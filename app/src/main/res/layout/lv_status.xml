@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp"
+    >
+
+    <LinearLayout
+        android:id="@+id/llBoosted"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal"
+        >
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginEnd="8dp"
+            android:scaleType="fitEnd"
+            android:src="@drawable/btn_boost"
+            android:id="@+id/ivBoosted"
+            />
+
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            >
+
+            <TextView
+                android:id="@+id/tvBoostedTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:textColor="#888888"
+                android:textSize="12dp"
+                tools:text="2017-04-16 09:37:14"
+                />
+
+            <TextView
+                android:id="@+id/tvBoosted"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="～にブーストされました"
+                />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llFollow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal"
+        >
+
+        <ImageView
+            android:layout_width="64dp"
+            android:layout_height="32dp"
+            android:layout_gravity="bottom"
+            android:layout_marginEnd="8dp"
+            android:id="@+id/ivFollow"
+            android:background="#888"
+            android:contentDescription="@string/thumbnail"
+            android:scaleType="fitEnd"
+            />
+
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            >
+
+            <TextView
+                android:id="@+id/tvFollowerName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="Follower Name"
+                />
+
+            <TextView
+                android:id="@+id/tvFollowerAcct"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#888888"
+                android:textSize="12dp"
+                tools:text="aaaaaaaaaaaaaaaa"
+                />
+
+        </LinearLayout>
+        <ImageButton
+            android:id="@+id/btnFollow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/follow"
+            android:src="@drawable/btn_follow"
+            />
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/llStatus"
+        >
+
+        <ImageView
+            android:id="@+id/ivThumbnail"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="8dp"
+            android:background="#888"
+            android:contentDescription="@string/thumbnail"
+            android:scaleType="centerCrop"
+            />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            >
+
+            <TextView
+                android:id="@+id/tvTime"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:textColor="#888888"
+                android:textSize="12dp"
+                tools:text="2017-04-16 09:37:14"
+                />
+
+            <TextView
+                android:id="@+id/tvName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                tools:text="Displayname @username"
+                />
+
+            <TextView
+                android:id="@+id/tvContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                tools:text="Contents\nContents"
+                />
+            <!-- TODO: make MultipleImageView  -->
+            <ImageView
+                android:id="@+id/ivMedia"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginTop="8dp"
+                android:background="#f88"
+                android:contentDescription="@string/media_attachment"
+                android:scaleType="centerCrop"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                >
+
+                <ImageButton
+                    android:id="@+id/btnReply"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/reply"
+                    android:src="@drawable/btn_reply"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnBoost"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/boost"
+                    android:src="@drawable/btn_boost"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnFavourite"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/favourite"
+                    android:src="@drawable/btn_favourite"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnMore"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="@string/more"
+                    android:src="@drawable/btn_more"
+                    />
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

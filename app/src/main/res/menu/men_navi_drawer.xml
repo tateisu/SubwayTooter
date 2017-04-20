@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+
+
+        <item
+            android:id="@+id/nav_account_add"
+            android:icon="@drawable/ic_account_add"
+            android:title="@string/account_add"/>
+
+        <item android:title="@string/add_column">
+            <menu>
+                <item
+                    android:id="@+id/nav_add_tl_home"
+                    android:icon="@drawable/btn_home"
+                    android:title="@string/home"/>
+                <item
+                    android:id="@+id/nav_add_tl_local"
+                    android:icon="@drawable/btn_local_tl"
+                    android:title="@string/local_tl"/>
+                <item
+                    android:id="@+id/nav_add_tl_federate"
+                    android:icon="@drawable/btn_federate_tl"
+                    android:title="@string/federate_tl"/>
+
+                <item
+                    android:id="@+id/nav_add_statuses"
+                    android:icon="@drawable/btn_statuses"
+                    android:title="@string/your_statuses"/>
+
+                <item
+                    android:id="@+id/nav_add_favourites"
+                    android:icon="@drawable/btn_favourite"
+                    android:title="@string/your_favourites"/>
+
+                <item
+                    android:id="@+id/nav_add_notifications"
+                    android:icon="@drawable/btn_notification"
+                    android:title="@string/your_notifications"/>
+
+                <!--<item-->
+                <!--android:id="@+id/nav_add_reports"-->
+                <!--android:icon="@drawable/btn_report"-->
+                <!--android:title="@string/your_reports"/>-->
+
+
+                <!--<item-->
+                <!--android:id="@+id/nav_slideshow"-->
+                <!--android:icon="@drawable/ic_menu_slideshow"-->
+                <!--android:title="Slideshow"/>-->
+                <!--<item-->
+                <!--android:id="@+id/nav_manage"-->
+                <!--android:icon="@drawable/ic_menu_manage"-->
+                <!--android:title="Tools"/>-->
+            </menu>
+        </item>
+
+    </group>
+
+    <!--<item android:title="Communicate">-->
+    <!--<menu>-->
+    <!--<item-->
+    <!--android:id="@+id/nav_share"-->
+    <!--android:icon="@drawable/ic_menu_share"-->
+    <!--android:title="Share"/>-->
+    <!--<item-->
+    <!--android:id="@+id/nav_send"-->
+    <!--android:icon="@drawable/ic_menu_send"-->
+    <!--android:title="Send"/>-->
+    <!--</menu>-->
+    <!--</item>-->
+
+</menu>

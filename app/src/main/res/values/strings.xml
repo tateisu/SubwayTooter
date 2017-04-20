@@ -1,0 +1,58 @@
+<resources>
+    <string name="app_name">SubwayTooter</string>
+
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="account_add">add account</string>
+    <string name="instance">instance</string>
+    <string name="user_mail_address">user mail address</string>
+    <string name="user_password">user password</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="instance_empty">instance empty</string>
+    <string name="mail_empty">mail empty</string>
+    <string name="instance_not_specified">instance not specified</string>
+    <string name="mail_not_specified">mail not specified</string>
+    <string name="password_not_specified">password not specified</string>
+
+    <string name="network_error">network error. %1$s</string>
+    <string name="api_error">API error. %1$s</string>
+
+    <string name="register_app_to_server">registering this app to %1$s…</string>
+    <string name="request_access_token">request access token…</string>
+    <string name="request_api">get %1$s…</string>
+    <string name="column_empty">please add column from left-top menu button</string>
+    <string name="home">home</string>
+    <string name="local_timeline">local timeline</string>
+    <string name="federate_timeline">federated timeline</string>
+    <string name="login_required">login required</string>
+    <string name="cancelled">cancelled</string>
+    <string name="show_home">add home</string>
+    <string name="account_pick">select account</string>
+    <string name="local_tl">local timeline</string>
+    <string name="accout_confirmed">account confirmed.</string>
+    <string name="reply">reply</string>
+    <string name="boost">boost</string>
+    <string name="favourite">favourite</string>
+    <string name="more">more</string>
+    <string name="media_attachment">media attachment</string>
+    <string name="close_column">close column</string>
+    <string name="thumbnail">thumbnail</string>
+    <string name="boosted_by">boosted by %1$s</string>
+    <string name="reload">reload</string>
+    <string name="add_favourites">add your favourites</string>
+    <string name="federate_tl">federate timeline</string>
+    <string name="favourites">favourites</string>
+    <string name="notifications">notifications</string>
+    <string name="reports">reports</string>
+    <string name="your_favourites">your favourites</string>
+    <string name="your_reports">reports made by you</string>
+    <string name="your_statuses">your statuses</string>
+    <string name="your_notifications">your notifications</string>
+    <string name="statuses_of">statuses of %1$s</string>
+    <string name="follow">follow</string>
+    <string name="favourited_by">favourited by %1$s</string>
+    <string name="add_column">add column</string>
+</resources>

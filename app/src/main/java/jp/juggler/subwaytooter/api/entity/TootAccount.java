@@ -62,6 +62,8 @@ public class TootAccount {
 	//	URL to the header static image (gif)
 	public String header_static;
 	
+	public long time_created_at;
+	
 	public static TootAccount parse( LogCategory log, JSONObject src, TootAccount dst ){
 		if( src == null ) return null;
 		try{
@@ -80,6 +82,8 @@ public class TootAccount {
 			dst.avatar_static = Utils.optStringX( src, "avatar_static" ); // "https:\/\/mastodon.juggler.jp\/system\/accounts\/avatars\/000\/000\/148\/original\/0a468974fac5a448.PNG?1492081886",
 			dst.header = Utils.optStringX( src, "header" ); // "https:\/\/mastodon.juggler.jp\/headers\/original\/missing.png"
 			dst.header_static = Utils.optStringX( src, "header_static" ); // "https:\/\/mastodon.juggler.jp\/headers\/original\/missing.png"}
+			
+			dst.time_created_at = TootStatus.parseTime( log,dst.created_at );
 			return dst;
 		}catch( Throwable ex ){
 			ex.printStackTrace();

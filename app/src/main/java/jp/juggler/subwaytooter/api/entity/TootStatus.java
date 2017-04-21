@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.api.entity;
 
+import android.text.Spannable;
 import android.text.TextUtils;
 
 import org.json.JSONArray;
@@ -9,10 +10,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -83,6 +84,8 @@ public class TootStatus {
 	public String application;
 	
 	public long time_created_at;
+
+	public Spannable decoded_content;
 	
 	public static TootStatus parse( LogCategory log, JSONObject src ){
 		
@@ -113,6 +116,7 @@ public class TootStatus {
 			status.application = Utils.optStringX( src, "application" ); // null
 			
 			status.time_created_at = parseTime( log, status.created_at );
+			status.decoded_content = HTMLDecoder.decodeHTML(status.content);
 			
 			return status;
 		}catch( Throwable ex ){

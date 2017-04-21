@@ -7,6 +7,7 @@
     android:orientation="vertical"
     android:paddingTop="12dp"
     android:paddingBottom="12dp"
+    android:descendantFocusability="blocksDescendants"
     >
 
     <LinearLayout
@@ -41,7 +42,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="end"
                 android:textColor="#888888"
-                android:textSize="12dp"
+                android:textSize="12sp"
                 tools:text="2017-04-16 09:37:14"
                 />
 
@@ -64,17 +65,15 @@
         android:orientation="horizontal"
         >
 
-        <ImageView
+        <com.android.volley.toolbox.NetworkImageView
             android:layout_width="64dp"
             android:layout_height="32dp"
             android:layout_gravity="bottom"
             android:layout_marginEnd="8dp"
             android:id="@+id/ivFollow"
-            android:background="#888"
             android:contentDescription="@string/thumbnail"
             android:scaleType="fitEnd"
             />
-
 
         <LinearLayout
             android:layout_width="0dp"
@@ -95,7 +94,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="#888888"
-                android:textSize="12dp"
+                android:textSize="12sp"
                 tools:text="aaaaaaaaaaaaaaaa"
                 />
 
@@ -116,13 +115,12 @@
         android:id="@+id/llStatus"
         >
 
-        <ImageView
+        <com.android.volley.toolbox.NetworkImageView
             android:id="@+id/ivThumbnail"
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:layout_marginEnd="8dp"
             android:layout_marginTop="8dp"
-            android:background="#888"
             android:contentDescription="@string/thumbnail"
             android:scaleType="centerCrop"
             />
@@ -140,7 +138,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="end"
                 android:textColor="#888888"
-                android:textSize="12dp"
+                android:textSize="12sp"
                 tools:text="2017-04-16 09:37:14"
                 />
 
@@ -152,6 +150,28 @@
                 tools:text="Displayname @username"
                 />
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="8dp"
+                android:id="@+id/llContentWarning"
+                >
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    tools:text="見る"
+                    android:id="@+id/btnContentWarning"
+                    android:minWidth="32dp"
+                    />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:id="@+id/tvContentWarning"
+                    />
+            </LinearLayout>
             <TextView
                 android:id="@+id/tvContent"
                 android:layout_width="match_parent"
@@ -159,15 +179,75 @@
                 android:layout_marginTop="8dp"
                 tools:text="Contents\nContents"
                 />
-            <!-- TODO: make MultipleImageView  -->
-            <ImageView
-                android:id="@+id/ivMedia"
+
+            <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="64dp"
                 android:layout_marginTop="8dp"
-                android:background="#f88"
-                android:contentDescription="@string/media_attachment"
-                android:scaleType="centerCrop"/>
+                android:id="@+id/flMedia"
+                >
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    >
+
+                    <com.android.volley.toolbox.NetworkImageView
+                        android:id="@+id/ivMedia1"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:contentDescription="@string/thumbnail"
+                        android:scaleType="centerCrop"
+                        />
+                    <com.android.volley.toolbox.NetworkImageView
+                        android:id="@+id/ivMedia2"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:contentDescription="@string/thumbnail"
+                        android:scaleType="centerCrop"
+                        />
+                    <com.android.volley.toolbox.NetworkImageView
+                        android:id="@+id/ivMedia3"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        android:contentDescription="@string/thumbnail"
+                        android:scaleType="centerCrop"
+                        />
+                    <com.android.volley.toolbox.NetworkImageView
+                        android:id="@+id/ivMedia4"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:contentDescription="@string/thumbnail"
+                        android:scaleType="centerCrop"
+                        />
+
+                    <ImageButton
+                        android:layout_width="32dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="8dp"
+                        android:background="@null"
+                        android:src="@drawable/btn_close"
+                        android:contentDescription="@string/hide"
+                        android:id="@+id/btnHideMedia"
+                        />
+                </LinearLayout>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#000"
+                    android:textColor="#fff"
+                    android:text="@string/tap_to_show"
+                    android:id="@+id/btnShowMedia"
+                    android:gravity="center"
+                />
+            </FrameLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -184,20 +264,20 @@
                     android:src="@drawable/btn_reply"
                     />
 
-                <ImageButton
+                <Button
                     android:id="@+id/btnBoost"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:contentDescription="@string/boost"
-                    android:src="@drawable/btn_boost"
+                    android:drawablePadding="4dp"
+                    android:minWidth="32dp"
                     />
 
-                <ImageButton
+                <Button
                     android:id="@+id/btnFavourite"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:contentDescription="@string/favourite"
-                    android:src="@drawable/btn_favourite"
+                    android:drawablePadding="4dp"
+                    android:minWidth="32dp"
                     />
 
                 <ImageButton

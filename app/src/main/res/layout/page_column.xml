@@ -9,39 +9,57 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="12dp"
-
         android:background="#ddd"
+        android:orientation="vertical"
+        android:padding="12dp"
         >
 
         <TextView
-            android:id="@+id/tvColumnName"
-            android:layout_width="0dp"
+            android:id="@+id/tvColumnContext"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            tools:text="tvColumnName"
+            android:gravity="end"
+            android:textColor="#888"
+            android:textSize="12sp"
+            tools:text="tvColumnContext"
             />
 
-        <ImageButton
-            android:id="@+id/btnColumnReload"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginStart="8dp"
-            android:contentDescription="@string/reload"
-            android:src="@drawable/btn_refresh"
-            android:layout_gravity="center_vertical"
-            />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
 
-        <ImageButton
-            android:id="@+id/btnColumnClose"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:layout_marginStart="8dp"
-            android:contentDescription="@string/close_column"
-            android:src="@drawable/black_close"
-            android:layout_gravity="center_vertical"
-            />
+            <TextView
+                android:id="@+id/tvColumnName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                tools:text="tvColumnName"
+                />
+
+            <ImageButton
+                android:id="@+id/btnColumnReload"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="8dp"
+                android:contentDescription="@string/reload"
+                android:src="@drawable/btn_refresh"
+                />
+
+            <ImageButton
+                android:id="@+id/btnColumnClose"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="8dp"
+                android:contentDescription="@string/close_column"
+                android:src="@drawable/black_close"
+                />
+
+
+        </LinearLayout>
     </LinearLayout>
 
     <TextView
@@ -58,11 +76,11 @@
         android:layout_height="0dp"
         android:layout_weight="1"
 
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:paddingBottom="64dp"
         android:clipToPadding="false"
-        android:scrollbarStyle="outsideOverlay"
         android:fadeScrollbars="false"
+        android:paddingBottom="64dp"
+        android:paddingEnd="12dp"
+        android:paddingStart="12dp"
+        android:scrollbarStyle="outsideOverlay"
         />
 </LinearLayout>

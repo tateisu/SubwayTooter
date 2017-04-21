@@ -23,7 +23,7 @@
     <string name="register_app_to_server">registering this app to %1$s…</string>
     <string name="request_access_token">request access token…</string>
     <string name="request_api">get %1$s…</string>
-    <string name="column_empty">please add column from left-top menu button</string>
+    <string name="column_empty">please add column from left-bottom menu button</string>
     <string name="home">home</string>
     <string name="local_timeline">local timeline</string>
     <string name="federate_timeline">federated timeline</string>
@@ -32,7 +32,7 @@
     <string name="show_home">add home</string>
     <string name="account_pick">select account</string>
     <string name="local_tl">local timeline</string>
-    <string name="accout_confirmed">account confirmed.</string>
+    <string name="account_confirmed">account confirmed.</string>
     <string name="reply">reply</string>
     <string name="boost">boost</string>
     <string name="favourite">favourite</string>
@@ -55,4 +55,22 @@
     <string name="follow">follow</string>
     <string name="favourited_by">favourited by %1$s</string>
     <string name="add_column">add column</string>
+    <string name="profile_page">profile\npage</string>
+    <string name="following">following</string>
+    <string name="followers">followers</string>
+    <string name="statuses">statuses</string>
+    <string name="hide">hide</string>
+    <string name="nsfw">NSFW</string>
+    <string name="show_media">NSFW\n(tap to show)</string>
+    <string name="tap_to_show">tap to show</string>
+    <string name="show">show</string>
+    <string name="act_post">posting Toot</string>
+    <string name="content_warning">content warning</string>
+    <string name="content">content</string>
+    <string name="please_add_account">missng account. please add account before posting.</string>
+    <string name="not_selected">(not selected)</string>
+    <string name="content_warning_hint">please input text for content warning.</string>
+    <string name="content_hint">please input your status</string>
+    <string name="status">status</string>
+    <string name="list_empty">no items in list</string>
 </resources>

@@ -28,18 +28,11 @@ public class ColumnPagerAdapter extends PagerAdapter{
 	
 	int addColumn( ViewPager pager, Column column ){
 		int size = column_list.size();
-		if( size == 0 ){
-			column_list.add( column );
-			notifyDataSetChanged();
-			return 0;
-		}else{
-			int idx = 1+pager.getCurrentItem();
-			column_list.add( idx, column );
-			notifyDataSetChanged();
-			pager.setCurrentItem( idx );
-			return idx;
-		}
+		column_list.add( column );
+		notifyDataSetChanged();
+		return size;
 	}
+
 	public void removeColumn( ViewPager pager,Column column ){
 		int idx_column = column_list.indexOf( column );
 		if( idx_column == - 1 ) return;
@@ -53,7 +46,8 @@ public class ColumnPagerAdapter extends PagerAdapter{
 	
 	
 	public Column getColumn( int idx ){
-		return column_list.get( idx );
+		if( idx >= 0 && idx < column_list.size() ) return column_list.get( idx );
+		return null;
 	}
 	
 	public ColumnViewHolder getColumnViewHolder( int idx ){

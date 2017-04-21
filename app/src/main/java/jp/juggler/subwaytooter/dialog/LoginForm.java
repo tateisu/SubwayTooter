@@ -4,7 +4,14 @@ import android.app.Dialog;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 
 import jp.juggler.subwaytooter.ActMain;
 import jp.juggler.subwaytooter.R;
@@ -22,7 +29,7 @@ public class LoginForm {
 	
 	public static void showLoginForm(final ActMain activity,final LoginFormCallback callback){
 		final View view = activity.getLayoutInflater().inflate( R.layout.dlg_account_add, null, false );
-		final EditText etInstance = (EditText) view.findViewById( R.id.etInstance );
+		final AutoCompleteTextView etInstance = (AutoCompleteTextView) view.findViewById( R.id.etInstance );
 		final EditText etUserMail = (EditText) view.findViewById( R.id.etUserMail );
 		final EditText etUserPassword = (EditText) view.findViewById( R.id.etUserPassword );
 		final Dialog dialog = new Dialog( activity );
@@ -54,8 +61,36 @@ public class LoginForm {
 				dialog.cancel();
 			}
 		} );
+		
+		ArrayList<String> instance_list = new ArrayList<>(  );
+		try{
+			InputStream is = activity.getResources().openRawResource( R.raw.server_list );
+			try{
+				BufferedReader br = new BufferedReader( new InputStreamReader( is,"UTF-8" ) );
+				for(;;){
+					String s  = br.readLine();
+					if( s == null ) break;
+					s= s.trim();
+					if( s.length() > 0 ) instance_list.add( s );
+				}
+			}finally{
+				try{
+					is.close();
+				}catch(Throwable ignored){
+					
+				}
+			}
+		}catch(Throwable ex){
+			ex.printStackTrace(  );
+		}
+		
+		ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, R.layout.lv_instance_dropdown, instance_list);
+		adapter.setDropDownViewResource( R.layout.lv_instance_dropdown );
+		etInstance.setAdapter(adapter);
+		
 		//noinspection ConstantConditions
 		dialog.getWindow().setLayout( WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT );
 		dialog.show();
 	}
+
 }

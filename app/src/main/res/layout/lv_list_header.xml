@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:descendantFocusability="blocksDescendants"
+    >
+    <TextView
+        android:id="@+id/tvCreated"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:textColor="#888888"
+        android:textSize="12sp"
+        tools:text="xxxx-xx-xx xx:xx:xx"
+        />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        >
+
+        <com.android.volley.toolbox.NetworkImageView
+            android:id="@+id/ivBackground"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#40ffffff"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="12dp"
+            >
+
+            <com.android.volley.toolbox.NetworkImageView
+                android:id="@+id/ivAvatar"
+                android:layout_width="128dp"
+                android:layout_height="128dp"
+                android:layout_marginTop="20dp"
+                android:background="#888"
+                />
+
+            <TextView
+                android:id="@+id/tvDisplayName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center"
+                android:textSize="20dp"
+                tools:text="ディスプレイネームディスプレイネームディスプレイネーム"
+                />
+
+            <TextView
+                android:id="@+id/tvAcct"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                tools:text="\@fugahogehogera\@jugemujyugemugokounosurikire.jp"
+                android:textColor="@color/colorLink"
+                />
+
+
+            <TextView
+                android:id="@+id/tvNote"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                tools:text="説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 "
+                />
+
+        </LinearLayout>
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal"
+        >
+
+        <Button
+            android:id="@+id/btnStatusCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="statuses\n124"
+            />
+
+        <Button
+            android:id="@+id/btnFollowing"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="following\n9999"
+            />
+
+        <Button
+            android:id="@+id/btnFollowers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="followers\n9999"
+            />
+
+    </LinearLayout>
+
+</LinearLayout>

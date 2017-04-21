@@ -3,7 +3,9 @@ package jp.juggler.subwaytooter;
 import android.os.AsyncTask;
 import android.support.v4.os.AsyncTaskCompat;
 
-import java.util.ArrayList;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,6 +23,10 @@ import jp.juggler.subwaytooter.util.Utils;
 public class Column {
 	static final LogCategory log = new LogCategory( "Column" );
 	
+	static final String KEY_ACCOUNT_ROW_ID = "account_id";
+	static final String KEY_TYPE = "type";
+	static final String KEY_WHO_ID = "who_id";
+	
 	final ActMain activity;
 	final SavedAccount access_info;
 	final int type;
@@ -35,14 +41,23 @@ public class Column {
 	static final int TYPE_TL_NOTIFICATIONS = 7;
 	
 	public Column( ActMain activity, SavedAccount access_info, int type ){
-		this( activity,access_info,type,access_info.id);
+		this( activity, access_info, type, access_info.id );
 	}
 	
-	public Column( ActMain activity, SavedAccount access_info, int type ,long who_id,Object... params){
+	public Column( ActMain activity, SavedAccount access_info, int type, long who_id, Object... params ){
 		this.activity = activity;
 		this.access_info = access_info;
 		this.type = type;
 		this.who_id = who_id;
+		startLoading();
+	}
+	
+	public Column( ActMain activity, JSONObject src ){
+		this.activity = activity;
+		this.access_info = SavedAccount.loadAccount( log, src.optLong( KEY_ACCOUNT_ROW_ID ) );
+		if( access_info == null ) throw new RuntimeException( "missing account" );
+		this.type = src.optInt( KEY_TYPE );
+		this.who_id = src.optLong( KEY_WHO_ID );
 		startLoading();
 	}
 	
@@ -52,30 +67,36 @@ public class Column {
 		is_dispose.set( true );
 	}
 	
+	public void encodeJSON( JSONObject item ) throws JSONException{
+		item.put( KEY_ACCOUNT_ROW_ID , access_info.db_id );
+		item.put( KEY_TYPE, type );
+		item.put( KEY_WHO_ID, who_id );
+	}
+	
 	public String getColumnName(){
 		switch( type ){
 		default:
-			return access_info.getFullAcct( access_info ) + "\n" + "?";
+			return "?";
 		case TYPE_TL_HOME:
-			return access_info.getFullAcct( access_info ) + "\n" + activity.getString( R.string.home );
+			return activity.getString( R.string.home );
 		case TYPE_TL_LOCAL:
-			return access_info.getFullAcct( access_info ) + "\n" + activity.getString( R.string.local_timeline );
+			return activity.getString( R.string.local_timeline );
 		case TYPE_TL_FEDERATE:
-			return access_info.getFullAcct( access_info ) + "\n" + activity.getString( R.string.federate_timeline );
+			return activity.getString( R.string.federate_timeline );
 		
 		case TYPE_TL_STATUSES:
-			return access_info.getFullAcct( access_info ) + "\n" + activity.getString( R.string.statuses_of
+			return activity.getString( R.string.statuses_of
 				, who_account != null ? access_info.getFullAcct( who_account ) : Long.toString( who_id )
 			);
 		
 		case TYPE_TL_FAVOURITES:
-			return access_info.getFullAcct( access_info ) + "\n" + activity.getString( R.string.favourites );
+			return activity.getString( R.string.favourites );
 		
 		case TYPE_TL_REPORTS:
-			return access_info.getFullAcct( access_info ) + "\n" + activity.getString( R.string.reports );
+			return activity.getString( R.string.reports );
 		
 		case TYPE_TL_NOTIFICATIONS:
-			return access_info.getFullAcct( access_info ) + "\n" + activity.getString( R.string.notifications );
+			return activity.getString( R.string.notifications );
 			
 		}
 	}
@@ -196,7 +217,7 @@ public class Column {
 					}
 				} );
 				
-				client.setAccessInfo( access_info );
+				client.setAccount( access_info );
 				
 				switch( type ){
 				default:
@@ -215,7 +236,7 @@ public class Column {
 						client.callback.publishProgress( "" );
 					}
 					
-					return parseStatuses( client.get( "/api/v1/accounts/"+who_id+"/statuses" ) );
+					return parseStatuses( client.get( "/api/v1/accounts/" + who_id + "/statuses" ) );
 				
 				case TYPE_TL_FAVOURITES:
 					return parseStatuses( client.get( "/api/v1/favourites" ) );

@@ -101,6 +101,27 @@ public class Column {
 		}
 	}
 	
+	public interface StatusEntryCallback{
+		void onIterate(TootStatus status);
+	}
+	
+	public void findStatus( SavedAccount target_account,long target_status_id ,StatusEntryCallback callback){
+		if( target_account.user.equals( access_info.user ) ){
+			for( int i = 0, ie = status_list.size() ; i < ie ; ++ i ){
+				TootStatus status = status_list.get( i );
+				if( target_status_id == status.id ){
+					callback.onIterate( status );
+				}
+				TootStatus reblog = status.reblog;
+				if( reblog!= null ){
+					if( target_status_id == reblog.id ){
+						callback.onIterate( status );
+					}
+				}
+			}
+		}
+	}
+	
 	public interface VisualCallback {
 		void onVisualColumn();
 	}
@@ -126,7 +147,7 @@ public class Column {
 		}
 	}
 	
-	private void fireVisualCallback(){
+	public void fireVisualCallback(){
 		Iterator< VisualCallback > it = visual_callback.iterator();
 		while( it.hasNext() ){
 			it.next().onVisualColumn();
@@ -160,9 +181,6 @@ public class Column {
 		cancelLastTask();
 		
 		AsyncTask< Void, Void, TootApiResult > task = this.last_task = new AsyncTask< Void, Void, TootApiResult >() {
-			boolean __isCancelled(){
-				return isCancelled();
-			}
 			
 			TootStatus.List tmp_list_status;
 			TootReport.List tmp_list_report;
@@ -200,12 +218,12 @@ public class Column {
 			protected TootApiResult doInBackground( Void... params ){
 				TootApiClient client = new TootApiClient( activity, new TootApiClient.Callback() {
 					@Override
-					public boolean isCancelled(){
-						return __isCancelled() || is_dispose.get();
+					public boolean isApiCancelled(){
+						return isCancelled() || is_dispose.get();
 					}
 					
 					@Override
-					public void publishProgress( final String s ){
+					public void publishApiProgress( final String s ){
 						Utils.runOnMainThread( new Runnable() {
 							@Override
 							public void run(){
@@ -222,30 +240,30 @@ public class Column {
 				switch( type ){
 				default:
 				case TYPE_TL_HOME:
-					return parseStatuses( client.get( "/api/v1/timelines/home" ) );
+					return parseStatuses( client.request( "/api/v1/timelines/home" ) );
 				
 				case TYPE_TL_LOCAL:
-					return parseStatuses( client.get( "/api/v1/timelines/public?local=1" ) );
+					return parseStatuses( client.request( "/api/v1/timelines/public?local=1" ) );
 				
 				case TYPE_TL_FEDERATE:
-					return parseStatuses( client.get( "/api/v1/timelines/public" ) );
+					return parseStatuses( client.request( "/api/v1/timelines/public" ) );
 				
 				case TYPE_TL_STATUSES:
 					if( who_account == null ){
-						parseAccount( client.get( "/api/v1/accounts/" + who_id ) );
-						client.callback.publishProgress( "" );
+						parseAccount( client.request( "/api/v1/accounts/" + who_id ) );
+						client.callback.publishApiProgress( "" );
 					}
 					
-					return parseStatuses( client.get( "/api/v1/accounts/" + who_id + "/statuses" ) );
+					return parseStatuses( client.request( "/api/v1/accounts/" + who_id + "/statuses" ) );
 				
 				case TYPE_TL_FAVOURITES:
-					return parseStatuses( client.get( "/api/v1/favourites" ) );
+					return parseStatuses( client.request( "/api/v1/favourites" ) );
 				
 				case TYPE_TL_REPORTS:
-					return parseReports( client.get( "/api/v1/reports" ) );
+					return parseReports( client.request( "/api/v1/reports" ) );
 				
 				case TYPE_TL_NOTIFICATIONS:
-					return parseNotifications( client.get( "/api/v1/notifications" ) );
+					return parseNotifications( client.request( "/api/v1/notifications" ) );
 				}
 			}
 			

@@ -1,18 +1,18 @@
 package jp.juggler.subwaytooter.util;
 
-import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.ClickableSpan;
 import android.view.View;
 
-import com.emojione.Emojione;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import jp.juggler.subwaytooter.api.entity.TootMention;
+import jp.juggler.subwaytooter.api.entity.TootTag;
 
 public class HTMLDecoder {
 	static final LogCategory log = new LogCategory( "HTMLDecoder" );
@@ -27,7 +27,9 @@ public class HTMLDecoder {
 	static final Pattern reTag = Pattern.compile( "<(/?)(\\w+)" );
 	static final Pattern reTagEnd = Pattern.compile( "(/?)>$" );
 	static final Pattern reHref = Pattern.compile( "\\bhref=\"([^\"]*)\"" );
+	
 
+	
 	static class TokenParser {
 		
 		final String src;
@@ -133,15 +135,13 @@ public class HTMLDecoder {
 			if( DEBUG_HTML_PARSER ) log.d( "parseChild: %s)%s", indent, tag );
 		}
 		
-
 		
-		String decodeEmoji( String s ){
-			return Emojione.shortnameToUnicode( s, false );
-		}
+		
+
 		
 		public void encodeSpan( SpannableStringBuilder sb ){
 			if( TAG_TEXT.equals( tag ) ){
-				sb.append( decodeEntity( decodeEmoji( text ) ) );
+				sb.append( Emojione.decodeEmoji( decodeEntity( text ) ) );
 				return;
 			}
 			if( DEBUG_HTML_PARSER ) sb.append( "(start " + tag + ")" );
@@ -203,6 +203,49 @@ public class HTMLDecoder {
 		return null;
 	}
 	
+	public static Spannable decodeTags( TootTag.List src_list ){
+		if( src_list == null || src_list.isEmpty()) return null;
+		SpannableStringBuilder sb = new SpannableStringBuilder();
+		for(TootTag item : src_list){
+			if(sb.length() > 0) sb.append(" ");
+			int start = sb.length();
+			sb.append('#');
+			sb.append(item.name);
+			final String item_url = item.url;
+			sb.setSpan( new ClickableSpan() {
+				@Override public void onClick( View widget ){
+					if( link_callback != null ){
+						link_callback.onClickLink( item_url );
+					}
+				}
+			}, start, sb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+		}
+		return sb;
+	}
+	
+	public static Spannable decodeMentions( TootMention.List src_list ){
+		if( src_list == null || src_list.isEmpty()) return null;
+		SpannableStringBuilder sb = new SpannableStringBuilder();
+		for(TootMention item : src_list){
+			if(sb.length() > 0) sb.append(" ");
+			int start = sb.length();
+			sb.append('@');
+			sb.append( item.acct );
+			final String item_url = item.url;
+			sb.setSpan( new ClickableSpan() {
+				@Override public void onClick( View widget ){
+					if( link_callback != null ){
+						link_callback.onClickLink( item_url );
+					}
+				}
+			}, start, sb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+		}
+		return sb;
+	}
+
+	
+	//////////////////////////////////////////////////////////////////////////////////////
+	
 	private static final HashMap< String, Character > entity_map = new HashMap<>();
 	
 	private static void _addEntity( String s, char c ){
@@ -215,7 +258,7 @@ public class HTMLDecoder {
 	
 	static final Pattern reEntity = Pattern.compile( "&(#?)(\\w+);" );
 	
-	static CharSequence decodeEntity( String src ){
+	public static String decodeEntity( String src ){
 		StringBuilder sb = null;
 		Matcher m = reEntity.matcher( src );
 		int last_end = 0;
@@ -262,7 +305,7 @@ public class HTMLDecoder {
 		if( end > last_end ){
 			sb.append( src.substring( last_end, end ) );
 		}
-		return sb;
+		return sb.toString();
 	}
 	
 	private static void init1(){

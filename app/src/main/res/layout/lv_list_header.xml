@@ -32,10 +32,10 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#40ffffff"
             android:gravity="center_horizontal"
             android:orientation="vertical"
             android:padding="12dp"
+            android:background="#C0FFFFFF"
             >
 
             <com.android.volley.toolbox.NetworkImageView
@@ -43,7 +43,7 @@
                 android:layout_width="128dp"
                 android:layout_height="128dp"
                 android:layout_marginTop="20dp"
-                android:background="#888"
+                android:background="@drawable/btn_bg_transparent"
                 />
 
             <TextView
@@ -89,6 +89,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="statuses\n124"
+            android:background="@drawable/btn_bg_transparent"
             />
 
         <Button
@@ -96,6 +97,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="following\n9999"
+            android:background="@drawable/btn_bg_transparent"
             />
 
         <Button
@@ -103,6 +105,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             tools:text="followers\n9999"
+            android:background="@drawable/btn_bg_transparent"
             />
 
     </LinearLayout>

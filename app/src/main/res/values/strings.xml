@@ -18,6 +18,7 @@
     <string name="password_not_specified">password not specified</string>
 
     <string name="network_error">network error. %1$s</string>
+    <string name="network_error_arg">network error. %1$s</string>
     <string name="api_error">API error. %1$s</string>
 
     <string name="register_app_to_server">registering this app to %1$s…</string>
@@ -40,7 +41,6 @@
     <string name="media_attachment">media attachment</string>
     <string name="close_column">close column</string>
     <string name="thumbnail">thumbnail</string>
-    <string name="boosted_by">boosted by %1$s</string>
     <string name="reload">reload</string>
     <string name="add_favourites">add your favourites</string>
     <string name="federate_tl">federate timeline</string>
@@ -53,7 +53,6 @@
     <string name="your_notifications">your notifications</string>
     <string name="statuses_of">statuses of %1$s</string>
     <string name="follow">follow</string>
-    <string name="favourited_by">favourited by %1$s</string>
     <string name="add_column">add column</string>
     <string name="profile_page">profile\npage</string>
     <string name="following">following</string>
@@ -73,4 +72,44 @@
     <string name="content_hint">please input your status</string>
     <string name="status">status</string>
     <string name="list_empty">no items in list</string>
+    <string name="post_from">post from</string>
+    <string name="choose_account">choose account</string>
+    <string name="response_not_json">API response is not JSON.</string>
+    <string name="attachment_too_many">max 4 files allowed.</string>
+    <string name="account_select_please">please select account</string>
+    <string name="login_failed">login failed</string>
+    <string name="file_size_too_big">file size too big. maximum limit is 8MB.</string>
+    <string name="visibility_public">public</string>
+    <string name="visibility_unlisted">unlisted</string>
+    <string name="visibility_private">private</string>
+    <string name="visibility_direct">direct</string>
+    <string name="choose_visibility">choose visibility</string>
+    <string name="confirm_delete_attachment">remove this attachment?</string>
+    <string name="post_error_contents_empty">please input your status.</string>
+    <string name="post_error_contents_warning_empty">please input contents warning</string>
+    <string name="wait_previous_operation">Please wait until last operation is over.</string>
+    <string name="cant_remove_boost_while_favourited">Can\'t remove boost while favourited</string>
+    <string name="confirm">confirm</string>
+    <string name="confirm_boost">Boost this status? it\'s shown by all followers and your profile page.</string>
+    <string name="tags">tags</string>
+    <string name="mentions">mentions</string>
+
+    <string name="display_name_favourited_by">favourited by %1$s</string>
+    <string name="display_name_boosted_by">boosted by %1$s</string>
+    <string name="display_name_replied_by">replied by %1$s</string>
+    <string name="display_name_followed_by">followed by %1$s</string>
+    <string name="account">account</string>
+    <string name="account_setting">account setting</string>
+    <string name="setting">setting</string>
+    <string name="app_setting">app setting</string>
+    <string name="columun_list">column list</string>
+    <string name="column_list">column list</string>
+    <string name="get_access_token">get access token</string>
+    <string name="account_remove">remove account from this app</string>
+    <string name="actions">actions</string>
+    <string name="default_status_visibility">default visibility of status</string>
+    <string name="confirm_before_boost">confirm before boost</string>
+    <string name="sensitive_content_default_open">sensitive content default open</string>
+    <string name="user">user</string>
+    <string name="confirm_account_remove">Account will be deleted. also all columns are remove.\nAre you sure?</string>
 </resources>

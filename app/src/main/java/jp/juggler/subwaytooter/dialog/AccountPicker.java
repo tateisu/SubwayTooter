@@ -34,7 +34,7 @@ public class AccountPicker {
 
 		for(int i=0,ie=account_list.size();i<ie;++i){
 			SavedAccount ai = account_list.get(i);
-			caption_list[i] = ai.acct + ( ai.login_required ? " "+ activity.getString( R.string.login_required) : "");
+			caption_list[i] = ai.acct;
 		}
 
 		new AlertDialog.Builder(activity)

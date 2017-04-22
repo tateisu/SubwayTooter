@@ -1,118 +1,173 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="12dp"
+    android:fillViewport="true"
     >
 
     <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="12dp"
         >
 
-        <Button
-            android:id="@+id/btnAccount"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:textAllCaps="false"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:text="@string/post_from"
+                />
+
+            <Button
+                android:id="@+id/btnAccount"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/btn_bg_transparent"
+                android:gravity="center_vertical"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:textAllCaps="false"
+                />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
+
+
+            <ImageButton
+                android:id="@+id/btnAttachment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:minHeight="48dp"
+                android:minWidth="48dp"
+                android:src="@drawable/btn_attachment"
+                />
+
+            <ImageButton
+                android:id="@+id/btnVisibility"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:minHeight="48dp"
+                android:minWidth="48dp"
+                android:src="@drawable/ic_public"
+                />
+
+            <TextView
+                android:id="@+id/tvCharCount"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:gravity="end|center_vertical"
+                />
+
+            <ImageButton
+                android:id="@+id/btnPost"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:minHeight="48dp"
+                android:minWidth="48dp"
+                android:src="@drawable/btn_post"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llAttachment"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal"
+            >
+
+            <com.android.volley.toolbox.NetworkImageView
+                android:id="@+id/ivMedia1"
+                android:layout_width="48dp"
+                android:layout_height="match_parent"
+                android:background="@drawable/btn_bg_transparent"
+                android:scaleType="fitCenter"
+                />
+
+            <com.android.volley.toolbox.NetworkImageView
+                android:id="@+id/ivMedia2"
+                android:layout_width="48dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/btn_bg_transparent"
+                android:scaleType="fitCenter"
+                />
+
+            <com.android.volley.toolbox.NetworkImageView
+                android:id="@+id/ivMedia3"
+                android:layout_width="48dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/btn_bg_transparent"
+                android:scaleType="fitCenter"
+                />
+
+            <com.android.volley.toolbox.NetworkImageView
+                android:id="@+id/ivMedia4"
+                android:layout_width="48dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/btn_bg_transparent"
+                android:scaleType="fitCenter"
+                />
+        </LinearLayout>
+
+        <CheckBox
+            android:id="@+id/cbNSFW"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/nsfw"
             />
 
-        <ImageButton
-            android:id="@+id/btnAttachment"
-            android:layout_width="wrap_content"
+        <CheckBox
+            android:id="@+id/cbContentWarning"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@drawable/btn_attachment"
+            android:layout_marginTop="12dp"
+            android:text="@string/content_warning"
+            />
+
+        <EditText
+            android:id="@+id/etContentWarning"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/content_warning_hint"
             />
 
         <TextView
-            android:id="@+id/tvCharCount"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/status"
             />
 
-        <ImageButton
-            android:id="@+id/btnPost"
-            android:layout_width="wrap_content"
+        <EditText
+            android:id="@+id/etContent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@drawable/btn_post"
+            android:hint="@string/content_hint"
+            android:inputType="textMultiLine"
             />
     </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/llAttachment"
-        android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:layout_marginTop="12dp"
-        android:orientation="horizontal"
-        >
-
-        <com.android.volley.toolbox.NetworkImageView
-            android:id="@+id/ivMedia1"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:scaleType="centerCrop"
-            />
-
-        <com.android.volley.toolbox.NetworkImageView
-            android:id="@+id/ivMedia2"
-            android:layout_marginStart="8dp"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:scaleType="centerCrop"
-            />
-
-        <com.android.volley.toolbox.NetworkImageView
-            android:id="@+id/ivMedia3"
-            android:layout_marginStart="8dp"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:scaleType="centerCrop"
-            />
-
-        <com.android.volley.toolbox.NetworkImageView
-            android:id="@+id/ivMedia4"
-            android:layout_marginStart="8dp"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:scaleType="centerCrop"
-            />
-    </LinearLayout>
-
-    <CheckBox
-        android:id="@+id/cbContentWarning"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="@string/content_warning"
-        />
-
-    <EditText
-        android:id="@+id/etContentWarning"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/content_warning_hint"
-        />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:text="@string/status"
-        />
-
-    <EditText
-        android:id="@+id/etContent"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:inputType="textMultiLine"
-        android:hint="@string/content_hint"
-        />
-</LinearLayout>
+</ScrollView>

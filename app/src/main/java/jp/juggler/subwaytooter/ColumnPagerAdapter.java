@@ -27,10 +27,17 @@ public class ColumnPagerAdapter extends PagerAdapter{
 	final SparseArray<ColumnViewHolder> holder_list = new SparseArray<>();
 	
 	int addColumn( ViewPager pager, Column column ){
+		return addColumn( pager,column,pager.getCurrentItem()+1 );
+	}
+	
+	int addColumn( ViewPager pager, Column column,int index ){
 		int size = column_list.size();
-		column_list.add( column );
+		if( index > size ) index = size;
+		pager.setAdapter( null );
+		column_list.add( index,column );
+		pager.setAdapter( this );
 		notifyDataSetChanged();
-		return size;
+		return index;
 	}
 
 	public void removeColumn( ViewPager pager,Column column ){
@@ -40,7 +47,7 @@ public class ColumnPagerAdapter extends PagerAdapter{
 		pager.setAdapter( null );
 		column_list.remove( idx_column );
 		pager.setAdapter( this );
-		pager.setCurrentItem( idx_showing >= column_list.size() ? idx_showing -1 : idx_showing );
+	
 		
 	}
 	

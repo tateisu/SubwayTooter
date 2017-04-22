@@ -40,20 +40,22 @@
 
             <ImageButton
                 android:id="@+id/btnColumnReload"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_gravity="center_vertical"
                 android:layout_marginStart="8dp"
+                android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/reload"
                 android:src="@drawable/btn_refresh"
                 />
 
             <ImageButton
                 android:id="@+id/btnColumnClose"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_gravity="center_vertical"
                 android:layout_marginStart="8dp"
+                android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/close_column"
                 android:src="@drawable/black_close"
                 />

@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -11,6 +12,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.os.AsyncTaskCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AlertDialog;
 import android.view.Gravity;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -29,20 +31,33 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringBufferInputStream;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
+import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
 import jp.juggler.subwaytooter.dialog.LoginForm;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
+import okhttp3.Request;
+import okhttp3.RequestBody;
 
 public class ActMain extends AppCompatActivity
 	implements NavigationView.OnNavigationItemSelectedListener {
 	public static final LogCategory log = new LogCategory( "ActMain" );
+	
+	static boolean update_at_resume = false;
+	
+//	@Override
+//	protected void attachBaseContext(Context newBase) {
+//		super.attachBaseContext( CalligraphyContextWrapper.wrap(newBase));
+//	}
 	
 	@Override
 	protected void onCreate( Bundle savedInstanceState ){
@@ -62,6 +77,26 @@ public class ActMain extends AppCompatActivity
 	protected void onResume(){
 		super.onResume();
 		HTMLDecoder.link_callback = link_click_listener;
+		
+		// アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
+		int size =pager_adapter.getCount();
+		for(int i=size-1;i>=0;--i){
+			Column column = pager_adapter.getColumn( i );
+			SavedAccount sa = SavedAccount.loadAccount( log, column.access_info.db_id );
+			if( sa == null ){
+				pager_adapter.removeColumn( pager,column );
+			}
+		}
+		
+		
+		if(update_at_resume){
+			update_at_resume = false;
+			// TODO: 各カラムを更新する
+		}
+		
+		if( pager_adapter.getCount() == 0){
+			llEmpty.setVisibility( View.VISIBLE );
+		}
 	}
 	
 	@Override
@@ -76,6 +111,8 @@ public class ActMain extends AppCompatActivity
 		DrawerLayout drawer = (DrawerLayout) findViewById( R.id.drawer_layout );
 		if( drawer.isDrawerOpen( GravityCompat.START ) ){
 			drawer.closeDrawer( GravityCompat.START );
+		}else if( ! pager_adapter.column_list.isEmpty() ){
+			performColumnClose( false,pager_adapter.getColumn( pager.getCurrentItem() ) );
 		}else{
 			super.onBackPressed();
 		}
@@ -126,6 +163,13 @@ public class ActMain extends AppCompatActivity
 			performAddTimeline( Column.TYPE_TL_STATUSES );
 		}else if( id == R.id.nav_add_notifications ){
 			performAddTimeline( Column.TYPE_TL_NOTIFICATIONS );
+			
+		}else if( id == R.id.nav_app_setting ){
+			performAppSetting(  );
+		}else if( id == R.id.nav_account_setting ){
+			performAccountSetting();
+		}else if( id == R.id.nav_column_list ){
+			performColumnList();
 			
 			// Handle the camera action
 //		}else if( id == R.id.nav_gallery ){
@@ -180,8 +224,8 @@ public class ActMain extends AppCompatActivity
 		fabMenu.setOnClickListener( new View.OnClickListener() {
 			@Override
 			public void onClick( View view ){
-				if( ! drawer.isDrawerOpen( Gravity.LEFT ) ){
-					drawer.openDrawer( Gravity.LEFT );
+				if( ! drawer.isDrawerOpen( Gravity.START ) ){
+					drawer.openDrawer( Gravity.START );
 				}
 			}
 		} );
@@ -202,22 +246,18 @@ public class ActMain extends AppCompatActivity
 				
 				final AsyncTask< Void, String, TootApiResult > task = new AsyncTask< Void, String, TootApiResult >() {
 					
-					boolean __isCancelled(){
-						return isCancelled();
-					}
-					
 					long row_id;
 					
 					@Override
 					protected TootApiResult doInBackground( Void... params ){
 						TootApiClient api_client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
 							@Override
-							public boolean isCancelled(){
-								return __isCancelled();
+							public boolean isApiCancelled(){
+								return isCancelled();
 							}
 							
 							@Override
-							public void publishProgress( final String s ){
+							public void publishApiProgress( final String s ){
 								Utils.runOnMainThread( new Runnable() {
 									@Override
 									public void run(){
@@ -229,11 +269,11 @@ public class ActMain extends AppCompatActivity
 						
 						api_client.setUserInfo( instance, user_mail, password );
 						
-						TootApiResult result = api_client.get( "/api/v1/accounts/verify_credentials" );
+						TootApiResult result = api_client.request( "/api/v1/accounts/verify_credentials" );
 						if( result != null && result.object != null ){
 							TootAccount ta = TootAccount.parse( log, result.object );
 							String user = ta.username +"@" + instance;
-							this.row_id = SavedAccount.insert( log, instance, user, result.object ,result.token_info );
+							this.row_id = SavedAccount.insert( instance, user, result.object ,result.token_info );
 						}
 						return result;
 					}
@@ -281,11 +321,37 @@ public class ActMain extends AppCompatActivity
 		pager.setCurrentItem( idx );
 	}
 	
-	public void performColumnClose( Column column ){
+	public void performColumnClose( boolean bConfirm,final Column column ){
+		if(! bConfirm ){
+			new AlertDialog.Builder( this )
+				.setTitle( R.string.confirm )
+				.setMessage( R.string.close_column )
+				.setNegativeButton( R.string.cancel, null )
+				.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick( DialogInterface dialog, int which ){
+						performColumnClose( true,column );
+					}
+				} )
+				.show();
+			return;
+		}
+		int page_showing = pager.getCurrentItem();
+		int page_delete = pager_adapter.column_list.indexOf( column );
 		pager_adapter.removeColumn( pager, column );
 		if( pager_adapter.getCount() == 0 ){
 			llEmpty.setVisibility( View.VISIBLE );
+		}else if( page_showing > 0 && page_showing == page_delete ){
+			pager.setCurrentItem( page_showing-1 ,true);
 		}
+	}
+	
+	
+	void performOpenUser(SavedAccount access_info,TootAccount user){
+		llEmpty.setVisibility( View.GONE );
+		//
+		Column col = new Column( ActMain.this, access_info, Column.TYPE_TL_STATUSES, user.id );
+		pager.setCurrentItem( pager_adapter.addColumn( pager, col ) ,true);
 	}
 	
 	private void performAddTimeline( final int type, final Object... params ){
@@ -296,7 +362,7 @@ public class ActMain extends AppCompatActivity
 				//
 				Column col = new Column( ActMain.this, ai, type, ai.id, params );
 				int idx = pager_adapter.addColumn( pager, col );
-				pager.setCurrentItem( idx );
+				pager.setCurrentItem( idx ,true);
 			}
 		} );
 	}
@@ -316,8 +382,8 @@ public class ActMain extends AppCompatActivity
 			customTabsIntent.launchUrl( this, Uri.parse( url ) );
 			
 		}catch( Throwable ex ){
-			ex.printStackTrace();
-			log.e( ex, "openChromeTab failed." );
+			// ex.printStackTrace();
+			log.e( ex, "openChromeTab failed. url=%s",url );
 		}
 	}
 	
@@ -393,8 +459,281 @@ public class ActMain extends AppCompatActivity
 
 		Column c = pager_adapter.getColumn( pager.getCurrentItem() );
 		if( c != null && c.access_info != null ){
-			ActPost.open( this, c.access_info.db_id );
+			ActPost.open( this, c.access_info.db_id ,null );
 		}
 	}
+	
+	/////////////////////////////////////////////////////////////////////////
+	
+	private void showColumnMatchAccount( SavedAccount account ){
+		for( Column column : pager_adapter.column_list ){
+			if( account.user.equals( column.access_info.user ) ){
+				column.fireVisualCallback();
+			}
+		}
+	}
+	
+	
+	/////////////////////////////////////////////////////////////////////////
+	// favourite
+	
+	final HashSet<String> map_busy_fav = new HashSet<>(  );
+	
+	boolean isBusyFav(SavedAccount account,TootStatus status){
+		String busy_key = account.host+":"+ status.id;
+		return map_busy_fav.contains(busy_key);
+	}
+	
+	public void performFavourite( final SavedAccount account, final TootStatus status ){
+		//
+		final String busy_key = account.host+":"+ status.id;
+		//
+		if( map_busy_fav.contains(busy_key) ){
+			Utils.showToast( this,false,R.string.wait_previous_operation );
+			return;
+		}
+		//
+		map_busy_fav.add( busy_key );
+		//
+		new AsyncTask<Void,Void,TootApiResult>(){
+			final boolean new_state = ! status.favourited;
+			TootStatus new_status;
+			
+			@Override
+			protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override
+					public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override
+					public void publishApiProgress( final String s ){
+					}
+				} );
+				client.setAccount( account );
+				
+				Request.Builder request_builder = new Request.Builder()
+					.post( RequestBody.create(
+						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+						,""
+					));
+				
+				TootApiResult result = client.request(
+					(new_state
+						? "/api/v1/statuses/"+status.id+"/favourite"
+						: "/api/v1/statuses/"+status.id+"/unfavourite"
+					)
+					, request_builder );
+				if( result.object != null ){
+					new_status = TootStatus.parse( log,result.object );
+				}
+
+				return result;
+				
+			}
+			
+			@Override
+			protected void onCancelled( TootApiResult result ){
+				super.onPostExecute( result );
+			}
+			
+			@Override
+			protected void onPostExecute( TootApiResult result ){
+				map_busy_fav.remove( busy_key);
+				if( new_status  != null ){
+					// カウント数は遅延があるみたい
+					if( new_state && new_status.favourites_count <= status.favourites_count ){
+						// 星つけたのにカウントが上がらないのは違和感あるので、表示をいじる
+						new_status.favourites_count = status.favourites_count +1;
+					}else if( !new_state && new_status.favourites_count >= status.favourites_count ){
+						// 星外したのにカウントが下がらないのは違和感あるので、表示をいじる
+						new_status.favourites_count = status.favourites_count -1;
+						if( new_status.favourites_count < 0 ){
+							new_status.favourites_count = 0;
+						}
+					}
+					for( Column column : pager_adapter.column_list ){
+						column.findStatus( account, new_status.id, new Column.StatusEntryCallback() {
+							@Override
+							public void onIterate( TootStatus status ){
+								status.favourited = new_status.favourited;
+								status.favourites_count = new_status.favourites_count;
+							}
+						});
+					}
+				}else{
+					if( result != null) Utils.showToast( ActMain.this,true,result.error );
+				}
+				showColumnMatchAccount(account);
+			}
+			
+		}.execute();
+		showColumnMatchAccount(account);
+	}
+	
+
+	
+	/////////////////////////////////////////////////////////////////////////
+	// boost
+	final HashSet<String> map_busy_boost = new HashSet<>(  );
+	
+	boolean isBusyBoost(SavedAccount account,TootStatus status){
+		String busy_key = account.host+":"+ status.id;
+		return map_busy_boost.contains( busy_key);
+	}
+	
+	public void performBoost( final SavedAccount account, final TootStatus status ,boolean bConfirmed){
+		//
+		final String busy_key = account.host + ":" + status.id;
+		//
+		if(map_busy_boost.contains( busy_key ) ){
+			Utils.showToast( this, false, R.string.wait_previous_operation );
+			return;
+		}
+		
+		if( status.reblogged ){
+			// FAVがついているか、FAV操作中はBoostを外せない
+			if( isBusyFav( account, status ) || status.favourited ){
+				Utils.showToast( this, false, R.string.cant_remove_boost_while_favourited );
+				return;
+			}
+		}else{
+			if(!bConfirmed && account.confirm_boost ){
+				// TODO: アカウント設定でスキップさせたい
+				new AlertDialog.Builder(this)
+					.setTitle(R.string.confirm)
+					.setMessage(R.string.confirm_boost)
+					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick( DialogInterface dialog, int which ){
+							performBoost(  account,  status ,true);
+						}
+					} )
+					.setNegativeButton( R.string.cancel,null )
+					.show();
+				return;
+			}
+		}
+
+		//
+		map_busy_boost.add( busy_key);
+		//
+		new AsyncTask<Void,Void,TootApiResult>(){
+			final boolean new_state = ! status.reblogged;
+			TootStatus new_status;
+			
+			@Override
+			protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override
+					public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override
+					public void publishApiProgress( final String s ){
+					}
+				} );
+				client.setAccount( account );
+				
+				Request.Builder request_builder = new Request.Builder()
+					.post( RequestBody.create(
+						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+						,""
+					));
+				
+				TootApiResult result = client.request(
+					"/api/v1/statuses/"+status.id+(new_state ? "/reblog" : "/unreblog")
+					, request_builder );
+
+				if( result.object != null ){
+					// reblog,unreblog のレスポンスは信用ならんのでステータスを再取得する
+					result = client.request("/api/v1/statuses/"+status.id);
+					if( result.object != null ){
+						new_status = TootStatus.parse( log, result.object );
+					}
+				}
+				
+				return result;
+				
+			}
+			
+			@Override
+			protected void onCancelled( TootApiResult result ){
+				super.onPostExecute( result );
+			}
+			
+			@Override
+			protected void onPostExecute( TootApiResult result ){
+				map_busy_boost.remove( busy_key);
+				if( new_status  != null ){
+					// カウント数は遅延があるみたい
+					if( new_status.reblogged && new_status.reblogs_count <= status.reblogs_count ){
+						// 星つけたのにカウントが上がらないのは違和感あるので、表示をいじる
+						new_status.reblogs_count = status.reblogs_count +1;
+					}else if( !new_status.reblogged && new_status.reblogs_count >= status.reblogs_count ){
+						// 星外したのにカウントが下がらないのは違和感あるので、表示をいじる
+						new_status.reblogs_count = status.reblogs_count -1;
+						if( new_status.reblogs_count < 0 ){
+							new_status.reblogs_count = 0;
+						}
+					}
+					for( Column column : pager_adapter.column_list ){
+						column.findStatus( account, new_status.id, new Column.StatusEntryCallback() {
+							@Override
+							public void onIterate( TootStatus status ){
+								status.reblogged = new_status.reblogged;
+								status.reblogs_count = new_status.reblogs_count;
+							}
+						});
+					}
+				}else{
+					if( result != null) Utils.showToast( ActMain.this,true,result.error );
+				}
+				showColumnMatchAccount(account);
+			}
+			
+		}.execute();
+		
+		showColumnMatchAccount(account);
+	}
+	
+	////////////////////////////////////////
+	
+	public void performMore( SavedAccount account, TootStatus status ){
+		// open menu
+		// Expand this status
+		// Mute user
+		// Block user
+		// report user
+		Utils.showToast( this,false,"not implemented. toot="+status.decoded_content );
+	}
+
+	public void performReply( SavedAccount account, TootStatus status ){
+		Utils.showToast( this,false,"not implemented. toot="+status.decoded_content );
+	}
+	
+	////////////////////////////////////////
+	
+	private void performColumnList(){
+		
+		Utils.showToast( this,false,"not implemented." );
+		
+	}
+	
+	private void performAccountSetting(){
+		AccountPicker.pick( this, new AccountPicker.AccountPickerCallback() {
+			@Override
+			public void onAccountPicked( SavedAccount ai ){
+				ActAccountSetting.open( ActMain.this, ai);
+			}
+		} );
+	}
+	
+	private void performAppSetting(){
+		Utils.showToast( this,false,"not implemented." );
+	}
+	
 	
 }

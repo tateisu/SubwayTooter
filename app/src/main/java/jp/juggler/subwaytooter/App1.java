@@ -5,6 +5,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Bitmap;
+import android.graphics.Typeface;
 import android.support.v4.util.LruCache;
 import android.widget.ImageView;
 
@@ -19,12 +20,30 @@ import jp.juggler.subwaytooter.table.ContentWarning;
 import jp.juggler.subwaytooter.table.LogData;
 import jp.juggler.subwaytooter.table.MediaShown;
 import jp.juggler.subwaytooter.table.SavedAccount;
+import okhttp3.OkHttpClient;
+import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
+import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 
 public class App1 extends Application {
 	
 	@Override
 	public void onCreate(){
 		super.onCreate();
+		
+		CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
+			.setDefaultFontPath("NotoSansCJKjp-Regular.otf")
+			.setFontAttrId(R.attr.fontPath)
+			.build()
+		);
+		
+		if( typeface_emoji == null ){
+			typeface_emoji = TypefaceUtils.load(getAssets(), "emojione_android.ttf");
+		}
+		
+		if( typeface_normal == null ){
+			typeface_normal = TypefaceUtils.load(getAssets(), "NotoSansCJKjp-Regular.otf");
+		}
+		
 		if( db_open_helper == null ){
 			db_open_helper = new DBOpenHelper( getApplicationContext() );
 			db_open_helper.onCreate( getDB() );
@@ -134,4 +153,8 @@ public class App1 extends Application {
 		
 	}
 	
+	public static final OkHttpClient ok_http_client = new OkHttpClient();
+	
+	public static Typeface typeface_emoji ;
+	public static Typeface typeface_normal ;
 }

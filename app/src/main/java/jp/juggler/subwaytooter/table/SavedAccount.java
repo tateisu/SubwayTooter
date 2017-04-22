@@ -15,15 +15,19 @@ import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
 
 public class SavedAccount extends TootAccount{
+	private static final LogCategory log = new LogCategory( "SavedAccount" );
 	
-	static final String table = "access_info";
+	private static final String table = "access_info";
 	
-	static final String COL_ID = BaseColumns._ID;
-	static final String COL_HOST = "h";
-	static final String COL_USER = "u";
-	static final String COL_ACCOUNT = "a";
-	static final String COL_TOKEN = "t";
-	static final String COL_LOGIN_REQUIRED = "lr";
+	private static final String COL_ID = BaseColumns._ID;
+	private static final String COL_HOST = "h";
+	private static final String COL_USER = "u";
+	private static final String COL_ACCOUNT = "a";
+	private static final String COL_TOKEN = "t";
+
+	private static final String COL_VISIBILITY = "visibility";
+	private static final String COL_CONFIRM_BOOST = "confirm_boost";
+	private static final String COL_DONT_HIDE_NSFW = "dont_hide_nsfw";
 	
 	public static final long INVALID_ID = -1L;
 	
@@ -31,8 +35,10 @@ public class SavedAccount extends TootAccount{
 	public long db_id = INVALID_ID;
 	public String host;
 	public String user;
-	public boolean login_required;
 	public JSONObject token_info;
+	public String visibility;
+	public boolean confirm_boost;
+	public boolean dont_hide_nsfw;
 	
 	public static void onDBCreate( SQLiteDatabase db ){
 		db.execSQL(
@@ -42,7 +48,9 @@ public class SavedAccount extends TootAccount{
 				+ ",h text not null"
 				+ ",a text not null"
 				+ ",t text not null"
-				+ ",lr integer default 0"
+				+ ",visibility text"
+				+ ",confirm_boost integer default 1"
+				+ ",dont_hide_nsfw integer default 0"
 				+ ")"
 		);
 		db.execSQL("create index if not exists " + table + "_user on " + table + "(u)" );
@@ -53,21 +61,27 @@ public class SavedAccount extends TootAccount{
 		
 	}
 	
-	private static SavedAccount parse( LogCategory log, Cursor cursor ) throws JSONException{
+	private static SavedAccount parse(  Cursor cursor ) throws JSONException{
 		JSONObject src = new JSONObject( cursor.getString( cursor.getColumnIndex( COL_ACCOUNT ) ) );
 		SavedAccount dst = (SavedAccount)parse(log,src,new SavedAccount());
 		if( dst != null){
 			dst.db_id = cursor.getLong( cursor.getColumnIndex( COL_ID ) );
 			dst.host = cursor.getString( cursor.getColumnIndex( COL_HOST ) );
 			dst.user = cursor.getString( cursor.getColumnIndex( COL_USER ) );
-			dst.login_required = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_LOGIN_REQUIRED ) ) );
+			
+			int colIdx_visibility = cursor.getColumnIndex( COL_VISIBILITY );
+			dst.visibility = cursor.isNull( colIdx_visibility )? null : cursor.getString( colIdx_visibility );
+
+			dst.confirm_boost = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_CONFIRM_BOOST ) ) );
+			dst.dont_hide_nsfw = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_DONT_HIDE_NSFW ) ) );
+			
 			dst.token_info = new JSONObject( cursor.getString( cursor.getColumnIndex( COL_TOKEN ) ) );
 		}
 		return dst;
 	}
 	
 	
-	public static long insert( LogCategory log,String host, String user, JSONObject account,JSONObject token ){
+	public static long insert( String host, String user, JSONObject account,JSONObject token ){
 		try{
 			ContentValues cv = new ContentValues();
 			cv.put( COL_HOST, host );
@@ -81,10 +95,27 @@ public class SavedAccount extends TootAccount{
 		return INVALID_ID;
 	}
 	
+	public void delete(){
+		try{
+			App1.getDB().delete(  table,  COL_ID + "=?", new String[]{ Long.toString(db_id) } );
+		}catch( Throwable ex ){
+			log.e( ex, "saveAccount failed." );
+		}
+	}
+	
 	public void updateTokenInfo( JSONObject token_info ){
 		if( db_id != INVALID_ID ){
 			ContentValues cv = new ContentValues();
 			cv.put( COL_TOKEN, token_info.toString() );
+			App1.getDB().update( table, cv, COL_ID + "=?", new String[]{ Long.toString(db_id) } );
+		}
+	}
+	public void saveSetting(){
+		if( db_id != INVALID_ID ){
+			ContentValues cv = new ContentValues();
+			cv.put( COL_VISIBILITY, visibility );
+			cv.put( COL_CONFIRM_BOOST, confirm_boost? 1:0  );
+			cv.put( COL_DONT_HIDE_NSFW, dont_hide_nsfw ? 1: 0  );
 			App1.getDB().update( table, cv, COL_ID + "=?", new String[]{ Long.toString(db_id) } );
 		}
 	}
@@ -94,7 +125,7 @@ public class SavedAccount extends TootAccount{
 			Cursor cursor = App1.getDB().query( table, null, COL_ID+"=?", new String[]{ Long.toString(id) }, null, null, null );
 			try{
 				if( cursor.moveToFirst() ){
-					return parse( log,cursor );
+					return parse( cursor );
 				}
 			}finally{
 				cursor.close();
@@ -112,7 +143,7 @@ public class SavedAccount extends TootAccount{
 			Cursor cursor = App1.getDB().query( table, null, null, null, null, null, null );
 			try{
 				while( cursor.moveToNext() ){
-					result.add( parse( log,cursor ) );
+					result.add( parse( cursor ) );
 				}
 				return result;
 			}finally{

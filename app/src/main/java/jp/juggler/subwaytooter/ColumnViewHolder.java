@@ -27,6 +27,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.ContentWarning;
 import jp.juggler.subwaytooter.table.MediaShown;
 import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -90,7 +91,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 	public void onClick( View v ){
 		switch( v.getId() ){
 		case R.id.btnColumnClose:
-			activity.performColumnClose( column );
+			activity.performColumnClose( false, column );
 			break;
 		case R.id.btnColumnReload:
 			column.reload();
@@ -99,10 +100,10 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		
 	}
 	
-	void showError(String message){
+	void showError( String message ){
 		tvLoading.setVisibility( View.VISIBLE );
 		listView.setVisibility( View.GONE );
-		tvLoading.setText(  message);
+		tvLoading.setText( message );
 	}
 	
 	@Override
@@ -112,18 +113,18 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		tvColumnName.setText( column.getColumnName() );
 		
 		if( column.is_dispose.get() ){
-			showError("column was disposed.");
+			showError( "column was disposed." );
 			return;
 		}
 		
 		if( vh_header != null ){
 			vh_header.bind( activity, column.access_info, column.who_account );
 		}
-
+		
 		if( column.is_loading ){
 			String message = column.task_progress;
 			if( message == null ) message = "loading?";
-			showError( message);
+			showError( message );
 			return;
 		}
 		
@@ -135,7 +136,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		case Column.TYPE_TL_FAVOURITES:
 		case Column.TYPE_TL_STATUSES:
 			if( column.status_list.isEmpty() && vh_header == null ){
-				showError(activity.getString(R.string.list_empty));
+				showError( activity.getString( R.string.list_empty ) );
 			}else{
 				tvLoading.setVisibility( View.GONE );
 				listView.setVisibility( View.VISIBLE );
@@ -144,7 +145,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			break;
 		case Column.TYPE_TL_REPORTS:
 			if( column.report_list.isEmpty() ){
-				showError(activity.getString(R.string.list_empty));
+				showError( activity.getString( R.string.list_empty ) );
 			}else{
 				tvLoading.setVisibility( View.GONE );
 				listView.setVisibility( View.VISIBLE );
@@ -153,7 +154,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			break;
 		case Column.TYPE_TL_NOTIFICATIONS:
 			if( column.notification_list.isEmpty() ){
-				showError(activity.getString(R.string.list_empty));
+				showError( activity.getString( R.string.list_empty ) );
 			}else{
 				tvLoading.setVisibility( View.GONE );
 				listView.setVisibility( View.VISIBLE );
@@ -231,6 +232,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		final NetworkImageView ivFollow;
 		final TextView tvFollowerName;
 		final TextView tvFollowerAcct;
+		final ImageButton btnFollow;
 		
 		final View llStatus;
 		final NetworkImageView ivThumbnail;
@@ -240,6 +242,10 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		final View llContentWarning;
 		final TextView tvContentWarning;
 		final Button btnContentWarning;
+		
+		final View llContents;
+		final TextView 	tvTags;
+		final TextView 	tvMentions;
 		final TextView tvContent;
 		
 		final View flMedia;
@@ -256,8 +262,12 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		final Button btnFavourite;
 		final ImageButton btnMore;
 		
+			
 		TootStatus status;
 		SavedAccount account;
+		TootAccount account_thumbnail;
+		TootAccount account_boost;
+		TootAccount account_follow;
 		
 		public StatusViewHolder( View view ){
 			this.llBoosted = view.findViewById( R.id.llBoosted );
@@ -269,6 +279,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			this.ivFollow = (NetworkImageView) view.findViewById( R.id.ivFollow );
 			this.tvFollowerName = (TextView) view.findViewById( R.id.tvFollowerName );
 			this.tvFollowerAcct = (TextView) view.findViewById( R.id.tvFollowerAcct );
+			this.btnFollow = (ImageButton)view.findViewById( R.id.btnFollow );
 			
 			this.llStatus = view.findViewById( R.id.llStatus );
 			
@@ -279,7 +290,12 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			this.llContentWarning = view.findViewById( R.id.llContentWarning );
 			this.tvContentWarning = (TextView) view.findViewById( R.id.tvContentWarning );
 			this.btnContentWarning = (Button) view.findViewById( R.id.btnContentWarning );
+			
+			this.llContents = view.findViewById( R.id.llContents );
 			this.tvContent = (TextView) view.findViewById( R.id.tvContent );
+			this.tvTags = (TextView) view.findViewById( R.id.tvTags );
+			this.tvMentions = (TextView) view.findViewById( R.id.tvMentions );
+			
 			this.btnReply = (ImageButton) view.findViewById( R.id.btnReply );
 			this.btnBoost = (Button) view.findViewById( R.id.btnBoost );
 			this.btnFavourite = (Button) view.findViewById( R.id.btnFavourite );
@@ -301,11 +317,24 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			ivMedia3.setOnClickListener( this );
 			ivMedia4.setOnClickListener( this );
 			
+			btnReply.setOnClickListener( this );
+			btnBoost.setOnClickListener( this );
+			btnFavourite.setOnClickListener( this );
+			btnMore.setOnClickListener( this );
+
+			ivThumbnail.setOnClickListener( this );
+			tvName.setOnClickListener( this );
+			llBoosted.setOnClickListener( this );
+			llFollow.setOnClickListener( this );
+			btnFollow.setOnClickListener( this );
+			
 			tvContent.setMovementMethod( LinkMovementMethod.getInstance() );
+			tvTags.setMovementMethod( LinkMovementMethod.getInstance() );
+			tvMentions.setMovementMethod( LinkMovementMethod.getInstance() );
 		}
 		
-		public void bind( ActMain activity, View view, Object item, SavedAccount account ){
-			this.account = account;
+		public void bind( ActMain activity, View view, Object item, SavedAccount access_info ){
+			this.account = access_info;
 			
 			llBoosted.setVisibility( View.GONE );
 			llFollow.setVisibility( View.GONE );
@@ -316,36 +345,50 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			if( item instanceof TootNotification ){
 				TootNotification n = (TootNotification) item;
 				if( TootNotification.TYPE_FAVOURITE.equals( n.type ) ){
+					account_boost = n.account;
+
 					llBoosted.setVisibility( View.VISIBLE );
 					ivBoosted.setImageResource( R.drawable.btn_favourite );
 					tvBoostedTime.setText( TootStatus.formatTime( n.time_created_at )
-						+ "\n" + account.getFullAcct( n.account )
+						+ "\n" + access_info.getFullAcct(account_boost )
 					);
-					tvBoosted.setText( activity.getString( R.string.favourited_by, n.account.display_name ) );
-					
-					if( n.status != null ) bindSub( activity, view, n.status, account );
+					tvBoosted.setText( Utils.formatSpannable1( activity,R.string.display_name_favourited_by,  account_boost.display_name));
+			
+					if( n.status != null ) bindSub( activity, view, n.status, access_info );
 				}else if( TootNotification.TYPE_REBLOG.equals( n.type ) ){
+					account_boost = n.account;
 					llBoosted.setVisibility( View.VISIBLE );
 					ivBoosted.setImageResource( R.drawable.btn_boost );
 					tvBoostedTime.setText( TootStatus.formatTime( n.time_created_at )
-						+ "\n" + account.getFullAcct( n.account )
+						+ "\n" + access_info.getFullAcct(account_boost )
 					);
-					tvBoosted.setText( activity.getString( R.string.boosted_by, n.account.display_name ) );
-					if( n.status != null ) bindSub( activity, view, n.status, account );
+					tvBoosted.setText( Utils.formatSpannable1( activity, R.string.display_name_boosted_by, account_boost.display_name ) );
+					account_boost = n.account;
+					if( n.status != null ) bindSub( activity, view, n.status, access_info );
 				}else if( TootNotification.TYPE_FOLLOW.equals( n.type ) ){
+					account_boost = n.account;
 					llBoosted.setVisibility( View.VISIBLE );
 					ivBoosted.setImageResource( R.drawable.btn_boost );
 					tvBoostedTime.setText( TootStatus.formatTime( n.time_created_at )
-						+ "\n" + account.getFullAcct( n.account )
+						+ "\n" + access_info.getFullAcct( account_boost )
 					);
-					tvBoosted.setText( activity.getString( R.string.boosted_by, n.account.display_name ) );
+					tvBoosted.setText( Utils.formatSpannable1( activity, R.string.display_name_followed_by, account_boost.display_name ) );
 					//
+					account_follow = n.account;
 					llFollow.setVisibility( View.VISIBLE );
-					ivFollow.setImageUrl( n.account.avatar_static, App1.getImageLoader() );
-					tvFollowerName.setText( n.account.display_name );
-					tvFollowerAcct.setText( account.getFullAcct( n.account ) );
+					ivFollow.setImageUrl( account_follow.avatar_static, App1.getImageLoader() );
+					tvFollowerName.setText(account_follow.display_name );
+					tvFollowerAcct.setText( access_info.getFullAcct( account_follow ) );
 				}else if( TootNotification.TYPE_MENTION.equals( n.type ) ){
-					if( n.status != null ) bindSub( activity, view, n.status, account );
+					account_boost = n.account;
+					llBoosted.setVisibility( View.VISIBLE );
+					ivBoosted.setImageResource( R.drawable.btn_reply );
+					tvBoostedTime.setText( TootStatus.formatTime( n.time_created_at )
+						+ "\n" + access_info.getFullAcct(account_boost )
+					);
+					tvBoosted.setText( Utils.formatSpannable1( activity, R.string.display_name_replied_by, account_boost.display_name ) );
+
+					if( n.status != null ) bindSub( activity, view, n.status, access_info );
 				}
 				return;
 			}
@@ -353,22 +396,23 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			if( item instanceof TootStatus ){
 				TootStatus status = (TootStatus) item;
 				if( status.reblog != null ){
+					account_boost = status.account;
 					llBoosted.setVisibility( View.VISIBLE );
 					ivBoosted.setImageResource( R.drawable.btn_boost );
 					tvBoostedTime.setText( TootStatus.formatTime( status.time_created_at )
-						+ "\n" + account.getFullAcct( status.account )
+						+ "\n" + access_info.getFullAcct( account_boost )
 					);
-					tvBoosted.setText( activity.getString( R.string.boosted_by, status.account.display_name ) );
-					bindSub( activity, view, status.reblog, account );
+					tvBoosted.setText( Utils.formatSpannable1( activity, R.string.display_name_boosted_by, status.account.display_name ) );
+					bindSub( activity, view, status.reblog, access_info );
 				}else{
-					bindSub( activity, view, status, account );
+					bindSub( activity, view, status, access_info );
 				}
 			}
 		}
 		
 		private void bindSub( ActMain activity, View view, TootStatus status, SavedAccount account ){
 			this.status = status;
-			
+			account_thumbnail = status.account;
 			llStatus.setVisibility( View.VISIBLE );
 			tvTime.setText( TootStatus.formatTime( status.time_created_at )
 				+ "\n" + account.getFullAcct( status.account )
@@ -377,14 +421,29 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			ivThumbnail.setImageUrl( status.account.avatar_static, App1.getImageLoader() );
 			tvContent.setText( status.decoded_content );
 			
+			if( status.decoded_tags == null ){
+				tvTags.setVisibility( View.GONE );
+			}else{
+				tvTags.setVisibility( View.VISIBLE );
+				tvTags.setText( status.decoded_tags);
+			}
+			
+			if( status.decoded_mentions == null ){
+				tvMentions.setVisibility( View.GONE );
+			}else{
+				tvMentions.setVisibility( View.VISIBLE );
+				tvMentions.setText( status.decoded_mentions);
+			}
+			
 			// Content warning
 			if( TextUtils.isEmpty( status.spoiler_text ) ){
 				llContentWarning.setVisibility( View.GONE );
-				tvContent.setVisibility( View.VISIBLE );
+				llContents.setVisibility( View.VISIBLE );
 			}else{
 				llContentWarning.setVisibility( View.VISIBLE );
 				tvContentWarning.setText( status.spoiler_text );
-				showContent( ContentWarning.isShown( account.host, status.id, false ));
+				boolean cw_shown = ContentWarning.isShown( account.host, status.id, false );
+				showContent( cw_shown );
 			}
 			
 			if( status.media_attachments == null || status.media_attachments.isEmpty() ){
@@ -397,32 +456,52 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				setMedia( ivMedia4, status, 3 );
 				
 				// hide sensitive media
-				boolean is_shown = MediaShown.isShown( account.host,status.id, ! status.sensitive );
+				boolean is_shown = MediaShown.isShown( account.host, status.id, account.dont_hide_nsfw || ! status.sensitive );
 				btnShowMedia.setVisibility( ! is_shown ? View.VISIBLE : View.GONE );
 			}
 			
 			Drawable d;
 			int color;
 			
-			color = ( status.reblogged ? 0xff0088ff : 0xff000000 );
-			d = ContextCompat.getDrawable( activity, R.drawable.btn_boost ).mutate();
-			d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
-			btnBoost.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
-			btnBoost.setText( Long.toString( status.reblogs_count ) );
-			btnBoost.setTextColor( color );
+			if( activity.isBusyBoost( account,status )){
+				color = 0xff000000;
+				d = ContextCompat.getDrawable( activity, R.drawable.btn_boost ).mutate();
+				d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
+				btnBoost.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
+				btnBoost.setText( "?" );
+				btnBoost.setTextColor( color );
 			
-			color = ( status.favourited ? 0xff0088ff : 0xff000000 );
-			d = ContextCompat.getDrawable( activity, R.drawable.btn_favourite ).mutate();
-			d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
-			btnFavourite.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
-			btnFavourite.setText( Long.toString( status.favourites_count ) );
-			btnFavourite.setTextColor( color );
+			}else{
+				color = ( status.reblogged ? 0xff0088ff : 0xff000000 );
+				d = ContextCompat.getDrawable( activity, R.drawable.btn_boost ).mutate();
+				d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
+				btnBoost.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
+				btnBoost.setText( Long.toString( status.reblogs_count ) );
+				btnBoost.setTextColor( color );
+				
+			}
+			
+			if( activity.isBusyFav( account,status )){
+				color = 0xff000000;
+				d = ContextCompat.getDrawable( activity, R.drawable.btn_refresh ).mutate();
+				d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
+				btnFavourite.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
+				btnFavourite.setText( "?" );
+				btnFavourite.setTextColor( color );
+			}else{
+				color = ( status.favourited ? 0xff0088ff : 0xff000000 );
+				d = ContextCompat.getDrawable( activity, R.drawable.btn_favourite ).mutate();
+				d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
+				btnFavourite.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
+				btnFavourite.setText( Long.toString( status.favourites_count ) );
+				btnFavourite.setTextColor( color );
+			}
 			
 		}
 		
 		private void showContent( boolean shown ){
 			btnContentWarning.setText( shown ? R.string.hide : R.string.show );
-			tvContent.setVisibility( shown ? View.VISIBLE : View.GONE );
+			llContents.setVisibility( shown ? View.VISIBLE : View.GONE );
 		}
 		
 		private void setMedia( NetworkImageView iv, TootStatus status, int idx ){
@@ -441,11 +520,11 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		public void onClick( View v ){
 			switch( v.getId() ){
 			case R.id.btnHideMedia:
-				MediaShown.save( account.host,status.id, false );
+				MediaShown.save( account.host, status.id, false );
 				btnShowMedia.setVisibility( View.VISIBLE );
 				break;
 			case R.id.btnShowMedia:
-				MediaShown.save( account.host,status.id, true );
+				MediaShown.save( account.host, status.id, true );
 				btnShowMedia.setVisibility( View.GONE );
 				break;
 			case R.id.ivMedia1:
@@ -460,24 +539,54 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			case R.id.ivMedia4:
 				clickMedia( 3 );
 				break;
-			case R.id.btnContentWarning:
-				{
-					boolean new_shown = (tvContent.getVisibility()==View.GONE);
-					ContentWarning.save( account.host,status.id , new_shown);
-					showContent( new_shown );
-					break;
-				}
+			case R.id.btnContentWarning:{
+				boolean new_shown = ( llContents.getVisibility() == View.GONE );
+				ContentWarning.save( account.host, status.id, new_shown );
+				showContent( new_shown );
+				break;
+			}
+			
+			case R.id.btnReply:
+				activity.performReply( account,status);
+				break;
+			case R.id.btnBoost:
+				activity.performBoost( account,status.reblog != null ? status.reblog : status ,false);
+				break;
+			case R.id.btnFavourite:
+				activity.performFavourite( account,status.reblog != null ? status.reblog : status);
+				break;
+			case R.id.btnMore:
+				activity.performMore( account,status);
+				break;
+			case R.id.ivThumbnail:
+			case R.id.tvName:
+				activity.performOpenUser(account,account_thumbnail);
+				break;
+			case R.id.llBoosted:
+				activity.performOpenUser(account,account_boost);
+				break;
+			case R.id.llFollow:
+				activity.performOpenUser(account,account_follow);
+				break;
 			}
 		}
 		
 		private void clickMedia( int i ){
 			try{
-				activity.openChromeTab( status.media_attachments.get( i ).remote_url );
+				TootAttachment a = status.media_attachments.get( i );
+				
+				String sv = a.remote_url;
+				if( TextUtils.isEmpty( sv ) ){
+					sv = a.url;
+				}
+				activity.openChromeTab( sv );
 			}catch( Throwable ex ){
 				ex.printStackTrace();
 			}
 		}
 	}
+	
+
 	
 	class HeaderViewHolder implements View.OnClickListener {
 		final View viewRoot;
@@ -509,6 +618,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			btnFollowers.setOnClickListener( this );
 			btnStatusCount.setOnClickListener( this );
 			
+			tvNote.setMovementMethod( LinkMovementMethod.getInstance() );
 		}
 		
 		public void bind( ActMain activity, SavedAccount access_info, TootAccount who ){

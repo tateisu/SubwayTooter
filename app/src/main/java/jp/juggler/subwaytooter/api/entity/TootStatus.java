@@ -19,6 +19,7 @@ import jp.juggler.subwaytooter.util.Utils;
 
 public class TootStatus {
 	
+	
 	public static class List extends ArrayList< TootStatus > {
 		
 	}
@@ -70,6 +71,10 @@ public class TootStatus {
 	
 	//One of: public, unlisted, private, direct
 	public String visibility;
+	public static final String VISIBILITY_PUBLIC ="public";
+	public static final String VISIBILITY_UNLISTED ="unlisted";
+	public static final String VISIBILITY_PRIVATE ="private";
+	public static final String VISIBILITY_DIRECT ="direct";
 	
 	//	An array of Attachments
 	public TootAttachment.List media_attachments;
@@ -78,7 +83,7 @@ public class TootStatus {
 	public TootMention.List mentions;
 	
 	//An array of Tags
-	public ArrayList<String> tags;
+	public TootTag.List tags;
 	
 	//Application from which the status was posted
 	public String application;
@@ -86,6 +91,8 @@ public class TootStatus {
 	public long time_created_at;
 
 	public Spannable decoded_content;
+	public Spannable decoded_tags;
+	public Spannable decoded_mentions;
 	
 	public static TootStatus parse( LogCategory log, JSONObject src ){
 		
@@ -112,12 +119,14 @@ public class TootStatus {
 			status.visibility = Utils.optStringX( src, "visibility" );
 			status.media_attachments = TootAttachment.parseList( log, src.optJSONArray( "media_attachments" ) );
 			status.mentions = TootMention.parseList( log, src.optJSONArray( "mentions" ));
-			status.tags = Utils.parseStringArray( log, src.optJSONArray(  "tags" ));
+			status.tags = TootTag.parseList( log, src.optJSONArray(  "tags" ));
 			status.application = Utils.optStringX( src, "application" ); // null
 			
 			status.time_created_at = parseTime( log, status.created_at );
 			status.decoded_content = HTMLDecoder.decodeHTML(status.content);
-			
+			status.decoded_tags = HTMLDecoder.decodeTags( status.tags);
+			status.decoded_mentions = HTMLDecoder.decodeMentions( status.mentions);
+
 			return status;
 		}catch( Throwable ex ){
 			ex.printStackTrace();

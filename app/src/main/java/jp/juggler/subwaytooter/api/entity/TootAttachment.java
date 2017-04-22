@@ -35,10 +35,13 @@ public class TootAttachment {
 	//	Shorter URL for the image, for insertion into text (only present on local images)
 	public String text_url;
 	
+	public JSONObject json;
+	
 	public static TootAttachment parse( LogCategory log, JSONObject src ){
 		if( src == null ) return null;
 		try{
 			TootAttachment dst = new TootAttachment();
+			dst.json = src;
 			dst.id = src.optLong( "id" );
 			dst.type = Utils.optStringX( src, "type" );
 			dst.url = Utils.optStringX( src, "url" );

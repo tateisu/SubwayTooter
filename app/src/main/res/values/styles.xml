@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -17,4 +17,75 @@
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
+    <style name="setting_group_header">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginTop">20dp</item>
+
+    </style>
+
+    <style name="setting_row_label">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+
+        <item name="android:paddingLeft">12dp</item>
+        <item name="android:paddingRight">0dp</item>
+
+        <item name="android:paddingStart"  tools:ignore="NewApi">12dp</item>
+        <item name="android:paddingEnd"  tools:ignore="NewApi">0dp</item>
+    </style>
+
+    <style name="setting_row_form">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:baselineAligned">true</item>
+
+        <item name="android:paddingLeft">48dp</item>
+        <item name="android:paddingRight">0dp</item>
+
+        <item name="android:paddingStart" tools:ignore="NewApi">48dp</item>
+        <item name="android:paddingEnd" tools:ignore="NewApi">0dp</item>
+
+    </style>
+
+    <style name="setting_row_help">
+        <item name="android:background">@drawable/btn_bg_transparent</item>
+        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:layout_width">40dp</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:minWidth">32dp</item>
+        <item name="android:minHeight">32dp</item>
+
+        <item name="android:layout_marginLeft">8dp</item>
+        <item name="android:layout_marginRight">0dp</item>
+
+        <item name="android:layout_marginStart" tools:ignore="NewApi">8dp</item>
+        <item name="android:layout_marginEnd" tools:ignore="NewApi">0dp</item>
+
+        <item name="android:text">@string/question</item>
+    </style>
+
+    <style name="setting_divider">
+
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">#ddd</item>
+        <item name="android:layout_marginTop">12dp</item>
+        <item name="android:layout_marginBottom">12dp</item>
+    </style>
+
+    <style name="setting_horizontal_stretch">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+    </style>
+
+    <style name="setting_edit_text" parent="@style/setting_horizontal_stretch">
+        <item name="android:imeOptions">actionDone</item>
+    </style>
+
+    <string name="question">\?</string>
 </resources>

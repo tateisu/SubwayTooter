@@ -23,6 +23,7 @@ import android.os.Looper;
 import android.os.storage.StorageManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.SparseBooleanArray;
@@ -44,6 +45,8 @@ import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import jp.juggler.subwaytooter.ActMain;
 
 public class Utils {
 	
@@ -531,7 +534,17 @@ public class Utils {
 		return MIME_TYPE_APPLICATION_OCTET_STREAM;
 	}
 	
-
+	public static CharSequence formatSpannable1( Context context, int string_id, CharSequence display_name ){
+		String s = context.getString( string_id );
+		int end = s.length();
+		int pos = s.indexOf( "%1$s" );
+		if( pos == -1 ) return s;
+		SpannableStringBuilder sb = new SpannableStringBuilder(  );
+		if( pos > 0 ) sb.append(s.substring( 0,pos ));
+		sb.append( display_name);
+		if( pos +4 < end ) sb.append(s.substring( pos+4,end ));
+		return sb;
+	}
 	
 	static class FileInfo {
 		

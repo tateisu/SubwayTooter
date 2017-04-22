@@ -3,12 +3,19 @@
 
     <group android:checkableBehavior="single">
 
+        <item android:title="@string/account">
+        <menu>
 
         <item
             android:id="@+id/nav_account_add"
             android:icon="@drawable/ic_account_add"
             android:title="@string/account_add"/>
-
+            <item
+                android:id="@+id/nav_account_setting"
+                android:icon="@drawable/ic_setting"
+                android:title="@string/account_setting"/>
+        </menu>
+        </item>
         <item android:title="@string/add_column">
             <menu>
                 <item
@@ -55,7 +62,19 @@
                 <!--android:title="Tools"/>-->
             </menu>
         </item>
+        <item android:title="@string/setting">
+            <menu>
+                <item
+                    android:id="@+id/nav_column_list"
+                    android:icon="@drawable/ic_list"
+                    android:title="@string/column_list"/>
 
+                <item
+                    android:id="@+id/nav_app_setting"
+                    android:icon="@drawable/ic_setting"
+                    android:title="@string/app_setting"/>
+            </menu>
+        </item>
     </group>
 
     <!--<item android:title="Communicate">-->

@@ -307,8 +307,10 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		final Button btnFollowing;
 		final Button btnFollowers;
 		final Button btnStatusCount;
+		final View btnMore;
 		final TextView tvNote;
 		TootAccount who;
+		SavedAccount access_info;
 		
 		public HeaderViewHolder( final ActMain activity, ListView parent ){
 			viewRoot = activity.getLayoutInflater().inflate( R.layout.lv_list_header, parent, false );
@@ -321,17 +323,20 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			this.btnFollowers = (Button) viewRoot.findViewById( R.id.btnFollowers );
 			this.btnStatusCount = (Button) viewRoot.findViewById( R.id.btnStatusCount );
 			this.tvNote = (TextView) viewRoot.findViewById( R.id.tvNote );
+			this.btnMore = viewRoot.findViewById( R.id.btnMore );
 			
 			ivBackground.setOnClickListener( this );
 			btnFollowing.setOnClickListener( this );
 			btnFollowers.setOnClickListener( this );
 			btnStatusCount.setOnClickListener( this );
+			btnMore.setOnClickListener( this );
 			
 			tvNote.setMovementMethod( LinkMovementMethod.getInstance() );
 		}
 		
 		public void bind( ActMain activity, SavedAccount access_info, TootAccount who ){
 			this.who = who;
+			this.access_info = access_info;
 			if( who == null ){
 				tvCreated.setText( "" );
 				ivBackground.setImageDrawable( null );
@@ -378,6 +383,10 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			case R.id.btnStatusCount:
 				Utils.showToast( activity, false, "not implemented" );
 				break;
+			case R.id.btnMore:
+				activity.performAccountMore( access_info,who );
+				break;
+			
 			}
 		}
 	}
@@ -479,7 +488,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			ivMedia2.setOnClickListener( this );
 			ivMedia3.setOnClickListener( this );
 			ivMedia4.setOnClickListener( this );
-			
+			btnFollow.setOnClickListener( this );
 			btnConversation.setOnClickListener( this );
 			btnReply.setOnClickListener( this );
 			btnBoost.setOnClickListener( this );
@@ -726,7 +735,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				activity.performFavourite( account, status );
 				break;
 			case R.id.btnMore:
-				activity.performMore( account, status );
+				activity.performStatusMore( account, status );
 				break;
 			case R.id.ivThumbnail:
 				activity.performOpenUser( account, account_thumbnail );
@@ -737,6 +746,8 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			case R.id.llFollow:
 				activity.performOpenUser( account, account_follow );
 				break;
+			case R.id.btnFollow:
+				activity.performAccountMore( account,account_follow);
 			}
 		}
 		

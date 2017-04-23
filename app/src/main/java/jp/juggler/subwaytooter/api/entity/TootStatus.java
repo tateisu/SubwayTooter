@@ -17,11 +17,17 @@ import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
-public class TootStatus extends TootId{
-	
+public class TootStatus extends TootId {
 	
 	public static class List extends ArrayList< TootStatus > {
 		
+		public List(){
+			super();
+		}
+		
+		public List( int capacity ){
+			super( capacity );
+		}
 	}
 	
 	//	The ID of the status
@@ -29,7 +35,7 @@ public class TootStatus extends TootId{
 	
 	// A Fediverse-unique resource ID
 	public String uri;
-
+	
 	//URL to the status page (can be remote)
 	public String url;
 	
@@ -71,10 +77,10 @@ public class TootStatus extends TootId{
 	
 	//One of: public, unlisted, private, direct
 	public String visibility;
-	public static final String VISIBILITY_PUBLIC ="public";
-	public static final String VISIBILITY_UNLISTED ="unlisted";
-	public static final String VISIBILITY_PRIVATE ="private";
-	public static final String VISIBILITY_DIRECT ="direct";
+	public static final String VISIBILITY_PUBLIC = "public";
+	public static final String VISIBILITY_UNLISTED = "unlisted";
+	public static final String VISIBILITY_PRIVATE = "private";
+	public static final String VISIBILITY_DIRECT = "direct";
 	
 	//	An array of Attachments
 	public TootAttachment.List media_attachments;
@@ -89,7 +95,7 @@ public class TootStatus extends TootId{
 	public String application;
 	
 	public long time_created_at;
-
+	
 	public Spannable decoded_content;
 	public Spannable decoded_tags;
 	public Spannable decoded_mentions;
@@ -98,7 +104,6 @@ public class TootStatus extends TootId{
 	
 	public boolean conversation_main;
 	
-	
 	public static TootStatus parse( LogCategory log, JSONObject src ){
 		
 		if( src == null ) return null;
@@ -106,14 +111,14 @@ public class TootStatus extends TootId{
 		try{
 			TootStatus status = new TootStatus();
 			status.json = src;
-		//	log.d( "parse: %s", src.toString() );
+			//	log.d( "parse: %s", src.toString() );
 			status.id = src.optLong( "id" );
 			status.uri = Utils.optStringX( src, "uri" );
 			status.url = Utils.optStringX( src, "url" );
 			status.account = TootAccount.parse( log, src.optJSONObject( "account" ) );
 			status.in_reply_to_id = Utils.optStringX( src, "in_reply_to_id" ); // null
 			status.in_reply_to_account_id = Utils.optStringX( src, "in_reply_to_account_id" ); // null
-			status.reblog = TootStatus.parse( log, src.optJSONObject( "reblog" ));
+			status.reblog = TootStatus.parse( log, src.optJSONObject( "reblog" ) );
 			status.content = Utils.optStringX( src, "content" );
 			status.created_at = Utils.optStringX( src, "created_at" ); // "2017-04-16T09:37:14.000Z"
 			status.reblogs_count = src.optLong( "reblogs_count" );
@@ -124,15 +129,15 @@ public class TootStatus extends TootId{
 			status.spoiler_text = Utils.optStringX( src, "spoiler_text" ); // "",null, or CW text
 			status.visibility = Utils.optStringX( src, "visibility" );
 			status.media_attachments = TootAttachment.parseList( log, src.optJSONArray( "media_attachments" ) );
-			status.mentions = TootMention.parseList( log, src.optJSONArray( "mentions" ));
-			status.tags = TootTag.parseList( log, src.optJSONArray(  "tags" ));
+			status.mentions = TootMention.parseList( log, src.optJSONArray( "mentions" ) );
+			status.tags = TootTag.parseList( log, src.optJSONArray( "tags" ) );
 			status.application = Utils.optStringX( src, "application" ); // null
 			
 			status.time_created_at = parseTime( log, status.created_at );
-			status.decoded_content = HTMLDecoder.decodeHTML(status.content);
-			status.decoded_tags = HTMLDecoder.decodeTags( status.tags);
-			status.decoded_mentions = HTMLDecoder.decodeMentions( status.mentions);
-
+			status.decoded_content = HTMLDecoder.decodeHTML( status.content );
+			status.decoded_tags = HTMLDecoder.decodeTags( status.tags );
+			status.decoded_mentions = HTMLDecoder.decodeMentions( status.mentions );
+			
 			return status;
 		}catch( Throwable ex ){
 			ex.printStackTrace();
@@ -182,18 +187,18 @@ public class TootStatus extends TootId{
 	// aの方が大きい（狭い)ならプラス
 	// IndexOutOfBoundsException 公開範囲が想定外
 	public static int compareVisibility( String a, String b ){
-		int ia = compareVisibility_tmp(a);
-		int ib = compareVisibility_tmp(b);
-		if( ia < ib ) return -1;
+		int ia = compareVisibility_tmp( a );
+		int ib = compareVisibility_tmp( b );
+		if( ia < ib ) return - 1;
 		if( ia > ib ) return 1;
 		return 0;
 	}
 	
 	private static int compareVisibility_tmp( String a ){
-		if(TootStatus.VISIBILITY_DIRECT.equals( a ) ) return 0;
-		if(TootStatus.VISIBILITY_PRIVATE.equals( a ) ) return 1;
-		if(TootStatus.VISIBILITY_UNLISTED.equals( a ) ) return 2;
-		if(TootStatus.VISIBILITY_PUBLIC.equals( a ) ) return 3;
+		if( TootStatus.VISIBILITY_DIRECT.equals( a ) ) return 0;
+		if( TootStatus.VISIBILITY_PRIVATE.equals( a ) ) return 1;
+		if( TootStatus.VISIBILITY_UNLISTED.equals( a ) ) return 2;
+		if( TootStatus.VISIBILITY_PUBLIC.equals( a ) ) return 3;
 		throw new IndexOutOfBoundsException( "visibility not in range" );
 	}
 	

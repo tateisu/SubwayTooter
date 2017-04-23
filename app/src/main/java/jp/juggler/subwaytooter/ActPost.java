@@ -57,6 +57,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	
 	static final String KEY_ACCOUNT_DB_ID = "account_db_id";
 	static final String KEY_REPLY_STATUS = "reply_status";
+	static final String KEY_INITIAL_TEXT = "initial_text";
 	
 	static final String KEY_ATTACHMENT_LIST = "attachment_list";
 	static final String KEY_VISIBILITY = "visibility";
@@ -70,6 +71,14 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		intent.putExtra( KEY_ACCOUNT_DB_ID, account_db_id );
 		if( reply_status != null ){
 			intent.putExtra( KEY_REPLY_STATUS, reply_status.json.toString() );
+		}
+		context.startActivity( intent );
+	}
+	public static void open( Context context, long account_db_id, String  initial_text ){
+		Intent intent = new Intent( context, ActPost.class );
+		intent.putExtra( KEY_ACCOUNT_DB_ID, account_db_id );
+		if( initial_text != null ){
+			intent.putExtra( KEY_INITIAL_TEXT, initial_text );
 		}
 		context.startActivity( intent );
 	}
@@ -197,7 +206,13 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				}
 			}
 			
-			String sv = intent.getStringExtra( KEY_REPLY_STATUS );
+			String sv = intent.getStringExtra( KEY_INITIAL_TEXT );
+			if( sv != null){
+				etContent.setText(sv);
+				etContent.setSelection( sv.length() );
+			}
+			
+			sv = intent.getStringExtra( KEY_REPLY_STATUS );
 			if( sv != null ){
 				try{
 					TootStatus repley_status = TootStatus.parse( log, new JSONObject( sv ) );

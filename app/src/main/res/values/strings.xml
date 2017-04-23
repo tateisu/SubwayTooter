@@ -132,4 +132,21 @@
     <string name="mail_address_not_contains_at_mark">please input user mail address that contains \'@\' and \'.\'</string>
     <string name="instance_hint">ex) mastodon.social</string>
     <string name="mail_hint">ex) your@e-mail.address</string>
+    <string name="unfollow">unfollow</string>
+    <string name="follow_succeeded">follow succeeded</string>
+    <string name="unfollow_succeeded">unfollow succeeded</string>
+    <string name="mute">mute</string>
+    <string name="unmute">unmute</string>
+    <string name="block">block</string>
+    <string name="unblock">unblock</string>
+    <string name="report">report</string>
+    <string name="cant_follow_locked_user">could not follow the non-public user</string>
+    <string name="unmute_succeeded">unmute succeeded</string>
+    <string name="mute_succeeded">mute succeeded</string>
+    <string name="unblock_succeeded">unblock succeeded</string>
+    <string name="block_succeeded">block succeeded</string>
+    <string name="report_reason">comment for report reason</string>
+    <string name="comment_empty">please comment for any reason to report</string>
+    <string name="report_completed">report completed.</string>
+    <string name="mention">mention</string>
 </resources>

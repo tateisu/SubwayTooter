@@ -41,6 +41,7 @@ import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
 import jp.juggler.subwaytooter.dialog.LoginForm;
+import jp.juggler.subwaytooter.dialog.ReportForm;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -53,7 +54,7 @@ public class ActMain extends AppCompatActivity
 	public static final LogCategory log = new LogCategory( "ActMain" );
 	
 	static boolean update_at_resume = false;
-	
+
 //	@Override
 //	protected void attachBaseContext(Context newBase) {
 //		super.attachBaseContext( CalligraphyContextWrapper.wrap(newBase));
@@ -66,7 +67,7 @@ public class ActMain extends AppCompatActivity
 		super.onCreate( savedInstanceState );
 		requestWindowFeature( Window.FEATURE_NO_TITLE );
 		
-		pref = Pref.pref(this);
+		pref = Pref.pref( this );
 		
 		initUI();
 		loadColumnList();
@@ -101,12 +102,12 @@ public class ActMain extends AppCompatActivity
 			}
 		}
 		
-		if(update_at_resume){
+		if( update_at_resume ){
 			update_at_resume = false;
 			// TODO: 各カラムを更新する
 		}
 		
-		if( pager_adapter.getCount() == 0){
+		if( pager_adapter.getCount() == 0 ){
 			llEmpty.setVisibility( View.VISIBLE );
 		}
 	}
@@ -118,12 +119,12 @@ public class ActMain extends AppCompatActivity
 		super.onPause();
 	}
 	
-	static final int REQUEST_CODE_COLUMN_LIST =1;
+	static final int REQUEST_CODE_COLUMN_LIST = 1;
 	
-	boolean isOrderChanged(ArrayList<Integer> new_order){
+	boolean isOrderChanged( ArrayList< Integer > new_order ){
 		if( new_order.size() != pager_adapter.getCount() ) return true;
-		for(int i=0,ie = new_order.size();i<ie;++i ){
-			if( new_order.get(i) != i ) return true;
+		for( int i = 0, ie = new_order.size() ; i < ie ; ++ i ){
+			if( new_order.get( i ) != i ) return true;
 		}
 		return false;
 	}
@@ -132,8 +133,8 @@ public class ActMain extends AppCompatActivity
 	protected void onActivityResult( int requestCode, int resultCode, Intent data ){
 		if( resultCode == RESULT_OK && requestCode == REQUEST_CODE_COLUMN_LIST ){
 			if( data != null ){
-				ArrayList<Integer> order = data.getIntegerArrayListExtra( ActColumnList.EXTRA_ORDER );
-				if( order != null && isOrderChanged(order) ){
+				ArrayList< Integer > order = data.getIntegerArrayListExtra( ActColumnList.EXTRA_ORDER );
+				if( order != null && isOrderChanged( order ) ){
 					pager_adapter.setOrder( pager, order );
 				}
 				
@@ -155,10 +156,10 @@ public class ActMain extends AppCompatActivity
 		DrawerLayout drawer = (DrawerLayout) findViewById( R.id.drawer_layout );
 		if( drawer.isDrawerOpen( GravityCompat.START ) ){
 			drawer.closeDrawer( GravityCompat.START );
-		}else if( pref.getBoolean( Pref.KEY_BACK_TO_COLUMN_LIST ,false) ){
+		}else if( pref.getBoolean( Pref.KEY_BACK_TO_COLUMN_LIST, false ) ){
 			performColumnList();
 		}else if( ! pager_adapter.column_list.isEmpty() ){
-			performColumnClose( false,pager_adapter.getColumn( pager.getCurrentItem() ) );
+			performColumnClose( false, pager_adapter.getColumn( pager.getCurrentItem() ) );
 		}else{
 			super.onBackPressed();
 		}
@@ -211,7 +212,7 @@ public class ActMain extends AppCompatActivity
 			performAddTimeline( Column.TYPE_TL_NOTIFICATIONS );
 			
 		}else if( id == R.id.nav_app_setting ){
-			performAppSetting(  );
+			performAppSetting();
 		}else if( id == R.id.nav_account_setting ){
 			performAccountSetting();
 		}else if( id == R.id.nav_column_list ){
@@ -283,7 +284,7 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	public void performAccountAdd(){
-		LoginForm.showLoginForm( this, null,new LoginForm.LoginFormCallback() {
+		LoginForm.showLoginForm( this, null, new LoginForm.LoginFormCallback() {
 			
 			@Override
 			public void startLogin( final Dialog dialog, final String instance, final String user_mail, final String password ){
@@ -318,8 +319,8 @@ public class ActMain extends AppCompatActivity
 						TootApiResult result = api_client.request( "/api/v1/accounts/verify_credentials" );
 						if( result != null && result.object != null ){
 							TootAccount ta = TootAccount.parse( log, result.object );
-							String user = ta.username +"@" + instance;
-							this.row_id = SavedAccount.insert( instance, user, result.object ,result.token_info );
+							String user = ta.username + "@" + instance;
+							this.row_id = SavedAccount.insert( instance, user, result.object, result.token_info );
 						}
 						return result;
 					}
@@ -357,9 +358,8 @@ public class ActMain extends AppCompatActivity
 		
 	}
 	
-
-	public void performColumnClose( boolean bConfirm,final Column column ){
-		if(! bConfirm && ! pref.getBoolean( Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN,false ) ){
+	public void performColumnClose( boolean bConfirm, final Column column ){
+		if( ! bConfirm && ! pref.getBoolean( Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN, false ) ){
 			new AlertDialog.Builder( this )
 				.setTitle( R.string.confirm )
 				.setMessage( R.string.close_column )
@@ -367,7 +367,7 @@ public class ActMain extends AppCompatActivity
 				.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick( DialogInterface dialog, int which ){
-						performColumnClose( true,column );
+						performColumnClose( true, column );
 					}
 				} )
 				.show();
@@ -379,58 +379,56 @@ public class ActMain extends AppCompatActivity
 		if( pager_adapter.getCount() == 0 ){
 			llEmpty.setVisibility( View.VISIBLE );
 		}else if( page_showing > 0 && page_showing == page_delete ){
-			pager.setCurrentItem( page_showing-1 ,true);
+			pager.setCurrentItem( page_showing - 1, true );
 		}
 	}
 	
 	//////////////////////////////////////////////////////////////
 	// カラム追加系
 	
-	public void addColumn(SavedAccount ai,int type,long who,long status_id ){
+	public void addColumn( SavedAccount ai, int type, long who, long status_id ){
 		// 既に同じカラムがあればそこに移動する
 		for( Column column : pager_adapter.column_list ){
 			if( ai.user.equals( column.access_info.user )
 				&& column.type == type
 				&& column.who_id == who
 				&& column.status_id == status_id
-			){
-				pager.setCurrentItem( pager_adapter.column_list.indexOf( column ) ,true);
+				){
+				pager.setCurrentItem( pager_adapter.column_list.indexOf( column ), true );
 				return;
 			}
 		}
 		
 		llEmpty.setVisibility( View.GONE );
 		//
-		Column col = new Column( ActMain.this, ai, type, who,status_id );
+		Column col = new Column( ActMain.this, ai, type, who, status_id );
 		int idx = pager_adapter.addColumn( pager, col );
-		pager.setCurrentItem( idx ,true);
+		pager.setCurrentItem( idx, true );
 	}
 	
 	private void onAccountUpdated( SavedAccount data ){
 		Utils.showToast( this, false, R.string.account_confirmed );
-		addColumn(data, Column.TYPE_TL_HOME,data.id ,0L );
+		addColumn( data, Column.TYPE_TL_HOME, data.id, 0L );
 	}
 	
-	void performOpenUser(SavedAccount access_info,TootAccount user){
-		addColumn( access_info,Column.TYPE_TL_STATUSES, user.id ,0L);
+	void performOpenUser( SavedAccount access_info, TootAccount user ){
+		addColumn( access_info, Column.TYPE_TL_STATUSES, user.id, 0L );
 	}
-	
 	
 	public void performConversation( SavedAccount access_info, TootStatus status ){
-		addColumn( access_info,Column.TYPE_TL_CONVERSATION, access_info.id, status.id );
+		addColumn( access_info, Column.TYPE_TL_CONVERSATION, access_info.id, status.id );
 	}
 	
 	private void performAddTimeline( final int type ){
 		AccountPicker.pick( this, new AccountPicker.AccountPickerCallback() {
 			@Override
 			public void onAccountPicked( SavedAccount ai ){
-				addColumn( ai, type,ai.id ,0L);
+				addColumn( ai, type, ai.id, 0L );
 			}
 		} );
 	}
 	
 	//////////////////////////////////////////////////////////////
-
 	
 	public void openBrowser( String url ){
 		openChromeTab( url );
@@ -448,7 +446,7 @@ public class ActMain extends AppCompatActivity
 			
 		}catch( Throwable ex ){
 			// ex.printStackTrace();
-			log.e( ex, "openChromeTab failed. url=%s",url );
+			log.e( ex, "openChromeTab failed. url=%s", url );
 		}
 	}
 	
@@ -458,15 +456,20 @@ public class ActMain extends AppCompatActivity
 			openChromeTab( url );
 		}
 	};
-
+	
 	private void performTootButton(){
 		Column c = pager_adapter.getColumn( pager.getCurrentItem() );
 		if( c != null && c.access_info != null ){
-			ActPost.open( this, c.access_info.db_id ,null );
+			ActPost.open( this, c.access_info.db_id, "" );
 		}
 	}
+	
 	public void performReply( SavedAccount account, TootStatus status ){
-		ActPost.open( this, account.db_id ,status );
+		ActPost.open( this, account.db_id, status );
+	}
+	
+	public void performMention( SavedAccount account, TootAccount who ){
+		ActPost.open( this, account.db_id, account.getFullAcct( who ) +" " );
 	}
 	
 	/////////////////////////////////////////////////////////////////////////
@@ -479,29 +482,28 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-	
 	/////////////////////////////////////////////////////////////////////////
 	// favourite
 	
-	final HashSet<String> map_busy_fav = new HashSet<>(  );
+	final HashSet< String > map_busy_fav = new HashSet<>();
 	
-	boolean isBusyFav(SavedAccount account,TootStatus status){
-		String busy_key = account.host+":"+ status.id;
-		return map_busy_fav.contains(busy_key);
+	boolean isBusyFav( SavedAccount account, TootStatus status ){
+		String busy_key = account.host + ":" + status.id;
+		return map_busy_fav.contains( busy_key );
 	}
 	
 	public void performFavourite( final SavedAccount account, final TootStatus status ){
 		//
-		final String busy_key = account.host+":"+ status.id;
+		final String busy_key = account.host + ":" + status.id;
 		//
-		if( map_busy_fav.contains(busy_key) ){
-			Utils.showToast( this,false,R.string.wait_previous_operation );
+		if( map_busy_fav.contains( busy_key ) ){
+			Utils.showToast( this, false, R.string.wait_previous_operation );
 			return;
 		}
 		//
 		map_busy_fav.add( busy_key );
 		//
-		new AsyncTask<Void,Void,TootApiResult>(){
+		new AsyncTask< Void, Void, TootApiResult >() {
 			final boolean new_state = ! status.favourited;
 			TootStatus new_status;
 			
@@ -522,19 +524,19 @@ public class ActMain extends AppCompatActivity
 				Request.Builder request_builder = new Request.Builder()
 					.post( RequestBody.create(
 						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
-						,""
-					));
+						, ""
+					) );
 				
 				TootApiResult result = client.request(
-					(new_state
-						? "/api/v1/statuses/"+status.id+"/favourite"
-						: "/api/v1/statuses/"+status.id+"/unfavourite"
+					( new_state
+						? "/api/v1/statuses/" + status.id + "/favourite"
+						: "/api/v1/statuses/" + status.id + "/unfavourite"
 					)
 					, request_builder );
 				if( result.object != null ){
-					new_status = TootStatus.parse( log,result.object );
+					new_status = TootStatus.parse( log, result.object );
 				}
-
+				
 				return result;
 				
 			}
@@ -546,15 +548,15 @@ public class ActMain extends AppCompatActivity
 			
 			@Override
 			protected void onPostExecute( TootApiResult result ){
-				map_busy_fav.remove( busy_key);
-				if( new_status  != null ){
+				map_busy_fav.remove( busy_key );
+				if( new_status != null ){
 					// カウント数は遅延があるみたい
 					if( new_state && new_status.favourites_count <= status.favourites_count ){
 						// 星つけたのにカウントが上がらないのは違和感あるので、表示をいじる
-						new_status.favourites_count = status.favourites_count +1;
-					}else if( !new_state && new_status.favourites_count >= status.favourites_count ){
+						new_status.favourites_count = status.favourites_count + 1;
+					}else if( ! new_state && new_status.favourites_count >= status.favourites_count ){
 						// 星外したのにカウントが下がらないのは違和感あるので、表示をいじる
-						new_status.favourites_count = status.favourites_count -1;
+						new_status.favourites_count = status.favourites_count - 1;
 						if( new_status.favourites_count < 0 ){
 							new_status.favourites_count = 0;
 						}
@@ -566,34 +568,32 @@ public class ActMain extends AppCompatActivity
 								status.favourited = new_status.favourited;
 								status.favourites_count = new_status.favourites_count;
 							}
-						});
+						} );
 					}
 				}else{
-					if( result != null) Utils.showToast( ActMain.this,true,result.error );
+					if( result != null ) Utils.showToast( ActMain.this, true, result.error );
 				}
-				showColumnMatchAccount(account);
+				showColumnMatchAccount( account );
 			}
 			
 		}.execute();
-		showColumnMatchAccount(account);
+		showColumnMatchAccount( account );
 	}
-	
-
 	
 	/////////////////////////////////////////////////////////////////////////
 	// boost
-	final HashSet<String> map_busy_boost = new HashSet<>(  );
+	final HashSet< String > map_busy_boost = new HashSet<>();
 	
-	boolean isBusyBoost(SavedAccount account,TootStatus status){
-		String busy_key = account.host+":"+ status.id;
-		return map_busy_boost.contains( busy_key);
+	boolean isBusyBoost( SavedAccount account, TootStatus status ){
+		String busy_key = account.host + ":" + status.id;
+		return map_busy_boost.contains( busy_key );
 	}
 	
-	public void performBoost( final SavedAccount account, final TootStatus status ,boolean bConfirmed){
+	public void performBoost( final SavedAccount account, final TootStatus status, boolean bConfirmed ){
 		//
 		final String busy_key = account.host + ":" + status.id;
 		//
-		if(map_busy_boost.contains( busy_key ) ){
+		if( map_busy_boost.contains( busy_key ) ){
 			Utils.showToast( this, false, R.string.wait_previous_operation );
 			return;
 		}
@@ -605,27 +605,27 @@ public class ActMain extends AppCompatActivity
 				return;
 			}
 		}else{
-			if(!bConfirmed && account.confirm_boost ){
+			if( ! bConfirmed && account.confirm_boost ){
 				// TODO: アカウント設定でスキップさせたい
-				new AlertDialog.Builder(this)
-					.setTitle(R.string.confirm)
-					.setMessage(R.string.confirm_boost)
+				new AlertDialog.Builder( this )
+					.setTitle( R.string.confirm )
+					.setMessage( R.string.confirm_boost )
 					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 						@Override
 						public void onClick( DialogInterface dialog, int which ){
-							performBoost(  account,  status ,true);
+							performBoost( account, status, true );
 						}
 					} )
-					.setNegativeButton( R.string.cancel,null )
+					.setNegativeButton( R.string.cancel, null )
 					.show();
 				return;
 			}
 		}
-
+		
 		//
-		map_busy_boost.add( busy_key);
+		map_busy_boost.add( busy_key );
 		//
-		new AsyncTask<Void,Void,TootApiResult>(){
+		new AsyncTask< Void, Void, TootApiResult >() {
 			final boolean new_state = ! status.reblogged;
 			TootStatus new_status;
 			
@@ -646,16 +646,16 @@ public class ActMain extends AppCompatActivity
 				Request.Builder request_builder = new Request.Builder()
 					.post( RequestBody.create(
 						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
-						,""
-					));
+						, ""
+					) );
 				
 				TootApiResult result = client.request(
-					"/api/v1/statuses/"+status.id+(new_state ? "/reblog" : "/unreblog")
+					"/api/v1/statuses/" + status.id + ( new_state ? "/reblog" : "/unreblog" )
 					, request_builder );
-
+				
 				if( result.object != null ){
 					// reblog,unreblog のレスポンスは信用ならんのでステータスを再取得する
-					result = client.request("/api/v1/statuses/"+status.id);
+					result = client.request( "/api/v1/statuses/" + status.id );
 					if( result.object != null ){
 						new_status = TootStatus.parse( log, result.object );
 					}
@@ -672,15 +672,15 @@ public class ActMain extends AppCompatActivity
 			
 			@Override
 			protected void onPostExecute( TootApiResult result ){
-				map_busy_boost.remove( busy_key);
-				if( new_status  != null ){
+				map_busy_boost.remove( busy_key );
+				if( new_status != null ){
 					// カウント数は遅延があるみたい
 					if( new_status.reblogged && new_status.reblogs_count <= status.reblogs_count ){
 						// 星つけたのにカウントが上がらないのは違和感あるので、表示をいじる
-						new_status.reblogs_count = status.reblogs_count +1;
-					}else if( !new_status.reblogged && new_status.reblogs_count >= status.reblogs_count ){
+						new_status.reblogs_count = status.reblogs_count + 1;
+					}else if( ! new_status.reblogged && new_status.reblogs_count >= status.reblogs_count ){
 						// 星外したのにカウントが下がらないのは違和感あるので、表示をいじる
-						new_status.reblogs_count = status.reblogs_count -1;
+						new_status.reblogs_count = status.reblogs_count - 1;
 						if( new_status.reblogs_count < 0 ){
 							new_status.reblogs_count = 0;
 						}
@@ -692,61 +692,44 @@ public class ActMain extends AppCompatActivity
 								status.reblogged = new_status.reblogged;
 								status.reblogs_count = new_status.reblogs_count;
 							}
-						});
+						} );
 					}
 				}else{
-					if( result != null) Utils.showToast( ActMain.this,true,result.error );
+					if( result != null ) Utils.showToast( ActMain.this, true, result.error );
 				}
-				showColumnMatchAccount(account);
+				showColumnMatchAccount( account );
 			}
 			
 		}.execute();
 		
-		showColumnMatchAccount(account);
+		showColumnMatchAccount( account );
 	}
 	
 	////////////////////////////////////////
-	
-	public void performMore( SavedAccount account, TootStatus status ){
-		// open menu
-		// Expand this status
-		// Mute user
-		// Block user
-		// report user
-		Utils.showToast( this,false,"not implemented. toot="+status.decoded_content );
-	}
-
-
-	////////////////////////////////////////
-	
-
 	
 	private void performAccountSetting(){
 		AccountPicker.pick( this, new AccountPicker.AccountPickerCallback() {
 			@Override
 			public void onAccountPicked( SavedAccount ai ){
-				ActAccountSetting.open( ActMain.this, ai);
+				ActAccountSetting.open( ActMain.this, ai );
 			}
 		} );
 	}
 	
 	private void performAppSetting(){
-		ActAppSetting.open( ActMain.this);
+		ActAppSetting.open( ActMain.this );
 	}
 	
-	
-
 	////////////////////////////////////////////////////////
 	// column list
 	
-	
 	JSONArray encodeColumnList(){
 		JSONArray array = new JSONArray();
-		for(int i=0,ie = pager_adapter.column_list.size(); i<ie;++i){
-			Column column = pager_adapter.column_list.get(i);
+		for( int i = 0, ie = pager_adapter.column_list.size() ; i < ie ; ++ i ){
+			Column column = pager_adapter.column_list.get( i );
 			try{
 				JSONObject dst = new JSONObject();
-				column.encodeJSON( dst ,i);
+				column.encodeJSON( dst, i );
 				array.put( dst );
 			}catch( JSONException ex ){
 				ex.printStackTrace();
@@ -756,15 +739,13 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	private void performColumnList(){
-		Intent intent = new Intent(this,ActColumnList.class);
-		intent.putExtra(ActColumnList.EXTRA_ORDER,encodeColumnList().toString() );
-		intent.putExtra(ActColumnList.EXTRA_SELECTION,pager.getCurrentItem() );
-		startActivityForResult( intent ,REQUEST_CODE_COLUMN_LIST );
+		Intent intent = new Intent( this, ActColumnList.class );
+		intent.putExtra( ActColumnList.EXTRA_ORDER, encodeColumnList().toString() );
+		intent.putExtra( ActColumnList.EXTRA_SELECTION, pager.getCurrentItem() );
+		startActivityForResult( intent, REQUEST_CODE_COLUMN_LIST );
 	}
 	
-	
 	static final String FILE_COLUMN_LIST = "column_list";
-	
 	
 	private void saveColumnList(){
 		JSONArray array = encodeColumnList();
@@ -815,5 +796,341 @@ public class ActMain extends AppCompatActivity
 			llEmpty.setVisibility( View.GONE );
 		}
 	}
-
+	
+	public void performFollow( final SavedAccount account, final TootAccount who ){
+		String[] caption_list = new String[]{
+			getString( R.string.follow ),
+			getString( R.string.unfollow ),
+		};
+		new AlertDialog.Builder( this )
+			.setNegativeButton( R.string.cancel, null )
+			.setItems( caption_list, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick( DialogInterface dialog, int which ){
+					switch( which ){
+					case 0:
+						performFollow( account, who, true );
+						break;
+					case 1:
+						performFollow( account, who, false );
+						break;
+					}
+				}
+			} )
+			.show();
+	}
+	
+	private void performFollow( final SavedAccount account, final TootAccount who, final boolean bFollow ){
+		new AsyncTask< Void, Void, TootApiResult >() {
+			
+			@Override
+			protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override
+					public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override
+					public void publishApiProgress( String s ){
+						
+					}
+				} );
+				client.setAccount( account );
+				
+				TootApiResult result;
+				if( bFollow & who.acct.contains( "@" ) ){
+					Request.Builder request_builder = new Request.Builder().post(
+						RequestBody.create(
+							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+							, "uri=" + Uri.encode( who.acct )
+						) );
+					result = client.request( "/api/v1/follows", request_builder );
+				}else{
+					Request.Builder request_builder = new Request.Builder().post(
+						RequestBody.create(
+							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+							, "" // 空データ
+						) );
+					result = client.request( "/api/v1/accounts/" + who.id + ( bFollow ? "/follow" : "/unfollow" )
+						, request_builder );
+				}
+				if( result != null ){
+					if( result.object != null ){
+						Utils.showToast( ActMain.this, false, bFollow ? R.string.follow_succeeded : R.string.unfollow_succeeded );
+					}else if( bFollow && who.locked && result.response.code() == 422 ){
+						Utils.showToast( ActMain.this, false, R.string.cant_follow_locked_user );
+					}else{
+						Utils.showToast( ActMain.this, false, result.error );
+					}
+				}
+				
+				return result;
+			}
+		}.execute();
+	}
+	
+	////////////////////////////////////////
+	
+	private void performMute( final SavedAccount account, final TootAccount who, final boolean bMute ){
+		new AsyncTask< Void, Void, TootApiResult >() {
+			
+			@Override
+			protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override
+					public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override
+					public void publishApiProgress( String s ){
+						
+					}
+				} );
+				client.setAccount( account );
+				
+				Request.Builder request_builder = new Request.Builder().post(
+					RequestBody.create(
+						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+						, "" // 空データ
+					) );
+				TootApiResult result = client.request( "/api/v1/accounts/" + who.id + ( bMute ? "/mute" : "/unmute" )
+					, request_builder );
+				if( result != null ){
+					if( result.object != null ){
+						Utils.showToast( ActMain.this, false, bMute ? R.string.mute_succeeded : R.string.unmute_succeeded );
+						if( bMute ){
+							for( Column column : pager_adapter.column_list ){
+								column.removeStatusByAccount( account, who.id );
+							}
+							showColumnMatchAccount( account );
+						}
+					}else{
+						Utils.showToast( ActMain.this, false, result.error );
+					}
+				}
+				
+				return result;
+			}
+		}.execute();
+	}
+	
+	private void performBlock( final SavedAccount account, final TootAccount who, final boolean bBlock ){
+		new AsyncTask< Void, Void, TootApiResult >() {
+			
+			@Override
+			protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override
+					public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override
+					public void publishApiProgress( String s ){
+						
+					}
+				} );
+				client.setAccount( account );
+				
+				Request.Builder request_builder = new Request.Builder().post(
+					RequestBody.create(
+						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+						, "" // 空データ
+					) );
+				TootApiResult result = client.request( "/api/v1/accounts/" + who.id + ( bBlock ? "/block" : "/unblock" )
+					, request_builder );
+				if( result != null ){
+					if( result.object != null ){
+						Utils.showToast( ActMain.this, false, bBlock ? R.string.block_succeeded : R.string.unblock_succeeded );
+						if( bBlock ){
+							for( Column column : pager_adapter.column_list ){
+								column.removeStatusByAccount( account, who.id );
+							}
+							showColumnMatchAccount( account );
+						}
+					}else{
+						Utils.showToast( ActMain.this, false, result.error );
+					}
+				}
+				
+				return result;
+			}
+		}.execute();
+	}
+	
+	public interface ReportCompleteCallback {
+		void onReportComplete( TootApiResult result );
+		
+	}
+	
+	private void performReport( final SavedAccount account, final TootAccount who, final TootStatus status
+		, final String comment, final ReportCompleteCallback callback
+	){
+		new AsyncTask< Void, Void, TootApiResult >() {
+			
+			@Override
+			protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override
+					public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override
+					public void publishApiProgress( String s ){
+						
+					}
+				} );
+				client.setAccount( account );
+				
+				StringBuilder sb = new StringBuilder();
+				
+				sb.append( "account_id=" )
+					.append( Long.toString( status.account.id ) )
+					.append( "&comment=" )
+					.append( Uri.encode( comment ) )
+				;
+				
+				if( status != null ){
+					sb.append( "&status_ids[]=" )
+						.append( Long.toString( status.id ) )
+					;
+				}
+				
+				Request.Builder request_builder = new Request.Builder().post(
+					RequestBody.create(
+						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+						, sb.toString()
+					) );
+				TootApiResult result = client.request( "/api/v1/reports", request_builder );
+				if( result != null ){
+					callback.onReportComplete( result );
+				}
+				
+				return result;
+			}
+		}.execute();
+	}
+	
+	private void performReport( final SavedAccount account, final TootAccount who, final TootStatus status ){
+		ReportForm.showReportForm( this, who, status, new ReportForm.ReportFormCallback() {
+			@Override
+			public void startReport( final Dialog dialog, String comment ){
+				performReport( account, who, status, comment, new ReportCompleteCallback() {
+					@Override
+					public void onReportComplete( TootApiResult result ){
+						if( result == null ){
+							// cancelled
+							return;
+						}else if( result.object != null ){
+							Utils.showToast( ActMain.this, false, R.string.report_completed );
+							dialog.dismiss();
+						}else{
+							// error
+							Utils.showToast( ActMain.this, false, result.error );
+						}
+					}
+				} );
+			}
+		} );
+	}
+	
+	////////////////////////////////////////
+	
+	// ステータスのmoreメニュー
+	public void performStatusMore( final SavedAccount account, final TootStatus status ){
+		String[] caption_list = new String[]{
+			getString( R.string.follow ),
+			getString( R.string.unfollow ),
+			getString( R.string.mute ),
+			getString( R.string.unmute ),
+			getString( R.string.block ),
+			getString( R.string.unblock ),
+			getString( R.string.report ),
+		};
+		new AlertDialog.Builder( this )
+			.setNegativeButton( R.string.cancel, null )
+			.setItems( caption_list, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick( DialogInterface dialog, int which ){
+					switch( which ){
+					case 0:
+						performFollow( account, status.account, true );
+						break;
+					case 1:
+						performFollow( account, status.account, false );
+						break;
+					case 2:
+						performMute( account, status.account, true );
+						break;
+					case 3:
+						performMute( account, status.account, false );
+						break;
+					case 4:
+						performBlock( account, status.account, true );
+						break;
+					case 5:
+						performBlock( account, status.account, false );
+						break;
+					
+					case 6:
+						performReport( account, status.account, status );
+						break;
+					}
+				}
+			} )
+			.show();
+		
+	}
+	
+	public void performAccountMore( final SavedAccount account, final TootAccount who ){
+		String[] caption_list = new String[]{
+			getString( R.string.mention ),
+			getString( R.string.follow ),
+			getString( R.string.unfollow ),
+			getString( R.string.mute ),
+			getString( R.string.unmute ),
+			getString( R.string.block ),
+			getString( R.string.unblock ),
+			getString( R.string.report ),
+		};
+		new AlertDialog.Builder( this )
+			.setNegativeButton( R.string.cancel, null )
+			.setItems( caption_list, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick( DialogInterface dialog, int which ){
+					switch( which ){
+					case 0:
+						performMention( account, who );
+						break;
+					case 1:
+						performFollow( account, who, true );
+						break;
+					case 2:
+						performFollow( account, who, false );
+						break;
+					case 3:
+						performMute( account, who, true );
+						break;
+					case 4:
+						performMute( account, who, false );
+						break;
+					case 5:
+						performBlock( account, who, true );
+						break;
+					case 6:
+						performBlock( account, who, false );
+						break;
+					
+					case 7:
+						performReport( account, who ,null );
+						break;
+					}
+				}
+			} )
+			.show();
+	}
+	
 }

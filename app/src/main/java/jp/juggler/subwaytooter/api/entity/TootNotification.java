@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
-public class TootNotification extends TootId{
+public class TootNotification extends TootId {
 	
 	//	The notification ID
 	//TootId public long id;
@@ -42,9 +42,7 @@ public class TootNotification extends TootId{
 			dst.account = TootAccount.parse( log, src.optJSONObject( "account" ) );
 			dst.status = TootStatus.parse( log, src.optJSONObject( "status" ) );
 			
-			
 			dst.time_created_at = TootStatus.parseTime( log, dst.created_at );
-			
 			
 			return dst;
 		}catch( Throwable ex ){
@@ -54,9 +52,14 @@ public class TootNotification extends TootId{
 		}
 	}
 	
-
 	public static class List extends ArrayList< TootNotification > {
+		public List(){
+			super();
+		}
 		
+		public List( int capacity ){
+			super( capacity );
+		}
 	}
 	
 	public static List parseList( LogCategory log, JSONArray array ){

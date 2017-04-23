@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -133,6 +134,7 @@ public class Column {
 		}
 	}
 	
+
 	public interface StatusEntryCallback {
 		void onIterate( TootStatus status );
 	}
@@ -154,6 +156,41 @@ public class Column {
 			}
 		}
 	}
+	// ミュート、ブロックが成功した時に呼ばれる
+	public void removeStatusByAccount( SavedAccount target_account, long who_id ){
+		if( target_account.user.equals( access_info.user ) ){
+			{
+				// remove from status_list
+				TootStatus.List tmp_list = new TootStatus.List( status_list.size() );
+				for( TootStatus status : status_list ){
+					if( status.account.id == who_id
+						|| ( status.reblog != null && status.reblog.account.id == who_id )
+						){
+						continue;
+					}
+					tmp_list.add( status );
+				}
+				status_list.clear();
+				status_list.addAll( tmp_list );
+			}
+			{
+				// remove from notification_list
+				TootNotification.List tmp_list = new TootNotification.List( notification_list.size() );
+				for( TootNotification item : notification_list ){
+					if( item.account.id == who_id ) continue;
+					if( item.status != null ){
+						if( item.status.account.id == who_id ) continue;
+						if( item.status.reblog != null && item.status.reblog.account.id == who_id ) continue;
+					}
+					tmp_list.add( item );
+				}
+				notification_list.clear();
+				notification_list.addAll( tmp_list );
+			}
+		}
+	}
+	
+	
 	
 	public interface VisualCallback {
 		void onVisualColumn();
@@ -180,11 +217,19 @@ public class Column {
 		}
 	}
 	
-	public void fireVisualCallback(){
-		Iterator< VisualCallback > it = visual_callback.iterator();
-		while( it.hasNext() ){
-			it.next().onVisualColumn();
+	private final Runnable proc_fireVisualCallback = new Runnable() {
+		@Override
+		public void run(){
+			Iterator< VisualCallback > it = visual_callback.iterator();
+			while( it.hasNext() ){
+				it.next().onVisualColumn();
+			}
 		}
+	};
+	
+	
+	public void fireVisualCallback(){
+		Utils.runOnMainThread( proc_fireVisualCallback  );
 	}
 	
 	AsyncTask< Void, Void, TootApiResult > last_task;

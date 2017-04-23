@@ -62,6 +62,10 @@ public class SavedAccount extends TootAccount implements LinkClickContext{
 		
 	}
 	
+	private SavedAccount(){
+		
+	}
+	
 	private static SavedAccount parse(  Cursor cursor ) throws JSONException{
 		JSONObject src = new JSONObject( cursor.getString( cursor.getColumnIndex( COL_ACCOUNT ) ) );
 		SavedAccount dst = new SavedAccount();
@@ -125,6 +129,19 @@ public class SavedAccount extends TootAccount implements LinkClickContext{
 		}
 	}
 	
+	// onResumeの時に設定を読み直す
+	public void reloadSetting(){
+		if( db_id != INVALID_ID ){
+			SavedAccount b = loadAccount( log,db_id );
+			if( b != null ){
+				this.visibility = b.visibility;
+				this.confirm_boost = b.confirm_boost;
+				this.dont_hide_nsfw = b.dont_hide_nsfw;
+				this.token_info = b.token_info;
+			}
+		}
+	}
+	
 	public static SavedAccount loadAccount( LogCategory log, long db_id ){
 		try{
 			Cursor cursor = App1.getDB().query( table, null, COL_ID+"=?", new String[]{ Long.toString(db_id) }, null, null, null );
@@ -172,4 +189,5 @@ public class SavedAccount extends TootAccount implements LinkClickContext{
 			return "@"+ acct +"@"+ this.host;
 		}
 	}
+	
 }

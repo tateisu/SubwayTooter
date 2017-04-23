@@ -107,6 +107,17 @@ public class ActMain extends AppCompatActivity
 			}
 		}
 		
+		// 各カラムのアカウント設定を読み直す
+		{
+			ArrayList< SavedAccount > done_list = new ArrayList<>();
+			for( Column column : pager_adapter.column_list ){
+				SavedAccount a = column.access_info;
+				if( a==null || done_list.contains( a ) ) continue;
+				done_list.add( a );
+				a.reloadSetting();
+			}
+		}
+		
 		if( update_at_resume ){
 			update_at_resume = false;
 			// TODO: 各カラムを更新する
@@ -618,7 +629,7 @@ public class ActMain extends AppCompatActivity
 		map_busy_fav.add( busy_key );
 		//
 		new AsyncTask< Void, Void, TootApiResult >() {
-			final boolean new_state = ! status.favourited;
+			final boolean bSet = ! status.favourited;
 			TootStatus new_status;
 			
 			@Override
@@ -642,7 +653,7 @@ public class ActMain extends AppCompatActivity
 					) );
 				
 				TootApiResult result = client.request(
-					( new_state
+					( bSet
 						? "/api/v1/statuses/" + status.id + "/favourite"
 						: "/api/v1/statuses/" + status.id + "/unfavourite"
 					)
@@ -665,10 +676,10 @@ public class ActMain extends AppCompatActivity
 				map_busy_fav.remove( busy_key );
 				if( new_status != null ){
 					// カウント数は遅延があるみたい
-					if( new_state && new_status.favourites_count <= status.favourites_count ){
+					if( bSet && new_status.favourites_count <= status.favourites_count ){
 						// 星つけたのにカウントが上がらないのは違和感あるので、表示をいじる
 						new_status.favourites_count = status.favourites_count + 1;
-					}else if( ! new_state && new_status.favourites_count >= status.favourites_count ){
+					}else if( ! bSet && new_status.favourites_count >= status.favourites_count ){
 						// 星外したのにカウントが下がらないのは違和感あるので、表示をいじる
 						new_status.favourites_count = status.favourites_count - 1;
 						if( new_status.favourites_count < 0 ){

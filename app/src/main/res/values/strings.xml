@@ -154,4 +154,6 @@
     <string name="open_in_browser"/>
     <string name="open_web_page">open web page</string>
     <string name="open_web_on_host">open web page on %1$s</string>
+    <string name="follow_from_another_account">follow_from_another_account</string>
+    <string name="menu">menu</string>
 </resources>

@@ -47,6 +47,7 @@ import jp.juggler.subwaytooter.dialog.AccountPicker;
 import jp.juggler.subwaytooter.dialog.LoginForm;
 import jp.juggler.subwaytooter.dialog.ReportForm;
 import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.util.ActionsDialog;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -112,7 +113,7 @@ public class ActMain extends AppCompatActivity
 			ArrayList< SavedAccount > done_list = new ArrayList<>();
 			for( Column column : pager_adapter.column_list ){
 				SavedAccount a = column.access_info;
-				if( a==null || done_list.contains( a ) ) continue;
+				if( a == null || done_list.contains( a ) ) continue;
 				done_list.add( a );
 				a.reloadSetting();
 			}
@@ -337,7 +338,7 @@ public class ActMain extends AppCompatActivity
 							// taは使い捨てなので、生成に使うLinkClickContextはダミーで問題ない
 							LinkClickContext lcc = new LinkClickContext() {
 							};
-							TootAccount ta = TootAccount.parse( log, lcc,result.object );
+							TootAccount ta = TootAccount.parse( log, lcc, result.object );
 							String user = ta.username + "@" + instance;
 							this.row_id = SavedAccount.insert( instance, user, result.object, result.token_info );
 						}
@@ -449,35 +450,124 @@ public class ActMain extends AppCompatActivity
 	
 	//////////////////////////////////////////////////////////////
 	
-	public void openBrowser(SavedAccount account,  String url ){
-		openChromeTab( account,url,false );
+	public interface GetAccountCallback {
+		// return account information
+		// if failed, account is null.
+		void onGetAccount( TootAccount account );
+	}
+	
+	void startGetAccount( final SavedAccount access_info, final String host, final String user, final GetAccountCallback callback ){
+		
+		final ProgressDialog progress = new ProgressDialog( this );
+		final AsyncTask< Void, Void, TootAccount > task = new AsyncTask< Void, Void, TootAccount >() {
+			@Override
+			protected TootAccount doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					
+					@Override
+					public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override
+					public void publishApiProgress( final String s ){
+						Utils.runOnMainThread( new Runnable() {
+							@Override
+							public void run(){
+								progress.setMessage( s );
+							}
+						} );
+					}
+				} );
+				client.setAccount( access_info );
+				String path = "/api/v1/accounts/search" + "?q=" + Uri.encode( user );
+				
+				TootApiResult result = client.request( path );
+				
+				if( result.array != null ){
+					for( int i = 0, ie = result.array.length() ; i < ie ; ++ i ){
+						
+						TootAccount item = TootAccount.parse( log, access_info, result.array.optJSONObject( i ) );
+						
+						if( ! item.username.equals( user ) ) continue;
+						
+						if( ! item.acct.contains( "@" )
+							|| item.acct.equalsIgnoreCase( user + "@" + host ) )
+							return item;
+					}
+				}
+				
+				return null;
+				
+			}
+			
+			@Override
+			protected void onCancelled( TootAccount result ){
+				super.onPostExecute( result );
+			}
+			
+			@Override
+			protected void onPostExecute( TootAccount result ){
+				progress.dismiss();
+				callback.onGetAccount( result );
+			}
+			
+		};
+		progress.setIndeterminate( true );
+		progress.setCancelable( true );
+		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
+			@Override
+			public void onCancel( DialogInterface dialog ){
+				task.cancel( true );
+			}
+		} );
+		progress.show();
+		AsyncTaskCompat.executeParallel( task );
+	}
+	
+	public void openBrowser( SavedAccount account, String url ){
+		openChromeTab( account, url, false );
 	}
 	
 	Pattern reHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#]+)\\z" );
+	Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#]+)\\z" );
 	
-	
-	public void openChromeTab( SavedAccount account, String url ,boolean noIntercept ){
+	public void openChromeTab( final SavedAccount access_info, final String url, boolean noIntercept ){
 		try{
-			log.d("openChromeTab url=%s",url);
+			log.d( "openChromeTab url=%s", url );
 			
-			if(!noIntercept){
+			if( ! noIntercept ){
 				// ハッシュタグをアプリ内で開く
 				Matcher m = reHashTag.matcher( url );
 				if( m.find() ){
 					// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
 					String host = m.group( 1 );
-					String tag = m.group( 2 );
-					if( tag.length() > 0 ){
-						if( host.equalsIgnoreCase( account.host ) ){
-							openHashTag( account, Uri.decode( tag ) );
-							return;
-						}else{
-							openHashTagOtherInstance( account,url, host,Uri.decode(tag) );
-							return;
-							
-							
-						}
+					String tag = Uri.decode( m.group( 2 ) );
+					if( host.equalsIgnoreCase( access_info.host ) ){
+						openHashTag( access_info, tag );
+						return;
+					}else{
+						openHashTagOtherInstance( access_info, url, host, tag );
+						return;
 					}
+				}
+				
+				m = reUserPage.matcher( url );
+				if( m.find() ){
+					// https://mastodon.juggler.jp/@SubwayTooter
+					final String host = m.group( 1 );
+					final String user = Uri.decode( m.group( 2 ) );
+					startGetAccount( access_info, host, user, new GetAccountCallback() {
+						@Override
+						public void onGetAccount( TootAccount who ){
+							if( who != null ){
+								performOpenUser( access_info, who );
+								return;
+							}
+							openChromeTab( access_info, url, true );
+						}
+					} );
+					return;
 				}
 			}
 			
@@ -495,90 +585,76 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-	static class Action{
-		String caption;
-		Runnable runnable;
-	}
-	
 	// 他インスタンスのハッシュタグの表示
-	private void openHashTagOtherInstance( final SavedAccount access_info,final String url,String host, final String tag ){
-		final ArrayList<Action> action_list = new ArrayList<>();
+	private void openHashTagOtherInstance( final SavedAccount access_info, final String url, String host, final String tag ){
 		
-		ArrayList<SavedAccount> account_list = new ArrayList<>(  );
-		for(SavedAccount a : SavedAccount.loadAccountList( log )){
-			if( a.host.equalsIgnoreCase( host )){
-				account_list.add(a);
+		ActionsDialog dialog = new ActionsDialog();
+		
+		ArrayList< SavedAccount > account_list = new ArrayList<>();
+		for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
+			if( a.host.equalsIgnoreCase( host ) ){
+				account_list.add( a );
 			}
 		}
-		Collections.sort( account_list,new Comparator< SavedAccount >() {
+		Collections.sort( account_list, new Comparator< SavedAccount >() {
 			@Override
 			public int compare( SavedAccount a, SavedAccount b ){
 				return String.CASE_INSENSITIVE_ORDER.compare( a.getFullAcct( a ), b.getFullAcct( b ) );
 			}
 		} );
 		for( SavedAccount a : account_list ){
-			Action action = new Action();
-			action.caption = getString(R.string.open_in_account,a.user);
 			final SavedAccount _a = a;
-			action.runnable = new Runnable() {
-				@Override
-				public void run(){
-					openHashTag( _a,tag );
+			dialog.addAction(
+				getString( R.string.open_in_account, a.user )
+				, new Runnable() {
+					@Override
+					public void run(){
+						openHashTag( _a, tag );
+					}
 				}
-			};
-			action_list.add( action);
+			);
+			
 		}
 		if( account_list.isEmpty() ){
 			// TODO ログインなしアカウントで開く選択肢
 		}
 		// カラムのアカウントで開く
 		{
-			Action action = new Action();
-			action.caption = getString(R.string.open_in_account,access_info.user);
 			final SavedAccount _a = access_info;
-			action.runnable = new Runnable() {
-				@Override
-				public void run(){
-					openHashTag( _a,tag );
-				}
-			};
-			action_list.add( action);
-		}
-		// ブラウザで表示する
-		{
-			Action action = new Action();
-			action.caption = getString(R.string.open_web_on_host,host);
-			action.runnable = new Runnable() {
-				@Override
-				public void run(){
-					openChromeTab( access_info,url,true);
-				}
-			};
-			action_list.add( action);
-		}
-		
-		String[] caption_list = new String[action_list.size()];
-		for(int i=0,ie=caption_list.length;i<ie;++i){
-			caption_list[i] = action_list.get(i).caption;
-		}
-		new AlertDialog.Builder( this )
-			.setTitle( "#"+tag)
-			.setNegativeButton( R.string.cancel,null )
-			.setItems( caption_list, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick( DialogInterface dialog, int which ){
-					if( which >= 0 && which < action_list.size()){
-						action_list.get(which).runnable.run();
+			dialog.addAction(
+				getString( R.string.open_in_account, access_info.user )
+				, new Runnable() {
+					@Override
+					public void run(){
+						openHashTag( _a, tag );
 					}
 				}
-			})
-			.show();
+			
+			);
+		}
+		
+		// ブラウザで表示する
+		{
+			dialog.addAction(
+				getString( R.string.open_web_on_host, host )
+				, new Runnable() {
+					@Override
+					public void run(){
+						openChromeTab( access_info, url, true );
+					}
+				}
+			);
+			
+		}
+		
+		dialog.show( this, "#" + tag );
+		
 	}
 	
 	final HTMLDecoder.LinkClickCallback link_click_listener = new HTMLDecoder.LinkClickCallback() {
 		@Override
-		public void onClickLink( LinkClickContext lcc,String url ){
-			openChromeTab( (SavedAccount)lcc,url ,false );
+		public void onClickLink( LinkClickContext lcc, String url ){
+			openChromeTab( (SavedAccount) lcc, url, false );
 		}
 	};
 	
@@ -659,7 +735,7 @@ public class ActMain extends AppCompatActivity
 					)
 					, request_builder );
 				if( result.object != null ){
-					new_status = TootStatus.parse( log,account, result.object );
+					new_status = TootStatus.parse( log, account, result.object );
 				}
 				
 				return result;
@@ -782,7 +858,7 @@ public class ActMain extends AppCompatActivity
 					// reblog,unreblog のレスポンスは信用ならんのでステータスを再取得する
 					result = client.request( "/api/v1/statuses/" + status.id );
 					if( result.object != null ){
-						new_status = TootStatus.parse( log, account,result.object );
+						new_status = TootStatus.parse( log, account, result.object );
 					}
 				}
 				
@@ -922,32 +998,11 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-	public void performFollow( final SavedAccount account, final TootAccount who ){
-		String[] caption_list = new String[]{
-			getString( R.string.follow ),
-			getString( R.string.unfollow ),
-		};
-		new AlertDialog.Builder( this )
-			.setNegativeButton( R.string.cancel, null )
-			.setItems( caption_list, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick( DialogInterface dialog, int which ){
-					switch( which ){
-					case 0:
-						performFollow( account, who, true );
-						break;
-					case 1:
-						performFollow( account, who, false );
-						break;
-					}
-				}
-			} )
-			.show();
-	}
+	////////////////////////////////////////////////////////////////////////////
 	
-	private void performFollow( final SavedAccount account, final TootAccount who, final boolean bFollow ){
+	private void callFollow( final SavedAccount account, final TootAccount who, final boolean bFollow ){
+		
 		new AsyncTask< Void, Void, TootApiResult >() {
-			
 			@Override
 			protected TootApiResult doInBackground( Void... params ){
 				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
@@ -995,9 +1050,65 @@ public class ActMain extends AppCompatActivity
 		}.execute();
 	}
 	
+	// acct で指定したユーザをリモートフォローする
+	void callRemoteFollow( final SavedAccount access_info, final String acct, final boolean locked ){
+		
+		new AsyncTask< Void, Void, TootApiResult >() {
+			
+			@Override
+			protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override
+					public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override
+					public void publishApiProgress( String s ){
+						
+					}
+				} );
+				client.setAccount( access_info );
+				
+				Request.Builder request_builder = new Request.Builder().post(
+					RequestBody.create(
+						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+						, "uri=" + Uri.encode( acct )
+					) );
+				TootApiResult result = client.request( "/api/v1/follows", request_builder );
+				
+				if( result != null ){
+					if( result.object != null ){
+						Utils.showToast( ActMain.this, false, R.string.follow_succeeded );
+					}else if( locked && result.response.code() == 422 ){
+						Utils.showToast( ActMain.this, false, R.string.cant_follow_locked_user );
+					}else{
+						Utils.showToast( ActMain.this, false, result.error );
+					}
+				}
+				
+				return result;
+			}
+		}.execute();
+	}
+	
+	// アカウントを選択してからユーザをフォローする
+	void followFromAnotherAccount( final SavedAccount access_info, final TootAccount who ){
+		AccountPicker.pick( ActMain.this, new AccountPicker.AccountPickerCallback() {
+			@Override
+			public void onAccountPicked( SavedAccount ai ){
+				String acct = who.acct;
+				if( ! acct.contains( "@" ) ){
+					acct = acct + "@" + access_info.host;
+				}
+				callRemoteFollow( ai, acct, who.locked );
+			}
+		} );
+	}
+	
 	////////////////////////////////////////
 	
-	private void performMute( final SavedAccount account, final TootAccount who, final boolean bMute ){
+	private void callMute( final SavedAccount account, final TootAccount who, final boolean bMute ){
 		new AsyncTask< Void, Void, TootApiResult >() {
 			
 			@Override
@@ -1041,7 +1152,7 @@ public class ActMain extends AppCompatActivity
 		}.execute();
 	}
 	
-	private void performBlock( final SavedAccount account, final TootAccount who, final boolean bBlock ){
+	private void callBlock( final SavedAccount account, final TootAccount who, final boolean bBlock ){
 		new AsyncTask< Void, Void, TootApiResult >() {
 			
 			@Override
@@ -1090,7 +1201,7 @@ public class ActMain extends AppCompatActivity
 		
 	}
 	
-	private void performReport( final SavedAccount account, final TootAccount who, final TootStatus status
+	private void callReport( final SavedAccount account, final TootAccount who, final TootStatus status
 		, final String comment, final ReportCompleteCallback callback
 	){
 		new AsyncTask< Void, Void, TootApiResult >() {
@@ -1139,11 +1250,11 @@ public class ActMain extends AppCompatActivity
 		}.execute();
 	}
 	
-	private void performReport( final SavedAccount account, final TootAccount who, final TootStatus status ){
+	private void openReportForm( final SavedAccount account, final TootAccount who, final TootStatus status ){
 		ReportForm.showReportForm( this, who, status, new ReportForm.ReportFormCallback() {
 			@Override
 			public void startReport( final Dialog dialog, String comment ){
-				performReport( account, who, status, comment, new ReportCompleteCallback() {
+				callReport( account, who, status, comment, new ReportCompleteCallback() {
 					@Override
 					public void onReportComplete( TootApiResult result ){
 						if( result == null ){
@@ -1162,100 +1273,111 @@ public class ActMain extends AppCompatActivity
 		} );
 	}
 	
-	////////////////////////////////////////
+	////////////////////////////////////////////////
 	
 	// ステータスのmoreメニュー
-	public void performStatusMore( final SavedAccount account, final TootStatus status ){
-		String[] caption_list = new String[]{
-			getString( R.string.follow ),
-			getString( R.string.unfollow ),
-			getString( R.string.mute ),
-			getString( R.string.unmute ),
-			getString( R.string.block ),
-			getString( R.string.unblock ),
-			getString( R.string.report ),
-		};
-		new AlertDialog.Builder( this )
-			.setNegativeButton( R.string.cancel, null )
-			.setItems( caption_list, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick( DialogInterface dialog, int which ){
-					switch( which ){
-					case 0:
-						performFollow( account, status.account, true );
-						break;
-					case 1:
-						performFollow( account, status.account, false );
-						break;
-					case 2:
-						performMute( account, status.account, true );
-						break;
-					case 3:
-						performMute( account, status.account, false );
-						break;
-					case 4:
-						performBlock( account, status.account, true );
-						break;
-					case 5:
-						performBlock( account, status.account, false );
-						break;
-					
-					case 6:
-						performReport( account, status.account, status );
-						break;
-					}
-				}
-			} )
-			.show();
+	public void openStatusMoreMenu( final SavedAccount access_info, final TootStatus status ){
+		ActionsDialog dialog = new ActionsDialog();
+		dialog.addAction( getString( R.string. follow), new Runnable() {
+			@Override public void run(){
+				callFollow( access_info, status.account, true );
+			}
+		} );
+		dialog.addAction( getString( R.string. follow_from_another_account), new Runnable() {
+			@Override public void run(){
+				followFromAnotherAccount( access_info, status.account );
+			}
+		} );
+		dialog.addAction( getString( R.string.unfollow ), new Runnable() {
+			@Override public void run(){
+				callFollow( access_info, status.account, false );
+			}
+		} );
+		dialog.addAction( getString( R.string. mute), new Runnable() {
+			@Override public void run(){
+				callMute( access_info, status.account, true );
+			}
+		} );
+		dialog.addAction( getString( R.string.unmute ), new Runnable() {
+			@Override public void run(){
+				callMute( access_info, status.account, false );
+			}
+		} );
+		dialog.addAction( getString( R.string.block ), new Runnable() {
+			@Override public void run(){
+				callBlock( access_info, status.account, true );
+			}
+		} );
+		dialog.addAction( getString( R.string. unblock), new Runnable() {
+			@Override public void run(){
+				callBlock( access_info, status.account, false );
+			}
+		} );
+		dialog.addAction( getString( R.string. report), new Runnable() {
+			@Override public void run(){
+				openReportForm( access_info, status.account, status );
+			}
+		} );
+		dialog.addAction( getString( R.string. open_web_page), new Runnable() {
+			@Override public void run(){
+				// 強制的にブラウザで開く
+				openChromeTab( access_info, status.url, true );
+			}
+		} );
+		dialog.show(this, null );
 		
 	}
 	
-	public void performAccountMore( final SavedAccount account, final TootAccount who ){
-		String[] caption_list = new String[]{
-			getString( R.string.mention ),
-			getString( R.string.follow ),
-			getString( R.string.unfollow ),
-			getString( R.string.mute ),
-			getString( R.string.unmute ),
-			getString( R.string.block ),
-			getString( R.string.unblock ),
-			getString( R.string.report ),
-		};
-		new AlertDialog.Builder( this )
-			.setNegativeButton( R.string.cancel, null )
-			.setItems( caption_list, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick( DialogInterface dialog, int which ){
-					switch( which ){
-					case 0:
-						performMention( account, who );
-						break;
-					case 1:
-						performFollow( account, who, true );
-						break;
-					case 2:
-						performFollow( account, who, false );
-						break;
-					case 3:
-						performMute( account, who, true );
-						break;
-					case 4:
-						performMute( account, who, false );
-						break;
-					case 5:
-						performBlock( account, who, true );
-						break;
-					case 6:
-						performBlock( account, who, false );
-						break;
-					
-					case 7:
-						performReport( account, who, null );
-						break;
-					}
-				}
-			} )
-			.show();
+	public void openAccountMoreMenu( final SavedAccount access_info, final TootAccount who ){
+		ActionsDialog dialog = new ActionsDialog();
+		
+		dialog.addAction( getString( R.string.mention ), new Runnable() {
+			@Override public void run(){
+				performMention( access_info, who );
+			}
+		} );
+		dialog.addAction( getString( R.string.follow ), new Runnable() {
+			@Override public void run(){
+				callFollow( access_info, who, true );
+			}
+		} );
+		dialog.addAction( getString( R.string.follow_from_another_account ), new Runnable() {
+			@Override public void run(){
+				followFromAnotherAccount( access_info, who );
+			}
+		} );
+		dialog.addAction( getString( R.string.unfollow ), new Runnable() {
+			@Override
+			public void run(){
+				callFollow( access_info, who, false );
+			}
+		} );
+		dialog.addAction( getString( R.string.mute ), new Runnable() {
+			@Override public void run(){
+				callMute( access_info, who, true );
+			}
+		} );
+		dialog.addAction( getString( R.string.unmute ), new Runnable() {
+			@Override
+			public void run(){
+				callMute( access_info, who, false );
+			}
+		} );
+		dialog.addAction( getString( R.string.block ), new Runnable() {
+			@Override public void run(){
+				callBlock( access_info, who, true );
+			}
+		} );
+		dialog.addAction( getString( R.string.unblock ), new Runnable() {
+			@Override public void run(){
+				callBlock( access_info, who, false );
+			}
+		} );
+		dialog.addAction( getString( R.string.report ), new Runnable() {
+			@Override public void run(){
+				openReportForm( access_info, who, null );
+			}
+		} );
+		dialog.show( this, null );
 	}
-	
 }

@@ -371,7 +371,8 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			switch( v.getId() ){
 			case R.id.ivBackground:
 				if( who != null ){
-					activity.openBrowser(  access_info,who.url );
+					// 強制的にブラウザで開く
+					activity.openChromeTab(  access_info,who.url ,true);
 				}
 				break;
 			case R.id.btnFollowing:
@@ -384,7 +385,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				Utils.showToast( activity, false, "not implemented" );
 				break;
 			case R.id.btnMore:
-				activity.performAccountMore( access_info,who );
+				activity.openAccountMoreMenu( access_info,who );
 				break;
 			
 			}
@@ -735,7 +736,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				activity.performFavourite( access_info, status );
 				break;
 			case R.id.btnMore:
-				activity.performStatusMore( access_info, status );
+				activity.openStatusMoreMenu( access_info, status );
 				break;
 			case R.id.ivThumbnail:
 				activity.performOpenUser( access_info, account_thumbnail );
@@ -747,7 +748,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				activity.performOpenUser( access_info, account_follow );
 				break;
 			case R.id.btnFollow:
-				activity.performAccountMore( access_info,account_follow);
+				activity.openAccountMoreMenu( access_info,account_follow);
 			}
 		}
 		

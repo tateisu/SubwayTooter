@@ -47,6 +47,8 @@ public class Column {
 	final int type;
 	final long who_id;
 	long status_id;
+
+	int profile_tab = 0;
 	
 	public int scroll_pos;
 	public int scroll_y;

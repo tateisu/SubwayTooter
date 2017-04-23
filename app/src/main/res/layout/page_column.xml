@@ -117,6 +117,7 @@
             android:paddingEnd="12dp"
             android:paddingStart="12dp"
             android:scrollbarStyle="outsideOverlay"
+            android:fastScrollEnabled="true"
             />
 
     </com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout>

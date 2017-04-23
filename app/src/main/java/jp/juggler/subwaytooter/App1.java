@@ -41,7 +41,6 @@ public class App1 extends Application {
 		
 		if( db_open_helper == null ){
 			db_open_helper = new DBOpenHelper( getApplicationContext() );
-			db_open_helper.onCreate( getDB() );
 		}
 
 		if( image_loader == null ){

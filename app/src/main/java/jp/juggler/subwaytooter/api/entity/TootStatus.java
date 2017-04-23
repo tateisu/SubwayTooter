@@ -141,7 +141,7 @@ public class TootStatus extends TootId {
 			status.decoded_mentions = HTMLDecoder.decodeMentions(account, status.mentions );
 
 			if( !TextUtils.isEmpty( status.spoiler_text ) ){
-				status.decoded_spoiler_text = HTMLDecoder.decodeMentions(account, status.mentions );
+				status.decoded_spoiler_text = HTMLDecoder.decodeHTML(account, status.spoiler_text );
 			}
 			return status;
 		}catch( Throwable ex ){

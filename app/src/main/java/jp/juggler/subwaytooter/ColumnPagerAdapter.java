@@ -5,11 +5,13 @@ import android.app.Activity;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.SparseArray;
+import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 public class ColumnPagerAdapter extends PagerAdapter{
 	
@@ -47,9 +49,28 @@ public class ColumnPagerAdapter extends PagerAdapter{
 		pager.setAdapter( null );
 		column_list.remove( idx_column );
 		pager.setAdapter( this );
-	
-		
 	}
+	
+	public void setOrder(  ViewPager pager,ArrayList< Integer > order ){
+		pager.setAdapter( null );
+
+		ArrayList<Column> tmp_list = new ArrayList<>();
+		HashSet<Integer> used_set = new HashSet<>(  );
+
+		for(Integer i : order){
+			used_set.add( i );
+			tmp_list.add( column_list.get(i));
+		}
+		for(int i=0,ie=column_list.size();i<ie;++i){
+			if( used_set.contains( i ) ) continue;
+			column_list.get(i).dispose();
+		}
+		column_list.clear();
+		column_list.addAll( tmp_list );
+		
+		pager.setAdapter( this );
+	}
+	
 	
 	
 	public Column getColumn( int idx ){
@@ -84,7 +105,7 @@ public class ColumnPagerAdapter extends PagerAdapter{
 		//
 		holder_list.put( page_idx, holder );
 		//
-		holder.onPageCreate( root );
+		holder.onPageCreate( root ,page_idx,column_list.size());
 
 		return root;
 	}

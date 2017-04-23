@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.util;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
 
 import java.io.ByteArrayInputStream;
@@ -15,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import android.content.ContextWrapper;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Environment;
@@ -31,6 +33,7 @@ import android.util.SparseBooleanArray;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
@@ -793,6 +796,18 @@ public class Utils {
 			}
 		}catch( Throwable ex ){
 			ex.printStackTrace();
+		}
+		return null;
+	}
+	
+	
+	public static Activity getActivityFromView( View view) {
+		Context context = view.getContext();
+		while (context instanceof ContextWrapper ) {
+			if (context instanceof Activity) {
+				return (Activity)context;
+			}
+			context = ((ContextWrapper)context).getBaseContext();
 		}
 		return null;
 	}

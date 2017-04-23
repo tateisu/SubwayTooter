@@ -5,5 +5,5 @@
     <color name="colorAccent">#5a5a5a</color>
 
     <color name="colorLink">#00a2ff</color>
-
+    <color name="list_item_bg_pressed_dragged">#AACCCCCC</color>
 </resources>

@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -15,6 +16,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.NetworkImageView;
+import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout;
+import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,11 +30,11 @@ import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.ContentWarning;
 import jp.juggler.subwaytooter.table.MediaShown;
 import jp.juggler.subwaytooter.table.SavedAccount;
-import jp.juggler.subwaytooter.util.HTMLDecoder;
+import jp.juggler.subwaytooter.util.Emojione;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
-public class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback {
+public class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, SwipyRefreshLayout.OnRefreshListener {
 	static final LogCategory log = new LogCategory( "ColumnViewHolder" );
 	
 	public final AtomicBoolean is_destroyed = new AtomicBoolean( false );
@@ -56,9 +59,13 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 	TextView tvColumnName;
 	StatusListAdapter status_adapter;
 	HeaderViewHolder vh_header;
+	SwipyRefreshLayout swipyRefreshLayout;
 	
-	void onPageCreate( View root ){
+	void onPageCreate( View root, int page_idx, int page_count ){
 		log.d( "onPageCreate:%s", column.getColumnName() );
+		
+		( (TextView) root.findViewById( R.id.tvColumnIndex ) )
+			.setText( activity.getString( R.string.column_index, page_idx + 1, page_count ) );
 		
 		tvColumnName = (TextView) root.findViewById( R.id.tvColumnName );
 		tvColumnContext = (TextView) root.findViewById( R.id.tvColumnContext );
@@ -70,10 +77,18 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		listView = (ListView) root.findViewById( R.id.listView );
 		status_adapter = new StatusListAdapter();
 		listView.setAdapter( status_adapter );
+		listView.setOnItemClickListener( status_adapter );
+		
+		this.swipyRefreshLayout = (SwipyRefreshLayout) root.findViewById( R.id.swipyRefreshLayout );
+		swipyRefreshLayout.setOnRefreshListener( this );
 		
 		if( column.type == Column.TYPE_TL_STATUSES ){
 			vh_header = new HeaderViewHolder( activity, listView );
 			listView.addHeaderView( vh_header.viewRoot );
+		}
+		
+		if( column.type == Column.TYPE_TL_CONVERSATION ){
+			swipyRefreshLayout.setEnabled( false );
 		}
 		
 		//
@@ -102,7 +117,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 	
 	void showError( String message ){
 		tvLoading.setVisibility( View.VISIBLE );
-		listView.setVisibility( View.GONE );
+		swipyRefreshLayout.setVisibility( View.GONE );
 		tvLoading.setText( message );
 	}
 	
@@ -121,11 +136,19 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			vh_header.bind( activity, column.access_info, column.who_account );
 		}
 		
-		if( column.is_loading ){
+		if( column.bInitialLoading ){
 			String message = column.task_progress;
 			if( message == null ) message = "loading?";
 			showError( message );
 			return;
+		}
+		
+		if( ! column.bRefreshLoading ){
+			swipyRefreshLayout.setRefreshing( false );
+			if( column.mRefreshLoadingError != null ){
+				Utils.showToast( activity, true, column.mRefreshLoadingError );
+				column.mRefreshLoadingError = null;
+			}
 		}
 		
 		switch( column.type ){
@@ -139,7 +162,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				showError( activity.getString( R.string.list_empty ) );
 			}else{
 				tvLoading.setVisibility( View.GONE );
-				listView.setVisibility( View.VISIBLE );
+				swipyRefreshLayout.setVisibility( View.VISIBLE );
 				status_adapter.set( column.status_list );
 			}
 			break;
@@ -148,7 +171,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				showError( activity.getString( R.string.list_empty ) );
 			}else{
 				tvLoading.setVisibility( View.GONE );
-				listView.setVisibility( View.VISIBLE );
+				swipyRefreshLayout.setVisibility( View.VISIBLE );
 				status_adapter.set( column.report_list );
 			}
 			break;
@@ -157,16 +180,23 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				showError( activity.getString( R.string.list_empty ) );
 			}else{
 				tvLoading.setVisibility( View.GONE );
-				listView.setVisibility( View.VISIBLE );
+				swipyRefreshLayout.setVisibility( View.VISIBLE );
 				status_adapter.set( column.notification_list );
 			}
 			break;
 		}
 	}
 	
+	@Override
+	public void onRefresh( SwipyRefreshLayoutDirection direction ){
+		if( ! column.startRefresh( direction == SwipyRefreshLayoutDirection.BOTTOM ) ){
+			swipyRefreshLayout.setRefreshing( false );
+		}
+	}
+	
 	///////////////////////////////////////////////////////////////////
 	
-	class StatusListAdapter extends BaseAdapter {
+	class StatusListAdapter extends BaseAdapter implements AdapterView.OnItemClickListener {
 		final ArrayList< Object > status_list = new ArrayList<>();
 		
 		public void set( TootStatus.List src ){
@@ -219,6 +249,98 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			return view;
 		}
 		
+		@Override
+		public void onItemClick( AdapterView< ? > parent, View view, int position, long id ){
+			Object o = view.getTag();
+			if( o instanceof StatusViewHolder ){
+				( (StatusViewHolder) o ).onItemClick();
+			}
+		}
+	}
+	
+	class HeaderViewHolder implements View.OnClickListener {
+		final View viewRoot;
+		final NetworkImageView ivBackground;
+		final TextView tvCreated;
+		final NetworkImageView ivAvatar;
+		final TextView tvDisplayName;
+		final TextView tvAcct;
+		final Button btnFollowing;
+		final Button btnFollowers;
+		final Button btnStatusCount;
+		final TextView tvNote;
+		TootAccount who;
+		
+		public HeaderViewHolder( final ActMain activity, ListView parent ){
+			viewRoot = activity.getLayoutInflater().inflate( R.layout.lv_list_header, parent, false );
+			this.ivBackground = (NetworkImageView) viewRoot.findViewById( R.id.ivBackground );
+			this.tvCreated = (TextView) viewRoot.findViewById( R.id.tvCreated );
+			this.ivAvatar = (NetworkImageView) viewRoot.findViewById( R.id.ivAvatar );
+			this.tvDisplayName = (TextView) viewRoot.findViewById( R.id.tvDisplayName );
+			this.tvAcct = (TextView) viewRoot.findViewById( R.id.tvAcct );
+			this.btnFollowing = (Button) viewRoot.findViewById( R.id.btnFollowing );
+			this.btnFollowers = (Button) viewRoot.findViewById( R.id.btnFollowers );
+			this.btnStatusCount = (Button) viewRoot.findViewById( R.id.btnStatusCount );
+			this.tvNote = (TextView) viewRoot.findViewById( R.id.tvNote );
+			
+			ivBackground.setOnClickListener( this );
+			btnFollowing.setOnClickListener( this );
+			btnFollowers.setOnClickListener( this );
+			btnStatusCount.setOnClickListener( this );
+			
+			tvNote.setMovementMethod( LinkMovementMethod.getInstance() );
+		}
+		
+		public void bind( ActMain activity, SavedAccount access_info, TootAccount who ){
+			this.who = who;
+			if( who == null ){
+				tvCreated.setText( "" );
+				ivBackground.setImageDrawable( null );
+				ivAvatar.setImageDrawable( null );
+				tvDisplayName.setText( "" );
+				tvAcct.setText( "" );
+				tvNote.setText( "" );
+				btnStatusCount.setText( activity.getString( R.string.statuses ) + "\n" + "?" );
+				btnFollowing.setText( activity.getString( R.string.following ) + "\n" + "?" );
+				btnFollowers.setText( activity.getString( R.string.followers ) + "\n" + "?" );
+			}else{
+				tvCreated.setText( TootStatus.formatTime( who.time_created_at ) );
+				ivBackground.setImageUrl( who.header_static, App1.getImageLoader() );
+				ivAvatar.setImageUrl( who.avatar_static, App1.getImageLoader() );
+				tvDisplayName.setText( who.display_name );
+				
+				String s = access_info.getFullAcct( who );
+				if( who.locked ){
+					s += " " + Emojione.map_name2unicode.get( "lock" );
+				}
+				tvAcct.setText( Emojione.decodeEmoji( s ) );
+				
+				tvNote.setText( who.note );
+				btnStatusCount.setText( activity.getString( R.string.statuses ) + "\n" + who.statuses_count );
+				btnFollowing.setText( activity.getString( R.string.following ) + "\n" + who.following_count );
+				btnFollowers.setText( activity.getString( R.string.followers ) + "\n" + who.followers_count );
+			}
+		}
+		
+		@Override
+		public void onClick( View v ){
+			switch( v.getId() ){
+			case R.id.ivBackground:
+				if( who != null ){
+					activity.openBrowser( who.url );
+				}
+				break;
+			case R.id.btnFollowing:
+				Utils.showToast( activity, false, "not implemented" );
+				break;
+			case R.id.btnFollowers:
+				Utils.showToast( activity, false, "not implemented" );
+				break;
+			case R.id.btnStatusCount:
+				Utils.showToast( activity, false, "not implemented" );
+				break;
+			}
+		}
 	}
 	
 	class StatusViewHolder implements View.OnClickListener {
@@ -244,8 +366,8 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		final Button btnContentWarning;
 		
 		final View llContents;
-		final TextView 	tvTags;
-		final TextView 	tvMentions;
+		final TextView tvTags;
+		final TextView tvMentions;
 		final TextView tvContent;
 		
 		final View flMedia;
@@ -262,14 +384,15 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		final Button btnFavourite;
 		final ImageButton btnMore;
 		
-			
 		TootStatus status;
 		SavedAccount account;
 		TootAccount account_thumbnail;
 		TootAccount account_boost;
 		TootAccount account_follow;
+		View btnConversation;
 		
 		public StatusViewHolder( View view ){
+			
 			this.llBoosted = view.findViewById( R.id.llBoosted );
 			this.ivBoosted = (ImageView) view.findViewById( R.id.ivBoosted );
 			this.tvBoosted = (TextView) view.findViewById( R.id.tvBoosted );
@@ -279,7 +402,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			this.ivFollow = (NetworkImageView) view.findViewById( R.id.ivFollow );
 			this.tvFollowerName = (TextView) view.findViewById( R.id.tvFollowerName );
 			this.tvFollowerAcct = (TextView) view.findViewById( R.id.tvFollowerAcct );
-			this.btnFollow = (ImageButton)view.findViewById( R.id.btnFollow );
+			this.btnFollow = (ImageButton) view.findViewById( R.id.btnFollow );
 			
 			this.llStatus = view.findViewById( R.id.llStatus );
 			
@@ -296,6 +419,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			this.tvTags = (TextView) view.findViewById( R.id.tvTags );
 			this.tvMentions = (TextView) view.findViewById( R.id.tvMentions );
 			
+			this.btnConversation = view.findViewById( R.id.btnConversation );
 			this.btnReply = (ImageButton) view.findViewById( R.id.btnReply );
 			this.btnBoost = (Button) view.findViewById( R.id.btnBoost );
 			this.btnFavourite = (Button) view.findViewById( R.id.btnFavourite );
@@ -317,13 +441,14 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			ivMedia3.setOnClickListener( this );
 			ivMedia4.setOnClickListener( this );
 			
+			btnConversation.setOnClickListener( this );
 			btnReply.setOnClickListener( this );
 			btnBoost.setOnClickListener( this );
 			btnFavourite.setOnClickListener( this );
 			btnMore.setOnClickListener( this );
-
+			
 			ivThumbnail.setOnClickListener( this );
-			tvName.setOnClickListener( this );
+			// ここを個別タップにすると邪魔すぎる tvName.setOnClickListener( this );
 			llBoosted.setOnClickListener( this );
 			llFollow.setOnClickListener( this );
 			btnFollow.setOnClickListener( this );
@@ -331,6 +456,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			tvContent.setMovementMethod( LinkMovementMethod.getInstance() );
 			tvTags.setMovementMethod( LinkMovementMethod.getInstance() );
 			tvMentions.setMovementMethod( LinkMovementMethod.getInstance() );
+			
 		}
 		
 		public void bind( ActMain activity, View view, Object item, SavedAccount access_info ){
@@ -346,21 +472,21 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				TootNotification n = (TootNotification) item;
 				if( TootNotification.TYPE_FAVOURITE.equals( n.type ) ){
 					account_boost = n.account;
-
+					
 					llBoosted.setVisibility( View.VISIBLE );
 					ivBoosted.setImageResource( R.drawable.btn_favourite );
 					tvBoostedTime.setText( TootStatus.formatTime( n.time_created_at )
-						+ "\n" + access_info.getFullAcct(account_boost )
+						+ "\n" + access_info.getFullAcct( account_boost )
 					);
-					tvBoosted.setText( Utils.formatSpannable1( activity,R.string.display_name_favourited_by,  account_boost.display_name));
-			
+					tvBoosted.setText( Utils.formatSpannable1( activity, R.string.display_name_favourited_by, account_boost.display_name ) );
+					
 					if( n.status != null ) bindSub( activity, view, n.status, access_info );
 				}else if( TootNotification.TYPE_REBLOG.equals( n.type ) ){
 					account_boost = n.account;
 					llBoosted.setVisibility( View.VISIBLE );
 					ivBoosted.setImageResource( R.drawable.btn_boost );
 					tvBoostedTime.setText( TootStatus.formatTime( n.time_created_at )
-						+ "\n" + access_info.getFullAcct(account_boost )
+						+ "\n" + access_info.getFullAcct( account_boost )
 					);
 					tvBoosted.setText( Utils.formatSpannable1( activity, R.string.display_name_boosted_by, account_boost.display_name ) );
 					account_boost = n.account;
@@ -377,17 +503,17 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 					account_follow = n.account;
 					llFollow.setVisibility( View.VISIBLE );
 					ivFollow.setImageUrl( account_follow.avatar_static, App1.getImageLoader() );
-					tvFollowerName.setText(account_follow.display_name );
+					tvFollowerName.setText( account_follow.display_name );
 					tvFollowerAcct.setText( access_info.getFullAcct( account_follow ) );
 				}else if( TootNotification.TYPE_MENTION.equals( n.type ) ){
 					account_boost = n.account;
 					llBoosted.setVisibility( View.VISIBLE );
 					ivBoosted.setImageResource( R.drawable.btn_reply );
 					tvBoostedTime.setText( TootStatus.formatTime( n.time_created_at )
-						+ "\n" + access_info.getFullAcct(account_boost )
+						+ "\n" + access_info.getFullAcct( account_boost )
 					);
 					tvBoosted.setText( Utils.formatSpannable1( activity, R.string.display_name_replied_by, account_boost.display_name ) );
-
+					
 					if( n.status != null ) bindSub( activity, view, n.status, access_info );
 				}
 				return;
@@ -414,8 +540,10 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			this.status = status;
 			account_thumbnail = status.account;
 			llStatus.setVisibility( View.VISIBLE );
-			tvTime.setText( TootStatus.formatTime( status.time_created_at )
-				+ "\n" + account.getFullAcct( status.account )
+			tvTime.setText(
+				status.id
+					+ " " + TootStatus.formatTime( status.time_created_at )
+					+ "\n" + account.getFullAcct( status.account )
 			);
 			tvName.setText( status.account.display_name );
 			ivThumbnail.setImageUrl( status.account.avatar_static, App1.getImageLoader() );
@@ -425,14 +553,14 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				tvTags.setVisibility( View.GONE );
 			}else{
 				tvTags.setVisibility( View.VISIBLE );
-				tvTags.setText( status.decoded_tags);
+				tvTags.setText( status.decoded_tags );
 			}
 			
 			if( status.decoded_mentions == null ){
 				tvMentions.setVisibility( View.GONE );
 			}else{
 				tvMentions.setVisibility( View.VISIBLE );
-				tvMentions.setText( status.decoded_mentions);
+				tvMentions.setText( status.decoded_mentions );
 			}
 			
 			// Content warning
@@ -463,14 +591,14 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			Drawable d;
 			int color;
 			
-			if( activity.isBusyBoost( account,status )){
+			if( activity.isBusyBoost( account, status ) ){
 				color = 0xff000000;
 				d = ContextCompat.getDrawable( activity, R.drawable.btn_boost ).mutate();
 				d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
 				btnBoost.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
 				btnBoost.setText( "?" );
 				btnBoost.setTextColor( color );
-			
+				
 			}else{
 				color = ( status.reblogged ? 0xff0088ff : 0xff000000 );
 				d = ContextCompat.getDrawable( activity, R.drawable.btn_boost ).mutate();
@@ -481,7 +609,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				
 			}
 			
-			if( activity.isBusyFav( account,status )){
+			if( activity.isBusyFav( account, status ) ){
 				color = 0xff000000;
 				d = ContextCompat.getDrawable( activity, R.drawable.btn_refresh ).mutate();
 				d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
@@ -546,27 +674,29 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				break;
 			}
 			
+			case R.id.btnConversation:
+				activity.performConversation( account, status );
+				break;
 			case R.id.btnReply:
-				activity.performReply( account,status);
+				activity.performReply( account, status );
 				break;
 			case R.id.btnBoost:
-				activity.performBoost( account,status.reblog != null ? status.reblog : status ,false);
+				activity.performBoost( account, status, false );
 				break;
 			case R.id.btnFavourite:
-				activity.performFavourite( account,status.reblog != null ? status.reblog : status);
+				activity.performFavourite( account, status );
 				break;
 			case R.id.btnMore:
-				activity.performMore( account,status);
+				activity.performMore( account, status );
 				break;
 			case R.id.ivThumbnail:
-			case R.id.tvName:
-				activity.performOpenUser(account,account_thumbnail);
+				activity.performOpenUser( account, account_thumbnail );
 				break;
 			case R.id.llBoosted:
-				activity.performOpenUser(account,account_boost);
+				activity.performOpenUser( account, account_boost );
 				break;
 			case R.id.llFollow:
-				activity.performOpenUser(account,account_follow);
+				activity.performOpenUser( account, account_follow );
 				break;
 			}
 		}
@@ -584,86 +714,10 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				ex.printStackTrace();
 			}
 		}
-	}
-	
-
-	
-	class HeaderViewHolder implements View.OnClickListener {
-		final View viewRoot;
-		final NetworkImageView ivBackground;
-		final TextView tvCreated;
-		final NetworkImageView ivAvatar;
-		final TextView tvDisplayName;
-		final TextView tvAcct;
-		final Button btnFollowing;
-		final Button btnFollowers;
-		final Button btnStatusCount;
-		final TextView tvNote;
-		TootAccount who;
 		
-		public HeaderViewHolder( final ActMain activity, ListView parent ){
-			viewRoot = activity.getLayoutInflater().inflate( R.layout.lv_list_header, parent, false );
-			this.ivBackground = (NetworkImageView) viewRoot.findViewById( R.id.ivBackground );
-			this.tvCreated = (TextView) viewRoot.findViewById( R.id.tvCreated );
-			this.ivAvatar = (NetworkImageView) viewRoot.findViewById( R.id.ivAvatar );
-			this.tvDisplayName = (TextView) viewRoot.findViewById( R.id.tvDisplayName );
-			this.tvAcct = (TextView) viewRoot.findViewById( R.id.tvAcct );
-			this.btnFollowing = (Button) viewRoot.findViewById( R.id.btnFollowing );
-			this.btnFollowers = (Button) viewRoot.findViewById( R.id.btnFollowers );
-			this.btnStatusCount = (Button) viewRoot.findViewById( R.id.btnStatusCount );
-			this.tvNote = (TextView) viewRoot.findViewById( R.id.tvNote );
-			
-			ivBackground.setOnClickListener( this );
-			btnFollowing.setOnClickListener( this );
-			btnFollowers.setOnClickListener( this );
-			btnStatusCount.setOnClickListener( this );
-			
-			tvNote.setMovementMethod( LinkMovementMethod.getInstance() );
-		}
-		
-		public void bind( ActMain activity, SavedAccount access_info, TootAccount who ){
-			this.who = who;
-			if( who == null ){
-				tvCreated.setText( "" );
-				ivBackground.setImageDrawable( null );
-				ivAvatar.setImageDrawable( null );
-				tvDisplayName.setText( "" );
-				tvAcct.setText( "" );
-				tvNote.setText( "" );
-				btnStatusCount.setText( activity.getString( R.string.statuses ) + "\n" + "?" );
-				btnFollowing.setText( activity.getString( R.string.following ) + "\n" + "?" );
-				btnFollowers.setText( activity.getString( R.string.followers ) + "\n" + "?" );
-			}else{
-				tvCreated.setText( TootStatus.formatTime( who.time_created_at ) );
-				ivBackground.setImageUrl( who.header_static, App1.getImageLoader() );
-				ivAvatar.setImageUrl( who.avatar_static, App1.getImageLoader() );
-				tvDisplayName.setText( who.display_name );
-				tvAcct.setText( access_info.getFullAcct( who ) );
-				tvNote.setText( who.note );
-				btnStatusCount.setText( activity.getString( R.string.statuses ) + "\n" + who.statuses_count );
-				btnFollowing.setText( activity.getString( R.string.following ) + "\n" + who.following_count );
-				btnFollowers.setText( activity.getString( R.string.followers ) + "\n" + who.followers_count );
-			}
-		}
-		
-		@Override
-		public void onClick( View v ){
-			switch( v.getId() ){
-			case R.id.ivBackground:
-				if( who != null ){
-					activity.openBrowser( who.url );
-				}
-				break;
-			case R.id.btnFollowing:
-				Utils.showToast( activity, false, "not implemented" );
-				break;
-			case R.id.btnFollowers:
-				Utils.showToast( activity, false, "not implemented" );
-				break;
-			case R.id.btnStatusCount:
-				Utils.showToast( activity, false, "not implemented" );
-				break;
-			}
+		public void onItemClick(){
+			activity.performConversation( account, status );
 		}
 	}
+	
 }

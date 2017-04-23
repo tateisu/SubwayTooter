@@ -102,9 +102,8 @@
     <string name="account_setting">account setting</string>
     <string name="setting">setting</string>
     <string name="app_setting">app setting</string>
-    <string name="columun_list">column list</string>
     <string name="column_list">column list</string>
-    <string name="get_access_token">get access token</string>
+    <string name="update_access_token">update access token</string>
     <string name="account_remove">remove account from this app</string>
     <string name="actions">actions</string>
     <string name="default_status_visibility">default visibility of status</string>
@@ -112,4 +111,22 @@
     <string name="sensitive_content_default_open">sensitive content default open</string>
     <string name="user">user</string>
     <string name="confirm_account_remove">Account will be deleted. also all columns are remove.\nAre you sure?</string>
+    <string name="user_name_not_match">user name not match.</string>
+    <string name="access_token_updated">access token updated.</string>
+    <string name="back_to_column_list">show column list when back button pressed</string>
+    <string name="account_empty">Account  is not set up.Please add account.</string>
+    <string name="confirm_before_close_column">confirm before close column</string>
+    <string name="dont_confirm_before_close_column">don\'t confirm before close column</string>
+    <string name="drag_handle">drag handle</string>
+    <string name="delete">delete</string>
+    <string name="column_list_desc">swipe to delete. sorting and deletion is applied at back or pick.</string>
+    <string name="last_selection">last selection</string>
+    <string name="column_index">%1$d/%2$d</string>
+    <string name="reply_to_this_post">reply to this post:</string>
+    <string name="reply_to_this_status">reply to this status:</string>
+    <string name="cant_change_account_when_attachiment_specified">can\'t change account when attachement  specified.</string>
+    <string name="column">column</string>
+    <string name="conversation_view">conversation view</string>
+    <string name="conversation">status:%1$d</string>
+    <string name="conversation_around">conversation around status:%1$d</string>
 </resources>

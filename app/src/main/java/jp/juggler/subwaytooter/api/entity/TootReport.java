@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
-public class TootReport {
+public class TootReport extends TootId{
 	
 	//	The ID of the report
-	public long id;
+	//TootId public long id;
 	
 	//	The action taken in response to the report
 	public String action_taken;

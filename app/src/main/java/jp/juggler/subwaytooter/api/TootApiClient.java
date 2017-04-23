@@ -69,8 +69,17 @@ public class TootApiClient {
 	}
 
 	public TootApiResult request( String path, Request.Builder request_builder ){
-		
-		JSONObject client_info = null;
+		log.d("request: %s",path);
+		TootApiResult result = request_sub( path,request_builder );
+		if( result.error != null ){
+			log.d("error: %s",result.error);
+		}
+		return result;
+	}
+
+	public TootApiResult request_sub( String path, Request.Builder request_builder ){
+			
+			JSONObject client_info = null;
 		JSONObject token_info = ( account == null ? null : account.token_info );
 		
 		for( ; ; ){
@@ -84,7 +93,7 @@ public class TootApiClient {
 					callback.publishApiProgress( context.getString( R.string.register_app_to_server, instance ) );
 					
 					// OAuth2 クライアント登録
-					String client_name = "jp.juggler.subwaytooter." + UUID.randomUUID().toString();
+					String client_name = "SubwayTooter" ; // + UUID.randomUUID().toString();
 					
 					Request request = new Request.Builder()
 						.url( "https://" + instance + "/api/v1/apps" )
@@ -218,7 +227,7 @@ public class TootApiClient {
 						return new TootApiResult( context.getString( R.string.response_not_json ) + "\n" + json );
 					}else if( json.startsWith( "[" ) ){
 						JSONArray array = new JSONArray( json );
-						return new TootApiResult( token_info, json, array );
+						return new TootApiResult( response,token_info, json, array );
 					}else{
 						JSONObject object = new JSONObject( json );
 						
@@ -226,7 +235,7 @@ public class TootApiClient {
 						if( ! TextUtils.isEmpty( error ) ){
 							return new TootApiResult( context.getString( R.string.api_error, error ) );
 						}
-						return new TootApiResult( token_info, json, object );
+						return new TootApiResult( response,token_info, json, object );
 					}
 				}catch( Throwable ex ){
 					ex.printStackTrace();

@@ -2,6 +2,7 @@
   <dictionary name="tateisu">
     <words>
       <w>dont</w>
+      <w>emoji</w>
       <w>emojione</w>
       <w>favourited</w>
       <w>noto</w>
@@ -10,6 +11,7 @@
       <w>reblogged</w>
       <w>reblogs</w>
       <w>subwaytooter</w>
+      <w>swipy</w>
       <w>timelines</w>
       <w>unfavourite</w>
       <w>unreblog</w>

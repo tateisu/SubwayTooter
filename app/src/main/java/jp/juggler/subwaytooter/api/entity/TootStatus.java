@@ -17,7 +17,7 @@ import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
-public class TootStatus {
+public class TootStatus extends TootId{
 	
 	
 	public static class List extends ArrayList< TootStatus > {
@@ -25,7 +25,7 @@ public class TootStatus {
 	}
 	
 	//	The ID of the status
-	public long id;
+	// TootId public long id;
 	
 	// A Fediverse-unique resource ID
 	public String uri;
@@ -94,12 +94,18 @@ public class TootStatus {
 	public Spannable decoded_tags;
 	public Spannable decoded_mentions;
 	
+	public JSONObject json;
+	
+	public boolean conversation_main;
+	
+	
 	public static TootStatus parse( LogCategory log, JSONObject src ){
 		
 		if( src == null ) return null;
 		
 		try{
 			TootStatus status = new TootStatus();
+			status.json = src;
 		//	log.d( "parse: %s", src.toString() );
 			status.id = src.optLong( "id" );
 			status.uri = Utils.optStringX( src, "uri" );
@@ -168,6 +174,27 @@ public class TootStatus {
 	public static String formatTime( long t ){
 		date_format.setTimeZone( TimeZone.getDefault() );
 		return date_format.format( new Date( t ) );
+	}
+	
+	// 公開範囲を比較する
+	// 公開範囲が広い => 大きい
+	// aの方が小さい（狭い)ならマイナス
+	// aの方が大きい（狭い)ならプラス
+	// IndexOutOfBoundsException 公開範囲が想定外
+	public static int compareVisibility( String a, String b ){
+		int ia = compareVisibility_tmp(a);
+		int ib = compareVisibility_tmp(b);
+		if( ia < ib ) return -1;
+		if( ia > ib ) return 1;
+		return 0;
+	}
+	
+	private static int compareVisibility_tmp( String a ){
+		if(TootStatus.VISIBILITY_DIRECT.equals( a ) ) return 0;
+		if(TootStatus.VISIBILITY_PRIVATE.equals( a ) ) return 1;
+		if(TootStatus.VISIBILITY_UNLISTED.equals( a ) ) return 2;
+		if(TootStatus.VISIBILITY_PUBLIC.equals( a ) ) return 3;
+		throw new IndexOutOfBoundsException( "visibility not in range" );
 	}
 	
 }

@@ -155,7 +155,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:background="@drawable/btn_bg_transparent"
                 android:textStyle="bold"
                 tools:text="Displayname @username"
                 />
@@ -298,6 +297,17 @@
                 android:layout_marginTop="8dp"
                 android:orientation="horizontal"
                 >
+                <ImageButton
+                    android:id="@+id/btnConversation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/conversation_view"
+                    android:minWidth="48dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
+                    android:src="@drawable/ic_conversation"
+                    />
 
                 <ImageButton
                     android:id="@+id/btnReply"
@@ -306,6 +316,8 @@
                     android:background="@drawable/btn_bg_transparent"
                     android:contentDescription="@string/reply"
                     android:minWidth="48dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
                     android:src="@drawable/btn_reply"
                     />
 
@@ -315,6 +327,8 @@
                     android:layout_height="match_parent"
                     android:background="@drawable/btn_bg_transparent"
                     android:drawablePadding="4dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
                     android:minWidth="48dp"
                     />
 
@@ -324,6 +338,8 @@
                     android:layout_height="match_parent"
                     android:background="@drawable/btn_bg_transparent"
                     android:drawablePadding="4dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
                     android:minWidth="48dp"
                     />
 
@@ -334,6 +350,8 @@
                     android:background="@drawable/btn_bg_transparent"
                     android:contentDescription="@string/more"
                     android:minWidth="48dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp"
                     android:src="@drawable/btn_more"
                     />
 

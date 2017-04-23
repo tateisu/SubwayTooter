@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
     <LinearLayout
@@ -11,23 +12,47 @@
         android:layout_height="wrap_content"
         android:background="#ddd"
         android:orientation="vertical"
-        android:padding="12dp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="6dp"
         >
-
-        <TextView
-            android:id="@+id/tvColumnContext"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="end"
-            android:textColor="#888"
-            android:textSize="12sp"
-            tools:text="tvColumnContext"
-            />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            >
+
+            <TextView
+                android:id="@+id/tvColumnContext"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="end"
+                android:textColor="#888"
+                android:textSize="12sp"
+                tools:text="tvColumnContext"
+                />
+
+            <TextView
+                android:id="@+id/tvColumnIndex"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:gravity="end"
+                android:textColor="#888"
+                android:textSize="12sp"
+                tools:text="col 6/12"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
             >
 
             <TextView
@@ -62,6 +87,8 @@
 
 
         </LinearLayout>
+
+
     </LinearLayout>
 
     <TextView
@@ -72,17 +99,27 @@
         android:gravity="center"
         />
 
-    <ListView
-        android:id="@+id/listView"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+    <com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
+        android:id="@+id/swipyRefreshLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:srl_direction="both">
 
-        android:clipToPadding="false"
-        android:fadeScrollbars="false"
-        android:paddingBottom="64dp"
-        android:paddingEnd="12dp"
-        android:paddingStart="12dp"
-        android:scrollbarStyle="outsideOverlay"
-        />
+        <ListView
+            android:id="@+id/listView"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+
+            android:clipToPadding="false"
+            android:fadeScrollbars="false"
+            android:paddingBottom="64dp"
+            android:paddingEnd="12dp"
+            android:paddingStart="12dp"
+            android:scrollbarStyle="outsideOverlay"
+            />
+
+    </com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout>
+
+
 </LinearLayout>

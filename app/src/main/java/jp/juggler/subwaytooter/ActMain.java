@@ -4,6 +4,8 @@ import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -31,8 +33,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.StringBufferInputStream;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
@@ -59,10 +60,14 @@ public class ActMain extends AppCompatActivity
 //		super.attachBaseContext( CalligraphyContextWrapper.wrap(newBase));
 //	}
 	
+	SharedPreferences pref;
+	
 	@Override
 	protected void onCreate( Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
 		requestWindowFeature( Window.FEATURE_NO_TITLE );
+		
+		pref = Pref.pref(this);
 		
 		initUI();
 		loadColumnList();
@@ -106,11 +111,36 @@ public class ActMain extends AppCompatActivity
 		super.onPause();
 	}
 	
+	static final int REQUEST_CODE_COLUMN_LIST =1;
+	
+	@Override
+	protected void onActivityResult( int requestCode, int resultCode, Intent data ){
+		if( resultCode == RESULT_OK && requestCode == REQUEST_CODE_COLUMN_LIST ){
+			if( data != null ){
+				ArrayList<Integer> order = data.getIntegerArrayListExtra( ActColumnList.EXTRA_ORDER );
+				if( order != null ){
+					pager_adapter.setOrder( pager, order );
+				}
+				if( pager_adapter.column_list.isEmpty() ){
+					llEmpty.setVisibility( View.VISIBLE );
+				}
+				
+				int select = data.getIntExtra( ActColumnList.EXTRA_SELECTION ,-1);
+				if( select != -1 ){
+					pager.setCurrentItem( select,true );
+				}
+			}
+		}
+		super.onActivityResult( requestCode, resultCode, data );
+	}
+	
 	@Override
 	public void onBackPressed(){
 		DrawerLayout drawer = (DrawerLayout) findViewById( R.id.drawer_layout );
 		if( drawer.isDrawerOpen( GravityCompat.START ) ){
 			drawer.closeDrawer( GravityCompat.START );
+		}else if( pref.getBoolean( Pref.KEY_BACK_TO_COLUMN_LIST ,false) ){
+			performColumnList();
 		}else if( ! pager_adapter.column_list.isEmpty() ){
 			performColumnClose( false,pager_adapter.getColumn( pager.getCurrentItem() ) );
 		}else{
@@ -237,7 +267,7 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	public void performAccountAdd(){
-		LoginForm.showLoginForm( this, new LoginForm.LoginFormCallback() {
+		LoginForm.showLoginForm( this, null,new LoginForm.LoginFormCallback() {
 			
 			@Override
 			public void startLogin( final Dialog dialog, final String instance, final String user_mail, final String password ){
@@ -311,18 +341,9 @@ public class ActMain extends AppCompatActivity
 		
 	}
 	
-	private void onAccountUpdated( SavedAccount data ){
-		Utils.showToast( this, false, R.string.account_confirmed );
-		//
-		llEmpty.setVisibility( View.GONE );
-		//
-		Column col = new Column( this, data, Column.TYPE_TL_HOME );
-		int idx = pager_adapter.addColumn( pager, col );
-		pager.setCurrentItem( idx );
-	}
-	
+
 	public void performColumnClose( boolean bConfirm,final Column column ){
-		if(! bConfirm ){
+		if(! bConfirm && ! pref.getBoolean( Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN,false ) ){
 			new AlertDialog.Builder( this )
 				.setTitle( R.string.confirm )
 				.setMessage( R.string.close_column )
@@ -346,26 +367,54 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
+	//////////////////////////////////////////////////////////////
+	// カラム追加系
 	
-	void performOpenUser(SavedAccount access_info,TootAccount user){
+	public void addColumn(SavedAccount ai,int type,long who,long status_id ){
+		// 既に同じカラムがあればそこに移動する
+		for( Column column : pager_adapter.column_list ){
+			if( ai.user.equals( column.access_info.user )
+				&& column.type == type
+				&& column.who_id == who
+				&& column.status_id == status_id
+			){
+				pager.setCurrentItem( pager_adapter.column_list.indexOf( column ) ,true);
+				return;
+			}
+		}
+		
 		llEmpty.setVisibility( View.GONE );
 		//
-		Column col = new Column( ActMain.this, access_info, Column.TYPE_TL_STATUSES, user.id );
-		pager.setCurrentItem( pager_adapter.addColumn( pager, col ) ,true);
+		Column col = new Column( ActMain.this, ai, type, who,status_id );
+		int idx = pager_adapter.addColumn( pager, col );
+		pager.setCurrentItem( idx ,true);
 	}
 	
-	private void performAddTimeline( final int type, final Object... params ){
+	private void onAccountUpdated( SavedAccount data ){
+		Utils.showToast( this, false, R.string.account_confirmed );
+		addColumn(data, Column.TYPE_TL_HOME,data.id ,0L );
+	}
+	
+	void performOpenUser(SavedAccount access_info,TootAccount user){
+		addColumn( access_info,Column.TYPE_TL_STATUSES, user.id ,0L);
+	}
+	
+	
+	public void performConversation( SavedAccount access_info, TootStatus status ){
+		addColumn( access_info,Column.TYPE_TL_CONVERSATION, access_info.id, status.id );
+	}
+	
+	private void performAddTimeline( final int type ){
 		AccountPicker.pick( this, new AccountPicker.AccountPickerCallback() {
 			@Override
 			public void onAccountPicked( SavedAccount ai ){
-				llEmpty.setVisibility( View.GONE );
-				//
-				Column col = new Column( ActMain.this, ai, type, ai.id, params );
-				int idx = pager_adapter.addColumn( pager, col );
-				pager.setCurrentItem( idx ,true);
+				addColumn( ai, type,ai.id ,0L);
 			}
 		} );
 	}
+	
+	//////////////////////////////////////////////////////////////
+
 	
 	public void openBrowser( String url ){
 		openChromeTab( url );
@@ -393,74 +442,15 @@ public class ActMain extends AppCompatActivity
 			openChromeTab( url );
 		}
 	};
-	
-	static final String FILE_COLUMN_LIST = "column_list";
-	
-	private void loadColumnList(){
-		try{
-			InputStream is = openFileInput( FILE_COLUMN_LIST );
-			try{
-				ByteArrayOutputStream bao = new ByteArrayOutputStream( is.available() );
-				byte[] tmp = new byte[ 4096 ];
-				for( ; ; ){
-					int r = is.read( tmp, 0, tmp.length );
-					if( r <= 0 ) break;
-					bao.write( tmp, 0, r );
-				}
-				JSONArray array = new JSONArray( Utils.decodeUTF8( bao.toByteArray() ) );
-				for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
-					try{
-						JSONObject src = array.optJSONObject( i );
-						Column col = new Column( ActMain.this, src );
-						pager_adapter.addColumn( pager, col );
-					}catch( Throwable ex ){
-						ex.printStackTrace();
-					}
-				}
-			}finally{
-				is.close();
-			}
-		}catch( FileNotFoundException ignored ){
-		}catch( Throwable ex ){
-			ex.printStackTrace();
-			Utils.showToast( this, ex, "loadColumnList failed." );
-		}
-		
-		if( pager_adapter.column_list.size() > 0 ){
-			llEmpty.setVisibility( View.GONE );
-		}
-	}
-	
-	private void saveColumnList(){
-		JSONArray array = new JSONArray();
-		for( Column column : pager_adapter.column_list ){
-			try{
-				JSONObject item = new JSONObject();
-				column.encodeJSON( item );
-				array.put( item );
-			}catch( JSONException ex ){
-				ex.printStackTrace();
-			}
-		}
-		try{
-			OutputStream os = openFileOutput( FILE_COLUMN_LIST, MODE_PRIVATE );
-			try{
-				os.write( Utils.encodeUTF8( array.toString() ) );
-			}finally{
-				os.close();
-			}
-		}catch( Throwable ex ){
-			ex.printStackTrace();
-			Utils.showToast( this, ex, "saveColumnList failed." );
-		}
-	}
-	
-	private void performTootButton(){
 
+	private void performTootButton(){
 		Column c = pager_adapter.getColumn( pager.getCurrentItem() );
 		if( c != null && c.access_info != null ){
 			ActPost.open( this, c.access_info.db_id ,null );
 		}
+	}
+	public void performReply( SavedAccount account, TootStatus status ){
+		ActPost.open( this, account.db_id ,status );
 	}
 	
 	/////////////////////////////////////////////////////////////////////////
@@ -710,17 +700,10 @@ public class ActMain extends AppCompatActivity
 		Utils.showToast( this,false,"not implemented. toot="+status.decoded_content );
 	}
 
-	public void performReply( SavedAccount account, TootStatus status ){
-		Utils.showToast( this,false,"not implemented. toot="+status.decoded_content );
-	}
-	
+
 	////////////////////////////////////////
 	
-	private void performColumnList(){
-		
-		Utils.showToast( this,false,"not implemented." );
-		
-	}
+
 	
 	private void performAccountSetting(){
 		AccountPicker.pick( this, new AccountPicker.AccountPickerCallback() {
@@ -732,8 +715,89 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	private void performAppSetting(){
-		Utils.showToast( this,false,"not implemented." );
+		ActAppSetting.open( ActMain.this);
 	}
 	
 	
+
+	////////////////////////////////////////////////////////
+	// column list
+	
+	
+	JSONArray encodeColumnList(){
+		JSONArray array = new JSONArray();
+		for(int i=0,ie = pager_adapter.column_list.size(); i<ie;++i){
+			Column column = pager_adapter.column_list.get(i);
+			try{
+				JSONObject dst = new JSONObject();
+				column.encodeJSON( dst ,i);
+				array.put( dst );
+			}catch( JSONException ex ){
+				ex.printStackTrace();
+			}
+		}
+		return array;
+	}
+	
+	private void performColumnList(){
+		Intent intent = new Intent(this,ActColumnList.class);
+		intent.putExtra(ActColumnList.EXTRA_ORDER,encodeColumnList().toString() );
+		intent.putExtra(ActColumnList.EXTRA_SELECTION,pager.getCurrentItem() );
+		startActivityForResult( intent ,REQUEST_CODE_COLUMN_LIST );
+	}
+	
+	
+	static final String FILE_COLUMN_LIST = "column_list";
+	
+	
+	private void saveColumnList(){
+		JSONArray array = encodeColumnList();
+		try{
+			OutputStream os = openFileOutput( FILE_COLUMN_LIST, MODE_PRIVATE );
+			try{
+				os.write( Utils.encodeUTF8( array.toString() ) );
+			}finally{
+				os.close();
+			}
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			Utils.showToast( this, ex, "saveColumnList failed." );
+		}
+	}
+	
+	private void loadColumnList(){
+		try{
+			InputStream is = openFileInput( FILE_COLUMN_LIST );
+			try{
+				ByteArrayOutputStream bao = new ByteArrayOutputStream( is.available() );
+				byte[] tmp = new byte[ 4096 ];
+				for( ; ; ){
+					int r = is.read( tmp, 0, tmp.length );
+					if( r <= 0 ) break;
+					bao.write( tmp, 0, r );
+				}
+				JSONArray array = new JSONArray( Utils.decodeUTF8( bao.toByteArray() ) );
+				for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
+					try{
+						JSONObject src = array.optJSONObject( i );
+						Column col = new Column( ActMain.this, src );
+						pager_adapter.addColumn( pager, col );
+					}catch( Throwable ex ){
+						ex.printStackTrace();
+					}
+				}
+			}finally{
+				is.close();
+			}
+		}catch( FileNotFoundException ignored ){
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			Utils.showToast( this, ex, "loadColumnList failed." );
+		}
+		
+		if( pager_adapter.column_list.size() > 0 ){
+			llEmpty.setVisibility( View.GONE );
+		}
+	}
+
 }

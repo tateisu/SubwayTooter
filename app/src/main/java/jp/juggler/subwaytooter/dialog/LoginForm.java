@@ -1,6 +1,8 @@
 package jp.juggler.subwaytooter.dialog;
 
+import android.app.Activity;
 import android.app.Dialog;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
@@ -27,10 +29,18 @@ public class LoginForm {
 		void startLogin(Dialog dialog,String instance,String user_main,String password);
 	}
 	
-	public static void showLoginForm(final ActMain activity,final LoginFormCallback callback){
+	public static void showLoginForm( final Activity activity, String instance , final LoginFormCallback callback){
 		final View view = activity.getLayoutInflater().inflate( R.layout.dlg_account_add, null, false );
 		final AutoCompleteTextView etInstance = (AutoCompleteTextView) view.findViewById( R.id.etInstance );
 		final EditText etUserMail = (EditText) view.findViewById( R.id.etUserMail );
+		
+		if( !TextUtils.isEmpty( instance ) ){
+			etInstance.setText(instance);
+			etInstance.setInputType( InputType.TYPE_NULL );
+			etInstance.setEnabled( false );
+			etInstance.setFocusable( false );
+		}
+		
 		final EditText etUserPassword = (EditText) view.findViewById( R.id.etUserPassword );
 		final Dialog dialog = new Dialog( activity );
 		dialog.setContentView( view );

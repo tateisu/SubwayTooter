@@ -14,8 +14,8 @@ public abstract class Emojione
 {
 	private static final Pattern SHORTNAME_PATTERN = Pattern.compile(":([-+\\w]+):");
 	
-	private static final HashMap<String,String> map_name2unicode = EmojiMap._shortNameToUnicode;
-	private static final HashMap<String,String> map_unicode2name = EmojiMap._unicodeToShortName;
+	public static final HashMap<String,String> map_name2unicode = EmojiMap._shortNameToUnicode;
+	public static final HashMap<String,String> map_unicode2name = EmojiMap._unicodeToShortName;
 
 	static class DecodeEnv{
 		SpannableStringBuilder sb = new SpannableStringBuilder();

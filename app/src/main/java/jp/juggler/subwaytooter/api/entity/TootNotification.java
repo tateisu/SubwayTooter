@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
-public class TootNotification {
+public class TootNotification extends TootId{
 	
 	//	The notification ID
-	public long id;
+	//TootId public long id;
 	
 	//	One of: "mention", "reblog", "favourite", "follow"
 	public String type;

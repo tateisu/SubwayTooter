@@ -31,7 +31,6 @@ public class App1 extends Application {
 		super.onCreate();
 		
 		CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
-			.setDefaultFontPath("NotoSansCJKjp-Regular.otf")
 			.setFontAttrId(R.attr.fontPath)
 			.build()
 		);
@@ -40,14 +39,11 @@ public class App1 extends Application {
 			typeface_emoji = TypefaceUtils.load(getAssets(), "emojione_android.ttf");
 		}
 		
-		if( typeface_normal == null ){
-			typeface_normal = TypefaceUtils.load(getAssets(), "NotoSansCJKjp-Regular.otf");
-		}
-		
 		if( db_open_helper == null ){
 			db_open_helper = new DBOpenHelper( getApplicationContext() );
 			db_open_helper.onCreate( getDB() );
 		}
+
 		if( image_loader == null ){
 			image_loader = new MyImageLoader(
 				Volley.newRequestQueue( getApplicationContext() )
@@ -156,5 +152,4 @@ public class App1 extends Application {
 	public static final OkHttpClient ok_http_client = new OkHttpClient();
 	
 	public static Typeface typeface_emoji ;
-	public static Typeface typeface_normal ;
 }

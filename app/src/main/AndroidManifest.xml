@@ -36,24 +36,23 @@
         <activity
             android:name=".ActAccountSetting"
             android:label="@string/account_setting"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustResize"
             />
 
         <activity
             android:name=".ActAppSetting"
             android:label="@string/app_setting"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustResize"
             />
 
         <activity
             android:name=".ActColumnList"
             android:label="@string/column_list"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/AppTheme"
             android:windowSoftInputMode="adjustResize"
             />
-
 
     </application>
 

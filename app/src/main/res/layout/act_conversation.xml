@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent">
+    <ListView
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+
+        android:clipToPadding="false"
+        android:fadeScrollbars="false"
+        android:paddingBottom="64dp"
+        android:paddingEnd="12dp"
+        android:paddingStart="12dp"
+        android:scrollbarStyle="outsideOverlay"
+        />
+
+
+</LinearLayout>

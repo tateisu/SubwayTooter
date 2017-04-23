@@ -29,6 +29,7 @@ import com.android.volley.toolbox.NetworkImageView;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,8 +40,10 @@ import java.util.Comparator;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
+import jp.juggler.subwaytooter.api.entity.TootMention;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 import okhttp3.MediaType;
@@ -53,13 +56,21 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	static final LogCategory log = new LogCategory( "ActPost" );
 	
 	static final String KEY_ACCOUNT_DB_ID = "account_db_id";
-	static final String KEY_VISIBILITY = "visibility";
-	static final String KEY_ATTACHMENT_LIST = "attachment_list";
+	static final String KEY_REPLY_STATUS = "reply_status";
 	
-	public static void open( Context context, long account_db_id, String visibility ){
+	static final String KEY_ATTACHMENT_LIST = "attachment_list";
+	static final String KEY_VISIBILITY = "visibility";
+	static final String KEY_IN_REPLY_TO_ID = "in_reply_to_id";
+	static final String KEY_IN_REPLY_TO_TEXT = "in_reply_to_text";
+	static final String KEY_IN_REPLY_TO_IMAGE = "in_reply_to_image";
+	
+	
+	public static void open( Context context, long account_db_id, TootStatus reply_status ){
 		Intent intent = new Intent( context, ActPost.class );
 		intent.putExtra( KEY_ACCOUNT_DB_ID, account_db_id );
-		if( visibility != null ) intent.putExtra( KEY_VISIBILITY, visibility );
+		if( reply_status != null ){
+			intent.putExtra( KEY_REPLY_STATUS, reply_status.json.toString() );
+		}
 		context.startActivity( intent );
 	}
 	
@@ -94,9 +105,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		case R.id.btnPost:
 			performPost();
 			break;
+		
+		case R.id.btnRemoveReply:
+			removeReply();
+			break;
 		}
 	}
-	
 	
 	static final int REQUEST_CODE_ATTACHMENT = 1;
 	
@@ -143,11 +157,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				}
 			}
 			
-			String sv = savedInstanceState.getString( KEY_VISIBILITY );
-			if( TextUtils.isEmpty( sv ) ) sv = account.visibility;
-			this.visibility = sv;
+			this.visibility = savedInstanceState.getString( KEY_VISIBILITY );
 			
-			sv = savedInstanceState.getString( KEY_ATTACHMENT_LIST );
+			String sv = savedInstanceState.getString( KEY_ATTACHMENT_LIST );
 			if( ! TextUtils.isEmpty( sv ) ){
 				try{
 					attachment_list.clear();
@@ -168,6 +180,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 					ex.printStackTrace();
 				}
 			}
+			
+			this.in_reply_to_id = savedInstanceState.getLong( KEY_IN_REPLY_TO_ID, - 1L );
+			this.in_reply_to_text = savedInstanceState.getString( KEY_IN_REPLY_TO_TEXT );
+			this.in_reply_to_image = savedInstanceState.getString( KEY_IN_REPLY_TO_IMAGE );
 		}else{
 			Intent intent = getIntent();
 			long account_db_id = intent.getLongExtra( KEY_ACCOUNT_DB_ID, SavedAccount.INVALID_ID );
@@ -181,9 +197,75 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				}
 			}
 			
-			String sv = intent.getStringExtra( KEY_VISIBILITY );
-			if( TextUtils.isEmpty( sv ) ) sv = account.visibility;
-			this.visibility = sv;
+			String sv = intent.getStringExtra( KEY_REPLY_STATUS );
+			if( sv != null ){
+				try{
+					TootStatus repley_status = TootStatus.parse( log, new JSONObject( sv ) );
+					
+					// CW をリプライ元に合わせる
+					if( ! TextUtils.isEmpty( repley_status.spoiler_text ) ){
+						cbContentWarning.setChecked( true );
+						etContentWarning.setText( repley_status.spoiler_text );
+					}
+					
+					// mention を自動設定する
+					String acct_me = account.getFullAcct( account );
+					ArrayList< String > mention_list = new ArrayList<>();
+					mention_list.add( account.getFullAcct( repley_status.account ) );
+					if( repley_status.mentions != null ){
+						for( TootMention mention : repley_status.mentions ){
+							sv = account.getFullAcct( mention.acct );
+							if( !sv.equals( acct_me ) && ! mention_list.contains( sv ) ){
+								mention_list.add( sv );
+							}
+						}
+					}
+					StringBuilder sb = new StringBuilder();
+					for( String acct : mention_list ){
+						if( sb.length() > 0 ) sb.append( ' ' );
+						sb.append( acct );
+					}
+					if( sb.length() > 0 ){
+						sb.append( ' ' );
+						etContent.setText( sb.toString() );
+						etContent.setSelection( sb.length() );
+					}
+					
+					// リプライ表示をつける
+					in_reply_to_id = repley_status.id;
+					in_reply_to_text = repley_status.content;
+					in_reply_to_image = repley_status.account.avatar_static;
+					
+					// 公開範囲
+					try{
+						// 比較する前にデフォルトの公開範囲を計算する
+						if( TextUtils.isEmpty( visibility ) ){
+							visibility = account.visibility;
+							if( TextUtils.isEmpty( visibility ) ){
+								visibility = TootStatus.VISIBILITY_PUBLIC;
+							}
+						}
+						
+						// デフォルトの方が公開範囲が大きい場合、リプライ元に合わせて公開範囲を狭める
+						int i = TootStatus.compareVisibility( this.visibility, repley_status.visibility );
+						if( i > 0 ){ // より大きい=>より公開範囲が広い
+							this.visibility = repley_status.visibility;
+						}
+					}catch( Throwable ex ){
+						ex.printStackTrace();
+					}
+					
+				}catch( Throwable ex ){
+					ex.printStackTrace();
+				}
+			}
+		}
+		
+		if( TextUtils.isEmpty( visibility ) ){
+			visibility = account.visibility;
+			if( TextUtils.isEmpty( visibility ) ){
+				visibility = TootStatus.VISIBILITY_PUBLIC;
+			}
 		}
 		
 		if( this.account == null ){
@@ -194,6 +276,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		showMediaAttachment();
 		updateVisibility();
 		updateTextCount();
+		showReplyTo();
 	}
 	
 	@Override
@@ -214,6 +297,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			}
 			outState.putString( KEY_ATTACHMENT_LIST, array.toString() );
 		}
+		
+		outState.putLong( KEY_IN_REPLY_TO_ID, in_reply_to_id );
+		outState.putString( KEY_IN_REPLY_TO_TEXT, in_reply_to_text );
+		outState.putString( KEY_IN_REPLY_TO_IMAGE, in_reply_to_image );
+		
 	}
 	
 	Button btnAccount;
@@ -230,7 +318,13 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	EditText etContentWarning;
 	EditText etContent;
 	TextView tvCharCount;
+	
 	ArrayList< SavedAccount > account_list;
+	
+	View llReply;
+	TextView tvReplyTo;
+	View btnRemoveReply;
+	NetworkImageView ivReply;
 	
 	private void initUI(){
 		setContentView( R.layout.act_post );
@@ -250,6 +344,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		etContent = (EditText) findViewById( R.id.etContent );
 		tvCharCount = (TextView) findViewById( R.id.tvCharCount );
 		
+		llReply = findViewById( R.id.llReply );
+		tvReplyTo = (TextView) findViewById( R.id.tvReplyTo );
+		btnRemoveReply = findViewById( R.id.btnRemoveReply );
+		ivReply= (NetworkImageView) findViewById( R.id.ivReply );
+		
 		account_list = SavedAccount.loadAccountList( log );
 		Collections.sort( account_list, new Comparator< SavedAccount >() {
 			@Override
@@ -262,6 +361,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		btnVisibility.setOnClickListener( this );
 		btnAttachment.setOnClickListener( this );
 		btnPost.setOnClickListener( this );
+		btnRemoveReply.setOnClickListener( this );
 		ivMedia1.setOnClickListener( this );
 		ivMedia2.setOnClickListener( this );
 		ivMedia3.setOnClickListener( this );
@@ -312,12 +412,22 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	}
 	
 	private void performAccountChooser(){
-		// TODO: mention の状況によっては別サーバを選べないかもしれない
 		
-		// TODO: 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
+		if( ! attachment_list.isEmpty() ){
+			// 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
+			Utils.showToast( this,false,R.string.cant_change_account_when_attachiment_specified );
+		}
 		
 		final ArrayList< SavedAccount > tmp_account_list = new ArrayList<>();
-		tmp_account_list.addAll( account_list );
+		if( in_reply_to_id != -1L ){
+			// リプライは数値IDなのでサーバが同じじゃないと選択できない
+			for( SavedAccount a : account_list ){
+				if( !a.host.equals( account.host ) ) continue;
+				tmp_account_list.add(a);
+			}
+		}else{
+			tmp_account_list.addAll( account_list );
+		}
 		String[] caption_list = new String[ tmp_account_list.size() ];
 		for( int i = 0, ie = tmp_account_list.size() ; i < ie ; ++ i ){
 			caption_list[ i ] = tmp_account_list.get( i ).user;
@@ -371,11 +481,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			iv.setVisibility( View.VISIBLE );
 			PostAttachment a = attachment_list.get( idx );
 			if( a.status == ATTACHMENT_UPLOADING ){
-				iv.setImageDrawable( ContextCompat.getDrawable(this,R.drawable.ic_loading ));
+				iv.setImageDrawable( ContextCompat.getDrawable( this, R.drawable.ic_loading ) );
 			}else if( a.attachment != null ){
 				iv.setImageUrl( a.attachment.preview_url, App1.getImageLoader() );
 			}else{
-				iv.setImageDrawable( ContextCompat.getDrawable(this,R.drawable.ic_unknown ));
+				iv.setImageDrawable( ContextCompat.getDrawable( this, R.drawable.ic_unknown ) );
 			}
 		}
 	}
@@ -535,8 +645,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 					attachment_list.remove( pa );
 				}else{
 					String sv = etContent.getText().toString();
-					sv = sv + pa.attachment.text_url+" ";
-					etContent.setText(sv);
+					sv = sv + pa.attachment.text_url + " ";
+					etContent.setText( sv );
 				}
 				
 				showMediaAttachment();
@@ -575,10 +685,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	//////////////////////////////////////////////////////////////////////
 	// visibility
 	
-	String visibility = TootStatus.VISIBILITY_PUBLIC;
+	String visibility;
 	
 	private void updateVisibility(){
-		btnVisibility.setImageResource( Styler.getVisibilityIcon(visibility) );
+		btnVisibility.setImageResource( Styler.getVisibilityIcon( visibility ) );
 	}
 	
 	private void performVisibility(){
@@ -626,12 +736,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	
 	private void performPost(){
 		final String content = etContent.getText().toString().trim();
-		if(TextUtils.isEmpty( content ) ){
-			Utils.showToast( this,true,R.string.post_error_contents_empty );
+		if( TextUtils.isEmpty( content ) ){
+			Utils.showToast( this, true, R.string.post_error_contents_empty );
 			return;
 		}
 		final String spoiler_text;
-		if( !cbContentWarning.isChecked() ){
+		if( ! cbContentWarning.isChecked() ){
 			spoiler_text = null;
 		}else{
 			spoiler_text = etContentWarning.getText().toString().trim();
@@ -641,29 +751,33 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			}
 		}
 		
+		final StringBuilder sb = new StringBuilder();
 		
-		final StringBuilder sb = new StringBuilder(  );
-
-		sb.append("status=");
-		sb.append(Uri.encode( content ));
-
-		sb.append("&visibility=");
-		sb.append(Uri.encode( visibility ));
+		sb.append( "status=" );
+		sb.append( Uri.encode( content ) );
+		
+		sb.append( "&visibility=" );
+		sb.append( Uri.encode( visibility ) );
 		
 		if( cbNSFW.isChecked() ){
-			sb.append("&sensitive=1");
+			sb.append( "&sensitive=1" );
 		}
+		
 		if( spoiler_text != null ){
-			sb.append("&spoiler_text=");
-			sb.append(Uri.encode( spoiler_text ));
+			sb.append( "&spoiler_text=" );
+			sb.append( Uri.encode( spoiler_text ) );
 		}
-		for(PostAttachment pa : attachment_list){
+		
+		if( in_reply_to_id != - 1L ){
+			sb.append( "&in_reply_to_id=" );
+			sb.append( Long.toString( in_reply_to_id ) );
+		}
+		
+		for( PostAttachment pa : attachment_list ){
 			if( pa.attachment != null ){
-				sb.append("&media_ids[]="+pa.attachment.id);
+				sb.append( "&media_ids[]=" + pa.attachment.id );
 			}
 		}
-		// TODO: in_reply_to_id (optional): local ID of the status you want to reply to
-		
 		
 		final ProgressDialog progress = new ProgressDialog( this );
 		
@@ -671,7 +785,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			final SavedAccount target_account = account;
 			
 			TootStatus status;
-
+			
 			@Override
 			protected TootApiResult doInBackground( Void... params ){
 				TootApiClient client = new TootApiClient( ActPost.this, new TootApiClient.Callback() {
@@ -690,21 +804,21 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 						} );
 					}
 				} );
-
+				
 				client.setAccount( target_account );
-			
+				
 				Request.Builder request_builder = new Request.Builder()
 					.post( RequestBody.create(
-					TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
-					,sb.toString()
-				));
+						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+						, sb.toString()
+					) );
 				
 				TootApiResult result = client.request( "/api/v1/statuses", request_builder );
 				if( result.object != null ){
-					status = TootStatus.parse( log,result.object );
+					status = TootStatus.parse( log, result.object );
 				}
 				return result;
-					
+				
 			}
 			
 			@Override
@@ -739,5 +853,26 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		AsyncTaskCompat.executeParallel( task );
 	}
 	
+	/////////////////////////////////////////////////
 	
+	long in_reply_to_id = - 1L;
+	String in_reply_to_text;
+	String in_reply_to_image;
+	
+	void showReplyTo(){
+		if( in_reply_to_id == - 1L ){
+			llReply.setVisibility( View.GONE );
+		}else{
+			llReply.setVisibility( View.VISIBLE );
+			tvReplyTo.setText( HTMLDecoder.decodeHTML( in_reply_to_text ) );
+			ivReply.setImageUrl( in_reply_to_image,App1.getImageLoader() );
+		}
+	}
+	
+	private void removeReply(){
+		in_reply_to_id = - 1L;
+		in_reply_to_text = null;
+		in_reply_to_image = null;
+		showReplyTo();
+	}
 }

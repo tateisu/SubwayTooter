@@ -105,11 +105,14 @@ public class SavedAccount extends TootAccount{
 	
 	public void updateTokenInfo( JSONObject token_info ){
 		if( db_id != INVALID_ID ){
+			this.token_info = token_info;
+
 			ContentValues cv = new ContentValues();
 			cv.put( COL_TOKEN, token_info.toString() );
 			App1.getDB().update( table, cv, COL_ID + "=?", new String[]{ Long.toString(db_id) } );
 		}
 	}
+
 	public void saveSetting(){
 		if( db_id != INVALID_ID ){
 			ContentValues cv = new ContentValues();
@@ -120,9 +123,9 @@ public class SavedAccount extends TootAccount{
 		}
 	}
 	
-	public static SavedAccount loadAccount( LogCategory log, long id ){
+	public static SavedAccount loadAccount( LogCategory log, long db_id ){
 		try{
-			Cursor cursor = App1.getDB().query( table, null, COL_ID+"=?", new String[]{ Long.toString(id) }, null, null, null );
+			Cursor cursor = App1.getDB().query( table, null, COL_ID+"=?", new String[]{ Long.toString(db_id) }, null, null, null );
 			try{
 				if( cursor.moveToFirst() ){
 					return parse( cursor );
@@ -156,12 +159,15 @@ public class SavedAccount extends TootAccount{
 	}
 	
 	public String getFullAcct(TootAccount who ){
-		if( who== null || who.acct ==null ) return "@?";
-		if( -1 != who.acct.indexOf( '@' ) ){
-			return "@" + who.acct;
-		}else{
-			return "@"+ who.acct +"@"+ this.host;
-		}
+		return who==null ? "@?" : getFullAcct( who.acct );
 	}
 	
+	public String getFullAcct( String acct ){
+		if( acct ==null ) return "@?";
+		if( -1 != acct.indexOf( '@' ) ){
+			return "@" + acct;
+		}else{
+			return "@"+ acct +"@"+ this.host;
+		}
+	}
 }

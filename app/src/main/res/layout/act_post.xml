@@ -7,12 +7,61 @@
     >
 
     <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:padding="12dp"
         >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#cccccc"
+            android:orientation="vertical"
+            android:padding="6dp"
+            android:id="@+id/llReply"
+            android:layout_marginBottom="12dp"
+            >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/reply_to_this_status"
+                />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                >
+
+                <com.android.volley.toolbox.NetworkImageView
+                    android:id="@+id/ivReply"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:scaleType="fitCenter"
+                    />
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:id="@+id/tvReplyTo"
+                    android:gravity="center_vertical"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnRemoveReply"
+                    android:layout_marginStart="4dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:gravity="center_vertical"
+                    android:src="@drawable/black_close"
+                    />
+            </LinearLayout>
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

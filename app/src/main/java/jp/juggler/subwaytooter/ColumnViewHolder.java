@@ -617,7 +617,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				llContents.setVisibility( View.VISIBLE );
 			}else{
 				llContentWarning.setVisibility( View.VISIBLE );
-				tvContentWarning.setText( status.spoiler_text );
+				tvContentWarning.setText( status.decoded_spoiler_text );
 				boolean cw_shown = ContentWarning.isShown( account.host, status.id, false );
 				showContent( cw_shown );
 			}

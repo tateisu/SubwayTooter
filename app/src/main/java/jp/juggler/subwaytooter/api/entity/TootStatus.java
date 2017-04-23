@@ -98,6 +98,7 @@ public class TootStatus extends TootId {
 	public long time_created_at;
 	
 	public Spannable decoded_content;
+	public Spannable decoded_spoiler_text;
 	public Spannable decoded_tags;
 	public Spannable decoded_mentions;
 	
@@ -138,7 +139,10 @@ public class TootStatus extends TootId {
 			status.decoded_content = HTMLDecoder.decodeHTML( account,status.content );
 			status.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
 			status.decoded_mentions = HTMLDecoder.decodeMentions(account, status.mentions );
-			
+
+			if( !TextUtils.isEmpty( status.spoiler_text ) ){
+				status.decoded_spoiler_text = HTMLDecoder.decodeMentions(account, status.mentions );
+			}
 			return status;
 		}catch( Throwable ex ){
 			ex.printStackTrace();

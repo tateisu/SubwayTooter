@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -84,15 +83,23 @@ public class ActMain extends AppCompatActivity
 		HTMLDecoder.link_callback = link_click_listener;
 		
 		// アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
-		int size =pager_adapter.getCount();
-		for(int i=size-1;i>=0;--i){
-			Column column = pager_adapter.getColumn( i );
-			SavedAccount sa = SavedAccount.loadAccount( log, column.access_info.db_id );
-			if( sa == null ){
-				pager_adapter.removeColumn( pager,column );
+		{
+			
+			ArrayList< Integer > new_order = new ArrayList<>();
+			boolean bRemoved = false;
+			for( int i = 0, ie = pager_adapter.getCount() ; i < ie ; ++ i ){
+				Column column = pager_adapter.getColumn( i );
+				SavedAccount sa = SavedAccount.loadAccount( log, column.access_info.db_id );
+				if( sa == null ){
+					bRemoved = true;
+				}else{
+					new_order.add( i );
+				}
+			}
+			if( bRemoved ){
+				pager_adapter.setOrder( pager, new_order );
 			}
 		}
-		
 		
 		if(update_at_resume){
 			update_at_resume = false;
@@ -113,21 +120,30 @@ public class ActMain extends AppCompatActivity
 	
 	static final int REQUEST_CODE_COLUMN_LIST =1;
 	
+	boolean isOrderChanged(ArrayList<Integer> new_order){
+		if( new_order.size() != pager_adapter.getCount() ) return true;
+		for(int i=0,ie = new_order.size();i<ie;++i ){
+			if( new_order.get(i) != i ) return true;
+		}
+		return false;
+	}
+	
 	@Override
 	protected void onActivityResult( int requestCode, int resultCode, Intent data ){
 		if( resultCode == RESULT_OK && requestCode == REQUEST_CODE_COLUMN_LIST ){
 			if( data != null ){
 				ArrayList<Integer> order = data.getIntegerArrayListExtra( ActColumnList.EXTRA_ORDER );
-				if( order != null ){
+				if( order != null && isOrderChanged(order) ){
 					pager_adapter.setOrder( pager, order );
 				}
+				
 				if( pager_adapter.column_list.isEmpty() ){
 					llEmpty.setVisibility( View.VISIBLE );
-				}
-				
-				int select = data.getIntExtra( ActColumnList.EXTRA_SELECTION ,-1);
-				if( select != -1 ){
-					pager.setCurrentItem( select,true );
+				}else{
+					int select = data.getIntExtra( ActColumnList.EXTRA_SELECTION, - 1 );
+					if( select != - 1 ){
+						pager.setCurrentItem( select, true );
+					}
 				}
 			}
 		}

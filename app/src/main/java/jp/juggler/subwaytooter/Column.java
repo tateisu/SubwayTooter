@@ -47,6 +47,9 @@ public class Column {
 	final long who_id;
 	long status_id;
 	
+	public int scroll_pos;
+	public int scroll_y;
+	
 	static final int TYPE_TL_HOME = 1;
 	static final int TYPE_TL_LOCAL = 2;
 	static final int TYPE_TL_FEDERATE = 3;

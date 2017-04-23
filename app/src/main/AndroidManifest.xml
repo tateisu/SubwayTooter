@@ -54,6 +54,7 @@
             android:windowSoftInputMode="adjustResize"
             />
 
+        <meta-data android:name="android.max_aspect" android:value="ratio_float"/>
     </application>
 
 </manifest>

@@ -35,13 +35,20 @@ public class ColumnPagerAdapter extends PagerAdapter{
 	int addColumn( ViewPager pager, Column column,int index ){
 		int size = column_list.size();
 		if( index > size ) index = size;
+	
 		pager.setAdapter( null );
 		column_list.add( index,column );
 		pager.setAdapter( this );
 		notifyDataSetChanged();
 		return index;
 	}
-
+	
+	private void saveScrollPosition(){
+		for( int i=0,ie=holder_list.size();i<ie;++i){
+			holder_list.valueAt( i ).saveScrollPosition();
+		}
+	}
+	
 	public void removeColumn( ViewPager pager,Column column ){
 		int idx_column = column_list.indexOf( column );
 		if( idx_column == - 1 ) return;

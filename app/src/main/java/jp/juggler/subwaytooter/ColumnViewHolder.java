@@ -98,6 +98,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 	}
 	
 	void onPageDestroy( View root ){
+		saveScrollPosition();
 		log.d( "onPageDestroy:%s", column.getColumnName() );
 		column.removeVisualListener( this );
 	}
@@ -185,12 +186,50 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			}
 			break;
 		}
+
+		proc_restore_scroll.run();
+		
 	}
 	
 	@Override
 	public void onRefresh( SwipyRefreshLayoutDirection direction ){
 		if( ! column.startRefresh( direction == SwipyRefreshLayoutDirection.BOTTOM ) ){
 			swipyRefreshLayout.setRefreshing( false );
+		}
+	}
+	
+	final Runnable proc_restore_scroll = new Runnable() {
+		@Override
+		public void run(){
+			if( column.scroll_pos == 0 && column.scroll_y == 0 ){
+				return;
+			}
+			if( listView.getVisibility() != View.VISIBLE ){
+				column.scroll_pos = 0;
+				column.scroll_y = 0;
+				return;
+			}
+			if( column.scroll_pos > status_adapter.getCount() ){
+				column.scroll_pos = 0;
+				column.scroll_y = 0;
+				return;
+			}
+			listView.setSelectionFromTop( column.scroll_pos, column.scroll_y );
+			column.scroll_pos = 0;
+			column.scroll_y = 0;
+		}
+	};
+	
+	public void saveScrollPosition(){
+		column.scroll_pos =0;
+		column.scroll_y = 0;
+		if( listView.getVisibility() == View.VISIBLE ){
+			if( listView.getChildCount() > 0 ){
+				int pos = listView.getFirstVisiblePosition();
+				int y = listView.getChildAt( 0 ).getTop();
+				column.scroll_pos = pos;
+				column.scroll_y = y;
+			}
 		}
 	}
 	

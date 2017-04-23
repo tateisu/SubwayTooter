@@ -128,4 +128,8 @@
     <string name="conversation_view">conversation view</string>
     <string name="conversation">status:%1$d</string>
     <string name="conversation_around">conversation around status:%1$d</string>
+    <string name="instance_not_need_slash">please input just host name of instance, without \'/\'.</string>
+    <string name="mail_address_not_contains_at_mark">please input user mail address that contains \'@\' and \'.\'</string>
+    <string name="instance_hint">ex) mastodon.social</string>
+    <string name="mail_hint">ex) your@e-mail.address</string>
 </resources>

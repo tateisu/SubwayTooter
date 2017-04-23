@@ -27,6 +27,7 @@
         android:layout_marginRight="12dp"
         android:layout_marginStart="12dp"
         android:inputType="textUri"
+        android:hint="@string/instance_hint"
         />
 
     <TextView
@@ -50,6 +51,7 @@
         android:layout_marginRight="12dp"
         android:layout_marginStart="12dp"
         android:inputType="textEmailAddress"
+        android:hint="@string/mail_hint"
         />
 
     <TextView

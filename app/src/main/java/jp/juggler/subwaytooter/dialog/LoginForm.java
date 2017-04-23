@@ -53,9 +53,15 @@ public class LoginForm {
 				if( TextUtils.isEmpty( instance ) ){
 					Utils.showToast( activity, true, R.string.instance_not_specified );
 					return;
+				}else if( instance.contains( "/" )){
+					Utils.showToast( activity, true, R.string.instance_not_need_slash );
+					return;
 				}
 				if( TextUtils.isEmpty( user_mail ) ){
 					Utils.showToast(activity, true, R.string.mail_not_specified );
+					return;
+				}else if( ! user_mail.contains( "@" ) || ! user_mail.contains( "." )){
+					Utils.showToast( activity, true, R.string.mail_address_not_contains_at_mark );
 					return;
 				}
 				if( TextUtils.isEmpty( password ) ){

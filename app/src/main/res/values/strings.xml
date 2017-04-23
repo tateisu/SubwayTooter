@@ -93,7 +93,6 @@
     <string name="confirm_boost">Boost this status? it\'s shown by all followers and your profile page.</string>
     <string name="tags">tags</string>
     <string name="mentions">mentions</string>
-
     <string name="display_name_favourited_by">favourited by %1$s</string>
     <string name="display_name_boosted_by">boosted by %1$s</string>
     <string name="display_name_replied_by">replied by %1$s</string>

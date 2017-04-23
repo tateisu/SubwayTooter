@@ -215,7 +215,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			sv = intent.getStringExtra( KEY_REPLY_STATUS );
 			if( sv != null ){
 				try{
-					TootStatus repley_status = TootStatus.parse( log, new JSONObject( sv ) );
+					TootStatus repley_status = TootStatus.parse( log, account,new JSONObject( sv ) );
 					
 					// CW をリプライ元に合わせる
 					if( ! TextUtils.isEmpty( repley_status.spoiler_text ) ){
@@ -830,7 +830,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				
 				TootApiResult result = client.request( "/api/v1/statuses", request_builder );
 				if( result.object != null ){
-					status = TootStatus.parse( log, result.object );
+					status = TootStatus.parse( log,  account,result.object );
 				}
 				return result;
 				
@@ -879,7 +879,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			llReply.setVisibility( View.GONE );
 		}else{
 			llReply.setVisibility( View.VISIBLE );
-			tvReplyTo.setText( HTMLDecoder.decodeHTML( in_reply_to_text ) );
+			tvReplyTo.setText( HTMLDecoder.decodeHTML(  account,in_reply_to_text ) );
 			ivReply.setImageUrl( in_reply_to_image,App1.getImageLoader() );
 		}
 	}

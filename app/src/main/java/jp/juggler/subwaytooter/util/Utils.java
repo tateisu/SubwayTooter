@@ -175,6 +175,10 @@ public class Utils {
 		return dst_list;
 	}
 	
+	public static  <T> boolean equalsNullable(T a,T b){
+		return a == null ? b == null : a.equals( b );
+	}
+	
 	static final char[] hex = new char[]{ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 	
 	public static void addHex( StringBuilder sb, byte b ){

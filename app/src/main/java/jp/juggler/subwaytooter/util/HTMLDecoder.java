@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.api.entity.TootMention;
 import jp.juggler.subwaytooter.api.entity.TootTag;
+import jp.juggler.subwaytooter.table.SavedAccount;
 
 public class HTMLDecoder {
 	static final LogCategory log = new LogCategory( "HTMLDecoder" );
@@ -81,6 +82,7 @@ public class HTMLDecoder {
 					is_openclose = ! TextUtils.isEmpty( m2.group( 1 ) );
 				}
 				open_type = is_close ? OPEN_TYPE_CLOSE : is_openclose ? OPEN_TYPE_OPENCLOSE : OPEN_TYPE_OPEN;
+				if( tag.equals( "br" )) open_type = OPEN_TYPE_OPENCLOSE;
 			}else{
 				tag = TAG_TEXT;
 				this.open_type = OPEN_TYPE_OPENCLOSE;
@@ -89,7 +91,7 @@ public class HTMLDecoder {
 	}
 	
 	public interface LinkClickCallback {
-		void onClickLink( String url );
+		void onClickLink( LinkClickContext account,String url );
 	}
 	
 	public static LinkClickCallback link_callback;
@@ -139,7 +141,7 @@ public class HTMLDecoder {
 		
 
 		
-		public void encodeSpan( SpannableStringBuilder sb ){
+		public void encodeSpan( final LinkClickContext account,SpannableStringBuilder sb ){
 			if( TAG_TEXT.equals( tag ) ){
 				sb.append( Emojione.decodeEmoji( decodeEntity( text ) ) );
 				return;
@@ -149,7 +151,7 @@ public class HTMLDecoder {
 			int start = sb.length();
 			
 			for( Node child : child_nodes ){
-				child.encodeSpan( sb );
+				child.encodeSpan( account,sb );
 			}
 			
 			if( "a".equals( tag ) ){
@@ -161,7 +163,7 @@ public class HTMLDecoder {
 							@Override
 							public void onClick( View widget ){
 								if( link_callback != null ){
-									link_callback.onClickLink( href );
+									link_callback.onClickLink( account,href );
 								}
 							}
 						}, start, sb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
@@ -180,7 +182,7 @@ public class HTMLDecoder {
 	
 	
 	
-	public static SpannableStringBuilder decodeHTML( String src ){
+	public static SpannableStringBuilder decodeHTML( LinkClickContext account, String src ){
 		try{
 			TokenParser tracker = new TokenParser( src );
 			Node rootNode = new Node();
@@ -188,13 +190,15 @@ public class HTMLDecoder {
 			
 			SpannableStringBuilder sb = new SpannableStringBuilder();
 			
-			rootNode.encodeSpan( sb );
+			rootNode.encodeSpan( account, sb );
 			int end = sb.length();
 			while( end > 0 && Character.isWhitespace( sb.charAt( end-1 ) ) ) --end;
 			if( end < sb.length() ){
 				sb.delete( end,sb.length() );
 			}
 			
+//			sb.append( "\n" );
+//			sb.append( src );
 			return sb;
 			
 		}catch( Throwable ex ){
@@ -203,7 +207,7 @@ public class HTMLDecoder {
 		return null;
 	}
 	
-	public static Spannable decodeTags( TootTag.List src_list ){
+	public static Spannable decodeTags( final LinkClickContext account,TootTag.List src_list ){
 		if( src_list == null || src_list.isEmpty()) return null;
 		SpannableStringBuilder sb = new SpannableStringBuilder();
 		for(TootTag item : src_list){
@@ -215,7 +219,7 @@ public class HTMLDecoder {
 			sb.setSpan( new ClickableSpan() {
 				@Override public void onClick( View widget ){
 					if( link_callback != null ){
-						link_callback.onClickLink( item_url );
+						link_callback.onClickLink( account,item_url );
 					}
 				}
 			}, start, sb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
@@ -223,7 +227,7 @@ public class HTMLDecoder {
 		return sb;
 	}
 	
-	public static Spannable decodeMentions( TootMention.List src_list ){
+	public static Spannable decodeMentions( final LinkClickContext account, TootMention.List src_list ){
 		if( src_list == null || src_list.isEmpty()) return null;
 		SpannableStringBuilder sb = new SpannableStringBuilder();
 		for(TootMention item : src_list){
@@ -235,7 +239,7 @@ public class HTMLDecoder {
 			sb.setSpan( new ClickableSpan() {
 				@Override public void onClick( View widget ){
 					if( link_callback != null ){
-						link_callback.onClickLink( item_url );
+						link_callback.onClickLink( account,item_url );
 					}
 				}
 			}, start, sb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );

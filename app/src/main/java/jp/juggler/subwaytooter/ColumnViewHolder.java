@@ -371,7 +371,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			switch( v.getId() ){
 			case R.id.ivBackground:
 				if( who != null ){
-					activity.openBrowser( who.url );
+					activity.openBrowser(  access_info,who.url );
 				}
 				break;
 			case R.id.btnFollowing:
@@ -433,7 +433,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		final ImageButton btnMore;
 		
 		TootStatus status;
-		SavedAccount account;
+		SavedAccount access_info;
 		TootAccount account_thumbnail;
 		TootAccount account_boost;
 		TootAccount account_follow;
@@ -508,7 +508,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		}
 		
 		public void bind( ActMain activity, View view, Object item, SavedAccount access_info ){
-			this.account = access_info;
+			this.access_info = access_info;
 			
 			llBoosted.setVisibility( View.GONE );
 			llFollow.setVisibility( View.GONE );
@@ -696,11 +696,11 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		public void onClick( View v ){
 			switch( v.getId() ){
 			case R.id.btnHideMedia:
-				MediaShown.save( account.host, status.id, false );
+				MediaShown.save( access_info.host, status.id, false );
 				btnShowMedia.setVisibility( View.VISIBLE );
 				break;
 			case R.id.btnShowMedia:
-				MediaShown.save( account.host, status.id, true );
+				MediaShown.save( access_info.host, status.id, true );
 				btnShowMedia.setVisibility( View.GONE );
 				break;
 			case R.id.ivMedia1:
@@ -717,37 +717,37 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				break;
 			case R.id.btnContentWarning:{
 				boolean new_shown = ( llContents.getVisibility() == View.GONE );
-				ContentWarning.save( account.host, status.id, new_shown );
+				ContentWarning.save( access_info.host, status.id, new_shown );
 				showContent( new_shown );
 				break;
 			}
 			
 			case R.id.btnConversation:
-				activity.performConversation( account, status );
+				activity.performConversation( access_info, status );
 				break;
 			case R.id.btnReply:
-				activity.performReply( account, status );
+				activity.performReply( access_info, status );
 				break;
 			case R.id.btnBoost:
-				activity.performBoost( account, status, false );
+				activity.performBoost( access_info, status, false );
 				break;
 			case R.id.btnFavourite:
-				activity.performFavourite( account, status );
+				activity.performFavourite( access_info, status );
 				break;
 			case R.id.btnMore:
-				activity.performStatusMore( account, status );
+				activity.performStatusMore( access_info, status );
 				break;
 			case R.id.ivThumbnail:
-				activity.performOpenUser( account, account_thumbnail );
+				activity.performOpenUser( access_info, account_thumbnail );
 				break;
 			case R.id.llBoosted:
-				activity.performOpenUser( account, account_boost );
+				activity.performOpenUser( access_info, account_boost );
 				break;
 			case R.id.llFollow:
-				activity.performOpenUser( account, account_follow );
+				activity.performOpenUser( access_info, account_follow );
 				break;
 			case R.id.btnFollow:
-				activity.performAccountMore( account,account_follow);
+				activity.performAccountMore( access_info,account_follow);
 			}
 		}
 		
@@ -759,14 +759,14 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				if( TextUtils.isEmpty( sv ) ){
 					sv = a.url;
 				}
-				activity.openChromeTab( sv );
+				activity.openChromeTab( access_info,sv ,false);
 			}catch( Throwable ex ){
 				ex.printStackTrace();
 			}
 		}
 		
 		public void onItemClick(){
-			activity.performConversation( account, status );
+			activity.performConversation( access_info, status );
 		}
 	}
 	

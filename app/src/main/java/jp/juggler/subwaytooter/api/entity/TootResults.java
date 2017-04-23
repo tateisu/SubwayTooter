@@ -4,6 +4,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -17,12 +18,12 @@ public class TootResults {
 	//	An array of matched hashtags, as strings
 	public ArrayList< String > hashtags;
 	
-	public static TootResults parse( LogCategory log, JSONObject src ){
+	public static TootResults parse( LogCategory log, LinkClickContext account,JSONObject src ){
 		if( src == null ) return null;
 		try{
 			TootResults dst = new TootResults();
-			dst.accounts = TootAccount.parseList( log, src.optJSONArray( "accounts" ) );
-			dst.statuses = TootStatus.parseList( log, src.optJSONArray( "statuses" ) );
+			dst.accounts = TootAccount.parseList( log, account, src.optJSONArray( "accounts" ) );
+			dst.statuses = TootStatus.parseList( log, account, src.optJSONArray( "statuses" ) );
 			dst.hashtags = Utils.parseStringArray( log, src.optJSONArray( "hashtags" ) );
 			return dst;
 		}catch( Throwable ex ){

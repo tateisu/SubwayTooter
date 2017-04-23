@@ -5,6 +5,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -32,15 +33,15 @@ public class TootNotification extends TootId {
 	
 	public long time_created_at;
 	
-	public static TootNotification parse( LogCategory log, JSONObject src ){
+	public static TootNotification parse( LogCategory log, LinkClickContext accopunt, JSONObject src ){
 		if( src == null ) return null;
 		try{
 			TootNotification dst = new TootNotification();
 			dst.id = src.optLong( "id" );
 			dst.type = Utils.optStringX( src, "type" );
 			dst.created_at = Utils.optStringX( src, "created_at" );
-			dst.account = TootAccount.parse( log, src.optJSONObject( "account" ) );
-			dst.status = TootStatus.parse( log, src.optJSONObject( "status" ) );
+			dst.account = TootAccount.parse( log, accopunt,  src.optJSONObject( "account" ) );
+			dst.status = TootStatus.parse( log, accopunt,  src.optJSONObject( "status" ) );
 			
 			dst.time_created_at = TootStatus.parseTime( log, dst.created_at );
 			
@@ -62,13 +63,13 @@ public class TootNotification extends TootId {
 		}
 	}
 	
-	public static List parseList( LogCategory log, JSONArray array ){
+	public static List parseList( LogCategory log,  LinkClickContext accopunt,JSONArray array ){
 		List result = new List();
 		if( array != null ){
 			for( int i = array.length() - 1 ; i >= 0 ; -- i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootNotification item = parse( log, src );
+				TootNotification item = parse( log, accopunt,src );
 				if( item != null ) result.add( 0, item );
 			}
 		}

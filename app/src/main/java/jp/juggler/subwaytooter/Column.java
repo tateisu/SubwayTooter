@@ -37,21 +37,23 @@ public class Column {
 	static final String KEY_TYPE = "type";
 	static final String KEY_WHO_ID = "who_id";
 	static final String KEY_STATUS_ID = "status_id";
+	static final String KEY_HASHTAG = "hashtag";
 
 	static final String KEY_COLUMN_ACCESS = "column_access";
 	static final String KEY_COLUMN_NAME = "column_name";
 	static final String KEY_OLD_INDEX = "old_index";
 	
-	final ActMain activity;
+	private final ActMain activity;
 	final SavedAccount access_info;
 	final int type;
-	final long who_id;
+	
+	long who_id;
 	long status_id;
-
+	String hashtag;
 	int profile_tab = 0;
 	
-	public int scroll_pos;
-	public int scroll_y;
+	int scroll_pos;
+	int scroll_y;
 	
 	static final int TYPE_TL_HOME = 1;
 	static final int TYPE_TL_LOCAL = 2;
@@ -61,45 +63,43 @@ public class Column {
 	static final int TYPE_TL_REPORTS = 6;
 	static final int TYPE_TL_NOTIFICATIONS = 7;
 	static final int TYPE_TL_CONVERSATION = 8;
+	static final int TYPE_TL_HASHTAG = 9;
 	
-	public Column( ActMain activity, SavedAccount access_info, int type ){
-		this( activity, access_info, type, access_info.id );
-	}
-	
-	public Column( ActMain activity, SavedAccount access_info, int type, long who_id, Object... params ){
+
+	Column( ActMain activity, SavedAccount access_info, int type, Object... params ){
 		this.activity = activity;
 		this.access_info = access_info;
 		this.type = type;
-		this.who_id = who_id;
-		if( type == TYPE_TL_CONVERSATION ){
-			if( params==null || params.length < 1 ) throw new IndexOutOfBoundsException( "TYPE_TL_CONVERSATION requires status_id as Long" );
-			if( !( params[0] instanceof Long ) )throw new IllegalArgumentException( "TYPE_TL_CONVERSATION status_id is not Long" );
-			status_id = (Long) params[0];
+		switch(type){
+		case TYPE_TL_CONVERSATION:
+			this.status_id = (Long)getParamAt( params,0 );
+			break;
+		case TYPE_TL_STATUSES:
+			this.who_id = (Long)getParamAt( params,0 );
+			break;
+		case TYPE_TL_HASHTAG:
+			this.hashtag = (String)getParamAt( params,0 );
+			break;
 		}
+
 		startLoading();
-	}
-	
-	public Column( ActMain activity, JSONObject src ){
-		this.activity = activity;
-		this.access_info = SavedAccount.loadAccount( log, src.optLong( KEY_ACCOUNT_ROW_ID ) );
-		if( access_info == null ) throw new RuntimeException( "missing account" );
-		this.type = src.optInt( KEY_TYPE );
-		this.who_id = src.optLong( KEY_WHO_ID );
-		this.status_id = src.optLong( KEY_STATUS_ID );
-		startLoading();
-	}
-	
-	final AtomicBoolean is_dispose = new AtomicBoolean();
-	
-	void dispose(){
-		is_dispose.set( true );
 	}
 	
 	public void encodeJSON( JSONObject item, int old_index ) throws JSONException{
 		item.put( KEY_ACCOUNT_ROW_ID, access_info.db_id );
 		item.put( KEY_TYPE, type );
-		item.put( KEY_WHO_ID, who_id );
-		item.put( KEY_STATUS_ID,status_id);
+		
+		switch(type){
+		case TYPE_TL_CONVERSATION:
+			item.put( KEY_STATUS_ID,status_id);
+			break;
+		case TYPE_TL_STATUSES:
+			item.put( KEY_WHO_ID, who_id );
+			break;
+		case TYPE_TL_HASHTAG:
+			item.put( KEY_HASHTAG,hashtag );
+			break;
+		}
 		
 		// 以下は保存には必要ないが、カラムリスト画面で使う
 		item.put( KEY_COLUMN_ACCESS, access_info.user );
@@ -107,14 +107,44 @@ public class Column {
 		item.put( KEY_OLD_INDEX, old_index );
 	}
 	
+	
+	Column( ActMain activity, JSONObject src ){
+		this.activity = activity;
+		this.access_info = SavedAccount.loadAccount( log, src.optLong( KEY_ACCOUNT_ROW_ID ) );
+		if( access_info == null ) throw new RuntimeException( "missing account" );
+		this.type = src.optInt( KEY_TYPE );
+		switch(type){
+		case TYPE_TL_CONVERSATION:
+			this.status_id = src.optLong( KEY_STATUS_ID );
+			break;
+		case TYPE_TL_STATUSES:
+			this.who_id = src.optLong( KEY_WHO_ID );
+			break;
+		case TYPE_TL_HASHTAG:
+			this.hashtag = src.optString( KEY_HASHTAG );
+			break;
+		}
+		startLoading();
+	}
+
+	final AtomicBoolean is_dispose = new AtomicBoolean();
+	
+	void dispose(){
+		is_dispose.set( true );
+	}
+	
 	public String getColumnName(){
 		switch( type ){
+
 		default:
 			return "?";
+
 		case TYPE_TL_HOME:
 			return activity.getString( R.string.home );
+
 		case TYPE_TL_LOCAL:
 			return activity.getString( R.string.local_timeline );
+
 		case TYPE_TL_FEDERATE:
 			return activity.getString( R.string.federate_timeline );
 		
@@ -131,12 +161,59 @@ public class Column {
 		
 		case TYPE_TL_NOTIFICATIONS:
 			return activity.getString( R.string.notifications );
+
 		case TYPE_TL_CONVERSATION:
 			return activity.getString( R.string.conversation_around,status_id );
+		
+		case TYPE_TL_HASHTAG:
+			return activity.getString( R.string.hashtag_of ,hashtag );
 		}
 	}
 	
+	
+	Object getParamAt(Object[] params,int idx){
+		if( params == null || idx >= params.length){
+			throw new IndexOutOfBoundsException( "getParamAt idx="+idx );
+		}
+		return params[idx];
+	}
+	
+	public boolean isSameSpec( SavedAccount ai, int type, Object[] params ){
+		if( type != this.type || ! Utils.equalsNullable(ai.user,access_info.user ) ) return false;
+		switch( type ){
+		default:
+			return true;
 
+		case TYPE_TL_STATUSES:
+			// プロフィール画面
+			try{
+				long who_id = (Long)getParamAt( params, 0 );
+				return who_id == this.who_id;
+			}catch(Throwable ex){
+				return false;
+			}
+
+		case TYPE_TL_CONVERSATION:
+			// 会話画面
+			try{
+				long status_id = (Long)getParamAt( params, 0 );
+				return status_id == this.status_id;
+			}catch(Throwable ex){
+				return false;
+			}
+
+		case TYPE_TL_HASHTAG:
+			// 会話画面
+			try{
+				long status_id = (Long)getParamAt( params, 0 );
+				return status_id == this.status_id;
+			}catch(Throwable ex){
+				return false;
+			}
+			
+		}
+	}
+	
 	public interface StatusEntryCallback {
 		void onIterate( TootStatus status );
 	}
@@ -292,7 +369,7 @@ public class Column {
 			TootApiResult parseStatuses( TootApiResult result ){
 				if( result != null ){
 					saveRange( result, true, true );
-					tmp_list_status = TootStatus.parseList( log, result.array );
+					tmp_list_status = TootStatus.parseList( log, access_info,result.array );
 				}
 				return result;
 			}
@@ -300,7 +377,7 @@ public class Column {
 			TootApiResult parseAccount( TootApiResult result ){
 				if( result != null ){
 					saveRange( result, true, true );
-					who_account = TootAccount.parse( log, result.object );
+					who_account = TootAccount.parse( log,  access_info,result.object );
 				}
 				return result;
 			}
@@ -316,7 +393,7 @@ public class Column {
 			TootApiResult parseNotifications( TootApiResult result ){
 				if( result != null ){
 					saveRange( result, true, true );
-					tmp_list_notification = TootNotification.parseList( log, result.array );
+					tmp_list_notification = TootNotification.parseList( log, access_info,result.array );
 				}
 				return result;
 			}
@@ -365,6 +442,9 @@ public class Column {
 				
 				case TYPE_TL_FAVOURITES:
 					return parseStatuses( client.request( PATH_TL_FAVOURITES ) );
+
+				case TYPE_TL_HASHTAG:
+					return parseStatuses( client.request( "/api/v1/timelines/tag/"+hashtag+"?limit=80" ) );
 				
 				case TYPE_TL_REPORTS:
 					return parseReports( client.request( PATH_TL_REPORTS ) );
@@ -375,12 +455,12 @@ public class Column {
 				case TYPE_TL_CONVERSATION:
 					TootApiResult result = client.request( "/api/v1/statuses/"+status_id );
 					if( result== null || result.object == null ) return result;
-					TootStatus target_status = TootStatus.parse( log,result.object );
+					TootStatus target_status = TootStatus.parse( log, access_info,result.object );
 					target_status.conversation_main = true;
 					//
 					result = client.request( "/api/v1/statuses/"+status_id+"/context" );
 					if( result== null || result.object == null ) return result;
-					TootContext context = TootContext.parse( log,result.object );
+					TootContext context = TootContext.parse( log,access_info,result.object );
 					tmp_list_status = new TootStatus.List();
 					if( context.ancestors != null ) tmp_list_status.addAll( context.ancestors);
 					tmp_list_status.add(target_status);
@@ -415,6 +495,7 @@ public class Column {
 					case TYPE_TL_STATUSES:
 					case TYPE_TL_FAVOURITES:
 					case TYPE_TL_CONVERSATION:
+					case TYPE_TL_HASHTAG:
 						initList( status_list, tmp_list_status );
 						break;
 					
@@ -526,7 +607,7 @@ public class Column {
 			TootApiResult parseStatuses( TootApiResult result ){
 				if( result != null ){
 					saveRange( result, bBottom, ! bBottom );
-					tmp_list_status = TootStatus.parseList( log, result.array );
+					tmp_list_status = TootStatus.parseList( log, access_info, result.array );
 				}
 				return result;
 			}
@@ -534,7 +615,7 @@ public class Column {
 			TootApiResult parseAccount( TootApiResult result ){
 				if( result != null ){
 					saveRange( result, bBottom, ! bBottom );
-					who_account = TootAccount.parse( log, result.object );
+					who_account = TootAccount.parse( log,  access_info,result.object );
 				}
 				return result;
 			}
@@ -550,7 +631,7 @@ public class Column {
 			TootApiResult parseNotifications( TootApiResult result ){
 				if( result != null ){
 					saveRange( result, bBottom, ! bBottom );
-					tmp_list_notification = TootNotification.parseList( log, result.array );
+					tmp_list_notification = TootNotification.parseList( log, access_info,result.array );
 				}
 				return result;
 			}
@@ -600,6 +681,9 @@ public class Column {
 				case TYPE_TL_FAVOURITES:
 					return parseStatuses( client.request( addRange( bBottom, PATH_TL_FAVOURITES ) ) );
 				
+				case TYPE_TL_HASHTAG:
+					return parseStatuses( client.request(  addRange( bBottom,"/api/v1/timelines/tag/"+hashtag+"?limit=80" ) ) );
+				
 				case TYPE_TL_REPORTS:
 					return parseReports( client.request( addRange( bBottom, PATH_TL_REPORTS ) ) );
 				
@@ -633,6 +717,7 @@ public class Column {
 					case TYPE_TL_FEDERATE:
 					case TYPE_TL_STATUSES:
 					case TYPE_TL_FAVOURITES:
+					case TYPE_TL_HASHTAG:
 						mergeList( status_list, tmp_list_status, bBottom );
 						break;
 					

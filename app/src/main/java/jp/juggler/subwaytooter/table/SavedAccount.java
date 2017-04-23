@@ -12,9 +12,10 @@ import java.util.ArrayList;
 
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
+import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 
-public class SavedAccount extends TootAccount{
+public class SavedAccount extends TootAccount implements LinkClickContext{
 	private static final LogCategory log = new LogCategory( "SavedAccount" );
 	
 	private static final String table = "access_info";
@@ -63,7 +64,8 @@ public class SavedAccount extends TootAccount{
 	
 	private static SavedAccount parse(  Cursor cursor ) throws JSONException{
 		JSONObject src = new JSONObject( cursor.getString( cursor.getColumnIndex( COL_ACCOUNT ) ) );
-		SavedAccount dst = (SavedAccount)parse(log,src,new SavedAccount());
+		SavedAccount dst = new SavedAccount();
+		dst = (SavedAccount)parse(log,dst,src,dst);
 		if( dst != null){
 			dst.db_id = cursor.getLong( cursor.getColumnIndex( COL_ID ) );
 			dst.host = cursor.getString( cursor.getColumnIndex( COL_HOST ) );

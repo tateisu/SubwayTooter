@@ -33,7 +33,11 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
@@ -44,6 +48,7 @@ import jp.juggler.subwaytooter.dialog.LoginForm;
 import jp.juggler.subwaytooter.dialog.ReportForm;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
+import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 import okhttp3.Request;
@@ -318,7 +323,10 @@ public class ActMain extends AppCompatActivity
 						
 						TootApiResult result = api_client.request( "/api/v1/accounts/verify_credentials" );
 						if( result != null && result.object != null ){
-							TootAccount ta = TootAccount.parse( log, result.object );
+							// taは使い捨てなので、生成に使うLinkClickContextはダミーで問題ない
+							LinkClickContext lcc = new LinkClickContext() {
+							};
+							TootAccount ta = TootAccount.parse( log, lcc,result.object );
 							String user = ta.username + "@" + instance;
 							this.row_id = SavedAccount.insert( instance, user, result.object, result.token_info );
 						}
@@ -386,56 +394,82 @@ public class ActMain extends AppCompatActivity
 	//////////////////////////////////////////////////////////////
 	// カラム追加系
 	
-	public void addColumn( SavedAccount ai, int type, long who, long status_id ){
+	public void addColumn( SavedAccount ai, int type, Object... params ){
 		// 既に同じカラムがあればそこに移動する
 		for( Column column : pager_adapter.column_list ){
-			if( ai.user.equals( column.access_info.user )
-				&& column.type == type
-				&& column.who_id == who
-				&& column.status_id == status_id
-				){
+			if( column.isSameSpec( ai, type, params ) ){
 				pager.setCurrentItem( pager_adapter.column_list.indexOf( column ), true );
 				return;
 			}
 		}
-		
+		//
 		llEmpty.setVisibility( View.GONE );
 		//
-		Column col = new Column( ActMain.this, ai, type, who, status_id );
+		Column col = new Column( ActMain.this, ai, type, params );
 		int idx = pager_adapter.addColumn( pager, col );
 		pager.setCurrentItem( idx, true );
 	}
 	
 	private void onAccountUpdated( SavedAccount data ){
 		Utils.showToast( this, false, R.string.account_confirmed );
-		addColumn( data, Column.TYPE_TL_HOME, data.id, 0L );
+		addColumn( data, Column.TYPE_TL_HOME );
 	}
 	
 	void performOpenUser( SavedAccount access_info, TootAccount user ){
-		addColumn( access_info, Column.TYPE_TL_STATUSES, user.id, 0L );
+		addColumn( access_info, Column.TYPE_TL_STATUSES, user.id );
 	}
 	
 	public void performConversation( SavedAccount access_info, TootStatus status ){
-		addColumn( access_info, Column.TYPE_TL_CONVERSATION, access_info.id, status.id );
+		addColumn( access_info, Column.TYPE_TL_CONVERSATION, status.id );
 	}
 	
 	private void performAddTimeline( final int type ){
 		AccountPicker.pick( this, new AccountPicker.AccountPickerCallback() {
 			@Override
 			public void onAccountPicked( SavedAccount ai ){
-				addColumn( ai, type, ai.id, 0L );
+				addColumn( ai, type, ai.id );
 			}
 		} );
 	}
 	
-	//////////////////////////////////////////////////////////////
-	
-	public void openBrowser( String url ){
-		openChromeTab( url );
+	public void openHashTag( SavedAccount access_info, String tag ){
+		addColumn( access_info, Column.TYPE_TL_HASHTAG, tag );
 	}
 	
-	public void openChromeTab( String url ){
+	//////////////////////////////////////////////////////////////
+	
+	public void openBrowser(SavedAccount account,  String url ){
+		openChromeTab( account,url,false );
+	}
+	
+	Pattern reHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#]+)\\z" );
+	
+	
+	public void openChromeTab( SavedAccount account, String url ,boolean noIntercept ){
 		try{
+			log.d("openChromeTab url=%s",url);
+			
+			if(!noIntercept){
+				// ハッシュタグをアプリ内で開く
+				Matcher m = reHashTag.matcher( url );
+				if( m.find() ){
+					// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
+					String host = m.group( 1 );
+					String tag = m.group( 2 );
+					if( tag.length() > 0 ){
+						if( host.equalsIgnoreCase( account.host ) ){
+							openHashTag( account, Uri.decode( tag ) );
+							return;
+						}else{
+							openHashTagOtherInstance( account,url, host,Uri.decode(tag) );
+							return;
+							
+							
+						}
+					}
+				}
+			}
+			
 			// ビルダーを使って表示方法を指定する
 			CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
 			builder.setToolbarColor( ContextCompat.getColor( this, R.color.colorPrimary ) ).setShowTitle( true );
@@ -450,10 +484,90 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
+	static class Action{
+		String caption;
+		Runnable runnable;
+	}
+	
+	// 他インスタンスのハッシュタグの表示
+	private void openHashTagOtherInstance( final SavedAccount access_info,final String url,String host, final String tag ){
+		final ArrayList<Action> action_list = new ArrayList<>();
+		
+		ArrayList<SavedAccount> account_list = new ArrayList<>(  );
+		for(SavedAccount a : SavedAccount.loadAccountList( log )){
+			if( a.host.equalsIgnoreCase( host )){
+				account_list.add(a);
+			}
+		}
+		Collections.sort( account_list,new Comparator< SavedAccount >() {
+			@Override
+			public int compare( SavedAccount a, SavedAccount b ){
+				return String.CASE_INSENSITIVE_ORDER.compare( a.getFullAcct( a ), b.getFullAcct( b ) );
+			}
+		} );
+		for( SavedAccount a : account_list ){
+			Action action = new Action();
+			action.caption = getString(R.string.open_in_account,a.user);
+			final SavedAccount _a = a;
+			action.runnable = new Runnable() {
+				@Override
+				public void run(){
+					openHashTag( _a,tag );
+				}
+			};
+			action_list.add( action);
+		}
+		if( account_list.isEmpty() ){
+			// TODO ログインなしアカウントで開く選択肢
+		}
+		// カラムのアカウントで開く
+		{
+			Action action = new Action();
+			action.caption = getString(R.string.open_in_account,access_info.user);
+			final SavedAccount _a = access_info;
+			action.runnable = new Runnable() {
+				@Override
+				public void run(){
+					openHashTag( _a,tag );
+				}
+			};
+			action_list.add( action);
+		}
+		// ブラウザで表示する
+		{
+			Action action = new Action();
+			action.caption = getString(R.string.open_web_on_host,host);
+			action.runnable = new Runnable() {
+				@Override
+				public void run(){
+					openChromeTab( access_info,url,true);
+				}
+			};
+			action_list.add( action);
+		}
+		
+		String[] caption_list = new String[action_list.size()];
+		for(int i=0,ie=caption_list.length;i<ie;++i){
+			caption_list[i] = action_list.get(i).caption;
+		}
+		new AlertDialog.Builder( this )
+			.setTitle( "#"+tag)
+			.setNegativeButton( R.string.cancel,null )
+			.setItems( caption_list, new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick( DialogInterface dialog, int which ){
+					if( which >= 0 && which < action_list.size()){
+						action_list.get(which).runnable.run();
+					}
+				}
+			})
+			.show();
+	}
+	
 	final HTMLDecoder.LinkClickCallback link_click_listener = new HTMLDecoder.LinkClickCallback() {
 		@Override
-		public void onClickLink( String url ){
-			openChromeTab( url );
+		public void onClickLink( LinkClickContext lcc,String url ){
+			openChromeTab( (SavedAccount)lcc,url ,false );
 		}
 	};
 	
@@ -469,7 +583,7 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	public void performMention( SavedAccount account, TootAccount who ){
-		ActPost.open( this, account.db_id, account.getFullAcct( who ) +" " );
+		ActPost.open( this, account.db_id, account.getFullAcct( who ) + " " );
 	}
 	
 	/////////////////////////////////////////////////////////////////////////
@@ -534,7 +648,7 @@ public class ActMain extends AppCompatActivity
 					)
 					, request_builder );
 				if( result.object != null ){
-					new_status = TootStatus.parse( log, result.object );
+					new_status = TootStatus.parse( log,account, result.object );
 				}
 				
 				return result;
@@ -657,7 +771,7 @@ public class ActMain extends AppCompatActivity
 					// reblog,unreblog のレスポンスは信用ならんのでステータスを再取得する
 					result = client.request( "/api/v1/statuses/" + status.id );
 					if( result.object != null ){
-						new_status = TootStatus.parse( log, result.object );
+						new_status = TootStatus.parse( log, account,result.object );
 					}
 				}
 				
@@ -1125,7 +1239,7 @@ public class ActMain extends AppCompatActivity
 						break;
 					
 					case 7:
-						performReport( account, who ,null );
+						performReport( account, who, null );
 						break;
 					}
 				}

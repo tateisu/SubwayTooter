@@ -219,7 +219,7 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 						
 						TootApiResult result = api_client.request( "/api/v1/accounts/verify_credentials" );
 						if( result != null && result.object != null ){
-							TootAccount ta = TootAccount.parse( log, result.object );
+							TootAccount ta = TootAccount.parse( log, account,result.object );
 							
 							if( ! ta.username.equals( account.username ) ){
 								return new TootApiResult( getString( R.string.user_name_not_match ) );

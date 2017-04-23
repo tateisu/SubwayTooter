@@ -149,4 +149,9 @@
     <string name="comment_empty">please comment for any reason to report</string>
     <string name="report_completed">report completed.</string>
     <string name="mention">mention</string>
+    <string name="hashtag_of">hashtag :#%1$s</string>
+    <string name="open_in_account">open with %1$s</string>
+    <string name="open_in_browser"/>
+    <string name="open_web_page">open web page</string>
+    <string name="open_web_on_host">open web page on %1$s</string>
 </resources>

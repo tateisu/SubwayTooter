@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.api.entity;
 
 import org.json.JSONObject;
 
+import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 
 public class TootContext {
@@ -12,12 +13,12 @@ public class TootContext {
 	// descendants	The descendants of the status in the conversation, as a list of Statuses
 	public TootStatus.List descendants;
 	
-	public static TootContext parse( LogCategory log, JSONObject src ){
+	public static TootContext parse( LogCategory log, LinkClickContext account,JSONObject src ){
 		if( src==null) return null;
 		try{
 			TootContext dst = new TootContext();
-			dst.ancestors = TootStatus.parseList( log,src.optJSONArray( "ancestors" ) );
-			dst.descendants = TootStatus.parseList(log, src.optJSONArray( "descendants" ) );
+			dst.ancestors = TootStatus.parseList( log, account,src.optJSONArray( "ancestors" ) );
+			dst.descendants = TootStatus.parseList(log, account, src.optJSONArray( "descendants" ) );
 			return dst;
 		}catch( Throwable ex ){
 			ex.printStackTrace();

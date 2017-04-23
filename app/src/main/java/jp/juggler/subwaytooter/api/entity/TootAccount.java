@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.api.entity;
 import android.text.Spannable;
 import android.text.TextUtils;
 
+import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.Emojione;
 
 import org.json.JSONArray;
@@ -11,6 +12,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import jp.juggler.subwaytooter.util.HTMLDecoder;
+import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -70,7 +72,7 @@ public class TootAccount {
 	
 	public long time_created_at;
 	
-	public static TootAccount parse( LogCategory log, JSONObject src, TootAccount dst ){
+	public static TootAccount parse( LogCategory log, LinkClickContext account, JSONObject src, TootAccount dst ){
 		if( src == null ) return null;
 		try{
 			dst.id = src.optLong( "id" );
@@ -89,7 +91,7 @@ public class TootAccount {
 			dst.followers_count = src.optLong( "followers_count" );
 			dst.following_count = src.optLong( "following_count" );
 			dst.statuses_count = src.optLong( "statuses_count" );
-			dst.note = HTMLDecoder.decodeHTML( Utils.optStringX( src, "note" ) );
+			dst.note = HTMLDecoder.decodeHTML( account,Utils.optStringX( src, "note" ) );
 			dst.url = Utils.optStringX( src, "url" );
 			dst.avatar = Utils.optStringX( src, "avatar" ); // "https:\/\/mastodon.juggler.jp\/system\/accounts\/avatars\/000\/000\/148\/original\/0a468974fac5a448.PNG?1492081886",
 			dst.avatar_static = Utils.optStringX( src, "avatar_static" ); // "https:\/\/mastodon.juggler.jp\/system\/accounts\/avatars\/000\/000\/148\/original\/0a468974fac5a448.PNG?1492081886",
@@ -107,17 +109,17 @@ public class TootAccount {
 		}
 	}
 	
-	public static TootAccount parse( LogCategory log, JSONObject src ){
-		return parse( log, src, new TootAccount() );
+	public static TootAccount parse( LogCategory log, LinkClickContext account,JSONObject src ){
+		return parse( log, account, src, new TootAccount() );
 	}
 	
-	public static List parseList( LogCategory log, JSONArray array ){
+	public static List parseList( LogCategory log,  LinkClickContext account,JSONArray array ){
 		List result = new List();
 		if( array != null ){
 			for( int i = array.length() - 1 ; i >= 0 ; -- i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootAccount item = parse( log, src );
+				TootAccount item = parse( log, account,src );
 				if( item != null ) result.add( 0, item );
 			}
 		}

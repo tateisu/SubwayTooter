@@ -368,6 +368,7 @@ class Column {
 	void reload(){
 		status_list.clear();
 		notification_list.clear();
+		report_list.clear();
 		result_list.clear();
 		startLoading();
 	}

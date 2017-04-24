@@ -224,6 +224,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				status_adapter.set( column.status_list );
 			}
 			break;
+		
 		case Column.TYPE_REPORTS:
 			if( column.report_list.isEmpty() ){
 				showError( activity.getString( R.string.list_empty ) );
@@ -233,6 +234,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				status_adapter.set( column.report_list );
 			}
 			break;
+		
 		case Column.TYPE_NOTIFICATIONS:
 			if( column.notification_list.isEmpty() ){
 				showError( activity.getString( R.string.list_empty ) );
@@ -241,6 +243,8 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				swipyRefreshLayout.setVisibility( View.VISIBLE );
 				status_adapter.set( column.notification_list );
 			}
+			break;
+		
 		case Column.TYPE_SEARCH:
 			if( column.result_list.isEmpty() ){
 				showError( activity.getString( R.string.list_empty ) );

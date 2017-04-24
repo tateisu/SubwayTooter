@@ -55,7 +55,17 @@
             style="@style/setting_row_label"
             android:text="@string/actions"
             />
+        <LinearLayout style="@style/setting_row_form">
 
+            <Button
+                android:id="@+id/btnOpenBrowser"
+                style="@style/setting_horizontal_stretch"
+                android:ellipsize="start"
+                android:text="@string/update_access_token"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
         <LinearLayout style="@style/setting_row_form">
 
             <Button
@@ -63,6 +73,7 @@
                 style="@style/setting_horizontal_stretch"
                 android:ellipsize="start"
                 android:text="@string/update_access_token"
+                android:textAllCaps="false"
                 />
 
         </LinearLayout>
@@ -74,6 +85,7 @@
                 style="@style/setting_horizontal_stretch"
                 android:ellipsize="start"
                 android:text="@string/account_remove"
+                android:textAllCaps="false"
                 />
 
         </LinearLayout>

@@ -173,8 +173,10 @@ public class HTMLDecoder {
 			
 			if( "br".equals( tag ) ) sb.append( '\n' );
 			if( "p".equals( tag ) ){
-				if( sb.charAt( sb.length()-1 ) != '\n' ) sb.append( '\n' );
-				sb.append( '\n' );
+				if( sb.length() > 0 ){
+					if(sb.charAt( sb.length()-1 ) != '\n' ) sb.append( '\n' );
+					sb.append( '\n' );
+				}
 			}
 		}
 	}

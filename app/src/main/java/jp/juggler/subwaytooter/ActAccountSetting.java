@@ -1,10 +1,10 @@
 package jp.juggler.subwaytooter;
 
-import android.app.Dialog;
+import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -19,9 +19,7 @@ import android.widget.TextView;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
-import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
-import jp.juggler.subwaytooter.dialog.LoginForm;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
@@ -31,10 +29,10 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 	
 	static final String KEY_ACCOUNT_DB_ID = "account_db_id";
 	
-	public static void open( Context context, SavedAccount ai ){
-		Intent intent = new Intent( context, ActAccountSetting.class );
+	public static void open( Activity activity, SavedAccount ai ,int requestCode){
+		Intent intent = new Intent( activity, ActAccountSetting.class );
 		intent.putExtra( KEY_ACCOUNT_DB_ID, ai.db_id );
-		context.startActivity( intent );
+		activity.startActivityForResult( intent ,requestCode);
 	}
 	
 	SavedAccount account;
@@ -47,6 +45,7 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 		if( account == null ) finish();
 		loadUIFromData( account );
 		
+		btnOpenBrowser.setText(getString(R.string.open_instance_website,account.host));
 	}
 	
 	TextView tvInstance;
@@ -56,6 +55,7 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 	Button btnVisibility;
 	Switch swConfirmBeforeBoost;
 	Switch swNSFWOpen;
+	Button btnOpenBrowser;
 	
 	private void initUI(){
 		setContentView( R.layout.act_account_setting );
@@ -66,7 +66,9 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 		btnVisibility = (Button) findViewById( R.id.btnVisibility );
 		swConfirmBeforeBoost = (Switch) findViewById( R.id.swConfirmBeforeBoost );
 		swNSFWOpen = (Switch) findViewById( R.id.swNSFWOpen );
+		btnOpenBrowser = (Button) findViewById( R.id.btnOpenBrowser );
 		
+		btnOpenBrowser.setOnClickListener( this );
 		btnAccessToken.setOnClickListener( this );
 		btnAccountRemove.setOnClickListener( this );
 		btnVisibility.setOnClickListener( this );
@@ -113,9 +115,20 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 		case R.id.btnVisibility:
 			performVisibility();
 			break;
+		case R.id.btnOpenBrowser:
+			open_browser( "https://"+account.host+"/" );
 		}
 	}
-	
+
+	void open_browser( String url ){
+		try{
+			Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse( url ) );
+			startActivity( intent );
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+		}
+	}
+
 	///////////////////////////////////////////////////
 	
 	String visibility = TootStatus.VISIBILITY_PUBLIC;
@@ -184,83 +197,72 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 	
 	///////////////////////////////////////////////////
 	private void performAccessToken(){
+
+		final ProgressDialog progress = new ProgressDialog( ActAccountSetting.this );
 		
-		LoginForm.showLoginForm( this, account.host, new LoginForm.LoginFormCallback() {
+		final AsyncTask< Void, String, TootApiResult > task = new AsyncTask< Void, String, TootApiResult >() {
+			
+			long row_id;
 			
 			@Override
-			public void startLogin( final Dialog dialog, final String instance, final String user_mail, final String password ){
-				
-				final ProgressDialog progress = new ProgressDialog( ActAccountSetting.this );
-				
-				final AsyncTask< Void, String, TootApiResult > task = new AsyncTask< Void, String, TootApiResult >() {
-					
-					long row_id;
+			protected TootApiResult doInBackground( Void... params ){
+				TootApiClient api_client = new TootApiClient( ActAccountSetting.this, new TootApiClient.Callback() {
+					@Override
+					public boolean isApiCancelled(){
+						return isCancelled();
+					}
 					
 					@Override
-					protected TootApiResult doInBackground( Void... params ){
-						TootApiClient api_client = new TootApiClient( ActAccountSetting.this, new TootApiClient.Callback() {
+					public void publishApiProgress( final String s ){
+						Utils.runOnMainThread( new Runnable() {
 							@Override
-							public boolean isApiCancelled(){
-								return isCancelled();
-							}
-							
-							@Override
-							public void publishApiProgress( final String s ){
-								Utils.runOnMainThread( new Runnable() {
-									@Override
-									public void run(){
-										progress.setMessage( s );
-									}
-								} );
+							public void run(){
+								progress.setMessage( s );
 							}
 						} );
-						
-						api_client.setUserInfo( instance, user_mail, password );
-						
-						TootApiResult result = api_client.request( "/api/v1/accounts/verify_credentials" );
-						if( result != null && result.object != null ){
-							TootAccount ta = TootAccount.parse( log, account,result.object );
-							
-							if( ! ta.username.equals( account.username ) ){
-								return new TootApiResult( getString( R.string.user_name_not_match ) );
-							}
-							
-							account.updateTokenInfo( result.token_info );
-							row_id = account.db_id;
-						}
-						return result;
-					}
-					
-					@Override
-					protected void onPostExecute( TootApiResult result ){
-						progress.dismiss();
-						
-						if( result == null ){
-							// cancelled.
-						}else if( result.object == null ){
-							Utils.showToast( ActAccountSetting.this, true, result.error );
-							log.e( result.error );
-						}else{
-							Utils.showToast( ActAccountSetting.this, false, R.string.access_token_updated );
-							dialog.dismiss();
-						}
-					}
-				};
-				progress.setIndeterminate( true );
-				progress.setCancelable( true );
-				progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
-					@Override
-					public void onCancel( DialogInterface dialog ){
-						task.cancel( true );
 					}
 				} );
-				progress.show();
-				AsyncTaskCompat.executeParallel( task );
+				
+				api_client.setAccount( account );
+				return api_client.authorize1();
+			}
+			
+			@Override
+			protected void onPostExecute( TootApiResult result ){
+				progress.dismiss();
+				
+				if( result == null ){
+					// cancelled.
+				}else if( result.error != null ){
+					// エラー？
+					String sv = result.error;
+					if( sv.startsWith( "https" ) ){
+						// OAuth認証が必要
+						Intent data = new Intent();
+						data.setData( Uri.parse( sv ) );
+						setResult( RESULT_OK, data );
+						finish();
+						return;
+					}
+					// 他のエラー
+					Utils.showToast( ActAccountSetting.this, true, sv );
+					log.e( result.error );
+				}else{
+					// 多分ここは通らないはず
+					Utils.showToast( ActAccountSetting.this, false, R.string.access_token_updated_for );
+				}
+			}
+		};
+		progress.setIndeterminate( true );
+		progress.setCancelable( true );
+		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
+			@Override
+			public void onCancel( DialogInterface dialog ){
+				task.cancel( true );
 			}
 		} );
-		
+		progress.show();
+		AsyncTaskCompat.executeParallel( task );
 	}
-
-	///////////////////////////////////////////////////
-	
 }
+

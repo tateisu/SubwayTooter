@@ -28,53 +28,7 @@
         android:layout_marginStart="12dp"
         android:inputType="textUri"
         android:hint="@string/instance_hint"
-        />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
-        android:layout_marginLeft="12dp"
-        android:layout_marginRight="12dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="12dp"
-        android:text="@string/user_mail_address"
-        android:labelFor="@+id/etUserMail"
-        />
-
-    <EditText
-        android:id="@+id/etUserMail"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
-        android:layout_marginLeft="12dp"
-        android:layout_marginRight="12dp"
-        android:layout_marginStart="12dp"
-        android:inputType="textEmailAddress"
-        android:hint="@string/mail_hint"
-        />
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
-        android:layout_marginLeft="12dp"
-        android:layout_marginRight="12dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="12dp"
-        android:text="@string/user_password"
-        android:labelFor="@+id/etUserPassword"
-        />
-
-    <EditText
-        android:id="@+id/etUserPassword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
-        android:layout_marginLeft="12dp"
-        android:layout_marginRight="12dp"
-        android:layout_marginStart="12dp"
-        android:inputType="textPassword"
+        android:imeOptions="actionDone"
         />
 
     <LinearLayout

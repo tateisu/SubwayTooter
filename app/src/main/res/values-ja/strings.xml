@@ -23,7 +23,7 @@
     <string name="home">ホーム</string>
     <string name="local_timeline">ローカルタイムライン</string>
     <string name="federate_timeline">連合タイムライン</string>
-    <string name="login_required">アクセストークンの更新が必要です</string>
+    <string name="login_required">アカウントの設定からアクセストークンの更新を行ってください</string>
     <string name="cancelled">キャンセルされました</string>
     <string name="account_pick">アカウントの選択</string>
     <string name="account_confirmed">アカウントを確認できました</string>
@@ -90,7 +90,7 @@
     <string name="user">ユーザ</string>
     <string name="confirm_account_remove">アカウントをこのアプリから除去しますか？関連するカラムはすべて除去されます</string>
     <string name="user_name_not_match">ユーザ名が一致しません</string>
-    <string name="access_token_updated">アクセストークンを更新しました</string>
+    <string name="access_token_updated_for">%1$sのアクセストークンを更新しました</string>
     <string name="back_to_column_list">戻るボタンでカラム一覧を開く</string>
     <string name="account_empty">先にアカウントの追加を行ってください</string>
     <string name="dont_confirm_before_close_column">確認なしでカラムを閉じる</string>
@@ -144,4 +144,5 @@
     <string name="please_donate">開発継続のために寄付をお願いします！</string>
     <string name="version_is">バージョン %1$s</string>
     <string name="oss_license">OSSライセンス</string>
+    <string name="open_instance_website">https://%1$s/ を開く</string>
 </resources>

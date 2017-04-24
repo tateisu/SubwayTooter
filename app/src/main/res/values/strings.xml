@@ -23,7 +23,7 @@
     <string name="home">home</string>
     <string name="local_timeline">local timeline</string>
     <string name="federate_timeline">federated timeline</string>
-    <string name="login_required">login required</string>
+    <string name="login_required">please update access token from account setting.</string>
     <string name="cancelled">cancelled</string>
     <string name="account_pick">select account</string>
     <string name="account_confirmed">account confirmed.</string>
@@ -90,7 +90,7 @@
     <string name="user">user</string>
     <string name="confirm_account_remove">Account will be deleted. also all columns are remove.\nAre you sure?</string>
     <string name="user_name_not_match">user name not match.</string>
-    <string name="access_token_updated">access token updated.</string>
+    <string name="access_token_updated_for">%1%s\'s access token was updated.</string>
     <string name="back_to_column_list">show column list when back button pressed</string>
     <string name="account_empty">Account  is not set up.Please add account.</string>
     <string name="dont_confirm_before_close_column">don\'t confirm before close column</string>
@@ -143,4 +143,5 @@
     <string name="rate_on_store">rate on store</string>
     <string name="please_donate">Please support this app!</string>
     <string name="version_is">version %1$s</string>
+    <string name="open_instance_website">open https://%1$s/</string>
 </resources>

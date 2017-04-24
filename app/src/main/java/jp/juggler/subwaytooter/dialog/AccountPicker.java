@@ -17,20 +17,20 @@ public class AccountPicker {
 	public interface AccountPickerCallback{
 		void onAccountPicked(SavedAccount ai);
 	}
-	public static void pick( ActMain activity, final AccountPickerCallback callback){
+	public static void pick( ActMain activity, boolean bAuto,final AccountPickerCallback callback){
 		
 		final ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( ActMain.log );
-		pick( activity,account_list,callback);
+		pick( activity,bAuto,account_list,callback);
 	}
 	
-	public static void pick( ActMain activity,final ArrayList<SavedAccount > account_list, final AccountPickerCallback callback){
+	public static void pick( ActMain activity, boolean bAuto,final ArrayList<SavedAccount > account_list,final AccountPickerCallback callback){
 
 		if( account_list == null || account_list.isEmpty() ){
 			Utils.showToast(activity,false,R.string.account_empty);
 			return;
 		}
 		
-		if( account_list.size() == 1 ){
+		if( bAuto && account_list.size() == 1 ){
 			callback.onAccountPicked(account_list.get(0));
 			return;
 		}

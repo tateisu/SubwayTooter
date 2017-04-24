@@ -101,8 +101,6 @@ public class ActMain extends AppCompatActivity
 		super.onDestroy();
 	}
 	
-
-	
 	@Override
 	protected void onResume(){
 		super.onResume();
@@ -373,7 +371,7 @@ public class ActMain extends AppCompatActivity
 								// OAuth認証が必要
 								Intent data = new Intent();
 								data.setData( Uri.parse( sv ) );
-								startAccessTokenUpdate(data);
+								startAccessTokenUpdate( data );
 								dialog.dismiss();
 								return;
 							}
@@ -418,7 +416,7 @@ public class ActMain extends AppCompatActivity
 		final ProgressDialog progress = new ProgressDialog( ActMain.this );
 		
 		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
-
+			
 			long row_id;
 			TootAccount ta;
 			SavedAccount sa;
@@ -446,11 +444,10 @@ public class ActMain extends AppCompatActivity
 				// ?error=access_denied
 				// &error_description=%E3%83%AA%E3%82%BD%E3%83%BC%E3%82%B9%E3%81%AE%E6%89%80%E6%9C%89%E8%80%85%E3%81%BE%E3%81%9F%E3%81%AF%E8%AA%8D%E8%A8%BC%E3%82%B5%E3%83%BC%E3%83%90%E3%83%BC%E3%81%8C%E8%A6%81%E6%B1%82%E3%82%92%E6%8B%92%E5%90%A6%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F%E3%80%82
 				// &state=db%3A3
-				String error = uri.getQueryParameter("error_description");
-				if(!TextUtils.isEmpty( error )){
+				String error = uri.getQueryParameter( "error_description" );
+				if( ! TextUtils.isEmpty( error ) ){
 					return new TootApiResult( error );
 				}
-				
 				
 				// subwaytooter://oauth
 				//    ?code=113cc036e078ac500d3d0d3ad345cd8181456ab087abc67270d40f40a4e9e3c2
@@ -460,7 +457,7 @@ public class ActMain extends AppCompatActivity
 				if( TextUtils.isEmpty( code ) ){
 					return new TootApiResult( "missing code in callback url." );
 				}
-
+				
 				String sv = uri.getQueryParameter( "state" );
 				if( TextUtils.isEmpty( sv ) ){
 					return new TootApiResult( "missing state in callback url." );
@@ -476,7 +473,7 @@ public class ActMain extends AppCompatActivity
 						client.setAccount( sa );
 					}catch( Throwable ex ){
 						ex.printStackTrace();
-						return new TootApiResult( Utils.formatError( ex, "invalid state" ));
+						return new TootApiResult( Utils.formatError( ex, "invalid state" ) );
 					}
 				}else if( sv.startsWith( "host:" ) ){
 					String host = sv.substring( 5 );
@@ -489,7 +486,7 @@ public class ActMain extends AppCompatActivity
 				
 				this.host = client.instance;
 				
-				TootApiResult result = client.authorize2(uri.toString(),code);
+				TootApiResult result = client.authorize2( uri.toString(), code );
 				if( result != null && result.object != null ){
 					// taは使い捨てなので、生成に使うLinkClickContextはダミーで問題ない
 					LinkClickContext lcc = new LinkClickContext() {
@@ -508,18 +505,18 @@ public class ActMain extends AppCompatActivity
 					// cancelled.
 				}else if( result.error != null ){
 					Utils.showToast( ActMain.this, true, result.error );
-				}else if(ta == null){
+				}else if( ta == null ){
 					// 自分のユーザネームを取れなかった
 					// …普通はエラーメッセージが設定されてるはずだが
 					Utils.showToast( ActMain.this, true, "missing TootAccount" );
-				}else if( this.sa  != null ){
+				}else if( this.sa != null ){
 					// アクセストークン更新時
-						
+					
 					// インスタンスは同じだと思うが、ユーザ名が異なる可能性がある
-					if( ! sa.username.equals( ta.username) ){
-						Utils.showToast( ActMain.this,true, R.string.user_name_not_match);
+					if( ! sa.username.equals( ta.username ) ){
+						Utils.showToast( ActMain.this, true, R.string.user_name_not_match );
 					}else{
-						Utils.showToast( ActMain.this, false, R.string.access_token_updated_for,sa.acct );
+						Utils.showToast( ActMain.this, false, R.string.access_token_updated_for, sa.acct );
 						
 						// DBの情報を更新する
 						sa.updateTokenInfo( result.token_info );
@@ -565,6 +562,7 @@ public class ActMain extends AppCompatActivity
 			a.reloadSetting();
 		}
 	}
+	
 	public void performColumnClose( boolean bConfirm, final Column column ){
 		if( ! bConfirm && ! pref.getBoolean( Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN, false ) ){
 			new AlertDialog.Builder( this )
@@ -622,7 +620,7 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	private void performAddTimeline( final int type ){
-		AccountPicker.pick( this, new AccountPicker.AccountPickerCallback() {
+		AccountPicker.pick( this, true, new AccountPicker.AccountPickerCallback() {
 			@Override
 			public void onAccountPicked( SavedAccount ai ){
 				switch( type ){
@@ -1102,7 +1100,7 @@ public class ActMain extends AppCompatActivity
 	////////////////////////////////////////
 	
 	private void performAccountSetting(){
-		AccountPicker.pick( this, new AccountPicker.AccountPickerCallback() {
+		AccountPicker.pick( this, true,new AccountPicker.AccountPickerCallback() {
 			@Override
 			public void onAccountPicked( SavedAccount ai ){
 				ActAccountSetting.open( ActMain.this, ai, REQUEST_CODE_ACCOUNT_SETTING );
@@ -1353,7 +1351,7 @@ public class ActMain extends AppCompatActivity
 	
 	// アカウントを選択してからユーザをフォローする
 	void followFromAnotherAccount( final SavedAccount access_info, final TootAccount who, final RelationChangedCallback callback ){
-		AccountPicker.pick( ActMain.this, new AccountPicker.AccountPickerCallback() {
+		AccountPicker.pick( ActMain.this, false,new AccountPicker.AccountPickerCallback() {
 			@Override
 			public void onAccountPicked( SavedAccount ai ){
 				String acct = who.acct;
@@ -1600,13 +1598,14 @@ public class ActMain extends AppCompatActivity
 		final ArrayList< SavedAccount > tmp_list = new ArrayList<>();
 		for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
 			if( a.host.equalsIgnoreCase( access_info.host ) ){
+				// 同じホストを収集
 				tmp_list.add( a );
 			}
 		}
 		if( ! tmp_list.isEmpty() ){
 			dialog.addAction( getString( R.string.favourite_from_another_account ), new Runnable() {
 				@Override public void run(){
-					AccountPicker.pick( ActMain.this, tmp_list, new AccountPicker.AccountPickerCallback() {
+					AccountPicker.pick( ActMain.this, false,tmp_list, new AccountPicker.AccountPickerCallback() {
 						@Override public void onAccountPicked( SavedAccount ai ){
 							if( ai != null ) performFavourite( ai, status );
 						}
@@ -1615,7 +1614,7 @@ public class ActMain extends AppCompatActivity
 			} );
 			dialog.addAction( getString( R.string.boost_from_another_account ), new Runnable() {
 				@Override public void run(){
-					AccountPicker.pick( ActMain.this, tmp_list, new AccountPicker.AccountPickerCallback() {
+					AccountPicker.pick( ActMain.this,false,  tmp_list, new AccountPicker.AccountPickerCallback() {
 						@Override public void onAccountPicked( SavedAccount ai ){
 							if( ai != null ) performBoost( ai, status, false );
 						}

@@ -17,10 +17,13 @@ public class AccountPicker {
 	public interface AccountPickerCallback{
 		void onAccountPicked(SavedAccount ai);
 	}
-	
 	public static void pick( ActMain activity, final AccountPickerCallback callback){
-
-		final ArrayList<SavedAccount > account_list = SavedAccount.loadAccountList(ActMain.log);
+		
+		final ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( ActMain.log );
+		pick( activity,account_list,callback);
+	}
+	
+	public static void pick( ActMain activity,final ArrayList<SavedAccount > account_list, final AccountPickerCallback callback){
 
 		if( account_list == null || account_list.isEmpty() ){
 			Utils.showToast(activity,false,R.string.account_empty);

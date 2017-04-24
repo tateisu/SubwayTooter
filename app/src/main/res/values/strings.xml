@@ -135,4 +135,6 @@
     <string name="resolve_non_local_account">resolve non local account</string>
     <string name="question">\?</string>
     <string name="confirm_close_column">close thic colum?</string>
+    <string name="favourite_from_another_account">favourite from another account</string>
+    <string name="boost_from_another_account">boost from another account</string>
 </resources>

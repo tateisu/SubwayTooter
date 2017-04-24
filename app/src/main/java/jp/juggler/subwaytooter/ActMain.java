@@ -1287,12 +1287,44 @@ public class ActMain extends AppCompatActivity
 	
 	// ステータスのmoreメニュー
 	public void openStatusMoreMenu( final SavedAccount access_info, final TootStatus status ){
+		
 		ActionsDialog dialog = new ActionsDialog();
+		
+		
+		final ArrayList<SavedAccount> tmp_list = new ArrayList<>();
+		for( SavedAccount a : SavedAccount.loadAccountList( log )){
+			if( a.host.equalsIgnoreCase( access_info.host )){
+				tmp_list.add( a );
+			}
+		}
+		if( ! tmp_list.isEmpty() ){
+			dialog.addAction( getString( R.string. favourite_from_another_account), new Runnable() {
+				@Override public void run(){
+					AccountPicker.pick( ActMain.this, tmp_list, new AccountPicker.AccountPickerCallback() {
+						@Override public void onAccountPicked( SavedAccount ai ){
+							if(ai!= null) performFavourite( ai,status );
+						}
+					} );
+				}
+			} );
+			dialog.addAction( getString( R.string. boost_from_another_account), new Runnable() {
+				@Override public void run(){
+					AccountPicker.pick( ActMain.this, tmp_list, new AccountPicker.AccountPickerCallback() {
+						@Override public void onAccountPicked( SavedAccount ai ){
+							if(ai!= null) performBoost( ai,status ,false);
+						}
+					} );
+				}
+			} );
+		}
+
 		dialog.addAction( getString( R.string. follow), new Runnable() {
 			@Override public void run(){
 				callFollow( access_info, status.account, true );
 			}
 		} );
+		
+		
 		dialog.addAction( getString( R.string. follow_from_another_account), new Runnable() {
 			@Override public void run(){
 				followFromAnotherAccount( access_info, status.account );

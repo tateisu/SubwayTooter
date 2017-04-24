@@ -82,12 +82,12 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		this.swipyRefreshLayout = (SwipyRefreshLayout) root.findViewById( R.id.swipyRefreshLayout );
 		swipyRefreshLayout.setOnRefreshListener( this );
 		
-		if( column.type == Column.TYPE_TL_STATUSES ){
+		if( column.type == Column.TYPE_PROFILE ){
 			vh_header = new HeaderViewHolder( activity, listView );
 			listView.addHeaderView( vh_header.viewRoot );
 		}
 		
-		if( column.type == Column.TYPE_TL_CONVERSATION ){
+		if( column.type == Column.TYPE_CONVERSATION ){
 			swipyRefreshLayout.setEnabled( false );
 		}
 		
@@ -154,11 +154,11 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		
 		switch( column.type ){
 		default:
-		case Column.TYPE_TL_HOME:
-		case Column.TYPE_TL_LOCAL:
-		case Column.TYPE_TL_FEDERATE:
-		case Column.TYPE_TL_FAVOURITES:
-		case Column.TYPE_TL_STATUSES:
+		case Column.TYPE_HOME:
+		case Column.TYPE_LOCAL:
+		case Column.TYPE_FEDERATE:
+		case Column.TYPE_FAVOURITES:
+		case Column.TYPE_PROFILE:
 			if( column.status_list.isEmpty() && vh_header == null ){
 				showError( activity.getString( R.string.list_empty ) );
 			}else{
@@ -167,7 +167,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				status_adapter.set( column.status_list );
 			}
 			break;
-		case Column.TYPE_TL_REPORTS:
+		case Column.TYPE_REPORTS:
 			if( column.report_list.isEmpty() ){
 				showError( activity.getString( R.string.list_empty ) );
 			}else{
@@ -176,7 +176,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				status_adapter.set( column.report_list );
 			}
 			break;
-		case Column.TYPE_TL_NOTIFICATIONS:
+		case Column.TYPE_NOTIFICATIONS:
 			if( column.notification_list.isEmpty() ){
 				showError( activity.getString( R.string.list_empty ) );
 			}else{

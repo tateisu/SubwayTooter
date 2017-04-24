@@ -156,4 +156,6 @@
     <string name="open_web_on_host">open web page on %1$s</string>
     <string name="follow_from_another_account">follow_from_another_account</string>
     <string name="menu">menu</string>
+    <string name="search_of">search \"%1$s\"</string>
+    <string name="search">search</string>
 </resources>

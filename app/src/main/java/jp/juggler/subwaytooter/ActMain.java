@@ -213,20 +213,20 @@ public class ActMain extends AppCompatActivity
 		if( id == R.id.nav_account_add ){
 			performAccountAdd();
 		}else if( id == R.id.nav_add_tl_home ){
-			performAddTimeline( Column.TYPE_TL_HOME );
+			performAddTimeline( Column.TYPE_HOME );
 		}else if( id == R.id.nav_add_tl_local ){
-			performAddTimeline( Column.TYPE_TL_LOCAL );
+			performAddTimeline( Column.TYPE_LOCAL );
 		}else if( id == R.id.nav_add_tl_federate ){
-			performAddTimeline( Column.TYPE_TL_FEDERATE );
+			performAddTimeline( Column.TYPE_FEDERATE );
 			
 		}else if( id == R.id.nav_add_favourites ){
-			performAddTimeline( Column.TYPE_TL_FAVOURITES );
+			performAddTimeline( Column.TYPE_FAVOURITES );
 //		}else if( id == R.id.nav_add_reports ){
-//			performAddTimeline(Column.TYPE_TL_REPORTS );
+//			performAddTimeline(Column.TYPE_REPORTS );
 		}else if( id == R.id.nav_add_statuses ){
-			performAddTimeline( Column.TYPE_TL_STATUSES );
+			performAddTimeline( Column.TYPE_PROFILE );
 		}else if( id == R.id.nav_add_notifications ){
-			performAddTimeline( Column.TYPE_TL_NOTIFICATIONS );
+			performAddTimeline( Column.TYPE_NOTIFICATIONS );
 			
 		}else if( id == R.id.nav_app_setting ){
 			performAppSetting();
@@ -424,15 +424,15 @@ public class ActMain extends AppCompatActivity
 	
 	private void onAccountUpdated( SavedAccount data ){
 		Utils.showToast( this, false, R.string.account_confirmed );
-		addColumn( data, Column.TYPE_TL_HOME );
+		addColumn( data, Column.TYPE_HOME );
 	}
 	
 	void performOpenUser( SavedAccount access_info, TootAccount user ){
-		addColumn( access_info, Column.TYPE_TL_STATUSES, user.id );
+		addColumn( access_info, Column.TYPE_PROFILE, user.id );
 	}
 	
 	public void performConversation( SavedAccount access_info, TootStatus status ){
-		addColumn( access_info, Column.TYPE_TL_CONVERSATION, status.id );
+		addColumn( access_info, Column.TYPE_CONVERSATION, status.id );
 	}
 	
 	private void performAddTimeline( final int type ){
@@ -445,7 +445,7 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	public void openHashTag( SavedAccount access_info, String tag ){
-		addColumn( access_info, Column.TYPE_TL_HASHTAG, tag );
+		addColumn( access_info, Column.TYPE_HASHTAG, tag );
 	}
 	
 	//////////////////////////////////////////////////////////////

@@ -87,5 +87,4 @@
         <item name="android:imeOptions">actionDone</item>
     </style>
 
-    <string name="question">\?</string>
 </resources>

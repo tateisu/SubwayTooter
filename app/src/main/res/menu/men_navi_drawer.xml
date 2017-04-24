@@ -35,16 +35,21 @@
                 <item
                     android:id="@+id/nav_add_tl_local"
                     android:icon="@drawable/btn_local_tl"
-                    android:title="@string/local_tl"/>
+                    android:title="@string/local_timeline"/>
                 <item
                     android:id="@+id/nav_add_tl_federate"
                     android:icon="@drawable/btn_federate_tl"
-                    android:title="@string/federate_tl"/>
+                    android:title="@string/federate_timeline"/>
+
+                <item
+                    android:id="@+id/nav_add_tl_search"
+                    android:icon="@drawable/ic_search"
+                    android:title="@string/search"/>
 
                 <item
                     android:id="@+id/nav_add_favourites"
                     android:icon="@drawable/btn_favourite"
-                    android:title="@string/your_favourites"/>
+                    android:title="@string/favourites"/>
 
                 <item
                     android:id="@+id/nav_add_statuses"

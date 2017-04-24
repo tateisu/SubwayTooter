@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.api.entity.TootMention;
 import jp.juggler.subwaytooter.api.entity.TootTag;
-import jp.juggler.subwaytooter.table.SavedAccount;
 
 public class HTMLDecoder {
 	static final LogCategory log = new LogCategory( "HTMLDecoder" );
@@ -202,9 +201,9 @@ public class HTMLDecoder {
 			return sb;
 			
 		}catch( Throwable ex ){
-			
+			ex.printStackTrace(  );
+			return null;
 		}
-		return null;
 	}
 	
 	public static Spannable decodeTags( final LinkClickContext account,TootTag.List src_list ){

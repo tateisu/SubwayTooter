@@ -235,6 +235,10 @@ public class ActMain extends AppCompatActivity
 		}else if( id == R.id.nav_column_list ){
 			performColumnList();
 			
+		}else if( id == R.id.nav_add_tl_search ){
+			performAddTimeline( Column.TYPE_SEARCH );
+			
+			
 			// Handle the camera action
 //		}else if( id == R.id.nav_gallery ){
 //
@@ -381,8 +385,7 @@ public class ActMain extends AppCompatActivity
 	public void performColumnClose( boolean bConfirm, final Column column ){
 		if( ! bConfirm && ! pref.getBoolean( Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN, false ) ){
 			new AlertDialog.Builder( this )
-				.setTitle( R.string.confirm )
-				.setMessage( R.string.close_column )
+				.setMessage( R.string.confirm_close_column )
 				.setNegativeButton( R.string.cancel, null )
 				.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 					@Override
@@ -439,7 +442,14 @@ public class ActMain extends AppCompatActivity
 		AccountPicker.pick( this, new AccountPicker.AccountPickerCallback() {
 			@Override
 			public void onAccountPicked( SavedAccount ai ){
-				addColumn( ai, type, ai.id );
+				switch(type){
+				default:
+					addColumn( ai, type, ai.id );
+					break;
+				case Column.TYPE_SEARCH:
+					addColumn(  ai,type, "",false);
+					break;
+				}
 			}
 		} );
 	}
@@ -1257,9 +1267,9 @@ public class ActMain extends AppCompatActivity
 				callReport( account, who, status, comment, new ReportCompleteCallback() {
 					@Override
 					public void onReportComplete( TootApiResult result ){
+						//noinspection StatementWithEmptyBody
 						if( result == null ){
 							// cancelled
-							return;
 						}else if( result.object != null ){
 							Utils.showToast( ActMain.this, false, R.string.report_completed );
 							dialog.dismiss();

@@ -64,8 +64,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:orientation="horizontal"
         android:background="@drawable/btn_bg_transparent"
+        android:orientation="horizontal"
         >
 
         <com.android.volley.toolbox.NetworkImageView
@@ -164,9 +164,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:orientation="horizontal"
                 android:baselineAligned="false"
                 android:gravity="center_vertical"
+                android:orientation="horizontal"
                 >
 
                 <Button
@@ -299,6 +299,7 @@
                 android:layout_marginTop="8dp"
                 android:orientation="horizontal"
                 >
+
                 <ImageButton
                     android:id="@+id/btnConversation"
                     android:layout_width="wrap_content"
@@ -306,8 +307,8 @@
                     android:background="@drawable/btn_bg_transparent"
                     android:contentDescription="@string/conversation_view"
                     android:minWidth="48dp"
-                    android:paddingStart="4dp"
                     android:paddingEnd="4dp"
+                    android:paddingStart="4dp"
                     android:src="@drawable/ic_conversation"
                     />
 
@@ -318,8 +319,8 @@
                     android:background="@drawable/btn_bg_transparent"
                     android:contentDescription="@string/reply"
                     android:minWidth="48dp"
-                    android:paddingStart="4dp"
                     android:paddingEnd="4dp"
+                    android:paddingStart="4dp"
                     android:src="@drawable/btn_reply"
                     />
 
@@ -329,9 +330,9 @@
                     android:layout_height="match_parent"
                     android:background="@drawable/btn_bg_transparent"
                     android:drawablePadding="4dp"
-                    android:paddingStart="4dp"
-                    android:paddingEnd="4dp"
                     android:minWidth="48dp"
+                    android:paddingEnd="4dp"
+                    android:paddingStart="4dp"
                     />
 
                 <Button
@@ -340,9 +341,9 @@
                     android:layout_height="match_parent"
                     android:background="@drawable/btn_bg_transparent"
                     android:drawablePadding="4dp"
-                    android:paddingStart="4dp"
-                    android:paddingEnd="4dp"
                     android:minWidth="48dp"
+                    android:paddingEnd="4dp"
+                    android:paddingStart="4dp"
                     />
 
                 <ImageButton
@@ -352,8 +353,8 @@
                     android:background="@drawable/btn_bg_transparent"
                     android:contentDescription="@string/more"
                     android:minWidth="48dp"
-                    android:paddingStart="4dp"
                     android:paddingEnd="4dp"
+                    android:paddingStart="4dp"
                     android:src="@drawable/btn_more"
                     />
 
@@ -361,5 +362,19 @@
 
 
         </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llSearchTag"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_bg_transparent"
+            android:id="@+id/btnSearchTag"
+            />
     </LinearLayout>
 </LinearLayout>

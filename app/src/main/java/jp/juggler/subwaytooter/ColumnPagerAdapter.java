@@ -1,11 +1,9 @@
 package jp.juggler.subwaytooter;
 
 
-import android.app.Activity;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.util.SparseArray;
-import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -108,7 +106,7 @@ public class ColumnPagerAdapter extends PagerAdapter{
 		container.addView( root, 0 );
 		
 		Column column = column_list.get( page_idx  );
-		ColumnViewHolder holder = new ColumnViewHolder( activity,column, page_idx  );
+		ColumnViewHolder holder = new ColumnViewHolder( activity,column );
 		//
 		holder_list.put( page_idx, holder );
 		//

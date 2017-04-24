@@ -77,7 +77,7 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 	
 	private void loadUIFromData( SavedAccount a ){
 		tvInstance.setText( a.host );
-		tvUser.setText( a.user );
+		tvUser.setText( a.acct );
 		
 		String sv = a.visibility;
 		if( sv != null ){

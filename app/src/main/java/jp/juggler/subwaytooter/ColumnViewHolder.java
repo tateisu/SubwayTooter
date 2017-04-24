@@ -1,6 +1,8 @@
 package jp.juggler.subwaytooter;
 
 import android.content.Context;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
@@ -32,6 +34,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
+import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.ContentWarning;
 import jp.juggler.subwaytooter.table.MediaShown;
@@ -174,8 +177,16 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		tvLoading.setText( message );
 	}
 	
+	
+//	final RelationshipMap.UpdateCallback callback_relation = new RelationshipMap.UpdateCallback() {
+//		@Override public void onRelationShipUpdate(){
+//			onVisualColumn();
+//		}
+//	};
+	
 	@Override
 	public void onVisualColumn(){
+//		App1.relationship_map.checkUpdate( activity, column.access_info,callback_relation );
 		
 		tvColumnContext.setText( column.access_info.getFullAcct( column.access_info ) );
 		tvColumnName.setText( column.getColumnName( false ) );
@@ -209,51 +220,12 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			}
 		}
 		
-		switch( column.type ){
-		default:
-		case Column.TYPE_HOME:
-		case Column.TYPE_LOCAL:
-		case Column.TYPE_FEDERATE:
-		case Column.TYPE_FAVOURITES:
-		case Column.TYPE_PROFILE:
-			if( column.status_list.isEmpty() && vh_header == null ){
-				showError( activity.getString( R.string.list_empty ) );
-			}else{
-				tvLoading.setVisibility( View.GONE );
-				swipyRefreshLayout.setVisibility( View.VISIBLE );
-				status_adapter.set( column.status_list );
-			}
-			break;
-		
-		case Column.TYPE_REPORTS:
-			if( column.report_list.isEmpty() ){
-				showError( activity.getString( R.string.list_empty ) );
-			}else{
-				tvLoading.setVisibility( View.GONE );
-				swipyRefreshLayout.setVisibility( View.VISIBLE );
-				status_adapter.set( column.report_list );
-			}
-			break;
-		
-		case Column.TYPE_NOTIFICATIONS:
-			if( column.notification_list.isEmpty() ){
-				showError( activity.getString( R.string.list_empty ) );
-			}else{
-				tvLoading.setVisibility( View.GONE );
-				swipyRefreshLayout.setVisibility( View.VISIBLE );
-				status_adapter.set( column.notification_list );
-			}
-			break;
-		
-		case Column.TYPE_SEARCH:
-			if( column.result_list.isEmpty() ){
-				showError( activity.getString( R.string.list_empty ) );
-			}else{
-				tvLoading.setVisibility( View.GONE );
-				swipyRefreshLayout.setVisibility( View.VISIBLE );
-				status_adapter.set( column.result_list );
-			}
-			break;
+		if( column. list_data.isEmpty() && vh_header == null ){
+			showError( activity.getString( R.string.list_empty ) );
+		}else{
+			tvLoading.setVisibility( View.GONE );
+			swipyRefreshLayout.setVisibility( View.VISIBLE );
+			status_adapter.set( column.list_data );
 		}
 		
 		proc_restore_scroll.run();
@@ -376,21 +348,29 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		@Override
 		public void onClick( View v ){
 			switch( v.getId() ){
+
 			case R.id.ivBackground:
 				if( who != null ){
 					// 強制的にブラウザで開く
 					activity.openChromeTab( access_info, who.url, true );
 				}
 				break;
+
 			case R.id.btnFollowing:
-				Utils.showToast( activity, false, "not implemented" );
+				column.profile_tab = Column.TAB_FOLLOWING;
+				column.reload();
 				break;
+
 			case R.id.btnFollowers:
-				Utils.showToast( activity, false, "not implemented" );
+				column.profile_tab = Column.TAB_FOLLOWERS;
+				column.reload();
 				break;
+
 			case R.id.btnStatusCount:
-				Utils.showToast( activity, false, "not implemented" );
+				column.profile_tab = Column.TAB_STATUS;
+				column.reload();
 				break;
+
 			case R.id.btnMore:
 				activity.openAccountMoreMenu( access_info, who );
 				break;
@@ -663,6 +643,9 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			ivFollow.setImageUrl( who.avatar_static, App1.getImageLoader() );
 			tvFollowerName.setText( who.display_name );
 			tvFollowerAcct.setText( access_info.getFullAcct( who ) );
+			
+			btnFollow.setImageResource( R.drawable.btn_follow );
+
 		}
 		
 		private void showStatus( ActMain activity, View view, TootStatus status, SavedAccount account ){
@@ -829,9 +812,11 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 				break;
 			case R.id.btnFollow:
 				activity.openAccountMoreMenu( access_info, account_follow );
+				break;
 				
 			case R.id.btnSearchTag:
 				activity.openHashTag( access_info,search_tag );
+				break;
 			}
 		}
 		

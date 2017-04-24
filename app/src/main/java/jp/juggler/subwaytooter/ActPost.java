@@ -445,7 +445,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		}
 		String[] caption_list = new String[ tmp_account_list.size() ];
 		for( int i = 0, ie = tmp_account_list.size() ; i < ie ; ++ i ){
-			caption_list[ i ] = tmp_account_list.get( i ).user;
+			caption_list[ i ] = tmp_account_list.get( i ).acct;
 		}
 		
 		new AlertDialog.Builder( this )

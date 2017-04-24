@@ -138,4 +138,10 @@
     <string name="follow_from_another_account">別のアカウントでフォロー</string>
     <string name="favourite_from_another_account">別のアカウントでお気に入り</string>
     <string name="boost_from_another_account">別のアカウントでブースト</string>
+    <string name="app_about">このアプリについて</string>
+    <string name="please_rate">ストアで評価やレビューをお願いします！</string>
+    <string name="rate_on_store">ストアで評価</string>
+    <string name="please_donate">開発継続のために寄付をお願いします！</string>
+    <string name="version_is">バージョン %1$s</string>
+    <string name="oss_license">OSSライセンス</string>
 </resources>

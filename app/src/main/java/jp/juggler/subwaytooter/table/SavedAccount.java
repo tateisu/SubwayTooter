@@ -35,7 +35,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext{
 	// login information
 	public long db_id = INVALID_ID;
 	public String host;
-	public String user;
+	public String acct; // user@host
 	public JSONObject token_info;
 	public String visibility;
 	public boolean confirm_boost;
@@ -73,7 +73,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext{
 		if( dst != null){
 			dst.db_id = cursor.getLong( cursor.getColumnIndex( COL_ID ) );
 			dst.host = cursor.getString( cursor.getColumnIndex( COL_HOST ) );
-			dst.user = cursor.getString( cursor.getColumnIndex( COL_USER ) );
+			dst.acct = cursor.getString( cursor.getColumnIndex( COL_USER ) );
 			
 			int colIdx_visibility = cursor.getColumnIndex( COL_VISIBILITY );
 			dst.visibility = cursor.isNull( colIdx_visibility )? null : cursor.getString( colIdx_visibility );
@@ -87,11 +87,11 @@ public class SavedAccount extends TootAccount implements LinkClickContext{
 	}
 	
 	
-	public static long insert( String host, String user, JSONObject account,JSONObject token ){
+	public static long insert( String host, String acct, JSONObject account,JSONObject token ){
 		try{
 			ContentValues cv = new ContentValues();
 			cv.put( COL_HOST, host );
-			cv.put( COL_USER, user );
+			cv.put( COL_USER, acct );
 			cv.put( COL_ACCOUNT, account.toString() );
 			cv.put( COL_TOKEN, token.toString() );
 			return App1.getDB().insert(  table, null, cv );

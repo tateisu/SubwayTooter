@@ -137,4 +137,10 @@
     <string name="confirm_close_column">close thic colum?</string>
     <string name="favourite_from_another_account">favourite from another account</string>
     <string name="boost_from_another_account">boost from another account</string>
+    <string name="app_about">about this app</string>
+    <string name="oss_license">OSS license</string>
+    <string name="please_rate">Please rating and write review!</string>
+    <string name="rate_on_store">rate on store</string>
+    <string name="please_donate">Please support this app!</string>
+    <string name="version_is">version %1$s</string>
 </resources>

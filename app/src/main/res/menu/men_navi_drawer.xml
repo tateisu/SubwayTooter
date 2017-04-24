@@ -79,6 +79,16 @@
                     android:id="@+id/nav_app_setting"
                     android:icon="@drawable/ic_setting"
                     android:title="@string/app_setting"/>
+
+                <item
+                    android:id="@+id/nav_app_about"
+                    android:icon="@drawable/ic_info"
+                    android:title="@string/app_about"/>
+
+                <item
+                    android:id="@+id/nav_oss_license"
+                    android:icon="@drawable/ic_info"
+                    android:title="@string/oss_license"/>
             </menu>
         </item>
     </group>

@@ -151,4 +151,7 @@ public class App1 extends Application {
 	public static final OkHttpClient ok_http_client = new OkHttpClient();
 	
 	public static Typeface typeface_emoji ;
+	
+	// public static final RelationshipMap relationship_map = new RelationshipMap();
+	
 }

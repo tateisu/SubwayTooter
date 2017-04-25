@@ -850,6 +850,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		}
 		
 		public void onItemClick(){
+			if( status ==null ) return;
 			activity.performConversation( access_info, status );
 		}
 	}

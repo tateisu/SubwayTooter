@@ -190,8 +190,10 @@ public class AlarmService extends IntentService {
 	private static final String PATH_NOTIFICATIONS = "/api/v1/notifications";
 	
 	private void checkAccount( TootApiClient client, ArrayList< Data > data_list, SavedAccount account ){
+		log.d("checkAccount account_db_id=%s",account.db_id);
+
 		NotificationTracking nr = NotificationTracking.load( account.db_id );
-		
+
 		// まずキャッシュされたデータを処理する
 		HashSet< Long > duplicate_check = new HashSet<>();
 		ArrayList< JSONObject > dst_array = new ArrayList<>();
@@ -437,8 +439,10 @@ public class AlarmService extends IntentService {
 					JSONArray array = new JSONArray( nr.last_data );
 					for( int i = array.length() - 1 ; i >= 0 ; -- i ){
 						JSONObject src = array.optJSONObject( i );
+						long id = src.optLong( "id" );
 						dst_array.add( src );
-						duplicate_check.add( src.optLong( "id" ) );
+						duplicate_check.add( id );
+						log.d("add old. id=%s",id);
 					}
 				}catch( JSONException ex ){
 					ex.printStackTrace();
@@ -446,7 +450,10 @@ public class AlarmService extends IntentService {
 			}
 			for( TootNotification item : data.list ){
 				try{
-					if( duplicate_check.contains( item.id ) ) continue;
+					if( duplicate_check.contains( item.id ) ){
+						log.d("skip duplicate. id=%s",item.id);
+						continue;
+					}
 					duplicate_check.add( item.id );
 					
 					String type = item.type;
@@ -456,6 +463,7 @@ public class AlarmService extends IntentService {
 						|| ( ! account.notification_favourite && TootNotification.TYPE_FAVOURITE.equals( type ) )
 						|| ( ! account.notification_follow && TootNotification.TYPE_FOLLOW.equals( type ) )
 						){
+						log.d("skip by setting. id=%s",item.id);
 						continue;
 					}
 					
@@ -483,10 +491,14 @@ public class AlarmService extends IntentService {
 			// 最新10件を保存
 			JSONArray d = new JSONArray();
 			for( int i = 0 ; i < 10 ; ++ i ){
-				if( i >= dst_array.size() ) break;
+				if( i >= dst_array.size() ){
+					log.d("inject %s data",i);
+					break;
+				}
 				d.put( dst_array.get( i ) );
 			}
 			nr.last_data = d.toString();
+			
 			nr.save();
 		}
 	}

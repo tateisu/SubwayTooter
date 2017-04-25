@@ -633,14 +633,14 @@ class Column {
 					Matcher m = reMaxId.matcher( sv );
 					if( m.find() ){
 						max_id = m.group( 1 );
-						log.d( "col=%s,max_id=%s", this.hashCode(), max_id );
+						//log.d( "col=%s,max_id=%s", this.hashCode(), max_id );
 					}
 				}
 				if( bTop ){
 					Matcher m = reSinceId.matcher( sv );
 					if( m.find() ){
 						since_id = m.group( 1 );
-						log.d( "col=%s,since_id=%s", this.hashCode(), since_id );
+						//log.d( "col=%s,since_id=%s", this.hashCode(), since_id );
 					}
 				}
 			}

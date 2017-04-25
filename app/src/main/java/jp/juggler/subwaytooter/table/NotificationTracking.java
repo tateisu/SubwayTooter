@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.table;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.provider.BaseColumns;
 
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -12,7 +13,9 @@ public class NotificationTracking {
 	private static final LogCategory log = new LogCategory( "NotificationTracking" );
 	
 	private static final String table = "noti_trac";
-
+	
+	private static final String COL_ID = BaseColumns._ID;
+	
 	// アカウントDBの行ID。 サーバ側のIDではない
 	private static final String COL_ACCOUNT_DB_ID = "a";
 	
@@ -58,6 +61,7 @@ public class NotificationTracking {
 		}
 	}
 	
+	private long id = -1L;
 	private long account_db_id;
 	public long last_load;
 	public long nid_read;
@@ -77,6 +81,7 @@ public class NotificationTracking {
 			Cursor cursor = App1.getDB().query( table, null,WHERE_AID, new String[]{ Long.toString( account_db_id ) }, null, null, null );
 			try{
 				if( cursor.moveToFirst() ){
+					dst.id = cursor.getLong( cursor.getColumnIndex( COL_ID ) );
 					dst.last_load = cursor.getLong( cursor.getColumnIndex( COL_LAST_LOAD ) );
 					dst.nid_read = cursor.getLong( cursor.getColumnIndex( COL_NID_READ ) );
 					dst.nid_show = cursor.getLong( cursor.getColumnIndex( COL_NID_SHOW ) );
@@ -86,6 +91,13 @@ public class NotificationTracking {
 					
 					int idx_last_data = cursor.getColumnIndex( COL_LAST_DATA );
 					dst.last_data = cursor.isNull( idx_last_data ) ? null : cursor.getString( idx_last_data );
+
+					log.d("load account_db_id=%s,post=%s,%s last_data=%s"
+						,account_db_id
+						,dst.post_id
+						,dst.post_time
+						,(dst.last_data ==null ? "null" : ""+dst.last_data.length())
+					);
 				}
 			}finally{
 				cursor.close();
@@ -104,11 +116,31 @@ public class NotificationTracking {
 			cv.put( COL_NID_READ, nid_read );
 			cv.put( COL_NID_SHOW, nid_show );
 			cv.put( COL_LAST_DATA, last_data );
-			App1.getDB().replace( table, null, cv );
+			cv.put( COL_POST_ID, post_id);
+			cv.put( COL_POST_TIME, post_time);
+			if( id == -1L ){
+				id = App1.getDB().insert( table,null,cv );
+				log.d("save.insert account_db_id=%s,post=%s,%s last_data=%s"
+					,account_db_id
+					,post_id
+					,post_time
+					,(last_data ==null ? "null" : ""+last_data.length())
+				);
+				
+			}else{
+				App1.getDB().update( table, cv, WHERE_AID, new String[]{ Long.toString( account_db_id ) } );
+				log.d("save.update account_db_id=%s,post=%s,%s last_data=%s"
+					,account_db_id
+					,post_id
+					,post_time
+					,(last_data ==null ? "null" : ""+last_data.length())
+				);
+			}
 		}catch( Throwable ex ){
 			log.e( ex, "save failed." );
 		}
 	}
+	
 	public void updatePost(long post_id,long post_time){
 		this.post_id = post_id;
 		this.post_time = post_time;
@@ -116,9 +148,15 @@ public class NotificationTracking {
 			ContentValues cv = new ContentValues();
 			cv.put( COL_POST_ID, post_id );
 			cv.put( COL_POST_TIME, post_time );
-			App1.getDB().update( table, cv,WHERE_AID, new String[]{ Long.toString( account_db_id ) } );
+			int rows = App1.getDB().update( table, cv,WHERE_AID, new String[]{ Long.toString( account_db_id ) } );
+			log.d("updatePost account_db_id=%s,post=%s,%s last_data=%s"
+				,account_db_id
+				,post_id
+				,post_time
+				,(last_data ==null ? "null" : ""+last_data.length())
+			);
 		}catch( Throwable ex ){
-			log.e( ex, "save failed." );
+			log.e( ex, "updatePost failed." );
 		}
 	}
 	
@@ -147,6 +185,7 @@ public class NotificationTracking {
 			cv.put( COL_POST_ID, 0 );
 			cv.put( COL_POST_TIME, 0 );
 			App1.getDB().update( table, cv,null,null);
+			
 		}catch( Throwable ex ){
 			log.e( ex, "save failed." );
 		}

@@ -145,4 +145,8 @@
     <string name="version_is">バージョン %1$s</string>
     <string name="oss_license">OSSライセンス</string>
     <string name="open_instance_website">https://%1$s/ を開く</string>
+    <string name="mention2">返信</string>
+    <string name="notification_count">%1$d件の通知</string>
+    <string name="boost">ブースト</string>
+    <string name="favourite">お気に入り</string>
 </resources>

@@ -6,7 +6,8 @@ import android.preference.PreferenceManager;
 
 public class Pref {
 	
-	public static SharedPreferences pref(Context context){
+	
+	public static SharedPreferences pref( Context context){
 		return PreferenceManager.getDefaultSharedPreferences( context );
 	}
 	

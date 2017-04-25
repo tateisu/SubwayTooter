@@ -47,8 +47,7 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 	}
 	
 	private void saveUIToData(){
-		pref
-			.edit()
+		pref.edit()
 			.putBoolean( Pref.KEY_BACK_TO_COLUMN_LIST, swBackToColumnList.isChecked() )
 			.putBoolean( Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN, swDontConfirmBeforeCloseColumn.isChecked() )
 			.apply();

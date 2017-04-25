@@ -19,6 +19,7 @@ import jp.juggler.subwaytooter.table.ClientInfo;
 import jp.juggler.subwaytooter.table.ContentWarning;
 import jp.juggler.subwaytooter.table.LogData;
 import jp.juggler.subwaytooter.table.MediaShown;
+import jp.juggler.subwaytooter.table.NotificationTracking;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import okhttp3.OkHttpClient;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
@@ -26,38 +27,11 @@ import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 
 public class App1 extends Application {
 	
-	@Override
-	public void onCreate(){
-		super.onCreate();
-		
-		CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
-			.setFontAttrId(R.attr.fontPath)
-			.build()
-		);
-		
-		if( typeface_emoji == null ){
-			typeface_emoji = TypefaceUtils.load(getAssets(), "emojione_android.ttf");
-		}
-		
-		if( db_open_helper == null ){
-			db_open_helper = new DBOpenHelper( getApplicationContext() );
-		}
-
-		if( image_loader == null ){
-			image_loader = new MyImageLoader(
-				Volley.newRequestQueue( getApplicationContext() )
-				, new BitmapCache()
-			);
-		}
-	}
-	
-	@Override
-	public void onTerminate(){
-		super.onTerminate();
-	}
 	
 	static final String DB_NAME = "app_db";
-	static final int DB_VERSION = 1;
+	static final int DB_VERSION = 2;
+	// 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
+	// 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加
 	
 	static DBOpenHelper db_open_helper;
 	
@@ -65,9 +39,10 @@ public class App1 extends Application {
 		return db_open_helper.getWritableDatabase();
 	}
 	
-	static class DBOpenHelper extends SQLiteOpenHelper {
+
+	private static class DBOpenHelper extends SQLiteOpenHelper {
 		
-		public DBOpenHelper( Context context ){
+		DBOpenHelper( Context context ){
 			super( context, DB_NAME, null, DB_VERSION );
 		}
 		
@@ -79,6 +54,7 @@ public class App1 extends Application {
 			ClientInfo.onDBCreate( db );
 			MediaShown.onDBCreate(db);
 			ContentWarning.onDBCreate(db);
+			NotificationTracking.onDBCreate(db);
 		}
 		
 		@Override
@@ -89,6 +65,7 @@ public class App1 extends Application {
 			ClientInfo.onDBUpgrade( db, oldVersion, newVersion );
 			MediaShown.onDBUpgrade( db, oldVersion, newVersion );
 			ContentWarning.onDBUpgrade( db, oldVersion, newVersion );
+			NotificationTracking.onDBUpgrade( db, oldVersion, newVersion );
 		}
 	}
 	
@@ -98,7 +75,7 @@ public class App1 extends Application {
 		return image_loader;
 	}
 	
-	public static class MyImageLoader extends ImageLoader {
+	private static class MyImageLoader extends ImageLoader {
 		
 		/**
 		 * Constructs a new ImageLoader.
@@ -122,7 +99,7 @@ public class App1 extends Application {
 		}
 	}
 	
-	public static class BitmapCache implements ImageLoader.ImageCache {
+	private static class BitmapCache implements ImageLoader.ImageCache {
 		
 		private LruCache<String, Bitmap> mCache;
 		
@@ -154,4 +131,38 @@ public class App1 extends Application {
 	
 	// public static final RelationshipMap relationship_map = new RelationshipMap();
 	
+	@Override
+	public void onCreate(){
+		super.onCreate();
+		
+		CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
+			.setFontAttrId(R.attr.fontPath)
+			.build()
+		);
+		
+		if( typeface_emoji == null ){
+			typeface_emoji = TypefaceUtils.load(getAssets(), "emojione_android.ttf");
+		}
+		
+		if( db_open_helper == null ){
+			db_open_helper = new DBOpenHelper( getApplicationContext() );
+
+			if( BuildConfig.DEBUG){
+//				SQLiteDatabase db = db_open_helper.getWritableDatabase();
+//				db_open_helper.onCreate( db );
+			}
+		}
+
+		if( image_loader == null ){
+			image_loader = new MyImageLoader(
+				Volley.newRequestQueue( getApplicationContext() )
+				, new BitmapCache()
+			);
+		}
+	}
+	
+	@Override
+	public void onTerminate(){
+		super.onTerminate();
+	}
 }

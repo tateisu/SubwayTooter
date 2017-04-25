@@ -13,6 +13,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -29,10 +30,10 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 	
 	static final String KEY_ACCOUNT_DB_ID = "account_db_id";
 	
-	public static void open( Activity activity, SavedAccount ai ,int requestCode){
+	public static void open( Activity activity, SavedAccount ai, int requestCode ){
 		Intent intent = new Intent( activity, ActAccountSetting.class );
 		intent.putExtra( KEY_ACCOUNT_DB_ID, ai.db_id );
-		activity.startActivityForResult( intent ,requestCode);
+		activity.startActivityForResult( intent, requestCode );
 	}
 	
 	SavedAccount account;
@@ -45,7 +46,7 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 		if( account == null ) finish();
 		loadUIFromData( account );
 		
-		btnOpenBrowser.setText(getString(R.string.open_instance_website,account.host));
+		btnOpenBrowser.setText( getString( R.string.open_instance_website, account.host ) );
 	}
 	
 	TextView tvInstance;
@@ -56,6 +57,10 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 	Switch swConfirmBeforeBoost;
 	Switch swNSFWOpen;
 	Button btnOpenBrowser;
+	CheckBox cbNotificationMention;
+	CheckBox cbNotificationBoost;
+	CheckBox cbNotificationFavourite;
+	CheckBox cbNotificationFollow;
 	
 	private void initUI(){
 		setContentView( R.layout.act_account_setting );
@@ -67,6 +72,10 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 		swConfirmBeforeBoost = (Switch) findViewById( R.id.swConfirmBeforeBoost );
 		swNSFWOpen = (Switch) findViewById( R.id.swNSFWOpen );
 		btnOpenBrowser = (Button) findViewById( R.id.btnOpenBrowser );
+		cbNotificationMention = (CheckBox) findViewById( R.id.cbNotificationMention );
+		cbNotificationBoost = (CheckBox) findViewById( R.id.cbNotificationBoost );
+		cbNotificationFavourite = (CheckBox) findViewById( R.id.cbNotificationFavourite );
+		cbNotificationFollow = (CheckBox) findViewById( R.id.cbNotificationFollow );
 		
 		btnOpenBrowser.setOnClickListener( this );
 		btnAccessToken.setOnClickListener( this );
@@ -75,7 +84,13 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 		
 		swNSFWOpen.setOnCheckedChangeListener( this );
 		swConfirmBeforeBoost.setOnCheckedChangeListener( this );
+		cbNotificationMention.setOnCheckedChangeListener( this );
+		cbNotificationBoost.setOnCheckedChangeListener( this );
+		cbNotificationFavourite.setOnCheckedChangeListener( this );
+		cbNotificationFollow.setOnCheckedChangeListener( this );
 	}
+	
+	boolean loading = false;
 	
 	private void loadUIFromData( SavedAccount a ){
 		tvInstance.setText( a.host );
@@ -85,26 +100,44 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 		if( sv != null ){
 			visibility = sv;
 		}
+		
+		loading = true;
+		
 		swConfirmBeforeBoost.setChecked( a.confirm_boost );
 		swNSFWOpen.setChecked( a.dont_hide_nsfw );
+		cbNotificationMention.setChecked( a.notification_mention );
+		cbNotificationBoost.setChecked( a.notification_boost );
+		cbNotificationFavourite.setChecked( a.notification_favourite );
+		cbNotificationFollow.setChecked( a.notification_follow );
+		
+		loading = false;
 		
 		updateVisibility();
+	}
+	
+	@Override protected void onStop(){
+		AlarmService.startCheck(this);
+		super.onStop();
 	}
 	
 	private void saveUIToData(){
 		account.visibility = visibility;
 		account.confirm_boost = swConfirmBeforeBoost.isChecked();
 		account.dont_hide_nsfw = swNSFWOpen.isChecked();
+		account.notification_mention = cbNotificationMention.isChecked();
+		account.notification_boost = cbNotificationBoost.isChecked();
+		account.notification_favourite = cbNotificationFavourite.isChecked();
+		account.notification_follow = cbNotificationFollow.isChecked();
 		account.saveSetting();
+		
 	}
 	
-	@Override
-	public void onCheckedChanged( CompoundButton buttonView, boolean isChecked ){
+	@Override public void onCheckedChanged( CompoundButton buttonView, boolean isChecked ){
+		if( loading ) return;
 		saveUIToData();
 	}
 	
-	@Override
-	public void onClick( View v ){
+	@Override public void onClick( View v ){
 		switch( v.getId() ){
 		case R.id.btnAccessToken:
 			performAccessToken();
@@ -116,10 +149,10 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 			performVisibility();
 			break;
 		case R.id.btnOpenBrowser:
-			open_browser( "https://"+account.host+"/" );
+			open_browser( "https://" + account.host + "/" );
 		}
 	}
-
+	
 	void open_browser( String url ){
 		try{
 			Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse( url ) );
@@ -128,7 +161,7 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 			ex.printStackTrace();
 		}
 	}
-
+	
 	///////////////////////////////////////////////////
 	
 	String visibility = TootStatus.VISIBILITY_PUBLIC;
@@ -197,7 +230,7 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 	
 	///////////////////////////////////////////////////
 	private void performAccessToken(){
-
+		
 		final ProgressDialog progress = new ProgressDialog( ActAccountSetting.this );
 		
 		final AsyncTask< Void, String, TootApiResult > task = new AsyncTask< Void, String, TootApiResult >() {

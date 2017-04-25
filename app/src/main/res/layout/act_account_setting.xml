@@ -3,6 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     android:fillViewport="true"
     android:scrollbarStyle="outsideOverlay"
     >
@@ -61,7 +62,7 @@
                 android:id="@+id/btnOpenBrowser"
                 style="@style/setting_horizontal_stretch"
                 android:ellipsize="start"
-                android:text="@string/update_access_token"
+                tools:text="open http://mastodon.juggler.jp/"
                 android:textAllCaps="false"
                 />
 
@@ -118,8 +119,12 @@
 
             <Switch
                 android:id="@+id/swConfirmBeforeBoost"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
+                style="@style/setting_wrap"
+                />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
                 />
         </LinearLayout>
 
@@ -135,11 +140,55 @@
 
             <Switch
                 android:id="@+id/swNSFWOpen"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
+                style="@style/setting_wrap"
+                />
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
                 />
         </LinearLayout>
 
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/notifications"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <CheckBox
+                android:id="@+id/cbNotificationMention"
+                style="@style/setting_horizontal_stretch"
+                android:text="@string/mention2"
+                />
+        </LinearLayout>
+        <LinearLayout style="@style/setting_row_form">
+
+            <CheckBox
+                android:id="@+id/cbNotificationBoost"
+                style="@style/setting_horizontal_stretch"
+                android:text="@string/boost"
+                />
+        </LinearLayout>
+        <LinearLayout style="@style/setting_row_form">
+
+            <CheckBox
+                android:id="@+id/cbNotificationFavourite"
+                style="@style/setting_horizontal_stretch"
+                android:text="@string/favourite"
+                />
+        </LinearLayout>
+        <LinearLayout style="@style/setting_row_form">
+
+            <CheckBox
+                android:id="@+id/cbNotificationFollow"
+                style="@style/setting_horizontal_stretch"
+                android:text="@string/follow"
+                />
+        </LinearLayout>
 
         <!--<View style="@style/setting_divider"/>-->
 

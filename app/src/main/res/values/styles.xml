@@ -82,7 +82,10 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">1</item>
     </style>
-
+    <style name="setting_wrap">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
     <style name="setting_edit_text" parent="@style/setting_horizontal_stretch">
         <item name="android:imeOptions">actionDone</item>
     </style>

@@ -33,10 +33,13 @@ public class TootNotification extends TootId {
 	
 	public long time_created_at;
 	
+	public JSONObject json;
+	
 	public static TootNotification parse( LogCategory log, LinkClickContext accopunt, JSONObject src ){
 		if( src == null ) return null;
 		try{
 			TootNotification dst = new TootNotification();
+			dst.json = src;
 			dst.id = src.optLong( "id" );
 			dst.type = Utils.optStringX( src, "type" );
 			dst.created_at = Utils.optStringX( src, "created_at" );

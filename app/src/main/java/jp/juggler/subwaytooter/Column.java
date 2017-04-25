@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter;
 
+import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
@@ -72,9 +73,9 @@ class Column {
 	static final String KEY_COLUMN_NAME = "column_name";
 	static final String KEY_OLD_INDEX = "old_index";
 	
-	private final ActMain activity;
+	private final @NonNull ActMain activity;
 	
-	final SavedAccount access_info;
+	final @NonNull SavedAccount access_info;
 	
 	final int type;
 	static final int TYPE_HOME = 1;
@@ -82,7 +83,7 @@ class Column {
 	static final int TYPE_FEDERATE = 3;
 	static final int TYPE_PROFILE = 4;
 	static final int TYPE_FAVOURITES = 5;
-	static final int TYPE_REPORTS = 6;
+	private static final int TYPE_REPORTS = 6;
 	static final int TYPE_NOTIFICATIONS = 7;
 	static final int TYPE_CONVERSATION = 8;
 	static final int TYPE_HASHTAG = 9;
@@ -106,7 +107,7 @@ class Column {
 	int scroll_pos;
 	int scroll_y;
 	
-	Column( ActMain activity, @NonNull SavedAccount access_info, int type, Object... params ){
+	Column( @NonNull ActMain activity, @NonNull SavedAccount access_info, int type, Object... params ){
 		this.activity = activity;
 		this.access_info = access_info;
 		this.type = type;
@@ -155,10 +156,13 @@ class Column {
 		item.put( KEY_OLD_INDEX, old_index );
 	}
 	
-	Column( ActMain activity, JSONObject src ){
+	Column( @NonNull ActMain activity, JSONObject src ){
 		this.activity = activity;
-		this.access_info = SavedAccount.loadAccount( log, src.optLong( KEY_ACCOUNT_ROW_ID ) );
-		if( access_info == null ) throw new RuntimeException( "missing account" );
+
+		SavedAccount ac = SavedAccount.loadAccount( log, src.optLong( KEY_ACCOUNT_ROW_ID ) );
+		if( ac == null ) throw new RuntimeException( "missing account" );
+		this.access_info = ac;
+
 		this.type = src.optInt( KEY_TYPE );
 		switch( type ){
 		case TYPE_CONVERSATION:
@@ -452,8 +456,14 @@ class Column {
 			TootApiResult parseNotifications( TootApiResult result ){
 				if( result != null ){
 					saveRange( result, true, true );
-					list_tmp = new ArrayList<>();
-					list_tmp.addAll( TootNotification.parseList( log, access_info, result.array ) );
+					TootNotification.List src= TootNotification.parseList( log, access_info, result.array );
+					if( src != null){
+						list_tmp = new ArrayList<>();
+						list_tmp.addAll( src );
+						//
+						AlarmService.injectData( activity,access_info.db_id, src );
+					}
+				
 				}
 				return result;
 			}
@@ -594,6 +604,8 @@ class Column {
 					if( list_tmp != null ){
 						list_data.clear();
 						list_data.addAll( list_tmp );
+						
+
 					}
 					
 				}
@@ -700,8 +712,14 @@ class Column {
 			TootApiResult parseNotifications( TootApiResult result ){
 				if( result != null ){
 					saveRange( result, bBottom, ! bBottom );
-					list_tmp = new ArrayList<>();
-					list_tmp.addAll( TootNotification.parseList( log, access_info, result.array ) );
+					
+					TootNotification.List src = TootNotification.parseList( log, access_info, result.array );
+					if( src != null ){
+						list_tmp = new ArrayList<>();
+						list_tmp.addAll( src );
+						//
+						AlarmService.injectData( activity,access_info.db_id, src );
+					}
 				}
 				return result;
 			}

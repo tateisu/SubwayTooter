@@ -144,4 +144,8 @@
     <string name="please_donate">Please support this app!</string>
     <string name="version_is">version %1$s</string>
     <string name="open_instance_website">open https://%1$s/</string>
+    <string name="boost">boost</string>
+    <string name="favourite">favourite</string>
+    <string name="mention2">mention</string>
+    <string name="notification_count">%1$d notifications</string>
 </resources>

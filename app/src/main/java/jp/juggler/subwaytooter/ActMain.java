@@ -80,29 +80,16 @@ public class ActMain extends AppCompatActivity
 		
 		initUI();
 		
-		Uri uri = ActOAuthCallback.last_uri.get();
-		if( uri != null ){
-			updateAccessToken( uri );
-		}
+		AlarmService.startCheck( this );
 		
 		loadColumnList();
 	}
 	
-	@Override protected void onNewIntent( Intent intent ){
-		super.onNewIntent( intent );
-		Uri uri = ActOAuthCallback.last_uri.get();
-		if( uri != null ){
-			updateAccessToken( uri );
-		}
-	}
-	
-	@Override
-	protected void onDestroy(){
+	@Override protected void onDestroy(){
 		super.onDestroy();
 	}
 	
-	@Override
-	protected void onResume(){
+	@Override protected void onResume(){
 		super.onResume();
 		HTMLDecoder.link_callback = link_click_listener;
 		
@@ -122,6 +109,7 @@ public class ActMain extends AppCompatActivity
 			}
 			if( bRemoved ){
 				pager_adapter.setOrder( pager, new_order );
+				saveColumnList();
 			}
 		}
 		
@@ -136,12 +124,16 @@ public class ActMain extends AppCompatActivity
 		if( pager_adapter.getCount() == 0 ){
 			llEmpty.setVisibility( View.VISIBLE );
 		}
+		
+		Uri uri = ActOAuthCallback.last_uri.get();
+		if( uri != null ){
+			ActOAuthCallback.last_uri.set( null );
+			updateAccessToken( uri );
+		}
 	}
 	
-	@Override
-	protected void onPause(){
+	@Override protected void onPause(){
 		HTMLDecoder.link_callback = null;
-		saveColumnList();
 		super.onPause();
 	}
 	
@@ -164,6 +156,7 @@ public class ActMain extends AppCompatActivity
 					ArrayList< Integer > order = data.getIntegerArrayListExtra( ActColumnList.EXTRA_ORDER );
 					if( order != null && isOrderChanged( order ) ){
 						pager_adapter.setOrder( pager, order );
+						saveColumnList();
 					}
 					
 					if( pager_adapter.column_list.isEmpty() ){
@@ -413,6 +406,25 @@ public class ActMain extends AppCompatActivity
 	
 	private void updateAccessToken( final Uri uri ){
 		
+		// 通知タップ
+		// subwaytooter://notification_click?db_id=(db_id)
+		String sv = uri.getQueryParameter( "db_id" );
+		if( ! TextUtils.isEmpty( sv ) ){
+			try{
+				long db_id = Long.parseLong( sv, 10 );
+				SavedAccount account = SavedAccount.loadAccount( log, db_id );
+				if( account != null ){
+					Column column = addColumn( account, Column.TYPE_NOTIFICATIONS );
+					if( ! column.bInitialLoading ){
+						column.reload();
+					}
+				}
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+			}
+			return;
+		}
+		
 		final ProgressDialog progress = new ProgressDialog( ActMain.this );
 		
 		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
@@ -536,7 +548,8 @@ public class ActMain extends AppCompatActivity
 					this.row_id = SavedAccount.insert( host, user, result.object, result.token_info );
 					SavedAccount account = SavedAccount.loadAccount( log, row_id );
 					if( account != null ){
-						ActMain.this.onAccountUpdated( account );
+						AlarmService.startCheck( ActMain.this );
+						onAccountUpdated( account );
 					}
 				}
 			}
@@ -580,6 +593,7 @@ public class ActMain extends AppCompatActivity
 		int page_showing = pager.getCurrentItem();
 		int page_delete = pager_adapter.column_list.indexOf( column );
 		pager_adapter.removeColumn( pager, column );
+		saveColumnList();
 		if( pager_adapter.getCount() == 0 ){
 			llEmpty.setVisibility( View.VISIBLE );
 		}else if( page_showing > 0 && page_showing == page_delete ){
@@ -590,12 +604,12 @@ public class ActMain extends AppCompatActivity
 	//////////////////////////////////////////////////////////////
 	// カラム追加系
 	
-	public void addColumn( SavedAccount ai, int type, Object... params ){
+	public Column addColumn( SavedAccount ai, int type, Object... params ){
 		// 既に同じカラムがあればそこに移動する
 		for( Column column : pager_adapter.column_list ){
 			if( column.isSameSpec( ai, type, params ) ){
 				pager.setCurrentItem( pager_adapter.column_list.indexOf( column ), true );
-				return;
+				return column;
 			}
 		}
 		//
@@ -603,7 +617,9 @@ public class ActMain extends AppCompatActivity
 		//
 		Column col = new Column( ActMain.this, ai, type, params );
 		int idx = pager_adapter.addColumn( pager, col );
+		saveColumnList();
 		pager.setCurrentItem( idx, true );
+		return col;
 	}
 	
 	private void onAccountUpdated( SavedAccount data ){
@@ -641,7 +657,7 @@ public class ActMain extends AppCompatActivity
 	
 	//////////////////////////////////////////////////////////////
 	
-	public interface GetAccountCallback {
+	interface GetAccountCallback {
 		// return account information
 		// if failed, account is null.
 		void onGetAccount( TootAccount account );
@@ -1100,7 +1116,7 @@ public class ActMain extends AppCompatActivity
 	////////////////////////////////////////
 	
 	private void performAccountSetting(){
-		AccountPicker.pick( this, true,new AccountPicker.AccountPickerCallback() {
+		AccountPicker.pick( this, true, new AccountPicker.AccountPickerCallback() {
 			@Override
 			public void onAccountPicked( SavedAccount ai ){
 				ActAccountSetting.open( ActMain.this, ai, REQUEST_CODE_ACCOUNT_SETTING );
@@ -1137,6 +1153,13 @@ public class ActMain extends AppCompatActivity
 		startActivityForResult( intent, REQUEST_CODE_COLUMN_LIST );
 	}
 	
+	private void dumpColumnList(){
+		for( int i = 0, ie = pager_adapter.column_list.size() ; i < ie ; ++ i ){
+			Column column = pager_adapter.column_list.get( i );
+			log.d( "dumpColumnList [%s]%s %s", i, column.access_info.acct, column.getColumnName( true ) );
+		}
+	}
+	
 	static final String FILE_COLUMN_LIST = "column_list";
 	
 	private void saveColumnList(){
@@ -1170,7 +1193,7 @@ public class ActMain extends AppCompatActivity
 					try{
 						JSONObject src = array.optJSONObject( i );
 						Column col = new Column( ActMain.this, src );
-						pager_adapter.addColumn( pager, col );
+						pager_adapter.addColumn( pager, col, pager_adapter.getCount() );
 					}catch( Throwable ex ){
 						ex.printStackTrace();
 					}
@@ -1191,7 +1214,7 @@ public class ActMain extends AppCompatActivity
 	
 	////////////////////////////////////////////////////////////////////////////
 	
-	public interface RelationChangedCallback {
+	interface RelationChangedCallback {
 		// void onRelationChanged( TootRelationShip relationship );
 		void onRelationChanged();
 	}
@@ -1226,8 +1249,8 @@ public class ActMain extends AppCompatActivity
 						if( result.object != null ){
 							remote_who = TootAccount.parse( log, access_info, result.object );
 							
-							Utils.showToast( ActMain.this, false, bFollow ? R.string.follow_succeeded : R.string.unfollow_succeeded );
-						}else if( bFollow && who.locked && result.response.code() == 422 ){
+							Utils.showToast( ActMain.this, false, R.string.follow_succeeded );
+						}else if( who.locked && result.response.code() == 422 ){
 							Utils.showToast( ActMain.this, false, R.string.cant_follow_locked_user );
 						}else{
 							Utils.showToast( ActMain.this, false, result.error );
@@ -1351,7 +1374,7 @@ public class ActMain extends AppCompatActivity
 	
 	// アカウントを選択してからユーザをフォローする
 	void followFromAnotherAccount( final SavedAccount access_info, final TootAccount who, final RelationChangedCallback callback ){
-		AccountPicker.pick( ActMain.this, false,new AccountPicker.AccountPickerCallback() {
+		AccountPicker.pick( ActMain.this, false, new AccountPicker.AccountPickerCallback() {
 			@Override
 			public void onAccountPicked( SavedAccount ai ){
 				String acct = who.acct;
@@ -1502,9 +1525,8 @@ public class ActMain extends AppCompatActivity
 		}.execute();
 	}
 	
-	public interface ReportCompleteCallback {
+	interface ReportCompleteCallback {
 		void onReportComplete( TootApiResult result );
-		
 	}
 	
 	private void callReport( final SavedAccount account, final TootAccount who, final TootStatus status
@@ -1605,7 +1627,7 @@ public class ActMain extends AppCompatActivity
 		if( ! tmp_list.isEmpty() ){
 			dialog.addAction( getString( R.string.favourite_from_another_account ), new Runnable() {
 				@Override public void run(){
-					AccountPicker.pick( ActMain.this, false,tmp_list, new AccountPicker.AccountPickerCallback() {
+					AccountPicker.pick( ActMain.this, false, tmp_list, new AccountPicker.AccountPickerCallback() {
 						@Override public void onAccountPicked( SavedAccount ai ){
 							if( ai != null ) performFavourite( ai, status );
 						}
@@ -1614,7 +1636,7 @@ public class ActMain extends AppCompatActivity
 			} );
 			dialog.addAction( getString( R.string.boost_from_another_account ), new Runnable() {
 				@Override public void run(){
-					AccountPicker.pick( ActMain.this,false,  tmp_list, new AccountPicker.AccountPickerCallback() {
+					AccountPicker.pick( ActMain.this, false, tmp_list, new AccountPicker.AccountPickerCallback() {
 						@Override public void onAccountPicked( SavedAccount ai ){
 							if( ai != null ) performBoost( ai, status, false );
 						}

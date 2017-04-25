@@ -29,6 +29,10 @@ public class SavedAccount extends TootAccount implements LinkClickContext{
 	private static final String COL_VISIBILITY = "visibility";
 	private static final String COL_CONFIRM_BOOST = "confirm_boost";
 	private static final String COL_DONT_HIDE_NSFW = "dont_hide_nsfw";
+	private static final String COL_NOTIFICATION_MENTION = "notification_mention";
+	private static final String COL_NOTIFICATION_BOOST = "notification_boost";
+	private static final String COL_NOTIFICATION_FAVOURITE = "notification_favourite";
+	private static final String COL_NOTIFICATION_FOLLOW = "notification_follow";
 	
 	public static final long INVALID_ID = -1L;
 	
@@ -40,6 +44,10 @@ public class SavedAccount extends TootAccount implements LinkClickContext{
 	public String visibility;
 	public boolean confirm_boost;
 	public boolean dont_hide_nsfw;
+	public boolean notification_mention;
+	public boolean notification_boost;
+	public boolean notification_favourite;
+	public boolean notification_follow;
 	
 	public static void onDBCreate( SQLiteDatabase db ){
 		db.execSQL(
@@ -52,6 +60,11 @@ public class SavedAccount extends TootAccount implements LinkClickContext{
 				+ ",visibility text"
 				+ ",confirm_boost integer default 1"
 				+ ",dont_hide_nsfw integer default 0"
+				// 以下はDBスキーマ2で追加
+				+ ",notification_mention integer default 1"
+				+ ",notification_boost integer default 1"
+				+ ",notification_favourite integer default 1"
+				+ ",notification_follow integer default 1"
 				+ ")"
 		);
 		db.execSQL("create index if not exists " + table + "_user on " + table + "(u)" );
@@ -59,11 +72,31 @@ public class SavedAccount extends TootAccount implements LinkClickContext{
 	}
 	
 	public static void onDBUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ){
-		
+		if( oldVersion < 2 && newVersion >= 2){
+			try{
+				db.execSQL( "alter table "+table+" add column notification_mention integer default 1" );
+			}catch(Throwable ex){
+				ex.printStackTrace(  );
+			}
+			try{
+				db.execSQL( "alter table "+table+" add column notification_boost integer default 1" );
+			}catch(Throwable ex){
+				ex.printStackTrace(  );
+			}
+			try{
+				db.execSQL( "alter table "+table+" add column notification_favourite integer default 1" );
+			}catch(Throwable ex){
+				ex.printStackTrace(  );
+			}
+			try{
+				db.execSQL( "alter table "+table+" add column notification_follow integer default 1" );
+			}catch(Throwable ex){
+				ex.printStackTrace(  );
+			}
+		}
 	}
 	
 	private SavedAccount(){
-		
 	}
 	
 	private static SavedAccount parse(  Cursor cursor ) throws JSONException{
@@ -80,6 +113,11 @@ public class SavedAccount extends TootAccount implements LinkClickContext{
 
 			dst.confirm_boost = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_CONFIRM_BOOST ) ) );
 			dst.dont_hide_nsfw = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_DONT_HIDE_NSFW ) ) );
+			
+			dst.notification_mention = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_NOTIFICATION_MENTION ) ) );
+			dst.notification_boost = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_NOTIFICATION_BOOST ) ) );
+			dst.notification_favourite = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_NOTIFICATION_FAVOURITE ) ) );
+			dst.notification_follow = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_NOTIFICATION_FOLLOW ) ) );
 			
 			dst.token_info = new JSONObject( cursor.getString( cursor.getColumnIndex( COL_TOKEN ) ) );
 		}
@@ -125,6 +163,12 @@ public class SavedAccount extends TootAccount implements LinkClickContext{
 			cv.put( COL_VISIBILITY, visibility );
 			cv.put( COL_CONFIRM_BOOST, confirm_boost? 1:0  );
 			cv.put( COL_DONT_HIDE_NSFW, dont_hide_nsfw ? 1: 0  );
+			
+			cv.put( COL_NOTIFICATION_MENTION, notification_mention ? 1: 0  );
+			cv.put( COL_NOTIFICATION_BOOST, notification_boost ? 1: 0  );
+			cv.put( COL_NOTIFICATION_FAVOURITE, notification_favourite ? 1: 0  );
+			cv.put( COL_NOTIFICATION_FOLLOW, notification_follow ? 1: 0  );
+
 			App1.getDB().update( table, cv, COL_ID + "=?", new String[]{ Long.toString(db_id) } );
 		}
 	}
@@ -138,6 +182,10 @@ public class SavedAccount extends TootAccount implements LinkClickContext{
 				this.confirm_boost = b.confirm_boost;
 				this.dont_hide_nsfw = b.dont_hide_nsfw;
 				this.token_info = b.token_info;
+				this.notification_mention = b.notification_follow;
+				this.notification_boost = b.notification_boost;
+				this.notification_favourite = b.notification_favourite;
+				this.notification_follow = b.notification_follow;
 			}
 		}
 	}

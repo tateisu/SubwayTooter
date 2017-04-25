@@ -112,18 +112,24 @@ class Column {
 		this.access_info = access_info;
 		this.type = type;
 		switch( type ){
+
 		case TYPE_CONVERSATION:
 			this.status_id = (Long) getParamAt( params, 0 );
 			break;
+
 		case TYPE_PROFILE:
 			this.profile_id = (Long) getParamAt( params, 0 );
 			break;
+
 		case TYPE_HASHTAG:
 			this.hashtag = (String) getParamAt( params, 0 );
 			break;
+
 		case TYPE_SEARCH:
 			this.search_query = (String) getParamAt( params, 0 );
 			this.search_resolve = (Boolean) getParamAt( params, 1 );
+			break;
+
 		}
 		
 		startLoading();
@@ -165,21 +171,70 @@ class Column {
 
 		this.type = src.optInt( KEY_TYPE );
 		switch( type ){
+
 		case TYPE_CONVERSATION:
 			this.status_id = src.optLong( KEY_STATUS_ID );
 			break;
+
 		case TYPE_PROFILE:
 			this.profile_id = src.optLong( KEY_PROFILE_ID );
 			this.profile_tab = src.optInt( KEY_PROFILE_TAB );
 			break;
+
 		case TYPE_HASHTAG:
 			this.hashtag = src.optString( KEY_HASHTAG );
 			break;
+
 		case TYPE_SEARCH:
 			this.search_query = src.optString( KEY_SEARCH_QUERY );
 			this.search_resolve = src.optBoolean( KEY_SEARCH_RESOLVE, false );
+			break;
+
 		}
 		startLoading();
+	}
+	
+	boolean isSameSpec( SavedAccount ai, int type, Object[] params ){
+		if( type != this.type || ! Utils.equalsNullable( ai.acct, access_info.acct ) ) return false;
+		switch( type ){
+		default:
+			return true;
+		
+		case TYPE_PROFILE:
+			try{
+				long who_id = (Long) getParamAt( params, 0 );
+				return who_id == this.profile_id;
+			}catch( Throwable ex ){
+				return false;
+			}
+		
+		case TYPE_CONVERSATION:
+			try{
+				long status_id = (Long) getParamAt( params, 0 );
+				return status_id == this.status_id;
+			}catch( Throwable ex ){
+				return false;
+			}
+		
+		case TYPE_HASHTAG:
+			try{
+				String hashtag = (String) getParamAt( params, 0 );
+				return Utils.equalsNullable( hashtag, this.hashtag );
+			}catch( Throwable ex ){
+				return false;
+			}
+		
+		case TYPE_SEARCH:
+			try{
+				String q = (String) getParamAt( params, 0 );
+				boolean r = (Boolean) getParamAt( params, 1 );
+				return Utils.equalsNullable( q, this.search_query )
+					&& r == this.search_resolve;
+			}catch( Throwable ex ){
+				return false;
+			}
+			
+		}
 	}
 	
 	final AtomicBoolean is_dispose = new AtomicBoolean();
@@ -222,6 +277,7 @@ class Column {
 		
 		case TYPE_HASHTAG:
 			return activity.getString( R.string.hashtag_of, hashtag );
+		
 		case TYPE_SEARCH:
 			if( bLong ){
 				return activity.getString( R.string.search_of, search_query );
@@ -231,48 +287,7 @@ class Column {
 		}
 	}
 	
-	boolean isSameSpec( SavedAccount ai, int type, Object[] params ){
-		if( type != this.type || ! Utils.equalsNullable( ai.acct, access_info.acct ) ) return false;
-		switch( type ){
-		default:
-			return true;
-		
-		case TYPE_PROFILE:
-			try{
-				long who_id = (Long) getParamAt( params, 0 );
-				return who_id == this.profile_id;
-			}catch( Throwable ex ){
-				return false;
-			}
-		
-		case TYPE_CONVERSATION:
-			try{
-				long status_id = (Long) getParamAt( params, 0 );
-				return status_id == this.status_id;
-			}catch( Throwable ex ){
-				return false;
-			}
-		
-		case TYPE_HASHTAG:
-			try{
-				long status_id = (Long) getParamAt( params, 0 );
-				return status_id == this.status_id;
-			}catch( Throwable ex ){
-				return false;
-			}
-		
-		case TYPE_SEARCH:
-			try{
-				String q = (String) getParamAt( params, 0 );
-				boolean r = (Boolean) getParamAt( params, 1 );
-				return Utils.equalsNullable( q, this.search_query )
-					&& r == this.search_resolve;
-			}catch( Throwable ex ){
-				return false;
-			}
-			
-		}
-	}
+
 	
 	interface StatusEntryCallback {
 		void onIterate( TootStatus status );
@@ -512,14 +527,16 @@ class Column {
 						client.callback.publishApiProgress( "" );
 					}
 					switch( profile_tab ){
+
 					default:
 					case TAB_STATUS:
 						return parseStatuses( client.request(
 							String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id ) ) );
+					
 					case TAB_FOLLOWING:
-						
 						return parseAccountList( client.request(
 							String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id ) ) );
+					
 					case TAB_FOLLOWERS:
 						return parseAccountList( client.request(
 							String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id ) ) );
@@ -748,6 +765,7 @@ class Column {
 				client.setAccount( access_info );
 				
 				switch( type ){
+
 				default:
 				case TYPE_HOME:
 					return parseStatuses( client.request( addRange( bBottom, PATH_HOME ) ) );
@@ -775,14 +793,16 @@ class Column {
 						client.callback.publishApiProgress( "" );
 					}
 					switch( profile_tab ){
+
 					default:
 					case TAB_STATUS:
 						return parseStatuses( client.request(addRange( bBottom,
 							String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id ) ) ));
+
 					case TAB_FOLLOWING:
-						
 						return parseAccountList( client.request(addRange( bBottom,
 							String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id ) ) ));
+
 					case TAB_FOLLOWERS:
 						return parseAccountList( client.request(addRange( bBottom,
 							String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id ) ) ));

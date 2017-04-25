@@ -153,4 +153,5 @@
     <string name="open_column_list">open column list</string>
     <string name="back_button_action">back button action</string>
     <string name="prior_local_url_when_open_attachment">prior local URL when open attachment</string>
+    <string name="disable_fast_scroller">disable fast scroller (app restart required)</string>
 </resources>

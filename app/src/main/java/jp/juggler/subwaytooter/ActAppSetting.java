@@ -33,6 +33,8 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 	
 	Switch swDontConfirmBeforeCloseColumn;
 	Switch swPriorLocalURL;
+	Switch swDisableFastScroller;
+	
 	Spinner spBackButtonAction;
 	
 	static final int BACK_ASK_ALWAYS =0;
@@ -49,6 +51,10 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 		
 		swPriorLocalURL = (Switch) findViewById( R.id.swPriorLocalURL );
 		swPriorLocalURL.setOnCheckedChangeListener( this );
+		
+		swDisableFastScroller = (Switch) findViewById( R.id.swDisableFastScroller );
+		swDisableFastScroller.setOnCheckedChangeListener( this );
+		
 		
 		spBackButtonAction =  (Spinner) findViewById( R.id.spBackButtonAction );
 		spBackButtonAction.setOnItemSelectedListener( this );
@@ -69,7 +75,7 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 
 		swDontConfirmBeforeCloseColumn.setChecked( pref.getBoolean( Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN, false ) );
 		swPriorLocalURL.setChecked( pref.getBoolean( Pref.KEY_PRIOR_LOCAL_URL, false ) );
-		
+		swDisableFastScroller.setChecked( pref.getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, false ) );
 		spBackButtonAction.setSelection( pref.getInt(Pref.KEY_BACK_BUTTON_ACTION,0) );
 
 		load_busy = false;
@@ -80,6 +86,7 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 		pref.edit()
 			.putBoolean( Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN, swDontConfirmBeforeCloseColumn.isChecked() )
 			.putBoolean( Pref.KEY_PRIOR_LOCAL_URL, swPriorLocalURL.isChecked() )
+			.putBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, swDisableFastScroller.isChecked() )
 			.putInt( Pref.KEY_BACK_BUTTON_ACTION, spBackButtonAction.getSelectedItemPosition() )
 			.apply();
 	}

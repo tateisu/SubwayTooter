@@ -102,6 +102,8 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		etSearch = (EditText) root.findViewById( R.id.etSearch );
 		cbResolve = (CheckBox) root.findViewById( R.id.cbResolve );
 		
+		listView.setFastScrollEnabled( !Pref.pref(activity).getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER,false) );
+		
 		if( column.type != Column.TYPE_SEARCH ){
 			llSearch.setVisibility( View.GONE );
 		}else{

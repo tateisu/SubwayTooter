@@ -71,6 +71,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 	View btnSearch;
 	EditText etSearch;
 	CheckBox cbResolve;
+	View llColumnHeader;
 	
 	void onPageCreate( View root, int page_idx, int page_count ){
 		log.d( "onPageCreate:%s", column.getColumnName( true ) );
@@ -83,6 +84,8 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		
 		root.findViewById( R.id.btnColumnClose ).setOnClickListener( this );
 		root.findViewById( R.id.btnColumnReload ).setOnClickListener( this );
+		root.findViewById( R.id.llColumnHeader ).setOnClickListener( this );
+		
 		
 		tvLoading = (TextView) root.findViewById( R.id.tvLoading );
 		listView = (ListView) root.findViewById( R.id.listView );
@@ -161,6 +164,10 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			column.search_query = etSearch.getText().toString().trim();
 			column.search_resolve = cbResolve.isChecked();
 			column.reload();
+			break;
+		
+		case R.id.llColumnHeader:
+			if( status_adapter.getCount() > 0 ) listView.setSelectionFromTop( 0,0);
 			break;
 		}
 		
@@ -824,9 +831,17 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			try{
 				TootAttachment a = status.media_attachments.get( i );
 				
-				String sv = a.remote_url;
-				if( TextUtils.isEmpty( sv ) ){
+				String sv;
+				if( Pref.pref(activity).getBoolean( Pref.KEY_PRIOR_LOCAL_URL,false )){
 					sv = a.url;
+					if( TextUtils.isEmpty( sv ) ){
+						sv = a.remote_url;
+					}
+				}else{
+					sv = a.remote_url;
+					if( TextUtils.isEmpty( sv ) ){
+						sv = a.url;
+					}
 				}
 				activity.openChromeTab( access_info, sv, false );
 			}catch( Throwable ex ){

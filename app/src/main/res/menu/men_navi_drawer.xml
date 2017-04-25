@@ -89,6 +89,11 @@
                     android:id="@+id/nav_oss_license"
                     android:icon="@drawable/ic_info"
                     android:title="@string/oss_license"/>
+
+                <item
+                    android:id="@+id/nav_app_exit"
+                    android:icon="@drawable/ic_hot_tub"
+                    android:title="@string/app_exit"/>
             </menu>
         </item>
     </group>

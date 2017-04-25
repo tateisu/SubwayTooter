@@ -180,15 +180,46 @@ public class ActMain extends AppCompatActivity
 	
 	@Override
 	public void onBackPressed(){
+
 		DrawerLayout drawer = (DrawerLayout) findViewById( R.id.drawer_layout );
 		if( drawer.isDrawerOpen( GravityCompat.START ) ){
 			drawer.closeDrawer( GravityCompat.START );
-		}else if( pref.getBoolean( Pref.KEY_BACK_TO_COLUMN_LIST, false ) ){
-			performColumnList();
-		}else if( ! pager_adapter.column_list.isEmpty() ){
+			return;
+		}
+
+		switch( pref.getInt(Pref.KEY_BACK_BUTTON_ACTION,0)){
+		default:
+		case ActAppSetting.BACK_ASK_ALWAYS:
+			ActionsDialog dialog = new ActionsDialog();
+			dialog.addAction( getString( R.string.close_column ), new Runnable() {
+				@Override public void run(){
+					performColumnClose( true, pager_adapter.getColumn( pager.getCurrentItem() ) );
+				}
+			} );
+			dialog.addAction( getString( R.string.open_column_list ), new Runnable() {
+				@Override public void run(){
+					performColumnList();
+				}
+			} );
+			dialog.addAction( getString( R.string.app_exit ), new Runnable() {
+				@Override public void run(){
+					ActMain.this.finish();
+				}
+			} );
+			dialog.show( this,null );
+			break;
+
+		case ActAppSetting.BACK_CLOSE_COLUMN:
 			performColumnClose( false, pager_adapter.getColumn( pager.getCurrentItem() ) );
-		}else{
-			super.onBackPressed();
+			break;
+
+		case ActAppSetting.BACK_EXIT_APP:
+			ActMain.this.finish();
+			break;
+
+		case ActAppSetting.BACK_OPEN_COLUMN_LIST:
+			performColumnList();
+			break;
 		}
 	}
 	
@@ -253,6 +284,10 @@ public class ActMain extends AppCompatActivity
 			
 		}else if( id == R.id.nav_oss_license ){
 			openOSSLicense();
+			
+		}else if( id == R.id.nav_app_exit ){
+			finish();
+			
 			
 			// Handle the camera action
 //		}else if( id == R.id.nav_gallery ){

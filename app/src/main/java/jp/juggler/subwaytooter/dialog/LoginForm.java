@@ -93,8 +93,8 @@ public class LoginForm {
 			ex.printStackTrace(  );
 		}
 		
-		ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, R.layout.lv_instance_dropdown, instance_list);
-		adapter.setDropDownViewResource( R.layout.lv_instance_dropdown );
+		ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, R.layout.lv_spinner_dropdown, instance_list);
+		adapter.setDropDownViewResource( R.layout.lv_spinner_dropdown );
 		etInstance.setAdapter(adapter);
 		
 		//noinspection ConstantConditions

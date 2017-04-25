@@ -6,4 +6,6 @@
 
     <color name="colorLink">#00a2ff</color>
     <color name="list_item_bg_pressed_dragged">#AACCCCCC</color>
+    <color name="color_column_header">#ddd</color>
+
 </resources>

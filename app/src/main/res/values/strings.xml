@@ -148,4 +148,9 @@
     <string name="favourite">favourite</string>
     <string name="mention2">mention</string>
     <string name="notification_count">%1$d notifications</string>
+    <string name="app_exit">exit app</string>
+    <string name="ask_always">ask always</string>
+    <string name="open_column_list">open column list</string>
+    <string name="back_button_action">back button action</string>
+    <string name="prior_local_url_when_open_attachment">prior local URL when open attachment</string>
 </resources>

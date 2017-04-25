@@ -27,23 +27,6 @@ android:scrollbarStyle="outsideOverlay"
 
     <TextView
         style="@style/setting_row_label"
-        android:text="@string/back_to_column_list"
-        />
-
-    <LinearLayout style="@style/setting_row_form">
-
-        <Switch
-            android:id="@+id/swBackToColumnList"
-            style="@style/setting_horizontal_stretch"
-            android:gravity="center"
-            />
-
-    </LinearLayout>
-
-    <View style="@style/setting_divider"/>
-
-    <TextView
-        style="@style/setting_row_label"
         android:text="@string/dont_confirm_before_close_column"
         />
 
@@ -56,6 +39,38 @@ android:scrollbarStyle="outsideOverlay"
             />
 
     </LinearLayout>
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/back_button_action"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <Spinner
+            android:id="@+id/spBackButtonAction"
+            style="@style/setting_horizontal_stretch"
+            />
+
+    </LinearLayout>
+
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/prior_local_url_when_open_attachment"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <Switch
+            android:id="@+id/swPriorLocalURL"
+            style="@style/setting_horizontal_stretch"
+            />
+
+    </LinearLayout>
+
     <View style="@style/setting_divider"/>
 
     <!--<TextView-->

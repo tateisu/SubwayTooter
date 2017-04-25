@@ -149,4 +149,9 @@
     <string name="notification_count">%1$d件の通知</string>
     <string name="boost">ブースト</string>
     <string name="favourite">お気に入り</string>
+    <string name="app_exit">アプリを終了</string>
+    <string name="ask_always">毎回尋ねる</string>
+    <string name="open_column_list">カラム一覧を開く</string>
+    <string name="back_button_action">戻るボタンの動作</string>
+    <string name="prior_local_url_when_open_attachment">添付画像を開く時に自タンスURLを重視</string>
 </resources>

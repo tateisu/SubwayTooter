@@ -182,8 +182,14 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 	
 	private void showError( String message ){
 		tvLoading.setVisibility( View.VISIBLE );
-		swipyRefreshLayout.setVisibility( View.GONE );
 		tvLoading.setText( message );
+
+		swipyRefreshLayout.setVisibility( View.GONE );
+		
+		// ロード完了後に先頭から表示させる
+		if( status_adapter.getCount() > 0 ){
+			listView.setSelectionFromTop( 0,0 );
+		}
 	}
 	
 	

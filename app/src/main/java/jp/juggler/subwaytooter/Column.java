@@ -662,7 +662,7 @@ class Column {
 					default:
 					case TAB_STATUS:
 						String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
-						if( with_attachment ) s = s + "&only_media";
+						if( with_attachment ) s = s + "&only_media=1";
 						return getStatuses( client, s );
 					
 					case TAB_FOLLOWING:
@@ -1165,8 +1165,9 @@ class Column {
 					
 					default:
 					case TAB_STATUS:
-						return getStatusList( client,
-							String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id ) );
+						String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
+						if( with_attachment ) s = s + "&only_media=1";
+						return getStatusList( client,s );
 					
 					case TAB_FOLLOWING:
 						return getAccountList( client,
@@ -1505,8 +1506,9 @@ class Column {
 					
 					default:
 					case TAB_STATUS:
-						return getStatusList( client,
-							String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id ) );
+						String s =String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
+						if( with_attachment ) s = s + "&only_media=1";
+						return getStatusList( client,s );
 					
 					case TAB_FOLLOWING:
 						return getAccountList( client,

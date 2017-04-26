@@ -1,8 +1,6 @@
 package jp.juggler.subwaytooter;
 
 import android.content.Context;
-import android.graphics.Color;
-import android.graphics.ColorFilter;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.v4.content.ContextCompat;
@@ -13,7 +11,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -34,7 +31,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
-import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.ContentWarning;
 import jp.juggler.subwaytooter.table.MediaShown;
@@ -43,21 +39,27 @@ import jp.juggler.subwaytooter.util.Emojione;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
-public class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, SwipyRefreshLayout.OnRefreshListener {
-	static final LogCategory log = new LogCategory( "ColumnViewHolder" );
+class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, SwipyRefreshLayout.OnRefreshListener {
+	private static final LogCategory log = new LogCategory( "ColumnViewHolder" );
 	
 	public final ActMain activity;
 	final AtomicBoolean is_destroyed = new AtomicBoolean( false );
 	
 	private final Column column;
 	
-	public ColumnViewHolder( ActMain activity, Column column ){
+	ColumnViewHolder( ActMain activity, Column column ){
 		this.activity = activity;
 		this.column = column;
 	}
 	
 	public boolean isPageDestroyed(){
 		return is_destroyed.get() || activity.isFinishing();
+	}
+	
+	void onPageDestroy( View root ){
+		saveScrollPosition();
+		log.d( "onPageDestroy:%s", column.getColumnName( true ) );
+		column.removeVisualListener( this );
 	}
 	
 	private TextView tvLoading;
@@ -67,11 +69,9 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 	private StatusListAdapter status_adapter;
 	private HeaderViewHolder vh_header;
 	private SwipyRefreshLayout swipyRefreshLayout;
-	View llSearch;
-	View btnSearch;
-	EditText etSearch;
-	CheckBox cbResolve;
-	View llColumnHeader;
+	private View btnSearch;
+	private EditText etSearch;
+	private CheckBox cbResolve;
 	
 	void onPageCreate( View root, int page_idx, int page_count ){
 		log.d( "onPageCreate:%s", column.getColumnName( true ) );
@@ -91,13 +91,12 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		listView = (ListView) root.findViewById( R.id.listView );
 		status_adapter = new StatusListAdapter();
 		listView.setAdapter( status_adapter );
-		listView.setOnItemClickListener( status_adapter );
 		
 		this.swipyRefreshLayout = (SwipyRefreshLayout) root.findViewById( R.id.swipyRefreshLayout );
 		swipyRefreshLayout.setOnRefreshListener( this );
 		swipyRefreshLayout.setDistanceToTriggerSync( (int) ( 0.5f + 20 * activity.getResources().getDisplayMetrics().density ) );
 		
-		llSearch = root.findViewById( R.id.llSearch );
+		View llSearch = root.findViewById( R.id.llSearch );
 		btnSearch = root.findViewById( R.id.btnSearch );
 		etSearch = (EditText) root.findViewById( R.id.etSearch );
 		cbResolve = (CheckBox) root.findViewById( R.id.cbResolve );
@@ -139,12 +138,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		onVisualColumn();
 	}
 	
-	void onPageDestroy( View root ){
-		saveScrollPosition();
-		log.d( "onPageDestroy:%s", column.getColumnName( true ) );
-		column.removeVisualListener( this );
-	}
-	
+
 	@Override
 	public void onClick( View v ){
 		switch( v.getId() ){
@@ -254,7 +248,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		}
 	}
 	
-	final Runnable proc_restore_scroll = new Runnable() {
+	private final Runnable proc_restore_scroll = new Runnable() {
 		@Override
 		public void run(){
 			if( column.scroll_pos == 0 && column.scroll_y == 0 ){
@@ -276,7 +270,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		}
 	};
 	
-	public void saveScrollPosition(){
+	void saveScrollPosition(){
 		column.scroll_pos = 0;
 		column.scroll_y = 0;
 		if( listView.getVisibility() == View.VISIBLE ){
@@ -291,7 +285,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 	
 	///////////////////////////////////////////////////////////////////
 	
-	class HeaderViewHolder implements View.OnClickListener {
+	private class HeaderViewHolder implements View.OnClickListener {
 		final View viewRoot;
 		final NetworkImageView ivBackground;
 		final TextView tvCreated;
@@ -306,7 +300,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		TootAccount who;
 		SavedAccount access_info;
 		
-		public HeaderViewHolder( final ActMain activity, ListView parent ){
+		HeaderViewHolder( final ActMain activity, ListView parent ){
 			viewRoot = activity.getLayoutInflater().inflate( R.layout.lv_list_header, parent, false );
 			this.ivBackground = (NetworkImageView) viewRoot.findViewById( R.id.ivBackground );
 			this.tvCreated = (TextView) viewRoot.findViewById( R.id.tvCreated );
@@ -328,7 +322,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			tvNote.setMovementMethod( LinkMovementMethod.getInstance() );
 		}
 		
-		public void bind( ActMain activity, SavedAccount access_info, TootAccount who ){
+		void bind( ActMain activity, SavedAccount access_info, TootAccount who ){
 			this.who = who;
 			this.access_info = access_info;
 			if( who == null ){
@@ -394,10 +388,10 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		}
 	}
 	
-	class StatusListAdapter extends BaseAdapter implements AdapterView.OnItemClickListener {
+	private class StatusListAdapter extends BaseAdapter {
 		final ArrayList< Object > status_list = new ArrayList<>();
 		
-		public < T > void set( List< T > src ){
+		< T > void set( List< T > src ){
 			this.status_list.clear();
 			this.status_list.addAll( src );
 			notifyDataSetChanged();
@@ -431,24 +425,17 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			}else{
 				holder = (StatusViewHolder) view.getTag();
 			}
-			holder.bind( activity, view, o, column.access_info );
+			holder.bind( activity, o, column.access_info );
 			return view;
-		}
-		
-		@Override
-		public void onItemClick( AdapterView< ? > parent, View view, int position, long id ){
-			Object o = view.getTag();
-			if( o instanceof StatusViewHolder ){
-				( (StatusViewHolder) o ).onItemClick();
-			}
 		}
 	}
 	
-	class StatusViewHolder implements View.OnClickListener {
+	private class StatusViewHolder implements View.OnClickListener {
 		
 		final View llBoosted;
 		final ImageView ivBoosted;
 		final TextView tvBoosted;
+		final TextView tvBoostedAcct;
 		final TextView tvBoostedTime;
 		
 		final View llFollow;
@@ -461,13 +448,13 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		final NetworkImageView ivThumbnail;
 		final TextView tvName;
 		final TextView tvTime;
+		final TextView tvAcct;
 		
 		final View llContentWarning;
 		final TextView tvContentWarning;
 		final Button btnContentWarning;
 		
 		final View llContents;
-		final TextView tvTags;
 		final TextView tvMentions;
 		final TextView tvContent;
 		
@@ -496,13 +483,14 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 		View llSearchTag;
 		Button btnSearchTag;
 		
-		public StatusViewHolder( View view ){
+		StatusViewHolder( View view ){
 			
 			this.llBoosted = view.findViewById( R.id.llBoosted );
 			this.ivBoosted = (ImageView) view.findViewById( R.id.ivBoosted );
 			this.tvBoosted = (TextView) view.findViewById( R.id.tvBoosted );
 			this.tvBoostedTime = (TextView) view.findViewById( R.id.tvBoostedTime );
-			
+			this.tvBoostedAcct = (TextView) view.findViewById( R.id.tvBoostedAcct );
+				
 			this.llFollow = view.findViewById( R.id.llFollow );
 			this.ivFollow = (NetworkImageView) view.findViewById( R.id.ivFollow );
 			this.tvFollowerName = (TextView) view.findViewById( R.id.tvFollowerName );
@@ -514,14 +502,14 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			this.ivThumbnail = (NetworkImageView) view.findViewById( R.id.ivThumbnail );
 			this.tvName = (TextView) view.findViewById( R.id.tvName );
 			this.tvTime = (TextView) view.findViewById( R.id.tvTime );
-			
+			this.tvAcct =(TextView) view.findViewById( R.id.tvAcct );
+				
 			this.llContentWarning = view.findViewById( R.id.llContentWarning );
 			this.tvContentWarning = (TextView) view.findViewById( R.id.tvContentWarning );
 			this.btnContentWarning = (Button) view.findViewById( R.id.btnContentWarning );
 			
 			this.llContents = view.findViewById( R.id.llContents );
 			this.tvContent = (TextView) view.findViewById( R.id.tvContent );
-			this.tvTags = (TextView) view.findViewById( R.id.tvTags );
 			this.tvMentions = (TextView) view.findViewById( R.id.tvMentions );
 			
 			this.btnConversation = view.findViewById( R.id.btnConversation );
@@ -563,12 +551,10 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			btnFollow.setOnClickListener( this );
 			
 			tvContent.setMovementMethod( LinkMovementMethod.getInstance() );
-			tvTags.setMovementMethod( LinkMovementMethod.getInstance() );
 			tvMentions.setMovementMethod( LinkMovementMethod.getInstance() );
-			
 		}
 		
-		public void bind( ActMain activity, View view, Object item, SavedAccount access_info ){
+		void bind( ActMain activity, Object item, SavedAccount access_info ){
 			this.access_info = access_info;
 			
 			llBoosted.setVisibility( View.GONE );
@@ -591,7 +577,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 						, R.drawable.btn_favourite
 						, Utils.formatSpannable1( activity, R.string.display_name_favourited_by, n.account.display_name )
 					);
-					if( n.status != null ) showStatus( activity, view, n.status, access_info );
+					if( n.status != null ) showStatus( activity, n.status, access_info );
 				}else if( TootNotification.TYPE_REBLOG.equals( n.type ) ){
 					showBoost(
 						n.account
@@ -599,7 +585,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 						, R.drawable.btn_boost
 						, Utils.formatSpannable1( activity, R.string.display_name_boosted_by, n.account.display_name )
 					);
-					if( n.status != null ) showStatus( activity, view, n.status, access_info );
+					if( n.status != null ) showStatus( activity, n.status, access_info );
 				}else if( TootNotification.TYPE_FOLLOW.equals( n.type ) ){
 					showBoost(
 						n.account
@@ -618,7 +604,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 						, R.drawable.btn_reply
 						, Utils.formatSpannable1( activity, R.string.display_name_replied_by, n.account.display_name )
 					);
-					if( n.status != null ) showStatus( activity, view, n.status, access_info );
+					if( n.status != null ) showStatus( activity, n.status, access_info );
 				}
 			}else if( item instanceof TootStatus ){
 				TootStatus status = (TootStatus) item;
@@ -629,9 +615,9 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 						, R.drawable.btn_boost
 						, Utils.formatSpannable1( activity, R.string.display_name_boosted_by, status.account.display_name )
 					);
-					showStatus( activity, view, status.reblog, access_info );
+					showStatus( activity, status.reblog, access_info );
 				}else{
-					showStatus( activity, view, status, access_info );
+					showStatus( activity, status, access_info );
 				}
 			}
 		}
@@ -646,9 +632,8 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			account_boost = who;
 			llBoosted.setVisibility( View.VISIBLE );
 			ivBoosted.setImageResource( icon_id );
-			tvBoostedTime.setText( TootStatus.formatTime( time )
-				+ "\n" + access_info.getFullAcct( who )
-			);
+			tvBoostedTime.setText( TootStatus.formatTime( time ) );
+			tvBoostedAcct.setText(access_info.getFullAcct( who ) );
 			tvBoosted.setText( text );
 		}
 		
@@ -663,25 +648,24 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 
 		}
 		
-		private void showStatus( ActMain activity, View view, TootStatus status, SavedAccount account ){
+		private void showStatus( ActMain activity, TootStatus status, SavedAccount account ){
 			this.status = status;
 			account_thumbnail = status.account;
 			llStatus.setVisibility( View.VISIBLE );
-			tvTime.setText(
-				status.id
-					+ " " + TootStatus.formatTime( status.time_created_at )
-					+ "\n" + account.getFullAcct( status.account )
-			);
+
+			tvAcct.setText( account.getFullAcct( status.account )  );
+			tvTime.setText(  TootStatus.formatTime( status.time_created_at ) );
+
 			tvName.setText( status.account.display_name );
 			ivThumbnail.setImageUrl( status.account.avatar_static, App1.getImageLoader() );
 			tvContent.setText( status.decoded_content );
 			
-			if( status.decoded_tags == null ){
-				tvTags.setVisibility( View.GONE );
-			}else{
-				tvTags.setVisibility( View.VISIBLE );
-				tvTags.setText( status.decoded_tags );
-			}
+//			if( status.decoded_tags == null ){
+//				tvTags.setVisibility( View.GONE );
+//			}else{
+//				tvTags.setVisibility( View.VISIBLE );
+//				tvTags.setText( status.decoded_tags );
+//			}
 			
 			if( status.decoded_mentions == null ){
 				tvMentions.setVisibility( View.GONE );
@@ -857,10 +841,7 @@ public class ColumnViewHolder implements View.OnClickListener, Column.VisualCall
 			}
 		}
 		
-		public void onItemClick(){
-			if( status ==null ) return;
-			activity.performConversation( access_info, status );
-		}
+
 	}
 	
 }

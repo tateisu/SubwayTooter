@@ -99,7 +99,7 @@ public class TootStatus extends TootId {
 	
 	public Spannable decoded_content;
 	public Spannable decoded_spoiler_text;
-	public Spannable decoded_tags;
+	// public Spannable decoded_tags;
 	public Spannable decoded_mentions;
 	
 	public JSONObject json;
@@ -137,7 +137,7 @@ public class TootStatus extends TootId {
 			
 			status.time_created_at = parseTime( log, status.created_at );
 			status.decoded_content = HTMLDecoder.decodeHTML( account,status.content );
-			status.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
+			// status.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
 			status.decoded_mentions = HTMLDecoder.decodeMentions(account, status.mentions );
 
 			if( !TextUtils.isEmpty( status.spoiler_text ) ){

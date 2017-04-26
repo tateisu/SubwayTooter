@@ -2,7 +2,7 @@
     <string name="app_name">Subway Tooter</string>
 
     <string name="action_settings">設定</string>
-    <string name="account_add">アカウント追加</string>
+    <string name="account_add">アカウントの追加</string>
     <string name="instance">インスタンス</string>
     <string name="user_mail_address">メールアドレス</string>
     <string name="user_password">パスワード</string>

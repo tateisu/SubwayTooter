@@ -6,25 +6,25 @@
     android:layout_height="wrap_content"
     android:descendantFocusability="blocksDescendants"
     android:orientation="vertical"
-    android:paddingBottom="12dp"
-    android:paddingTop="12dp"
+    android:paddingBottom="3dp"
+    android:paddingTop="3dp"
     >
 
     <LinearLayout
         android:id="@+id/llBoosted"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="6dp"
         android:background="@drawable/btn_bg_transparent"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
         >
 
         <ImageView
             android:id="@+id/ivBoosted"
-            android:layout_width="64dp"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:layout_marginEnd="8dp"
+            android:layout_width="48dp"
+            android:layout_height="32dp"
+            android:layout_marginEnd="4dp"
             android:scaleType="fitEnd"
             android:src="@drawable/btn_boost"
             />
@@ -37,15 +37,37 @@
             android:orientation="vertical"
             >
 
-            <TextView
-                android:id="@+id/tvBoostedTime"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="end"
-                android:textColor="#888888"
-                android:textSize="12sp"
-                tools:text="2017-04-16 09:37:14"
-                />
+                android:orientation="horizontal"
+                >
+
+                <TextView
+                    android:id="@+id/tvBoostedAcct"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:gravity="end"
+                    android:maxLines="1"
+                    android:textColor="#888888"
+                    android:textSize="12sp"
+                    tools:text="who@hoge"
+                    />
+
+                <TextView
+                    android:id="@+id/tvBoostedTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:textColor="#888888"
+                    android:textSize="12sp"
+                    tools:text="2017-04-16 09:37:14"
+                    />
+
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/tvBoosted"
@@ -63,19 +85,19 @@
         android:id="@+id/llFollow"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:background="@drawable/btn_bg_transparent"
+        android:gravity="center_vertical"
         android:orientation="horizontal"
         >
 
         <com.android.volley.toolbox.NetworkImageView
             android:id="@+id/ivFollow"
-            android:layout_width="64dp"
-            android:layout_height="32dp"
-            android:layout_gravity="bottom"
-            android:layout_marginEnd="8dp"
+            android:layout_width="48dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="4dp"
             android:contentDescription="@string/thumbnail"
             android:scaleType="fitEnd"
+
             />
 
         <LinearLayout
@@ -106,8 +128,9 @@
 
         <ImageButton
             android:id="@+id/btnFollow"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="4dp"
             android:background="@drawable/btn_bg_transparent"
             android:contentDescription="@string/follow"
             android:src="@drawable/btn_follow"
@@ -124,10 +147,10 @@
 
         <com.android.volley.toolbox.NetworkImageView
             android:id="@+id/ivThumbnail"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="4dp"
+            android:layout_marginTop="20dp"
             android:background="@drawable/btn_bg_transparent"
             android:contentDescription="@string/thumbnail"
             android:scaleType="centerCrop"
@@ -140,21 +163,42 @@
             android:orientation="vertical"
             >
 
-            <TextView
-                android:id="@+id/tvTime"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="end"
-                android:textColor="#888888"
-                android:textSize="12sp"
-                tools:text="2017-04-16 09:37:14"
-                />
+                android:orientation="horizontal"
+                >
+
+                <TextView
+                    android:id="@+id/tvAcct"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:gravity="end"
+                    android:maxLines="1"
+                    android:textColor="#888888"
+                    android:textSize="12sp"
+                    tools:text="who@hoge"
+                    />
+
+                <TextView
+                    android:id="@+id/tvTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:textColor="#888888"
+                    android:textSize="12sp"
+                    tools:text="2017-04-16 09:37:14"
+                    />
+
+            </LinearLayout>
 
             <TextView
                 android:id="@+id/tvName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
                 android:textStyle="bold"
                 tools:text="Displayname @username"
                 />
@@ -163,7 +207,7 @@
                 android:id="@+id/llContentWarning"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="3dp"
                 android:baselineAligned="false"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
@@ -171,28 +215,38 @@
 
                 <Button
                     android:id="@+id/btnContentWarning"
+                    android:background="@drawable/btn_bg_ddd"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:minWidth="32dp"
+                    android:layout_height="40dp"
+                    android:layout_marginEnd="8dp"
+                    android:minWidth="40dp"
+                    android:padding="4dp"
                     tools:text="見る"
                     />
 
-                <TextView
-                    android:id="@+id/tvContentWarning"
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    />
+                    android:orientation="vertical"
+                    >
+
+                    <TextView
+                        android:id="@+id/tvMentions"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        />
+
+                    <TextView
+                        android:id="@+id/tvContentWarning"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        />
+                </LinearLayout>
+
             </LinearLayout>
 
-            <TextView
-                android:id="@+id/tvMentions"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:gravity="end"
-                />
 
             <LinearLayout
                 android:id="@+id/llContents"
@@ -202,19 +256,11 @@
                 >
 
                 <TextView
-                    android:id="@+id/tvTags"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:gravity="end"
-                    />
-
-
-                <TextView
                     android:id="@+id/tvContent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="3dp"
+                    android:lineSpacingMultiplier="1.1"
                     tools:text="Contents\nContents"
                     />
 
@@ -222,7 +268,7 @@
                     android:id="@+id/flMedia"
                     android:layout_width="match_parent"
                     android:layout_height="64dp"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="3dp"
                     >
 
                     <LinearLayout
@@ -295,8 +341,9 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="40dp"
                 android:orientation="horizontal"
+                android:layout_marginTop="3dp"
                 >
 
                 <ImageButton
@@ -305,9 +352,7 @@
                     android:layout_height="match_parent"
                     android:background="@drawable/btn_bg_transparent"
                     android:contentDescription="@string/conversation_view"
-                    android:minWidth="48dp"
-                    android:paddingEnd="4dp"
-                    android:paddingStart="4dp"
+                    android:minWidth="40dp"
                     android:src="@drawable/ic_conversation"
                     />
 
@@ -317,9 +362,7 @@
                     android:layout_height="match_parent"
                     android:background="@drawable/btn_bg_transparent"
                     android:contentDescription="@string/reply"
-                    android:minWidth="48dp"
-                    android:paddingEnd="4dp"
-                    android:paddingStart="4dp"
+                    android:minWidth="40dp"
                     android:src="@drawable/btn_reply"
                     />
 
@@ -351,14 +394,11 @@
                     android:layout_height="match_parent"
                     android:background="@drawable/btn_bg_transparent"
                     android:contentDescription="@string/more"
-                    android:minWidth="48dp"
-                    android:paddingEnd="4dp"
-                    android:paddingStart="4dp"
+                    android:minWidth="40dp"
                     android:src="@drawable/btn_more"
                     />
 
             </LinearLayout>
-
 
         </LinearLayout>
     </LinearLayout>
@@ -369,11 +409,12 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         >
+
         <Button
+            android:id="@+id/btnSearchTag"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/btn_bg_transparent"
-            android:id="@+id/btnSearchTag"
             android:textAllCaps="false"
             />
     </LinearLayout>

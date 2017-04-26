@@ -4,6 +4,8 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -124,7 +126,12 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return dst;
 	}
 	
-	public static long insert( String host, String acct, JSONObject account, JSONObject token ){
+	public static long insert(
+		@NonNull String host,
+		@NonNull String acct,
+		@NonNull JSONObject account,
+		@NonNull JSONObject token
+	){
 		try{
 			ContentValues cv = new ContentValues();
 			cv.put( COL_HOST, host );
@@ -133,63 +140,60 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 			cv.put( COL_TOKEN, token.toString() );
 			return App1.getDB().insert( table, null, cv );
 		}catch( Throwable ex ){
-			log.e( ex, "saveAccount failed." );
+			ex.printStackTrace();
+			throw new RuntimeException( "SavedAccount.insert failed.", ex );
 		}
-		return INVALID_ID;
 	}
 	
 	public void delete(){
 		try{
 			App1.getDB().delete( table, COL_ID + "=?", new String[]{ Long.toString( db_id ) } );
 		}catch( Throwable ex ){
-			log.e( ex, "saveAccount failed." );
+			ex.printStackTrace();
+			throw new RuntimeException( "SavedAccount.delete failed.", ex );
 		}
 	}
 	
-	public void updateTokenInfo( JSONObject token_info ){
-		if( db_id != INVALID_ID ){
-			this.token_info = token_info;
-			
-			ContentValues cv = new ContentValues();
-			cv.put( COL_TOKEN, token_info.toString() );
-			App1.getDB().update( table, cv, COL_ID + "=?", new String[]{ Long.toString( db_id ) } );
-		}
+	public void updateTokenInfo( @NonNull JSONObject token_info ){
+		if( db_id == INVALID_ID )
+			throw new RuntimeException( "SavedAccount.updateTokenInfo missing db_id" );
+		this.token_info = token_info;
+		ContentValues cv = new ContentValues();
+		cv.put( COL_TOKEN, token_info.toString() );
+		App1.getDB().update( table, cv, COL_ID + "=?", new String[]{ Long.toString( db_id ) } );
 	}
 	
 	public void saveSetting(){
-		if( db_id != INVALID_ID ){
-			ContentValues cv = new ContentValues();
-			cv.put( COL_VISIBILITY, visibility );
-			cv.put( COL_CONFIRM_BOOST, confirm_boost ? 1 : 0 );
-			cv.put( COL_DONT_HIDE_NSFW, dont_hide_nsfw ? 1 : 0 );
-			
-			cv.put( COL_NOTIFICATION_MENTION, notification_mention ? 1 : 0 );
-			cv.put( COL_NOTIFICATION_BOOST, notification_boost ? 1 : 0 );
-			cv.put( COL_NOTIFICATION_FAVOURITE, notification_favourite ? 1 : 0 );
-			cv.put( COL_NOTIFICATION_FOLLOW, notification_follow ? 1 : 0 );
-			
-			App1.getDB().update( table, cv, COL_ID + "=?", new String[]{ Long.toString( db_id ) } );
-		}
+		if( db_id == INVALID_ID )
+			throw new RuntimeException( "SavedAccount.saveSetting missing db_id" );
+		ContentValues cv = new ContentValues();
+		cv.put( COL_VISIBILITY, visibility );
+		cv.put( COL_CONFIRM_BOOST, confirm_boost ? 1 : 0 );
+		cv.put( COL_DONT_HIDE_NSFW, dont_hide_nsfw ? 1 : 0 );
+		cv.put( COL_NOTIFICATION_MENTION, notification_mention ? 1 : 0 );
+		cv.put( COL_NOTIFICATION_BOOST, notification_boost ? 1 : 0 );
+		cv.put( COL_NOTIFICATION_FAVOURITE, notification_favourite ? 1 : 0 );
+		cv.put( COL_NOTIFICATION_FOLLOW, notification_follow ? 1 : 0 );
+		App1.getDB().update( table, cv, COL_ID + "=?", new String[]{ Long.toString( db_id ) } );
 	}
 	
 	// onResumeの時に設定を読み直す
 	public void reloadSetting(){
-		if( db_id != INVALID_ID ){
-			SavedAccount b = loadAccount( log, db_id );
-			if( b != null ){
-				this.visibility = b.visibility;
-				this.confirm_boost = b.confirm_boost;
-				this.dont_hide_nsfw = b.dont_hide_nsfw;
-				this.token_info = b.token_info;
-				this.notification_mention = b.notification_follow;
-				this.notification_boost = b.notification_boost;
-				this.notification_favourite = b.notification_favourite;
-				this.notification_follow = b.notification_follow;
-			}
-		}
+		if( db_id == INVALID_ID )
+			throw new RuntimeException( "SavedAccount.reloadSetting missing db_id" );
+		SavedAccount b = loadAccount( log, db_id );
+		if( b == null ) return; // DBから削除されてる？
+		this.visibility = b.visibility;
+		this.confirm_boost = b.confirm_boost;
+		this.dont_hide_nsfw = b.dont_hide_nsfw;
+		this.token_info = b.token_info;
+		this.notification_mention = b.notification_follow;
+		this.notification_boost = b.notification_boost;
+		this.notification_favourite = b.notification_favourite;
+		this.notification_follow = b.notification_follow;
 	}
 	
-	public static SavedAccount loadAccount( LogCategory log, long db_id ){
+	public static @Nullable SavedAccount loadAccount( @NonNull LogCategory log, long db_id ){
 		try{
 			Cursor cursor = App1.getDB().query( table, null, COL_ID + "=?", new String[]{ Long.toString( db_id ) }, null, null, null );
 			try{
@@ -200,36 +204,36 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 				cursor.close();
 			}
 		}catch( Throwable ex ){
-			log.e( ex, "loadToken failed." );
+			ex.printStackTrace();
+			log.e( ex, "loadAccount failed." );
 		}
 		return null;
 	}
 	
-	public static ArrayList< SavedAccount > loadAccountList( LogCategory log ){
+	public static @NonNull ArrayList< SavedAccount > loadAccountList( @NonNull LogCategory log ){
 		ArrayList< SavedAccount > result = new ArrayList<>();
-		
 		try{
 			Cursor cursor = App1.getDB().query( table, null, null, null, null, null, null );
 			try{
 				while( cursor.moveToNext() ){
 					result.add( parse( cursor ) );
 				}
-				return result;
 			}finally{
 				cursor.close();
 			}
 		}catch( Throwable ex ){
+			ex.printStackTrace();
 			log.e( ex, "loadAccountList failed." );
+			throw new RuntimeException( "SavedAccount.loadAccountList failed.", ex );
 		}
-		return null;
+		return result;
 	}
 	
-	public String getFullAcct( TootAccount who ){
-		return getFullAcct( who == null ? null : who.acct );
+	public String getFullAcct( @NonNull TootAccount who ){
+		return getFullAcct( who.acct );
 	}
 	
-	public String getFullAcct( String acct ){
-		if( acct == null ) return "?";
+	public String getFullAcct( @NonNull String acct ){
 		if( - 1 != acct.indexOf( '@' ) ){
 			return acct;
 		}else{
@@ -237,7 +241,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		}
 	}
 	
-	public boolean isMe( TootAccount who ){
+	public boolean isMe( @NonNull TootAccount who ){
 		int pos = this.acct.indexOf( '@' );
 		String this_user = this.acct.substring( 0, pos );
 		//
@@ -247,7 +251,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return pos == - 1 || this.host.equalsIgnoreCase( who.acct.substring( pos + 1 ) );
 	}
 	
-	public boolean isMe( String who_acct ){
+	public boolean isMe( @NonNull String who_acct ){
 		int pos = this.acct.indexOf( '@' );
 		String this_user = this.acct.substring( 0, pos );
 		//

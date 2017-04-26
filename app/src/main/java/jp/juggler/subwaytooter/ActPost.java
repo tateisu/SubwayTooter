@@ -224,13 +224,15 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 					}
 					
 					// mention を自動設定する
-					String acct_me = account.getFullAcct( account );
 					ArrayList< String > mention_list = new ArrayList<>();
-					mention_list.add( account.getFullAcct( repley_status.account ) );
+					mention_list.add( "@"+account.getFullAcct( repley_status.account ) );
 					if( repley_status.mentions != null ){
 						for( TootMention mention : repley_status.mentions ){
-							sv = account.getFullAcct( mention.acct );
-							if( !sv.equals( acct_me ) && ! mention_list.contains( sv ) ){
+
+							if( account.isMe(mention.acct)) continue;
+
+							sv = "@"+account.getFullAcct(mention.acct  );
+							if( ! mention_list.contains( sv ) ){
 								mention_list.add( sv );
 							}
 						}

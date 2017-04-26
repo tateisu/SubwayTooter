@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
@@ -125,10 +126,9 @@ public class ActMain extends AppCompatActivity
 			llEmpty.setVisibility( View.VISIBLE );
 		}
 		
-		Uri uri = ActOAuthCallback.last_uri.get();
+		Uri uri = ActOAuthCallback.last_uri.getAndSet(null);
 		if( uri != null ){
-			ActOAuthCallback.last_uri.set( null );
-			updateAccessToken( uri );
+			handleIntentUri( uri );
 		}
 	}
 	
@@ -439,7 +439,8 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-	private void updateAccessToken( final Uri uri ){
+	// ActOAuthCallbackで受け取ったUriを処理する
+	private void handleIntentUri( @NonNull final Uri uri ){
 		
 		// 通知タップ
 		// subwaytooter://notification_click?db_id=(db_id)
@@ -902,7 +903,7 @@ public class ActMain extends AppCompatActivity
 	
 	private void performTootButton(){
 		Column c = pager_adapter.getColumn( pager.getCurrentItem() );
-		if( c != null && c.access_info != null ){
+		if( c != null ){
 			ActPost.open( this, c.access_info.db_id, "" );
 		}
 	}
@@ -912,7 +913,7 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	public void performMention( SavedAccount account, TootAccount who ){
-		ActPost.open( this, account.db_id, account.getFullAcct( who ) + " " );
+		ActPost.open( this, account.db_id, "@"+account.getFullAcct( who ) + " " );
 	}
 	
 	/////////////////////////////////////////////////////////////////////////
@@ -1408,10 +1409,9 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	// アカウントを選択してからユーザをフォローする
-	void followFromAnotherAccount( final SavedAccount access_info, final TootAccount who, final RelationChangedCallback callback ){
-		AccountPicker.pick( ActMain.this, false, new AccountPicker.AccountPickerCallback() {
-			@Override
-			public void onAccountPicked( SavedAccount ai ){
+	void followFromAccount( final SavedAccount access_info, final TootAccount who, final RelationChangedCallback callback ){
+		AccountPicker.pick( ActMain.this, true, new AccountPicker.AccountPickerCallback() {
+			@Override public void onAccountPicked( SavedAccount ai ){
 				String acct = who.acct;
 				if( ! acct.contains( "@" ) ){
 					acct = acct + "@" + access_info.host;
@@ -1559,6 +1559,54 @@ public class ActMain extends AppCompatActivity
 			}
 		}.execute();
 	}
+	private void deleteStatus( final SavedAccount access_info, final long status_id ){
+		new AsyncTask< Void, Void, TootApiResult >() {
+			
+			@Override
+			protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override
+					public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override
+					public void publishApiProgress( String s ){
+						
+					}
+				} );
+				client.setAccount( access_info );
+				
+				Request.Builder request_builder = new Request.Builder().delete();
+				
+				TootApiResult result = client.request( "/api/v1/statuses/" + status_id , request_builder );
+				
+				return result;
+			}
+			
+			@Override
+			protected void onCancelled( TootApiResult result ){
+				onPostExecute( null );
+			}
+			
+			@Override
+			protected void onPostExecute( TootApiResult result ){
+				boolean bOK = false;
+				if( result != null ){
+					if( result.object != null ){
+						Utils.showToast( ActMain.this, false,R.string.delete_succeeded );
+						for( Column column : pager_adapter.column_list ){
+							column.removeStatus( access_info, status_id );
+						}
+						showColumnMatchAccount( access_info );
+					}else{
+						Utils.showToast( ActMain.this, false, result.error );
+					}
+				}
+			}
+		}.execute();
+	}
+
 	
 	interface ReportCompleteCallback {
 		void onReportComplete( TootApiResult result );
@@ -1652,6 +1700,13 @@ public class ActMain extends AppCompatActivity
 		
 		ActionsDialog dialog = new ActionsDialog();
 		
+		dialog.addAction( getString( R.string.open_web_page ), new Runnable() {
+			@Override public void run(){
+				// 強制的にブラウザで開く
+				openChromeTab( access_info, status.url, true );
+			}
+		} );
+		
 		final ArrayList< SavedAccount > tmp_list = new ArrayList<>();
 		for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
 			if( a.host.equalsIgnoreCase( access_info.host ) ){
@@ -1680,17 +1735,18 @@ public class ActMain extends AppCompatActivity
 			} );
 		}
 		
-		dialog.addAction( getString( R.string.follow ), new Runnable() {
+		dialog.addAction( getString( R.string.follow_from_another_account ), new Runnable() {
 			@Override public void run(){
-				callFollow( access_info, status.account, true, null );
+				followFromAccount( access_info, status.account, follow_comolete_callback );
 			}
 		} );
 		
-		dialog.addAction( getString( R.string.follow_from_another_account ), new Runnable() {
+		dialog.addAction( getString( R.string.follow ), new Runnable() {
 			@Override public void run(){
-				followFromAnotherAccount( access_info, status.account, follow_comolete_callback );
+				callFollow( access_info, status.account, true, follow_comolete_callback );
 			}
 		} );
+		
 		dialog.addAction( getString( R.string.unfollow ), new Runnable() {
 			@Override public void run(){
 				callFollow( access_info, status.account, false, null );
@@ -1721,15 +1777,17 @@ public class ActMain extends AppCompatActivity
 				openReportForm( access_info, status.account, status );
 			}
 		} );
-		dialog.addAction( getString( R.string.open_web_page ), new Runnable() {
-			@Override public void run(){
-				// 強制的にブラウザで開く
-				openChromeTab( access_info, status.url, true );
-			}
-		} );
+		if( access_info.isMe( status.account) ){
+			dialog.addAction( getString( R.string.delete ), new Runnable() {
+				@Override public void run(){
+					deleteStatus( access_info, status.id );
+				}
+			} );
+		}
 		dialog.show( this, null );
 		
 	}
+	
 	
 	public void openAccountMoreMenu( final SavedAccount access_info, final TootAccount who ){
 		ActionsDialog dialog = new ActionsDialog();
@@ -1741,12 +1799,12 @@ public class ActMain extends AppCompatActivity
 		} );
 		dialog.addAction( getString( R.string.follow ), new Runnable() {
 			@Override public void run(){
-				callFollow( access_info, who, true, null );
+				callFollow( access_info, who, true, follow_comolete_callback );
 			}
 		} );
 		dialog.addAction( getString( R.string.follow_from_another_account ), new Runnable() {
 			@Override public void run(){
-				followFromAnotherAccount( access_info, who, follow_comolete_callback );
+				followFromAccount( access_info, who, follow_comolete_callback );
 			}
 		} );
 		dialog.addAction( getString( R.string.unfollow ), new Runnable() {

@@ -73,9 +73,11 @@ class Column {
 	static final String KEY_COLUMN_NAME = "column_name";
 	static final String KEY_OLD_INDEX = "old_index";
 	
-	private final @NonNull ActMain activity;
+	private final
+	@NonNull ActMain activity;
 	
-	final @NonNull SavedAccount access_info;
+	final
+	@NonNull SavedAccount access_info;
 	
 	final int type;
 	static final int TYPE_HOME = 1;
@@ -103,7 +105,6 @@ class Column {
 	String search_query;
 	boolean search_resolve;
 	
-	
 	int scroll_pos;
 	int scroll_y;
 	
@@ -112,24 +113,24 @@ class Column {
 		this.access_info = access_info;
 		this.type = type;
 		switch( type ){
-
+		
 		case TYPE_CONVERSATION:
 			this.status_id = (Long) getParamAt( params, 0 );
 			break;
-
+		
 		case TYPE_PROFILE:
 			this.profile_id = (Long) getParamAt( params, 0 );
 			break;
-
+		
 		case TYPE_HASHTAG:
 			this.hashtag = (String) getParamAt( params, 0 );
 			break;
-
+		
 		case TYPE_SEARCH:
 			this.search_query = (String) getParamAt( params, 0 );
 			this.search_resolve = (Boolean) getParamAt( params, 1 );
 			break;
-
+			
 		}
 		
 		startLoading();
@@ -164,32 +165,32 @@ class Column {
 	
 	Column( @NonNull ActMain activity, JSONObject src ){
 		this.activity = activity;
-
+		
 		SavedAccount ac = SavedAccount.loadAccount( log, src.optLong( KEY_ACCOUNT_ROW_ID ) );
 		if( ac == null ) throw new RuntimeException( "missing account" );
 		this.access_info = ac;
-
+		
 		this.type = src.optInt( KEY_TYPE );
 		switch( type ){
-
+		
 		case TYPE_CONVERSATION:
 			this.status_id = src.optLong( KEY_STATUS_ID );
 			break;
-
+		
 		case TYPE_PROFILE:
 			this.profile_id = src.optLong( KEY_PROFILE_ID );
 			this.profile_tab = src.optInt( KEY_PROFILE_TAB );
 			break;
-
+		
 		case TYPE_HASHTAG:
 			this.hashtag = src.optString( KEY_HASHTAG );
 			break;
-
+		
 		case TYPE_SEARCH:
 			this.search_query = src.optString( KEY_SEARCH_QUERY );
 			this.search_resolve = src.optBoolean( KEY_SEARCH_RESOLVE, false );
 			break;
-
+			
 		}
 		startLoading();
 	}
@@ -287,8 +288,6 @@ class Column {
 		}
 	}
 	
-
-	
 	interface StatusEntryCallback {
 		void onIterate( TootStatus status );
 	}
@@ -324,33 +323,61 @@ class Column {
 	// ミュート、ブロックが成功した時に呼ばれる
 	void removeStatusByAccount( SavedAccount target_account, long who_id ){
 		if( ! target_account.acct.equals( access_info.acct ) ) return;
-		{
-			// remove from status_list
-			ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
-			for( Object o : list_data ){
-				if( o instanceof TootStatus ){
-					TootStatus item = (TootStatus) o;
-					if( item.account.id == who_id
-						|| ( item.reblog != null && item.reblog.account.id == who_id )
-						){
-						continue;
-					}
+		
+		ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
+		for( Object o : list_data ){
+			if( o instanceof TootStatus ){
+				TootStatus item = (TootStatus) o;
+				if( item.account.id == who_id
+					|| ( item.reblog != null && item.reblog.account.id == who_id )
+					){
+					continue;
 				}
-				if( o instanceof TootNotification ){
-					TootNotification item = (TootNotification) o;
-					if( item.account.id == who_id ) continue;
-					if( item.status != null ){
-						if( item.status.account.id == who_id ) continue;
-						if( item.status.reblog != null && item.status.reblog.account.id == who_id )
-							continue;
-					}
-				}
-				
-				tmp_list.add( o );
 			}
-			list_data.clear();
-			list_data.addAll( tmp_list );
+			if( o instanceof TootNotification ){
+				TootNotification item = (TootNotification) o;
+				if( item.account.id == who_id ) continue;
+				if( item.status != null ){
+					if( item.status.account.id == who_id ) continue;
+					if( item.status.reblog != null && item.status.reblog.account.id == who_id )
+						continue;
+				}
+			}
+			
+			tmp_list.add( o );
 		}
+		list_data.clear();
+		list_data.addAll( tmp_list );
+	}
+	
+	// 自分のステータスを削除した時に呼ばれる
+	void removeStatus( SavedAccount target_account, long status_id ){
+		
+		if( ! target_account.host.equals( access_info.host ) ) return;
+		
+		ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
+		for( Object o : list_data ){
+			if( o instanceof TootStatus ){
+				TootStatus item = (TootStatus) o;
+				if( item.id == status_id
+					|| ( item.reblog != null && item.reblog.id == status_id )
+					){
+					continue;
+				}
+			}
+			if( o instanceof TootNotification ){
+				TootNotification item = (TootNotification) o;
+				if( item.status != null ){
+					if( item.status.id == status_id ) continue;
+					if( item.status.reblog != null && item.status.reblog.id == status_id )
+						continue;
+				}
+			}
+			
+			tmp_list.add( o );
+		}
+		list_data.clear();
+		list_data.addAll( tmp_list );
 	}
 	
 	interface VisualCallback {
@@ -412,7 +439,6 @@ class Column {
 	
 	final ArrayList< Object > list_data = new ArrayList<>();
 	
-
 	void reload(){
 		list_data.clear();
 		startLoading();
@@ -471,14 +497,14 @@ class Column {
 			TootApiResult parseNotifications( TootApiResult result ){
 				if( result != null ){
 					saveRange( result, true, true );
-					TootNotification.List src= TootNotification.parseList( log, access_info, result.array );
-					if( src != null){
+					TootNotification.List src = TootNotification.parseList( log, access_info, result.array );
+					if( src != null ){
 						list_tmp = new ArrayList<>();
 						list_tmp.addAll( src );
 						//
-						AlarmService.injectData( activity,access_info.db_id, src );
+						AlarmService.injectData( activity, access_info.db_id, src );
 					}
-				
+					
 				}
 				return result;
 			}
@@ -527,7 +553,7 @@ class Column {
 						client.callback.publishApiProgress( "" );
 					}
 					switch( profile_tab ){
-
+					
 					default:
 					case TAB_STATUS:
 						return parseStatuses( client.request(
@@ -622,7 +648,6 @@ class Column {
 						list_data.clear();
 						list_data.addAll( list_tmp );
 						
-
 					}
 					
 				}
@@ -735,7 +760,7 @@ class Column {
 						list_tmp = new ArrayList<>();
 						list_tmp.addAll( src );
 						//
-						AlarmService.injectData( activity,access_info.db_id, src );
+						AlarmService.injectData( activity, access_info.db_id, src );
 					}
 				}
 				return result;
@@ -765,7 +790,7 @@ class Column {
 				client.setAccount( access_info );
 				
 				switch( type ){
-
+				
 				default:
 				case TYPE_HOME:
 					return parseStatuses( client.request( addRange( bBottom, PATH_HOME ) ) );
@@ -793,22 +818,21 @@ class Column {
 						client.callback.publishApiProgress( "" );
 					}
 					switch( profile_tab ){
-
+					
 					default:
 					case TAB_STATUS:
-						return parseStatuses( client.request(addRange( bBottom,
-							String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id ) ) ));
-
+						return parseStatuses( client.request( addRange( bBottom,
+							String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id ) ) ) );
+					
 					case TAB_FOLLOWING:
-						return parseAccountList( client.request(addRange( bBottom,
-							String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id ) ) ));
-
+						return parseAccountList( client.request( addRange( bBottom,
+							String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id ) ) ) );
+					
 					case TAB_FOLLOWERS:
-						return parseAccountList( client.request(addRange( bBottom,
-							String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id ) ) ));
+						return parseAccountList( client.request( addRange( bBottom,
+							String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id ) ) ) );
 						
 					}
-					
 				
 				case TYPE_HASHTAG:
 					return parseStatuses( client.request( addRange( bBottom,

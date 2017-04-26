@@ -1,5 +1,7 @@
 package jp.juggler.subwaytooter.api.entity;
 
+import android.support.annotation.NonNull;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -40,7 +42,7 @@ public class TootRelationShip {
 			return dst;
 		}catch( Throwable ex ){
 			ex.printStackTrace();
-			log.e(ex,"TootRelationShip.parse failed.");
+			log.e( ex, "TootRelationShip.parse failed." );
 			return null;
 		}
 	}
@@ -55,17 +57,19 @@ public class TootRelationShip {
 		}
 	}
 	
+	@NonNull
 	public static List parseList( LogCategory log, JSONArray array ){
 		List result = new List();
 		if( array != null ){
-			for( int i = array.length() - 1 ; i >= 0 ; -- i ){
+			int array_size = array.length();
+			result.ensureCapacity( array_size );
+			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
 				TootRelationShip item = parse( log, src );
-				if( item != null ) result.add( 0, item );
+				if( item != null ) result.add( item );
 			}
 		}
 		return result;
 	}
-	
 }

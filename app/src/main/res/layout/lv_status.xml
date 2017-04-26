@@ -138,62 +138,65 @@
 
     </LinearLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:id="@+id/llStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         >
 
+        <LinearLayout
+            android:id="@+id/llTime"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            >
+
+            <TextView
+                android:id="@+id/tvAcct"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:gravity="end"
+                android:maxLines="1"
+                android:textColor="#888888"
+                android:textSize="12sp"
+                tools:text="who@hoge"
+                />
+
+            <TextView
+                android:id="@+id/tvTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:textColor="#888888"
+                android:textSize="12sp"
+                tools:text="2017-04-16 09:37:14"
+                />
+
+        </LinearLayout>
+
         <com.android.volley.toolbox.NetworkImageView
             android:id="@+id/ivThumbnail"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:layout_below="@id/llTime"
             android:layout_marginEnd="4dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="4dp"
             android:background="@drawable/btn_bg_transparent"
             android:contentDescription="@string/thumbnail"
             android:scaleType="centerCrop"
             />
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_below="@id/llTime"
+            android:layout_toEndOf="@id/ivThumbnail"
             android:orientation="vertical"
             >
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                >
-
-                <TextView
-                    android:id="@+id/tvAcct"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="4dp"
-                    android:layout_weight="1"
-                    android:ellipsize="end"
-                    android:gravity="end"
-                    android:maxLines="1"
-                    android:textColor="#888888"
-                    android:textSize="12sp"
-                    tools:text="who@hoge"
-                    />
-
-                <TextView
-                    android:id="@+id/tvTime"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="end"
-                    android:textColor="#888888"
-                    android:textSize="12sp"
-                    tools:text="2017-04-16 09:37:14"
-                    />
-
-            </LinearLayout>
 
             <TextView
                 android:id="@+id/tvName"
@@ -215,10 +218,10 @@
 
                 <Button
                     android:id="@+id/btnContentWarning"
-                    android:background="@drawable/btn_bg_ddd"
                     android:layout_width="wrap_content"
                     android:layout_height="40dp"
                     android:layout_marginEnd="8dp"
+                    android:background="@drawable/btn_bg_ddd"
                     android:minWidth="40dp"
                     android:padding="4dp"
                     tools:text="見る"
@@ -282,6 +285,7 @@
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="1"
+                            android:background="@drawable/btn_bg_ddd"
                             android:contentDescription="@string/thumbnail"
                             android:scaleType="centerCrop"
                             />
@@ -292,6 +296,7 @@
                             android:layout_height="match_parent"
                             android:layout_marginStart="8dp"
                             android:layout_weight="1"
+                            android:background="@drawable/btn_bg_ddd"
                             android:contentDescription="@string/thumbnail"
                             android:scaleType="centerCrop"
                             />
@@ -302,6 +307,7 @@
                             android:layout_height="match_parent"
                             android:layout_marginStart="8dp"
                             android:layout_weight="1"
+                            android:background="@drawable/btn_bg_ddd"
                             android:contentDescription="@string/thumbnail"
                             android:scaleType="centerCrop"
                             />
@@ -312,6 +318,7 @@
                             android:layout_height="match_parent"
                             android:layout_marginStart="8dp"
                             android:layout_weight="1"
+                            android:background="@drawable/btn_bg_ddd"
                             android:contentDescription="@string/thumbnail"
                             android:scaleType="centerCrop"
                             />
@@ -342,8 +349,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="40dp"
-                android:orientation="horizontal"
                 android:layout_marginTop="3dp"
+                android:orientation="horizontal"
                 >
 
                 <ImageButton
@@ -360,6 +367,7 @@
                     android:id="@+id/btnReply"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
+                    android:layout_marginStart="2dp"
                     android:background="@drawable/btn_bg_transparent"
                     android:contentDescription="@string/reply"
                     android:minWidth="40dp"
@@ -370,6 +378,7 @@
                     android:id="@+id/btnBoost"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
+                    android:layout_marginStart="2dp"
                     android:background="@drawable/btn_bg_transparent"
                     android:drawablePadding="4dp"
                     android:minWidth="48dp"
@@ -381,6 +390,7 @@
                     android:id="@+id/btnFavourite"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
+                    android:layout_marginStart="2dp"
                     android:background="@drawable/btn_bg_transparent"
                     android:drawablePadding="4dp"
                     android:minWidth="48dp"
@@ -392,6 +402,7 @@
                     android:id="@+id/btnMore"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"
+                    android:layout_marginStart="2dp"
                     android:background="@drawable/btn_bg_transparent"
                     android:contentDescription="@string/more"
                     android:minWidth="40dp"
@@ -401,7 +412,7 @@
             </LinearLayout>
 
         </LinearLayout>
-    </LinearLayout>
+    </RelativeLayout>
 
     <LinearLayout
         android:id="@+id/llSearchTag"

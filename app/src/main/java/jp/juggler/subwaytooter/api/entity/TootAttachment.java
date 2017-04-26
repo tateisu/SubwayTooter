@@ -1,5 +1,7 @@
 package jp.juggler.subwaytooter.api.entity;
 
+import android.support.annotation.NonNull;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -56,13 +58,17 @@ public class TootAttachment {
 		}
 	}
 	
-	public static List parseList( LogCategory log, JSONArray array ){
+	@NonNull public static List parseList( LogCategory log, JSONArray array ){
 		List result = new List();
-		for( int i = array.length() - 1 ; i >= 0 ; -- i ){
-			JSONObject src = array.optJSONObject( i );
-			if( src == null ) continue;
-			TootAttachment item = parse( log, src );
-			if( item != null ) result.add( 0, item );
+		if( array != null ){
+			int array_size = array.length();
+			result.ensureCapacity( array_size );
+			for( int i=0;i<array_size;++i){
+				JSONObject src = array.optJSONObject( i );
+				if( src == null ) continue;
+				TootAttachment item = parse( log, src );
+				if( item != null ) result.add( item );
+			}
 		}
 		return result;
 	}

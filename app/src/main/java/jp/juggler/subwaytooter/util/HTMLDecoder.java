@@ -148,12 +148,14 @@ public class HTMLDecoder {
 			if( DEBUG_HTML_PARSER ) sb.append( "(start " + tag + ")" );
 			
 			int start = sb.length();
-			
+
 			for( Node child : child_nodes ){
 				child.encodeSpan( account,sb );
 			}
+
+			int end = sb.length();
 			
-			if( "a".equals( tag ) ){
+			if( end >start && "a".equals( tag ) ){
 				Matcher m = reHref.matcher( text );
 				if( m.find() ){
 					final String href = decodeEntity( m.group( 1 ) ).toString();
@@ -165,7 +167,7 @@ public class HTMLDecoder {
 									link_callback.onClickLink( account,href );
 								}
 							}
-						}, start, sb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+						}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
 					}
 				}
 			}
@@ -216,14 +218,17 @@ public class HTMLDecoder {
 			int start = sb.length();
 			sb.append('#');
 			sb.append(item.name);
-			final String item_url = item.url;
-			sb.setSpan( new ClickableSpan() {
-				@Override public void onClick( View widget ){
-					if( link_callback != null ){
-						link_callback.onClickLink( account,item_url );
+			int end = sb.length();
+			if( end > start ){
+				final String item_url = item.url;
+				sb.setSpan( new ClickableSpan() {
+					@Override public void onClick( View widget ){
+						if( link_callback != null ){
+							link_callback.onClickLink( account,item_url );
+						}
 					}
-				}
-			}, start, sb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+				}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+			}
 		}
 		return sb;
 	}
@@ -236,14 +241,17 @@ public class HTMLDecoder {
 			int start = sb.length();
 			sb.append('@');
 			sb.append( item.acct );
-			final String item_url = item.url;
-			sb.setSpan( new ClickableSpan() {
-				@Override public void onClick( View widget ){
-					if( link_callback != null ){
-						link_callback.onClickLink( account,item_url );
+			int end = sb.length();
+			if( end > start){
+				final String item_url = item.url;
+				sb.setSpan( new ClickableSpan() {
+					@Override public void onClick( View widget ){
+						if( link_callback != null ){
+							link_callback.onClickLink( account,item_url );
+						}
 					}
-				}
-			}, start, sb.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+				}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+			}
 		}
 		return sb;
 	}

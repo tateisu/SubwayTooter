@@ -1,5 +1,7 @@
 package jp.juggler.subwaytooter.api.entity;
 
+import android.support.annotation.NonNull;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -13,6 +15,7 @@ public class TootMention {
 	public static class List extends ArrayList< TootMention > {
 		
 	}
+	
 	//	URL of user's profile (can be remote)
 	public String url;
 	
@@ -41,15 +44,17 @@ public class TootMention {
 		}
 	}
 	
-	
+	@NonNull
 	public static List parseList( LogCategory log, JSONArray array ){
 		List result = new List();
 		if( array != null ){
-			for( int i = array.length() - 1 ; i >= 0 ; -- i ){
+			int array_size = array.length();
+			result.ensureCapacity( array_size );
+			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
 				TootMention item = parse( log, src );
-				if( item != null ) result.add( 0, item );
+				if( item != null ) result.add( item );
 			}
 		}
 		return result;

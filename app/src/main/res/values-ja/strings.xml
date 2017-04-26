@@ -156,4 +156,11 @@
     <string name="prior_local_url_when_open_attachment">添付画像を開く時に自タンスURLを重視</string>
     <string name="disable_fast_scroller">FastScrollerを無効にする(アプリ再起動が必要)</string>
     <string name="delete_succeeded">削除できました</string>
+    <string name="developer">開発者</string>
+    <string name="with_attachment">添付データあり</string>
+    <string name="read_gap">ギャップを読む</string>
+    <string name="column_is_busy">別の処理を行っています</string>
+    <string name="blocked_users">ブロックしたユーザ</string>
+    <string name="end_of_list">リストの終端</string>
+    <string name="muted_users">ミュートしたユーザ</string>
 </resources>

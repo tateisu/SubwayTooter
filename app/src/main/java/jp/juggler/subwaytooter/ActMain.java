@@ -69,11 +69,16 @@ public class ActMain extends AppCompatActivity
 //		super.attachBaseContext( CalligraphyContextWrapper.wrap(newBase));
 //	}
 	
+	float density;
+	
+	
 	SharedPreferences pref;
 	
 	@Override
 	protected void onCreate( Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
+		
+		this.density = getResources().getDisplayMetrics().density;
 		
 		requestWindowFeature( Window.FEATURE_NO_TITLE );
 		
@@ -296,6 +301,13 @@ public class ActMain extends AppCompatActivity
 			
 		}else if( id == R.id.nav_app_exit ){
 			finish();
+			
+		}else if( id == R.id.nav_add_mutes ){
+			performAddTimeline( Column.TYPE_MUTES );
+			
+		}else if( id == R.id.nav_add_blocks ){
+			performAddTimeline( Column.TYPE_BLOCKS );
+			
 			
 			// Handle the camera action
 //		}else if( id == R.id.nav_gallery ){
@@ -1206,7 +1218,7 @@ public class ActMain extends AppCompatActivity
 	
 	static final String FILE_COLUMN_LIST = "column_list";
 	
-	private void saveColumnList(){
+	void saveColumnList(){
 		JSONArray array = encodeColumnList();
 		try{
 			OutputStream os = openFileOutput( FILE_COLUMN_LIST, MODE_PRIVATE );
@@ -1495,6 +1507,11 @@ public class ActMain extends AppCompatActivity
 						for( Column column : pager_adapter.column_list ){
 							column.removeStatusByAccount( access_info, who.id );
 						}
+					}else{
+						for( Column column : pager_adapter.column_list ){
+							column.removeFromMuteList( access_info, who.id );
+						}
+						
 					}
 					showColumnMatchAccount( access_info );
 				}
@@ -1568,6 +1585,10 @@ public class ActMain extends AppCompatActivity
 					if( bBlock ){
 						for( Column column : pager_adapter.column_list ){
 							column.removeStatusByAccount( access_info, who.id );
+						}
+					}else{
+						for( Column column : pager_adapter.column_list ){
+							column.removeFromBlockList( access_info, who.id );
 						}
 					}
 					showColumnMatchAccount( access_info );

@@ -12,15 +12,15 @@ public class TootResults {
 	//	An array of matched Accounts
 	public TootAccount.List accounts;
 	
-	//	An array of matchhed Statuses
+	//	An array of matched Statuses
 	public TootStatus.List statuses;
 	
 	//	An array of matched hashtags, as strings
 	public ArrayList< String > hashtags;
 	
-	public static TootResults parse( LogCategory log, LinkClickContext account,JSONObject src ){
-		if( src == null ) return null;
+	public static TootResults parse( LogCategory log, LinkClickContext account, JSONObject src ){
 		try{
+			if( src == null ) return null;
 			TootResults dst = new TootResults();
 			dst.accounts = TootAccount.parseList( log, account, src.optJSONArray( "accounts" ) );
 			dst.statuses = TootStatus.parseList( log, account, src.optJSONArray( "statuses" ) );

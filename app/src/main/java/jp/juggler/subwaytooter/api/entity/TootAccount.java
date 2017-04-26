@@ -1,9 +1,9 @@
 package jp.juggler.subwaytooter.api.entity;
 
+import android.support.annotation.NonNull;
 import android.text.Spannable;
 import android.text.TextUtils;
 
-import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.Emojione;
 
 import org.json.JSONArray;
@@ -113,14 +113,16 @@ public class TootAccount {
 		return parse( log, account, src, new TootAccount() );
 	}
 	
-	public static List parseList( LogCategory log,  LinkClickContext account,JSONArray array ){
+	@NonNull public static List parseList( LogCategory log, LinkClickContext account, JSONArray array ){
 		List result = new List();
 		if( array != null ){
-			for( int i = array.length() - 1 ; i >= 0 ; -- i ){
+			int array_size = array.length();
+			result.ensureCapacity( array_size );
+			for( int i=0;i<array_size;++i){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
 				TootAccount item = parse( log, account,src );
-				if( item != null ) result.add( 0, item );
+				if( item != null ) result.add( item );
 			}
 		}
 		return result;

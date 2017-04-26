@@ -1,5 +1,7 @@
 package jp.juggler.subwaytooter.api.entity;
 
+import android.support.annotation.NonNull;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -8,7 +10,7 @@ import java.util.ArrayList;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
-public class TootReport extends TootId{
+public class TootReport extends TootId {
 	
 	//	The ID of the report
 	//TootId public long id;
@@ -34,14 +36,17 @@ public class TootReport extends TootId{
 		
 	}
 	
+	@NonNull
 	public static List parseList( LogCategory log, JSONArray array ){
 		List result = new List();
 		if( array != null ){
-			for( int i = array.length() - 1 ; i >= 0 ; -- i ){
+			int array_size = array.length();
+			result.ensureCapacity( array_size );
+			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
 				TootReport item = parse( log, src );
-				if( item != null ) result.add( 0, item );
+				if( item != null ) result.add( item );
 			}
 		}
 		return result;

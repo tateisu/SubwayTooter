@@ -56,6 +56,15 @@
                     android:icon="@drawable/btn_statuses"
                     android:title="@string/your_statuses"/>
 
+                <item
+                    android:id="@+id/nav_add_mutes"
+                    android:icon="@drawable/ic_mute"
+                    android:title="@string/muted_users"/>
+                <item
+                    android:id="@+id/nav_add_blocks"
+                    android:icon="@drawable/ic_block"
+                    android:title="@string/blocked_users"/>
+
                 <!--<item-->
                 <!--android:id="@+id/nav_add_reports"-->
                 <!--android:icon="@drawable/btn_report"-->

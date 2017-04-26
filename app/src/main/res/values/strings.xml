@@ -156,4 +156,10 @@
     <string name="disable_fast_scroller">disable fast scroller (app restart required)</string>
     <string name="delete_succeeded">delete succeeded</string>
     <string name="developer">developer</string>
+    <string name="with_attachment">with attachment</string>
+    <string name="column_is_busy">column is busy</string>
+    <string name="read_gap">read gap</string>
+    <string name="muted_users">mutes users</string>
+    <string name="blocked_users">blocked users</string>
+    <string name="end_of_list">end of list</string>
 </resources>

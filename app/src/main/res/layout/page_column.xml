@@ -65,11 +65,22 @@
                 />
 
             <ImageButton
+                android:id="@+id/btnColumnSetting"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="2dp"
+                android:background="@drawable/btn_bg_transparent"
+                android:contentDescription="@string/setting"
+                android:src="@drawable/ic_tune"
+                />
+
+            <ImageButton
                 android:id="@+id/btnColumnReload"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center_vertical"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="2dp"
                 android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/reload"
                 android:src="@drawable/btn_refresh"
@@ -80,7 +91,7 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center_vertical"
-                android:layout_marginStart="8dp"
+                android:layout_marginStart="2dp"
                 android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/close_column"
                 android:src="@drawable/black_close"
@@ -91,7 +102,25 @@
 
 
     </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:paddingTop="3dp"
+        android:paddingBottom="3dp"
+        android:background="#ccc"
+        android:id="@+id/llColumnSetting"
+        >
+        <CheckBox
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/with_attachment"
+            android:id="@+id/cbWithAttachment"
+            />
 
+    </LinearLayout>
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

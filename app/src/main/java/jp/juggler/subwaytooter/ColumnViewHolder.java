@@ -14,6 +14,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -30,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
+import jp.juggler.subwaytooter.api.entity.TootGap;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.ContentWarning;
@@ -39,7 +41,7 @@ import jp.juggler.subwaytooter.util.Emojione;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
-class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, SwipyRefreshLayout.OnRefreshListener {
+class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, SwipyRefreshLayout.OnRefreshListener, CompoundButton.OnCheckedChangeListener {
 	private static final LogCategory log = new LogCategory( "ColumnViewHolder" );
 	
 	public final ActMain activity;
@@ -72,9 +74,13 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 	private View btnSearch;
 	private EditText etSearch;
 	private CheckBox cbResolve;
+	private View llColumnSetting;
+	
 	
 	void onPageCreate( View root, int page_idx, int page_count ){
 		log.d( "onPageCreate:%s", column.getColumnName( true ) );
+		
+		
 		
 		( (TextView) root.findViewById( R.id.tvColumnIndex ) )
 			.setText( activity.getString( R.string.column_index, page_idx + 1, page_count ) );
@@ -86,7 +92,6 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		root.findViewById( R.id.btnColumnReload ).setOnClickListener( this );
 		root.findViewById( R.id.llColumnHeader ).setOnClickListener( this );
 		
-		
 		tvLoading = (TextView) root.findViewById( R.id.tvLoading );
 		listView = (ListView) root.findViewById( R.id.listView );
 		status_adapter = new StatusListAdapter();
@@ -94,14 +99,42 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		
 		this.swipyRefreshLayout = (SwipyRefreshLayout) root.findViewById( R.id.swipyRefreshLayout );
 		swipyRefreshLayout.setOnRefreshListener( this );
-		swipyRefreshLayout.setDistanceToTriggerSync( (int) ( 0.5f + 20 * activity.getResources().getDisplayMetrics().density ) );
+		swipyRefreshLayout.setDistanceToTriggerSync( (int) ( 0.5f + 20f * activity.density ) );
 		
 		View llSearch = root.findViewById( R.id.llSearch );
 		btnSearch = root.findViewById( R.id.btnSearch );
 		etSearch = (EditText) root.findViewById( R.id.etSearch );
 		cbResolve = (CheckBox) root.findViewById( R.id.cbResolve );
 		
-		listView.setFastScrollEnabled( !Pref.pref(activity).getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER,false) );
+		listView.setFastScrollEnabled( ! Pref.pref( activity ).getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, false ) );
+		
+		boolean bAllowColumnSetting;
+		switch( column.type ){
+		default:
+			bAllowColumnSetting = true;
+			break;
+		case Column.TYPE_SEARCH:
+		case Column.TYPE_CONVERSATION:
+		case Column.TYPE_REPORTS:
+		case Column.TYPE_BLOCKS:
+		case Column.TYPE_MUTES:
+		case Column.TYPE_NOTIFICATIONS:
+			bAllowColumnSetting = false;
+			break;
+		}
+		View btnColumnSetting = root.findViewById( R.id.btnColumnSetting );
+		llColumnSetting = root.findViewById( R.id.llColumnSetting );
+		if( ! bAllowColumnSetting ){
+			btnColumnSetting.setVisibility( View.GONE );
+			llColumnSetting.setVisibility( View.GONE );
+		}else{
+			btnColumnSetting.setVisibility( View.VISIBLE );
+			btnColumnSetting.setOnClickListener( this );
+			llColumnSetting.setVisibility( View.GONE );
+			CheckBox cbWithAttachment = (CheckBox) root.findViewById( R.id.cbWithAttachment );
+			cbWithAttachment.setChecked( column.with_attachment );
+			cbWithAttachment.setOnCheckedChangeListener( this );
+		}
 		
 		if( column.type != Column.TYPE_SEARCH ){
 			llSearch.setVisibility( View.GONE );
@@ -138,7 +171,16 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		onVisualColumn();
 	}
 	
-
+	@Override public void onCheckedChanged( CompoundButton view, boolean isChecked ){
+		switch( view.getId() ){
+		case R.id.cbWithAttachment:
+			column.with_attachment = isChecked;
+			activity.saveColumnList();
+			column.reload();
+			break;
+		}
+	}
+	
 	@Override
 	public void onClick( View v ){
 		switch( v.getId() ){
@@ -163,7 +205,11 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			break;
 		
 		case R.id.llColumnHeader:
-			if( status_adapter.getCount() > 0 ) listView.setSelectionFromTop( 0,0);
+			if( status_adapter.getCount() > 0 ) listView.setSelectionFromTop( 0, 0 );
+			break;
+		
+		case R.id.btnColumnSetting:
+			llColumnSetting.setVisibility( llColumnSetting.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE );
 			break;
 		}
 		
@@ -177,16 +223,15 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 	private void showError( String message ){
 		tvLoading.setVisibility( View.VISIBLE );
 		tvLoading.setText( message );
-
+		
 		swipyRefreshLayout.setVisibility( View.GONE );
 		
 		// ロード完了後に先頭から表示させる
 		if( status_adapter.getCount() > 0 ){
-			listView.setSelectionFromTop( 0,0 );
+			listView.setSelectionFromTop( 0, 0 );
 		}
 	}
-	
-	
+
 //	final RelationshipMap.UpdateCallback callback_relation = new RelationshipMap.UpdateCallback() {
 //		@Override public void onRelationShipUpdate(){
 //			onVisualColumn();
@@ -229,28 +274,32 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			}
 		}
 		
-		if( column. list_data.isEmpty() && vh_header == null ){
+		if( column.list_data.isEmpty() && vh_header == null ){
 			showError( activity.getString( R.string.list_empty ) );
 		}else{
 			tvLoading.setVisibility( View.GONE );
 			swipyRefreshLayout.setVisibility( View.VISIBLE );
 			status_adapter.set( column.list_data );
+			if( column.scroll_hack > 0 ){
+				listView.setSelectionFromTop( column.scroll_hack-1,-(int)(0.5f + 80f * activity.density ));
+				column.scroll_hack = 0;
+			}
 		}
 		
 		proc_restore_scroll.run();
 		
 	}
 	
-	@Override
-	public void onRefresh( SwipyRefreshLayoutDirection direction ){
-		if( ! column.startRefresh( direction == SwipyRefreshLayoutDirection.BOTTOM ) ){
+	@Override public void onRefresh( SwipyRefreshLayoutDirection direction ){
+		String error = column.startRefresh( direction == SwipyRefreshLayoutDirection.BOTTOM );
+		if( ! TextUtils.isEmpty( error ) ){
 			swipyRefreshLayout.setRefreshing( false );
+			Utils.showToast( activity, true, error );
 		}
 	}
 	
 	private final Runnable proc_restore_scroll = new Runnable() {
-		@Override
-		public void run(){
+		@Override public void run(){
 			if( column.scroll_pos == 0 && column.scroll_y == 0 ){
 				return;
 			}
@@ -357,29 +406,29 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		@Override
 		public void onClick( View v ){
 			switch( v.getId() ){
-
+			
 			case R.id.ivBackground:
 				if( who != null ){
 					// 強制的にブラウザで開く
 					activity.openChromeTab( access_info, who.url, true );
 				}
 				break;
-
+			
 			case R.id.btnFollowing:
 				column.profile_tab = Column.TAB_FOLLOWING;
 				column.reload();
 				break;
-
+			
 			case R.id.btnFollowers:
 				column.profile_tab = Column.TAB_FOLLOWERS;
 				column.reload();
 				break;
-
+			
 			case R.id.btnStatusCount:
 				column.profile_tab = Column.TAB_STATUS;
 				column.reload();
 				break;
-
+			
 			case R.id.btnMore:
 				activity.openAccountMoreMenu( access_info, who );
 				break;
@@ -483,6 +532,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		View llSearchTag;
 		Button btnSearchTag;
 		
+		TootGap gap;
+		
 		StatusViewHolder( View view ){
 			
 			this.llBoosted = view.findViewById( R.id.llBoosted );
@@ -490,7 +541,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			this.tvBoosted = (TextView) view.findViewById( R.id.tvBoosted );
 			this.tvBoostedTime = (TextView) view.findViewById( R.id.tvBoostedTime );
 			this.tvBoostedAcct = (TextView) view.findViewById( R.id.tvBoostedAcct );
-				
+			
 			this.llFollow = view.findViewById( R.id.llFollow );
 			this.ivFollow = (NetworkImageView) view.findViewById( R.id.ivFollow );
 			this.tvFollowerName = (TextView) view.findViewById( R.id.tvFollowerName );
@@ -502,8 +553,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			this.ivThumbnail = (NetworkImageView) view.findViewById( R.id.ivThumbnail );
 			this.tvName = (TextView) view.findViewById( R.id.tvName );
 			this.tvTime = (TextView) view.findViewById( R.id.tvTime );
-			this.tvAcct =(TextView) view.findViewById( R.id.tvAcct );
-				
+			this.tvAcct = (TextView) view.findViewById( R.id.tvAcct );
+			
 			this.llContentWarning = view.findViewById( R.id.llContentWarning );
 			this.tvContentWarning = (TextView) view.findViewById( R.id.tvContentWarning );
 			this.btnContentWarning = (Button) view.findViewById( R.id.btnContentWarning );
@@ -565,7 +616,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			if( item == null ) return;
 			
 			if( item instanceof String ){
-				showSearchTag( (String) item);
+				showSearchTag( (String) item );
 			}else if( item instanceof TootAccount ){
 				showFollow( (TootAccount) item );
 			}else if( item instanceof TootNotification ){
@@ -619,13 +670,23 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				}else{
 					showStatus( activity, status, access_info );
 				}
+			}else if( item instanceof TootGap ){
+				showGap( (TootGap) item );
 			}
 		}
 		
 		private void showSearchTag( String tag ){
+			this.gap = null;
 			search_tag = tag;
 			llSearchTag.setVisibility( View.VISIBLE );
-			btnSearchTag.setText( "#"+tag);
+			btnSearchTag.setText( "#" + tag );
+		}
+		
+		private void showGap( TootGap gap ){
+			this.gap = gap;
+			search_tag = null;
+			llSearchTag.setVisibility( View.VISIBLE );
+			btnSearchTag.setText( activity.getString( R.string.read_gap ) );
 		}
 		
 		void showBoost( TootAccount who, long time, int icon_id, CharSequence text ){
@@ -633,7 +694,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			llBoosted.setVisibility( View.VISIBLE );
 			ivBoosted.setImageResource( icon_id );
 			tvBoostedTime.setText( TootStatus.formatTime( time ) );
-			tvBoostedAcct.setText(access_info.getFullAcct( who ) );
+			tvBoostedAcct.setText( access_info.getFullAcct( who ) );
 			tvBoosted.setText( text );
 		}
 		
@@ -645,21 +706,21 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			tvFollowerAcct.setText( access_info.getFullAcct( who ) );
 			
 			btnFollow.setImageResource( R.drawable.btn_follow );
-
+			
 		}
 		
 		private void showStatus( ActMain activity, TootStatus status, SavedAccount account ){
 			this.status = status;
 			account_thumbnail = status.account;
 			llStatus.setVisibility( View.VISIBLE );
-
-			tvAcct.setText( account.getFullAcct( status.account )  );
-			tvTime.setText(  TootStatus.formatTime( status.time_created_at ) );
-
+			
+			tvAcct.setText( account.getFullAcct( status.account ) );
+			tvTime.setText( TootStatus.formatTime( status.time_created_at ) );
+			
 			tvName.setText( status.account.display_name );
 			ivThumbnail.setImageUrl( status.account.avatar_static, App1.getImageLoader() );
 			tvContent.setText( status.decoded_content );
-			
+
 //			if( status.decoded_tags == null ){
 //				tvTags.setVisibility( View.GONE );
 //			}else{
@@ -812,9 +873,18 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			case R.id.btnFollow:
 				activity.openAccountMoreMenu( access_info, account_follow );
 				break;
-				
+			
 			case R.id.btnSearchTag:
-				activity.openHashTag( access_info,search_tag );
+				if( search_tag != null ){
+					activity.openHashTag( access_info, search_tag );
+				}else if( gap != null ){
+					String error = column.startGap( gap );
+					if( ! TextUtils.isEmpty( error ) ){
+						Utils.showToast( activity, true, error );
+					}else{
+						swipyRefreshLayout.setRefreshing( true );
+					}
+				}
 				break;
 			}
 		}
@@ -824,7 +894,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				TootAttachment a = status.media_attachments.get( i );
 				
 				String sv;
-				if( Pref.pref(activity).getBoolean( Pref.KEY_PRIOR_LOCAL_URL,false )){
+				if( Pref.pref( activity ).getBoolean( Pref.KEY_PRIOR_LOCAL_URL, false ) ){
 					sv = a.url;
 					if( TextUtils.isEmpty( sv ) ){
 						sv = a.remote_url;
@@ -841,7 +911,6 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			}
 		}
 		
-
 	}
 	
 }

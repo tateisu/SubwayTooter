@@ -147,6 +147,7 @@ public class ActMain extends AppCompatActivity
 	
 	static final int REQUEST_CODE_COLUMN_LIST = 1;
 	static final int REQUEST_CODE_ACCOUNT_SETTING = 2;
+	static final int REQUEST_APP_ABOUT = 3;
 	
 	@Override
 	protected void onActivityResult( int requestCode, int resultCode, Intent data ){
@@ -171,6 +172,14 @@ public class ActMain extends AppCompatActivity
 			}else if( requestCode == REQUEST_CODE_ACCOUNT_SETTING ){
 				if( data != null ){
 					startAccessTokenUpdate( data );
+					return;
+				}
+			}else if( requestCode == REQUEST_APP_ABOUT ){
+				if( data != null ){
+					String search = data.getStringExtra( ActAbout.EXTRA_SEARCH );
+					if( ! TextUtils.isEmpty( search ) ){
+						performAddTimeline( Column.TYPE_SEARCH, search, true );
+					}
 					return;
 				}
 			}
@@ -277,7 +286,7 @@ public class ActMain extends AppCompatActivity
 			performColumnList();
 			
 		}else if( id == R.id.nav_add_tl_search ){
-			performAddTimeline( Column.TYPE_SEARCH );
+			performAddTimeline( Column.TYPE_SEARCH, "", false );
 			
 		}else if( id == R.id.nav_app_about ){
 			openAppAbout();
@@ -670,16 +679,16 @@ public class ActMain extends AppCompatActivity
 		addColumn( access_info, Column.TYPE_CONVERSATION, status.id );
 	}
 	
-	private void performAddTimeline( final int type ){
+	private void performAddTimeline( final int type, final Object... args ){
 		AccountPicker.pick( this, true, new AccountPicker.AccountPickerCallback() {
-			@Override
-			public void onAccountPicked( SavedAccount ai ){
+			@Override public void onAccountPicked( SavedAccount ai ){
 				switch( type ){
 				default:
-					addColumn( ai, type, ai.id );
+					addColumn( ai, type, args );
 					break;
-				case Column.TYPE_SEARCH:
-					addColumn( ai, type, "", false );
+				
+				case Column.TYPE_PROFILE:
+					addColumn( ai, type, ai.id );
 					break;
 				}
 			}
@@ -1398,7 +1407,7 @@ public class ActMain extends AppCompatActivity
 				if( result == null ){
 					// cancelled.
 				}else if( who != null ){
-
+					
 					//	App1.relationship_map.addFollowing( access_info, who.id );
 //					if( callback != null )
 //						callback.onRelationChanged( App1.relationship_map.get( access_info, who.id ) );
@@ -1861,7 +1870,7 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	private void openAppAbout(){
-		startActivity( new Intent( this, ActAbout.class ) );
+		startActivityForResult( new Intent( this, ActAbout.class ), REQUEST_APP_ABOUT );
 	}
 	
 }

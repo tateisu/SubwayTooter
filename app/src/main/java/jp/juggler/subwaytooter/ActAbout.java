@@ -13,8 +13,11 @@ import android.widget.TextView;
 
 public class ActAbout extends AppCompatActivity {
 	
+	static final String EXTRA_SEARCH = "search";
+	
 	static final String url_store = "https://play.google.com/store/apps/details?id=jp.juggler.subwaytooter";
 	static final String url_enty = "https://enty.jp/3WtlzHG10wZv";
+	static final String developer_acct = "tateisu@mastodon.juggler.jp";
 	
 	@Override protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
@@ -26,8 +29,20 @@ public class ActAbout extends AppCompatActivity {
 		}catch( PackageManager.NameNotFoundException ex ){
 			ex.printStackTrace();
 		}
+		Button b;
 		
-		Button b = (Button) findViewById( R.id.btnRate );
+		b =  (Button) findViewById( R.id.btnDeveloper );
+		b.setText( developer_acct );
+		b.setOnClickListener( new View.OnClickListener() {
+			@Override public void onClick( View v ){
+				Intent data = new Intent();
+				data.putExtra(EXTRA_SEARCH,developer_acct);
+				setResult( RESULT_OK,data );
+				finish();
+			}
+		} );
+		
+		b = (Button) findViewById( R.id.btnRate );
 		b.setText( url_store );
 		b.setOnClickListener( new View.OnClickListener() {
 			@Override public void onClick( View v ){

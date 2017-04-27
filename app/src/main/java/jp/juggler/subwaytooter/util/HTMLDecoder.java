@@ -12,25 +12,22 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.api.entity.TootMention;
-import jp.juggler.subwaytooter.api.entity.TootTag;
 
 public class HTMLDecoder {
-	static final LogCategory log = new LogCategory( "HTMLDecoder" );
+	private static final LogCategory log = new LogCategory( "HTMLDecoder" );
 	
-	static final int OPEN_TYPE_OPENCLOSE = 1;
-	static final int OPEN_TYPE_OPEN = 2;
-	static final int OPEN_TYPE_CLOSE = 3;
+	private static final int OPEN_TYPE_OPEN_CLOSE = 1;
+	private static final int OPEN_TYPE_OPEN = 2;
+	private static final int OPEN_TYPE_CLOSE = 3;
 	
-	static final String TAG_TEXT = "<>text";
-	static final String TAG_END = "<>end";
+	private static final String TAG_TEXT = "<>text";
+	private static final String TAG_END = "<>end";
 	
-	static final Pattern reTag = Pattern.compile( "<(/?)(\\w+)" );
-	static final Pattern reTagEnd = Pattern.compile( "(/?)>$" );
-	static final Pattern reHref = Pattern.compile( "\\bhref=\"([^\"]*)\"" );
+	private static final Pattern reTag = Pattern.compile( "<(/?)(\\w+)" );
+	private static final Pattern reTagEnd = Pattern.compile( "(/?)>$" );
+	private static final Pattern reHref = Pattern.compile( "\\bhref=\"([^\"]*)\"" );
 	
-
-	
-	static class TokenParser {
+	private static class TokenParser {
 		
 		final String src;
 		int next;
@@ -39,7 +36,7 @@ public class HTMLDecoder {
 		int open_type;
 		String text;
 		
-		public TokenParser( String src ){
+		TokenParser( String src ){
 			this.src = src;
 			this.next = 0;
 			eat();
@@ -49,7 +46,7 @@ public class HTMLDecoder {
 			// end?
 			if( next >= src.length() ){
 				tag = TAG_END;
-				open_type = OPEN_TYPE_OPENCLOSE;
+				open_type = OPEN_TYPE_OPEN_CLOSE;
 				return;
 			}
 			// text ?
@@ -58,7 +55,7 @@ public class HTMLDecoder {
 			if( end > next ){
 				this.text = src.substring( next, end );
 				this.tag = TAG_TEXT;
-				this.open_type = OPEN_TYPE_OPENCLOSE;
+				this.open_type = OPEN_TYPE_OPEN_CLOSE;
 				next = end;
 				return;
 			}
@@ -80,40 +77,40 @@ public class HTMLDecoder {
 				if( m2.find() ){
 					is_openclose = ! TextUtils.isEmpty( m2.group( 1 ) );
 				}
-				open_type = is_close ? OPEN_TYPE_CLOSE : is_openclose ? OPEN_TYPE_OPENCLOSE : OPEN_TYPE_OPEN;
-				if( tag.equals( "br" )) open_type = OPEN_TYPE_OPENCLOSE;
+				open_type = is_close ? OPEN_TYPE_CLOSE : is_openclose ? OPEN_TYPE_OPEN_CLOSE : OPEN_TYPE_OPEN;
+				if( tag.equals( "br" ) ) open_type = OPEN_TYPE_OPEN_CLOSE;
 			}else{
 				tag = TAG_TEXT;
-				this.open_type = OPEN_TYPE_OPENCLOSE;
+				this.open_type = OPEN_TYPE_OPEN_CLOSE;
 			}
 		}
 	}
 	
 	public interface LinkClickCallback {
-		void onClickLink( LinkClickContext account,String url );
+		void onClickLink( LinkClickContext account, String url );
 	}
 	
 	public static LinkClickCallback link_callback;
 	
-	static final boolean DEBUG_HTML_PARSER = false;
+	private static final boolean DEBUG_HTML_PARSER = false;
 	
-	static class Node {
+	private static class Node {
 		final ArrayList< Node > child_nodes = new ArrayList<>();
 		
 		String tag;
 		String text;
 		
-		public Node(){
+		Node(){
 			tag = "<>root";
 			text = "";
 		}
 		
-		public Node( TokenParser t ){
+		Node( TokenParser t ){
 			this.tag = t.tag;
 			this.text = t.text;
 		}
 		
-		public void parseChild( TokenParser t, String indent ){
+		void parseChild( TokenParser t, String indent ){
 			if( DEBUG_HTML_PARSER ) log.d( "parseChild: %s(%s", indent, tag );
 			for( ; ; ){
 				if( TAG_END.equals( t.tag ) ) break;
@@ -136,54 +133,79 @@ public class HTMLDecoder {
 			if( DEBUG_HTML_PARSER ) log.d( "parseChild: %s)%s", indent, tag );
 		}
 		
-		
-		
-
-		
-		public void encodeSpan( final LinkClickContext account,SpannableStringBuilder sb ){
+		void encodeSpan( final LinkClickContext account, SpannableStringBuilder sb ){
 			if( TAG_TEXT.equals( tag ) ){
 				sb.append( Emojione.decodeEmoji( decodeEntity( text ) ) );
 				return;
 			}
-			if( DEBUG_HTML_PARSER ) sb.append( "(start " + tag + ")" );
+			if( DEBUG_HTML_PARSER ) sb.append( "(start " ).append( tag ).append( ")" );
 			
 			int start = sb.length();
-
+			
 			for( Node child : child_nodes ){
-				child.encodeSpan( account,sb );
+				child.encodeSpan( account, sb );
 			}
-
+			
 			int end = sb.length();
 			
-			if( end >start && "a".equals( tag ) ){
+			if( end > start && "a".equals( tag ) ){
 				Matcher m = reHref.matcher( text );
 				if( m.find() ){
-					final String href = decodeEntity( m.group( 1 ) ).toString();
+					final String href = decodeEntity( m.group( 1 ) );
 					if( ! TextUtils.isEmpty( href ) ){
 						sb.setSpan( new ClickableSpan() {
 							@Override
 							public void onClick( View widget ){
 								if( link_callback != null ){
-									link_callback.onClickLink( account,href );
+									link_callback.onClickLink( account, href );
 								}
 							}
 						}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
 					}
 				}
 			}
-			if( DEBUG_HTML_PARSER ) sb.append( "(end " + tag + ")" );
+			if( DEBUG_HTML_PARSER ) sb.append( "(end " ).append( tag ).append( ")" );
 			
 			if( "br".equals( tag ) ) sb.append( '\n' );
 			if( "p".equals( tag ) ){
 				if( sb.length() > 0 ){
-					if(sb.charAt( sb.length()-1 ) != '\n' ) sb.append( '\n' );
+					if( sb.charAt( sb.length() - 1 ) != '\n' ) sb.append( '\n' );
 					sb.append( '\n' );
 				}
 			}
 		}
+		
+		void encodeSpanForClipboard( LinkClickContext account, SpannableStringBuilder sb ){
+			encodeSpan( account, sb );
+			// 現時点ではURLの一部を非表示にするとかはしてないので
+			// そのままテキストにしたものをコピーして大丈夫なはず
+		}
 	}
 	
-	
+	public static CharSequence decodeHTMLForClipboard( LinkClickContext account, String src ){
+		try{
+			TokenParser tracker = new TokenParser( src );
+			Node rootNode = new Node();
+			rootNode.parseChild( tracker, "" );
+			
+			SpannableStringBuilder sb = new SpannableStringBuilder();
+			
+			rootNode.encodeSpanForClipboard( account, sb );
+			int end = sb.length();
+			while( end > 0 && Character.isWhitespace( sb.charAt( end - 1 ) ) ) -- end;
+			if( end < sb.length() ){
+				sb.delete( end, sb.length() );
+			}
+
+//			sb.append( "\n" );
+//			sb.append( src );
+			return sb;
+			
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			return null;
+		}
+	}
 	
 	public static SpannableStringBuilder decodeHTML( LinkClickContext account, String src ){
 		try{
@@ -195,36 +217,59 @@ public class HTMLDecoder {
 			
 			rootNode.encodeSpan( account, sb );
 			int end = sb.length();
-			while( end > 0 && Character.isWhitespace( sb.charAt( end-1 ) ) ) --end;
+			while( end > 0 && Character.isWhitespace( sb.charAt( end - 1 ) ) ) -- end;
 			if( end < sb.length() ){
-				sb.delete( end,sb.length() );
+				sb.delete( end, sb.length() );
 			}
-			
+
 //			sb.append( "\n" );
 //			sb.append( src );
 			return sb;
 			
 		}catch( Throwable ex ){
-			ex.printStackTrace(  );
+			ex.printStackTrace();
 			return null;
 		}
 	}
+
+//	public static Spannable decodeTags( final LinkClickContext account, TootTag.List src_list ){
+//		if( src_list == null || src_list.isEmpty() ) return null;
+//		SpannableStringBuilder sb = new SpannableStringBuilder();
+//		for( TootTag item : src_list ){
+//			if( sb.length() > 0 ) sb.append( " " );
+//			int start = sb.length();
+//			sb.append( '#' );
+//			sb.append( item.name );
+//			int end = sb.length();
+//			if( end > start ){
+//				final String item_url = item.url;
+//				sb.setSpan( new ClickableSpan() {
+//					@Override public void onClick( View widget ){
+//						if( link_callback != null ){
+//							link_callback.onClickLink( account, item_url );
+//						}
+//					}
+//				}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+//			}
+//		}
+//		return sb;
+//	}
 	
-	public static Spannable decodeTags( final LinkClickContext account,TootTag.List src_list ){
-		if( src_list == null || src_list.isEmpty()) return null;
+	public static Spannable decodeMentions( final LinkClickContext account, TootMention.List src_list ){
+		if( src_list == null || src_list.isEmpty() ) return null;
 		SpannableStringBuilder sb = new SpannableStringBuilder();
-		for(TootTag item : src_list){
-			if(sb.length() > 0) sb.append(" ");
+		for( TootMention item : src_list ){
+			if( sb.length() > 0 ) sb.append( " " );
 			int start = sb.length();
-			sb.append('#');
-			sb.append(item.name);
+			sb.append( '@' );
+			sb.append( item.acct );
 			int end = sb.length();
 			if( end > start ){
 				final String item_url = item.url;
 				sb.setSpan( new ClickableSpan() {
 					@Override public void onClick( View widget ){
 						if( link_callback != null ){
-							link_callback.onClickLink( account,item_url );
+							link_callback.onClickLink( account, item_url );
 						}
 					}
 				}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
@@ -232,30 +277,6 @@ public class HTMLDecoder {
 		}
 		return sb;
 	}
-	
-	public static Spannable decodeMentions( final LinkClickContext account, TootMention.List src_list ){
-		if( src_list == null || src_list.isEmpty()) return null;
-		SpannableStringBuilder sb = new SpannableStringBuilder();
-		for(TootMention item : src_list){
-			if(sb.length() > 0) sb.append(" ");
-			int start = sb.length();
-			sb.append('@');
-			sb.append( item.acct );
-			int end = sb.length();
-			if( end > start){
-				final String item_url = item.url;
-				sb.setSpan( new ClickableSpan() {
-					@Override public void onClick( View widget ){
-						if( link_callback != null ){
-							link_callback.onClickLink( account,item_url );
-						}
-					}
-				}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
-			}
-		}
-		return sb;
-	}
-
 	
 	//////////////////////////////////////////////////////////////////////////////////////
 	
@@ -269,14 +290,14 @@ public class HTMLDecoder {
 		return (char) num;
 	}
 	
-	static final Pattern reEntity = Pattern.compile( "&(#?)(\\w+);" );
+	private static final Pattern reEntity = Pattern.compile( "&(#?)(\\w+);" );
 	
 	public static String decodeEntity( String src ){
 		StringBuilder sb = null;
 		Matcher m = reEntity.matcher( src );
 		int last_end = 0;
 		while( m.find() ){
-			if(sb==null) sb = new StringBuilder();
+			if( sb == null ) sb = new StringBuilder();
 			int start = m.start();
 			int end = m.end();
 			try{

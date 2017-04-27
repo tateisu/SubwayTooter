@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import jp.juggler.subwaytooter.util.Emojione;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;

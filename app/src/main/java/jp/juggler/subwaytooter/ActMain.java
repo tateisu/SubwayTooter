@@ -71,7 +71,6 @@ public class ActMain extends AppCompatActivity
 	
 	float density;
 	
-	
 	SharedPreferences pref;
 	
 	@Override
@@ -307,7 +306,6 @@ public class ActMain extends AppCompatActivity
 			
 		}else if( id == R.id.nav_add_blocks ){
 			performAddTimeline( Column.TYPE_BLOCKS );
-			
 			
 			// Handle the camera action
 //		}else if( id == R.id.nav_gallery ){
@@ -1723,6 +1721,49 @@ public class ActMain extends AppCompatActivity
 	
 	////////////////////////////////////////////////
 	
+	private void sendStatus( SavedAccount access_info, TootStatus status ){
+		try{
+			StringBuilder sb = new StringBuilder();
+			sb.append( getString( R.string.send_header_url ) );
+			sb.append( ": " );
+			sb.append( status.url );
+			sb.append( "\n" );
+			sb.append( getString( R.string.send_header_date ) );
+			sb.append( ": " );
+			sb.append( TootStatus.formatTime( status.time_created_at ) );
+			sb.append( "\n" );
+			sb.append( getString( R.string.send_header_from_acct ) );
+			sb.append( ": " );
+			sb.append( access_info.getFullAcct( status.account ) );
+			sb.append( "\n" );
+			sb.append( getString( R.string.send_header_from_name ) );
+			sb.append( ": " );
+			sb.append( status.account.display_name );
+			sb.append( "\n" );
+			if( ! TextUtils.isEmpty( status.spoiler_text ) ){
+				sb.append( getString( R.string.send_header_content_warning ) );
+				sb.append( ": " );
+				sb.append( HTMLDecoder.decodeHTMLForClipboard( access_info, status.spoiler_text ) );
+				sb.append( "\n" );
+			}
+			sb.append( "\n" );
+			sb.append( HTMLDecoder.decodeHTMLForClipboard( access_info, status.content ) );
+			
+			Intent intent = new Intent();
+			intent.setAction( Intent.ACTION_SEND );
+			intent.setType( "text/plain" );
+			intent.putExtra( Intent.EXTRA_TEXT, sb.toString() );
+			startActivity( intent );
+			
+		}catch( Throwable ex ){
+			log.e( ex, "sendStatus failed." );
+			ex.printStackTrace();
+			Utils.showToast( this, ex, "sendStatus failed." );
+		}
+	}
+	
+	////////////////////////////////////////////////
+	
 	final RelationChangedCallback follow_comolete_callback = new RelationChangedCallback() {
 		//		@Override public void onRelationChanged( TootRelationShip relationship ){
 //			Utils.showToast( ActMain.this,false,R.string.follow_succeeded );
@@ -1751,7 +1792,11 @@ public class ActMain extends AppCompatActivity
 				openChromeTab( access_info, status.url, true );
 			}
 		} );
-		
+		dialog.addAction( getString( R.string.send_text ), new Runnable() {
+			@Override public void run(){
+				sendStatus( access_info, status );
+			}
+		} );
 		final ArrayList< SavedAccount > tmp_list = new ArrayList<>();
 		for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
 			if( a.host.equalsIgnoreCase( access_info.host ) ){

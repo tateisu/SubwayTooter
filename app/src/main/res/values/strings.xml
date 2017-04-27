@@ -162,4 +162,10 @@
     <string name="muted_users">mutes users</string>
     <string name="blocked_users">blocked users</string>
     <string name="end_of_list">end of list</string>
+    <string name="send_text">send text to apps</string>
+    <string name="send_header_date">Date</string>
+    <string name="send_header_from_acct">From-Acct</string>
+    <string name="send_header_from_name">From-Name</string>
+    <string name="send_header_content_warning">Content-Warning</string>
+    <string name="send_header_url">Status-URL</string>
 </resources>

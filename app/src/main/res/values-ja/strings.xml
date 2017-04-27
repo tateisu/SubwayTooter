@@ -163,4 +163,10 @@
     <string name="blocked_users">ブロックしたユーザ</string>
     <string name="end_of_list">リストの終端</string>
     <string name="muted_users">ミュートしたユーザ</string>
+    <string name="send_text">テキストをアプリに送る</string>
+    <string name="send_header_date">Date</string>
+    <string name="send_header_from_acct">From-Acct</string>
+    <string name="send_header_from_name">From-Name</string>
+    <string name="send_header_content_warning">Content-Warning</string>
+    <string name="send_header_url">Status-URL</string>
 </resources>

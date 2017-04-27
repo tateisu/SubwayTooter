@@ -65,7 +65,6 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	static final String KEY_IN_REPLY_TO_TEXT = "in_reply_to_text";
 	static final String KEY_IN_REPLY_TO_IMAGE = "in_reply_to_image";
 	
-	
 	public static void open( Context context, long account_db_id, TootStatus reply_status ){
 		Intent intent = new Intent( context, ActPost.class );
 		intent.putExtra( KEY_ACCOUNT_DB_ID, account_db_id );
@@ -74,7 +73,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		}
 		context.startActivity( intent );
 	}
-	public static void open( Context context, long account_db_id, String  initial_text ){
+	
+	public static void open( Context context, long account_db_id, String initial_text ){
 		Intent intent = new Intent( context, ActPost.class );
 		intent.putExtra( KEY_ACCOUNT_DB_ID, account_db_id );
 		if( initial_text != null ){
@@ -145,7 +145,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	@Override
 	protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
-		
+		App1.setActivityTheme( this, true );
 		initUI();
 		
 		if( account_list.isEmpty() ){
@@ -207,15 +207,15 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			}
 			
 			String sv = intent.getStringExtra( KEY_INITIAL_TEXT );
-			if( sv != null){
-				etContent.setText(sv);
+			if( sv != null ){
+				etContent.setText( sv );
 				etContent.setSelection( sv.length() );
 			}
 			
 			sv = intent.getStringExtra( KEY_REPLY_STATUS );
 			if( sv != null ){
 				try{
-					TootStatus repley_status = TootStatus.parse( log, account,new JSONObject( sv ) );
+					TootStatus repley_status = TootStatus.parse( log, account, new JSONObject( sv ) );
 					
 					// CW をリプライ元に合わせる
 					if( ! TextUtils.isEmpty( repley_status.spoiler_text ) ){
@@ -225,13 +225,13 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 					
 					// mention を自動設定する
 					ArrayList< String > mention_list = new ArrayList<>();
-					mention_list.add( "@"+account.getFullAcct( repley_status.account ) );
+					mention_list.add( "@" + account.getFullAcct( repley_status.account ) );
 					if( repley_status.mentions != null ){
 						for( TootMention mention : repley_status.mentions ){
-
-							if( account.isMe(mention.acct)) continue;
-
-							sv = "@"+account.getFullAcct(mention.acct  );
+							
+							if( account.isMe( mention.acct ) ) continue;
+							
+							sv = "@" + account.getFullAcct( mention.acct );
 							if( ! mention_list.contains( sv ) ){
 								mention_list.add( sv );
 							}
@@ -364,7 +364,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		llReply = findViewById( R.id.llReply );
 		tvReplyTo = (TextView) findViewById( R.id.tvReplyTo );
 		btnRemoveReply = findViewById( R.id.btnRemoveReply );
-		ivReply= (NetworkImageView) findViewById( R.id.ivReply );
+		ivReply = (NetworkImageView) findViewById( R.id.ivReply );
 		
 		account_list = SavedAccount.loadAccountList( log );
 		Collections.sort( account_list, new Comparator< SavedAccount >() {
@@ -432,15 +432,15 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		
 		if( ! attachment_list.isEmpty() ){
 			// 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
-			Utils.showToast( this,false,R.string.cant_change_account_when_attachiment_specified );
+			Utils.showToast( this, false, R.string.cant_change_account_when_attachiment_specified );
 		}
 		
 		final ArrayList< SavedAccount > tmp_account_list = new ArrayList<>();
-		if( in_reply_to_id != -1L ){
+		if( in_reply_to_id != - 1L ){
 			// リプライは数値IDなのでサーバが同じじゃないと選択できない
 			for( SavedAccount a : account_list ){
-				if( !a.host.equals( account.host ) ) continue;
-				tmp_account_list.add(a);
+				if( ! a.host.equals( account.host ) ) continue;
+				tmp_account_list.add( a );
 			}
 		}else{
 			tmp_account_list.addAll( account_list );
@@ -498,11 +498,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			iv.setVisibility( View.VISIBLE );
 			PostAttachment a = attachment_list.get( idx );
 			if( a.status == ATTACHMENT_UPLOADING ){
-				iv.setImageDrawable( ContextCompat.getDrawable( this, R.drawable.ic_loading ) );
+				iv.setImageDrawable( Styler.getAttributeDrawable( this, R.attr.ic_loading ) );
 			}else if( a.attachment != null ){
 				iv.setImageUrl( a.attachment.preview_url, App1.getImageLoader() );
 			}else{
-				iv.setImageDrawable( ContextCompat.getDrawable( this, R.drawable.ic_unknown ) );
+				iv.setImageDrawable( Styler.getAttributeDrawable( this, R.attr.ic_unknown ) );
 			}
 		}
 	}
@@ -705,7 +705,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	String visibility;
 	
 	private void updateVisibility(){
-		btnVisibility.setImageResource( Styler.getVisibilityIcon( visibility ) );
+		btnVisibility.setImageResource( Styler.getVisibilityIcon( this, visibility ) );
 	}
 	
 	private void performVisibility(){
@@ -715,11 +715,6 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			getString( R.string.visibility_private ),
 			getString( R.string.visibility_direct ),
 		};
-
-//		public static final String VISIBILITY_PUBLIC ="public";
-//		public static final String VISIBILITY_UNLISTED ="unlisted";
-//		public static final String VISIBILITY_PRIVATE ="private";
-//		public static final String VISIBILITY_DIRECT ="direct";
 		
 		new AlertDialog.Builder( this )
 			.setTitle( R.string.choose_visibility )
@@ -832,7 +827,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				
 				TootApiResult result = client.request( "/api/v1/statuses", request_builder );
 				if( result.object != null ){
-					status = TootStatus.parse( log,  account,result.object );
+					status = TootStatus.parse( log, account, result.object );
 				}
 				return result;
 				
@@ -881,8 +876,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			llReply.setVisibility( View.GONE );
 		}else{
 			llReply.setVisibility( View.VISIBLE );
-			tvReplyTo.setText( HTMLDecoder.decodeHTML(  account,in_reply_to_text ) );
-			ivReply.setImageUrl( in_reply_to_image,App1.getImageLoader() );
+			tvReplyTo.setText( HTMLDecoder.decodeHTML( account, in_reply_to_text ) );
+			ivReply.setImageUrl( in_reply_to_image, App1.getImageLoader() );
 		}
 	}
 	

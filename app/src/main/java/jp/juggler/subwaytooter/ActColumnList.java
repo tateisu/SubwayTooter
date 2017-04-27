@@ -31,6 +31,7 @@ public class ActColumnList extends AppCompatActivity {
 	@Override
 	protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
+		App1.setActivityTheme(this,false);
 		initUI();
 		
 		if( savedInstanceState != null ){

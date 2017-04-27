@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="colorLink" format="color"/>
+
+    <attr name="list_item_bg_pressed_dragged" format="color"/>
+
+    <!-- カラムヘッダ背景色、および一部ボタンの背景色 -->
+    <attr name="color_column_header" format="color"/>
+
+    <!-- イメージボタンの図柄の色 0xff000000 -->
+    <attr name="colorImageButton" format="color"/>
+
+    <!-- イメージボタンの図柄の色 ファボ済みなど 0xff0088ff-->
+    <attr name="colorImageButtonAccent" format="color"/>
+
+    <!-- リップルエフェクトの色 FF808080-->
+    <attr name="colorRippleEffect" format="color"/>
+
+    <!-- v21未満のボタンのselected/focused状態の色 #ff000080-->
+    <attr name="colorButtonSelected" format="color"/>
+
+    <!-- 投稿画面の返信表示の背景 #cccccc -->
+    <attr name="colorReplyBackground" format="color"/>
+
+    <!-- カラム一覧の削除UIの背景 #FF0000 -->
+    <attr name="colorColumnListDeleteBackground" format="color"/>
+
+    <!-- カラム一覧の削除UIの文字色 @android:color/white -->
+    <attr name="colorColumnListDeleteText" format="color"/>
+
+    <!-- カラム一覧のドラッグハンドルの背景色 #80cccccc -->
+    <attr name="colorColumnListDragHandleBackground" format="color"/>
+
+    <!-- カラム一覧の要素の文字色 #888888 -->
+    <attr name="colorColumnListItemText" format="color"/>
+
+    <!-- 日時の表記 #888888 -->
+    <attr name="colorTimeSmall" format="color"/>
+
+    <!-- プロフ背景を薄くするマスク #C0FFFFFF -->
+    <attr name="colorProfileBackgroundMask" format="color"/>
+
+    <!-- Acct の小さな表記 #888888 -->
+    <attr name="colorAcctSmall" format="color"/>
+
+    <!-- NSFWを隠す表示の背景色 #000 -->
+    <attr name="colorShowMediaBackground" format="color"/>
+
+    <!-- NSFWを隠す表示の文字色 #fff -->
+    <attr name="colorShowMediaText" format="color"/>
+
+    <!-- カラムヘッダAcctの文字色 #888 -->
+    <attr name="colorColumnHeaderAcct" format="color"/>
+
+    <!-- カラムヘッダページ番号の文字色 #888 -->
+    <attr name="colorColumnHeaderPageNumber" format="color"/>
+
+    <!-- カラム設定の背景色 #ccc -->
+    <attr name="colorColumnSettingBackground" format="color"/>
+
+    <!-- カラム設定の背景色 #bee6ff -->
+    <attr name="colorSearchFormBackground" format="color"/>
+
+    <!-- 設定画面のdividerの色  #ddd -->
+    <attr name="colorSettingDivider" format="color"/>
+
+
+    <attr name="btn_attachment" format="reference" />
+    <attr name="btn_boost" format="reference" />
+    <attr name="btn_close" format="reference" />
+    <attr name="btn_favourite" format="reference" />
+    <attr name="btn_federate_tl" format="reference" />
+    <attr name="btn_home" format="reference" />
+    <attr name="btn_local_tl" format="reference" />
+    <attr name="btn_more" format="reference" />
+    <attr name="btn_notification" format="reference" />
+    <attr name="btn_post" format="reference" />
+    <attr name="btn_refresh" format="reference" />
+    <attr name="btn_reply" format="reference" />
+    <attr name="btn_statuses" format="reference" />
+    <attr name="ic_account_add" format="reference" />
+    <attr name="ic_block" format="reference" />
+    <attr name="ic_bookmark" format="reference" />
+    <attr name="ic_conversation" format="reference" />
+    <attr name="ic_hot_tub" format="reference" />
+    <attr name="ic_info" format="reference" />
+    <attr name="ic_knob" format="reference" />
+    <attr name="ic_list" format="reference" />
+    <attr name="ic_loading" format="reference" />
+    <attr name="ic_lock" format="reference" />
+    <attr name="ic_lock_open" format="reference" />
+    <attr name="ic_mail" format="reference" />
+    <attr name="ic_menu" format="reference" />
+    <attr name="ic_mute" format="reference" />
+    <attr name="ic_public" format="reference" />
+    <attr name="ic_search" format="reference" />
+    <attr name="ic_setting" format="reference" />
+    <attr name="ic_toot" format="reference" />
+    <attr name="ic_tune" format="reference" />
+    <attr name="ic_unknown" format="reference" />
+
+</resources>

@@ -76,7 +76,7 @@ public class ActMain extends AppCompatActivity
 	@Override
 	protected void onCreate( Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
-		
+		App1.setActivityTheme(this,true);
 		this.density = getResources().getDisplayMetrics().density;
 		
 		requestWindowFeature( Window.FEATURE_NO_TITLE );
@@ -839,7 +839,7 @@ public class ActMain extends AppCompatActivity
 			
 			// ビルダーを使って表示方法を指定する
 			CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-			builder.setToolbarColor( ContextCompat.getColor( this, R.color.colorPrimary ) ).setShowTitle( true );
+			builder.setToolbarColor( Styler.getAttributeColor( this,R.attr.colorPrimary ) ).setShowTitle( true );
 			
 			// CustomTabsでURLをひらくIntentを発行
 			CustomTabsIntent customTabsIntent = builder.build();

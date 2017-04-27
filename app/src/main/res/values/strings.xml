@@ -170,4 +170,7 @@
     <string name="send_header_url">Status-URL</string>
     <string name="dont_close_column">don\'t close column</string>
     <string name="column_has_dont_close_option">this column has \'dont close\' option.</string>
+    <string name="ui_theme">UI theme (app restart required)</string>
+    <string name="theme_light">light</string>
+    <string name="theme_dark">dark</string>
 </resources>

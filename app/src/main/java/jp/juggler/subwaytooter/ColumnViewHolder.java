@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.KeyEvent;
@@ -630,7 +629,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 					showBoost(
 						n.account
 						, n.time_created_at
-						, R.drawable.btn_favourite
+						, R.attr.btn_favourite
 						, Utils.formatSpannable1( activity, R.string.display_name_favourited_by, n.account.display_name )
 					);
 					if( n.status != null ) showStatus( activity, n.status, access_info );
@@ -638,7 +637,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 					showBoost(
 						n.account
 						, n.time_created_at
-						, R.drawable.btn_boost
+						, R.attr.btn_boost
 						, Utils.formatSpannable1( activity, R.string.display_name_boosted_by, n.account.display_name )
 					);
 					if( n.status != null ) showStatus( activity, n.status, access_info );
@@ -646,7 +645,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 					showBoost(
 						n.account
 						, n.time_created_at
-						, R.drawable.btn_boost
+						, R.attr.btn_boost
 						, Utils.formatSpannable1( activity, R.string.display_name_followed_by, n.account.display_name )
 					);
 					//
@@ -657,7 +656,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 					showBoost(
 						n.account
 						, n.time_created_at
-						, R.drawable.btn_reply
+						, R.attr.btn_reply
 						, Utils.formatSpannable1( activity, R.string.display_name_replied_by, n.account.display_name )
 					);
 					if( n.status != null ) showStatus( activity, n.status, access_info );
@@ -668,7 +667,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 					showBoost(
 						status.account
 						, status.time_created_at
-						, R.drawable.btn_boost
+						, R.attr.btn_boost
 						, Utils.formatSpannable1( activity, R.string.display_name_boosted_by, status.account.display_name )
 					);
 					showStatus( activity, status.reblog, access_info );
@@ -694,10 +693,10 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			btnSearchTag.setText( activity.getString( R.string.read_gap ) );
 		}
 		
-		void showBoost( TootAccount who, long time, int icon_id, CharSequence text ){
+		void showBoost( TootAccount who, long time, int icon_attr_id, CharSequence text ){
 			account_boost = who;
 			llBoosted.setVisibility( View.VISIBLE );
-			ivBoosted.setImageResource( icon_id );
+			ivBoosted.setImageResource( Styler.getAttributeResourceId(activity,icon_attr_id) );
 			tvBoostedTime.setText( TootStatus.formatTime( time ) );
 			tvBoostedAcct.setText( access_info.getFullAcct( who ) );
 			tvBoosted.setText( text );
@@ -710,8 +709,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			tvFollowerName.setText( who.display_name );
 			tvFollowerAcct.setText( access_info.getFullAcct( who ) );
 			
-			btnFollow.setImageResource( R.drawable.btn_follow );
-			
+			btnFollow.setImageResource( Styler.getAttributeResourceId( activity,R.attr.ic_account_add ));
 		}
 		
 		private void showStatus( ActMain activity, TootStatus status, SavedAccount account ){
@@ -766,19 +764,19 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			}
 			
 			Drawable d;
-			int color;
+			int color_normal = Styler.getAttributeColor( activity,R.attr.colorImageButton );
+			int color_accent = Styler.getAttributeColor( activity,R.attr.colorImageButtonAccent );
 			
 			if( activity.isBusyBoost( account, status ) ){
-				color = 0xff000000;
-				d = ContextCompat.getDrawable( activity, R.drawable.btn_boost ).mutate();
-				d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
+				d = Styler.getAttributeDrawable( activity,R.attr.btn_refresh ).mutate();
+				d.setColorFilter( color_normal, PorterDuff.Mode.SRC_ATOP );
 				btnBoost.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
 				btnBoost.setText( "?" );
-				btnBoost.setTextColor( color );
+				btnBoost.setTextColor( color_normal );
 				
 			}else{
-				color = ( status.reblogged ? 0xff0088ff : 0xff000000 );
-				d = ContextCompat.getDrawable( activity, R.drawable.btn_boost ).mutate();
+				int color = ( status.reblogged ? color_accent : color_normal );
+				d = Styler.getAttributeDrawable( activity,R.attr.btn_boost ).mutate();
 				d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
 				btnBoost.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
 				btnBoost.setText( Long.toString( status.reblogs_count ) );
@@ -787,15 +785,14 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			}
 			
 			if( activity.isBusyFav( account, status ) ){
-				color = 0xff000000;
-				d = ContextCompat.getDrawable( activity, R.drawable.btn_refresh ).mutate();
-				d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
+				d = Styler.getAttributeDrawable( activity,R.attr.btn_refresh ).mutate();
+				d.setColorFilter( color_normal, PorterDuff.Mode.SRC_ATOP );
 				btnFavourite.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
 				btnFavourite.setText( "?" );
-				btnFavourite.setTextColor( color );
+				btnFavourite.setTextColor( color_normal );
 			}else{
-				color = ( status.favourited ? 0xff0088ff : 0xff000000 );
-				d = ContextCompat.getDrawable( activity, R.drawable.btn_favourite ).mutate();
+				int color = ( status.favourited ? color_accent : color_normal );
+				d = Styler.getAttributeDrawable( activity,R.attr.btn_favourite ).mutate();
 				d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
 				btnFavourite.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
 				btnFavourite.setText( Long.toString( status.favourites_count ) );

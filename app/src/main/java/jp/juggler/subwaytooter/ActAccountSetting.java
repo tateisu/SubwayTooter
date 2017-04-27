@@ -41,6 +41,7 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 	@Override
 	protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
+		App1.setActivityTheme(this,false);
 		initUI();
 		account = SavedAccount.loadAccount( log, getIntent().getLongExtra( KEY_ACCOUNT_DB_ID, - 1L ) );
 		if( account == null ) finish();

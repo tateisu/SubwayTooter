@@ -31,7 +31,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="end"
-                android:textColor="#888"
+                android:textColor="?attr/colorColumnHeaderAcct"
                 android:textSize="12sp"
                 tools:text="tvColumnContext"
                 />
@@ -42,7 +42,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="12dp"
                 android:gravity="end"
-                android:textColor="#888"
+                android:textColor="?attr/colorColumnHeaderPageNumber"
                 android:textSize="12sp"
                 tools:text="col 6/12"
                 />
@@ -72,7 +72,7 @@
                 android:layout_marginStart="2dp"
                 android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/setting"
-                android:src="@drawable/ic_tune"
+                android:src="?attr/ic_tune"
                 />
 
             <ImageButton
@@ -83,7 +83,7 @@
                 android:layout_marginStart="2dp"
                 android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/reload"
-                android:src="@drawable/btn_refresh"
+                android:src="?attr/btn_refresh"
                 />
 
             <ImageButton
@@ -94,7 +94,7 @@
                 android:layout_marginStart="2dp"
                 android:background="@drawable/btn_bg_transparent"
                 android:contentDescription="@string/close_column"
-                android:src="@drawable/black_close"
+                android:src="?attr/btn_close"
                 />
 
 
@@ -110,7 +110,7 @@
         android:paddingEnd="12dp"
         android:paddingTop="3dp"
         android:paddingBottom="3dp"
-        android:background="#ccc"
+        android:background="?attr/colorColumnSettingBackground"
         android:id="@+id/llColumnSetting"
         >
         <CheckBox
@@ -133,14 +133,14 @@
         android:paddingEnd="12dp"
         android:paddingTop="3dp"
         android:paddingBottom="3dp"
-        android:background="#bee6ff"
+        android:background="?attr/colorSearchFormBackground"
         android:id="@+id/llSearch"
         >
         <ImageButton
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="@drawable/btn_bg_transparent"
-            android:src="@drawable/ic_search"
+            android:src="?attr/ic_search"
             android:contentDescription="@string/search"
             android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
@@ -153,7 +153,7 @@
             android:inputType="text"
             android:id="@+id/etSearch"
             android:imeOptions="actionSearch"
-            />
+            tools:ignore="LabelFor"/>
         <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

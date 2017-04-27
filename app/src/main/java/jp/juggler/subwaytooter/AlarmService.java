@@ -364,8 +364,8 @@ public class AlarmService extends IntentService {
 			.setContentIntent( pi_click )
 			.setDeleteIntent( pi_delete )
 			.setAutoCancel( false )
-			.setSmallIcon( R.drawable.ic_notification )
-			.setColor( ContextCompat.getColor( this, R.color.colorAccent ) )
+			.setSmallIcon( R.drawable.ic_notification ) // ここは常に白テーマのアイコンを使う
+			.setColor( ContextCompat.getColor(this, R.color.Light_colorAccent ) ) // ここは常に白テーマの色を使う
 			.setDefaults( NotificationCompat.DEFAULT_ALL )
 			.setWhen( item.notification.time_created_at );
 		

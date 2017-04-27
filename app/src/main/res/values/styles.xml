@@ -1,17 +1,152 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+    <!-- light theme -->
+    <style name="AppTheme.Light" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/Light_colorPrimary</item>
+        <item name="colorPrimaryDark">@color/Light_colorPrimaryDark</item>
+        <item name="colorAccent">@color/Light_colorAccent</item>
+
+        <item name="colorLink">@color/Light_colorLink</item>
+        <item name="list_item_bg_pressed_dragged">@color/Light_list_item_bg_pressed_dragged</item>
+        <item name="color_column_header">@color/Light_color_column_header</item>
+        <item name="colorImageButton">@color/Light_colorImageButton</item>
+        <item name="colorImageButtonAccent">@color/Light_colorImageButtonAccent</item>
+        <item name="colorRippleEffect">@color/Light_colorRippleEffect</item>
+        <item name="colorButtonSelected">@color/Light_colorButtonSelected</item>
+        <item name="colorReplyBackground">@color/Light_colorReplyBackground</item>
+        <item name="colorColumnListDeleteBackground">@color/Light_colorColumnListDeleteBackground
+        </item>
+        <item name="colorColumnListDeleteText">@color/Light_colorColumnListDeleteText</item>
+        <item name="colorColumnListDragHandleBackground">
+            @color/Light_colorColumnListDragHandleBackground
+        </item>
+        <item name="colorColumnListItemText">@color/Light_colorColumnListItemText</item>
+        <item name="colorTimeSmall">@color/Light_colorTimeSmall</item>
+        <item name="colorProfileBackgroundMask">@color/Light_colorProfileBackgroundMask</item>
+        <item name="colorAcctSmall">@color/Light_colorAcctSmall</item>
+        <item name="colorShowMediaBackground">@color/Light_colorShowMediaBackground</item>
+        <item name="colorShowMediaText">@color/Light_colorShowMediaText</item>
+        <item name="colorColumnHeaderAcct">@color/Light_colorColumnHeaderAcct</item>
+        <item name="colorColumnHeaderPageNumber">@color/Light_colorColumnHeaderPageNumber</item>
+        <item name="colorColumnSettingBackground">@color/Light_colorColumnSettingBackground</item>
+        <item name="colorSearchFormBackground">@color/Light_colorSearchFormBackground</item>
+        <item name="colorSettingDivider">@color/Light_colorSettingDivider</item>
+
+        <item name="btn_attachment">@drawable/btn_attachment</item>
+        <item name="btn_boost">@drawable/btn_boost</item>
+        <item name="btn_close">@drawable/btn_close</item>
+        <item name="btn_favourite">@drawable/btn_favourite</item>
+        <item name="btn_federate_tl">@drawable/btn_federate_tl</item>
+        <item name="btn_home">@drawable/btn_home</item>
+        <item name="btn_local_tl">@drawable/btn_local_tl</item>
+        <item name="btn_more">@drawable/btn_more</item>
+        <item name="btn_notification">@drawable/btn_notification</item>
+        <item name="btn_post">@drawable/btn_post</item>
+        <item name="btn_refresh">@drawable/btn_refresh</item>
+        <item name="btn_reply">@drawable/btn_reply</item>
+        <item name="btn_statuses">@drawable/btn_statuses</item>
+        <item name="ic_account_add">@drawable/ic_account_add</item>
+        <item name="ic_block">@drawable/ic_block</item>
+        <item name="ic_bookmark">@drawable/ic_bookmark</item>
+        <item name="ic_conversation">@drawable/ic_conversation</item>
+        <item name="ic_hot_tub">@drawable/ic_hot_tub</item>
+        <item name="ic_info">@drawable/ic_info</item>
+        <item name="ic_knob">@drawable/ic_knob</item>
+        <item name="ic_list">@drawable/ic_list</item>
+        <item name="ic_loading">@drawable/ic_loading</item>
+        <item name="ic_lock">@drawable/ic_lock</item>
+        <item name="ic_lock_open">@drawable/ic_lock_open</item>
+        <item name="ic_mail">@drawable/ic_mail</item>
+        <item name="ic_menu">@drawable/ic_menu</item>
+        <item name="ic_mute">@drawable/ic_mute</item>
+        <item name="ic_public">@drawable/ic_public</item>
+        <item name="ic_search">@drawable/ic_search</item>
+        <item name="ic_setting">@drawable/ic_setting</item>
+        <item name="ic_toot">@drawable/ic_toot</item>
+        <item name="ic_tune">@drawable/ic_tune</item>
+        <item name="ic_unknown">@drawable/ic_unknown</item>
     </style>
 
-    <style name="AppTheme.NoActionBar">
+    <style name="AppTheme.Light.NoActionBar" parent="AppTheme.Light">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
+
+    <!-- dark theme -->
+    <style name="AppTheme.Dark" parent="Theme.AppCompat">
+        <item name="android:windowBackground">@drawable/window_background_dark</item>
+
+        <item name="colorPrimary">@color/Dark_colorPrimary</item>
+        <item name="colorPrimaryDark">@color/Dark_colorPrimaryDark</item>
+        <item name="colorAccent">@color/Dark_colorAccent</item>
+
+        <item name="colorLink">@color/Dark_colorLink</item>
+        <item name="list_item_bg_pressed_dragged">@color/Dark_list_item_bg_pressed_dragged</item>
+        <item name="color_column_header">@color/Dark_color_column_header</item>
+        <item name="colorImageButton">@color/Dark_colorImageButton</item>
+        <item name="colorImageButtonAccent">@color/Dark_colorImageButtonAccent</item>
+        <item name="colorRippleEffect">@color/Dark_colorRippleEffect</item>
+        <item name="colorButtonSelected">@color/Dark_colorButtonSelected</item>
+        <item name="colorReplyBackground">@color/Dark_colorReplyBackground</item>
+        <item name="colorColumnListDeleteBackground">@color/Dark_colorColumnListDeleteBackground
+        </item>
+        <item name="colorColumnListDeleteText">@color/Dark_colorColumnListDeleteText</item>
+        <item name="colorColumnListDragHandleBackground">
+            @color/Dark_colorColumnListDragHandleBackground
+        </item>
+        <item name="colorColumnListItemText">@color/Dark_colorColumnListItemText</item>
+        <item name="colorTimeSmall">@color/Dark_colorTimeSmall</item>
+        <item name="colorProfileBackgroundMask">@color/Dark_colorProfileBackgroundMask</item>
+        <item name="colorAcctSmall">@color/Dark_colorAcctSmall</item>
+        <item name="colorShowMediaBackground">@color/Dark_colorShowMediaBackground</item>
+        <item name="colorShowMediaText">@color/Dark_colorShowMediaText</item>
+        <item name="colorColumnHeaderAcct">@color/Dark_colorColumnHeaderAcct</item>
+        <item name="colorColumnHeaderPageNumber">@color/Dark_colorColumnHeaderPageNumber</item>
+        <item name="colorColumnSettingBackground">@color/Dark_colorColumnSettingBackground</item>
+        <item name="colorSearchFormBackground">@color/Dark_colorSearchFormBackground</item>
+        <item name="colorSettingDivider">@color/Dark_colorSettingDivider</item>
+
+        <item name="btn_attachment">@drawable/btn_attachment_dark</item>
+        <item name="btn_boost">@drawable/btn_boost_dark</item>
+        <item name="btn_close">@drawable/btn_close_dark</item>
+        <item name="btn_favourite">@drawable/btn_favourite_dark</item>
+        <item name="btn_federate_tl">@drawable/btn_federate_tl_dark</item>
+        <item name="btn_home">@drawable/btn_home_dark</item>
+        <item name="btn_local_tl">@drawable/btn_local_tl_dark</item>
+        <item name="btn_more">@drawable/btn_more_dark</item>
+        <item name="btn_notification">@drawable/btn_notification_dark</item>
+        <item name="btn_post">@drawable/btn_post_dark</item>
+        <item name="btn_refresh">@drawable/btn_refresh_dark</item>
+        <item name="btn_reply">@drawable/btn_reply_dark</item>
+        <item name="btn_statuses">@drawable/btn_statuses_dark</item>
+        <item name="ic_account_add">@drawable/ic_account_add_dark</item>
+        <item name="ic_block">@drawable/ic_block_dark</item>
+        <item name="ic_bookmark">@drawable/ic_bookmark_dark</item>
+        <item name="ic_conversation">@drawable/ic_conversation_dark</item>
+        <item name="ic_hot_tub">@drawable/ic_hot_tub_dark</item>
+        <item name="ic_info">@drawable/ic_info_dark</item>
+        <item name="ic_knob">@drawable/ic_knob_dark</item>
+        <item name="ic_list">@drawable/ic_list_dark</item>
+        <item name="ic_loading">@drawable/ic_loading_dark</item>
+        <item name="ic_lock">@drawable/ic_lock_dark</item>
+        <item name="ic_lock_open">@drawable/ic_lock_open_dark</item>
+        <item name="ic_mail">@drawable/ic_mail_dark</item>
+        <item name="ic_menu">@drawable/ic_menu_dark</item>
+        <item name="ic_mute">@drawable/ic_mute_dark</item>
+        <item name="ic_public">@drawable/ic_public_dark</item>
+        <item name="ic_search">@drawable/ic_search_dark</item>
+        <item name="ic_setting">@drawable/ic_setting_dark</item>
+        <item name="ic_toot">@drawable/ic_toot_dark</item>
+        <item name="ic_tune">@drawable/ic_tune_dark</item>
+        <item name="ic_unknown">@drawable/ic_unknown_dark</item>
+
+    </style>
+
+    <style name="AppTheme.Dark.NoActionBar" parent="AppTheme.Dark">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
 
@@ -33,8 +168,8 @@
         <item name="android:paddingLeft">12dp</item>
         <item name="android:paddingRight">0dp</item>
 
-        <item name="android:paddingStart"  tools:ignore="NewApi">12dp</item>
-        <item name="android:paddingEnd"  tools:ignore="NewApi">0dp</item>
+        <item name="android:paddingStart" tools:ignore="NewApi">12dp</item>
+        <item name="android:paddingEnd" tools:ignore="NewApi">0dp</item>
     </style>
 
     <style name="setting_row_form">
@@ -53,7 +188,7 @@
 
     <style name="setting_row_help">
         <item name="android:background">@drawable/btn_bg_transparent</item>
-        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:textColor">?attr/colorAccent</item>
         <item name="android:layout_width">40dp</item>
         <item name="android:layout_height">40dp</item>
         <item name="android:minWidth">32dp</item>
@@ -72,7 +207,7 @@
 
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">1dp</item>
-        <item name="android:background">#ddd</item>
+        <item name="android:background">?attr/colorSettingDivider</item>
         <item name="android:layout_marginTop">12dp</item>
         <item name="android:layout_marginBottom">12dp</item>
     </style>
@@ -82,10 +217,12 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">1</item>
     </style>
+
     <style name="setting_wrap">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
     </style>
+
     <style name="setting_edit_text" parent="@style/setting_horizontal_stretch">
         <item name="android:imeOptions">actionDone</item>
     </style>

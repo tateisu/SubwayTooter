@@ -3,24 +3,24 @@
 
     <item android:state_pressed="true">
         <shape android:shape="rectangle">
-            <solid android:color="#FF808080" />
+            <solid android:color="?attr/colorRippleEffect" />
         </shape>
     </item>
 
     <item android:state_selected="true">
         <shape android:shape="rectangle">
-            <solid android:color="#ff000080" />
+            <solid android:color="?attr/colorButtonSelected" />
         </shape>
     </item>
 
     <item android:state_focused="true">
         <shape android:shape="rectangle">
-            <solid android:color="#ff000080" />
+            <solid android:color="?attr/colorButtonSelected" />
         </shape>
     </item>
     <item>
         <shape android:shape="rectangle">
-            <solid android:color="@color/color_column_header" />
+            <solid android:color="?attr/color_column_header" />
         </shape>
     </item>
 </selector>

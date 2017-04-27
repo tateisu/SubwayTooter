@@ -15,6 +15,7 @@ import jp.juggler.subwaytooter.util.Utils;
 public class ActOSSLicense extends AppCompatActivity{
 	@Override protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
+		App1.setActivityTheme(this,true);
 		setContentView( R.layout.act_oss_license);
 
 		try{

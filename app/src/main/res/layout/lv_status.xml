@@ -26,9 +26,7 @@
             android:layout_height="32dp"
             android:layout_marginEnd="4dp"
             android:scaleType="fitEnd"
-            android:src="@drawable/btn_boost"
             />
-
 
         <LinearLayout
             android:layout_width="0dp"
@@ -52,7 +50,7 @@
                     android:ellipsize="end"
                     android:gravity="end"
                     android:maxLines="1"
-                    android:textColor="#888888"
+                    android:textColor="?attr/colorAcctSmall"
                     android:textSize="12sp"
                     tools:text="who@hoge"
                     />
@@ -62,7 +60,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="end"
-                    android:textColor="#888888"
+                    android:textColor="?attr/colorTimeSmall"
                     android:textSize="12sp"
                     tools:text="2017-04-16 09:37:14"
                     />
@@ -119,7 +117,7 @@
                 android:id="@+id/tvFollowerAcct"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="#888888"
+                android:textColor="?attr/colorAcctSmall"
                 android:textSize="12sp"
                 tools:text="aaaaaaaaaaaaaaaa"
                 />
@@ -133,7 +131,7 @@
             android:layout_marginStart="4dp"
             android:background="@drawable/btn_bg_transparent"
             android:contentDescription="@string/follow"
-            android:src="@drawable/btn_follow"
+            android:src="?attr/ic_account_add"
             />
 
     </LinearLayout>
@@ -161,7 +159,7 @@
                 android:ellipsize="end"
                 android:gravity="end"
                 android:maxLines="1"
-                android:textColor="#888888"
+                android:textColor="?attr/colorAcctSmall"
                 android:textSize="12sp"
                 tools:text="who@hoge"
                 />
@@ -171,7 +169,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="end"
-                android:textColor="#888888"
+                android:textColor="?attr/colorTimeSmall"
                 android:textSize="12sp"
                 tools:text="2017-04-16 09:37:14"
                 />
@@ -330,7 +328,7 @@
                             android:layout_marginStart="8dp"
                             android:background="@drawable/btn_bg_transparent"
                             android:contentDescription="@string/hide"
-                            android:src="@drawable/btn_close"
+                            android:src="?attr/btn_close"
                             />
                     </LinearLayout>
 
@@ -338,10 +336,10 @@
                         android:id="@+id/btnShowMedia"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="#000"
+                        android:background="?attr/colorShowMediaBackground"
                         android:gravity="center"
                         android:text="@string/tap_to_show"
-                        android:textColor="#fff"
+                        android:textColor="?attr/colorShowMediaText"
                         />
                 </FrameLayout>
             </LinearLayout>
@@ -360,7 +358,7 @@
                     android:background="@drawable/btn_bg_transparent"
                     android:contentDescription="@string/conversation_view"
                     android:minWidth="40dp"
-                    android:src="@drawable/ic_conversation"
+                    android:src="?attr/ic_conversation"
                     />
 
                 <ImageButton
@@ -371,7 +369,7 @@
                     android:background="@drawable/btn_bg_transparent"
                     android:contentDescription="@string/reply"
                     android:minWidth="40dp"
-                    android:src="@drawable/btn_reply"
+                    android:src="?attr/btn_reply"
                     />
 
                 <Button
@@ -406,7 +404,7 @@
                     android:background="@drawable/btn_bg_transparent"
                     android:contentDescription="@string/more"
                     android:minWidth="40dp"
-                    android:src="@drawable/btn_more"
+                    android:src="?attr/btn_more"
                     />
 
             </LinearLayout>

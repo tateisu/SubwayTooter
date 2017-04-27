@@ -1,11 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#c4c4c4</color>
-    <color name="colorPrimaryDark">#303030</color>
-    <color name="colorAccent">#5a5a5a</color>
 
-    <color name="colorLink">#00a2ff</color>
-    <color name="list_item_bg_pressed_dragged">#AACCCCCC</color>
-    <color name="color_column_header">#ddd</color>
+    <color name="Light_colorImageButton">#99343434</color>
+
+    <color name="Light_colorAccent">#5a5a5a</color>
+
+    <color name="Light_colorRippleEffect">#FF808080</color>
+    <color name="Light_colorColumnListItemText">#808080</color>
+    <color name="Light_colorTimeSmall">#808080</color>
+    <color name="Light_colorAcctSmall">#808080</color>
+    <color name="Light_colorColumnHeaderAcct">#808080</color>
+    <color name="Light_colorColumnHeaderPageNumber">#808080</color>
+
+    <color name="Light_colorColumnListDragHandleBackground">#80cccccc</color>
+    <color name="Light_list_item_bg_pressed_dragged">#AACCCCCC</color>
+
+    <color name="Light_colorColumnSettingBackground">#bbb</color>
+    <color name="Light_colorSearchFormBackground">#bee6ff</color>
+
+    <color name="Light_colorPrimary">#cccccc</color>
+    <color name="Light_color_column_header">#cccccc</color>
+    <color name="Light_colorReplyBackground">#cccccc</color>
+
+    <color name="Light_colorSettingDivider">#ddd</color>
+    <color name="Light_colorProfileBackgroundMask">#C0FFFFFF</color>
+
+    <color name="Light_colorPrimaryDark">#303030</color>
+
+    <!-- 以下は白テーマでも黒テーマでもだいたい同じ -->
+    <color name="Light_colorButtonSelected">#ff000080</color>
+    <color name="Light_colorLink">#00a2ff</color>
+    <color name="Light_colorImageButtonAccent">#ff0088ff</color>
+    <color name="Light_colorShowMediaBackground">#000</color>
+    <color name="Light_colorShowMediaText">#fff</color>
+    <color name="Light_colorColumnListDeleteBackground">#FF0000</color>
+    <color name="Light_colorColumnListDeleteText">#fff</color>
+
+
+    <!-- Dark theme -->
+
+    <color name="Dark_colorImageButton">#ccFFFFFF</color>
+
+    <color name="Dark_colorAccent">#ccFFFFFF</color>
+
+    <color name="Dark_colorRippleEffect">#FF666666</color>
+    <color name="Dark_colorColumnListItemText">#666</color>
+    <color name="Dark_colorTimeSmall">#666</color>
+    <color name="Dark_colorAcctSmall">#666</color>
+    <color name="Dark_colorColumnHeaderAcct">#666</color>
+    <color name="Dark_colorColumnHeaderPageNumber">#666</color>
+
+    <color name="Dark_colorColumnListDragHandleBackground">#80444444</color>
+    <color name="Dark_list_item_bg_pressed_dragged">#AA444444</color>
+
+    <color name="Dark_colorColumnSettingBackground">#383838</color>
+    <color name="Dark_colorSearchFormBackground">#333370</color>
+
+    <color name="Dark_colorPrimary">#333</color>
+    <color name="Dark_color_column_header">#333</color>
+    <color name="Dark_colorReplyBackground">#333</color>
+
+    <color name="Dark_colorSettingDivider">#222</color>
+
+    <color name="Dark_colorProfileBackgroundMask">#C0000000</color>
+    <color name="Dark_colorBackground">#000</color>
+
+    <color name="Dark_colorPrimaryDark">#222</color>
+
+    <!-- 以下は白テーマでも黒テーマでもだいたい同じ -->
+    <color name="Dark_colorButtonSelected">#ff000080</color>
+    <color name="Dark_colorLink">#00a2ff</color>
+    <color name="Dark_colorImageButtonAccent">#ff0088ff</color>
+    <color name="Dark_colorShowMediaBackground">#222</color>
+    <color name="Dark_colorShowMediaText">#ccFFFFFF</color>
+    <color name="Dark_colorColumnListDeleteBackground">#FF0000</color>
+    <color name="Dark_colorColumnListDeleteText">#fff</color>
 
 </resources>

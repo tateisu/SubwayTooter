@@ -16,5 +16,6 @@ public class Pref {
 	public static final String KEY_BACK_BUTTON_ACTION ="back_button_action";
 	public static final String KEY_PRIOR_LOCAL_URL = "prior_local_url";
 	public static final String KEY_DISABLE_FAST_SCROLLER = "disable_fast_scroller";
+	public static final String KEY_UI_THEME = "ui_theme";
 	
 }

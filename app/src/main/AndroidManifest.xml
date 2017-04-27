@@ -12,7 +12,7 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme"
+        android:theme="@style/AppTheme.Light"
         >
         <receiver android:name=".AlarmReceiver">
             <intent-filter>
@@ -27,7 +27,7 @@
             android:name=".ActMain"
             android:label="@string/app_name"
             android:launchMode="singleTask"
-            android:theme="@style/AppTheme.NoActionBar"
+
             android:windowSoftInputMode="adjustPan|stateAlwaysHidden"
             >
             <intent-filter>
@@ -39,44 +39,44 @@
         <activity
             android:name=".ActPost"
             android:label="@string/act_post"
-            android:theme="@style/AppTheme.NoActionBar"
+
             android:windowSoftInputMode="adjustResize"
             />
 
         <activity
             android:name=".ActAccountSetting"
             android:label="@string/account_setting"
-            android:theme="@style/AppTheme"
+
             android:windowSoftInputMode="adjustResize"
             />
 
         <activity
             android:name=".ActAppSetting"
             android:label="@string/app_setting"
-            android:theme="@style/AppTheme"
+
             android:windowSoftInputMode="adjustResize"
             />
 
         <activity
             android:name=".ActColumnList"
             android:label="@string/column_list"
-            android:theme="@style/AppTheme"
+
             android:windowSoftInputMode="adjustResize"
             />
         <activity
             android:name=".ActAbout"
             android:label="@string/app_about"
-            android:theme="@style/AppTheme"
+
             />
         <activity
             android:name=".ActOSSLicense"
             android:label="@string/oss_license"
-            android:theme="@style/AppTheme"
+
             />
         <activity
             android:name=".ActOAuthCallback"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme"
+
             >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

@@ -12,7 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="end"
-        android:textColor="#888888"
+        android:textColor="?attr/colorTimeSmall"
         android:textSize="12sp"
         tools:text="xxxx-xx-xx xx:xx:xx"
         />
@@ -35,7 +35,7 @@
             android:gravity="center_horizontal"
             android:orientation="vertical"
             android:padding="12dp"
-            android:background="#C0FFFFFF"
+            android:background="?attr/colorProfileBackgroundMask"
             >
 
             <com.android.volley.toolbox.NetworkImageView
@@ -52,7 +52,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:gravity="center"
-                android:textSize="20dp"
+                android:textSize="20sp"
                 tools:text="ディスプレイネームディスプレイネームディスプレイネーム"
                 />
 
@@ -62,8 +62,9 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 tools:text="\@fugahogehogera\@jugemujyugemugokounosurikire.jp"
-                android:textColor="@color/colorLink"
+
                 android:drawablePadding="4dp"
+                android:textColor="?attr/colorLink"
                 />
 
 
@@ -117,7 +118,7 @@
             android:minWidth="48dp"
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
-            android:src="@drawable/btn_more"
+            android:src="?attr/btn_more"
             />
 
     </LinearLayout>

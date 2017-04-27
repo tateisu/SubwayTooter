@@ -24,6 +24,7 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 	@Override
 	protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
+		App1.setActivityTheme(this,false);
 		initUI();
 		pref = Pref.pref( this );
 		
@@ -36,6 +37,7 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 	Switch swDisableFastScroller;
 	
 	Spinner spBackButtonAction;
+	Spinner spUITheme;
 	
 	static final int BACK_ASK_ALWAYS =0;
 	static final int BACK_CLOSE_COLUMN =1;
@@ -56,17 +58,31 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 		swDisableFastScroller.setOnCheckedChangeListener( this );
 		
 		
-		spBackButtonAction =  (Spinner) findViewById( R.id.spBackButtonAction );
-		spBackButtonAction.setOnItemSelectedListener( this );
 		
-		String[] caption_list = new String[4];
-		caption_list[0] = getString(R.string.ask_always);
-		caption_list[1] = getString(R.string.close_column);
-		caption_list[2] = getString(R.string.open_column_list);
-		caption_list[3] = getString(R.string.app_exit);
-		ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, caption_list);
-		adapter.setDropDownViewResource( R.layout.lv_spinner_dropdown );
-		spBackButtonAction.setAdapter( adapter );
+		{
+			String[] caption_list = new String[ 4 ];
+			caption_list[ 0 ] = getString( R.string.ask_always );
+			caption_list[ 1 ] = getString( R.string.close_column );
+			caption_list[ 2 ] = getString( R.string.open_column_list );
+			caption_list[ 3 ] = getString( R.string.app_exit );
+			ArrayAdapter< String > adapter = new ArrayAdapter<>( this, android.R.layout.simple_spinner_item, caption_list );
+			adapter.setDropDownViewResource( R.layout.lv_spinner_dropdown );
+			spBackButtonAction =  (Spinner) findViewById( R.id.spBackButtonAction );
+			spBackButtonAction.setAdapter( adapter );
+			spBackButtonAction.setOnItemSelectedListener( this );
+		}
+		
+		
+		{
+			String[] caption_list = new String[ 2 ];
+			caption_list[ 0 ] = getString( R.string.theme_light );
+			caption_list[ 1 ] = getString( R.string.theme_dark );
+			ArrayAdapter< String > adapter = new ArrayAdapter<>( this, android.R.layout.simple_spinner_item, caption_list );
+			adapter.setDropDownViewResource( R.layout.lv_spinner_dropdown );
+			spUITheme =  (Spinner) findViewById( R.id.spUITheme );
+			spUITheme.setAdapter( adapter );
+			spUITheme.setOnItemSelectedListener( this );
+		}
 	}
 	
 	boolean load_busy;
@@ -77,7 +93,7 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 		swPriorLocalURL.setChecked( pref.getBoolean( Pref.KEY_PRIOR_LOCAL_URL, false ) );
 		swDisableFastScroller.setChecked( pref.getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, false ) );
 		spBackButtonAction.setSelection( pref.getInt(Pref.KEY_BACK_BUTTON_ACTION,0) );
-
+		spUITheme.setSelection( pref.getInt(Pref.KEY_UI_THEME,0) );
 		load_busy = false;
 	}
 	
@@ -88,6 +104,7 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 			.putBoolean( Pref.KEY_PRIOR_LOCAL_URL, swPriorLocalURL.isChecked() )
 			.putBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, swDisableFastScroller.isChecked() )
 			.putInt( Pref.KEY_BACK_BUTTON_ACTION, spBackButtonAction.getSelectedItemPosition() )
+			.putInt( Pref.KEY_UI_THEME, spUITheme.getSelectedItemPosition() )
 			.apply();
 	}
 	

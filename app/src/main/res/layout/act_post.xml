@@ -16,7 +16,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="#cccccc"
+            android:background="?attr/colorReplyBackground"
             android:orientation="vertical"
             android:padding="6dp"
             android:id="@+id/llReply"
@@ -58,7 +58,7 @@
                     android:layout_height="40dp"
                     android:background="@drawable/btn_bg_transparent"
                     android:gravity="center_vertical"
-                    android:src="@drawable/black_close"
+                    android:src="?attr/btn_close"
                     />
             </LinearLayout>
         </LinearLayout>
@@ -104,7 +104,7 @@
                 android:background="@drawable/btn_bg_transparent"
                 android:minHeight="48dp"
                 android:minWidth="48dp"
-                android:src="@drawable/btn_attachment"
+                android:src="?attr/btn_attachment"
                 />
 
             <ImageButton
@@ -114,7 +114,6 @@
                 android:background="@drawable/btn_bg_transparent"
                 android:minHeight="48dp"
                 android:minWidth="48dp"
-                android:src="@drawable/ic_public"
                 />
 
             <TextView
@@ -133,7 +132,7 @@
                 android:background="@drawable/btn_bg_transparent"
                 android:minHeight="48dp"
                 android:minWidth="48dp"
-                android:src="@drawable/btn_post"
+                android:src="?attr/btn_post"
                 />
         </LinearLayout>
 

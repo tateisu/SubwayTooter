@@ -21,6 +21,7 @@ public class ActAbout extends AppCompatActivity {
 	
 	@Override protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
+		App1.setActivityTheme(this,false);
 		setContentView( R.layout.act_about );
 		
 		try{

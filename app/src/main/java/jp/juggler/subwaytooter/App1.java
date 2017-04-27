@@ -1,7 +1,9 @@
 package jp.juggler.subwaytooter;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Bitmap;
@@ -39,7 +41,22 @@ public class App1 extends Application {
 		return db_open_helper.getWritableDatabase();
 	}
 	
+	public static void setActivityTheme( Activity activity ,boolean bNoActionBar ){
+		int theme_idx = pref.getInt(Pref.KEY_UI_THEME,0);
+		switch(theme_idx){
 
+		default:
+		case 0:
+			activity.setTheme( bNoActionBar ? R.style.AppTheme_Light_NoActionBar : R.style.AppTheme_Light );
+			break;
+
+		case 1:
+			activity.setTheme( bNoActionBar ? R.style.AppTheme_Dark_NoActionBar : R.style.AppTheme_Dark );
+			break;
+
+		}
+	}
+	
 	private static class DBOpenHelper extends SQLiteOpenHelper {
 		
 		DBOpenHelper( Context context ){
@@ -131,14 +148,21 @@ public class App1 extends Application {
 	
 	// public static final RelationshipMap relationship_map = new RelationshipMap();
 	
+	public static SharedPreferences pref;
+	
 	@Override
 	public void onCreate(){
 		super.onCreate();
+		
 		
 		CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
 			.setFontAttrId(R.attr.fontPath)
 			.build()
 		);
+		
+		if( pref == null ){
+			pref = Pref.pref(getApplicationContext());
+		}
 		
 		if( typeface_emoji == null ){
 			typeface_emoji = TypefaceUtils.load(getAssets(), "emojione_android.ttf");

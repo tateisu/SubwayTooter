@@ -8,11 +8,11 @@
 
         <item
             android:id="@+id/nav_account_add"
-            android:icon="@drawable/ic_account_add"
+            android:icon="?attr/ic_account_add"
             android:title="@string/account_add"/>
             <item
                 android:id="@+id/nav_account_setting"
-                android:icon="@drawable/ic_setting"
+                android:icon="?attr/ic_setting"
                 android:title="@string/account_setting"/>
         </menu>
         </item>
@@ -20,64 +20,64 @@
             <menu>
                 <item
                     android:id="@+id/nav_column_list"
-                    android:icon="@drawable/ic_list"
+                    android:icon="?attr/ic_list"
                     android:title="@string/column_list"/>
 
                 <item
                     android:id="@+id/nav_add_tl_home"
-                    android:icon="@drawable/btn_home"
+                    android:icon="?attr/btn_home"
                     android:title="@string/home"/>
                 <item
                     android:id="@+id/nav_add_notifications"
-                    android:icon="@drawable/btn_notification"
+                    android:icon="?attr/btn_notification"
                     android:title="@string/notifications"/>
 
                 <item
                     android:id="@+id/nav_add_tl_local"
-                    android:icon="@drawable/btn_local_tl"
+                    android:icon="?attr/btn_local_tl"
                     android:title="@string/local_timeline"/>
                 <item
                     android:id="@+id/nav_add_tl_federate"
-                    android:icon="@drawable/btn_federate_tl"
+                    android:icon="?attr/btn_federate_tl"
                     android:title="@string/federate_timeline"/>
 
                 <item
                     android:id="@+id/nav_add_tl_search"
-                    android:icon="@drawable/ic_search"
+                    android:icon="?attr/ic_search"
                     android:title="@string/search"/>
 
                 <item
                     android:id="@+id/nav_add_favourites"
-                    android:icon="@drawable/btn_favourite"
+                    android:icon="?attr/btn_favourite"
                     android:title="@string/favourites"/>
 
                 <item
                     android:id="@+id/nav_add_statuses"
-                    android:icon="@drawable/btn_statuses"
+                    android:icon="?attr/btn_statuses"
                     android:title="@string/your_statuses"/>
 
                 <item
                     android:id="@+id/nav_add_mutes"
-                    android:icon="@drawable/ic_mute"
+                    android:icon="?attr/ic_mute"
                     android:title="@string/muted_users"/>
                 <item
                     android:id="@+id/nav_add_blocks"
-                    android:icon="@drawable/ic_block"
+                    android:icon="?attr/ic_block"
                     android:title="@string/blocked_users"/>
 
                 <!--<item-->
                 <!--android:id="@+id/nav_add_reports"-->
-                <!--android:icon="@drawable/btn_report"-->
+                <!--android:icon="?attr/btn_report"-->
                 <!--android:title="@string/your_reports"/>-->
 
 
                 <!--<item-->
                 <!--android:id="@+id/nav_slideshow"-->
-                <!--android:icon="@drawable/ic_menu_slideshow"-->
+                <!--android:icon="?attr/ic_menu_slideshow"-->
                 <!--android:title="Slideshow"/>-->
                 <!--<item-->
                 <!--android:id="@+id/nav_manage"-->
-                <!--android:icon="@drawable/ic_menu_manage"-->
+                <!--android:icon="?attr/ic_menu_manage"-->
                 <!--android:title="Tools"/>-->
             </menu>
         </item>
@@ -86,22 +86,22 @@
 
                 <item
                     android:id="@+id/nav_app_setting"
-                    android:icon="@drawable/ic_setting"
+                    android:icon="?attr/ic_setting"
                     android:title="@string/app_setting"/>
 
                 <item
                     android:id="@+id/nav_app_about"
-                    android:icon="@drawable/ic_info"
+                    android:icon="?attr/ic_info"
                     android:title="@string/app_about"/>
 
                 <item
                     android:id="@+id/nav_oss_license"
-                    android:icon="@drawable/ic_info"
+                    android:icon="?attr/ic_info"
                     android:title="@string/oss_license"/>
 
                 <item
                     android:id="@+id/nav_app_exit"
-                    android:icon="@drawable/ic_hot_tub"
+                    android:icon="?attr/ic_hot_tub"
                     android:title="@string/app_exit"/>
             </menu>
         </item>
@@ -111,11 +111,11 @@
     <!--<menu>-->
     <!--<item-->
     <!--android:id="@+id/nav_share"-->
-    <!--android:icon="@drawable/ic_menu_share"-->
+    <!--android:icon="?attr/ic_menu_share"-->
     <!--android:title="Share"/>-->
     <!--<item-->
     <!--android:id="@+id/nav_send"-->
-    <!--android:icon="@drawable/ic_menu_send"-->
+    <!--android:icon="?attr/ic_menu_send"-->
     <!--android:title="Send"/>-->
     <!--</menu>-->
     <!--</item>-->

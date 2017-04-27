@@ -4,6 +4,7 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,7 +16,7 @@ public abstract class Emojione
 	private static final Pattern SHORTNAME_PATTERN = Pattern.compile(":([-+\\w]+):");
 	
 	public static final HashMap<String,String> map_name2unicode = EmojiMap._shortNameToUnicode;
-	public static final HashMap<String,String> map_unicode2name = EmojiMap._unicodeToShortName;
+	public static final HashSet<String> set_unicode = EmojiMap._unicode_set;
 
 	static class DecodeEnv{
 		SpannableStringBuilder sb = new SpannableStringBuilder();
@@ -45,46 +46,36 @@ public abstract class Emojione
 			int end = s.length();
 			while( i < end ){
 				int remain = end - i;
-				if( remain >= 4 ){
-					String check = s.substring( i, i + 4 );
-					if( map_unicode2name.containsKey( check ) ){
-						addEmoji( check );
-						i += 4;
-						continue;
-					}
+				String emoji = null;
+				for(int j = EmojiMap.max_length; j>0;--j ){
+					if( j > remain ) continue;
+					String check = s.substring( i, i + j );
+					if( ! set_unicode.contains( check ) ) continue;
+					emoji = check;
+					break;
 				}
-				if( remain >= 3 ){
-					String check = s.substring( i, i + 3 );
-					if( map_unicode2name.containsKey( check ) ){
-						addEmoji( check );
-						i += 3;
-						continue;
-					}
-				}
-				if( remain >= 2 ){
-					String check = s.substring( i, i + 2 );
-					if( map_unicode2name.containsKey( check ) ){
-						addEmoji( check );
-						i += 2;
-						continue;
-					}
-				}
-				if( remain >= 1 ){
-					String check = s.substring( i, i + 1 );
-					if( map_unicode2name.containsKey( check ) ){
-						addEmoji( check );
-						i += 1;
-						continue;
-					}
+				if( emoji != null ){
+					addEmoji( emoji );
+					i += emoji.length();
+					continue;
 				}
 				closeSpan();
-				sb.append( s.charAt( i ) );
-				++ i;
+				int length = Character.charCount(  s.codePointAt( i ) );
+				if( length == 1){
+					sb.append( s.charAt( i ) );
+					++ i;
+				}else{
+					sb.append( s.substring( i,i+length ));
+					i+= length;
+				}
 			}
 		}
 	}
 	
 	public static CharSequence decodeEmoji( String s ){
+
+		
+
 		DecodeEnv decode_env = new DecodeEnv();
 		Matcher matcher = SHORTNAME_PATTERN.matcher(s);
 		int last_end = 0;
@@ -103,13 +94,13 @@ public abstract class Emojione
 				decode_env.addEmoji( unicode );
 			}
 		}
-		// close span
-		decode_env.closeSpan();
 		// copy remain
 		int end = s.length();
 		if( end > last_end ){
 			decode_env.addUnicodeString(s.substring( last_end, end ));
 		}
+		// close span
+		decode_env.closeSpan();
 		return decode_env.sb;
 	}
 }

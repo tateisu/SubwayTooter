@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jp.juggler.subwaytooter.BuildConfig;
 import jp.juggler.subwaytooter.api.entity.TootMention;
 
 public class HTMLDecoder {
@@ -207,6 +208,10 @@ public class HTMLDecoder {
 		}
 	}
 	
+	private static boolean isWhitespace( char c ){
+		return Character.isWhitespace( c ) || c == 0x0a || c == 0x0d;
+	}
+	
 	public static SpannableStringBuilder decodeHTML( LinkClickContext account, String src ){
 		try{
 			TokenParser tracker = new TokenParser( src );
@@ -217,7 +222,7 @@ public class HTMLDecoder {
 			
 			rootNode.encodeSpan( account, sb );
 			int end = sb.length();
-			while( end > 0 && Character.isWhitespace( sb.charAt( end - 1 ) ) ) -- end;
+			while( end > 0 && isWhitespace( sb.charAt( end - 1 ) ) ) -- end;
 			if( end < sb.length() ){
 				sb.delete( end, sb.length() );
 			}

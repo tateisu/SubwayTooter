@@ -120,6 +120,11 @@ public class ActColumnList extends AppCompatActivity {
 				// 左にスワイプした(右端に青が見えた) なら要素を削除する
 				if( swipedDirection == ListSwipeItem.SwipeDirection.LEFT ){
 					MyItem adapterItem = (MyItem) item.getTag();
+					if( adapterItem.json.optBoolean( Column.KEY_DONT_CLOSE,false )){
+						Utils.showToast( ActColumnList.this,false,R.string.column_has_dont_close_option );
+						listView.resetSwipedViews(null);
+						return;
+					}
 					listAdapter.removeItem( listAdapter.getPositionForItem( adapterItem ) );
 				}
 			}
@@ -218,6 +223,10 @@ public class ActColumnList extends AppCompatActivity {
 				, true // 長押しでドラッグ開始するなら真
 			);
 			
+			ivBookmark = viewRoot.findViewById( R.id.ivBookmark );
+			tvAccess = (TextView) viewRoot.findViewById( R.id.tvAccess );
+			tvName = (TextView) viewRoot.findViewById( R.id.tvName );
+			
 			// リスト要素のビューが ListSwipeItem だった場合、Swipe操作を制御できる
 			if( viewRoot instanceof ListSwipeItem ){
 				ListSwipeItem lsi = (ListSwipeItem) viewRoot;
@@ -225,12 +234,11 @@ public class ActColumnList extends AppCompatActivity {
 				lsi.setSupportedSwipeDirection( ListSwipeItem.SwipeDirection.LEFT );
 			}
 			
-			ivBookmark = viewRoot.findViewById( R.id.ivBookmark );
-			tvAccess = (TextView) viewRoot.findViewById( R.id.tvAccess );
-			tvName = (TextView) viewRoot.findViewById( R.id.tvName );
 		}
 		
 		void bind( MyItem item ){
+			
+			
 			itemView.setTag( item ); // itemView は親クラスのメンバ変数
 			ivBookmark.setVisibility( item.bOldSelection ? View.VISIBLE: View.INVISIBLE );
 			tvAccess.setText( item.access );

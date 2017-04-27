@@ -76,11 +76,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 	private CheckBox cbResolve;
 	private View llColumnSetting;
 	
-	
 	void onPageCreate( View root, int page_idx, int page_count ){
 		log.d( "onPageCreate:%s", column.getColumnName( true ) );
-		
-		
 		
 		( (TextView) root.findViewById( R.id.tvColumnIndex ) )
 			.setText( activity.getString( R.string.column_index, page_idx + 1, page_count ) );
@@ -108,10 +105,10 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		
 		listView.setFastScrollEnabled( ! Pref.pref( activity ).getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, false ) );
 		
-		boolean bAllowColumnSetting;
+		boolean bAllowMediaOnly;
 		switch( column.type ){
 		default:
-			bAllowColumnSetting = true;
+			bAllowMediaOnly = true;
 			break;
 		case Column.TYPE_SEARCH:
 		case Column.TYPE_CONVERSATION:
@@ -119,22 +116,23 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		case Column.TYPE_BLOCKS:
 		case Column.TYPE_MUTES:
 		case Column.TYPE_NOTIFICATIONS:
-			bAllowColumnSetting = false;
+			bAllowMediaOnly = false;
 			break;
 		}
 		View btnColumnSetting = root.findViewById( R.id.btnColumnSetting );
 		llColumnSetting = root.findViewById( R.id.llColumnSetting );
-		if( ! bAllowColumnSetting ){
-			btnColumnSetting.setVisibility( View.GONE );
-			llColumnSetting.setVisibility( View.GONE );
-		}else{
-			btnColumnSetting.setVisibility( View.VISIBLE );
-			btnColumnSetting.setOnClickListener( this );
-			llColumnSetting.setVisibility( View.GONE );
-			CheckBox cbWithAttachment = (CheckBox) root.findViewById( R.id.cbWithAttachment );
-			cbWithAttachment.setChecked( column.with_attachment );
-			cbWithAttachment.setOnCheckedChangeListener( this );
-		}
+		btnColumnSetting.setVisibility( View.VISIBLE );
+		btnColumnSetting.setOnClickListener( this );
+		llColumnSetting.setVisibility( View.GONE );
+		
+		CheckBox cbWithAttachment = (CheckBox) root.findViewById( R.id.cbWithAttachment );
+		cbWithAttachment.setChecked( column.with_attachment );
+		cbWithAttachment.setOnCheckedChangeListener( this );
+		cbWithAttachment.setEnabled( bAllowMediaOnly );
+		
+		CheckBox cbDontCloseColumn = (CheckBox) root.findViewById( R.id.cbDontCloseColumn );
+		cbDontCloseColumn.setChecked( column.dont_close );
+		cbDontCloseColumn.setOnCheckedChangeListener( this );
 		
 		if( column.type != Column.TYPE_SEARCH ){
 			llSearch.setVisibility( View.GONE );
@@ -173,11 +171,18 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 	
 	@Override public void onCheckedChanged( CompoundButton view, boolean isChecked ){
 		switch( view.getId() ){
+		
 		case R.id.cbWithAttachment:
 			column.with_attachment = isChecked;
 			activity.saveColumnList();
 			column.reload();
 			break;
+		
+		case R.id.cbDontCloseColumn:
+			column.dont_close = isChecked;
+			activity.saveColumnList();
+			break;
+			
 		}
 	}
 	
@@ -281,7 +286,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			swipyRefreshLayout.setVisibility( View.VISIBLE );
 			status_adapter.set( column.list_data );
 			if( column.scroll_hack > 0 ){
-				listView.setSelectionFromTop( column.scroll_hack-1,-(int)(0.5f + 80f * activity.density ));
+				listView.setSelectionFromTop( column.scroll_hack - 1, - (int) ( 0.5f + 80f * activity.density ) );
 				column.scroll_hack = 0;
 			}
 		}

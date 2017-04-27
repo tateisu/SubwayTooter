@@ -168,4 +168,6 @@
     <string name="send_header_from_name">From-Name</string>
     <string name="send_header_content_warning">Content-Warning</string>
     <string name="send_header_url">Status-URL</string>
+    <string name="dont_close_column">don\'t close column</string>
+    <string name="column_has_dont_close_option">this column has \'dont close\' option.</string>
 </resources>

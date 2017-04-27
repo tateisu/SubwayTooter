@@ -631,6 +631,11 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	public void performColumnClose( boolean bConfirm, final Column column ){
+		if( column.dont_close){
+			Utils.showToast( this,false,R.string.column_has_dont_close_option );
+			return;
+		}
+
 		if( ! bConfirm && ! pref.getBoolean( Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN, false ) ){
 			new AlertDialog.Builder( this )
 				.setMessage( R.string.confirm_close_column )

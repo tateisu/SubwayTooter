@@ -169,4 +169,6 @@
     <string name="send_header_from_name">From-Name</string>
     <string name="send_header_content_warning">Content-Warning</string>
     <string name="send_header_url">Status-URL</string>
+    <string name="column_has_dont_close_option">保護されたカラムは閉じられません</string>
+    <string name="dont_close_column">保護(閉じることができない)</string>
 </resources>

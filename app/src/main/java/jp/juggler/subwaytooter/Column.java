@@ -73,6 +73,9 @@ class Column {
 	private static final String KEY_ACCOUNT_ROW_ID = "account_id";
 	private static final String KEY_TYPE = "type";
 	private static final String KEY_WITH_ATTACHMENT = "with_attachment";
+	static final String KEY_DONT_CLOSE = "dont_close";
+
+
 	private static final String KEY_PROFILE_ID = "profile_id";
 	private static final String KEY_PROFILE_TAB = "tab";
 	private static final String KEY_STATUS_ID = "status_id";
@@ -103,6 +106,7 @@ class Column {
 	final int type;
 	
 	boolean with_attachment;
+	boolean dont_close;
 	
 	private long profile_id;
 	volatile TootAccount who_account;
@@ -153,6 +157,7 @@ class Column {
 		item.put( KEY_ACCOUNT_ROW_ID, access_info.db_id );
 		item.put( KEY_TYPE, type );
 		item.put( KEY_WITH_ATTACHMENT, with_attachment );
+		item.put( KEY_DONT_CLOSE, dont_close );
 		
 		switch( type ){
 		case TYPE_CONVERSATION:
@@ -185,6 +190,7 @@ class Column {
 		this.access_info = ac;
 		this.type = src.optInt( KEY_TYPE );
 		this.with_attachment = src.optBoolean( KEY_WITH_ATTACHMENT );
+		this.dont_close = src.optBoolean( KEY_DONT_CLOSE );
 		
 		switch( type ){
 		

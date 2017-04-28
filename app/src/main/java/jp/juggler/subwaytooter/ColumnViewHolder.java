@@ -505,8 +505,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				btnFollowers.setText( activity.getString( R.string.followers ) + "\n" + "?" );
 			}else{
 				tvCreated.setText( TootStatus.formatTime( who.time_created_at ) );
-				ivBackground.setImageUrl( who.header_static, App1.getImageLoader() );
-				ivAvatar.setImageUrl( who.avatar_static, App1.getImageLoader() );
+				ivBackground.setImageUrl(  access_info.supplyBaseUrl(who.header_static), App1.getImageLoader() );
+				ivAvatar.setImageUrl( access_info.supplyBaseUrl(who.avatar_static), App1.getImageLoader() );
 				tvDisplayName.setText( who.display_name );
 				
 				String s = access_info.getFullAcct( who );
@@ -820,7 +820,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		private void showFollow( TootAccount who ){
 			account_follow = who;
 			llFollow.setVisibility( View.VISIBLE );
-			ivFollow.setImageUrl( who.avatar_static, App1.getImageLoader() );
+			ivFollow.setImageUrl( access_info.supplyBaseUrl(who.avatar_static), App1.getImageLoader() );
 			tvFollowerName.setText( who.display_name );
 			tvFollowerAcct.setText( access_info.getFullAcct( who ) );
 			
@@ -836,7 +836,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			tvTime.setText( TootStatus.formatTime( status.time_created_at ) );
 			
 			tvName.setText( status.account.display_name );
-			ivThumbnail.setImageUrl( status.account.avatar_static, App1.getImageLoader() );
+			ivThumbnail.setImageUrl( access_info.supplyBaseUrl(status.account.avatar_static), App1.getImageLoader() );
 			tvContent.setText( status.decoded_content );
 
 //			if( status.decoded_tags == null ){
@@ -923,7 +923,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				TootAttachment ta = status.media_attachments.get( idx );
 				String url = ta.preview_url;
 				if( TextUtils.isEmpty( url ) ) url = ta.remote_url;
-				iv.setImageUrl( url, App1.getImageLoader() );
+				iv.setImageUrl( access_info.supplyBaseUrl(url), App1.getImageLoader() );
 			}
 		}
 		

@@ -35,7 +35,7 @@ import jp.juggler.subwaytooter.util.Utils;
 
 class Column {
 	private static final LogCategory log = new LogCategory( "Column" );
-
+	
 	private static Object getParamAt( Object[] params, int idx ){
 		if( params == null || idx >= params.length ){
 			throw new IndexOutOfBoundsException( "getParamAt idx=" + idx );
@@ -45,6 +45,7 @@ class Column {
 	
 	private static final int READ_LIMIT = 80; // API側の上限が80です
 	private static final long LOOP_TIMEOUT = 10000L;
+	private static final int LOOP_READ_ENOUGH = 50;
 	
 	// ステータスのリストを返すAPI
 	private static final String PATH_HOME = "/api/v1/timelines/home?limit=" + READ_LIMIT;
@@ -77,9 +78,7 @@ class Column {
 	private static final String KEY_DONT_SHOW_BOOST = "dont_show_boost";
 	private static final String KEY_DONT_SHOW_REPLY = "dont_show_reply";
 	private static final String KEY_REGEX_TEXT = "regex_text";
-
-
-
+	
 	private static final String KEY_PROFILE_ID = "profile_id";
 	private static final String KEY_PROFILE_TAB = "tab";
 	private static final String KEY_STATUS_ID = "status_id";
@@ -110,12 +109,11 @@ class Column {
 	final int type;
 	
 	boolean dont_close;
-
+	
 	boolean with_attachment;
 	boolean dont_show_boost;
 	boolean dont_show_reply;
 	String regex_text;
-	
 	
 	private long profile_id;
 	volatile TootAccount who_account;
@@ -205,7 +203,7 @@ class Column {
 		this.with_attachment = src.optBoolean( KEY_WITH_ATTACHMENT );
 		this.dont_show_boost = src.optBoolean( KEY_DONT_SHOW_BOOST );
 		this.dont_show_reply = src.optBoolean( KEY_DONT_SHOW_REPLY );
-		this.regex_text = Utils.optStringX(src, KEY_REGEX_TEXT);
+		this.regex_text = Utils.optStringX( src, KEY_REGEX_TEXT );
 		
 		switch( type ){
 		
@@ -329,7 +327,6 @@ class Column {
 			}
 		}
 	}
-	
 	
 	interface StatusEntryCallback {
 		void onIterate( TootStatus status );
@@ -526,12 +523,12 @@ class Column {
 	
 	private boolean isFiltered(){
 		return ( with_attachment
-			||  dont_show_boost
+			|| dont_show_boost
 			|| dont_show_reply
-			|| !TextUtils.isEmpty( regex_text )
-			);
+			|| ! TextUtils.isEmpty( regex_text )
+		);
 	}
-
+	
 	private void addWithFilter( ArrayList< Object > dst, TootStatus.List src ){
 		if( ! isFiltered() ){
 			dst.addAll( src );
@@ -554,8 +551,8 @@ class Column {
 			}
 			if( dont_show_reply ){
 				if( status.in_reply_to_id != null
-					|| ( status.reblog != null &&  status.reblog.in_reply_to_id != null )
-				) continue;
+					|| ( status.reblog != null && status.reblog.in_reply_to_id != null )
+					) continue;
 			}
 			if( pattern != null ){
 				if( status.reblog != null ){
@@ -601,27 +598,49 @@ class Column {
 					//
 					TootStatus.List src = TootStatus.parseList( log, access_info, result.array );
 					list_tmp = new ArrayList<>( src.size() );
-					addWithFilter(list_tmp,src);
+					addWithFilter( list_tmp, src );
 					//
 					char delimiter = ( - 1 != path_base.indexOf( '?' ) ? '&' : '?' );
-					while( isFiltered() && max_id != null && list_tmp.size() < 50 ){
-						if( client.isCancelled() ) break;
+					for( ; ; ){
+						if( client.isCancelled() ){
+							log.d( "loading-statuses: cancelled." );
+							break;
+						}
+						if( ! isFiltered() ){
+							log.d( "loading-statuses: isFiltered is false." );
+							break;
+						}
+						if( max_id == null ){
+							log.d( "loading-statuses: max_id is null." );
+							break;
+						}
+						if( list_tmp.size() >= LOOP_READ_ENOUGH ){
+							log.d( "loading-statuses: read enough data." );
+							break;
+						}
 						if( src.isEmpty() ){
-							// 直前のリクエストが空のリストを返したら諦める
+							log.d( "loading-statuses: previous response is empty." );
 							break;
 						}
 						if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
-							// タイムアウト
+							log.d( "loading-statuses: timeout." );
 							break;
 						}
 						String path = path_base + delimiter + "max_id=" + max_id;
 						TootApiResult result2 = client.request( path );
-						if( result2 == null || result2.array == null ) break;
-						if( ! saveRangeEnd( result2 ) ) break;
+						if( result2 == null || result2.array == null ){
+							log.d( "loading-statuses: error or cancelled." );
+							break;
+						}
 						
 						src = TootStatus.parseList( log, access_info, result2.array );
 						
-						addWithFilter(list_tmp,src);
+						addWithFilter( list_tmp, src );
+						
+						if( ! saveRangeEnd( result2 ) ){
+							log.d( "loading-statuses: missing range info." );
+							break;
+						}
 					}
 				}
 				return result;
@@ -827,38 +846,24 @@ class Column {
 	int scroll_hack;
 	
 	private void saveRange( TootApiResult result, boolean bBottom, boolean bTop ){
-		// Link:  <https://mastodon.juggler.jp/api/v1/timelines/home?limit=XX&max_id=405228>; rel="next",
-		//        <https://mastodon.juggler.jp/api/v1/timelines/home?limit=XX&since_id=436946>; rel="prev"
-		
-		if( result.response != null ){
-			String sv = result.response.header( "Link" );
-			if( ! TextUtils.isEmpty( sv ) ){
-				if( bBottom ){
-					Matcher m = reMaxId.matcher( sv );
-					if( m.find() ){
-						max_id = m.group( 1 );
-						//log.d( "col=%s,max_id=%s", this.hashCode(), max_id );
-					}
-				}
-				if( bTop ){
-					Matcher m = reSinceId.matcher( sv );
-					if( m.find() ){
-						since_id = m.group( 1 );
-						//log.d( "col=%s,since_id=%s", this.hashCode(), since_id );
-					}
-				}
+		if( result != null ){
+			if( bBottom && result.link_older != null ){
+				Matcher m = reMaxId.matcher( result.link_older );
+				if( m.find() ) max_id = m.group( 1 );
+			}
+			if( bTop && result.link_newer != null ){
+				Matcher m = reSinceId.matcher( result.link_newer );
+				if( m.find() ) since_id = m.group( 1 );
 			}
 		}
 	}
 	
 	private boolean saveRangeEnd( TootApiResult result ){
-		if( result.response != null ){
-			String sv = result.response.header( "Link" );
-			if( ! TextUtils.isEmpty( sv ) ){
-				Matcher m = reMaxId.matcher( sv );
+		if( result != null ){
+			if( result.link_older != null ){
+				Matcher m = reMaxId.matcher( result.link_older );
 				if( m.find() ){
 					max_id = m.group( 1 );
-					//log.d( "col=%s,max_id=%s", this.hashCode(), max_id );
 					return true;
 				}
 			}
@@ -910,6 +915,11 @@ class Column {
 					list_tmp.addAll( src );
 					if( ! bBottom ){
 						for( ; ; ){
+							if( isCancelled() ){
+								log.d( "refresh-account-top: cancelled." );
+								break;
+							}
+							
 							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
 							// 直前のデータが0個なら終了とみなすしかなさそう
 							if( src.isEmpty() ){
@@ -921,6 +931,7 @@ class Column {
 							String max_id = Long.toString( src.get( src.size() - 1 ).id );
 							
 							if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
+								log.d( "refresh-account-top: timeout. make gap." );
 								// タイムアウト
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								TootGap gap = new TootGap( max_id, last_since_id );
@@ -931,6 +942,7 @@ class Column {
 							String path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id;
 							TootApiResult result2 = client.request( path );
 							if( result2 == null || result2.array == null ){
+								log.d( "refresh-account-top: error or cancelled. make gap." );
 								// エラー
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								TootGap gap = new TootGap( max_id, last_since_id );
@@ -958,6 +970,11 @@ class Column {
 					list_tmp.addAll( src );
 					if( ! bBottom ){
 						for( ; ; ){
+							if( isCancelled() ){
+								log.d( "refresh-report-top: cancelled." );
+								break;
+							}
+							
 							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
 							// 直前のデータが0個なら終了とみなすしかなさそう
 							if( src.isEmpty() ){
@@ -969,6 +986,7 @@ class Column {
 							String max_id = Long.toString( src.get( src.size() - 1 ).id );
 							
 							if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
+								log.d( "refresh-report-top: timeout. make gap." );
 								// タイムアウト
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								TootGap gap = new TootGap( max_id, last_since_id );
@@ -979,6 +997,7 @@ class Column {
 							String path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id;
 							TootApiResult result2 = client.request( path );
 							if( result2 == null || result2.array == null ){
+								log.d( "refresh-report-top: timeout. error or retry. make gap." );
 								// エラー
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								TootGap gap = new TootGap( max_id, last_since_id );
@@ -1012,6 +1031,11 @@ class Column {
 					
 					if( ! bBottom ){
 						for( ; ; ){
+							if( isCancelled() ){
+								log.d( "refresh-notification-top: cancelled." );
+								break;
+							}
+							
 							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
 							// 直前のデータが0個なら終了とみなすしかなさそう
 							if( src.isEmpty() ){
@@ -1023,6 +1047,7 @@ class Column {
 							String max_id = Long.toString( src.get( src.size() - 1 ).id );
 							
 							if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
+								log.d( "refresh-notification-top: timeout. make gap." );
 								// タイムアウト
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								TootGap gap = new TootGap( max_id, last_since_id );
@@ -1033,6 +1058,7 @@ class Column {
 							String path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id;
 							TootApiResult result2 = client.request( path );
 							if( result2 == null || result2.array == null ){
+								log.d( "refresh-notification-top: error or cancelled. make gap." );
 								// エラー
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								TootGap gap = new TootGap( max_id, last_since_id );
@@ -1065,16 +1091,31 @@ class Column {
 					TootStatus.List src = TootStatus.parseList( log, access_info, result.array );
 					list_tmp = new ArrayList<>();
 					
-					addWithFilter(list_tmp,src);
+					addWithFilter( list_tmp, src );
 					
 					if( bBottom ){
-						while( list_tmp.size() < 50 ){
-							if( client.isCancelled() ) break;
+						for( ; ; ){
+							if( isCancelled() ){
+								log.d( "refresh-status-bottom: cancelled." );
+								break;
+							}
+							
+							// bottomの場合、フィルタなしなら繰り返さない
+							if( ! isFiltered() ){
+								log.d( "refresh-status-bottom: isFiltered is false." );
+								break;
+							}
 							
 							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
 							// 直前のデータが0個なら終了とみなすしかなさそう
 							if( src.isEmpty() ){
 								log.d( "refresh-status-bottom: previous size == 0." );
+								break;
+							}
+							
+							// 十分読んだらそれで終了
+							if( list_tmp.size() >= LOOP_READ_ENOUGH ){
+								log.d( "refresh-status-bottom: read enough data." );
 								break;
 							}
 							
@@ -1093,7 +1134,7 @@ class Column {
 							
 							src = TootStatus.parseList( log, access_info, result2.array );
 							
-							addWithFilter(list_tmp,src);
+							addWithFilter( list_tmp, src );
 							
 							if( ! saveRangeEnd( result2 ) ){
 								log.d( "refresh-status-bottom: saveRangeEnd failed." );
@@ -1101,9 +1142,13 @@ class Column {
 							}
 						}
 					}else{
-						// 頭の方を読む時は隙間を減らすため、フィルタの有無に関係なく繰り返しを行う
-						while( list_tmp.size() < 50 ){
-							if( client.isCancelled() ) break;
+						for( ; ; ){
+							if( isCancelled() ){
+								log.d( "refresh-status-top: cancelled." );
+								break;
+							}
+							
+							// 頭の方を読む時は隙間を減らすため、フィルタの有無に関係なく繰り返しを行う
 							
 							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
 							// 直前のデータが0個なら終了とみなすしかなさそう
@@ -1115,7 +1160,16 @@ class Column {
 							// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
 							String max_id = Long.toString( src.get( src.size() - 1 ).id );
 							
+							if( list_tmp.size() >= LOOP_READ_ENOUGH ){
+								log.d( "refresh-status-top: read enough. make gap." );
+								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
+								TootGap gap = new TootGap( max_id, last_since_id );
+								list_tmp.add( gap );
+								break;
+							}
+							
 							if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
+								log.d( "refresh-status-top: timeout. make gap." );
 								// タイムアウト
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								TootGap gap = new TootGap( max_id, last_since_id );
@@ -1126,6 +1180,7 @@ class Column {
 							String path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id;
 							TootApiResult result2 = client.request( path );
 							if( result2 == null || result2.array == null ){
+								log.d( "refresh-status-top: error or cancelled. make gap." );
 								// エラー
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								TootGap gap = new TootGap( max_id, last_since_id );
@@ -1134,7 +1189,7 @@ class Column {
 							}
 							
 							src = TootStatus.parseList( log, access_info, result2.array );
-							addWithFilter( list_tmp,src );
+							addWithFilter( list_tmp, src );
 						}
 					}
 				}
@@ -1198,7 +1253,7 @@ class Column {
 					case TAB_STATUS:
 						String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
 						if( with_attachment ) s = s + "&only_media=1";
-						return getStatusList( client,s );
+						return getStatusList( client, s );
 					
 					case TAB_FOLLOWING:
 						return getAccountList( client,
@@ -1314,7 +1369,13 @@ class Column {
 				
 				TootApiResult result = null;
 				for( ; ; ){
+					if( isCancelled() ){
+						log.d( "gap-account: cancelled." );
+						break;
+					}
+					
 					if( result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
+						log.d( "gap-account: timeout. make gap." );
 						// タイムアウト
 						// 隙間が残る
 						list_tmp.add( new TootGap( max_id, since_id ) );
@@ -1324,7 +1385,10 @@ class Column {
 					String path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + since_id;
 					TootApiResult r2 = client.request( path );
 					if( r2 == null || r2.array == null ){
+						log.d( "gap-account: error timeout. make gap." );
+						
 						if( result == null ) result = r2;
+						
 						// 隙間が残る
 						list_tmp.add( new TootGap( max_id, since_id ) );
 						break;
@@ -1333,13 +1397,15 @@ class Column {
 					TootAccount.List src = TootAccount.parseList( log, access_info, r2.array );
 					
 					if( src.isEmpty() ){
+						log.d( "gap-account: empty." );
 						break;
 					}
+					
+					list_tmp.addAll( src );
 					
 					// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
 					max_id = Long.toString( src.get( src.size() - 1 ).id );
 					
-					list_tmp.addAll( src );
 				}
 				return result;
 			}
@@ -1351,7 +1417,13 @@ class Column {
 				
 				TootApiResult result = null;
 				for( ; ; ){
+					if( isCancelled() ){
+						log.d( "gap-report: cancelled." );
+						break;
+					}
+					
 					if( result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
+						log.d( "gap-report: timeout. make gap." );
 						// タイムアウト
 						// 隙間が残る
 						list_tmp.add( new TootGap( max_id, since_id ) );
@@ -1361,6 +1433,7 @@ class Column {
 					String path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + since_id;
 					TootApiResult r2 = client.request( path );
 					if( r2 == null || r2.array == null ){
+						log.d( "gap-report: error or cancelled. make gap." );
 						if( result == null ) result = r2;
 						// 隙間が残る
 						list_tmp.add( new TootGap( max_id, since_id ) );
@@ -1370,14 +1443,15 @@ class Column {
 					result = r2;
 					TootReport.List src = TootReport.parseList( log, r2.array );
 					if( src.isEmpty() ){
+						log.d( "gap-report: empty." );
 						// コレ以上取得する必要はない
 						break;
 					}
 					
+					list_tmp.addAll( src );
+					
 					// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
 					max_id = Long.toString( src.get( src.size() - 1 ).id );
-					
-					list_tmp.addAll( src );
 				}
 				return result;
 			}
@@ -1389,7 +1463,13 @@ class Column {
 				
 				TootApiResult result = null;
 				for( ; ; ){
+					if( isCancelled() ){
+						log.d( "gap-notification: cancelled." );
+						break;
+					}
+					
 					if( result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
+						log.d( "gap-notification: timeout. make gap." );
 						// タイムアウト
 						// 隙間が残る
 						list_tmp.add( new TootGap( max_id, since_id ) );
@@ -1399,7 +1479,7 @@ class Column {
 					TootApiResult r2 = client.request( path );
 					if( r2 == null || r2.array == null ){
 						// エラー
-						log.d( "gap-notification: got error." );
+						log.d( "gap-notification: error or response. make gap." );
 						
 						if( result == null ) result = r2;
 						
@@ -1412,7 +1492,7 @@ class Column {
 					TootNotification.List src = TootNotification.parseList( log, access_info, r2.array );
 					
 					if( src.isEmpty() ){
-						log.d( "gap-notification: got empty list." );
+						log.d( "gap-notification: empty." );
 						break;
 					}
 					
@@ -1434,9 +1514,13 @@ class Column {
 				
 				TootApiResult result = null;
 				for( ; ; ){
-					if( client.isCancelled() ) break;
+					if( isCancelled() ){
+						log.d( "gap-statuses: cancelled." );
+						break;
+					}
 					
 					if( result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
+						log.d( "gap-statuses: timeout." );
 						// タイムアウト
 						// 隙間が残る
 						list_tmp.add( new TootGap( max_id, since_id ) );
@@ -1447,8 +1531,7 @@ class Column {
 					
 					TootApiResult r2 = client.request( path );
 					if( r2 == null || r2.array == null ){
-						// エラー
-						log.d( "gap-status: got error." );
+						log.d( "gap-statuses: error or cancelled. make gap." );
 						
 						// 成功データがない場合だけ、今回のエラーを返すようにする
 						if( result == null ) result = r2;
@@ -1465,13 +1548,13 @@ class Column {
 					TootStatus.List src = TootStatus.parseList( log, access_info, r2.array );
 					if( src.size() == 0 ){
 						// 直前の取得でカラのデータが帰ってきたら終了
-						log.d( "gap-status: got empty list." );
+						log.d( "gap-statuses: empty." );
 						break;
 					}
 					// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
 					max_id = Long.toString( src.get( src.size() - 1 ).id );
 					
-					addWithFilter( list_tmp,src );
+					addWithFilter( list_tmp, src );
 				}
 				return result;
 			}
@@ -1532,9 +1615,9 @@ class Column {
 					
 					default:
 					case TAB_STATUS:
-						String s =String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
+						String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
 						if( with_attachment ) s = s + "&only_media=1";
-						return getStatusList( client,s );
+						return getStatusList( client, s );
 					
 					case TAB_FOLLOWING:
 						return getAccountList( client,
@@ -1628,7 +1711,7 @@ class Column {
 		
 		fireVisualCallback();
 		
-		AlarmService.dataRemoved(activity,access_info.db_id);
+		AlarmService.dataRemoved( activity, access_info.db_id );
 	}
-
+	
 }

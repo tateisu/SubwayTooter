@@ -129,7 +129,7 @@ public class TootApiClient {
 				return new TootApiResult( context.getString( R.string.response_not_json ) + "\n" + json );
 			}else if( json.startsWith( "[" ) ){
 				JSONArray array = new JSONArray( json );
-				return new TootApiResult( response, token_info, json, array );
+				return new TootApiResult( log,response, token_info, json, array );
 			}else{
 				JSONObject object = new JSONObject( json );
 				
@@ -320,7 +320,7 @@ public class TootApiClient {
 				return new TootApiResult( context.getString( R.string.response_not_json ) + "\n" + json );
 			}else if( json.startsWith( "[" ) ){
 				JSONArray array = new JSONArray( json );
-				return new TootApiResult( response, token_info, json, array );
+				return new TootApiResult( log,response, token_info, json, array );
 			}else{
 				JSONObject object = new JSONObject( json );
 				

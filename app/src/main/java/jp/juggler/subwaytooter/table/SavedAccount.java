@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -260,5 +261,11 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		//
 		return this_user.equals( who_acct.substring( 0, pos ) )
 			&& this.host.equalsIgnoreCase( who_acct.substring( pos + 1 ) );
+	}
+	
+	public String supplyBaseUrl( String url ){
+		if( TextUtils.isEmpty(url)) return url;
+		if( url.charAt( 0 )=='/') return "https://"+host+url;
+		return url;
 	}
 }

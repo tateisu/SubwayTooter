@@ -181,4 +181,6 @@
     <string name="confirm_delete_notification">This will empty your notification on your instance.\nAre you sure?</string>
     <string name="search_for">Search %1$s</string>
     <string name="spoil_visibility_for_account">Visibility is spoiled for account.</string>
+    <string name="contributor">contributor</string>
+    <string name="thanks_for">Thanks for %1$s</string>
 </resources>

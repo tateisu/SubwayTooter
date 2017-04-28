@@ -196,12 +196,20 @@ public class ActMain extends AppCompatActivity
 	@Override
 	public void onBackPressed(){
 		
+		// メニューが開いていたら閉じる
 		DrawerLayout drawer = (DrawerLayout) findViewById( R.id.drawer_layout );
 		if( drawer.isDrawerOpen( GravityCompat.START ) ){
 			drawer.closeDrawer( GravityCompat.START );
 			return;
 		}
 		
+		// カラムが0個ならアプリを終了する
+		if( pager_adapter.getCount() == 0 ){
+			ActMain.this.finish();
+			return;
+		}
+		
+		// カラムが1個以上ある場合は設定に合わせて挙動を変える
 		switch( pref.getInt( Pref.KEY_BACK_BUTTON_ACTION, 0 ) ){
 		default:
 		case ActAppSetting.BACK_ASK_ALWAYS:

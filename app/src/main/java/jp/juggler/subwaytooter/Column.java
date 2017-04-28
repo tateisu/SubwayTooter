@@ -43,9 +43,9 @@ class Column {
 		return params[ idx ];
 	}
 	
-	private static final int READ_LIMIT = 80; // API側の上限が80です
+	private static final int READ_LIMIT = 80; // API側の上限が80です。ただし指定しても40しか返ってこないことが多い
 	private static final long LOOP_TIMEOUT = 10000L;
-	private static final int LOOP_READ_ENOUGH = 50;
+	private static final int LOOP_READ_ENOUGH = 30; // フィルタ後のデータ数がコレ以上ならループを諦めます
 	
 	// ステータスのリストを返すAPI
 	private static final String PATH_HOME = "/api/v1/timelines/home?limit=" + READ_LIMIT;

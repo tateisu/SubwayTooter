@@ -31,10 +31,10 @@ public class App1 extends Application {
 	
 	
 	static final String DB_NAME = "app_db";
-	static final int DB_VERSION = 2;
+	static final int DB_VERSION = 5;
 	// 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
 	// 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加
-	
+	// 2017/4/29 v20 2=>5 MediaShown,ContentWarningのインデクスが間違っていたので貼り直す
 	static DBOpenHelper db_open_helper;
 	
 	public static SQLiteDatabase getDB(){

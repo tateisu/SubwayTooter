@@ -913,6 +913,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		private void showContent( boolean shown ){
 			btnContentWarning.setText( shown ? R.string.hide : R.string.show );
 			llContents.setVisibility( shown ? View.VISIBLE : View.GONE );
+			
 		}
 		
 		private void setMedia( NetworkImageView iv, TootStatus status, int idx ){
@@ -953,7 +954,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			case R.id.btnContentWarning:{
 				boolean new_shown = ( llContents.getVisibility() == View.GONE );
 				ContentWarning.save( access_info.host, status.id, new_shown );
-				showContent( new_shown );
+				status_adapter.notifyDataSetChanged();
 				break;
 			}
 			

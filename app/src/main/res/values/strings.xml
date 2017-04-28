@@ -173,4 +173,10 @@
     <string name="ui_theme">UI theme (app restart required)</string>
     <string name="theme_light">light</string>
     <string name="theme_dark">dark</string>
+    <string name="dont_show_boost">dont show boost</string>
+    <string name="dont_show_reply">dont show reply</string>
+    <string name="regex_filter">regex filter</string>
+    <string name="regex_error">regex error</string>
+    <string name="notification_delete">delete notification</string>
+    <string name="confirm_delete_notification">your notification data on instance sarver will be deleted. Are you sure?</string>
 </resources>

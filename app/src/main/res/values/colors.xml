@@ -35,6 +35,7 @@
     <color name="Light_colorShowMediaText">#fff</color>
     <color name="Light_colorColumnListDeleteBackground">#FF0000</color>
     <color name="Light_colorColumnListDeleteText">#fff</color>
+    <color name="Light_colorRegexFilterError">#f00</color>
 
 
     <!-- Dark theme -->
@@ -75,5 +76,6 @@
     <color name="Dark_colorShowMediaText">#ccFFFFFF</color>
     <color name="Dark_colorColumnListDeleteBackground">#FF0000</color>
     <color name="Dark_colorColumnListDeleteText">#fff</color>
+    <color name="Dark_colorRegexFilterError">#f00</color>
 
 </resources>

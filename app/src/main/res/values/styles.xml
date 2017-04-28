@@ -32,6 +32,9 @@
         <item name="colorSearchFormBackground">@color/Light_colorSearchFormBackground</item>
         <item name="colorSettingDivider">@color/Light_colorSettingDivider</item>
 
+        <item name="colorRegexFilterError">@color/Light_colorRegexFilterError</item>
+
+
         <item name="btn_attachment">@drawable/btn_attachment</item>
         <item name="btn_boost">@drawable/btn_boost</item>
         <item name="btn_close">@drawable/btn_close</item>
@@ -105,6 +108,7 @@
         <item name="colorColumnSettingBackground">@color/Dark_colorColumnSettingBackground</item>
         <item name="colorSearchFormBackground">@color/Dark_colorSearchFormBackground</item>
         <item name="colorSettingDivider">@color/Dark_colorSettingDivider</item>
+        <item name="colorRegexFilterError">@color/Dark_colorRegexFilterError</item>
 
         <item name="btn_attachment">@drawable/btn_attachment_dark</item>
         <item name="btn_boost">@drawable/btn_boost_dark</item>

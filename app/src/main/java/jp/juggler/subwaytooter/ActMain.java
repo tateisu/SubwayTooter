@@ -8,10 +8,10 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.os.AsyncTaskCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
@@ -72,6 +72,7 @@ public class ActMain extends AppCompatActivity
 	float density;
 	
 	SharedPreferences pref;
+	Handler handler;
 	
 	@Override
 	protected void onCreate( Bundle savedInstanceState ){
@@ -82,6 +83,7 @@ public class ActMain extends AppCompatActivity
 		requestWindowFeature( Window.FEATURE_NO_TITLE );
 		
 		pref = Pref.pref( this );
+		handler = new Handler(  );
 		
 		initUI();
 		
@@ -470,7 +472,7 @@ public class ActMain extends AppCompatActivity
 				if( account != null ){
 					Column column = addColumn( account, Column.TYPE_NOTIFICATIONS );
 					if( ! column.bInitialLoading ){
-						column.reload();
+						column.startLoading();
 					}
 				}
 			}catch( Throwable ex ){
@@ -552,7 +554,7 @@ public class ActMain extends AppCompatActivity
 				
 				this.host = client.instance;
 				
-				TootApiResult result = client.authorize2( uri.toString(), code );
+				TootApiResult result = client.authorize2( code );
 				if( result != null && result.object != null ){
 					// taは使い捨てなので、生成に使うLinkClickContextはダミーで問題ない
 					LinkClickContext lcc = new LinkClickContext() {
@@ -592,7 +594,7 @@ public class ActMain extends AppCompatActivity
 						// 自動でリロードする
 						for( Column c : pager_adapter.column_list ){
 							if( c.access_info.acct.equals( sa.acct ) ){
-								c.reload();
+								c.startLoading();
 							}
 						}
 					}
@@ -713,6 +715,7 @@ public class ActMain extends AppCompatActivity
 	public void openHashTag( SavedAccount access_info, String tag ){
 		addColumn( access_info, Column.TYPE_HASHTAG, tag );
 	}
+	
 	
 	//////////////////////////////////////////////////////////////
 	
@@ -1943,5 +1946,74 @@ public class ActMain extends AppCompatActivity
 	private void openAppAbout(){
 		startActivityForResult( new Intent( this, ActAbout.class ), REQUEST_APP_ABOUT );
 	}
+	
+	
+	public void deleteNotification( boolean bConfirmed, final SavedAccount target_account ){
+		if( ! bConfirmed ){
+			new AlertDialog.Builder( this )
+				.setMessage( R.string.confirm_delete_notification )
+				.setNegativeButton( R.string.cancel, null )
+				.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick( DialogInterface dialog, int which ){
+						deleteNotification( true, target_account );
+					}
+				} )
+				.show();
+			return;
+		}
+		new AsyncTask< Void, Void, TootApiResult >() {
+			
+			@Override
+			protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override
+					public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override
+					public void publishApiProgress( String s ){
+						
+					}
+				} );
+				client.setAccount( target_account );
+				
+				Request.Builder request_builder = new Request.Builder().post(
+					RequestBody.create(
+						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+						, "" // 空データ
+					) );
+				TootApiResult result = client.request( "/api/v1/notifications/clear" , request_builder );
+				return result;
+			}
+			
+			@Override
+			protected void onCancelled( TootApiResult result ){
+				onPostExecute( null );
+			}
+			
+			@Override
+			protected void onPostExecute( TootApiResult result ){
+				if( result == null ){
+					//cancelled.
+				}else if( result.object != null ){
+					// ok. empty object will be returned.
+					for( Column column : pager_adapter.column_list ){
+						if( column.type == Column.TYPE_NOTIFICATIONS
+							&& column.access_info.acct.equals( target_account.acct )
+							){
+							column.removeNotifications();
+						}
+					}
+					Utils.showToast( ActMain.this, false, R.string.delete_succeeded );
+				}else{
+					Utils.showToast( ActMain.this, false, result.error );
+				}
+			}
+			
+		}.execute();
+	}
+	
 	
 }

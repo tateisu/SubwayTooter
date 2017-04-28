@@ -3,7 +3,9 @@ package jp.juggler.subwaytooter;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.view.KeyEvent;
 import android.view.View;
@@ -27,6 +29,8 @@ import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirec
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
@@ -53,7 +57,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		this.column = column;
 	}
 	
-	public boolean isPageDestroyed(){
+	private boolean isPageDestroyed(){
 		return is_destroyed.get() || activity.isFinishing();
 	}
 	
@@ -74,6 +78,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 	private EditText etSearch;
 	private CheckBox cbResolve;
 	private View llColumnSetting;
+	private EditText etRegexFilter;
+	private TextView tvRegexFilterError;
 	
 	void onPageCreate( View root, int page_idx, int page_count ){
 		log.d( "onPageCreate:%s", column.getColumnName( true ) );
@@ -104,10 +110,10 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		
 		listView.setFastScrollEnabled( ! Pref.pref( activity ).getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, false ) );
 		
-		boolean bAllowMediaOnly;
+		boolean bAllowFilter;
 		switch( column.type ){
 		default:
-			bAllowMediaOnly = true;
+			bAllowFilter = true;
 			break;
 		case Column.TYPE_SEARCH:
 		case Column.TYPE_CONVERSATION:
@@ -115,23 +121,85 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		case Column.TYPE_BLOCKS:
 		case Column.TYPE_MUTES:
 		case Column.TYPE_NOTIFICATIONS:
-			bAllowMediaOnly = false;
+			bAllowFilter = false;
 			break;
 		}
+		
+		boolean bAllowFilterBoost;
+		switch( column.type ){
+		default:
+			bAllowFilterBoost = false;
+			break;
+		case Column.TYPE_HOME:
+		case Column.TYPE_PROFILE:
+			bAllowFilterBoost = true;
+			break;
+		}
+		
 		View btnColumnSetting = root.findViewById( R.id.btnColumnSetting );
 		llColumnSetting = root.findViewById( R.id.llColumnSetting );
 		btnColumnSetting.setVisibility( View.VISIBLE );
 		btnColumnSetting.setOnClickListener( this );
 		llColumnSetting.setVisibility( View.GONE );
 		
-		CheckBox cbWithAttachment = (CheckBox) root.findViewById( R.id.cbWithAttachment );
-		cbWithAttachment.setChecked( column.with_attachment );
-		cbWithAttachment.setOnCheckedChangeListener( this );
-		cbWithAttachment.setEnabled( bAllowMediaOnly );
+		CheckBox cb;
+		cb = (CheckBox) root.findViewById( R.id.cbDontCloseColumn );
+		cb.setChecked( column.dont_close );
+		cb.setOnCheckedChangeListener( this );
 		
-		CheckBox cbDontCloseColumn = (CheckBox) root.findViewById( R.id.cbDontCloseColumn );
-		cbDontCloseColumn.setChecked( column.dont_close );
-		cbDontCloseColumn.setOnCheckedChangeListener( this );
+		cb = (CheckBox) root.findViewById( R.id.cbWithAttachment );
+		cb.setChecked( column.with_attachment );
+		cb.setOnCheckedChangeListener( this );
+		cb.setEnabled( bAllowFilter );
+		cb.setVisibility( bAllowFilter ? View.VISIBLE : View.GONE );
+		
+		cb = (CheckBox) root.findViewById( R.id.cbDontShowBoost );
+		cb.setChecked( column.dont_show_boost );
+		cb.setOnCheckedChangeListener( this );
+		cb.setEnabled( bAllowFilter );
+		cb.setVisibility( bAllowFilterBoost ? View.VISIBLE : View.GONE );
+		
+		cb = (CheckBox) root.findViewById( R.id.cbDontShowReply );
+		cb.setChecked( column.dont_show_reply );
+		cb.setOnCheckedChangeListener( this );
+		cb.setEnabled( bAllowFilter );
+		cb.setVisibility( bAllowFilterBoost ? View.VISIBLE : View.GONE );
+		
+		etRegexFilter = (EditText) root.findViewById( R.id.etRegexFilter );
+		if( ! bAllowFilter ){
+			etRegexFilter.setVisibility( View.GONE );
+			root.findViewById( R.id.llRegexFilter ).setVisibility( View.GONE );
+		}else{
+			etRegexFilter.setText( column.regex_text );
+			// tvRegexFilterErrorの表示を更新
+			tvRegexFilterError = (TextView) root.findViewById( R.id.tvRegexFilterError );
+			isRegexValid();
+			// 入力の追跡
+			etRegexFilter.addTextChangedListener( new TextWatcher() {
+				@Override
+				public void beforeTextChanged( CharSequence s, int start, int count, int after ){
+				}
+				
+				@Override
+				public void onTextChanged( CharSequence s, int start, int before, int count ){
+				}
+				
+				@Override public void afterTextChanged( Editable s ){
+					activity.handler.removeCallbacks( proc_start_filter );
+					if( isRegexValid() ){
+						activity.handler.postDelayed( proc_start_filter, 1500L );
+					}
+				}
+			} );
+		}
+		Button button = (Button) root.findViewById( R.id.btnDeleteNotification );
+		if( column.type != Column.TYPE_NOTIFICATIONS ){
+			button.setVisibility( View.GONE );
+		}else{
+			button.setVisibility( View.VISIBLE );
+			button.setOnClickListener( this );
+			
+		}
 		
 		if( column.type != Column.TYPE_SEARCH ){
 			llSearch.setVisibility( View.GONE );
@@ -168,18 +236,60 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		onVisualColumn();
 	}
 	
+	private final Runnable proc_start_filter = new Runnable() {
+		@Override public void run(){
+			if( isPageDestroyed() ) return;
+			if( isRegexValid() ){
+				column.regex_text = etRegexFilter.getText().toString();
+				activity.saveColumnList();
+				column.startLoading();
+			}
+		}
+	};
+	
+	private boolean isRegexValid(){
+		String s = etRegexFilter.getText().toString();
+		if( s.length() == 0 ){
+			tvRegexFilterError.setText( "" );
+			return true;
+		}
+		try{
+			@SuppressWarnings("unused") Matcher m = Pattern.compile( s ).matcher( "" );
+			tvRegexFilterError.setText( "" );
+			return true;
+		}catch( Throwable ex ){
+			String message = ex.getMessage();
+			if( TextUtils.isEmpty( message ) )
+				message = Utils.formatError( ex, activity.getResources(), R.string.regex_error );
+			tvRegexFilterError.setText( message );
+			return false;
+		}
+	}
+	
 	@Override public void onCheckedChanged( CompoundButton view, boolean isChecked ){
 		switch( view.getId() ){
-		
-		case R.id.cbWithAttachment:
-			column.with_attachment = isChecked;
-			activity.saveColumnList();
-			column.reload();
-			break;
 		
 		case R.id.cbDontCloseColumn:
 			column.dont_close = isChecked;
 			activity.saveColumnList();
+			break;
+		
+		case R.id.cbWithAttachment:
+			column.with_attachment = isChecked;
+			activity.saveColumnList();
+			column.startLoading();
+			break;
+		
+		case R.id.cbDontShowBoost:
+			column.dont_show_boost = isChecked;
+			activity.saveColumnList();
+			column.startLoading();
+			break;
+		
+		case R.id.cbDontShowReply:
+			column.dont_show_reply = isChecked;
+			activity.saveColumnList();
+			column.startLoading();
 			break;
 			
 		}
@@ -198,14 +308,14 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				etSearch.setText( column.search_query );
 				cbResolve.setChecked( column.search_resolve );
 			}
-			column.reload();
+			column.startLoading();
 			break;
 		
 		case R.id.btnSearch:
 			hideKeyboard( etSearch );
 			column.search_query = etSearch.getText().toString().trim();
 			column.search_resolve = cbResolve.isChecked();
-			column.reload();
+			column.startLoading();
 			break;
 		
 		case R.id.llColumnHeader:
@@ -214,6 +324,10 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		
 		case R.id.btnColumnSetting:
 			llColumnSetting.setVisibility( llColumnSetting.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE );
+			break;
+		
+		case R.id.btnDeleteNotification:
+			activity.deleteNotification( false, column.access_info );
 			break;
 		}
 		
@@ -350,6 +464,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		final Button btnStatusCount;
 		final View btnMore;
 		final TextView tvNote;
+		
 		TootAccount who;
 		SavedAccount access_info;
 		
@@ -420,17 +535,17 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			
 			case R.id.btnFollowing:
 				column.profile_tab = Column.TAB_FOLLOWING;
-				column.reload();
+				column.startLoading();
 				break;
 			
 			case R.id.btnFollowers:
 				column.profile_tab = Column.TAB_FOLLOWERS;
-				column.reload();
+				column.startLoading();
 				break;
 			
 			case R.id.btnStatusCount:
 				column.profile_tab = Column.TAB_STATUS;
-				column.reload();
+				column.startLoading();
 				break;
 			
 			case R.id.btnMore:
@@ -696,7 +811,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		void showBoost( TootAccount who, long time, int icon_attr_id, CharSequence text ){
 			account_boost = who;
 			llBoosted.setVisibility( View.VISIBLE );
-			ivBoosted.setImageResource( Styler.getAttributeResourceId(activity,icon_attr_id) );
+			ivBoosted.setImageResource( Styler.getAttributeResourceId( activity, icon_attr_id ) );
 			tvBoostedTime.setText( TootStatus.formatTime( time ) );
 			tvBoostedAcct.setText( access_info.getFullAcct( who ) );
 			tvBoosted.setText( text );
@@ -709,7 +824,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			tvFollowerName.setText( who.display_name );
 			tvFollowerAcct.setText( access_info.getFullAcct( who ) );
 			
-			btnFollow.setImageResource( Styler.getAttributeResourceId( activity,R.attr.ic_account_add ));
+			btnFollow.setImageResource( Styler.getAttributeResourceId( activity, R.attr.ic_account_add ) );
 		}
 		
 		private void showStatus( ActMain activity, TootStatus status, SavedAccount account ){
@@ -763,42 +878,36 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				btnShowMedia.setVisibility( ! is_shown ? View.VISIBLE : View.GONE );
 			}
 			
-			Drawable d;
-			int color_normal = Styler.getAttributeColor( activity,R.attr.colorImageButton );
-			int color_accent = Styler.getAttributeColor( activity,R.attr.colorImageButtonAccent );
+			int color_normal = Styler.getAttributeColor( activity, R.attr.colorImageButton );
+			int color_accent = Styler.getAttributeColor( activity, R.attr.colorImageButtonAccent );
 			
-			if( activity.isBusyBoost( account, status ) ){
-				d = Styler.getAttributeDrawable( activity,R.attr.btn_refresh ).mutate();
-				d.setColorFilter( color_normal, PorterDuff.Mode.SRC_ATOP );
-				btnBoost.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
-				btnBoost.setText( "?" );
-				btnBoost.setTextColor( color_normal );
-				
+			if( TootStatus.VISIBILITY_DIRECT.equals( status.visibility ) ){
+				setButton( btnBoost, false, color_accent, R.attr.ic_mail, "" );
+			}else if( TootStatus.VISIBILITY_PRIVATE.equals( status.visibility ) ){
+				setButton( btnBoost, false, color_accent, R.attr.ic_lock, "" );
+			}else if( activity.isBusyBoost( account, status ) ){
+				setButton( btnBoost, false, color_normal, R.attr.btn_refresh, "?" );
 			}else{
 				int color = ( status.reblogged ? color_accent : color_normal );
-				d = Styler.getAttributeDrawable( activity,R.attr.btn_boost ).mutate();
-				d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
-				btnBoost.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
-				btnBoost.setText( Long.toString( status.reblogs_count ) );
-				btnBoost.setTextColor( color );
-				
+				setButton( btnBoost, true, color, R.attr.btn_boost, Long.toString( status.reblogs_count ) );
 			}
 			
 			if( activity.isBusyFav( account, status ) ){
-				d = Styler.getAttributeDrawable( activity,R.attr.btn_refresh ).mutate();
-				d.setColorFilter( color_normal, PorterDuff.Mode.SRC_ATOP );
-				btnFavourite.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
-				btnFavourite.setText( "?" );
-				btnFavourite.setTextColor( color_normal );
+				setButton( btnFavourite, false, color_normal, R.attr.btn_refresh, "?" );
 			}else{
 				int color = ( status.favourited ? color_accent : color_normal );
-				d = Styler.getAttributeDrawable( activity,R.attr.btn_favourite ).mutate();
-				d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
-				btnFavourite.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
-				btnFavourite.setText( Long.toString( status.favourites_count ) );
-				btnFavourite.setTextColor( color );
+				setButton( btnFavourite, true, color, R.attr.btn_favourite, Long.toString( status.favourites_count ) );
 			}
 			
+		}
+		
+		private void setButton( Button b, boolean enabled, int color, int icon_attr, String text ){
+			Drawable d = Styler.getAttributeDrawable( activity, icon_attr ).mutate();
+			d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
+			b.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
+			b.setText( text );
+			b.setTextColor( color );
+			b.setEnabled( enabled );
 		}
 		
 		private void showContent( boolean shown ){

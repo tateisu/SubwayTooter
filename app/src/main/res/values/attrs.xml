@@ -64,6 +64,9 @@
     <!-- 設定画面のdividerの色  #ddd -->
     <attr name="colorSettingDivider" format="color"/>
 
+    <!-- カラム設定の正規表現フィルタのエラー表示 #f00 -->
+    <attr name="colorRegexFilterError" format="color"/>
+
 
     <attr name="btn_attachment" format="reference" />
     <attr name="btn_boost" format="reference" />

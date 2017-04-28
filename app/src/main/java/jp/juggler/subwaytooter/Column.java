@@ -35,7 +35,7 @@ import jp.juggler.subwaytooter.util.Utils;
 
 class Column {
 	private static final LogCategory log = new LogCategory( "Column" );
-	
+
 	private static Object getParamAt( Object[] params, int idx ){
 		if( params == null || idx >= params.length ){
 			throw new IndexOutOfBoundsException( "getParamAt idx=" + idx );
@@ -72,8 +72,12 @@ class Column {
 	
 	private static final String KEY_ACCOUNT_ROW_ID = "account_id";
 	private static final String KEY_TYPE = "type";
-	private static final String KEY_WITH_ATTACHMENT = "with_attachment";
 	static final String KEY_DONT_CLOSE = "dont_close";
+	private static final String KEY_WITH_ATTACHMENT = "with_attachment";
+	private static final String KEY_DONT_SHOW_BOOST = "dont_show_boost";
+	private static final String KEY_DONT_SHOW_REPLY = "dont_show_reply";
+	private static final String KEY_REGEX_TEXT = "regex_text";
+
 
 
 	private static final String KEY_PROFILE_ID = "profile_id";
@@ -105,8 +109,13 @@ class Column {
 	
 	final int type;
 	
-	boolean with_attachment;
 	boolean dont_close;
+
+	boolean with_attachment;
+	boolean dont_show_boost;
+	boolean dont_show_reply;
+	String regex_text;
+	
 	
 	private long profile_id;
 	volatile TootAccount who_account;
@@ -156,8 +165,11 @@ class Column {
 	void encodeJSON( JSONObject item, int old_index ) throws JSONException{
 		item.put( KEY_ACCOUNT_ROW_ID, access_info.db_id );
 		item.put( KEY_TYPE, type );
-		item.put( KEY_WITH_ATTACHMENT, with_attachment );
 		item.put( KEY_DONT_CLOSE, dont_close );
+		item.put( KEY_WITH_ATTACHMENT, with_attachment );
+		item.put( KEY_DONT_SHOW_BOOST, dont_show_boost );
+		item.put( KEY_DONT_SHOW_REPLY, dont_show_reply );
+		item.put( KEY_REGEX_TEXT, regex_text );
 		
 		switch( type ){
 		case TYPE_CONVERSATION:
@@ -189,8 +201,11 @@ class Column {
 		if( ac == null ) throw new RuntimeException( "missing account" );
 		this.access_info = ac;
 		this.type = src.optInt( KEY_TYPE );
-		this.with_attachment = src.optBoolean( KEY_WITH_ATTACHMENT );
 		this.dont_close = src.optBoolean( KEY_DONT_CLOSE );
+		this.with_attachment = src.optBoolean( KEY_WITH_ATTACHMENT );
+		this.dont_show_boost = src.optBoolean( KEY_DONT_SHOW_BOOST );
+		this.dont_show_reply = src.optBoolean( KEY_DONT_SHOW_REPLY );
+		this.regex_text = Utils.optStringX(src, KEY_REGEX_TEXT);
 		
 		switch( type ){
 		
@@ -314,6 +329,7 @@ class Column {
 			}
 		}
 	}
+	
 	
 	interface StatusEntryCallback {
 		void onIterate( TootStatus status );
@@ -502,20 +518,62 @@ class Column {
 	
 	final ArrayList< Object > list_data = new ArrayList<>();
 	
-	void reload(){
-		list_data.clear();
-		startLoading();
-	}
-	
 	private static boolean hasMedia( TootStatus status ){
 		if( status == null ) return false;
 		TootAttachment.List list = status.media_attachments;
 		return ! ( list == null || list.isEmpty() );
 	}
 	
-	private void startLoading(){
+	private boolean isFiltered(){
+		return ( with_attachment
+			||  dont_show_boost
+			|| dont_show_reply
+			|| !TextUtils.isEmpty( regex_text )
+			);
+	}
+
+	private void addWithFilter( ArrayList< Object > dst, TootStatus.List src ){
+		if( ! isFiltered() ){
+			dst.addAll( src );
+			return;
+		}
+		Pattern pattern = null;
+		if( ! TextUtils.isEmpty( regex_text ) ){
+			try{
+				pattern = Pattern.compile( regex_text );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+			}
+		}
+		for( TootStatus status : src ){
+			if( with_attachment ){
+				if( ! hasMedia( status ) && ! hasMedia( status.reblog ) ) continue;
+			}
+			if( dont_show_boost ){
+				if( status.reblog != null ) continue;
+			}
+			if( dont_show_reply ){
+				if( status.in_reply_to_id != null
+					|| ( status.reblog != null &&  status.reblog.in_reply_to_id != null )
+				) continue;
+			}
+			if( pattern != null ){
+				if( status.reblog != null ){
+					if( pattern.matcher( status.reblog.decoded_content.toString() ).find() )
+						continue;
+				}else{
+					if( pattern.matcher( status.decoded_content.toString() ).find() ) continue;
+					
+				}
+			}
+			dst.add( status );
+		}
+	}
+	
+	void startLoading(){
 		cancelLastTask();
 		
+		list_data.clear();
 		mRefreshLoadingError = null;
 		bRefreshLoading = false;
 		mInitialLoadingError = null;
@@ -543,42 +601,27 @@ class Column {
 					//
 					TootStatus.List src = TootStatus.parseList( log, access_info, result.array );
 					list_tmp = new ArrayList<>( src.size() );
-					if( ! with_attachment ){
-						list_tmp.addAll( src );
-					}else{
-						for( TootStatus status : src ){
-							if( hasMedia( status ) || hasMedia( status.reblog ) )
-								list_tmp.add( status );
-						}
-					}
+					addWithFilter(list_tmp,src);
 					//
-					if( max_id != null && with_attachment ){
-						char delimiter = ( - 1 != path_base.indexOf( '?' ) ? '&' : '?' );
-						for( ; ; ){
-							if( src.isEmpty() ){
-								// 直前のリクエストが空のリストを返したら諦める
-								break;
-							}
-							if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
-								// タイムアウト
-								break;
-							}
-							String path = path_base + delimiter + "max_id=" + max_id;
-							TootApiResult result2 = client.request( path );
-							if( result2 == null || result2.array == null ) break;
-							if( ! saveRangeEnd( result2 ) ) break;
-							
-							src = TootStatus.parseList( log, access_info, result2.array );
-							
-							if( ! with_attachment ){
-								list_tmp.addAll( src );
-							}else{
-								for( TootStatus status : src ){
-									if( hasMedia( status ) || hasMedia( status.reblog ) )
-										list_tmp.add( status );
-								}
-							}
+					char delimiter = ( - 1 != path_base.indexOf( '?' ) ? '&' : '?' );
+					while( isFiltered() && max_id != null && list_tmp.size() < 50 ){
+						if( client.isCancelled() ) break;
+						if( src.isEmpty() ){
+							// 直前のリクエストが空のリストを返したら諦める
+							break;
 						}
+						if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
+							// タイムアウト
+							break;
+						}
+						String path = path_base + delimiter + "max_id=" + max_id;
+						TootApiResult result2 = client.request( path );
+						if( result2 == null || result2.array == null ) break;
+						if( ! saveRangeEnd( result2 ) ) break;
+						
+						src = TootStatus.parseList( log, access_info, result2.array );
+						
+						addWithFilter(list_tmp,src);
 					}
 				}
 				return result;
@@ -1022,57 +1065,46 @@ class Column {
 					TootStatus.List src = TootStatus.parseList( log, access_info, result.array );
 					list_tmp = new ArrayList<>();
 					
-					if( ! with_attachment ){
-						list_tmp.addAll( src );
-					}else{
-						for( TootStatus status : src ){
-							if( hasMedia( status ) || hasMedia( status.reblog ) )
-								list_tmp.add( status );
-						}
-					}
+					addWithFilter(list_tmp,src);
 					
 					if( bBottom ){
-						if( with_attachment ){
-							for( ; ; ){
-								// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
-								// 直前のデータが0個なら終了とみなすしかなさそう
-								if( src.isEmpty() ){
-									log.d( "refresh-status-bottom: previous size == 0." );
-									break;
-								}
-								
-								if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
-									// タイムアウト
-									log.d( "refresh-status-bottom: loop timeout." );
-									break;
-								}
-								
-								String path = path_base + delimiter + "max_id=" + max_id;
-								TootApiResult result2 = client.request( path );
-								if( result2 == null || result2.array == null ){
-									log.d( "refresh-status-bottom: error or cancelled." );
-									break;
-								}
-								
-								src = TootStatus.parseList( log, access_info, result2.array );
-								
-								if( ! with_attachment ){
-									list_tmp.addAll( src );
-								}else{
-									for( TootStatus status : src ){
-										if( hasMedia( status ) || hasMedia( status.reblog ) )
-											list_tmp.add( status );
-									}
-								}
-								
-								if( ! saveRangeEnd( result2 ) ){
-									log.d( "refresh-status-bottom: saveRangeEnd failed." );
-									break;
-								}
+						while( list_tmp.size() < 50 ){
+							if( client.isCancelled() ) break;
+							
+							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
+							// 直前のデータが0個なら終了とみなすしかなさそう
+							if( src.isEmpty() ){
+								log.d( "refresh-status-bottom: previous size == 0." );
+								break;
+							}
+							
+							if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
+								// タイムアウト
+								log.d( "refresh-status-bottom: loop timeout." );
+								break;
+							}
+							
+							String path = path_base + delimiter + "max_id=" + max_id;
+							TootApiResult result2 = client.request( path );
+							if( result2 == null || result2.array == null ){
+								log.d( "refresh-status-bottom: error or cancelled." );
+								break;
+							}
+							
+							src = TootStatus.parseList( log, access_info, result2.array );
+							
+							addWithFilter(list_tmp,src);
+							
+							if( ! saveRangeEnd( result2 ) ){
+								log.d( "refresh-status-bottom: saveRangeEnd failed." );
+								break;
 							}
 						}
 					}else{
-						for( ; ; ){
+						// 頭の方を読む時は隙間を減らすため、フィルタの有無に関係なく繰り返しを行う
+						while( list_tmp.size() < 50 ){
+							if( client.isCancelled() ) break;
+							
 							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
 							// 直前のデータが0個なら終了とみなすしかなさそう
 							if( src.isEmpty() ){
@@ -1102,14 +1134,7 @@ class Column {
 							}
 							
 							src = TootStatus.parseList( log, access_info, result2.array );
-							if( ! with_attachment ){
-								list_tmp.addAll( src );
-							}else{
-								for( TootStatus status : src ){
-									if( hasMedia( status ) || hasMedia( status.reblog ) )
-										list_tmp.add( status );
-								}
-							}
+							addWithFilter( list_tmp,src );
 						}
 					}
 				}
@@ -1409,6 +1434,8 @@ class Column {
 				
 				TootApiResult result = null;
 				for( ; ; ){
+					if( client.isCancelled() ) break;
+					
 					if( result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
 						// タイムアウト
 						// 隙間が残る
@@ -1444,14 +1471,7 @@ class Column {
 					// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
 					max_id = Long.toString( src.get( src.size() - 1 ).id );
 					
-					if( ! with_attachment ){
-						list_tmp.addAll( src );
-					}else{
-						for( TootStatus status : src ){
-							if( hasMedia( status ) || hasMedia( status.reblog ) )
-								list_tmp.add( status );
-						}
-					}
+					addWithFilter( list_tmp,src );
 				}
 				return result;
 			}
@@ -1594,4 +1614,21 @@ class Column {
 		AsyncTaskCompat.executeParallel( task );
 		return null;
 	}
+	
+	void removeNotifications(){
+		cancelLastTask();
+		
+		list_data.clear();
+		mRefreshLoadingError = null;
+		bRefreshLoading = false;
+		mInitialLoadingError = null;
+		bInitialLoading = false;
+		max_id = null;
+		since_id = null;
+		
+		fireVisualCallback();
+		
+		AlarmService.dataRemoved(activity,access_info.db_id);
+	}
+
 }

@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
     <LinearLayout
+        android:id="@+id/llColumnHeader"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:paddingTop="3dp"
-        android:paddingBottom="3dp"
-        android:id="@+id/llColumnHeader"
         android:background="@drawable/btn_bg_ddd"
+        android:orientation="vertical"
+        android:paddingBottom="3dp"
+        android:paddingEnd="12dp"
+        android:paddingStart="12dp"
+        android:paddingTop="3dp"
         >
 
         <LinearLayout
@@ -52,8 +52,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="0dp"
-            android:orientation="horizontal"
             android:gravity="center_vertical"
+            android:orientation="horizontal"
             >
 
             <TextView
@@ -102,64 +102,127 @@
 
 
     </LinearLayout>
+
     <LinearLayout
+        android:id="@+id/llColumnSetting"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:paddingTop="3dp"
-        android:paddingBottom="3dp"
         android:background="?attr/colorColumnSettingBackground"
-        android:id="@+id/llColumnSetting"
+        android:orientation="vertical"
+        android:paddingBottom="3dp"
+        android:paddingEnd="12dp"
+        android:paddingStart="12dp"
+        android:paddingTop="3dp"
         >
+
         <CheckBox
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/with_attachment"
-            android:id="@+id/cbWithAttachment"
-            />
-        <CheckBox
+            android:id="@+id/cbDontCloseColumn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/dont_close_column"
-            android:id="@+id/cbDontCloseColumn"
+            />
+
+        <CheckBox
+            android:id="@+id/cbWithAttachment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/with_attachment"
+            />
+
+        <CheckBox
+            android:id="@+id/cbDontShowBoost"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/dont_show_boost"
+            />
+
+        <CheckBox
+            android:id="@+id/cbDontShowReply"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/dont_show_reply"
+            />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:id="@+id/llRegexFilter"
+            >
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:labelFor="@+id/etRegexFilter"
+                android:text="@string/regex_filter"
+                android:textColor="?attr/colorColumnHeaderPageNumber"
+                />
+
+            <TextView
+                android:id="@+id/tvRegexFilterError"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:textColor="?attr/colorRegexFilterError"
+                />
+
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/etRegexFilter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:scrollHorizontally="true"
+            android:inputType="text"
+            />
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/notification_delete"
+            android:id="@+id/btnDeleteNotification"
+            android:textAllCaps="false"
             />
     </LinearLayout>
+
     <RelativeLayout
+        android:id="@+id/llSearch"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp"
-        android:paddingTop="3dp"
-        android:paddingBottom="3dp"
         android:background="?attr/colorSearchFormBackground"
-        android:id="@+id/llSearch"
+        android:paddingBottom="3dp"
+        android:paddingEnd="12dp"
+        android:paddingStart="12dp"
+        android:paddingTop="3dp"
         >
+
         <ImageButton
+            android:id="@+id/btnSearch"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@drawable/btn_bg_transparent"
-            android:src="?attr/ic_search"
-            android:contentDescription="@string/search"
             android:layout_alignParentEnd="true"
             android:layout_alignParentTop="true"
-            android:id="@+id/btnSearch"
+            android:background="@drawable/btn_bg_transparent"
+            android:contentDescription="@string/search"
+            android:src="?attr/ic_search"
             />
+
         <EditText
+            android:id="@+id/etSearch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_toStartOf="@id/btnSearch"
-            android:inputType="text"
-            android:id="@+id/etSearch"
             android:imeOptions="actionSearch"
+            android:inputType="text"
             tools:ignore="LabelFor"/>
+
         <CheckBox
+            android:id="@+id/cbResolve"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/etSearch"
             android:text="@string/resolve_non_local_account"
-            android:id="@+id/cbResolve"
             />
 
     </RelativeLayout>
@@ -186,11 +249,11 @@
 
             android:clipToPadding="false"
             android:fadeScrollbars="false"
+            android:fastScrollEnabled="true"
             android:paddingBottom="64dp"
             android:paddingEnd="12dp"
             android:paddingStart="12dp"
             android:scrollbarStyle="outsideOverlay"
-            android:fastScrollEnabled="true"
             />
 
     </com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout>

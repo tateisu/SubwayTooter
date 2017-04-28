@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.api;
 
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
@@ -25,7 +24,7 @@ import okhttp3.Response;
 public class TootApiClient {
 	private static final LogCategory log = new LogCategory( "TootApiClient" );
 	
-	static final OkHttpClient ok_http_client = App1.ok_http_client;
+	private static final OkHttpClient ok_http_client = App1.ok_http_client;
 	
 	public interface Callback {
 		boolean isApiCancelled();
@@ -57,6 +56,10 @@ public class TootApiClient {
 		this.account = account;
 	}
 	
+	public boolean isCancelled(){
+		return callback.isApiCancelled();
+	}
+	
 	public static final MediaType MEDIA_TYPE_FORM_URL_ENCODED = MediaType.parse( "application/x-www-form-urlencoded" );
 	
 	public TootApiResult request( String path ){
@@ -66,17 +69,17 @@ public class TootApiClient {
 	public TootApiResult request( String path, Request.Builder request_builder ){
 		log.d( "request: %s", path );
 		TootApiResult result = request_sub( path, request_builder );
-		if( result.error != null ){
+		if( result != null && result.error != null ){
 			log.d( "error: %s", result.error );
 		}
 		return result;
 	}
 	
-	static final String KEY_AUTH_VERSION = "SubwayTooterAuthVersion";
-	static final int AUTH_VERSION = 1;
-	static final String REDIRECT_URL = "subwaytooter://oauth";
+	private static final String KEY_AUTH_VERSION = "SubwayTooterAuthVersion";
+	private static final int AUTH_VERSION = 1;
+	private static final String REDIRECT_URL = "subwaytooter://oauth";
 	
-	public TootApiResult request_sub( String path, Request.Builder request_builder ){
+	private TootApiResult request_sub( String path, Request.Builder request_builder ){
 		
 		if( account == null ){
 			return new TootApiResult( "account is null" );
@@ -217,7 +220,7 @@ public class TootApiClient {
 				+ "&grant_type=authorization_code"
 				//	+ "&username=" + Uri.encode( user_mail )
 				//	+ "&password=" + Uri.encode( password )
-						+"&approval_prompt=force"
+				+ "&approval_prompt=force"
 				//		+"&access_type=offline"
 				;
 			// APIリクエストは失敗?する
@@ -227,7 +230,7 @@ public class TootApiClient {
 		
 	}
 	
-	public TootApiResult authorize2( String url, String code ){
+	public TootApiResult authorize2( String code ){
 		
 		JSONObject client_info = ClientInfo.load( instance );
 		if( client_info != null && client_info.optInt( KEY_AUTH_VERSION, 0 ) < AUTH_VERSION ){
@@ -246,7 +249,7 @@ public class TootApiClient {
 			"grant_type=authorization_code"
 				+ "&code=" + Uri.encode( code )
 				+ "&client_id=" + Uri.encode( Utils.optStringX( client_info, "client_id" ) )
-				+ "&redirect_uri="  + Uri.encode( REDIRECT_URL )
+				+ "&redirect_uri=" + Uri.encode( REDIRECT_URL )
 				+ "&client_secret=" + Uri.encode( Utils.optStringX( client_info, "client_secret" ) )
 				+ "&scope=read write follow"
 				+ "&scopes=read write follow";

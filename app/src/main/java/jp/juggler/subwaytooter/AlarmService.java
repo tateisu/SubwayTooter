@@ -47,6 +47,7 @@ public class AlarmService extends IntentService {
 	static final String KEY_TIME = "<>time";
 	private static final String ACTION_DATA_INJECTED = "data_injected";
 	private static final String EXTRA_DB_ID = "db_id";
+	private static final String ACTION_DATA_DELETED = "data_deleted";
 	
 	public AlarmService(){
 		// name: Used to name the worker thread, important only for debugging.
@@ -94,7 +95,9 @@ public class AlarmService extends IntentService {
 			String action = intent.getAction();
 			log.d("onHandleIntent action=%s",action);
 
-			if( ACTION_DATA_INJECTED.equals( action ) ){
+			if( ACTION_DATA_DELETED.equals( action ) ){
+				deleteCacheData(intent.getLongExtra( EXTRA_DB_ID ,-1L));
+			}else if( ACTION_DATA_INJECTED.equals( action ) ){
 				processInjectedData();
 			}else if( AlarmReceiver.ACTION_FROM_RECEIVER.equals( action ) ){
 				WakefulBroadcastReceiver.completeWakefulIntent( intent );
@@ -181,7 +184,6 @@ public class AlarmService extends IntentService {
 	}
 	
 	
-
 	private static class Data {
 		SavedAccount access_info;
 		TootNotification notification;
@@ -502,4 +504,23 @@ public class AlarmService extends IntentService {
 			nr.save();
 		}
 	}
+	
+	public static void dataRemoved( Context context, long db_id ){
+		Intent intent = new Intent( context, AlarmService.class );
+		intent.putExtra( EXTRA_DB_ID,db_id );
+		intent.setAction( ACTION_DATA_DELETED );
+		context.startService( intent );
+	}
+	private void deleteCacheData( long db_id ){
+		
+		SavedAccount account = SavedAccount.loadAccount( log,db_id );
+		if( account == null ) return;
+		
+		NotificationTracking nr = NotificationTracking.load( db_id );
+
+		nr.last_data = new JSONArray().toString();
+
+		nr.save();
+	}
+	
 }

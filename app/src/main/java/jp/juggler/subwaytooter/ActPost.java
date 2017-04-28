@@ -326,10 +326,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	View btnAttachment;
 	View btnPost;
 	View llAttachment;
-	NetworkImageView ivMedia1;
-	NetworkImageView ivMedia2;
-	NetworkImageView ivMedia3;
-	NetworkImageView ivMedia4;
+	final NetworkImageView[] ivMedia = new NetworkImageView[4];
 	CheckBox cbNSFW;
 	CheckBox cbContentWarning;
 	EditText etContentWarning;
@@ -351,10 +348,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		btnAttachment = findViewById( R.id.btnAttachment );
 		btnPost = findViewById( R.id.btnPost );
 		llAttachment = findViewById( R.id.llAttachment );
-		ivMedia1 = (NetworkImageView) findViewById( R.id.ivMedia1 );
-		ivMedia2 = (NetworkImageView) findViewById( R.id.ivMedia2 );
-		ivMedia3 = (NetworkImageView) findViewById( R.id.ivMedia3 );
-		ivMedia4 = (NetworkImageView) findViewById( R.id.ivMedia4 );
+		ivMedia[0] = (NetworkImageView) findViewById( R.id.ivMedia1 );
+		ivMedia[1] = (NetworkImageView) findViewById( R.id.ivMedia2 );
+		ivMedia[2] = (NetworkImageView) findViewById( R.id.ivMedia3 );
+		ivMedia[3] = (NetworkImageView) findViewById( R.id.ivMedia4 );
 		cbNSFW = (CheckBox) findViewById( R.id.cbNSFW );
 		cbContentWarning = (CheckBox) findViewById( R.id.cbContentWarning );
 		etContentWarning = (EditText) findViewById( R.id.etContentWarning );
@@ -379,11 +376,13 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		btnAttachment.setOnClickListener( this );
 		btnPost.setOnClickListener( this );
 		btnRemoveReply.setOnClickListener( this );
-		ivMedia1.setOnClickListener( this );
-		ivMedia2.setOnClickListener( this );
-		ivMedia3.setOnClickListener( this );
-		ivMedia4.setOnClickListener( this );
 		
+		for( NetworkImageView iv :ivMedia){
+			iv.setOnClickListener( this );
+			iv.setDefaultImageResId( Styler.getAttributeResourceId( this,R.attr.btn_refresh ));
+		//	iv.setErrorImageResId( Styler.getAttributeResourceId( this,R.attr.btn_refresh ));
+		}
+
 		cbContentWarning.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged( CompoundButton buttonView, boolean isChecked ){
@@ -410,12 +409,18 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	}
 	
 	private void updateTextCount(){
-		tvCharCount.setText( Integer.toString( 500 - etContent.getText().length() ) );
+		String s = etContent.getText().toString();
+		int count = s.codePointCount( 0,s.length() );
+		int remain = 500 - count;
+		tvCharCount.setText( Integer.toString( remain    ) );
+		int color = Styler.getAttributeColor( this, remain < 0 ? R.attr.colorRegexFilterError : android.R.attr.textColorPrimary );
+		tvCharCount.setTextColor( color );
 	}
 	
 	private void updateContentWarning(){
 		etContentWarning.setVisibility( cbContentWarning.isChecked() ? View.VISIBLE : View.GONE );
 	}
+	
 	//////////////////////////////////////////////////////////
 	// Account
 	
@@ -433,6 +438,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		if( ! attachment_list.isEmpty() ){
 			// 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
 			Utils.showToast( this, false, R.string.cant_change_account_when_attachment_specified );
+			return;
 		}
 		
 		final ArrayList< SavedAccount > tmp_account_list = new ArrayList<>();
@@ -445,6 +451,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		}else{
 			tmp_account_list.addAll( account_list );
 		}
+
 		String[] caption_list = new String[ tmp_account_list.size() ];
 		for( int i = 0, ie = tmp_account_list.size() ; i < ie ; ++ i ){
 			caption_list[ i ] = tmp_account_list.get( i ).acct;
@@ -490,14 +497,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	private void showMediaAttachment(){
 		if( attachment_list.isEmpty() ){
 			llAttachment.setVisibility( View.GONE );
-			cbNSFW.setVisibility( View.GONE );
 		}else{
 			llAttachment.setVisibility( View.VISIBLE );
-			cbNSFW.setVisibility( View.VISIBLE );
-			showAttachment_sub( ivMedia1, 0 );
-			showAttachment_sub( ivMedia2, 1 );
-			showAttachment_sub( ivMedia3, 2 );
-			showAttachment_sub( ivMedia4, 3 );
+			for(int i=0,ie=ivMedia.length;i<ie;++i){
+				showAttachment_sub( ivMedia[i], i );
+			}
 		}
 	}
 	
@@ -507,12 +511,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		}else{
 			iv.setVisibility( View.VISIBLE );
 			PostAttachment a = attachment_list.get( idx );
-			if( a.status == ATTACHMENT_UPLOADING ){
-				iv.setImageDrawable( Styler.getAttributeDrawable( this, R.attr.ic_loading ) );
-			}else if( a.attachment != null ){
+			if( a.attachment != null && a.status == ATTACHMENT_UPLOADED ){
 				iv.setImageUrl( a.attachment.preview_url, App1.getImageLoader() );
 			}else{
-				iv.setImageDrawable( Styler.getAttributeDrawable( this, R.attr.ic_unknown ) );
+				iv.setImageUrl( null, App1.getImageLoader() );
 			}
 		}
 	}
@@ -622,6 +624,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 								@Override
 								public void writeTo( BufferedSink sink ) throws IOException{
 									InputStream is = getContentResolver().openInputStream( uri );
+									if( is == null ) throw new IOException( "openInputStream() failed. uri="+uri );
 									try{
 										byte[] tmp = new byte[ 4096 ];
 										for( ; ; ){
@@ -672,8 +675,14 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 					attachment_list.remove( pa );
 				}else{
 					String sv = etContent.getText().toString();
+					int l = sv.length();
+					if( l > 0 ){
+						char c = sv.charAt( l - 1 );
+						if( c > 0x20 ) sv = sv + " ";
+					}
 					sv = sv + pa.attachment.text_url + " ";
 					etContent.setText( sv );
+					etContent.setSelection( sv.length() );
 				}
 				
 				showMediaAttachment();
@@ -797,7 +806,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		
 		for( PostAttachment pa : attachment_list ){
 			if( pa.attachment != null ){
-				sb.append( "&media_ids[]=" + pa.attachment.id );
+				sb.append( "&media_ids[]=" ).append( pa.attachment.id );
 			}
 		}
 		

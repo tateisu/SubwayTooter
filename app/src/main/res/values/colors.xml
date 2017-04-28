@@ -22,7 +22,10 @@
     <color name="Light_color_column_header">#cccccc</color>
     <color name="Light_colorReplyBackground">#cccccc</color>
 
+
     <color name="Light_colorSettingDivider">#ddd</color>
+    <color name="Light_colorPostFormBackground">#eee</color>
+
     <color name="Light_colorProfileBackgroundMask">#C0FFFFFF</color>
 
     <color name="Light_colorPrimaryDark">#303030</color>
@@ -62,6 +65,7 @@
     <color name="Dark_colorReplyBackground">#333</color>
 
     <color name="Dark_colorSettingDivider">#222</color>
+    <color name="Dark_colorPostFormBackground">#111</color>
 
     <color name="Dark_colorProfileBackgroundMask">#C0000000</color>
     <color name="Dark_colorBackground">#000</color>

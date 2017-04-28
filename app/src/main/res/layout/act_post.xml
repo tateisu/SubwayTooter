@@ -1,221 +1,267 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
+    android:orientation="vertical"
     >
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="12dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:fadingEdgeLength="20dp"
+        android:requiresFadingEdge="vertical"
+        android:cacheColorHint="#00000000"
+        android:scrollbarStyle="outsideOverlay"
+        android:fadeScrollbars="false"
         >
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/colorReplyBackground"
             android:orientation="vertical"
-            android:padding="6dp"
-            android:id="@+id/llReply"
-            android:layout_marginBottom="12dp"
+            android:padding="12dp"
             >
 
-            <TextView
+            <LinearLayout
+                android:id="@+id/llReply"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/reply_to_this_status"
-                />
+                android:layout_marginBottom="4dp"
+                android:background="?attr/colorReplyBackground"
+                android:orientation="vertical"
+                android:padding="6dp"
+                >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/reply_to_this_status"
+                    />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    >
+
+                    <com.android.volley.toolbox.NetworkImageView
+                        android:id="@+id/ivReply"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/btn_bg_transparent"
+                        android:scaleType="fitCenter"
+                        />
+
+                    <TextView
+                        android:id="@+id/tvReplyTo"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center_vertical"
+                        />
+
+                    <ImageButton
+                        android:id="@+id/btnRemoveReply"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="4dp"
+                        android:background="@drawable/btn_bg_transparent"
+                        android:gravity="center_vertical"
+                        android:src="?attr/btn_close"
+                        />
+                </LinearLayout>
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
                 >
 
-                <com.android.volley.toolbox.NetworkImageView
-                    android:id="@+id/ivReply"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:background="@drawable/btn_bg_transparent"
-                    android:scaleType="fitCenter"
-                    />
                 <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="4dp"
+                    android:text="@string/post_from"
+                    />
+
+                <Button
+                    android:id="@+id/btnAccount"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:id="@+id/tvReplyTo"
-                    android:gravity="center_vertical"
-                    />
-
-                <ImageButton
-                    android:id="@+id/btnRemoveReply"
-                    android:layout_marginStart="4dp"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
                     android:background="@drawable/btn_bg_transparent"
                     android:gravity="center_vertical"
-                    android:src="?attr/btn_close"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
+                    android:textAllCaps="false"
                     />
             </LinearLayout>
-        </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            >
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
-                android:text="@string/post_from"
-                />
-
-            <Button
-                android:id="@+id/btnAccount"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:background="@drawable/btn_bg_transparent"
+            <LinearLayout
+                android:id="@+id/llAttachment"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="4dp"
+                android:baselineAligned="false"
                 android:gravity="center_vertical"
-                android:paddingEnd="8dp"
-                android:paddingStart="8dp"
-                android:textAllCaps="false"
-                />
-        </LinearLayout>
+                android:orientation="horizontal"
+                >
+
+                <com.android.volley.toolbox.NetworkImageView
+                    android:id="@+id/ivMedia1"
+                    android:layout_width="48dp"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:scaleType="fitCenter"
+                    />
+
+                <com.android.volley.toolbox.NetworkImageView
+                    android:id="@+id/ivMedia2"
+                    android:layout_width="48dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:scaleType="fitCenter"
+                    />
+
+                <com.android.volley.toolbox.NetworkImageView
+                    android:id="@+id/ivMedia3"
+                    android:layout_width="48dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:scaleType="fitCenter"
+                    />
+
+                <com.android.volley.toolbox.NetworkImageView
+                    android:id="@+id/ivMedia4"
+                    android:layout_width="48dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:scaleType="fitCenter"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbNSFW"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical|start"
+                    android:layout_marginStart="4dp"
+                    android:text="@string/nsfw"
+                    />
+            </LinearLayout>
 
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            >
-
-
-            <ImageButton
-                android:id="@+id/btnAttachment"
-                android:layout_width="wrap_content"
+            <CheckBox
+                android:id="@+id/cbContentWarning"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/btn_bg_transparent"
-                android:minHeight="48dp"
-                android:minWidth="48dp"
-                android:src="?attr/btn_attachment"
+                android:layout_marginTop="4dp"
+                android:text="@string/content_warning"
                 />
 
-            <ImageButton
-                android:id="@+id/btnVisibility"
-                android:layout_width="wrap_content"
+            <FrameLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/btn_bg_transparent"
-                android:minHeight="48dp"
-                android:minWidth="48dp"
-                />
+                android:background="?attr/colorPostFormBackground"
+                >
+
+                <EditText
+                    android:id="@+id/etContentWarning"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/content_warning_hint"
+                    android:inputType="text"
+                    />
+            </FrameLayout>
 
             <TextView
-                android:id="@+id/tvCharCount"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="8dp"
-                android:layout_weight="1"
-                android:gravity="end|center_vertical"
-                />
-
-            <ImageButton
-                android:id="@+id/btnPost"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/btn_bg_transparent"
-                android:minHeight="48dp"
-                android:minWidth="48dp"
-                android:src="?attr/btn_post"
+                android:layout_marginTop="8dp"
+                android:text="@string/status"
                 />
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/colorPostFormBackground"
+                >
+
+                <EditText
+                    android:id="@+id/etContent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="start|top"
+                    android:hint="@string/content_hint"
+                    android:inputType="textMultiLine"
+                    android:minLines="5"
+                    />
+
+            </FrameLayout>
+
         </LinearLayout>
 
-        <LinearLayout
-            android:id="@+id/llAttachment"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal"
-            >
+    </ScrollView>
 
-            <com.android.volley.toolbox.NetworkImageView
-                android:id="@+id/ivMedia1"
-                android:layout_width="48dp"
-                android:layout_height="match_parent"
-                android:background="@drawable/btn_bg_transparent"
-                android:scaleType="fitCenter"
-                />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/color_column_header"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
+        >
 
-            <com.android.volley.toolbox.NetworkImageView
-                android:id="@+id/ivMedia2"
-                android:layout_width="48dp"
-                android:layout_height="match_parent"
-                android:layout_marginStart="8dp"
-                android:background="@drawable/btn_bg_transparent"
-                android:scaleType="fitCenter"
-                />
 
-            <com.android.volley.toolbox.NetworkImageView
-                android:id="@+id/ivMedia3"
-                android:layout_width="48dp"
-                android:layout_height="match_parent"
-                android:layout_marginStart="8dp"
-                android:background="@drawable/btn_bg_transparent"
-                android:scaleType="fitCenter"
-                />
-
-            <com.android.volley.toolbox.NetworkImageView
-                android:id="@+id/ivMedia4"
-                android:layout_width="48dp"
-                android:layout_height="match_parent"
-                android:layout_marginStart="8dp"
-                android:background="@drawable/btn_bg_transparent"
-                android:scaleType="fitCenter"
-                />
-        </LinearLayout>
-
-        <CheckBox
-            android:id="@+id/cbNSFW"
-            android:layout_width="match_parent"
+        <ImageButton
+            android:id="@+id/btnAttachment"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/nsfw"
+            android:background="@drawable/btn_bg_transparent"
+            android:minHeight="48dp"
+            android:minWidth="48dp"
+            android:src="?attr/btn_attachment"
             />
 
-        <CheckBox
-            android:id="@+id/cbContentWarning"
-            android:layout_width="match_parent"
+        <ImageButton
+            android:id="@+id/btnVisibility"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/content_warning"
-            />
-
-        <EditText
-            android:id="@+id/etContentWarning"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/content_warning_hint"
+            android:layout_marginStart="4dp"
+            android:background="@drawable/btn_bg_transparent"
+            android:minHeight="48dp"
+            android:minWidth="48dp"
+            tools:src="?attr/ic_public"
             />
 
         <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="@string/status"
+            android:id="@+id/tvCharCount"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_marginEnd="4dp"
+            android:layout_marginStart="4dp"
+            android:layout_weight="1"
+            android:gravity="end|center_vertical"
+            tools:text="-500"
+            tools:textColor="#f00"
             />
 
-        <EditText
-            android:id="@+id/etContent"
-            android:layout_width="match_parent"
+        <ImageButton
+            android:id="@+id/btnPost"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="@string/content_hint"
-            android:inputType="textMultiLine"
+            android:background="@drawable/btn_bg_transparent"
+            android:minHeight="48dp"
+            android:minWidth="48dp"
+            android:src="?attr/btn_post"
             />
     </LinearLayout>
-</ScrollView>
+</LinearLayout>

@@ -67,6 +67,9 @@
     <!-- カラム設定の正規表現フィルタのエラー表示 #f00 -->
     <attr name="colorRegexFilterError" format="color"/>
 
+    <!-- 投稿画面のEditTextの下に引くFrameLayoutの背景 -->
+    <attr name="colorPostFormBackground" format="color"/>
+
 
     <attr name="btn_attachment" format="reference" />
     <attr name="btn_boost" format="reference" />

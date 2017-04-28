@@ -1,4 +1,6 @@
-<resources>
+<resources
+
+    >
     <string name="app_name">Subway Tooter</string>
 
     <string name="action_settings">Settings</string>

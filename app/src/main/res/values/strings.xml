@@ -66,7 +66,7 @@
     <string name="visibility_direct">Direct</string>
     <string name="choose_visibility">Choose visibility</string>
     <string name="confirm_delete_attachment">Remove this attachment?</string>
-    <string name="post_error_contents_empty">You can't post an empty toot.</string>
+    <string name="post_error_contents_empty">You can\'t post an empty toot.</string>
     <string name="post_error_contents_warning_empty">Your toot needs a warning.</string>
     <string name="wait_previous_operation">Please wait until last operation is over.</string>
     <string name="cant_remove_boost_while_favourited">Can\'t remove boost while favourited</string>
@@ -100,12 +100,12 @@
     <string name="last_selection">Last selection</string>
     <string name="column_index">%1$d/%2$d</string>
     <string name="reply_to_this_status">Reply to this toot:</string>
-    <string name="cant_change_account_when_attachiment_specified">You can\'t change account when you have an attachment.</string>
+    <string name="cant_change_account_when_attachment_specified">You can\'t change account when you have an attachment.</string>
     <string name="column">Column</string>
     <string name="conversation_view">Conversation view</string>
     <string name="conversation_around">Conversation around toot:%1$d</string>
     <string name="instance_not_need_slash">Hostname of the instance, without \'/\'.</string>
-    <string name="mail_address_not_contains_at_mark">USe emails that contains \'@\' and \'.\'</string>
+    <string name="mail_address_not_contains_at_mark">Use emails that contains \'@\' and \'.\'</string>
     <string name="instance_hint">ex) mastodon.social</string>
     <string name="mail_hint">ex) your@e-mail.address</string>
     <string name="unfollow">Unfollow</string>
@@ -134,7 +134,7 @@
     <string name="search">Search</string>
     <string name="resolve_non_local_account">Resolve non local account</string>
     <string name="question">\?</string>
-    <string name="confirm_close_column">Close this colum?</string>
+    <string name="confirm_close_column">Close this column?</string>
     <string name="favourite_from_another_account">Favourite from another account</string>
     <string name="boost_from_another_account">Boost from another account</string>
     <string name="app_about">About this app</string>

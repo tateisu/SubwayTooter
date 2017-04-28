@@ -432,7 +432,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		
 		if( ! attachment_list.isEmpty() ){
 			// 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
-			Utils.showToast( this, false, R.string.cant_change_account_when_attachiment_specified );
+			Utils.showToast( this, false, R.string.cant_change_account_when_attachment_specified );
 		}
 		
 		final ArrayList< SavedAccount > tmp_account_list = new ArrayList<>();

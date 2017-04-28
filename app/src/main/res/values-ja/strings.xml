@@ -100,7 +100,7 @@
     <string name="last_selection">最後に選択した</string>
     <string name="column_index">%1$d/%2$d</string>
     <string name="reply_to_this_status">この発言への返信：</string>
-    <string name="cant_change_account_when_attachiment_specified">添付ファイルがある状態ではアカウントを変更できません</string>
+    <string name="cant_change_account_when_attachment_specified">添付ファイルがある状態ではアカウントを変更できません</string>
     <string name="column">カラム</string>
     <string name="conversation_view">会話ビュー</string>
     <string name="conversation_around">会話の流れ(id:%1$d)</string>

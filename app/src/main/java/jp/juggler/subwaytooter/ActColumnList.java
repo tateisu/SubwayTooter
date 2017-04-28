@@ -260,7 +260,7 @@ public class ActColumnList extends AppCompatActivity {
 	}
 	
 	// ドラッグ操作中のデータ
-	private static class MyDragItem extends DragItem {
+	private class MyDragItem extends DragItem {
 		MyDragItem( Context context, int layoutId ){
 			super( context, layoutId );
 		}
@@ -275,6 +275,9 @@ public class ActColumnList extends AppCompatActivity {
 			);
 			((TextView)dragView.findViewById( R.id.tvName )).setText(
 				((TextView)clickedView.findViewById( R.id.tvName )).getText()
+			);
+			dragView.findViewById(R.id.item_layout).setBackgroundColor(
+				Styler.getAttributeColor( ActColumnList.this, R.attr.list_item_bg_pressed_dragged)
 			);
 		}
 	}

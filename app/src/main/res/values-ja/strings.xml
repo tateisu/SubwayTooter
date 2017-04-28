@@ -180,4 +180,6 @@
     <string name="regex_filter">正規表現フィルタ(上級者向け)</string>
     <string name="confirm_delete_notification">ユーザへの通知データがタンスのサーバから削除されます。よろしいですか？</string>
     <string name="notification_delete">通知の削除</string>
+    <string name="search_for">%1$s を検索</string>
+    <string name="spoil_visibility_for_account">公開範囲をアカウントの既定値に狭めました</string>
 </resources>

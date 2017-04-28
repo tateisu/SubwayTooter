@@ -179,4 +179,6 @@
     <string name="regex_error">regex error</string>
     <string name="notification_delete">delete notification</string>
     <string name="confirm_delete_notification">your notification data on instance sarver will be deleted. Are you sure?</string>
+    <string name="search_for">search %1$s</string>
+    <string name="spoil_visibility_for_account">visivility is spoiled for account.</string>
 </resources>

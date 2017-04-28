@@ -33,7 +33,7 @@ public class ActAbout extends AppCompatActivity {
 		Button b;
 		
 		b =  (Button) findViewById( R.id.btnDeveloper );
-		b.setText( developer_acct );
+		b.setText( getString(R.string.search_for,developer_acct ));
 		b.setOnClickListener( new View.OnClickListener() {
 			@Override public void onClick( View v ){
 				Intent data = new Intent();

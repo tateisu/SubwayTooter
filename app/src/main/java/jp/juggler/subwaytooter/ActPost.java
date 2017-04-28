@@ -10,7 +10,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.OpenableColumns;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.os.AsyncTaskCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -286,12 +285,13 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		}
 		
 		if( this.account == null ){
+			// 表示を未選択に更新
 			setAccount( null );
 		}
 		
 		updateContentWarning();
 		showMediaAttachment();
-		updateVisibility();
+		showVisibility();
 		updateTextCount();
 		showReplyTo();
 	}
@@ -456,7 +456,17 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				@Override
 				public void onClick( DialogInterface dialog, int which ){
 					if( which >= 0 && which < tmp_account_list.size() ){
-						setAccount( tmp_account_list.get( which ) );
+						SavedAccount account =tmp_account_list.get( which );
+						setAccount( account );
+						try{
+							if( account.visibility != null && TootStatus.compareVisibility( visibility, account.visibility ) > 0 ){
+								Utils.showToast( ActPost.this, true, R.string.spoil_visibility_for_account );
+								visibility = account.visibility;
+								showVisibility();
+							}
+						}catch(Throwable ex){
+							ex.printStackTrace(  );
+						}
 					}
 				}
 			} )
@@ -704,7 +714,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	
 	String visibility;
 	
-	private void updateVisibility(){
+	private void showVisibility(){
 		btnVisibility.setImageResource( Styler.getVisibilityIcon( this, visibility ) );
 	}
 	
@@ -735,7 +745,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 						visibility = TootStatus.VISIBILITY_DIRECT;
 						break;
 					}
-					updateVisibility();
+					showVisibility();
 				}
 			} )
 			.setNegativeButton( R.string.cancel, null )

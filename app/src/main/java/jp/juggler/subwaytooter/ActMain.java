@@ -604,8 +604,13 @@ public class ActMain extends AppCompatActivity
 					this.row_id = SavedAccount.insert( host, user, result.object, result.token_info );
 					SavedAccount account = SavedAccount.loadAccount( log, row_id );
 					if( account != null ){
+						if( account.locked ){
+							account.visibility = TootStatus.VISIBILITY_PRIVATE;
+							account.saveSetting();
+						}
+						Utils.showToast(ActMain. this, false, R.string.account_confirmed );
 						AlarmService.startCheck( ActMain.this );
-						onAccountUpdated( account );
+						addColumn( account, Column.TYPE_HOME );
 					}
 				}
 			}
@@ -683,10 +688,7 @@ public class ActMain extends AppCompatActivity
 		return col;
 	}
 	
-	private void onAccountUpdated( SavedAccount data ){
-		Utils.showToast( this, false, R.string.account_confirmed );
-		addColumn( data, Column.TYPE_HOME );
-	}
+
 	
 	void performOpenUser( SavedAccount access_info, TootAccount user ){
 		addColumn( access_info, Column.TYPE_PROFILE, user.id );

@@ -654,7 +654,7 @@ class Column {
 				}
 			}
 			
-			dst.add( status );
+			dst.add( item );
 		}
 	}
 	

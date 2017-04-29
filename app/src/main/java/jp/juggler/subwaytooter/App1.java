@@ -33,10 +33,11 @@ public class App1 extends Application {
 	
 	
 	static final String DB_NAME = "app_db";
-	static final int DB_VERSION = 5;
+	static final int DB_VERSION = 6;
 	// 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
 	// 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加
 	// 2017/4/29 v20 2=>5 MediaShown,ContentWarningのインデクスが間違っていたので貼り直す
+	// 2017/4/29 v23 5=>6 MutedAppテーブルの追加、UserRelationテーブルの追加
 	static DBOpenHelper db_open_helper;
 	
 	public static SQLiteDatabase getDB(){
@@ -177,10 +178,10 @@ public class App1 extends Application {
 		if( db_open_helper == null ){
 			db_open_helper = new DBOpenHelper( getApplicationContext() );
 
-			if( BuildConfig.DEBUG){
-				SQLiteDatabase db = db_open_helper.getWritableDatabase();
-				db_open_helper.onCreate( db );
-			}
+//			if( BuildConfig.DEBUG){
+//				SQLiteDatabase db = db_open_helper.getWritableDatabase();
+//				db_open_helper.onCreate( db );
+//			}
 		}
 
 		if( image_loader == null ){

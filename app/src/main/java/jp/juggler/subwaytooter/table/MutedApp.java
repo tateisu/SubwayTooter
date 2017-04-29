@@ -32,7 +32,9 @@ public class MutedApp {
 	}
 	
 	public static void onDBUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ){
-
+		if(oldVersion < 6 && newVersion >= 6){
+			onDBCreate( db );
+		}
 	}
 	
 	public static void save( String app_name ){

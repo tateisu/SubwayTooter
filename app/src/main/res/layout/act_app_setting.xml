@@ -105,6 +105,23 @@ android:scrollbarStyle="outsideOverlay"
 
     <View style="@style/setting_divider"/>
 
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/simple_list"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <Switch
+            android:id="@+id/swSimpleList"
+            style="@style/setting_horizontal_stretch"
+            android:gravity="center"
+            />
+
+    </LinearLayout>
+
+    <View style="@style/setting_divider"/>
+
     <!--<TextView-->
         <!--style="@style/setting_row_label"-->
         <!--android:text="@string/actions"-->

@@ -35,6 +35,7 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 	Switch swDontConfirmBeforeCloseColumn;
 	Switch swPriorLocalURL;
 	Switch swDisableFastScroller;
+	Switch swSimpleList;
 	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
@@ -57,7 +58,8 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 		swDisableFastScroller = (Switch) findViewById( R.id.swDisableFastScroller );
 		swDisableFastScroller.setOnCheckedChangeListener( this );
 		
-		
+		swSimpleList = (Switch) findViewById( R.id.swSimpleList );
+		swSimpleList.setOnCheckedChangeListener( this );
 		
 		{
 			String[] caption_list = new String[ 4 ];
@@ -92,6 +94,8 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 		swDontConfirmBeforeCloseColumn.setChecked( pref.getBoolean( Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN, false ) );
 		swPriorLocalURL.setChecked( pref.getBoolean( Pref.KEY_PRIOR_LOCAL_URL, false ) );
 		swDisableFastScroller.setChecked( pref.getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, false ) );
+		swSimpleList.setChecked( pref.getBoolean(Pref.KEY_SIMPLE_LIST,false) );
+
 		spBackButtonAction.setSelection( pref.getInt(Pref.KEY_BACK_BUTTON_ACTION,0) );
 		spUITheme.setSelection( pref.getInt(Pref.KEY_UI_THEME,0) );
 		load_busy = false;
@@ -103,6 +107,7 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 			.putBoolean( Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN, swDontConfirmBeforeCloseColumn.isChecked() )
 			.putBoolean( Pref.KEY_PRIOR_LOCAL_URL, swPriorLocalURL.isChecked() )
 			.putBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, swDisableFastScroller.isChecked() )
+			.putBoolean( Pref.KEY_SIMPLE_LIST, swSimpleList.isChecked() )
 			.putInt( Pref.KEY_BACK_BUTTON_ACTION, spBackButtonAction.getSelectedItemPosition() )
 			.putInt( Pref.KEY_UI_THEME, spUITheme.getSelectedItemPosition() )
 			.apply();

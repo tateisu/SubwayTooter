@@ -68,7 +68,7 @@
                 />
 
 
-            <TextView
+            <jp.juggler.subwaytooter.util.MyTextView
                 android:id="@+id/tvNote"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

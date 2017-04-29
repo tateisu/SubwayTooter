@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    >
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/list_item_popup_triangle"
+        android:layout_gravity="center_horizontal"
+        android:id="@+id/ivTriangleTop"
+        />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="56dp"
+        android:background="@drawable/list_item_popup_bg"
+        android:orientation="horizontal"
+        >
+
+        <ImageButton
+            android:id="@+id/btnConversation"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/btn_bg_transparent"
+            android:contentDescription="@string/conversation_view"
+            android:minWidth="40dp"
+            android:src="?attr/ic_conversation"
+            />
+
+        <ImageButton
+            android:id="@+id/btnReply"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="2dp"
+            android:background="@drawable/btn_bg_transparent"
+            android:contentDescription="@string/reply"
+            android:minWidth="40dp"
+            android:src="?attr/btn_reply"
+            />
+
+        <Button
+            android:id="@+id/btnBoost"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="2dp"
+            android:background="@drawable/btn_bg_transparent"
+            android:drawablePadding="4dp"
+            android:minWidth="48dp"
+            android:paddingEnd="4dp"
+            android:paddingStart="4dp"
+            />
+
+        <Button
+            android:id="@+id/btnFavourite"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="2dp"
+            android:background="@drawable/btn_bg_transparent"
+            android:drawablePadding="4dp"
+            android:minWidth="48dp"
+            android:paddingEnd="4dp"
+            android:paddingStart="4dp"
+            />
+
+        <ImageButton
+            android:id="@+id/btnMore"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginStart="2dp"
+            android:background="@drawable/btn_bg_transparent"
+            android:contentDescription="@string/more"
+            android:minWidth="40dp"
+            android:src="?attr/btn_more"
+            />
+
+    </LinearLayout>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/list_item_popup_triangle_bottom"
+        android:layout_gravity="center_horizontal"
+        android:visibility="gone"
+        android:id="@+id/ivTriangleBottom"
+        />
+
+</LinearLayout>

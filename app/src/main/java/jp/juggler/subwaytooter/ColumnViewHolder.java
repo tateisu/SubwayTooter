@@ -1,17 +1,28 @@
 package jp.juggler.subwaytooter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.SystemClock;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.view.MotionEventCompat;
+import android.support.v4.widget.AutoScrollHelper;
+import android.support.v4.widget.PopupWindowCompat;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.text.method.LinkMovementMethod;
+import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -19,7 +30,9 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.NetworkImageView;
@@ -42,6 +55,9 @@ import jp.juggler.subwaytooter.table.MediaShown;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.Emojione;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.MyLinkMovementMethod;
+import jp.juggler.subwaytooter.util.MyListView;
+import jp.juggler.subwaytooter.util.MyTextView;
 import jp.juggler.subwaytooter.util.Utils;
 
 class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, SwipyRefreshLayout.OnRefreshListener, CompoundButton.OnCheckedChangeListener {
@@ -51,10 +67,12 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 	final AtomicBoolean is_destroyed = new AtomicBoolean( false );
 	
 	private final Column column;
+	final SavedAccount access_info;
 	
 	ColumnViewHolder( ActMain activity, Column column ){
 		this.activity = activity;
 		this.column = column;
+		this.access_info = column.access_info;
 	}
 	
 	private boolean isPageDestroyed(){
@@ -68,7 +86,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 	}
 	
 	private TextView tvLoading;
-	private ListView listView;
+	private MyListView listView;
 	private TextView tvColumnContext;
 	private TextView tvColumnName;
 	private StatusListAdapter status_adapter;
@@ -80,9 +98,12 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 	private View llColumnSetting;
 	private EditText etRegexFilter;
 	private TextView tvRegexFilterError;
+	private boolean bSimpleList;
+	
 	
 	void onPageCreate( View root, int page_idx, int page_count ){
 		log.d( "onPageCreate:%s", column.getColumnName( true ) );
+		
 		
 		( (TextView) root.findViewById( R.id.tvColumnIndex ) )
 			.setText( activity.getString( R.string.column_index, page_idx + 1, page_count ) );
@@ -95,7 +116,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		root.findViewById( R.id.llColumnHeader ).setOnClickListener( this );
 		
 		tvLoading = (TextView) root.findViewById( R.id.tvLoading );
-		listView = (ListView) root.findViewById( R.id.listView );
+		listView = (MyListView) root.findViewById( R.id.listView );
 		status_adapter = new StatusListAdapter();
 		listView.setAdapter( status_adapter );
 		
@@ -228,6 +249,14 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		case Column.TYPE_CONVERSATION:
 		case Column.TYPE_SEARCH:
 			swipyRefreshLayout.setEnabled( false );
+		}
+		
+		bSimpleList = activity.pref.getBoolean(Pref.KEY_SIMPLE_LIST,false);
+		if( column.type == Column.TYPE_CONVERSATION ){
+			bSimpleList = false;
+		}
+		if(bSimpleList){
+			listView.setOnItemClickListener( status_adapter );
 		}
 		
 		//
@@ -487,7 +516,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			btnStatusCount.setOnClickListener( this );
 			btnMore.setOnClickListener( this );
 			
-			tvNote.setMovementMethod( LinkMovementMethod.getInstance() );
+			tvNote.setMovementMethod( MyLinkMovementMethod.getInstance() );
 		}
 		
 		void bind( ActMain activity, SavedAccount access_info, TootAccount who ){
@@ -556,7 +585,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		}
 	}
 	
-	private class StatusListAdapter extends BaseAdapter {
+	private class StatusListAdapter extends BaseAdapter implements AdapterView.OnItemClickListener {
 		final ArrayList< Object > status_list = new ArrayList<>();
 		
 		< T > void set( List< T > src ){
@@ -587,14 +616,22 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			
 			StatusViewHolder holder;
 			if( view == null ){
-				view = activity.getLayoutInflater().inflate( R.layout.lv_status, parent, false );
+				view = activity.getLayoutInflater().inflate( bSimpleList ? R.layout.lv_status_simple : R.layout.lv_status, parent, false );
 				holder = new StatusViewHolder( view );
 				view.setTag( holder );
 			}else{
 				holder = (StatusViewHolder) view.getTag();
 			}
-			holder.bind( activity, o, column.access_info );
+			holder.bind( o );
 			return view;
+		}
+		
+		@Override
+		public void onItemClick( AdapterView< ? > parent, View view, int position, long id ){
+			Object tag = view.getTag();
+			if( tag instanceof StatusViewHolder){
+				((StatusViewHolder)tag).onItemClick(view);
+			}
 		}
 	}
 	
@@ -619,12 +656,12 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		final TextView tvAcct;
 		
 		final View llContentWarning;
-		final TextView tvContentWarning;
+		final MyTextView tvContentWarning;
 		final Button btnContentWarning;
 		
 		final View llContents;
-		final TextView tvMentions;
-		final TextView tvContent;
+		final MyTextView tvMentions;
+		final MyTextView tvContent;
 		
 		final View flMedia;
 		final View btnHideMedia;
@@ -635,22 +672,17 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		final NetworkImageView ivMedia3;
 		final NetworkImageView ivMedia4;
 		
-		final ImageButton btnReply;
-		final Button btnBoost;
-		final Button btnFavourite;
-		final ImageButton btnMore;
+		final ButtonsForStatus buttons_for_status;
+		
+
+		final View llSearchTag;
+		final Button btnSearchTag;
 		
 		TootStatus status;
-		SavedAccount access_info;
 		TootAccount account_thumbnail;
 		TootAccount account_boost;
 		TootAccount account_follow;
-		View btnConversation;
-		
 		String search_tag;
-		View llSearchTag;
-		Button btnSearchTag;
-		
 		TootGap gap;
 		
 		StatusViewHolder( View view ){
@@ -675,18 +707,14 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			this.tvAcct = (TextView) view.findViewById( R.id.tvAcct );
 			
 			this.llContentWarning = view.findViewById( R.id.llContentWarning );
-			this.tvContentWarning = (TextView) view.findViewById( R.id.tvContentWarning );
+			this.tvContentWarning = (MyTextView) view.findViewById( R.id.tvContentWarning );
 			this.btnContentWarning = (Button) view.findViewById( R.id.btnContentWarning );
 			
 			this.llContents = view.findViewById( R.id.llContents );
-			this.tvContent = (TextView) view.findViewById( R.id.tvContent );
-			this.tvMentions = (TextView) view.findViewById( R.id.tvMentions );
+			this.tvContent = (MyTextView) view.findViewById( R.id.tvContent );
+			this.tvMentions = (MyTextView) view.findViewById( R.id.tvMentions );
 			
-			this.btnConversation = view.findViewById( R.id.btnConversation );
-			this.btnReply = (ImageButton) view.findViewById( R.id.btnReply );
-			this.btnBoost = (Button) view.findViewById( R.id.btnBoost );
-			this.btnFavourite = (Button) view.findViewById( R.id.btnFavourite );
-			this.btnMore = (ImageButton) view.findViewById( R.id.btnMore );
+			this.buttons_for_status = bSimpleList ? null : new ButtonsForStatus( view );
 			
 			this.flMedia = view.findViewById( R.id.flMedia );
 			this.btnHideMedia = view.findViewById( R.id.btnHideMedia );
@@ -708,11 +736,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			ivMedia3.setOnClickListener( this );
 			ivMedia4.setOnClickListener( this );
 			btnFollow.setOnClickListener( this );
-			btnConversation.setOnClickListener( this );
-			btnReply.setOnClickListener( this );
-			btnBoost.setOnClickListener( this );
-			btnFavourite.setOnClickListener( this );
-			btnMore.setOnClickListener( this );
+
 			
 			ivThumbnail.setOnClickListener( this );
 			// ここを個別タップにすると邪魔すぎる tvName.setOnClickListener( this );
@@ -720,12 +744,19 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			llFollow.setOnClickListener( this );
 			btnFollow.setOnClickListener( this );
 			
-			tvContent.setMovementMethod( LinkMovementMethod.getInstance() );
-			tvMentions.setMovementMethod( LinkMovementMethod.getInstance() );
+			tvContent.setMovementMethod( MyLinkMovementMethod.getInstance() );
+			tvMentions.setMovementMethod( MyLinkMovementMethod.getInstance() );
+			tvContentWarning.setMovementMethod( MyLinkMovementMethod.getInstance() );
 		}
 		
-		void bind( ActMain activity, Object item, SavedAccount access_info ){
-			this.access_info = access_info;
+		void bind( Object item ){
+			
+			this.status = null;
+			this.account_thumbnail = null;
+			this.account_boost = null;
+			this.account_follow = null;
+			this.search_tag = null;
+			this.gap = null;
 			
 			llBoosted.setVisibility( View.GONE );
 			llFollow.setVisibility( View.GONE );
@@ -747,7 +778,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 						, R.attr.btn_favourite
 						, Utils.formatSpannable1( activity, R.string.display_name_favourited_by, n.account.display_name )
 					);
-					if( n.status != null ) showStatus( activity, n.status, access_info );
+					if( n.status != null ) showStatus( activity, n.status );
 				}else if( TootNotification.TYPE_REBLOG.equals( n.type ) ){
 					showBoost(
 						n.account
@@ -755,7 +786,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 						, R.attr.btn_boost
 						, Utils.formatSpannable1( activity, R.string.display_name_boosted_by, n.account.display_name )
 					);
-					if( n.status != null ) showStatus( activity, n.status, access_info );
+					if( n.status != null ) showStatus( activity, n.status );
 				}else if( TootNotification.TYPE_FOLLOW.equals( n.type ) ){
 					showBoost(
 						n.account
@@ -764,17 +795,17 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 						, Utils.formatSpannable1( activity, R.string.display_name_followed_by, n.account.display_name )
 					);
 					//
-					showFollow(
-						n.account
-					);
+					showFollow( n.account );
 				}else if( TootNotification.TYPE_MENTION.equals( n.type ) ){
-					showBoost(
-						n.account
-						, n.time_created_at
-						, R.attr.btn_reply
-						, Utils.formatSpannable1( activity, R.string.display_name_replied_by, n.account.display_name )
-					);
-					if( n.status != null ) showStatus( activity, n.status, access_info );
+					if(!bSimpleList){
+						showBoost(
+							n.account
+							, n.time_created_at
+							, R.attr.btn_reply
+							, Utils.formatSpannable1( activity, R.string.display_name_replied_by, n.account.display_name )
+						);
+					}
+					if( n.status != null ) showStatus( activity, n.status );
 				}
 			}else if( item instanceof TootStatus ){
 				TootStatus status = (TootStatus) item;
@@ -785,9 +816,9 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 						, R.attr.btn_boost
 						, Utils.formatSpannable1( activity, R.string.display_name_boosted_by, status.account.display_name )
 					);
-					showStatus( activity, status.reblog, access_info );
+					showStatus( activity, status.reblog );
 				}else{
-					showStatus( activity, status, access_info );
+					showStatus( activity, status );
 				}
 			}else if( item instanceof TootGap ){
 				showGap( (TootGap) item );
@@ -827,12 +858,12 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			btnFollow.setImageResource( Styler.getAttributeResourceId( activity, R.attr.ic_account_add ) );
 		}
 		
-		private void showStatus( ActMain activity, TootStatus status, SavedAccount account ){
+		private void showStatus( ActMain activity, TootStatus status ){
 			this.status = status;
 			account_thumbnail = status.account;
 			llStatus.setVisibility( View.VISIBLE );
 			
-			tvAcct.setText( account.getFullAcct( status.account ) );
+			tvAcct.setText( access_info.getFullAcct( status.account ) );
 			tvTime.setText( TootStatus.formatTime( status.time_created_at ) );
 			
 			tvName.setText( status.account.display_name );
@@ -860,7 +891,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			}else{
 				llContentWarning.setVisibility( View.VISIBLE );
 				tvContentWarning.setText( status.decoded_spoiler_text );
-				boolean cw_shown = ContentWarning.isShown( account.host, status.id, false );
+				boolean cw_shown = ContentWarning.isShown( access_info.host, status.id, false );
 				showContent( cw_shown );
 			}
 			
@@ -874,41 +905,16 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				setMedia( ivMedia4, status, 3 );
 				
 				// hide sensitive media
-				boolean is_shown = MediaShown.isShown( account.host, status.id, account.dont_hide_nsfw || ! status.sensitive );
+				boolean is_shown = MediaShown.isShown( access_info.host, status.id, access_info.dont_hide_nsfw || ! status.sensitive );
 				btnShowMedia.setVisibility( ! is_shown ? View.VISIBLE : View.GONE );
 			}
 			
-			int color_normal = Styler.getAttributeColor( activity, R.attr.colorImageButton );
-			int color_accent = Styler.getAttributeColor( activity, R.attr.colorImageButtonAccent );
-			
-			if( TootStatus.VISIBILITY_DIRECT.equals( status.visibility ) ){
-				setButton( btnBoost, false, color_accent, R.attr.ic_mail, "" );
-			}else if( TootStatus.VISIBILITY_PRIVATE.equals( status.visibility ) ){
-				setButton( btnBoost, false, color_accent, R.attr.ic_lock, "" );
-			}else if( activity.isBusyBoost( account, status ) ){
-				setButton( btnBoost, false, color_normal, R.attr.btn_refresh, "?" );
-			}else{
-				int color = ( status.reblogged ? color_accent : color_normal );
-				setButton( btnBoost, true, color, R.attr.btn_boost, Long.toString( status.reblogs_count ) );
+			if( buttons_for_status != null){
+				buttons_for_status.bind( status );
 			}
-			
-			if( activity.isBusyFav( account, status ) ){
-				setButton( btnFavourite, false, color_normal, R.attr.btn_refresh, "?" );
-			}else{
-				int color = ( status.favourited ? color_accent : color_normal );
-				setButton( btnFavourite, true, color, R.attr.btn_favourite, Long.toString( status.favourites_count ) );
-			}
-			
 		}
 		
-		private void setButton( Button b, boolean enabled, int color, int icon_attr, String text ){
-			Drawable d = Styler.getAttributeDrawable( activity, icon_attr ).mutate();
-			d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
-			b.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
-			b.setText( text );
-			b.setTextColor( color );
-			b.setEnabled( enabled );
-		}
+
 		
 		private void showContent( boolean shown ){
 			btnContentWarning.setText( shown ? R.string.hide : R.string.show );
@@ -958,21 +964,6 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				break;
 			}
 			
-			case R.id.btnConversation:
-				activity.performConversation( access_info, status );
-				break;
-			case R.id.btnReply:
-				activity.performReply( access_info, status );
-				break;
-			case R.id.btnBoost:
-				activity.performBoost( access_info, status, false );
-				break;
-			case R.id.btnFavourite:
-				activity.performFavourite( access_info, status );
-				break;
-			case R.id.btnMore:
-				activity.openStatusMoreMenu( access_info, status );
-				break;
 			case R.id.ivThumbnail:
 				activity.performOpenUser( access_info, account_thumbnail );
 				break;
@@ -1023,6 +1014,166 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			}
 		}
 		
+		// 簡略ビューの時だけ呼ばれる
+		void onItemClick(View anchor){
+
+			if( status != null ){
+				// ポップアップを表示する
+				ListItemPopup popup = new ListItemPopup();
+				popup.show( anchor, status );
+			}
+		}
 	}
 	
+	private class ButtonsForStatus implements View.OnClickListener {
+		final ImageButton btnConversation;
+		final ImageButton btnReply;
+		final Button btnBoost;
+		final Button btnFavourite;
+		final ImageButton btnMore;
+
+		ButtonsForStatus(View viewRoot){
+			btnConversation = (ImageButton) viewRoot.findViewById( R.id.btnConversation );
+			btnReply = (ImageButton) viewRoot.findViewById( R.id.btnReply );
+			btnBoost = (Button) viewRoot.findViewById( R.id.btnBoost );
+			btnFavourite = (Button) viewRoot.findViewById( R.id.btnFavourite );
+			btnMore = (ImageButton) viewRoot.findViewById( R.id.btnMore );
+			btnConversation.setOnClickListener( this );
+			btnReply.setOnClickListener( this );
+			btnBoost.setOnClickListener( this );
+			btnFavourite.setOnClickListener( this );
+			btnMore.setOnClickListener( this );
+			
+		}
+		
+		TootStatus status;
+		
+		void bind( TootStatus status ){
+			this.status = status;
+				
+			int color_normal = Styler.getAttributeColor( activity, R.attr.colorImageButton );
+			int color_accent = Styler.getAttributeColor( activity, R.attr.colorImageButtonAccent );
+			
+			if( TootStatus.VISIBILITY_DIRECT.equals( status.visibility ) ){
+				setButton( btnBoost, false, color_accent, R.attr.ic_mail, "" );
+			}else if( TootStatus.VISIBILITY_PRIVATE.equals( status.visibility ) ){
+				setButton( btnBoost, false, color_accent, R.attr.ic_lock, "" );
+			}else if( activity.isBusyBoost( access_info, status ) ){
+				setButton( btnBoost, false, color_normal, R.attr.btn_refresh, "?" );
+			}else{
+				int color = ( status.reblogged ? color_accent : color_normal );
+				setButton( btnBoost, true, color, R.attr.btn_boost, Long.toString( status.reblogs_count ) );
+			}
+			
+			if( activity.isBusyFav( access_info, status ) ){
+				setButton( btnFavourite, false, color_normal, R.attr.btn_refresh, "?" );
+			}else{
+				int color = ( status.favourited ? color_accent : color_normal );
+				setButton( btnFavourite, true, color, R.attr.btn_favourite, Long.toString( status.favourites_count ) );
+			}
+			
+			
+		}
+		private void setButton( Button b, boolean enabled, int color, int icon_attr, String text ){
+			Drawable d = Styler.getAttributeDrawable( activity, icon_attr ).mutate();
+			d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
+			b.setCompoundDrawablesRelativeWithIntrinsicBounds( d, null, null, null );
+			b.setText( text );
+			b.setTextColor( color );
+			b.setEnabled( enabled );
+		}
+		
+		PopupWindow close_window;
+		
+		@Override public void onClick( View v ){
+			if( close_window != null ) close_window.dismiss();
+			switch(v.getId()){
+			case R.id.btnConversation:
+				activity.performConversation( access_info, status );
+				break;
+			case R.id.btnReply:
+				activity.performReply( access_info, status );
+				break;
+			case R.id.btnBoost:
+				activity.performBoost( access_info, status, false );
+				break;
+			case R.id.btnFavourite:
+				activity.performFavourite( access_info, status );
+				break;
+			case R.id.btnMore:
+				activity.openStatusMoreMenu( access_info, status );
+				break;
+			}
+		}
+	}
+	
+	private class ListItemPopup{
+		final View viewRoot;
+		final ButtonsForStatus buttons_for_status;
+
+		ListItemPopup( ){
+			viewRoot = activity.getLayoutInflater().inflate( R.layout.list_item_popup, null, false );
+			buttons_for_status = new ButtonsForStatus( viewRoot );
+		}
+		
+		PopupWindow window;
+		
+		void show(View anchor, TootStatus status ){
+			
+			//
+			window = new PopupWindow(activity);
+			window.setWidth( WindowManager.LayoutParams.WRAP_CONTENT );
+			window.setHeight( WindowManager.LayoutParams.WRAP_CONTENT );
+			window.setContentView( viewRoot );
+			window.setBackgroundDrawable( new ColorDrawable(0x00000000) );
+			window.setTouchable(true);
+			window.setOutsideTouchable( true );
+			window.setTouchInterceptor( new View.OnTouchListener(){
+				@Override public boolean onTouch( View v, MotionEvent event ){
+					if( MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_OUTSIDE){
+						window.dismiss();
+						listView.last_popup_close =  SystemClock.elapsedRealtime();
+						return true;
+					}
+					return false;
+				}
+			} );
+	
+			buttons_for_status.bind( status );
+			buttons_for_status.close_window = window;
+			
+			int[] location = new int[2];
+
+			anchor.getLocationOnScreen(location);
+			int anchor_top = location[1];
+			
+			listView.getLocationOnScreen(location);
+			int listView_top = location[1];
+			
+			int clip_top = listView_top + (int)(0.5f + 8f * activity.density );
+			int clip_bottom = listView_top + listView.getHeight() - (int)(0.5f + 8f * activity.density );
+			
+			int popup_height =  (int)(0.5f + (56f+24f) * activity.density );
+			int popup_y = anchor_top + anchor.getHeight()/2;
+			
+			if(popup_y < clip_top){
+				// 画面外のは画面内にする
+				popup_y = clip_top;
+			}else if( clip_bottom - popup_y < popup_height ){
+				// 画面外のは画面内にする
+				if( popup_y > clip_bottom ) popup_y = clip_bottom;
+
+				// 画面の下側にあるならポップアップの吹き出しが下から出ているように見せる
+				viewRoot.findViewById( R.id.ivTriangleTop ).setVisibility( View.GONE );
+				viewRoot.findViewById( R.id.ivTriangleBottom ).setVisibility( View.VISIBLE );
+				popup_y -= popup_height;
+			}
+			window.showAtLocation(
+				listView
+				, Gravity.CENTER_HORIZONTAL|Gravity.TOP
+				, 0
+				, popup_y
+			);
+		}
+	}
 }

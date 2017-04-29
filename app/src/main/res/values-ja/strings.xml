@@ -184,4 +184,5 @@
     <string name="spoil_visibility_for_account">公開範囲をアカウントの既定値に狭めました</string>
     <string name="contributor">contributor</string>
     <string name="thanks_for">Thanks for %1$s</string>
+    <string name="simple_list">簡略表示(アプリ再起動が必要)</string>
 </resources>

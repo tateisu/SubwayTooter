@@ -88,7 +88,10 @@
                     android:id="@+id/nav_app_setting"
                     android:icon="?attr/ic_setting"
                     android:title="@string/app_setting"/>
-
+                <item
+                    android:id="@+id/nav_muted_app"
+                    android:icon="?attr/ic_setting"
+                    android:title="@string/muted_app"/>
                 <item
                     android:id="@+id/nav_app_about"
                     android:icon="?attr/ic_info"

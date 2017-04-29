@@ -17,12 +17,14 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
+import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.ClientInfo;
 import jp.juggler.subwaytooter.table.ContentWarning;
 import jp.juggler.subwaytooter.table.LogData;
 import jp.juggler.subwaytooter.table.MediaShown;
 import jp.juggler.subwaytooter.table.NotificationTracking;
 import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.table.UserRelation;
 import okhttp3.OkHttpClient;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.TypefaceUtils;
@@ -59,7 +61,7 @@ public class App1 extends Application {
 	
 	private static class DBOpenHelper extends SQLiteOpenHelper {
 		
-		DBOpenHelper( Context context ){
+		private DBOpenHelper(Context context) {
 			super( context, DB_NAME, null, DB_VERSION );
 		}
 		
@@ -72,6 +74,8 @@ public class App1 extends Application {
 			MediaShown.onDBCreate(db);
 			ContentWarning.onDBCreate(db);
 			NotificationTracking.onDBCreate(db);
+			MutedApp.onDBCreate(db);
+			UserRelation.onDBCreate(db);
 		}
 		
 		@Override
@@ -83,6 +87,8 @@ public class App1 extends Application {
 			MediaShown.onDBUpgrade( db, oldVersion, newVersion );
 			ContentWarning.onDBUpgrade( db, oldVersion, newVersion );
 			NotificationTracking.onDBUpgrade( db, oldVersion, newVersion );
+			MutedApp.onDBUpgrade( db, oldVersion, newVersion );
+			UserRelation.onDBUpgrade( db, oldVersion, newVersion );
 		}
 	}
 	
@@ -172,8 +178,8 @@ public class App1 extends Application {
 			db_open_helper = new DBOpenHelper( getApplicationContext() );
 
 			if( BuildConfig.DEBUG){
-//				SQLiteDatabase db = db_open_helper.getWritableDatabase();
-//				db_open_helper.onCreate( db );
+				SQLiteDatabase db = db_open_helper.getWritableDatabase();
+				db_open_helper.onCreate( db );
 			}
 		}
 

@@ -26,7 +26,10 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
+import jp.juggler.subwaytooter.api.entity.TootApplication;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
+import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.NotificationTracking;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -143,30 +146,29 @@ public class AlarmService extends IntentService {
 		} );
 		
 		boolean bAlarmRequired = false;
-		if( account_list != null ){
-			for( SavedAccount account : account_list ){
-				try{
-					if( account.notification_mention
-						|| account.notification_boost
-						|| account.notification_favourite
-						|| account.notification_follow
-						){
-						bAlarmRequired = true;
-						
-						ArrayList< Data > data_list = new ArrayList<>();
-						
-						checkAccount( client, data_list, account );
-						
-						showNotification( account.db_id, data_list );
+		
+		HashSet<String> muted_app = MutedApp.getNameSet();
+		
+		for( SavedAccount account : account_list ){
+			try{
+				if( account.notification_mention
+					|| account.notification_boost
+					|| account.notification_favourite
+					|| account.notification_follow
+					){
+					bAlarmRequired = true;
+					
+					ArrayList< Data > data_list = new ArrayList<>();
+					
+					checkAccount( client, data_list, account ,muted_app);
+					
+					showNotification( account.db_id, data_list );
 
-					}
-				}catch( Throwable ex ){
-					ex.printStackTrace();
 				}
+			}catch( Throwable ex ){
+				ex.printStackTrace();
 			}
 		}
-		
-
 		
 		alarm_manager.cancel( pi_next );
 		if( bAlarmRequired ){
@@ -191,7 +193,7 @@ public class AlarmService extends IntentService {
 	
 	private static final String PATH_NOTIFICATIONS = "/api/v1/notifications";
 	
-	private void checkAccount( TootApiClient client, ArrayList< Data > data_list, SavedAccount account ){
+	private void checkAccount( TootApiClient client, ArrayList< Data > data_list, SavedAccount account,HashSet<String> muted_app ){
 		log.d("checkAccount account_db_id=%s",account.db_id);
 
 		NotificationTracking nr = NotificationTracking.load( account.db_id );
@@ -204,7 +206,7 @@ public class AlarmService extends IntentService {
 				JSONArray array = new JSONArray( nr.last_data );
 				for( int i = array.length() - 1 ; i >= 0 ; -- i ){
 					JSONObject src = array.optJSONObject( i );
-					update_sub( src, nr, account, dst_array, data_list, duplicate_check );
+					update_sub( src, nr, account, dst_array, data_list, duplicate_check , muted_app);
 				}
 			}catch( JSONException ex ){
 				ex.printStackTrace();
@@ -228,7 +230,7 @@ public class AlarmService extends IntentService {
 						JSONArray array = result.array;
 						for( int i = array.length() - 1 ; i >= 0 ; -- i ){
 							JSONObject src = array.optJSONObject( i );
-							update_sub( src, nr, account, dst_array, data_list, duplicate_check );
+							update_sub( src, nr, account, dst_array, data_list, duplicate_check ,muted_app);
 						}
 					}catch( JSONException ex ){
 						ex.printStackTrace();
@@ -267,6 +269,7 @@ public class AlarmService extends IntentService {
 		, ArrayList< JSONObject > dst_array
 		, ArrayList< Data > data_list
 		, HashSet< Long > duplicate_check
+	    , HashSet<String> muted_app
 	) throws JSONException{
 		
 		long id = src.optLong( "id" );
@@ -291,16 +294,35 @@ public class AlarmService extends IntentService {
 			return;
 		}
 		
+		TootNotification notification = TootNotification.parse( log, account, src );
+		if( notification == null ){
+			return;
+		}
+		
+		// app mute
+		{
+			TootStatus status = notification.status;
+			if( status != null ){
+				TootApplication application = status.application;
+				if( application != null ){
+					String name = application.name;
+					if( name != null ){
+						if( muted_app.contains( name ) ){
+							return;
+						}
+					}
+				}
+			}
+		}
+		
 		//
 		Data data = new Data();
 		data.access_info = account;
-		data.notification = TootNotification.parse( log, account, src );
-		if( data.notification != null ){
-			data_list.add( data );
-			//
-			src.put( KEY_TIME, data.notification.time_created_at );
-			dst_array.add( src );
-		}
+		data.notification = notification;
+		data_list.add( data );
+		//
+		src.put( KEY_TIME, data.notification.time_created_at );
+		dst_array.add( src );
 	}
 	
 	public String getNotificationLine( String type, CharSequence display_name ){

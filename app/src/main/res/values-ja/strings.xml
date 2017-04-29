@@ -36,7 +36,7 @@
     <string name="notifications">通知</string>
     <string name="reports">通報</string>
     <string name="your_statuses">あなたの発言</string>
-    <string name="statuses_of">%1$sの発言</string>
+    <string name="statuses_of">%1$s の発言</string>
     <string name="follow">フォロー</string>
     <string name="following">フォロー中</string>
     <string name="followers">フォロワー</string>
@@ -185,4 +185,11 @@
     <string name="contributor">contributor</string>
     <string name="thanks_for">Thanks for %1$s</string>
     <string name="simple_list">簡略表示(アプリ再起動が必要)</string>
+    <string name="app_was_muted">アプリはミュートされます</string>
+    <string name="application_is">アプリ:  %1$s</string>
+    <string name="boost_succeeded">ブーストできました</string>
+    <string name="favourite_succeeded">お気に入りにしました</string>
+    <string name="mute_app_desc">スワイプで解除。解除した後はカラムをリロードすると再表示されます</string>
+    <string name="mute_app_of">\"%1$s\" アプリをミュート</string>
+    <string name="muted_app">ミュートしたアプリ</string>
 </resources>

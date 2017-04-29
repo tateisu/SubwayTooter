@@ -3,13 +3,16 @@ package jp.juggler.subwaytooter;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.widget.ImageButton;
 
 import java.util.Locale;
 
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.table.UserRelation;
 
 class Styler {
 	static int getVisibilityIcon( Context context,String visibility ){
@@ -54,5 +57,29 @@ class Styler {
 		a.recycle();
 		if( res_id == 0) throw new RuntimeException( String.format( Locale.JAPAN,"attr not defined.attr_id=0x%x",attr_id));
 		return res_id;
+	}
+	
+	static void setFollowIcon( @NonNull Context context ,@NonNull ImageButton ib, UserRelation relation ){
+		int icon_attr;
+		int color_attr;
+
+		if( relation.blocking ){
+			color_attr = ( relation.followed_by ? R.attr.colorImageButtonAccent  : R.attr.colorImageButton);
+			icon_attr = R.attr.ic_block;
+		}else if( relation.muting ){
+			color_attr = ( relation.followed_by ? R.attr.colorImageButtonAccent  : R.attr.colorImageButton);
+			icon_attr = R.attr.ic_mute;
+		}else if( relation.requested ){
+			color_attr = R.attr.colorRegexFilterError;
+			icon_attr = (relation.following ? R.attr.ic_account_remove: R.attr.ic_account_add );
+		}else{
+			color_attr = ( relation.followed_by ? R.attr.colorImageButtonAccent : R.attr.colorImageButton );
+			icon_attr = ( relation.following ? R.attr.ic_account_remove : R.attr.ic_account_add );
+		}
+		
+		int color = Styler.getAttributeColor( context,color_attr );
+		Drawable d = Styler.getAttributeDrawable( context,icon_attr ).mutate();
+		d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
+		ib.setImageDrawable( d );
 	}
 }

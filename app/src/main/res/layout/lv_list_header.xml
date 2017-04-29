@@ -77,6 +77,15 @@
                 />
 
         </LinearLayout>
+        <ImageButton
+            android:id="@+id/btnFollow"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/btn_bg_transparent"
+            android:contentDescription="@string/follow"
+            />
     </FrameLayout>
 
     <LinearLayout

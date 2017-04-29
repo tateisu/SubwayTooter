@@ -111,7 +111,9 @@ public class TootApiClient {
 		try{
 			response = call.execute();
 		}catch( Throwable ex ){
-			return new TootApiResult( Utils.formatError( ex, context.getResources(), R.string.network_error ) );
+			return new TootApiResult(
+				Utils.formatError( ex, context.getResources(), R.string.network_error )
+			);
 		}
 		
 		if( callback.isApiCancelled() ) return null;

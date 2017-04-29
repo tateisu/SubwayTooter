@@ -16,7 +16,7 @@
     <string name="mail_not_specified">e-mail non spécifié</string>
     <string name="password_not_specified">mot de passe non spécifié</string>
 
-    <string name="network_error">erreur réseau. %1$s</string>
+    <string name="network_error">erreur réseau.</string>
     <string name="network_error_arg">erreur réseau. %1$s</string>
     <string name="api_error">erreur API %1$s</string>
 
@@ -189,5 +189,12 @@
     <string name="contributor">contributor</string>
     <string name="thanks_for">Thanks for %1$s</string>
     <string name="simple_list">Simple list(app restart required)</string>
+    <string name="app_was_muted">App was muted.</string>
+    <string name="application_is">app: %1$s</string>
+    <string name="boost_succeeded">boost succeeded</string>
+    <string name="favourite_succeeded">favourite succeeded</string>
+    <string name="mute_app_desc">Swipe to delete. You may need reload to show status published by unmuted apps.</string>
+    <string name="mute_app_of">mute app \"%1$s\"</string>
+    <string name="muted_app">Muted apps</string>
 
 </resources>

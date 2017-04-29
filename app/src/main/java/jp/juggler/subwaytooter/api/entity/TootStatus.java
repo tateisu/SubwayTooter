@@ -95,7 +95,7 @@ public class TootStatus extends TootId {
 	public TootTag.List tags;
 	
 	//Application from which the status was posted
-	public String application;
+	public TootApplication application;
 	
 	public long time_created_at;
 	
@@ -135,7 +135,7 @@ public class TootStatus extends TootId {
 			status.media_attachments = TootAttachment.parseList( log, src.optJSONArray( "media_attachments" ) );
 			status.mentions = TootMention.parseList( log, src.optJSONArray( "mentions" ) );
 			status.tags = TootTag.parseList( log, src.optJSONArray( "tags" ) );
-			status.application = Utils.optStringX( src, "application" ); // null
+			status.application = TootApplication.parse( log,src.optJSONObject( "application" )); // null
 			
 			status.time_created_at = parseTime( log, status.created_at );
 			status.decoded_content = HTMLDecoder.decodeHTML( account, status.content );

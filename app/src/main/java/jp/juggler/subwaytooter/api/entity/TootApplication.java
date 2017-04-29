@@ -10,6 +10,7 @@ public class TootApplication {
 	public String website;
 	
 	public static TootApplication parse( LogCategory log, JSONObject src ){
+		if( src == null ) return null;
 		try{
 			TootApplication dst = new TootApplication();
 			dst.name = Utils.optStringX( src, "name" );

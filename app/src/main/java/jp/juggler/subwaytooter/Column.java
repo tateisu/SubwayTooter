@@ -22,14 +22,18 @@ import java.util.regex.Pattern;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
+import jp.juggler.subwaytooter.api.entity.TootApplication;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootContext;
 import jp.juggler.subwaytooter.api.entity.TootGap;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
+import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootReport;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -46,6 +50,7 @@ class Column {
 	private static final int READ_LIMIT = 80; // API側の上限が80です。ただし指定しても40しか返ってこないことが多い
 	private static final long LOOP_TIMEOUT = 10000L;
 	private static final int LOOP_READ_ENOUGH = 30; // フィルタ後のデータ数がコレ以上ならループを諦めます
+	private static final int RELATIONSHIP_LOAD_STEP = 40;
 	
 	// ステータスのリストを返すAPI
 	private static final String PATH_HOME = "/api/v1/timelines/home?limit=" + READ_LIMIT;
@@ -386,8 +391,12 @@ class Column {
 			
 			tmp_list.add( o );
 		}
-		list_data.clear();
-		list_data.addAll( tmp_list );
+		if( tmp_list.size() != list_data.size() ){
+			list_data.clear();
+			list_data.addAll( tmp_list );
+			fireVisualCallback();
+			
+		}
 	}
 	
 	// ミュート解除が成功した時に呼ばれる
@@ -404,11 +413,14 @@ class Column {
 			
 			tmp_list.add( o );
 		}
-		list_data.clear();
-		list_data.addAll( tmp_list );
+		if( tmp_list.size() != list_data.size() ){
+			list_data.clear();
+			list_data.addAll( tmp_list );
+			fireVisualCallback();
+		}
 	}
 	
-	// ミュート解除が成功した時に呼ばれる
+	// ブロック解除が成功したので、ブロックリストから削除する
 	void removeFromBlockList( SavedAccount target_account, long who_id ){
 		if( ! target_account.acct.equals( access_info.acct ) ) return;
 		if( type != TYPE_BLOCKS ) return;
@@ -419,11 +431,13 @@ class Column {
 				TootAccount item = (TootAccount) o;
 				if( item.id == who_id ) continue;
 			}
-			
 			tmp_list.add( o );
 		}
-		list_data.clear();
-		list_data.addAll( tmp_list );
+		if( tmp_list.size() != list_data.size() ){
+			list_data.clear();
+			list_data.addAll( tmp_list );
+			fireVisualCallback();
+		}
 	}
 	
 	// 自分のステータスを削除した時に呼ばれる
@@ -452,8 +466,11 @@ class Column {
 			
 			tmp_list.add( o );
 		}
-		list_data.clear();
-		list_data.addAll( tmp_list );
+		if( tmp_list.size() != list_data.size() ){
+			list_data.clear();
+			list_data.addAll( tmp_list );
+			fireVisualCallback();
+		}
 	}
 	
 	interface VisualCallback {
@@ -529,40 +546,114 @@ class Column {
 		);
 	}
 	
-	private void addWithFilter( ArrayList< Object > dst, TootStatus.List src ){
-		if( ! isFiltered() ){
-			dst.addAll( src );
-			return;
+	void removeMuteApp(){
+		ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
+		
+		HashSet< String > muted_app = MutedApp.getNameSet();
+		
+		for( Object o : list_data ){
+			if( o instanceof TootStatus ){
+				TootStatus item = (TootStatus) o;
+				TootApplication application = item.application;
+				if( application != null ){
+					String name = application.name;
+					if( name != null && muted_app.contains( name ) ){
+						log.d( "removeMuteApp: mute app %s", name );
+						continue;
+					}
+				}
+			}
+			if( o instanceof TootNotification ){
+				TootNotification item = (TootNotification) o;
+				TootStatus status = item.status;
+				
+				if( status != null ){
+					if( status.application != null ){
+						String sv = status.application.name;
+						if( sv != null && muted_app.contains( sv ) ) continue;
+					}
+				}
+			}
+			tmp_list.add( o );
 		}
-		Pattern pattern = null;
+		if( tmp_list.size() != list_data.size() ){
+			list_data.clear();
+			list_data.addAll( tmp_list );
+			fireVisualCallback();
+		}
+	}
+	
+	@SuppressWarnings("ConstantConditions")
+	private void addWithFilter( ArrayList< Object > dst, TootStatus.List src ){
+		
+		Pattern column_regex_filter = null;
 		if( ! TextUtils.isEmpty( regex_text ) ){
 			try{
-				pattern = Pattern.compile( regex_text );
+				column_regex_filter = Pattern.compile( regex_text );
 			}catch( Throwable ex ){
 				ex.printStackTrace();
 			}
 		}
+		
+		HashSet< String > muted_app = MutedApp.getNameSet();
+		
 		for( TootStatus status : src ){
 			if( with_attachment ){
 				if( ! hasMedia( status ) && ! hasMedia( status.reblog ) ) continue;
 			}
+			
 			if( dont_show_boost ){
 				if( status.reblog != null ) continue;
 			}
+			
 			if( dont_show_reply ){
 				if( status.in_reply_to_id != null
 					|| ( status.reblog != null && status.reblog.in_reply_to_id != null )
 					) continue;
 			}
-			if( pattern != null ){
+			
+			if( column_regex_filter != null ){
 				if( status.reblog != null ){
-					if( pattern.matcher( status.reblog.decoded_content.toString() ).find() )
+					if( column_regex_filter.matcher( status.reblog.decoded_content.toString() ).find() )
 						continue;
 				}else{
-					if( pattern.matcher( status.decoded_content.toString() ).find() ) continue;
+					if( column_regex_filter.matcher( status.decoded_content.toString() ).find() )
+						continue;
 					
 				}
 			}
+			
+			if( status.application != null ){
+				String sv = status.application.name;
+				if( sv != null && muted_app.contains( sv ) ){
+					log.d( "addWithFilter: mute app %s", sv );
+					continue;
+				}
+			}
+			
+			dst.add( status );
+		}
+	}
+	
+	@SuppressWarnings("ConstantConditions")
+	private void addWithFilter( ArrayList< Object > dst, TootNotification.List src ){
+		
+		HashSet< String > muted_app = MutedApp.getNameSet();
+		
+		for( TootNotification item : src ){
+			
+			TootStatus status = item.status;
+			
+			if( status != null ){
+				if( status.application != null ){
+					String sv = status.application.name;
+					if( sv != null && muted_app.contains( sv ) ){
+						log.d( "addWithFilter: mute app %s", sv );
+						continue;
+					}
+				}
+			}
+			
 			dst.add( status );
 		}
 	}
@@ -673,7 +764,7 @@ class Column {
 					TootNotification.List src = TootNotification.parseList( log, access_info, result.array );
 					
 					list_tmp = new ArrayList<>();
-					list_tmp.addAll( src );
+					addWithFilter( list_tmp, src );
 					//
 					if( ! src.isEmpty() ){
 						AlarmService.injectData( activity, access_info.db_id, src );
@@ -706,102 +797,112 @@ class Column {
 				
 				client.setAccount( access_info );
 				
-				TootApiResult result;
-				
-				switch( type ){
-				
-				default:
-				case TYPE_HOME:
-					return getStatuses( client, PATH_HOME );
-				
-				case TYPE_LOCAL:
-					return getStatuses( client, PATH_LOCAL );
-				
-				case TYPE_FEDERATE:
-					return getStatuses( client, PATH_FEDERATE );
-				
-				case TYPE_PROFILE:
-					if( who_account == null ){
-						parseAccount1( client, String.format( Locale.JAPAN, PATH_ACCOUNT, profile_id ) );
-						client.callback.publishApiProgress( "" );
-					}
-					switch( profile_tab ){
+				try{
+					TootApiResult result;
+					
+					switch( type ){
 					
 					default:
-					case TAB_STATUS:
-						String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
-						if( with_attachment ) s = s + "&only_media=1";
-						return getStatuses( client, s );
+					case TYPE_HOME:
+						return getStatuses( client, PATH_HOME );
 					
-					case TAB_FOLLOWING:
-						return parseAccountList( client,
-							String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id ) );
+					case TYPE_LOCAL:
+						return getStatuses( client, PATH_LOCAL );
 					
-					case TAB_FOLLOWERS:
-						return parseAccountList( client,
-							String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id ) );
+					case TYPE_FEDERATE:
+						return getStatuses( client, PATH_FEDERATE );
+					
+					case TYPE_PROFILE:
+						if( who_account == null ){
+							parseAccount1( client, String.format( Locale.JAPAN, PATH_ACCOUNT, profile_id ) );
+							client.callback.publishApiProgress( "" );
+						}
+						switch( profile_tab ){
+						
+						default:
+						case TAB_STATUS:
+							String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
+							if( with_attachment ) s = s + "&only_media=1";
+							return getStatuses( client, s );
+						
+						case TAB_FOLLOWING:
+							return parseAccountList( client,
+								String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id ) );
+						
+						case TAB_FOLLOWERS:
+							return parseAccountList( client,
+								String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id ) );
+							
+						}
+					
+					case TYPE_MUTES:
+						return parseAccountList( client, PATH_MUTES );
+					
+					case TYPE_BLOCKS:
+						return parseAccountList( client, PATH_BLOCKS );
+					
+					case TYPE_FAVOURITES:
+						return getStatuses( client, PATH_FAVOURITES );
+					
+					case TYPE_HASHTAG:
+						return getStatuses( client,
+							String.format( Locale.JAPAN, PATH_HASHTAG, Uri.encode( hashtag ) ) );
+					
+					case TYPE_REPORTS:
+						return parseReports( client, PATH_REPORTS );
+					
+					case TYPE_NOTIFICATIONS:
+						return parseNotifications( client, PATH_NOTIFICATIONS );
+					
+					case TYPE_CONVERSATION:
+						
+						// 指定された発言そのもの
+						result = client.request(
+							String.format( Locale.JAPAN, PATH_STATUSES, status_id ) );
+						if( result == null || result.object == null ) return result;
+						TootStatus target_status = TootStatus.parse( log, access_info, result.object );
+						target_status.conversation_main = true;
+						
+						// 前後の会話
+						result = client.request(
+							String.format( Locale.JAPAN, PATH_STATUSES_CONTEXT, status_id ) );
+						if( result == null || result.object == null ) return result;
+						
+						// 一つのリストにまとめる
+						TootContext context = TootContext.parse( log, access_info, result.object );
+						list_tmp = new ArrayList<>( 1 + context.ancestors.size() + context.descendants.size() );
+						if( context.ancestors != null )
+							addWithFilter( list_tmp, context.ancestors );
+						list_tmp.add( target_status );
+						if( context.descendants != null )
+							addWithFilter( list_tmp, context.descendants );
+						
+						//
+						return result;
+					
+					case TYPE_SEARCH:
+						String path = String.format( Locale.JAPAN, PATH_SEARCH, Uri.encode( search_query ) );
+						if( search_resolve ) path = path + "&resolve=1";
+						
+						result = client.request( path );
+						if( result == null || result.object == null ) return result;
+						
+						TootResults tmp = TootResults.parse( log, access_info, result.object );
+						if( tmp != null ){
+							list_tmp = new ArrayList<>();
+							list_tmp.addAll( tmp.hashtags );
+							list_tmp.addAll( tmp.accounts );
+							list_tmp.addAll( tmp.statuses );
+						}
+						return result;
 						
 					}
-				
-				case TYPE_MUTES:
-					return parseAccountList( client, PATH_MUTES );
-				
-				case TYPE_BLOCKS:
-					return parseAccountList( client, PATH_BLOCKS );
-				
-				case TYPE_FAVOURITES:
-					return getStatuses( client, PATH_FAVOURITES );
-				
-				case TYPE_HASHTAG:
-					return getStatuses( client,
-						String.format( Locale.JAPAN, PATH_HASHTAG, Uri.encode( hashtag ) ) );
-				
-				case TYPE_REPORTS:
-					return parseReports( client, PATH_REPORTS );
-				
-				case TYPE_NOTIFICATIONS:
-					return parseNotifications( client, PATH_NOTIFICATIONS );
-				
-				case TYPE_CONVERSATION:
-					
-					// 指定された発言そのもの
-					result = client.request(
-						String.format( Locale.JAPAN, PATH_STATUSES, status_id ) );
-					if( result == null || result.object == null ) return result;
-					TootStatus target_status = TootStatus.parse( log, access_info, result.object );
-					target_status.conversation_main = true;
-					
-					// 前後の会話
-					result = client.request(
-						String.format( Locale.JAPAN, PATH_STATUSES_CONTEXT, status_id ) );
-					if( result == null || result.object == null ) return result;
-					
-					// 一つのリストにまとめる
-					TootContext context = TootContext.parse( log, access_info, result.object );
-					list_tmp = new ArrayList<>( 1 + context.ancestors.size() + context.descendants.size() );
-					if( context.ancestors != null ) list_tmp.addAll( context.ancestors );
-					list_tmp.add( target_status );
-					if( context.descendants != null ) list_tmp.addAll( context.descendants );
-					
-					//
-					return result;
-				
-				case TYPE_SEARCH:
-					String path = String.format( Locale.JAPAN, PATH_SEARCH, Uri.encode( search_query ) );
-					if( search_resolve ) path = path + "&resolve=1";
-					
-					result = client.request( path );
-					if( result == null || result.object == null ) return result;
-					
-					TootResults tmp = TootResults.parse( log, access_info, result.object );
-					if( tmp != null ){
-						list_tmp = new ArrayList<>();
-						list_tmp.addAll( tmp.hashtags );
-						list_tmp.addAll( tmp.accounts );
-						list_tmp.addAll( tmp.statuses );
+				}finally{
+					try{
+						updateRelation( client, list_tmp );
+					}catch( Throwable ex ){
+						ex.printStackTrace();
 					}
-					return result;
-					
 				}
 			}
 			
@@ -1023,7 +1124,7 @@ class Column {
 					saveRange( result, bBottom, ! bBottom );
 					list_tmp = new ArrayList<>();
 					TootNotification.List src = TootNotification.parseList( log, access_info, result.array );
-					list_tmp.addAll( src );
+					addWithFilter( list_tmp, src );
 					
 					if( ! src.isEmpty() ){
 						AlarmService.injectData( activity, access_info.db_id, src );
@@ -1068,7 +1169,7 @@ class Column {
 							
 							src = TootNotification.parseList( log, access_info, result2.array );
 							if( ! src.isEmpty() ){
-								list_tmp.addAll( src );
+								addWithFilter( list_tmp, src );
 								AlarmService.injectData( activity, access_info.db_id, src );
 							}
 						}
@@ -1218,61 +1319,69 @@ class Column {
 				} );
 				
 				client.setAccount( access_info );
-				
-				switch( type ){
-				
-				default:
-				case TYPE_HOME:
-					return getStatusList( client, PATH_HOME );
-				
-				case TYPE_LOCAL:
-					return getStatusList( client, PATH_LOCAL );
-				
-				case TYPE_FEDERATE:
-					return getStatusList( client, PATH_FEDERATE );
-				
-				case TYPE_FAVOURITES:
-					return getStatusList( client, PATH_FAVOURITES );
-				
-				case TYPE_REPORTS:
-					return getReportList( client, PATH_REPORTS );
-				
-				case TYPE_NOTIFICATIONS:
-					return getNotificationList( client, PATH_NOTIFICATIONS );
-				
-				case TYPE_PROFILE:
-					if( who_account == null ){
-						parseAccount1( client.request(
-							String.format( Locale.JAPAN, PATH_ACCOUNT, profile_id ) ) );
-						
-						client.callback.publishApiProgress( "" );
-					}
-					switch( profile_tab ){
+				try{
+					
+					switch( type ){
 					
 					default:
-					case TAB_STATUS:
-						String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
-						if( with_attachment ) s = s + "&only_media=1";
-						return getStatusList( client, s );
+					case TYPE_HOME:
+						return getStatusList( client, PATH_HOME );
 					
-					case TAB_FOLLOWING:
-						return getAccountList( client,
-							String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id ) );
+					case TYPE_LOCAL:
+						return getStatusList( client, PATH_LOCAL );
 					
-					case TAB_FOLLOWERS:
-						return getAccountList( client,
-							String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id ) );
+					case TYPE_FEDERATE:
+						return getStatusList( client, PATH_FEDERATE );
+					
+					case TYPE_FAVOURITES:
+						return getStatusList( client, PATH_FAVOURITES );
+					
+					case TYPE_REPORTS:
+						return getReportList( client, PATH_REPORTS );
+					
+					case TYPE_NOTIFICATIONS:
+						return getNotificationList( client, PATH_NOTIFICATIONS );
+					
+					case TYPE_PROFILE:
+						if( who_account == null ){
+							parseAccount1( client.request(
+								String.format( Locale.JAPAN, PATH_ACCOUNT, profile_id ) ) );
+							
+							client.callback.publishApiProgress( "" );
+						}
+						switch( profile_tab ){
 						
+						default:
+						case TAB_STATUS:
+							String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
+							if( with_attachment ) s = s + "&only_media=1";
+							return getStatusList( client, s );
+						
+						case TAB_FOLLOWING:
+							return getAccountList( client,
+								String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id ) );
+						
+						case TAB_FOLLOWERS:
+							return getAccountList( client,
+								String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id ) );
+							
+						}
+					case TYPE_MUTES:
+						return getAccountList( client, PATH_MUTES );
+					
+					case TYPE_BLOCKS:
+						return getAccountList( client, PATH_BLOCKS );
+					
+					case TYPE_HASHTAG:
+						return getStatusList( client,
+							String.format( Locale.JAPAN, PATH_HASHTAG, Uri.encode( hashtag ) ) );
 					}
-				case TYPE_MUTES:
-					return getAccountList( client, PATH_MUTES );
-				
-				case TYPE_BLOCKS:
-					return getAccountList( client, PATH_BLOCKS );
-				
-				case TYPE_HASHTAG:
-					return getStatusList( client,
-						String.format( Locale.JAPAN, PATH_HASHTAG, Uri.encode( hashtag ) ) );
+				}finally{
+					try{
+						updateRelation( client, list_tmp );
+					}catch( Throwable ex ){
+						ex.printStackTrace();
+					}
 				}
 			}
 			
@@ -1499,7 +1608,7 @@ class Column {
 					// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
 					max_id = Long.toString( src.get( src.size() - 1 ).id );
 					
-					list_tmp.addAll( src );
+					addWithFilter( list_tmp, src );
 					
 					AlarmService.injectData( activity, access_info.db_id, src );
 					
@@ -1579,55 +1688,63 @@ class Column {
 				
 				client.setAccount( access_info );
 				
-				switch( type ){
-				
-				default:
-				case TYPE_HOME:
-					return getStatusList( client, PATH_HOME );
-				
-				case TYPE_LOCAL:
-					return getStatusList( client, PATH_LOCAL );
-				
-				case TYPE_FEDERATE:
-					return getStatusList( client, PATH_FEDERATE );
-				
-				case TYPE_FAVOURITES:
-					return getStatusList( client, PATH_FAVOURITES );
-				
-				case TYPE_REPORTS:
-					return getReportList( client, PATH_REPORTS );
-				
-				case TYPE_NOTIFICATIONS:
-					return getNotificationList( client, PATH_NOTIFICATIONS );
-				
-				case TYPE_HASHTAG:
-					return getStatusList( client,
-						String.format( Locale.JAPAN, PATH_HASHTAG, Uri.encode( hashtag ) ) );
-				
-				case TYPE_MUTES:
-					return getAccountList( client, PATH_MUTES );
-				
-				case TYPE_BLOCKS:
-					return getAccountList( client, PATH_BLOCKS );
-				
-				case TYPE_PROFILE:
-					switch( profile_tab ){
+				try{
+					switch( type ){
 					
 					default:
-					case TAB_STATUS:
-						String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
-						if( with_attachment ) s = s + "&only_media=1";
-						return getStatusList( client, s );
+					case TYPE_HOME:
+						return getStatusList( client, PATH_HOME );
 					
-					case TAB_FOLLOWING:
-						return getAccountList( client,
-							String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id ) );
+					case TYPE_LOCAL:
+						return getStatusList( client, PATH_LOCAL );
 					
-					case TAB_FOLLOWERS:
-						return getAccountList( client,
-							String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id ) );
+					case TYPE_FEDERATE:
+						return getStatusList( client, PATH_FEDERATE );
+					
+					case TYPE_FAVOURITES:
+						return getStatusList( client, PATH_FAVOURITES );
+					
+					case TYPE_REPORTS:
+						return getReportList( client, PATH_REPORTS );
+					
+					case TYPE_NOTIFICATIONS:
+						return getNotificationList( client, PATH_NOTIFICATIONS );
+					
+					case TYPE_HASHTAG:
+						return getStatusList( client,
+							String.format( Locale.JAPAN, PATH_HASHTAG, Uri.encode( hashtag ) ) );
+					
+					case TYPE_MUTES:
+						return getAccountList( client, PATH_MUTES );
+					
+					case TYPE_BLOCKS:
+						return getAccountList( client, PATH_BLOCKS );
+					
+					case TYPE_PROFILE:
+						switch( profile_tab ){
+						
+						default:
+						case TAB_STATUS:
+							String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
+							if( with_attachment ) s = s + "&only_media=1";
+							return getStatusList( client, s );
+						
+						case TAB_FOLLOWING:
+							return getAccountList( client,
+								String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id ) );
+						
+						case TAB_FOLLOWERS:
+							return getAccountList( client,
+								String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id ) );
+						}
+						
 					}
-					
+				}finally{
+					try{
+						updateRelation( client, list_tmp );
+					}catch( Throwable ex ){
+						ex.printStackTrace();
+					}
 				}
 			}
 			
@@ -1712,6 +1829,81 @@ class Column {
 		fireVisualCallback();
 		
 		AlarmService.dataRemoved( activity, access_info.db_id );
+	}
+	
+	private void updateRelation( TootApiClient client, ArrayList< Object > list_tmp ){
+		if( list_tmp == null || list_tmp.isEmpty() ) return;
+		HashSet< Long > who_set = new HashSet<>();
+		{
+			TootAccount a;
+			TootStatus s;
+			TootNotification n;
+			for( Object o : list_tmp ){
+				if( o instanceof TootAccount ){
+					a = (TootAccount) o;
+					who_set.add( a.id );
+				}else if( o instanceof TootStatus ){
+					s = (TootStatus) o;
+					if( s != null ){
+						a = s.account;
+						if( a != null ) who_set.add( a.id );
+						s = s.reblog;
+						if( s != null ){
+							a = s.account;
+							if( a != null ) who_set.add( a.id );
+						}
+					}
+				}else if( o instanceof TootNotification ){
+					n = (TootNotification) o;
+					//
+					a = n.account;
+					if( a != null ) who_set.add( a.id );
+					//
+					s = n.status;
+					if( s != null ){
+						a = s.account;
+						if( a != null ) who_set.add( a.id );
+						s = s.reblog;
+						if( s != null ){
+							a = s.account;
+							if( a != null ) who_set.add( a.id );
+						}
+					}
+				}
+			}
+		}
+		int size = who_set.size();
+		if( size > 0 ){
+			long[] who_list = new long[ size ];
+			{
+				int n = 0;
+				for( Long l : who_set ){
+					who_list[ n++ ] = l;
+				}
+			}
+			
+			int n = 0;
+			while( n < size ){
+				StringBuilder sb = new StringBuilder();
+				sb.append( "/api/v1/accounts/relationships" );
+				for( int i = 0 ; i < RELATIONSHIP_LOAD_STEP ; ++ i ){
+					if( n >= size ) break;
+					sb.append( i == 0 ? '?' : '&' );
+					sb.append( "id[]=" );
+					sb.append( Long.toString( who_list[ n++ ] ) );
+				}
+				TootApiResult result = client.request( sb.toString() );
+				if( result == null ){
+					// cancelled.
+					break;
+				}else if( result.array != null ){
+					TootRelationShip.List list = TootRelationShip.parseList( log, result.array );
+					long now = System.currentTimeMillis();
+					UserRelation.saveList( now, access_info.db_id, list );
+				}
+			}
+			log.d( "updateRelation: update %d relations.", n );
+		}
 	}
 	
 }

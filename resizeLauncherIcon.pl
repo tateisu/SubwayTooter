@@ -50,3 +50,6 @@ my $res_dir = "app/src/main/res";
 resize_scales( "ic_launcher-1024.png",$res_dir,"mipmap","ic_launcher",0,48);
 #resize_scales( "ic_app_logo-512.png",$res_dir,"drawable","ic_app_logo",0,32);
 resize_scales( "ic_notification-817.png",$res_dir,"drawable","ic_notification",0,24);
+
+resize_scales( "ic_account_remove.png",$res_dir,"drawable","ic_account_remove",0,32);
+resize_scales( "ic_account_remove_dark.png",$res_dir,"drawable","ic_account_remove_dark",0,32);

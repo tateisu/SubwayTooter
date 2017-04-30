@@ -1397,7 +1397,7 @@ public class ActMain extends AppCompatActivity
 					
 					if( callback != null ) callback.onRelationChanged();
 					
-				}else if( bFollow && who.locked && result.response.code() == 422 ){
+				}else if( bFollow && who.locked && result.response != null && result.response.code() == 422 ){
 					Utils.showToast( ActMain.this, false, R.string.cant_follow_locked_user );
 					
 				}else{

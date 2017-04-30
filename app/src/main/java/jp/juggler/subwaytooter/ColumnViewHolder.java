@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
@@ -74,7 +75,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		return is_destroyed.get() || activity.isFinishing();
 	}
 	
-	void onPageDestroy( View root ){
+	void onPageDestroy( @SuppressWarnings("UnusedParameters") View root ){
 		saveScrollPosition();
 		log.d( "onPageDestroy:%s", column.getColumnName( true ) );
 		column.removeVisualListener( this );
@@ -95,10 +96,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 	private TextView tvRegexFilterError;
 	private boolean bSimpleList;
 	
-	
 	void onPageCreate( View root, int page_idx, int page_count ){
 		log.d( "onPageCreate:%s", column.getColumnName( true ) );
-		
 		
 		( (TextView) root.findViewById( R.id.tvColumnIndex ) )
 			.setText( activity.getString( R.string.column_index, page_idx + 1, page_count ) );
@@ -136,6 +135,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		case Column.TYPE_REPORTS:
 		case Column.TYPE_BLOCKS:
 		case Column.TYPE_MUTES:
+		case Column.TYPE_FOLLOW_REQUESTS:
 		case Column.TYPE_NOTIFICATIONS:
 			bAllowFilter = false;
 			break;
@@ -246,11 +246,11 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			swipyRefreshLayout.setEnabled( false );
 		}
 		
-		bSimpleList = activity.pref.getBoolean(Pref.KEY_SIMPLE_LIST,false);
+		bSimpleList = activity.pref.getBoolean( Pref.KEY_SIMPLE_LIST, false );
 		if( column.type == Column.TYPE_CONVERSATION ){
 			bSimpleList = false;
 		}
-		if(bSimpleList){
+		if( bSimpleList ){
 			listView.setOnItemClickListener( status_adapter );
 		}
 		
@@ -533,8 +533,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				btnFollow.setImageDrawable( null );
 			}else{
 				tvCreated.setText( TootStatus.formatTime( who.time_created_at ) );
-				ivBackground.setImageUrl(  access_info.supplyBaseUrl(who.header_static), App1.getImageLoader() );
-				ivAvatar.setImageUrl( access_info.supplyBaseUrl(who.avatar_static), App1.getImageLoader() );
+				ivBackground.setImageUrl( access_info.supplyBaseUrl( who.header_static ), App1.getImageLoader() );
+				ivAvatar.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ), App1.getImageLoader() );
 				tvDisplayName.setText( who.display_name );
 				
 				String s = access_info.getFullAcct( who );
@@ -548,8 +548,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				btnFollowing.setText( activity.getString( R.string.following ) + "\n" + who.following_count );
 				btnFollowers.setText( activity.getString( R.string.followers ) + "\n" + who.followers_count );
 				
-				UserRelation relation = UserRelation.load( access_info.db_id,who.id );
-				Styler.setFollowIcon( activity,btnFollow,relation );
+				UserRelation relation = UserRelation.load( access_info.db_id, who.id );
+				Styler.setFollowIcon( activity, btnFollow, relation );
 			}
 		}
 		
@@ -580,14 +580,14 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				break;
 			
 			case R.id.btnMore:
-				if( who != null){
-					activity.openAccountMoreMenu( access_info, who );
+				if( who != null ){
+					activity.openAccountMoreMenu( access_info, who ,column.type);
 				}
 				break;
-				
+			
 			case R.id.btnFollow:
-				if( who != null){
-					activity.openAccountMoreMenu( access_info, who );
+				if( who != null ){
+					activity.openAccountMoreMenu( access_info, who ,column.type);
 				}
 				break;
 				
@@ -639,8 +639,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		@Override
 		public void onItemClick( AdapterView< ? > parent, View view, int position, long id ){
 			Object tag = view.getTag();
-			if( tag instanceof StatusViewHolder){
-				((StatusViewHolder)tag).onItemClick(view);
+			if( tag instanceof StatusViewHolder ){
+				( (StatusViewHolder) tag ).onItemClick( view );
 			}
 		}
 	}
@@ -684,7 +684,6 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		
 		final ButtonsForStatus buttons_for_status;
 		
-
 		final View llSearchTag;
 		final Button btnSearchTag;
 		
@@ -749,7 +748,6 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			ivMedia3.setOnClickListener( this );
 			ivMedia4.setOnClickListener( this );
 			btnFollow.setOnClickListener( this );
-
 			
 			ivThumbnail.setOnClickListener( this );
 			// ここを個別タップにすると邪魔すぎる tvName.setOnClickListener( this );
@@ -761,7 +759,6 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			tvMentions.setMovementMethod( MyLinkMovementMethod.getInstance() );
 			tvContentWarning.setMovementMethod( MyLinkMovementMethod.getInstance() );
 			
-
 		}
 		
 		void bind( Object item ){
@@ -812,7 +809,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 					//
 					showFollow( n.account );
 				}else if( TootNotification.TYPE_MENTION.equals( n.type ) ){
-					if(!bSimpleList){
+					if( ! bSimpleList ){
 						showBoost(
 							n.account
 							, n.time_created_at
@@ -866,12 +863,12 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		private void showFollow( TootAccount who ){
 			account_follow = who;
 			llFollow.setVisibility( View.VISIBLE );
-			ivFollow.setImageUrl( access_info.supplyBaseUrl(who.avatar_static), App1.getImageLoader() );
+			ivFollow.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ), App1.getImageLoader() );
 			tvFollowerName.setText( who.display_name );
 			tvFollowerAcct.setText( access_info.getFullAcct( who ) );
 			
-			UserRelation relation = UserRelation.load( access_info.db_id,who.id);
-			Styler.setFollowIcon( activity,btnFollow,relation );
+			UserRelation relation = UserRelation.load( access_info.db_id, who.id );
+			Styler.setFollowIcon( activity, btnFollow, relation );
 		}
 		
 		private void showStatus( ActMain activity, TootStatus status ){
@@ -883,7 +880,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			tvTime.setText( TootStatus.formatTime( status.time_created_at ) );
 			
 			tvName.setText( status.account.display_name );
-			ivThumbnail.setImageUrl( access_info.supplyBaseUrl(status.account.avatar_static), App1.getImageLoader() );
+			ivThumbnail.setImageUrl( access_info.supplyBaseUrl( status.account.avatar_static ), App1.getImageLoader() );
 			tvContent.setText( status.decoded_content );
 
 //			if( status.decoded_tags == null ){
@@ -925,30 +922,28 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				btnShowMedia.setVisibility( ! is_shown ? View.VISIBLE : View.GONE );
 			}
 			
-			if( buttons_for_status != null){
+			if( buttons_for_status != null ){
 				buttons_for_status.bind( status );
 			}
 			
 			if( tvApplication != null ){
-				switch(column.type){
+				switch( column.type ){
 				default:
 					tvApplication.setVisibility( View.GONE );
 					break;
-
+				
 				case Column.TYPE_CONVERSATION:
 					if( status.application == null ){
 						tvApplication.setVisibility( View.GONE );
 					}else{
 						tvApplication.setVisibility( View.VISIBLE );
-						tvApplication.setText( activity.getString(R.string.application_is,status.application.name));
+						tvApplication.setText( activity.getString( R.string.application_is, status.application.name ) );
 					}
 					break;
 					
 				}
 			}
 		}
-		
-
 		
 		private void showContent( boolean shown ){
 			btnContentWarning.setText( shown ? R.string.hide : R.string.show );
@@ -964,7 +959,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				TootAttachment ta = status.media_attachments.get( idx );
 				String url = ta.preview_url;
 				if( TextUtils.isEmpty( url ) ) url = ta.remote_url;
-				iv.setImageUrl( access_info.supplyBaseUrl(url), App1.getImageLoader() );
+				iv.setImageUrl( access_info.supplyBaseUrl( url ), App1.getImageLoader() );
 			}
 		}
 		
@@ -1008,7 +1003,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				activity.performOpenUser( access_info, account_follow );
 				break;
 			case R.id.btnFollow:
-				activity.openAccountMoreMenu( access_info, account_follow );
+				activity.openAccountMoreMenu( access_info, account_follow ,column.type);
 				break;
 			
 			case R.id.btnSearchTag:
@@ -1049,8 +1044,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		}
 		
 		// 簡略ビューの時だけ呼ばれる
-		void onItemClick(View anchor){
-
+		void onItemClick( View anchor ){
+			
 			if( status != null ){
 				// ポップアップを表示する
 				ListItemPopup popup = new ListItemPopup();
@@ -1059,14 +1054,25 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		}
 	}
 	
+	private final ActMain.RelationChangedCallback favourite_complete_callback = new ActMain.RelationChangedCallback() {
+		@Override public void onRelationChanged(){
+			Utils.showToast( activity, false, R.string.favourite_succeeded );
+		}
+	};
+	private final ActMain.RelationChangedCallback boost_complete_callback = new ActMain.RelationChangedCallback() {
+		@Override public void onRelationChanged(){
+			Utils.showToast( activity, false, R.string.boost_succeeded );
+		}
+	};
+	
 	private class ButtonsForStatus implements View.OnClickListener {
 		final ImageButton btnConversation;
 		final ImageButton btnReply;
 		final Button btnBoost;
 		final Button btnFavourite;
 		final ImageButton btnMore;
-
-		ButtonsForStatus(View viewRoot){
+		
+		ButtonsForStatus( View viewRoot ){
 			btnConversation = (ImageButton) viewRoot.findViewById( R.id.btnConversation );
 			btnReply = (ImageButton) viewRoot.findViewById( R.id.btnReply );
 			btnBoost = (Button) viewRoot.findViewById( R.id.btnBoost );
@@ -1084,7 +1090,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		
 		void bind( TootStatus status ){
 			this.status = status;
-				
+			
 			int color_normal = Styler.getAttributeColor( activity, R.attr.colorImageButton );
 			int color_accent = Styler.getAttributeColor( activity, R.attr.colorImageButtonAccent );
 			
@@ -1106,8 +1112,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				setButton( btnFavourite, true, color, R.attr.btn_favourite, Long.toString( status.favourites_count ) );
 			}
 			
-			
 		}
+		
 		private void setButton( Button b, boolean enabled, int color, int icon_attr, String text ){
 			Drawable d = Styler.getAttributeDrawable( activity, icon_attr ).mutate();
 			d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
@@ -1121,7 +1127,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		
 		@Override public void onClick( View v ){
 			if( close_window != null ) close_window.dismiss();
-			switch(v.getId()){
+			switch( v.getId() ){
 			case R.id.btnConversation:
 				activity.performConversation( access_info, status );
 				break;
@@ -1129,74 +1135,74 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				activity.performReply( access_info, status );
 				break;
 			case R.id.btnBoost:
-				activity.performBoost( access_info, status, false ,null);
+				activity.performBoost( access_info, status, false, bSimpleList ? boost_complete_callback : null );
 				break;
 			case R.id.btnFavourite:
-				activity.performFavourite( access_info, status ,null);
+				activity.performFavourite( access_info, status, bSimpleList ? favourite_complete_callback : null );
 				break;
 			case R.id.btnMore:
-				activity.openStatusMoreMenu( access_info, status ,column.type);
+				activity.openStatusMoreMenu( access_info, status, column.type );
 				break;
 			}
 		}
 	}
 	
-	private class ListItemPopup{
+	private class ListItemPopup {
 		final View viewRoot;
 		final ButtonsForStatus buttons_for_status;
-
-		ListItemPopup( ){
+		
+		@SuppressLint("InflateParams") ListItemPopup(){
 			viewRoot = activity.getLayoutInflater().inflate( R.layout.list_item_popup, null, false );
 			buttons_for_status = new ButtonsForStatus( viewRoot );
 		}
 		
 		PopupWindow window;
 		
-		void show(View anchor, TootStatus status ){
+		void show( View anchor, TootStatus status ){
 			
 			//
-			window = new PopupWindow(activity);
+			window = new PopupWindow( activity );
 			window.setWidth( WindowManager.LayoutParams.WRAP_CONTENT );
 			window.setHeight( WindowManager.LayoutParams.WRAP_CONTENT );
 			window.setContentView( viewRoot );
-			window.setBackgroundDrawable( new ColorDrawable(0x00000000) );
-			window.setTouchable(true);
+			window.setBackgroundDrawable( new ColorDrawable( 0x00000000 ) );
+			window.setTouchable( true );
 			window.setOutsideTouchable( true );
-			window.setTouchInterceptor( new View.OnTouchListener(){
+			window.setTouchInterceptor( new View.OnTouchListener() {
 				@Override public boolean onTouch( View v, MotionEvent event ){
-					if( MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_OUTSIDE){
+					if( MotionEventCompat.getActionMasked( event ) == MotionEvent.ACTION_OUTSIDE ){
 						window.dismiss();
-						listView.last_popup_close =  SystemClock.elapsedRealtime();
+						listView.last_popup_close = SystemClock.elapsedRealtime();
 						return true;
 					}
 					return false;
 				}
 			} );
-	
+			
 			buttons_for_status.bind( status );
 			buttons_for_status.close_window = window;
 			
-			int[] location = new int[2];
-
-			anchor.getLocationOnScreen(location);
-			int anchor_top = location[1];
+			int[] location = new int[ 2 ];
 			
-			listView.getLocationOnScreen(location);
-			int listView_top = location[1];
+			anchor.getLocationOnScreen( location );
+			int anchor_top = location[ 1 ];
 			
-			int clip_top = listView_top + (int)(0.5f + 8f * activity.density );
-			int clip_bottom = listView_top + listView.getHeight() - (int)(0.5f + 8f * activity.density );
+			listView.getLocationOnScreen( location );
+			int listView_top = location[ 1 ];
 			
-			int popup_height =  (int)(0.5f + (56f+24f) * activity.density );
-			int popup_y = anchor_top + anchor.getHeight()/2;
+			int clip_top = listView_top + (int) ( 0.5f + 8f * activity.density );
+			int clip_bottom = listView_top + listView.getHeight() - (int) ( 0.5f + 8f * activity.density );
 			
-			if(popup_y < clip_top){
+			int popup_height = (int) ( 0.5f + ( 56f + 24f ) * activity.density );
+			int popup_y = anchor_top + anchor.getHeight() / 2;
+			
+			if( popup_y < clip_top ){
 				// 画面外のは画面内にする
 				popup_y = clip_top;
 			}else if( clip_bottom - popup_y < popup_height ){
 				// 画面外のは画面内にする
 				if( popup_y > clip_bottom ) popup_y = clip_bottom;
-
+				
 				// 画面の下側にあるならポップアップの吹き出しが下から出ているように見せる
 				viewRoot.findViewById( R.id.ivTriangleTop ).setVisibility( View.GONE );
 				viewRoot.findViewById( R.id.ivTriangleBottom ).setVisibility( View.VISIBLE );
@@ -1204,7 +1210,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			}
 			window.showAtLocation(
 				listView
-				, Gravity.CENTER_HORIZONTAL|Gravity.TOP
+				, Gravity.CENTER_HORIZONTAL | Gravity.TOP
 				, 0
 				, popup_y
 			);

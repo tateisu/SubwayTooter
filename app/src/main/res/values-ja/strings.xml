@@ -192,4 +192,13 @@
     <string name="mute_app_desc">スワイプで解除。解除した後はカラムをリロードすると再表示されます</string>
     <string name="mute_app_of">\"%1$s\" アプリをミュート</string>
     <string name="muted_app">ミュートしたアプリ</string>
+    <string name="follow_request_authorized">%1$s からのフォローリクエストを許可しました</string>
+    <string name="follow_request_ng">フォローリクエストの却下</string>
+    <string name="follow_request_ok">フォローリクエストの許可</string>
+    <string name="follow_request_rejected">%1$s からのフォローリクエストを却下しました</string>
+    <string name="follow_requests">フォローリクエスト一覧</string>
+    <string name="led">LED</string>
+    <string name="notification_option">通知オプション</string>
+    <string name="sound">音</string>
+    <string name="vibration">振動</string>
 </resources>

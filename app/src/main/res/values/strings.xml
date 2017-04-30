@@ -193,4 +193,13 @@
     <string name="app_was_muted">App was muted.</string>
     <string name="favourite_succeeded">favourite succeeded</string>
     <string name="boost_succeeded">boost succeeded</string>
+    <string name="notification_option">notification option</string>
+    <string name="sound">sound</string>
+    <string name="vibration">vibration</string>
+    <string name="led">LED</string>
+    <string name="follow_requests">Follow requests</string>
+    <string name="follow_request_ok">Authorize for follow request</string>
+    <string name="follow_request_ng">Reject for follow request</string>
+    <string name="follow_request_rejected">%1$s\'s follow request is rejected.</string>
+    <string name="follow_request_authorized">%1$s\'s follow request is authorized.</string>
 </resources>

@@ -121,6 +121,40 @@ android:scrollbarStyle="outsideOverlay"
     </LinearLayout>
 
     <View style="@style/setting_divider"/>
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/notification_option"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <CheckBox
+            android:id="@+id/cbNotificationSound"
+            style="@style/setting_horizontal_stretch"
+            android:text="@string/sound"
+            />
+
+    </LinearLayout>
+    <LinearLayout style="@style/setting_row_form">
+
+        <CheckBox
+            android:id="@+id/cbNotificationVibration"
+            style="@style/setting_horizontal_stretch"
+            android:text="@string/vibration"
+            />
+
+    </LinearLayout>
+    <LinearLayout style="@style/setting_row_form">
+
+        <CheckBox
+            android:id="@+id/cbNotificationLED"
+            style="@style/setting_horizontal_stretch"
+            android:text="@string/led"
+            />
+
+    </LinearLayout>
+
+    <View style="@style/setting_divider"/>
 
     <!--<TextView-->
         <!--style="@style/setting_row_label"-->

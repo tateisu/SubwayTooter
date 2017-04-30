@@ -57,6 +57,11 @@
                     android:title="@string/your_statuses"/>
 
                 <item
+                    android:id="@+id/nav_follow_requests"
+                    android:icon="?attr/ic_account_add"
+                    android:title="@string/follow_requests"/>
+
+                <item
                     android:id="@+id/nav_add_mutes"
                     android:icon="?attr/ic_mute"
                     android:title="@string/muted_users"/>

@@ -130,20 +130,20 @@ public class Utils {
 //	}
 //
 	// 文字列とバイト列の変換
-	public static byte[] encodeUTF8( String str ){
+	@NonNull public static byte[] encodeUTF8( @NonNull String str ){
 		try{
 			return str.getBytes( "UTF-8" );
 		}catch( Throwable ex ){
-			return null; // 入力がnullの場合のみ発生
+			return new byte[0]; // 入力がnullの場合のみ発生
 		}
 	}
 	
 	// 文字列とバイト列の変換
-	public static String decodeUTF8( byte[] data ){
+	@NonNull public static String decodeUTF8( @NonNull byte[] data ){
 		try{
 			return new String( data, "UTF-8" );
 		}catch( Throwable ex ){
-			return null; // 入力がnullの場合のみ発生
+			return ""; // 入力がnullの場合のみ発生
 		}
 	}
 	

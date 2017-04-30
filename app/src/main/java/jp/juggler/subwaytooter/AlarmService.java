@@ -6,6 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.PowerManager;
 import android.os.SystemClock;
@@ -62,10 +63,11 @@ public class AlarmService extends IntentService {
 	NotificationManager notification_manager;
 	PowerManager.WakeLock wake_lock;
 	PendingIntent pi_next;
+	SharedPreferences pref;
 	
 	@Override public void onCreate(){
 		super.onCreate();
-		log.d("ctor");
+		log.d( "ctor" );
 		
 		alarm_manager = (AlarmManager) getApplicationContext().getSystemService( ALARM_SERVICE );
 		power_manager = (PowerManager) getApplicationContext().getSystemService( POWER_SERVICE );
@@ -75,6 +77,8 @@ public class AlarmService extends IntentService {
 		wake_lock.setReferenceCounted( false );
 		wake_lock.acquire();
 		
+		pref = Pref.pref( this );
+		
 		// 次回レシーバーを起こすためのPendingIntent
 		Intent next_intent = new Intent( this, AlarmReceiver.class );
 		pi_next = PendingIntent.getBroadcast( this, PENDING_CODE_ALARM, next_intent, PendingIntent.FLAG_UPDATE_CURRENT );
@@ -82,7 +86,7 @@ public class AlarmService extends IntentService {
 	}
 	
 	@Override public void onDestroy(){
-		log.d("dtor");
+		log.d( "dtor" );
 		wake_lock.release();
 		
 		super.onDestroy();
@@ -96,10 +100,10 @@ public class AlarmService extends IntentService {
 		
 		if( intent != null ){
 			String action = intent.getAction();
-			log.d("onHandleIntent action=%s",action);
-
+			log.d( "onHandleIntent action=%s", action );
+			
 			if( ACTION_DATA_DELETED.equals( action ) ){
-				deleteCacheData(intent.getLongExtra( EXTRA_DB_ID ,-1L));
+				deleteCacheData( intent.getLongExtra( EXTRA_DB_ID, - 1L ) );
 			}else if( ACTION_DATA_INJECTED.equals( action ) ){
 				processInjectedData();
 			}else if( AlarmReceiver.ACTION_FROM_RECEIVER.equals( action ) ){
@@ -109,23 +113,23 @@ public class AlarmService extends IntentService {
 				if( received_intent != null ){
 					
 					action = received_intent.getAction();
-					log.d("received_intent.action=%s",action);
+					log.d( "received_intent.action=%s", action );
 					
 					if( Intent.ACTION_BOOT_COMPLETED.equals( action ) ){
 						NotificationTracking.resetPostAll();
 					}else if( ACTION_NOTIFICATION_DELETE.equals( action ) ){
 						log.d( "Notification deleted!" );
-						long db_id = received_intent.getLongExtra( EXTRA_DB_ID ,0L);
+						long db_id = received_intent.getLongExtra( EXTRA_DB_ID, 0L );
 						NotificationTracking.updateRead( db_id );
 						return;
 					}else if( ACTION_NOTIFICATION_CLICK.equals( action ) ){
 						log.d( "Notification clicked!" );
-						long db_id = received_intent.getLongExtra( EXTRA_DB_ID ,0L);
+						long db_id = received_intent.getLongExtra( EXTRA_DB_ID, 0L );
 						NotificationTracking.updateRead( db_id );
-						notification_manager.cancel( Long.toString(db_id),NOTIFICATION_ID );
+						notification_manager.cancel( Long.toString( db_id ), NOTIFICATION_ID );
 						//
 						intent = new Intent( this, ActOAuthCallback.class );
-						intent.setData( Uri.parse( "subwaytooter://notification_click?db_id="+ db_id ) );
+						intent.setData( Uri.parse( "subwaytooter://notification_click?db_id=" + db_id ) );
 						intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
 						startActivity( intent );
 						return;
@@ -134,7 +138,7 @@ public class AlarmService extends IntentService {
 				}
 			}
 		}
-
+		
 		TootApiClient client = new TootApiClient( this, new TootApiClient.Callback() {
 			@Override public boolean isApiCancelled(){
 				return false;
@@ -147,7 +151,7 @@ public class AlarmService extends IntentService {
 		
 		boolean bAlarmRequired = false;
 		
-		HashSet<String> muted_app = MutedApp.getNameSet();
+		HashSet< String > muted_app = MutedApp.getNameSet();
 		
 		for( SavedAccount account : account_list ){
 			try{
@@ -160,10 +164,10 @@ public class AlarmService extends IntentService {
 					
 					ArrayList< Data > data_list = new ArrayList<>();
 					
-					checkAccount( client, data_list, account ,muted_app);
+					checkAccount( client, data_list, account, muted_app );
 					
 					showNotification( account.db_id, data_list );
-
+					
 				}
 			}catch( Throwable ex ){
 				ex.printStackTrace();
@@ -179,12 +183,11 @@ public class AlarmService extends IntentService {
 				, 60000L * 10
 				, pi_next
 			);
-			log.d("alarm set!");
+			log.d( "alarm set!" );
 		}else{
-			log.d("alarm is no longer required.");
+			log.d( "alarm is no longer required." );
 		}
 	}
-	
 	
 	private static class Data {
 		SavedAccount access_info;
@@ -193,11 +196,11 @@ public class AlarmService extends IntentService {
 	
 	private static final String PATH_NOTIFICATIONS = "/api/v1/notifications";
 	
-	private void checkAccount( TootApiClient client, ArrayList< Data > data_list, SavedAccount account,HashSet<String> muted_app ){
-		log.d("checkAccount account_db_id=%s",account.db_id);
-
+	private void checkAccount( TootApiClient client, ArrayList< Data > data_list, SavedAccount account, HashSet< String > muted_app ){
+		log.d( "checkAccount account_db_id=%s", account.db_id );
+		
 		NotificationTracking nr = NotificationTracking.load( account.db_id );
-
+		
 		// まずキャッシュされたデータを処理する
 		HashSet< Long > duplicate_check = new HashSet<>();
 		ArrayList< JSONObject > dst_array = new ArrayList<>();
@@ -206,7 +209,7 @@ public class AlarmService extends IntentService {
 				JSONArray array = new JSONArray( nr.last_data );
 				for( int i = array.length() - 1 ; i >= 0 ; -- i ){
 					JSONObject src = array.optJSONObject( i );
-					update_sub( src, nr, account, dst_array, data_list, duplicate_check , muted_app);
+					update_sub( src, nr, account, dst_array, data_list, duplicate_check, muted_app );
 				}
 			}catch( JSONException ex ){
 				ex.printStackTrace();
@@ -230,7 +233,7 @@ public class AlarmService extends IntentService {
 						JSONArray array = result.array;
 						for( int i = array.length() - 1 ; i >= 0 ; -- i ){
 							JSONObject src = array.optJSONObject( i );
-							update_sub( src, nr, account, dst_array, data_list, duplicate_check ,muted_app);
+							update_sub( src, nr, account, dst_array, data_list, duplicate_check, muted_app );
 						}
 					}catch( JSONException ex ){
 						ex.printStackTrace();
@@ -269,7 +272,7 @@ public class AlarmService extends IntentService {
 		, ArrayList< JSONObject > dst_array
 		, ArrayList< Data > data_list
 		, HashSet< Long > duplicate_check
-	    , HashSet<String> muted_app
+		, HashSet< String > muted_app
 	) throws JSONException{
 		
 		long id = src.optLong( "id" );
@@ -327,24 +330,24 @@ public class AlarmService extends IntentService {
 	
 	public String getNotificationLine( String type, CharSequence display_name ){
 		if( TootNotification.TYPE_FAVOURITE.equals( type ) ){
-			return "- "+getString( R.string.display_name_favourited_by, display_name );
+			return "- " + getString( R.string.display_name_favourited_by, display_name );
 		}
 		if( TootNotification.TYPE_REBLOG.equals( type ) ){
-			return "- "+getString( R.string.display_name_boosted_by, display_name );
+			return "- " + getString( R.string.display_name_boosted_by, display_name );
 		}
 		if( TootNotification.TYPE_MENTION.equals( type ) ){
-			return "- "+getString( R.string.display_name_replied_by, display_name );
+			return "- " + getString( R.string.display_name_replied_by, display_name );
 		}
 		if( TootNotification.TYPE_FOLLOW.equals( type ) ){
-			return "- "+getString( R.string.display_name_followed_by, display_name );
+			return "- " + getString( R.string.display_name_followed_by, display_name );
 		}
-		return "- "+"?";
+		return "- " + "?";
 	}
 	
-	private void showNotification( long account_db_id,ArrayList< Data > data_list ){
+	private void showNotification( long account_db_id, ArrayList< Data > data_list ){
 		String notification_tag = Long.toString( account_db_id );
 		if( data_list.isEmpty() ){
-			notification_manager.cancel( notification_tag,NOTIFICATION_ID );
+			notification_manager.cancel( notification_tag, NOTIFICATION_ID );
 			return;
 		}
 		
@@ -368,33 +371,45 @@ public class AlarmService extends IntentService {
 			// このマーカーは端末再起動時にリセットされるので、再起動後は通知が出るはず
 			return;
 		}
-		nt.updatePost(  item.notification.id, item.notification.time_created_at  );
+		nt.updatePost( item.notification.id, item.notification.time_created_at );
 		
 		// 通知タップ
 		Intent intent_click = new Intent( this, AlarmReceiver.class );
-		intent_click.putExtra(EXTRA_DB_ID,account_db_id);
+		intent_click.putExtra( EXTRA_DB_ID, account_db_id );
 		intent_click.setAction( ACTION_NOTIFICATION_CLICK );
 		
 		Intent intent_delete = new Intent( this, AlarmReceiver.class );
-		intent_click.putExtra(EXTRA_DB_ID,account_db_id);
+		intent_click.putExtra( EXTRA_DB_ID, account_db_id );
 		intent_delete.setAction( ACTION_NOTIFICATION_DELETE );
 		
-		PendingIntent pi_click = PendingIntent.getBroadcast( this, (256+(int)account_db_id), intent_click, PendingIntent.FLAG_UPDATE_CURRENT );
+		PendingIntent pi_click = PendingIntent.getBroadcast( this, ( 256 + (int) account_db_id ), intent_click, PendingIntent.FLAG_UPDATE_CURRENT );
 		
 		// 通知を消去した時のPendingIntent
-		PendingIntent pi_delete = PendingIntent.getBroadcast( this, (Integer.MAX_VALUE-(int)account_db_id), intent_delete, PendingIntent.FLAG_UPDATE_CURRENT );
+		PendingIntent pi_delete = PendingIntent.getBroadcast( this, ( Integer.MAX_VALUE - (int) account_db_id ), intent_delete, PendingIntent.FLAG_UPDATE_CURRENT );
+		
+		int iv = 0;
+		if( pref.getBoolean( Pref.KEY_NOTIFICATION_SOUND, true ) ){
+			iv |= NotificationCompat.DEFAULT_SOUND;
+		}
+		if( pref.getBoolean( Pref.KEY_NOTIFICATION_VIBRATION, true ) ){
+			iv |= NotificationCompat.DEFAULT_VIBRATE;
+			
+		}
+		if( pref.getBoolean( Pref.KEY_NOTIFICATION_LED, true ) ){
+			iv |= NotificationCompat.DEFAULT_LIGHTS;
+		}
 		
 		NotificationCompat.Builder builder = new NotificationCompat.Builder( this )
 			.setContentIntent( pi_click )
 			.setDeleteIntent( pi_delete )
 			.setAutoCancel( false )
 			.setSmallIcon( R.drawable.ic_notification ) // ここは常に白テーマのアイコンを使う
-			.setColor( ContextCompat.getColor(this, R.color.Light_colorAccent ) ) // ここは常に白テーマの色を使う
-			.setDefaults( NotificationCompat.DEFAULT_ALL )
+			.setColor( ContextCompat.getColor( this, R.color.Light_colorAccent ) ) // ここは常に白テーマの色を使う
+			.setDefaults( iv )
 			.setWhen( item.notification.time_created_at );
 		
 		String a = getNotificationLine( item.notification.type, item.notification.account.display_name );
-		String acct = item.access_info.acct +" "+getString( R.string.app_name );
+		String acct = item.access_info.acct + " " + getString( R.string.app_name );
 		if( data_list.size() == 1 ){
 			builder.setContentTitle( a );
 			builder.setContentText( acct );
@@ -415,14 +430,14 @@ public class AlarmService extends IntentService {
 			builder.setStyle( style );
 		}
 		
-		notification_manager.notify( notification_tag,NOTIFICATION_ID, builder.build() );
+		notification_manager.notify( notification_tag, NOTIFICATION_ID, builder.build() );
 	}
 	
 	////////////////////////////////////////////////////////////////////////////
 	// Activity との連携
 	
-	public static void startCheck(Context context){
-		Intent intent = new Intent(context,AlarmReceiver.class);
+	public static void startCheck( Context context ){
+		Intent intent = new Intent( context, AlarmReceiver.class );
 		context.sendBroadcast( intent );
 	}
 	
@@ -466,7 +481,7 @@ public class AlarmService extends IntentService {
 						long id = src.optLong( "id" );
 						dst_array.add( src );
 						duplicate_check.add( id );
-						log.d("add old. id=%s",id);
+						log.d( "add old. id=%s", id );
 					}
 				}catch( JSONException ex ){
 					ex.printStackTrace();
@@ -475,7 +490,7 @@ public class AlarmService extends IntentService {
 			for( TootNotification item : data.list ){
 				try{
 					if( duplicate_check.contains( item.id ) ){
-						log.d("skip duplicate. id=%s",item.id);
+						log.d( "skip duplicate. id=%s", item.id );
 						continue;
 					}
 					duplicate_check.add( item.id );
@@ -487,7 +502,7 @@ public class AlarmService extends IntentService {
 						|| ( ! account.notification_favourite && TootNotification.TYPE_FAVOURITE.equals( type ) )
 						|| ( ! account.notification_follow && TootNotification.TYPE_FOLLOW.equals( type ) )
 						){
-						log.d("skip by setting. id=%s",item.id);
+						log.d( "skip by setting. id=%s", item.id );
 						continue;
 					}
 					
@@ -516,7 +531,7 @@ public class AlarmService extends IntentService {
 			JSONArray d = new JSONArray();
 			for( int i = 0 ; i < 10 ; ++ i ){
 				if( i >= dst_array.size() ){
-					log.d("inject %s data",i);
+					log.d( "inject %s data", i );
 					break;
 				}
 				d.put( dst_array.get( i ) );
@@ -529,19 +544,20 @@ public class AlarmService extends IntentService {
 	
 	public static void dataRemoved( Context context, long db_id ){
 		Intent intent = new Intent( context, AlarmService.class );
-		intent.putExtra( EXTRA_DB_ID,db_id );
+		intent.putExtra( EXTRA_DB_ID, db_id );
 		intent.setAction( ACTION_DATA_DELETED );
 		context.startService( intent );
 	}
+	
 	private void deleteCacheData( long db_id ){
 		
-		SavedAccount account = SavedAccount.loadAccount( log,db_id );
+		SavedAccount account = SavedAccount.loadAccount( log, db_id );
 		if( account == null ) return;
 		
 		NotificationTracking nr = NotificationTracking.load( db_id );
-
+		
 		nr.last_data = new JSONArray().toString();
-
+		
 		nr.save();
 	}
 	

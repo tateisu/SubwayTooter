@@ -65,6 +65,7 @@ class Column {
 	private static final String PATH_ACCOUNT_FOLLOWERS = "/api/v1/accounts/%d/followers?limit=" + READ_LIMIT; // 1:account_id
 	private static final String PATH_MUTES = "/api/v1/mutes?limit=" + READ_LIMIT; // 1:account_id
 	private static final String PATH_BLOCKS = "/api/v1/blocks?limit=" + READ_LIMIT; // 1:account_id
+	private static final String PATH_FOLLOW_REQUESTS = "/api/v1/follow_requests?limit=" + READ_LIMIT; // 1:account_id
 	
 	// 他のリストを返すAPI
 	private static final String PATH_REPORTS = "/api/v1/reports?limit=" + READ_LIMIT;
@@ -107,6 +108,7 @@ class Column {
 	static final int TYPE_SEARCH = 10;
 	static final int TYPE_MUTES = 11;
 	static final int TYPE_BLOCKS = 12;
+	static final int TYPE_FOLLOW_REQUESTS = 13;
 	
 	@NonNull private final ActMain activity;
 	@NonNull final SavedAccount access_info;
@@ -330,8 +332,12 @@ class Column {
 			}else{
 				return activity.getString( R.string.search );
 			}
+			
+		case TYPE_FOLLOW_REQUESTS:
+			return activity.getString( R.string.follow_requests );
 		}
 	}
+
 	
 	interface StatusEntryCallback {
 		void onIterate( TootStatus status );
@@ -440,6 +446,29 @@ class Column {
 		}
 	}
 	
+	public void removeFollowRequest( SavedAccount target_account, long who_id ){
+		if( ! target_account.acct.equals( access_info.acct ) ) return;
+		
+		if( type == TYPE_FOLLOW_REQUESTS ){
+			ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
+			for( Object o : list_data ){
+				if( o instanceof TootAccount ){
+					TootAccount item = (TootAccount) o;
+					if( item.id == who_id ) continue;
+				}
+				tmp_list.add( o );
+			}
+			if( tmp_list.size() != list_data.size() ){
+				list_data.clear();
+				list_data.addAll( tmp_list );
+				fireVisualCallback();
+			}
+		}else{
+			// 他のカラムでもフォロー状態の表示更新が必要
+			fireVisualCallback();
+		}
+	}
+
 	// 自分のステータスを削除した時に呼ばれる
 	void removeStatus( SavedAccount target_account, long status_id ){
 		
@@ -840,6 +869,9 @@ class Column {
 					
 					case TYPE_BLOCKS:
 						return parseAccountList( client, PATH_BLOCKS );
+					
+					case TYPE_FOLLOW_REQUESTS:
+						return parseAccountList( client, PATH_FOLLOW_REQUESTS );
 					
 					case TYPE_FAVOURITES:
 						return getStatuses( client, PATH_FAVOURITES );
@@ -1371,6 +1403,9 @@ class Column {
 					
 					case TYPE_BLOCKS:
 						return getAccountList( client, PATH_BLOCKS );
+
+					case TYPE_FOLLOW_REQUESTS:
+						return getAccountList( client, PATH_FOLLOW_REQUESTS );
 					
 					case TYPE_HASHTAG:
 						return getStatusList( client,
@@ -1720,6 +1755,9 @@ class Column {
 					case TYPE_BLOCKS:
 						return getAccountList( client, PATH_BLOCKS );
 					
+					case TYPE_FOLLOW_REQUESTS:
+						return getAccountList( client, PATH_FOLLOW_REQUESTS );
+					
 					case TYPE_PROFILE:
 						switch( profile_tab ){
 						
@@ -1799,10 +1837,17 @@ class Column {
 							list_new.add( o );
 						}
 						
+						
+						
 						int pos = list_data.indexOf( gap );
 						if( pos != - 1 ){
+
 							list_data.remove( pos );
 							list_data.addAll( pos, list_new );
+							
+							// リフレッシュ開始時はリストの先頭を見ていたのだからスクロール範囲を調整したい
+							scroll_hack = pos + list_new.size() -2;
+							if( scroll_hack < 1 ) scroll_hack = 1;
 						}
 					}
 				}
@@ -1844,14 +1889,12 @@ class Column {
 					who_set.add( a.id );
 				}else if( o instanceof TootStatus ){
 					s = (TootStatus) o;
+					a = s.account;
+					if( a != null ) who_set.add( a.id );
+					s = s.reblog;
 					if( s != null ){
 						a = s.account;
 						if( a != null ) who_set.add( a.id );
-						s = s.reblog;
-						if( s != null ){
-							a = s.account;
-							if( a != null ) who_set.add( a.id );
-						}
 					}
 				}else if( o instanceof TootNotification ){
 					n = (TootNotification) o;

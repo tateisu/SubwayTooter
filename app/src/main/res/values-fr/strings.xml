@@ -205,5 +205,6 @@
     <string name="notification_option">notification option</string>
     <string name="sound">sound</string>
     <string name="vibration">vibration</string>
+    <string name="close">Close</string>
 
 </resources>

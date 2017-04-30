@@ -501,7 +501,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			String s = src.substring( start, end );
 			ArrayList< String > acct_list = AcctSet.searchPrefix( s, limit );
 			log.d( "search for %s, result=%d", s, acct_list.size() );
-			if( acct_list.isEmpty() || acct_list.size() >= limit ){
+			if( acct_list.isEmpty() ){
 				closeAcctPopup();
 				return;
 			}

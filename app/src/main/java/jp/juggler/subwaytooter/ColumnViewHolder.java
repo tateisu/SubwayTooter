@@ -79,6 +79,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		saveScrollPosition();
 		log.d( "onPageDestroy:%s", column.getColumnName( true ) );
 		column.removeVisualListener( this );
+		
+		activity.closeListItemPopup();
 	}
 	
 	private TextView tvLoading;
@@ -1047,12 +1049,14 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		void onItemClick( View anchor ){
 			
 			if( status != null ){
+				activity.closeListItemPopup();
 				// ポップアップを表示する
-				ListItemPopup popup = new ListItemPopup();
-				popup.show( anchor, status );
+				activity.list_item_popup = new ListItemPopup();
+				activity.list_item_popup.show( anchor, status );
 			}
 		}
 	}
+	
 	
 	private final ActMain.RelationChangedCallback favourite_complete_callback = new ActMain.RelationChangedCallback() {
 		@Override public void onRelationChanged(){
@@ -1147,7 +1151,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		}
 	}
 	
-	private class ListItemPopup {
+	class ListItemPopup {
 		final View viewRoot;
 		final ButtonsForStatus buttons_for_status;
 		
@@ -1214,6 +1218,10 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				, 0
 				, popup_y
 			);
+		}
+		
+		public void dismiss(){
+			
 		}
 	}
 }

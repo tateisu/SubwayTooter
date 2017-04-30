@@ -140,7 +140,17 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
+	ColumnViewHolder.ListItemPopup list_item_popup;
+	void closeListItemPopup(){
+		if( list_item_popup != null ){
+			list_item_popup.dismiss();
+			list_item_popup = null;
+		}
+	}
+	
 	@Override protected void onPause(){
+		closeListItemPopup();
+		
 		HTMLDecoder.link_callback = null;
 		super.onPause();
 	}

@@ -31,6 +31,7 @@ import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootReport;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
@@ -51,6 +52,7 @@ class Column {
 	private static final long LOOP_TIMEOUT = 10000L;
 	private static final int LOOP_READ_ENOUGH = 30; // フィルタ後のデータ数がコレ以上ならループを諦めます
 	private static final int RELATIONSHIP_LOAD_STEP = 40;
+	private static final int ACCT_DB_STEP = 100;
 	
 	// ステータスのリストを返すAPI
 	private static final String PATH_HOME = "/api/v1/timelines/home?limit=" + READ_LIMIT;
@@ -1879,6 +1881,7 @@ class Column {
 	private void updateRelation( TootApiClient client, ArrayList< Object > list_tmp ){
 		if( list_tmp == null || list_tmp.isEmpty() ) return;
 		HashSet< Long > who_set = new HashSet<>();
+		HashSet<String> acct_set = new HashSet<>();
 		{
 			TootAccount a;
 			TootStatus s;
@@ -1887,29 +1890,45 @@ class Column {
 				if( o instanceof TootAccount ){
 					a = (TootAccount) o;
 					who_set.add( a.id );
+					acct_set.add( "@" + access_info.getFullAcct( a ));
 				}else if( o instanceof TootStatus ){
 					s = (TootStatus) o;
 					a = s.account;
-					if( a != null ) who_set.add( a.id );
+					if( a != null ){
+						who_set.add( a.id );
+						acct_set.add( "@" + access_info.getFullAcct( a ));
+					}
 					s = s.reblog;
 					if( s != null ){
 						a = s.account;
-						if( a != null ) who_set.add( a.id );
+						if( a != null ){
+							who_set.add( a.id );
+							acct_set.add( "@" + access_info.getFullAcct( a ));
+						}
 					}
 				}else if( o instanceof TootNotification ){
 					n = (TootNotification) o;
 					//
 					a = n.account;
-					if( a != null ) who_set.add( a.id );
+					if( a != null ){
+						who_set.add( a.id );
+						acct_set.add( "@" + access_info.getFullAcct( a ));
+					}
 					//
 					s = n.status;
 					if( s != null ){
 						a = s.account;
-						if( a != null ) who_set.add( a.id );
+						if( a != null ){
+							who_set.add( a.id );
+							acct_set.add( "@" + access_info.getFullAcct( a ));
+						}
 						s = s.reblog;
 						if( s != null ){
 							a = s.account;
-							if( a != null ) who_set.add( a.id );
+							if( a != null ){
+								who_set.add( a.id );
+								acct_set.add( "@" + access_info.getFullAcct( a ));
+							}
 						}
 					}
 				}
@@ -1925,6 +1944,7 @@ class Column {
 				}
 			}
 			
+			long now = System.currentTimeMillis();
 			int n = 0;
 			while( n < size ){
 				StringBuilder sb = new StringBuilder();
@@ -1941,12 +1961,34 @@ class Column {
 					break;
 				}else if( result.array != null ){
 					TootRelationShip.List list = TootRelationShip.parseList( log, result.array );
-					long now = System.currentTimeMillis();
 					UserRelation.saveList( now, access_info.db_id, list );
 				}
 			}
 			log.d( "updateRelation: update %d relations.", n );
+			
 		}
+		size = acct_set.size();
+		if( size > 0 ){
+			String[] acct_list = new String[ size ];
+			{
+				int n = 0;
+				for( String l : acct_set ){
+					acct_list[ n++ ] = l;
+				}
+			}
+			long now = System.currentTimeMillis();
+			int n = 0;
+			while( n < size ){
+				int length = size-n;
+				if( length > ACCT_DB_STEP ) length = ACCT_DB_STEP;
+				AcctSet.saveList( now, acct_list, n,length );
+				n += length;
+			}
+			log.d( "updateRelation: update %d acct.", n );
+			
+		}
+		
+		
 	}
 	
 }

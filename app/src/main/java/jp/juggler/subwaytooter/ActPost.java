@@ -4,24 +4,34 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.provider.OpenableColumns;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.os.AsyncTaskCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
+import android.text.Layout;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.view.Gravity;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.CheckedTextView;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.NetworkImageView;
@@ -41,9 +51,11 @@ import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootMention;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.MyEditText;
 import jp.juggler.subwaytooter.util.Utils;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -141,10 +153,13 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		super.onActivityResult( requestCode, resultCode, data );
 	}
 	
+	SharedPreferences pref;
+	
 	@Override
 	protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
 		App1.setActivityTheme( this, true );
+		pref = Pref.pref( this );
 		initUI();
 		
 		if( account_list.isEmpty() ){
@@ -296,6 +311,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		showReplyTo();
 	}
 	
+	@Override protected void onDestroy(){
+		handler.removeCallbacks( proc_text_changed );
+		closeAcctPopup();
+		super.onDestroy();
+	}
+	
 	@Override
 	protected void onSaveInstanceState( Bundle outState ){
 		if( account != null ){
@@ -326,12 +347,13 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	View btnAttachment;
 	View btnPost;
 	View llAttachment;
-	final NetworkImageView[] ivMedia = new NetworkImageView[4];
+	final NetworkImageView[] ivMedia = new NetworkImageView[ 4 ];
 	CheckBox cbNSFW;
 	CheckBox cbContentWarning;
-	EditText etContentWarning;
-	EditText etContent;
+	MyEditText etContentWarning;
+	MyEditText etContent;
 	TextView tvCharCount;
+	Handler handler;
 	
 	ArrayList< SavedAccount > account_list;
 	
@@ -342,20 +364,21 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	
 	private void initUI(){
 		setContentView( R.layout.act_post );
+		handler = new Handler();
 		
 		btnAccount = (Button) findViewById( R.id.btnAccount );
 		btnVisibility = (ImageButton) findViewById( R.id.btnVisibility );
 		btnAttachment = findViewById( R.id.btnAttachment );
 		btnPost = findViewById( R.id.btnPost );
 		llAttachment = findViewById( R.id.llAttachment );
-		ivMedia[0] = (NetworkImageView) findViewById( R.id.ivMedia1 );
-		ivMedia[1] = (NetworkImageView) findViewById( R.id.ivMedia2 );
-		ivMedia[2] = (NetworkImageView) findViewById( R.id.ivMedia3 );
-		ivMedia[3] = (NetworkImageView) findViewById( R.id.ivMedia4 );
+		ivMedia[ 0 ] = (NetworkImageView) findViewById( R.id.ivMedia1 );
+		ivMedia[ 1 ] = (NetworkImageView) findViewById( R.id.ivMedia2 );
+		ivMedia[ 2 ] = (NetworkImageView) findViewById( R.id.ivMedia3 );
+		ivMedia[ 3 ] = (NetworkImageView) findViewById( R.id.ivMedia4 );
 		cbNSFW = (CheckBox) findViewById( R.id.cbNSFW );
 		cbContentWarning = (CheckBox) findViewById( R.id.cbContentWarning );
-		etContentWarning = (EditText) findViewById( R.id.etContentWarning );
-		etContent = (EditText) findViewById( R.id.etContent );
+		etContentWarning = (MyEditText) findViewById( R.id.etContentWarning );
+		etContent = (MyEditText) findViewById( R.id.etContent );
 		tvCharCount = (TextView) findViewById( R.id.tvCharCount );
 		
 		llReply = findViewById( R.id.llReply );
@@ -377,12 +400,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		btnPost.setOnClickListener( this );
 		btnRemoveReply.setOnClickListener( this );
 		
-		for( NetworkImageView iv :ivMedia){
+		for( NetworkImageView iv : ivMedia ){
 			iv.setOnClickListener( this );
-			iv.setDefaultImageResId( Styler.getAttributeResourceId( this,R.attr.btn_refresh ));
-		//	iv.setErrorImageResId( Styler.getAttributeResourceId( this,R.attr.btn_refresh ));
+			iv.setDefaultImageResId( Styler.getAttributeResourceId( this, R.attr.btn_refresh ) );
+			//	iv.setErrorImageResId( Styler.getAttributeResourceId( this,R.attr.btn_refresh ));
 		}
-
+		
 		cbContentWarning.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged( CompoundButton buttonView, boolean isChecked ){
@@ -398,7 +421,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			
 			@Override
 			public void onTextChanged( CharSequence s, int start, int before, int count ){
-				
+				if( count > 0 ){
+					log.d( "onTextChanged" );
+					handler.removeCallbacks( proc_text_changed );
+					handler.postDelayed( proc_text_changed, 1500L );
+				}
 			}
 			
 			@Override
@@ -406,13 +433,176 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				updateTextCount();
 			}
 		} );
+		etContent.setOnSelectionChangeListener( new MyEditText.OnSelectionChangeListener() {
+			int last_selection = - 1;
+			
+			@Override public void onSelectionChanged( int selStart, int selEnd ){
+				if( selStart != selEnd ){
+					// 範囲選択されてるならポップアップは閉じる
+					log.d( "onSelectionChanged: range selected" );
+					closeAcctPopup();
+				}else if( selStart > last_selection ){
+					// 文字挿入の直後かもしれないので何もしない
+					log.d( "onSelectionChanged: may after text input? " );
+				}else{
+					// 前方への移動ではないならポップアップは閉じる
+					log.d( "onSelectionChanged: not forward change" );
+					closeAcctPopup();
+				}
+				last_selection = selStart;
+			}
+		} );
+	}
+	
+	final Runnable proc_text_changed = new Runnable() {
+		@Override public void run(){
+			int ss = etContent.getSelectionStart();
+			int se = etContent.getSelectionEnd();
+			if( ss != se ){
+				closeAcctPopup();
+				return;
+			}
+			int end = ss;
+			String src = etContent.getText().toString();
+			int start = ss;
+			int count_atMark = 0;
+			int[] pos_atMark = new int[ 2 ];
+			for( ; ; ){
+				if( start == 0 ) break;
+				if( count_atMark >= 2 ) break;
+				char c = src.charAt( start - 1 );
+				if( ( '0' <= c && c <= '9' )
+					|| ( 'A' <= c && c <= 'Z' )
+					|| ( 'a' <= c && c <= 'z' )
+					|| c == '_'
+					){
+					-- start;
+					continue;
+				}else if( c == '@' ){
+					-- start;
+					pos_atMark[ count_atMark++ ] = start;
+					continue;
+				}
+				break;
+			}
+			if( count_atMark == 0 ){
+				closeAcctPopup();
+				return;
+			}else if( count_atMark == 1 ){
+				start = pos_atMark[ 0 ];
+			}else if( count_atMark == 2 ){
+				start = pos_atMark[ 1 ];
+			}
+			if( end - start < 2 ){
+				closeAcctPopup();
+				return;
+			}
+			int limit = 10;
+			String s = src.substring( start, end );
+			ArrayList< String > acct_list = AcctSet.searchPrefix( s, limit );
+			log.d( "search for %s, result=%d", s, acct_list.size() );
+			if( acct_list.isEmpty() || acct_list.size() >= limit ){
+				closeAcctPopup();
+				return;
+			}
+			openAcctPopup( acct_list, start, end );
+		}
+	};
+	
+	PopupWindow acct_popup;
+	
+	private void closeAcctPopup(){
+		if( acct_popup != null ){
+			acct_popup.dismiss();
+			acct_popup = null;
+		}
+	}
+	
+	private void openAcctPopup( ArrayList< String > acct_list, final int start, final int end ){
+		closeAcctPopup();
+		View viewRoot = getLayoutInflater().inflate( R.layout.acct_complete_popup, null, false );
+		LinearLayout llItems = (LinearLayout) viewRoot.findViewById( R.id.llItems );
+		{
+			CheckedTextView v = (CheckedTextView) getLayoutInflater().inflate( R.layout.lv_spinner_dropdown, llItems, false );
+			v.setTextColor( Styler.getAttributeColor( this, android.R.attr.textColorPrimary ) );
+			v.setText( R.string.close );
+			v.setOnClickListener( new View.OnClickListener() {
+				@Override public void onClick( View v ){
+					closeAcctPopup();
+				}
+			} );
+			llItems.addView( v );
+		}
+		
+		for( int i = 0 ; ; ++ i ){
+			if( i >= acct_list.size() ) break;
+			final String acct = acct_list.get( i );
+			CheckedTextView v = (CheckedTextView) getLayoutInflater().inflate( R.layout.lv_spinner_dropdown, llItems, false );
+			v.setTextColor( Styler.getAttributeColor( this, android.R.attr.textColorPrimary ) );
+			v.setText( acct );
+			v.setOnClickListener( new View.OnClickListener() {
+				@Override public void onClick( View v ){
+					String s = etContent.getText().toString();
+					s = s.substring( 0, start ) + acct + " " + ( end >= s.length() ? "" : s.substring( end ) );
+					etContent.setText( s );
+					etContent.setSelection( start + acct.length() + 1 );
+					closeAcctPopup();
+				}
+			} );
+			llItems.addView( v );
+		}
+		
+		//
+		acct_popup = new PopupWindow( this );
+		acct_popup.setBackgroundDrawable( ContextCompat.getDrawable( this, R.drawable.acct_popup_bg ) );
+
+//		Resources.Theme popupTheme = getResources().newTheme();
+//
+//		int theme_idx = pref.getInt(Pref.KEY_UI_THEME,0);
+//		switch(theme_idx){
+//
+//		default:
+//		case 0:
+//			popupTheme.applyStyle( R.style.Theme_AppCompat_Light_Dialog, true);
+//			break;
+//
+//		case 1:
+//			popupTheme.applyStyle( R.style.Theme_AppCompat_Dialog, true);
+//			break;
+//
+//		}
+		
+		acct_popup.setWidth( WindowManager.LayoutParams.WRAP_CONTENT );
+		acct_popup.setHeight( WindowManager.LayoutParams.WRAP_CONTENT );
+		acct_popup.setContentView( viewRoot );
+		acct_popup.setTouchable( true );
+		
+		int[] location = new int[ 2 ];
+		
+		etContent.getLocationOnScreen( location );
+		int y = location[ 1 ];
+		y += etContent.getTotalPaddingTop();
+		y -= etContent.getScrollY();
+		Layout layout = etContent.getLayout();
+		y += layout.getLineBottom( layout.getLineCount() - 1 );
+		
+		acct_popup.showAtLocation(
+			etContent
+			, Gravity.CENTER_HORIZONTAL | Gravity.TOP
+			, 0
+			, y
+		);
+		
 	}
 	
 	private void updateTextCount(){
 		String s = etContent.getText().toString();
-		int count = s.codePointCount( 0,s.length() );
-		int remain = 500 - count;
-		tvCharCount.setText( Integer.toString( remain    ) );
+		int count_content = s.codePointCount( 0, s.length() );
+		s = cbContentWarning.isChecked() ? etContentWarning.getText().toString() : "";
+		int count_spoiler = s.codePointCount( 0, s.length() );
+		
+		int remain = 500 - count_content - count_spoiler;
+		tvCharCount.setText( Integer.toString( remain ) );
 		int color = Styler.getAttributeColor( this, remain < 0 ? R.attr.colorRegexFilterError : android.R.attr.textColorPrimary );
 		tvCharCount.setTextColor( color );
 	}
@@ -451,7 +641,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		}else{
 			tmp_account_list.addAll( account_list );
 		}
-
+		
 		String[] caption_list = new String[ tmp_account_list.size() ];
 		for( int i = 0, ie = tmp_account_list.size() ; i < ie ; ++ i ){
 			caption_list[ i ] = tmp_account_list.get( i ).acct;
@@ -463,7 +653,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				@Override
 				public void onClick( DialogInterface dialog, int which ){
 					if( which >= 0 && which < tmp_account_list.size() ){
-						SavedAccount account =tmp_account_list.get( which );
+						SavedAccount account = tmp_account_list.get( which );
 						setAccount( account );
 						try{
 							if( account.visibility != null && TootStatus.compareVisibility( visibility, account.visibility ) > 0 ){
@@ -471,8 +661,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 								visibility = account.visibility;
 								showVisibility();
 							}
-						}catch(Throwable ex){
-							ex.printStackTrace(  );
+						}catch( Throwable ex ){
+							ex.printStackTrace();
 						}
 					}
 				}
@@ -499,8 +689,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			llAttachment.setVisibility( View.GONE );
 		}else{
 			llAttachment.setVisibility( View.VISIBLE );
-			for(int i=0,ie=ivMedia.length;i<ie;++i){
-				showAttachment_sub( ivMedia[i], i );
+			for( int i = 0, ie = ivMedia.length ; i < ie ; ++ i ){
+				showAttachment_sub( ivMedia[ i ], i );
 			}
 		}
 	}
@@ -624,7 +814,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 								@Override
 								public void writeTo( BufferedSink sink ) throws IOException{
 									InputStream is = getContentResolver().openInputStream( uri );
-									if( is == null ) throw new IOException( "openInputStream() failed. uri="+uri );
+									if( is == null )
+										throw new IOException( "openInputStream() failed. uri=" + uri );
 									try{
 										byte[] tmp = new byte[ 4096 ];
 										for( ; ; ){

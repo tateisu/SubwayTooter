@@ -174,7 +174,7 @@
                 android:background="?attr/colorPostFormBackground"
                 >
 
-                <EditText
+                <jp.juggler.subwaytooter.util.MyEditText
                     android:id="@+id/etContentWarning"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -196,7 +196,7 @@
                 android:background="?attr/colorPostFormBackground"
                 >
 
-                <EditText
+                <jp.juggler.subwaytooter.util.MyEditText
                     android:id="@+id/etContent"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

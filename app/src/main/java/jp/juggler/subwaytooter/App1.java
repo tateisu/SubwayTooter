@@ -17,6 +17,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
+import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.ClientInfo;
 import jp.juggler.subwaytooter.table.ContentWarning;
@@ -33,11 +34,12 @@ public class App1 extends Application {
 	
 	
 	static final String DB_NAME = "app_db";
-	static final int DB_VERSION = 6;
+	static final int DB_VERSION = 7;
 	// 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
 	// 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加
 	// 2017/4/29 v20 2=>5 MediaShown,ContentWarningのインデクスが間違っていたので貼り直す
 	// 2017/4/29 v23 5=>6 MutedAppテーブルの追加、UserRelationテーブルの追加
+	// 2017/5/01 v26 6=>7 AcctSetテーブルの追加
 	static DBOpenHelper db_open_helper;
 	
 	public static SQLiteDatabase getDB(){
@@ -77,6 +79,7 @@ public class App1 extends Application {
 			NotificationTracking.onDBCreate(db);
 			MutedApp.onDBCreate(db);
 			UserRelation.onDBCreate(db);
+			AcctSet.onDBCreate( db );
 		}
 		
 		@Override
@@ -90,6 +93,7 @@ public class App1 extends Application {
 			NotificationTracking.onDBUpgrade( db, oldVersion, newVersion );
 			MutedApp.onDBUpgrade( db, oldVersion, newVersion );
 			UserRelation.onDBUpgrade( db, oldVersion, newVersion );
+			AcctSet.onDBUpgrade( db, oldVersion, newVersion );
 		}
 	}
 	
@@ -182,6 +186,8 @@ public class App1 extends Application {
 //				SQLiteDatabase db = db_open_helper.getWritableDatabase();
 //				db_open_helper.onCreate( db );
 //			}
+			UserRelation.deleteOld(System.currentTimeMillis());
+			AcctSet.deleteOld(System.currentTimeMillis());
 		}
 
 		if( image_loader == null ){

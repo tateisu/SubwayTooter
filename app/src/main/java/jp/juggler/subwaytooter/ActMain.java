@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.os.AsyncTaskCompat;
@@ -141,6 +142,7 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	ColumnViewHolder.ListItemPopup list_item_popup;
+	
 	void closeListItemPopup(){
 		if( list_item_popup != null ){
 			list_item_popup.dismiss();
@@ -328,7 +330,7 @@ public class ActMain extends AppCompatActivity
 			
 		}else if( id == R.id.nav_add_blocks ){
 			performAddTimeline( Column.TYPE_BLOCKS );
-
+			
 		}else if( id == R.id.nav_follow_requests ){
 			performAddTimeline( Column.TYPE_FOLLOW_REQUESTS );
 			
@@ -1660,7 +1662,7 @@ public class ActMain extends AppCompatActivity
 					) );
 				
 				return client.request(
-					"/api/v1/follow_requests/" + who.id+ ( bAllow ? "/authorize" : "/reject" )
+					"/api/v1/follow_requests/" + who.id + ( bAllow ? "/authorize" : "/reject" )
 					, request_builder );
 			}
 			
@@ -1680,7 +1682,7 @@ public class ActMain extends AppCompatActivity
 						column.removeFollowRequest( access_info, who.id );
 					}
 					
-					Utils.showToast( ActMain.this, false,( bAllow ? R.string.follow_request_authorized : R.string.follow_request_rejected),who.display_name );
+					Utils.showToast( ActMain.this, false, ( bAllow ? R.string.follow_request_authorized : R.string.follow_request_rejected ), who.display_name );
 				}else{
 					Utils.showToast( ActMain.this, false, result.error );
 				}
@@ -1739,7 +1741,9 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	private void callReport(
-		@NonNull final SavedAccount account
+		@NonNull final SavedAccount access_info
+		
+		, @NonNull final TootAccount who
 		, @NonNull final TootStatus status
 		, @NonNull final String comment
 		, final ReportCompleteCallback callback
@@ -1756,16 +1760,20 @@ public class ActMain extends AppCompatActivity
 					}
 				} );
 				
-				client.setAccount( account );
+				client.setAccount( access_info );
+				StringBuilder sb = new StringBuilder();
+				sb.append( "account_id=" )
+					.append( Long.toString( who.id ) )
+					.append( "&comment=" )
+					.append( Uri.encode( comment ) );
 				
-				String sb = "account_id=" + Long.toString( status.account.id )
-					+ "&comment=" + Uri.encode( comment )
-					+ "&status_ids[]=" + Long.toString( status.id );
+				sb.append( "&status_ids[]=" )
+					.append( Long.toString( status.id ) );
 				
 				Request.Builder request_builder = new Request.Builder().post(
 					RequestBody.create(
 						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
-						, sb
+						, sb.toString()
 					) );
 				
 				return client.request( "/api/v1/reports", request_builder );
@@ -1789,13 +1797,13 @@ public class ActMain extends AppCompatActivity
 		}.execute();
 	}
 	
-	private void openReportForm( final SavedAccount account, final TootAccount who, final TootStatus status ){
+	private void openReportForm( @NonNull final SavedAccount account, @NonNull final TootAccount who, @NonNull final TootStatus status ){
 		ReportForm.showReportForm( this, who, status, new ReportForm.ReportFormCallback() {
 			
 			@Override public void startReport( final Dialog dialog, String comment ){
 				
 				// レポートの送信を開始する
-				callReport( account, status, comment, new ReportCompleteCallback() {
+				callReport( account, who, status, comment, new ReportCompleteCallback() {
 					@Override public void onReportComplete( TootApiResult result ){
 						
 						// 成功したらダイアログを閉じる
@@ -1957,15 +1965,17 @@ public class ActMain extends AppCompatActivity
 				callBlock( access_info, status.account, false, null );
 			}
 		} );
-		dialog.addAction( getString( R.string.report ), new Runnable() {
-			@Override public void run(){
-				openReportForm( access_info, status.account, status );
-			}
-		} );
+
 		if( access_info.isMe( status.account ) ){
 			dialog.addAction( getString( R.string.delete ), new Runnable() {
 				@Override public void run(){
 					deleteStatus( access_info, status.id );
+				}
+			} );
+		}else{
+			dialog.addAction( getString( R.string.report ), new Runnable() {
+				@Override public void run(){
+					openReportForm( access_info, status.account, status );
 				}
 			} );
 		}
@@ -1991,12 +2001,12 @@ public class ActMain extends AppCompatActivity
 		if( column_type == Column.TYPE_FOLLOW_REQUESTS ){
 			dialog.addAction( getString( R.string.follow_request_ok ), new Runnable() {
 				@Override public void run(){
-					callFollowRequestAuthorize( access_info, who ,true);
+					callFollowRequestAuthorize( access_info, who, true );
 				}
 			} );
 			dialog.addAction( getString( R.string.follow_request_ng ), new Runnable() {
 				@Override public void run(){
-					callFollowRequestAuthorize( access_info, who ,false);
+					callFollowRequestAuthorize( access_info, who, false );
 				}
 			} );
 			
@@ -2044,14 +2054,13 @@ public class ActMain extends AppCompatActivity
 				callBlock( access_info, who, false, null );
 			}
 		} );
-		dialog.addAction( getString( R.string.report ), new Runnable() {
-			@Override public void run(){
-				openReportForm( access_info, who, null );
-			}
-		} );
+//		dialog.addAction( getString( R.string.report ), new Runnable() {
+//			@Override public void run(){
+//				openReportForm( access_info, who, null );
+//			}
+//		} );
 		dialog.show( this, null );
 	}
-	
 	
 	private void openOSSLicense(){
 		startActivity( new Intent( this, ActOSSLicense.class ) );

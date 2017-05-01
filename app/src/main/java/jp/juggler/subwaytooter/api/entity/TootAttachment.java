@@ -74,3 +74,47 @@ public class TootAttachment {
 	}
 	
 }
+
+// v1.3 から 添付ファイルの画像のピクセルサイズが取得できるようになった
+// https://github.com/tootsuite/mastodon/issues/1985
+// "media_attachments" : [
+//	 {
+//	 "id" : 4,
+//	 "type" : "image",
+//	 "remote_url" : "",
+//	 "meta" : {
+//	 "original" : {
+//	 "width" : 600,
+//	 "size" : "600x400",
+//	 "height" : 400,
+//	 "aspect" : 1.5
+//	 },
+//	 "small" : {
+//	 "aspect" : 1.49812734082397,
+//	 "height" : 267,
+//	 "size" : "400x267",
+//	 "width" : 400
+//	 }
+//	 },
+//	 "url" : "http://127.0.0.1:3000/system/media_attachments/files/000/000/004/original/3416fc5188c656da.jpg?1493138517",
+//	 "preview_url" : "http://127.0.0.1:3000/system/media_attachments/files/000/000/004/small/3416fc5188c656da.jpg?1493138517",
+//	 "text_url" : "http://127.0.0.1:3000/media/4hfW3Kt4U9UxDvV_xug"
+//	 },
+//	 {
+//	 "text_url" : "http://127.0.0.1:3000/media/0vTH_B1kjvIvlUBhGBw",
+//	 "preview_url" : "http://127.0.0.1:3000/system/media_attachments/files/000/000/003/small/23519a5e64064e32.png?1493138030",
+//	 "meta" : {
+//	 "fps" : 15,
+//	 "duration" : 5.06,
+//	 "width" : 320,
+//	 "size" : "320x180",
+//	 "height" : 180,
+//	 "length" : "0:00:05.06",
+//	 "aspect" : 1.77777777777778
+//	 },
+//	 "url" : "http://127.0.0.1:3000/system/media_attachments/files/000/000/003/original/23519a5e64064e32.mp4?1493138030",
+//	 "remote_url" : "",
+//	 "type" : "gifv",
+//	 "id" : 3
+//	 }
+//	 ],

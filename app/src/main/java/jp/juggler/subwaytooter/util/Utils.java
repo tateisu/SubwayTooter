@@ -134,7 +134,7 @@ public class Utils {
 		try{
 			return str.getBytes( "UTF-8" );
 		}catch( Throwable ex ){
-			return new byte[0]; // 入力がnullの場合のみ発生
+			return new byte[ 0 ]; // 入力がnullの場合のみ発生
 		}
 	}
 	
@@ -156,38 +156,37 @@ public class Utils {
 		}
 	}
 	
-	public static String optStringX( JSONObject src, String key){
-		return  src.isNull( key ) ? null : src.optString( key );
+	public static String optStringX( JSONObject src, String key ){
+		return src.isNull( key ) ? null : src.optString( key );
 	}
-
-	public static String optStringX( JSONArray src, int key){
-		return  src.isNull( key ) ? null : src.optString( key );
+	
+	public static String optStringX( JSONArray src, int key ){
+		return src.isNull( key ) ? null : src.optString( key );
 	}
 	
 	public static ArrayList< String > parseStringArray( LogCategory log, JSONArray array ){
-		ArrayList< String > dst_list = new ArrayList<>(  );
+		ArrayList< String > dst_list = new ArrayList<>();
 		if( array != null ){
-			for(int i=0,ie=array.length();i<ie;++i){
-				String sv = Utils.optStringX(array,i);
+			for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
+				String sv = Utils.optStringX( array, i );
 				dst_list.add( sv );
 			}
 		}
 		return dst_list;
 	}
 	
-	public static  <T> boolean equalsNullable(T a,T b){
+	public static < T > boolean equalsNullable( T a, T b ){
 		return a == null ? b == null : a.equals( b );
 	}
 	
-	public static CharSequence dumpCodePoints(String str){
+	public static CharSequence dumpCodePoints( String str ){
 		StringBuilder sb = new StringBuilder();
-		for(int i=0,ie=str.length(),cp;i<ie;i+=Character.charCount(cp)){
+		for( int i = 0, ie = str.length(), cp ; i < ie ; i += Character.charCount( cp ) ){
 			cp = str.codePointAt( i );
 			sb.append( String.format( "0x%x,", cp ) );
 		}
 		return sb;
 	}
-	
 	
 	static final char[] hex = new char[]{ '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
 	
@@ -298,6 +297,18 @@ public class Utils {
 			MessageDigest md = MessageDigest.getInstance( "MD5" );
 			md.reset();
 			return encodeHex( md.digest( s.getBytes( "UTF-8" ) ) );
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static String digestSHA256( String src ){
+		if( src == null ) return null;
+		try{
+			MessageDigest md = MessageDigest.getInstance( "SHA-256" );
+			md.reset();
+			return encodeHex( md.digest( src.getBytes( "UTF-8" ) ) );
 		}catch( Throwable ex ){
 			ex.printStackTrace();
 		}
@@ -555,11 +566,11 @@ public class Utils {
 		String s = context.getString( string_id );
 		int end = s.length();
 		int pos = s.indexOf( "%1$s" );
-		if( pos == -1 ) return s;
-		SpannableStringBuilder sb = new SpannableStringBuilder(  );
-		if( pos > 0 ) sb.append(s.substring( 0,pos ));
-		sb.append( display_name);
-		if( pos +4 < end ) sb.append(s.substring( pos+4,end ));
+		if( pos == - 1 ) return s;
+		SpannableStringBuilder sb = new SpannableStringBuilder();
+		if( pos > 0 ) sb.append( s.substring( 0, pos ) );
+		sb.append( display_name );
+		if( pos + 4 < end ) sb.append( s.substring( pos + 4, end ) );
 		return sb;
 	}
 	
@@ -814,14 +825,13 @@ public class Utils {
 		return null;
 	}
 	
-	
-	public static Activity getActivityFromView( View view) {
+	public static Activity getActivityFromView( View view ){
 		Context context = view.getContext();
-		while (context instanceof ContextWrapper ) {
-			if (context instanceof Activity) {
-				return (Activity)context;
+		while( context instanceof ContextWrapper ){
+			if( context instanceof Activity ){
+				return (Activity) context;
 			}
-			context = ((ContextWrapper)context).getBaseContext();
+			context = ( (ContextWrapper) context ).getBaseContext();
 		}
 		return null;
 	}

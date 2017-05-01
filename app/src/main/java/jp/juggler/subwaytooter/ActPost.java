@@ -940,19 +940,14 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			
 			TootStatus status;
 			
-			@Override
-			protected TootApiResult doInBackground( Void... params ){
+			@Override protected TootApiResult doInBackground( Void... params ){
 				TootApiClient client = new TootApiClient( ActPost.this, new TootApiClient.Callback() {
-					@Override
-					public boolean isApiCancelled(){
+					@Override public boolean isApiCancelled(){
 						return isCancelled();
 					}
-					
-					@Override
-					public void publishApiProgress( final String s ){
+					@Override public void publishApiProgress( final String s ){
 						Utils.runOnMainThread( new Runnable() {
-							@Override
-							public void run(){
+							@Override public void run(){
 								progress.setMessage( s );
 							}
 						} );
@@ -960,12 +955,16 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				} );
 				
 				client.setAccount( target_account );
+				String post_content = sb.toString();
+				String digest = Utils.digestSHA256( post_content + target_account.acct );
 				
 				Request.Builder request_builder = new Request.Builder()
 					.post( RequestBody.create(
 						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
-						, sb.toString()
-					) );
+						, post_content
+					) )
+					.header( "Idempotency-Key" ,digest)
+					;
 				
 				TootApiResult result = client.request( "/api/v1/statuses", request_builder );
 				if( result.object != null ){
@@ -986,7 +985,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				
 				if( status != null ){
 					ActMain.update_at_resume = true;
-					ActPost.this.finish();
+				//DEBUG	ActPost.this.finish();
 				}else{
 					if( result != null ){
 						Utils.showToast( ActPost.this, true, result.error );

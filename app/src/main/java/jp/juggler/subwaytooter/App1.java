@@ -17,6 +17,9 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
+import java.util.ArrayList;
+import java.util.Collections;
+
 import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.ClientInfo;
@@ -26,7 +29,11 @@ import jp.juggler.subwaytooter.table.MediaShown;
 import jp.juggler.subwaytooter.table.NotificationTracking;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
+import okhttp3.CipherSuite;
+import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
+import okhttp3.TlsVersion;
+import okhttp3.internal.Util;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 
@@ -153,7 +160,8 @@ public class App1 extends Application {
 		
 	}
 	
-	public static final OkHttpClient ok_http_client = new OkHttpClient();
+	public static OkHttpClient ok_http_client ;
+	
 	
 	public static Typeface typeface_emoji ;
 	
@@ -178,6 +186,28 @@ public class App1 extends Application {
 		if( typeface_emoji == null ){
 			typeface_emoji = TypefaceUtils.load(getAssets(), "emojione_android.ttf");
 		}
+		
+		if( ok_http_client == null ){
+//			ConnectionSpec spec = new ConnectionSpec.Builder(ConnectionSpec.COMPATIBLE_TLS)
+//				.tlsVersions( TlsVersion.TLS_1_2)
+//				.cipherSuites(
+//					CipherSuite.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+//					CipherSuite.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+//					CipherSuite.TLS_DHE_RSA_WITH_AES_128_GCM_SHA256)
+//				.build();
+//
+//			ArrayList<ConnectionSpec> spec_list = new ArrayList<>(  );
+//			spec_list.add(ConnectionSpec.MODERN_TLS );
+//		//	spec_list.add(ConnectionSpec.COMPATIBLE_TLS );
+//			spec_list.add(ConnectionSpec.CLEARTEXT );
+//			ok_http_client = new OkHttpClient.Builder()
+//				.connectionSpecs( spec_list )
+//				.build();
+
+			ok_http_client = new OkHttpClient();
+		}
+		
+		
 		
 		if( db_open_helper == null ){
 			db_open_helper = new DBOpenHelper( getApplicationContext() );

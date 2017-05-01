@@ -111,6 +111,7 @@ public class TootApiClient {
 		try{
 			response = call.execute();
 		}catch( Throwable ex ){
+			ex.printStackTrace(  );
 			return new TootApiResult(
 				Utils.formatError( ex, context.getResources(), R.string.network_error )
 			);
@@ -183,6 +184,7 @@ public class TootApiClient {
 				try{
 					response = call.execute();
 				}catch( Throwable ex ){
+					ex.printStackTrace(  );
 					return new TootApiResult( Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 				}
 				if( callback.isApiCancelled() ) return null;
@@ -266,6 +268,7 @@ public class TootApiClient {
 		try{
 			response = call.execute();
 		}catch( Throwable ex ){
+			ex.printStackTrace(  );
 			return new TootApiResult( Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		if( callback.isApiCancelled() ) return null;
@@ -306,6 +309,7 @@ public class TootApiClient {
 		try{
 			response = call.execute();
 		}catch( Throwable ex ){
+			ex.printStackTrace(  );
 			return new TootApiResult( Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		

@@ -10,6 +10,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
+import android.widget.CheckBox;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
@@ -23,14 +24,15 @@ import jp.juggler.subwaytooter.util.Utils;
 public class LoginForm {
 	
 	public interface LoginFormCallback{
-		void startLogin(Dialog dialog,String instance);
+		void startLogin(Dialog dialog,String instance,boolean bPseudoAccount);
 	}
 	
 	public static void showLoginForm( final Activity activity, String instance , final LoginFormCallback callback){
 		final View view = activity.getLayoutInflater().inflate( R.layout.dlg_account_add, null, false );
 		final AutoCompleteTextView etInstance = (AutoCompleteTextView) view.findViewById( R.id.etInstance );
 		final View btnOk = view.findViewById( R.id.btnOk );
-			
+		final CheckBox cbPseudoAccount = (CheckBox) view.findViewById( R.id.cbPseudoAccount );
+		
 		if( !TextUtils.isEmpty( instance ) ){
 			etInstance.setText(instance);
 			etInstance.setInputType( InputType.TYPE_NULL );
@@ -61,7 +63,7 @@ public class LoginForm {
 					Utils.showToast( activity, true, R.string.instance_not_need_slash );
 					return;
 				}
-				callback.startLogin( dialog,instance );
+				callback.startLogin( dialog,instance ,cbPseudoAccount.isChecked() );
 			}
 		} );
 		view.findViewById( R.id.btnCancel ).setOnClickListener( new View.OnClickListener() {

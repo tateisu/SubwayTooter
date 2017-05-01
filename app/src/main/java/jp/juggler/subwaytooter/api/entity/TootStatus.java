@@ -178,7 +178,7 @@ public class TootStatus extends TootId {
 				return date_format_utc.parse( strTime ).getTime();
 			}catch( ParseException ex ){
 				ex.printStackTrace();
-				log.e( ex, "TootStatus.parseTime failed." );
+				log.e( ex, "TootStatus.parseTime failed. src=%s",strTime );
 			}
 		}
 		return 0L;

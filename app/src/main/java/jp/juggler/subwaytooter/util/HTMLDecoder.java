@@ -213,29 +213,29 @@ public class HTMLDecoder {
 	}
 	
 	public static SpannableStringBuilder decodeHTML( LinkClickContext account, String src ){
+		SpannableStringBuilder sb = new SpannableStringBuilder();
 		try{
-			TokenParser tracker = new TokenParser( src );
-			Node rootNode = new Node();
-			rootNode.parseChild( tracker, "" );
-			
-			SpannableStringBuilder sb = new SpannableStringBuilder();
-			
-			rootNode.encodeSpan( account, sb );
-			int end = sb.length();
-			while( end > 0 && isWhitespace( sb.charAt( end - 1 ) ) ) -- end;
-			if( end < sb.length() ){
-				sb.delete( end, sb.length() );
-			}
+			if( src != null ){
+				TokenParser tracker = new TokenParser( src );
+				Node rootNode = new Node();
+				rootNode.parseChild( tracker, "" );
+				
+				rootNode.encodeSpan( account, sb );
+				int end = sb.length();
+				while( end > 0 && isWhitespace( sb.charAt( end - 1 ) ) ) -- end;
+				if( end < sb.length() ){
+					sb.delete( end, sb.length() );
+				}
 
 //			sb.append( "\n" );
 //			sb.append( src );
-
-			return sb;
-			
+				
+			}
 		}catch( Throwable ex ){
 			ex.printStackTrace();
-			return null;
 		}
+		
+		return sb;
 	}
 
 //	public static Spannable decodeTags( final LinkClickContext account, TootTag.List src_list ){

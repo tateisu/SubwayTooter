@@ -203,4 +203,7 @@
     <string name="follow_request_rejected">%1$s\'s follow request is rejected.</string>
     <string name="follow_request_authorized">%1$s\'s follow request is authorized.</string>
     <string name="close">Close</string>
+    <string name="pseudo_account">pseudo account (non-login,only reading public data)</string>
+    <string name="server_confirmed">server confirmed.</string>
+    <string name="not_available_for_pseudo_account">not available for pseudo account</string>
 </resources>

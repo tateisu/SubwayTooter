@@ -115,7 +115,7 @@
             android:text="@string/confirm_before_boost"
             />
 
-        <LinearLayout style="@style/setting_row_form">
+        <LinearLayout style="@style/setting_row_form" >
 
             <Switch
                 android:id="@+id/swConfirmBeforeBoost"

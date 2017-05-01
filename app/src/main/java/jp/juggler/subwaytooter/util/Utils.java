@@ -163,7 +163,7 @@ public class Utils {
 	public static String optStringX( JSONArray src, int key ){
 		return src.isNull( key ) ? null : src.optString( key );
 	}
-	
+
 	public static ArrayList< String > parseStringArray( LogCategory log, JSONArray array ){
 		ArrayList< String > dst_list = new ArrayList<>();
 		if( array != null ){

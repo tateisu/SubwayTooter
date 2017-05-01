@@ -78,6 +78,7 @@ class Column {
 	private static final String PATH_STATUSES = "/api/v1/statuses/%d"; // 1:status_id
 	private static final String PATH_STATUSES_CONTEXT = "/api/v1/statuses/%d/context"; // 1:status_id
 	private static final String PATH_SEARCH = "/api/v1/search?q=%s"; // 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
+	private static final String PATH_INSTANCE="/api/v1/instance";
 	
 	private static final String KEY_ACCOUNT_ROW_ID = "account_id";
 	private static final String KEY_TYPE = "type";
@@ -852,9 +853,16 @@ class Column {
 						
 						default:
 						case TAB_STATUS:
-							String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
-							if( with_attachment ) s = s + "&only_media=1";
-							return getStatuses( client, s );
+							if( access_info.isPseudo()){
+								return client.request(PATH_INSTANCE );
+								
+							}else{
+								String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
+								if( with_attachment ) s = s + "&only_media=1";
+								return getStatuses( client, s );
+								
+							}
+							
 						
 						case TAB_FOLLOWING:
 							return parseAccountList( client,
@@ -1387,10 +1395,13 @@ class Column {
 						
 						default:
 						case TAB_STATUS:
-							String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
-							if( with_attachment ) s = s + "&only_media=1";
-							return getStatusList( client, s );
-						
+							if( access_info.isPseudo()){
+								return client.request(PATH_INSTANCE );
+							}else{
+								String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
+								if( with_attachment ) s = s + "&only_media=1";
+								return getStatusList( client, s );
+							}
 						case TAB_FOLLOWING:
 							return getAccountList( client,
 								String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id ) );
@@ -1765,9 +1776,16 @@ class Column {
 						
 						default:
 						case TAB_STATUS:
-							String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
-							if( with_attachment ) s = s + "&only_media=1";
-							return getStatusList( client, s );
+							
+							if( access_info.isPseudo()){
+								return client.request(PATH_INSTANCE );
+								
+							}else{
+								String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
+								if( with_attachment ) s = s + "&only_media=1";
+								return getStatusList( client, s );
+								
+							}
 						
 						case TAB_FOLLOWING:
 							return getAccountList( client,

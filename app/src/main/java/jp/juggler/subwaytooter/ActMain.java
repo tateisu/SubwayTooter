@@ -198,7 +198,7 @@ public class ActMain extends AppCompatActivity
 				if( data != null ){
 					String search = data.getStringExtra( ActAbout.EXTRA_SEARCH );
 					if( ! TextUtils.isEmpty( search ) ){
-						performAddTimeline( Column.TYPE_SEARCH, search, true );
+						performAddTimeline( true, Column.TYPE_SEARCH, search, true );
 					}
 					return;
 				}
@@ -291,20 +291,22 @@ public class ActMain extends AppCompatActivity
 		if( id == R.id.nav_account_add ){
 			performAccountAdd();
 		}else if( id == R.id.nav_add_tl_home ){
-			performAddTimeline( Column.TYPE_HOME );
+			
+			performAddTimeline( false, Column.TYPE_HOME );
 		}else if( id == R.id.nav_add_tl_local ){
-			performAddTimeline( Column.TYPE_LOCAL );
+			performAddTimeline( true, Column.TYPE_LOCAL );
 		}else if( id == R.id.nav_add_tl_federate ){
-			performAddTimeline( Column.TYPE_FEDERATE );
+			performAddTimeline( true, Column.TYPE_FEDERATE );
 			
 		}else if( id == R.id.nav_add_favourites ){
-			performAddTimeline( Column.TYPE_FAVOURITES );
+			performAddTimeline( false, Column.TYPE_FAVOURITES );
+
 //		}else if( id == R.id.nav_add_reports ){
 //			performAddTimeline(Column.TYPE_REPORTS );
 		}else if( id == R.id.nav_add_statuses ){
-			performAddTimeline( Column.TYPE_PROFILE );
+			performAddTimeline( false, Column.TYPE_PROFILE );
 		}else if( id == R.id.nav_add_notifications ){
-			performAddTimeline( Column.TYPE_NOTIFICATIONS );
+			performAddTimeline( false, Column.TYPE_NOTIFICATIONS );
 			
 		}else if( id == R.id.nav_app_setting ){
 			performAppSetting();
@@ -314,7 +316,7 @@ public class ActMain extends AppCompatActivity
 			performColumnList();
 			
 		}else if( id == R.id.nav_add_tl_search ){
-			performAddTimeline( Column.TYPE_SEARCH, "", false );
+			performAddTimeline( true, Column.TYPE_SEARCH, "", false );
 			
 		}else if( id == R.id.nav_app_about ){
 			openAppAbout();
@@ -326,13 +328,13 @@ public class ActMain extends AppCompatActivity
 			finish();
 			
 		}else if( id == R.id.nav_add_mutes ){
-			performAddTimeline( Column.TYPE_MUTES );
+			performAddTimeline( false, Column.TYPE_MUTES );
 			
 		}else if( id == R.id.nav_add_blocks ){
-			performAddTimeline( Column.TYPE_BLOCKS );
+			performAddTimeline( false, Column.TYPE_BLOCKS );
 			
 		}else if( id == R.id.nav_follow_requests ){
-			performAddTimeline( Column.TYPE_FOLLOW_REQUESTS );
+			performAddTimeline( false, Column.TYPE_FOLLOW_REQUESTS );
 			
 		}else if( id == R.id.nav_muted_app ){
 			startActivity( new Intent( this, ActMutedApp.class ) );
@@ -404,22 +406,19 @@ public class ActMain extends AppCompatActivity
 	public void performAccountAdd(){
 		LoginForm.showLoginForm( this, null, new LoginForm.LoginFormCallback() {
 			@Override
-			public void startLogin( final Dialog dialog, final String instance ){
+			public void startLogin( final Dialog dialog, final String instance, final boolean bPseudoAccount ){
 				
 				final ProgressDialog progress = new ProgressDialog( ActMain.this );
 				
 				final AsyncTask< Void, String, TootApiResult > task = new AsyncTask< Void, String, TootApiResult >() {
 					
-					@Override
-					protected TootApiResult doInBackground( Void... params ){
+					@Override protected TootApiResult doInBackground( Void... params ){
 						TootApiClient api_client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-							@Override
-							public boolean isApiCancelled(){
+							@Override public boolean isApiCancelled(){
 								return isCancelled();
 							}
 							
-							@Override
-							public void publishApiProgress( final String s ){
+							@Override public void publishApiProgress( final String s ){
 								Utils.runOnMainThread( new Runnable() {
 									@Override
 									public void run(){
@@ -430,7 +429,13 @@ public class ActMain extends AppCompatActivity
 						} );
 						
 						api_client.setInstance( instance );
-						return api_client.authorize1();
+						
+						if( bPseudoAccount ){
+							return api_client.checkInstance();
+						}else{
+							return api_client.authorize1();
+							
+						}
 					}
 					
 					@Override
@@ -441,8 +446,9 @@ public class ActMain extends AppCompatActivity
 						if( result == null ){
 							// cancelled.
 						}else if( result.error != null ){
-							// エラー？
 							String sv = result.error;
+							
+							// エラーはブラウザ用URLかもしれない
 							if( sv.startsWith( "https" ) ){
 								// OAuth認証が必要
 								Intent data = new Intent();
@@ -451,12 +457,36 @@ public class ActMain extends AppCompatActivity
 								dialog.dismiss();
 								return;
 							}
+							
 							// 他のエラー
 							Utils.showToast( ActMain.this, true, sv );
 							log.e( result.error );
 						}else{
-							// 多分ここは通らないはず
-							Utils.showToast( ActMain.this, false, R.string.access_token_updated_for );
+							// 疑似アカウントが追加された
+							try{
+								String username = "?";
+								String full_acct = username + "@" + instance;
+								
+								JSONObject account_info = new JSONObject();
+								account_info.put( "username", username );
+								account_info.put( "acct", username );
+								
+								long row_id = SavedAccount.insert( instance, full_acct, account_info, new JSONObject() );
+								SavedAccount account = SavedAccount.loadAccount( log, row_id );
+								if( account != null ){
+									account.notification_follow = false;
+									account.notification_favourite = false;
+									account.notification_boost = false;
+									account.notification_mention = false;
+									account.saveSetting();
+									
+									Utils.showToast( ActMain.this, false, R.string.server_confirmed );
+									addColumn( account, Column.TYPE_LOCAL );
+									dialog.dismiss();
+								}
+							}catch( JSONException ex ){
+								ex.printStackTrace();
+							}
 						}
 					}
 				};
@@ -513,7 +543,6 @@ public class ActMain extends AppCompatActivity
 		
 		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
 			
-			long row_id;
 			TootAccount ta;
 			SavedAccount sa;
 			String host;
@@ -629,7 +658,7 @@ public class ActMain extends AppCompatActivity
 				}else{
 					// アカウント追加時
 					String user = ta.username + "@" + host;
-					this.row_id = SavedAccount.insert( host, user, result.object, result.token_info );
+					long row_id = SavedAccount.insert( host, user, result.object, result.token_info );
 					SavedAccount account = SavedAccount.loadAccount( log, row_id );
 					if( account != null ){
 						if( account.locked ){
@@ -717,15 +746,19 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	void performOpenUser( SavedAccount access_info, TootAccount user ){
-		addColumn( access_info, Column.TYPE_PROFILE, user.id );
+		if( access_info.isPseudo() ){
+			Utils.showToast( this,false,R.string.not_available_for_pseudo_account );
+		}else{
+			addColumn( access_info, Column.TYPE_PROFILE, user.id );
+		}
 	}
 	
 	public void performConversation( SavedAccount access_info, TootStatus status ){
 		addColumn( access_info, Column.TYPE_CONVERSATION, status.id );
 	}
 	
-	private void performAddTimeline( final int type, final Object... args ){
-		AccountPicker.pick( this, true, new AccountPicker.AccountPickerCallback() {
+	private void performAddTimeline( boolean bAllowPseudo, final int type, final Object... args ){
+		AccountPicker.pick( this, bAllowPseudo, true, new AccountPicker.AccountPickerCallback() {
 			@Override public void onAccountPicked( SavedAccount ai ){
 				switch( type ){
 				default:
@@ -1191,9 +1224,8 @@ public class ActMain extends AppCompatActivity
 	////////////////////////////////////////
 	
 	private void performAccountSetting(){
-		AccountPicker.pick( this, true, new AccountPicker.AccountPickerCallback() {
-			@Override
-			public void onAccountPicked( SavedAccount ai ){
+		AccountPicker.pick( this, true, true, new AccountPicker.AccountPickerCallback() {
+			@Override public void onAccountPicked( SavedAccount ai ){
 				ActAccountSetting.open( ActMain.this, ai, REQUEST_CODE_ACCOUNT_SETTING );
 			}
 		} );
@@ -1490,7 +1522,7 @@ public class ActMain extends AppCompatActivity
 	
 	// アカウントを選択してからユーザをフォローする
 	void followFromAccount( final SavedAccount access_info, final TootAccount who, final RelationChangedCallback callback ){
-		AccountPicker.pick( ActMain.this, true, new AccountPicker.AccountPickerCallback() {
+		AccountPicker.pick( ActMain.this, false, true, new AccountPicker.AccountPickerCallback() {
 			@Override public void onAccountPicked( SavedAccount ai ){
 				String acct = who.acct;
 				if( ! acct.contains( "@" ) ){
@@ -1761,19 +1793,14 @@ public class ActMain extends AppCompatActivity
 				} );
 				
 				client.setAccount( access_info );
-				StringBuilder sb = new StringBuilder();
-				sb.append( "account_id=" )
-					.append( Long.toString( who.id ) )
-					.append( "&comment=" )
-					.append( Uri.encode( comment ) );
-				
-				sb.append( "&status_ids[]=" )
-					.append( Long.toString( status.id ) );
+				String sb = "account_id=" + Long.toString( who.id )
+					+ "&comment=" + Uri.encode( comment )
+					+ "&status_ids[]=" + Long.toString( status.id );
 				
 				Request.Builder request_builder = new Request.Builder().post(
 					RequestBody.create(
 						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
-						, sb.toString()
+						, sb
 					) );
 				
 				return client.request( "/api/v1/reports", request_builder );
@@ -1900,6 +1927,7 @@ public class ActMain extends AppCompatActivity
 		} );
 		final ArrayList< SavedAccount > tmp_list = new ArrayList<>();
 		for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
+			if( a.isPseudo() ) continue;
 			if( a.host.equalsIgnoreCase( access_info.host ) ){
 				// 同じホストを収集
 				tmp_list.add( a );
@@ -1908,7 +1936,7 @@ public class ActMain extends AppCompatActivity
 		if( ! tmp_list.isEmpty() ){
 			dialog.addAction( getString( R.string.favourite_from_another_account ), new Runnable() {
 				@Override public void run(){
-					AccountPicker.pick( ActMain.this, false, tmp_list, new AccountPicker.AccountPickerCallback() {
+					AccountPicker.pick( ActMain.this, false, false, tmp_list, new AccountPicker.AccountPickerCallback() {
 						@Override public void onAccountPicked( SavedAccount ai ){
 							if( ai != null )
 								performFavourite( ai, status, favourite_complete_callback );
@@ -1918,7 +1946,7 @@ public class ActMain extends AppCompatActivity
 			} );
 			dialog.addAction( getString( R.string.boost_from_another_account ), new Runnable() {
 				@Override public void run(){
-					AccountPicker.pick( ActMain.this, false, tmp_list, new AccountPicker.AccountPickerCallback() {
+					AccountPicker.pick( ActMain.this, false, false, tmp_list, new AccountPicker.AccountPickerCallback() {
 						@Override public void onAccountPicked( SavedAccount ai ){
 							if( ai != null )
 								performBoost( ai, status, false, boost_complete_callback );
@@ -1934,50 +1962,53 @@ public class ActMain extends AppCompatActivity
 			}
 		} );
 		
-		dialog.addAction( getString( R.string.follow ), new Runnable() {
-			@Override public void run(){
-				callFollow( access_info, status.account, true, follow_complete_callback );
-			}
-		} );
-		
-		dialog.addAction( getString( R.string.unfollow ), new Runnable() {
-			@Override public void run(){
-				callFollow( access_info, status.account, false, unfollow_complete_callback );
-			}
-		} );
-		dialog.addAction( getString( R.string.mute ), new Runnable() {
-			@Override public void run(){
-				callMute( access_info, status.account, true, null );
-			}
-		} );
-		dialog.addAction( getString( R.string.unmute ), new Runnable() {
-			@Override public void run(){
-				callMute( access_info, status.account, false, null );
-			}
-		} );
-		dialog.addAction( getString( R.string.block ), new Runnable() {
-			@Override public void run(){
-				callBlock( access_info, status.account, true, null );
-			}
-		} );
-		dialog.addAction( getString( R.string.unblock ), new Runnable() {
-			@Override public void run(){
-				callBlock( access_info, status.account, false, null );
-			}
-		} );
-
-		if( access_info.isMe( status.account ) ){
-			dialog.addAction( getString( R.string.delete ), new Runnable() {
+		if( ! access_info.isPseudo() ){
+			dialog.addAction( getString( R.string.follow ), new Runnable() {
 				@Override public void run(){
-					deleteStatus( access_info, status.id );
+					callFollow( access_info, status.account, true, follow_complete_callback );
 				}
 			} );
-		}else{
-			dialog.addAction( getString( R.string.report ), new Runnable() {
+			
+			dialog.addAction( getString( R.string.unfollow ), new Runnable() {
 				@Override public void run(){
-					openReportForm( access_info, status.account, status );
+					callFollow( access_info, status.account, false, unfollow_complete_callback );
 				}
 			} );
+			dialog.addAction( getString( R.string.mute ), new Runnable() {
+				@Override public void run(){
+					callMute( access_info, status.account, true, null );
+				}
+			} );
+			dialog.addAction( getString( R.string.unmute ), new Runnable() {
+				@Override public void run(){
+					callMute( access_info, status.account, false, null );
+				}
+			} );
+			dialog.addAction( getString( R.string.block ), new Runnable() {
+				@Override public void run(){
+					callBlock( access_info, status.account, true, null );
+				}
+			} );
+			dialog.addAction( getString( R.string.unblock ), new Runnable() {
+				@Override public void run(){
+					callBlock( access_info, status.account, false, null );
+				}
+			} );
+			
+			if( access_info.isMe( status.account ) ){
+				dialog.addAction( getString( R.string.delete ), new Runnable() {
+					@Override public void run(){
+						deleteStatus( access_info, status.id );
+					}
+				} );
+			}else{
+				dialog.addAction( getString( R.string.report ), new Runnable() {
+					@Override public void run(){
+						openReportForm( access_info, status.account, status );
+					}
+				} );
+			}
+			
 		}
 		
 		if( column_type == Column.TYPE_CONVERSATION && status.application != null ){
@@ -1998,67 +2029,68 @@ public class ActMain extends AppCompatActivity
 	public void openAccountMoreMenu( final SavedAccount access_info, final TootAccount who, int column_type ){
 		ActionsDialog dialog = new ActionsDialog();
 		
-		if( column_type == Column.TYPE_FOLLOW_REQUESTS ){
-			dialog.addAction( getString( R.string.follow_request_ok ), new Runnable() {
-				@Override public void run(){
-					callFollowRequestAuthorize( access_info, who, true );
-				}
-			} );
-			dialog.addAction( getString( R.string.follow_request_ng ), new Runnable() {
-				@Override public void run(){
-					callFollowRequestAuthorize( access_info, who, false );
-				}
-			} );
-			
+		if( ! access_info.isPseudo() ){
+			if( column_type == Column.TYPE_FOLLOW_REQUESTS ){
+				dialog.addAction( getString( R.string.follow_request_ok ), new Runnable() {
+					@Override public void run(){
+						callFollowRequestAuthorize( access_info, who, true );
+					}
+				} );
+				dialog.addAction( getString( R.string.follow_request_ng ), new Runnable() {
+					@Override public void run(){
+						callFollowRequestAuthorize( access_info, who, false );
+					}
+				} );
+				
+			}
 		}
 		
-		dialog.addAction( getString( R.string.mention ), new Runnable() {
-			@Override public void run(){
-				performMention( access_info, who );
-			}
-		} );
-		dialog.addAction( getString( R.string.follow ), new Runnable() {
-			@Override public void run(){
-				callFollow( access_info, who, true, follow_complete_callback );
-			}
-		} );
+		if( ! access_info.isPseudo() ){
+			dialog.addAction( getString( R.string.mention ), new Runnable() {
+				@Override public void run(){
+					performMention( access_info, who );
+				}
+			} );
+			dialog.addAction( getString( R.string.follow ), new Runnable() {
+				@Override public void run(){
+					callFollow( access_info, who, true, follow_complete_callback );
+				}
+			} );
+		}
 		dialog.addAction( getString( R.string.follow_from_another_account ), new Runnable() {
 			@Override public void run(){
 				followFromAccount( access_info, who, follow_complete_callback );
 			}
 		} );
-		dialog.addAction( getString( R.string.unfollow ), new Runnable() {
-			@Override
-			public void run(){
-				callFollow( access_info, who, false, unfollow_complete_callback );
-			}
-		} );
-		dialog.addAction( getString( R.string.mute ), new Runnable() {
-			@Override public void run(){
-				callMute( access_info, who, true, null );
-			}
-		} );
-		dialog.addAction( getString( R.string.unmute ), new Runnable() {
-			@Override
-			public void run(){
-				callMute( access_info, who, false, null );
-			}
-		} );
-		dialog.addAction( getString( R.string.block ), new Runnable() {
-			@Override public void run(){
-				callBlock( access_info, who, true, null );
-			}
-		} );
-		dialog.addAction( getString( R.string.unblock ), new Runnable() {
-			@Override public void run(){
-				callBlock( access_info, who, false, null );
-			}
-		} );
-//		dialog.addAction( getString( R.string.report ), new Runnable() {
-//			@Override public void run(){
-//				openReportForm( access_info, who, null );
-//			}
-//		} );
+		if( ! access_info.isPseudo() ){
+			dialog.addAction( getString( R.string.unfollow ), new Runnable() {
+				@Override
+				public void run(){
+					callFollow( access_info, who, false, unfollow_complete_callback );
+				}
+			} );
+			dialog.addAction( getString( R.string.mute ), new Runnable() {
+				@Override public void run(){
+					callMute( access_info, who, true, null );
+				}
+			} );
+			dialog.addAction( getString( R.string.unmute ), new Runnable() {
+				@Override
+				public void run(){
+					callMute( access_info, who, false, null );
+				}
+			} );
+			dialog.addAction( getString( R.string.block ), new Runnable() {
+				@Override public void run(){
+					callBlock( access_info, who, true, null );
+				}
+			} );
+			dialog.addAction( getString( R.string.unblock ), new Runnable() {
+				@Override public void run(){
+					callBlock( access_info, who, false, null );
+				}
+			} );
+		}
 		dialog.show( this, null );
 	}
 	
@@ -2106,8 +2138,7 @@ public class ActMain extends AppCompatActivity
 						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
 						, "" // 空データ
 					) );
-				TootApiResult result = client.request( "/api/v1/notifications/clear", request_builder );
-				return result;
+				return client.request( "/api/v1/notifications/clear", request_builder );
 			}
 			
 			@Override
@@ -2117,6 +2148,7 @@ public class ActMain extends AppCompatActivity
 			
 			@Override
 			protected void onPostExecute( TootApiResult result ){
+				//noinspection StatementWithEmptyBody
 				if( result == null ){
 					//cancelled.
 				}else if( result.object != null ){

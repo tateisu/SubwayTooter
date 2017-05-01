@@ -18,6 +18,7 @@ import jp.juggler.subwaytooter.util.Utils;
 
 public class TootAccount {
 	
+	
 	public static class List extends ArrayList< TootAccount > {
 		
 	}
@@ -72,10 +73,20 @@ public class TootAccount {
 	
 	public long time_created_at;
 	
+	public TootAccount(){
+		
+	}
+	
+	// 疑似アカウントの作成
+	public TootAccount( String username ){
+		this.acct = username;
+		this.username = username;
+	}
+	
 	public static TootAccount parse( LogCategory log, LinkClickContext account, JSONObject src, TootAccount dst ){
 		if( src == null ) return null;
 		try{
-			dst.id = src.optLong( "id" );
+			dst.id = src.optLong( "id",-1L );
 			dst.username = Utils.optStringX( src, "username" );
 			dst.acct = Utils.optStringX( src, "acct" );
 			

@@ -206,5 +206,8 @@
     <string name="sound">sound</string>
     <string name="vibration">vibration</string>
     <string name="close">Close</string>
+    <string name="not_available_for_pseudo_account">not available for pseudo account</string>
+    <string name="pseudo_account">pseudo account (non-login,only reading public data)</string>
+    <string name="server_confirmed">server confirmed.</string>
 
 </resources>

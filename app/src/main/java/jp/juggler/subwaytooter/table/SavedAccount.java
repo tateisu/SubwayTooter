@@ -268,4 +268,8 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		if( url.charAt( 0 )=='/') return "https://"+host+url;
 		return url;
 	}
+	
+	public boolean isPseudo(){
+		return "?".equals( username );
+	}
 }

@@ -41,7 +41,7 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 	@Override
 	protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
-		App1.setActivityTheme(this,false);
+		App1.setActivityTheme( this, false );
 		initUI();
 		account = SavedAccount.loadAccount( log, getIntent().getLongExtra( KEY_ACCOUNT_DB_ID, - 1L ) );
 		if( account == null ) finish();
@@ -113,11 +113,20 @@ public class ActAccountSetting extends AppCompatActivity implements View.OnClick
 		
 		loading = false;
 		
+		boolean enabled = ! a.isPseudo();
+		btnAccessToken.setEnabled( enabled );
+		btnVisibility.setEnabled( enabled );
+		swConfirmBeforeBoost.setEnabled( enabled );
+		cbNotificationMention.setEnabled( enabled );
+		cbNotificationBoost.setEnabled( enabled );
+		cbNotificationFavourite.setEnabled( enabled );
+		cbNotificationFollow.setEnabled( enabled );
+		
 		updateVisibility();
 	}
 	
 	@Override protected void onStop(){
-		AlarmService.startCheck(this);
+		AlarmService.startCheck( this );
 		super.onStop();
 	}
 	

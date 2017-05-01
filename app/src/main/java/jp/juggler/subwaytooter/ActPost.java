@@ -5,33 +5,26 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.database.Cursor;
-import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.provider.OpenableColumns;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.os.AsyncTaskCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
-import android.text.Layout;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.view.Gravity;
 import android.view.View;
-import android.view.WindowManager;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CheckedTextView;
 import android.widget.CompoundButton;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
-import android.widget.PopupWindow;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.android.volley.toolbox.NetworkImageView;
@@ -62,6 +55,8 @@ import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okio.BufferedSink;
+
+import static jp.juggler.subwaytooter.R.id.viewRoot;
 
 public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	static final LogCategory log = new LogCategory( "ActPost" );
@@ -229,19 +224,19 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			sv = intent.getStringExtra( KEY_REPLY_STATUS );
 			if( sv != null ){
 				try{
-					TootStatus repley_status = TootStatus.parse( log, account, new JSONObject( sv ) );
+					TootStatus reply_status = TootStatus.parse( log, account, new JSONObject( sv ) );
 					
 					// CW をリプライ元に合わせる
-					if( ! TextUtils.isEmpty( repley_status.spoiler_text ) ){
+					if( ! TextUtils.isEmpty( reply_status.spoiler_text ) ){
 						cbContentWarning.setChecked( true );
-						etContentWarning.setText( repley_status.spoiler_text );
+						etContentWarning.setText( reply_status.spoiler_text );
 					}
 					
 					// mention を自動設定する
 					ArrayList< String > mention_list = new ArrayList<>();
-					mention_list.add( "@" + account.getFullAcct( repley_status.account ) );
-					if( repley_status.mentions != null ){
-						for( TootMention mention : repley_status.mentions ){
+					mention_list.add( "@" + account.getFullAcct( reply_status.account ) );
+					if( reply_status.mentions != null ){
+						for( TootMention mention : reply_status.mentions ){
 							
 							if( account.isMe( mention.acct ) ) continue;
 							
@@ -263,9 +258,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 					}
 					
 					// リプライ表示をつける
-					in_reply_to_id = repley_status.id;
-					in_reply_to_text = repley_status.content;
-					in_reply_to_image = repley_status.account.avatar_static;
+					in_reply_to_id = reply_status.id;
+					in_reply_to_text = reply_status.content;
+					in_reply_to_image = reply_status.account.avatar_static;
 					
 					// 公開範囲
 					try{
@@ -278,9 +273,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 						}
 						
 						// デフォルトの方が公開範囲が大きい場合、リプライ元に合わせて公開範囲を狭める
-						int i = TootStatus.compareVisibility( this.visibility, repley_status.visibility );
+						int i = TootStatus.compareVisibility( this.visibility, reply_status.visibility );
 						if( i > 0 ){ // より大きい=>より公開範囲が広い
-							this.visibility = repley_status.visibility;
+							this.visibility = reply_status.visibility;
 						}
 					}catch( Throwable ex ){
 						ex.printStackTrace();
@@ -354,6 +349,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	MyEditText etContent;
 	TextView tvCharCount;
 	Handler handler;
+	View formRoot;
+	float density;
 	
 	ArrayList< SavedAccount > account_list;
 	
@@ -361,11 +358,16 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	TextView tvReplyTo;
 	View btnRemoveReply;
 	NetworkImageView ivReply;
+	ScrollView scrollView;
 	
 	private void initUI(){
-		setContentView( R.layout.act_post );
 		handler = new Handler();
+		density = getResources().getDisplayMetrics().density;
 		
+		setContentView( R.layout.act_post );
+		
+		formRoot = findViewById( viewRoot );
+		scrollView = (ScrollView) findViewById( R.id.scrollView );
 		btnAccount = (Button) findViewById( R.id.btnAccount );
 		btnVisibility = (ImageButton) findViewById( R.id.btnVisibility );
 		btnAttachment = findViewById( R.id.btnAttachment );
@@ -421,11 +423,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			
 			@Override
 			public void onTextChanged( CharSequence s, int start, int before, int count ){
-				if( count > 0 ){
-					log.d( "onTextChanged" );
-					handler.removeCallbacks( proc_text_changed );
-					handler.postDelayed( proc_text_changed, 1500L );
-				}
+				handler.removeCallbacks( proc_text_changed );
+				handler.postDelayed( proc_text_changed,  (popup!= null && popup.isShowing() ? 100L : 1000L ));
 			}
 			
 			@Override
@@ -433,58 +432,62 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				updateTextCount();
 			}
 		} );
+		
 		etContent.setOnSelectionChangeListener( new MyEditText.OnSelectionChangeListener() {
-			int last_selection = - 1;
 			
 			@Override public void onSelectionChanged( int selStart, int selEnd ){
 				if( selStart != selEnd ){
 					// 範囲選択されてるならポップアップは閉じる
 					log.d( "onSelectionChanged: range selected" );
 					closeAcctPopup();
-				}else if( selStart > last_selection ){
-					// 文字挿入の直後かもしれないので何もしない
-					log.d( "onSelectionChanged: may after text input? " );
-				}else{
-					// 前方への移動ではないならポップアップは閉じる
-					log.d( "onSelectionChanged: not forward change" );
-					closeAcctPopup();
 				}
-				last_selection = selStart;
 			}
 		} );
+		
+		scrollView.getViewTreeObserver().addOnScrollChangedListener( scroll_listener );
 	}
+	
+	final ViewTreeObserver.OnScrollChangedListener scroll_listener = new ViewTreeObserver.OnScrollChangedListener() {
+		@Override public void onScrollChanged(){
+			if( popup != null && popup.isShowing() ){
+				popup.updatePosition();
+			}
+		}
+	};
 	
 	final Runnable proc_text_changed = new Runnable() {
 		@Override public void run(){
-			int ss = etContent.getSelectionStart();
-			int se = etContent.getSelectionEnd();
-			if( ss != se ){
+			int start = etContent.getSelectionStart();
+			int end = etContent.getSelectionEnd();
+			if( start != end ){
 				closeAcctPopup();
 				return;
 			}
-			int end = ss;
 			String src = etContent.getText().toString();
-			int start = ss;
 			int count_atMark = 0;
 			int[] pos_atMark = new int[ 2 ];
 			for( ; ; ){
-				if( start == 0 ) break;
 				if( count_atMark >= 2 ) break;
+				
+				if( start == 0 ) break;
 				char c = src.charAt( start - 1 );
-				if( ( '0' <= c && c <= '9' )
-					|| ( 'A' <= c && c <= 'Z' )
-					|| ( 'a' <= c && c <= 'z' )
-					|| c == '_'
-					){
-					-- start;
-					continue;
-				}else if( c == '@' ){
+				
+				if( c == '@' ){
 					-- start;
 					pos_atMark[ count_atMark++ ] = start;
 					continue;
+				}else if( ( '0' <= c && c <= '9' )
+					|| ( 'A' <= c && c <= 'Z' )
+					|| ( 'a' <= c && c <= 'z' )
+					|| c == '_' || c == '-' || c == '.'
+					){
+					-- start;
+					continue;
 				}
+				// その他の文字種が出たら探索打ち切り
 				break;
 			}
+			// 登場した@の数
 			if( count_atMark == 0 ){
 				closeAcctPopup();
 				return;
@@ -493,106 +496,33 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			}else if( count_atMark == 2 ){
 				start = pos_atMark[ 1 ];
 			}
+			// 最低でも2文字ないと補完しない
 			if( end - start < 2 ){
 				closeAcctPopup();
 				return;
 			}
-			int limit = 10;
+			int limit = 100;
 			String s = src.substring( start, end );
 			ArrayList< String > acct_list = AcctSet.searchPrefix( s, limit );
 			log.d( "search for %s, result=%d", s, acct_list.size() );
 			if( acct_list.isEmpty() ){
 				closeAcctPopup();
-				return;
+			}else{
+				if( popup == null || ! popup.isShowing() ){
+					popup = new PopupAutoCompleteAcct( ActPost.this, etContent ,formRoot);
+				}
+				popup.setList( acct_list, start, end );
 			}
-			openAcctPopup( acct_list, start, end );
 		}
 	};
 	
-	PopupWindow acct_popup;
+	PopupAutoCompleteAcct popup;
 	
 	private void closeAcctPopup(){
-		if( acct_popup != null ){
-			acct_popup.dismiss();
-			acct_popup = null;
+		if( popup != null ){
+			popup.dismiss();
+			popup = null;
 		}
-	}
-	
-	private void openAcctPopup( ArrayList< String > acct_list, final int start, final int end ){
-		closeAcctPopup();
-		View viewRoot = getLayoutInflater().inflate( R.layout.acct_complete_popup, null, false );
-		LinearLayout llItems = (LinearLayout) viewRoot.findViewById( R.id.llItems );
-		{
-			CheckedTextView v = (CheckedTextView) getLayoutInflater().inflate( R.layout.lv_spinner_dropdown, llItems, false );
-			v.setTextColor( Styler.getAttributeColor( this, android.R.attr.textColorPrimary ) );
-			v.setText( R.string.close );
-			v.setOnClickListener( new View.OnClickListener() {
-				@Override public void onClick( View v ){
-					closeAcctPopup();
-				}
-			} );
-			llItems.addView( v );
-		}
-		
-		for( int i = 0 ; ; ++ i ){
-			if( i >= acct_list.size() ) break;
-			final String acct = acct_list.get( i );
-			CheckedTextView v = (CheckedTextView) getLayoutInflater().inflate( R.layout.lv_spinner_dropdown, llItems, false );
-			v.setTextColor( Styler.getAttributeColor( this, android.R.attr.textColorPrimary ) );
-			v.setText( acct );
-			v.setOnClickListener( new View.OnClickListener() {
-				@Override public void onClick( View v ){
-					String s = etContent.getText().toString();
-					s = s.substring( 0, start ) + acct + " " + ( end >= s.length() ? "" : s.substring( end ) );
-					etContent.setText( s );
-					etContent.setSelection( start + acct.length() + 1 );
-					closeAcctPopup();
-				}
-			} );
-			llItems.addView( v );
-		}
-		
-		//
-		acct_popup = new PopupWindow( this );
-		acct_popup.setBackgroundDrawable( ContextCompat.getDrawable( this, R.drawable.acct_popup_bg ) );
-
-//		Resources.Theme popupTheme = getResources().newTheme();
-//
-//		int theme_idx = pref.getInt(Pref.KEY_UI_THEME,0);
-//		switch(theme_idx){
-//
-//		default:
-//		case 0:
-//			popupTheme.applyStyle( R.style.Theme_AppCompat_Light_Dialog, true);
-//			break;
-//
-//		case 1:
-//			popupTheme.applyStyle( R.style.Theme_AppCompat_Dialog, true);
-//			break;
-//
-//		}
-		
-		acct_popup.setWidth( WindowManager.LayoutParams.WRAP_CONTENT );
-		acct_popup.setHeight( WindowManager.LayoutParams.WRAP_CONTENT );
-		acct_popup.setContentView( viewRoot );
-		acct_popup.setTouchable( true );
-		
-		int[] location = new int[ 2 ];
-		
-		etContent.getLocationOnScreen( location );
-		int y = location[ 1 ];
-		y += etContent.getTotalPaddingTop();
-		y -= etContent.getScrollY();
-		Layout layout = etContent.getLayout();
-		y += layout.getLineBottom( layout.getLineCount() - 1 );
-		
-		acct_popup.showAtLocation(
-			etContent
-			, Gravity.CENTER_HORIZONTAL | Gravity.TOP
-			, 0
-			, y
-		);
-		
 	}
 	
 	private void updateTextCount(){
@@ -677,7 +607,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	static final int ATTACHMENT_UPLOADING = 1;
 	static final int ATTACHMENT_UPLOADED = 2;
 	
-	static class PostAttachment {
+	private static class PostAttachment {
 		int status;
 		TootAttachment attachment;
 	}
@@ -752,7 +682,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		}
 	}
 	
-	static final byte[] hex = Utils.encodeUTF8( "0123456789abcdef" );
+	// static final byte[] hex = Utils.encodeUTF8( "0123456789abcdef" );
 	
 	void addAttachment( final Uri uri, final String mime_type ){
 		if( attachment_list.size() >= 4 ){
@@ -885,14 +815,16 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	public String getDocumentName( Uri uri ){
 		
 		Cursor cursor = getContentResolver().query( uri, null, null, null, null, null );
-		try{
-			if( cursor != null && cursor.moveToFirst() ){
-				return cursor.getString( cursor.getColumnIndex( OpenableColumns.DISPLAY_NAME ) );
+		if( cursor != null){
+			try{
+				if( cursor.moveToFirst() ){
+					return cursor.getString( cursor.getColumnIndex( OpenableColumns.DISPLAY_NAME ) );
+				}
+			}finally{
+				cursor.close();
 			}
-		}finally{
-			cursor.close();
 		}
-		return null;
+		return "no_name";
 	}
 	
 	long getStreamSize( boolean bClose, InputStream is ) throws IOException{

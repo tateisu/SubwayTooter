@@ -4,6 +4,7 @@
     style="?android:attr/spinnerDropDownItemStyle"
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="48dp"
-    android:ellipsize="marquee"
+    android:layout_height="wrap_content"
+    android:minHeight="48dp"
+    android:background="@drawable/btn_bg_transparent"
     />

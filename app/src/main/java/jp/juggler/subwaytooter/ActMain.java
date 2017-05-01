@@ -381,16 +381,14 @@ public class ActMain extends AppCompatActivity
 		// floating action button
 		FloatingActionButton fabToot = (FloatingActionButton) findViewById( R.id.fabToot );
 		fabToot.setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick( View view ){
+			@Override public void onClick( View view ){
 				performTootButton();
 			}
 		} );
 		// floating action button
 		FloatingActionButton fabMenu = (FloatingActionButton) findViewById( R.id.fabMenu );
 		fabMenu.setOnClickListener( new View.OnClickListener() {
-			@Override
-			public void onClick( View view ){
+			@Override public void onClick( View view ){
 				if( ! drawer.isDrawerOpen( Gravity.START ) ){
 					drawer.openDrawer( Gravity.START );
 				}
@@ -405,8 +403,7 @@ public class ActMain extends AppCompatActivity
 	
 	public void performAccountAdd(){
 		LoginForm.showLoginForm( this, null, new LoginForm.LoginFormCallback() {
-			@Override
-			public void startLogin( final Dialog dialog, final String instance, final boolean bPseudoAccount ){
+			@Override public void startLogin( final Dialog dialog, final String instance, final boolean bPseudoAccount ){
 				
 				final ProgressDialog progress = new ProgressDialog( ActMain.this );
 				
@@ -968,7 +965,11 @@ public class ActMain extends AppCompatActivity
 	private void performTootButton(){
 		Column c = pager_adapter.getColumn( pager.getCurrentItem() );
 		if( c != null ){
-			ActPost.open( this, c.access_info.db_id, "" );
+			if( c.access_info.isPseudo() ){
+				Utils.showToast( this,false,R.string.not_available_for_pseudo_account );
+			}else{
+				ActPost.open( this, c.access_info.db_id, "" );
+			}
 		}
 	}
 	

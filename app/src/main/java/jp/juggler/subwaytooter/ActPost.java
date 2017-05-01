@@ -982,14 +982,14 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			@Override
 			protected void onPostExecute( TootApiResult result ){
 				progress.dismiss();
-				
-				if( status != null ){
+				if( result == null ){
+					// cancelled.
+				}else if( status != null ){
+					// 連投してIdempotency が同じだった場合もエラーにはならず、ここを通る
 					ActMain.update_at_resume = true;
-				//DEBUG	ActPost.this.finish();
+					ActPost.this.finish();
 				}else{
-					if( result != null ){
-						Utils.showToast( ActPost.this, true, result.error );
-					}
+					Utils.showToast( ActPost.this, true, result.error );
 				}
 			}
 		};

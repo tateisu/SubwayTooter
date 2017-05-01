@@ -1136,13 +1136,25 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				activity.performConversation( access_info, status );
 				break;
 			case R.id.btnReply:
-				activity.performReply( access_info, status );
+				if(access_info.isPseudo() ){
+					Utils.showToast( activity,false,R.string.not_available_for_pseudo_account );
+				}else{
+					activity.performReply( access_info, status );
+				}
 				break;
 			case R.id.btnBoost:
-				activity.performBoost( access_info, status, false, bSimpleList ? boost_complete_callback : null );
+				if(access_info.isPseudo() ){
+					Utils.showToast( activity,false,R.string.not_available_for_pseudo_account );
+				}else{
+					activity.performBoost( access_info, status, false, bSimpleList ? boost_complete_callback : null );
+				}
 				break;
 			case R.id.btnFavourite:
-				activity.performFavourite( access_info, status, bSimpleList ? favourite_complete_callback : null );
+				if(access_info.isPseudo() ){
+					Utils.showToast( activity,false,R.string.not_available_for_pseudo_account );
+				}else{
+					activity.performFavourite( access_info, status, bSimpleList ? favourite_complete_callback : null );
+				}
 				break;
 			case R.id.btnMore:
 				activity.openStatusMoreMenu( access_info, status, column.type );

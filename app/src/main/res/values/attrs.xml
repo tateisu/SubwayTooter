@@ -105,5 +105,6 @@
     <attr name="ic_tune" format="reference" />
     <attr name="ic_unknown" format="reference" />
     <attr name="ic_account_remove" format="reference" />
+    <attr name="ic_hourglass" format="reference" />
 
 </resources>

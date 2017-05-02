@@ -59,6 +59,23 @@ android:scrollbarStyle="outsideOverlay"
 
     <TextView
         style="@style/setting_row_label"
+        android:text="@string/exit_app_when_close_protected_column"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <Switch
+            android:id="@+id/swExitAppWhenCloseProtectedColumn"
+            style="@style/setting_horizontal_stretch"
+            />
+
+    </LinearLayout>
+
+
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
         android:text="@string/prior_local_url_when_open_attachment"
         />
 
@@ -102,6 +119,9 @@ android:scrollbarStyle="outsideOverlay"
             />
 
     </LinearLayout>
+
+
+
 
     <View style="@style/setting_divider"/>
 
@@ -156,6 +176,20 @@ android:scrollbarStyle="outsideOverlay"
 
     <View style="@style/setting_divider"/>
 
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/resize_image"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <Spinner
+            android:id="@+id/spResizeImage"
+            style="@style/setting_horizontal_stretch"
+            />
+
+    </LinearLayout>
+    <View style="@style/setting_divider"/>
     <!--<TextView-->
         <!--style="@style/setting_row_label"-->
         <!--android:text="@string/actions"-->

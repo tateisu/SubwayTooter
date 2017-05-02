@@ -248,7 +248,17 @@ public class ActMain extends AppCompatActivity
 			break;
 		
 		case ActAppSetting.BACK_CLOSE_COLUMN:
-			performColumnClose( false, pager_adapter.getColumn( pager.getCurrentItem() ) );
+			Column column = pager_adapter.getColumn( pager.getCurrentItem() );
+			if(column != null ){
+				if( column.dont_close
+					&& pref.getBoolean(Pref.KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN,false  )
+					&& pref.getBoolean( Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN, false )
+				){
+					ActMain.this.finish();
+					return;
+				}
+				performColumnClose( false, column );
+			}
 			break;
 		
 		case ActAppSetting.BACK_EXIT_APP:

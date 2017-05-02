@@ -206,4 +206,13 @@
     <string name="pseudo_account">pseudo account (non-login,only reading public data)</string>
     <string name="server_confirmed">server confirmed.</string>
     <string name="not_available_for_pseudo_account">not available for pseudo account</string>
+    <string name="exit_app_when_close_protected_column">Exit app when try to close protected column with back button without confirm</string>
+    <string name="resize_image">Resize attachment image (JPEG,PNG)</string>
+    <string name="dont_resize">don\'t resize</string>
+    <string name="long_side_pixel">long side %1$d pixels</string>
+    <string name="image_pick">Pick images</string>
+    <string name="image_capture">Capture by camera</string>
+    <string name="missing_storage_permission">Permission to write storage is missing.</string>
+    <string name="attachment_uploading">Media attachment  is uploading…</string>
+    <string name="attachment_uploaded">Media attachment upload completed.</string>
 </resources>

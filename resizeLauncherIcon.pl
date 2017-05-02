@@ -53,3 +53,6 @@ resize_scales( "ic_notification-817.png",$res_dir,"drawable","ic_notification",0
 
 resize_scales( "ic_account_remove.png",$res_dir,"drawable","ic_account_remove",0,32);
 resize_scales( "ic_account_remove_dark.png",$res_dir,"drawable","ic_account_remove_dark",0,32);
+
+resize_scales( "ic_hourglass.png",$res_dir,"drawable","ic_hourglass",0,32);
+resize_scales( "ic_hourglass_dark.png",$res_dir,"drawable","ic_hourglass_dark",0,32);

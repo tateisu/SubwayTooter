@@ -6,6 +6,7 @@ import android.preference.PreferenceManager;
 
 class Pref {
 	
+	
 	static SharedPreferences pref( Context context ){
 		return PreferenceManager.getDefaultSharedPreferences( context );
 	}
@@ -21,5 +22,7 @@ class Pref {
 	static final String KEY_NOTIFICATION_SOUND = "notification_sound";
 	static final String KEY_NOTIFICATION_VIBRATION = "notification_vibration";
 	static final String KEY_NOTIFICATION_LED = "notification_led";
+	static final String KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN = "ExitAppWhenCloseProtectedColumn";
+	public static final String KEY_RESIZE_IMAGE = "resize_image";
 	
 }

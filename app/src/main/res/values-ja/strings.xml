@@ -205,4 +205,13 @@
     <string name="not_available_for_pseudo_account">疑似アカウントでは利用できません</string>
     <string name="pseudo_account">疑似アカウント(ログインなし、公開データを読めるだけ)</string>
     <string name="server_confirmed">サーバを確認しました</string>
+    <string name="exit_app_when_close_protected_column">保護されたカラムを戻るボタンで確認なしで閉じようとしたらアプリを終了する</string>
+    <string name="dont_resize">しない</string>
+    <string name="resize_image">添付画像のリサイズ(JPEG,PNG)</string>
+    <string name="long_side_pixel">長辺 %1$d ピクセル</string>
+    <string name="image_capture">カメラで撮影</string>
+    <string name="image_pick">画像を選択</string>
+    <string name="attachment_uploaded">添付メディアをアップロードできました</string>
+    <string name="attachment_uploading">添付メディアのアップロード中です…</string>
+    <string name="missing_storage_permission">ストレージ書き込み権限がありません</string>
 </resources>

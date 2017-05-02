@@ -37,9 +37,11 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 	Switch swPriorLocalURL;
 	Switch swDisableFastScroller;
 	Switch swSimpleList;
+	Switch swExitAppWhenCloseProtectedColumn;
 	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
+	Spinner spResizeImage;
 	
 	CheckBox cbNotificationSound;
 	CheckBox cbNotificationVibration;
@@ -64,6 +66,9 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 		swSimpleList = (Switch) findViewById( R.id.swSimpleList );
 		swSimpleList.setOnCheckedChangeListener( this );
 		
+		swExitAppWhenCloseProtectedColumn = (Switch) findViewById( R.id.swExitAppWhenCloseProtectedColumn );
+		swExitAppWhenCloseProtectedColumn.setOnCheckedChangeListener( this );
+		
 		cbNotificationSound = (CheckBox) findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = (CheckBox) findViewById( R.id.cbNotificationVibration );
 		cbNotificationLED = (CheckBox) findViewById( R.id.cbNotificationLED );
@@ -72,11 +77,12 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 		cbNotificationLED.setOnCheckedChangeListener( this );
 		
 		{
-			String[] caption_list = new String[ 4 ];
-			caption_list[ 0 ] = getString( R.string.ask_always );
-			caption_list[ 1 ] = getString( R.string.close_column );
-			caption_list[ 2 ] = getString( R.string.open_column_list );
-			caption_list[ 3 ] = getString( R.string.app_exit );
+			String[] caption_list = new String[]{
+				getString( R.string.ask_always ),
+				getString( R.string.close_column ),
+				getString( R.string.open_column_list ),
+				getString( R.string.app_exit ),
+			};
 			ArrayAdapter< String > adapter = new ArrayAdapter<>( this, android.R.layout.simple_spinner_item, caption_list );
 			adapter.setDropDownViewResource( R.layout.lv_spinner_dropdown );
 			spBackButtonAction = (Spinner) findViewById( R.id.spBackButtonAction );
@@ -85,14 +91,32 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 		}
 		
 		{
-			String[] caption_list = new String[ 2 ];
-			caption_list[ 0 ] = getString( R.string.theme_light );
-			caption_list[ 1 ] = getString( R.string.theme_dark );
+			String[] caption_list = new String[]{
+				getString( R.string.theme_light ),
+				getString( R.string.theme_dark ),
+			};
 			ArrayAdapter< String > adapter = new ArrayAdapter<>( this, android.R.layout.simple_spinner_item, caption_list );
 			adapter.setDropDownViewResource( R.layout.lv_spinner_dropdown );
 			spUITheme = (Spinner) findViewById( R.id.spUITheme );
 			spUITheme.setAdapter( adapter );
 			spUITheme.setOnItemSelectedListener( this );
+		}
+		{
+			String[] caption_list = new String[]{
+				getString( R.string.dont_resize ),
+				getString( R.string.long_side_pixel, 640 ),
+				getString( R.string.long_side_pixel, 800 ),
+				getString( R.string.long_side_pixel, 1024 ),
+				getString( R.string.long_side_pixel, 1280 ),
+				//// サーバ側でさらに縮小されるようなので、1280より上は用意しない
+				//	Integer.toString( 1600 ),
+				//	Integer.toString( 2048 ),
+			};
+			ArrayAdapter< String > adapter = new ArrayAdapter<>( this, android.R.layout.simple_spinner_item, caption_list );
+			adapter.setDropDownViewResource( R.layout.lv_spinner_dropdown );
+			spResizeImage = (Spinner) findViewById( R.id.spResizeImage );
+			spResizeImage.setAdapter( adapter );
+			spResizeImage.setOnItemSelectedListener( this );
 		}
 	}
 	
@@ -105,6 +129,7 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 		swPriorLocalURL.setChecked( pref.getBoolean( Pref.KEY_PRIOR_LOCAL_URL, false ) );
 		swDisableFastScroller.setChecked( pref.getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, false ) );
 		swSimpleList.setChecked( pref.getBoolean( Pref.KEY_SIMPLE_LIST, false ) );
+		swExitAppWhenCloseProtectedColumn.setChecked( pref.getBoolean( Pref.KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN, false ) );
 		
 		cbNotificationSound.setChecked( pref.getBoolean( Pref.KEY_NOTIFICATION_SOUND, true ) );
 		cbNotificationVibration.setChecked( pref.getBoolean( Pref.KEY_NOTIFICATION_VIBRATION, true ) );
@@ -112,6 +137,8 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 		
 		spBackButtonAction.setSelection( pref.getInt( Pref.KEY_BACK_BUTTON_ACTION, 0 ) );
 		spUITheme.setSelection( pref.getInt( Pref.KEY_UI_THEME, 0 ) );
+		spResizeImage.setSelection( pref.getInt( Pref.KEY_RESIZE_IMAGE, 4 ) );
+		
 		load_busy = false;
 	}
 	
@@ -122,6 +149,7 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 			.putBoolean( Pref.KEY_PRIOR_LOCAL_URL, swPriorLocalURL.isChecked() )
 			.putBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, swDisableFastScroller.isChecked() )
 			.putBoolean( Pref.KEY_SIMPLE_LIST, swSimpleList.isChecked() )
+			.putBoolean( Pref.KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN, swExitAppWhenCloseProtectedColumn.isChecked() )
 			
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )
@@ -129,6 +157,8 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 			
 			.putInt( Pref.KEY_BACK_BUTTON_ACTION, spBackButtonAction.getSelectedItemPosition() )
 			.putInt( Pref.KEY_UI_THEME, spUITheme.getSelectedItemPosition() )
+			.putInt( Pref.KEY_RESIZE_IMAGE, spResizeImage.getSelectedItemPosition() )
+			
 			.apply();
 	}
 	

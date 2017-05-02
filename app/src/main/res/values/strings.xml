@@ -1,6 +1,4 @@
-<resources
-
-    >
+<resources>
     <string name="app_name">Subway Tooter</string>
 
     <string name="action_settings">Settings</string>
@@ -46,7 +44,7 @@
     <string name="hide">Hide</string>
     <string name="nsfw">NSFW</string>
     <string name="tap_to_show">Tap to show</string>
-    <string name="show">show</string>
+    <string name="show">Show</string>
     <string name="act_post">Posting Toot</string>
     <string name="content_warning">Content warning</string>
     <string name="please_add_account">You need to set an account to post a toot.</string>
@@ -61,7 +59,7 @@
     <string name="attachment_too_many">a max of 4 files is allowed.</string>
     <string name="account_select_please">Select the account</string>
     <string name="login_failed">Login failed</string>
-    <string name="file_size_too_big">File size too big. Maximum limit is 8MB.</string>
+    <string name="file_size_too_big">The file is too big. Maximum limit is 8MB.</string>
     <string name="visibility_public">Public</string>
     <string name="visibility_unlisted">Unlisted</string>
     <string name="visibility_private">Private</string>
@@ -77,7 +75,7 @@
     <string name="display_name_favourited_by">%1$s favourited</string>
     <string name="display_name_boosted_by">%1$s boosted</string>
     <string name="display_name_replied_by">%1$s replied</string>
-    <string name="display_name_followed_by">followed by %1$s</string>
+    <string name="display_name_followed_by">%1$s is following you</string>
     <string name="account">Account</string>
     <string name="account_setting">Account settings</string>
     <string name="setting">Settings</string>
@@ -131,10 +129,10 @@
     <string name="open_in_account">Open with %1$s</string>
     <string name="open_web_page">Open web page</string>
     <string name="open_web_on_host">Open web page on %1$s</string>
-    <string name="follow_from_another_account">follow_from_another_account</string>
+    <string name="follow_from_another_account">Follow from another account</string>
     <string name="search_of">Search \"%1$s\"</string>
     <string name="search">Search</string>
-    <string name="resolve_non_local_account">Resolve non local account</string>
+    <string name="resolve_non_local_account">Load non local account</string>
     <string name="question">\?</string>
     <string name="confirm_close_column">Close this column?</string>
     <string name="favourite_from_another_account">Favourite from another account</string>
@@ -160,7 +158,7 @@
     <string name="developer">Developer</string>
     <string name="with_attachment">with attachment</string>
     <string name="column_is_busy">Column is busy</string>
-    <string name="read_gap">Read gap</string>
+    <string name="read_gap">Load missing messages</string>
     <string name="muted_users">Muted users</string>
     <string name="blocked_users">Blocked users</string>
     <string name="end_of_list">end of the list</string>
@@ -198,19 +196,19 @@
     <string name="vibration">vibration</string>
     <string name="led">LED</string>
     <string name="follow_requests">Follow requests</string>
-    <string name="follow_request_ok">Authorize for follow request</string>
-    <string name="follow_request_ng">Reject for follow request</string>
-    <string name="follow_request_rejected">%1$s\'s follow request is rejected.</string>
-    <string name="follow_request_authorized">%1$s\'s follow request is authorized.</string>
+    <string name="follow_request_ok">Accept the follow request</string>
+    <string name="follow_request_ng">Decline the follow request</string>
+    <string name="follow_request_rejected">You decline %1$s\'s follow request.</string>
+    <string name="follow_request_authorized">You accepted %1$s\'s follow request.</string>
     <string name="close">Close</string>
-    <string name="pseudo_account">pseudo account (non-login,only reading public data)</string>
-    <string name="server_confirmed">server confirmed.</string>
-    <string name="not_available_for_pseudo_account">not available for pseudo account</string>
+    <string name="pseudo_account">Pseudo account (non-login,only reading public data)</string>
+    <string name="server_confirmed">Server confirmed.</string>
+    <string name="not_available_for_pseudo_account">Not available for pseudo account</string>
     <string name="exit_app_when_close_protected_column">Exit app when try to close protected column with back button without confirm</string>
     <string name="resize_image">Resize attachment image (JPEG,PNG)</string>
-    <string name="dont_resize">don\'t resize</string>
-    <string name="long_side_pixel">long side %1$d pixels</string>
-    <string name="image_pick">Pick images</string>
+    <string name="dont_resize">Don\'t resize</string>
+    <string name="long_side_pixel">Width %1$d pixels</string>
+    <string name="image_pick">Choose your images</string>
     <string name="image_capture">Capture by camera</string>
     <string name="missing_storage_permission">Permission to write storage is missing.</string>
     <string name="attachment_uploading">Media attachment  is uploading…</string>

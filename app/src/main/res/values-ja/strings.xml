@@ -136,8 +136,8 @@
     <string name="confirm_close_column">このカラムを閉じますか？</string>
 
     <string name="follow_from_another_account">別のアカウントでフォロー</string>
-    <string name="favourite_from_another_account">別のアカウントでお気に入り</string>
-    <string name="boost_from_another_account">別のアカウントでブースト</string>
+    <string name="favourite_from_another_account"> (同タンスの)別アカウントでお気に入り</string>
+    <string name="boost_from_another_account">(同タンスの)別アカウントでブースト</string>
     <string name="app_about">このアプリについて</string>
     <string name="please_rate">ストアで評価やレビューをお願いします！</string>
     <string name="rate_on_store">ストアで評価</string>
@@ -214,4 +214,13 @@
     <string name="attachment_uploaded">添付メディアをアップロードできました</string>
     <string name="attachment_uploading">添付メディアのアップロード中です…</string>
     <string name="missing_storage_permission">ストレージ書き込み権限がありません</string>
+    <string name="send_message_from_another_account">別アカウントでメッセージを送る</string>
+    <string name="send_message">メッセージを送る</string>
+    <string name="open_profile_from_another_account">(同タンスの)別アカウントでプロフを開く</string>
+    <string name="open_profile">プロフを開く</string>
+    <string name="actions_for_user">ユーザへのアクション</string>
+    <string name="actions_for_status">発言へのアクション</string>
+    <string name="confirm_block_user">ユーザ \'%1$s\' をブロックします。よろしいですか?</string>
+    <string name="confirm_mute_user">ユーザ \'%1$s\' をミュートします。よろしいですか?</string>
+    <string name="confirm_delete_status">この発言を削除します。よろしいですか?</string>
 </resources>

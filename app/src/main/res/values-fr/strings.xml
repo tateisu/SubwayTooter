@@ -218,5 +218,14 @@
     <string name="attachment_uploading">Media attachment  is uploading…</string>
     <string name="attachment_uploaded">Media attachment upload completed.</string>
     <string name="missing_storage_permission">Permission to write storage is missing.</string>
+    <string name="actions_for_status">Actions for this toot</string>
+    <string name="actions_for_user">Actions for this user</string>
+    <string name="open_profile">Open profile</string>
+    <string name="open_profile_from_another_account">Open profile from another account (same instance)</string>
+    <string name="send_message">Send message</string>
+    <string name="send_message_from_another_account">Send message from another account</string>
+    <string name="confirm_block_user">User \'%1$s\' will be blocked. Are you sure?</string>
+    <string name="confirm_delete_status">This toot will be deleted. Are you sure?</string>
+    <string name="confirm_mute_user">User \'%1$s\' will be muted. Are you sure?</string>
 
 </resources>

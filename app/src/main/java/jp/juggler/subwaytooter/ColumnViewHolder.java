@@ -583,13 +583,13 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			
 			case R.id.btnMore:
 				if( who != null ){
-					activity.openAccountMoreMenu( access_info, who ,column.type);
+					new DlgContextMenu( activity, access_info, who, null ).show();
 				}
 				break;
 			
 			case R.id.btnFollow:
 				if( who != null ){
-					activity.openAccountMoreMenu( access_info, who ,column.type);
+					new DlgContextMenu( activity, access_info, who, null ).show();
 				}
 				break;
 				
@@ -647,7 +647,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		}
 	}
 	
-	private class StatusViewHolder implements View.OnClickListener {
+	private class StatusViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		final View llBoosted;
 		final ImageView ivBoosted;
@@ -757,6 +757,10 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			llFollow.setOnClickListener( this );
 			btnFollow.setOnClickListener( this );
 			
+			// ロングタップ
+			ivThumbnail.setOnLongClickListener( this );
+			
+			//
 			tvContent.setMovementMethod( MyLinkMovementMethod.getInstance() );
 			tvMentions.setMovementMethod( MyLinkMovementMethod.getInstance() );
 			tvContentWarning.setMovementMethod( MyLinkMovementMethod.getInstance() );
@@ -1005,7 +1009,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				activity.performOpenUser( access_info, account_follow );
 				break;
 			case R.id.btnFollow:
-				activity.openAccountMoreMenu( access_info, account_follow ,column.type);
+				new DlgContextMenu( activity, access_info, account_follow, null ).show();
 				break;
 			
 			case R.id.btnSearchTag:
@@ -1021,6 +1025,15 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				}
 				break;
 			}
+		}
+		
+		@Override public boolean onLongClick( View v ){
+			switch( v.getId() ){
+			case R.id.ivThumbnail:
+				new DlgContextMenu( activity, access_info, account_thumbnail, null ).show();
+				break;
+			}
+			return false;
 		}
 		
 		private void clickMedia( int i ){
@@ -1055,8 +1068,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				activity.list_item_popup.show( anchor, status );
 			}
 		}
+		
 	}
-	
 	
 	private final ActMain.RelationChangedCallback favourite_complete_callback = new ActMain.RelationChangedCallback() {
 		@Override public void onRelationChanged(){
@@ -1136,28 +1149,28 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				activity.performConversation( access_info, status );
 				break;
 			case R.id.btnReply:
-				if(access_info.isPseudo() ){
-					Utils.showToast( activity,false,R.string.not_available_for_pseudo_account );
+				if( access_info.isPseudo() ){
+					Utils.showToast( activity, false, R.string.not_available_for_pseudo_account );
 				}else{
 					activity.performReply( access_info, status );
 				}
 				break;
 			case R.id.btnBoost:
-				if(access_info.isPseudo() ){
-					Utils.showToast( activity,false,R.string.not_available_for_pseudo_account );
+				if( access_info.isPseudo() ){
+					Utils.showToast( activity, false, R.string.not_available_for_pseudo_account );
 				}else{
 					activity.performBoost( access_info, status, false, bSimpleList ? boost_complete_callback : null );
 				}
 				break;
 			case R.id.btnFavourite:
-				if(access_info.isPseudo() ){
-					Utils.showToast( activity,false,R.string.not_available_for_pseudo_account );
+				if( access_info.isPseudo() ){
+					Utils.showToast( activity, false, R.string.not_available_for_pseudo_account );
 				}else{
 					activity.performFavourite( access_info, status, bSimpleList ? favourite_complete_callback : null );
 				}
 				break;
 			case R.id.btnMore:
-				activity.openStatusMoreMenu( access_info, status, column.type );
+				new DlgContextMenu( activity, access_info, status.account, status ).show();
 				break;
 			}
 		}
@@ -1173,6 +1186,12 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		}
 		
 		PopupWindow window;
+		
+		void dismiss(){
+			if( window != null && window.isShowing() ){
+				window.dismiss();
+			}
+		}
 		
 		void show( View anchor, TootStatus status ){
 			
@@ -1230,10 +1249,6 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				, 0
 				, popup_y
 			);
-		}
-		
-		public void dismiss(){
-			
 		}
 	}
 }

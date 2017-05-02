@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="280dp"
+    android:layout_height="match_parent"
+    android:fadeScrollbars="false"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp"
+        >
+
+
+        <LinearLayout
+            android:id="@+id/llStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+
+            android:orientation="vertical"
+
+            >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:text="@string/actions_for_status"
+
+                />
+
+
+            <Button
+                android:id="@+id/btnStatusWebPage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:gravity="start|center_vertical"
+                android:minHeight="32dp"
+                android:paddingBottom="4dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:text="@string/open_web_page"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnStatusSendApp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:gravity="start|center_vertical"
+                android:minHeight="32dp"
+                android:paddingBottom="4dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:text="@string/send_text"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnFavouriteAnotherAccount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:gravity="start|center_vertical"
+                android:minHeight="32dp"
+                android:paddingBottom="4dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:text="@string/favourite_from_another_account"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnBoostAnotherAccount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:gravity="start|center_vertical"
+                android:minHeight="32dp"
+                android:paddingBottom="4dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:text="@string/boost_from_another_account"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnDelete"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:gravity="start|center_vertical"
+                android:minHeight="32dp"
+                android:paddingBottom="4dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:text="@string/delete"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnMuteApp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:gravity="start|center_vertical"
+                android:minHeight="32dp"
+                android:paddingBottom="4dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:textAllCaps="false"
+                tools:text="mute app '…'"
+
+                />
+
+
+            <Button
+                android:id="@+id/btnReport"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:gravity="start|center_vertical"
+                android:minHeight="32dp"
+                android:paddingBottom="4dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:text="@string/report"
+                android:textAllCaps="false"
+
+                />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="?attr/colorSettingDivider"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llAccount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+
+            >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:text="@string/actions_for_user"
+                />
+
+
+            <LinearLayout
+                android:id="@+id/llAccountActionBar"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:orientation="horizontal"
+                >
+
+                <ImageButton
+                    android:id="@+id/btnFollow"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/follow"
+                    android:src="?attr/ic_account_add"
+                    />
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"/>
+
+                <ImageButton
+                    android:id="@+id/btnMute"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/mute"
+                    android:src="?attr/ic_mute"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnBlock"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/block"
+                    android:src="?attr/ic_block"
+                    />
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/btnProfile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:gravity="start|center_vertical"
+                android:minHeight="32dp"
+                android:paddingBottom="4dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:text="@string/open_profile"
+                android:textAllCaps="false"
+                />
+
+
+            <Button
+                android:id="@+id/btnAccountWebPage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:gravity="start|center_vertical"
+                android:minHeight="32dp"
+                android:paddingBottom="4dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:text="@string/open_web_page"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnFollowRequestOK"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:drawablePadding="4dp"
+                android:gravity="start|center_vertical"
+                android:minHeight="32dp"
+                android:paddingBottom="4dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:text="@string/follow_request_ok"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnFollowRequestNG"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:drawablePadding="4dp"
+                android:gravity="start|center_vertical"
+                android:minHeight="32dp"
+                android:paddingBottom="4dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:text="@string/follow_request_ng"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnSendMessage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:gravity="start|center_vertical"
+                android:minHeight="32dp"
+                android:paddingBottom="4dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:text="@string/send_message"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnFollowFromAnotherAccount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:gravity="start|center_vertical"
+                android:minHeight="32dp"
+                android:paddingBottom="4dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:text="@string/follow_from_another_account"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnSendMessageFromAnotherAccount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:gravity="start|center_vertical"
+                android:minHeight="32dp"
+                android:paddingBottom="4dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:text="@string/send_message_from_another_account"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnOpenProfileFromAnotherAccount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/btn_bg_transparent"
+                android:gravity="start|center_vertical"
+                android:minHeight="32dp"
+                android:paddingBottom="4dp"
+                android:paddingEnd="8dp"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:text="@string/open_profile_from_another_account"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

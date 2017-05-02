@@ -229,6 +229,13 @@ public class ActMain extends AppCompatActivity
 			return;
 		}
 		
+		// カラム設定が開いているならカラム設定を閉じる
+		ColumnViewHolder vh = pager_adapter.getColumnViewHolder( pager.getCurrentItem() );
+		if( vh.isColumnSettingShown() ){
+			vh.closeColumnSetting();
+			return;
+		}
+		
 		// カラムが1個以上ある場合は設定に合わせて挙動を変える
 		switch( pref.getInt( Pref.KEY_BACK_BUTTON_ACTION, 0 ) ){
 		default:

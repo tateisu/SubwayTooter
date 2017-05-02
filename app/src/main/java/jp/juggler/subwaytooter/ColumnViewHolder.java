@@ -96,6 +96,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 	private View llColumnSetting;
 	private EditText etRegexFilter;
 	private TextView tvRegexFilterError;
+	private View btnColumnClose;
 	private boolean bSimpleList;
 	
 	void onPageCreate( View root, int page_idx, int page_count ){
@@ -109,7 +110,10 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		tvColumnName = (TextView) root.findViewById( R.id.tvColumnName );
 		tvColumnContext = (TextView) root.findViewById( R.id.tvColumnContext );
 		
-		root.findViewById( R.id.btnColumnClose ).setOnClickListener( this );
+		btnColumnClose = root.findViewById( R.id.btnColumnClose );
+		
+		btnColumnClose.setOnClickListener( this );
+		
 		root.findViewById( R.id.btnColumnReload ).setOnClickListener( this );
 		root.findViewById( R.id.llColumnHeader ).setOnClickListener( this );
 		
@@ -299,6 +303,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		
 		case R.id.cbDontCloseColumn:
 			column.dont_close = isChecked;
+			showColumnCloseButton();
 			activity.saveColumnList();
 			break;
 		
@@ -379,7 +384,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 //		}
 //	};
 	
-	int acct_pad_lr;
+	private int acct_pad_lr;
 	
 	@Override public void onVisualColumn2(){
 		
@@ -401,6 +406,15 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		tvColumnContext.setPaddingRelative( acct_pad_lr, 0, acct_pad_lr, 0 );
 		
 		tvColumnName.setText( column.getColumnName( false ) );
+		
+		showColumnCloseButton();
+		
+	}
+	
+	private void showColumnCloseButton(){
+		// カラム保護の状態
+		btnColumnClose.setEnabled( ! column.dont_close );
+		btnColumnClose.setAlpha( column.dont_close ? 0.3f : 1f );
 	}
 	
 	@Override
@@ -493,6 +507,15 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				column.scroll_y = y;
 			}
 		}
+	}
+	
+	boolean isColumnSettingShown(){
+		return llColumnSetting.getVisibility() == View.VISIBLE;
+	}
+	
+	void closeColumnSetting(){
+		llColumnSetting.setVisibility( View.GONE );
+		
 	}
 	
 	///////////////////////////////////////////////////////////////////

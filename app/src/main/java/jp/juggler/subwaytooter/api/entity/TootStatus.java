@@ -14,13 +14,14 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import jp.juggler.subwaytooter.util.Emojione;
+import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 public class TootStatus extends TootId {
+	
 	
 	public static class List extends ArrayList< TootStatus > {
 		
@@ -171,7 +172,7 @@ public class TootStatus extends TootId {
 	
 	private static final SimpleDateFormat date_format_utc = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault() );
 	
-	public static long parseTime( LogCategory log, String strTime ){
+	static long parseTime( LogCategory log, String strTime ){
 		if( ! TextUtils.isEmpty( strTime ) ){
 			try{
 				date_format_utc.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
@@ -210,6 +211,15 @@ public class TootStatus extends TootId {
 		if( TootStatus.VISIBILITY_UNLISTED.equals( a ) ) return 2;
 		if( TootStatus.VISIBILITY_PUBLIC.equals( a ) ) return 3;
 		throw new IndexOutOfBoundsException( "visibility not in range" );
+	}
+	
+	public void updateNickname( SavedAccount access_info ){
+		decoded_content = HTMLDecoder.decodeHTML( access_info, content );
+		decoded_mentions = HTMLDecoder.decodeMentions( access_info, mentions );
+		
+		if( ! TextUtils.isEmpty( spoiler_text ) ){
+			decoded_spoiler_text = HTMLDecoder.decodeHTML( access_info, spoiler_text );
+		}
 	}
 	
 }

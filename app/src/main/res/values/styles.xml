@@ -71,6 +71,7 @@
         <item name="ic_unknown">@drawable/ic_unknown</item>
         <item name="ic_account_remove">@drawable/ic_account_remove</item>
         <item name="ic_hourglass">@drawable/ic_hourglass</item>
+        <item name="ic_edit">@drawable/ic_edit</item>
 
     </style>
 
@@ -150,6 +151,7 @@
         <item name="ic_unknown">@drawable/ic_unknown_dark</item>
         <item name="ic_account_remove">@drawable/ic_account_remove_dark</item>
         <item name="ic_hourglass">@drawable/ic_hourglass_dark</item>
+        <item name="ic_edit">@drawable/ic_edit_dark</item>
     </style>
 
     <style name="AppTheme.Dark.NoActionBar" parent="AppTheme.Dark">

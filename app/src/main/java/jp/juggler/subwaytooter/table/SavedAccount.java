@@ -12,6 +12,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
@@ -271,5 +273,13 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	
 	public boolean isPseudo(){
 		return "?".equals( username );
+	}
+	
+	private static final Pattern reAcctUrl = Pattern.compile( "\\Ahttps://([A-Za-z0-9.-]+)/@([A-Za-z0-9_]+)\\z" );
+	
+	@Override public AcctColor findAcctColor( String url ){
+		Matcher m = reAcctUrl.matcher( url );
+		if( m.find() ) return AcctColor.load( m.group(2)+"@"+m.group(1) );
+		return null;
 	}
 }

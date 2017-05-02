@@ -31,7 +31,7 @@ public class ActColumnList extends AppCompatActivity {
 	@Override
 	protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
-		App1.setActivityTheme(this,false);
+		App1.setActivityTheme( this, false );
 		initUI();
 		
 		if( savedInstanceState != null ){
@@ -97,7 +97,7 @@ public class ActColumnList extends AppCompatActivity {
 			public void onItemDragEnded( int fromPosition, int toPosition ){
 				// 操作完了でリフレッシュ許可
 				// mRefreshLayout.setEnabled( USE_SWIPE_REFRESH );
-				
+
 //				if( fromPosition != toPosition ){
 //					// 並べ替えが発生した
 //				}
@@ -121,9 +121,9 @@ public class ActColumnList extends AppCompatActivity {
 				// 左にスワイプした(右端に青が見えた) なら要素を削除する
 				if( swipedDirection == ListSwipeItem.SwipeDirection.LEFT ){
 					MyItem adapterItem = (MyItem) item.getTag();
-					if( adapterItem.json.optBoolean( Column.KEY_DONT_CLOSE,false )){
-						Utils.showToast( ActColumnList.this,false,R.string.column_has_dont_close_option );
-						listView.resetSwipedViews(null);
+					if( adapterItem.json.optBoolean( Column.KEY_DONT_CLOSE, false ) ){
+						Utils.showToast( ActColumnList.this, false, R.string.column_has_dont_close_option );
+						listView.resetSwipedViews( null );
 						return;
 					}
 					listAdapter.removeItem( listAdapter.getPositionForItem( adapterItem ) );
@@ -142,7 +142,7 @@ public class ActColumnList extends AppCompatActivity {
 			for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
 				try{
 					JSONObject src = array.optJSONObject( i );
-					MyItem item = new MyItem( src, i );
+					MyItem item = new MyItem( src, i, this );
 					if( src != null ){
 						tmp_list.add( item );
 						if( old_selection == item.old_index ){
@@ -195,14 +195,20 @@ public class ActColumnList extends AppCompatActivity {
 		long id;
 		JSONObject json;
 		String name;
-		String access;
+		String acct;
+		int acct_color_fg;
+		int acct_color_bg;
 		boolean bOldSelection;
 		int old_index;
 		
-		MyItem( JSONObject src, long id ){
+		MyItem( JSONObject src, long id, Context context ){
 			this.json = src;
 			this.name = src.optString( Column.KEY_COLUMN_NAME );
-			this.access = src.optString( Column.KEY_COLUMN_ACCESS );
+			this.acct = src.optString( Column.KEY_COLUMN_ACCESS );
+			int c = src.optInt( Column.KEY_COLUMN_ACCESS_COLOR, 0 );
+			this.acct_color_fg = c != 0 ? c : Styler.getAttributeColor( context, R.attr.colorColumnListItemText );
+			c = src.optInt( Column.KEY_COLUMN_ACCESS_COLOR_BG, 0 );
+			this.acct_color_bg = c;
 			this.old_index = src.optInt( Column.KEY_OLD_INDEX );
 			this.id = id;
 		}
@@ -217,7 +223,8 @@ public class ActColumnList extends AppCompatActivity {
 		final View ivBookmark;
 		final TextView tvAccess;
 		final TextView tvName;
-			
+		final int acct_pad_lr;
+		
 		MyViewHolder( final View viewRoot ){
 			super( viewRoot
 				, R.id.ivDragHandle // View ID。 ここを押すとドラッグ操作をすぐに開始する
@@ -227,7 +234,9 @@ public class ActColumnList extends AppCompatActivity {
 			ivBookmark = viewRoot.findViewById( R.id.ivBookmark );
 			tvAccess = (TextView) viewRoot.findViewById( R.id.tvAccess );
 			tvName = (TextView) viewRoot.findViewById( R.id.tvName );
-			
+
+			acct_pad_lr = (int) ( 0.5f + 4f * viewRoot.getResources().getDisplayMetrics().density );
+
 			// リスト要素のビューが ListSwipeItem だった場合、Swipe操作を制御できる
 			if( viewRoot instanceof ListSwipeItem ){
 				ListSwipeItem lsi = (ListSwipeItem) viewRoot;
@@ -238,11 +247,12 @@ public class ActColumnList extends AppCompatActivity {
 		}
 		
 		void bind( MyItem item ){
-			
-			
 			itemView.setTag( item ); // itemView は親クラスのメンバ変数
-			ivBookmark.setVisibility( item.bOldSelection ? View.VISIBLE: View.INVISIBLE );
-			tvAccess.setText( item.access );
+			ivBookmark.setVisibility( item.bOldSelection ? View.VISIBLE : View.INVISIBLE );
+			tvAccess.setText( item.acct );
+			tvAccess.setTextColor( item.acct_color_fg );
+			tvAccess.setBackgroundColor( item.acct_color_bg );
+			tvAccess.setPaddingRelative( acct_pad_lr, 0, acct_pad_lr, 0 );
 			tvName.setText( item.name );
 		}
 
@@ -267,17 +277,22 @@ public class ActColumnList extends AppCompatActivity {
 		
 		@Override
 		public void onBindDragView( View clickedView, View dragView ){
+			MyItem item = (MyItem) clickedView.getTag();
+			
+			TextView tv = (TextView) dragView.findViewById( R.id.tvAccess );
+			tv.setText( item.acct );
+			tv.setTextColor( item.acct_color_fg );
+			tv.setBackgroundColor( item.acct_color_bg );
+			
+			tv = (TextView) dragView.findViewById( R.id.tvName );
+			tv.setText( item.name );
+			
 			dragView.findViewById( R.id.ivBookmark ).setVisibility(
 				clickedView.findViewById( R.id.ivBookmark ).getVisibility()
 			);
-			((TextView)dragView.findViewById( R.id.tvAccess )).setText(
-				((TextView)clickedView.findViewById( R.id.tvAccess )).getText()
-			);
-			((TextView)dragView.findViewById( R.id.tvName )).setText(
-				((TextView)clickedView.findViewById( R.id.tvName )).getText()
-			);
-			dragView.findViewById(R.id.item_layout).setBackgroundColor(
-				Styler.getAttributeColor( ActColumnList.this, R.attr.list_item_bg_pressed_dragged)
+			
+			dragView.findViewById( R.id.item_layout ).setBackgroundColor(
+				Styler.getAttributeColor( ActColumnList.this, R.attr.list_item_bg_pressed_dragged )
 			);
 		}
 	}

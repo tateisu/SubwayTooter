@@ -51,6 +51,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
 import jp.juggler.subwaytooter.dialog.LoginForm;
 import jp.juggler.subwaytooter.dialog.ReportForm;
+import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
@@ -169,9 +170,9 @@ public class ActMain extends AppCompatActivity
 	static final int REQUEST_CODE_COLUMN_LIST = 1;
 	static final int REQUEST_CODE_ACCOUNT_SETTING = 2;
 	static final int REQUEST_APP_ABOUT = 3;
+	static final int REQUEST_CODE_NICKNAME = 4;
 	
-	@Override
-	protected void onActivityResult( int requestCode, int resultCode, Intent data ){
+	@Override protected void onActivityResult( int requestCode, int resultCode, Intent data ){
 		if( resultCode == RESULT_OK ){
 			if( requestCode == REQUEST_CODE_COLUMN_LIST ){
 				if( data != null ){
@@ -202,6 +203,10 @@ public class ActMain extends AppCompatActivity
 						performAddTimeline( true, Column.TYPE_SEARCH, search, true );
 					}
 					return;
+				}
+			}else if( requestCode == REQUEST_CODE_NICKNAME ){
+				for( Column column: pager_adapter.column_list ){
+					column.onNicknameUpdated();
 				}
 			}
 		}
@@ -624,6 +629,9 @@ public class ActMain extends AppCompatActivity
 				if( result != null && result.object != null ){
 					// taは使い捨てなので、生成に使うLinkClickContextはダミーで問題ない
 					LinkClickContext lcc = new LinkClickContext() {
+						@Override public AcctColor findAcctColor( String url ){
+							return null;
+						}
 					};
 					this.ta = TootAccount.parse( log, lcc, result.object );
 				}
@@ -700,6 +708,7 @@ public class ActMain extends AppCompatActivity
 			if( done_list.contains( a ) ) continue;
 			done_list.add( a );
 			a.reloadSetting();
+			column.fireVisualCallback2();
 		}
 	}
 	
@@ -963,7 +972,7 @@ public class ActMain extends AppCompatActivity
 		// ソートする
 		Collections.sort( account_list, new Comparator< SavedAccount >() {
 			@Override public int compare( SavedAccount a, SavedAccount b ){
-				return String.CASE_INSENSITIVE_ORDER.compare( a.getFullAcct( a ), b.getFullAcct( b ) );
+				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname(a.acct), AcctColor.getNickname(b.acct) );
 			}
 		} );
 		

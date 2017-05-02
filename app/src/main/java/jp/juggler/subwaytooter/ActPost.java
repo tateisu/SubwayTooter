@@ -61,6 +61,7 @@ import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootMention;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.ActionsDialog;
@@ -130,7 +131,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 					performCamera();
 				}
 			} );
-			a.show( this,null );
+			a.show( this, null );
 			break;
 		
 		case R.id.ivMedia1:
@@ -155,7 +156,6 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			break;
 		}
 	}
-	
 	
 	private static final int REQUEST_CODE_ATTACHMENT = 1;
 	private static final int REQUEST_CODE_CAMERA = 2;
@@ -184,19 +184,19 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 					}
 				}
 			}
-		}else if (requestCode == REQUEST_CODE_CAMERA){
-
-			if (resultCode != RESULT_OK) {
+		}else if( requestCode == REQUEST_CODE_CAMERA ){
+			
+			if( resultCode != RESULT_OK ){
 				// 失敗したら DBからデータを削除
-				if (uriCameraImage != null) {
-					getContentResolver().delete(uriCameraImage, null, null);
+				if( uriCameraImage != null ){
+					getContentResolver().delete( uriCameraImage, null, null );
 					uriCameraImage = null;
 				}
 			}else{
 				// 画像のURL
-				Uri uri = ( data == null? null : data.getData() );
+				Uri uri = ( data == null ? null : data.getData() );
 				if( uri == null ) uri = uriCameraImage;
-
+				
 				if( uri != null ){
 					String type = getContentResolver().getType( uri );
 					addAttachment( uri, type );
@@ -461,7 +461,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		Collections.sort( account_list, new Comparator< SavedAccount >() {
 			@Override
 			public int compare( SavedAccount a, SavedAccount b ){
-				return String.CASE_INSENSITIVE_ORDER.compare( a.getFullAcct( a ), b.getFullAcct( b ) );
+				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
+				
 			}
 		} );
 		
@@ -797,7 +798,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				options.inScaled = false;
 				InputStream is = getContentResolver().openInputStream( uri );
 				if( is == null ){
-					Utils.showToast( this,false,"could not open image." );
+					Utils.showToast( this, false, "could not open image." );
 					break;
 				}
 				try{
@@ -808,7 +809,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				int src_width = options.outWidth;
 				int src_height = options.outHeight;
 				if( src_width <= 0 || src_height <= 0 ){
-					Utils.showToast( this,false,"could not get image bounds." );
+					Utils.showToast( this, false, "could not get image bounds." );
 					break;
 				}
 				
@@ -830,7 +831,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				options.inSampleSize = 1 << bits;
 				is = getContentResolver().openInputStream( uri );
 				if( is == null ){
-					Utils.showToast( this,false,"could not open image." );
+					Utils.showToast( this, false, "could not open image." );
 					break;
 				}
 				Bitmap src;
@@ -840,7 +841,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 					IOUtils.closeQuietly( is );
 				}
 				if( src == null ){
-					Utils.showToast( this,false,"could not decode image." );
+					Utils.showToast( this, false, "could not decode image." );
 					break;
 				}
 				try{
@@ -860,7 +861,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 					// 64*64ピクセルのBitmap作成
 					Bitmap dst = Bitmap.createBitmap( dst_width, dst_height, Bitmap.Config.ARGB_8888 );
 					if( dst == null ){
-						Utils.showToast( this,false,"bitmap creation failed." );
+						Utils.showToast( this, false, "bitmap creation failed." );
 						break;
 					}
 					try{
@@ -872,7 +873,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 						canvas.drawBitmap( src, rect_src, rect_dst, paint );
 						File cache_dir = getExternalCacheDir();
 						if( cache_dir == null ){
-							Utils.showToast( this,false,"getExternalCacheDir returns null." );
+							Utils.showToast( this, false, "getExternalCacheDir returns null." );
 							break;
 						}
 						
@@ -914,7 +915,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				
 			}catch( Throwable ex ){
 				ex.printStackTrace();
-				Utils.showToast( this,ex,"Resizing image failed." );
+				Utils.showToast( this, ex, "Resizing image failed." );
 			}
 			
 			break;
@@ -1069,8 +1070,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	Uri uriCameraImage;
 	
 	private void performCamera(){
-
-		int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+		
+		int permissionCheck = ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_EXTERNAL_STORAGE );
 		if( permissionCheck != PackageManager.PERMISSION_GRANTED ){
 			preparePermission();
 			return;
@@ -1080,35 +1081,35 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			// カメラで撮影
 			String filename = System.currentTimeMillis() + ".jpg";
 			ContentValues values = new ContentValues();
-			values.put(MediaStore.Images.Media.TITLE, filename);
-			values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
-			uriCameraImage = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+			values.put( MediaStore.Images.Media.TITLE, filename );
+			values.put( MediaStore.Images.Media.MIME_TYPE, "image/jpeg" );
+			uriCameraImage = getContentResolver().insert( MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values );
 			
 			Intent intent = new Intent( MediaStore.ACTION_IMAGE_CAPTURE );
-			intent.putExtra(MediaStore.EXTRA_OUTPUT, uriCameraImage);
+			intent.putExtra( MediaStore.EXTRA_OUTPUT, uriCameraImage );
 			
 			startActivityForResult( intent, REQUEST_CODE_CAMERA );
-		}catch(Throwable ex){
-			ex.printStackTrace(  );
-			Utils.showToast( this,ex,"opening camera app failed.");
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			Utils.showToast( this, ex, "opening camera app failed." );
 		}
 	}
 	
 	private static final int PERMISSION_REQUEST_CODE = 1;
 	
 	private void preparePermission(){
-		if( Build.VERSION.SDK_INT >= 23){
+		if( Build.VERSION.SDK_INT >= 23 ){
 			// No explanation needed, we can request the permission.
 			
-			ActivityCompat.requestPermissions(this
-				,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}
+			ActivityCompat.requestPermissions( this
+				, new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE }
 				, PERMISSION_REQUEST_CODE
 			);
 			return;
 		}
 		Utils.showToast( this, true, R.string.missing_storage_permission );
 	}
-
+	
 	@Override public void onRequestPermissionsResult(
 		int requestCode
 		, @NonNull String permissions[]
@@ -1127,7 +1128,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			break;
 		}
 	}
-
+	
 	public String getDocumentName( Uri uri ){
 		
 		Cursor cursor = getContentResolver().query( uri, null, null, null, null, null );

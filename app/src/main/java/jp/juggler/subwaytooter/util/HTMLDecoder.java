@@ -3,15 +3,12 @@ package jp.juggler.subwaytooter.util;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
-import android.text.style.ClickableSpan;
-import android.view.View;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jp.juggler.subwaytooter.BuildConfig;
 import jp.juggler.subwaytooter.api.entity.TootMention;
 
 public class HTMLDecoder {
@@ -134,7 +131,7 @@ public class HTMLDecoder {
 			if( DEBUG_HTML_PARSER ) log.d( "parseChild: %s)%s", indent, tag );
 		}
 		
-		void encodeSpan( final LinkClickContext account, SpannableStringBuilder sb ){
+		void encodeSpan( LinkClickContext account, SpannableStringBuilder sb ){
 			if( TAG_TEXT.equals( tag ) ){
 				sb.append( Emojione.decodeEmoji( decodeEntity( text ) ) );
 				return;
@@ -154,14 +151,8 @@ public class HTMLDecoder {
 				if( m.find() ){
 					final String href = decodeEntity( m.group( 1 ) );
 					if( ! TextUtils.isEmpty( href ) ){
-						sb.setSpan( new ClickableSpan() {
-							@Override
-							public void onClick( View widget ){
-								if( link_callback != null ){
-									link_callback.onClickLink( account, href );
-								}
-							}
-						}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+						MyClickableSpan span =  new MyClickableSpan(account,href,account.findAcctColor( href ) ) ;
+						sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
 					}
 				}
 			}
@@ -271,14 +262,10 @@ public class HTMLDecoder {
 			sb.append( item.acct );
 			int end = sb.length();
 			if( end > start ){
-				final String item_url = item.url;
-				sb.setSpan( new ClickableSpan() {
-					@Override public void onClick( View widget ){
-						if( link_callback != null ){
-							link_callback.onClickLink( account, item_url );
-						}
-					}
-				}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+				MyClickableSpan span =  new MyClickableSpan(account,item.url,account.findAcctColor( item.url ) ) ;
+				
+				
+				sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}
 		}
 		return sb;

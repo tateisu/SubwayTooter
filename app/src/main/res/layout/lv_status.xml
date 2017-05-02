@@ -45,7 +45,6 @@
                     android:id="@+id/tvBoostedAcct"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginEnd="4dp"
                     android:layout_weight="1"
                     android:ellipsize="end"
                     android:gravity="end"
@@ -60,8 +59,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="end"
+                    android:paddingStart="2dp"
                     android:textColor="?attr/colorTimeSmall"
                     android:textSize="12sp"
+                    tools:ignore="RtlSymmetry"
                     tools:text="2017-04-16 09:37:14"
                     />
 
@@ -117,6 +118,8 @@
                 android:id="@+id/tvFollowerAcct"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:paddingEnd="4dp"
+                android:paddingStart="4dp"
                 android:textColor="?attr/colorAcctSmall"
                 android:textSize="12sp"
                 tools:text="aaaaaaaaaaaaaaaa"
@@ -154,7 +157,6 @@
                 android:id="@+id/tvAcct"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="4dp"
                 android:layout_weight="1"
                 android:ellipsize="end"
                 android:gravity="end"
@@ -169,8 +171,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="end"
+                android:paddingStart="2dp"
                 android:textColor="?attr/colorTimeSmall"
                 android:textSize="12sp"
+                tools:ignore="RtlSymmetry"
                 tools:text="2017-04-16 09:37:14"
                 />
 
@@ -408,10 +412,11 @@
                     />
 
             </LinearLayout>
+
             <TextView
+                android:id="@+id/tvApplication"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/tvApplication"
                 android:gravity="end"
                 />
         </LinearLayout>

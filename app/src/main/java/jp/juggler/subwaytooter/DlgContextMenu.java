@@ -185,6 +185,10 @@ class DlgContextMenu implements View.OnClickListener {
 		}else{
 			btnOpenProfileFromAnotherAccount.setOnClickListener( this );
 		}
+		
+		View v = viewRoot.findViewById( R.id.btnNickname );
+		v.setOnClickListener( this );
+			
 	}
 	
 	void show(){
@@ -334,6 +338,9 @@ class DlgContextMenu implements View.OnClickListener {
 			activity.performOpenUserFromAnotherAccount( who, account_list_non_pseudo_same_instance );
 			break;
 			
+		case R.id.btnNickname:
+			ActNickname.open( activity,access_info.getFullAcct( who ) ,ActMain.REQUEST_CODE_NICKNAME );
+			break;
 		}
 	}
 	

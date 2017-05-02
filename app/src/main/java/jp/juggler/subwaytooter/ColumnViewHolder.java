@@ -1,12 +1,12 @@
 package jp.juggler.subwaytooter;
 
 import android.annotation.SuppressLint;
-import android.content.Context;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.support.v4.view.MotionEventCompat;
+import android.support.v4.view.ViewCompat;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -17,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
@@ -45,6 +44,7 @@ import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootGap;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.ContentWarning;
 import jp.juggler.subwaytooter.table.MediaShown;
 import jp.juggler.subwaytooter.table.SavedAccount;
@@ -100,6 +100,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 	
 	void onPageCreate( View root, int page_idx, int page_count ){
 		log.d( "onPageCreate:%s", column.getColumnName( true ) );
+		
+		acct_pad_lr = (int) ( 0.5f + 4f * activity.density );
 		
 		( (TextView) root.findViewById( R.id.tvColumnIndex ) )
 			.setText( activity.getString( R.string.column_index, page_idx + 1, page_count ) );
@@ -330,7 +332,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		
 		case R.id.btnColumnReload:
 			if( column.type == Column.TYPE_SEARCH ){
-				hideKeyboard( etSearch );
+				Utils.hideKeyboard( activity, etSearch );
 				etSearch.setText( column.search_query );
 				cbResolve.setChecked( column.search_resolve );
 			}
@@ -338,7 +340,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			break;
 		
 		case R.id.btnSearch:
-			hideKeyboard( etSearch );
+			Utils.hideKeyboard( activity, etSearch );
 			column.search_query = etSearch.getText().toString().trim();
 			column.search_resolve = cbResolve.isChecked();
 			column.startLoading();
@@ -359,11 +361,6 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		
 	}
 	
-	private void hideKeyboard( View v ){
-		InputMethodManager imm = (InputMethodManager) activity.getSystemService( Context.INPUT_METHOD_SERVICE );
-		imm.hideSoftInputFromWindow( v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS );
-	}
-	
 	private void showError( String message ){
 		tvLoading.setVisibility( View.VISIBLE );
 		tvLoading.setText( message );
@@ -382,12 +379,34 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 //		}
 //	};
 	
+	int acct_pad_lr;
+	
+	@Override public void onVisualColumn2(){
+		
+		String acct = column.access_info.acct;
+		AcctColor ac = AcctColor.load( acct );
+		int c;
+		
+		tvColumnContext.setText( ac != null && ! TextUtils.isEmpty( ac.nickname ) ? ac.nickname : acct );
+		
+		c = ( ac != null ? ac.color_fg : 0 );
+		tvColumnContext.setTextColor( c != 0 ? c : Styler.getAttributeColor( activity, R.attr.colorAcctSmall ) );
+		
+		c = ( ac != null ? ac.color_bg : 0 );
+		if( c == 0 ){
+			ViewCompat.setBackground( tvColumnContext, null );
+		}else{
+			tvColumnContext.setBackgroundColor( c );
+		}
+		tvColumnContext.setPaddingRelative( acct_pad_lr, 0, acct_pad_lr, 0 );
+		
+		tvColumnName.setText( column.getColumnName( false ) );
+	}
+	
 	@Override
 	public void onVisualColumn(){
-//		App1.relationship_map.checkUpdate( activity, column.access_info,callback_relation );
 		
-		tvColumnContext.setText( column.access_info.getFullAcct( column.access_info ) );
-		tvColumnName.setText( column.getColumnName( false ) );
+		onVisualColumn2();
 		
 		if( column.is_dispose.get() ){
 			showError( "column was disposed." );
@@ -526,7 +545,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				ivBackground.setImageDrawable( null );
 				ivAvatar.setImageDrawable( null );
 				tvDisplayName.setText( "" );
-				tvAcct.setText( "" );
+				tvAcct.setText( "@" );
 				tvNote.setText( "" );
 				btnStatusCount.setText( activity.getString( R.string.statuses ) + "\n" + "?" );
 				btnFollowing.setText( activity.getString( R.string.following ) + "\n" + "?" );
@@ -539,7 +558,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				ivAvatar.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ), App1.getImageLoader() );
 				tvDisplayName.setText( who.display_name );
 				
-				String s = access_info.getFullAcct( who );
+				String s = "@" + access_info.getFullAcct( who );
 				if( who.locked ){
 					s += " " + Emojione.map_name2unicode.get( "lock" );
 				}
@@ -862,8 +881,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			llBoosted.setVisibility( View.VISIBLE );
 			ivBoosted.setImageResource( Styler.getAttributeResourceId( activity, icon_attr_id ) );
 			tvBoostedTime.setText( TootStatus.formatTime( time ) );
-			tvBoostedAcct.setText( access_info.getFullAcct( who ) );
 			tvBoosted.setText( text );
+			setAcct( tvBoostedAcct, access_info.getFullAcct( who ), R.attr.colorAcctSmall );
 		}
 		
 		private void showFollow( TootAccount who ){
@@ -871,7 +890,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			llFollow.setVisibility( View.VISIBLE );
 			ivFollow.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ), App1.getImageLoader() );
 			tvFollowerName.setText( who.display_name );
-			tvFollowerAcct.setText( access_info.getFullAcct( who ) );
+			setAcct( tvFollowerAcct, access_info.getFullAcct( who ), R.attr.colorAcctSmall );
 			
 			UserRelation relation = UserRelation.load( access_info.db_id, who.id );
 			Styler.setFollowIcon( activity, btnFollow, relation );
@@ -882,7 +901,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			account_thumbnail = status.account;
 			llStatus.setVisibility( View.VISIBLE );
 			
-			tvAcct.setText( access_info.getFullAcct( status.account ) );
+			setAcct( tvAcct, access_info.getFullAcct( status.account ), R.attr.colorAcctSmall );
 			tvTime.setText( TootStatus.formatTime( status.time_created_at ) );
 			
 			tvName.setText( status.account.display_name );
@@ -949,6 +968,20 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 					
 				}
 			}
+		}
+		
+		private void setAcct( TextView tv, String acct, int color_attr_id ){
+			AcctColor ac = AcctColor.load( acct );
+			tv.setText( AcctColor.hasNickname( ac ) ? ac.nickname : acct );
+			tv.setTextColor( AcctColor.hasColorForeground( ac ) ? ac.color_fg : Styler.getAttributeColor( activity, color_attr_id ) );
+			
+			if( AcctColor.hasColorBackground( ac ) ){
+				tv.setBackgroundColor( ac.color_bg );
+			}else{
+				ViewCompat.setBackground( tv, null );
+			}
+			tv.setPaddingRelative( acct_pad_lr, 0, acct_pad_lr, 0 );
+			
 		}
 		
 		private void showContent( boolean shown ){

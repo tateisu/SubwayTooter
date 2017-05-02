@@ -14,7 +14,7 @@ import java.util.Locale;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.UserRelation;
 
-class Styler {
+public class Styler {
 	static int getVisibilityIcon( Context context,String visibility ){
 		return
 			getAttributeResourceId(  context,
@@ -35,7 +35,7 @@ class Styler {
 				: "?";
 	}
 	
-	static int getAttributeColor( @NonNull Context context, int attr_id ){
+	public static int getAttributeColor( @NonNull Context context, int attr_id ){
 		Resources.Theme theme = context.getTheme();
 		TypedArray a = theme.obtainStyledAttributes( new int[]{ attr_id } );
 		int color = a.getColor( 0, 0xFFFF0000 );

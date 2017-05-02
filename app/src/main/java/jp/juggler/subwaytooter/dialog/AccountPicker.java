@@ -10,6 +10,7 @@ import java.util.Comparator;
 
 import jp.juggler.subwaytooter.ActMain;
 import jp.juggler.subwaytooter.R;
+import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -57,8 +58,8 @@ public class AccountPicker {
 		
 		Collections.sort( account_list, new Comparator< SavedAccount >() {
 			@Override
-			public int compare( SavedAccount o1, SavedAccount o2 ){
-				return String.CASE_INSENSITIVE_ORDER.compare( o1.acct, o2.acct );
+			public int compare( SavedAccount a, SavedAccount b ){
+				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
 			}
 		} );
 		
@@ -66,7 +67,7 @@ public class AccountPicker {
 		
 		for( int i = 0, ie = account_list.size() ; i < ie ; ++ i ){
 			SavedAccount ai = account_list.get( i );
-			caption_list[ i ] = ai.acct;
+			caption_list[ i ] = AcctColor.getNickname( ai.acct );
 		}
 		
 		new AlertDialog.Builder( activity )

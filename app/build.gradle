@@ -61,4 +61,5 @@ dependencies {
     compile 'uk.co.chrisjenx:calligraphy:2.2.0'
     compile 'com.github.woxthebox:draglistview:1.4.3'
     compile 'com.github.omadahealth:swipy:1.2.3@aar'
+    compile 'com.jrummyapps:colorpicker:2.1.6'
 }

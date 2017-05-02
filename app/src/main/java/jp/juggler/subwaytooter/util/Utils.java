@@ -34,6 +34,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
@@ -421,6 +422,11 @@ public class Utils {
 			}catch( Throwable ignored ){
 			}
 		}
+	}
+	
+	public static void hideKeyboard(Context context,View v ){
+		InputMethodManager imm = (InputMethodManager) context.getSystemService( Context.INPUT_METHOD_SERVICE );
+		imm.hideSoftInputFromWindow( v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS );
 	}
 	
 	public static String ellipsize( String t, int max ){

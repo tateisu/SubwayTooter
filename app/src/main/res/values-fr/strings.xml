@@ -227,5 +227,20 @@
     <string name="confirm_block_user">User \'%1$s\' will be blocked. Are you sure?</string>
     <string name="confirm_delete_status">This toot will be deleted. Are you sure?</string>
     <string name="confirm_mute_user">User \'%1$s\' will be muted. Are you sure?</string>
+    <string name="nickname_label">Nickname (if specified, it\'s shown instead of full acct)</string>
+    <string name="customize">Customize</string>
+    <string name="acct_customize">Nickname and Color</string>
+    <string name="acct">Acct</string>
+    <string name="background_color">Background color</string>
+    <string name="color">Color</string>
+    <string name="discard">Discard</string>
+    <string name="edit">Edit</string>
+    <string name="nickname">Nickname</string>
+    <string name="preview">Preview</string>
+    <string name="reset">Reset</string>
+    <string name="save">Save</string>
+    <string name="text_color">Text color</string>
+    <string name="nickname_and_color">Nickname and Color</string>
+    <string name="nickname_applied_after_reload">The change of nickname/color will be applied after reload column.</string>
 
 </resources>

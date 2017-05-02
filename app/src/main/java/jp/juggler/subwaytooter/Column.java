@@ -31,6 +31,7 @@ import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootReport;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.SavedAccount;
@@ -40,7 +41,7 @@ import jp.juggler.subwaytooter.util.Utils;
 
 class Column {
 	private static final LogCategory log = new LogCategory( "Column" );
-	
+	public static final java.lang.String KEY_COLUMN_COLOR = "color";
 	private static Object getParamAt( Object[] params, int idx ){
 		if( params == null || idx >= params.length ){
 			throw new IndexOutOfBoundsException( "getParamAt idx=" + idx );
@@ -96,8 +97,11 @@ class Column {
 	private static final String KEY_SEARCH_RESOLVE = "search_resolve";
 	
 	static final String KEY_COLUMN_ACCESS = "column_access";
+	static final String KEY_COLUMN_ACCESS_COLOR = "column_access_color";
+	static final String KEY_COLUMN_ACCESS_COLOR_BG = "column_access_color_bg";
 	static final String KEY_COLUMN_NAME = "column_name";
 	static final String KEY_OLD_INDEX = "old_index";
+	
 	
 	static final int TYPE_HOME = 1;
 	static final int TYPE_LOCAL = 2;
@@ -197,7 +201,10 @@ class Column {
 		}
 		
 		// 以下は保存には必要ないが、カラムリスト画面で使う
-		item.put( KEY_COLUMN_ACCESS, access_info.acct );
+		AcctColor ac = AcctColor.load( access_info.acct );
+		item.put( KEY_COLUMN_ACCESS, AcctColor.hasNickname(ac) ? ac.nickname : access_info.acct );
+		item.put( KEY_COLUMN_ACCESS_COLOR, AcctColor.hasColorForeground(ac) ? ac.color_fg : 0 );
+		item.put( KEY_COLUMN_ACCESS_COLOR_BG, AcctColor.hasColorBackground( ac) ? ac.color_bg : 0 );
 		item.put( KEY_COLUMN_NAME, getColumnName( true ) );
 		item.put( KEY_OLD_INDEX, old_index );
 	}
@@ -340,7 +347,11 @@ class Column {
 			return activity.getString( R.string.follow_requests );
 		}
 	}
+	
+	void onNicknameUpdated(){
 
+		fireVisualCallback2();
+	}
 	
 	interface StatusEntryCallback {
 		void onIterate( TootStatus status );
@@ -507,6 +518,7 @@ class Column {
 	
 	interface VisualCallback {
 		void onVisualColumn();
+		void onVisualColumn2();
 	}
 	
 	private final LinkedList< VisualCallback > visual_callback = new LinkedList<>();
@@ -535,11 +547,22 @@ class Column {
 			}
 		}
 	};
-	
+	private final Runnable proc_fireVisualCallback2 = new Runnable() {
+		@Override public void run(){
+			for( VisualCallback aVisual_callback : visual_callback ){
+				aVisual_callback.onVisualColumn2();
+			}
+		}
+	};
 	void fireVisualCallback(){
 		Utils.runOnMainThread( proc_fireVisualCallback );
 	}
-	
+
+	// カラムヘッダ部分だけ更新する
+	void fireVisualCallback2(){
+		Utils.runOnMainThread( proc_fireVisualCallback2 );
+	}
+
 	private AsyncTask< Void, Void, TootApiResult > last_task;
 	
 	private void cancelLastTask(){

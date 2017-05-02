@@ -101,6 +101,11 @@
             android:label="@string/muted_app"
 
             />
+        <activity
+            android:name=".ActNickname"
+            android:label="@string/nickname_and_color"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
+            />
 
         <meta-data
             android:name="android.max_aspect"

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:tools="http://schemas.android.com/tools"
     android:fillViewport="true"
     android:scrollbarStyle="outsideOverlay"
     >
@@ -54,19 +54,49 @@
 
         <TextView
             style="@style/setting_row_label"
+            android:text="@string/nickname_label"
+            />
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                android:id="@+id/tvUserCustom"
+                style="@style/setting_horizontal_stretch"
+                android:padding="4dp"
+                android:layout_gravity="center_vertical"
+
+
+                />
+
+            <ImageButton
+                android:layout_marginStart="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/edit"
+                android:src="?attr/ic_edit"
+                android:id="@+id/btnUserCustom"
+                android:background="@drawable/btn_bg_transparent"
+                />
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
             android:text="@string/actions"
             />
+
         <LinearLayout style="@style/setting_row_form">
 
             <Button
                 android:id="@+id/btnOpenBrowser"
                 style="@style/setting_horizontal_stretch"
                 android:ellipsize="start"
-                tools:text="open http://mastodon.juggler.jp/"
                 android:textAllCaps="false"
+                tools:text="open http://mastodon.juggler.jp/"
                 />
 
         </LinearLayout>
+
         <LinearLayout style="@style/setting_row_form">
 
             <Button
@@ -115,12 +145,13 @@
             android:text="@string/confirm_before_boost"
             />
 
-        <LinearLayout style="@style/setting_row_form" >
+        <LinearLayout style="@style/setting_row_form">
 
             <Switch
                 android:id="@+id/swConfirmBeforeBoost"
                 style="@style/setting_wrap"
                 />
+
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
@@ -142,6 +173,7 @@
                 android:id="@+id/swNSFWOpen"
                 style="@style/setting_wrap"
                 />
+
             <View
                 android:layout_width="0dp"
                 android:layout_height="0dp"
@@ -165,6 +197,7 @@
                 android:text="@string/mention2"
                 />
         </LinearLayout>
+
         <LinearLayout style="@style/setting_row_form">
 
             <CheckBox
@@ -173,6 +206,7 @@
                 android:text="@string/boost"
                 />
         </LinearLayout>
+
         <LinearLayout style="@style/setting_row_form">
 
             <CheckBox
@@ -181,6 +215,7 @@
                 android:text="@string/favourite"
                 />
         </LinearLayout>
+
         <LinearLayout style="@style/setting_row_form">
 
             <CheckBox

@@ -232,9 +232,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 						etContentWarning.setText( reply_status.spoiler_text );
 					}
 					
-					// mention を自動設定する
 					ArrayList< String > mention_list = new ArrayList<>();
-					mention_list.add( "@" + account.getFullAcct( reply_status.account ) );
+					// 元レスにあった mention
 					if( reply_status.mentions != null ){
 						for( TootMention mention : reply_status.mentions ){
 							
@@ -246,6 +245,18 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 							}
 						}
 					}
+					// 今回メンションを追加する？
+					{
+						sv = account.getFullAcct( reply_status.account );
+						//noinspection StatementWithEmptyBody
+						if( mention_list.contains( "@" + sv ) ){
+							// 既に含まれている
+						}else if( ! account.isMe( reply_status.account ) || mention_list.isEmpty() ){
+							// 自分ではない、もしくは、メンションが空
+							mention_list.add( "@" + sv );
+						}
+					}
+					
 					StringBuilder sb = new StringBuilder();
 					for( String acct : mention_list ){
 						if( sb.length() > 0 ) sb.append( ' ' );
@@ -424,7 +435,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			@Override
 			public void onTextChanged( CharSequence s, int start, int before, int count ){
 				handler.removeCallbacks( proc_text_changed );
-				handler.postDelayed( proc_text_changed,  (popup!= null && popup.isShowing() ? 100L : 1000L ));
+				handler.postDelayed( proc_text_changed, ( popup != null && popup.isShowing() ? 100L : 1000L ) );
 			}
 			
 			@Override
@@ -509,7 +520,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				closeAcctPopup();
 			}else{
 				if( popup == null || ! popup.isShowing() ){
-					popup = new PopupAutoCompleteAcct( ActPost.this, etContent ,formRoot);
+					popup = new PopupAutoCompleteAcct( ActPost.this, etContent, formRoot );
 				}
 				popup.setList( acct_list, start, end );
 			}
@@ -815,7 +826,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	public String getDocumentName( Uri uri ){
 		
 		Cursor cursor = getContentResolver().query( uri, null, null, null, null, null );
-		if( cursor != null){
+		if( cursor != null ){
 			try{
 				if( cursor.moveToFirst() ){
 					return cursor.getString( cursor.getColumnIndex( OpenableColumns.DISPLAY_NAME ) );
@@ -945,6 +956,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 					@Override public boolean isApiCancelled(){
 						return isCancelled();
 					}
+					
 					@Override public void publishApiProgress( final String s ){
 						Utils.runOnMainThread( new Runnable() {
 							@Override public void run(){
@@ -963,8 +975,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
 						, post_content
 					) )
-					.header( "Idempotency-Key" ,digest)
-					;
+					.header( "Idempotency-Key", digest );
 				
 				TootApiResult result = client.request( "/api/v1/statuses", request_builder );
 				if( result.object != null ){
@@ -982,6 +993,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			@Override
 			protected void onPostExecute( TootApiResult result ){
 				progress.dismiss();
+				//noinspection StatementWithEmptyBody
 				if( result == null ){
 					// cancelled.
 				}else if( status != null ){

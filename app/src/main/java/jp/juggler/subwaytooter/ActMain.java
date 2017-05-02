@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -892,14 +893,24 @@ public class ActMain extends AppCompatActivity
 					return;
 				}
 			}
-			
-			// ビルダーを使って表示方法を指定する
-			CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-			builder.setToolbarColor( Styler.getAttributeColor( this, R.attr.colorPrimary ) ).setShowTitle( true );
-			
-			// CustomTabsでURLをひらくIntentを発行
-			CustomTabsIntent customTabsIntent = builder.build();
-			customTabsIntent.launchUrl( this, Uri.parse( url ) );
+
+			try{
+				// 初回はChrome指定で試す
+
+				CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+				builder.setToolbarColor( Styler.getAttributeColor( this, R.attr.colorPrimary ) ).setShowTitle( true );
+				CustomTabsIntent customTabsIntent = builder.build();
+				customTabsIntent.intent.setComponent( new ComponentName("com.android.chrome","com.google.android.apps.chrome.Main"  ) );
+				customTabsIntent.launchUrl( this, Uri.parse( url ) );
+			}catch(Throwable ex2){
+				log.e( ex2, "openChromeTab: missing chrome. retry to other application.");
+				
+				// chromeがないなら ResolverActivity でアプリを選択させる
+				CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+				builder.setToolbarColor( Styler.getAttributeColor( this, R.attr.colorPrimary ) ).setShowTitle( true );
+				CustomTabsIntent customTabsIntent = builder.build();
+				customTabsIntent.launchUrl( this, Uri.parse( url ) );
+			}
 			
 		}catch( Throwable ex ){
 			// ex.printStackTrace();

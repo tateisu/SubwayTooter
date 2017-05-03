@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter;
 
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -9,6 +10,7 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 
@@ -19,7 +21,6 @@ import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
-import jp.juggler.subwaytooter.util.ActionsDialog;
 import jp.juggler.subwaytooter.util.LogCategory;
 
 class DlgContextMenu implements View.OnClickListener {
@@ -32,7 +33,7 @@ class DlgContextMenu implements View.OnClickListener {
 	@Nullable private final TootStatus status;
 	@NonNull private final UserRelation relation;
 	
-	private final AlertDialog dialog;
+	private final Dialog dialog;
 	
 	private final ArrayList< SavedAccount > account_list_non_pseudo_same_instance = new ArrayList<>();
 	private final ArrayList< SavedAccount > account_list_non_pseudo = new ArrayList<>();
@@ -51,10 +52,10 @@ class DlgContextMenu implements View.OnClickListener {
 		this.relation = UserRelation.load( access_info.db_id, who.id );
 		
 		@SuppressLint("InflateParams") View viewRoot = activity.getLayoutInflater().inflate( R.layout.dlg_context_menu, null, false );
-		this.dialog = new AlertDialog.Builder( activity )
-			.setNegativeButton( R.string.cancel, null )
-			.setView( viewRoot )
-			.create();
+		this.dialog = new Dialog( activity );
+		dialog.setContentView( viewRoot );
+		dialog.setCancelable( true );
+		dialog.setCanceledOnTouchOutside( true );
 		
 		View llStatus = viewRoot.findViewById( R.id.llStatus );
 		View btnStatusWebPage = viewRoot.findViewById( R.id.btnStatusWebPage );
@@ -188,10 +189,18 @@ class DlgContextMenu implements View.OnClickListener {
 		
 		View v = viewRoot.findViewById( R.id.btnNickname );
 		v.setOnClickListener( this );
-			
+		
+		v = viewRoot.findViewById( R.id.btnCancel );
+		v.setOnClickListener( this );
 	}
 	
 	void show(){
+		//noinspection ConstantConditions
+		WindowManager.LayoutParams lp = dialog.getWindow().getAttributes();
+		lp.width = (int)(0.5f + 280f * activity.density);
+		lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
+		dialog.getWindow().setAttributes(lp);
+		
 		dialog.show();
 	}
 	
@@ -341,6 +350,11 @@ class DlgContextMenu implements View.OnClickListener {
 		case R.id.btnNickname:
 			ActNickname.open( activity,access_info.getFullAcct( who ) ,ActMain.REQUEST_CODE_NICKNAME );
 			break;
+		
+		case R.id.btnCancel:
+			dialog.cancel();
+			break;
+
 		}
 	}
 	

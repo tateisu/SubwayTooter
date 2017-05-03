@@ -261,6 +261,8 @@
             android:paddingEnd="12dp"
             android:paddingStart="12dp"
             android:scrollbarStyle="outsideOverlay"
+            android:dividerHeight="1dp"
+            android:divider="?attr/colorSettingDivider"
             />
 
     </com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout>

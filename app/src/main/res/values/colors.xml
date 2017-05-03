@@ -12,6 +12,8 @@
     <color name="Light_colorColumnHeaderAcct">#808080</color>
     <color name="Light_colorColumnHeaderPageNumber">#808080</color>
 
+    <color name="Light_colorSettingDivider">#808080</color>
+
     <color name="Light_colorColumnListDragHandleBackground">#80cccccc</color>
     <color name="Light_list_item_bg_pressed_dragged">#AACCCCCC</color>
 
@@ -23,7 +25,6 @@
     <color name="Light_colorReplyBackground">#cccccc</color>
 
 
-    <color name="Light_colorSettingDivider">#ddd</color>
     <color name="Light_colorPostFormBackground">#eee</color>
 
     <color name="Light_colorProfileBackgroundMask">#C0FFFFFF</color>
@@ -54,6 +55,8 @@
     <color name="Dark_colorColumnHeaderAcct">#666</color>
     <color name="Dark_colorColumnHeaderPageNumber">#666</color>
 
+    <color name="Dark_colorSettingDivider">#666</color><!-- ダイアログ背景が#424242なので、それより明るくないといけない -->
+
     <color name="Dark_colorColumnListDragHandleBackground">#80444444</color>
     <color name="Dark_list_item_bg_pressed_dragged">#AA444444</color>
 
@@ -64,7 +67,6 @@
     <color name="Dark_color_column_header">#333</color>
     <color name="Dark_colorReplyBackground">#333</color>
 
-    <color name="Dark_colorSettingDivider">#282828</color>
     <color name="Dark_colorPostFormBackground">#222</color>
 
     <color name="Dark_colorProfileBackgroundMask">#C0000000</color>

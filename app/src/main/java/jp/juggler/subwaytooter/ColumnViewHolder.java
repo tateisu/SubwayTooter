@@ -133,7 +133,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		etSearch = (EditText) root.findViewById( R.id.etSearch );
 		cbResolve = (CheckBox) root.findViewById( R.id.cbResolve );
 		
-		listView.setFastScrollEnabled( ! Pref.pref( activity ).getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, false ) );
+		listView.setFastScrollEnabled( ! Pref.pref( activity ).getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
 		
 		boolean bAllowFilter;
 		switch( column.type ){

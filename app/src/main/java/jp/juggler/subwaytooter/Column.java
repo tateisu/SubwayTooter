@@ -42,6 +42,7 @@ import jp.juggler.subwaytooter.util.Utils;
 class Column {
 	private static final LogCategory log = new LogCategory( "Column" );
 	public static final java.lang.String KEY_COLUMN_COLOR = "color";
+	
 	private static Object getParamAt( Object[] params, int idx ){
 		if( params == null || idx >= params.length ){
 			throw new IndexOutOfBoundsException( "getParamAt idx=" + idx );
@@ -79,10 +80,10 @@ class Column {
 	private static final String PATH_STATUSES = "/api/v1/statuses/%d"; // 1:status_id
 	private static final String PATH_STATUSES_CONTEXT = "/api/v1/statuses/%d/context"; // 1:status_id
 	private static final String PATH_SEARCH = "/api/v1/search?q=%s"; // 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
-	private static final String PATH_INSTANCE="/api/v1/instance";
+	private static final String PATH_INSTANCE = "/api/v1/instance";
 	
 	private static final String KEY_ACCOUNT_ROW_ID = "account_id";
-	private static final String KEY_TYPE = "type";
+	static final String KEY_TYPE = "type";
 	static final String KEY_DONT_CLOSE = "dont_close";
 	private static final String KEY_WITH_ATTACHMENT = "with_attachment";
 	private static final String KEY_DONT_SHOW_BOOST = "dont_show_boost";
@@ -101,7 +102,6 @@ class Column {
 	static final String KEY_COLUMN_ACCESS_COLOR_BG = "column_access_color_bg";
 	static final String KEY_COLUMN_NAME = "column_name";
 	static final String KEY_OLD_INDEX = "old_index";
-	
 	
 	static final int TYPE_HOME = 1;
 	static final int TYPE_LOCAL = 2;
@@ -202,9 +202,9 @@ class Column {
 		
 		// 以下は保存には必要ないが、カラムリスト画面で使う
 		AcctColor ac = AcctColor.load( access_info.acct );
-		item.put( KEY_COLUMN_ACCESS, AcctColor.hasNickname(ac) ? ac.nickname : access_info.acct );
-		item.put( KEY_COLUMN_ACCESS_COLOR, AcctColor.hasColorForeground(ac) ? ac.color_fg : 0 );
-		item.put( KEY_COLUMN_ACCESS_COLOR_BG, AcctColor.hasColorBackground( ac) ? ac.color_bg : 0 );
+		item.put( KEY_COLUMN_ACCESS, AcctColor.hasNickname( ac ) ? ac.nickname : access_info.acct );
+		item.put( KEY_COLUMN_ACCESS_COLOR, AcctColor.hasColorForeground( ac ) ? ac.color_fg : 0 );
+		item.put( KEY_COLUMN_ACCESS_COLOR_BG, AcctColor.hasColorBackground( ac ) ? ac.color_bg : 0 );
 		item.put( KEY_COLUMN_NAME, getColumnName( true ) );
 		item.put( KEY_OLD_INDEX, old_index );
 	}
@@ -311,8 +311,9 @@ class Column {
 			return activity.getString( R.string.federate_timeline );
 		
 		case TYPE_PROFILE:
+			
 			return activity.getString( R.string.statuses_of
-				, who_account != null ? access_info.getFullAcct( who_account ) : Long.toString( profile_id )
+				, who_account != null ? AcctColor.getNickname( access_info.getFullAcct( who_account ) ) : Long.toString( profile_id )
 			);
 		
 		case TYPE_FAVOURITES:
@@ -342,16 +343,62 @@ class Column {
 			}else{
 				return activity.getString( R.string.search );
 			}
-			
+		
 		case TYPE_FOLLOW_REQUESTS:
 			return activity.getString( R.string.follow_requests );
 		}
 	}
 	
+	static int getIconAttrId(int type){
+		switch( type ){
+		
+		default:
+		case TYPE_REPORTS:
+			return R.attr.ic_info;
+		
+		case TYPE_HOME:
+			return R.attr.btn_home;
+		
+		case TYPE_LOCAL:
+			return R.attr.btn_local_tl;
+		
+		case TYPE_FEDERATE:
+			return R.attr.btn_federate_tl;
+		
+		case TYPE_PROFILE:
+			return R.attr.btn_statuses;
+		
+		case TYPE_FAVOURITES:
+			return R.attr.btn_favourite;
+		
+		case TYPE_NOTIFICATIONS:
+			return R.attr.btn_notification;
+		
+		case TYPE_CONVERSATION:
+			return R.attr.ic_conversation;
+		
+		case TYPE_HASHTAG:
+			return R.attr.ic_hashtag;
+		
+		case TYPE_MUTES:
+			return R.attr.ic_mute;
+		
+		case TYPE_BLOCKS:
+			return R.attr.ic_block;
+		
+		case TYPE_SEARCH:
+			return R.attr.ic_search;
+		
+		case TYPE_FOLLOW_REQUESTS:
+			return R.attr.ic_account_add;
+		}
+	}
+	
 	void onNicknameUpdated(){
-
+		
 		fireVisualCallback2();
 	}
+	
 	
 	interface StatusEntryCallback {
 		void onIterate( TootStatus status );
@@ -482,7 +529,7 @@ class Column {
 			fireVisualCallback();
 		}
 	}
-
+	
 	// 自分のステータスを削除した時に呼ばれる
 	void removeStatus( SavedAccount target_account, long status_id ){
 		
@@ -518,6 +565,7 @@ class Column {
 	
 	interface VisualCallback {
 		void onVisualColumn();
+		
 		void onVisualColumn2();
 	}
 	
@@ -554,15 +602,16 @@ class Column {
 			}
 		}
 	};
+	
 	void fireVisualCallback(){
 		Utils.runOnMainThread( proc_fireVisualCallback );
 	}
-
+	
 	// カラムヘッダ部分だけ更新する
 	void fireVisualCallback2(){
 		Utils.runOnMainThread( proc_fireVisualCallback2 );
 	}
-
+	
 	private AsyncTask< Void, Void, TootApiResult > last_task;
 	
 	private void cancelLastTask(){
@@ -876,8 +925,8 @@ class Column {
 						
 						default:
 						case TAB_STATUS:
-							if( access_info.isPseudo()){
-								return client.request(PATH_INSTANCE );
+							if( access_info.isPseudo() ){
+								return client.request( PATH_INSTANCE );
 								
 							}else{
 								String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
@@ -885,7 +934,6 @@ class Column {
 								return getStatuses( client, s );
 								
 							}
-							
 						
 						case TAB_FOLLOWING:
 							return parseAccountList( client,
@@ -1418,8 +1466,8 @@ class Column {
 						
 						default:
 						case TAB_STATUS:
-							if( access_info.isPseudo()){
-								return client.request(PATH_INSTANCE );
+							if( access_info.isPseudo() ){
+								return client.request( PATH_INSTANCE );
 							}else{
 								String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
 								if( with_attachment ) s = s + "&only_media=1";
@@ -1439,7 +1487,7 @@ class Column {
 					
 					case TYPE_BLOCKS:
 						return getAccountList( client, PATH_BLOCKS );
-
+					
 					case TYPE_FOLLOW_REQUESTS:
 						return getAccountList( client, PATH_FOLLOW_REQUESTS );
 					
@@ -1800,8 +1848,8 @@ class Column {
 						default:
 						case TAB_STATUS:
 							
-							if( access_info.isPseudo()){
-								return client.request(PATH_INSTANCE );
+							if( access_info.isPseudo() ){
+								return client.request( PATH_INSTANCE );
 								
 							}else{
 								String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
@@ -1880,16 +1928,14 @@ class Column {
 							list_new.add( o );
 						}
 						
-						
-						
 						int pos = list_data.indexOf( gap );
 						if( pos != - 1 ){
-
+							
 							list_data.remove( pos );
 							list_data.addAll( pos, list_new );
 							
 							// リフレッシュ開始時はリストの先頭を見ていたのだからスクロール範囲を調整したい
-							scroll_hack = pos + list_new.size() -2;
+							scroll_hack = pos + list_new.size() - 2;
 							if( scroll_hack < 1 ) scroll_hack = 1;
 						}
 					}
@@ -1922,7 +1968,7 @@ class Column {
 	private void updateRelation( TootApiClient client, ArrayList< Object > list_tmp ){
 		if( list_tmp == null || list_tmp.isEmpty() ) return;
 		HashSet< Long > who_set = new HashSet<>();
-		HashSet<String> acct_set = new HashSet<>();
+		HashSet< String > acct_set = new HashSet<>();
 		{
 			TootAccount a;
 			TootStatus s;
@@ -1931,20 +1977,20 @@ class Column {
 				if( o instanceof TootAccount ){
 					a = (TootAccount) o;
 					who_set.add( a.id );
-					acct_set.add( "@" + access_info.getFullAcct( a ));
+					acct_set.add( "@" + access_info.getFullAcct( a ) );
 				}else if( o instanceof TootStatus ){
 					s = (TootStatus) o;
 					a = s.account;
 					if( a != null ){
 						who_set.add( a.id );
-						acct_set.add( "@" + access_info.getFullAcct( a ));
+						acct_set.add( "@" + access_info.getFullAcct( a ) );
 					}
 					s = s.reblog;
 					if( s != null ){
 						a = s.account;
 						if( a != null ){
 							who_set.add( a.id );
-							acct_set.add( "@" + access_info.getFullAcct( a ));
+							acct_set.add( "@" + access_info.getFullAcct( a ) );
 						}
 					}
 				}else if( o instanceof TootNotification ){
@@ -1953,7 +1999,7 @@ class Column {
 					a = n.account;
 					if( a != null ){
 						who_set.add( a.id );
-						acct_set.add( "@" + access_info.getFullAcct( a ));
+						acct_set.add( "@" + access_info.getFullAcct( a ) );
 					}
 					//
 					s = n.status;
@@ -1961,14 +2007,14 @@ class Column {
 						a = s.account;
 						if( a != null ){
 							who_set.add( a.id );
-							acct_set.add( "@" + access_info.getFullAcct( a ));
+							acct_set.add( "@" + access_info.getFullAcct( a ) );
 						}
 						s = s.reblog;
 						if( s != null ){
 							a = s.account;
 							if( a != null ){
 								who_set.add( a.id );
-								acct_set.add( "@" + access_info.getFullAcct( a ));
+								acct_set.add( "@" + access_info.getFullAcct( a ) );
 							}
 						}
 					}
@@ -2020,15 +2066,14 @@ class Column {
 			long now = System.currentTimeMillis();
 			int n = 0;
 			while( n < size ){
-				int length = size-n;
+				int length = size - n;
 				if( length > ACCT_DB_STEP ) length = ACCT_DB_STEP;
-				AcctSet.saveList( now, acct_list, n,length );
+				AcctSet.saveList( now, acct_list, n, length );
 				n += length;
 			}
 			log.d( "updateRelation: update %d acct.", n );
 			
 		}
-		
 		
 	}
 	

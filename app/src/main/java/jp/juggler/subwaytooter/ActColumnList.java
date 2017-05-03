@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.woxthebox.draglistview.DragItem;
@@ -200,6 +201,7 @@ public class ActColumnList extends AppCompatActivity {
 		int acct_color_bg;
 		boolean bOldSelection;
 		int old_index;
+		int type;
 		
 		MyItem( JSONObject src, long id, Context context ){
 			this.json = src;
@@ -211,6 +213,7 @@ public class ActColumnList extends AppCompatActivity {
 			this.acct_color_bg = c;
 			this.old_index = src.optInt( Column.KEY_OLD_INDEX );
 			this.id = id;
+			this.type = src.optInt( Column.KEY_TYPE );
 		}
 		
 		void setOldSelection( boolean b ){
@@ -219,10 +222,11 @@ public class ActColumnList extends AppCompatActivity {
 	}
 	
 	// リスト要素のViewHolder
-	static class MyViewHolder extends DragItemAdapter.ViewHolder {
+	class MyViewHolder extends DragItemAdapter.ViewHolder {
 		final View ivBookmark;
 		final TextView tvAccess;
 		final TextView tvName;
+		final ImageView ivColumnIcon;
 		final int acct_pad_lr;
 		
 		MyViewHolder( final View viewRoot ){
@@ -234,9 +238,9 @@ public class ActColumnList extends AppCompatActivity {
 			ivBookmark = viewRoot.findViewById( R.id.ivBookmark );
 			tvAccess = (TextView) viewRoot.findViewById( R.id.tvAccess );
 			tvName = (TextView) viewRoot.findViewById( R.id.tvName );
-
+			ivColumnIcon = (ImageView) viewRoot.findViewById( R.id.ivColumnIcon );
 			acct_pad_lr = (int) ( 0.5f + 4f * viewRoot.getResources().getDisplayMetrics().density );
-
+			
 			// リスト要素のビューが ListSwipeItem だった場合、Swipe操作を制御できる
 			if( viewRoot instanceof ListSwipeItem ){
 				ListSwipeItem lsi = (ListSwipeItem) viewRoot;
@@ -254,6 +258,8 @@ public class ActColumnList extends AppCompatActivity {
 			tvAccess.setBackgroundColor( item.acct_color_bg );
 			tvAccess.setPaddingRelative( acct_pad_lr, 0, acct_pad_lr, 0 );
 			tvName.setText( item.name );
+			ivColumnIcon.setImageResource( Styler.getAttributeResourceId(
+				ActColumnList.this, Column.getIconAttrId( item.type ) ) );
 		}
 
 //		@Override
@@ -286,6 +292,10 @@ public class ActColumnList extends AppCompatActivity {
 			
 			tv = (TextView) dragView.findViewById( R.id.tvName );
 			tv.setText( item.name );
+			
+			ImageView ivColumnIcon = (ImageView) dragView.findViewById( R.id.ivColumnIcon );
+			ivColumnIcon.setImageResource( Styler.getAttributeResourceId(
+				ActColumnList.this, Column.getIconAttrId( item.type ) ) );
 			
 			dragView.findViewById( R.id.ivBookmark ).setVisibility(
 				clickedView.findViewById( R.id.ivBookmark ).getVisibility()

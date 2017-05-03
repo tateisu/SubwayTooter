@@ -107,5 +107,6 @@
     <attr name="ic_account_remove" format="reference" />
     <attr name="ic_hourglass" format="reference" />
     <attr name="ic_edit" format="reference" />
+    <attr name="ic_hashtag" format="reference" />
 
 </resources>

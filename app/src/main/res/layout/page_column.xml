@@ -58,6 +58,12 @@
             android:orientation="horizontal"
             >
 
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginEnd="4dp"
+                android:id="@+id/ivColumnIcon"
+                />
             <TextView
                 android:id="@+id/tvColumnName"
                 android:layout_width="0dp"
@@ -101,7 +107,6 @@
 
 
         </LinearLayout>
-
 
     </LinearLayout>
 

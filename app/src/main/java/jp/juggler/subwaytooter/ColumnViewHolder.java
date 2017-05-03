@@ -97,6 +97,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 	private EditText etRegexFilter;
 	private TextView tvRegexFilterError;
 	private View btnColumnClose;
+	private ImageView ivColumnIcon;
+	
 	private boolean bSimpleList;
 	
 	void onPageCreate( View root, int page_idx, int page_count ){
@@ -109,7 +111,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		
 		tvColumnName = (TextView) root.findViewById( R.id.tvColumnName );
 		tvColumnContext = (TextView) root.findViewById( R.id.tvColumnContext );
-		
+		ivColumnIcon = (ImageView) root.findViewById( R.id.ivColumnIcon );
 		btnColumnClose = root.findViewById( R.id.btnColumnClose );
 		
 		btnColumnClose.setOnClickListener( this );
@@ -408,6 +410,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		tvColumnName.setText( column.getColumnName( false ) );
 		
 		showColumnCloseButton();
+		
+		ivColumnIcon.setImageResource( Styler.getAttributeResourceId( activity, Column.getIconAttrId(column.type) ) );
 		
 	}
 	

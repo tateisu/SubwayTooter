@@ -207,7 +207,7 @@
     <string name="exit_app_when_close_protected_column">Exit app when try to close protected column with back button without confirm</string>
     <string name="resize_image">Resize attachment image (JPEG,PNG)</string>
     <string name="dont_resize">Don\'t resize</string>
-    <string name="long_side_pixel">Width %1$d pixels</string>
+    <string name="long_side_pixel">Resize to %1$d pixels</string>
     <string name="image_pick">Choose your images</string>
     <string name="image_capture">Capture by camera</string>
     <string name="missing_storage_permission">Permission to write storage is missing.</string>

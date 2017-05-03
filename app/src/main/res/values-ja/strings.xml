@@ -224,14 +224,12 @@
     <string name="confirm_mute_user">ユーザ \'%1$s\' をミュートします。よろしいですか?</string>
     <string name="confirm_delete_status">この発言を削除します。よろしいですか?</string>
     <string name="acct">Acct</string>
-    <string name="acct_customize">ニックネームと色</string>
     <string name="background_color">背景色</string>
     <string name="color">Color</string>
-    <string name="customize">カスタマイズ</string>
     <string name="discard">取り消し</string>
     <string name="edit">編集</string>
     <string name="nickname">色</string>
-    <string name="nickname_label">ニックネーム (指定するとAcctの代わりに表示されます)</string>
+    <string name="nickname_label">通称 (指定するとAcctの代わりに表示されます)</string>
     <string name="preview">プレビュー</string>
     <string name="reset">リセット</string>
     <string name="save">保存</string>

@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.util.LogCategory;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.util.LruCache;
 import android.text.TextUtils;
 
 import java.util.Locale;
@@ -50,31 +51,35 @@ public class AcctColor {
 		}
 	}
 	
-	public String acct;
+	@NonNull public String acct;
 	public int color_fg;
 	public int color_bg;
 	public String nickname;
 	
-	private AcctColor(){
-	}
-	
-	public AcctColor( String acct, String nickname, int color_fg, int color_bg ){
+	public AcctColor( @NonNull String acct, String nickname, int color_fg, int color_bg ){
 		this.acct = acct;
 		this.nickname = nickname;
 		this.color_fg = color_fg;
 		this.color_bg = color_bg;
 	}
 	
+	private AcctColor( @NonNull String acct ){
+		this.acct = acct;
+	}
+	
 	public void save( long now ){
+
+		acct = acct.toLowerCase( Locale.ENGLISH );
+
 		try{
 			ContentValues cv = new ContentValues();
 			cv.put( COL_TIME_SAVE, now );
-			cv.put( COL_ACCT, acct.toLowerCase( Locale.ENGLISH ) );
+			cv.put( COL_ACCT, acct );
 			cv.put( COL_COLOR_FG, color_fg );
 			cv.put( COL_COLOR_BG, color_bg );
 			cv.put( COL_NICKNAME, nickname == null ? "" : nickname );
 			App1.getDB().replace( table, null, cv );
-			
+			mMemoryCache.remove( acct );
 		}catch( Throwable ex ){
 			ex.printStackTrace();
 			log.e( ex, "save failed." );
@@ -89,19 +94,25 @@ public class AcctColor {
 		}
 	};
 	
+	private static final LruCache< String, AcctColor > mMemoryCache = new LruCache<>( 2048 );
+	
 	@Nullable public static AcctColor load( @NonNull String acct ){
+		
+		acct = acct.toLowerCase( Locale.ENGLISH );
+		
+		AcctColor dst = mMemoryCache.get( acct );
+		
+		if( dst != null ) return dst;
+		
 		try{
 			String[] where_arg = load_where_arg.get();
-			where_arg[ 0 ] = acct.toLowerCase( Locale.ENGLISH );
+			where_arg[ 0 ] = acct;
 			Cursor cursor = App1.getDB().query( table, null, load_where, where_arg, null, null, null );
 			if( cursor != null ){
 				try{
 					if( cursor.moveToNext() ){
-						AcctColor dst = new AcctColor();
+						dst = new AcctColor(acct);
 						int idx;
-						
-						idx = cursor.getColumnIndex( COL_ACCT );
-						dst.acct = cursor.getString( idx );
 						
 						idx = cursor.getColumnIndex( COL_COLOR_FG );
 						dst.color_fg = cursor.isNull( idx ) ? 0 : cursor.getInt( idx );
@@ -112,6 +123,7 @@ public class AcctColor {
 						idx = cursor.getColumnIndex( COL_NICKNAME );
 						dst.nickname = cursor.isNull( idx ) ? null : cursor.getString( idx );
 						
+						mMemoryCache.put( acct, dst );
 						return dst;
 					}
 				}finally{
@@ -122,23 +134,26 @@ public class AcctColor {
 			ex.printStackTrace();
 			log.e( ex, "load failed." );
 		}
-		return null;
+		log.d("lruCache size=%s,hit=%s,miss=%s",mMemoryCache.size(),mMemoryCache.hitCount(),mMemoryCache.missCount() );
+		dst = new AcctColor( acct );
+		mMemoryCache.put( acct, dst );
+		return dst;
 	}
 	
-	public static String getNickname( String acct ){
+	@NonNull public static String getNickname( @NonNull String acct ){
 		AcctColor ac = load( acct );
 		return ac != null && ! TextUtils.isEmpty( ac.nickname ) ? ac.nickname : acct;
 	}
 	
-	public static boolean hasNickname( AcctColor ac ){
-		return ac != null && !TextUtils.isEmpty( ac.nickname );
+	public static boolean hasNickname( @Nullable AcctColor ac ){
+		return ac != null && ! TextUtils.isEmpty( ac.nickname );
 	}
 	
-	public static boolean hasColorForeground( AcctColor ac ){
+	public static boolean hasColorForeground( @Nullable AcctColor ac ){
 		return ac != null && ac.color_fg != 0;
 	}
 	
-	public static boolean hasColorBackground( AcctColor ac ){
+	public static boolean hasColorBackground( @Nullable AcctColor ac ){
 		return ac != null && ac.color_bg != 0;
 	}
 }

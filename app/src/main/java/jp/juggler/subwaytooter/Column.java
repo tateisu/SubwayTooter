@@ -312,7 +312,7 @@ class Column {
 		
 		case TYPE_PROFILE:
 			
-			return activity.getString( R.string.statuses_of
+			return activity.getString( R.string.profile_of
 				, who_account != null ? AcctColor.getNickname( access_info.getFullAcct( who_account ) ) : Long.toString( profile_id )
 			);
 		

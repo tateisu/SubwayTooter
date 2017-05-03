@@ -69,10 +69,15 @@
         <item name="ic_toot">@drawable/ic_toot</item>
         <item name="ic_tune">@drawable/ic_tune</item>
         <item name="ic_unknown">@drawable/ic_unknown</item>
-        <item name="ic_account_remove">@drawable/ic_account_remove</item>
         <item name="ic_hourglass">@drawable/ic_hourglass</item>
         <item name="ic_edit">@drawable/ic_edit</item>
         <item name="ic_hashtag">@drawable/ic_hashtag</item>
+
+        <item name="ic_follow_plus">@drawable/ic_follow_plus</item>
+        <item name="ic_follow_cross">@drawable/ic_follow_cross</item>
+        <item name="ic_followed_by">@drawable/ic_followed_by</item>
+
+
 
     </style>
 
@@ -150,10 +155,15 @@
         <item name="ic_toot">@drawable/ic_toot_dark</item>
         <item name="ic_tune">@drawable/ic_tune_dark</item>
         <item name="ic_unknown">@drawable/ic_unknown_dark</item>
-        <item name="ic_account_remove">@drawable/ic_account_remove_dark</item>
         <item name="ic_hourglass">@drawable/ic_hourglass_dark</item>
         <item name="ic_edit">@drawable/ic_edit_dark</item>
         <item name="ic_hashtag">@drawable/ic_hashtag_dark</item>
+
+        <item name="ic_follow_plus">@drawable/ic_follow_plus_dark</item>
+        <item name="ic_follow_cross">@drawable/ic_follow_cross_dark</item>
+        <item name="ic_followed_by">@drawable/ic_followed_by_dark</item>
+
+
     </style>
 
     <style name="AppTheme.Dark.NoActionBar" parent="AppTheme.Dark">
@@ -240,5 +250,6 @@
     <style name="setting_edit_text" parent="@style/setting_horizontal_stretch">
         <item name="android:imeOptions">actionDone</item>
     </style>
+
 
 </resources>

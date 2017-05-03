@@ -75,7 +75,7 @@
     <string name="wait_previous_operation">Veuillez attendre la fin de la dernière opération.</string>
     <string name="cant_remove_boost_while_favourited">Impossible de supprimer le boost quand il est dans les favoris</string>
     <string name="confirm">confirmer</string>
-    <string name="confirm_boost">Booster ce statut ? il est affiché par tous les abonnés et sur votre page de profil.</string>
+    <string name="confirm_boost_from">Booster ce statut from %1$s ? il est affiché par tous les abonnés et sur votre page de profil.</string>
     <string name="display_name_favourited_by">préféré par %1$s</string>
     <string name="display_name_boosted_by">boosté par %1$s</string>
     <string name="display_name_replied_by">répondu par %1$s</string>
@@ -183,7 +183,7 @@
     <string name="regex_filter">Regex filter</string>
     <string name="regex_error">Regex error</string>
     <string name="notification_delete">Empty notifications</string>
-    <string name="confirm_delete_notification">This will empty your notification on your instance.\nAre you sure?</string>
+    <string name="confirm_delete_notification">This will empty your notification on your instance.\nAre you sure ?</string>
     <string name="search_for">Search %1$s</string>
     <string name="spoil_visibility_for_account">Visibility is spoiled for account.</string>
     <string name="contributor">contributor</string>
@@ -224,9 +224,9 @@
     <string name="open_profile_from_another_account">Open profile from another account (same instance)</string>
     <string name="send_message">Send message</string>
     <string name="send_message_from_another_account">Send message from another account</string>
-    <string name="confirm_block_user">User \'%1$s\' will be blocked. Are you sure?</string>
-    <string name="confirm_delete_status">This toot will be deleted. Are you sure?</string>
-    <string name="confirm_mute_user">User \'%1$s\' will be muted. Are you sure?</string>
+    <string name="confirm_block_user">User \'%1$s\' will be blocked. Are you sure ?</string>
+    <string name="confirm_delete_status">This toot will be deleted. Are you sure ?</string>
+    <string name="confirm_mute_user">User \'%1$s\' will be muted. Are you sure ?</string>
     <string name="nickname_label">Nickname (if specified, it\'s shown instead of full acct)</string>
     <string name="acct">Acct</string>
     <string name="background_color">Background color</string>
@@ -240,5 +240,18 @@
     <string name="text_color">Text color</string>
     <string name="nickname_and_color">Nickname and Color</string>
     <string name="nickname_applied_after_reload">The change of nickname/color will be applied after reload column.</string>
+    <string name="confirmation">Confirmation</string>
+    <string name="follow_locked_user">Follow locked user</string>
+    <string name="follow_requested">You are requesting follow to locked account.</string>
+    <string name="show_follow_button_in_button_bar">Show follow button in button bar (app restart required)</string>
+    <string name="profile">Profile</string>
+    <string name="profile_of">Profile of %1$s</string>
+    <string name="confirm_follow_request_who_from">Send follow request from %2$s to locked user %1$s ?</string>
+    <string name="confirm_follow_who_from">Follow %1$s from %2$s ?</string>
+    <string name="confirm_post_from">Posting a toot from %1$s. Are you sure ?</string>
+    <string name="confirm_unfollow_who_from">Unfollow %1$s from %2$s ?</string>
+    <string name="dont_confirm_again">Don\'t confirm again</string>
+    <string name="follow_request_cant_remove_by_sender">seems follow request can\'t be removed by sender…</string>
+    <string name="it_is_you">It\'s you.</string>
 
 </resources>

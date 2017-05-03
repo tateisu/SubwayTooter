@@ -350,6 +350,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			Utils.hideKeyboard( activity, etSearch );
 			column.search_query = etSearch.getText().toString().trim();
 			column.search_resolve = cbResolve.isChecked();
+			activity.saveColumnList();
 			column.startLoading();
 			break;
 		
@@ -379,12 +380,6 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			listView.setSelectionFromTop( 0, 0 );
 		}
 	}
-
-//	final RelationshipMap.UpdateCallback callback_relation = new RelationshipMap.UpdateCallback() {
-//		@Override public void onRelationShipUpdate(){
-//			onVisualColumn();
-//		}
-//	};
 	
 	private int acct_pad_lr;
 	
@@ -411,7 +406,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		
 		showColumnCloseButton();
 		
-		ivColumnIcon.setImageResource( Styler.getAttributeResourceId( activity, Column.getIconAttrId(column.type) ) );
+		ivColumnIcon.setImageResource( Styler.getAttributeResourceId( activity, Column.getIconAttrId( column.type ) ) );
 		
 	}
 	
@@ -537,6 +532,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		final View btnMore;
 		final TextView tvNote;
 		final ImageButton btnFollow;
+		final ImageView ivFollowedBy;
 		
 		TootAccount who;
 		SavedAccount access_info;
@@ -554,6 +550,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			this.tvNote = (TextView) viewRoot.findViewById( R.id.tvNote );
 			this.btnMore = viewRoot.findViewById( R.id.btnMore );
 			this.btnFollow = (ImageButton) viewRoot.findViewById( R.id.btnFollow );
+			this.ivFollowedBy = (ImageView) viewRoot.findViewById( R.id.ivFollowedBy );
 			ivBackground.setOnClickListener( this );
 			btnFollowing.setOnClickListener( this );
 			btnFollowers.setOnClickListener( this );
@@ -597,7 +594,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				btnFollowers.setText( activity.getString( R.string.followers ) + "\n" + who.followers_count );
 				
 				UserRelation relation = UserRelation.load( access_info.db_id, who.id );
-				Styler.setFollowIcon( activity, btnFollow, relation );
+				Styler.setFollowIcon( activity, btnFollow,ivFollowedBy, relation ,column.type);
 			}
 		}
 		
@@ -629,13 +626,13 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			
 			case R.id.btnMore:
 				if( who != null ){
-					new DlgContextMenu( activity, access_info, who, null ).show();
+					new DlgContextMenu( activity, access_info, who, null, column.type ).show();
 				}
 				break;
 			
 			case R.id.btnFollow:
 				if( who != null ){
-					new DlgContextMenu( activity, access_info, who, null ).show();
+					new DlgContextMenu( activity, access_info, who, null, column.type ).show();
 				}
 				break;
 				
@@ -706,6 +703,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		final TextView tvFollowerName;
 		final TextView tvFollowerAcct;
 		final ImageButton btnFollow;
+		final ImageView ivFollowedBy;
 		
 		final View llStatus;
 		final NetworkImageView ivThumbnail;
@@ -757,7 +755,8 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			this.tvFollowerName = (TextView) view.findViewById( R.id.tvFollowerName );
 			this.tvFollowerAcct = (TextView) view.findViewById( R.id.tvFollowerAcct );
 			this.btnFollow = (ImageButton) view.findViewById( R.id.btnFollow );
-			
+			this.ivFollowedBy = (ImageView) view.findViewById( R.id.ivFollowedBy );
+				
 			this.llStatus = view.findViewById( R.id.llStatus );
 			
 			this.ivThumbnail = (NetworkImageView) view.findViewById( R.id.ivThumbnail );
@@ -920,7 +919,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			setAcct( tvFollowerAcct, access_info.getFullAcct( who ), R.attr.colorAcctSmall );
 			
 			UserRelation relation = UserRelation.load( access_info.db_id, who.id );
-			Styler.setFollowIcon( activity, btnFollow, relation );
+			Styler.setFollowIcon( activity, btnFollow, ivFollowedBy,relation ,column.type);
 		}
 		
 		private void showStatus( ActMain activity, TootStatus status ){
@@ -1069,7 +1068,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				activity.performOpenUser( access_info, account_follow );
 				break;
 			case R.id.btnFollow:
-				new DlgContextMenu( activity, access_info, account_follow, null ).show();
+				new DlgContextMenu( activity, access_info, account_follow, null, column.type ).show();
 				break;
 			
 			case R.id.btnSearchTag:
@@ -1090,7 +1089,7 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		@Override public boolean onLongClick( View v ){
 			switch( v.getId() ){
 			case R.id.ivThumbnail:
-				new DlgContextMenu( activity, access_info, account_thumbnail, null ).show();
+				new DlgContextMenu( activity, access_info, account_thumbnail, null, column.type ).show();
 				break;
 			}
 			return false;
@@ -1148,6 +1147,9 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 		final Button btnBoost;
 		final Button btnFavourite;
 		final ImageButton btnMore;
+		final ImageButton btnFollow2;
+		final ImageView ivFollowedBy2;
+		final View llFollow2;
 		
 		ButtonsForStatus( View viewRoot ){
 			btnConversation = (ImageButton) viewRoot.findViewById( R.id.btnConversation );
@@ -1155,15 +1157,21 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			btnBoost = (Button) viewRoot.findViewById( R.id.btnBoost );
 			btnFavourite = (Button) viewRoot.findViewById( R.id.btnFavourite );
 			btnMore = (ImageButton) viewRoot.findViewById( R.id.btnMore );
+			btnFollow2 = (ImageButton) viewRoot.findViewById( R.id.btnFollow2 );
+			ivFollowedBy2 = (ImageView) viewRoot.findViewById( R.id.ivFollowedBy2 );
+			llFollow2 = viewRoot.findViewById( R.id.llFollow2 );
+			
 			btnConversation.setOnClickListener( this );
 			btnReply.setOnClickListener( this );
 			btnBoost.setOnClickListener( this );
 			btnFavourite.setOnClickListener( this );
 			btnMore.setOnClickListener( this );
+			btnFollow2.setOnClickListener( this );
 			
 		}
 		
 		TootStatus status;
+		UserRelation relation;
 		
 		void bind( TootStatus status ){
 			this.status = status;
@@ -1187,6 +1195,16 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 			}else{
 				int color = ( status.favourited ? color_accent : color_normal );
 				setButton( btnFavourite, true, color, R.attr.btn_favourite, Long.toString( status.favourites_count ) );
+			}
+			
+			if( ! activity.pref.getBoolean( Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR, false ) ){
+				llFollow2.setVisibility( View.GONE );
+				this.relation = null;
+			}else{
+				llFollow2.setVisibility( View.VISIBLE );
+				this.relation = UserRelation.load( access_info.db_id, status.account.id );
+				Styler.setFollowIcon( activity, btnFollow2, ivFollowedBy2, relation ,column.type);
+				
 			}
 			
 		}
@@ -1230,7 +1248,17 @@ class ColumnViewHolder implements View.OnClickListener, Column.VisualCallback, S
 				}
 				break;
 			case R.id.btnMore:
-				new DlgContextMenu( activity, access_info, status.account, status ).show();
+				new DlgContextMenu( activity, access_info, status.account, status, column.type ).show();
+				break;
+			case R.id.btnFollow2:
+				//noinspection StatementWithEmptyBody
+				if( relation.blocking || relation.muting ){
+					// 何もしない
+				}else if( relation.following || relation.requested ){
+					activity.callFollow( access_info, status.account, false,false, activity.unfollow_complete_callback );
+				}else{
+					activity.callFollow( access_info, status.account, true, false,activity.follow_complete_callback );
+				}
 				break;
 			}
 		}

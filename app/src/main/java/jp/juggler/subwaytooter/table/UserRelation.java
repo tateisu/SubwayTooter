@@ -3,6 +3,8 @@ package jp.juggler.subwaytooter.table;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
+import android.support.v4.util.LruCache;
 
 import java.util.HashSet;
 
@@ -29,136 +31,149 @@ public class UserRelation {
 		db.execSQL(
 			"create table if not exists " + table
 				+ "(_id INTEGER PRIMARY KEY"
-				+ ","+COL_TIME_SAVE+" integer not null"
-				+ ","+COL_DB_ID+" integer not null"
-				+ ","+COL_WHO_ID+" integer not null"
-				+ ","+COL_FOLLOWING+" integer not null"
-				+ ","+COL_FOLLOWED_BY+" integer not null"
-				+ ","+COL_BLOCKING+" integer not null"
-				+ ","+COL_MUTING+" integer not null"
-				+ ","+COL_REQUESTED+" integer not null"
+				+ "," + COL_TIME_SAVE + " integer not null"
+				+ "," + COL_DB_ID + " integer not null"
+				+ "," + COL_WHO_ID + " integer not null"
+				+ "," + COL_FOLLOWING + " integer not null"
+				+ "," + COL_FOLLOWED_BY + " integer not null"
+				+ "," + COL_BLOCKING + " integer not null"
+				+ "," + COL_MUTING + " integer not null"
+				+ "," + COL_REQUESTED + " integer not null"
 				+ ")"
 		);
 		db.execSQL(
-			"create unique index if not exists " + table + "_id on " + table + "("+COL_DB_ID+","+COL_WHO_ID+")"
+			"create unique index if not exists " + table + "_id on " + table + "(" + COL_DB_ID + "," + COL_WHO_ID + ")"
 		);
 		db.execSQL(
-			"create index if not exists " + table + "_time on " + table + "("+COL_TIME_SAVE+")"
+			"create index if not exists " + table + "_time on " + table + "(" + COL_TIME_SAVE + ")"
 		);
 	}
 	
 	public static void onDBUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ){
-		if(oldVersion < 6 && newVersion >= 6){
+		if( oldVersion < 6 && newVersion >= 6 ){
 			onDBCreate( db );
 		}
 	}
 	
-	public static void deleteOld( long now){
+	public static void deleteOld( long now ){
 		try{
 			// 古いデータを掃除する
 			long expire = now - 86400000L * 365;
-			App1.getDB().delete( table,COL_TIME_SAVE+"<?",new String[]{Long.toString(expire)});
+			App1.getDB().delete( table, COL_TIME_SAVE + "<?", new String[]{ Long.toString( expire ) } );
 			
 		}catch( Throwable ex ){
 			log.e( ex, "deleteOld failed." );
 		}
 	}
 	
-	public static void save1( long now, long db_id, TootRelationShip src  ){
+	public static void save1( long now, long db_id, TootRelationShip src ){
 		try{
-
 			ContentValues cv = new ContentValues();
 			cv.put( COL_TIME_SAVE, now );
 			cv.put( COL_DB_ID, db_id );
 			cv.put( COL_WHO_ID, src.id );
-			cv.put( COL_FOLLOWING, src.following ? 1: 0 );
-			cv.put( COL_FOLLOWED_BY, src.followed_by ? 1: 0 );
-			cv.put( COL_BLOCKING, src.blocking ? 1: 0 );
-			cv.put( COL_MUTING, src.muting ? 1: 0 );
-			cv.put( COL_REQUESTED, src.requested ? 1: 0 );
+			cv.put( COL_FOLLOWING, src.following ? 1 : 0 );
+			cv.put( COL_FOLLOWED_BY, src.followed_by ? 1 : 0 );
+			cv.put( COL_BLOCKING, src.blocking ? 1 : 0 );
+			cv.put( COL_MUTING, src.muting ? 1 : 0 );
+			cv.put( COL_REQUESTED, src.requested ? 1 : 0 );
 			App1.getDB().replace( table, null, cv );
+			
+			String key = String.format( "%s:%s", db_id, src.id );
+			mMemoryCache.remove( key );
 		}catch( Throwable ex ){
 			log.e( ex, "save failed." );
 		}
 	}
+	
 	public static void saveList( long now, long db_id, TootRelationShip.List src_list ){
-
+		
+		ContentValues cv = new ContentValues();
+		cv.put( COL_TIME_SAVE, now );
+		cv.put( COL_DB_ID, db_id );
+		
+		boolean bOK = false;
+		SQLiteDatabase db = App1.getDB();
+		db.execSQL( "BEGIN TRANSACTION" );
 		try{
-			ContentValues cv = new ContentValues();
-			cv.put( COL_TIME_SAVE, now );
-			cv.put( COL_DB_ID, db_id );
-
-			boolean bOK = false;
-			SQLiteDatabase db = App1.getDB();
-			db.execSQL( "BEGIN TRANSACTION" );
-			try{
-				for( TootRelationShip src : src_list ){
-					cv.put( COL_WHO_ID, src.id );
-					cv.put( COL_FOLLOWING, src.following ? 1 : 0 );
-					cv.put( COL_FOLLOWED_BY, src.followed_by ? 1 : 0 );
-					cv.put( COL_BLOCKING, src.blocking ? 1 : 0 );
-					cv.put( COL_MUTING, src.muting ? 1 : 0 );
-					cv.put( COL_REQUESTED, src.requested ? 1 : 0 );
-					db.replace( table, null, cv );
-				}
-				bOK = true;
-			}catch( Throwable ex ){
-				ex.printStackTrace();
-				log.e( ex, "saveList failed." );
+			for( TootRelationShip src : src_list ){
+				cv.put( COL_WHO_ID, src.id );
+				cv.put( COL_FOLLOWING, src.following ? 1 : 0 );
+				cv.put( COL_FOLLOWED_BY, src.followed_by ? 1 : 0 );
+				cv.put( COL_BLOCKING, src.blocking ? 1 : 0 );
+				cv.put( COL_MUTING, src.muting ? 1 : 0 );
+				cv.put( COL_REQUESTED, src.requested ? 1 : 0 );
+				db.replace( table, null, cv );
+				
 			}
-			if( bOK ){
-				db.execSQL( "COMMIT TRANSACTION" );
-			}else{
-				db.execSQL( "ROLLBACK TRANSACTION" );
-			}
+			bOK = true;
 		}catch( Throwable ex ){
 			ex.printStackTrace();
 			log.e( ex, "saveList failed." );
 		}
-	}
-	
-	static final String load_where = COL_DB_ID+"=? and "+COL_WHO_ID+"=?";
-		private static final ThreadLocal<String[]> load_where_arg = new ThreadLocal<String[]>() {
-		@Override protected String[] initialValue() {
-			return new String[2];
+		if( bOK ){
+			db.execSQL( "COMMIT TRANSACTION" );
+			for( TootRelationShip src : src_list ){
+				String key = String.format( "%s:%s", db_id, src.id );
+				mMemoryCache.remove( key );
+			}
+		}else{
+			db.execSQL( "ROLLBACK TRANSACTION" );
 		}
-	};
+	}
 	
 	public boolean following;
 	public boolean followed_by;
 	public boolean blocking;
 	public boolean muting;
 	public boolean requested;
-
+	
 	private UserRelation(){
 	}
-
-	public static UserRelation load( long db_id, long who_id ){
+	
+	private static final LruCache< String, UserRelation > mMemoryCache = new LruCache<>( 2048 );
+	
+	static final String load_where = COL_DB_ID + "=? and " + COL_WHO_ID + "=?";
+	private static final ThreadLocal< String[] > load_where_arg = new ThreadLocal< String[] >() {
+		@Override protected String[] initialValue(){
+			return new String[ 2 ];
+		}
+	};
+	
+	@NonNull public static UserRelation load( long db_id, long who_id ){
+		
+		String key = String.format( "%s:%s", db_id, who_id );
+		UserRelation dst = mMemoryCache.get( key );
+		
+		if( dst != null ) return dst;
+		
 		try{
 			String[] where_arg = load_where_arg.get();
-			where_arg[0] = Long.toString( db_id );
-			where_arg[1] = Long.toString( who_id );
-			Cursor cursor = App1.getDB().query( table,null,load_where,where_arg,null,null,null );
-			if( cursor != null){
+			where_arg[ 0 ] = Long.toString( db_id );
+			where_arg[ 1 ] = Long.toString( who_id );
+			Cursor cursor = App1.getDB().query( table, null, load_where, where_arg, null, null, null );
+			if( cursor != null ){
 				try{
 					if( cursor.moveToNext() ){
-						UserRelation dst = new UserRelation();
-						dst.following = (0!=cursor.getInt( cursor.getColumnIndex( COL_FOLLOWING ) ));
-						dst.followed_by = (0!=cursor.getInt( cursor.getColumnIndex( COL_FOLLOWED_BY ) ));
-						dst.blocking = (0!=cursor.getInt( cursor.getColumnIndex( COL_BLOCKING ) ));
-						dst.muting = (0!=cursor.getInt( cursor.getColumnIndex( COL_MUTING ) ));
-						dst.requested = (0!=cursor.getInt( cursor.getColumnIndex( COL_REQUESTED ) ));
+						dst = new UserRelation();
+						dst.following = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_FOLLOWING ) ) );
+						dst.followed_by = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_FOLLOWED_BY ) ) );
+						dst.blocking = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_BLOCKING ) ) );
+						dst.muting = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_MUTING ) ) );
+						dst.requested = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_REQUESTED ) ) );
 						return dst;
 					}
 				}finally{
 					cursor.close();
 				}
 			}
-		}catch(Throwable ex){
-			ex.printStackTrace(  );
-			log.e(ex,"load failed.");
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			log.e( ex, "load failed." );
 		}
-		return new UserRelation();
+		dst = new UserRelation();
+		mMemoryCache.put( key, dst );
+		return dst;
 	}
 
 //	public static Cursor createCursor(){

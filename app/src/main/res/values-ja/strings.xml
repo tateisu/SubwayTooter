@@ -71,7 +71,7 @@
     <string name="wait_previous_operation">直前の操作が完了するまでお待ちください</string>
     <string name="cant_remove_boost_while_favourited">お気に入りを外さないとブーストを外せません？</string>
     <string name="confirm">確認</string>
-    <string name="confirm_boost">この発言をブーストしますか? 全てのフォロワーとあなたのプロフィールページに公開されます</string>
+    <string name="confirm_boost_from">この発言を %1$s からブーストしますか? 全てのフォロワーとあなたのプロフィールページに公開されます</string>
     <string name="display_name_favourited_by">%1$sがお気に入りに追加しました</string>
     <string name="display_name_boosted_by">%1$sがブーストしました</string>
     <string name="display_name_replied_by">%1$sからの返信</string>
@@ -236,4 +236,17 @@
     <string name="text_color">文字色</string>
     <string name="nickname_and_color">通称と色</string>
     <string name="nickname_applied_after_reload">通称と色の変更はカラムをリロードした後に反映されます</string>
+    <string name="confirmation">確認</string>
+    <string name="follow_locked_user">鍵つきユーザのフォロー</string>
+    <string name="follow_requested">フォローリクエストを申請しました</string>
+    <string name="show_follow_button_in_button_bar">フォローボタンをボタンバーに表示する(アプリ再起動が必要)</string>
+    <string name="confirm_follow_request_who_from">%2$s から鍵付きユーザ %1$s にフォローリクエストを送りますか？</string>
+    <string name="confirm_follow_who_from">%2$s から %1$s をフォローしますか？</string>
+    <string name="confirm_post_from">%1$s から投稿します。よろしいですか？</string>
+    <string name="confirm_unfollow_who_from">%2$s から %1$s をフォロー解除しますか？</string>
+    <string name="dont_confirm_again">次回から確認しない</string>
+    <string name="follow_request_cant_remove_by_sender">フォローリクエストを送信者から解除することはできないようです…</string>
+    <string name="profile">プロフィール</string>
+    <string name="profile_of">%1$s のプロフィール</string>
+    <string name="it_is_you">あなたです</string>
 </resources>

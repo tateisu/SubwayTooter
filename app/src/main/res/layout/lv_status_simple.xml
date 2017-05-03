@@ -124,15 +124,32 @@
 
         </LinearLayout>
 
-        <ImageButton
-            android:id="@+id/btnFollow"
+        <FrameLayout
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginStart="4dp"
-            android:background="@drawable/btn_bg_transparent"
-            android:contentDescription="@string/follow"
-            android:src="?attr/ic_account_add"
-            />
+            >
+
+            <ImageButton
+                android:id="@+id/btnFollow"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/btn_bg_transparent"
+                android:contentDescription="@string/follow"
+                android:scaleType="center"
+                tools:src="?attr/ic_follow_plus"
+                />
+
+            <ImageView
+                android:id="@+id/ivFollowedBy"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="center"
+                android:src="?attr/ic_followed_by"
+                tools:ignore="ContentDescription"
+                />
+        </FrameLayout>
+
 
     </LinearLayout>
 

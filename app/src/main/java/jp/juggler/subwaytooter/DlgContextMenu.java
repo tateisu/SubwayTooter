@@ -22,6 +22,7 @@ import jp.juggler.subwaytooter.dialog.AccountPicker;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.Utils;
 
 class DlgContextMenu implements View.OnClickListener {
 	
@@ -43,6 +44,7 @@ class DlgContextMenu implements View.OnClickListener {
 		, @NonNull SavedAccount access_info
 		, @NonNull TootAccount who
 		, @Nullable TootStatus status
+	    ,int column_type
 	){
 		this.activity = activity;
 		this.access_info = access_info;
@@ -128,10 +130,19 @@ class DlgContextMenu implements View.OnClickListener {
 			btnMute.setOnClickListener( this );
 			btnBlock.setOnClickListener( this );
 			
+			// 被フォロー状態
+			ImageView ivFollowedBy = (ImageView) viewRoot.findViewById( R.id. ivFollowedBy);
+			if( !relation.followed_by){
+				ivFollowedBy.setVisibility( View.GONE );
+			}else{
+				ivFollowedBy.setVisibility( View.VISIBLE );
+				ivFollowedBy.setImageResource( Styler.getAttributeResourceId( activity,R.attr.ic_followed_by ));
+			}
+			
 			// follow button
-			int icon_attr = ( relation.following ? R.attr.ic_account_remove : R.attr.ic_account_add );
+			int icon_attr = ( relation.following ? R.attr.ic_follow_cross : R.attr.ic_follow_plus );
 			int color_attr = ( relation.requested ? R.attr.colorRegexFilterError
-				: relation.followed_by ? R.attr.colorImageButtonAccent
+				: relation.following ? R.attr.colorImageButtonAccent
 				: R.attr.colorImageButton );
 			int color = Styler.getAttributeColor( activity, color_attr );
 			Drawable d = Styler.getAttributeDrawable( activity, icon_attr ).mutate();
@@ -165,7 +176,7 @@ class DlgContextMenu implements View.OnClickListener {
 		
 		btnAccountWebPage.setOnClickListener( this );
 		
-		if( relation.requested ){
+		if( column_type == Column.TYPE_FOLLOW_REQUESTS ){
 			btnFollowRequestOK.setOnClickListener( this );
 			btnFollowRequestNG.setOnClickListener( this );
 		}else{
@@ -271,10 +282,10 @@ class DlgContextMenu implements View.OnClickListener {
 			break;
 		
 		case R.id.btnFollow:
-			if( relation.following ){
-				activity.callFollow( access_info, who, false, activity.unfollow_complete_callback );
+			if( relation.following || relation.requested ){
+				activity.callFollow( access_info, who, false, false,activity.unfollow_complete_callback );
 			}else{
-				activity.callFollow( access_info, who, true, activity.follow_complete_callback );
+				activity.callFollow( access_info, who, true, false,activity.follow_complete_callback );
 			}
 			break;
 		
@@ -334,7 +345,7 @@ class DlgContextMenu implements View.OnClickListener {
 			final String who_acct = access_info.getFullAcct( who );
 			AccountPicker.pick( activity, false, false, account_list_non_pseudo, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( SavedAccount ai ){
-					activity.callRemoteFollow( ai, who_acct, who.locked, activity.follow_complete_callback );
+					activity.callRemoteFollow( ai, who_acct, who.locked, false,activity.follow_complete_callback );
 				}
 			} );
 			break;

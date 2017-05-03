@@ -26,6 +26,9 @@ import java.util.List;
 import jp.juggler.subwaytooter.util.Utils;
 
 public class ActColumnList extends AppCompatActivity {
+	
+	static final String TMP_FILE_COLUMN_LIST = "tmp_column_list";
+	
 	public static final String EXTRA_ORDER = "order";
 	public static final String EXTRA_SELECTION = "selection";
 	
@@ -36,31 +39,25 @@ public class ActColumnList extends AppCompatActivity {
 		initUI();
 		
 		if( savedInstanceState != null ){
-			restoreData(
-				savedInstanceState.getString( EXTRA_ORDER )
-				, savedInstanceState.getInt( EXTRA_SELECTION )
-			);
+			restoreData( savedInstanceState.getInt( EXTRA_SELECTION ) );
 		}else{
 			Intent intent = getIntent();
-			restoreData(
-				intent.getStringExtra( EXTRA_ORDER )
-				, intent.getIntExtra( EXTRA_SELECTION, - 1 )
-			);
+			restoreData( intent.getIntExtra( EXTRA_SELECTION, - 1 ) );
 		}
 	}
 	
 	@Override
 	protected void onSaveInstanceState( Bundle outState ){
 		super.onSaveInstanceState( outState );
-		//
 		outState.putInt( EXTRA_SELECTION, old_selection );
+
 		//
 		JSONArray array = new JSONArray();
 		List< MyItem > item_list = listAdapter.getItemList();
 		for( int i = 0, ie = item_list.size() ; i < ie ; ++ i ){
 			array.put( item_list.get( i ).json );
 		}
-		outState.putString( EXTRA_ORDER, array.toString() );
+		App1.saveColumnList( this,TMP_FILE_COLUMN_LIST,array );
 	}
 	
 	@Override
@@ -133,25 +130,27 @@ public class ActColumnList extends AppCompatActivity {
 		} );
 	}
 	
-	void restoreData( String svColumnList, int ivSelection ){
+	void restoreData(  int ivSelection ){
 		
 		this.old_selection = ivSelection;
 		
 		ArrayList< MyItem > tmp_list = new ArrayList<>();
 		try{
-			JSONArray array = new JSONArray( svColumnList );
-			for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
-				try{
-					JSONObject src = array.optJSONObject( i );
-					MyItem item = new MyItem( src, i, this );
-					if( src != null ){
-						tmp_list.add( item );
-						if( old_selection == item.old_index ){
-							item.setOldSelection( true );
+			JSONArray array = App1.loadColumnList( this, TMP_FILE_COLUMN_LIST );
+			if( array != null ){
+				for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
+					try{
+						JSONObject src = array.optJSONObject( i );
+						MyItem item = new MyItem( src, i, this );
+						if( src != null ){
+							tmp_list.add( item );
+							if( old_selection == item.old_index ){
+								item.setOldSelection( true );
+							}
 						}
+					}catch( Throwable ex2 ){
+						ex2.printStackTrace();
 					}
-				}catch( Throwable ex2 ){
-					ex2.printStackTrace();
 				}
 			}
 		}catch( Throwable ex ){

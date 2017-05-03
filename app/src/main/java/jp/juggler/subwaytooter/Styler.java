@@ -7,7 +7,9 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import java.util.Locale;
 
@@ -59,27 +61,63 @@ public class Styler {
 		return res_id;
 	}
 	
-	static void setFollowIcon( @NonNull Context context ,@NonNull ImageButton ib, UserRelation relation ){
-		int icon_attr;
-		int color_attr;
-
-		if( relation.blocking ){
-			color_attr = ( relation.followed_by ? R.attr.colorImageButtonAccent  : R.attr.colorImageButton);
-			icon_attr = R.attr.ic_block;
-		}else if( relation.muting ){
-			color_attr = ( relation.followed_by ? R.attr.colorImageButtonAccent  : R.attr.colorImageButton);
-			icon_attr = R.attr.ic_mute;
-		}else if( relation.requested ){
-			color_attr = R.attr.colorRegexFilterError;
-			icon_attr = (relation.following ? R.attr.ic_account_remove: R.attr.ic_account_add );
+	static void setFollowIcon(
+		@NonNull Context context
+		, @NonNull ImageButton ib
+		, @NonNull ImageView iv
+		, @NonNull  UserRelation relation
+	    ,int column_type
+	    
+	){
+		
+		// 被フォロー状態
+		if( !relation.followed_by ){
+			iv.setVisibility( View.GONE );
 		}else{
-			color_attr = ( relation.followed_by ? R.attr.colorImageButtonAccent : R.attr.colorImageButton );
-			icon_attr = ( relation.following ? R.attr.ic_account_remove : R.attr.ic_account_add );
+			iv.setVisibility( View.VISIBLE );
+			iv.setImageResource( Styler.getAttributeResourceId( context,R.attr.ic_followed_by ));
+
+// 被フォローリクエスト状態の時に followed_by が 真と偽の両方がありえるようなので
+// Relationshipだけを見ても被フォローリクエスト状態は分からないっぽい
+// 仕方ないので馬鹿正直に「 followed_byが真ならバッジをつける」しかできない
+//			if( column_type == Column.TYPE_FOLLOW_REQUESTS ){
+//				// フォローリクエストされてる状態でも followed_by はtrueになる
+//				int color = Styler.getAttributeColor( context,R.attr.colorRegexFilterError );
+//				Drawable d = Styler.getAttributeDrawable( context,R.attr.ic_followed_by ).mutate();
+//				d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
+//				iv.setImageDrawable( d );
+//			}
+		}
+		
+		// follow button
+		int color_attr ;
+		int icon_attr;
+		
+		if( relation.blocking ){
+			icon_attr = R.attr.ic_block;
+			color_attr = R.attr.colorImageButton;
+			
+		}else if( relation.muting ){
+			icon_attr = R.attr.ic_mute;
+			color_attr = R.attr.colorImageButton;
+			
+		}else if( relation.following ){
+			icon_attr = R.attr.ic_follow_cross;
+			color_attr = R.attr.colorImageButtonAccent;
+			
+		}else if( relation.requested ){
+			icon_attr =R.attr.ic_follow_plus;
+			color_attr = R.attr.colorRegexFilterError;
+		}else{
+			icon_attr =R.attr.ic_follow_plus;
+			color_attr = R.attr.colorImageButton;
 		}
 		
 		int color = Styler.getAttributeColor( context,color_attr );
 		Drawable d = Styler.getAttributeDrawable( context,icon_attr ).mutate();
 		d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
 		ib.setImageDrawable( d );
+		
+
 	}
 }

@@ -137,29 +137,6 @@
 
         </LinearLayout>
 
-
-        <View style="@style/setting_divider"/>
-
-        <TextView
-            style="@style/setting_row_label"
-            android:text="@string/confirm_before_boost"
-            />
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <Switch
-                android:id="@+id/swConfirmBeforeBoost"
-                style="@style/setting_wrap"
-                />
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                />
-        </LinearLayout>
-
-
         <View style="@style/setting_divider"/>
 
         <TextView
@@ -181,6 +158,62 @@
                 />
         </LinearLayout>
 
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/confirmation"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <CheckBox
+                android:id="@+id/cbConfirmFollow"
+                style="@style/setting_horizontal_stretch"
+                android:text="@string/follow"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <CheckBox
+                android:id="@+id/cbConfirmFollowLockedUser"
+                style="@style/setting_horizontal_stretch"
+                android:text="@string/follow_locked_user"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <CheckBox
+                android:id="@+id/cbConfirmUnfollow"
+                style="@style/setting_horizontal_stretch"
+                android:text="@string/unfollow"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <CheckBox
+                android:id="@+id/cbConfirmBoost"
+                style="@style/setting_wrap"
+                android:text="@string/boost"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <CheckBox
+                android:id="@+id/cbConfirmToot"
+                style="@style/setting_wrap"
+                android:text="@string/act_post"
+                />
+
+        </LinearLayout>
 
         <View style="@style/setting_divider"/>
 

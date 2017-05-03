@@ -71,7 +71,7 @@
     <string name="wait_previous_operation">Please wait until last operation is over.</string>
     <string name="cant_remove_boost_while_favourited">Can\'t remove boost while favourited</string>
     <string name="confirm">Confirm</string>
-    <string name="confirm_boost">Boost this status? It\'s shown to all followers and on your profile page.</string>
+    <string name="confirm_boost_from">Boost this status from %1$s ? It\'s shown to all followers and on your profile page.</string>
     <string name="display_name_favourited_by">%1$s favourited</string>
     <string name="display_name_boosted_by">%1$s boosted</string>
     <string name="display_name_replied_by">%1$s replied</string>
@@ -235,4 +235,17 @@
     <string name="discard">Discard</string>
     <string name="nickname_and_color">Nickname and Color</string>
     <string name="nickname_applied_after_reload">The change of nickname/color will be applied after reload column.</string>
+    <string name="show_follow_button_in_button_bar">Show follow button in button bar (app restart required)</string>
+    <string name="follow_requested">Follow request was sent.</string>
+    <string name="confirmation">Confirmation</string>
+    <string name="follow_locked_user">Follow locked user</string>
+    <string name="dont_confirm_again">Don\'t confirm again</string>
+    <string name="confirm_post_from">Posting a toot from %1$s. Are you sure ?</string>
+    <string name="confirm_follow_who_from">Follow %1$s from %2$s ?</string>
+    <string name="confirm_unfollow_who_from">Unfollow %1$s from %2$s ?</string>
+    <string name="confirm_follow_request_who_from">Send follow request from %2$s to locked user %1$s ?</string>
+    <string name="follow_request_cant_remove_by_sender">seems follow request can\'t be removed by sender…</string>
+    <string name="profile">Profile</string>
+    <string name="profile_of">Profile of %1$s</string>
+    <string name="it_is_you">It\'s you.</string>
 </resources>

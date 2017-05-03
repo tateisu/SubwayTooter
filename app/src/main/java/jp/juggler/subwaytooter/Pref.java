@@ -23,6 +23,7 @@ class Pref {
 	static final String KEY_NOTIFICATION_VIBRATION = "notification_vibration";
 	static final String KEY_NOTIFICATION_LED = "notification_led";
 	static final String KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN = "ExitAppWhenCloseProtectedColumn";
-	public static final String KEY_RESIZE_IMAGE = "resize_image";
+	static final String KEY_RESIZE_IMAGE = "resize_image";
+	static final String KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR = "ShowFollowButtonInButtonBar";
 	
 }

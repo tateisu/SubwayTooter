@@ -4,9 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
     android:descendantFocusability="blocksDescendants"
+    android:orientation="vertical"
     >
+
     <TextView
         android:id="@+id/tvCreated"
         android:layout_width="match_parent"
@@ -32,10 +33,10 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="?attr/colorProfileBackgroundMask"
             android:gravity="center_horizontal"
             android:orientation="vertical"
             android:padding="12dp"
-            android:background="?attr/colorProfileBackgroundMask"
             >
 
             <com.android.volley.toolbox.NetworkImageView
@@ -60,11 +61,11 @@
                 android:id="@+id/tvAcct"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center"
-                tools:text="\@fugahogehogera\@jugemujyugemugokounosurikire.jp"
-
                 android:drawablePadding="4dp"
+                android:gravity="center"
+
                 android:textColor="?attr/colorLink"
+                tools:text="\@fugahogehogera\@jugemujyugemugokounosurikire.jp"
                 />
 
 
@@ -77,15 +78,35 @@
                 />
 
         </LinearLayout>
-        <ImageButton
-            android:id="@+id/btnFollow"
+
+        <FrameLayout
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
-            android:background="@drawable/btn_bg_transparent"
-            android:contentDescription="@string/follow"
-            />
+            >
+
+            <ImageButton
+                android:id="@+id/btnFollow"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/btn_bg_transparent"
+                android:contentDescription="@string/follow"
+                android:scaleType="center"
+                tools:src="?attr/ic_follow_plus"
+                />
+
+            <ImageView
+                android:id="@+id/ivFollowedBy"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="center"
+                android:src="?attr/ic_followed_by"
+                tools:ignore="ContentDescription"
+                />
+        </FrameLayout>
+
+
     </FrameLayout>
 
     <LinearLayout
@@ -99,25 +120,26 @@
             android:id="@+id/btnStatusCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="statuses\n124"
             android:background="@drawable/btn_bg_transparent"
+            tools:text="statuses\n124"
             />
 
         <Button
             android:id="@+id/btnFollowing"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="following\n9999"
             android:background="@drawable/btn_bg_transparent"
+            tools:text="following\n9999"
             />
 
         <Button
             android:id="@+id/btnFollowers"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            tools:text="followers\n9999"
             android:background="@drawable/btn_bg_transparent"
+            tools:text="followers\n9999"
             />
+
         <ImageButton
             android:id="@+id/btnMore"
             android:layout_width="wrap_content"
@@ -125,8 +147,8 @@
             android:background="@drawable/btn_bg_transparent"
             android:contentDescription="@string/more"
             android:minWidth="48dp"
-            android:paddingStart="4dp"
             android:paddingEnd="4dp"
+            android:paddingStart="4dp"
             android:src="?attr/btn_more"
             />
 

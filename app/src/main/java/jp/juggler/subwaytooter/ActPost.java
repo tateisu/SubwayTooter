@@ -1,10 +1,10 @@
 package jp.juggler.subwaytooter;
 
 import android.Manifest;
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -61,6 +61,7 @@ import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootMention;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.dialog.DlgConfirm;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.SavedAccount;
@@ -90,22 +91,22 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	static final String KEY_IN_REPLY_TO_TEXT = "in_reply_to_text";
 	static final String KEY_IN_REPLY_TO_IMAGE = "in_reply_to_image";
 	
-	public static void open( Context context, long account_db_id, TootStatus reply_status ){
-		Intent intent = new Intent( context, ActPost.class );
+	public static void open( Activity activity, int request_code, long account_db_id, TootStatus reply_status ){
+		Intent intent = new Intent( activity, ActPost.class );
 		intent.putExtra( KEY_ACCOUNT_DB_ID, account_db_id );
 		if( reply_status != null ){
 			intent.putExtra( KEY_REPLY_STATUS, reply_status.json.toString() );
 		}
-		context.startActivity( intent );
+		activity.startActivityForResult( intent, request_code );
 	}
 	
-	public static void open( Context context, long account_db_id, String initial_text ){
-		Intent intent = new Intent( context, ActPost.class );
+	public static void open( Activity activity, int request_code, long account_db_id, String initial_text ){
+		Intent intent = new Intent( activity, ActPost.class );
 		intent.putExtra( KEY_ACCOUNT_DB_ID, account_db_id );
 		if( initial_text != null ){
 			intent.putExtra( KEY_INITIAL_TEXT, initial_text );
 		}
-		context.startActivity( intent );
+		activity.startActivityForResult( intent, request_code );
 	}
 	
 	@Override
@@ -148,7 +149,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			break;
 		
 		case R.id.btnPost:
-			performPost();
+			performPost( false );
 			break;
 		
 		case R.id.btnRemoveReply:
@@ -1205,12 +1206,13 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	///////////////////////////////////////////////////////////////////////////////////////
 	// post
 	
-	private void performPost(){
+	private void performPost( boolean bConfirm ){
 		final String content = etContent.getText().toString().trim();
 		if( TextUtils.isEmpty( content ) ){
 			Utils.showToast( this, true, R.string.post_error_contents_empty );
 			return;
 		}
+		
 		final String spoiler_text;
 		if( ! cbContentWarning.isChecked() ){
 			spoiler_text = null;
@@ -1220,6 +1222,26 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				Utils.showToast( this, true, R.string.post_error_contents_warning_empty );
 				return;
 			}
+		}
+		
+		if( ! bConfirm ){
+			DlgConfirm.open( this
+				, getString( R.string.confirm_post_from, AcctColor.getNickname( account.acct ) )
+				, new DlgConfirm.Callback() {
+					@Override public boolean isConfirmEnabled(){
+						return account.confirm_post;
+					}
+					
+					@Override public void setConfirmEnabled( boolean bv ){
+						account.confirm_post = bv;
+						account.saveSetting();
+					}
+					
+					@Override public void onOK(){
+						performPost( true );
+					}
+				} );
+			return;
 		}
 		
 		final StringBuilder sb = new StringBuilder();
@@ -1305,6 +1327,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				}else if( status != null ){
 					// 連投してIdempotency が同じだった場合もエラーにはならず、ここを通る
 					ActMain.update_at_resume = true;
+					setResult( RESULT_OK );
 					ActPost.this.finish();
 				}else{
 					Utils.showToast( ActPost.this, true, result.error );

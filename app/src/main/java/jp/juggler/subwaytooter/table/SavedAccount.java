@@ -34,10 +34,16 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	private static final String COL_VISIBILITY = "visibility";
 	private static final String COL_CONFIRM_BOOST = "confirm_boost";
 	private static final String COL_DONT_HIDE_NSFW = "dont_hide_nsfw";
+	// スキーマ2から
 	private static final String COL_NOTIFICATION_MENTION = "notification_mention";
 	private static final String COL_NOTIFICATION_BOOST = "notification_boost";
 	private static final String COL_NOTIFICATION_FAVOURITE = "notification_favourite";
 	private static final String COL_NOTIFICATION_FOLLOW = "notification_follow";
+	// スキーマ10から
+	private static final String COL_CONFIRM_FOLLOW = "confirm_follow";
+	private static final String COL_CONFIRM_FOLLOW_LOCKED = "confirm_follow_locked";
+	private static final String COL_CONFIRM_UNFOLLOW = "confirm_unfollow";
+	private static final String COL_CONFIRM_POST = "confirm_post";
 	
 	public static final long INVALID_ID = - 1L;
 	
@@ -54,6 +60,11 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public boolean notification_favourite;
 	public boolean notification_follow;
 	
+	public boolean confirm_follow;
+	public boolean confirm_follow_locked;
+	public boolean confirm_unfollow;
+	public boolean confirm_post;
+	
 	public static void onDBCreate( SQLiteDatabase db ){
 		db.execSQL(
 			"create table if not exists " + table
@@ -65,11 +76,18 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 				+ ",visibility text"
 				+ ",confirm_boost integer default 1"
 				+ ",dont_hide_nsfw integer default 0"
+				
 				// 以下はDBスキーマ2で追加
 				+ ",notification_mention integer default 1"
 				+ ",notification_boost integer default 1"
 				+ ",notification_favourite integer default 1"
 				+ ",notification_follow integer default 1"
+				
+				// 以下はDBスキーマ10で更新
+				+ "," + COL_CONFIRM_FOLLOW + " integer default 1"
+				+ "," + COL_CONFIRM_FOLLOW_LOCKED + " integer default 1"
+				+ "," + COL_CONFIRM_UNFOLLOW + " integer default 1"
+				+ "," + COL_CONFIRM_POST + " integer default 1"
 				+ ")"
 		);
 		db.execSQL( "create index if not exists " + table + "_user on " + table + "(u)" );
@@ -99,6 +117,28 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 				ex.printStackTrace();
 			}
 		}
+		if( oldVersion < 10 && newVersion >= 10 ){
+			try{
+				db.execSQL( "alter table " + table + " add column " + COL_CONFIRM_FOLLOW + " integer default 1" );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+			}
+			try{
+				db.execSQL( "alter table " + table + " add column " + COL_CONFIRM_FOLLOW_LOCKED + " integer default 1" );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+			}
+			try{
+				db.execSQL( "alter table " + table + " add column " + COL_CONFIRM_UNFOLLOW + " integer default 1" );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+			}
+			try{
+				db.execSQL( "alter table " + table + " add column " + COL_CONFIRM_POST + " integer default 1" );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+			}
+		}
 	}
 	
 	private SavedAccount(){
@@ -123,6 +163,11 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 			dst.notification_boost = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_NOTIFICATION_BOOST ) ) );
 			dst.notification_favourite = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_NOTIFICATION_FAVOURITE ) ) );
 			dst.notification_follow = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_NOTIFICATION_FOLLOW ) ) );
+			
+			dst.confirm_follow = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_CONFIRM_FOLLOW ) ) );
+			dst.confirm_follow_locked = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_CONFIRM_FOLLOW_LOCKED ) ) );
+			dst.confirm_unfollow = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_CONFIRM_UNFOLLOW ) ) );
+			dst.confirm_post = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_CONFIRM_POST ) ) );
 			
 			dst.token_info = new JSONObject( cursor.getString( cursor.getColumnIndex( COL_TOKEN ) ) );
 		}
@@ -177,6 +222,12 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		cv.put( COL_NOTIFICATION_BOOST, notification_boost ? 1 : 0 );
 		cv.put( COL_NOTIFICATION_FAVOURITE, notification_favourite ? 1 : 0 );
 		cv.put( COL_NOTIFICATION_FOLLOW, notification_follow ? 1 : 0 );
+		
+		cv.put( COL_CONFIRM_FOLLOW, confirm_follow ? 1 : 0 );
+		cv.put( COL_CONFIRM_FOLLOW_LOCKED, confirm_follow_locked ? 1 : 0 );
+		cv.put( COL_CONFIRM_UNFOLLOW, confirm_unfollow ? 1 : 0 );
+		cv.put( COL_CONFIRM_POST, confirm_post ? 1 : 0 );
+		
 		App1.getDB().update( table, cv, COL_ID + "=?", new String[]{ Long.toString( db_id ) } );
 	}
 	
@@ -266,8 +317,8 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	}
 	
 	public String supplyBaseUrl( String url ){
-		if( TextUtils.isEmpty(url)) return url;
-		if( url.charAt( 0 )=='/') return "https://"+host+url;
+		if( TextUtils.isEmpty( url ) ) return url;
+		if( url.charAt( 0 ) == '/' ) return "https://" + host + url;
 		return url;
 	}
 	
@@ -279,7 +330,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	
 	@Override public AcctColor findAcctColor( String url ){
 		Matcher m = reAcctUrl.matcher( url );
-		if( m.find() ) return AcctColor.load( m.group(2)+"@"+m.group(1) );
+		if( m.find() ) return AcctColor.load( m.group( 2 ) + "@" + m.group( 1 ) );
 		return null;
 	}
 }

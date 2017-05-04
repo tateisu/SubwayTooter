@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter;
 
+import android.support.annotation.NonNull;
 import android.support.v4.view.ViewCompat;
 import android.text.Editable;
 import android.text.TextUtils;
@@ -28,7 +29,6 @@ import jp.juggler.subwaytooter.util.Utils;
 
 class ColumnViewHolder
 	implements View.OnClickListener
-	, Column.Callback
 	, SwipyRefreshLayout.OnRefreshListener
 	, CompoundButton.OnCheckedChangeListener
 {
@@ -50,7 +50,7 @@ class ColumnViewHolder
 	void onPageDestroy( @SuppressWarnings("UnusedParameters") View root ){
 		saveScrollPosition();
 		log.d( "onPageDestroy:%s", column.getColumnName( true ) );
-		column.setCallback( null );
+		column.setColumnViewHolder( null );
 		
 		activity.closeListItemPopup();
 	}
@@ -228,8 +228,8 @@ class ColumnViewHolder
 		
 		//
 		
-		column.setCallback( this );
-		onVisualColumn();
+		column.setColumnViewHolder( this );
+		showContent();
 	}
 	
 	private final Runnable proc_start_filter = new Runnable() {
@@ -263,12 +263,17 @@ class ColumnViewHolder
 		}
 	}
 	
+	boolean isColumnSettingShown(){
+		return llColumnSetting.getVisibility() == View.VISIBLE;
+	}
+	
+	void closeColumnSetting(){
+		llColumnSetting.setVisibility( View.GONE );
+	}
+	
 	@Override public void onRefresh( SwipyRefreshLayoutDirection direction ){
-		String error = column.startRefresh( direction == SwipyRefreshLayoutDirection.BOTTOM );
-		if( ! TextUtils.isEmpty( error ) ){
-			swipyRefreshLayout.setRefreshing( false );
-			Utils.showToast( activity, true, error );
-		}
+		column.startRefresh( false, direction == SwipyRefreshLayoutDirection.BOTTOM );
+		
 	}
 	
 	@Override public void onCheckedChanged( CompoundButton view, boolean isChecked ){
@@ -358,16 +363,23 @@ class ColumnViewHolder
 		btnColumnClose.setAlpha( column.dont_close ? 0.3f : 1f );
 	}
 	
-	@Override public SwipyRefreshLayout getRefreshLayout(){
+	/////////////////////////////////////////////////////////////////
+	// Column から呼ばれる
+	
+	boolean hasHeaderView(){
+		return vh_header != null;
+	}
+	
+	SwipyRefreshLayout getRefreshLayout(){
 		return swipyRefreshLayout;
 	}
 	
-	@Override public MyListView getListView(){
+	MyListView getListView(){
 		return listView;
 	}
 	
 	// カラムヘッダなど、負荷が低い部分の表示更新
-	@Override public void onVisualColumn2(){
+	void showColumnHeader(){
 		
 		String acct = column.access_info.acct;
 		AcctColor ac = AcctColor.load( acct );
@@ -394,9 +406,9 @@ class ColumnViewHolder
 		
 	}
 	
-	@Override public void onVisualColumn(){
+	void showContent(){
 		
-		onVisualColumn2();
+		showColumnHeader();
 		
 		if( column.is_dispose.get() ){
 			showError( "column was disposed." );
@@ -434,43 +446,42 @@ class ColumnViewHolder
 			swipyRefreshLayout.setVisibility( View.VISIBLE );
 			column.status_adapter.notifyDataSetChanged();
 		}
-		
 		restoreScrollPosition();
-		
-		if( column.scroll_hack > 0 ){
-			listView.setSelectionFromTop( column.scroll_hack - 1, - (int) ( 0.5f + 80f * activity.density ) );
-			column.scroll_hack = 0;
-		}
 	}
 	
 	private void restoreScrollPosition(){
-		ScrollPosition pos = column.scroll_pos;
-		if( pos == null ) return;
-		column.scroll_pos = null;
+		ScrollPosition sp = column.scroll_save;
+		if( sp == null ) return;
+		column.scroll_save = null;
 		
-		if( listView.getVisibility() == View.VISIBLE
-			&& 0 <= pos.index && pos.index < column.status_adapter.getCount()
-			){
-			listView.setSelectionFromTop( pos.index, - pos.offset );
+		if( listView.getVisibility() == View.VISIBLE ){
+			sp.restore( listView );
 		}
+		
 	}
 	
 	private void saveScrollPosition(){
-		column.scroll_pos = null;
+		column.scroll_save = null;
 		if( listView.getVisibility() == View.VISIBLE ){
 			if( listView.getChildCount() > 0 ){
-				ScrollPosition pos = column.scroll_pos = new ScrollPosition();
-				pos.index = listView.getFirstVisiblePosition();
-				pos.offset = - listView.getChildAt( 0 ).getTop();
+				column.scroll_save = new ScrollPosition( listView );
 			}
 		}
 	}
 	
-	boolean isColumnSettingShown(){
-		return llColumnSetting.getVisibility() == View.VISIBLE;
+	@NonNull ScrollPosition getScrollPosition(){
+		return new ScrollPosition( listView );
 	}
 	
-	void closeColumnSetting(){
-		llColumnSetting.setVisibility( View.GONE );
+	void setScrollPosition( @NonNull ScrollPosition sp, final float delta ){
+		sp.restore( listView );
+		listView.postDelayed( new Runnable() {
+			@Override public void run(){
+				if( isPageDestroyed() ) return;
+				listView.scrollListBy( (int) ( delta * activity.density ) );
+			}
+		}, 20L );
+		
 	}
+	
 }

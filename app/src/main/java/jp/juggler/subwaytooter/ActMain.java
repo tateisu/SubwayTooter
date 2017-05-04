@@ -715,7 +715,7 @@ public class ActMain extends AppCompatActivity
 			if( done_list.contains( a ) ) continue;
 			done_list.add( a );
 			a.reloadSetting();
-			column.fireVisualCallback2();
+			column.fireShowColumnHeader();
 		}
 	}
 	void reloadAccountSetting(SavedAccount account){
@@ -726,7 +726,7 @@ public class ActMain extends AppCompatActivity
 			if( done_list.contains( a ) ) continue;
 			done_list.add( a );
 			a.reloadSetting();
-			column.fireVisualCallback2();
+			column.fireShowColumnHeader();
 		}
 	}
 	public void performColumnClose( boolean bConfirm, final Column column ){
@@ -1048,7 +1048,7 @@ public class ActMain extends AppCompatActivity
 	private void showColumnMatchAccount( SavedAccount account ){
 		for( Column column : pager_adapter.column_list ){
 			if( account.acct.equals( column.access_info.acct ) ){
-				column.fireVisualCallback();
+				column.fireShowContent();
 			}
 		}
 	}

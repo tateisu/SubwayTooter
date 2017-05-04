@@ -6,8 +6,8 @@ import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v4.os.AsyncTaskCompat;
 import android.text.TextUtils;
-
-import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout;
+import android.view.View;
+import android.widget.ListView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,7 +43,6 @@ import jp.juggler.subwaytooter.util.Utils;
 
 class Column {
 	private static final LogCategory log = new LogCategory( "Column" );
-
 	
 	private static Object getParamAt( Object[] params, int idx ){
 		if( params == null || idx >= params.length ){
@@ -147,7 +146,7 @@ class Column {
 	String search_query;
 	boolean search_resolve;
 	
-	ScrollPosition scroll_pos;
+	ScrollPosition scroll_save;
 	
 	Column( @NonNull ActMain activity, @NonNull SavedAccount access_info, int type, Object... params ){
 		this.activity = activity;
@@ -249,7 +248,8 @@ class Column {
 	}
 	
 	boolean isSameSpec( SavedAccount ai, int type, Object[] params ){
-		if( type != column_type || ! Utils.equalsNullable( ai.acct, access_info.acct ) ) return false;
+		if( type != column_type || ! Utils.equalsNullable( ai.acct, access_info.acct ) )
+			return false;
 		switch( type ){
 		default:
 			return true;
@@ -405,14 +405,14 @@ class Column {
 		
 		bSimpleList = ( column_type != Column.TYPE_CONVERSATION && activity.pref.getBoolean( Pref.KEY_SIMPLE_LIST, false ) );
 		
-		status_adapter = new ItemListAdapter(this);
+		status_adapter = new ItemListAdapter( this );
 		
 		startLoading();
 	}
 	
 	void onNicknameUpdated(){
 		
-		fireVisualCallback2();
+		fireShowColumnHeader();
 	}
 	
 	interface StatusEntryCallback {
@@ -476,7 +476,7 @@ class Column {
 		if( tmp_list.size() != list_data.size() ){
 			list_data.clear();
 			list_data.addAll( tmp_list );
-			fireVisualCallback();
+			fireShowContent();
 			
 		}
 	}
@@ -498,7 +498,7 @@ class Column {
 		if( tmp_list.size() != list_data.size() ){
 			list_data.clear();
 			list_data.addAll( tmp_list );
-			fireVisualCallback();
+			fireShowContent();
 		}
 	}
 	
@@ -518,7 +518,7 @@ class Column {
 		if( tmp_list.size() != list_data.size() ){
 			list_data.clear();
 			list_data.addAll( tmp_list );
-			fireVisualCallback();
+			fireShowContent();
 		}
 	}
 	
@@ -537,11 +537,11 @@ class Column {
 			if( tmp_list.size() != list_data.size() ){
 				list_data.clear();
 				list_data.addAll( tmp_list );
-				fireVisualCallback();
+				fireShowContent();
 			}
 		}else{
 			// 他のカラムでもフォロー状態の表示更新が必要
-			fireVisualCallback();
+			fireShowContent();
 		}
 	}
 	
@@ -574,7 +574,7 @@ class Column {
 		if( tmp_list.size() != list_data.size() ){
 			list_data.clear();
 			list_data.addAll( tmp_list );
-			fireVisualCallback();
+			fireShowContent();
 		}
 	}
 	
@@ -589,47 +589,35 @@ class Column {
 		max_id = null;
 		since_id = null;
 		
-		fireVisualCallback();
+		fireShowContent();
 		
 		AlarmService.dataRemoved( activity, access_info.db_id );
 	}
 	
+	private ColumnViewHolder holder;
 	
-	
-	interface Callback {
-		void onVisualColumn();
-		
-		void onVisualColumn2();
-		
-		SwipyRefreshLayout getRefreshLayout();
-		
-		MyListView getListView();
+	void setColumnViewHolder( ColumnViewHolder holder ){
+		this.holder = holder;
 	}
 	
-	private Callback callback ;
-	
-	void setCallback( Callback callback ){
-		this.callback = callback;
-	}
-	
-	private final Runnable proc_fireVisualCallback = new Runnable() {
+	private final Runnable proc_showContent = new Runnable() {
 		@Override public void run(){
-			if(callback != null) callback.onVisualColumn();
+			if( holder != null ) holder.showContent();
 		}
 	};
-	private final Runnable proc_fireVisualCallback2 = new Runnable() {
+	private final Runnable proc_showColumnHeader = new Runnable() {
 		@Override public void run(){
-			if(callback != null) callback.onVisualColumn2();
+			if( holder != null ) holder.showColumnHeader();
 		}
 	};
 	
-	void fireVisualCallback(){
-		Utils.runOnMainThread( proc_fireVisualCallback );
+	void fireShowContent(){
+		Utils.runOnMainThread( proc_showContent );
 	}
 	
 	// カラムヘッダ部分だけ更新する
-	void fireVisualCallback2(){
-		Utils.runOnMainThread( proc_fireVisualCallback2 );
+	void fireShowColumnHeader(){
+		Utils.runOnMainThread( proc_showColumnHeader );
 	}
 	
 	private AsyncTask< Void, Void, TootApiResult > last_task;
@@ -703,7 +691,7 @@ class Column {
 		if( tmp_list.size() != list_data.size() ){
 			list_data.clear();
 			list_data.addAll( tmp_list );
-			fireVisualCallback();
+			fireShowContent();
 		}
 	}
 	
@@ -793,7 +781,7 @@ class Column {
 		max_id = null;
 		since_id = null;
 		
-		fireVisualCallback();
+		fireShowContent();
 		
 		AsyncTask< Void, Void, TootApiResult > task = this.last_task = new AsyncTask< Void, Void, TootApiResult >() {
 			
@@ -913,7 +901,7 @@ class Column {
 							public void run(){
 								if( isCancelled() ) return;
 								task_progress = s;
-								fireVisualCallback();
+								fireShowContent();
 							}
 						} );
 					}
@@ -1057,15 +1045,12 @@ class Column {
 				if( result.error != null ){
 					Column.this.mInitialLoadingError = result.error;
 				}else{
-					
 					if( list_tmp != null ){
 						list_data.clear();
 						list_data.addAll( list_tmp );
-						
 					}
-					
 				}
-				fireVisualCallback();
+				fireShowContent();
 			}
 		};
 		
@@ -1077,7 +1062,7 @@ class Column {
 	
 	private String max_id;
 	private String since_id;
-	int scroll_hack;
+	// int scroll_hack;
 	
 	private void saveRange( TootApiResult result, boolean bBottom, boolean bTop ){
 		if( result != null ){
@@ -1106,22 +1091,153 @@ class Column {
 	}
 	
 	private String addRange( boolean bBottom, String path ){
-		char delm = ( - 1 != path.indexOf( '?' ) ? '&' : '?' );
+		char delimiter = ( - 1 != path.indexOf( '?' ) ? '&' : '?' );
 		if( bBottom ){
-			if( max_id != null ) return path + delm + "max_id=" + max_id;
+			if( max_id != null ) return path + delimiter + "max_id=" + max_id;
 		}else{
-			if( since_id != null ) return path + delm + "since_id=" + since_id;
+			if( since_id != null ) return path + delimiter + "since_id=" + since_id;
 		}
 		return path;
 	}
 	
-	String startRefresh( final boolean bBottom ){
+	private void updateRelation( TootApiClient client, ArrayList< Object > list_tmp ){
+		if( list_tmp == null || list_tmp.isEmpty() ) return;
+		HashSet< Long > who_set = new HashSet<>();
+		HashSet< String > acct_set = new HashSet<>();
+		{
+			TootAccount a;
+			TootStatus s;
+			TootNotification n;
+			for( Object o : list_tmp ){
+				if( o instanceof TootAccount ){
+					a = (TootAccount) o;
+					who_set.add( a.id );
+					acct_set.add( "@" + access_info.getFullAcct( a ) );
+				}else if( o instanceof TootStatus ){
+					s = (TootStatus) o;
+					a = s.account;
+					if( a != null ){
+						who_set.add( a.id );
+						acct_set.add( "@" + access_info.getFullAcct( a ) );
+					}
+					s = s.reblog;
+					if( s != null ){
+						a = s.account;
+						if( a != null ){
+							who_set.add( a.id );
+							acct_set.add( "@" + access_info.getFullAcct( a ) );
+						}
+					}
+				}else if( o instanceof TootNotification ){
+					n = (TootNotification) o;
+					//
+					a = n.account;
+					if( a != null ){
+						who_set.add( a.id );
+						acct_set.add( "@" + access_info.getFullAcct( a ) );
+					}
+					//
+					s = n.status;
+					if( s != null ){
+						a = s.account;
+						if( a != null ){
+							who_set.add( a.id );
+							acct_set.add( "@" + access_info.getFullAcct( a ) );
+						}
+						s = s.reblog;
+						if( s != null ){
+							a = s.account;
+							if( a != null ){
+								who_set.add( a.id );
+								acct_set.add( "@" + access_info.getFullAcct( a ) );
+							}
+						}
+					}
+				}
+			}
+		}
+		int size = who_set.size();
+		if( size > 0 ){
+			long[] who_list = new long[ size ];
+			{
+				int n = 0;
+				for( Long l : who_set ){
+					who_list[ n++ ] = l;
+				}
+			}
+			
+			long now = System.currentTimeMillis();
+			int n = 0;
+			while( n < size ){
+				StringBuilder sb = new StringBuilder();
+				sb.append( "/api/v1/accounts/relationships" );
+				for( int i = 0 ; i < RELATIONSHIP_LOAD_STEP ; ++ i ){
+					if( n >= size ) break;
+					sb.append( i == 0 ? '?' : '&' );
+					sb.append( "id[]=" );
+					sb.append( Long.toString( who_list[ n++ ] ) );
+				}
+				TootApiResult result = client.request( sb.toString() );
+				if( result == null ){
+					// cancelled.
+					break;
+				}else if( result.array != null ){
+					TootRelationShip.List list = TootRelationShip.parseList( log, result.array );
+					UserRelation.saveList( now, access_info.db_id, list );
+				}
+			}
+			log.d( "updateRelation: update %d relations.", n );
+			
+		}
+		size = acct_set.size();
+		if( size > 0 ){
+			String[] acct_list = new String[ size ];
+			{
+				int n = 0;
+				for( String l : acct_set ){
+					acct_list[ n++ ] = l;
+				}
+			}
+			long now = System.currentTimeMillis();
+			int n = 0;
+			while( n < size ){
+				int length = size - n;
+				if( length > ACCT_DB_STEP ) length = ACCT_DB_STEP;
+				AcctSet.saveList( now, acct_list, n, length );
+				n += length;
+			}
+			log.d( "updateRelation: update %d acct.", n );
+			
+		}
+		
+	}
+	
+	void startRefresh( boolean bSilent, final boolean bBottom ){
+		
 		if( last_task != null ){
-			return activity.getString( R.string.column_is_busy );
+			if( ! bSilent ){
+				Utils.showToast( activity, true, R.string.column_is_busy );
+				if( holder != null ) holder.getRefreshLayout().setRefreshing( false );
+			}
+			return;
 		}else if( bBottom && max_id == null ){
-			return activity.getString( R.string.end_of_list );
+			if( ! bSilent ){
+				Utils.showToast( activity, true, R.string.end_of_list );
+				if( holder != null ) holder.getRefreshLayout().setRefreshing( false );
+			}
+			return;
 		}else if( ! bBottom && since_id == null ){
-			return "startRefresh failed. missing since_id";
+			if( ! bSilent ){
+				if( holder != null ) holder.getRefreshLayout().setRefreshing( false );
+			}
+			startLoading();
+			return;
+		}
+		
+		if( bSilent ){
+			if( holder != null ){
+				holder.getRefreshLayout().setRefreshing( true );
+			}
 		}
 		
 		bRefreshLoading = true;
@@ -1445,7 +1561,7 @@ class Column {
 							public void run(){
 								if( isCancelled() ) return;
 								task_progress = s;
-								fireVisualCallback();
+								fireShowContent();
 							}
 						} );
 					}
@@ -1540,73 +1656,94 @@ class Column {
 				
 				if( result.error != null ){
 					Column.this.mRefreshLoadingError = result.error;
-				}else{
-					if( list_tmp != null ){
-						// 古いリストにある要素のIDの集合集合
-						HashSet< Long > set_status_id = new HashSet<>();
-						HashSet< Long > set_notification_id = new HashSet<>();
-						HashSet< Long > set_report_id = new HashSet<>();
-						HashSet< Long > set_account_id = new HashSet<>();
-						for( Object o : list_data ){
-							if( o instanceof TootStatus ){
-								set_status_id.add( ( (TootStatus) o ).id );
-							}else if( o instanceof TootNotification ){
-								set_notification_id.add( ( (TootNotification) o ).id );
-							}else if( o instanceof TootReport ){
-								set_report_id.add( ( (TootReport) o ).id );
-							}else if( o instanceof TootAccount ){
-								set_account_id.add( ( (TootAccount) o ).id );
-							}
-						}
-						ArrayList< Object > list_new = new ArrayList<>();
-						for( Object o : list_tmp ){
-							if( o instanceof TootStatus ){
-								if( set_status_id.contains( ( (TootStatus) o ).id ) ) continue;
-							}else if( o instanceof TootNotification ){
-								if( set_notification_id.contains( ( (TootNotification) o ).id ) )
-									continue;
-							}else if( o instanceof TootReport ){
-								if( set_report_id.contains( ( (TootReport) o ).id ) ) continue;
-							}else if( o instanceof TootAccount ){
-								if( set_account_id.contains( ( (TootAccount) o ).id ) ) continue;
-							}
-							list_new.add( o );
-						}
-						
-						if( ! bBottom ){
-							// リフレッシュ開始時はリストの先頭を見ていたのだからスクロール範囲を調整したい
-							scroll_hack = list_new.size();
-							// 新しいデータの後に今のデータが並ぶ
-							list_new.addAll( list_data );
-							list_data.clear();
-							list_data.addAll( list_new );
-						}else{
-							// 今のデータの後にさらに古いデータが続く
-							list_data.addAll( list_new );
-						}
-						
-					}
+					fireShowContent();
+					return;
+				}
+				if( list_tmp == null || list_tmp.isEmpty() ){
+					fireShowContent();
+					return;
 				}
 				
-				fireVisualCallback();
+				// 古いリストにある要素のIDの集合集合
+				HashSet< Long > set_status_id = new HashSet<>();
+				HashSet< Long > set_notification_id = new HashSet<>();
+				HashSet< Long > set_report_id = new HashSet<>();
+				HashSet< Long > set_account_id = new HashSet<>();
+				for( Object o : list_data ){
+					if( o instanceof TootStatus ){
+						set_status_id.add( ( (TootStatus) o ).id );
+					}else if( o instanceof TootNotification ){
+						set_notification_id.add( ( (TootNotification) o ).id );
+					}else if( o instanceof TootReport ){
+						set_report_id.add( ( (TootReport) o ).id );
+					}else if( o instanceof TootAccount ){
+						set_account_id.add( ( (TootAccount) o ).id );
+					}
+				}
+				ArrayList< Object > list_new = new ArrayList<>();
+				for( Object o : list_tmp ){
+					if( o instanceof TootStatus ){
+						if( set_status_id.contains( ( (TootStatus) o ).id ) ) continue;
+					}else if( o instanceof TootNotification ){
+						if( set_notification_id.contains( ( (TootNotification) o ).id ) )
+							continue;
+					}else if( o instanceof TootReport ){
+						if( set_report_id.contains( ( (TootReport) o ).id ) ) continue;
+					}else if( o instanceof TootAccount ){
+						if( set_account_id.contains( ( (TootAccount) o ).id ) ) continue;
+					}
+					list_new.add( o );
+				}
+				if( list_new.isEmpty() ){
+					fireShowContent();
+					return;
+				}
+				
+				// 事前にスクロール位置を覚えておく
+				ScrollPosition sp = null;
+				if( holder != null ){
+					sp = holder.getScrollPosition();
+				}
+				
+				if( bBottom ){
+					list_data.addAll( list_new );
+					fireShowContent();
+					if( holder != null ){
+						//noinspection ConstantConditions
+						holder.setScrollPosition( sp, 20f );
+					}
+				}else{
+					
+					int added = list_new.size();
+					list_new.addAll( list_data );
+					list_data.clear();
+					list_data.addAll( list_new );
+					fireShowContent();
+					if( holder != null ){
+						//noinspection ConstantConditions
+						sp.pos += added;
+						holder.setScrollPosition( sp, - 20f );
+					}else{
+						scroll_save.pos += added;
+					}
+				}
 			}
 		};
 		
 		AsyncTaskCompat.executeParallel( task );
 		
-		return null;
 	}
 	
-	void startGap( final TootGap gap, int position ){
+	void startGap( final TootGap gap, final int position ){
 		if( last_task != null ){
 			Utils.showToast( activity, true, R.string.column_is_busy );
 			return;
 		}
-
-		if( callback != null ){
-			callback.getRefreshLayout().setRefreshing( true );
+		
+		if( holder != null ){
+			holder.getRefreshLayout().setRefreshing( true );
 		}
-
+		
 		bRefreshLoading = true;
 		mRefreshLoadingError = null;
 		
@@ -1824,7 +1961,7 @@ class Column {
 							public void run(){
 								if( isCancelled() ) return;
 								task_progress = s;
-								fireVisualCallback();
+								fireShowContent();
 							}
 						} );
 					}
@@ -1918,175 +2055,118 @@ class Column {
 				
 				if( result.error != null ){
 					Column.this.mRefreshLoadingError = result.error;
-				}else{
-					if( list_tmp != null ){
-						// 古いリストにある要素のIDの集合
-						HashSet< Long > set_status_id = new HashSet<>();
-						HashSet< Long > set_notification_id = new HashSet<>();
-						HashSet< Long > set_report_id = new HashSet<>();
-						HashSet< Long > set_account_id = new HashSet<>();
-						for( Object o : list_data ){
-							if( o instanceof TootStatus ){
-								set_status_id.add( ( (TootStatus) o ).id );
-							}else if( o instanceof TootNotification ){
-								set_notification_id.add( ( (TootNotification) o ).id );
-							}else if( o instanceof TootReport ){
-								set_report_id.add( ( (TootReport) o ).id );
-							}else if( o instanceof TootAccount ){
-								set_account_id.add( ( (TootAccount) o ).id );
-							}
-						}
-						// list_tmp をフィルタしてlist_newを作成
-						ArrayList< Object > list_new = new ArrayList<>();
-						for( Object o : list_tmp ){
-							if( o instanceof TootStatus ){
-								if( set_status_id.contains( ( (TootStatus) o ).id ) ) continue;
-							}else if( o instanceof TootNotification ){
-								if( set_notification_id.contains( ( (TootNotification) o ).id ) )
-									continue;
-							}else if( o instanceof TootReport ){
-								if( set_report_id.contains( ( (TootReport) o ).id ) ) continue;
-							}else if( o instanceof TootAccount ){
-								if( set_account_id.contains( ( (TootAccount) o ).id ) )
-									continue;
-							}
-							list_new.add( o );
-						}
-						
-						int pos = list_data.indexOf( gap );
-						if( pos != - 1 ){
-							
-							list_data.remove( pos );
-							list_data.addAll( pos, list_new );
-							
-							// リフレッシュ開始時はリストの先頭を見ていたのだからスクロール範囲を調整したい
-							scroll_hack = pos + list_new.size() - 2;
-							if( scroll_hack < 1 ) scroll_hack = 1;
-						}
+					fireShowContent();
+					return;
+				}
+				if( list_tmp == null ){
+					fireShowContent();
+					return;
+				}
+				
+				// 古いリストにある要素のIDの集合
+				HashSet< Long > set_status_id = new HashSet<>();
+				HashSet< Long > set_notification_id = new HashSet<>();
+				HashSet< Long > set_report_id = new HashSet<>();
+				HashSet< Long > set_account_id = new HashSet<>();
+				for( Object o : list_data ){
+					if( o instanceof TootStatus ){
+						set_status_id.add( ( (TootStatus) o ).id );
+					}else if( o instanceof TootNotification ){
+						set_notification_id.add( ( (TootNotification) o ).id );
+					}else if( o instanceof TootReport ){
+						set_report_id.add( ( (TootReport) o ).id );
+					}else if( o instanceof TootAccount ){
+						set_account_id.add( ( (TootAccount) o ).id );
+					}
+				}
+				// list_tmp をフィルタしてlist_newを作成
+				ArrayList< Object > list_new = new ArrayList<>();
+				for( Object o : list_tmp ){
+					if( o instanceof TootStatus ){
+						if( set_status_id.contains( ( (TootStatus) o ).id ) ) continue;
+					}else if( o instanceof TootNotification ){
+						if( set_notification_id.contains( ( (TootNotification) o ).id ) )
+							continue;
+					}else if( o instanceof TootReport ){
+						if( set_report_id.contains( ( (TootReport) o ).id ) ) continue;
+					}else if( o instanceof TootAccount ){
+						if( set_account_id.contains( ( (TootAccount) o ).id ) )
+							continue;
+					}
+					list_new.add( o );
+				}
+				
+				// idx番目の要素がListViewのtopから何ピクセル下にあるか
+				int restore_idx = position + 1;
+				int restore_y = 0;
+				if( holder != null ){
+					try{
+						restore_y = getItemTop( restore_idx );
+					}catch( IndexOutOfBoundsException ex ){
+						restore_idx = position;
+						restore_y = getItemTop( restore_idx );
 					}
 				}
 				
-				fireVisualCallback();
+				int added = list_new.size(); // may 0
+				list_data.remove( position );
+				list_data.addAll( position, list_new );
+				fireShowContent();
+				
+				if( holder != null ){
+					setItemTop( restore_idx + added - 1, restore_y );
+				}else{
+					scroll_save.pos += added - 1;
+				}
 			}
 		};
 		
 		AsyncTaskCompat.executeParallel( task );
 	}
 	
-
-	private void updateRelation( TootApiClient client, ArrayList< Object > list_tmp ){
-		if( list_tmp == null || list_tmp.isEmpty() ) return;
-		HashSet< Long > who_set = new HashSet<>();
-		HashSet< String > acct_set = new HashSet<>();
-		{
-			TootAccount a;
-			TootStatus s;
-			TootNotification n;
-			for( Object o : list_tmp ){
-				if( o instanceof TootAccount ){
-					a = (TootAccount) o;
-					who_set.add( a.id );
-					acct_set.add( "@" + access_info.getFullAcct( a ) );
-				}else if( o instanceof TootStatus ){
-					s = (TootStatus) o;
-					a = s.account;
-					if( a != null ){
-						who_set.add( a.id );
-						acct_set.add( "@" + access_info.getFullAcct( a ) );
-					}
-					s = s.reblog;
-					if( s != null ){
-						a = s.account;
-						if( a != null ){
-							who_set.add( a.id );
-							acct_set.add( "@" + access_info.getFullAcct( a ) );
-						}
-					}
-				}else if( o instanceof TootNotification ){
-					n = (TootNotification) o;
-					//
-					a = n.account;
-					if( a != null ){
-						who_set.add( a.id );
-						acct_set.add( "@" + access_info.getFullAcct( a ) );
-					}
-					//
-					s = n.status;
-					if( s != null ){
-						a = s.account;
-						if( a != null ){
-							who_set.add( a.id );
-							acct_set.add( "@" + access_info.getFullAcct( a ) );
-						}
-						s = s.reblog;
-						if( s != null ){
-							a = s.account;
-							if( a != null ){
-								who_set.add( a.id );
-								acct_set.add( "@" + access_info.getFullAcct( a ) );
-							}
-						}
-					}
-				}
-			}
-		}
-		int size = who_set.size();
-		if( size > 0 ){
-			long[] who_list = new long[ size ];
-			{
-				int n = 0;
-				for( Long l : who_set ){
-					who_list[ n++ ] = l;
-				}
-			}
-			
-			long now = System.currentTimeMillis();
-			int n = 0;
-			while( n < size ){
-				StringBuilder sb = new StringBuilder();
-				sb.append( "/api/v1/accounts/relationships" );
-				for( int i = 0 ; i < RELATIONSHIP_LOAD_STEP ; ++ i ){
-					if( n >= size ) break;
-					sb.append( i == 0 ? '?' : '&' );
-					sb.append( "id[]=" );
-					sb.append( Long.toString( who_list[ n++ ] ) );
-				}
-				TootApiResult result = client.request( sb.toString() );
-				if( result == null ){
-					// cancelled.
-					break;
-				}else if( result.array != null ){
-					TootRelationShip.List list = TootRelationShip.parseList( log, result.array );
-					UserRelation.saveList( now, access_info.db_id, list );
-				}
-			}
-			log.d( "updateRelation: update %d relations.", n );
-			
-		}
-		size = acct_set.size();
-		if( size > 0 ){
-			String[] acct_list = new String[ size ];
-			{
-				int n = 0;
-				for( String l : acct_set ){
-					acct_list[ n++ ] = l;
-				}
-			}
-			long now = System.currentTimeMillis();
-			int n = 0;
-			while( n < size ){
-				int length = size - n;
-				if( length > ACCT_DB_STEP ) length = ACCT_DB_STEP;
-				AcctSet.saveList( now, acct_list, n, length );
-				n += length;
-			}
-			log.d( "updateRelation: update %d acct.", n );
-			
+	private static final int heightSpec = View.MeasureSpec.makeMeasureSpec( 0, View.MeasureSpec.UNSPECIFIED );
+	
+	private static int getListItemHeight( ListView listView, int idx ){
+		int item_width = listView.getWidth() - listView.getPaddingLeft() - listView.getPaddingRight();
+		int widthSpec = View.MeasureSpec.makeMeasureSpec( item_width, View.MeasureSpec.EXACTLY );
+		View childView = listView.getAdapter().getView( idx, null, listView );
+		childView.measure( widthSpec, heightSpec );
+		return childView.getMeasuredHeight();
+	}
+	
+	// 特定の要素が特定の位置に来るようにスクロール位置を調整する
+	private void setItemTop( int idx, int y ){
+		MyListView listView = holder.getListView();
+		boolean hasHeader = holder.hasHeaderView();
+		if( hasHeader ){
+			// Adapter中から見たpositionとListViewから見たpositionにズレができる
+			idx = idx + 1;
 		}
 		
+		while( y > 0 && idx > 0 ){
+			-- idx;
+			y -= getListItemHeight( listView, idx );
+			y -= listView.getDividerHeight();
+		}
+		listView.setSelectionFromTop( idx, y );
 	}
-	//////////////////////////////////////////////////////////////////////////////////
-
-
+	
+	private int getItemTop( int idx ){
+		MyListView listView = holder.getListView();
+		boolean hasHeader = holder.hasHeaderView();
+		
+		if( hasHeader ){
+			// Adapter中から見たpositionとListViewから見たpositionにズレができる
+			idx = idx + 1;
+		}
+		
+		int vs = listView.getFirstVisiblePosition();
+		int ve = listView.getLastVisiblePosition();
+		if( idx < vs || ve < idx ){
+			throw new IndexOutOfBoundsException( "not in visible range" );
+		}
+		int child_idx = idx - vs;
+		return listView.getChildAt( child_idx ).getTop();
+	}
 	
 }

@@ -140,7 +140,7 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-	ColumnViewHolder.ListItemPopup list_item_popup;
+	StatusButtonsPopup list_item_popup;
 	
 	void closeListItemPopup(){
 		if( list_item_popup != null ){
@@ -2068,6 +2068,7 @@ public class ActMain extends AppCompatActivity
 			Utils.showToast( ActMain.this, false, R.string.boost_succeeded );
 		}
 	};
+
 	
 	private void openOSSLicense(){
 		startActivity( new Intent( this, ActOSSLicense.class ) );
@@ -2129,7 +2130,7 @@ public class ActMain extends AppCompatActivity
 				}else if( result.object != null ){
 					// ok. empty object will be returned.
 					for( Column column : pager_adapter.column_list ){
-						if( column.type == Column.TYPE_NOTIFICATIONS
+						if( column.column_type == Column.TYPE_NOTIFICATIONS
 							&& column.access_info.acct.equals( target_account.acct )
 							){
 							column.removeNotifications();

@@ -7,13 +7,13 @@ import android.support.annotation.NonNull;
 import android.support.v4.os.AsyncTaskCompat;
 import android.text.TextUtils;
 
+import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
@@ -37,11 +37,13 @@ import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.MyListView;
+import jp.juggler.subwaytooter.util.ScrollPosition;
 import jp.juggler.subwaytooter.util.Utils;
 
 class Column {
 	private static final LogCategory log = new LogCategory( "Column" );
-	public static final java.lang.String KEY_COLUMN_COLOR = "color";
+
 	
 	private static Object getParamAt( Object[] params, int idx ){
 		if( params == null || idx >= params.length ){
@@ -90,6 +92,8 @@ class Column {
 	private static final String KEY_DONT_SHOW_REPLY = "dont_show_reply";
 	private static final String KEY_REGEX_TEXT = "regex_text";
 	
+	// static final java.lang.String KEY_COLUMN_COLOR = "color";
+	
 	private static final String KEY_PROFILE_ID = "profile_id";
 	private static final String KEY_PROFILE_TAB = "tab";
 	private static final String KEY_STATUS_ID = "status_id";
@@ -117,10 +121,10 @@ class Column {
 	static final int TYPE_BLOCKS = 12;
 	static final int TYPE_FOLLOW_REQUESTS = 13;
 	
-	@NonNull private final ActMain activity;
+	@NonNull final ActMain activity;
 	@NonNull final SavedAccount access_info;
 	
-	final int type;
+	final int column_type;
 	
 	boolean dont_close;
 	
@@ -143,13 +147,12 @@ class Column {
 	String search_query;
 	boolean search_resolve;
 	
-	int scroll_pos;
-	int scroll_y;
+	ScrollPosition scroll_pos;
 	
 	Column( @NonNull ActMain activity, @NonNull SavedAccount access_info, int type, Object... params ){
 		this.activity = activity;
 		this.access_info = access_info;
-		this.type = type;
+		this.column_type = type;
 		switch( type ){
 		
 		case TYPE_CONVERSATION:
@@ -170,20 +173,19 @@ class Column {
 			break;
 			
 		}
-		
-		startLoading();
+		init();
 	}
 	
 	void encodeJSON( JSONObject item, int old_index ) throws JSONException{
 		item.put( KEY_ACCOUNT_ROW_ID, access_info.db_id );
-		item.put( KEY_TYPE, type );
+		item.put( KEY_TYPE, column_type );
 		item.put( KEY_DONT_CLOSE, dont_close );
 		item.put( KEY_WITH_ATTACHMENT, with_attachment );
 		item.put( KEY_DONT_SHOW_BOOST, dont_show_boost );
 		item.put( KEY_DONT_SHOW_REPLY, dont_show_reply );
 		item.put( KEY_REGEX_TEXT, regex_text );
 		
-		switch( type ){
+		switch( column_type ){
 		case TYPE_CONVERSATION:
 			item.put( KEY_STATUS_ID, status_id );
 			break;
@@ -215,14 +217,14 @@ class Column {
 		SavedAccount ac = SavedAccount.loadAccount( log, src.optLong( KEY_ACCOUNT_ROW_ID ) );
 		if( ac == null ) throw new RuntimeException( "missing account" );
 		this.access_info = ac;
-		this.type = src.optInt( KEY_TYPE );
+		this.column_type = src.optInt( KEY_TYPE );
 		this.dont_close = src.optBoolean( KEY_DONT_CLOSE );
 		this.with_attachment = src.optBoolean( KEY_WITH_ATTACHMENT );
 		this.dont_show_boost = src.optBoolean( KEY_DONT_SHOW_BOOST );
 		this.dont_show_reply = src.optBoolean( KEY_DONT_SHOW_REPLY );
 		this.regex_text = Utils.optStringX( src, KEY_REGEX_TEXT );
 		
-		switch( type ){
+		switch( column_type ){
 		
 		case TYPE_CONVERSATION:
 			this.status_id = src.optLong( KEY_STATUS_ID );
@@ -243,11 +245,11 @@ class Column {
 			break;
 			
 		}
-		startLoading();
+		init();
 	}
 	
 	boolean isSameSpec( SavedAccount ai, int type, Object[] params ){
-		if( type != this.type || ! Utils.equalsNullable( ai.acct, access_info.acct ) ) return false;
+		if( type != column_type || ! Utils.equalsNullable( ai.acct, access_info.acct ) ) return false;
 		switch( type ){
 		default:
 			return true;
@@ -296,7 +298,7 @@ class Column {
 	}
 	
 	String getColumnName( boolean bLong ){
-		switch( type ){
+		switch( column_type ){
 		
 		default:
 			return "?";
@@ -349,7 +351,7 @@ class Column {
 		}
 	}
 	
-	static int getIconAttrId(int type){
+	static int getIconAttrId( int type ){
 		switch( type ){
 		
 		default:
@@ -394,11 +396,24 @@ class Column {
 		}
 	}
 	
+	boolean bSimpleList;
+	ItemListAdapter status_adapter;
+	int acct_pad_lr;
+	
+	private void init(){
+		acct_pad_lr = (int) ( 0.5f + 4f * activity.density );
+		
+		bSimpleList = ( column_type != Column.TYPE_CONVERSATION && activity.pref.getBoolean( Pref.KEY_SIMPLE_LIST, false ) );
+		
+		status_adapter = new ItemListAdapter(this);
+		
+		startLoading();
+	}
+	
 	void onNicknameUpdated(){
 		
 		fireVisualCallback2();
 	}
-	
 	
 	interface StatusEntryCallback {
 		void onIterate( TootStatus status );
@@ -469,7 +484,7 @@ class Column {
 	// ミュート解除が成功した時に呼ばれる
 	void removeFromMuteList( SavedAccount target_account, long who_id ){
 		if( ! target_account.acct.equals( access_info.acct ) ) return;
-		if( type != TYPE_MUTES ) return;
+		if( column_type != TYPE_MUTES ) return;
 		
 		ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
 		for( Object o : list_data ){
@@ -490,7 +505,7 @@ class Column {
 	// ブロック解除が成功したので、ブロックリストから削除する
 	void removeFromBlockList( SavedAccount target_account, long who_id ){
 		if( ! target_account.acct.equals( access_info.acct ) ) return;
-		if( type != TYPE_BLOCKS ) return;
+		if( column_type != TYPE_BLOCKS ) return;
 		
 		ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
 		for( Object o : list_data ){
@@ -507,10 +522,10 @@ class Column {
 		}
 	}
 	
-	public void removeFollowRequest( SavedAccount target_account, long who_id ){
+	void removeFollowRequest( SavedAccount target_account, long who_id ){
 		if( ! target_account.acct.equals( access_info.acct ) ) return;
 		
-		if( type == TYPE_FOLLOW_REQUESTS ){
+		if( column_type == TYPE_FOLLOW_REQUESTS ){
 			ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
 			for( Object o : list_data ){
 				if( o instanceof TootAccount ){
@@ -563,43 +578,48 @@ class Column {
 		}
 	}
 	
-	interface VisualCallback {
+	void removeNotifications(){
+		cancelLastTask();
+		
+		list_data.clear();
+		mRefreshLoadingError = null;
+		bRefreshLoading = false;
+		mInitialLoadingError = null;
+		bInitialLoading = false;
+		max_id = null;
+		since_id = null;
+		
+		fireVisualCallback();
+		
+		AlarmService.dataRemoved( activity, access_info.db_id );
+	}
+	
+	
+	
+	interface Callback {
 		void onVisualColumn();
 		
 		void onVisualColumn2();
+		
+		SwipyRefreshLayout getRefreshLayout();
+		
+		MyListView getListView();
 	}
 	
-	private final LinkedList< VisualCallback > visual_callback = new LinkedList<>();
+	private Callback callback ;
 	
-	void addVisualListener( VisualCallback listener ){
-		if( listener == null ) return;
-		for( VisualCallback vc : visual_callback ){
-			if( vc == listener ) return;
-		}
-		visual_callback.add( listener );
-	}
-	
-	void removeVisualListener( VisualCallback listener ){
-		if( listener == null ) return;
-		Iterator< VisualCallback > it = visual_callback.iterator();
-		while( it.hasNext() ){
-			VisualCallback vc = it.next();
-			if( vc == listener ) it.remove();
-		}
+	void setCallback( Callback callback ){
+		this.callback = callback;
 	}
 	
 	private final Runnable proc_fireVisualCallback = new Runnable() {
 		@Override public void run(){
-			for( VisualCallback aVisual_callback : visual_callback ){
-				aVisual_callback.onVisualColumn();
-			}
+			if(callback != null) callback.onVisualColumn();
 		}
 	};
 	private final Runnable proc_fireVisualCallback2 = new Runnable() {
 		@Override public void run(){
-			for( VisualCallback aVisual_callback : visual_callback ){
-				aVisual_callback.onVisualColumn2();
-			}
+			if(callback != null) callback.onVisualColumn2();
 		}
 	};
 	
@@ -904,7 +924,7 @@ class Column {
 				try{
 					TootApiResult result;
 					
-					switch( type ){
+					switch( column_type ){
 					
 					default:
 					case TYPE_HOME:
@@ -1434,7 +1454,7 @@ class Column {
 				client.setAccount( access_info );
 				try{
 					
-					switch( type ){
+					switch( column_type ){
 					
 					default:
 					case TYPE_HOME:
@@ -1577,11 +1597,16 @@ class Column {
 		return null;
 	}
 	
-	String startGap( final TootGap gap ){
+	void startGap( final TootGap gap, int position ){
 		if( last_task != null ){
-			return activity.getString( R.string.column_is_busy );
+			Utils.showToast( activity, true, R.string.column_is_busy );
+			return;
 		}
-		
+
+		if( callback != null ){
+			callback.getRefreshLayout().setRefreshing( true );
+		}
+
 		bRefreshLoading = true;
 		mRefreshLoadingError = null;
 		
@@ -1808,7 +1833,7 @@ class Column {
 				client.setAccount( access_info );
 				
 				try{
-					switch( type ){
+					switch( column_type ){
 					
 					default:
 					case TYPE_HOME:
@@ -1946,25 +1971,9 @@ class Column {
 		};
 		
 		AsyncTaskCompat.executeParallel( task );
-		return null;
 	}
 	
-	void removeNotifications(){
-		cancelLastTask();
-		
-		list_data.clear();
-		mRefreshLoadingError = null;
-		bRefreshLoading = false;
-		mInitialLoadingError = null;
-		bInitialLoading = false;
-		max_id = null;
-		since_id = null;
-		
-		fireVisualCallback();
-		
-		AlarmService.dataRemoved( activity, access_info.db_id );
-	}
-	
+
 	private void updateRelation( TootApiClient client, ArrayList< Object > list_tmp ){
 		if( list_tmp == null || list_tmp.isEmpty() ) return;
 		HashSet< Long > who_set = new HashSet<>();
@@ -2076,5 +2085,8 @@ class Column {
 		}
 		
 	}
+	//////////////////////////////////////////////////////////////////////////////////
+
+
 	
 }

@@ -89,6 +89,9 @@ public class TootAccount {
 			dst.id = src.optLong( "id",-1L );
 			dst.username = Utils.optStringX( src, "username" );
 			dst.acct = Utils.optStringX( src, "acct" );
+			if( dst.acct == null){
+				dst.acct = "?@?";
+			}
 			
 			String sv = Utils.optStringX( src, "display_name" );
 			if( TextUtils.isEmpty( sv ) ){

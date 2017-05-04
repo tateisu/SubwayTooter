@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
@@ -170,14 +172,20 @@ public class TootStatus extends TootId {
 		return result;
 	}
 	
-	private static final SimpleDateFormat date_format_utc = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault() );
+	private static final Pattern reTime = Pattern.compile("\\A(\\d+\\D+\\d+\\D+\\d+\\D+\\d+\\D+\\d+\\D+\\d+\\D+\\d+)");
+	private static final SimpleDateFormat date_format_utc = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.getDefault() );
 	
 	static long parseTime( LogCategory log, String strTime ){
 		if( ! TextUtils.isEmpty( strTime ) ){
 			try{
-				date_format_utc.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
-				return date_format_utc.parse( strTime ).getTime();
-			}catch( ParseException ex ){
+				Matcher m = reTime.matcher( strTime );
+				if(!m.find() ){
+					log.d("!!invalid time format: %s",strTime);
+				}else{
+					date_format_utc.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
+					return date_format_utc.parse( m.group( 1 ) ).getTime();
+				}
+			}catch( Throwable  ex ){// ParseException,  ArrayIndexOutOfBoundsException
 				ex.printStackTrace();
 				log.e( ex, "TootStatus.parseTime failed. src=%s",strTime );
 			}

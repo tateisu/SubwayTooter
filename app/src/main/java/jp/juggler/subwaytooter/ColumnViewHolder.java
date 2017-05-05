@@ -272,8 +272,7 @@ class ColumnViewHolder
 	}
 	
 	@Override public void onRefresh( SwipyRefreshLayoutDirection direction ){
-		column.startRefresh( false, direction == SwipyRefreshLayoutDirection.BOTTOM );
-		
+		column.startRefresh( false, direction == SwipyRefreshLayoutDirection.BOTTOM ,-1L);
 	}
 	
 	@Override public void onCheckedChanged( CompoundButton view, boolean isChecked ){

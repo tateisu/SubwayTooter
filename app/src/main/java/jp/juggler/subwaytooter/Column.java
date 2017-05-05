@@ -1212,7 +1212,26 @@ class Column {
 		
 	}
 	
-	void startRefresh( boolean bSilent, final boolean bBottom ){
+	void startRefreshForPost( long status_id ){
+		switch(column_type){
+		case TYPE_HOME:
+		case TYPE_LOCAL:
+		case TYPE_FEDERATE:
+			startRefresh( true, false, status_id );
+			break;
+		case TYPE_PROFILE:
+			if( profile_tab == TAB_STATUS && profile_id == access_info.id ){
+				startRefresh( true, false, status_id );
+			}
+			break;
+		case TYPE_CONVERSATION:
+			startLoading();
+			
+			break;
+		}
+	}
+	
+	void startRefresh( boolean bSilent, final boolean bBottom ,final long status_id){
 		
 		if( last_task != null ){
 			if( ! bSilent ){
@@ -1227,9 +1246,7 @@ class Column {
 			}
 			return;
 		}else if( ! bBottom && since_id == null ){
-			if( ! bSilent ){
-				if( holder != null ) holder.getRefreshLayout().setRefreshing( false );
-			}
+			if( holder != null ) holder.getRefreshLayout().setRefreshing( false );
 			startLoading();
 			return;
 		}
@@ -1714,17 +1731,42 @@ class Column {
 					}
 				}else{
 					
+					int status_index = -1;
+					for( int i=0,ie=list_new.size();i<ie;++i){
+						Object o = list_new.get(i);
+						if( o instanceof TootStatus ){
+							TootStatus status = (TootStatus)o;
+							if( status.id == status_id ){
+								status_index = i;
+								break;
+							}
+						}
+					}
+					
 					int added = list_new.size();
 					list_new.addAll( list_data );
 					list_data.clear();
 					list_data.addAll( list_new );
 					fireShowContent();
-					if( holder != null ){
-						//noinspection ConstantConditions
-						sp.pos += added;
-						holder.setScrollPosition( sp, - 20f );
+					
+					if( status_index >= 0 ){
+						if( holder != null ){
+							//noinspection ConstantConditions
+							sp.pos = status_index;
+							sp.top = 0;
+							holder.setScrollPosition( sp, 0f );
+						}else{
+							scroll_save.pos += status_index;
+							scroll_save.top = 0;
+						}
 					}else{
-						scroll_save.pos += added;
+						if( holder != null ){
+							//noinspection ConstantConditions
+							sp.pos += added;
+							holder.setScrollPosition( sp, - 20f );
+						}else{
+							scroll_save.pos += added;
+						}
 					}
 				}
 			}

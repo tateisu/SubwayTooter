@@ -64,7 +64,6 @@ public class ActMain extends AppCompatActivity
 	implements NavigationView.OnNavigationItemSelectedListener {
 	public static final LogCategory log = new LogCategory( "ActMain" );
 	
-	static boolean update_at_resume = false;
 
 //	@Override
 //	protected void attachBaseContext(Context newBase) {
@@ -75,6 +74,9 @@ public class ActMain extends AppCompatActivity
 	
 	SharedPreferences pref;
 	Handler handler;
+	String posted_acct;
+	long posted_status_id;
+	
 	
 	@Override
 	protected void onCreate( Bundle savedInstanceState ){
@@ -99,6 +101,7 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	@Override protected void onResume(){
+		log.d("onResume");
 		super.onResume();
 		HTMLDecoder.link_callback = link_click_listener;
 		
@@ -125,9 +128,13 @@ public class ActMain extends AppCompatActivity
 		// 各カラムのアカウント設定を読み直す
 		reloadAccountSetting();
 		
-		if( update_at_resume ){
-			update_at_resume = false;
-			// TODO: 各カラムを更新する
+		if( ! TextUtils.isEmpty( posted_acct ) ){
+			for( Column column : pager_adapter.column_list ){
+				SavedAccount a = column.access_info;
+				if( ! Utils.equalsNullable( a.acct,posted_acct )) continue;
+				column.startRefreshForPost(posted_status_id);
+			}
+			posted_acct = null;
 		}
 		
 		if( pager_adapter.getCount() == 0 ){
@@ -171,6 +178,7 @@ public class ActMain extends AppCompatActivity
 	static final int REQUEST_CODE_POST = 5;
 	
 	@Override protected void onActivityResult( int requestCode, int resultCode, Intent data ){
+		log.d("onActivityResult");
 		if( resultCode == RESULT_OK ){
 			if( requestCode == REQUEST_CODE_COLUMN_LIST ){
 				if( data != null ){
@@ -207,7 +215,10 @@ public class ActMain extends AppCompatActivity
 					column.onNicknameUpdated();
 				}
 			}else if( requestCode == REQUEST_CODE_POST ){
-				reloadAccountSetting();
+				if( data != null ){
+					posted_acct = data.getStringExtra( ActPost.EXTRA_POSTED_ACCT );
+					posted_status_id = data.getLongExtra( ActPost.EXTRA_POSTED_STATUS_ID,0L );
+				}
 			}
 		}
 		super.onActivityResult( requestCode, resultCode, data );

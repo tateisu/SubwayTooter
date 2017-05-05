@@ -81,6 +81,9 @@ import static jp.juggler.subwaytooter.R.id.viewRoot;
 public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	static final LogCategory log = new LogCategory( "ActPost" );
 	
+	static final String EXTRA_POSTED_ACCT = "posted_acct";
+	static final String EXTRA_POSTED_STATUS_ID = "posted_status_id";
+	
 	static final String KEY_ACCOUNT_DB_ID = "account_db_id";
 	static final String KEY_REPLY_STATUS = "reply_status";
 	static final String KEY_INITIAL_TEXT = "initial_text";
@@ -1326,8 +1329,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 					// cancelled.
 				}else if( status != null ){
 					// 連投してIdempotency が同じだった場合もエラーにはならず、ここを通る
-					ActMain.update_at_resume = true;
-					setResult( RESULT_OK );
+					Intent data = new Intent();
+					data.putExtra( EXTRA_POSTED_ACCT, target_account.acct );
+					data.putExtra( EXTRA_POSTED_STATUS_ID, status.id );
+					
+					setResult( RESULT_OK ,data );
 					ActPost.this.finish();
 				}else{
 					Utils.showToast( ActPost.this, true, result.error );

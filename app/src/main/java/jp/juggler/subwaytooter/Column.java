@@ -344,10 +344,10 @@ class Column {
 		
 		case TYPE_BOOSTED_BY:
 			return activity.getString( R.string.boosted_by );
-
+		
 		case TYPE_FAVOURITED_BY:
 			return activity.getString( R.string.favourited_by );
-
+		
 		case TYPE_HASHTAG:
 			return activity.getString( R.string.hashtag_of, hashtag );
 		
@@ -399,10 +399,10 @@ class Column {
 		
 		case TYPE_BOOSTED_BY:
 			return R.attr.btn_boost;
-
+		
 		case TYPE_FAVOURITED_BY:
 			return R.attr.btn_favourite;
-			
+		
 		case TYPE_HASHTAG:
 			return R.attr.ic_hashtag;
 		
@@ -1000,11 +1000,10 @@ class Column {
 						return parseNotifications( client, PATH_NOTIFICATIONS );
 					
 					case TYPE_BOOSTED_BY:
-						return  parseAccountList( client, String.format( Locale.JAPAN,PATH_BOOSTED_BY,status_id ) );
+						return parseAccountList( client, String.format( Locale.JAPAN, PATH_BOOSTED_BY, status_id ) );
 					
 					case TYPE_FAVOURITED_BY:
-						return  parseAccountList( client, String.format( Locale.JAPAN,PATH_FAVOURITED_BY,status_id ) );
-					
+						return parseAccountList( client, String.format( Locale.JAPAN, PATH_FAVOURITED_BY, status_id ) );
 					
 					case TYPE_CONVERSATION:
 						
@@ -1246,15 +1245,15 @@ class Column {
 	}
 	
 	void startRefreshForPost( long status_id, int refresh_after_toot ){
-		switch(column_type){
+		switch( column_type ){
 		case TYPE_HOME:
 		case TYPE_LOCAL:
 		case TYPE_FEDERATE:
-			startRefresh( true, false, status_id ,refresh_after_toot);
+			startRefresh( true, false, status_id, refresh_after_toot );
 			break;
 		case TYPE_PROFILE:
 			if( profile_tab == TAB_STATUS && profile_id == access_info.id ){
-				startRefresh( true, false, status_id ,refresh_after_toot);
+				startRefresh( true, false, status_id, refresh_after_toot );
 			}
 			break;
 		case TYPE_CONVERSATION:
@@ -1264,7 +1263,7 @@ class Column {
 		}
 	}
 	
-	void startRefresh( final boolean bSilent, final boolean bBottom , final long status_id, final int refresh_after_toot){
+	void startRefresh( final boolean bSilent, final boolean bBottom, final long status_id, final int refresh_after_toot ){
 		
 		if( last_task != null ){
 			if( ! bSilent ){
@@ -1642,12 +1641,10 @@ class Column {
 						return getNotificationList( client, PATH_NOTIFICATIONS );
 					
 					case TYPE_BOOSTED_BY:
-						return  getAccountList( client, String.format( Locale.JAPAN,PATH_BOOSTED_BY,status_id ) );
+						return getAccountList( client, String.format( Locale.JAPAN, PATH_BOOSTED_BY, status_id ) );
 					
 					case TYPE_FAVOURITED_BY:
-						return  getAccountList( client, String.format( Locale.JAPAN,PATH_FAVOURITED_BY,status_id ) );
-					
-					
+						return getAccountList( client, String.format( Locale.JAPAN, PATH_FAVOURITED_BY, status_id ) );
 					
 					case TYPE_PROFILE:
 						if( who_account == null ){
@@ -1766,17 +1763,17 @@ class Column {
 				if( bBottom ){
 					list_data.addAll( list_new );
 					fireShowContent();
-					if( holder != null ){
-						//noinspection ConstantConditions
+					
+					if( sp != null ){
 						holder.setScrollPosition( sp, 20f );
 					}
 				}else{
 					
-					int status_index = -1;
-					for( int i=0,ie=list_new.size();i<ie;++i){
-						Object o = list_new.get(i);
+					int status_index = - 1;
+					for( int i = 0, ie = list_new.size() ; i < ie ; ++ i ){
+						Object o = list_new.get( i );
 						if( o instanceof TootStatus ){
-							TootStatus status = (TootStatus)o;
+							TootStatus status = (TootStatus) o;
 							if( status.id == status_id ){
 								status_index = i;
 								break;
@@ -1790,24 +1787,21 @@ class Column {
 					list_data.addAll( list_new );
 					fireShowContent();
 					
-					if( status_index >= 0 && refresh_after_toot == Pref.RAT_REFRESH_SCROLL){
+					if( status_index >= 0 && refresh_after_toot == Pref.RAT_REFRESH_SCROLL ){
 						if( holder != null ){
-							//noinspection ConstantConditions
-							sp.pos = status_index;
-							sp.top = 0;
-							holder.setScrollPosition( sp, 0f );
+							holder.setScrollPosition( new ScrollPosition( status_index, 0 ), 0f );
 						}else{
-							scroll_save.pos = status_index;
-							scroll_save.top = 0;
+							scroll_save = new ScrollPosition( status_index, 0 );
 						}
 					}else{
 						float delta = bSilent ? 0f : - 20f;
-						if( holder != null ){
-							//noinspection ConstantConditions
+						if(  sp != null ){
 							sp.pos += added;
 							holder.setScrollPosition( sp, delta );
-						}else{
+						}else if ( scroll_save != null ){
 							scroll_save.pos += added;
+						}else{
+							scroll_save = new ScrollPosition( added,0 );
 						}
 					}
 				}
@@ -2080,11 +2074,10 @@ class Column {
 							String.format( Locale.JAPAN, PATH_HASHTAG, Uri.encode( hashtag ) ) );
 					
 					case TYPE_BOOSTED_BY:
-						return  getAccountList( client, String.format( Locale.JAPAN,PATH_BOOSTED_BY,status_id ) );
+						return getAccountList( client, String.format( Locale.JAPAN, PATH_BOOSTED_BY, status_id ) );
 					
 					case TYPE_FAVOURITED_BY:
-						return  getAccountList( client, String.format( Locale.JAPAN,PATH_FAVOURITED_BY,status_id ) );
-					
+						return getAccountList( client, String.format( Locale.JAPAN, PATH_FAVOURITED_BY, status_id ) );
 					
 					case TYPE_MUTES:
 						return getAccountList( client, PATH_MUTES );
@@ -2207,7 +2200,9 @@ class Column {
 				if( holder != null ){
 					setItemTop( restore_idx + added - 1, restore_y );
 				}else{
-					scroll_save.pos += added - 1;
+					if( scroll_save != null ){
+						scroll_save.pos += added - 1;
+					}
 				}
 			}
 		};

@@ -460,11 +460,11 @@ class ColumnViewHolder
 	}
 	
 	private void saveScrollPosition(){
-		column.scroll_save = null;
+		
 		if( listView.getVisibility() == View.VISIBLE ){
-			if( listView.getChildCount() > 0 ){
-				column.scroll_save = new ScrollPosition( listView );
-			}
+			column.scroll_save = new ScrollPosition( listView );
+		}else{
+			column.scroll_save = new ScrollPosition( 0,0 );
 		}
 	}
 	

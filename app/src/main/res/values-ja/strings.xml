@@ -249,4 +249,10 @@
     <string name="profile">プロフィール</string>
     <string name="profile_of">%1$s のプロフィール</string>
     <string name="it_is_you">あなたです</string>
+    <string name="boosted_by">発言をブーストした人</string>
+    <string name="dont_refresh">更新しない</string>
+    <string name="favourited_by">発言をお気に入りした人</string>
+    <string name="refresh_after_toot">発言後の更新</string>
+    <string name="refresh_no_scroll">更新するがスクロールしない</string>
+    <string name="refresh_scroll_to_toot">更新して発言までスクロール</string>
 </resources>

@@ -71,6 +71,8 @@ class Column {
 	private static final String PATH_MUTES = "/api/v1/mutes?limit=" + READ_LIMIT; // 1:account_id
 	private static final String PATH_BLOCKS = "/api/v1/blocks?limit=" + READ_LIMIT; // 1:account_id
 	private static final String PATH_FOLLOW_REQUESTS = "/api/v1/follow_requests?limit=" + READ_LIMIT; // 1:account_id
+	private static final String PATH_BOOSTED_BY = "/api/v1/statuses/%s/reblogged_by?limit=" + READ_LIMIT; // 1:status_id
+	private static final String PATH_FAVOURITED_BY = "/api/v1/statuses/%s/favourited_by?limit=" + READ_LIMIT; // 1:status_id
 	
 	// 他のリストを返すAPI
 	private static final String PATH_REPORTS = "/api/v1/reports?limit=" + READ_LIMIT;
@@ -119,6 +121,8 @@ class Column {
 	static final int TYPE_MUTES = 11;
 	static final int TYPE_BLOCKS = 12;
 	static final int TYPE_FOLLOW_REQUESTS = 13;
+	static final int TYPE_BOOSTED_BY = 14;
+	static final int TYPE_FAVOURITED_BY = 15;
 	
 	@NonNull final ActMain activity;
 	@NonNull final SavedAccount access_info;
@@ -155,6 +159,8 @@ class Column {
 		switch( type ){
 		
 		case TYPE_CONVERSATION:
+		case TYPE_BOOSTED_BY:
+		case TYPE_FAVOURITED_BY:
 			this.status_id = (Long) getParamAt( params, 0 );
 			break;
 		
@@ -186,6 +192,8 @@ class Column {
 		
 		switch( column_type ){
 		case TYPE_CONVERSATION:
+		case TYPE_BOOSTED_BY:
+		case TYPE_FAVOURITED_BY:
 			item.put( KEY_STATUS_ID, status_id );
 			break;
 		case TYPE_PROFILE:
@@ -226,6 +234,8 @@ class Column {
 		switch( column_type ){
 		
 		case TYPE_CONVERSATION:
+		case TYPE_BOOSTED_BY:
+		case TYPE_FAVOURITED_BY:
 			this.status_id = src.optLong( KEY_STATUS_ID );
 			break;
 		
@@ -263,6 +273,8 @@ class Column {
 			}
 		
 		case TYPE_CONVERSATION:
+		case TYPE_BOOSTED_BY:
+		case TYPE_FAVOURITED_BY:
 			try{
 				long status_id = (Long) getParamAt( params, 0 );
 				return status_id == this.status_id;
@@ -330,6 +342,12 @@ class Column {
 		case TYPE_CONVERSATION:
 			return activity.getString( R.string.conversation_around, status_id );
 		
+		case TYPE_BOOSTED_BY:
+			return activity.getString( R.string.boosted_by );
+
+		case TYPE_FAVOURITED_BY:
+			return activity.getString( R.string.favourited_by );
+
 		case TYPE_HASHTAG:
 			return activity.getString( R.string.hashtag_of, hashtag );
 		
@@ -379,6 +397,12 @@ class Column {
 		case TYPE_CONVERSATION:
 			return R.attr.ic_conversation;
 		
+		case TYPE_BOOSTED_BY:
+			return R.attr.btn_boost;
+
+		case TYPE_FAVOURITED_BY:
+			return R.attr.btn_favourite;
+			
 		case TYPE_HASHTAG:
 			return R.attr.ic_hashtag;
 		
@@ -975,6 +999,13 @@ class Column {
 					case TYPE_NOTIFICATIONS:
 						return parseNotifications( client, PATH_NOTIFICATIONS );
 					
+					case TYPE_BOOSTED_BY:
+						return  parseAccountList( client, String.format( Locale.JAPAN,PATH_BOOSTED_BY,status_id ) );
+					
+					case TYPE_FAVOURITED_BY:
+						return  parseAccountList( client, String.format( Locale.JAPAN,PATH_FAVOURITED_BY,status_id ) );
+					
+					
 					case TYPE_CONVERSATION:
 						
 						// 指定された発言そのもの
@@ -1102,6 +1133,8 @@ class Column {
 	
 	private void updateRelation( TootApiClient client, ArrayList< Object > list_tmp ){
 		if( list_tmp == null || list_tmp.isEmpty() ) return;
+		if( access_info.isPseudo() ) return;
+		
 		HashSet< Long > who_set = new HashSet<>();
 		HashSet< String > acct_set = new HashSet<>();
 		{
@@ -1212,16 +1245,16 @@ class Column {
 		
 	}
 	
-	void startRefreshForPost( long status_id ){
+	void startRefreshForPost( long status_id, int refresh_after_toot ){
 		switch(column_type){
 		case TYPE_HOME:
 		case TYPE_LOCAL:
 		case TYPE_FEDERATE:
-			startRefresh( true, false, status_id );
+			startRefresh( true, false, status_id ,refresh_after_toot);
 			break;
 		case TYPE_PROFILE:
 			if( profile_tab == TAB_STATUS && profile_id == access_info.id ){
-				startRefresh( true, false, status_id );
+				startRefresh( true, false, status_id ,refresh_after_toot);
 			}
 			break;
 		case TYPE_CONVERSATION:
@@ -1231,7 +1264,7 @@ class Column {
 		}
 	}
 	
-	void startRefresh( boolean bSilent, final boolean bBottom ,final long status_id){
+	void startRefresh( final boolean bSilent, final boolean bBottom , final long status_id, final int refresh_after_toot){
 		
 		if( last_task != null ){
 			if( ! bSilent ){
@@ -1608,6 +1641,14 @@ class Column {
 					case TYPE_NOTIFICATIONS:
 						return getNotificationList( client, PATH_NOTIFICATIONS );
 					
+					case TYPE_BOOSTED_BY:
+						return  getAccountList( client, String.format( Locale.JAPAN,PATH_BOOSTED_BY,status_id ) );
+					
+					case TYPE_FAVOURITED_BY:
+						return  getAccountList( client, String.format( Locale.JAPAN,PATH_FAVOURITED_BY,status_id ) );
+					
+					
+					
 					case TYPE_PROFILE:
 						if( who_account == null ){
 							parseAccount1( client.request(
@@ -1749,21 +1790,22 @@ class Column {
 					list_data.addAll( list_new );
 					fireShowContent();
 					
-					if( status_index >= 0 ){
+					if( status_index >= 0 && refresh_after_toot == Pref.RAT_REFRESH_SCROLL){
 						if( holder != null ){
 							//noinspection ConstantConditions
 							sp.pos = status_index;
 							sp.top = 0;
 							holder.setScrollPosition( sp, 0f );
 						}else{
-							scroll_save.pos += status_index;
+							scroll_save.pos = status_index;
 							scroll_save.top = 0;
 						}
 					}else{
+						float delta = bSilent ? 0f : - 20f;
 						if( holder != null ){
 							//noinspection ConstantConditions
 							sp.pos += added;
-							holder.setScrollPosition( sp, - 20f );
+							holder.setScrollPosition( sp, delta );
 						}else{
 							scroll_save.pos += added;
 						}
@@ -2036,6 +2078,13 @@ class Column {
 					case TYPE_HASHTAG:
 						return getStatusList( client,
 							String.format( Locale.JAPAN, PATH_HASHTAG, Uri.encode( hashtag ) ) );
+					
+					case TYPE_BOOSTED_BY:
+						return  getAccountList( client, String.format( Locale.JAPAN,PATH_BOOSTED_BY,status_id ) );
+					
+					case TYPE_FAVOURITED_BY:
+						return  getAccountList( client, String.format( Locale.JAPAN,PATH_FAVOURITED_BY,status_id ) );
+					
 					
 					case TYPE_MUTES:
 						return getAccountList( client, PATH_MUTES );

@@ -27,6 +27,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 
+import com.astuetz.PagerSlidingTabStrip;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -129,10 +131,13 @@ public class ActMain extends AppCompatActivity
 		reloadAccountSetting();
 		
 		if( ! TextUtils.isEmpty( posted_acct ) ){
-			for( Column column : pager_adapter.column_list ){
-				SavedAccount a = column.access_info;
-				if( ! Utils.equalsNullable( a.acct,posted_acct )) continue;
-				column.startRefreshForPost(posted_status_id);
+			int refresh_after_toot = pref.getInt( Pref.KEY_REFRESH_AFTER_TOOT,0);
+			if( refresh_after_toot != Pref.RAT_DONT_REFRESH ){
+				for( Column column : pager_adapter.column_list ){
+					SavedAccount a = column.access_info;
+					if( ! Utils.equalsNullable( a.acct,posted_acct )) continue;
+					column.startRefreshForPost(posted_status_id,refresh_after_toot);
+				}
 			}
 			posted_acct = null;
 		}
@@ -397,7 +402,6 @@ public class ActMain extends AppCompatActivity
 	void initUI(){
 		setContentView( R.layout.act_main );
 		llEmpty = findViewById( R.id.llEmpty );
-
 //		// toolbar
 //		Toolbar toolbar = (Toolbar) findViewById( R.id.toolbar );
 //		setSupportActionBar( toolbar );
@@ -433,6 +437,7 @@ public class ActMain extends AppCompatActivity
 		pager = (ViewPager) findViewById( R.id.viewPager );
 		pager_adapter = new ColumnPagerAdapter( this );
 		pager.setAdapter( pager_adapter );
+		
 	}
 	
 	public void performAccountAdd(){

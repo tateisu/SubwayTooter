@@ -79,7 +79,7 @@ class ColumnPagerAdapter extends PagerAdapter {
 	}
 	
 	@Override public CharSequence getPageTitle( int page_idx ){
-		return "page" + page_idx;
+		return getColumn( page_idx).getColumnName( false );
 	}
 	
 	@Override public boolean isViewFromObject( View view, Object object ){

@@ -44,7 +44,7 @@ class DlgContextMenu implements View.OnClickListener {
 		, @NonNull SavedAccount access_info
 		, @NonNull TootAccount who
 		, @Nullable TootStatus status
-	    ,int column_type
+		, int column_type
 	){
 		this.activity = activity;
 		this.access_info = access_info;
@@ -131,12 +131,12 @@ class DlgContextMenu implements View.OnClickListener {
 			btnBlock.setOnClickListener( this );
 			
 			// 被フォロー状態
-			ImageView ivFollowedBy = (ImageView) viewRoot.findViewById( R.id. ivFollowedBy);
-			if( !relation.followed_by){
+			ImageView ivFollowedBy = (ImageView) viewRoot.findViewById( R.id.ivFollowedBy );
+			if( ! relation.followed_by ){
 				ivFollowedBy.setVisibility( View.GONE );
 			}else{
 				ivFollowedBy.setVisibility( View.VISIBLE );
-				ivFollowedBy.setImageResource( Styler.getAttributeResourceId( activity,R.attr.ic_followed_by ));
+				ivFollowedBy.setImageResource( Styler.getAttributeResourceId( activity, R.attr.ic_followed_by ) );
 			}
 			
 			// follow button
@@ -203,14 +203,21 @@ class DlgContextMenu implements View.OnClickListener {
 		
 		v = viewRoot.findViewById( R.id.btnCancel );
 		v.setOnClickListener( this );
+		
+		v = viewRoot.findViewById( R.id.btnBoostedBy );
+		v.setOnClickListener( this );
+		
+		v = viewRoot.findViewById( R.id.btnFavouritedBy );
+		v.setOnClickListener( this );
+		
 	}
 	
 	void show(){
 		//noinspection ConstantConditions
 		WindowManager.LayoutParams lp = dialog.getWindow().getAttributes();
-		lp.width = (int)(0.5f + 280f * activity.density);
+		lp.width = (int) ( 0.5f + 280f * activity.density );
 		lp.height = WindowManager.LayoutParams.WRAP_CONTENT;
-		dialog.getWindow().setAttributes(lp);
+		dialog.getWindow().setAttributes( lp );
 		
 		dialog.show();
 	}
@@ -281,11 +288,23 @@ class DlgContextMenu implements View.OnClickListener {
 			}
 			break;
 		
+		case R.id.btnBoostedBy:
+			if( status != null ){
+				activity.addColumn( access_info, Column.TYPE_BOOSTED_BY, status.id );
+			}
+			break;
+		
+		case R.id.btnFavouritedBy:
+			if( status != null ){
+				activity.addColumn( access_info, Column.TYPE_FAVOURITED_BY, status.id );
+			}
+			break;
+		
 		case R.id.btnFollow:
 			if( relation.following || relation.requested ){
-				activity.callFollow( access_info, who, false, false,activity.unfollow_complete_callback );
+				activity.callFollow( access_info, who, false, false, activity.unfollow_complete_callback );
 			}else{
-				activity.callFollow( access_info, who, true, false,activity.follow_complete_callback );
+				activity.callFollow( access_info, who, true, false, activity.follow_complete_callback );
 			}
 			break;
 		
@@ -345,7 +364,7 @@ class DlgContextMenu implements View.OnClickListener {
 			final String who_acct = access_info.getFullAcct( who );
 			AccountPicker.pick( activity, false, false, account_list_non_pseudo, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( SavedAccount ai ){
-					activity.callRemoteFollow( ai, who_acct, who.locked, false,activity.follow_complete_callback );
+					activity.callRemoteFollow( ai, who_acct, who.locked, false, activity.follow_complete_callback );
 				}
 			} );
 			break;
@@ -357,15 +376,15 @@ class DlgContextMenu implements View.OnClickListener {
 		case R.id.btnOpenProfileFromAnotherAccount:
 			activity.performOpenUserFromAnotherAccount( who, account_list_non_pseudo_same_instance );
 			break;
-			
+		
 		case R.id.btnNickname:
-			ActNickname.open( activity,access_info.getFullAcct( who ) ,ActMain.REQUEST_CODE_NICKNAME );
+			ActNickname.open( activity, access_info.getFullAcct( who ), ActMain.REQUEST_CODE_NICKNAME );
 			break;
 		
 		case R.id.btnCancel:
 			dialog.cancel();
 			break;
-
+			
 		}
 	}
 	

@@ -248,4 +248,10 @@
     <string name="profile">Profile</string>
     <string name="profile_of">Profile of %1$s</string>
     <string name="it_is_you">It\'s you.</string>
+    <string name="refresh_after_toot">Refresh after toot</string>
+    <string name="refresh_scroll_to_toot">Refresh, Scroll to toot</string>
+    <string name="refresh_no_scroll">Refresh, Don\'t scroll</string>
+    <string name="dont_refresh">Don\'t refresh</string>
+    <string name="boosted_by">Boosted by…</string>
+    <string name="favourited_by">Favourited by…</string>
 </resources>

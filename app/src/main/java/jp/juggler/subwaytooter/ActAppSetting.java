@@ -43,6 +43,7 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
 	Spinner spResizeImage;
+	Spinner spRefreshAfterToot;
 	
 	CheckBox cbNotificationSound;
 	CheckBox cbNotificationVibration;
@@ -122,6 +123,20 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 			spResizeImage.setAdapter( adapter );
 			spResizeImage.setOnItemSelectedListener( this );
 		}
+		
+		{
+			String[] caption_list = new String[]{
+				getString( R.string.refresh_scroll_to_toot ),
+				getString( R.string.refresh_no_scroll ),
+				getString( R.string.dont_refresh ),
+			};
+			ArrayAdapter< String > adapter = new ArrayAdapter<>( this, android.R.layout.simple_spinner_item, caption_list );
+			adapter.setDropDownViewResource( R.layout.lv_spinner_dropdown );
+			spRefreshAfterToot = (Spinner) findViewById( R.id.spRefreshAfterToot );
+			spRefreshAfterToot.setAdapter( adapter );
+			spRefreshAfterToot.setOnItemSelectedListener( this );
+		}
+		
 	}
 	
 	boolean load_busy;
@@ -143,7 +158,7 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 		spBackButtonAction.setSelection( pref.getInt( Pref.KEY_BACK_BUTTON_ACTION, 0 ) );
 		spUITheme.setSelection( pref.getInt( Pref.KEY_UI_THEME, 0 ) );
 		spResizeImage.setSelection( pref.getInt( Pref.KEY_RESIZE_IMAGE, 4 ) );
-		
+		spRefreshAfterToot.setSelection( pref.getInt( Pref.KEY_REFRESH_AFTER_TOOT, 0 ) );
 		load_busy = false;
 	}
 	
@@ -164,7 +179,7 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 			.putInt( Pref.KEY_BACK_BUTTON_ACTION, spBackButtonAction.getSelectedItemPosition() )
 			.putInt( Pref.KEY_UI_THEME, spUITheme.getSelectedItemPosition() )
 			.putInt( Pref.KEY_RESIZE_IMAGE, spResizeImage.getSelectedItemPosition() )
-			
+			.putInt( Pref.KEY_REFRESH_AFTER_TOOT, spRefreshAfterToot.getSelectedItemPosition() )
 			.apply();
 	}
 	

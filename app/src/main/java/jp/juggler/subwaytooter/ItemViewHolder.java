@@ -199,7 +199,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 				showBoost(
 					n.account
 					, n.time_created_at
-					, R.attr.btn_boost
+					, R.attr.ic_follow_plus
 					, Utils.formatSpannable1( activity, R.string.display_name_followed_by, n.account.display_name )
 				);
 				//

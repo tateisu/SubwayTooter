@@ -77,6 +77,7 @@
         <item name="ic_follow_cross">@drawable/ic_follow_cross</item>
         <item name="ic_followed_by">@drawable/ic_followed_by</item>
 
+        <item name="ic_hamburger">@drawable/ic_hamburger</item>
 
 
     </style>
@@ -162,6 +163,8 @@
         <item name="ic_follow_plus">@drawable/ic_follow_plus_dark</item>
         <item name="ic_follow_cross">@drawable/ic_follow_cross_dark</item>
         <item name="ic_followed_by">@drawable/ic_followed_by_dark</item>
+
+        <item name="ic_hamburger">@drawable/ic_hamburger_dark</item>
 
 
     </style>

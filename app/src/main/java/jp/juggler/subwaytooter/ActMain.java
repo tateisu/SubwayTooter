@@ -72,7 +72,7 @@ public class ActMain extends AppCompatActivity
 //		super.attachBaseContext( CalligraphyContextWrapper.wrap(newBase));
 //	}
 	
-	float density;
+	public float density;
 	
 	SharedPreferences pref;
 	Handler handler;
@@ -417,14 +417,14 @@ public class ActMain extends AppCompatActivity
 		navigationView.setNavigationItemSelectedListener( this );
 		
 		// floating action button
-		FloatingActionButton fabToot = (FloatingActionButton) findViewById( R.id.fabToot );
+		View fabToot = (View) findViewById( R.id.fabToot );
 		fabToot.setOnClickListener( new View.OnClickListener() {
 			@Override public void onClick( View view ){
 				performTootButton();
 			}
 		} );
 		// floating action button
-		FloatingActionButton fabMenu = (FloatingActionButton) findViewById( R.id.fabMenu );
+		View fabMenu = findViewById( R.id.fabMenu );
 		fabMenu.setOnClickListener( new View.OnClickListener() {
 			@Override public void onClick( View view ){
 				if( ! drawer.isDrawerOpen( Gravity.START ) ){

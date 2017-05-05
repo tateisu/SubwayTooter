@@ -112,4 +112,6 @@
     <attr name="ic_follow_cross" format="reference" />
     <attr name="ic_followed_by" format="reference" />
 
+    <attr name="ic_hamburger" format="reference" />
+
 </resources>

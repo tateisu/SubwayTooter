@@ -22,7 +22,6 @@ import jp.juggler.subwaytooter.dialog.AccountPicker;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.LogCategory;
-import jp.juggler.subwaytooter.util.Utils;
 
 class DlgContextMenu implements View.OnClickListener {
 	

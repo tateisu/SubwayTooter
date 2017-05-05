@@ -7,7 +7,7 @@
     android:descendantFocusability="blocksDescendants"
     android:orientation="vertical"
     android:paddingBottom="3dp"
-    android:paddingTop="3dp"
+    android:paddingTop="0dp"
     >
 
     <LinearLayout

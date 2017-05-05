@@ -254,4 +254,15 @@
     <string name="dont_refresh">Don\'t refresh</string>
     <string name="boosted_by">Boosted by…</string>
     <string name="favourited_by">Favourited by…</string>
+    <string name="hashtag">hashtag</string>
+    <string name="conversation">conversation</string>
+    <string name="account_picker_open_user_who">Which account do you open user %1$s ?</string>
+    <string name="account_picker_add_timeline_of">Which account do you open %1$s ?</string>
+    <string name="account_picker_open_setting">Which account do you open setting?</string>
+    <string name="account_picker_favourite">Which account do you favourite ?</string>
+    <string name="account_picker_boost">Which account do you boost?</string>
+    <string name="account_picker_follow">Which account do you follow?</string>
+    <string name="account_picker_toot">Which account do you toot?</string>
+    <string name="qr_code">QR code</string>
+    <string name="generating_qr_code">Making QR code…</string>
 </resources>

@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.SystemClock;
@@ -311,18 +312,8 @@ class Column {
 	
 	String getColumnName( boolean bLong ){
 		switch( column_type ){
-		
 		default:
-			return "?";
-		
-		case TYPE_HOME:
-			return activity.getString( R.string.home );
-		
-		case TYPE_LOCAL:
-			return activity.getString( R.string.local_timeline );
-		
-		case TYPE_FEDERATE:
-			return activity.getString( R.string.federate_timeline );
+			return getColumnTypeName( activity, column_type );
 		
 		case TYPE_PROFILE:
 			
@@ -330,42 +321,72 @@ class Column {
 				, who_account != null ? AcctColor.getNickname( access_info.getFullAcct( who_account ) ) : Long.toString( profile_id )
 			);
 		
-		case TYPE_FAVOURITES:
-			return activity.getString( R.string.favourites );
-		
-		case TYPE_REPORTS:
-			return activity.getString( R.string.reports );
-		
-		case TYPE_NOTIFICATIONS:
-			return activity.getString( R.string.notifications );
-		
 		case TYPE_CONVERSATION:
 			return activity.getString( R.string.conversation_around, status_id );
 		
-		case TYPE_BOOSTED_BY:
-			return activity.getString( R.string.boosted_by );
-		
-		case TYPE_FAVOURITED_BY:
-			return activity.getString( R.string.favourited_by );
-		
 		case TYPE_HASHTAG:
 			return activity.getString( R.string.hashtag_of, hashtag );
-		
-		case TYPE_MUTES:
-			return activity.getString( R.string.muted_users );
-		
-		case TYPE_BLOCKS:
-			return activity.getString( R.string.blocked_users );
 		
 		case TYPE_SEARCH:
 			if( bLong ){
 				return activity.getString( R.string.search_of, search_query );
 			}else{
-				return activity.getString( R.string.search );
+				return getColumnTypeName( activity, column_type );
 			}
+			
+		}
+	}
+	
+	static String getColumnTypeName( Context context, int type ){
+		switch( type ){
+		default:
+			return "?";
+		
+		case TYPE_HOME:
+			return context.getString( R.string.home );
+		
+		case TYPE_LOCAL:
+			return context.getString( R.string.local_timeline );
+		
+		case TYPE_FEDERATE:
+			return context.getString( R.string.federate_timeline );
+		
+		case TYPE_PROFILE:
+			
+			return context.getString( R.string.profile );
+		
+		case TYPE_FAVOURITES:
+			return context.getString( R.string.favourites );
+		
+		case TYPE_REPORTS:
+			return context.getString( R.string.reports );
+		
+		case TYPE_NOTIFICATIONS:
+			return context.getString( R.string.notifications );
+		
+		case TYPE_CONVERSATION:
+			return context.getString( R.string.conversation );
+		
+		case TYPE_BOOSTED_BY:
+			return context.getString( R.string.boosted_by );
+		
+		case TYPE_FAVOURITED_BY:
+			return context.getString( R.string.favourited_by );
+		
+		case TYPE_HASHTAG:
+			return context.getString( R.string.hashtag );
+		
+		case TYPE_MUTES:
+			return context.getString( R.string.muted_users );
+		
+		case TYPE_BLOCKS:
+			return context.getString( R.string.blocked_users );
+		
+		case TYPE_SEARCH:
+			return context.getString( R.string.search );
 		
 		case TYPE_FOLLOW_REQUESTS:
-			return activity.getString( R.string.follow_requests );
+			return context.getString( R.string.follow_requests );
 		}
 	}
 	
@@ -1795,13 +1816,13 @@ class Column {
 						}
 					}else{
 						float delta = bSilent ? 0f : - 20f;
-						if(  sp != null ){
+						if( sp != null ){
 							sp.pos += added;
 							holder.setScrollPosition( sp, delta );
-						}else if ( scroll_save != null ){
+						}else if( scroll_save != null ){
 							scroll_save.pos += added;
 						}else{
-							scroll_save = new ScrollPosition( added,0 );
+							scroll_save = new ScrollPosition( added, 0 );
 						}
 					}
 				}

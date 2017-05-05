@@ -259,5 +259,16 @@
     <string name="refresh_after_toot">Refresh after toot</string>
     <string name="refresh_no_scroll">Refresh, Don\'t scroll</string>
     <string name="refresh_scroll_to_toot">Refresh, Scroll to toot</string>
+    <string name="account_picker_add_timeline_of">Which account do you open %1$s ?</string>
+    <string name="account_picker_boost">Which account do you boost?</string>
+    <string name="account_picker_favourite">Which account do you favourite ?</string>
+    <string name="account_picker_follow">Which account do you follow?</string>
+    <string name="account_picker_open_setting">Which account do you open setting?</string>
+    <string name="account_picker_open_user_who">Which account do you open user %1$s ?</string>
+    <string name="account_picker_toot">Which account do you toot?</string>
+    <string name="conversation">conversation</string>
+    <string name="hashtag">hashtag</string>
+    <string name="generating_qr_code">Making QR code…</string>
+    <string name="qr_code">QR code</string>
 
 </resources>

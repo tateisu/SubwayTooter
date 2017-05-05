@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.customtabs.CustomTabsIntent;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.os.AsyncTaskCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
@@ -26,8 +25,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
-
-import com.astuetz.PagerSlidingTabStrip;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -63,14 +60,14 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 
 public class ActMain extends AppCompatActivity
-	implements NavigationView.OnNavigationItemSelectedListener {
+	implements NavigationView.OnNavigationItemSelectedListener
+{
 	public static final LogCategory log = new LogCategory( "ActMain" );
 	
-
-//	@Override
-//	protected void attachBaseContext(Context newBase) {
-//		super.attachBaseContext( CalligraphyContextWrapper.wrap(newBase));
-//	}
+	//	@Override
+	//	protected void attachBaseContext(Context newBase) {
+	//		super.attachBaseContext( CalligraphyContextWrapper.wrap(newBase));
+	//	}
 	
 	public float density;
 	
@@ -78,7 +75,6 @@ public class ActMain extends AppCompatActivity
 	Handler handler;
 	String posted_acct;
 	long posted_status_id;
-	
 	
 	@Override
 	protected void onCreate( Bundle savedInstanceState ){
@@ -103,7 +99,7 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	@Override protected void onResume(){
-		log.d("onResume");
+		log.d( "onResume" );
 		super.onResume();
 		HTMLDecoder.link_callback = link_click_listener;
 		
@@ -131,12 +127,12 @@ public class ActMain extends AppCompatActivity
 		reloadAccountSetting();
 		
 		if( ! TextUtils.isEmpty( posted_acct ) ){
-			int refresh_after_toot = pref.getInt( Pref.KEY_REFRESH_AFTER_TOOT,0);
+			int refresh_after_toot = pref.getInt( Pref.KEY_REFRESH_AFTER_TOOT, 0 );
 			if( refresh_after_toot != Pref.RAT_DONT_REFRESH ){
 				for( Column column : pager_adapter.column_list ){
 					SavedAccount a = column.access_info;
-					if( ! Utils.equalsNullable( a.acct,posted_acct )) continue;
-					column.startRefreshForPost(posted_status_id,refresh_after_toot);
+					if( ! Utils.equalsNullable( a.acct, posted_acct ) ) continue;
+					column.startRefreshForPost( posted_status_id, refresh_after_toot );
 				}
 			}
 			posted_acct = null;
@@ -146,7 +142,7 @@ public class ActMain extends AppCompatActivity
 			llEmpty.setVisibility( View.VISIBLE );
 		}
 		
-		Uri uri = ActOAuthCallback.last_uri.getAndSet( null );
+		Uri uri = ActCallback.last_uri.getAndSet( null );
 		if( uri != null ){
 			handleIntentUri( uri );
 		}
@@ -183,7 +179,7 @@ public class ActMain extends AppCompatActivity
 	static final int REQUEST_CODE_POST = 5;
 	
 	@Override protected void onActivityResult( int requestCode, int resultCode, Intent data ){
-		log.d("onActivityResult");
+		log.d( "onActivityResult" );
 		if( resultCode == RESULT_OK ){
 			if( requestCode == REQUEST_CODE_COLUMN_LIST ){
 				if( data != null ){
@@ -222,7 +218,7 @@ public class ActMain extends AppCompatActivity
 			}else if( requestCode == REQUEST_CODE_POST ){
 				if( data != null ){
 					posted_acct = data.getStringExtra( ActPost.EXTRA_POSTED_ACCT );
-					posted_status_id = data.getLongExtra( ActPost.EXTRA_POSTED_STATUS_ID,0L );
+					posted_status_id = data.getLongExtra( ActPost.EXTRA_POSTED_STATUS_ID, 0L );
 				}
 			}
 		}
@@ -339,9 +335,9 @@ public class ActMain extends AppCompatActivity
 			
 		}else if( id == R.id.nav_add_favourites ){
 			performAddTimeline( false, Column.TYPE_FAVOURITES );
-
-//		}else if( id == R.id.nav_add_reports ){
-//			performAddTimeline(Column.TYPE_REPORTS );
+			
+			//		}else if( id == R.id.nav_add_reports ){
+			//			performAddTimeline(Column.TYPE_REPORTS );
 		}else if( id == R.id.nav_add_statuses ){
 			performAddTimeline( false, Column.TYPE_PROFILE );
 		}else if( id == R.id.nav_add_notifications ){
@@ -378,15 +374,15 @@ public class ActMain extends AppCompatActivity
 		}else if( id == R.id.nav_muted_app ){
 			startActivity( new Intent( this, ActMutedApp.class ) );
 			// Handle the camera action
-//		}else if( id == R.id.nav_gallery ){
-//
-//		}else if( id == R.id.nav_slideshow ){
-//
-//		}else if( id == R.id.nav_manage ){
-//
-//		}else if( id == R.id.nav_share ){
-//
-//		}else if( id == R.id.nav_send ){
+			//		}else if( id == R.id.nav_gallery ){
+			//
+			//		}else if( id == R.id.nav_slideshow ){
+			//
+			//		}else if( id == R.id.nav_manage ){
+			//
+			//		}else if( id == R.id.nav_share ){
+			//
+			//		}else if( id == R.id.nav_send ){
 			
 		}
 		
@@ -402,16 +398,16 @@ public class ActMain extends AppCompatActivity
 	void initUI(){
 		setContentView( R.layout.act_main );
 		llEmpty = findViewById( R.id.llEmpty );
-//		// toolbar
-//		Toolbar toolbar = (Toolbar) findViewById( R.id.toolbar );
-//		setSupportActionBar( toolbar );
+		//		// toolbar
+		//		Toolbar toolbar = (Toolbar) findViewById( R.id.toolbar );
+		//		setSupportActionBar( toolbar );
 		
 		// navigation drawer
 		final DrawerLayout drawer = (DrawerLayout) findViewById( R.id.drawer_layout );
-//		ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-//			this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close );
-//		drawer.addDrawerListener( toggle );
-//		toggle.syncState();
+		//		ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+		//			this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close );
+		//		drawer.addDrawerListener( toggle );
+		//		toggle.syncState();
 		
 		NavigationView navigationView = (NavigationView) findViewById( R.id.nav_view );
 		navigationView.setNavigationItemSelectedListener( this );
@@ -499,31 +495,14 @@ public class ActMain extends AppCompatActivity
 							Utils.showToast( ActMain.this, true, sv );
 							log.e( result.error );
 						}else{
-							// 疑似アカウントが追加された
-							try{
-								String username = "?";
-								String full_acct = username + "@" + instance;
-								
-								JSONObject account_info = new JSONObject();
-								account_info.put( "username", username );
-								account_info.put( "acct", username );
-								
-								long row_id = SavedAccount.insert( instance, full_acct, account_info, new JSONObject() );
-								SavedAccount account = SavedAccount.loadAccount( log, row_id );
-								if( account != null ){
-									account.notification_follow = false;
-									account.notification_favourite = false;
-									account.notification_boost = false;
-									account.notification_mention = false;
-									account.saveSetting();
-									
-									Utils.showToast( ActMain.this, false, R.string.server_confirmed );
-									addColumn( account, Column.TYPE_LOCAL );
-									dialog.dismiss();
-								}
-							}catch( JSONException ex ){
-								ex.printStackTrace();
+							SavedAccount a = addPseudoAccount(instance);
+							if( a != null ){
+								// 疑似アカウントが追加された
+								Utils.showToast( ActMain.this, false, R.string.server_confirmed );
+								addColumn( a, Column.TYPE_LOCAL );
+								dialog.dismiss();
 							}
+								
 						}
 					}
 				};
@@ -542,6 +521,34 @@ public class ActMain extends AppCompatActivity
 		
 	}
 	
+	SavedAccount addPseudoAccount(String host){
+		try{
+			String username = "?";
+			String full_acct = username + "@" + host;
+			
+			JSONObject account_info = new JSONObject();
+			account_info.put( "username", username );
+			account_info.put( "acct", username );
+			
+			long row_id = SavedAccount.insert( host, full_acct, account_info, new JSONObject() );
+			SavedAccount account = SavedAccount.loadAccount( log, row_id );
+			if( account == null){
+				throw new RuntimeException( "loadAccount returns null.");
+			}
+			account.notification_follow = false;
+			account.notification_favourite = false;
+			account.notification_boost = false;
+			account.notification_mention = false;
+			account.saveSetting();
+			return account;
+		}catch( JSONException ex ){
+			ex.printStackTrace();
+			log.e(ex,"addPseudoAccount failed.");
+			Utils.showToast( this, ex,"addPseudoAccount failed.");
+		}
+		return null;
+	}
+	
 	private void startAccessTokenUpdate( Intent data ){
 		Uri uri = data.getData();
 		if( uri == null ) return;
@@ -556,6 +563,53 @@ public class ActMain extends AppCompatActivity
 	
 	// ActOAuthCallbackで受け取ったUriを処理する
 	private void handleIntentUri( @NonNull final Uri uri ){
+		
+		// プロフURL
+		if( "https".equals( uri.getScheme() ) ){
+			if( uri.getPath().startsWith( "/@" ) ){
+				// ユーザページをアプリ内で開く
+				Matcher m = reUserPage.matcher( uri.toString() );
+				if( m.find() ){
+					// https://mastodon.juggler.jp/@SubwayTooter
+					final String host = m.group( 1 );
+					final String user = Uri.decode( m.group( 2 ) );
+					ArrayList<SavedAccount> account_list = SavedAccount.loadAccountList( log );
+					ArrayList<SavedAccount> account_list_same_host = new ArrayList<>(  );
+					
+					for( SavedAccount a : account_list){
+						if( host.equalsIgnoreCase( a.host ) ){
+							account_list_same_host.add(a);
+						}
+					}
+					
+					if( account_list_same_host.isEmpty() ){
+						account_list_same_host.add( addPseudoAccount( host ));
+					}
+					
+					AccountPicker.pick( this, true, true
+						,getString(R.string.account_picker_open_user_who,user+"@"+host)
+						,account_list_same_host
+						, new AccountPicker.AccountPickerCallback() {
+						@Override public void onAccountPicked( final SavedAccount ai ){
+							startGetAccount( ai, host, user, new GetAccountCallback() {
+								@Override public void onGetAccount( TootAccount who ){
+									if( who != null ){
+										performOpenUser( ai, who );
+										return;
+									}
+									openChromeTab( ai, uri.toString(), true );
+								}
+							} );
+						}
+					} );
+					return;
+				}
+				return;
+				
+			}
+			// https なら oAuth用の導線は通さない
+			return;
+		}
 		
 		// 通知タップ
 		// subwaytooter://notification_click?db_id=(db_id)
@@ -734,17 +788,19 @@ public class ActMain extends AppCompatActivity
 			column.fireShowColumnHeader();
 		}
 	}
-	void reloadAccountSetting(SavedAccount account){
+	
+	void reloadAccountSetting( SavedAccount account ){
 		ArrayList< SavedAccount > done_list = new ArrayList<>();
 		for( Column column : pager_adapter.column_list ){
 			SavedAccount a = column.access_info;
-			if( ! Utils.equalsNullable( a.acct ,account.acct ) ) continue;
+			if( ! Utils.equalsNullable( a.acct, account.acct ) ) continue;
 			if( done_list.contains( a ) ) continue;
 			done_list.add( a );
 			a.reloadSetting();
 			column.fireShowColumnHeader();
 		}
 	}
+	
 	public void performColumnClose( boolean bConfirm, final Column column ){
 		if( column.dont_close ){
 			Utils.showToast( this, false, R.string.column_has_dont_close_option );
@@ -805,7 +861,10 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	public void performOpenUserFromAnotherAccount( final TootAccount who, ArrayList< SavedAccount > account_list_non_pseudo_same_instance ){
-		AccountPicker.pick( this, false, false, account_list_non_pseudo_same_instance, new AccountPicker.AccountPickerCallback() {
+		AccountPicker.pick( this, false, false
+			,getString(R.string.account_picker_open_user_who,AcctColor.getNickname( who.acct) )
+			, account_list_non_pseudo_same_instance
+			, new AccountPicker.AccountPickerCallback() {
 			@Override public void onAccountPicked( SavedAccount ai ){
 				addColumn( ai, Column.TYPE_PROFILE, who.id );
 			}
@@ -817,7 +876,9 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	private void performAddTimeline( boolean bAllowPseudo, final int type, final Object... args ){
-		AccountPicker.pick( this, bAllowPseudo, true, new AccountPicker.AccountPickerCallback() {
+		AccountPicker.pick( this, bAllowPseudo, true
+			,getString(R.string.account_picker_add_timeline_of,Column.getColumnTypeName(this,type))
+		, new AccountPicker.AccountPickerCallback() {
 			@Override public void onAccountPicked( SavedAccount ai ){
 				switch( type ){
 				default:
@@ -944,6 +1005,7 @@ public class ActMain extends AppCompatActivity
 					}
 				}
 				
+				// ユーザページをアプリ内で開く
 				m = reUserPage.matcher( url );
 				if( m.find() ){
 					// https://mastodon.juggler.jp/@SubwayTooter
@@ -1037,24 +1099,26 @@ public class ActMain extends AppCompatActivity
 			if( c.access_info.isPseudo() ){
 				Utils.showToast( this, false, R.string.not_available_for_pseudo_account );
 			}else{
-				ActPost.open( this, REQUEST_CODE_POST,c.access_info.db_id, "" );
+				ActPost.open( this, REQUEST_CODE_POST, c.access_info.db_id, "" );
 			}
 		}
 	}
 	
 	public void performReply( SavedAccount account, TootStatus status ){
-		ActPost.open( this, REQUEST_CODE_POST,account.db_id, status );
+		ActPost.open( this, REQUEST_CODE_POST, account.db_id, status );
 	}
 	
 	public void performMention( SavedAccount account, TootAccount who ){
-		ActPost.open( this, REQUEST_CODE_POST,account.db_id, "@" + account.getFullAcct( who ) + " " );
+		ActPost.open( this, REQUEST_CODE_POST, account.db_id, "@" + account.getFullAcct( who ) + " " );
 	}
 	
 	public void performMentionFromAnotherAccount( SavedAccount access_info, final TootAccount who, ArrayList< SavedAccount > account_list_non_pseudo ){
 		final String initial_text = "@" + access_info.getFullAcct( who ) + " ";
-		AccountPicker.pick( this, false, false, account_list_non_pseudo, new AccountPicker.AccountPickerCallback() {
+		AccountPicker.pick( this, false, false
+			,getString(R.string.account_picker_toot )
+			, account_list_non_pseudo, new AccountPicker.AccountPickerCallback() {
 			@Override public void onAccountPicked( SavedAccount ai ){
-				ActPost.open( ActMain.this, REQUEST_CODE_POST,ai.db_id, initial_text );
+				ActPost.open( ActMain.this, REQUEST_CODE_POST, ai.db_id, initial_text );
 			}
 		} );
 	}
@@ -1202,7 +1266,7 @@ public class ActMain extends AppCompatActivity
 				return;
 			}
 		}else if( ! bConfirmed ){
-			DlgConfirm.open( this, getString( R.string.confirm_boost_from,AcctColor.getNickname( access_info.acct ) ), new DlgConfirm.Callback() {
+			DlgConfirm.open( this, getString( R.string.confirm_boost_from, AcctColor.getNickname( access_info.acct ) ), new DlgConfirm.Callback() {
 				@Override public boolean isConfirmEnabled(){
 					return access_info.confirm_boost;
 				}
@@ -1210,7 +1274,7 @@ public class ActMain extends AppCompatActivity
 				@Override public void setConfirmEnabled( boolean bv ){
 					access_info.confirm_boost = bv;
 					access_info.saveSetting();
-					reloadAccountSetting(access_info);
+					reloadAccountSetting( access_info );
 				}
 				
 				@Override public void onOK(){
@@ -1306,7 +1370,9 @@ public class ActMain extends AppCompatActivity
 	////////////////////////////////////////
 	
 	private void performAccountSetting(){
-		AccountPicker.pick( this, true, true, new AccountPicker.AccountPickerCallback() {
+		AccountPicker.pick( this, true, true
+			,getString(R.string.account_picker_open_setting)
+			, new AccountPicker.AccountPickerCallback() {
 			@Override public void onAccountPicked( SavedAccount ai ){
 				ActAccountSetting.open( ActMain.this, ai, REQUEST_CODE_ACCOUNT_SETTING );
 			}
@@ -1337,29 +1403,29 @@ public class ActMain extends AppCompatActivity
 	
 	private void performColumnList(){
 		JSONArray array = encodeColumnList();
-		App1.saveColumnList(this,ActColumnList.TMP_FILE_COLUMN_LIST,array);
+		App1.saveColumnList( this, ActColumnList.TMP_FILE_COLUMN_LIST, array );
 		Intent intent = new Intent( this, ActColumnList.class );
 		intent.putExtra( ActColumnList.EXTRA_SELECTION, pager.getCurrentItem() );
 		startActivityForResult( intent, REQUEST_CODE_COLUMN_LIST );
 	}
-
-//	private void dumpColumnList(){
-//		for( int i = 0, ie = pager_adapter.column_list.size() ; i < ie ; ++ i ){
-//			Column column = pager_adapter.column_list.get( i );
-//			log.d( "dumpColumnList [%s]%s %s", i, column.access_info.acct, column.getColumnName( true ) );
-//		}
-//	}
+	
+	//	private void dumpColumnList(){
+	//		for( int i = 0, ie = pager_adapter.column_list.size() ; i < ie ; ++ i ){
+	//			Column column = pager_adapter.column_list.get( i );
+	//			log.d( "dumpColumnList [%s]%s %s", i, column.access_info.acct, column.getColumnName( true ) );
+	//		}
+	//	}
 	
 	static final String FILE_COLUMN_LIST = "column_list";
 	
 	void saveColumnList(){
 		JSONArray array = encodeColumnList();
-		App1.saveColumnList(this,FILE_COLUMN_LIST,array);
+		App1.saveColumnList( this, FILE_COLUMN_LIST, array );
 		
 	}
 	
 	private void loadColumnList(){
-		JSONArray array = App1.loadColumnList(this,FILE_COLUMN_LIST);
+		JSONArray array = App1.loadColumnList( this, FILE_COLUMN_LIST );
 		if( array != null ){
 			for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
 				try{
@@ -1411,15 +1477,15 @@ public class ActMain extends AppCompatActivity
 		, boolean bConfirmed
 		, final RelationChangedCallback callback
 	){
-		if( access_info.isMe( who )){
-			Utils.showToast( this,false,R.string.it_is_you );
+		if( access_info.isMe( who ) ){
+			Utils.showToast( this, false, R.string.it_is_you );
 			return;
 		}
 		
 		if( ! bConfirmed ){
 			if( bFollow && who.locked ){
 				DlgConfirm.open( this
-					, getString( R.string.confirm_follow_request_who_from,who.display_name ,AcctColor.getNickname( access_info.acct) )
+					, getString( R.string.confirm_follow_request_who_from, who.display_name, AcctColor.getNickname( access_info.acct ) )
 					, new DlgConfirm.Callback() {
 						@Override public boolean isConfirmEnabled(){
 							return access_info.confirm_follow_locked;
@@ -1428,7 +1494,7 @@ public class ActMain extends AppCompatActivity
 						@Override public void setConfirmEnabled( boolean bv ){
 							access_info.confirm_follow_locked = bv;
 							access_info.saveSetting();
-							reloadAccountSetting(access_info);
+							reloadAccountSetting( access_info );
 						}
 						
 						@Override public void onOK(){
@@ -1440,7 +1506,7 @@ public class ActMain extends AppCompatActivity
 				return;
 			}else if( bFollow ){
 				DlgConfirm.open( this
-					, getString( R.string.confirm_follow_who_from,who.display_name ,AcctColor.getNickname( access_info.acct) )
+					, getString( R.string.confirm_follow_who_from, who.display_name, AcctColor.getNickname( access_info.acct ) )
 					, new DlgConfirm.Callback() {
 						@Override public boolean isConfirmEnabled(){
 							return access_info.confirm_follow;
@@ -1449,7 +1515,7 @@ public class ActMain extends AppCompatActivity
 						@Override public void setConfirmEnabled( boolean bv ){
 							access_info.confirm_follow = bv;
 							access_info.saveSetting();
-							reloadAccountSetting(access_info);
+							reloadAccountSetting( access_info );
 						}
 						
 						@Override public void onOK(){
@@ -1461,7 +1527,7 @@ public class ActMain extends AppCompatActivity
 				return;
 			}else{
 				DlgConfirm.open( this
-					, getString( R.string.confirm_unfollow_who_from, who.display_name ,AcctColor.getNickname( access_info.acct))
+					, getString( R.string.confirm_unfollow_who_from, who.display_name, AcctColor.getNickname( access_info.acct ) )
 					, new DlgConfirm.Callback() {
 						@Override public boolean isConfirmEnabled(){
 							return access_info.confirm_unfollow;
@@ -1470,7 +1536,7 @@ public class ActMain extends AppCompatActivity
 						@Override public void setConfirmEnabled( boolean bv ){
 							access_info.confirm_unfollow = bv;
 							access_info.saveSetting();
-							reloadAccountSetting(access_info);
+							reloadAccountSetting( access_info );
 						}
 						
 						@Override public void onOK(){
@@ -1555,14 +1621,14 @@ public class ActMain extends AppCompatActivity
 			
 			@Override
 			protected void onPostExecute( TootApiResult result ){
-//				if( relation != null ){
-//			     	App1.relationship_map.put( access_info, relation );
-//					if( callback != null ) callback.onRelationChanged( relation );
-//				}else if( remote_who != null ){
-//					App1.relationship_map.addFollowing( access_info, remote_who.id );
-//					if( callback != null )
-//						callback.onRelationChanged( App1.relationship_map.get( access_info, remote_who.id ) );
-//				}
+				//				if( relation != null ){
+				//			     	App1.relationship_map.put( access_info, relation );
+				//					if( callback != null ) callback.onRelationChanged( relation );
+				//				}else if( remote_who != null ){
+				//					App1.relationship_map.addFollowing( access_info, remote_who.id );
+				//					if( callback != null )
+				//						callback.onRelationChanged( App1.relationship_map.get( access_info, remote_who.id ) );
+				//				}
 				
 				//noinspection StatementWithEmptyBody
 				if( result == null ){
@@ -1574,7 +1640,7 @@ public class ActMain extends AppCompatActivity
 					if( bFollow && relation.requested ){
 						// 鍵付きアカウントにフォローリクエストを申請した状態
 						Utils.showToast( ActMain.this, false, R.string.follow_requested );
-					}else if( !bFollow && relation.requested ){
+					}else if( ! bFollow && relation.requested ){
 						Utils.showToast( ActMain.this, false, R.string.follow_request_cant_remove_by_sender );
 					}else{
 						// ローカル操作成功、もしくはリモートフォロー成功
@@ -1595,15 +1661,15 @@ public class ActMain extends AppCompatActivity
 	void callRemoteFollow( final SavedAccount access_info
 		, final String acct, final boolean locked, boolean bConfirmed, final RelationChangedCallback callback
 	){
-		if( access_info.isMe( acct )){
-			Utils.showToast( this,false,R.string.it_is_you );
+		if( access_info.isMe( acct ) ){
+			Utils.showToast( this, false, R.string.it_is_you );
 			return;
 		}
 		
 		if( ! bConfirmed ){
 			if( locked ){
 				DlgConfirm.open( this
-					, getString( R.string.confirm_follow_request_who_from, AcctColor.getNickname( acct ) , AcctColor.getNickname( access_info.acct ) )
+					, getString( R.string.confirm_follow_request_who_from, AcctColor.getNickname( acct ), AcctColor.getNickname( access_info.acct ) )
 					, new DlgConfirm.Callback() {
 						@Override public boolean isConfirmEnabled(){
 							return access_info.confirm_follow_locked;
@@ -1612,7 +1678,7 @@ public class ActMain extends AppCompatActivity
 						@Override public void setConfirmEnabled( boolean bv ){
 							access_info.confirm_follow_locked = bv;
 							access_info.saveSetting();
-							reloadAccountSetting(access_info);
+							reloadAccountSetting( access_info );
 						}
 						
 						@Override public void onOK(){
@@ -1624,7 +1690,7 @@ public class ActMain extends AppCompatActivity
 				return;
 			}else{
 				DlgConfirm.open( this
-					, getString( R.string.confirm_follow_who_from, AcctColor.getNickname( acct ) , AcctColor.getNickname( access_info.acct ) )
+					, getString( R.string.confirm_follow_who_from, AcctColor.getNickname( acct ), AcctColor.getNickname( access_info.acct ) )
 					, new DlgConfirm.Callback() {
 						@Override public boolean isConfirmEnabled(){
 							return access_info.confirm_follow;
@@ -2084,7 +2150,6 @@ public class ActMain extends AppCompatActivity
 			Utils.showToast( ActMain.this, false, R.string.boost_succeeded );
 		}
 	};
-
 	
 	private void openOSSLicense(){
 		startActivity( new Intent( this, ActOSSLicense.class ) );

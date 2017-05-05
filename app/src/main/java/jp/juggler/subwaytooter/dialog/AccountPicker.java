@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.dialog;
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
@@ -13,12 +14,12 @@ import java.util.Comparator;
 
 import jp.juggler.subwaytooter.ActMain;
 import jp.juggler.subwaytooter.R;
-import jp.juggler.subwaytooter.Styler;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.Utils;
 
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 public class AccountPicker {
 	
@@ -27,14 +28,16 @@ public class AccountPicker {
 	}
 	
 	public static void pick( @NonNull ActMain activity, boolean bAllowPseudo, boolean bAuto
+		, String message
 		, @NonNull final AccountPickerCallback callback
 	){
 		
 		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( ActMain.log );
-		pick( activity, bAllowPseudo, bAuto, account_list, callback );
+		pick( activity, bAllowPseudo, bAuto, message, account_list, callback );
 	}
 	
 	public static void pick( @NonNull ActMain activity, boolean bAllowPseudo, boolean bAuto
+		, String message
 		, @NonNull final ArrayList< SavedAccount > account_list
 		, @NonNull final AccountPickerCallback callback
 	){
@@ -73,6 +76,11 @@ public class AccountPicker {
 		dialog.setContentView( viewRoot );
 		dialog.setCancelable( true );
 		dialog.setCanceledOnTouchOutside( true );
+		if( ! TextUtils.isEmpty( message ) ){
+			TextView tv = (TextView) viewRoot.findViewById( R.id.tvMessage );
+			tv.setVisibility( View.VISIBLE );
+			tv.setText( message );
+		}
 		
 		viewRoot.findViewById( R.id.btnCancel ).setOnClickListener( new View.OnClickListener() {
 			@Override public void onClick( View v ){
@@ -80,10 +88,9 @@ public class AccountPicker {
 			}
 		} );
 		
-		LinearLayout llAccounts = (LinearLayout)viewRoot.findViewById( R.id.llAccounts );
-		int pad_se = (int)(0.5f + 12f * activity.density);
-		int pad_tb = (int)(0.5f + 6f * activity.density);
-		int default_color_fg = Styler.getAttributeColor( activity,android.R.attr.textColorPrimary );
+		LinearLayout llAccounts = (LinearLayout) viewRoot.findViewById( R.id.llAccounts );
+		int pad_se = (int) ( 0.5f + 12f * activity.density );
+		int pad_tb = (int) ( 0.5f + 6f * activity.density );
 		
 		for( SavedAccount a : account_list ){
 			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams( LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT );
@@ -91,13 +98,13 @@ public class AccountPicker {
 			AcctColor ac = AcctColor.load( a.acct );
 			
 			Button b = new Button( activity );
-
+			
 			if( AcctColor.hasColorBackground( ac ) ){
 				b.setBackgroundColor( ac.color_bg );
 			}else{
 				b.setBackgroundResource( R.drawable.btn_bg_transparent );
 			}
-			if( AcctColor.hasColorForeground( ac )){
+			if( AcctColor.hasColorForeground( ac ) ){
 				b.setTextColor( ac.color_fg );
 			}
 			

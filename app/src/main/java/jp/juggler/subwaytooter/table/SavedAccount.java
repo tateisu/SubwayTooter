@@ -295,6 +295,15 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		}
 	}
 	
+	public String getUserUrl( @NonNull String who_acct ){
+		int p = who_acct.indexOf( '@' );
+		if( - 1 != p ){
+			return "https:/" +who_acct.substring( p + 1 ) + "/@" + who_acct.substring( 0,p);
+		}else{
+			return "https:/" + host + "/@" + who_acct;
+		}
+	}
+	
 	public boolean isMe( @NonNull TootAccount who ){
 		int pos = this.acct.indexOf( '@' );
 		String this_user = this.acct.substring( 0, pos );
@@ -333,4 +342,5 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		if( m.find() ) return AcctColor.load( m.group( 2 ) + "@" + m.group( 1 ) );
 		return null;
 	}
+	
 }

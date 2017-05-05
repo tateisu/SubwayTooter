@@ -8,7 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ActOAuthCallback extends AppCompatActivity {
+public class ActCallback extends AppCompatActivity {
 	static final AtomicReference< Uri > last_uri = new AtomicReference<>( null );
 	
 	@Override protected void onCreate( @Nullable Bundle savedInstanceState ){

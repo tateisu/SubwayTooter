@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
+import jp.juggler.subwaytooter.dialog.DlgQRCode;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -209,6 +210,9 @@ class DlgContextMenu implements View.OnClickListener {
 		v = viewRoot.findViewById( R.id.btnFavouritedBy );
 		v.setOnClickListener( this );
 		
+		v = viewRoot.findViewById( R.id.btnAccountQrCode );
+		v.setOnClickListener( this );
+		
 	}
 	
 	void show(){
@@ -241,23 +245,27 @@ class DlgContextMenu implements View.OnClickListener {
 		
 		case R.id.btnFavouriteAnotherAccount:
 			if( status != null ){
-				AccountPicker.pick( activity, false, false, account_list_non_pseudo_same_instance, new AccountPicker.AccountPickerCallback() {
-					@Override public void onAccountPicked( SavedAccount ai ){
-						if( ai != null )
-							activity.performFavourite( ai, status, activity.favourite_complete_callback );
-					}
-				} );
+				AccountPicker.pick( activity, false, false
+					, activity.getString( R.string.account_picker_favourite )
+					, account_list_non_pseudo_same_instance, new AccountPicker.AccountPickerCallback() {
+						@Override public void onAccountPicked( SavedAccount ai ){
+							if( ai != null )
+								activity.performFavourite( ai, status, activity.favourite_complete_callback );
+						}
+					} );
 			}
 			break;
 		
 		case R.id.btnBoostAnotherAccount:
 			if( status != null ){
-				AccountPicker.pick( activity, false, false, account_list_non_pseudo_same_instance, new AccountPicker.AccountPickerCallback() {
-					@Override public void onAccountPicked( SavedAccount ai ){
-						if( ai != null )
-							activity.performBoost( ai, status, false, activity.boost_complete_callback );
-					}
-				} );
+				AccountPicker.pick( activity, false, false
+					, activity.getString( R.string.account_picker_boost )
+					, account_list_non_pseudo_same_instance, new AccountPicker.AccountPickerCallback() {
+						@Override public void onAccountPicked( SavedAccount ai ){
+							if( ai != null )
+								activity.performBoost( ai, status, false, activity.boost_complete_callback );
+						}
+					} );
 			}
 			break;
 		
@@ -361,11 +369,13 @@ class DlgContextMenu implements View.OnClickListener {
 		
 		case R.id.btnFollowFromAnotherAccount:
 			final String who_acct = access_info.getFullAcct( who );
-			AccountPicker.pick( activity, false, false, account_list_non_pseudo, new AccountPicker.AccountPickerCallback() {
-				@Override public void onAccountPicked( SavedAccount ai ){
-					activity.callRemoteFollow( ai, who_acct, who.locked, false, activity.follow_complete_callback );
-				}
-			} );
+			AccountPicker.pick( activity, false, false
+				, activity.getString( R.string.account_picker_follow )
+				, account_list_non_pseudo, new AccountPicker.AccountPickerCallback() {
+					@Override public void onAccountPicked( SavedAccount ai ){
+						activity.callRemoteFollow( ai, who_acct, who.locked, false, activity.follow_complete_callback );
+					}
+				} );
 			break;
 		
 		case R.id.btnSendMessageFromAnotherAccount:
@@ -382,6 +392,10 @@ class DlgContextMenu implements View.OnClickListener {
 		
 		case R.id.btnCancel:
 			dialog.cancel();
+			break;
+		
+		case R.id.btnAccountQrCode:
+			DlgQRCode.open( activity, who.display_name, access_info.getUserUrl( who.acct ) );
 			break;
 			
 		}

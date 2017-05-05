@@ -132,7 +132,7 @@ public class AlarmService extends IntentService {
 						NotificationTracking.updateRead( db_id );
 						notification_manager.cancel( Long.toString( db_id ), NOTIFICATION_ID );
 						//
-						intent = new Intent( this, ActOAuthCallback.class );
+						intent = new Intent( this, ActCallback.class );
 						intent.setData( Uri.parse( "subwaytooter://notification_click?db_id=" + db_id ) );
 						intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
 						startActivity( intent );

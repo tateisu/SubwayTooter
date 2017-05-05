@@ -62,8 +62,7 @@ dependencies {
     compile 'com.github.woxthebox:draglistview:1.4.3'
     compile 'com.github.omadahealth:swipy:1.2.3@aar'
     compile 'com.jrummyapps:colorpicker:2.1.6'
-
-//    compile 'com.astuetz:pagerslidingtabstrip:1.0.1'
+    //    compile 'com.astuetz:pagerslidingtabstrip:1.0.1'
     compile 'com.github.kenglxn.QRGen:android:2.2.0'
-
+    compile project(':exif')
 }

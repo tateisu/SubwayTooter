@@ -13,8 +13,8 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
+import it.sephiroth.android.library.exif2.ExifInterface;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
@@ -781,12 +782,6 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		//noinspection LoopStatementThatDoesntLoop
 		for( ; ; ){
 			try{
-				// 設定からリサイズ指定を読む
-				int resize_max = list_resize_max[ pref.getInt( Pref.KEY_RESIZE_IMAGE, 4 ) ];
-				if( resize_max <= 0 ){
-					log.d( "createOpener: resize not required" );
-					break;
-				}
 				
 				// 画像の種別
 				boolean is_jpeg = MIME_TYPE_JPEG.equals( mime_type );
@@ -796,11 +791,27 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 					break;
 				}
 				
+				// EXIF回転情報の取得
+				Integer orientation;
+				
+				InputStream is = getContentResolver().openInputStream( uri );
+				if( is == null ){
+					Utils.showToast( this, false, "could not open image." );
+					break;
+				}
+				try{
+					ExifInterface exif = new ExifInterface();
+					exif.readExif( is, ExifInterface.Options.OPTION_IFD_0 | ExifInterface.Options.OPTION_IFD_1 | ExifInterface.Options.OPTION_IFD_EXIF );
+					orientation = exif.getTagIntValue( ExifInterface.TAG_ORIENTATION );
+				}finally{
+					IOUtils.closeQuietly( is );
+				}
+				
 				// 画像のサイズを調べる
 				BitmapFactory.Options options = new BitmapFactory.Options();
 				options.inJustDecodeBounds = true;
 				options.inScaled = false;
-				InputStream is = getContentResolver().openInputStream( uri );
+				is = getContentResolver().openInputStream( uri );
 				if( is == null ){
 					Utils.showToast( this, false, "could not open image." );
 					break;
@@ -819,15 +830,30 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				
 				// 長辺
 				int size = ( src_width > src_height ? src_width : src_height );
-				if( size <= resize_max ){
-					log.d( "createOpener: no need to resize, %s <= %s", size, resize_max );
+				
+				// 設定からリサイズ指定を読む
+				int resize_to = list_resize_max[ pref.getInt( Pref.KEY_RESIZE_IMAGE, 4 ) ];
+				
+				// リサイズも回転も必要がない場合
+				if( (orientation == null || orientation == 1 )
+					&& (resize_to <= 0 || size <= resize_to )
+					){
+					log.d( "createOpener: no need to resize & rotate" );
 					break;
+				}
+				
+				//noinspection StatementWithEmptyBody
+				if( size > resize_to ){
+					// 縮小が必要
+				}else{
+					// 縮小は不要
+					resize_to = size;
 				}
 				
 				// inSampleSizeを計算
 				int bits = 0;
 				int x = size;
-				while( x > resize_max * 2 ){
+				while( x > resize_to * 2 ){
 					++ bits;
 					x >>= 1;
 				}
@@ -851,18 +877,79 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				try{
 					src_width = options.outWidth;
 					src_height = options.outHeight;
+					float scale;
 					int dst_width;
 					int dst_height;
 					if( src_width >= src_height ){
-						dst_width = resize_max;
-						dst_height = (int) ( 0.5f + src_height / (float) src_width * resize_max );
+						scale = resize_to / (float)src_width;
+						dst_width = resize_to;
+						dst_height = (int) ( 0.5f + src_height / (float) src_width * resize_to );
 						if( dst_height < 1 ) dst_height = 1;
 					}else{
-						dst_height = resize_max;
-						dst_width = (int) ( 0.5f + src_width / (float) src_height * resize_max );
+						scale = resize_to /(float)src_height;
+						dst_height = resize_to;
+						dst_width = (int) ( 0.5f + src_width / (float) src_height * resize_to );
 						if( dst_width < 1 ) dst_width = 1;
 					}
-					// 64*64ピクセルのBitmap作成
+					
+					Matrix matrix = new Matrix(  );
+					matrix.reset();
+
+					// 画像の中心が原点に来るようにして
+					matrix.postTranslate( src_width * - 0.5f, src_height * - 0.5f );
+					// スケーリング
+					matrix.postScale( scale, scale );
+					// 回転情報があれば回転
+					if( orientation != null ){
+						int tmp;
+						switch( orientation.shortValue() ){
+						default:
+							break;
+						case 2:
+							matrix.postScale( 1f, - 1f );
+							break; // 上下反転
+						case 3:
+							matrix.postRotate( 180f );
+							break; // 180度回転
+						case 4:
+							matrix.postScale( - 1f, 1f );
+							break; // 左右反転
+						case 5:
+							tmp= dst_width;
+							//noinspection SuspiciousNameCombination
+							dst_width=dst_height;
+							dst_height=tmp;
+							matrix.postScale( 1f, - 1f );
+							matrix.postRotate( - 90f );
+							break;
+						case 6:
+							tmp= dst_width;
+							//noinspection SuspiciousNameCombination
+							dst_width=dst_height;
+							dst_height=tmp;
+							matrix.postRotate( 90f );
+							break;
+						case 7:
+							tmp= dst_width;
+							//noinspection SuspiciousNameCombination
+							dst_width=dst_height;
+							dst_height=tmp;
+							matrix.postScale( 1f, - 1f );
+							matrix.postRotate( 90f );
+							break;
+						case 8:
+							tmp= dst_width;
+							//noinspection SuspiciousNameCombination
+							dst_width=dst_height;
+							dst_height=tmp;
+							matrix.postRotate( - 90f );
+							break;
+						}
+					}
+					// 表示領域に埋まるように平行移動
+					matrix.postTranslate( dst_width * 0.5f, dst_height * 0.5f );
+					
+					// 出力用Bitmap作成
 					Bitmap dst = Bitmap.createBitmap( dst_width, dst_height, Bitmap.Config.ARGB_8888 );
 					if( dst == null ){
 						Utils.showToast( this, false, "bitmap creation failed." );
@@ -872,9 +959,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 						Canvas canvas = new Canvas( dst );
 						Paint paint = new Paint();
 						paint.setFilterBitmap( true );
-						Rect rect_src = new Rect( 0, 0, src_width, src_height );
-						Rect rect_dst = new Rect( 0, 0, dst_width, dst_height );
-						canvas.drawBitmap( src, rect_src, rect_dst, paint );
+						canvas.drawBitmap( src, matrix, paint );
 						File cache_dir = getExternalCacheDir();
 						if( cache_dir == null ){
 							Utils.showToast( this, false, "getExternalCacheDir returns null." );
@@ -1333,7 +1418,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 					data.putExtra( EXTRA_POSTED_ACCT, target_account.acct );
 					data.putExtra( EXTRA_POSTED_STATUS_ID, status.id );
 					
-					setResult( RESULT_OK ,data );
+					setResult( RESULT_OK, data );
 					ActPost.this.finish();
 				}else{
 					Utils.showToast( ActPost.this, true, result.error );

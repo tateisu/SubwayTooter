@@ -1,17 +1,31 @@
 package jp.juggler.subwaytooter;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
+import android.content.ClipData;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.os.AsyncTaskCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -33,6 +47,9 @@ import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -44,8 +61,11 @@ import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootMention;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.dialog.DlgConfirm;
+import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.util.ActionsDialog;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.MyEditText;
@@ -61,6 +81,9 @@ import static jp.juggler.subwaytooter.R.id.viewRoot;
 public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	static final LogCategory log = new LogCategory( "ActPost" );
 	
+	static final String EXTRA_POSTED_ACCT = "posted_acct";
+	static final String EXTRA_POSTED_STATUS_ID = "posted_status_id";
+	
 	static final String KEY_ACCOUNT_DB_ID = "account_db_id";
 	static final String KEY_REPLY_STATUS = "reply_status";
 	static final String KEY_INITIAL_TEXT = "initial_text";
@@ -71,22 +94,22 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	static final String KEY_IN_REPLY_TO_TEXT = "in_reply_to_text";
 	static final String KEY_IN_REPLY_TO_IMAGE = "in_reply_to_image";
 	
-	public static void open( Context context, long account_db_id, TootStatus reply_status ){
-		Intent intent = new Intent( context, ActPost.class );
+	public static void open( Activity activity, int request_code, long account_db_id, TootStatus reply_status ){
+		Intent intent = new Intent( activity, ActPost.class );
 		intent.putExtra( KEY_ACCOUNT_DB_ID, account_db_id );
 		if( reply_status != null ){
 			intent.putExtra( KEY_REPLY_STATUS, reply_status.json.toString() );
 		}
-		context.startActivity( intent );
+		activity.startActivityForResult( intent, request_code );
 	}
 	
-	public static void open( Context context, long account_db_id, String initial_text ){
-		Intent intent = new Intent( context, ActPost.class );
+	public static void open( Activity activity, int request_code, long account_db_id, String initial_text ){
+		Intent intent = new Intent( activity, ActPost.class );
 		intent.putExtra( KEY_ACCOUNT_DB_ID, account_db_id );
 		if( initial_text != null ){
 			intent.putExtra( KEY_INITIAL_TEXT, initial_text );
 		}
-		context.startActivity( intent );
+		activity.startActivityForResult( intent, request_code );
 	}
 	
 	@Override
@@ -101,7 +124,18 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			break;
 		
 		case R.id.btnAttachment:
-			performAttachment();
+			ActionsDialog a = new ActionsDialog();
+			a.addAction( getString( R.string.image_pick ), new Runnable() {
+				@Override public void run(){
+					performAttachment();
+				}
+			} );
+			a.addAction( getString( R.string.image_capture ), new Runnable() {
+				@Override public void run(){
+					performCamera();
+				}
+			} );
+			a.show( this, null );
 			break;
 		
 		case R.id.ivMedia1:
@@ -118,7 +152,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			break;
 		
 		case R.id.btnPost:
-			performPost();
+			performPost( false );
 			break;
 		
 		case R.id.btnRemoveReply:
@@ -127,21 +161,49 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		}
 	}
 	
-	static final int REQUEST_CODE_ATTACHMENT = 1;
+	private static final int REQUEST_CODE_ATTACHMENT = 1;
+	private static final int REQUEST_CODE_CAMERA = 2;
 	
 	@Override
 	protected void onActivityResult( int requestCode, int resultCode, Intent data ){
-		if( resultCode == RESULT_OK ){
-			if( requestCode == REQUEST_CODE_ATTACHMENT ){
-				if( data != null ){
-					Uri uri = data.getData();
-					if( uri != null ){
-						String type = data.getType();
-						if( TextUtils.isEmpty( type ) ){
-							type = getContentResolver().getType( uri );
-						}
+		if( requestCode == REQUEST_CODE_ATTACHMENT && resultCode == RESULT_OK ){
+			if( data != null ){
+				Uri uri = data.getData();
+				if( uri != null ){
+					// 単一選択
+					String type = data.getType();
+					if( TextUtils.isEmpty( type ) ){
+						type = getContentResolver().getType( uri );
+					}
+					addAttachment( uri, type );
+				}
+				ClipData cd = data.getClipData();
+				if( cd != null ){
+					int count = cd.getItemCount();
+					for( int i = 0 ; i < count ; ++ i ){
+						ClipData.Item item = cd.getItemAt( i );
+						uri = item.getUri();
+						String type = getContentResolver().getType( uri );
 						addAttachment( uri, type );
 					}
+				}
+			}
+		}else if( requestCode == REQUEST_CODE_CAMERA ){
+			
+			if( resultCode != RESULT_OK ){
+				// 失敗したら DBからデータを削除
+				if( uriCameraImage != null ){
+					getContentResolver().delete( uriCameraImage, null, null );
+					uriCameraImage = null;
+				}
+			}else{
+				// 画像のURL
+				Uri uri = ( data == null ? null : data.getData() );
+				if( uri == null ) uri = uriCameraImage;
+				
+				if( uri != null ){
+					String type = getContentResolver().getType( uri );
+					addAttachment( uri, type );
 				}
 			}
 		}
@@ -232,9 +294,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 						etContentWarning.setText( reply_status.spoiler_text );
 					}
 					
-					// mention を自動設定する
 					ArrayList< String > mention_list = new ArrayList<>();
-					mention_list.add( "@" + account.getFullAcct( reply_status.account ) );
+					// 元レスにあった mention
 					if( reply_status.mentions != null ){
 						for( TootMention mention : reply_status.mentions ){
 							
@@ -246,6 +307,18 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 							}
 						}
 					}
+					// 今回メンションを追加する？
+					{
+						sv = account.getFullAcct( reply_status.account );
+						//noinspection StatementWithEmptyBody
+						if( mention_list.contains( "@" + sv ) ){
+							// 既に含まれている
+						}else if( ! account.isMe( reply_status.account ) || mention_list.isEmpty() ){
+							// 自分ではない、もしくは、メンションが空
+							mention_list.add( "@" + sv );
+						}
+					}
+					
 					StringBuilder sb = new StringBuilder();
 					for( String acct : mention_list ){
 						if( sb.length() > 0 ) sb.append( ' ' );
@@ -392,7 +465,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		Collections.sort( account_list, new Comparator< SavedAccount >() {
 			@Override
 			public int compare( SavedAccount a, SavedAccount b ){
-				return String.CASE_INSENSITIVE_ORDER.compare( a.getFullAcct( a ), b.getFullAcct( b ) );
+				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
+				
 			}
 		} );
 		
@@ -404,8 +478,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		
 		for( NetworkImageView iv : ivMedia ){
 			iv.setOnClickListener( this );
-			iv.setDefaultImageResId( Styler.getAttributeResourceId( this, R.attr.btn_refresh ) );
-			//	iv.setErrorImageResId( Styler.getAttributeResourceId( this,R.attr.btn_refresh ));
+			iv.setDefaultImageResId( Styler.getAttributeResourceId( this, R.attr.ic_loading ) );
+			iv.setErrorImageResId( Styler.getAttributeResourceId( this, R.attr.ic_unknown ) );
 		}
 		
 		cbContentWarning.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
@@ -424,7 +498,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			@Override
 			public void onTextChanged( CharSequence s, int start, int before, int count ){
 				handler.removeCallbacks( proc_text_changed );
-				handler.postDelayed( proc_text_changed,  (popup!= null && popup.isShowing() ? 100L : 1000L ));
+				handler.postDelayed( proc_text_changed, ( popup != null && popup.isShowing() ? 100L : 1000L ) );
 			}
 			
 			@Override
@@ -509,7 +583,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				closeAcctPopup();
 			}else{
 				if( popup == null || ! popup.isShowing() ){
-					popup = new PopupAutoCompleteAcct( ActPost.this, etContent ,formRoot);
+					popup = new PopupAutoCompleteAcct( ActPost.this, etContent, formRoot );
 				}
 				popup.setList( acct_list, start, end );
 			}
@@ -674,6 +748,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			Intent intent = new Intent( Intent.ACTION_OPEN_DOCUMENT );
 			intent.addCategory( Intent.CATEGORY_OPENABLE );
 			intent.setType( "*/*" );
+			intent.putExtra( Intent.EXTRA_ALLOW_MULTIPLE, true );
 			intent.putExtra( Intent.EXTRA_MIME_TYPES, new String[]{ "image/*", "video/*" } );
 			startActivityForResult( intent, REQUEST_CODE_ATTACHMENT );
 		}catch( Throwable ex ){
@@ -682,7 +757,187 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		}
 	}
 	
-	// static final byte[] hex = Utils.encodeUTF8( "0123456789abcdef" );
+	interface InputStreamOpener {
+		InputStream open() throws IOException;
+		
+		String getMimeType();
+		
+		void deleteTempFile();
+	}
+	
+	static final int[] list_resize_max = new int[]{
+		0
+		, 640
+		, 800
+		, 1024
+		, 1280
+		, 1600
+		, 2048
+	};
+	static final String MIME_TYPE_JPEG = "image/jpeg";
+	static final String MIME_TYPE_PNG = "image/png";
+	
+	private InputStreamOpener createOpener( final Uri uri, final String mime_type ){
+		//noinspection LoopStatementThatDoesntLoop
+		for( ; ; ){
+			try{
+				// 設定からリサイズ指定を読む
+				int resize_max = list_resize_max[ pref.getInt( Pref.KEY_RESIZE_IMAGE, 4 ) ];
+				if( resize_max <= 0 ){
+					log.d( "createOpener: resize not required" );
+					break;
+				}
+				
+				// 画像の種別
+				boolean is_jpeg = MIME_TYPE_JPEG.equals( mime_type );
+				boolean is_png = MIME_TYPE_PNG.equals( mime_type );
+				if( ! is_jpeg && ! is_png ){
+					log.d( "createOpener: source is not jpeg or png" );
+					break;
+				}
+				
+				// 画像のサイズを調べる
+				BitmapFactory.Options options = new BitmapFactory.Options();
+				options.inJustDecodeBounds = true;
+				options.inScaled = false;
+				InputStream is = getContentResolver().openInputStream( uri );
+				if( is == null ){
+					Utils.showToast( this, false, "could not open image." );
+					break;
+				}
+				try{
+					BitmapFactory.decodeStream( is, null, options );
+				}finally{
+					IOUtils.closeQuietly( is );
+				}
+				int src_width = options.outWidth;
+				int src_height = options.outHeight;
+				if( src_width <= 0 || src_height <= 0 ){
+					Utils.showToast( this, false, "could not get image bounds." );
+					break;
+				}
+				
+				// 長辺
+				int size = ( src_width > src_height ? src_width : src_height );
+				if( size <= resize_max ){
+					log.d( "createOpener: no need to resize, %s <= %s", size, resize_max );
+					break;
+				}
+				
+				// inSampleSizeを計算
+				int bits = 0;
+				int x = size;
+				while( x > resize_max * 2 ){
+					++ bits;
+					x >>= 1;
+				}
+				options.inJustDecodeBounds = false;
+				options.inSampleSize = 1 << bits;
+				is = getContentResolver().openInputStream( uri );
+				if( is == null ){
+					Utils.showToast( this, false, "could not open image." );
+					break;
+				}
+				Bitmap src;
+				try{
+					src = BitmapFactory.decodeStream( is, null, options );
+				}finally{
+					IOUtils.closeQuietly( is );
+				}
+				if( src == null ){
+					Utils.showToast( this, false, "could not decode image." );
+					break;
+				}
+				try{
+					src_width = options.outWidth;
+					src_height = options.outHeight;
+					int dst_width;
+					int dst_height;
+					if( src_width >= src_height ){
+						dst_width = resize_max;
+						dst_height = (int) ( 0.5f + src_height / (float) src_width * resize_max );
+						if( dst_height < 1 ) dst_height = 1;
+					}else{
+						dst_height = resize_max;
+						dst_width = (int) ( 0.5f + src_width / (float) src_height * resize_max );
+						if( dst_width < 1 ) dst_width = 1;
+					}
+					// 64*64ピクセルのBitmap作成
+					Bitmap dst = Bitmap.createBitmap( dst_width, dst_height, Bitmap.Config.ARGB_8888 );
+					if( dst == null ){
+						Utils.showToast( this, false, "bitmap creation failed." );
+						break;
+					}
+					try{
+						Canvas canvas = new Canvas( dst );
+						Paint paint = new Paint();
+						paint.setFilterBitmap( true );
+						Rect rect_src = new Rect( 0, 0, src_width, src_height );
+						Rect rect_dst = new Rect( 0, 0, dst_width, dst_height );
+						canvas.drawBitmap( src, rect_src, rect_dst, paint );
+						File cache_dir = getExternalCacheDir();
+						if( cache_dir == null ){
+							Utils.showToast( this, false, "getExternalCacheDir returns null." );
+							break;
+						}
+						
+						//noinspection ResultOfMethodCallIgnored
+						cache_dir.mkdir();
+						
+						final File temp_file = new File( cache_dir, "tmp." + Thread.currentThread().getId() );
+						FileOutputStream os = new FileOutputStream( temp_file );
+						try{
+							if( is_jpeg ){
+								dst.compress( Bitmap.CompressFormat.JPEG, 95, os );
+							}else{
+								dst.compress( Bitmap.CompressFormat.PNG, 100, os );
+							}
+						}finally{
+							os.close();
+						}
+						log.d( "createOpener: resized to %sx%s", dst_width, dst_height );
+						return new InputStreamOpener() {
+							@Override public InputStream open() throws IOException{
+								return new FileInputStream( temp_file );
+							}
+							
+							@Override public String getMimeType(){
+								return mime_type;
+							}
+							
+							@Override public void deleteTempFile(){
+								//noinspection ResultOfMethodCallIgnored
+								temp_file.delete();
+							}
+						};
+					}finally{
+						dst.recycle();
+					}
+				}finally{
+					src.recycle();
+				}
+				
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+				Utils.showToast( this, ex, "Resizing image failed." );
+			}
+			
+			break;
+		}
+		return new InputStreamOpener() {
+			@Override public InputStream open() throws IOException{
+				return getContentResolver().openInputStream( uri );
+			}
+			
+			@Override public String getMimeType(){
+				return mime_type;
+			}
+			
+			@Override public void deleteTempFile(){
+				
+			}
+		};
+	}
 	
 	void addAttachment( final Uri uri, final String mime_type ){
 		if( attachment_list.size() >= 4 ){
@@ -698,20 +953,18 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		pa.status = ATTACHMENT_UPLOADING;
 		attachment_list.add( pa );
 		showMediaAttachment();
+		Utils.showToast( this, false, R.string.attachment_uploading );
 		
 		new AsyncTask< Void, Void, TootApiResult >() {
 			final SavedAccount target_account = account;
 			
-			@Override
-			protected TootApiResult doInBackground( Void... params ){
+			@Override protected TootApiResult doInBackground( Void... params ){
 				TootApiClient client = new TootApiClient( ActPost.this, new TootApiClient.Callback() {
-					@Override
-					public boolean isApiCancelled(){
+					@Override public boolean isApiCancelled(){
 						return isCancelled();
 					}
 					
-					@Override
-					public void publishApiProgress( String s ){
+					@Override public void publishApiProgress( String s ){
 					}
 				} );
 				client.setAccount( target_account );
@@ -721,7 +974,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				}
 				
 				try{
-					final long content_length = getStreamSize( true, getContentResolver().openInputStream( uri ) );
+					final InputStreamOpener opener = createOpener( uri, mime_type );
+					
+					final long content_length = getStreamSize( true, opener.open() );
 					if( content_length > 8000000 ){
 						return new TootApiResult( getString( R.string.file_size_too_big ) );
 					}
@@ -733,7 +988,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 							, new RequestBody() {
 								@Override
 								public MediaType contentType(){
-									return MediaType.parse( mime_type );
+									return MediaType.parse( opener.getMimeType() );
 								}
 								
 								@Override
@@ -743,7 +998,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 								
 								@Override
 								public void writeTo( BufferedSink sink ) throws IOException{
-									InputStream is = getContentResolver().openInputStream( uri );
+									InputStream is = opener.open();
 									if( is == null )
 										throw new IOException( "openInputStream() failed. uri=" + uri );
 									try{
@@ -766,6 +1021,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 						.post( multipart_body );
 					
 					TootApiResult result = client.request( "/api/v1/media", request_builder );
+					
+					opener.deleteTempFile();
+					
 					if( result.object != null ){
 						pa.attachment = TootAttachment.parse( log, result.object );
 						if( pa.attachment == null ){
@@ -795,6 +1053,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 					}
 					attachment_list.remove( pa );
 				}else{
+					Utils.showToast( ActPost.this, false, R.string.attachment_uploaded );
 					String sv = etContent.getText().toString();
 					int l = sv.length();
 					if( l > 0 ){
@@ -812,10 +1071,72 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		}.execute();
 	}
 	
+	Uri uriCameraImage;
+	
+	private void performCamera(){
+		
+		int permissionCheck = ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_EXTERNAL_STORAGE );
+		if( permissionCheck != PackageManager.PERMISSION_GRANTED ){
+			preparePermission();
+			return;
+		}
+		
+		try{
+			// カメラで撮影
+			String filename = System.currentTimeMillis() + ".jpg";
+			ContentValues values = new ContentValues();
+			values.put( MediaStore.Images.Media.TITLE, filename );
+			values.put( MediaStore.Images.Media.MIME_TYPE, "image/jpeg" );
+			uriCameraImage = getContentResolver().insert( MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values );
+			
+			Intent intent = new Intent( MediaStore.ACTION_IMAGE_CAPTURE );
+			intent.putExtra( MediaStore.EXTRA_OUTPUT, uriCameraImage );
+			
+			startActivityForResult( intent, REQUEST_CODE_CAMERA );
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			Utils.showToast( this, ex, "opening camera app failed." );
+		}
+	}
+	
+	private static final int PERMISSION_REQUEST_CODE = 1;
+	
+	private void preparePermission(){
+		if( Build.VERSION.SDK_INT >= 23 ){
+			// No explanation needed, we can request the permission.
+			
+			ActivityCompat.requestPermissions( this
+				, new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE }
+				, PERMISSION_REQUEST_CODE
+			);
+			return;
+		}
+		Utils.showToast( this, true, R.string.missing_storage_permission );
+	}
+	
+	@Override public void onRequestPermissionsResult(
+		int requestCode
+		, @NonNull String permissions[]
+		, @NonNull int[] grantResults
+	){
+		switch( requestCode ){
+		case PERMISSION_REQUEST_CODE:
+			// If request is cancelled, the result arrays are empty.
+			if( grantResults.length > 0 &&
+				grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED
+				){
+				performCamera();
+			}else{
+				Utils.showToast( this, true, R.string.missing_storage_permission );
+			}
+			break;
+		}
+	}
+	
 	public String getDocumentName( Uri uri ){
 		
 		Cursor cursor = getContentResolver().query( uri, null, null, null, null, null );
-		if( cursor != null){
+		if( cursor != null ){
 			try{
 				if( cursor.moveToFirst() ){
 					return cursor.getString( cursor.getColumnIndex( OpenableColumns.DISPLAY_NAME ) );
@@ -888,12 +1209,13 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	///////////////////////////////////////////////////////////////////////////////////////
 	// post
 	
-	private void performPost(){
+	private void performPost( boolean bConfirm ){
 		final String content = etContent.getText().toString().trim();
 		if( TextUtils.isEmpty( content ) ){
 			Utils.showToast( this, true, R.string.post_error_contents_empty );
 			return;
 		}
+		
 		final String spoiler_text;
 		if( ! cbContentWarning.isChecked() ){
 			spoiler_text = null;
@@ -903,6 +1225,26 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				Utils.showToast( this, true, R.string.post_error_contents_warning_empty );
 				return;
 			}
+		}
+		
+		if( ! bConfirm ){
+			DlgConfirm.open( this
+				, getString( R.string.confirm_post_from, AcctColor.getNickname( account.acct ) )
+				, new DlgConfirm.Callback() {
+					@Override public boolean isConfirmEnabled(){
+						return account.confirm_post;
+					}
+					
+					@Override public void setConfirmEnabled( boolean bv ){
+						account.confirm_post = bv;
+						account.saveSetting();
+					}
+					
+					@Override public void onOK(){
+						performPost( true );
+					}
+				} );
+			return;
 		}
 		
 		final StringBuilder sb = new StringBuilder();
@@ -945,6 +1287,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 					@Override public boolean isApiCancelled(){
 						return isCancelled();
 					}
+					
 					@Override public void publishApiProgress( final String s ){
 						Utils.runOnMainThread( new Runnable() {
 							@Override public void run(){
@@ -963,8 +1306,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
 						, post_content
 					) )
-					.header( "Idempotency-Key" ,digest)
-					;
+					.header( "Idempotency-Key", digest );
 				
 				TootApiResult result = client.request( "/api/v1/statuses", request_builder );
 				if( result.object != null ){
@@ -982,11 +1324,16 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			@Override
 			protected void onPostExecute( TootApiResult result ){
 				progress.dismiss();
+				//noinspection StatementWithEmptyBody
 				if( result == null ){
 					// cancelled.
 				}else if( status != null ){
 					// 連投してIdempotency が同じだった場合もエラーにはならず、ここを通る
-					ActMain.update_at_resume = true;
+					Intent data = new Intent();
+					data.putExtra( EXTRA_POSTED_ACCT, target_account.acct );
+					data.putExtra( EXTRA_POSTED_STATUS_ID, status.id );
+					
+					setResult( RESULT_OK ,data );
 					ActPost.this.finish();
 				}else{
 					Utils.showToast( ActPost.this, true, result.error );

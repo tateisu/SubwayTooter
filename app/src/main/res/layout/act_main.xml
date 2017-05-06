@@ -45,7 +45,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:layout_margin="@dimen/fab_margin"
+            android:layout_marginEnd="4dp"
+            android:layout_marginBottom="4dp"
             app:srcCompat="?attr/ic_toot"
             />
 
@@ -54,10 +55,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|start"
-            android:layout_margin="@dimen/fab_margin"
+            android:layout_marginStart="4dp"
+            android:layout_marginBottom="4dp"
             app:srcCompat="?attr/ic_menu"
             />
-
+        <!--<ImageButton-->
+            <!--android:id="@+id/fabMenu"-->
+            <!--android:layout_width="48dp"-->
+            <!--android:layout_height="48dp"-->
+            <!--android:layout_gravity="top|start"-->
+            <!--android:background="@drawable/btn_bg_transparent"-->
+            <!--app:srcCompat="?attr/ic_hamburger"-->
+            <!--/>-->
     </FrameLayout>
 
 

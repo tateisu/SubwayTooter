@@ -1,6 +1,4 @@
-<resources
-
-    >
+<resources>
     <string name="app_name">Subway Tooter</string>
 
     <string name="action_settings">Settings</string>
@@ -46,7 +44,7 @@
     <string name="hide">Hide</string>
     <string name="nsfw">NSFW</string>
     <string name="tap_to_show">Tap to show</string>
-    <string name="show">show</string>
+    <string name="show">Show</string>
     <string name="act_post">Posting Toot</string>
     <string name="content_warning">Content warning</string>
     <string name="please_add_account">You need to set an account to post a toot.</string>
@@ -61,7 +59,7 @@
     <string name="attachment_too_many">a max of 4 files is allowed.</string>
     <string name="account_select_please">Select the account</string>
     <string name="login_failed">Login failed</string>
-    <string name="file_size_too_big">File size too big. Maximum limit is 8MB.</string>
+    <string name="file_size_too_big">The file is too big. Maximum limit is 8MB.</string>
     <string name="visibility_public">Public</string>
     <string name="visibility_unlisted">Unlisted</string>
     <string name="visibility_private">Private</string>
@@ -73,11 +71,11 @@
     <string name="wait_previous_operation">Please wait until last operation is over.</string>
     <string name="cant_remove_boost_while_favourited">Can\'t remove boost while favourited</string>
     <string name="confirm">Confirm</string>
-    <string name="confirm_boost">Boost this status? It\'s shown to all followers and on your profile page.</string>
+    <string name="confirm_boost_from">Boost this status from %1$s ? It\'s shown to all followers and on your profile page.</string>
     <string name="display_name_favourited_by">%1$s favourited</string>
     <string name="display_name_boosted_by">%1$s boosted</string>
     <string name="display_name_replied_by">%1$s replied</string>
-    <string name="display_name_followed_by">followed by %1$s</string>
+    <string name="display_name_followed_by">%1$s is following you</string>
     <string name="account">Account</string>
     <string name="account_setting">Account settings</string>
     <string name="setting">Settings</string>
@@ -131,10 +129,10 @@
     <string name="open_in_account">Open with %1$s</string>
     <string name="open_web_page">Open web page</string>
     <string name="open_web_on_host">Open web page on %1$s</string>
-    <string name="follow_from_another_account">follow_from_another_account</string>
+    <string name="follow_from_another_account">Follow from another account</string>
     <string name="search_of">Search \"%1$s\"</string>
     <string name="search">Search</string>
-    <string name="resolve_non_local_account">Resolve non local account</string>
+    <string name="resolve_non_local_account">Load non local account</string>
     <string name="question">\?</string>
     <string name="confirm_close_column">Close this column?</string>
     <string name="favourite_from_another_account">Favourite from another account</string>
@@ -160,7 +158,7 @@
     <string name="developer">Developer</string>
     <string name="with_attachment">with attachment</string>
     <string name="column_is_busy">Column is busy</string>
-    <string name="read_gap">Read gap</string>
+    <string name="read_gap">Load missing messages</string>
     <string name="muted_users">Muted users</string>
     <string name="blocked_users">Blocked users</string>
     <string name="end_of_list">end of the list</string>
@@ -198,12 +196,62 @@
     <string name="vibration">vibration</string>
     <string name="led">LED</string>
     <string name="follow_requests">Follow requests</string>
-    <string name="follow_request_ok">Authorize for follow request</string>
-    <string name="follow_request_ng">Reject for follow request</string>
-    <string name="follow_request_rejected">%1$s\'s follow request is rejected.</string>
-    <string name="follow_request_authorized">%1$s\'s follow request is authorized.</string>
+    <string name="follow_request_ok">Accept the follow request</string>
+    <string name="follow_request_ng">Decline the follow request</string>
+    <string name="follow_request_rejected">You decline %1$s\'s follow request.</string>
+    <string name="follow_request_authorized">You accepted %1$s\'s follow request.</string>
     <string name="close">Close</string>
-    <string name="pseudo_account">pseudo account (non-login,only reading public data)</string>
-    <string name="server_confirmed">server confirmed.</string>
-    <string name="not_available_for_pseudo_account">not available for pseudo account</string>
+    <string name="pseudo_account">Pseudo account (non-login,only reading public data)</string>
+    <string name="server_confirmed">Server confirmed.</string>
+    <string name="not_available_for_pseudo_account">Not available for pseudo account</string>
+    <string name="exit_app_when_close_protected_column">Exit app when try to close protected column with back button without confirm</string>
+    <string name="resize_image">Resize attachment image (JPEG,PNG)</string>
+    <string name="dont_resize">Don\'t resize</string>
+    <string name="long_side_pixel">Resize to %1$d pixels</string>
+    <string name="image_pick">Choose your images</string>
+    <string name="image_capture">Capture by camera</string>
+    <string name="missing_storage_permission">Permission to write storage is missing.</string>
+    <string name="attachment_uploading">Media attachment  is uploading…</string>
+    <string name="attachment_uploaded">Media attachment upload completed.</string>
+    <string name="actions_for_status">Actions for this toot</string>
+    <string name="actions_for_user">Actions for this user</string>
+    <string name="open_profile">Open profile</string>
+    <string name="send_message">Send message</string>
+    <string name="send_message_from_another_account">Send message from another account</string>
+    <string name="open_profile_from_another_account">Open profile from another account (same instance)</string>
+    <string name="confirm_block_user">User \'%1$s\' will be blocked. Are you sure?</string>
+    <string name="confirm_mute_user">User \'%1$s\' will be muted. Are you sure?</string>
+    <string name="confirm_delete_status">This toot will be deleted. Are you sure?</string>
+    <string name="nickname_label">Nickname (if specified, it\'s shown instead of full acct)</string>
+    <string name="color">Color</string>
+    <string name="reset">Reset</string>
+    <string name="edit">Edit</string>
+    <string name="acct">Acct</string>
+    <string name="preview">Preview</string>
+    <string name="nickname">Nickname</string>
+    <string name="text_color">Text color</string>
+    <string name="background_color">Background color</string>
+    <string name="save">Save</string>
+    <string name="discard">Discard</string>
+    <string name="nickname_and_color">Nickname and Color</string>
+    <string name="nickname_applied_after_reload">The change of nickname/color will be applied after reload column.</string>
+    <string name="show_follow_button_in_button_bar">Show follow button in button bar (app restart required)</string>
+    <string name="follow_requested">Follow request was sent.</string>
+    <string name="confirmation">Confirmation</string>
+    <string name="follow_locked_user">Follow locked user</string>
+    <string name="dont_confirm_again">Don\'t confirm again</string>
+    <string name="confirm_post_from">Posting a toot from %1$s. Are you sure ?</string>
+    <string name="confirm_follow_who_from">Follow %1$s from %2$s ?</string>
+    <string name="confirm_unfollow_who_from">Unfollow %1$s from %2$s ?</string>
+    <string name="confirm_follow_request_who_from">Send follow request from %2$s to locked user %1$s ?</string>
+    <string name="follow_request_cant_remove_by_sender">seems follow request can\'t be removed by sender…</string>
+    <string name="profile">Profile</string>
+    <string name="profile_of">Profile of %1$s</string>
+    <string name="it_is_you">It\'s you.</string>
+    <string name="refresh_after_toot">Refresh after toot</string>
+    <string name="refresh_scroll_to_toot">Refresh, Scroll to toot</string>
+    <string name="refresh_no_scroll">Refresh, Don\'t scroll</string>
+    <string name="dont_refresh">Don\'t refresh</string>
+    <string name="boosted_by">Boosted by…</string>
+    <string name="favourited_by">Favourited by…</string>
 </resources>

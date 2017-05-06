@@ -1,8 +1,11 @@
 package jp.juggler.subwaytooter.dialog;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.support.annotation.NonNull;
+import android.view.Gravity;
+import android.view.View;
+import android.widget.Button;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,8 +13,12 @@ import java.util.Comparator;
 
 import jp.juggler.subwaytooter.ActMain;
 import jp.juggler.subwaytooter.R;
+import jp.juggler.subwaytooter.Styler;
+import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.Utils;
+
+import android.widget.LinearLayout;
 
 public class AccountPicker {
 	
@@ -56,31 +63,62 @@ public class AccountPicker {
 		}
 		
 		Collections.sort( account_list, new Comparator< SavedAccount >() {
-			@Override
-			public int compare( SavedAccount o1, SavedAccount o2 ){
-				return String.CASE_INSENSITIVE_ORDER.compare( o1.acct, o2.acct );
+			@Override public int compare( SavedAccount a, SavedAccount b ){
+				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
 			}
 		} );
 		
-		String[] caption_list = new String[ account_list.size() ];
+		@SuppressLint("InflateParams") View viewRoot = activity.getLayoutInflater().inflate( R.layout.dlg_account_picker, null, false );
+		final Dialog dialog = new Dialog( activity );
+		dialog.setContentView( viewRoot );
+		dialog.setCancelable( true );
+		dialog.setCanceledOnTouchOutside( true );
 		
-		for( int i = 0, ie = account_list.size() ; i < ie ; ++ i ){
-			SavedAccount ai = account_list.get( i );
-			caption_list[ i ] = ai.acct;
+		viewRoot.findViewById( R.id.btnCancel ).setOnClickListener( new View.OnClickListener() {
+			@Override public void onClick( View v ){
+				dialog.cancel();
+			}
+		} );
+		
+		LinearLayout llAccounts = (LinearLayout)viewRoot.findViewById( R.id.llAccounts );
+		int pad_se = (int)(0.5f + 12f * activity.density);
+		int pad_tb = (int)(0.5f + 6f * activity.density);
+		int default_color_fg = Styler.getAttributeColor( activity,android.R.attr.textColorPrimary );
+		
+		for( SavedAccount a : account_list ){
+			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams( LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT );
+			
+			AcctColor ac = AcctColor.load( a.acct );
+			
+			Button b = new Button( activity );
+
+			if( AcctColor.hasColorBackground( ac ) ){
+				b.setBackgroundColor( ac.color_bg );
+			}else{
+				b.setBackgroundResource( R.drawable.btn_bg_transparent );
+			}
+			if( AcctColor.hasColorForeground( ac )){
+				b.setTextColor( ac.color_fg );
+			}
+			
+			b.setPaddingRelative( pad_se, pad_tb, pad_se, pad_tb );
+			b.setGravity( Gravity.START | Gravity.CENTER_VERTICAL );
+			b.setAllCaps( false );
+			b.setLayoutParams( lp );
+			b.setMinHeight( (int) ( 0.5f + 32f * activity.density ) );
+			b.setText( AcctColor.hasNickname( ac ) ? ac.nickname : a.acct );
+			
+			final SavedAccount _a = a;
+			b.setOnClickListener( new View.OnClickListener() {
+				@Override public void onClick( View v ){
+					dialog.dismiss();
+					callback.onAccountPicked( _a );
+				}
+			} );
+			llAccounts.addView( b );
 		}
 		
-		new AlertDialog.Builder( activity )
-			.setNegativeButton( R.string.cancel, null )
-			.setItems( caption_list, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick( DialogInterface dialog, int which ){
-					if( which >= 0 && which < account_list.size() ){
-						callback.onAccountPicked( account_list.get( which ) );
-						dialog.dismiss();
-					}
-				}
-			} )
-			.setTitle( R.string.account_pick )
-			.show();
+		dialog.show();
 	}
+	
 }

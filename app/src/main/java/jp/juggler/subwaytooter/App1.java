@@ -17,9 +17,17 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
+import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
+
+import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.ClientInfo;
@@ -29,6 +37,7 @@ import jp.juggler.subwaytooter.table.MediaShown;
 import jp.juggler.subwaytooter.table.NotificationTracking;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
+import jp.juggler.subwaytooter.util.Utils;
 import okhttp3.CipherSuite;
 import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
@@ -41,12 +50,16 @@ public class App1 extends Application {
 	
 	
 	static final String DB_NAME = "app_db";
-	static final int DB_VERSION = 7;
+	static final int DB_VERSION = 10;
 	// 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
 	// 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加
 	// 2017/4/29 v20 2=>5 MediaShown,ContentWarningのインデクスが間違っていたので貼り直す
 	// 2017/4/29 v23 5=>6 MutedAppテーブルの追加、UserRelationテーブルの追加
 	// 2017/5/01 v26 6=>7 AcctSetテーブルの追加
+	// 2017/5/02 v32 7=>8 (この変更は取り消された)
+	// 2017/5/02 v32 8=>9 AcctColor テーブルの追加
+	// 2017/5/04 v33 9=>10 SavedAccountに項目追加
+	
 	static DBOpenHelper db_open_helper;
 	
 	public static SQLiteDatabase getDB(){
@@ -69,6 +82,7 @@ public class App1 extends Application {
 		}
 	}
 	
+	
 	private static class DBOpenHelper extends SQLiteOpenHelper {
 		
 		private DBOpenHelper(Context context) {
@@ -87,6 +101,7 @@ public class App1 extends Application {
 			MutedApp.onDBCreate(db);
 			UserRelation.onDBCreate(db);
 			AcctSet.onDBCreate( db );
+			AcctColor.onDBCreate( db );
 		}
 		
 		@Override
@@ -101,6 +116,7 @@ public class App1 extends Application {
 			MutedApp.onDBUpgrade( db, oldVersion, newVersion );
 			UserRelation.onDBUpgrade( db, oldVersion, newVersion );
 			AcctSet.onDBUpgrade( db, oldVersion, newVersion );
+			AcctColor.onDBUpgrade( db, oldVersion, newVersion );
 		}
 	}
 	
@@ -232,4 +248,38 @@ public class App1 extends Application {
 	public void onTerminate(){
 		super.onTerminate();
 	}
+
+	
+	public static void saveColumnList( Context context, String fileName, JSONArray array ){
+		
+		try{
+			OutputStream os = context.openFileOutput( fileName, MODE_PRIVATE );
+			try{
+				os.write( Utils.encodeUTF8( array.toString() ) );
+			}finally{
+				os.close();
+			}
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			Utils.showToast( context, ex, "saveColumnList failed." );
+		}
+	}
+	public static JSONArray loadColumnList( Context context, String fileName ){
+		try{
+			InputStream is = context.openFileInput( fileName );
+			try{
+				ByteArrayOutputStream bao = new ByteArrayOutputStream( is.available() );
+				IOUtils.copy( is,bao);
+				return new JSONArray( Utils.decodeUTF8( bao.toByteArray() ) );
+			}finally{
+				is.close();
+			}
+		}catch( FileNotFoundException ignored ){
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			Utils.showToast( context, ex, "loadColumnList failed." );
+		}
+		return null;
+	}
+	
 }

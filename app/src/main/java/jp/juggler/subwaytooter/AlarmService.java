@@ -117,6 +117,10 @@ public class AlarmService extends IntentService {
 					
 					if( Intent.ACTION_BOOT_COMPLETED.equals( action ) ){
 						NotificationTracking.resetPostAll();
+						
+					}else if( Intent.ACTION_MY_PACKAGE_REPLACED.equals( action ) ){
+						NotificationTracking.resetPostAll();
+
 					}else if( ACTION_NOTIFICATION_DELETE.equals( action ) ){
 						log.d( "Notification deleted!" );
 						long db_id = received_intent.getLongExtra( EXTRA_DB_ID, 0L );

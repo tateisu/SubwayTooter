@@ -13,16 +13,17 @@
         android:layout_height="wrap_content"
         android:background="@drawable/btn_bg_ddd"
         android:orientation="vertical"
+        android:paddingTop="3dp"
         android:paddingBottom="3dp"
         android:paddingEnd="12dp"
         android:paddingStart="12dp"
-        android:paddingTop="3dp"
         >
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:gravity="bottom"
             >
 
             <TextView
@@ -34,7 +35,9 @@
                 android:textColor="?attr/colorColumnHeaderAcct"
                 android:textSize="12sp"
                 tools:text="tvColumnContext"
-                />
+                android:paddingEnd="4dp"
+                android:paddingStart="4dp"
+            />
 
             <TextView
                 android:id="@+id/tvColumnIndex"
@@ -56,6 +59,12 @@
             android:orientation="horizontal"
             >
 
+            <ImageView
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginEnd="4dp"
+                android:id="@+id/ivColumnIcon"
+                />
             <TextView
                 android:id="@+id/tvColumnName"
                 android:layout_width="0dp"
@@ -99,7 +108,6 @@
 
 
         </LinearLayout>
-
 
     </LinearLayout>
 
@@ -254,6 +262,8 @@
             android:paddingEnd="12dp"
             android:paddingStart="12dp"
             android:scrollbarStyle="outsideOverlay"
+            android:dividerHeight="1dp"
+            android:divider="?attr/colorSettingDivider"
             />
 
     </com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout>

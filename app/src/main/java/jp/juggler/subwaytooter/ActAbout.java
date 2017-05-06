@@ -17,7 +17,7 @@ public class ActAbout extends AppCompatActivity {
 	static final String EXTRA_SEARCH = "search";
 	
 	static final String url_store = "https://play.google.com/store/apps/details?id=jp.juggler.subwaytooter";
-	static final String url_enty = "https://enty.jp/3WtlzHG10wZv";
+//	static final String url_enty = "https://enty.jp/3WtlzHG10wZv";
 	static final String developer_acct = "tateisu@mastodon.juggler.jp";
 	
 	static final String[] contributors = new String[]{
@@ -56,13 +56,13 @@ public class ActAbout extends AppCompatActivity {
 			}
 		} );
 		
-		b = (Button) findViewById( R.id.btnDonate );
-		b.setText( url_enty );
-		b.setOnClickListener( new View.OnClickListener() {
-			@Override public void onClick( View v ){
-				open_browser( url_enty );
-			}
-		} );
+//		b = (Button) findViewById( R.id.btnDonate );
+//		b.setText( url_enty );
+//		b.setOnClickListener( new View.OnClickListener() {
+//			@Override public void onClick( View v ){
+//				open_browser( url_enty );
+//			}
+//		} );
 		
 		LinearLayout ll = (LinearLayout) findViewById( R.id.llContributors );
 		float density = getResources().getDisplayMetrics().density;

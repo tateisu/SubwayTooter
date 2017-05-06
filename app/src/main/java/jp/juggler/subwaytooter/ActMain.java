@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,7 +11,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.os.AsyncTaskCompat;
@@ -27,14 +27,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 
+import com.astuetz.PagerSlidingTabStrip;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -45,11 +43,14 @@ import java.util.regex.Pattern;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
+import jp.juggler.subwaytooter.api.entity.TootApplication;
 import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
+import jp.juggler.subwaytooter.dialog.DlgConfirm;
 import jp.juggler.subwaytooter.dialog.LoginForm;
 import jp.juggler.subwaytooter.dialog.ReportForm;
+import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
@@ -65,17 +66,19 @@ public class ActMain extends AppCompatActivity
 	implements NavigationView.OnNavigationItemSelectedListener {
 	public static final LogCategory log = new LogCategory( "ActMain" );
 	
-	static boolean update_at_resume = false;
 
 //	@Override
 //	protected void attachBaseContext(Context newBase) {
 //		super.attachBaseContext( CalligraphyContextWrapper.wrap(newBase));
 //	}
 	
-	float density;
+	public float density;
 	
 	SharedPreferences pref;
 	Handler handler;
+	String posted_acct;
+	long posted_status_id;
+	
 	
 	@Override
 	protected void onCreate( Bundle savedInstanceState ){
@@ -100,6 +103,7 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	@Override protected void onResume(){
+		log.d("onResume");
 		super.onResume();
 		HTMLDecoder.link_callback = link_click_listener;
 		
@@ -126,9 +130,16 @@ public class ActMain extends AppCompatActivity
 		// 各カラムのアカウント設定を読み直す
 		reloadAccountSetting();
 		
-		if( update_at_resume ){
-			update_at_resume = false;
-			// TODO: 各カラムを更新する
+		if( ! TextUtils.isEmpty( posted_acct ) ){
+			int refresh_after_toot = pref.getInt( Pref.KEY_REFRESH_AFTER_TOOT,0);
+			if( refresh_after_toot != Pref.RAT_DONT_REFRESH ){
+				for( Column column : pager_adapter.column_list ){
+					SavedAccount a = column.access_info;
+					if( ! Utils.equalsNullable( a.acct,posted_acct )) continue;
+					column.startRefreshForPost(posted_status_id,refresh_after_toot);
+				}
+			}
+			posted_acct = null;
 		}
 		
 		if( pager_adapter.getCount() == 0 ){
@@ -141,7 +152,7 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-	ColumnViewHolder.ListItemPopup list_item_popup;
+	StatusButtonsPopup list_item_popup;
 	
 	void closeListItemPopup(){
 		if( list_item_popup != null ){
@@ -168,9 +179,11 @@ public class ActMain extends AppCompatActivity
 	static final int REQUEST_CODE_COLUMN_LIST = 1;
 	static final int REQUEST_CODE_ACCOUNT_SETTING = 2;
 	static final int REQUEST_APP_ABOUT = 3;
+	static final int REQUEST_CODE_NICKNAME = 4;
+	static final int REQUEST_CODE_POST = 5;
 	
-	@Override
-	protected void onActivityResult( int requestCode, int resultCode, Intent data ){
+	@Override protected void onActivityResult( int requestCode, int resultCode, Intent data ){
+		log.d("onActivityResult");
 		if( resultCode == RESULT_OK ){
 			if( requestCode == REQUEST_CODE_COLUMN_LIST ){
 				if( data != null ){
@@ -202,6 +215,15 @@ public class ActMain extends AppCompatActivity
 					}
 					return;
 				}
+			}else if( requestCode == REQUEST_CODE_NICKNAME ){
+				for( Column column : pager_adapter.column_list ){
+					column.onNicknameUpdated();
+				}
+			}else if( requestCode == REQUEST_CODE_POST ){
+				if( data != null ){
+					posted_acct = data.getStringExtra( ActPost.EXTRA_POSTED_ACCT );
+					posted_status_id = data.getLongExtra( ActPost.EXTRA_POSTED_STATUS_ID,0L );
+				}
 			}
 		}
 		super.onActivityResult( requestCode, resultCode, data );
@@ -220,6 +242,13 @@ public class ActMain extends AppCompatActivity
 		// カラムが0個ならアプリを終了する
 		if( pager_adapter.getCount() == 0 ){
 			ActMain.this.finish();
+			return;
+		}
+		
+		// カラム設定が開いているならカラム設定を閉じる
+		ColumnViewHolder vh = pager_adapter.getColumnViewHolder( pager.getCurrentItem() );
+		if( vh.isColumnSettingShown() ){
+			vh.closeColumnSetting();
 			return;
 		}
 		
@@ -247,7 +276,17 @@ public class ActMain extends AppCompatActivity
 			break;
 		
 		case ActAppSetting.BACK_CLOSE_COLUMN:
-			performColumnClose( false, pager_adapter.getColumn( pager.getCurrentItem() ) );
+			Column column = pager_adapter.getColumn( pager.getCurrentItem() );
+			if( column != null ){
+				if( column.dont_close
+					&& pref.getBoolean( Pref.KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN, false )
+					&& pref.getBoolean( Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN, false )
+					){
+					ActMain.this.finish();
+					return;
+				}
+				performColumnClose( false, column );
+			}
 			break;
 		
 		case ActAppSetting.BACK_EXIT_APP:
@@ -363,7 +402,6 @@ public class ActMain extends AppCompatActivity
 	void initUI(){
 		setContentView( R.layout.act_main );
 		llEmpty = findViewById( R.id.llEmpty );
-
 //		// toolbar
 //		Toolbar toolbar = (Toolbar) findViewById( R.id.toolbar );
 //		setSupportActionBar( toolbar );
@@ -379,14 +417,14 @@ public class ActMain extends AppCompatActivity
 		navigationView.setNavigationItemSelectedListener( this );
 		
 		// floating action button
-		FloatingActionButton fabToot = (FloatingActionButton) findViewById( R.id.fabToot );
+		View fabToot = (View) findViewById( R.id.fabToot );
 		fabToot.setOnClickListener( new View.OnClickListener() {
 			@Override public void onClick( View view ){
 				performTootButton();
 			}
 		} );
 		// floating action button
-		FloatingActionButton fabMenu = (FloatingActionButton) findViewById( R.id.fabMenu );
+		View fabMenu = findViewById( R.id.fabMenu );
 		fabMenu.setOnClickListener( new View.OnClickListener() {
 			@Override public void onClick( View view ){
 				if( ! drawer.isDrawerOpen( Gravity.START ) ){
@@ -399,11 +437,13 @@ public class ActMain extends AppCompatActivity
 		pager = (ViewPager) findViewById( R.id.viewPager );
 		pager_adapter = new ColumnPagerAdapter( this );
 		pager.setAdapter( pager_adapter );
+		
 	}
 	
 	public void performAccountAdd(){
 		LoginForm.showLoginForm( this, null, new LoginForm.LoginFormCallback() {
-			@Override public void startLogin( final Dialog dialog, final String instance, final boolean bPseudoAccount ){
+			@Override
+			public void startLogin( final Dialog dialog, final String instance, final boolean bPseudoAccount ){
 				
 				final ProgressDialog progress = new ProgressDialog( ActMain.this );
 				
@@ -612,6 +652,9 @@ public class ActMain extends AppCompatActivity
 				if( result != null && result.object != null ){
 					// taは使い捨てなので、生成に使うLinkClickContextはダミーで問題ない
 					LinkClickContext lcc = new LinkClickContext() {
+						@Override public AcctColor findAcctColor( String url ){
+							return null;
+						}
 					};
 					this.ta = TootAccount.parse( log, lcc, result.object );
 				}
@@ -688,9 +731,20 @@ public class ActMain extends AppCompatActivity
 			if( done_list.contains( a ) ) continue;
 			done_list.add( a );
 			a.reloadSetting();
+			column.fireShowColumnHeader();
 		}
 	}
-	
+	void reloadAccountSetting(SavedAccount account){
+		ArrayList< SavedAccount > done_list = new ArrayList<>();
+		for( Column column : pager_adapter.column_list ){
+			SavedAccount a = column.access_info;
+			if( ! Utils.equalsNullable( a.acct ,account.acct ) ) continue;
+			if( done_list.contains( a ) ) continue;
+			done_list.add( a );
+			a.reloadSetting();
+			column.fireShowColumnHeader();
+		}
+	}
 	public void performColumnClose( boolean bConfirm, final Column column ){
 		if( column.dont_close ){
 			Utils.showToast( this, false, R.string.column_has_dont_close_option );
@@ -744,10 +798,18 @@ public class ActMain extends AppCompatActivity
 	
 	void performOpenUser( SavedAccount access_info, TootAccount user ){
 		if( access_info.isPseudo() ){
-			Utils.showToast( this,false,R.string.not_available_for_pseudo_account );
+			Utils.showToast( this, false, R.string.not_available_for_pseudo_account );
 		}else{
 			addColumn( access_info, Column.TYPE_PROFILE, user.id );
 		}
+	}
+	
+	public void performOpenUserFromAnotherAccount( final TootAccount who, ArrayList< SavedAccount > account_list_non_pseudo_same_instance ){
+		AccountPicker.pick( this, false, false, account_list_non_pseudo_same_instance, new AccountPicker.AccountPickerCallback() {
+			@Override public void onAccountPicked( SavedAccount ai ){
+				addColumn( ai, Column.TYPE_PROFILE, who.id );
+			}
+		} );
 	}
 	
 	public void performConversation( SavedAccount access_info, TootStatus status ){
@@ -772,6 +834,14 @@ public class ActMain extends AppCompatActivity
 	
 	public void openHashTag( SavedAccount access_info, String tag ){
 		addColumn( access_info, Column.TYPE_HASHTAG, tag );
+	}
+	
+	public void performMuteApp( @NonNull TootApplication application ){
+		MutedApp.save( application.name );
+		for( Column column : pager_adapter.column_list ){
+			column.removeMuteApp();
+		}
+		Utils.showToast( ActMain.this, false, R.string.app_was_muted );
 	}
 	
 	//////////////////////////////////////////////////////////////
@@ -893,13 +963,23 @@ public class ActMain extends AppCompatActivity
 				}
 			}
 			
-			// ビルダーを使って表示方法を指定する
-			CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-			builder.setToolbarColor( Styler.getAttributeColor( this, R.attr.colorPrimary ) ).setShowTitle( true );
-			
-			// CustomTabsでURLをひらくIntentを発行
-			CustomTabsIntent customTabsIntent = builder.build();
-			customTabsIntent.launchUrl( this, Uri.parse( url ) );
+			try{
+				// 初回はChrome指定で試す
+				
+				CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+				builder.setToolbarColor( Styler.getAttributeColor( this, R.attr.colorPrimary ) ).setShowTitle( true );
+				CustomTabsIntent customTabsIntent = builder.build();
+				customTabsIntent.intent.setComponent( new ComponentName( "com.android.chrome", "com.google.android.apps.chrome.Main" ) );
+				customTabsIntent.launchUrl( this, Uri.parse( url ) );
+			}catch( Throwable ex2 ){
+				log.e( ex2, "openChromeTab: missing chrome. retry to other application." );
+				
+				// chromeがないなら ResolverActivity でアプリを選択させる
+				CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+				builder.setToolbarColor( Styler.getAttributeColor( this, R.attr.colorPrimary ) ).setShowTitle( true );
+				CustomTabsIntent customTabsIntent = builder.build();
+				customTabsIntent.launchUrl( this, Uri.parse( url ) );
+			}
 			
 		}catch( Throwable ex ){
 			// ex.printStackTrace();
@@ -912,18 +992,24 @@ public class ActMain extends AppCompatActivity
 		
 		ActionsDialog dialog = new ActionsDialog();
 		
-		ArrayList< SavedAccount > account_list = new ArrayList<>();
-		for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
-			if( a.host.equalsIgnoreCase( host ) ){
-				account_list.add( a );
-			}
-		}
-		Collections.sort( account_list, new Comparator< SavedAccount >() {
-			@Override public int compare( SavedAccount a, SavedAccount b ){
-				return String.CASE_INSENSITIVE_ORDER.compare( a.getFullAcct( a ), b.getFullAcct( b ) );
+		// ブラウザで表示する
+		dialog.addAction( getString( R.string.open_web_on_host, host ), new Runnable() {
+			@Override public void run(){
+				openChromeTab( access_info, url, true );
 			}
 		} );
 		
+		// 各アカウント
+		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( log );
+		
+		// ソートする
+		Collections.sort( account_list, new Comparator< SavedAccount >() {
+			@Override public int compare( SavedAccount a, SavedAccount b ){
+				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
+			}
+		} );
+		
+		// 各アカウントで開く選択肢
 		for( SavedAccount a : account_list ){
 			final SavedAccount _a = a;
 			dialog.addAction( getString( R.string.open_in_account, a.acct ), new Runnable() {
@@ -933,24 +1019,7 @@ public class ActMain extends AppCompatActivity
 			} );
 		}
 		
-		//noinspection StatementWithEmptyBody
-		if( account_list.isEmpty() ){
-			// TODO ログインなしアカウントで開く選択肢
-		}
-		
-		// カラムのアカウントで開く
-		dialog.addAction( getString( R.string.open_in_account, access_info.acct ), new Runnable() {
-			@Override public void run(){
-				openHashTag( access_info, tag );
-			}
-		} );
-		
-		// ブラウザで表示する
-		dialog.addAction( getString( R.string.open_web_on_host, host ), new Runnable() {
-			@Override public void run(){
-				openChromeTab( access_info, url, true );
-			}
-		} );
+		// TODO: もしカラならログイン無しアカウントで開きたいかも
 		
 		dialog.show( this, "#" + tag );
 		
@@ -966,19 +1035,28 @@ public class ActMain extends AppCompatActivity
 		Column c = pager_adapter.getColumn( pager.getCurrentItem() );
 		if( c != null ){
 			if( c.access_info.isPseudo() ){
-				Utils.showToast( this,false,R.string.not_available_for_pseudo_account );
+				Utils.showToast( this, false, R.string.not_available_for_pseudo_account );
 			}else{
-				ActPost.open( this, c.access_info.db_id, "" );
+				ActPost.open( this, REQUEST_CODE_POST,c.access_info.db_id, "" );
 			}
 		}
 	}
 	
 	public void performReply( SavedAccount account, TootStatus status ){
-		ActPost.open( this, account.db_id, status );
+		ActPost.open( this, REQUEST_CODE_POST,account.db_id, status );
 	}
 	
 	public void performMention( SavedAccount account, TootAccount who ){
-		ActPost.open( this, account.db_id, "@" + account.getFullAcct( who ) + " " );
+		ActPost.open( this, REQUEST_CODE_POST,account.db_id, "@" + account.getFullAcct( who ) + " " );
+	}
+	
+	public void performMentionFromAnotherAccount( SavedAccount access_info, final TootAccount who, ArrayList< SavedAccount > account_list_non_pseudo ){
+		final String initial_text = "@" + access_info.getFullAcct( who ) + " ";
+		AccountPicker.pick( this, false, false, account_list_non_pseudo, new AccountPicker.AccountPickerCallback() {
+			@Override public void onAccountPicked( SavedAccount ai ){
+				ActPost.open( ActMain.this, REQUEST_CODE_POST,ai.db_id, initial_text );
+			}
+		} );
 	}
 	
 	/////////////////////////////////////////////////////////////////////////
@@ -986,7 +1064,7 @@ public class ActMain extends AppCompatActivity
 	private void showColumnMatchAccount( SavedAccount account ){
 		for( Column column : pager_adapter.column_list ){
 			if( account.acct.equals( column.access_info.acct ) ){
-				column.fireVisualCallback();
+				column.fireShowContent();
 			}
 		}
 	}
@@ -1108,9 +1186,9 @@ public class ActMain extends AppCompatActivity
 		return map_busy_boost.contains( busy_key );
 	}
 	
-	public void performBoost( final SavedAccount account, final TootStatus status, boolean bConfirmed, final RelationChangedCallback callback ){
+	public void performBoost( final SavedAccount access_info, final TootStatus status, boolean bConfirmed, final RelationChangedCallback callback ){
 		//
-		final String busy_key = account.host + ":" + status.id;
+		final String busy_key = access_info.host + ":" + status.id;
 		//
 		if( map_busy_boost.contains( busy_key ) ){
 			Utils.showToast( this, false, R.string.wait_previous_operation );
@@ -1119,24 +1197,27 @@ public class ActMain extends AppCompatActivity
 		
 		if( status.reblogged ){
 			// FAVがついているか、FAV操作中はBoostを外せない
-			if( isBusyFav( account, status ) || status.favourited ){
+			if( isBusyFav( access_info, status ) || status.favourited ){
 				Utils.showToast( this, false, R.string.cant_remove_boost_while_favourited );
 				return;
 			}
-		}else{
-			if( ! bConfirmed && account.confirm_boost ){
-				new AlertDialog.Builder( this )
-					.setTitle( R.string.confirm )
-					.setMessage( R.string.confirm_boost )
-					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
-						@Override public void onClick( DialogInterface dialog, int which ){
-							performBoost( account, status, true, callback );
-						}
-					} )
-					.setNegativeButton( R.string.cancel, null )
-					.show();
-				return;
-			}
+		}else if( ! bConfirmed ){
+			DlgConfirm.open( this, getString( R.string.confirm_boost_from,AcctColor.getNickname( access_info.acct ) ), new DlgConfirm.Callback() {
+				@Override public boolean isConfirmEnabled(){
+					return access_info.confirm_boost;
+				}
+				
+				@Override public void setConfirmEnabled( boolean bv ){
+					access_info.confirm_boost = bv;
+					access_info.saveSetting();
+					reloadAccountSetting(access_info);
+				}
+				
+				@Override public void onOK(){
+					performBoost( access_info, status, true, callback );
+				}
+			} );
+			return;
 		}
 		
 		//
@@ -1155,7 +1236,7 @@ public class ActMain extends AppCompatActivity
 					@Override public void publishApiProgress( final String s ){
 					}
 				} );
-				client.setAccount( account );
+				client.setAccount( access_info );
 				
 				Request.Builder request_builder = new Request.Builder()
 					.post( RequestBody.create(
@@ -1171,7 +1252,7 @@ public class ActMain extends AppCompatActivity
 					// reblog,unreblog のレスポンスは信用ならんのでステータスを再取得する
 					result = client.request( "/api/v1/statuses/" + status.id );
 					if( result.object != null ){
-						new_status = TootStatus.parse( log, account, result.object );
+						new_status = TootStatus.parse( log, access_info, result.object );
 					}
 				}
 				
@@ -1203,7 +1284,7 @@ public class ActMain extends AppCompatActivity
 						}
 					}
 					for( Column column : pager_adapter.column_list ){
-						column.findStatus( account, new_status.id, new Column.StatusEntryCallback() {
+						column.findStatus( access_info, new_status.id, new Column.StatusEntryCallback() {
 							@Override public void onIterate( TootStatus status ){
 								status.reblogged = new_status.reblogged;
 								status.reblogs_count = new_status.reblogs_count;
@@ -1214,12 +1295,12 @@ public class ActMain extends AppCompatActivity
 				}else{
 					Utils.showToast( ActMain.this, true, result.error );
 				}
-				showColumnMatchAccount( account );
+				showColumnMatchAccount( access_info );
 			}
 			
 		}.execute();
 		
-		showColumnMatchAccount( account );
+		showColumnMatchAccount( access_info );
 	}
 	
 	////////////////////////////////////////
@@ -1255,8 +1336,9 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	private void performColumnList(){
+		JSONArray array = encodeColumnList();
+		App1.saveColumnList(this,ActColumnList.TMP_FILE_COLUMN_LIST,array);
 		Intent intent = new Intent( this, ActColumnList.class );
-		intent.putExtra( ActColumnList.EXTRA_ORDER, encodeColumnList().toString() );
 		intent.putExtra( ActColumnList.EXTRA_SELECTION, pager.getCurrentItem() );
 		startActivityForResult( intent, REQUEST_CODE_COLUMN_LIST );
 	}
@@ -1272,49 +1354,23 @@ public class ActMain extends AppCompatActivity
 	
 	void saveColumnList(){
 		JSONArray array = encodeColumnList();
-		try{
-			OutputStream os = openFileOutput( FILE_COLUMN_LIST, MODE_PRIVATE );
-			try{
-				os.write( Utils.encodeUTF8( array.toString() ) );
-			}finally{
-				os.close();
-			}
-		}catch( Throwable ex ){
-			ex.printStackTrace();
-			Utils.showToast( this, ex, "saveColumnList failed." );
-		}
+		App1.saveColumnList(this,FILE_COLUMN_LIST,array);
+		
 	}
 	
 	private void loadColumnList(){
-		try{
-			InputStream is = openFileInput( FILE_COLUMN_LIST );
-			try{
-				ByteArrayOutputStream bao = new ByteArrayOutputStream( is.available() );
-				byte[] tmp = new byte[ 4096 ];
-				for( ; ; ){
-					int r = is.read( tmp, 0, tmp.length );
-					if( r <= 0 ) break;
-					bao.write( tmp, 0, r );
+		JSONArray array = App1.loadColumnList(this,FILE_COLUMN_LIST);
+		if( array != null ){
+			for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
+				try{
+					JSONObject src = array.optJSONObject( i );
+					Column col = new Column( ActMain.this, src );
+					pager_adapter.addColumn( pager, col, pager_adapter.getCount() );
+				}catch( Throwable ex ){
+					ex.printStackTrace();
 				}
-				JSONArray array = new JSONArray( Utils.decodeUTF8( bao.toByteArray() ) );
-				for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
-					try{
-						JSONObject src = array.optJSONObject( i );
-						Column col = new Column( ActMain.this, src );
-						pager_adapter.addColumn( pager, col, pager_adapter.getCount() );
-					}catch( Throwable ex ){
-						ex.printStackTrace();
-					}
-				}
-			}finally{
-				is.close();
 			}
-		}catch( FileNotFoundException ignored ){
-		}catch( Throwable ex ){
-			ex.printStackTrace();
-			Utils.showToast( this, ex, "loadColumnList failed." );
 		}
-		
 		if( pager_adapter.column_list.size() > 0 ){
 			llEmpty.setVisibility( View.GONE );
 		}
@@ -1348,8 +1404,84 @@ public class ActMain extends AppCompatActivity
 		return rr;
 	}
 	
-	private void callFollow( final SavedAccount access_info, final TootAccount who
-		, final boolean bFollow, final RelationChangedCallback callback ){
+	void callFollow(
+		final SavedAccount access_info
+		, final TootAccount who
+		, final boolean bFollow
+		, boolean bConfirmed
+		, final RelationChangedCallback callback
+	){
+		if( access_info.isMe( who )){
+			Utils.showToast( this,false,R.string.it_is_you );
+			return;
+		}
+		
+		if( ! bConfirmed ){
+			if( bFollow && who.locked ){
+				DlgConfirm.open( this
+					, getString( R.string.confirm_follow_request_who_from,who.display_name ,AcctColor.getNickname( access_info.acct) )
+					, new DlgConfirm.Callback() {
+						@Override public boolean isConfirmEnabled(){
+							return access_info.confirm_follow_locked;
+						}
+						
+						@Override public void setConfirmEnabled( boolean bv ){
+							access_info.confirm_follow_locked = bv;
+							access_info.saveSetting();
+							reloadAccountSetting(access_info);
+						}
+						
+						@Override public void onOK(){
+							//noinspection ConstantConditions
+							callFollow( access_info, who, bFollow, true, callback );
+						}
+					}
+				);
+				return;
+			}else if( bFollow ){
+				DlgConfirm.open( this
+					, getString( R.string.confirm_follow_who_from,who.display_name ,AcctColor.getNickname( access_info.acct) )
+					, new DlgConfirm.Callback() {
+						@Override public boolean isConfirmEnabled(){
+							return access_info.confirm_follow;
+						}
+						
+						@Override public void setConfirmEnabled( boolean bv ){
+							access_info.confirm_follow = bv;
+							access_info.saveSetting();
+							reloadAccountSetting(access_info);
+						}
+						
+						@Override public void onOK(){
+							//noinspection ConstantConditions
+							callFollow( access_info, who, bFollow, true, callback );
+						}
+					}
+				);
+				return;
+			}else{
+				DlgConfirm.open( this
+					, getString( R.string.confirm_unfollow_who_from, who.display_name ,AcctColor.getNickname( access_info.acct))
+					, new DlgConfirm.Callback() {
+						@Override public boolean isConfirmEnabled(){
+							return access_info.confirm_unfollow;
+						}
+						
+						@Override public void setConfirmEnabled( boolean bv ){
+							access_info.confirm_unfollow = bv;
+							access_info.saveSetting();
+							reloadAccountSetting(access_info);
+						}
+						
+						@Override public void onOK(){
+							//noinspection ConstantConditions
+							callFollow( access_info, who, bFollow, true, callback );
+						}
+					}
+				);
+				return;
+			}
+		}
 		
 		new AsyncTask< Void, Void, TootApiResult >() {
 			@Override protected TootApiResult doInBackground( Void... params ){
@@ -1436,11 +1568,18 @@ public class ActMain extends AppCompatActivity
 				if( result == null ){
 					// cancelled.
 				}else if( relation != null ){
-					// ローカル操作成功、もしくはリモートフォロー成功
 					
 					showColumnMatchAccount( access_info );
 					
-					if( callback != null ) callback.onRelationChanged();
+					if( bFollow && relation.requested ){
+						// 鍵付きアカウントにフォローリクエストを申請した状態
+						Utils.showToast( ActMain.this, false, R.string.follow_requested );
+					}else if( !bFollow && relation.requested ){
+						Utils.showToast( ActMain.this, false, R.string.follow_request_cant_remove_by_sender );
+					}else{
+						// ローカル操作成功、もしくはリモートフォロー成功
+						if( callback != null ) callback.onRelationChanged();
+					}
 					
 				}else if( bFollow && who.locked && result.response != null && result.response.code() == 422 ){
 					Utils.showToast( ActMain.this, false, R.string.cant_follow_locked_user );
@@ -1454,8 +1593,58 @@ public class ActMain extends AppCompatActivity
 	
 	// acct で指定したユーザをリモートフォローする
 	void callRemoteFollow( final SavedAccount access_info
-		, final String acct, final boolean locked, final RelationChangedCallback callback
+		, final String acct, final boolean locked, boolean bConfirmed, final RelationChangedCallback callback
 	){
+		if( access_info.isMe( acct )){
+			Utils.showToast( this,false,R.string.it_is_you );
+			return;
+		}
+		
+		if( ! bConfirmed ){
+			if( locked ){
+				DlgConfirm.open( this
+					, getString( R.string.confirm_follow_request_who_from, AcctColor.getNickname( acct ) , AcctColor.getNickname( access_info.acct ) )
+					, new DlgConfirm.Callback() {
+						@Override public boolean isConfirmEnabled(){
+							return access_info.confirm_follow_locked;
+						}
+						
+						@Override public void setConfirmEnabled( boolean bv ){
+							access_info.confirm_follow_locked = bv;
+							access_info.saveSetting();
+							reloadAccountSetting(access_info);
+						}
+						
+						@Override public void onOK(){
+							//noinspection ConstantConditions
+							callRemoteFollow( access_info, acct, locked, true, callback );
+						}
+					}
+				);
+				return;
+			}else{
+				DlgConfirm.open( this
+					, getString( R.string.confirm_follow_who_from, AcctColor.getNickname( acct ) , AcctColor.getNickname( access_info.acct ) )
+					, new DlgConfirm.Callback() {
+						@Override public boolean isConfirmEnabled(){
+							return access_info.confirm_follow;
+						}
+						
+						@Override public void setConfirmEnabled( boolean bv ){
+							access_info.confirm_follow = bv;
+							access_info.saveSetting();
+							reloadAccountSetting();
+						}
+						
+						@Override public void onOK(){
+							//noinspection ConstantConditions
+							callRemoteFollow( access_info, acct, locked, true, callback );
+						}
+					}
+				);
+				return;
+			}
+		}
 		
 		new AsyncTask< Void, Void, TootApiResult >() {
 			
@@ -1521,22 +1710,9 @@ public class ActMain extends AppCompatActivity
 		}.execute();
 	}
 	
-	// アカウントを選択してからユーザをフォローする
-	void followFromAccount( final SavedAccount access_info, final TootAccount who, final RelationChangedCallback callback ){
-		AccountPicker.pick( ActMain.this, false, true, new AccountPicker.AccountPickerCallback() {
-			@Override public void onAccountPicked( SavedAccount ai ){
-				String acct = who.acct;
-				if( ! acct.contains( "@" ) ){
-					acct = acct + "@" + access_info.host;
-				}
-				callRemoteFollow( ai, acct, who.locked, callback );
-			}
-		} );
-	}
-	
 	////////////////////////////////////////
 	
-	private void callMute( final SavedAccount access_info, final TootAccount who, final boolean bMute, final RelationChangedCallback callback ){
+	void callMute( final SavedAccount access_info, final TootAccount who, final boolean bMute, final RelationChangedCallback callback ){
 		new AsyncTask< Void, Void, TootApiResult >() {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
@@ -1605,7 +1781,7 @@ public class ActMain extends AppCompatActivity
 		}.execute();
 	}
 	
-	private void callBlock( final SavedAccount access_info, final TootAccount who, final boolean bBlock, final RelationChangedCallback callback ){
+	void callBlock( final SavedAccount access_info, final TootAccount who, final boolean bBlock, final RelationChangedCallback callback ){
 		new AsyncTask< Void, Void, TootApiResult >() {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
@@ -1672,7 +1848,7 @@ public class ActMain extends AppCompatActivity
 		}.execute();
 	}
 	
-	private void callFollowRequestAuthorize( final SavedAccount access_info
+	void callFollowRequestAuthorize( final SavedAccount access_info
 		, final TootAccount who, final boolean bAllow
 	){
 		new AsyncTask< Void, Void, TootApiResult >() {
@@ -1723,7 +1899,7 @@ public class ActMain extends AppCompatActivity
 		}.execute();
 	}
 	
-	private void deleteStatus( final SavedAccount access_info, final long status_id ){
+	void deleteStatus( final SavedAccount access_info, final long status_id ){
 		new AsyncTask< Void, Void, TootApiResult >() {
 			
 			@Override
@@ -1825,7 +2001,7 @@ public class ActMain extends AppCompatActivity
 		}.execute();
 	}
 	
-	private void openReportForm( @NonNull final SavedAccount account, @NonNull final TootAccount who, @NonNull final TootStatus status ){
+	void openReportForm( @NonNull final SavedAccount account, @NonNull final TootAccount who, @NonNull final TootStatus status ){
 		ReportForm.showReportForm( this, who, status, new ReportForm.ReportFormCallback() {
 			
 			@Override public void startReport( final Dialog dialog, String comment ){
@@ -1845,7 +2021,7 @@ public class ActMain extends AppCompatActivity
 	
 	////////////////////////////////////////////////
 	
-	private void sendStatus( SavedAccount access_info, TootStatus status ){
+	void sendStatus( SavedAccount access_info, TootStatus status ){
 		try{
 			StringBuilder sb = new StringBuilder();
 			sb.append( getString( R.string.send_header_url ) );
@@ -1888,17 +2064,6 @@ public class ActMain extends AppCompatActivity
 	
 	////////////////////////////////////////////////
 	
-	final RelationChangedCallback favourite_complete_callback = new RelationChangedCallback() {
-		@Override public void onRelationChanged(){
-			Utils.showToast( ActMain.this, false, R.string.favourite_succeeded );
-		}
-	};
-	final RelationChangedCallback boost_complete_callback = new RelationChangedCallback() {
-		@Override public void onRelationChanged(){
-			Utils.showToast( ActMain.this, false, R.string.boost_succeeded );
-		}
-	};
-	
 	final RelationChangedCallback follow_complete_callback = new RelationChangedCallback() {
 		@Override public void onRelationChanged(){
 			Utils.showToast( ActMain.this, false, R.string.follow_succeeded );
@@ -1909,191 +2074,17 @@ public class ActMain extends AppCompatActivity
 			Utils.showToast( ActMain.this, false, R.string.unfollow_succeeded );
 		}
 	};
-	
-	// ステータスのmoreメニュー
-	public void openStatusMoreMenu( final SavedAccount access_info, final TootStatus status, int column_type ){
-		
-		ActionsDialog dialog = new ActionsDialog();
-		
-		dialog.addAction( getString( R.string.open_web_page ), new Runnable() {
-			@Override public void run(){
-				// 強制的にブラウザで開く
-				openChromeTab( access_info, status.url, true );
-			}
-		} );
-		dialog.addAction( getString( R.string.send_text ), new Runnable() {
-			@Override public void run(){
-				sendStatus( access_info, status );
-			}
-		} );
-		final ArrayList< SavedAccount > tmp_list = new ArrayList<>();
-		for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
-			if( a.isPseudo() ) continue;
-			if( a.host.equalsIgnoreCase( access_info.host ) ){
-				// 同じホストを収集
-				tmp_list.add( a );
-			}
+	final ActMain.RelationChangedCallback favourite_complete_callback = new ActMain.RelationChangedCallback() {
+		@Override public void onRelationChanged(){
+			Utils.showToast( ActMain.this, false, R.string.favourite_succeeded );
 		}
-		if( ! tmp_list.isEmpty() ){
-			dialog.addAction( getString( R.string.favourite_from_another_account ), new Runnable() {
-				@Override public void run(){
-					AccountPicker.pick( ActMain.this, false, false, tmp_list, new AccountPicker.AccountPickerCallback() {
-						@Override public void onAccountPicked( SavedAccount ai ){
-							if( ai != null )
-								performFavourite( ai, status, favourite_complete_callback );
-						}
-					} );
-				}
-			} );
-			dialog.addAction( getString( R.string.boost_from_another_account ), new Runnable() {
-				@Override public void run(){
-					AccountPicker.pick( ActMain.this, false, false, tmp_list, new AccountPicker.AccountPickerCallback() {
-						@Override public void onAccountPicked( SavedAccount ai ){
-							if( ai != null )
-								performBoost( ai, status, false, boost_complete_callback );
-						}
-					} );
-				}
-			} );
+	};
+	final ActMain.RelationChangedCallback boost_complete_callback = new ActMain.RelationChangedCallback() {
+		@Override public void onRelationChanged(){
+			Utils.showToast( ActMain.this, false, R.string.boost_succeeded );
 		}
-		
-		dialog.addAction( getString( R.string.follow_from_another_account ), new Runnable() {
-			@Override public void run(){
-				followFromAccount( access_info, status.account, follow_complete_callback );
-			}
-		} );
-		
-		if( ! access_info.isPseudo() ){
-			dialog.addAction( getString( R.string.follow ), new Runnable() {
-				@Override public void run(){
-					callFollow( access_info, status.account, true, follow_complete_callback );
-				}
-			} );
-			
-			dialog.addAction( getString( R.string.unfollow ), new Runnable() {
-				@Override public void run(){
-					callFollow( access_info, status.account, false, unfollow_complete_callback );
-				}
-			} );
-			dialog.addAction( getString( R.string.mute ), new Runnable() {
-				@Override public void run(){
-					callMute( access_info, status.account, true, null );
-				}
-			} );
-			dialog.addAction( getString( R.string.unmute ), new Runnable() {
-				@Override public void run(){
-					callMute( access_info, status.account, false, null );
-				}
-			} );
-			dialog.addAction( getString( R.string.block ), new Runnable() {
-				@Override public void run(){
-					callBlock( access_info, status.account, true, null );
-				}
-			} );
-			dialog.addAction( getString( R.string.unblock ), new Runnable() {
-				@Override public void run(){
-					callBlock( access_info, status.account, false, null );
-				}
-			} );
-			
-			if( access_info.isMe( status.account ) ){
-				dialog.addAction( getString( R.string.delete ), new Runnable() {
-					@Override public void run(){
-						deleteStatus( access_info, status.id );
-					}
-				} );
-			}else{
-				dialog.addAction( getString( R.string.report ), new Runnable() {
-					@Override public void run(){
-						openReportForm( access_info, status.account, status );
-					}
-				} );
-			}
-			
-		}
-		
-		if( column_type == Column.TYPE_CONVERSATION && status.application != null ){
-			dialog.addAction( getString( R.string.mute_app_of, status.application.name ), new Runnable() {
-				@Override public void run(){
-					Utils.showToast( ActMain.this, false, R.string.app_was_muted );
-					MutedApp.save( status.application.name );
-					for( Column column : pager_adapter.column_list ){
-						column.removeMuteApp();
-					}
-				}
-			} );
-		}
-		
-		dialog.show( this, null );
-	}
-	
-	public void openAccountMoreMenu( final SavedAccount access_info, final TootAccount who, int column_type ){
-		ActionsDialog dialog = new ActionsDialog();
-		
-		if( ! access_info.isPseudo() ){
-			if( column_type == Column.TYPE_FOLLOW_REQUESTS ){
-				dialog.addAction( getString( R.string.follow_request_ok ), new Runnable() {
-					@Override public void run(){
-						callFollowRequestAuthorize( access_info, who, true );
-					}
-				} );
-				dialog.addAction( getString( R.string.follow_request_ng ), new Runnable() {
-					@Override public void run(){
-						callFollowRequestAuthorize( access_info, who, false );
-					}
-				} );
-				
-			}
-		}
-		
-		if( ! access_info.isPseudo() ){
-			dialog.addAction( getString( R.string.mention ), new Runnable() {
-				@Override public void run(){
-					performMention( access_info, who );
-				}
-			} );
-			dialog.addAction( getString( R.string.follow ), new Runnable() {
-				@Override public void run(){
-					callFollow( access_info, who, true, follow_complete_callback );
-				}
-			} );
-		}
-		dialog.addAction( getString( R.string.follow_from_another_account ), new Runnable() {
-			@Override public void run(){
-				followFromAccount( access_info, who, follow_complete_callback );
-			}
-		} );
-		if( ! access_info.isPseudo() ){
-			dialog.addAction( getString( R.string.unfollow ), new Runnable() {
-				@Override
-				public void run(){
-					callFollow( access_info, who, false, unfollow_complete_callback );
-				}
-			} );
-			dialog.addAction( getString( R.string.mute ), new Runnable() {
-				@Override public void run(){
-					callMute( access_info, who, true, null );
-				}
-			} );
-			dialog.addAction( getString( R.string.unmute ), new Runnable() {
-				@Override
-				public void run(){
-					callMute( access_info, who, false, null );
-				}
-			} );
-			dialog.addAction( getString( R.string.block ), new Runnable() {
-				@Override public void run(){
-					callBlock( access_info, who, true, null );
-				}
-			} );
-			dialog.addAction( getString( R.string.unblock ), new Runnable() {
-				@Override public void run(){
-					callBlock( access_info, who, false, null );
-				}
-			} );
-		}
-		dialog.show( this, null );
-	}
+	};
+
 	
 	private void openOSSLicense(){
 		startActivity( new Intent( this, ActOSSLicense.class ) );
@@ -2155,7 +2146,7 @@ public class ActMain extends AppCompatActivity
 				}else if( result.object != null ){
 					// ok. empty object will be returned.
 					for( Column column : pager_adapter.column_list ){
-						if( column.type == Column.TYPE_NOTIFICATIONS
+						if( column.column_type == Column.TYPE_NOTIFICATIONS
 							&& column.access_info.acct.equals( target_account.acct )
 							){
 							column.removeNotifications();

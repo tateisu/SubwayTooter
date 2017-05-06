@@ -6,14 +6,14 @@ import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.v4.os.AsyncTaskCompat;
 import android.text.TextUtils;
+import android.view.View;
+import android.widget.ListView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
@@ -31,11 +31,14 @@ import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootReport;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.MyListView;
+import jp.juggler.subwaytooter.util.ScrollPosition;
 import jp.juggler.subwaytooter.util.Utils;
 
 class Column {
@@ -68,6 +71,8 @@ class Column {
 	private static final String PATH_MUTES = "/api/v1/mutes?limit=" + READ_LIMIT; // 1:account_id
 	private static final String PATH_BLOCKS = "/api/v1/blocks?limit=" + READ_LIMIT; // 1:account_id
 	private static final String PATH_FOLLOW_REQUESTS = "/api/v1/follow_requests?limit=" + READ_LIMIT; // 1:account_id
+	private static final String PATH_BOOSTED_BY = "/api/v1/statuses/%s/reblogged_by?limit=" + READ_LIMIT; // 1:status_id
+	private static final String PATH_FAVOURITED_BY = "/api/v1/statuses/%s/favourited_by?limit=" + READ_LIMIT; // 1:status_id
 	
 	// 他のリストを返すAPI
 	private static final String PATH_REPORTS = "/api/v1/reports?limit=" + READ_LIMIT;
@@ -78,15 +83,17 @@ class Column {
 	private static final String PATH_STATUSES = "/api/v1/statuses/%d"; // 1:status_id
 	private static final String PATH_STATUSES_CONTEXT = "/api/v1/statuses/%d/context"; // 1:status_id
 	private static final String PATH_SEARCH = "/api/v1/search?q=%s"; // 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
-	private static final String PATH_INSTANCE="/api/v1/instance";
+	private static final String PATH_INSTANCE = "/api/v1/instance";
 	
 	private static final String KEY_ACCOUNT_ROW_ID = "account_id";
-	private static final String KEY_TYPE = "type";
+	static final String KEY_TYPE = "type";
 	static final String KEY_DONT_CLOSE = "dont_close";
 	private static final String KEY_WITH_ATTACHMENT = "with_attachment";
 	private static final String KEY_DONT_SHOW_BOOST = "dont_show_boost";
 	private static final String KEY_DONT_SHOW_REPLY = "dont_show_reply";
 	private static final String KEY_REGEX_TEXT = "regex_text";
+	
+	// static final java.lang.String KEY_COLUMN_COLOR = "color";
 	
 	private static final String KEY_PROFILE_ID = "profile_id";
 	private static final String KEY_PROFILE_TAB = "tab";
@@ -96,6 +103,8 @@ class Column {
 	private static final String KEY_SEARCH_RESOLVE = "search_resolve";
 	
 	static final String KEY_COLUMN_ACCESS = "column_access";
+	static final String KEY_COLUMN_ACCESS_COLOR = "column_access_color";
+	static final String KEY_COLUMN_ACCESS_COLOR_BG = "column_access_color_bg";
 	static final String KEY_COLUMN_NAME = "column_name";
 	static final String KEY_OLD_INDEX = "old_index";
 	
@@ -112,11 +121,13 @@ class Column {
 	static final int TYPE_MUTES = 11;
 	static final int TYPE_BLOCKS = 12;
 	static final int TYPE_FOLLOW_REQUESTS = 13;
+	static final int TYPE_BOOSTED_BY = 14;
+	static final int TYPE_FAVOURITED_BY = 15;
 	
-	@NonNull private final ActMain activity;
+	@NonNull final ActMain activity;
 	@NonNull final SavedAccount access_info;
 	
-	final int type;
+	final int column_type;
 	
 	boolean dont_close;
 	
@@ -139,16 +150,17 @@ class Column {
 	String search_query;
 	boolean search_resolve;
 	
-	int scroll_pos;
-	int scroll_y;
+	ScrollPosition scroll_save;
 	
 	Column( @NonNull ActMain activity, @NonNull SavedAccount access_info, int type, Object... params ){
 		this.activity = activity;
 		this.access_info = access_info;
-		this.type = type;
+		this.column_type = type;
 		switch( type ){
 		
 		case TYPE_CONVERSATION:
+		case TYPE_BOOSTED_BY:
+		case TYPE_FAVOURITED_BY:
 			this.status_id = (Long) getParamAt( params, 0 );
 			break;
 		
@@ -166,21 +178,22 @@ class Column {
 			break;
 			
 		}
-		
-		startLoading();
+		init();
 	}
 	
 	void encodeJSON( JSONObject item, int old_index ) throws JSONException{
 		item.put( KEY_ACCOUNT_ROW_ID, access_info.db_id );
-		item.put( KEY_TYPE, type );
+		item.put( KEY_TYPE, column_type );
 		item.put( KEY_DONT_CLOSE, dont_close );
 		item.put( KEY_WITH_ATTACHMENT, with_attachment );
 		item.put( KEY_DONT_SHOW_BOOST, dont_show_boost );
 		item.put( KEY_DONT_SHOW_REPLY, dont_show_reply );
 		item.put( KEY_REGEX_TEXT, regex_text );
 		
-		switch( type ){
+		switch( column_type ){
 		case TYPE_CONVERSATION:
+		case TYPE_BOOSTED_BY:
+		case TYPE_FAVOURITED_BY:
 			item.put( KEY_STATUS_ID, status_id );
 			break;
 		case TYPE_PROFILE:
@@ -197,7 +210,10 @@ class Column {
 		}
 		
 		// 以下は保存には必要ないが、カラムリスト画面で使う
-		item.put( KEY_COLUMN_ACCESS, access_info.acct );
+		AcctColor ac = AcctColor.load( access_info.acct );
+		item.put( KEY_COLUMN_ACCESS, AcctColor.hasNickname( ac ) ? ac.nickname : access_info.acct );
+		item.put( KEY_COLUMN_ACCESS_COLOR, AcctColor.hasColorForeground( ac ) ? ac.color_fg : 0 );
+		item.put( KEY_COLUMN_ACCESS_COLOR_BG, AcctColor.hasColorBackground( ac ) ? ac.color_bg : 0 );
 		item.put( KEY_COLUMN_NAME, getColumnName( true ) );
 		item.put( KEY_OLD_INDEX, old_index );
 	}
@@ -208,16 +224,18 @@ class Column {
 		SavedAccount ac = SavedAccount.loadAccount( log, src.optLong( KEY_ACCOUNT_ROW_ID ) );
 		if( ac == null ) throw new RuntimeException( "missing account" );
 		this.access_info = ac;
-		this.type = src.optInt( KEY_TYPE );
+		this.column_type = src.optInt( KEY_TYPE );
 		this.dont_close = src.optBoolean( KEY_DONT_CLOSE );
 		this.with_attachment = src.optBoolean( KEY_WITH_ATTACHMENT );
 		this.dont_show_boost = src.optBoolean( KEY_DONT_SHOW_BOOST );
 		this.dont_show_reply = src.optBoolean( KEY_DONT_SHOW_REPLY );
 		this.regex_text = Utils.optStringX( src, KEY_REGEX_TEXT );
 		
-		switch( type ){
+		switch( column_type ){
 		
 		case TYPE_CONVERSATION:
+		case TYPE_BOOSTED_BY:
+		case TYPE_FAVOURITED_BY:
 			this.status_id = src.optLong( KEY_STATUS_ID );
 			break;
 		
@@ -236,11 +254,12 @@ class Column {
 			break;
 			
 		}
-		startLoading();
+		init();
 	}
 	
 	boolean isSameSpec( SavedAccount ai, int type, Object[] params ){
-		if( type != this.type || ! Utils.equalsNullable( ai.acct, access_info.acct ) ) return false;
+		if( type != column_type || ! Utils.equalsNullable( ai.acct, access_info.acct ) )
+			return false;
 		switch( type ){
 		default:
 			return true;
@@ -254,6 +273,8 @@ class Column {
 			}
 		
 		case TYPE_CONVERSATION:
+		case TYPE_BOOSTED_BY:
+		case TYPE_FAVOURITED_BY:
 			try{
 				long status_id = (Long) getParamAt( params, 0 );
 				return status_id == this.status_id;
@@ -289,7 +310,7 @@ class Column {
 	}
 	
 	String getColumnName( boolean bLong ){
-		switch( type ){
+		switch( column_type ){
 		
 		default:
 			return "?";
@@ -304,8 +325,9 @@ class Column {
 			return activity.getString( R.string.federate_timeline );
 		
 		case TYPE_PROFILE:
-			return activity.getString( R.string.statuses_of
-				, who_account != null ? access_info.getFullAcct( who_account ) : Long.toString( profile_id )
+			
+			return activity.getString( R.string.profile_of
+				, who_account != null ? AcctColor.getNickname( access_info.getFullAcct( who_account ) ) : Long.toString( profile_id )
 			);
 		
 		case TYPE_FAVOURITES:
@@ -320,6 +342,12 @@ class Column {
 		case TYPE_CONVERSATION:
 			return activity.getString( R.string.conversation_around, status_id );
 		
+		case TYPE_BOOSTED_BY:
+			return activity.getString( R.string.boosted_by );
+
+		case TYPE_FAVOURITED_BY:
+			return activity.getString( R.string.favourited_by );
+
 		case TYPE_HASHTAG:
 			return activity.getString( R.string.hashtag_of, hashtag );
 		
@@ -335,12 +363,81 @@ class Column {
 			}else{
 				return activity.getString( R.string.search );
 			}
-			
+		
 		case TYPE_FOLLOW_REQUESTS:
 			return activity.getString( R.string.follow_requests );
 		}
 	}
+	
+	static int getIconAttrId( int type ){
+		switch( type ){
+		
+		default:
+		case TYPE_REPORTS:
+			return R.attr.ic_info;
+		
+		case TYPE_HOME:
+			return R.attr.btn_home;
+		
+		case TYPE_LOCAL:
+			return R.attr.btn_local_tl;
+		
+		case TYPE_FEDERATE:
+			return R.attr.btn_federate_tl;
+		
+		case TYPE_PROFILE:
+			return R.attr.btn_statuses;
+		
+		case TYPE_FAVOURITES:
+			return R.attr.btn_favourite;
+		
+		case TYPE_NOTIFICATIONS:
+			return R.attr.btn_notification;
+		
+		case TYPE_CONVERSATION:
+			return R.attr.ic_conversation;
+		
+		case TYPE_BOOSTED_BY:
+			return R.attr.btn_boost;
 
+		case TYPE_FAVOURITED_BY:
+			return R.attr.btn_favourite;
+			
+		case TYPE_HASHTAG:
+			return R.attr.ic_hashtag;
+		
+		case TYPE_MUTES:
+			return R.attr.ic_mute;
+		
+		case TYPE_BLOCKS:
+			return R.attr.ic_block;
+		
+		case TYPE_SEARCH:
+			return R.attr.ic_search;
+		
+		case TYPE_FOLLOW_REQUESTS:
+			return R.attr.ic_account_add;
+		}
+	}
+	
+	boolean bSimpleList;
+	ItemListAdapter status_adapter;
+	int acct_pad_lr;
+	
+	private void init(){
+		acct_pad_lr = (int) ( 0.5f + 4f * activity.density );
+		
+		bSimpleList = ( column_type != Column.TYPE_CONVERSATION && activity.pref.getBoolean( Pref.KEY_SIMPLE_LIST, false ) );
+		
+		status_adapter = new ItemListAdapter( this );
+		
+		startLoading();
+	}
+	
+	void onNicknameUpdated(){
+		
+		fireShowColumnHeader();
+	}
 	
 	interface StatusEntryCallback {
 		void onIterate( TootStatus status );
@@ -403,7 +500,7 @@ class Column {
 		if( tmp_list.size() != list_data.size() ){
 			list_data.clear();
 			list_data.addAll( tmp_list );
-			fireVisualCallback();
+			fireShowContent();
 			
 		}
 	}
@@ -411,7 +508,7 @@ class Column {
 	// ミュート解除が成功した時に呼ばれる
 	void removeFromMuteList( SavedAccount target_account, long who_id ){
 		if( ! target_account.acct.equals( access_info.acct ) ) return;
-		if( type != TYPE_MUTES ) return;
+		if( column_type != TYPE_MUTES ) return;
 		
 		ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
 		for( Object o : list_data ){
@@ -425,14 +522,14 @@ class Column {
 		if( tmp_list.size() != list_data.size() ){
 			list_data.clear();
 			list_data.addAll( tmp_list );
-			fireVisualCallback();
+			fireShowContent();
 		}
 	}
 	
 	// ブロック解除が成功したので、ブロックリストから削除する
 	void removeFromBlockList( SavedAccount target_account, long who_id ){
 		if( ! target_account.acct.equals( access_info.acct ) ) return;
-		if( type != TYPE_BLOCKS ) return;
+		if( column_type != TYPE_BLOCKS ) return;
 		
 		ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
 		for( Object o : list_data ){
@@ -445,14 +542,14 @@ class Column {
 		if( tmp_list.size() != list_data.size() ){
 			list_data.clear();
 			list_data.addAll( tmp_list );
-			fireVisualCallback();
+			fireShowContent();
 		}
 	}
 	
-	public void removeFollowRequest( SavedAccount target_account, long who_id ){
+	void removeFollowRequest( SavedAccount target_account, long who_id ){
 		if( ! target_account.acct.equals( access_info.acct ) ) return;
 		
-		if( type == TYPE_FOLLOW_REQUESTS ){
+		if( column_type == TYPE_FOLLOW_REQUESTS ){
 			ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
 			for( Object o : list_data ){
 				if( o instanceof TootAccount ){
@@ -464,14 +561,14 @@ class Column {
 			if( tmp_list.size() != list_data.size() ){
 				list_data.clear();
 				list_data.addAll( tmp_list );
-				fireVisualCallback();
+				fireShowContent();
 			}
 		}else{
 			// 他のカラムでもフォロー状態の表示更新が必要
-			fireVisualCallback();
+			fireShowContent();
 		}
 	}
-
+	
 	// 自分のステータスを削除した時に呼ばれる
 	void removeStatus( SavedAccount target_account, long status_id ){
 		
@@ -501,43 +598,50 @@ class Column {
 		if( tmp_list.size() != list_data.size() ){
 			list_data.clear();
 			list_data.addAll( tmp_list );
-			fireVisualCallback();
+			fireShowContent();
 		}
 	}
 	
-	interface VisualCallback {
-		void onVisualColumn();
+	void removeNotifications(){
+		cancelLastTask();
+		
+		list_data.clear();
+		mRefreshLoadingError = null;
+		bRefreshLoading = false;
+		mInitialLoadingError = null;
+		bInitialLoading = false;
+		max_id = null;
+		since_id = null;
+		
+		fireShowContent();
+		
+		AlarmService.dataRemoved( activity, access_info.db_id );
 	}
 	
-	private final LinkedList< VisualCallback > visual_callback = new LinkedList<>();
+	private ColumnViewHolder holder;
 	
-	void addVisualListener( VisualCallback listener ){
-		if( listener == null ) return;
-		for( VisualCallback vc : visual_callback ){
-			if( vc == listener ) return;
-		}
-		visual_callback.add( listener );
+	void setColumnViewHolder( ColumnViewHolder holder ){
+		this.holder = holder;
 	}
 	
-	void removeVisualListener( VisualCallback listener ){
-		if( listener == null ) return;
-		Iterator< VisualCallback > it = visual_callback.iterator();
-		while( it.hasNext() ){
-			VisualCallback vc = it.next();
-			if( vc == listener ) it.remove();
-		}
-	}
-	
-	private final Runnable proc_fireVisualCallback = new Runnable() {
+	private final Runnable proc_showContent = new Runnable() {
 		@Override public void run(){
-			for( VisualCallback aVisual_callback : visual_callback ){
-				aVisual_callback.onVisualColumn();
-			}
+			if( holder != null ) holder.showContent();
+		}
+	};
+	private final Runnable proc_showColumnHeader = new Runnable() {
+		@Override public void run(){
+			if( holder != null ) holder.showColumnHeader();
 		}
 	};
 	
-	void fireVisualCallback(){
-		Utils.runOnMainThread( proc_fireVisualCallback );
+	void fireShowContent(){
+		Utils.runOnMainThread( proc_showContent );
+	}
+	
+	// カラムヘッダ部分だけ更新する
+	void fireShowColumnHeader(){
+		Utils.runOnMainThread( proc_showColumnHeader );
 	}
 	
 	private AsyncTask< Void, Void, TootApiResult > last_task;
@@ -611,7 +715,7 @@ class Column {
 		if( tmp_list.size() != list_data.size() ){
 			list_data.clear();
 			list_data.addAll( tmp_list );
-			fireVisualCallback();
+			fireShowContent();
 		}
 	}
 	
@@ -701,7 +805,7 @@ class Column {
 		max_id = null;
 		since_id = null;
 		
-		fireVisualCallback();
+		fireShowContent();
 		
 		AsyncTask< Void, Void, TootApiResult > task = this.last_task = new AsyncTask< Void, Void, TootApiResult >() {
 			
@@ -821,7 +925,7 @@ class Column {
 							public void run(){
 								if( isCancelled() ) return;
 								task_progress = s;
-								fireVisualCallback();
+								fireShowContent();
 							}
 						} );
 					}
@@ -832,7 +936,7 @@ class Column {
 				try{
 					TootApiResult result;
 					
-					switch( type ){
+					switch( column_type ){
 					
 					default:
 					case TYPE_HOME:
@@ -853,8 +957,8 @@ class Column {
 						
 						default:
 						case TAB_STATUS:
-							if( access_info.isPseudo()){
-								return client.request(PATH_INSTANCE );
+							if( access_info.isPseudo() ){
+								return client.request( PATH_INSTANCE );
 								
 							}else{
 								String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
@@ -862,7 +966,6 @@ class Column {
 								return getStatuses( client, s );
 								
 							}
-							
 						
 						case TAB_FOLLOWING:
 							return parseAccountList( client,
@@ -895,6 +998,13 @@ class Column {
 					
 					case TYPE_NOTIFICATIONS:
 						return parseNotifications( client, PATH_NOTIFICATIONS );
+					
+					case TYPE_BOOSTED_BY:
+						return  parseAccountList( client, String.format( Locale.JAPAN,PATH_BOOSTED_BY,status_id ) );
+					
+					case TYPE_FAVOURITED_BY:
+						return  parseAccountList( client, String.format( Locale.JAPAN,PATH_FAVOURITED_BY,status_id ) );
+					
 					
 					case TYPE_CONVERSATION:
 						
@@ -966,15 +1076,12 @@ class Column {
 				if( result.error != null ){
 					Column.this.mInitialLoadingError = result.error;
 				}else{
-					
 					if( list_tmp != null ){
 						list_data.clear();
 						list_data.addAll( list_tmp );
-						
 					}
-					
 				}
-				fireVisualCallback();
+				fireShowContent();
 			}
 		};
 		
@@ -986,7 +1093,7 @@ class Column {
 	
 	private String max_id;
 	private String since_id;
-	int scroll_hack;
+	// int scroll_hack;
 	
 	private void saveRange( TootApiResult result, boolean bBottom, boolean bTop ){
 		if( result != null ){
@@ -1015,22 +1122,172 @@ class Column {
 	}
 	
 	private String addRange( boolean bBottom, String path ){
-		char delm = ( - 1 != path.indexOf( '?' ) ? '&' : '?' );
+		char delimiter = ( - 1 != path.indexOf( '?' ) ? '&' : '?' );
 		if( bBottom ){
-			if( max_id != null ) return path + delm + "max_id=" + max_id;
+			if( max_id != null ) return path + delimiter + "max_id=" + max_id;
 		}else{
-			if( since_id != null ) return path + delm + "since_id=" + since_id;
+			if( since_id != null ) return path + delimiter + "since_id=" + since_id;
 		}
 		return path;
 	}
 	
-	String startRefresh( final boolean bBottom ){
+	private void updateRelation( TootApiClient client, ArrayList< Object > list_tmp ){
+		if( list_tmp == null || list_tmp.isEmpty() ) return;
+		if( access_info.isPseudo() ) return;
+		
+		HashSet< Long > who_set = new HashSet<>();
+		HashSet< String > acct_set = new HashSet<>();
+		{
+			TootAccount a;
+			TootStatus s;
+			TootNotification n;
+			for( Object o : list_tmp ){
+				if( o instanceof TootAccount ){
+					a = (TootAccount) o;
+					who_set.add( a.id );
+					acct_set.add( "@" + access_info.getFullAcct( a ) );
+				}else if( o instanceof TootStatus ){
+					s = (TootStatus) o;
+					a = s.account;
+					if( a != null ){
+						who_set.add( a.id );
+						acct_set.add( "@" + access_info.getFullAcct( a ) );
+					}
+					s = s.reblog;
+					if( s != null ){
+						a = s.account;
+						if( a != null ){
+							who_set.add( a.id );
+							acct_set.add( "@" + access_info.getFullAcct( a ) );
+						}
+					}
+				}else if( o instanceof TootNotification ){
+					n = (TootNotification) o;
+					//
+					a = n.account;
+					if( a != null ){
+						who_set.add( a.id );
+						acct_set.add( "@" + access_info.getFullAcct( a ) );
+					}
+					//
+					s = n.status;
+					if( s != null ){
+						a = s.account;
+						if( a != null ){
+							who_set.add( a.id );
+							acct_set.add( "@" + access_info.getFullAcct( a ) );
+						}
+						s = s.reblog;
+						if( s != null ){
+							a = s.account;
+							if( a != null ){
+								who_set.add( a.id );
+								acct_set.add( "@" + access_info.getFullAcct( a ) );
+							}
+						}
+					}
+				}
+			}
+		}
+		int size = who_set.size();
+		if( size > 0 ){
+			long[] who_list = new long[ size ];
+			{
+				int n = 0;
+				for( Long l : who_set ){
+					who_list[ n++ ] = l;
+				}
+			}
+			
+			long now = System.currentTimeMillis();
+			int n = 0;
+			while( n < size ){
+				StringBuilder sb = new StringBuilder();
+				sb.append( "/api/v1/accounts/relationships" );
+				for( int i = 0 ; i < RELATIONSHIP_LOAD_STEP ; ++ i ){
+					if( n >= size ) break;
+					sb.append( i == 0 ? '?' : '&' );
+					sb.append( "id[]=" );
+					sb.append( Long.toString( who_list[ n++ ] ) );
+				}
+				TootApiResult result = client.request( sb.toString() );
+				if( result == null ){
+					// cancelled.
+					break;
+				}else if( result.array != null ){
+					TootRelationShip.List list = TootRelationShip.parseList( log, result.array );
+					UserRelation.saveList( now, access_info.db_id, list );
+				}
+			}
+			log.d( "updateRelation: update %d relations.", n );
+			
+		}
+		size = acct_set.size();
+		if( size > 0 ){
+			String[] acct_list = new String[ size ];
+			{
+				int n = 0;
+				for( String l : acct_set ){
+					acct_list[ n++ ] = l;
+				}
+			}
+			long now = System.currentTimeMillis();
+			int n = 0;
+			while( n < size ){
+				int length = size - n;
+				if( length > ACCT_DB_STEP ) length = ACCT_DB_STEP;
+				AcctSet.saveList( now, acct_list, n, length );
+				n += length;
+			}
+			log.d( "updateRelation: update %d acct.", n );
+			
+		}
+		
+	}
+	
+	void startRefreshForPost( long status_id, int refresh_after_toot ){
+		switch(column_type){
+		case TYPE_HOME:
+		case TYPE_LOCAL:
+		case TYPE_FEDERATE:
+			startRefresh( true, false, status_id ,refresh_after_toot);
+			break;
+		case TYPE_PROFILE:
+			if( profile_tab == TAB_STATUS && profile_id == access_info.id ){
+				startRefresh( true, false, status_id ,refresh_after_toot);
+			}
+			break;
+		case TYPE_CONVERSATION:
+			startLoading();
+			
+			break;
+		}
+	}
+	
+	void startRefresh( final boolean bSilent, final boolean bBottom , final long status_id, final int refresh_after_toot){
+		
 		if( last_task != null ){
-			return activity.getString( R.string.column_is_busy );
+			if( ! bSilent ){
+				Utils.showToast( activity, true, R.string.column_is_busy );
+				if( holder != null ) holder.getRefreshLayout().setRefreshing( false );
+			}
+			return;
 		}else if( bBottom && max_id == null ){
-			return activity.getString( R.string.end_of_list );
+			if( ! bSilent ){
+				Utils.showToast( activity, true, R.string.end_of_list );
+				if( holder != null ) holder.getRefreshLayout().setRefreshing( false );
+			}
+			return;
 		}else if( ! bBottom && since_id == null ){
-			return "startRefresh failed. missing since_id";
+			if( holder != null ) holder.getRefreshLayout().setRefreshing( false );
+			startLoading();
+			return;
+		}
+		
+		if( bSilent ){
+			if( holder != null ){
+				holder.getRefreshLayout().setRefreshing( true );
+			}
 		}
 		
 		bRefreshLoading = true;
@@ -1354,7 +1611,7 @@ class Column {
 							public void run(){
 								if( isCancelled() ) return;
 								task_progress = s;
-								fireVisualCallback();
+								fireShowContent();
 							}
 						} );
 					}
@@ -1363,7 +1620,7 @@ class Column {
 				client.setAccount( access_info );
 				try{
 					
-					switch( type ){
+					switch( column_type ){
 					
 					default:
 					case TYPE_HOME:
@@ -1384,6 +1641,14 @@ class Column {
 					case TYPE_NOTIFICATIONS:
 						return getNotificationList( client, PATH_NOTIFICATIONS );
 					
+					case TYPE_BOOSTED_BY:
+						return  getAccountList( client, String.format( Locale.JAPAN,PATH_BOOSTED_BY,status_id ) );
+					
+					case TYPE_FAVOURITED_BY:
+						return  getAccountList( client, String.format( Locale.JAPAN,PATH_FAVOURITED_BY,status_id ) );
+					
+					
+					
 					case TYPE_PROFILE:
 						if( who_account == null ){
 							parseAccount1( client.request(
@@ -1395,8 +1660,8 @@ class Column {
 						
 						default:
 						case TAB_STATUS:
-							if( access_info.isPseudo()){
-								return client.request(PATH_INSTANCE );
+							if( access_info.isPseudo() ){
+								return client.request( PATH_INSTANCE );
 							}else{
 								String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
 								if( with_attachment ) s = s + "&only_media=1";
@@ -1416,7 +1681,7 @@ class Column {
 					
 					case TYPE_BLOCKS:
 						return getAccountList( client, PATH_BLOCKS );
-
+					
 					case TYPE_FOLLOW_REQUESTS:
 						return getAccountList( client, PATH_FOLLOW_REQUESTS );
 					
@@ -1449,66 +1714,118 @@ class Column {
 				
 				if( result.error != null ){
 					Column.this.mRefreshLoadingError = result.error;
-				}else{
-					if( list_tmp != null ){
-						// 古いリストにある要素のIDの集合集合
-						HashSet< Long > set_status_id = new HashSet<>();
-						HashSet< Long > set_notification_id = new HashSet<>();
-						HashSet< Long > set_report_id = new HashSet<>();
-						HashSet< Long > set_account_id = new HashSet<>();
-						for( Object o : list_data ){
-							if( o instanceof TootStatus ){
-								set_status_id.add( ( (TootStatus) o ).id );
-							}else if( o instanceof TootNotification ){
-								set_notification_id.add( ( (TootNotification) o ).id );
-							}else if( o instanceof TootReport ){
-								set_report_id.add( ( (TootReport) o ).id );
-							}else if( o instanceof TootAccount ){
-								set_account_id.add( ( (TootAccount) o ).id );
-							}
-						}
-						ArrayList< Object > list_new = new ArrayList<>();
-						for( Object o : list_tmp ){
-							if( o instanceof TootStatus ){
-								if( set_status_id.contains( ( (TootStatus) o ).id ) ) continue;
-							}else if( o instanceof TootNotification ){
-								if( set_notification_id.contains( ( (TootNotification) o ).id ) )
-									continue;
-							}else if( o instanceof TootReport ){
-								if( set_report_id.contains( ( (TootReport) o ).id ) ) continue;
-							}else if( o instanceof TootAccount ){
-								if( set_account_id.contains( ( (TootAccount) o ).id ) ) continue;
-							}
-							list_new.add( o );
-						}
-						
-						if( ! bBottom ){
-							// リフレッシュ開始時はリストの先頭を見ていたのだからスクロール範囲を調整したい
-							scroll_hack = list_new.size();
-							// 新しいデータの後に今のデータが並ぶ
-							list_new.addAll( list_data );
-							list_data.clear();
-							list_data.addAll( list_new );
-						}else{
-							// 今のデータの後にさらに古いデータが続く
-							list_data.addAll( list_new );
-						}
-						
-					}
+					fireShowContent();
+					return;
+				}
+				if( list_tmp == null || list_tmp.isEmpty() ){
+					fireShowContent();
+					return;
 				}
 				
-				fireVisualCallback();
+				// 古いリストにある要素のIDの集合集合
+				HashSet< Long > set_status_id = new HashSet<>();
+				HashSet< Long > set_notification_id = new HashSet<>();
+				HashSet< Long > set_report_id = new HashSet<>();
+				HashSet< Long > set_account_id = new HashSet<>();
+				for( Object o : list_data ){
+					if( o instanceof TootStatus ){
+						set_status_id.add( ( (TootStatus) o ).id );
+					}else if( o instanceof TootNotification ){
+						set_notification_id.add( ( (TootNotification) o ).id );
+					}else if( o instanceof TootReport ){
+						set_report_id.add( ( (TootReport) o ).id );
+					}else if( o instanceof TootAccount ){
+						set_account_id.add( ( (TootAccount) o ).id );
+					}
+				}
+				ArrayList< Object > list_new = new ArrayList<>();
+				for( Object o : list_tmp ){
+					if( o instanceof TootStatus ){
+						if( set_status_id.contains( ( (TootStatus) o ).id ) ) continue;
+					}else if( o instanceof TootNotification ){
+						if( set_notification_id.contains( ( (TootNotification) o ).id ) )
+							continue;
+					}else if( o instanceof TootReport ){
+						if( set_report_id.contains( ( (TootReport) o ).id ) ) continue;
+					}else if( o instanceof TootAccount ){
+						if( set_account_id.contains( ( (TootAccount) o ).id ) ) continue;
+					}
+					list_new.add( o );
+				}
+				if( list_new.isEmpty() ){
+					fireShowContent();
+					return;
+				}
+				
+				// 事前にスクロール位置を覚えておく
+				ScrollPosition sp = null;
+				if( holder != null ){
+					sp = holder.getScrollPosition();
+				}
+				
+				if( bBottom ){
+					list_data.addAll( list_new );
+					fireShowContent();
+					if( holder != null ){
+						//noinspection ConstantConditions
+						holder.setScrollPosition( sp, 20f );
+					}
+				}else{
+					
+					int status_index = -1;
+					for( int i=0,ie=list_new.size();i<ie;++i){
+						Object o = list_new.get(i);
+						if( o instanceof TootStatus ){
+							TootStatus status = (TootStatus)o;
+							if( status.id == status_id ){
+								status_index = i;
+								break;
+							}
+						}
+					}
+					
+					int added = list_new.size();
+					list_new.addAll( list_data );
+					list_data.clear();
+					list_data.addAll( list_new );
+					fireShowContent();
+					
+					if( status_index >= 0 && refresh_after_toot == Pref.RAT_REFRESH_SCROLL){
+						if( holder != null ){
+							//noinspection ConstantConditions
+							sp.pos = status_index;
+							sp.top = 0;
+							holder.setScrollPosition( sp, 0f );
+						}else{
+							scroll_save.pos = status_index;
+							scroll_save.top = 0;
+						}
+					}else{
+						float delta = bSilent ? 0f : - 20f;
+						if( holder != null ){
+							//noinspection ConstantConditions
+							sp.pos += added;
+							holder.setScrollPosition( sp, delta );
+						}else{
+							scroll_save.pos += added;
+						}
+					}
+				}
 			}
 		};
 		
 		AsyncTaskCompat.executeParallel( task );
 		
-		return null;
 	}
 	
-	String startGap( final TootGap gap ){
+	void startGap( final TootGap gap, final int position ){
 		if( last_task != null ){
-			return activity.getString( R.string.column_is_busy );
+			Utils.showToast( activity, true, R.string.column_is_busy );
+			return;
+		}
+		
+		if( holder != null ){
+			holder.getRefreshLayout().setRefreshing( true );
 		}
 		
 		bRefreshLoading = true;
@@ -1728,7 +2045,7 @@ class Column {
 							public void run(){
 								if( isCancelled() ) return;
 								task_progress = s;
-								fireVisualCallback();
+								fireShowContent();
 							}
 						} );
 					}
@@ -1737,7 +2054,7 @@ class Column {
 				client.setAccount( access_info );
 				
 				try{
-					switch( type ){
+					switch( column_type ){
 					
 					default:
 					case TYPE_HOME:
@@ -1762,6 +2079,13 @@ class Column {
 						return getStatusList( client,
 							String.format( Locale.JAPAN, PATH_HASHTAG, Uri.encode( hashtag ) ) );
 					
+					case TYPE_BOOSTED_BY:
+						return  getAccountList( client, String.format( Locale.JAPAN,PATH_BOOSTED_BY,status_id ) );
+					
+					case TYPE_FAVOURITED_BY:
+						return  getAccountList( client, String.format( Locale.JAPAN,PATH_FAVOURITED_BY,status_id ) );
+					
+					
 					case TYPE_MUTES:
 						return getAccountList( client, PATH_MUTES );
 					
@@ -1777,8 +2101,8 @@ class Column {
 						default:
 						case TAB_STATUS:
 							
-							if( access_info.isPseudo()){
-								return client.request(PATH_INSTANCE );
+							if( access_info.isPseudo() ){
+								return client.request( PATH_INSTANCE );
 								
 							}else{
 								String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
@@ -1822,191 +2146,118 @@ class Column {
 				
 				if( result.error != null ){
 					Column.this.mRefreshLoadingError = result.error;
-				}else{
-					if( list_tmp != null ){
-						// 古いリストにある要素のIDの集合
-						HashSet< Long > set_status_id = new HashSet<>();
-						HashSet< Long > set_notification_id = new HashSet<>();
-						HashSet< Long > set_report_id = new HashSet<>();
-						HashSet< Long > set_account_id = new HashSet<>();
-						for( Object o : list_data ){
-							if( o instanceof TootStatus ){
-								set_status_id.add( ( (TootStatus) o ).id );
-							}else if( o instanceof TootNotification ){
-								set_notification_id.add( ( (TootNotification) o ).id );
-							}else if( o instanceof TootReport ){
-								set_report_id.add( ( (TootReport) o ).id );
-							}else if( o instanceof TootAccount ){
-								set_account_id.add( ( (TootAccount) o ).id );
-							}
-						}
-						// list_tmp をフィルタしてlist_newを作成
-						ArrayList< Object > list_new = new ArrayList<>();
-						for( Object o : list_tmp ){
-							if( o instanceof TootStatus ){
-								if( set_status_id.contains( ( (TootStatus) o ).id ) ) continue;
-							}else if( o instanceof TootNotification ){
-								if( set_notification_id.contains( ( (TootNotification) o ).id ) )
-									continue;
-							}else if( o instanceof TootReport ){
-								if( set_report_id.contains( ( (TootReport) o ).id ) ) continue;
-							}else if( o instanceof TootAccount ){
-								if( set_account_id.contains( ( (TootAccount) o ).id ) )
-									continue;
-							}
-							list_new.add( o );
-						}
-						
-						
-						
-						int pos = list_data.indexOf( gap );
-						if( pos != - 1 ){
-
-							list_data.remove( pos );
-							list_data.addAll( pos, list_new );
-							
-							// リフレッシュ開始時はリストの先頭を見ていたのだからスクロール範囲を調整したい
-							scroll_hack = pos + list_new.size() -2;
-							if( scroll_hack < 1 ) scroll_hack = 1;
-						}
+					fireShowContent();
+					return;
+				}
+				if( list_tmp == null ){
+					fireShowContent();
+					return;
+				}
+				
+				// 古いリストにある要素のIDの集合
+				HashSet< Long > set_status_id = new HashSet<>();
+				HashSet< Long > set_notification_id = new HashSet<>();
+				HashSet< Long > set_report_id = new HashSet<>();
+				HashSet< Long > set_account_id = new HashSet<>();
+				for( Object o : list_data ){
+					if( o instanceof TootStatus ){
+						set_status_id.add( ( (TootStatus) o ).id );
+					}else if( o instanceof TootNotification ){
+						set_notification_id.add( ( (TootNotification) o ).id );
+					}else if( o instanceof TootReport ){
+						set_report_id.add( ( (TootReport) o ).id );
+					}else if( o instanceof TootAccount ){
+						set_account_id.add( ( (TootAccount) o ).id );
+					}
+				}
+				// list_tmp をフィルタしてlist_newを作成
+				ArrayList< Object > list_new = new ArrayList<>();
+				for( Object o : list_tmp ){
+					if( o instanceof TootStatus ){
+						if( set_status_id.contains( ( (TootStatus) o ).id ) ) continue;
+					}else if( o instanceof TootNotification ){
+						if( set_notification_id.contains( ( (TootNotification) o ).id ) )
+							continue;
+					}else if( o instanceof TootReport ){
+						if( set_report_id.contains( ( (TootReport) o ).id ) ) continue;
+					}else if( o instanceof TootAccount ){
+						if( set_account_id.contains( ( (TootAccount) o ).id ) )
+							continue;
+					}
+					list_new.add( o );
+				}
+				
+				// idx番目の要素がListViewのtopから何ピクセル下にあるか
+				int restore_idx = position + 1;
+				int restore_y = 0;
+				if( holder != null ){
+					try{
+						restore_y = getItemTop( restore_idx );
+					}catch( IndexOutOfBoundsException ex ){
+						restore_idx = position;
+						restore_y = getItemTop( restore_idx );
 					}
 				}
 				
-				fireVisualCallback();
+				int added = list_new.size(); // may 0
+				list_data.remove( position );
+				list_data.addAll( position, list_new );
+				fireShowContent();
+				
+				if( holder != null ){
+					setItemTop( restore_idx + added - 1, restore_y );
+				}else{
+					scroll_save.pos += added - 1;
+				}
 			}
 		};
 		
 		AsyncTaskCompat.executeParallel( task );
-		return null;
 	}
 	
-	void removeNotifications(){
-		cancelLastTask();
-		
-		list_data.clear();
-		mRefreshLoadingError = null;
-		bRefreshLoading = false;
-		mInitialLoadingError = null;
-		bInitialLoading = false;
-		max_id = null;
-		since_id = null;
-		
-		fireVisualCallback();
-		
-		AlarmService.dataRemoved( activity, access_info.db_id );
+	private static final int heightSpec = View.MeasureSpec.makeMeasureSpec( 0, View.MeasureSpec.UNSPECIFIED );
+	
+	private static int getListItemHeight( ListView listView, int idx ){
+		int item_width = listView.getWidth() - listView.getPaddingLeft() - listView.getPaddingRight();
+		int widthSpec = View.MeasureSpec.makeMeasureSpec( item_width, View.MeasureSpec.EXACTLY );
+		View childView = listView.getAdapter().getView( idx, null, listView );
+		childView.measure( widthSpec, heightSpec );
+		return childView.getMeasuredHeight();
 	}
 	
-	private void updateRelation( TootApiClient client, ArrayList< Object > list_tmp ){
-		if( list_tmp == null || list_tmp.isEmpty() ) return;
-		HashSet< Long > who_set = new HashSet<>();
-		HashSet<String> acct_set = new HashSet<>();
-		{
-			TootAccount a;
-			TootStatus s;
-			TootNotification n;
-			for( Object o : list_tmp ){
-				if( o instanceof TootAccount ){
-					a = (TootAccount) o;
-					who_set.add( a.id );
-					acct_set.add( "@" + access_info.getFullAcct( a ));
-				}else if( o instanceof TootStatus ){
-					s = (TootStatus) o;
-					a = s.account;
-					if( a != null ){
-						who_set.add( a.id );
-						acct_set.add( "@" + access_info.getFullAcct( a ));
-					}
-					s = s.reblog;
-					if( s != null ){
-						a = s.account;
-						if( a != null ){
-							who_set.add( a.id );
-							acct_set.add( "@" + access_info.getFullAcct( a ));
-						}
-					}
-				}else if( o instanceof TootNotification ){
-					n = (TootNotification) o;
-					//
-					a = n.account;
-					if( a != null ){
-						who_set.add( a.id );
-						acct_set.add( "@" + access_info.getFullAcct( a ));
-					}
-					//
-					s = n.status;
-					if( s != null ){
-						a = s.account;
-						if( a != null ){
-							who_set.add( a.id );
-							acct_set.add( "@" + access_info.getFullAcct( a ));
-						}
-						s = s.reblog;
-						if( s != null ){
-							a = s.account;
-							if( a != null ){
-								who_set.add( a.id );
-								acct_set.add( "@" + access_info.getFullAcct( a ));
-							}
-						}
-					}
-				}
-			}
-		}
-		int size = who_set.size();
-		if( size > 0 ){
-			long[] who_list = new long[ size ];
-			{
-				int n = 0;
-				for( Long l : who_set ){
-					who_list[ n++ ] = l;
-				}
-			}
-			
-			long now = System.currentTimeMillis();
-			int n = 0;
-			while( n < size ){
-				StringBuilder sb = new StringBuilder();
-				sb.append( "/api/v1/accounts/relationships" );
-				for( int i = 0 ; i < RELATIONSHIP_LOAD_STEP ; ++ i ){
-					if( n >= size ) break;
-					sb.append( i == 0 ? '?' : '&' );
-					sb.append( "id[]=" );
-					sb.append( Long.toString( who_list[ n++ ] ) );
-				}
-				TootApiResult result = client.request( sb.toString() );
-				if( result == null ){
-					// cancelled.
-					break;
-				}else if( result.array != null ){
-					TootRelationShip.List list = TootRelationShip.parseList( log, result.array );
-					UserRelation.saveList( now, access_info.db_id, list );
-				}
-			}
-			log.d( "updateRelation: update %d relations.", n );
-			
-		}
-		size = acct_set.size();
-		if( size > 0 ){
-			String[] acct_list = new String[ size ];
-			{
-				int n = 0;
-				for( String l : acct_set ){
-					acct_list[ n++ ] = l;
-				}
-			}
-			long now = System.currentTimeMillis();
-			int n = 0;
-			while( n < size ){
-				int length = size-n;
-				if( length > ACCT_DB_STEP ) length = ACCT_DB_STEP;
-				AcctSet.saveList( now, acct_list, n,length );
-				n += length;
-			}
-			log.d( "updateRelation: update %d acct.", n );
-			
+	// 特定の要素が特定の位置に来るようにスクロール位置を調整する
+	private void setItemTop( int idx, int y ){
+		MyListView listView = holder.getListView();
+		boolean hasHeader = holder.hasHeaderView();
+		if( hasHeader ){
+			// Adapter中から見たpositionとListViewから見たpositionにズレができる
+			idx = idx + 1;
 		}
 		
+		while( y > 0 && idx > 0 ){
+			-- idx;
+			y -= getListItemHeight( listView, idx );
+			y -= listView.getDividerHeight();
+		}
+		listView.setSelectionFromTop( idx, y );
+	}
+	
+	private int getItemTop( int idx ){
+		MyListView listView = holder.getListView();
+		boolean hasHeader = holder.hasHeaderView();
 		
+		if( hasHeader ){
+			// Adapter中から見たpositionとListViewから見たpositionにズレができる
+			idx = idx + 1;
+		}
+		
+		int vs = listView.getFirstVisiblePosition();
+		int ve = listView.getLastVisiblePosition();
+		if( idx < vs || ve < idx ){
+			throw new IndexOutOfBoundsException( "not in visible range" );
+		}
+		int child_idx = idx - vs;
+		return listView.getChildAt( child_idx ).getTop();
 	}
 	
 }

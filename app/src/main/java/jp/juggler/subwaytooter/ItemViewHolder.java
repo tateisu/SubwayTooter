@@ -8,8 +8,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.android.volley.toolbox.NetworkImageView;
-
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootGap;
@@ -22,6 +20,7 @@ import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.MyLinkMovementMethod;
 import jp.juggler.subwaytooter.util.MyListView;
+import jp.juggler.subwaytooter.util.MyNetworkImageView;
 import jp.juggler.subwaytooter.util.MyTextView;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -39,14 +38,14 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private final TextView tvBoostedTime;
 	
 	private final View llFollow;
-	private final NetworkImageView ivFollow;
+	private final MyNetworkImageView ivFollow;
 	private final TextView tvFollowerName;
 	private final TextView tvFollowerAcct;
 	private final ImageButton btnFollow;
 	private final ImageView ivFollowedBy;
 	
 	private final View llStatus;
-	private final NetworkImageView ivThumbnail;
+	private final MyNetworkImageView ivThumbnail;
 	private final TextView tvName;
 	private final TextView tvTime;
 	private final TextView tvAcct;
@@ -62,10 +61,10 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private final View flMedia;
 	private final View btnShowMedia;
 	
-	private final NetworkImageView ivMedia1;
-	private final NetworkImageView ivMedia2;
-	private final NetworkImageView ivMedia3;
-	private final NetworkImageView ivMedia4;
+	private final MyNetworkImageView ivMedia1;
+	private final MyNetworkImageView ivMedia2;
+	private final MyNetworkImageView ivMedia3;
+	private final MyNetworkImageView ivMedia4;
 	
 	private final StatusButtons buttons_for_status;
 	
@@ -95,7 +94,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.tvBoostedAcct = (TextView) view.findViewById( R.id.tvBoostedAcct );
 		
 		this.llFollow = view.findViewById( R.id.llFollow );
-		this.ivFollow = (NetworkImageView) view.findViewById( R.id.ivFollow );
+		this.ivFollow = (MyNetworkImageView) view.findViewById( R.id.ivFollow );
 		this.tvFollowerName = (TextView) view.findViewById( R.id.tvFollowerName );
 		this.tvFollowerAcct = (TextView) view.findViewById( R.id.tvFollowerAcct );
 		this.btnFollow = (ImageButton) view.findViewById( R.id.btnFollow );
@@ -103,7 +102,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		this.llStatus = view.findViewById( R.id.llStatus );
 		
-		this.ivThumbnail = (NetworkImageView) view.findViewById( R.id.ivThumbnail );
+		this.ivThumbnail = (MyNetworkImageView) view.findViewById( R.id.ivThumbnail );
 		this.tvName = (TextView) view.findViewById( R.id.tvName );
 		this.tvTime = (TextView) view.findViewById( R.id.tvTime );
 		this.tvAcct = (TextView) view.findViewById( R.id.tvAcct );
@@ -120,10 +119,10 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		this.flMedia = view.findViewById( R.id.flMedia );
 		this.btnShowMedia = view.findViewById( R.id.btnShowMedia );
-		this.ivMedia1 = (NetworkImageView) view.findViewById( R.id.ivMedia1 );
-		this.ivMedia2 = (NetworkImageView) view.findViewById( R.id.ivMedia2 );
-		this.ivMedia3 = (NetworkImageView) view.findViewById( R.id.ivMedia3 );
-		this.ivMedia4 = (NetworkImageView) view.findViewById( R.id.ivMedia4 );
+		this.ivMedia1 = (MyNetworkImageView) view.findViewById( R.id.ivMedia1 );
+		this.ivMedia2 = (MyNetworkImageView) view.findViewById( R.id.ivMedia2 );
+		this.ivMedia3 = (MyNetworkImageView) view.findViewById( R.id.ivMedia3 );
+		this.ivMedia4 = (MyNetworkImageView) view.findViewById( R.id.ivMedia4 );
 		
 		this.llSearchTag = view.findViewById( R.id.llSearchTag );
 		this.btnSearchTag = (Button) view.findViewById( R.id.btnSearchTag );
@@ -261,6 +260,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private void showFollow( TootAccount who ){
 		account_follow = who;
 		llFollow.setVisibility( View.VISIBLE );
+		ivFollow.setCornerRadius( activity.density * 4f );
 		ivFollow.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ), App1.getImageLoader() );
 		tvFollowerName.setText( who.display_name );
 		setAcct( tvFollowerAcct, access_info.getFullAcct( who ), R.attr.colorAcctSmall );
@@ -278,6 +278,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		tvTime.setText( TootStatus.formatTime( status.time_created_at ) );
 		
 		tvName.setText( status.account.display_name );
+		ivThumbnail.setCornerRadius( activity.density * 4f );
 		ivThumbnail.setImageUrl( access_info.supplyBaseUrl( status.account.avatar_static ), App1.getImageLoader() );
 		tvContent.setText( status.decoded_content );
 
@@ -363,7 +364,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 	}
 	
-	private void setMedia( NetworkImageView iv, TootStatus status, int idx ){
+	private void setMedia( MyNetworkImageView iv, TootStatus status, int idx ){
 		if( idx >= status.media_attachments.size() ){
 			iv.setVisibility( View.GONE );
 		}else{
@@ -371,6 +372,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			TootAttachment ta = status.media_attachments.get( idx );
 			String url = ta.preview_url;
 			if( TextUtils.isEmpty( url ) ) url = ta.remote_url;
+			iv.setCornerRadius( 0f ); // 正方形じゃないせいか、うまく動かない activity.density * 4f );
 			iv.setImageUrl( access_info.supplyBaseUrl( url ), App1.getImageLoader() );
 		}
 	}

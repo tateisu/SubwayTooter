@@ -7,7 +7,6 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.android.volley.toolbox.NetworkImageView;
 
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
@@ -15,6 +14,7 @@ import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.Emojione;
 import jp.juggler.subwaytooter.util.MyLinkMovementMethod;
+import jp.juggler.subwaytooter.util.MyNetworkImageView;
 
 class HeaderViewHolder implements View.OnClickListener {
 	private final Column column;
@@ -22,9 +22,9 @@ class HeaderViewHolder implements View.OnClickListener {
 	private final SavedAccount access_info;
 	
 	final View viewRoot;
-	private final NetworkImageView ivBackground;
+	private final MyNetworkImageView ivBackground;
 	private final TextView tvCreated;
-	private final NetworkImageView ivAvatar;
+	private final MyNetworkImageView ivAvatar;
 	private final TextView tvDisplayName;
 	private final TextView tvAcct;
 	private final Button btnFollowing;
@@ -42,9 +42,9 @@ class HeaderViewHolder implements View.OnClickListener {
 		this.access_info = column.access_info;
 		this.viewRoot = activity.getLayoutInflater().inflate( R.layout.lv_list_header, parent, false );
 
-		ivBackground = (NetworkImageView) viewRoot.findViewById( R.id.ivBackground );
+		ivBackground = (MyNetworkImageView) viewRoot.findViewById( R.id.ivBackground );
 		tvCreated = (TextView) viewRoot.findViewById( R.id.tvCreated );
-		ivAvatar = (NetworkImageView) viewRoot.findViewById( R.id.ivAvatar );
+		ivAvatar = (MyNetworkImageView) viewRoot.findViewById( R.id.ivAvatar );
 		tvDisplayName = (TextView) viewRoot.findViewById( R.id.tvDisplayName );
 		tvAcct = (TextView) viewRoot.findViewById( R.id.tvAcct );
 		btnFollowing = (Button) viewRoot.findViewById( R.id.btnFollowing );
@@ -82,6 +82,7 @@ class HeaderViewHolder implements View.OnClickListener {
 		}else{
 			tvCreated.setText( TootStatus.formatTime( who.time_created_at ) );
 			ivBackground.setImageUrl( access_info.supplyBaseUrl( who.header_static ), App1.getImageLoader() );
+			ivAvatar.setCornerRadius( activity.density * 8f );
 			ivAvatar.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ), App1.getImageLoader() );
 			tvDisplayName.setText( who.display_name );
 			

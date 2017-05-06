@@ -41,7 +41,6 @@ import android.widget.ImageButton;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.android.volley.toolbox.NetworkImageView;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -70,6 +69,7 @@ import jp.juggler.subwaytooter.util.ActionsDialog;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.MyEditText;
+import jp.juggler.subwaytooter.util.MyNetworkImageView;
 import jp.juggler.subwaytooter.util.PostAttachment;
 import jp.juggler.subwaytooter.util.Utils;
 import okhttp3.MediaType;
@@ -496,7 +496,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	View btnAttachment;
 	View btnPost;
 	View llAttachment;
-	final NetworkImageView[] ivMedia = new NetworkImageView[ 4 ];
+	final MyNetworkImageView[] ivMedia = new MyNetworkImageView[ 4 ];
 	CheckBox cbNSFW;
 	CheckBox cbContentWarning;
 	MyEditText etContentWarning;
@@ -511,7 +511,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	View llReply;
 	TextView tvReplyTo;
 	View btnRemoveReply;
-	NetworkImageView ivReply;
+	MyNetworkImageView ivReply;
 	ScrollView scrollView;
 	
 	private void initUI(){
@@ -527,10 +527,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		btnAttachment = findViewById( R.id.btnAttachment );
 		btnPost = findViewById( R.id.btnPost );
 		llAttachment = findViewById( R.id.llAttachment );
-		ivMedia[ 0 ] = (NetworkImageView) findViewById( R.id.ivMedia1 );
-		ivMedia[ 1 ] = (NetworkImageView) findViewById( R.id.ivMedia2 );
-		ivMedia[ 2 ] = (NetworkImageView) findViewById( R.id.ivMedia3 );
-		ivMedia[ 3 ] = (NetworkImageView) findViewById( R.id.ivMedia4 );
+		ivMedia[ 0 ] = (MyNetworkImageView) findViewById( R.id.ivMedia1 );
+		ivMedia[ 1 ] = (MyNetworkImageView) findViewById( R.id.ivMedia2 );
+		ivMedia[ 2 ] = (MyNetworkImageView) findViewById( R.id.ivMedia3 );
+		ivMedia[ 3 ] = (MyNetworkImageView) findViewById( R.id.ivMedia4 );
 		cbNSFW = (CheckBox) findViewById( R.id.cbNSFW );
 		cbContentWarning = (CheckBox) findViewById( R.id.cbContentWarning );
 		etContentWarning = (MyEditText) findViewById( R.id.etContentWarning );
@@ -540,7 +540,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		llReply = findViewById( R.id.llReply );
 		tvReplyTo = (TextView) findViewById( R.id.tvReplyTo );
 		btnRemoveReply = findViewById( R.id.btnRemoveReply );
-		ivReply = (NetworkImageView) findViewById( R.id.ivReply );
+		ivReply = (MyNetworkImageView) findViewById( R.id.ivReply );
 		
 		account_list = SavedAccount.loadAccountList( log );
 		Collections.sort( account_list, new Comparator< SavedAccount >() {
@@ -557,7 +557,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		btnPost.setOnClickListener( this );
 		btnRemoveReply.setOnClickListener( this );
 		
-		for( NetworkImageView iv : ivMedia ){
+		for( MyNetworkImageView iv : ivMedia ){
 			iv.setOnClickListener( this );
 			iv.setDefaultImageResId( Styler.getAttributeResourceId( this, R.attr.ic_loading ) );
 			iv.setErrorImageResId( Styler.getAttributeResourceId( this, R.attr.ic_unknown ) );
@@ -776,11 +776,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}
 	}
 	
-	private void showAttachment_sub( NetworkImageView iv, int idx ){
+	private void showAttachment_sub( MyNetworkImageView iv, int idx ){
 		if( idx >= attachment_list.size() ){
 			iv.setVisibility( View.GONE );
 		}else{
 			iv.setVisibility( View.VISIBLE );
+			iv.setCornerRadius( density * 4f );
 			PostAttachment a = attachment_list.get( idx );
 			if( a.attachment != null && a.status == PostAttachment.ATTACHMENT_UPLOADED ){
 				iv.setImageUrl( a.attachment.preview_url, App1.getImageLoader() );
@@ -1578,7 +1579,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}else{
 			llReply.setVisibility( View.VISIBLE );
 			tvReplyTo.setText( HTMLDecoder.decodeHTML( account, in_reply_to_text ) );
+			ivReply.setCornerRadius( density * 4f );
 			ivReply.setImageUrl( in_reply_to_image, App1.getImageLoader() );
+			
 		}
 	}
 	

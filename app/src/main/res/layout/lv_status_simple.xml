@@ -88,7 +88,7 @@
         android:layout_marginBottom="4dp"
         >
 
-        <com.android.volley.toolbox.NetworkImageView
+        <jp.juggler.subwaytooter.util.MyNetworkImageView
             android:id="@+id/ivFollow"
             android:layout_width="48dp"
             android:layout_height="40dp"
@@ -194,7 +194,7 @@
 
         </LinearLayout>
 
-        <com.android.volley.toolbox.NetworkImageView
+        <jp.juggler.subwaytooter.util.MyNetworkImageView
             android:id="@+id/ivThumbnail"
             android:layout_width="48dp"
             android:layout_height="48dp"
@@ -296,7 +296,7 @@
                         android:orientation="horizontal"
                         >
 
-                        <com.android.volley.toolbox.NetworkImageView
+                        <jp.juggler.subwaytooter.util.MyNetworkImageView
                             android:id="@+id/ivMedia1"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
@@ -306,7 +306,7 @@
                             android:scaleType="centerCrop"
                             />
 
-                        <com.android.volley.toolbox.NetworkImageView
+                        <jp.juggler.subwaytooter.util.MyNetworkImageView
                             android:id="@+id/ivMedia2"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
@@ -317,7 +317,7 @@
                             android:scaleType="centerCrop"
                             />
 
-                        <com.android.volley.toolbox.NetworkImageView
+                        <jp.juggler.subwaytooter.util.MyNetworkImageView
                             android:id="@+id/ivMedia3"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
@@ -328,7 +328,7 @@
                             android:scaleType="centerCrop"
                             />
 
-                        <com.android.volley.toolbox.NetworkImageView
+                        <jp.juggler.subwaytooter.util.MyNetworkImageView
                             android:id="@+id/ivMedia4"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"

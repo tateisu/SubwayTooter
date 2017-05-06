@@ -4,7 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-class Pref {
+public class Pref {
 	
 	
 	static SharedPreferences pref( Context context ){
@@ -30,5 +30,5 @@ class Pref {
 	static final String KEY_RESIZE_IMAGE = "resize_image";
 	static final String KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR = "ShowFollowButtonInButtonBar";
 	static final String KEY_REFRESH_AFTER_TOOT = "refresh_after_toot";
-	
+	public static final String KEY_DONT_ROUND = "dont_round";
 }

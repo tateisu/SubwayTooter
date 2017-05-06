@@ -276,5 +276,6 @@
     <string name="media_attachment">Media attachment</string>
     <string name="toot">Toot</string>
     <string name="visibility">Visibility</string>
+    <string name="dont_round_avatar">Don\'t round corner of avatar image (app restart required)</string>
 
 </resources>

@@ -82,7 +82,7 @@ class HeaderViewHolder implements View.OnClickListener {
 		}else{
 			tvCreated.setText( TootStatus.formatTime( who.time_created_at ) );
 			ivBackground.setImageUrl( access_info.supplyBaseUrl( who.header_static ), App1.getImageLoader() );
-			ivAvatar.setCornerRadius( activity.density * 8f );
+			ivAvatar.setCornerRadius( activity.pref,16f );
 			ivAvatar.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ), App1.getImageLoader() );
 			tvDisplayName.setText( who.display_name );
 			

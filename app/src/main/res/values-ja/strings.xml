@@ -272,4 +272,5 @@
     <string name="media_attachment">添付メディア</string>
     <string name="toot">トゥート</string>
     <string name="visibility">公開範囲</string>
+    <string name="dont_round_avatar">ユーザ画像を角丸にしない(アプリ再起動が必要)</string>
 </resources>

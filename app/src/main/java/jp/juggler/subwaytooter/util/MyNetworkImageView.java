@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.util;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.text.TextUtils;
@@ -10,6 +11,8 @@ import android.support.v7.widget.AppCompatImageView;
 
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.ImageLoader;
+
+import jp.juggler.subwaytooter.Pref;
 
 public class MyNetworkImageView extends AppCompatImageView {
 	/**
@@ -86,8 +89,11 @@ public class MyNetworkImageView extends AppCompatImageView {
 	
 	float mCornerRadius;
 	
-	public void setCornerRadius( float r ){
-		mCornerRadius = r;
+	// 元画像の短辺に対する割合を指定するらしい
+	public void setCornerRadius( SharedPreferences pref, float r ){
+		if( ! pref.getBoolean( Pref.KEY_DONT_ROUND,false ) ){
+			mCornerRadius = r;
+		}
 	}
 	
 	/**

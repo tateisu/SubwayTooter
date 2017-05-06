@@ -39,6 +39,8 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 	Switch swSimpleList;
 	Switch swExitAppWhenCloseProtectedColumn;
 	Switch swShowFollowButtonInButtonBar;
+	Switch swDontRound;
+	
 	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
@@ -73,6 +75,9 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 		
 		swShowFollowButtonInButtonBar = (Switch) findViewById( R.id.swShowFollowButtonInButtonBar );
 		swShowFollowButtonInButtonBar.setOnCheckedChangeListener( this );
+		
+		swDontRound = (Switch) findViewById( R.id.swDontRound );
+		swDontRound.setOnCheckedChangeListener( this );
 		
 		cbNotificationSound = (CheckBox) findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = (CheckBox) findViewById( R.id.cbNotificationVibration );
@@ -150,6 +155,7 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 		swSimpleList.setChecked( pref.getBoolean( Pref.KEY_SIMPLE_LIST, false ) );
 		swExitAppWhenCloseProtectedColumn.setChecked( pref.getBoolean( Pref.KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN, false ) );
 		swShowFollowButtonInButtonBar.setChecked( pref.getBoolean( Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR, false ) );
+		swDontRound.setChecked( pref.getBoolean( Pref.KEY_DONT_ROUND, false ) );
 		
 		cbNotificationSound.setChecked( pref.getBoolean( Pref.KEY_NOTIFICATION_SOUND, true ) );
 		cbNotificationVibration.setChecked( pref.getBoolean( Pref.KEY_NOTIFICATION_VIBRATION, true ) );
@@ -171,7 +177,9 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 			.putBoolean( Pref.KEY_SIMPLE_LIST, swSimpleList.isChecked() )
 			.putBoolean( Pref.KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN, swExitAppWhenCloseProtectedColumn.isChecked() )
 			.putBoolean( Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR, swShowFollowButtonInButtonBar.isChecked() )
-			
+			.putBoolean( Pref.KEY_DONT_ROUND, swDontRound.isChecked() )
+		
+
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_LED, cbNotificationLED.isChecked() )

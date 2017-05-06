@@ -260,7 +260,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private void showFollow( TootAccount who ){
 		account_follow = who;
 		llFollow.setVisibility( View.VISIBLE );
-		ivFollow.setCornerRadius( activity.density * 4f );
+		ivFollow.setCornerRadius( activity.pref,16f );
 		ivFollow.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ), App1.getImageLoader() );
 		tvFollowerName.setText( who.display_name );
 		setAcct( tvFollowerAcct, access_info.getFullAcct( who ), R.attr.colorAcctSmall );
@@ -278,7 +278,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		tvTime.setText( TootStatus.formatTime( status.time_created_at ) );
 		
 		tvName.setText( status.account.display_name );
-		ivThumbnail.setCornerRadius( activity.density * 4f );
+		ivThumbnail.setCornerRadius( activity.pref,16f );
 		ivThumbnail.setImageUrl( access_info.supplyBaseUrl( status.account.avatar_static ), App1.getImageLoader() );
 		tvContent.setText( status.decoded_content );
 
@@ -372,7 +372,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			TootAttachment ta = status.media_attachments.get( idx );
 			String url = ta.preview_url;
 			if( TextUtils.isEmpty( url ) ) url = ta.remote_url;
-			iv.setCornerRadius( 0f ); // 正方形じゃないせいか、うまく動かない activity.density * 4f );
+			iv.setCornerRadius( activity.pref,16f ); // 正方形じゃないせいか、うまく動かない activity.density * 4f );
 			iv.setImageUrl( access_info.supplyBaseUrl( url ), App1.getImageLoader() );
 		}
 	}

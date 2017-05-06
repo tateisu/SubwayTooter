@@ -271,4 +271,5 @@
     <string name="toot">Toot</string>
     <string name="clear_text">Cleat text</string>
     <string name="clear_text_and_media">Clear text and media</string>
+    <string name="dont_round_avatar">Don\'t round corner of avatar image (app restart required)</string>
 </resources>

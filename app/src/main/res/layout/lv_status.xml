@@ -2,6 +2,7 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:roundedrect="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:descendantFocusability="blocksDescendants"
@@ -89,15 +90,23 @@
         android:orientation="horizontal"
         >
 
-        <com.android.volley.toolbox.NetworkImageView
-            android:id="@+id/ivFollow"
+        <jp.juggler.subwaytooter.util.RoundedRectangleLayout
             android:layout_width="48dp"
-            android:layout_height="40dp"
+            android:layout_height="48dp"
             android:layout_marginEnd="4dp"
-            android:contentDescription="@string/thumbnail"
-            android:scaleType="fitEnd"
+            roundedrect:radius="2.0">
 
-            />
+
+            <com.android.volley.toolbox.NetworkImageView
+                android:id="@+id/ivFollow"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="4dp"
+                android:contentDescription="@string/thumbnail"
+                android:scaleType="fitEnd"
+                />
+
+        </jp.juggler.subwaytooter.util.RoundedRectangleLayout>
 
         <LinearLayout
             android:layout_width="0dp"
@@ -196,24 +205,31 @@
                 />
 
         </LinearLayout>
-
-        <com.android.volley.toolbox.NetworkImageView
-            android:id="@+id/ivThumbnail"
+        <jp.juggler.subwaytooter.util.RoundedRectangleLayout
+            android:id="@+id/llThumbnail"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:layout_below="@id/llTime"
             android:layout_marginEnd="4dp"
             android:layout_marginTop="4dp"
-            android:background="@drawable/btn_bg_transparent"
-            android:contentDescription="@string/thumbnail"
-            android:scaleType="centerCrop"
-            />
+            roundedrect:radius="2.0">
+
+            <com.android.volley.toolbox.NetworkImageView
+                android:id="@+id/ivThumbnail"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/btn_bg_transparent"
+                android:contentDescription="@string/thumbnail"
+                android:scaleType="centerCrop"
+                />
+
+        </jp.juggler.subwaytooter.util.RoundedRectangleLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@id/llTime"
-            android:layout_toEndOf="@id/ivThumbnail"
+            android:layout_toEndOf="@id/llThumbnail"
             android:orientation="vertical"
             >
 

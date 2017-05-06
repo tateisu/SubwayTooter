@@ -114,4 +114,8 @@
 
     <attr name="ic_hamburger" format="reference" />
 
+    <declare-styleable name="RoundedRectangleLayout">
+        <attr name="radius" format="float" />
+    </declare-styleable>
+
 </resources>

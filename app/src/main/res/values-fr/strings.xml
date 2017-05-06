@@ -270,5 +270,11 @@
     <string name="hashtag">hashtag</string>
     <string name="generating_qr_code">Making QR code…</string>
     <string name="qr_code">QR code</string>
+    <string name="clear">Clear</string>
+    <string name="clear_text">Cleat text</string>
+    <string name="clear_text_and_media">Clear text and media</string>
+    <string name="media_attachment">Media attachment</string>
+    <string name="toot">Toot</string>
+    <string name="visibility">Visibility</string>
 
 </resources>

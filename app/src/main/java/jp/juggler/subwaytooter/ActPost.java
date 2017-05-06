@@ -70,6 +70,7 @@ import jp.juggler.subwaytooter.util.ActionsDialog;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.MyEditText;
+import jp.juggler.subwaytooter.util.PostAttachment;
 import jp.juggler.subwaytooter.util.Utils;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -79,7 +80,7 @@ import okio.BufferedSink;
 
 import static jp.juggler.subwaytooter.R.id.viewRoot;
 
-public class ActPost extends AppCompatActivity implements View.OnClickListener {
+public class ActPost extends AppCompatActivity implements View.OnClickListener, PostAttachment.Callback {
 	static final LogCategory log = new LogCategory( "ActPost" );
 	
 	static final String EXTRA_POSTED_ACCT = "posted_acct";
@@ -88,6 +89,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	static final String KEY_ACCOUNT_DB_ID = "account_db_id";
 	static final String KEY_REPLY_STATUS = "reply_status";
 	static final String KEY_INITIAL_TEXT = "initial_text";
+	static final String KEY_SENT_INTENT = "sent_intent";
 	
 	static final String KEY_ATTACHMENT_LIST = "attachment_list";
 	static final String KEY_VISIBILITY = "visibility";
@@ -113,8 +115,18 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		activity.startActivityForResult( intent, request_code );
 	}
 	
-	@Override
-	public void onClick( View v ){
+	public static void open( Activity activity, int request_code, long account_db_id, Intent sent_intent ){
+		Intent intent = new Intent( activity, ActPost.class );
+		intent.putExtra( KEY_ACCOUNT_DB_ID, account_db_id );
+		if( sent_intent != null ){
+			intent.putExtra( KEY_SENT_INTENT, sent_intent );
+		}
+		activity.startActivityForResult( intent, request_code );
+	}
+	
+	////////////////////////////////////////////////////////////////
+	
+	@Override public void onClick( View v ){
 		switch( v.getId() ){
 		case R.id.btnAccount:
 			performAccountChooser();
@@ -158,6 +170,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		
 		case R.id.btnRemoveReply:
 			removeReply();
+			break;
+		
+		case R.id.btnClear:
+			performClear();
 			break;
 		}
 	}
@@ -212,12 +228,17 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	}
 	
 	SharedPreferences pref;
+	ArrayList< PostAttachment > attachment_list;
+	AppState app_state;
 	
 	@Override
 	protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
 		App1.setActivityTheme( this, true );
-		pref = Pref.pref( this );
+		
+		app_state = App1.getAppState( this );
+		pref = app_state.pref;
+		
 		initUI();
 		
 		if( account_list.isEmpty() ){
@@ -241,17 +262,28 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			this.visibility = savedInstanceState.getString( KEY_VISIBILITY );
 			
 			String sv = savedInstanceState.getString( KEY_ATTACHMENT_LIST );
-			if( ! TextUtils.isEmpty( sv ) ){
+			
+			if( app_state.attachment_list != null ){
+				
+				// static なデータが残ってるならそれを使う
+				this.attachment_list = app_state.attachment_list;
+				
+				// コールバックを新しい画面に差し替える
+				for( PostAttachment pa : attachment_list ){
+					pa.callback = this;
+				}
+				
+			}else if( ! TextUtils.isEmpty( sv ) ){
+				
+				// state から復元する
+				this.attachment_list = app_state.attachment_list = new ArrayList<>();
 				try{
-					attachment_list.clear();
 					JSONArray array = new JSONArray( sv );
 					for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
 						try{
 							TootAttachment a = TootAttachment.parse( log, array.optJSONObject( i ) );
 							if( a != null ){
-								PostAttachment pa = new PostAttachment();
-								pa.status = ATTACHMENT_UPLOADED;
-								pa.attachment = a;
+								attachment_list.add( new PostAttachment( a ) );
 							}
 						}catch( Throwable ex2 ){
 							ex2.printStackTrace();
@@ -266,6 +298,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			this.in_reply_to_text = savedInstanceState.getString( KEY_IN_REPLY_TO_TEXT );
 			this.in_reply_to_image = savedInstanceState.getString( KEY_IN_REPLY_TO_IMAGE );
 		}else{
+			this.attachment_list = app_state.attachment_list = null;
+			
 			Intent intent = getIntent();
 			long account_db_id = intent.getLongExtra( KEY_ACCOUNT_DB_ID, SavedAccount.INVALID_ID );
 			if( account_db_id != SavedAccount.INVALID_ID ){
@@ -275,6 +309,40 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 						setAccount( a );
 						break;
 					}
+				}
+			}
+			
+			Intent sent_intent = intent.getParcelableExtra( KEY_SENT_INTENT );
+			if( sent_intent != null ){
+				String action = sent_intent.getAction();
+				String type = sent_intent.getType();
+				if( type == null ){
+					//
+				}else if( type.startsWith( "image/" ) ){
+					if( Intent.ACTION_SEND.equals( action ) ){
+						Uri uri = sent_intent.getParcelableExtra( Intent.EXTRA_STREAM );
+						if( uri != null ){
+							addAttachment( uri, type );
+						}
+					}else if( Intent.ACTION_SEND_MULTIPLE.equals( action ) ){
+						ArrayList< Uri > list_uri = sent_intent.getParcelableArrayListExtra( Intent.EXTRA_STREAM );
+						if( list_uri != null ){
+							for( Uri uri : list_uri ){
+								if( uri != null ){
+									addAttachment( uri, type );
+								}
+							}
+						}
+					}
+				}else if( type.startsWith( "text/" ) ){
+					if( Intent.ACTION_SEND.equals( action ) ){
+						String sv = sent_intent.getStringExtra( Intent.EXTRA_TEXT );
+						if( sv != null ){
+							etContent.setText( sv );
+							etContent.setSelection( sv.length() );
+						}
+					}
+					
 				}
 			}
 			
@@ -388,16 +456,20 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	
 	@Override
 	protected void onSaveInstanceState( Bundle outState ){
+		super.onSaveInstanceState( outState );
+		
 		if( account != null ){
 			outState.putLong( KEY_ACCOUNT_DB_ID, account.db_id );
 		}
+		
 		if( visibility != null ){
 			outState.putString( KEY_VISIBILITY, visibility );
 		}
-		if( ! attachment_list.isEmpty() ){
+		
+		if( attachment_list != null && ! attachment_list.isEmpty() ){
 			JSONArray array = new JSONArray();
 			for( PostAttachment pa : attachment_list ){
-				if( pa.status == ATTACHMENT_UPLOADED ){
+				if( pa.status == PostAttachment.ATTACHMENT_UPLOADED ){
 					// アップロード完了したものだけ保持する
 					array.put( pa.attachment.json );
 				}
@@ -408,7 +480,15 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		outState.putLong( KEY_IN_REPLY_TO_ID, in_reply_to_id );
 		outState.putString( KEY_IN_REPLY_TO_TEXT, in_reply_to_text );
 		outState.putString( KEY_IN_REPLY_TO_IMAGE, in_reply_to_image );
-		
+	}
+	
+	@Override protected void onRestoreInstanceState( Bundle savedInstanceState ){
+		super.onRestoreInstanceState( savedInstanceState );
+		updateContentWarning();
+		showMediaAttachment();
+		showVisibility();
+		updateTextCount();
+		showReplyTo();
 	}
 	
 	Button btnAccount;
@@ -520,6 +600,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		} );
 		
 		scrollView.getViewTreeObserver().addOnScrollChangedListener( scroll_listener );
+		
+		View v = findViewById( R.id.btnClear );
+		v.setOnClickListener( this );
 	}
 	
 	final ViewTreeObserver.OnScrollChangedListener scroll_listener = new ViewTreeObserver.OnScrollChangedListener() {
@@ -630,7 +713,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	
 	private void performAccountChooser(){
 		
-		if( ! attachment_list.isEmpty() ){
+		if( attachment_list != null && ! attachment_list.isEmpty() ){
 			// 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
 			Utils.showToast( this, false, R.string.cant_change_account_when_attachment_specified );
 			return;
@@ -679,18 +762,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	//////////////////////////////////////////////////////////
 	// Attachment
 	
-	static final int ATTACHMENT_UPLOADING = 1;
-	static final int ATTACHMENT_UPLOADED = 2;
-	
-	private static class PostAttachment {
-		int status;
-		TootAttachment attachment;
-	}
-	
-	final ArrayList< PostAttachment > attachment_list = new ArrayList<>();
-	
 	private void showMediaAttachment(){
-		if( attachment_list.isEmpty() ){
+		
+		if( isFinishing() ) return;
+		
+		if( attachment_list == null || attachment_list.isEmpty() ){
 			llAttachment.setVisibility( View.GONE );
 		}else{
 			llAttachment.setVisibility( View.VISIBLE );
@@ -706,7 +782,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 		}else{
 			iv.setVisibility( View.VISIBLE );
 			PostAttachment a = attachment_list.get( idx );
-			if( a.attachment != null && a.status == ATTACHMENT_UPLOADED ){
+			if( a.attachment != null && a.status == PostAttachment.ATTACHMENT_UPLOADED ){
 				iv.setImageUrl( a.attachment.preview_url, App1.getImageLoader() );
 			}else{
 				iv.setImageUrl( null, App1.getImageLoader() );
@@ -735,10 +811,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	}
 	
 	private void performAttachment(){
-		if( attachment_list.size() >= 4 ){
+		
+		if( attachment_list != null && attachment_list.size() >= 4 ){
 			Utils.showToast( this, false, R.string.attachment_too_many );
 			return;
 		}
+		
 		if( account == null ){
 			Utils.showToast( this, false, R.string.account_select_please );
 			return;
@@ -835,8 +913,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 				int resize_to = list_resize_max[ pref.getInt( Pref.KEY_RESIZE_IMAGE, 4 ) ];
 				
 				// リサイズも回転も必要がない場合
-				if( (orientation == null || orientation == 1 )
-					&& (resize_to <= 0 || size <= resize_to )
+				if( ( orientation == null || orientation == 1 )
+					&& ( resize_to <= 0 || size <= resize_to )
 					){
 					log.d( "createOpener: no need to resize & rotate" );
 					break;
@@ -881,20 +959,20 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 					int dst_width;
 					int dst_height;
 					if( src_width >= src_height ){
-						scale = resize_to / (float)src_width;
+						scale = resize_to / (float) src_width;
 						dst_width = resize_to;
 						dst_height = (int) ( 0.5f + src_height / (float) src_width * resize_to );
 						if( dst_height < 1 ) dst_height = 1;
 					}else{
-						scale = resize_to /(float)src_height;
+						scale = resize_to / (float) src_height;
 						dst_height = resize_to;
 						dst_width = (int) ( 0.5f + src_width / (float) src_height * resize_to );
 						if( dst_width < 1 ) dst_width = 1;
 					}
 					
-					Matrix matrix = new Matrix(  );
+					Matrix matrix = new Matrix();
 					matrix.reset();
-
+					
 					// 画像の中心が原点に来るようにして
 					matrix.postTranslate( src_width * - 0.5f, src_height * - 0.5f );
 					// スケーリング
@@ -915,33 +993,33 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 							matrix.postScale( - 1f, 1f );
 							break; // 左右反転
 						case 5:
-							tmp= dst_width;
+							tmp = dst_width;
 							//noinspection SuspiciousNameCombination
-							dst_width=dst_height;
-							dst_height=tmp;
+							dst_width = dst_height;
+							dst_height = tmp;
 							matrix.postScale( 1f, - 1f );
 							matrix.postRotate( - 90f );
 							break;
 						case 6:
-							tmp= dst_width;
+							tmp = dst_width;
 							//noinspection SuspiciousNameCombination
-							dst_width=dst_height;
-							dst_height=tmp;
+							dst_width = dst_height;
+							dst_height = tmp;
 							matrix.postRotate( 90f );
 							break;
 						case 7:
-							tmp= dst_width;
+							tmp = dst_width;
 							//noinspection SuspiciousNameCombination
-							dst_width=dst_height;
-							dst_height=tmp;
+							dst_width = dst_height;
+							dst_height = tmp;
 							matrix.postScale( 1f, - 1f );
 							matrix.postRotate( 90f );
 							break;
 						case 8:
-							tmp= dst_width;
+							tmp = dst_width;
 							//noinspection SuspiciousNameCombination
-							dst_width=dst_height;
-							dst_height=tmp;
+							dst_width = dst_height;
+							dst_height = tmp;
 							matrix.postRotate( - 90f );
 							break;
 						}
@@ -1025,7 +1103,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	}
 	
 	void addAttachment( final Uri uri, final String mime_type ){
-		if( attachment_list.size() >= 4 ){
+		if( attachment_list != null && attachment_list.size() >= 4 ){
 			Utils.showToast( this, false, R.string.attachment_too_many );
 			return;
 		}
@@ -1034,8 +1112,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			return;
 		}
 		
-		final PostAttachment pa = new PostAttachment();
-		pa.status = ATTACHMENT_UPLOADING;
+		if( attachment_list == null ){
+			this.attachment_list = app_state.attachment_list = new ArrayList<>();
+		}
+		
+		final PostAttachment pa = new PostAttachment( this );
 		attachment_list.add( pa );
 		showMediaAttachment();
 		Utils.showToast( this, false, R.string.attachment_uploading );
@@ -1130,30 +1211,47 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			
 			@Override
 			protected void onPostExecute( TootApiResult result ){
-				pa.status = ATTACHMENT_UPLOADED;
-				
 				if( pa.attachment == null ){
+					pa.status = PostAttachment.ATTACHMENT_UPLOAD_FAILED;
 					if( result != null ){
 						Utils.showToast( ActPost.this, true, result.error );
 					}
-					attachment_list.remove( pa );
 				}else{
-					Utils.showToast( ActPost.this, false, R.string.attachment_uploaded );
-					String sv = etContent.getText().toString();
-					int l = sv.length();
-					if( l > 0 ){
-						char c = sv.charAt( l - 1 );
-						if( c > 0x20 ) sv = sv + " ";
-					}
-					sv = sv + pa.attachment.text_url + " ";
-					etContent.setText( sv );
-					etContent.setSelection( sv.length() );
+					pa.status = PostAttachment.ATTACHMENT_UPLOADED;
 				}
-				
-				showMediaAttachment();
+				// 投稿中に画面回転があった場合、新しい画面のコールバックを呼び出す必要がある
+				pa.callback.onPostAttachmentComplete( pa );
 			}
 			
 		}.execute();
+	}
+	
+	// 添付メディア投稿が完了したら呼ばれる
+	@Override public void onPostAttachmentComplete( PostAttachment pa ){
+		if( pa.status != PostAttachment.ATTACHMENT_UPLOADED ){
+			if( attachment_list != null ){
+				attachment_list.remove( pa );
+				showMediaAttachment();
+			}
+		}else{
+			if( attachment_list != null && attachment_list.contains( pa ) ){
+				
+				Utils.showToast( ActPost.this, false, R.string.attachment_uploaded );
+				
+				// 投稿欄に追記する
+				String sv = etContent.getText().toString();
+				int l = sv.length();
+				if( l > 0 ){
+					char c = sv.charAt( l - 1 );
+					if( c > 0x20 ) sv = sv + " ";
+				}
+				sv = sv + pa.attachment.text_url + " ";
+				etContent.setText( sv );
+				etContent.setSelection( sv.length() );
+				
+				showMediaAttachment();
+			}
+		}
 	}
 	
 	Uri uriCameraImage;
@@ -1292,6 +1390,35 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////////
+	
+	private void performClear(){
+		ActionsDialog dialog = new ActionsDialog();
+		dialog.addAction(
+			getString( R.string.clear_text )
+			, new Runnable() {
+				@Override public void run(){
+					etContent.setText( "" );
+					etContentWarning.setText( "" );
+				}
+			}
+		);
+		dialog.addAction(
+			getString( R.string.clear_text_and_media )
+			, new Runnable() {
+				@Override public void run(){
+					etContent.setText( "" );
+					etContentWarning.setText( "" );
+					if( attachment_list != null ){
+						attachment_list.clear();
+						showMediaAttachment();
+					}
+				}
+			}
+		);
+		dialog.show( this, null );
+	}
+	
+	///////////////////////////////////////////////////////////////////////////////////////
 	// post
 	
 	private void performPost( boolean bConfirm ){
@@ -1353,10 +1480,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener {
 			sb.append( "&in_reply_to_id=" );
 			sb.append( Long.toString( in_reply_to_id ) );
 		}
-		
-		for( PostAttachment pa : attachment_list ){
-			if( pa.attachment != null ){
-				sb.append( "&media_ids[]=" ).append( pa.attachment.id );
+		if( attachment_list != null ){
+			for( PostAttachment pa : attachment_list ){
+				if( pa.attachment != null ){
+					sb.append( "&media_ids[]=" ).append( pa.attachment.id );
+				}
 			}
 		}
 		

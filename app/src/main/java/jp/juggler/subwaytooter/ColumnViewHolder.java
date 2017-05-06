@@ -37,10 +37,12 @@ class ColumnViewHolder
 	final ActMain activity;
 	final Column column;
 	final AtomicBoolean is_destroyed = new AtomicBoolean( false );
+	final ItemListAdapter status_adapter;
 	
 	ColumnViewHolder( ActMain activity, Column column ){
 		this.activity = activity;
 		this.column = column;
+		this.status_adapter = new ItemListAdapter( activity,column );
 	}
 	
 	private boolean isPageDestroyed(){
@@ -88,7 +90,7 @@ class ColumnViewHolder
 		
 		tvLoading = (TextView) root.findViewById( R.id.tvLoading );
 		listView = (MyListView) root.findViewById( R.id.listView );
-		listView.setAdapter( column.status_adapter );
+		listView.setAdapter( status_adapter );
 		
 		this.swipyRefreshLayout = (SwipyRefreshLayout) root.findViewById( R.id.swipyRefreshLayout );
 		swipyRefreshLayout.setOnRefreshListener( this );
@@ -212,7 +214,7 @@ class ColumnViewHolder
 		}
 		
 		if( column.column_type == Column.TYPE_PROFILE ){
-			vh_header = new HeaderViewHolder( column, listView );
+			vh_header = new HeaderViewHolder( activity,column, listView );
 			listView.addHeaderView( vh_header.viewRoot );
 		}
 		
@@ -223,7 +225,7 @@ class ColumnViewHolder
 		}
 		
 		if( column.bSimpleList ){
-			listView.setOnItemClickListener( column.status_adapter );
+			listView.setOnItemClickListener( status_adapter );
 		}
 		
 		//
@@ -237,7 +239,7 @@ class ColumnViewHolder
 			if( isPageDestroyed() ) return;
 			if( isRegexValid() ){
 				column.regex_text = etRegexFilter.getText().toString();
-				activity.saveColumnList();
+				activity.app_state.saveColumnList();
 				column.startLoading();
 			}
 		}
@@ -281,24 +283,24 @@ class ColumnViewHolder
 		case R.id.cbDontCloseColumn:
 			column.dont_close = isChecked;
 			showColumnCloseButton();
-			activity.saveColumnList();
+			activity.app_state.saveColumnList();
 			break;
 		
 		case R.id.cbWithAttachment:
 			column.with_attachment = isChecked;
-			activity.saveColumnList();
+			activity.app_state.saveColumnList();
 			column.startLoading();
 			break;
 		
 		case R.id.cbDontShowBoost:
 			column.dont_show_boost = isChecked;
-			activity.saveColumnList();
+			activity.app_state.saveColumnList();
 			column.startLoading();
 			break;
 		
 		case R.id.cbDontShowReply:
 			column.dont_show_reply = isChecked;
-			activity.saveColumnList();
+			activity.app_state.saveColumnList();
 			column.startLoading();
 			break;
 			
@@ -325,12 +327,12 @@ class ColumnViewHolder
 			Utils.hideKeyboard( activity, etSearch );
 			column.search_query = etSearch.getText().toString().trim();
 			column.search_resolve = cbResolve.isChecked();
-			activity.saveColumnList();
+			activity.app_state.saveColumnList();
 			column.startLoading();
 			break;
 		
 		case R.id.llColumnHeader:
-			if( column.status_adapter.getCount() > 0 ) listView.setSelectionFromTop( 0, 0 );
+			if( status_adapter.getCount() > 0 ) listView.setSelectionFromTop( 0, 0 );
 			break;
 		
 		case R.id.btnColumnSetting:
@@ -351,7 +353,7 @@ class ColumnViewHolder
 		swipyRefreshLayout.setVisibility( View.GONE );
 		
 		// ロード完了後に先頭から表示させる
-		if( column.status_adapter.getCount() > 0 ){
+		if( status_adapter.getCount() > 0 ){
 			listView.setSelectionFromTop( 0, 0 );
 		}
 	}
@@ -395,7 +397,7 @@ class ColumnViewHolder
 		}else{
 			tvColumnContext.setBackgroundColor( c );
 		}
-		tvColumnContext.setPaddingRelative( column.acct_pad_lr, 0, column.acct_pad_lr, 0 );
+		tvColumnContext.setPaddingRelative( activity.acct_pad_lr, 0, activity.acct_pad_lr, 0 );
 		
 		tvColumnName.setText( column.getColumnName( false ) );
 		
@@ -443,7 +445,7 @@ class ColumnViewHolder
 		}else{
 			tvLoading.setVisibility( View.GONE );
 			swipyRefreshLayout.setVisibility( View.VISIBLE );
-			column.status_adapter.notifyDataSetChanged();
+			status_adapter.notifyDataSetChanged();
 		}
 		restoreScrollPosition();
 	}

@@ -298,9 +298,9 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public String getUserUrl( @NonNull String who_acct ){
 		int p = who_acct.indexOf( '@' );
 		if( - 1 != p ){
-			return "https:/" +who_acct.substring( p + 1 ) + "/@" + who_acct.substring( 0,p);
+			return "https://" +who_acct.substring( p + 1 ) + "/@" + who_acct.substring( 0,p);
 		}else{
-			return "https:/" + host + "/@" + who_acct;
+			return "https://" + host + "/@" + who_acct;
 		}
 	}
 	

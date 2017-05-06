@@ -15,14 +15,14 @@ import jp.juggler.subwaytooter.util.MyListView;
 
 class StatusButtonsPopup {
 	
-	private final Column column;
+	private final ActMain activity;
 	private final View viewRoot;
 	private final StatusButtons buttons_for_status;
 	
-	@SuppressLint("InflateParams") StatusButtonsPopup( Column column ){
-		this.column = column;
-		this.viewRoot = column.activity.getLayoutInflater().inflate( R.layout.list_item_popup, null, false );
-		this.buttons_for_status = new StatusButtons( column, viewRoot );
+	@SuppressLint("InflateParams") StatusButtonsPopup( ActMain activity, Column column ){
+		this.activity = activity;
+		this.viewRoot = activity.getLayoutInflater().inflate( R.layout.list_item_popup, null, false );
+		this.buttons_for_status = new StatusButtons( activity,column, viewRoot );
 	}
 	
 	private PopupWindow window;
@@ -36,7 +36,7 @@ class StatusButtonsPopup {
 	void show( final MyListView listView, View anchor, TootStatus status ){
 		
 		//
-		window = new PopupWindow( column.activity );
+		window = new PopupWindow( activity );
 		window.setWidth( WindowManager.LayoutParams.WRAP_CONTENT );
 		window.setHeight( WindowManager.LayoutParams.WRAP_CONTENT );
 		window.setContentView( viewRoot );
@@ -65,7 +65,7 @@ class StatusButtonsPopup {
 		listView.getLocationOnScreen( location );
 		int listView_top = location[ 1 ];
 		
-		float density = column.activity.density;
+		float density = activity.density;
 		
 		int clip_top = listView_top + (int) ( 0.5f + 8f * density );
 		int clip_bottom = listView_top + listView.getHeight() - (int) ( 0.5f + 8f * density );

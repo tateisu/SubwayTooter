@@ -24,9 +24,9 @@ class StatusButtons implements View.OnClickListener {
 	private final ImageView ivFollowedBy2;
 	private final View llFollow2;
 	
-	StatusButtons( Column column, View viewRoot ){
+	StatusButtons( ActMain activity,Column column, View viewRoot ){
+		this.activity = activity;
 		this.column = column;
-		this.activity = column.activity;
 		this.access_info = column.access_info;
 		
 		btnBoost = (Button) viewRoot.findViewById( R.id.btnBoost );
@@ -65,14 +65,14 @@ class StatusButtons implements View.OnClickListener {
 			setButton( btnBoost, false, color_accent, R.attr.ic_mail, "" );
 		}else if( TootStatus.VISIBILITY_PRIVATE.equals( status.visibility ) ){
 			setButton( btnBoost, false, color_accent, R.attr.ic_lock, "" );
-		}else if( activity.isBusyBoost( access_info, status ) ){
+		}else if( activity.app_state.isBusyBoost( access_info, status ) ){
 			setButton( btnBoost, false, color_normal, R.attr.btn_refresh, "?" );
 		}else{
 			int color = ( status.reblogged ? color_accent : color_normal );
 			setButton( btnBoost, true, color, R.attr.btn_boost, Long.toString( status.reblogs_count ) );
 		}
 		
-		if( activity.isBusyFav( access_info, status ) ){
+		if( activity.app_state.isBusyFav( access_info, status ) ){
 			setButton( btnFavourite, false, color_normal, R.attr.btn_refresh, "?" );
 		}else{
 			int color = ( status.favourited ? color_accent : color_normal );

@@ -36,9 +36,9 @@ class HeaderViewHolder implements View.OnClickListener {
 	
 	private TootAccount who;
 	
-	HeaderViewHolder( Column column, ListView parent ){
+	HeaderViewHolder( ActMain activity,Column column, ListView parent ){
+		this.activity = activity;
 		this.column = column;
-		this.activity = column.activity;
 		this.access_info = column.access_info;
 		this.viewRoot = activity.getLayoutInflater().inflate( R.layout.lv_list_header, parent, false );
 
@@ -114,16 +114,19 @@ class HeaderViewHolder implements View.OnClickListener {
 		
 		case R.id.btnFollowing:
 			column.profile_tab = Column.TAB_FOLLOWING;
+			activity.app_state.saveColumnList();
 			column.startLoading();
 			break;
 		
 		case R.id.btnFollowers:
 			column.profile_tab = Column.TAB_FOLLOWERS;
+			activity.app_state.saveColumnList();
 			column.startLoading();
 			break;
 		
 		case R.id.btnStatusCount:
 			column.profile_tab = Column.TAB_STATUS;
+			activity.app_state.saveColumnList();
 			column.startLoading();
 			break;
 		

@@ -33,7 +33,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -70,9 +69,14 @@ public class ActMain extends AppCompatActivity
 	//	}
 	
 	public float density;
+	int acct_pad_lr;
 	
 	SharedPreferences pref;
 	Handler handler;
+	AppState app_state;
+	
+	// onActivityResultで設定されてonResumeで消化される
+	// 状態保存の必要なし
 	String posted_acct;
 	long posted_status_id;
 	
@@ -80,18 +84,23 @@ public class ActMain extends AppCompatActivity
 	protected void onCreate( Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
 		App1.setActivityTheme( this, true );
-		this.density = getResources().getDisplayMetrics().density;
-		
 		requestWindowFeature( Window.FEATURE_NO_TITLE );
 		
-		pref = Pref.pref( this );
 		handler = new Handler();
+		app_state = App1.getAppState( this );
+		pref = App1.pref;
 		
+		this.density = app_state.density;
+		this.acct_pad_lr = (int) ( 0.5f + 4f * density );
+		
+
 		initUI();
 		
-		AlarmService.startCheck( this );
+		if( pager_adapter.column_list.size() > 0 ){
+			llEmpty.setVisibility( View.GONE );
+		}
 		
-		loadColumnList();
+		AlarmService.startCheck( this );
 	}
 	
 	@Override protected void onDestroy(){
@@ -119,7 +128,7 @@ public class ActMain extends AppCompatActivity
 			}
 			if( bRemoved ){
 				pager_adapter.setOrder( pager, new_order );
-				saveColumnList();
+				app_state.saveColumnList();
 			}
 		}
 		
@@ -146,8 +155,24 @@ public class ActMain extends AppCompatActivity
 		if( uri != null ){
 			handleIntentUri( uri );
 		}
+		
+		Intent intent = ActCallback.sent_intent.getAndSet( null );
+		if( intent != null ){
+			handleSentIntent( intent );
+		}
 	}
 	
+	private void handleSentIntent( final Intent sent_intent ){
+		AccountPicker.pick( this, false, true, getString( R.string.account_picker_toot ), new AccountPicker.AccountPickerCallback() {
+			@Override public void onAccountPicked( SavedAccount ai ){
+				ActPost.open( ActMain.this,REQUEST_CODE_POST,ai.db_id,sent_intent);
+			}
+		} );
+	}
+	
+	// 画面上のUI操作で生成されて
+	// onPause,onPageDestoroy 等のタイミングで閉じられる
+	// 状態保存の必要なし
 	StatusButtonsPopup list_item_popup;
 	
 	void closeListItemPopup(){
@@ -186,7 +211,7 @@ public class ActMain extends AppCompatActivity
 					ArrayList< Integer > order = data.getIntegerArrayListExtra( ActColumnList.EXTRA_ORDER );
 					if( order != null && isOrderChanged( order ) ){
 						pager_adapter.setOrder( pager, order );
-						saveColumnList();
+						app_state.saveColumnList();
 					}
 					
 					if( pager_adapter.column_list.isEmpty() ){
@@ -260,7 +285,7 @@ public class ActMain extends AppCompatActivity
 			} );
 			dialog.addAction( getString( R.string.open_column_list ), new Runnable() {
 				@Override public void run(){
-					performColumnList();
+					openColumnList();
 				}
 			} );
 			dialog.addAction( getString( R.string.app_exit ), new Runnable() {
@@ -290,7 +315,7 @@ public class ActMain extends AppCompatActivity
 			break;
 		
 		case ActAppSetting.BACK_OPEN_COLUMN_LIST:
-			performColumnList();
+			openColumnList();
 			break;
 		}
 	}
@@ -348,7 +373,7 @@ public class ActMain extends AppCompatActivity
 		}else if( id == R.id.nav_account_setting ){
 			performAccountSetting();
 		}else if( id == R.id.nav_column_list ){
-			performColumnList();
+			openColumnList();
 			
 		}else if( id == R.id.nav_add_tl_search ){
 			performAddTimeline( true, Column.TYPE_SEARCH, "", false );
@@ -823,7 +848,7 @@ public class ActMain extends AppCompatActivity
 		int page_showing = pager.getCurrentItem();
 		int page_delete = pager_adapter.column_list.indexOf( column );
 		pager_adapter.removeColumn( pager, column );
-		saveColumnList();
+		app_state.saveColumnList();
 		if( pager_adapter.getCount() == 0 ){
 			llEmpty.setVisibility( View.VISIBLE );
 		}else if( page_showing > 0 && page_showing == page_delete ){
@@ -845,9 +870,9 @@ public class ActMain extends AppCompatActivity
 		//
 		llEmpty.setVisibility( View.GONE );
 		//
-		Column col = new Column( ActMain.this, ai, type, params );
+		Column col = new Column( app_state , ai, type, params );
 		int idx = pager_adapter.addColumn( pager, col );
-		saveColumnList();
+		app_state.saveColumnList();
 		pager.setCurrentItem( idx, true );
 		return col;
 	}
@@ -982,8 +1007,8 @@ public class ActMain extends AppCompatActivity
 		AsyncTaskCompat.executeParallel( task );
 	}
 	
-	Pattern reHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#]+)\\z" );
-	Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#]+)\\z" );
+	static final Pattern reHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#]+)\\z" );
+	static final Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#]+)\\z" );
 	
 	public void openChromeTab( final SavedAccount access_info, final String url, boolean noIntercept ){
 		try{
@@ -1136,23 +1161,17 @@ public class ActMain extends AppCompatActivity
 	/////////////////////////////////////////////////////////////////////////
 	// favourite
 	
-	final HashSet< String > map_busy_fav = new HashSet<>();
-	
-	boolean isBusyFav( SavedAccount account, TootStatus status ){
-		String busy_key = account.host + ":" + status.id;
-		return map_busy_fav.contains( busy_key );
-	}
-	
+
 	public void performFavourite( final SavedAccount account, final TootStatus status, final RelationChangedCallback callback ){
 		//
 		final String busy_key = account.host + ":" + status.id;
 		//
-		if( map_busy_fav.contains( busy_key ) ){
+		if( app_state.map_busy_fav.contains( busy_key ) ){
 			Utils.showToast( this, false, R.string.wait_previous_operation );
 			return;
 		}
 		//
-		map_busy_fav.add( busy_key );
+		app_state.map_busy_fav.add( busy_key );
 		//
 		new AsyncTask< Void, Void, TootApiResult >() {
 			final boolean bSet = ! status.favourited;
@@ -1199,7 +1218,7 @@ public class ActMain extends AppCompatActivity
 			
 			@Override
 			protected void onPostExecute( TootApiResult result ){
-				map_busy_fav.remove( busy_key );
+				app_state.map_busy_fav.remove( busy_key );
 				
 				//noinspection StatementWithEmptyBody
 				if( result == null ){
@@ -1243,25 +1262,19 @@ public class ActMain extends AppCompatActivity
 	
 	/////////////////////////////////////////////////////////////////////////
 	// boost
-	final HashSet< String > map_busy_boost = new HashSet<>();
-	
-	boolean isBusyBoost( SavedAccount account, TootStatus status ){
-		String busy_key = account.host + ":" + status.id;
-		return map_busy_boost.contains( busy_key );
-	}
-	
+
 	public void performBoost( final SavedAccount access_info, final TootStatus status, boolean bConfirmed, final RelationChangedCallback callback ){
 		//
 		final String busy_key = access_info.host + ":" + status.id;
 		//
-		if( map_busy_boost.contains( busy_key ) ){
+		if( app_state.map_busy_boost.contains( busy_key ) ){
 			Utils.showToast( this, false, R.string.wait_previous_operation );
 			return;
 		}
 		
 		if( status.reblogged ){
 			// FAVがついているか、FAV操作中はBoostを外せない
-			if( isBusyFav( access_info, status ) || status.favourited ){
+			if( app_state.isBusyFav( access_info, status ) || status.favourited ){
 				Utils.showToast( this, false, R.string.cant_remove_boost_while_favourited );
 				return;
 			}
@@ -1285,7 +1298,7 @@ public class ActMain extends AppCompatActivity
 		}
 		
 		//
-		map_busy_boost.add( busy_key );
+		app_state.map_busy_boost.add( busy_key );
 		//
 		new AsyncTask< Void, Void, TootApiResult >() {
 			final boolean new_state = ! status.reblogged;
@@ -1329,7 +1342,7 @@ public class ActMain extends AppCompatActivity
 			}
 			
 			@Override protected void onPostExecute( TootApiResult result ){
-				map_busy_boost.remove( busy_key );
+				app_state.map_busy_boost.remove( busy_key );
 				
 				//noinspection StatementWithEmptyBody
 				if( result == null ){
@@ -1386,27 +1399,8 @@ public class ActMain extends AppCompatActivity
 	////////////////////////////////////////////////////////
 	// column list
 	
-	JSONArray encodeColumnList(){
-		JSONArray array = new JSONArray();
-		for( int i = 0, ie = pager_adapter.column_list.size() ; i < ie ; ++ i ){
-			Column column = pager_adapter.column_list.get( i );
-			try{
-				JSONObject dst = new JSONObject();
-				column.encodeJSON( dst, i );
-				array.put( dst );
-			}catch( JSONException ex ){
-				ex.printStackTrace();
-			}
-		}
-		return array;
-	}
-	
-	private void performColumnList(){
-		JSONArray array = encodeColumnList();
-		App1.saveColumnList( this, ActColumnList.TMP_FILE_COLUMN_LIST, array );
-		Intent intent = new Intent( this, ActColumnList.class );
-		intent.putExtra( ActColumnList.EXTRA_SELECTION, pager.getCurrentItem() );
-		startActivityForResult( intent, REQUEST_CODE_COLUMN_LIST );
+	private void openColumnList(){
+		ActColumnList.open(this,pager.getCurrentItem(),REQUEST_CODE_COLUMN_LIST);
 	}
 	
 	//	private void dumpColumnList(){
@@ -1416,31 +1410,7 @@ public class ActMain extends AppCompatActivity
 	//		}
 	//	}
 	
-	static final String FILE_COLUMN_LIST = "column_list";
-	
-	void saveColumnList(){
-		JSONArray array = encodeColumnList();
-		App1.saveColumnList( this, FILE_COLUMN_LIST, array );
-		
-	}
-	
-	private void loadColumnList(){
-		JSONArray array = App1.loadColumnList( this, FILE_COLUMN_LIST );
-		if( array != null ){
-			for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
-				try{
-					JSONObject src = array.optJSONObject( i );
-					Column col = new Column( ActMain.this, src );
-					pager_adapter.addColumn( pager, col, pager_adapter.getCount() );
-				}catch( Throwable ex ){
-					ex.printStackTrace();
-				}
-			}
-		}
-		if( pager_adapter.column_list.size() > 0 ){
-			llEmpty.setVisibility( View.GONE );
-		}
-	}
+
 	
 	////////////////////////////////////////////////////////////////////////////
 	

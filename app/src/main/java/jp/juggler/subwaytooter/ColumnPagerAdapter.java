@@ -14,12 +14,14 @@ class ColumnPagerAdapter extends PagerAdapter {
 	
 	private final ActMain activity;
 	private final LayoutInflater inflater;
-	final ArrayList< Column > column_list = new ArrayList<>();
+	final ArrayList< Column > column_list;
 	private final SparseArray< ColumnViewHolder > holder_list = new SparseArray<>();
-	
-	ColumnPagerAdapter( ActMain activity ){
+
+
+	ColumnPagerAdapter(ActMain activity){
 		this.activity = activity;
 		this.inflater = activity.getLayoutInflater();
+		this.column_list = activity.app_state.column_list;
 	}
 	
 	@Override public int getCount(){
@@ -42,7 +44,6 @@ class ColumnPagerAdapter extends PagerAdapter {
 	int addColumn( ViewPager pager, Column column, int index ){
 		int size = column_list.size();
 		if( index > size ) index = size;
-		
 		pager.setAdapter( null );
 		column_list.add( index, column );
 		pager.setAdapter( this );
@@ -56,6 +57,7 @@ class ColumnPagerAdapter extends PagerAdapter {
 		pager.setAdapter( null );
 		column_list.remove( idx_column );
 		pager.setAdapter( this );
+		column.dispose();
 	}
 	
 	void setOrder( ViewPager pager, ArrayList< Integer > order ){
@@ -112,5 +114,4 @@ class ColumnPagerAdapter extends PagerAdapter {
 			holder.onPageDestroy( view );
 		}
 	}
-	
 }

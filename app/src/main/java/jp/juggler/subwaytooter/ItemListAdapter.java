@@ -14,9 +14,9 @@ class ItemListAdapter extends BaseAdapter implements AdapterView.OnItemClickList
 	private final ActMain activity;
 	private final ArrayList< Object > list;
 	
-	ItemListAdapter( Column column ){
+	ItemListAdapter( ActMain activity,Column column ){
+		this.activity = activity;
 		this.column = column;
-		this.activity = column.activity;
 		this.list = column.list_data;
 	}
 	
@@ -43,7 +43,7 @@ class ItemListAdapter extends BaseAdapter implements AdapterView.OnItemClickList
 		ItemViewHolder holder;
 		if( view == null ){
 			view = activity.getLayoutInflater().inflate( column.bSimpleList ? R.layout.lv_status_simple : R.layout.lv_status, parent, false );
-			holder = new ItemViewHolder( column, view );
+			holder = new ItemViewHolder( activity,column,this, view );
 			view.setTag( holder );
 		}else{
 			holder = (ItemViewHolder) view.getTag();

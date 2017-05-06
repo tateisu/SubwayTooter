@@ -266,4 +266,10 @@
     <string name="hashtag">ハッシュタグ</string>
     <string name="generating_qr_code">QRコードの作成中…</string>
     <string name="qr_code">QRコード</string>
+    <string name="clear">消去</string>
+    <string name="clear_text">テキストの消去</string>
+    <string name="clear_text_and_media">テキストとメディアの消去</string>
+    <string name="media_attachment">添付メディア</string>
+    <string name="toot">トゥート</string>
+    <string name="visibility">公開範囲</string>
 </resources>

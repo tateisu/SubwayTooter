@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -32,6 +33,14 @@ public class ActColumnList extends AppCompatActivity {
 	public static final String EXTRA_ORDER = "order";
 	public static final String EXTRA_SELECTION = "selection";
 	
+	public static void open( ActMain activity, int currentItem, int requestCode ){
+		JSONArray array = activity.app_state.encodeColumnList();
+		AppState.saveColumnList( activity, ActColumnList.TMP_FILE_COLUMN_LIST, array );
+		Intent intent = new Intent( activity, ActColumnList.class );
+		intent.putExtra( ActColumnList.EXTRA_SELECTION, currentItem );
+		activity.startActivityForResult( intent, requestCode );
+	}
+	
 	@Override
 	protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
@@ -50,14 +59,14 @@ public class ActColumnList extends AppCompatActivity {
 	protected void onSaveInstanceState( Bundle outState ){
 		super.onSaveInstanceState( outState );
 		outState.putInt( EXTRA_SELECTION, old_selection );
-
+		
 		//
 		JSONArray array = new JSONArray();
 		List< MyItem > item_list = listAdapter.getItemList();
 		for( int i = 0, ie = item_list.size() ; i < ie ; ++ i ){
 			array.put( item_list.get( i ).json );
 		}
-		App1.saveColumnList( this,TMP_FILE_COLUMN_LIST,array );
+		AppState.saveColumnList( this,TMP_FILE_COLUMN_LIST, array );
 	}
 	
 	@Override
@@ -95,10 +104,10 @@ public class ActColumnList extends AppCompatActivity {
 			public void onItemDragEnded( int fromPosition, int toPosition ){
 				// 操作完了でリフレッシュ許可
 				// mRefreshLayout.setEnabled( USE_SWIPE_REFRESH );
-
-//				if( fromPosition != toPosition ){
-//					// 並べ替えが発生した
-//				}
+				
+				//				if( fromPosition != toPosition ){
+				//					// 並べ替えが発生した
+				//				}
 			}
 		} );
 		
@@ -130,13 +139,13 @@ public class ActColumnList extends AppCompatActivity {
 		} );
 	}
 	
-	void restoreData(  int ivSelection ){
+	void restoreData( int ivSelection ){
 		
 		this.old_selection = ivSelection;
 		
 		ArrayList< MyItem > tmp_list = new ArrayList<>();
 		try{
-			JSONArray array = App1.loadColumnList( this, TMP_FILE_COLUMN_LIST );
+			JSONArray array = AppState.loadColumnList( this,TMP_FILE_COLUMN_LIST );
 			if( array != null ){
 				for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
 					try{
@@ -260,11 +269,11 @@ public class ActColumnList extends AppCompatActivity {
 			ivColumnIcon.setImageResource( Styler.getAttributeResourceId(
 				ActColumnList.this, Column.getIconAttrId( item.type ) ) );
 		}
-
-//		@Override
-//		public boolean onItemLongClicked( View view ){
-//			return false;
-//		}
+		
+		//		@Override
+		//		public boolean onItemLongClicked( View view ){
+		//			return false;
+		//		}
 		
 		@Override
 		public void onItemClicked( View view ){

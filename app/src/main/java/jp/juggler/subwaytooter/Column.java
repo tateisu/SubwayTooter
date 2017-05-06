@@ -125,7 +125,8 @@ class Column {
 	static final int TYPE_BOOSTED_BY = 14;
 	static final int TYPE_FAVOURITED_BY = 15;
 	
-	@NonNull final ActMain activity;
+	@NonNull final Context context;
+	@NonNull private final AppState app_state;
 	@NonNull final SavedAccount access_info;
 	
 	final int column_type;
@@ -153,8 +154,9 @@ class Column {
 	
 	ScrollPosition scroll_save;
 	
-	Column( @NonNull ActMain activity, @NonNull SavedAccount access_info, int type, Object... params ){
-		this.activity = activity;
+	Column( @NonNull AppState app_state, @NonNull SavedAccount access_info, int type, Object... params ){
+		this.app_state = app_state;
+		this.context = app_state.context;
 		this.access_info = access_info;
 		this.column_type = type;
 		switch( type ){
@@ -219,8 +221,9 @@ class Column {
 		item.put( KEY_OLD_INDEX, old_index );
 	}
 	
-	Column( @NonNull ActMain activity, JSONObject src ){
-		this.activity = activity;
+	Column( @NonNull AppState app_state,JSONObject src ){
+		this.app_state = app_state;
+		this.context = app_state.context;
 		
 		SavedAccount ac = SavedAccount.loadAccount( log, src.optLong( KEY_ACCOUNT_ROW_ID ) );
 		if( ac == null ) throw new RuntimeException( "missing account" );
@@ -313,25 +316,25 @@ class Column {
 	String getColumnName( boolean bLong ){
 		switch( column_type ){
 		default:
-			return getColumnTypeName( activity, column_type );
+			return getColumnTypeName( context, column_type );
 		
 		case TYPE_PROFILE:
 			
-			return activity.getString( R.string.profile_of
+			return context.getString( R.string.profile_of
 				, who_account != null ? AcctColor.getNickname( access_info.getFullAcct( who_account ) ) : Long.toString( profile_id )
 			);
 		
 		case TYPE_CONVERSATION:
-			return activity.getString( R.string.conversation_around, status_id );
+			return context.getString( R.string.conversation_around, status_id );
 		
 		case TYPE_HASHTAG:
-			return activity.getString( R.string.hashtag_of, hashtag );
+			return context.getString( R.string.hashtag_of, hashtag );
 		
 		case TYPE_SEARCH:
 			if( bLong ){
-				return activity.getString( R.string.search_of, search_query );
+				return context.getString( R.string.search_of, search_query );
 			}else{
-				return getColumnTypeName( activity, column_type );
+				return getColumnTypeName( context, column_type );
 			}
 			
 		}
@@ -442,15 +445,14 @@ class Column {
 	}
 	
 	boolean bSimpleList;
-	ItemListAdapter status_adapter;
-	int acct_pad_lr;
 	
+
 	private void init(){
-		acct_pad_lr = (int) ( 0.5f + 4f * activity.density );
 		
-		bSimpleList = ( column_type != Column.TYPE_CONVERSATION && activity.pref.getBoolean( Pref.KEY_SIMPLE_LIST, false ) );
 		
-		status_adapter = new ItemListAdapter( this );
+		bSimpleList = ( column_type != Column.TYPE_CONVERSATION && app_state.pref.getBoolean( Pref.KEY_SIMPLE_LIST, false ) );
+		
+	
 		
 		startLoading();
 	}
@@ -636,7 +638,7 @@ class Column {
 		
 		fireShowContent();
 		
-		AlarmService.dataRemoved( activity, access_info.db_id );
+		AlarmService.dataRemoved( context, access_info.db_id );
 	}
 	
 	private ColumnViewHolder holder;
@@ -674,7 +676,7 @@ class Column {
 			//
 			bInitialLoading = false;
 			bRefreshLoading = false;
-			mInitialLoadingError = activity.getString( R.string.cancelled );
+			mInitialLoadingError = context.getString( R.string.cancelled );
 			//
 		}
 	}
@@ -924,7 +926,7 @@ class Column {
 					addWithFilter( list_tmp, src );
 					//
 					if( ! src.isEmpty() ){
-						AlarmService.injectData( activity, access_info.db_id, src );
+						AlarmService.injectData( context, access_info.db_id, src );
 					}
 					
 				}
@@ -933,7 +935,7 @@ class Column {
 			
 			@Override
 			protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( activity, new TootApiClient.Callback() {
+				TootApiClient client = new TootApiClient( context, new TootApiClient.Callback() {
 					@Override
 					public boolean isApiCancelled(){
 						return isCancelled() || is_dispose.get();
@@ -1288,13 +1290,13 @@ class Column {
 		
 		if( last_task != null ){
 			if( ! bSilent ){
-				Utils.showToast( activity, true, R.string.column_is_busy );
+				Utils.showToast( context, true, R.string.column_is_busy );
 				if( holder != null ) holder.getRefreshLayout().setRefreshing( false );
 			}
 			return;
 		}else if( bBottom && max_id == null ){
 			if( ! bSilent ){
-				Utils.showToast( activity, true, R.string.end_of_list );
+				Utils.showToast( context, true, R.string.end_of_list );
 				if( holder != null ) holder.getRefreshLayout().setRefreshing( false );
 			}
 			return;
@@ -1446,7 +1448,7 @@ class Column {
 					addWithFilter( list_tmp, src );
 					
 					if( ! src.isEmpty() ){
-						AlarmService.injectData( activity, access_info.db_id, src );
+						AlarmService.injectData( context, access_info.db_id, src );
 					}
 					
 					if( ! bBottom ){
@@ -1489,7 +1491,7 @@ class Column {
 							src = TootNotification.parseList( log, access_info, result2.array );
 							if( ! src.isEmpty() ){
 								addWithFilter( list_tmp, src );
-								AlarmService.injectData( activity, access_info.db_id, src );
+								AlarmService.injectData( context, access_info.db_id, src );
 							}
 						}
 					}
@@ -1618,7 +1620,7 @@ class Column {
 			
 			@Override
 			protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( activity, new TootApiClient.Callback() {
+				TootApiClient client = new TootApiClient( context, new TootApiClient.Callback() {
 					@Override
 					public boolean isApiCancelled(){
 						return isCancelled() || is_dispose.get();
@@ -1835,7 +1837,7 @@ class Column {
 	
 	void startGap( final TootGap gap, final int position ){
 		if( last_task != null ){
-			Utils.showToast( activity, true, R.string.column_is_busy );
+			Utils.showToast( context, true, R.string.column_is_busy );
 			return;
 		}
 		
@@ -1990,7 +1992,7 @@ class Column {
 					
 					addWithFilter( list_tmp, src );
 					
-					AlarmService.injectData( activity, access_info.db_id, src );
+					AlarmService.injectData( context, access_info.db_id, src );
 					
 				}
 				return result;
@@ -2049,7 +2051,7 @@ class Column {
 			}
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( activity, new TootApiClient.Callback() {
+				TootApiClient client = new TootApiClient( context, new TootApiClient.Callback() {
 					@Override public boolean isApiCancelled(){
 						return isCancelled() || is_dispose.get();
 					}

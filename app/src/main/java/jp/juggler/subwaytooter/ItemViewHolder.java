@@ -29,6 +29,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	
 	final ActMain activity;
 	final Column column;
+	private final ItemListAdapter list_adapter;
 	private final SavedAccount access_info;
 	
 	private final View llBoosted;
@@ -81,10 +82,11 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private TootGap gap;
 	private int position;
 	
-	ItemViewHolder( Column column, View view ){
+	ItemViewHolder( ActMain activity,Column column,  ItemListAdapter list_adapter,View view ){
+		this.activity = activity;
 		this.column = column;
-		this.activity = column.activity;
 		this.access_info = column.access_info;
+		this.list_adapter = list_adapter;
 		
 		this.llBoosted = view.findViewById( R.id.llBoosted );
 		this.ivBoosted = (ImageView) view.findViewById( R.id.ivBoosted );
@@ -114,7 +116,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.tvContent = (MyTextView) view.findViewById( R.id.tvContent );
 		this.tvMentions = (MyTextView) view.findViewById( R.id.tvMentions );
 		
-		this.buttons_for_status = column.bSimpleList ? null : new StatusButtons( column, view );
+		this.buttons_for_status = column.bSimpleList ? null : new StatusButtons( activity,column, view );
 		
 		this.flMedia = view.findViewById( R.id.flMedia );
 		this.btnShowMedia = view.findViewById( R.id.btnShowMedia );
@@ -351,7 +353,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		}else{
 			ViewCompat.setBackground( tv, null );
 		}
-		tv.setPaddingRelative( column.acct_pad_lr, 0, column.acct_pad_lr, 0 );
+		tv.setPaddingRelative( activity.acct_pad_lr, 0, activity.acct_pad_lr, 0 );
 		
 	}
 	
@@ -398,7 +400,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		case R.id.btnContentWarning:{
 			boolean new_shown = ( llContents.getVisibility() == View.GONE );
 			ContentWarning.save( access_info.host, status.id, new_shown );
-			column.status_adapter.notifyDataSetChanged();
+			list_adapter.notifyDataSetChanged();
 			break;
 		}
 		
@@ -461,7 +463,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	void onItemClick( MyListView listView, View anchor ){
 		if( status != null ){
 			activity.closeListItemPopup();
-			activity.list_item_popup = new StatusButtonsPopup( column );
+			activity.list_item_popup = new StatusButtonsPopup( activity,column );
 			activity.list_item_popup.show( listView, anchor, status );
 		}
 	}

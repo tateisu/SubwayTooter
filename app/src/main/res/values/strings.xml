@@ -265,4 +265,10 @@
     <string name="account_picker_toot">Which account do you toot?</string>
     <string name="qr_code">QR code</string>
     <string name="generating_qr_code">Making QR code…</string>
+    <string name="media_attachment">Media attachment</string>
+    <string name="visibility">Visibility</string>
+    <string name="clear">Clear</string>
+    <string name="toot">Toot</string>
+    <string name="clear_text">Cleat text</string>
+    <string name="clear_text_and_media">Clear text and media</string>
 </resources>

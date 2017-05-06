@@ -19,6 +19,7 @@ import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
@@ -30,6 +31,7 @@ import jp.juggler.subwaytooter.table.MediaShown;
 import jp.juggler.subwaytooter.table.NotificationTracking;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
+import jp.juggler.subwaytooter.util.LogCategory;
 import okhttp3.CipherSuite;
 import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
@@ -38,7 +40,8 @@ import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 
 public class App1 extends Application {
 	
-
+	static final LogCategory log = new LogCategory( "App1" );
+	
 	static final String DB_NAME = "app_db";
 	static final int DB_VERSION = 10;
 	// 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
@@ -226,7 +229,6 @@ public class App1 extends Application {
 			typeface_emoji = TypefaceUtils.load( getAssets(), "emojione_android.ttf" );
 		}
 		
-		
 		if( db_open_helper == null ){
 			db_open_helper = new DBOpenHelper( getApplicationContext() );
 			
@@ -245,10 +247,7 @@ public class App1 extends Application {
 			);
 		}
 		
-
 		if( ok_http_client == null ){
-			
-			// ok_http_client = new OkHttpClient();
 			
 			ConnectionSpec spec = new ConnectionSpec.Builder( ConnectionSpec.MODERN_TLS )
 				.cipherSuites( APPROVED_CIPHER_SUITES )
@@ -257,13 +256,16 @@ public class App1 extends Application {
 			ArrayList< ConnectionSpec > spec_list = new ArrayList<>();
 			spec_list.add( spec );
 			spec_list.add( ConnectionSpec.CLEARTEXT );
-			
-			ok_http_client = new OkHttpClient.Builder()
+
+			OkHttpClient.Builder builder = new OkHttpClient.Builder()
+				.connectTimeout( 30, TimeUnit.SECONDS )
+				.readTimeout( 30, TimeUnit.SECONDS )
+				.writeTimeout( 30, TimeUnit.SECONDS )
 				.connectionSpecs( spec_list )
-				.build();
+			;
 			
+			ok_http_client = builder.build();
 		}
-		
 		
 	}
 	
@@ -274,7 +276,8 @@ public class App1 extends Application {
 	
 	@SuppressLint("StaticFieldLeak")
 	private static AppState app_state;
-	static AppState getAppState(Context context){
+	
+	static AppState getAppState( Context context ){
 		// これは最後。loadColumnListでDBが必要になる
 		if( app_state == null ){
 			app_state = new AppState( context.getApplicationContext(), pref );

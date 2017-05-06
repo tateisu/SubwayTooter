@@ -88,9 +88,12 @@ public class ActMutedApp extends AppCompatActivity {
 				
 				// 左にスワイプした(右端に青が見えた) なら要素を削除する
 				if( swipedDirection == ListSwipeItem.SwipeDirection.LEFT ){
-					MyItem adapterItem = (MyItem) item.getTag();
-					MutedApp.delete( adapterItem.name );
-					listAdapter.removeItem( listAdapter.getPositionForItem( adapterItem ) );
+					Object o = item.getTag();
+					if( o instanceof  MyItem){
+						MyItem adapterItem = ( MyItem ) o;
+						MutedApp.delete( adapterItem.name );
+						listAdapter.removeItem( listAdapter.getPositionForItem( adapterItem ) );
+					}
 				}
 			}
 		} );

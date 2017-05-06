@@ -2211,7 +2211,11 @@ class Column {
 						restore_y = getItemTop( restore_idx );
 					}catch( IndexOutOfBoundsException ex ){
 						restore_idx = position;
-						restore_y = getItemTop( restore_idx );
+						try{
+							restore_y = getItemTop( restore_idx );
+						}catch( IndexOutOfBoundsException ex2 ){
+							restore_idx = -1;
+						}
 					}
 				}
 				
@@ -2221,7 +2225,11 @@ class Column {
 				fireShowContent();
 				
 				if( holder != null ){
-					setItemTop( restore_idx + added - 1, restore_y );
+					if(restore_idx >= 0 ){
+						setItemTop( restore_idx + added - 1, restore_y );
+					}else{
+						// ギャップが画面内にない場合、何もしない
+					}
 				}else{
 					if( scroll_save != null ){
 						scroll_save.pos += added - 1;

@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:scrollbarStyle="outsideOverlay"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp"
+        >
+
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/column_header"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <LinearLayout
+                android:id="@+id/llColumnHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:paddingBottom="3dp"
+                android:paddingEnd="12dp"
+                android:paddingStart="12dp"
+                android:paddingTop="3dp"
+                android:layout_marginBottom="6dp"
+                >
+
+                <ImageView
+                    android:id="@+id/ivColumnHeader"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="4dp"
+                    android:importantForAccessibility="no"
+                    tools:src="?attr/btn_federate_tl"
+                    />
+
+                <TextView
+                    android:id="@+id/tvColumnName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    tools:text="@string/federate_timeline"
+                    />
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                style="@style/setting_row_label"
+                android:text="@string/background_color"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnHeaderBackgroundEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                />
+
+            <Button
+                android:id="@+id/btnHeaderBackgroundReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                />
+
+        </LinearLayout>
+
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                style="@style/setting_row_label"
+                android:text="@string/foreground_color"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnHeaderTextEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnHeaderTextReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/column_background"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <FrameLayout
+                android:id="@+id/flColumnBackground"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                >
+
+                <ImageView
+                    android:id="@+id/ivColumnBackground"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:importantForAccessibility="no"
+                    android:scaleType="centerCrop"
+                    />
+            </FrameLayout>
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                style="@style/setting_row_label"
+                android:text="@string/color"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnColumnBackgroundColor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnColumnBackgroundColorReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                style="@style/setting_row_label"
+                android:text="@string/image"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnColumnBackgroundImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/pick_image"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnColumnBackgroundImageReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                style="@style/setting_row_label"
+                android:text="@string/image_alpha"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <SeekBar
+                android:id="@+id/sbColumnBackgroundAlpha"
+                style="@style/setting_horizontal_stretch"
+                android:layout_height="48dp"
+                android:paddingEnd="32dp"
+                android:paddingStart="32dp"
+                />
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+    </LinearLayout>
+</ScrollView>

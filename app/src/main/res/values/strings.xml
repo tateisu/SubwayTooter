@@ -272,4 +272,14 @@
     <string name="clear_text">Cleat text</string>
     <string name="clear_text_and_media">Clear text and media</string>
     <string name="dont_round_avatar">Don\'t round corner of avatar image (app restart required)</string>
+    <string name="menu">Menu</string>
+    <string name="open_in_pseudo_account">open in pseudo account %1$s</string>
+
+    <string name="color_and_background">Color and Background…</string>
+    <string name="column_background">column background</string>
+    <string name="pick_image">pick image</string>
+    <string name="image_alpha">image alpha</string>
+    <string name="image">image</string>
+    <string name="column_header">column header</string>
+    <string name="foreground_color">foreground color</string>
 </resources>

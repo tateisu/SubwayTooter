@@ -11,10 +11,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -26,7 +22,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.os.AsyncTaskCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -41,7 +36,6 @@ import android.widget.ImageButton;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -55,7 +49,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 
-import it.sephiroth.android.library.exif2.ExifInterface;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
@@ -316,6 +309,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			if( sent_intent != null ){
 				String action = sent_intent.getAction();
 				String type = sent_intent.getType();
+				//noinspection StatementWithEmptyBody
 				if( type == null ){
 					//
 				}else if( type.startsWith( "image/" ) ){
@@ -781,7 +775,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			iv.setVisibility( View.GONE );
 		}else{
 			iv.setVisibility( View.VISIBLE );
-			iv.setCornerRadius( pref,16f );
+			iv.setCornerRadius( pref, 16f );
 			PostAttachment a = attachment_list.get( idx );
 			if( a.attachment != null && a.status == PostAttachment.ATTACHMENT_UPLOADED ){
 				iv.setImageUrl( a.attachment.preview_url, App1.getImageLoader() );
@@ -870,175 +864,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					break;
 				}
 				
-				// EXIF回転情報の取得
-				Integer orientation;
-				
-				InputStream is = getContentResolver().openInputStream( uri );
-				if( is == null ){
-					Utils.showToast( this, false, "could not open image." );
-					break;
-				}
-				try{
-					ExifInterface exif = new ExifInterface();
-					exif.readExif( is, ExifInterface.Options.OPTION_IFD_0 | ExifInterface.Options.OPTION_IFD_1 | ExifInterface.Options.OPTION_IFD_EXIF );
-					orientation = exif.getTagIntValue( ExifInterface.TAG_ORIENTATION );
-				}finally{
-					IOUtils.closeQuietly( is );
-				}
-				
-				// 画像のサイズを調べる
-				BitmapFactory.Options options = new BitmapFactory.Options();
-				options.inJustDecodeBounds = true;
-				options.inScaled = false;
-				is = getContentResolver().openInputStream( uri );
-				if( is == null ){
-					Utils.showToast( this, false, "could not open image." );
-					break;
-				}
-				try{
-					BitmapFactory.decodeStream( is, null, options );
-				}finally{
-					IOUtils.closeQuietly( is );
-				}
-				int src_width = options.outWidth;
-				int src_height = options.outHeight;
-				if( src_width <= 0 || src_height <= 0 ){
-					Utils.showToast( this, false, "could not get image bounds." );
-					break;
-				}
-				
-				// 長辺
-				int size = ( src_width > src_height ? src_width : src_height );
-				
 				// 設定からリサイズ指定を読む
 				int resize_to = list_resize_max[ pref.getInt( Pref.KEY_RESIZE_IMAGE, 4 ) ];
 				
-				// リサイズも回転も必要がない場合
-				if( ( orientation == null || orientation == 1 )
-					&& ( resize_to <= 0 || size <= resize_to )
-					){
-					log.d( "createOpener: no need to resize & rotate" );
-					break;
-				}
-				
-				//noinspection StatementWithEmptyBody
-				if( size > resize_to ){
-					// 縮小が必要
-				}else{
-					// 縮小は不要
-					resize_to = size;
-				}
-				
-				// inSampleSizeを計算
-				int bits = 0;
-				int x = size;
-				while( x > resize_to * 2 ){
-					++ bits;
-					x >>= 1;
-				}
-				options.inJustDecodeBounds = false;
-				options.inSampleSize = 1 << bits;
-				is = getContentResolver().openInputStream( uri );
-				if( is == null ){
-					Utils.showToast( this, false, "could not open image." );
-					break;
-				}
-				Bitmap src;
-				try{
-					src = BitmapFactory.decodeStream( is, null, options );
-				}finally{
-					IOUtils.closeQuietly( is );
-				}
-				if( src == null ){
-					Utils.showToast( this, false, "could not decode image." );
-					break;
-				}
-				try{
-					src_width = options.outWidth;
-					src_height = options.outHeight;
-					float scale;
-					int dst_width;
-					int dst_height;
-					if( src_width >= src_height ){
-						scale = resize_to / (float) src_width;
-						dst_width = resize_to;
-						dst_height = (int) ( 0.5f + src_height / (float) src_width * resize_to );
-						if( dst_height < 1 ) dst_height = 1;
-					}else{
-						scale = resize_to / (float) src_height;
-						dst_height = resize_to;
-						dst_width = (int) ( 0.5f + src_width / (float) src_height * resize_to );
-						if( dst_width < 1 ) dst_width = 1;
-					}
-					
-					Matrix matrix = new Matrix();
-					matrix.reset();
-					
-					// 画像の中心が原点に来るようにして
-					matrix.postTranslate( src_width * - 0.5f, src_height * - 0.5f );
-					// スケーリング
-					matrix.postScale( scale, scale );
-					// 回転情報があれば回転
-					if( orientation != null ){
-						int tmp;
-						switch( orientation.shortValue() ){
-						default:
-							break;
-						case 2:
-							matrix.postScale( 1f, - 1f );
-							break; // 上下反転
-						case 3:
-							matrix.postRotate( 180f );
-							break; // 180度回転
-						case 4:
-							matrix.postScale( - 1f, 1f );
-							break; // 左右反転
-						case 5:
-							tmp = dst_width;
-							//noinspection SuspiciousNameCombination
-							dst_width = dst_height;
-							dst_height = tmp;
-							matrix.postScale( 1f, - 1f );
-							matrix.postRotate( - 90f );
-							break;
-						case 6:
-							tmp = dst_width;
-							//noinspection SuspiciousNameCombination
-							dst_width = dst_height;
-							dst_height = tmp;
-							matrix.postRotate( 90f );
-							break;
-						case 7:
-							tmp = dst_width;
-							//noinspection SuspiciousNameCombination
-							dst_width = dst_height;
-							dst_height = tmp;
-							matrix.postScale( 1f, - 1f );
-							matrix.postRotate( 90f );
-							break;
-						case 8:
-							tmp = dst_width;
-							//noinspection SuspiciousNameCombination
-							dst_width = dst_height;
-							dst_height = tmp;
-							matrix.postRotate( - 90f );
-							break;
-						}
-					}
-					// 表示領域に埋まるように平行移動
-					matrix.postTranslate( dst_width * 0.5f, dst_height * 0.5f );
-					
-					// 出力用Bitmap作成
-					Bitmap dst = Bitmap.createBitmap( dst_width, dst_height, Bitmap.Config.ARGB_8888 );
-					if( dst == null ){
-						Utils.showToast( this, false, "bitmap creation failed." );
-						break;
-					}
+				Bitmap bitmap = Utils.createResizedBitmap( log, this, uri, true,resize_to );
+				if( bitmap != null ){
 					try{
-						Canvas canvas = new Canvas( dst );
-						Paint paint = new Paint();
-						paint.setFilterBitmap( true );
-						canvas.drawBitmap( src, matrix, paint );
 						File cache_dir = getExternalCacheDir();
 						if( cache_dir == null ){
 							Utils.showToast( this, false, "getExternalCacheDir returns null." );
@@ -1052,15 +883,15 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 						FileOutputStream os = new FileOutputStream( temp_file );
 						try{
 							if( is_jpeg ){
-								dst.compress( Bitmap.CompressFormat.JPEG, 95, os );
+								bitmap.compress( Bitmap.CompressFormat.JPEG, 95, os );
 							}else{
-								dst.compress( Bitmap.CompressFormat.PNG, 100, os );
+								bitmap.compress( Bitmap.CompressFormat.PNG, 100, os );
 							}
 						}finally{
 							os.close();
 						}
-						log.d( "createOpener: resized to %sx%s", dst_width, dst_height );
-						return new InputStreamOpener() {
+						
+						return new ActPost.InputStreamOpener() {
 							@Override public InputStream open() throws IOException{
 								return new FileInputStream( temp_file );
 							}
@@ -1075,10 +906,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 							}
 						};
 					}finally{
-						dst.recycle();
+						bitmap.recycle();
 					}
-				}finally{
-					src.recycle();
 				}
 				
 			}catch( Throwable ex ){
@@ -1224,7 +1053,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				pa.callback.onPostAttachmentComplete( pa );
 			}
 			
-		}.execute();
+		}.executeOnExecutor( App1.task_executor );
 	}
 	
 	// 添付メディア投稿が完了したら呼ばれる
@@ -1564,7 +1393,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			}
 		} );
 		progress.show();
-		AsyncTaskCompat.executeParallel( task );
+		task.executeOnExecutor( App1.task_executor );
 	}
 	
 	/////////////////////////////////////////////////
@@ -1579,7 +1408,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}else{
 			llReply.setVisibility( View.VISIBLE );
 			tvReplyTo.setText( HTMLDecoder.decodeHTML( account, in_reply_to_text ) );
-			ivReply.setCornerRadius( pref,16f );
+			ivReply.setCornerRadius( pref, 16f );
 			ivReply.setImageUrl( in_reply_to_image, App1.getImageLoader() );
 			
 		}

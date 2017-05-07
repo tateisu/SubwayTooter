@@ -13,6 +13,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import jp.juggler.subwaytooter.ActMain;
+import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -59,7 +60,7 @@ public class DlgQRCode {
 		} );
 		progress.show();
 		
-		AsyncTaskCompat.executeParallel( task );
+		task.executeOnExecutor( App1.task_executor);
 	}
 	
 	public static void open( @NonNull final ActMain activity ,final CharSequence message,final String url ){

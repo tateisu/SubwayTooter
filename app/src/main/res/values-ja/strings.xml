@@ -273,4 +273,13 @@
     <string name="toot">トゥート</string>
     <string name="visibility">公開範囲</string>
     <string name="dont_round_avatar">ユーザ画像を角丸にしない(アプリ再起動が必要)</string>
+    <string name="color_and_background">色と背景</string>
+    <string name="column_background">カラム背景</string>
+    <string name="column_header">カラムヘッダ</string>
+    <string name="foreground_color">文字とアイコンの色</string>
+    <string name="image">画像</string>
+    <string name="image_alpha">画像の不透明度</string>
+    <string name="menu">メニュー</string>
+    <string name="open_in_pseudo_account">疑似アカウント %1$s で開く</string>
+    <string name="pick_image">画像の選択</string>
 </resources>

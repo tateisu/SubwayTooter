@@ -5,7 +5,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
-import android.support.v4.os.AsyncTaskCompat;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ListView;
@@ -94,7 +93,11 @@ class Column {
 	private static final String KEY_DONT_SHOW_REPLY = "dont_show_reply";
 	private static final String KEY_REGEX_TEXT = "regex_text";
 	
-	// static final java.lang.String KEY_COLUMN_COLOR = "color";
+	static final String KEY_HEADER_BACKGROUND_COLOR = "header_background_color";
+	static final String KEY_HEADER_TEXT_COLOR = "header_text_color";
+	static final String KEY_COLUMN_BACKGROUND_COLOR = "column_background_color";
+	static final String KEY_COLUMN_BACKGROUND_IMAGE = "column_background_image";
+	static final String KEY_COLUMN_BACKGROUND_IMAGE_ALPHA = "column_background_image_alpha";
 	
 	private static final String KEY_PROFILE_ID = "profile_id";
 	private static final String KEY_PROFILE_TAB = "tab";
@@ -137,6 +140,12 @@ class Column {
 	boolean dont_show_boost;
 	boolean dont_show_reply;
 	String regex_text;
+	
+	int header_bg_color;
+	int header_fg_color;
+	int column_bg_color;
+	String column_bg_image;
+	float column_bg_image_alpha = 1f;
 	
 	private long profile_id;
 	volatile TootAccount who_account;
@@ -193,6 +202,13 @@ class Column {
 		item.put( KEY_DONT_SHOW_REPLY, dont_show_reply );
 		item.put( KEY_REGEX_TEXT, regex_text );
 		
+		
+		item.put( KEY_HEADER_BACKGROUND_COLOR, header_bg_color );
+		item.put( KEY_HEADER_TEXT_COLOR, header_fg_color );
+		item.put( KEY_COLUMN_BACKGROUND_COLOR, column_bg_color );
+		item.put( KEY_COLUMN_BACKGROUND_IMAGE, column_bg_image );
+		item.put( KEY_COLUMN_BACKGROUND_IMAGE_ALPHA, (double) column_bg_image_alpha );
+
 		switch( column_type ){
 		case TYPE_CONVERSATION:
 		case TYPE_BOOSTED_BY:
@@ -235,6 +251,12 @@ class Column {
 		this.dont_show_reply = src.optBoolean( KEY_DONT_SHOW_REPLY );
 		this.regex_text = Utils.optStringX( src, KEY_REGEX_TEXT );
 		
+		this.header_bg_color = src.optInt( KEY_HEADER_BACKGROUND_COLOR );
+		this.header_fg_color = src.optInt( KEY_HEADER_TEXT_COLOR );
+		this.column_bg_color = src.optInt( KEY_COLUMN_BACKGROUND_COLOR );
+		this.column_bg_image = Utils.optStringX( src, KEY_COLUMN_BACKGROUND_IMAGE );
+		this.column_bg_image_alpha = (float)src.optDouble( KEY_COLUMN_BACKGROUND_IMAGE_ALPHA ,1.0f);
+
 		switch( column_type ){
 		
 		case TYPE_CONVERSATION:
@@ -446,19 +468,14 @@ class Column {
 	
 	boolean bSimpleList;
 	
+	boolean bFirstInitialized = false;
+	
 
 	private void init(){
-		
-		
 		bSimpleList = ( column_type != Column.TYPE_CONVERSATION && app_state.pref.getBoolean( Pref.KEY_SIMPLE_LIST, false ) );
-		
-	
-		
-		startLoading();
 	}
 	
 	void onNicknameUpdated(){
-		
 		fireShowColumnHeader();
 	}
 	
@@ -820,6 +837,7 @@ class Column {
 	void startLoading(){
 		cancelLastTask();
 		
+		bFirstInitialized = true;
 		list_data.clear();
 		mRefreshLoadingError = null;
 		bRefreshLoading = false;
@@ -1107,7 +1125,7 @@ class Column {
 			}
 		};
 		
-		AsyncTaskCompat.executeParallel( task );
+		task.executeOnExecutor(App1.task_executor);
 	}
 	
 	private static final Pattern reMaxId = Pattern.compile( "&max_id=(\\d+)" ); // より古いデータの取得に使う
@@ -1831,7 +1849,7 @@ class Column {
 			}
 		};
 		
-		AsyncTaskCompat.executeParallel( task );
+		task.executeOnExecutor(App1.task_executor);
 		
 	}
 	
@@ -2238,7 +2256,7 @@ class Column {
 			}
 		};
 		
-		AsyncTaskCompat.executeParallel( task );
+		task.executeOnExecutor(App1.task_executor);
 	}
 	
 	private static final int heightSpec = View.MeasureSpec.makeMeasureSpec( 0, View.MeasureSpec.UNSPECIFIED );

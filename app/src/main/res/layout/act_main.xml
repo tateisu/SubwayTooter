@@ -12,62 +12,120 @@
     tools:openDrawer="start"
     >
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
         >
 
-        <LinearLayout
-            android:id="@+id/llEmpty"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:orientation="vertical"
             >
 
-            <TextView
+            <LinearLayout
+                android:id="@+id/llEmpty"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:gravity="center"
-                android:text="@string/column_empty"
+                android:orientation="vertical"
+                >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="@string/column_empty"
+                    />
+
+            </LinearLayout>
+
+            <android.support.v4.view.ViewPager
+                android:id="@+id/viewPager"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:orientation="horizontal"
+            >
+
+            <ImageButton
+                android:id="@+id/btnMenu"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/btn_bg_ddd"
+                app:srcCompat="?attr/ic_hamburger"
+                android:contentDescription="@string/menu"
                 />
 
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="?attr/colorImageButton"
+                />
+
+            <HorizontalScrollView
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:cacheColorHint="#00000000"
+                android:fadingEdge="horizontal"
+                android:fadingEdgeLength="20dp"
+                android:fillViewport="true"
+                android:scrollbars="none"
+                android:background="?attr/colorColumnStripBackground"
+                android:id="@+id/svColumnStrip"
+                >
+
+                <LinearLayout
+                    android:id="@+id/llColumnStrip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal"
+                    />
+            </HorizontalScrollView>
+
+            <View
+                android:layout_width="1dp"
+                android:layout_height="match_parent"
+                android:background="?attr/colorImageButton"
+                />
+            <ImageButton
+                android:id="@+id/btnToot"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/btn_bg_ddd"
+                app:srcCompat="?attr/ic_edit"
+                android:contentDescription="@string/toot"
+                />
         </LinearLayout>
+    </LinearLayout>
 
-        <android.support.v4.view.ViewPager
-            android:id="@+id/viewPager"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            />
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fabToot"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|end"
-            android:layout_marginEnd="4dp"
-            android:layout_marginBottom="4dp"
-            app:srcCompat="?attr/ic_toot"
-            />
+    <!--<android.support.design.widget.FloatingActionButton-->
+    <!--android:id="@+id/"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_gravity="bottom|end"-->
+    <!--android:layout_marginBottom="4dp"-->
+    <!--android:layout_marginEnd="4dp"-->
+    <!--app:srcCompat="?attr/ic_toot"-->
+    <!--/>-->
 
-        <android.support.design.widget.FloatingActionButton
-            android:id="@+id/fabMenu"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|start"
-            android:layout_marginStart="4dp"
-            android:layout_marginBottom="4dp"
-            app:srcCompat="?attr/ic_menu"
-            />
-        <!--<ImageButton-->
-            <!--android:id="@+id/fabMenu"-->
-            <!--android:layout_width="48dp"-->
-            <!--android:layout_height="48dp"-->
-            <!--android:layout_gravity="top|start"-->
-            <!--android:background="@drawable/btn_bg_transparent"-->
-            <!--app:srcCompat="?attr/ic_hamburger"-->
-            <!--/>-->
-    </FrameLayout>
+    <!--<android.support.design.widget.FloatingActionButton-->
+    <!--android:id="@+id/fabMenu"-->
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_gravity="bottom|start"-->
+    <!--android:layout_marginBottom="4dp"-->
+    <!--android:layout_marginStart="4dp"-->
+    <!--app:srcCompat="?attr/ic_menu"-->
+    <!--/>-->
 
 
     <!--<android.support.design.widget.CoordinatorLayout-->

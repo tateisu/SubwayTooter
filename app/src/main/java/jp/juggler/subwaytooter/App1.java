@@ -9,6 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
+import android.support.annotation.NonNull;
 import android.support.v4.util.LruCache;
 import android.widget.ImageView;
 
@@ -19,7 +20,13 @@ import com.android.volley.toolbox.ImageLoader;
 import com.android.volley.toolbox.Volley;
 
 import java.util.ArrayList;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Executor;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
@@ -212,6 +219,13 @@ public class App1 extends Application {
 	
 	public static SharedPreferences pref;
 	
+	
+	/**
+	 * An {@link Executor} that can be used to execute tasks in parallel.
+	 */
+	public static ThreadPoolExecutor task_executor;
+	
+	
 	@Override
 	public void onCreate(){
 		super.onCreate();
@@ -220,6 +234,40 @@ public class App1 extends Application {
 			.setFontAttrId( R.attr.fontPath )
 			.build()
 		);
+		
+		if( task_executor == null ){
+			
+			// We want at least 2 threads and at most 4 threads in the core pool,
+			// preferring to have 1 less than the CPU count to avoid saturating
+			// the CPU with background work
+			
+			int CPU_COUNT = Runtime.getRuntime().availableProcessors();
+			int CORE_POOL_SIZE = Math.max(2, Math.min(CPU_COUNT - 1, 4));
+			int MAXIMUM_POOL_SIZE = CPU_COUNT * 2 + 1;
+			int KEEP_ALIVE_SECONDS = 30;
+			
+			// デフォルトだとキューはmax128で、溢れることがある
+			BlockingQueue<Runnable> sPoolWorkQueue = new LinkedBlockingQueue<>(999);
+
+			ThreadFactory sThreadFactory = new ThreadFactory() {
+				private final AtomicInteger mCount = new AtomicInteger(1);
+				public Thread newThread( @NonNull Runnable r) {
+					return new Thread(r, "SubwayTooterTask #" + mCount.getAndIncrement());
+				}
+			};
+
+			task_executor = new ThreadPoolExecutor(
+				CORE_POOL_SIZE  // pool size
+				, MAXIMUM_POOL_SIZE // max pool size
+				, KEEP_ALIVE_SECONDS // keep-alive-seconds
+				, TimeUnit.SECONDS // unit of keep-alive-seconds
+				, sPoolWorkQueue
+				, sThreadFactory
+			);
+
+			task_executor.allowCoreThreadTimeOut(true);
+		}
+		
 		
 		if( pref == null ){
 			pref = Pref.pref( getApplicationContext() );

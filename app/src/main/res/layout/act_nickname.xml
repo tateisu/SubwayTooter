@@ -66,6 +66,7 @@
             <TextView
                 style="@style/setting_row_label"
                 android:text="@string/nickname_label"
+                android:labelFor="@+id/etNickname"
                 />
 
             <LinearLayout style="@style/setting_row_form">
@@ -94,6 +95,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/edit"
+                    android:textAllCaps="false"
                     />
 
                 <Button
@@ -101,6 +103,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/reset"
+                    android:textAllCaps="false"
                     />
 
             </LinearLayout>
@@ -119,6 +122,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/edit"
+                    android:textAllCaps="false"
                     />
 
                 <Button
@@ -126,6 +130,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/reset"
+                    android:textAllCaps="false"
                     />
 
             </LinearLayout>
@@ -157,6 +162,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/save"
+            android:textAllCaps="false"
             />
 
         <Button
@@ -166,6 +172,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="@string/discard"
+            android:textAllCaps="false"
             />
     </LinearLayout>
 </LinearLayout>

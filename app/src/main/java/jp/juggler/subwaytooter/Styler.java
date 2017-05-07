@@ -1,16 +1,25 @@
 package jp.juggler.subwaytooter;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.RippleDrawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.StateListDrawable;
+import android.graphics.drawable.shapes.RectShape;
+import android.graphics.drawable.shapes.RoundRectShape;
+import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
+import java.util.Arrays;
 import java.util.Locale;
 
 import jp.juggler.subwaytooter.api.entity.TootStatus;
@@ -120,4 +129,50 @@ public class Styler {
 		
 
 	}
+	
+	static void setIconDefaultColor( Context context,ImageView iv, int icon_attr ){
+		iv.setImageResource( Styler.getAttributeResourceId( context, icon_attr ) );
+	}
+	
+	static void setIconCustomColor(  Context context,ImageView iv, int color,int icon_attr ){
+		Drawable d = Styler.getAttributeDrawable( context,icon_attr ).mutate();
+		d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
+		iv.setImageDrawable( d );
+	}
+	
+	
+	static Drawable getAdaptiveRippleDrawable( int normalColor, int pressedColor){
+		if ( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			return new RippleDrawable(
+				ColorStateList.valueOf(pressedColor)
+				,getShape(normalColor)
+				, null
+			);
+		} else {
+			return getStateListDrawable(normalColor, pressedColor);
+		}
+	}
+	
+	private static Drawable getShape(int color) {
+		RectShape r = new RectShape();
+		ShapeDrawable shapeDrawable = new ShapeDrawable(r);
+		shapeDrawable.getPaint().setColor(color);
+		return shapeDrawable;
+	}
+	
+	
+	private static StateListDrawable getStateListDrawable( int normalColor, int pressedColor) {
+		StateListDrawable states = new StateListDrawable();
+		states.addState(new int[]{android.R.attr.state_pressed},
+			new ColorDrawable(pressedColor));
+		states.addState(new int[]{android.R.attr.state_focused},
+			new ColorDrawable(pressedColor));
+		states.addState(new int[]{android.R.attr.state_activated},
+			new ColorDrawable(pressedColor));
+		states.addState(new int[]{},
+			new ColorDrawable(normalColor));
+		return states;
+	}
+	
+	
 }

@@ -1,5 +1,9 @@
 package jp.juggler.subwaytooter;
 
+import android.graphics.Bitmap;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.view.ViewCompat;
 import android.text.Editable;
@@ -12,6 +16,7 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -37,12 +42,12 @@ class ColumnViewHolder
 	final ActMain activity;
 	final Column column;
 	final AtomicBoolean is_destroyed = new AtomicBoolean( false );
-	final ItemListAdapter status_adapter;
+	private final ItemListAdapter status_adapter;
 	
 	ColumnViewHolder( ActMain activity, Column column ){
 		this.activity = activity;
 		this.column = column;
-		this.status_adapter = new ItemListAdapter( activity,column );
+		this.status_adapter = new ItemListAdapter( activity, column );
 	}
 	
 	private boolean isPageDestroyed(){
@@ -50,11 +55,16 @@ class ColumnViewHolder
 	}
 	
 	void onPageDestroy( @SuppressWarnings("UnusedParameters") View root ){
-		saveScrollPosition();
 		log.d( "onPageDestroy:%s", column.getColumnName( true ) );
+		
+		saveScrollPosition();
+		
 		column.setColumnViewHolder( null );
 		
+		closeBitmaps();
+		
 		activity.closeListItemPopup();
+		
 	}
 	
 	private TextView tvLoading;
@@ -69,24 +79,42 @@ class ColumnViewHolder
 	private View llColumnSetting;
 	private EditText etRegexFilter;
 	private TextView tvRegexFilterError;
-	private View btnColumnClose;
 	private ImageView ivColumnIcon;
+	
+	private View llColumnHeader;
+	private TextView tvColumnIndex;
+	private ImageButton btnColumnSetting;
+	private ImageButton btnColumnReload;
+	private ImageButton btnColumnClose;
+	
+	private View flColumnBackground;
+	private ImageView ivColumnBackgroundImage;
 	
 	void onPageCreate( View root, int page_idx, int page_count ){
 		log.d( "onPageCreate:%s", column.getColumnName( true ) );
 		
-		( (TextView) root.findViewById( R.id.tvColumnIndex ) )
-			.setText( activity.getString( R.string.column_index, page_idx + 1, page_count ) );
+		flColumnBackground = root.findViewById( R.id.flColumnBackground );
+		ivColumnBackgroundImage = (ImageView) root.findViewById( R.id.ivColumnBackgroundImage );
+		llColumnHeader = root.findViewById( R.id.llColumnHeader );
+		
+		tvColumnIndex = (TextView) root.findViewById( R.id.tvColumnIndex );
+		tvColumnIndex.setText( activity.getString( R.string.column_index, page_idx + 1, page_count ) );
 		
 		tvColumnName = (TextView) root.findViewById( R.id.tvColumnName );
 		tvColumnContext = (TextView) root.findViewById( R.id.tvColumnContext );
 		ivColumnIcon = (ImageView) root.findViewById( R.id.ivColumnIcon );
-		btnColumnClose = root.findViewById( R.id.btnColumnClose );
 		
+		btnColumnSetting = (ImageButton) root.findViewById( R.id.btnColumnSetting );
+		btnColumnReload = (ImageButton) root.findViewById( R.id.btnColumnReload );
+		btnColumnClose = (ImageButton) root.findViewById( R.id.btnColumnClose );
+		
+		btnColumnSetting.setOnClickListener( this );
+		btnColumnReload.setOnClickListener( this );
 		btnColumnClose.setOnClickListener( this );
 		
-		root.findViewById( R.id.btnColumnReload ).setOnClickListener( this );
-		root.findViewById( R.id.llColumnHeader ).setOnClickListener( this );
+		llColumnHeader.setOnClickListener( this );
+		
+		root.findViewById( R.id.btnColor ).setOnClickListener( this );
 		
 		tvLoading = (TextView) root.findViewById( R.id.tvLoading );
 		listView = (MyListView) root.findViewById( R.id.listView );
@@ -130,10 +158,7 @@ class ColumnViewHolder
 			break;
 		}
 		
-		View btnColumnSetting = root.findViewById( R.id.btnColumnSetting );
 		llColumnSetting = root.findViewById( R.id.llColumnSetting );
-		btnColumnSetting.setVisibility( View.VISIBLE );
-		btnColumnSetting.setOnClickListener( this );
 		llColumnSetting.setVisibility( View.GONE );
 		
 		CheckBox cb;
@@ -214,7 +239,7 @@ class ColumnViewHolder
 		}
 		
 		if( column.column_type == Column.TYPE_PROFILE ){
-			vh_header = new HeaderViewHolder( activity,column, listView );
+			vh_header = new HeaderViewHolder( activity, column, listView );
 			listView.addHeaderView( vh_header.viewRoot );
 		}
 		
@@ -231,7 +256,101 @@ class ColumnViewHolder
 		//
 		
 		column.setColumnViewHolder( this );
+		
+		showColumnColor();
+		
 		showContent();
+	}
+	
+	void showColumnColor(){
+		int c = column.header_bg_color;
+		if( c == 0 ){
+			llColumnHeader.setBackgroundResource( R.drawable.btn_bg_ddd );
+		}else{
+			ViewCompat.setBackground( llColumnHeader,Styler.getAdaptiveRippleDrawable(
+				c,
+				(column.header_fg_color != 0 ? column.header_fg_color :
+					Styler.getAttributeColor( activity,R.attr.colorRippleEffect ))
+			) );
+		}
+		
+		c = column.header_fg_color;
+		if( c == 0 ){
+			tvColumnIndex.setTextColor( Styler.getAttributeColor( activity, R.attr.colorColumnHeaderPageNumber ) );
+			tvColumnName.setTextColor( Styler.getAttributeColor( activity, android.R.attr.textColorPrimary ) );
+			Styler.setIconDefaultColor( activity, ivColumnIcon, Column.getIconAttrId( column.column_type ) );
+			Styler.setIconDefaultColor( activity, btnColumnSetting, R.attr.ic_tune );
+			Styler.setIconDefaultColor( activity, btnColumnReload, R.attr.btn_refresh );
+			Styler.setIconDefaultColor( activity, btnColumnClose, R.attr.btn_close );
+		}else{
+			tvColumnIndex.setTextColor( c );
+			tvColumnName.setTextColor( c );
+			Styler.setIconCustomColor( activity, ivColumnIcon, c, Column.getIconAttrId( column.column_type ) );
+			Styler.setIconCustomColor( activity, btnColumnSetting, c, R.attr.ic_tune );
+			Styler.setIconCustomColor( activity, btnColumnReload, c, R.attr.btn_refresh );
+			Styler.setIconCustomColor( activity, btnColumnClose, c, R.attr.btn_close );
+		}
+		
+		c = column.column_bg_color;
+		if( c == 0 ){
+			ViewCompat.setBackground( flColumnBackground, null );
+		}else{
+			flColumnBackground.setBackgroundColor( c );
+		}
+		
+		ivColumnBackgroundImage.setAlpha( column.column_bg_image_alpha );
+		
+		loadBackgroundImage( ivColumnBackgroundImage, column.column_bg_image );
+		
+	}
+	
+	private String last_image_uri;
+	private Bitmap last_image_bitmap;
+	
+	private void closeBitmaps(){
+		try{
+			if( last_image_bitmap != null ){
+				ivColumnBackgroundImage.setVisibility( View.GONE );
+				ivColumnBackgroundImage.setImageDrawable( null );
+				last_image_uri = null;
+				last_image_bitmap.recycle();
+				last_image_bitmap = null;
+			}
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			
+		}
+	}
+	
+	private void loadBackgroundImage( ImageView iv, String url ){
+		try{
+			if( TextUtils.isEmpty( url ) ){
+				closeBitmaps();
+				return;
+			}else if( url.equals( last_image_uri ) ){
+				// 今表示してるのと同じ
+				return;
+			}
+			
+			// 直前のBitmapを掃除する
+			closeBitmaps();
+			
+			iv.setVisibility( View.VISIBLE );
+			
+			int w = iv.getResources().getDisplayMetrics().widthPixels;
+			int h = iv.getResources().getDisplayMetrics().heightPixels;
+			int resize_max = ( w > h ? w : h );
+			
+			Uri uri = Uri.parse( url );
+			last_image_bitmap = Utils.createResizedBitmap( log, activity, uri, false, resize_max );
+			if( last_image_bitmap != null ){
+				iv.setImageBitmap( last_image_bitmap );
+				last_image_uri = url;
+			}
+			
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+		}
 	}
 	
 	private final Runnable proc_start_filter = new Runnable() {
@@ -274,7 +393,7 @@ class ColumnViewHolder
 	}
 	
 	@Override public void onRefresh( SwipyRefreshLayoutDirection direction ){
-		column.startRefresh( false, direction == SwipyRefreshLayoutDirection.BOTTOM ,-1L,-1);
+		column.startRefresh( false, direction == SwipyRefreshLayoutDirection.BOTTOM, - 1L, - 1 );
 	}
 	
 	@Override public void onCheckedChanged( CompoundButton view, boolean isChecked ){
@@ -342,6 +461,11 @@ class ColumnViewHolder
 		case R.id.btnDeleteNotification:
 			activity.deleteNotification( false, column.access_info );
 			break;
+		
+		case R.id.btnColor:
+			int idx = activity.app_state.column_list.indexOf( column );
+			ActColumnCustomize.open( activity, idx, ActMain.REQUEST_COLUMN_COLOR );
+			break;
 		}
 		
 	}
@@ -403,8 +527,6 @@ class ColumnViewHolder
 		
 		showColumnCloseButton();
 		
-		ivColumnIcon.setImageResource( Styler.getAttributeResourceId( activity, Column.getIconAttrId( column.column_type ) ) );
-		
 	}
 	
 	void showContent(){
@@ -418,6 +540,11 @@ class ColumnViewHolder
 		
 		if( vh_header != null ){
 			vh_header.bind( column.who_account );
+		}
+		
+		if( ! column.bFirstInitialized ){
+			showError( "initializing" );
+			return;
 		}
 		
 		if( column.bInitialLoading ){
@@ -466,7 +593,7 @@ class ColumnViewHolder
 		if( listView.getVisibility() == View.VISIBLE ){
 			column.scroll_save = new ScrollPosition( listView );
 		}else{
-			column.scroll_save = new ScrollPosition( 0,0 );
+			column.scroll_save = new ScrollPosition( 0, 0 );
 		}
 	}
 	

@@ -2,12 +2,15 @@ package jp.juggler.subwaytooter.util;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.content.Context;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -18,6 +21,11 @@ import java.util.Locale;
 
 import android.content.ContextWrapper;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -38,6 +46,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.w3c.dom.Element;
@@ -50,7 +59,9 @@ import java.util.Map;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import it.sephiroth.android.library.exif2.ExifInterface;
 import jp.juggler.subwaytooter.ActMain;
+import jp.juggler.subwaytooter.ActPost;
 
 public class Utils {
 	
@@ -87,49 +98,49 @@ public class Utils {
 	
 	public static String formatBytes( long t ){
 		return bytes_format.format( t );
-
-//		StringBuilder sb = new StringBuilder();
-//		long n;
-//		// giga
-//		n = t / 1000000000L;
-//		if( n > 0 ){
-//			sb.append( String.format( Locale.JAPAN, "%dg", n ) );
-//			t -= n * 1000000000L;
-//		}
-//		// Mega
-//		n = t / 1000000L;
-//		if( sb.length() > 0 ){
-//			sb.append( String.format( Locale.JAPAN, "%03dm", n ) );
-//			t -= n * 1000000L;
-//		}else if( n > 0 ){
-//			sb.append( String.format( Locale.JAPAN, "%dm", n ) );
-//			t -= n * 1000000L;
-//		}
-//		// kilo
-//		n = t / 1000L;
-//		if( sb.length() > 0 ){
-//			sb.append( String.format( Locale.JAPAN, "%03dk", n ) );
-//			t -= n * 1000L;
-//		}else if( n > 0 ){
-//			sb.append( String.format( Locale.JAPAN, "%dk", n ) );
-//			t -= n * 1000L;
-//		}
-//		// remain
-//		if( sb.length() > 0 ){
-//			sb.append( String.format( Locale.JAPAN, "%03d", t ) );
-//		}else if( n > 0 ){
-//			sb.append( String.format( Locale.JAPAN, "%d", t ) );
-//		}
-//
-//		return sb.toString();
+		
+		//		StringBuilder sb = new StringBuilder();
+		//		long n;
+		//		// giga
+		//		n = t / 1000000000L;
+		//		if( n > 0 ){
+		//			sb.append( String.format( Locale.JAPAN, "%dg", n ) );
+		//			t -= n * 1000000000L;
+		//		}
+		//		// Mega
+		//		n = t / 1000000L;
+		//		if( sb.length() > 0 ){
+		//			sb.append( String.format( Locale.JAPAN, "%03dm", n ) );
+		//			t -= n * 1000000L;
+		//		}else if( n > 0 ){
+		//			sb.append( String.format( Locale.JAPAN, "%dm", n ) );
+		//			t -= n * 1000000L;
+		//		}
+		//		// kilo
+		//		n = t / 1000L;
+		//		if( sb.length() > 0 ){
+		//			sb.append( String.format( Locale.JAPAN, "%03dk", n ) );
+		//			t -= n * 1000L;
+		//		}else if( n > 0 ){
+		//			sb.append( String.format( Locale.JAPAN, "%dk", n ) );
+		//			t -= n * 1000L;
+		//		}
+		//		// remain
+		//		if( sb.length() > 0 ){
+		//			sb.append( String.format( Locale.JAPAN, "%03d", t ) );
+		//		}else if( n > 0 ){
+		//			sb.append( String.format( Locale.JAPAN, "%d", t ) );
+		//		}
+		//
+		//		return sb.toString();
 	}
 	
 	//	public static PendingIntent createAlarmPendingIntent( Context context ){
-//		Intent i = new Intent( context.getApplicationContext(), Receiver1.class );
-//		i.setAction( Receiver1.ACTION_ALARM );
-//		return PendingIntent.getBroadcast( context.getApplicationContext(), 0, i, 0 );
-//	}
-//
+	//		Intent i = new Intent( context.getApplicationContext(), Receiver1.class );
+	//		i.setAction( Receiver1.ACTION_ALARM );
+	//		return PendingIntent.getBroadcast( context.getApplicationContext(), 0, i, 0 );
+	//	}
+	//
 	// 文字列とバイト列の変換
 	@NonNull public static byte[] encodeUTF8( @NonNull String str ){
 		try{
@@ -164,7 +175,7 @@ public class Utils {
 	public static String optStringX( JSONArray src, int key ){
 		return src.isNull( key ) ? null : src.optString( key );
 	}
-
+	
 	public static ArrayList< String > parseStringArray( LogCategory log, JSONArray array ){
 		ArrayList< String > dst_list = new ArrayList<>();
 		if( array != null ){
@@ -279,15 +290,15 @@ public class Utils {
 		if( url == null ) return null;
 		return encodeBase64Safe( encodeSHA256( encodeUTF8( url ) ) );
 	}
-
-//	public static String name2url(String entry) {
-//		if(entry==null) return null;
-//		byte[] b = new byte[entry.length()/2];
-//		for(int i=0,ie=b.length;i<ie;++i){
-//			b[i]= (byte)((hex2int(entry.charAt(i*2))<<4)| hex2int(entry.charAt(i*2+1)));
-//		}
-//		return decodeUTF8(b);
-//	}
+	
+	//	public static String name2url(String entry) {
+	//		if(entry==null) return null;
+	//		byte[] b = new byte[entry.length()/2];
+	//		for(int i=0,ie=b.length;i<ie;++i){
+	//			b[i]= (byte)((hex2int(entry.charAt(i*2))<<4)| hex2int(entry.charAt(i*2+1)));
+	//		}
+	//		return decodeUTF8(b);
+	//	}
 	
 	///////////////////////////////////////////////////
 	
@@ -424,7 +435,7 @@ public class Utils {
 		}
 	}
 	
-	public static void hideKeyboard(Context context,View v ){
+	public static void hideKeyboard( Context context, View v ){
 		InputMethodManager imm = (InputMethodManager) context.getSystemService( Context.INPUT_METHOD_SERVICE );
 		imm.hideSoftInputFromWindow( v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS );
 	}
@@ -432,99 +443,99 @@ public class Utils {
 	public static String ellipsize( String t, int max ){
 		return ( t.length() > max ? t.substring( 0, max - 1 ) + "…" : t );
 	}
-
-//	public static int getEnumStringId( String residPrefix, String name,Context context ) {
-//		name = residPrefix + name;
-//		try{
-//			int iv = context.getResources().getIdentifier(name,"string",context.getPackageName() );
-//			if( iv != 0 ) return iv;
-//		}catch(Throwable ex){
-//		}
-//		log.e("missing resid for %s",name);
-//		return R.string.Dialog_Cancel;
-//	}
-
-//	public static String getConnectionResultErrorMessage( ConnectionResult connectionResult ){
-//		int code = connectionResult.getErrorCode();
-//		String msg = connectionResult.getErrorMessage();
-//		if( TextUtils.isEmpty( msg ) ){
-//			switch( code ){
-//			case ConnectionResult.SUCCESS:
-//				msg = "SUCCESS";
-//				break;
-//			case ConnectionResult.SERVICE_MISSING:
-//				msg = "SERVICE_MISSING";
-//				break;
-//			case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
-//				msg = "SERVICE_VERSION_UPDATE_REQUIRED";
-//				break;
-//			case ConnectionResult.SERVICE_DISABLED:
-//				msg = "SERVICE_DISABLED";
-//				break;
-//			case ConnectionResult.SIGN_IN_REQUIRED:
-//				msg = "SIGN_IN_REQUIRED";
-//				break;
-//			case ConnectionResult.INVALID_ACCOUNT:
-//				msg = "INVALID_ACCOUNT";
-//				break;
-//			case ConnectionResult.RESOLUTION_REQUIRED:
-//				msg = "RESOLUTION_REQUIRED";
-//				break;
-//			case ConnectionResult.NETWORK_ERROR:
-//				msg = "NETWORK_ERROR";
-//				break;
-//			case ConnectionResult.INTERNAL_ERROR:
-//				msg = "INTERNAL_ERROR";
-//				break;
-//			case ConnectionResult.SERVICE_INVALID:
-//				msg = "SERVICE_INVALID";
-//				break;
-//			case ConnectionResult.DEVELOPER_ERROR:
-//				msg = "DEVELOPER_ERROR";
-//				break;
-//			case ConnectionResult.LICENSE_CHECK_FAILED:
-//				msg = "LICENSE_CHECK_FAILED";
-//				break;
-//			case ConnectionResult.CANCELED:
-//				msg = "CANCELED";
-//				break;
-//			case ConnectionResult.TIMEOUT:
-//				msg = "TIMEOUT";
-//				break;
-//			case ConnectionResult.INTERRUPTED:
-//				msg = "INTERRUPTED";
-//				break;
-//			case ConnectionResult.API_UNAVAILABLE:
-//				msg = "API_UNAVAILABLE";
-//				break;
-//			case ConnectionResult.SIGN_IN_FAILED:
-//				msg = "SIGN_IN_FAILED";
-//				break;
-//			case ConnectionResult.SERVICE_UPDATING:
-//				msg = "SERVICE_UPDATING";
-//				break;
-//			case ConnectionResult.SERVICE_MISSING_PERMISSION:
-//				msg = "SERVICE_MISSING_PERMISSION";
-//				break;
-//			case ConnectionResult.RESTRICTED_PROFILE:
-//				msg = "RESTRICTED_PROFILE";
-//				break;
-//
-//			}
-//		}
-//		return msg;
-//	}
-
-//	public static String getConnectionSuspendedMessage( int i ){
-//		switch( i ){
-//		default:
-//			return "?";
-//		case GoogleApiClient.ConnectionCallbacks.CAUSE_NETWORK_LOST:
-//			return "NETWORK_LOST";
-//		case GoogleApiClient.ConnectionCallbacks.CAUSE_SERVICE_DISCONNECTED:
-//			return "SERVICE_DISCONNECTED";
-//		}
-//	}
+	
+	//	public static int getEnumStringId( String residPrefix, String name,Context context ) {
+	//		name = residPrefix + name;
+	//		try{
+	//			int iv = context.getResources().getIdentifier(name,"string",context.getPackageName() );
+	//			if( iv != 0 ) return iv;
+	//		}catch(Throwable ex){
+	//		}
+	//		log.e("missing resid for %s",name);
+	//		return R.string.Dialog_Cancel;
+	//	}
+	
+	//	public static String getConnectionResultErrorMessage( ConnectionResult connectionResult ){
+	//		int code = connectionResult.getErrorCode();
+	//		String msg = connectionResult.getErrorMessage();
+	//		if( TextUtils.isEmpty( msg ) ){
+	//			switch( code ){
+	//			case ConnectionResult.SUCCESS:
+	//				msg = "SUCCESS";
+	//				break;
+	//			case ConnectionResult.SERVICE_MISSING:
+	//				msg = "SERVICE_MISSING";
+	//				break;
+	//			case ConnectionResult.SERVICE_VERSION_UPDATE_REQUIRED:
+	//				msg = "SERVICE_VERSION_UPDATE_REQUIRED";
+	//				break;
+	//			case ConnectionResult.SERVICE_DISABLED:
+	//				msg = "SERVICE_DISABLED";
+	//				break;
+	//			case ConnectionResult.SIGN_IN_REQUIRED:
+	//				msg = "SIGN_IN_REQUIRED";
+	//				break;
+	//			case ConnectionResult.INVALID_ACCOUNT:
+	//				msg = "INVALID_ACCOUNT";
+	//				break;
+	//			case ConnectionResult.RESOLUTION_REQUIRED:
+	//				msg = "RESOLUTION_REQUIRED";
+	//				break;
+	//			case ConnectionResult.NETWORK_ERROR:
+	//				msg = "NETWORK_ERROR";
+	//				break;
+	//			case ConnectionResult.INTERNAL_ERROR:
+	//				msg = "INTERNAL_ERROR";
+	//				break;
+	//			case ConnectionResult.SERVICE_INVALID:
+	//				msg = "SERVICE_INVALID";
+	//				break;
+	//			case ConnectionResult.DEVELOPER_ERROR:
+	//				msg = "DEVELOPER_ERROR";
+	//				break;
+	//			case ConnectionResult.LICENSE_CHECK_FAILED:
+	//				msg = "LICENSE_CHECK_FAILED";
+	//				break;
+	//			case ConnectionResult.CANCELED:
+	//				msg = "CANCELED";
+	//				break;
+	//			case ConnectionResult.TIMEOUT:
+	//				msg = "TIMEOUT";
+	//				break;
+	//			case ConnectionResult.INTERRUPTED:
+	//				msg = "INTERRUPTED";
+	//				break;
+	//			case ConnectionResult.API_UNAVAILABLE:
+	//				msg = "API_UNAVAILABLE";
+	//				break;
+	//			case ConnectionResult.SIGN_IN_FAILED:
+	//				msg = "SIGN_IN_FAILED";
+	//				break;
+	//			case ConnectionResult.SERVICE_UPDATING:
+	//				msg = "SERVICE_UPDATING";
+	//				break;
+	//			case ConnectionResult.SERVICE_MISSING_PERMISSION:
+	//				msg = "SERVICE_MISSING_PERMISSION";
+	//				break;
+	//			case ConnectionResult.RESTRICTED_PROFILE:
+	//				msg = "RESTRICTED_PROFILE";
+	//				break;
+	//
+	//			}
+	//		}
+	//		return msg;
+	//	}
+	
+	//	public static String getConnectionSuspendedMessage( int i ){
+	//		switch( i ){
+	//		default:
+	//			return "?";
+	//		case GoogleApiClient.ConnectionCallbacks.CAUSE_NETWORK_LOST:
+	//			return "NETWORK_LOST";
+	//		case GoogleApiClient.ConnectionCallbacks.CAUSE_SERVICE_DISCONNECTED:
+	//			return "SERVICE_DISCONNECTED";
+	//		}
+	//	}
 	
 	static HashMap< String, String > mime_type_ex = null;
 	static final Object mime_type_ex_lock = new Object();
@@ -580,6 +591,193 @@ public class Utils {
 		return sb;
 	}
 	
+	public static Bitmap createResizedBitmap( LogCategory log, Context context, Uri uri, boolean skipIfNoNeedToResizeAndRotate, int resize_to ){
+		try{
+			// EXIF回転情報の取得
+			Integer orientation;
+			
+			InputStream is = context.getContentResolver().openInputStream( uri );
+			if( is == null ){
+				Utils.showToast( context, false, "could not open image." );
+				return null;
+			}
+			
+			try{
+				ExifInterface exif = new ExifInterface();
+				exif.readExif( is, ExifInterface.Options.OPTION_IFD_0 | ExifInterface.Options.OPTION_IFD_1 | ExifInterface.Options.OPTION_IFD_EXIF );
+				orientation = exif.getTagIntValue( ExifInterface.TAG_ORIENTATION );
+			}finally{
+				IOUtils.closeQuietly( is );
+			}
+			
+			// 画像のサイズを調べる
+			BitmapFactory.Options options = new BitmapFactory.Options();
+			options.inJustDecodeBounds = true;
+			options.inScaled = false;
+			is = context.getContentResolver().openInputStream( uri );
+			if( is == null ){
+				Utils.showToast( context, false, "could not open image." );
+				return null;
+			}
+			try{
+				BitmapFactory.decodeStream( is, null, options );
+			}finally{
+				IOUtils.closeQuietly( is );
+			}
+			int src_width = options.outWidth;
+			int src_height = options.outHeight;
+			if( src_width <= 0 || src_height <= 0 ){
+				Utils.showToast( context, false, "could not get image bounds." );
+				return null;
+			}
+			
+			// 長辺
+			int size = ( src_width > src_height ? src_width : src_height );
+			
+			// リサイズも回転も必要がない場合
+			if( skipIfNoNeedToResizeAndRotate
+				&& ( orientation == null || orientation == 1 )
+				&& ( resize_to <= 0 || size <= resize_to )
+				
+				){
+				log.d( "createOpener: no need to resize & rotate" );
+				return null;
+			}
+			
+			//noinspection StatementWithEmptyBody
+			if( size > resize_to ){
+				// 縮小が必要
+			}else{
+				// 縮小は不要
+				resize_to = size;
+			}
+			
+			// inSampleSizeを計算
+			int bits = 0;
+			int x = size;
+			while( x > resize_to * 2 ){
+				++ bits;
+				x >>= 1;
+			}
+			options.inJustDecodeBounds = false;
+			options.inSampleSize = 1 << bits;
+			is = context.getContentResolver().openInputStream( uri );
+			if( is == null ){
+				Utils.showToast( context, false, "could not open image." );
+				return null;
+			}
+			Bitmap src;
+			try{
+				src = BitmapFactory.decodeStream( is, null, options );
+			}finally{
+				IOUtils.closeQuietly( is );
+			}
+			if( src == null ){
+				Utils.showToast( context, false, "could not decode image." );
+				return null;
+			}
+			try{
+				src_width = options.outWidth;
+				src_height = options.outHeight;
+				float scale;
+				int dst_width;
+				int dst_height;
+				if( src_width >= src_height ){
+					scale = resize_to / (float) src_width;
+					dst_width = resize_to;
+					dst_height = (int) ( 0.5f + src_height / (float) src_width * resize_to );
+					if( dst_height < 1 ) dst_height = 1;
+				}else{
+					scale = resize_to / (float) src_height;
+					dst_height = resize_to;
+					dst_width = (int) ( 0.5f + src_width / (float) src_height * resize_to );
+					if( dst_width < 1 ) dst_width = 1;
+				}
+				
+				Matrix matrix = new Matrix();
+				matrix.reset();
+				
+				// 画像の中心が原点に来るようにして
+				matrix.postTranslate( src_width * - 0.5f, src_height * - 0.5f );
+				// スケーリング
+				matrix.postScale( scale, scale );
+				// 回転情報があれば回転
+				if( orientation != null ){
+					int tmp;
+					switch( orientation.shortValue() ){
+					default:
+						break;
+					case 2:
+						matrix.postScale( 1f, - 1f );
+						break; // 上下反転
+					case 3:
+						matrix.postRotate( 180f );
+						break; // 180度回転
+					case 4:
+						matrix.postScale( - 1f, 1f );
+						break; // 左右反転
+					case 5:
+						tmp = dst_width;
+						//noinspection SuspiciousNameCombination
+						dst_width = dst_height;
+						dst_height = tmp;
+						matrix.postScale( 1f, - 1f );
+						matrix.postRotate( - 90f );
+						break;
+					case 6:
+						tmp = dst_width;
+						//noinspection SuspiciousNameCombination
+						dst_width = dst_height;
+						dst_height = tmp;
+						matrix.postRotate( 90f );
+						break;
+					case 7:
+						tmp = dst_width;
+						//noinspection SuspiciousNameCombination
+						dst_width = dst_height;
+						dst_height = tmp;
+						matrix.postScale( 1f, - 1f );
+						matrix.postRotate( 90f );
+						break;
+					case 8:
+						tmp = dst_width;
+						//noinspection SuspiciousNameCombination
+						dst_width = dst_height;
+						dst_height = tmp;
+						matrix.postRotate( - 90f );
+						break;
+					}
+				}
+				// 表示領域に埋まるように平行移動
+				matrix.postTranslate( dst_width * 0.5f, dst_height * 0.5f );
+				
+				// 出力用Bitmap作成
+				Bitmap dst = Bitmap.createBitmap( dst_width, dst_height, Bitmap.Config.ARGB_8888 );
+				if( dst == null ){
+					Utils.showToast( context, false, "bitmap creation failed." );
+					return null;
+				}
+				try{
+					Canvas canvas = new Canvas( dst );
+					Paint paint = new Paint();
+					paint.setFilterBitmap( true );
+					canvas.drawBitmap( src, matrix, paint );
+					log.d( "createResizedBitmap: resized to %sx%s", dst_width, dst_height );
+					Bitmap tmp = dst;
+					dst = null;
+					return tmp;
+				}finally{
+					if( dst != null ) dst.recycle();
+				}
+			}finally{
+				src.recycle();
+			}
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+		}
+		return null;
+	}
+	
 	static class FileInfo {
 		
 		Uri uri;
@@ -610,13 +808,13 @@ public class Utils {
 			StorageManager sm = (StorageManager) context.getApplicationContext().getSystemService( Context.STORAGE_SERVICE );
 			
 			// SDカードスロットのある7.0端末が手元にないから検証できない
-//			if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ){
-//				for(StorageVolume volume : sm.getStorageVolumes() ){
-//					// String path = volume.getPath();
-//					String state = volume.getState();
-//
-//				}
-//			}
+			//			if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ){
+			//				for(StorageVolume volume : sm.getStorageVolumes() ){
+			//					// String path = volume.getPath();
+			//					String state = volume.getState();
+			//
+			//				}
+			//			}
 			
 			Method getVolumeList = sm.getClass().getMethod( "getVolumeList" );
 			Object[] volumes = (Object[]) getVolumeList.invoke( sm );

@@ -12,7 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.customtabs.CustomTabsIntent;
-import android.support.v4.os.AsyncTaskCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
@@ -25,8 +25,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
+import android.widget.HorizontalScrollView;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -59,7 +61,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 
 public class ActMain extends AppCompatActivity
-	implements NavigationView.OnNavigationItemSelectedListener
+	implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, ViewPager.OnPageChangeListener
 {
 	public static final LogCategory log = new LogCategory( "ActMain" );
 	
@@ -93,11 +95,13 @@ public class ActMain extends AppCompatActivity
 		this.density = app_state.density;
 		this.acct_pad_lr = (int) ( 0.5f + 4f * density );
 		
-
 		initUI();
+		
+		updateColumnStrip();
 		
 		if( pager_adapter.column_list.size() > 0 ){
 			llEmpty.setVisibility( View.GONE );
+			onPageSelected( pager.getCurrentItem() );
 		}
 		
 		AlarmService.startCheck( this );
@@ -129,6 +133,7 @@ public class ActMain extends AppCompatActivity
 			if( bRemoved ){
 				pager_adapter.setOrder( pager, new_order );
 				app_state.saveColumnList();
+				updateColumnStrip();
 			}
 		}
 		
@@ -165,7 +170,7 @@ public class ActMain extends AppCompatActivity
 	private void handleSentIntent( final Intent sent_intent ){
 		AccountPicker.pick( this, false, true, getString( R.string.account_picker_toot ), new AccountPicker.AccountPickerCallback() {
 			@Override public void onAccountPicked( SavedAccount ai ){
-				ActPost.open( ActMain.this,REQUEST_CODE_POST,ai.db_id,sent_intent);
+				ActPost.open( ActMain.this, REQUEST_CODE_POST, ai.db_id, sent_intent );
 			}
 		} );
 	}
@@ -189,6 +194,44 @@ public class ActMain extends AppCompatActivity
 		super.onPause();
 	}
 	
+	@Override public void onClick( View v ){
+		switch( v.getId() ){
+		case R.id.btnMenu:
+			if( ! drawer.isDrawerOpen( Gravity.START ) ){
+				drawer.openDrawer( Gravity.START );
+			}
+			break;
+		
+		case R.id.btnToot:
+			performTootButton();
+			break;
+			
+		}
+	}
+	
+	@Override
+	public void onPageScrolled( int position, float positionOffset, int positionOffsetPixels ){
+		
+	}
+	
+	@Override public void onPageSelected( final int position ){
+		handler.post( new Runnable() {
+			@Override public void run(){
+				if( position >= 0 && position < app_state.column_list.size() ){
+					Column column = app_state.column_list.get( position );
+					if( ! column.bFirstInitialized ){
+						column.startLoading();
+					}
+					scrollColumnStrip( position );
+				}
+			}
+		} );
+	}
+	
+	@Override public void onPageScrollStateChanged( int state ){
+		
+	}
+	
 	boolean isOrderChanged( ArrayList< Integer > new_order ){
 		if( new_order.size() != pager_adapter.getCount() ) return true;
 		for( int i = 0, ie = new_order.size() ; i < ie ; ++ i ){
@@ -202,6 +245,7 @@ public class ActMain extends AppCompatActivity
 	static final int REQUEST_APP_ABOUT = 3;
 	static final int REQUEST_CODE_NICKNAME = 4;
 	static final int REQUEST_CODE_POST = 5;
+	static final int REQUEST_COLUMN_COLOR = 6;
 	
 	@Override protected void onActivityResult( int requestCode, int resultCode, Intent data ){
 		log.d( "onActivityResult" );
@@ -212,6 +256,7 @@ public class ActMain extends AppCompatActivity
 					if( order != null && isOrderChanged( order ) ){
 						pager_adapter.setOrder( pager, order );
 						app_state.saveColumnList();
+						updateColumnStrip();
 					}
 					
 					if( pager_adapter.column_list.isEmpty() ){
@@ -220,6 +265,7 @@ public class ActMain extends AppCompatActivity
 						int select = data.getIntExtra( ActColumnList.EXTRA_SELECTION, - 1 );
 						if( select != - 1 ){
 							pager.setCurrentItem( select, true );
+							scrollColumnStrip( select );
 						}
 					}
 				}
@@ -244,6 +290,16 @@ public class ActMain extends AppCompatActivity
 				if( data != null ){
 					posted_acct = data.getStringExtra( ActPost.EXTRA_POSTED_ACCT );
 					posted_status_id = data.getLongExtra( ActPost.EXTRA_POSTED_STATUS_ID, 0L );
+				}
+			}else if( requestCode == REQUEST_COLUMN_COLOR ){
+				if( data != null ){
+					app_state.saveColumnList();
+					int idx = data.getIntExtra( ActColumnCustomize.EXTRA_COLUMN_INDEX, 0 );
+					ColumnViewHolder vh = pager_adapter.getColumnViewHolder( idx );
+					if( vh != null ){
+						vh.showColumnColor();
+					}
+					updateColumnStrip();
 				}
 			}
 		}
@@ -419,16 +475,21 @@ public class ActMain extends AppCompatActivity
 	ViewPager pager;
 	ColumnPagerAdapter pager_adapter;
 	View llEmpty;
+	DrawerLayout drawer;
+	LinearLayout llColumnStrip;
+	HorizontalScrollView svColumnStrip;
 	
 	void initUI(){
 		setContentView( R.layout.act_main );
+		
 		llEmpty = findViewById( R.id.llEmpty );
+		
 		//		// toolbar
 		//		Toolbar toolbar = (Toolbar) findViewById( R.id.toolbar );
 		//		setSupportActionBar( toolbar );
 		
 		// navigation drawer
-		final DrawerLayout drawer = (DrawerLayout) findViewById( R.id.drawer_layout );
+		drawer = (DrawerLayout) findViewById( R.id.drawer_layout );
 		//		ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
 		//			this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close );
 		//		drawer.addDrawerListener( toggle );
@@ -437,28 +498,107 @@ public class ActMain extends AppCompatActivity
 		NavigationView navigationView = (NavigationView) findViewById( R.id.nav_view );
 		navigationView.setNavigationItemSelectedListener( this );
 		
-		// floating action button
-		View fabToot = (View) findViewById( R.id.fabToot );
-		fabToot.setOnClickListener( new View.OnClickListener() {
-			@Override public void onClick( View view ){
-				performTootButton();
-			}
-		} );
-		// floating action button
-		View fabMenu = findViewById( R.id.fabMenu );
-		fabMenu.setOnClickListener( new View.OnClickListener() {
-			@Override public void onClick( View view ){
-				if( ! drawer.isDrawerOpen( Gravity.START ) ){
-					drawer.openDrawer( Gravity.START );
-				}
-			}
-		} );
+		View v;
+		
+		v = findViewById( R.id.btnToot );
+		v.setOnClickListener( this );
+		
+		v = findViewById( R.id.btnMenu );
+		v.setOnClickListener( this );
+		
+		llColumnStrip = (LinearLayout) findViewById( R.id.llColumnStrip );
+		
+		svColumnStrip = (HorizontalScrollView) findViewById( R.id.svColumnStrip );
+		svColumnStrip.setHorizontalFadingEdgeEnabled( true );
 		
 		// ViewPager
 		pager = (ViewPager) findViewById( R.id.viewPager );
 		pager_adapter = new ColumnPagerAdapter( this );
 		pager.setAdapter( pager_adapter );
+		pager.addOnPageChangeListener( this );
 		
+	}
+	
+	void updateColumnStrip(){
+		llColumnStrip.removeAllViews();
+		for( int i = 0, ie = app_state.column_list.size() ; i < ie ; ++ i ){
+			
+			final Column column = app_state.column_list.get( i );
+			
+			View viewRoot = getLayoutInflater().inflate( R.layout.lv_column_strip, llColumnStrip, false );
+			ImageView ivIcon = (ImageView) viewRoot.findViewById( R.id.ivIcon );
+			
+			viewRoot.setTag( i );
+			viewRoot.setOnClickListener( new View.OnClickListener() {
+				@Override public void onClick( View v ){
+					onClickColumnStrip( (Integer) v.getTag() );
+				}
+			} );
+			viewRoot.setContentDescription( column.getColumnName( true ) );
+			//
+			
+			int c = column.header_bg_color;
+			if( c == 0 ){
+				viewRoot.setBackgroundResource( R.drawable.btn_bg_ddd );
+			}else{
+				ViewCompat.setBackground( viewRoot,Styler.getAdaptiveRippleDrawable(
+					c,
+					(column.header_fg_color != 0 ? column.header_fg_color :
+						Styler.getAttributeColor( this,R.attr.colorRippleEffect ))
+				
+				) );
+			}
+			
+			c = column.header_fg_color;
+			if( c == 0 ){
+				Styler.setIconDefaultColor( this, ivIcon, Column.getIconAttrId( column.column_type ) );
+			}else{
+				Styler.setIconCustomColor( this, ivIcon, c, Column.getIconAttrId( column.column_type ) );
+			}
+			
+			//
+			AcctColor ac = AcctColor.load( column.access_info.acct );
+			if( AcctColor.hasColorForeground( ac ) ){
+				View vAcctColor = viewRoot.findViewById( R.id.vAcctColor );
+				vAcctColor.setBackgroundColor( ac.color_fg );
+			}
+			//
+			llColumnStrip.addView( viewRoot );
+			//
+			
+		}
+		svColumnStrip.requestLayout();
+	}
+	
+	private void scrollColumnStrip( final int select ){
+		int child_count = llColumnStrip.getChildCount();
+		if( select < 0 || select >= child_count ){
+			return;
+		}
+		
+		View icon = llColumnStrip.getChildAt( select );
+		
+		int sv_width = ( (View) llColumnStrip.getParent() ).getWidth();
+		int ll_width = llColumnStrip.getWidth();
+		int icon_width = icon.getWidth();
+		int icon_left = icon.getLeft();
+		
+		if( sv_width == 0 || ll_width == 0 || icon_width == 0 ){
+			handler.postDelayed( new Runnable() {
+				@Override public void run(){
+					scrollColumnStrip( select );
+				}
+			}, 20L );
+			
+		}
+		
+		int sx = icon_left + icon_width / 2 - sv_width / 2;
+		svColumnStrip.smoothScrollTo( sx, 0 );
+		
+	}
+	
+	private void onClickColumnStrip( int idx ){
+		pager.setCurrentItem( idx, true );
 	}
 	
 	public void performAccountAdd(){
@@ -520,14 +660,14 @@ public class ActMain extends AppCompatActivity
 							Utils.showToast( ActMain.this, true, sv );
 							log.e( result.error );
 						}else{
-							SavedAccount a = addPseudoAccount(instance);
+							SavedAccount a = addPseudoAccount( instance );
 							if( a != null ){
 								// 疑似アカウントが追加された
 								Utils.showToast( ActMain.this, false, R.string.server_confirmed );
 								addColumn( a, Column.TYPE_LOCAL );
 								dialog.dismiss();
 							}
-								
+							
 						}
 					}
 				};
@@ -540,13 +680,13 @@ public class ActMain extends AppCompatActivity
 					}
 				} );
 				progress.show();
-				AsyncTaskCompat.executeParallel( task );
+				task.executeOnExecutor( App1.task_executor );
 			}
 		} );
 		
 	}
 	
-	SavedAccount addPseudoAccount(String host){
+	SavedAccount addPseudoAccount( String host ){
 		try{
 			String username = "?";
 			String full_acct = username + "@" + host;
@@ -557,8 +697,8 @@ public class ActMain extends AppCompatActivity
 			
 			long row_id = SavedAccount.insert( host, full_acct, account_info, new JSONObject() );
 			SavedAccount account = SavedAccount.loadAccount( log, row_id );
-			if( account == null){
-				throw new RuntimeException( "loadAccount returns null.");
+			if( account == null ){
+				throw new RuntimeException( "loadAccount returns null." );
 			}
 			account.notification_follow = false;
 			account.notification_favourite = false;
@@ -568,8 +708,8 @@ public class ActMain extends AppCompatActivity
 			return account;
 		}catch( JSONException ex ){
 			ex.printStackTrace();
-			log.e(ex,"addPseudoAccount failed.");
-			Utils.showToast( this, ex,"addPseudoAccount failed.");
+			log.e( ex, "addPseudoAccount failed." );
+			Utils.showToast( this, ex, "addPseudoAccount failed." );
 		}
 		return null;
 	}
@@ -598,35 +738,35 @@ public class ActMain extends AppCompatActivity
 					// https://mastodon.juggler.jp/@SubwayTooter
 					final String host = m.group( 1 );
 					final String user = Uri.decode( m.group( 2 ) );
-					ArrayList<SavedAccount> account_list = SavedAccount.loadAccountList( log );
-					ArrayList<SavedAccount> account_list_same_host = new ArrayList<>(  );
+					ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( log );
+					ArrayList< SavedAccount > account_list_same_host = new ArrayList<>();
 					
-					for( SavedAccount a : account_list){
+					for( SavedAccount a : account_list ){
 						if( host.equalsIgnoreCase( a.host ) ){
-							account_list_same_host.add(a);
+							account_list_same_host.add( a );
 						}
 					}
 					
 					if( account_list_same_host.isEmpty() ){
-						account_list_same_host.add( addPseudoAccount( host ));
+						account_list_same_host.add( addPseudoAccount( host ) );
 					}
 					
 					AccountPicker.pick( this, true, true
-						,getString(R.string.account_picker_open_user_who,user+"@"+host)
-						,account_list_same_host
+						, getString( R.string.account_picker_open_user_who, user + "@" + host )
+						, account_list_same_host
 						, new AccountPicker.AccountPickerCallback() {
-						@Override public void onAccountPicked( final SavedAccount ai ){
-							startGetAccount( ai, host, user, new GetAccountCallback() {
-								@Override public void onGetAccount( TootAccount who ){
-									if( who != null ){
-										performOpenUser( ai, who );
-										return;
+							@Override public void onAccountPicked( final SavedAccount ai ){
+								startGetAccount( ai, host, user, new GetAccountCallback() {
+									@Override public void onGetAccount( TootAccount who ){
+										if( who != null ){
+											performOpenUser( ai, who );
+											return;
+										}
+										openChromeTab( ai, uri.toString(), true );
 									}
-									openChromeTab( ai, uri.toString(), true );
-								}
-							} );
-						}
-					} );
+								} );
+							}
+						} );
 					return;
 				}
 				return;
@@ -800,7 +940,7 @@ public class ActMain extends AppCompatActivity
 			}
 		} );
 		progress.show();
-		AsyncTaskCompat.executeParallel( task );
+		task.executeOnExecutor( App1.task_executor );
 	}
 	
 	void reloadAccountSetting(){
@@ -849,10 +989,12 @@ public class ActMain extends AppCompatActivity
 		int page_delete = pager_adapter.column_list.indexOf( column );
 		pager_adapter.removeColumn( pager, column );
 		app_state.saveColumnList();
+		updateColumnStrip();
 		if( pager_adapter.getCount() == 0 ){
 			llEmpty.setVisibility( View.VISIBLE );
 		}else if( page_showing > 0 && page_showing == page_delete ){
 			pager.setCurrentItem( page_showing - 1, true );
+			scrollColumnStrip( page_showing - 1 );
 		}
 	}
 	
@@ -870,9 +1012,10 @@ public class ActMain extends AppCompatActivity
 		//
 		llEmpty.setVisibility( View.GONE );
 		//
-		Column col = new Column( app_state , ai, type, params );
+		Column col = new Column( app_state, ai, type, params );
 		int idx = pager_adapter.addColumn( pager, col );
 		app_state.saveColumnList();
+		updateColumnStrip();
 		pager.setCurrentItem( idx, true );
 		return col;
 	}
@@ -887,13 +1030,13 @@ public class ActMain extends AppCompatActivity
 	
 	public void performOpenUserFromAnotherAccount( final TootAccount who, ArrayList< SavedAccount > account_list_non_pseudo_same_instance ){
 		AccountPicker.pick( this, false, false
-			,getString(R.string.account_picker_open_user_who,AcctColor.getNickname( who.acct) )
+			, getString( R.string.account_picker_open_user_who, AcctColor.getNickname( who.acct ) )
 			, account_list_non_pseudo_same_instance
 			, new AccountPicker.AccountPickerCallback() {
-			@Override public void onAccountPicked( SavedAccount ai ){
-				addColumn( ai, Column.TYPE_PROFILE, who.id );
-			}
-		} );
+				@Override public void onAccountPicked( SavedAccount ai ){
+					addColumn( ai, Column.TYPE_PROFILE, who.id );
+				}
+			} );
 	}
 	
 	public void performConversation( SavedAccount access_info, TootStatus status ){
@@ -902,20 +1045,20 @@ public class ActMain extends AppCompatActivity
 	
 	private void performAddTimeline( boolean bAllowPseudo, final int type, final Object... args ){
 		AccountPicker.pick( this, bAllowPseudo, true
-			,getString(R.string.account_picker_add_timeline_of,Column.getColumnTypeName(this,type))
-		, new AccountPicker.AccountPickerCallback() {
-			@Override public void onAccountPicked( SavedAccount ai ){
-				switch( type ){
-				default:
-					addColumn( ai, type, args );
-					break;
-				
-				case Column.TYPE_PROFILE:
-					addColumn( ai, type, ai.id );
-					break;
+			, getString( R.string.account_picker_add_timeline_of, Column.getColumnTypeName( this, type ) )
+			, new AccountPicker.AccountPickerCallback() {
+				@Override public void onAccountPicked( SavedAccount ai ){
+					switch( type ){
+					default:
+						addColumn( ai, type, args );
+						break;
+					
+					case Column.TYPE_PROFILE:
+						addColumn( ai, type, ai.id );
+						break;
+					}
 				}
-			}
-		} );
+			} );
 	}
 	
 	public void openHashTag( SavedAccount access_info, String tag ){
@@ -1004,7 +1147,7 @@ public class ActMain extends AppCompatActivity
 			}
 		} );
 		progress.show();
-		AsyncTaskCompat.executeParallel( task );
+		task.executeOnExecutor( App1.task_executor );
 	}
 	
 	static final Pattern reHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#]+)\\z" );
@@ -1075,7 +1218,7 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	// 他インスタンスのハッシュタグの表示
-	private void openHashTagOtherInstance( final SavedAccount access_info, final String url, String host, final String tag ){
+	private void openHashTagOtherInstance( final SavedAccount access_info, final String url, final String host, final String tag ){
 		
 		ActionsDialog dialog = new ActionsDialog();
 		
@@ -1097,7 +1240,13 @@ public class ActMain extends AppCompatActivity
 		} );
 		
 		// 各アカウントで開く選択肢
+		boolean has_host = false;
 		for( SavedAccount a : account_list ){
+			
+			if( host.equalsIgnoreCase( a.host ) ){
+				has_host = true;
+			}
+			
 			final SavedAccount _a = a;
 			dialog.addAction( getString( R.string.open_in_account, a.acct ), new Runnable() {
 				@Override public void run(){
@@ -1106,7 +1255,16 @@ public class ActMain extends AppCompatActivity
 			} );
 		}
 		
-		// TODO: もしカラならログイン無しアカウントで開きたいかも
+		if( ! has_host ){
+			dialog.addAction( getString( R.string.open_in_pseudo_account, "?@" + host ), new Runnable() {
+				@Override public void run(){
+					SavedAccount sa = addPseudoAccount( host );
+					if( sa != null ){
+						openHashTag( sa, tag );
+					}
+				}
+			} );
+		}
 		
 		dialog.show( this, "#" + tag );
 		
@@ -1140,12 +1298,12 @@ public class ActMain extends AppCompatActivity
 	public void performMentionFromAnotherAccount( SavedAccount access_info, final TootAccount who, ArrayList< SavedAccount > account_list_non_pseudo ){
 		final String initial_text = "@" + access_info.getFullAcct( who ) + " ";
 		AccountPicker.pick( this, false, false
-			,getString(R.string.account_picker_toot )
+			, getString( R.string.account_picker_toot )
 			, account_list_non_pseudo, new AccountPicker.AccountPickerCallback() {
-			@Override public void onAccountPicked( SavedAccount ai ){
-				ActPost.open( ActMain.this, REQUEST_CODE_POST, ai.db_id, initial_text );
-			}
-		} );
+				@Override public void onAccountPicked( SavedAccount ai ){
+					ActPost.open( ActMain.this, REQUEST_CODE_POST, ai.db_id, initial_text );
+				}
+			} );
 	}
 	
 	/////////////////////////////////////////////////////////////////////////
@@ -1161,7 +1319,6 @@ public class ActMain extends AppCompatActivity
 	/////////////////////////////////////////////////////////////////////////
 	// favourite
 	
-
 	public void performFavourite( final SavedAccount account, final TootStatus status, final RelationChangedCallback callback ){
 		//
 		final String busy_key = account.host + ":" + status.id;
@@ -1255,14 +1412,14 @@ public class ActMain extends AppCompatActivity
 				showColumnMatchAccount( account );
 			}
 			
-		}.execute();
+		}.executeOnExecutor( App1.task_executor );
 		// ファボ表示を更新中にする
 		showColumnMatchAccount( account );
 	}
 	
 	/////////////////////////////////////////////////////////////////////////
 	// boost
-
+	
 	public void performBoost( final SavedAccount access_info, final TootStatus status, boolean bConfirmed, final RelationChangedCallback callback ){
 		//
 		final String busy_key = access_info.host + ":" + status.id;
@@ -1375,7 +1532,7 @@ public class ActMain extends AppCompatActivity
 				showColumnMatchAccount( access_info );
 			}
 			
-		}.execute();
+		}.executeOnExecutor( App1.task_executor );
 		
 		showColumnMatchAccount( access_info );
 	}
@@ -1384,12 +1541,12 @@ public class ActMain extends AppCompatActivity
 	
 	private void performAccountSetting(){
 		AccountPicker.pick( this, true, true
-			,getString(R.string.account_picker_open_setting)
+			, getString( R.string.account_picker_open_setting )
 			, new AccountPicker.AccountPickerCallback() {
-			@Override public void onAccountPicked( SavedAccount ai ){
-				ActAccountSetting.open( ActMain.this, ai, REQUEST_CODE_ACCOUNT_SETTING );
-			}
-		} );
+				@Override public void onAccountPicked( SavedAccount ai ){
+					ActAccountSetting.open( ActMain.this, ai, REQUEST_CODE_ACCOUNT_SETTING );
+				}
+			} );
 	}
 	
 	private void performAppSetting(){
@@ -1400,7 +1557,7 @@ public class ActMain extends AppCompatActivity
 	// column list
 	
 	private void openColumnList(){
-		ActColumnList.open(this,pager.getCurrentItem(),REQUEST_CODE_COLUMN_LIST);
+		ActColumnList.open( this, pager.getCurrentItem(), REQUEST_CODE_COLUMN_LIST );
 	}
 	
 	//	private void dumpColumnList(){
@@ -1409,8 +1566,6 @@ public class ActMain extends AppCompatActivity
 	//			log.d( "dumpColumnList [%s]%s %s", i, column.access_info.acct, column.getColumnName( true ) );
 	//		}
 	//	}
-	
-
 	
 	////////////////////////////////////////////////////////////////////////////
 	
@@ -1624,7 +1779,7 @@ public class ActMain extends AppCompatActivity
 					Utils.showToast( ActMain.this, false, result.error );
 				}
 			}
-		}.execute();
+		}.executeOnExecutor( App1.task_executor );
 	}
 	
 	// acct で指定したユーザをリモートフォローする
@@ -1743,7 +1898,7 @@ public class ActMain extends AppCompatActivity
 					Utils.showToast( ActMain.this, false, result.error );
 				}
 			}
-		}.execute();
+		}.executeOnExecutor( App1.task_executor );
 	}
 	
 	////////////////////////////////////////
@@ -1814,7 +1969,7 @@ public class ActMain extends AppCompatActivity
 				}
 			}
 			
-		}.execute();
+		}.executeOnExecutor( App1.task_executor );
 	}
 	
 	void callBlock( final SavedAccount access_info, final TootAccount who, final boolean bBlock, final RelationChangedCallback callback ){
@@ -1881,7 +2036,7 @@ public class ActMain extends AppCompatActivity
 					Utils.showToast( ActMain.this, false, result.error );
 				}
 			}
-		}.execute();
+		}.executeOnExecutor( App1.task_executor );
 	}
 	
 	void callFollowRequestAuthorize( final SavedAccount access_info
@@ -1932,7 +2087,7 @@ public class ActMain extends AppCompatActivity
 					Utils.showToast( ActMain.this, false, result.error );
 				}
 			}
-		}.execute();
+		}.executeOnExecutor( App1.task_executor );
 	}
 	
 	void deleteStatus( final SavedAccount access_info, final long status_id ){
@@ -1977,7 +2132,7 @@ public class ActMain extends AppCompatActivity
 					Utils.showToast( ActMain.this, false, result.error );
 				}
 			}
-		}.execute();
+		}.executeOnExecutor( App1.task_executor );
 	}
 	
 	interface ReportCompleteCallback {
@@ -2034,7 +2189,7 @@ public class ActMain extends AppCompatActivity
 				}
 			}
 			
-		}.execute();
+		}.executeOnExecutor( App1.task_executor );
 	}
 	
 	void openReportForm( @NonNull final SavedAccount account, @NonNull final TootAccount who, @NonNull final TootStatus status ){
@@ -2193,7 +2348,7 @@ public class ActMain extends AppCompatActivity
 				}
 			}
 			
-		}.execute();
+		}.executeOnExecutor( App1.task_executor );
 	}
 	
 }

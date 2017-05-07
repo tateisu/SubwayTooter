@@ -70,6 +70,8 @@
     <!-- 投稿画面のEditTextの下に引くFrameLayoutの背景 -->
     <attr name="colorPostFormBackground" format="color"/>
 
+    <!-- カラムストリップの背景色 -->
+    <attr name="colorColumnStripBackground" format="color"/>
 
     <attr name="btn_attachment" format="reference" />
     <attr name="btn_boost" format="reference" />

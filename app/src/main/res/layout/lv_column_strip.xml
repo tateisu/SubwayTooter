@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="48dp"
+    android:layout_height="48dp"
+    android:layout_weight="1"
+    android:background="@drawable/btn_bg_ddd"
+    android:gravity="center"
+    android:orientation="vertical"
+    >
+
+    <ImageView
+        android:id="@+id/ivIcon"
+        android:layout_marginTop="4dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        tools:ignore="ContentDescription"
+        android:importantForAccessibility="no"
+        />
+
+    <View
+        android:id="@+id/vAcctColor"
+        android:layout_width="32dp"
+        android:layout_height="3dp"
+        android:layout_marginTop="3dp"
+        />
+
+</LinearLayout>

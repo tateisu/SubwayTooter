@@ -64,6 +64,7 @@
                 android:layout_height="32dp"
                 android:layout_marginEnd="4dp"
                 android:id="@+id/ivColumnIcon"
+                android:importantForAccessibility="no"
                 />
             <TextView
                 android:id="@+id/tvColumnName"
@@ -192,6 +193,15 @@
             android:id="@+id/btnDeleteNotification"
             android:textAllCaps="false"
             />
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/color_and_background"
+            android:id="@+id/btnColor"
+            android:textAllCaps="false"
+            />
+
     </LinearLayout>
 
     <RelativeLayout
@@ -235,38 +245,49 @@
 
     </RelativeLayout>
 
-    <TextView
-        android:id="@+id/tvLoading"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:gravity="center"
-        />
+        android:id="@+id/flColumnBackground"
+        >
 
-    <com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
-        android:id="@+id/swipyRefreshLayout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:srl_direction="both">
-
-        <jp.juggler.subwaytooter.util.MyListView
-            android:id="@+id/listView"
+        <ImageView
+            android:id="@+id/ivColumnBackgroundImage"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-
-            android:clipToPadding="false"
-            android:fadeScrollbars="false"
-            android:fastScrollEnabled="true"
-            android:paddingBottom="64dp"
-            android:paddingEnd="12dp"
-            android:paddingStart="12dp"
-            android:scrollbarStyle="outsideOverlay"
-            android:dividerHeight="1dp"
-            android:divider="?attr/colorSettingDivider"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
             />
 
-    </com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout>
+        <TextView
+            android:id="@+id/tvLoading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            />
 
+        <com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
+            android:id="@+id/swipyRefreshLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:srl_direction="both">
 
+            <jp.juggler.subwaytooter.util.MyListView
+                android:id="@+id/listView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+
+                android:clipToPadding="false"
+                android:fadeScrollbars="false"
+                android:fastScrollEnabled="true"
+                android:paddingEnd="12dp"
+                android:paddingStart="12dp"
+                android:scrollbarStyle="outsideOverlay"
+                android:dividerHeight="1dp"
+                android:divider="?attr/colorSettingDivider"
+                />
+
+        </com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout>
+    </FrameLayout>
 </LinearLayout>

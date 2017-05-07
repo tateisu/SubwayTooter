@@ -1,18 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+    <color name="Light_colorColumnListItemText">#80000000</color>
+    <color name="Light_colorTimeSmall">#80000000</color>
+    <color name="Light_colorAcctSmall">#80000000</color>
+    <color name="Light_colorColumnHeaderAcct">#80000000</color>
+    <color name="Light_colorColumnHeaderPageNumber">#80000000</color>
+    <color name="Light_colorSettingDivider">#80000000</color>
+
     <color name="Light_colorImageButton">#99343434</color>
 
     <color name="Light_colorAccent">#5a5a5a</color>
 
     <color name="Light_colorRippleEffect">#FF808080</color>
-    <color name="Light_colorColumnListItemText">#808080</color>
-    <color name="Light_colorTimeSmall">#808080</color>
-    <color name="Light_colorAcctSmall">#808080</color>
-    <color name="Light_colorColumnHeaderAcct">#808080</color>
-    <color name="Light_colorColumnHeaderPageNumber">#808080</color>
 
-    <color name="Light_colorSettingDivider">#808080</color>
 
     <color name="Light_colorColumnListDragHandleBackground">#80cccccc</color>
     <color name="Light_list_item_bg_pressed_dragged">#AACCCCCC</color>
@@ -27,7 +28,10 @@
 
     <color name="Light_colorPostFormBackground">#eee</color>
 
+    <color name="Light_colorColumnStripBackground">#FFFFFFFF</color>
+
     <color name="Light_colorProfileBackgroundMask">#C0FFFFFF</color>
+
 
     <color name="Light_colorPrimaryDark">#303030</color>
 
@@ -44,18 +48,20 @@
 
     <!-- Dark theme -->
 
+    <color name="Dark_colorColumnListItemText">#66FFFFFF</color>
+    <color name="Dark_colorTimeSmall">#66FFFFFF</color>
+    <color name="Dark_colorAcctSmall">#66FFFFFF</color>
+    <color name="Dark_colorColumnHeaderAcct">#66FFFFFF</color>
+    <color name="Dark_colorColumnHeaderPageNumber">#66FFFFFF</color>
+    <color name="Dark_colorSettingDivider">#66FFFFFF</color><!-- ダイアログ背景が#424242なので、それより明るくないといけない -->
+
+
     <color name="Dark_colorImageButton">#ccFFFFFF</color>
 
     <color name="Dark_colorAccent">#ccFFFFFF</color>
 
     <color name="Dark_colorRippleEffect">#FF666666</color>
-    <color name="Dark_colorColumnListItemText">#666</color>
-    <color name="Dark_colorTimeSmall">#666</color>
-    <color name="Dark_colorAcctSmall">#666</color>
-    <color name="Dark_colorColumnHeaderAcct">#666</color>
-    <color name="Dark_colorColumnHeaderPageNumber">#666</color>
 
-    <color name="Dark_colorSettingDivider">#666</color><!-- ダイアログ背景が#424242なので、それより明るくないといけない -->
 
     <color name="Dark_colorColumnListDragHandleBackground">#80444444</color>
     <color name="Dark_list_item_bg_pressed_dragged">#AA444444</color>
@@ -71,6 +77,8 @@
 
     <color name="Dark_colorProfileBackgroundMask">#C0000000</color>
     <color name="Dark_colorBackground">#000</color>
+
+    <color name="Dark_colorColumnStripBackground">#000</color>
 
     <color name="Dark_colorPrimaryDark">#222</color>
 

@@ -375,7 +375,7 @@ public class ActAccountSetting extends AppCompatActivity
 			}
 		} );
 		progress.show();
-		AsyncTaskCompat.executeParallel( task );
+		task.executeOnExecutor(App1.task_executor);
 	}
 	
 }

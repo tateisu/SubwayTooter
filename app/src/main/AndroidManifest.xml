@@ -130,8 +130,13 @@
         <activity
             android:name=".ActMutedApp"
             android:label="@string/muted_app"
-
             />
+
+        <activity
+            android:name=".ActColumnCustomize"
+            android:label="@string/color_and_background"
+            />
+
         <activity
             android:name=".ActNickname"
             android:label="@string/nickname_and_color"

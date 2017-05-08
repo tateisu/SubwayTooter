@@ -282,4 +282,13 @@
     <string name="image">image</string>
     <string name="column_header">column header</string>
     <string name="foreground_color">foreground color</string>
+    <string name="hashtag_and_visibility_not_match">this message contains hashtags, but message visibility is not public. normally hashtags are searchable only in public messages. Are you sure?</string>
+    <string name="copy">Copy</string>
+    <string name="send">Send</string>
+    <string name="mute_word">mute word</string>
+    <string name="select_and_copy">Select and copy</string>
+    <string name="search_web">Web search</string>
+    <string name="muted_word">Muted words</string>
+    <string name="word_was_muted">Word was muted.</string>
+    <string name="copy_complete">Clipboard updated.</string>
 </resources>

@@ -97,7 +97,7 @@ public class TootAccount {
 			if( TextUtils.isEmpty( sv ) ){
 				dst.display_name = dst.username;
 			}else{
-				dst.display_name =  Emojione.decodeEmoji( HTMLDecoder.decodeEntity(sv ) );
+				dst.display_name = filterDisplayName(sv);
 			}
 			
 			dst.locked = src.optBoolean( "locked" );
@@ -123,6 +123,7 @@ public class TootAccount {
 		}
 	}
 	
+	
 	public static TootAccount parse( LogCategory log, LinkClickContext account,JSONObject src ){
 		return parse( log, account, src, new TootAccount() );
 	}
@@ -140,6 +141,18 @@ public class TootAccount {
 			}
 		}
 		return result;
+	}
+	
+	private static CharSequence filterDisplayName( String sv ){
+
+		// decode HTML entity
+		sv = HTMLDecoder.decodeEntity(sv );
+
+		// sanitize LRO,RLO
+		sv = Utils.sanitizeBDI( sv);
+
+		// decode emoji code
+		return Emojione.decodeEmoji( sv ) ;
 	}
 	
 }

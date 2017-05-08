@@ -31,6 +31,7 @@ import jp.juggler.subwaytooter.api.entity.TootApplication;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.MutedApp;
+import jp.juggler.subwaytooter.table.MutedWord;
 import jp.juggler.subwaytooter.table.NotificationTracking;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -129,13 +130,15 @@ public class AlarmService extends IntentService {
 					}else if( ACTION_NOTIFICATION_CLICK.equals( action ) ){
 						log.d( "Notification clicked!" );
 						long db_id = received_intent.getLongExtra( EXTRA_DB_ID, 0L );
-						NotificationTracking.updateRead( db_id );
-						notification_manager.cancel( Long.toString( db_id ), NOTIFICATION_ID );
-						//
+						// 画面を開く
 						intent = new Intent( this, ActCallback.class );
 						intent.setData( Uri.parse( "subwaytooter://notification_click?db_id=" + db_id ) );
 						intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
 						startActivity( intent );
+						// 通知をキャンセル
+						notification_manager.cancel( Long.toString( db_id ), NOTIFICATION_ID );
+						// DB更新処理
+						NotificationTracking.updateRead( db_id );
 						return;
 						
 					}
@@ -156,7 +159,8 @@ public class AlarmService extends IntentService {
 		boolean bAlarmRequired = false;
 		
 		HashSet< String > muted_app = MutedApp.getNameSet();
-		
+		HashSet< String > muted_word = MutedWord.getNameSet();
+
 		for( SavedAccount account : account_list ){
 			try{
 				if( account.notification_mention
@@ -168,7 +172,7 @@ public class AlarmService extends IntentService {
 					
 					ArrayList< Data > data_list = new ArrayList<>();
 					
-					checkAccount( client, data_list, account, muted_app );
+					checkAccount( client, data_list, account, muted_app ,muted_word);
 					
 					showNotification( account.db_id, data_list );
 					
@@ -200,7 +204,7 @@ public class AlarmService extends IntentService {
 	
 	private static final String PATH_NOTIFICATIONS = "/api/v1/notifications";
 	
-	private void checkAccount( TootApiClient client, ArrayList< Data > data_list, SavedAccount account, HashSet< String > muted_app ){
+	private void checkAccount( TootApiClient client, ArrayList< Data > data_list, SavedAccount account, HashSet< String > muted_app, HashSet< String > muted_word ){
 		log.d( "checkAccount account_db_id=%s", account.db_id );
 		
 		NotificationTracking nr = NotificationTracking.load( account.db_id );
@@ -213,7 +217,7 @@ public class AlarmService extends IntentService {
 				JSONArray array = new JSONArray( nr.last_data );
 				for( int i = array.length() - 1 ; i >= 0 ; -- i ){
 					JSONObject src = array.optJSONObject( i );
-					update_sub( src, nr, account, dst_array, data_list, duplicate_check, muted_app );
+					update_sub( src, nr, account, dst_array, data_list, duplicate_check, muted_app ,muted_word);
 				}
 			}catch( JSONException ex ){
 				ex.printStackTrace();
@@ -237,7 +241,7 @@ public class AlarmService extends IntentService {
 						JSONArray array = result.array;
 						for( int i = array.length() - 1 ; i >= 0 ; -- i ){
 							JSONObject src = array.optJSONObject( i );
-							update_sub( src, nr, account, dst_array, data_list, duplicate_check, muted_app );
+							update_sub( src, nr, account, dst_array, data_list, duplicate_check, muted_app, muted_word );
 						}
 					}catch( JSONException ex ){
 						ex.printStackTrace();
@@ -277,7 +281,10 @@ public class AlarmService extends IntentService {
 		, ArrayList< Data > data_list
 		, HashSet< Long > duplicate_check
 		, HashSet< String > muted_app
-	) throws JSONException{
+		, HashSet< String > muted_word
+	)
+		throws JSONException
+	{
 		
 		long id = src.optLong( "id" );
 		
@@ -306,18 +313,11 @@ public class AlarmService extends IntentService {
 			return;
 		}
 		
-		// app mute
 		{
 			TootStatus status = notification.status;
 			if( status != null ){
-				TootApplication application = status.application;
-				if( application != null ){
-					String name = application.name;
-					if( name != null ){
-						if( muted_app.contains( name ) ){
-							return;
-						}
-					}
+				if( status.checkMuted( muted_app,muted_word )){
+					return;
 				}
 			}
 		}

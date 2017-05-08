@@ -28,7 +28,6 @@
 
     <color name="Light_colorPostFormBackground">#eee</color>
 
-    <color name="Light_colorColumnStripBackground">#FFFFFFFF</color>
 
     <color name="Light_colorProfileBackgroundMask">#C0FFFFFF</color>
 
@@ -44,6 +43,7 @@
     <color name="Light_colorColumnListDeleteBackground">#FF0000</color>
     <color name="Light_colorColumnListDeleteText">#fff</color>
     <color name="Light_colorRegexFilterError">#f00</color>
+    <color name="Light_colorColumnStripBackground">#000000</color>
 
 
     <!-- Dark theme -->
@@ -78,7 +78,6 @@
     <color name="Dark_colorProfileBackgroundMask">#C0000000</color>
     <color name="Dark_colorBackground">#000</color>
 
-    <color name="Dark_colorColumnStripBackground">#000</color>
 
     <color name="Dark_colorPrimaryDark">#222</color>
 
@@ -91,5 +90,6 @@
     <color name="Dark_colorColumnListDeleteBackground">#FF0000</color>
     <color name="Dark_colorColumnListDeleteText">#fff</color>
     <color name="Dark_colorRegexFilterError">#f00</color>
+    <color name="Dark_colorColumnStripBackground">#000</color>
 
 </resources>

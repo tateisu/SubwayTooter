@@ -98,6 +98,11 @@
                     android:icon="?attr/ic_setting"
                     android:title="@string/muted_app"/>
                 <item
+                    android:id="@+id/nav_muted_word"
+                    android:icon="?attr/ic_setting"
+                    android:title="@string/muted_word"/>
+
+                <item
                     android:id="@+id/nav_app_about"
                     android:icon="?attr/ic_info"
                     android:title="@string/app_about"/>

@@ -60,7 +60,7 @@
                     />
 
                 <Button
-                    android:id="@+id/btnStatusSendApp"
+                    android:id="@+id/btnText"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/btn_bg_transparent"
@@ -70,7 +70,7 @@
                     android:paddingEnd="8dp"
                     android:paddingStart="8dp"
                     android:paddingTop="4dp"
-                    android:text="@string/send_text"
+                    android:text="@string/select_and_copy"
                     android:textAllCaps="false"
                     />
 

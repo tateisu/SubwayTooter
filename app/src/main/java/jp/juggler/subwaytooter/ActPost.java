@@ -48,6 +48,8 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
@@ -158,7 +160,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			break;
 		
 		case R.id.btnPost:
-			performPost( false );
+			performPost( false,false );
 			break;
 		
 		case R.id.btnRemoveReply:
@@ -867,7 +869,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				// 設定からリサイズ指定を読む
 				int resize_to = list_resize_max[ pref.getInt( Pref.KEY_RESIZE_IMAGE, 4 ) ];
 				
-				Bitmap bitmap = Utils.createResizedBitmap( log, this, uri, true,resize_to );
+				Bitmap bitmap = Utils.createResizedBitmap( log, this, uri, true, resize_to );
 				if( bitmap != null ){
 					try{
 						File cache_dir = getExternalCacheDir();
@@ -1251,7 +1253,18 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	///////////////////////////////////////////////////////////////////////////////////////
 	// post
 	
-	private void performPost( boolean bConfirm ){
+	// [:word:] 単語構成文字 (Letter | Mark | Decimal_Number | Connector_Punctuation)
+	// [:alpha:] 英字 (Letter | Mark)
+	
+	static final String word = "[_\\p{L}\\p{M}\\p{Nd}\\p{Pc}]";
+	static final String alpha = "[_\\p{L}\\p{M}]";
+	
+	static final Pattern reTag = Pattern.compile(
+		"(?:^|[^/)\\w])#(" + word + "*" + alpha + word + "*)"
+		, Pattern.CASE_INSENSITIVE
+	);
+	
+	private void performPost( final boolean bConfirmTag, final boolean bConfirmAccount ){
 		final String content = etContent.getText().toString().trim();
 		if( TextUtils.isEmpty( content ) ){
 			Utils.showToast( this, true, R.string.post_error_contents_empty );
@@ -1269,7 +1282,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			}
 		}
 		
-		if( ! bConfirm ){
+		if( ! bConfirmAccount ){
 			DlgConfirm.open( this
 				, getString( R.string.confirm_post_from, AcctColor.getNickname( account.acct ) )
 				, new DlgConfirm.Callback() {
@@ -1283,10 +1296,27 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					}
 					
 					@Override public void onOK(){
-						performPost( true );
+						performPost( bConfirmTag, true );
 					}
 				} );
 			return;
+		}
+		
+		if( ! bConfirmTag ){
+			Matcher m = reTag.matcher( content );
+			if( m.find() && ! TootStatus.VISIBILITY_PUBLIC.equals( visibility ) ){
+				new AlertDialog.Builder( this )
+					.setCancelable( true )
+					.setMessage( R.string.hashtag_and_visibility_not_match )
+					.setNegativeButton( R.string.cancel, null )
+					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
+						@Override public void onClick( DialogInterface dialog, int which ){
+							performPost( true, bConfirmAccount );
+						}
+					} )
+					.show();
+				return;
+			}
 		}
 		
 		final StringBuilder sb = new StringBuilder();

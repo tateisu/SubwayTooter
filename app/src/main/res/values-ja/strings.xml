@@ -282,4 +282,12 @@
     <string name="menu">メニュー</string>
     <string name="open_in_pseudo_account">疑似アカウント %1$s で開く</string>
     <string name="pick_image">画像の選択</string>
+    <string name="hashtag_and_visibility_not_match">メッセージにハッシュタグが含まれていますが、公開範囲が公開ではありません。ハッシュタグは公開メッセージに含まれる場合のみ検索されることができます。続けてもよろしいですか？</string>
+    <string name="copy">コピー</string>
+    <string name="mute_word">単語をミュート</string>
+    <string name="muted_word">ミュートした単語</string>
+    <string name="search_web">Web検索</string>
+    <string name="select_and_copy">選択してコピー…</string>
+    <string name="send">共有</string>
+    <string name="word_was_muted">単語をミュートしました</string>
 </resources>

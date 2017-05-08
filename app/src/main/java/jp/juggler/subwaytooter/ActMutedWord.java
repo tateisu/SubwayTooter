@@ -18,9 +18,9 @@ import com.woxthebox.draglistview.swipe.ListSwipeItem;
 
 import java.util.ArrayList;
 
-import jp.juggler.subwaytooter.table.MutedApp;
+import jp.juggler.subwaytooter.table.MutedWord;
 
-public class ActMutedApp extends AppCompatActivity {
+public class ActMutedWord extends AppCompatActivity {
 	
 	DragListView listView;
 	MyListAdapter listAdapter;
@@ -91,7 +91,7 @@ public class ActMutedApp extends AppCompatActivity {
 					Object o = item.getTag();
 					if( o instanceof  MyItem){
 						MyItem adapterItem = ( MyItem ) o;
-						MutedApp.delete( adapterItem.name );
+						MutedWord.delete( adapterItem.name );
 						listAdapter.removeItem( listAdapter.getPositionForItem( adapterItem ) );
 					}
 				}
@@ -103,10 +103,10 @@ public class ActMutedApp extends AppCompatActivity {
 		
 		ArrayList< MyItem > tmp_list = new ArrayList<>();
 		try{
-			Cursor cursor = MutedApp.createCursor();
+			Cursor cursor = MutedWord.createCursor();
 			if( cursor != null ){
 				try{
-					int idx_name = cursor.getColumnIndex( MutedApp.COL_NAME );
+					int idx_name = cursor.getColumnIndex( MutedWord.COL_NAME );
 					while( cursor.moveToNext() ){
 						String name = cursor.getString( idx_name);
 						MyItem item = new MyItem( name );
@@ -183,7 +183,7 @@ public class ActMutedApp extends AppCompatActivity {
 			);
 			
 			dragView.findViewById(R.id.item_layout).setBackgroundColor(
-				Styler.getAttributeColor( ActMutedApp.this, R.attr.list_item_bg_pressed_dragged)
+				Styler.getAttributeColor( ActMutedWord.this, R.attr.list_item_bg_pressed_dragged)
 			);
 		}
 	}

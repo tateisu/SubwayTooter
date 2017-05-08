@@ -74,8 +74,6 @@ public abstract class Emojione
 	
 	public static CharSequence decodeEmoji( String s ){
 
-		
-
 		DecodeEnv decode_env = new DecodeEnv();
 		Matcher matcher = SHORTNAME_PATTERN.matcher(s);
 		int last_end = 0;
@@ -101,6 +99,7 @@ public abstract class Emojione
 		}
 		// close span
 		decode_env.closeSpan();
+		
 		return decode_env.sb;
 	}
 }

@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.Utils;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -142,7 +143,7 @@ public class AcctColor {
 	
 	@NonNull public static String getNickname( @NonNull String acct ){
 		AcctColor ac = load( acct );
-		return ac != null && ! TextUtils.isEmpty( ac.nickname ) ? ac.nickname : acct;
+		return ac != null && ! TextUtils.isEmpty( ac.nickname ) ? Utils.sanitizeBDI( ac.nickname ) : acct;
 	}
 	
 	public static boolean hasNickname( @Nullable AcctColor ac ){

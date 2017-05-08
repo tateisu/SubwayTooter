@@ -131,7 +131,10 @@
             android:name=".ActMutedApp"
             android:label="@string/muted_app"
             />
-
+        <activity
+            android:name=".ActMutedWord"
+            android:label="@string/muted_word"
+            />
         <activity
             android:name=".ActColumnCustomize"
             android:label="@string/color_and_background"
@@ -142,7 +145,11 @@
             android:label="@string/nickname_and_color"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
             />
-
+        <activity
+            android:name=".ActText"
+            android:label="@string/select_and_copy"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
+            />
         <meta-data
             android:name="android.max_aspect"
             android:value="ratio_float"/>

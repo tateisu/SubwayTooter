@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.customtabs.CustomTabsIntent;
+import android.support.v4.text.BidiFormatter;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
@@ -454,6 +455,10 @@ public class ActMain extends AppCompatActivity
 			
 		}else if( id == R.id.nav_muted_app ){
 			startActivity( new Intent( this, ActMutedApp.class ) );
+			
+		}else if( id == R.id.nav_muted_word ){
+			startActivity( new Intent( this, ActMutedWord.class ) );
+			
 			// Handle the camera action
 			//		}else if( id == R.id.nav_gallery ){
 			//
@@ -1630,8 +1635,14 @@ public class ActMain extends AppCompatActivity
 				);
 				return;
 			}else if( bFollow ){
+				BidiFormatter bidiFormatter = BidiFormatter.getInstance();
+				String msg = getString( R.string.confirm_follow_who_from
+					, bidiFormatter.unicodeWrap(who.display_name )
+					, AcctColor.getNickname( access_info.acct )
+				);
+				
 				DlgConfirm.open( this
-					, getString( R.string.confirm_follow_who_from, who.display_name, AcctColor.getNickname( access_info.acct ) )
+					, msg
 					, new DlgConfirm.Callback() {
 						@Override public boolean isConfirmEnabled(){
 							return access_info.confirm_follow;
@@ -2211,47 +2222,6 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	////////////////////////////////////////////////
-	
-	void sendStatus( SavedAccount access_info, TootStatus status ){
-		try{
-			StringBuilder sb = new StringBuilder();
-			sb.append( getString( R.string.send_header_url ) );
-			sb.append( ": " );
-			sb.append( status.url );
-			sb.append( "\n" );
-			sb.append( getString( R.string.send_header_date ) );
-			sb.append( ": " );
-			sb.append( TootStatus.formatTime( status.time_created_at ) );
-			sb.append( "\n" );
-			sb.append( getString( R.string.send_header_from_acct ) );
-			sb.append( ": " );
-			sb.append( access_info.getFullAcct( status.account ) );
-			sb.append( "\n" );
-			sb.append( getString( R.string.send_header_from_name ) );
-			sb.append( ": " );
-			sb.append( status.account.display_name );
-			sb.append( "\n" );
-			if( ! TextUtils.isEmpty( status.spoiler_text ) ){
-				sb.append( getString( R.string.send_header_content_warning ) );
-				sb.append( ": " );
-				sb.append( HTMLDecoder.decodeHTMLForClipboard( access_info, status.spoiler_text ) );
-				sb.append( "\n" );
-			}
-			sb.append( "\n" );
-			sb.append( HTMLDecoder.decodeHTMLForClipboard( access_info, status.content ) );
-			
-			Intent intent = new Intent();
-			intent.setAction( Intent.ACTION_SEND );
-			intent.setType( "text/plain" );
-			intent.putExtra( Intent.EXTRA_TEXT, sb.toString() );
-			startActivity( intent );
-			
-		}catch( Throwable ex ){
-			log.e( ex, "sendStatus failed." );
-			ex.printStackTrace();
-			Utils.showToast( this, ex, "sendStatus failed." );
-		}
-	}
 	
 	////////////////////////////////////////////////
 	

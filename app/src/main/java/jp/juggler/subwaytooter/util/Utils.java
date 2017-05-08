@@ -16,6 +16,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
@@ -1040,4 +1041,51 @@ public class Utils {
 		return null;
 	}
 	
+	
+	private static final char ALM = (char)0x061c; // Arabic letter mark (ALM)
+	private static final char LRM = (char)0x200E; //	Left-to-right mark (LRM)
+	private static final char RLM = (char)0x200F; //	Right-to-left mark (RLM)
+	private static final char LRE = (char)0x202A; // Left-to-right embedding (LRE)
+	private static final char RLE = (char)0x202B; // Right-to-left embedding (RLE)
+	private static final char PDF = (char)0x202C; // Pop directional formatting (PDF)
+	private static final char LRO = (char)0x202D; // Left-to-right override (LRO)
+	private static final char RLO = (char)0x202E; // Right-to-left override (RLO)
+	
+	private static final String CHARS_MUST_PDF = String.valueOf( LRE ) + RLE + LRO + RLO ;
+	
+	private static final char LRI = (char)0x2066; // Left-to-right isolate (LRI)
+	private static final char RLI = (char)0x2067; // Right-to-left isolate (RLI)
+	private static final char FSI = (char)0x2068; // First strong isolate (FSI)
+	private static final char PDI = (char)0x2069; // Pop directional isolate (PDI)
+	
+	private static final String CHARS_MUST_PDI = String.valueOf( LRI ) + RLI + FSI ;
+
+	public static String sanitizeBDI(String src){
+
+		LinkedList< Character > stack = null;
+
+		for( int i = 0, ie = src.length() ; i < ie ; ++ i ){
+			char c = src.charAt( i );
+			
+			if( - 1 != CHARS_MUST_PDF.indexOf( c ) ){
+				if( stack == null ) stack = new LinkedList<>();
+				stack.add( PDF );
+				
+			}else if( - 1 != CHARS_MUST_PDI.indexOf( c ) ){
+				if( stack == null ) stack = new LinkedList<>();
+				stack.add( PDI );
+			}else if( stack != null && ! stack.isEmpty() && stack.getLast() == c ){
+				stack.removeLast();
+			}
+		}
+		
+		if( stack == null || stack.isEmpty() ) return src;
+
+		StringBuilder sb = new StringBuilder();
+		sb.append( src );
+		while( ! stack.isEmpty() ){
+			sb.append( (char) stack.removeLast() );
+		}
+		return sb.toString();
+	}
 }

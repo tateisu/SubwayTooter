@@ -22,7 +22,6 @@ import java.util.regex.Pattern;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
-import jp.juggler.subwaytooter.api.entity.TootApplication;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootContext;
 import jp.juggler.subwaytooter.api.entity.TootGap;
@@ -34,6 +33,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.MutedApp;
+import jp.juggler.subwaytooter.table.MutedWord;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -93,11 +93,11 @@ class Column {
 	private static final String KEY_DONT_SHOW_REPLY = "dont_show_reply";
 	private static final String KEY_REGEX_TEXT = "regex_text";
 	
-	static final String KEY_HEADER_BACKGROUND_COLOR = "header_background_color";
-	static final String KEY_HEADER_TEXT_COLOR = "header_text_color";
-	static final String KEY_COLUMN_BACKGROUND_COLOR = "column_background_color";
-	static final String KEY_COLUMN_BACKGROUND_IMAGE = "column_background_image";
-	static final String KEY_COLUMN_BACKGROUND_IMAGE_ALPHA = "column_background_image_alpha";
+	private static final String KEY_HEADER_BACKGROUND_COLOR = "header_background_color";
+	private static final String KEY_HEADER_TEXT_COLOR = "header_text_color";
+	private static final String KEY_COLUMN_BACKGROUND_COLOR = "column_background_color";
+	private static final String KEY_COLUMN_BACKGROUND_IMAGE = "column_background_image";
+	private static final String KEY_COLUMN_BACKGROUND_IMAGE_ALPHA = "column_background_image_alpha";
 	
 	private static final String KEY_PROFILE_ID = "profile_id";
 	private static final String KEY_PROFILE_TAB = "tab";
@@ -726,17 +726,14 @@ class Column {
 		ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
 		
 		HashSet< String > muted_app = MutedApp.getNameSet();
+		HashSet< String > muted_word = MutedWord.getNameSet();
 		
 		for( Object o : list_data ){
 			if( o instanceof TootStatus ){
 				TootStatus item = (TootStatus) o;
-				TootApplication application = item.application;
-				if( application != null ){
-					String name = application.name;
-					if( name != null && muted_app.contains( name ) ){
-						log.d( "removeMuteApp: mute app %s", name );
-						continue;
-					}
+				if( item.checkMuted( muted_app,muted_word )){
+					continue;
+					
 				}
 			}
 			if( o instanceof TootNotification ){
@@ -744,9 +741,8 @@ class Column {
 				TootStatus status = item.status;
 				
 				if( status != null ){
-					if( status.application != null ){
-						String sv = status.application.name;
-						if( sv != null && muted_app.contains( sv ) ) continue;
+					if( status.checkMuted( muted_app,muted_word )){
+						continue;
 					}
 				}
 			}
@@ -772,7 +768,8 @@ class Column {
 		}
 		
 		HashSet< String > muted_app = MutedApp.getNameSet();
-		
+		HashSet< String > muted_word = MutedWord.getNameSet();
+
 		for( TootStatus status : src ){
 			if( with_attachment ){
 				if( ! hasMedia( status ) && ! hasMedia( status.reblog ) ) continue;
@@ -799,12 +796,8 @@ class Column {
 				}
 			}
 			
-			if( status.application != null ){
-				String sv = status.application.name;
-				if( sv != null && muted_app.contains( sv ) ){
-					log.d( "addWithFilter: mute app %s", sv );
-					continue;
-				}
+			if( status.checkMuted( muted_app,muted_word )){
+				continue;
 			}
 			
 			dst.add( status );
@@ -815,19 +808,18 @@ class Column {
 	private void addWithFilter( ArrayList< Object > dst, TootNotification.List src ){
 		
 		HashSet< String > muted_app = MutedApp.getNameSet();
+		HashSet< String > muted_word = MutedWord.getNameSet();
 		
 		for( TootNotification item : src ){
 			
 			TootStatus status = item.status;
 			
 			if( status != null ){
-				if( status.application != null ){
-					String sv = status.application.name;
-					if( sv != null && muted_app.contains( sv ) ){
-						log.d( "addWithFilter: mute app %s", sv );
-						continue;
-					}
+				if( status.checkMuted( muted_app,muted_word ) ){
+					log.d( "addWithFilter: status muted.");
+					continue;
 				}
+			
 			}
 			
 			dst.add( item );
@@ -2243,6 +2235,7 @@ class Column {
 				fireShowContent();
 				
 				if( holder != null ){
+					//noinspection StatementWithEmptyBody
 					if(restore_idx >= 0 ){
 						setItemTop( restore_idx + added - 1, restore_y );
 					}else{

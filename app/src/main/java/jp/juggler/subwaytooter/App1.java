@@ -35,6 +35,7 @@ import jp.juggler.subwaytooter.table.ClientInfo;
 import jp.juggler.subwaytooter.table.ContentWarning;
 import jp.juggler.subwaytooter.table.LogData;
 import jp.juggler.subwaytooter.table.MediaShown;
+import jp.juggler.subwaytooter.table.MutedWord;
 import jp.juggler.subwaytooter.table.NotificationTracking;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
@@ -50,7 +51,7 @@ public class App1 extends Application {
 	static final LogCategory log = new LogCategory( "App1" );
 	
 	static final String DB_NAME = "app_db";
-	static final int DB_VERSION = 10;
+	static final int DB_VERSION = 11;
 	// 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
 	// 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加
 	// 2017/4/29 v20 2=>5 MediaShown,ContentWarningのインデクスが間違っていたので貼り直す
@@ -59,6 +60,7 @@ public class App1 extends Application {
 	// 2017/5/02 v32 7=>8 (この変更は取り消された)
 	// 2017/5/02 v32 8=>9 AcctColor テーブルの追加
 	// 2017/5/04 v33 9=>10 SavedAccountに項目追加
+	// 2017/5/08 v41 10=>11 MutedWord テーブルの追加
 	
 	static DBOpenHelper db_open_helper;
 	
@@ -101,6 +103,7 @@ public class App1 extends Application {
 			UserRelation.onDBCreate( db );
 			AcctSet.onDBCreate( db );
 			AcctColor.onDBCreate( db );
+			MutedWord.onDBCreate( db );
 		}
 		
 		@Override
@@ -116,6 +119,7 @@ public class App1 extends Application {
 			UserRelation.onDBUpgrade( db, oldVersion, newVersion );
 			AcctSet.onDBUpgrade( db, oldVersion, newVersion );
 			AcctColor.onDBUpgrade( db, oldVersion, newVersion );
+			MutedWord.onDBUpgrade( db, oldVersion, newVersion );
 		}
 	}
 	

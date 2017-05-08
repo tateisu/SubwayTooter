@@ -11,6 +11,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
@@ -23,7 +24,6 @@ import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 public class TootStatus extends TootId {
-	
 	
 	public static class List extends ArrayList< TootStatus > {
 		
@@ -229,5 +229,39 @@ public class TootStatus extends TootId {
 			decoded_spoiler_text = HTMLDecoder.decodeHTML( access_info, spoiler_text );
 		}
 	}
+	
+	
+	public boolean checkMuted( HashSet< String > muted_app, HashSet< String > muted_word ){
+		
+		// app mute
+		if( application != null ){
+			String name = application.name;
+			if( name != null ){
+				if( muted_app.contains( name ) ){
+					return true;
+				}
+			}
+		}
+		
+		// word mute
+		for( String word: muted_word ){
+			if( decoded_content != null && decoded_content.toString().contains( word ) ){
+				return true;
+			}
+			if( decoded_spoiler_text != null && decoded_spoiler_text.toString().contains( word ) ){
+				return true;
+			}
+		}
+		
+		// reblog
+		//noinspection RedundantIfStatement
+		if( reblog != null && reblog.checkMuted( muted_app,muted_word ) ){
+			return true;
+		}
+		
+		return false;
+
+	}
+	
 	
 }

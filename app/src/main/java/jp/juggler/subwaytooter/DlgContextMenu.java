@@ -61,7 +61,7 @@ class DlgContextMenu implements View.OnClickListener {
 		
 		View llStatus = viewRoot.findViewById( R.id.llStatus );
 		View btnStatusWebPage = viewRoot.findViewById( R.id.btnStatusWebPage );
-		View btnStatusSendApp = viewRoot.findViewById( R.id.btnStatusSendApp );
+		View btnText = viewRoot.findViewById( R.id.btnText );
 		View btnFavouriteAnotherAccount = viewRoot.findViewById( R.id.btnFavouriteAnotherAccount );
 		View btnBoostAnotherAccount = viewRoot.findViewById( R.id.btnBoostAnotherAccount );
 		View btnDelete = viewRoot.findViewById( R.id.btnDelete );
@@ -98,7 +98,7 @@ class DlgContextMenu implements View.OnClickListener {
 			boolean status_by_me = access_info.isMe( status.account );
 			
 			btnStatusWebPage.setOnClickListener( this );
-			btnStatusSendApp.setOnClickListener( this );
+			btnText.setOnClickListener( this );
 			
 			if( account_list_non_pseudo_same_instance.isEmpty() ){
 				btnFavouriteAnotherAccount.setVisibility( View.GONE );
@@ -237,9 +237,9 @@ class DlgContextMenu implements View.OnClickListener {
 			}
 			break;
 		
-		case R.id.btnStatusSendApp:
+		case R.id.btnText:
 			if( status != null ){
-				activity.sendStatus( access_info, status );
+				ActText.open( activity,access_info,status);
 			}
 			break;
 		

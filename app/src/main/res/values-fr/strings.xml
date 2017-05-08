@@ -294,5 +294,6 @@
     <string name="select_and_copy">Select and copy</string>
     <string name="send">Send</string>
     <string name="word_was_muted">Word was muted.</string>
+    <string name="copy_complete">Clipboard updated.</string>
 
 </resources>

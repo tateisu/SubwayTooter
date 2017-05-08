@@ -290,4 +290,5 @@
     <string name="select_and_copy">選択してコピー…</string>
     <string name="send">共有</string>
     <string name="word_was_muted">単語をミュートしました</string>
+    <string name="copy_complete">クリップボードにコピーしました</string>
 </resources>

@@ -9,8 +9,8 @@ android {
         applicationId "jp.juggler.subwaytooter"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 41
-        versionName "0.4.1"
+        versionCode 42
+        versionName "0.4.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -61,7 +61,7 @@ dependencies {
     compile 'uk.co.chrisjenx:calligraphy:2.2.0'
     compile 'com.github.woxthebox:draglistview:1.4.3'
     compile 'com.github.omadahealth:swipy:1.2.3@aar'
-    compile 'com.jrummyapps:colorpicker:2.1.6'
+    compile 'com.jrummyapps:colorpicker:2.1.7'
     //    compile 'com.astuetz:pagerslidingtabstrip:1.0.1'
     compile 'com.github.kenglxn.QRGen:android:2.2.0'
     compile project(':exif')

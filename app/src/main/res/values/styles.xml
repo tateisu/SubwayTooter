@@ -2,6 +2,10 @@
 
     <!-- light theme -->
     <style name="AppTheme.Light" parent="Theme.AppCompat.Light.DarkActionBar">
+
+        <item name="android:windowBackground">@drawable/window_background_light</item>
+
+
         <item name="colorPrimary">@color/Light_colorPrimary</item>
         <item name="colorPrimaryDark">@color/Light_colorPrimaryDark</item>
         <item name="colorAccent">@color/Light_colorAccent</item>

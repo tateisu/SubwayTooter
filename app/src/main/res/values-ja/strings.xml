@@ -291,4 +291,9 @@
     <string name="send">共有</string>
     <string name="word_was_muted">単語をミュートしました</string>
     <string name="copy_complete">クリップボードにコピーしました</string>
+    <string name="button_background_color">ボタン背景色</string>
+    <string name="button_foreground_color">ボタン前景色</string>
+    <string name="footer_color">フッタの色</string>
+    <string name="tab_background_color">タブ背景色</string>
+    <string name="tab_divider_color">タブ両端の区切りの色</string>
 </resources>

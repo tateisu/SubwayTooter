@@ -28,11 +28,12 @@
 
     <color name="Light_colorPostFormBackground">#eee</color>
 
-
     <color name="Light_colorProfileBackgroundMask">#C0FFFFFF</color>
 
+    <color name="Light_colorBackground">#fff</color>
+    <color name="Light_colorColumnStripBackground">#fff</color>
 
-    <color name="Light_colorPrimaryDark">#303030</color>
+    <color name="Light_colorPrimaryDark">#303030</color> <!-- ステータスバー背景 -->
 
     <!-- 以下は白テーマでも黒テーマでもだいたい同じ -->
     <color name="Light_colorButtonSelected">#ff000080</color>
@@ -43,7 +44,6 @@
     <color name="Light_colorColumnListDeleteBackground">#FF0000</color>
     <color name="Light_colorColumnListDeleteText">#fff</color>
     <color name="Light_colorRegexFilterError">#f00</color>
-    <color name="Light_colorColumnStripBackground">#000000</color>
 
 
     <!-- Dark theme -->
@@ -76,10 +76,13 @@
     <color name="Dark_colorPostFormBackground">#222</color>
 
     <color name="Dark_colorProfileBackgroundMask">#C0000000</color>
+
     <color name="Dark_colorBackground">#000</color>
 
+    <color name="Dark_colorColumnStripBackground">#000</color>
 
-    <color name="Dark_colorPrimaryDark">#222</color>
+
+    <color name="Dark_colorPrimaryDark">#222</color> <!-- ステータスバー背景 -->
 
     <!-- 以下は白テーマでも黒テーマでもだいたい同じ -->
     <color name="Dark_colorButtonSelected">#ff000080</color>
@@ -90,6 +93,5 @@
     <color name="Dark_colorColumnListDeleteBackground">#FF0000</color>
     <color name="Dark_colorColumnListDeleteText">#fff</color>
     <color name="Dark_colorRegexFilterError">#f00</color>
-    <color name="Dark_colorColumnStripBackground">#000</color>
 
 </resources>

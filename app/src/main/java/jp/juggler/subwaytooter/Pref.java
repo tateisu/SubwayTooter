@@ -31,4 +31,12 @@ public class Pref {
 	static final String KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR = "ShowFollowButtonInButtonBar";
 	static final String KEY_REFRESH_AFTER_TOOT = "refresh_after_toot";
 	public static final String KEY_DONT_ROUND = "dont_round";
+	
+	static final String KEY_FOOTER_BUTTON_BG_COLOR = "footer_button_bg_color";
+	static final String KEY_FOOTER_BUTTON_FG_COLOR = "footer_button_fg_color";
+	static final String KEY_FOOTER_TAB_BG_COLOR = "footer_tab_bg_color";
+	static final String KEY_FOOTER_TAB_DIVIDER_COLOR = "footer_tab_divider_color";
+	
+	
+	
 }

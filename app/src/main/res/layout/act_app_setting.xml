@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:clipToPadding="false"
     android:fillViewport="true"
 
@@ -226,8 +228,8 @@
         </LinearLayout>
 
 
-
         <View style="@style/setting_divider"/>
+
         <TextView
             style="@style/setting_row_label"
             android:text="@string/dont_round_avatar"
@@ -244,6 +246,206 @@
         </LinearLayout>
 
         <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/footer_color"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <LinearLayout
+                android:id="@+id/llFooterBG"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:orientation="horizontal"
+                android:background="?attr/colorColumnStripBackground"
+                >
+
+                <ImageView
+                    android:id="@+id/ivFooterMenu"
+                    app:srcCompat="?attr/ic_hamburger"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/btn_bg_ddd"
+                    android:importantForAccessibility="no"
+                    />
+
+                <View
+                    android:id="@+id/vFooterDivider1"
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:background="?attr/colorImageButton"
+                    />
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    />
+                <HorizontalScrollView
+                    android:id="@+id/svColumnStrip"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+
+                    android:cacheColorHint="#00000000"
+                    android:fadingEdge="horizontal"
+                    android:fadingEdgeLength="20dp"
+                    android:fillViewport="true"
+                    android:scrollbars="none"
+                    >
+
+                    <LinearLayout
+                        android:id="@+id/llColumnStrip"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        >
+
+
+                    </LinearLayout>
+                </HorizontalScrollView>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    />
+                <View
+                    android:id="@+id/vFooterDivider2"
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:background="?attr/colorImageButton"
+                    />
+
+                <ImageView
+                    android:id="@+id/ivFooterToot"
+                    app:srcCompat="?attr/ic_edit"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/btn_bg_ddd"
+                    android:contentDescription="@string/toot"
+                    />
+            </LinearLayout>
+
+        </LinearLayout>
+
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                style="@style/setting_row_label"
+                android:text="@string/button_background_color"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnFooterBackgroundEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                />
+
+            <Button
+                android:id="@+id/btnFooterBackgroundReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                />
+
+        </LinearLayout>
+
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                style="@style/setting_row_label"
+                android:text="@string/button_foreground_color"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnFooterForegroundColorEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnFooterForegroundColorReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                style="@style/setting_row_label"
+                android:text="@string/tab_background_color"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnTabBackgroundColorEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnTabBackgroundColorReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                style="@style/setting_row_label"
+                android:text="@string/tab_divider_color"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnTabDividerColorEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnTabDividerColorReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+
+        <View style="@style/setting_divider"/>
+
+
         <!--<TextView-->
         <!--style="@style/setting_row_label"-->
         <!--android:text="@string/actions"-->

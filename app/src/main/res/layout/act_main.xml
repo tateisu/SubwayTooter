@@ -67,6 +67,7 @@
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
                 android:background="?attr/colorImageButton"
+                android:id="@+id/vFooterDivider1"
                 />
 
             <HorizontalScrollView
@@ -94,6 +95,7 @@
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
                 android:background="?attr/colorImageButton"
+                android:id="@+id/vFooterDivider2"
                 />
             <ImageButton
                 android:id="@+id/btnToot"

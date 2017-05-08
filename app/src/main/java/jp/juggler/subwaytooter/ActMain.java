@@ -27,6 +27,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
 import android.widget.HorizontalScrollView;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
@@ -247,6 +248,7 @@ public class ActMain extends AppCompatActivity
 	static final int REQUEST_CODE_NICKNAME = 4;
 	static final int REQUEST_CODE_POST = 5;
 	static final int REQUEST_COLUMN_COLOR = 6;
+	static final int REQUEST_APP_SETTING = 7;
 	
 	@Override protected void onActivityResult( int requestCode, int resultCode, Intent data ){
 		log.d( "onActivityResult" );
@@ -302,8 +304,14 @@ public class ActMain extends AppCompatActivity
 					}
 					updateColumnStrip();
 				}
+				
 			}
 		}
+		
+		if( requestCode == REQUEST_APP_SETTING ){
+			showFooterColor();
+		}
+
 		super.onActivityResult( requestCode, resultCode, data );
 	}
 	
@@ -426,9 +434,11 @@ public class ActMain extends AppCompatActivity
 			performAddTimeline( false, Column.TYPE_NOTIFICATIONS );
 			
 		}else if( id == R.id.nav_app_setting ){
-			performAppSetting();
+			ActAppSetting.open( this, REQUEST_APP_SETTING );
+			
 		}else if( id == R.id.nav_account_setting ){
 			performAccountSetting();
+			
 		}else if( id == R.id.nav_column_list ){
 			openColumnList();
 			
@@ -483,6 +493,10 @@ public class ActMain extends AppCompatActivity
 	DrawerLayout drawer;
 	LinearLayout llColumnStrip;
 	HorizontalScrollView svColumnStrip;
+	ImageButton btnMenu;
+	ImageButton btnToot;
+	View vFooterDivider1;
+	View vFooterDivider2;
 	
 	void initUI(){
 		setContentView( R.layout.act_main );
@@ -503,17 +517,16 @@ public class ActMain extends AppCompatActivity
 		NavigationView navigationView = (NavigationView) findViewById( R.id.nav_view );
 		navigationView.setNavigationItemSelectedListener( this );
 		
-		View v;
-		
-		v = findViewById( R.id.btnToot );
-		v.setOnClickListener( this );
-		
-		v = findViewById( R.id.btnMenu );
-		v.setOnClickListener( this );
-		
+		btnMenu = (ImageButton) findViewById( R.id.btnMenu );
+		btnToot = (ImageButton) findViewById( R.id.btnToot );
+		vFooterDivider1 = findViewById( R.id.vFooterDivider1 );
+		vFooterDivider2 = findViewById( R.id.vFooterDivider2 );
 		llColumnStrip = (LinearLayout) findViewById( R.id.llColumnStrip );
-		
 		svColumnStrip = (HorizontalScrollView) findViewById( R.id.svColumnStrip );
+		
+		btnToot.setOnClickListener( this );
+		btnMenu.setOnClickListener( this );
+		
 		svColumnStrip.setHorizontalFadingEdgeEnabled( true );
 		
 		// ViewPager
@@ -522,6 +535,7 @@ public class ActMain extends AppCompatActivity
 		pager.setAdapter( pager_adapter );
 		pager.addOnPageChangeListener( this );
 		
+		showFooterColor();
 	}
 	
 	void updateColumnStrip(){
@@ -546,10 +560,10 @@ public class ActMain extends AppCompatActivity
 			if( c == 0 ){
 				viewRoot.setBackgroundResource( R.drawable.btn_bg_ddd );
 			}else{
-				ViewCompat.setBackground( viewRoot,Styler.getAdaptiveRippleDrawable(
+				ViewCompat.setBackground( viewRoot, Styler.getAdaptiveRippleDrawable(
 					c,
-					(column.header_fg_color != 0 ? column.header_fg_color :
-						Styler.getAttributeColor( this,R.attr.colorRippleEffect ))
+					( column.header_fg_color != 0 ? column.header_fg_color :
+						Styler.getAttributeColor( this, R.attr.colorRippleEffect ) )
 				
 				) );
 			}
@@ -1554,10 +1568,6 @@ public class ActMain extends AppCompatActivity
 			} );
 	}
 	
-	private void performAppSetting(){
-		ActAppSetting.open( ActMain.this );
-	}
-	
 	////////////////////////////////////////////////////////
 	// column list
 	
@@ -1637,7 +1647,7 @@ public class ActMain extends AppCompatActivity
 			}else if( bFollow ){
 				BidiFormatter bidiFormatter = BidiFormatter.getInstance();
 				String msg = getString( R.string.confirm_follow_who_from
-					, bidiFormatter.unicodeWrap(who.display_name )
+					, bidiFormatter.unicodeWrap( who.display_name )
 					, AcctColor.getNickname( access_info.acct )
 				);
 				
@@ -2321,4 +2331,47 @@ public class ActMain extends AppCompatActivity
 		}.executeOnExecutor( App1.task_executor );
 	}
 	
+	private void showFooterColor(){
+		int footer_button_bg_color = pref.getInt( Pref.KEY_FOOTER_BUTTON_BG_COLOR, 0 );
+		int footer_button_fg_color = pref.getInt( Pref.KEY_FOOTER_BUTTON_FG_COLOR, 0 );
+		int footer_tab_bg_color = pref.getInt( Pref.KEY_FOOTER_TAB_BG_COLOR, 0 );
+		int footer_tab_divider_color = pref.getInt( Pref.KEY_FOOTER_TAB_DIVIDER_COLOR, 0 );
+		
+		int c = footer_button_bg_color;
+		if( c == 0 ){
+			btnMenu.setBackgroundResource( R.drawable.btn_bg_ddd );
+			btnToot.setBackgroundResource( R.drawable.btn_bg_ddd );
+		}else{
+			int fg = ( footer_button_fg_color != 0
+				? footer_button_fg_color
+				: Styler.getAttributeColor( this, R.attr.colorRippleEffect ) );
+			ViewCompat.setBackground( btnToot, Styler.getAdaptiveRippleDrawable( c, fg ) );
+			ViewCompat.setBackground( btnMenu, Styler.getAdaptiveRippleDrawable( c, fg ) );
+		}
+		
+		c = footer_button_fg_color;
+		if( c == 0 ){
+			Styler.setIconDefaultColor( this, btnToot, R.attr.ic_edit );
+			Styler.setIconDefaultColor( this, btnMenu, R.attr.ic_hamburger );
+		}else{
+			Styler.setIconCustomColor( this, btnToot, c, R.attr.ic_edit );
+			Styler.setIconCustomColor( this, btnMenu, c, R.attr.ic_hamburger );
+		}
+		
+		c = footer_tab_bg_color;
+		if( c == 0 ){
+			svColumnStrip.setBackgroundColor( Styler.getAttributeColor( this, R.attr.colorColumnStripBackground ) );
+		}else{
+			svColumnStrip.setBackgroundColor( c );
+		}
+		
+		c = footer_tab_divider_color;
+		if( c == 0 ){
+			vFooterDivider1.setBackgroundColor( Styler.getAttributeColor( this, R.attr.colorImageButton ) );
+			vFooterDivider2.setBackgroundColor( Styler.getAttributeColor( this, R.attr.colorImageButton ) );
+		}else{
+			vFooterDivider1.setBackgroundColor( c );
+			vFooterDivider2.setBackgroundColor( c );
+		}
+	}
 }

@@ -295,5 +295,10 @@
     <string name="send">Send</string>
     <string name="word_was_muted">Word was muted.</string>
     <string name="copy_complete">Clipboard updated.</string>
+    <string name="button_background_color">Button background color</string>
+    <string name="button_foreground_color">Button foreground color</string>
+    <string name="footer_color">Footer color</string>
+    <string name="tab_background_color">Tab background color</string>
+    <string name="tab_divider_color">Tab divider color</string>
 
 </resources>

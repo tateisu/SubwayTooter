@@ -1,23 +1,33 @@
 package jp.juggler.subwaytooter;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Switch;
 
-public class ActAppSetting extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener, AdapterView.OnItemSelectedListener {
+import com.jrummyapps.android.colorpicker.ColorPickerDialog;
+import com.jrummyapps.android.colorpicker.ColorPickerDialogListener;
+
+public class ActAppSetting extends AppCompatActivity
+	implements CompoundButton.OnCheckedChangeListener
+	, AdapterView.OnItemSelectedListener
+	, View.OnClickListener
+	, ColorPickerDialogListener
+{
 	
-	public static void open( Context context ){
-		context.startActivity( new Intent( context, ActAppSetting.class ) );
+	public static void open( ActMain activity ,int request_code ){
+		activity.startActivityForResult( new Intent( activity, ActAppSetting.class ),request_code );
 	}
 	
 	SharedPreferences pref;
@@ -41,7 +51,6 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 	Switch swShowFollowButtonInButtonBar;
 	Switch swDontRound;
 	
-	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
 	Spinner spResizeImage;
@@ -55,6 +64,17 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 	static final int BACK_CLOSE_COLUMN = 1;
 	static final int BACK_OPEN_COLUMN_LIST = 2;
 	static final int BACK_EXIT_APP = 3;
+	
+	int footer_button_bg_color;
+	int footer_button_fg_color;
+	int footer_tab_bg_color;
+	int footer_tab_divider_color;
+	
+	ImageView ivFooterToot;
+	ImageView ivFooterMenu;
+	View llFooterBG;
+	View vFooterDivider1;
+	View vFooterDivider2;
 	
 	private void initUI(){
 		setContentView( R.layout.act_app_setting );
@@ -142,6 +162,20 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 			spRefreshAfterToot.setOnItemSelectedListener( this );
 		}
 		
+		findViewById( R.id.btnFooterBackgroundEdit ).setOnClickListener( this );
+		findViewById( R.id.btnFooterBackgroundReset ).setOnClickListener( this );
+		findViewById( R.id.btnFooterForegroundColorEdit ).setOnClickListener( this );
+		findViewById( R.id.btnFooterForegroundColorReset ).setOnClickListener( this );
+		findViewById( R.id.btnTabBackgroundColorEdit ).setOnClickListener( this );
+		findViewById( R.id.btnTabBackgroundColorReset ).setOnClickListener( this );
+		findViewById( R.id.btnTabDividerColorEdit ).setOnClickListener( this );
+		findViewById( R.id.btnTabDividerColorReset ).setOnClickListener( this );
+		
+		ivFooterToot = (ImageView) findViewById( R.id.ivFooterToot );
+		ivFooterMenu = (ImageView) findViewById( R.id.ivFooterMenu );
+		llFooterBG = findViewById( R.id.llFooterBG );
+		vFooterDivider1 = findViewById( R.id.vFooterDivider1 );
+		vFooterDivider2 = findViewById( R.id.vFooterDivider2 );
 	}
 	
 	boolean load_busy;
@@ -165,7 +199,15 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 		spUITheme.setSelection( pref.getInt( Pref.KEY_UI_THEME, 0 ) );
 		spResizeImage.setSelection( pref.getInt( Pref.KEY_RESIZE_IMAGE, 4 ) );
 		spRefreshAfterToot.setSelection( pref.getInt( Pref.KEY_REFRESH_AFTER_TOOT, 0 ) );
+		
+		footer_button_bg_color = pref.getInt( Pref.KEY_FOOTER_BUTTON_BG_COLOR, 0 );
+		footer_button_fg_color = pref.getInt( Pref.KEY_FOOTER_BUTTON_FG_COLOR, 0 );
+		footer_tab_bg_color = pref.getInt( Pref.KEY_FOOTER_TAB_BG_COLOR, 0 );
+		footer_tab_divider_color = pref.getInt( Pref.KEY_FOOTER_TAB_DIVIDER_COLOR, 0 );
+		
 		load_busy = false;
+		
+		showFooterColor();
 	}
 	
 	private void saveUIToData(){
@@ -178,8 +220,7 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 			.putBoolean( Pref.KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN, swExitAppWhenCloseProtectedColumn.isChecked() )
 			.putBoolean( Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR, swShowFollowButtonInButtonBar.isChecked() )
 			.putBoolean( Pref.KEY_DONT_ROUND, swDontRound.isChecked() )
-		
-
+			
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_LED, cbNotificationLED.isChecked() )
@@ -188,7 +229,14 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 			.putInt( Pref.KEY_UI_THEME, spUITheme.getSelectedItemPosition() )
 			.putInt( Pref.KEY_RESIZE_IMAGE, spResizeImage.getSelectedItemPosition() )
 			.putInt( Pref.KEY_REFRESH_AFTER_TOOT, spRefreshAfterToot.getSelectedItemPosition() )
+			
+			.putInt( Pref.KEY_FOOTER_BUTTON_BG_COLOR, footer_button_bg_color )
+			.putInt( Pref.KEY_FOOTER_BUTTON_FG_COLOR, footer_button_fg_color )
+			.putInt( Pref.KEY_FOOTER_TAB_BG_COLOR, footer_tab_bg_color )
+			.putInt( Pref.KEY_FOOTER_TAB_DIVIDER_COLOR, footer_tab_divider_color )
+			
 			.apply();
+		
 	}
 	
 	@Override public void onCheckedChanged( CompoundButton buttonView, boolean isChecked ){
@@ -202,4 +250,139 @@ public class ActAppSetting extends AppCompatActivity implements CompoundButton.O
 	
 	@Override public void onNothingSelected( AdapterView< ? > parent ){
 	}
+	
+	static final int COLOR_DIALOG_ID_FOOTER_BUTTON_BG = 1;
+	static final int COLOR_DIALOG_ID_FOOTER_BUTTON_FG = 2;
+	static final int COLOR_DIALOG_ID_FOOTER_TAB_BG = 3;
+	static final int COLOR_DIALOG_ID_FOOTER_TAB_DIVIDER = 4;
+	
+	@Override public void onClick( View v ){
+		switch( v.getId() ){
+		
+		case R.id.btnFooterBackgroundEdit:
+			openColorPicker( COLOR_DIALOG_ID_FOOTER_BUTTON_BG, footer_button_bg_color );
+			break;
+		
+		case R.id.btnFooterBackgroundReset:
+			footer_button_bg_color = 0;
+			saveUIToData();
+			showFooterColor();
+			break;
+		
+		case R.id.btnFooterForegroundColorEdit:
+			openColorPicker( COLOR_DIALOG_ID_FOOTER_BUTTON_FG, footer_button_fg_color );
+			break;
+		
+		case R.id.btnFooterForegroundColorReset:
+			footer_button_fg_color = 0;
+			saveUIToData();
+			showFooterColor();
+			break;
+		
+		case R.id.btnTabBackgroundColorEdit:
+			openColorPicker( COLOR_DIALOG_ID_FOOTER_TAB_BG, footer_tab_bg_color );
+			break;
+		
+		case R.id.btnTabBackgroundColorReset:
+			footer_tab_bg_color = 0;
+			saveUIToData();
+			showFooterColor();
+			break;
+		
+		case R.id.btnTabDividerColorEdit:
+			openColorPicker( COLOR_DIALOG_ID_FOOTER_TAB_DIVIDER, footer_tab_divider_color );
+			break;
+		
+		case R.id.btnTabDividerColorReset:
+			footer_tab_divider_color = 0;
+			saveUIToData();
+			showFooterColor();
+			break;
+			
+		}
+	}
+	
+	void openColorPicker( int id, int color ){
+		ColorPickerDialog.Builder builder = ColorPickerDialog.newBuilder()
+			.setDialogType( ColorPickerDialog.TYPE_CUSTOM )
+			.setAllowPresets( true )
+			.setShowAlphaSlider( false )
+			.setDialogId( id );
+		if( color != 0 ) builder.setColor( color );
+		builder.show( this );
+	}
+	
+	@Override public void onColorSelected( int dialogId, @ColorInt int color ){
+		switch( dialogId ){
+		
+		case COLOR_DIALOG_ID_FOOTER_BUTTON_BG:
+			footer_button_bg_color = 0xff000000 | color;
+			saveUIToData();
+			showFooterColor();
+			break;
+		
+		case COLOR_DIALOG_ID_FOOTER_BUTTON_FG:
+			footer_button_fg_color = 0xff000000 | color;
+			saveUIToData();
+			showFooterColor();
+			break;
+		
+		case COLOR_DIALOG_ID_FOOTER_TAB_BG:
+			footer_tab_bg_color = 0xff000000 | color;
+			saveUIToData();
+			showFooterColor();
+			break;
+		
+		case COLOR_DIALOG_ID_FOOTER_TAB_DIVIDER:
+			footer_tab_divider_color = 0xff000000 | color;
+			saveUIToData();
+			showFooterColor();
+			break;
+			
+		}
+	}
+	
+	@Override public void onDialogDismissed( int dialogId ){
+	}
+	
+	private void showFooterColor(){
+		
+		int c = footer_button_bg_color;
+		if( c == 0 ){
+			ivFooterToot.setBackgroundResource( R.drawable.btn_bg_ddd );
+			ivFooterMenu.setBackgroundResource( R.drawable.btn_bg_ddd );
+		}else{
+			int fg = ( footer_button_fg_color != 0
+				? footer_button_fg_color
+				: Styler.getAttributeColor( this, R.attr.colorRippleEffect ) );
+			ViewCompat.setBackground( ivFooterToot, Styler.getAdaptiveRippleDrawable( c, fg ) );
+			ViewCompat.setBackground( ivFooterMenu, Styler.getAdaptiveRippleDrawable( c, fg ) );
+		}
+		
+		c = footer_button_fg_color;
+		if( c == 0 ){
+			Styler.setIconDefaultColor( this, ivFooterToot, R.attr.ic_edit );
+			Styler.setIconDefaultColor( this, ivFooterMenu, R.attr.ic_hamburger );
+		}else{
+			Styler.setIconCustomColor( this, ivFooterToot, c, R.attr.ic_edit );
+			Styler.setIconCustomColor( this, ivFooterMenu, c, R.attr.ic_hamburger );
+		}
+		
+		c = footer_tab_bg_color;
+		if( c == 0 ){
+			llFooterBG.setBackgroundColor( Styler.getAttributeColor( this, R.attr.colorColumnStripBackground ) );
+		}else{
+			llFooterBG.setBackgroundColor( c );
+		}
+		
+		c = footer_tab_divider_color;
+		if( c == 0 ){
+			vFooterDivider1.setBackgroundColor( Styler.getAttributeColor( this, R.attr.colorImageButton ) );
+			vFooterDivider2.setBackgroundColor( Styler.getAttributeColor( this, R.attr.colorImageButton ) );
+		}else{
+			vFooterDivider1.setBackgroundColor( c );
+			vFooterDivider2.setBackgroundColor( c );
+		}
+	}
+	
 }

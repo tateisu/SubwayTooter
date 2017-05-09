@@ -106,7 +106,7 @@ class StatusButtons implements View.OnClickListener {
 		if( close_window != null ) close_window.dismiss();
 		switch( v.getId() ){
 		case R.id.btnConversation:
-			activity.performConversation( access_info, status );
+			activity.openStatus( access_info, status );
 			break;
 		case R.id.btnReply:
 			if( access_info.isPseudo() ){

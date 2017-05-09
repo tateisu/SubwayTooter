@@ -63,6 +63,7 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 	
 	@Override protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
+		App1.setActivityTheme( this, false );
 		initUI();
 		
 		

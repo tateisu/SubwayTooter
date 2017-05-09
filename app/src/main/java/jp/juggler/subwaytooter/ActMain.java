@@ -31,6 +31,8 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.yasesprox.android.transcommusdk.TransCommuActivity;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -311,7 +313,7 @@ public class ActMain extends AppCompatActivity
 		if( requestCode == REQUEST_APP_SETTING ){
 			showFooterColor();
 		}
-
+		
 		super.onActivityResult( requestCode, resultCode, data );
 	}
 	
@@ -469,6 +471,11 @@ public class ActMain extends AppCompatActivity
 		}else if( id == R.id.nav_muted_word ){
 			startActivity( new Intent( this, ActMutedWord.class ) );
 			
+//		}else if( id == R.id.nav_translation ){
+//			Intent intent = new Intent(this, TransCommuActivity.class);
+//			intent.putExtra(TransCommuActivity.APPLICATION_CODE_EXTRA, "FJlDoBKitg");
+//			this.startActivity(intent);
+//
 			// Handle the camera action
 			//		}else if( id == R.id.nav_gallery ){
 			//
@@ -751,20 +758,70 @@ public class ActMain extends AppCompatActivity
 		// プロフURL
 		if( "https".equals( uri.getScheme() ) ){
 			if( uri.getPath().startsWith( "/@" ) ){
+				// ステータスをアプリ内で開く
+				Matcher m = reStatusPage.matcher(  uri.toString()  );
+				if( m.find() ){
+					try{
+						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
+						final String host = m.group( 1 );
+						final long status_id = Long.parseLong( m.group( 3 ), 10 );
+						
+						ArrayList< SavedAccount > account_list_same_host = new ArrayList<>();
+						
+						for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
+							if( host.equalsIgnoreCase( a.host ) ){
+								account_list_same_host.add( a );
+							}
+						}
+						
+						// ソートする
+						Collections.sort( account_list_same_host, new Comparator< SavedAccount >() {
+							@Override public int compare( SavedAccount a, SavedAccount b ){
+								return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
+							}
+						} );
+						
+						
+						if( account_list_same_host.isEmpty() ){
+							account_list_same_host.add( addPseudoAccount( host ) );
+						}
+						
+						
+						AccountPicker.pick( this, true, true
+							, getString( R.string.open_status_from )
+							, account_list_same_host
+							, new AccountPicker.AccountPickerCallback() {
+								@Override public void onAccountPicked( final SavedAccount ai ){
+									openStatus( ai, status_id );
+								}
+							} );
+						
+					}catch( Throwable ex ){
+						Utils.showToast( this, ex, "can't parse status id." );
+					}
+					return;
+				}
+				
 				// ユーザページをアプリ内で開く
-				Matcher m = reUserPage.matcher( uri.toString() );
+				 m = reUserPage.matcher( uri.toString() );
 				if( m.find() ){
 					// https://mastodon.juggler.jp/@SubwayTooter
 					final String host = m.group( 1 );
 					final String user = Uri.decode( m.group( 2 ) );
-					ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( log );
+
 					ArrayList< SavedAccount > account_list_same_host = new ArrayList<>();
-					
-					for( SavedAccount a : account_list ){
+					for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
 						if( host.equalsIgnoreCase( a.host ) ){
 							account_list_same_host.add( a );
 						}
 					}
+					
+					// ソートする
+					Collections.sort( account_list_same_host, new Comparator< SavedAccount >() {
+						@Override public int compare( SavedAccount a, SavedAccount b ){
+							return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
+						}
+					} );
 					
 					if( account_list_same_host.isEmpty() ){
 						account_list_same_host.add( addPseudoAccount( host ) );
@@ -1058,10 +1115,6 @@ public class ActMain extends AppCompatActivity
 			} );
 	}
 	
-	public void performConversation( SavedAccount access_info, TootStatus status ){
-		addColumn( access_info, Column.TYPE_CONVERSATION, status.id );
-	}
-	
 	private void performAddTimeline( boolean bAllowPseudo, final int type, final Object... args ){
 		AccountPicker.pick( this, bAllowPseudo, true
 			, getString( R.string.account_picker_add_timeline_of, Column.getColumnTypeName( this, type ) )
@@ -1078,10 +1131,6 @@ public class ActMain extends AppCompatActivity
 					}
 				}
 			} );
-	}
-	
-	public void openHashTag( SavedAccount access_info, String tag ){
-		addColumn( access_info, Column.TYPE_HASHTAG, tag );
 	}
 	
 	public void performMuteApp( @NonNull TootApplication application ){
@@ -1170,7 +1219,8 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	static final Pattern reHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#]+)\\z" );
-	static final Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#]+)\\z" );
+	static final Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)\\z" );
+	static final Pattern reStatusPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)/(\\d+)\\z" );
 	
 	public void openChromeTab( final SavedAccount access_info, final String url, boolean noIntercept ){
 		try{
@@ -1192,6 +1242,26 @@ public class ActMain extends AppCompatActivity
 					}
 				}
 				
+				// ステータスページをアプリから開く
+				m = reStatusPage.matcher( url );
+				if( m.find() ){
+					try{
+						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
+						final String host = m.group( 1 );
+						final long status_id = Long.parseLong( m.group( 3 ), 10 );
+						if( host.equalsIgnoreCase( access_info.host ) ){
+							openStatus( access_info, status_id );
+							return;
+						}else{
+							openStatusOtherInstance( access_info, url, host, status_id );
+							return;
+						}
+					}catch( Throwable ex ){
+						Utils.showToast( this, ex, "can't parse status id." );
+					}
+					return;
+				}
+				
 				// ユーザページをアプリ内で開く
 				m = reUserPage.matcher( url );
 				if( m.find() ){
@@ -1210,6 +1280,8 @@ public class ActMain extends AppCompatActivity
 					} );
 					return;
 				}
+				
+			
 			}
 			
 			try{
@@ -1234,6 +1306,67 @@ public class ActMain extends AppCompatActivity
 			// ex.printStackTrace();
 			log.e( ex, "openChromeTab failed. url=%s", url );
 		}
+	}
+	
+	public void openStatus( @NonNull SavedAccount access_info, @NonNull TootStatus status ){
+		openStatus( access_info, status.id );
+	}
+	
+	public void openStatus( @NonNull SavedAccount access_info, long status_id ){
+		addColumn( access_info, Column.TYPE_CONVERSATION, status_id );
+	}
+	
+	private void openStatusOtherInstance( final SavedAccount access_info, final String url, final String host, final long status_id ){
+		ActionsDialog dialog = new ActionsDialog();
+		
+		// ブラウザで表示する
+		dialog.addAction( getString( R.string.open_web_on_host, host ), new Runnable() {
+			@Override public void run(){
+				openChromeTab( access_info, url, true );
+			}
+		} );
+		
+		// 同タンスのアカウント
+		ArrayList< SavedAccount > account_list = new ArrayList<>(  );
+		for( SavedAccount a: SavedAccount.loadAccountList( log ) ){
+			if( host.equalsIgnoreCase( a.host ) ){
+				account_list.add(a);
+			}
+		}
+		
+		// ソートする
+		Collections.sort( account_list, new Comparator< SavedAccount >() {
+			@Override public int compare( SavedAccount a, SavedAccount b ){
+				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
+			}
+		} );
+		
+		for( SavedAccount a : account_list ){
+			final SavedAccount _a = a;
+			dialog.addAction( getString( R.string.open_in_account, a.acct ), new Runnable() {
+				@Override public void run(){
+					openStatus( _a, status_id );
+				}
+			} );
+		}
+		
+		// アカウントがないなら、疑似ホストを作る選択肢
+		if( account_list .isEmpty() ){
+			dialog.addAction( getString( R.string.open_in_pseudo_account, "?@" + host ), new Runnable() {
+				@Override public void run(){
+					SavedAccount sa = addPseudoAccount( host );
+					if( sa != null ){
+						openStatus( sa, status_id );
+					}
+				}
+			} );
+		}
+		
+		dialog.show( this, getString( R.string.open_status_from ) );
+	}
+	
+	public void openHashTag( SavedAccount access_info, String tag ){
+		addColumn( access_info, Column.TYPE_HASHTAG, tag );
 	}
 	
 	// 他インスタンスのハッシュタグの表示

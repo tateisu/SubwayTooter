@@ -107,6 +107,11 @@
                     android:icon="?attr/ic_info"
                     android:title="@string/app_about"/>
 
+                <!--<item-->
+                    <!--android:id="@+id/nav_translation"-->
+                    <!--android:icon="?attr/ic_info"-->
+                    <!--android:title="@string/help_translation"/>-->
+
                 <item
                     android:id="@+id/nav_oss_license"
                     android:icon="?attr/ic_info"

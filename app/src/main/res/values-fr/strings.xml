@@ -300,5 +300,7 @@
     <string name="footer_color">Footer color</string>
     <string name="tab_background_color">Tab background color</string>
     <string name="tab_divider_color">Tab divider color</string>
+    <string name="help_translation">Help translation</string>
+    <string name="open_status_from">Open status from</string>
 
 </resources>

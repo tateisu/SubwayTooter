@@ -296,4 +296,6 @@
     <string name="button_foreground_color">Button foreground color</string>
     <string name="tab_background_color">Tab background color</string>
     <string name="tab_divider_color">Tab divider color</string>
+    <string name="open_status_from">Open status from</string>
+    <string name="help_translation">Help translation</string>
 </resources>

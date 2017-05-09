@@ -5,14 +5,14 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import jp.juggler.subwaytooter.util.MyListView;
 
 class ItemListAdapter extends BaseAdapter implements AdapterView.OnItemClickListener {
 	private final Column column;
 	private final ActMain activity;
-	private final ArrayList< Object > list;
+	private final List< Object > list;
 	
 	ItemListAdapter( ActMain activity,Column column ){
 		this.activity = activity;

@@ -24,6 +24,7 @@
             android:layout_height="32dp"
             android:layout_marginEnd="4dp"
             android:scaleType="fitEnd"
+            android:importantForAccessibility="no"
             />
 
         <LinearLayout
@@ -153,11 +154,11 @@
 
     </LinearLayout>
 
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/llStatus"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:layout_marginBottom="3dp"
         >
 
@@ -194,175 +195,180 @@
 
         </LinearLayout>
 
-        <jp.juggler.subwaytooter.util.MyNetworkImageView
-            android:id="@+id/ivThumbnail"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:layout_below="@id/llTime"
-            android:layout_marginEnd="4dp"
-            android:layout_marginTop="4dp"
-            android:background="@drawable/btn_bg_transparent"
-            android:contentDescription="@string/thumbnail"
-            android:scaleType="centerCrop"
-            />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/llTime"
-            android:layout_toEndOf="@id/ivThumbnail"
-            android:orientation="vertical"
+            android:orientation="horizontal"
             >
 
-            <TextView
-                android:id="@+id/tvName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textStyle="bold"
-                tools:text="Displayname @username"
+            <jp.juggler.subwaytooter.util.MyNetworkImageView
+                android:id="@+id/ivThumbnail"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/btn_bg_transparent"
+                android:contentDescription="@string/thumbnail"
+                android:scaleType="centerCrop"
                 />
 
             <LinearLayout
-                android:id="@+id/llContentWarning"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="3dp"
-                android:baselineAligned="false"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                >
-
-                <Button
-                    android:id="@+id/btnContentWarning"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:layout_marginEnd="8dp"
-                    android:background="@drawable/btn_bg_ddd"
-                    android:minWidth="40dp"
-                    android:padding="4dp"
-                    tools:text="見る"
-                    />
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    >
-
-                    <jp.juggler.subwaytooter.util.MyTextView
-                        android:id="@+id/tvMentions"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        />
-
-                    <jp.juggler.subwaytooter.util.MyTextView
-                        android:id="@+id/tvContentWarning"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="3dp"
-                        />
-                </LinearLayout>
-
-            </LinearLayout>
-
-
-            <LinearLayout
-                android:id="@+id/llContents"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 >
 
-                <jp.juggler.subwaytooter.util.MyTextView
-                    android:id="@+id/tvContent"
+                <TextView
+                    android:id="@+id/tvName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    tools:text="Displayname @username"
+                    />
+
+                <LinearLayout
+                    android:id="@+id/llContentWarning"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
-                    android:lineSpacingMultiplier="1.1"
-                    tools:text="Contents\nContents"
-                    />
-
-                <FrameLayout
-                    android:id="@+id/flMedia"
-                    android:layout_width="match_parent"
-                    android:layout_height="64dp"
-                    android:layout_marginTop="3dp"
+                    android:baselineAligned="false"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
                     >
 
+                    <Button
+                        android:id="@+id/btnContentWarning"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="@drawable/btn_bg_ddd"
+                        android:minWidth="40dp"
+                        android:padding="4dp"
+                        tools:text="見る"
+                        />
+
                     <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="horizontal"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
                         >
 
-                        <jp.juggler.subwaytooter.util.MyNetworkImageView
-                            android:id="@+id/ivMedia1"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:background="@drawable/btn_bg_ddd"
-                            android:contentDescription="@string/thumbnail"
-                            android:scaleType="centerCrop"
+                        <jp.juggler.subwaytooter.util.MyTextView
+                            android:id="@+id/tvMentions"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
                             />
 
-                        <jp.juggler.subwaytooter.util.MyNetworkImageView
-                            android:id="@+id/ivMedia2"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_marginStart="8dp"
-                            android:layout_weight="1"
-                            android:background="@drawable/btn_bg_ddd"
-                            android:contentDescription="@string/thumbnail"
-                            android:scaleType="centerCrop"
-                            />
-
-                        <jp.juggler.subwaytooter.util.MyNetworkImageView
-                            android:id="@+id/ivMedia3"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_marginStart="8dp"
-                            android:layout_weight="1"
-                            android:background="@drawable/btn_bg_ddd"
-                            android:contentDescription="@string/thumbnail"
-                            android:scaleType="centerCrop"
-                            />
-
-                        <jp.juggler.subwaytooter.util.MyNetworkImageView
-                            android:id="@+id/ivMedia4"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_marginStart="8dp"
-                            android:layout_weight="1"
-                            android:background="@drawable/btn_bg_ddd"
-                            android:contentDescription="@string/thumbnail"
-                            android:scaleType="centerCrop"
-                            />
-
-                        <ImageButton
-                            android:id="@+id/btnHideMedia"
-                            android:layout_width="32dp"
-                            android:layout_height="match_parent"
-                            android:layout_marginStart="8dp"
-                            android:background="@drawable/btn_bg_transparent"
-                            android:contentDescription="@string/hide"
-                            android:src="?attr/btn_close"
+                        <jp.juggler.subwaytooter.util.MyTextView
+                            android:id="@+id/tvContentWarning"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
                             />
                     </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/btnShowMedia"
+                </LinearLayout>
+
+
+                <LinearLayout
+                    android:id="@+id/llContents"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    >
+
+                    <jp.juggler.subwaytooter.util.MyTextView
+                        android:id="@+id/tvContent"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:background="?attr/colorShowMediaBackground"
-                        android:gravity="center"
-                        android:text="@string/tap_to_show"
-                        android:textColor="?attr/colorShowMediaText"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:lineSpacingMultiplier="1.1"
+                        tools:text="Contents\nContents"
                         />
-                </FrameLayout>
+
+                    <FrameLayout
+                        android:id="@+id/flMedia"
+                        android:layout_width="match_parent"
+                        android:layout_height="64dp"
+                        android:layout_marginTop="3dp"
+                        >
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal"
+                            >
+
+                            <jp.juggler.subwaytooter.util.MyNetworkImageView
+                                android:id="@+id/ivMedia1"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_weight="1"
+                                android:background="@drawable/btn_bg_ddd"
+                                android:contentDescription="@string/thumbnail"
+                                android:scaleType="centerCrop"
+                                />
+
+                            <jp.juggler.subwaytooter.util.MyNetworkImageView
+                                android:id="@+id/ivMedia2"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_marginStart="8dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/btn_bg_ddd"
+                                android:contentDescription="@string/thumbnail"
+                                android:scaleType="centerCrop"
+                                />
+
+                            <jp.juggler.subwaytooter.util.MyNetworkImageView
+                                android:id="@+id/ivMedia3"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_marginStart="8dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/btn_bg_ddd"
+                                android:contentDescription="@string/thumbnail"
+                                android:scaleType="centerCrop"
+                                />
+
+                            <jp.juggler.subwaytooter.util.MyNetworkImageView
+                                android:id="@+id/ivMedia4"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:layout_marginStart="8dp"
+                                android:layout_weight="1"
+                                android:background="@drawable/btn_bg_ddd"
+                                android:contentDescription="@string/thumbnail"
+                                android:scaleType="centerCrop"
+                                />
+
+                            <ImageButton
+                                android:id="@+id/btnHideMedia"
+                                android:layout_width="32dp"
+                                android:layout_height="match_parent"
+                                android:layout_marginStart="8dp"
+                                android:background="@drawable/btn_bg_transparent"
+                                android:contentDescription="@string/hide"
+                                android:src="?attr/btn_close"
+                                />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/btnShowMedia"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="?attr/colorShowMediaBackground"
+                            android:gravity="center"
+                            android:text="@string/tap_to_show"
+                            android:textColor="?attr/colorShowMediaText"
+                            />
+                    </FrameLayout>
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-    </RelativeLayout>
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/llSearchTag"

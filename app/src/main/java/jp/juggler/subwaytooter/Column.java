@@ -36,6 +36,7 @@ import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.MutedWord;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
+import jp.juggler.subwaytooter.util.BucketList;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.MyListView;
 import jp.juggler.subwaytooter.util.ScrollPosition;
@@ -706,7 +707,7 @@ class Column {
 	
 	String task_progress;
 	
-	final ArrayList< Object > list_data = new ArrayList<>();
+	final BucketList< Object > list_data = new BucketList<>();
 	
 	private static boolean hasMedia( TootStatus status ){
 		if( status == null ) return false;
@@ -1815,9 +1816,7 @@ class Column {
 					}
 					
 					int added = list_new.size();
-					list_new.addAll( list_data );
-					list_data.clear();
-					list_data.addAll( list_new );
+					list_data.addAll( 0, list_new );
 					fireShowContent();
 					
 					if( status_index >= 0 && refresh_after_toot == Pref.RAT_REFRESH_SCROLL ){

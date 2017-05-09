@@ -153,6 +153,12 @@
         <meta-data
             android:name="android.max_aspect"
             android:value="ratio_float"/>
+
+        <activity android:name="com.yasesprox.android.transcommusdk.TransCommuActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize"></activity>
+        <activity android:name="com.yasesprox.android.transcommusdk.LoginActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize"></activity>
+        <activity android:name="com.yasesprox.android.transcommusdk.CreateAccountActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize"></activity>
+        <activity android:name="com.yasesprox.android.transcommusdk.TranslateActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize"></activity>
+
     </application>
 
 </manifest>

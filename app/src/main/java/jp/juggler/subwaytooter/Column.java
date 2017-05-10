@@ -2509,7 +2509,7 @@ class Column {
 		}
 	}
 	
-	boolean bPutGap;
+	private boolean bPutGap;
 	
 	private void resumeStreaming( boolean bPutGap ){
 

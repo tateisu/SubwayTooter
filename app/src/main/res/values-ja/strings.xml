@@ -588,4 +588,6 @@
     <!--ステータスURLをアプリ内で開く時に、どのアカウントから閲覧するかで取得結果が異なる。ログインなしの擬似アカウントも選択肢に含まれる。-->
     <string name="open_status_from">ステータスを次のアカウントから開く</string>
     <string name="help_translation">翻訳に協力する</string>
+    <string name="dont_use_streaming_api">ストリーミングAPIを使わない</string>
+    <string name="dont_refresh_on_activity_resume">画面復帰時に自動ロードしない</string>
 </resources>

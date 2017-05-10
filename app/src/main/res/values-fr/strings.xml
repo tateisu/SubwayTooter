@@ -302,5 +302,7 @@
     <string name="tab_divider_color">Tab divider color</string>
     <string name="help_translation">Help translation</string>
     <string name="open_status_from">Open status from</string>
+    <string name="dont_use_streaming_api">Don\'t use streaming API</string>
+    <string name="dont_refresh_on_activity_resume">Don\'t auto refresh when activity resumed</string>
 
 </resources>

@@ -9,11 +9,15 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.ListView;
 
+import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
@@ -37,6 +41,7 @@ import jp.juggler.subwaytooter.table.MutedWord;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.BucketList;
+import jp.juggler.subwaytooter.util.DuplicateMap;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.MyListView;
 import jp.juggler.subwaytooter.util.ScrollPosition;
@@ -44,6 +49,26 @@ import jp.juggler.subwaytooter.util.Utils;
 
 class Column {
 	private static final LogCategory log = new LogCategory( "Column" );
+	
+	
+	interface Callback {
+		boolean isActivityResume();
+	}
+	
+	private WeakReference< Callback > callback_ref;
+	
+	private boolean isResume(){
+		if( callback_ref == null ){
+			log.d("isResume: callback_ref is not set");
+			return false;
+		}
+		Callback cb = callback_ref.get();
+		if( cb == null ){
+			log.d("isResume: callback was lost.");
+			return false;
+		}
+		return cb.isActivityResume();
+	}
 	
 	private static Object getParamAt( Object[] params, int idx ){
 		if( params == null || idx >= params.length ){
@@ -164,11 +189,12 @@ class Column {
 	
 	ScrollPosition scroll_save;
 	
-	Column( @NonNull AppState app_state, @NonNull SavedAccount access_info, int type, Object... params ){
+	Column( @NonNull AppState app_state, @NonNull SavedAccount access_info, @NonNull Callback callback,int type, Object... params ){
 		this.app_state = app_state;
 		this.context = app_state.context;
 		this.access_info = access_info;
 		this.column_type = type;
+		this.callback_ref = new WeakReference< Callback >( callback );
 		switch( type ){
 		
 		case TYPE_CONVERSATION:
@@ -203,13 +229,12 @@ class Column {
 		item.put( KEY_DONT_SHOW_REPLY, dont_show_reply );
 		item.put( KEY_REGEX_TEXT, regex_text );
 		
-		
 		item.put( KEY_HEADER_BACKGROUND_COLOR, header_bg_color );
 		item.put( KEY_HEADER_TEXT_COLOR, header_fg_color );
 		item.put( KEY_COLUMN_BACKGROUND_COLOR, column_bg_color );
 		item.put( KEY_COLUMN_BACKGROUND_IMAGE, column_bg_image );
 		item.put( KEY_COLUMN_BACKGROUND_IMAGE_ALPHA, (double) column_bg_image_alpha );
-
+		
 		switch( column_type ){
 		case TYPE_CONVERSATION:
 		case TYPE_BOOSTED_BY:
@@ -238,7 +263,7 @@ class Column {
 		item.put( KEY_OLD_INDEX, old_index );
 	}
 	
-	Column( @NonNull AppState app_state,JSONObject src ){
+	Column( @NonNull AppState app_state, JSONObject src ){
 		this.app_state = app_state;
 		this.context = app_state.context;
 		
@@ -256,8 +281,8 @@ class Column {
 		this.header_fg_color = src.optInt( KEY_HEADER_TEXT_COLOR );
 		this.column_bg_color = src.optInt( KEY_COLUMN_BACKGROUND_COLOR );
 		this.column_bg_image = Utils.optStringX( src, KEY_COLUMN_BACKGROUND_IMAGE );
-		this.column_bg_image_alpha = (float)src.optDouble( KEY_COLUMN_BACKGROUND_IMAGE_ALPHA ,1.0f);
-
+		this.column_bg_image_alpha = (float) src.optDouble( KEY_COLUMN_BACKGROUND_IMAGE_ALPHA, 1.0f );
+		
 		switch( column_type ){
 		
 		case TYPE_CONVERSATION:
@@ -334,6 +359,7 @@ class Column {
 	
 	void dispose(){
 		is_dispose.set( true );
+		stopStreaming();
 	}
 	
 	String getColumnName( boolean bLong ){
@@ -471,7 +497,6 @@ class Column {
 	
 	boolean bFirstInitialized = false;
 	
-
 	private void init(){
 		bSimpleList = ( column_type != Column.TYPE_CONVERSATION && app_state.pref.getBoolean( Pref.KEY_SIMPLE_LIST, false ) );
 	}
@@ -708,6 +733,7 @@ class Column {
 	String task_progress;
 	
 	final BucketList< Object > list_data = new BucketList<>();
+	private final DuplicateMap duplicate_map = new DuplicateMap();
 	
 	private static boolean hasMedia( TootStatus status ){
 		if( status == null ) return false;
@@ -732,7 +758,7 @@ class Column {
 		for( Object o : list_data ){
 			if( o instanceof TootStatus ){
 				TootStatus item = (TootStatus) o;
-				if( item.checkMuted( muted_app,muted_word )){
+				if( item.checkMuted( muted_app, muted_word ) ){
 					continue;
 					
 				}
@@ -742,7 +768,7 @@ class Column {
 				TootStatus status = item.status;
 				
 				if( status != null ){
-					if( status.checkMuted( muted_app,muted_word )){
+					if( status.checkMuted( muted_app, muted_word ) ){
 						continue;
 					}
 				}
@@ -756,10 +782,12 @@ class Column {
 		}
 	}
 	
-	@SuppressWarnings("ConstantConditions")
-	private void addWithFilter( ArrayList< Object > dst, TootStatus.List src ){
-		
-		Pattern column_regex_filter = null;
+	private Pattern column_regex_filter;
+	private HashSet< String > muted_app;
+	private HashSet< String > muted_word;
+	
+	private void initFilter(){
+		column_regex_filter = null;
 		if( ! TextUtils.isEmpty( regex_text ) ){
 			try{
 				column_regex_filter = Pattern.compile( regex_text );
@@ -768,70 +796,84 @@ class Column {
 			}
 		}
 		
-		HashSet< String > muted_app = MutedApp.getNameSet();
-		HashSet< String > muted_word = MutedWord.getNameSet();
-
-		for( TootStatus status : src ){
-			if( with_attachment ){
-				if( ! hasMedia( status ) && ! hasMedia( status.reblog ) ) continue;
-			}
-			
-			if( dont_show_boost ){
-				if( status.reblog != null ) continue;
-			}
-			
-			if( dont_show_reply ){
-				if( status.in_reply_to_id != null
-					|| ( status.reblog != null && status.reblog.in_reply_to_id != null )
-					) continue;
-			}
-			
-			if( column_regex_filter != null ){
-				if( status.reblog != null ){
-					if( column_regex_filter.matcher( status.reblog.decoded_content.toString() ).find() )
-						continue;
-				}else{
-					if( column_regex_filter.matcher( status.decoded_content.toString() ).find() )
-						continue;
-					
-				}
-			}
-			
-			if( status.checkMuted( muted_app,muted_word )){
-				continue;
-			}
-			
-			dst.add( status );
+		muted_app = MutedApp.getNameSet();
+		muted_word = MutedWord.getNameSet();
+	}
+	
+	private boolean isFiltered( TootStatus status ){
+		if( with_attachment ){
+			if( ! hasMedia( status ) && ! hasMedia( status.reblog ) ) return true;
 		}
+		
+		if( dont_show_boost ){
+			if( status.reblog != null ) return true;
+		}
+		
+		if( dont_show_reply ){
+			if( status.in_reply_to_id != null
+				|| ( status.reblog != null && status.reblog.in_reply_to_id != null )
+				) return true;
+		}
+		
+		if( column_regex_filter != null ){
+			if( status.reblog != null ){
+				if( column_regex_filter.matcher( status.reblog.decoded_content.toString() ).find() )
+					return true;
+			}else{
+				if( column_regex_filter.matcher( status.decoded_content.toString() ).find() )
+					return true;
+			}
+		}
+		
+		//noinspection RedundantIfStatement
+		if( status.checkMuted( muted_app, muted_word ) ){
+			return true;
+		}
+		
+		return false;
+	}
+	
+	@SuppressWarnings("ConstantConditions")
+	private void addWithFilter( ArrayList< Object > dst, TootStatus.List src ){
+		for( TootStatus status : src ){
+			if( ! isFiltered( status ) ){
+				dst.add( status );
+			}
+		}
+	}
+	
+	private boolean isFiltered( TootNotification item ){
+		
+		TootStatus status = item.status;
+		if( status != null ){
+			if( status.checkMuted( muted_app, muted_word ) ){
+				log.d( "addWithFilter: status muted." );
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	@SuppressWarnings("ConstantConditions")
 	private void addWithFilter( ArrayList< Object > dst, TootNotification.List src ){
 		
-		HashSet< String > muted_app = MutedApp.getNameSet();
-		HashSet< String > muted_word = MutedWord.getNameSet();
-		
 		for( TootNotification item : src ){
-			
-			TootStatus status = item.status;
-			
-			if( status != null ){
-				if( status.checkMuted( muted_app,muted_word ) ){
-					log.d( "addWithFilter: status muted.");
-					continue;
-				}
-			
+			if( ! isFiltered( item ) ){
+				dst.add( item );
 			}
-			
-			dst.add( item );
 		}
 	}
 	
 	void startLoading(){
 		cancelLastTask();
 		
+		stopStreaming();
+		
+		initFilter();
+		
 		bFirstInitialized = true;
 		list_data.clear();
+		duplicate_map.clear();
 		mRefreshLoadingError = null;
 		bRefreshLoading = false;
 		mInitialLoadingError = null;
@@ -1110,15 +1152,18 @@ class Column {
 					Column.this.mInitialLoadingError = result.error;
 				}else{
 					if( list_tmp != null ){
+						ArrayList< Object > list_new = duplicate_map.filterDuplicate( list_tmp );
 						list_data.clear();
-						list_data.addAll( list_tmp );
+						list_data.addAll( list_new );
 					}
+					
+					resumeStreaming( false );
 				}
 				fireShowContent();
 			}
 		};
 		
-		task.executeOnExecutor(App1.task_executor);
+		task.executeOnExecutor( App1.task_executor );
 	}
 	
 	private static final Pattern reMaxId = Pattern.compile( "&max_id=(\\d+)" ); // より古いデータの取得に使う
@@ -1297,6 +1342,8 @@ class Column {
 		}
 	}
 	
+	boolean bRefreshingTop;
+	
 	void startRefresh( final boolean bSilent, final boolean bBottom, final long status_id, final int refresh_after_toot ){
 		
 		if( last_task != null ){
@@ -1321,6 +1368,11 @@ class Column {
 			if( holder != null ){
 				holder.getRefreshLayout().setRefreshing( true );
 			}
+		}
+		
+		if(!bBottom){
+			bRefreshingTop = true;
+			stopStreaming();
 		}
 		
 		bRefreshLoading = true;
@@ -1736,114 +1788,91 @@ class Column {
 			
 			@Override
 			protected void onPostExecute( TootApiResult result ){
-				
 				if( isCancelled() || result == null ){
 					return;
 				}
-				last_task = null;
-				bRefreshLoading = false;
-				
-				if( result.error != null ){
-					Column.this.mRefreshLoadingError = result.error;
-					fireShowContent();
-					return;
-				}
-				if( list_tmp == null || list_tmp.isEmpty() ){
-					fireShowContent();
-					return;
-				}
-				
-				// 古いリストにある要素のIDの集合集合
-				HashSet< Long > set_status_id = new HashSet<>();
-				HashSet< Long > set_notification_id = new HashSet<>();
-				HashSet< Long > set_report_id = new HashSet<>();
-				HashSet< Long > set_account_id = new HashSet<>();
-				for( Object o : list_data ){
-					if( o instanceof TootStatus ){
-						set_status_id.add( ( (TootStatus) o ).id );
-					}else if( o instanceof TootNotification ){
-						set_notification_id.add( ( (TootNotification) o ).id );
-					}else if( o instanceof TootReport ){
-						set_report_id.add( ( (TootReport) o ).id );
-					}else if( o instanceof TootAccount ){
-						set_account_id.add( ( (TootAccount) o ).id );
-					}
-				}
-				ArrayList< Object > list_new = new ArrayList<>();
-				for( Object o : list_tmp ){
-					if( o instanceof TootStatus ){
-						if( set_status_id.contains( ( (TootStatus) o ).id ) ) continue;
-					}else if( o instanceof TootNotification ){
-						if( set_notification_id.contains( ( (TootNotification) o ).id ) )
-							continue;
-					}else if( o instanceof TootReport ){
-						if( set_report_id.contains( ( (TootReport) o ).id ) ) continue;
-					}else if( o instanceof TootAccount ){
-						if( set_account_id.contains( ( (TootAccount) o ).id ) ) continue;
-					}
-					list_new.add( o );
-				}
-				if( list_new.isEmpty() ){
-					fireShowContent();
-					return;
-				}
-				
-				// 事前にスクロール位置を覚えておく
-				ScrollPosition sp = null;
-				if( holder != null ){
-					sp = holder.getScrollPosition();
-				}
-				
-				if( bBottom ){
-					list_data.addAll( list_new );
-					fireShowContent();
+				try{
+					last_task = null;
+					bRefreshLoading = false;
 					
-					if( sp != null ){
-						holder.setScrollPosition( sp, 20f );
+					if( result.error != null ){
+						Column.this.mRefreshLoadingError = result.error;
+						fireShowContent();
+						return;
 					}
-				}else{
+					if( list_tmp == null || list_tmp.isEmpty() ){
+						fireShowContent();
+						return;
+					}
 					
-					int status_index = - 1;
-					for( int i = 0, ie = list_new.size() ; i < ie ; ++ i ){
-						Object o = list_new.get( i );
-						if( o instanceof TootStatus ){
-							TootStatus status = (TootStatus) o;
-							if( status.id == status_id ){
-								status_index = i;
-								break;
+					ArrayList< Object > list_new = duplicate_map.filterDuplicate( list_tmp );
+					
+					if( list_new.isEmpty() ){
+						fireShowContent();
+						return;
+					}
+					
+					// 事前にスクロール位置を覚えておく
+					ScrollPosition sp = null;
+					if( holder != null ){
+						sp = holder.getScrollPosition();
+					}
+					
+					if( bBottom ){
+						list_data.addAll( list_new );
+						fireShowContent();
+						
+						if( sp != null ){
+							holder.setScrollPosition( sp, 20f );
+						}
+					}else{
+						
+						int status_index = - 1;
+						for( int i = 0, ie = list_new.size() ; i < ie ; ++ i ){
+							Object o = list_new.get( i );
+							if( o instanceof TootStatus ){
+								TootStatus status = (TootStatus) o;
+								if( status.id == status_id ){
+									status_index = i;
+									break;
+								}
+							}
+						}
+						
+						int added = list_new.size();
+						list_data.addAll( 0, list_new );
+						fireShowContent();
+						
+						if( status_index >= 0 && refresh_after_toot == Pref.RAT_REFRESH_SCROLL ){
+							if( holder != null ){
+								holder.setScrollPosition( new ScrollPosition( status_index, 0 ), 0f );
+							}else{
+								scroll_save = new ScrollPosition( status_index, 0 );
+							}
+						}else{
+							float delta = bSilent ? 0f : - 20f;
+							if( sp != null ){
+								sp.pos += added;
+								holder.setScrollPosition( sp, delta );
+							}else if( scroll_save != null ){
+								scroll_save.pos += added;
+							}else{
+								scroll_save = new ScrollPosition( added, 0 );
 							}
 						}
 					}
-					
-					int added = list_new.size();
-					list_data.addAll( 0, list_new );
-					fireShowContent();
-					
-					if( status_index >= 0 && refresh_after_toot == Pref.RAT_REFRESH_SCROLL ){
-						if( holder != null ){
-							holder.setScrollPosition( new ScrollPosition( status_index, 0 ), 0f );
-						}else{
-							scroll_save = new ScrollPosition( status_index, 0 );
-						}
-					}else{
-						float delta = bSilent ? 0f : - 20f;
-						if( sp != null ){
-							sp.pos += added;
-							holder.setScrollPosition( sp, delta );
-						}else if( scroll_save != null ){
-							scroll_save.pos += added;
-						}else{
-							scroll_save = new ScrollPosition( added, 0 );
-						}
+				}finally{
+					if(!bBottom){
+						bRefreshingTop = false;
+						resumeStreaming( false );
 					}
 				}
 			}
 		};
 		
-		task.executeOnExecutor(App1.task_executor);
-		
+		task.executeOnExecutor( App1.task_executor );
 	}
-	
+
 	void startGap( final TootGap gap, final int position ){
 		if( last_task != null ){
 			Utils.showToast( context, true, R.string.column_is_busy );
@@ -2178,39 +2207,9 @@ class Column {
 					fireShowContent();
 					return;
 				}
+				// 0個でもギャップを消すために以下の処理を続ける
 				
-				// 古いリストにある要素のIDの集合
-				HashSet< Long > set_status_id = new HashSet<>();
-				HashSet< Long > set_notification_id = new HashSet<>();
-				HashSet< Long > set_report_id = new HashSet<>();
-				HashSet< Long > set_account_id = new HashSet<>();
-				for( Object o : list_data ){
-					if( o instanceof TootStatus ){
-						set_status_id.add( ( (TootStatus) o ).id );
-					}else if( o instanceof TootNotification ){
-						set_notification_id.add( ( (TootNotification) o ).id );
-					}else if( o instanceof TootReport ){
-						set_report_id.add( ( (TootReport) o ).id );
-					}else if( o instanceof TootAccount ){
-						set_account_id.add( ( (TootAccount) o ).id );
-					}
-				}
-				// list_tmp をフィルタしてlist_newを作成
-				ArrayList< Object > list_new = new ArrayList<>();
-				for( Object o : list_tmp ){
-					if( o instanceof TootStatus ){
-						if( set_status_id.contains( ( (TootStatus) o ).id ) ) continue;
-					}else if( o instanceof TootNotification ){
-						if( set_notification_id.contains( ( (TootNotification) o ).id ) )
-							continue;
-					}else if( o instanceof TootReport ){
-						if( set_report_id.contains( ( (TootReport) o ).id ) ) continue;
-					}else if( o instanceof TootAccount ){
-						if( set_account_id.contains( ( (TootAccount) o ).id ) )
-							continue;
-					}
-					list_new.add( o );
-				}
+				ArrayList< Object > list_new = duplicate_map.filterDuplicate( list_tmp );
 				
 				// idx番目の要素がListViewのtopから何ピクセル下にあるか
 				int restore_idx = position + 1;
@@ -2223,7 +2222,7 @@ class Column {
 						try{
 							restore_y = getItemTop( restore_idx );
 						}catch( IndexOutOfBoundsException ex2 ){
-							restore_idx = -1;
+							restore_idx = - 1;
 						}
 					}
 				}
@@ -2235,7 +2234,7 @@ class Column {
 				
 				if( holder != null ){
 					//noinspection StatementWithEmptyBody
-					if(restore_idx >= 0 ){
+					if( restore_idx >= 0 ){
 						setItemTop( restore_idx + added - 1, restore_y );
 					}else{
 						// ギャップが画面内にない場合、何もしない
@@ -2248,7 +2247,7 @@ class Column {
 			}
 		};
 		
-		task.executeOnExecutor(App1.task_executor);
+		task.executeOnExecutor( App1.task_executor );
 	}
 	
 	private static final int heightSpec = View.MeasureSpec.makeMeasureSpec( 0, View.MeasureSpec.UNSPECIFIED );
@@ -2294,6 +2293,298 @@ class Column {
 		}
 		int child_idx = idx - vs;
 		return listView.getChildAt( child_idx ).getTop();
+	}
+	
+	final StreamReader.Callback stream_callback = new StreamReader.Callback() {
+		@Override public void onEvent( String event_type, Object o ){
+			
+			if( o instanceof Long ){
+				removeStatus( access_info, (Long) o );
+				return;
+			}
+			
+			if( o instanceof TootNotification ){
+				TootNotification notification = (TootNotification) o;
+				if( column_type != TYPE_NOTIFICATIONS ) return;
+				if( isFiltered( notification ) ) return;
+			}else if( o instanceof TootStatus ){
+				TootStatus status = (TootStatus) o;
+				if( column_type == TYPE_NOTIFICATIONS ) return;
+				if( column_type == TYPE_LOCAL && status.account.acct.indexOf( '@' ) != - 1 ) return;
+				if( isFiltered( status ) ) return;
+			}
+			
+			stream_data_queue.addFirst( o );
+			proc_stream_data.run();
+			
+		}
+	};
+	
+	private final LinkedList< Object > stream_data_queue = new LinkedList<>();
+	
+	// ListViewの表示更新が追いつかないとスクロール位置が崩れるので
+	// 一定時間より短期間にはデータ更新しないようにする
+	private long last_show_stream_data;
+	
+	final Runnable proc_stream_data = new Runnable() {
+		@Override public void run(){
+			App1.getAppState( context ).handler.removeCallbacks( proc_stream_data );
+			long now = SystemClock.elapsedRealtime();
+			long remain = last_show_stream_data + 333L - now;
+			if( remain > 0 ){
+				App1.getAppState( context ).handler.postDelayed( proc_stream_data, 333L );
+				return;
+			}
+			last_show_stream_data = now;
+			
+			ArrayList< Object > list_new = duplicate_map.filterDuplicate( stream_data_queue );
+			stream_data_queue.clear();
+
+			if( list_new.isEmpty() ){
+				return;
+			}else{
+				if( column_type == TYPE_NOTIFICATIONS ){
+					TootNotification.List list = new TootNotification.List(  );
+					for( Object o : list_new ){
+						if( o instanceof TootNotification){
+							list.add( (TootNotification) o);
+						}
+					}
+					if( !list.isEmpty() ){
+						AlarmService.injectData( context, access_info.db_id, list );
+					}
+				}
+				
+				try{
+					since_id = Long.toString( getId( list_new.get( 0 ) ) );
+				}catch(Throwable ex){
+					// ストリームに来るのは通知かステータスだから、多分ここは通らない
+					log.e(ex,"getId() failed. o=",list_new.get( 0 ));
+				}
+			}
+			
+			
+			
+			// 事前にスクロール位置を覚えておく
+			ScrollPosition sp = null;
+			if( holder != null ){
+				sp = holder.getScrollPosition();
+			}
+			
+			// idx番目の要素がListViewのtopから何ピクセル下にあるか
+			int restore_idx = - 1;
+			int restore_y = 0;
+			if( holder != null ){
+				if( list_data.size() > 0 ){
+					try{
+						restore_idx = holder.getListView().getFirstVisiblePosition();
+						restore_y = getItemTop( restore_idx );
+					}catch( IndexOutOfBoundsException ex ){
+						ex.printStackTrace();
+					}
+				}
+			}
+			
+			if( bPutGap ){
+				bPutGap = false;
+				try{
+					if( list_new.size() > 0 && list_data.size() > 0 ){
+						long max = getId( list_new.get( list_new.size() - 1 ) );
+						long since = getId( list_data.get( 0 ) );
+						if( max > since ){
+							TootGap gap = new TootGap( max,since );
+							list_new.add( gap );
+						}
+					}
+				}catch( Throwable ex ){
+					log.e( ex, "can't put gap." );
+				}
+			}
+			
+			list_data.addAll( 0, list_new );
+			fireShowContent();
+			int added = list_new.size();
+			
+			
+			if( holder != null ){
+				//noinspection StatementWithEmptyBody
+				if( sp == null || ( sp.pos == 0 && sp.top == 0 ) ){
+					// スクロール位置が先頭なら先頭のまま
+				}else if( restore_idx >= 0 ){
+					//
+					setItemTop( restore_idx + added, restore_y );
+				}else{
+					// ギャップが画面内にない場合、何もしない
+				}
+			}else{
+				if( scroll_save == null || ( scroll_save.pos == 0 || scroll_save.top == 0 ) ){
+					// スクロール位置が先頭なら先頭のまま
+				}else{
+					// 現在の要素が表示され続けるようにしたい
+					scroll_save.pos += added;
+				}
+			}
+		}
+	};
+	
+	private long getId( Object o ){
+		if( o instanceof TootNotification ){
+			return ( (TootNotification) o ).id;
+		}else if( o instanceof TootStatus ){
+			return ( (TootStatus) o ).id;
+		}else if( o instanceof TootAccount){
+			return ( (TootAccount) o ).id;
+		}
+		throw new RuntimeException( "getId: object is not status,notification" );
+	}
+	
+	// onPauseの時はまとめて止められるが
+	// カラム破棄やリロード開始時は個別にストリーミングを止める必要がある
+	private void stopStreaming(){
+		
+		switch( column_type ){
+		case TYPE_HOME:
+		case TYPE_NOTIFICATIONS:
+			
+			app_state.stream_reader.unregister(
+				access_info
+				, StreamReader.EP_USER
+				, stream_callback
+			);
+			break;
+		
+		case TYPE_LOCAL:
+		case TYPE_FEDERATE:
+			app_state.stream_reader.unregister(
+				access_info
+				, StreamReader.EP_PUBLIC
+				, stream_callback
+			);
+			break;
+		
+		case TYPE_HASHTAG:
+			app_state.stream_reader.unregister(
+				access_info
+				, StreamReader.EP_HASHTAG + "?tag=" + Uri.encode( hashtag )
+				, stream_callback
+			);
+			break;
+		}
+	}
+	
+	void onResume(  Callback callback ){
+		this.callback_ref = new WeakReference<>( callback );
+		
+		// 破棄されたカラムなら何もしない
+		if( is_dispose.get() ){
+			log.d("onResume: column was disposed.");
+			return;
+		}
+
+		// 未初期化なら何もしない
+		if( ! bFirstInitialized ){
+			log.d("onResume: column is not initialized.");
+			return;
+		}
+		
+		// 初期ロード中なら何もしない
+		if( bInitialLoading ){
+			log.d("onResume: column is in initial loading.");
+			return;
+		}
+		
+		if( bRefreshingTop ){
+			log.d("onResume: bRefreshingTop is true.");
+			// リフレッシュ終了時に自動でストリーミング開始するはず
+		}else if( !bRefreshLoading
+			&& ! App1.getAppState( context ).pref.getBoolean(Pref.KEY_DONT_REFRESH_ON_RESUME,false)
+			){
+			log.d("onResume: start auto refresh.");
+			// リフレッシュしてからストリーミング開始
+			startRefresh( true, false, - 1L, - 1 );
+		}else{
+			log.d("onResume: start streaming with gap.");
+			// ギャップつきでストリーミング開始
+			resumeStreaming( true );
+		}
+	}
+	
+	boolean bPutGap;
+	
+	private void resumeStreaming( boolean bPutGap ){
+
+		if( ! isResume() ){
+			log.d("resumeStreaming: not resumed.");
+			return;
+		}
+		
+		// 破棄されたカラムなら何もしない
+		if( is_dispose.get() ){
+			log.d("resumeStreaming: column was disposed.");
+			return;
+		}
+		
+		// 未初期化なら何もしない
+		if( ! bFirstInitialized ){
+			log.d("resumeStreaming: column is not initialized.");
+			return;
+		}
+		
+		// 初期ロード中なら何もしない
+		if( bInitialLoading ){
+			log.d("resumeStreaming: is in initial loading.");
+			return;
+		}
+		
+		this.bPutGap = bPutGap;
+		
+		stream_data_queue.clear();
+		
+		switch( column_type ){
+		case TYPE_HOME:
+		case TYPE_NOTIFICATIONS:
+			
+			if( access_info.isPseudo() ) return;
+			
+			app_state.stream_reader.register(
+				access_info
+				, StreamReader.EP_USER
+				, stream_callback
+			);
+			break;
+		
+		case TYPE_LOCAL:
+			
+			// 認証がないと読めないらしい
+			if( access_info.isPseudo() ) return;
+			
+			app_state.stream_reader.register(
+				access_info
+				, StreamReader.EP_PUBLIC_LOCAL
+				, stream_callback
+			);
+			break;
+		
+		case TYPE_FEDERATE:
+			
+			// 認証がないと読めないらしい
+			if( access_info.isPseudo() ) return;
+			
+			app_state.stream_reader.register(
+				access_info
+				, StreamReader.EP_PUBLIC
+				, stream_callback
+			);
+			break;
+		
+		case TYPE_HASHTAG:
+			app_state.stream_reader.register(
+				access_info
+				, StreamReader.EP_HASHTAG + "&tag=" + Uri.encode( hashtag )
+				, stream_callback
+			);
+			break;
+		}
 	}
 	
 }

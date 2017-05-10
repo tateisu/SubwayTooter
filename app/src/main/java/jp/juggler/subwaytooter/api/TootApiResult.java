@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.util.LogCategory;
 import okhttp3.Response;
+import okhttp3.WebSocket;
 
 public class TootApiResult {
 	public String error;
@@ -18,25 +19,31 @@ public class TootApiResult {
 	public String json;
 	public JSONObject token_info;
 	public Response response;
+	public WebSocket socket;
+	
 	
 	public TootApiResult( String error ){
 		this.error = error;
 	}
 	
-	public TootApiResult( Response response,JSONObject token_info,String json,JSONObject object ){
+	TootApiResult( Response response, JSONObject token_info, String json, JSONObject object ){
 		this.token_info = token_info;
 		this.json = json;
 		this.object = object;
 		this.response = response;
 	}
 
-	public TootApiResult( LogCategory log, Response response, JSONObject token_info
+	TootApiResult( LogCategory log, Response response, JSONObject token_info
 		, String json, JSONArray array ){
 		this.token_info = token_info;
 		this.json = json;
 		this.array = array;
 		this.response = response;
 		parseLinkHeader(log,response,array);
+	}
+	
+	TootApiResult( WebSocket socket ){
+		this.socket = socket;
 	}
 	
 	public String link_older; // より古いデータへのリンク

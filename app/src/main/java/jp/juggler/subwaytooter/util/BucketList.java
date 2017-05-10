@@ -26,7 +26,6 @@ public class BucketList < E >
 		this( DEFAULT_BUCKET_CAPACITY );
 	}
 	
-	
 	private static class Bucket < E > extends ArrayList< E > {
 		int total_start;
 		int total_end;
@@ -67,7 +66,7 @@ public class BucketList < E >
 			return new BucketPos();
 		}
 	};
-
+	
 	private BucketPos findPos( BucketPos dst, int total_index ){
 		
 		if( total_index < 0 || total_index >= mSize ){
@@ -139,7 +138,7 @@ public class BucketList < E >
 		
 		BucketPos pos = findPos( pos_internal.get(), index );
 		Bucket< E > bucket = groups.get( pos.group_index );
-
+		
 		// 挿入位置がバケツの先頭ではないか、バケツのサイズに問題がないなら
 		if( pos.bucket_index > 0 || bucket.size() + c_size <= mStep ){
 			// バケツの中に挿入する
@@ -150,22 +149,22 @@ public class BucketList < E >
 			bucket.addAll( c );
 			groups.add( pos.group_index, bucket );
 		}
-
+		
 		updateIndex();
 		return true;
 	}
 	
 	public E remove( int index ){
 		BucketPos pos = findPos( pos_internal.get(), index );
-
+		
 		Bucket< E > bucket = groups.get( pos.group_index );
-
+		
 		E data = bucket.remove( pos.bucket_index );
-
+		
 		if( bucket.isEmpty() ){
 			groups.remove( pos.group_index );
 		}
-
+		
 		updateIndex();
 		return data;
 	}

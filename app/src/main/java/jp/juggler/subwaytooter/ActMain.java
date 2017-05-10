@@ -31,8 +31,6 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import com.yasesprox.android.transcommusdk.TransCommuActivity;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -65,7 +63,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 
 public class ActMain extends AppCompatActivity
-	implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, ViewPager.OnPageChangeListener
+	implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, ViewPager.OnPageChangeListener, Column.Callback
 {
 	public static final LogCategory log = new LogCategory( "ActMain" );
 	
@@ -115,7 +113,14 @@ public class ActMain extends AppCompatActivity
 		super.onDestroy();
 	}
 	
+	
+	boolean bResume;
+	@Override public boolean isActivityResume(){
+		return bResume;
+	}
+	
 	@Override protected void onResume(){
+		bResume = true;
 		log.d( "onResume" );
 		super.onResume();
 		HTMLDecoder.link_callback = link_click_listener;
@@ -156,10 +161,6 @@ public class ActMain extends AppCompatActivity
 			posted_acct = null;
 		}
 		
-		if( pager_adapter.getCount() == 0 ){
-			llEmpty.setVisibility( View.VISIBLE );
-		}
-		
 		Uri uri = ActCallback.last_uri.getAndSet( null );
 		if( uri != null ){
 			handleIntentUri( uri );
@@ -168,6 +169,15 @@ public class ActMain extends AppCompatActivity
 		Intent intent = ActCallback.sent_intent.getAndSet( null );
 		if( intent != null ){
 			handleSentIntent( intent );
+		}
+		
+		
+		if( pager_adapter.getCount() == 0 ){
+			llEmpty.setVisibility( View.VISIBLE );
+		}else{
+			for(Column column : app_state.column_list ){
+				column.onResume(this);
+			}
 		}
 	}
 	
@@ -192,7 +202,11 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	@Override protected void onPause(){
+		bResume = false;
+		
 		closeListItemPopup();
+		
+		app_state.stream_reader.onPause();
 		
 		HTMLDecoder.link_callback = null;
 		super.onPause();
@@ -268,7 +282,7 @@ public class ActMain extends AppCompatActivity
 						llEmpty.setVisibility( View.VISIBLE );
 					}else{
 						int select = data.getIntExtra( ActColumnList.EXTRA_SELECTION, - 1 );
-						if( select != - 1 ){
+						if( 0 <= select && select < pager_adapter.getCount() ){
 							pager.setCurrentItem( select, true );
 							scrollColumnStrip( select );
 						}
@@ -347,7 +361,7 @@ public class ActMain extends AppCompatActivity
 			ActionsDialog dialog = new ActionsDialog();
 			dialog.addAction( getString( R.string.close_column ), new Runnable() {
 				@Override public void run(){
-					performColumnClose( true, pager_adapter.getColumn( pager.getCurrentItem() ) );
+					closeColumn( true, pager_adapter.getColumn( pager.getCurrentItem() ) );
 				}
 			} );
 			dialog.addAction( getString( R.string.open_column_list ), new Runnable() {
@@ -373,7 +387,7 @@ public class ActMain extends AppCompatActivity
 					ActMain.this.finish();
 					return;
 				}
-				performColumnClose( false, column );
+				closeColumn( false, column );
 			}
 			break;
 		
@@ -1042,7 +1056,7 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-	public void performColumnClose( boolean bConfirm, final Column column ){
+	public void closeColumn( boolean bConfirm, final Column column ){
 		if( column.dont_close ){
 			Utils.showToast( this, false, R.string.column_has_dont_close_option );
 			return;
@@ -1055,7 +1069,7 @@ public class ActMain extends AppCompatActivity
 				.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 					@Override
 					public void onClick( DialogInterface dialog, int which ){
-						performColumnClose( true, column );
+						closeColumn( true, column );
 					}
 				} )
 				.show();
@@ -1088,7 +1102,7 @@ public class ActMain extends AppCompatActivity
 		//
 		llEmpty.setVisibility( View.GONE );
 		//
-		Column col = new Column( app_state, ai, type, params );
+		Column col = new Column( app_state, ai, this,type, params );
 		int idx = pager_adapter.addColumn( pager, col );
 		app_state.saveColumnList();
 		updateColumnStrip();
@@ -1140,7 +1154,7 @@ public class ActMain extends AppCompatActivity
 		}
 		Utils.showToast( ActMain.this, false, R.string.app_was_muted );
 	}
-	
+
 	//////////////////////////////////////////////////////////////
 	
 	interface GetAccountCallback {

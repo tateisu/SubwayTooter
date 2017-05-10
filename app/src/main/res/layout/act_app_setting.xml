@@ -26,6 +26,40 @@
 
         <View style="@style/setting_divider"/>
 
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/dont_use_streaming_api"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swDontUseStreaming"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+        <View style="@style/setting_divider"/>
+
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/dont_refresh_on_activity_resume"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swDontRefreshOnResume"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+        <View style="@style/setting_divider"/>
+
         <TextView
             style="@style/setting_row_label"
             android:text="@string/dont_confirm_before_close_column"

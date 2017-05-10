@@ -47,7 +47,6 @@ class ColumnPagerAdapter extends PagerAdapter {
 		pager.setAdapter( null );
 		column_list.add( index, column );
 		pager.setAdapter( this );
-		notifyDataSetChanged();
 		return index;
 	}
 	
@@ -55,9 +54,8 @@ class ColumnPagerAdapter extends PagerAdapter {
 		int idx_column = column_list.indexOf( column );
 		if( idx_column == - 1 ) return;
 		pager.setAdapter( null );
-		column_list.remove( idx_column );
+		column_list.remove( idx_column ).dispose();
 		pager.setAdapter( this );
-		column.dispose();
 	}
 	
 	void setOrder( ViewPager pager, ArrayList< Integer > order ){

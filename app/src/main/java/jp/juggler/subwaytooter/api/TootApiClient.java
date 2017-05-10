@@ -20,6 +20,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.WebSocket;
+import okhttp3.WebSocketListener;
 
 public class TootApiClient {
 	private static final LogCategory log = new LogCategory( "TootApiClient" );
@@ -139,6 +141,46 @@ public class TootApiClient {
 			return new TootApiResult( Utils.formatError( ex, "API data error" ) );
 		}
 	}
+	
+	
+	public TootApiResult webSocket( String path, Request.Builder request_builder , WebSocketListener ws_listener ){
+		
+		if( callback.isApiCancelled() ) return null;
+		
+		// アクセストークンを使ってAPIを呼び出す
+		callback.publishApiProgress( context.getString( R.string.request_api, path ) );
+		
+		
+		if( account == null ){
+			return new TootApiResult( "account is null" );
+		}
+		
+		String url = "wss://" + instance + path;
+		
+		JSONObject token_info = account.token_info;
+		String access_token = Utils.optStringX( token_info, "access_token" );
+		if( !TextUtils.isEmpty( access_token ) ){
+			char delm = (-1!= url.indexOf( '?' ) ? '&':'?');
+			url = url + delm + "access_token="+ access_token;
+		}
+		
+		request_builder.url( url );
+		
+		try{
+			WebSocket ws = ok_http_client.newWebSocket( request_builder.build() ,ws_listener );
+			if( callback.isApiCancelled() ){
+				ws.cancel();
+				return null;
+			}
+			return new TootApiResult( ws );
+		}catch( Throwable ex ){
+			ex.printStackTrace(  );
+			return new TootApiResult(
+				Utils.formatError( ex, context.getResources(), R.string.network_error )
+			);
+		}
+	}
+	
 	
 	
 	// 疑似アカウントの追加時に、インスタンスの検証を行う

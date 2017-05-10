@@ -11,4 +11,8 @@ public class TootGap {
 		this.max_id = Long.toString(max_id);
 		this.since_id = since_id;
 	}
+	public TootGap( long max_id, long since_id ){
+		this.max_id = Long.toString(max_id);
+		this.since_id = Long.toString(since_id);
+	}
 }

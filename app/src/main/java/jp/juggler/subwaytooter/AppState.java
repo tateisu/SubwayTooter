@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -26,12 +27,16 @@ class AppState {
 	final Context context;
 	final float density;
 	final SharedPreferences pref;
+	final Handler handler;
 	
+	final StreamReader stream_reader;
 	
 	AppState( Context applicationContext ,SharedPreferences pref){
 		this.context = applicationContext;
 		this.pref = pref;
 		this.density = context.getResources().getDisplayMetrics().density;
+		this.stream_reader = new StreamReader(applicationContext,pref);
+		this.handler = new Handler();
 		
 		if( ! isLoaded ){
 			isLoaded = true;

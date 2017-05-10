@@ -50,6 +50,9 @@ public class ActAppSetting extends AppCompatActivity
 	Switch swExitAppWhenCloseProtectedColumn;
 	Switch swShowFollowButtonInButtonBar;
 	Switch swDontRound;
+	Switch swDontUseStreaming;
+	Switch swDontRefreshOnResume;
+	
 	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
@@ -98,6 +101,12 @@ public class ActAppSetting extends AppCompatActivity
 		
 		swDontRound = (Switch) findViewById( R.id.swDontRound );
 		swDontRound.setOnCheckedChangeListener( this );
+		
+		swDontUseStreaming = (Switch) findViewById( R.id.swDontUseStreaming );
+		swDontUseStreaming.setOnCheckedChangeListener( this );
+		
+		swDontRefreshOnResume = (Switch) findViewById( R.id.swDontRefreshOnResume );
+		swDontRefreshOnResume.setOnCheckedChangeListener( this );
 		
 		cbNotificationSound = (CheckBox) findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = (CheckBox) findViewById( R.id.cbNotificationVibration );
@@ -190,6 +199,8 @@ public class ActAppSetting extends AppCompatActivity
 		swExitAppWhenCloseProtectedColumn.setChecked( pref.getBoolean( Pref.KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN, false ) );
 		swShowFollowButtonInButtonBar.setChecked( pref.getBoolean( Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR, false ) );
 		swDontRound.setChecked( pref.getBoolean( Pref.KEY_DONT_ROUND, false ) );
+		swDontUseStreaming.setChecked( pref.getBoolean( Pref.KEY_DONT_USE_STREAMING, false ) );
+		swDontRefreshOnResume.setChecked( pref.getBoolean( Pref.KEY_DONT_REFRESH_ON_RESUME , false ) );
 		
 		cbNotificationSound.setChecked( pref.getBoolean( Pref.KEY_NOTIFICATION_SOUND, true ) );
 		cbNotificationVibration.setChecked( pref.getBoolean( Pref.KEY_NOTIFICATION_VIBRATION, true ) );
@@ -220,6 +231,8 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN, swExitAppWhenCloseProtectedColumn.isChecked() )
 			.putBoolean( Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR, swShowFollowButtonInButtonBar.isChecked() )
 			.putBoolean( Pref.KEY_DONT_ROUND, swDontRound.isChecked() )
+			.putBoolean( Pref.KEY_DONT_USE_STREAMING, swDontUseStreaming.isChecked() )
+			.putBoolean( Pref.KEY_DONT_REFRESH_ON_RESUME, swDontRefreshOnResume.isChecked() )
 			
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )

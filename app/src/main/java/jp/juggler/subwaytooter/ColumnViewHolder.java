@@ -1,8 +1,6 @@
 package jp.juggler.subwaytooter;
 
 import android.graphics.Bitmap;
-import android.graphics.PorterDuff;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.view.ViewCompat;
@@ -430,7 +428,7 @@ class ColumnViewHolder
 	public void onClick( View v ){
 		switch( v.getId() ){
 		case R.id.btnColumnClose:
-			activity.performColumnClose( false, column );
+			activity.closeColumn( false, column );
 			break;
 		
 		case R.id.btnColumnReload:

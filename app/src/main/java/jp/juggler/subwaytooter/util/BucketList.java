@@ -150,14 +150,22 @@ public class BucketList < E >
 			bucket.addAll( c );
 			groups.add( pos.group_index, bucket );
 		}
+
 		updateIndex();
 		return true;
 	}
 	
 	public E remove( int index ){
 		BucketPos pos = findPos( pos_internal.get(), index );
+
 		Bucket< E > bucket = groups.get( pos.group_index );
+
 		E data = bucket.remove( pos.bucket_index );
+
+		if( bucket.isEmpty() ){
+			groups.remove( pos.group_index );
+		}
+
 		updateIndex();
 		return data;
 	}

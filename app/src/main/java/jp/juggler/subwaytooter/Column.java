@@ -887,7 +887,9 @@ class Column {
 			
 			TootApiResult parseAccount1( TootApiClient client, String path_base ){
 				TootApiResult result = client.request( path_base );
-				Column.this.who_account = TootAccount.parse( log, access_info, result.object );
+				if( result != null && result.object != null){
+					Column.this.who_account = TootAccount.parse( log, access_info, result.object );
+				}
 				return result;
 			}
 			

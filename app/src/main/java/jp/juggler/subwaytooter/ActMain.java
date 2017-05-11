@@ -1714,7 +1714,7 @@ public class ActMain extends AppCompatActivity
 					}
 					if( target_status == null ){
 						return new TootApiResult( getString( R.string.status_id_conversion_failed ) );
-					}else if( target_status.favourited ){
+					}else if( target_status.reblogged ){
 						return new TootApiResult( getString( R.string.already_boosted ) );
 					}
 				}

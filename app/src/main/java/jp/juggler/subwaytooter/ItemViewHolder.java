@@ -136,6 +136,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		ivMedia3.setOnClickListener( this );
 		ivMedia4.setOnClickListener( this );
 		btnFollow.setOnClickListener( this );
+		btnFollow.setOnLongClickListener( this );
 		
 		ivThumbnail.setOnClickListener( this );
 		// ここを個別タップにすると邪魔すぎる tvName.setOnClickListener( this );
@@ -407,13 +408,26 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		}
 		
 		case R.id.ivThumbnail:
-			activity.performOpenUser( access_info, account_thumbnail );
+			if( access_info.isPseudo() ){
+				new DlgContextMenu( activity, access_info,account_thumbnail, null, column.column_type ).show();
+			}else{
+				activity.performOpenUser( access_info, account_thumbnail );
+			}
 			break;
+
 		case R.id.llBoosted:
-			activity.performOpenUser( access_info, account_boost );
+			if( access_info.isPseudo() ){
+				new DlgContextMenu( activity, access_info,account_boost, null, column.column_type ).show();
+			}else{
+				activity.performOpenUser( access_info, account_boost );
+			}
 			break;
 		case R.id.llFollow:
-			activity.performOpenUser( access_info, account_follow );
+			if( access_info.isPseudo() ){
+				new DlgContextMenu( activity, access_info,account_follow, null, column.column_type ).show();
+			}else{
+				activity.performOpenUser( access_info, account_follow );
+			}
 			break;
 		case R.id.btnFollow:
 			new DlgContextMenu( activity, access_info, account_follow, null, column.column_type ).show();
@@ -431,10 +445,17 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	
 	@Override public boolean onLongClick( View v ){
 		switch( v.getId() ){
+
 		case R.id.ivThumbnail:
 			new DlgContextMenu( activity, access_info, account_thumbnail, null, column.column_type ).show();
-			break;
+			return true;
+
+		case R.id.btnFollow:
+			activity.openFollowFromAnotherAccount( access_info,account_follow );
+			return true;
+
 		}
+
 		return false;
 	}
 	

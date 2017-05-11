@@ -1110,7 +1110,7 @@ public class ActMain extends AppCompatActivity
 		return col;
 	}
 	
-	void performOpenUser( SavedAccount access_info, TootAccount user ){
+	void performOpenUser( @NonNull SavedAccount access_info, @NonNull TootAccount user ){
 		if( access_info.isPseudo() ){
 			Utils.showToast( this, false, R.string.not_available_for_pseudo_account );
 		}else{
@@ -1283,8 +1283,7 @@ public class ActMain extends AppCompatActivity
 					final String host = m.group( 1 );
 					final String user = Uri.decode( m.group( 2 ) );
 					startGetAccount( access_info, host, user, new GetAccountCallback() {
-						@Override
-						public void onGetAccount( TootAccount who ){
+						@Override public void onGetAccount( TootAccount who ){
 							if( who != null ){
 								performOpenUser( access_info, who );
 								return;
@@ -1535,7 +1534,7 @@ public class ActMain extends AppCompatActivity
 						if( tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 							target_status = tmp.statuses.get( 0 );
 							
-							log.d("status id conversion %s => %s",arg_status.id,target_status.id);
+							log.d( "status id conversion %s => %s", arg_status.id, target_status.id );
 						}
 					}
 					if( target_status == null ){
@@ -1692,7 +1691,7 @@ public class ActMain extends AppCompatActivity
 					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
 					String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( arg_status.url ) );
 					path = path + "&resolve=1";
-
+					
 					result = client.request( path );
 					if( result == null || result.object == null ){
 						return result;
@@ -2597,5 +2596,75 @@ public class ActMain extends AppCompatActivity
 			vFooterDivider1.setBackgroundColor( c );
 			vFooterDivider2.setBackgroundColor( c );
 		}
+	}
+	
+	ArrayList< SavedAccount > makeAccountListNonPseudo( LogCategory log ){
+		ArrayList< SavedAccount > dst = new ArrayList<>();
+		for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
+			if( ! a.isPseudo() ){
+				dst.add( a );
+			}
+		}
+		Collections.sort( dst, new Comparator< SavedAccount >() {
+			@Override public int compare( SavedAccount a, SavedAccount b ){
+				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
+			}
+		} );
+		return dst;
+	}
+	
+	void openBoostFromAnotherAccount( @NonNull final SavedAccount access_info, final TootStatus status ){
+		if( status == null ) return;
+		AccountPicker.pick( this, false, false
+			, getString( R.string.account_picker_boost )
+			, makeAccountListNonPseudo(log)
+			, new AccountPicker.AccountPickerCallback() {
+				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+					performBoost(
+						ai
+						, !ai.host.equalsIgnoreCase( access_info.host )
+						, true
+						, status
+						, false
+						, boost_complete_callback
+					);
+				}
+			} );
+	}
+	
+	void openFavouriteFromAnotherAccount( @NonNull final SavedAccount access_info, final TootStatus status ){
+		if( status == null ) return;
+		AccountPicker.pick( this, false, false
+			, getString( R.string.account_picker_favourite )
+			// , account_list_non_pseudo_same_instance
+			, makeAccountListNonPseudo( log )
+			, new AccountPicker.AccountPickerCallback() {
+				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+					performFavourite(
+						ai
+						, ! ai.host.equalsIgnoreCase( access_info.host )
+						, true
+						, status
+						, favourite_complete_callback
+					);
+				}
+			} );
+	}
+	
+	void openFollowFromAnotherAccount( @NonNull SavedAccount access_info, TootStatus status ){
+		if( status == null ) return;
+		openFollowFromAnotherAccount( access_info, status.account );
+	}
+	
+	void openFollowFromAnotherAccount( @NonNull SavedAccount access_info, final TootAccount account ){
+		if( account == null ) return;
+		final String who_acct = access_info.getFullAcct( account );
+		AccountPicker.pick( this, false, false
+			, getString( R.string.account_picker_follow )
+			, makeAccountListNonPseudo( log ), new AccountPicker.AccountPickerCallback() {
+				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+					callRemoteFollow( ai, who_acct, account.locked, false, follow_complete_callback );
+				}
+			} );
 	}
 }

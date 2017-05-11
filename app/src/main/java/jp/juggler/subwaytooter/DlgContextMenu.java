@@ -24,7 +24,7 @@ import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.LogCategory;
 
-class DlgContextMenu implements View.OnClickListener {
+class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 	
 	private static final LogCategory log = new LogCategory( "DlgContextMenu" );
 	
@@ -107,7 +107,11 @@ class DlgContextMenu implements View.OnClickListener {
 				btnFavouriteAnotherAccount.setOnClickListener( this );
 				btnBoostAnotherAccount.setOnClickListener( this );
 			}
-			if( status_by_me ){
+			if( access_info.isPseudo() ){
+				btnDelete.setVisibility( View.GONE );
+				btnReport.setVisibility( View.GONE );
+				btnMuteApp.setVisibility( View.GONE );
+			}else if( status_by_me ){
 				btnDelete.setOnClickListener( this );
 				btnReport.setVisibility( View.GONE );
 				btnMuteApp.setVisibility( View.GONE );
@@ -129,6 +133,8 @@ class DlgContextMenu implements View.OnClickListener {
 			btnFollow.setOnClickListener( this );
 			btnMute.setOnClickListener( this );
 			btnBlock.setOnClickListener( this );
+			
+			btnFollow.setOnLongClickListener( this );
 			
 			// 被フォロー状態
 			ImageView ivFollowedBy = (ImageView) viewRoot.findViewById( R.id.ivFollowedBy );
@@ -253,7 +259,7 @@ class DlgContextMenu implements View.OnClickListener {
 						@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 							activity.performFavourite(
 								ai
-								, !ai.host.equalsIgnoreCase( access_info.host )
+								, ! ai.host.equalsIgnoreCase( access_info.host )
 								, true
 								, status
 								, activity.favourite_complete_callback
@@ -273,7 +279,7 @@ class DlgContextMenu implements View.OnClickListener {
 						@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 							activity.performBoost(
 								ai
-								, !ai.host.equalsIgnoreCase( access_info.host )
+								, ! ai.host.equalsIgnoreCase( access_info.host )
 								, true
 								, status
 								, false
@@ -323,7 +329,9 @@ class DlgContextMenu implements View.OnClickListener {
 			break;
 		
 		case R.id.btnFollow:
-			if( relation.following || relation.requested ){
+			if( access_info.isPseudo() ){
+				activity.openFollowFromAnotherAccount( access_info, who );
+			}else if( relation.following || relation.requested ){
 				activity.callFollow( access_info, who, false, false, activity.unfollow_complete_callback );
 			}else{
 				activity.callFollow( access_info, who, true, false, activity.follow_complete_callback );
@@ -383,14 +391,7 @@ class DlgContextMenu implements View.OnClickListener {
 			break;
 		
 		case R.id.btnFollowFromAnotherAccount:
-			final String who_acct = access_info.getFullAcct( who );
-			AccountPicker.pick( activity, false, false
-				, activity.getString( R.string.account_picker_follow )
-				, account_list_non_pseudo, new AccountPicker.AccountPickerCallback() {
-					@Override public void onAccountPicked( @NonNull SavedAccount ai ){
-						activity.callRemoteFollow( ai, who_acct, who.locked, false, activity.follow_complete_callback );
-					}
-				} );
+			activity.openFollowFromAnotherAccount( access_info, who );
 			break;
 		
 		case R.id.btnSendMessageFromAnotherAccount:
@@ -416,4 +417,15 @@ class DlgContextMenu implements View.OnClickListener {
 		}
 	}
 	
+	@Override public boolean onLongClick( View v ){
+		
+		switch( v.getId() ){
+		case R.id.btnFollow:
+			dialog.dismiss();
+			activity.openFollowFromAnotherAccount( access_info, who );
+			return true;
+			
+		}
+		return false;
+	}
 }

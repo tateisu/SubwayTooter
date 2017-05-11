@@ -16,7 +16,7 @@ import jp.juggler.subwaytooter.util.Emojione;
 import jp.juggler.subwaytooter.util.MyLinkMovementMethod;
 import jp.juggler.subwaytooter.util.MyNetworkImageView;
 
-class HeaderViewHolder implements View.OnClickListener {
+class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private final Column column;
 	private final ActMain activity;
 	private final SavedAccount access_info;
@@ -60,6 +60,8 @@ class HeaderViewHolder implements View.OnClickListener {
 		btnStatusCount.setOnClickListener( this );
 		btnMore.setOnClickListener( this );
 		btnFollow.setOnClickListener( this );
+		
+		btnFollow.setOnLongClickListener( this );
 		
 		tvNote.setMovementMethod( MyLinkMovementMethod.getInstance() );
 	}
@@ -144,5 +146,15 @@ class HeaderViewHolder implements View.OnClickListener {
 			break;
 			
 		}
+	}
+	
+	@Override public boolean onLongClick( View v ){
+		switch( v.getId() ){
+		case R.id.btnFollow:
+			activity.openFollowFromAnotherAccount( access_info,who );
+			return true;
+		}
+		
+		return false;
 	}
 }

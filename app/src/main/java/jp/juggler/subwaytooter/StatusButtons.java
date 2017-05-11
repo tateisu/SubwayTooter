@@ -9,13 +9,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-
 import jp.juggler.subwaytooter.api.entity.TootStatus;
-import jp.juggler.subwaytooter.dialog.AccountPicker;
-import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -34,7 +28,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 	private final ImageView ivFollowedBy2;
 	private final View llFollow2;
 	
-	StatusButtons( ActMain activity,Column column, View viewRoot ){
+	StatusButtons( @NonNull ActMain activity, @NonNull Column column, @NonNull View viewRoot ){
 		this.activity = activity;
 		this.column = column;
 		this.access_info = column.access_info;
@@ -53,7 +47,6 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		btnFavourite.setOnLongClickListener( this );
 		btnFollow2.setOnLongClickListener( this );
 		
-		
 		View v;
 		//
 		v = viewRoot.findViewById( R.id.btnMore );
@@ -70,7 +63,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 	private TootStatus status;
 	private UserRelation relation;
 	
-	void bind( TootStatus status ){
+	void bind( @NonNull TootStatus status ){
 		this.status = status;
 		
 		int color_normal = Styler.getAttributeColor( activity, R.attr.colorImageButton );
@@ -101,7 +94,6 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			llFollow2.setVisibility( View.VISIBLE );
 			this.relation = UserRelation.load( access_info.db_id, status.account.id );
 			Styler.setFollowIcon( activity, btnFollow2, ivFollowedBy2, relation, column.column_type );
-			
 		}
 		
 	}
@@ -132,7 +124,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		case R.id.btnBoost:
 			if( access_info.isPseudo() ){
-				Utils.showToast( activity, false, R.string.not_available_for_pseudo_account );
+				activity.openBoostFromAnotherAccount( access_info, status );
 			}else{
 				activity.performBoost(
 					access_info
@@ -144,9 +136,10 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 				);
 			}
 			break;
+		
 		case R.id.btnFavourite:
 			if( access_info.isPseudo() ){
-				Utils.showToast( activity, false, R.string.not_available_for_pseudo_account );
+				activity.openFavouriteFromAnotherAccount( access_info, status );
 			}else{
 				activity.performFavourite(
 					access_info
@@ -157,12 +150,15 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 				);
 			}
 			break;
+		
 		case R.id.btnMore:
 			new DlgContextMenu( activity, access_info, status.account, status, column.column_type ).show();
 			break;
+		
 		case R.id.btnFollow2:
-			//noinspection StatementWithEmptyBody
-			if( relation.blocking || relation.muting ){
+			if( access_info.isPseudo() ){
+				activity.openFollowFromAnotherAccount( access_info, status );
+			}else if( relation.blocking || relation.muting ){
 				// 何もしない
 			}else if( relation.following || relation.requested ){
 				activity.callFollow( access_info, status.account, false, false, activity.unfollow_complete_callback );
@@ -176,75 +172,20 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 	@Override public boolean onLongClick( View v ){
 		if( close_window != null ) close_window.dismiss();
 		switch( v.getId() ){
-		case R.id. btnBoost :
-			if( status != null ){
-				AccountPicker.pick( activity, false, false
-					, activity.getString( R.string.account_picker_boost )
-					, makeAccountListNonPseudo(log)
-					, new AccountPicker.AccountPickerCallback() {
-						@Override public void onAccountPicked( @NonNull SavedAccount ai ){
-							activity.performBoost(
-								ai
-								, !ai.host.equalsIgnoreCase( access_info.host )
-								, true
-								, status
-								, false
-								, activity.boost_complete_callback
-							);
-						}
-					} );
-			}
-			
-			break;
-		case R.id. btnFavourite :
-			if( status != null ){
-				AccountPicker.pick( activity, false, false
-					, activity.getString( R.string.account_picker_favourite )
-					// , account_list_non_pseudo_same_instance
-					, makeAccountListNonPseudo( log )
-					, new AccountPicker.AccountPickerCallback() {
-						@Override public void onAccountPicked( @NonNull SavedAccount ai ){
-							activity.performFavourite(
-								ai
-								, !ai.host.equalsIgnoreCase( access_info.host )
-								, true
-								, status
-								, activity.favourite_complete_callback
-							);
-						}
-					} );
-			}
-			break;
-		case R.id. btnFollow2 :
-			if( status != null ){
-				final String who_acct = access_info.getFullAcct( status.account );
-				AccountPicker.pick( activity, false, false
-					, activity.getString( R.string.account_picker_follow )
-					, makeAccountListNonPseudo( log ), new AccountPicker.AccountPickerCallback() {
-						@Override public void onAccountPicked( @NonNull SavedAccount ai ){
-							activity.callRemoteFollow( ai, who_acct, status.account.locked, false, activity.follow_complete_callback );
-						}
-					} );
-			}
+		case R.id.btnBoost:
+			activity.openBoostFromAnotherAccount( access_info, status );
 			break;
 		
+		case R.id.btnFavourite:
+			activity.openFavouriteFromAnotherAccount( access_info, status );
+			break;
+		
+		case R.id.btnFollow2:
+			activity.openFollowFromAnotherAccount( access_info, status );
+			break;
+			
 		}
 		return true;
-	}
-	
-	ArrayList< SavedAccount > makeAccountListNonPseudo( LogCategory log){
-		ArrayList< SavedAccount > dst = new ArrayList<>();
-		for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
-			if( ! a.isPseudo() ){
-				dst.add( a );
-			}
-		}
-		Collections.sort( dst, new Comparator< SavedAccount >() {
-			@Override public int compare( SavedAccount a, SavedAccount b ){
-				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
-			}
-		} );
-		return dst;
 	}
 	
 }

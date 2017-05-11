@@ -173,7 +173,12 @@
                 android:layout_height="wrap_content"
                 android:text="@string/dont_refresh_on_activity_resume"
                 />
-
+            <CheckBox
+                android:id="@+id/cbHideMediaDefault"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/hide_media_default"
+                />
             <LinearLayout
                 android:id="@+id/llRegexFilter"
                 android:layout_width="match_parent"

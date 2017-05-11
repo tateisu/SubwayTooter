@@ -117,6 +117,8 @@ class Column implements StreamReader.Callback {
 	private static final String KEY_DONT_SHOW_REPLY = "dont_show_reply";
 	private static final String KEY_DONT_STREAMING = "dont_streaming";
 	private static final String KEY_DONT_AUTO_REFRESH = "dont_auto_refresh";
+	private static final String KEY_HIDE_MEDIA_DEFAULT = "hide_media_default";
+	
 	private static final String KEY_REGEX_TEXT = "regex_text";
 	
 	private static final String KEY_HEADER_BACKGROUND_COLOR = "header_background_color";
@@ -167,6 +169,7 @@ class Column implements StreamReader.Callback {
 	boolean dont_show_reply;
 	boolean dont_streaming;
 	boolean dont_auto_refresh;
+	boolean hide_media_default;
 	
 	String regex_text;
 	
@@ -197,7 +200,7 @@ class Column implements StreamReader.Callback {
 		this.context = app_state.context;
 		this.access_info = access_info;
 		this.column_type = type;
-		this.callback_ref = new WeakReference< Callback >( callback );
+		this.callback_ref = new WeakReference<>( callback );
 		switch( type ){
 		
 		case TYPE_CONVERSATION:
@@ -232,6 +235,8 @@ class Column implements StreamReader.Callback {
 		item.put( KEY_DONT_SHOW_REPLY, dont_show_reply );
 		item.put( KEY_DONT_STREAMING, dont_streaming );
 		item.put( KEY_DONT_AUTO_REFRESH, dont_auto_refresh );
+		item.put( KEY_HIDE_MEDIA_DEFAULT, hide_media_default );
+
 		item.put( KEY_REGEX_TEXT, regex_text );
 		
 		item.put( KEY_HEADER_BACKGROUND_COLOR, header_bg_color );
@@ -282,6 +287,8 @@ class Column implements StreamReader.Callback {
 		this.dont_show_reply = src.optBoolean( KEY_DONT_SHOW_REPLY );
 		this.dont_streaming = src.optBoolean( KEY_DONT_STREAMING );
 		this.dont_auto_refresh = src.optBoolean( KEY_DONT_AUTO_REFRESH );
+		this.hide_media_default = src.optBoolean( KEY_HIDE_MEDIA_DEFAULT );
+		
 		this.regex_text = Utils.optStringX( src, KEY_REGEX_TEXT );
 		
 		this.header_bg_color = src.optInt( KEY_HEADER_BACKGROUND_COLOR );
@@ -1351,7 +1358,7 @@ class Column implements StreamReader.Callback {
 		}
 	}
 	
-	boolean bRefreshingTop;
+	private boolean bRefreshingTop;
 	
 	void startRefresh( final boolean bSilent, final boolean bBottom, final long status_id, final int refresh_after_toot ){
 		
@@ -2520,6 +2527,21 @@ class Column implements StreamReader.Callback {
 		}
 	}
 	
+	boolean canShowMedia(){
+		switch( column_type ){
+		case TYPE_REPORTS:
+		case TYPE_MUTES:
+		case TYPE_BLOCKS:
+		case TYPE_FOLLOW_REQUESTS:
+		case TYPE_BOOSTED_BY:
+		case TYPE_FAVOURITED_BY:
+			return false;
+		
+		default:
+			return true;
+		}
+	}
+	
 	boolean canAutoRefresh(){
 		switch( column_type ){
 		default:
@@ -2551,7 +2573,7 @@ class Column implements StreamReader.Callback {
 	private boolean bPutGap;
 	
 	
-	void resumeStreaming( boolean bPutGap ){
+	private void resumeStreaming( boolean bPutGap ){
 		
 		if( ! canStreaming() ){
 			return;

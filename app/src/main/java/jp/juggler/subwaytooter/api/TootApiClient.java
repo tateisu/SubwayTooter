@@ -288,7 +288,6 @@ public class TootApiClient {
 			ex.printStackTrace();
 			return new TootApiResult( Utils.formatError( ex, "API data error" ) );
 		}
-	
 		
 		// 認証ページURLを作る
 		final String browser_url = "https://" + instance + "/oauth/authorize"

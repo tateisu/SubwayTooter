@@ -594,4 +594,5 @@
     <string name="already_favourited">既にお気に入り済みです</string>
     <string name="status_id_conversion_failed">ステータスIDを変換できませんでした</string>
     <string name="dont_screen_off">メイン画面表示中は自動消灯無効</string>
+    <string name="hide_media_default">全ての画像を隠す</string>
 </resources>

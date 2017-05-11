@@ -81,7 +81,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private TootGap gap;
 	private int position;
 	
-	ItemViewHolder( ActMain activity,Column column,  ItemListAdapter list_adapter,View view ){
+	ItemViewHolder( ActMain activity, Column column, ItemListAdapter list_adapter, View view ){
 		this.activity = activity;
 		this.column = column;
 		this.access_info = column.access_info;
@@ -115,7 +115,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.tvContent = (MyTextView) view.findViewById( R.id.tvContent );
 		this.tvMentions = (MyTextView) view.findViewById( R.id.tvMentions );
 		
-		this.buttons_for_status = column.bSimpleList ? null : new StatusButtons( activity,column, view );
+		this.buttons_for_status = column.bSimpleList ? null : new StatusButtons( activity, column, view );
 		
 		this.flMedia = view.findViewById( R.id.flMedia );
 		this.btnShowMedia = view.findViewById( R.id.btnShowMedia );
@@ -159,7 +159,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 	}
 	
-	void bind( Object item ,int position){
+	void bind( Object item, int position ){
 		this.position = position;
 		this.status = null;
 		this.account_thumbnail = null;
@@ -261,7 +261,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private void showFollow( TootAccount who ){
 		account_follow = who;
 		llFollow.setVisibility( View.VISIBLE );
-		ivFollow.setCornerRadius( activity.pref,16f );
+		ivFollow.setCornerRadius( activity.pref, 16f );
 		ivFollow.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ), App1.getImageLoader() );
 		tvFollowerName.setText( who.display_name );
 		setAcct( tvFollowerAcct, access_info.getFullAcct( who ), R.attr.colorAcctSmall );
@@ -279,16 +279,16 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		tvTime.setText( TootStatus.formatTime( status.time_created_at ) );
 		
 		tvName.setText( status.account.display_name );
-		ivThumbnail.setCornerRadius( activity.pref,16f );
+		ivThumbnail.setCornerRadius( activity.pref, 16f );
 		ivThumbnail.setImageUrl( access_info.supplyBaseUrl( status.account.avatar_static ), App1.getImageLoader() );
 		tvContent.setText( status.decoded_content );
-
-//			if( status.decoded_tags == null ){
-//				tvTags.setVisibility( View.GONE );
-//			}else{
-//				tvTags.setVisibility( View.VISIBLE );
-//				tvTags.setText( status.decoded_tags );
-//			}
+		
+		//			if( status.decoded_tags == null ){
+		//				tvTags.setVisibility( View.GONE );
+		//			}else{
+		//				tvTags.setVisibility( View.VISIBLE );
+		//				tvTags.setText( status.decoded_tags );
+		//			}
 		
 		if( status.decoded_mentions == null ){
 			tvMentions.setVisibility( View.GONE );
@@ -317,8 +317,14 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			setMedia( ivMedia3, status, 2 );
 			setMedia( ivMedia4, status, 3 );
 			
+			@SuppressWarnings("SimplifiableConditionalExpression")
+			boolean default_shown =
+				column.hide_media_default ? false :
+					access_info.dont_hide_nsfw ? true :
+						! status.sensitive;
+			
 			// hide sensitive media
-			boolean is_shown = MediaShown.isShown( access_info.host, status.id, access_info.dont_hide_nsfw || ! status.sensitive );
+			boolean is_shown = MediaShown.isShown( access_info.host, status.id, default_shown );
 			btnShowMedia.setVisibility( ! is_shown ? View.VISIBLE : View.GONE );
 		}
 		
@@ -373,7 +379,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			TootAttachment ta = status.media_attachments.get( idx );
 			String url = ta.preview_url;
 			if( TextUtils.isEmpty( url ) ) url = ta.remote_url;
-			iv.setCornerRadius( activity.pref,16f ); // 正方形じゃないせいか、うまく動かない activity.density * 4f );
+			iv.setCornerRadius( activity.pref, 16f ); // 正方形じゃないせいか、うまく動かない activity.density * 4f );
 			iv.setImageUrl( access_info.supplyBaseUrl( url ), App1.getImageLoader() );
 		}
 	}
@@ -409,22 +415,22 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.ivThumbnail:
 			if( access_info.isPseudo() ){
-				new DlgContextMenu( activity, access_info,account_thumbnail, null, column.column_type ).show();
+				new DlgContextMenu( activity, access_info, account_thumbnail, null, column.column_type ).show();
 			}else{
 				activity.performOpenUser( access_info, account_thumbnail );
 			}
 			break;
-
+		
 		case R.id.llBoosted:
 			if( access_info.isPseudo() ){
-				new DlgContextMenu( activity, access_info,account_boost, null, column.column_type ).show();
+				new DlgContextMenu( activity, access_info, account_boost, null, column.column_type ).show();
 			}else{
 				activity.performOpenUser( access_info, account_boost );
 			}
 			break;
 		case R.id.llFollow:
 			if( access_info.isPseudo() ){
-				new DlgContextMenu( activity, access_info,account_follow, null, column.column_type ).show();
+				new DlgContextMenu( activity, access_info, account_follow, null, column.column_type ).show();
 			}else{
 				activity.performOpenUser( access_info, account_follow );
 			}
@@ -445,17 +451,17 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	
 	@Override public boolean onLongClick( View v ){
 		switch( v.getId() ){
-
+		
 		case R.id.ivThumbnail:
 			new DlgContextMenu( activity, access_info, account_thumbnail, null, column.column_type ).show();
 			return true;
-
+		
 		case R.id.btnFollow:
-			activity.openFollowFromAnotherAccount( access_info,account_follow );
+			activity.openFollowFromAnotherAccount( access_info, account_follow );
 			return true;
-
+			
 		}
-
+		
 		return false;
 	}
 	
@@ -486,7 +492,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	void onItemClick( MyListView listView, View anchor ){
 		if( status != null ){
 			activity.closeListItemPopup();
-			activity.list_item_popup = new StatusButtonsPopup( activity,column );
+			activity.list_item_popup = new StatusButtonsPopup( activity, column );
 			activity.list_item_popup.show( listView, anchor, status );
 		}
 	}

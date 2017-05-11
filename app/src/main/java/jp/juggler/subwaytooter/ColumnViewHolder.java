@@ -200,6 +200,15 @@ class ColumnViewHolder
 			cb.setOnCheckedChangeListener( this );
 		}
 		
+		cb = (CheckBox) root.findViewById( R.id.cbHideMediaDefault );
+		if( ! column.canShowMedia() ){
+			cb.setVisibility(  View.GONE );
+		}else{
+			cb.setVisibility(View.VISIBLE  );
+			cb.setChecked( column.hide_media_default );
+			cb.setOnCheckedChangeListener( this );
+		}
+		
 		etRegexFilter = (EditText) root.findViewById( R.id.etRegexFilter );
 		if( ! bAllowFilter ){
 			etRegexFilter.setVisibility( View.GONE );
@@ -453,6 +462,12 @@ class ColumnViewHolder
 		case R.id.cbDontAutoRefresh:
 			column.dont_auto_refresh = isChecked;
 			activity.app_state.saveColumnList();
+			break;
+		
+		case R.id.cbHideMediaDefault:
+			column.hide_media_default = isChecked;
+			activity.app_state.saveColumnList();
+			column.fireShowContent();
 			break;
 			
 		}

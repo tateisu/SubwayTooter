@@ -304,4 +304,5 @@
     <string name="already_favourited">Already favourited.</string>
     <string name="already_boosted">Already boosted.</string>
     <string name="dont_screen_off">Don\'t screen off while main activity is shown</string>
+    <string name="hide_media_default">Hide all media</string>
 </resources>

@@ -9,11 +9,11 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import jp.juggler.subwaytooter.App1;
+import jp.juggler.subwaytooter.table.ClientInfo;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.util.Utils;
-import jp.juggler.subwaytooter.table.ClientInfo;
 import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -236,96 +236,83 @@ public class TootApiClient {
 	
 	public TootApiResult authorize1(){
 		
-		JSONObject client_info = null;
+		JSONObject client_info;
+
+		// サーバ側がクライアント情報を消した場合、今の認証フローではアプリがそれを知ることができない
+		// 毎回クライアント情報を作ることでしか対策できない
+
+		callback.publishApiProgress( context.getString( R.string.register_app_to_server, instance ) );
+
+		// OAuth2 クライアント登録
+		String client_name = "SubwayTooter"; // + UUID.randomUUID().toString();
 		
-		for( ; ; ){
-			if( callback.isApiCancelled() ) return null;
-			
-			if( client_info == null ){
-				// DBからまず探す
-				client_info = ClientInfo.load( instance );
-				if( client_info != null && client_info.optInt( KEY_AUTH_VERSION, 0 ) < AUTH_VERSION ){
-					// このトークンは形式が古くて使えないよ
-					client_info = null;
-				}
-				
-				if( client_info != null ) continue;
-				
-				callback.publishApiProgress( context.getString( R.string.register_app_to_server, instance ) );
-				
-				// OAuth2 クライアント登録
-				String client_name = "SubwayTooter"; // + UUID.randomUUID().toString();
-				
-				Request request = new Request.Builder()
-					.url( "https://" + instance + "/api/v1/apps" )
-					.post( RequestBody.create( MEDIA_TYPE_FORM_URL_ENCODED
-						, "client_name=" + Uri.encode( client_name )
-							+ "&redirect_uris=" + Uri.encode( REDIRECT_URL )
-							+ "&scopes=read write follow"
-					) )
-					.build();
-				Call call = ok_http_client.newCall( request );
-				
-				Response response;
-				try{
-					response = call.execute();
-				}catch( Throwable ex ){
-					ex.printStackTrace(  );
-					return new TootApiResult( Utils.formatError( ex, context.getResources(), R.string.network_error ) );
-				}
-				if( callback.isApiCancelled() ) return null;
-				
-				if( ! response.isSuccessful() ){
-					return new TootApiResult( context.getString( R.string.network_error_arg, response ) );
-				}
-				try{
-					String json = response.body().string();
-					if( TextUtils.isEmpty( json ) || json.startsWith( "<" ) ){
-						return new TootApiResult( context.getString( R.string.response_not_json ) + "\n" + json );
-					}
-					// {"id":999,"redirect_uri":"urn:ietf:wg:oauth:2.0:oob","client_id":"******","client_secret":"******"}
-					client_info = new JSONObject( json );
-					String error = Utils.optStringX( client_info, "error" );
-					if( ! TextUtils.isEmpty( error ) ){
-						return new TootApiResult( context.getString( R.string.api_error, error ) );
-					}
-					client_info.put( KEY_AUTH_VERSION, AUTH_VERSION );
-					ClientInfo.save( instance, client_info.toString() );
-					continue;
-				}catch( Throwable ex ){
-					ex.printStackTrace();
-					return new TootApiResult( Utils.formatError( ex, "API data error" ) );
-				}
-			}
-			
-			// 認証ページURLを作る
-			final String browser_url = "https://" + instance + "/oauth/authorize"
-				+ "?client_id=" + Uri.encode( Utils.optStringX( client_info, "client_id" ) )
-				// この段階では要らない		+ "&client_secret=" + Uri.encode( Utils.optStringX( client_info, "client_secret" ) )
-				+ "&response_type=code"
-				+ "&redirect_uri=" + Uri.encode( REDIRECT_URL )
-				+ "&scope=read write follow"
-				+ "&scopes=read write follow"
-				+ "&state=" + ( account != null ? "db:" + account.db_id : "host:" + instance )
-				+ "&grant_type=authorization_code"
-				//	+ "&username=" + Uri.encode( user_mail )
-				//	+ "&password=" + Uri.encode( password )
-				+ "&approval_prompt=force"
-				//		+"&access_type=offline"
-				;
-			// APIリクエストは失敗?する
-			// URLをエラーとして返す
-			return new TootApiResult( browser_url );
+		Request request = new Request.Builder()
+			.url( "https://" + instance + "/api/v1/apps" )
+			.post( RequestBody.create( MEDIA_TYPE_FORM_URL_ENCODED
+				, "client_name=" + Uri.encode( client_name )
+					+ "&redirect_uris=" + Uri.encode( REDIRECT_URL )
+					+ "&scopes=read write follow"
+			) )
+			.build();
+		Call call = ok_http_client.newCall( request );
+		
+		Response response;
+		try{
+			response = call.execute();
+		}catch( Throwable ex ){
+			ex.printStackTrace(  );
+			return new TootApiResult( Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
+		if( callback.isApiCancelled() ) return null;
 		
+		if( ! response.isSuccessful() ){
+			return new TootApiResult( context.getString( R.string.network_error_arg, response ) );
+		}
+		try{
+			String json = response.body().string();
+			if( TextUtils.isEmpty( json ) || json.startsWith( "<" ) ){
+				return new TootApiResult( context.getString( R.string.response_not_json ) + "\n" + json );
+			}
+			// {"id":999,"redirect_uri":"urn:ietf:wg:oauth:2.0:oob","client_id":"******","client_secret":"******"}
+			client_info = new JSONObject( json );
+			String error = Utils.optStringX( client_info, "error" );
+			if( ! TextUtils.isEmpty( error ) ){
+				return new TootApiResult( context.getString( R.string.api_error, error ) );
+			}
+			client_info.put( KEY_AUTH_VERSION, AUTH_VERSION );
+
+			// authorize2 で使う
+			ClientInfo.save( instance, client_info.toString() );
+
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			return new TootApiResult( Utils.formatError( ex, "API data error" ) );
+		}
+	
+		
+		// 認証ページURLを作る
+		final String browser_url = "https://" + instance + "/oauth/authorize"
+			+ "?client_id=" + Uri.encode( Utils.optStringX( client_info, "client_id" ) )
+			// この段階では要らない		+ "&client_secret=" + Uri.encode( Utils.optStringX( client_info, "client_secret" ) )
+			+ "&response_type=code"
+			+ "&redirect_uri=" + Uri.encode( REDIRECT_URL )
+			+ "&scope=read write follow"
+			+ "&scopes=read write follow"
+			+ "&state=" + ( account != null ? "db:" + account.db_id : "host:" + instance )
+			+ "&grant_type=authorization_code"
+			//	+ "&username=" + Uri.encode( user_mail )
+			//	+ "&password=" + Uri.encode( password )
+			+ "&approval_prompt=force"
+			//		+"&access_type=offline"
+			;
+		// APIリクエストは失敗?する
+		// URLをエラーとして返す
+		return new TootApiResult( browser_url );
 	}
 	
 	public TootApiResult authorize2( String code ){
 		
 		JSONObject client_info = ClientInfo.load( instance );
-		if( client_info != null && client_info.optInt( KEY_AUTH_VERSION, 0 ) < AUTH_VERSION ){
-			client_info = null;
-		}
 		if( client_info == null ){
 			return new TootApiResult( "missing client id" );
 		}

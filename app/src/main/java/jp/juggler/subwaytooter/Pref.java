@@ -39,6 +39,7 @@ public class Pref {
 	
 	static final String KEY_DONT_USE_STREAMING = "dont_use_streaming";
 	static final String KEY_DONT_REFRESH_ON_RESUME = "dont_refresh_on_resume";
+	static final String KEY_DONT_SCREEN_OFF = "dont_screen_off";
 	
 	
 	

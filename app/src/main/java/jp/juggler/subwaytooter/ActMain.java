@@ -26,6 +26,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -128,6 +129,12 @@ public class ActMain extends AppCompatActivity
 		super.onResume();
 
 		MyClickableSpan.link_callback = link_click_listener;
+		
+		if( pref.getBoolean( Pref.KEY_DONT_SCREEN_OFF,false )){
+			getWindow().addFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		}else{
+			getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+		}
 		
 		// アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
 		{

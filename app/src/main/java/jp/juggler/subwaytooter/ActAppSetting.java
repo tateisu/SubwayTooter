@@ -52,7 +52,7 @@ public class ActAppSetting extends AppCompatActivity
 	Switch swDontRound;
 	Switch swDontUseStreaming;
 	Switch swDontRefreshOnResume;
-	
+	Switch swDontScreenOff;
 	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
@@ -107,6 +107,10 @@ public class ActAppSetting extends AppCompatActivity
 		
 		swDontRefreshOnResume = (Switch) findViewById( R.id.swDontRefreshOnResume );
 		swDontRefreshOnResume.setOnCheckedChangeListener( this );
+		
+		swDontScreenOff= (Switch) findViewById( R.id.swDontScreenOff );
+		swDontScreenOff.setOnCheckedChangeListener( this );
+		
 		
 		cbNotificationSound = (CheckBox) findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = (CheckBox) findViewById( R.id.cbNotificationVibration );
@@ -201,7 +205,8 @@ public class ActAppSetting extends AppCompatActivity
 		swDontRound.setChecked( pref.getBoolean( Pref.KEY_DONT_ROUND, false ) );
 		swDontUseStreaming.setChecked( pref.getBoolean( Pref.KEY_DONT_USE_STREAMING, false ) );
 		swDontRefreshOnResume.setChecked( pref.getBoolean( Pref.KEY_DONT_REFRESH_ON_RESUME , false ) );
-		
+		swDontScreenOff.setChecked( pref.getBoolean( Pref.KEY_DONT_SCREEN_OFF , false ) );
+
 		cbNotificationSound.setChecked( pref.getBoolean( Pref.KEY_NOTIFICATION_SOUND, true ) );
 		cbNotificationVibration.setChecked( pref.getBoolean( Pref.KEY_NOTIFICATION_VIBRATION, true ) );
 		cbNotificationLED.setChecked( pref.getBoolean( Pref.KEY_NOTIFICATION_LED, true ) );
@@ -233,6 +238,8 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_DONT_ROUND, swDontRound.isChecked() )
 			.putBoolean( Pref.KEY_DONT_USE_STREAMING, swDontUseStreaming.isChecked() )
 			.putBoolean( Pref.KEY_DONT_REFRESH_ON_RESUME, swDontRefreshOnResume.isChecked() )
+			.putBoolean( Pref.KEY_DONT_SCREEN_OFF, swDontScreenOff.isChecked() )
+		
 			
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )

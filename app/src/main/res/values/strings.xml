@@ -300,4 +300,7 @@
     <string name="help_translation">Help translation</string>
     <string name="dont_use_streaming_api">Don\'t use streaming API</string>
     <string name="dont_refresh_on_activity_resume">Don\'t auto refresh when activity resumed</string>
+    <string name="status_id_conversion_failed">Status id conversion failed.</string>
+    <string name="already_favourited">Already favourited.</string>
+    <string name="already_boosted">Already boosted.</string>
 </resources>

@@ -304,5 +304,8 @@
     <string name="open_status_from">Open status from</string>
     <string name="dont_use_streaming_api">Don\'t use streaming API</string>
     <string name="dont_refresh_on_activity_resume">Don\'t auto refresh when activity resumed</string>
+    <string name="already_boosted">Already boosted.</string>
+    <string name="already_favourited">Already favourited.</string>
+    <string name="status_id_conversion_failed">Status id conversion failed.</string>
 
 </resources>

@@ -266,9 +266,9 @@
     <!---->
     <string name="follow_from_another_account">別のアカウントでフォロー</string>
     <!---->
-    <string name="favourite_from_another_account"> (同タンスの)別アカウントでお気に入り</string>
+    <string name="favourite_from_another_account">別アカウントでお気に入り</string>
     <!---->
-    <string name="boost_from_another_account">(同タンスの)別アカウントでブースト</string>
+    <string name="boost_from_another_account">別アカウントでブースト</string>
     <!---->
     <string name="app_about">このアプリについて</string>
     <!---->
@@ -590,4 +590,7 @@
     <string name="help_translation">翻訳に協力する</string>
     <string name="dont_use_streaming_api">ストリーミングAPIを使わない</string>
     <string name="dont_refresh_on_activity_resume">画面復帰時に自動ロードしない</string>
+    <string name="already_boosted">既にブースト済みです</string>
+    <string name="already_favourited">既にお気に入り済みです</string>
+    <string name="status_id_conversion_failed">ステータスIDを変換できませんでした</string>
 </resources>

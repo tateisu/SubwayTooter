@@ -2,18 +2,28 @@ package jp.juggler.subwaytooter;
 
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.dialog.AccountPicker;
+import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
+import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
-class StatusButtons implements View.OnClickListener {
+class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
+	static final LogCategory log = new LogCategory( "StatusButtons" );
+	
 	private final Column column;
 	private final ActMain activity;
 	private final SavedAccount access_info;
@@ -38,6 +48,11 @@ class StatusButtons implements View.OnClickListener {
 		btnBoost.setOnClickListener( this );
 		btnFavourite.setOnClickListener( this );
 		btnFollow2.setOnClickListener( this );
+		
+		btnBoost.setOnLongClickListener( this );
+		btnFavourite.setOnLongClickListener( this );
+		btnFollow2.setOnLongClickListener( this );
+		
 		
 		View v;
 		//
@@ -119,14 +134,27 @@ class StatusButtons implements View.OnClickListener {
 			if( access_info.isPseudo() ){
 				Utils.showToast( activity, false, R.string.not_available_for_pseudo_account );
 			}else{
-				activity.performBoost( access_info, status, false, column.bSimpleList ? activity.boost_complete_callback : null );
+				activity.performBoost(
+					access_info
+					, false
+					, ! status.reblogged
+					, status
+					, false
+					, column.bSimpleList ? activity.boost_complete_callback : null
+				);
 			}
 			break;
 		case R.id.btnFavourite:
 			if( access_info.isPseudo() ){
 				Utils.showToast( activity, false, R.string.not_available_for_pseudo_account );
 			}else{
-				activity.performFavourite( access_info, status, column.bSimpleList ? activity.favourite_complete_callback : null );
+				activity.performFavourite(
+					access_info
+					, false
+					, ! status.favourited
+					, status
+					, column.bSimpleList ? activity.favourite_complete_callback : null
+				);
 			}
 			break;
 		case R.id.btnMore:
@@ -144,5 +172,80 @@ class StatusButtons implements View.OnClickListener {
 			break;
 		}
 	}
+	
+	@Override public boolean onLongClick( View v ){
+		if( close_window != null ) close_window.dismiss();
+		switch( v.getId() ){
+		case R.id. btnBoost :
+			if( status != null ){
+				AccountPicker.pick( activity, false, false
+					, activity.getString( R.string.account_picker_boost )
+					, makeAccountListNonPseudo(log)
+					, new AccountPicker.AccountPickerCallback() {
+						@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+							activity.performBoost(
+								ai
+								, !ai.host.equalsIgnoreCase( access_info.host )
+								, true
+								, status
+								, false
+								, activity.boost_complete_callback
+							);
+						}
+					} );
+			}
+			
+			break;
+		case R.id. btnFavourite :
+			if( status != null ){
+				AccountPicker.pick( activity, false, false
+					, activity.getString( R.string.account_picker_favourite )
+					// , account_list_non_pseudo_same_instance
+					, makeAccountListNonPseudo( log )
+					, new AccountPicker.AccountPickerCallback() {
+						@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+							activity.performFavourite(
+								ai
+								, !ai.host.equalsIgnoreCase( access_info.host )
+								, true
+								, status
+								, activity.favourite_complete_callback
+							);
+						}
+					} );
+			}
+			break;
+		case R.id. btnFollow2 :
+			if( status != null ){
+				final String who_acct = access_info.getFullAcct( status.account );
+				AccountPicker.pick( activity, false, false
+					, activity.getString( R.string.account_picker_follow )
+					, makeAccountListNonPseudo( log ), new AccountPicker.AccountPickerCallback() {
+						@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+							activity.callRemoteFollow( ai, who_acct, status.account.locked, false, activity.follow_complete_callback );
+						}
+					} );
+			}
+			break;
+		
+		}
+		return true;
+	}
+	
+	ArrayList< SavedAccount > makeAccountListNonPseudo( LogCategory log){
+		ArrayList< SavedAccount > dst = new ArrayList<>();
+		for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
+			if( ! a.isPseudo() ){
+				dst.add( a );
+			}
+		}
+		Collections.sort( dst, new Comparator< SavedAccount >() {
+			@Override public int compare( SavedAccount a, SavedAccount b ){
+				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
+			}
+		} );
+		return dst;
+	}
+	
 }
 	

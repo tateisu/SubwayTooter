@@ -24,7 +24,7 @@ import android.widget.TextView;
 public class AccountPicker {
 	
 	public interface AccountPickerCallback {
-		void onAccountPicked( SavedAccount ai );
+		void onAccountPicked( @NonNull SavedAccount ai );
 	}
 	
 	public static void pick( @NonNull ActMain activity, boolean bAllowPseudo, boolean bAuto

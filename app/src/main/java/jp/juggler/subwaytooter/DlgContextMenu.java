@@ -239,7 +239,7 @@ class DlgContextMenu implements View.OnClickListener {
 		
 		case R.id.btnText:
 			if( status != null ){
-				ActText.open( activity,access_info,status);
+				ActText.open( activity, access_info, status );
 			}
 			break;
 		
@@ -247,10 +247,17 @@ class DlgContextMenu implements View.OnClickListener {
 			if( status != null ){
 				AccountPicker.pick( activity, false, false
 					, activity.getString( R.string.account_picker_favourite )
-					, account_list_non_pseudo_same_instance, new AccountPicker.AccountPickerCallback() {
-						@Override public void onAccountPicked( SavedAccount ai ){
-							if( ai != null )
-								activity.performFavourite( ai, status, activity.favourite_complete_callback );
+					// , account_list_non_pseudo_same_instance
+					, account_list_non_pseudo
+					, new AccountPicker.AccountPickerCallback() {
+						@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+							activity.performFavourite(
+								ai
+								, !ai.host.equalsIgnoreCase( access_info.host )
+								, true
+								, status
+								, activity.favourite_complete_callback
+							);
 						}
 					} );
 			}
@@ -260,10 +267,18 @@ class DlgContextMenu implements View.OnClickListener {
 			if( status != null ){
 				AccountPicker.pick( activity, false, false
 					, activity.getString( R.string.account_picker_boost )
-					, account_list_non_pseudo_same_instance, new AccountPicker.AccountPickerCallback() {
-						@Override public void onAccountPicked( SavedAccount ai ){
-							if( ai != null )
-								activity.performBoost( ai, status, false, activity.boost_complete_callback );
+					// , account_list_non_pseudo_same_instance
+					, account_list_non_pseudo
+					, new AccountPicker.AccountPickerCallback() {
+						@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+							activity.performBoost(
+								ai
+								, !ai.host.equalsIgnoreCase( access_info.host )
+								, true
+								, status
+								, false
+								, activity.boost_complete_callback
+							);
 						}
 					} );
 			}
@@ -372,7 +387,7 @@ class DlgContextMenu implements View.OnClickListener {
 			AccountPicker.pick( activity, false, false
 				, activity.getString( R.string.account_picker_follow )
 				, account_list_non_pseudo, new AccountPicker.AccountPickerCallback() {
-					@Override public void onAccountPicked( SavedAccount ai ){
+					@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 						activity.callRemoteFollow( ai, who_acct, who.locked, false, activity.follow_complete_callback );
 					}
 				} );

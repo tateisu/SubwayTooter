@@ -1,4 +1,4 @@
-package jp.juggler.subwaytooter.util;
+package jp.juggler.subwaytooter.api;
 
 import java.util.ArrayList;
 import java.util.Collection;

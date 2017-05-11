@@ -18,10 +18,10 @@ import jp.juggler.subwaytooter.table.ContentWarning;
 import jp.juggler.subwaytooter.table.MediaShown;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
-import jp.juggler.subwaytooter.util.MyLinkMovementMethod;
-import jp.juggler.subwaytooter.util.MyListView;
-import jp.juggler.subwaytooter.util.MyNetworkImageView;
-import jp.juggler.subwaytooter.util.MyTextView;
+import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
+import jp.juggler.subwaytooter.view.MyListView;
+import jp.juggler.subwaytooter.view.MyNetworkImageView;
+import jp.juggler.subwaytooter.view.MyTextView;
 import jp.juggler.subwaytooter.util.Utils;
 
 class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {

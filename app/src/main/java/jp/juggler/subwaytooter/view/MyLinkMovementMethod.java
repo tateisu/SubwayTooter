@@ -1,8 +1,7 @@
-package jp.juggler.subwaytooter.util;
+package jp.juggler.subwaytooter.view;
 
 import android.support.v4.view.MotionEventCompat;
 import android.text.Layout;
-import android.text.Selection;
 import android.text.Spannable;
 import android.text.method.LinkMovementMethod;
 import android.text.method.Touch;

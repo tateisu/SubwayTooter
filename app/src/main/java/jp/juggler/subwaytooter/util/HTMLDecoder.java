@@ -84,12 +84,8 @@ public class HTMLDecoder {
 		}
 	}
 	
-	public interface LinkClickCallback {
-		void onClickLink( LinkClickContext account, String url );
-	}
-	
-	public static LinkClickCallback link_callback;
-	
+
+
 	private static final boolean DEBUG_HTML_PARSER = false;
 	
 	private static class Node {

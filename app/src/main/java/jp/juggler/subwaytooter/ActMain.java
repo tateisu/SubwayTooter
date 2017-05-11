@@ -56,10 +56,11 @@ import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
-import jp.juggler.subwaytooter.util.ActionsDialog;
+import jp.juggler.subwaytooter.dialog.ActionsDialog;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.MyClickableSpan;
 import jp.juggler.subwaytooter.util.Utils;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -125,7 +126,8 @@ public class ActMain extends AppCompatActivity
 		bResume = true;
 		log.d( "onResume" );
 		super.onResume();
-		HTMLDecoder.link_callback = link_click_listener;
+
+		MyClickableSpan.link_callback = link_click_listener;
 		
 		// アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
 		{
@@ -209,7 +211,7 @@ public class ActMain extends AppCompatActivity
 		
 		app_state.stream_reader.onPause();
 		
-		HTMLDecoder.link_callback = null;
+		MyClickableSpan.link_callback = null;
 		super.onPause();
 	}
 	
@@ -1434,7 +1436,7 @@ public class ActMain extends AppCompatActivity
 		
 	}
 	
-	final HTMLDecoder.LinkClickCallback link_click_listener = new HTMLDecoder.LinkClickCallback() {
+	final MyClickableSpan.LinkClickCallback link_click_listener = new MyClickableSpan.LinkClickCallback() {
 		@Override public void onClickLink( LinkClickContext lcc, String url ){
 			openChromeTab( (SavedAccount) lcc, url, false );
 		}

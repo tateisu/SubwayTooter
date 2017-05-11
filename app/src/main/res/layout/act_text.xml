@@ -19,7 +19,7 @@
             android:orientation="vertical"
             >
 
-            <jp.juggler.subwaytooter.util.MyEditText
+            <jp.juggler.subwaytooter.view.MyEditText
                 android:id="@+id/etText"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

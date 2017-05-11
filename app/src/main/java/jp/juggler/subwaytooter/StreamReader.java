@@ -34,7 +34,7 @@ class StreamReader {
 	static final String EP_HASHTAG = "/api/v1/streaming/?stream=hashtag"; // + &tag=hashtag (先頭の＃を含まない)
 	
 	interface Callback {
-		void onEvent( String event_type, Object o );
+		void onStreamingMessage( String event_type, Object o );
 	}
 	
 	private class Reader extends WebSocketListener {
@@ -100,7 +100,7 @@ class StreamReader {
 							synchronized( this ){
 								for( Callback callback : callback_list ){
 									try{
-										callback.onEvent( event, payload );
+										callback.onStreamingMessage( event, payload );
 									}catch( Throwable ex ){
 										ex.printStackTrace();
 									}
@@ -268,8 +268,6 @@ class StreamReader {
 	
 	// onResume や ロード完了ののタイミングで登録される
 	void register( @NonNull SavedAccount access_info, @NonNull String end_point, @NonNull Callback stream_callback ){
-		
-		if( pref.getBoolean( Pref.KEY_DONT_USE_STREAMING ,false) ) return;
 		
 		final Reader reader = prepareReader( access_info, end_point );
 		reader.addCallback( stream_callback );

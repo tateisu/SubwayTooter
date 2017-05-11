@@ -9,8 +9,6 @@ import android.text.TextUtils;
 import android.view.View;
 import android.widget.ListView;
 
-import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -41,13 +39,13 @@ import jp.juggler.subwaytooter.table.MutedWord;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.BucketList;
-import jp.juggler.subwaytooter.util.DuplicateMap;
+import jp.juggler.subwaytooter.api.DuplicateMap;
 import jp.juggler.subwaytooter.util.LogCategory;
-import jp.juggler.subwaytooter.util.MyListView;
+import jp.juggler.subwaytooter.view.MyListView;
 import jp.juggler.subwaytooter.util.ScrollPosition;
 import jp.juggler.subwaytooter.util.Utils;
 
-class Column {
+class Column implements StreamReader.Callback {
 	private static final LogCategory log = new LogCategory( "Column" );
 	
 	
@@ -59,12 +57,12 @@ class Column {
 	
 	private boolean isResume(){
 		if( callback_ref == null ){
-			log.d("isResume: callback_ref is not set");
+			log.d( "isResume: callback_ref is not set" );
 			return false;
 		}
 		Callback cb = callback_ref.get();
 		if( cb == null ){
-			log.d("isResume: callback was lost.");
+			log.d( "isResume: callback was lost." );
 			return false;
 		}
 		return cb.isActivityResume();
@@ -117,6 +115,8 @@ class Column {
 	private static final String KEY_WITH_ATTACHMENT = "with_attachment";
 	private static final String KEY_DONT_SHOW_BOOST = "dont_show_boost";
 	private static final String KEY_DONT_SHOW_REPLY = "dont_show_reply";
+	private static final String KEY_DONT_STREAMING = "dont_streaming";
+	private static final String KEY_DONT_AUTO_REFRESH = "dont_auto_refresh";
 	private static final String KEY_REGEX_TEXT = "regex_text";
 	
 	private static final String KEY_HEADER_BACKGROUND_COLOR = "header_background_color";
@@ -165,6 +165,9 @@ class Column {
 	boolean with_attachment;
 	boolean dont_show_boost;
 	boolean dont_show_reply;
+	boolean dont_streaming;
+	boolean dont_auto_refresh;
+	
 	String regex_text;
 	
 	int header_bg_color;
@@ -189,7 +192,7 @@ class Column {
 	
 	ScrollPosition scroll_save;
 	
-	Column( @NonNull AppState app_state, @NonNull SavedAccount access_info, @NonNull Callback callback,int type, Object... params ){
+	Column( @NonNull AppState app_state, @NonNull SavedAccount access_info, @NonNull Callback callback, int type, Object... params ){
 		this.app_state = app_state;
 		this.context = app_state.context;
 		this.access_info = access_info;
@@ -227,6 +230,8 @@ class Column {
 		item.put( KEY_WITH_ATTACHMENT, with_attachment );
 		item.put( KEY_DONT_SHOW_BOOST, dont_show_boost );
 		item.put( KEY_DONT_SHOW_REPLY, dont_show_reply );
+		item.put( KEY_DONT_STREAMING, dont_streaming );
+		item.put( KEY_DONT_AUTO_REFRESH, dont_auto_refresh );
 		item.put( KEY_REGEX_TEXT, regex_text );
 		
 		item.put( KEY_HEADER_BACKGROUND_COLOR, header_bg_color );
@@ -275,6 +280,8 @@ class Column {
 		this.with_attachment = src.optBoolean( KEY_WITH_ATTACHMENT );
 		this.dont_show_boost = src.optBoolean( KEY_DONT_SHOW_BOOST );
 		this.dont_show_reply = src.optBoolean( KEY_DONT_SHOW_REPLY );
+		this.dont_streaming = src.optBoolean( KEY_DONT_STREAMING );
+		this.dont_auto_refresh = src.optBoolean( KEY_DONT_AUTO_REFRESH );
 		this.regex_text = Utils.optStringX( src, KEY_REGEX_TEXT );
 		
 		this.header_bg_color = src.optInt( KEY_HEADER_BACKGROUND_COLOR );
@@ -887,7 +894,7 @@ class Column {
 			
 			TootApiResult parseAccount1( TootApiClient client, String path_base ){
 				TootApiResult result = client.request( path_base );
-				if( result != null && result.object != null){
+				if( result != null && result.object != null ){
 					Column.this.who_account = TootAccount.parse( log, access_info, result.object );
 				}
 				return result;
@@ -1372,7 +1379,7 @@ class Column {
 			}
 		}
 		
-		if(!bBottom){
+		if( ! bBottom ){
 			bRefreshingTop = true;
 			stopStreaming();
 		}
@@ -1864,7 +1871,7 @@ class Column {
 						}
 					}
 				}finally{
-					if(!bBottom){
+					if( ! bBottom ){
 						bRefreshingTop = false;
 						resumeStreaming( false );
 					}
@@ -1874,7 +1881,7 @@ class Column {
 		
 		task.executeOnExecutor( App1.task_executor );
 	}
-
+	
 	void startGap( final TootGap gap, final int position ){
 		if( last_task != null ){
 			Utils.showToast( context, true, R.string.column_is_busy );
@@ -2297,38 +2304,26 @@ class Column {
 		return listView.getChildAt( child_idx ).getTop();
 	}
 	
-	final StreamReader.Callback stream_callback = new StreamReader.Callback() {
-		@Override public void onEvent( String event_type, Object o ){
-			
-			if( o instanceof Long ){
-				removeStatus( access_info, (Long) o );
-				return;
-			}
-			
-			if( o instanceof TootNotification ){
-				TootNotification notification = (TootNotification) o;
-				if( column_type != TYPE_NOTIFICATIONS ) return;
-				if( isFiltered( notification ) ) return;
-			}else if( o instanceof TootStatus ){
-				TootStatus status = (TootStatus) o;
-				if( column_type == TYPE_NOTIFICATIONS ) return;
-				if( column_type == TYPE_LOCAL && status.account.acct.indexOf( '@' ) != - 1 ) return;
-				if( isFiltered( status ) ) return;
-			}
-			
-			stream_data_queue.addFirst( o );
-			proc_stream_data.run();
-			
-		}
-	};
+	////////////////////////////////////////////////////////////////////////
+	// Streaming
 	
-	private final LinkedList< Object > stream_data_queue = new LinkedList<>();
+	private long getId( Object o ){
+		if( o instanceof TootNotification ){
+			return ( (TootNotification) o ).id;
+		}else if( o instanceof TootStatus ){
+			return ( (TootStatus) o ).id;
+		}else if( o instanceof TootAccount ){
+			return ( (TootAccount) o ).id;
+		}
+		throw new RuntimeException( "getId: object is not status,notification" );
+	}
 	
 	// ListViewの表示更新が追いつかないとスクロール位置が崩れるので
 	// 一定時間より短期間にはデータ更新しないようにする
 	private long last_show_stream_data;
+	private final LinkedList< Object > stream_data_queue = new LinkedList<>();
 	
-	final Runnable proc_stream_data = new Runnable() {
+	private final Runnable proc_stream_data = new Runnable() {
 		@Override public void run(){
 			App1.getAppState( context ).handler.removeCallbacks( proc_stream_data );
 			long now = SystemClock.elapsedRealtime();
@@ -2341,31 +2336,29 @@ class Column {
 			
 			ArrayList< Object > list_new = duplicate_map.filterDuplicate( stream_data_queue );
 			stream_data_queue.clear();
-
+			
 			if( list_new.isEmpty() ){
 				return;
 			}else{
 				if( column_type == TYPE_NOTIFICATIONS ){
-					TootNotification.List list = new TootNotification.List(  );
+					TootNotification.List list = new TootNotification.List();
 					for( Object o : list_new ){
-						if( o instanceof TootNotification){
-							list.add( (TootNotification) o);
+						if( o instanceof TootNotification ){
+							list.add( (TootNotification) o );
 						}
 					}
-					if( !list.isEmpty() ){
+					if( ! list.isEmpty() ){
 						AlarmService.injectData( context, access_info.db_id, list );
 					}
 				}
 				
 				try{
 					since_id = Long.toString( getId( list_new.get( 0 ) ) );
-				}catch(Throwable ex){
+				}catch( Throwable ex ){
 					// ストリームに来るのは通知かステータスだから、多分ここは通らない
-					log.e(ex,"getId() failed. o=",list_new.get( 0 ));
+					log.e( ex, "getId() failed. o=", list_new.get( 0 ) );
 				}
 			}
-			
-			
 			
 			// 事前にスクロール位置を覚えておく
 			ScrollPosition sp = null;
@@ -2394,7 +2387,7 @@ class Column {
 						long max = getId( list_new.get( list_new.size() - 1 ) );
 						long since = getId( list_data.get( 0 ) );
 						if( max > since ){
-							TootGap gap = new TootGap( max,since );
+							TootGap gap = new TootGap( max, since );
 							list_new.add( gap );
 						}
 					}
@@ -2406,7 +2399,6 @@ class Column {
 			list_data.addAll( 0, list_new );
 			fireShowContent();
 			int added = list_new.size();
-			
 			
 			if( holder != null ){
 				//noinspection StatementWithEmptyBody
@@ -2429,20 +2421,32 @@ class Column {
 		}
 	};
 	
-	private long getId( Object o ){
-		if( o instanceof TootNotification ){
-			return ( (TootNotification) o ).id;
-		}else if( o instanceof TootStatus ){
-			return ( (TootStatus) o ).id;
-		}else if( o instanceof TootAccount){
-			return ( (TootAccount) o ).id;
+	@Override public void onStreamingMessage( String event_type, Object o ){
+		
+		if( o instanceof Long ){
+			removeStatus( access_info, (Long) o );
+			return;
 		}
-		throw new RuntimeException( "getId: object is not status,notification" );
+		
+		if( o instanceof TootNotification ){
+			TootNotification notification = (TootNotification) o;
+			if( column_type != TYPE_NOTIFICATIONS ) return;
+			if( isFiltered( notification ) ) return;
+		}else if( o instanceof TootStatus ){
+			TootStatus status = (TootStatus) o;
+			if( column_type == TYPE_NOTIFICATIONS ) return;
+			if( column_type == TYPE_LOCAL && status.account.acct.indexOf( '@' ) != - 1 ) return;
+			if( isFiltered( status ) ) return;
+		}
+		
+		stream_data_queue.addFirst( o );
+		proc_stream_data.run();
+		
 	}
 	
 	// onPauseの時はまとめて止められるが
 	// カラム破棄やリロード開始時は個別にストリーミングを止める必要がある
-	private void stopStreaming(){
+	void stopStreaming(){
 		
 		switch( column_type ){
 		case TYPE_HOME:
@@ -2451,7 +2455,7 @@ class Column {
 			app_state.stream_reader.unregister(
 				access_info
 				, StreamReader.EP_USER
-				, stream_callback
+				, this
 			);
 			break;
 		
@@ -2460,7 +2464,7 @@ class Column {
 			app_state.stream_reader.unregister(
 				access_info
 				, StreamReader.EP_PUBLIC
-				, stream_callback
+				, this
 			);
 			break;
 		
@@ -2468,73 +2472,126 @@ class Column {
 			app_state.stream_reader.unregister(
 				access_info
 				, StreamReader.EP_HASHTAG + "?tag=" + Uri.encode( hashtag )
-				, stream_callback
+				, this
 			);
 			break;
 		}
 	}
 	
-	void onResume(  Callback callback ){
+	void onResume( Callback callback ){
 		this.callback_ref = new WeakReference<>( callback );
 		
 		// 破棄されたカラムなら何もしない
 		if( is_dispose.get() ){
-			log.d("onResume: column was disposed.");
+			log.d( "onResume: column was disposed." );
 			return;
 		}
 
 		// 未初期化なら何もしない
 		if( ! bFirstInitialized ){
-			log.d("onResume: column is not initialized.");
+			log.d( "onResume: column is not initialized." );
 			return;
 		}
 		
 		// 初期ロード中なら何もしない
 		if( bInitialLoading ){
-			log.d("onResume: column is in initial loading.");
+			log.d( "onResume: column is in initial loading." );
 			return;
 		}
 		
 		if( bRefreshingTop ){
-			log.d("onResume: bRefreshingTop is true.");
+			// 始端リフレッシュの最中だった
 			// リフレッシュ終了時に自動でストリーミング開始するはず
-		}else if( !bRefreshLoading
-			&& ! App1.getAppState( context ).pref.getBoolean(Pref.KEY_DONT_REFRESH_ON_RESUME,false)
+			log.d( "onResume: bRefreshingTop is true." );
+		}else if(
+			! bRefreshLoading
+			&& canAutoRefresh()
+			&& ! App1.getAppState( context ).pref.getBoolean( Pref.KEY_DONT_REFRESH_ON_RESUME, false )
+			&& ! dont_auto_refresh
 			){
-			log.d("onResume: start auto refresh.");
+			
 			// リフレッシュしてからストリーミング開始
+			log.d( "onResume: start auto refresh." );
 			startRefresh( true, false, - 1L, - 1 );
 		}else{
-			log.d("onResume: start streaming with gap.");
 			// ギャップつきでストリーミング開始
+			log.d( "onResume: start streaming with gap." );
 			resumeStreaming( true );
+		}
+	}
+	
+	boolean canAutoRefresh(){
+		switch( column_type ){
+		default:
+			return false;
+		
+		case TYPE_HOME:
+		case TYPE_NOTIFICATIONS:
+		case TYPE_LOCAL:
+		case TYPE_FEDERATE:
+		case TYPE_HASHTAG:
+			return true;
+		}
+	}
+	
+	boolean canStreaming(){
+		switch( column_type ){
+		default:
+			return false;
+		
+		case TYPE_HOME:
+		case TYPE_NOTIFICATIONS:
+		case TYPE_LOCAL:
+		case TYPE_FEDERATE:
+		case TYPE_HASHTAG:
+			return ! access_info.isPseudo();
 		}
 	}
 	
 	private boolean bPutGap;
 	
-	private void resumeStreaming( boolean bPutGap ){
-
+	
+	void resumeStreaming( boolean bPutGap ){
+		
+		if( ! canStreaming() ){
+			return;
+		}
+		
 		if( ! isResume() ){
-			log.d("resumeStreaming: not resumed.");
+			log.d( "resumeStreaming: not resumed." );
 			return;
 		}
 		
 		// 破棄されたカラムなら何もしない
 		if( is_dispose.get() ){
-			log.d("resumeStreaming: column was disposed.");
+			log.d( "resumeStreaming: column was disposed." );
 			return;
 		}
 		
 		// 未初期化なら何もしない
 		if( ! bFirstInitialized ){
-			log.d("resumeStreaming: column is not initialized.");
+			log.d( "resumeStreaming: column is not initialized." );
 			return;
 		}
 		
 		// 初期ロード中なら何もしない
 		if( bInitialLoading ){
-			log.d("resumeStreaming: is in initial loading.");
+			log.d( "resumeStreaming: is in initial loading." );
+			return;
+		}
+		
+		if( App1.getAppState( context ).pref.getBoolean( Pref.KEY_DONT_USE_STREAMING, false ) ){
+			log.d( "resumeStreaming: disabled in app setting." );
+			return;
+		}
+		
+		if( dont_streaming ){
+			log.d( "resumeStreaming: disabled in column setting." );
+			return;
+		}
+		
+		if( access_info.isPseudo() ){
+			log.d( "resumeStreaming: pseudo account can't streaming." );
 			return;
 		}
 		
@@ -2546,36 +2603,28 @@ class Column {
 		case TYPE_HOME:
 		case TYPE_NOTIFICATIONS:
 			
-			if( access_info.isPseudo() ) return;
-			
 			app_state.stream_reader.register(
 				access_info
 				, StreamReader.EP_USER
-				, stream_callback
+				, this
 			);
 			break;
 		
 		case TYPE_LOCAL:
 			
-			// 認証がないと読めないらしい
-			if( access_info.isPseudo() ) return;
-			
 			app_state.stream_reader.register(
 				access_info
 				, StreamReader.EP_PUBLIC_LOCAL
-				, stream_callback
+				, this
 			);
 			break;
 		
 		case TYPE_FEDERATE:
 			
-			// 認証がないと読めないらしい
-			if( access_info.isPseudo() ) return;
-			
 			app_state.stream_reader.register(
 				access_info
 				, StreamReader.EP_PUBLIC
-				, stream_callback
+				, this
 			);
 			break;
 		
@@ -2583,7 +2632,7 @@ class Column {
 			app_state.stream_reader.register(
 				access_info
 				, StreamReader.EP_HASHTAG + "&tag=" + Uri.encode( hashtag )
-				, stream_callback
+				, this
 			);
 			break;
 		}

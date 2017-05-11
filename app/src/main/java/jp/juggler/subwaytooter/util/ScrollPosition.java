@@ -1,5 +1,7 @@
 package jp.juggler.subwaytooter.util;
 
+import jp.juggler.subwaytooter.view.MyListView;
+
 public class ScrollPosition {
 	public int pos;
 	public int top;

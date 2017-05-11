@@ -11,7 +11,7 @@ import android.view.WindowManager;
 import android.widget.PopupWindow;
 
 import jp.juggler.subwaytooter.api.entity.TootStatus;
-import jp.juggler.subwaytooter.util.MyListView;
+import jp.juggler.subwaytooter.view.MyListView;
 
 class StatusButtonsPopup {
 	

@@ -1,4 +1,4 @@
-package jp.juggler.subwaytooter.util;
+package jp.juggler.subwaytooter.view;
 
 import android.content.Context;
 import android.support.annotation.Nullable;

@@ -7,7 +7,7 @@ import android.widget.BaseAdapter;
 
 import java.util.List;
 
-import jp.juggler.subwaytooter.util.MyListView;
+import jp.juggler.subwaytooter.view.MyListView;
 
 class ItemListAdapter extends BaseAdapter implements AdapterView.OnItemClickListener {
 	private final Column column;

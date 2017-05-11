@@ -6,7 +6,13 @@ import android.view.View;
 
 import jp.juggler.subwaytooter.table.AcctColor;
 
-final class MyClickableSpan extends ClickableSpan {
+public class MyClickableSpan extends ClickableSpan {
+	
+	public interface LinkClickCallback {
+		void onClickLink( LinkClickContext account, String url );
+	}
+	
+	public static LinkClickCallback link_callback;
 	
 	public LinkClickContext account;
 	public String url;
@@ -23,8 +29,8 @@ final class MyClickableSpan extends ClickableSpan {
 	}
 	
 	@Override public void onClick( View widget ){
-		if( HTMLDecoder.link_callback != null ){
-			HTMLDecoder.link_callback.onClickLink( this.account, url );
+		if( link_callback != null ){
+			link_callback.onClickLink( this.account, url );
 		}
 	}
 	

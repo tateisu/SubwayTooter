@@ -1,4 +1,4 @@
-package jp.juggler.subwaytooter.util;
+package jp.juggler.subwaytooter.view;
 
 import android.content.Context;
 import android.support.v7.widget.AppCompatEditText;

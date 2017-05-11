@@ -13,8 +13,8 @@ import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.Emojione;
-import jp.juggler.subwaytooter.util.MyLinkMovementMethod;
-import jp.juggler.subwaytooter.util.MyNetworkImageView;
+import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
+import jp.juggler.subwaytooter.view.MyNetworkImageView;
 
 class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private final Column column;

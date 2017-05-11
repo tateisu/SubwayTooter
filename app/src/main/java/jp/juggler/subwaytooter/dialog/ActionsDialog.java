@@ -1,4 +1,4 @@
-package jp.juggler.subwaytooter.util;
+package jp.juggler.subwaytooter.dialog;
 
 import android.content.Context;
 import android.content.DialogInterface;

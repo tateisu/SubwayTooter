@@ -90,7 +90,7 @@
         android:orientation="horizontal"
         >
 
-        <jp.juggler.subwaytooter.util.MyNetworkImageView
+        <jp.juggler.subwaytooter.view.MyNetworkImageView
             android:id="@+id/ivFollow"
             android:layout_width="48dp"
             android:layout_height="40dp"
@@ -204,7 +204,7 @@
             android:orientation="horizontal"
             >
 
-            <jp.juggler.subwaytooter.util.MyNetworkImageView
+            <jp.juggler.subwaytooter.view.MyNetworkImageView
                 android:id="@+id/ivThumbnail"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
@@ -258,13 +258,13 @@
                         android:orientation="vertical"
                         >
 
-                        <jp.juggler.subwaytooter.util.MyTextView
+                        <jp.juggler.subwaytooter.view.MyTextView
                             android:id="@+id/tvMentions"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             />
 
-                        <jp.juggler.subwaytooter.util.MyTextView
+                        <jp.juggler.subwaytooter.view.MyTextView
                             android:id="@+id/tvContentWarning"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -282,7 +282,7 @@
                     android:orientation="vertical"
                     >
 
-                    <jp.juggler.subwaytooter.util.MyTextView
+                    <jp.juggler.subwaytooter.view.MyTextView
                         android:id="@+id/tvContent"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -304,7 +304,7 @@
                             android:orientation="horizontal"
                             >
 
-                            <jp.juggler.subwaytooter.util.MyNetworkImageView
+                            <jp.juggler.subwaytooter.view.MyNetworkImageView
                                 android:id="@+id/ivMedia1"
                                 android:layout_width="0dp"
                                 android:layout_height="match_parent"
@@ -314,7 +314,7 @@
                                 android:scaleType="centerCrop"
                                 />
 
-                            <jp.juggler.subwaytooter.util.MyNetworkImageView
+                            <jp.juggler.subwaytooter.view.MyNetworkImageView
                                 android:id="@+id/ivMedia2"
                                 android:layout_width="0dp"
                                 android:layout_height="match_parent"
@@ -325,7 +325,7 @@
                                 android:scaleType="centerCrop"
                                 />
 
-                            <jp.juggler.subwaytooter.util.MyNetworkImageView
+                            <jp.juggler.subwaytooter.view.MyNetworkImageView
                                 android:id="@+id/ivMedia3"
                                 android:layout_width="0dp"
                                 android:layout_height="match_parent"
@@ -336,7 +336,7 @@
                                 android:scaleType="centerCrop"
                                 />
 
-                            <jp.juggler.subwaytooter.util.MyNetworkImageView
+                            <jp.juggler.subwaytooter.view.MyNetworkImageView
                                 android:id="@+id/ivMedia4"
                                 android:layout_width="0dp"
                                 android:layout_height="match_parent"

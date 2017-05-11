@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.util.LogCategory;
-import jp.juggler.subwaytooter.util.MyListView;
+import jp.juggler.subwaytooter.view.MyListView;
 import jp.juggler.subwaytooter.util.ScrollPosition;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -181,6 +181,24 @@ class ColumnViewHolder
 		cb.setOnCheckedChangeListener( this );
 		cb.setEnabled( bAllowFilter );
 		cb.setVisibility( bAllowFilterBoost ? View.VISIBLE : View.GONE );
+		
+		cb = (CheckBox) root.findViewById( R.id.cbDontStreaming );
+		if( ! column.canStreaming() ){
+			cb.setVisibility(  View.GONE );
+		}else{
+			cb.setVisibility( View.VISIBLE  );
+			cb.setChecked( column.dont_streaming );
+			cb.setOnCheckedChangeListener( this );
+		}
+		
+		cb = (CheckBox) root.findViewById( R.id.cbDontAutoRefresh );
+		if( ! column.canAutoRefresh() ){
+			cb.setVisibility(  View.GONE );
+		}else{
+			cb.setVisibility(View.VISIBLE  );
+			cb.setChecked( column.dont_auto_refresh );
+			cb.setOnCheckedChangeListener( this );
+		}
 		
 		etRegexFilter = (EditText) root.findViewById( R.id.etRegexFilter );
 		if( ! bAllowFilter ){
@@ -415,10 +433,26 @@ class ColumnViewHolder
 			column.startLoading();
 			break;
 		
+		
 		case R.id.cbDontShowReply:
 			column.dont_show_reply = isChecked;
 			activity.app_state.saveColumnList();
 			column.startLoading();
+			break;
+		
+		case R.id.cbDontStreaming:
+			column.dont_streaming = isChecked;
+			activity.app_state.saveColumnList();
+			if( isChecked ){
+				column.onResume( activity );
+			}else{
+				column.stopStreaming();
+			}
+			break;
+
+		case R.id.cbDontAutoRefresh:
+			column.dont_auto_refresh = isChecked;
+			activity.app_state.saveColumnList();
 			break;
 			
 		}

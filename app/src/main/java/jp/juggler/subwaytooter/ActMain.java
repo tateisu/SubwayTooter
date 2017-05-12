@@ -585,6 +585,8 @@ public class ActMain extends AppCompatActivity
 	TabletColumnPagerAdapter tablet_pager_adapter;
 	LinearLayoutManager tablet_layout_manager;
 	
+	static final float COLUMN_WIDTH_MIN_DP = 300f;
+	
 	void initUI(){
 		setContentView( R.layout.act_main );
 		
@@ -623,7 +625,7 @@ public class ActMain extends AppCompatActivity
 		// int short_side = ( sw < sh ? sw : sh );
 		//
 		float density = dm.density;
-		int column_w_min = (int) ( 0.5f + 320f * density );
+		int column_w_min = (int) ( 0.5f + COLUMN_WIDTH_MIN_DP * density );
 		
 		pager = (ViewPager) findViewById( R.id.viewPager );
 		tablet_pager = (RecyclerView) findViewById( R.id.rvPager );
@@ -1594,6 +1596,7 @@ public class ActMain extends AppCompatActivity
 			Column c = pager_adapter.getColumn( pager.getCurrentItem() );
 			if( c != null && ! c.access_info.isPseudo() ){
 				ActPost.open( this, REQUEST_CODE_POST, c.access_info.db_id, "" );
+				return;
 			}
 		}
 		
@@ -2932,13 +2935,15 @@ public class ActMain extends AppCompatActivity
 		final int sw = dm.widthPixels;
 
 		float density = dm.density;
-		int column_w_min = (int) ( 0.5f + 320f * density );
+		int column_w_min = (int) ( 0.5f + COLUMN_WIDTH_MIN_DP * density );
 		
 		if( sw < column_w_min * 2 ){
 			tablet_pager_adapter.setColumnWidth( sw );
 		}else{
+			nScreenColumn = sw / column_w_min;
+
 			// ２つは表示できるが3つは表示できないかもしれない
-			int column_w_max = (int) ( 0.5f + 1.5f * column_w_min );
+			int column_w_max = (int) ( 0.5f + column_w_min * 1.5f );
 			
 			nScreenColumn = sw / column_w_min;
 			if( nScreenColumn > app_state.column_list.size() ){

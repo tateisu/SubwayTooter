@@ -59,6 +59,9 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 	
 	private void initUI(){
 		setContentView( R.layout.act_nickname );
+		
+		Styler.fixHorizontalPadding(findViewById( R.id.llContent ));
+		
 		tvPreview = (TextView) findViewById( R.id.tvPreview );
 		tvAcct = (TextView) findViewById( R.id.tvAcct );
 		

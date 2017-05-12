@@ -1,8 +1,10 @@
 package jp.juggler.subwaytooter;
 
 import android.support.v4.view.ViewCompat;
+import android.support.v4.view.ViewGroupCompat;
 import android.text.TextUtils;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -157,6 +159,8 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		v = view.findViewById( R.id.btnHideMedia );
 		v.setOnClickListener( this );
 		
+		ViewGroup.LayoutParams lp = flMedia.getLayoutParams();
+		lp.height = activity.app_state.media_thumb_height;
 	}
 	
 	void bind( Object item, int position ){

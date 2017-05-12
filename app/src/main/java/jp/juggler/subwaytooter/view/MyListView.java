@@ -57,4 +57,12 @@ public class MyListView extends ListView {
 
 		return super.onTouchEvent( ev );
 	}
+	
+	@Override protected void layoutChildren(){
+		try{
+			super.layoutChildren();
+		}catch(Throwable ex){
+			ex.printStackTrace(  );
+		}
+	}
 }

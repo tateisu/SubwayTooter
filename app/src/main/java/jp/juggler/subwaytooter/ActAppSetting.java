@@ -7,11 +7,14 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Switch;
@@ -23,11 +26,11 @@ public class ActAppSetting extends AppCompatActivity
 	implements CompoundButton.OnCheckedChangeListener
 	, AdapterView.OnItemSelectedListener
 	, View.OnClickListener
-	, ColorPickerDialogListener
+	, ColorPickerDialogListener, TextWatcher
 {
 	
-	public static void open( ActMain activity ,int request_code ){
-		activity.startActivityForResult( new Intent( activity, ActAppSetting.class ),request_code );
+	public static void open( ActMain activity, int request_code ){
+		activity.startActivityForResult( new Intent( activity, ActAppSetting.class ), request_code );
 	}
 	
 	SharedPreferences pref;
@@ -80,8 +83,16 @@ public class ActAppSetting extends AppCompatActivity
 	View vFooterDivider1;
 	View vFooterDivider2;
 	
+	EditText etColumnWidth;
+	EditText etMediaThumbHeight;
+	
 	private void initUI(){
 		setContentView( R.layout.act_app_setting );
+		
+		
+		Styler.fixHorizontalPadding(findViewById( R.id.svContent ));
+		
+		
 		swDontConfirmBeforeCloseColumn = (Switch) findViewById( R.id.swDontConfirmBeforeCloseColumn );
 		swDontConfirmBeforeCloseColumn.setOnCheckedChangeListener( this );
 		
@@ -109,10 +120,10 @@ public class ActAppSetting extends AppCompatActivity
 		swDontRefreshOnResume = (Switch) findViewById( R.id.swDontRefreshOnResume );
 		swDontRefreshOnResume.setOnCheckedChangeListener( this );
 		
-		swDontScreenOff= (Switch) findViewById( R.id.swDontScreenOff );
+		swDontScreenOff = (Switch) findViewById( R.id.swDontScreenOff );
 		swDontScreenOff.setOnCheckedChangeListener( this );
 		
-		swDisableTabletMode= (Switch) findViewById( R.id.swDisableTabletMode );
+		swDisableTabletMode = (Switch) findViewById( R.id.swDisableTabletMode );
 		swDisableTabletMode.setOnCheckedChangeListener( this );
 		
 		cbNotificationSound = (CheckBox) findViewById( R.id.cbNotificationSound );
@@ -192,6 +203,10 @@ public class ActAppSetting extends AppCompatActivity
 		llFooterBG = findViewById( R.id.llFooterBG );
 		vFooterDivider1 = findViewById( R.id.vFooterDivider1 );
 		vFooterDivider2 = findViewById( R.id.vFooterDivider2 );
+		
+		etColumnWidth = (EditText) findViewById( R.id.etColumnWidth );
+		etMediaThumbHeight = (EditText) findViewById( R.id.etMediaThumbHeight );
+		
 	}
 	
 	boolean load_busy;
@@ -207,10 +222,10 @@ public class ActAppSetting extends AppCompatActivity
 		swShowFollowButtonInButtonBar.setChecked( pref.getBoolean( Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR, false ) );
 		swDontRound.setChecked( pref.getBoolean( Pref.KEY_DONT_ROUND, false ) );
 		swDontUseStreaming.setChecked( pref.getBoolean( Pref.KEY_DONT_USE_STREAMING, false ) );
-		swDontRefreshOnResume.setChecked( pref.getBoolean( Pref.KEY_DONT_REFRESH_ON_RESUME , false ) );
-		swDontScreenOff.setChecked( pref.getBoolean( Pref.KEY_DONT_SCREEN_OFF , false ) );
-		swDisableTabletMode.setChecked( pref.getBoolean( Pref.KEY_DISABLE_TABLET_MODE , false ) );
-
+		swDontRefreshOnResume.setChecked( pref.getBoolean( Pref.KEY_DONT_REFRESH_ON_RESUME, false ) );
+		swDontScreenOff.setChecked( pref.getBoolean( Pref.KEY_DONT_SCREEN_OFF, false ) );
+		swDisableTabletMode.setChecked( pref.getBoolean( Pref.KEY_DISABLE_TABLET_MODE, false ) );
+		
 		cbNotificationSound.setChecked( pref.getBoolean( Pref.KEY_NOTIFICATION_SOUND, true ) );
 		cbNotificationVibration.setChecked( pref.getBoolean( Pref.KEY_NOTIFICATION_VIBRATION, true ) );
 		cbNotificationLED.setChecked( pref.getBoolean( Pref.KEY_NOTIFICATION_LED, true ) );
@@ -224,6 +239,12 @@ public class ActAppSetting extends AppCompatActivity
 		footer_button_fg_color = pref.getInt( Pref.KEY_FOOTER_BUTTON_FG_COLOR, 0 );
 		footer_tab_bg_color = pref.getInt( Pref.KEY_FOOTER_TAB_BG_COLOR, 0 );
 		footer_tab_divider_color = pref.getInt( Pref.KEY_FOOTER_TAB_DIVIDER_COLOR, 0 );
+		
+		etColumnWidth.setText( pref.getString( Pref.KEY_COLUMN_WIDTH, "" ) );
+		etMediaThumbHeight.setText( pref.getString( Pref.KEY_MEDIA_THUMB_HEIGHT, "" ) );
+		
+		etColumnWidth.addTextChangedListener( this );
+		etMediaThumbHeight.addTextChangedListener( this );
 		
 		load_busy = false;
 		
@@ -258,6 +279,9 @@ public class ActAppSetting extends AppCompatActivity
 			.putInt( Pref.KEY_FOOTER_BUTTON_FG_COLOR, footer_button_fg_color )
 			.putInt( Pref.KEY_FOOTER_TAB_BG_COLOR, footer_tab_bg_color )
 			.putInt( Pref.KEY_FOOTER_TAB_DIVIDER_COLOR, footer_tab_divider_color )
+			
+			.putString( Pref.KEY_COLUMN_WIDTH, etColumnWidth.getText().toString().trim() )
+			.putString( Pref.KEY_MEDIA_THUMB_HEIGHT, etMediaThumbHeight.getText().toString().trim() )
 			
 			.apply();
 		
@@ -409,4 +433,15 @@ public class ActAppSetting extends AppCompatActivity
 		}
 	}
 	
+	@Override public void beforeTextChanged( CharSequence s, int start, int count, int after ){
+		
+	}
+	
+	@Override public void onTextChanged( CharSequence s, int start, int before, int count ){
+		
+	}
+	
+	@Override public void afterTextChanged( Editable s ){
+		saveUIToData();
+	}
 }

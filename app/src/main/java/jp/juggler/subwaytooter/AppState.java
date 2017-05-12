@@ -30,6 +30,8 @@ class AppState {
 	
 	final StreamReader stream_reader;
 	
+	int media_thumb_height;
+	
 	AppState( Context applicationContext ,SharedPreferences pref){
 		this.context = applicationContext;
 		this.pref = pref;

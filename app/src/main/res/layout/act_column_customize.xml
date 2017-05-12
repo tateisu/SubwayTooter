@@ -5,14 +5,19 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
+
     android:scrollbarStyle="outsideOverlay"
+    android:id="@+id/svContent"
+    android:paddingTop="12dp"
+    android:paddingBottom="128dp"
+    android:clipToPadding="false"
+
     >
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="12dp"
         >
 
 

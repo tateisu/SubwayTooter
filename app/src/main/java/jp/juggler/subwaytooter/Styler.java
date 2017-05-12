@@ -15,7 +15,9 @@ import android.graphics.drawable.shapes.RoundRectShape;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
@@ -174,5 +176,42 @@ public class Styler {
 		return states;
 	}
 	
+	static void fixHorizontalPadding( View v ){
+		DisplayMetrics dm = v.getResources().getDisplayMetrics();
+		int sw = dm.widthPixels;
+		int content_w = (int)(0.5f + 360f * dm.density);
+		int pad_lr = (sw-content_w)/2;
+		int pad_min = (int)(0.5f + 12f * dm.density);
+		if( pad_lr < pad_min ) pad_lr = pad_min;
+		
+		int pad_t = v.getPaddingTop();
+		int pad_b = v.getPaddingBottom();
+		v.setPaddingRelative( pad_lr,pad_t,pad_lr,pad_b );
+	}
 	
+	static void fixHorizontalPadding2( View v ){
+		DisplayMetrics dm = v.getResources().getDisplayMetrics();
+		int sw = dm.widthPixels;
+		int content_w = (int)(0.5f + 360f * dm.density);
+		int pad_lr = (sw-content_w)/2;
+		int pad_min = 0;
+		if( pad_lr < pad_min ) pad_lr = pad_min;
+		
+		int pad_t = v.getPaddingTop();
+		int pad_b = v.getPaddingBottom();
+		v.setPaddingRelative( pad_lr,pad_t,pad_lr,pad_b );
+	}
+	
+	static void fixHorizontalMargin( View v ){
+		DisplayMetrics dm = v.getResources().getDisplayMetrics();
+		int sw = dm.widthPixels;
+		int content_w = (int)(0.5f + 360f * dm.density);
+		int pad_lr = (sw-content_w)/2;
+		int pad_min = 0;
+		if( pad_lr < pad_min ) pad_lr = pad_min;
+		
+		ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+		lp.leftMargin = pad_lr;
+		lp.rightMargin = pad_lr;
+	}
 }

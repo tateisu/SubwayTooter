@@ -29,6 +29,9 @@ public class ActAbout extends AppCompatActivity {
 		App1.setActivityTheme( this, false );
 		setContentView( R.layout.act_about );
 		
+		Styler.fixHorizontalPadding(findViewById( R.id.svContent ));
+		
+		
 		try{
 			PackageInfo pInfo = getPackageManager().getPackageInfo( getPackageName(), 0 );
 			( (TextView) findViewById( R.id.tvVersion ) ).setText( getString( R.string.version_is, pInfo.versionName ) );

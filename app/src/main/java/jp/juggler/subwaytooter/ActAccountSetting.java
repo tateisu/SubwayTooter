@@ -93,6 +93,11 @@ public class ActAccountSetting extends AppCompatActivity
 	
 	private void initUI(){
 		setContentView( R.layout.act_account_setting );
+		
+		
+		Styler.fixHorizontalPadding(findViewById( R.id.svContent ));
+		
+		
 		tvInstance = (TextView) findViewById( R.id.tvInstance );
 		tvUser = (TextView) findViewById( R.id.tvUser );
 		btnAccessToken = findViewById( R.id.btnAccessToken );

@@ -42,6 +42,8 @@ public class Pref {
 	static final String KEY_DONT_SCREEN_OFF = "dont_screen_off";
 	static final String KEY_DISABLE_TABLET_MODE = "disable_tablet_mode";
 	
+	static final String KEY_COLUMN_WIDTH = "ColumnWidth";
+	static final String KEY_MEDIA_THUMB_HEIGHT = "MediaThumbHeight";
 	
 	
 }

@@ -80,6 +80,12 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 	
 	void initUI(){
 		setContentView( R.layout.act_text );
+		
+		Styler.fixHorizontalMargin(findViewById( R.id.svFooterBar ));
+		Styler.fixHorizontalMargin(findViewById( R.id.svContent ));
+		
+		
+		
 		etText = (EditText) findViewById( R.id.etText );
 		
 		findViewById( R.id.btnCopy ).setOnClickListener( this );

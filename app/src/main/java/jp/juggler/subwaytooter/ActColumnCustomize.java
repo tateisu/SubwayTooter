@@ -184,6 +184,10 @@ public class ActColumnCustomize extends AppCompatActivity
 	private void initUI(){
 		setContentView( R.layout.act_column_customize );
 		
+		
+		Styler.fixHorizontalPadding(findViewById( R.id.svContent ));
+		
+		
 		findViewById( R.id.btnHeaderBackgroundEdit ).setOnClickListener( this );
 		findViewById( R.id.btnHeaderBackgroundReset ).setOnClickListener( this );
 		findViewById( R.id.btnHeaderTextEdit ).setOnClickListener( this );

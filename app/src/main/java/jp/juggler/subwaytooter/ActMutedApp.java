@@ -41,6 +41,9 @@ public class ActMutedApp extends AppCompatActivity {
 	private void initUI(){
 		setContentView( R.layout.act_mute_app );
 		
+		Styler.fixHorizontalPadding2(findViewById( R.id.llContent ));
+		
+		
 		// リストのアダプター
 		listAdapter = new MyListAdapter();
 		

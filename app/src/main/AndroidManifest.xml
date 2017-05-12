@@ -108,7 +108,7 @@
             android:name=".ActAppSetting"
             android:label="@string/app_setting"
 
-            android:windowSoftInputMode="adjustResize"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
             />
 
         <activity

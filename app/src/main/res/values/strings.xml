@@ -307,4 +307,6 @@
     <string name="hide_media_default">Hide all media</string>
     <string name="cant_close_column_by_back_button_when_multiple_column_shown">Can\'t close column by back button when multiple column is shown.</string>
     <string name="disable_tablet_mode">Disable tablet mode (app restart required)</string>
+    <string name="minimum_column_width">Minimum column width (default=300(dp),app restart required)</string>
+    <string name="media_thumbnail_height">Media Thumbnail height (default=64(dp), app restart required)</string>
 </resources>

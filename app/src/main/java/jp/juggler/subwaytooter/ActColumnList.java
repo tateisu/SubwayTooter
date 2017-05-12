@@ -82,6 +82,9 @@ public class ActColumnList extends AppCompatActivity {
 	private void initUI(){
 		setContentView( R.layout.act_column_list );
 		
+		Styler.fixHorizontalPadding2(findViewById( R.id.llContent ));
+		
+		
 		// リストのアダプター
 		listAdapter = new MyListAdapter();
 		

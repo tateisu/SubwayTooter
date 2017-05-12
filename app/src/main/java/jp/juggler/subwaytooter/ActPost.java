@@ -516,6 +516,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		
 		setContentView( R.layout.act_post );
 		
+		Styler.fixHorizontalPadding(findViewById( R.id.llContent ));
+		Styler.fixHorizontalMargin(findViewById( R.id.llFooterBar ));
+		
+		
 		formRoot = findViewById( viewRoot );
 		scrollView = (ScrollView) findViewById( R.id.scrollView );
 		btnAccount = (Button) findViewById( R.id.btnAccount );

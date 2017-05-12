@@ -585,7 +585,7 @@ public class ActMain extends AppCompatActivity
 	TabletColumnPagerAdapter tablet_pager_adapter;
 	LinearLayoutManager tablet_layout_manager;
 	
-	static final float COLUMN_WIDTH_MIN_DP = 300f;
+	static final int COLUMN_WIDTH_MIN_DP = 300;
 	
 	void initUI(){
 		setContentView( R.layout.act_main );
@@ -618,14 +618,42 @@ public class ActMain extends AppCompatActivity
 		
 		svColumnStrip.setHorizontalFadingEdgeEnabled( true );
 		
+		String sv;
 		DisplayMetrics dm = getResources().getDisplayMetrics();
-		//
-		int sw = dm.widthPixels;
-		// int sh = dm.heightPixels;
-		// int short_side = ( sw < sh ? sw : sh );
-		//
+		
 		float density = dm.density;
-		int column_w_min = (int) ( 0.5f + COLUMN_WIDTH_MIN_DP * density );
+		
+		int media_thumb_height = 64;
+		sv = pref.getString(Pref.KEY_MEDIA_THUMB_HEIGHT,"");
+		if( !TextUtils.isEmpty( sv )){
+			try{
+				int iv = Integer.parseInt( sv );
+				if( iv >= 32 ){
+					media_thumb_height = iv;
+				}
+			}catch(Throwable ex){
+				ex.printStackTrace(  );
+			}
+		}
+		app_state.media_thumb_height = (int)(0.5f + media_thumb_height *density);
+		
+		int column_w_min_dp = COLUMN_WIDTH_MIN_DP;
+		sv = pref.getString(Pref.KEY_COLUMN_WIDTH,"");
+		if( !TextUtils.isEmpty( sv )){
+			try{
+				int iv = Integer.parseInt( sv );
+				if( iv >= 100 ){
+					column_w_min_dp = iv;
+				}
+			}catch(Throwable ex){
+				ex.printStackTrace(  );
+			}
+		}
+		int column_w_min = (int) ( 0.5f + column_w_min_dp * density );
+
+		int sw = dm.widthPixels;
+		
+		
 		
 		pager = (ViewPager) findViewById( R.id.viewPager );
 		tablet_pager = (RecyclerView) findViewById( R.id.rvPager );
@@ -2930,12 +2958,26 @@ public class ActMain extends AppCompatActivity
 	int nScreenColumn;
 	
 	private void resizeColumnWidth(){
+		
+		int column_w_min_dp = COLUMN_WIDTH_MIN_DP;
+		String sv = pref.getString(Pref.KEY_COLUMN_WIDTH,"");
+		if( !TextUtils.isEmpty( sv )){
+			try{
+				int iv = Integer.parseInt( sv );
+				if( iv >= 100 ){
+					column_w_min_dp = iv;
+				}
+			}catch(Throwable ex){
+				ex.printStackTrace(  );
+			}
+		}
+		
 		DisplayMetrics dm = getResources().getDisplayMetrics();
 
 		final int sw = dm.widthPixels;
 
 		float density = dm.density;
-		int column_w_min = (int) ( 0.5f + COLUMN_WIDTH_MIN_DP * density );
+		int column_w_min = (int) ( 0.5f + column_w_min_dp * density );
 		
 		if( sw < column_w_min * 2 ){
 			tablet_pager_adapter.setColumnWidth( sw );

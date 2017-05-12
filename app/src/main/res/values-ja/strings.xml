@@ -597,4 +597,6 @@
     <string name="hide_media_default">全ての画像を隠す</string>
     <string name="cant_close_column_by_back_button_when_multiple_column_shown">複数カラムが表示されてると戻るボタンではカラムを閉じられません</string>
     <string name="disable_tablet_mode">タブレットモードを使わない(アプリ再起動が必要)</string>
+    <string name="media_thumbnail_height">添付メディアのサムネイルの高さ(デフォルト=64(dp)、アプリ再起動が必要)</string>
+    <string name="minimum_column_width">カラム最小幅(デフォルト=300(dp)、アプリ再起動が必要)</string>
 </resources>

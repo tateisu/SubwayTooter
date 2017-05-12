@@ -117,6 +117,7 @@ class ColumnViewHolder
 		
 		tvLoading = (TextView) root.findViewById( R.id.tvLoading );
 		listView = (MyListView) root.findViewById( R.id.listView );
+		listView.setAdapter( null );
 		if( column.column_type == Column.TYPE_PROFILE ){
 			vh_header = new HeaderViewHolder( activity, column, listView );
 			status_adapter.header =  vh_header;

@@ -16,7 +16,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.PostAttachment;
@@ -38,10 +37,7 @@ class AppState {
 		this.stream_reader = new StreamReader(applicationContext,pref);
 		this.handler = new Handler();
 		
-		if( ! isLoaded ){
-			isLoaded = true;
-			loadColumnList();
-		}
+		loadColumnList();
 	}
 	
 	// データ保存用 および カラム一覧への伝達用
@@ -82,7 +78,6 @@ class AppState {
 	
 	private static final String FILE_COLUMN_LIST = "column_list";
 	final ArrayList< Column > column_list = new ArrayList<>();
-	boolean isLoaded = false;
 	
 	JSONArray encodeColumnList(){
 		JSONArray array = new JSONArray();
@@ -105,7 +100,7 @@ class AppState {
 		
 	}
 	
-	void loadColumnList(){
+	private void loadColumnList(){
 		JSONArray array = loadColumnList( context,FILE_COLUMN_LIST );
 		if( array != null ){
 			for( int i = 0, ie = array.length() ; i < ie ; ++ i ){

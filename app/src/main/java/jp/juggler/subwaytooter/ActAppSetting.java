@@ -53,6 +53,7 @@ public class ActAppSetting extends AppCompatActivity
 	Switch swDontUseStreaming;
 	Switch swDontRefreshOnResume;
 	Switch swDontScreenOff;
+	Switch swDisableTabletMode;
 	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
@@ -111,6 +112,8 @@ public class ActAppSetting extends AppCompatActivity
 		swDontScreenOff= (Switch) findViewById( R.id.swDontScreenOff );
 		swDontScreenOff.setOnCheckedChangeListener( this );
 		
+		swDisableTabletMode= (Switch) findViewById( R.id.swDisableTabletMode );
+		swDisableTabletMode.setOnCheckedChangeListener( this );
 		
 		cbNotificationSound = (CheckBox) findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = (CheckBox) findViewById( R.id.cbNotificationVibration );
@@ -206,6 +209,7 @@ public class ActAppSetting extends AppCompatActivity
 		swDontUseStreaming.setChecked( pref.getBoolean( Pref.KEY_DONT_USE_STREAMING, false ) );
 		swDontRefreshOnResume.setChecked( pref.getBoolean( Pref.KEY_DONT_REFRESH_ON_RESUME , false ) );
 		swDontScreenOff.setChecked( pref.getBoolean( Pref.KEY_DONT_SCREEN_OFF , false ) );
+		swDisableTabletMode.setChecked( pref.getBoolean( Pref.KEY_DISABLE_TABLET_MODE , false ) );
 
 		cbNotificationSound.setChecked( pref.getBoolean( Pref.KEY_NOTIFICATION_SOUND, true ) );
 		cbNotificationVibration.setChecked( pref.getBoolean( Pref.KEY_NOTIFICATION_VIBRATION, true ) );
@@ -239,7 +243,7 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_DONT_USE_STREAMING, swDontUseStreaming.isChecked() )
 			.putBoolean( Pref.KEY_DONT_REFRESH_ON_RESUME, swDontRefreshOnResume.isChecked() )
 			.putBoolean( Pref.KEY_DONT_SCREEN_OFF, swDontScreenOff.isChecked() )
-		
+			.putBoolean( Pref.KEY_DISABLE_TABLET_MODE, swDisableTabletMode.isChecked() )
 			
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )

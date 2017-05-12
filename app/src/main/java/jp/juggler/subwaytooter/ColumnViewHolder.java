@@ -39,7 +39,7 @@ class ColumnViewHolder
 	
 	final ActMain activity;
 	final Column column;
-	final AtomicBoolean is_destroyed = new AtomicBoolean( false );
+	private final AtomicBoolean is_destroyed = new AtomicBoolean( false );
 	private final ItemListAdapter status_adapter;
 	
 	ColumnViewHolder( ActMain activity, Column column ){
@@ -117,6 +117,12 @@ class ColumnViewHolder
 		
 		tvLoading = (TextView) root.findViewById( R.id.tvLoading );
 		listView = (MyListView) root.findViewById( R.id.listView );
+		if( column.column_type == Column.TYPE_PROFILE ){
+			vh_header = new HeaderViewHolder( activity, column, listView );
+			status_adapter.header =  vh_header;
+		}else{
+			status_adapter.header = null;
+		}
 		listView.setAdapter( status_adapter );
 		
 		this.swipyRefreshLayout = (SwipyRefreshLayout) root.findViewById( R.id.swipyRefreshLayout );
@@ -249,6 +255,7 @@ class ColumnViewHolder
 		if( column.column_type != Column.TYPE_SEARCH ){
 			llSearch.setVisibility( View.GONE );
 		}else{
+			llSearch.setVisibility( View.VISIBLE );
 			etSearch.setText( column.search_query );
 			cbResolve.setChecked( column.search_resolve );
 			btnSearch.setOnClickListener( this );
@@ -264,19 +271,22 @@ class ColumnViewHolder
 			} );
 		}
 		
-		if( column.column_type == Column.TYPE_PROFILE ){
-			vh_header = new HeaderViewHolder( activity, column, listView );
-			listView.addHeaderView( vh_header.viewRoot );
-		}
+
 		
 		switch( column.column_type ){
 		case Column.TYPE_CONVERSATION:
 		case Column.TYPE_SEARCH:
 			swipyRefreshLayout.setEnabled( false );
+			break;
+		default:
+			swipyRefreshLayout.setEnabled( true );
+			break;
 		}
 		
 		if( column.bSimpleList ){
 			listView.setOnItemClickListener( status_adapter );
+		}else{
+			listView.setOnItemClickListener( null );
 		}
 		
 		//
@@ -578,6 +588,13 @@ class ColumnViewHolder
 	}
 	
 	void showContent(){
+		// クラッシュレポートにadapterとリストデータの状態不整合が多かったので、
+		// とりあえずリストデータ変更の通知だけは最優先で行っておく
+		try{
+			status_adapter.notifyDataSetChanged();
+		}catch(Throwable ex){
+			ex.printStackTrace(  );
+		}
 		
 		showColumnHeader();
 		
@@ -620,6 +637,7 @@ class ColumnViewHolder
 		}else{
 			tvLoading.setVisibility( View.GONE );
 			swipyRefreshLayout.setVisibility( View.VISIBLE );
+			// 表示状態が変わった後にもう一度呼び出す必要があるらしい。。。
 			status_adapter.notifyDataSetChanged();
 		}
 		restoreScrollPosition();

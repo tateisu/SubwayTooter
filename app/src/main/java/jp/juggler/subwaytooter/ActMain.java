@@ -124,6 +124,33 @@ public class ActMain extends AppCompatActivity
 		super.onDestroy();
 	}
 	
+	static final String STATE_CURRENT_PAGE = "current_page";
+	
+	@Override protected void onSaveInstanceState( Bundle outState ){
+		super.onSaveInstanceState( outState );
+		
+		if(pager_adapter != null){
+			outState.putInt( STATE_CURRENT_PAGE, pager.getCurrentItem() );
+		}else{
+			int ve =tablet_layout_manager.findLastVisibleItemPosition();
+			if( ve != RecyclerView.NO_POSITION ){
+				outState.putInt( STATE_CURRENT_PAGE, ve );
+			}
+		}
+	}
+	
+	@Override protected void onRestoreInstanceState( Bundle savedInstanceState ){
+		super.onRestoreInstanceState( savedInstanceState );
+		int pos = savedInstanceState.getInt( STATE_CURRENT_PAGE);
+		if( pos > 0 && pos < app_state.column_list.size() ){
+			if(pager_adapter != null){
+				pager.setCurrentItem(pos);
+			}else{
+				tablet_layout_manager.smoothScrollToPosition( tablet_pager,null,pos );
+			}
+		}
+	}
+	
 	boolean bResume;
 	
 	@Override public boolean isActivityResume(){
@@ -159,7 +186,7 @@ public class ActMain extends AppCompatActivity
 			}
 			if( bRemoved ){
 				setOrder( new_order );
-			
+				
 			}
 		}
 		
@@ -196,8 +223,6 @@ public class ActMain extends AppCompatActivity
 			}
 		}
 	}
-	
-
 	
 	private void handleSentIntent( final Intent sent_intent ){
 		AccountPicker.pick( this, false, true, getString( R.string.account_picker_toot ), new AccountPicker.AccountPickerCallback() {
@@ -300,7 +325,7 @@ public class ActMain extends AppCompatActivity
 					}else{
 						int select = data.getIntExtra( ActColumnList.EXTRA_SELECTION, - 1 );
 						if( 0 <= select && select < app_state.column_list.size() ){
-							scrollToColumn( select);
+							scrollToColumn( select );
 						}
 					}
 				}
@@ -331,7 +356,7 @@ public class ActMain extends AppCompatActivity
 					app_state.saveColumnList();
 					int idx = data.getIntExtra( ActColumnCustomize.EXTRA_COLUMN_INDEX, 0 );
 					if( idx >= 0 && idx < app_state.column_list.size() ){
-						app_state.column_list.get(idx).fireColumnColor();
+						app_state.column_list.get( idx ).fireColumnColor();
 					}
 					updateColumnStrip();
 				}
@@ -345,8 +370,6 @@ public class ActMain extends AppCompatActivity
 		super.onActivityResult( requestCode, resultCode, data );
 	}
 	
-
-	
 	@Override
 	public void onBackPressed(){
 		
@@ -358,7 +381,7 @@ public class ActMain extends AppCompatActivity
 		}
 		
 		// カラムが0個ならアプリを終了する
-		if( app_state.column_list.isEmpty()  ){
+		if( app_state.column_list.isEmpty() ){
 			ActMain.this.finish();
 			return;
 		}
@@ -374,15 +397,23 @@ public class ActMain extends AppCompatActivity
 		case ActAppSetting.BACK_ASK_ALWAYS:
 			ActionsDialog dialog = new ActionsDialog();
 			
-			dialog.addAction( getString( R.string.close_column ), new Runnable() {
-				@Override public void run(){
-					if( pager_adapter != null ){
-						closeColumn( true, pager_adapter.getColumn( pager.getCurrentItem() ) );
-					}else{
-						// TODO
+			if( pager_adapter != null ){
+				dialog.addAction( getString( R.string.close_column ), new Runnable() {
+					@Override public void run(){
+						closeColumn( true, app_state.column_list.get( pager.getCurrentItem() ) );
 					}
+				} );
+			}else{
+				final int vs = tablet_layout_manager.findFirstVisibleItemPosition();
+				final int ve = tablet_layout_manager.findLastVisibleItemPosition();
+				if( vs == ve && vs != RecyclerView.NO_POSITION ){
+					dialog.addAction( getString( R.string.close_column ), new Runnable() {
+						@Override public void run(){
+							closeColumn( true, app_state.column_list.get( vs ) );
+						}
+					} );
 				}
-			} );
+			}
 			
 			dialog.addAction( getString( R.string.open_column_list ), new Runnable() {
 				@Override public void run(){
@@ -398,20 +429,27 @@ public class ActMain extends AppCompatActivity
 			break;
 		
 		case ActAppSetting.BACK_CLOSE_COLUMN:
+			Column column = null;
 			if( pager_adapter != null ){
-				Column column = pager_adapter.getColumn( pager.getCurrentItem() );
-				if( column != null ){
-					if( column.dont_close
-						&& pref.getBoolean( Pref.KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN, false )
-						&& pref.getBoolean( Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN, false )
-						){
-						ActMain.this.finish();
-						return;
-					}
-					closeColumn( false, column );
-				}
+				column = pager_adapter.getColumn( pager.getCurrentItem() );
 			}else{
-				// TODO
+				final int vs = tablet_layout_manager.findFirstVisibleItemPosition();
+				final int ve = tablet_layout_manager.findLastVisibleItemPosition();
+				if( vs == ve && vs != RecyclerView.NO_POSITION ){
+					column = app_state.column_list.get( vs );
+				}else{
+					Utils.showToast( this,false,getString(R.string.cant_close_column_by_back_button_when_multiple_column_shown) );
+				}
+			}
+			if( column != null ){
+				if( column.dont_close
+					&& pref.getBoolean( Pref.KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN, false )
+					&& pref.getBoolean( Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN, false )
+					){
+					ActMain.this.finish();
+					return;
+				}
+				closeColumn( false, column );
 			}
 			break;
 		
@@ -424,8 +462,6 @@ public class ActMain extends AppCompatActivity
 			break;
 		}
 	}
-	
-	
 	
 	@Override
 	public boolean onCreateOptionsMenu( Menu menu ){
@@ -459,21 +495,21 @@ public class ActMain extends AppCompatActivity
 			performAccountAdd();
 		}else if( id == R.id.nav_add_tl_home ){
 			
-			performAddTimeline(getDefaultInsertPosition(), false, Column.TYPE_HOME );
+			performAddTimeline( getDefaultInsertPosition(), false, Column.TYPE_HOME );
 		}else if( id == R.id.nav_add_tl_local ){
-			performAddTimeline( getDefaultInsertPosition(),true, Column.TYPE_LOCAL );
+			performAddTimeline( getDefaultInsertPosition(), true, Column.TYPE_LOCAL );
 		}else if( id == R.id.nav_add_tl_federate ){
-			performAddTimeline( getDefaultInsertPosition(),true, Column.TYPE_FEDERATE );
+			performAddTimeline( getDefaultInsertPosition(), true, Column.TYPE_FEDERATE );
 			
 		}else if( id == R.id.nav_add_favourites ){
-			performAddTimeline( getDefaultInsertPosition(),false, Column.TYPE_FAVOURITES );
+			performAddTimeline( getDefaultInsertPosition(), false, Column.TYPE_FAVOURITES );
 			
 			//		}else if( id == R.id.nav_add_reports ){
 			//			performAddTimeline(Column.TYPE_REPORTS );
 		}else if( id == R.id.nav_add_statuses ){
-			performAddTimeline( getDefaultInsertPosition(),false, Column.TYPE_PROFILE );
+			performAddTimeline( getDefaultInsertPosition(), false, Column.TYPE_PROFILE );
 		}else if( id == R.id.nav_add_notifications ){
-			performAddTimeline( getDefaultInsertPosition(),false, Column.TYPE_NOTIFICATIONS );
+			performAddTimeline( getDefaultInsertPosition(), false, Column.TYPE_NOTIFICATIONS );
 			
 		}else if( id == R.id.nav_app_setting ){
 			ActAppSetting.open( this, REQUEST_APP_SETTING );
@@ -497,13 +533,13 @@ public class ActMain extends AppCompatActivity
 			finish();
 			
 		}else if( id == R.id.nav_add_mutes ){
-			performAddTimeline( getDefaultInsertPosition(),false, Column.TYPE_MUTES );
+			performAddTimeline( getDefaultInsertPosition(), false, Column.TYPE_MUTES );
 			
 		}else if( id == R.id.nav_add_blocks ){
-			performAddTimeline( getDefaultInsertPosition(),false, Column.TYPE_BLOCKS );
+			performAddTimeline( getDefaultInsertPosition(), false, Column.TYPE_BLOCKS );
 			
 		}else if( id == R.id.nav_follow_requests ){
-			performAddTimeline( getDefaultInsertPosition(),false, Column.TYPE_FOLLOW_REQUESTS );
+			performAddTimeline( getDefaultInsertPosition(), false, Column.TYPE_FOLLOW_REQUESTS );
 			
 		}else if( id == R.id.nav_muted_app ){
 			startActivity( new Intent( this, ActMutedApp.class ) );
@@ -548,7 +584,7 @@ public class ActMain extends AppCompatActivity
 	RecyclerView tablet_pager;
 	TabletColumnPagerAdapter tablet_pager_adapter;
 	LinearLayoutManager tablet_layout_manager;
-		
+	
 	void initUI(){
 		setContentView( R.layout.act_main );
 		
@@ -586,15 +622,15 @@ public class ActMain extends AppCompatActivity
 		// int sh = dm.heightPixels;
 		// int short_side = ( sw < sh ? sw : sh );
 		//
-		// float density = dm.density;
-		// int column_w_min = (int) ( 0.5f + 320f * density );
+		float density = dm.density;
+		int column_w_min = (int) ( 0.5f + 320f * density );
 		
 		pager = (ViewPager) findViewById( R.id.viewPager );
 		tablet_pager = (RecyclerView) findViewById( R.id.rvPager );
 		
-		//noinspection ConstantIfStatement
-		if( false ){
+		if( pref.getBoolean(Pref.KEY_DISABLE_TABLET_MODE,false) ||  sw < column_w_min * 2  ){
 			tablet_pager.setVisibility( View.GONE );
+
 			// SmartPhone mode
 			pager_adapter = new ColumnPagerAdapter( this );
 			pager.setAdapter( pager_adapter );
@@ -607,10 +643,30 @@ public class ActMain extends AppCompatActivity
 			tablet_layout_manager = new LinearLayoutManager( this, LinearLayoutManager.HORIZONTAL, false );
 			tablet_pager.setAdapter( tablet_pager_adapter );
 			tablet_pager.setLayoutManager( tablet_layout_manager );
+			tablet_pager.addOnScrollListener( new RecyclerView.OnScrollListener() {
+				@Override
+				public void onScrollStateChanged( RecyclerView recyclerView, int newState ){
+					super.onScrollStateChanged( recyclerView, newState );
+					int vs = tablet_layout_manager.findFirstVisibleItemPosition();
+					int ve = tablet_layout_manager.findLastVisibleItemPosition();
+					// 端に近い方に合わせる
+					int distance_left = Math.abs( vs );
+					int distance_right = Math.abs( ( app_state.column_list.size() - 1 ) - ve );
+					if( distance_left < distance_right ){
+						scrollColumnStrip( vs );
+					}else{
+						scrollColumnStrip( ve );
+					}
+				}
+				
+				@Override public void onScrolled( RecyclerView recyclerView, int dx, int dy ){
+					super.onScrolled( recyclerView, dx, dy );
+				}
+			} );
 			///////tablet_pager.setHasFixedSize( true );
 			// tablet_pager.addItemDecoration( new TabletColumnDivider( this ) );
 			
-			new GravitySnapHelper(Gravity.START).attachToRecyclerView( tablet_pager );
+			new GravitySnapHelper( Gravity.START ).attachToRecyclerView( tablet_pager );
 		}
 		
 		showFooterColor();
@@ -693,8 +749,6 @@ public class ActMain extends AppCompatActivity
 		svColumnStrip.smoothScrollTo( sx, 0 );
 		
 	}
-	
-
 	
 	public void performAccountAdd(){
 		LoginForm.showLoginForm( this, null, new LoginForm.LoginFormCallback() {
@@ -861,7 +915,7 @@ public class ActMain extends AppCompatActivity
 							, new AccountPicker.AccountPickerCallback() {
 								@Override
 								public void onAccountPicked( @NonNull final SavedAccount ai ){
-									openStatus( getDefaultInsertPosition(),ai, status_id );
+									openStatus( getDefaultInsertPosition(), ai, status_id );
 								}
 							} );
 						
@@ -904,10 +958,10 @@ public class ActMain extends AppCompatActivity
 								startGetAccount( ai, host, user, new GetAccountCallback() {
 									@Override public void onGetAccount( TootAccount who ){
 										if( who != null ){
-											performOpenUser(getDefaultInsertPosition(), ai, who );
+											performOpenUser( getDefaultInsertPosition(), ai, who );
 											return;
 										}
-										openChromeTab(  getDefaultInsertPosition(),ai, uri.toString(), true );
+										openChromeTab( getDefaultInsertPosition(), ai, uri.toString(), true );
 									}
 								} );
 							}
@@ -930,9 +984,7 @@ public class ActMain extends AppCompatActivity
 				SavedAccount account = SavedAccount.loadAccount( log, db_id );
 				if( account != null ){
 					Column column = addColumn( getDefaultInsertPosition(), account, Column.TYPE_NOTIFICATIONS );
-					if( ! column.bInitialLoading ){
-						column.startLoading();
-					}
+					
 				}
 			}catch( Throwable ex ){
 				ex.printStackTrace();
@@ -1071,7 +1123,7 @@ public class ActMain extends AppCompatActivity
 						}
 						Utils.showToast( ActMain.this, false, R.string.account_confirmed );
 						AlarmService.startCheck( ActMain.this );
-						addColumn( getDefaultInsertPosition(),account, Column.TYPE_HOME );
+						addColumn( getDefaultInsertPosition(), account, Column.TYPE_HOME );
 					}
 				}
 			}
@@ -1132,17 +1184,21 @@ public class ActMain extends AppCompatActivity
 		}
 		
 		int page_delete = app_state.column_list.indexOf( column );
-
-		if( pager_adapter != null){
+		
+		if( pager_adapter != null ){
 			int page_showing = pager.getCurrentItem();
 			
-			removeColumn(  column );
-			
+			removeColumn( column );
 			
 			if( app_state.column_list.isEmpty() ){
 				llEmpty.setVisibility( View.VISIBLE );
 			}else if( page_delete > 0 && page_showing == page_delete ){
-				scrollToColumn( page_showing - 1 );
+				int idx = page_delete - 1;
+				scrollToColumn( idx );
+				Column c = app_state.column_list.get(idx);
+				if( ! c.bInitialLoading ){
+					c.startLoading();
+				}
 			}
 			
 		}else{
@@ -1150,10 +1206,12 @@ public class ActMain extends AppCompatActivity
 			
 			if( app_state.column_list.isEmpty() ){
 				llEmpty.setVisibility( View.VISIBLE );
-			}else{
-				// TODO 一つ左のカラムが見えるようにしたい
-				if( page_delete > 0 ){
-					scrollToColumn( page_delete -1 );
+			}else if( page_delete > 0 ){
+				int idx = page_delete - 1;
+				scrollToColumn( idx );
+				Column c = app_state.column_list.get(idx);
+				if( ! c.bInitialLoading ){
+					c.startLoading();
 				}
 			}
 		}
@@ -1176,16 +1234,19 @@ public class ActMain extends AppCompatActivity
 		llEmpty.setVisibility( View.GONE );
 		//
 		Column col = new Column( app_state, ai, this, type, params );
-		index = addColumn(  col, index );
+		index = addColumn( col, index );
 		scrollToColumn( index );
+		if( ! col.bInitialLoading ){
+			col.startLoading();
+		}
 		return col;
 	}
 	
-	void performOpenUser( int pos,@NonNull SavedAccount access_info, @NonNull TootAccount user ){
+	void performOpenUser( int pos, @NonNull SavedAccount access_info, @NonNull TootAccount user ){
 		if( access_info.isPseudo() ){
 			Utils.showToast( this, false, R.string.not_available_for_pseudo_account );
 		}else{
-			addColumn( pos,access_info, Column.TYPE_PROFILE, user.id );
+			addColumn( pos, access_info, Column.TYPE_PROFILE, user.id );
 		}
 	}
 	
@@ -1195,7 +1256,7 @@ public class ActMain extends AppCompatActivity
 			, account_list_non_pseudo_same_instance
 			, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
-					addColumn( pos,ai, Column.TYPE_PROFILE, who.id );
+					addColumn( pos, ai, Column.TYPE_PROFILE, who.id );
 				}
 			} );
 	}
@@ -1207,11 +1268,11 @@ public class ActMain extends AppCompatActivity
 				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 					switch( type ){
 					default:
-						addColumn( pos,ai, type, args );
+						addColumn( pos, ai, type, args );
 						break;
 					
 					case Column.TYPE_PROFILE:
-						addColumn(pos, ai, type, ai.id );
+						addColumn( pos, ai, type, ai.id );
 						break;
 					}
 				}
@@ -1307,7 +1368,7 @@ public class ActMain extends AppCompatActivity
 	static final Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)\\z" );
 	static final Pattern reStatusPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)/(\\d+)\\z" );
 	
-	public void openChromeTab( final int pos,final SavedAccount access_info, final String url, boolean noIntercept ){
+	public void openChromeTab( final int pos, final SavedAccount access_info, final String url, boolean noIntercept ){
 		try{
 			log.d( "openChromeTab url=%s", url );
 			
@@ -1319,10 +1380,10 @@ public class ActMain extends AppCompatActivity
 					String host = m.group( 1 );
 					String tag = Uri.decode( m.group( 2 ) );
 					if( host.equalsIgnoreCase( access_info.host ) ){
-						openHashTag( pos,access_info, tag );
+						openHashTag( pos, access_info, tag );
 						return;
 					}else{
-						openHashTagOtherInstance( pos,access_info, url, host, tag );
+						openHashTagOtherInstance( pos, access_info, url, host, tag );
 						return;
 					}
 				}
@@ -1335,10 +1396,10 @@ public class ActMain extends AppCompatActivity
 						final String host = m.group( 1 );
 						final long status_id = Long.parseLong( m.group( 3 ), 10 );
 						if( host.equalsIgnoreCase( access_info.host ) ){
-							openStatus(pos, access_info, status_id );
+							openStatus( pos, access_info, status_id );
 							return;
 						}else{
-							openStatusOtherInstance( pos,access_info, url, host, status_id );
+							openStatusOtherInstance( pos, access_info, url, host, status_id );
 							return;
 						}
 					}catch( Throwable ex ){
@@ -1356,10 +1417,10 @@ public class ActMain extends AppCompatActivity
 					startGetAccount( access_info, host, user, new GetAccountCallback() {
 						@Override public void onGetAccount( TootAccount who ){
 							if( who != null ){
-								performOpenUser( pos,access_info, who );
+								performOpenUser( pos, access_info, who );
 								return;
 							}
-							openChromeTab( pos,access_info, url, true );
+							openChromeTab( pos, access_info, url, true );
 						}
 					} );
 					return;
@@ -1391,21 +1452,21 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-	public void openStatus( int pos,@NonNull SavedAccount access_info, @NonNull TootStatus status ){
-		openStatus( pos,access_info, status.id );
+	public void openStatus( int pos, @NonNull SavedAccount access_info, @NonNull TootStatus status ){
+		openStatus( pos, access_info, status.id );
 	}
 	
 	public void openStatus( int pos, @NonNull SavedAccount access_info, long status_id ){
-		addColumn( pos,access_info, Column.TYPE_CONVERSATION, status_id );
+		addColumn( pos, access_info, Column.TYPE_CONVERSATION, status_id );
 	}
 	
-	private void openStatusOtherInstance( final int pos,final SavedAccount access_info, final String url, final String host, final long status_id ){
+	private void openStatusOtherInstance( final int pos, final SavedAccount access_info, final String url, final String host, final long status_id ){
 		ActionsDialog dialog = new ActionsDialog();
 		
 		// ブラウザで表示する
 		dialog.addAction( getString( R.string.open_web_on_host, host ), new Runnable() {
 			@Override public void run(){
-				openChromeTab( pos,access_info, url, true );
+				openChromeTab( pos, access_info, url, true );
 			}
 		} );
 		
@@ -1439,7 +1500,7 @@ public class ActMain extends AppCompatActivity
 				@Override public void run(){
 					SavedAccount sa = addPseudoAccount( host );
 					if( sa != null ){
-						openStatus( pos,sa, status_id );
+						openStatus( pos, sa, status_id );
 					}
 				}
 			} );
@@ -1460,7 +1521,7 @@ public class ActMain extends AppCompatActivity
 		// ブラウザで表示する
 		dialog.addAction( getString( R.string.open_web_on_host, host ), new Runnable() {
 			@Override public void run(){
-				openChromeTab( pos,access_info, url, true );
+				openChromeTab( pos, access_info, url, true );
 			}
 		} );
 		
@@ -1495,7 +1556,7 @@ public class ActMain extends AppCompatActivity
 				@Override public void run(){
 					SavedAccount sa = addPseudoAccount( host );
 					if( sa != null ){
-						openHashTag( pos,sa, tag );
+						openHashTag( pos, sa, tag );
 					}
 				}
 			} );
@@ -1506,12 +1567,12 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	final MyClickableSpan.LinkClickCallback link_click_listener = new MyClickableSpan.LinkClickCallback() {
-		@Override public void onClickLink( View view,LinkClickContext lcc, String url ){
+		@Override public void onClickLink( View view, LinkClickContext lcc, String url ){
 			Column column = null;
 			while( view != null ){
 				Object tag = view.getTag();
-				if( tag instanceof  ItemViewHolder ){
-					column = ((ItemViewHolder)tag).column;
+				if( tag instanceof ItemViewHolder ){
+					column = ( (ItemViewHolder) tag ).column;
 					break;
 				}else if( tag instanceof HeaderViewHolder ){
 					column = ( (HeaderViewHolder) tag ).column;
@@ -1524,20 +1585,18 @@ public class ActMain extends AppCompatActivity
 				}
 			}
 			
-			openChromeTab( nextPosition( column ),(SavedAccount) lcc, url, false );
+			openChromeTab( nextPosition( column ), (SavedAccount) lcc, url, false );
 		}
 	};
 	
-
-	
 	private void performTootButton(){
-		if( pager_adapter != null){
+		if( pager_adapter != null ){
 			Column c = pager_adapter.getColumn( pager.getCurrentItem() );
 			if( c != null && ! c.access_info.isPseudo() ){
 				ActPost.open( this, REQUEST_CODE_POST, c.access_info.db_id, "" );
 			}
 		}
-
+		
 		AccountPicker.pick( this, false, true, getString( R.string.account_picker_toot ), new AccountPicker.AccountPickerCallback() {
 			@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 				ActPost.open( ActMain.this, REQUEST_CODE_POST, ai.db_id, "" );
@@ -1892,7 +1951,7 @@ public class ActMain extends AppCompatActivity
 		if( pager_adapter != null ){
 			ActColumnList.open( this, pager.getCurrentItem(), REQUEST_CODE_COLUMN_LIST );
 		}else{
-			ActColumnList.open( this, -1, REQUEST_CODE_COLUMN_LIST );
+			ActColumnList.open( this, - 1, REQUEST_CODE_COLUMN_LIST );
 		}
 	}
 	
@@ -1909,7 +1968,8 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	// relationshipを取得
-	@NonNull RelationResult loadRelation1( TootApiClient client, SavedAccount access_info, long who_id ){
+	@NonNull
+	RelationResult loadRelation1( TootApiClient client, SavedAccount access_info, long who_id ){
 		RelationResult rr = new RelationResult();
 		TootApiResult r2 = rr.result = client.request( "/api/v1/accounts/relationships?id=" + who_id );
 		if( r2 != null && r2.array != null ){
@@ -2758,9 +2818,8 @@ public class ActMain extends AppCompatActivity
 			} );
 	}
 	
-
 	private boolean closeColumnSetting(){
-		if( pager_adapter != null){
+		if( pager_adapter != null ){
 			ColumnViewHolder vh = pager_adapter.getColumnViewHolder( pager.getCurrentItem() );
 			if( vh.isColumnSettingShown() ){
 				vh.closeColumnSetting();
@@ -2782,11 +2841,9 @@ public class ActMain extends AppCompatActivity
 		return false;
 	}
 	
-
-
 	private int getDefaultInsertPosition(){
 		if( pager_adapter != null ){
-			return 1+ pager.getCurrentItem();
+			return 1 + pager.getCurrentItem();
 		}else{
 			return Integer.MAX_VALUE;
 		}
@@ -2800,12 +2857,11 @@ public class ActMain extends AppCompatActivity
 		return getDefaultInsertPosition();
 	}
 	
-	
 	private int addColumn( Column column, int index ){
 		int size = app_state.column_list.size();
 		if( index > size ) index = size;
-
-		if( pager_adapter != null){
+		
+		if( pager_adapter != null ){
 			pager.setAdapter( null );
 			app_state.column_list.add( index, column );
 			pager.setAdapter( pager_adapter );
@@ -2813,7 +2869,7 @@ public class ActMain extends AppCompatActivity
 			app_state.column_list.add( index, column );
 			resizeColumnWidth();
 		}
-
+		
 		app_state.saveColumnList();
 		updateColumnStrip();
 		
@@ -2824,8 +2880,8 @@ public class ActMain extends AppCompatActivity
 	private void removeColumn( Column column ){
 		int idx_column = app_state.column_list.indexOf( column );
 		if( idx_column == - 1 ) return;
-
-		if( pager_adapter != null){
+		
+		if( pager_adapter != null ){
 			pager.setAdapter( null );
 			app_state.column_list.remove( idx_column ).dispose();
 			pager.setAdapter( pager_adapter );
@@ -2871,31 +2927,30 @@ public class ActMain extends AppCompatActivity
 	int nScreenColumn;
 	
 	private void resizeColumnWidth(){
-		// TODO カラム幅を調節する
 		DisplayMetrics dm = getResources().getDisplayMetrics();
-		//
-		int sw = dm.widthPixels;
-		// int sh = dm.heightPixels;
-		// int short_side = ( sw < sh ? sw : sh );
-		//
+
+		final int sw = dm.widthPixels;
+
 		float density = dm.density;
 		int column_w_min = (int) ( 0.5f + 320f * density );
-		int column_w_max = (int) ( 0.5f + 360f * density );
 		
-		if( sw >= column_w_min * 2 ){
+		if( sw < column_w_min * 2 ){
+			tablet_pager_adapter.setColumnWidth( sw );
+		}else{
+			// ２つは表示できるが3つは表示できないかもしれない
+			int column_w_max = (int) ( 0.5f + 1.5f * column_w_min );
+			
 			nScreenColumn = sw / column_w_min;
 			if( nScreenColumn > app_state.column_list.size() ){
 				nScreenColumn = app_state.column_list.size();
 			}
-			int column_w = sw/ nScreenColumn;
+			int column_w = sw / nScreenColumn;
 			if( column_w > column_w_max ){
 				column_w = column_w_max;
 			}
 			tablet_pager_adapter.setColumnWidth( column_w );
-		}else{
-			tablet_pager_adapter.setColumnWidth( sw );
 		}
-
+		
 		// 並べ直す
 		tablet_pager_adapter.notifyDataSetChanged();
 	}
@@ -2906,22 +2961,9 @@ public class ActMain extends AppCompatActivity
 		if( pager_adapter != null ){
 			pager.setCurrentItem( index, true );
 		}else{
-			// 指定されたカラムが画面内に表示される最低限の移動ですませたい
-			if( nScreenColumn >0 ){
-				int vs = tablet_layout_manager.findFirstVisibleItemPosition();
-				if( vs != RecyclerView.NO_POSITION ){
-					if( index < vs ){
-						tablet_pager.smoothScrollToPosition( index );
-					}else{
-						int ve = vs + nScreenColumn - 1;
-						if( index > ve ){
-							tablet_pager.smoothScrollToPosition( index - ( nScreenColumn - 1 ) );
-						}
-					}
-				}
-			}
+			// 指定したカラムが画面内に表示されるように動いてくれるようだ
+			tablet_pager.smoothScrollToPosition( index );
 		}
 	}
-	
 	
 }

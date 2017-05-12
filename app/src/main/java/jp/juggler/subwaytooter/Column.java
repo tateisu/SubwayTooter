@@ -2392,7 +2392,8 @@ class Column implements StreamReader.Callback {
 						restore_idx = holder.getListView().getFirstVisiblePosition();
 						restore_y = getItemTop( restore_idx );
 					}catch( IndexOutOfBoundsException ex ){
-						ex.printStackTrace();
+						restore_idx = - 1;
+						restore_y = 0;
 					}
 				}
 			}

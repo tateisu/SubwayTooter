@@ -17,7 +17,7 @@ import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
 import jp.juggler.subwaytooter.view.MyNetworkImageView;
 
 class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener {
-	private final Column column;
+	final Column column;
 	private final ActMain activity;
 	private final SavedAccount access_info;
 	
@@ -106,12 +106,13 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 	
 	@Override
 	public void onClick( View v ){
+		
 		switch( v.getId() ){
 		
 		case R.id.ivBackground:
 			if( who != null ){
 				// 強制的にブラウザで開く
-				activity.openChromeTab( access_info, who.url, true );
+				activity.openChromeTab( activity.nextPosition( column ), access_info, who.url, true );
 			}
 			break;
 		
@@ -135,13 +136,13 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 		
 		case R.id.btnMore:
 			if( who != null ){
-				new DlgContextMenu( activity, access_info, who, null, column.column_type ).show();
+				new DlgContextMenu( activity, column, who, null ).show();
 			}
 			break;
 		
 		case R.id.btnFollow:
 			if( who != null ){
-				new DlgContextMenu( activity, access_info, who, null, column.column_type ).show();
+				new DlgContextMenu( activity, column, who, null ).show();
 			}
 			break;
 			

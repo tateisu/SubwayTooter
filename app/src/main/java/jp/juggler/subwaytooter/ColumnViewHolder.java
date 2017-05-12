@@ -54,7 +54,8 @@ class ColumnViewHolder
 	
 	void onPageDestroy( @SuppressWarnings("UnusedParameters") View root ){
 		log.d( "onPageDestroy:%s", column.getColumnName( true ) );
-		
+		is_destroyed.set( true );
+
 		saveScrollPosition();
 		
 		column.setColumnViewHolder( null );

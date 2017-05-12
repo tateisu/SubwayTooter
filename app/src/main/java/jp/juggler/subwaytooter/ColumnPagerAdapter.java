@@ -37,46 +37,6 @@ class ColumnPagerAdapter extends PagerAdapter {
 		return holder_list.get( idx );
 	}
 	
-	int addColumn( ViewPager pager, Column column ){
-		return addColumn( pager, column, pager.getCurrentItem() + 1 );
-	}
-	
-	int addColumn( ViewPager pager, Column column, int index ){
-		int size = column_list.size();
-		if( index > size ) index = size;
-		pager.setAdapter( null );
-		column_list.add( index, column );
-		pager.setAdapter( this );
-		return index;
-	}
-	
-	void removeColumn( ViewPager pager, Column column ){
-		int idx_column = column_list.indexOf( column );
-		if( idx_column == - 1 ) return;
-		pager.setAdapter( null );
-		column_list.remove( idx_column ).dispose();
-		pager.setAdapter( this );
-	}
-	
-	void setOrder( ViewPager pager, ArrayList< Integer > order ){
-		pager.setAdapter( null );
-		
-		ArrayList< Column > tmp_list = new ArrayList<>();
-		HashSet< Integer > used_set = new HashSet<>();
-		
-		for( Integer i : order ){
-			used_set.add( i );
-			tmp_list.add( column_list.get( i ) );
-		}
-		for( int i = 0, ie = column_list.size() ; i < ie ; ++ i ){
-			if( used_set.contains( i ) ) continue;
-			column_list.get( i ).dispose();
-		}
-		column_list.clear();
-		column_list.addAll( tmp_list );
-		
-		pager.setAdapter( this );
-	}
 	
 	@Override public CharSequence getPageTitle( int page_idx ){
 		return getColumn( page_idx).getColumnName( false );
@@ -108,7 +68,7 @@ class ColumnPagerAdapter extends PagerAdapter {
 		ColumnViewHolder holder = holder_list.get( page_idx );
 		holder_list.remove( page_idx );
 		if( holder != null ){
-			holder.is_destroyed.set( true );
+			
 			holder.onPageDestroy( view );
 		}
 	}

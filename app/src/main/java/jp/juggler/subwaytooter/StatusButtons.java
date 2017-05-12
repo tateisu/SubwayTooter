@@ -113,7 +113,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		if( close_window != null ) close_window.dismiss();
 		switch( v.getId() ){
 		case R.id.btnConversation:
-			activity.openStatus( access_info, status );
+			activity.openStatus( activity.nextPosition( column ), access_info, status );
 			break;
 		case R.id.btnReply:
 			if( access_info.isPseudo() ){
@@ -152,7 +152,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnMore:
-			new DlgContextMenu( activity, access_info, status.account, status, column.column_type ).show();
+			new DlgContextMenu( activity, column, status.account, status ).show();
 			break;
 		
 		case R.id.btnFollow2:

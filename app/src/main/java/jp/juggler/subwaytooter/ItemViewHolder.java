@@ -385,6 +385,9 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	}
 	
 	@Override public void onClick( View v ){
+		
+		int pos = activity.nextPosition( column ) ;
+		
 		switch( v.getId() ){
 		case R.id.btnHideMedia:
 			MediaShown.save( access_info.host, status.id, false );
@@ -415,33 +418,33 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.ivThumbnail:
 			if( access_info.isPseudo() ){
-				new DlgContextMenu( activity, access_info, account_thumbnail, null, column.column_type ).show();
+				new DlgContextMenu( activity, column, account_thumbnail, null ).show();
 			}else{
-				activity.performOpenUser( access_info, account_thumbnail );
+				activity.performOpenUser( pos,access_info, account_thumbnail );
 			}
 			break;
 		
 		case R.id.llBoosted:
 			if( access_info.isPseudo() ){
-				new DlgContextMenu( activity, access_info, account_boost, null, column.column_type ).show();
+				new DlgContextMenu( activity, column, account_boost, null ).show();
 			}else{
-				activity.performOpenUser( access_info, account_boost );
+				activity.performOpenUser( pos,access_info, account_boost );
 			}
 			break;
 		case R.id.llFollow:
 			if( access_info.isPseudo() ){
-				new DlgContextMenu( activity, access_info, account_follow, null, column.column_type ).show();
+				new DlgContextMenu( activity, column, account_follow, null ).show();
 			}else{
-				activity.performOpenUser( access_info, account_follow );
+				activity.performOpenUser( pos,access_info, account_follow );
 			}
 			break;
 		case R.id.btnFollow:
-			new DlgContextMenu( activity, access_info, account_follow, null, column.column_type ).show();
+			new DlgContextMenu( activity, column, account_follow, null ).show();
 			break;
 		
 		case R.id.btnSearchTag:
 			if( search_tag != null ){
-				activity.openHashTag( access_info, search_tag );
+				activity.openHashTag( pos,access_info, search_tag );
 			}else if( gap != null ){
 				column.startGap( gap, position );
 			}
@@ -453,7 +456,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		switch( v.getId() ){
 		
 		case R.id.ivThumbnail:
-			new DlgContextMenu( activity, access_info, account_thumbnail, null, column.column_type ).show();
+			new DlgContextMenu( activity, column, account_thumbnail, null ).show();
 			return true;
 		
 		case R.id.btnFollow:
@@ -481,7 +484,8 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 					sv = a.url;
 				}
 			}
-			activity.openChromeTab( access_info, sv, false );
+			int pos =  activity.nextPosition( column ) ;
+			activity.openChromeTab(pos, access_info, sv, false );
 		}catch( Throwable ex ){
 			ex.printStackTrace();
 		}

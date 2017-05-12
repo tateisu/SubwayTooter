@@ -9,7 +9,7 @@ import jp.juggler.subwaytooter.table.AcctColor;
 public class MyClickableSpan extends ClickableSpan {
 	
 	public interface LinkClickCallback {
-		void onClickLink( LinkClickContext account, String url );
+		void onClickLink( View widget,LinkClickContext account, String url );
 	}
 	
 	public static LinkClickCallback link_callback;
@@ -30,7 +30,7 @@ public class MyClickableSpan extends ClickableSpan {
 	
 	@Override public void onClick( View widget ){
 		if( link_callback != null ){
-			link_callback.onClickLink( this.account, url );
+			link_callback.onClickLink( widget,this.account, url );
 		}
 	}
 	

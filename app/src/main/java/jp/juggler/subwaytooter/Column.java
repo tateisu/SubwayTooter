@@ -714,6 +714,11 @@ class Column implements StreamReader.Callback {
 			if( holder != null ) holder.showColumnHeader();
 		}
 	};
+	private final Runnable proc_showColumnColor = new Runnable() {
+		@Override public void run(){
+			if( holder != null ) holder.showColumnColor();
+		}
+	};
 	
 	void fireShowContent(){
 		Utils.runOnMainThread( proc_showContent );
@@ -723,6 +728,11 @@ class Column implements StreamReader.Callback {
 	void fireShowColumnHeader(){
 		Utils.runOnMainThread( proc_showColumnHeader );
 	}
+	
+	void fireColumnColor(){
+		Utils.runOnMainThread( proc_showColumnColor );
+	}
+	
 	
 	private AsyncTask< Void, Void, TootApiResult > last_task;
 	

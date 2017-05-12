@@ -33,6 +33,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 	@NonNull private final TootAccount who;
 	@Nullable private final TootStatus status;
 	@NonNull private final UserRelation relation;
+	@NonNull private final Column column;
 	
 	private final Dialog dialog;
 	
@@ -41,15 +42,16 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 	
 	DlgContextMenu(
 		@NonNull ActMain activity
-		, @NonNull SavedAccount access_info
+	    , @NonNull Column column
 		, @NonNull TootAccount who
 		, @Nullable TootStatus status
-		, int column_type
 	){
 		this.activity = activity;
-		this.access_info = access_info;
+		this.column = column;
+		this.access_info = column.access_info;
 		this.who = who;
 		this.status = status;
+		int column_type = column.column_type;
 		
 		this.relation = UserRelation.load( access_info.db_id, who.id );
 		
@@ -235,11 +237,13 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		
 		dialog.dismiss();
 		
+		int pos = activity.nextPosition( column ) ;
+		
 		switch( v.getId() ){
 		
 		case R.id.btnStatusWebPage:
 			if( status != null ){
-				activity.openChromeTab( access_info, status.url, true );
+				activity.openChromeTab(pos,access_info, status.url, true );
 			}
 			break;
 		
@@ -318,13 +322,13 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnBoostedBy:
 			if( status != null ){
-				activity.addColumn( access_info, Column.TYPE_BOOSTED_BY, status.id );
+				activity.addColumn( pos,access_info, Column.TYPE_BOOSTED_BY, status.id );
 			}
 			break;
 		
 		case R.id.btnFavouritedBy:
 			if( status != null ){
-				activity.addColumn( access_info, Column.TYPE_FAVOURITED_BY, status.id );
+				activity.addColumn( pos,access_info, Column.TYPE_FAVOURITED_BY, status.id );
 			}
 			break;
 		
@@ -371,7 +375,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnProfile:
-			activity.performOpenUser( access_info, who );
+			activity.performOpenUser( pos,access_info, who );
 			break;
 		
 		case R.id.btnSendMessage:
@@ -379,7 +383,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnAccountWebPage:
-			activity.openChromeTab( access_info, who.url, true );
+			activity.openChromeTab( pos, access_info, who.url, true );
 			break;
 		
 		case R.id.btnFollowRequestOK:
@@ -399,7 +403,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnOpenProfileFromAnotherAccount:
-			activity.performOpenUserFromAnotherAccount( who, account_list_non_pseudo_same_instance );
+			activity.performOpenUserFromAnotherAccount( pos,who, account_list_non_pseudo_same_instance );
 			break;
 		
 		case R.id.btnNickname:

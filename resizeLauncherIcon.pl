@@ -47,9 +47,13 @@ sub resize_scales{
 
 
 my $res_dir = "app/src/main/res";
-resize_scales( "_ArtWork/ic_launcher-1024.png"		,$res_dir,"mipmap","ic_launcher",0,48);
 #resize_scales( "_ArtWork/ic_app_logo-512.png"		,$res_dir,"drawable","ic_app_logo",0,32);
-resize_scales( "_ArtWork/ic_notification-817.png"	,$res_dir,"drawable","ic_notification",0,24);
+
+#resize_scales( "_ArtWork/ic_launcher-1024.png"		,$res_dir,"mipmap","ic_launcher",0,48);
+#resize_scales( "_ArtWork/ic_notification-817.png"	,$res_dir,"drawable","ic_notification",0,24);
+
+resize_scales( "_ArtWork/ic_launcher_20170513.png"		,$res_dir,"mipmap","ic_launcher",0,48);
+resize_scales( "_ArtWork/ic_notification_20150513.png"	,$res_dir,"drawable","ic_notification",0,24);
 
 
 resize_scales( "_ArtWork/ic_hourglass.png"			,$res_dir,"drawable","ic_hourglass",0,32);

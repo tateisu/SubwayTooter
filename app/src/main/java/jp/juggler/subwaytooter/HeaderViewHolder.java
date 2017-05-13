@@ -41,6 +41,7 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 		this.column = column;
 		this.access_info = column.access_info;
 		this.viewRoot = activity.getLayoutInflater().inflate( R.layout.lv_list_header, parent, false );
+		viewRoot.setTag( this);
 
 		ivBackground = (MyNetworkImageView) viewRoot.findViewById( R.id.ivBackground );
 		tvCreated = (TextView) viewRoot.findViewById( R.id.tvCreated );

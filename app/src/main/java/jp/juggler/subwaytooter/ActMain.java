@@ -15,6 +15,7 @@ import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.text.BidiFormatter;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
+import android.support.v4.view.ViewParentCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -28,6 +29,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.HorizontalScrollView;
@@ -1611,10 +1613,14 @@ public class ActMain extends AppCompatActivity
 					column = ( (TabletColumnViewHolder) tag ).vh.column;
 					break;
 				}else{
-					view = (View) view.getParent();
+					ViewParent parent = view.getParent();
+					if( parent instanceof View ){
+						view = (View) parent;
+					}else{
+						break;
+					}
 				}
 			}
-			
 			openChromeTab( nextPosition( column ), (SavedAccount) lcc, url, false );
 		}
 	};

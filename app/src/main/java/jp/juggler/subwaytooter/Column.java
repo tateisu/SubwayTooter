@@ -915,6 +915,13 @@ class Column implements StreamReader.Callback {
 		
 		fireShowContent();
 		
+		try{
+			ColumnViewHolder holder = getViewHolder();
+			if( holder != null ) holder.getRefreshLayout().setRefreshing( false );
+		}catch(Throwable ignored){
+			
+		}
+		
 		AsyncTask< Void, Void, TootApiResult > task = this.last_task = new AsyncTask< Void, Void, TootApiResult >() {
 			
 			TootApiResult parseAccount1( TootApiClient client, String path_base ){

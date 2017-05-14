@@ -476,11 +476,11 @@
     <!---->
     <string name="confirm_follow_request_who_from">%2$s から鍵付きユーザ %1$s にフォローリクエストを送りますか？</string>
     <!---->
-    <string name="confirm_follow_who_from">%2$s から %1$s をフォローしますか？</string>
+    <string name="confirm_follow_who_from">%2$s で %1$s をフォローしますか？</string>
     <!---->
     <string name="confirm_post_from">%1$s から投稿します。よろしいですか？</string>
     <!---->
-    <string name="confirm_unfollow_who_from">%2$s から %1$s をフォロー解除しますか？</string>
+    <string name="confirm_unfollow_who_from">%2$s で %1$s をフォロー解除しますか？</string>
     <!---->
     <string name="dont_confirm_again">次回から確認しない</string>
     <!---->
@@ -599,6 +599,6 @@
     <string name="disable_tablet_mode">タブレットモードを使わない(アプリ再起動が必要)</string>
     <string name="media_thumbnail_height">添付メディアのサムネイルの高さ(デフォルト=64(dp)、アプリ再起動が必要)</string>
     <string name="minimum_column_width">カラム最小幅(デフォルト=300(dp)、アプリ再起動が必要)</string>
-    <string name="account_picker_reply">どのアカウントから返信しますか？</string>
-    <string name="reply_from_another_account">別アカウントから返信</string>
+    <string name="account_picker_reply">どのアカウントで返信しますか？</string>
+    <string name="reply_from_another_account">別アカウントで返信</string>
 </resources>

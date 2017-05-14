@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
@@ -912,9 +913,10 @@ public class ActMain extends AppCompatActivity
 		// プロフURL
 		if( "https".equals( uri.getScheme() ) ){
 			if( uri.getPath().startsWith( "/@" ) ){
-				// ステータスをアプリ内で開く
+				
 				Matcher m = reStatusPage.matcher( uri.toString() );
 				if( m.find() ){
+					// ステータスをアプリ内で開く
 					try{
 						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
 						final String host = m.group( 1 );
@@ -955,9 +957,10 @@ public class ActMain extends AppCompatActivity
 					return;
 				}
 				
-				// ユーザページをアプリ内で開く
 				m = reUserPage.matcher( uri.toString() );
 				if( m.find() ){
+					// ユーザページをアプリ内で開く
+
 					// https://mastodon.juggler.jp/@SubwayTooter
 					final String host = m.group( 1 );
 					final String user = Uri.decode( m.group( 2 ) );
@@ -1021,7 +1024,11 @@ public class ActMain extends AppCompatActivity
 				long db_id = Long.parseLong( sv, 10 );
 				SavedAccount account = SavedAccount.loadAccount( log, db_id );
 				if( account != null ){
-					addColumn( getDefaultInsertPosition(), account, Column.TYPE_NOTIFICATIONS );
+					Column column = addColumn( getDefaultInsertPosition(), account, Column.TYPE_NOTIFICATIONS );
+					// 通知を読み直す
+					if( ! column.bInitialLoading ){
+						column.startLoading();
+					}
 				}
 			}catch( Throwable ex ){
 				ex.printStackTrace();
@@ -1029,6 +1036,8 @@ public class ActMain extends AppCompatActivity
 			return;
 		}
 		
+		// OAuth2 認証コールバック
+
 		final ProgressDialog progress = new ProgressDialog( ActMain.this );
 		
 		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
@@ -3036,7 +3045,6 @@ public class ActMain extends AppCompatActivity
 		updateColumnStrip();
 		
 		return index;
-		
 	}
 	
 	private void removeColumn( Column column ){

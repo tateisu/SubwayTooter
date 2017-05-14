@@ -11,7 +11,7 @@ class TabletColumnViewHolder extends RecyclerView.ViewHolder{
 	
 	final ColumnViewHolder vh;
 
-	private int old_position = -1;
+	int old_position = - 1;
 	
 	TabletColumnViewHolder(  ActMain activity, View v ){
 		super( v );
@@ -20,7 +20,8 @@ class TabletColumnViewHolder extends RecyclerView.ViewHolder{
 	}
 	
 	void bind(Column column,int position,int column_count ){
-		log.d("bind. %d => %d ",old_position,position);
+		log.d("bind. %d => %d ", old_position,position);
+		old_position = position;
 
 		vh.onPageDestroy();
 

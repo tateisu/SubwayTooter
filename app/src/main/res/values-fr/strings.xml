@@ -4,25 +4,8 @@
     tools:ignore="MissingTranslation"
     >
 
-	<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>
-	<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>
-	<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>
-	<string name="abc_action_bar_up_description">Revenir en haut de la page</string>
-	<string name="abc_action_menu_overflow_description">Plus d\'options</string>
-	<string name="abc_action_mode_done">OK</string>
-	<string name="abc_activity_chooser_view_see_all">Tout afficher</string>
-	<string name="abc_activitychooserview_choose_application">Sélectionner une application</string>
-	<string name="abc_capital_off">DÉSACTIVÉ</string>
-	<string name="abc_capital_on">ACTIVÉ</string>
-	<string name="abc_search_hint">Rechercher…</string>
-	<string name="abc_searchview_description_clear">Effacer la requête</string>
-	<string name="abc_searchview_description_query">Requête de recherche</string>
-	<string name="abc_searchview_description_search">Rechercher</string>
-	<string name="abc_searchview_description_submit">Envoyer la requête</string>
-	<string name="abc_searchview_description_voice">Recherche vocale</string>
-	<string name="abc_shareactionprovider_share_with">Partager avec</string>
-	<string name="abc_shareactionprovider_share_with_application">Partager avec %s</string>
-	<string name="abc_toolbar_collapse_description">Réduire</string>
+
+
 	<string name="access_token_updated_for">L\'autorisation d\'accès a été mis à jour pour %1$s.</string>
 	<string name="account">Compte</string>
 	<string name="account_add">Ajouter un compte</string>
@@ -275,7 +258,6 @@
 	<string name="save">Sauvegarder</string>
 	<string name="search">Rechercher</string>
 	<string name="search_for">Rechercher %1$s</string>
-	<string name="search_menu_title">Rechercher</string>
 	<string name="search_of">Rechercher \"%1$s\"</string>
 	<string name="search_web">Rechercher sur internet</string>
 	<string name="select_and_copy">Sélectionner et copier</string>
@@ -297,7 +279,6 @@
 	<string name="sound">Émettre un son</string>
 	<string name="spoil_visibility_for_account">Mauvaise visibilité pour ce compte.</string>
 	<string name="status">Statut</string>
-	<string name="status_bar_notification_info_overflow">&gt;999</string>
 	<string name="status_id_conversion_failed">Identification du statut de la conversation échouée.</string>
 	<string name="statuses">Statut</string>
 	<string name="statuses_of">Statut de %1$s</string>
@@ -333,5 +314,28 @@
 	<string name="with_attachment">Avec pièce(s) jointe(s)</string>
 	<string name="word_was_muted">Ce mot a été interdit.</string>
 	<string name="your_statuses">Vos statuts</string>
+
+
+	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
+	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
+	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->
+	<!--<string name="abc_action_menu_overflow_description">Plus d\'options</string>-->
+	<!--<string name="abc_action_mode_done">OK</string>-->
+	<!--<string name="abc_activity_chooser_view_see_all">Tout afficher</string>-->
+	<!--<string name="abc_activitychooserview_choose_application">Sélectionner une application</string>-->
+	<!--<string name="abc_capital_off">DÉSACTIVÉ</string>-->
+	<!--<string name="abc_capital_on">ACTIVÉ</string>-->
+	<!--<string name="abc_search_hint">Rechercher…</string>-->
+	<!--<string name="abc_searchview_description_clear">Effacer la requête</string>-->
+	<!--<string name="abc_searchview_description_query">Requête de recherche</string>-->
+	<!--<string name="abc_searchview_description_search">Rechercher</string>-->
+	<!--<string name="abc_searchview_description_submit">Envoyer la requête</string>-->
+	<!--<string name="abc_searchview_description_voice">Recherche vocale</string>-->
+	<!--<string name="abc_shareactionprovider_share_with">Partager avec</string>-->
+	<!--<string name="abc_shareactionprovider_share_with_application">Partager avec %s</string>-->
+	<!--<string name="abc_toolbar_collapse_description">Réduire</string>-->
+	<!--<string name="search_menu_title">Rechercher</string>-->
+	<!--<string name="status_bar_notification_info_overflow">&gt;999</string>-->
 
 </resources>

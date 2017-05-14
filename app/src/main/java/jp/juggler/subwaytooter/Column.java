@@ -1186,6 +1186,12 @@ class Column implements StreamReader.Callback {
 					resumeStreaming( false );
 				}
 				fireShowContent();
+
+				// 初期ロードの直後は先頭に移動する
+				try{
+					holder.getListView().setSelection( 0 );
+				}catch(Throwable ignored){
+				}
 			}
 		};
 		

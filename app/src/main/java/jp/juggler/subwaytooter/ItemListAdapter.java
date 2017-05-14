@@ -78,9 +78,11 @@ class ItemListAdapter extends BaseAdapter implements AdapterView.OnItemClickList
 	
 	@Override
 	public void onItemClick( AdapterView< ? > parent, View view, int position, long id ){
-		Object tag = view.getTag();
-		if( tag instanceof ItemViewHolder ){
-			( (ItemViewHolder) tag ).onItemClick( (MyListView) parent, view );
+		if( column.bSimpleList ){
+			Object tag = view.getTag();
+			if( tag instanceof ItemViewHolder ){
+				( (ItemViewHolder) tag ).onItemClick( (MyListView) parent, view );
+			}
 		}
 	}
 }

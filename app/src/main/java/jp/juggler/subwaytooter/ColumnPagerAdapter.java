@@ -14,7 +14,7 @@ class ColumnPagerAdapter extends PagerAdapter {
 	
 	private final ActMain activity;
 	private final LayoutInflater inflater;
-	final ArrayList< Column > column_list;
+	private final ArrayList< Column > column_list;
 	private final SparseArray< ColumnViewHolder > holder_list = new SparseArray<>();
 
 
@@ -51,11 +51,11 @@ class ColumnPagerAdapter extends PagerAdapter {
 		container.addView( root, 0 );
 		
 		Column column = column_list.get( page_idx );
-		ColumnViewHolder holder = new ColumnViewHolder( activity, column );
+		ColumnViewHolder holder = new ColumnViewHolder( activity,root );
 		//
 		holder_list.put( page_idx, holder );
 		//
-		holder.onPageCreate( root, page_idx, column_list.size() );
+		holder.onPageCreate( column, page_idx, column_list.size() );
 		
 		return root;
 	}
@@ -68,8 +68,7 @@ class ColumnPagerAdapter extends PagerAdapter {
 		ColumnViewHolder holder = holder_list.get( page_idx );
 		holder_list.remove( page_idx );
 		if( holder != null ){
-			
-			holder.onPageDestroy( view );
+			holder.onPageDestroy();
 		}
 	}
 }

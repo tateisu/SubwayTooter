@@ -66,6 +66,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		View btnText = viewRoot.findViewById( R.id.btnText );
 		View btnFavouriteAnotherAccount = viewRoot.findViewById( R.id.btnFavouriteAnotherAccount );
 		View btnBoostAnotherAccount = viewRoot.findViewById( R.id.btnBoostAnotherAccount );
+		View btnReplyAnotherAccount = viewRoot.findViewById( R.id.btnReplyAnotherAccount );
 		View btnDelete = viewRoot.findViewById( R.id.btnDelete );
 		View btnReport = viewRoot.findViewById( R.id.btnReport );
 		Button btnMuteApp = (Button) viewRoot.findViewById( R.id.btnMuteApp );
@@ -105,9 +106,11 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			if( account_list_non_pseudo_same_instance.isEmpty() ){
 				btnFavouriteAnotherAccount.setVisibility( View.GONE );
 				btnBoostAnotherAccount.setVisibility( View.GONE );
+				btnReplyAnotherAccount.setVisibility( View.GONE );
 			}else{
 				btnFavouriteAnotherAccount.setOnClickListener( this );
 				btnBoostAnotherAccount.setOnClickListener( this );
+				btnReplyAnotherAccount.setOnClickListener( this );
 			}
 			if( access_info.isPseudo() ){
 				btnDelete.setVisibility( View.GONE );
@@ -254,44 +257,15 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnFavouriteAnotherAccount:
-			if( status != null ){
-				AccountPicker.pick( activity, false, false
-					, activity.getString( R.string.account_picker_favourite )
-					// , account_list_non_pseudo_same_instance
-					, account_list_non_pseudo
-					, new AccountPicker.AccountPickerCallback() {
-						@Override public void onAccountPicked( @NonNull SavedAccount ai ){
-							activity.performFavourite(
-								ai
-								, ! ai.host.equalsIgnoreCase( access_info.host )
-								, true
-								, status
-								, activity.favourite_complete_callback
-							);
-						}
-					} );
-			}
+			activity.openFavouriteFromAnotherAccount( access_info,status );
 			break;
 		
 		case R.id.btnBoostAnotherAccount:
-			if( status != null ){
-				AccountPicker.pick( activity, false, false
-					, activity.getString( R.string.account_picker_boost )
-					// , account_list_non_pseudo_same_instance
-					, account_list_non_pseudo
-					, new AccountPicker.AccountPickerCallback() {
-						@Override public void onAccountPicked( @NonNull SavedAccount ai ){
-							activity.performBoost(
-								ai
-								, ! ai.host.equalsIgnoreCase( access_info.host )
-								, true
-								, status
-								, false
-								, activity.boost_complete_callback
-							);
-						}
-					} );
-			}
+			activity.openBoostFromAnotherAccount( access_info,status );
+			break;
+
+		case R.id.btnReplyAnotherAccount:
+			activity.openReplyFromAnotherAccount( access_info,status );
 			break;
 		
 		case R.id.btnDelete:

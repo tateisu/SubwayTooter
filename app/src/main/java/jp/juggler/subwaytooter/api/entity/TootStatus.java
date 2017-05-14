@@ -10,7 +10,9 @@ import org.json.JSONObject;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -138,7 +140,7 @@ public class TootStatus extends TootId {
 			status.media_attachments = TootAttachment.parseList( log, src.optJSONArray( "media_attachments" ) );
 			status.mentions = TootMention.parseList( log, src.optJSONArray( "mentions" ) );
 			status.tags = TootTag.parseList( log, src.optJSONArray( "tags" ) );
-			status.application = TootApplication.parse( log,src.optJSONObject( "application" )); // null
+			status.application = TootApplication.parse( log, src.optJSONObject( "application" ) ); // null
 			
 			status.time_created_at = parseTime( log, status.created_at );
 			status.decoded_content = HTMLDecoder.decodeHTML( account, status.content );
@@ -172,22 +174,32 @@ public class TootStatus extends TootId {
 		return result;
 	}
 	
-	private static final Pattern reTime = Pattern.compile("\\A(\\d+\\D+\\d+\\D+\\d+\\D+\\d+\\D+\\d+\\D+\\d+\\D+\\d+)");
-	private static final SimpleDateFormat date_format_utc = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSS", Locale.getDefault() );
+	private static final Pattern reTime = Pattern.compile( "\\A(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)" );
+	
+	private static final TimeZone tz_utc = TimeZone.getTimeZone( "UTC" );
 	
 	static long parseTime( LogCategory log, String strTime ){
 		if( ! TextUtils.isEmpty( strTime ) ){
 			try{
 				Matcher m = reTime.matcher( strTime );
-				if(!m.find() ){
-					log.d("!!invalid time format: %s",strTime);
+				if( ! m.find() ){
+					log.d( "!!invalid time format: %s", strTime );
 				}else{
-					date_format_utc.setTimeZone( TimeZone.getTimeZone( "GMT" ) );
-					return date_format_utc.parse( m.group( 1 ) ).getTime();
+					GregorianCalendar g = new GregorianCalendar( tz_utc );
+					g.set(
+						Utils.parse_int( m.group( 1 ), 1 ),
+						Utils.parse_int( m.group( 2 ), 1 ) - 1,
+						Utils.parse_int( m.group( 3 ), 1 ),
+						Utils.parse_int( m.group( 4 ), 0 ),
+						Utils.parse_int( m.group( 5 ), 0 ),
+						Utils.parse_int( m.group( 6 ), 0 )
+					);
+					g.set( Calendar.MILLISECOND, Utils.parse_int( m.group( 7 ), 0 ) );
+					return g.getTimeInMillis();
 				}
-			}catch( Throwable  ex ){// ParseException,  ArrayIndexOutOfBoundsException
+			}catch( Throwable ex ){// ParseException,  ArrayIndexOutOfBoundsException
 				ex.printStackTrace();
-				log.e( ex, "TootStatus.parseTime failed. src=%s",strTime );
+				log.e( ex, "TootStatus.parseTime failed. src=%s", strTime );
 			}
 		}
 		return 0L;
@@ -230,7 +242,6 @@ public class TootStatus extends TootId {
 		}
 	}
 	
-	
 	public boolean checkMuted( HashSet< String > muted_app, HashSet< String > muted_word ){
 		
 		// app mute
@@ -244,7 +255,7 @@ public class TootStatus extends TootId {
 		}
 		
 		// word mute
-		for( String word: muted_word ){
+		for( String word : muted_word ){
 			if( decoded_content != null && decoded_content.toString().contains( word ) ){
 				return true;
 			}
@@ -255,13 +266,12 @@ public class TootStatus extends TootId {
 		
 		// reblog
 		//noinspection RedundantIfStatement
-		if( reblog != null && reblog.checkMuted( muted_app,muted_word ) ){
+		if( reblog != null && reblog.checkMuted( muted_app, muted_word ) ){
 			return true;
 		}
 		
 		return false;
-
+		
 	}
-	
 	
 }

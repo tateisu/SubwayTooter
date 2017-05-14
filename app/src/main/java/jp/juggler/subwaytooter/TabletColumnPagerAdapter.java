@@ -34,7 +34,7 @@ class TabletColumnPagerAdapter extends RecyclerView.Adapter<TabletColumnViewHold
 	@Override public TabletColumnViewHolder onCreateViewHolder( ViewGroup parent, int viewType ){
 		View v = mLayoutInflater.inflate( R.layout.page_column, parent, false );
 
-		return new TabletColumnViewHolder( v );
+		return new TabletColumnViewHolder( activity,v );
 	}
 	
 	@Override public void onBindViewHolder( TabletColumnViewHolder holder, int position ){
@@ -45,7 +45,7 @@ class TabletColumnPagerAdapter extends RecyclerView.Adapter<TabletColumnViewHold
 			holder.itemView.setLayoutParams( lp );
 		}
 		
-		holder.bind( activity, column_list.get(position), position , column_list.size() );
+		holder.bind( column_list.get(position), position , column_list.size() );
 	}
 	
 

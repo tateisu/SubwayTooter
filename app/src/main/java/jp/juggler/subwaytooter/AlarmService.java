@@ -23,11 +23,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
-import jp.juggler.subwaytooter.api.entity.TootApplication;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.MutedApp;
@@ -146,44 +147,57 @@ public class AlarmService extends IntentService {
 			}
 		}
 		
-		TootApiClient client = new TootApiClient( this, new TootApiClient.Callback() {
-			@Override public boolean isApiCancelled(){
-				return false;
-			}
-			
-			@Override public void publishApiProgress( String s ){
-				
-			}
-		} );
 		
-		boolean bAlarmRequired = false;
 		
-		HashSet< String > muted_app = MutedApp.getNameSet();
-		HashSet< String > muted_word = MutedWord.getNameSet();
+		final AtomicBoolean bAlarmRequired = new AtomicBoolean( false );
+		final HashSet< String > muted_app = MutedApp.getNameSet();
+		final HashSet< String > muted_word = MutedWord.getNameSet();
+		
+		LinkedList<Thread> thread_list = new LinkedList<>(  );
+		for( SavedAccount _a : account_list ){
+			final SavedAccount account = _a;
+			Thread t = new Thread( new Runnable() {
+				@Override public void run(){
 
-		for( SavedAccount account : account_list ){
-			try{
-				if( account.notification_mention
-					|| account.notification_boost
-					|| account.notification_favourite
-					|| account.notification_follow
-					){
-					bAlarmRequired = true;
-					
-					ArrayList< Data > data_list = new ArrayList<>();
-					
-					checkAccount( client, data_list, account, muted_app ,muted_word);
-					
-					showNotification( account.db_id, data_list );
-					
+					try{
+						if( account.notification_mention
+							|| account.notification_boost
+							|| account.notification_favourite
+							|| account.notification_follow
+							){
+							bAlarmRequired.set(true);
+							
+							TootApiClient client = new TootApiClient( AlarmService.this, new TootApiClient.Callback() {
+								@Override public boolean isApiCancelled(){
+									return false;
+								}
+								@Override public void publishApiProgress( String s ){
+								}
+							} );
+							
+							ArrayList< Data > data_list = new ArrayList<>();
+							checkAccount( client, data_list, account, muted_app ,muted_word);
+							showNotification( account.db_id, data_list );
+						}
+					}catch( Throwable ex ){
+						ex.printStackTrace();
+					}
 				}
-			}catch( Throwable ex ){
-				ex.printStackTrace();
+			} );
+			thread_list.add( t);
+			t.start();
+		}
+		
+		for( Thread t : thread_list ){
+			try{
+				t.join();
+			}catch(Throwable ex){
+				ex.printStackTrace(  );
 			}
 		}
 		
 		alarm_manager.cancel( pi_next );
-		if( bAlarmRequired ){
+		if( bAlarmRequired.get() ){
 			long now = SystemClock.elapsedRealtime();
 			alarm_manager.setWindow(
 				AlarmManager.ELAPSED_REALTIME_WAKEUP

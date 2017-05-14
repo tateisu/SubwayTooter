@@ -48,7 +48,6 @@ import jp.juggler.subwaytooter.util.Utils;
 class Column implements StreamReader.Callback {
 	private static final LogCategory log = new LogCategory( "Column" );
 	
-	
 	interface Callback {
 		boolean isActivityResume();
 	}
@@ -236,7 +235,7 @@ class Column implements StreamReader.Callback {
 		item.put( KEY_DONT_STREAMING, dont_streaming );
 		item.put( KEY_DONT_AUTO_REFRESH, dont_auto_refresh );
 		item.put( KEY_HIDE_MEDIA_DEFAULT, hide_media_default );
-
+		
 		item.put( KEY_REGEX_TEXT, regex_text );
 		
 		item.put( KEY_HEADER_BACKGROUND_COLOR, header_bg_color );
@@ -374,6 +373,13 @@ class Column implements StreamReader.Callback {
 	void dispose(){
 		is_dispose.set( true );
 		stopStreaming();
+		
+		if( _holder != null ){
+			try{
+				_holder.getListView().setAdapter( null );
+			}catch( Throwable ignored ){
+			}
+		}
 	}
 	
 	String getColumnName( boolean bLong ){
@@ -698,41 +704,43 @@ class Column implements StreamReader.Callback {
 		AlarmService.dataRemoved( context, access_info.db_id );
 	}
 	
-	private ColumnViewHolder holder;
+	//////////////////////////////////////////////////////////////////////////////////////
 	
-	void setColumnViewHolder( ColumnViewHolder holder ){
-		this.holder = holder;
+	private ColumnViewHolder _holder;
+	
+	void setColumnViewHolder( ColumnViewHolder new_holder ){
+		this._holder = new_holder;
 	}
 	
-	private final Runnable proc_showContent = new Runnable() {
-		@Override public void run(){
-			if( holder != null ) holder.showContent();
-		}
-	};
-	private final Runnable proc_showColumnHeader = new Runnable() {
-		@Override public void run(){
-			if( holder != null ) holder.showColumnHeader();
-		}
-	};
-	private final Runnable proc_showColumnColor = new Runnable() {
-		@Override public void run(){
-			if( holder != null ) holder.showColumnColor();
-		}
-	};
+	private ColumnViewHolder getViewHolder(){
+		return is_dispose.get() ? null : _holder;
+	}
 	
 	void fireShowContent(){
-		Utils.runOnMainThread( proc_showContent );
+		if( ! Utils.isMainThread() ){
+			throw new RuntimeException( "fireShowColumnHeader: not on main thread." );
+		}
+		ColumnViewHolder holder = getViewHolder();
+		if( holder != null ) holder.showContent();
 	}
 	
-	// カラムヘッダ部分だけ更新する
 	void fireShowColumnHeader(){
-		Utils.runOnMainThread( proc_showColumnHeader );
+		if( ! Utils.isMainThread() ){
+			throw new RuntimeException( "fireShowColumnHeader: not on main thread." );
+		}
+		ColumnViewHolder holder = getViewHolder();
+		if( holder != null ) holder.showColumnHeader();
 	}
 	
 	void fireColumnColor(){
-		Utils.runOnMainThread( proc_showColumnColor );
+		if( ! Utils.isMainThread() ){
+			throw new RuntimeException( "fireShowColumnHeader: not on main thread." );
+		}
+		ColumnViewHolder holder = getViewHolder();
+		if( holder != null ) holder.showColumnColor();
 	}
 	
+	//////////////////////////////////////////////////////////////////////////////////////
 	
 	private AsyncTask< Void, Void, TootApiResult > last_task;
 	
@@ -906,6 +914,13 @@ class Column implements StreamReader.Callback {
 		since_id = null;
 		
 		fireShowContent();
+		
+		try{
+			ColumnViewHolder holder = getViewHolder();
+			if( holder != null ) holder.getRefreshLayout().setRefreshing( false );
+		}catch(Throwable ignored){
+			
+		}
 		
 		AsyncTask< Void, Void, TootApiResult > task = this.last_task = new AsyncTask< Void, Void, TootApiResult >() {
 			
@@ -1166,6 +1181,7 @@ class Column implements StreamReader.Callback {
 			
 			@Override
 			protected void onPostExecute( TootApiResult result ){
+				if( is_dispose.get() ) return;
 				
 				if( isCancelled() || result == null ){
 					return;
@@ -1186,11 +1202,12 @@ class Column implements StreamReader.Callback {
 					resumeStreaming( false );
 				}
 				fireShowContent();
-
+				
 				// 初期ロードの直後は先頭に移動する
 				try{
-					holder.getListView().setSelection( 0 );
-				}catch(Throwable ignored){
+					ColumnViewHolder holder = getViewHolder();
+					if( holder != null ) holder.getListView().setSelection( 0 );
+				}catch( Throwable ignored ){
 				}
 			}
 		};
@@ -1362,14 +1379,15 @@ class Column implements StreamReader.Callback {
 		case TYPE_FEDERATE:
 			startRefresh( true, false, status_id, refresh_after_toot );
 			break;
+
 		case TYPE_PROFILE:
 			if( profile_tab == TAB_STATUS && profile_id == access_info.id ){
 				startRefresh( true, false, status_id, refresh_after_toot );
 			}
 			break;
+
 		case TYPE_CONVERSATION:
 			startLoading();
-			
 			break;
 		}
 	}
@@ -1381,22 +1399,26 @@ class Column implements StreamReader.Callback {
 		if( last_task != null ){
 			if( ! bSilent ){
 				Utils.showToast( context, true, R.string.column_is_busy );
+				ColumnViewHolder holder = getViewHolder();
 				if( holder != null ) holder.getRefreshLayout().setRefreshing( false );
 			}
 			return;
 		}else if( bBottom && max_id == null ){
 			if( ! bSilent ){
 				Utils.showToast( context, true, R.string.end_of_list );
+				ColumnViewHolder holder = getViewHolder();
 				if( holder != null ) holder.getRefreshLayout().setRefreshing( false );
 			}
 			return;
 		}else if( ! bBottom && since_id == null ){
+			ColumnViewHolder holder = getViewHolder();
 			if( holder != null ) holder.getRefreshLayout().setRefreshing( false );
 			startLoading();
 			return;
 		}
 		
 		if( bSilent ){
+			ColumnViewHolder holder = getViewHolder();
 			if( holder != null ){
 				holder.getRefreshLayout().setRefreshing( true );
 			}
@@ -1820,6 +1842,8 @@ class Column implements StreamReader.Callback {
 			
 			@Override
 			protected void onPostExecute( TootApiResult result ){
+				if( is_dispose.get() ) return;
+				
 				if( isCancelled() || result == null ){
 					return;
 				}
@@ -1846,6 +1870,7 @@ class Column implements StreamReader.Callback {
 					
 					// 事前にスクロール位置を覚えておく
 					ScrollPosition sp = null;
+					ColumnViewHolder holder = getViewHolder();
 					if( holder != null ){
 						sp = holder.getScrollPosition();
 					}
@@ -1911,6 +1936,7 @@ class Column implements StreamReader.Callback {
 			return;
 		}
 		
+		ColumnViewHolder holder = getViewHolder();
 		if( holder != null ){
 			holder.getRefreshLayout().setRefreshing( true );
 		}
@@ -2223,10 +2249,12 @@ class Column implements StreamReader.Callback {
 			
 			@Override
 			protected void onPostExecute( TootApiResult result ){
+				if( is_dispose.get() ) return;
 				
 				if( isCancelled() || result == null ){
 					return;
 				}
+				
 				last_task = null;
 				bRefreshLoading = false;
 				
@@ -2243,16 +2271,18 @@ class Column implements StreamReader.Callback {
 				
 				ArrayList< Object > list_new = duplicate_map.filterDuplicate( list_tmp );
 				
+				ColumnViewHolder holder = getViewHolder();
+				
 				// idx番目の要素がListViewのtopから何ピクセル下にあるか
 				int restore_idx = position + 1;
 				int restore_y = 0;
 				if( holder != null ){
 					try{
-						restore_y = getItemTop( restore_idx );
+						restore_y = getItemTop( holder, restore_idx );
 					}catch( IndexOutOfBoundsException ex ){
 						restore_idx = position;
 						try{
-							restore_y = getItemTop( restore_idx );
+							restore_y = getItemTop( holder, restore_idx );
 						}catch( IndexOutOfBoundsException ex2 ){
 							restore_idx = - 1;
 						}
@@ -2267,7 +2297,7 @@ class Column implements StreamReader.Callback {
 				if( holder != null ){
 					//noinspection StatementWithEmptyBody
 					if( restore_idx >= 0 ){
-						setItemTop( restore_idx + added - 1, restore_y );
+						setItemTop( holder, restore_idx + added - 1, restore_y );
 					}else{
 						// ギャップが画面内にない場合、何もしない
 					}
@@ -2293,7 +2323,8 @@ class Column implements StreamReader.Callback {
 	}
 	
 	// 特定の要素が特定の位置に来るようにスクロール位置を調整する
-	private void setItemTop( int idx, int y ){
+	private void setItemTop( @NonNull ColumnViewHolder holder, int idx, int y ){
+		
 		MyListView listView = holder.getListView();
 		boolean hasHeader = holder.hasHeaderView();
 		if( hasHeader ){
@@ -2309,7 +2340,8 @@ class Column implements StreamReader.Callback {
 		listView.setSelectionFromTop( idx, y );
 	}
 	
-	private int getItemTop( int idx ){
+	private int getItemTop( @NonNull ColumnViewHolder holder, int idx ){
+		
 		MyListView listView = holder.getListView();
 		boolean hasHeader = holder.hasHeaderView();
 		
@@ -2382,6 +2414,7 @@ class Column implements StreamReader.Callback {
 					log.e( ex, "getId() failed. o=", list_new.get( 0 ) );
 				}
 			}
+			ColumnViewHolder holder = getViewHolder();
 			
 			// 事前にスクロール位置を覚えておく
 			ScrollPosition sp = null;
@@ -2396,7 +2429,7 @@ class Column implements StreamReader.Callback {
 				if( list_data.size() > 0 ){
 					try{
 						restore_idx = holder.getListView().getFirstVisiblePosition();
-						restore_y = getItemTop( restore_idx );
+						restore_y = getItemTop( holder, restore_idx );
 					}catch( IndexOutOfBoundsException ex ){
 						restore_idx = - 1;
 						restore_y = 0;
@@ -2426,11 +2459,11 @@ class Column implements StreamReader.Callback {
 			
 			if( holder != null ){
 				//noinspection StatementWithEmptyBody
-				if( sp == null || ( sp.pos == 0 && sp.top == 0 ) ){
+				if( sp.pos == 0 && sp.top == 0 ){
 					// スクロール位置が先頭なら先頭のまま
 				}else if( restore_idx >= 0 ){
 					//
-					setItemTop( restore_idx + added, restore_y );
+					setItemTop( holder, restore_idx + added, restore_y );
 				}else{
 					// ギャップが画面内にない場合、何もしない
 				}
@@ -2446,6 +2479,7 @@ class Column implements StreamReader.Callback {
 	};
 	
 	@Override public void onStreamingMessage( String event_type, Object o ){
+		if( is_dispose.get() ) return;
 		
 		if( o instanceof Long ){
 			removeStatus( access_info, (Long) o );
@@ -2510,7 +2544,7 @@ class Column implements StreamReader.Callback {
 			log.d( "onResume: column was disposed." );
 			return;
 		}
-
+		
 		// 未初期化なら何もしない
 		if( ! bFirstInitialized ){
 			log.d( "onResume: column is not initialized." );
@@ -2529,9 +2563,9 @@ class Column implements StreamReader.Callback {
 			log.d( "onResume: bRefreshingTop is true." );
 		}else if(
 			! bRefreshLoading
-			&& canAutoRefresh()
-			&& ! App1.getAppState( context ).pref.getBoolean( Pref.KEY_DONT_REFRESH_ON_RESUME, false )
-			&& ! dont_auto_refresh
+				&& canAutoRefresh()
+				&& ! App1.getAppState( context ).pref.getBoolean( Pref.KEY_DONT_REFRESH_ON_RESUME, false )
+				&& ! dont_auto_refresh
 			){
 			
 			// リフレッシュしてからストリーミング開始
@@ -2588,7 +2622,6 @@ class Column implements StreamReader.Callback {
 	}
 	
 	private boolean bPutGap;
-	
 	
 	private void resumeStreaming( boolean bPutGap ){
 		

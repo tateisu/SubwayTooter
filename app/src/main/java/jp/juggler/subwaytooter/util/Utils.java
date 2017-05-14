@@ -886,6 +886,10 @@ public class Utils {
 		return resources.getString( string_id, args ) + String.format( " :%s %s", ex.getClass().getSimpleName(), ex.getMessage() );
 	}
 	
+	public static boolean isMainThread(  ){
+		return Looper.getMainLooper().getThread() == Thread.currentThread();
+	}
+		
 	public static void runOnMainThread( @NonNull Runnable proc ){
 		if( Looper.getMainLooper().getThread() == Thread.currentThread() ){
 			proc.run();

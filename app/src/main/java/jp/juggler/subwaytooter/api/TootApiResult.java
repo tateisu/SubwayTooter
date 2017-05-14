@@ -67,7 +67,7 @@ public class TootApiResult {
 		while( m.find()){
 			String url = m.group(1);
 			String rel = m.group(2);
-			log.d("Link %s,%s",rel,url);
+		//	log.d("Link %s,%s",rel,url);
 			if( "next".equals( rel )) link_older = url;
 			if( "prev".equals( rel )) link_newer = url;
 		}

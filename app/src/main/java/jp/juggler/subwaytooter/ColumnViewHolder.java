@@ -57,9 +57,11 @@ class ColumnViewHolder
 		is_destroyed.set( true );
 
 		saveScrollPosition();
-		
+
+		listView.setAdapter( null );
+
 		column.setColumnViewHolder( null );
-		
+
 		closeBitmaps();
 		
 		activity.closeListItemPopup();
@@ -118,13 +120,14 @@ class ColumnViewHolder
 		tvLoading = (TextView) root.findViewById( R.id.tvLoading );
 		listView = (MyListView) root.findViewById( R.id.listView );
 		listView.setAdapter( null );
+
 		if( column.column_type == Column.TYPE_PROFILE ){
 			vh_header = new HeaderViewHolder( activity, column, listView );
 			status_adapter.header =  vh_header;
 		}else{
 			status_adapter.header = null;
 		}
-		listView.setAdapter( status_adapter );
+
 		
 		this.swipyRefreshLayout = (SwipyRefreshLayout) root.findViewById( R.id.swipyRefreshLayout );
 		swipyRefreshLayout.setOnRefreshListener( this );
@@ -291,7 +294,7 @@ class ColumnViewHolder
 		}
 		
 		//
-		
+		listView.setAdapter( status_adapter );
 		column.setColumnViewHolder( this );
 		
 		showColumnColor();

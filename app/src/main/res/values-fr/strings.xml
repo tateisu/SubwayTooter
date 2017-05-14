@@ -313,5 +313,7 @@
     <string name="disable_tablet_mode">Désactiver le mode tablette (redémarrage nécessaire)</string>
     <string name="media_thumbnail_height">Hauteur des miniatures (défaut=64(dp), redémarrage nécessaire)</string>
     <string name="minimum_column_width">Largeur minimum des colonnes (défaut=300(dp), redémarrage nécessaire)</string>
+    <string name="account_picker_reply">Which account do you reply from?</string>
+    <string name="reply_from_another_account">Reply from another account</string>
 
 </resources>

@@ -11,11 +11,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
 import android.support.v4.text.BidiFormatter;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v4.view.ViewParentCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -131,10 +131,10 @@ public class ActMain extends AppCompatActivity
 	@Override protected void onSaveInstanceState( Bundle outState ){
 		super.onSaveInstanceState( outState );
 		
-		if(pager_adapter != null){
+		if( pager_adapter != null ){
 			outState.putInt( STATE_CURRENT_PAGE, pager.getCurrentItem() );
 		}else{
-			int ve =tablet_layout_manager.findLastVisibleItemPosition();
+			int ve = tablet_layout_manager.findLastVisibleItemPosition();
 			if( ve != RecyclerView.NO_POSITION ){
 				outState.putInt( STATE_CURRENT_PAGE, ve );
 			}
@@ -143,12 +143,12 @@ public class ActMain extends AppCompatActivity
 	
 	@Override protected void onRestoreInstanceState( Bundle savedInstanceState ){
 		super.onRestoreInstanceState( savedInstanceState );
-		int pos = savedInstanceState.getInt( STATE_CURRENT_PAGE);
+		int pos = savedInstanceState.getInt( STATE_CURRENT_PAGE );
 		if( pos > 0 && pos < app_state.column_list.size() ){
-			if(pager_adapter != null){
-				pager.setCurrentItem(pos);
+			if( pager_adapter != null ){
+				pager.setCurrentItem( pos );
 			}else{
-				tablet_layout_manager.smoothScrollToPosition( tablet_pager,null,pos );
+				tablet_layout_manager.smoothScrollToPosition( tablet_pager, null, pos );
 			}
 		}
 	}
@@ -440,7 +440,7 @@ public class ActMain extends AppCompatActivity
 				if( vs == ve && vs != RecyclerView.NO_POSITION ){
 					column = app_state.column_list.get( vs );
 				}else{
-					Utils.showToast( this,false,getString(R.string.cant_close_column_by_back_button_when_multiple_column_shown) );
+					Utils.showToast( this, false, getString( R.string.cant_close_column_by_back_button_when_multiple_column_shown ) );
 				}
 			}
 			if( column != null ){
@@ -626,43 +626,41 @@ public class ActMain extends AppCompatActivity
 		float density = dm.density;
 		
 		int media_thumb_height = 64;
-		sv = pref.getString(Pref.KEY_MEDIA_THUMB_HEIGHT,"");
-		if( !TextUtils.isEmpty( sv )){
+		sv = pref.getString( Pref.KEY_MEDIA_THUMB_HEIGHT, "" );
+		if( ! TextUtils.isEmpty( sv ) ){
 			try{
 				int iv = Integer.parseInt( sv );
 				if( iv >= 32 ){
 					media_thumb_height = iv;
 				}
-			}catch(Throwable ex){
-				ex.printStackTrace(  );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
 			}
 		}
-		app_state.media_thumb_height = (int)(0.5f + media_thumb_height *density);
+		app_state.media_thumb_height = (int) ( 0.5f + media_thumb_height * density );
 		
 		int column_w_min_dp = COLUMN_WIDTH_MIN_DP;
-		sv = pref.getString(Pref.KEY_COLUMN_WIDTH,"");
-		if( !TextUtils.isEmpty( sv )){
+		sv = pref.getString( Pref.KEY_COLUMN_WIDTH, "" );
+		if( ! TextUtils.isEmpty( sv ) ){
 			try{
 				int iv = Integer.parseInt( sv );
 				if( iv >= 100 ){
 					column_w_min_dp = iv;
 				}
-			}catch(Throwable ex){
-				ex.printStackTrace(  );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
 			}
 		}
 		int column_w_min = (int) ( 0.5f + column_w_min_dp * density );
-
+		
 		int sw = dm.widthPixels;
-		
-		
 		
 		pager = (ViewPager) findViewById( R.id.viewPager );
 		tablet_pager = (RecyclerView) findViewById( R.id.rvPager );
 		
-		if( pref.getBoolean(Pref.KEY_DISABLE_TABLET_MODE,false) ||  sw < column_w_min * 2  ){
+		if( pref.getBoolean( Pref.KEY_DISABLE_TABLET_MODE, false ) || sw < column_w_min * 2 ){
 			tablet_pager.setVisibility( View.GONE );
-
+			
 			// SmartPhone mode
 			pager_adapter = new ColumnPagerAdapter( this );
 			pager.setAdapter( pager_adapter );
@@ -964,31 +962,39 @@ public class ActMain extends AppCompatActivity
 					final String host = m.group( 1 );
 					final String user = Uri.decode( m.group( 2 ) );
 					
-					ArrayList< SavedAccount > account_list_same_host = new ArrayList<>();
-					for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
+					// 1: 検索APIは疑似アカウントでは開けない => startFindAccountが使えない
+					// 2: かりに検索できたとしてもユーザページは疑似アカウントでは開けない
+					
+					ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( log );
+					ArrayList< SavedAccount > account_list_filtered = new ArrayList<>();
+					for( SavedAccount a : account_list ){
+						if( a.isPseudo() ) continue;
 						if( host.equalsIgnoreCase( a.host ) ){
-							account_list_same_host.add( a );
+							account_list_filtered.add( a );
 						}
 					}
 					
-					// ソートする
-					Collections.sort( account_list_same_host, new Comparator< SavedAccount >() {
-						@Override public int compare( SavedAccount a, SavedAccount b ){
-							return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
+					if( account_list_filtered.isEmpty() ){
+						
+						for( SavedAccount a : account_list ){
+							if( a.isPseudo() ) continue;
+							account_list_filtered.add( a );
 						}
-					} );
-					
-					if( account_list_same_host.isEmpty() ){
-						account_list_same_host.add( addPseudoAccount( host ) );
+						
+						if( account_list_filtered.isEmpty() ){
+							// 認証されたアカウントが全くないので、ブラウザで開くしかない
+							openChromeTab( getDefaultInsertPosition(), null, uri.toString(), true );
+							return;
+						}
 					}
 					
-					AccountPicker.pick( this, true, true
+					AccountPicker.pick( this, false, true
 						, getString( R.string.account_picker_open_user_who, user + "@" + host )
-						, account_list_same_host
+						, account_list_filtered
 						, new AccountPicker.AccountPickerCallback() {
 							@Override public void onAccountPicked( @NonNull final SavedAccount ai ){
-								startGetAccount( ai, host, user, new GetAccountCallback() {
-									@Override public void onGetAccount( TootAccount who ){
+								startFindAccount( ai, host, user, new FindAccountCallback() {
+									@Override public void onFindAccount( TootAccount who ){
 										if( who != null ){
 											performOpenUser( getDefaultInsertPosition(), ai, who );
 											return;
@@ -1015,8 +1021,7 @@ public class ActMain extends AppCompatActivity
 				long db_id = Long.parseLong( sv, 10 );
 				SavedAccount account = SavedAccount.loadAccount( log, db_id );
 				if( account != null ){
-					Column column = addColumn( getDefaultInsertPosition(), account, Column.TYPE_NOTIFICATIONS );
-					
+					addColumn( getDefaultInsertPosition(), account, Column.TYPE_NOTIFICATIONS );
 				}
 			}catch( Throwable ex ){
 				ex.printStackTrace();
@@ -1227,8 +1232,8 @@ public class ActMain extends AppCompatActivity
 			}else if( page_delete > 0 && page_showing == page_delete ){
 				int idx = page_delete - 1;
 				scrollToColumn( idx );
-				Column c = app_state.column_list.get(idx);
-				if( ! c.bInitialLoading ){
+				Column c = app_state.column_list.get( idx );
+				if( ! c.bFirstInitialized ){
 					c.startLoading();
 				}
 			}
@@ -1241,8 +1246,8 @@ public class ActMain extends AppCompatActivity
 			}else if( page_delete > 0 ){
 				int idx = page_delete - 1;
 				scrollToColumn( idx );
-				Column c = app_state.column_list.get(idx);
-				if( ! c.bInitialLoading ){
+				Column c = app_state.column_list.get( idx );
+				if( ! c.bFirstInitialized ){
 					c.startLoading();
 				}
 			}
@@ -1268,7 +1273,7 @@ public class ActMain extends AppCompatActivity
 		Column col = new Column( app_state, ai, this, type, params );
 		index = addColumn( col, index );
 		scrollToColumn( index );
-		if( ! col.bInitialLoading ){
+		if( ! col.bFirstInitialized ){
 			col.startLoading();
 		}
 		return col;
@@ -1321,13 +1326,13 @@ public class ActMain extends AppCompatActivity
 	
 	//////////////////////////////////////////////////////////////
 	
-	interface GetAccountCallback {
+	interface FindAccountCallback {
 		// return account information
 		// if failed, account is null.
-		void onGetAccount( TootAccount account );
+		void onFindAccount( TootAccount account );
 	}
 	
-	void startGetAccount( final SavedAccount access_info, final String host, final String user, final GetAccountCallback callback ){
+	void startFindAccount( final SavedAccount access_info, final String host, final String user, final FindAccountCallback callback ){
 		
 		final ProgressDialog progress = new ProgressDialog( this );
 		final AsyncTask< Void, Void, TootAccount > task = new AsyncTask< Void, Void, TootAccount >() {
@@ -1380,7 +1385,7 @@ public class ActMain extends AppCompatActivity
 			@Override
 			protected void onPostExecute( TootAccount result ){
 				progress.dismiss();
-				callback.onGetAccount( result );
+				callback.onFindAccount( result );
 			}
 			
 		};
@@ -1396,15 +1401,15 @@ public class ActMain extends AppCompatActivity
 		task.executeOnExecutor( App1.task_executor );
 	}
 	
-	static final Pattern reHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#]+)\\z" );
-	static final Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)\\z" );
-	static final Pattern reStatusPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)/(\\d+)\\z" );
+	static final Pattern reHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#]+)(?:\\z|\\?)" );
+	static final Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)(?:\\z|\\?)" );
+	static final Pattern reStatusPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)/(\\d+)(?:\\z|\\?)" );
 	
-	public void openChromeTab( final int pos, final SavedAccount access_info, final String url, boolean noIntercept ){
+	public void openChromeTab( final int pos, @Nullable final SavedAccount access_info, final String url, boolean noIntercept ){
 		try{
 			log.d( "openChromeTab url=%s", url );
 			
-			if( ! noIntercept ){
+			if( ! noIntercept && access_info != null ){
 				// ハッシュタグをアプリ内で開く
 				Matcher m = reHashTag.matcher( url );
 				if( m.find() ){
@@ -1446,18 +1451,64 @@ public class ActMain extends AppCompatActivity
 					// https://mastodon.juggler.jp/@SubwayTooter
 					final String host = m.group( 1 );
 					final String user = Uri.decode( m.group( 2 ) );
-					startGetAccount( access_info, host, user, new GetAccountCallback() {
-						@Override public void onGetAccount( TootAccount who ){
-							if( who != null ){
-								performOpenUser( pos, access_info, who );
-								return;
+					
+					if( ! access_info.isPseudo() ){
+						startFindAccount( access_info, host, user, new FindAccountCallback() {
+							@Override public void onFindAccount( TootAccount who ){
+								if( who != null ){
+									performOpenUser( pos, access_info, who );
+									return;
+								}
+								openChromeTab( pos, access_info, url, true );
 							}
-							openChromeTab( pos, access_info, url, true );
+						} );
+						return;
+					}
+					// 1: 検索APIは疑似アカウントでは開けない => startFindAccountが使えない
+					// 2: かりに検索できたとしてもユーザページは疑似アカウントでは開けない
+					
+					ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( log );
+					ArrayList< SavedAccount > account_list_filtered = new ArrayList<>();
+					for( SavedAccount a : account_list ){
+						if( a.isPseudo() ) continue;
+						if( host.equalsIgnoreCase( a.host ) ){
+							account_list_filtered.add( a );
 						}
-					} );
+					}
+					
+					if( account_list_filtered.isEmpty() ){
+						
+						for( SavedAccount a : account_list ){
+							if( a.isPseudo() ) continue;
+							account_list_filtered.add( a );
+						}
+						
+						if( account_list_filtered.isEmpty() ){
+							// 認証されたアカウントが全くないので、ブラウザで開くしかない
+							openChromeTab( getDefaultInsertPosition(), null, url, true );
+							return;
+						}
+					}
+					
+					AccountPicker.pick( this, false, true
+						, getString( R.string.account_picker_open_user_who, user + "@" + host )
+						, account_list_filtered
+						, new AccountPicker.AccountPickerCallback() {
+							@Override public void onAccountPicked( @NonNull final SavedAccount ai ){
+								startFindAccount( ai, host, user, new FindAccountCallback() {
+									@Override public void onFindAccount( TootAccount who ){
+										if( who != null ){
+											performOpenUser( getDefaultInsertPosition(), ai, who );
+											return;
+										}
+										openChromeTab( getDefaultInsertPosition(), ai, url, true );
+									}
+								} );
+							}
+						} );
 					return;
+					
 				}
-				
 			}
 			
 			try{
@@ -1639,10 +1690,6 @@ public class ActMain extends AppCompatActivity
 				ActPost.open( ActMain.this, REQUEST_CODE_POST, ai.db_id, "" );
 			}
 		} );
-	}
-	
-	public void performReply( SavedAccount account, TootStatus status ){
-		ActPost.open( this, REQUEST_CODE_POST, account.db_id, status );
 	}
 	
 	public void performMention( SavedAccount account, TootAccount who ){
@@ -1967,6 +2014,66 @@ public class ActMain extends AppCompatActivity
 		}.executeOnExecutor( App1.task_executor );
 		
 		showColumnMatchAccount( access_info );
+	}
+	
+	public void performReply(
+		final SavedAccount access_info
+		, final TootStatus arg_status
+		, final boolean bRemote
+	){
+		if( ! bRemote ){
+			ActPost.open( this, REQUEST_CODE_POST, access_info.db_id, arg_status );
+			return;
+		}
+		
+		new AsyncTask< Void, Void, TootApiResult >() {
+			TootStatus target_status;
+			
+			@Override protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override public void publishApiProgress( final String s ){
+					}
+				} );
+				client.setAccount( access_info );
+				
+				// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
+				String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( arg_status.url ) );
+				path = path + "&resolve=1";
+				
+				TootApiResult result = client.request( path );
+				if( result != null && result.object != null ){
+					TootResults tmp = TootResults.parse( log, access_info, result.object );
+					if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
+						target_status = tmp.statuses.get( 0 );
+						log.d( "status id conversion %s => %s", arg_status.id, target_status.id );
+					}
+					if( target_status == null ){
+						return new TootApiResult( getString( R.string.status_id_conversion_failed ) );
+					}
+				}
+				return result;
+			}
+			
+			@Override
+			protected void onCancelled( TootApiResult result ){
+				super.onPostExecute( result );
+			}
+			
+			@Override
+			protected void onPostExecute( TootApiResult result ){
+				if( result == null ){
+					// cancelled.
+				}else if( target_status != null ){
+					ActPost.open( ActMain.this, REQUEST_CODE_POST, access_info.db_id, target_status );
+				}else{
+					Utils.showToast( ActMain.this, true, result.error );
+				}
+			}
+		}.executeOnExecutor( App1.task_executor );
 	}
 	
 	////////////////////////////////////////
@@ -2838,6 +2945,21 @@ public class ActMain extends AppCompatActivity
 			} );
 	}
 	
+	void openReplyFromAnotherAccount( @NonNull final SavedAccount access_info, final TootStatus status ){
+		if( status == null ) return;
+		AccountPicker.pick( this, false, false
+			, getString( R.string.account_picker_reply )
+			, makeAccountListNonPseudo( log ), new AccountPicker.AccountPickerCallback() {
+				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+					performReply(
+						ai
+						, status
+						, ! ai.host.equalsIgnoreCase( access_info.host )
+					);
+				}
+			} );
+	}
+	
 	void openFollowFromAnotherAccount( @NonNull SavedAccount access_info, TootStatus status ){
 		if( status == null ) return;
 		openFollowFromAnotherAccount( access_info, status.account );
@@ -2854,6 +2976,9 @@ public class ActMain extends AppCompatActivity
 				}
 			} );
 	}
+	
+	/////////////////////////////////////////////////////////////////////////
+	// タブレット対応で必要になった関数など
 	
 	private boolean closeColumnSetting(){
 		if( pager_adapter != null ){
@@ -2966,22 +3091,22 @@ public class ActMain extends AppCompatActivity
 	private void resizeColumnWidth(){
 		
 		int column_w_min_dp = COLUMN_WIDTH_MIN_DP;
-		String sv = pref.getString(Pref.KEY_COLUMN_WIDTH,"");
-		if( !TextUtils.isEmpty( sv )){
+		String sv = pref.getString( Pref.KEY_COLUMN_WIDTH, "" );
+		if( ! TextUtils.isEmpty( sv ) ){
 			try{
 				int iv = Integer.parseInt( sv );
 				if( iv >= 100 ){
 					column_w_min_dp = iv;
 				}
-			}catch(Throwable ex){
-				ex.printStackTrace(  );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
 			}
 		}
 		
 		DisplayMetrics dm = getResources().getDisplayMetrics();
-
+		
 		final int sw = dm.widthPixels;
-
+		
 		float density = dm.density;
 		int column_w_min = (int) ( 0.5f + column_w_min_dp * density );
 		
@@ -2989,7 +3114,7 @@ public class ActMain extends AppCompatActivity
 			tablet_pager_adapter.setColumnWidth( sw );
 		}else{
 			nScreenColumn = sw / column_w_min;
-
+			
 			// ２つは表示できるが3つは表示できないかもしれない
 			int column_w_max = (int) ( 0.5f + column_w_min * 1.5f );
 			

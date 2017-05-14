@@ -57,6 +57,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		//
 		v = viewRoot.findViewById( R.id.btnReply );
 		v.setOnClickListener( this );
+		v.setOnLongClickListener( this );
 		
 	}
 	
@@ -117,9 +118,9 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		case R.id.btnReply:
 			if( access_info.isPseudo() ){
-				Utils.showToast( activity, false, R.string.not_available_for_pseudo_account );
+				activity.openReplyFromAnotherAccount( access_info, status );
 			}else{
-				activity.performReply( access_info, status );
+				activity.performReply( access_info, status ,false);
 			}
 			break;
 		case R.id.btnBoost:
@@ -182,6 +183,10 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnFollow2:
 			activity.openFollowFromAnotherAccount( access_info, status );
+			break;
+			
+		case R.id.btnReply:
+			activity.openReplyFromAnotherAccount( access_info, status );
 			break;
 			
 		}

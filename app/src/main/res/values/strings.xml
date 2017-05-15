@@ -109,8 +109,8 @@
     <string name="instance_hint">ex) mastodon.social</string>
     <string name="mail_hint">ex) your@e-mail.address</string>
     <string name="unfollow">Unfollow</string>
-    <string name="follow_succeeded">Follow succeeded</string>
-    <string name="unfollow_succeeded">Unfollow succeeded</string>
+    <string name="follow_succeeded">Followed successfuly</string>
+    <string name="unfollow_succeeded">Unfollowed successfuly</string>
     <string name="mute">Mute</string>
     <string name="unmute">Unmute</string>
     <string name="block">Block</string>
@@ -208,8 +208,8 @@
     <string name="resize_image">Resize attachment image (JPEG,PNG)</string>
     <string name="dont_resize">Don\'t resize</string>
     <string name="long_side_pixel">Resize to %1$d pixels</string>
-    <string name="image_pick">Choose your images</string>
-    <string name="image_capture">Capture by camera</string>
+    <string name="image_pick">Pick an image</string>
+    <string name="image_capture">Take a picture</string>
     <string name="missing_storage_permission">Permission to write storage is missing.</string>
     <string name="attachment_uploading">Media attachment  is uploading…</string>
     <string name="attachment_uploaded">Media attachment upload completed.</string>
@@ -273,44 +273,44 @@
     <string name="clear_text_and_media">Clear text and media</string>
     <string name="dont_round_avatar">Don\'t round corner of avatar image (app restart required)</string>
     <string name="menu">Menu</string>
-    <string name="open_in_pseudo_account">open in pseudo account %1$s</string>
+    <string name="open_in_pseudo_account">Open in emulated account on %1$s</string>
 
     <string name="color_and_background">Color and Background…</string>
-    <string name="column_background">column background</string>
-    <string name="pick_image">pick image</string>
-    <string name="image_alpha">image alpha</string>
-    <string name="image">image</string>
-    <string name="column_header">column header</string>
-    <string name="foreground_color">foreground color</string>
+    <string name="column_background">Column's background</string>
+    <string name="pick_image">Pick an image</string>
+    <string name="image_alpha">Image alpha</string>
+    <string name="image">Image</string>
+    <string name="column_header">Column header</string>
+    <string name="foreground_color">Foreground color</string>
     <string name="hashtag_and_visibility_not_match">this message contains hashtags, but message visibility is not public. normally hashtags are searchable only in public messages. Are you sure?</string>
     <string name="copy">Copy</string>
     <string name="send">Send</string>
-    <string name="mute_word">mute word</string>
+    <string name="mute_word">Ban word</string>
     <string name="select_and_copy">Select and copy</string>
     <string name="search_web">Web search</string>
-    <string name="muted_word">Muted words</string>
-    <string name="word_was_muted">Word was muted.</string>
+    <string name="muted_word">Banned words</string>
+    <string name="word_was_muted">The word was banned.</string>
     <string name="copy_complete">Clipboard updated.</string>
-    <string name="footer_color">Footer color</string>
-    <string name="button_background_color">Button background color</string>
-    <string name="button_foreground_color">Button foreground color</string>
-    <string name="tab_background_color">Tab background color</string>
-    <string name="tab_divider_color">Tab divider color</string>
+    <string name="footer_color">Footer's color</string>
+    <string name="button_background_color">Button's background color</string>
+    <string name="button_foreground_color">Button's foreground color</string>
+    <string name="tab_background_color">Tab's background color</string>
+    <string name="tab_divider_color">Tab's divider color</string>
     <string name="open_status_from">Open status from</string>
-    <string name="help_translation">Help translation</string>
-    <string name="dont_use_streaming_api">Don\'t use streaming API</string>
-    <string name="dont_refresh_on_activity_resume">Don\'t auto refresh when activity resumed</string>
+    <string name="help_translation">Help with the translation</string>
+    <string name="dont_use_streaming_api">Refresh manually the feeds</string>
+    <string name="dont_refresh_on_activity_resume">Disable auto-refresh when returning to the app.</string>
     <string name="status_id_conversion_failed">Status id conversion failed.</string>
     <string name="already_favourited">Already favourited.</string>
     <string name="already_boosted">Already boosted.</string>
-    <string name="dont_screen_off">Don\'t screen off while main activity is shown</string>
+    <string name="dont_screen_off">Keep the screen on when using the app.</string>
     <string name="hide_media_default">Hide all media</string>
-    <string name="cant_close_column_by_back_button_when_multiple_column_shown">Can\'t close column by back button when multiple column is shown.</string>
+    <string name="cant_close_column_by_back_button_when_multiple_column_shown">You can\'t close the column using the back button when multiple columns are shown.</string>
     <string name="disable_tablet_mode">Disable tablet mode (app restart required)</string>
     <string name="minimum_column_width">Minimum column width (default=300(dp),app restart required)</string>
     <string name="media_thumbnail_height">Media Thumbnail height (default=64(dp), app restart required)</string>
     <string name="account_picker_reply">Which account do you reply from?</string>
     <string name="reply_from_another_account">Reply from another account</string>
-    <string name="launcher_icon_by">Launcher icon is designed by フタバ</string>
-    <string name="ssl_bug_7_0">Android 7.0 has a bug that can use only one elliptic curve \"prime256v1\".\nBut the instance you will connect seems does not support it.\nIf you can update OS, this bug is fixed at Android 7.1.1.\nOr you can send request to instance owner to support elliptic curve \"prime256v1\".\nsee also https://code.google.com/p/android/issues/detail?id=224438</string>
+    <string name="launcher_icon_by">Thanks to フタバ for the application icon.</string>
+    <string name="ssl_bug_7_0">Android 7.0 can only use the elliptic curve \"prime256v1\".\nUnfortunatly your instance seems to not support it.\nThis bug has been fixed in Android 7.1.1.\nYou can either upgrade your OS or ask the administrator of your instance to add support to the elliptic curve \"prime256v1\".\nSee also https://code.google.com/p/android/issues/detail?id=224438</string>
 </resources>

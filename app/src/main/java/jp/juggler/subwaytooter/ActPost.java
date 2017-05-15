@@ -132,18 +132,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			break;
 		
 		case R.id.btnAttachment:
-			ActionsDialog a = new ActionsDialog();
-			a.addAction( getString( R.string.image_pick ), new Runnable() {
-				@Override public void run(){
-					performAttachment();
-				}
-			} );
-			a.addAction( getString( R.string.image_capture ), new Runnable() {
-				@Override public void run(){
-					performCamera();
-				}
-			} );
-			a.show( this, null );
+			openAttachment();
 			break;
 		
 		case R.id.ivMedia1:
@@ -172,6 +161,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			break;
 		}
 	}
+	
 	
 	private static final int REQUEST_CODE_ATTACHMENT = 1;
 	private static final int REQUEST_CODE_CAMERA = 2;
@@ -811,6 +801,30 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		
 	}
 	
+	
+	void openAttachment(){
+		int permissionCheck = ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_EXTERNAL_STORAGE );
+		if( permissionCheck != PackageManager.PERMISSION_GRANTED ){
+			preparePermission();
+			return;
+		}
+
+		ActionsDialog a = new ActionsDialog();
+		a.addAction( getString( R.string.image_pick ), new Runnable() {
+			@Override public void run(){
+				performAttachment();
+			}
+		} );
+		a.addAction( getString( R.string.image_capture ), new Runnable() {
+			@Override public void run(){
+				performCamera();
+			}
+		} );
+		a.show( this, null );
+		
+	}
+	
+	
 	private void performAttachment(){
 		
 		if( attachment_list != null && attachment_list.size() >= 4 ){
@@ -822,6 +836,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			Utils.showToast( this, false, R.string.account_select_please );
 			return;
 		}
+		
 		
 		// SAFのIntentで開く
 		try{
@@ -1094,12 +1109,6 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	
 	private void performCamera(){
 		
-		int permissionCheck = ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_EXTERNAL_STORAGE );
-		if( permissionCheck != PackageManager.PERMISSION_GRANTED ){
-			preparePermission();
-			return;
-		}
-		
 		try{
 			// カメラで撮影
 			String filename = System.currentTimeMillis() + ".jpg";
@@ -1144,7 +1153,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			if( grantResults.length > 0 &&
 				grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED
 				){
-				performCamera();
+				openAttachment();
 			}else{
 				Utils.showToast( this, true, R.string.missing_storage_permission );
 			}

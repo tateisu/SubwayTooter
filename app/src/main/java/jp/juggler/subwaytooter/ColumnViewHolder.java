@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
@@ -349,49 +350,82 @@ class ColumnViewHolder
 		
 	}
 	
+	
 	private String last_image_uri;
 	private Bitmap last_image_bitmap;
+	private AsyncTask<Void,Void,Bitmap> last_image_task;
 	
 	private void closeBitmaps(){
 		try{
+			ivColumnBackgroundImage.setVisibility( View.GONE );
+			ivColumnBackgroundImage.setImageDrawable( null );
+
 			if( last_image_bitmap != null ){
-				ivColumnBackgroundImage.setVisibility( View.GONE );
-				ivColumnBackgroundImage.setImageDrawable( null );
-				last_image_uri = null;
 				last_image_bitmap.recycle();
 				last_image_bitmap = null;
 			}
+
+			if( last_image_task != null ){
+				last_image_task.cancel( true );
+				last_image_task = null;
+			}
+
+			last_image_uri = null;
+
 		}catch( Throwable ex ){
 			ex.printStackTrace();
-			
 		}
 	}
 	
-	private void loadBackgroundImage( ImageView iv, String url ){
+	private void loadBackgroundImage( final ImageView iv, final String url ){
 		try{
-			if( TextUtils.isEmpty( url ) ){
-				closeBitmaps();
-				return;
-			}else if( url.equals( last_image_uri ) ){
+			if( url.equals( last_image_uri ) ){
 				// 今表示してるのと同じ
 				return;
 			}
 			
-			// 直前のBitmapを掃除する
+			// 直前の処理をキャンセルする。Bitmapも破棄する
 			closeBitmaps();
-			
-			iv.setVisibility( View.VISIBLE );
-			
-			int w = iv.getResources().getDisplayMetrics().widthPixels;
-			int h = iv.getResources().getDisplayMetrics().heightPixels;
-			int resize_max = ( w > h ? w : h );
-			
-			Uri uri = Uri.parse( url );
-			last_image_bitmap = Utils.createResizedBitmap( log, activity, uri, false, resize_max );
-			if( last_image_bitmap != null ){
-				iv.setImageBitmap( last_image_bitmap );
-				last_image_uri = url;
+
+			if( TextUtils.isEmpty( url ) ){
+				// この状態でOK
+				return;
 			}
+			last_image_uri = url;
+			
+			final int screen_w = iv.getResources().getDisplayMetrics().widthPixels;
+			final int screen_h = iv.getResources().getDisplayMetrics().heightPixels;
+			
+			// 非同期処理を開始
+			last_image_task = new AsyncTask< Void, Void, Bitmap >() {
+				@Override protected Bitmap doInBackground( Void... params ){
+					try{
+						int resize_max = ( screen_w > screen_h ? screen_w : screen_h );
+						Uri uri = Uri.parse( url );
+						return Utils.createResizedBitmap( log, activity, uri, false, resize_max );
+						
+					}catch(Throwable ex){
+						ex.printStackTrace();
+					}
+					return null;
+				}
+				
+				@Override protected void onCancelled( Bitmap bitmap ){
+					onPostExecute( bitmap );
+				}
+				@Override protected void onPostExecute( Bitmap bitmap ){
+					if( bitmap !=null ){
+						if( isCancelled() || ! url.equals( last_image_uri ) ){
+							bitmap.recycle();
+						}else{
+							last_image_bitmap = bitmap;
+							iv.setImageBitmap( last_image_bitmap );
+							iv.setVisibility( View.VISIBLE );
+						}
+					}
+				}
+			};
+			last_image_task.executeOnExecutor( App1.task_executor );
 			
 		}catch( Throwable ex ){
 			ex.printStackTrace();

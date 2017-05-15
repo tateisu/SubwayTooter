@@ -519,10 +519,7 @@ class Column implements StreamReader.Callback {
 	private void init(){
 	}
 	
-	void onNicknameUpdated(){
-		fireShowColumnHeader();
-	}
-	
+
 	interface StatusEntryCallback {
 		void onIterate( TootStatus status );
 	}
@@ -901,24 +898,17 @@ class Column implements StreamReader.Callback {
 		
 		initFilter();
 		
-		bFirstInitialized = true;
-		list_data.clear();
-		duplicate_map.clear();
 		mRefreshLoadingError = null;
-		bRefreshLoading = false;
 		mInitialLoadingError = null;
+		bFirstInitialized = true;
 		bInitialLoading = true;
+		bRefreshLoading = false;
 		max_id = null;
 		since_id = null;
 		
+		duplicate_map.clear();
+		list_data.clear();
 		fireShowContent();
-		
-		try{
-			ColumnViewHolder holder = getViewHolder();
-			if( holder != null ) holder.getRefreshLayout().setRefreshing( false );
-		}catch(Throwable ignored){
-			
-		}
 		
 		AsyncTask< Void, Void, TootApiResult > task = this.last_task = new AsyncTask< Void, Void, TootApiResult >() {
 			

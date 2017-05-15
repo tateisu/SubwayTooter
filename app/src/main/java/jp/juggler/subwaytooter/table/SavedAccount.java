@@ -343,4 +343,21 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return null;
 	}
 	
+	public static long getCount(){
+		try{
+			Cursor cursor = App1.getDB().query( table,new String[]{ "count(*)"} , null, null, null, null, null );
+			try{
+				if( cursor.moveToNext() ){
+					return cursor.getLong(0);
+				}
+			}finally{
+				cursor.close();
+			}
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			log.e( ex, "getCount failed." );
+			throw new RuntimeException( "SavedAccount.getCount failed.", ex );
+		}
+		return 0L;
+	}
 }

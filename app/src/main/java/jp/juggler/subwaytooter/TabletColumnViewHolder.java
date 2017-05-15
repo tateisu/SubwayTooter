@@ -11,10 +11,11 @@ class TabletColumnViewHolder extends RecyclerView.ViewHolder{
 	
 	final ColumnViewHolder vh;
 
-	int old_position = - 1;
+	private int old_position = - 1;
 	
 	TabletColumnViewHolder(  ActMain activity, View v ){
 		super( v );
+		
 		vh =new ColumnViewHolder( activity ,v);
 		v.findViewById( R.id.vTabletDivider ).setVisibility( View.VISIBLE );
 	}

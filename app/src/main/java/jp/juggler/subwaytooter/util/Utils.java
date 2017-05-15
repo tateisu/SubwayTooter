@@ -61,8 +61,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import it.sephiroth.android.library.exif2.ExifInterface;
-import jp.juggler.subwaytooter.ActMain;
-import jp.juggler.subwaytooter.ActPost;
 
 public class Utils {
 	

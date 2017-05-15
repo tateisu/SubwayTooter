@@ -8,14 +8,19 @@ import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.jrummyapps.android.colorpicker.ColorPickerDialog;
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener;
+
+import java.util.Locale;
 
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
@@ -42,7 +47,7 @@ public class ActColumnCustomize extends AppCompatActivity
 	private void makeResult(){
 		Intent data = new Intent();
 		data.putExtra( EXTRA_COLUMN_INDEX, column_index );
-		setResult( RESULT_OK ,data);
+		setResult( RESULT_OK, data );
 	}
 	
 	int column_index;
@@ -177,16 +182,14 @@ public class ActColumnCustomize extends AppCompatActivity
 	View llColumnHeader;
 	ImageView ivColumnHeader;
 	TextView tvColumnName;
-	
+	EditText etAlpha;
 	
 	static final int PROGRESS_MAX = 65536;
 	
 	private void initUI(){
 		setContentView( R.layout.act_column_customize );
 		
-		
-		Styler.fixHorizontalPadding(findViewById( R.id.svContent ));
-		
+		Styler.fixHorizontalPadding( findViewById( R.id.svContent ) );
 		
 		findViewById( R.id.btnHeaderBackgroundEdit ).setOnClickListener( this );
 		findViewById( R.id.btnHeaderBackgroundReset ).setOnClickListener( this );
@@ -196,7 +199,6 @@ public class ActColumnCustomize extends AppCompatActivity
 		findViewById( R.id.btnColumnBackgroundColorReset ).setOnClickListener( this );
 		findViewById( R.id.btnColumnBackgroundImage ).setOnClickListener( this );
 		findViewById( R.id.btnColumnBackgroundImageReset ).setOnClickListener( this );
-		
 		
 		llColumnHeader = findViewById( R.id.llColumnHeader );
 		ivColumnHeader = (ImageView) findViewById( R.id.ivColumnHeader );
@@ -218,52 +220,90 @@ public class ActColumnCustomize extends AppCompatActivity
 			
 			@Override
 			public void onProgressChanged( SeekBar seekBar, int progress, boolean fromUser ){
-				if( fromUser ){
-					column.column_bg_image_alpha = progress / (float)PROGRESS_MAX;
-					ivColumnBackground.setAlpha( column.column_bg_image_alpha );
-				}
+				if( loading_busy ) return;
+				if( ! fromUser ) return;
+				column.column_bg_image_alpha = progress / (float) PROGRESS_MAX;
+				ivColumnBackground.setAlpha( column.column_bg_image_alpha );
+				etAlpha.setText( String.format( Locale.JAPAN, "%.4f", column.column_bg_image_alpha ) );
 			}
 			
 		} );
+		
+		etAlpha = (EditText) findViewById( R.id.etAlpha );
+		etAlpha.addTextChangedListener( new TextWatcher() {
+			@Override
+			public void beforeTextChanged( CharSequence s, int start, int count, int after ){
+				
+			}
+			
+			@Override public void onTextChanged( CharSequence s, int start, int before, int count ){
+				
+			}
+			
+			@Override public void afterTextChanged( Editable s ){
+				if( loading_busy ) return;
+				try{
+					float f = Float.parseFloat( etAlpha.getText().toString() );
+					if( ! Float.isNaN( f ) ){
+						if( f < 0f ) f = 0f;
+						if( f > 1f ) f = 1f;
+						column.column_bg_image_alpha = f;
+						ivColumnBackground.setAlpha( column.column_bg_image_alpha );
+						sbColumnBackgroundAlpha.setProgress( (int) ( 0.5f + f * PROGRESS_MAX ) );
+					}
+				}catch( Throwable ex ){
+					log.e( ex, "alpha parse failed." );
+				}
+			}
+		} );
 	}
 	
+	boolean loading_busy;
+	
 	private void show(){
-		int c = column.header_bg_color;
-		if( c == 0 ){
-			llColumnHeader.setBackgroundResource( R.drawable.btn_bg_ddd );
-		}else{
-			ViewCompat.setBackground( llColumnHeader,Styler.getAdaptiveRippleDrawable(
-				c,
-				(column.header_fg_color != 0 ? column.header_fg_color :
-					Styler.getAttributeColor( this,R.attr.colorRippleEffect ))
-			) );
+		try{
+			loading_busy = true;
+			int c = column.header_bg_color;
+			if( c == 0 ){
+				llColumnHeader.setBackgroundResource( R.drawable.btn_bg_ddd );
+			}else{
+				ViewCompat.setBackground( llColumnHeader, Styler.getAdaptiveRippleDrawable(
+					c,
+					( column.header_fg_color != 0 ? column.header_fg_color :
+						Styler.getAttributeColor( this, R.attr.colorRippleEffect ) )
+				) );
+			}
+			
+			c = column.header_fg_color;
+			if( c == 0 ){
+				tvColumnName.setTextColor( Styler.getAttributeColor( this, android.R.attr.textColorPrimary ) );
+				Styler.setIconDefaultColor( this, ivColumnHeader, Column.getIconAttrId( column.column_type ) );
+			}else{
+				tvColumnName.setTextColor( c );
+				Styler.setIconCustomColor( this, ivColumnHeader, c, Column.getIconAttrId( column.column_type ) );
+			}
+			
+			tvColumnName.setText( column.getColumnName( false ) );
+			
+			if( column.column_bg_color != 0 ){
+				flColumnBackground.setBackgroundColor( column.column_bg_color );
+			}else{
+				ViewCompat.setBackground( flColumnBackground, null );
+			}
+			
+			float alpha = column.column_bg_image_alpha;
+			if( Float.isNaN( alpha ) ){
+				alpha = column.column_bg_image_alpha = 1f;
+			}
+			ivColumnBackground.setAlpha( alpha );
+			sbColumnBackgroundAlpha.setProgress( (int) ( 0.5f + alpha * PROGRESS_MAX ) );
+			
+			etAlpha.setText( String.format( Locale.getDefault(), "%.4f", column.column_bg_image_alpha ) );
+			
+			loadImage( ivColumnBackground, column.column_bg_image );
+		}finally{
+			loading_busy = false;
 		}
-		
-		c = column.header_fg_color;
-		if( c == 0 ){
-			tvColumnName.setTextColor( Styler.getAttributeColor( this, android.R.attr.textColorPrimary ) );
-			Styler.setIconDefaultColor( this, ivColumnHeader, Column.getIconAttrId( column.column_type ) );
-		}else{
-			tvColumnName.setTextColor( c );
-			Styler.setIconCustomColor( this, ivColumnHeader, c, Column.getIconAttrId( column.column_type ) );
-		}
-		
-		tvColumnName.setText( column.getColumnName( false ));
-		
-		if( column.column_bg_color != 0 ){
-			flColumnBackground.setBackgroundColor( column.column_bg_color );
-		}else{
-			ViewCompat.setBackground( flColumnBackground, null );
-		}
-		
-		float alpha =column.column_bg_image_alpha;
-		if( Float.isNaN( alpha )){
-			alpha = column.column_bg_image_alpha = 1f;
-		}
-		ivColumnBackground.setAlpha( alpha );
-		sbColumnBackgroundAlpha.setProgress( (int) ( 0.5f + alpha * PROGRESS_MAX ) );
-		
-		loadImage( ivColumnBackground, column.column_bg_image );
 	}
 	
 	String last_image_uri;
@@ -285,10 +325,10 @@ public class ActColumnCustomize extends AppCompatActivity
 	
 	private void loadImage( ImageView ivColumnBackground, String url ){
 		try{
-			if( TextUtils.isEmpty(url ) ){
+			if( TextUtils.isEmpty( url ) ){
 				closeBitmaps();
 				return;
-
+				
 			}else if( url.equals( last_image_uri ) ){
 				// 今表示してるのと同じ
 				return;
@@ -296,16 +336,16 @@ public class ActColumnCustomize extends AppCompatActivity
 			
 			// 直前のBitmapを掃除する
 			closeBitmaps();
-
+			
 			// 画像をロードして、成功したら表示してURLを覚える
 			int resize_max = (int) ( 0.5f + 64f * density );
 			Uri uri = Uri.parse( url );
-			last_image_bitmap = Utils.createResizedBitmap( log, this, uri,false, resize_max );
+			last_image_bitmap = Utils.createResizedBitmap( log, this, uri, false, resize_max );
 			if( last_image_bitmap != null ){
 				ivColumnBackground.setImageBitmap( last_image_bitmap );
 				last_image_uri = url;
 			}
-
+			
 		}catch( Throwable ex ){
 			ex.printStackTrace();
 		}

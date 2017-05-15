@@ -320,7 +320,6 @@ public class ActMain extends AppCompatActivity
 					ArrayList< Integer > order = data.getIntegerArrayListExtra( ActColumnList.EXTRA_ORDER );
 					if( order != null && isOrderChanged( order ) ){
 						setOrder( order );
-						
 					}
 					
 					if( app_state.column_list.isEmpty() ){
@@ -332,11 +331,20 @@ public class ActMain extends AppCompatActivity
 						}
 					}
 				}
+
 			}else if( requestCode == REQUEST_CODE_ACCOUNT_SETTING ){
+				
+				updateColumnStrip();
+				
+				for( Column column : app_state.column_list ){
+					column.fireShowColumnHeader();
+				}
+
 				if( data != null ){
 					startAccessTokenUpdate( data );
 					return;
 				}
+				
 			}else if( requestCode == REQUEST_APP_ABOUT ){
 				if( data != null ){
 					String search = data.getStringExtra( ActAbout.EXTRA_SEARCH );
@@ -346,14 +354,19 @@ public class ActMain extends AppCompatActivity
 					return;
 				}
 			}else if( requestCode == REQUEST_CODE_NICKNAME ){
+				
+				updateColumnStrip();
+
 				for( Column column : app_state.column_list ){
-					column.onNicknameUpdated();
+					column.fireShowColumnHeader();
 				}
+
 			}else if( requestCode == REQUEST_CODE_POST ){
 				if( data != null ){
 					posted_acct = data.getStringExtra( ActPost.EXTRA_POSTED_ACCT );
 					posted_status_id = data.getLongExtra( ActPost.EXTRA_POSTED_STATUS_ID, 0L );
 				}
+
 			}else if( requestCode == REQUEST_COLUMN_COLOR ){
 				if( data != null ){
 					app_state.saveColumnList();
@@ -587,6 +600,7 @@ public class ActMain extends AppCompatActivity
 	RecyclerView tablet_pager;
 	TabletColumnPagerAdapter tablet_pager_adapter;
 	LinearLayoutManager tablet_layout_manager;
+	GravitySnapHelper tablet_snap_helper;
 	
 	static final int COLUMN_WIDTH_MIN_DP = 300;
 	
@@ -697,7 +711,8 @@ public class ActMain extends AppCompatActivity
 			///////tablet_pager.setHasFixedSize( true );
 			// tablet_pager.addItemDecoration( new TabletColumnDivider( this ) );
 			
-			new GravitySnapHelper( Gravity.START ).attachToRecyclerView( tablet_pager );
+			tablet_snap_helper =new GravitySnapHelper( Gravity.START );
+			tablet_snap_helper.attachToRecyclerView( tablet_pager );
 		}
 		
 		showFooterColor();
@@ -848,7 +863,6 @@ public class ActMain extends AppCompatActivity
 								addColumn( pos, a, Column.TYPE_LOCAL );
 								dialog.dismiss();
 							}
-							
 						}
 					}
 				};
@@ -1169,7 +1183,15 @@ public class ActMain extends AppCompatActivity
 						}
 						Utils.showToast( ActMain.this, false, R.string.account_confirmed );
 						AlarmService.startCheck( ActMain.this );
-						addColumn( getDefaultInsertPosition(), account, Column.TYPE_HOME );
+						long count = SavedAccount.getCount();
+						if( count > 1 ){
+							addColumn( getDefaultInsertPosition(), account, Column.TYPE_HOME );
+						}else{
+							addColumn( getDefaultInsertPosition(), account, Column.TYPE_HOME );
+							addColumn( getDefaultInsertPosition(), account, Column.TYPE_NOTIFICATIONS );
+							addColumn( getDefaultInsertPosition(), account, Column.TYPE_LOCAL );
+							addColumn( getDefaultInsertPosition(), account, Column.TYPE_FEDERATE );
+						}
 					}
 				}
 			}
@@ -2999,13 +3021,10 @@ public class ActMain extends AppCompatActivity
 		}else{
 			for( int i = 0, ie = tablet_layout_manager.getChildCount() ; i < ie ; ++ i ){
 				View v = tablet_layout_manager.getChildAt( i );
-				Object o = v.getTag();
-				if( o instanceof TabletColumnViewHolder ){
-					TabletColumnViewHolder holder = (TabletColumnViewHolder) o;
-					if( holder.vh.isColumnSettingShown() ){
-						holder.vh.closeColumnSetting();
-						return true;
-					}
+				TabletColumnViewHolder holder = (TabletColumnViewHolder) tablet_pager.getChildViewHolder(v);
+				if( holder != null && holder.vh.isColumnSettingShown() ){
+					holder.vh.closeColumnSetting();
+					return true;
 				}
 			}
 		}
@@ -3119,22 +3138,36 @@ public class ActMain extends AppCompatActivity
 		int column_w_min = (int) ( 0.5f + column_w_min_dp * density );
 		
 		if( sw < column_w_min * 2 ){
+			// 最小幅で2つ表示できないのなら1カラム表示
 			tablet_pager_adapter.setColumnWidth( sw );
 		}else{
+
+			// カラム最小幅から計算した表示カラム数
 			nScreenColumn = sw / column_w_min;
-			
-			// ２つは表示できるが3つは表示できないかもしれない
-			int column_w_max = (int) ( 0.5f + column_w_min * 1.5f );
-			
-			nScreenColumn = sw / column_w_min;
-			if( nScreenColumn > app_state.column_list.size() ){
-				nScreenColumn = app_state.column_list.size();
+			if( nScreenColumn <= 0 ){
+				nScreenColumn = 1;
 			}
+
+			// データのカラム数より大きくならないようにする
+			// (でも最小は1)
+			int column_count = app_state.column_list.size();
+			if( column_count > 0 ){
+				if( nScreenColumn > column_count ){
+					nScreenColumn = column_count;
+				}
+			}
+
+			// 表示カラム数から計算したカラム幅
 			int column_w = sw / nScreenColumn;
+			
+			// 最小カラム幅の1.5倍よりは大きくならないようにする
+			int column_w_max = (int) ( 0.5f + column_w_min * 1.5f );
 			if( column_w > column_w_max ){
 				column_w = column_w_max;
 			}
+			
 			tablet_pager_adapter.setColumnWidth( column_w );
+			tablet_snap_helper.setColumnWidth( column_w );
 		}
 		
 		// 並べ直す

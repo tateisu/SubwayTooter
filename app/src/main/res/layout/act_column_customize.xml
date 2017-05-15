@@ -211,6 +211,14 @@
 
         <LinearLayout style="@style/setting_row_form">
 
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="4dp"
+                android:inputType="numberDecimal"
+                android:id="@+id/etAlpha"
+                android:minWidth="64dp"
+                />
             <SeekBar
                 android:id="@+id/sbColumnBackgroundAlpha"
                 style="@style/setting_horizontal_stretch"

@@ -9,8 +9,8 @@ android {
         applicationId "jp.juggler.subwaytooter"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 55
-        versionName "0.5.5"
+        versionCode 56
+        versionName "0.5.6"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 

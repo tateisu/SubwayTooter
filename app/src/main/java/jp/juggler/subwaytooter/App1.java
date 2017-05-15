@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -195,12 +196,32 @@ public class App1 extends Application {
 		
 		private LruCache< String, Bitmap > mCache;
 		
-		BitmapCache(){
-			int maxSize = 10 * 1024 * 1024;
+		BitmapCache(Context context){
+			
+			ActivityManager am = ((ActivityManager)context.getSystemService(Activity.ACTIVITY_SERVICE));
+			int memory = am.getMemoryClass();
+			int largeMemory = am.getLargeMemoryClass();
+			// どちらも単位はMB
+			log.d("MemoryClass=%d, LargeMemoryClass = %d",memory,largeMemory);
+			
+			int maxSize;
+			if( am.isLowRamDevice() ){
+				maxSize = 5 * 1024; // 単位はKiB
+			}else if( largeMemory >= 512 ){
+				maxSize = 128 * 1024; // 単位はKiB
+			}else if( largeMemory >= 256 ){
+				maxSize = 64 * 1024; // 単位はKiB
+			}else{
+				maxSize = 10 * 1024; // 単位はKiB
+			}
+			
 			mCache = new LruCache< String, Bitmap >( maxSize ) {
 				@Override
 				protected int sizeOf( String key, Bitmap value ){
-					return value.getRowBytes() * value.getHeight();
+					int size = value.getRowBytes() * value.getHeight();
+					size = ((size + 1023) >> 10); // 単位はKiB
+					size = 1+(size>>10);
+					return size <= 0 ? 1 : size;
 				}
 			};
 		}
@@ -295,7 +316,7 @@ public class App1 extends Application {
 		if( image_loader == null ){
 			image_loader = new MyImageLoader(
 				Volley.newRequestQueue( getApplicationContext() )
-				, new BitmapCache()
+				, new BitmapCache( getApplicationContext() )
 			);
 		}
 		

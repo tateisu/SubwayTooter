@@ -107,7 +107,7 @@
 	<string name="delete">Supprimer</string>
 	<string name="delete_succeeded">Effacé avec succès</string>
 	<string name="developer">Développeur</string>
-	<string name="disable_fast_scroller">Désactiver le déroulement rapide \n(redémarrage nécessaire)</string>
+	<string name="disable_fast_scroller">Désactiver la glissière de défilement rapide des colonnes\n(redémarrage nécessaire)</string>
 	<string name="disable_tablet_mode">Désactiver le mode tablette \n(redémarrage nécessaire)</string>
 	<string name="discard">Annuler</string>
 	<string name="display_name_boosted_by">Partagé par %1$s</string>
@@ -314,7 +314,7 @@
 	<string name="with_attachment">Avec pièce(s) jointe(s)</string>
 	<string name="word_was_muted">Ce mot a été interdit.</string>
 	<string name="your_statuses">Vos statuts</string>
-	<string name="launcher_icon_by">Launcher icon is designed by フタバ</string>
+	<string name="launcher_icon_by">Icon de l\'application créée par フタバ</string>
 
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->

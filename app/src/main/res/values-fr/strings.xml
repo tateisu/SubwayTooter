@@ -154,7 +154,7 @@
 	<string name="generating_qr_code">Créer un code QR…</string>
 	<string name="hashtag">Hashtag</string>
 	<string name="hashtag_and_visibility_not_match">Ce message contient des hashtags, mais sa visibilité n\'est pas publique. \nNormalement les hashtags peuvent être recherchés uniquement dans les messages publiques.\nÊtes-vous sur ?</string>
-	<string name="hashtag_of">Hashtag : #%1$s</string>
+	<string name="hashtag_of">Hashtag: #%1$s</string>
 	<string name="help_translation">Aide à la traduction</string>
 	<string name="hide">Masquer</string>
 	<string name="hide_media_default">Ne pas afficher les pièces jointes</string>
@@ -314,7 +314,7 @@
 	<string name="with_attachment">Avec pièce(s) jointe(s)</string>
 	<string name="word_was_muted">Ce mot a été interdit.</string>
 	<string name="your_statuses">Vos statuts</string>
-	<string name="launcher_icon_by">Icon de l\'application créée par フタバ</string>
+	<string name="launcher_icon_by">Icone de l\'application créée par フタバ</string>
 	<string name="ssl_bug_7_0">Android 7.0 ne peut utiliser qu\'elliptic curve \"prime256v1\" pour les connexions sécurisées.\nL\'instance à laquelle vous voulez vous connecter semble ne pas le gérer.\n-Vous pouvez mettre à jour le système d\'exploitation vers Android 7.1.1.\n-Ou, demander au propriétaire de l\'instance de prendre en charge elliptic curve \"prime256v1\".\nPlus de détails ici: https://code.google.com/p/android/issues/detail?id=224438</string>
 
 

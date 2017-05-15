@@ -39,9 +39,8 @@ class ColumnViewHolder
 	private static final LogCategory log = new LogCategory( "ColumnViewHolder" );
 	
 	final ActMain activity;
-
+	
 	@Nullable Column column;
-	@Nullable private HeaderViewHolder vh_header;
 	@Nullable private ItemListAdapter status_adapter;
 	
 	private final TextView tvLoading;
@@ -117,7 +116,8 @@ class ColumnViewHolder
 		etRegexFilter = (EditText) root.findViewById( R.id.etRegexFilter );
 		llRegexFilter = root.findViewById( R.id.llRegexFilter );
 		tvRegexFilterError = (TextView) root.findViewById( R.id.tvRegexFilterError );
-		listView.setOnItemClickListener( status_adapter );
+
+		
 		
 		btnDeleteNotification = (Button) root.findViewById( R.id.btnDeleteNotification );
 		
@@ -208,14 +208,15 @@ class ColumnViewHolder
 			
 			log.d( "onPageCreate:%s", column.getColumnName( true ) );
 			
+			boolean bSimpleList = ( column.column_type != Column.TYPE_CONVERSATION && activity.pref.getBoolean( Pref.KEY_SIMPLE_LIST, false ) );
+			
 			tvColumnIndex.setText( activity.getString( R.string.column_index, page_idx + 1, page_count ) );
 			
 			listView.setAdapter( null );
 			
-			this.status_adapter = new ItemListAdapter( activity, column );
+			this.status_adapter = new ItemListAdapter( activity, column , bSimpleList );
 			if( column.column_type == Column.TYPE_PROFILE ){
-				vh_header = new HeaderViewHolder( activity, column, listView );
-				status_adapter.header = vh_header;
+				status_adapter.header =new HeaderViewHolder( activity, column, listView );
 			}else{
 				status_adapter.header = null;
 			}
@@ -292,6 +293,7 @@ class ColumnViewHolder
 			//
 			listView.setAdapter( status_adapter );
 			listView.setFastScrollEnabled( ! Pref.pref( activity ).getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
+			listView.setOnItemClickListener( status_adapter );
 			
 			column.setColumnViewHolder( this );
 			
@@ -560,7 +562,7 @@ class ColumnViewHolder
 	// Column から呼ばれる
 	
 	boolean hasHeaderView(){
-		return vh_header != null;
+		return status_adapter != null && status_adapter.header != null;
 	}
 	
 	SwipyRefreshLayout getRefreshLayout(){
@@ -614,8 +616,8 @@ class ColumnViewHolder
 			return;
 		}
 		
-		if( vh_header != null ){
-			vh_header.bind( column.who_account );
+		if( status_adapter.header != null ){
+			status_adapter.header.bind( column.who_account );
 		}
 		
 		if( ! column.bFirstInitialized ){
@@ -643,7 +645,7 @@ class ColumnViewHolder
 			}
 		}
 		
-		if( column.list_data.isEmpty() && vh_header == null ){
+		if( status_adapter.getCount() == 0 ){
 			showError( activity.getString( R.string.list_empty ) );
 		}else{
 			tvLoading.setVisibility( View.GONE );

@@ -28,10 +28,13 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 	private final ImageView ivFollowedBy2;
 	private final View llFollow2;
 	
-	StatusButtons( @NonNull ActMain activity, @NonNull Column column, @NonNull View viewRoot ){
+	final boolean bSimpleList;
+	
+	StatusButtons( @NonNull ActMain activity, @NonNull Column column, @NonNull View viewRoot ,boolean bSimpleList){
 		this.activity = activity;
 		this.column = column;
 		this.access_info = column.access_info;
+		this.bSimpleList = bSimpleList;
 		
 		btnBoost = (Button) viewRoot.findViewById( R.id.btnBoost );
 		btnFavourite = (Button) viewRoot.findViewById( R.id.btnFavourite );
@@ -133,7 +136,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 					, ! status.reblogged
 					, status
 					, false
-					, column.bSimpleList ? activity.boost_complete_callback : null
+					, bSimpleList ? activity.boost_complete_callback : null
 				);
 			}
 			break;
@@ -147,7 +150,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 					, false
 					, ! status.favourited
 					, status
-					, column.bSimpleList ? activity.favourite_complete_callback : null
+					, bSimpleList ? activity.favourite_complete_callback : null
 				);
 			}
 			break;

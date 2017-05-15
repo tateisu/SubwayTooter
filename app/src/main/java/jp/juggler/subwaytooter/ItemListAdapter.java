@@ -15,11 +15,14 @@ class ItemListAdapter extends BaseAdapter implements AdapterView.OnItemClickList
 	private final List< Object > list;
 	
 	HeaderViewHolder header;
+
+	private final boolean bSimpleList;
 	
-	ItemListAdapter( ActMain activity, Column column ){
+	ItemListAdapter( ActMain activity, Column column ,boolean bSimpleList ){
 		this.activity = activity;
 		this.column = column;
 		this.list = column.list_data;
+		this.bSimpleList = bSimpleList;
 	}
 	
 	
@@ -66,8 +69,8 @@ class ItemListAdapter extends BaseAdapter implements AdapterView.OnItemClickList
 		
 		ItemViewHolder holder;
 		if( view == null ){
-			view = activity.getLayoutInflater().inflate( column.bSimpleList ? R.layout.lv_status_simple : R.layout.lv_status, parent, false );
-			holder = new ItemViewHolder( activity, column, this, view );
+			view = activity.getLayoutInflater().inflate( bSimpleList ? R.layout.lv_status_simple : R.layout.lv_status, parent, false );
+			holder = new ItemViewHolder( activity, column, this, view ,bSimpleList );
 			view.setTag( holder );
 		}else{
 			holder = (ItemViewHolder) view.getTag();
@@ -78,7 +81,7 @@ class ItemListAdapter extends BaseAdapter implements AdapterView.OnItemClickList
 	
 	@Override
 	public void onItemClick( AdapterView< ? > parent, View view, int position, long id ){
-		if( column.bSimpleList ){
+		if( bSimpleList ){
 			Object tag = view.getTag();
 			if( tag instanceof ItemViewHolder ){
 				( (ItemViewHolder) tag ).onItemClick( (MyListView) parent, view );

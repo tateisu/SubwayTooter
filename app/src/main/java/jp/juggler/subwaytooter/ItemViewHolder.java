@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter;
 
 import android.support.v4.view.ViewCompat;
-import android.support.v4.view.ViewGroupCompat;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -83,11 +82,14 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private TootGap gap;
 	private int position;
 	
-	ItemViewHolder( ActMain activity, Column column, ItemListAdapter list_adapter, View view ){
+	private final boolean bSimpleList;
+	
+	ItemViewHolder( ActMain activity, Column column, ItemListAdapter list_adapter, View view ,boolean bSimpleList ){
 		this.activity = activity;
 		this.column = column;
 		this.access_info = column.access_info;
 		this.list_adapter = list_adapter;
+		this.bSimpleList = bSimpleList;
 		
 		this.llBoosted = view.findViewById( R.id.llBoosted );
 		this.ivBoosted = (ImageView) view.findViewById( R.id.ivBoosted );
@@ -117,7 +119,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.tvContent = (MyTextView) view.findViewById( R.id.tvContent );
 		this.tvMentions = (MyTextView) view.findViewById( R.id.tvMentions );
 		
-		this.buttons_for_status = column.bSimpleList ? null : new StatusButtons( activity, column, view );
+		this.buttons_for_status = bSimpleList ? null : new StatusButtons( activity, column, view , false );
 		
 		this.flMedia = view.findViewById( R.id.flMedia );
 		this.btnShowMedia = view.findViewById( R.id.btnShowMedia );
@@ -211,7 +213,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 				//
 				showFollow( n.account );
 			}else if( TootNotification.TYPE_MENTION.equals( n.type ) ){
-				if( ! column.bSimpleList ){
+				if( ! bSimpleList ){
 					showBoost(
 						n.account
 						, n.time_created_at
@@ -448,7 +450,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnSearchTag:
 			if( search_tag != null ){
-				activity.openHashTag( pos,access_info, search_tag );
+				activity.openHashTag( activity.nextPosition( column ),access_info, search_tag );
 			}else if( gap != null ){
 				column.startGap( gap, position );
 			}
@@ -500,7 +502,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	void onItemClick( MyListView listView, View anchor ){
 		if( status != null ){
 			activity.closeListItemPopup();
-			activity.list_item_popup = new StatusButtonsPopup( activity, column );
+			activity.list_item_popup = new StatusButtonsPopup( activity, column ,bSimpleList);
 			activity.list_item_popup.show( listView, anchor, status );
 		}
 	}

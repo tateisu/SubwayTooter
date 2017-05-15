@@ -8,6 +8,7 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ListView;
 import android.widget.PopupWindow;
 
 import jp.juggler.subwaytooter.api.entity.TootStatus;
@@ -19,10 +20,10 @@ class StatusButtonsPopup {
 	private final View viewRoot;
 	private final StatusButtons buttons_for_status;
 	
-	@SuppressLint("InflateParams") StatusButtonsPopup( ActMain activity, Column column ){
+	@SuppressLint("InflateParams") StatusButtonsPopup( ActMain activity, Column column ,boolean bSimpleList ){
 		this.activity = activity;
 		this.viewRoot = activity.getLayoutInflater().inflate( R.layout.list_item_popup, null, false );
-		this.buttons_for_status = new StatusButtons( activity,column, viewRoot );
+		this.buttons_for_status = new StatusButtons( activity,column, viewRoot , bSimpleList);
 	}
 	
 	private PopupWindow window;
@@ -60,6 +61,7 @@ class StatusButtonsPopup {
 		int[] location = new int[ 2 ];
 		
 		anchor.getLocationOnScreen( location );
+		int anchor_left = location[ 0 ];
 		int anchor_top = location[ 1 ];
 		
 		listView.getLocationOnScreen( location );
@@ -85,11 +87,27 @@ class StatusButtonsPopup {
 			viewRoot.findViewById( R.id.ivTriangleBottom ).setVisibility( View.VISIBLE );
 			popup_y -= popup_height;
 		}
+		
+		int anchor_width = anchor.getWidth();
+		int popup_width =getViewWidth(viewRoot);
+		int popup_x = anchor_left + anchor_width/2 - popup_width/2;
+		if( popup_x < 0 ) popup_x = 0;
+		int popup_x_max = activity.getResources().getDisplayMetrics().widthPixels - popup_width;
+		if( popup_x > popup_x_max ) popup_x = popup_x_max;
+		
+		
 		window.showAtLocation(
 			listView
-			, Gravity.CENTER_HORIZONTAL | Gravity.TOP
-			, 0
+			, Gravity.LEFT | Gravity.TOP
+			, popup_x
 			, popup_y
 		);
+	}
+	
+	
+	private static int getViewWidth( View v ){
+		int spec= View.MeasureSpec.makeMeasureSpec( 0, View.MeasureSpec.UNSPECIFIED );
+		v.measure( spec,spec );
+		return v.getMeasuredWidth();
 	}
 }

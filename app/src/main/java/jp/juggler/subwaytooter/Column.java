@@ -513,12 +513,10 @@ class Column implements StreamReader.Callback {
 		}
 	}
 	
-	boolean bSimpleList;
-	
+
 	boolean bFirstInitialized = false;
-	
+
 	private void init(){
-		bSimpleList = ( column_type != Column.TYPE_CONVERSATION && app_state.pref.getBoolean( Pref.KEY_SIMPLE_LIST, false ) );
 	}
 	
 	void onNicknameUpdated(){

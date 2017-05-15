@@ -51,7 +51,7 @@
 	<string name="boost">Partager</string>
 	<string name="boost_from_another_account">Partager à partir d\'un autre compte</string>
 	<string name="boost_succeeded">Partagé avec succès</string>
-	<string name="boosted_by">Partagé par…</string>
+	<string name="boosted_by">Partagé par …</string>
 	<string name="button_background_color">Couleur de l\'arrière plan des bouton de la barre d\'onglets (bas)</string>
 	<string name="button_foreground_color">Couleur des bouton de la barre d\'onglets (bas)</string>
 	<string name="cancel">Annuler</string>
@@ -96,11 +96,11 @@
 	<string name="confirmation">Confirmation</string>
 	<string name="content_hint">Veuillez saisir votre statut</string>
 	<string name="content_warning">Avertissement de contenu</string>
-	<string name="content_warning_hint">Veuillez saisir le texte d\'avertissement de contenu.</string>
+	<string name="content_warning_hint">Saisissez le texte d\'avertissement de contenu.</string>
 	<string name="contributor">Contributeur(s)</string>
 	<string name="conversation">Conversation</string>
-	<string name="conversation_around">Conversation autour du statut: %1$d</string>
-	<string name="conversation_view">Consultation de la conversation</string>
+	<string name="conversation_around">Conversation du statut: %1$d</string>
+	<string name="conversation_view">Visualiser la conversation</string>
 	<string name="copy">Copier</string>
 	<string name="copy_complete">Clipboard mis à jour.</string>
 	<string name="default_status_visibility">Visibilité par défaut du statut</string>
@@ -119,9 +119,9 @@
 	<string name="dont_confirm_before_close_column">Ne pas confirmer à la fermeture d\'une colonne</string>
 	<string name="dont_refresh">Ne pas actualiser</string>
 	<string name="dont_refresh_on_activity_resume">Ne pas actualiser à la reprise d\'activité</string>
-	<string name="dont_resize">Ne pas ajuster la taille</string>
+	<string name="dont_resize">Conserver les dimensions</string>
 	<string name="dont_round_avatar">Ne pas arrondir les coins de l\'image des avatars \n(redémarrage nécessaire)</string>
-	<string name="dont_screen_off">Ne pas éteindre l\'écran quand l\'application est affichée</string>
+	<string name="dont_screen_off">Garder l\'écran allumé quand l\'application est affichée</string>
 	<string name="dont_show_boost">Masquer les partages</string>
 	<string name="dont_show_reply">Masquer les réponses</string>
 	<string name="dont_use_streaming_api">Ne pas auto-actualiser</string>
@@ -132,7 +132,7 @@
 	<string name="favourite">Favori</string>
 	<string name="favourite_from_another_account">Placer dans les favoris à partir d\'un autre compte</string>
 	<string name="favourite_succeeded">Mis en favori avec succès</string>
-	<string name="favourited_by">Mis en favori par…</string>
+	<string name="favourited_by">Mis en favori par …</string>
 	<string name="favourites">Favoris</string>
 	<string name="federate_timeline">Chronologie fédérée</string>
 	<string name="file_size_too_big">Taille du fichier est trop grande. La limite maximale est de 8 Mo.</string>
@@ -153,8 +153,8 @@
 	<string name="foreground_color">Couleur du texte</string>
 	<string name="generating_qr_code">Créer un code QR…</string>
 	<string name="hashtag">Hashtag</string>
-	<string name="hashtag_and_visibility_not_match">Ce message contient des hashtags, mais sa visibilité n\'est pas publique. \nNormalement les hashtags ne peuvent être recherchés que dans les messages publiques.\nÊtes-vous sur ?</string>
-	<string name="hashtag_of">Hashtag : #%1$s</string>
+	<string name="hashtag_and_visibility_not_match">Ce message contient des hashtags, mais sa visibilité n\'est pas publique. \nNormalement les hashtags peuvent être recherchés uniquement dans les messages publiques.\nÊtes-vous sur ?</string>
+	<string name="hashtag_of">Hashtag: #%1$s</string>
 	<string name="help_translation">Aide à la traduction</string>
 	<string name="hide">Masquer</string>
 	<string name="hide_media_default">Ne pas afficher les pièces jointes</string>
@@ -314,8 +314,8 @@
 	<string name="with_attachment">Avec pièce(s) jointe(s)</string>
 	<string name="word_was_muted">Ce mot a été interdit.</string>
 	<string name="your_statuses">Vos statuts</string>
-	<string name="launcher_icon_by">Icon de l\'application créée par フタバ</string>
-	<string name="ssl_bug_7_0">Android 7.0 has a bug that can use only one elliptic curve \"prime256v1\".\nBut the instance you will connect seems does not support it.\nIf you can update OS, this bug is fixed at Android 7.1.1.\nOr you can send request to instance owner to support elliptic curve \"prime256v1\".\nsee also https://code.google.com/p/android/issues/detail?id=224438</string>
+	<string name="launcher_icon_by">Icone de l\'application créée par フタバ</string>
+	<string name="ssl_bug_7_0">Android 7.0 ne peut utiliser qu\'elliptic curve \"prime256v1\" pour les connexions sécurisées.\nL\'instance à laquelle vous voulez vous connecter semble ne pas le gérer.\n-Vous pouvez mettre à jour le système d\'exploitation vers Android 7.1.1.\n-Ou, demander au propriétaire de l\'instance de prendre en charge elliptic curve \"prime256v1\".\nPlus de détails ici: https://code.google.com/p/android/issues/detail?id=224438</string>
 
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->

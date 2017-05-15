@@ -379,6 +379,12 @@ class ColumnViewHolder
 	
 	private void loadBackgroundImage( final ImageView iv, final String url ){
 		try{
+			if( TextUtils.isEmpty( url ) ){
+				// 指定がないなら閉じる
+				closeBitmaps();
+				return;
+			}
+			
 			if( url.equals( last_image_uri ) ){
 				// 今表示してるのと同じ
 				return;

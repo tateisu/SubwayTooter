@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.jrummyapps.android.colorpicker.ColorPickerDialog;
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener;
 
+import java.text.NumberFormat;
 import java.util.Locale;
 
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -243,7 +244,9 @@ public class ActColumnCustomize extends AppCompatActivity
 			@Override public void afterTextChanged( Editable s ){
 				if( loading_busy ) return;
 				try{
-					float f = Float.parseFloat( etAlpha.getText().toString() );
+					NumberFormat format = NumberFormat.getInstance( Locale.getDefault() );
+					Number number = format.parse( etAlpha.getText().toString() );
+					float f = number.floatValue();
 					if( ! Float.isNaN( f ) ){
 						if( f < 0f ) f = 0f;
 						if( f > 1f ) f = 1f;

@@ -20,6 +20,8 @@ public class ActAbout extends AppCompatActivity {
 //	static final String url_enty = "https://enty.jp/3WtlzHG10wZv";
 	static final String developer_acct = "tateisu@mastodon.juggler.jp";
 	
+	static final String url_futaba = "https://www.instagram.com/hinomoto_hutaba/";
+	
 	static final String[] contributors = new String[]{
 		"@Balor@freeradical.zone", "update english language",
 	};
@@ -58,6 +60,15 @@ public class ActAbout extends AppCompatActivity {
 				open_browser( url_store );
 			}
 		} );
+		
+		b = (Button) findViewById( R.id.btnIconDesign );
+		b.setText( url_futaba );
+		b.setOnClickListener( new View.OnClickListener() {
+			@Override public void onClick( View v ){
+				open_browser( url_futaba );
+			}
+		} );
+		
 		
 //		b = (Button) findViewById( R.id.btnDonate );
 //		b.setText( url_enty );

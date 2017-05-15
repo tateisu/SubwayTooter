@@ -85,6 +85,27 @@
             tools:text="rate_on_store"
             />
 
+        <View
+            android:layout_width="0dp"
+            android:layout_height="8dp"
+            android:layout_weight="0.2"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/launcher_icon_by"
+            />
+
+        <Button
+            android:id="@+id/btnIconDesign"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_bg_transparent"
+            android:padding="8dp"
+            android:textAllCaps="false"
+            />
+
         <!--<View-->
             <!--android:layout_width="0dp"-->
             <!--android:layout_height="8dp"-->

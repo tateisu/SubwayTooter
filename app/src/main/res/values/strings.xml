@@ -311,4 +311,5 @@
     <string name="media_thumbnail_height">Media Thumbnail height (default=64(dp), app restart required)</string>
     <string name="account_picker_reply">Which account do you reply from?</string>
     <string name="reply_from_another_account">Reply from another account</string>
+    <string name="launcher_icon_by">Launcher icon is designed by フタバ</string>
 </resources>

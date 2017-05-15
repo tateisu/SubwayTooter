@@ -16,7 +16,7 @@
 	<string name="account_picker_boost">Avec quelle compte voulez-vous partager ?</string>
 	<string name="account_picker_favourite">Avec quelle compte voulez-vous mettre en favori ?</string>
 	<string name="account_picker_follow">Avec quelle compte voulez-vous suivre ?</string>
-	<string name="account_picker_open_setting">Avec quelle compte ouvrir les paramètres?</string>
+	<string name="account_picker_open_setting">Avec quelle compte ouvrir les paramètres ?</string>
 	<string name="account_picker_open_user_who">Avec quelle compte ouvrir l\'utilisateur %1$s ?</string>
 	<string name="account_picker_reply">Répondre à partir de quel compte ?</string>
 	<string name="account_picker_toot">Avec quelle compte tooter ?</string>
@@ -92,14 +92,14 @@
 	<string name="confirm_follow_who_from">Suivre %1$s depuis %2$s ?</string>
 	<string name="confirm_mute_user">L\'utilisateur \'%1$s\' sera muet. Êtes-vous sur ?</string>
 	<string name="confirm_post_from">Envoyer un toot du compte %1$s. Êtes-vous sur ?</string>
-	<string name="confirm_unfollow_who_from">Ne plus suivre%1$s depuis %2$s ?</string>
+	<string name="confirm_unfollow_who_from">Ne plus suivre %1$s depuis %2$s ?</string>
 	<string name="confirmation">Confirmation</string>
 	<string name="content_hint">Veuillez saisir votre statut</string>
 	<string name="content_warning">Avertissement de contenu</string>
 	<string name="content_warning_hint">Veuillez saisir le texte d\'avertissement de contenu.</string>
 	<string name="contributor">Contributeur(s)</string>
 	<string name="conversation">Conversation</string>
-	<string name="conversation_around">Conversation autour du statut : %1$d</string>
+	<string name="conversation_around">Conversation autour du statut: %1$d</string>
 	<string name="conversation_view">Consultation de la conversation</string>
 	<string name="copy">Copier</string>
 	<string name="copy_complete">Clipboard mis à jour.</string>
@@ -173,13 +173,13 @@
 	<string name="list_empty">Aucun élément dans la liste</string>
 	<string name="local_timeline">Chronologie locale</string>
 	<string name="login_failed">Échec de la connexion</string>
-	<string name="login_required">Veuillez mettre à jour le jeton d\'accès à partir des paramètres du compte.</string>
+	<string name="login_required">Veuillez mettre à jour votre connexion à partir des paramètres du compte.</string>
 	<string name="long_side_pixel">Côté le plus long mis à %1$d pixels</string>
 	<string name="mail_address_not_contains_at_mark">veuillez entrer l\'adresse e-mail de l\'utilisateur contenant « \@ » et « . »</string>
 	<string name="mail_hint">Ex) votre\@e-mail.address</string>
 	<string name="mail_not_specified">E-mail non spécifié</string>
 	<string name="media_attachment">Ajouter une pièce jointe</string>
-	<string name="media_thumbnail_height">Hauteur des miniatures (défaut=64(dp), redémarrage nécessaire)</string>
+	<string name="media_thumbnail_height">Hauteur des miniatures \n(défaut=64(dp), redémarrage nécessaire)</string>
 	<string name="mention">Mention</string>
 	<string name="mention2">Mention</string>
 	<string name="menu">Menu</string>
@@ -222,7 +222,7 @@
 	<string name="pick_image">Choisir une image</string>
 	<string name="please_add_account">Compte manquant. Veuillez ajouter un compte avant de poster.</string>
 	<string name="please_donate">Merci de soutenir cette application !</string>
-	<string name="please_rate">Merci de bien vouloir noter cette application et laisser votre avis !</string>
+	<string name="please_rate">Merci de prendre un peu de temps pour pouvoir\nnoter cette application et laisser votre avis !</string>
 	<string name="post_error_contents_empty">Veuillez saisir votre statut.</string>
 	<string name="post_error_contents_warning_empty">Veuillez saisir l\'avertissement de contenu</string>
 	<string name="post_from">Publier par</string>
@@ -275,7 +275,7 @@
 	<string name="setting">Paramètre</string>
 	<string name="show">Afficher</string>
 	<string name="show_follow_button_in_button_bar">Voir le bouton de suivi dans la barre d\'action \n(redémarrage nécessaire)</string>
-	<string name="simple_list">Liste simple sans barre d\'action, appuyer sur le toot pour l\'afficher \n(redémarrage nécessaire)</string>
+	<string name="simple_list">Liste simple sans barre d\'actions, appuyer sur le toot pour l\'afficher \n(redémarrage nécessaire)</string>
 	<string name="sound">Émettre un son</string>
 	<string name="spoil_visibility_for_account">Mauvaise visibilité pour ce compte.</string>
 	<string name="status">Statut</string>

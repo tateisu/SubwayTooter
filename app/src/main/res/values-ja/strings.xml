@@ -602,4 +602,6 @@
     <string name="account_picker_reply">どのアカウントで返信しますか？</string>
     <string name="reply_from_another_account">別アカウントで返信</string>
     <string name="launcher_icon_by">ランチャーアイコンはフタバさんがデザインしました</string>
+
+    <string name="ssl_bug_7_0">Android 7.0 には利用できる elliptic curve が \"prime256v1\" だけというバグがあります。\nしかし対象のインスタンスはこの elliptic curve に対応していないようです。\n可能ならOSバージョン 7.1.1以降にアップデートするとバグは修正されます。\nもしくは elliptic curve \"prime256v1\" に対応してもらうよう、あなたからインスタンスのオーナーに要望を出すことができます。\n関連情報 https://code.google.com/p/android/issues/detail?id=224438</string>
 </resources>

@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -331,7 +332,7 @@ public class ActMain extends AppCompatActivity
 						}
 					}
 				}
-
+				
 			}else if( requestCode == REQUEST_CODE_ACCOUNT_SETTING ){
 				
 				updateColumnStrip();
@@ -339,7 +340,7 @@ public class ActMain extends AppCompatActivity
 				for( Column column : app_state.column_list ){
 					column.fireShowColumnHeader();
 				}
-
+				
 				if( data != null ){
 					startAccessTokenUpdate( data );
 					return;
@@ -356,17 +357,17 @@ public class ActMain extends AppCompatActivity
 			}else if( requestCode == REQUEST_CODE_NICKNAME ){
 				
 				updateColumnStrip();
-
+				
 				for( Column column : app_state.column_list ){
 					column.fireShowColumnHeader();
 				}
-
+				
 			}else if( requestCode == REQUEST_CODE_POST ){
 				if( data != null ){
 					posted_acct = data.getStringExtra( ActPost.EXTRA_POSTED_ACCT );
 					posted_status_id = data.getLongExtra( ActPost.EXTRA_POSTED_STATUS_ID, 0L );
 				}
-
+				
 			}else if( requestCode == REQUEST_COLUMN_COLOR ){
 				if( data != null ){
 					app_state.saveColumnList();
@@ -711,7 +712,7 @@ public class ActMain extends AppCompatActivity
 			///////tablet_pager.setHasFixedSize( true );
 			// tablet_pager.addItemDecoration( new TabletColumnDivider( this ) );
 			
-			tablet_snap_helper =new GravitySnapHelper( Gravity.START );
+			tablet_snap_helper = new GravitySnapHelper( Gravity.START );
 			tablet_snap_helper.attachToRecyclerView( tablet_pager );
 		}
 		
@@ -851,9 +852,21 @@ public class ActMain extends AppCompatActivity
 								return;
 							}
 							
+							log.e( result.error );
+							
+							if( sv.contains( "SSLHandshakeException" )
+								&& ( Build.VERSION.RELEASE.startsWith( "7.0" )
+								|| ( Build.VERSION.RELEASE.startsWith( "7.1" ) && ! Build.VERSION.RELEASE.startsWith( "7.1." ) ) )
+								){
+								new AlertDialog.Builder( ActMain.this )
+									.setMessage( sv + "\n\n" + getString( R.string.ssl_bug_7_0 ) )
+									.setNeutralButton( R.string.close, null )
+									.show();
+								return;
+							}
+							
 							// 他のエラー
 							Utils.showToast( ActMain.this, true, sv );
-							log.e( result.error );
 						}else{
 							SavedAccount a = addPseudoAccount( instance );
 							if( a != null ){
@@ -974,7 +987,7 @@ public class ActMain extends AppCompatActivity
 				m = reUserPage.matcher( uri.toString() );
 				if( m.find() ){
 					// ユーザページをアプリ内で開く
-
+					
 					// https://mastodon.juggler.jp/@SubwayTooter
 					final String host = m.group( 1 );
 					final String user = Uri.decode( m.group( 2 ) );
@@ -1051,7 +1064,7 @@ public class ActMain extends AppCompatActivity
 		}
 		
 		// OAuth2 認証コールバック
-
+		
 		final ProgressDialog progress = new ProgressDialog( ActMain.this );
 		
 		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
@@ -3021,7 +3034,7 @@ public class ActMain extends AppCompatActivity
 		}else{
 			for( int i = 0, ie = tablet_layout_manager.getChildCount() ; i < ie ; ++ i ){
 				View v = tablet_layout_manager.getChildAt( i );
-				TabletColumnViewHolder holder = (TabletColumnViewHolder) tablet_pager.getChildViewHolder(v);
+				TabletColumnViewHolder holder = (TabletColumnViewHolder) tablet_pager.getChildViewHolder( v );
 				if( holder != null && holder.vh.isColumnSettingShown() ){
 					holder.vh.closeColumnSetting();
 					return true;
@@ -3141,13 +3154,13 @@ public class ActMain extends AppCompatActivity
 			// 最小幅で2つ表示できないのなら1カラム表示
 			tablet_pager_adapter.setColumnWidth( sw );
 		}else{
-
+			
 			// カラム最小幅から計算した表示カラム数
 			nScreenColumn = sw / column_w_min;
 			if( nScreenColumn <= 0 ){
 				nScreenColumn = 1;
 			}
-
+			
 			// データのカラム数より大きくならないようにする
 			// (でも最小は1)
 			int column_count = app_state.column_list.size();
@@ -3156,7 +3169,7 @@ public class ActMain extends AppCompatActivity
 					nScreenColumn = column_count;
 				}
 			}
-
+			
 			// 表示カラム数から計算したカラム幅
 			int column_w = sw / nScreenColumn;
 			

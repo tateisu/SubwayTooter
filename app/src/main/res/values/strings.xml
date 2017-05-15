@@ -312,4 +312,5 @@
     <string name="account_picker_reply">Which account do you reply from?</string>
     <string name="reply_from_another_account">Reply from another account</string>
     <string name="launcher_icon_by">Launcher icon is designed by フタバ</string>
+    <string name="ssl_bug_7_0">Android 7.0 has a bug that can use only one elliptic curve \"prime256v1\".\nBut the instance you will connect seems does not support it.\nIf you can update OS, this bug is fixed at Android 7.1.1.\nOr you can send request to instance owner to support elliptic curve \"prime256v1\".\nsee also https://code.google.com/p/android/issues/detail?id=224438</string>
 </resources>

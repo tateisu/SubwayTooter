@@ -315,6 +315,7 @@
 	<string name="word_was_muted">Ce mot a été interdit.</string>
 	<string name="your_statuses">Vos statuts</string>
 	<string name="launcher_icon_by">Icon de l\'application créée par フタバ</string>
+	<string name="ssl_bug_7_0">Android 7.0 has a bug that can use only one elliptic curve \"prime256v1\".\nBut the instance you will connect seems does not support it.\nIf you can update OS, this bug is fixed at Android 7.1.1.\nOr you can send request to instance owner to support elliptic curve \"prime256v1\".\nsee also https://code.google.com/p/android/issues/detail?id=224438</string>
 
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->

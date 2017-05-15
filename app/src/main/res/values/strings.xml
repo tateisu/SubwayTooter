@@ -109,8 +109,8 @@
     <string name="instance_hint">ex) mastodon.social</string>
     <string name="mail_hint">ex) your@e-mail.address</string>
     <string name="unfollow">Unfollow</string>
-    <string name="follow_succeeded">Follow succeeded</string>
-    <string name="unfollow_succeeded">Unfollow succeeded</string>
+    <string name="follow_succeeded">Followed successfuly</string>
+    <string name="unfollow_succeeded">Unfollowed successfuly</string>
     <string name="mute">Mute</string>
     <string name="unmute">Unmute</string>
     <string name="block">Block</string>
@@ -208,8 +208,8 @@
     <string name="resize_image">Resize attachment image (JPEG,PNG)</string>
     <string name="dont_resize">Don\'t resize</string>
     <string name="long_side_pixel">Resize to %1$d pixels</string>
-    <string name="image_pick">Choose your images</string>
-    <string name="image_capture">Capture by camera</string>
+    <string name="image_pick">Pick an image</string>
+    <string name="image_capture">Take a picture</string>
     <string name="missing_storage_permission">Permission to write storage is missing.</string>
     <string name="attachment_uploading">Media attachment  is uploading…</string>
     <string name="attachment_uploaded">Media attachment upload completed.</string>
@@ -295,7 +295,7 @@
     <string name="button_background_color">Button's background color</string>
     <string name="button_foreground_color">Button's foreground color</string>
     <string name="tab_background_color">Tab's background color</string>
-    <string name="tab_divider_color">Color of the tab divider</string>
+    <string name="tab_divider_color">Tab's divider color</string>
     <string name="open_status_from">Open status from</string>
     <string name="help_translation">Help with the translation</string>
     <string name="dont_use_streaming_api">Refresh manually the feeds</string>

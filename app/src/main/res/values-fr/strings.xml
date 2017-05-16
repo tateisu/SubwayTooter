@@ -52,8 +52,8 @@
 	<string name="boost_from_another_account">Partager à partir d\'un autre compte</string>
 	<string name="boost_succeeded">Partagé avec succès</string>
 	<string name="boosted_by">Partagé par …</string>
-	<string name="button_background_color">Couleur de l\'arrière plan des bouton de la barre d\'onglets (bas)</string>
-	<string name="button_foreground_color">Couleur des bouton de la barre d\'onglets (bas)</string>
+	<string name="button_background_color">Couleur d\'arrière plan des boutons de la barre d\'onglets (bas)</string>
+	<string name="button_foreground_color">Couleur des boutons de la barre d\'onglets (bas)</string>
 	<string name="cancel">Annuler</string>
 	<string name="cancelled">Annulé</string>
 	<string name="cant_change_account_when_attachment_specified">Impossible de changer de compte quand la pièce jointe est spécifiée.</string>
@@ -179,7 +179,7 @@
 	<string name="mail_hint">Ex) votre\@e-mail.address</string>
 	<string name="mail_not_specified">E-mail non spécifié</string>
 	<string name="media_attachment">Ajouter une pièce jointe</string>
-	<string name="media_thumbnail_height">Hauteur des miniatures \n(défaut=64(dp), redémarrage nécessaire)</string>
+	<string name="media_thumbnail_height">Hauteur des pièces jointes dans l\'interface \n(défaut=64(dp), redémarrage nécessaire)</string>
 	<string name="mention">Mention</string>
 	<string name="mention2">Mention</string>
 	<string name="menu">Menu</string>
@@ -201,7 +201,7 @@
 	<string name="nickname_applied_after_reload">Le changement de pseudo/couleur sera appliqué après actualisation.</string>
 	<string name="nickname_label">Pseudo. (s\'il est spécifié, il remplacera le nom du compte affiché)</string>
 	<string name="not_available_for_pseudo_account">Non disponible pour les personnes non connectés</string>
-	<string name="not_selected">(pas sélectionné)</string>
+	<string name="not_selected">(Non sélectionné)</string>
 	<string name="notification_count">%1$d notifications</string>
 	<string name="notification_delete">Effacer les notifications</string>
 	<string name="notification_option">Options de notification</string>
@@ -274,8 +274,8 @@
 	<string name="server_confirmed">Confirmation du serveur.</string>
 	<string name="setting">Paramètre</string>
 	<string name="show">Afficher</string>
-	<string name="show_follow_button_in_button_bar">Voir le bouton de suivi dans la barre d\'action \n(redémarrage nécessaire)</string>
-	<string name="simple_list">Liste simple sans barre d\'actions, appuyer sur le toot pour l\'afficher \n(redémarrage nécessaire)</string>
+	<string name="show_follow_button_in_button_bar">Voir le bouton suivre dans la barre d\'action \n(redémarrage nécessaire)</string>
+	<string name="simple_list">Cacher la barre d\'actions, elle apparaîtra en appuyant sur le toot\n(redémarrage nécessaire)</string>
 	<string name="sound">Émettre un son</string>
 	<string name="spoil_visibility_for_account">Mauvaise visibilité pour ce compte.</string>
 	<string name="status">Statut</string>
@@ -312,11 +312,11 @@
 	<string name="visibility_unlisted">Non listé</string>
 	<string name="wait_previous_operation">Veuillez attendre la fin de la dernière opération.</string>
 	<string name="with_attachment">Avec pièce(s) jointe(s)</string>
-	<string name="word_was_muted">Ce mot a été interdit.</string>
+	<string name="word_was_muted">Ce mot a été interdit!</string>
 	<string name="your_statuses">Vos statuts</string>
 	<string name="launcher_icon_by">Icone de l\'application créée par フタバ</string>
 	<string name="ssl_bug_7_0">Android 7.0 ne peut utiliser qu\'elliptic curve \"prime256v1\" pour les connexions sécurisées.\nL\'instance à laquelle vous voulez vous connecter semble ne pas le gérer.\n-Vous pouvez mettre à jour le système d\'exploitation vers Android 7.1.1.\n-Ou, demander au propriétaire de l\'instance de prendre en charge elliptic curve \"prime256v1\".\nPlus de détails ici: https://code.google.com/p/android/issues/detail?id=224438</string>
-	<string name="timeline_font">Timeline font (app restart required)</string>
+	<string name="timeline_font">Changer la police de caractères de l\'interface\n(redémarrage nécessaire)</string>
 
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->

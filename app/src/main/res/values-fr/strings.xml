@@ -179,7 +179,7 @@
 	<string name="mail_hint">Ex) votre\@e-mail.address</string>
 	<string name="mail_not_specified">E-mail non spécifié</string>
 	<string name="media_attachment">Ajouter une pièce jointe</string>
-	<string name="media_thumbnail_height">Hauteur pièces jointes dans l\'interface \n(défaut=64(px), redémarrage nécessaire)</string>
+	<string name="media_thumbnail_height">Hauteur des pièces jointes dans l\'interface \n(défaut=64(px), redémarrage nécessaire)</string>
 	<string name="mention">Mention</string>
 	<string name="mention2">Mention</string>
 	<string name="menu">Menu</string>

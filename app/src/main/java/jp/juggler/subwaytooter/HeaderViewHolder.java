@@ -48,7 +48,9 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 			Utils.scanView( viewRoot, new Utils.ScanViewCallback() {
 				@Override public void onScanView( View v ){
 					try{
-						if( v instanceof TextView ){
+						if( v instanceof Button ){
+							// ボタンは太字なので触らない
+						}else if( v instanceof TextView ){
 							( (TextView) v ).setTypeface( activity.timeline_font );
 						}
 					}catch(Throwable ex){

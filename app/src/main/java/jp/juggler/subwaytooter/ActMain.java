@@ -608,7 +608,6 @@ public class ActMain extends AppCompatActivity
 	
 	Typeface timeline_font ;
 	
-	
 	void initUI(){
 		setContentView( R.layout.act_main );
 		

@@ -44,6 +44,7 @@ public class Pref {
 	
 	static final String KEY_COLUMN_WIDTH = "ColumnWidth";
 	static final String KEY_MEDIA_THUMB_HEIGHT = "MediaThumbHeight";
+	static final String KEY_TIMELINE_FONT = "timeline_font";
 	
 	
 }

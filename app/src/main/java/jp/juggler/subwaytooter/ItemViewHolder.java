@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter;
 
+import android.graphics.Typeface;
 import android.support.v4.view.ViewCompat;
 import android.text.TextUtils;
 import android.view.View;
@@ -84,22 +85,43 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	
 	private final boolean bSimpleList;
 	
-	ItemViewHolder( ActMain activity, Column column, ItemListAdapter list_adapter, View view ,boolean bSimpleList ){
-		this.activity = activity;
+	ItemViewHolder( ActMain arg_activity, Column column, ItemListAdapter list_adapter, View view ,boolean bSimpleList ){
+		this.activity = arg_activity;
 		this.column = column;
 		this.access_info = column.access_info;
 		this.list_adapter = list_adapter;
 		this.bSimpleList = bSimpleList;
 		
+		this.tvName = (TextView) view.findViewById( R.id.tvName );
+		this.tvFollowerName = (TextView) view.findViewById( R.id.tvFollowerName );
+		this.tvBoosted = (TextView) view.findViewById( R.id.tvBoosted );
+		
+		
+		if( activity.timeline_font != null ){
+			Utils.scanView( view, new Utils.ScanViewCallback() {
+				@Override public void onScanView( View v ){
+					try{
+						if( v instanceof TextView ){
+							( (TextView) v ).setTypeface( activity.timeline_font );
+						}
+					}catch(Throwable ex){
+						ex.printStackTrace();
+					}
+				}
+			} );
+		}else{
+			tvName.setTypeface( Typeface.DEFAULT_BOLD );
+			tvFollowerName.setTypeface( Typeface.DEFAULT_BOLD );
+			tvBoosted.setTypeface( Typeface.DEFAULT_BOLD );
+		}
+		
 		this.llBoosted = view.findViewById( R.id.llBoosted );
 		this.ivBoosted = (ImageView) view.findViewById( R.id.ivBoosted );
-		this.tvBoosted = (TextView) view.findViewById( R.id.tvBoosted );
 		this.tvBoostedTime = (TextView) view.findViewById( R.id.tvBoostedTime );
 		this.tvBoostedAcct = (TextView) view.findViewById( R.id.tvBoostedAcct );
 		
 		this.llFollow = view.findViewById( R.id.llFollow );
 		this.ivFollow = (MyNetworkImageView) view.findViewById( R.id.ivFollow );
-		this.tvFollowerName = (TextView) view.findViewById( R.id.tvFollowerName );
 		this.tvFollowerAcct = (TextView) view.findViewById( R.id.tvFollowerAcct );
 		this.btnFollow = (ImageButton) view.findViewById( R.id.btnFollow );
 		this.ivFollowedBy = (ImageView) view.findViewById( R.id.ivFollowedBy );
@@ -107,7 +129,6 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.llStatus = view.findViewById( R.id.llStatus );
 		
 		this.ivThumbnail = (MyNetworkImageView) view.findViewById( R.id.ivThumbnail );
-		this.tvName = (TextView) view.findViewById( R.id.tvName );
 		this.tvTime = (TextView) view.findViewById( R.id.tvTime );
 		this.tvAcct = (TextView) view.findViewById( R.id.tvAcct );
 		

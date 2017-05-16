@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -605,8 +606,22 @@ public class ActMain extends AppCompatActivity
 	
 	static final int COLUMN_WIDTH_MIN_DP = 300;
 	
+	Typeface timeline_font ;
+	
+	
 	void initUI(){
 		setContentView( R.layout.act_main );
+		
+		String sv = pref.getString(Pref.KEY_TIMELINE_FONT,"");
+		
+		if( ! TextUtils.isEmpty( sv ) ){
+			try{
+				timeline_font = Typeface.createFromFile( sv );
+			}catch(Throwable ex){
+				ex.printStackTrace();
+			}
+		}
+		
 		
 		llEmpty = findViewById( R.id.llEmpty );
 		
@@ -636,7 +651,6 @@ public class ActMain extends AppCompatActivity
 		
 		svColumnStrip.setHorizontalFadingEdgeEnabled( true );
 		
-		String sv;
 		DisplayMetrics dm = getResources().getDisplayMetrics();
 		
 		float density = dm.density;

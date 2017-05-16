@@ -70,7 +70,6 @@
                 android:id="@+id/tvBoosted"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textStyle="bold"
                 tools:text="～にブーストされました"
                 />
 
@@ -110,7 +109,6 @@
                 android:id="@+id/tvFollowerName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textStyle="bold"
                 tools:text="Follower Name"
                 />
 
@@ -223,7 +221,6 @@
                     android:id="@+id/tvName"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textStyle="bold"
                     tools:text="Displayname @username"
                     />
 

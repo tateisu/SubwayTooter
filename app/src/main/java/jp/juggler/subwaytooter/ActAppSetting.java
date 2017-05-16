@@ -2,12 +2,15 @@ package jp.juggler.subwaytooter;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
@@ -18,9 +21,18 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.TextView;
 
 import com.jrummyapps.android.colorpicker.ColorPickerDialog;
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener;
+
+import org.apache.commons.io.IOUtils;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+
+import jp.juggler.subwaytooter.util.Utils;
 
 public class ActAppSetting extends AppCompatActivity
 	implements CompoundButton.OnCheckedChangeListener
@@ -85,6 +97,8 @@ public class ActAppSetting extends AppCompatActivity
 	
 	EditText etColumnWidth;
 	EditText etMediaThumbHeight;
+	TextView tvTimelineFontUrl;
+	String timeline_font;
 	
 	private void initUI(){
 		setContentView( R.layout.act_app_setting );
@@ -197,6 +211,8 @@ public class ActAppSetting extends AppCompatActivity
 		findViewById( R.id.btnTabBackgroundColorReset ).setOnClickListener( this );
 		findViewById( R.id.btnTabDividerColorEdit ).setOnClickListener( this );
 		findViewById( R.id.btnTabDividerColorReset ).setOnClickListener( this );
+		findViewById( R.id.btnTimelineFontEdit ).setOnClickListener( this );
+		findViewById( R.id.btnTimelineFontReset ).setOnClickListener( this );
 		
 		ivFooterToot = (ImageView) findViewById( R.id.ivFooterToot );
 		ivFooterMenu = (ImageView) findViewById( R.id.ivFooterMenu );
@@ -206,6 +222,11 @@ public class ActAppSetting extends AppCompatActivity
 		
 		etColumnWidth = (EditText) findViewById( R.id.etColumnWidth );
 		etMediaThumbHeight = (EditText) findViewById( R.id.etMediaThumbHeight );
+		
+		tvTimelineFontUrl= (TextView) findViewById( R.id.tvTimelineFontUrl );
+		
+		etColumnWidth.addTextChangedListener( this );
+		etMediaThumbHeight.addTextChangedListener( this );
 		
 	}
 	
@@ -243,14 +264,16 @@ public class ActAppSetting extends AppCompatActivity
 		etColumnWidth.setText( pref.getString( Pref.KEY_COLUMN_WIDTH, "" ) );
 		etMediaThumbHeight.setText( pref.getString( Pref.KEY_MEDIA_THUMB_HEIGHT, "" ) );
 		
-		etColumnWidth.addTextChangedListener( this );
-		etMediaThumbHeight.addTextChangedListener( this );
+
+		timeline_font =  pref.getString( Pref.KEY_TIMELINE_FONT, "" );
+		
 		
 		load_busy = false;
 		
 		showFooterColor();
+		showTimelineFont();
 	}
-	
+
 	private void saveUIToData(){
 		if( load_busy ) return;
 		pref.edit()
@@ -282,6 +305,7 @@ public class ActAppSetting extends AppCompatActivity
 			
 			.putString( Pref.KEY_COLUMN_WIDTH, etColumnWidth.getText().toString().trim() )
 			.putString( Pref.KEY_MEDIA_THUMB_HEIGHT, etMediaThumbHeight.getText().toString().trim() )
+			.putString( Pref.KEY_TIMELINE_FONT, timeline_font )
 			
 			.apply();
 		
@@ -346,10 +370,42 @@ public class ActAppSetting extends AppCompatActivity
 			saveUIToData();
 			showFooterColor();
 			break;
-			
+		
+		case R.id.btnTimelineFontReset:
+			timeline_font = "";
+			saveUIToData();
+			showTimelineFont();
+			break;
+		
+		case R.id.btnTimelineFontEdit:
+			try{
+				Intent intent = new Intent( Intent.ACTION_OPEN_DOCUMENT );
+				intent.addCategory( Intent.CATEGORY_OPENABLE );
+				intent.setType( "*/*" );
+				startActivityForResult( intent, REQUEST_CODE_TIMELINE_FONT );
+			}catch(Throwable ex){
+				Utils.showToast( this,ex,"could not open picker for font/*" );
+			}
+			break;
 		}
 	}
 	
+	static final int REQUEST_CODE_TIMELINE_FONT = 1;
+	
+	@Override protected void onActivityResult( int requestCode, int resultCode, Intent data ){
+		if( resultCode == RESULT_OK && requestCode == REQUEST_CODE_TIMELINE_FONT){
+			if( data != null ){
+				Uri uri = data.getData();
+				if( uri != null ){
+					getContentResolver().takePersistableUriPermission( uri, Intent.FLAG_GRANT_READ_URI_PERMISSION );
+					saveTimelineFont( uri);
+				}
+			}
+		}
+		super.onActivityResult( requestCode, resultCode, data );
+	}
+	
+
 	void openColorPicker( int id, int color ){
 		ColorPickerDialog.Builder builder = ColorPickerDialog.newBuilder()
 			.setDialogType( ColorPickerDialog.TYPE_CUSTOM )
@@ -444,4 +500,76 @@ public class ActAppSetting extends AppCompatActivity
 	@Override public void afterTextChanged( Editable s ){
 		saveUIToData();
 	}
+	
+	
+	private void showTimelineFont(){
+		try{
+			if( ! TextUtils.isEmpty( timeline_font ) ){
+				
+				tvTimelineFontUrl.setTypeface( Typeface.DEFAULT );
+				Typeface face = Typeface.createFromFile( timeline_font );
+				tvTimelineFontUrl.setTypeface(face );
+				tvTimelineFontUrl.setText( timeline_font );
+				return;
+			}
+		}catch(Throwable ex){
+			ex.printStackTrace(  );
+		}
+		// fallback
+		tvTimelineFontUrl.setText( getString( R.string.not_selected ) );
+		tvTimelineFontUrl.setTypeface( Typeface.DEFAULT );
+	}
+	
+	static final String TIMELINE_FONT_FILE_NAME = "TimelineFont";
+	
+	private void saveTimelineFont( Uri uri ){
+		try{
+			File dir = getFilesDir();
+			
+			//noinspection ResultOfMethodCallIgnored
+			dir.mkdir();
+			
+			File tmp_file = new File( dir, TIMELINE_FONT_FILE_NAME +".tmp" );
+			
+			
+			InputStream is = getContentResolver().openInputStream( uri );
+			if( is == null ){
+				Utils.showToast( this, false, "openInputStream returns null.");
+				return;
+			}
+			try{
+				FileOutputStream os = new FileOutputStream( tmp_file );
+				try{
+					IOUtils.copy( is,os );
+				}finally{
+					IOUtils.closeQuietly( os );
+				}
+				
+			}finally{
+				IOUtils.closeQuietly( is );
+			}
+			
+			
+			Typeface face = Typeface.createFromFile( tmp_file );
+			if( face == null ){
+				Utils.showToast( this, false, "Typeface.createFromFile() failed.");
+				return;
+			}
+			
+			File file = new File( dir, TIMELINE_FONT_FILE_NAME );
+			if(!tmp_file.renameTo( file ) ){
+				Utils.showToast( this, false, "File operation failed.");
+				return;
+			}
+			
+			timeline_font = file.getAbsolutePath();
+			saveUIToData();
+			showTimelineFont();
+			
+		}catch(Throwable ex){
+			ex.printStackTrace(  );
+			Utils.showToast( this,ex,"saveTimelineFont failed.");
+		}
+	}
+	
 }

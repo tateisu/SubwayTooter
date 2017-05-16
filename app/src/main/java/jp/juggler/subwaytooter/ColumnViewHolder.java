@@ -6,6 +6,7 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
+import android.support.v4.widget.TextViewCompat;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -81,6 +82,21 @@ class ColumnViewHolder
 	
 	ColumnViewHolder( ActMain arg_activity, View root ){
 		this.activity = arg_activity;
+		
+		if( activity.timeline_font != null ){
+			Utils.scanView( root, new Utils.ScanViewCallback() {
+				@Override public void onScanView( View v ){
+					try{
+						if( v instanceof TextView ){
+							( (TextView) v ).setTypeface( activity.timeline_font );
+						}
+					}catch(Throwable ex){
+						ex.printStackTrace();
+					}
+				}
+			} );
+		}
+		
 		
 		flColumnBackground = root.findViewById( R.id.flColumnBackground );
 		ivColumnBackgroundImage = (ImageView) root.findViewById( R.id.ivColumnBackgroundImage );

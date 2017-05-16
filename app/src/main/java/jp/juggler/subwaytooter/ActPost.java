@@ -73,7 +73,6 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okio.BufferedSink;
 
-import static jp.juggler.subwaytooter.R.id.viewRoot;
 
 public class ActPost extends AppCompatActivity implements View.OnClickListener, PostAttachment.Callback {
 	static final LogCategory log = new LogCategory( "ActPost" );
@@ -510,7 +509,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		Styler.fixHorizontalMargin(findViewById( R.id.llFooterBar ));
 		
 		
-		formRoot = findViewById( viewRoot );
+		formRoot = findViewById( R.id.viewRoot );
 		scrollView = (ScrollView) findViewById( R.id.scrollView );
 		btnAccount = (Button) findViewById( R.id.btnAccount );
 		btnVisibility = (ImageButton) findViewById( R.id.btnVisibility );

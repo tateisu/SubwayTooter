@@ -13,6 +13,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.Emojione;
+import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
 import jp.juggler.subwaytooter.view.MyNetworkImageView;
 
@@ -36,13 +37,28 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 	
 	private TootAccount who;
 	
-	HeaderViewHolder( ActMain activity,Column column, ListView parent ){
-		this.activity = activity;
+	HeaderViewHolder( ActMain arg_activity,Column column, ListView parent ){
+		this.activity = arg_activity;
 		this.column = column;
 		this.access_info = column.access_info;
 		this.viewRoot = activity.getLayoutInflater().inflate( R.layout.lv_list_header, parent, false );
 		viewRoot.setTag( this);
-
+		
+		if( activity.timeline_font != null ){
+			Utils.scanView( viewRoot, new Utils.ScanViewCallback() {
+				@Override public void onScanView( View v ){
+					try{
+						if( v instanceof TextView ){
+							( (TextView) v ).setTypeface( activity.timeline_font );
+						}
+					}catch(Throwable ex){
+						ex.printStackTrace();
+					}
+				}
+			} );
+		}
+		
+		
 		ivBackground = (MyNetworkImageView) viewRoot.findViewById( R.id.ivBackground );
 		tvCreated = (TextView) viewRoot.findViewById( R.id.tvCreated );
 		ivAvatar = (MyNetworkImageView) viewRoot.findViewById( R.id.ivAvatar );

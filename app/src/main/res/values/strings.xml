@@ -276,7 +276,7 @@
     <string name="open_in_pseudo_account">Open in emulated account on %1$s</string>
 
     <string name="color_and_background">Color and Background…</string>
-    <string name="column_background">Column's background</string>
+    <string name="column_background">Column\'s background</string>
     <string name="pick_image">Pick an image</string>
     <string name="image_alpha">Image alpha</string>
     <string name="image">Image</string>
@@ -291,11 +291,11 @@
     <string name="muted_word">Banned words</string>
     <string name="word_was_muted">The word was banned.</string>
     <string name="copy_complete">Clipboard updated.</string>
-    <string name="footer_color">Footer's color</string>
-    <string name="button_background_color">Button's background color</string>
-    <string name="button_foreground_color">Button's foreground color</string>
-    <string name="tab_background_color">Tab's background color</string>
-    <string name="tab_divider_color">Tab's divider color</string>
+    <string name="footer_color">Footer\'s color</string>
+    <string name="button_background_color">Button\'s background color</string>
+    <string name="button_foreground_color">Button\'s foreground color</string>
+    <string name="tab_background_color">Tab\'s background color</string>
+    <string name="tab_divider_color">Tab\'s divider color</string>
     <string name="open_status_from">Open status from</string>
     <string name="help_translation">Help with the translation</string>
     <string name="dont_use_streaming_api">Refresh manually the feeds</string>
@@ -312,5 +312,6 @@
     <string name="account_picker_reply">Which account do you reply from?</string>
     <string name="reply_from_another_account">Reply from another account</string>
     <string name="launcher_icon_by">Thanks to フタバ for the application icon.</string>
-    <string name="ssl_bug_7_0">Android 7.0 can only use the elliptic curve \"prime256v1\".\nUnfortunatly your instance seems to not support it.\nThis bug has been fixed in Android 7.1.1.\nYou can either upgrade your OS or ask the administrator of your instance to add support to the elliptic curve \"prime256v1\".\nSee also https://code.google.com/p/android/issues/detail?id=224438</string>
+    <string name="ssl_bug_7_0">Android 7.0 can only use the elliptic curve \"prime256v1\".\nUnfortunately your instance seems to not support it.\nThis bug has been fixed in Android 7.1.1.\nYou can either upgrade your OS or ask the administrator of your instance to add support to the elliptic curve \"prime256v1\".\nSee also https://code.google.com/p/android/issues/detail?id=224438</string>
+    <string name="timeline_font">Timeline font (app restart required)</string>
 </resources>

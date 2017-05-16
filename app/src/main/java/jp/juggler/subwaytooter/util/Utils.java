@@ -43,6 +43,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
@@ -777,6 +778,21 @@ public class Utils {
 		return null;
 	}
 	
+	public interface ScanViewCallback {
+		void onScanView( View v );
+	}
+	
+	public static void scanView( View v, ScanViewCallback callback ){
+		if( v == null ) return;
+		callback.onScanView( v );
+		if( v instanceof ViewGroup ){
+			ViewGroup vg = (ViewGroup) v;
+			for( int i = 0, ie = vg.getChildCount() ; i < ie ; ++ i ){
+				scanView( vg.getChildAt( i ), callback );
+			}
+		}
+	}
+	
 	static class FileInfo {
 		
 		Uri uri;
@@ -884,10 +900,10 @@ public class Utils {
 		return resources.getString( string_id, args ) + String.format( " :%s %s", ex.getClass().getSimpleName(), ex.getMessage() );
 	}
 	
-	public static boolean isMainThread(  ){
+	public static boolean isMainThread(){
 		return Looper.getMainLooper().getThread() == Thread.currentThread();
 	}
-		
+	
 	public static void runOnMainThread( @NonNull Runnable proc ){
 		if( Looper.getMainLooper().getThread() == Thread.currentThread() ){
 			proc.run();
@@ -1043,29 +1059,28 @@ public class Utils {
 		return null;
 	}
 	
+	private static final char ALM = (char) 0x061c; // Arabic letter mark (ALM)
+	private static final char LRM = (char) 0x200E; //	Left-to-right mark (LRM)
+	private static final char RLM = (char) 0x200F; //	Right-to-left mark (RLM)
+	private static final char LRE = (char) 0x202A; // Left-to-right embedding (LRE)
+	private static final char RLE = (char) 0x202B; // Right-to-left embedding (RLE)
+	private static final char PDF = (char) 0x202C; // Pop directional formatting (PDF)
+	private static final char LRO = (char) 0x202D; // Left-to-right override (LRO)
+	private static final char RLO = (char) 0x202E; // Right-to-left override (RLO)
 	
-	private static final char ALM = (char)0x061c; // Arabic letter mark (ALM)
-	private static final char LRM = (char)0x200E; //	Left-to-right mark (LRM)
-	private static final char RLM = (char)0x200F; //	Right-to-left mark (RLM)
-	private static final char LRE = (char)0x202A; // Left-to-right embedding (LRE)
-	private static final char RLE = (char)0x202B; // Right-to-left embedding (RLE)
-	private static final char PDF = (char)0x202C; // Pop directional formatting (PDF)
-	private static final char LRO = (char)0x202D; // Left-to-right override (LRO)
-	private static final char RLO = (char)0x202E; // Right-to-left override (RLO)
+	private static final String CHARS_MUST_PDF = String.valueOf( LRE ) + RLE + LRO + RLO;
 	
-	private static final String CHARS_MUST_PDF = String.valueOf( LRE ) + RLE + LRO + RLO ;
+	private static final char LRI = (char) 0x2066; // Left-to-right isolate (LRI)
+	private static final char RLI = (char) 0x2067; // Right-to-left isolate (RLI)
+	private static final char FSI = (char) 0x2068; // First strong isolate (FSI)
+	private static final char PDI = (char) 0x2069; // Pop directional isolate (PDI)
 	
-	private static final char LRI = (char)0x2066; // Left-to-right isolate (LRI)
-	private static final char RLI = (char)0x2067; // Right-to-left isolate (RLI)
-	private static final char FSI = (char)0x2068; // First strong isolate (FSI)
-	private static final char PDI = (char)0x2069; // Pop directional isolate (PDI)
+	private static final String CHARS_MUST_PDI = String.valueOf( LRI ) + RLI + FSI;
 	
-	private static final String CHARS_MUST_PDI = String.valueOf( LRI ) + RLI + FSI ;
-
-	public static String sanitizeBDI(String src){
-
+	public static String sanitizeBDI( String src ){
+		
 		LinkedList< Character > stack = null;
-
+		
 		for( int i = 0, ie = src.length() ; i < ie ; ++ i ){
 			char c = src.charAt( i );
 			
@@ -1082,7 +1097,7 @@ public class Utils {
 		}
 		
 		if( stack == null || stack.isEmpty() ) return src;
-
+		
 		StringBuilder sb = new StringBuilder();
 		sb.append( src );
 		while( ! stack.isEmpty() ){

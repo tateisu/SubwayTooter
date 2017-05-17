@@ -22,10 +22,10 @@
         >
 
         <LinearLayout
+            android:id="@+id/llContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:id="@+id/llContent"
             android:paddingBottom="320dp"
             android:paddingEnd="12dp"
             android:paddingStart="12dp"
@@ -219,14 +219,13 @@
     </ScrollView>
 
     <LinearLayout
+        android:id="@+id/llFooterBar"
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:background="?attr/color_column_header"
         android:baselineAligned="false"
         android:orientation="horizontal"
-        android:id="@+id/llFooterBar"
         >
-
 
         <ImageButton
             android:id="@+id/btnAttachment"
@@ -249,19 +248,14 @@
             tools:src="?attr/ic_public"
             />
 
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            />
-
         <ImageButton
-            android:id="@+id/btnClear"
+            android:id="@+id/btnMore"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:layout_marginStart="4dp"
             android:background="@drawable/btn_bg_transparent"
-            android:contentDescription="@string/clear"
-            android:src="?attr/ic_delete"
+            android:contentDescription="@string/more"
+            android:src="?attr/btn_more"
             />
 
         <View
@@ -269,6 +263,7 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             />
+
 
         <TextView
             android:id="@+id/tvCharCount"

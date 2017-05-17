@@ -317,6 +317,11 @@
 	<string name="launcher_icon_by">Icone de l\'application créée par フタバ</string>
 	<string name="ssl_bug_7_0">Android 7.0 ne peut utiliser qu\'elliptic curve \"prime256v1\" pour les connexions sécurisées.\nL\'instance à laquelle vous voulez vous connecter semble ne pas le gérer.\n-Vous pouvez mettre à jour le système d\'exploitation vers Android 7.1.1.\n-Ou, demander au propriétaire de l\'instance de prendre en charge elliptic curve \"prime256v1\".\nPlus de détails ici: https://code.google.com/p/android/issues/detail?id=224438</string>
 	<string name="timeline_font">Changer la police de caractères de l\'interface\n(redémarrage nécessaire)</string>
+	<string name="account_in_draft_is_lost">The account used for this draft has been removed from app. The following context can not be restored. in_reply_to, media attachment.</string>
+	<string name="attachment_in_draft_is_lost">Some of media attachment in the draft have been lost.</string>
+	<string name="reply_to_in_draft_is_lost">The reply origin referred by draft has been lost. The following context is removed. in_reply_to</string>
+	<string name="restore_draft">Restore from draft</string>
+	<string name="select_draft">Which draft to restore ?</string>
 
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->

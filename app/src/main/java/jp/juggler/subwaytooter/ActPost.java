@@ -38,6 +38,7 @@ import android.widget.TextView;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -59,6 +60,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.dialog.DlgConfirm;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
+import jp.juggler.subwaytooter.table.PostDraft;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.dialog.ActionsDialog;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
@@ -67,12 +69,13 @@ import jp.juggler.subwaytooter.view.MyEditText;
 import jp.juggler.subwaytooter.view.MyNetworkImageView;
 import jp.juggler.subwaytooter.util.PostAttachment;
 import jp.juggler.subwaytooter.util.Utils;
+import okhttp3.Call;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 import okio.BufferedSink;
-
 
 public class ActPost extends AppCompatActivity implements View.OnClickListener, PostAttachment.Callback {
 	static final LogCategory log = new LogCategory( "ActPost" );
@@ -148,19 +151,18 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			break;
 		
 		case R.id.btnPost:
-			performPost( false,false );
+			performPost( false, false );
 			break;
 		
 		case R.id.btnRemoveReply:
 			removeReply();
 			break;
 		
-		case R.id.btnClear:
-			performClear();
+		case R.id.btnMore:
+			performMore();
 			break;
 		}
 	}
-	
 	
 	private static final int REQUEST_CODE_ATTACHMENT = 1;
 	private static final int REQUEST_CODE_CAMERA = 2;
@@ -209,6 +211,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			}
 		}
 		super.onActivityResult( requestCode, resultCode, data );
+	}
+	
+	@Override public void onBackPressed(){
+		saveDraft();
+		super.onBackPressed();
 	}
 	
 	SharedPreferences pref;
@@ -505,9 +512,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		
 		setContentView( R.layout.act_post );
 		
-		Styler.fixHorizontalPadding(findViewById( R.id.llContent ));
-		Styler.fixHorizontalMargin(findViewById( R.id.llFooterBar ));
-		
+		Styler.fixHorizontalPadding( findViewById( R.id.llContent ) );
+		Styler.fixHorizontalMargin( findViewById( R.id.llFooterBar ) );
 		
 		formRoot = findViewById( R.id.viewRoot );
 		scrollView = (ScrollView) findViewById( R.id.scrollView );
@@ -590,7 +596,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		
 		scrollView.getViewTreeObserver().addOnScrollChangedListener( scroll_listener );
 		
-		View v = findViewById( R.id.btnClear );
+		View v = findViewById( R.id.btnMore );
 		v.setOnClickListener( this );
 	}
 	
@@ -800,14 +806,13 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		
 	}
 	
-	
 	void openAttachment(){
 		int permissionCheck = ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_EXTERNAL_STORAGE );
 		if( permissionCheck != PackageManager.PERMISSION_GRANTED ){
 			preparePermission();
 			return;
 		}
-
+		
 		ActionsDialog a = new ActionsDialog();
 		a.addAction( getString( R.string.image_pick ), new Runnable() {
 			@Override public void run(){
@@ -823,7 +828,6 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		
 	}
 	
-	
 	private void performAttachment(){
 		
 		if( attachment_list != null && attachment_list.size() >= 4 ){
@@ -835,7 +839,6 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			Utils.showToast( this, false, R.string.account_select_please );
 			return;
 		}
-		
 		
 		// SAFのIntentで開く
 		try{
@@ -1235,8 +1238,22 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	
 	///////////////////////////////////////////////////////////////////////////////////////
 	
-	private void performClear(){
+	private void performMore(){
 		ActionsDialog dialog = new ActionsDialog();
+		
+		final ArrayList< JSONObject > list_draft = PostDraft.loadList( 20 );
+		
+		if( ! list_draft.isEmpty() ){
+			dialog.addAction(
+				getString( R.string.restore_draft )
+				, new Runnable() {
+					@Override public void run(){
+						openDraftPicker( list_draft );
+					}
+				}
+			);
+		}
+		
 		dialog.addAction(
 			getString( R.string.clear_text )
 			, new Runnable() {
@@ -1323,6 +1340,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					.setNegativeButton( R.string.cancel, null )
 					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 						@Override public void onClick( DialogInterface dialog, int which ){
+							//noinspection ConstantConditions
 							performPost( true, bConfirmAccount );
 						}
 					} )
@@ -1462,4 +1480,266 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		in_reply_to_image = null;
 		showReplyTo();
 	}
+	
+	/////////////////////////////////////////////////
+	
+	static final String DRAFT_CONTENT = "content";
+	static final String DRAFT_CONTENT_WARNING = "content_warning";
+	static final String DRAFT_CONTENT_WARNING_CHECK = "content_warning_check";
+	static final String DRAFT_NSFW_CHECK = "nsfw_check";
+	static final String DRAFT_VISIBILITY = "visibility";
+	static final String DRAFT_ACCOUNT_DB_ID = "account_db_id";
+	static final String DRAFT_ATTACHMENT_LIST = "attachment_list";
+	static final String DRAFT_REPLY_ID = "reply_id";
+	static final String DRAFT_REPLY_TEXT = "reply_text";
+	static final String DRAFT_REPLY_IMAGE = "reply_image";
+	
+	private void saveDraft(){
+		String content = etContent.getText().toString();
+		String content_warning = etContentWarning.getText().toString();
+		if( TextUtils.isEmpty( content.trim() ) && TextUtils.isEmpty( content_warning.trim() ) ){
+			log.d( "saveDraft: dont save empty content" );
+			return;
+		}
+		try{
+			JSONArray tmp_attachment_list = new JSONArray();
+			if( attachment_list != null ){
+				for( PostAttachment pa : attachment_list ){
+					if( pa.attachment != null ) tmp_attachment_list.put( pa.attachment.json );
+				}
+			}
+			
+			JSONObject json = new JSONObject();
+			json.put( DRAFT_CONTENT, content );
+			json.put( DRAFT_CONTENT_WARNING, content_warning );
+			json.put( DRAFT_CONTENT_WARNING_CHECK, cbContentWarning.isChecked() );
+			json.put( DRAFT_NSFW_CHECK, cbNSFW.isChecked() );
+			json.put( DRAFT_VISIBILITY, visibility );
+			json.put( DRAFT_ACCOUNT_DB_ID, ( account == null ? - 1L : account.db_id ) );
+			json.put( DRAFT_ATTACHMENT_LIST, tmp_attachment_list );
+			json.put( DRAFT_REPLY_ID, in_reply_to_id );
+			json.put( DRAFT_REPLY_TEXT, in_reply_to_text );
+			json.put( DRAFT_REPLY_IMAGE, in_reply_to_image );
+			
+			PostDraft.save( System.currentTimeMillis(), json );
+			
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+		}
+	}
+	
+	private void openDraftPicker( @NonNull ArrayList< JSONObject > list_draft ){
+		
+		ActionsDialog dialog = new ActionsDialog();
+		for( JSONObject o : list_draft ){
+			final JSONObject draft = o;
+			String cw = draft.optString( DRAFT_CONTENT_WARNING );
+			String c = draft.optString( DRAFT_CONTENT );
+			StringBuilder sb = new StringBuilder();
+			if( ! TextUtils.isEmpty( cw.trim() ) ){
+				sb.append( cw );
+			}
+			if( ! TextUtils.isEmpty( c.trim() ) ){
+				if( sb.length() > 0 ) sb.append( "\n" );
+				sb.append( c );
+			}
+			String caption = sb.toString();
+			dialog.addAction(
+				caption
+				, new Runnable() {
+					@Override public void run(){
+						restoreDraft( draft );
+					}
+				}
+			);
+		}
+		
+		dialog.show( this, getString( R.string.select_draft ) );
+	}
+	
+	static boolean check_exist( String url ){
+		try{
+			Request request = new Request.Builder().url( url ).build();
+			Call call = App1.ok_http_client.newCall( request );
+			return call.execute().isSuccessful();
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+		}
+		return false;
+	}
+	
+	private void restoreDraft( final JSONObject draft ){
+		
+		final ProgressDialog progress = new ProgressDialog( this );
+		
+		final AsyncTask< Void, String, String > task = new AsyncTask< Void, String, String >() {
+			
+			ArrayList< String > list_warning = new ArrayList<>();
+			SavedAccount account;
+			
+			@Override protected String doInBackground( Void... params ){
+				
+				String content = draft.optString( DRAFT_CONTENT );
+				String content_warning = draft.optString( DRAFT_CONTENT_WARNING );
+				boolean content_warning_checked = draft.optBoolean( DRAFT_CONTENT_WARNING_CHECK );
+				boolean nsfw_checked = draft.optBoolean( DRAFT_NSFW_CHECK );
+				long account_db_id = draft.optLong( DRAFT_ACCOUNT_DB_ID );
+				JSONArray tmp_attachment_list = draft.optJSONArray( DRAFT_ATTACHMENT_LIST );
+				long reply_id = draft.optLong( DRAFT_REPLY_ID, in_reply_to_id );
+				String reply_text = draft.optString( DRAFT_REPLY_TEXT, in_reply_to_text );
+				String reply_image = draft.optString( DRAFT_REPLY_IMAGE, in_reply_to_image );
+				
+				account = SavedAccount.loadAccount( log, account_db_id );
+				if( account == null ){
+					list_warning.add( getString( R.string.account_in_draft_is_lost ) );
+					try{
+						for( int i = 0, ie = tmp_attachment_list.length() ; i < ie ; ++ i ){
+							TootAttachment ta = TootAttachment.parse( log, tmp_attachment_list.optJSONObject( i ) );
+							if( ta != null ){
+								content = content.replace( ta.text_url, "" );
+							}
+						}
+						tmp_attachment_list = new JSONArray();
+						draft.put( DRAFT_ATTACHMENT_LIST, tmp_attachment_list );
+						draft.put( DRAFT_CONTENT, content );
+						draft.remove( DRAFT_REPLY_ID );
+						draft.remove( DRAFT_REPLY_TEXT );
+						draft.remove( DRAFT_REPLY_IMAGE );
+					}catch( JSONException ignored ){
+					}
+					return "OK";
+				}
+				// アカウントがあるなら基本的にはすべての情報を復元できるはずだが、いくつか確認が必要だ
+				TootApiClient api_client = new TootApiClient( ActPost.this, new TootApiClient.Callback() {
+					@Override public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override public void publishApiProgress( final String s ){
+						Utils.runOnMainThread( new Runnable() {
+							@Override public void run(){
+								progress.setMessage( s );
+							}
+						} );
+					}
+				} );
+				api_client.setAccount( account );
+				
+				if( in_reply_to_id != - 1L ){
+					TootApiResult result = api_client.request( "/api/v1/statuses/" + in_reply_to_id );
+					if( isCancelled() ) return null;
+					if( result != null && result.object == null ){
+						list_warning.add( getString( R.string.reply_to_in_draft_is_lost ) );
+						draft.remove( DRAFT_REPLY_ID );
+						draft.remove( DRAFT_REPLY_TEXT );
+						draft.remove( DRAFT_REPLY_IMAGE );
+					}
+				}
+				try{
+					boolean isSomeAttachmentRemoved = false;
+					for( int i = tmp_attachment_list.length() - 1 ; i >= 0 ; -- i ){
+						if( isCancelled() ) return null;
+						TootAttachment ta = TootAttachment.parse( log, tmp_attachment_list.optJSONObject( i ) );
+						if( ta == null ){
+							isSomeAttachmentRemoved = true;
+							tmp_attachment_list.remove( i );
+						}else if( ! check_exist( ta.url ) ){
+							isSomeAttachmentRemoved = true;
+							tmp_attachment_list.remove( i );
+							content = content.replace( ta.text_url, "" );
+						}
+					}
+					if( isSomeAttachmentRemoved ){
+						list_warning.add( getString( R.string.attachment_in_draft_is_lost ) );
+						draft.put( DRAFT_ATTACHMENT_LIST, tmp_attachment_list );
+						draft.put( DRAFT_CONTENT, content );
+					}
+				}catch( JSONException ex ){
+					ex.printStackTrace();
+				}
+				
+				return "OK";
+			}
+			
+			@Override protected void onCancelled( String result ){
+				super.onCancelled( result );
+			}
+			
+			@Override protected void onPostExecute( String result ){
+				progress.dismiss();
+				
+				if( isCancelled() || result == null ){
+					// cancelled.
+					return;
+				}
+				
+				String content = draft.optString( DRAFT_CONTENT );
+				String content_warning = draft.optString( DRAFT_CONTENT_WARNING );
+				boolean content_warning_checked = draft.optBoolean( DRAFT_CONTENT_WARNING_CHECK );
+				boolean nsfw_checked = draft.optBoolean( DRAFT_NSFW_CHECK );
+				JSONArray tmp_attachment_list = draft.optJSONArray( DRAFT_ATTACHMENT_LIST );
+				long reply_id = draft.optLong( DRAFT_REPLY_ID, in_reply_to_id );
+				String reply_text = draft.optString( DRAFT_REPLY_TEXT, in_reply_to_text );
+				String reply_image = draft.optString( DRAFT_REPLY_IMAGE, in_reply_to_image );
+				
+				etContent.setText( content );
+				etContent.setSelection( content.length() );
+				etContentWarning.setText( content_warning );
+				etContentWarning.setSelection( content_warning.length() );
+				cbContentWarning.setChecked( content_warning_checked );
+				cbNSFW.setChecked( nsfw_checked );
+				ActPost.this.visibility = visibility;
+				
+				if( account != null ) setAccount( account );
+				
+				if( tmp_attachment_list.length() > 0 ){
+					if( attachment_list != null ){
+						attachment_list.clear();
+					}else{
+						attachment_list = new ArrayList<>();
+					}
+					for( int i = 0, ie = tmp_attachment_list.length() ; i < ie ; ++ i ){
+						TootAttachment ta = TootAttachment.parse( log, tmp_attachment_list.optJSONObject( i ) );
+						if( ta != null ){
+							PostAttachment pa = new PostAttachment( ta );
+							attachment_list.add( pa );
+						}
+					}
+				}
+				if( reply_id != - 1L ){
+					in_reply_to_id = reply_id;
+					in_reply_to_text = reply_text;
+					in_reply_to_image = reply_image;
+				}
+				
+				updateContentWarning();
+				showMediaAttachment();
+				showVisibility();
+				updateTextCount();
+				showReplyTo();
+				
+				if( ! list_warning.isEmpty() ){
+					StringBuilder sb = new StringBuilder();
+					for( String s : list_warning ){
+						if( sb.length() > 0 ) sb.append( "\n" );
+						sb.append( s );
+					}
+					new AlertDialog.Builder( ActPost.this )
+						.setMessage( sb )
+						.setNeutralButton( R.string.close, null )
+						.show();
+				}
+			}
+		};
+		progress.setIndeterminate( true );
+		progress.setCancelable( true );
+		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
+			@Override public void onCancel( DialogInterface dialog ){
+				task.cancel( true );
+			}
+		} );
+		progress.show();
+		task.executeOnExecutor( App1.task_executor );
+	}
+	
 }

@@ -307,6 +307,34 @@ public class AppDataExporter {
 		e.apply();
 	}
 	
+	private static void writeColumn( AppState app_state, JsonWriter writer ) throws IOException, JSONException{
+		writer.beginArray();
+		for( Column column : app_state.column_list ){
+			JSONObject dst = new JSONObject();
+			column.encodeJSON( dst, 0 );
+			writeJSONObject( writer, dst );
+		}
+		writer.endArray();
+	}
+	
+	private static @NonNull
+	ArrayList< Column > readColumn( AppState app_state, JsonReader reader, HashMap< Long, Long > id_map ) throws IOException, JSONException{
+		ArrayList< Column > result = new ArrayList<>();
+		reader.beginArray();
+		while( reader.hasNext() ){
+			JSONObject item = readJsonObject( reader );
+			long old_id = item.optLong( Column.KEY_ACCOUNT_ROW_ID, - 1L );
+			Long new_id = id_map.get( old_id );
+			if( new_id == null ){
+				throw new RuntimeException( "readColumn: can't convert account id" );
+			}
+			item.put( Column.KEY_ACCOUNT_ROW_ID, (long) new_id );
+			result.add( new Column( app_state, item ) );
+		}
+		reader.endArray();
+		return result;
+	}
+	
 	private static final String KEY_PREF = "pref";
 	private static final String KEY_ACCOUNT = "account";
 	private static final String KEY_COLUMN = "column";
@@ -334,13 +362,8 @@ public class AppDataExporter {
 		//////////////////////////////////////
 		{
 			writer.name( KEY_COLUMN );
-			writer.beginArray();
-			for( Column column : app_state.column_list ){
-				JSONObject dst = new JSONObject();
-				column.encodeJSON( dst, 0 );
-				writeJSONObject( writer, dst );
-			}
-			writer.endArray();
+			writeColumn( app_state, writer );
+			
 		}
 		
 		writer.endObject();
@@ -376,7 +399,7 @@ public class AppDataExporter {
 				importTable( reader, MutedWord.table, null );
 				
 			}else if( KEY_COLUMN.equals( name ) ){
-				result = importColumn( app_state, reader, account_id_map );
+				result = readColumn( app_state, reader, account_id_map );
 			}
 		}
 		
@@ -387,21 +410,4 @@ public class AppDataExporter {
 		return result;
 	}
 	
-	private static @NonNull
-	ArrayList< Column > importColumn( AppState app_state, JsonReader reader, HashMap< Long, Long > id_map ) throws IOException, JSONException{
-		ArrayList< Column > result = new ArrayList<>();
-		reader.beginArray();
-		while( reader.hasNext() ){
-			JSONObject item = readJsonObject( reader );
-			long old_id = item.optLong( Column.KEY_ACCOUNT_ROW_ID, - 1L );
-			Long new_id = id_map.get( old_id );
-			if( new_id == null ){
-				throw new RuntimeException( "importColumn: can't convert account id" );
-			}
-			item.put( Column.KEY_ACCOUNT_ROW_ID, (long) new_id );
-			result.add( new Column( app_state, item ) );
-		}
-		reader.endArray();
-		return result;
-	}
 }

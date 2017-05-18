@@ -2,6 +2,8 @@ package jp.juggler.subwaytooter.view;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.text.TextUtils;
@@ -9,36 +11,18 @@ import android.util.AttributeSet;
 import android.view.ViewGroup;
 import android.support.v7.widget.AppCompatImageView;
 
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.ImageLoader;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.Target;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import jp.juggler.subwaytooter.Pref;
 
 public class MyNetworkImageView extends AppCompatImageView {
-	/**
-	 * The URL of the network image to load
-	 */
-	private String mUrl;
-	
-	/**
-	 * Resource ID of the image to be used as a placeholder until the network image is loaded.
-	 */
-	private int mDefaultImageId;
-	
-	/**
-	 * Resource ID of the image to be used if the network response fails.
-	 */
-	private int mErrorImageId;
-	
-	/**
-	 * Local copy of the ImageLoader.
-	 */
-	private ImageLoader mImageLoader;
-	
-	/**
-	 * Current ImageContainer. (either in-flight or finished)
-	 */
-	private ImageLoader.ImageContainer mImageContainer;
 	
 	public MyNetworkImageView( Context context ){
 		this( context, null );
@@ -53,36 +37,19 @@ public class MyNetworkImageView extends AppCompatImageView {
 	}
 	
 	/**
-	 * Sets URL of the image that should be loaded into this view. Note that calling this will
-	 * immediately either set the cached image (if available) or the default image specified by
-	 * {@link com.android.volley.toolbox.NetworkImageView#setDefaultImageResId(int)} on the view.
-	 * <p>
-	 * NOTE: If applicable, {@link com.android.volley.toolbox.NetworkImageView#setDefaultImageResId(int)} and
-	 * {@link com.android.volley.toolbox.NetworkImageView#setErrorImageResId(int)} should be called prior to calling
-	 * this function.
-	 *
-	 * @param url         The URL that should be loaded into this ImageView.
-	 * @param imageLoader ImageLoader that will be used to make the request.
+	 * Resource ID of the image to be used as a placeholder until the network image is loaded.
 	 */
-	public void setImageUrl( String url, ImageLoader imageLoader ){
-		mUrl = url;
-		mImageLoader = imageLoader;
-		// The URL has potentially changed. See if we need to load it.
-		loadImageIfNecessary( false );
-	}
+	private int mDefaultImageId;
 	
-	/**
-	 * Sets the default image resource ID to be used for this view until the attempt to load it
-	 * completes.
-	 */
 	public void setDefaultImageResId( int defaultImage ){
 		mDefaultImageId = defaultImage;
 	}
 	
 	/**
-	 * Sets the error image resource ID to be used for this view in the event that the image
-	 * requested fails to load.
+	 * Resource ID of the image to be used if the network response fails.
 	 */
+	private int mErrorImageId;
+	
 	public void setErrorImageResId( int errorImage ){
 		mErrorImageId = errorImage;
 	}
@@ -91,20 +58,49 @@ public class MyNetworkImageView extends AppCompatImageView {
 	
 	// 元画像の短辺に対する割合を指定するらしい
 	public void setCornerRadius( SharedPreferences pref, float r ){
-		if( ! pref.getBoolean( Pref.KEY_DONT_ROUND,false ) ){
+		if( ! pref.getBoolean( Pref.KEY_DONT_ROUND, false ) ){
 			mCornerRadius = r;
+		}
+	}
+	
+	/**
+	 * The URL of the network image to load
+	 */
+	private String mUrl;
+	
+	public void setImageUrl( String url ){
+		mUrl = url;
+		// The URL has potentially changed. See if we need to load it.
+		loadImageIfNecessary(false);
+	}
+	
+	Target< ? > mTarget;
+	String mTargetUrl;
+	
+	private void cancelLoading(){
+		if( mTarget != null ){
+			setImageDrawable( null );
+			Glide.clear( mTarget );
+			mTarget = null;
+			mTargetUrl = null;
+		}
+	}
+	
+	private void setDefaultImageOrNull(){
+		if( mDefaultImageId != 0 ){
+			setImageResource( mDefaultImageId );
+		}else{
+			setImageDrawable( null );
 		}
 	}
 	
 	/**
 	 * Loads the image for the view if it isn't already loaded.
 	 *
-	 * @param isInLayoutPass True if this was invoked from a layout pass, false otherwise.
 	 */
-	void loadImageIfNecessary( final boolean isInLayoutPass ){
+	void loadImageIfNecessary(final boolean isInLayoutPass){
 		int width = getWidth();
 		int height = getHeight();
-		ScaleType scaleType = getScaleType();
 		
 		boolean wrapWidth = false, wrapHeight = false;
 		if( getLayoutParams() != null ){
@@ -122,106 +118,82 @@ public class MyNetworkImageView extends AppCompatImageView {
 		// if the URL to be loaded in this view is empty, cancel any old requests and clear the
 		// currently loaded image.
 		if( TextUtils.isEmpty( mUrl ) ){
-			if( mImageContainer != null ){
-				mImageContainer.cancelRequest();
-				mImageContainer = null;
-			}
+			cancelLoading();
 			setDefaultImageOrNull();
 			return;
+		}else if( mTarget != null ){
+			// if there was an old request in this view, check if it needs to be canceled.
+			// if the request is from the same URL, return.
+			if( mUrl.equals( mTargetUrl ) ) return;
+
+			// if there is a pre-existing request, cancel it if it's fetching a different URL.
+			cancelLoading();
 		}
 		
-		// if there was an old request in this view, check if it needs to be canceled.
-		if( mImageContainer != null && mImageContainer.getRequestUrl() != null ){
-			if( mImageContainer.getRequestUrl().equals( mUrl ) ){
-				// if the request is from the same URL, return.
-				return;
-			}else{
-				// if there is a pre-existing request, cancel it if it's fetching a different URL.
-				mImageContainer.cancelRequest();
-				setDefaultImageOrNull();
-			}
-		}
+		setDefaultImageOrNull();
 		
 		// Calculate the max image width / height to use while ignoring WRAP_CONTENT dimens.
-		int maxWidth = wrapWidth ? 0 : width;
-		int maxHeight = wrapHeight ? 0 : height;
+		int desiredWidth = wrapWidth ? Target.SIZE_ORIGINAL : width;
+		int desiredHeight = wrapHeight ? Target.SIZE_ORIGINAL : height;
 		
-		// The pre-existing content of this view didn't match the current URL. Load the new image
-		// from the network.
-		ImageLoader.ImageContainer newContainer = mImageLoader.get( mUrl,
-			new ImageLoader.ImageListener() {
-				@Override
-				public void onErrorResponse( VolleyError error ){
-					if( mErrorImageId != 0 ){
-						setImageResource( mErrorImageId );
-					}
+		final AtomicBoolean isImmediate = new AtomicBoolean(true);
+		mTargetUrl = mUrl;
+		mTarget = Glide.with( getContext() )
+			.load( mUrl )
+			.asBitmap()
+			.into(
+			new SimpleTarget< Bitmap >( desiredWidth, desiredHeight ) {
+				@Override public void onLoadFailed( Exception e, Drawable errorDrawable ){
+					e.printStackTrace();
+					if( mErrorImageId != 0 ) setImageResource( mErrorImageId );
 				}
 				
-				@Override
-				public void onResponse( final ImageLoader.ImageContainer response, boolean isImmediate ){
-					// If this was an immediate response that was delivered inside of a layout
-					// pass do not set the image immediately as it will trigger a requestLayout
-					// inside of a layout. Instead, defer setting the image by posting back to
-					// the main thread.
-					if( isImmediate && isInLayoutPass ){
+				@Override public void onResourceReady(
+					final Bitmap bitmap
+					,final  GlideAnimation< ? super Bitmap > glideAnimation
+				){
+					if( isImmediate.get() && isInLayoutPass ){
 						post( new Runnable() {
 							@Override
 							public void run(){
-								onResponse( response, false );
+								onResourceReady( bitmap, glideAnimation );
 							}
 						} );
 						return;
 					}
 					
-					if( response.getBitmap() != null ){
-						if( mCornerRadius > 0f ){
-							RoundedBitmapDrawable d = RoundedBitmapDrawableFactory
-								.create( getResources(), response.getBitmap() );
-							d.setCornerRadius( mCornerRadius );
-							setImageDrawable( d );
-						}else{
-							setImageBitmap( response.getBitmap() );
-							
-						}
-					}else if( mDefaultImageId != 0 ){
-						setImageResource( mDefaultImageId );
+					if( bitmap == null ){
+						setDefaultImageOrNull();
+					}else if( mCornerRadius <= 0f ){
+						setImageBitmap( bitmap );
+					}else{
+						RoundedBitmapDrawable d = RoundedBitmapDrawableFactory
+							.create( getResources(), bitmap );
+						d.setCornerRadius( mCornerRadius );
+						setImageDrawable( d );
 					}
 				}
-			}, maxWidth, maxHeight, scaleType );
-		
-		// update the ImageContainer to be the new bitmap container.
-		mImageContainer = newContainer;
+			}
+		);
+		isImmediate.set(false);
 	}
-	
-	private void setDefaultImageOrNull(){
-		if( mDefaultImageId != 0 ){
-			setImageResource( mDefaultImageId );
-		}else{
-			setImageBitmap( null );
-		}
-	}
-	
-	@Override
-	protected void onLayout( boolean changed, int left, int top, int right, int bottom ){
+
+	@Override protected void onLayout( boolean changed, int left, int top, int right, int bottom ){
 		super.onLayout( changed, left, top, right, bottom );
-		loadImageIfNecessary( true );
+		loadImageIfNecessary(true);
 	}
 	
-	@Override
-	protected void onDetachedFromWindow(){
-		if( mImageContainer != null ){
-			// If the view was bound to an image request, cancel it and clear
-			// out the image from the view.
-			mImageContainer.cancelRequest();
-			setImageBitmap( null );
-			// also clear out the container so we can reload the image if necessary.
-			mImageContainer = null;
-		}
+	@Override protected void onDetachedFromWindow(){
+		cancelLoading();
 		super.onDetachedFromWindow();
 	}
 	
-	@Override
-	protected void drawableStateChanged(){
+	@Override protected void onAttachedToWindow(){
+		super.onAttachedToWindow();
+		loadImageIfNecessary(true);
+	}
+	
+	@Override protected void drawableStateChanged(){
 		super.drawableStateChanged();
 		invalidate();
 	}

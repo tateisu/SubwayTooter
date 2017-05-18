@@ -291,7 +291,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		account_follow = who;
 		llFollow.setVisibility( View.VISIBLE );
 		ivFollow.setCornerRadius( activity.pref, 16f );
-		ivFollow.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ), App1.getImageLoader() );
+		ivFollow.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ) );
 		tvFollowerName.setText( who.display_name );
 		setAcct( tvFollowerAcct, access_info.getFullAcct( who ), R.attr.colorAcctSmall );
 		
@@ -309,7 +309,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		tvName.setText( status.account.display_name );
 		ivThumbnail.setCornerRadius( activity.pref, 16f );
-		ivThumbnail.setImageUrl( access_info.supplyBaseUrl( status.account.avatar_static ), App1.getImageLoader() );
+		ivThumbnail.setImageUrl( access_info.supplyBaseUrl( status.account.avatar_static ) );
 		tvContent.setText( status.decoded_content );
 		
 		//			if( status.decoded_tags == null ){
@@ -409,7 +409,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			String url = ta.preview_url;
 			if( TextUtils.isEmpty( url ) ) url = ta.remote_url;
 			iv.setCornerRadius( activity.pref, 16f ); // 正方形じゃないせいか、うまく動かない activity.density * 4f );
-			iv.setImageUrl( access_info.supplyBaseUrl( url ), App1.getImageLoader() );
+			iv.setImageUrl( access_info.supplyBaseUrl( url ) );
 		}
 	}
 	

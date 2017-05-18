@@ -102,9 +102,9 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 			btnFollow.setImageDrawable( null );
 		}else{
 			tvCreated.setText( TootStatus.formatTime( who.time_created_at ) );
-			ivBackground.setImageUrl( access_info.supplyBaseUrl( who.header_static ), App1.getImageLoader() );
+			ivBackground.setImageUrl( access_info.supplyBaseUrl( who.header_static ) );
 			ivAvatar.setCornerRadius( activity.pref,16f );
-			ivAvatar.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ), App1.getImageLoader() );
+			ivAvatar.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ) );
 			tvDisplayName.setText( who.display_name );
 			
 			String s = "@" + access_info.getFullAcct( who );

@@ -2,27 +2,24 @@ package jp.juggler.subwaytooter;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.graphics.Bitmap;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
-import android.support.v4.util.LruCache;
-import android.widget.ImageView;
 
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.ImageLoader;
-import com.android.volley.toolbox.Volley;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.GlideBuilder;
+import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader;
+import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory;
+import com.bumptech.glide.load.model.GlideUrl;
+
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Executor;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -166,94 +163,35 @@ public class App1 extends Application {
 		CipherSuite.TLS_DHE_RSA_WITH_AES_256_CBC_SHA, // m.sighash.info 用 デフォルトにはない
 	};
 	
-	static ImageLoader image_loader;
-	
-	public static ImageLoader getImageLoader(){
-		return image_loader;
-	}
-	
-	private static class MyImageLoader extends ImageLoader {
-		
-		/**
-		 * Constructs a new ImageLoader.
-		 *
-		 * @param queue      The RequestQueue to use for making image requests.
-		 * @param imageCache The cache to use as an L1 cache.
-		 */
-		MyImageLoader( RequestQueue queue, ImageCache imageCache ){
-			super( queue, imageCache );
-		}
-		
-		@Override
-		protected Request< Bitmap > makeImageRequest( String requestUrl, int maxWidth, int maxHeight, ImageView.ScaleType scaleType, String cacheKey ){
-			Request< Bitmap > req = super.makeImageRequest( requestUrl, maxWidth, maxHeight, scaleType, cacheKey );
-			req.setRetryPolicy( new DefaultRetryPolicy(
-				30000 // SOCKET_TIMEOUT_MS
-				, 3 // DefaultRetryPolicy.DEFAULT_MAX_RETRIES
-				, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-			) );
-			return req;
-		}
-	}
-	
-	private static class BitmapCache implements ImageLoader.ImageCache {
-		
-		private LruCache< String, Bitmap > mCache;
-		
-		BitmapCache(Context context){
-			
-			ActivityManager am = ((ActivityManager)context.getSystemService(Activity.ACTIVITY_SERVICE));
-			int memory = am.getMemoryClass();
-			int largeMemory = am.getLargeMemoryClass();
-			// どちらも単位はMB
-			log.d("MemoryClass=%d, LargeMemoryClass = %d",memory,largeMemory);
-			
-			int maxSize;
-			if( am.isLowRamDevice() ){
-				maxSize = 5 * 1024; // 単位はKiB
-			}else if( largeMemory >= 512 ){
-				maxSize = 128 * 1024; // 単位はKiB
-			}else if( largeMemory >= 256 ){
-				maxSize = 64 * 1024; // 単位はKiB
-			}else{
-				maxSize = 10 * 1024; // 単位はKiB
-			}
-			
-			mCache = new LruCache< String, Bitmap >( maxSize ) {
-				@Override
-				protected int sizeOf( String key, Bitmap value ){
-					int size = value.getRowBytes() * value.getHeight();
-					size = ((size + 1023) >> 10); // 単位はKiB
-					size = 1+(size>>10);
-					return size <= 0 ? 1 : size;
-				}
-			};
-		}
-		
-		@Override public Bitmap getBitmap( String url ){
-			return mCache.get( url );
-		}
-		
-		@Override public void putBitmap( String url, Bitmap bitmap ){
-			mCache.put( url, bitmap );
-		}
-		
-	}
+	//	private int getBitmapPoolSize( Context context ){
+	//		ActivityManager am = ((ActivityManager)context.getSystemService(Activity.ACTIVITY_SERVICE));
+	//		int memory = am.getMemoryClass();
+	//		int largeMemory = am.getLargeMemoryClass();
+	//		// どちらも単位はMB
+	//		log.d("MemoryClass=%d, LargeMemoryClass = %d",memory,largeMemory);
+	//
+	//		int maxSize;
+	//		if( am.isLowRamDevice() ){
+	//			maxSize = 5 * 1024; // 単位はKiB
+	//		}else if( largeMemory >= 512 ){
+	//			maxSize = 128 * 1024; // 単位はKiB
+	//		}else if( largeMemory >= 256 ){
+	//			maxSize = 64 * 1024; // 単位はKiB
+	//		}else{
+	//			maxSize = 10 * 1024; // 単位はKiB
+	//		}
+	//		return maxSize * 1024;
+	//	}
 	
 	public static OkHttpClient ok_http_client;
 	
 	public static Typeface typeface_emoji;
 	
-	// public static final RelationshipMap relationship_map = new RelationshipMap();
-	
 	public static SharedPreferences pref;
 	
-	
-	/**
-	 * An {@link Executor} that can be used to execute tasks in parallel.
-	 */
 	public static ThreadPoolExecutor task_executor;
 	
+	static OkHttpUrlLoader.Factory glide_okhttp3_factory;
 	
 	@Override
 	public void onCreate(){
@@ -271,20 +209,21 @@ public class App1 extends Application {
 			// the CPU with background work
 			
 			int CPU_COUNT = Runtime.getRuntime().availableProcessors();
-			int CORE_POOL_SIZE = Math.max(2, Math.min(CPU_COUNT - 1, 4));
+			int CORE_POOL_SIZE = Math.max( 2, Math.min( CPU_COUNT - 1, 4 ) );
 			int MAXIMUM_POOL_SIZE = CPU_COUNT * 2 + 1;
 			int KEEP_ALIVE_SECONDS = 30;
 			
 			// デフォルトだとキューはmax128で、溢れることがある
-			BlockingQueue<Runnable> sPoolWorkQueue = new LinkedBlockingQueue<>(999);
-
+			BlockingQueue< Runnable > sPoolWorkQueue = new LinkedBlockingQueue<>( 999 );
+			
 			ThreadFactory sThreadFactory = new ThreadFactory() {
-				private final AtomicInteger mCount = new AtomicInteger(1);
-				public Thread newThread( @NonNull Runnable r) {
-					return new Thread(r, "SubwayTooterTask #" + mCount.getAndIncrement());
+				private final AtomicInteger mCount = new AtomicInteger( 1 );
+				
+				public Thread newThread( @NonNull Runnable r ){
+					return new Thread( r, "SubwayTooterTask #" + mCount.getAndIncrement() );
 				}
 			};
-
+			
 			task_executor = new ThreadPoolExecutor(
 				CORE_POOL_SIZE  // pool size
 				, MAXIMUM_POOL_SIZE // max pool size
@@ -293,10 +232,9 @@ public class App1 extends Application {
 				, sPoolWorkQueue
 				, sThreadFactory
 			);
-
-			task_executor.allowCoreThreadTimeOut(true);
+			
+			task_executor.allowCoreThreadTimeOut( true );
 		}
-		
 		
 		if( pref == null ){
 			pref = Pref.pref( getApplicationContext() );
@@ -317,12 +255,12 @@ public class App1 extends Application {
 			AcctSet.deleteOld( System.currentTimeMillis() );
 		}
 		
-		if( image_loader == null ){
-			image_loader = new MyImageLoader(
-				Volley.newRequestQueue( getApplicationContext() )
-				, new BitmapCache( getApplicationContext() )
-			);
-		}
+		//		if( image_loader == null ){
+		//			image_loader = new MyImageLoader(
+		//				Volley.newRequestQueue( getApplicationContext() )
+		//				, new BitmapCache( getApplicationContext() )
+		//			);
+		//		}
 		
 		if( ok_http_client == null ){
 			
@@ -333,17 +271,55 @@ public class App1 extends Application {
 			ArrayList< ConnectionSpec > spec_list = new ArrayList<>();
 			spec_list.add( spec );
 			spec_list.add( ConnectionSpec.CLEARTEXT );
-
+			
 			OkHttpClient.Builder builder = new OkHttpClient.Builder()
 				.connectTimeout( 30, TimeUnit.SECONDS )
 				.readTimeout( 30, TimeUnit.SECONDS )
 				.writeTimeout( 30, TimeUnit.SECONDS )
-				.connectionSpecs( spec_list )
-			;
+				.connectionSpecs( spec_list );
 			
 			ok_http_client = builder.build();
 		}
 		
+		// Glide.isSetup は Glide 4.0 で廃止になるらしいが、俺が使ってるのは3.xだ
+		//noinspection deprecation
+		if( ! Glide.isSetup() ){
+			Context context = getApplicationContext();
+			
+			GlideBuilder builder = new GlideBuilder( context );
+			builder.setDiskCache( new InternalCacheDiskCacheFactory( context, 10 * 1024 * 1024 ) );
+			
+			// 割とGlide任せで十分いけるっぽい
+			//			MemorySizeCalculator calculator = new MemorySizeCalculator(context);
+			//			int defaultMemoryCacheSize = calculator.getMemoryCacheSize();
+			//			int defaultBitmapPoolSize = calculator.getBitmapPoolSize();
+			//
+			//			ActivityManager am = ((ActivityManager)context.getSystemService(Activity.ACTIVITY_SERVICE));
+			//			int class_memory = am.getMemoryClass(); // 単位はMB
+			//			int class_large = am.getLargeMemoryClass(); // 単位はMB
+			//
+			//				int maxSize;
+			//				if( am.isLowRamDevice() ){
+			//					maxSize = 5 * 1024; // 単位はKiB
+			//				}else if( largeMemory >= 512 ){
+			//					maxSize = 128 * 1024; // 単位はKiB
+			//				}else if( largeMemory >= 256 ){
+			//					maxSize = 64 * 1024; // 単位はKiB
+			//				}else{
+			//					maxSize = 10 * 1024; // 単位はKiB
+			//				}
+			//				return maxSize * 1024;
+			//			}
+			//			builder.setMemoryCache(new LruResourceCache(getMemoryCacheSize(getApplicationContext())));
+			//			builder.setBitmapPool(new LruBitmapPool(getBitmapPoolSize(getApplicationContext())));
+
+			// Glide.setupはGLide 4.0 で廃止になるらしいが、俺が使ってるのは3.xだ
+			//noinspection deprecation
+			Glide.setup( builder );
+			
+			glide_okhttp3_factory = new OkHttpUrlLoader.Factory( ok_http_client );
+			Glide.get( getApplicationContext() ).register( GlideUrl.class, InputStream.class, glide_okhttp3_factory );
+		}
 	}
 	
 	@Override
@@ -355,7 +331,6 @@ public class App1 extends Application {
 	private static AppState app_state;
 	
 	static AppState getAppState( Context context ){
-		// これは最後。loadColumnListでDBが必要になる
 		if( app_state == null ){
 			app_state = new AppState( context.getApplicationContext(), pref );
 		}

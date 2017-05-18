@@ -23,9 +23,9 @@ import jp.juggler.subwaytooter.util.LogCategory;
 public class SavedAccount extends TootAccount implements LinkClickContext {
 	private static final LogCategory log = new LogCategory( "SavedAccount" );
 	
-	private static final String table = "access_info";
+	public static final String table = "access_info";
 	
-	private static final String COL_ID = BaseColumns._ID;
+	public static final String COL_ID = BaseColumns._ID;
 	private static final String COL_HOST = "h";
 	private static final String COL_USER = "u";
 	private static final String COL_ACCOUNT = "a";
@@ -64,6 +64,15 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public boolean confirm_follow_locked;
 	public boolean confirm_unfollow;
 	public boolean confirm_post;
+	
+	// アプリデータのインポート時に呼ばれる
+	public static void onDBDelete( SQLiteDatabase db ){
+		try{
+			db.execSQL( "drop table if exists " + table );
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+		}
+	}
 	
 	public static void onDBCreate( SQLiteDatabase db ){
 		db.execSQL(
@@ -298,7 +307,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public String getUserUrl( @NonNull String who_acct ){
 		int p = who_acct.indexOf( '@' );
 		if( - 1 != p ){
-			return "https://" +who_acct.substring( p + 1 ) + "/@" + who_acct.substring( 0,p);
+			return "https://" + who_acct.substring( p + 1 ) + "/@" + who_acct.substring( 0, p );
 		}else{
 			return "https://" + host + "/@" + who_acct;
 		}
@@ -345,10 +354,10 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	
 	public static long getCount(){
 		try{
-			Cursor cursor = App1.getDB().query( table,new String[]{ "count(*)"} , null, null, null, null, null );
+			Cursor cursor = App1.getDB().query( table, new String[]{ "count(*)" }, null, null, null, null, null );
 			try{
 				if( cursor.moveToNext() ){
-					return cursor.getLong(0);
+					return cursor.getLong( 0 );
 				}
 			}finally{
 				cursor.close();
@@ -360,4 +369,5 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		}
 		return 0L;
 	}
+	
 }

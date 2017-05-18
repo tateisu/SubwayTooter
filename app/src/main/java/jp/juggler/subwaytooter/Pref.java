@@ -18,6 +18,7 @@ public class Pref {
 	static final int RAT_DONT_REFRESH = 2;
 	
 	static final String KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN = "DontConfirmBeforeCloseColumn";
+	
 	static final String KEY_BACK_BUTTON_ACTION = "back_button_action";
 	static final String KEY_PRIOR_LOCAL_URL = "prior_local_url";
 	static final String KEY_DISABLE_FAST_SCROLLER = "disable_fast_scroller";

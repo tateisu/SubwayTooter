@@ -610,4 +610,8 @@
     <string name="reply_to_in_draft_is_lost">下書きから参照されている返信元の投稿は失われました。以下の文脈を再現できません。in_reply_to</string>
     <string name="restore_draft">下書きから復元</string>
     <string name="select_draft">どの下書きから復元しますか？</string>
+    <string name="app_data_export">アプリデータのエクスポート</string>
+    <string name="app_data_import">アプリデータのインポート</string>
+    <string name="app_data_import_confirm">アプリに今あるデータは消えてしまいます。よろしいですか？</string>
+    <string name="app_data_import_desc">エクスポート先はいくつか選べますが、インポートするには端末のストレージかGoogleドライブにデータを置く必要があります。カラム背景画像とタイムラインのフォントはエクスポート/インポートの対象外です。</string>
 </resources>

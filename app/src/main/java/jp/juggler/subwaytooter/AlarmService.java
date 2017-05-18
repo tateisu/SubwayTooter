@@ -55,6 +55,11 @@ public class AlarmService extends IntentService {
 	private static final String EXTRA_DB_ID = "db_id";
 	private static final String ACTION_DATA_DELETED = "data_deleted";
 	
+	public static final String ACTION_APP_DATA_IMPORT_BEFORE = "app_data_import_before";
+	public static final AtomicBoolean mBusyAppDataImportBefore = new AtomicBoolean( false );
+	public static final AtomicBoolean mBusyAppDataImportAfter = new AtomicBoolean( false );
+	public static final String ACTION_APP_DATA_IMPORT_AFTER = "app_data_import_after";
+	
 	public AlarmService(){
 		// name: Used to name the worker thread, important only for debugging.
 		super( "AlarmService" );
@@ -98,11 +103,34 @@ public class AlarmService extends IntentService {
 	// 同期処理を行って良い
 	@Override protected void onHandleIntent( @Nullable Intent intent ){
 		
+		if( intent != null ){
+			String action = intent.getAction();
+			log.d( "onHandleIntent action=%s", action );
+			
+			if( ACTION_APP_DATA_IMPORT_BEFORE.equals( action ) ){
+				alarm_manager.cancel( pi_next );
+				for( SavedAccount a :  SavedAccount.loadAccountList( log ) ){
+					try{
+						String notification_tag = Long.toString( a.db_id );
+						notification_manager.cancel( notification_tag, NOTIFICATION_ID );
+					}catch( Throwable ex ){
+						ex.printStackTrace();
+					}
+				}
+				mBusyAppDataImportBefore.set( false );
+				return;
+			}else if( ACTION_APP_DATA_IMPORT_AFTER.equals( action ) ){
+				mBusyAppDataImportAfter.set( false );
+				NotificationTracking.resetPostAll();
+			}
+		}
+		
+		if( mBusyAppDataImportAfter.get() ) return;
+		
 		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( log );
 		
 		if( intent != null ){
 			String action = intent.getAction();
-			log.d( "onHandleIntent action=%s", action );
 			
 			if( ACTION_DATA_DELETED.equals( action ) ){
 				deleteCacheData( intent.getLongExtra( EXTRA_DB_ID, - 1L ) );
@@ -122,7 +150,7 @@ public class AlarmService extends IntentService {
 						
 					}else if( Intent.ACTION_MY_PACKAGE_REPLACED.equals( action ) ){
 						NotificationTracking.resetPostAll();
-
+						
 					}else if( ACTION_NOTIFICATION_DELETE.equals( action ) ){
 						log.d( "Notification deleted!" );
 						long db_id = received_intent.getLongExtra( EXTRA_DB_ID, 0L );
@@ -146,8 +174,6 @@ public class AlarmService extends IntentService {
 				}
 			}
 		}
-		
-		
 		
 		final AtomicBoolean bAlarmRequired = new AtomicBoolean( false );
 		final HashSet< String > muted_app = MutedApp.getNameSet();

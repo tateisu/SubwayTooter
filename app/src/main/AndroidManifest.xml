@@ -161,6 +161,17 @@
         <activity android:name="com.yasesprox.android.transcommusdk.CreateAccountActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize"></activity>
         <activity android:name="com.yasesprox.android.transcommusdk.TranslateActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize"></activity>
 
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="jp.juggler.subwaytooter.FileProvider"
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_provider_path" />
+        </provider>
+
     </application>
 
 </manifest>

@@ -108,7 +108,7 @@ class Column implements StreamReader.Callback {
 	static final String PATH_SEARCH = "/api/v1/search?q=%s"; // 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
 	private static final String PATH_INSTANCE = "/api/v1/instance";
 	
-	private static final String KEY_ACCOUNT_ROW_ID = "account_id";
+	static final String KEY_ACCOUNT_ROW_ID = "account_id";
 	static final String KEY_TYPE = "type";
 	static final String KEY_DONT_CLOSE = "dont_close";
 	private static final String KEY_WITH_ATTACHMENT = "with_attachment";

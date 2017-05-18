@@ -319,4 +319,8 @@
     <string name="account_in_draft_is_lost">The account used for this draft has been removed from app. The following context can not be restored. in_reply_to, media attachment.</string>
     <string name="reply_to_in_draft_is_lost">The reply origin referred by draft has been lost. The following context is removed. in_reply_to</string>
     <string name="attachment_in_draft_is_lost">Some of media attachment in the draft have been lost.</string>
+    <string name="app_data_export">Export app data</string>
+    <string name="app_data_import">Import app data</string>
+    <string name="app_data_import_desc">You can export data to any app that can receive data, But maybe you can import data only from device\'s storage or Google drive.\nColumn background image may be not exported/imported over device.\nTimeline font is not exported/imported.</string>
+    <string name="app_data_import_confirm">existing data ( before import ) will be cleared. Are you sure?</string>
 </resources>

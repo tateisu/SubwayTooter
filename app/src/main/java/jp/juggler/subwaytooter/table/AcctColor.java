@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import jp.juggler.subwaytooter.App1;
+import jp.juggler.subwaytooter.AppDataExporter;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -12,14 +13,16 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LruCache;
 import android.text.TextUtils;
+import android.util.JsonWriter;
 
+import java.io.IOException;
 import java.util.Locale;
 
 public class AcctColor {
 	
 	private static final LogCategory log = new LogCategory( "AcctColor" );
 	
-	private static final String table = "acct_color";
+	public static final String table = "acct_color";
 	private static final String COL_TIME_SAVE = "time_save";
 	private static final String COL_ACCT = "ac"; //@who@host ascii文字の大文字小文字は(sqliteにより)同一視される
 	private static final String COL_COLOR_FG = "cf"; // 未設定なら0、それ以外は色
@@ -69,9 +72,9 @@ public class AcctColor {
 	}
 	
 	public void save( long now ){
-
+		
 		acct = acct.toLowerCase( Locale.ENGLISH );
-
+		
 		try{
 			ContentValues cv = new ContentValues();
 			cv.put( COL_TIME_SAVE, now );
@@ -112,7 +115,7 @@ public class AcctColor {
 			if( cursor != null ){
 				try{
 					if( cursor.moveToNext() ){
-						dst = new AcctColor(acct);
+						dst = new AcctColor( acct );
 						int idx;
 						
 						idx = cursor.getColumnIndex( COL_COLOR_FG );
@@ -135,7 +138,7 @@ public class AcctColor {
 			ex.printStackTrace();
 			log.e( ex, "load failed." );
 		}
-		log.d("lruCache size=%s,hit=%s,miss=%s",mMemoryCache.size(),mMemoryCache.hitCount(),mMemoryCache.missCount() );
+		log.d( "lruCache size=%s,hit=%s,miss=%s", mMemoryCache.size(), mMemoryCache.hitCount(), mMemoryCache.missCount() );
 		dst = new AcctColor( acct );
 		mMemoryCache.put( acct, dst );
 		return dst;
@@ -156,5 +159,9 @@ public class AcctColor {
 	
 	public static boolean hasColorBackground( @Nullable AcctColor ac ){
 		return ac != null && ac.color_bg != 0;
+	}
+	
+	public static void clearMemoryCache(){
+		mMemoryCache.evictAll ();
 	}
 }

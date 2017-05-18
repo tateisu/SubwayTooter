@@ -1,17 +1,23 @@
 package jp.juggler.subwaytooter;
 
+import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
+import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.JsonWriter;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -27,11 +33,13 @@ import com.jrummyapps.android.colorpicker.ColorPickerDialog;
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.FileWriterWithEncoding;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 
+import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 public class ActAppSetting extends AppCompatActivity
@@ -40,6 +48,7 @@ public class ActAppSetting extends AppCompatActivity
 	, View.OnClickListener
 	, ColorPickerDialogListener, TextWatcher
 {
+	static final LogCategory log = new LogCategory( "ActAppSetting" );
 	
 	public static void open( ActMain activity, int request_code ){
 		activity.startActivityForResult( new Intent( activity, ActAppSetting.class ), request_code );
@@ -103,9 +112,7 @@ public class ActAppSetting extends AppCompatActivity
 	private void initUI(){
 		setContentView( R.layout.act_app_setting );
 		
-		
-		Styler.fixHorizontalPadding(findViewById( R.id.svContent ));
-		
+		Styler.fixHorizontalPadding( findViewById( R.id.svContent ) );
 		
 		swDontConfirmBeforeCloseColumn = (Switch) findViewById( R.id.swDontConfirmBeforeCloseColumn );
 		swDontConfirmBeforeCloseColumn.setOnCheckedChangeListener( this );
@@ -213,6 +220,8 @@ public class ActAppSetting extends AppCompatActivity
 		findViewById( R.id.btnTabDividerColorReset ).setOnClickListener( this );
 		findViewById( R.id.btnTimelineFontEdit ).setOnClickListener( this );
 		findViewById( R.id.btnTimelineFontReset ).setOnClickListener( this );
+		findViewById( R.id.btnSettingExport ).setOnClickListener( this );
+		findViewById( R.id.btnSettingImport ).setOnClickListener( this );
 		
 		ivFooterToot = (ImageView) findViewById( R.id.ivFooterToot );
 		ivFooterMenu = (ImageView) findViewById( R.id.ivFooterMenu );
@@ -223,7 +232,7 @@ public class ActAppSetting extends AppCompatActivity
 		etColumnWidth = (EditText) findViewById( R.id.etColumnWidth );
 		etMediaThumbHeight = (EditText) findViewById( R.id.etMediaThumbHeight );
 		
-		tvTimelineFontUrl= (TextView) findViewById( R.id.tvTimelineFontUrl );
+		tvTimelineFontUrl = (TextView) findViewById( R.id.tvTimelineFontUrl );
 		
 		etColumnWidth.addTextChangedListener( this );
 		etMediaThumbHeight.addTextChangedListener( this );
@@ -264,16 +273,14 @@ public class ActAppSetting extends AppCompatActivity
 		etColumnWidth.setText( pref.getString( Pref.KEY_COLUMN_WIDTH, "" ) );
 		etMediaThumbHeight.setText( pref.getString( Pref.KEY_MEDIA_THUMB_HEIGHT, "" ) );
 		
-
-		timeline_font =  pref.getString( Pref.KEY_TIMELINE_FONT, "" );
-		
+		timeline_font = pref.getString( Pref.KEY_TIMELINE_FONT, "" );
 		
 		load_busy = false;
 		
 		showFooterColor();
 		showTimelineFont();
 	}
-
+	
 	private void saveUIToData(){
 		if( load_busy ) return;
 		pref.edit()
@@ -383,29 +390,46 @@ public class ActAppSetting extends AppCompatActivity
 				intent.addCategory( Intent.CATEGORY_OPENABLE );
 				intent.setType( "*/*" );
 				startActivityForResult( intent, REQUEST_CODE_TIMELINE_FONT );
-			}catch(Throwable ex){
-				Utils.showToast( this,ex,"could not open picker for font/*" );
+			}catch( Throwable ex ){
+				Utils.showToast( this, ex, "could not open picker for font/*" );
 			}
+			break;
+		
+		case R.id.btnSettingExport:
+			exportAppData();
+			break;
+		
+		case R.id.btnSettingImport:
+			importAppData();
 			break;
 		}
 	}
 	
 	static final int REQUEST_CODE_TIMELINE_FONT = 1;
+	static final int REQUEST_CODE_APP_DATA_EXPORT = 2;
+	static final int REQUEST_CODE_APP_DATA_IMPORT = 3;
 	
 	@Override protected void onActivityResult( int requestCode, int resultCode, Intent data ){
-		if( resultCode == RESULT_OK && requestCode == REQUEST_CODE_TIMELINE_FONT){
+		if( resultCode == RESULT_OK && requestCode == REQUEST_CODE_TIMELINE_FONT ){
 			if( data != null ){
 				Uri uri = data.getData();
 				if( uri != null ){
 					getContentResolver().takePersistableUriPermission( uri, Intent.FLAG_GRANT_READ_URI_PERMISSION );
-					saveTimelineFont( uri);
+					saveTimelineFont( uri );
+				}
+			}
+		}else if( resultCode == RESULT_OK && requestCode == REQUEST_CODE_APP_DATA_IMPORT ){
+			if( data != null ){
+				Uri uri = data.getData();
+				if( uri != null ){
+					getContentResolver().takePersistableUriPermission( uri, Intent.FLAG_GRANT_READ_URI_PERMISSION );
+					importAppData( false, uri );
 				}
 			}
 		}
 		super.onActivityResult( requestCode, resultCode, data );
 	}
 	
-
 	void openColorPicker( int id, int color ){
 		ColorPickerDialog.Builder builder = ColorPickerDialog.newBuilder()
 			.setDialogType( ColorPickerDialog.TYPE_CUSTOM )
@@ -501,19 +525,18 @@ public class ActAppSetting extends AppCompatActivity
 		saveUIToData();
 	}
 	
-	
 	private void showTimelineFont(){
 		try{
 			if( ! TextUtils.isEmpty( timeline_font ) ){
 				
 				tvTimelineFontUrl.setTypeface( Typeface.DEFAULT );
 				Typeface face = Typeface.createFromFile( timeline_font );
-				tvTimelineFontUrl.setTypeface(face );
+				tvTimelineFontUrl.setTypeface( face );
 				tvTimelineFontUrl.setText( timeline_font );
 				return;
 			}
-		}catch(Throwable ex){
-			ex.printStackTrace(  );
+		}catch( Throwable ex ){
+			ex.printStackTrace();
 		}
 		// fallback
 		tvTimelineFontUrl.setText( getString( R.string.not_selected ) );
@@ -529,18 +552,17 @@ public class ActAppSetting extends AppCompatActivity
 			//noinspection ResultOfMethodCallIgnored
 			dir.mkdir();
 			
-			File tmp_file = new File( dir, TIMELINE_FONT_FILE_NAME +".tmp" );
-			
+			File tmp_file = new File( dir, TIMELINE_FONT_FILE_NAME + ".tmp" );
 			
 			InputStream is = getContentResolver().openInputStream( uri );
 			if( is == null ){
-				Utils.showToast( this, false, "openInputStream returns null.");
+				Utils.showToast( this, false, "openInputStream returns null." );
 				return;
 			}
 			try{
 				FileOutputStream os = new FileOutputStream( tmp_file );
 				try{
-					IOUtils.copy( is,os );
+					IOUtils.copy( is, os );
 				}finally{
 					IOUtils.closeQuietly( os );
 				}
@@ -549,16 +571,15 @@ public class ActAppSetting extends AppCompatActivity
 				IOUtils.closeQuietly( is );
 			}
 			
-			
 			Typeface face = Typeface.createFromFile( tmp_file );
 			if( face == null ){
-				Utils.showToast( this, false, "Typeface.createFromFile() failed.");
+				Utils.showToast( this, false, "Typeface.createFromFile() failed." );
 				return;
 			}
 			
 			File file = new File( dir, TIMELINE_FONT_FILE_NAME );
-			if(!tmp_file.renameTo( file ) ){
-				Utils.showToast( this, false, "File operation failed.");
+			if( ! tmp_file.renameTo( file ) ){
+				Utils.showToast( this, false, "File operation failed." );
 				return;
 			}
 			
@@ -566,10 +587,113 @@ public class ActAppSetting extends AppCompatActivity
 			saveUIToData();
 			showTimelineFont();
 			
-		}catch(Throwable ex){
-			ex.printStackTrace(  );
-			Utils.showToast( this,ex,"saveTimelineFont failed.");
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			Utils.showToast( this, ex, "saveTimelineFont failed." );
 		}
+	}
+	
+	private void exportAppData(){
+		final ProgressDialog progress = new ProgressDialog( this );
+		
+		final AsyncTask< Void, String, File > task = new AsyncTask< Void, String, File >() {
+			
+			@Override protected File doInBackground( Void... params ){
+				try{
+					File cache_dir = getCacheDir();
+					//noinspection ResultOfMethodCallIgnored
+					cache_dir.mkdir();
+					
+					File file = new File( cache_dir, "SubwayTooter." + android.os.Process.myPid() + "." + android.os.Process.myTid() + ".json" );
+					FileWriterWithEncoding w = new FileWriterWithEncoding( file, "UTF-8" );
+					try{
+						JsonWriter jw = new JsonWriter( w );
+						AppDataExporter.encodeAppData( ActAppSetting.this, jw );
+						jw.flush();
+					}finally{
+						IOUtils.closeQuietly( w );
+					}
+					return file;
+				}catch( Throwable ex ){
+					ex.printStackTrace();
+					Utils.showToast( ActAppSetting.this, ex, "exportAppData failed." );
+				}
+				return null;
+			}
+			
+			@Override protected void onCancelled( File result ){
+				super.onCancelled( result );
+			}
+			
+			@Override protected void onPostExecute( File result ){
+				progress.dismiss();
+				
+				if( isCancelled() || result == null ){
+					// cancelled.
+					return;
+				}
+				
+				try{
+					Uri uri = FileProvider.getUriForFile( ActAppSetting.this, "jp.juggler.subwaytooter.FileProvider", result );
+					Intent intent = new Intent( Intent.ACTION_SEND );
+					intent.setType( getContentResolver().getType( uri ) );
+					intent.putExtra( Intent.EXTRA_SUBJECT, "SubwayTooter app data" );
+					intent.putExtra( Intent.EXTRA_STREAM, uri );
+					
+					intent.addFlags( Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION );
+					startActivityForResult( intent, REQUEST_CODE_APP_DATA_EXPORT );
+				}catch( Throwable ex ){
+					ex.printStackTrace();
+					Utils.showToast( ActAppSetting.this, ex, "exportAppData failed." );
+				}
+			}
+		};
+		
+		progress.setIndeterminate( true );
+		progress.setCancelable( true );
+		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
+			@Override public void onCancel( DialogInterface dialog ){
+				task.cancel( true );
+			}
+		} );
+		progress.show();
+		task.executeOnExecutor( App1.task_executor );
+	}
+	
+	private void importAppData(){
+		try{
+			Intent intent = new Intent( Intent.ACTION_OPEN_DOCUMENT );
+			intent.addCategory( Intent.CATEGORY_OPENABLE );
+			intent.setType( "*/*" );
+			startActivityForResult( intent, REQUEST_CODE_APP_DATA_IMPORT );
+		}catch( Throwable ex ){
+			Utils.showToast( this, ex, "importAppData(1) failed." );
+		}
+	}
+	
+	private void importAppData( boolean bConfirm, final Uri uri ){
+		
+		String type = getContentResolver().getType( uri );
+		log.d( "importAppData type=%s", type );
+		
+		if( ! bConfirm ){
+			new AlertDialog.Builder( this )
+				.setMessage( getString( R.string.app_data_import_confirm ) )
+				.setNegativeButton( R.string.cancel, null )
+				.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
+					@Override public void onClick( DialogInterface dialog, int which ){
+						importAppData( true, uri );
+					}
+				} )
+				.show();
+			return;
+		}
+		
+		Intent data = new Intent();
+		data.setData( uri );
+		setResult( ActMain.RESULT_APP_DATA_IMPORT, data );
+		finish();
+		
 	}
 	
 }

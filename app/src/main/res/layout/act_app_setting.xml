@@ -586,6 +586,45 @@
         </LinearLayout>
 
         <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/actions"
+            />
+
+
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnSettingExport"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_data_export"
+                android:textAllCaps="false"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+            <Button
+                android:id="@+id/btnSettingImport"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_data_import"
+                android:textAllCaps="false"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/app_data_import_desc"
+                android:textAllCaps="false"
+                />
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
         <!--<TextView-->
         <!--style="@style/setting_row_label"-->
         <!--android:text="@string/actions"-->

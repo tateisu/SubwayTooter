@@ -24,6 +24,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.JsonReader;
 import android.view.Gravity;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -40,9 +41,16 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -306,6 +314,10 @@ public class ActMain extends AppCompatActivity
 		return false;
 	}
 	
+	// リザルト
+	static final int RESULT_APP_DATA_IMPORT = RESULT_FIRST_USER ;
+		
+		// リクエスト
 	static final int REQUEST_CODE_COLUMN_LIST = 1;
 	static final int REQUEST_CODE_ACCOUNT_SETTING = 2;
 	static final int REQUEST_APP_ABOUT = 3;
@@ -383,11 +395,19 @@ public class ActMain extends AppCompatActivity
 		
 		if( requestCode == REQUEST_APP_SETTING ){
 			showFooterColor();
+			
+			if( resultCode == RESULT_APP_DATA_IMPORT ){
+				if( data != null ){
+					importAppData( data.getData() );
+				}
+			}
+			
 		}
 		
 		super.onActivityResult( requestCode, resultCode, data );
 	}
 	
+
 	@Override
 	public void onBackPressed(){
 		
@@ -3211,4 +3231,153 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
+	//////////////////////////////////////////////////////////////////////////////////////////////
+	
+	
+	private void importAppData( final Uri uri ){
+		// remove all columns
+		{
+			if( pager_adapter != null ){
+				pager.setAdapter( null );
+			}
+			for( Column c : app_state.column_list ){
+				c.dispose();
+			}
+			app_state.column_list.clear();
+			if( pager_adapter != null ){
+				pager.setAdapter( pager_adapter );
+			}else{
+				tablet_pager_adapter.notifyDataSetChanged();
+			}
+		}
+		
+		final ProgressDialog progress = new ProgressDialog( this );
+		
+		final AsyncTask< Void, String, ArrayList<Column> > task = new AsyncTask< Void, String, ArrayList<Column> >() {
+
+			void setProgressMessage(final String sv){
+				Utils.runOnMainThread( new Runnable() {
+					@Override public void run(){
+						progress.setMessage(sv);
+					}
+				} );
+				
+			}
+			
+			@Override protected ArrayList<Column> doInBackground( Void... params ){
+				try{
+					setProgressMessage( "import data to local storage..." );
+					
+					File cache_dir = getCacheDir();
+					//noinspection ResultOfMethodCallIgnored
+					cache_dir.mkdir();
+					File file = new File( cache_dir, "SubwayTooter." + android.os.Process.myPid() + "." + android.os.Process.myTid() + ".json" );
+
+					// ローカルファイルにコピーする
+					InputStream is = getContentResolver().openInputStream( uri );
+					if( is == null ){
+						Utils.showToast( ActMain.this, true,"openInputStream failed.");
+						return null;
+					}
+					try{
+						FileOutputStream os = new FileOutputStream( file );
+						try{
+							IOUtils.copy( is,os );
+						}finally{
+							IOUtils.closeQuietly( os );
+							
+						}
+					}finally{
+						IOUtils.closeQuietly( is );
+					}
+					
+
+					// 通知サービスを止める
+					setProgressMessage( "reset Notification..." );
+					{
+						AlarmService.mBusyAppDataImportBefore.set(true);
+						AlarmService.mBusyAppDataImportAfter.set(true);
+						
+						Intent intent = new Intent(ActMain.this,AlarmService.class);
+						intent.setAction( AlarmService.ACTION_APP_DATA_IMPORT_BEFORE );
+						startService( intent );
+						while( AlarmService.mBusyAppDataImportBefore.get() ){
+							Thread.sleep( 100L );
+						}
+					}
+					
+					// JSONを読みだす
+					setProgressMessage( "reading app data..." );
+					Reader r =new InputStreamReader(new FileInputStream(file),"UTF-8");
+					try{
+						JsonReader reader = new JsonReader( r );
+						return AppDataExporter.decodeAppData( ActMain.this, reader );
+					}finally{
+						IOUtils.closeQuietly( r );
+					}
+				}catch( Throwable ex ){
+					ex.printStackTrace();
+					Utils.showToast( ActMain.this, ex, "importAppData failed." );
+				}
+				return null;
+			}
+			
+			@Override protected void onCancelled( ArrayList<Column> result ){
+				super.onCancelled( result );
+			}
+			
+			@Override protected void onPostExecute( ArrayList<Column> result ){
+				progress.dismiss();
+				
+				try{
+					getWindow().clearFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
+				}catch(Throwable ignored){
+				}
+				
+				if( isCancelled() || result == null ){
+					// cancelled.
+					return;
+				}
+				
+				{
+					if( pager_adapter != null ){
+						pager.setAdapter( null );
+					}
+					app_state.column_list.clear();
+					app_state.column_list.addAll(result );
+					app_state.saveColumnList();
+
+					if( pager_adapter != null ){
+						pager.setAdapter( pager_adapter );
+					}else{
+						tablet_pager_adapter.notifyDataSetChanged();
+					}
+				}
+				
+				// 通知サービスをリスタート
+				{
+					Intent intent = new Intent(ActMain.this,AlarmService.class);
+					intent.setAction( AlarmService.ACTION_APP_DATA_IMPORT_AFTER );
+					startService( intent );
+				}
+				
+				updateColumnStrip();
+			}
+		};
+		
+		try{
+			getWindow().addFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
+		}catch(Throwable ignored){
+		}
+		
+		progress.setIndeterminate( true );
+		progress.setCancelable( false );
+		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
+			@Override public void onCancel( DialogInterface dialog ){
+				task.cancel( true );
+			}
+		} );
+		progress.show();
+		task.executeOnExecutor( App1.task_executor );
+	}
 }

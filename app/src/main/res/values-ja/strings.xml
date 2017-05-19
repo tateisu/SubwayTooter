@@ -614,4 +614,5 @@
     <string name="app_data_import">アプリデータのインポート</string>
     <string name="app_data_import_confirm">アプリに今あるデータは消えてしまいます。よろしいですか？</string>
     <string name="app_data_import_desc">エクスポート先はいくつか選べますが、インポートするには端末のストレージかGoogleドライブにデータを置く必要があります。カラム背景画像とタイムラインのフォントはエクスポート/インポートの対象外です。</string>
+    <string name="user_id_conversion_failed">ユーザIDを変換できません</string>
 </resources>

@@ -12,7 +12,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
@@ -315,9 +314,9 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	// リザルト
-	static final int RESULT_APP_DATA_IMPORT = RESULT_FIRST_USER ;
-		
-		// リクエスト
+	static final int RESULT_APP_DATA_IMPORT = RESULT_FIRST_USER;
+	
+	// リクエスト
 	static final int REQUEST_CODE_COLUMN_LIST = 1;
 	static final int REQUEST_CODE_ACCOUNT_SETTING = 2;
 	static final int REQUEST_APP_ABOUT = 3;
@@ -407,7 +406,6 @@ public class ActMain extends AppCompatActivity
 		super.onActivityResult( requestCode, resultCode, data );
 	}
 	
-
 	@Override
 	public void onBackPressed(){
 		
@@ -626,21 +624,20 @@ public class ActMain extends AppCompatActivity
 	
 	static final int COLUMN_WIDTH_MIN_DP = 300;
 	
-	Typeface timeline_font ;
+	Typeface timeline_font;
 	
 	void initUI(){
 		setContentView( R.layout.act_main );
 		
-		String sv = pref.getString(Pref.KEY_TIMELINE_FONT,"");
+		String sv = pref.getString( Pref.KEY_TIMELINE_FONT, "" );
 		
 		if( ! TextUtils.isEmpty( sv ) ){
 			try{
 				timeline_font = Typeface.createFromFile( sv );
-			}catch(Throwable ex){
+			}catch( Throwable ex ){
 				ex.printStackTrace();
 			}
 		}
-		
 		
 		llEmpty = findViewById( R.id.llEmpty );
 		
@@ -1025,49 +1022,7 @@ public class ActMain extends AppCompatActivity
 					final String host = m.group( 1 );
 					final String user = Uri.decode( m.group( 2 ) );
 					
-					// 1: 検索APIは疑似アカウントでは開けない => startFindAccountが使えない
-					// 2: かりに検索できたとしてもユーザページは疑似アカウントでは開けない
-					
-					ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( log );
-					ArrayList< SavedAccount > account_list_filtered = new ArrayList<>();
-					for( SavedAccount a : account_list ){
-						if( a.isPseudo() ) continue;
-						if( host.equalsIgnoreCase( a.host ) ){
-							account_list_filtered.add( a );
-						}
-					}
-					
-					if( account_list_filtered.isEmpty() ){
-						
-						for( SavedAccount a : account_list ){
-							if( a.isPseudo() ) continue;
-							account_list_filtered.add( a );
-						}
-						
-						if( account_list_filtered.isEmpty() ){
-							// 認証されたアカウントが全くないので、ブラウザで開くしかない
-							openChromeTab( getDefaultInsertPosition(), null, uri.toString(), true );
-							return;
-						}
-					}
-					
-					AccountPicker.pick( this, false, true
-						, getString( R.string.account_picker_open_user_who, user + "@" + host )
-						, account_list_filtered
-						, new AccountPicker.AccountPickerCallback() {
-							@Override public void onAccountPicked( @NonNull final SavedAccount ai ){
-								startFindAccount( ai, host, user, new FindAccountCallback() {
-									@Override public void onFindAccount( TootAccount who ){
-										if( who != null ){
-											performOpenUser( getDefaultInsertPosition(), ai, who );
-											return;
-										}
-										openChromeTab( getDefaultInsertPosition(), ai, uri.toString(), true );
-									}
-								} );
-							}
-						} );
-					return;
+					openProfileByHostUser( getDefaultInsertPosition(), null, uri.toString(), host, user );
 				}
 				return;
 				
@@ -1356,25 +1311,6 @@ public class ActMain extends AppCompatActivity
 		return col;
 	}
 	
-	void performOpenUser( int pos, @NonNull SavedAccount access_info, @NonNull TootAccount user ){
-		if( access_info.isPseudo() ){
-			Utils.showToast( this, false, R.string.not_available_for_pseudo_account );
-		}else{
-			addColumn( pos, access_info, Column.TYPE_PROFILE, user.id );
-		}
-	}
-	
-	public void performOpenUserFromAnotherAccount( final int pos, final TootAccount who, ArrayList< SavedAccount > account_list_non_pseudo_same_instance ){
-		AccountPicker.pick( this, false, false
-			, getString( R.string.account_picker_open_user_who, AcctColor.getNickname( who.acct ) )
-			, account_list_non_pseudo_same_instance
-			, new AccountPicker.AccountPickerCallback() {
-				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
-					addColumn( pos, ai, Column.TYPE_PROFILE, who.id );
-				}
-			} );
-	}
-	
 	private void performAddTimeline( final int pos, boolean bAllowPseudo, final int type, final Object... args ){
 		AccountPicker.pick( this, bAllowPseudo, true
 			, getString( R.string.account_picker_add_timeline_of, Column.getColumnTypeName( this, type ) )
@@ -1406,7 +1342,7 @@ public class ActMain extends AppCompatActivity
 	interface FindAccountCallback {
 		// return account information
 		// if failed, account is null.
-		void onFindAccount( TootAccount account );
+		void onFindAccount( @Nullable TootAccount account );
 	}
 	
 	void startFindAccount( final SavedAccount access_info, final String host, final String user, final FindAccountCallback callback ){
@@ -1528,61 +1464,8 @@ public class ActMain extends AppCompatActivity
 					// https://mastodon.juggler.jp/@SubwayTooter
 					final String host = m.group( 1 );
 					final String user = Uri.decode( m.group( 2 ) );
+					openProfileByHostUser( pos, access_info, url, host, user );
 					
-					if( ! access_info.isPseudo() ){
-						startFindAccount( access_info, host, user, new FindAccountCallback() {
-							@Override public void onFindAccount( TootAccount who ){
-								if( who != null ){
-									performOpenUser( pos, access_info, who );
-									return;
-								}
-								openChromeTab( pos, access_info, url, true );
-							}
-						} );
-						return;
-					}
-					// 1: 検索APIは疑似アカウントでは開けない => startFindAccountが使えない
-					// 2: かりに検索できたとしてもユーザページは疑似アカウントでは開けない
-					
-					ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( log );
-					ArrayList< SavedAccount > account_list_filtered = new ArrayList<>();
-					for( SavedAccount a : account_list ){
-						if( a.isPseudo() ) continue;
-						if( host.equalsIgnoreCase( a.host ) ){
-							account_list_filtered.add( a );
-						}
-					}
-					
-					if( account_list_filtered.isEmpty() ){
-						
-						for( SavedAccount a : account_list ){
-							if( a.isPseudo() ) continue;
-							account_list_filtered.add( a );
-						}
-						
-						if( account_list_filtered.isEmpty() ){
-							// 認証されたアカウントが全くないので、ブラウザで開くしかない
-							openChromeTab( getDefaultInsertPosition(), null, url, true );
-							return;
-						}
-					}
-					
-					AccountPicker.pick( this, false, true
-						, getString( R.string.account_picker_open_user_who, user + "@" + host )
-						, account_list_filtered
-						, new AccountPicker.AccountPickerCallback() {
-							@Override public void onAccountPicked( @NonNull final SavedAccount ai ){
-								startFindAccount( ai, host, user, new FindAccountCallback() {
-									@Override public void onFindAccount( TootAccount who ){
-										if( who != null ){
-											performOpenUser( getDefaultInsertPosition(), ai, who );
-											return;
-										}
-										openChromeTab( getDefaultInsertPosition(), ai, url, true );
-									}
-								} );
-							}
-						} );
 					return;
 					
 				}
@@ -1792,6 +1675,149 @@ public class ActMain extends AppCompatActivity
 				column.fireShowContent();
 			}
 		}
+	}
+	
+	/////////////////////////////////////////////////////////////////////////
+	// open profile
+	
+	private void openProfileRemote( final int pos, final SavedAccount access_info, final String who_url ){
+		new AsyncTask< Void, Void, TootApiResult >() {
+			TootAccount who_local;
+			
+			@Override protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override public void publishApiProgress( final String s ){
+					}
+				} );
+				
+				client.setAccount( access_info );
+				
+				// 検索APIに他タンスのユーザのURLを投げると、自タンスのURLを得られる
+				String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( who_url ) );
+				path = path + "&resolve=1";
+				
+				TootApiResult result = client.request( path );
+				
+				if( result != null && result.object != null ){
+					
+					TootResults tmp = TootResults.parse( log, access_info, result.object );
+					if( tmp != null ){
+						if( tmp.accounts != null && ! tmp.accounts.isEmpty() ){
+							who_local = tmp.accounts.get( 0 );
+						}
+					}
+					
+					if( who_local == null ){
+						return new TootApiResult( getString( R.string.user_id_conversion_failed ) );
+					}
+				}
+				
+				return result;
+				
+			}
+			
+			@Override protected void onCancelled( TootApiResult result ){
+				super.onPostExecute( result );
+			}
+			
+			@Override protected void onPostExecute( TootApiResult result ){
+				if( result == null ){
+					// cancelled.
+				}else if( who_local != null ){
+					addColumn( pos, access_info, Column.TYPE_PROFILE, who_local.id );
+				}else{
+					Utils.showToast( ActMain.this, true, result.error );
+					
+					// 仕方ないのでchrome tab で開く
+					openChromeTab( pos, access_info, who_url, true );
+				}
+			}
+			
+		}.executeOnExecutor( App1.task_executor );
+	}
+	
+	void openProfileFromAnotherAccount( final int pos, @NonNull final SavedAccount access_info, final TootAccount who ){
+		AccountPicker.pick( this, false, false
+			, getString( R.string.account_picker_open_user_who, AcctColor.getNickname( who.acct ) )
+			, new AccountPicker.AccountPickerCallback() {
+				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+					if( ai.host.equalsIgnoreCase( access_info.host ) ){
+						addColumn( pos, ai, Column.TYPE_PROFILE, who.id );
+					}else{
+						openProfileRemote( pos, ai, who.url );
+					}
+				}
+			} );
+	}
+	
+	void openProfile( int pos, @NonNull SavedAccount access_info, @NonNull TootAccount who ){
+		if( access_info.isPseudo() ){
+			openProfileFromAnotherAccount( pos, access_info, who );
+		}else{
+			addColumn( pos, access_info, Column.TYPE_PROFILE, who.id );
+		}
+	}
+	
+	// Intent-FilterからUser URL で指定されたユーザのプロフを開く
+	// openChromeTabからUser URL で指定されたユーザのプロフを開く
+	private void openProfileByHostUser(
+		final int pos
+		, @Nullable final SavedAccount access_info
+		, @NonNull final String url
+		, @NonNull final String host
+		, @NonNull final String user
+	){
+		// リンクタップした文脈のアカウントが疑似でないなら
+		if( access_info != null && ! access_info.isPseudo() ){
+			if( access_info.host.equalsIgnoreCase( host ) ){
+				// 文脈のアカウントと同じインスタンスなら、アカウントIDを探して開いてしまう
+				startFindAccount( access_info, host, user, new FindAccountCallback() {
+					@Override public void onFindAccount( TootAccount who ){
+						if( who != null ){
+							openProfile( pos, access_info, who );
+							return;
+						}
+						// ダメならchromeで開く
+						openChromeTab( pos, access_info, url, true );
+					}
+				} );
+			}else{
+				// 文脈のアカウント異なるインスタンスなら、別アカウントで開く
+				openProfileRemote( pos, access_info, url );
+			}
+			return;
+		}
+		
+		// 文脈がない、もしくは疑似アカウントだった
+		
+		// 疑似アカウントではユーザ情報APIを呼べないし検索APIも使えない
+		
+		// 疑似ではないアカウントの一覧
+		ArrayList< SavedAccount > account_list_filtered = new ArrayList<>();
+		for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
+			if( a.isPseudo() ) continue;
+			account_list_filtered.add( a );
+		}
+		
+		if( account_list_filtered.isEmpty() ){
+			// アカウントがないのでchrome tab で開くしかない
+			openChromeTab( pos, access_info, url, true );
+		}else{
+			// アカウントを選択して開く
+			AccountPicker.pick( this, false, false
+				, getString( R.string.account_picker_open_user_who, AcctColor.getNickname( user + "@" + host ) )
+				, account_list_filtered
+				, new AccountPicker.AccountPickerCallback() {
+					@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+						openProfileRemote( pos, ai, url );
+					}
+				} );
+		}
+			
 	}
 	
 	/////////////////////////////////////////////////////////////////////////
@@ -3233,7 +3259,6 @@ public class ActMain extends AppCompatActivity
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	
-	
 	private void importAppData( final Uri uri ){
 		// remove all columns
 		{
@@ -3253,18 +3278,18 @@ public class ActMain extends AppCompatActivity
 		
 		final ProgressDialog progress = new ProgressDialog( this );
 		
-		final AsyncTask< Void, String, ArrayList<Column> > task = new AsyncTask< Void, String, ArrayList<Column> >() {
-
-			void setProgressMessage(final String sv){
+		final AsyncTask< Void, String, ArrayList< Column > > task = new AsyncTask< Void, String, ArrayList< Column > >() {
+			
+			void setProgressMessage( final String sv ){
 				Utils.runOnMainThread( new Runnable() {
 					@Override public void run(){
-						progress.setMessage(sv);
+						progress.setMessage( sv );
 					}
 				} );
 				
 			}
 			
-			@Override protected ArrayList<Column> doInBackground( Void... params ){
+			@Override protected ArrayList< Column > doInBackground( Void... params ){
 				try{
 					setProgressMessage( "import data to local storage..." );
 					
@@ -3272,17 +3297,17 @@ public class ActMain extends AppCompatActivity
 					//noinspection ResultOfMethodCallIgnored
 					cache_dir.mkdir();
 					File file = new File( cache_dir, "SubwayTooter." + android.os.Process.myPid() + "." + android.os.Process.myTid() + ".json" );
-
+					
 					// ローカルファイルにコピーする
 					InputStream is = getContentResolver().openInputStream( uri );
 					if( is == null ){
-						Utils.showToast( ActMain.this, true,"openInputStream failed.");
+						Utils.showToast( ActMain.this, true, "openInputStream failed." );
 						return null;
 					}
 					try{
 						FileOutputStream os = new FileOutputStream( file );
 						try{
-							IOUtils.copy( is,os );
+							IOUtils.copy( is, os );
 						}finally{
 							IOUtils.closeQuietly( os );
 							
@@ -3291,14 +3316,13 @@ public class ActMain extends AppCompatActivity
 						IOUtils.closeQuietly( is );
 					}
 					
-
 					// 通知サービスを止める
 					setProgressMessage( "reset Notification..." );
 					{
-						AlarmService.mBusyAppDataImportBefore.set(true);
-						AlarmService.mBusyAppDataImportAfter.set(true);
+						AlarmService.mBusyAppDataImportBefore.set( true );
+						AlarmService.mBusyAppDataImportAfter.set( true );
 						
-						Intent intent = new Intent(ActMain.this,AlarmService.class);
+						Intent intent = new Intent( ActMain.this, AlarmService.class );
 						intent.setAction( AlarmService.ACTION_APP_DATA_IMPORT_BEFORE );
 						startService( intent );
 						while( AlarmService.mBusyAppDataImportBefore.get() ){
@@ -3308,7 +3332,7 @@ public class ActMain extends AppCompatActivity
 					
 					// JSONを読みだす
 					setProgressMessage( "reading app data..." );
-					Reader r =new InputStreamReader(new FileInputStream(file),"UTF-8");
+					Reader r = new InputStreamReader( new FileInputStream( file ), "UTF-8" );
 					try{
 						JsonReader reader = new JsonReader( r );
 						return AppDataExporter.decodeAppData( ActMain.this, reader );
@@ -3322,16 +3346,16 @@ public class ActMain extends AppCompatActivity
 				return null;
 			}
 			
-			@Override protected void onCancelled( ArrayList<Column> result ){
+			@Override protected void onCancelled( ArrayList< Column > result ){
 				super.onCancelled( result );
 			}
 			
-			@Override protected void onPostExecute( ArrayList<Column> result ){
+			@Override protected void onPostExecute( ArrayList< Column > result ){
 				progress.dismiss();
 				
 				try{
 					getWindow().clearFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
-				}catch(Throwable ignored){
+				}catch( Throwable ignored ){
 				}
 				
 				if( isCancelled() || result == null ){
@@ -3344,9 +3368,9 @@ public class ActMain extends AppCompatActivity
 						pager.setAdapter( null );
 					}
 					app_state.column_list.clear();
-					app_state.column_list.addAll(result );
+					app_state.column_list.addAll( result );
 					app_state.saveColumnList();
-
+					
 					if( pager_adapter != null ){
 						pager.setAdapter( pager_adapter );
 					}else{
@@ -3356,7 +3380,7 @@ public class ActMain extends AppCompatActivity
 				
 				// 通知サービスをリスタート
 				{
-					Intent intent = new Intent(ActMain.this,AlarmService.class);
+					Intent intent = new Intent( ActMain.this, AlarmService.class );
 					intent.setAction( AlarmService.ACTION_APP_DATA_IMPORT_AFTER );
 					startService( intent );
 				}
@@ -3367,7 +3391,7 @@ public class ActMain extends AppCompatActivity
 		
 		try{
 			getWindow().addFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
-		}catch(Throwable ignored){
+		}catch( Throwable ignored ){
 		}
 		
 		progress.setIndeterminate( true );

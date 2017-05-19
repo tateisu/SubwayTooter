@@ -164,7 +164,6 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 				new DlgContextMenu( activity, column, who, null ).show();
 			}
 			break;
-			
 		}
 	}
 	

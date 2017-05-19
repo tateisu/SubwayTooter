@@ -18,7 +18,6 @@ import java.util.ArrayList;
 
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
-import jp.juggler.subwaytooter.dialog.AccountPicker;
 import jp.juggler.subwaytooter.dialog.DlgQRCode;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
@@ -203,11 +202,8 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			btnSendMessageFromAnotherAccount.setOnClickListener( this );
 		}
 		
-		if( account_list_non_pseudo_same_instance.isEmpty() ){
-			btnOpenProfileFromAnotherAccount.setVisibility( View.GONE );
-		}else{
-			btnOpenProfileFromAnotherAccount.setOnClickListener( this );
-		}
+		btnOpenProfileFromAnotherAccount.setOnClickListener( this );
+
 		
 		View v = viewRoot.findViewById( R.id.btnNickname );
 		v.setOnClickListener( this );
@@ -349,7 +345,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnProfile:
-			activity.performOpenUser( pos,access_info, who );
+			activity.openProfile( pos,access_info, who );
 			break;
 		
 		case R.id.btnSendMessage:
@@ -377,7 +373,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnOpenProfileFromAnotherAccount:
-			activity.performOpenUserFromAnotherAccount( pos,who, account_list_non_pseudo_same_instance );
+			activity.openProfileFromAnotherAccount( pos,access_info,who );
 			break;
 		
 		case R.id.btnNickname:

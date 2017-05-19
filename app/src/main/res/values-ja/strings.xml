@@ -426,7 +426,7 @@
     <!---->
     <string name="send_message">メッセージを送る</string>
     <!---->
-    <string name="open_profile_from_another_account">(同タンスの)別アカウントでプロフを開く</string>
+    <string name="open_profile_from_another_account">別アカウントでプロフを開く</string>
     <!---->
     <string name="open_profile">プロフを開く</string>
     <!---->

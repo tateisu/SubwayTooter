@@ -449,7 +449,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			if( access_info.isPseudo() ){
 				new DlgContextMenu( activity, column, account_thumbnail, null ).show();
 			}else{
-				activity.performOpenUser( pos,access_info, account_thumbnail );
+				activity.openProfile( pos,access_info, account_thumbnail );
 			}
 			break;
 		
@@ -457,14 +457,14 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			if( access_info.isPseudo() ){
 				new DlgContextMenu( activity, column, account_boost, null ).show();
 			}else{
-				activity.performOpenUser( pos,access_info, account_boost );
+				activity.openProfile( pos,access_info, account_boost );
 			}
 			break;
 		case R.id.llFollow:
 			if( access_info.isPseudo() ){
 				new DlgContextMenu( activity, column, account_follow, null ).show();
 			}else{
-				activity.performOpenUser( pos,access_info, account_follow );
+				activity.openProfile( pos,access_info, account_follow );
 			}
 			break;
 		case R.id.btnFollow:

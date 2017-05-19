@@ -27,7 +27,10 @@ public class AccountPicker {
 		void onAccountPicked( @NonNull SavedAccount ai );
 	}
 	
-	public static void pick( @NonNull ActMain activity, boolean bAllowPseudo, boolean bAuto
+	public static void pick(
+		@NonNull ActMain activity
+		, boolean bAllowPseudo
+		, boolean bAuto
 		, String message
 		, @NonNull final AccountPickerCallback callback
 	){
@@ -36,7 +39,10 @@ public class AccountPicker {
 		pick( activity, bAllowPseudo, bAuto, message, account_list, callback );
 	}
 	
-	public static void pick( @NonNull ActMain activity, boolean bAllowPseudo, boolean bAuto
+	public static void pick(
+		@NonNull ActMain activity
+		, boolean bAllowPseudo
+		, boolean bAuto
 		, String message
 		, @NonNull final ArrayList< SavedAccount > account_list
 		, @NonNull final AccountPickerCallback callback

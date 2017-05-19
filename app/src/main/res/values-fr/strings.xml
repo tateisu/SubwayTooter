@@ -213,7 +213,7 @@
 	<string name="open_in_pseudo_account">Ouvrir avec le compte %1$s</string>
 	<string name="open_instance_website">Ouvrir https://%1$s/</string>
 	<string name="open_profile">Ouvrir ce profil</string>
-	<string name="open_profile_from_another_account">Ouvrir ce profil avec un autre compte (même instance)</string>
+	<string name="open_profile_from_another_account">Ouvrir ce profil avec un autre compte</string>
 	<string name="open_status_from">Ouvrir le statut depuis</string>
 	<string name="open_web_on_host">Ouvrir la page web sur %1$s</string>
 	<string name="open_web_page">Ouvrir la page Web</string>

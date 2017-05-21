@@ -201,7 +201,7 @@
 	<string name="nickname_applied_after_reload">Le changement de pseudo/couleur sera appliqué après actualisation.</string>
 	<string name="nickname_label">Pseudo. (s\'il est spécifié, il remplacera le nom du compte affiché)</string>
 	<string name="not_available_for_pseudo_account">Non disponible pour les personnes non connectés</string>
-	<string name="not_selected">(Non sélectionné)</string>
+	<string name="not_selected">(Aucune sélection)</string>
 	<string name="notification_count">%1$d notifications</string>
 	<string name="notification_delete">Effacer les notifications</string>
 	<string name="notification_option">Options de notification</string>
@@ -222,7 +222,7 @@
 	<string name="pick_image">Choisir une image</string>
 	<string name="please_add_account">Compte manquant. Veuillez ajouter un compte avant de poster.</string>
 	<string name="please_donate">Merci de soutenir cette application !</string>
-	<string name="please_rate">Merci de prendre un peu de temps pour pouvoir\nnoter cette application et laisser votre avis !</string>
+	<string name="please_rate">Merci de prendre un peu de temps pour\nnoter cette application et donner votre avis !</string>
 	<string name="post_error_contents_empty">Veuillez saisir votre statut.</string>
 	<string name="post_error_contents_warning_empty">Veuillez saisir l\'avertissement de contenu</string>
 	<string name="post_from">Publier par</string>
@@ -319,16 +319,16 @@
 	<string name="timeline_font">Changer la police de caractères de l\'interface\n(redémarrage nécessaire)</string>
 	<string name="account_in_draft_is_lost">Le compte utilisé pour ce brouillon a été supprimé de Subway Tooter. Le lien avec le toot d\'origine ne peut être restauré.</string>
 	<string name="attachment_in_draft_is_lost">Une ou plusieurs pièces jointes de ce brouillon sont introuvables.</string>
-	<string name="reply_to_in_draft_is_lost">La réponse d\'origine à laquelle ce brouillon fait référence n\'existe plus, vous ne pouvez plus y répondre.</string>
+	<string name="reply_to_in_draft_is_lost">Le toot auquel ce brouillon fait référence n\'existe plus, vous ne pouvez plus y répondre.</string>
 	<string name="restore_draft">Restaurer un brouillon</string>
 	<string name="select_draft">Sélectionnez le brouillon à restaurer</string>
 	<string name="app_data_export">Exporter les données de Subway Tooter</string>
 	<string name="app_data_import">Importer les données dans Subway Tooter</string>
-	<string name="app_data_import_confirm">Toutes les données actuelles, seront remplacées par celle de l\'importation.\nÊtes-vous sur ?</string>
+	<string name="app_data_import_confirm">Toutes les données actuelles seront remplacées lors de l\'importation.\nÊtes-vous sur ?</string>
 	<string name="app_data_import_desc">Vous pouvez exporter les données vers toute application qui pourra les recevoir. L\'importation ne peut s\'effectuer que depuis le stockage de votre appareil ou Google Drive !</string>
-    <string name="user_id_conversion_failed">User id conversion failed.</string>
-    <string name="draft_deleted">Draft deleted.</string>
-	<string name="draft_picker_desc">Long tap to delete.</string>
+	<string name="user_id_conversion_failed">Conversion de l\'identification utilisateur échouée.</string>
+	<string name="draft_deleted">Brouillon effacé !</string>
+	<string name="draft_picker_desc">[Appuie long, pour effacer]</string>
 
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->

@@ -24,6 +24,7 @@ public class TootAttachment {
 	public static final String TYPE_IMAGE = "image";
 	public static final String TYPE_VIDEO = "video";
 	public static final String TYPE_GIFV = "gifv";
+	public static final String TYPE_UNKNOWN = "unknown";
 	
 	//URL of the locally hosted version of the image
 	public String url;

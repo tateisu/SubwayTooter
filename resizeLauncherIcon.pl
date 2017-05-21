@@ -4,18 +4,29 @@ use warnings;
 use Image::Magick;
 
 sub resize{
-	my($src_file,$dst_file,$resize_w,$resize_h) = @_;
+	my($src_file,$dst_file,$resize_w,$resize_h,$scale) = @_;
 
 	my $image = new Image::Magick;
 
 	$image->read($src_file);
 
 	my($src_w,$src_h) = $image->Get(qw( width height));
+	if( not ( $src_w and $src_h ) ){
+		warn "cant get image bound. $src_file\n";
+		return;
+	}
 
-	if( not $resize_w ){
-		$resize_w = $resize_h * $src_w / $src_h;
-	}elsif( not $resize_h ){
-		$resize_h = $resize_w * $src_h / $src_w;
+	if($resize_w < 0 ){
+		# wが-1ならソース画像をxxxhdpi(x4)として扱い、$scaleに応じて縮小する
+		$resize_w = $src_w * ( $scale /4 );
+		$resize_h = $src_h * ( $scale /4 );
+	}else{
+		# wかhのどちらかが0なら、適当に補う
+		if( not $resize_w ){
+			$resize_w = $resize_h * $src_w / $src_h;
+		}elsif( not $resize_h ){
+			$resize_h = $resize_w * $src_h / $src_w;
+		}
 	}
 
 	$image -> Resize(
@@ -37,11 +48,20 @@ my @scale_list = (
 
 sub resize_scales{
 	my($src,$res_dir,$dir_prefix,$res_name,$w,$h)=@_;
-	for(@scale_list){
-		my($dir_suffix,$scale)=@$_;
-		my $subdir = "$res_dir/$dir_prefix-$dir_suffix";
-		mkdir($subdir,0777);
-		resize( $src, "$subdir/$res_name.png", $scale * $w, $scale * $h );
+	if( $w < 0 ){
+		for(@scale_list){
+			my($dir_suffix,$scale)=@$_;
+			my $subdir = "$res_dir/$dir_prefix-$dir_suffix";
+			mkdir($subdir,0777);
+			resize( $src, "$subdir/$res_name.png", $w,$h,$scale);
+		}
+	}else{
+		for(@scale_list){
+			my($dir_suffix,$scale)=@$_;
+			my $subdir = "$res_dir/$dir_prefix-$dir_suffix";
+			mkdir($subdir,0777);
+			resize( $src, "$subdir/$res_name.png", $scale * $w, $scale * $h );
+		}
 	}
 }
 
@@ -66,3 +86,10 @@ resize_scales( "_ArtWork/ic_follow_plus.png"		,$res_dir,"drawable","ic_follow_pl
 resize_scales( "_ArtWork/ic_follow_plus_dark.png"	,$res_dir,"drawable","ic_follow_plus_dark",0,32);
 resize_scales( "_ArtWork/ic_followed_by.png"		,$res_dir,"drawable","ic_followed_by",0,32);
 resize_scales( "_ArtWork/ic_followed_by_dark.png"	,$res_dir,"drawable","ic_followed_by_dark",0,32);
+
+
+resize_scales( "_ArtWork/media_type_gifv.png"	,$res_dir,"drawable","media_type_gifv",-1,-1);
+resize_scales( "_ArtWork/media_type_image.png"	,$res_dir,"drawable","media_type_image",-1,-1);
+resize_scales( "_ArtWork/media_type_unknown.png"	,$res_dir,"drawable","media_type_unknown",-1,-1);
+resize_scales( "_ArtWork/media_type_video.png"	,$res_dir,"drawable","media_type_video",-1,-1);
+

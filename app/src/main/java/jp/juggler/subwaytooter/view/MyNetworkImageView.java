@@ -3,18 +3,24 @@ package jp.juggler.subwaytooter.view;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.view.ViewGroup;
 import android.support.v7.widget.AppCompatImageView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.BaseTarget;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.SizeReadyCallback;
 import com.bumptech.glide.request.target.Target;
+import com.bumptech.glide.util.Util;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -97,22 +103,27 @@ public class MyNetworkImageView extends AppCompatImageView {
 	 * Loads the image for the view if it isn't already loaded.
 	 */
 	void loadImageIfNecessary( final boolean isInLayoutPass ){
-		int width = getWidth();
-		int height = getHeight();
-		
+
 		boolean wrapWidth = false, wrapHeight = false;
 		if( getLayoutParams() != null ){
 			wrapWidth = getLayoutParams().width == ViewGroup.LayoutParams.WRAP_CONTENT;
 			wrapHeight = getLayoutParams().height == ViewGroup.LayoutParams.WRAP_CONTENT;
 		}
 		
-		// if the view's bounds aren't known yet, and this is not a wrap-content/wrap-content
-		// view, hold off on loading the image.
-		boolean isFullyWrapContent = wrapWidth && wrapHeight;
-		if( width == 0 && height == 0 && ! isFullyWrapContent ){
+		// Calculate the max image width / height to use while ignoring WRAP_CONTENT dimens.
+		final int desiredWidth = wrapWidth ? Target.SIZE_ORIGINAL : getWidth();
+		final int desiredHeight = wrapHeight ? Target.SIZE_ORIGINAL : getHeight();
+
+		if( (desiredWidth != Target.SIZE_ORIGINAL && desiredWidth <=0 )
+			|| (desiredHeight != Target.SIZE_ORIGINAL && desiredHeight <=0 )
+			){
+			// desiredWidth,desiredHeight の指定がおかしいと非同期処理中にSimpleTargetが落ちる
+
+			// if the view's bounds aren't known yet, and this is not a wrap-content/wrap-content
+			// view, hold off on loading the image.
 			return;
 		}
-		
+
 		// if the URL to be loaded in this view is empty, cancel any old requests and clear the
 		// currently loaded image.
 		if( TextUtils.isEmpty( mUrl ) ){
@@ -130,9 +141,6 @@ public class MyNetworkImageView extends AppCompatImageView {
 		
 		setDefaultImageOrNull();
 		
-		// Calculate the max image width / height to use while ignoring WRAP_CONTENT dimens.
-		int desiredWidth = wrapWidth ? Target.SIZE_ORIGINAL : width;
-		int desiredHeight = wrapHeight ? Target.SIZE_ORIGINAL : height;
 		
 		final AtomicBoolean isImmediate = new AtomicBoolean( true );
 		mTargetUrl = mUrl;
@@ -142,6 +150,7 @@ public class MyNetworkImageView extends AppCompatImageView {
 				.asBitmap()
 				.into(
 					new SimpleTarget< Bitmap >( desiredWidth, desiredHeight ) {
+						
 						@Override public void onLoadFailed( Exception e, Drawable errorDrawable ){
 							try{
 								// このViewは別の画像を表示するように指定が変わっていた
@@ -151,11 +160,11 @@ public class MyNetworkImageView extends AppCompatImageView {
 								if( mErrorImageId != 0 ) setImageResource( mErrorImageId );
 							}catch( Throwable ex ){
 								ex.printStackTrace();
-//								java.lang.NullPointerException:
-//								at jp.juggler.subwaytooter.view.MyNetworkImageView$1.onLoadFailed(MyNetworkImageView.java:147)
-//								at com.bumptech.glide.request.GenericRequest.setErrorPlaceholder(GenericRequest.java:404)
-//								at com.bumptech.glide.request.GenericRequest.onException(GenericRequest.java:548)
-//								at com.bumptech.glide.load.engine.EngineJob.handleExceptionOnMainThread(EngineJob.java:183)
+								//								java.lang.NullPointerException:
+								//								at jp.juggler.subwaytooter.view.MyNetworkImageView$1.onLoadFailed(MyNetworkImageView.java:147)
+								//								at com.bumptech.glide.request.GenericRequest.setErrorPlaceholder(GenericRequest.java:404)
+								//								at com.bumptech.glide.request.GenericRequest.onException(GenericRequest.java:548)
+								//								at com.bumptech.glide.load.engine.EngineJob.handleExceptionOnMainThread(EngineJob.java:183)
 							}
 						}
 						
@@ -221,5 +230,37 @@ public class MyNetworkImageView extends AppCompatImageView {
 	@Override protected void drawableStateChanged(){
 		super.drawableStateChanged();
 		invalidate();
+	}
+	
+	Drawable media_type_drawable;
+	int media_type_bottom;
+	int media_type_left;
+	public void setMediaType( int drawable_id ){
+		if( drawable_id == 0){
+			media_type_drawable = null;
+		}else{
+			media_type_drawable = ContextCompat.getDrawable(getContext(),drawable_id).mutate();
+			// DisplayMetrics dm = getResources().getDisplayMetrics();
+			media_type_bottom = 0;
+			media_type_left =0;
+		}
+		invalidate();
+	}
+	
+	@Override protected void onDraw( Canvas canvas ){
+		super.onDraw( canvas );
+		if( media_type_drawable != null ){
+			int drawable_w = media_type_drawable.getIntrinsicWidth();
+			int drawable_h = media_type_drawable.getIntrinsicHeight();
+			// int view_w = getWidth();
+			int view_h = getHeight();
+			media_type_drawable.setBounds(
+				0,
+				view_h - drawable_h,
+				drawable_w,
+				view_h
+			);
+			media_type_drawable.draw( canvas );
+		}
 	}
 }

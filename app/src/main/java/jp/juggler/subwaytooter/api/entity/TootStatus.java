@@ -7,7 +7,6 @@ import android.text.TextUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -19,11 +18,11 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
+import jp.juggler.subwaytooter.util.WordTrieTree;
 
 public class TootStatus extends TootId {
 	
@@ -143,12 +142,12 @@ public class TootStatus extends TootId {
 			status.application = TootApplication.parse( log, src.optJSONObject( "application" ) ); // null
 			
 			status.time_created_at = parseTime( log, status.created_at );
-			status.decoded_content = HTMLDecoder.decodeHTML( account, status.content );
+			status.decoded_content = HTMLDecoder.decodeHTML( account, status.content ,true,status.media_attachments );
 			// status.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
 			status.decoded_mentions = HTMLDecoder.decodeMentions( account, status.mentions );
 			
 			if( ! TextUtils.isEmpty( status.spoiler_text ) ){
-				status.decoded_spoiler_text = HTMLDecoder.decodeHTML( account, status.spoiler_text );
+				status.decoded_spoiler_text = HTMLDecoder.decodeHTML( account, status.spoiler_text ,true,status.media_attachments);
 			}
 			return status;
 		}catch( Throwable ex ){
@@ -233,16 +232,16 @@ public class TootStatus extends TootId {
 		throw new IndexOutOfBoundsException( "visibility not in range" );
 	}
 	
-	public void updateNickname( SavedAccount access_info ){
-		decoded_content = HTMLDecoder.decodeHTML( access_info, content );
-		decoded_mentions = HTMLDecoder.decodeMentions( access_info, mentions );
-		
-		if( ! TextUtils.isEmpty( spoiler_text ) ){
-			decoded_spoiler_text = HTMLDecoder.decodeHTML( access_info, spoiler_text );
-		}
-	}
+//	public void updateNickname( SavedAccount access_info ){
+//		decoded_content = HTMLDecoder.decodeHTML( access_info, content );
+//		decoded_mentions = HTMLDecoder.decodeMentions( access_info, mentions );
+//
+//		if( ! TextUtils.isEmpty( spoiler_text ) ){
+//			decoded_spoiler_text = HTMLDecoder.decodeHTML( access_info, spoiler_text );
+//		}
+//	}
 	
-	public boolean checkMuted( HashSet< String > muted_app, HashSet< String > muted_word ){
+	public boolean checkMuted( @NonNull HashSet< String > muted_app, @NonNull WordTrieTree muted_word ){
 		
 		// app mute
 		if( application != null ){
@@ -255,22 +254,16 @@ public class TootStatus extends TootId {
 		}
 		
 		// word mute
-		for( String word : muted_word ){
-			if( decoded_content != null && decoded_content.toString().contains( word ) ){
-				return true;
-			}
-			if( decoded_spoiler_text != null && decoded_spoiler_text.toString().contains( word ) ){
-				return true;
-			}
-		}
-		
-		// reblog
-		//noinspection RedundantIfStatement
-		if( reblog != null && reblog.checkMuted( muted_app, muted_word ) ){
+		if( decoded_content != null && muted_word.containsWord( decoded_content.toString() ) ){
 			return true;
 		}
 		
-		return false;
+		if( decoded_spoiler_text != null && muted_word.containsWord( decoded_spoiler_text.toString() ) ){
+			return true;
+		}
+		
+		// reblog
+		return reblog != null && reblog.checkMuted( muted_app, muted_word );
 		
 	}
 	

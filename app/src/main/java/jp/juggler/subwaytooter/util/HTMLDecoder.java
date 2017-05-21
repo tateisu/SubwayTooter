@@ -1,14 +1,18 @@
 package jp.juggler.subwaytooter.util;
 
+import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootMention;
 
 public class HTMLDecoder {
@@ -127,31 +131,47 @@ public class HTMLDecoder {
 			if( DEBUG_HTML_PARSER ) log.d( "parseChild: %s)%s", indent, tag );
 		}
 		
-		void encodeSpan( LinkClickContext account, SpannableStringBuilder sb ){
+		void encodeSpan(
+			LinkClickContext account
+			, SpannableStringBuilder sb
+			, boolean bShort
+			, @Nullable TootAttachment.List  list_attachment
+		){
 			if( TAG_TEXT.equals( tag ) ){
 				sb.append( Emojione.decodeEmoji( decodeEntity( text ) ) );
 				return;
 			}
 			if( DEBUG_HTML_PARSER ) sb.append( "(start " ).append( tag ).append( ")" );
 			
-			int start = sb.length();
+			SpannableStringBuilder sb_tmp;
+			if( bShort && "a".equals( tag ) ){
+				sb_tmp = new SpannableStringBuilder(  );
+			}else{
+				sb_tmp = sb;
+			}
+			
+			int start = sb_tmp.length();
 			
 			for( Node child : child_nodes ){
-				child.encodeSpan( account, sb );
+				child.encodeSpan( account, sb_tmp ,bShort,list_attachment );
 			}
 			
-			int end = sb.length();
+			int end = sb_tmp.length();
+			
+			if( bShort && "a".equals( tag ) ){
+				start = sb.length();
+				sb.append(  encodeShortUrl( sb_tmp.toString(), getHref(), list_attachment ) );
+				end = sb.length();
+			}
 			
 			if( end > start && "a".equals( tag ) ){
-				Matcher m = reHref.matcher( text );
-				if( m.find() ){
-					final String href = decodeEntity( m.group( 1 ) );
-					if( ! TextUtils.isEmpty( href ) ){
-						MyClickableSpan span =  new MyClickableSpan(account,href,account.findAcctColor( href ) ) ;
-						sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
-					}
+				String href = getHref();
+				if( href != null){
+					MyClickableSpan span =  new MyClickableSpan(account,href,account.findAcctColor( href ) ) ;
+					sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
 				}
 			}
+			
 			if( DEBUG_HTML_PARSER ) sb.append( "(end " ).append( tag ).append( ")" );
 			
 			if( "br".equals( tag ) ) sb.append( '\n' );
@@ -163,35 +183,61 @@ public class HTMLDecoder {
 			}
 		}
 		
-		void encodeSpanForClipboard( LinkClickContext account, SpannableStringBuilder sb ){
-			encodeSpan( account, sb );
-			// 現時点ではURLの一部を非表示にするとかはしてないので
-			// そのままテキストにしたものをコピーして大丈夫なはず
+		private String getHref(){
+			Matcher m = reHref.matcher( text );
+			if( m.find() ){
+				final String href = decodeEntity( m.group( 1 ) );
+				if( ! TextUtils.isEmpty( href ) ){
+					return href;
+				}
+			}
+			return null;
 		}
-	}
-	
-	public static CharSequence decodeHTMLForClipboard( LinkClickContext account, String src ){
-		try{
-			TokenParser tracker = new TokenParser( src );
-			Node rootNode = new Node();
-			rootNode.parseChild( tracker, "" );
-			
-			SpannableStringBuilder sb = new SpannableStringBuilder();
-			
-			rootNode.encodeSpanForClipboard( account, sb );
-			int end = sb.length();
-			while( end > 0 && Character.isWhitespace( sb.charAt( end - 1 ) ) ) -- end;
-			if( end < sb.length() ){
-				sb.delete( end, sb.length() );
+		
+		boolean is_media_attachment( @Nullable TootAttachment.List list_attachment,@Nullable String href){
+			if( href == null || list_attachment == null ) return false;
+			for( TootAttachment a : list_attachment ){
+				if( href.equals( a.remote_url )
+					|| href.equals( a.url )
+					|| href.equals( a.text_url )
+					) return true;
+			}
+			return false;
+		}
+
+		private CharSequence encodeShortUrl(
+			String display_url
+			, @Nullable String href
+			, @Nullable TootAttachment.List list_attachment
+		){
+			if( ! display_url.startsWith( "http" ) ){
+				// ハッシュタグやメンションはいじらない
+				return display_url;
 			}
 
-//			sb.append( "\n" );
-//			sb.append( src );
-			return sb;
+			if( is_media_attachment( list_attachment,href )){
+				return Emojione.decodeEmoji( ":frame_photo:" );
+			}
 			
-		}catch( Throwable ex ){
-			ex.printStackTrace();
-			return null;
+			try{
+				Uri uri = Uri.parse( display_url );
+				StringBuilder sb = new StringBuilder();
+				sb.append( uri.getAuthority() );
+				String a = uri.getEncodedPath();
+				String q = uri.getEncodedQuery();
+				String f = uri.getEncodedFragment();
+				String remain = a + ( q == null ? "" : "?" + q ) + ( f == null ? "" : "#" + f );
+				if( remain.length() > 10 ){
+					sb.append( remain.substring( 0, 10 ) );
+					sb.append( "…" );
+				}else{
+					sb.append( remain );
+				}
+				return sb;
+			}catch(Throwable ex){
+				ex.printStackTrace();
+				return display_url;
+			}
 		}
 	}
 	
@@ -199,7 +245,12 @@ public class HTMLDecoder {
 		return Character.isWhitespace( c ) || c == 0x0a || c == 0x0d;
 	}
 	
-	public static SpannableStringBuilder decodeHTML( LinkClickContext account, String src ){
+	public static SpannableStringBuilder decodeHTML(
+		LinkClickContext account
+		, String src
+		, boolean bShort
+		, @Nullable TootAttachment.List  list_attachment
+	){
 		SpannableStringBuilder sb = new SpannableStringBuilder();
 		try{
 			if( src != null ){
@@ -207,16 +258,15 @@ public class HTMLDecoder {
 				Node rootNode = new Node();
 				rootNode.parseChild( tracker, "" );
 				
-				rootNode.encodeSpan( account, sb );
+				rootNode.encodeSpan( account, sb ,bShort,list_attachment);
 				int end = sb.length();
 				while( end > 0 && isWhitespace( sb.charAt( end - 1 ) ) ) -- end;
 				if( end < sb.length() ){
 					sb.delete( end, sb.length() );
 				}
-
-//			sb.append( "\n" );
-//			sb.append( src );
 				
+//				sb.append( "\n" );
+//				sb.append(src);
 			}
 		}catch( Throwable ex ){
 			ex.printStackTrace();

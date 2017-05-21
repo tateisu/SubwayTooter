@@ -626,10 +626,14 @@ public class ActMain extends AppCompatActivity
 	
 	Typeface timeline_font;
 	
+	boolean dont_crop_media_thumbnail;
+	
 	void initUI(){
 		setContentView( R.layout.act_main );
 		
 		String sv = pref.getString( Pref.KEY_TIMELINE_FONT, "" );
+		
+		dont_crop_media_thumbnail = pref.getBoolean( Pref.KEY_DONT_CROP_MEDIA_THUMBNAIL,false );
 		
 		if( ! TextUtils.isEmpty( sv ) ){
 			try{

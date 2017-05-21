@@ -42,6 +42,7 @@ import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.BucketList;
 import jp.juggler.subwaytooter.api.DuplicateMap;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.WordTrieTree;
 import jp.juggler.subwaytooter.view.MyListView;
 import jp.juggler.subwaytooter.util.ScrollPosition;
 import jp.juggler.subwaytooter.util.Utils;
@@ -794,7 +795,7 @@ class Column implements StreamReader.Callback {
 		ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
 		
 		HashSet< String > muted_app = MutedApp.getNameSet();
-		HashSet< String > muted_word = MutedWord.getNameSet();
+		WordTrieTree muted_word = MutedWord.getNameSet();
 		
 		for( Object o : list_data ){
 			if( o instanceof TootStatus ){
@@ -825,7 +826,7 @@ class Column implements StreamReader.Callback {
 	
 	private Pattern column_regex_filter;
 	private HashSet< String > muted_app;
-	private HashSet< String > muted_word;
+	private WordTrieTree muted_word;
 	
 	private void initFilter(){
 		column_regex_filter = null;

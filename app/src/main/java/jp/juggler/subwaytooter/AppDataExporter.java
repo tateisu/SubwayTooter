@@ -271,6 +271,7 @@ public class AppDataExporter {
 			case Pref.KEY_DONT_REFRESH_ON_RESUME:
 			case Pref.KEY_DONT_SCREEN_OFF:
 			case Pref.KEY_DISABLE_TABLET_MODE:
+			case Pref.KEY_DONT_CROP_MEDIA_THUMBNAIL:
 				boolean bv = reader.nextBoolean();
 				e.putBoolean( k, bv );
 				break;

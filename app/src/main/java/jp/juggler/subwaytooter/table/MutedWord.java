@@ -3,14 +3,11 @@ package jp.juggler.subwaytooter.table;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.JsonWriter;
-
-import java.io.IOException;
 import java.util.HashSet;
 
 import jp.juggler.subwaytooter.App1;
-import jp.juggler.subwaytooter.AppDataExporter;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.WordTrieTree;
 
 public class MutedWord {
 	
@@ -67,8 +64,8 @@ public class MutedWord {
 		}
 	}
 	
-	public static HashSet< String > getNameSet(){
-		HashSet< String > dst = new HashSet<>();
+	public static WordTrieTree getNameSet(){
+		WordTrieTree dst = new WordTrieTree();
 		try{
 			Cursor cursor = App1.getDB().query( table, null, null, null, null, null, null );
 			if( cursor != null ){

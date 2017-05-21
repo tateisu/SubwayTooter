@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
@@ -37,6 +38,7 @@ import jp.juggler.subwaytooter.table.NotificationTracking;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
+import jp.juggler.subwaytooter.util.WordTrieTree;
 
 public class AlarmService extends IntentService {
 	
@@ -105,7 +107,7 @@ public class AlarmService extends IntentService {
 		
 		// クラッシュレポートによると App1.onCreate より前にここを通る場合がある
 		// データベースへアクセスできるようにする
-		App1.prepareDB(this.getApplicationContext());
+		App1.prepareDB( this.getApplicationContext() );
 		
 		if( intent != null ){
 			String action = intent.getAction();
@@ -113,7 +115,7 @@ public class AlarmService extends IntentService {
 			
 			if( ACTION_APP_DATA_IMPORT_BEFORE.equals( action ) ){
 				alarm_manager.cancel( pi_next );
-				for( SavedAccount a :  SavedAccount.loadAccountList( log ) ){
+				for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
 					try{
 						String notification_tag = Long.toString( a.db_id );
 						notification_manager.cancel( notification_tag, NOTIFICATION_ID );
@@ -181,32 +183,33 @@ public class AlarmService extends IntentService {
 		
 		final AtomicBoolean bAlarmRequired = new AtomicBoolean( false );
 		final HashSet< String > muted_app = MutedApp.getNameSet();
-		final HashSet< String > muted_word = MutedWord.getNameSet();
+		final WordTrieTree muted_word = MutedWord.getNameSet();
 		
-		LinkedList<Thread> thread_list = new LinkedList<>(  );
+		LinkedList< Thread > thread_list = new LinkedList<>();
 		for( SavedAccount _a : account_list ){
 			final SavedAccount account = _a;
 			Thread t = new Thread( new Runnable() {
 				@Override public void run(){
-
+					
 					try{
 						if( account.notification_mention
 							|| account.notification_boost
 							|| account.notification_favourite
 							|| account.notification_follow
 							){
-							bAlarmRequired.set(true);
+							bAlarmRequired.set( true );
 							
 							TootApiClient client = new TootApiClient( AlarmService.this, new TootApiClient.Callback() {
 								@Override public boolean isApiCancelled(){
 									return false;
 								}
+								
 								@Override public void publishApiProgress( String s ){
 								}
 							} );
 							
 							ArrayList< Data > data_list = new ArrayList<>();
-							checkAccount( client, data_list, account, muted_app ,muted_word);
+							checkAccount( client, data_list, account, muted_app, muted_word );
 							showNotification( account.db_id, data_list );
 						}
 					}catch( Throwable ex ){
@@ -214,15 +217,15 @@ public class AlarmService extends IntentService {
 					}
 				}
 			} );
-			thread_list.add( t);
+			thread_list.add( t );
 			t.start();
 		}
 		
 		for( Thread t : thread_list ){
 			try{
 				t.join();
-			}catch(Throwable ex){
-				ex.printStackTrace(  );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
 			}
 		}
 		
@@ -248,7 +251,13 @@ public class AlarmService extends IntentService {
 	
 	private static final String PATH_NOTIFICATIONS = "/api/v1/notifications";
 	
-	private void checkAccount( TootApiClient client, ArrayList< Data > data_list, SavedAccount account, HashSet< String > muted_app, HashSet< String > muted_word ){
+	private void checkAccount(
+		@NonNull TootApiClient client
+		, @NonNull ArrayList< Data > data_list
+		, @NonNull SavedAccount account
+		, @NonNull HashSet< String > muted_app
+		, @NonNull WordTrieTree muted_word
+	){
 		log.d( "checkAccount account_db_id=%s", account.db_id );
 		
 		NotificationTracking nr = NotificationTracking.load( account.db_id );
@@ -261,7 +270,7 @@ public class AlarmService extends IntentService {
 				JSONArray array = new JSONArray( nr.last_data );
 				for( int i = array.length() - 1 ; i >= 0 ; -- i ){
 					JSONObject src = array.optJSONObject( i );
-					update_sub( src, nr, account, dst_array, data_list, duplicate_check, muted_app ,muted_word);
+					update_sub( src, nr, account, dst_array, data_list, duplicate_check, muted_app, muted_word );
 				}
 			}catch( JSONException ex ){
 				ex.printStackTrace();
@@ -318,17 +327,16 @@ public class AlarmService extends IntentService {
 	}
 	
 	void update_sub(
-		JSONObject src
-		, NotificationTracking nr
-		, SavedAccount account
-		, ArrayList< JSONObject > dst_array
-		, ArrayList< Data > data_list
-		, HashSet< Long > duplicate_check
-		, HashSet< String > muted_app
-		, HashSet< String > muted_word
+		@NonNull JSONObject src
+		, @NonNull NotificationTracking nr
+		, @NonNull SavedAccount account
+		, @NonNull ArrayList< JSONObject > dst_array
+		, @NonNull ArrayList< Data > data_list
+		, @NonNull HashSet< Long > duplicate_check
+		, @NonNull HashSet< String > muted_app
+		, @NonNull WordTrieTree muted_word
 	)
-		throws JSONException
-	{
+		throws JSONException{
 		
 		long id = src.optLong( "id" );
 		
@@ -360,7 +368,7 @@ public class AlarmService extends IntentService {
 		{
 			TootStatus status = notification.status;
 			if( status != null ){
-				if( status.checkMuted( muted_app,muted_word )){
+				if( status.checkMuted( muted_app, muted_word ) ){
 					return;
 				}
 			}
@@ -376,7 +384,7 @@ public class AlarmService extends IntentService {
 		dst_array.add( src );
 	}
 	
-	public String getNotificationLine( String type, CharSequence display_name ){
+	public String getNotificationLine( @NonNull String type, @NonNull CharSequence display_name ){
 		if( TootNotification.TYPE_FAVOURITE.equals( type ) ){
 			return "- " + getString( R.string.display_name_favourited_by, display_name );
 		}
@@ -392,7 +400,7 @@ public class AlarmService extends IntentService {
 		return "- " + "?";
 	}
 	
-	private void showNotification( long account_db_id, ArrayList< Data > data_list ){
+	private void showNotification( long account_db_id, @NonNull ArrayList< Data > data_list ){
 		String notification_tag = Long.toString( account_db_id );
 		if( data_list.isEmpty() ){
 			notification_manager.cancel( notification_tag, NOTIFICATION_ID );
@@ -484,7 +492,7 @@ public class AlarmService extends IntentService {
 	////////////////////////////////////////////////////////////////////////////
 	// Activity との連携
 	
-	public static void startCheck( Context context ){
+	public static void startCheck( @NonNull Context context ){
 		Intent intent = new Intent( context, AlarmReceiver.class );
 		context.sendBroadcast( intent );
 	}
@@ -496,7 +504,7 @@ public class AlarmService extends IntentService {
 	
 	static final ConcurrentLinkedQueue< InjectData > inject_queue = new ConcurrentLinkedQueue<>();
 	
-	public static void injectData( Context context, long account_db_id, TootNotification.List src ){
+	public static void injectData( @NonNull Context context, long account_db_id, @NonNull TootNotification.List src ){
 		InjectData data = new InjectData();
 		data.account_db_id = account_db_id;
 		data.list.addAll( src );
@@ -590,7 +598,7 @@ public class AlarmService extends IntentService {
 		}
 	}
 	
-	public static void dataRemoved( Context context, long db_id ){
+	public static void dataRemoved( @NonNull Context context, long db_id ){
 		Intent intent = new Intent( context, AlarmService.class );
 		intent.putExtra( EXTRA_DB_ID, db_id );
 		intent.setAction( ACTION_DATA_DELETED );

@@ -617,4 +617,6 @@
     <string name="user_id_conversion_failed">ユーザIDを変換できません</string>
     <string name="draft_deleted">下書きを削除しました</string>
     <string name="draft_picker_desc">長押しで削除</string>
+    <string name="dont_crop_media_thumbnail">添付メディアのサムネイルをクロップしない(アプリ再起動が必要)</string>
+
 </resources>

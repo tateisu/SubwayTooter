@@ -329,9 +329,9 @@
     <string name="user_id_conversion_failed">User id conversion failed.</string>
     <string name="draft_deleted">Draft deleted.</string>
 	<string name="draft_picker_desc">Long tap to delete.</string>
+	<string name="dont_crop_media_thumbnail">Don\'t crop media thumbnail</string>
 
-
-	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

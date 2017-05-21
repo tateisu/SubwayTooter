@@ -405,10 +405,12 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			iv.setVisibility( View.GONE );
 		}else{
 			iv.setVisibility( View.VISIBLE );
+			iv.setScaleType( activity.dont_crop_media_thumbnail ? ImageView.ScaleType.FIT_CENTER : ImageView.ScaleType.CENTER_CROP );
+
 			TootAttachment ta = status.media_attachments.get( idx );
 			String url = ta.preview_url;
 			if( TextUtils.isEmpty( url ) ) url = ta.remote_url;
-			iv.setCornerRadius( activity.pref, 16f ); // 正方形じゃないせいか、うまく動かない activity.density * 4f );
+			iv.setCornerRadius( activity.pref,0f ); // 正方形じゃないせいか、うまく動かない activity.density * 4f );
 			iv.setImageUrl( access_info.supplyBaseUrl( url ) );
 		}
 	}

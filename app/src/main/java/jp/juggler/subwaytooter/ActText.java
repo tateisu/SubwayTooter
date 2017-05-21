@@ -44,11 +44,11 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 		if( ! TextUtils.isEmpty( status.spoiler_text ) ){
 			sb.append( context.getString( R.string.send_header_content_warning ) );
 			sb.append( ": " );
-			sb.append( HTMLDecoder.decodeHTMLForClipboard( access_info, status.spoiler_text ) );
+			sb.append( HTMLDecoder.decodeHTML( access_info, status.spoiler_text ,false,null) );
 			sb.append( "\n" );
 		}
 		sb.append( "\n" );
-		sb.append( HTMLDecoder.decodeHTMLForClipboard( access_info, status.content ) );
+		sb.append( HTMLDecoder.decodeHTML( access_info, status.content ,false,null) );
 		return sb.toString();
 	}
 	

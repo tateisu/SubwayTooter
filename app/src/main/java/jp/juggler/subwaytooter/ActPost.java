@@ -394,7 +394,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					
 					// リプライ表示をつける
 					in_reply_to_id = reply_status.id;
-					in_reply_to_text = reply_status.content;
+					in_reply_to_text = reply_status.decoded_content.toString();
 					in_reply_to_image = reply_status.account.avatar_static;
 					
 					// 公開範囲
@@ -1466,7 +1466,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			llReply.setVisibility( View.GONE );
 		}else{
 			llReply.setVisibility( View.VISIBLE );
-			tvReplyTo.setText( HTMLDecoder.decodeHTML( account, in_reply_to_text ) );
+			tvReplyTo.setText( HTMLDecoder.decodeHTML( account ,in_reply_to_text ,true,null ));
 			ivReply.setCornerRadius( pref, 16f );
 			ivReply.setImageUrl( in_reply_to_image );
 			

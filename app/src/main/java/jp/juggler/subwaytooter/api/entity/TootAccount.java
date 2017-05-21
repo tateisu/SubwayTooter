@@ -105,7 +105,7 @@ public class TootAccount {
 			dst.followers_count = src.optLong( "followers_count" );
 			dst.following_count = src.optLong( "following_count" );
 			dst.statuses_count = src.optLong( "statuses_count" );
-			dst.note = HTMLDecoder.decodeHTML( account,Utils.optStringX( src, "note" ) );
+			dst.note = HTMLDecoder.decodeHTML( account,Utils.optStringX( src, "note" ) ,true,null);
 			dst.url = Utils.optStringX( src, "url" );
 			dst.avatar = Utils.optStringX( src, "avatar" ); // "https:\/\/mastodon.juggler.jp\/system\/accounts\/avatars\/000\/000\/148\/original\/0a468974fac5a448.PNG?1492081886",
 			dst.avatar_static = Utils.optStringX( src, "avatar_static" ); // "https:\/\/mastodon.juggler.jp\/system\/accounts\/avatars\/000\/000\/148\/original\/0a468974fac5a448.PNG?1492081886",

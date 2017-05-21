@@ -326,4 +326,5 @@
     <string name="user_id_conversion_failed">User id conversion failed.</string>
     <string name="draft_picker_desc">Long tap to delete.</string>
     <string name="draft_deleted">Draft deleted.</string>
+    <string name="dont_crop_media_thumbnail">Don\'t crop media thumbnail</string>
 </resources>

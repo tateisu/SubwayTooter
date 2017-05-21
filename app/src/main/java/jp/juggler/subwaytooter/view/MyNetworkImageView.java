@@ -12,8 +12,6 @@ import android.view.ViewGroup;
 import android.support.v7.widget.AppCompatImageView;
 
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.drawable.GlideDrawable;
-import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.target.Target;
@@ -21,6 +19,7 @@ import com.bumptech.glide.request.target.Target;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import jp.juggler.subwaytooter.Pref;
+import jp.juggler.subwaytooter.util.Utils;
 
 public class MyNetworkImageView extends AppCompatImageView {
 	
@@ -144,6 +143,9 @@ public class MyNetworkImageView extends AppCompatImageView {
 			.into(
 			new SimpleTarget< Bitmap >( desiredWidth, desiredHeight ) {
 				@Override public void onLoadFailed( Exception e, Drawable errorDrawable ){
+					// このViewは別の画像を表示するように指定が変わっていた
+					if( mTargetUrl == null || ! mTargetUrl.equals( mUrl ) ) return;
+
 					e.printStackTrace();
 					if( mErrorImageId != 0 ) setImageResource( mErrorImageId );
 				}
@@ -154,13 +156,15 @@ public class MyNetworkImageView extends AppCompatImageView {
 				){
 					if( isImmediate.get() && isInLayoutPass ){
 						post( new Runnable() {
-							@Override
-							public void run(){
+							@Override public void run(){
 								onResourceReady( bitmap, glideAnimation );
 							}
 						} );
 						return;
 					}
+					
+					// このViewは別の画像を表示するように指定が変わっていた
+					if( mTargetUrl == null || ! mTargetUrl.equals( mUrl ) ) return;
 					
 					if( bitmap == null ){
 						setDefaultImageOrNull();

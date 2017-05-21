@@ -70,7 +70,7 @@ public class MyNetworkImageView extends AppCompatImageView {
 	public void setImageUrl( String url ){
 		mUrl = url;
 		// The URL has potentially changed. See if we need to load it.
-		loadImageIfNecessary(false);
+		loadImageIfNecessary( false );
 	}
 	
 	Target< ? > mTarget;
@@ -95,9 +95,8 @@ public class MyNetworkImageView extends AppCompatImageView {
 	
 	/**
 	 * Loads the image for the view if it isn't already loaded.
-	 *
 	 */
-	void loadImageIfNecessary(final boolean isInLayoutPass){
+	void loadImageIfNecessary( final boolean isInLayoutPass ){
 		int width = getWidth();
 		int height = getHeight();
 		
@@ -124,7 +123,7 @@ public class MyNetworkImageView extends AppCompatImageView {
 			// if there was an old request in this view, check if it needs to be canceled.
 			// if the request is from the same URL, return.
 			if( mUrl.equals( mTargetUrl ) ) return;
-
+			
 			// if there is a pre-existing request, cancel it if it's fetching a different URL.
 			cancelLoading();
 		}
@@ -135,56 +134,78 @@ public class MyNetworkImageView extends AppCompatImageView {
 		int desiredWidth = wrapWidth ? Target.SIZE_ORIGINAL : width;
 		int desiredHeight = wrapHeight ? Target.SIZE_ORIGINAL : height;
 		
-		final AtomicBoolean isImmediate = new AtomicBoolean(true);
+		final AtomicBoolean isImmediate = new AtomicBoolean( true );
 		mTargetUrl = mUrl;
-		mTarget = Glide.with( getContext() )
-			.load( mUrl )
-			.asBitmap()
-			.into(
-			new SimpleTarget< Bitmap >( desiredWidth, desiredHeight ) {
-				@Override public void onLoadFailed( Exception e, Drawable errorDrawable ){
-					// このViewは別の画像を表示するように指定が変わっていた
-					if( mTargetUrl == null || ! mTargetUrl.equals( mUrl ) ) return;
-
-					e.printStackTrace();
-					if( mErrorImageId != 0 ) setImageResource( mErrorImageId );
-				}
-				
-				@Override public void onResourceReady(
-					final Bitmap bitmap
-					,final  GlideAnimation< ? super Bitmap > glideAnimation
-				){
-					if( isImmediate.get() && isInLayoutPass ){
-						post( new Runnable() {
-							@Override public void run(){
-								onResourceReady( bitmap, glideAnimation );
+		try{
+			mTarget = Glide.with( getContext() )
+				.load( mUrl )
+				.asBitmap()
+				.into(
+					new SimpleTarget< Bitmap >( desiredWidth, desiredHeight ) {
+						@Override public void onLoadFailed( Exception e, Drawable errorDrawable ){
+							try{
+								// このViewは別の画像を表示するように指定が変わっていた
+								if( mTargetUrl == null || ! mTargetUrl.equals( mUrl ) ) return;
+								
+								e.printStackTrace();
+								if( mErrorImageId != 0 ) setImageResource( mErrorImageId );
+							}catch( Throwable ex ){
+								ex.printStackTrace();
+//								java.lang.NullPointerException:
+//								at jp.juggler.subwaytooter.view.MyNetworkImageView$1.onLoadFailed(MyNetworkImageView.java:147)
+//								at com.bumptech.glide.request.GenericRequest.setErrorPlaceholder(GenericRequest.java:404)
+//								at com.bumptech.glide.request.GenericRequest.onException(GenericRequest.java:548)
+//								at com.bumptech.glide.load.engine.EngineJob.handleExceptionOnMainThread(EngineJob.java:183)
 							}
-						} );
-						return;
+						}
+						
+						@Override public void onResourceReady(
+							final Bitmap bitmap
+							, final GlideAnimation< ? super Bitmap > glideAnimation
+						){
+							try{
+								if( isImmediate.get() && isInLayoutPass ){
+									post( new Runnable() {
+										@Override public void run(){
+											onResourceReady( bitmap, glideAnimation );
+										}
+									} );
+									return;
+								}
+								
+								// このViewは別の画像を表示するように指定が変わっていた
+								if( mTargetUrl == null || ! mTargetUrl.equals( mUrl ) ) return;
+								
+								if( bitmap == null ){
+									setDefaultImageOrNull();
+								}else if( mCornerRadius <= 0f ){
+									setImageBitmap( bitmap );
+								}else{
+									RoundedBitmapDrawable d = RoundedBitmapDrawableFactory
+										.create( getResources(), bitmap );
+									d.setCornerRadius( mCornerRadius );
+									setImageDrawable( d );
+								}
+							}catch( Throwable ex ){
+								ex.printStackTrace();
+							}
+						}
 					}
-					
-					// このViewは別の画像を表示するように指定が変わっていた
-					if( mTargetUrl == null || ! mTargetUrl.equals( mUrl ) ) return;
-					
-					if( bitmap == null ){
-						setDefaultImageOrNull();
-					}else if( mCornerRadius <= 0f ){
-						setImageBitmap( bitmap );
-					}else{
-						RoundedBitmapDrawable d = RoundedBitmapDrawableFactory
-							.create( getResources(), bitmap );
-						d.setCornerRadius( mCornerRadius );
-						setImageDrawable( d );
-					}
-				}
-			}
-		);
-		isImmediate.set(false);
+				);
+			isImmediate.set( false );
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			// java.lang.IllegalArgumentException:
+			//			at com.bumptech.glide.manager.RequestManagerRetriever.assertNotDestroyed(RequestManagerRetriever.java:134)
+			//			at com.bumptech.glide.manager.RequestManagerRetriever.get(RequestManagerRetriever.java:102)
+			//			at com.bumptech.glide.manager.RequestManagerRetriever.get(RequestManagerRetriever.java:87)
+			//			at com.bumptech.glide.Glide.with(Glide.java:657)
+		}
 	}
-
+	
 	@Override protected void onLayout( boolean changed, int left, int top, int right, int bottom ){
 		super.onLayout( changed, left, top, right, bottom );
-		loadImageIfNecessary(true);
+		loadImageIfNecessary( true );
 	}
 	
 	@Override protected void onDetachedFromWindow(){
@@ -194,7 +215,7 @@ public class MyNetworkImageView extends AppCompatImageView {
 	
 	@Override protected void onAttachedToWindow(){
 		super.onAttachedToWindow();
-		loadImageIfNecessary(true);
+		loadImageIfNecessary( true );
 	}
 	
 	@Override protected void drawableStateChanged(){

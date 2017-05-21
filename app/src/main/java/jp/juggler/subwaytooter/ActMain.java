@@ -868,8 +868,19 @@ public class ActMain extends AppCompatActivity
 					
 					@Override
 					protected void onPostExecute( TootApiResult result ){
-						progress.dismiss();
-						
+						try{
+							progress.dismiss();
+						}catch(Throwable ignored){
+//							java.lang.IllegalArgumentException:
+//							at android.view.WindowManagerGlobal.findViewLocked(WindowManagerGlobal.java:396)
+//							at android.view.WindowManagerGlobal.removeView(WindowManagerGlobal.java:322)
+//							at android.view.WindowManagerImpl.removeViewImmediate(WindowManagerImpl.java:116)
+//							at android.app.Dialog.dismissDialog(Dialog.java:341)
+//							at android.app.Dialog.dismiss(Dialog.java:324)
+//							at jp.juggler.subwaytooter.ActMain$10$1.onPostExecute(ActMain.java:867)
+//							at jp.juggler.subwaytooter.ActMain$10$1.onPostExecute(ActMain.java:837)
+						}
+							
 						//noinspection StatementWithEmptyBody
 						if( result == null ){
 							// cancelled.

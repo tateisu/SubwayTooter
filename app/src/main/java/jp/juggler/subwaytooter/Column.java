@@ -15,6 +15,7 @@ import org.json.JSONObject;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -374,9 +375,9 @@ class Column implements StreamReader.Callback {
 		is_dispose.set( true );
 		stopStreaming();
 		
-		if( _holder != null ){
+		for( ColumnViewHolder vh : _holder_list ){
 			try{
-				_holder.getListView().setAdapter( null );
+				vh.getListView().setAdapter( null );
 			}catch( Throwable ignored ){
 			}
 		}
@@ -513,13 +514,11 @@ class Column implements StreamReader.Callback {
 		}
 	}
 	
-
 	boolean bFirstInitialized = false;
-
+	
 	private void init(){
 	}
 	
-
 	interface StatusEntryCallback {
 		void onIterate( TootStatus status );
 	}
@@ -701,14 +700,29 @@ class Column implements StreamReader.Callback {
 	
 	//////////////////////////////////////////////////////////////////////////////////////
 	
-	private ColumnViewHolder _holder;
+	// カラムを閉じた後のnotifyDataSetChangedのタイミングで、add/removeされる順序が期待通りにならないので
+	// 参照を１つだけ持つのではなく、リストを保持して先頭の要素を使うことにする
+	private final LinkedList< ColumnViewHolder > _holder_list = new LinkedList<>();
 	
-	void setColumnViewHolder( ColumnViewHolder new_holder ){
-		this._holder = new_holder;
+	void addColumnViewHolder( @NonNull ColumnViewHolder cvh ){
+
+		// 現在のリストにあるなら削除する
+		removeColumnViewHolder( cvh );
+
+		// 最後に追加されたものが先頭にくるようにする
+		// 呼び出しの後に必ず追加されているようにする
+		_holder_list.addFirst( cvh );
+	}
+	
+	void removeColumnViewHolder( @NonNull ColumnViewHolder cvh ){
+		for( Iterator< ColumnViewHolder > it = _holder_list.iterator() ; it.hasNext() ; ){
+			if( cvh == it.next() ) it.remove();
+		}
 	}
 	
 	private ColumnViewHolder getViewHolder(){
-		return is_dispose.get() ? null : _holder;
+		if( is_dispose.get() ) return null;
+		return _holder_list.isEmpty() ? null : _holder_list.getFirst();
 	}
 	
 	void fireShowContent(){
@@ -1367,13 +1381,13 @@ class Column implements StreamReader.Callback {
 		case TYPE_FEDERATE:
 			startRefresh( true, false, status_id, refresh_after_toot );
 			break;
-
+		
 		case TYPE_PROFILE:
 			if( profile_tab == TAB_STATUS && profile_id == access_info.id ){
 				startRefresh( true, false, status_id, refresh_after_toot );
 			}
 			break;
-
+		
 		case TYPE_CONVERSATION:
 			startLoading();
 			break;

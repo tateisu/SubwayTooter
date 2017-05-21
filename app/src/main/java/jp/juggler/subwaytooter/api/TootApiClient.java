@@ -244,20 +244,22 @@ public class TootApiClient {
 		callback.publishApiProgress( context.getString( R.string.register_app_to_server, instance ) );
 
 		// OAuth2 クライアント登録
-		String client_name = "SubwayTooter"; // + UUID.randomUUID().toString();
-		
-		Request request = new Request.Builder()
-			.url( "https://" + instance + "/api/v1/apps" )
-			.post( RequestBody.create( MEDIA_TYPE_FORM_URL_ENCODED
-				, "client_name=" + Uri.encode( client_name )
-					+ "&redirect_uris=" + Uri.encode( REDIRECT_URL )
-					+ "&scopes=read write follow"
-			) )
-			.build();
-		Call call = ok_http_client.newCall( request );
-		
+
 		Response response;
 		try{
+			String client_name = "SubwayTooter"; // + UUID.randomUUID().toString();
+			
+			Request request = new Request.Builder()
+				.url( "https://" + instance + "/api/v1/apps" )
+				.post( RequestBody.create( MEDIA_TYPE_FORM_URL_ENCODED
+					, "client_name=" + Uri.encode( client_name )
+						+ "&redirect_uris=" + Uri.encode( REDIRECT_URL )
+						+ "&scopes=read write follow"
+				) )
+				.build();
+			
+			Call call = ok_http_client.newCall( request );
+			
 			response = call.execute();
 		}catch( Throwable ex ){
 			ex.printStackTrace(  );

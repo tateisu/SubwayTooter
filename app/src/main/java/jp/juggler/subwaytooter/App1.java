@@ -62,9 +62,10 @@ public class App1 extends Application {
 	// 2017/5/08 v41 10=>11 MutedWord テーブルの追加
 	// 2017/5/17 v59 11=>12 PostDraft テーブルの追加
 	
-	static DBOpenHelper db_open_helper;
+	private static DBOpenHelper db_open_helper;
 	
 	public static SQLiteDatabase getDB(){
+		
 		return db_open_helper.getWritableDatabase();
 	}
 	
@@ -81,6 +82,19 @@ public class App1 extends Application {
 			activity.setTheme( bNoActionBar ? R.style.AppTheme_Dark_NoActionBar : R.style.AppTheme_Dark );
 			break;
 			
+		}
+	}
+	
+	public static void prepareDB( Context applicationContext ){
+		if( db_open_helper == null ){
+			db_open_helper = new DBOpenHelper( applicationContext );
+			
+			//			if( BuildConfig.DEBUG){
+			//				SQLiteDatabase db = db_open_helper.getWritableDatabase();
+			//				db_open_helper.onCreate( db );
+			//			}
+			UserRelation.deleteOld( System.currentTimeMillis() );
+			AcctSet.deleteOld( System.currentTimeMillis() );
 		}
 	}
 	
@@ -240,20 +254,14 @@ public class App1 extends Application {
 			pref = Pref.pref( getApplicationContext() );
 		}
 		
+		prepareDB(getApplicationContext());
+		
+		
 		if( typeface_emoji == null ){
 			typeface_emoji = TypefaceUtils.load( getAssets(), "emojione_android.ttf" );
 		}
 		
-		if( db_open_helper == null ){
-			db_open_helper = new DBOpenHelper( getApplicationContext() );
-			
-			//			if( BuildConfig.DEBUG){
-			//				SQLiteDatabase db = db_open_helper.getWritableDatabase();
-			//				db_open_helper.onCreate( db );
-			//			}
-			UserRelation.deleteOld( System.currentTimeMillis() );
-			AcctSet.deleteOld( System.currentTimeMillis() );
-		}
+		
 		
 		//		if( image_loader == null ){
 		//			image_loader = new MyImageLoader(

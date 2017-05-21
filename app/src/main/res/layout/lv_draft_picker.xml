@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:paddingStart="12dp"
+              android:paddingEnd="12dp"
+              android:paddingTop="3dp"
+              android:paddingBottom="3dp"
+              android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tvTime"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:textColor="?attr/colorColumnHeaderAcct"
+        android:textSize="12sp"
+        />
+
+    <TextView
+        android:id="@+id/tvText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="40dp"
+        android:maxWidth="300dp"
+        android:textColor="?android:attr/textColorPrimary"
+        />
+
+</LinearLayout>

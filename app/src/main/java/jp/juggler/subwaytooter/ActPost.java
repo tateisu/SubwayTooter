@@ -58,6 +58,7 @@ import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootMention;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.dialog.DlgConfirm;
+import jp.juggler.subwaytooter.dialog.DlgDraftPicker;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.PostDraft;
@@ -1241,14 +1242,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	private void performMore(){
 		ActionsDialog dialog = new ActionsDialog();
 		
-		final ArrayList< JSONObject > list_draft = PostDraft.loadList( 20 );
-		
-		if( ! list_draft.isEmpty() ){
+		if( PostDraft.hasDraft() ){
 			dialog.addAction(
 				getString( R.string.restore_draft )
 				, new Runnable() {
 					@Override public void run(){
-						openDraftPicker( list_draft );
+						openDraftPicker();
 					}
 				}
 			);
@@ -1483,8 +1482,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	
 	/////////////////////////////////////////////////
 	
-	static final String DRAFT_CONTENT = "content";
-	static final String DRAFT_CONTENT_WARNING = "content_warning";
+	public static final String DRAFT_CONTENT = "content";
+	public static final String DRAFT_CONTENT_WARNING = "content_warning";
 	static final String DRAFT_CONTENT_WARNING_CHECK = "content_warning_check";
 	static final String DRAFT_NSFW_CHECK = "nsfw_check";
 	static final String DRAFT_VISIBILITY = "visibility";
@@ -1528,33 +1527,15 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}
 	}
 	
-	private void openDraftPicker( @NonNull ArrayList< JSONObject > list_draft ){
+	private void openDraftPicker(){
 		
-		ActionsDialog dialog = new ActionsDialog();
-		for( JSONObject o : list_draft ){
-			final JSONObject draft = o;
-			String cw = draft.optString( DRAFT_CONTENT_WARNING );
-			String c = draft.optString( DRAFT_CONTENT );
-			StringBuilder sb = new StringBuilder();
-			if( ! TextUtils.isEmpty( cw.trim() ) ){
-				sb.append( cw );
+		new DlgDraftPicker().open( this, new DlgDraftPicker.Callback() {
+			@Override public void onDraftSelected( JSONObject draft ){
+				restoreDraft( draft );
 			}
-			if( ! TextUtils.isEmpty( c.trim() ) ){
-				if( sb.length() > 0 ) sb.append( "\n" );
-				sb.append( c );
-			}
-			String caption = sb.toString();
-			dialog.addAction(
-				caption
-				, new Runnable() {
-					@Override public void run(){
-						restoreDraft( draft );
-					}
-				}
-			);
-		}
+		});
 		
-		dialog.show( this, getString( R.string.select_draft ) );
+
 	}
 	
 	static boolean check_exist( String url ){

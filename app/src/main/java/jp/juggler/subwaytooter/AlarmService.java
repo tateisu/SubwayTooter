@@ -103,6 +103,10 @@ public class AlarmService extends IntentService {
 	// 同期処理を行って良い
 	@Override protected void onHandleIntent( @Nullable Intent intent ){
 		
+		// クラッシュレポートによると App1.onCreate より前にここを通る場合がある
+		// データベースへアクセスできるようにする
+		App1.prepareDB(this.getApplicationContext());
+		
 		if( intent != null ){
 			String action = intent.getAction();
 			log.d( "onHandleIntent action=%s", action );

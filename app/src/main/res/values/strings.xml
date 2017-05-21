@@ -324,4 +324,6 @@
     <string name="app_data_import_desc">You can export data to any app that can receive data, But maybe you can import data only from device\'s storage or Google drive.\nColumn background image may be not exported/imported over device.\nTimeline font is not exported/imported.</string>
     <string name="app_data_import_confirm">existing data ( before import ) will be cleared. Are you sure?</string>
     <string name="user_id_conversion_failed">User id conversion failed.</string>
+    <string name="draft_picker_desc">Long tap to delete.</string>
+    <string name="draft_deleted">Draft deleted.</string>
 </resources>

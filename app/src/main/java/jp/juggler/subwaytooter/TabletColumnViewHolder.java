@@ -24,8 +24,7 @@ class TabletColumnViewHolder extends RecyclerView.ViewHolder{
 		log.d("bind. %d => %d ", old_position,position);
 		old_position = position;
 
-		vh.onPageDestroy();
-
+		vh.onPageDestroy( position );
 		vh.onPageCreate( column, position,column_count );
 		
 		if( ! column.bFirstInitialized ){

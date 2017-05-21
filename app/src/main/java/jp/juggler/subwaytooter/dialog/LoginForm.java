@@ -112,7 +112,6 @@ public class LoginForm {
 				return nameFilter;
 			}
 			
-			final StringArray suggestions = new StringArray(  );
 			
 			Filter nameFilter = new Filter() {
 				@Override public CharSequence convertResultToString(Object value){
@@ -122,7 +121,8 @@ public class LoginForm {
 					FilterResults result = new FilterResults();
 					if(! TextUtils.isEmpty( constraint ) ){
 						String key = constraint.toString().toLowerCase();
-						suggestions.clear();
+						// suggestions リストは毎回生成する必要がある。publishResultsと同時にアクセスされる場合がある
+						StringArray suggestions = new StringArray(  );
 						for( String s : instance_list ){
 							if( s.contains( key ) ){
 								suggestions.add( s );

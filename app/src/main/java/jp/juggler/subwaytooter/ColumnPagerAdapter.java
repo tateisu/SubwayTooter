@@ -68,7 +68,7 @@ class ColumnPagerAdapter extends PagerAdapter {
 		ColumnViewHolder holder = holder_list.get( page_idx );
 		holder_list.remove( page_idx );
 		if( holder != null ){
-			holder.onPageDestroy();
+			holder.onPageDestroy(page_idx);
 		}
 	}
 }

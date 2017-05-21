@@ -6,7 +6,6 @@ import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
-import android.support.v4.widget.TextViewCompat;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -198,14 +197,14 @@ class ColumnViewHolder
 		return column ==null || activity.isFinishing();
 	}
 	
-	void onPageDestroy(){
+	void onPageDestroy(int page_idx){
 		// タブレットモードの場合、onPageCreateより前に呼ばれる
 		
 		if( column != null ){
-			log.d( "onPageDestroy #%s", tvColumnName.getText() );
+			log.d( "onPageDestroy [%d] %s",page_idx, tvColumnName.getText() );
 			saveScrollPosition();
 			listView.setAdapter( null );
-			column.setColumnViewHolder( null );
+			column.removeColumnViewHolder( this );
 			column = null;
 		}
 
@@ -225,7 +224,7 @@ class ColumnViewHolder
 		try{
 			this.column = column;
 			
-			log.d( "onPageCreate:%s", column.getColumnName( true ) );
+			log.d( "onPageCreate [%d] %s",page_idx, column.getColumnName( true ) );
 			
 			boolean bSimpleList = ( column.column_type != Column.TYPE_CONVERSATION && activity.pref.getBoolean( Pref.KEY_SIMPLE_LIST, false ) );
 			
@@ -314,7 +313,7 @@ class ColumnViewHolder
 			listView.setFastScrollEnabled( ! Pref.pref( activity ).getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
 			listView.setOnItemClickListener( status_adapter );
 			
-			column.setColumnViewHolder( this );
+			column.addColumnViewHolder( this );
 			
 			showColumnColor();
 			
@@ -499,12 +498,21 @@ class ColumnViewHolder
 	
 	@Override public void onRefresh( SwipyRefreshLayoutDirection direction ){
 		if( column == null ) return;
+		
+		// カラムを追加/削除したときに ColumnからColumnViewHolderへの参照が外れることがある
+		// リロードやリフレッシュ操作で直るようにする
+		column.addColumnViewHolder( this );
+
 		column.startRefresh( false, direction == SwipyRefreshLayoutDirection.BOTTOM, - 1L, - 1 );
 	}
 	
 	@Override public void onCheckedChanged( CompoundButton view, boolean isChecked ){
 		if( loading_busy || column ==null || status_adapter ==null ) return;
-
+		
+		// カラムを追加/削除したときに ColumnからColumnViewHolderへの参照が外れることがある
+		// リロードやリフレッシュ操作で直るようにする
+		column.addColumnViewHolder( this );
+		
 		switch( view.getId() ){
 		
 		case R.id.cbDontCloseColumn:
@@ -558,6 +566,10 @@ class ColumnViewHolder
 	@Override
 	public void onClick( View v ){
 		if( loading_busy || column ==null || status_adapter ==null ) return;
+		
+		// カラムを追加/削除したときに ColumnからColumnViewHolderへの参照が外れることがある
+		// リロードやリフレッシュ操作で直るようにする
+		column.addColumnViewHolder( this );
 		
 		switch( v.getId() ){
 		case R.id.btnColumnClose:

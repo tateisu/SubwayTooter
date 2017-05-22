@@ -3275,7 +3275,7 @@ public class ActMain extends AppCompatActivity
 			if( pager_adapter != null ){
 				pager.setAdapter( pager_adapter );
 			}else{
-				tablet_pager_adapter.notifyDataSetChanged();
+				resizeColumnWidth();
 			}
 		}
 		
@@ -3377,8 +3377,9 @@ public class ActMain extends AppCompatActivity
 					if( pager_adapter != null ){
 						pager.setAdapter( pager_adapter );
 					}else{
-						tablet_pager_adapter.notifyDataSetChanged();
+						resizeColumnWidth();
 					}
+					updateColumnStrip();
 				}
 				
 				// 通知サービスをリスタート
@@ -3387,8 +3388,6 @@ public class ActMain extends AppCompatActivity
 					intent.setAction( AlarmService.ACTION_APP_DATA_IMPORT_AFTER );
 					startService( intent );
 				}
-				
-				updateColumnStrip();
 			}
 		};
 		

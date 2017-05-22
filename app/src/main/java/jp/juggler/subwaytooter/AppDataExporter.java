@@ -156,7 +156,6 @@ public class AppDataExporter {
 			SavedAccount.onDBCreate( db );
 		}
 		
-		boolean bOK = false;
 		db.execSQL( "BEGIN TRANSACTION" );
 		try{
 			db.execSQL( "delete from " + table );
@@ -175,6 +174,14 @@ public class AppDataExporter {
 					
 					if( BaseColumns._ID.equals( name ) ){
 						old_id = reader.nextLong();
+						continue;
+					}
+					
+					// 一時的に存在したが現在のDBスキーマにはない項目は読み飛ばす
+					if( SavedAccount.table.equals( table ) &&
+						( "nickname".equals( name ) || "color".equals( name ) )
+						){
+						reader.skipValue();
 						continue;
 					}
 					
@@ -204,19 +211,24 @@ public class AppDataExporter {
 					}
 				}
 				reader.endObject();
-				long new_id = db.insert( table, null, cv );
-				if( id_map != null ) id_map.put( old_id, new_id );
+				long new_id = db.insertWithOnConflict( table, null, cv, SQLiteDatabase.CONFLICT_REPLACE );
+				if( new_id == - 1L ){
+					throw new RuntimeException( "importTable: invalid row_id" );
+				}
+				if( id_map != null ){
+					id_map.put( old_id, new_id );
+				}
 			}
 			reader.endArray();
-			bOK = true;
+			db.execSQL( "COMMIT TRANSACTION" );
 		}catch( Throwable ex ){
 			ex.printStackTrace();
-			log.e( ex, "saveList failed." );
-		}
-		if( bOK ){
-			db.execSQL( "COMMIT TRANSACTION" );
-		}else{
-			db.execSQL( "ROLLBACK TRANSACTION" );
+			log.e( ex, "importTable failed." );
+			try{
+				db.execSQL( "ROLLBACK TRANSACTION" );
+			}catch( Throwable ignored ){
+			}
+			throw ex;
 		}
 	}
 	
@@ -330,7 +342,13 @@ public class AppDataExporter {
 				throw new RuntimeException( "readColumn: can't convert account id" );
 			}
 			item.put( Column.KEY_ACCOUNT_ROW_ID, (long) new_id );
-			result.add( new Column( app_state, item ) );
+			try{
+				result.add( new Column( app_state, item ) );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+				log.e( ex, "column load failed." );
+				throw ex;
+			}
 		}
 		reader.endArray();
 		return result;

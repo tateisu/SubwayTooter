@@ -156,12 +156,6 @@
             android:name="android.max_aspect"
             android:value="ratio_float"/>
 
-        <activity android:name="com.yasesprox.android.transcommusdk.TransCommuActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize"></activity>
-        <activity android:name="com.yasesprox.android.transcommusdk.LoginActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize"></activity>
-        <activity android:name="com.yasesprox.android.transcommusdk.CreateAccountActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize"></activity>
-        <activity android:name="com.yasesprox.android.transcommusdk.TranslateActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize"></activity>
-
-
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="jp.juggler.subwaytooter.FileProvider"
@@ -172,7 +166,7 @@
                 android:resource="@xml/file_provider_path" />
         </provider>
 
-
+        <!-- okhttp3クライアントを指定する必要があるため、マニフェスト経由での組み込みは行わない -->
         <!--<meta-data-->
             <!--android:name="com.bumptech.glide.integration.okhttp3.OkHttpGlideModule"-->
             <!--android:value="GlideModule" />-->

@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.api;
 import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.json.JSONArray;
@@ -64,11 +65,12 @@ public class TootApiClient {
 	
 	public static final MediaType MEDIA_TYPE_FORM_URL_ENCODED = MediaType.parse( "application/x-www-form-urlencoded" );
 	
-	public TootApiResult request( String path ){
+	public @Nullable TootApiResult request( @NonNull String path ){
 		return request( path, new Request.Builder() );
 	}
 	
-	public TootApiResult request( String path, Request.Builder request_builder ){
+	public @Nullable
+	TootApiResult request( @NonNull String path, @NonNull Request.Builder request_builder ){
 		log.d( "request: %s", path );
 		TootApiResult result = request_sub( path, request_builder );
 		if( result != null && result.error != null ){
@@ -81,33 +83,34 @@ public class TootApiClient {
 	private static final int AUTH_VERSION = 1;
 	private static final String REDIRECT_URL = "subwaytooter://oauth";
 	
-	private TootApiResult request_sub( String path, Request.Builder request_builder ){
+	private @Nullable
+	TootApiResult request_sub( @NonNull String path, @NonNull Request.Builder request_builder ){
 		
 		if( callback.isApiCancelled() ) return null;
 		
-		// アクセストークンを使ってAPIを呼び出す
 		callback.publishApiProgress( context.getString( R.string.request_api, path ) );
-
+		
 		if( account == null ){
 			return new TootApiResult( "account is null" );
 		}
 		
 		JSONObject token_info = account.token_info;
 		
-		
-		request_builder.url( "https://" + instance + path );
-		
-		String access_token = Utils.optStringX( token_info, "access_token" );
-		if( !TextUtils.isEmpty( access_token ) ){
-			request_builder.header( "Authorization", "Bearer " + access_token );
-		}
-		
-		Call call = ok_http_client.newCall( request_builder.build() );
 		Response response;
 		try{
+			
+			request_builder.url( "https://" + instance + path );
+			
+			String access_token = Utils.optStringX( token_info, "access_token" );
+			if( ! TextUtils.isEmpty( access_token ) ){
+				request_builder.header( "Authorization", "Bearer " + access_token );
+			}
+			
+			Call call = ok_http_client.newCall( request_builder.build() );
+			
 			response = call.execute();
 		}catch( Throwable ex ){
-			ex.printStackTrace(  );
+			ex.printStackTrace();
 			return new TootApiResult(
 				Utils.formatError( ex, context.getResources(), R.string.network_error )
 			);
@@ -120,13 +123,14 @@ public class TootApiClient {
 		}
 		
 		try{
+			//noinspection ConstantConditions
 			String json = response.body().string();
 			
 			if( TextUtils.isEmpty( json ) || json.startsWith( "<" ) ){
 				return new TootApiResult( context.getString( R.string.response_not_json ) + "\n" + json );
 			}else if( json.startsWith( "[" ) ){
 				JSONArray array = new JSONArray( json );
-				return new TootApiResult( log,response, token_info, json, array );
+				return new TootApiResult( log, response, token_info, json, array );
 			}else{
 				JSONObject object = new JSONObject( json );
 				
@@ -142,65 +146,62 @@ public class TootApiClient {
 		}
 	}
 	
-	
-	public TootApiResult webSocket( String path, Request.Builder request_builder , WebSocketListener ws_listener ){
+	public @Nullable
+	TootApiResult webSocket( @NonNull String path, @NonNull Request.Builder request_builder, @NonNull WebSocketListener ws_listener ){
 		
 		if( callback.isApiCancelled() ) return null;
 		
 		// アクセストークンを使ってAPIを呼び出す
 		callback.publishApiProgress( context.getString( R.string.request_api, path ) );
 		
-		
-		if( account == null ){
-			return new TootApiResult( "account is null" );
-		}
-		
-		String url = "wss://" + instance + path;
-		
-		JSONObject token_info = account.token_info;
-		String access_token = Utils.optStringX( token_info, "access_token" );
-		if( !TextUtils.isEmpty( access_token ) ){
-			char delm = (-1!= url.indexOf( '?' ) ? '&':'?');
-			url = url + delm + "access_token="+ access_token;
-		}
-		
-		request_builder.url( url );
-		
 		try{
-			WebSocket ws = ok_http_client.newWebSocket( request_builder.build() ,ws_listener );
+			if( account == null ){
+				return new TootApiResult( "account is null" );
+			}
+			
+			String url = "wss://" + instance + path;
+			
+			JSONObject token_info = account.token_info;
+			String access_token = Utils.optStringX( token_info, "access_token" );
+			if( ! TextUtils.isEmpty( access_token ) ){
+				char delm = ( - 1 != url.indexOf( '?' ) ? '&' : '?' );
+				url = url + delm + "access_token=" + access_token;
+			}
+			
+			request_builder.url( url );
+			
+			WebSocket ws = ok_http_client.newWebSocket( request_builder.build(), ws_listener );
 			if( callback.isApiCancelled() ){
 				ws.cancel();
 				return null;
 			}
 			return new TootApiResult( ws );
 		}catch( Throwable ex ){
-			ex.printStackTrace(  );
+			ex.printStackTrace();
 			return new TootApiResult(
 				Utils.formatError( ex, context.getResources(), R.string.network_error )
 			);
 		}
 	}
 	
-	
-	
 	// 疑似アカウントの追加時に、インスタンスの検証を行う
-	public TootApiResult checkInstance(){
+	public @Nullable TootApiResult checkInstance(){
 		
 		// サーバ情報APIを使う
 		String path = "/api/v1/instance";
 		callback.publishApiProgress( context.getString( R.string.request_api, path ) );
 		
-		Request request = new Request.Builder()
-			.url( "https://" + instance + path )
-			.build();
-		
-		Call call = ok_http_client.newCall( request );
-		
 		Response response;
 		try{
+			Request request = new Request.Builder()
+				.url( "https://" + instance + path )
+				.build();
+			
+			Call call = ok_http_client.newCall( request );
+			
 			response = call.execute();
 		}catch( Throwable ex ){
-			ex.printStackTrace(  );
+			ex.printStackTrace();
 			return new TootApiResult( Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		
@@ -211,13 +212,14 @@ public class TootApiClient {
 		}
 		
 		try{
+			//noinspection ConstantConditions
 			String json = response.body().string();
 			
 			if( TextUtils.isEmpty( json ) || json.startsWith( "<" ) ){
 				return new TootApiResult( context.getString( R.string.response_not_json ) + "\n" + json );
 			}else if( json.startsWith( "[" ) ){
 				JSONArray array = new JSONArray( json );
-				return new TootApiResult( log,response, null, json, array );
+				return new TootApiResult( log, response, null, json, array );
 			}else{
 				JSONObject object = new JSONObject( json );
 				
@@ -233,18 +235,17 @@ public class TootApiClient {
 		}
 	}
 	
-	
-	public TootApiResult authorize1(){
+	public @Nullable TootApiResult authorize1(){
 		
 		JSONObject client_info;
-
+		
 		// サーバ側がクライアント情報を消した場合、今の認証フローではアプリがそれを知ることができない
 		// 毎回クライアント情報を作ることでしか対策できない
-
+		
 		callback.publishApiProgress( context.getString( R.string.register_app_to_server, instance ) );
-
+		
 		// OAuth2 クライアント登録
-
+		
 		Response response;
 		try{
 			String client_name = "SubwayTooter"; // + UUID.randomUUID().toString();
@@ -262,7 +263,7 @@ public class TootApiClient {
 			
 			response = call.execute();
 		}catch( Throwable ex ){
-			ex.printStackTrace(  );
+			ex.printStackTrace();
 			return new TootApiResult( Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		if( callback.isApiCancelled() ) return null;
@@ -271,6 +272,7 @@ public class TootApiClient {
 			return new TootApiResult( context.getString( R.string.network_error_arg, response ) );
 		}
 		try{
+			//noinspection ConstantConditions
 			String json = response.body().string();
 			if( TextUtils.isEmpty( json ) || json.startsWith( "<" ) ){
 				return new TootApiResult( context.getString( R.string.response_not_json ) + "\n" + json );
@@ -282,10 +284,10 @@ public class TootApiClient {
 				return new TootApiResult( context.getString( R.string.api_error, error ) );
 			}
 			client_info.put( KEY_AUTH_VERSION, AUTH_VERSION );
-
+			
 			// authorize2 で使う
 			ClientInfo.save( instance, client_info.toString() );
-
+			
 		}catch( Throwable ex ){
 			ex.printStackTrace();
 			return new TootApiResult( Utils.formatError( ex, "API data error" ) );
@@ -311,7 +313,7 @@ public class TootApiClient {
 		return new TootApiResult( browser_url );
 	}
 	
-	public TootApiResult authorize2( String code ){
+	public @Nullable TootApiResult authorize2( String code ){
 		
 		JSONObject client_info = ClientInfo.load( instance );
 		if( client_info == null ){
@@ -321,28 +323,26 @@ public class TootApiClient {
 		// コードを使ってトークンを取得する
 		callback.publishApiProgress( context.getString( R.string.request_access_token ) );
 		
-		JSONObject token_info;
-		
-		String post_content =
-			"grant_type=authorization_code"
-				+ "&code=" + Uri.encode( code )
-				+ "&client_id=" + Uri.encode( Utils.optStringX( client_info, "client_id" ) )
-				+ "&redirect_uri=" + Uri.encode( REDIRECT_URL )
-				+ "&client_secret=" + Uri.encode( Utils.optStringX( client_info, "client_secret" ) )
-				+ "&scope=read write follow"
-				+ "&scopes=read write follow";
-		
-		Request request = new Request.Builder()
-			.url( "https://" + instance + "/oauth/token" )
-			.post( RequestBody.create( MEDIA_TYPE_FORM_URL_ENCODED, post_content ) )
-			.build();
-		Call call = ok_http_client.newCall( request );
-		
 		Response response;
 		try{
+			String post_content =
+				"grant_type=authorization_code"
+					+ "&code=" + Uri.encode( code )
+					+ "&client_id=" + Uri.encode( Utils.optStringX( client_info, "client_id" ) )
+					+ "&redirect_uri=" + Uri.encode( REDIRECT_URL )
+					+ "&client_secret=" + Uri.encode( Utils.optStringX( client_info, "client_secret" ) )
+					+ "&scope=read write follow"
+					+ "&scopes=read write follow";
+			
+			Request request = new Request.Builder()
+				.url( "https://" + instance + "/oauth/token" )
+				.post( RequestBody.create( MEDIA_TYPE_FORM_URL_ENCODED, post_content ) )
+				.build();
+			Call call = ok_http_client.newCall( request );
+			
 			response = call.execute();
 		}catch( Throwable ex ){
-			ex.printStackTrace(  );
+			ex.printStackTrace();
 			return new TootApiResult( Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		if( callback.isApiCancelled() ) return null;
@@ -351,7 +351,10 @@ public class TootApiClient {
 			return new TootApiResult( context.getString( R.string.network_error_arg, response ) );
 		}
 		
+		JSONObject token_info;
+		
 		try{
+			//noinspection ConstantConditions
 			String json = response.body().string();
 			
 			// {"access_token":"******","token_type":"bearer","scope":"read","created_at":1492334641}
@@ -370,20 +373,22 @@ public class TootApiClient {
 		}
 		
 		// 認証されたアカウントのユーザ名を取得する
+		
 		String path = "/api/v1/accounts/verify_credentials";
 		callback.publishApiProgress( context.getString( R.string.request_api, path ) );
 		
-		request = new Request.Builder()
-			.url( "https://" + instance + path )
-			.header( "Authorization", "Bearer " + Utils.optStringX( token_info, "access_token" ) )
-			.build();
-		
-		call = ok_http_client.newCall( request );
-		
 		try{
+			
+			Request request = new Request.Builder()
+				.url( "https://" + instance + path )
+				.header( "Authorization", "Bearer " + Utils.optStringX( token_info, "access_token" ) )
+				.build();
+			
+			Call call = ok_http_client.newCall( request );
+			
 			response = call.execute();
 		}catch( Throwable ex ){
-			ex.printStackTrace(  );
+			ex.printStackTrace();
 			return new TootApiResult( Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		
@@ -394,13 +399,14 @@ public class TootApiClient {
 		}
 		
 		try{
+			//noinspection ConstantConditions
 			String json = response.body().string();
 			
 			if( TextUtils.isEmpty( json ) || json.startsWith( "<" ) ){
 				return new TootApiResult( context.getString( R.string.response_not_json ) + "\n" + json );
 			}else if( json.startsWith( "[" ) ){
 				JSONArray array = new JSONArray( json );
-				return new TootApiResult( log,response, token_info, json, array );
+				return new TootApiResult( log, response, token_info, json, array );
 			}else{
 				JSONObject object = new JSONObject( json );
 				
@@ -415,7 +421,5 @@ public class TootApiClient {
 			return new TootApiResult( Utils.formatError( ex, "API data error" ) );
 		}
 	}
-	
-	
 	
 }

@@ -80,7 +80,7 @@ class StreamReader {
 		 */
 		@Override
 		public void onOpen( WebSocket webSocket, Response response ){
-			log.d( "WebSocket onOpen. url=%s", webSocket.request().url() );
+			log.d( "WebSocket onOpen. url=%s .", webSocket.request().url() );
 		}
 		
 		/**
@@ -134,7 +134,7 @@ class StreamReader {
 		 */
 		@Override
 		public void onClosing( WebSocket webSocket, int code, String reason ){
-			log.d( "WebSocket onClosing. code=%s,reason=%s,url=%s", code, reason, webSocket.request().url() );
+			log.d( "WebSocket onClosing. code=%s,reason=%s,url=%s .", code, reason, webSocket.request().url() );
 			webSocket.cancel();
 			bListening.set( false );
 			handler.removeCallbacks( proc_reconnect );
@@ -147,7 +147,7 @@ class StreamReader {
 		 */
 		@Override
 		public void onClosed( WebSocket webSocket, int code, String reason ){
-			log.d( "WebSocket onClosed.  code=%s,reason=%s,url=%s", code, reason, webSocket.request().url() );
+			log.d( "WebSocket onClosed.  code=%s,reason=%s,url=%s .", code, reason, webSocket.request().url() );
 			bListening.set( false );
 			handler.removeCallbacks( proc_reconnect );
 			handler.postDelayed( proc_reconnect, 10000L );
@@ -160,7 +160,7 @@ class StreamReader {
 		 */
 		@Override
 		public void onFailure( WebSocket webSocket, Throwable ex, Response response ){
-			log.e( ex, "WebSocket onFailure. url=%s", webSocket.request().url() );
+			log.e( ex, "WebSocket onFailure. url=%s .", webSocket.request().url() );
 			bListening.set( false );
 			handler.removeCallbacks( proc_reconnect );
 			handler.postDelayed( proc_reconnect, 10000L );

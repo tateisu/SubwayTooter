@@ -120,8 +120,7 @@ public class ActMain extends AppCompatActivity
 		
 		updateColumnStrip();
 		
-		if( app_state.column_list.size() > 0 ){
-			llEmpty.setVisibility( View.GONE );
+		if( ! app_state.column_list.isEmpty() ){
 			if( pager_adapter != null ){
 				onPageSelected( pager.getCurrentItem() );
 			}else{
@@ -198,7 +197,6 @@ public class ActMain extends AppCompatActivity
 			}
 			if( bRemoved ){
 				setOrder( new_order );
-				
 			}
 		}
 		
@@ -227,12 +225,8 @@ public class ActMain extends AppCompatActivity
 			handleSentIntent( intent );
 		}
 		
-		if( app_state.column_list.isEmpty() ){
-			llEmpty.setVisibility( View.VISIBLE );
-		}else{
-			for( Column column : app_state.column_list ){
-				column.onResume( this );
-			}
+		for( Column column : app_state.column_list ){
+			column.onResume( this );
 		}
 	}
 	
@@ -335,9 +329,7 @@ public class ActMain extends AppCompatActivity
 						setOrder( order );
 					}
 					
-					if( app_state.column_list.isEmpty() ){
-						llEmpty.setVisibility( View.VISIBLE );
-					}else{
+					if( ! app_state.column_list.isEmpty() ){
 						int select = data.getIntExtra( ActColumnList.EXTRA_SELECTION, - 1 );
 						if( 0 <= select && select < app_state.column_list.size() ){
 							scrollToColumn( select );
@@ -633,7 +625,7 @@ public class ActMain extends AppCompatActivity
 		
 		String sv = pref.getString( Pref.KEY_TIMELINE_FONT, "" );
 		
-		dont_crop_media_thumbnail = pref.getBoolean( Pref.KEY_DONT_CROP_MEDIA_THUMBNAIL,false );
+		dont_crop_media_thumbnail = pref.getBoolean( Pref.KEY_DONT_CROP_MEDIA_THUMBNAIL, false );
 		
 		if( ! TextUtils.isEmpty( sv ) ){
 			try{
@@ -754,6 +746,8 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	void updateColumnStrip(){
+		llEmpty.setVisibility( app_state.column_list.isEmpty() ? View.VISIBLE : View.GONE );
+		
 		llColumnStrip.removeAllViews();
 		for( int i = 0, ie = app_state.column_list.size() ; i < ie ; ++ i ){
 			
@@ -870,17 +864,17 @@ public class ActMain extends AppCompatActivity
 					protected void onPostExecute( TootApiResult result ){
 						try{
 							progress.dismiss();
-						}catch(Throwable ignored){
-//							java.lang.IllegalArgumentException:
-//							at android.view.WindowManagerGlobal.findViewLocked(WindowManagerGlobal.java:396)
-//							at android.view.WindowManagerGlobal.removeView(WindowManagerGlobal.java:322)
-//							at android.view.WindowManagerImpl.removeViewImmediate(WindowManagerImpl.java:116)
-//							at android.app.Dialog.dismissDialog(Dialog.java:341)
-//							at android.app.Dialog.dismiss(Dialog.java:324)
-//							at jp.juggler.subwaytooter.ActMain$10$1.onPostExecute(ActMain.java:867)
-//							at jp.juggler.subwaytooter.ActMain$10$1.onPostExecute(ActMain.java:837)
+						}catch( Throwable ignored ){
+							// java.lang.IllegalArgumentException:
+							// at android.view.WindowManagerGlobal.findViewLocked(WindowManagerGlobal.java:396)
+							// at android.view.WindowManagerGlobal.removeView(WindowManagerGlobal.java:322)
+							// at android.view.WindowManagerImpl.removeViewImmediate(WindowManagerImpl.java:116)
+							// at android.app.Dialog.dismissDialog(Dialog.java:341)
+							// at android.app.Dialog.dismiss(Dialog.java:324)
+							// at jp.juggler.subwaytooter.ActMain$10$1.onPostExecute(ActMain.java:867)
+							// at jp.juggler.subwaytooter.ActMain$10$1.onPostExecute(ActMain.java:837)
 						}
-							
+						
 						//noinspection StatementWithEmptyBody
 						if( result == null ){
 							// cancelled.
@@ -1274,9 +1268,7 @@ public class ActMain extends AppCompatActivity
 			
 			removeColumn( column );
 			
-			if( app_state.column_list.isEmpty() ){
-				llEmpty.setVisibility( View.VISIBLE );
-			}else if( page_delete > 0 && page_showing == page_delete ){
+			if( ! app_state.column_list.isEmpty() && page_delete > 0 && page_showing == page_delete ){
 				int idx = page_delete - 1;
 				scrollToColumn( idx );
 				Column c = app_state.column_list.get( idx );
@@ -1288,9 +1280,7 @@ public class ActMain extends AppCompatActivity
 		}else{
 			removeColumn( column );
 			
-			if( app_state.column_list.isEmpty() ){
-				llEmpty.setVisibility( View.VISIBLE );
-			}else if( page_delete > 0 ){
+			if( ! app_state.column_list.isEmpty() && page_delete > 0 ){
 				int idx = page_delete - 1;
 				scrollToColumn( idx );
 				Column c = app_state.column_list.get( idx );
@@ -1314,8 +1304,6 @@ public class ActMain extends AppCompatActivity
 			}
 		}
 		
-		//
-		llEmpty.setVisibility( View.GONE );
 		//
 		Column col = new Column( app_state, ai, this, type, params );
 		index = addColumn( col, index );
@@ -1832,7 +1820,7 @@ public class ActMain extends AppCompatActivity
 					}
 				} );
 		}
-			
+		
 	}
 	
 	/////////////////////////////////////////////////////////////////////////

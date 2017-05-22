@@ -3277,6 +3277,7 @@ public class ActMain extends AppCompatActivity
 			}else{
 				resizeColumnWidth();
 			}
+			updateColumnStrip();
 		}
 		
 		final ProgressDialog progress = new ProgressDialog( this );

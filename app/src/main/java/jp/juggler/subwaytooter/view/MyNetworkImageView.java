@@ -37,19 +37,21 @@ public class MyNetworkImageView extends AppCompatImageView {
 	
 	// ロード中などに表示するDrawableのリソースID
 	private int mDefaultImageId;
+	
 	public void setDefaultImageResId( int defaultImage ){
 		mDefaultImageId = defaultImage;
 	}
-
+	
 	// エラー時に表示するDrawableのリソースID
 	private int mErrorImageId;
+	
 	public void setErrorImageResId( int errorImage ){
 		mErrorImageId = errorImage;
 	}
 	
-	
 	// 角丸の半径。元画像の短辺に対する割合を指定するらしい
 	float mCornerRadius;
+	
 	public void setCornerRadius( SharedPreferences pref, float r ){
 		if( ! pref.getBoolean( Pref.KEY_DONT_ROUND, false ) ){
 			mCornerRadius = r;
@@ -58,13 +60,15 @@ public class MyNetworkImageView extends AppCompatImageView {
 	
 	// 表示したい画像のURL
 	private String mUrl;
+	
 	public void setImageUrl( String url ){
 		mUrl = url;
 		loadImageIfNecessary();
 	}
-
+	
 	// 非同期処理のキャンセル
 	MyTarget mTarget;
+	
 	private void cancelLoading(){
 		if( mTarget != null ){
 			setImageDrawable( null );
@@ -72,7 +76,7 @@ public class MyNetworkImageView extends AppCompatImageView {
 			mTarget = null;
 		}
 	}
-
+	
 	// デフォルト画像かnullを表示する
 	private void setDefaultImageOrNull(){
 		if( mDefaultImageId != 0 ){
@@ -81,46 +85,46 @@ public class MyNetworkImageView extends AppCompatImageView {
 			setImageDrawable( null );
 		}
 	}
-
+	
 	// 必要なら非同期処理を開始する
 	void loadImageIfNecessary(){
-		
-		if( TextUtils.isEmpty( mUrl ) ){
-			// if the URL to be loaded in this view is empty,
-			// cancel any old requests and clear the currently loaded image.
+		try{
+			
+			if( TextUtils.isEmpty( mUrl ) ){
+				// if the URL to be loaded in this view is empty,
+				// cancel any old requests and clear the currently loaded image.
+				cancelLoading();
+				setDefaultImageOrNull();
+				return;
+			}
+			
+			if( mTarget != null && mUrl.equals( mTarget.url ) ){
+				// すでにリクエストが発行済みで、リクエストされたURLが同じなら何もしない
+				return;
+			}
+			
+			// if there is a pre-existing request, cancel it if it's fetching a different URL.
 			cancelLoading();
 			setDefaultImageOrNull();
-			return;
-		}
-		
-		if( mTarget != null && mUrl.equals( mTarget.url ) ){
-			// すでにリクエストが発行済みで、リクエストされたURLが同じなら何もしない
-			return;
-		}
-		
-		// if there is a pre-existing request, cancel it if it's fetching a different URL.
-		cancelLoading();
-		setDefaultImageOrNull();
-		
-		boolean wrapWidth = false, wrapHeight = false;
-		if( getLayoutParams() != null ){
-			wrapWidth = getLayoutParams().width == ViewGroup.LayoutParams.WRAP_CONTENT;
-			wrapHeight = getLayoutParams().height == ViewGroup.LayoutParams.WRAP_CONTENT;
-		}
-		
-		// Calculate the max image width / height to use while ignoring WRAP_CONTENT dimens.
-		final int desiredWidth = wrapWidth ? Target.SIZE_ORIGINAL : getWidth();
-		final int desiredHeight = wrapHeight ? Target.SIZE_ORIGINAL : getHeight();
-		
-		if( ( desiredWidth != Target.SIZE_ORIGINAL && desiredWidth <= 0 )
-			|| ( desiredHeight != Target.SIZE_ORIGINAL && desiredHeight <= 0 )
-			){
-			// desiredWidth,desiredHeight の指定がおかしいと非同期処理中にSimpleTargetが落ちる
-			// おそらくレイアウト後に再度呼び出される
-			return;
-		}
-		
-		try{
+			
+			boolean wrapWidth = false, wrapHeight = false;
+			if( getLayoutParams() != null ){
+				wrapWidth = getLayoutParams().width == ViewGroup.LayoutParams.WRAP_CONTENT;
+				wrapHeight = getLayoutParams().height == ViewGroup.LayoutParams.WRAP_CONTENT;
+			}
+			
+			// Calculate the max image width / height to use while ignoring WRAP_CONTENT dimens.
+			final int desiredWidth = wrapWidth ? Target.SIZE_ORIGINAL : getWidth();
+			final int desiredHeight = wrapHeight ? Target.SIZE_ORIGINAL : getHeight();
+			
+			if( ( desiredWidth != Target.SIZE_ORIGINAL && desiredWidth <= 0 )
+				|| ( desiredHeight != Target.SIZE_ORIGINAL && desiredHeight <= 0 )
+				){
+				// desiredWidth,desiredHeight の指定がおかしいと非同期処理中にSimpleTargetが落ちる
+				// おそらくレイアウト後に再度呼び出される
+				return;
+			}
+			
 			mTarget = Glide.with( getContext() )
 				.load( mUrl )
 				.asBitmap()
@@ -134,9 +138,9 @@ public class MyNetworkImageView extends AppCompatImageView {
 			//			at com.bumptech.glide.Glide.with(Glide.java:657)
 		}
 	}
-
+	
 	private class MyTarget extends SimpleTarget< Bitmap > {
-
+		
 		@NonNull final String url;
 		
 		MyTarget( @NonNull String url, int desiredWidth, int desiredHeight ){

@@ -5,27 +5,21 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.text.TextUtils;
 import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 import android.view.ViewGroup;
 import android.support.v7.widget.AppCompatImageView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.animation.GlideAnimation;
-import com.bumptech.glide.request.target.BaseTarget;
 import com.bumptech.glide.request.target.SimpleTarget;
-import com.bumptech.glide.request.target.SizeReadyCallback;
 import com.bumptech.glide.request.target.Target;
-import com.bumptech.glide.util.Util;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import jp.juggler.subwaytooter.Pref;
-import jp.juggler.subwaytooter.util.Utils;
 
 public class MyNetworkImageView extends AppCompatImageView {
 	
@@ -41,56 +35,45 @@ public class MyNetworkImageView extends AppCompatImageView {
 		super( context, attrs, defStyle );
 	}
 	
-	/**
-	 * Resource ID of the image to be used as a placeholder until the network image is loaded.
-	 */
+	// ロード中などに表示するDrawableのリソースID
 	private int mDefaultImageId;
-	
 	public void setDefaultImageResId( int defaultImage ){
 		mDefaultImageId = defaultImage;
 	}
-	
-	/**
-	 * Resource ID of the image to be used if the network response fails.
-	 */
+
+	// エラー時に表示するDrawableのリソースID
 	private int mErrorImageId;
-	
 	public void setErrorImageResId( int errorImage ){
 		mErrorImageId = errorImage;
 	}
 	
-	float mCornerRadius;
 	
-	// 元画像の短辺に対する割合を指定するらしい
+	// 角丸の半径。元画像の短辺に対する割合を指定するらしい
+	float mCornerRadius;
 	public void setCornerRadius( SharedPreferences pref, float r ){
 		if( ! pref.getBoolean( Pref.KEY_DONT_ROUND, false ) ){
 			mCornerRadius = r;
 		}
 	}
 	
-	/**
-	 * The URL of the network image to load
-	 */
+	// 表示したい画像のURL
 	private String mUrl;
-	
 	public void setImageUrl( String url ){
 		mUrl = url;
-		// The URL has potentially changed. See if we need to load it.
-		loadImageIfNecessary( false );
+		loadImageIfNecessary();
 	}
-	
-	Target< ? > mTarget;
-	String mTargetUrl;
-	
+
+	// 非同期処理のキャンセル
+	MyTarget mTarget;
 	private void cancelLoading(){
 		if( mTarget != null ){
 			setImageDrawable( null );
 			Glide.clear( mTarget );
 			mTarget = null;
-			mTargetUrl = null;
 		}
 	}
-	
+
+	// デフォルト画像かnullを表示する
 	private void setDefaultImageOrNull(){
 		if( mDefaultImageId != 0 ){
 			setImageResource( mDefaultImageId );
@@ -98,12 +81,27 @@ public class MyNetworkImageView extends AppCompatImageView {
 			setImageDrawable( null );
 		}
 	}
-	
-	/**
-	 * Loads the image for the view if it isn't already loaded.
-	 */
-	void loadImageIfNecessary( final boolean isInLayoutPass ){
 
+	// 必要なら非同期処理を開始する
+	void loadImageIfNecessary(){
+		
+		if( TextUtils.isEmpty( mUrl ) ){
+			// if the URL to be loaded in this view is empty,
+			// cancel any old requests and clear the currently loaded image.
+			cancelLoading();
+			setDefaultImageOrNull();
+			return;
+		}
+		
+		if( mTarget != null && mUrl.equals( mTarget.url ) ){
+			// すでにリクエストが発行済みで、リクエストされたURLが同じなら何もしない
+			return;
+		}
+		
+		// if there is a pre-existing request, cancel it if it's fetching a different URL.
+		cancelLoading();
+		setDefaultImageOrNull();
+		
 		boolean wrapWidth = false, wrapHeight = false;
 		if( getLayoutParams() != null ){
 			wrapWidth = getLayoutParams().width == ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -113,95 +111,20 @@ public class MyNetworkImageView extends AppCompatImageView {
 		// Calculate the max image width / height to use while ignoring WRAP_CONTENT dimens.
 		final int desiredWidth = wrapWidth ? Target.SIZE_ORIGINAL : getWidth();
 		final int desiredHeight = wrapHeight ? Target.SIZE_ORIGINAL : getHeight();
-
-		if( (desiredWidth != Target.SIZE_ORIGINAL && desiredWidth <=0 )
-			|| (desiredHeight != Target.SIZE_ORIGINAL && desiredHeight <=0 )
+		
+		if( ( desiredWidth != Target.SIZE_ORIGINAL && desiredWidth <= 0 )
+			|| ( desiredHeight != Target.SIZE_ORIGINAL && desiredHeight <= 0 )
 			){
 			// desiredWidth,desiredHeight の指定がおかしいと非同期処理中にSimpleTargetが落ちる
-
-			// if the view's bounds aren't known yet, and this is not a wrap-content/wrap-content
-			// view, hold off on loading the image.
+			// おそらくレイアウト後に再度呼び出される
 			return;
 		}
-
-		// if the URL to be loaded in this view is empty, cancel any old requests and clear the
-		// currently loaded image.
-		if( TextUtils.isEmpty( mUrl ) ){
-			cancelLoading();
-			setDefaultImageOrNull();
-			return;
-		}else if( mTarget != null ){
-			// if there was an old request in this view, check if it needs to be canceled.
-			// if the request is from the same URL, return.
-			if( mUrl.equals( mTargetUrl ) ) return;
-			
-			// if there is a pre-existing request, cancel it if it's fetching a different URL.
-			cancelLoading();
-		}
 		
-		setDefaultImageOrNull();
-		
-		
-		final AtomicBoolean isImmediate = new AtomicBoolean( true );
-		mTargetUrl = mUrl;
 		try{
 			mTarget = Glide.with( getContext() )
 				.load( mUrl )
 				.asBitmap()
-				.into(
-					new SimpleTarget< Bitmap >( desiredWidth, desiredHeight ) {
-						
-						@Override public void onLoadFailed( Exception e, Drawable errorDrawable ){
-							try{
-								// このViewは別の画像を表示するように指定が変わっていた
-								if( mTargetUrl == null || ! mTargetUrl.equals( mUrl ) ) return;
-								
-								e.printStackTrace();
-								if( mErrorImageId != 0 ) setImageResource( mErrorImageId );
-							}catch( Throwable ex ){
-								ex.printStackTrace();
-								//								java.lang.NullPointerException:
-								//								at jp.juggler.subwaytooter.view.MyNetworkImageView$1.onLoadFailed(MyNetworkImageView.java:147)
-								//								at com.bumptech.glide.request.GenericRequest.setErrorPlaceholder(GenericRequest.java:404)
-								//								at com.bumptech.glide.request.GenericRequest.onException(GenericRequest.java:548)
-								//								at com.bumptech.glide.load.engine.EngineJob.handleExceptionOnMainThread(EngineJob.java:183)
-							}
-						}
-						
-						@Override public void onResourceReady(
-							final Bitmap bitmap
-							, final GlideAnimation< ? super Bitmap > glideAnimation
-						){
-							try{
-								if( isImmediate.get() && isInLayoutPass ){
-									post( new Runnable() {
-										@Override public void run(){
-											onResourceReady( bitmap, glideAnimation );
-										}
-									} );
-									return;
-								}
-								
-								// このViewは別の画像を表示するように指定が変わっていた
-								if( mTargetUrl == null || ! mTargetUrl.equals( mUrl ) ) return;
-								
-								if( bitmap == null ){
-									setDefaultImageOrNull();
-								}else if( mCornerRadius <= 0f ){
-									setImageBitmap( bitmap );
-								}else{
-									RoundedBitmapDrawable d = RoundedBitmapDrawableFactory
-										.create( getResources(), bitmap );
-									d.setCornerRadius( mCornerRadius );
-									setImageDrawable( d );
-								}
-							}catch( Throwable ex ){
-								ex.printStackTrace();
-							}
-						}
-					}
-				);
-			isImmediate.set( false );
+				.into( new MyTarget( mUrl, desiredWidth, desiredHeight ) );
 		}catch( Throwable ex ){
 			ex.printStackTrace();
 			// java.lang.IllegalArgumentException:
@@ -211,10 +134,71 @@ public class MyNetworkImageView extends AppCompatImageView {
 			//			at com.bumptech.glide.Glide.with(Glide.java:657)
 		}
 	}
+
+	private class MyTarget extends SimpleTarget< Bitmap > {
+
+		@NonNull final String url;
+		
+		MyTarget( @NonNull String url, int desiredWidth, int desiredHeight ){
+			super( desiredWidth, desiredHeight );
+			this.url = url;
+		}
+		
+		@Override public void onLoadFailed( Exception e, Drawable errorDrawable ){
+			try{
+				// このViewは別の画像を表示するように指定が変わっていた
+				if( ! url.equals( mUrl ) ) return;
+				
+				e.printStackTrace();
+				if( mErrorImageId != 0 ) setImageResource( mErrorImageId );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+				// java.lang.NullPointerException:
+				// at jp.juggler.subwaytooter.view.MyNetworkImageView$1.onLoadFailed(MyNetworkImageView.java:147)
+				// at com.bumptech.glide.request.GenericRequest.setErrorPlaceholder(GenericRequest.java:404)
+				// at com.bumptech.glide.request.GenericRequest.onException(GenericRequest.java:548)
+				// at com.bumptech.glide.load.engine.EngineJob.handleExceptionOnMainThread(EngineJob.java:183)
+			}
+		}
+		
+		@Override public void onResourceReady(
+			final Bitmap bitmap
+			, final GlideAnimation< ? super Bitmap > glideAnimation
+		){
+			try{
+				// このViewは別の画像を表示するように指定が変わっていた
+				if( ! url.equals( mUrl ) ) return;
+				
+				if( bitmap == null ){
+					setDefaultImageOrNull();
+				}else if( mCornerRadius <= 0f ){
+					setImageBitmap( bitmap );
+				}else{
+					RoundedBitmapDrawable d = RoundedBitmapDrawableFactory
+						.create( getResources(), bitmap );
+					d.setCornerRadius( mCornerRadius );
+					setImageDrawable( d );
+				}
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+			}
+		}
+	}
+	
+	final Runnable proc_load_image = new Runnable() {
+		@Override public void run(){
+			loadImageIfNecessary();
+		}
+	};
+	
+	@Override protected void onSizeChanged( int w, int h, int oldw, int oldh ){
+		super.onSizeChanged( w, h, oldw, oldh );
+		post( proc_load_image );
+	}
 	
 	@Override protected void onLayout( boolean changed, int left, int top, int right, int bottom ){
 		super.onLayout( changed, left, top, right, bottom );
-		loadImageIfNecessary( true );
+		post( proc_load_image );
 	}
 	
 	@Override protected void onDetachedFromWindow(){
@@ -224,7 +208,7 @@ public class MyNetworkImageView extends AppCompatImageView {
 	
 	@Override protected void onAttachedToWindow(){
 		super.onAttachedToWindow();
-		loadImageIfNecessary( true );
+		loadImageIfNecessary();
 	}
 	
 	@Override protected void drawableStateChanged(){
@@ -235,14 +219,15 @@ public class MyNetworkImageView extends AppCompatImageView {
 	Drawable media_type_drawable;
 	int media_type_bottom;
 	int media_type_left;
+	
 	public void setMediaType( int drawable_id ){
-		if( drawable_id == 0){
+		if( drawable_id == 0 ){
 			media_type_drawable = null;
 		}else{
-			media_type_drawable = ContextCompat.getDrawable(getContext(),drawable_id).mutate();
+			media_type_drawable = ContextCompat.getDrawable( getContext(), drawable_id ).mutate();
 			// DisplayMetrics dm = getResources().getDisplayMetrics();
 			media_type_bottom = 0;
-			media_type_left =0;
+			media_type_left = 0;
 		}
 		invalidate();
 	}

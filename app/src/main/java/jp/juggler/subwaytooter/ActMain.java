@@ -128,7 +128,7 @@ public class ActMain extends AppCompatActivity
 			}
 		}
 		
-		AlarmService.startCheck( this );
+		AlarmService.startCheck( this ,false);
 	}
 	
 	@Override protected void onDestroy(){
@@ -1192,7 +1192,7 @@ public class ActMain extends AppCompatActivity
 							account.saveSetting();
 						}
 						Utils.showToast( ActMain.this, false, R.string.account_confirmed );
-						AlarmService.startCheck( ActMain.this );
+						AlarmService.startCheck( ActMain.this ,false);
 						long count = SavedAccount.getCount();
 						if( count > 1 ){
 							addColumn( getDefaultInsertPosition(), account, Column.TYPE_HOME );

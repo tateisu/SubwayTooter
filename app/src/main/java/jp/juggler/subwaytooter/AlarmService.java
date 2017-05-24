@@ -15,6 +15,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.WakefulBroadcastReceiver;
+import android.text.TextUtils;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -25,6 +26,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -39,6 +41,10 @@ import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.util.WordTrieTree;
+import okhttp3.Call;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class AlarmService extends IntentService {
 	
@@ -61,6 +67,10 @@ public class AlarmService extends IntentService {
 	public static final AtomicBoolean mBusyAppDataImportBefore = new AtomicBoolean( false );
 	public static final AtomicBoolean mBusyAppDataImportAfter = new AtomicBoolean( false );
 	public static final String ACTION_APP_DATA_IMPORT_AFTER = "app_data_import_after";
+	public static final String ACTION_DEVICE_TOKEN = "device_token";
+	private static final String ACTION_RESET_LAST_LOAD = "reset_last_load";
+	
+	static final String APP_SERVER = "https://mastodon-msg.juggler.jp";
 	
 	public AlarmService(){
 		// name: Used to name the worker thread, important only for debugging.
@@ -92,6 +102,7 @@ public class AlarmService extends IntentService {
 		Intent next_intent = new Intent( this, AlarmReceiver.class );
 		pi_next = PendingIntent.getBroadcast( this, PENDING_CODE_ALARM, next_intent, PendingIntent.FLAG_UPDATE_CURRENT );
 		
+		
 	}
 	
 	@Override public void onDestroy(){
@@ -101,6 +112,8 @@ public class AlarmService extends IntentService {
 		super.onDestroy();
 	}
 	
+	String install_id;
+	
 	// IntentService は onHandleIntent をワーカースレッドから呼び出す
 	// 同期処理を行って良い
 	@Override protected void onHandleIntent( @Nullable Intent intent ){
@@ -108,6 +121,10 @@ public class AlarmService extends IntentService {
 		// クラッシュレポートによると App1.onCreate より前にここを通る場合がある
 		// データベースへアクセスできるようにする
 		App1.prepareDB( this.getApplicationContext() );
+		
+		
+		install_id = getInstallId();
+		
 		
 		if( intent != null ){
 			String action = intent.getAction();
@@ -138,10 +155,19 @@ public class AlarmService extends IntentService {
 		if( intent != null ){
 			String action = intent.getAction();
 			
-			if( ACTION_DATA_DELETED.equals( action ) ){
+			if( ACTION_DEVICE_TOKEN.equals( action ) ){
+				// デバイストークンが更新された
+				// TODO 過去に中継サーバに登録したものは登録解除して登録しなおす必要がある
+				
+			}else if( ACTION_RESET_LAST_LOAD.equals( action ) ){
+				NotificationTracking.resetLastLoad();
+				
+			}else if( ACTION_DATA_DELETED.equals( action ) ){
 				deleteCacheData( intent.getLongExtra( EXTRA_DB_ID, - 1L ) );
+				
 			}else if( ACTION_DATA_INJECTED.equals( action ) ){
 				processInjectedData();
+				
 			}else if( AlarmReceiver.ACTION_FROM_RECEIVER.equals( action ) ){
 				WakefulBroadcastReceiver.completeWakefulIntent( intent );
 				//
@@ -192,26 +218,36 @@ public class AlarmService extends IntentService {
 				@Override public void run(){
 					
 					try{
-						if( account.notification_mention
-							|| account.notification_boost
-							|| account.notification_favourite
-							|| account.notification_follow
+						if( account.isPseudo() ) return;
+						
+						if( ! account.notification_mention
+							&& ! account.notification_boost
+							&& ! account.notification_favourite
+							&& ! account.notification_follow
 							){
-							bAlarmRequired.set( true );
-							
-							TootApiClient client = new TootApiClient( AlarmService.this, new TootApiClient.Callback() {
-								@Override public boolean isApiCancelled(){
-									return false;
-								}
-								
-								@Override public void publishApiProgress( String s ){
-								}
-							} );
-							
-							ArrayList< Data > data_list = new ArrayList<>();
-							checkAccount( client, data_list, account, muted_app, muted_word );
-							showNotification( account.db_id, data_list );
+							unregisterDeviceToken( account );
+							return;
 						}
+						
+						if( registerDeviceToken( account ) ){
+							return;
+						}
+						
+						bAlarmRequired.set( true );
+						
+						TootApiClient client = new TootApiClient( AlarmService.this, new TootApiClient.Callback() {
+							@Override public boolean isApiCancelled(){
+								return false;
+							}
+							
+							@Override public void publishApiProgress( String s ){
+							}
+						} );
+						
+						ArrayList< Data > data_list = new ArrayList<>();
+						checkAccount( client, data_list, account, muted_app, muted_word );
+						showNotification( account.db_id, data_list );
+						
 					}catch( Throwable ex ){
 						ex.printStackTrace();
 					}
@@ -242,6 +278,118 @@ public class AlarmService extends IntentService {
 		}else{
 			log.d( "alarm is no longer required." );
 		}
+	}
+	
+	String getInstallId(){
+		String sv = pref.getString(Pref.KEY_INSTALL_ID,null);
+		if( ! TextUtils.isEmpty( sv ) ) return sv;
+		
+		try{
+			String device_token = pref.getString( Pref.KEY_DEVICE_TOKEN, null );
+			if( TextUtils.isEmpty( device_token ) ) return null;
+			
+			Request request = new Request.Builder()
+				.url( APP_SERVER + "/counter" )
+				.build();
+			
+			Call call = App1.ok_http_client.newCall( request );
+			
+			Response response = call.execute();
+			
+			if( ! response.isSuccessful() ){
+				log.e("getInstallId: get /counter failed. %s",response);
+				return null;
+			}
+			
+			//noinspection ConstantConditions
+			sv = Utils.digestSHA256( device_token + UUID.randomUUID() + response.body().string() );
+			pref.edit().putString(Pref.KEY_INSTALL_ID, sv).apply();
+			
+			return sv;
+			
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			return null;
+		}
+	}
+	
+	private void unregisterDeviceToken( @NonNull SavedAccount account ){
+		try{
+			// ネットワーク的な事情でインストールIDを取得できなかったのなら、何もしない
+			if( TextUtils.isEmpty( install_id ) ) return;
+			
+			String device_token = pref.getString( Pref.KEY_DEVICE_TOKEN, null );
+			if( TextUtils.isEmpty( device_token ) ) return;
+			
+			String tag = account.notification_tag;
+			if( TextUtils.isEmpty( tag ) ) return;
+			
+			String post_data = "instance_url=" + Uri.encode( "https://" + account.host )
+				+ "&app_id=" + Uri.encode( getPackageName() )
+				+ "&tag=" + tag;
+			
+			Request request = new Request.Builder()
+				.url( APP_SERVER + "/unregister" )
+				.post( RequestBody.create( TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, post_data ) )
+				.build();
+			
+			Call call = App1.ok_http_client.newCall( request );
+			
+			Response response = call.execute();
+			
+			log.e( "unregisterDeviceToken:%s", response );
+		
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+		}
+	}
+	
+	// 定期的な通知更新が不要なら真を返す
+	private boolean registerDeviceToken( @NonNull SavedAccount account ){
+		try{
+			// ネットワーク的な事情でインストールIDを取得できなかったのなら、何もしない
+			if( TextUtils.isEmpty( install_id ) ) return false;
+			
+			String device_token = pref.getString( Pref.KEY_DEVICE_TOKEN, null );
+			if( TextUtils.isEmpty( device_token ) ) return false;
+			
+			String tag = account.notification_tag;
+			if( TextUtils.isEmpty( tag ) ){
+				tag = account.notification_tag = Utils.digestSHA256( install_id + account.db_id + account.acct );
+				account.saveNotificationTag();
+			}
+			
+			// サーバ情報APIを使う
+			String post_data = "instance_url=" +
+				Uri.encode( "https://" + account.host ) +
+				"&app_id=" +
+				Uri.encode( getPackageName() ) +
+				"&tag=" +
+				tag +
+				"&access_token=" +
+				Utils.optStringX( account.token_info, "access_token" ) +
+				"&device_token=" +
+				device_token;
+			
+			Request request = new Request.Builder()
+				.url( APP_SERVER + "/register" )
+				.post( RequestBody.create( TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, post_data ) )
+				.build();
+			
+			Call call = App1.ok_http_client.newCall( request );
+			
+			Response response = call.execute();
+			
+			log.e( "registerDeviceToken:%s", response );
+			
+			// TODO 登録結果をDBに記録する
+			// 登録してから一定時間は再登録しない
+			
+		}catch( Throwable ex ){
+			
+			ex.printStackTrace();
+		}
+		return false;
 	}
 	
 	private static class Data {
@@ -492,9 +640,11 @@ public class AlarmService extends IntentService {
 	////////////////////////////////////////////////////////////////////////////
 	// Activity との連携
 	
-	public static void startCheck( @NonNull Context context ){
-		Intent intent = new Intent( context, AlarmReceiver.class );
-		context.sendBroadcast( intent );
+	public static void startCheck( @NonNull Context context, boolean bResetLastLoad ){
+		Intent intent = new Intent( context, AlarmService.class );
+		if( bResetLastLoad ) intent.setAction( ACTION_RESET_LAST_LOAD );
+		
+		context.startService( intent );
 	}
 	
 	private static class InjectData {

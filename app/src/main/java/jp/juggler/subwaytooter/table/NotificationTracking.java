@@ -33,6 +33,7 @@ public class NotificationTracking {
 	
 	// 最後に表示した通知のID
 	private static final String COL_POST_ID = "pi";
+	
 	// 最後に表示した通知の作成時刻
 	private static final String COL_POST_TIME = "pt";
 	
@@ -187,7 +188,19 @@ public class NotificationTracking {
 			App1.getDB().update( table, cv,null,null);
 			
 		}catch( Throwable ex ){
-			log.e( ex, "save failed." );
+			log.e( ex, "resetPostAll failed." );
 		}
+	}
+	
+	public static void resetLastLoad(){
+		try{
+			ContentValues cv = new ContentValues();
+			cv.put( COL_LAST_LOAD, 0 );
+			App1.getDB().update( table, cv,null,null);
+			
+		}catch( Throwable ex ){
+			log.e( ex, "resetLastLoad failed." );
+		}
+		
 	}
 }

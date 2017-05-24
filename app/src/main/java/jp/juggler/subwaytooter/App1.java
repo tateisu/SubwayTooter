@@ -50,7 +50,7 @@ public class App1 extends Application {
 	static final LogCategory log = new LogCategory( "App1" );
 	
 	static final String DB_NAME = "app_db";
-	static final int DB_VERSION = 12;
+	static final int DB_VERSION = 13;
 	// 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
 	// 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加
 	// 2017/4/29 v20 2=>5 MediaShown,ContentWarningのインデクスが間違っていたので貼り直す
@@ -61,11 +61,11 @@ public class App1 extends Application {
 	// 2017/5/04 v33 9=>10 SavedAccountに項目追加
 	// 2017/5/08 v41 10=>11 MutedWord テーブルの追加
 	// 2017/5/17 v59 11=>12 PostDraft テーブルの追加
+	// 2017/5/23 v68 12=>13 SavedAccountに項目追加
 	
 	private static DBOpenHelper db_open_helper;
 	
 	public static SQLiteDatabase getDB(){
-		
 		return db_open_helper.getWritableDatabase();
 	}
 	

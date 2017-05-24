@@ -25,7 +25,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	
 	public static final String table = "access_info";
 	
-	public static final String COL_ID = BaseColumns._ID;
+	private static final String COL_ID = BaseColumns._ID;
 	private static final String COL_HOST = "h";
 	private static final String COL_USER = "u";
 	private static final String COL_ACCOUNT = "a";
@@ -44,6 +44,9 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	private static final String COL_CONFIRM_FOLLOW_LOCKED = "confirm_follow_locked";
 	private static final String COL_CONFIRM_UNFOLLOW = "confirm_unfollow";
 	private static final String COL_CONFIRM_POST = "confirm_post";
+
+	// スキーマ13から
+	private static final String COL_NOTIFICATION_TAG = "notification_server";
 	
 	public static final long INVALID_ID = - 1L;
 	
@@ -64,6 +67,8 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public boolean confirm_follow_locked;
 	public boolean confirm_unfollow;
 	public boolean confirm_post;
+	
+	public String notification_tag;
 	
 	// アプリデータのインポート時に呼ばれる
 	public static void onDBDelete( SQLiteDatabase db ){
@@ -97,6 +102,11 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 				+ "," + COL_CONFIRM_FOLLOW_LOCKED + " integer default 1"
 				+ "," + COL_CONFIRM_UNFOLLOW + " integer default 1"
 				+ "," + COL_CONFIRM_POST + " integer default 1"
+				
+				// 以下はDBスキーマ13で更新
+				+ "," + COL_NOTIFICATION_TAG + " text default ''"
+			
+				
 				+ ")"
 		);
 		db.execSQL( "create index if not exists " + table + "_user on " + table + "(u)" );
@@ -148,6 +158,13 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 				ex.printStackTrace();
 			}
 		}
+		if( oldVersion < 13 && newVersion >= 13 ){
+			try{
+				db.execSQL( "alter table " + table + " add column " + COL_NOTIFICATION_TAG + " text default ''" );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+			}
+		}
 	}
 	
 	private SavedAccount(){
@@ -177,6 +194,9 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 			dst.confirm_follow_locked = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_CONFIRM_FOLLOW_LOCKED ) ) );
 			dst.confirm_unfollow = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_CONFIRM_UNFOLLOW ) ) );
 			dst.confirm_post = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_CONFIRM_POST ) ) );
+			
+			int idx_notification_tag =  cursor.getColumnIndex( COL_NOTIFICATION_TAG );
+			dst.notification_tag = cursor.isNull(idx_notification_tag) ? null : cursor.getString( idx_notification_tag );
 			
 			dst.token_info = new JSONObject( cursor.getString( cursor.getColumnIndex( COL_TOKEN ) ) );
 		}
@@ -237,6 +257,18 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		cv.put( COL_CONFIRM_UNFOLLOW, confirm_unfollow ? 1 : 0 );
 		cv.put( COL_CONFIRM_POST, confirm_post ? 1 : 0 );
 		
+		if( notification_tag != null ) cv.put( COL_NOTIFICATION_TAG, notification_tag );
+		
+		App1.getDB().update( table, cv, COL_ID + "=?", new String[]{ Long.toString( db_id ) } );
+	}
+	
+	public void saveNotificationTag(){
+		if( db_id == INVALID_ID )
+			throw new RuntimeException( "SavedAccount.saveSetting missing db_id" );
+		
+		ContentValues cv = new ContentValues();
+		cv.put( COL_NOTIFICATION_TAG, notification_tag );
+		
 		App1.getDB().update( table, cv, COL_ID + "=?", new String[]{ Long.toString( db_id ) } );
 	}
 	
@@ -254,6 +286,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		this.notification_boost = b.notification_boost;
 		this.notification_favourite = b.notification_favourite;
 		this.notification_follow = b.notification_follow;
+		this.notification_tag = b.notification_tag;
 	}
 	
 	public static @Nullable SavedAccount loadAccount( @NonNull LogCategory log, long db_id ){
@@ -370,4 +403,5 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return 0L;
 	}
 	
+
 }

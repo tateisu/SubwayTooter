@@ -314,6 +314,13 @@ public class AppDataExporter {
 				reader.skipValue();
 				e.remove( k );
 				break;
+			
+			// just ignore
+			case Pref.KEY_DEVICE_TOKEN:
+			case Pref.KEY_INSTALL_ID:
+				reader.skipValue();
+				e.remove( k );
+				break;
 			}
 		}
 		reader.endObject();

@@ -47,8 +47,10 @@ public class Pref {
 	static final String KEY_MEDIA_THUMB_HEIGHT = "MediaThumbHeight";
 	static final String KEY_TIMELINE_FONT = "timeline_font";
 	static final String KEY_DONT_CROP_MEDIA_THUMBNAIL = "DontCropMediaThumb";
+	static final String KEY_DEVICE_TOKEN = "device_token";
+	static final String KEY_INSTALL_ID = "install_id";
 	
-
+	
 	
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

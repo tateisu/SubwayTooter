@@ -48,6 +48,10 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	// スキーマ13から
 	private static final String COL_NOTIFICATION_TAG = "notification_server";
 	
+	// スキーマ14から
+	private static final String COL_REGISTER_KEY = "register_key";
+	private static final String COL_REGISTER_TIME = "register_time";
+	
 	public static final long INVALID_ID = - 1L;
 	
 	// login information
@@ -69,6 +73,8 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public boolean confirm_post;
 	
 	public String notification_tag;
+	public String register_key;
+	public long register_time;
 	
 	// アプリデータのインポート時に呼ばれる
 	public static void onDBDelete( SQLiteDatabase db ){
@@ -105,6 +111,10 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 				
 				// 以下はDBスキーマ13で更新
 				+ "," + COL_NOTIFICATION_TAG + " text default ''"
+			
+				// 以下はDBスキーマ14で更新
+				+ "," + COL_REGISTER_KEY + " text default ''"
+				+ "," + COL_REGISTER_TIME + " integer default 0"
 			
 				
 				+ ")"
@@ -165,6 +175,18 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 				ex.printStackTrace();
 			}
 		}
+		if( oldVersion < 14 && newVersion >= 14 ){
+			try{
+				db.execSQL( "alter table " + table + " add column " + COL_REGISTER_KEY + " text default ''" );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+			}
+			try{
+				db.execSQL( "alter table " + table + " add column " + COL_REGISTER_TIME + " integer default 0" );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+			}
+		}
 	}
 	
 	private SavedAccount(){
@@ -197,6 +219,11 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 			
 			int idx_notification_tag =  cursor.getColumnIndex( COL_NOTIFICATION_TAG );
 			dst.notification_tag = cursor.isNull(idx_notification_tag) ? null : cursor.getString( idx_notification_tag );
+			
+			int idx_register_key =  cursor.getColumnIndex( COL_REGISTER_KEY );
+			dst.register_key = cursor.isNull(idx_register_key) ? null : cursor.getString( idx_register_key );
+			
+			dst.register_time = cursor.getLong( cursor.getColumnIndex( COL_REGISTER_TIME ));
 			
 			dst.token_info = new JSONObject( cursor.getString( cursor.getColumnIndex( COL_TOKEN ) ) );
 		}
@@ -257,21 +284,34 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		cv.put( COL_CONFIRM_UNFOLLOW, confirm_unfollow ? 1 : 0 );
 		cv.put( COL_CONFIRM_POST, confirm_post ? 1 : 0 );
 		
-		if( notification_tag != null ) cv.put( COL_NOTIFICATION_TAG, notification_tag );
+		// UIからは更新しない
+		// notification_tag
+		// register_key
 		
 		App1.getDB().update( table, cv, COL_ID + "=?", new String[]{ Long.toString( db_id ) } );
 	}
 	
 	public void saveNotificationTag(){
 		if( db_id == INVALID_ID )
-			throw new RuntimeException( "SavedAccount.saveSetting missing db_id" );
+			throw new RuntimeException( "SavedAccount.saveNotificationTag missing db_id" );
 		
 		ContentValues cv = new ContentValues();
 		cv.put( COL_NOTIFICATION_TAG, notification_tag );
 		
 		App1.getDB().update( table, cv, COL_ID + "=?", new String[]{ Long.toString( db_id ) } );
 	}
-	
+
+	public void saveRegisterKey(){
+		if( db_id == INVALID_ID )
+			throw new RuntimeException( "SavedAccount.saveRegisterKey missing db_id" );
+		
+		ContentValues cv = new ContentValues();
+		cv.put( COL_REGISTER_KEY, register_key );
+		cv.put( COL_REGISTER_TIME, register_time );
+		
+		App1.getDB().update( table, cv, COL_ID + "=?", new String[]{ Long.toString( db_id ) } );
+	}
+
 	// onResumeの時に設定を読み直す
 	public void reloadSetting(){
 		if( db_id == INVALID_ID )

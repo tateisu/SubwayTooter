@@ -313,16 +313,26 @@ public class AlarmService extends IntentService {
 		}
 	}
 	
+	static final String REGISTER_KEY_UNREGISTERED = "unregistered";
+	
 	private void unregisterDeviceToken( @NonNull SavedAccount account ){
 		try{
+			if( REGISTER_KEY_UNREGISTERED.equals( account.register_key ) ){
+				log.d("unregisterDeviceToken: already unregistered.");
+				return;
+			}
+
 			// ネットワーク的な事情でインストールIDを取得できなかったのなら、何もしない
-			if( TextUtils.isEmpty( install_id ) ) return;
-			
-			String device_token = pref.getString( Pref.KEY_DEVICE_TOKEN, null );
-			if( TextUtils.isEmpty( device_token ) ) return;
+			if( TextUtils.isEmpty( install_id ) ){
+				log.d("unregisterDeviceToken: missing install_id");
+				return;
+			}
 			
 			String tag = account.notification_tag;
-			if( TextUtils.isEmpty( tag ) ) return;
+			if( TextUtils.isEmpty( tag ) ){
+				log.d("unregisterDeviceToken: missing notification_tag");
+				return;
+			}
 			
 			String post_data = "instance_url=" + Uri.encode( "https://" + account.host )
 				+ "&app_id=" + Uri.encode( getPackageName() )
@@ -337,7 +347,13 @@ public class AlarmService extends IntentService {
 			
 			Response response = call.execute();
 			
-			log.e( "unregisterDeviceToken:%s", response );
+			log.e( "unregisterDeviceToken: %s", response );
+			
+			if( response.isSuccessful() ){
+				account.register_key = REGISTER_KEY_UNREGISTERED;
+				account.register_time = 0L;
+				account.saveRegisterKey();
+			}
 		
 		}catch( Throwable ex ){
 			ex.printStackTrace();
@@ -348,17 +364,37 @@ public class AlarmService extends IntentService {
 	private boolean registerDeviceToken( @NonNull SavedAccount account ){
 		try{
 			// ネットワーク的な事情でインストールIDを取得できなかったのなら、何もしない
-			if( TextUtils.isEmpty( install_id ) ) return false;
+			if( TextUtils.isEmpty( install_id ) ){
+				log.d("registerDeviceToken: missing install id");
+				return false;
+			}
 			
 			String device_token = pref.getString( Pref.KEY_DEVICE_TOKEN, null );
-			if( TextUtils.isEmpty( device_token ) ) return false;
+			if( TextUtils.isEmpty( device_token ) ){
+				log.d("registerDeviceToken: missing device_token");
+				return false;
+			}
 			
+			String access_token = Utils.optStringX( account.token_info, "access_token" );
+			if( TextUtils.isEmpty( access_token ) ){
+				log.d("registerDeviceToken: missing access_token");
+				return false;
+			}
+
 			String tag = account.notification_tag;
 			if( TextUtils.isEmpty( tag ) ){
 				tag = account.notification_tag = Utils.digestSHA256( install_id + account.db_id + account.acct );
 				account.saveNotificationTag();
 			}
 			
+			String reg_key = tag + access_token + device_token ;
+			long now = System.currentTimeMillis();
+			if( reg_key.equals( account.register_key ) && now - account.register_time < 3600000 * 3 ){
+				// タグやトークンが同一なら、前回登録に成功してから一定時間は再登録しない
+				log.d("registerDeviceToken: already registered.");
+				return false;
+			}
+
 			// サーバ情報APIを使う
 			String post_data = "instance_url=" +
 				Uri.encode( "https://" + account.host ) +
@@ -381,9 +417,15 @@ public class AlarmService extends IntentService {
 			Response response = call.execute();
 			
 			log.e( "registerDeviceToken:%s", response );
-			
-			// TODO 登録結果をDBに記録する
-			// 登録してから一定時間は再登録しない
+
+			int code = response.code();
+
+			if( response.isSuccessful() || (code >= 400 && code < 500) ){
+				// 登録できた時も4xxエラーだった時もDBに記録する
+				account.register_key = reg_key;
+				account.register_time = now;
+				account.saveRegisterKey();
+			}
 			
 		}catch( Throwable ex ){
 			

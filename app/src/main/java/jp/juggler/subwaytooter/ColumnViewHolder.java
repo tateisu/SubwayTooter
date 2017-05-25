@@ -618,6 +618,7 @@ class ColumnViewHolder
 		tvLoading.setVisibility( View.VISIBLE );
 		tvLoading.setText( message );
 		
+		swipyRefreshLayout.setRefreshing( false );
 		swipyRefreshLayout.setVisibility( View.GONE );
 		
 	}
@@ -687,10 +688,6 @@ class ColumnViewHolder
 			return;
 		}
 		
-		if( status_adapter.header != null ){
-			status_adapter.header.bind( column.who_account );
-		}
-		
 		if( ! column.bFirstInitialized ){
 			showError( "initializing" );
 			return;
@@ -708,6 +705,20 @@ class ColumnViewHolder
 			return;
 		}
 		
+		
+		if( status_adapter.getCount() == 0 ){
+			showError( activity.getString( R.string.list_empty ) );
+			return;
+		}
+		
+		tvLoading.setVisibility( View.GONE );
+
+		swipyRefreshLayout.setVisibility( View.VISIBLE );
+		
+		if( status_adapter.header != null ){
+			status_adapter.header.bind( column.who_account );
+		}
+		
 		if( ! column.bRefreshLoading ){
 			swipyRefreshLayout.setRefreshing( false );
 			if( column.mRefreshLoadingError != null ){
@@ -716,14 +727,9 @@ class ColumnViewHolder
 			}
 		}
 		
-		if( status_adapter.getCount() == 0 ){
-			showError( activity.getString( R.string.list_empty ) );
-		}else{
-			tvLoading.setVisibility( View.GONE );
-			swipyRefreshLayout.setVisibility( View.VISIBLE );
-			// 表示状態が変わった後にもう一度呼び出す必要があるらしい。。。
-			status_adapter.notifyDataSetChanged();
-		}
+		// 表示状態が変わった後にもう一度呼び出す必要があるらしい。。。
+		status_adapter.notifyDataSetChanged();
+
 		restoreScrollPosition();
 	}
 	

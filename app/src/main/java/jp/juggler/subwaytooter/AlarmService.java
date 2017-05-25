@@ -70,7 +70,7 @@ public class AlarmService extends IntentService {
 	public static final String ACTION_DEVICE_TOKEN = "device_token";
 	private static final String ACTION_RESET_LAST_LOAD = "reset_last_load";
 	
-	static final String APP_SERVER = "https://mastodon-msg.juggler.jp";
+	public static final String APP_SERVER = "https://mastodon-msg.juggler.jp";
 	
 	public AlarmService(){
 		// name: Used to name the worker thread, important only for debugging.

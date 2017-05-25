@@ -26,6 +26,10 @@ import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
+import okhttp3.Call;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class ActAccountSetting extends AppCompatActivity
 	implements View.OnClickListener
@@ -303,10 +307,59 @@ public class ActAccountSetting extends AppCompatActivity
 			.setMessage( R.string.confirm_account_remove )
 			.setNegativeButton( R.string.cancel, null )
 			.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick( DialogInterface dialog, int which ){
+				@Override public void onClick( DialogInterface dialog, int which ){
 					account.delete();
 					finish();
+
+					new AsyncTask<Void,Void,String>(){
+						
+						void unregister(){
+							try{
+								String install_id = App1.pref.getString(Pref.KEY_INSTALL_ID,null);
+								
+								if( TextUtils.isEmpty( install_id ) ){
+									log.d("performAccountRemove: missing install_id");
+									return;
+								}
+								
+								String tag = account.notification_tag;
+								if( TextUtils.isEmpty( tag ) ){
+									log.d("performAccountRemove: missing notification_tag");
+									return;
+								}
+								
+								String post_data = "instance_url=" + Uri.encode( "https://" + account.host )
+									+ "&app_id=" + Uri.encode( getPackageName() )
+									+ "&tag=" + tag;
+								
+								Request request = new Request.Builder()
+									.url( AlarmService.APP_SERVER + "/unregister" )
+									.post( RequestBody.create( TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, post_data ) )
+									.build();
+								
+								Call call = App1.ok_http_client.newCall( request );
+								
+								Response response = call.execute();
+								
+								log.e( "performAccountRemove: %s", response );
+								
+							}catch( Throwable ex ){
+								ex.printStackTrace();
+							}
+						}
+						
+						@Override protected String doInBackground( Void... params ){
+							unregister();
+							return null;
+						}
+						
+						@Override protected void onCancelled( String s ){
+							onPostExecute(s);
+						}
+						
+						@Override protected void onPostExecute( String s ){
+						}
+					}.executeOnExecutor( App1.task_executor );
 				}
 			} )
 			.show();
@@ -345,8 +398,7 @@ public class ActAccountSetting extends AppCompatActivity
 				return api_client.authorize1();
 			}
 			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
+			@Override protected void onPostExecute( TootApiResult result ){
 				progress.dismiss();
 				
 				if( result == null ){
@@ -374,8 +426,7 @@ public class ActAccountSetting extends AppCompatActivity
 		progress.setIndeterminate( true );
 		progress.setCancelable( true );
 		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
-			@Override
-			public void onCancel( DialogInterface dialog ){
+			@Override public void onCancel( DialogInterface dialog ){
 				task.cancel( true );
 			}
 		} );

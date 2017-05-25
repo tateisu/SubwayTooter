@@ -128,7 +128,7 @@ public class ActMain extends AppCompatActivity
 			}
 		}
 		
-		AlarmService.startCheck( this ,false);
+		AlarmService.startCheck( this, false );
 	}
 	
 	@Override protected void onDestroy(){
@@ -1171,6 +1171,7 @@ public class ActMain extends AppCompatActivity
 						
 						// DBの情報を更新する
 						sa.updateTokenInfo( result.token_info );
+						
 						// 各カラムの持つアカウント情報をリロードする
 						reloadAccountSetting();
 						
@@ -1180,6 +1181,9 @@ public class ActMain extends AppCompatActivity
 								c.startLoading();
 							}
 						}
+						
+						// 通知の更新が必要かもしれない
+						AlarmService.startCheck( ActMain.this, false );
 					}
 				}else{
 					// アカウント追加時
@@ -1192,7 +1196,11 @@ public class ActMain extends AppCompatActivity
 							account.saveSetting();
 						}
 						Utils.showToast( ActMain.this, false, R.string.account_confirmed );
-						AlarmService.startCheck( ActMain.this ,false);
+						
+						// 通知の更新が必要かもしれない
+						AlarmService.startCheck( ActMain.this, false );
+						
+						// 適当にカラムを追加する
 						long count = SavedAccount.getCount();
 						if( count > 1 ){
 							addColumn( getDefaultInsertPosition(), account, Column.TYPE_HOME );
@@ -1375,8 +1383,7 @@ public class ActMain extends AppCompatActivity
 				String path = "/api/v1/accounts/search" + "?q=" + Uri.encode( user );
 				
 				TootApiResult result = client.request( path );
-				
-				if( result.array != null ){
+				if( result != null && result.array != null ){
 					for( int i = 0, ie = result.array.length() ; i < ie ; ++ i ){
 						
 						TootAccount item = TootAccount.parse( log, access_info, result.array.optJSONObject( i ) );
@@ -1899,7 +1906,7 @@ public class ActMain extends AppCompatActivity
 						: "/api/v1/statuses/" + target_status.id + "/unfavourite"
 					)
 					, request_builder );
-				if( result.object != null ){
+				if( result != null && result.object != null ){
 					new_status = TootStatus.parse( log, access_info, result.object );
 				}
 				
@@ -2063,10 +2070,10 @@ public class ActMain extends AppCompatActivity
 					"/api/v1/statuses/" + target_status.id + ( bSet ? "/reblog" : "/unreblog" )
 					, request_builder );
 				
-				if( result.object != null ){
+				if( result != null && result.object != null ){
 					// reblog,unreblog のレスポンスは信用ならんのでステータスを再取得する
 					result = client.request( "/api/v1/statuses/" + target_status.id );
-					if( result.object != null ){
+					if( result != null && result.object != null ){
 						new_status = TootStatus.parse( log, access_info, result.object );
 					}
 				}

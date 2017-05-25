@@ -582,6 +582,7 @@ class ColumnViewHolder
 				etSearch.setText( column.search_query );
 				cbResolve.setChecked( column.search_resolve );
 			}
+			swipyRefreshLayout.setRefreshing( false );
 			column.startLoading();
 			break;
 		

@@ -46,11 +46,11 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	private static final String COL_CONFIRM_POST = "confirm_post";
 
 	// スキーマ13から
-	private static final String COL_NOTIFICATION_TAG = "notification_server";
+	public static final String COL_NOTIFICATION_TAG = "notification_server";
 	
 	// スキーマ14から
-	private static final String COL_REGISTER_KEY = "register_key";
-	private static final String COL_REGISTER_TIME = "register_time";
+	public static final String COL_REGISTER_KEY = "register_key";
+	public static final String COL_REGISTER_TIME = "register_time";
 	
 	public static final long INVALID_ID = - 1L;
 	

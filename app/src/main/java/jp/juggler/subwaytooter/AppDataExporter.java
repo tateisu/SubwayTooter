@@ -177,12 +177,23 @@ public class AppDataExporter {
 						continue;
 					}
 					
-					// 一時的に存在したが現在のDBスキーマにはない項目は読み飛ばす
-					if( SavedAccount.table.equals( table ) &&
-						( "nickname".equals( name ) || "color".equals( name ) )
-						){
-						reader.skipValue();
-						continue;
+					if( SavedAccount.table.equals( table ) ){
+						// 一時的に存在したが現在のDBスキーマにはない項目は読み飛ばす
+						if( "nickname".equals( name )
+							|| "color".equals( name )
+							){
+							reader.skipValue();
+							continue;
+						}
+						
+						// リアルタイム通知に関連する項目は読み飛ばす
+						if( SavedAccount.COL_NOTIFICATION_TAG.equals( name )
+							|| SavedAccount.COL_REGISTER_KEY.equals( name )
+							|| SavedAccount.COL_REGISTER_TIME.equals( name )
+							){
+							reader.skipValue();
+							continue;
+						}
 					}
 					
 					JsonToken token = reader.peek();

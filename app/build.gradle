@@ -9,8 +9,8 @@ android {
         applicationId "jp.juggler.subwaytooter"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 71
-        versionName "0.7.1"
+        versionCode 72
+        versionName "0.7.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -76,6 +76,8 @@ dependencies {
     compile 'com.github.bumptech.glide:glide:3.8.0'
 //    annotationProcessor 'com.github.bumptech.glide:compiler:3.8.0'
     compile 'com.github.bumptech.glide:okhttp3-integration:1.5.0'
+
+    compile 'org.hjson:hjson:2.1.1'
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -312,6 +312,12 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		App1.getDB().update( table, cv, COL_ID + "=?", new String[]{ Long.toString( db_id ) } );
 	}
 
+	public static void clearRegistrationCache(){
+		ContentValues cv = new ContentValues();
+		cv.put( COL_REGISTER_TIME, 0L );
+		App1.getDB().update( table, cv, null, null);
+	}
+	
 	// onResumeの時に設定を読み直す
 	public void reloadSetting(){
 		if( db_id == INVALID_ID )

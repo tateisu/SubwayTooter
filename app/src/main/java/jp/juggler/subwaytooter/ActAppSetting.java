@@ -38,7 +38,9 @@ import org.apache.commons.io.output.FileWriterWithEncoding;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 
+import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -108,6 +110,8 @@ public class ActAppSetting extends AppCompatActivity
 	
 	EditText etColumnWidth;
 	EditText etMediaThumbHeight;
+
+	
 	TextView tvTimelineFontUrl;
 	String timeline_font;
 	
@@ -228,6 +232,9 @@ public class ActAppSetting extends AppCompatActivity
 		findViewById( R.id.btnTimelineFontReset ).setOnClickListener( this );
 		findViewById( R.id.btnSettingExport ).setOnClickListener( this );
 		findViewById( R.id.btnSettingImport ).setOnClickListener( this );
+		findViewById( R.id.btnCustomStreamListenerEdit ).setOnClickListener( this );
+		findViewById( R.id.btnCustomStreamListenerReset ).setOnClickListener( this );
+
 		
 		ivFooterToot = (ImageView) findViewById( R.id.ivFooterToot );
 		ivFooterMenu = (ImageView) findViewById( R.id.ivFooterMenu );
@@ -242,7 +249,6 @@ public class ActAppSetting extends AppCompatActivity
 		
 		etColumnWidth.addTextChangedListener( this );
 		etMediaThumbHeight.addTextChangedListener( this );
-		
 	}
 	
 	boolean load_busy;
@@ -319,9 +325,10 @@ public class ActAppSetting extends AppCompatActivity
 			.putInt( Pref.KEY_FOOTER_TAB_BG_COLOR, footer_tab_bg_color )
 			.putInt( Pref.KEY_FOOTER_TAB_DIVIDER_COLOR, footer_tab_divider_color )
 			
+			.putString( Pref.KEY_TIMELINE_FONT, timeline_font )
 			.putString( Pref.KEY_COLUMN_WIDTH, etColumnWidth.getText().toString().trim() )
 			.putString( Pref.KEY_MEDIA_THUMB_HEIGHT, etMediaThumbHeight.getText().toString().trim() )
-			.putString( Pref.KEY_TIMELINE_FONT, timeline_font )
+		
 			
 			.apply();
 		
@@ -410,6 +417,22 @@ public class ActAppSetting extends AppCompatActivity
 		
 		case R.id.btnSettingImport:
 			importAppData();
+			break;
+		
+		case R.id.btnCustomStreamListenerEdit:
+			ActCustomStreamListener.open( this );
+			break;
+
+		case R.id.btnCustomStreamListenerReset:
+			pref
+				.edit()
+				.remove(Pref.KEY_STREAM_LISTENER_CONFIG_URL)
+				.remove( Pref.KEY_STREAM_LISTENER_SECRET)
+				.remove( Pref.KEY_STREAM_LISTENER_CONFIG_DATA)
+				.apply();
+			SavedAccount.clearRegistrationCache();
+			AlarmService.startCheck( this,false );
+			Utils.showToast( this,false,getString(R.string.custom_stream_listener_was_reset) );
 			break;
 		}
 	}
@@ -704,5 +727,4 @@ public class ActAppSetting extends AppCompatActivity
 		finish();
 		
 	}
-	
 }

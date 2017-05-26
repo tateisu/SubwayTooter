@@ -331,6 +331,13 @@
 	<string name="draft_deleted">Brouillon effacé !</string>
 	<string name="draft_picker_desc">[Appuie long, pour effacer]</string>
 	<string name="dont_crop_media_thumbnail">Ne pas recadrer les aperçus de pièces jointes\n(redémarrage nécessaire)</string>
+    <string name="configuration_url">Configuration URL</string>
+	<string name="custom_stream_listener">Custom notification listener</string>
+	<string name="secret">Secret</string>
+	<string name="test">Test</string>
+	<string name="custom_stream_listener_desc">This setting is for advanced users. If you are not sure, please don\'t edit.</string>
+	<string name="custom_stream_listener_was_reset">Custom notification listener was reset.</string>
+	<string name="input_url_and_secret_then_test">Input URL and Secret, then tap Test button.</string>
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/llContent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    android:orientation="vertical"
+    >
+
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
+        android:labelFor="@+id/etStreamListenerConfigurationUrl"
+        android:text="@string/configuration_url"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <EditText
+            android:id="@+id/etStreamListenerConfigurationUrl"
+            style="@style/setting_horizontal_stretch"
+            android:inputType="textUri"
+            android:maxLines="1"
+
+            />
+    </LinearLayout>
+
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
+        android:labelFor="@+id/etStreamListenerSecret"
+        android:text="@string/secret"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <EditText
+            android:id="@+id/etStreamListenerSecret"
+            style="@style/setting_horizontal_stretch"
+            android:inputType="textPassword"
+            android:maxLines="1"
+            />
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="@string/custom_stream_listener_desc"
+        android:textSize="12sp"
+        />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fadeScrollbars="false"
+        android:fillViewport="true"
+        >
+
+        <TextView
+            android:id="@+id/tvLog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp"
+            />
+    </ScrollView>
+
+    <LinearLayout
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:measureWithLargestChild="true"
+        >
+
+        <Button
+            android:id="@+id/btnDiscard"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/discard"
+            android:textAllCaps="false"
+            />
+
+        <Button
+            android:id="@+id/btnTest"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/test"
+            android:textAllCaps="false"
+            />
+
+
+        <Button
+            android:id="@+id/btnSave"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/save"
+            android:textAllCaps="false"
+            />
+
+    </LinearLayout>
+</LinearLayout>

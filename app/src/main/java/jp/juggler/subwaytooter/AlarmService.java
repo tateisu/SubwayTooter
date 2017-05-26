@@ -17,10 +17,11 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.text.TextUtils;
 
+import org.hjson.JsonObject;
+import org.hjson.JsonValue;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -113,18 +114,34 @@ public class AlarmService extends IntentService {
 	}
 	
 	String install_id;
+	boolean bStreamListenerTest;
+	String mCustomStreamListenerSecret;
+	String mCustomStreamListenerSettingString;
+	JsonObject mCustomStreamListenerSetting;
+
+	void loadCustomStreamListenerSetting(  ){
+		mCustomStreamListenerSetting = null;
+		mCustomStreamListenerSecret = null;
+		mCustomStreamListenerSettingString = pref.getString(Pref.KEY_STREAM_LISTENER_CONFIG_DATA ,null);
+		if(! TextUtils.isEmpty( mCustomStreamListenerSettingString ) ){
+			try{
+				mCustomStreamListenerSetting = JsonValue.readHjson( mCustomStreamListenerSettingString ).asObject();
+				mCustomStreamListenerSecret = pref.getString(Pref.KEY_STREAM_LISTENER_SECRET ,null);
+			}catch(Throwable ex){
+				ex.printStackTrace();
+			}
+		}
+	}
 	
 	// IntentService は onHandleIntent をワーカースレッドから呼び出す
 	// 同期処理を行って良い
 	@Override protected void onHandleIntent( @Nullable Intent intent ){
-		
+		bStreamListenerTest =false;
 		// クラッシュレポートによると App1.onCreate より前にここを通る場合がある
 		// データベースへアクセスできるようにする
 		App1.prepareDB( this.getApplicationContext() );
 		
-		
 		install_id = getInstallId();
-		
 		
 		if( intent != null ){
 			String action = intent.getAction();
@@ -157,8 +174,7 @@ public class AlarmService extends IntentService {
 			
 			if( ACTION_DEVICE_TOKEN.equals( action ) ){
 				// デバイストークンが更新された
-				// TODO 過去に中継サーバに登録したものは登録解除して登録しなおす必要がある
-				
+				// アプリサーバへの登録をやり直す
 			}else if( ACTION_RESET_LAST_LOAD.equals( action ) ){
 				NotificationTracking.resetLastLoad();
 				
@@ -206,6 +222,8 @@ public class AlarmService extends IntentService {
 				}
 			}
 		}
+		
+		loadCustomStreamListenerSetting();
 		
 		final AtomicBoolean bAlarmRequired = new AtomicBoolean( false );
 		final HashSet< String > muted_app = MutedApp.getNameSet();
@@ -278,6 +296,10 @@ public class AlarmService extends IntentService {
 		}else{
 			log.d( "alarm is no longer required." );
 		}
+	}
+	
+	private void testLog( String s ){
+		// TODO アプリ設定画面に進捗表示を追加する
 	}
 	
 	String getInstallId(){
@@ -387,7 +409,13 @@ public class AlarmService extends IntentService {
 				account.saveNotificationTag();
 			}
 			
-			String reg_key = tag + access_token + device_token ;
+			String reg_key = Utils.digestSHA256(
+				tag
+				+ access_token
+				+ device_token
+				+ (mCustomStreamListenerSecret==null? "" :mCustomStreamListenerSecret)
+				+ (mCustomStreamListenerSettingString==null? "" :mCustomStreamListenerSettingString)
+			);
 			long now = System.currentTimeMillis();
 			if( reg_key.equals( account.register_key ) && now - account.register_time < 3600000 * 3 ){
 				// タグやトークンが同一なら、前回登録に成功してから一定時間は再登録しない
@@ -396,27 +424,41 @@ public class AlarmService extends IntentService {
 			}
 
 			// サーバ情報APIを使う
-			String post_data = "instance_url=" +
-				Uri.encode( "https://" + account.host ) +
-				"&app_id=" +
-				Uri.encode( getPackageName() ) +
-				"&tag=" +
-				tag +
-				"&access_token=" +
-				Utils.optStringX( account.token_info, "access_token" ) +
-				"&device_token=" +
-				device_token;
+			StringBuilder post_data = new StringBuilder(  );
+
+			post_data.append("instance_url=").append(Uri.encode( "https://" + account.host ));
+
+			post_data.append("&app_id=").append(Uri.encode( getPackageName() ));
+
+			post_data.append("&tag=").append(tag);
+
+			post_data.append("&access_token=").append(Utils.optStringX( account.token_info, "access_token" ));
+
+			post_data.append("&device_token=").append(device_token);
+
+			if( ! TextUtils.isEmpty( mCustomStreamListenerSettingString )
+			&& 	! TextUtils.isEmpty( mCustomStreamListenerSecret )
+				){
+				post_data.append("&user_config=").append(Uri.encode(mCustomStreamListenerSettingString));
+				post_data.append("&app_secret=").append(Uri.encode(mCustomStreamListenerSecret));
+			}
 			
 			Request request = new Request.Builder()
 				.url( APP_SERVER + "/register" )
-				.post( RequestBody.create( TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, post_data ) )
+				.post( RequestBody.create( TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, post_data.toString() ) )
 				.build();
 			
-			Call call = App1.ok_http_client.newCall( request );
+			Call call = App1.ok_http_client.newCall( request  );
 			
 			Response response = call.execute();
 			
-			log.e( "registerDeviceToken:%s", response );
+			String body=null;
+			try{
+				body =response.body().string();
+				
+			}catch(Throwable ignored){
+			}
+			log.e( "registerDeviceToken: %s (%s)",response,(body==null?"":body) );
 
 			int code = response.code();
 
@@ -428,7 +470,6 @@ public class AlarmService extends IntentService {
 			}
 			
 		}catch( Throwable ex ){
-			
 			ex.printStackTrace();
 		}
 		return false;
@@ -688,6 +729,8 @@ public class AlarmService extends IntentService {
 		
 		context.startService( intent );
 	}
+
+	
 	
 	private static class InjectData {
 		long account_db_id;

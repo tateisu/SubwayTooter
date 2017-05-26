@@ -315,6 +315,9 @@ public class AppDataExporter {
 			// string
 			case Pref.KEY_COLUMN_WIDTH:
 			case Pref.KEY_MEDIA_THUMB_HEIGHT:
+			case Pref.KEY_STREAM_LISTENER_CONFIG_URL:
+			case Pref.KEY_STREAM_LISTENER_SECRET:
+			case Pref.KEY_STREAM_LISTENER_CONFIG_DATA:
 				String sv = reader.nextString();
 				e.putString( k, sv );
 				break;

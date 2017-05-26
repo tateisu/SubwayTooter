@@ -49,8 +49,10 @@ public class Pref {
 	static final String KEY_DONT_CROP_MEDIA_THUMBNAIL = "DontCropMediaThumb";
 	static final String KEY_DEVICE_TOKEN = "device_token";
 	static final String KEY_INSTALL_ID = "install_id";
-	
-	
+
+	static final String KEY_STREAM_LISTENER_SECRET = "stream_listener_secret";
+	static final String KEY_STREAM_LISTENER_CONFIG_URL = "stream_listener_config_url";
+	static final String KEY_STREAM_LISTENER_CONFIG_DATA = "stream_listener_config_data";
 	
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

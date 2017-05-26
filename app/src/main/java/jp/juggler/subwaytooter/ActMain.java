@@ -1804,8 +1804,10 @@ public class ActMain extends AppCompatActivity
 			} );
 	}
 	
-	void openProfile( int pos, @NonNull SavedAccount access_info, @NonNull TootAccount who ){
-		if( access_info.isPseudo() ){
+	void openProfile( int pos, @NonNull SavedAccount access_info, @Nullable TootAccount who ){
+		if( who == null ){
+			Utils.showToast( this,false,"user is null" );
+		}else if( access_info.isPseudo() ){
 			openProfileFromAnotherAccount( pos, access_info, who );
 		}else{
 			addColumn( pos, access_info, Column.TYPE_PROFILE, who.id );

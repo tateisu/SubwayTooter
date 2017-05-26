@@ -697,7 +697,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			int end = etContent.getSelectionEnd();
 			
 			String src = etContent.getText().toString();
-			int last_sharp = src.lastIndexOf( '#' );
+			int last_sharp = src.lastIndexOf( '#',end-1 );
 			
 			if( last_sharp == - 1 || end - last_sharp < 3 ){
 				closeAcctPopup();

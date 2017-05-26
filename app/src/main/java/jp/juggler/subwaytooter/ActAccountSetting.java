@@ -60,7 +60,7 @@ public class ActAccountSetting extends AppCompatActivity
 	}
 	
 	@Override protected void onStop(){
-		AlarmService.startCheck( this ,false);
+		AlarmService.startCheck( this );
 		super.onStop();
 	}
 	

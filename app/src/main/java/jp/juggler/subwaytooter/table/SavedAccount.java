@@ -371,6 +371,27 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return result;
 	}
 	
+	public static @NonNull ArrayList< SavedAccount > loadByTag( @NonNull LogCategory log,String tag ){
+		ArrayList< SavedAccount > result = new ArrayList<>();
+		try{
+			Cursor cursor = App1.getDB().query( table, null, COL_NOTIFICATION_TAG+"=?", new String[]{tag}, null, null, null );
+			try{
+				while( cursor.moveToNext() ){
+					result.add( parse( cursor ) );
+				}
+			}finally{
+				cursor.close();
+			}
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			log.e( ex, "loadByTag failed." );
+			throw new RuntimeException( "SavedAccount.loadByTag failed.", ex );
+		}
+		return result;
+	}
+	
+	
+	
 	public String getFullAcct( @NonNull TootAccount who ){
 		return getFullAcct( who.acct );
 	}
@@ -449,5 +470,4 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return 0L;
 	}
 	
-
 }

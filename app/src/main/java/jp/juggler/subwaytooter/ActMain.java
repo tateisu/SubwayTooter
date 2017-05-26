@@ -128,7 +128,7 @@ public class ActMain extends AppCompatActivity
 			}
 		}
 		
-		AlarmService.startCheck( this, false );
+		AlarmService.startCheck( this );
 	}
 	
 	@Override protected void onDestroy(){
@@ -1223,7 +1223,7 @@ public class ActMain extends AppCompatActivity
 						}
 						
 						// 通知の更新が必要かもしれない
-						AlarmService.startCheck( ActMain.this, false );
+						AlarmService.startCheck( ActMain.this );
 					}
 				}else{
 					// アカウント追加時
@@ -1238,7 +1238,7 @@ public class ActMain extends AppCompatActivity
 						Utils.showToast( ActMain.this, false, R.string.account_confirmed );
 						
 						// 通知の更新が必要かもしれない
-						AlarmService.startCheck( ActMain.this, false );
+						AlarmService.startCheck( ActMain.this );
 						
 						// 適当にカラムを追加する
 						long count = SavedAccount.getCount();

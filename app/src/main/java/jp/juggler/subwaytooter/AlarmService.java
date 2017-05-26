@@ -70,6 +70,7 @@ public class AlarmService extends IntentService {
 	public static final String ACTION_APP_DATA_IMPORT_AFTER = "app_data_import_after";
 	public static final String ACTION_DEVICE_TOKEN = "device_token";
 	private static final String ACTION_RESET_LAST_LOAD = "reset_last_load";
+	private static final String EXTRA_TAG = "tag";
 	
 	public static final String APP_SERVER = "https://mastodon-msg.juggler.jp";
 	
@@ -176,8 +177,18 @@ public class AlarmService extends IntentService {
 				// デバイストークンが更新された
 				// アプリサーバへの登録をやり直す
 			}else if( ACTION_RESET_LAST_LOAD.equals( action ) ){
-				NotificationTracking.resetLastLoad();
-				
+				boolean bDone = false;
+				String tag = intent.getStringExtra(EXTRA_TAG);
+				if( tag != null ){
+					for(SavedAccount sa : SavedAccount.loadByTag(log,tag )){
+						bDone = true;
+						NotificationTracking.resetLastLoad( sa.db_id);
+					}
+				}
+				if(!bDone){
+					// タグにマッチする情報がなかった場合、全部読み直す
+					NotificationTracking.resetLastLoad( );
+				}
 			}else if( ACTION_DATA_DELETED.equals( action ) ){
 				deleteCacheData( intent.getLongExtra( EXTRA_DB_ID, - 1L ) );
 				
@@ -723,13 +734,17 @@ public class AlarmService extends IntentService {
 	////////////////////////////////////////////////////////////////////////////
 	// Activity との連携
 	
-	public static void startCheck( @NonNull Context context, boolean bResetLastLoad ){
+	public static void startCheck( @NonNull Context context ){
 		Intent intent = new Intent( context, AlarmService.class );
-		if( bResetLastLoad ) intent.setAction( ACTION_RESET_LAST_LOAD );
-		
 		context.startService( intent );
 	}
-
+	
+	public static void onFirebaseMessage( @NonNull Context context, @Nullable String tag ){
+		Intent intent = new Intent( context, AlarmService.class );
+		intent.setAction( ACTION_RESET_LAST_LOAD );
+		if(tag !=null) intent.putExtra( EXTRA_TAG,tag );
+		context.startService( intent );
+	}
 	
 	
 	private static class InjectData {

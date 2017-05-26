@@ -13,12 +13,17 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 	@Override public void onMessageReceived( RemoteMessage remoteMessage ){
 		super.onMessageReceived( remoteMessage );
 		
+		String tag = null;
 		Map< String, String > data = remoteMessage.getData();
 		if( data != null ){
 			for( Map.Entry< String, String > entry : data.entrySet() ){
 				log.d( "onMessageReceived: %s=%s", entry.getKey(), entry.getValue() );
+				
+				if( "notification_tag".equals( entry.getKey() ) ){
+					tag = entry.getValue();
+				}
 			}
 		}
-		AlarmService.startCheck( getApplicationContext() ,true);
+		AlarmService.onFirebaseMessage( getApplicationContext() ,tag);
 	}
 }

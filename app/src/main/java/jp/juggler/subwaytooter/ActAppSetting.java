@@ -448,7 +448,7 @@ public class ActAppSetting extends AppCompatActivity
 				.remove( Pref.KEY_STREAM_LISTENER_CONFIG_DATA)
 				.apply();
 			SavedAccount.clearRegistrationCache();
-			AlarmService.startCheck( this,false );
+			AlarmService.startCheck( this );
 			Utils.showToast( this,false,getString(R.string.custom_stream_listener_was_reset) );
 			break;
 		}

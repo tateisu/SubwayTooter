@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
+import android.support.annotation.Nullable;
 
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -192,15 +193,23 @@ public class NotificationTracking {
 		}
 	}
 	
+	public static void resetLastLoad(long db_id){
+		try{
+			ContentValues cv = new ContentValues();
+			cv.put( COL_LAST_LOAD, 0 );
+			App1.getDB().update( table, cv, COL_ACCOUNT_DB_ID+"=?",new String[]{ Long.toString( db_id )});
+		}catch( Throwable ex ){
+			log.e( ex, "resetLastLoad(db_id) failed." );
+		}
+	}
+
 	public static void resetLastLoad(){
 		try{
 			ContentValues cv = new ContentValues();
 			cv.put( COL_LAST_LOAD, 0 );
 			App1.getDB().update( table, cv,null,null);
-			
 		}catch( Throwable ex ){
-			log.e( ex, "resetLastLoad failed." );
+			log.e( ex, "resetLastLoad() failed." );
 		}
-		
 	}
 }

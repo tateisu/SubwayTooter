@@ -38,7 +38,6 @@ import org.apache.commons.io.output.FileWriterWithEncoding;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.lang.ref.WeakReference;
 
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -101,16 +100,17 @@ public class ActAppSetting extends AppCompatActivity
 	int footer_button_fg_color;
 	int footer_tab_bg_color;
 	int footer_tab_divider_color;
+	int footer_tab_indicator_color;
 	
 	ImageView ivFooterToot;
 	ImageView ivFooterMenu;
 	View llFooterBG;
 	View vFooterDivider1;
 	View vFooterDivider2;
+	View vIndicator;
 	
 	EditText etColumnWidth;
 	EditText etMediaThumbHeight;
-
 	
 	TextView tvTimelineFontUrl;
 	String timeline_font;
@@ -228,6 +228,9 @@ public class ActAppSetting extends AppCompatActivity
 		findViewById( R.id.btnTabBackgroundColorReset ).setOnClickListener( this );
 		findViewById( R.id.btnTabDividerColorEdit ).setOnClickListener( this );
 		findViewById( R.id.btnTabDividerColorReset ).setOnClickListener( this );
+		findViewById( R.id.btnTabIndicatorColorEdit ).setOnClickListener( this );
+		findViewById( R.id.btnTabIndicatorColorReset ).setOnClickListener( this );
+
 		findViewById( R.id.btnTimelineFontEdit ).setOnClickListener( this );
 		findViewById( R.id.btnTimelineFontReset ).setOnClickListener( this );
 		findViewById( R.id.btnSettingExport ).setOnClickListener( this );
@@ -241,6 +244,7 @@ public class ActAppSetting extends AppCompatActivity
 		llFooterBG = findViewById( R.id.llFooterBG );
 		vFooterDivider1 = findViewById( R.id.vFooterDivider1 );
 		vFooterDivider2 = findViewById( R.id.vFooterDivider2 );
+		vIndicator = findViewById( R.id.vIndicator );
 		
 		etColumnWidth = (EditText) findViewById( R.id.etColumnWidth );
 		etMediaThumbHeight = (EditText) findViewById( R.id.etMediaThumbHeight );
@@ -282,6 +286,7 @@ public class ActAppSetting extends AppCompatActivity
 		footer_button_fg_color = pref.getInt( Pref.KEY_FOOTER_BUTTON_FG_COLOR, 0 );
 		footer_tab_bg_color = pref.getInt( Pref.KEY_FOOTER_TAB_BG_COLOR, 0 );
 		footer_tab_divider_color = pref.getInt( Pref.KEY_FOOTER_TAB_DIVIDER_COLOR, 0 );
+		footer_tab_indicator_color = pref.getInt( Pref.KEY_FOOTER_TAB_INDICATOR_COLOR, 0 );
 		
 		etColumnWidth.setText( pref.getString( Pref.KEY_COLUMN_WIDTH, "" ) );
 		etMediaThumbHeight.setText( pref.getString( Pref.KEY_MEDIA_THUMB_HEIGHT, "" ) );
@@ -324,7 +329,8 @@ public class ActAppSetting extends AppCompatActivity
 			.putInt( Pref.KEY_FOOTER_BUTTON_FG_COLOR, footer_button_fg_color )
 			.putInt( Pref.KEY_FOOTER_TAB_BG_COLOR, footer_tab_bg_color )
 			.putInt( Pref.KEY_FOOTER_TAB_DIVIDER_COLOR, footer_tab_divider_color )
-			
+			.putInt( Pref.KEY_FOOTER_TAB_INDICATOR_COLOR, footer_tab_indicator_color )
+		
 			.putString( Pref.KEY_TIMELINE_FONT, timeline_font )
 			.putString( Pref.KEY_COLUMN_WIDTH, etColumnWidth.getText().toString().trim() )
 			.putString( Pref.KEY_MEDIA_THUMB_HEIGHT, etMediaThumbHeight.getText().toString().trim() )
@@ -350,12 +356,13 @@ public class ActAppSetting extends AppCompatActivity
 	static final int COLOR_DIALOG_ID_FOOTER_BUTTON_FG = 2;
 	static final int COLOR_DIALOG_ID_FOOTER_TAB_BG = 3;
 	static final int COLOR_DIALOG_ID_FOOTER_TAB_DIVIDER = 4;
+	static final int COLOR_DIALOG_ID_FOOTER_TAB_INDICATOR = 5;
 	
 	@Override public void onClick( View v ){
 		switch( v.getId() ){
 		
 		case R.id.btnFooterBackgroundEdit:
-			openColorPicker( COLOR_DIALOG_ID_FOOTER_BUTTON_BG, footer_button_bg_color );
+			openColorPicker( COLOR_DIALOG_ID_FOOTER_BUTTON_BG, footer_button_bg_color ,false);
 			break;
 		
 		case R.id.btnFooterBackgroundReset:
@@ -365,7 +372,7 @@ public class ActAppSetting extends AppCompatActivity
 			break;
 		
 		case R.id.btnFooterForegroundColorEdit:
-			openColorPicker( COLOR_DIALOG_ID_FOOTER_BUTTON_FG, footer_button_fg_color );
+			openColorPicker( COLOR_DIALOG_ID_FOOTER_BUTTON_FG, footer_button_fg_color ,false);
 			break;
 		
 		case R.id.btnFooterForegroundColorReset:
@@ -375,7 +382,7 @@ public class ActAppSetting extends AppCompatActivity
 			break;
 		
 		case R.id.btnTabBackgroundColorEdit:
-			openColorPicker( COLOR_DIALOG_ID_FOOTER_TAB_BG, footer_tab_bg_color );
+			openColorPicker( COLOR_DIALOG_ID_FOOTER_TAB_BG, footer_tab_bg_color ,false);
 			break;
 		
 		case R.id.btnTabBackgroundColorReset:
@@ -385,11 +392,21 @@ public class ActAppSetting extends AppCompatActivity
 			break;
 		
 		case R.id.btnTabDividerColorEdit:
-			openColorPicker( COLOR_DIALOG_ID_FOOTER_TAB_DIVIDER, footer_tab_divider_color );
+			openColorPicker( COLOR_DIALOG_ID_FOOTER_TAB_DIVIDER, footer_tab_divider_color ,false);
 			break;
 		
 		case R.id.btnTabDividerColorReset:
 			footer_tab_divider_color = 0;
+			saveUIToData();
+			showFooterColor();
+			break;
+		
+		case R.id.btnTabIndicatorColorEdit:
+			openColorPicker( COLOR_DIALOG_ID_FOOTER_TAB_INDICATOR, footer_tab_indicator_color ,true);
+			break;
+		
+		case R.id.btnTabIndicatorColorReset:
+			footer_tab_indicator_color = 0;
 			saveUIToData();
 			showFooterColor();
 			break;
@@ -462,11 +479,11 @@ public class ActAppSetting extends AppCompatActivity
 		super.onActivityResult( requestCode, resultCode, data );
 	}
 	
-	void openColorPicker( int id, int color ){
+	void openColorPicker( int id, int color ,boolean bShowAlphaSlider ){
 		ColorPickerDialog.Builder builder = ColorPickerDialog.newBuilder()
 			.setDialogType( ColorPickerDialog.TYPE_CUSTOM )
 			.setAllowPresets( true )
-			.setShowAlphaSlider( false )
+			.setShowAlphaSlider( bShowAlphaSlider )
 			.setDialogId( id );
 		if( color != 0 ) builder.setColor( color );
 		builder.show( this );
@@ -498,7 +515,12 @@ public class ActAppSetting extends AppCompatActivity
 			saveUIToData();
 			showFooterColor();
 			break;
-			
+		case COLOR_DIALOG_ID_FOOTER_TAB_INDICATOR:
+			if( color == 0 ) color = 0x01000000;
+			footer_tab_indicator_color = color;
+			saveUIToData();
+			showFooterColor();
+			break;
 		}
 	}
 	
@@ -542,6 +564,13 @@ public class ActAppSetting extends AppCompatActivity
 		}else{
 			vFooterDivider1.setBackgroundColor( c );
 			vFooterDivider2.setBackgroundColor( c );
+		}
+		
+		c = footer_tab_indicator_color;
+		if( c == 0 ){
+			vIndicator.setBackgroundColor( Styler.getAttributeColor( this, R.attr.colorAccent ) );
+		}else{
+			vIndicator.setBackgroundColor( c );
 		}
 	}
 	

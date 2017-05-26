@@ -87,7 +87,7 @@
                 android:id="@+id/svColumnStrip"
                 >
 
-                <LinearLayout
+                <jp.juggler.subwaytooter.view.ColumnStripLinearLayout
                     android:id="@+id/llColumnStrip"
                     android:layout_width="wrap_content"
                     android:layout_height="match_parent"

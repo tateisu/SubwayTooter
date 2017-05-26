@@ -249,6 +249,16 @@
             />
 
         <ImageButton
+            android:id="@+id/btnPlugin"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="4dp"
+            android:background="@drawable/btn_bg_transparent"
+            android:contentDescription="@string/plugin"
+            android:src="?attr/ic_plugin"
+            />
+
+        <ImageButton
             android:id="@+id/btnMore"
             android:layout_width="48dp"
             android:layout_height="48dp"

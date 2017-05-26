@@ -38,7 +38,6 @@ import android.view.WindowManager;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
@@ -78,6 +77,7 @@ import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.MyClickableSpan;
 import jp.juggler.subwaytooter.util.Utils;
+import jp.juggler.subwaytooter.view.ColumnStripLinearLayout;
 import jp.juggler.subwaytooter.view.GravitySnapHelper;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -228,6 +228,8 @@ public class ActMain extends AppCompatActivity
 		for( Column column : app_state.column_list ){
 			column.onResume( this );
 		}
+		
+		updateColumnStripSelection(-1,-1f);
 	}
 	
 	private void handleSentIntent( final Intent sent_intent ){
@@ -278,7 +280,7 @@ public class ActMain extends AppCompatActivity
 	
 	@Override
 	public void onPageScrolled( int position, float positionOffset, int positionOffsetPixels ){
-		
+		updateColumnStripSelection(position,positionOffset);
 	}
 	
 	@Override public void onPageSelected( final int position ){
@@ -293,7 +295,9 @@ public class ActMain extends AppCompatActivity
 				}
 			}
 		} );
+		
 	}
+	
 	
 	@Override public void onPageScrollStateChanged( int state ){
 		
@@ -602,7 +606,7 @@ public class ActMain extends AppCompatActivity
 	ColumnPagerAdapter pager_adapter;
 	View llEmpty;
 	DrawerLayout drawer;
-	LinearLayout llColumnStrip;
+	ColumnStripLinearLayout llColumnStrip;
 	HorizontalScrollView svColumnStrip;
 	ImageButton btnMenu;
 	ImageButton btnToot;
@@ -655,7 +659,7 @@ public class ActMain extends AppCompatActivity
 		btnToot = (ImageButton) findViewById( R.id.btnToot );
 		vFooterDivider1 = findViewById( R.id.vFooterDivider1 );
 		vFooterDivider2 = findViewById( R.id.vFooterDivider2 );
-		llColumnStrip = (LinearLayout) findViewById( R.id.llColumnStrip );
+		llColumnStrip = (ColumnStripLinearLayout) findViewById( R.id.llColumnStrip );
 		svColumnStrip = (HorizontalScrollView) findViewById( R.id.svColumnStrip );
 		
 		btnToot.setOnClickListener( this );
@@ -733,6 +737,7 @@ public class ActMain extends AppCompatActivity
 				
 				@Override public void onScrolled( RecyclerView recyclerView, int dx, int dy ){
 					super.onScrolled( recyclerView, dx, dy );
+					updateColumnStripSelection(-1,-1f);
 				}
 			} );
 			///////tablet_pager.setHasFixedSize( true );
@@ -796,8 +801,43 @@ public class ActMain extends AppCompatActivity
 			
 		}
 		svColumnStrip.requestLayout();
+		updateColumnStripSelection(-1,-1f);
+		
 	}
 	
+	private void updateColumnStripSelection(final int position,final float positionOffset){
+		handler.post( new Runnable() {
+			@Override public void run(){
+				if( isFinishing() ) return;
+				
+				if( app_state.column_list.isEmpty() ){
+					llColumnStrip.setColumnRange(-1,-1,0f);
+				}else if( pager_adapter != null ){
+					if( position >= 0 ){
+						llColumnStrip.setColumnRange( position, position, positionOffset );
+					}else{
+						int c = pager.getCurrentItem();
+						llColumnStrip.setColumnRange( c, c, 0f );
+					}
+				}else{
+					int first = tablet_layout_manager.findFirstVisibleItemPosition();
+					int last = tablet_layout_manager.findLastVisibleItemPosition();
+					
+					if( last-first > nScreenColumn-1 ){
+						last = first + nScreenColumn - 1;
+					}
+					float slide_ratio = 0f;
+					if( first != RecyclerView.NO_POSITION && nColumnWidth > 0 ){
+						View child = tablet_layout_manager.findViewByPosition( first );
+						slide_ratio = Math.abs( child.getLeft() / (float)nColumnWidth);
+						log.d("slide_ratio %s",slide_ratio);
+					}
+					
+					llColumnStrip.setColumnRange(first,last,slide_ratio);
+				}
+			}
+		} );
+	}
 	private void scrollColumnStrip( final int select ){
 		int child_count = llColumnStrip.getChildCount();
 		if( select < 0 || select >= child_count ){
@@ -2966,7 +3006,7 @@ public class ActMain extends AppCompatActivity
 		int footer_button_fg_color = pref.getInt( Pref.KEY_FOOTER_BUTTON_FG_COLOR, 0 );
 		int footer_tab_bg_color = pref.getInt( Pref.KEY_FOOTER_TAB_BG_COLOR, 0 );
 		int footer_tab_divider_color = pref.getInt( Pref.KEY_FOOTER_TAB_DIVIDER_COLOR, 0 );
-		
+		int footer_tab_indicator_color = pref.getInt( Pref.KEY_FOOTER_TAB_INDICATOR_COLOR, 0 );
 		int c = footer_button_bg_color;
 		if( c == 0 ){
 			btnMenu.setBackgroundResource( R.drawable.btn_bg_ddd );
@@ -3003,6 +3043,9 @@ public class ActMain extends AppCompatActivity
 			vFooterDivider1.setBackgroundColor( c );
 			vFooterDivider2.setBackgroundColor( c );
 		}
+		
+		c = footer_tab_indicator_color;
+		llColumnStrip.setColor(c);
 	}
 	
 	ArrayList< SavedAccount > makeAccountListNonPseudo( LogCategory log ){
@@ -3196,6 +3239,7 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	int nScreenColumn;
+	int nColumnWidth;
 	
 	private void resizeColumnWidth(){
 		
@@ -3248,6 +3292,7 @@ public class ActMain extends AppCompatActivity
 				column_w = column_w_max;
 			}
 			
+			nColumnWidth = column_w;
 			tablet_pager_adapter.setColumnWidth( column_w );
 			tablet_snap_helper.setColumnWidth( column_w );
 		}
@@ -3414,4 +3459,7 @@ public class ActMain extends AppCompatActivity
 		progress.show();
 		task.executeOnExecutor( App1.task_executor );
 	}
+	
+
+
 }

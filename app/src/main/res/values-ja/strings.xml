@@ -204,7 +204,7 @@
     <!---->
     <string name="conversation_around">会話の流れ(id:%1$d)</string>
     <!---->
-    <string name="instance_not_need_slash">インスタンスには\'/\'を含めずに、ホスト名だけを指定してください</string>
+    <string name="instance_not_need_slash">インスタンスには\'/\',\'\@\'を含めずに、ホスト名だけを指定してください</string>
     <!---->
     <string name="mail_address_not_contains_at_mark">メールアドレスが不十分です。\'@\'や\'.\'がありません</string>
     <!---->
@@ -625,5 +625,9 @@
     <string name="test">テスト</string>
     <string name="custom_stream_listener_was_reset">カスタム通知リスナを使わないようにしました</string>
     <string name="input_url_and_secret_then_test">URLとシークレットを入力してテストボタンを押してください</string>
+    <string name="tab_indicator_color">タブのインジケータの色</string>
+    <string name="plugin">プラグイン</string>
+    <string name="select_plugin">プラグインの選択</string>
+    <string name="plugin_not_installed">プラグインがインストールされてません</string>
 
 </resources>

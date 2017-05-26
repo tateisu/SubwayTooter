@@ -67,7 +67,7 @@ public class LoginForm {
 				if( TextUtils.isEmpty( instance ) ){
 					Utils.showToast( activity, true, R.string.instance_not_specified );
 					return;
-				}else if( instance.contains( "/" )){
+				}else if( instance.contains( "/" ) || instance.contains( "@" ) ){
 					Utils.showToast( activity, true, R.string.instance_not_need_slash );
 					return;
 				}

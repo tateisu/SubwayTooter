@@ -25,6 +25,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
+import android.text.Spannable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
@@ -32,6 +33,7 @@ import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -64,8 +66,10 @@ import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.PostDraft;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.dialog.ActionsDialog;
+import jp.juggler.subwaytooter.table.TagSet;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.MyClickableSpan;
 import jp.juggler.subwaytooter.view.MyEditText;
 import jp.juggler.subwaytooter.view.MyNetworkImageView;
 import jp.juggler.subwaytooter.util.PostAttachment;
@@ -75,7 +79,6 @@ import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.Response;
 import okio.BufferedSink;
 
 public class ActPost extends AppCompatActivity implements View.OnClickListener, PostAttachment.Callback {
@@ -162,11 +165,15 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		case R.id.btnMore:
 			performMore();
 			break;
+		
+		case R.id.btnPlugin:
+			openMushroom();
 		}
 	}
 	
 	private static final int REQUEST_CODE_ATTACHMENT = 1;
 	private static final int REQUEST_CODE_CAMERA = 2;
+	private static final int REQUEST_CODE_MUSHROOM = 3;
 	
 	@Override
 	protected void onActivityResult( int requestCode, int resultCode, Intent data ){
@@ -210,6 +217,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					addAttachment( uri, type );
 				}
 			}
+		}else if( requestCode == REQUEST_CODE_MUSHROOM && resultCode == RESULT_OK ){
+			String text = data.getStringExtra( "replace_key" );
+			applyMushroomResult( text );
 		}
 		super.onActivityResult( requestCode, resultCode, data );
 	}
@@ -240,6 +250,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}
 		
 		if( savedInstanceState != null ){
+			
+			mushroom_input = savedInstanceState.getInt( STATE_MUSHROOM_INPUT, 0 );
+			mushroom_start = savedInstanceState.getInt( STATE_MUSHROOM_START, 0 );
+			mushroom_end = savedInstanceState.getInt( STATE_MUSHROOM_END, 0 );
+			
 			long account_db_id = savedInstanceState.getLong( KEY_ACCOUNT_DB_ID, SavedAccount.INVALID_ID );
 			if( account_db_id != SavedAccount.INVALID_ID ){
 				for( int i = 0, ie = account_list.size() ; i < ie ; ++ i ){
@@ -451,6 +466,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	protected void onSaveInstanceState( Bundle outState ){
 		super.onSaveInstanceState( outState );
 		
+		outState.putInt( STATE_MUSHROOM_INPUT, mushroom_input );
+		outState.putInt( STATE_MUSHROOM_START, mushroom_start );
+		outState.putInt( STATE_MUSHROOM_END, mushroom_end );
+		
 		if( account != null ){
 			outState.putLong( KEY_ACCOUNT_DB_ID, account.db_id );
 		}
@@ -553,6 +572,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		btnPost.setOnClickListener( this );
 		btnRemoveReply.setOnClickListener( this );
 		
+		findViewById( R.id.btnPlugin ).setOnClickListener( this );
+		
 		for( MyNetworkImageView iv : ivMedia ){
 			iv.setOnClickListener( this );
 			iv.setDefaultImageResId( Styler.getAttributeResourceId( this, R.attr.ic_loading ) );
@@ -609,6 +630,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}
 	};
 	
+	static final Pattern reCharsNotTag = Pattern.compile( "[\\s\\-+.,:;/]" );
+	
 	final Runnable proc_text_changed = new Runnable() {
 		@Override public void run(){
 			int start = etContent.getSelectionStart();
@@ -643,7 +666,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			}
 			// 登場した@の数
 			if( count_atMark == 0 ){
-				closeAcctPopup();
+				// 次はAcctじゃなくてHashtagの補完を試みる
+				checkTag();
 				return;
 			}else if( count_atMark == 1 ){
 				start = pos_atMark[ 0 ];
@@ -666,6 +690,37 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					popup = new PopupAutoCompleteAcct( ActPost.this, etContent, formRoot );
 				}
 				popup.setList( acct_list, start, end );
+			}
+		}
+		
+		private void checkTag(){
+			int end = etContent.getSelectionEnd();
+			
+			String src = etContent.getText().toString();
+			int last_sharp = src.lastIndexOf( '#' );
+			
+			if( last_sharp == - 1 || end - last_sharp < 3 ){
+				closeAcctPopup();
+				return;
+			}
+			
+			String part = src.substring( last_sharp + 1, end );
+			if( reCharsNotTag.matcher( part ).find() ){
+				closeAcctPopup();
+				return;
+			}
+			
+			int limit = 100;
+			String s = src.substring( last_sharp + 1, end );
+			ArrayList< String > tag_list = TagSet.searchPrefix( s, limit );
+			log.d( "search for %s, result=%d", s, tag_list.size() );
+			if( tag_list.isEmpty() ){
+				closeAcctPopup();
+			}else{
+				if( popup == null || ! popup.isShowing() ){
+					popup = new PopupAutoCompleteAcct( ActPost.this, etContent, formRoot );
+				}
+				popup.setList( tag_list, last_sharp, end );
 			}
 		}
 	};
@@ -1017,7 +1072,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 								}
 								
 								@Override
-								public void writeTo( BufferedSink sink ) throws IOException{
+								public void writeTo( @NonNull BufferedSink sink ) throws IOException{
 									InputStream is = opener.open();
 									if( is == null )
 										throw new IOException( "openInputStream() failed. uri=" + uri );
@@ -1044,7 +1099,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					
 					opener.deleteTempFile();
 					
-					if( result.object != null ){
+					if( result != null && result.object != null ){
 						pa.attachment = TootAttachment.parse( log, result.object );
 						if( pa.attachment == null ){
 							result.error = "TootAttachment.parse failed";
@@ -1411,8 +1466,33 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					.header( "Idempotency-Key", digest );
 				
 				TootApiResult result = client.request( "/api/v1/statuses", request_builder );
-				if( result.object != null ){
+				if( result != null && result.object != null ){
 					status = TootStatus.parse( log, account, result.object );
+					
+					Spannable s = status.decoded_content;
+					MyClickableSpan[] span_list = s.getSpans( 0, s.length(), MyClickableSpan.class );
+					if( span_list != null ){
+						ArrayList< String > tag_list = new ArrayList<>();
+						for( MyClickableSpan span : span_list ){
+							int start = s.getSpanStart( span );
+							int end = s.getSpanEnd( span );
+							String text = s.subSequence( start, end ).toString();
+							if( text.startsWith( "#" ) ){
+								tag_list.add( text.substring( 1 ) );
+							}
+						}
+						int count = tag_list.size();
+						if( count > 0 ){
+							TagSet.saveList(
+								System.currentTimeMillis()
+								, tag_list.toArray( new String[ count ] )
+								, 0
+								, count
+							);
+						}
+						
+					}
+					
 				}
 				return result;
 				
@@ -1427,7 +1507,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			protected void onPostExecute( TootApiResult result ){
 				try{
 					progress.dismiss();
-				}catch(Throwable ignored){
+				}catch( Throwable ignored ){
 					//							java.lang.IllegalArgumentException:
 					//							at android.view.WindowManagerGlobal.findViewLocked(WindowManagerGlobal.java:396)
 					//							at android.view.WindowManagerGlobal.removeView(WindowManagerGlobal.java:322)
@@ -1478,7 +1558,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			llReply.setVisibility( View.GONE );
 		}else{
 			llReply.setVisibility( View.VISIBLE );
-			tvReplyTo.setText( HTMLDecoder.decodeHTML( account ,in_reply_to_text ,true,null ));
+			tvReplyTo.setText( HTMLDecoder.decodeHTML( account, in_reply_to_text, true, null ) );
 			ivReply.setCornerRadius( pref, 16f );
 			ivReply.setImageUrl( in_reply_to_image );
 			
@@ -1545,9 +1625,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			@Override public void onDraftSelected( JSONObject draft ){
 				restoreDraft( draft );
 			}
-		});
+		} );
 		
-
 	}
 	
 	static boolean check_exist( String url ){
@@ -1573,14 +1652,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			@Override protected String doInBackground( Void... params ){
 				
 				String content = draft.optString( DRAFT_CONTENT );
-				String content_warning = draft.optString( DRAFT_CONTENT_WARNING );
-				boolean content_warning_checked = draft.optBoolean( DRAFT_CONTENT_WARNING_CHECK );
-				boolean nsfw_checked = draft.optBoolean( DRAFT_NSFW_CHECK );
 				long account_db_id = draft.optLong( DRAFT_ACCOUNT_DB_ID );
 				JSONArray tmp_attachment_list = draft.optJSONArray( DRAFT_ATTACHMENT_LIST );
-				long reply_id = draft.optLong( DRAFT_REPLY_ID, in_reply_to_id );
-				String reply_text = draft.optString( DRAFT_REPLY_TEXT, in_reply_to_text );
-				String reply_image = draft.optString( DRAFT_REPLY_IMAGE, in_reply_to_image );
 				
 				account = SavedAccount.loadAccount( log, account_db_id );
 				if( account == null ){
@@ -1735,4 +1808,75 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		task.executeOnExecutor( App1.task_executor );
 	}
 	
+	//////////////////////////////////////////////////////////////////////////
+	// Mushroom plugin
+	
+	private static final String STATE_MUSHROOM_INPUT = "mushroom_input";
+	private static final String STATE_MUSHROOM_START = "mushroom_start";
+	private static final String STATE_MUSHROOM_END = "mushroom_end";
+	int mushroom_input;
+	int mushroom_start;
+	int mushroom_end;
+	
+	@NonNull String prepareMushroomText( @NonNull EditText et ){
+		mushroom_start = et.getSelectionStart();
+		mushroom_end = et.getSelectionEnd();
+		if( mushroom_end > mushroom_start ){
+			return et.getText().toString().substring( mushroom_start, mushroom_end );
+		}else{
+			return "";
+		}
+	}
+	
+	void applyMushroomText( @NonNull EditText et, @NonNull String text ){
+		String src = et.getText().toString();
+		if( mushroom_start > src.length() ) mushroom_start = src.length();
+		if( mushroom_end > src.length() ) mushroom_end = src.length();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append( src.substring( 0, mushroom_start ) );
+		int new_sel_start = sb.length();
+		sb.append( text );
+		int new_sel_end = sb.length();
+		sb.append( src.substring( mushroom_end ) );
+		et.setText( sb );
+		et.setSelection( new_sel_end, new_sel_end );
+	}
+	
+	void openMushroom(){
+		try{
+			String text;
+			if( etContentWarning.hasFocus() ){
+				mushroom_input = 1;
+				text = prepareMushroomText( etContentWarning );
+			}else{
+				mushroom_input = 0;
+				text = prepareMushroomText( etContent );
+			}
+			Intent intent = new Intent( "com.adamrocker.android.simeji.ACTION_INTERCEPT" );
+			intent.addCategory( "com.adamrocker.android.simeji.REPLACE" );
+			intent.putExtra( "replace_key", text );
+			
+			// Create intent to show chooser
+			Intent chooser = Intent.createChooser( intent, getString( R.string.select_plugin ) );
+			
+			// Verify the intent will resolve to at least one activity
+			if( intent.resolveActivity( getPackageManager() ) == null ){
+				Utils.showToast( this, false, R.string.plugin_not_installed );
+				return;
+			}
+			startActivityForResult( chooser, REQUEST_CODE_MUSHROOM );
+			
+		}catch( Throwable ex ){
+			Utils.showToast( this, ex, R.string.plugin_not_installed );
+		}
+	}
+	
+	private void applyMushroomResult( String text ){
+		if( mushroom_input == 1 ){
+			applyMushroomText( etContentWarning, text );
+		}else{
+			applyMushroomText( etContent, text );
+		}
+	}
 }

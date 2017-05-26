@@ -104,8 +104,8 @@
     <string name="column">Column</string>
     <string name="conversation_view">Conversation view</string>
     <string name="conversation_around">Conversation around toot:%1$d</string>
-    <string name="instance_not_need_slash">Hostname of the instance, without \'/\'.</string>
-    <string name="mail_address_not_contains_at_mark">Use emails that contains \'@\' and \'.\'</string>
+    <string name="instance_not_need_slash">Hostname of the instance, without \'/\', \'\@\'.</string>
+    <string name="mail_address_not_contains_at_mark">Use emails that contains \'\@\' and \'.\'</string>
     <string name="instance_hint">ex) mastodon.social</string>
     <string name="mail_hint">ex) your@e-mail.address</string>
     <string name="unfollow">Unfollow</string>
@@ -334,4 +334,8 @@
     <string name="custom_stream_listener_desc">This setting is for advanced users. If you are not sure, please don\'t edit.</string>
     <string name="custom_stream_listener_was_reset">Custom notification listener was reset.</string>
     <string name="input_url_and_secret_then_test">Input URL and Secret, then tap Test button.</string>
+    <string name="tab_indicator_color">Tab\'s indicator color</string>
+    <string name="plugin">Plugin</string>
+    <string name="select_plugin">Select plugin</string>
+    <string name="plugin_not_installed">Plugin is not installed.</string>
 </resources>

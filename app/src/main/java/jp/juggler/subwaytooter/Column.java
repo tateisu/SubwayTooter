@@ -33,11 +33,13 @@ import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootReport;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.api.entity.TootTag;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.MutedWord;
 import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.table.TagSet;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.BucketList;
 import jp.juggler.subwaytooter.api.DuplicateMap;
@@ -1267,6 +1269,7 @@ class Column implements StreamReader.Callback {
 		
 		HashSet< Long > who_set = new HashSet<>();
 		HashSet< String > acct_set = new HashSet<>();
+		HashSet< String > tag_set = new HashSet<>();
 		{
 			TootAccount a;
 			TootStatus s;
@@ -1278,6 +1281,11 @@ class Column implements StreamReader.Callback {
 					acct_set.add( "@" + access_info.getFullAcct( a ) );
 				}else if( o instanceof TootStatus ){
 					s = (TootStatus) o;
+					if( s.tags != null ){
+						for(TootTag tag : s.tags){
+							tag_set.add( tag.name);
+						}
+					}
 					a = s.account;
 					if( a != null ){
 						who_set.add( a.id );
@@ -1285,6 +1293,13 @@ class Column implements StreamReader.Callback {
 					}
 					s = s.reblog;
 					if( s != null ){
+
+						if( s.tags != null ){
+							for(TootTag tag : s.tags){
+								tag_set.add( tag.name);
+							}
+						}
+
 						a = s.account;
 						if( a != null ){
 							who_set.add( a.id );
@@ -1302,6 +1317,13 @@ class Column implements StreamReader.Callback {
 					//
 					s = n.status;
 					if( s != null ){
+						
+						if( s.tags != null ){
+							for(TootTag tag : s.tags){
+								tag_set.add( tag.name);
+							}
+						}
+						
 						a = s.account;
 						if( a != null ){
 							who_set.add( a.id );
@@ -1309,6 +1331,13 @@ class Column implements StreamReader.Callback {
 						}
 						s = s.reblog;
 						if( s != null ){
+							
+							if( s.tags != null ){
+								for(TootTag tag : s.tags){
+									tag_set.add( tag.name);
+								}
+							}
+							
 							a = s.account;
 							if( a != null ){
 								who_set.add( a.id );
@@ -1372,7 +1401,26 @@ class Column implements StreamReader.Callback {
 			log.d( "updateRelation: update %d acct.", n );
 			
 		}
-		
+		size = tag_set.size();
+		if( size > 0 ){
+			String[] tag_list = new String[ size ];
+			{
+				int n = 0;
+				for( String l : tag_set ){
+					tag_list[ n++ ] = l;
+				}
+			}
+			long now = System.currentTimeMillis();
+			int n = 0;
+			while( n < size ){
+				int length = size - n;
+				if( length > ACCT_DB_STEP ) length = ACCT_DB_STEP;
+				TagSet.saveList( now, tag_list, n, length );
+				n += length;
+			}
+			log.d( "updateRelation: update %d tag.", n );
+			
+		}
 	}
 	
 	void startRefreshForPost( long status_id, int refresh_after_toot ){

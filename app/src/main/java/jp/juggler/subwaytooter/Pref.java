@@ -37,6 +37,7 @@ public class Pref {
 	static final String KEY_FOOTER_BUTTON_FG_COLOR = "footer_button_fg_color";
 	static final String KEY_FOOTER_TAB_BG_COLOR = "footer_tab_bg_color";
 	static final String KEY_FOOTER_TAB_DIVIDER_COLOR = "footer_tab_divider_color";
+	static final String KEY_FOOTER_TAB_INDICATOR_COLOR = "footer_tab_indicator_color";
 	
 	static final String KEY_DONT_USE_STREAMING = "dont_use_streaming";
 	static final String KEY_DONT_REFRESH_ON_RESUME = "dont_refresh_on_resume";

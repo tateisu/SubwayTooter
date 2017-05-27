@@ -331,17 +331,17 @@
 	<string name="draft_deleted">Brouillon effacé !</string>
 	<string name="draft_picker_desc">[Appuie long, pour effacer]</string>
 	<string name="dont_crop_media_thumbnail">Ne pas recadrer les aperçus de pièces jointes\n(redémarrage nécessaire)</string>
-	<string name="configuration_url">URL de configuration</string>
+	<string name="configuration_url">URL du serveur</string>
 	<string name="custom_stream_listener">Custom notification listener</string>
-	<string name="secret">Code</string>
+	<string name="secret">Secret</string>
 	<string name="test">Tester</string>
 	<string name="custom_stream_listener_desc">Réglages réservés aux utilisateurs avertis. Si vous ne savez pas de quoi il s\'agit, laissez tel quel.</string>
 	<string name="custom_stream_listener_was_reset">Custom notification listener réinitialisé.</string>
-	<string name="input_url_and_secret_then_test">Entrez l\'URL et le code, ensuite, appuyez sur le bouton [Tester].</string>
+	<string name="input_url_and_secret_then_test">Entrez les informations d\'URL et de Secret, appuyez ensuite sur le bouton [Tester].</string>
 	<string name="tab_indicator_color">Couleur de la ligne d\'indication des colonnes affichées</string>
 	<string name="plugin">Plugin</string>
 	<string name="select_plugin">Sélection du plugin</string>
-	<string name="plugin_not_installed">Aucun plugin emoji n\'est installé.\n(EmojionePicker est disponible gratuitement sur GooglePlay).</string>
+	<string name="plugin_not_installed">Aucun plugin Mushroom n\'est installé.</string>
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

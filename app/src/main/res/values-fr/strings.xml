@@ -165,7 +165,7 @@
 	<string name="image_pick">Choisir une image</string>
 	<string name="instance">Instance</string>
 	<string name="instance_hint">Ex) mastodon.social</string>
-	<string name="instance_not_need_slash">Veuillez entrer seulement le nom de l\'hôte de l\'instance, sans « / », « \@ ».</string>
+	<string name="instance_not_need_slash">Veuillez entrer seulement le nom de l\'hôte de l\'instance, sans « / » ni « \@ ».</string>
 	<string name="instance_not_specified">Instance non spécifiée</string>
 	<string name="it_is_you">C\'est vous.</string>
 	<string name="last_selection">Dernière sélection</string>

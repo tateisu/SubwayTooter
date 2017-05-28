@@ -343,7 +343,7 @@
 	<string name="select_plugin">Sélection du plugin</string>
 	<string name="plugin_not_installed">Aucun plugin Mushroom n\'est installé.</string>
 	<string name="language_code">fr</string>
-	<string name="recommended_plugin">Recommended plugin</string>
+	<string name="recommended_plugin">Plugins Mushroom recommandés</string>
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

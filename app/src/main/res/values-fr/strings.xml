@@ -331,8 +331,8 @@
 	<string name="draft_deleted">Brouillon effacé !</string>
 	<string name="draft_picker_desc">[Appuie long, pour effacer]</string>
 	<string name="dont_crop_media_thumbnail">Ne pas recadrer les aperçus de pièces jointes\n(redémarrage nécessaire)</string>
-	<string name="configuration_url">URL du serveur</string>
 	<string name="custom_stream_listener">Custom notification listener</string>
+	<string name="configuration_url">Configuration URL</string>
 	<string name="secret">Secret</string>
 	<string name="test">Tester</string>
 	<string name="custom_stream_listener_desc">Réglages réservés aux utilisateurs avertis. Si vous ne savez pas de quoi il s\'agit, laissez tel quel.</string>

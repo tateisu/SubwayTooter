@@ -229,7 +229,7 @@ public class ActMain extends AppCompatActivity
 			column.onResume( this );
 		}
 		
-		updateColumnStripSelection(-1,-1f);
+		updateColumnStripSelection( - 1, - 1f );
 	}
 	
 	private void handleSentIntent( final Intent sent_intent ){
@@ -280,7 +280,7 @@ public class ActMain extends AppCompatActivity
 	
 	@Override
 	public void onPageScrolled( int position, float positionOffset, int positionOffsetPixels ){
-		updateColumnStripSelection(position,positionOffset);
+		updateColumnStripSelection( position, positionOffset );
 	}
 	
 	@Override public void onPageSelected( final int position ){
@@ -297,7 +297,6 @@ public class ActMain extends AppCompatActivity
 		} );
 		
 	}
-	
 	
 	@Override public void onPageScrollStateChanged( int state ){
 		
@@ -737,7 +736,7 @@ public class ActMain extends AppCompatActivity
 				
 				@Override public void onScrolled( RecyclerView recyclerView, int dx, int dy ){
 					super.onScrolled( recyclerView, dx, dy );
-					updateColumnStripSelection(-1,-1f);
+					updateColumnStripSelection( - 1, - 1f );
 				}
 			} );
 			///////tablet_pager.setHasFixedSize( true );
@@ -801,17 +800,17 @@ public class ActMain extends AppCompatActivity
 			
 		}
 		svColumnStrip.requestLayout();
-		updateColumnStripSelection(-1,-1f);
+		updateColumnStripSelection( - 1, - 1f );
 		
 	}
 	
-	private void updateColumnStripSelection(final int position,final float positionOffset){
+	private void updateColumnStripSelection( final int position, final float positionOffset ){
 		handler.post( new Runnable() {
 			@Override public void run(){
 				if( isFinishing() ) return;
 				
 				if( app_state.column_list.isEmpty() ){
-					llColumnStrip.setColumnRange(-1,-1,0f);
+					llColumnStrip.setColumnRange( - 1, - 1, 0f );
 				}else if( pager_adapter != null ){
 					if( position >= 0 ){
 						llColumnStrip.setColumnRange( position, position, positionOffset );
@@ -823,21 +822,22 @@ public class ActMain extends AppCompatActivity
 					int first = tablet_layout_manager.findFirstVisibleItemPosition();
 					int last = tablet_layout_manager.findLastVisibleItemPosition();
 					
-					if( last-first > nScreenColumn-1 ){
+					if( last - first > nScreenColumn - 1 ){
 						last = first + nScreenColumn - 1;
 					}
 					float slide_ratio = 0f;
 					if( first != RecyclerView.NO_POSITION && nColumnWidth > 0 ){
 						View child = tablet_layout_manager.findViewByPosition( first );
-						slide_ratio = Math.abs( child.getLeft() / (float)nColumnWidth);
-						log.d("slide_ratio %s",slide_ratio);
+						slide_ratio = Math.abs( child.getLeft() / (float) nColumnWidth );
+						log.d( "slide_ratio %s", slide_ratio );
 					}
 					
-					llColumnStrip.setColumnRange(first,last,slide_ratio);
+					llColumnStrip.setColumnRange( first, last, slide_ratio );
 				}
 			}
 		} );
 	}
+	
 	private void scrollColumnStrip( final int select ){
 		int child_count = llColumnStrip.getChildCount();
 		if( select < 0 || select >= child_count ){
@@ -1189,7 +1189,17 @@ public class ActMain extends AppCompatActivity
 			
 			@Override
 			protected void onPostExecute( TootApiResult result ){
-				progress.dismiss();
+				try{
+					progress.dismiss();
+				}catch( Throwable ex ){
+					ex.printStackTrace();
+					// java.lang.IllegalArgumentException:
+					// at android.view.WindowManagerGlobal.findViewLocked(WindowManagerGlobal.java:451)
+					// at android.view.WindowManagerGlobal.removeView(WindowManagerGlobal.java:377)
+					// at android.view.WindowManagerImpl.removeViewImmediate(WindowManagerImpl.java:122)
+					// at android.app.Dialog.dismissDialog(Dialog.java:546)
+					// at android.app.Dialog.dismiss(Dialog.java:529)
+				}
 				
 				//noinspection StatementWithEmptyBody
 				if( result == null ){
@@ -1806,7 +1816,7 @@ public class ActMain extends AppCompatActivity
 	
 	void openProfile( int pos, @NonNull SavedAccount access_info, @Nullable TootAccount who ){
 		if( who == null ){
-			Utils.showToast( this,false,"user is null" );
+			Utils.showToast( this, false, "user is null" );
 		}else if( access_info.isPseudo() ){
 			openProfileFromAnotherAccount( pos, access_info, who );
 		}else{
@@ -3047,7 +3057,7 @@ public class ActMain extends AppCompatActivity
 		}
 		
 		c = footer_tab_indicator_color;
-		llColumnStrip.setColor(c);
+		llColumnStrip.setColor( c );
 	}
 	
 	ArrayList< SavedAccount > makeAccountListNonPseudo( LogCategory log ){
@@ -3462,6 +3472,4 @@ public class ActMain extends AppCompatActivity
 		task.executeOnExecutor( App1.task_executor );
 	}
 	
-
-
 }

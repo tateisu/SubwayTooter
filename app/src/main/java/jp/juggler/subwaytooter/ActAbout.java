@@ -24,6 +24,7 @@ public class ActAbout extends AppCompatActivity {
 	
 	static final String[] contributors = new String[]{
 		"@Balor@freeradical.zone", "update english language",
+		"@Luattic@oc.todon.fr", "update french language",
 	};
 	
 	@Override protected void onCreate( @Nullable Bundle savedInstanceState ){

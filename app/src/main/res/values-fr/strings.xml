@@ -52,8 +52,8 @@
 	<string name="boost_from_another_account">Partager à partir d\'un autre compte</string>
 	<string name="boost_succeeded">Partagé avec succès</string>
 	<string name="boosted_by">Partagé par …</string>
-	<string name="button_background_color">Couleur d\'arrière plan des boutons de la barre d\'onglets (bas)</string>
-	<string name="button_foreground_color">Couleur des boutons de la barre d\'onglets (bas)</string>
+	<string name="button_background_color">Couleur d\'arrière plan des onglets</string>
+	<string name="button_foreground_color">Couleur des onglets</string>
 	<string name="cancel">Annuler</string>
 	<string name="cancelled">Annulé</string>
 	<string name="cant_change_account_when_attachment_specified">Impossible de changer de compte quand la pièce jointe est spécifiée.</string>
@@ -149,7 +149,7 @@
 	<string name="follow_succeeded">Abonnement réussi</string>
 	<string name="followers">Abonnés</string>
 	<string name="following">Suivis</string>
-	<string name="footer_color">Couleur de la barre d\'onglets (bas)</string>
+	<string name="footer_color">Personalisation de la barre d\'onglets (bas)</string>
 	<string name="foreground_color">Couleur du texte</string>
 	<string name="generating_qr_code">Créer un code QR…</string>
 	<string name="hashtag">Hashtag</string>
@@ -165,7 +165,7 @@
 	<string name="image_pick">Choisir une image</string>
 	<string name="instance">Instance</string>
 	<string name="instance_hint">Ex) mastodon.social</string>
-	<string name="instance_not_need_slash">Veuillez entrer seulement le nom de l\'hôte de l\'instance, sans « / », « \@ ».</string>
+	<string name="instance_not_need_slash">Veuillez entrer seulement le nom de l\'hôte de l\'instance, sans « / » ni « \@ ».</string>
 	<string name="instance_not_specified">Instance non spécifiée</string>
 	<string name="it_is_you">C\'est vous.</string>
 	<string name="last_selection">Dernière sélection</string>
@@ -274,7 +274,7 @@
 	<string name="server_confirmed">Confirmation du serveur.</string>
 	<string name="setting">Paramètre</string>
 	<string name="show">Afficher</string>
-	<string name="show_follow_button_in_button_bar">Voir le bouton suivre dans la barre d\'action \n(redémarrage nécessaire)</string>
+	<string name="show_follow_button_in_button_bar">Voir le bouton suivre dans la barre d\'actions \n(redémarrage nécessaire)</string>
 	<string name="simple_list">Cacher la barre d\'actions, elle apparaîtra en appuyant sur le toot\n(redémarrage nécessaire)</string>
 	<string name="sound">Émettre un son</string>
 	<string name="spoil_visibility_for_account">Mauvaise visibilité pour ce compte.</string>
@@ -282,8 +282,8 @@
 	<string name="status_id_conversion_failed">Identification du statut de la conversation échouée.</string>
 	<string name="statuses">Statut</string>
 	<string name="statuses_of">Statut de %1$s</string>
-	<string name="tab_background_color">Couleur d\'arrière plan de la barre d\'onglets (bas)</string>
-	<string name="tab_divider_color">Couleur des lignes de séparation de la barre d\'onglets (bas)</string>
+	<string name="tab_background_color">Couleur d\'arrière plan des onglets</string>
+	<string name="tab_divider_color">Couleur des lignes de séparation des onglets</string>
 	<string name="tap_to_show">Appuyez pour afficher</string>
 	<string name="text_color">Couleur du texte</string>
 	<string name="thanks_for">Merci pour %1$s</string>
@@ -331,17 +331,17 @@
 	<string name="draft_deleted">Brouillon effacé !</string>
 	<string name="draft_picker_desc">[Appuie long, pour effacer]</string>
 	<string name="dont_crop_media_thumbnail">Ne pas recadrer les aperçus de pièces jointes\n(redémarrage nécessaire)</string>
-    <string name="configuration_url">Configuration URL</string>
+	<string name="configuration_url">URL du serveur</string>
 	<string name="custom_stream_listener">Custom notification listener</string>
 	<string name="secret">Secret</string>
-	<string name="test">Test</string>
-	<string name="custom_stream_listener_desc">This setting is for advanced users. If you are not sure, please don\'t edit.</string>
-	<string name="custom_stream_listener_was_reset">Custom notification listener was reset.</string>
-	<string name="input_url_and_secret_then_test">Input URL and Secret, then tap Test button.</string>
-    <string name="tab_indicator_color">Tab\'s indicator color</string>
-    <string name="plugin">Plugin</string>
-    <string name="select_plugin">Select plugin</string>
-	<string name="plugin_not_installed">Plugin is not installed.</string>
+	<string name="test">Tester</string>
+	<string name="custom_stream_listener_desc">Réglages réservés aux utilisateurs avertis. Si vous ne savez pas de quoi il s\'agit, laissez tel quel.</string>
+	<string name="custom_stream_listener_was_reset">Custom notification listener réinitialisé.</string>
+	<string name="input_url_and_secret_then_test">Entrez les informations d\'URL et de Secret, appuyez ensuite sur le bouton [Tester].</string>
+	<string name="tab_indicator_color">Couleur de la ligne d\'indication des colonnes affichées</string>
+	<string name="plugin">Plugin</string>
+	<string name="select_plugin">Sélection du plugin</string>
+	<string name="plugin_not_installed">Aucun plugin Mushroom n\'est installé.</string>
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

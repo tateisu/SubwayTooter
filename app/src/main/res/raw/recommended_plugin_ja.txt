@@ -1,0 +1,9 @@
+<html lang="ja">
+<ul>
+<li>EmojionePicker <a href="https://play.google.com/store/apps/details?id=com.mastopane.emojionepicker">https://play.google.com/store/apps/details?id=com.mastopane.emojionepicker</a></li>
+<li>SupportText Free <a href="https://play.google.com/store/apps/details?id=com.z589.supporttext">https://play.google.com/store/apps/details?id=com.z589.supporttext</a></li>
+<li>ANdClip Free <a href="https://play.google.com/store/apps/details?id=com.amazing_create.android.andclipfree">https://play.google.com/store/apps/details?id=com.amazing_create.android.andclipfree</a></li>
+<li>Contact Picker <a href="https://play.google.com/store/apps/details?id=jp.narikitic.android.mushroom.contactPicker">https://play.google.com/store/apps/details?id=jp.narikitic.android.mushroom.contactPicker</a></li>
+<li>顔文字コピー <a href="https://play.google.com/store/apps/details?id=jp.neoscorp.android.kaomoji">https://play.google.com/store/apps/details?id=jp.neoscorp.android.kaomoji</a></li>
+</ul>
+</html>

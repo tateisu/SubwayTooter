@@ -338,4 +338,6 @@
     <string name="plugin">Plugin</string>
     <string name="select_plugin">Select plugin</string>
     <string name="plugin_not_installed">Plugin is not installed.</string>
+    <string name="language_code">en</string>
+    <string name="recommended_plugin">Recommended plugin</string>
 </resources>

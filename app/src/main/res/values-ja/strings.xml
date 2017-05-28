@@ -629,5 +629,7 @@
     <string name="plugin">プラグイン</string>
     <string name="select_plugin">プラグインの選択</string>
     <string name="plugin_not_installed">プラグインがインストールされてません</string>
+    <string name="language_code">ja</string>
+    <string name="recommended_plugin">おすすめプラグイン</string>
 
 </resources>

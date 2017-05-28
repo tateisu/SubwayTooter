@@ -25,9 +25,11 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
+import android.text.Html;
 import android.text.Spannable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
@@ -43,6 +45,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -1330,6 +1333,15 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				}
 			}
 		);
+		
+		dialog.addAction(
+			getString( R.string.recommended_plugin )
+			, new Runnable() {
+				@Override public void run(){
+					showRecommendedPlugin(null);
+				}
+			}
+		);
 		dialog.show( this, null );
 	}
 	
@@ -1862,15 +1874,17 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			
 			// Verify the intent will resolve to at least one activity
 			if( intent.resolveActivity( getPackageManager() ) == null ){
-				Utils.showToast( this, false, R.string.plugin_not_installed );
+				showRecommendedPlugin(getString( R.string.plugin_not_installed ));
 				return;
 			}
 			startActivityForResult( chooser, REQUEST_CODE_MUSHROOM );
 			
 		}catch( Throwable ex ){
-			Utils.showToast( this, ex, R.string.plugin_not_installed );
+			ex.printStackTrace();
+			showRecommendedPlugin(getString( R.string.plugin_not_installed ));
 		}
 	}
+	
 	
 	private void applyMushroomResult( String text ){
 		if( mushroom_input == 1 ){
@@ -1879,4 +1893,51 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			applyMushroomText( etContent, text );
 		}
 	}
+	
+	private void showRecommendedPlugin(String title){
+		String language_code = getString(R.string.language_code);
+		int res_id;
+		if( "ja".equals( language_code )){
+			res_id = R.raw.recommended_plugin_ja;
+		}else if ( "fr".equals( language_code )){
+			res_id = R.raw.recommended_plugin_fr;
+		}else{
+			res_id = R.raw.recommended_plugin_en;
+		}
+		try{
+			InputStream is = getResources().openRawResource(res_id );
+			try{
+				ByteArrayOutputStream bao = new ByteArrayOutputStream(  );
+				IOUtils.copy( is,bao );
+				String text = Utils.decodeUTF8(bao.toByteArray());
+
+				View viewRoot = getLayoutInflater().inflate( R.layout.dlg_plugin_missing,null,false );
+
+				TextView tvText = (TextView)viewRoot. findViewById(R.id.tvText);
+				tvText.setText( Html.fromHtml(text));
+				tvText.setMovementMethod( LinkMovementMethod.getInstance()  );
+
+				TextView tvTitle = (TextView)viewRoot. findViewById(R.id.tvTitle);
+				if( TextUtils.isEmpty( title )){
+					tvTitle.setVisibility( View.GONE );
+				}else{
+					tvTitle.setText( title );
+					
+				}
+
+				new AlertDialog.Builder(this)
+					.setView(viewRoot )
+					.setCancelable( true )
+					.setNeutralButton( R.string.close, null )
+					.show();
+
+			}finally{
+				IOUtils.closeQuietly( is );
+			}
+			
+		}catch(Throwable ex){
+			ex.printStackTrace(  );
+		}
+	}
+	
 }

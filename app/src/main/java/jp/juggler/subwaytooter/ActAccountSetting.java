@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -33,7 +34,8 @@ import okhttp3.Response;
 
 public class ActAccountSetting extends AppCompatActivity
 	implements View.OnClickListener
-	, CompoundButton.OnCheckedChangeListener {
+	, CompoundButton.OnCheckedChangeListener
+{
 	
 	static final LogCategory log = new LogCategory( "ActAccountSetting" );
 	
@@ -98,9 +100,7 @@ public class ActAccountSetting extends AppCompatActivity
 	private void initUI(){
 		setContentView( R.layout.act_account_setting );
 		
-		
-		Styler.fixHorizontalPadding(findViewById( R.id.svContent ));
-		
+		Styler.fixHorizontalPadding( findViewById( R.id.svContent ) );
 		
 		tvInstance = (TextView) findViewById( R.id.tvInstance );
 		tvUser = (TextView) findViewById( R.id.tvUser );
@@ -157,7 +157,6 @@ public class ActAccountSetting extends AppCompatActivity
 		
 		loading = true;
 		
-
 		swNSFWOpen.setChecked( a.dont_hide_nsfw );
 		cbNotificationMention.setChecked( a.notification_mention );
 		cbNotificationBoost.setChecked( a.notification_boost );
@@ -175,7 +174,7 @@ public class ActAccountSetting extends AppCompatActivity
 		boolean enabled = ! a.isPseudo();
 		btnAccessToken.setEnabled( enabled );
 		btnVisibility.setEnabled( enabled );
-
+		
 		cbNotificationMention.setEnabled( enabled );
 		cbNotificationBoost.setEnabled( enabled );
 		cbNotificationFavourite.setEnabled( enabled );
@@ -266,11 +265,11 @@ public class ActAccountSetting extends AppCompatActivity
 			getString( R.string.visibility_private ),
 			getString( R.string.visibility_direct ),
 		};
-
-//		public static final String VISIBILITY_PUBLIC ="public";
-//		public static final String VISIBILITY_UNLISTED ="unlisted";
-//		public static final String VISIBILITY_PRIVATE ="private";
-//		public static final String VISIBILITY_DIRECT ="direct";
+		
+		//		public static final String VISIBILITY_PUBLIC ="public";
+		//		public static final String VISIBILITY_UNLISTED ="unlisted";
+		//		public static final String VISIBILITY_PRIVATE ="private";
+		//		public static final String VISIBILITY_DIRECT ="direct";
 		
 		new AlertDialog.Builder( this )
 			.setTitle( R.string.choose_visibility )
@@ -309,22 +308,28 @@ public class ActAccountSetting extends AppCompatActivity
 			.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 				@Override public void onClick( DialogInterface dialog, int which ){
 					account.delete();
+					
+					SharedPreferences pref = Pref.pref( ActAccountSetting.this );
+					if( account.db_id == pref.getLong( Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, - 1L ) ){
+						pref.edit().putLong( Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, - 1L ).apply();
+					}
+					
 					finish();
-
-					new AsyncTask<Void,Void,String>(){
+					
+					new AsyncTask< Void, Void, String >() {
 						
 						void unregister(){
 							try{
-								String install_id = App1.pref.getString(Pref.KEY_INSTALL_ID,null);
+								String install_id = App1.pref.getString( Pref.KEY_INSTALL_ID, null );
 								
 								if( TextUtils.isEmpty( install_id ) ){
-									log.d("performAccountRemove: missing install_id");
+									log.d( "performAccountRemove: missing install_id" );
 									return;
 								}
 								
 								String tag = account.notification_tag;
 								if( TextUtils.isEmpty( tag ) ){
-									log.d("performAccountRemove: missing notification_tag");
+									log.d( "performAccountRemove: missing notification_tag" );
 									return;
 								}
 								
@@ -354,7 +359,7 @@ public class ActAccountSetting extends AppCompatActivity
 						}
 						
 						@Override protected void onCancelled( String s ){
-							onPostExecute(s);
+							onPostExecute( s );
 						}
 						
 						@Override protected void onPostExecute( String s ){
@@ -431,7 +436,7 @@ public class ActAccountSetting extends AppCompatActivity
 			}
 		} );
 		progress.show();
-		task.executeOnExecutor(App1.task_executor);
+		task.executeOnExecutor( App1.task_executor );
 	}
 	
 }

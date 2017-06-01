@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.ColorInt;
@@ -296,6 +297,17 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 									if(! reUrl.matcher( sv ).find() ){
 										addLog( strInstance + "." + key + " : not like Url." );
 										has_error = true;
+									}else if( Uri.parse(sv).getScheme().equals( "https" ) ){
+										try{
+											addLog("check access to "+sv+" …");
+											builder = new Request.Builder() .url( sv );
+											call = App1.ok_http_client.newCall( builder.build() );
+											call.execute();
+										}catch(Throwable ex){
+											ex.printStackTrace(  );
+											addLog( strInstance + "." + key + " : "+ Utils.formatError( ex,"connect failed." ) );
+											has_error = true;
+										}
 									}
 								}
 							}

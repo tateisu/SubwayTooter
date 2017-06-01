@@ -300,7 +300,7 @@
     <!---->
     <string name="back_button_action">戻るボタンの動作</string>
     <!---->
-    <string name="prior_local_url_when_open_attachment">添付画像を開く時に自タンスURLを重視</string>
+    <string name="prior_local_url_when_open_attachment">添付メディアを開く時に自タンスURLを重視</string>
     <!---->
     <string name="disable_fast_scroller">FastScrollerを無効にする(アプリ再起動が必要)</string>
     <!---->
@@ -452,7 +452,7 @@
     <!---->
     <string name="nickname">色</string>
     <!---->
-    <string name="nickname_label">通称 (指定するとAcctの代わりに表示されます)</string>
+    <string name="nickname_label">通称と色 (指定するとAcctの代わりに表示されます)</string>
     <!---->
     <string name="preview">プレビュー</string>
     <!---->
@@ -498,7 +498,7 @@
     <!---->
     <string name="favourited_by">発言をお気に入りした人</string>
     <!---->
-    <string name="refresh_after_toot">発言後の更新</string>
+    <string name="refresh_after_toot">投稿後の更新</string>
     <!---->
     <string name="refresh_no_scroll">更新するがスクロールしない</string>
     <!---->
@@ -631,5 +631,14 @@
     <string name="plugin_not_installed">プラグインがインストールされてません</string>
     <string name="language_code">ja</string>
     <string name="recommended_plugin">おすすめプラグイン</string>
+    <string name="appearance">見た目</string>
+    <string name="behavior">挙動</string>
+    <string name="notification_on_off_desc">通知のON/OFFはアカウント設定にあります</string>
+    <string name="performance">性能</string>
+    <string name="tablet_mode">タブレットモード</string>
+    <string name="post">投稿</string>
+    <string name="toot_button_default_account">トゥートボタンを押した時のデフォルトアカウント</string>
+    <string name="account_change_failed_old_draft_has_no_in_reply_to_url">アカウント切り替えできません。古い下書きデータにはin_reply_to_urlがなくて、別タンスへの切り替えができません。</string>
+    <string name="in_reply_to_id_conversion_failed">アカウント切り替えできません。in_reply_toのID変換に失敗しました。</string>
 
 </resources>

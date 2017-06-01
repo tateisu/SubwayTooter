@@ -22,8 +22,10 @@ import jp.juggler.subwaytooter.util.Utils;
 public class ActText extends AppCompatActivity implements View.OnClickListener {
 	
 	static final LogCategory log = new LogCategory( "ActText" );
+	static final String EXTRA_TEXT = "text";
+	static final String EXTRA_CONTENT_START = "content_start";
 	
-	static String encodeStatus( Context context, SavedAccount access_info, TootStatus status ){
+	static void encodeStatus( Intent intent, Context context, SavedAccount access_info, TootStatus status ){
 		StringBuilder sb = new StringBuilder();
 		sb.append( context.getString( R.string.send_header_url ) );
 		sb.append( ": " );
@@ -48,16 +50,21 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 			sb.append( "\n" );
 		}
 		sb.append( "\n" );
+
+		intent.putExtra( EXTRA_CONTENT_START, sb.length() );
+
 		sb.append( HTMLDecoder.decodeHTML( access_info, status.content ,false,null) );
-		return sb.toString();
+	
+		intent.putExtra( EXTRA_TEXT, sb.toString() );
+		
+		
 	}
 	
-	static final String EXTRA_TEXT = "text";
-	
+
 	public static void open( ActMain activity, SavedAccount access_info, TootStatus status ){
-		String sv = encodeStatus( activity, access_info, status );
 		Intent intent = new Intent( activity, ActText.class );
-		intent.putExtra( EXTRA_TEXT, sv );
+		encodeStatus( intent,activity, access_info, status );
+		
 		activity.startActivity( intent );
 	}
 	
@@ -70,12 +77,12 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 		if( savedInstanceState == null ){
 			Intent intent = getIntent();
 			String sv = intent.getStringExtra( EXTRA_TEXT );
+			int content_start = intent.getIntExtra( EXTRA_CONTENT_START, 0);
 			etText.setText(sv);
-			etText.setSelection( 0,sv.length() );
+			etText.setSelection( content_start,sv.length() );
 		}
 	}
-	
-	
+
 	EditText etText;
 	
 	void initUI(){

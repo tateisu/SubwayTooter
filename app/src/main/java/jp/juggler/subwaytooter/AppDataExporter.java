@@ -313,6 +313,12 @@ public class AppDataExporter {
 				e.putInt( k, iv );
 				break;
 			
+			// long
+			case Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT:
+				long lv = reader.nextLong();
+				e.putLong( k, lv );
+				break;
+			
 			// string
 			case Pref.KEY_COLUMN_WIDTH:
 			case Pref.KEY_MEDIA_THUMB_HEIGHT:
@@ -441,6 +447,14 @@ public class AppDataExporter {
 				
 			}else if( KEY_COLUMN.equals( name ) ){
 				result = readColumn( app_state, reader, account_id_map );
+			}
+		}
+		
+		{
+			long old_id = app_state.pref.getLong( Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, - 1L );
+			if( old_id != -1L ){
+				Long new_id = account_id_map.get( old_id );
+				app_state.pref.edit().putLong( Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, ( new_id != null ? new_id : - 1L ) ).apply();
 			}
 		}
 		

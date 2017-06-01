@@ -1703,6 +1703,13 @@ public class ActMain extends AppCompatActivity
 				ActPost.open( this, REQUEST_CODE_POST, c.access_info.db_id, "" );
 				return;
 			}
+		}else{
+			long db_id = pref.getLong( Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, - 1L );
+			SavedAccount a = SavedAccount.loadAccount( log, db_id );
+			if( a != null ){
+				ActPost.open( this, REQUEST_CODE_POST, a.db_id, "" );
+				return;
+			}
 		}
 		
 		AccountPicker.pick( this, false, true, getString( R.string.account_picker_toot ), new AccountPicker.AccountPickerCallback() {

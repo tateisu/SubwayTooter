@@ -19,8 +19,10 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.JsonWriter;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -38,7 +40,11 @@ import org.apache.commons.io.output.FileWriterWithEncoding;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
+import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
@@ -57,6 +63,13 @@ public class ActAppSetting extends AppCompatActivity
 	
 	SharedPreferences pref;
 	
+	@Override protected void onPause(){
+		super.onPause();
+		
+		// DefaultAccount の Spinnerの値を復元するため、このタイミングでも保存することになった
+		saveUIToData();
+	}
+	
 	@Override
 	protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
@@ -65,7 +78,6 @@ public class ActAppSetting extends AppCompatActivity
 		pref = Pref.pref( this );
 		
 		loadUIFromData();
-		
 	}
 	
 	Switch swDontConfirmBeforeCloseColumn;
@@ -86,6 +98,7 @@ public class ActAppSetting extends AppCompatActivity
 	Spinner spUITheme;
 	Spinner spResizeImage;
 	Spinner spRefreshAfterToot;
+	Spinner spDefaultAccount;
 	
 	CheckBox cbNotificationSound;
 	CheckBox cbNotificationVibration;
@@ -220,6 +233,16 @@ public class ActAppSetting extends AppCompatActivity
 			spRefreshAfterToot.setOnItemSelectedListener( this );
 		}
 		
+		{
+
+			AccountAdapter adapter = new AccountAdapter();
+			spDefaultAccount = (Spinner) findViewById( R.id.spDefaultAccount );
+			spDefaultAccount.setAdapter( adapter );
+			spDefaultAccount.setOnItemSelectedListener( this );
+		}
+		
+		
+		
 		findViewById( R.id.btnFooterBackgroundEdit ).setOnClickListener( this );
 		findViewById( R.id.btnFooterBackgroundReset ).setOnClickListener( this );
 		findViewById( R.id.btnFooterForegroundColorEdit ).setOnClickListener( this );
@@ -282,6 +305,10 @@ public class ActAppSetting extends AppCompatActivity
 		spResizeImage.setSelection( pref.getInt( Pref.KEY_RESIZE_IMAGE, 4 ) );
 		spRefreshAfterToot.setSelection( pref.getInt( Pref.KEY_REFRESH_AFTER_TOOT, 0 ) );
 		
+		spDefaultAccount.setSelection(
+			((AccountAdapter)spDefaultAccount.getAdapter()).getIndexFromId( pref.getLong( Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, -1L ))
+		);
+		
 		footer_button_bg_color = pref.getInt( Pref.KEY_FOOTER_BUTTON_BG_COLOR, 0 );
 		footer_button_fg_color = pref.getInt( Pref.KEY_FOOTER_BUTTON_FG_COLOR, 0 );
 		footer_tab_bg_color = pref.getInt( Pref.KEY_FOOTER_TAB_BG_COLOR, 0 );
@@ -330,7 +357,10 @@ public class ActAppSetting extends AppCompatActivity
 			.putInt( Pref.KEY_FOOTER_TAB_BG_COLOR, footer_tab_bg_color )
 			.putInt( Pref.KEY_FOOTER_TAB_DIVIDER_COLOR, footer_tab_divider_color )
 			.putInt( Pref.KEY_FOOTER_TAB_INDICATOR_COLOR, footer_tab_indicator_color )
-		
+
+			.putLong( Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT,((AccountAdapter)spDefaultAccount.getAdapter())
+				.getIdFromIndex(spDefaultAccount.getSelectedItemPosition() ) )
+			
 			.putString( Pref.KEY_TIMELINE_FONT, timeline_font )
 			.putString( Pref.KEY_COLUMN_WIDTH, etColumnWidth.getText().toString().trim() )
 			.putString( Pref.KEY_MEDIA_THUMB_HEIGHT, etMediaThumbHeight.getText().toString().trim() )
@@ -755,5 +785,64 @@ public class ActAppSetting extends AppCompatActivity
 		setResult( ActMain.RESULT_APP_DATA_IMPORT, data );
 		finish();
 		
+	}
+	
+	private class AccountAdapter extends BaseAdapter {
+		
+		final ArrayList<SavedAccount> list = new ArrayList<>(  );
+		
+		AccountAdapter(){
+			for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
+				if( a.isPseudo() ) continue;
+				list.add(a);
+			}
+			Collections.sort( list, new Comparator< SavedAccount >() {
+				@Override
+				public int compare( SavedAccount a, SavedAccount b ){
+					return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
+					
+				}
+			} );
+		}
+		
+		@Override public int getCount(){
+			return 1+list.size();
+		}
+		
+		@Override public Object getItem( int position ){
+			return position == 0 ? null : list.get(position-1);
+		}
+		
+		@Override public long getItemId( int position ){
+			return 0;
+		}
+		
+		@Override public View getView( int position, View view, ViewGroup parent ){
+			if( view == null ) view = getLayoutInflater().inflate( android.R.layout.simple_spinner_item,parent,false );
+			((TextView)view.findViewById(android.R.id.text1  )).setText(
+				position == 0 ? getString(R.string.ask_always) :  AcctColor.getNickname( list.get(position-1).acct )
+			);
+			return view;
+		}
+		
+		@Override public View getDropDownView( int position, View view, ViewGroup parent ){
+			if( view ==null ) view = getLayoutInflater().inflate( R.layout.lv_spinner_dropdown,parent,false );
+			((TextView)view.findViewById(android.R.id.text1  )).setText(
+				position == 0 ? getString(R.string.ask_always) :  AcctColor.getNickname( list.get(position-1).acct )
+			);
+			return view;
+		}
+		
+		int getIndexFromId( long db_id ){
+			for( int i=0,ie=list.size();i<ie;++i){
+				if( list.get(i).db_id == db_id ) return i+1;
+			}
+			return 0;
+		}
+		
+		long getIdFromIndex( int position ){
+			if( position > 0 ) return list.get( position -1).db_id;
+			return -1L;
+		}
 	}
 }

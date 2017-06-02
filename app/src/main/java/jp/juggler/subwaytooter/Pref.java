@@ -56,5 +56,7 @@ public class Pref {
 	static final String KEY_STREAM_LISTENER_CONFIG_DATA = "stream_listener_config_data";
 	static final String KEY_TABLET_TOOT_DEFAULT_ACCOUNT = "tablet_toot_default_account";
 	
+	static final String KEY_PRIOR_CHROME = "prior_chrome";
+	
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

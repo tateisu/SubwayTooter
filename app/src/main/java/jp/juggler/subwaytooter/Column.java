@@ -2532,25 +2532,24 @@ class Column implements StreamReader.Callback {
 	@Override public void onStreamingMessage( String event_type, Object o ){
 		if( is_dispose.get() ) return;
 		
-		if( o instanceof Long ){
-			removeStatus( access_info, (Long) o );
-			return;
+		if( "delete".equals( event_type ) ){
+			if( o instanceof Long ){
+				removeStatus( access_info, (Long) o );
+			}
+		}else{
+			if( o instanceof TootNotification ){
+				TootNotification notification = (TootNotification) o;
+				if( column_type != TYPE_NOTIFICATIONS ) return;
+				if( isFiltered( notification ) ) return;
+			}else if( o instanceof TootStatus ){
+				TootStatus status = (TootStatus) o;
+				if( column_type == TYPE_NOTIFICATIONS ) return;
+				if( column_type == TYPE_LOCAL && status.account.acct.indexOf( '@' ) != - 1 ) return;
+				if( isFiltered( status ) ) return;
+			}
+			stream_data_queue.addFirst( o );
+			proc_stream_data.run();
 		}
-		
-		if( o instanceof TootNotification ){
-			TootNotification notification = (TootNotification) o;
-			if( column_type != TYPE_NOTIFICATIONS ) return;
-			if( isFiltered( notification ) ) return;
-		}else if( o instanceof TootStatus ){
-			TootStatus status = (TootStatus) o;
-			if( column_type == TYPE_NOTIFICATIONS ) return;
-			if( column_type == TYPE_LOCAL && status.account.acct.indexOf( '@' ) != - 1 ) return;
-			if( isFiltered( status ) ) return;
-		}
-		
-		stream_data_queue.addFirst( o );
-		proc_stream_data.run();
-		
 	}
 	
 	// onPauseの時はまとめて止められるが

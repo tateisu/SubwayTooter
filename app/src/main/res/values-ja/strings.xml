@@ -640,5 +640,6 @@
     <string name="toot_button_default_account">トゥートボタンを押した時のデフォルトアカウント</string>
     <string name="account_change_failed_old_draft_has_no_in_reply_to_url">アカウント切り替えできません。古い下書きデータにはin_reply_to_urlがなくて、別タンスへの切り替えができません。</string>
     <string name="in_reply_to_id_conversion_failed">アカウント切り替えできません。in_reply_toのID変換に失敗しました。</string>
+    <string name="prior_chrome_custom_tabs">Chrome Custom Tabs を優先的に利用する</string>
 
 </resources>

@@ -92,7 +92,7 @@ public class ActAppSetting extends AppCompatActivity
 	Switch swDontScreenOff;
 	Switch swDisableTabletMode;
 	Switch swDontCropMediaThumb;
-	
+	Switch swPriorChrome;
 	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
@@ -169,6 +169,8 @@ public class ActAppSetting extends AppCompatActivity
 		swDontCropMediaThumb = (Switch) findViewById( R.id.swDontCropMediaThumb );
 		swDontCropMediaThumb.setOnCheckedChangeListener( this );
 		
+		swPriorChrome = (Switch) findViewById( R.id.swPriorChrome );
+		swPriorChrome.setOnCheckedChangeListener( this );
 		
 		cbNotificationSound = (CheckBox) findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = (CheckBox) findViewById( R.id.cbNotificationVibration );
@@ -234,14 +236,12 @@ public class ActAppSetting extends AppCompatActivity
 		}
 		
 		{
-
+			
 			AccountAdapter adapter = new AccountAdapter();
 			spDefaultAccount = (Spinner) findViewById( R.id.spDefaultAccount );
 			spDefaultAccount.setAdapter( adapter );
 			spDefaultAccount.setOnItemSelectedListener( this );
 		}
-		
-		
 		
 		findViewById( R.id.btnFooterBackgroundEdit ).setOnClickListener( this );
 		findViewById( R.id.btnFooterBackgroundReset ).setOnClickListener( this );
@@ -253,14 +253,13 @@ public class ActAppSetting extends AppCompatActivity
 		findViewById( R.id.btnTabDividerColorReset ).setOnClickListener( this );
 		findViewById( R.id.btnTabIndicatorColorEdit ).setOnClickListener( this );
 		findViewById( R.id.btnTabIndicatorColorReset ).setOnClickListener( this );
-
+		
 		findViewById( R.id.btnTimelineFontEdit ).setOnClickListener( this );
 		findViewById( R.id.btnTimelineFontReset ).setOnClickListener( this );
 		findViewById( R.id.btnSettingExport ).setOnClickListener( this );
 		findViewById( R.id.btnSettingImport ).setOnClickListener( this );
 		findViewById( R.id.btnCustomStreamListenerEdit ).setOnClickListener( this );
 		findViewById( R.id.btnCustomStreamListenerReset ).setOnClickListener( this );
-
 		
 		ivFooterToot = (ImageView) findViewById( R.id.ivFooterToot );
 		ivFooterMenu = (ImageView) findViewById( R.id.ivFooterMenu );
@@ -285,7 +284,6 @@ public class ActAppSetting extends AppCompatActivity
 		
 		swDontConfirmBeforeCloseColumn.setChecked( pref.getBoolean( Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN, false ) );
 		swPriorLocalURL.setChecked( pref.getBoolean( Pref.KEY_PRIOR_LOCAL_URL, false ) );
-		swDisableFastScroller.setChecked( pref.getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
 		swSimpleList.setChecked( pref.getBoolean( Pref.KEY_SIMPLE_LIST, false ) );
 		swExitAppWhenCloseProtectedColumn.setChecked( pref.getBoolean( Pref.KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN, false ) );
 		swShowFollowButtonInButtonBar.setChecked( pref.getBoolean( Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR, false ) );
@@ -295,6 +293,10 @@ public class ActAppSetting extends AppCompatActivity
 		swDontScreenOff.setChecked( pref.getBoolean( Pref.KEY_DONT_SCREEN_OFF, false ) );
 		swDisableTabletMode.setChecked( pref.getBoolean( Pref.KEY_DISABLE_TABLET_MODE, false ) );
 		swDontCropMediaThumb.setChecked( pref.getBoolean( Pref.KEY_DONT_CROP_MEDIA_THUMBNAIL, false ) );
+		
+		// Switch with default true
+		swDisableFastScroller.setChecked( pref.getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
+		swPriorChrome.setChecked( pref.getBoolean( Pref.KEY_PRIOR_CHROME, true ) );
 		
 		cbNotificationSound.setChecked( pref.getBoolean( Pref.KEY_NOTIFICATION_SOUND, true ) );
 		cbNotificationVibration.setChecked( pref.getBoolean( Pref.KEY_NOTIFICATION_VIBRATION, true ) );
@@ -306,7 +308,7 @@ public class ActAppSetting extends AppCompatActivity
 		spRefreshAfterToot.setSelection( pref.getInt( Pref.KEY_REFRESH_AFTER_TOOT, 0 ) );
 		
 		spDefaultAccount.setSelection(
-			((AccountAdapter)spDefaultAccount.getAdapter()).getIndexFromId( pref.getLong( Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, -1L ))
+			( (AccountAdapter) spDefaultAccount.getAdapter() ).getIndexFromId( pref.getLong( Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, - 1L ) )
 		);
 		
 		footer_button_bg_color = pref.getInt( Pref.KEY_FOOTER_BUTTON_BG_COLOR, 0 );
@@ -341,7 +343,7 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_DONT_SCREEN_OFF, swDontScreenOff.isChecked() )
 			.putBoolean( Pref.KEY_DISABLE_TABLET_MODE, swDisableTabletMode.isChecked() )
 			.putBoolean( Pref.KEY_DONT_CROP_MEDIA_THUMBNAIL, swDontCropMediaThumb.isChecked() )
-		
+			.putBoolean( Pref.KEY_PRIOR_CHROME, swPriorChrome.isChecked() )
 			
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )
@@ -357,14 +359,13 @@ public class ActAppSetting extends AppCompatActivity
 			.putInt( Pref.KEY_FOOTER_TAB_BG_COLOR, footer_tab_bg_color )
 			.putInt( Pref.KEY_FOOTER_TAB_DIVIDER_COLOR, footer_tab_divider_color )
 			.putInt( Pref.KEY_FOOTER_TAB_INDICATOR_COLOR, footer_tab_indicator_color )
-
-			.putLong( Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT,((AccountAdapter)spDefaultAccount.getAdapter())
-				.getIdFromIndex(spDefaultAccount.getSelectedItemPosition() ) )
+			
+			.putLong( Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, ( (AccountAdapter) spDefaultAccount.getAdapter() )
+				.getIdFromIndex( spDefaultAccount.getSelectedItemPosition() ) )
 			
 			.putString( Pref.KEY_TIMELINE_FONT, timeline_font )
 			.putString( Pref.KEY_COLUMN_WIDTH, etColumnWidth.getText().toString().trim() )
 			.putString( Pref.KEY_MEDIA_THUMB_HEIGHT, etMediaThumbHeight.getText().toString().trim() )
-		
 			
 			.apply();
 		
@@ -392,7 +393,7 @@ public class ActAppSetting extends AppCompatActivity
 		switch( v.getId() ){
 		
 		case R.id.btnFooterBackgroundEdit:
-			openColorPicker( COLOR_DIALOG_ID_FOOTER_BUTTON_BG, footer_button_bg_color ,false);
+			openColorPicker( COLOR_DIALOG_ID_FOOTER_BUTTON_BG, footer_button_bg_color, false );
 			break;
 		
 		case R.id.btnFooterBackgroundReset:
@@ -402,7 +403,7 @@ public class ActAppSetting extends AppCompatActivity
 			break;
 		
 		case R.id.btnFooterForegroundColorEdit:
-			openColorPicker( COLOR_DIALOG_ID_FOOTER_BUTTON_FG, footer_button_fg_color ,false);
+			openColorPicker( COLOR_DIALOG_ID_FOOTER_BUTTON_FG, footer_button_fg_color, false );
 			break;
 		
 		case R.id.btnFooterForegroundColorReset:
@@ -412,7 +413,7 @@ public class ActAppSetting extends AppCompatActivity
 			break;
 		
 		case R.id.btnTabBackgroundColorEdit:
-			openColorPicker( COLOR_DIALOG_ID_FOOTER_TAB_BG, footer_tab_bg_color ,false);
+			openColorPicker( COLOR_DIALOG_ID_FOOTER_TAB_BG, footer_tab_bg_color, false );
 			break;
 		
 		case R.id.btnTabBackgroundColorReset:
@@ -422,7 +423,7 @@ public class ActAppSetting extends AppCompatActivity
 			break;
 		
 		case R.id.btnTabDividerColorEdit:
-			openColorPicker( COLOR_DIALOG_ID_FOOTER_TAB_DIVIDER, footer_tab_divider_color ,false);
+			openColorPicker( COLOR_DIALOG_ID_FOOTER_TAB_DIVIDER, footer_tab_divider_color, false );
 			break;
 		
 		case R.id.btnTabDividerColorReset:
@@ -432,7 +433,7 @@ public class ActAppSetting extends AppCompatActivity
 			break;
 		
 		case R.id.btnTabIndicatorColorEdit:
-			openColorPicker( COLOR_DIALOG_ID_FOOTER_TAB_INDICATOR, footer_tab_indicator_color ,true);
+			openColorPicker( COLOR_DIALOG_ID_FOOTER_TAB_INDICATOR, footer_tab_indicator_color, true );
 			break;
 		
 		case R.id.btnTabIndicatorColorReset:
@@ -469,17 +470,17 @@ public class ActAppSetting extends AppCompatActivity
 		case R.id.btnCustomStreamListenerEdit:
 			ActCustomStreamListener.open( this );
 			break;
-
+		
 		case R.id.btnCustomStreamListenerReset:
 			pref
 				.edit()
-				.remove(Pref.KEY_STREAM_LISTENER_CONFIG_URL)
-				.remove( Pref.KEY_STREAM_LISTENER_SECRET)
-				.remove( Pref.KEY_STREAM_LISTENER_CONFIG_DATA)
+				.remove( Pref.KEY_STREAM_LISTENER_CONFIG_URL )
+				.remove( Pref.KEY_STREAM_LISTENER_SECRET )
+				.remove( Pref.KEY_STREAM_LISTENER_CONFIG_DATA )
 				.apply();
 			SavedAccount.clearRegistrationCache();
 			AlarmService.startCheck( this );
-			Utils.showToast( this,false,getString(R.string.custom_stream_listener_was_reset) );
+			Utils.showToast( this, false, getString( R.string.custom_stream_listener_was_reset ) );
 			break;
 		}
 	}
@@ -509,7 +510,7 @@ public class ActAppSetting extends AppCompatActivity
 		super.onActivityResult( requestCode, resultCode, data );
 	}
 	
-	void openColorPicker( int id, int color ,boolean bShowAlphaSlider ){
+	void openColorPicker( int id, int color, boolean bShowAlphaSlider ){
 		ColorPickerDialog.Builder builder = ColorPickerDialog.newBuilder()
 			.setDialogType( ColorPickerDialog.TYPE_CUSTOM )
 			.setAllowPresets( true )
@@ -789,12 +790,12 @@ public class ActAppSetting extends AppCompatActivity
 	
 	private class AccountAdapter extends BaseAdapter {
 		
-		final ArrayList<SavedAccount> list = new ArrayList<>(  );
+		final ArrayList< SavedAccount > list = new ArrayList<>();
 		
 		AccountAdapter(){
 			for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
 				if( a.isPseudo() ) continue;
-				list.add(a);
+				list.add( a );
 			}
 			Collections.sort( list, new Comparator< SavedAccount >() {
 				@Override
@@ -806,11 +807,11 @@ public class ActAppSetting extends AppCompatActivity
 		}
 		
 		@Override public int getCount(){
-			return 1+list.size();
+			return 1 + list.size();
 		}
 		
 		@Override public Object getItem( int position ){
-			return position == 0 ? null : list.get(position-1);
+			return position == 0 ? null : list.get( position - 1 );
 		}
 		
 		@Override public long getItemId( int position ){
@@ -818,31 +819,33 @@ public class ActAppSetting extends AppCompatActivity
 		}
 		
 		@Override public View getView( int position, View view, ViewGroup parent ){
-			if( view == null ) view = getLayoutInflater().inflate( android.R.layout.simple_spinner_item,parent,false );
-			((TextView)view.findViewById(android.R.id.text1  )).setText(
-				position == 0 ? getString(R.string.ask_always) :  AcctColor.getNickname( list.get(position-1).acct )
+			if( view == null )
+				view = getLayoutInflater().inflate( android.R.layout.simple_spinner_item, parent, false );
+			( (TextView) view.findViewById( android.R.id.text1 ) ).setText(
+				position == 0 ? getString( R.string.ask_always ) : AcctColor.getNickname( list.get( position - 1 ).acct )
 			);
 			return view;
 		}
 		
 		@Override public View getDropDownView( int position, View view, ViewGroup parent ){
-			if( view ==null ) view = getLayoutInflater().inflate( R.layout.lv_spinner_dropdown,parent,false );
-			((TextView)view.findViewById(android.R.id.text1  )).setText(
-				position == 0 ? getString(R.string.ask_always) :  AcctColor.getNickname( list.get(position-1).acct )
+			if( view == null )
+				view = getLayoutInflater().inflate( R.layout.lv_spinner_dropdown, parent, false );
+			( (TextView) view.findViewById( android.R.id.text1 ) ).setText(
+				position == 0 ? getString( R.string.ask_always ) : AcctColor.getNickname( list.get( position - 1 ).acct )
 			);
 			return view;
 		}
 		
 		int getIndexFromId( long db_id ){
-			for( int i=0,ie=list.size();i<ie;++i){
-				if( list.get(i).db_id == db_id ) return i+1;
+			for( int i = 0, ie = list.size() ; i < ie ; ++ i ){
+				if( list.get( i ).db_id == db_id ) return i + 1;
 			}
 			return 0;
 		}
 		
 		long getIdFromIndex( int position ){
-			if( position > 0 ) return list.get( position -1).db_id;
-			return -1L;
+			if( position > 0 ) return list.get( position - 1 ).db_id;
+			return - 1L;
 		}
 	}
 }

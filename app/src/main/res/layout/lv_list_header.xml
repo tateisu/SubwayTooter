@@ -33,10 +33,10 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="?attr/colorProfileBackgroundMask"
             android:gravity="center_horizontal"
             android:orientation="vertical"
             android:padding="12dp"
+            android:id="@+id/llProfile"
             >
 
             <jp.juggler.subwaytooter.view.MyNetworkImageView

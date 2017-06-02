@@ -365,6 +365,10 @@ class ColumnViewHolder
 		
 		loadBackgroundImage( ivColumnBackgroundImage, column.column_bg_image );
 		
+		
+		if( status_adapter != null &&  status_adapter.header != null ){
+			status_adapter.header.showColor();
+		}
 	}
 	
 	

@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter;
 
+import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -34,6 +35,8 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 	private final TextView tvNote;
 	private final ImageButton btnFollow;
 	private final ImageView ivFollowedBy;
+	private final View llProfile;
+	
 	
 	private TootAccount who;
 	
@@ -62,6 +65,7 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 		
 		
 		ivBackground = (MyNetworkImageView) viewRoot.findViewById( R.id.ivBackground );
+		llProfile = viewRoot.findViewById( R.id.llProfile );
 		tvCreated = (TextView) viewRoot.findViewById( R.id.tvCreated );
 		ivAvatar = (MyNetworkImageView) viewRoot.findViewById( R.id.ivAvatar );
 		tvDisplayName = (TextView) viewRoot.findViewById( R.id.tvDisplayName );
@@ -73,6 +77,8 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 		View btnMore = viewRoot.findViewById( R.id.btnMore );
 		btnFollow = (ImageButton) viewRoot.findViewById( R.id.btnFollow );
 		ivFollowedBy = (ImageView) viewRoot.findViewById( R.id.ivFollowedBy );
+		
+		
 		ivBackground.setOnClickListener( this );
 		btnFollowing.setOnClickListener( this );
 		btnFollowers.setOnClickListener( this );
@@ -85,8 +91,20 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 		tvNote.setMovementMethod( MyLinkMovementMethod.getInstance() );
 	}
 	
+	void showColor(){
+		int c = column.column_bg_color;
+		if( c == 0 ){
+			c = Styler.getAttributeColor( activity, R.attr. colorProfileBackgroundMask);
+		}else{
+			c = 0xc0000000 | (0x00ffffff & c);
+		}
+		llProfile.setBackgroundColor( c );
+	}
+	
 	void bind( TootAccount who ){
 		this.who = who;
+
+		showColor();
 		
 		if( who == null ){
 			tvCreated.setText( "" );
@@ -176,4 +194,5 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 		
 		return false;
 	}
+	
 }

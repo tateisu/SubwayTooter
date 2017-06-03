@@ -320,8 +320,8 @@ public class ActAccountSetting extends AppCompatActivity
 						
 						void unregister(){
 							try{
-								String install_id = App1.pref.getString( Pref.KEY_INSTALL_ID, null );
-								
+
+								String install_id = PrefDevice.prefDevice( ActAccountSetting.this ).getString( PrefDevice.KEY_INSTALL_ID,null);
 								if( TextUtils.isEmpty( install_id ) ){
 									log.d( "performAccountRemove: missing install_id" );
 									return;

@@ -311,9 +311,12 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		
 		App1.getDB().update( table, cv, COL_ID + "=?", new String[]{ Long.toString( db_id ) } );
 	}
-
+	
+	public static final String REGISTER_KEY_UNREGISTERED = "unregistered";
+	
 	public static void clearRegistrationCache(){
 		ContentValues cv = new ContentValues();
+		cv.put( COL_REGISTER_KEY, REGISTER_KEY_UNREGISTERED );
 		cv.put( COL_REGISTER_TIME, 0L );
 		App1.getDB().update( table, cv, null, null);
 	}

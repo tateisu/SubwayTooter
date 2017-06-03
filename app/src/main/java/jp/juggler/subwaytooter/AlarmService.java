@@ -17,6 +17,8 @@ import android.support.v4.content.ContextCompat;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.text.TextUtils;
 
+import com.google.firebase.iid.FirebaseInstanceId;
+
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 import org.json.JSONArray;
@@ -138,10 +140,14 @@ public class AlarmService extends IntentService {
 	// 同期処理を行って良い
 	@Override protected void onHandleIntent( @Nullable Intent intent ){
 		bStreamListenerTest =false;
+		
 		// クラッシュレポートによると App1.onCreate より前にここを通る場合がある
 		// データベースへアクセスできるようにする
 		App1.prepareDB( this.getApplicationContext() );
 		
+		// インストールIDを生成する
+		// インストールID生成時にSavedAccountテーブルを操作することがあるので
+		// アカウントリストの取得より先に行う
 		install_id = getInstallId();
 		
 		if( intent != null ){
@@ -314,12 +320,33 @@ public class AlarmService extends IntentService {
 	}
 	
 	String getInstallId(){
-		String sv = pref.getString(Pref.KEY_INSTALL_ID,null);
+		SharedPreferences prefDevice = PrefDevice.prefDevice( this );
+			
+		
+		String sv = prefDevice.getString(PrefDevice.KEY_INSTALL_ID,null);
 		if( ! TextUtils.isEmpty( sv ) ) return sv;
 		
+		// インストールIDを生成する前に、各データの通知登録キャッシュをクリアする
+		SavedAccount.clearRegistrationCache();
+		
 		try{
-			String device_token = pref.getString( Pref.KEY_DEVICE_TOKEN, null );
-			if( TextUtils.isEmpty( device_token ) ) return null;
+			String device_token = prefDevice.getString( PrefDevice.KEY_DEVICE_TOKEN, null );
+			if( TextUtils.isEmpty( device_token ) ){
+				try{
+					// トークンがまだ生成されていない場合、このメソッドは null を返します。
+					device_token = FirebaseInstanceId.getInstance().getToken();
+					if( TextUtils.isEmpty( device_token ) ){
+						log.e("getInstallId: missing device token.");
+						return null;
+					}else{
+						prefDevice.edit().putString( PrefDevice.KEY_DEVICE_TOKEN, device_token ).apply();
+					}
+				}catch(Throwable ex2){
+					log.e("getInstallId: could not get device token.");
+					ex2.printStackTrace();
+					return null;
+				}
+			}
 			
 			Request request = new Request.Builder()
 				.url( APP_SERVER + "/counter" )
@@ -336,7 +363,7 @@ public class AlarmService extends IntentService {
 			
 			//noinspection ConstantConditions
 			sv = Utils.digestSHA256( device_token + UUID.randomUUID() + response.body().string() );
-			pref.edit().putString(Pref.KEY_INSTALL_ID, sv).apply();
+			prefDevice.edit().putString(PrefDevice.KEY_INSTALL_ID, sv).apply();
 			
 			return sv;
 			
@@ -346,11 +373,11 @@ public class AlarmService extends IntentService {
 		}
 	}
 	
-	static final String REGISTER_KEY_UNREGISTERED = "unregistered";
+	
 	
 	private void unregisterDeviceToken( @NonNull SavedAccount account ){
 		try{
-			if( REGISTER_KEY_UNREGISTERED.equals( account.register_key ) ){
+			if( SavedAccount.REGISTER_KEY_UNREGISTERED.equals( account.register_key ) ){
 				log.d("unregisterDeviceToken: already unregistered.");
 				return;
 			}
@@ -383,7 +410,7 @@ public class AlarmService extends IntentService {
 			log.e( "unregisterDeviceToken: %s", response );
 			
 			if( response.isSuccessful() ){
-				account.register_key = REGISTER_KEY_UNREGISTERED;
+				account.register_key = SavedAccount.REGISTER_KEY_UNREGISTERED;
 				account.register_time = 0L;
 				account.saveRegisterKey();
 			}
@@ -402,7 +429,9 @@ public class AlarmService extends IntentService {
 				return false;
 			}
 			
-			String device_token = pref.getString( Pref.KEY_DEVICE_TOKEN, null );
+			SharedPreferences prefDevice = PrefDevice.prefDevice( this );
+			
+			String device_token = prefDevice.getString( PrefDevice.KEY_DEVICE_TOKEN, null );
 			if( TextUtils.isEmpty( device_token ) ){
 				log.d("registerDeviceToken: missing device_token");
 				return false;
@@ -413,8 +442,13 @@ public class AlarmService extends IntentService {
 				log.d("registerDeviceToken: missing access_token");
 				return false;
 			}
-
+			
 			String tag = account.notification_tag;
+
+			if( SavedAccount.REGISTER_KEY_UNREGISTERED.equals( account.register_key ) ){
+				tag = null;
+			}
+			
 			if( TextUtils.isEmpty( tag ) ){
 				tag = account.notification_tag = Utils.digestSHA256( install_id + account.db_id + account.acct );
 				account.saveNotificationTag();

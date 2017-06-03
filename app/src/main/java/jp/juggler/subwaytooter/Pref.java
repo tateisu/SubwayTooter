@@ -48,8 +48,7 @@ public class Pref {
 	static final String KEY_MEDIA_THUMB_HEIGHT = "MediaThumbHeight";
 	static final String KEY_TIMELINE_FONT = "timeline_font";
 	static final String KEY_DONT_CROP_MEDIA_THUMBNAIL = "DontCropMediaThumb";
-	static final String KEY_DEVICE_TOKEN = "device_token";
-	static final String KEY_INSTALL_ID = "install_id";
+
 
 	static final String KEY_STREAM_LISTENER_SECRET = "stream_listener_secret";
 	static final String KEY_STREAM_LISTENER_CONFIG_URL = "stream_listener_config_url";

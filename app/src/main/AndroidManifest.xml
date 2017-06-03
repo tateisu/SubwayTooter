@@ -15,6 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme.Light"
         android:largeHeap="true"
+        android:fullBackupContent="@xml/backup_spec"
         >
         <receiver android:name=".AlarmReceiver">
             <intent-filter>

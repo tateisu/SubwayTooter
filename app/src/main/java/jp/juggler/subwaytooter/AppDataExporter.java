@@ -338,8 +338,8 @@ public class AppDataExporter {
 				break;
 			
 			// just ignore
-			case Pref.KEY_DEVICE_TOKEN:
-			case Pref.KEY_INSTALL_ID:
+			case "device_token":
+			case "install_id":
 				reader.skipValue();
 				e.remove( k );
 				break;

@@ -18,8 +18,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
 			String token = FirebaseInstanceId.getInstance().getToken();
 			log.d("onTokenRefresh: instance_token=%s",token);
 			
-			Pref.pref(this).edit().putString(Pref.KEY_DEVICE_TOKEN,token).apply();
-			
+			PrefDevice.prefDevice(this).edit().putString(PrefDevice.KEY_DEVICE_TOKEN,token).apply();
 			
 			Intent intent = new Intent(this,AlarmService.class);
 			intent.setAction( AlarmService.ACTION_DEVICE_TOKEN );

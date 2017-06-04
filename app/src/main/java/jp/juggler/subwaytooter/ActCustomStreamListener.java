@@ -6,7 +6,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -21,16 +20,12 @@ import org.hjson.JsonValue;
 
 import java.util.regex.Pattern;
 
-import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.Response;
-
-import static jp.juggler.subwaytooter.R.id.large;
-import static jp.juggler.subwaytooter.R.id.tvAcct;
 
 public class ActCustomStreamListener extends AppCompatActivity implements View.OnClickListener, TextWatcher {
 	

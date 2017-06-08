@@ -547,9 +547,9 @@ class ColumnViewHolder
 			column.dont_streaming = isChecked;
 			activity.app_state.saveColumnList();
 			if( isChecked ){
-				column.onResume( activity );
-			}else{
 				column.stopStreaming();
+			}else{
+				column.onResume( activity );
 			}
 			break;
 		

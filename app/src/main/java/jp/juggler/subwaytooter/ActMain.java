@@ -3163,7 +3163,7 @@ public class ActMain extends AppCompatActivity
 	private boolean closeColumnSetting(){
 		if( pager_adapter != null ){
 			ColumnViewHolder vh = pager_adapter.getColumnViewHolder( pager.getCurrentItem() );
-			if( vh.isColumnSettingShown() ){
+			if( vh!=null && vh.isColumnSettingShown() ){
 				vh.closeColumnSetting();
 				return true;
 			}

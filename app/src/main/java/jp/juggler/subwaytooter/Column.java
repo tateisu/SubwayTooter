@@ -2567,7 +2567,17 @@ class Column implements StreamReader.Callback {
 			);
 			break;
 		
+		
 		case TYPE_LOCAL:
+			
+			app_state.stream_reader.unregister(
+				access_info
+				, StreamReader.EP_PUBLIC_LOCAL
+				, this
+			);
+
+			break;
+		
 		case TYPE_FEDERATE:
 			app_state.stream_reader.unregister(
 				access_info

@@ -256,8 +256,10 @@ class StreamReader {
 				if( reader.access_info.db_id == access_info.db_id
 					&& reader.end_point.equals( end_point )
 					){
+					log.d("unregister: removeCallback %s",end_point);
 					reader.removeCallback( stream_callback );
 					if( reader.callback_list.isEmpty() ){
+						log.d("unregister: dispose %s",end_point);
 						reader.dispose();
 						it.remove();
 					}

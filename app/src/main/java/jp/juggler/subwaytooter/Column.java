@@ -1981,7 +1981,11 @@ class Column implements StreamReader.Callback {
 		task.executeOnExecutor( App1.task_executor );
 	}
 	
-	void startGap( final TootGap gap, final int position ){
+	void startGap( final TootGap gap ){
+		if( gap== null ){
+			Utils.showToast( context, true, "gap is null");
+			return;
+		}
 		if( last_task != null ){
 			Utils.showToast( context, true, R.string.column_is_busy );
 			return;
@@ -2314,11 +2318,18 @@ class Column implements StreamReader.Callback {
 					fireShowContent();
 					return;
 				}
+				
 				if( list_tmp == null ){
 					fireShowContent();
 					return;
 				}
 				// 0個でもギャップを消すために以下の処理を続ける
+				
+				int position = list_data.indexOf( gap );
+				if( position == -1 ){
+					log.d("gap is not found..");
+					return;
+				}
 				
 				ArrayList< Object > list_new = duplicate_map.filterDuplicate( list_tmp );
 				

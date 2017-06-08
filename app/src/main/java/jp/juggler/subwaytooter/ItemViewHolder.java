@@ -504,7 +504,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			if( search_tag != null ){
 				activity.openHashTag( activity.nextPosition( column ),access_info, search_tag );
 			}else if( gap != null ){
-				column.startGap( gap, position );
+				column.startGap( gap );
 			}
 			break;
 		}

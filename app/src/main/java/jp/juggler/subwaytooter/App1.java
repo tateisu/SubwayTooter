@@ -52,6 +52,7 @@ public class App1 extends Application {
 	
 	static final String DB_NAME = "app_db";
 	static final int DB_VERSION = 15;
+	public static final String FILE_PROVIDER_AUTHORITY = "jp.juggler.subwaytooter.FileProvider";
 	// 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
 	// 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加
 	// 2017/4/29 v20 2=>5 MediaShown,ContentWarningのインデクスが間違っていたので貼り直す

@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter;
 
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -233,6 +234,7 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	private void handleSentIntent( final Intent sent_intent ){
+		
 		AccountPicker.pick( this, false, true, getString( R.string.account_picker_toot ), new AccountPicker.AccountPickerCallback() {
 			@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 				ActPost.open( ActMain.this, REQUEST_CODE_POST, ai.db_id, sent_intent );

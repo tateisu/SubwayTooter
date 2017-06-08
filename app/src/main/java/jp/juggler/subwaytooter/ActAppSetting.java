@@ -726,7 +726,7 @@ public class ActAppSetting extends AppCompatActivity
 				}
 				
 				try{
-					Uri uri = FileProvider.getUriForFile( ActAppSetting.this, "jp.juggler.subwaytooter.FileProvider", result );
+					Uri uri = FileProvider.getUriForFile( ActAppSetting.this, App1.FILE_PROVIDER_AUTHORITY, result );
 					Intent intent = new Intent( Intent.ACTION_SEND );
 					intent.setType( getContentResolver().getType( uri ) );
 					intent.putExtra( Intent.EXTRA_SUBJECT, "SubwayTooter app data" );

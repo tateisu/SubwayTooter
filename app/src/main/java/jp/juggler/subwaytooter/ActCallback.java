@@ -26,15 +26,18 @@ public class ActCallback extends AppCompatActivity {
 		super.onCreate( savedInstanceState );
 		Intent intent = getIntent();
 		if( intent != null ){
-			if( Intent.ACTION_SEND.equals( intent.getAction() )
-				|| Intent.ACTION_SEND_MULTIPLE.equals( intent.getAction() )
+			String action = intent.getAction();
+			String type = intent.getType();
+			if( Intent.ACTION_SEND.equals( action )
+				|| Intent.ACTION_SEND_MULTIPLE.equals( action )
+				|| ( type != null && type.startsWith( "image/" ) && Intent.ACTION_VIEW.equals( action ) )
 				){
 				
 				// Google Photo などから送られるIntentに含まれるuriの有効期間はActivityが閉じられるまで
 				// http://qiita.com/pside/items/a821e2fe9ae6b7c1a98c
 				
 				// 有効期間を延長する
-				intent = remake(intent);
+				intent = remake( intent );
 				if( intent != null ){
 					sent_intent.set( intent );
 				}
@@ -60,18 +63,33 @@ public class ActCallback extends AppCompatActivity {
 			if( type == null ) return null;
 			
 			if( type.startsWith( "image/" ) ){
-				if( Intent.ACTION_SEND.equals( action ) ){
-					Uri uri = src.getParcelableExtra( Intent.EXTRA_STREAM );
+				if( Intent.ACTION_VIEW.equals( action ) ){
+					Uri uri = src.getData();
 					if( uri == null ) return null;
 					try{
 						uri = saveToCache( uri );
-						
 						Intent dst = new Intent( action );
-						dst.setType( type );
-						dst.putExtra( Intent.EXTRA_STREAM, uri );
+						dst.setDataAndType( uri,type );
 						return dst;
 					}catch( Throwable ex ){
 						ex.printStackTrace();
+					}
+				}else if( Intent.ACTION_SEND.equals( action ) ){
+					Uri uri = src.getParcelableExtra( Intent.EXTRA_STREAM );
+					if( uri == null ){
+						// text/plain
+						return src;
+					}else{
+						try{
+							uri = saveToCache( uri );
+							
+							Intent dst = new Intent( action );
+							dst.setType( type );
+							dst.putExtra( Intent.EXTRA_STREAM, uri );
+							return dst;
+						}catch( Throwable ex ){
+							ex.printStackTrace();
+						}
 					}
 				}else if( Intent.ACTION_SEND_MULTIPLE.equals( action ) ){
 					ArrayList< Uri > list_uri = src.getParcelableArrayListExtra( Intent.EXTRA_STREAM );
@@ -103,7 +121,7 @@ public class ActCallback extends AppCompatActivity {
 					return dst;
 				}
 			}
-		}catch(Throwable ex){
+		}catch( Throwable ex ){
 			ex.printStackTrace();
 		}
 		return null;

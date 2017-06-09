@@ -1077,6 +1077,51 @@ public class ActMain extends AppCompatActivity
 				}
 				return;
 				
+			}else if( uri.getPath().startsWith( "/users/" ) ){
+
+				// どうも古い形式らしいが、こういうURLもあるらしい
+				// https://mastodon.juggler.jp/users/SubwayTooter/updates/(status_id)
+				Matcher m = reStatusPage2.matcher( uri.toString() );
+				if( m.find() ){
+					// ステータスをアプリ内で開く
+					try{
+						final String host = m.group( 1 );
+						final long status_id = Long.parseLong( m.group( 3 ), 10 );
+						
+						ArrayList< SavedAccount > account_list_same_host = new ArrayList<>();
+						
+						for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
+							if( host.equalsIgnoreCase( a.host ) ){
+								account_list_same_host.add( a );
+							}
+						}
+						
+						// ソートする
+						Collections.sort( account_list_same_host, new Comparator< SavedAccount >() {
+							@Override public int compare( SavedAccount a, SavedAccount b ){
+								return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
+							}
+						} );
+						
+						if( account_list_same_host.isEmpty() ){
+							account_list_same_host.add( addPseudoAccount( host ) );
+						}
+						
+						AccountPicker.pick( this, true, true
+							, getString( R.string.open_status_from )
+							, account_list_same_host
+							, new AccountPicker.AccountPickerCallback() {
+								@Override
+								public void onAccountPicked( @NonNull final SavedAccount ai ){
+									openStatus( getDefaultInsertPosition(), ai, status_id );
+								}
+							} );
+						
+					}catch( Throwable ex ){
+						Utils.showToast( this, ex, "can't parse status id." );
+					}
+					return;
+				}
 			}
 			// https なら oAuth用の導線は通さない
 			return;
@@ -1479,6 +1524,7 @@ public class ActMain extends AppCompatActivity
 	static final Pattern reHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#]+)(?:\\z|\\?)" );
 	static final Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)(?:\\z|\\?)" );
 	static final Pattern reStatusPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)/(\\d+)(?:\\z|\\?)" );
+	static final Pattern reStatusPage2 = Pattern.compile( "\\Ahttps://([^/]+)/users/([^?#/]+)/updates/(\\d+)(?:\\z|\\?)" );
 	
 	public void openChromeTab( final int pos, @Nullable final SavedAccount access_info, final String url, boolean noIntercept ){
 		try{

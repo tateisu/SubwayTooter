@@ -334,7 +334,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				if( type == null ){
 					//
 				}else if( type.startsWith( "image/" ) ){
-					if( Intent.ACTION_SEND.equals( action ) ){
+					if( Intent.ACTION_VIEW.equals( action ) ){
+						Uri uri = sent_intent.getData();
+						if( uri != null ){
+							addAttachment( uri, type );
+						}
+					}else if( Intent.ACTION_SEND.equals( action ) ){
 						Uri uri = sent_intent.getParcelableExtra( Intent.EXTRA_STREAM );
 						if( uri != null ){
 							addAttachment( uri, type );

@@ -56,6 +56,9 @@ public class ActCallback extends AppCompatActivity {
 	}
 	
 	@Nullable Intent remake( @NonNull Intent src ){
+		
+		sweepOldCache();
+		
 		try{
 			final String action = src.getAction();
 			final String type = src.getType();
@@ -128,10 +131,13 @@ public class ActCallback extends AppCompatActivity {
 	}
 	
 	private Uri saveToCache( Uri uri ) throws Throwable{
+
+		// prepare cache directory
 		File cache_dir = getCacheDir();
-		
 		//noinspection ResultOfMethodCallIgnored
 		cache_dir.mkdirs();
+		
+		
 		
 		String name = "img." + Long.toString( System.currentTimeMillis() ) + "." + Utils.digestSHA256( uri.toString() );
 		
@@ -151,5 +157,32 @@ public class ActCallback extends AppCompatActivity {
 			IOUtils.closeQuietly( os );
 		}
 		return FileProvider.getUriForFile( this, App1.FILE_PROVIDER_AUTHORITY, dst );
+	}
+	
+	private void sweepOldCache(){
+		// sweep old cache
+		try{
+			// prepare cache directory
+			File cache_dir = getCacheDir();
+			//noinspection ResultOfMethodCallIgnored
+			cache_dir.mkdirs();
+			
+			long now = System.currentTimeMillis();
+			for( File f : cache_dir.listFiles() ){
+				try{
+					if( f.isFile()
+						&& f.getName().startsWith( "img." )
+						&& now - f.lastModified() >= 86400000L
+						){
+						//noinspection ResultOfMethodCallIgnored
+						f.delete();
+					}
+				}catch(Throwable ex){
+					ex.printStackTrace();
+				}
+			}
+		}catch(Throwable ex){
+			ex.printStackTrace();
+		}
 	}
 }

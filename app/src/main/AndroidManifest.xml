@@ -176,7 +176,7 @@
             />
         <meta-data
             android:name="android.max_aspect"
-            android:value="ratio_float"/>
+            android:value="100.0"/>
 
         <provider
             android:name="android.support.v4.content.FileProvider"

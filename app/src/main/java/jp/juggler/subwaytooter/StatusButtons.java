@@ -13,7 +13,6 @@ import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.LogCategory;
-import jp.juggler.subwaytooter.util.Utils;
 
 class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 	static final LogCategory log = new LogCategory( "StatusButtons" );
@@ -97,7 +96,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		}else{
 			llFollow2.setVisibility( View.VISIBLE );
 			this.relation = UserRelation.load( access_info.db_id, status.account.id );
-			Styler.setFollowIcon( activity, btnFollow2, ivFollowedBy2, relation, column.column_type );
+			Styler.setFollowIcon( activity, btnFollow2, ivFollowedBy2, relation );
 		}
 		
 	}

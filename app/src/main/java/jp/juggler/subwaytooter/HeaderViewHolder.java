@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter;
 
-import android.support.v4.view.ViewCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -137,7 +136,7 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 			btnFollowers.setText( activity.getString( R.string.followers ) + "\n" + who.followers_count );
 			
 			UserRelation relation = UserRelation.load( access_info.db_id, who.id );
-			Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation, column.column_type );
+			Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation );
 		}
 	}
 	

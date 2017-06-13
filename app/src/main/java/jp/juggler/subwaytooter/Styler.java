@@ -11,7 +11,6 @@ import android.graphics.drawable.RippleDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.graphics.drawable.shapes.RectShape;
-import android.graphics.drawable.shapes.RoundRectShape;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
@@ -21,7 +20,6 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 
-import java.util.Arrays;
 import java.util.Locale;
 
 import jp.juggler.subwaytooter.api.entity.TootStatus;
@@ -76,9 +74,7 @@ public class Styler {
 		@NonNull Context context
 		, @NonNull ImageButton ib
 		, @NonNull ImageView iv
-		, @NonNull  UserRelation relation
-	    ,int column_type
-	    
+		, @NonNull UserRelation relation
 	){
 		
 		// 被フォロー状態
@@ -176,13 +172,18 @@ public class Styler {
 		return states;
 	}
 	
-	static void fixHorizontalPadding( View v ){
+	private static final float form_width_max = 420f;
+
+	private static int getHorizontalPadding(View v,float delta_dp){
 		DisplayMetrics dm = v.getResources().getDisplayMetrics();
-		int sw = dm.widthPixels;
-		int content_w = (int)(0.5f + 360f * dm.density);
-		int pad_lr = (sw-content_w)/2;
-		int pad_min = (int)(0.5f + 12f * dm.density);
-		if( pad_lr < pad_min ) pad_lr = pad_min;
+		int screen_w = dm.widthPixels;
+		int content_w = (int)(0.5f + form_width_max * dm.density);
+		int pad_lr = (screen_w-content_w)/2;
+		return (pad_lr < 0 ? 0 : pad_lr) + (int)(0.5f + delta_dp * dm.density);
+	}
+	
+	static void fixHorizontalPadding( View v ){
+		int pad_lr = getHorizontalPadding( v ,12f);
 		
 		int pad_t = v.getPaddingTop();
 		int pad_b = v.getPaddingBottom();
@@ -190,12 +191,7 @@ public class Styler {
 	}
 	
 	static void fixHorizontalPadding2( View v ){
-		DisplayMetrics dm = v.getResources().getDisplayMetrics();
-		int sw = dm.widthPixels;
-		int content_w = (int)(0.5f + 360f * dm.density);
-		int pad_lr = (sw-content_w)/2;
-		int pad_min = 0;
-		if( pad_lr < pad_min ) pad_lr = pad_min;
+		int pad_lr = getHorizontalPadding( v ,0f);
 		
 		int pad_t = v.getPaddingTop();
 		int pad_b = v.getPaddingBottom();
@@ -203,12 +199,7 @@ public class Styler {
 	}
 	
 	static void fixHorizontalMargin( View v ){
-		DisplayMetrics dm = v.getResources().getDisplayMetrics();
-		int sw = dm.widthPixels;
-		int content_w = (int)(0.5f + 360f * dm.density);
-		int pad_lr = (sw-content_w)/2;
-		int pad_min = 0;
-		if( pad_lr < pad_min ) pad_lr = pad_min;
+		int pad_lr = getHorizontalPadding( v ,0f);
 		
 		ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
 		lp.leftMargin = pad_lr;

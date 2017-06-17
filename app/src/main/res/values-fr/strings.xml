@@ -344,18 +344,19 @@
 	<string name="plugin_not_installed">Aucun plugin Mushroom n\'est installé.</string>
 	<string name="language_code">fr</string>
 	<string name="recommended_plugin">Plugins Mushroom recommandés</string>
-    <string name="appearance">Appearance</string>
-    <string name="behavior">Behavior</string>
-    <string name="notification_on_off_desc">See also account setting to enable/disable notification.</string>
-    <string name="performance">Performance</string>
-    <string name="tablet_mode">Tablet mode</string>
+	<string name="appearance">Apparence</string>
+	<string name="behavior">Comportement</string>
+	<string name="notification_on_off_desc">Activez/désactiver les notifications dans les options du compte.</string>
+	<string name="performance">Performance</string>
+	<string name="tablet_mode">Mode tablette</string>
 	<string name="post">Post</string>
-    <string name="toot_button_default_account">Default acount when toot button tapped</string>
-	<string name="account_change_failed_old_draft_has_no_in_reply_to_url">Account change failed. Old draft data has no in_reply_to_url, can\'t convert in_repley_to for selected instance.</string>
-	<string name="in_reply_to_id_conversion_failed">\"in_reply_to\" ID conversion failed.</string>
-    <string name="prior_chrome_custom_tabs">Prior Chrome Custom Tabs</string>
-
-    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+  <string name="toot_button_default_account">Compte par défaut pour l\'envoi de toots</string>
+	<string name="account_change_failed_old_draft_has_no_in_reply_to_url">Changement de compte échoué, aucune information de destinataire, impossible de répondre.</string>
+	<string name="in_reply_to_id_conversion_failed">Conversion de l\'identifiant du destinataire échouée.</string>
+  <string name="prior_chrome_custom_tabs">Onglet personalisé Chrome précédent.</string>
+ 
+ 
+  <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

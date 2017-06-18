@@ -733,23 +733,34 @@ class ColumnViewHolder
 		
 		// 表示状態が変わった後にもう一度呼び出す必要があるらしい。。。
 		status_adapter.notifyDataSetChanged();
-
-		restoreScrollPosition();
+		
+		proc_restoreScrollPosition.run();
 	}
 	
-	private void restoreScrollPosition(){
-		if( column == null ) return;
-		
-		ScrollPosition sp = column.scroll_save;
-		if( sp == null ) return;
-		
-		column.scroll_save = null;
-		
-		if( listView.getVisibility() == View.VISIBLE ){
-			sp.restore( listView );
+	final Runnable proc_restoreScrollPosition = new Runnable() {
+		@Override public void run(){
+			activity.handler.removeCallbacks( proc_restoreScrollPosition );
+			if( column == null ) return;
+			
+			if( column.hasMultipleViewHolder() ){
+				// タブレットモードでカラムを追加/削除した際に発生する。
+				// このタイミングでスクロール位置を復元してもうまくいかないので延期する
+				activity.handler.post( proc_restoreScrollPosition );
+				return;
+			}
+			
+			ScrollPosition sp = column.scroll_save;
+			if( sp == null ) return;
+			
+			column.scroll_save = null;
+			
+			if( listView.getVisibility() == View.VISIBLE ){
+				sp.restore( listView );
+			}
+			
 		}
-		
-	}
+	};
+	
 	
 	private void saveScrollPosition(){
 		if( column != null && ! column.is_dispose.get() ){

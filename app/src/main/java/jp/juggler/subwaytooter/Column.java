@@ -52,6 +52,7 @@ import jp.juggler.subwaytooter.util.Utils;
 class Column implements StreamReader.Callback {
 	private static final LogCategory log = new LogCategory( "Column" );
 	
+	
 	interface Callback {
 		boolean isActivityResume();
 	}
@@ -721,6 +722,10 @@ class Column implements StreamReader.Callback {
 		for( Iterator< ColumnViewHolder > it = _holder_list.iterator() ; it.hasNext() ; ){
 			if( cvh == it.next() ) it.remove();
 		}
+	}
+	
+	boolean hasMultipleViewHolder(){
+		return _holder_list.size() > 1;
 	}
 	
 	private ColumnViewHolder getViewHolder(){

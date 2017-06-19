@@ -130,6 +130,10 @@ public class ActMain extends AppCompatActivity
 		}
 		
 		AlarmService.startCheck( this );
+		
+		if( savedInstanceState != null && sent_intent2 != null ){
+			handleSentIntent( sent_intent2 );
+		}
 	}
 	
 	@Override protected void onDestroy(){
@@ -233,17 +237,29 @@ public class ActMain extends AppCompatActivity
 		updateColumnStripSelection( - 1, - 1f );
 	}
 	
-	private void handleSentIntent( final Intent sent_intent ){
-		
-		AccountPicker.pick( this, false, true, getString( R.string.account_picker_toot ), new AccountPicker.AccountPickerCallback() {
-			@Override public void onAccountPicked( @NonNull SavedAccount ai ){
-				ActPost.open( ActMain.this, REQUEST_CODE_POST, ai.db_id, sent_intent );
+	static Intent sent_intent2;
+	
+	private void handleSentIntent( final Intent intent ){
+		sent_intent2 = intent;
+		AccountPicker.pick( this
+			, false
+			, true
+			, getString( R.string.account_picker_toot )
+			, new AccountPicker.AccountPickerCallback() {
+				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+					ActPost.open( ActMain.this, REQUEST_CODE_POST, ai.db_id, intent );
+				}
 			}
-		} );
+			, new DialogInterface.OnDismissListener() {
+				@Override public void onDismiss( DialogInterface dialog ){
+					sent_intent2 = null;
+				}
+			}
+		);
 	}
 	
 	// 画面上のUI操作で生成されて
-	// onPause,onPageDestoroy 等のタイミングで閉じられる
+	// onPause,onPageDestroy 等のタイミングで閉じられる
 	// 状態保存の必要なし
 	StatusButtonsPopup list_item_popup;
 	
@@ -430,22 +446,23 @@ public class ActMain extends AppCompatActivity
 		case ActAppSetting.BACK_ASK_ALWAYS:
 			ActionsDialog dialog = new ActionsDialog();
 			
+			Column current_column = null;
 			if( pager_adapter != null ){
-				dialog.addAction( getString( R.string.close_column ), new Runnable() {
-					@Override public void run(){
-						closeColumn( true, app_state.column_list.get( pager.getCurrentItem() ) );
-					}
-				} );
+				current_column = app_state.column_list.get( pager.getCurrentItem() );
 			}else{
 				final int vs = tablet_layout_manager.findFirstVisibleItemPosition();
 				final int ve = tablet_layout_manager.findLastVisibleItemPosition();
 				if( vs == ve && vs != RecyclerView.NO_POSITION ){
-					dialog.addAction( getString( R.string.close_column ), new Runnable() {
-						@Override public void run(){
-							closeColumn( true, app_state.column_list.get( vs ) );
-						}
-					} );
+					current_column = app_state.column_list.get( vs );
 				}
+			}
+			if( current_column != null && !current_column.dont_close){
+				final Column _column = current_column;
+				dialog.addAction( getString( R.string.close_column ), new Runnable() {
+					@Override public void run(){
+						closeColumn( true, _column );
+					}
+				} );
 			}
 			
 			dialog.addAction( getString( R.string.open_column_list ), new Runnable() {
@@ -453,6 +470,7 @@ public class ActMain extends AppCompatActivity
 					openColumnList();
 				}
 			} );
+
 			dialog.addAction( getString( R.string.app_exit ), new Runnable() {
 				@Override public void run(){
 					ActMain.this.finish();

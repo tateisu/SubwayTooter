@@ -2,7 +2,9 @@ package jp.juggler.subwaytooter.dialog;
 
 import android.annotation.SuppressLint;
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
@@ -11,6 +13,7 @@ import android.widget.Button;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import jp.juggler.subwaytooter.ActMain;
 import jp.juggler.subwaytooter.R;
@@ -27,6 +30,7 @@ public class AccountPicker {
 		void onAccountPicked( @NonNull SavedAccount ai );
 	}
 	
+	
 	public static void pick(
 		@NonNull ActMain activity
 		, boolean bAllowPseudo
@@ -36,7 +40,19 @@ public class AccountPicker {
 	){
 		
 		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( ActMain.log );
-		pick( activity, bAllowPseudo, bAuto, message, account_list, callback );
+		pick( activity, bAllowPseudo, bAuto, message, account_list, callback ,null );
+	}
+	
+	public static void pick(
+		@NonNull ActMain activity
+		, boolean bAllowPseudo
+		, boolean bAuto
+		, String message
+		, @NonNull final AccountPickerCallback callback
+		, @Nullable final DialogInterface.OnDismissListener dissmiss_callback
+	){
+		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( ActMain.log );
+		pick( activity, bAllowPseudo, bAuto, message, account_list, callback ,dissmiss_callback );
 	}
 	
 	public static void pick(
@@ -46,6 +62,18 @@ public class AccountPicker {
 		, String message
 		, @NonNull final ArrayList< SavedAccount > account_list
 		, @NonNull final AccountPickerCallback callback
+	){
+		pick( activity, bAllowPseudo, bAuto, message, account_list, callback ,null );
+	}
+	
+	public static void pick(
+		@NonNull ActMain activity
+		, boolean bAllowPseudo
+		, boolean bAuto
+		, String message
+		, @NonNull final ArrayList< SavedAccount > account_list
+		, @NonNull final AccountPickerCallback callback
+		, @Nullable final DialogInterface.OnDismissListener dissmiss_callback
 	){
 		if( account_list.isEmpty() ){
 			Utils.showToast( activity, false, R.string.account_empty );
@@ -78,21 +106,36 @@ public class AccountPicker {
 		} );
 		
 		@SuppressLint("InflateParams") View viewRoot = activity.getLayoutInflater().inflate( R.layout.dlg_account_picker, null, false );
+
 		final Dialog dialog = new Dialog( activity );
+		final AtomicBoolean isDialogClosed = new AtomicBoolean( false );
+		
+		if( dissmiss_callback != null ){
+			dialog.setOnDismissListener( dissmiss_callback );
+		}
+
 		dialog.setContentView( viewRoot );
-		dialog.setCancelable( true );
-		dialog.setCanceledOnTouchOutside( true );
 		if( ! TextUtils.isEmpty( message ) ){
 			TextView tv = (TextView) viewRoot.findViewById( R.id.tvMessage );
 			tv.setVisibility( View.VISIBLE );
 			tv.setText( message );
 		}
-		
 		viewRoot.findViewById( R.id.btnCancel ).setOnClickListener( new View.OnClickListener() {
 			@Override public void onClick( View v ){
+				isDialogClosed.set(true);
 				dialog.cancel();
 			}
 		} );
+		dialog.setCancelable( true );
+		dialog.setCanceledOnTouchOutside( true );
+		dialog.setOnCancelListener( new DialogInterface.OnCancelListener() {
+			@Override public void onCancel( DialogInterface dialog ){
+				isDialogClosed.set(true);
+			}
+		} );
+		
+		
+		
 		
 		LinearLayout llAccounts = (LinearLayout) viewRoot.findViewById( R.id.llAccounts );
 		int pad_se = (int) ( 0.5f + 12f * activity.density );
@@ -124,6 +167,7 @@ public class AccountPicker {
 			final SavedAccount _a = a;
 			b.setOnClickListener( new View.OnClickListener() {
 				@Override public void onClick( View v ){
+					isDialogClosed.set(true);
 					dialog.dismiss();
 					callback.onAccountPicked( _a );
 				}

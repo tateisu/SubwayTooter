@@ -354,6 +354,8 @@
 	<string name="account_change_failed_old_draft_has_no_in_reply_to_url">Account change failed. Old draft data has no in_reply_to_url, can\'t convert in_repley_to for selected instance.</string>
 	<string name="in_reply_to_id_conversion_failed">\"in_reply_to\" ID conversion failed.</string>
     <string name="prior_chrome_custom_tabs">Prior Chrome Custom Tabs</string>
+    <string name="enable_speech">Enables speech</string>
+    <string name="url_omitted">(URL omitted)</string>
 
     <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

@@ -122,6 +122,7 @@ class Column implements StreamReader.Callback {
 	private static final String KEY_DONT_STREAMING = "dont_streaming";
 	private static final String KEY_DONT_AUTO_REFRESH = "dont_auto_refresh";
 	private static final String KEY_HIDE_MEDIA_DEFAULT = "hide_media_default";
+	private static final String KEY_ENABLE_SPEECH = "enable_speech";
 	
 	private static final String KEY_REGEX_TEXT = "regex_text";
 	
@@ -174,6 +175,7 @@ class Column implements StreamReader.Callback {
 	boolean dont_streaming;
 	boolean dont_auto_refresh;
 	boolean hide_media_default;
+	boolean enable_speech;
 	
 	String regex_text;
 	
@@ -240,6 +242,7 @@ class Column implements StreamReader.Callback {
 		item.put( KEY_DONT_STREAMING, dont_streaming );
 		item.put( KEY_DONT_AUTO_REFRESH, dont_auto_refresh );
 		item.put( KEY_HIDE_MEDIA_DEFAULT, hide_media_default );
+		item.put( KEY_ENABLE_SPEECH, enable_speech );
 		
 		item.put( KEY_REGEX_TEXT, regex_text );
 		
@@ -292,6 +295,7 @@ class Column implements StreamReader.Callback {
 		this.dont_streaming = src.optBoolean( KEY_DONT_STREAMING );
 		this.dont_auto_refresh = src.optBoolean( KEY_DONT_AUTO_REFRESH );
 		this.hide_media_default = src.optBoolean( KEY_HIDE_MEDIA_DEFAULT );
+		this.enable_speech = src.optBoolean( KEY_ENABLE_SPEECH );
 		
 		this.regex_text = Utils.optStringX( src, KEY_REGEX_TEXT );
 		
@@ -2562,6 +2566,10 @@ class Column implements StreamReader.Callback {
 				if( column_type == TYPE_NOTIFICATIONS ) return;
 				if( column_type == TYPE_LOCAL && status.account.acct.indexOf( '@' ) != - 1 ) return;
 				if( isFiltered( status ) ) return;
+				
+				if( this.enable_speech ){
+					App1.getAppState( context ).addSpeech( status.reblog != null ? status.reblog : status);
+				}
 			}
 			stream_data_queue.addFirst( o );
 			proc_stream_data.run();
@@ -2696,6 +2704,11 @@ class Column implements StreamReader.Callback {
 			return ! access_info.isPseudo();
 		}
 	}
+	
+	boolean canSpeech(){
+		return canStreaming() && column_type != TYPE_NOTIFICATIONS;
+	}
+	
 	
 	private boolean bPutGap;
 	

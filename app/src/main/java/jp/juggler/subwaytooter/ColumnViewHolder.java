@@ -76,6 +76,7 @@ class ColumnViewHolder
 	private final CheckBox cbDontStreaming;
 	private final CheckBox cbDontAutoRefresh;
 	private final CheckBox cbHideMediaDefault;
+	private final CheckBox cbEnableSpeech;
 	private final View llRegexFilter;
 	private final Button btnDeleteNotification;
 	
@@ -131,6 +132,7 @@ class ColumnViewHolder
 		cbDontStreaming = (CheckBox) root.findViewById( R.id.cbDontStreaming );
 		cbDontAutoRefresh = (CheckBox) root.findViewById( R.id.cbDontAutoRefresh );
 		cbHideMediaDefault = (CheckBox) root.findViewById( R.id.cbHideMediaDefault );
+		cbEnableSpeech = (CheckBox) root.findViewById( R.id.cbEnableSpeech );
 		etRegexFilter = (EditText) root.findViewById( R.id.etRegexFilter );
 		llRegexFilter = root.findViewById( R.id.llRegexFilter );
 		tvRegexFilterError = (TextView) root.findViewById( R.id.tvRegexFilterError );
@@ -158,6 +160,7 @@ class ColumnViewHolder
 		cbDontStreaming.setOnCheckedChangeListener( this );
 		cbDontAutoRefresh.setOnCheckedChangeListener( this );
 		cbHideMediaDefault.setOnCheckedChangeListener( this );
+		cbEnableSpeech.setOnCheckedChangeListener( this );
 		
 		// 入力の追跡
 		etRegexFilter.addTextChangedListener( new TextWatcher() {
@@ -275,6 +278,7 @@ class ColumnViewHolder
 			cbDontStreaming.setChecked( column.dont_streaming );
 			cbDontAutoRefresh.setChecked( column.dont_auto_refresh );
 			cbHideMediaDefault.setChecked( column.hide_media_default );
+			cbEnableSpeech.setChecked( column.enable_speech );
 			
 			etRegexFilter.setText( column.regex_text );
 			etSearch.setText( column.search_query );
@@ -286,6 +290,7 @@ class ColumnViewHolder
 			vg( cbDontStreaming, column.canStreaming() );
 			vg( cbDontAutoRefresh, column.canAutoRefresh() );
 			vg( cbHideMediaDefault, column.canShowMedia() );
+			vg( cbEnableSpeech, column.canSpeech() );
 			
 			vg( etRegexFilter, bAllowFilter );
 			vg( llRegexFilter, bAllowFilter );
@@ -562,6 +567,11 @@ class ColumnViewHolder
 			column.hide_media_default = isChecked;
 			activity.app_state.saveColumnList();
 			column.fireShowContent();
+			break;
+
+		case R.id.cbEnableSpeech:
+			column.enable_speech = isChecked;
+			activity.app_state.saveColumnList();
 			break;
 			
 		}

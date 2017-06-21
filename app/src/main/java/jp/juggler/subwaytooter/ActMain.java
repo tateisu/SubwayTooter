@@ -13,6 +13,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
@@ -133,6 +134,31 @@ public class ActMain extends AppCompatActivity
 		
 		if( savedInstanceState != null && sent_intent2 != null ){
 			handleSentIntent( sent_intent2 );
+		}
+		
+		log.d("speech initialize start");
+		if( app_state.tts == null ){
+			new AsyncTask<Void,Void,TextToSpeech>(){
+				TextToSpeech tmp_tts;
+				@Override protected TextToSpeech doInBackground( Void... params ){
+					tmp_tts = new TextToSpeech( getApplicationContext(), tts_init_listener );
+					return tmp_tts;
+				}
+				final TextToSpeech.OnInitListener tts_init_listener = new TextToSpeech.OnInitListener() {
+					@Override public void onInit( int status ){
+						if (TextToSpeech.SUCCESS != status){
+							log.d( "speech initialize failed. status=%s", status );
+						}else{
+							log.d( "speech initialize complete.");
+							Utils.runOnMainThread( new Runnable() {
+								@Override public void run(){
+									app_state.setTextToSpeech( tmp_tts );
+								}
+							} );
+						}
+					}
+				};
+			}.executeOnExecutor( App1.task_executor );
 		}
 	}
 	

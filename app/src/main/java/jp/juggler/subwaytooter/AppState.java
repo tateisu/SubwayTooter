@@ -262,6 +262,8 @@ class AppState {
 		}
 		
 		tts_queue.add( sv );
+		if( tts_queue.size() > 30 ) tts_queue.removeFirst();
+		
 		flushSpeechQueue();
 	}
 	

@@ -27,6 +27,7 @@ import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootContext;
+import jp.juggler.subwaytooter.api.entity.TootDomainBlock;
 import jp.juggler.subwaytooter.api.entity.TootGap;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootRelationShip;
@@ -105,6 +106,7 @@ class Column implements StreamReader.Callback {
 	// 他のリストを返すAPI
 	private static final String PATH_REPORTS = "/api/v1/reports?limit=" + READ_LIMIT;
 	private static final String PATH_NOTIFICATIONS = "/api/v1/notifications?limit=" + READ_LIMIT;
+	private static final String PATH_DOMAIN_BLOCK = "/api/v1/domain_blocks?limit=" + READ_LIMIT;
 	
 	// リストではなくオブジェクトを返すAPI
 	private static final String PATH_ACCOUNT = "/api/v1/accounts/%d"; // 1:account_id
@@ -160,6 +162,7 @@ class Column implements StreamReader.Callback {
 	static final int TYPE_FOLLOW_REQUESTS = 13;
 	static final int TYPE_BOOSTED_BY = 14;
 	static final int TYPE_FAVOURITED_BY = 15;
+	static final int TYPE_DOMAIN_BLOCKS = 16;
 	
 	@NonNull final Context context;
 	@NonNull private final AppState app_state;
@@ -462,6 +465,9 @@ class Column implements StreamReader.Callback {
 		
 		case TYPE_BLOCKS:
 			return context.getString( R.string.blocked_users );
+
+		case TYPE_DOMAIN_BLOCKS:
+			return context.getString( R.string.blocked_domains );
 		
 		case TYPE_SEARCH:
 			return context.getString( R.string.search );
@@ -513,6 +519,9 @@ class Column implements StreamReader.Callback {
 		
 		case TYPE_BLOCKS:
 			return R.attr.ic_block;
+
+		case TYPE_DOMAIN_BLOCKS:
+			return R.attr.ic_domain_block;
 		
 		case TYPE_SEARCH:
 			return R.attr.ic_search;
@@ -705,6 +714,51 @@ class Column implements StreamReader.Callback {
 		
 		AlarmService.dataRemoved( context, access_info.db_id );
 	}
+	
+	void onDomainBlockChanged( SavedAccount target_account, String domain, boolean bBlocked ){
+		if( ! target_account.host.equals( access_info.host ) ) return;
+		if( access_info.isPseudo() ) return;
+		
+		if( column_type == TYPE_DOMAIN_BLOCKS ){
+			// ドメインブロック一覧を読み直す
+			startLoading();
+			return;
+		}
+		
+		if( bBlocked ){
+			// ブロックしたのとドメイン部分が一致するアカウントからのステータスと通知をすべて除去する
+
+			Pattern reDomain = Pattern.compile( "[^@]+@\\Q" + domain +"\\E\\z",Pattern.CASE_INSENSITIVE );
+			
+			ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
+			
+			for( Object o : list_data ){
+				if( o instanceof TootStatus ){
+					TootStatus item = (TootStatus) o;
+					if( reDomain.matcher( item.account.acct).find() ) continue;
+					if( item.reblog != null && reDomain.matcher( item.reblog.account.acct).find() ) continue;
+				}else if( o instanceof TootNotification ){
+					TootNotification item = (TootNotification) o;
+					if( item.account != null ){
+						if( reDomain.matcher( item.account.acct).find() ) continue;
+					}
+					if( item.status != null ){
+						if( reDomain.matcher( item.status.account.acct).find() ) continue;
+						if( item.status.reblog != null && reDomain.matcher( item.status.reblog.account.acct).find() ) continue;
+					}
+				}
+				tmp_list.add( o );
+			}
+			if( tmp_list.size() != list_data.size() ){
+				list_data.clear();
+				list_data.addAll( tmp_list );
+				fireShowContent();
+			}
+
+		}
+
+	}
+	
 	
 	//////////////////////////////////////////////////////////////////////////////////////
 	
@@ -1014,6 +1068,16 @@ class Column implements StreamReader.Callback {
 				return result;
 			}
 			
+			TootApiResult parseDomainList( TootApiClient client, String path_base ){
+				TootApiResult result = client.request( path_base );
+				if( result != null ){
+					saveRange( result, true, true );
+					list_tmp = new ArrayList<>();
+					list_tmp.addAll( TootDomainBlock.parseList( log, result.array ) );
+				}
+				return result;
+			}
+			
 			TootApiResult parseReports( TootApiClient client, String path_base ){
 				TootApiResult result = client.request( path_base );
 				if( result != null ){
@@ -1113,6 +1177,9 @@ class Column implements StreamReader.Callback {
 					
 					case TYPE_BLOCKS:
 						return parseAccountList( client, PATH_BLOCKS );
+
+					case TYPE_DOMAIN_BLOCKS:
+						return parseDomainList( client, PATH_DOMAIN_BLOCK );
 					
 					case TYPE_FOLLOW_REQUESTS:
 						return parseAccountList( client, PATH_FOLLOW_REQUESTS );
@@ -1557,6 +1624,55 @@ class Column implements StreamReader.Callback {
 				return result;
 			}
 			
+			
+			TootApiResult getDomainList( TootApiClient client, String path_base ){
+				long time_start = SystemClock.elapsedRealtime();
+				char delimiter = ( - 1 != path_base.indexOf( '?' ) ? '&' : '?' );
+				String last_since_id = since_id;
+				
+				TootApiResult result = client.request( addRange( bBottom, path_base ) );
+				if( result != null && result.array != null ){
+					saveRange( result, bBottom, ! bBottom );
+					list_tmp = new ArrayList<>();
+					TootDomainBlock.List src = TootDomainBlock.parseList( log, result.array );
+					list_tmp.addAll( src );
+					if( ! bBottom ){
+						for( ; ; ){
+							if( isCancelled() ){
+								log.d( "refresh-domain-top: cancelled." );
+								break;
+							}
+							
+							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
+							// 直前のデータが0個なら終了とみなすしかなさそう
+							if( src.isEmpty() ){
+								log.d( "refresh-domain-top: previous size == 0." );
+								break;
+							}
+							
+							if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
+								log.d( "refresh-domain-top: timeout." );
+								// タイムアウト
+								break;
+							}
+							
+							String path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id;
+							TootApiResult result2 = client.request( path );
+							if( result2 == null || result2.array == null ){
+								log.d( "refresh-domain-top: error or cancelled." );
+								// エラー
+								break;
+							}
+							
+							src = TootDomainBlock.parseList( log, result2.array );
+							list_tmp.addAll( src );
+						}
+					}
+				}
+				return result;
+			}
+			
+			
 			TootApiResult getReportList( TootApiClient client, String path_base ){
 				long time_start = SystemClock.elapsedRealtime();
 				char delimiter = ( - 1 != path_base.indexOf( '?' ) ? '&' : '?' );
@@ -1878,6 +1994,9 @@ class Column implements StreamReader.Callback {
 					
 					case TYPE_BLOCKS:
 						return getAccountList( client, PATH_BLOCKS );
+					
+					case TYPE_DOMAIN_BLOCKS:
+						return getDomainList( client, PATH_DOMAIN_BLOCK );
 					
 					case TYPE_FOLLOW_REQUESTS:
 						return getAccountList( client, PATH_FOLLOW_REQUESTS );
@@ -2267,6 +2386,9 @@ class Column implements StreamReader.Callback {
 					
 					case TYPE_BLOCKS:
 						return getAccountList( client, PATH_BLOCKS );
+
+					// ドメインブロックはギャップ表示がもともとない
+					//case TYPE_DOMAIN_BLOCKS:
 					
 					case TYPE_FOLLOW_REQUESTS:
 						return getAccountList( client, PATH_FOLLOW_REQUESTS );
@@ -2667,6 +2789,7 @@ class Column implements StreamReader.Callback {
 		case TYPE_REPORTS:
 		case TYPE_MUTES:
 		case TYPE_BLOCKS:
+		case TYPE_DOMAIN_BLOCKS:
 		case TYPE_FOLLOW_REQUESTS:
 		case TYPE_BOOSTED_BY:
 		case TYPE_FAVOURITED_BY:

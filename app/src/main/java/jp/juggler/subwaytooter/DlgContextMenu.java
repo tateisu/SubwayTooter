@@ -82,6 +82,9 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		View btnFollowFromAnotherAccount = viewRoot.findViewById( R.id.btnFollowFromAnotherAccount );
 		View btnSendMessageFromAnotherAccount = viewRoot.findViewById( R.id.btnSendMessageFromAnotherAccount );
 		View btnOpenProfileFromAnotherAccount = viewRoot.findViewById( R.id.btnOpenProfileFromAnotherAccount );
+		Button btnDomainBlock = (Button) viewRoot.findViewById( R.id.btnDomainBlock );
+
+		
 		
 		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( log );
 		
@@ -174,6 +177,19 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			d = Styler.getAttributeDrawable( activity, icon_attr ).mutate();
 			d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
 			btnBlock.setImageDrawable( d );
+			
+			
+			{
+				int acct_delm = who.acct.indexOf( "@" );
+				if( -1 ==  acct_delm || access_info.isPseudo() ){
+					// 疑似アカウントではドメインブロックできない
+					// 自ドメインはブロックできない
+					btnDomainBlock.setVisibility( View.GONE );
+				}else{
+					btnDomainBlock.setText(activity.getString(R.string.block_domain_that,who.acct.substring( acct_delm+1 )));
+					btnDomainBlock.setOnClickListener( this );
+				}
+			}
 		}
 		
 		if( access_info.isPseudo() ){
@@ -387,7 +403,26 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		case R.id.btnAccountQrCode:
 			DlgQRCode.open( activity, who.display_name, access_info.getUserUrl( who.acct ) );
 			break;
-			
+		
+		case R.id.btnDomainBlock:
+		
+			int acct_delm = who.acct.indexOf( "@" );
+			if( -1 ==  acct_delm || access_info.isPseudo() ){
+				// 疑似アカウントではドメインブロックできない
+				// 自ドメインはブロックできない
+			}else{
+				final String domain = who.acct.substring( acct_delm+1 );
+				new AlertDialog.Builder( activity )
+					.setMessage( activity.getString( R.string.confirm_block_domain, domain ) )
+					.setNegativeButton( R.string.cancel, null )
+					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
+						@Override public void onClick( DialogInterface dialog, int which ){
+							activity.callDomainBlock( access_info, domain, true, null );
+						}
+					} )
+					.show();
+			}
+			break;
 		}
 	}
 	

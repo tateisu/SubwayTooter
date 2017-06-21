@@ -85,6 +85,7 @@
         <item name="ic_hamburger">@drawable/ic_hamburger</item>
         <item name="ic_delete">@drawable/ic_delete</item>
         <item name="ic_plugin">@drawable/ic_plugin</item>
+        <item name="ic_domain_block">@drawable/ic_domain_block</item>
 
 
     </style>
@@ -175,6 +176,7 @@
         <item name="ic_hamburger">@drawable/ic_hamburger_dark</item>
         <item name="ic_delete">@drawable/ic_delete_dark</item>
         <item name="ic_plugin">@drawable/ic_plugin_dark</item>
+        <item name="ic_domain_block">@drawable/ic_domain_block_dark</item>
 
     </style>
 

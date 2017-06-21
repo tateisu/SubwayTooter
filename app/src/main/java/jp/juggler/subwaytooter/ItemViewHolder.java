@@ -1,7 +1,9 @@
 package jp.juggler.subwaytooter;
 
+import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.support.v4.view.ViewCompat;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,6 +14,7 @@ import android.widget.TextView;
 
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
+import jp.juggler.subwaytooter.api.entity.TootDomainBlock;
 import jp.juggler.subwaytooter.api.entity.TootGap;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
@@ -81,6 +84,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private TootAccount account_follow;
 	private String search_tag;
 	private TootGap gap;
+	private TootDomainBlock domain_block;
 	private int position;
 	
 	private final boolean bSimpleList;
@@ -196,6 +200,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.account_follow = null;
 		this.search_tag = null;
 		this.gap = null;
+		this.domain_block = null;
 		
 		llBoosted.setVisibility( View.GONE );
 		llFollow.setVisibility( View.GONE );
@@ -261,7 +266,16 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			}
 		}else if( item instanceof TootGap ){
 			showGap( (TootGap) item );
+		}else if( item instanceof TootDomainBlock ){
+			showDomainBlock( (TootDomainBlock)item );
 		}
+	}
+	
+	private void showDomainBlock( TootDomainBlock domain_block ){
+		this.gap = null;
+		this.domain_block = domain_block;
+		llSearchTag.setVisibility( View.VISIBLE );
+		btnSearchTag.setText( domain_block.domain );
 	}
 	
 	private void showSearchTag( String tag ){
@@ -505,8 +519,20 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 				activity.openHashTag( activity.nextPosition( column ),access_info, search_tag );
 			}else if( gap != null ){
 				column.startGap( gap );
+			}else if( domain_block != null ){
+				final String domain =  domain_block.domain;
+				new AlertDialog.Builder( activity )
+					.setMessage( activity.getString( R.string.confirm_unblock_domain, domain) )
+					.setNegativeButton( R.string.cancel, null )
+					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
+						@Override public void onClick( DialogInterface dialog, int which ){
+							activity.callDomainBlock( access_info, domain, false, null );
+						}
+					} )
+					.show();
 			}
 			break;
+		
 		}
 	}
 	

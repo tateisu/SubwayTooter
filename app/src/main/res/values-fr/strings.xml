@@ -356,8 +356,12 @@
     <string name="prior_chrome_custom_tabs">Prior Chrome Custom Tabs</string>
     <string name="enable_speech">Enables speech</string>
     <string name="url_omitted">(URL omitted)</string>
+    <string name="blocked_domains">Blocked domains</string>
+	<string name="block_domain_that">Block whole domain \'%1$s\'</string>
+	<string name="confirm_block_domain">Whole domain \'%1$s\' will be blocked. Are you sure?</string>
+	<string name="confirm_unblock_domain">Unblock domain \'%1$s\'?</string>
 
-    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

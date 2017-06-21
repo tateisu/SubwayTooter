@@ -1,0 +1,41 @@
+package jp.juggler.subwaytooter.api.entity;
+
+import android.support.annotation.NonNull;
+import android.text.TextUtils;
+
+import org.json.JSONArray;
+
+import java.util.ArrayList;
+
+import jp.juggler.subwaytooter.util.LogCategory;
+
+public class TootDomainBlock {
+	
+	public static class List extends ArrayList< TootDomainBlock > {
+		
+	}
+	
+	// domain
+	public String domain;
+	
+	public TootDomainBlock( String sv ){
+		this.domain = sv;
+	}
+
+	@NonNull
+	public static List parseList( LogCategory log, JSONArray array ){
+		List result = new List();
+		if( array != null ){
+			int array_size = array.length();
+			result.ensureCapacity( array_size );
+			for( int i=0;i<array_size;++i){
+				String sv = array.optString( i);
+				if(!TextUtils.isEmpty( sv )){
+					result.add( new TootDomainBlock(sv));
+				}
+			}
+		}
+		return result;
+	}
+	
+}

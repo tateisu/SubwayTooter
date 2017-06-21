@@ -643,5 +643,8 @@
     <string name="prior_chrome_custom_tabs">Chrome Custom Tabs を優先的に利用する</string>
     <string name="enable_speech">読み上げを有効にする</string>
     <string name="url_omitted">(URL略)</string>
-
+    <string name="block_domain_that">\'%1$s\' ドメインをブロック</string>
+    <string name="blocked_domains">ブロックしたドメイン</string>
+    <string name="confirm_block_domain">ドメイン \'%1$s\' 全体をブロックします。よろしいですか？</string>
+    <string name="confirm_unblock_domain">ドメイン \'%1$s\' のブロックを解除しますか？</string>
 </resources>

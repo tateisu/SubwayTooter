@@ -251,6 +251,7 @@ class ColumnViewHolder
 			case Column.TYPE_CONVERSATION:
 			case Column.TYPE_REPORTS:
 			case Column.TYPE_BLOCKS:
+			case Column.TYPE_DOMAIN_BLOCKS:
 			case Column.TYPE_MUTES:
 			case Column.TYPE_FOLLOW_REQUESTS:
 			case Column.TYPE_NOTIFICATIONS:

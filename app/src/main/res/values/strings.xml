@@ -352,4 +352,8 @@
     <string name="prior_chrome_custom_tabs">Prior Chrome Custom Tabs</string>
     <string name="enable_speech">Enables speech</string>
     <string name="url_omitted">(URL omitted)</string>
+    <string name="blocked_domains">Blocked domains</string>
+    <string name="block_domain_that">Block whole domain \'%1$s\'</string>
+    <string name="confirm_block_domain">Whole domain \'%1$s\' will be blocked. Are you sure?</string>
+    <string name="confirm_unblock_domain">Unblock domain \'%1$s\'?</string>
 </resources>

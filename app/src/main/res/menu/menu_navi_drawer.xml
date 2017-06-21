@@ -65,10 +65,16 @@
                     android:id="@+id/nav_add_mutes"
                     android:icon="?attr/ic_mute"
                     android:title="@string/muted_users"/>
+
                 <item
                     android:id="@+id/nav_add_blocks"
                     android:icon="?attr/ic_block"
                     android:title="@string/blocked_users"/>
+
+                <item
+                    android:id="@+id/nav_add_domain_blocks"
+                    android:icon="?attr/ic_domain_block"
+                    android:title="@string/blocked_domains"/>
 
                 <!--<item-->
                 <!--android:id="@+id/nav_add_reports"-->

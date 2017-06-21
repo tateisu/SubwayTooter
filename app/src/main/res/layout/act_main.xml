@@ -148,6 +148,6 @@
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
 
-        app:menu="@menu/men_navi_drawer"/>
+        app:menu="@menu/menu_navi_drawer"/>
     <!-- app:headerLayout="@layout/nav_header_act_main" -->
 </android.support.v4.widget.DrawerLayout>

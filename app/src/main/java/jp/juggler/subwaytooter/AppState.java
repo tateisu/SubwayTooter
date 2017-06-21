@@ -211,6 +211,7 @@ class AppState {
 		String str_text = text.toString();
 		StringBuilder sb = new StringBuilder();
 		int last_end = 0;
+		boolean has_url = false;
 		for( MyClickableSpan span : span_list ){
 			int start = text.getSpanStart( span );
 			int end = text.getSpanEnd( span );
@@ -228,13 +229,17 @@ class AppState {
 					sb.append( span_text );
 				}else{
 					// それ以外はURL省略
-					sb.append( context.getString( R.string.url_omitted ) );
+					has_url = true;
+					sb.append( " " );
 				}
 			}
 		}
 		int text_end = str_text.length();
 		if( text_end > last_end ){
 			sb.append( str_text.substring( last_end, text_end ) );
+		}
+		if( has_url){
+			sb.append( context.getString( R.string.url_omitted ) );
 		}
 		addSpeech( sb.toString() );
 	}

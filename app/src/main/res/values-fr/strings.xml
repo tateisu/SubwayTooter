@@ -361,6 +361,11 @@
 	<string name="confirm_block_domain">Whole domain \'%1$s\' will be blocked. Are you sure?</string>
 	<string name="confirm_unblock_domain">Unblock domain \'%1$s\'?</string>
 
+	<string name="text_to_speech_initializing">TextToSpeech initializing…</string>
+	<string name="text_to_speech_initialize_failed">TextToSpeech initializing failed. status=%1$s</string>
+	<string name="text_to_speech_shutdown">TextToSpeech shutdown…</string>
+
+
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->

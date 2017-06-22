@@ -237,7 +237,7 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 							addLog( Utils.formatError( ex, "Can't parse configuration data." ) );
 							break;
 						}
-						
+
 						if( ! jv.isObject() ){
 							addLog( "configuration data is not JSON Object." );
 							break;
@@ -307,15 +307,16 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 								}
 							}
 						}
+
 						if( ! has_wildcard ){
 							addLog( "Warning: This configuration has no wildcard entry." );
 							if(! has_error){
 								for( SavedAccount sa : SavedAccount.loadAccountList( log )){
+									if( sa.isPseudo() ) continue;
 									String instanceUrl = ("https://" + sa.host ).toLowerCase();
 									JsonValue v = root.get( instanceUrl );
-									if( ! v.isObject() ){
-										addLog( instanceUrl + " : is not found in configuration data." );
-										has_error = true;
+									if( v == null || ! v.isObject() ){
+										addLog( "Warning: "+ instanceUrl + " : is found in account, but not found in configuration data." );
 									}
 								}
 							}

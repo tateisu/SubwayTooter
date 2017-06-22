@@ -647,4 +647,9 @@
     <string name="blocked_domains">ブロックしたドメイン</string>
     <string name="confirm_block_domain">ドメイン \'%1$s\' 全体をブロックします。よろしいですか？</string>
     <string name="confirm_unblock_domain">ドメイン \'%1$s\' のブロックを解除しますか？</string>
+
+    <string name="text_to_speech_initializing">TextToSpeechの初期化中…</string>
+    <string name="text_to_speech_initialize_failed">TextToSpeechの初期化に失敗。status=%1$s</string>
+    <string name="text_to_speech_shutdown">TextToSpeechの後処理…</string>
+
 </resources>

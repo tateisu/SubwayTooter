@@ -2,10 +2,10 @@ package jp.juggler.subwaytooter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
-import android.support.annotation.NonNull;
 import android.text.Spannable;
 import android.text.TextUtils;
 
@@ -31,6 +31,7 @@ import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.MyClickableSpan;
 import jp.juggler.subwaytooter.util.PostAttachment;
 import jp.juggler.subwaytooter.util.Utils;
+
 
 class AppState {
 	static final LogCategory log = new LogCategory( "AppState" );
@@ -109,7 +110,7 @@ class AppState {
 	void saveColumnList(){
 		JSONArray array = encodeColumnList();
 		saveColumnList( context, FILE_COLUMN_LIST, array );
-		
+		enableSpeech();
 	}
 	
 	private void loadColumnList(){
@@ -125,6 +126,7 @@ class AppState {
 				}
 			}
 		}
+		enableSpeech();
 	}
 	
 	//////////////////////////////////////////////////////
@@ -149,29 +151,93 @@ class AppState {
 	
 	ArrayList< PostAttachment > attachment_list = null;
 	
-	TextToSpeech tts;
+	//////////////////////////////////////////////////////
+	// TextToSpeech
 	
-	void setTextToSpeech( @NonNull TextToSpeech tmp_tts ){
-		this.tts = tmp_tts;
-		tts.setOnUtteranceProgressListener( new UtteranceProgressListener() {
-			@Override public void onStart( String utteranceId ){
-				log.d( "UtteranceProgressListener.onStart id=%s", utteranceId );
+	private boolean willSpeechEnabled;
+	private TextToSpeech tts;
+	
+	private static final int TTS_STATUS_NONE = 0;
+	private static final int TTS_STATUS_INITIALIZING = 1;
+	private static final int TTS_STATUS_INITIALIZED = 2;
+	private int tts_status = TTS_STATUS_NONE;
+	
+	private boolean isTextToSpeechRequired(){
+		boolean b = false;
+		for( Column c : column_list ){
+			if( c.enable_speech ){
+				b = true;
+				break;
 			}
-			
-			@Override public void onDone( String utteranceId ){
-				log.d( "UtteranceProgressListener.onStart id=%s", utteranceId );
-				flushSpeechQueue();
-			}
-			
-			@Override public void onError( String utteranceId ){
-				log.d( "UtteranceProgressListener.onError id=%s", utteranceId );
-				flushSpeechQueue();
-			}
-		} );
+		}
+		return b;
 	}
 	
-	static final Pattern reURL = Pattern.compile( "\\bhttp(s)?://[:/?#@!$&'.,;=%()*+\\w\\-\\[\\]]+\\b" );
-	static final Pattern reSpaces = Pattern.compile( "[\\s　]+" );
+	private void enableSpeech(){
+		this.willSpeechEnabled = isTextToSpeechRequired();
+		
+		if( willSpeechEnabled && tts == null && tts_status == TTS_STATUS_NONE ){
+			tts_status = TTS_STATUS_INITIALIZING;
+			Utils.showToast( context, false, R.string.text_to_speech_initializing );
+			log.d( "initializing TextToSpeech…" );
+			new AsyncTask< Void, Void, TextToSpeech >() {
+				TextToSpeech tmp_tts;
+				
+				@Override protected TextToSpeech doInBackground( Void... params ){
+					tmp_tts = new TextToSpeech( context, tts_init_listener );
+					return tmp_tts;
+				}
+				
+				final TextToSpeech.OnInitListener tts_init_listener = new TextToSpeech.OnInitListener() {
+					@Override public void onInit( int status ){
+						if( TextToSpeech.SUCCESS != status ){
+							Utils.showToast( context, false, R.string.text_to_speech_initialize_failed, status );
+							log.d( "speech initialize failed. status=%s", status );
+							return;
+						}
+						Utils.runOnMainThread( new Runnable() {
+							@Override public void run(){
+								if( ! willSpeechEnabled ){
+									Utils.showToast( context, false, R.string.text_to_speech_shutdown );
+									log.d( "shutdown TextToSpeech…");
+									tmp_tts.shutdown();
+								}else{
+									tts_queue.clear();
+									duplication_check.clear();
+									tts = tmp_tts;
+									tts_status = TTS_STATUS_INITIALIZED;
+									tts.setOnUtteranceProgressListener( new UtteranceProgressListener() {
+										@Override public void onStart( String utteranceId ){
+											log.d( "UtteranceProgressListener.onStart id=%s", utteranceId );
+										}
+										
+										@Override public void onDone( String utteranceId ){
+											log.d( "UtteranceProgressListener.onDone id=%s", utteranceId );
+											flushSpeechQueue();
+										}
+										
+										@Override public void onError( String utteranceId ){
+											log.d( "UtteranceProgressListener.onError id=%s", utteranceId );
+											flushSpeechQueue();
+										}
+									} );
+								}
+							}
+						} );
+					}
+				};
+			}.executeOnExecutor( App1.task_executor );
+		}
+		if( ! willSpeechEnabled && tts != null ){
+			Utils.showToast( context, false, R.string.text_to_speech_shutdown );
+			log.d( "shutdown TextToSpeech…");
+			tts.shutdown();
+			tts = null;
+			tts_status = TTS_STATUS_NONE;
+		}
+	}
+		
+	private static final Pattern reSpaces = Pattern.compile( "[\\s　]+" );
 	
 	private static Spannable getStatusText( TootStatus status ){
 		if( status == null ){
@@ -244,8 +310,8 @@ class AppState {
 		addSpeech( sb.toString() );
 	}
 	
-	final LinkedList< String > tts_queue = new LinkedList<>();
-	final LinkedList< String > duplication_check = new LinkedList<>();
+	private final LinkedList< String > tts_queue = new LinkedList<>();
+	private final LinkedList< String > duplication_check = new LinkedList<>();
 	
 	private void addSpeech( String sv ){
 		if( tts == null ) return;
@@ -267,9 +333,9 @@ class AppState {
 		flushSpeechQueue();
 	}
 	
-	static int utteranceIdSeed = 0;
+	private static int utteranceIdSeed = 0;
 	
-	void flushSpeechQueue(){
+	private void flushSpeechQueue(){
 		if( tts_queue.isEmpty() ) return;
 		if( tts.isSpeaking() ) return;
 		String sv = tts_queue.removeFirst();
@@ -280,4 +346,6 @@ class AppState {
 			, Integer.toString( ++ utteranceIdSeed ) // String utteranceId
 		);
 	}
+	
+	
 }

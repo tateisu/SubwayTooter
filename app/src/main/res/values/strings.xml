@@ -356,4 +356,7 @@
     <string name="block_domain_that">Block whole domain \'%1$s\'</string>
     <string name="confirm_block_domain">Whole domain \'%1$s\' will be blocked. Are you sure?</string>
     <string name="confirm_unblock_domain">Unblock domain \'%1$s\'?</string>
+    <string name="text_to_speech_initializing">TextToSpeech initializing…</string>
+    <string name="text_to_speech_initialize_failed">TextToSpeech initializing failed. status=%1$s</string>
+    <string name="text_to_speech_shutdown">TextToSpeech shutdown…</string>
 </resources>

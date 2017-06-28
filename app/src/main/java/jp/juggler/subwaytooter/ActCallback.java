@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 
 import org.apache.commons.io.IOUtils;
 
@@ -63,9 +64,7 @@ public class ActCallback extends AppCompatActivity {
 			final String action = src.getAction();
 			final String type = src.getType();
 			
-			if( type == null ) return null;
-			
-			if( type.startsWith( "image/" ) ){
+			if( type!= null && type.startsWith( "image/" ) ){
 				if( Intent.ACTION_VIEW.equals( action ) ){
 					Uri uri = src.getData();
 					if( uri == null ) return null;
@@ -114,12 +113,19 @@ public class ActCallback extends AppCompatActivity {
 					dst.putParcelableArrayListExtra( Intent.EXTRA_STREAM, list_dst );
 					return dst;
 				}
-			}else if( type.startsWith( "text/" ) ){
-				if( Intent.ACTION_SEND.equals( action ) ){
-					String sv = src.getStringExtra( Intent.EXTRA_TEXT );
-					if( sv == null ) return null;
+			}else if( Intent.ACTION_SEND.equals( action ) ){
+				
+				// Swarmアプリから送られたインテントは getType()==null だが EXTRA_TEXT は含まれている
+				// EXTRA_TEXT の存在を確認してからtypeがnullもしくは text/plain なら受け取る
+
+				String sv = src.getStringExtra( Intent.EXTRA_TEXT );
+				if( ! TextUtils.isEmpty(sv) && ( type==null || type.startsWith( "text/" ) ) ){
+					String subject = src.getStringExtra( Intent.EXTRA_SUBJECT );
+					if(! TextUtils.isEmpty(subject) ){
+						sv = subject + " " +sv;
+					}
 					Intent dst = new Intent( action );
-					dst.setType( type );
+					dst.setType( "text/plain" );
 					dst.putExtra( Intent.EXTRA_TEXT, sv );
 					return dst;
 				}

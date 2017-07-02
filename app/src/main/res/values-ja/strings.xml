@@ -651,5 +651,6 @@
     <string name="text_to_speech_initializing">TextToSpeechの初期化中…</string>
     <string name="text_to_speech_initialize_failed">TextToSpeechの初期化に失敗。status=%1$s</string>
     <string name="text_to_speech_shutdown">TextToSpeechの後処理…</string>
+    <string name="show_post_button_bar_top">投稿画面のボタンバーを上端に表示</string>
 
 </resources>

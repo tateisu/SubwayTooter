@@ -93,6 +93,7 @@ public class ActAppSetting extends AppCompatActivity
 	Switch swDisableTabletMode;
 	Switch swDontCropMediaThumb;
 	Switch swPriorChrome;
+	Switch swPostButtonBarTop;
 	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
@@ -171,6 +172,10 @@ public class ActAppSetting extends AppCompatActivity
 		
 		swPriorChrome = (Switch) findViewById( R.id.swPriorChrome );
 		swPriorChrome.setOnCheckedChangeListener( this );
+		
+		swPostButtonBarTop = (Switch) findViewById( R.id.swPostButtonBarTop );
+		swPostButtonBarTop.setOnCheckedChangeListener( this );
+		
 		
 		cbNotificationSound = (CheckBox) findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = (CheckBox) findViewById( R.id.cbNotificationVibration );
@@ -293,6 +298,7 @@ public class ActAppSetting extends AppCompatActivity
 		swDontScreenOff.setChecked( pref.getBoolean( Pref.KEY_DONT_SCREEN_OFF, false ) );
 		swDisableTabletMode.setChecked( pref.getBoolean( Pref.KEY_DISABLE_TABLET_MODE, false ) );
 		swDontCropMediaThumb.setChecked( pref.getBoolean( Pref.KEY_DONT_CROP_MEDIA_THUMBNAIL, false ) );
+		swPostButtonBarTop.setChecked( pref.getBoolean( Pref.KEY_POST_BUTTON_BAR_AT_TOP, false ) );
 		
 		// Switch with default true
 		swDisableFastScroller.setChecked( pref.getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
@@ -344,7 +350,8 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_DISABLE_TABLET_MODE, swDisableTabletMode.isChecked() )
 			.putBoolean( Pref.KEY_DONT_CROP_MEDIA_THUMBNAIL, swDontCropMediaThumb.isChecked() )
 			.putBoolean( Pref.KEY_PRIOR_CHROME, swPriorChrome.isChecked() )
-			
+			.putBoolean( Pref.KEY_POST_BUTTON_BAR_AT_TOP, swPostButtonBarTop.isChecked() )
+
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_LED, cbNotificationLED.isChecked() )

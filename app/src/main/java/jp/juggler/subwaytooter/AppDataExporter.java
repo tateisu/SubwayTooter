@@ -296,6 +296,7 @@ public class AppDataExporter {
 			case Pref.KEY_DISABLE_TABLET_MODE:
 			case Pref.KEY_DONT_CROP_MEDIA_THUMBNAIL:
 			case Pref.KEY_PRIOR_CHROME:
+			case Pref.KEY_POST_BUTTON_BAR_AT_TOP:
 				boolean bv = reader.nextBoolean();
 				e.putBoolean( k, bv );
 				break;

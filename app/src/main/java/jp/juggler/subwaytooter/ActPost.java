@@ -31,6 +31,7 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -545,6 +546,13 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		density = getResources().getDisplayMetrics().density;
 		
 		setContentView( R.layout.act_post );
+		
+		if( Pref.pref(this).getBoolean( Pref.KEY_POST_BUTTON_BAR_AT_TOP ,false)){
+			View bar = findViewById( R.id.llFooterBar );
+			ViewGroup parent = (ViewGroup) bar.getParent();
+			parent.removeView( bar );
+			parent.addView( bar,0 );
+		}
 		
 		Styler.fixHorizontalMargin( findViewById( R.id.scrollView ) );
 		Styler.fixHorizontalMargin( findViewById( R.id.llFooterBar ) );

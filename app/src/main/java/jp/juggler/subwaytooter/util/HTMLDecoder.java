@@ -174,8 +174,9 @@ public class HTMLDecoder {
 			
 			if( DEBUG_HTML_PARSER ) sb.append( "(end " ).append( tag ).append( ")" );
 			
-			if( "br".equals( tag ) ) sb.append( '\n' );
-			if( "p".equals( tag ) ){
+			if( "br".equals( tag )  ) sb.append( '\n' );
+
+			if( "p".equals( tag ) || "li".equals( tag ) ){
 				if( sb.length() > 0 ){
 					if( sb.charAt( sb.length() - 1 ) != '\n' ) sb.append( '\n' );
 					sb.append( '\n' );

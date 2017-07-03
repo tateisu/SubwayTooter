@@ -1,8 +1,7 @@
-<html lang="en">
-<ul>
-<li>EmojionePicker <a href="https://play.google.com/store/apps/details?id=com.mastopane.emojionepicker">https://play.google.com/store/apps/details?id=com.mastopane.emojionepicker</a></li>
-<li>SupportText Free <a href="https://play.google.com/store/apps/details?id=com.z589.supporttext">https://play.google.com/store/apps/details?id=com.z589.supporttext</a></li>
-<li>ANdClip Free <a href="https://play.google.com/store/apps/details?id=com.amazing_create.android.andclipfree">https://play.google.com/store/apps/details?id=com.amazing_create.android.andclipfree</a></li>
-<li>Contact Picker <a href="https://play.google.com/store/apps/details?id=jp.narikitic.android.mushroom.contactPicker">https://play.google.com/store/apps/details?id=jp.narikitic.android.mushroom.contactPicker</a></li>
-<li>Facemark Generator Mushroom <a href="https://play.google.com/store/apps/details?id=jp.rgfx_currentdir_ozero.facegenmush">https://play.google.com/store/apps/details?id=jp.rgfx_currentdir_ozero.facegenmush</a></li>
-</ul></html>
+<html lang="en"><ul><li
+>EmojionePicker <a href="https://play.google.com/store/apps/details?id=com.mastopane.emojionepicker">https://play.google.com/store/apps/details?id=com.mastopane.emojionepicker</a></li
+><li>SupportText Free <a href="https://play.google.com/store/apps/details?id=com.z589.supporttext">https://play.google.com/store/apps/details?id=com.z589.supporttext</a></li
+><li>ANdClip Free <a href="https://play.google.com/store/apps/details?id=com.amazing_create.android.andclipfree">https://play.google.com/store/apps/details?id=com.amazing_create.android.andclipfree</a></li
+><li>Contact Picker <a href="https://play.google.com/store/apps/details?id=jp.narikitic.android.mushroom.contactPicker">https://play.google.com/store/apps/details?id=jp.narikitic.android.mushroom.contactPicker</a></li
+><li>Facemark Generator Mushroom <a href="https://play.google.com/store/apps/details?id=jp.rgfx_currentdir_ozero.facegenmush">https://play.google.com/store/apps/details?id=jp.rgfx_currentdir_ozero.facegenmush</a></li
+></ul></html>

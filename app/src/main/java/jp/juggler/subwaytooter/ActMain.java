@@ -54,6 +54,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -455,7 +456,7 @@ public class ActMain extends AppCompatActivity
 					current_column = app_state.column_list.get( vs );
 				}
 			}
-			if( current_column != null && !current_column.dont_close){
+			if( current_column != null && ! current_column.dont_close ){
 				final Column _column = current_column;
 				dialog.addAction( getString( R.string.close_column ), new Runnable() {
 					@Override public void run(){
@@ -469,7 +470,7 @@ public class ActMain extends AppCompatActivity
 					openColumnList();
 				}
 			} );
-
+			
 			dialog.addAction( getString( R.string.app_exit ), new Runnable() {
 				@Override public void run(){
 					ActMain.this.finish();
@@ -590,8 +591,6 @@ public class ActMain extends AppCompatActivity
 			
 		}else if( id == R.id.nav_add_domain_blocks ){
 			performAddTimeline( getDefaultInsertPosition(), false, Column.TYPE_DOMAIN_BLOCKS );
-			
-			
 			
 		}else if( id == R.id.nav_follow_requests ){
 			performAddTimeline( getDefaultInsertPosition(), false, Column.TYPE_FOLLOW_REQUESTS );
@@ -1100,7 +1099,7 @@ public class ActMain extends AppCompatActivity
 				return;
 				
 			}else if( uri.getPath().startsWith( "/users/" ) ){
-
+				
 				// どうも古い形式らしいが、こういうURLもあるらしい
 				// https://mastodon.juggler.jp/users/SubwayTooter/updates/(status_id)
 				Matcher m = reStatusPage2.matcher( uri.toString() );
@@ -1602,7 +1601,7 @@ public class ActMain extends AppCompatActivity
 			}
 			
 			do{
-				if( pref.getBoolean( Pref.KEY_PRIOR_CHROME,true )){
+				if( pref.getBoolean( Pref.KEY_PRIOR_CHROME, true ) ){
 					try{
 						// 初回はChrome指定で試す
 						CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
@@ -1621,9 +1620,9 @@ public class ActMain extends AppCompatActivity
 				builder.setToolbarColor( Styler.getAttributeColor( this, R.attr.colorPrimary ) ).setShowTitle( true );
 				CustomTabsIntent customTabsIntent = builder.build();
 				customTabsIntent.launchUrl( this, Uri.parse( url ) );
-
-			}while(false);
-
+				
+			}while( false );
+			
 		}catch( Throwable ex ){
 			// ex.printStackTrace();
 			log.e( ex, "openChromeTab failed. url=%s", url );
@@ -1969,21 +1968,18 @@ public class ActMain extends AppCompatActivity
 	
 	public void performFavourite(
 		final SavedAccount access_info
-		, final boolean bRemote
-		, final boolean bSet
 		, final TootStatus arg_status
+		, final int nCrossAccountMode
+		, final boolean bSet
 		, final RelationChangedCallback callback
 	){
-		//
-		final String busy_key = access_info.host + ":" + arg_status.id;
-		//
-		if( ! bRemote ){
-			if( app_state.map_busy_fav.contains( busy_key ) ){
-				Utils.showToast( this, false, R.string.wait_previous_operation );
-				return;
-			}
-			app_state.map_busy_fav.add( busy_key );
+		if( app_state.isBusyFav( access_info, arg_status ) ){
+			Utils.showToast( this, false, R.string.wait_previous_operation );
+			return;
 		}
+		//
+		app_state.setBusyFav( access_info, arg_status );
+		
 		//
 		new AsyncTask< Void, Void, TootApiResult >() {
 			TootStatus new_status;
@@ -2001,9 +1997,7 @@ public class ActMain extends AppCompatActivity
 				TootApiResult result;
 				
 				TootStatus target_status;
-				if( ! bRemote ){
-					target_status = arg_status;
-				}else{
+				if( nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE ){
 					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
 					String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( arg_status.url ) );
 					path = path + "&resolve=1";
@@ -2026,6 +2020,8 @@ public class ActMain extends AppCompatActivity
 					}else if( target_status.favourited ){
 						return new TootApiResult( getString( R.string.already_favourited ) );
 					}
+				}else{
+					target_status = arg_status;
 				}
 				
 				Request.Builder request_builder = new Request.Builder()
@@ -2055,39 +2051,38 @@ public class ActMain extends AppCompatActivity
 			
 			@Override
 			protected void onPostExecute( TootApiResult result ){
-				if( ! bRemote ){
-					app_state.map_busy_fav.remove( busy_key );
-				}
+				app_state.resetBusyFav( access_info, arg_status );
 				
 				//noinspection StatementWithEmptyBody
 				if( result == null ){
 					// cancelled.
 				}else if( new_status != null ){
 					
-					if( ! bRemote ){
-						// カウント数は遅延があるみたい
-						if( bSet && new_status.favourites_count <= arg_status.favourites_count ){
-							// 星つけたのにカウントが上がらないのは違和感あるので、表示をいじる
-							new_status.favourites_count = arg_status.favourites_count + 1;
-						}else if( ! bSet && new_status.favourites_count >= arg_status.favourites_count ){
-							// 星外したのにカウントが下がらないのは違和感あるので、表示をいじる
-							new_status.favourites_count = arg_status.favourites_count - 1;
-							if( new_status.favourites_count < 0 ){
-								new_status.favourites_count = 0;
-							}
+					// カウント数は遅延があるみたいなので、恣意的に表示を変更する
+					if( bSet && new_status.favourited && new_status.favourites_count <= arg_status.favourites_count ){
+						// 星をつけたのにカウントが上がらないのは違和感あるので、表示をいじる
+						new_status.favourites_count = arg_status.favourites_count + 1;
+					}else if( ! bSet && ! new_status.favourited && new_status.favourites_count >= arg_status.favourites_count ){
+						// 星を外したのにカウントが下がらないのは違和感あるので、表示をいじる
+						new_status.favourites_count = arg_status.favourites_count - 1;
+						// 0未満にはならない
+						if( new_status.favourites_count < 0 ){
+							new_status.favourites_count = 0;
 						}
 					}
 					
 					for( Column column : app_state.column_list ){
-						column.findStatus( access_info, new_status.id, new Column.StatusEntryCallback() {
+						column.findStatus( access_info.host, new_status.id, new Column.StatusEntryCallback() {
 							@Override
-							public void onIterate( TootStatus status ){
-								status.favourited = new_status.favourited;
+							public boolean onIterate( SavedAccount account, TootStatus status ){
 								status.favourites_count = new_status.favourites_count;
+								if( access_info.acct.equalsIgnoreCase( account.acct ) ){
+									status.favourited = new_status.favourited;
+								}
+								return true;
 							}
 						} );
 					}
-					
 					if( callback != null ) callback.onRelationChanged();
 					
 				}else{
@@ -2107,48 +2102,51 @@ public class ActMain extends AppCompatActivity
 	
 	public void performBoost(
 		final SavedAccount access_info
-		, final boolean bRemote
-		, final boolean bSet
 		, final TootStatus arg_status
-		, boolean bConfirmed
+		, final int nCrossAccountMode
+		, final boolean bSet
+		, final boolean bConfirmed
 		, final RelationChangedCallback callback
 	){
-		//
-		final String busy_key = access_info.host + ":" + arg_status.id;
-		if( ! bRemote ){
-			//
-			if( app_state.map_busy_boost.contains( busy_key ) ){
-				Utils.showToast( this, false, R.string.wait_previous_operation );
-				return;
-			}
-			//
+		
+		// アカウントからステータスにブースト操作を行っているなら、何もしない
+		if( app_state.isBusyBoost( access_info, arg_status ) ){
+			Utils.showToast( this, false, R.string.wait_previous_operation );
+			return;
+		}
+		
+		// クロスアカウント操作ではないならステータス内容を使ったチェックを行える
+		if( nCrossAccountMode == NOT_CROSS_ACCOUNT ){
 			if( arg_status.reblogged ){
-				// FAVがついているか、FAV操作中はBoostを外せない
 				if( app_state.isBusyFav( access_info, arg_status ) || arg_status.favourited ){
+					// FAVがついているか、FAV操作中はBoostを外せない
 					Utils.showToast( this, false, R.string.cant_remove_boost_while_favourited );
 					return;
 				}
-			}else if( ! bConfirmed ){
-				DlgConfirm.open( this, getString( R.string.confirm_boost_from, AcctColor.getNickname( access_info.acct ) ), new DlgConfirm.Callback() {
-					@Override public boolean isConfirmEnabled(){
-						return access_info.confirm_boost;
-					}
-					
-					@Override public void setConfirmEnabled( boolean bv ){
-						access_info.confirm_boost = bv;
-						access_info.saveSetting();
-						reloadAccountSetting( access_info );
-					}
-					
-					@Override public void onOK(){
-						performBoost( access_info, false, bSet, arg_status, true, callback );
-					}
-				} );
-				return;
 			}
-			//
-			app_state.map_busy_boost.add( busy_key );
 		}
+		
+		// 操作確認が必要なら確認を出す
+		if( ! bConfirmed ){
+			DlgConfirm.open( this, getString( R.string.confirm_boost_from, AcctColor.getNickname( access_info.acct ) ), new DlgConfirm.Callback() {
+				@Override public boolean isConfirmEnabled(){
+					return access_info.confirm_boost;
+				}
+				
+				@Override public void setConfirmEnabled( boolean bv ){
+					access_info.confirm_boost = bv;
+					access_info.saveSetting();
+					reloadAccountSetting( access_info );
+				}
+				
+				@Override public void onOK(){
+					performBoost( access_info, arg_status, nCrossAccountMode, bSet, true, callback );
+				}
+			} );
+			return;
+		}
+		
+		app_state.setBusyBoost( access_info, arg_status );
 		
 		//
 		new AsyncTask< Void, Void, TootApiResult >() {
@@ -2169,9 +2167,7 @@ public class ActMain extends AppCompatActivity
 				TootApiResult result;
 				
 				TootStatus target_status;
-				if( ! bRemote ){
-					target_status = arg_status;
-				}else{
+				if( nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE ){
 					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
 					String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( arg_status.url ) );
 					path = path + "&resolve=1";
@@ -2192,6 +2188,9 @@ public class ActMain extends AppCompatActivity
 					}else if( target_status.reblogged ){
 						return new TootApiResult( getString( R.string.already_boosted ) );
 					}
+				}else{
+					// 既に自タンスのステータスがある
+					target_status = arg_status;
 				}
 				
 				Request.Builder request_builder = new Request.Builder()
@@ -2221,33 +2220,36 @@ public class ActMain extends AppCompatActivity
 			}
 			
 			@Override protected void onPostExecute( TootApiResult result ){
-				if( ! bRemote ){
-					app_state.map_busy_boost.remove( busy_key );
-				}
+				app_state.resetBusyBoost( access_info, arg_status );
 				
 				//noinspection StatementWithEmptyBody
 				if( result == null ){
 					// cancelled.
 				}else if( new_status != null ){
 					
-					if( ! bRemote ){
-						// カウント数は遅延があるみたい
-						if( new_status.reblogged && new_status.reblogs_count <= arg_status.reblogs_count ){
-							// 星つけたのにカウントが上がらないのは違和感あるので、表示をいじる
-							new_status.reblogs_count = arg_status.reblogs_count + 1;
-						}else if( ! new_status.reblogged && new_status.reblogs_count >= arg_status.reblogs_count ){
-							// 星外したのにカウントが下がらないのは違和感あるので、表示をいじる
-							new_status.reblogs_count = arg_status.reblogs_count - 1;
-							if( new_status.reblogs_count < 0 ){
-								new_status.reblogs_count = 0;
-							}
+					// カウント数は遅延があるみたいなので、恣意的に表示を変更する
+					// ブーストカウント数を加工する
+					if( bSet && new_status.reblogged && new_status.reblogs_count <= arg_status.reblogs_count ){
+						// 星をつけたのにカウントが上がらないのは違和感あるので、表示をいじる
+						new_status.reblogs_count = arg_status.reblogs_count + 1;
+					}else if( ! bSet && ! new_status.reblogged && new_status.reblogs_count >= arg_status.reblogs_count ){
+						// 星を外したのにカウントが下がらないのは違和感あるので、表示をいじる
+						new_status.reblogs_count = arg_status.reblogs_count - 1;
+						// 0未満にはならない
+						if( new_status.reblogs_count < 0 ){
+							new_status.reblogs_count = 0;
 						}
 					}
+					
 					for( Column column : app_state.column_list ){
-						column.findStatus( access_info, new_status.id, new Column.StatusEntryCallback() {
-							@Override public void onIterate( TootStatus status ){
-								status.reblogged = new_status.reblogged;
+						column.findStatus( access_info.host, new_status.id, new Column.StatusEntryCallback() {
+							@Override
+							public boolean onIterate( SavedAccount account, TootStatus status ){
 								status.reblogs_count = new_status.reblogs_count;
+								if( access_info.acct.equalsIgnoreCase( account.acct ) ){
+									status.reblogged = new_status.reblogged;
+								}
+								return true;
 							}
 						} );
 					}
@@ -2255,6 +2257,8 @@ public class ActMain extends AppCompatActivity
 				}else{
 					Utils.showToast( ActMain.this, true, result.error );
 				}
+				
+				// 結果に関わらず、更新中状態から復帰させる
 				showColumnMatchAccount( access_info );
 			}
 			
@@ -2823,7 +2827,7 @@ public class ActMain extends AppCompatActivity
 			}
 		}.executeOnExecutor( App1.task_executor );
 	}
-
+	
 	void callDomainBlock( final SavedAccount access_info, final String domain, final boolean bBlock, final RelationChangedCallback callback ){
 		new AsyncTask< Void, Void, TootApiResult >() {
 			
@@ -2838,24 +2842,23 @@ public class ActMain extends AppCompatActivity
 				} );
 				client.setAccount( access_info );
 				
-				
 				Request.Builder request_builder = new Request.Builder();
 				
 				if( bBlock ){
 					request_builder.post(
 						RequestBody.create(
 							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
-							, "domain="+ Uri.encode( domain )
+							, "domain=" + Uri.encode( domain )
 						) );
 					
 				}else{
 					request_builder.delete(
 						RequestBody.create(
 							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
-							, "domain="+ Uri.encode( domain )
+							, "domain=" + Uri.encode( domain )
 						) );
 				}
-				TootApiResult result = client.request( "/api/v1/domain_blocks" , request_builder );
+				TootApiResult result = client.request( "/api/v1/domain_blocks", request_builder );
 				
 				if( result != null ){
 					if( result.object != null ){
@@ -2882,7 +2885,7 @@ public class ActMain extends AppCompatActivity
 					
 					for( Column column : app_state.column_list ){
 						if( bBlock ){
-							column.onDomainBlockChanged( access_info, domain,bBlock );
+							column.onDomainBlockChanged( access_info, domain, bBlock );
 						}
 					}
 					
@@ -3229,18 +3232,33 @@ public class ActMain extends AppCompatActivity
 		return dst;
 	}
 	
-	void openBoostFromAnotherAccount( @NonNull final SavedAccount access_info, final TootStatus status ){
+	// 別アカ操作と別タンスの関係
+	static final int NOT_CROSS_ACCOUNT = 1;
+	static final int CROSS_ACCOUNT_SAME_INSTANCE = 2;
+	static final int CROSS_ACCOUNT_REMOTE_INSTANCE = 3;
+	
+	int calcCrossAccountMode( @NonNull final SavedAccount timeline_account, @NonNull final SavedAccount action_account ){
+		if( ! timeline_account.host.equalsIgnoreCase( action_account.host ) ){
+			return CROSS_ACCOUNT_REMOTE_INSTANCE;
+		}else if( ! timeline_account.acct.equalsIgnoreCase( action_account.acct ) ){
+			return CROSS_ACCOUNT_SAME_INSTANCE;
+		}else{
+			return NOT_CROSS_ACCOUNT;
+		}
+	}
+	
+	void openBoostFromAnotherAccount( @NonNull final SavedAccount timeline_account, final TootStatus status ){
 		if( status == null ) return;
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_boost )
 			, makeAccountListNonPseudo( log )
 			, new AccountPicker.AccountPickerCallback() {
-				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+				@Override public void onAccountPicked( @NonNull SavedAccount action_account ){
 					performBoost(
-						ai
-						, ! ai.host.equalsIgnoreCase( access_info.host )
-						, true
+						action_account
 						, status
+						, calcCrossAccountMode( timeline_account, action_account )
+						, true
 						, false
 						, boost_complete_callback
 					);
@@ -3248,19 +3266,18 @@ public class ActMain extends AppCompatActivity
 			} );
 	}
 	
-	void openFavouriteFromAnotherAccount( @NonNull final SavedAccount access_info, final TootStatus status ){
+	void openFavouriteFromAnotherAccount( @NonNull final SavedAccount timeline_account, final TootStatus status ){
 		if( status == null ) return;
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_favourite )
-			// , account_list_non_pseudo_same_instance
 			, makeAccountListNonPseudo( log )
 			, new AccountPicker.AccountPickerCallback() {
-				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+				@Override public void onAccountPicked( @NonNull SavedAccount action_account ){
 					performFavourite(
-						ai
-						, ! ai.host.equalsIgnoreCase( access_info.host )
-						, true
+						action_account
 						, status
+						, calcCrossAccountMode( timeline_account, action_account )
+						, true
 						, favourite_complete_callback
 					);
 				}
@@ -3305,7 +3322,7 @@ public class ActMain extends AppCompatActivity
 	private boolean closeColumnSetting(){
 		if( pager_adapter != null ){
 			ColumnViewHolder vh = pager_adapter.getColumnViewHolder( pager.getCurrentItem() );
-			if( vh!=null && vh.isColumnSettingShown() ){
+			if( vh != null && vh.isColumnSettingShown() ){
 				vh.closeColumnSetting();
 				return true;
 			}

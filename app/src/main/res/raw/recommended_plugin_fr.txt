@@ -1,11 +1,10 @@
-<html lang="fr">
-<ul>
-    <li>EmojionePicker <a href="https://play.google.com/store/apps/details?id=com.mastopane.emojionepicker">https://play.google.com/store/apps/details?id=com.mastopane.emojionepicker</a></li>
-    <li>SupportText Free <a href="https://play.google.com/store/apps/details?id=com.z589.supporttext">https://play.google.com/store/apps/details?id=com.z589.supporttext</a></li>
-    <li>ANdClip Free <a href="https://play.google.com/store/apps/details?id=com.amazing_create.android.andclipfree">https://play.google.com/store/apps/details?id=com.amazing_create.android.andclipfree</a></li>
-    <li>Contact Picker <a href="https://play.google.com/store/apps/details?id=jp.narikitic.android.mushroom.contactPicker">https://play.google.com/store/apps/details?id=jp.narikitic.android.mushroom.contactPicker</a></li>
-    <li>AntiSearchEngine <a href="https://play.google.com/store/apps/details?id=jp.Keshigoto.AntiSearchEngine">https://play.google.com/store/apps/details?id=jp.Keshigoto.AntiSearchEngine</a></li>
-    <li>Emoji Mush <a href="https://play.google.com/store/apps/details?id=jp.mstssk.emoji_mush">https://play.google.com/store/apps/details?id=jp.mstssk.emoji_mush</a></li>
-    <li>Facemark Generator Mushroom <a href="https://play.google.com/store/apps/details?id=jp.rgfx_currentdir_ozero.facegenmush">https://play.google.com/store/apps/details?id=jp.rgfx_currentdir_ozero.facegenmush</a></li>
-    <li>Tagifier <a href="https://play.google.com/store/apps/details?id=jp.wktk.tagifier">https://play.google.com/store/apps/details?id=jp.wktk.tagifier</a></li>
-</ul></html>
+<html lang="fr"><ul><li
+>EmojionePicker <a href="https://play.google.com/store/apps/details?id=com.mastopane.emojionepicker">https://play.google.com/store/apps/details?id=com.mastopane.emojionepicker</a></li
+><li>SupportText Free <a href="https://play.google.com/store/apps/details?id=com.z589.supporttext">https://play.google.com/store/apps/details?id=com.z589.supporttext</a></li
+><li>ANdClip Free <a href="https://play.google.com/store/apps/details?id=com.amazing_create.android.andclipfree">https://play.google.com/store/apps/details?id=com.amazing_create.android.andclipfree</a></li
+><li>Contact Picker <a href="https://play.google.com/store/apps/details?id=jp.narikitic.android.mushroom.contactPicker">https://play.google.com/store/apps/details?id=jp.narikitic.android.mushroom.contactPicker</a></li
+><li>AntiSearchEngine <a href="https://play.google.com/store/apps/details?id=jp.Keshigoto.AntiSearchEngine">https://play.google.com/store/apps/details?id=jp.Keshigoto.AntiSearchEngine</a></li
+><li>Emoji Mush <a href="https://play.google.com/store/apps/details?id=jp.mstssk.emoji_mush">https://play.google.com/store/apps/details?id=jp.mstssk.emoji_mush</a></li
+><li>Facemark Generator Mushroom <a href="https://play.google.com/store/apps/details?id=jp.rgfx_currentdir_ozero.facegenmush">https://play.google.com/store/apps/details?id=jp.rgfx_currentdir_ozero.facegenmush</a></li
+><li>Tagifier <a href="https://play.google.com/store/apps/details?id=jp.wktk.tagifier">https://play.google.com/store/apps/details?id=jp.wktk.tagifier</a></li
+></ul></html>

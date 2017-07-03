@@ -32,6 +32,7 @@ import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -74,6 +75,7 @@ import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.dialog.ActionsDialog;
 import jp.juggler.subwaytooter.table.TagSet;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
+import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.MyClickableSpan;
 import jp.juggler.subwaytooter.view.MyEditText;
@@ -234,6 +236,16 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	@Override public void onBackPressed(){
 		saveDraft();
 		super.onBackPressed();
+	}
+	
+	@Override protected void onResume(){
+		super.onResume();
+		MyClickableSpan.link_callback = link_click_listener;
+	}
+	
+	@Override protected void onPause(){
+		super.onPause();
+		MyClickableSpan.link_callback = null;
 	}
 	
 	SharedPreferences pref;
@@ -2025,7 +2037,13 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				View viewRoot = getLayoutInflater().inflate( R.layout.dlg_plugin_missing,null,false );
 
 				TextView tvText = (TextView)viewRoot. findViewById(R.id.tvText);
-				tvText.setText( Html.fromHtml(text));
+				LinkClickContext lcc = new LinkClickContext() {
+					@Override public AcctColor findAcctColor( String url ){
+						return null;
+					}
+				};
+				CharSequence sv = HTMLDecoder.decodeHTML( lcc,text,false,null );
+				tvText.setText(sv );
 				tvText.setMovementMethod( LinkMovementMethod.getInstance()  );
 
 				TextView tvTitle = (TextView)viewRoot. findViewById(R.id.tvTitle);
@@ -2051,4 +2069,16 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}
 	}
 	
+	final MyClickableSpan.LinkClickCallback link_click_listener = new MyClickableSpan.LinkClickCallback() {
+		@Override public void onClickLink( View view, LinkClickContext lcc, String url ){
+			if( url == null ) return;
+			// ブラウザで開く
+			try{
+				Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse( url ) );
+				startActivity( intent );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+			}
+		}
+	};
 }

@@ -537,14 +537,14 @@ class Column implements StreamReader.Callback {
 	}
 	
 	interface StatusEntryCallback {
-		void onIterate( TootStatus status );
+		boolean onIterate( SavedAccount account,TootStatus status );
 	}
 	
 	// ブーストやお気に入りの更新に使う。ステータスを列挙する。
-	void findStatus( SavedAccount target_account, long target_status_id, StatusEntryCallback callback ){
-		if( target_account.acct.equals( access_info.acct ) ){
-			for( int i = 0, ie = list_data.size() ; i < ie ; ++ i ){
-				Object data = list_data.get( i );
+	void findStatus( String target_instance, long target_status_id, StatusEntryCallback callback ){
+		if( access_info.host.equalsIgnoreCase( target_instance ) ){
+			boolean bChanged = false;
+			for( Object data: list_data ){
 				//
 				if( data instanceof TootNotification ){
 					data = ( (TootNotification) data ).status;
@@ -554,16 +554,21 @@ class Column implements StreamReader.Callback {
 					//
 					TootStatus status = (TootStatus) data;
 					if( target_status_id == status.id ){
-						callback.onIterate( status );
+						if(callback.onIterate( access_info,status )){
+							bChanged = true;
+						}
 					}
 					//
 					TootStatus reblog = status.reblog;
-					if( reblog != null ){
-						if( target_status_id == reblog.id ){
-							callback.onIterate( reblog );
+					if( reblog != null && target_status_id == reblog.id ){
+						if(callback.onIterate( access_info,reblog )){
+							bChanged = true;
 						}
 					}
 				}
+			}
+			if(bChanged){
+				fireShowContent();
 			}
 		}
 	}

@@ -131,9 +131,9 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			}else{
 				activity.performBoost(
 					access_info
-					, false
-					, ! status.reblogged
 					, status
+					,ActMain.NOT_CROSS_ACCOUNT
+					, ! status.reblogged
 					, false
 					, bSimpleList ? activity.boost_complete_callback : null
 				);
@@ -146,9 +146,9 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			}else{
 				activity.performFavourite(
 					access_info
-					, false
-					, ! status.favourited
 					, status
+					,ActMain.NOT_CROSS_ACCOUNT
+					, ! status.favourited
 					, bSimpleList ? activity.favourite_complete_callback : null
 				);
 			}

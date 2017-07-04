@@ -246,11 +246,20 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	@Override protected void onPause(){
 		super.onPause();
 		MyClickableSpan.link_callback = null;
+		
+		// 編集中にホーム画面を押したり他アプリに移動する場合は下書きを保存する
+		// やや過剰な気がするが、自アプリに戻ってくるときにランチャーからアイコンタップされると
+		// メイン画面より上にあるアクティビティはすべて消されてしまうので
+		// このタイミングで保存するしかない
+		if( ! isPostComplete ){
+			saveDraft();
+		}
 	}
 	
 	SharedPreferences pref;
 	ArrayList< PostAttachment > attachment_list;
 	AppState app_state;
+	boolean isPostComplete;
 	
 	@Override
 	protected void onCreate( @Nullable Bundle savedInstanceState ){
@@ -486,6 +495,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		handler.removeCallbacks( proc_text_changed );
 		closeAcctPopup();
 		super.onDestroy();
+
 	}
 	
 	@Override
@@ -559,11 +569,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		
 		setContentView( R.layout.act_post );
 		
-		if( Pref.pref(this).getBoolean( Pref.KEY_POST_BUTTON_BAR_AT_TOP ,false)){
+		if( Pref.pref( this ).getBoolean( Pref.KEY_POST_BUTTON_BAR_AT_TOP, false ) ){
 			View bar = findViewById( R.id.llFooterBar );
 			ViewGroup parent = (ViewGroup) bar.getParent();
 			parent.removeView( bar );
-			parent.addView( bar,0 );
+			parent.addView( bar, 0 );
 		}
 		
 		Styler.fixHorizontalMargin( findViewById( R.id.scrollView ) );
@@ -731,7 +741,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			int end = etContent.getSelectionEnd();
 			
 			String src = etContent.getText().toString();
-			int last_sharp = src.lastIndexOf( '#',end-1 );
+			int last_sharp = src.lastIndexOf( '#', end - 1 );
 			
 			if( last_sharp == - 1 || end - last_sharp < 3 ){
 				closeAcctPopup();
@@ -817,32 +827,32 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			.setItems( caption_list, new DialogInterface.OnClickListener() {
 				@Override
 				public void onClick( DialogInterface dialog, int which ){
-
-					if( which <0 || which >= tmp_account_list.size() ){
+					
+					if( which < 0 || which >= tmp_account_list.size() ){
 						// 範囲外
 						return;
 					}
-
+					
 					SavedAccount a = tmp_account_list.get( which );
 					
 					if( ! a.host.equals( account.host ) ){
 						// 別タンスへの移動
-						if( in_reply_to_id != -1L ){
+						if( in_reply_to_id != - 1L ){
 							// 別タンスのアカウントならin_reply_toの変換が必要
-							startReplyConversion(a);
+							startReplyConversion( a );
 							
 						}
 					}
 					
 					// リプライがないか、同タンスへの移動
-					setAccountWithVisibilityConversion(a);
+					setAccountWithVisibilityConversion( a );
 				}
 			} )
 			.setNegativeButton( R.string.cancel, null )
 			.show();
 	}
 	
-	void setAccountWithVisibilityConversion(@NonNull SavedAccount a){
+	void setAccountWithVisibilityConversion( @NonNull SavedAccount a ){
 		setAccount( a );
 		try{
 			if( account.visibility != null && TootStatus.compareVisibility( visibility, a.visibility ) > 0 ){
@@ -855,7 +865,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}
 	}
 	
-	private void startReplyConversion( @NonNull  final SavedAccount access_info ){
+	private void startReplyConversion( @NonNull final SavedAccount access_info ){
 		if( in_reply_to_url == null ){
 			// 下書きが古い形式の場合、URLがないので別タンスへの移動ができない
 			new AlertDialog.Builder( ActPost.this )
@@ -904,7 +914,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			@Override protected void onPostExecute( TootApiResult result ){
 				try{
 					progress.dismiss();
-				}catch(Throwable ex){
+				}catch( Throwable ex ){
 					ex.printStackTrace();
 				}
 				if( isCancelled() ) return;
@@ -915,7 +925,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					in_reply_to_id = target_status.id;
 					setAccountWithVisibilityConversion( access_info );
 				}else{
-					Utils.showToast( ActPost.this, true, getString(R.string.in_reply_to_id_conversion_failed ) +"\n"+result.error );
+					Utils.showToast( ActPost.this, true, getString( R.string.in_reply_to_id_conversion_failed ) + "\n" + result.error );
 				}
 			}
 		}.executeOnExecutor( App1.task_executor );
@@ -1454,7 +1464,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			getString( R.string.recommended_plugin )
 			, new Runnable() {
 				@Override public void run(){
-					showRecommendedPlugin(null);
+					showRecommendedPlugin( null );
 				}
 			}
 		);
@@ -1656,6 +1666,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					data.putExtra( EXTRA_POSTED_STATUS_ID, status.id );
 					
 					setResult( RESULT_OK, data );
+					isPostComplete = true;
 					ActPost.this.finish();
 				}else{
 					Utils.showToast( ActPost.this, true, result.error );
@@ -1714,7 +1725,6 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	static final String DRAFT_REPLY_TEXT = "reply_text";
 	static final String DRAFT_REPLY_IMAGE = "reply_image";
 	static final String DRAFT_REPLY_URL = "reply_url";
-	
 	
 	private void saveDraft(){
 		String content = etContent.getText().toString();
@@ -1877,7 +1887,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				boolean content_warning_checked = draft.optBoolean( DRAFT_CONTENT_WARNING_CHECK );
 				boolean nsfw_checked = draft.optBoolean( DRAFT_NSFW_CHECK );
 				JSONArray tmp_attachment_list = draft.optJSONArray( DRAFT_ATTACHMENT_LIST );
-				long reply_id = draft.optLong( DRAFT_REPLY_ID, -1L );
+				long reply_id = draft.optLong( DRAFT_REPLY_ID, - 1L );
 				String reply_text = draft.optString( DRAFT_REPLY_TEXT, null );
 				String reply_image = draft.optString( DRAFT_REPLY_IMAGE, null );
 				String reply_url = draft.optString( DRAFT_REPLY_URL, null );
@@ -1997,17 +2007,16 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			
 			// Verify the intent will resolve to at least one activity
 			if( intent.resolveActivity( getPackageManager() ) == null ){
-				showRecommendedPlugin(getString( R.string.plugin_not_installed ));
+				showRecommendedPlugin( getString( R.string.plugin_not_installed ) );
 				return;
 			}
 			startActivityForResult( chooser, REQUEST_CODE_MUSHROOM );
 			
 		}catch( Throwable ex ){
 			ex.printStackTrace();
-			showRecommendedPlugin(getString( R.string.plugin_not_installed ));
+			showRecommendedPlugin( getString( R.string.plugin_not_installed ) );
 		}
 	}
-	
 	
 	private void applyMushroomResult( String text ){
 		if( mushroom_input == 1 ){
@@ -2017,55 +2026,55 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}
 	}
 	
-	private void showRecommendedPlugin(String title){
-		String language_code = getString(R.string.language_code);
+	private void showRecommendedPlugin( String title ){
+		String language_code = getString( R.string.language_code );
 		int res_id;
-		if( "ja".equals( language_code )){
+		if( "ja".equals( language_code ) ){
 			res_id = R.raw.recommended_plugin_ja;
-		}else if ( "fr".equals( language_code )){
+		}else if( "fr".equals( language_code ) ){
 			res_id = R.raw.recommended_plugin_fr;
 		}else{
 			res_id = R.raw.recommended_plugin_en;
 		}
 		try{
-			InputStream is = getResources().openRawResource(res_id );
+			InputStream is = getResources().openRawResource( res_id );
 			try{
-				ByteArrayOutputStream bao = new ByteArrayOutputStream(  );
-				IOUtils.copy( is,bao );
-				String text = Utils.decodeUTF8(bao.toByteArray());
-
-				View viewRoot = getLayoutInflater().inflate( R.layout.dlg_plugin_missing,null,false );
-
-				TextView tvText = (TextView)viewRoot. findViewById(R.id.tvText);
+				ByteArrayOutputStream bao = new ByteArrayOutputStream();
+				IOUtils.copy( is, bao );
+				String text = Utils.decodeUTF8( bao.toByteArray() );
+				
+				View viewRoot = getLayoutInflater().inflate( R.layout.dlg_plugin_missing, null, false );
+				
+				TextView tvText = (TextView) viewRoot.findViewById( R.id.tvText );
 				LinkClickContext lcc = new LinkClickContext() {
 					@Override public AcctColor findAcctColor( String url ){
 						return null;
 					}
 				};
-				CharSequence sv = HTMLDecoder.decodeHTML( lcc,text,false,null );
-				tvText.setText(sv );
-				tvText.setMovementMethod( LinkMovementMethod.getInstance()  );
-
-				TextView tvTitle = (TextView)viewRoot. findViewById(R.id.tvTitle);
-				if( TextUtils.isEmpty( title )){
+				CharSequence sv = HTMLDecoder.decodeHTML( lcc, text, false, null );
+				tvText.setText( sv );
+				tvText.setMovementMethod( LinkMovementMethod.getInstance() );
+				
+				TextView tvTitle = (TextView) viewRoot.findViewById( R.id.tvTitle );
+				if( TextUtils.isEmpty( title ) ){
 					tvTitle.setVisibility( View.GONE );
 				}else{
 					tvTitle.setText( title );
 					
 				}
-
-				new AlertDialog.Builder(this)
-					.setView(viewRoot )
+				
+				new AlertDialog.Builder( this )
+					.setView( viewRoot )
 					.setCancelable( true )
 					.setNeutralButton( R.string.close, null )
 					.show();
-
+				
 			}finally{
 				IOUtils.closeQuietly( is );
 			}
 			
-		}catch(Throwable ex){
-			ex.printStackTrace(  );
+		}catch( Throwable ex ){
+			ex.printStackTrace();
 		}
 	}
 	

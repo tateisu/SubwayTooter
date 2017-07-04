@@ -3445,6 +3445,7 @@ public class ActMain extends AppCompatActivity
 		
 		float density = dm.density;
 		int column_w_min = (int) ( 0.5f + column_w_min_dp * density );
+		if( column_w_min < 1) column_w_min =1;
 		
 		if( sw < column_w_min * 2 ){
 			// 最小幅で2つ表示できないのなら1カラム表示
@@ -3453,9 +3454,7 @@ public class ActMain extends AppCompatActivity
 			
 			// カラム最小幅から計算した表示カラム数
 			nScreenColumn = sw / column_w_min;
-			if( nScreenColumn <= 0 ){
-				nScreenColumn = 1;
-			}
+			if( nScreenColumn < 1 ) nScreenColumn = 1;
 			
 			// データのカラム数より大きくならないようにする
 			// (でも最小は1)

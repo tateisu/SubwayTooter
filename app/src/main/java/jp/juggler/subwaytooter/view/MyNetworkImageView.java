@@ -15,7 +15,10 @@ import android.view.ViewGroup;
 import android.support.v7.widget.AppCompatImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
+import com.bumptech.glide.request.target.BaseTarget;
+import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.bumptech.glide.request.target.SimpleTarget;
 import com.bumptech.glide.request.target.Target;
 
@@ -60,14 +63,26 @@ public class MyNetworkImageView extends AppCompatImageView {
 	
 	// 表示したい画像のURL
 	private String mUrl;
+	private boolean mIsUrlGif;
 	
 	public void setImageUrl( String url ){
-		mUrl = url;
+		setImageUrl( url, null );
+	}
+	
+	public void setImageUrl( String url, String gif_url ){
+		//		if( gif_url != null && mCornerRadius <= 0f && ! gif_url.equals( url ) ){
+		//			mUrl = gif_url;
+		//			mIsUrlGif = true;
+		//		}else
+		{
+			mUrl = url;
+			mIsUrlGif = false;
+		}
 		loadImageIfNecessary();
 	}
 	
 	// 非同期処理のキャンセル
-	MyTarget mTarget;
+	BaseTarget< ? > mTarget;
 	
 	private void cancelLoading(){
 		if( mTarget != null ){
@@ -98,7 +113,7 @@ public class MyNetworkImageView extends AppCompatImageView {
 				return;
 			}
 			
-			if( mTarget != null && mUrl.equals( mTarget.url ) ){
+			if( mTarget != null && mUrl.equals( ( (UrlTarget) mTarget ).getUrl() ) ){
 				// すでにリクエストが発行済みで、リクエストされたURLが同じなら何もしない
 				return;
 			}
@@ -125,10 +140,18 @@ public class MyNetworkImageView extends AppCompatImageView {
 				return;
 			}
 			
-			mTarget = Glide.with( getContext() )
-				.load( mUrl )
-				.asBitmap()
-				.into( new MyTarget( mUrl, desiredWidth, desiredHeight ) );
+			if( mIsUrlGif ){
+				mTarget = Glide.with( getContext() )
+					.load( mUrl )
+					.into( new MyTargetGif( mUrl ) );
+				
+			}else{
+				mTarget = Glide.with( getContext() )
+					.load( mUrl )
+					.asBitmap()
+					.into( new MyTarget( mUrl, desiredWidth, desiredHeight ) );
+				
+			}
 		}catch( Throwable ex ){
 			ex.printStackTrace();
 			// java.lang.IllegalArgumentException:
@@ -139,9 +162,91 @@ public class MyNetworkImageView extends AppCompatImageView {
 		}
 	}
 	
-	private class MyTarget extends SimpleTarget< Bitmap > {
+	private interface UrlTarget {
+		@NonNull String getUrl();
+	}
+	
+	private class MyTargetGif extends GlideDrawableImageViewTarget implements UrlTarget {
 		
 		@NonNull final String url;
+		
+		@Override @NonNull public String getUrl(){
+			return url;
+		}
+		
+		MyTargetGif( @NonNull String url ){
+			super( MyNetworkImageView.this, GlideDrawable.LOOP_FOREVER );
+			this.url = url;
+		}
+		
+		@Override public void onLoadFailed( Exception e, Drawable errorDrawable ){
+			try{
+				// このViewは別の画像を表示するように指定が変わっていた
+				if( ! url.equals( mUrl ) ) return;
+				
+				e.printStackTrace();
+				if( mErrorImageId != 0 ) setImageResource( mErrorImageId );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+				// java.lang.NullPointerException:
+				// at jp.juggler.subwaytooter.view.MyNetworkImageView$1.onLoadFailed(MyNetworkImageView.java:147)
+				// at com.bumptech.glide.request.GenericRequest.setErrorPlaceholder(GenericRequest.java:404)
+				// at com.bumptech.glide.request.GenericRequest.onException(GenericRequest.java:548)
+				// at com.bumptech.glide.load.engine.EngineJob.handleExceptionOnMainThread(EngineJob.java:183)
+			}
+		}
+		
+		@Override public void onResourceReady(
+			final GlideDrawable resource
+			, final GlideAnimation< ? super GlideDrawable > glideAnimation
+		){
+			try{
+				// このViewは別の画像を表示するように指定が変わっていた
+				if( ! url.equals( mUrl ) ) return;
+				
+				super.onResourceReady( resource, glideAnimation );
+				
+				//				}else if( mCornerRadius <= 0f ){
+				//					setImageBitmap( bitmap );
+				//				}else{
+				//					RoundedBitmapDrawable d = RoundedBitmapDrawableFactory
+				//						.create( getResources(), bitmap );
+				//					d.setCornerRadius( mCornerRadius );
+				//					setImageDrawable( d );
+				//				}
+				
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+			}
+		}
+		
+		/**
+		 * Sets the given {@link android.graphics.drawable.Drawable} on the view using
+		 * {@link android.widget.ImageView#setImageDrawable(android.graphics.drawable.Drawable)}.
+		 *
+		 * @param drawable {@inheritDoc}
+		 */
+		@Override
+		public void setDrawable( Drawable drawable ){
+			
+			//			if( mCornerRadius > 0f ){
+			//				RoundedBitmapDrawable d = RoundedBitmapDrawableFactory.create( getResources(), bitmap );
+			//				d.setCornerRadius( mCornerRadius );
+			//				setImageDrawable( d );
+			//			}
+			
+			view.setImageDrawable( drawable );
+		}
+		
+	}
+	
+	private class MyTarget extends SimpleTarget< Bitmap > implements UrlTarget {
+		
+		@NonNull final String url;
+		
+		@Override @NonNull public String getUrl(){
+			return url;
+		}
 		
 		MyTarget( @NonNull String url, int desiredWidth, int desiredHeight ){
 			super( desiredWidth, desiredHeight );
@@ -173,9 +278,7 @@ public class MyNetworkImageView extends AppCompatImageView {
 				// このViewは別の画像を表示するように指定が変わっていた
 				if( ! url.equals( mUrl ) ) return;
 				
-				if( bitmap == null ){
-					setDefaultImageOrNull();
-				}else if( mCornerRadius <= 0f ){
+				if( mCornerRadius <= 0f ){
 					setImageBitmap( bitmap );
 				}else{
 					RoundedBitmapDrawable d = RoundedBitmapDrawableFactory
@@ -183,6 +286,11 @@ public class MyNetworkImageView extends AppCompatImageView {
 					d.setCornerRadius( mCornerRadius );
 					setImageDrawable( d );
 				}
+				
+				//				if( glideAnimation != null ){
+				//					glideAnimation.animate(  )
+				//				}
+				
 			}catch( Throwable ex ){
 				ex.printStackTrace();
 			}

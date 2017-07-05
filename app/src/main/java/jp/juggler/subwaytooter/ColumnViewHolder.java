@@ -43,6 +43,7 @@ class ColumnViewHolder
 	
 	@Nullable Column column;
 	@Nullable private ItemListAdapter status_adapter;
+	int page_idx;
 	
 	private final TextView tvLoading;
 	private final MyListView listView;
@@ -226,6 +227,7 @@ class ColumnViewHolder
 		loading_busy = true;
 		try{
 			this.column = column;
+			this.page_idx = page_idx;
 			
 			log.d( "onPageCreate [%d] %s",page_idx, column.getColumnName( true ) );
 			
@@ -437,6 +439,7 @@ class ColumnViewHolder
 						Uri uri = Uri.parse( url );
 						return Utils.createResizedBitmap( log, activity, uri, false, resize_max );
 						
+					
 					}catch(Throwable ex){
 						ex.printStackTrace();
 					}
@@ -751,9 +754,25 @@ class ColumnViewHolder
 	final Runnable proc_restoreScrollPosition = new Runnable() {
 		@Override public void run(){
 			activity.handler.removeCallbacks( proc_restoreScrollPosition );
-			if( column == null ) return;
+
+			if( isPageDestroyed() ){
+				log.d( "restoreScrollPosition [%d], page is destroyed.");
+				return;
+			}
+				
+			if( column == null ){
+				log.d( "restoreScrollPosition [%d], column==null",page_idx);
+				return;
+			}
+			
+			if( column .is_dispose.get()  ){
+				log.d( "restoreScrollPosition [%d], column is disposed",page_idx);
+				return;
+			}
 			
 			if( column.hasMultipleViewHolder() ){
+				log.d( "restoreScrollPosition [%d] %s , column has multiple view holder. retry later.", page_idx, column.getColumnName( true ));
+
 				// タブレットモードでカラムを追加/削除した際に発生する。
 				// このタイミングでスクロール位置を復元してもうまくいかないので延期する
 				activity.handler.post( proc_restoreScrollPosition );
@@ -761,11 +780,26 @@ class ColumnViewHolder
 			}
 			
 			ScrollPosition sp = column.scroll_save;
-			if( sp == null ) return;
+			if( sp == null ){
+				log.d( "restoreScrollPosition [%d] %s , column has no saved scroll position.", page_idx, column.getColumnName( true ));
+				return;
+			}
+
 			
 			column.scroll_save = null;
 			
-			if( listView.getVisibility() == View.VISIBLE ){
+			if( listView.getVisibility() != View.VISIBLE ){
+				log.d( "restoreScrollPosition [%d] %s , listView is not visible. saved position %s,%s is dropped."
+					, page_idx, column.getColumnName( true )
+					,sp.pos
+					,sp.top
+				);
+			}else{
+				log.d( "restoreScrollPosition [%d] %s , listView is visible. resume %s,%s"
+					, page_idx, column.getColumnName( true )
+					,sp.pos
+					,sp.top
+				);
 				sp.restore( listView );
 			}
 			
@@ -774,12 +808,29 @@ class ColumnViewHolder
 	
 	
 	private void saveScrollPosition(){
-		if( column != null && ! column.is_dispose.get() ){
-			if( listView.getVisibility() == View.VISIBLE ){
-				column.scroll_save = new ScrollPosition( listView );
-			}else{
-				column.scroll_save = new ScrollPosition( 0, 0 );
-			}
+
+		if( column == null ){
+			log.d( "saveScrollPosition [%d] , column==null",page_idx );
+
+		}else if( column.is_dispose.get() ){
+			log.d( "saveScrollPosition [%d] , column is disposed",page_idx );
+
+		}else if( listView.getVisibility() != View.VISIBLE ){
+
+			column.scroll_save = new ScrollPosition( 0, 0 );
+			log.d( "saveScrollPosition [%d] %s , listView is not visible, save %s,%s"
+				, page_idx, column.getColumnName( true )
+				,column.scroll_save.pos
+				,column.scroll_save.top
+			);
+		}else{
+
+			column.scroll_save = new ScrollPosition( listView );
+			log.d( "saveScrollPosition [%d] %s , listView is visible, save %s,%s"
+				, page_idx, column.getColumnName( true )
+				,column.scroll_save.pos
+				,column.scroll_save.top
+			);
 		}
 	}
 	

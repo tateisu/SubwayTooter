@@ -786,6 +786,10 @@ class Column implements StreamReader.Callback {
 			if( cvh == it.next() ) it.remove();
 		}
 	}
+
+	void removeAllColumnViewHolder(  ){
+		_holder_list.clear();
+	}
 	
 	boolean hasMultipleViewHolder(){
 		return _holder_list.size() > 1;

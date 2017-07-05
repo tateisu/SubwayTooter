@@ -772,6 +772,8 @@ public class Utils {
 			}finally{
 				src.recycle();
 			}
+		}catch(SecurityException ex){
+			log.e(ex,"maybe we need pick up image again.");
 		}catch( Throwable ex ){
 			ex.printStackTrace();
 		}

@@ -138,6 +138,9 @@ public class ActMain extends AppCompatActivity
 	
 	@Override protected void onDestroy(){
 		super.onDestroy();
+		for(Column c: app_state.column_list){
+			c.removeAllColumnViewHolder();
+		}
 	}
 	
 	static final String STATE_CURRENT_PAGE = "current_page";

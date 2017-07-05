@@ -323,7 +323,10 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		tvName.setText( status.account.display_name );
 		ivThumbnail.setCornerRadius( activity.pref, 16f );
-		ivThumbnail.setImageUrl( access_info.supplyBaseUrl( status.account.avatar_static ) );
+		ivThumbnail.setImageUrl(
+			access_info.supplyBaseUrl( status.account.avatar_static )
+			,access_info.supplyBaseUrl( status.account.avatar )
+		);
 		tvContent.setText( status.decoded_content );
 		
 		//			if( status.decoded_tags == null ){

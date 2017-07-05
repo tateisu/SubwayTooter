@@ -54,7 +54,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -2890,9 +2889,7 @@ public class ActMain extends AppCompatActivity
 				}else if( empty_object != null ){
 					
 					for( Column column : app_state.column_list ){
-						if( bBlock ){
-							column.onDomainBlockChanged( access_info, domain, bBlock );
-						}
+						column.onDomainBlockChanged( access_info, domain, bBlock );
 					}
 					
 					Utils.showToast( ActMain.this, false, bBlock ? R.string.block_succeeded : R.string.unblock_succeeded );

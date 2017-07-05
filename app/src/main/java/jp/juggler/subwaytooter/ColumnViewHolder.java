@@ -43,7 +43,7 @@ class ColumnViewHolder
 	
 	@Nullable Column column;
 	@Nullable private ItemListAdapter status_adapter;
-	int page_idx;
+	private int page_idx;
 	
 	private final TextView tvLoading;
 	private final MyListView listView;
@@ -751,7 +751,7 @@ class ColumnViewHolder
 		proc_restoreScrollPosition.run();
 	}
 	
-	final Runnable proc_restoreScrollPosition = new Runnable() {
+	private final Runnable proc_restoreScrollPosition = new Runnable() {
 		@Override public void run(){
 			activity.handler.removeCallbacks( proc_restoreScrollPosition );
 

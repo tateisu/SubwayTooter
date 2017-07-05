@@ -53,7 +53,6 @@ import jp.juggler.subwaytooter.util.Utils;
 class Column implements StreamReader.Callback {
 	private static final LogCategory log = new LogCategory( "Column" );
 	
-	
 	interface Callback {
 		boolean isActivityResume();
 	}
@@ -465,7 +464,7 @@ class Column implements StreamReader.Callback {
 		
 		case TYPE_BLOCKS:
 			return context.getString( R.string.blocked_users );
-
+		
 		case TYPE_DOMAIN_BLOCKS:
 			return context.getString( R.string.blocked_domains );
 		
@@ -519,7 +518,7 @@ class Column implements StreamReader.Callback {
 		
 		case TYPE_BLOCKS:
 			return R.attr.ic_block;
-
+		
 		case TYPE_DOMAIN_BLOCKS:
 			return R.attr.ic_domain_block;
 		
@@ -537,14 +536,14 @@ class Column implements StreamReader.Callback {
 	}
 	
 	interface StatusEntryCallback {
-		boolean onIterate( SavedAccount account,TootStatus status );
+		boolean onIterate( SavedAccount account, TootStatus status );
 	}
 	
 	// ブーストやお気に入りの更新に使う。ステータスを列挙する。
 	void findStatus( String target_instance, long target_status_id, StatusEntryCallback callback ){
 		if( access_info.host.equalsIgnoreCase( target_instance ) ){
 			boolean bChanged = false;
-			for( Object data: list_data ){
+			for( Object data : list_data ){
 				//
 				if( data instanceof TootNotification ){
 					data = ( (TootNotification) data ).status;
@@ -554,20 +553,20 @@ class Column implements StreamReader.Callback {
 					//
 					TootStatus status = (TootStatus) data;
 					if( target_status_id == status.id ){
-						if(callback.onIterate( access_info,status )){
+						if( callback.onIterate( access_info, status ) ){
 							bChanged = true;
 						}
 					}
 					//
 					TootStatus reblog = status.reblog;
 					if( reblog != null && target_status_id == reblog.id ){
-						if(callback.onIterate( access_info,reblog )){
+						if( callback.onIterate( access_info, reblog ) ){
 							bChanged = true;
 						}
 					}
 				}
 			}
-			if(bChanged){
+			if( bChanged ){
 				fireShowContent();
 			}
 		}
@@ -732,24 +731,26 @@ class Column implements StreamReader.Callback {
 		
 		if( bBlocked ){
 			// ブロックしたのとドメイン部分が一致するアカウントからのステータスと通知をすべて除去する
-
-			Pattern reDomain = Pattern.compile( "[^@]+@\\Q" + domain +"\\E\\z",Pattern.CASE_INSENSITIVE );
+			
+			Pattern reDomain = Pattern.compile( "[^@]+@\\Q" + domain + "\\E\\z", Pattern.CASE_INSENSITIVE );
 			
 			ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
 			
 			for( Object o : list_data ){
 				if( o instanceof TootStatus ){
 					TootStatus item = (TootStatus) o;
-					if( reDomain.matcher( item.account.acct).find() ) continue;
-					if( item.reblog != null && reDomain.matcher( item.reblog.account.acct).find() ) continue;
+					if( reDomain.matcher( item.account.acct ).find() ) continue;
+					if( item.reblog != null && reDomain.matcher( item.reblog.account.acct ).find() )
+						continue;
 				}else if( o instanceof TootNotification ){
 					TootNotification item = (TootNotification) o;
 					if( item.account != null ){
-						if( reDomain.matcher( item.account.acct).find() ) continue;
+						if( reDomain.matcher( item.account.acct ).find() ) continue;
 					}
 					if( item.status != null ){
-						if( reDomain.matcher( item.status.account.acct).find() ) continue;
-						if( item.status.reblog != null && reDomain.matcher( item.status.reblog.account.acct).find() ) continue;
+						if( reDomain.matcher( item.status.account.acct ).find() ) continue;
+						if( item.status.reblog != null && reDomain.matcher( item.status.reblog.account.acct ).find() )
+							continue;
 					}
 				}
 				tmp_list.add( o );
@@ -759,11 +760,10 @@ class Column implements StreamReader.Callback {
 				list_data.addAll( tmp_list );
 				fireShowContent();
 			}
-
+			
 		}
-
+		
 	}
-	
 	
 	//////////////////////////////////////////////////////////////////////////////////////
 	
@@ -772,10 +772,10 @@ class Column implements StreamReader.Callback {
 	private final LinkedList< ColumnViewHolder > _holder_list = new LinkedList<>();
 	
 	void addColumnViewHolder( @NonNull ColumnViewHolder cvh ){
-
+		
 		// 現在のリストにあるなら削除する
 		removeColumnViewHolder( cvh );
-
+		
 		// 最後に追加されたものが先頭にくるようにする
 		// 呼び出しの後に必ず追加されているようにする
 		_holder_list.addFirst( cvh );
@@ -786,9 +786,14 @@ class Column implements StreamReader.Callback {
 			if( cvh == it.next() ) it.remove();
 		}
 	}
-
-	void removeAllColumnViewHolder(  ){
-		_holder_list.clear();
+	
+	void removeColumnViewHolderByActivity( ActMain activity ){
+		for( Iterator< ColumnViewHolder > it = _holder_list.iterator() ; it.hasNext() ; ){
+			ColumnViewHolder cvh = it.next();
+			if( cvh != null && cvh.activity == activity ){
+				it.remove();
+			}
+		}
 	}
 	
 	boolean hasMultipleViewHolder(){
@@ -1186,7 +1191,7 @@ class Column implements StreamReader.Callback {
 					
 					case TYPE_BLOCKS:
 						return parseAccountList( client, PATH_BLOCKS );
-
+					
 					case TYPE_DOMAIN_BLOCKS:
 						return parseDomainList( client, PATH_DOMAIN_BLOCK );
 					
@@ -1367,8 +1372,8 @@ class Column implements StreamReader.Callback {
 				}else if( o instanceof TootStatus ){
 					s = (TootStatus) o;
 					if( s.tags != null ){
-						for(TootTag tag : s.tags){
-							tag_set.add( tag.name);
+						for( TootTag tag : s.tags ){
+							tag_set.add( tag.name );
 						}
 					}
 					a = s.account;
@@ -1378,13 +1383,13 @@ class Column implements StreamReader.Callback {
 					}
 					s = s.reblog;
 					if( s != null ){
-
+						
 						if( s.tags != null ){
-							for(TootTag tag : s.tags){
-								tag_set.add( tag.name);
+							for( TootTag tag : s.tags ){
+								tag_set.add( tag.name );
 							}
 						}
-
+						
 						a = s.account;
 						if( a != null ){
 							who_set.add( a.id );
@@ -1404,8 +1409,8 @@ class Column implements StreamReader.Callback {
 					if( s != null ){
 						
 						if( s.tags != null ){
-							for(TootTag tag : s.tags){
-								tag_set.add( tag.name);
+							for( TootTag tag : s.tags ){
+								tag_set.add( tag.name );
 							}
 						}
 						
@@ -1418,8 +1423,8 @@ class Column implements StreamReader.Callback {
 						if( s != null ){
 							
 							if( s.tags != null ){
-								for(TootTag tag : s.tags){
-									tag_set.add( tag.name);
+								for( TootTag tag : s.tags ){
+									tag_set.add( tag.name );
 								}
 							}
 							
@@ -1633,7 +1638,6 @@ class Column implements StreamReader.Callback {
 				return result;
 			}
 			
-			
 			TootApiResult getDomainList( TootApiClient client, String path_base ){
 				long time_start = SystemClock.elapsedRealtime();
 				char delimiter = ( - 1 != path_base.indexOf( '?' ) ? '&' : '?' );
@@ -1680,7 +1684,6 @@ class Column implements StreamReader.Callback {
 				}
 				return result;
 			}
-			
 			
 			TootApiResult getReportList( TootApiClient client, String path_base ){
 				long time_start = SystemClock.elapsedRealtime();
@@ -2119,8 +2122,8 @@ class Column implements StreamReader.Callback {
 	}
 	
 	void startGap( final TootGap gap ){
-		if( gap== null ){
-			Utils.showToast( context, true, "gap is null");
+		if( gap == null ){
+			Utils.showToast( context, true, "gap is null" );
 			return;
 		}
 		if( last_task != null ){
@@ -2395,7 +2398,7 @@ class Column implements StreamReader.Callback {
 					
 					case TYPE_BLOCKS:
 						return getAccountList( client, PATH_BLOCKS );
-
+					
 					// ドメインブロックはギャップ表示がもともとない
 					//case TYPE_DOMAIN_BLOCKS:
 					
@@ -2466,8 +2469,8 @@ class Column implements StreamReader.Callback {
 				// 0個でもギャップを消すために以下の処理を続ける
 				
 				int position = list_data.indexOf( gap );
-				if( position == -1 ){
-					log.d("gap is not found..");
+				if( position == - 1 ){
+					log.d( "gap is not found.." );
 					return;
 				}
 				
@@ -2699,7 +2702,7 @@ class Column implements StreamReader.Callback {
 				if( isFiltered( status ) ) return;
 				
 				if( this.enable_speech ){
-					App1.getAppState( context ).addSpeech( status.reblog != null ? status.reblog : status);
+					App1.getAppState( context ).addSpeech( status.reblog != null ? status.reblog : status );
 				}
 			}
 			stream_data_queue.addFirst( o );
@@ -2722,7 +2725,6 @@ class Column implements StreamReader.Callback {
 			);
 			break;
 		
-		
 		case TYPE_LOCAL:
 			
 			app_state.stream_reader.unregister(
@@ -2730,7 +2732,7 @@ class Column implements StreamReader.Callback {
 				, StreamReader.EP_PUBLIC_LOCAL
 				, this
 			);
-
+			
 			break;
 		
 		case TYPE_FEDERATE:
@@ -2840,7 +2842,6 @@ class Column implements StreamReader.Callback {
 	boolean canSpeech(){
 		return canStreaming() && column_type != TYPE_NOTIFICATIONS;
 	}
-	
 	
 	private boolean bPutGap;
 	

@@ -106,6 +106,7 @@ public class ActMain extends AppCompatActivity
 	long posted_status_id;
 	
 	@Override protected void onCreate( Bundle savedInstanceState ){
+		log.d("onCreate");
 		super.onCreate( savedInstanceState );
 		App1.setActivityTheme( this, true );
 		requestWindowFeature( Window.FEATURE_NO_TITLE );
@@ -137,9 +138,11 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	@Override protected void onDestroy(){
+		log.d("onDestroy");
 		super.onDestroy();
+		// このアクティビティに関連する ColumnViewHolder への参照を全カラムから除去する
 		for(Column c: app_state.column_list){
-			c.removeAllColumnViewHolder();
+			c.removeColumnViewHolderByActivity(this);
 		}
 	}
 	

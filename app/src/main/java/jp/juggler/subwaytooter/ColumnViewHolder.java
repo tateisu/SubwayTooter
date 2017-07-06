@@ -784,7 +784,6 @@ class ColumnViewHolder
 				log.d( "restoreScrollPosition [%d] %s , column has no saved scroll position.", page_idx, column.getColumnName( true ));
 				return;
 			}
-
 			
 			column.scroll_save = null;
 			

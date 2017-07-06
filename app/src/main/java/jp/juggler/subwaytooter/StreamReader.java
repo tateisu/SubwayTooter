@@ -42,6 +42,8 @@ class StreamReader {
 		final String end_point;
 		final LinkedList< Callback > callback_list = new LinkedList<>();
 		
+
+		
 		Reader( SavedAccount access_info, String end_point ){
 			this.access_info = access_info;
 			this.end_point = end_point;
@@ -216,10 +218,10 @@ class StreamReader {
 	final SharedPreferences pref;
 	private final Handler handler;
 	
-	StreamReader( Context context, SharedPreferences pref ){
+	StreamReader( Context context, Handler handler,SharedPreferences pref ){
 		this.context = context;
 		this.pref = pref;
-		this.handler = new Handler();
+		this.handler = handler;
 	}
 	
 	private Reader prepareReader( @NonNull SavedAccount access_info, @NonNull String end_point ){

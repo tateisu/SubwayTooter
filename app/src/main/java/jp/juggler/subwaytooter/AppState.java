@@ -47,10 +47,10 @@ class AppState {
 	
 	AppState( Context applicationContext, SharedPreferences pref ){
 		this.context = applicationContext;
+		this.handler = new Handler();
 		this.pref = pref;
 		this.density = context.getResources().getDisplayMetrics().density;
-		this.stream_reader = new StreamReader( applicationContext, pref );
-		this.handler = new Handler();
+		this.stream_reader = new StreamReader( applicationContext, handler, pref );
 		
 		loadColumnList();
 	}

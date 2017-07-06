@@ -290,6 +290,7 @@ public class App1 extends Application {
 				.connectTimeout( 30, TimeUnit.SECONDS )
 				.readTimeout( 30, TimeUnit.SECONDS )
 				.writeTimeout( 30, TimeUnit.SECONDS )
+				.pingInterval( 10, TimeUnit.SECONDS )
 				.connectionSpecs( spec_list );
 			
 			ok_http_client = builder.build();

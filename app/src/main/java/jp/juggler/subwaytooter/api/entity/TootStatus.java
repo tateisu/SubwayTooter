@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.entity;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.TextUtils;
 
@@ -47,7 +48,7 @@ public class TootStatus extends TootId {
 	public String url;
 	
 	// The TootAccount which posted the status
-	public TootAccount account;
+	@Nullable public TootAccount account;
 	
 	//	null or the ID of the status it replies to
 	public String in_reply_to_id;

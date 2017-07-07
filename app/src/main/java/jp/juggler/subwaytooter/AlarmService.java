@@ -499,8 +499,8 @@ public class AlarmService extends IntentService {
 			
 			String body=null;
 			try{
+				//noinspection ConstantConditions
 				body =response.body().string();
-				
 			}catch(Throwable ignored){
 			}
 			log.e( "registerDeviceToken: %s (%s)",response,(body==null?"":body) );

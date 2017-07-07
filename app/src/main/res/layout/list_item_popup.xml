@@ -13,6 +13,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:background="@drawable/list_item_popup_triangle"
+        android:importantForAccessibility="no"
         />
 
     <LinearLayout
@@ -114,6 +115,8 @@
         android:layout_gravity="center_horizontal"
         android:background="@drawable/list_item_popup_triangle_bottom"
         android:visibility="gone"
+        android:importantForAccessibility="no"
+
         />
 
 </LinearLayout>

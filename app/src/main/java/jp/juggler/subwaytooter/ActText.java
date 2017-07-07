@@ -39,10 +39,12 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 		sb.append( ": " );
 		sb.append( access_info.getFullAcct( status.account ) );
 		sb.append( "\n" );
-		sb.append( context.getString( R.string.send_header_from_name ) );
-		sb.append( ": " );
-		sb.append( status.account.display_name );
-		sb.append( "\n" );
+		if( status.account != null ){
+			sb.append( context.getString( R.string.send_header_from_name ) );
+			sb.append( ": " );
+			sb.append( status.account.display_name );
+			sb.append( "\n" );
+		}
 		if( ! TextUtils.isEmpty( status.spoiler_text ) ){
 			sb.append( context.getString( R.string.send_header_content_warning ) );
 			sb.append( ": " );

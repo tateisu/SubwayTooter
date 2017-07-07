@@ -395,8 +395,8 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	
 	
 	
-	public String getFullAcct( @NonNull TootAccount who ){
-		return getFullAcct( who.acct );
+	public String getFullAcct( @Nullable TootAccount who ){
+		return who == null ? "?@?" : getFullAcct( who.acct );
 	}
 	
 	public String getFullAcct( @NonNull String acct ){
@@ -416,7 +416,9 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		}
 	}
 	
-	public boolean isMe( @NonNull TootAccount who ){
+	public boolean isMe( @Nullable TootAccount who ){
+		if( who == null ) return false;
+		
 		int pos = this.acct.indexOf( '@' );
 		String this_user = this.acct.substring( 0, pos );
 		//

@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter;
 
 import android.content.DialogInterface;
 import android.graphics.Typeface;
+import android.support.annotation.NonNull;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
@@ -253,7 +254,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			}
 		}else if( item instanceof TootStatus ){
 			TootStatus status = (TootStatus) item;
-			if( status.reblog != null ){
+			if( status.reblog != null && status.account != null ){
 				showBoost(
 					status.account
 					, status.time_created_at
@@ -271,28 +272,28 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		}
 	}
 	
-	private void showDomainBlock( TootDomainBlock domain_block ){
+	private void showDomainBlock( @NonNull TootDomainBlock domain_block ){
 		this.gap = null;
 		this.domain_block = domain_block;
 		llSearchTag.setVisibility( View.VISIBLE );
 		btnSearchTag.setText( domain_block.domain );
 	}
 	
-	private void showSearchTag( String tag ){
+	private void showSearchTag( @NonNull String tag ){
 		this.gap = null;
 		search_tag = tag;
 		llSearchTag.setVisibility( View.VISIBLE );
 		btnSearchTag.setText( "#" + tag );
 	}
 	
-	private void showGap( TootGap gap ){
+	private void showGap( @NonNull TootGap gap ){
 		this.gap = gap;
 		search_tag = null;
 		llSearchTag.setVisibility( View.VISIBLE );
 		btnSearchTag.setText( activity.getString( R.string.read_gap ) );
 	}
 	
-	private void showBoost( TootAccount who, long time, int icon_attr_id, CharSequence text ){
+	private void showBoost( @NonNull TootAccount who, long time, int icon_attr_id, CharSequence text ){
 		account_boost = who;
 		llBoosted.setVisibility( View.VISIBLE );
 		ivBoosted.setImageResource( Styler.getAttributeResourceId( activity, icon_attr_id ) );
@@ -301,7 +302,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		setAcct( tvBoostedAcct, access_info.getFullAcct( who ), R.attr.colorAcctSmall );
 	}
 	
-	private void showFollow( TootAccount who ){
+	private void showFollow( @NonNull TootAccount who ){
 		account_follow = who;
 		llFollow.setVisibility( View.VISIBLE );
 		ivFollow.setCornerRadius( activity.pref, 16f );
@@ -313,20 +314,25 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation );
 	}
 	
-	private void showStatus( ActMain activity, TootStatus status ){
+	private void showStatus( @NonNull ActMain activity, @NonNull TootStatus status ){
 		this.status = status;
-		account_thumbnail = status.account;
 		llStatus.setVisibility( View.VISIBLE );
 		
-		setAcct( tvAcct, access_info.getFullAcct( status.account ), R.attr.colorAcctSmall );
 		tvTime.setText( TootStatus.formatTime( status.time_created_at ) );
-		
-		tvName.setText( status.account.display_name );
 		ivThumbnail.setCornerRadius( activity.pref, 16f );
-		ivThumbnail.setImageUrl(
-			access_info.supplyBaseUrl( status.account.avatar_static )
-			,access_info.supplyBaseUrl( status.account.avatar )
-		);
+		
+		account_thumbnail = null;
+		setAcct( tvAcct, access_info.getFullAcct( status.account  ), R.attr.colorAcctSmall );
+		
+		if(status.account == null ){
+			tvName.setText( "?" );
+			ivThumbnail.setImageUrl(null,null);
+		}else{
+			ivThumbnail.setImageUrl(
+				access_info.supplyBaseUrl( status.account.avatar_static )
+				,access_info.supplyBaseUrl( status.account.avatar )
+			);
+		}
 		tvContent.setText( status.decoded_content );
 		
 		//			if( status.decoded_tags == null ){

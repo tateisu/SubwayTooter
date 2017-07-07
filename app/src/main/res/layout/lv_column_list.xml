@@ -92,6 +92,7 @@
                     android:layout_height="32dp"
                     android:layout_marginEnd="4dp"
                     android:id="@+id/ivColumnIcon"
+                    android:importantForAccessibility="no"
                     />
                 <TextView
                     android:id="@+id/tvName"

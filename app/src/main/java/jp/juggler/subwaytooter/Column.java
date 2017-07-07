@@ -580,8 +580,8 @@ class Column implements StreamReader.Callback {
 		for( Object o : list_data ){
 			if( o instanceof TootStatus ){
 				TootStatus item = (TootStatus) o;
-				if( item.account.id == who_id
-					|| ( item.reblog != null && item.reblog.account.id == who_id )
+				if( (item.account != null && item.account.id == who_id)
+					|| ( item.reblog != null && item.reblog.account != null && item.reblog.account.id == who_id )
 					){
 					continue;
 				}
@@ -590,8 +590,8 @@ class Column implements StreamReader.Callback {
 				TootNotification item = (TootNotification) o;
 				if( item.account.id == who_id ) continue;
 				if( item.status != null ){
-					if( item.status.account.id == who_id ) continue;
-					if( item.status.reblog != null && item.status.reblog.account.id == who_id )
+					if( (item.status.account != null && item.status.account.id == who_id) ) continue;
+					if( item.status.reblog != null && item.status.reblog.account != null && item.status.reblog.account.id == who_id )
 						continue;
 				}
 			}
@@ -739,8 +739,8 @@ class Column implements StreamReader.Callback {
 			for( Object o : list_data ){
 				if( o instanceof TootStatus ){
 					TootStatus item = (TootStatus) o;
-					if( reDomain.matcher( item.account.acct ).find() ) continue;
-					if( item.reblog != null && reDomain.matcher( item.reblog.account.acct ).find() )
+					if( item.account != null && reDomain.matcher( item.account.acct ).find() ) continue;
+					if( item.reblog != null && item.reblog.account !=null && reDomain.matcher( item.reblog.account.acct ).find() )
 						continue;
 				}else if( o instanceof TootNotification ){
 					TootNotification item = (TootNotification) o;
@@ -748,8 +748,8 @@ class Column implements StreamReader.Callback {
 						if( reDomain.matcher( item.account.acct ).find() ) continue;
 					}
 					if( item.status != null ){
-						if( reDomain.matcher( item.status.account.acct ).find() ) continue;
-						if( item.status.reblog != null && reDomain.matcher( item.status.reblog.account.acct ).find() )
+						if( item.status.account != null && reDomain.matcher( item.status.account.acct ).find() ) continue;
+						if( item.status.reblog != null &&  item.status.reblog.account !=null && reDomain.matcher( item.status.reblog.account.acct ).find() )
 							continue;
 					}
 				}
@@ -2698,7 +2698,7 @@ class Column implements StreamReader.Callback {
 			}else if( o instanceof TootStatus ){
 				TootStatus status = (TootStatus) o;
 				if( column_type == TYPE_NOTIFICATIONS ) return;
-				if( column_type == TYPE_LOCAL && status.account.acct.indexOf( '@' ) != - 1 ) return;
+				if( column_type == TYPE_LOCAL &&  status.account != null && status.account.acct.indexOf( '@' ) != - 1 ) return;
 				if( isFiltered( status ) ) return;
 				
 				if( this.enable_speech ){

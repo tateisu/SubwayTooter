@@ -298,6 +298,7 @@
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
                 android:visibility="gone"
+                android:importantForAccessibility="no"
                 />
 
             <TextView

@@ -80,6 +80,7 @@
                         android:background="@drawable/btn_bg_transparent"
                         android:gravity="center_vertical"
                         android:src="?attr/btn_close"
+                        android:contentDescription="@string/delete"
                         />
                 </LinearLayout>
             </LinearLayout>

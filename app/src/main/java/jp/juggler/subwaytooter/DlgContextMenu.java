@@ -29,7 +29,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 	
 	@NonNull final ActMain activity;
 	@NonNull private final SavedAccount access_info;
-	@NonNull private final TootAccount who;
+	@Nullable private final TootAccount who;
 	@Nullable private final TootStatus status;
 	@NonNull private final UserRelation relation;
 	@NonNull private final Column column;
@@ -42,7 +42,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 	DlgContextMenu(
 		@NonNull ActMain activity
 	    , @NonNull Column column
-		, @NonNull TootAccount who
+		, @Nullable TootAccount who
 		, @Nullable TootStatus status
 	){
 		this.activity = activity;
@@ -52,7 +52,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		this.status = status;
 		int column_type = column.column_type;
 		
-		this.relation = UserRelation.load( access_info.db_id, who.id );
+		this.relation = UserRelation.load( access_info.db_id, who == null ? -1 : who.id );
 		
 		@SuppressLint("InflateParams") View viewRoot = activity.getLayoutInflater().inflate( R.layout.dlg_context_menu, null, false );
 		this.dialog = new Dialog( activity );
@@ -179,7 +179,9 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			btnBlock.setImageDrawable( d );
 			
 			
-			{
+			if( who == null ){
+				btnDomainBlock.setVisibility( View.GONE );
+			}else{
 				int acct_delm = who.acct.indexOf( "@" );
 				if( -1 ==  acct_delm || access_info.isPseudo() ){
 					// 疑似アカウントではドメインブロックできない
@@ -295,7 +297,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnReport:
-			if( status != null ){
+			if( status != null && who != null ){
 				activity.openReportForm( access_info, who, status );
 			}
 			break;
@@ -329,7 +331,9 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnMute:
-			if( relation.muting ){
+			if( who == null ){
+				// サーバのバグで誰のことか分からないので何もできない
+			}else if( relation.muting ){
 				activity.callMute( access_info, who, false, null );
 			}else{
 				new AlertDialog.Builder( activity )
@@ -345,7 +349,9 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnBlock:
-			if( relation.blocking ){
+			if( who == null ){
+				// サーバのバグで誰のことか分からないので何もできない
+			}else if( relation.blocking ){
 				activity.callBlock( access_info, who, false, null );
 			}else{
 				new AlertDialog.Builder( activity )
@@ -369,31 +375,45 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnAccountWebPage:
-			activity.openChromeTab( pos, access_info, who.url, true );
+			if( who != null ){
+				activity.openChromeTab( pos, access_info, who.url, true );
+			}
 			break;
 		
 		case R.id.btnFollowRequestOK:
-			activity.callFollowRequestAuthorize( access_info, who, true );
+			if( who != null){
+				activity.callFollowRequestAuthorize( access_info, who, true );
+			}
 			break;
 		
 		case R.id.btnFollowRequestNG:
-			activity.callFollowRequestAuthorize( access_info, who, false );
+			if( who != null){
+				activity.callFollowRequestAuthorize( access_info, who, false );
+			}
 			break;
 		
 		case R.id.btnFollowFromAnotherAccount:
-			activity.openFollowFromAnotherAccount( access_info, who );
+			if( who != null){
+				activity.openFollowFromAnotherAccount( access_info, who );
+			}
 			break;
 		
 		case R.id.btnSendMessageFromAnotherAccount:
-			activity.performMentionFromAnotherAccount( access_info, who, account_list_non_pseudo );
+			if( who != null){
+				activity.performMentionFromAnotherAccount( access_info, who, account_list_non_pseudo );
+			}
 			break;
 		
 		case R.id.btnOpenProfileFromAnotherAccount:
-			activity.openProfileFromAnotherAccount( pos,access_info,who );
+			if( who != null){
+				activity.openProfileFromAnotherAccount( pos, access_info, who );
+			}
 			break;
 		
 		case R.id.btnNickname:
-			ActNickname.open( activity, access_info.getFullAcct( who ), ActMain.REQUEST_CODE_NICKNAME );
+			if( who != null){
+				ActNickname.open( activity, access_info.getFullAcct( who ), ActMain.REQUEST_CODE_NICKNAME );
+			}
 			break;
 		
 		case R.id.btnCancel:
@@ -401,26 +421,31 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnAccountQrCode:
-			DlgQRCode.open( activity, who.display_name, access_info.getUserUrl( who.acct ) );
+			if( who != null){
+				DlgQRCode.open( activity, who.display_name, access_info.getUserUrl( who.acct ) );
+			}
 			break;
 		
 		case R.id.btnDomainBlock:
-		
-			int acct_delm = who.acct.indexOf( "@" );
-			if( -1 ==  acct_delm || access_info.isPseudo() ){
-				// 疑似アカウントではドメインブロックできない
-				// 自ドメインはブロックできない
+			if( who == null ){
+				// サーバのバグで誰のことか分からないので何もできない
 			}else{
-				final String domain = who.acct.substring( acct_delm+1 );
-				new AlertDialog.Builder( activity )
-					.setMessage( activity.getString( R.string.confirm_block_domain, domain ) )
-					.setNegativeButton( R.string.cancel, null )
-					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
-						@Override public void onClick( DialogInterface dialog, int which ){
-							activity.callDomainBlock( access_info, domain, true, null );
-						}
-					} )
-					.show();
+				int acct_delm = who.acct.indexOf( "@" );
+				if( - 1 == acct_delm || access_info.isPseudo() ){
+					// 疑似アカウントではドメインブロックできない
+					// 自ドメインはブロックできない
+				}else{
+					final String domain = who.acct.substring( acct_delm + 1 );
+					new AlertDialog.Builder( activity )
+						.setMessage( activity.getString( R.string.confirm_block_domain, domain ) )
+						.setNegativeButton( R.string.cancel, null )
+						.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
+							@Override public void onClick( DialogInterface dialog, int which ){
+								activity.callDomainBlock( access_info, domain, true, null );
+							}
+						} )
+						.show();
+				}
 			}
 			break;
 		}

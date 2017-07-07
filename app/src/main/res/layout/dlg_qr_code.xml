@@ -35,6 +35,7 @@
         android:layout_margin="10dp"
         android:scaleType="centerInside"
         android:id="@+id/ivQrCode"
+        android:importantForAccessibility="no"
         />
 
     <View

@@ -90,7 +90,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			setButton( btnFavourite, true, color, R.attr.btn_favourite, Long.toString( status.favourites_count ) );
 		}
 		
-		if( ! activity.pref.getBoolean( Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR, false ) ){
+		if( status.account == null || ! activity.pref.getBoolean( Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR, false ) ){
 			llFollow2.setVisibility( View.GONE );
 			this.relation = null;
 		}else{

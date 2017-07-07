@@ -323,7 +323,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		tvTime.setText( TootStatus.formatTime( status.time_created_at ) );
 		ivThumbnail.setCornerRadius( activity.pref, 16f );
 		
-		account_thumbnail = null;
+		account_thumbnail = status.account;
 		setAcct( tvAcct, access_info.getFullAcct( status.account  ), R.attr.colorAcctSmall );
 		
 		if(status.account == null ){

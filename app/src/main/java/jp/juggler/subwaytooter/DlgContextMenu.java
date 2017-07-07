@@ -429,9 +429,11 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		case R.id.btnDomainBlock:
 			if( who == null ){
 				// サーバのバグで誰のことか分からないので何もできない
+			}else if( access_info.isPseudo() ){
+				// 疑似アカウントではドメインブロックできない
 			}else{
 				int acct_delm = who.acct.indexOf( "@" );
-				if( - 1 == acct_delm || access_info.isPseudo() ){
+				if( - 1 == acct_delm ){
 					// 疑似アカウントではドメインブロックできない
 					// 自ドメインはブロックできない
 				}else{

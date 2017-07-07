@@ -254,13 +254,15 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			}
 		}else if( item instanceof TootStatus ){
 			TootStatus status = (TootStatus) item;
-			if( status.reblog != null && status.account != null ){
-				showBoost(
-					status.account
-					, status.time_created_at
-					, R.attr.btn_boost
-					, Utils.formatSpannable1( activity, R.string.display_name_boosted_by, status.account.display_name )
-				);
+			if( status.reblog != null ){
+				if( status.account != null ){
+					showBoost(
+						status.account
+						, status.time_created_at
+						, R.attr.btn_boost
+						, Utils.formatSpannable1( activity, R.string.display_name_boosted_by, status.account.display_name )
+					);
+				}
 				showStatus( activity, status.reblog );
 			}else{
 				showStatus( activity, status );
@@ -328,6 +330,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			tvName.setText( "?" );
 			ivThumbnail.setImageUrl(null,null);
 		}else{
+			tvName.setText( status.account.display_name );
 			ivThumbnail.setImageUrl(
 				access_info.supplyBaseUrl( status.account.avatar_static )
 				,access_info.supplyBaseUrl( status.account.avatar )

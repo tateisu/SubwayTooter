@@ -41,7 +41,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 	
 	DlgContextMenu(
 		@NonNull ActMain activity
-	    , @NonNull Column column
+		, @NonNull Column column
 		, @Nullable TootAccount who
 		, @Nullable TootStatus status
 	){
@@ -52,7 +52,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		this.status = status;
 		int column_type = column.column_type;
 		
-		this.relation = UserRelation.load( access_info.db_id, who == null ? -1 : who.id );
+		this.relation = UserRelation.load( access_info.db_id, who == null ? - 1 : who.id );
 		
 		@SuppressLint("InflateParams") View viewRoot = activity.getLayoutInflater().inflate( R.layout.dlg_context_menu, null, false );
 		this.dialog = new Dialog( activity );
@@ -83,8 +83,6 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		View btnSendMessageFromAnotherAccount = viewRoot.findViewById( R.id.btnSendMessageFromAnotherAccount );
 		View btnOpenProfileFromAnotherAccount = viewRoot.findViewById( R.id.btnOpenProfileFromAnotherAccount );
 		Button btnDomainBlock = (Button) viewRoot.findViewById( R.id.btnDomainBlock );
-
-		
 		
 		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( log );
 		
@@ -178,17 +176,16 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
 			btnBlock.setImageDrawable( d );
 			
-			
 			if( who == null ){
 				btnDomainBlock.setVisibility( View.GONE );
 			}else{
 				int acct_delm = who.acct.indexOf( "@" );
-				if( -1 ==  acct_delm || access_info.isPseudo() ){
+				if( - 1 == acct_delm || access_info.isPseudo() ){
 					// 疑似アカウントではドメインブロックできない
 					// 自ドメインはブロックできない
 					btnDomainBlock.setVisibility( View.GONE );
 				}else{
-					btnDomainBlock.setText(activity.getString(R.string.block_domain_that,who.acct.substring( acct_delm+1 )));
+					btnDomainBlock.setText( activity.getString( R.string.block_domain_that, who.acct.substring( acct_delm + 1 ) ) );
 					btnDomainBlock.setOnClickListener( this );
 				}
 			}
@@ -221,7 +218,6 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		}
 		
 		btnOpenProfileFromAnotherAccount.setOnClickListener( this );
-
 		
 		View v = viewRoot.findViewById( R.id.btnNickname );
 		v.setOnClickListener( this );
@@ -254,13 +250,13 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		
 		dialog.dismiss();
 		
-		int pos = activity.nextPosition( column ) ;
+		int pos = activity.nextPosition( column );
 		
 		switch( v.getId() ){
 		
 		case R.id.btnStatusWebPage:
 			if( status != null ){
-				activity.openChromeTab(pos,access_info, status.url, true );
+				activity.openChromeTab( pos, access_info, status.url, true );
 			}
 			break;
 		
@@ -271,15 +267,15 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnFavouriteAnotherAccount:
-			activity.openFavouriteFromAnotherAccount( access_info,status );
+			activity.openFavouriteFromAnotherAccount( access_info, status );
 			break;
 		
 		case R.id.btnBoostAnotherAccount:
-			activity.openBoostFromAnotherAccount( access_info,status );
+			activity.openBoostFromAnotherAccount( access_info, status );
 			break;
-
+		
 		case R.id.btnReplyAnotherAccount:
-			activity.openReplyFromAnotherAccount( access_info,status );
+			activity.openReplyFromAnotherAccount( access_info, status );
 			break;
 		
 		case R.id.btnDelete:
@@ -310,18 +306,20 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnBoostedBy:
 			if( status != null ){
-				activity.addColumn( pos,access_info, Column.TYPE_BOOSTED_BY, status.id );
+				activity.addColumn( pos, access_info, Column.TYPE_BOOSTED_BY, status.id );
 			}
 			break;
 		
 		case R.id.btnFavouritedBy:
 			if( status != null ){
-				activity.addColumn( pos,access_info, Column.TYPE_FAVOURITED_BY, status.id );
+				activity.addColumn( pos, access_info, Column.TYPE_FAVOURITED_BY, status.id );
 			}
 			break;
 		
 		case R.id.btnFollow:
-			if( access_info.isPseudo() ){
+			if( who == null ){
+				// サーバのバグで誰のことか分からないので何もできない
+			}else if( access_info.isPseudo() ){
 				activity.openFollowFromAnotherAccount( access_info, who );
 			}else if( relation.following || relation.requested ){
 				activity.callFollow( access_info, who, false, false, activity.unfollow_complete_callback );
@@ -367,7 +365,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnProfile:
-			activity.openProfile( pos,access_info, who );
+			activity.openProfile( pos, access_info, who );
 			break;
 		
 		case R.id.btnSendMessage:
@@ -381,37 +379,37 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnFollowRequestOK:
-			if( who != null){
+			if( who != null ){
 				activity.callFollowRequestAuthorize( access_info, who, true );
 			}
 			break;
 		
 		case R.id.btnFollowRequestNG:
-			if( who != null){
+			if( who != null ){
 				activity.callFollowRequestAuthorize( access_info, who, false );
 			}
 			break;
 		
 		case R.id.btnFollowFromAnotherAccount:
-			if( who != null){
+			if( who != null ){
 				activity.openFollowFromAnotherAccount( access_info, who );
 			}
 			break;
 		
 		case R.id.btnSendMessageFromAnotherAccount:
-			if( who != null){
+			if( who != null ){
 				activity.performMentionFromAnotherAccount( access_info, who, account_list_non_pseudo );
 			}
 			break;
 		
 		case R.id.btnOpenProfileFromAnotherAccount:
-			if( who != null){
+			if( who != null ){
 				activity.openProfileFromAnotherAccount( pos, access_info, who );
 			}
 			break;
 		
 		case R.id.btnNickname:
-			if( who != null){
+			if( who != null ){
 				ActNickname.open( activity, access_info.getFullAcct( who ), ActMain.REQUEST_CODE_NICKNAME );
 			}
 			break;
@@ -421,7 +419,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnAccountQrCode:
-			if( who != null){
+			if( who != null ){
 				DlgQRCode.open( activity, who.display_name, access_info.getUserUrl( who.acct ) );
 			}
 			break;

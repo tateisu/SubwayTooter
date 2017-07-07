@@ -105,7 +105,7 @@ public class ActMain extends AppCompatActivity
 	long posted_status_id;
 	
 	@Override protected void onCreate( Bundle savedInstanceState ){
-		log.d("onCreate");
+		log.d( "onCreate" );
 		super.onCreate( savedInstanceState );
 		App1.setActivityTheme( this, true );
 		requestWindowFeature( Window.FEATURE_NO_TITLE );
@@ -137,11 +137,11 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	@Override protected void onDestroy(){
-		log.d("onDestroy");
+		log.d( "onDestroy" );
 		super.onDestroy();
 		// このアクティビティに関連する ColumnViewHolder への参照を全カラムから除去する
-		for(Column c: app_state.column_list){
-			c.removeColumnViewHolderByActivity(this);
+		for( Column c : app_state.column_list ){
+			c.removeColumnViewHolderByActivity( this );
 		}
 	}
 	
@@ -1798,7 +1798,7 @@ public class ActMain extends AppCompatActivity
 		} );
 	}
 	
-	public void performMention( SavedAccount account, TootAccount who ){
+	public void performMention( SavedAccount account, @NonNull TootAccount who ){
 		ActPost.open( this, REQUEST_CODE_POST, account.db_id, "@" + account.getFullAcct( who ) + " " );
 	}
 	
@@ -2384,11 +2384,11 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	void callFollow(
-		final SavedAccount access_info
-		, final TootAccount who
+		@NonNull final SavedAccount access_info
+		, @NonNull final TootAccount who
 		, final boolean bFollow
 		, boolean bConfirmed
-		, final RelationChangedCallback callback
+		, @Nullable final RelationChangedCallback callback
 	){
 		if( access_info.isMe( who ) ){
 			Utils.showToast( this, false, R.string.it_is_you );
@@ -3448,7 +3448,7 @@ public class ActMain extends AppCompatActivity
 		
 		float density = dm.density;
 		int column_w_min = (int) ( 0.5f + column_w_min_dp * density );
-		if( column_w_min < 1) column_w_min =1;
+		if( column_w_min < 1 ) column_w_min = 1;
 		
 		if( sw < column_w_min * 2 ){
 			// 最小幅で2つ表示できないのなら1カラム表示

@@ -360,4 +360,5 @@
     <string name="text_to_speech_initialize_failed">TextToSpeech initializing failed. status=%1$s</string>
     <string name="text_to_speech_shutdown">TextToSpeech shutdown…</string>
     <string name="show_post_button_bar_top">Show buttons bar at the top of posting screen</string>
+    <string name="client_name">Client name (access token update required)</string>
 </resources>

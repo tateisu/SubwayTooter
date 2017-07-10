@@ -235,7 +235,7 @@ public class TootApiClient {
 		}
 	}
 	
-	public @Nullable TootApiResult authorize1(){
+	public @Nullable TootApiResult authorize1(String client_name){
 		
 		JSONObject client_info;
 		
@@ -248,7 +248,9 @@ public class TootApiClient {
 		
 		Response response;
 		try{
-			String client_name = "SubwayTooter"; // + UUID.randomUUID().toString();
+			if( TextUtils.isEmpty( client_name )){
+				client_name = "SubwayTooter";
+			}
 			
 			Request request = new Request.Builder()
 				.url( "https://" + instance + "/api/v1/apps" )

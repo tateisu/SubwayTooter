@@ -73,7 +73,7 @@ public class AccountPicker {
 		, String message
 		, @NonNull final ArrayList< SavedAccount > account_list
 		, @NonNull final AccountPickerCallback callback
-		, @Nullable final DialogInterface.OnDismissListener dissmiss_callback
+		, @Nullable final DialogInterface.OnDismissListener dismiss_callback
 	){
 		if( account_list.isEmpty() ){
 			Utils.showToast( activity, false, R.string.account_empty );
@@ -110,8 +110,8 @@ public class AccountPicker {
 		final Dialog dialog = new Dialog( activity );
 		final AtomicBoolean isDialogClosed = new AtomicBoolean( false );
 		
-		if( dissmiss_callback != null ){
-			dialog.setOnDismissListener( dissmiss_callback );
+		if( dismiss_callback != null ){
+			dialog.setOnDismissListener( dismiss_callback );
 		}
 
 		dialog.setContentView( viewRoot );
@@ -168,8 +168,8 @@ public class AccountPicker {
 			b.setOnClickListener( new View.OnClickListener() {
 				@Override public void onClick( View v ){
 					isDialogClosed.set(true);
-					dialog.dismiss();
 					callback.onAccountPicked( _a );
+					dialog.dismiss();
 				}
 			} );
 			llAccounts.addView( b );

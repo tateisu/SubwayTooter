@@ -252,6 +252,7 @@ public class ActMain extends AppCompatActivity
 			, getString( R.string.account_picker_toot )
 			, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+					sent_intent2 = null;
 					ActPost.open( ActMain.this, REQUEST_CODE_POST, ai.db_id, intent );
 				}
 			}
@@ -923,7 +924,7 @@ public class ActMain extends AppCompatActivity
 						if( bPseudoAccount ){
 							return api_client.checkInstance();
 						}else{
-							return api_client.authorize1();
+							return api_client.authorize1( Pref.pref(ActMain.this).getString(Pref.KEY_CLIENT_NAME,""));
 							
 						}
 					}

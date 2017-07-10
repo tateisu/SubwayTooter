@@ -327,6 +327,7 @@ public class AppDataExporter {
 			case Pref.KEY_STREAM_LISTENER_CONFIG_URL:
 			case Pref.KEY_STREAM_LISTENER_SECRET:
 			case Pref.KEY_STREAM_LISTENER_CONFIG_DATA:
+			case Pref.KEY_CLIENT_NAME:
 				String sv = reader.nextString();
 				e.putString( k, sv );
 				break;

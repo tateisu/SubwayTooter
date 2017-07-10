@@ -400,7 +400,7 @@ public class ActAccountSetting extends AppCompatActivity
 				} );
 				
 				api_client.setAccount( account );
-				return api_client.authorize1();
+				return api_client.authorize1( Pref.pref(ActAccountSetting.this).getString(Pref.KEY_CLIENT_NAME,""));
 			}
 			
 			@Override protected void onPostExecute( TootApiResult result ){

@@ -6,7 +6,6 @@ import android.preference.PreferenceManager;
 
 public class Pref {
 	
-	
 	static SharedPreferences pref( Context context ){
 		return PreferenceManager.getDefaultSharedPreferences( context );
 	}
@@ -58,6 +57,9 @@ public class Pref {
 	static final String KEY_PRIOR_CHROME = "prior_chrome";
 	
 	static final String KEY_POST_BUTTON_BAR_AT_TOP = "post_button_bar_at_top";
+
+	static final String KEY_CLIENT_NAME = "client_name";
+	
 	
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

@@ -207,6 +207,23 @@
 
         <View style="@style/setting_divider"/>
 
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/client_name"
+            android:labelFor="@+id/etClientName"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etClientName"
+                style="@style/setting_horizontal_stretch"
+                android:inputType="text"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
 
         <!-- =============================================== -->
 

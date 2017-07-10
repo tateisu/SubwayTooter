@@ -125,6 +125,8 @@ public class ActAppSetting extends AppCompatActivity
 	
 	EditText etColumnWidth;
 	EditText etMediaThumbHeight;
+	EditText etClientName;
+	
 	
 	TextView tvTimelineFontUrl;
 	String timeline_font;
@@ -274,12 +276,16 @@ public class ActAppSetting extends AppCompatActivity
 		vIndicator = findViewById( R.id.vIndicator );
 		
 		etColumnWidth = (EditText) findViewById( R.id.etColumnWidth );
+		etColumnWidth.addTextChangedListener( this );
+
 		etMediaThumbHeight = (EditText) findViewById( R.id.etMediaThumbHeight );
-		
+		etMediaThumbHeight.addTextChangedListener( this );
+
+		etClientName = (EditText) findViewById( R.id.etClientName );
+		etClientName.addTextChangedListener( this );
+
 		tvTimelineFontUrl = (TextView) findViewById( R.id.tvTimelineFontUrl );
 		
-		etColumnWidth.addTextChangedListener( this );
-		etMediaThumbHeight.addTextChangedListener( this );
 	}
 	
 	boolean load_busy;
@@ -325,7 +331,7 @@ public class ActAppSetting extends AppCompatActivity
 		
 		etColumnWidth.setText( pref.getString( Pref.KEY_COLUMN_WIDTH, "" ) );
 		etMediaThumbHeight.setText( pref.getString( Pref.KEY_MEDIA_THUMB_HEIGHT, "" ) );
-		
+		etClientName.setText( pref.getString( Pref.KEY_CLIENT_NAME, "" ) );
 		timeline_font = pref.getString( Pref.KEY_TIMELINE_FONT, "" );
 		
 		load_busy = false;
@@ -373,7 +379,8 @@ public class ActAppSetting extends AppCompatActivity
 			.putString( Pref.KEY_TIMELINE_FONT, timeline_font )
 			.putString( Pref.KEY_COLUMN_WIDTH, etColumnWidth.getText().toString().trim() )
 			.putString( Pref.KEY_MEDIA_THUMB_HEIGHT, etMediaThumbHeight.getText().toString().trim() )
-			
+			.putString( Pref.KEY_CLIENT_NAME, etClientName.getText().toString().trim() )
+
 			.apply();
 		
 	}

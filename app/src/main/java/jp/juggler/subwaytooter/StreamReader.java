@@ -119,9 +119,9 @@ class StreamReader {
 		private Object parsePayload( String event, JSONObject obj ){
 			try{
 				if( "update".equals( event ) ){
-					return TootStatus.parse( log, access_info, new JSONObject( obj.optString( "payload" ) ) );
+					return TootStatus.parse( log, access_info, access_info.host,new JSONObject( obj.optString( "payload" ) ) );
 				}else if( "notification".equals( event ) ){
-					return TootNotification.parse( log, access_info, new JSONObject( obj.optString( "payload" ) ) );
+					return TootNotification.parse( log, access_info, access_info.host,new JSONObject( obj.optString( "payload" ) ) );
 				}else if( "delete".equals( event ) ){
 					return obj.optLong( "payload", - 1L );
 				}

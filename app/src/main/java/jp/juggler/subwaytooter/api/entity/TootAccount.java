@@ -143,7 +143,7 @@ public class TootAccount {
 		return result;
 	}
 	
-	private static CharSequence filterDisplayName( String sv ){
+	public static CharSequence filterDisplayName( String sv ){
 
 		// decode HTML entity
 		sv = HTMLDecoder.decodeEntity(sv );
@@ -153,6 +153,16 @@ public class TootAccount {
 
 		// decode emoji code
 		return Emojione.decodeEmoji( sv ) ;
+	}
+	
+	public String getAcctHost(){
+		try{
+			int pos = acct.indexOf( '@' );
+			if( pos != - 1 ) return acct.substring( pos + 1 );
+		}catch(Throwable ignored){
+			
+		}
+		return null;
 	}
 	
 }

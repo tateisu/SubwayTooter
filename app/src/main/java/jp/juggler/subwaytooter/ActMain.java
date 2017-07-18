@@ -64,6 +64,7 @@ import jp.juggler.subwaytooter.api.entity.TootApplication;
 import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
 import jp.juggler.subwaytooter.dialog.DlgConfirm;
 import jp.juggler.subwaytooter.dialog.LoginForm;
@@ -198,11 +199,16 @@ public class ActMain extends AppCompatActivity
 			boolean bRemoved = false;
 			for( int i = 0, ie = app_state.column_list.size() ; i < ie ; ++ i ){
 				Column column = app_state.column_list.get( i );
-				SavedAccount sa = SavedAccount.loadAccount( log, column.access_info.db_id );
-				if( sa == null ){
-					bRemoved = true;
+
+				if( column.access_info.isNA() ){
+					// 検索カラムはアカウント削除とか無関係
 				}else{
-					new_order.add( i );
+					SavedAccount sa = SavedAccount.loadAccount( log, column.access_info.db_id );
+					if( sa == null ){
+						bRemoved = true;
+					}else{
+						new_order.add( i );
+					}
 				}
 			}
 			if( bRemoved ){
@@ -607,6 +613,9 @@ public class ActMain extends AppCompatActivity
 		}else if( id == R.id.nav_muted_word ){
 			startActivity( new Intent( this, ActMutedWord.class ) );
 			
+		}else if( id == R.id.mastodon_search_portal ){
+			addColumn( getDefaultInsertPosition(),  SavedAccount.getNA(),Column.TYPE_SEARCH_PORTAL , "" );
+
 			//		}else if( id == R.id.nav_translation ){
 			//			Intent intent = new Intent(this, TransCommuActivity.class);
 			//			intent.putExtra(TransCommuActivity.APPLICATION_CODE_EXTRA, "FJlDoBKitg");
@@ -1356,7 +1365,7 @@ public class ActMain extends AppCompatActivity
 			SavedAccount a = column.access_info;
 			if( done_list.contains( a ) ) continue;
 			done_list.add( a );
-			a.reloadSetting();
+			if( !a.isNA() ) a.reloadSetting();
 			column.fireShowColumnHeader();
 		}
 	}
@@ -1368,7 +1377,7 @@ public class ActMain extends AppCompatActivity
 			if( ! Utils.equalsNullable( a.acct, account.acct ) ) continue;
 			if( done_list.contains( a ) ) continue;
 			done_list.add( a );
-			a.reloadSetting();
+			if( !a.isNA() ) a.reloadSetting();
 			column.fireShowColumnHeader();
 		}
 	}
@@ -1463,6 +1472,7 @@ public class ActMain extends AppCompatActivity
 				}
 			} );
 	}
+
 	
 	public void performMuteApp( @NonNull TootApplication application ){
 		MutedApp.save( application.name );
@@ -1557,6 +1567,47 @@ public class ActMain extends AppCompatActivity
 		try{
 			log.d( "openChromeTab url=%s", url );
 			
+			if( !noIntercept && access_info != null && access_info.isNA() ){
+				// トゥート検索カラムではaccess_infoは何にも紐ついていない
+				
+				// ハッシュタグをアプリ内で開く
+				Matcher m = reHashTag.matcher( url );
+				if( m.find() ){
+					// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
+					String host = m.group( 1 );
+					String tag = Uri.decode( m.group( 2 ) );
+					openHashTagOtherInstance( pos, access_info, url, host, tag );
+					return;
+				}
+				
+				// ステータスページをアプリから開く
+				m = reStatusPage.matcher( url );
+				if( m.find() ){
+					try{
+						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
+						final String host = m.group( 1 );
+						final long status_id = Long.parseLong( m.group( 3 ), 10 );
+						openStatusOtherInstance( pos, access_info, url, host, status_id );
+						return;
+					}catch( Throwable ex ){
+						Utils.showToast( this, ex, "can't parse status id." );
+					}
+					return;
+				}
+				
+				// ユーザページをアプリ内で開く
+				m = reUserPage.matcher( url );
+				if( m.find() ){
+					// https://mastodon.juggler.jp/@SubwayTooter
+					final String host = m.group( 1 );
+					final String user = Uri.decode( m.group( 2 ) );
+					
+					openProfileByHostUser( pos,access_info,url,host,user );
+					return;
+				}
+				
+			}
+			
 			if( ! noIntercept && access_info != null ){
 				// ハッシュタグをアプリ内で開く
 				Matcher m = reHashTag.matcher( url );
@@ -1635,15 +1686,19 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-	public void openStatus( int pos, @NonNull SavedAccount access_info, @NonNull TootStatus status ){
-		openStatus( pos, access_info, status.id );
+	public void openStatus( int pos, @NonNull SavedAccount access_info, @NonNull TootStatusLike status ){
+		if( access_info.host.equalsIgnoreCase( status.status_host ) ){
+			openStatus( pos, access_info, status.id );
+		}else{
+			openStatusOtherInstance( pos, access_info,status.url,status.status_host,status.id);
+		}
 	}
 	
 	public void openStatus( int pos, @NonNull SavedAccount access_info, long status_id ){
 		addColumn( pos, access_info, Column.TYPE_CONVERSATION, status_id );
 	}
 	
-	private void openStatusOtherInstance( final int pos, final SavedAccount access_info, final String url, final String host, final long status_id ){
+	void openStatusOtherInstance( final int pos, final SavedAccount access_info, final String url, final String host, final long status_id ){
 		ActionsDialog dialog = new ActionsDialog();
 		
 		// ブラウザで表示する
@@ -1851,7 +1906,7 @@ public class ActMain extends AppCompatActivity
 				
 				if( result != null && result.object != null ){
 					
-					TootResults tmp = TootResults.parse( log, access_info, result.object );
+					TootResults tmp = TootResults.parse( log, access_info, access_info.host, result.object );
 					if( tmp != null ){
 						if( tmp.accounts != null && ! tmp.accounts.isEmpty() ){
 							who_local = tmp.accounts.get( 0 );
@@ -1974,7 +2029,7 @@ public class ActMain extends AppCompatActivity
 	
 	public void performFavourite(
 		final SavedAccount access_info
-		, final TootStatus arg_status
+		, final TootStatusLike arg_status
 		, final int nCrossAccountMode
 		, final boolean bSet
 		, final RelationChangedCallback callback
@@ -2002,7 +2057,7 @@ public class ActMain extends AppCompatActivity
 				client.setAccount( access_info );
 				TootApiResult result;
 				
-				TootStatus target_status;
+				TootStatusLike target_status;
 				if( nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE ){
 					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
 					String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( arg_status.url ) );
@@ -2013,7 +2068,7 @@ public class ActMain extends AppCompatActivity
 						return result;
 					}
 					target_status = null;
-					TootResults tmp = TootResults.parse( log, access_info, result.object );
+					TootResults tmp = TootResults.parse( log, access_info, access_info.host,result.object );
 					if( tmp != null ){
 						if( tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 							target_status = tmp.statuses.get( 0 );
@@ -2043,7 +2098,7 @@ public class ActMain extends AppCompatActivity
 					)
 					, request_builder );
 				if( result != null && result.object != null ){
-					new_status = TootStatus.parse( log, access_info, result.object );
+					new_status = TootStatus.parse( log, access_info, access_info.host, result.object );
 				}
 				
 				return result;
@@ -2108,7 +2163,7 @@ public class ActMain extends AppCompatActivity
 	
 	public void performBoost(
 		final SavedAccount access_info
-		, final TootStatus arg_status
+		, final TootStatusLike arg_status
 		, final int nCrossAccountMode
 		, final boolean bSet
 		, final boolean bConfirmed
@@ -2172,7 +2227,7 @@ public class ActMain extends AppCompatActivity
 				
 				TootApiResult result;
 				
-				TootStatus target_status;
+				TootStatusLike target_status;
 				if( nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE ){
 					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
 					String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( arg_status.url ) );
@@ -2183,7 +2238,7 @@ public class ActMain extends AppCompatActivity
 						return result;
 					}
 					target_status = null;
-					TootResults tmp = TootResults.parse( log, access_info, result.object );
+					TootResults tmp = TootResults.parse( log, access_info, access_info.host,result.object );
 					if( tmp != null ){
 						if( tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 							target_status = tmp.statuses.get( 0 );
@@ -2213,7 +2268,7 @@ public class ActMain extends AppCompatActivity
 					// reblog,unreblog のレスポンスは信用ならんのでステータスを再取得する
 					result = client.request( "/api/v1/statuses/" + target_status.id );
 					if( result != null && result.object != null ){
-						new_status = TootStatus.parse( log, access_info, result.object );
+						new_status = TootStatus.parse( log, access_info, access_info.host,result.object );
 					}
 				}
 				
@@ -2276,14 +2331,18 @@ public class ActMain extends AppCompatActivity
 	public void performReply(
 		final SavedAccount access_info
 		, final TootStatus arg_status
-		, final boolean bRemote
 	){
-		if( ! bRemote ){
-			ActPost.open( this, REQUEST_CODE_POST, access_info.db_id, arg_status );
-			return;
-		}
+		ActPost.open( this, REQUEST_CODE_POST, access_info.db_id, arg_status );
+	}
+	
+	public void performReplyRemote(
+		final SavedAccount access_info
+	    ,final String remote_status_url
+	    ,final long remote_status_id
+	){
+		final ProgressDialog progress = new ProgressDialog( this );
 		
-		new AsyncTask< Void, Void, TootApiResult >() {
+		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
 			TootStatus target_status;
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
@@ -2298,15 +2357,15 @@ public class ActMain extends AppCompatActivity
 				client.setAccount( access_info );
 				
 				// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
-				String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( arg_status.url ) );
+				String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( remote_status_url ) );
 				path = path + "&resolve=1";
 				
 				TootApiResult result = client.request( path );
 				if( result != null && result.object != null ){
-					TootResults tmp = TootResults.parse( log, access_info, result.object );
+					TootResults tmp = TootResults.parse( log, access_info, access_info.host,result.object );
 					if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 						target_status = tmp.statuses.get( 0 );
-						log.d( "status id conversion %s => %s", arg_status.id, target_status.id );
+						log.d( "status id conversion %s => %s", remote_status_id, target_status.id );
 					}
 					if( target_status == null ){
 						return new TootApiResult( getString( R.string.status_id_conversion_failed ) );
@@ -2322,6 +2381,7 @@ public class ActMain extends AppCompatActivity
 			
 			@Override
 			protected void onPostExecute( TootApiResult result ){
+				progress.dismiss();
 				if( result == null ){
 					// cancelled.
 				}else if( target_status != null ){
@@ -2330,7 +2390,18 @@ public class ActMain extends AppCompatActivity
 					Utils.showToast( ActMain.this, true, result.error );
 				}
 			}
-		}.executeOnExecutor( App1.task_executor );
+		};
+		
+		progress.setIndeterminate( true );
+		progress.setCancelable( true );
+		progress.setMessage( getString(R.string.progress_synchronize_toot) );
+		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
+			@Override public void onCancel( DialogInterface dialog ){
+				task.cancel( true );
+			}
+		} );
+		progress.show();
+		task.executeOnExecutor( App1.task_executor );
 	}
 	
 	////////////////////////////////////////
@@ -3251,7 +3322,7 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-	void openBoostFromAnotherAccount( @NonNull final SavedAccount timeline_account, final TootStatus status ){
+	void openBoostFromAnotherAccount( @NonNull final SavedAccount timeline_account, @Nullable final TootStatusLike status ){
 		if( status == null ) return;
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_boost )
@@ -3270,7 +3341,7 @@ public class ActMain extends AppCompatActivity
 			} );
 	}
 	
-	void openFavouriteFromAnotherAccount( @NonNull final SavedAccount timeline_account, final TootStatus status ){
+	void openFavouriteFromAnotherAccount( @NonNull final SavedAccount timeline_account, final TootStatusLike status ){
 		if( status == null ) return;
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_favourite )
@@ -3288,25 +3359,38 @@ public class ActMain extends AppCompatActivity
 			} );
 	}
 	
-	void openReplyFromAnotherAccount( @NonNull final SavedAccount access_info, final TootStatus status ){
-		if( status == null ) return;
+
+	void openReplyFromAnotherAccount( final TootStatusLike status){
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_reply )
 			, makeAccountListNonPseudo( log ), new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
-					performReply(
-						ai
-						, status
-						, ! ai.host.equalsIgnoreCase( access_info.host )
-					);
+					if( (status instanceof TootStatus) && ai.host.equalsIgnoreCase( status.status_host  ) ){
+						performReply( ai, (TootStatus)status );
+					}else{
+						performReplyRemote( ai,status.url,status.id );
+					}
 				}
 			} );
 	}
 	
-	void openFollowFromAnotherAccount( @NonNull SavedAccount access_info, TootStatus status ){
-		if( status == null ) return;
-		openFollowFromAnotherAccount( access_info, status.account );
-	}
+//	void openReplyFromAnotherAccount( @NonNull final SavedAccount access_info, final String status_url,final long status_id ){
+//
+//		final String status_host = getHostFromStatusUrl(status_url);
+//		if( status_host ==null ) return;
+//
+//		AccountPicker.pick( this, false, false
+//			, getString( R.string.account_picker_reply )
+//			, makeAccountListNonPseudo( log ), new AccountPicker.AccountPickerCallback() {
+//				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+//					performReplyRemote( ai,status_url,status_id );
+//				}
+//			} );
+//	}
+//	void openFollowFromAnotherAccount( @NonNull SavedAccount access_info, TootStatus status ){
+//		if( status == null ) return;
+//		openFollowFromAnotherAccount( access_info, status.account );
+//	}
 	
 	void openFollowFromAnotherAccount( @NonNull SavedAccount access_info, final TootAccount account ){
 		if( account == null ) return;

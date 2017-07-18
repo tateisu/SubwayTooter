@@ -636,7 +636,7 @@ public class AlarmService extends IntentService {
 			return;
 		}
 		
-		TootNotification notification = TootNotification.parse( log, account, src );
+		TootNotification notification = TootNotification.parse( log, account,account.host ,src );
 		if( notification == null ){
 			return;
 		}

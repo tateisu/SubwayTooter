@@ -13,12 +13,12 @@ public class TootContext {
 	// descendants	The descendants of the status in the conversation, as a list of Statuses
 	public TootStatus.List descendants;
 	
-	public static TootContext parse( LogCategory log, LinkClickContext account,JSONObject src ){
+	public static TootContext parse( LogCategory log, LinkClickContext lcc,String status_host,JSONObject src ){
 		if( src==null) return null;
 		try{
 			TootContext dst = new TootContext();
-			dst.ancestors = TootStatus.parseList( log, account,src.optJSONArray( "ancestors" ) );
-			dst.descendants = TootStatus.parseList(log, account, src.optJSONArray( "descendants" ) );
+			dst.ancestors = TootStatus.parseList( log, lcc,status_host,src.optJSONArray( "ancestors" ) );
+			dst.descendants = TootStatus.parseList(log, lcc, status_host,src.optJSONArray( "descendants" ) );
 			return dst;
 		}catch( Throwable ex ){
 			ex.printStackTrace();

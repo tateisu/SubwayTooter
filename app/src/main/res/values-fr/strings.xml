@@ -366,8 +366,13 @@
 	<string name="text_to_speech_shutdown">TextToSpeech shutdown…</string>
 	<string name="show_post_button_bar_top">Show buttons bar at the top of posting screen</string>
     <string name="client_name">Client name (access token update required)</string>
+    <string name="toot_search">Toot search</string>
+    <string name="mastodon_search_portal">Mastodon Search Portal(JP)</string>
+	<string name="search_desc_mastodon_api">Account/Hashtag search using Mastodon API.</string>
+	<string name="toot_search_of">Toot Rechercher \"%1$s\"</string>
+	<string name="progress_synchronize_toot">Syncing Toot…</string>
 
-    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

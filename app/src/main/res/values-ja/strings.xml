@@ -653,5 +653,10 @@
     <string name="text_to_speech_shutdown">TextToSpeechの後処理…</string>
     <string name="show_post_button_bar_top">投稿画面のボタンバーを上端に表示</string>
     <string name="client_name">クライアント名(アクセストークンの更新が必要)</string>
+    <string name="toot_search">トゥート検索</string>
+    <string name="mastodon_search_portal">マストドン検索ポータル(JP)</string>
+    <string name="search_desc_mastodon_api">アカウントやハッシュタグをマストドンのAPIで検索します。</string>
+    <string name="toot_search_of">トゥート検索：%1$s</string>
+    <string name="progress_synchronize_toot">トゥートを同期してます…</string>
 
 </resources>

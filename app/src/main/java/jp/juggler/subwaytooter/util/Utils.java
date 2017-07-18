@@ -6,6 +6,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -1106,5 +1107,24 @@ public class Utils {
 			sb.append( (char) stack.removeLast() );
 		}
 		return sb.toString();
+	}
+	
+	public static byte[] loadRawResource(Context context,int res_id){
+		try{
+			InputStream is = context.getResources().openRawResource( res_id );
+			try{
+				ByteArrayOutputStream bao = new ByteArrayOutputStream();
+				IOUtils.copy( is, bao );
+				
+				return bao.toByteArray();
+				
+			}finally{
+				IOUtils.closeQuietly( is );
+			}
+			
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+		}
+		return null;
 	}
 }

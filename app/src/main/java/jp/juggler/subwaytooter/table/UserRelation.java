@@ -128,7 +128,7 @@ public class UserRelation {
 	public boolean muting;
 	public boolean requested;
 	
-	private UserRelation(){
+	public UserRelation(){
 	}
 	
 	private static final LruCache< String, UserRelation > mMemoryCache = new LruCache<>( 2048 );

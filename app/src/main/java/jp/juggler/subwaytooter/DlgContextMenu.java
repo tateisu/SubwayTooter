@@ -18,6 +18,7 @@ import java.util.ArrayList;
 
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.dialog.DlgQRCode;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
@@ -30,7 +31,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 	@NonNull final ActMain activity;
 	@NonNull private final SavedAccount access_info;
 	@Nullable private final TootAccount who;
-	@Nullable private final TootStatus status;
+	@Nullable private final TootStatusLike status;
 	@NonNull private final UserRelation relation;
 	@NonNull private final Column column;
 	
@@ -43,7 +44,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		@NonNull ActMain activity
 		, @NonNull Column column
 		, @Nullable TootAccount who
-		, @Nullable TootStatus status
+		, @Nullable TootStatusLike status
 	){
 		this.activity = activity;
 		this.column = column;
@@ -123,11 +124,11 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			}else{
 				btnDelete.setVisibility( View.GONE );
 				btnReport.setOnClickListener( this );
-				if( status.application == null || TextUtils.isEmpty( status.application.name ) ){
-					btnMuteApp.setVisibility( View.GONE );
-				}else{
+				if( status.application != null && !TextUtils.isEmpty( status.application.name ) ){
 					btnMuteApp.setText( activity.getString( R.string.mute_app_of, status.application.name ) );
 					btnMuteApp.setOnClickListener( this );
+				}else{
+					btnMuteApp.setVisibility( View.GONE );
 				}
 			}
 		}
@@ -225,11 +226,20 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		v = viewRoot.findViewById( R.id.btnCancel );
 		v.setOnClickListener( this );
 		
-		v = viewRoot.findViewById( R.id.btnBoostedBy );
-		v.setOnClickListener( this );
-		
-		v = viewRoot.findViewById( R.id.btnFavouritedBy );
-		v.setOnClickListener( this );
+		if( access_info.isNA() ){
+			v = viewRoot.findViewById( R.id.btnBoostedBy );
+			v.setVisibility( View.GONE);
+			
+			v = viewRoot.findViewById( R.id.btnFavouritedBy );
+			v.setVisibility( View.GONE);
+		}else{
+			v = viewRoot.findViewById( R.id.btnBoostedBy );
+			v.setOnClickListener( this );
+			
+			v = viewRoot.findViewById( R.id.btnFavouritedBy );
+			v.setOnClickListener( this );
+			
+		}
 		
 		v = viewRoot.findViewById( R.id.btnAccountQrCode );
 		v.setOnClickListener( this );
@@ -275,7 +285,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnReplyAnotherAccount:
-			activity.openReplyFromAnotherAccount( access_info, status );
+			activity.openReplyFromAnotherAccount( status );
 			break;
 		
 		case R.id.btnDelete:
@@ -293,8 +303,8 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnReport:
-			if( status != null && who != null ){
-				activity.openReportForm( access_info, who, status );
+			if( who != null && status instanceof TootStatus ){
+				activity.openReportForm( access_info, who, (TootStatus)status );
 			}
 			break;
 		

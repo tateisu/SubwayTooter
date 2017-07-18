@@ -10,6 +10,8 @@ import android.widget.ImageView;
 import android.widget.PopupWindow;
 
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.api.entity.TootStatusLike;
+import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -27,7 +29,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 	private final ImageView ivFollowedBy2;
 	private final View llFollow2;
 	
-	final boolean bSimpleList;
+	private final boolean bSimpleList;
 	
 	StatusButtons( @NonNull ActMain activity, @NonNull Column column, @NonNull View viewRoot ,boolean bSimpleList){
 		this.activity = activity;
@@ -63,32 +65,40 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		
 	}
 	
-	private TootStatus status;
 	private UserRelation relation;
+	private TootStatusLike status;
 	
-	void bind( @NonNull TootStatus status ){
+	void bind( @NonNull TootStatusLike status ){
 		this.status = status;
 		
 		int color_normal = Styler.getAttributeColor( activity, R.attr.colorImageButton );
 		int color_accent = Styler.getAttributeColor( activity, R.attr.colorImageButtonAccent );
 		
-		if( TootStatus.VISIBILITY_DIRECT.equals( status.visibility ) ){
-			setButton( btnBoost, false, color_accent, R.attr.ic_mail, "" );
-		}else if( TootStatus.VISIBILITY_PRIVATE.equals( status.visibility ) ){
-			setButton( btnBoost, false, color_accent, R.attr.ic_lock, "" );
-		}else if( activity.app_state.isBusyBoost( access_info, status ) ){
-			setButton( btnBoost, false, color_normal, R.attr.btn_refresh, "?" );
-		}else{
-			int color = ( status.reblogged ? color_accent : color_normal );
-			setButton( btnBoost, true, color, R.attr.btn_boost, Long.toString( status.reblogs_count ) );
+		if( status instanceof MSPToot ){
+			setButton( btnBoost, true, color_normal, R.attr.btn_boost, "" );
+			setButton( btnFavourite, true, color_normal, R.attr.btn_favourite, "");
+		}else if( status instanceof TootStatus ){
+			TootStatus ts = (TootStatus)status;
+
+			if( TootStatus.VISIBILITY_DIRECT.equals( ts.visibility ) ){
+				setButton( btnBoost, false, color_accent, R.attr.ic_mail, "" );
+			}else if( TootStatus.VISIBILITY_PRIVATE.equals( ts.visibility ) ){
+				setButton( btnBoost, false, color_accent, R.attr.ic_lock, "" );
+			}else if( activity.app_state.isBusyBoost( access_info, status ) ){
+				setButton( btnBoost, false, color_normal, R.attr.btn_refresh, "?" );
+			}else{
+				int color = ( ts.reblogged ? color_accent : color_normal );
+				setButton( btnBoost, true, color, R.attr.btn_boost, Long.toString( ts.reblogs_count ) );
+			}
+			
+			if( activity.app_state.isBusyFav( access_info, status ) ){
+				setButton( btnFavourite, false, color_normal, R.attr.btn_refresh, "?" );
+			}else{
+				int color = ( ts.favourited ? color_accent : color_normal );
+				setButton( btnFavourite, true, color, R.attr.btn_favourite, Long.toString( ts.favourites_count ) );
+			}
 		}
 		
-		if( activity.app_state.isBusyFav( access_info, status ) ){
-			setButton( btnFavourite, false, color_normal, R.attr.btn_refresh, "?" );
-		}else{
-			int color = ( status.favourited ? color_accent : color_normal );
-			setButton( btnFavourite, true, color, R.attr.btn_favourite, Long.toString( status.favourites_count ) );
-		}
 		
 		if( status.account == null || ! activity.pref.getBoolean( Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR, false ) ){
 			llFollow2.setVisibility( View.GONE );
@@ -100,6 +110,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		}
 		
 	}
+	
 	
 	private void setButton( Button b, boolean enabled, int color, int icon_attr, String text ){
 		Drawable d = Styler.getAttributeDrawable( activity, icon_attr ).mutate();
@@ -119,12 +130,13 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			activity.openStatus( activity.nextPosition( column ), access_info, status );
 			break;
 		case R.id.btnReply:
-			if( access_info.isPseudo() ){
-				activity.openReplyFromAnotherAccount( access_info, status );
+			if( status instanceof TootStatus && !access_info.isPseudo() ){
+				activity.performReply( access_info, (TootStatus)status );
 			}else{
-				activity.performReply( access_info, status ,false);
+				activity.openReplyFromAnotherAccount( status );
 			}
 			break;
+
 		case R.id.btnBoost:
 			if( access_info.isPseudo() ){
 				activity.openBoostFromAnotherAccount( access_info, status );
@@ -159,8 +171,10 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnFollow2:
-			if( access_info.isPseudo() ){
-				activity.openFollowFromAnotherAccount( access_info, status );
+			if( status == null || status.account == null ){
+				// 何もしない
+			}else if( access_info.isPseudo() ){
+				activity.openFollowFromAnotherAccount( access_info, status.account );
 			}else if( relation.blocking || relation.muting ){
 				// 何もしない
 			}else if( relation.following || relation.requested ){
@@ -184,11 +198,13 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnFollow2:
-			activity.openFollowFromAnotherAccount( access_info, status );
+			if( status != null && status.account != null ){
+				activity.openFollowFromAnotherAccount( access_info, status.account );
+			}
 			break;
 			
 		case R.id.btnReply:
-			activity.openReplyFromAnotherAccount( access_info, status );
+			activity.openReplyFromAnotherAccount( status );
 			break;
 			
 		}

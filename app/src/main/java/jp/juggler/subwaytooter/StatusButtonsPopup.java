@@ -8,10 +8,11 @@ import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ListView;
 import android.widget.PopupWindow;
 
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.api.entity.TootStatusLike;
+import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
 import jp.juggler.subwaytooter.view.MyListView;
 
 class StatusButtonsPopup {
@@ -34,7 +35,7 @@ class StatusButtonsPopup {
 		}
 	}
 	
-	void show( final MyListView listView, View anchor, TootStatus status ){
+	void show( final MyListView listView, View anchor, TootStatusLike status ){
 		
 		//
 		window = new PopupWindow( activity );

@@ -191,6 +191,30 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	
 	private SavedAccount(){
 	}
+
+	// 横断検索用の、何とも紐ついていないアカウント
+	// 保存しない。
+	private static SavedAccount na_account;
+	public static SavedAccount getNA(){
+		if( na_account == null ){
+			SavedAccount dst = new SavedAccount();
+			dst.db_id = - 1L;
+			dst.username = "?";
+			dst.acct = "?@?";
+			dst.host = "?";
+			dst.notification_follow = false;
+			dst.notification_favourite = false;
+			dst.notification_boost = false;
+			dst.notification_mention = false;
+			na_account = dst;
+		}
+		return na_account;
+	}
+	public boolean isNA(){
+		return acct.equals( "?@?" );
+	}
+	
+
 	
 	private static SavedAccount parse( Cursor cursor ) throws JSONException{
 		JSONObject src = new JSONObject( cursor.getString( cursor.getColumnIndex( COL_ACCOUNT ) ) );
@@ -474,5 +498,6 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		}
 		return 0L;
 	}
+	
 	
 }

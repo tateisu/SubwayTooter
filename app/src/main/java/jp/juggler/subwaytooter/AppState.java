@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.MyClickableSpan;
@@ -134,34 +135,34 @@ class AppState {
 	
 	private final HashSet< String > map_busy_fav = new HashSet<>();
 	
-	boolean isBusyFav( SavedAccount account, TootStatus status ){
-		String busy_key = account.host + ":" + status.id;
-		return map_busy_fav.contains( busy_key );
+	boolean isBusyFav( SavedAccount account, @NonNull TootStatusLike status ){
+		final String key = account.acct +":" + status.status_host + ":" + status.id;
+		return map_busy_fav.contains( key );
 	}
-	boolean setBusyFav( SavedAccount account, TootStatus status ){
-		final String busy_key = account.acct +":" + status.uri;
-		return map_busy_fav.add( busy_key );
+	boolean setBusyFav( SavedAccount account, @NonNull TootStatusLike status ){
+		final String key = account.acct +":" + status.status_host + ":" + status.id;
+		return map_busy_fav.add( key );
 	}
-	boolean resetBusyFav( SavedAccount account, TootStatus status ){
-		final String busy_key = account.acct +":" + status.uri;
-		return map_busy_fav.remove( busy_key );
+	boolean resetBusyFav( SavedAccount account, @NonNull TootStatusLike status ){
+		final String key = account.acct +":" + status.status_host + ":" + status.id;
+		return map_busy_fav.remove( key );
 	}
 	
 	//////////////////////////////////////////////////////
 	
 	private final HashSet< String > map_busy_boost = new HashSet<>();
 	
-	boolean isBusyBoost( @NonNull SavedAccount account, @NonNull TootStatus status ){
-		final String busy_key = account.acct +":" + status.uri;
-		return map_busy_boost.contains( busy_key );
+	boolean isBusyBoost( @NonNull SavedAccount account, @NonNull TootStatusLike status ){
+		final String key = account.acct +":" + status.status_host + ":" + status.id;
+		return map_busy_boost.contains( key );
 	}
-	boolean setBusyBoost( SavedAccount account, TootStatus status ){
-		final String busy_key = account.acct +":" + status.uri;
-		return map_busy_boost.add( busy_key );
+	boolean setBusyBoost( SavedAccount account, @NonNull TootStatusLike status ){
+		final String key = account.acct +":" + status.status_host + ":" + status.id;
+		return map_busy_boost.add( key );
 	}
-	boolean resetBusyBoost( SavedAccount account, TootStatus status ){
-		final String busy_key = account.acct +":" + status.uri;
-		return map_busy_boost.remove( busy_key );
+	boolean resetBusyBoost( SavedAccount account, @NonNull TootStatusLike status ){
+		final String key = account.acct +":" + status.status_host + ":" + status.id;
+		return map_busy_boost.remove( key );
 	}
 	//////////////////////////////////////////////////////
 	

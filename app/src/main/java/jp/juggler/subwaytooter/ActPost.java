@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ClipData;
@@ -25,14 +26,12 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
-import android.text.Html;
 import android.text.Spannable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -47,7 +46,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -397,7 +395,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			sv = intent.getStringExtra( KEY_REPLY_STATUS );
 			if( sv != null ){
 				try{
-					TootStatus reply_status = TootStatus.parse( log, account, new JSONObject( sv ) );
+					TootStatus reply_status = TootStatus.parse( log, account, account.host,new JSONObject( sv ) );
 					
 					// CW をリプライ元に合わせる
 					if( ! TextUtils.isEmpty( reply_status.spoiler_text ) ){
@@ -898,7 +896,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				
 				TootApiResult result = client.request( path );
 				if( result != null && result.object != null ){
-					TootResults tmp = TootResults.parse( log, access_info, result.object );
+					TootResults tmp = TootResults.parse( log, access_info, access_info.host,result.object );
 					if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 						target_status = tmp.statuses.get( 0 );
 					}
@@ -1607,7 +1605,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				
 				TootApiResult result = client.request( "/api/v1/statuses", request_builder );
 				if( result != null && result.object != null ){
-					status = TootStatus.parse( log, account, result.object );
+					status = TootStatus.parse( log, account, account.host,result.object );
 					
 					Spannable s = status.decoded_content;
 					MyClickableSpan[] span_list = s.getSpans( 0, s.length(), MyClickableSpan.class );
@@ -1982,7 +1980,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append( src.substring( 0, mushroom_start ) );
-		int new_sel_start = sb.length();
+		// int new_sel_start = sb.length();
 		sb.append( text );
 		int new_sel_end = sb.length();
 		sb.append( src.substring( mushroom_end ) );
@@ -2028,6 +2026,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}
 	}
 	
+
+	
 	private void showRecommendedPlugin( String title ){
 		String language_code = getString( R.string.language_code );
 		int res_id;
@@ -2038,46 +2038,37 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}else{
 			res_id = R.raw.recommended_plugin_en;
 		}
-		try{
-			InputStream is = getResources().openRawResource( res_id );
-			try{
-				ByteArrayOutputStream bao = new ByteArrayOutputStream();
-				IOUtils.copy( is, bao );
-				String text = Utils.decodeUTF8( bao.toByteArray() );
-				
-				View viewRoot = getLayoutInflater().inflate( R.layout.dlg_plugin_missing, null, false );
-				
-				TextView tvText = (TextView) viewRoot.findViewById( R.id.tvText );
-				LinkClickContext lcc = new LinkClickContext() {
-					@Override public AcctColor findAcctColor( String url ){
-						return null;
-					}
-				};
-				CharSequence sv = HTMLDecoder.decodeHTML( lcc, text, false, null );
-				tvText.setText( sv );
-				tvText.setMovementMethod( LinkMovementMethod.getInstance() );
-				
-				TextView tvTitle = (TextView) viewRoot.findViewById( R.id.tvTitle );
-				if( TextUtils.isEmpty( title ) ){
-					tvTitle.setVisibility( View.GONE );
-				}else{
-					tvTitle.setText( title );
-					
+		byte[] data = Utils.loadRawResource(this,res_id);
+		if( data != null ){
+			String text = Utils.decodeUTF8( data );
+			@SuppressLint("InflateParams")
+			View viewRoot = getLayoutInflater().inflate( R.layout.dlg_plugin_missing, null, false );
+			
+			TextView tvText = (TextView) viewRoot.findViewById( R.id.tvText );
+			LinkClickContext lcc = new LinkClickContext() {
+				@Override public AcctColor findAcctColor( String url ){
+					return null;
 				}
+			};
+			CharSequence sv = HTMLDecoder.decodeHTML( lcc, text, false, null );
+			tvText.setText( sv );
+			tvText.setMovementMethod( LinkMovementMethod.getInstance() );
+			
+			TextView tvTitle = (TextView) viewRoot.findViewById( R.id.tvTitle );
+			if( TextUtils.isEmpty( title ) ){
+				tvTitle.setVisibility( View.GONE );
+			}else{
+				tvTitle.setText( title );
 				
-				new AlertDialog.Builder( this )
-					.setView( viewRoot )
-					.setCancelable( true )
-					.setNeutralButton( R.string.close, null )
-					.show();
-				
-			}finally{
-				IOUtils.closeQuietly( is );
 			}
 			
-		}catch( Throwable ex ){
-			ex.printStackTrace();
+			new AlertDialog.Builder( this )
+				.setView( viewRoot )
+				.setCancelable( true )
+				.setNeutralButton( R.string.close, null )
+				.show();
 		}
+		
 	}
 	
 	final MyClickableSpan.LinkClickCallback link_click_listener = new MyClickableSpan.LinkClickCallback() {

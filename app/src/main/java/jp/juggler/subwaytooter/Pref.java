@@ -6,7 +6,8 @@ import android.preference.PreferenceManager;
 
 public class Pref {
 	
-	static SharedPreferences pref( Context context ){
+	
+	public static SharedPreferences pref( Context context ){
 		return PreferenceManager.getDefaultSharedPreferences( context );
 	}
 	
@@ -59,6 +60,8 @@ public class Pref {
 	static final String KEY_POST_BUTTON_BAR_AT_TOP = "post_button_bar_at_top";
 
 	static final String KEY_CLIENT_NAME = "client_name";
+	
+	public static final String KEY_MASTODON_SEARCH_PORTAL_USER_TOKEN = "mastodon_search_portal_user_token";
 	
 	
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること

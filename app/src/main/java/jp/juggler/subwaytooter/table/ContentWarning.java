@@ -3,8 +3,10 @@ package jp.juggler.subwaytooter.table;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.annotation.NonNull;
 
 import jp.juggler.subwaytooter.App1;
+import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.util.LogCategory;
 
 public class ContentWarning {
@@ -40,9 +42,9 @@ public class ContentWarning {
 	}
 	private static final String[] projection_shown = new String[]{COL_SHOWN};
 	
-	public static boolean isShown( String host,long status_id ,boolean default_value ){
+	public static boolean isShown( @NonNull TootStatusLike status , boolean default_value ){
 		try{
-			Cursor cursor = App1.getDB().query( table, projection_shown, "h=? and si=?", new String[]{host, Long.toString(status_id) }, null, null, null );
+			Cursor cursor = App1.getDB().query( table, projection_shown, "h=? and si=?", new String[]{status.status_host, Long.toString(status.id) }, null, null, null );
 			try{
 				if( cursor.moveToFirst() ){
 					int iv = cursor.getInt( cursor.getColumnIndex( COL_SHOWN ) );
@@ -57,13 +59,13 @@ public class ContentWarning {
 		return default_value ;
 	}
 	
-	public static void save( String host,long status_id ,boolean is_shown ){
+	public static void save( @NonNull TootStatusLike status ,boolean is_shown ){
 		try{
 			long now = System.currentTimeMillis();
 
 			ContentValues cv = new ContentValues();
-			cv.put( COL_HOST, host );
-			cv.put( COL_STATUS_ID, status_id );
+			cv.put( COL_HOST, status.status_host );
+			cv.put( COL_STATUS_ID, status.id );
 			cv.put( COL_SHOWN, is_shown ? 1:0 );
 			cv.put( COL_TIME_SAVE, now );
 			App1.getDB().replace( table, null, cv );

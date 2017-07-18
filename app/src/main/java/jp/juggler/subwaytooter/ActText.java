@@ -13,6 +13,8 @@ import android.view.View;
 import android.widget.EditText;
 
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.api.entity.TootStatusLike;
+import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
 import jp.juggler.subwaytooter.table.MutedWord;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
@@ -25,7 +27,7 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 	static final String EXTRA_TEXT = "text";
 	static final String EXTRA_CONTENT_START = "content_start";
 	
-	static void encodeStatus( Intent intent, Context context, SavedAccount access_info, TootStatus status ){
+	static void encodeStatus( Intent intent, Context context, SavedAccount access_info, TootStatusLike status ){
 		StringBuilder sb = new StringBuilder();
 		sb.append( context.getString( R.string.send_header_url ) );
 		sb.append( ": " );
@@ -33,7 +35,15 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 		sb.append( "\n" );
 		sb.append( context.getString( R.string.send_header_date ) );
 		sb.append( ": " );
-		sb.append( TootStatus.formatTime( status.time_created_at ) );
+
+		if( status instanceof  TootStatus ){
+			TootStatus ts = (TootStatus)status;
+			sb.append( TootStatus.formatTime( ts.time_created_at ) );
+		}else if( status instanceof MSPToot ){
+			MSPToot ts = (MSPToot)status;
+			sb.append( ts.created_at );
+		}
+
 		sb.append( "\n" );
 		sb.append( context.getString( R.string.send_header_from_acct ) );
 		sb.append( ": " );
@@ -63,7 +73,7 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 	}
 	
 
-	public static void open( ActMain activity, SavedAccount access_info, TootStatus status ){
+	public static void open( ActMain activity, SavedAccount access_info, TootStatusLike status ){
 		Intent intent = new Intent( activity, ActText.class );
 		encodeStatus( intent,activity, access_info, status );
 		

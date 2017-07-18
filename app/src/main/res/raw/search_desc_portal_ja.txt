@@ -1,0 +1,1 @@
+powered by <a href="http://mastodonsearch.jp/">マストドン検索ポータル</a><br/>検索結果からあなたのトゥートを除外したい場合、<a href="https://mstdn.jp/@mastodonsearch">@mastodonsearch@mstdn.jp</a>に連絡してください。

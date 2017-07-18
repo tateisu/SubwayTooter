@@ -2,6 +2,7 @@
   <dictionary name="tateisu">
     <words>
       <w>adamrocker</w>
+      <w>apikey</w>
       <w>dont</w>
       <w>emoji</w>
       <w>emojione</w>
@@ -30,6 +31,7 @@
       <w>unfollow</w>
       <w>unmute</w>
       <w>unreblog</w>
+      <w>utoken</w>
     </words>
   </dictionary>
 </component>

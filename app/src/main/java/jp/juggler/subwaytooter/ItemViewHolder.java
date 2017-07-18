@@ -19,6 +19,8 @@ import jp.juggler.subwaytooter.api.entity.TootDomainBlock;
 import jp.juggler.subwaytooter.api.entity.TootGap;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.api.entity.TootStatusLike;
+import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.ContentWarning;
 import jp.juggler.subwaytooter.table.MediaShown;
@@ -79,18 +81,17 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	
 	private final TextView tvApplication;
 	
-	private TootStatus status;
+	private TootStatusLike status;
 	private TootAccount account_thumbnail;
 	private TootAccount account_boost;
 	private TootAccount account_follow;
 	private String search_tag;
 	private TootGap gap;
 	private TootDomainBlock domain_block;
-	private int position;
 	
 	private final boolean bSimpleList;
 	
-	ItemViewHolder( ActMain arg_activity, Column column, ItemListAdapter list_adapter, View view ,boolean bSimpleList ){
+	ItemViewHolder( ActMain arg_activity, Column column, ItemListAdapter list_adapter, View view, boolean bSimpleList ){
 		this.activity = arg_activity;
 		this.column = column;
 		this.access_info = column.access_info;
@@ -101,7 +102,6 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.tvFollowerName = (TextView) view.findViewById( R.id.tvFollowerName );
 		this.tvBoosted = (TextView) view.findViewById( R.id.tvBoosted );
 		
-		
 		if( activity.timeline_font != null ){
 			Utils.scanView( view, new Utils.ScanViewCallback() {
 				@Override public void onScanView( View v ){
@@ -111,7 +111,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 						}else if( v instanceof TextView ){
 							( (TextView) v ).setTypeface( activity.timeline_font );
 						}
-					}catch(Throwable ex){
+					}catch( Throwable ex ){
 						ex.printStackTrace();
 					}
 				}
@@ -147,7 +147,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.tvContent = (MyTextView) view.findViewById( R.id.tvContent );
 		this.tvMentions = (MyTextView) view.findViewById( R.id.tvMentions );
 		
-		this.buttons_for_status = bSimpleList ? null : new StatusButtons( activity, column, view , false );
+		this.buttons_for_status = bSimpleList ? null : new StatusButtons( activity, column, view, false );
 		
 		this.flMedia = view.findViewById( R.id.flMedia );
 		this.btnShowMedia = view.findViewById( R.id.btnShowMedia );
@@ -193,8 +193,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		lp.height = activity.app_state.media_thumb_height;
 	}
 	
-	void bind( Object item, int position ){
-		this.position = position;
+	void bind( Object item ){
 		this.status = null;
 		this.account_thumbnail = null;
 		this.account_boost = null;
@@ -210,7 +209,9 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		if( item == null ) return;
 		
-		if( item instanceof String ){
+		if( item instanceof MSPToot ){
+			showStatus( activity, (MSPToot) item );
+		}else if( item instanceof String ){
 			showSearchTag( (String) item );
 		}else if( item instanceof TootAccount ){
 			showFollow( (TootAccount) item );
@@ -270,7 +271,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		}else if( item instanceof TootGap ){
 			showGap( (TootGap) item );
 		}else if( item instanceof TootDomainBlock ){
-			showDomainBlock( (TootDomainBlock)item );
+			showDomainBlock( (TootDomainBlock) item );
 		}
 	}
 	
@@ -316,24 +317,30 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation );
 	}
 	
-	private void showStatus( @NonNull ActMain activity, @NonNull TootStatus status ){
+	private void showStatus( @NonNull ActMain activity, @NonNull TootStatusLike status ){
 		this.status = status;
 		llStatus.setVisibility( View.VISIBLE );
 		
-		tvTime.setText( TootStatus.formatTime( status.time_created_at ) );
+		if( status instanceof TootStatus ){
+			tvTime.setText( TootStatus.formatTime( ( (TootStatus) status ).time_created_at ) );
+			
+		}else if( status instanceof MSPToot ){
+			tvTime.setText( ( (MSPToot) status ).created_at );
+			
+		}
 		ivThumbnail.setCornerRadius( activity.pref, 16f );
 		
 		account_thumbnail = status.account;
-		setAcct( tvAcct, access_info.getFullAcct( status.account  ), R.attr.colorAcctSmall );
+		setAcct( tvAcct, access_info.getFullAcct( status.account ), R.attr.colorAcctSmall );
 		
-		if(status.account == null ){
+		if( status.account == null ){
 			tvName.setText( "?" );
-			ivThumbnail.setImageUrl(null,null);
+			ivThumbnail.setImageUrl( null, null );
 		}else{
 			tvName.setText( status.account.display_name );
 			ivThumbnail.setImageUrl(
 				access_info.supplyBaseUrl( status.account.avatar_static )
-				,access_info.supplyBaseUrl( status.account.avatar )
+				, access_info.supplyBaseUrl( status.account.avatar )
 			);
 		}
 		tvContent.setText( status.decoded_content );
@@ -345,11 +352,16 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		//				tvTags.setText( status.decoded_tags );
 		//			}
 		
-		if( status.decoded_mentions == null ){
-			tvMentions.setVisibility( View.GONE );
+		if( status instanceof TootStatus ){
+			TootStatus ts = (TootStatus) status;
+			if( ts.decoded_mentions == null ){
+				tvMentions.setVisibility( View.GONE );
+			}else{
+				tvMentions.setVisibility( View.VISIBLE );
+				tvMentions.setText( ts.decoded_mentions );
+			}
 		}else{
-			tvMentions.setVisibility( View.VISIBLE );
-			tvMentions.setText( status.decoded_mentions );
+			tvMentions.setVisibility( View.GONE );
 		}
 		
 		// Content warning
@@ -359,28 +371,52 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		}else{
 			llContentWarning.setVisibility( View.VISIBLE );
 			tvContentWarning.setText( status.decoded_spoiler_text );
-			boolean cw_shown = ContentWarning.isShown( access_info.host, status.id, false );
+			boolean cw_shown = ContentWarning.isShown( status, false );
 			showContent( cw_shown );
 		}
 		
-		if( status.media_attachments == null || status.media_attachments.isEmpty() ){
-			flMedia.setVisibility( View.GONE );
-		}else{
-			flMedia.setVisibility( View.VISIBLE );
-			setMedia( ivMedia1, status, 0 );
-			setMedia( ivMedia2, status, 1 );
-			setMedia( ivMedia3, status, 2 );
-			setMedia( ivMedia4, status, 3 );
-			
-			@SuppressWarnings("SimplifiableConditionalExpression")
-			boolean default_shown =
-				column.hide_media_default ? false :
-					access_info.dont_hide_nsfw ? true :
-						! status.sensitive;
-			
-			// hide sensitive media
-			boolean is_shown = MediaShown.isShown( access_info.host, status.id, default_shown );
-			btnShowMedia.setVisibility( ! is_shown ? View.VISIBLE : View.GONE );
+		if( status instanceof TootStatus ){
+			TootStatus ts = (TootStatus) status;
+			if( ts.media_attachments == null || ts.media_attachments.isEmpty() ){
+				flMedia.setVisibility( View.GONE );
+			}else{
+				flMedia.setVisibility( View.VISIBLE );
+				setMedia( ivMedia1, ts, 0 );
+				setMedia( ivMedia2, ts, 1 );
+				setMedia( ivMedia3, ts, 2 );
+				setMedia( ivMedia4, ts, 3 );
+				
+				@SuppressWarnings("SimplifiableConditionalExpression")
+				boolean default_shown =
+					column.hide_media_default ? false :
+						access_info.dont_hide_nsfw ? true :
+							! status.sensitive;
+				
+				// hide sensitive media
+				boolean is_shown = MediaShown.isShown( status, default_shown );
+				btnShowMedia.setVisibility( ! is_shown ? View.VISIBLE : View.GONE );
+			}
+		}else if( status instanceof MSPToot ){
+			MSPToot ts = (MSPToot) status;
+			if( ts.media_attachments == null || ts.media_attachments.isEmpty() ){
+				flMedia.setVisibility( View.GONE );
+			}else{
+				flMedia.setVisibility( View.VISIBLE );
+				setMedia( ivMedia1, ts, 0 );
+				setMedia( ivMedia2, ts, 1 );
+				setMedia( ivMedia3, ts, 2 );
+				setMedia( ivMedia4, ts, 3 );
+				
+				@SuppressWarnings("SimplifiableConditionalExpression")
+				boolean default_shown =
+					column.hide_media_default ? false :
+						access_info.dont_hide_nsfw ? true :
+							! status.sensitive;
+				
+				// hide sensitive media
+				boolean is_shown = MediaShown.isShown( status, default_shown );
+				btnShowMedia.setVisibility( ! is_shown ? View.VISIBLE : View.GONE );
+			}
 		}
 		
 		if( buttons_for_status != null ){
@@ -432,11 +468,11 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		}else{
 			iv.setVisibility( View.VISIBLE );
 			iv.setScaleType( activity.dont_crop_media_thumbnail ? ImageView.ScaleType.FIT_CENTER : ImageView.ScaleType.CENTER_CROP );
-
+			
 			TootAttachment ta = status.media_attachments.get( idx );
-
-			if( TextUtils.isEmpty( ta.type )){
-				iv.setMediaType(0);
+			
+			if( TextUtils.isEmpty( ta.type ) ){
+				iv.setMediaType( 0 );
 			}else{
 				switch( ta.type ){
 				default:
@@ -463,22 +499,36 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 					url = ta.url;
 				}
 			}
-			iv.setCornerRadius( activity.pref,0f ); // 正方形じゃないせいか、うまく動かない activity.density * 4f );
+			iv.setCornerRadius( activity.pref, 0f ); // 正方形じゃないせいか、うまく動かない activity.density * 4f );
+			iv.setImageUrl( access_info.supplyBaseUrl( url ) );
+		}
+	}
+	
+	private void setMedia( MyNetworkImageView iv, MSPToot msp_toot, int idx ){
+		if( idx >= msp_toot.media_attachments.size() ){
+			iv.setVisibility( View.GONE );
+		}else{
+			iv.setVisibility( View.VISIBLE );
+			iv.setScaleType( activity.dont_crop_media_thumbnail ? ImageView.ScaleType.FIT_CENTER : ImageView.ScaleType.CENTER_CROP );
+			
+			String url = msp_toot.media_attachments.get( idx );
+			iv.setMediaType( 0 );
+			iv.setCornerRadius( activity.pref, 0f ); // 正方形じゃないせいか、うまく動かない activity.density * 4f );
 			iv.setImageUrl( access_info.supplyBaseUrl( url ) );
 		}
 	}
 	
 	@Override public void onClick( View v ){
 		
-		int pos = activity.nextPosition( column ) ;
+		int pos = activity.nextPosition( column );
 		
 		switch( v.getId() ){
 		case R.id.btnHideMedia:
-			MediaShown.save( access_info.host, status.id, false );
+			MediaShown.save( status, false );
 			btnShowMedia.setVisibility( View.VISIBLE );
 			break;
 		case R.id.btnShowMedia:
-			MediaShown.save( access_info.host, status.id, true );
+			MediaShown.save( status, true );
 			btnShowMedia.setVisibility( View.GONE );
 			break;
 		case R.id.ivMedia1:
@@ -495,7 +545,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		case R.id.btnContentWarning:{
 			boolean new_shown = ( llContents.getVisibility() == View.GONE );
-			ContentWarning.save( access_info.host, status.id, new_shown );
+			ContentWarning.save( status, new_shown );
 			list_adapter.notifyDataSetChanged();
 			break;
 		}
@@ -504,7 +554,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			if( access_info.isPseudo() ){
 				new DlgContextMenu( activity, column, account_thumbnail, null ).show();
 			}else{
-				activity.openProfile( pos,access_info, account_thumbnail );
+				activity.openProfile( pos, access_info, account_thumbnail );
 			}
 			break;
 		
@@ -512,14 +562,14 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			if( access_info.isPseudo() ){
 				new DlgContextMenu( activity, column, account_boost, null ).show();
 			}else{
-				activity.openProfile( pos,access_info, account_boost );
+				activity.openProfile( pos, access_info, account_boost );
 			}
 			break;
 		case R.id.llFollow:
 			if( access_info.isPseudo() ){
 				new DlgContextMenu( activity, column, account_follow, null ).show();
 			}else{
-				activity.openProfile( pos,access_info, account_follow );
+				activity.openProfile( pos, access_info, account_follow );
 			}
 			break;
 		case R.id.btnFollow:
@@ -528,13 +578,13 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnSearchTag:
 			if( search_tag != null ){
-				activity.openHashTag( activity.nextPosition( column ),access_info, search_tag );
+				activity.openHashTag( activity.nextPosition( column ), access_info, search_tag );
 			}else if( gap != null ){
 				column.startGap( gap );
 			}else if( domain_block != null ){
-				final String domain =  domain_block.domain;
+				final String domain = domain_block.domain;
 				new AlertDialog.Builder( activity )
-					.setMessage( activity.getString( R.string.confirm_unblock_domain, domain) )
+					.setMessage( activity.getString( R.string.confirm_unblock_domain, domain ) )
 					.setNegativeButton( R.string.cancel, null )
 					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 						@Override public void onClick( DialogInterface dialog, int which ){
@@ -544,7 +594,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 					.show();
 			}
 			break;
-		
+			
 		}
 	}
 	
@@ -566,22 +616,28 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	
 	private void clickMedia( int i ){
 		try{
-			TootAttachment a = status.media_attachments.get( i );
-			
-			String sv;
-			if( Pref.pref( activity ).getBoolean( Pref.KEY_PRIOR_LOCAL_URL, false ) ){
-				sv = a.url;
-				if( TextUtils.isEmpty( sv ) ){
-					sv = a.remote_url;
-				}
-			}else{
-				sv = a.remote_url;
-				if( TextUtils.isEmpty( sv ) ){
+			if( status instanceof MSPToot ){
+				activity.openStatus( activity.nextPosition( column ), access_info, status );
+			}else if( status instanceof TootStatus ){
+				TootStatus ts = (TootStatus) status;
+				
+				TootAttachment a = ts.media_attachments.get( i );
+				
+				String sv;
+				if( Pref.pref( activity ).getBoolean( Pref.KEY_PRIOR_LOCAL_URL, false ) ){
 					sv = a.url;
+					if( TextUtils.isEmpty( sv ) ){
+						sv = a.remote_url;
+					}
+				}else{
+					sv = a.remote_url;
+					if( TextUtils.isEmpty( sv ) ){
+						sv = a.url;
+					}
 				}
+				int pos = activity.nextPosition( column );
+				activity.openChromeTab( pos, access_info, sv, false );
 			}
-			int pos =  activity.nextPosition( column ) ;
-			activity.openChromeTab(pos, access_info, sv, false );
 		}catch( Throwable ex ){
 			ex.printStackTrace();
 		}
@@ -590,11 +646,9 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	// 簡略ビューの時だけ呼ばれる
 	// StatusButtonsPopupを表示する
 	void onItemClick( MyListView listView, View anchor ){
-		if( status != null ){
-			activity.closeListItemPopup();
-			activity.list_item_popup = new StatusButtonsPopup( activity, column ,bSimpleList);
-			activity.list_item_popup.show( listView, anchor, status );
-		}
+		activity.closeListItemPopup();
+		activity.list_item_popup = new StatusButtonsPopup( activity, column, bSimpleList );
+		activity.list_item_popup.show( listView, anchor, status );
 	}
 	
 }

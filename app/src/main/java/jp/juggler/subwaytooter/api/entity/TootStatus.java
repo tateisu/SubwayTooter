@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.api.entity;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.NavigationView;
 import android.text.Spannable;
 import android.text.TextUtils;
 
@@ -19,13 +20,14 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.util.WordTrieTree;
 
-public class TootStatus extends TootId {
+public class TootStatus extends TootStatusLike {
 	
 	public static class List extends ArrayList< TootStatus > {
 		
@@ -44,12 +46,9 @@ public class TootStatus extends TootId {
 	// A Fediverse-unique resource ID
 	public String uri;
 	
-	//URL to the status page (can be remote)
-	public String url;
+
 	
-	// The TootAccount which posted the status
-	@Nullable public TootAccount account;
-	
+
 	//	null or the ID of the status it replies to
 	public String in_reply_to_id;
 	
@@ -58,31 +57,12 @@ public class TootStatus extends TootId {
 	
 	//	null or the reblogged Status
 	public TootStatus reblog;
-	
-	//	Body of the status; this will contain HTML (remote HTML already sanitized)
-	public String content;
-	
+
 	//	The time the status was created
 	public String created_at;
 	
-	//The number of reblogs for the status
-	public long reblogs_count;
-	
-	//The number of favourites for the status
-	public long favourites_count;
-	
-	//	Whether the authenticated user has reblogged the status
-	public boolean reblogged;
-	
-	//	Whether the authenticated user has favourited the status
-	public boolean favourited;
-	
-	//Whether media attachments should be hidden by default
-	public boolean sensitive;
-	
-	//If not empty, warning text that should be displayed before the actual content
-	public String spoiler_text;
-	
+
+
 	//One of: public, unlisted, private, direct
 	public String visibility;
 	public static final String VISIBILITY_PUBLIC = "public";
@@ -99,13 +79,9 @@ public class TootStatus extends TootId {
 	//An array of Tags
 	public TootTag.List tags;
 	
-	//Application from which the status was posted
-	public TootApplication application;
-	
+
 	public long time_created_at;
 	
-	public Spannable decoded_content;
-	public Spannable decoded_spoiler_text;
 	// public Spannable decoded_tags;
 	public Spannable decoded_mentions;
 	
@@ -113,7 +89,7 @@ public class TootStatus extends TootId {
 	
 	public boolean conversation_main;
 	
-	public static TootStatus parse( LogCategory log, LinkClickContext account, JSONObject src ){
+	public static TootStatus parse( @NonNull LogCategory log, @NonNull LinkClickContext lcc, @NonNull String status_host, JSONObject src ){
 		
 		if( src == null ) return null;
 		
@@ -122,12 +98,13 @@ public class TootStatus extends TootId {
 			status.json = src;
 			//	log.d( "parse: %s", src.toString() );
 			status.id = src.optLong( "id" );
+			status.status_host = status_host;
 			status.uri = Utils.optStringX( src, "uri" );
 			status.url = Utils.optStringX( src, "url" );
-			status.account = TootAccount.parse( log, account, src.optJSONObject( "account" ) );
+			status.account = TootAccount.parse( log, lcc, src.optJSONObject( "account" ) );
 			status.in_reply_to_id = Utils.optStringX( src, "in_reply_to_id" ); // null
 			status.in_reply_to_account_id = Utils.optStringX( src, "in_reply_to_account_id" ); // null
-			status.reblog = TootStatus.parse( log, account, src.optJSONObject( "reblog" ) );
+			status.reblog = TootStatus.parse( log, lcc,status_host, src.optJSONObject( "reblog" ) );
 			status.content = Utils.optStringX( src, "content" );
 			status.created_at = Utils.optStringX( src, "created_at" ); // "2017-04-16T09:37:14.000Z"
 			status.reblogs_count = src.optLong( "reblogs_count" );
@@ -143,12 +120,12 @@ public class TootStatus extends TootId {
 			status.application = TootApplication.parse( log, src.optJSONObject( "application" ) ); // null
 			
 			status.time_created_at = parseTime( log, status.created_at );
-			status.decoded_content = HTMLDecoder.decodeHTML( account, status.content ,true,status.media_attachments );
+			status.decoded_content = HTMLDecoder.decodeHTML( lcc, status.content ,true,status.media_attachments );
 			// status.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
-			status.decoded_mentions = HTMLDecoder.decodeMentions( account, status.mentions );
+			status.decoded_mentions = HTMLDecoder.decodeMentions( lcc, status.mentions );
 			
 			if( ! TextUtils.isEmpty( status.spoiler_text ) ){
-				status.decoded_spoiler_text = HTMLDecoder.decodeHTML( account, status.spoiler_text ,true,status.media_attachments);
+				status.decoded_spoiler_text = HTMLDecoder.decodeHTML( lcc, status.spoiler_text ,true,status.media_attachments);
 			}
 			return status;
 		}catch( Throwable ex ){
@@ -159,7 +136,7 @@ public class TootStatus extends TootId {
 	}
 	
 	@NonNull
-	public static List parseList( LogCategory log, LinkClickContext account, JSONArray array ){
+	public static List parseList( @NonNull LogCategory log, @NonNull LinkClickContext lcc, @NonNull String status_host, JSONArray array ){
 		List result = new List();
 		if( array != null ){
 			int array_size = array.length();
@@ -167,7 +144,7 @@ public class TootStatus extends TootId {
 			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootStatus item = parse( log, account, src );
+				TootStatus item = parse( log, lcc,status_host, src );
 				if( item != null ) result.add( item );
 			}
 		}

@@ -35,6 +35,9 @@ import jp.juggler.subwaytooter.api.entity.TootReport;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootTag;
+import jp.juggler.subwaytooter.api_msp.MSPApiResult;
+import jp.juggler.subwaytooter.api_msp.MSPClient;
+import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.MutedApp;
@@ -162,6 +165,7 @@ class Column implements StreamReader.Callback {
 	static final int TYPE_BOOSTED_BY = 14;
 	static final int TYPE_FAVOURITED_BY = 15;
 	static final int TYPE_DOMAIN_BLOCKS = 16;
+	static final int TYPE_SEARCH_PORTAL = 17;
 	
 	@NonNull final Context context;
 	@NonNull private final AppState app_state;
@@ -229,7 +233,10 @@ class Column implements StreamReader.Callback {
 			this.search_query = (String) getParamAt( params, 0 );
 			this.search_resolve = (Boolean) getParamAt( params, 1 );
 			break;
-			
+		
+		case TYPE_SEARCH_PORTAL:
+			this.search_query = (String) getParamAt( params, 0 );
+			break;
 		}
 		init();
 	}
@@ -271,6 +278,9 @@ class Column implements StreamReader.Callback {
 			item.put( KEY_SEARCH_QUERY, search_query );
 			item.put( KEY_SEARCH_RESOLVE, search_resolve );
 			break;
+		case TYPE_SEARCH_PORTAL:
+			item.put( KEY_SEARCH_QUERY, search_query );
+			break;
 		}
 		
 		// 以下は保存には必要ないが、カラムリスト画面で使う
@@ -286,9 +296,15 @@ class Column implements StreamReader.Callback {
 		this.app_state = app_state;
 		this.context = app_state.context;
 		
-		SavedAccount ac = SavedAccount.loadAccount( log, src.optLong( KEY_ACCOUNT_ROW_ID ) );
-		if( ac == null ) throw new RuntimeException( "missing account" );
-		this.access_info = ac;
+		long account_db_id = src.optLong( KEY_ACCOUNT_ROW_ID );
+		if( account_db_id >= 0 ){
+			SavedAccount ac = SavedAccount.loadAccount( log, account_db_id );
+			if( ac == null ) throw new RuntimeException( "missing account" );
+			this.access_info = ac;
+		}else{
+			this.access_info = SavedAccount.getNA();
+		}
+		
 		this.column_type = src.optInt( KEY_TYPE );
 		this.dont_close = src.optBoolean( KEY_DONT_CLOSE );
 		this.with_attachment = src.optBoolean( KEY_WITH_ATTACHMENT );
@@ -328,7 +344,9 @@ class Column implements StreamReader.Callback {
 			this.search_query = src.optString( KEY_SEARCH_QUERY );
 			this.search_resolve = src.optBoolean( KEY_SEARCH_RESOLVE, false );
 			break;
-			
+		case TYPE_SEARCH_PORTAL:
+			this.search_query = src.optString( KEY_SEARCH_QUERY );
+			break;
 		}
 		init();
 	}
@@ -375,7 +393,13 @@ class Column implements StreamReader.Callback {
 			}catch( Throwable ex ){
 				return false;
 			}
-			
+		case TYPE_SEARCH_PORTAL:
+			try{
+				String q = (String) getParamAt( params, 0 );
+				return Utils.equalsNullable( q, this.search_query );
+			}catch( Throwable ex ){
+				return false;
+			}
 		}
 	}
 	
@@ -413,6 +437,13 @@ class Column implements StreamReader.Callback {
 		case TYPE_SEARCH:
 			if( bLong ){
 				return context.getString( R.string.search_of, search_query );
+			}else{
+				return getColumnTypeName( context, column_type );
+			}
+			
+		case TYPE_SEARCH_PORTAL:
+			if( bLong ){
+				return context.getString( R.string.toot_search_of, search_query );
 			}else{
 				return getColumnTypeName( context, column_type );
 			}
@@ -471,6 +502,9 @@ class Column implements StreamReader.Callback {
 		case TYPE_SEARCH:
 			return context.getString( R.string.search );
 		
+		case TYPE_SEARCH_PORTAL:
+			return context.getString( R.string.toot_search );
+		
 		case TYPE_FOLLOW_REQUESTS:
 			return context.getString( R.string.follow_requests );
 		}
@@ -523,6 +557,9 @@ class Column implements StreamReader.Callback {
 			return R.attr.ic_domain_block;
 		
 		case TYPE_SEARCH:
+			return R.attr.ic_search;
+		
+		case TYPE_SEARCH_PORTAL:
 			return R.attr.ic_search;
 		
 		case TYPE_FOLLOW_REQUESTS:
@@ -580,7 +617,7 @@ class Column implements StreamReader.Callback {
 		for( Object o : list_data ){
 			if( o instanceof TootStatus ){
 				TootStatus item = (TootStatus) o;
-				if( (item.account != null && item.account.id == who_id)
+				if( ( item.account != null && item.account.id == who_id )
 					|| ( item.reblog != null && item.reblog.account != null && item.reblog.account.id == who_id )
 					){
 					continue;
@@ -590,7 +627,8 @@ class Column implements StreamReader.Callback {
 				TootNotification item = (TootNotification) o;
 				if( item.account.id == who_id ) continue;
 				if( item.status != null ){
-					if( (item.status.account != null && item.status.account.id == who_id) ) continue;
+					if( ( item.status.account != null && item.status.account.id == who_id ) )
+						continue;
 					if( item.status.reblog != null && item.status.reblog.account != null && item.status.reblog.account.id == who_id )
 						continue;
 				}
@@ -739,8 +777,9 @@ class Column implements StreamReader.Callback {
 			for( Object o : list_data ){
 				if( o instanceof TootStatus ){
 					TootStatus item = (TootStatus) o;
-					if( item.account != null && reDomain.matcher( item.account.acct ).find() ) continue;
-					if( item.reblog != null && item.reblog.account !=null && reDomain.matcher( item.reblog.account.acct ).find() )
+					if( item.account != null && reDomain.matcher( item.account.acct ).find() )
+						continue;
+					if( item.reblog != null && item.reblog.account != null && reDomain.matcher( item.reblog.account.acct ).find() )
 						continue;
 				}else if( o instanceof TootNotification ){
 					TootNotification item = (TootNotification) o;
@@ -748,8 +787,9 @@ class Column implements StreamReader.Callback {
 						if( reDomain.matcher( item.account.acct ).find() ) continue;
 					}
 					if( item.status != null ){
-						if( item.status.account != null && reDomain.matcher( item.status.account.acct ).find() ) continue;
-						if( item.status.reblog != null &&  item.status.reblog.account !=null && reDomain.matcher( item.status.reblog.account.acct ).find() )
+						if( item.status.account != null && reDomain.matcher( item.status.account.acct ).find() )
+							continue;
+						if( item.status.reblog != null && item.status.reblog.account != null && reDomain.matcher( item.status.reblog.account.acct ).find() )
 							continue;
 					}
 				}
@@ -1022,7 +1062,7 @@ class Column implements StreamReader.Callback {
 				if( result != null && result.array != null ){
 					saveRange( result, true, true );
 					//
-					TootStatus.List src = TootStatus.parseList( log, access_info, result.array );
+					TootStatus.List src = TootStatus.parseList( log, access_info, access_info.host,result.array );
 					list_tmp = new ArrayList<>( src.size() );
 					addWithFilter( list_tmp, src );
 					//
@@ -1059,7 +1099,7 @@ class Column implements StreamReader.Callback {
 							break;
 						}
 						
-						src = TootStatus.parseList( log, access_info, result2.array );
+						src = TootStatus.parseList( log, access_info, access_info.host,result2.array );
 						
 						addWithFilter( list_tmp, src );
 						
@@ -1106,7 +1146,7 @@ class Column implements StreamReader.Callback {
 				TootApiResult result = client.request( path_base );
 				if( result != null ){
 					saveRange( result, true, true );
-					TootNotification.List src = TootNotification.parseList( log, access_info, result.array );
+					TootNotification.List src = TootNotification.parseList( log, access_info, access_info.host, result.array );
 					
 					list_tmp = new ArrayList<>();
 					addWithFilter( list_tmp, src );
@@ -1223,7 +1263,7 @@ class Column implements StreamReader.Callback {
 						result = client.request(
 							String.format( Locale.JAPAN, PATH_STATUSES, status_id ) );
 						if( result == null || result.object == null ) return result;
-						TootStatus target_status = TootStatus.parse( log, access_info, result.object );
+						TootStatus target_status = TootStatus.parse( log, access_info, access_info.host,result.object );
 						target_status.conversation_main = true;
 						
 						// 前後の会話
@@ -1232,13 +1272,13 @@ class Column implements StreamReader.Callback {
 						if( result == null || result.object == null ) return result;
 						
 						// 一つのリストにまとめる
-						TootContext context = TootContext.parse( log, access_info, result.object );
-						list_tmp = new ArrayList<>( 1 + context.ancestors.size() + context.descendants.size() );
-						if( context.ancestors != null )
-							addWithFilter( list_tmp, context.ancestors );
+						TootContext conversation_context = TootContext.parse( log, access_info, access_info.host,result.object );
+						list_tmp = new ArrayList<>( 1 + conversation_context.ancestors.size() + conversation_context.descendants.size() );
+						if( conversation_context.ancestors != null )
+							addWithFilter( list_tmp, conversation_context.ancestors );
 						list_tmp.add( target_status );
-						if( context.descendants != null )
-							addWithFilter( list_tmp, context.descendants );
+						if( conversation_context.descendants != null )
+							addWithFilter( list_tmp, conversation_context.descendants );
 						
 						//
 						return result;
@@ -1250,7 +1290,7 @@ class Column implements StreamReader.Callback {
 						result = client.request( path );
 						if( result == null || result.object == null ) return result;
 						
-						TootResults tmp = TootResults.parse( log, access_info, result.object );
+						TootResults tmp = TootResults.parse( log, access_info, access_info.host,result.object );
 						if( tmp != null ){
 							list_tmp = new ArrayList<>();
 							list_tmp.addAll( tmp.hashtags );
@@ -1258,7 +1298,45 @@ class Column implements StreamReader.Callback {
 							list_tmp.addAll( tmp.statuses );
 						}
 						return result;
-						
+					
+					case TYPE_SEARCH_PORTAL:
+					
+						max_id = "";
+						String q = search_query.trim();
+						if( q.length() <= 0 ){
+							list_tmp = new ArrayList<>();
+							result = new TootApiResult( context.getString( R.string.list_empty ) );
+						}else{
+							result = MSPClient.search( context, search_query, max_id, new MSPClient.Callback() {
+								@Override
+								public boolean isApiCancelled(){
+									return isCancelled() || is_dispose.get();
+								}
+								
+								@Override
+								public void publishApiProgress( final String s ){
+									Utils.runOnMainThread( new Runnable() {
+										@Override
+										public void run(){
+											if( isCancelled() ) return;
+											task_progress = s;
+											fireShowContent();
+										}
+									} );
+								}
+							} );
+							if( result != null && result.array != null ){
+								// max_id の更新
+								max_id = MSPClient.getMaxId( result.array, max_id );
+								// リストデータの用意
+								MSPToot.List search_result = MSPToot.parseList( log, access_info, result.array );
+								if( search_result != null ){
+									list_tmp = new ArrayList<>();
+									list_tmp.addAll( search_result );
+								}
+							}
+						}
+						return result;
 					}
 				}finally{
 					try{
@@ -1749,7 +1827,7 @@ class Column implements StreamReader.Callback {
 				if( result != null && result.array != null ){
 					saveRange( result, bBottom, ! bBottom );
 					list_tmp = new ArrayList<>();
-					TootNotification.List src = TootNotification.parseList( log, access_info, result.array );
+					TootNotification.List src = TootNotification.parseList( log, access_info,access_info.host, result.array );
 					addWithFilter( list_tmp, src );
 					
 					if( ! src.isEmpty() ){
@@ -1793,7 +1871,7 @@ class Column implements StreamReader.Callback {
 								break;
 							}
 							
-							src = TootNotification.parseList( log, access_info, result2.array );
+							src = TootNotification.parseList( log, access_info, access_info.host,result2.array );
 							if( ! src.isEmpty() ){
 								addWithFilter( list_tmp, src );
 								AlarmService.injectData( context, access_info.db_id, src );
@@ -1815,7 +1893,7 @@ class Column implements StreamReader.Callback {
 				TootApiResult result = client.request( addRange( bBottom, path_base ) );
 				if( result != null && result.array != null ){
 					saveRange( result, bBottom, ! bBottom );
-					TootStatus.List src = TootStatus.parseList( log, access_info, result.array );
+					TootStatus.List src = TootStatus.parseList( log, access_info, access_info.host,result.array );
 					list_tmp = new ArrayList<>();
 					
 					addWithFilter( list_tmp, src );
@@ -1859,7 +1937,7 @@ class Column implements StreamReader.Callback {
 								break;
 							}
 							
-							src = TootStatus.parseList( log, access_info, result2.array );
+							src = TootStatus.parseList( log, access_info, access_info.host,result2.array );
 							
 							addWithFilter( list_tmp, src );
 							
@@ -1915,7 +1993,7 @@ class Column implements StreamReader.Callback {
 								break;
 							}
 							
-							src = TootStatus.parseList( log, access_info, result2.array );
+							src = TootStatus.parseList( log, access_info, access_info.host,result2.array );
 							addWithFilter( list_tmp, src );
 						}
 					}
@@ -2016,6 +2094,49 @@ class Column implements StreamReader.Callback {
 					case TYPE_HASHTAG:
 						return getStatusList( client,
 							String.format( Locale.JAPAN, PATH_HASHTAG, Uri.encode( hashtag ) ) );
+					
+					case TYPE_SEARCH_PORTAL:
+						
+						if(!bBottom){
+							return new TootApiResult( "head of list.");
+						}
+
+						TootApiResult result;
+						String q = search_query.trim();
+						if( q.length() <= 0 ){
+							list_tmp = new ArrayList<>();
+							result = new TootApiResult( context.getString( R.string.list_empty ) );
+						}else{
+							result = MSPClient.search( context, search_query, max_id, new MSPClient.Callback() {
+								@Override
+								public boolean isApiCancelled(){
+									return isCancelled() || is_dispose.get();
+								}
+								
+								@Override
+								public void publishApiProgress( final String s ){
+									Utils.runOnMainThread( new Runnable() {
+										@Override
+										public void run(){
+											if( isCancelled() ) return;
+											task_progress = s;
+											fireShowContent();
+										}
+									} );
+								}
+							} );
+							if( result != null && result.array != null ){
+								// max_id の更新
+								max_id = MSPClient.getMaxId( result.array, max_id );
+								// リストデータの用意
+								MSPToot.List search_result = MSPToot.parseList( log, access_info, result.array );
+								if( search_result != null ){
+									list_tmp = new ArrayList<>();
+									list_tmp.addAll( search_result );
+								}
+							}
+						}
+						return result;
 					}
 				}finally{
 					try{
@@ -2271,7 +2392,7 @@ class Column implements StreamReader.Callback {
 					}
 					
 					result = r2;
-					TootNotification.List src = TootNotification.parseList( log, access_info, r2.array );
+					TootNotification.List src = TootNotification.parseList( log, access_info, access_info.host,r2.array );
 					
 					if( src.isEmpty() ){
 						log.d( "gap-notification: empty." );
@@ -2327,7 +2448,7 @@ class Column implements StreamReader.Callback {
 					// 成功した場合はそれを返したい
 					result = r2;
 					
-					TootStatus.List src = TootStatus.parseList( log, access_info, r2.array );
+					TootStatus.List src = TootStatus.parseList( log, access_info,access_info.host, r2.array );
 					if( src.size() == 0 ){
 						// 直前の取得でカラのデータが帰ってきたら終了
 						log.d( "gap-statuses: empty." );
@@ -2698,7 +2819,8 @@ class Column implements StreamReader.Callback {
 			}else if( o instanceof TootStatus ){
 				TootStatus status = (TootStatus) o;
 				if( column_type == TYPE_NOTIFICATIONS ) return;
-				if( column_type == TYPE_LOCAL &&  status.account != null && status.account.acct.indexOf( '@' ) != - 1 ) return;
+				if( column_type == TYPE_LOCAL && status.account != null && status.account.acct.indexOf( '@' ) != - 1 )
+					return;
 				if( isFiltered( status ) ) return;
 				
 				if( this.enable_speech ){
@@ -2788,6 +2910,9 @@ class Column implements StreamReader.Callback {
 			// リフレッシュしてからストリーミング開始
 			log.d( "onResume: start auto refresh." );
 			startRefresh( true, false, - 1L, - 1 );
+		}else if( column_type == TYPE_SEARCH || column_type == TYPE_SEARCH_PORTAL ){
+			// 検索カラムはリフレッシュもストリーミングもないが、resumeのタイミングでリストの再描画を行いたい
+			fireShowContent();
 		}else{
 			// ギャップつきでストリーミング開始
 			log.d( "onResume: start streaming with gap." );

@@ -9,6 +9,8 @@ import android.support.v4.view.ViewCompat;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
+import android.text.method.MovementMethod;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -27,7 +29,9 @@ import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirec
 import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.table.AcctColor;
+import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
 import jp.juggler.subwaytooter.view.MyListView;
 import jp.juggler.subwaytooter.util.ScrollPosition;
 import jp.juggler.subwaytooter.util.Utils;
@@ -80,6 +84,8 @@ class ColumnViewHolder
 	private final CheckBox cbEnableSpeech;
 	private final View llRegexFilter;
 	private final Button btnDeleteNotification;
+	
+	private final TextView tvSearchDesc;
 	
 	ColumnViewHolder( ActMain arg_activity, View root ){
 		this.activity = arg_activity;
@@ -137,8 +143,8 @@ class ColumnViewHolder
 		etRegexFilter = (EditText) root.findViewById( R.id.etRegexFilter );
 		llRegexFilter = root.findViewById( R.id.llRegexFilter );
 		tvRegexFilterError = (TextView) root.findViewById( R.id.tvRegexFilterError );
-
 		
+		tvSearchDesc = (TextView) root.findViewById( R.id.tvSearchDesc );
 		
 		btnDeleteNotification = (Button) root.findViewById( R.id.btnDeleteNotification );
 		
@@ -223,7 +229,7 @@ class ColumnViewHolder
 	
 	private boolean loading_busy;
 	
-	void onPageCreate( Column column, int page_idx, int page_count ){
+	void onPageCreate( @NonNull Column column, int page_idx, int page_count ){
 		loading_busy = true;
 		try{
 			this.column = column;
@@ -250,6 +256,7 @@ class ColumnViewHolder
 				bAllowFilter = true;
 				break;
 			case Column.TYPE_SEARCH:
+			case Column.TYPE_SEARCH_PORTAL:
 			case Column.TYPE_CONVERSATION:
 			case Column.TYPE_REPORTS:
 			case Column.TYPE_BLOCKS:
@@ -299,7 +306,8 @@ class ColumnViewHolder
 			vg( llRegexFilter, bAllowFilter );
 			
 			vg( btnDeleteNotification, column.column_type == Column.TYPE_NOTIFICATIONS );
-			vg( llSearch, column.column_type == Column.TYPE_SEARCH );
+			vg( llSearch, (column.column_type == Column.TYPE_SEARCH  || column.column_type == Column.TYPE_SEARCH_PORTAL ) );
+			vg( cbResolve, (column.column_type == Column.TYPE_SEARCH ) );
 			
 			// tvRegexFilterErrorの表示を更新
 			if( bAllowFilter ){
@@ -307,12 +315,32 @@ class ColumnViewHolder
 			}
 			
 			switch( column.column_type ){
+			default:
+				swipyRefreshLayout.setEnabled( true );
+				swipyRefreshLayout.setDirection( SwipyRefreshLayoutDirection.BOTH );
+				break;
+
 			case Column.TYPE_CONVERSATION:
 			case Column.TYPE_SEARCH:
 				swipyRefreshLayout.setEnabled( false );
 				break;
-			default:
+
+			case Column.TYPE_SEARCH_PORTAL:
 				swipyRefreshLayout.setEnabled( true );
+				swipyRefreshLayout.setDirection( SwipyRefreshLayoutDirection.BOTTOM );
+				break;
+
+			}
+			
+			switch( column.column_type ){
+			default:
+				tvSearchDesc.setVisibility( View.GONE );
+				break;
+			case Column.TYPE_SEARCH:
+				showSearchDesc( activity.getString( R.string.search_desc_mastodon_api ) );
+				break;
+			case Column.TYPE_SEARCH_PORTAL:
+				showSearchDesc( getSearchDescPortal() );
 				break;
 			}
 			
@@ -329,6 +357,27 @@ class ColumnViewHolder
 		}finally{
 			loading_busy = false;
 		}
+	}
+	
+	private String getSearchDescPortal(){
+		String language_code = activity.getString( R.string.language_code );
+		int res_id;
+		if( "ja".equals( language_code ) ){
+			res_id = R.raw.search_desc_portal_ja;
+		}else{
+			res_id = R.raw.search_desc_portal_en;
+		}
+		byte[] data = Utils.loadRawResource(activity,res_id);
+		return data == null ? null : Utils.decodeUTF8( data );
+	}
+	
+	private void showSearchDesc( String html ){
+		if( column==null) return;
+		log.d("showSearchDesc: html=%s",html);
+		tvSearchDesc.setVisibility( View.VISIBLE );
+		tvSearchDesc.setMovementMethod( MyLinkMovementMethod.getInstance() );
+		CharSequence sv = HTMLDecoder.decodeHTML( column.access_info, html, false, null );
+		tvSearchDesc.setText( sv );
 	}
 	
 	void showColumnColor(){
@@ -595,7 +644,7 @@ class ColumnViewHolder
 			break;
 		
 		case R.id.btnColumnReload:
-			if( column.column_type == Column.TYPE_SEARCH ){
+			if( column.column_type == Column.TYPE_SEARCH || column.column_type == Column.TYPE_SEARCH_PORTAL ){
 				Utils.hideKeyboard( activity, etSearch );
 				etSearch.setText( column.search_query );
 				cbResolve.setChecked( column.search_resolve );

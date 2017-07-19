@@ -620,7 +620,7 @@
     <string name="dont_crop_media_thumbnail">添付メディアのサムネイルをクロップしない(アプリ再起動が必要)</string>
     <string name="configuration_url">設定情報URL</string>
     <string name="custom_stream_listener">カスタム通知リスナ</string>
-    <string name="custom_stream_listener_desc">この設定は上級者向けです。よく分からない場合は編集しないでしてください。失敗するとリアルタイム通知が動作しなくなります。</string>
+    <string name="custom_stream_listener_desc">この設定は上級者向けです。よく分からない場合は編集しないでください。失敗するとリアルタイム通知が動作しなくなります。</string>
     <string name="secret">シークレット</string>
     <string name="test">テスト</string>
     <string name="custom_stream_listener_was_reset">カスタム通知リスナを使わないようにしました</string>

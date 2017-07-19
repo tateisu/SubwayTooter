@@ -311,6 +311,7 @@ public class AppDataExporter {
 			case Pref.KEY_FOOTER_TAB_BG_COLOR:
 			case Pref.KEY_FOOTER_TAB_DIVIDER_COLOR:
 			case Pref.KEY_FOOTER_TAB_INDICATOR_COLOR:
+			case Pref.KEY_LAST_COLUMN_POS:
 				int iv = reader.nextInt();
 				e.putInt( k, iv );
 				break;

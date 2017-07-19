@@ -123,6 +123,14 @@ public class ActMain extends AppCompatActivity
 		updateColumnStrip();
 		
 		if( ! app_state.column_list.isEmpty() ){
+			
+			// 前回最後に表示していたカラムの位置にスクロールする
+			int column_pos = pref.getInt(Pref.KEY_LAST_COLUMN_POS,-1);
+			if( column_pos >= 0 && column_pos < app_state.column_list.size() ){
+				scrollToColumn( column_pos ,true );
+			}
+
+			// 表示位置に合わせたイベントを発行
 			if( pager_adapter != null ){
 				onPageSelected( pager.getCurrentItem() );
 			}else{
@@ -285,6 +293,15 @@ public class ActMain extends AppCompatActivity
 	@Override protected void onPause(){
 		bResume = false;
 		
+		// 最後に表示していたカラムの位置
+		int column_pos;
+		if( pager_adapter != null ){
+			column_pos = pager.getCurrentItem();
+		}else{
+			column_pos = tablet_layout_manager.findFirstVisibleItemPosition();
+		}
+		pref.edit().putInt(Pref.KEY_LAST_COLUMN_POS,column_pos).apply();
+		
 		closeListItemPopup();
 		
 		app_state.stream_reader.onPause();
@@ -365,7 +382,7 @@ public class ActMain extends AppCompatActivity
 					if( ! app_state.column_list.isEmpty() ){
 						int select = data.getIntExtra( ActColumnList.EXTRA_SELECTION, - 1 );
 						if( 0 <= select && select < app_state.column_list.size() ){
-							scrollToColumn( select );
+							scrollToColumn( select ,false);
 						}
 					}
 				}
@@ -801,7 +818,7 @@ public class ActMain extends AppCompatActivity
 			viewRoot.setTag( i );
 			viewRoot.setOnClickListener( new View.OnClickListener() {
 				@Override public void onClick( View v ){
-					scrollToColumn( (Integer) v.getTag() );
+					scrollToColumn( (Integer) v.getTag() ,false);
 				}
 			} );
 			viewRoot.setContentDescription( column.getColumnName( true ) );
@@ -1411,7 +1428,7 @@ public class ActMain extends AppCompatActivity
 			
 			if( ! app_state.column_list.isEmpty() && page_delete > 0 && page_showing == page_delete ){
 				int idx = page_delete - 1;
-				scrollToColumn( idx );
+				scrollToColumn( idx ,false);
 				Column c = app_state.column_list.get( idx );
 				if( ! c.bFirstInitialized ){
 					c.startLoading();
@@ -1423,7 +1440,7 @@ public class ActMain extends AppCompatActivity
 			
 			if( ! app_state.column_list.isEmpty() && page_delete > 0 ){
 				int idx = page_delete - 1;
-				scrollToColumn( idx );
+				scrollToColumn( idx ,false);
 				Column c = app_state.column_list.get( idx );
 				if( ! c.bFirstInitialized ){
 					c.startLoading();
@@ -1440,7 +1457,7 @@ public class ActMain extends AppCompatActivity
 		for( Column column : app_state.column_list ){
 			if( column.isSameSpec( ai, type, params ) ){
 				index = app_state.column_list.indexOf( column );
-				scrollToColumn( index );
+				scrollToColumn( index ,false);
 				return column;
 			}
 		}
@@ -1448,7 +1465,7 @@ public class ActMain extends AppCompatActivity
 		//
 		Column col = new Column( app_state, ai, this, type, params );
 		index = addColumn( col, index );
-		scrollToColumn( index );
+		scrollToColumn( index ,false);
 		if( ! col.bFirstInitialized ){
 			col.startLoading();
 		}
@@ -3571,14 +3588,18 @@ public class ActMain extends AppCompatActivity
 		tablet_pager_adapter.notifyDataSetChanged();
 	}
 	
-	private void scrollToColumn( int index ){
+	private void scrollToColumn( int index ,boolean bAlign){
 		scrollColumnStrip( index );
 		
 		if( pager_adapter != null ){
 			pager.setCurrentItem( index, true );
-		}else{
+		}else if(!bAlign){
 			// 指定したカラムが画面内に表示されるように動いてくれるようだ
 			tablet_pager.smoothScrollToPosition( index );
+		}else{
+			// 指定位置が表示範囲の左端にくるようにスクロール
+			// TODO 挙動確認
+			tablet_pager.scrollToPosition( index );
 		}
 	}
 	

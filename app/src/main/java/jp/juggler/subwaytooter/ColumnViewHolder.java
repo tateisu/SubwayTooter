@@ -321,15 +321,14 @@ class ColumnViewHolder
 				break;
 
 			case Column.TYPE_CONVERSATION:
-			case Column.TYPE_SEARCH:
 				swipyRefreshLayout.setEnabled( false );
 				break;
-
-			case Column.TYPE_SEARCH_PORTAL:
+			
+			case Column.TYPE_SEARCH:
 				swipyRefreshLayout.setEnabled( true );
-				swipyRefreshLayout.setDirection( SwipyRefreshLayoutDirection.BOTTOM );
+				swipyRefreshLayout.setDirection( SwipyRefreshLayoutDirection.TOP );
 				break;
-
+				
 			}
 			
 			switch( column.column_type ){
@@ -564,6 +563,18 @@ class ColumnViewHolder
 		// カラムを追加/削除したときに ColumnからColumnViewHolderへの参照が外れることがある
 		// リロードやリフレッシュ操作で直るようにする
 		column.addColumnViewHolder( this );
+		
+		if( direction == SwipyRefreshLayoutDirection.TOP &&
+			(column.column_type == Column.TYPE_SEARCH_PORTAL || column.column_type == Column.TYPE_SEARCH)
+		){
+			swipyRefreshLayout.setRefreshing( false );
+			activity.handler.post( new Runnable() {
+				@Override public void run(){
+					if(column!=null) column.startLoading();
+				}
+			} );
+			return;
+		}
 
 		column.startRefresh( false, direction == SwipyRefreshLayoutDirection.BOTTOM, - 1L, - 1 );
 	}

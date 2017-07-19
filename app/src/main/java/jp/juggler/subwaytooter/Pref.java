@@ -63,6 +63,7 @@ public class Pref {
 	
 	public static final String KEY_MASTODON_SEARCH_PORTAL_USER_TOKEN = "mastodon_search_portal_user_token";
 	
+	static final String KEY_LAST_COLUMN_POS = "last_column_pos";
 	
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

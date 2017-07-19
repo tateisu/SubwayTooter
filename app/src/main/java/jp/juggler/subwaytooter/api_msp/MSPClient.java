@@ -12,7 +12,6 @@ import org.json.JSONObject;
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.Pref;
 import jp.juggler.subwaytooter.R;
-import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
@@ -20,7 +19,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class MSPClient {
-	static final LogCategory log = new LogCategory("MSPClient");
+	// static final LogCategory log = new LogCategory("MSPClient");
 	
 	private static final String url_token = "http://mastodonsearch.jp/api/v1.0.1/utoken";
 	private static final String url_search = "http://mastodonsearch.jp/api/v1.0.1/cross";
@@ -42,7 +41,7 @@ public class MSPClient {
 		
 		Response response;
 		
-		for(;;){
+		for(int nTry=0;nTry<10;++nTry){
 			// ユーザトークンがなければ取得する
 			if( TextUtils.isEmpty( user_token ) ){
 				
@@ -67,6 +66,7 @@ public class MSPClient {
 				if( ! response.isSuccessful() ){
 					if( response.code() >= 400 ){
 						try{
+							//noinspection ConstantConditions
 							String json = response.body().string();
 							JSONObject object = new JSONObject( json );
 							JSONObject error = object.getJSONObject( "error" );
@@ -124,6 +124,7 @@ public class MSPClient {
 				if( ! response.isSuccessful() ){
 					if( response.code() >= 400 ){
 						try{
+							//noinspection ConstantConditions
 							String json = response.body().string();
 							JSONObject object = new JSONObject( json );
 							JSONObject error = object.getJSONObject( "error" );
@@ -156,6 +157,7 @@ public class MSPClient {
 				}
 			}
 		}
+		return new MSPApiResult( "MSP user token retry exceeded.");
 	}
 	
 	public static String getMaxId( JSONArray array, String max_id ){

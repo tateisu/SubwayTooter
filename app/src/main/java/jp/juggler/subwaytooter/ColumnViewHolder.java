@@ -835,7 +835,7 @@ class ColumnViewHolder
 
 				// タブレットモードでカラムを追加/削除した際に発生する。
 				// このタイミングでスクロール位置を復元してもうまくいかないので延期する
-				activity.handler.post( proc_restoreScrollPosition );
+				activity.handler.postDelayed( proc_restoreScrollPosition ,100L);
 				return;
 			}
 			

@@ -440,7 +440,7 @@ class Column implements StreamReader.Callback {
 			}else{
 				return getColumnTypeName( context, column_type );
 			}
-			
+		
 		case TYPE_SEARCH_PORTAL:
 			if( bLong ){
 				return context.getString( R.string.toot_search_of, search_query );
@@ -809,6 +809,7 @@ class Column implements StreamReader.Callback {
 	
 	// カラムを閉じた後のnotifyDataSetChangedのタイミングで、add/removeされる順序が期待通りにならないので
 	// 参照を１つだけ持つのではなく、リストを保持して先頭の要素を使うことにする
+	
 	private final LinkedList< ColumnViewHolder > _holder_list = new LinkedList<>();
 	
 	void addColumnViewHolder( @NonNull ColumnViewHolder cvh ){
@@ -842,6 +843,7 @@ class Column implements StreamReader.Callback {
 	
 	private ColumnViewHolder getViewHolder(){
 		if( is_dispose.get() ) return null;
+		// 複数のリスナがある場合、最も新しいものを返す
 		return _holder_list.isEmpty() ? null : _holder_list.getFirst();
 	}
 	
@@ -1062,7 +1064,7 @@ class Column implements StreamReader.Callback {
 				if( result != null && result.array != null ){
 					saveRange( result, true, true );
 					//
-					TootStatus.List src = TootStatus.parseList( log, access_info, access_info.host,result.array );
+					TootStatus.List src = TootStatus.parseList( log, access_info, access_info.host, result.array );
 					list_tmp = new ArrayList<>( src.size() );
 					addWithFilter( list_tmp, src );
 					//
@@ -1099,7 +1101,7 @@ class Column implements StreamReader.Callback {
 							break;
 						}
 						
-						src = TootStatus.parseList( log, access_info, access_info.host,result2.array );
+						src = TootStatus.parseList( log, access_info, access_info.host, result2.array );
 						
 						addWithFilter( list_tmp, src );
 						
@@ -1263,7 +1265,7 @@ class Column implements StreamReader.Callback {
 						result = client.request(
 							String.format( Locale.JAPAN, PATH_STATUSES, status_id ) );
 						if( result == null || result.object == null ) return result;
-						TootStatus target_status = TootStatus.parse( log, access_info, access_info.host,result.object );
+						TootStatus target_status = TootStatus.parse( log, access_info, access_info.host, result.object );
 						target_status.conversation_main = true;
 						
 						// 前後の会話
@@ -1272,7 +1274,7 @@ class Column implements StreamReader.Callback {
 						if( result == null || result.object == null ) return result;
 						
 						// 一つのリストにまとめる
-						TootContext conversation_context = TootContext.parse( log, access_info, access_info.host,result.object );
+						TootContext conversation_context = TootContext.parse( log, access_info, access_info.host, result.object );
 						list_tmp = new ArrayList<>( 1 + conversation_context.ancestors.size() + conversation_context.descendants.size() );
 						if( conversation_context.ancestors != null )
 							addWithFilter( list_tmp, conversation_context.ancestors );
@@ -1290,7 +1292,7 @@ class Column implements StreamReader.Callback {
 						result = client.request( path );
 						if( result == null || result.object == null ) return result;
 						
-						TootResults tmp = TootResults.parse( log, access_info, access_info.host,result.object );
+						TootResults tmp = TootResults.parse( log, access_info, access_info.host, result.object );
 						if( tmp != null ){
 							list_tmp = new ArrayList<>();
 							list_tmp.addAll( tmp.hashtags );
@@ -1300,7 +1302,7 @@ class Column implements StreamReader.Callback {
 						return result;
 					
 					case TYPE_SEARCH_PORTAL:
-					
+						
 						max_id = "";
 						String q = search_query.trim();
 						if( q.length() <= 0 ){
@@ -1827,7 +1829,7 @@ class Column implements StreamReader.Callback {
 				if( result != null && result.array != null ){
 					saveRange( result, bBottom, ! bBottom );
 					list_tmp = new ArrayList<>();
-					TootNotification.List src = TootNotification.parseList( log, access_info,access_info.host, result.array );
+					TootNotification.List src = TootNotification.parseList( log, access_info, access_info.host, result.array );
 					addWithFilter( list_tmp, src );
 					
 					if( ! src.isEmpty() ){
@@ -1871,7 +1873,7 @@ class Column implements StreamReader.Callback {
 								break;
 							}
 							
-							src = TootNotification.parseList( log, access_info, access_info.host,result2.array );
+							src = TootNotification.parseList( log, access_info, access_info.host, result2.array );
 							if( ! src.isEmpty() ){
 								addWithFilter( list_tmp, src );
 								AlarmService.injectData( context, access_info.db_id, src );
@@ -1893,7 +1895,7 @@ class Column implements StreamReader.Callback {
 				TootApiResult result = client.request( addRange( bBottom, path_base ) );
 				if( result != null && result.array != null ){
 					saveRange( result, bBottom, ! bBottom );
-					TootStatus.List src = TootStatus.parseList( log, access_info, access_info.host,result.array );
+					TootStatus.List src = TootStatus.parseList( log, access_info, access_info.host, result.array );
 					list_tmp = new ArrayList<>();
 					
 					addWithFilter( list_tmp, src );
@@ -1937,7 +1939,7 @@ class Column implements StreamReader.Callback {
 								break;
 							}
 							
-							src = TootStatus.parseList( log, access_info, access_info.host,result2.array );
+							src = TootStatus.parseList( log, access_info, access_info.host, result2.array );
 							
 							addWithFilter( list_tmp, src );
 							
@@ -1993,7 +1995,7 @@ class Column implements StreamReader.Callback {
 								break;
 							}
 							
-							src = TootStatus.parseList( log, access_info, access_info.host,result2.array );
+							src = TootStatus.parseList( log, access_info, access_info.host, result2.array );
 							addWithFilter( list_tmp, src );
 						}
 					}
@@ -2097,10 +2099,10 @@ class Column implements StreamReader.Callback {
 					
 					case TYPE_SEARCH_PORTAL:
 						
-						if(!bBottom){
-							return new TootApiResult( "head of list.");
+						if( ! bBottom ){
+							return new TootApiResult( "head of list." );
 						}
-
+						
 						TootApiResult result;
 						String q = search_query.trim();
 						if( q.length() <= 0 ){
@@ -2392,7 +2394,7 @@ class Column implements StreamReader.Callback {
 					}
 					
 					result = r2;
-					TootNotification.List src = TootNotification.parseList( log, access_info, access_info.host,r2.array );
+					TootNotification.List src = TootNotification.parseList( log, access_info, access_info.host, r2.array );
 					
 					if( src.isEmpty() ){
 						log.d( "gap-notification: empty." );
@@ -2448,7 +2450,7 @@ class Column implements StreamReader.Callback {
 					// 成功した場合はそれを返したい
 					result = r2;
 					
-					TootStatus.List src = TootStatus.parseList( log, access_info,access_info.host, r2.array );
+					TootStatus.List src = TootStatus.parseList( log, access_info, access_info.host, r2.array );
 					if( src.size() == 0 ){
 						// 直前の取得でカラのデータが帰ってきたら終了
 						log.d( "gap-statuses: empty." );

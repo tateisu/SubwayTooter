@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter;
 
-import android.support.v4.view.ViewPager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,11 +7,11 @@ import android.view.ViewGroup;
 
 import java.util.List;
 
-class TabletColumnPagerAdapter extends RecyclerView.Adapter<TabletColumnViewHolder >{
+class TabletColumnPagerAdapter extends RecyclerView.Adapter< TabletColumnViewHolder > {
 	
 	private final ActMain activity;
 	private final LayoutInflater mLayoutInflater;
-	private final List<Column> column_list;
+	private final List< Column > column_list;
 	
 	TabletColumnPagerAdapter( ActMain activity ){
 		super();
@@ -33,22 +32,23 @@ class TabletColumnPagerAdapter extends RecyclerView.Adapter<TabletColumnViewHold
 	
 	@Override public TabletColumnViewHolder onCreateViewHolder( ViewGroup parent, int viewType ){
 		View v = mLayoutInflater.inflate( R.layout.page_column, parent, false );
-
-		return new TabletColumnViewHolder( activity,v );
+		
+		return new TabletColumnViewHolder( activity, v );
 	}
 	
 	@Override public void onBindViewHolder( TabletColumnViewHolder holder, int position ){
-
+		
 		if( mColumnWidth > 0 ){
 			ViewGroup.LayoutParams lp = holder.itemView.getLayoutParams();
 			lp.width = mColumnWidth;
 			holder.itemView.setLayoutParams( lp );
 		}
 		
-		holder.bind( column_list.get(position), position , column_list.size() );
+		holder.bind( column_list.get( position ), position, column_list.size() );
 	}
 	
-
-	
-	
+	@Override public void onViewRecycled( TabletColumnViewHolder holder ){
+		super.onViewRecycled( holder );
+		holder.onViewRecycled();
+	}
 }

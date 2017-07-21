@@ -304,6 +304,20 @@
                     android:text="@string/open_web_page"
                     android:textAllCaps="false"
                     />
+                <Button
+                    android:id="@+id/btnAccountText"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:gravity="start|center_vertical"
+                    android:minHeight="32dp"
+                    android:paddingBottom="4dp"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+                    android:text="@string/select_and_copy"
+                    android:textAllCaps="false"
+                    />
 
                 <Button
                     android:id="@+id/btnFollowRequestOK"
@@ -394,6 +408,21 @@
                     android:paddingStart="8dp"
                     android:paddingTop="4dp"
                     android:text="@string/open_profile_from_another_account"
+                    android:textAllCaps="false"
+                    />
+
+                <Button
+                    android:id="@+id/btnOpenTimeline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:gravity="start|center_vertical"
+                    android:minHeight="32dp"
+                    android:paddingBottom="4dp"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+
                     android:textAllCaps="false"
                     />
 

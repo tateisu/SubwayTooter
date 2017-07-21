@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter;
 import android.annotation.SuppressLint;
 import android.graphics.drawable.ColorDrawable;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
 import android.support.v4.view.MotionEventCompat;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -10,9 +11,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
 
-import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
-import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
 import jp.juggler.subwaytooter.view.MyListView;
 
 class StatusButtonsPopup {
@@ -35,7 +34,8 @@ class StatusButtonsPopup {
 		}
 	}
 	
-	void show( final MyListView listView, View anchor, TootStatusLike status ){
+	@SuppressLint("RtlHardcoded")
+	void show( @NonNull final MyListView listView, @NonNull View anchor, @NonNull TootStatusLike status ){
 		
 		//
 		window = new PopupWindow( activity );

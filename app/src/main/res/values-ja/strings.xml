@@ -264,7 +264,7 @@
     <!---->
     <string name="confirm_close_column">このカラムを閉じますか？</string>
     <!---->
-    <string name="follow_from_another_account">別のアカウントでフォロー</string>
+    <string name="follow_from_another_account">別アカウントでフォロー</string>
     <!---->
     <string name="favourite_from_another_account">別アカウントでお気に入り</string>
     <!---->
@@ -658,5 +658,18 @@
     <string name="search_desc_mastodon_api">アカウントやハッシュタグをマストドンのAPIで検索します。</string>
     <string name="toot_search_of">トゥート検索：%1$s</string>
     <string name="progress_synchronize_toot">トゥートを同期してます…</string>
+    <string name="send_header_account_name">Account-Name</string>
+    <string name="send_header_account_acct">Account-Acct</string>
+    <string name="send_header_account_created_at">Account-Created-At</string>
+    <string name="send_header_account_statuses_count">Account-Statuses-Count</string>
+    <string name="send_header_account_followers_count">Account-Followers-Count</string>
+    <string name="send_header_account_following_count">Account-Following-Count</string>
+    <string name="send_header_account_locked">Account-Locked</string>
+    <string name="send_header_account_image_avatar">Account-Image-Avatar</string>
+    <string name="send_header_account_image_avatar_static">Account-Image-Avatar-Static</string>
+    <string name="send_header_account_image_header">Account-Image-Header</string>
+    <string name="send_header_account_image_header_static">Account-Image-Header-Static</string>
+    <string name="send_header_account_url">Account-Url</string>
+    <string name="open_local_timeline_for">\"%1$s\"のタイムラインを開く</string>
 
 </resources>

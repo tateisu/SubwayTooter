@@ -10,7 +10,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        >
 
         <LinearLayout
             android:id="@+id/llColumnHeader"
@@ -113,7 +114,6 @@
                     android:src="?attr/btn_close"
                     />
 
-
             </LinearLayout>
 
         </LinearLayout>
@@ -185,12 +185,14 @@
                     android:layout_height="wrap_content"
                     android:text="@string/hide_media_default"
                     />
+
                 <CheckBox
                     android:id="@+id/cbEnableSpeech"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/enable_speech"
                     />
+
                 <LinearLayout
                     android:id="@+id/llRegexFilter"
                     android:layout_width="match_parent"
@@ -245,14 +247,14 @@
         </jp.juggler.subwaytooter.view.MaxHeightScrollView>
 
         <TextView
+            android:id="@+id/tvSearchDesc"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="?attr/colorSearchFormBackground"
             android:paddingBottom="0dp"
             android:paddingEnd="12dp"
             android:paddingStart="12dp"
             android:paddingTop="3dp"
-            android:background="?attr/colorSearchFormBackground"
-            android:id="@+id/tvSearchDesc"
             />
 
         <RelativeLayout
@@ -284,7 +286,8 @@
                 android:layout_toStartOf="@id/btnSearch"
                 android:imeOptions="actionSearch"
                 android:inputType="text"
-                tools:ignore="LabelFor"/>
+                tools:ignore="LabelFor"
+                />
 
             <CheckBox
                 android:id="@+id/cbResolve"
@@ -307,9 +310,9 @@
                 android:id="@+id/ivColumnBackgroundImage"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:importantForAccessibility="no"
                 android:scaleType="centerCrop"
                 android:visibility="gone"
-                android:importantForAccessibility="no"
                 />
 
             <TextView
@@ -323,7 +326,8 @@
                 android:id="@+id/swipyRefreshLayout"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                app:srl_direction="both">
+                app:srl_direction="both"
+                >
 
                 <jp.juggler.subwaytooter.view.MyListView
                     android:id="@+id/listView"

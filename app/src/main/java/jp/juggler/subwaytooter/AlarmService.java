@@ -315,10 +315,6 @@ public class AlarmService extends IntentService {
 		}
 	}
 	
-	private void testLog( String s ){
-		// TODO アプリ設定画面に進捗表示を追加する
-	}
-	
 	String getInstallId(){
 		SharedPreferences prefDevice = PrefDevice.prefDevice( this );
 			

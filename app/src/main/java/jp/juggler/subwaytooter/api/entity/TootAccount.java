@@ -18,7 +18,6 @@ import jp.juggler.subwaytooter.util.Utils;
 
 public class TootAccount {
 	
-	
 	public static class List extends ArrayList< TootAccount > {
 		
 	}
@@ -53,7 +52,8 @@ public class TootAccount {
 	
 	// Biography of user
 	// 説明文。改行は\r\n。リンクなどはHTMLタグで書かれている
-	public Spannable note;
+	public String note;
+	public Spannable decoded_note;
 	
 	//URL of the user's profile page (can be remote)
 	// https://mastodon.juggler.jp/@tateisu
@@ -86,10 +86,10 @@ public class TootAccount {
 	public static TootAccount parse( LogCategory log, LinkClickContext account, JSONObject src, TootAccount dst ){
 		if( src == null ) return null;
 		try{
-			dst.id = src.optLong( "id",-1L );
+			dst.id = src.optLong( "id", - 1L );
 			dst.username = Utils.optStringX( src, "username" );
 			dst.acct = Utils.optStringX( src, "acct" );
-			if( dst.acct == null){
+			if( dst.acct == null ){
 				dst.acct = "?@?";
 			}
 			
@@ -97,7 +97,7 @@ public class TootAccount {
 			if( TextUtils.isEmpty( sv ) ){
 				dst.display_name = dst.username;
 			}else{
-				dst.display_name = filterDisplayName(sv);
+				dst.display_name = filterDisplayName( sv );
 			}
 			
 			dst.locked = src.optBoolean( "locked" );
@@ -105,7 +105,10 @@ public class TootAccount {
 			dst.followers_count = src.optLong( "followers_count" );
 			dst.following_count = src.optLong( "following_count" );
 			dst.statuses_count = src.optLong( "statuses_count" );
-			dst.note = HTMLDecoder.decodeHTML( account,Utils.optStringX( src, "note" ) ,true,null);
+			
+			dst.note = Utils.optStringX( src, "note" );
+			dst.decoded_note = HTMLDecoder.decodeHTML( account, ( dst.note != null ? dst.note : null ), true, null );
+			
 			dst.url = Utils.optStringX( src, "url" );
 			dst.avatar = Utils.optStringX( src, "avatar" ); // "https:\/\/mastodon.juggler.jp\/system\/accounts\/avatars\/000\/000\/148\/original\/0a468974fac5a448.PNG?1492081886",
 			dst.avatar_static = Utils.optStringX( src, "avatar_static" ); // "https:\/\/mastodon.juggler.jp\/system\/accounts\/avatars\/000\/000\/148\/original\/0a468974fac5a448.PNG?1492081886",
@@ -123,20 +126,20 @@ public class TootAccount {
 		}
 	}
 	
-	
-	public static TootAccount parse( LogCategory log, LinkClickContext account,JSONObject src ){
+	public static TootAccount parse( LogCategory log, LinkClickContext account, JSONObject src ){
 		return parse( log, account, src, new TootAccount() );
 	}
 	
-	@NonNull public static List parseList( LogCategory log, LinkClickContext account, JSONArray array ){
+	@NonNull
+	public static List parseList( LogCategory log, LinkClickContext account, JSONArray array ){
 		List result = new List();
 		if( array != null ){
 			int array_size = array.length();
 			result.ensureCapacity( array_size );
-			for( int i=0;i<array_size;++i){
+			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootAccount item = parse( log, account,src );
+				TootAccount item = parse( log, account, src );
 				if( item != null ) result.add( item );
 			}
 		}
@@ -144,22 +147,22 @@ public class TootAccount {
 	}
 	
 	public static CharSequence filterDisplayName( String sv ){
-
+		
 		// decode HTML entity
-		sv = HTMLDecoder.decodeEntity(sv );
-
+		sv = HTMLDecoder.decodeEntity( sv );
+		
 		// sanitize LRO,RLO
-		sv = Utils.sanitizeBDI( sv);
-
+		sv = Utils.sanitizeBDI( sv );
+		
 		// decode emoji code
-		return Emojione.decodeEmoji( sv ) ;
+		return Emojione.decodeEmoji( sv );
 	}
 	
 	public String getAcctHost(){
 		try{
 			int pos = acct.indexOf( '@' );
 			if( pos != - 1 ) return acct.substring( pos + 1 );
-		}catch(Throwable ignored){
+		}catch( Throwable ignored ){
 			
 		}
 		return null;

@@ -29,7 +29,7 @@ public class MSPToot extends TootStatusLike {
 		
 		if( src == null ) return null;
 		
-		TootAccount dst = new TootAccount();
+		MSPAccount dst = new MSPAccount();
 		dst.url = Utils.optStringX( src, "url" );
 		dst.username = Utils.optStringX( src, "username" );
 		dst.avatar = dst.avatar_static = Utils.optStringX( src, "avatar" );
@@ -42,7 +42,10 @@ public class MSPToot extends TootStatusLike {
 		}
 
 		dst.id = src.optLong( "id" );
-		dst.note = HTMLDecoder.decodeHTML( access_info, Utils.optStringX( src, "note" ), true, null );
+		
+		dst.note = Utils.optStringX( src, "note" );
+		dst.decoded_note = HTMLDecoder.decodeHTML( access_info,(dst.note!=null? dst.note :null) ,true,null);
+		
 		
 		if( TextUtils.isEmpty( dst.url ) ){
 			log.e( "parseAccount: missing url" );

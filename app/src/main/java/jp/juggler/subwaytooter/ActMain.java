@@ -125,11 +125,11 @@ public class ActMain extends AppCompatActivity
 		if( ! app_state.column_list.isEmpty() ){
 			
 			// 前回最後に表示していたカラムの位置にスクロールする
-			int column_pos = pref.getInt(Pref.KEY_LAST_COLUMN_POS,-1);
+			int column_pos = pref.getInt( Pref.KEY_LAST_COLUMN_POS, - 1 );
 			if( column_pos >= 0 && column_pos < app_state.column_list.size() ){
-				scrollToColumn( column_pos ,true );
+				scrollToColumn( column_pos, true );
 			}
-
+			
 			// 表示位置に合わせたイベントを発行
 			if( pager_adapter != null ){
 				onPageSelected( pager.getCurrentItem() );
@@ -207,7 +207,7 @@ public class ActMain extends AppCompatActivity
 			boolean bRemoved = false;
 			for( int i = 0, ie = app_state.column_list.size() ; i < ie ; ++ i ){
 				Column column = app_state.column_list.get( i );
-
+				
 				if( column.access_info.isNA() ){
 					// 検索カラムはアカウント削除とか無関係
 				}else{
@@ -300,7 +300,7 @@ public class ActMain extends AppCompatActivity
 		}else{
 			column_pos = tablet_layout_manager.findFirstVisibleItemPosition();
 		}
-		pref.edit().putInt(Pref.KEY_LAST_COLUMN_POS,column_pos).apply();
+		pref.edit().putInt( Pref.KEY_LAST_COLUMN_POS, column_pos ).apply();
 		
 		closeListItemPopup();
 		
@@ -382,7 +382,7 @@ public class ActMain extends AppCompatActivity
 					if( ! app_state.column_list.isEmpty() ){
 						int select = data.getIntExtra( ActColumnList.EXTRA_SELECTION, - 1 );
 						if( 0 <= select && select < app_state.column_list.size() ){
-							scrollToColumn( select ,false);
+							scrollToColumn( select, false );
 						}
 					}
 				}
@@ -631,8 +631,8 @@ public class ActMain extends AppCompatActivity
 			startActivity( new Intent( this, ActMutedWord.class ) );
 			
 		}else if( id == R.id.mastodon_search_portal ){
-			addColumn( getDefaultInsertPosition(),  SavedAccount.getNA(),Column.TYPE_SEARCH_PORTAL , "" );
-
+			addColumn( getDefaultInsertPosition(), SavedAccount.getNA(), Column.TYPE_SEARCH_PORTAL, "" );
+			
 			//		}else if( id == R.id.nav_translation ){
 			//			Intent intent = new Intent(this, TransCommuActivity.class);
 			//			intent.putExtra(TransCommuActivity.APPLICATION_CODE_EXTRA, "FJlDoBKitg");
@@ -818,7 +818,7 @@ public class ActMain extends AppCompatActivity
 			viewRoot.setTag( i );
 			viewRoot.setOnClickListener( new View.OnClickListener() {
 				@Override public void onClick( View v ){
-					scrollToColumn( (Integer) v.getTag() ,false);
+					scrollToColumn( (Integer) v.getTag(), false );
 				}
 			} );
 			viewRoot.setContentDescription( column.getColumnName( true ) );
@@ -884,7 +884,6 @@ public class ActMain extends AppCompatActivity
 					if( first != RecyclerView.NO_POSITION && nColumnWidth > 0 ){
 						View child = tablet_layout_manager.findViewByPosition( first );
 						slide_ratio = Math.abs( child.getLeft() / (float) nColumnWidth );
-						log.d( "slide_ratio %s", slide_ratio );
 					}
 					
 					llColumnStrip.setColumnRange( first, last, slide_ratio );
@@ -950,7 +949,7 @@ public class ActMain extends AppCompatActivity
 						if( bPseudoAccount ){
 							return api_client.checkInstance();
 						}else{
-							return api_client.authorize1( Pref.pref(ActMain.this).getString(Pref.KEY_CLIENT_NAME,""));
+							return api_client.authorize1( Pref.pref( ActMain.this ).getString( Pref.KEY_CLIENT_NAME, "" ) );
 							
 						}
 					}
@@ -1382,7 +1381,7 @@ public class ActMain extends AppCompatActivity
 			SavedAccount a = column.access_info;
 			if( done_list.contains( a ) ) continue;
 			done_list.add( a );
-			if( !a.isNA() ) a.reloadSetting();
+			if( ! a.isNA() ) a.reloadSetting();
 			column.fireShowColumnHeader();
 		}
 	}
@@ -1394,7 +1393,7 @@ public class ActMain extends AppCompatActivity
 			if( ! Utils.equalsNullable( a.acct, account.acct ) ) continue;
 			if( done_list.contains( a ) ) continue;
 			done_list.add( a );
-			if( !a.isNA() ) a.reloadSetting();
+			if( ! a.isNA() ) a.reloadSetting();
 			column.fireShowColumnHeader();
 		}
 	}
@@ -1428,7 +1427,7 @@ public class ActMain extends AppCompatActivity
 			
 			if( ! app_state.column_list.isEmpty() && page_delete > 0 && page_showing == page_delete ){
 				int idx = page_delete - 1;
-				scrollToColumn( idx ,false);
+				scrollToColumn( idx, false );
 				Column c = app_state.column_list.get( idx );
 				if( ! c.bFirstInitialized ){
 					c.startLoading();
@@ -1440,7 +1439,7 @@ public class ActMain extends AppCompatActivity
 			
 			if( ! app_state.column_list.isEmpty() && page_delete > 0 ){
 				int idx = page_delete - 1;
-				scrollToColumn( idx ,false);
+				scrollToColumn( idx, false );
 				Column c = app_state.column_list.get( idx );
 				if( ! c.bFirstInitialized ){
 					c.startLoading();
@@ -1457,7 +1456,7 @@ public class ActMain extends AppCompatActivity
 		for( Column column : app_state.column_list ){
 			if( column.isSameSpec( ai, type, params ) ){
 				index = app_state.column_list.indexOf( column );
-				scrollToColumn( index ,false);
+				scrollToColumn( index, false );
 				return column;
 			}
 		}
@@ -1465,7 +1464,7 @@ public class ActMain extends AppCompatActivity
 		//
 		Column col = new Column( app_state, ai, this, type, params );
 		index = addColumn( col, index );
-		scrollToColumn( index ,false);
+		scrollToColumn( index, false );
 		if( ! col.bFirstInitialized ){
 			col.startLoading();
 		}
@@ -1489,7 +1488,6 @@ public class ActMain extends AppCompatActivity
 				}
 			} );
 	}
-
 	
 	public void performMuteApp( @NonNull TootApplication application ){
 		MutedApp.save( application.name );
@@ -1584,7 +1582,7 @@ public class ActMain extends AppCompatActivity
 		try{
 			log.d( "openChromeTab url=%s", url );
 			
-			if( !noIntercept && access_info != null && access_info.isNA() ){
+			if( ! noIntercept && access_info != null && access_info.isNA() ){
 				// トゥート検索カラムではaccess_infoは何にも紐ついていない
 				
 				// ハッシュタグをアプリ内で開く
@@ -1619,7 +1617,7 @@ public class ActMain extends AppCompatActivity
 					final String host = m.group( 1 );
 					final String user = Uri.decode( m.group( 2 ) );
 					
-					openProfileByHostUser( pos,access_info,url,host,user );
+					openProfileByHostUser( pos, access_info, url, host, user );
 					return;
 				}
 				
@@ -1707,7 +1705,7 @@ public class ActMain extends AppCompatActivity
 		if( access_info.host.equalsIgnoreCase( status.status_host ) ){
 			openStatus( pos, access_info, status.id );
 		}else{
-			openStatusOtherInstance( pos, access_info,status.url,status.status_host,status.id);
+			openStatusOtherInstance( pos, access_info, status.url, status.status_host, status.id );
 		}
 	}
 	
@@ -2085,7 +2083,7 @@ public class ActMain extends AppCompatActivity
 						return result;
 					}
 					target_status = null;
-					TootResults tmp = TootResults.parse( log, access_info, access_info.host,result.object );
+					TootResults tmp = TootResults.parse( log, access_info, access_info.host, result.object );
 					if( tmp != null ){
 						if( tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 							target_status = tmp.statuses.get( 0 );
@@ -2255,7 +2253,7 @@ public class ActMain extends AppCompatActivity
 						return result;
 					}
 					target_status = null;
-					TootResults tmp = TootResults.parse( log, access_info, access_info.host,result.object );
+					TootResults tmp = TootResults.parse( log, access_info, access_info.host, result.object );
 					if( tmp != null ){
 						if( tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 							target_status = tmp.statuses.get( 0 );
@@ -2282,11 +2280,18 @@ public class ActMain extends AppCompatActivity
 					, request_builder );
 				
 				if( result != null && result.object != null ){
-					// reblog,unreblog のレスポンスは信用ならんのでステータスを再取得する
-					result = client.request( "/api/v1/statuses/" + target_status.id );
-					if( result != null && result.object != null ){
-						new_status = TootStatus.parse( log, access_info, access_info.host,result.object );
-					}
+					
+					new_status = TootStatus.parse( log, access_info, access_info.host, result.object );
+					
+					// reblogはreblogを表すStatusを返す
+					// unreblogはreblogしたStatusを返す
+					if( new_status != null && new_status.reblog != null )
+						new_status = new_status.reblog;
+					
+					//					// reblog,unreblog のレスポンスは信用ならんのでステータスを再取得する
+					//					result = client.request( "/api/v1/statuses/" + target_status.id );
+					//					if( result != null && result.object != null ){
+					//					}
 				}
 				
 				return result;
@@ -2354,8 +2359,8 @@ public class ActMain extends AppCompatActivity
 	
 	public void performReplyRemote(
 		final SavedAccount access_info
-	    ,final String remote_status_url
-	    ,final long remote_status_id
+		, final String remote_status_url
+		, final long remote_status_id
 	){
 		final ProgressDialog progress = new ProgressDialog( this );
 		
@@ -2379,7 +2384,7 @@ public class ActMain extends AppCompatActivity
 				
 				TootApiResult result = client.request( path );
 				if( result != null && result.object != null ){
-					TootResults tmp = TootResults.parse( log, access_info, access_info.host,result.object );
+					TootResults tmp = TootResults.parse( log, access_info, access_info.host, result.object );
 					if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 						target_status = tmp.statuses.get( 0 );
 						log.d( "status id conversion %s => %s", remote_status_id, target_status.id );
@@ -2411,7 +2416,7 @@ public class ActMain extends AppCompatActivity
 		
 		progress.setIndeterminate( true );
 		progress.setCancelable( true );
-		progress.setMessage( getString(R.string.progress_synchronize_toot) );
+		progress.setMessage( getString( R.string.progress_synchronize_toot ) );
 		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
 			@Override public void onCancel( DialogInterface dialog ){
 				task.cancel( true );
@@ -3376,38 +3381,37 @@ public class ActMain extends AppCompatActivity
 			} );
 	}
 	
-
-	void openReplyFromAnotherAccount( final TootStatusLike status){
+	void openReplyFromAnotherAccount( final TootStatusLike status ){
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_reply )
 			, makeAccountListNonPseudo( log ), new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
-					if( (status instanceof TootStatus) && ai.host.equalsIgnoreCase( status.status_host  ) ){
-						performReply( ai, (TootStatus)status );
+					if( ( status instanceof TootStatus ) && ai.host.equalsIgnoreCase( status.status_host ) ){
+						performReply( ai, (TootStatus) status );
 					}else{
-						performReplyRemote( ai,status.url,status.id );
+						performReplyRemote( ai, status.url, status.id );
 					}
 				}
 			} );
 	}
 	
-//	void openReplyFromAnotherAccount( @NonNull final SavedAccount access_info, final String status_url,final long status_id ){
-//
-//		final String status_host = getHostFromStatusUrl(status_url);
-//		if( status_host ==null ) return;
-//
-//		AccountPicker.pick( this, false, false
-//			, getString( R.string.account_picker_reply )
-//			, makeAccountListNonPseudo( log ), new AccountPicker.AccountPickerCallback() {
-//				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
-//					performReplyRemote( ai,status_url,status_id );
-//				}
-//			} );
-//	}
-//	void openFollowFromAnotherAccount( @NonNull SavedAccount access_info, TootStatus status ){
-//		if( status == null ) return;
-//		openFollowFromAnotherAccount( access_info, status.account );
-//	}
+	//	void openReplyFromAnotherAccount( @NonNull final SavedAccount access_info, final String status_url,final long status_id ){
+	//
+	//		final String status_host = getHostFromStatusUrl(status_url);
+	//		if( status_host ==null ) return;
+	//
+	//		AccountPicker.pick( this, false, false
+	//			, getString( R.string.account_picker_reply )
+	//			, makeAccountListNonPseudo( log ), new AccountPicker.AccountPickerCallback() {
+	//				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+	//					performReplyRemote( ai,status_url,status_id );
+	//				}
+	//			} );
+	//	}
+	//	void openFollowFromAnotherAccount( @NonNull SavedAccount access_info, TootStatus status ){
+	//		if( status == null ) return;
+	//		openFollowFromAnotherAccount( access_info, status.account );
+	//	}
 	
 	void openFollowFromAnotherAccount( @NonNull SavedAccount access_info, final TootAccount account ){
 		if( account == null ) return;
@@ -3588,17 +3592,16 @@ public class ActMain extends AppCompatActivity
 		tablet_pager_adapter.notifyDataSetChanged();
 	}
 	
-	private void scrollToColumn( int index ,boolean bAlign){
+	private void scrollToColumn( int index, boolean bAlign ){
 		scrollColumnStrip( index );
 		
 		if( pager_adapter != null ){
 			pager.setCurrentItem( index, true );
-		}else if(!bAlign){
+		}else if( ! bAlign ){
 			// 指定したカラムが画面内に表示されるように動いてくれるようだ
 			tablet_pager.smoothScrollToPosition( index );
 		}else{
 			// 指定位置が表示範囲の左端にくるようにスクロール
-			// TODO 挙動確認
 			tablet_pager.scrollToPosition( index );
 		}
 	}
@@ -3751,4 +3754,26 @@ public class ActMain extends AppCompatActivity
 		task.executeOnExecutor( App1.task_executor );
 	}
 	
+	public void openTimelineFor( @NonNull String host ){
+		final ArrayList< SavedAccount > account_list = new ArrayList<>(  );
+		for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
+			if( host.equalsIgnoreCase( a.host ) ) account_list.add( a );
+		}
+		if( account_list.isEmpty() ){
+		
+			SavedAccount ai = addPseudoAccount( host );
+			if( ai != null ){
+				addColumn( getDefaultInsertPosition(), ai, Column.TYPE_LOCAL );
+			}
+			
+		}else{
+			AccountPicker.pick( this, false, false
+				, getString( R.string.account_picker_add_timeline_of ,host )
+				, account_list, new AccountPicker.AccountPickerCallback() {
+					@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+						addColumn( getDefaultInsertPosition(), ai, Column.TYPE_LOCAL );
+					}
+				} );
+		}
+	}
 }

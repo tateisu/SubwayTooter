@@ -372,7 +372,6 @@ class ColumnViewHolder
 	
 	private void showSearchDesc( String html ){
 		if( column==null) return;
-		log.d("showSearchDesc: html=%s",html);
 		tvSearchDesc.setVisibility( View.VISIBLE );
 		tvSearchDesc.setMovementMethod( MyLinkMovementMethod.getInstance() );
 		CharSequence sv = HTMLDecoder.decodeHTML( column.access_info, html, false, null );

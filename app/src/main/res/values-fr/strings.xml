@@ -371,6 +371,19 @@
 	<string name="search_desc_mastodon_api">Account/Hashtag search using Mastodon API.</string>
 	<string name="toot_search_of">Toot Rechercher \"%1$s\"</string>
 	<string name="progress_synchronize_toot">Syncing Toot…</string>
+	<string name="send_header_account_name">Account-Name</string>
+	<string name="send_header_account_acct">Account-Acct</string>
+	<string name="send_header_account_created_at">Account-Created-At</string>
+	<string name="send_header_account_statuses_count">Account-Statuses-Count</string>
+	<string name="send_header_account_followers_count">Account-Followers-Count</string>
+	<string name="send_header_account_following_count">Account-Following-Count</string>
+	<string name="send_header_account_locked">Account-Locked</string>
+	<string name="send_header_account_image_avatar">Account-Image-Avatar</string>
+	<string name="send_header_account_image_avatar_static">Account-Image-Avatar-Static</string>
+	<string name="send_header_account_image_header">Account-Image-Header</string>
+	<string name="send_header_account_image_header_static">Account-Image-Header-Static</string>
+	<string name="open_local_timeline_for">Open timeline of \"%1$s\"</string>
+	<string name="send_header_account_url">Account-Url</string>
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

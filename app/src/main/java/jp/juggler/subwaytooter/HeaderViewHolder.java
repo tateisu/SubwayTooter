@@ -130,7 +130,7 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 			}
 			tvAcct.setText( Emojione.decodeEmoji( s ) );
 			
-			tvNote.setText( who.note );
+			tvNote.setText( who.decoded_note );
 			btnStatusCount.setText( activity.getString( R.string.statuses ) + "\n" + who.statuses_count );
 			btnFollowing.setText( activity.getString( R.string.following ) + "\n" + who.following_count );
 			btnFollowers.setText( activity.getString( R.string.followers ) + "\n" + who.followers_count );

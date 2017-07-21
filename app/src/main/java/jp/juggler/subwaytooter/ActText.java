@@ -6,14 +6,20 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 
+import java.util.Locale;
+
+import jp.juggler.subwaytooter.api.entity.TootAccount;
+import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
+import jp.juggler.subwaytooter.api_msp.entity.MSPAccount;
 import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
 import jp.juggler.subwaytooter.table.MutedWord;
 import jp.juggler.subwaytooter.table.SavedAccount;
@@ -26,56 +32,135 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 	static final LogCategory log = new LogCategory( "ActText" );
 	static final String EXTRA_TEXT = "text";
 	static final String EXTRA_CONTENT_START = "content_start";
+	static final String EXTRA_CONTENT_END = "content_end";
 	
-	static void encodeStatus( Intent intent, Context context, SavedAccount access_info, TootStatusLike status ){
-		StringBuilder sb = new StringBuilder();
-		sb.append( context.getString( R.string.send_header_url ) );
-		sb.append( ": " );
-		sb.append( status.url );
-		sb.append( "\n" );
-		sb.append( context.getString( R.string.send_header_date ) );
-		sb.append( ": " );
-
-		if( status instanceof  TootStatus ){
-			TootStatus ts = (TootStatus)status;
-			sb.append( TootStatus.formatTime( ts.time_created_at ) );
-		}else if( status instanceof MSPToot ){
-			MSPToot ts = (MSPToot)status;
-			sb.append( ts.created_at );
+	static void addAfterLine(StringBuilder sb,@NonNull String text){
+		if(sb.length() > 0 && sb.charAt( sb.length()-1 ) != '\n' ){
+			sb.append('\n');
 		}
-
-		sb.append( "\n" );
-		sb.append( context.getString( R.string.send_header_from_acct ) );
+		sb.append( text );
+	}
+	static void addHeader(Context context,StringBuilder sb,int key_str_id,Object value){
+		if(sb.length() > 0 && sb.charAt( sb.length()-1 ) != '\n' ){
+			sb.append('\n');
+		}
+		addAfterLine( sb,context.getString( key_str_id ) );
 		sb.append( ": " );
-		sb.append( access_info.getFullAcct( status.account ) );
-		sb.append( "\n" );
-		if( status.account != null ){
-			sb.append( context.getString( R.string.send_header_from_name ) );
-			sb.append( ": " );
-			sb.append( status.account.display_name );
-			sb.append( "\n" );
-		}
-		if( ! TextUtils.isEmpty( status.spoiler_text ) ){
-			sb.append( context.getString( R.string.send_header_content_warning ) );
-			sb.append( ": " );
-			sb.append( HTMLDecoder.decodeHTML( access_info, status.spoiler_text ,false,null) );
-			sb.append( "\n" );
-		}
-		sb.append( "\n" );
-
-		intent.putExtra( EXTRA_CONTENT_START, sb.length() );
-
-		sb.append( HTMLDecoder.decodeHTML( access_info, status.content ,false,null) );
-	
-		intent.putExtra( EXTRA_TEXT, sb.toString() );
-		
-		
+		sb.append( value == null ? "(null)" : value.toString() );
 	}
 	
+	
+	static void encodeStatus( Intent intent, Context context, SavedAccount access_info, @NonNull TootStatusLike status ){
+		StringBuilder sb = new StringBuilder();
+		
+		addHeader( context,sb, R.string.send_header_url, status.url );
+		
+		if( status instanceof  TootStatus ){
+			TootStatus ts = (TootStatus)status;
+			addHeader( context,sb, R.string.send_header_date,TootStatus.formatTime( ts.time_created_at ) );
+		}else if( status instanceof MSPToot ){
+			MSPToot ts = (MSPToot)status;
+			addHeader( context,sb, R.string.send_header_date, ts.created_at  );
+		}
+		
+		if( status.account != null ){
+			addHeader( context,sb, R.string.send_header_from_acct, access_info.getFullAcct( status.account ) );
 
-	public static void open( ActMain activity, SavedAccount access_info, TootStatusLike status ){
+			addHeader( context,sb, R.string.send_header_from_name, status.account.display_name );
+		}
+
+		if( ! TextUtils.isEmpty( status.spoiler_text ) ){
+			addHeader( context,sb, R.string.send_header_content_warning
+				,HTMLDecoder.decodeHTML( access_info, status.spoiler_text ,false,null) );
+		}
+
+		addAfterLine( sb,"\n");
+
+		intent.putExtra( EXTRA_CONTENT_START, sb.length() );
+		sb.append( HTMLDecoder.decodeHTML( access_info, status.content ,false,null) );
+		intent.putExtra( EXTRA_CONTENT_END, sb.length() );
+		
+		if( status instanceof TootStatus ){
+			TootStatus ts = (TootStatus) status;
+			if( ts.media_attachments != null ){
+				int i = 0;
+				for( TootAttachment ma : ts.media_attachments ){
+					++ i;
+					addAfterLine( sb,"\n");
+					addAfterLine( sb, String.format( Locale.JAPAN, "Media-%d-Url: %s", i, ma.url ) );
+					addAfterLine( sb, String.format( Locale.JAPAN,"Media-%d-Remote-Url: %s", i, ma.remote_url ) );
+					addAfterLine( sb, String.format( Locale.JAPAN,"Media-%d-Preview-Url: %s", i, ma.preview_url ) );
+					addAfterLine( sb, String.format( Locale.JAPAN,"Media-%d-Text-Url: %s", i, ma.text_url ) );
+				}
+			}
+		}else if( status instanceof  MSPToot){
+			MSPToot ts = (MSPToot) status;
+			if( ts.media_attachments != null ){
+				int i = 0;
+				for( String ma : ts.media_attachments ){
+					++ i;
+					addAfterLine( sb,"\n");
+					addAfterLine( sb, String.format( Locale.JAPAN, "Media-%d-Preview-Url: %s", i, ma ) );
+				}
+			}
+		}
+		
+		addAfterLine( sb,"");
+		intent.putExtra( EXTRA_TEXT, sb.toString() );
+	}
+	
+	static void encodeAccount( Intent intent, Context context, SavedAccount access_info, @NonNull TootAccount who ){
+		StringBuilder sb = new StringBuilder();
+		
+		intent.putExtra( EXTRA_CONTENT_START, sb.length() );
+		sb.append(who.display_name);
+		sb.append("\n");
+		sb.append("@");sb.append( access_info.getFullAcct( who ) );
+		sb.append("\n");
+		
+		intent.putExtra( EXTRA_CONTENT_START, sb.length() );
+		sb.append( who.url );
+		intent.putExtra( EXTRA_CONTENT_END, sb.length() );
+		
+		addAfterLine( sb,"\n");
+		
+		sb.append( HTMLDecoder.decodeHTML( access_info,(who.note!=null? who.note :null) ,false,null));
+		
+		addAfterLine( sb,"\n");
+		
+		addHeader( context,sb, R.string.send_header_account_name,who.display_name );
+		addHeader( context,sb, R.string.send_header_account_acct, access_info.getFullAcct( who )  );
+		addHeader( context,sb, R.string.send_header_account_url,who.url );
+		
+		addHeader( context,sb, R.string.send_header_account_image_avatar, who.avatar  );
+		addHeader( context,sb, R.string.send_header_account_image_avatar_static, who.avatar_static  );
+		addHeader( context,sb, R.string.send_header_account_image_header, who.header  );
+		addHeader( context,sb, R.string.send_header_account_image_header_static, who.header_static  );
+
+		if( who instanceof MSPAccount){
+			// 検索結果の場合、以下のパラメータは出力しない
+		}else{
+			addHeader( context,sb, R.string.send_header_account_created_at, who.created_at );
+			addHeader( context,sb, R.string.send_header_account_statuses_count,  who.statuses_count );
+			addHeader( context,sb, R.string.send_header_account_followers_count,  who.followers_count );
+			addHeader( context,sb, R.string.send_header_account_following_count,  who.following_count  );
+			addHeader( context,sb, R.string.send_header_account_locked, who.locked  );
+		}
+		
+		addAfterLine( sb,"");
+		intent.putExtra( EXTRA_TEXT, sb.toString() );
+	}
+	
+	
+	public static void open( ActMain activity, SavedAccount access_info, @NonNull TootStatusLike status ){
 		Intent intent = new Intent( activity, ActText.class );
 		encodeStatus( intent,activity, access_info, status );
+		
+		activity.startActivity( intent );
+	}
+	public static void open( ActMain activity, SavedAccount access_info, @NonNull TootAccount who ){
+		Intent intent = new Intent( activity, ActText.class );
+		encodeAccount( intent,activity, access_info, who );
 		
 		activity.startActivity( intent );
 	}
@@ -90,8 +175,9 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 			Intent intent = getIntent();
 			String sv = intent.getStringExtra( EXTRA_TEXT );
 			int content_start = intent.getIntExtra( EXTRA_CONTENT_START, 0);
+			int content_end = intent.getIntExtra( EXTRA_CONTENT_END, sv.length());
 			etText.setText(sv);
-			etText.setSelection( content_start,sv.length() );
+			etText.setSelection( content_start,content_end );
 		}
 	}
 

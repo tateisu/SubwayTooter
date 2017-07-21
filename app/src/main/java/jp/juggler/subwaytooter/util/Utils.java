@@ -1001,7 +1001,8 @@ public class Utils {
 			Uri uri = Uri.parse( path );
 			if( "file".equals( uri.getScheme() ) ) return new File( uri.getPath() );
 			
-			if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT ){
+			// if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT )
+			{
 				if( isExternalStorageDocument( uri ) ){
 					try{
 						final String docId = getDocumentId( uri );

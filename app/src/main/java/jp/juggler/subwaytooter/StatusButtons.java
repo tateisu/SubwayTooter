@@ -31,7 +31,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 	
 	private final boolean bSimpleList;
 	
-	StatusButtons( @NonNull ActMain activity, @NonNull Column column, @NonNull View viewRoot ,boolean bSimpleList){
+	StatusButtons( @NonNull ActMain activity, @NonNull Column column, @NonNull View viewRoot, boolean bSimpleList ){
 		this.activity = activity;
 		this.column = column;
 		this.access_info = column.access_info;
@@ -76,10 +76,10 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		
 		if( status instanceof MSPToot ){
 			setButton( btnBoost, true, color_normal, R.attr.btn_boost, "" );
-			setButton( btnFavourite, true, color_normal, R.attr.btn_favourite, "");
+			setButton( btnFavourite, true, color_normal, R.attr.btn_favourite, "" );
 		}else if( status instanceof TootStatus ){
-			TootStatus ts = (TootStatus)status;
-
+			TootStatus ts = (TootStatus) status;
+			
 			if( TootStatus.VISIBILITY_DIRECT.equals( ts.visibility ) ){
 				setButton( btnBoost, false, color_accent, R.attr.ic_mail, "" );
 			}else if( TootStatus.VISIBILITY_PRIVATE.equals( ts.visibility ) ){
@@ -99,8 +99,10 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			}
 		}
 		
-		
-		if( status.account == null || ! activity.pref.getBoolean( Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR, false ) ){
+		if( status.account == null
+			|| activity.pref == null
+			|| ! activity.pref.getBoolean( Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR, false )
+			){
 			llFollow2.setVisibility( View.GONE );
 			this.relation = null;
 		}else{
@@ -110,7 +112,6 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		}
 		
 	}
-	
 	
 	private void setButton( Button b, boolean enabled, int color, int icon_attr, String text ){
 		Drawable d = Styler.getAttributeDrawable( activity, icon_attr ).mutate();
@@ -130,13 +131,13 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			activity.openStatus( activity.nextPosition( column ), access_info, status );
 			break;
 		case R.id.btnReply:
-			if( status instanceof TootStatus && !access_info.isPseudo() ){
-				activity.performReply( access_info, (TootStatus)status );
+			if( status instanceof TootStatus && ! access_info.isPseudo() ){
+				activity.performReply( access_info, (TootStatus) status );
 			}else{
 				activity.openReplyFromAnotherAccount( status );
 			}
 			break;
-
+		
 		case R.id.btnBoost:
 			if( access_info.isPseudo() ){
 				activity.openBoostFromAnotherAccount( access_info, status );
@@ -144,7 +145,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 				activity.performBoost(
 					access_info
 					, status
-					,ActMain.NOT_CROSS_ACCOUNT
+					, ActMain.NOT_CROSS_ACCOUNT
 					, ! status.reblogged
 					, false
 					, bSimpleList ? activity.boost_complete_callback : null
@@ -159,7 +160,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 				activity.performFavourite(
 					access_info
 					, status
-					,ActMain.NOT_CROSS_ACCOUNT
+					, ActMain.NOT_CROSS_ACCOUNT
 					, ! status.favourited
 					, bSimpleList ? activity.favourite_complete_callback : null
 				);
@@ -202,7 +203,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 				activity.openFollowFromAnotherAccount( access_info, status.account );
 			}
 			break;
-			
+		
 		case R.id.btnReply:
 			activity.openReplyFromAnotherAccount( status );
 			break;

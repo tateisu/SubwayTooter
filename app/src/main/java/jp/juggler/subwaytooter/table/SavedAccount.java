@@ -417,18 +417,27 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return result;
 	}
 	
-	
-	
-	public String getFullAcct( @Nullable TootAccount who ){
-		return who == null ? "?@?" : getFullAcct( who.acct );
+	public @NonNull String getAccountHost( @Nullable String acct ){
+		if( acct != null ){
+			int pos = acct.indexOf( '@' );
+			if( pos != - 1 ) return acct.substring( pos + 1 );
+		}
+		return this.host;
+	}
+	public @NonNull String getAccountHost( @Nullable TootAccount who ){
+		if( who != null ) return getAccountHost( who.acct );
+		return this.host;
+	}
+
+	public @NonNull String getFullAcct( @NonNull String acct ){
+		return acct.indexOf( '@' ) != - 1 ? acct : acct + "@" + this.host;
 	}
 	
-	public String getFullAcct( @NonNull String acct ){
-		if( - 1 != acct.indexOf( '@' ) ){
-			return acct;
-		}else{
-			return acct + "@" + this.host;
+	public String getFullAcct( @Nullable TootAccount who ){
+		if( who != null && who.acct != null ){
+			return getFullAcct( who.acct );
 		}
+		return "?@?";
 	}
 	
 	public String getUserUrl( @NonNull String who_acct ){

@@ -395,7 +395,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			sv = intent.getStringExtra( KEY_REPLY_STATUS );
 			if( sv != null ){
 				try{
-					TootStatus reply_status = TootStatus.parse( log, account, account.host,new JSONObject( sv ) );
+					TootStatus reply_status = TootStatus.parse( log, account, account.host, new JSONObject( sv ) );
 					
 					// CW をリプライ元に合わせる
 					if( ! TextUtils.isEmpty( reply_status.spoiler_text ) ){
@@ -495,7 +495,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		handler.removeCallbacks( proc_text_changed );
 		closeAcctPopup();
 		super.onDestroy();
-
+		
 	}
 	
 	@Override
@@ -896,7 +896,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				
 				TootApiResult result = client.request( path );
 				if( result != null && result.object != null ){
-					TootResults tmp = TootResults.parse( log, access_info, access_info.host,result.object );
+					TootResults tmp = TootResults.parse( log, access_info, access_info.host, result.object );
 					if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 						target_status = tmp.statuses.get( 0 );
 					}
@@ -1600,12 +1600,15 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					.post( RequestBody.create(
 						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
 						, post_content
-					) )
-					.header( "Idempotency-Key", digest );
+					) );
+				
+				if( ! pref.getBoolean( Pref.KEY_DONT_DUPLICATION_CHECK, false ) ){
+					request_builder.header( "Idempotency-Key", digest );
+				}
 				
 				TootApiResult result = client.request( "/api/v1/statuses", request_builder );
 				if( result != null && result.object != null ){
-					status = TootStatus.parse( log, account, account.host,result.object );
+					status = TootStatus.parse( log, account, account.host, result.object );
 					
 					Spannable s = status.decoded_content;
 					MyClickableSpan[] span_list = s.getSpans( 0, s.length(), MyClickableSpan.class );
@@ -2026,8 +2029,6 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}
 	}
 	
-
-	
 	private void showRecommendedPlugin( String title ){
 		String language_code = getString( R.string.language_code );
 		int res_id;
@@ -2038,7 +2039,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}else{
 			res_id = R.raw.recommended_plugin_en;
 		}
-		byte[] data = Utils.loadRawResource(this,res_id);
+		byte[] data = Utils.loadRawResource( this, res_id );
 		if( data != null ){
 			String text = Utils.decodeUTF8( data );
 			@SuppressLint("InflateParams")

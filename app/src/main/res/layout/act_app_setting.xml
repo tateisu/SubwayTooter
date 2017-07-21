@@ -289,6 +289,24 @@
 
         <View style="@style/setting_divider"/>
 
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/dont_add_duplication_check_header"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swDontDuplicationCheck"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+
+        <View style="@style/setting_divider"/>
+
 
         <!-- =============================================== -->
 

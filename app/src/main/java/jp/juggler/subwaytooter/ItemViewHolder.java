@@ -200,7 +200,9 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			tvContentWarning.setTextSize( activity.timeline_font_size_sp );
 			tvContent.setTextSize( activity.timeline_font_size_sp );
 			btnShowMedia.setTextSize( activity.timeline_font_size_sp );
-			tvApplication.setTextSize( activity.timeline_font_size_sp );
+			if(tvApplication != null){
+				tvApplication.setTextSize( activity.timeline_font_size_sp );
+			}
 			
 		}
 		

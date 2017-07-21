@@ -382,5 +382,6 @@
     <string name="notification_sound">Notification Sound</string>
     <string name="timeline_font_size">Timeline font size (unit:sp. leave empty to default. app restart required)</string>
     <string name="acct_font_size">Acct font size (unit:sp. leave empty to default. app restart required)</string>
+    <string name="dont_add_duplication_check_header">Don\'t add duplication check header</string>
 
 </resources>

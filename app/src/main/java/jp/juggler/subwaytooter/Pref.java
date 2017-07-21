@@ -6,7 +6,6 @@ import android.preference.PreferenceManager;
 
 public class Pref {
 	
-	
 	public static SharedPreferences pref( Context context ){
 		return PreferenceManager.getDefaultSharedPreferences( context );
 	}
@@ -48,8 +47,7 @@ public class Pref {
 	static final String KEY_MEDIA_THUMB_HEIGHT = "MediaThumbHeight";
 	static final String KEY_TIMELINE_FONT = "timeline_font";
 	static final String KEY_DONT_CROP_MEDIA_THUMBNAIL = "DontCropMediaThumb";
-
-
+	
 	static final String KEY_STREAM_LISTENER_SECRET = "stream_listener_secret";
 	static final String KEY_STREAM_LISTENER_CONFIG_URL = "stream_listener_config_url";
 	static final String KEY_STREAM_LISTENER_CONFIG_DATA = "stream_listener_config_data";
@@ -58,7 +56,7 @@ public class Pref {
 	static final String KEY_PRIOR_CHROME = "prior_chrome";
 	
 	static final String KEY_POST_BUTTON_BAR_AT_TOP = "post_button_bar_at_top";
-
+	
 	static final String KEY_CLIENT_NAME = "client_name";
 	
 	public static final String KEY_MASTODON_SEARCH_PORTAL_USER_TOKEN = "mastodon_search_portal_user_token";
@@ -67,6 +65,8 @@ public class Pref {
 	
 	public static final String KEY_TIMELINE_FONT_SIZE = "timeline_font_size";
 	public static final String KEY_ACCT_FONT_SIZE = "acct_font_size";
-
+	
+	public static final String KEY_DONT_DUPLICATION_CHECK = "dont_duplication_check";
+	
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

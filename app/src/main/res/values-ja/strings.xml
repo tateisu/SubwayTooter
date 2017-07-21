@@ -674,5 +674,6 @@
     <string name="notification_sound">通知音</string>
     <string name="timeline_font_size">タイムラインのフォントサイズ(単位:sp。空欄でデフォルト。アプリ再起動が必要)</string>
     <string name="acct_font_size">Acctのフォントサイズ(単位:sp。空欄でデフォルト。アプリ再起動が必要)</string>
+    <string name="dont_add_duplication_check_header">重複チェックヘッダを付与しない</string>
 
 </resources>

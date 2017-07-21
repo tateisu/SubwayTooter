@@ -379,5 +379,8 @@
     <string name="send_header_account_image_header">Account-Image-Header</string>
     <string name="send_header_account_image_header_static">Account-Image-Header-Static</string>
     <string name="open_local_timeline_for">Open timeline of \"%1$s\"</string>
+    <string name="notification_sound">Notification Sound</string>
+    <string name="timeline_font_size">Timeline font size (unit:sp. leave empty to default. app restart required)</string>
+    <string name="acct_font_size">Acct font size (unit:sp. leave empty to default. app restart required)</string>
 
 </resources>

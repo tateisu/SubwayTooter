@@ -671,5 +671,8 @@
     <string name="send_header_account_image_header_static">Account-Image-Header-Static</string>
     <string name="send_header_account_url">Account-Url</string>
     <string name="open_local_timeline_for">\"%1$s\"のタイムラインを開く</string>
+    <string name="notification_sound">通知音</string>
+    <string name="timeline_font_size">タイムラインのフォントサイズ(単位:sp。空欄でデフォルト。アプリ再起動が必要)</string>
+    <string name="acct_font_size">Acctのフォントサイズ(単位:sp。空欄でデフォルト。アプリ再起動が必要)</string>
 
 </resources>

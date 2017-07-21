@@ -65,5 +65,8 @@ public class Pref {
 	
 	static final String KEY_LAST_COLUMN_POS = "last_column_pos";
 	
+	public static final String KEY_TIMELINE_FONT_SIZE = "timeline_font_size";
+	public static final String KEY_ACCT_FONT_SIZE = "acct_font_size";
+
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

@@ -225,7 +225,7 @@ public class ActColumnCustomize extends AppCompatActivity
 				if( ! fromUser ) return;
 				column.column_bg_image_alpha = progress / (float) PROGRESS_MAX;
 				ivColumnBackground.setAlpha( column.column_bg_image_alpha );
-				etAlpha.setText( String.format( Locale.JAPAN, "%.4f", column.column_bg_image_alpha ) );
+				etAlpha.setText( String.format( Locale.getDefault() , "%.4f", column.column_bg_image_alpha ) );
 			}
 			
 		} );

@@ -67,7 +67,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private final MyTextView tvContent;
 	
 	private final View flMedia;
-	private final View btnShowMedia;
+	private final TextView btnShowMedia;
 	
 	private final MyNetworkImageView ivMedia1;
 	private final MyNetworkImageView ivMedia2;
@@ -150,7 +150,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.buttons_for_status = bSimpleList ? null : new StatusButtons( activity, column, view, false );
 		
 		this.flMedia = view.findViewById( R.id.flMedia );
-		this.btnShowMedia = view.findViewById( R.id.btnShowMedia );
+		this.btnShowMedia = (TextView) view.findViewById( R.id.btnShowMedia );
 		this.ivMedia1 = (MyNetworkImageView) view.findViewById( R.id.ivMedia1 );
 		this.ivMedia2 = (MyNetworkImageView) view.findViewById( R.id.ivMedia2 );
 		this.ivMedia3 = (MyNetworkImageView) view.findViewById( R.id.ivMedia3 );
@@ -191,6 +191,26 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		ViewGroup.LayoutParams lp = flMedia.getLayoutParams();
 		lp.height = activity.app_state.media_thumb_height;
+		
+		if( ! Float.isNaN( activity.timeline_font_size_sp ) ){
+			tvBoosted.setTextSize( activity.timeline_font_size_sp );
+			tvFollowerName.setTextSize( activity.timeline_font_size_sp );
+			tvName.setTextSize( activity.timeline_font_size_sp );
+			tvMentions.setTextSize( activity.timeline_font_size_sp );
+			tvContentWarning.setTextSize( activity.timeline_font_size_sp );
+			tvContent.setTextSize( activity.timeline_font_size_sp );
+			btnShowMedia.setTextSize( activity.timeline_font_size_sp );
+			tvApplication.setTextSize( activity.timeline_font_size_sp );
+			
+		}
+		
+		if( ! Float.isNaN( activity.acct_font_size_sp ) ){
+			tvBoostedAcct.setTextSize( activity.acct_font_size_sp );
+			tvBoostedTime.setTextSize( activity.acct_font_size_sp );
+			tvFollowerAcct.setTextSize( activity.acct_font_size_sp );
+			tvAcct.setTextSize( activity.acct_font_size_sp );
+			tvTime.setTextSize( activity.acct_font_size_sp );
+		}
 	}
 	
 	void bind( Object item ){
@@ -343,6 +363,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 				, access_info.supplyBaseUrl( status.account.avatar )
 			);
 		}
+		
 		tvContent.setText( status.decoded_content );
 		
 		//			if( status.decoded_tags == null ){

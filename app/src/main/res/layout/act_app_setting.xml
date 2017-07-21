@@ -78,6 +78,8 @@
                 />
         </LinearLayout>
 
+
+
         <View style="@style/setting_divider"/>
 
         <TextView
@@ -778,6 +780,46 @@
                 android:layout_height="wrap_content"
                 android:text="@string/reset"
                 android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etTimelineFontSize"
+            android:text="@string/timeline_font_size"
+            android:id="@+id/tvTimelineFontSize"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etTimelineFontSize"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="numberDecimal"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etAcctFontSize"
+            android:text="@string/acct_font_size"
+            android:id="@+id/tvAcctFontSize"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etAcctFontSize"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="numberDecimal"
                 />
 
         </LinearLayout>

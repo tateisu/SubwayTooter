@@ -7,6 +7,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.PowerManager;
 import android.os.SystemClock;
@@ -24,6 +26,7 @@ import org.hjson.JsonValue;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -106,7 +109,6 @@ public class AlarmService extends IntentService {
 		Intent next_intent = new Intent( this, AlarmReceiver.class );
 		pi_next = PendingIntent.getBroadcast( this, PENDING_CODE_ALARM, next_intent, PendingIntent.FLAG_UPDATE_CURRENT );
 		
-		
 	}
 	
 	@Override public void onDestroy(){
@@ -121,16 +123,16 @@ public class AlarmService extends IntentService {
 	String mCustomStreamListenerSecret;
 	String mCustomStreamListenerSettingString;
 	JsonObject mCustomStreamListenerSetting;
-
-	void loadCustomStreamListenerSetting(  ){
+	
+	void loadCustomStreamListenerSetting(){
 		mCustomStreamListenerSetting = null;
 		mCustomStreamListenerSecret = null;
-		mCustomStreamListenerSettingString = pref.getString(Pref.KEY_STREAM_LISTENER_CONFIG_DATA ,null);
-		if(! TextUtils.isEmpty( mCustomStreamListenerSettingString ) ){
+		mCustomStreamListenerSettingString = pref.getString( Pref.KEY_STREAM_LISTENER_CONFIG_DATA, null );
+		if( ! TextUtils.isEmpty( mCustomStreamListenerSettingString ) ){
 			try{
 				mCustomStreamListenerSetting = JsonValue.readHjson( mCustomStreamListenerSettingString ).asObject();
-				mCustomStreamListenerSecret = pref.getString(Pref.KEY_STREAM_LISTENER_SECRET ,null);
-			}catch(Throwable ex){
+				mCustomStreamListenerSecret = pref.getString( Pref.KEY_STREAM_LISTENER_SECRET, null );
+			}catch( Throwable ex ){
 				ex.printStackTrace();
 			}
 		}
@@ -139,7 +141,7 @@ public class AlarmService extends IntentService {
 	// IntentService は onHandleIntent をワーカースレッドから呼び出す
 	// 同期処理を行って良い
 	@Override protected void onHandleIntent( @Nullable Intent intent ){
-		bStreamListenerTest =false;
+		bStreamListenerTest = false;
 		
 		// クラッシュレポートによると App1.onCreate より前にここを通る場合がある
 		// データベースへアクセスできるようにする
@@ -184,16 +186,16 @@ public class AlarmService extends IntentService {
 				// アプリサーバへの登録をやり直す
 			}else if( ACTION_RESET_LAST_LOAD.equals( action ) ){
 				boolean bDone = false;
-				String tag = intent.getStringExtra(EXTRA_TAG);
+				String tag = intent.getStringExtra( EXTRA_TAG );
 				if( tag != null ){
-					for(SavedAccount sa : SavedAccount.loadByTag(log,tag )){
+					for( SavedAccount sa : SavedAccount.loadByTag( log, tag ) ){
 						bDone = true;
-						NotificationTracking.resetLastLoad( sa.db_id);
+						NotificationTracking.resetLastLoad( sa.db_id );
 					}
 				}
-				if(!bDone){
+				if( ! bDone ){
 					// タグにマッチする情報がなかった場合、全部読み直す
-					NotificationTracking.resetLastLoad( );
+					NotificationTracking.resetLastLoad();
 				}
 			}else if( ACTION_DATA_DELETED.equals( action ) ){
 				deleteCacheData( intent.getLongExtra( EXTRA_DB_ID, - 1L ) );
@@ -281,7 +283,7 @@ public class AlarmService extends IntentService {
 						
 						ArrayList< Data > data_list = new ArrayList<>();
 						checkAccount( client, data_list, account, muted_app, muted_word );
-						showNotification( account.db_id, data_list );
+						showNotification( account, data_list );
 						
 					}catch( Throwable ex ){
 						ex.printStackTrace();
@@ -317,9 +319,8 @@ public class AlarmService extends IntentService {
 	
 	String getInstallId(){
 		SharedPreferences prefDevice = PrefDevice.prefDevice( this );
-			
 		
-		String sv = prefDevice.getString(PrefDevice.KEY_INSTALL_ID,null);
+		String sv = prefDevice.getString( PrefDevice.KEY_INSTALL_ID, null );
 		if( ! TextUtils.isEmpty( sv ) ) return sv;
 		
 		// インストールIDを生成する前に、各データの通知登録キャッシュをクリアする
@@ -332,13 +333,13 @@ public class AlarmService extends IntentService {
 					// トークンがまだ生成されていない場合、このメソッドは null を返します。
 					device_token = FirebaseInstanceId.getInstance().getToken();
 					if( TextUtils.isEmpty( device_token ) ){
-						log.e("getInstallId: missing device token.");
+						log.e( "getInstallId: missing device token." );
 						return null;
 					}else{
 						prefDevice.edit().putString( PrefDevice.KEY_DEVICE_TOKEN, device_token ).apply();
 					}
-				}catch(Throwable ex2){
-					log.e("getInstallId: could not get device token.");
+				}catch( Throwable ex2 ){
+					log.e( "getInstallId: could not get device token." );
 					ex2.printStackTrace();
 					return null;
 				}
@@ -353,13 +354,13 @@ public class AlarmService extends IntentService {
 			Response response = call.execute();
 			
 			if( ! response.isSuccessful() ){
-				log.e("getInstallId: get /counter failed. %s",response);
+				log.e( "getInstallId: get /counter failed. %s", response );
 				return null;
 			}
 			
 			//noinspection ConstantConditions
 			sv = Utils.digestSHA256( device_token + UUID.randomUUID() + response.body().string() );
-			prefDevice.edit().putString(PrefDevice.KEY_INSTALL_ID, sv).apply();
+			prefDevice.edit().putString( PrefDevice.KEY_INSTALL_ID, sv ).apply();
 			
 			return sv;
 			
@@ -369,24 +370,22 @@ public class AlarmService extends IntentService {
 		}
 	}
 	
-	
-	
 	private void unregisterDeviceToken( @NonNull SavedAccount account ){
 		try{
 			if( SavedAccount.REGISTER_KEY_UNREGISTERED.equals( account.register_key ) ){
-				log.d("unregisterDeviceToken: already unregistered.");
+				log.d( "unregisterDeviceToken: already unregistered." );
 				return;
 			}
-
+			
 			// ネットワーク的な事情でインストールIDを取得できなかったのなら、何もしない
 			if( TextUtils.isEmpty( install_id ) ){
-				log.d("unregisterDeviceToken: missing install_id");
+				log.d( "unregisterDeviceToken: missing install_id" );
 				return;
 			}
 			
 			String tag = account.notification_tag;
 			if( TextUtils.isEmpty( tag ) ){
-				log.d("unregisterDeviceToken: missing notification_tag");
+				log.d( "unregisterDeviceToken: missing notification_tag" );
 				return;
 			}
 			
@@ -410,7 +409,7 @@ public class AlarmService extends IntentService {
 				account.register_time = 0L;
 				account.saveRegisterKey();
 			}
-		
+			
 		}catch( Throwable ex ){
 			ex.printStackTrace();
 		}
@@ -421,7 +420,7 @@ public class AlarmService extends IntentService {
 		try{
 			// ネットワーク的な事情でインストールIDを取得できなかったのなら、何もしない
 			if( TextUtils.isEmpty( install_id ) ){
-				log.d("registerDeviceToken: missing install id");
+				log.d( "registerDeviceToken: missing install id" );
 				return false;
 			}
 			
@@ -429,18 +428,18 @@ public class AlarmService extends IntentService {
 			
 			String device_token = prefDevice.getString( PrefDevice.KEY_DEVICE_TOKEN, null );
 			if( TextUtils.isEmpty( device_token ) ){
-				log.d("registerDeviceToken: missing device_token");
+				log.d( "registerDeviceToken: missing device_token" );
 				return false;
 			}
 			
 			String access_token = Utils.optStringX( account.token_info, "access_token" );
 			if( TextUtils.isEmpty( access_token ) ){
-				log.d("registerDeviceToken: missing access_token");
+				log.d( "registerDeviceToken: missing access_token" );
 				return false;
 			}
 			
 			String tag = account.notification_tag;
-
+			
 			if( SavedAccount.REGISTER_KEY_UNREGISTERED.equals( account.register_key ) ){
 				tag = null;
 			}
@@ -452,36 +451,36 @@ public class AlarmService extends IntentService {
 			
 			String reg_key = Utils.digestSHA256(
 				tag
-				+ access_token
-				+ device_token
-				+ (mCustomStreamListenerSecret==null? "" :mCustomStreamListenerSecret)
-				+ (mCustomStreamListenerSettingString==null? "" :mCustomStreamListenerSettingString)
+					+ access_token
+					+ device_token
+					+ ( mCustomStreamListenerSecret == null ? "" : mCustomStreamListenerSecret )
+					+ ( mCustomStreamListenerSettingString == null ? "" : mCustomStreamListenerSettingString )
 			);
 			long now = System.currentTimeMillis();
 			if( reg_key.equals( account.register_key ) && now - account.register_time < 3600000 * 3 ){
 				// タグやトークンが同一なら、前回登録に成功してから一定時間は再登録しない
-				log.d("registerDeviceToken: already registered.");
+				log.d( "registerDeviceToken: already registered." );
 				return false;
 			}
-
+			
 			// サーバ情報APIを使う
-			StringBuilder post_data = new StringBuilder(  );
-
-			post_data.append("instance_url=").append(Uri.encode( "https://" + account.host ));
-
-			post_data.append("&app_id=").append(Uri.encode( getPackageName() ));
-
-			post_data.append("&tag=").append(tag);
-
-			post_data.append("&access_token=").append(Utils.optStringX( account.token_info, "access_token" ));
-
-			post_data.append("&device_token=").append(device_token);
-
+			StringBuilder post_data = new StringBuilder();
+			
+			post_data.append( "instance_url=" ).append( Uri.encode( "https://" + account.host ) );
+			
+			post_data.append( "&app_id=" ).append( Uri.encode( getPackageName() ) );
+			
+			post_data.append( "&tag=" ).append( tag );
+			
+			post_data.append( "&access_token=" ).append( Utils.optStringX( account.token_info, "access_token" ) );
+			
+			post_data.append( "&device_token=" ).append( device_token );
+			
 			if( ! TextUtils.isEmpty( mCustomStreamListenerSettingString )
-			&& 	! TextUtils.isEmpty( mCustomStreamListenerSecret )
+				&& ! TextUtils.isEmpty( mCustomStreamListenerSecret )
 				){
-				post_data.append("&user_config=").append(Uri.encode(mCustomStreamListenerSettingString));
-				post_data.append("&app_secret=").append(Uri.encode(mCustomStreamListenerSecret));
+				post_data.append( "&user_config=" ).append( Uri.encode( mCustomStreamListenerSettingString ) );
+				post_data.append( "&app_secret=" ).append( Uri.encode( mCustomStreamListenerSecret ) );
 			}
 			
 			Request request = new Request.Builder()
@@ -489,21 +488,21 @@ public class AlarmService extends IntentService {
 				.post( RequestBody.create( TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, post_data.toString() ) )
 				.build();
 			
-			Call call = App1.ok_http_client.newCall( request  );
+			Call call = App1.ok_http_client.newCall( request );
 			
 			Response response = call.execute();
 			
-			String body=null;
+			String body = null;
 			try{
 				//noinspection ConstantConditions
-				body =response.body().string();
-			}catch(Throwable ignored){
+				body = response.body().string();
+			}catch( Throwable ignored ){
 			}
-			log.e( "registerDeviceToken: %s (%s)",response,(body==null?"":body) );
-
+			log.e( "registerDeviceToken: %s (%s)", response, ( body == null ? "" : body ) );
+			
 			int code = response.code();
-
-			if( response.isSuccessful() || (code >= 400 && code < 500) ){
+			
+			if( response.isSuccessful() || ( code >= 400 && code < 500 ) ){
 				// 登録できた時も4xxエラーだった時もDBに記録する
 				account.register_key = reg_key;
 				account.register_time = now;
@@ -632,7 +631,7 @@ public class AlarmService extends IntentService {
 			return;
 		}
 		
-		TootNotification notification = TootNotification.parse( log, account,account.host ,src );
+		TootNotification notification = TootNotification.parse( log, account, account.host, src );
 		if( notification == null ){
 			return;
 		}
@@ -672,8 +671,8 @@ public class AlarmService extends IntentService {
 		return "- " + "?";
 	}
 	
-	private void showNotification( long account_db_id, @NonNull ArrayList< Data > data_list ){
-		String notification_tag = Long.toString( account_db_id );
+	private void showNotification( @NonNull SavedAccount account, @NonNull ArrayList< Data > data_list ){
+		String notification_tag = Long.toString( account.db_id );
 		if( data_list.isEmpty() ){
 			notification_manager.cancel( notification_tag, NOTIFICATION_ID );
 			return;
@@ -691,7 +690,7 @@ public class AlarmService extends IntentService {
 		} );
 		
 		Data item = data_list.get( 0 );
-		NotificationTracking nt = NotificationTracking.load( account_db_id );
+		NotificationTracking nt = NotificationTracking.load( account.db_id );
 		if( item.notification.time_created_at == nt.post_time
 			&& item.notification.id == nt.post_id
 			){
@@ -703,21 +702,39 @@ public class AlarmService extends IntentService {
 		
 		// 通知タップ
 		Intent intent_click = new Intent( this, AlarmReceiver.class );
-		intent_click.putExtra( EXTRA_DB_ID, account_db_id );
+		intent_click.putExtra( EXTRA_DB_ID, account.db_id );
 		intent_click.setAction( ACTION_NOTIFICATION_CLICK );
 		
 		Intent intent_delete = new Intent( this, AlarmReceiver.class );
-		intent_click.putExtra( EXTRA_DB_ID, account_db_id );
+		intent_click.putExtra( EXTRA_DB_ID, account.db_id );
 		intent_delete.setAction( ACTION_NOTIFICATION_DELETE );
 		
-		PendingIntent pi_click = PendingIntent.getBroadcast( this, ( 256 + (int) account_db_id ), intent_click, PendingIntent.FLAG_UPDATE_CURRENT );
+		PendingIntent pi_click = PendingIntent.getBroadcast( this, ( 256 + (int) account.db_id ), intent_click, PendingIntent.FLAG_UPDATE_CURRENT );
 		
 		// 通知を消去した時のPendingIntent
-		PendingIntent pi_delete = PendingIntent.getBroadcast( this, ( Integer.MAX_VALUE - (int) account_db_id ), intent_delete, PendingIntent.FLAG_UPDATE_CURRENT );
+		PendingIntent pi_delete = PendingIntent.getBroadcast( this, ( Integer.MAX_VALUE - (int) account.db_id ), intent_delete, PendingIntent.FLAG_UPDATE_CURRENT );
+		
+		NotificationCompat.Builder builder = new NotificationCompat.Builder( this )
+			.setContentIntent( pi_click )
+			.setDeleteIntent( pi_delete )
+			.setAutoCancel( false )
+			.setSmallIcon( R.drawable.ic_notification ) // ここは常に白テーマのアイコンを使う
+			.setColor( ContextCompat.getColor( this, R.color.Light_colorAccent ) ) // ここは常に白テーマの色を使う
+			.setWhen( item.notification.time_created_at );
 		
 		int iv = 0;
 		if( pref.getBoolean( Pref.KEY_NOTIFICATION_SOUND, true ) ){
-			iv |= NotificationCompat.DEFAULT_SOUND;
+			Uri sound_uri = null;
+			try{
+				String sv = account.sound_uri;
+				sound_uri = TextUtils.isEmpty( sv ) ? null : Uri.parse( sv );
+			}catch( Throwable ignored ){
+			}
+			if( sound_uri != null ){
+				builder.setSound( sound_uri );
+			}else{
+				iv |= NotificationCompat.DEFAULT_SOUND;
+			}
 		}
 		if( pref.getBoolean( Pref.KEY_NOTIFICATION_VIBRATION, true ) ){
 			iv |= NotificationCompat.DEFAULT_VIBRATE;
@@ -726,15 +743,7 @@ public class AlarmService extends IntentService {
 		if( pref.getBoolean( Pref.KEY_NOTIFICATION_LED, true ) ){
 			iv |= NotificationCompat.DEFAULT_LIGHTS;
 		}
-		
-		NotificationCompat.Builder builder = new NotificationCompat.Builder( this )
-			.setContentIntent( pi_click )
-			.setDeleteIntent( pi_delete )
-			.setAutoCancel( false )
-			.setSmallIcon( R.drawable.ic_notification ) // ここは常に白テーマのアイコンを使う
-			.setColor( ContextCompat.getColor( this, R.color.Light_colorAccent ) ) // ここは常に白テーマの色を使う
-			.setDefaults( iv )
-			.setWhen( item.notification.time_created_at );
+		builder.setDefaults( iv );
 		
 		String a = getNotificationLine( item.notification.type, item.notification.account.display_name );
 		String acct = item.access_info.acct + " " + getString( R.string.app_name );
@@ -772,10 +781,9 @@ public class AlarmService extends IntentService {
 	public static void onFirebaseMessage( @NonNull Context context, @Nullable String tag ){
 		Intent intent = new Intent( context, AlarmService.class );
 		intent.setAction( ACTION_RESET_LAST_LOAD );
-		if(tag !=null) intent.putExtra( EXTRA_TAG,tag );
+		if( tag != null ) intent.putExtra( EXTRA_TAG, tag );
 		context.startService( intent );
 	}
-	
 	
 	private static class InjectData {
 		long account_db_id;

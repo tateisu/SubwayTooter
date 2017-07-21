@@ -105,6 +105,15 @@ public class ActMain extends AppCompatActivity
 	String posted_acct;
 	long posted_status_id;
 	
+	float timeline_font_size_sp = Float.NaN;
+	float acct_font_size_sp = Float.NaN;
+	
+	float validateFloat( float fv){
+		if( Float.isNaN( fv ) ) return fv;
+		if( fv < 1f ) fv = 1f;
+		return fv;
+	}
+	
 	@Override protected void onCreate( Bundle savedInstanceState ){
 		log.d( "onCreate" );
 		super.onCreate( savedInstanceState );
@@ -117,6 +126,9 @@ public class ActMain extends AppCompatActivity
 		
 		this.density = app_state.density;
 		this.acct_pad_lr = (int) ( 0.5f + 4f * density );
+		
+		timeline_font_size_sp = validateFloat( pref.getFloat( Pref.KEY_TIMELINE_FONT_SIZE, Float.NaN ) );
+		acct_font_size_sp = validateFloat( pref.getFloat( Pref.KEY_ACCT_FONT_SIZE, Float.NaN ) );
 		
 		initUI();
 		
@@ -3755,12 +3767,12 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	public void openTimelineFor( @NonNull String host ){
-		final ArrayList< SavedAccount > account_list = new ArrayList<>(  );
+		final ArrayList< SavedAccount > account_list = new ArrayList<>();
 		for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
 			if( host.equalsIgnoreCase( a.host ) ) account_list.add( a );
 		}
 		if( account_list.isEmpty() ){
-		
+			
 			SavedAccount ai = addPseudoAccount( host );
 			if( ai != null ){
 				addColumn( getDefaultInsertPosition(), ai, Column.TYPE_LOCAL );
@@ -3768,7 +3780,7 @@ public class ActMain extends AppCompatActivity
 			
 		}else{
 			AccountPicker.pick( this, false, false
-				, getString( R.string.account_picker_add_timeline_of ,host )
+				, getString( R.string.account_picker_add_timeline_of, host )
 				, account_list, new AccountPicker.AccountPickerCallback() {
 					@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 						addColumn( getDefaultInsertPosition(), ai, Column.TYPE_LOCAL );

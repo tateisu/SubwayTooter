@@ -334,6 +334,13 @@ public class AppDataExporter {
 				e.putString( k, sv );
 				break;
 			
+			// double
+			case Pref.KEY_TIMELINE_FONT_SIZE:
+			case Pref.KEY_ACCT_FONT_SIZE:
+				double dv = reader.nextDouble();
+				e.putFloat( k, (float)dv );
+				break;
+			
 			// force reset
 			default:
 			case Pref.KEY_TIMELINE_FONT:

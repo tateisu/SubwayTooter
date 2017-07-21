@@ -52,6 +52,10 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public static final String COL_REGISTER_KEY = "register_key";
 	public static final String COL_REGISTER_TIME = "register_time";
 	
+	// スキーマ16から
+	public static final String COL_SOUND_URI = "sound_uri";
+	
+	
 	public static final long INVALID_ID = - 1L;
 	
 	// login information
@@ -66,6 +70,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public boolean notification_boost;
 	public boolean notification_favourite;
 	public boolean notification_follow;
+	@NonNull public String sound_uri ="";
 	
 	public boolean confirm_follow;
 	public boolean confirm_follow_locked;
@@ -116,6 +121,9 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 				+ "," + COL_REGISTER_KEY + " text default ''"
 				+ "," + COL_REGISTER_TIME + " integer default 0"
 			
+				// 以下はDBスキーマ16で更新
+				+ "," + COL_SOUND_URI + " text default ''"
+				
 				
 				+ ")"
 		);
@@ -187,6 +195,13 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 				ex.printStackTrace();
 			}
 		}
+		if( oldVersion < 16 && newVersion >= 16 ){
+			try{
+				db.execSQL( "alter table " + table + " add column " + COL_SOUND_URI + " text default ''" );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+			}
+		}
 	}
 	
 	private SavedAccount(){
@@ -250,6 +265,8 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 			dst.register_time = cursor.getLong( cursor.getColumnIndex( COL_REGISTER_TIME ));
 			
 			dst.token_info = new JSONObject( cursor.getString( cursor.getColumnIndex( COL_TOKEN ) ) );
+			
+			dst.sound_uri = cursor.getString( cursor.getColumnIndex( COL_SOUND_URI ) );
 		}
 		return dst;
 	}
@@ -308,6 +325,8 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		cv.put( COL_CONFIRM_UNFOLLOW, confirm_unfollow ? 1 : 0 );
 		cv.put( COL_CONFIRM_POST, confirm_post ? 1 : 0 );
 		
+		cv.put( COL_SOUND_URI, sound_uri );
+
 		// UIからは更新しない
 		// notification_tag
 		// register_key
@@ -360,6 +379,8 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		this.notification_favourite = b.notification_favourite;
 		this.notification_follow = b.notification_follow;
 		this.notification_tag = b.notification_tag;
+		
+		this.sound_uri = b.sound_uri;
 	}
 	
 	public static @Nullable SavedAccount loadAccount( @NonNull LogCategory log, long db_id ){

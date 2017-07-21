@@ -40,9 +40,11 @@ import org.apache.commons.io.output.FileWriterWithEncoding;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Locale;
 
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.SavedAccount;
@@ -127,9 +129,16 @@ public class ActAppSetting extends AppCompatActivity
 	EditText etMediaThumbHeight;
 	EditText etClientName;
 	
-	
 	TextView tvTimelineFontUrl;
 	String timeline_font;
+	
+	EditText etTimelineFontSize;
+	EditText etAcctFontSize;
+	TextView tvTimelineFontSize;
+	TextView tvAcctFontSize;
+	
+	static final float default_timeline_font_size = 14f;
+	static final float default_acct_font_size = 12f;
 	
 	private void initUI(){
 		setContentView( R.layout.act_app_setting );
@@ -177,7 +186,6 @@ public class ActAppSetting extends AppCompatActivity
 		
 		swPostButtonBarTop = (Switch) findViewById( R.id.swPostButtonBarTop );
 		swPostButtonBarTop.setOnCheckedChangeListener( this );
-		
 		
 		cbNotificationSound = (CheckBox) findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = (CheckBox) findViewById( R.id.cbNotificationVibration );
@@ -277,13 +285,22 @@ public class ActAppSetting extends AppCompatActivity
 		
 		etColumnWidth = (EditText) findViewById( R.id.etColumnWidth );
 		etColumnWidth.addTextChangedListener( this );
-
+		
 		etMediaThumbHeight = (EditText) findViewById( R.id.etMediaThumbHeight );
 		etMediaThumbHeight.addTextChangedListener( this );
-
+		
 		etClientName = (EditText) findViewById( R.id.etClientName );
 		etClientName.addTextChangedListener( this );
-
+		
+		tvTimelineFontSize = (TextView) findViewById( R.id.tvTimelineFontSize );
+		tvAcctFontSize = (TextView) findViewById( R.id.tvAcctFontSize );
+		
+		etTimelineFontSize = (EditText) findViewById( R.id.etTimelineFontSize );
+		etTimelineFontSize.addTextChangedListener( new SizeCheckTextWatcher( tvTimelineFontSize, etTimelineFontSize, default_timeline_font_size ) );
+		
+		etAcctFontSize = (EditText) findViewById( R.id.etAcctFontSize );
+		etAcctFontSize.addTextChangedListener( new SizeCheckTextWatcher( tvAcctFontSize, etAcctFontSize, default_acct_font_size ) );
+		
 		tvTimelineFontUrl = (TextView) findViewById( R.id.tvTimelineFontUrl );
 		
 	}
@@ -332,12 +349,19 @@ public class ActAppSetting extends AppCompatActivity
 		etColumnWidth.setText( pref.getString( Pref.KEY_COLUMN_WIDTH, "" ) );
 		etMediaThumbHeight.setText( pref.getString( Pref.KEY_MEDIA_THUMB_HEIGHT, "" ) );
 		etClientName.setText( pref.getString( Pref.KEY_CLIENT_NAME, "" ) );
+		
+		etTimelineFontSize.setText( formatFontSize( pref.getFloat( Pref.KEY_TIMELINE_FONT_SIZE, Float.NaN ) ) );
+		etAcctFontSize.setText( formatFontSize( pref.getFloat( Pref.KEY_ACCT_FONT_SIZE, Float.NaN ) ) );
+		
 		timeline_font = pref.getString( Pref.KEY_TIMELINE_FONT, "" );
 		
 		load_busy = false;
 		
 		showFooterColor();
 		showTimelineFont();
+		
+		showFontSize( tvTimelineFontSize, etTimelineFontSize, default_timeline_font_size );
+		showFontSize( tvAcctFontSize, etAcctFontSize, default_acct_font_size );
 	}
 	
 	private void saveUIToData(){
@@ -357,7 +381,7 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_DONT_CROP_MEDIA_THUMBNAIL, swDontCropMediaThumb.isChecked() )
 			.putBoolean( Pref.KEY_PRIOR_CHROME, swPriorChrome.isChecked() )
 			.putBoolean( Pref.KEY_POST_BUTTON_BAR_AT_TOP, swPostButtonBarTop.isChecked() )
-
+			
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_LED, cbNotificationLED.isChecked() )
@@ -380,7 +404,9 @@ public class ActAppSetting extends AppCompatActivity
 			.putString( Pref.KEY_COLUMN_WIDTH, etColumnWidth.getText().toString().trim() )
 			.putString( Pref.KEY_MEDIA_THUMB_HEIGHT, etMediaThumbHeight.getText().toString().trim() )
 			.putString( Pref.KEY_CLIENT_NAME, etClientName.getText().toString().trim() )
-
+			.putFloat( Pref.KEY_TIMELINE_FONT_SIZE, parseFontSize( etTimelineFontSize.getText().toString().trim() ) )
+			.putFloat( Pref.KEY_ACCT_FONT_SIZE, parseFontSize( etAcctFontSize.getText().toString().trim() ) )
+			
 			.apply();
 		
 	}
@@ -496,6 +522,7 @@ public class ActAppSetting extends AppCompatActivity
 			AlarmService.startCheck( this );
 			Utils.showToast( this, false, getString( R.string.custom_stream_listener_was_reset ) );
 			break;
+			
 		}
 	}
 	
@@ -629,6 +656,65 @@ public class ActAppSetting extends AppCompatActivity
 	
 	@Override public void afterTextChanged( Editable s ){
 		saveUIToData();
+	}
+	
+	private class SizeCheckTextWatcher implements TextWatcher {
+		TextView sample;
+		EditText et;
+		float default_size_sp;
+		
+		SizeCheckTextWatcher( TextView sample, EditText et, float default_size_sp ){
+			this.sample = sample;
+			this.et = et;
+			this.default_size_sp = default_size_sp;
+		}
+		
+		@Override public void beforeTextChanged( CharSequence s, int start, int count, int after ){
+			
+		}
+		
+		@Override public void onTextChanged( CharSequence s, int start, int before, int count ){
+			
+		}
+		
+		@Override public void afterTextChanged( Editable s ){
+			saveUIToData();
+			showFontSize( sample, et, default_size_sp );
+		}
+	}
+	
+	private String formatFontSize( float fv ){
+		if( Float.isNaN( fv ) ){
+			return "";
+		}else{
+			return String.format( Locale.getDefault(), "%.1f", fv );
+		}
+	}
+	
+	private float parseFontSize( String src ){
+		try{
+			NumberFormat format = NumberFormat.getInstance( Locale.getDefault() );
+			Number number = format.parse( src );
+			float f = number.floatValue();
+			if( ! Float.isNaN( f ) ){
+				if( f < 0f ) f = 0f;
+				if( f > 999f ) f = 999f;
+				return f;
+			}
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+		}
+		return Float.NaN;
+	}
+	
+	private void showFontSize( TextView sample, EditText et, float default_sp ){
+		float fv = parseFontSize( et.getText().toString().trim() );
+		if( Float.isNaN( fv ) ){
+			sample.setTextSize( default_sp );
+		}else{
+			if( fv < 1f ) fv = 1f;
+			sample.setTextSize( fv );
+		}
 	}
 	
 	private void showTimelineFont(){

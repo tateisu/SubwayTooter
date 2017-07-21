@@ -5,11 +5,11 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.os.AsyncTaskCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
@@ -67,10 +67,25 @@ public class ActAccountSetting extends AppCompatActivity
 	}
 	
 	static final int REQUEST_CODE_ACCT_CUSTOMIZE = 1;
+	static final int REQUEST_CODE_NOTIFICATION_SOUND = 2;
 	
 	@Override protected void onActivityResult( int requestCode, int resultCode, Intent data ){
 		if( requestCode == REQUEST_CODE_ACCT_CUSTOMIZE && resultCode == RESULT_OK ){
 			showAcctColor();
+		}else if( resultCode == RESULT_OK && requestCode == REQUEST_CODE_NOTIFICATION_SOUND ){
+			// RINGTONE_PICKERからの選択されたデータを取得する
+			Uri uri = (Uri) data.getExtras().get( RingtoneManager.EXTRA_RINGTONE_PICKED_URI );
+			if( uri != null ){
+				notification_sound_uri = uri.toString();
+				saveUIToData();
+				//			Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), uri);
+				//			TextView ringView = (TextView) findViewById(R.id.ringtone);
+				//			ringView.setText(ringtone.getTitle(getApplicationContext()));
+				//			ringtone.setStreamType(AudioManager.STREAM_ALARM);
+				//			ringtone.play();
+				//			SystemClock.sleep(1000);
+				//			ringtone.stop();
+			}
 		}
 		super.onActivityResult( requestCode, resultCode, data );
 	}
@@ -96,6 +111,11 @@ public class ActAccountSetting extends AppCompatActivity
 	TextView tvUserCustom;
 	View btnUserCustom;
 	String full_acct;
+	
+	Button btnNotificationSoundEdit;
+	Button btnNotificationSoundReset;
+	
+	String notification_sound_uri;
 	
 	private void initUI(){
 		setContentView( R.layout.act_account_setting );
@@ -140,6 +160,11 @@ public class ActAccountSetting extends AppCompatActivity
 		cbConfirmUnfollow.setOnCheckedChangeListener( this );
 		cbConfirmBoost.setOnCheckedChangeListener( this );
 		cbConfirmToot.setOnCheckedChangeListener( this );
+		
+		btnNotificationSoundEdit = (Button) findViewById( R.id.btnNotificationSoundEdit );
+		btnNotificationSoundReset = (Button) findViewById( R.id.btnNotificationSoundReset );
+		btnNotificationSoundEdit.setOnClickListener( this );
+		btnNotificationSoundReset.setOnClickListener( this );
 	}
 	
 	boolean loading = false;
@@ -169,11 +194,17 @@ public class ActAccountSetting extends AppCompatActivity
 		cbConfirmBoost.setChecked( a.confirm_boost );
 		cbConfirmToot.setChecked( a.confirm_post );
 		
+		notification_sound_uri = a.sound_uri;
+		
 		loading = false;
 		
 		boolean enabled = ! a.isPseudo();
 		btnAccessToken.setEnabled( enabled );
 		btnVisibility.setEnabled( enabled );
+		btnVisibility.setEnabled( enabled );
+		btnVisibility.setEnabled( enabled );
+		btnNotificationSoundEdit.setEnabled( enabled );
+		btnNotificationSoundReset.setEnabled( enabled );
 		
 		cbNotificationMention.setEnabled( enabled );
 		cbNotificationBoost.setEnabled( enabled );
@@ -206,6 +237,8 @@ public class ActAccountSetting extends AppCompatActivity
 		account.notification_favourite = cbNotificationFavourite.isChecked();
 		account.notification_follow = cbNotificationFollow.isChecked();
 		
+		account.sound_uri = notification_sound_uri == null ? "" : notification_sound_uri;
+
 		account.confirm_follow = cbConfirmFollow.isChecked();
 		account.confirm_follow_locked = cbConfirmFollowLockedUser.isChecked();
 		account.confirm_unfollow = cbConfirmUnfollow.isChecked();
@@ -237,7 +270,15 @@ public class ActAccountSetting extends AppCompatActivity
 		case R.id.btnUserCustom:
 			ActNickname.open( this, full_acct, REQUEST_CODE_ACCT_CUSTOMIZE );
 			break;
-			
+		
+		case R.id.btnNotificationSoundEdit:
+			openNotificationSoundPicker();
+			break;
+		
+		case R.id.btnNotificationSoundReset:
+			notification_sound_uri = "";
+			saveUIToData();
+			break;
 		}
 	}
 	
@@ -437,6 +478,24 @@ public class ActAccountSetting extends AppCompatActivity
 		} );
 		progress.show();
 		task.executeOnExecutor( App1.task_executor );
+	}
+	
+	private void openNotificationSoundPicker(){
+		Intent intent = new Intent( RingtoneManager.ACTION_RINGTONE_PICKER );
+		intent.putExtra( RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION );
+		intent.putExtra( RingtoneManager.EXTRA_RINGTONE_TITLE, R.string.notification_sound );
+		intent.putExtra( RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false );
+		intent.putExtra( RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false );
+		try{
+			Uri uri = TextUtils.isEmpty( notification_sound_uri ) ? null : Uri.parse( notification_sound_uri );
+			if( uri != null ){
+				intent.putExtra( RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri );
+			}
+		}catch( Throwable ignored ){
+		}
+		
+		Intent chooser = Intent.createChooser( intent, getString( R.string.notification_sound ) );
+		startActivityForResult( chooser, REQUEST_CODE_NOTIFICATION_SOUND );
 	}
 	
 }

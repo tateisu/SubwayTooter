@@ -1,4 +1,4 @@
-package jp.juggler.subwaytooter;
+package jp.juggler.subwaytooter.util;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -6,13 +6,15 @@ import android.support.v4.content.ContextCompat;
 import android.text.Layout;
 import android.view.Gravity;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.CheckedTextView;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 
 import java.util.ArrayList;
+
+import jp.juggler.subwaytooter.R;
+import jp.juggler.subwaytooter.Styler;
 
 class PopupAutoCompleteAcct {
 	final Activity activity;
@@ -22,8 +24,10 @@ class PopupAutoCompleteAcct {
 	private final View formRoot;
 	private final float density;
 	private final int popup_width;
-
+	
 	private int popup_rows;
+	
+	private boolean bMainScreen;
 	
 	void dismiss(){
 		acct_popup.dismiss();
@@ -33,13 +37,14 @@ class PopupAutoCompleteAcct {
 		return acct_popup.isShowing();
 	}
 	
-	PopupAutoCompleteAcct( Activity activity, EditText etContent, View formRoot ){
+	PopupAutoCompleteAcct( Activity activity, EditText etContent, View formRoot, boolean bMainScreen ){
 		this.activity = activity;
 		this.etContent = etContent;
 		this.formRoot = formRoot;
+		this.bMainScreen = bMainScreen;
 		this.density = activity.getResources().getDisplayMetrics().density;
 		
-		popup_width = (int)(0.5f +240f * density );
+		popup_width = (int) ( 0.5f + 240f * density );
 		
 		@SuppressLint("InflateParams") View viewRoot =
 			activity.getLayoutInflater().inflate( R.layout.acct_complete_popup, null, false );
@@ -102,26 +107,40 @@ class PopupAutoCompleteAcct {
 		etContent.getLocationOnScreen( location );
 		int text_top = location[ 1 ];
 		
-		formRoot.getLocationOnScreen( location );
-		int form_top = location[ 1 ];
-		int form_bottom = location[ 1 ] + formRoot.getHeight();
+		int popup_top;
+		int popup_height;
 		
-		Layout layout = etContent.getLayout();
-		
-		int popup_top = text_top
-			+ etContent.getTotalPaddingTop()
-			+ layout.getLineBottom( layout.getLineCount() - 1 )
-			- etContent.getScrollY();
-		
-		if( popup_top < form_top ) popup_top = form_top;
-		
-		int popup_height = form_bottom - popup_top;
-		
-		int min = (int) ( 0.5f + 48f * 2f * density );
-		if( popup_height < min ) popup_height = min;
-
-		int max = (int) ( 0.5f + 48f * popup_rows * density );
-		if( popup_height > max ) popup_height = max;
+		if( bMainScreen ){
+			int popup_bottom = text_top + etContent.getTotalPaddingTop() - etContent.getScrollY();
+			int max = popup_bottom-(int) ( 0.5f + 48f * 1f * density );
+			int min = (int) ( 0.5f + 48f * 2f * density );
+			popup_height = (int) ( 0.5f + 48f * popup_rows * density );
+			if( popup_height < min ) popup_height = min;
+			if( popup_height > max ) popup_height = max;
+			popup_top = popup_bottom - popup_height;
+			
+		}else{
+			formRoot.getLocationOnScreen( location );
+			int form_top = location[ 1 ];
+			int form_bottom = location[ 1 ] + formRoot.getHeight();
+			
+			Layout layout = etContent.getLayout();
+			
+			popup_top = text_top
+				+ etContent.getTotalPaddingTop()
+				+ layout.getLineBottom( layout.getLineCount() - 1 )
+				- etContent.getScrollY();
+			
+			if( popup_top < form_top ) popup_top = form_top;
+			
+			popup_height = form_bottom - popup_top;
+			
+			int min = (int) ( 0.5f + 48f * 2f * density );
+			int max = (int) ( 0.5f + 48f * popup_rows * density );
+			
+			if( popup_height < min ) popup_height = min;
+			if( popup_height > max ) popup_height = max;
+		}
 		
 		if( acct_popup.isShowing() ){
 			acct_popup.update( 0, popup_top, popup_width, popup_height );

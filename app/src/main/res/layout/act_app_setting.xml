@@ -287,6 +287,8 @@
 
         </LinearLayout>
 
+
+
         <View style="@style/setting_divider"/>
 
         <TextView
@@ -304,6 +306,22 @@
 
         </LinearLayout>
 
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/show_quick_toot_bar"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swQuickTootBar"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
 
         <View style="@style/setting_divider"/>
 

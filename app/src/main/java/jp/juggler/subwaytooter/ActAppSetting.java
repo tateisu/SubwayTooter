@@ -97,6 +97,7 @@ public class ActAppSetting extends AppCompatActivity
 	Switch swPriorChrome;
 	Switch swPostButtonBarTop;
 	Switch swDontDuplicationCheck ;
+	Switch swQuickTootBar;
 	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
@@ -191,6 +192,9 @@ public class ActAppSetting extends AppCompatActivity
 		swDontDuplicationCheck = (Switch) findViewById( R.id.swDontDuplicationCheck );
 		swDontDuplicationCheck.setOnCheckedChangeListener( this );
 		
+		swQuickTootBar = (Switch) findViewById( R.id.swQuickTootBar );
+		swQuickTootBar.setOnCheckedChangeListener( this );
+			
 		cbNotificationSound = (CheckBox) findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = (CheckBox) findViewById( R.id.cbNotificationVibration );
 		cbNotificationLED = (CheckBox) findViewById( R.id.cbNotificationLED );
@@ -327,6 +331,7 @@ public class ActAppSetting extends AppCompatActivity
 		swDontCropMediaThumb.setChecked( pref.getBoolean( Pref.KEY_DONT_CROP_MEDIA_THUMBNAIL, false ) );
 		swPostButtonBarTop.setChecked( pref.getBoolean( Pref.KEY_POST_BUTTON_BAR_AT_TOP, false ) );
 		swDontDuplicationCheck.setChecked( pref.getBoolean( Pref.KEY_DONT_DUPLICATION_CHECK, false ) );
+		swQuickTootBar.setChecked( pref.getBoolean( Pref.KEY_QUICK_TOOT_BAR, false ) );
 		
 		// Switch with default true
 		swDisableFastScroller.setChecked( pref.getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
@@ -387,8 +392,9 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_PRIOR_CHROME, swPriorChrome.isChecked() )
 			.putBoolean( Pref.KEY_POST_BUTTON_BAR_AT_TOP, swPostButtonBarTop.isChecked() )
 			.putBoolean( Pref.KEY_DONT_DUPLICATION_CHECK, swDontDuplicationCheck.isChecked() )
+			.putBoolean( Pref.KEY_QUICK_TOOT_BAR, swQuickTootBar.isChecked() )
 		
-			
+	
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_LED, cbNotificationLED.isChecked() )

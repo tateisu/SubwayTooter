@@ -25,10 +25,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.Editable;
-import android.text.Spannable;
 import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,8 +52,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
@@ -64,18 +59,16 @@ import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootMention;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
-import jp.juggler.subwaytooter.dialog.DlgConfirm;
 import jp.juggler.subwaytooter.dialog.DlgDraftPicker;
 import jp.juggler.subwaytooter.table.AcctColor;
-import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.PostDraft;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.dialog.ActionsDialog;
-import jp.juggler.subwaytooter.table.TagSet;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.MyClickableSpan;
+import jp.juggler.subwaytooter.util.PostHelper;
 import jp.juggler.subwaytooter.view.MyEditText;
 import jp.juggler.subwaytooter.view.MyNetworkImageView;
 import jp.juggler.subwaytooter.util.PostAttachment;
@@ -162,7 +155,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			break;
 		
 		case R.id.btnPost:
-			performPost( false, false );
+			performPost();
 			break;
 		
 		case R.id.btnRemoveReply:
@@ -258,6 +251,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	ArrayList< PostAttachment > attachment_list;
 	AppState app_state;
 	boolean isPostComplete;
+	PostHelper post_helper;
 	
 	@Override
 	protected void onCreate( @Nullable Bundle savedInstanceState ){
@@ -268,6 +262,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		pref = app_state.pref;
 		
 		initUI();
+		
+		
 		
 		if( account_list.isEmpty() ){
 			Utils.showToast( this, true, R.string.please_add_account );
@@ -492,8 +488,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	}
 	
 	@Override protected void onDestroy(){
-		handler.removeCallbacks( proc_text_changed );
-		closeAcctPopup();
+		post_helper.onDestroy();
+		
+		
 		super.onDestroy();
 		
 	}
@@ -631,34 +628,14 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			}
 		} );
 		
-		etContent.addTextChangedListener( new TextWatcher() {
-			@Override
-			public void beforeTextChanged( CharSequence s, int start, int count, int after ){
-				
-			}
-			
-			@Override
-			public void onTextChanged( CharSequence s, int start, int before, int count ){
-				handler.removeCallbacks( proc_text_changed );
-				handler.postDelayed( proc_text_changed, ( popup != null && popup.isShowing() ? 100L : 1000L ) );
-			}
-			
-			@Override
-			public void afterTextChanged( Editable s ){
+		post_helper = new PostHelper( this, pref ,app_state.handler );
+		post_helper.attachEditText( formRoot,etContent,false, new PostHelper.Callback2() {
+			@Override public void onTextUpdate(){
 				updateTextCount();
 			}
 		} );
 		
-		etContent.setOnSelectionChangeListener( new MyEditText.OnSelectionChangeListener() {
-			
-			@Override public void onSelectionChanged( int selStart, int selEnd ){
-				if( selStart != selEnd ){
-					// 範囲選択されてるならポップアップは閉じる
-					log.d( "onSelectionChanged: range selected" );
-					closeAcctPopup();
-				}
-			}
-		} );
+		
 		
 		scrollView.getViewTreeObserver().addOnScrollChangedListener( scroll_listener );
 		
@@ -668,116 +645,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	
 	final ViewTreeObserver.OnScrollChangedListener scroll_listener = new ViewTreeObserver.OnScrollChangedListener() {
 		@Override public void onScrollChanged(){
-			if( popup != null && popup.isShowing() ){
-				popup.updatePosition();
-			}
+			post_helper.onScrollChanged();
+			
 		}
 	};
-	
-	static final Pattern reCharsNotTag = Pattern.compile( "[\\s\\-+.,:;/]" );
-	
-	final Runnable proc_text_changed = new Runnable() {
-		@Override public void run(){
-			int start = etContent.getSelectionStart();
-			int end = etContent.getSelectionEnd();
-			if( start != end ){
-				closeAcctPopup();
-				return;
-			}
-			String src = etContent.getText().toString();
-			int count_atMark = 0;
-			int[] pos_atMark = new int[ 2 ];
-			for( ; ; ){
-				if( count_atMark >= 2 ) break;
-				
-				if( start == 0 ) break;
-				char c = src.charAt( start - 1 );
-				
-				if( c == '@' ){
-					-- start;
-					pos_atMark[ count_atMark++ ] = start;
-					continue;
-				}else if( ( '0' <= c && c <= '9' )
-					|| ( 'A' <= c && c <= 'Z' )
-					|| ( 'a' <= c && c <= 'z' )
-					|| c == '_' || c == '-' || c == '.'
-					){
-					-- start;
-					continue;
-				}
-				// その他の文字種が出たら探索打ち切り
-				break;
-			}
-			// 登場した@の数
-			if( count_atMark == 0 ){
-				// 次はAcctじゃなくてHashtagの補完を試みる
-				checkTag();
-				return;
-			}else if( count_atMark == 1 ){
-				start = pos_atMark[ 0 ];
-			}else if( count_atMark == 2 ){
-				start = pos_atMark[ 1 ];
-			}
-			// 最低でも2文字ないと補完しない
-			if( end - start < 2 ){
-				closeAcctPopup();
-				return;
-			}
-			int limit = 100;
-			String s = src.substring( start, end );
-			ArrayList< String > acct_list = AcctSet.searchPrefix( s, limit );
-			log.d( "search for %s, result=%d", s, acct_list.size() );
-			if( acct_list.isEmpty() ){
-				closeAcctPopup();
-			}else{
-				if( popup == null || ! popup.isShowing() ){
-					popup = new PopupAutoCompleteAcct( ActPost.this, etContent, formRoot );
-				}
-				popup.setList( acct_list, start, end );
-			}
-		}
-		
-		private void checkTag(){
-			int end = etContent.getSelectionEnd();
-			
-			String src = etContent.getText().toString();
-			int last_sharp = src.lastIndexOf( '#', end - 1 );
-			
-			if( last_sharp == - 1 || end - last_sharp < 3 ){
-				closeAcctPopup();
-				return;
-			}
-			
-			String part = src.substring( last_sharp + 1, end );
-			if( reCharsNotTag.matcher( part ).find() ){
-				closeAcctPopup();
-				return;
-			}
-			
-			int limit = 100;
-			String s = src.substring( last_sharp + 1, end );
-			ArrayList< String > tag_list = TagSet.searchPrefix( s, limit );
-			log.d( "search for %s, result=%d", s, tag_list.size() );
-			if( tag_list.isEmpty() ){
-				closeAcctPopup();
-			}else{
-				if( popup == null || ! popup.isShowing() ){
-					popup = new PopupAutoCompleteAcct( ActPost.this, etContent, formRoot );
-				}
-				popup.setList( tag_list, last_sharp, end );
-			}
-		}
-	};
-	
-	PopupAutoCompleteAcct popup;
-	
-	private void closeAcctPopup(){
-		if( popup != null ){
-			popup.dismiss();
-			popup = null;
-		}
-	}
-	
+
 	private void updateTextCount(){
 		String s = etContent.getText().toString();
 		int count_content = s.codePointCount( 0, s.length() );
@@ -1474,219 +1346,34 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	///////////////////////////////////////////////////////////////////////////////////////
 	// post
 	
-	// [:word:] 単語構成文字 (Letter | Mark | Decimal_Number | Connector_Punctuation)
-	// [:alpha:] 英字 (Letter | Mark)
-	
-	static final String word = "[_\\p{L}\\p{M}\\p{Nd}\\p{Pc}]";
-	static final String alpha = "[_\\p{L}\\p{M}]";
-	
-	static final Pattern reTag = Pattern.compile(
-		"(?:^|[^/)\\w])#(" + word + "*" + alpha + word + "*)"
-		, Pattern.CASE_INSENSITIVE
-	);
-	
-	private void performPost( final boolean bConfirmTag, final boolean bConfirmAccount ){
-		final String content = etContent.getText().toString().trim();
-		if( TextUtils.isEmpty( content ) ){
-			Utils.showToast( this, true, R.string.post_error_contents_empty );
-			return;
-		}
+	private void performPost(){
+		post_helper.content = etContent.getText().toString().trim();
 		
-		final String spoiler_text;
 		if( ! cbContentWarning.isChecked() ){
-			spoiler_text = null;
+			post_helper.spoiler_text = null;
 		}else{
-			spoiler_text = etContentWarning.getText().toString().trim();
-			if( TextUtils.isEmpty( spoiler_text ) ){
-				Utils.showToast( this, true, R.string.post_error_contents_warning_empty );
-				return;
-			}
+			post_helper.spoiler_text = etContentWarning.getText().toString().trim();
 		}
 		
-		if( ! bConfirmAccount ){
-			DlgConfirm.open( this
-				, getString( R.string.confirm_post_from, AcctColor.getNickname( account.acct ) )
-				, new DlgConfirm.Callback() {
-					@Override public boolean isConfirmEnabled(){
-						return account.confirm_post;
-					}
-					
-					@Override public void setConfirmEnabled( boolean bv ){
-						account.confirm_post = bv;
-						account.saveSetting();
-					}
-					
-					@Override public void onOK(){
-						performPost( bConfirmTag, true );
-					}
-				} );
-			return;
-		}
+		post_helper.visibility = this.visibility;
+		post_helper.bNSFW = cbNSFW.isChecked();
 		
-		if( ! bConfirmTag ){
-			Matcher m = reTag.matcher( content );
-			if( m.find() && ! TootStatus.VISIBILITY_PUBLIC.equals( visibility ) ){
-				new AlertDialog.Builder( this )
-					.setCancelable( true )
-					.setMessage( R.string.hashtag_and_visibility_not_match )
-					.setNegativeButton( R.string.cancel, null )
-					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
-						@Override public void onClick( DialogInterface dialog, int which ){
-							//noinspection ConstantConditions
-							performPost( true, bConfirmAccount );
-						}
-					} )
-					.show();
-				return;
-			}
-		}
+		post_helper.in_reply_to_id = this.in_reply_to_id;
 		
-		final StringBuilder sb = new StringBuilder();
+		post_helper.attachment_list = this.attachment_list;
 		
-		sb.append( "status=" );
-		sb.append( Uri.encode( content ) );
-		
-		sb.append( "&visibility=" );
-		sb.append( Uri.encode( visibility ) );
-		
-		if( cbNSFW.isChecked() ){
-			sb.append( "&sensitive=1" );
-		}
-		
-		if( spoiler_text != null ){
-			sb.append( "&spoiler_text=" );
-			sb.append( Uri.encode( spoiler_text ) );
-		}
-		
-		if( in_reply_to_id != - 1L ){
-			sb.append( "&in_reply_to_id=" );
-			sb.append( Long.toString( in_reply_to_id ) );
-		}
-		if( attachment_list != null ){
-			for( PostAttachment pa : attachment_list ){
-				if( pa.attachment != null ){
-					sb.append( "&media_ids[]=" ).append( pa.attachment.id );
-				}
-			}
-		}
-		
-		final ProgressDialog progress = new ProgressDialog( this );
-		
-		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
-			final SavedAccount target_account = account;
+		post_helper.post( account, false, false, new PostHelper.Callback() {
 			
-			TootStatus status;
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActPost.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-						Utils.runOnMainThread( new Runnable() {
-							@Override public void run(){
-								progress.setMessage( s );
-							}
-						} );
-					}
-				} );
+			@Override public void onPostComplete( SavedAccount target_account, TootStatus status ){
+				Intent data = new Intent();
+				data.putExtra( EXTRA_POSTED_ACCT, target_account.acct );
+				data.putExtra( EXTRA_POSTED_STATUS_ID, status.id );
 				
-				client.setAccount( target_account );
-				String post_content = sb.toString();
-				String digest = Utils.digestSHA256( post_content + target_account.acct );
-				
-				Request.Builder request_builder = new Request.Builder()
-					.post( RequestBody.create(
-						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
-						, post_content
-					) );
-				
-				if( ! pref.getBoolean( Pref.KEY_DONT_DUPLICATION_CHECK, false ) ){
-					request_builder.header( "Idempotency-Key", digest );
-				}
-				
-				TootApiResult result = client.request( "/api/v1/statuses", request_builder );
-				if( result != null && result.object != null ){
-					status = TootStatus.parse( log, account, account.host, result.object );
-					
-					Spannable s = status.decoded_content;
-					MyClickableSpan[] span_list = s.getSpans( 0, s.length(), MyClickableSpan.class );
-					if( span_list != null ){
-						ArrayList< String > tag_list = new ArrayList<>();
-						for( MyClickableSpan span : span_list ){
-							int start = s.getSpanStart( span );
-							int end = s.getSpanEnd( span );
-							String text = s.subSequence( start, end ).toString();
-							if( text.startsWith( "#" ) ){
-								tag_list.add( text.substring( 1 ) );
-							}
-						}
-						int count = tag_list.size();
-						if( count > 0 ){
-							TagSet.saveList(
-								System.currentTimeMillis()
-								, tag_list.toArray( new String[ count ] )
-								, 0
-								, count
-							);
-						}
-						
-					}
-					
-				}
-				return result;
-				
-			}
-			
-			@Override
-			protected void onCancelled(){
-				onPostExecute( null );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				try{
-					progress.dismiss();
-				}catch( Throwable ignored ){
-					//							java.lang.IllegalArgumentException:
-					//							at android.view.WindowManagerGlobal.findViewLocked(WindowManagerGlobal.java:396)
-					//							at android.view.WindowManagerGlobal.removeView(WindowManagerGlobal.java:322)
-					//							at android.view.WindowManagerImpl.removeViewImmediate(WindowManagerImpl.java:116)
-					//							at android.app.Dialog.dismissDialog(Dialog.java:341)
-					//							at android.app.Dialog.dismiss(Dialog.java:324)
-					//							at jp.juggler.subwaytooter.ActMain$10$1.onPostExecute(ActMain.java:867)
-					//							at jp.juggler.subwaytooter.ActMain$10$1.onPostExecute(ActMain.java:837)
-				}
-				
-				//noinspection StatementWithEmptyBody
-				if( result == null ){
-					// cancelled.
-				}else if( status != null ){
-					// 連投してIdempotency が同じだった場合もエラーにはならず、ここを通る
-					Intent data = new Intent();
-					data.putExtra( EXTRA_POSTED_ACCT, target_account.acct );
-					data.putExtra( EXTRA_POSTED_STATUS_ID, status.id );
-					
-					setResult( RESULT_OK, data );
-					isPostComplete = true;
-					ActPost.this.finish();
-				}else{
-					Utils.showToast( ActPost.this, true, result.error );
-				}
-			}
-		};
-		
-		progress.setIndeterminate( true );
-		progress.setCancelable( true );
-		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
-			@Override
-			public void onCancel( DialogInterface dialog ){
-				task.cancel( true );
+				setResult( RESULT_OK, data );
+				isPostComplete = true;
+				ActPost.this.finish();
 			}
 		} );
-		progress.show();
-		task.executeOnExecutor( App1.task_executor );
 	}
 	
 	/////////////////////////////////////////////////

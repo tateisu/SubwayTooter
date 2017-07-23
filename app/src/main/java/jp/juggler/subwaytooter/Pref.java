@@ -67,6 +67,8 @@ public class Pref {
 	public static final String KEY_ACCT_FONT_SIZE = "acct_font_size";
 	
 	public static final String KEY_DONT_DUPLICATION_CHECK = "dont_duplication_check";
+	public static final String KEY_QUICK_TOOT_BAR = "quick_toot_bar";
+	
 	
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

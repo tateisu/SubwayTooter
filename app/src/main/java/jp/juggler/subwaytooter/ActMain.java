@@ -25,6 +25,7 @@ import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.JsonReader;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -35,9 +36,11 @@ import android.view.MenuItem;
 import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
@@ -77,9 +80,11 @@ import jp.juggler.subwaytooter.dialog.ActionsDialog;
 import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.MyClickableSpan;
+import jp.juggler.subwaytooter.util.PostHelper;
 import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.view.ColumnStripLinearLayout;
 import jp.juggler.subwaytooter.view.GravitySnapHelper;
+import jp.juggler.subwaytooter.view.MyEditText;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
@@ -160,6 +165,8 @@ public class ActMain extends AppCompatActivity
 	@Override protected void onDestroy(){
 		log.d( "onDestroy" );
 		super.onDestroy();
+		post_helper.onDestroy();
+		
 		// このアクティビティに関連する ColumnViewHolder への参照を全カラムから除去する
 		for( Column c : app_state.column_list ){
 			c.removeColumnViewHolderByActivity( this );
@@ -239,17 +246,7 @@ public class ActMain extends AppCompatActivity
 		// 各カラムのアカウント設定を読み直す
 		reloadAccountSetting();
 		
-		if( ! TextUtils.isEmpty( posted_acct ) ){
-			int refresh_after_toot = pref.getInt( Pref.KEY_REFRESH_AFTER_TOOT, 0 );
-			if( refresh_after_toot != Pref.RAT_DONT_REFRESH ){
-				for( Column column : app_state.column_list ){
-					SavedAccount a = column.access_info;
-					if( ! Utils.equalsNullable( a.acct, posted_acct ) ) continue;
-					column.startRefreshForPost( posted_status_id, refresh_after_toot );
-				}
-			}
-			posted_acct = null;
-		}
+		refreshAfterPost();
 		
 		Uri uri = ActCallback.last_uri.getAndSet( null );
 		if( uri != null ){
@@ -266,6 +263,20 @@ public class ActMain extends AppCompatActivity
 		}
 		
 		updateColumnStripSelection( - 1, - 1f );
+	}
+	
+	void refreshAfterPost(){
+		if( ! TextUtils.isEmpty( posted_acct ) ){
+			int refresh_after_toot = pref.getInt( Pref.KEY_REFRESH_AFTER_TOOT, 0 );
+			if( refresh_after_toot != Pref.RAT_DONT_REFRESH ){
+				for( Column column : app_state.column_list ){
+					SavedAccount a = column.access_info;
+					if( ! Utils.equalsNullable( a.acct, posted_acct ) ) continue;
+					column.startRefreshForPost( posted_status_id, refresh_after_toot );
+				}
+			}
+			posted_acct = null;
+		}
 	}
 	
 	static Intent sent_intent2;
@@ -333,8 +344,55 @@ public class ActMain extends AppCompatActivity
 		case R.id.btnToot:
 			performTootButton();
 			break;
-			
+		
+		case R.id.btnQuickToot:
+			performQuickPost(null);
+			break;
 		}
+	}
+	
+	private void performQuickPost(SavedAccount account){
+
+		if( account == null ){
+			if( pager_adapter != null ){
+				Column c = app_state.column_list.get( pager.getCurrentItem() );
+				if( ! c.access_info.isPseudo() ){
+					account = c.access_info;
+				}
+			}
+			if( account == null ){
+				AccountPicker.pick( this, false, true, getString( R.string.account_picker_toot ), new AccountPicker.AccountPickerCallback() {
+					@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+						performQuickPost( ai );
+					}
+				} );
+				return;
+			}
+		}
+		
+		String visibility = account.visibility;
+		if( TextUtils.isEmpty( visibility ) ){
+			visibility = TootStatus.VISIBILITY_PUBLIC;
+		}
+		
+		
+		
+		post_helper.content = etQuickToot.getText().toString().trim();
+		post_helper.spoiler_text = null;
+		post_helper.visibility = visibility;
+		post_helper.bNSFW = false;
+		post_helper.in_reply_to_id = - 1L;
+		post_helper.attachment_list = null;
+		
+		Utils.hideKeyboard( this,etQuickToot );
+		post_helper.post( account, false, false, new PostHelper.Callback() {
+			@Override public void onPostComplete( SavedAccount target_account, TootStatus status ){
+				etQuickToot.setText("");
+				posted_acct = target_account.acct;
+				posted_status_id =status.id;
+				refreshAfterPost();
+			}
+		});
 	}
 	
 	@Override
@@ -430,6 +488,7 @@ public class ActMain extends AppCompatActivity
 				
 			}else if( requestCode == REQUEST_CODE_POST ){
 				if( data != null ){
+					etQuickToot.setText("");
 					posted_acct = data.getStringExtra( ActPost.EXTRA_POSTED_ACCT );
 					posted_status_id = data.getLongExtra( ActPost.EXTRA_POSTED_STATUS_ID, 0L );
 				}
@@ -690,6 +749,12 @@ public class ActMain extends AppCompatActivity
 	
 	boolean dont_crop_media_thumbnail;
 	
+	View llQuickTootBar;
+	MyEditText etQuickToot;
+	ImageButton btnQuickToot;
+	PostHelper post_helper;
+	
+	
 	void initUI(){
 		setContentView( R.layout.act_main );
 		
@@ -727,11 +792,29 @@ public class ActMain extends AppCompatActivity
 		vFooterDivider2 = findViewById( R.id.vFooterDivider2 );
 		llColumnStrip = (ColumnStripLinearLayout) findViewById( R.id.llColumnStrip );
 		svColumnStrip = (HorizontalScrollView) findViewById( R.id.svColumnStrip );
+		llQuickTootBar = findViewById( R.id.llQuickTootBar );
+		etQuickToot = (MyEditText) findViewById( R.id. etQuickToot );
+		btnQuickToot = (ImageButton)findViewById( R.id. btnQuickToot );
+		
+		if( !pref.getBoolean( Pref.KEY_QUICK_TOOT_BAR ,false ) ){
+			llQuickTootBar.setVisibility( View.GONE );
+		}
 		
 		btnToot.setOnClickListener( this );
 		btnMenu.setOnClickListener( this );
-		
+		btnQuickToot.setOnClickListener( this );
+		etQuickToot.setOnEditorActionListener( new TextView.OnEditorActionListener() {
+			@Override public boolean onEditorAction( TextView v, int actionId, KeyEvent event ){
+				if( actionId == EditorInfo.IME_ACTION_SEND ){
+					btnQuickToot.performClick();
+					return true;
+				}
+				return false;
+			}
+		} );
 		svColumnStrip.setHorizontalFadingEdgeEnabled( true );
+		
+		post_helper = new PostHelper( this,pref,app_state.handler );
 		
 		DisplayMetrics dm = getResources().getDisplayMetrics();
 		
@@ -814,6 +897,11 @@ public class ActMain extends AppCompatActivity
 		}
 		
 		showFooterColor();
+		
+		post_helper.attachEditText( findViewById( R.id.llFormRoot ), etQuickToot, true,new PostHelper.Callback2() {
+			@Override public void onTextUpdate(){
+			}
+		} );
 	}
 	
 	void updateColumnStrip(){
@@ -1859,24 +1947,26 @@ public class ActMain extends AppCompatActivity
 	};
 	
 	private void performTootButton(){
+		post_helper.closeAcctPopup();
+		final String initial_text = etQuickToot.getText().toString();
 		if( pager_adapter != null ){
 			Column c = pager_adapter.getColumn( pager.getCurrentItem() );
 			if( c != null && ! c.access_info.isPseudo() ){
-				ActPost.open( this, REQUEST_CODE_POST, c.access_info.db_id, "" );
+				ActPost.open( this, REQUEST_CODE_POST, c.access_info.db_id, initial_text );
 				return;
 			}
 		}else{
 			long db_id = pref.getLong( Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, - 1L );
 			SavedAccount a = SavedAccount.loadAccount( log, db_id );
 			if( a != null ){
-				ActPost.open( this, REQUEST_CODE_POST, a.db_id, "" );
+				ActPost.open( this, REQUEST_CODE_POST, a.db_id, initial_text );
 				return;
 			}
 		}
 		
 		AccountPicker.pick( this, false, true, getString( R.string.account_picker_toot ), new AccountPicker.AccountPickerCallback() {
 			@Override public void onAccountPicked( @NonNull SavedAccount ai ){
-				ActPost.open( ActMain.this, REQUEST_CODE_POST, ai.db_id, "" );
+				ActPost.open( ActMain.this, REQUEST_CODE_POST, ai.db_id, initial_text );
 			}
 		} );
 	}
@@ -3289,28 +3379,34 @@ public class ActMain extends AppCompatActivity
 		if( c == 0 ){
 			btnMenu.setBackgroundResource( R.drawable.btn_bg_ddd );
 			btnToot.setBackgroundResource( R.drawable.btn_bg_ddd );
+			btnQuickToot.setBackgroundResource( R.drawable.btn_bg_ddd );
 		}else{
 			int fg = ( footer_button_fg_color != 0
 				? footer_button_fg_color
 				: Styler.getAttributeColor( this, R.attr.colorRippleEffect ) );
 			ViewCompat.setBackground( btnToot, Styler.getAdaptiveRippleDrawable( c, fg ) );
 			ViewCompat.setBackground( btnMenu, Styler.getAdaptiveRippleDrawable( c, fg ) );
+			ViewCompat.setBackground( btnQuickToot, Styler.getAdaptiveRippleDrawable( c, fg ) );
 		}
 		
 		c = footer_button_fg_color;
 		if( c == 0 ){
 			Styler.setIconDefaultColor( this, btnToot, R.attr.ic_edit );
 			Styler.setIconDefaultColor( this, btnMenu, R.attr.ic_hamburger );
+			Styler.setIconDefaultColor( this, btnQuickToot, R.attr.btn_post );
 		}else{
 			Styler.setIconCustomColor( this, btnToot, c, R.attr.ic_edit );
 			Styler.setIconCustomColor( this, btnMenu, c, R.attr.ic_hamburger );
+			Styler.setIconCustomColor( this, btnQuickToot, c,R.attr.btn_post );
 		}
 		
 		c = footer_tab_bg_color;
 		if( c == 0 ){
 			svColumnStrip.setBackgroundColor( Styler.getAttributeColor( this, R.attr.colorColumnStripBackground ) );
+			llQuickTootBar.setBackgroundColor( Styler.getAttributeColor( this, R.attr.colorColumnStripBackground ) );
 		}else{
 			svColumnStrip.setBackgroundColor( c );
+			svColumnStrip.setBackgroundColor( Styler.getAttributeColor( this, R.attr.colorColumnStripBackground ) );
 		}
 		
 		c = footer_tab_divider_color;

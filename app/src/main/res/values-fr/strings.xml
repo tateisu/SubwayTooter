@@ -388,6 +388,8 @@
 	<string name="timeline_font_size">Timeline font size (unit:sp. leave empty to default. app restart required)</string>
 	<string name="acct_font_size">Acct font size (unit:sp. leave empty to default. app restart required)</string>
     <string name="dont_add_duplication_check_header">Don\'t add duplication check header</string>
+    <string name="show_quick_toot_bar">Show \"Quick Toot\" bar (app restart required.)</string>
+    <string name="quick_toot_hint">Quick Toot</string>
 
     <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

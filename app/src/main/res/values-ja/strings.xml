@@ -675,5 +675,7 @@
     <string name="timeline_font_size">タイムラインのフォントサイズ(単位:sp。空欄でデフォルト。アプリ再起動が必要)</string>
     <string name="acct_font_size">Acctのフォントサイズ(単位:sp。空欄でデフォルト。アプリ再起動が必要)</string>
     <string name="dont_add_duplication_check_header">重複チェックヘッダを付与しない</string>
+    <string name="quick_toot_hint">簡易投稿入力</string>
+    <string name="show_quick_toot_bar">簡易投稿バーを表示(アプリ再起動が必要)</string>
 
 </resources>

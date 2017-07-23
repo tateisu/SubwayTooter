@@ -16,6 +16,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
+        android:id="@+id/llFormRoot"
         >
 
         <FrameLayout
@@ -46,10 +47,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 />
+
             <jp.juggler.subwaytooter.view.MyRecyclerView
                 android:id="@+id/rvPager"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent"
+                />
         </FrameLayout>
 
         <LinearLayout
@@ -63,28 +66,28 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="@drawable/btn_bg_ddd"
-                app:srcCompat="?attr/ic_hamburger"
                 android:contentDescription="@string/menu"
+                app:srcCompat="?attr/ic_hamburger"
                 />
 
             <View
+                android:id="@+id/vFooterDivider1"
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
                 android:background="?attr/colorImageButton"
-                android:id="@+id/vFooterDivider1"
                 />
 
             <HorizontalScrollView
+                android:id="@+id/svColumnStrip"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
+                android:background="?attr/colorColumnStripBackground"
                 android:cacheColorHint="#00000000"
                 android:fadingEdge="horizontal"
                 android:fadingEdgeLength="20dp"
                 android:fillViewport="true"
                 android:scrollbars="none"
-                android:background="?attr/colorColumnStripBackground"
-                android:id="@+id/svColumnStrip"
                 >
 
                 <jp.juggler.subwaytooter.view.ColumnStripLinearLayout
@@ -96,23 +99,53 @@
             </HorizontalScrollView>
 
             <View
+                android:id="@+id/vFooterDivider2"
                 android:layout_width="1dp"
                 android:layout_height="match_parent"
                 android:background="?attr/colorImageButton"
-                android:id="@+id/vFooterDivider2"
                 />
+
             <ImageButton
                 android:id="@+id/btnToot"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:background="@drawable/btn_bg_ddd"
-                app:srcCompat="?attr/ic_edit"
                 android:contentDescription="@string/toot"
+                app:srcCompat="?attr/ic_edit"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/llQuickTootBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:baselineAligned="false"
+            android:orientation="horizontal"
+            >
+
+            <jp.juggler.subwaytooter.view.MyEditText
+                android:id="@+id/etQuickToot"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:inputType="text"
+                android:maxLines="1"
+                android:hint="@string/quick_toot_hint"
+                android:imeOptions="actionSend"
+                />
+
+            <ImageButton
+                android:id="@+id/btnQuickToot"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/btn_bg_ddd"
+                android:contentDescription="@string/post"
+                app:srcCompat="?attr/btn_post"
                 />
         </LinearLayout>
     </LinearLayout>
-
-
     <!--<android.support.design.widget.FloatingActionButton-->
     <!--android:id="@+id/"-->
     <!--android:layout_width="wrap_content"-->
@@ -133,7 +166,6 @@
     <!--app:srcCompat="?attr/ic_menu"-->
     <!--/>-->
 
-
     <!--<android.support.design.widget.CoordinatorLayout-->
     <!--android:layout_width="match_parent"-->
     <!--android:layout_height="match_parent"-->
@@ -148,6 +180,7 @@
         android:layout_gravity="start"
         android:fitsSystemWindows="true"
 
-        app:menu="@menu/menu_navi_drawer"/>
+        app:menu="@menu/menu_navi_drawer"
+        />
     <!-- app:headerLayout="@layout/nav_header_act_main" -->
 </android.support.v4.widget.DrawerLayout>

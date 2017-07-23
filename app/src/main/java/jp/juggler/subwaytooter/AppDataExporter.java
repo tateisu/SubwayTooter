@@ -298,6 +298,7 @@ public class AppDataExporter {
 			case Pref.KEY_PRIOR_CHROME:
 			case Pref.KEY_POST_BUTTON_BAR_AT_TOP:
 			case Pref.KEY_DONT_DUPLICATION_CHECK:
+			case Pref.KEY_QUICK_TOOT_BAR:
 				boolean bv = reader.nextBoolean();
 				e.putBoolean( k, bv );
 				break;

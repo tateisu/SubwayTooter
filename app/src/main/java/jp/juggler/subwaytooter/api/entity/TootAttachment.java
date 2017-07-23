@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.entity;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -27,16 +28,16 @@ public class TootAttachment {
 	public static final String TYPE_UNKNOWN = "unknown";
 	
 	//URL of the locally hosted version of the image
-	public String url;
+	@Nullable public String url;
 	
 	//For remote images, the remote URL of the original image
-	public String remote_url;
+	@Nullable public String remote_url;
 	
 	//	URL of the preview image
-	public String preview_url;
+	@Nullable public String preview_url;
 	
 	//	Shorter URL for the image, for insertion into text (only present on local images)
-	public String text_url;
+	@Nullable public String text_url;
 	
 	public JSONObject json;
 	

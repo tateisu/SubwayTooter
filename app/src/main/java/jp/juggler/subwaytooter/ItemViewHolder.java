@@ -80,15 +80,15 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private final View llSearchTag;
 	private final Button btnSearchTag;
 	
-	private @Nullable final TextView tvApplication;
+	@Nullable private final TextView tvApplication;
 	
-	private TootStatusLike status;
-	private TootAccount account_thumbnail;
-	private TootAccount account_boost;
-	private TootAccount account_follow;
-	private String search_tag;
-	private TootGap gap;
-	private TootDomainBlock domain_block;
+	@Nullable private TootStatusLike status;
+	@Nullable private TootAccount account_thumbnail;
+	@Nullable private TootAccount account_boost;
+	@Nullable private TootAccount account_follow;
+	@Nullable private String search_tag;
+	@Nullable private TootGap gap;
+	@Nullable private TootDomainBlock domain_block;
 	
 	private final boolean bSimpleList;
 	
@@ -543,12 +543,16 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		switch( v.getId() ){
 		case R.id.btnHideMedia:
-			MediaShown.save( status, false );
-			btnShowMedia.setVisibility( View.VISIBLE );
+			if( status != null){
+				MediaShown.save( status, false );
+				btnShowMedia.setVisibility( View.VISIBLE );
+			}
 			break;
 		case R.id.btnShowMedia:
-			MediaShown.save( status, true );
-			btnShowMedia.setVisibility( View.GONE );
+			if( status != null){
+				MediaShown.save( status, true );
+				btnShowMedia.setVisibility( View.GONE );
+			}
 			break;
 		case R.id.ivMedia1:
 			clickMedia( 0 );
@@ -562,12 +566,13 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		case R.id.ivMedia4:
 			clickMedia( 3 );
 			break;
-		case R.id.btnContentWarning:{
-			boolean new_shown = ( llContents.getVisibility() == View.GONE );
-			ContentWarning.save( status, new_shown );
-			list_adapter.notifyDataSetChanged();
+		case R.id.btnContentWarning:
+			if( status != null){
+				boolean new_shown = ( llContents.getVisibility() == View.GONE );
+				ContentWarning.save( status, new_shown );
+				list_adapter.notifyDataSetChanged();
+			}
 			break;
-		}
 		
 		case R.id.ivThumbnail:
 			if( access_info.isPseudo() ){
@@ -666,8 +671,10 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	// StatusButtonsPopupを表示する
 	void onItemClick( MyListView listView, View anchor ){
 		activity.closeListItemPopup();
-		activity.list_item_popup = new StatusButtonsPopup( activity, column, bSimpleList );
-		activity.list_item_popup.show( listView, anchor, status );
+		if( status != null ){
+			activity.list_item_popup = new StatusButtonsPopup( activity, column, bSimpleList );
+			activity.list_item_popup.show( listView, anchor, status );
+		}
 	}
 	
 }

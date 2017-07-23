@@ -3,8 +3,7 @@ package jp.juggler.subwaytooter.api.entity;
 import android.support.annotation.Nullable;
 import android.text.Spannable;
 
-
-public abstract class TootStatusLike extends TootId{
+public abstract class TootStatusLike extends TootId {
 	
 	//URL to the status page (can be remote)
 	public String url;
@@ -13,7 +12,6 @@ public abstract class TootStatusLike extends TootId{
 	
 	// The TootAccount which posted the status
 	@Nullable public TootAccount account;
-	
 	
 	//The number of reblogs for the status
 	public long reblogs_count;
@@ -39,7 +37,7 @@ public abstract class TootStatusLike extends TootId{
 	public Spannable decoded_content;
 	
 	//Application from which the status was posted
-	public TootApplication application;
+	@Nullable public TootApplication application;
 	
 	public long time_created_at;
 	

@@ -18,7 +18,7 @@ public class TootDomainBlock {
 	// domain
 	public String domain;
 	
-	public TootDomainBlock( String sv ){
+	private TootDomainBlock( String sv ){
 		this.domain = sv;
 	}
 

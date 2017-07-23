@@ -3,23 +3,18 @@ package jp.juggler.subwaytooter.api;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootReport;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 
-/**
- * Created by tateisu on 2017/05/10.
- */
-
 public class DuplicateMap {
 	
-	HashSet< Long > set_status_id = new HashSet<>();
-	HashSet< Long > set_notification_id = new HashSet<>();
-	HashSet< Long > set_report_id = new HashSet<>();
-	HashSet< Long > set_account_id = new HashSet<>();
+	private final HashSet< Long > set_status_id = new HashSet<>();
+	private final HashSet< Long > set_notification_id = new HashSet<>();
+	private final HashSet< Long > set_report_id = new HashSet<>();
+	private final HashSet< Long > set_account_id = new HashSet<>();
 	
 	public void clear(){
 		set_status_id.clear();
@@ -28,7 +23,7 @@ public class DuplicateMap {
 		set_account_id.clear();
 	}
 	
-	boolean isDuplicate(Object o){
+	private boolean isDuplicate( Object o ){
 
 		if( o instanceof TootStatus ){
 			if( set_status_id.contains( ( (TootStatus) o ).id ) ) return true;

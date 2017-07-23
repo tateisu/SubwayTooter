@@ -88,8 +88,6 @@ public class HTMLDecoder {
 		}
 	}
 	
-
-
 	private static final boolean DEBUG_HTML_PARSER = false;
 	
 	private static class Node {
@@ -135,7 +133,7 @@ public class HTMLDecoder {
 			LinkClickContext account
 			, SpannableStringBuilder sb
 			, boolean bShort
-			, @Nullable TootAttachment.List  list_attachment
+			, @Nullable TootAttachment.List list_attachment
 		){
 			if( TAG_TEXT.equals( tag ) ){
 				sb.append( Emojione.decodeEmoji( decodeEntity( text ) ) );
@@ -145,7 +143,7 @@ public class HTMLDecoder {
 			
 			SpannableStringBuilder sb_tmp;
 			if( bShort && "a".equals( tag ) ){
-				sb_tmp = new SpannableStringBuilder(  );
+				sb_tmp = new SpannableStringBuilder();
 			}else{
 				sb_tmp = sb;
 			}
@@ -153,29 +151,29 @@ public class HTMLDecoder {
 			int start = sb_tmp.length();
 			
 			for( Node child : child_nodes ){
-				child.encodeSpan( account, sb_tmp ,bShort,list_attachment );
+				child.encodeSpan( account, sb_tmp, bShort, list_attachment );
 			}
 			
 			int end = sb_tmp.length();
 			
 			if( bShort && "a".equals( tag ) ){
 				start = sb.length();
-				sb.append(  encodeShortUrl( sb_tmp.toString(), getHref(), list_attachment ) );
+				sb.append( encodeShortUrl( sb_tmp.toString(), getHref(), list_attachment ) );
 				end = sb.length();
 			}
 			
 			if( end > start && "a".equals( tag ) ){
 				String href = getHref();
-				if( href != null){
-					MyClickableSpan span =  new MyClickableSpan(account,href,account.findAcctColor( href ) ) ;
-					sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+				if( href != null ){
+					MyClickableSpan span = new MyClickableSpan( account, href, account.findAcctColor( href ) );
+					sb.setSpan( span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
 				}
 			}
 			
 			if( DEBUG_HTML_PARSER ) sb.append( "(end " ).append( tag ).append( ")" );
 			
-			if( "br".equals( tag )  ) sb.append( '\n' );
-
+			if( "br".equals( tag ) ) sb.append( '\n' );
+			
 			if( "p".equals( tag ) || "li".equals( tag ) ){
 				if( sb.length() > 0 ){
 					if( sb.charAt( sb.length() - 1 ) != '\n' ) sb.append( '\n' );
@@ -195,7 +193,7 @@ public class HTMLDecoder {
 			return null;
 		}
 		
-		boolean is_media_attachment( @Nullable TootAttachment.List list_attachment,@Nullable String href){
+		boolean is_media_attachment( @Nullable TootAttachment.List list_attachment, @Nullable String href ){
 			if( href == null || list_attachment == null ) return false;
 			for( TootAttachment a : list_attachment ){
 				if( href.equals( a.remote_url )
@@ -205,7 +203,7 @@ public class HTMLDecoder {
 			}
 			return false;
 		}
-
+		
 		private CharSequence encodeShortUrl(
 			String display_url
 			, @Nullable String href
@@ -215,8 +213,8 @@ public class HTMLDecoder {
 				// ハッシュタグやメンションはいじらない
 				return display_url;
 			}
-
-			if( is_media_attachment( list_attachment,href )){
+			
+			if( is_media_attachment( list_attachment, href ) ){
 				return Emojione.decodeEmoji( ":frame_photo:" );
 			}
 			
@@ -235,7 +233,7 @@ public class HTMLDecoder {
 					sb.append( remain );
 				}
 				return sb;
-			}catch(Throwable ex){
+			}catch( Throwable ex ){
 				ex.printStackTrace();
 				return display_url;
 			}
@@ -250,7 +248,7 @@ public class HTMLDecoder {
 		LinkClickContext account
 		, String src
 		, boolean bShort
-		, @Nullable TootAttachment.List  list_attachment
+		, @Nullable TootAttachment.List list_attachment
 	){
 		SpannableStringBuilder sb = new SpannableStringBuilder();
 		try{
@@ -259,15 +257,15 @@ public class HTMLDecoder {
 				Node rootNode = new Node();
 				rootNode.parseChild( tracker, "" );
 				
-				rootNode.encodeSpan( account, sb ,bShort,list_attachment);
+				rootNode.encodeSpan( account, sb, bShort, list_attachment );
 				int end = sb.length();
 				while( end > 0 && isWhitespace( sb.charAt( end - 1 ) ) ) -- end;
 				if( end < sb.length() ){
 					sb.delete( end, sb.length() );
 				}
 				
-//				sb.append( "\n" );
-//				sb.append(src);
+				//				sb.append( "\n" );
+				//				sb.append(src);
 			}
 		}catch( Throwable ex ){
 			ex.printStackTrace();
@@ -275,29 +273,29 @@ public class HTMLDecoder {
 		
 		return sb;
 	}
-
-//	public static Spannable decodeTags( final LinkClickContext account, TootTag.List src_list ){
-//		if( src_list == null || src_list.isEmpty() ) return null;
-//		SpannableStringBuilder sb = new SpannableStringBuilder();
-//		for( TootTag item : src_list ){
-//			if( sb.length() > 0 ) sb.append( " " );
-//			int start = sb.length();
-//			sb.append( '#' );
-//			sb.append( item.name );
-//			int end = sb.length();
-//			if( end > start ){
-//				final String item_url = item.url;
-//				sb.setSpan( new ClickableSpan() {
-//					@Override public void onClick( View widget ){
-//						if( link_callback != null ){
-//							link_callback.onClickLink( account, item_url );
-//						}
-//					}
-//				}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
-//			}
-//		}
-//		return sb;
-//	}
+	
+	//	public static Spannable decodeTags( final LinkClickContext account, TootTag.List src_list ){
+	//		if( src_list == null || src_list.isEmpty() ) return null;
+	//		SpannableStringBuilder sb = new SpannableStringBuilder();
+	//		for( TootTag item : src_list ){
+	//			if( sb.length() > 0 ) sb.append( " " );
+	//			int start = sb.length();
+	//			sb.append( '#' );
+	//			sb.append( item.name );
+	//			int end = sb.length();
+	//			if( end > start ){
+	//				final String item_url = item.url;
+	//				sb.setSpan( new ClickableSpan() {
+	//					@Override public void onClick( View widget ){
+	//						if( link_callback != null ){
+	//							link_callback.onClickLink( account, item_url );
+	//						}
+	//					}
+	//				}, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+	//			}
+	//		}
+	//		return sb;
+	//	}
 	
 	public static Spannable decodeMentions( final LinkClickContext account, TootMention.List src_list ){
 		if( src_list == null || src_list.isEmpty() ) return null;
@@ -309,10 +307,9 @@ public class HTMLDecoder {
 			sb.append( item.acct );
 			int end = sb.length();
 			if( end > start ){
-				MyClickableSpan span =  new MyClickableSpan(account,item.url,account.findAcctColor( item.url ) ) ;
+				MyClickableSpan span = new MyClickableSpan( account, item.url, account.findAcctColor( item.url ) );
 				
-				
-				sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+				sb.setSpan( span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}
 		}
 		return sb;

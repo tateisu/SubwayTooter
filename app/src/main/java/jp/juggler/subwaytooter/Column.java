@@ -25,7 +25,6 @@ import java.util.regex.Pattern;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
-import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootContext;
 import jp.juggler.subwaytooter.api.entity.TootDomainBlock;
 import jp.juggler.subwaytooter.api.entity.TootGap;
@@ -35,7 +34,6 @@ import jp.juggler.subwaytooter.api.entity.TootReport;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootTag;
-import jp.juggler.subwaytooter.api_msp.MSPApiResult;
 import jp.juggler.subwaytooter.api_msp.MSPClient;
 import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
 import jp.juggler.subwaytooter.table.AcctColor;
@@ -757,6 +755,39 @@ class Column implements StreamReader.Callback {
 		AlarmService.dataRemoved( context, access_info.db_id );
 	}
 	
+	void removeMuteApp(){
+		ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
+		
+		HashSet< String > muted_app = MutedApp.getNameSet();
+		WordTrieTree muted_word = MutedWord.getNameSet();
+		
+		for( Object o : list_data ){
+			if( o instanceof TootStatus ){
+				TootStatus item = (TootStatus) o;
+				if( item.checkMuted( muted_app, muted_word ) ){
+					continue;
+					
+				}
+			}
+			if( o instanceof TootNotification ){
+				TootNotification item = (TootNotification) o;
+				TootStatus status = item.status;
+				
+				if( status != null ){
+					if( status.checkMuted( muted_app, muted_word ) ){
+						continue;
+					}
+				}
+			}
+			tmp_list.add( o );
+		}
+		if( tmp_list.size() != list_data.size() ){
+			list_data.clear();
+			list_data.addAll( tmp_list );
+			fireShowContent();
+		}
+	}
+	
 	void onDomainBlockChanged( SavedAccount target_account, String domain, boolean bBlocked ){
 		if( ! target_account.host.equals( access_info.host ) ) return;
 		if( access_info.isPseudo() ) return;
@@ -898,51 +929,12 @@ class Column implements StreamReader.Callback {
 	final BucketList< Object > list_data = new BucketList<>();
 	private final DuplicateMap duplicate_map = new DuplicateMap();
 	
-	private static boolean hasMedia( TootStatus status ){
-		if( status == null ) return false;
-		TootAttachment.List list = status.media_attachments;
-		return ! ( list == null || list.isEmpty() );
-	}
-	
-	private boolean isFiltered(){
+	private boolean isFilterEnabled(){
 		return ( with_attachment
 			|| dont_show_boost
 			|| dont_show_reply
 			|| ! TextUtils.isEmpty( regex_text )
 		);
-	}
-	
-	void removeMuteApp(){
-		ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
-		
-		HashSet< String > muted_app = MutedApp.getNameSet();
-		WordTrieTree muted_word = MutedWord.getNameSet();
-		
-		for( Object o : list_data ){
-			if( o instanceof TootStatus ){
-				TootStatus item = (TootStatus) o;
-				if( item.checkMuted( muted_app, muted_word ) ){
-					continue;
-					
-				}
-			}
-			if( o instanceof TootNotification ){
-				TootNotification item = (TootNotification) o;
-				TootStatus status = item.status;
-				
-				if( status != null ){
-					if( status.checkMuted( muted_app, muted_word ) ){
-						continue;
-					}
-				}
-			}
-			tmp_list.add( o );
-		}
-		if( tmp_list.size() != list_data.size() ){
-			list_data.clear();
-			list_data.addAll( tmp_list );
-			fireShowContent();
-		}
 	}
 	
 	private Pattern column_regex_filter;
@@ -963,9 +955,10 @@ class Column implements StreamReader.Callback {
 		muted_word = MutedWord.getNameSet();
 	}
 	
-	private boolean isFiltered( TootStatus status ){
+	private boolean isFiltered( @NonNull TootStatus status ){
 		if( with_attachment ){
-			if( ! hasMedia( status ) && ! hasMedia( status.reblog ) ) return true;
+			boolean hasMedia = status.reblog != null ? status.reblog.hasMedia() : status.hasMedia();
+			if( ! hasMedia ) return true;
 		}
 		
 		if( dont_show_boost ){
@@ -996,9 +989,45 @@ class Column implements StreamReader.Callback {
 		return false;
 	}
 	
+	private boolean isFiltered( MSPToot status ){
+		if( with_attachment ){
+			boolean hasMedia = status.hasMedia();
+			if( ! hasMedia ) return true;
+		}
+		
+		if( dont_show_boost ){
+			// MSPToot には関連パラメータはない
+		}
+		
+		if( dont_show_reply ){
+			// MSPToot には関連パラメータはない
+		}
+		
+		if( column_regex_filter != null ){
+			if( column_regex_filter.matcher( status.decoded_content.toString() ).find() )
+				return true;
+		}
+		
+		//noinspection RedundantIfStatement
+		if( status.checkMuted( muted_app, muted_word ) ){
+			return true;
+		}
+		
+		return false;
+	}
+	
 	@SuppressWarnings("ConstantConditions")
 	private void addWithFilter( ArrayList< Object > dst, TootStatus.List src ){
 		for( TootStatus status : src ){
+			if( ! isFiltered( status ) ){
+				dst.add( status );
+			}
+		}
+	}
+	
+	@SuppressWarnings("ConstantConditions")
+	private void addWithFilter( ArrayList< Object > dst, MSPToot.List src ){
+		for( MSPToot status : src ){
 			if( ! isFiltered( status ) ){
 				dst.add( status );
 			}
@@ -1074,7 +1103,7 @@ class Column implements StreamReader.Callback {
 							log.d( "loading-statuses: cancelled." );
 							break;
 						}
-						if( ! isFiltered() ){
+						if( ! isFilterEnabled() ){
 							log.d( "loading-statuses: isFiltered is false." );
 							break;
 						}
@@ -1334,7 +1363,7 @@ class Column implements StreamReader.Callback {
 								MSPToot.List search_result = MSPToot.parseList( log, access_info, result.array );
 								if( search_result != null ){
 									list_tmp = new ArrayList<>();
-									list_tmp.addAll( search_result );
+									addWithFilter( list_tmp, search_result );
 								}
 							}
 						}
@@ -1908,7 +1937,7 @@ class Column implements StreamReader.Callback {
 							}
 							
 							// bottomの場合、フィルタなしなら繰り返さない
-							if( ! isFiltered() ){
+							if( ! isFilterEnabled() ){
 								log.d( "refresh-status-bottom: isFiltered is false." );
 								break;
 							}
@@ -2134,7 +2163,7 @@ class Column implements StreamReader.Callback {
 								MSPToot.List search_result = MSPToot.parseList( log, access_info, result.array );
 								if( search_result != null ){
 									list_tmp = new ArrayList<>();
-									list_tmp.addAll( search_result );
+									addWithFilter( list_tmp, search_result );
 								}
 							}
 						}

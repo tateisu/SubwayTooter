@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
@@ -79,7 +80,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private final View llSearchTag;
 	private final Button btnSearchTag;
 	
-	private final TextView tvApplication;
+	private @Nullable final TextView tvApplication;
 	
 	private TootStatusLike status;
 	private TootAccount account_thumbnail;
@@ -343,13 +344,8 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.status = status;
 		llStatus.setVisibility( View.VISIBLE );
 		
-		if( status instanceof TootStatus ){
-			tvTime.setText( TootStatus.formatTime( ( (TootStatus) status ).time_created_at ) );
-			
-		}else if( status instanceof MSPToot ){
-			tvTime.setText( ( (MSPToot) status ).created_at );
-			
-		}
+		tvTime.setText( TootStatus.formatTime( status .time_created_at ) );
+
 		ivThumbnail.setCornerRadius( activity.pref, 16f );
 		
 		account_thumbnail = status.account;

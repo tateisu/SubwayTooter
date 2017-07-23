@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LinkClickContext;
@@ -146,13 +147,17 @@ public class TootAccount {
 		return result;
 	}
 	
+	static final Pattern reLineFeed = Pattern.compile( "[\\s\\t\\x0d\\x0a]+" );
+	
 	public static CharSequence filterDisplayName( String sv ){
-		
 		// decode HTML entity
 		sv = HTMLDecoder.decodeEntity( sv );
 		
 		// sanitize LRO,RLO
 		sv = Utils.sanitizeBDI( sv );
+		
+		// remove white spaces
+		sv = reLineFeed.matcher( sv ).replaceAll( " " );
 		
 		// decode emoji code
 		return Emojione.decodeEmoji( sv );

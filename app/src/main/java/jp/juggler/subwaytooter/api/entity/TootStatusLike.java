@@ -41,5 +41,7 @@ public abstract class TootStatusLike extends TootId{
 	//Application from which the status was posted
 	public TootApplication application;
 	
+	public long time_created_at;
 	
+	public abstract boolean hasMedia();
 }

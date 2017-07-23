@@ -256,7 +256,6 @@ class ColumnViewHolder
 				bAllowFilter = true;
 				break;
 			case Column.TYPE_SEARCH:
-			case Column.TYPE_SEARCH_PORTAL:
 			case Column.TYPE_CONVERSATION:
 			case Column.TYPE_REPORTS:
 			case Column.TYPE_BLOCKS:
@@ -295,15 +294,17 @@ class ColumnViewHolder
 			cbResolve.setChecked( column.search_resolve );
 			
 			vg( cbWithAttachment, bAllowFilter );
+			vg( etRegexFilter, bAllowFilter );
+			vg( llRegexFilter, bAllowFilter );
+
 			vg( cbDontShowBoost, bAllowFilterBoost );
 			vg( cbDontShowReply, bAllowFilterBoost );
+
 			vg( cbDontStreaming, column.canStreaming() );
 			vg( cbDontAutoRefresh, column.canAutoRefresh() );
 			vg( cbHideMediaDefault, column.canShowMedia() );
 			vg( cbEnableSpeech, column.canSpeech() );
 			
-			vg( etRegexFilter, bAllowFilter );
-			vg( llRegexFilter, bAllowFilter );
 			
 			vg( btnDeleteNotification, column.column_type == Column.TYPE_NOTIFICATIONS );
 			vg( llSearch, (column.column_type == Column.TYPE_SEARCH  || column.column_type == Column.TYPE_SEARCH_PORTAL ) );

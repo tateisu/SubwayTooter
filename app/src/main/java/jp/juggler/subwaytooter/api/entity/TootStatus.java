@@ -1,8 +1,6 @@
 package jp.juggler.subwaytooter.api.entity;
 
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.NavigationView;
 import android.text.Spannable;
 import android.text.TextUtils;
 
@@ -20,7 +18,6 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -46,9 +43,6 @@ public class TootStatus extends TootStatusLike {
 	// A Fediverse-unique resource ID
 	public String uri;
 	
-
-	
-
 	//	null or the ID of the status it replies to
 	public String in_reply_to_id;
 	
@@ -57,12 +51,10 @@ public class TootStatus extends TootStatusLike {
 	
 	//	null or the reblogged Status
 	public TootStatus reblog;
-
-	//	The time the status was created
-	public String created_at;
 	
-
-
+	//	The time the status was created
+	private String created_at;
+	
 	//One of: public, unlisted, private, direct
 	public String visibility;
 	public static final String VISIBILITY_PUBLIC = "public";
@@ -78,9 +70,6 @@ public class TootStatus extends TootStatusLike {
 	
 	//An array of Tags
 	public TootTag.List tags;
-	
-
-	public long time_created_at;
 	
 	// public Spannable decoded_tags;
 	public Spannable decoded_mentions;
@@ -104,7 +93,7 @@ public class TootStatus extends TootStatusLike {
 			status.account = TootAccount.parse( log, lcc, src.optJSONObject( "account" ) );
 			status.in_reply_to_id = Utils.optStringX( src, "in_reply_to_id" ); // null
 			status.in_reply_to_account_id = Utils.optStringX( src, "in_reply_to_account_id" ); // null
-			status.reblog = TootStatus.parse( log, lcc,status_host, src.optJSONObject( "reblog" ) );
+			status.reblog = TootStatus.parse( log, lcc, status_host, src.optJSONObject( "reblog" ) );
 			status.content = Utils.optStringX( src, "content" );
 			status.created_at = Utils.optStringX( src, "created_at" ); // "2017-04-16T09:37:14.000Z"
 			status.reblogs_count = src.optLong( "reblogs_count" );
@@ -120,12 +109,12 @@ public class TootStatus extends TootStatusLike {
 			status.application = TootApplication.parse( log, src.optJSONObject( "application" ) ); // null
 			
 			status.time_created_at = parseTime( log, status.created_at );
-			status.decoded_content = HTMLDecoder.decodeHTML( lcc, status.content ,true,status.media_attachments );
+			status.decoded_content = HTMLDecoder.decodeHTML( lcc, status.content, true, status.media_attachments );
 			// status.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
 			status.decoded_mentions = HTMLDecoder.decodeMentions( lcc, status.mentions );
 			
 			if( ! TextUtils.isEmpty( status.spoiler_text ) ){
-				status.decoded_spoiler_text = HTMLDecoder.decodeHTML( lcc, status.spoiler_text ,true,status.media_attachments);
+				status.decoded_spoiler_text = HTMLDecoder.decodeHTML( lcc, status.spoiler_text, true, status.media_attachments );
 			}
 			return status;
 		}catch( Throwable ex ){
@@ -144,7 +133,7 @@ public class TootStatus extends TootStatusLike {
 			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootStatus item = parse( log, lcc,status_host, src );
+				TootStatus item = parse( log, lcc, status_host, src );
 				if( item != null ) result.add( item );
 			}
 		}
@@ -210,14 +199,14 @@ public class TootStatus extends TootStatusLike {
 		throw new IndexOutOfBoundsException( "visibility not in range" );
 	}
 	
-//	public void updateNickname( SavedAccount access_info ){
-//		decoded_content = HTMLDecoder.decodeHTML( access_info, content );
-//		decoded_mentions = HTMLDecoder.decodeMentions( access_info, mentions );
-//
-//		if( ! TextUtils.isEmpty( spoiler_text ) ){
-//			decoded_spoiler_text = HTMLDecoder.decodeHTML( access_info, spoiler_text );
-//		}
-//	}
+	//	public void updateNickname( SavedAccount access_info ){
+	//		decoded_content = HTMLDecoder.decodeHTML( access_info, content );
+	//		decoded_mentions = HTMLDecoder.decodeMentions( access_info, mentions );
+	//
+	//		if( ! TextUtils.isEmpty( spoiler_text ) ){
+	//			decoded_spoiler_text = HTMLDecoder.decodeHTML( access_info, spoiler_text );
+	//		}
+	//	}
 	
 	public boolean checkMuted( @NonNull HashSet< String > muted_app, @NonNull WordTrieTree muted_word ){
 		
@@ -245,4 +234,7 @@ public class TootStatus extends TootStatusLike {
 		
 	}
 	
+	public boolean hasMedia(){
+		return media_attachments != null && media_attachments.size() > 0;
+	}
 }

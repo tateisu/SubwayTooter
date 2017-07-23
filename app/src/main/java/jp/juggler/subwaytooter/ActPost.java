@@ -443,7 +443,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					
 					// リプライ表示をつける
 					in_reply_to_id = reply_status.id;
-					in_reply_to_text = reply_status.decoded_content.toString();
+					in_reply_to_text = reply_status.content;
 					in_reply_to_image = reply_status.account == null ? null : reply_status.account.avatar_static;
 					in_reply_to_url = reply_status.url;
 					

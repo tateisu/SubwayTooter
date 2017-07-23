@@ -3779,7 +3779,7 @@ public class ActMain extends AppCompatActivity
 			}
 			
 		}else{
-			AccountPicker.pick( this, false, false
+			AccountPicker.pick( this, true, false
 				, getString( R.string.account_picker_add_timeline_of, host )
 				, account_list, new AccountPicker.AccountPickerCallback() {
 					@Override public void onAccountPicked( @NonNull SavedAccount ai ){

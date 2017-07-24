@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.entity;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.TextUtils;
 
@@ -74,6 +75,21 @@ public class TootAccount {
 	
 	public long time_created_at;
 	
+	public static class Source {
+		// デフォルト公開範囲
+		@Nullable public String privacy;
+		
+		// 添付画像をデフォルトでNSFWにする設定
+		// nullになることがある
+		public boolean sensitive;
+		
+		// HTMLエンコードされていない、生のnote
+		@Nullable public String note;
+		
+	}
+	@Nullable public Source source;
+	
+	
 	public TootAccount(){
 		
 	}
@@ -118,6 +134,8 @@ public class TootAccount {
 			
 			dst.time_created_at = TootStatus.parseTime( log, dst.created_at );
 			
+			dst.source = parseSource( log, src.optJSONObject( "source" ));
+			
 			return dst;
 			
 		}catch( Throwable ex ){
@@ -125,6 +143,17 @@ public class TootAccount {
 			log.e( ex, "TootAccount.parse failed." );
 			return null;
 		}
+	}
+	
+	private static Source parseSource( LogCategory log, JSONObject src ){
+		if( src==null) return null;
+		Source dst = new Source();
+		dst.privacy =  Utils.optStringX( src, "privacy" );
+		dst.note =  Utils.optStringX( src, "note" );
+		
+		// null,true,
+		dst.sensitive = src.optBoolean( "sensitive" ,false );
+		return dst;
 	}
 	
 	public static TootAccount parse( LogCategory log, LinkClickContext account, JSONObject src ){

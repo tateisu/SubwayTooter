@@ -34,7 +34,6 @@ import jp.juggler.subwaytooter.util.MyClickableSpan;
 import jp.juggler.subwaytooter.util.PostAttachment;
 import jp.juggler.subwaytooter.util.Utils;
 
-
 class AppState {
 	static final LogCategory log = new LogCategory( "AppState" );
 	final Context context;
@@ -136,15 +135,17 @@ class AppState {
 	private final HashSet< String > map_busy_fav = new HashSet<>();
 	
 	boolean isBusyFav( SavedAccount account, @NonNull TootStatusLike status ){
-		final String key = account.acct +":" + status.status_host + ":" + status.id;
+		final String key = account.acct + ":" + status.status_host + ":" + status.id;
 		return map_busy_fav.contains( key );
 	}
+	
 	boolean setBusyFav( SavedAccount account, @NonNull TootStatusLike status ){
-		final String key = account.acct +":" + status.status_host + ":" + status.id;
+		final String key = account.acct + ":" + status.status_host + ":" + status.id;
 		return map_busy_fav.add( key );
 	}
+	
 	boolean resetBusyFav( SavedAccount account, @NonNull TootStatusLike status ){
-		final String key = account.acct +":" + status.status_host + ":" + status.id;
+		final String key = account.acct + ":" + status.status_host + ":" + status.id;
 		return map_busy_fav.remove( key );
 	}
 	
@@ -153,15 +154,17 @@ class AppState {
 	private final HashSet< String > map_busy_boost = new HashSet<>();
 	
 	boolean isBusyBoost( @NonNull SavedAccount account, @NonNull TootStatusLike status ){
-		final String key = account.acct +":" + status.status_host + ":" + status.id;
+		final String key = account.acct + ":" + status.status_host + ":" + status.id;
 		return map_busy_boost.contains( key );
 	}
+	
 	boolean setBusyBoost( SavedAccount account, @NonNull TootStatusLike status ){
-		final String key = account.acct +":" + status.status_host + ":" + status.id;
+		final String key = account.acct + ":" + status.status_host + ":" + status.id;
 		return map_busy_boost.add( key );
 	}
+	
 	boolean resetBusyBoost( SavedAccount account, @NonNull TootStatusLike status ){
-		final String key = account.acct +":" + status.status_host + ":" + status.id;
+		final String key = account.acct + ":" + status.status_host + ":" + status.id;
 		return map_busy_boost.remove( key );
 	}
 	//////////////////////////////////////////////////////
@@ -216,7 +219,7 @@ class AppState {
 							@Override public void run(){
 								if( ! willSpeechEnabled ){
 									Utils.showToast( context, false, R.string.text_to_speech_shutdown );
-									log.d( "shutdown TextToSpeech…");
+									log.d( "shutdown TextToSpeech…" );
 									tmp_tts.shutdown();
 								}else{
 									tts_queue.clear();
@@ -230,12 +233,12 @@ class AppState {
 										
 										@Override public void onDone( String utteranceId ){
 											log.d( "UtteranceProgressListener.onDone id=%s", utteranceId );
-											flushSpeechQueue();
+											handler.post( proc_flushSpeechQueue );
 										}
 										
 										@Override public void onError( String utteranceId ){
 											log.d( "UtteranceProgressListener.onError id=%s", utteranceId );
-											flushSpeechQueue();
+											handler.post( proc_flushSpeechQueue );
 										}
 									} );
 								}
@@ -247,13 +250,13 @@ class AppState {
 		}
 		if( ! willSpeechEnabled && tts != null ){
 			Utils.showToast( context, false, R.string.text_to_speech_shutdown );
-			log.d( "shutdown TextToSpeech…");
+			log.d( "shutdown TextToSpeech…" );
 			tts.shutdown();
 			tts = null;
 			tts_status = TTS_STATUS_NONE;
 		}
 	}
-		
+	
 	private static final Pattern reSpaces = Pattern.compile( "[\\s　]+" );
 	
 	private static Spannable getStatusText( TootStatus status ){
@@ -321,7 +324,7 @@ class AppState {
 		if( text_end > last_end ){
 			sb.append( str_text.substring( last_end, text_end ) );
 		}
-		if( has_url){
+		if( has_url ){
 			sb.append( context.getString( R.string.url_omitted ) );
 		}
 		addSpeech( sb.toString() );
@@ -347,22 +350,41 @@ class AppState {
 		tts_queue.add( sv );
 		if( tts_queue.size() > 30 ) tts_queue.removeFirst();
 		
-		flushSpeechQueue();
+		handler.post( proc_flushSpeechQueue );
 	}
 	
 	private static int utteranceIdSeed = 0;
 	
-	private void flushSpeechQueue(){
-		if( tts_queue.isEmpty() ) return;
-		if( tts.isSpeaking() ) return;
-		String sv = tts_queue.removeFirst();
-		tts.speak(
-			sv
-			, TextToSpeech.QUEUE_ADD // int queueMode
-			, null // Bundle params
-			, Integer.toString( ++ utteranceIdSeed ) // String utteranceId
-		);
-	}
-	
+	private final Runnable proc_flushSpeechQueue = new Runnable() {
+		@Override public void run(){
+			try{
+				handler.removeCallbacks( proc_flushSpeechQueue );
+				if( tts_queue.isEmpty() ){
+					return;
+				}
+				
+				if( tts == null ){
+					log.d( "proc_flushSpeechQueue: tts is null" );
+					return;
+				}
+				
+				if( tts.isSpeaking() ){
+					log.d( "proc_flushSpeechQueue: tts is speaking. retry later." );
+					handler.postDelayed( proc_flushSpeechQueue, 333L );
+					return;
+				}
+				
+				String sv = tts_queue.removeFirst();
+				tts.speak(
+					sv
+					, TextToSpeech.QUEUE_ADD // int queueMode
+					, null // Bundle params
+					, Integer.toString( ++ utteranceIdSeed ) // String utteranceId
+				);
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+			}
+		}
+	};
 	
 }

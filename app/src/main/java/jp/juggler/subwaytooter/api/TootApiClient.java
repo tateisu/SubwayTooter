@@ -112,14 +112,14 @@ public class TootApiClient {
 		}catch( Throwable ex ){
 			ex.printStackTrace();
 			return new TootApiResult(
-				Utils.formatError( ex, context.getResources(), R.string.network_error )
+				Utils.formatError( ex, instance + ": " +context.getResources(), R.string.network_error )
 			);
 		}
 		
 		if( callback.isApiCancelled() ) return null;
 		
 		if( ! response.isSuccessful() ){
-			return new TootApiResult( context.getString( R.string.network_error_arg, response ) );
+			return new TootApiResult( instance + ": " +context.getString( R.string.network_error_arg, response ) );
 		}
 		
 		try{
@@ -179,7 +179,7 @@ public class TootApiClient {
 		}catch( Throwable ex ){
 			ex.printStackTrace();
 			return new TootApiResult(
-				Utils.formatError( ex, context.getResources(), R.string.network_error )
+				Utils.formatError( ex, instance + ": " +context.getResources(), R.string.network_error )
 			);
 		}
 	}
@@ -202,13 +202,13 @@ public class TootApiClient {
 			response = call.execute();
 		}catch( Throwable ex ){
 			ex.printStackTrace();
-			return new TootApiResult( Utils.formatError( ex, context.getResources(), R.string.network_error ) );
+			return new TootApiResult( instance + ": " +Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		
 		if( callback.isApiCancelled() ) return null;
 		
 		if( ! response.isSuccessful() ){
-			return new TootApiResult( context.getString( R.string.network_error_arg, response ) );
+			return new TootApiResult( instance + ": " +context.getString( R.string.network_error_arg, response ) );
 		}
 		
 		try{
@@ -266,12 +266,12 @@ public class TootApiClient {
 			response = call.execute();
 		}catch( Throwable ex ){
 			ex.printStackTrace();
-			return new TootApiResult( Utils.formatError( ex, context.getResources(), R.string.network_error ) );
+			return new TootApiResult( instance + ": " +Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		if( callback.isApiCancelled() ) return null;
 		
 		if( ! response.isSuccessful() ){
-			return new TootApiResult( context.getString( R.string.network_error_arg, response ) );
+			return new TootApiResult( instance + ": " +context.getString( R.string.network_error_arg, response ) );
 		}
 		try{
 			//noinspection ConstantConditions
@@ -345,12 +345,12 @@ public class TootApiClient {
 			response = call.execute();
 		}catch( Throwable ex ){
 			ex.printStackTrace();
-			return new TootApiResult( Utils.formatError( ex, context.getResources(), R.string.network_error ) );
+			return new TootApiResult( instance + ": " +Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		if( callback.isApiCancelled() ) return null;
 		
 		if( ! response.isSuccessful() ){
-			return new TootApiResult( context.getString( R.string.network_error_arg, response ) );
+			return new TootApiResult( instance + ": " + context.getString( R.string.network_error_arg, response ) );
 		}
 		
 		JSONObject token_info;
@@ -391,13 +391,13 @@ public class TootApiClient {
 			response = call.execute();
 		}catch( Throwable ex ){
 			ex.printStackTrace();
-			return new TootApiResult( Utils.formatError( ex, context.getResources(), R.string.network_error ) );
+			return new TootApiResult( instance + ": " +Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		
 		if( callback.isApiCancelled() ) return null;
 		
 		if( ! response.isSuccessful() ){
-			return new TootApiResult( context.getString( R.string.network_error_arg, response ) );
+			return new TootApiResult( instance + ": " + context.getString( R.string.network_error_arg, response ) );
 		}
 		
 		try{

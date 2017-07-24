@@ -1315,6 +1315,10 @@ class Column implements StreamReader.Callback {
 						return result;
 					
 					case TYPE_SEARCH:
+						if( access_info.isPseudo() ){
+							// 1.5.0rc からマストドンの検索APIは認証を要求するようになった
+							return new TootApiResult( context.getString(R.string.search_is_not_available_on_pseudo_account ) );
+						}
 						String path = String.format( Locale.JAPAN, PATH_SEARCH, Uri.encode( search_query ) );
 						if( search_resolve ) path = path + "&resolve=1";
 						

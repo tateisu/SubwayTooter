@@ -672,7 +672,7 @@ public class ActMain extends AppCompatActivity
 			openColumnList();
 			
 		}else if( id == R.id.nav_add_tl_search ){
-			performAddTimeline( getDefaultInsertPosition(), true, Column.TYPE_SEARCH, "", false );
+			performAddTimeline( getDefaultInsertPosition(), false, Column.TYPE_SEARCH, "", false );
 			
 		}else if( id == R.id.nav_app_about ){
 			openAppAbout();
@@ -1440,8 +1440,21 @@ public class ActMain extends AppCompatActivity
 					long row_id = SavedAccount.insert( host, user, result.object, result.token_info );
 					SavedAccount account = SavedAccount.loadAccount( log, row_id );
 					if( account != null ){
+						boolean bModified = false;
 						if( account.locked ){
+							bModified = true;
 							account.visibility = TootStatus.VISIBILITY_PRIVATE;
+						}
+						if( ta != null && ta.source !=null ){
+							if( ta.source.privacy != null ){
+								bModified = true;
+								account.visibility = ta.source.privacy;
+							}
+							// TODO  ta.source.sensitive パラメータを読んで「添付画像をデフォルトでNSFWにする」を実現する
+							
+						}
+
+						if( bModified ){
 							account.saveSetting();
 						}
 						Utils.showToast( ActMain.this, false, R.string.account_confirmed );

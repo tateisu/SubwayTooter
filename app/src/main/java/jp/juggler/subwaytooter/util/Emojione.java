@@ -1,5 +1,8 @@
 package jp.juggler.subwaytooter.util;
 
+import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.support.v4.content.ContextCompat;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 
@@ -9,6 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.App1;
+import jp.juggler.subwaytooter.R;
 import uk.co.chrisjenx.calligraphy.CalligraphyTypefaceSpan;
 
 public abstract class Emojione
@@ -70,9 +74,19 @@ public abstract class Emojione
 				}
 			}
 		}
+		
+		void addImageSpan( String text,Context context, int res_id){
+			closeSpan();
+			int start = sb.length();
+			sb.append(text);
+			int end = sb.length();
+			sb.setSpan( new EmojiImageSpan(context,res_id ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		}
 	}
 	
-	public static CharSequence decodeEmoji( String s ){
+	static final Pattern reNicoru = Pattern.compile( "\\Anicoru\\d*\\z",Pattern.CASE_INSENSITIVE );
+	
+	public static CharSequence decodeEmoji( Context context, String s ){
 
 		DecodeEnv decode_env = new DecodeEnv();
 		Matcher matcher = SHORTNAME_PATTERN.matcher(s);
@@ -87,7 +101,11 @@ public abstract class Emojione
 			//
 			String unicode = map_name2unicode.get(matcher.group(1));
 			if( unicode == null ){
-				decode_env.addUnicodeString(s.substring( start, end ));
+				if( reNicoru.matcher( matcher.group(1) ).find() ){
+					decode_env.addImageSpan( s.substring( start, end ), context,  R.drawable.emoji_hohoemi );
+				}else{
+					decode_env.addUnicodeString( s.substring( start, end ) );
+				}
 			}else{
 				decode_env.addEmoji( unicode );
 			}

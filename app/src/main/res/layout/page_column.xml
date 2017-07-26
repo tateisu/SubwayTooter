@@ -246,16 +246,6 @@
             </LinearLayout>
         </jp.juggler.subwaytooter.view.MaxHeightScrollView>
 
-        <TextView
-            android:id="@+id/tvSearchDesc"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="?attr/colorSearchFormBackground"
-            android:paddingBottom="0dp"
-            android:paddingEnd="12dp"
-            android:paddingStart="12dp"
-            android:paddingTop="3dp"
-            />
 
         <RelativeLayout
             android:id="@+id/llSearch"

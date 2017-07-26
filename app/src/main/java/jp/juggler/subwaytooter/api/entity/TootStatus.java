@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.api.entity;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.Spannable;
 import android.text.TextUtils;
@@ -78,22 +79,32 @@ public class TootStatus extends TootStatusLike {
 	
 	public boolean conversation_main;
 	
-	public static TootStatus parse( @NonNull LogCategory log, @NonNull LinkClickContext lcc, @NonNull String status_host, JSONObject src ){
+	public static TootStatus parse( @NonNull Context context, @NonNull LogCategory log, @NonNull LinkClickContext lcc, @NonNull String host_access, JSONObject src ){
 		
 		if( src == null ) return null;
+		//	log.d( "parse: %s", src.toString() );
 		
 		try{
 			TootStatus status = new TootStatus();
 			status.json = src;
-			//	log.d( "parse: %s", src.toString() );
-			status.id = src.optLong( "id" );
-			status.status_host = status_host;
+			
+			status.account = TootAccount.parse( context,log, lcc, src.optJSONObject( "account" ) );
+			
+			if( status.account == null ) return null;
+			
+			status.id = src.optLong( "id" ); // host_remote の上のID
 			status.uri = Utils.optStringX( src, "uri" );
 			status.url = Utils.optStringX( src, "url" );
-			status.account = TootAccount.parse( log, lcc, src.optJSONObject( "account" ) );
+			
+			status.host_access = host_access;
+			status.host_original = status.account.getAcctHost();
+			if( status.host_original == null ){
+				status.host_original = host_access;
+			}
+			
 			status.in_reply_to_id = Utils.optStringX( src, "in_reply_to_id" ); // null
 			status.in_reply_to_account_id = Utils.optStringX( src, "in_reply_to_account_id" ); // null
-			status.reblog = TootStatus.parse( log, lcc, status_host, src.optJSONObject( "reblog" ) );
+			status.reblog = TootStatus.parse( context, log, lcc, host_access, src.optJSONObject( "reblog" ) );
 			status.content = Utils.optStringX( src, "content" );
 			status.created_at = Utils.optStringX( src, "created_at" ); // "2017-04-16T09:37:14.000Z"
 			status.reblogs_count = src.optLong( "reblogs_count" );
@@ -109,12 +120,12 @@ public class TootStatus extends TootStatusLike {
 			status.application = TootApplication.parse( log, src.optJSONObject( "application" ) ); // null
 			
 			status.time_created_at = parseTime( log, status.created_at );
-			status.decoded_content = HTMLDecoder.decodeHTML( lcc, status.content, true, status.media_attachments );
+			status.decoded_content = HTMLDecoder.decodeHTML( context, lcc, status.content, true, status.media_attachments );
 			// status.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
 			status.decoded_mentions = HTMLDecoder.decodeMentions( lcc, status.mentions );
 			
 			if( ! TextUtils.isEmpty( status.spoiler_text ) ){
-				status.decoded_spoiler_text = HTMLDecoder.decodeHTML( lcc, status.spoiler_text, true, status.media_attachments );
+				status.decoded_spoiler_text = HTMLDecoder.decodeHTML( context, lcc, status.spoiler_text, true, status.media_attachments );
 			}
 			return status;
 		}catch( Throwable ex ){
@@ -125,7 +136,7 @@ public class TootStatus extends TootStatusLike {
 	}
 	
 	@NonNull
-	public static List parseList( @NonNull LogCategory log, @NonNull LinkClickContext lcc, @NonNull String status_host, JSONArray array ){
+	public static List parseList(@NonNull Context context, @NonNull LogCategory log, @NonNull LinkClickContext lcc, @NonNull String status_host, JSONArray array ){
 		List result = new List();
 		if( array != null ){
 			int array_size = array.length();
@@ -133,7 +144,7 @@ public class TootStatus extends TootStatusLike {
 			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootStatus item = parse( log, lcc, status_host, src );
+				TootStatus item = parse( context, log, lcc, status_host, src );
 				if( item != null ) result.add( item );
 			}
 		}

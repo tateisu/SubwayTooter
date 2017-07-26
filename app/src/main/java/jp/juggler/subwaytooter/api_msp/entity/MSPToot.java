@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter.api_msp.entity;
 
-import android.net.Uri;
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -16,8 +16,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.api.entity.TootAccount;
-import jp.juggler.subwaytooter.api.entity.TootAttachment;
-import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
@@ -33,7 +31,7 @@ public class MSPToot extends TootStatusLike {
 	
 	private static final Pattern reAccountUrl = Pattern.compile( "\\Ahttps://([^/#?]+)/@([^/#?]+)\\z" );
 	
-	private static TootAccount parseAccount( LogCategory log, SavedAccount access_info, JSONObject src ){
+	private static TootAccount parseAccount( @NonNull Context context, LogCategory log, SavedAccount access_info, JSONObject src ){
 		
 		if( src == null ) return null;
 		
@@ -46,13 +44,13 @@ public class MSPToot extends TootStatusLike {
 		if( TextUtils.isEmpty( sv ) ){
 			dst.display_name = dst.username;
 		}else{
-			dst.display_name = TootAccount.filterDisplayName( sv );
+			dst.display_name = TootAccount.filterDisplayName( context,sv );
 		}
 		
 		dst.id = src.optLong( "id" );
 		
 		dst.note = Utils.optStringX( src, "note" );
-		dst.decoded_note = HTMLDecoder.decodeHTML( access_info, ( dst.note != null ? dst.note : null ), true, null );
+		dst.decoded_note = HTMLDecoder.decodeHTML( context,access_info, ( dst.note != null ? dst.note : null ), true, null );
 		
 		if( TextUtils.isEmpty( dst.url ) ){
 			log.e( "parseAccount: missing url" );
@@ -103,23 +101,24 @@ public class MSPToot extends TootStatusLike {
 	private String created_at;
 	
 	public ArrayList< String > media_attachments;
-	public long msp_id;
+	// private long msp_id;
 	
-	private static MSPToot parse( LogCategory log, SavedAccount access_info, JSONObject src ){
+	private static MSPToot parse( @NonNull Context context, LogCategory log, SavedAccount access_info, JSONObject src ){
 		if( src == null ) return null;
 		MSPToot dst = new MSPToot();
 		
-		dst.account = parseAccount( log, access_info, src.optJSONObject( "account" ) );
+		dst.account = parseAccount( context,log, access_info, src.optJSONObject( "account" ) );
 		if( dst.account == null ){
 			log.e( "missing status account" );
 			return null;
 		}
 		
 		dst.url = Utils.optStringX( src, "url" );
-		dst.status_host = dst.account.getAcctHost();
+		dst.host_original = dst.account.getAcctHost();
+		dst.host_access = "?";
 		dst.id = src.optLong( "id", - 1L );
 		
-		if( TextUtils.isEmpty( dst.url ) || TextUtils.isEmpty( dst.status_host ) || dst.id == - 1L ){
+		if( TextUtils.isEmpty( dst.url ) || TextUtils.isEmpty( dst.host_original ) || dst.id == - 1L ){
 			log.e( "missing status url or host or id" );
 			return null;
 		}
@@ -138,26 +137,26 @@ public class MSPToot extends TootStatusLike {
 			}
 		}
 		
-		dst.msp_id = src.optLong( "msp_id" );
+		// dst.msp_id = src.optLong( "msp_id" );
 		dst.sensitive = ( src.optInt( "sensitive", 0 ) != 0 );
 		
 		dst.spoiler_text = Utils.optStringX( src, "spoiler_text" );
 		if( ! TextUtils.isEmpty( dst.spoiler_text ) ){
-			dst.decoded_spoiler_text = HTMLDecoder.decodeHTML( access_info, dst.spoiler_text, true, null );
+			dst.decoded_spoiler_text = HTMLDecoder.decodeHTML( context,access_info, dst.spoiler_text, true, null );
 		}
 		
 		dst.content = Utils.optStringX( src, "content" );
-		dst.decoded_content = HTMLDecoder.decodeHTML( access_info, dst.content, true, null );
+		dst.decoded_content = HTMLDecoder.decodeHTML( context,access_info, dst.content, true, null );
 		
 		return dst;
 	}
 	
-	public static List parseList( LogCategory log, SavedAccount access_info, JSONArray array ){
+	public static List parseList(  @NonNull Context context, LogCategory log, SavedAccount access_info, JSONArray array ){
 		List list = new List();
 		for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
 			JSONObject src = array.optJSONObject( i );
 			if( src == null ) continue;
-			MSPToot item = parse( log, access_info, src );
+			MSPToot item = parse( context,log, access_info, src );
 			if( item == null ) continue;
 			list.add( item );
 		}
@@ -168,7 +167,7 @@ public class MSPToot extends TootStatusLike {
 	
 	private static final TimeZone tz_utc = TimeZone.getTimeZone( "UTC" );
 	
-	static long parseTime( LogCategory log, String strTime ){
+	private static long parseTime( LogCategory log, String strTime ){
 		if( ! TextUtils.isEmpty( strTime ) ){
 			try{
 				Matcher m = reTime.matcher( strTime );
@@ -195,7 +194,7 @@ public class MSPToot extends TootStatusLike {
 		return 0L;
 	}
 	
-	public boolean checkMuted( @NonNull HashSet< String > muted_app, @NonNull WordTrieTree muted_word ){
+	public boolean checkMuted( @SuppressWarnings("UnusedParameters") @NonNull HashSet< String > muted_app, @NonNull WordTrieTree muted_word ){
 		
 		//		// app mute
 		//		if( application != null ){

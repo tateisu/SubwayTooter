@@ -187,7 +187,7 @@ public class PostHelper {
 				
 				TootApiResult result = client.request( "/api/v1/statuses", request_builder );
 				if( result != null && result.object != null ){
-					status = TootStatus.parse( log, account, account.host, result.object );
+					status = TootStatus.parse( activity, log, account, account.host, result.object );
 					
 					Spannable s = status.decoded_content;
 					MyClickableSpan[] span_list = s.getSpans( 0, s.length(), MyClickableSpan.class );
@@ -264,6 +264,7 @@ public class PostHelper {
 	
 	public interface Callback2{
 		void onTextUpdate();
+		boolean canOpenPopup();
 	}
 	
 	private Callback2 callback2;
@@ -335,6 +336,11 @@ public class PostHelper {
 	
 	private final Runnable proc_text_changed = new Runnable() {
 		@Override public void run(){
+			if(! callback2.canOpenPopup() ){
+				closeAcctPopup();
+				return;
+			}
+			
 			int start = et.getSelectionStart();
 			int end = et.getSelectionEnd();
 			if( start != end ){

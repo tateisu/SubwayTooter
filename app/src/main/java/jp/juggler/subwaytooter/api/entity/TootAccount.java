@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.api.entity;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.Spannable;
@@ -100,7 +101,7 @@ public class TootAccount {
 		this.username = username;
 	}
 	
-	public static TootAccount parse( LogCategory log, LinkClickContext account, JSONObject src, TootAccount dst ){
+	public static TootAccount parse( Context context,LogCategory log, LinkClickContext account, JSONObject src, TootAccount dst ){
 		if( src == null ) return null;
 		try{
 			dst.id = src.optLong( "id", - 1L );
@@ -114,7 +115,7 @@ public class TootAccount {
 			if( TextUtils.isEmpty( sv ) ){
 				dst.display_name = dst.username;
 			}else{
-				dst.display_name = filterDisplayName( sv );
+				dst.display_name = filterDisplayName(  context,sv );
 			}
 			
 			dst.locked = src.optBoolean( "locked" );
@@ -124,7 +125,7 @@ public class TootAccount {
 			dst.statuses_count = src.optLong( "statuses_count" );
 			
 			dst.note = Utils.optStringX( src, "note" );
-			dst.decoded_note = HTMLDecoder.decodeHTML( account, ( dst.note != null ? dst.note : null ), true, null );
+			dst.decoded_note = HTMLDecoder.decodeHTML( context, account, ( dst.note != null ? dst.note : null ), true, null );
 			
 			dst.url = Utils.optStringX( src, "url" );
 			dst.avatar = Utils.optStringX( src, "avatar" ); // "https:\/\/mastodon.juggler.jp\/system\/accounts\/avatars\/000\/000\/148\/original\/0a468974fac5a448.PNG?1492081886",
@@ -156,12 +157,12 @@ public class TootAccount {
 		return dst;
 	}
 	
-	public static TootAccount parse( LogCategory log, LinkClickContext account, JSONObject src ){
-		return parse( log, account, src, new TootAccount() );
+	public static TootAccount parse( Context context, LogCategory log, LinkClickContext account, JSONObject src ){
+		return parse(  context,log, account, src, new TootAccount() );
 	}
 	
 	@NonNull
-	public static List parseList( LogCategory log, LinkClickContext account, JSONArray array ){
+	public static List parseList( Context context, LogCategory log, LinkClickContext account, JSONArray array ){
 		List result = new List();
 		if( array != null ){
 			int array_size = array.length();
@@ -169,7 +170,7 @@ public class TootAccount {
 			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootAccount item = parse( log, account, src );
+				TootAccount item = parse( context, log, account, src );
 				if( item != null ) result.add( item );
 			}
 		}
@@ -178,7 +179,7 @@ public class TootAccount {
 	
 	static final Pattern reLineFeed = Pattern.compile( "[\\s\\t\\x0d\\x0a]+" );
 	
-	public static CharSequence filterDisplayName( String sv ){
+	public static CharSequence filterDisplayName( Context context, String sv ){
 		// decode HTML entity
 		sv = HTMLDecoder.decodeEntity( sv );
 		
@@ -189,7 +190,7 @@ public class TootAccount {
 		sv = reLineFeed.matcher( sv ).replaceAll( " " );
 		
 		// decode emoji code
-		return Emojione.decodeEmoji( sv );
+		return Emojione.decodeEmoji(context, sv );
 	}
 	
 	public String getAcctHost(){

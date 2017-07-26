@@ -14,7 +14,7 @@ class ItemListAdapter extends BaseAdapter implements AdapterView.OnItemClickList
 	private final ActMain activity;
 	private final List< Object > list;
 	
-	HeaderViewHolder header;
+	HeaderViewHolderBase header;
 
 	private final boolean bSimpleList;
 	

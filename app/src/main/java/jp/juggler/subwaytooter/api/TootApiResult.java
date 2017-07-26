@@ -21,7 +21,9 @@ public class TootApiResult {
 	public Response response;
 	public WebSocket socket;
 	
-	
+	public TootApiResult(){
+	}
+
 	public TootApiResult( String error ){
 		this.error = error;
 	}

@@ -1,5 +1,8 @@
 package jp.juggler.subwaytooter.api.entity;
 
+import android.content.Context;
+import android.support.annotation.NonNull;
+
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -18,12 +21,12 @@ public class TootResults {
 	//	An array of matched hashtags, as strings
 	public ArrayList< String > hashtags;
 	
-	public static TootResults parse( LogCategory log, LinkClickContext lcc,String status_host, JSONObject src ){
+	public static TootResults parse( @NonNull Context context, LogCategory log, LinkClickContext lcc, String status_host, JSONObject src ){
 		try{
 			if( src == null ) return null;
 			TootResults dst = new TootResults();
-			dst.accounts = TootAccount.parseList( log, lcc, src.optJSONArray( "accounts" ) );
-			dst.statuses = TootStatus.parseList( log, lcc, status_host,src.optJSONArray( "statuses" ) );
+			dst.accounts = TootAccount.parseList(  context,log, lcc, src.optJSONArray( "accounts" ) );
+			dst.statuses = TootStatus.parseList(  context,log, lcc, status_host,src.optJSONArray( "statuses" ) );
 			dst.hashtags = Utils.parseStringArray( log, src.optJSONArray( "hashtags" ) );
 			return dst;
 		}catch( Throwable ex ){

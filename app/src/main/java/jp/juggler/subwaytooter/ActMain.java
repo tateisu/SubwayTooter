@@ -68,6 +68,7 @@ import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
+import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
 import jp.juggler.subwaytooter.dialog.DlgConfirm;
 import jp.juggler.subwaytooter.dialog.LoginForm;
@@ -89,7 +90,7 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 
 public class ActMain extends AppCompatActivity
-	implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, ViewPager.OnPageChangeListener, Column.Callback
+	implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, ViewPager.OnPageChangeListener, Column.Callback, DrawerLayout.DrawerListener
 {
 	public static final LogCategory log = new LogCategory( "ActMain" );
 	
@@ -113,7 +114,7 @@ public class ActMain extends AppCompatActivity
 	float timeline_font_size_sp = Float.NaN;
 	float acct_font_size_sp = Float.NaN;
 	
-	float validateFloat( float fv){
+	float validateFloat( float fv ){
 		if( Float.isNaN( fv ) ) return fv;
 		if( fv < 1f ) fv = 1f;
 		return fv;
@@ -230,7 +231,7 @@ public class ActMain extends AppCompatActivity
 				if( column.access_info.isNA() ){
 					// 検索カラムはアカウント削除とか無関係
 				}else{
-					SavedAccount sa = SavedAccount.loadAccount( log, column.access_info.db_id );
+					SavedAccount sa = SavedAccount.loadAccount( ActMain.this, log, column.access_info.db_id );
 					if( sa == null ){
 						bRemoved = true;
 					}else{
@@ -316,6 +317,8 @@ public class ActMain extends AppCompatActivity
 	@Override protected void onPause(){
 		bResume = false;
 		
+		post_helper.closeAcctPopup();
+		
 		// 最後に表示していたカラムの位置
 		int column_pos;
 		if( pager_adapter != null ){
@@ -346,13 +349,13 @@ public class ActMain extends AppCompatActivity
 			break;
 		
 		case R.id.btnQuickToot:
-			performQuickPost(null);
+			performQuickPost( null );
 			break;
 		}
 	}
 	
-	private void performQuickPost(SavedAccount account){
-
+	private void performQuickPost( SavedAccount account ){
+		
 		if( account == null ){
 			if( pager_adapter != null ){
 				Column c = app_state.column_list.get( pager.getCurrentItem() );
@@ -375,8 +378,6 @@ public class ActMain extends AppCompatActivity
 			visibility = TootStatus.VISIBILITY_PUBLIC;
 		}
 		
-		
-		
 		post_helper.content = etQuickToot.getText().toString().trim();
 		post_helper.spoiler_text = null;
 		post_helper.visibility = visibility;
@@ -384,15 +385,15 @@ public class ActMain extends AppCompatActivity
 		post_helper.in_reply_to_id = - 1L;
 		post_helper.attachment_list = null;
 		
-		Utils.hideKeyboard( this,etQuickToot );
+		Utils.hideKeyboard( this, etQuickToot );
 		post_helper.post( account, false, false, new PostHelper.Callback() {
 			@Override public void onPostComplete( SavedAccount target_account, TootStatus status ){
-				etQuickToot.setText("");
+				etQuickToot.setText( "" );
 				posted_acct = target_account.acct;
-				posted_status_id =status.id;
+				posted_status_id = status.id;
 				refreshAfterPost();
 			}
-		});
+		} );
 	}
 	
 	@Override
@@ -436,8 +437,9 @@ public class ActMain extends AppCompatActivity
 	static final int REQUEST_APP_ABOUT = 3;
 	static final int REQUEST_CODE_NICKNAME = 4;
 	static final int REQUEST_CODE_POST = 5;
-	static final int REQUEST_COLUMN_COLOR = 6;
-	static final int REQUEST_APP_SETTING = 7;
+	static final int REQUEST_CODE_COLUMN_COLOR = 6;
+	static final int REQUEST_CODE_APP_SETTING = 7;
+	static final int REQUEST_CODE_TEXT = 8;
 	
 	@Override protected void onActivityResult( int requestCode, int resultCode, Intent data ){
 		log.d( "onActivityResult" );
@@ -488,12 +490,12 @@ public class ActMain extends AppCompatActivity
 				
 			}else if( requestCode == REQUEST_CODE_POST ){
 				if( data != null ){
-					etQuickToot.setText("");
+					etQuickToot.setText( "" );
 					posted_acct = data.getStringExtra( ActPost.EXTRA_POSTED_ACCT );
 					posted_status_id = data.getLongExtra( ActPost.EXTRA_POSTED_STATUS_ID, 0L );
 				}
 				
-			}else if( requestCode == REQUEST_COLUMN_COLOR ){
+			}else if( requestCode == REQUEST_CODE_COLUMN_COLOR ){
 				if( data != null ){
 					app_state.saveColumnList();
 					int idx = data.getIntExtra( ActColumnCustomize.EXTRA_COLUMN_INDEX, 0 );
@@ -505,7 +507,7 @@ public class ActMain extends AppCompatActivity
 			}
 		}
 		
-		if( requestCode == REQUEST_APP_SETTING ){
+		if( requestCode == REQUEST_CODE_APP_SETTING ){
 			showFooterColor();
 			
 			if( resultCode == RESULT_APP_DATA_IMPORT ){
@@ -514,6 +516,11 @@ public class ActMain extends AppCompatActivity
 				}
 			}
 			
+		}else if( requestCode == REQUEST_CODE_TEXT ){
+			if( resultCode == ActText.RESULT_TOOT_SEARCH ){
+				String text = data.getStringExtra( Intent.EXTRA_TEXT );
+				addColumn( getDefaultInsertPosition(), SavedAccount.getNA(), Column.TYPE_SEARCH_PORTAL, text );
+			}
 		}
 		
 		super.onActivityResult( requestCode, resultCode, data );
@@ -663,7 +670,7 @@ public class ActMain extends AppCompatActivity
 			performAddTimeline( getDefaultInsertPosition(), false, Column.TYPE_NOTIFICATIONS );
 			
 		}else if( id == R.id.nav_app_setting ){
-			ActAppSetting.open( this, REQUEST_APP_SETTING );
+			ActAppSetting.open( this, REQUEST_CODE_APP_SETTING );
 			
 		}else if( id == R.id.nav_account_setting ){
 			performAccountSetting();
@@ -754,7 +761,6 @@ public class ActMain extends AppCompatActivity
 	ImageButton btnQuickToot;
 	PostHelper post_helper;
 	
-	
 	void initUI(){
 		setContentView( R.layout.act_main );
 		
@@ -780,7 +786,7 @@ public class ActMain extends AppCompatActivity
 		drawer = (DrawerLayout) findViewById( R.id.drawer_layout );
 		//		ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
 		//			this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close );
-		//		drawer.addDrawerListener( toggle );
+		drawer.addDrawerListener( this );
 		//		toggle.syncState();
 		
 		NavigationView navigationView = (NavigationView) findViewById( R.id.nav_view );
@@ -793,10 +799,10 @@ public class ActMain extends AppCompatActivity
 		llColumnStrip = (ColumnStripLinearLayout) findViewById( R.id.llColumnStrip );
 		svColumnStrip = (HorizontalScrollView) findViewById( R.id.svColumnStrip );
 		llQuickTootBar = findViewById( R.id.llQuickTootBar );
-		etQuickToot = (MyEditText) findViewById( R.id. etQuickToot );
-		btnQuickToot = (ImageButton)findViewById( R.id. btnQuickToot );
+		etQuickToot = (MyEditText) findViewById( R.id.etQuickToot );
+		btnQuickToot = (ImageButton) findViewById( R.id.btnQuickToot );
 		
-		if( !pref.getBoolean( Pref.KEY_QUICK_TOOT_BAR ,false ) ){
+		if( ! pref.getBoolean( Pref.KEY_QUICK_TOOT_BAR, false ) ){
 			llQuickTootBar.setVisibility( View.GONE );
 		}
 		
@@ -814,7 +820,7 @@ public class ActMain extends AppCompatActivity
 		} );
 		svColumnStrip.setHorizontalFadingEdgeEnabled( true );
 		
-		post_helper = new PostHelper( this,pref,app_state.handler );
+		post_helper = new PostHelper( this, pref, app_state.handler );
 		
 		DisplayMetrics dm = getResources().getDisplayMetrics();
 		
@@ -898,8 +904,12 @@ public class ActMain extends AppCompatActivity
 		
 		showFooterColor();
 		
-		post_helper.attachEditText( findViewById( R.id.llFormRoot ), etQuickToot, true,new PostHelper.Callback2() {
+		post_helper.attachEditText( findViewById( R.id.llFormRoot ), etQuickToot, true, new PostHelper.Callback2() {
 			@Override public void onTextUpdate(){
+			}
+			
+			@Override public boolean canOpenPopup(){
+				return drawer != null && ! drawer.isDrawerOpen( Gravity.START );
 			}
 		} );
 	}
@@ -1137,7 +1147,7 @@ public class ActMain extends AppCompatActivity
 			account_info.put( "acct", username );
 			
 			long row_id = SavedAccount.insert( host, full_acct, account_info, new JSONObject() );
-			SavedAccount account = SavedAccount.loadAccount( log, row_id );
+			SavedAccount account = SavedAccount.loadAccount( ActMain.this, log, row_id );
 			if( account == null ){
 				throw new RuntimeException( "loadAccount returns null." );
 			}
@@ -1181,35 +1191,37 @@ public class ActMain extends AppCompatActivity
 						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
 						final String host = m.group( 1 );
 						final long status_id = Long.parseLong( m.group( 3 ), 10 );
+						openStatusOtherInstance( getDefaultInsertPosition(), null, uri.toString(), host, status_id, host, status_id );
 						
-						ArrayList< SavedAccount > account_list_same_host = new ArrayList<>();
-						
-						for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
-							if( host.equalsIgnoreCase( a.host ) ){
-								account_list_same_host.add( a );
-							}
-						}
-						
-						// ソートする
-						Collections.sort( account_list_same_host, new Comparator< SavedAccount >() {
-							@Override public int compare( SavedAccount a, SavedAccount b ){
-								return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
-							}
-						} );
-						
-						if( account_list_same_host.isEmpty() ){
-							account_list_same_host.add( addPseudoAccount( host ) );
-						}
-						
-						AccountPicker.pick( this, true, true
-							, getString( R.string.open_status_from )
-							, account_list_same_host
-							, new AccountPicker.AccountPickerCallback() {
-								@Override
-								public void onAccountPicked( @NonNull final SavedAccount ai ){
-									openStatus( getDefaultInsertPosition(), ai, status_id );
-								}
-							} );
+						//
+						//						ArrayList< SavedAccount > account_list_same_host = new ArrayList<>();
+						//
+						//						for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
+						//							if( host.equalsIgnoreCase( a.host ) ){
+						//								account_list_same_host.add( a );
+						//							}
+						//						}
+						//
+						//						// ソートする
+						//						Collections.sort( account_list_same_host, new Comparator< SavedAccount >() {
+						//							@Override public int compare( SavedAccount a, SavedAccount b ){
+						//								return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
+						//							}
+						//						} );
+						//
+						//						if( account_list_same_host.isEmpty() ){
+						//							account_list_same_host.add( addPseudoAccount( host ) );
+						//						}
+						//
+						//						AccountPicker.pick( this, true, true
+						//							, getString( R.string.open_status_from )
+						//							, account_list_same_host
+						//							, new AccountPicker.AccountPickerCallback() {
+						//								@Override
+						//								public void onAccountPicked( @NonNull final SavedAccount ai ){
+						//									openStatus( getDefaultInsertPosition(), ai, status_id );
+						//								}
+						//							} );
 						
 					}catch( Throwable ex ){
 						Utils.showToast( this, ex, "can't parse status id." );
@@ -1228,52 +1240,6 @@ public class ActMain extends AppCompatActivity
 					openProfileByHostUser( getDefaultInsertPosition(), null, uri.toString(), host, user );
 				}
 				return;
-				
-			}else if( uri.getPath().startsWith( "/users/" ) ){
-				
-				// どうも古い形式らしいが、こういうURLもあるらしい
-				// https://mastodon.juggler.jp/users/SubwayTooter/updates/(status_id)
-				Matcher m = reStatusPage2.matcher( uri.toString() );
-				if( m.find() ){
-					// ステータスをアプリ内で開く
-					try{
-						final String host = m.group( 1 );
-						final long status_id = Long.parseLong( m.group( 3 ), 10 );
-						
-						ArrayList< SavedAccount > account_list_same_host = new ArrayList<>();
-						
-						for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
-							if( host.equalsIgnoreCase( a.host ) ){
-								account_list_same_host.add( a );
-							}
-						}
-						
-						// ソートする
-						Collections.sort( account_list_same_host, new Comparator< SavedAccount >() {
-							@Override public int compare( SavedAccount a, SavedAccount b ){
-								return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
-							}
-						} );
-						
-						if( account_list_same_host.isEmpty() ){
-							account_list_same_host.add( addPseudoAccount( host ) );
-						}
-						
-						AccountPicker.pick( this, true, true
-							, getString( R.string.open_status_from )
-							, account_list_same_host
-							, new AccountPicker.AccountPickerCallback() {
-								@Override
-								public void onAccountPicked( @NonNull final SavedAccount ai ){
-									openStatus( getDefaultInsertPosition(), ai, status_id );
-								}
-							} );
-						
-					}catch( Throwable ex ){
-						Utils.showToast( this, ex, "can't parse status id." );
-					}
-					return;
-				}
 			}
 			// https なら oAuth用の導線は通さない
 			return;
@@ -1285,7 +1251,7 @@ public class ActMain extends AppCompatActivity
 		if( ! TextUtils.isEmpty( sv ) ){
 			try{
 				long db_id = Long.parseLong( sv, 10 );
-				SavedAccount account = SavedAccount.loadAccount( log, db_id );
+				SavedAccount account = SavedAccount.loadAccount( ActMain.this, log, db_id );
 				if( account != null ){
 					Column column = addColumn( getDefaultInsertPosition(), account, Column.TYPE_NOTIFICATIONS );
 					// 通知を読み直す
@@ -1353,7 +1319,7 @@ public class ActMain extends AppCompatActivity
 				if( sv.startsWith( "db:" ) ){
 					try{
 						long db_id = Long.parseLong( sv.substring( 3 ), 10 );
-						this.sa = SavedAccount.loadAccount( log, db_id );
+						this.sa = SavedAccount.loadAccount( ActMain.this, log, db_id );
 						if( sa == null ){
 							return new TootApiResult( "missing account db_id=" + db_id );
 						}
@@ -1381,7 +1347,7 @@ public class ActMain extends AppCompatActivity
 							return null;
 						}
 					};
-					this.ta = TootAccount.parse( log, lcc, result.object );
+					this.ta = TootAccount.parse( ActMain.this, log, lcc, result.object );
 				}
 				return result;
 			}
@@ -1438,22 +1404,21 @@ public class ActMain extends AppCompatActivity
 					// アカウント追加時
 					String user = ta.username + "@" + host;
 					long row_id = SavedAccount.insert( host, user, result.object, result.token_info );
-					SavedAccount account = SavedAccount.loadAccount( log, row_id );
+					SavedAccount account = SavedAccount.loadAccount( ActMain.this, log, row_id );
 					if( account != null ){
 						boolean bModified = false;
 						if( account.locked ){
 							bModified = true;
 							account.visibility = TootStatus.VISIBILITY_PRIVATE;
 						}
-						if( ta != null && ta.source !=null ){
+						if( ta != null && ta.source != null ){
 							if( ta.source.privacy != null ){
 								bModified = true;
 								account.visibility = ta.source.privacy;
 							}
-							// TODO  ta.source.sensitive パラメータを読んで「添付画像をデフォルトでNSFWにする」を実現する
-							
+							// FIXME  ta.source.sensitive パラメータを読んで「添付画像をデフォルトでNSFWにする」を実現する
 						}
-
+						
 						if( bModified ){
 							account.saveSetting();
 						}
@@ -1494,7 +1459,7 @@ public class ActMain extends AppCompatActivity
 			SavedAccount a = column.access_info;
 			if( done_list.contains( a ) ) continue;
 			done_list.add( a );
-			if( ! a.isNA() ) a.reloadSetting();
+			if( ! a.isNA() ) a.reloadSetting( ActMain.this );
 			column.fireShowColumnHeader();
 		}
 	}
@@ -1506,7 +1471,7 @@ public class ActMain extends AppCompatActivity
 			if( ! Utils.equalsNullable( a.acct, account.acct ) ) continue;
 			if( done_list.contains( a ) ) continue;
 			done_list.add( a );
-			if( ! a.isNA() ) a.reloadSetting();
+			if( ! a.isNA() ) a.reloadSetting( ActMain.this );
 			column.fireShowColumnHeader();
 		}
 	}
@@ -1618,6 +1583,7 @@ public class ActMain extends AppCompatActivity
 		void onFindAccount( @Nullable TootAccount account );
 	}
 	
+	// ユーザ名からアカウントIDを取得するために検索APIを使う
 	void startFindAccount( final SavedAccount access_info, final String host, final String user, final FindAccountCallback callback ){
 		
 		final ProgressDialog progress = new ProgressDialog( this );
@@ -1648,7 +1614,7 @@ public class ActMain extends AppCompatActivity
 				if( result != null && result.array != null ){
 					for( int i = 0, ie = result.array.length() ; i < ie ; ++ i ){
 						
-						TootAccount item = TootAccount.parse( log, access_info, result.array.optJSONObject( i ) );
+						TootAccount item = TootAccount.parse( ActMain.this, log, access_info, result.array.optJSONObject( i ) );
 						
 						if( ! item.username.equals( user ) ) continue;
 						
@@ -1689,7 +1655,6 @@ public class ActMain extends AppCompatActivity
 	static final Pattern reHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#]+)(?:\\z|\\?)" );
 	static final Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)(?:\\z|\\?)" );
 	static final Pattern reStatusPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)/(\\d+)(?:\\z|\\?)" );
-	static final Pattern reStatusPage2 = Pattern.compile( "\\Ahttps://([^/]+)/users/([^?#/]+)/updates/(\\d+)(?:\\z|\\?)" );
 	
 	public void openChromeTab( final int pos, @Nullable final SavedAccount access_info, final String url, boolean noIntercept ){
 		try{
@@ -1715,7 +1680,7 @@ public class ActMain extends AppCompatActivity
 						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
 						final String host = m.group( 1 );
 						final long status_id = Long.parseLong( m.group( 3 ), 10 );
-						openStatusOtherInstance( pos, access_info, url, host, status_id );
+						openStatusOtherInstance( pos, access_info, url, host, status_id, host, status_id );
 						return;
 					}catch( Throwable ex ){
 						Utils.showToast( this, ex, "can't parse status id." );
@@ -1760,10 +1725,10 @@ public class ActMain extends AppCompatActivity
 						final String host = m.group( 1 );
 						final long status_id = Long.parseLong( m.group( 3 ), 10 );
 						if( host.equalsIgnoreCase( access_info.host ) ){
-							openStatus( pos, access_info, status_id );
+							openStatusLocal( pos, access_info, status_id );
 							return;
 						}else{
-							openStatusOtherInstance( pos, access_info, url, host, status_id );
+							openStatusOtherInstance( pos, access_info, url, host, status_id, host, status_id );
 							return;
 						}
 					}catch( Throwable ex ){
@@ -1814,32 +1779,74 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-	public void openStatus( int pos, @NonNull SavedAccount access_info, @NonNull TootStatusLike status ){
-		if( access_info.host.equalsIgnoreCase( status.status_host ) ){
-			openStatus( pos, access_info, status.id );
-		}else{
-			openStatusOtherInstance( pos, access_info, status.url, status.status_host, status.id );
-		}
-	}
-	
-	public void openStatus( int pos, @NonNull SavedAccount access_info, long status_id ){
+	public void openStatusLocal( int pos, @NonNull SavedAccount access_info, long status_id ){
 		addColumn( pos, access_info, Column.TYPE_CONVERSATION, status_id );
 	}
 	
-	void openStatusOtherInstance( final int pos, final SavedAccount access_info, final String url, final String host, final long status_id ){
+	public void openStatus( int pos, @NonNull SavedAccount access_info, @NonNull TootStatusLike status ){
+		if( access_info.isNA() || ! access_info.host.equalsIgnoreCase( status.host_access ) ){
+			openStatusOtherInstance( pos, access_info, status );
+		}else{
+			openStatusLocal( pos, access_info, status.id );
+		}
+	}
+	
+	public void openStatusOtherInstance( int pos, @NonNull SavedAccount access_info, @NonNull TootStatusLike status ){
+		if( status.account == null ){
+			// アカウント情報がないと出来ないことがある
+		}else if( status instanceof MSPToot ){
+			// トゥート検索の場合
+			openStatusOtherInstance( pos, access_info, status.url
+				, status.host_original, status.id
+				, null, - 1L
+			);
+		}else if( status.host_original.equals( status.host_access ) ){
+			// TLアカウントのホストとトゥートのアカウントのホストが同じ場合
+			openStatusOtherInstance( pos, access_info, status.url
+				, status.host_original, status.id
+				, null, - 1L
+			);
+		}else{
+			// TLアカウントのホストとトゥートのアカウントのホストが異なる場合
+			openStatusOtherInstance( pos, access_info, status.url
+				, null, - 1L
+				, status.host_access, status.id
+			);
+		}
+	}
+	
+	void openStatusOtherInstance(
+		final int pos
+		, @Nullable final SavedAccount access_info
+		, @NonNull final String url
+		, final String host_original, final long status_id_original
+		, final String host_access, final long status_id_access
+	){
 		ActionsDialog dialog = new ActionsDialog();
 		
-		// ブラウザで表示する
-		dialog.addAction( getString( R.string.open_web_on_host, host ), new Runnable() {
+		Uri uri = Uri.parse( url );
+		String host_name = uri.getAuthority();
+		
+		// 選択肢：ブラウザで表示する
+		dialog.addAction( getString( R.string.open_web_on_host, host_name ), new Runnable() {
 			@Override public void run(){
 				openChromeTab( pos, access_info, url, true );
 			}
 		} );
 		
-		// 同タンスのアカウント
+		boolean has_local_account = false;
 		ArrayList< SavedAccount > account_list = new ArrayList<>();
-		for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
-			if( host.equalsIgnoreCase( a.host ) ){
+		for( SavedAccount a : SavedAccount.loadAccountList( ActMain.this, log ) ){
+			if( status_id_original >= 0L && host_original.equalsIgnoreCase( a.host ) ){
+				// アクセス情報＋ステータスID でアクセスできるなら
+				// 同タンスのアカウントならステータスIDの変換なしに表示できる
+				account_list.add( a );
+				has_local_account = true;
+			}else if( status_id_access >= 0L && host_access.equalsIgnoreCase( a.host ) ){
+				// 既に変換済みのステータスIDがあるなら、そのアカウントでもステータスIDの変換は必要ない
+				account_list.add( a );
+			}else if( ! a.isPseudo() ){
+				// 別タンスでも実アカウントなら検索APIでステータスIDを変換できる
 				account_list.add( a );
 			}
 		}
@@ -1851,29 +1858,44 @@ public class ActMain extends AppCompatActivity
 			}
 		} );
 		
+		// ダイアログの選択肢に追加
 		for( SavedAccount a : account_list ){
 			final SavedAccount _a = a;
-			dialog.addAction( getString( R.string.open_in_account, a.acct ), new Runnable() {
+			
+			dialog.addAction( getString( R.string.open_in_account, AcctColor.getNickname( a.acct ) ), new Runnable() {
 				@Override public void run(){
-					openStatus( pos, _a, status_id );
-				}
-			} );
-		}
-		
-		// アカウントがないなら、疑似ホストを作る選択肢
-		if( account_list.isEmpty() ){
-			dialog.addAction( getString( R.string.open_in_pseudo_account, "?@" + host ), new Runnable() {
-				@Override public void run(){
-					SavedAccount sa = addPseudoAccount( host );
-					if( sa != null ){
-						openStatus( pos, sa, status_id );
+					if( status_id_original >= 0L && host_original.equalsIgnoreCase( _a.host ) ){
+						openStatusLocal( pos, _a, status_id_original );
+					}else if( status_id_access >= 0L && host_access.equalsIgnoreCase( _a.host ) ){
+						openStatusLocal( pos, _a, status_id_access );
+					}else if( ! _a.isPseudo() ){
+						performConversationRemote( pos, _a, url );
 					}
 				}
 			} );
 		}
 		
+		// 同タンスのアカウントがないなら、疑似アカウントを作る選択肢
+		if( ! has_local_account ){
+			if( status_id_original >= 0L ){
+				dialog.addAction( getString( R.string.open_in_pseudo_account, "?@" + host_original ), new Runnable() {
+					@Override public void run(){
+						SavedAccount sa = addPseudoAccount( host_original );
+						if( sa != null ){
+							openStatusLocal( pos, sa, status_id_original );
+						}
+					}
+				} );
+			}else if( status_id_access >= 0L ){
+				// リモートから流れてきたトゥートを オリジナルのインスタンスの疑似アカウントで開きたい
+				// しかし疑似アカウントでは検索ができないので、オリジナルのインスタンス上でのステータスIDを知る方法がない
+			}
+		}
+		
 		dialog.show( this, getString( R.string.open_status_from ) );
 	}
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	public void openHashTag( int pos, SavedAccount access_info, String tag ){
 		addColumn( pos, access_info, Column.TYPE_HASHTAG, tag );
@@ -1892,7 +1914,7 @@ public class ActMain extends AppCompatActivity
 		} );
 		
 		// 各アカウント
-		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( log );
+		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( ActMain.this, log );
 		
 		// ソートする
 		Collections.sort( account_list, new Comparator< SavedAccount >() {
@@ -1940,8 +1962,8 @@ public class ActMain extends AppCompatActivity
 				if( tag instanceof ItemViewHolder ){
 					column = ( (ItemViewHolder) tag ).column;
 					break;
-				}else if( tag instanceof HeaderViewHolder ){
-					column = ( (HeaderViewHolder) tag ).column;
+				}else if( tag instanceof HeaderViewHolderProfile ){
+					column = ( (HeaderViewHolderProfile) tag ).column;
 					break;
 				}else if( tag instanceof TabletColumnViewHolder ){
 					column = ( (TabletColumnViewHolder) tag ).vh.column;
@@ -1970,7 +1992,7 @@ public class ActMain extends AppCompatActivity
 			}
 		}else{
 			long db_id = pref.getLong( Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, - 1L );
-			SavedAccount a = SavedAccount.loadAccount( log, db_id );
+			SavedAccount a = SavedAccount.loadAccount( ActMain.this, log, db_id );
 			if( a != null ){
 				ActPost.open( this, REQUEST_CODE_POST, a.db_id, initial_text );
 				return;
@@ -2036,7 +2058,7 @@ public class ActMain extends AppCompatActivity
 				
 				if( result != null && result.object != null ){
 					
-					TootResults tmp = TootResults.parse( log, access_info, access_info.host, result.object );
+					TootResults tmp = TootResults.parse( ActMain.this, log, access_info, access_info.host, result.object );
 					if( tmp != null ){
 						if( tmp.accounts != null && ! tmp.accounts.isEmpty() ){
 							who_local = tmp.accounts.get( 0 );
@@ -2132,7 +2154,7 @@ public class ActMain extends AppCompatActivity
 		
 		// 疑似ではないアカウントの一覧
 		ArrayList< SavedAccount > account_list_filtered = new ArrayList<>();
-		for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
+		for( SavedAccount a : SavedAccount.loadAccountList( ActMain.this, log ) ){
 			if( a.isPseudo() ) continue;
 			account_list_filtered.add( a );
 		}
@@ -2198,7 +2220,7 @@ public class ActMain extends AppCompatActivity
 						return result;
 					}
 					target_status = null;
-					TootResults tmp = TootResults.parse( log, access_info, access_info.host, result.object );
+					TootResults tmp = TootResults.parse( ActMain.this, log, access_info, access_info.host, result.object );
 					if( tmp != null ){
 						if( tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 							target_status = tmp.statuses.get( 0 );
@@ -2228,7 +2250,7 @@ public class ActMain extends AppCompatActivity
 					)
 					, request_builder );
 				if( result != null && result.object != null ){
-					new_status = TootStatus.parse( log, access_info, access_info.host, result.object );
+					new_status = TootStatus.parse( ActMain.this, log, access_info, access_info.host, result.object );
 				}
 				
 				return result;
@@ -2368,7 +2390,7 @@ public class ActMain extends AppCompatActivity
 						return result;
 					}
 					target_status = null;
-					TootResults tmp = TootResults.parse( log, access_info, access_info.host, result.object );
+					TootResults tmp = TootResults.parse( ActMain.this, log, access_info, access_info.host, result.object );
 					if( tmp != null ){
 						if( tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 							target_status = tmp.statuses.get( 0 );
@@ -2396,7 +2418,7 @@ public class ActMain extends AppCompatActivity
 				
 				if( result != null && result.object != null ){
 					
-					new_status = TootStatus.parse( log, access_info, access_info.host, result.object );
+					new_status = TootStatus.parse( ActMain.this, log, access_info, access_info.host, result.object );
 					
 					// reblogはreblogを表すStatusを返す
 					// unreblogはreblogしたStatusを返す
@@ -2475,7 +2497,6 @@ public class ActMain extends AppCompatActivity
 	public void performReplyRemote(
 		final SavedAccount access_info
 		, final String remote_status_url
-		, final long remote_status_id
 	){
 		final ProgressDialog progress = new ProgressDialog( this );
 		
@@ -2499,10 +2520,10 @@ public class ActMain extends AppCompatActivity
 				
 				TootApiResult result = client.request( path );
 				if( result != null && result.object != null ){
-					TootResults tmp = TootResults.parse( log, access_info, access_info.host, result.object );
+					TootResults tmp = TootResults.parse( ActMain.this, log, access_info, access_info.host, result.object );
 					if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 						target_status = tmp.statuses.get( 0 );
-						log.d( "status id conversion %s => %s", remote_status_id, target_status.id );
+						log.d( "status id conversion %s => %s", remote_status_url, target_status.id );
 					}
 					if( target_status == null ){
 						return new TootApiResult( getString( R.string.status_id_conversion_failed ) );
@@ -2523,6 +2544,75 @@ public class ActMain extends AppCompatActivity
 					// cancelled.
 				}else if( target_status != null ){
 					ActPost.open( ActMain.this, REQUEST_CODE_POST, access_info.db_id, target_status );
+				}else{
+					Utils.showToast( ActMain.this, true, result.error );
+				}
+			}
+		};
+		
+		progress.setIndeterminate( true );
+		progress.setCancelable( true );
+		progress.setMessage( getString( R.string.progress_synchronize_toot ) );
+		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
+			@Override public void onCancel( DialogInterface dialog ){
+				task.cancel( true );
+			}
+		} );
+		progress.show();
+		task.executeOnExecutor( App1.task_executor );
+	}
+	
+	public void performConversationRemote(
+		final int pos
+		, final SavedAccount access_info
+		, final String remote_status_url
+	){
+		final ProgressDialog progress = new ProgressDialog( this );
+		
+		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+			TootStatus target_status;
+			
+			@Override protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override public void publishApiProgress( final String s ){
+					}
+				} );
+				client.setAccount( access_info );
+				
+				// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
+				String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( remote_status_url ) );
+				path = path + "&resolve=1";
+				
+				TootApiResult result = client.request( path );
+				if( result != null && result.object != null ){
+					TootResults tmp = TootResults.parse( ActMain.this, log, access_info, access_info.host, result.object );
+					if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
+						target_status = tmp.statuses.get( 0 );
+						log.d( "status id conversion %s => %s", remote_status_url, target_status.id );
+					}
+					if( target_status == null ){
+						return new TootApiResult( getString( R.string.status_id_conversion_failed ) );
+					}
+				}
+				return result;
+			}
+			
+			@Override
+			protected void onCancelled( TootApiResult result ){
+				super.onPostExecute( result );
+			}
+			
+			@Override
+			protected void onPostExecute( TootApiResult result ){
+				progress.dismiss();
+				if( result == null ){
+					// cancelled.
+				}else if( target_status != null ){
+					openStatus( pos, access_info, target_status );
 				}else{
 					Utils.showToast( ActMain.this, true, result.error );
 				}
@@ -2705,7 +2795,7 @@ public class ActMain extends AppCompatActivity
 					result = client.request( "/api/v1/follows", request_builder );
 					if( result != null ){
 						if( result.object != null ){
-							TootAccount remote_who = TootAccount.parse( log, access_info, result.object );
+							TootAccount remote_who = TootAccount.parse( ActMain.this, log, access_info, result.object );
 							if( remote_who != null ){
 								RelationResult rr = loadRelation1( client, access_info, remote_who.id );
 								result = rr.result;
@@ -2865,7 +2955,7 @@ public class ActMain extends AppCompatActivity
 				
 				if( result != null ){
 					if( result.object != null ){
-						TootAccount remote_who = TootAccount.parse( log, access_info, result.object );
+						TootAccount remote_who = TootAccount.parse( ActMain.this, log, access_info, result.object );
 						if( remote_who != null ){
 							RelationResult rr = loadRelation1( client, access_info, remote_who.id );
 							result = rr.result;
@@ -3410,7 +3500,7 @@ public class ActMain extends AppCompatActivity
 		}else{
 			Styler.setIconCustomColor( this, btnToot, c, R.attr.ic_edit );
 			Styler.setIconCustomColor( this, btnMenu, c, R.attr.ic_hamburger );
-			Styler.setIconCustomColor( this, btnQuickToot, c,R.attr.btn_post );
+			Styler.setIconCustomColor( this, btnQuickToot, c, R.attr.btn_post );
 		}
 		
 		c = footer_tab_bg_color;
@@ -3437,7 +3527,7 @@ public class ActMain extends AppCompatActivity
 	
 	ArrayList< SavedAccount > makeAccountListNonPseudo( LogCategory log ){
 		ArrayList< SavedAccount > dst = new ArrayList<>();
-		for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
+		for( SavedAccount a : SavedAccount.loadAccountList( ActMain.this, log ) ){
 			if( ! a.isPseudo() ){
 				dst.add( a );
 			}
@@ -3507,10 +3597,13 @@ public class ActMain extends AppCompatActivity
 			, getString( R.string.account_picker_reply )
 			, makeAccountListNonPseudo( log ), new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
-					if( ( status instanceof TootStatus ) && ai.host.equalsIgnoreCase( status.status_host ) ){
-						performReply( ai, (TootStatus) status );
-					}else{
-						performReplyRemote( ai, status.url, status.id );
+					if( status instanceof MSPToot ){
+						// MSPの場合、status.url は https://instance/@user/:status_id の形式になる
+						performReplyRemote( ai, status.url );
+					}else if( status instanceof TootStatus ){
+						if( ai.host.equalsIgnoreCase( status.host_access ) ){
+							performReply( ai, (TootStatus) status );
+						}
 					}
 				}
 			} );
@@ -3877,7 +3970,7 @@ public class ActMain extends AppCompatActivity
 	
 	public void openTimelineFor( @NonNull String host ){
 		final ArrayList< SavedAccount > account_list = new ArrayList<>();
-		for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
+		for( SavedAccount a : SavedAccount.loadAccountList( ActMain.this, log ) ){
 			if( host.equalsIgnoreCase( a.host ) ) account_list.add( a );
 		}
 		if( account_list.isEmpty() ){
@@ -3895,6 +3988,30 @@ public class ActMain extends AppCompatActivity
 						addColumn( getDefaultInsertPosition(), ai, Column.TYPE_LOCAL );
 					}
 				} );
+		}
+	}
+	
+	@Override public void onDrawerSlide( View drawerView, float slideOffset ){
+		if( post_helper != null ){
+			post_helper.closeAcctPopup();
+		}
+	}
+	
+	@Override public void onDrawerOpened( View drawerView ){
+		if( post_helper != null ){
+			post_helper.closeAcctPopup();
+		}
+	}
+	
+	@Override public void onDrawerClosed( View drawerView ){
+		if( post_helper != null ){
+			post_helper.closeAcctPopup();
+		}
+	}
+	
+	@Override public void onDrawerStateChanged( int newState ){
+		if( post_helper != null ){
+			post_helper.closeAcctPopup();
 		}
 	}
 }

@@ -9,8 +9,6 @@ import android.support.v4.view.ViewCompat;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.text.method.LinkMovementMethod;
-import android.text.method.MovementMethod;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
@@ -85,8 +83,7 @@ class ColumnViewHolder
 	private final View llRegexFilter;
 	private final Button btnDeleteNotification;
 	
-	private final TextView tvSearchDesc;
-	
+
 	ColumnViewHolder( ActMain arg_activity, View root ){
 		this.activity = arg_activity;
 		
@@ -144,8 +141,7 @@ class ColumnViewHolder
 		llRegexFilter = root.findViewById( R.id.llRegexFilter );
 		tvRegexFilterError = (TextView) root.findViewById( R.id.tvRegexFilterError );
 		
-		tvSearchDesc = (TextView) root.findViewById( R.id.tvSearchDesc );
-		
+
 		btnDeleteNotification = (Button) root.findViewById( R.id.btnDeleteNotification );
 		
 		llColumnHeader.setOnClickListener( this );
@@ -244,10 +240,23 @@ class ColumnViewHolder
 			listView.setAdapter( null );
 			
 			this.status_adapter = new ItemListAdapter( activity, column , bSimpleList );
-			if( column.column_type == Column.TYPE_PROFILE ){
-				status_adapter.header =new HeaderViewHolder( activity, column, listView );
-			}else{
+			
+			switch( column.column_type ){
+			default:
 				status_adapter.header = null;
+				break;
+
+			case Column.TYPE_PROFILE:
+				status_adapter.header =new HeaderViewHolderProfile( activity, column, listView );
+				break;
+				
+			case Column.TYPE_SEARCH:
+				status_adapter.header =new HeaderViewHolderSearchDesc( activity, column, listView , activity.getString( R.string.search_desc_mastodon_api ) );
+				break;
+
+			case Column.TYPE_SEARCH_PORTAL:
+				status_adapter.header =new HeaderViewHolderSearchDesc( activity, column, listView , getSearchDescPortal() );
+				break;
 			}
 			
 			boolean bAllowFilter;
@@ -332,18 +341,7 @@ class ColumnViewHolder
 				
 			}
 			
-			switch( column.column_type ){
-			default:
-				tvSearchDesc.setVisibility( View.GONE );
-				break;
-			case Column.TYPE_SEARCH:
-				showSearchDesc( activity.getString( R.string.search_desc_mastodon_api ) );
-				break;
-			case Column.TYPE_SEARCH_PORTAL:
-				showSearchDesc( getSearchDescPortal() );
-				break;
-			}
-			
+
 			//
 			listView.setAdapter( status_adapter );
 			listView.setFastScrollEnabled( ! Pref.pref( activity ).getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
@@ -371,13 +369,7 @@ class ColumnViewHolder
 		return data == null ? null : Utils.decodeUTF8( data );
 	}
 	
-	private void showSearchDesc( String html ){
-		if( column==null) return;
-		tvSearchDesc.setVisibility( View.VISIBLE );
-		tvSearchDesc.setMovementMethod( MyLinkMovementMethod.getInstance() );
-		CharSequence sv = HTMLDecoder.decodeHTML( column.access_info, html, false, null );
-		tvSearchDesc.setText( sv );
-	}
+
 	
 	void showColumnColor(){
 		if( column == null ) return;
@@ -686,7 +678,7 @@ class ColumnViewHolder
 		
 		case R.id.btnColor:
 			int idx = activity.app_state.column_list.indexOf( column );
-			ActColumnCustomize.open( activity, idx, ActMain.REQUEST_COLUMN_COLOR );
+			ActColumnCustomize.open( activity, idx, ActMain.REQUEST_CODE_COLUMN_COLOR );
 			break;
 		}
 		
@@ -794,7 +786,7 @@ class ColumnViewHolder
 		swipyRefreshLayout.setVisibility( View.VISIBLE );
 		
 		if( status_adapter.header != null ){
-			status_adapter.header.bind( column.who_account );
+			status_adapter.header.bindAccount( column.who_account );
 		}
 		
 		if( ! column.bRefreshLoading ){

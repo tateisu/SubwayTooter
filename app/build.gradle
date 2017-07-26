@@ -9,8 +9,8 @@ android {
         applicationId "jp.juggler.subwaytooter"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 104
-        versionName "1.0.4"
+        versionCode 105
+        versionName "1.0.5"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -78,6 +78,8 @@ dependencies {
     compile 'com.github.bumptech.glide:okhttp3-integration:1.5.0'
 
     compile 'org.hjson:hjson:2.1.1'
+
+    compile 'com.google.android:flexbox:0.3.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.table;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
@@ -231,10 +232,10 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	
 
 	
-	private static SavedAccount parse( Cursor cursor ) throws JSONException{
+	private static SavedAccount parse( Context context, Cursor cursor ) throws JSONException{
 		JSONObject src = new JSONObject( cursor.getString( cursor.getColumnIndex( COL_ACCOUNT ) ) );
 		SavedAccount dst = new SavedAccount();
-		dst = (SavedAccount) parse( log, dst, src, dst );
+		dst = (SavedAccount) parse( context,log, dst, src, dst );
 		if( dst != null ){
 			dst.db_id = cursor.getLong( cursor.getColumnIndex( COL_ID ) );
 			dst.host = cursor.getString( cursor.getColumnIndex( COL_HOST ) );
@@ -365,10 +366,10 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	}
 	
 	// onResumeの時に設定を読み直す
-	public void reloadSetting(){
+	public void reloadSetting(Context context){
 		if( db_id == INVALID_ID )
 			throw new RuntimeException( "SavedAccount.reloadSetting missing db_id" );
-		SavedAccount b = loadAccount( log, db_id );
+		SavedAccount b = loadAccount( context, log, db_id );
 		if( b == null ) return; // DBから削除されてる？
 		this.visibility = b.visibility;
 		this.confirm_boost = b.confirm_boost;
@@ -383,12 +384,12 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		this.sound_uri = b.sound_uri;
 	}
 	
-	public static @Nullable SavedAccount loadAccount( @NonNull LogCategory log, long db_id ){
+	public static @Nullable SavedAccount loadAccount( @NonNull Context context,@NonNull LogCategory log, long db_id ){
 		try{
 			Cursor cursor = App1.getDB().query( table, null, COL_ID + "=?", new String[]{ Long.toString( db_id ) }, null, null, null );
 			try{
 				if( cursor.moveToFirst() ){
-					return parse( cursor );
+					return parse( context, cursor );
 				}
 			}finally{
 				cursor.close();
@@ -400,13 +401,13 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return null;
 	}
 	
-	public static @NonNull ArrayList< SavedAccount > loadAccountList( @NonNull LogCategory log ){
+	public static @NonNull ArrayList< SavedAccount > loadAccountList( Context context, @NonNull LogCategory log ){
 		ArrayList< SavedAccount > result = new ArrayList<>();
 		try{
 			Cursor cursor = App1.getDB().query( table, null, null, null, null, null, null );
 			try{
 				while( cursor.moveToNext() ){
-					result.add( parse( cursor ) );
+					result.add( parse( context,cursor ) );
 				}
 			}finally{
 				cursor.close();
@@ -419,13 +420,13 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return result;
 	}
 	
-	public static @NonNull ArrayList< SavedAccount > loadByTag( @NonNull LogCategory log,String tag ){
+	public static @NonNull ArrayList< SavedAccount > loadByTag( Context context, @NonNull LogCategory log,String tag ){
 		ArrayList< SavedAccount > result = new ArrayList<>();
 		try{
 			Cursor cursor = App1.getDB().query( table, null, COL_NOTIFICATION_TAG+"=?", new String[]{tag}, null, null, null );
 			try{
 				while( cursor.moveToNext() ){
-					result.add( parse( cursor ) );
+					result.add( parse( context,cursor ) );
 				}
 			}finally{
 				cursor.close();

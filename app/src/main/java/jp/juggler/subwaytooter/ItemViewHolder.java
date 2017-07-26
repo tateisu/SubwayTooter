@@ -174,7 +174,9 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		ivThumbnail.setOnClickListener( this );
 		// ここを個別タップにすると邪魔すぎる tvName.setOnClickListener( this );
 		llBoosted.setOnClickListener( this );
+		llBoosted.setOnLongClickListener( this );
 		llFollow.setOnClickListener( this );
+		llFollow.setOnLongClickListener( this );
 		btnFollow.setOnClickListener( this );
 		
 		// ロングタップ
@@ -583,10 +585,12 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.llBoosted:
-			if( access_info.isPseudo() ){
-				new DlgContextMenu( activity, column, account_boost, null ).show();
-			}else{
-				activity.openProfile( pos, access_info, account_boost );
+			if( account_boost != null ){
+				if( access_info.isPseudo() ){
+					new DlgContextMenu( activity, column, account_boost, null ).show();
+				}else{
+					activity.openProfile( pos, access_info, account_boost );
+				}
 			}
 			break;
 		case R.id.llFollow:
@@ -632,7 +636,19 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		case R.id.btnFollow:
 			activity.openFollowFromAnotherAccount( access_info, account_follow );
 			return true;
-			
+		
+		case R.id.llBoosted:
+			if( account_boost != null ){
+				new DlgContextMenu( activity, column, account_boost, null ).show();
+			}
+			return true;
+		
+		case R.id.llFollow:
+			if( account_follow != null ){
+				new DlgContextMenu( activity, column, account_follow, null ).show();
+			}
+			return true;
+		
 		}
 		
 		return false;
@@ -641,7 +657,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private void clickMedia( int i ){
 		try{
 			if( status instanceof MSPToot ){
-				activity.openStatus( activity.nextPosition( column ), access_info, status );
+				activity.openStatusOtherInstance( activity.nextPosition( column ), access_info, status );
 			}else if( status instanceof TootStatus ){
 				TootStatus ts = (TootStatus) status;
 				

@@ -296,7 +296,7 @@ class Column implements StreamReader.Callback {
 		
 		long account_db_id = src.optLong( KEY_ACCOUNT_ROW_ID );
 		if( account_db_id >= 0 ){
-			SavedAccount ac = SavedAccount.loadAccount( log, account_db_id );
+			SavedAccount ac = SavedAccount.loadAccount( context, log, account_db_id );
 			if( ac == null ) throw new RuntimeException( "missing account" );
 			this.access_info = ac;
 		}else{
@@ -1080,7 +1080,7 @@ class Column implements StreamReader.Callback {
 			TootApiResult parseAccount1( TootApiClient client, String path_base ){
 				TootApiResult result = client.request( path_base );
 				if( result != null && result.object != null ){
-					Column.this.who_account = TootAccount.parse( log, access_info, result.object );
+					Column.this.who_account = TootAccount.parse( context, log, access_info, result.object );
 				}
 				return result;
 			}
@@ -1093,7 +1093,7 @@ class Column implements StreamReader.Callback {
 				if( result != null && result.array != null ){
 					saveRange( result, true, true );
 					//
-					TootStatus.List src = TootStatus.parseList( log, access_info, access_info.host, result.array );
+					TootStatus.List src = TootStatus.parseList( context, log, access_info, access_info.host, result.array );
 					list_tmp = new ArrayList<>( src.size() );
 					addWithFilter( list_tmp, src );
 					//
@@ -1130,7 +1130,7 @@ class Column implements StreamReader.Callback {
 							break;
 						}
 						
-						src = TootStatus.parseList( log, access_info, access_info.host, result2.array );
+						src = TootStatus.parseList( context, log, access_info, access_info.host, result2.array );
 						
 						addWithFilter( list_tmp, src );
 						
@@ -1148,7 +1148,7 @@ class Column implements StreamReader.Callback {
 				if( result != null ){
 					saveRange( result, true, true );
 					list_tmp = new ArrayList<>();
-					list_tmp.addAll( TootAccount.parseList( log, access_info, result.array ) );
+					list_tmp.addAll( TootAccount.parseList( context, log, access_info, result.array ) );
 				}
 				return result;
 			}
@@ -1177,7 +1177,7 @@ class Column implements StreamReader.Callback {
 				TootApiResult result = client.request( path_base );
 				if( result != null ){
 					saveRange( result, true, true );
-					TootNotification.List src = TootNotification.parseList( log, access_info, access_info.host, result.array );
+					TootNotification.List src = TootNotification.parseList( context, log, access_info, access_info.host, result.array );
 					
 					list_tmp = new ArrayList<>();
 					addWithFilter( list_tmp, src );
@@ -1294,7 +1294,7 @@ class Column implements StreamReader.Callback {
 						result = client.request(
 							String.format( Locale.JAPAN, PATH_STATUSES, status_id ) );
 						if( result == null || result.object == null ) return result;
-						TootStatus target_status = TootStatus.parse( log, access_info, access_info.host, result.object );
+						TootStatus target_status = TootStatus.parse( context, log, access_info, access_info.host, result.object );
 						target_status.conversation_main = true;
 						
 						// 前後の会話
@@ -1303,7 +1303,7 @@ class Column implements StreamReader.Callback {
 						if( result == null || result.object == null ) return result;
 						
 						// 一つのリストにまとめる
-						TootContext conversation_context = TootContext.parse( log, access_info, access_info.host, result.object );
+						TootContext conversation_context = TootContext.parse( context, log, access_info, access_info.host, result.object );
 						list_tmp = new ArrayList<>( 1 + conversation_context.ancestors.size() + conversation_context.descendants.size() );
 						if( conversation_context.ancestors != null )
 							addWithFilter( list_tmp, conversation_context.ancestors );
@@ -1317,7 +1317,7 @@ class Column implements StreamReader.Callback {
 					case TYPE_SEARCH:
 						if( access_info.isPseudo() ){
 							// 1.5.0rc からマストドンの検索APIは認証を要求するようになった
-							return new TootApiResult( context.getString(R.string.search_is_not_available_on_pseudo_account ) );
+							return new TootApiResult( context.getString( R.string.search_is_not_available_on_pseudo_account ) );
 						}
 						String path = String.format( Locale.JAPAN, PATH_SEARCH, Uri.encode( search_query ) );
 						if( search_resolve ) path = path + "&resolve=1";
@@ -1325,7 +1325,7 @@ class Column implements StreamReader.Callback {
 						result = client.request( path );
 						if( result == null || result.object == null ) return result;
 						
-						TootResults tmp = TootResults.parse( log, access_info, access_info.host, result.object );
+						TootResults tmp = TootResults.parse( context, log, access_info, access_info.host, result.object );
 						if( tmp != null ){
 							list_tmp = new ArrayList<>();
 							list_tmp.addAll( tmp.hashtags );
@@ -1340,7 +1340,7 @@ class Column implements StreamReader.Callback {
 						String q = search_query.trim();
 						if( q.length() <= 0 ){
 							list_tmp = new ArrayList<>();
-							result = new TootApiResult( context.getString( R.string.list_empty ) );
+							result = new TootApiResult();
 						}else{
 							result = MSPClient.search( context, search_query, max_id, new MSPClient.Callback() {
 								@Override
@@ -1364,7 +1364,7 @@ class Column implements StreamReader.Callback {
 								// max_id の更新
 								max_id = MSPClient.getMaxId( result.array, max_id );
 								// リストデータの用意
-								MSPToot.List search_result = MSPToot.parseList( log, access_info, result.array );
+								MSPToot.List search_result = MSPToot.parseList( context, log, access_info, result.array );
 								if( search_result != null ){
 									list_tmp = new ArrayList<>();
 									addWithFilter( list_tmp, search_result );
@@ -1690,7 +1690,7 @@ class Column implements StreamReader.Callback {
 			
 			TootApiResult parseAccount1( TootApiResult result ){
 				if( result != null ){
-					who_account = TootAccount.parse( log, access_info, result.object );
+					who_account = TootAccount.parse( context, log, access_info, result.object );
 				}
 				return result;
 			}
@@ -1704,7 +1704,7 @@ class Column implements StreamReader.Callback {
 				if( result != null && result.array != null ){
 					saveRange( result, bBottom, ! bBottom );
 					list_tmp = new ArrayList<>();
-					TootAccount.List src = TootAccount.parseList( log, access_info, result.array );
+					TootAccount.List src = TootAccount.parseList( context, log, access_info, result.array );
 					list_tmp.addAll( src );
 					if( ! bBottom ){
 						for( ; ; ){
@@ -1743,7 +1743,7 @@ class Column implements StreamReader.Callback {
 								break;
 							}
 							
-							src = TootAccount.parseList( log, access_info, result2.array );
+							src = TootAccount.parseList( context, log, access_info, result2.array );
 							list_tmp.addAll( src );
 						}
 					}
@@ -1862,7 +1862,7 @@ class Column implements StreamReader.Callback {
 				if( result != null && result.array != null ){
 					saveRange( result, bBottom, ! bBottom );
 					list_tmp = new ArrayList<>();
-					TootNotification.List src = TootNotification.parseList( log, access_info, access_info.host, result.array );
+					TootNotification.List src = TootNotification.parseList( context, log, access_info, access_info.host, result.array );
 					addWithFilter( list_tmp, src );
 					
 					if( ! src.isEmpty() ){
@@ -1906,7 +1906,7 @@ class Column implements StreamReader.Callback {
 								break;
 							}
 							
-							src = TootNotification.parseList( log, access_info, access_info.host, result2.array );
+							src = TootNotification.parseList( context, log, access_info, access_info.host, result2.array );
 							if( ! src.isEmpty() ){
 								addWithFilter( list_tmp, src );
 								AlarmService.injectData( context, access_info.db_id, src );
@@ -1928,7 +1928,7 @@ class Column implements StreamReader.Callback {
 				TootApiResult result = client.request( addRange( bBottom, path_base ) );
 				if( result != null && result.array != null ){
 					saveRange( result, bBottom, ! bBottom );
-					TootStatus.List src = TootStatus.parseList( log, access_info, access_info.host, result.array );
+					TootStatus.List src = TootStatus.parseList( context, log, access_info, access_info.host, result.array );
 					list_tmp = new ArrayList<>();
 					
 					addWithFilter( list_tmp, src );
@@ -1972,7 +1972,7 @@ class Column implements StreamReader.Callback {
 								break;
 							}
 							
-							src = TootStatus.parseList( log, access_info, access_info.host, result2.array );
+							src = TootStatus.parseList( context, log, access_info, access_info.host, result2.array );
 							
 							addWithFilter( list_tmp, src );
 							
@@ -2028,7 +2028,7 @@ class Column implements StreamReader.Callback {
 								break;
 							}
 							
-							src = TootStatus.parseList( log, access_info, access_info.host, result2.array );
+							src = TootStatus.parseList( context, log, access_info, access_info.host, result2.array );
 							addWithFilter( list_tmp, src );
 						}
 					}
@@ -2140,7 +2140,7 @@ class Column implements StreamReader.Callback {
 						String q = search_query.trim();
 						if( q.length() <= 0 ){
 							list_tmp = new ArrayList<>();
-							result = new TootApiResult( context.getString( R.string.list_empty ) );
+							result = new TootApiResult( context.getString( R.string.end_of_list ) );
 						}else{
 							result = MSPClient.search( context, search_query, max_id, new MSPClient.Callback() {
 								@Override
@@ -2164,7 +2164,7 @@ class Column implements StreamReader.Callback {
 								// max_id の更新
 								max_id = MSPClient.getMaxId( result.array, max_id );
 								// リストデータの用意
-								MSPToot.List search_result = MSPToot.parseList( log, access_info, result.array );
+								MSPToot.List search_result = MSPToot.parseList( context, log, access_info, result.array );
 								if( search_result != null ){
 									list_tmp = new ArrayList<>();
 									addWithFilter( list_tmp, search_result );
@@ -2332,7 +2332,7 @@ class Column implements StreamReader.Callback {
 						break;
 					}
 					result = r2;
-					TootAccount.List src = TootAccount.parseList( log, access_info, r2.array );
+					TootAccount.List src = TootAccount.parseList( context, log, access_info, r2.array );
 					
 					if( src.isEmpty() ){
 						log.d( "gap-account: empty." );
@@ -2427,7 +2427,7 @@ class Column implements StreamReader.Callback {
 					}
 					
 					result = r2;
-					TootNotification.List src = TootNotification.parseList( log, access_info, access_info.host, r2.array );
+					TootNotification.List src = TootNotification.parseList( context, log, access_info, access_info.host, r2.array );
 					
 					if( src.isEmpty() ){
 						log.d( "gap-notification: empty." );
@@ -2483,7 +2483,7 @@ class Column implements StreamReader.Callback {
 					// 成功した場合はそれを返したい
 					result = r2;
 					
-					TootStatus.List src = TootStatus.parseList( log, access_info, access_info.host, r2.array );
+					TootStatus.List src = TootStatus.parseList( context, log, access_info, access_info.host, r2.array );
 					if( src.size() == 0 ){
 						// 直前の取得でカラのデータが帰ってきたら終了
 						log.d( "gap-statuses: empty." );

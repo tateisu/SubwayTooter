@@ -85,6 +85,8 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		Button btnDomainBlock = (Button) viewRoot.findViewById( R.id.btnDomainBlock );
 		ImageView ivFollowedBy = (ImageView) viewRoot.findViewById( R.id.ivFollowedBy );
 		Button btnOpenTimeline = (Button) viewRoot.findViewById( R.id.btnOpenTimeline );
+		View btnConversationAnotherAccount = viewRoot.findViewById( R.id.btnConversationAnotherAccount );
+		View btnAvatarImage = viewRoot.findViewById( R.id.btnAvatarImage );
 		
 		btnStatusWebPage.setOnClickListener( this );
 		btnText.setOnClickListener( this );
@@ -107,8 +109,10 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		btnSendMessageFromAnotherAccount.setOnClickListener( this );
 		btnOpenProfileFromAnotherAccount.setOnClickListener( this );
 		btnOpenTimeline.setOnClickListener( this );
+		btnConversationAnotherAccount.setOnClickListener( this );
+		btnAvatarImage.setOnClickListener( this );
 		
-		final ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( log );
+		final ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( activity,log );
 		//	final ArrayList< SavedAccount > account_list_non_pseudo_same_instance = new ArrayList<>();
 		
 		for( SavedAccount a : account_list ){
@@ -126,16 +130,13 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			boolean status_by_me = access_info.isMe( status.account );
 			
 			btnDelete.setVisibility( status_by_me ? View.VISIBLE : View.GONE );
+
+			btnReport.setVisibility( status_by_me || access_info.isPseudo() ? View.GONE : View.VISIBLE );
 			
-			if( access_info.isPseudo() || status_by_me ){
-				btnReport.setVisibility( View.GONE );
+			if( status_by_me || status.application == null || TextUtils.isEmpty( status.application.name ) ){
 				btnMuteApp.setVisibility( View.GONE );
 			}else{
-				if( status.application != null && ! TextUtils.isEmpty( status.application.name ) ){
-					btnMuteApp.setText( activity.getString( R.string.mute_app_of, status.application.name ) );
-				}else{
-					btnMuteApp.setVisibility( View.GONE );
-				}
+				btnMuteApp.setText( activity.getString( R.string.mute_app_of, status.application.name ) );
 			}
 			
 			View v;
@@ -158,7 +159,6 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		if( access_info.isPseudo() ){
 			llAccountActionBar.setVisibility( View.GONE );
 		}else{
-			
 			
 			// 被フォロー状態
 			if( ! relation.followed_by ){
@@ -230,8 +230,8 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		viewRoot.findViewById( R.id.btnCancel ).setOnClickListener( this );
 		viewRoot.findViewById( R.id.btnAccountQrCode ).setOnClickListener( this );
 		
-		String host =  access_info.getAccountHost( who );
-		if( TextUtils.isEmpty( host) || host.equals( "?" ) ){
+		String host = access_info.getAccountHost( who );
+		if( TextUtils.isEmpty( host ) || host.equals( "?" ) ){
 			btnOpenTimeline.setVisibility( View.GONE );
 		}else{
 			btnOpenTimeline.setText( activity.getString( R.string.open_local_timeline_for, host ) );
@@ -265,7 +265,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnText:
 			if( status != null ){
-				ActText.open( activity, access_info, status );
+				ActText.open( activity, ActMain.REQUEST_CODE_TEXT, access_info, status );
 			}
 			break;
 		
@@ -279,6 +279,12 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnReplyAnotherAccount:
 			activity.openReplyFromAnotherAccount( status );
+			break;
+		
+		case R.id.btnConversationAnotherAccount:
+			if( status != null ){
+				activity.openStatusOtherInstance( pos, access_info, status );
+			}
 			break;
 		
 		case R.id.btnDelete:
@@ -333,10 +339,9 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnAccountText:
 			if( who != null ){
-				ActText.open( activity, access_info, who );
+				ActText.open( activity, ActMain.REQUEST_CODE_TEXT, access_info, who );
 			}
 			break;
-		
 		
 		case R.id.btnMute:
 			if( who == null ){
@@ -464,11 +469,18 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnOpenTimeline:
-			String host =  access_info.getAccountHost( who );
-			if( TextUtils.isEmpty( host) || host.equals( "?" ) ){
+			String host = access_info.getAccountHost( who );
+			if( TextUtils.isEmpty( host ) || host.equals( "?" ) ){
 				// 何もしない
 			}else{
 				activity.openTimelineFor( host );
+			}
+			break;
+		
+		case R.id.btnAvatarImage:
+			if( who != null ){
+				String url = ! TextUtils.isEmpty( who.avatar ) ? who.avatar : who.avatar_static;
+				if( url != null ) activity.openChromeTab( pos, access_info, url, true );
 			}
 			break;
 		}

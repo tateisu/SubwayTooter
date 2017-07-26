@@ -44,7 +44,7 @@ public class ContentWarning {
 	
 	public static boolean isShown( @NonNull TootStatusLike status , boolean default_value ){
 		try{
-			Cursor cursor = App1.getDB().query( table, projection_shown, "h=? and si=?", new String[]{status.status_host, Long.toString(status.id) }, null, null, null );
+			Cursor cursor = App1.getDB().query( table, projection_shown, "h=? and si=?", new String[]{status.getHostAccessOrOriginal(), Long.toString(status.getIdAccessOrOriginal()) }, null, null, null );
 			try{
 				if( cursor.moveToFirst() ){
 					int iv = cursor.getInt( cursor.getColumnIndex( COL_SHOWN ) );
@@ -64,8 +64,8 @@ public class ContentWarning {
 			long now = System.currentTimeMillis();
 
 			ContentValues cv = new ContentValues();
-			cv.put( COL_HOST, status.status_host );
-			cv.put( COL_STATUS_ID, status.id );
+			cv.put( COL_HOST, status.getHostAccessOrOriginal() );
+			cv.put( COL_STATUS_ID, status.getIdAccessOrOriginal() );
 			cv.put( COL_SHOWN, is_shown ? 1:0 );
 			cv.put( COL_TIME_SAVE, now );
 			App1.getDB().replace( table, null, cv );

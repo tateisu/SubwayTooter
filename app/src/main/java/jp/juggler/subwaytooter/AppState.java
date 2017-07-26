@@ -135,17 +135,17 @@ class AppState {
 	private final HashSet< String > map_busy_fav = new HashSet<>();
 	
 	boolean isBusyFav( SavedAccount account, @NonNull TootStatusLike status ){
-		final String key = account.acct + ":" + status.status_host + ":" + status.id;
+		final String key = account.acct + ":" + status.getBusyKey();
 		return map_busy_fav.contains( key );
 	}
 	
 	boolean setBusyFav( SavedAccount account, @NonNull TootStatusLike status ){
-		final String key = account.acct + ":" + status.status_host + ":" + status.id;
+		final String key = account.acct + ":" + status.getBusyKey();
 		return map_busy_fav.add( key );
 	}
 	
 	boolean resetBusyFav( SavedAccount account, @NonNull TootStatusLike status ){
-		final String key = account.acct + ":" + status.status_host + ":" + status.id;
+		final String key = account.acct + ":" + status.getBusyKey();
 		return map_busy_fav.remove( key );
 	}
 	
@@ -154,17 +154,17 @@ class AppState {
 	private final HashSet< String > map_busy_boost = new HashSet<>();
 	
 	boolean isBusyBoost( @NonNull SavedAccount account, @NonNull TootStatusLike status ){
-		final String key = account.acct + ":" + status.status_host + ":" + status.id;
+		final String key = account.acct + ":" + status.getBusyKey();
 		return map_busy_boost.contains( key );
 	}
 	
 	boolean setBusyBoost( SavedAccount account, @NonNull TootStatusLike status ){
-		final String key = account.acct + ":" + status.status_host + ":" + status.id;
+		final String key = account.acct + ":" + status.getBusyKey();
 		return map_busy_boost.add( key );
 	}
 	
 	boolean resetBusyBoost( SavedAccount account, @NonNull TootStatusLike status ){
-		final String key = account.acct + ":" + status.status_host + ":" + status.id;
+		final String key = account.acct + ":"+ status.getBusyKey();
 		return map_busy_boost.remove( key );
 	}
 	//////////////////////////////////////////////////////

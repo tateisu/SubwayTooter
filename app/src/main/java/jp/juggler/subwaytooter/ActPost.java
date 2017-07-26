@@ -25,7 +25,9 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
@@ -391,7 +393,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			sv = intent.getStringExtra( KEY_REPLY_STATUS );
 			if( sv != null ){
 				try{
-					TootStatus reply_status = TootStatus.parse( log, account, account.host, new JSONObject( sv ) );
+					TootStatus reply_status = TootStatus.parse( ActPost.this, log, account, account.host, new JSONObject( sv ) );
 					
 					// CW をリプライ元に合わせる
 					if( ! TextUtils.isEmpty( reply_status.spoiler_text ) ){
@@ -598,7 +600,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		btnRemoveReply = findViewById( R.id.btnRemoveReply );
 		ivReply = (MyNetworkImageView) findViewById( R.id.ivReply );
 		
-		account_list = SavedAccount.loadAccountList( log );
+		account_list = SavedAccount.loadAccountList( ActPost.this,log );
 		Collections.sort( account_list, new Comparator< SavedAccount >() {
 			@Override
 			public int compare( SavedAccount a, SavedAccount b ){
@@ -631,6 +633,25 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		post_helper = new PostHelper( this, pref ,app_state.handler );
 		post_helper.attachEditText( formRoot,etContent,false, new PostHelper.Callback2() {
 			@Override public void onTextUpdate(){
+				updateTextCount();
+			}
+			
+			@Override public boolean canOpenPopup(){
+				return true;
+			}
+		} );
+		
+		etContentWarning.addTextChangedListener( new TextWatcher() {
+			@Override
+			public void beforeTextChanged( CharSequence s, int start, int count, int after ){
+				
+			}
+			
+			@Override public void onTextChanged( CharSequence s, int start, int before, int count ){
+				
+			}
+			
+			@Override public void afterTextChanged( Editable s ){
 				updateTextCount();
 			}
 		} );
@@ -768,7 +789,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				
 				TootApiResult result = client.request( path );
 				if( result != null && result.object != null ){
-					TootResults tmp = TootResults.parse( log, access_info, access_info.host, result.object );
+					TootResults tmp = TootResults.parse( ActPost.this, log, access_info, access_info.host, result.object );
 					if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 						target_status = tmp.statuses.get( 0 );
 					}
@@ -1388,7 +1409,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			llReply.setVisibility( View.GONE );
 		}else{
 			llReply.setVisibility( View.VISIBLE );
-			tvReplyTo.setText( HTMLDecoder.decodeHTML( account, in_reply_to_text, true, null ) );
+			tvReplyTo.setText( HTMLDecoder.decodeHTML( ActPost.this, account, in_reply_to_text, true, null ) );
 			ivReply.setCornerRadius( pref, 16f );
 			ivReply.setImageUrl( in_reply_to_image );
 		}
@@ -1487,7 +1508,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				long account_db_id = draft.optLong( DRAFT_ACCOUNT_DB_ID );
 				JSONArray tmp_attachment_list = draft.optJSONArray( DRAFT_ATTACHMENT_LIST );
 				
-				account = SavedAccount.loadAccount( log, account_db_id );
+				account = SavedAccount.loadAccount( ActPost.this, log, account_db_id );
 				if( account == null ){
 					list_warning.add( getString( R.string.account_in_draft_is_lost ) );
 					try{
@@ -1738,7 +1759,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					return null;
 				}
 			};
-			CharSequence sv = HTMLDecoder.decodeHTML( lcc, text, false, null );
+			CharSequence sv = HTMLDecoder.decodeHTML( ActPost.this,lcc, text, false, null );
 			tvText.setText( sv );
 			tvText.setMovementMethod( LinkMovementMethod.getInstance() );
 			

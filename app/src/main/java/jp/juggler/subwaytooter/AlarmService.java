@@ -7,8 +7,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.PowerManager;
 import android.os.SystemClock;
@@ -158,7 +156,7 @@ public class AlarmService extends IntentService {
 			
 			if( ACTION_APP_DATA_IMPORT_BEFORE.equals( action ) ){
 				alarm_manager.cancel( pi_next );
-				for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
+				for( SavedAccount a : SavedAccount.loadAccountList( AlarmService.this,log ) ){
 					try{
 						String notification_tag = Long.toString( a.db_id );
 						notification_manager.cancel( notification_tag, NOTIFICATION_ID );
@@ -176,7 +174,7 @@ public class AlarmService extends IntentService {
 		
 		if( mBusyAppDataImportAfter.get() ) return;
 		
-		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( log );
+		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( AlarmService.this,log );
 		
 		if( intent != null ){
 			String action = intent.getAction();
@@ -188,7 +186,7 @@ public class AlarmService extends IntentService {
 				boolean bDone = false;
 				String tag = intent.getStringExtra( EXTRA_TAG );
 				if( tag != null ){
-					for( SavedAccount sa : SavedAccount.loadByTag( log, tag ) ){
+					for( SavedAccount sa : SavedAccount.loadByTag( AlarmService.this,log, tag ) ){
 						bDone = true;
 						NotificationTracking.resetLastLoad( sa.db_id );
 					}
@@ -631,7 +629,7 @@ public class AlarmService extends IntentService {
 			return;
 		}
 		
-		TootNotification notification = TootNotification.parse( log, account, account.host, src );
+		TootNotification notification = TootNotification.parse( AlarmService.this,log, account, account.host, src );
 		if( notification == null ){
 			return;
 		}
@@ -808,7 +806,7 @@ public class AlarmService extends IntentService {
 			
 			InjectData data = inject_queue.poll();
 			
-			SavedAccount account = SavedAccount.loadAccount( log, data.account_db_id );
+			SavedAccount account = SavedAccount.loadAccount( AlarmService.this,log, data.account_db_id );
 			if( account == null ) continue;
 			
 			NotificationTracking nr = NotificationTracking.load( data.account_db_id );
@@ -895,7 +893,7 @@ public class AlarmService extends IntentService {
 	
 	private void deleteCacheData( long db_id ){
 		
-		SavedAccount account = SavedAccount.loadAccount( log, db_id );
+		SavedAccount account = SavedAccount.loadAccount( AlarmService.this,log, db_id );
 		if( account == null ) return;
 		
 		NotificationTracking nr = NotificationTracking.load( db_id );

@@ -54,7 +54,7 @@ public class ActAccountSetting extends AppCompatActivity
 		super.onCreate( savedInstanceState );
 		App1.setActivityTheme( this, false );
 		initUI();
-		account = SavedAccount.loadAccount( log, getIntent().getLongExtra( KEY_ACCOUNT_DB_ID, - 1L ) );
+		account = SavedAccount.loadAccount( this,log, getIntent().getLongExtra( KEY_ACCOUNT_DB_ID, - 1L ) );
 		if( account == null ) finish();
 		loadUIFromData( account );
 		

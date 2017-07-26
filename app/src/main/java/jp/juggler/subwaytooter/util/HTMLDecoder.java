@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.util;
 
+import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.Nullable;
 import android.text.Spannable;
@@ -130,13 +131,14 @@ public class HTMLDecoder {
 		}
 		
 		void encodeSpan(
-			LinkClickContext account
+			Context context
+			, LinkClickContext account
 			, SpannableStringBuilder sb
 			, boolean bShort
 			, @Nullable TootAttachment.List list_attachment
 		){
 			if( TAG_TEXT.equals( tag ) ){
-				sb.append( Emojione.decodeEmoji( decodeEntity( text ) ) );
+				sb.append( Emojione.decodeEmoji( context,decodeEntity( text ) ) );
 				return;
 			}
 			if( DEBUG_HTML_PARSER ) sb.append( "(start " ).append( tag ).append( ")" );
@@ -151,14 +153,14 @@ public class HTMLDecoder {
 			int start = sb_tmp.length();
 			
 			for( Node child : child_nodes ){
-				child.encodeSpan( account, sb_tmp, bShort, list_attachment );
+				child.encodeSpan( context, account, sb_tmp, bShort, list_attachment );
 			}
 			
 			int end = sb_tmp.length();
 			
 			if( bShort && "a".equals( tag ) ){
 				start = sb.length();
-				sb.append( encodeShortUrl( sb_tmp.toString(), getHref(), list_attachment ) );
+				sb.append( encodeShortUrl( context,sb_tmp.toString(), getHref(), list_attachment ) );
 				end = sb.length();
 			}
 			
@@ -205,7 +207,8 @@ public class HTMLDecoder {
 		}
 		
 		private CharSequence encodeShortUrl(
-			String display_url
+			Context context
+			, String display_url
 			, @Nullable String href
 			, @Nullable TootAttachment.List list_attachment
 		){
@@ -215,7 +218,7 @@ public class HTMLDecoder {
 			}
 			
 			if( is_media_attachment( list_attachment, href ) ){
-				return Emojione.decodeEmoji( ":frame_photo:" );
+				return Emojione.decodeEmoji( context, ":frame_photo:" );
 			}
 			
 			try{
@@ -245,7 +248,8 @@ public class HTMLDecoder {
 	}
 	
 	public static SpannableStringBuilder decodeHTML(
-		LinkClickContext account
+		Context context
+		, LinkClickContext account
 		, String src
 		, boolean bShort
 		, @Nullable TootAttachment.List list_attachment
@@ -257,7 +261,7 @@ public class HTMLDecoder {
 				Node rootNode = new Node();
 				rootNode.parseChild( tracker, "" );
 				
-				rootNode.encodeSpan( account, sb, bShort, list_attachment );
+				rootNode.encodeSpan( context,account, sb, bShort, list_attachment );
 				int end = sb.length();
 				while( end > 0 && isWhitespace( sb.charAt( end - 1 ) ) ) -- end;
 				if( end < sb.length() ){

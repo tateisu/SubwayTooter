@@ -2,13 +2,15 @@ package jp.juggler.subwaytooter.api.entity;
 
 import android.support.annotation.Nullable;
 import android.text.Spannable;
+import android.text.TextUtils;
 
 public abstract class TootStatusLike extends TootId {
 	
 	//URL to the status page (can be remote)
 	public String url;
 	
-	public String status_host;
+	public String host_original;
+	public String host_access;
 	
 	// The TootAccount which posted the status
 	@Nullable public TootAccount account;
@@ -42,4 +44,16 @@ public abstract class TootStatusLike extends TootId {
 	public long time_created_at;
 	
 	public abstract boolean hasMedia();
+	
+	public String getHostAccessOrOriginal(){
+		return ( TextUtils.isEmpty( host_access ) || "?".equals( host_access ) ) ? host_original : host_access;
+	}
+	
+	public long getIdAccessOrOriginal(){
+		return id;
+	}
+	
+	public String getBusyKey(){
+		return getHostAccessOrOriginal() + ":" + getIdAccessOrOriginal();
+	}
 }

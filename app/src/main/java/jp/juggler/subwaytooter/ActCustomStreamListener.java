@@ -311,7 +311,7 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 						if( ! has_wildcard ){
 							addLog( "Warning: This configuration has no wildcard entry." );
 							if(! has_error){
-								for( SavedAccount sa : SavedAccount.loadAccountList( log )){
+								for( SavedAccount sa : SavedAccount.loadAccountList( ActCustomStreamListener.this,log )){
 									if( sa.isPseudo() ) continue;
 									String instanceUrl = ("https://" + sa.host ).toLowerCase();
 									JsonValue v = root.get( instanceUrl );

@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.api.entity;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
 
 import org.json.JSONArray;
@@ -37,7 +38,7 @@ public class TootNotification extends TootId {
 	
 	public JSONObject json;
 	
-	public static TootNotification parse( LogCategory log, LinkClickContext lcc,String status_host, JSONObject src ){
+	public static TootNotification parse( @NonNull Context context, LogCategory log, LinkClickContext lcc, String status_host, JSONObject src ){
 		if( src == null ) return null;
 		try{
 			TootNotification dst = new TootNotification();
@@ -45,8 +46,8 @@ public class TootNotification extends TootId {
 			dst.id = src.optLong( "id" );
 			dst.type = Utils.optStringX( src, "type" );
 			dst.created_at = Utils.optStringX( src, "created_at" );
-			dst.account = TootAccount.parse( log, lcc, src.optJSONObject( "account" ) );
-			dst.status = TootStatus.parse( log, lcc, status_host,src.optJSONObject( "status" ) );
+			dst.account = TootAccount.parse( context, log, lcc, src.optJSONObject( "account" ) );
+			dst.status = TootStatus.parse( context, log, lcc, status_host, src.optJSONObject( "status" ) );
 			
 			dst.time_created_at = TootStatus.parseTime( log, dst.created_at );
 			
@@ -69,7 +70,7 @@ public class TootNotification extends TootId {
 	}
 	
 	@NonNull
-	public static List parseList( LogCategory log, LinkClickContext lcc,String status_host, JSONArray array ){
+	public static List parseList( @NonNull Context context, LogCategory log, LinkClickContext lcc, String status_host, JSONArray array ){
 		List result = new List();
 		if( array != null ){
 			int array_size = array.length();
@@ -77,7 +78,7 @@ public class TootNotification extends TootId {
 			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootNotification item = parse( log, lcc,status_host, src );
+				TootNotification item = parse( context, log, lcc, status_host, src );
 				if( item != null ) result.add( item );
 			}
 		}

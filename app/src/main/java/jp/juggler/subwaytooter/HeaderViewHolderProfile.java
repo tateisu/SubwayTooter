@@ -7,22 +7,15 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
-import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.Emojione;
-import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
 import jp.juggler.subwaytooter.view.MyNetworkImageView;
 
-class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener {
-	final Column column;
-	private final ActMain activity;
-	private final SavedAccount access_info;
+class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnClickListener, View.OnLongClickListener {
 	
-	final View viewRoot;
 	private final MyNetworkImageView ivBackground;
 	private final TextView tvCreated;
 	private final MyNetworkImageView ivAvatar;
@@ -36,32 +29,12 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 	private final ImageView ivFollowedBy;
 	private final View llProfile;
 	
-	
 	private TootAccount who;
 	
-	HeaderViewHolder( ActMain arg_activity,Column column, ListView parent ){
-		this.activity = arg_activity;
-		this.column = column;
-		this.access_info = column.access_info;
-		this.viewRoot = activity.getLayoutInflater().inflate( R.layout.lv_list_header, parent, false );
-		viewRoot.setTag( this);
-		
-		if( activity.timeline_font != null ){
-			Utils.scanView( viewRoot, new Utils.ScanViewCallback() {
-				@Override public void onScanView( View v ){
-					try{
-						if( v instanceof Button ){
-							// ボタンは太字なので触らない
-						}else if( v instanceof TextView ){
-							( (TextView) v ).setTypeface( activity.timeline_font );
-						}
-					}catch(Throwable ex){
-						ex.printStackTrace();
-					}
-				}
-			} );
-		}
-		
+	HeaderViewHolderProfile( ActMain arg_activity, Column column, ListView parent ){
+		super( arg_activity, column
+			, arg_activity.getLayoutInflater().inflate( R.layout.lv_list_header, parent, false )
+		);
 		
 		ivBackground = (MyNetworkImageView) viewRoot.findViewById( R.id.ivBackground );
 		llProfile = viewRoot.findViewById( R.id.llProfile );
@@ -76,7 +49,6 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 		View btnMore = viewRoot.findViewById( R.id.btnMore );
 		btnFollow = (ImageButton) viewRoot.findViewById( R.id.btnFollow );
 		ivFollowedBy = (ImageView) viewRoot.findViewById( R.id.ivFollowedBy );
-		
 		
 		ivBackground.setOnClickListener( this );
 		btnFollowing.setOnClickListener( this );
@@ -93,16 +65,16 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 	void showColor(){
 		int c = column.column_bg_color;
 		if( c == 0 ){
-			c = Styler.getAttributeColor( activity, R.attr. colorProfileBackgroundMask);
+			c = Styler.getAttributeColor( activity, R.attr.colorProfileBackgroundMask );
 		}else{
-			c = 0xc0000000 | (0x00ffffff & c);
+			c = 0xc0000000 | ( 0x00ffffff & c );
 		}
 		llProfile.setBackgroundColor( c );
 	}
 	
-	void bind( TootAccount who ){
+	void bindAccount( TootAccount who ){
 		this.who = who;
-
+		
 		showColor();
 		
 		if( who == null ){
@@ -120,7 +92,7 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 		}else{
 			tvCreated.setText( TootStatus.formatTime( who.time_created_at ) );
 			ivBackground.setImageUrl( access_info.supplyBaseUrl( who.header_static ) );
-			ivAvatar.setCornerRadius( activity.pref,16f );
+			ivAvatar.setCornerRadius( activity.pref, 16f );
 			ivAvatar.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ) );
 			tvDisplayName.setText( who.display_name );
 			
@@ -128,7 +100,7 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 			if( who.locked ){
 				s += " " + Emojione.map_name2unicode.get( "lock" );
 			}
-			tvAcct.setText( Emojione.decodeEmoji( s ) );
+			tvAcct.setText( Emojione.decodeEmoji( activity,s ) );
 			
 			tvNote.setText( who.decoded_note );
 			btnStatusCount.setText( activity.getString( R.string.statuses ) + "\n" + who.statuses_count );
@@ -187,7 +159,7 @@ class HeaderViewHolder implements View.OnClickListener, View.OnLongClickListener
 	@Override public boolean onLongClick( View v ){
 		switch( v.getId() ){
 		case R.id.btnFollow:
-			activity.openFollowFromAnotherAccount( access_info,who );
+			activity.openFollowFromAnotherAccount( access_info, who );
 			return true;
 		}
 		

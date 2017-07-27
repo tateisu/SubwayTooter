@@ -948,9 +948,9 @@ public class ActMain extends AppCompatActivity
 			
 			c = column.header_fg_color;
 			if( c == 0 ){
-				Styler.setIconDefaultColor( this, ivIcon, Column.getIconAttrId( column.column_type ) );
+				Styler.setIconDefaultColor( this, ivIcon, column.getIconAttrId( column.column_type ) );
 			}else{
-				Styler.setIconCustomColor( this, ivIcon, c, Column.getIconAttrId( column.column_type ) );
+				Styler.setIconCustomColor( this, ivIcon, c, column.getIconAttrId( column.column_type ) );
 			}
 			
 			//
@@ -1982,8 +1982,12 @@ public class ActMain extends AppCompatActivity
 	};
 	
 	private void performTootButton(){
+		openPost(etQuickToot.getText().toString());
+	}
+
+	public void openPost(final String initial_text){
 		post_helper.closeAcctPopup();
-		final String initial_text = etQuickToot.getText().toString();
+
 		if( pager_adapter != null ){
 			Column c = pager_adapter.getColumn( pager.getCurrentItem() );
 			if( c != null && ! c.access_info.isPseudo() ){

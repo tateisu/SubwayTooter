@@ -389,14 +389,14 @@ class ColumnViewHolder
 		if( c == 0 ){
 			tvColumnIndex.setTextColor( Styler.getAttributeColor( activity, R.attr.colorColumnHeaderPageNumber ) );
 			tvColumnName.setTextColor( Styler.getAttributeColor( activity, android.R.attr.textColorPrimary ) );
-			Styler.setIconDefaultColor( activity, ivColumnIcon, Column.getIconAttrId( column.column_type ) );
+			Styler.setIconDefaultColor( activity, ivColumnIcon, column.getIconAttrId( column.column_type ) );
 			Styler.setIconDefaultColor( activity, btnColumnSetting, R.attr.ic_tune );
 			Styler.setIconDefaultColor( activity, btnColumnReload, R.attr.btn_refresh );
 			Styler.setIconDefaultColor( activity, btnColumnClose, R.attr.btn_close );
 		}else{
 			tvColumnIndex.setTextColor( c );
 			tvColumnName.setTextColor( c );
-			Styler.setIconCustomColor( activity, ivColumnIcon, c, Column.getIconAttrId( column.column_type ) );
+			Styler.setIconCustomColor( activity, ivColumnIcon, c, column.getIconAttrId( column.column_type ) );
 			Styler.setIconCustomColor( activity, btnColumnSetting, c, R.attr.ic_tune );
 			Styler.setIconCustomColor( activity, btnColumnReload, c, R.attr.btn_refresh );
 			Styler.setIconCustomColor( activity, btnColumnClose, c, R.attr.btn_close );

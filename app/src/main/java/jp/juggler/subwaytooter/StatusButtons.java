@@ -75,9 +75,11 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		int color_normal = Styler.getAttributeColor( activity, R.attr.colorImageButton );
 		int color_accent = Styler.getAttributeColor( activity, R.attr.colorImageButtonAccent );
 		
+		int fav_icon_attr =  Column.isNicoru( access_info.getFullAcct( status.account ) ) ? R.attr.ic_nicoru : R.attr.btn_favourite;
+		
 		if( status instanceof MSPToot ){
 			setButton( btnBoost, true, color_normal, R.attr.btn_boost, "" );
-			setButton( btnFavourite, true, color_normal, R.attr.btn_favourite, "" );
+			setButton( btnFavourite, true, color_normal,fav_icon_attr, "" );
 		}else if( status instanceof TootStatus ){
 			TootStatus ts = (TootStatus) status;
 			
@@ -96,7 +98,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 				setButton( btnFavourite, false, color_normal, R.attr.btn_refresh, "?" );
 			}else{
 				int color = ( ts.favourited ? color_accent : color_normal );
-				setButton( btnFavourite, true, color, R.attr.btn_favourite, Long.toString( ts.favourites_count ) );
+				setButton( btnFavourite, true, color, fav_icon_attr, Long.toString( ts.favourites_count ) );
 			}
 		}
 		

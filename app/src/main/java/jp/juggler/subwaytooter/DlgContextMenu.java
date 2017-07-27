@@ -112,6 +112,9 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		btnConversationAnotherAccount.setOnClickListener( this );
 		btnAvatarImage.setOnClickListener( this );
 		
+		viewRoot.findViewById( R.id.btnQuoteUrlStatus ).setOnClickListener( this );
+		viewRoot.findViewById( R.id.btnQuoteUrlAccount ).setOnClickListener( this );
+		
 		final ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( activity,log );
 		//	final ArrayList< SavedAccount > account_list_non_pseudo_same_instance = new ArrayList<>();
 		
@@ -481,6 +484,20 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			if( who != null ){
 				String url = ! TextUtils.isEmpty( who.avatar ) ? who.avatar : who.avatar_static;
 				if( url != null ) activity.openChromeTab( pos, access_info, url, true );
+			}
+			break;
+		
+		case R.id.btnQuoteUrlStatus:
+			if( status != null ){
+				String url = TextUtils.isEmpty( status.url ) ? "" : status.url +" ";
+				activity.openPost( url );
+			}
+			break;
+		
+		case R.id.btnQuoteUrlAccount:
+			if( who != null ){
+				String url = TextUtils.isEmpty( who.url ) ? "" : who.url +" ";
+				activity.openPost( url );
 			}
 			break;
 		}

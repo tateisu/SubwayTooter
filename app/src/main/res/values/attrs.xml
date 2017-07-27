@@ -119,4 +119,6 @@
     <attr name="ic_plugin" format="reference" />
     <attr name="ic_domain_block" format="reference" />
 
+    <attr name="ic_nicoru" format="reference" />
+
 </resources>

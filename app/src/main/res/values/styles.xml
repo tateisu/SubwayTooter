@@ -87,6 +87,8 @@
         <item name="ic_plugin">@drawable/ic_plugin</item>
         <item name="ic_domain_block">@drawable/ic_domain_block</item>
 
+        <item name="ic_nicoru">@drawable/ic_nicoru</item>
+
 
     </style>
 
@@ -177,6 +179,8 @@
         <item name="ic_delete">@drawable/ic_delete_dark</item>
         <item name="ic_plugin">@drawable/ic_plugin_dark</item>
         <item name="ic_domain_block">@drawable/ic_domain_block_dark</item>
+
+        <item name="ic_nicoru">@drawable/ic_nicoru_dark</item>
 
     </style>
 

@@ -94,3 +94,7 @@ my $res_dir = "app/src/main/res";
 #resize_scales( "_ArtWork/media_type_video.png"	,$res_dir,"drawable","media_type_video",-1,-1);
 
 resize_scales( "_ArtWork/hohoemi.png"	,$res_dir,"drawable","emoji_hohoemi",0,24);
+resize_scales( "_ArtWork/nicoru.png"	,$res_dir,"drawable","emoji_nicoru",0,24);
+
+resize_scales( "_ArtWork/ic_nicoru.png"			,$res_dir,"drawable","ic_nicoru",0,32);
+resize_scales( "_ArtWork/ic_nicoru_dark.png"		,$res_dir,"drawable","ic_nicoru_dark",0,32);

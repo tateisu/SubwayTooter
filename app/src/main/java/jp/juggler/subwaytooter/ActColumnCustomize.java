@@ -280,10 +280,10 @@ public class ActColumnCustomize extends AppCompatActivity
 			c = column.header_fg_color;
 			if( c == 0 ){
 				tvColumnName.setTextColor( Styler.getAttributeColor( this, android.R.attr.textColorPrimary ) );
-				Styler.setIconDefaultColor( this, ivColumnHeader, Column.getIconAttrId( column.column_type ) );
+				Styler.setIconDefaultColor( this, ivColumnHeader, column.getIconAttrId( column.column_type ) );
 			}else{
 				tvColumnName.setTextColor( c );
-				Styler.setIconCustomColor( this, ivColumnHeader, c, Column.getIconAttrId( column.column_type ) );
+				Styler.setIconCustomColor( this, ivColumnHeader, c, column.getIconAttrId( column.column_type ) );
 			}
 			
 			tvColumnName.setText( column.getColumnName( false ) );

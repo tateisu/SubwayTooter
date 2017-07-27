@@ -246,7 +246,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 				showBoost(
 					n.account
 					, n.time_created_at
-					, R.attr.btn_favourite
+					, Column.isNicoru( access_info.getFullAcct( n.account) )? R.attr.ic_nicoru : R.attr.btn_favourite
 					, Utils.formatSpannable1( activity, R.string.display_name_favourited_by, n.account.display_name )
 				);
 				if( n.status != null ) showStatus( activity, n.status );

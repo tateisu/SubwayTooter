@@ -270,7 +270,7 @@ public class ActColumnList extends AppCompatActivity {
 			tvAccess.setPaddingRelative( acct_pad_lr, 0, acct_pad_lr, 0 );
 			tvName.setText( item.name );
 			ivColumnIcon.setImageResource( Styler.getAttributeResourceId(
-				ActColumnList.this, Column.getIconAttrId( item.type ) ) );
+				ActColumnList.this, Column.getIconAttrId( item.acct, item.type ) ) );
 		}
 		
 		//		@Override
@@ -306,7 +306,7 @@ public class ActColumnList extends AppCompatActivity {
 			
 			ImageView ivColumnIcon = (ImageView) dragView.findViewById( R.id.ivColumnIcon );
 			ivColumnIcon.setImageResource( Styler.getAttributeResourceId(
-				ActColumnList.this, Column.getIconAttrId( item.type ) ) );
+				ActColumnList.this, Column.getIconAttrId( item.acct, item.type ) ) );
 			
 			dragView.findViewById( R.id.ivBookmark ).setVisibility(
 				clickedView.findViewById( R.id.ivBookmark ).getVisibility()

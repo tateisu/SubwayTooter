@@ -85,6 +85,7 @@ public abstract class Emojione
 	}
 	
 	static final Pattern reNicoru = Pattern.compile( "\\Anicoru\\d*\\z",Pattern.CASE_INSENSITIVE );
+	static final Pattern reHohoemi = Pattern.compile( "\\Ahohoemi\\d*\\z",Pattern.CASE_INSENSITIVE );
 	
 	public static CharSequence decodeEmoji( Context context, String s ){
 
@@ -101,8 +102,10 @@ public abstract class Emojione
 			//
 			String unicode = map_name2unicode.get(matcher.group(1));
 			if( unicode == null ){
-				if( reNicoru.matcher( matcher.group(1) ).find() ){
-					decode_env.addImageSpan( s.substring( start, end ), context,  R.drawable.emoji_hohoemi );
+				if( reHohoemi.matcher( matcher.group(1) ).find() ){
+					decode_env.addImageSpan( s.substring( start, end ), context, R.drawable.emoji_hohoemi );
+				}else if( reNicoru.matcher( matcher.group(1) ).find() ){
+					decode_env.addImageSpan( s.substring( start, end ), context,  R.drawable.emoji_nicoru );
 				}else{
 					decode_env.addUnicodeString( s.substring( start, end ) );
 				}

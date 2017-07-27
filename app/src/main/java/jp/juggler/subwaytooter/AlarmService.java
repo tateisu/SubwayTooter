@@ -673,9 +673,12 @@ public class AlarmService extends IntentService {
 	private void showNotification( @NonNull SavedAccount account, @NonNull ArrayList< Data > data_list ){
 		String notification_tag = Long.toString( account.db_id );
 		if( data_list.isEmpty() ){
+			log.d("showNotification[%s] cancel notification.",account.acct);
 			notification_manager.cancel( notification_tag, NOTIFICATION_ID );
 			return;
 		}
+
+		log.d("showNotification[%s] sorting...",account.acct);
 		
 		Collections.sort( data_list, new Comparator< Data >() {
 			@Override public int compare( Data a, Data b ){
@@ -687,18 +690,26 @@ public class AlarmService extends IntentService {
 				return 0;
 			}
 		} );
-		
 		Data item = data_list.get( 0 );
+		
+		log.d("showNotification[%s] sort complete.",account.acct);
+
 		NotificationTracking nt = NotificationTracking.load( account.db_id );
 		if( item.notification.time_created_at == nt.post_time
 			&& item.notification.id == nt.post_id
 			){
 			// 先頭にあるデータが同じなら、通知を更新しない
 			// このマーカーは端末再起動時にリセットされるので、再起動後は通知が出るはず
+			
+			log.d("showNotification[%s] id=%s is already shown.",account.acct, item.notification.id);
+
 			return;
 		}
+
 		nt.updatePost( item.notification.id, item.notification.time_created_at );
 		
+		log.d("showNotification[%s] creating notification(1)",account.acct);
+
 		// 通知タップ
 		Intent intent_click = new Intent( this, AlarmReceiver.class );
 		intent_click.putExtra( EXTRA_DB_ID, account.db_id );
@@ -713,6 +724,8 @@ public class AlarmService extends IntentService {
 		// 通知を消去した時のPendingIntent
 		PendingIntent pi_delete = PendingIntent.getBroadcast( this, ( Integer.MAX_VALUE - (int) account.db_id ), intent_delete, PendingIntent.FLAG_UPDATE_CURRENT );
 		
+		log.d("showNotification[%s] creating notification(2)",account.acct);
+		
 		NotificationCompat.Builder builder = new NotificationCompat.Builder( this )
 			.setContentIntent( pi_click )
 			.setDeleteIntent( pi_delete )
@@ -721,6 +734,8 @@ public class AlarmService extends IntentService {
 			.setColor( ContextCompat.getColor( this, R.color.Light_colorAccent ) ) // ここは常に白テーマの色を使う
 			.setWhen( item.notification.time_created_at );
 		
+		log.d("showNotification[%s] creating notification(3)",account.acct);
+
 		int iv = 0;
 		if( pref.getBoolean( Pref.KEY_NOTIFICATION_SOUND, true ) ){
 
@@ -732,31 +747,50 @@ public class AlarmService extends IntentService {
 					String sv = AcctColor.getNotificationSound( acct );
 					sound_uri = TextUtils.isEmpty( sv ) ? null : Uri.parse( sv );
 				}
-			}catch( Throwable ignored ){
+			}catch( Throwable ex ){
+				ex.printStackTrace();
 			}
 			
 			if( sound_uri == null ){
 				try{
 					String sv = account.sound_uri;
 					sound_uri = TextUtils.isEmpty( sv ) ? null : Uri.parse( sv );
-				}catch( Throwable ignored ){
+				}catch( Throwable ex ){
+					ex.printStackTrace();
 				}
 			}
 			
+			boolean bSoundSet = false;
 			if( sound_uri != null ){
-				builder.setSound( sound_uri );
-			}else{
+				try{
+					builder.setSound( sound_uri );
+					bSoundSet = true;
+				}catch( Throwable ex ){
+					ex.printStackTrace();
+				}
+			}
+			if(!bSoundSet){
 				iv |= NotificationCompat.DEFAULT_SOUND;
 			}
 		}
+		
+		log.d("showNotification[%s] creating notification(4)",account.acct);
+
 		if( pref.getBoolean( Pref.KEY_NOTIFICATION_VIBRATION, true ) ){
 			iv |= NotificationCompat.DEFAULT_VIBRATE;
-			
 		}
+		
+		log.d("showNotification[%s] creating notification(5)",account.acct);
+
 		if( pref.getBoolean( Pref.KEY_NOTIFICATION_LED, true ) ){
 			iv |= NotificationCompat.DEFAULT_LIGHTS;
 		}
+		
+		log.d("showNotification[%s] creating notification(6)",account.acct);
+
 		builder.setDefaults( iv );
+		
+		log.d("showNotification[%s] creating notification(7)",account.acct);
 		
 		String a = getNotificationLine( item.notification.type, item.notification.account.display_name );
 		String acct = item.access_info.acct + " " + getString( R.string.app_name );
@@ -780,6 +814,8 @@ public class AlarmService extends IntentService {
 			builder.setStyle( style );
 		}
 		
+		log.d("showNotification[%s] set notification...",account.acct);
+
 		notification_manager.notify( notification_tag, NOTIFICATION_ID, builder.build() );
 	}
 	

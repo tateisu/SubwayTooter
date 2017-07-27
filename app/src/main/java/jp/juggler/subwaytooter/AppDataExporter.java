@@ -51,6 +51,7 @@ public class AppDataExporter {
 					writer.value( (Boolean) o );
 					
 				}else if( o instanceof Number ){
+					
 					writer.name( k );
 					writer.value( (Number) o );
 					
@@ -243,6 +244,8 @@ public class AppDataExporter {
 		}
 	}
 	
+	static final double MAGIC_NAN = (double) -76287755398823900d;
+	
 	private static void writePref( JsonWriter writer, SharedPreferences pref ) throws IOException{
 		writer.beginObject();
 		for( Map.Entry< String, ? > entry : pref.getAll().entrySet() ){
@@ -256,6 +259,17 @@ public class AppDataExporter {
 			}else if( v instanceof Boolean ){
 				writer.value( (Boolean) v );
 			}else if( v instanceof Number ){
+				if( v instanceof Double ){
+					if( Double.isNaN( (Double) v ) ){
+						writer.value( MAGIC_NAN );
+						continue;
+					}
+				}else if( v instanceof Float ){
+					if( Float.isNaN( (Float) v ) ){
+						writer.value( MAGIC_NAN );
+						continue;
+					}
+				}
 				writer.value( (Number) v );
 			}else{
 				throw new RuntimeException( String.format( Locale.JAPAN, "writePref. bad data type: Preference key =%s", k ) );
@@ -340,7 +354,11 @@ public class AppDataExporter {
 			case Pref.KEY_TIMELINE_FONT_SIZE:
 			case Pref.KEY_ACCT_FONT_SIZE:
 				double dv = reader.nextDouble();
-				e.putFloat( k, (float)dv );
+				if( dv <= MAGIC_NAN ){
+					e.putFloat( k, Float.NaN );
+				}else{
+					e.putFloat( k, (float) dv );
+				}
 				break;
 			
 			// force reset
@@ -379,11 +397,15 @@ public class AppDataExporter {
 		while( reader.hasNext() ){
 			JSONObject item = readJsonObject( reader );
 			long old_id = item.optLong( Column.KEY_ACCOUNT_ROW_ID, - 1L );
-			Long new_id = id_map.get( old_id );
-			if( new_id == null ){
-				throw new RuntimeException( "readColumn: can't convert account id" );
+			if( old_id == -1L ){
+				// 検索カラムは NAアカウントと紐ついている。変換の必要はない
+			}else{
+				Long new_id = id_map.get( old_id );
+				if( new_id == null ){
+					throw new RuntimeException( "readColumn: can't convert account id" );
+				}
+				item.put( Column.KEY_ACCOUNT_ROW_ID, (long) new_id );
 			}
-			item.put( Column.KEY_ACCOUNT_ROW_ID, (long) new_id );
 			try{
 				result.add( new Column( app_state, item ) );
 			}catch( Throwable ex ){

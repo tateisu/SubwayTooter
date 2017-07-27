@@ -1,6 +1,9 @@
 package jp.juggler.subwaytooter;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -193,6 +196,19 @@ class AppState {
 		return b;
 	}
 	
+	private boolean tts_isSpeaking = false;
+	private final BroadcastReceiver tts_receiver = new BroadcastReceiver(){
+		@Override public void onReceive(Context context, Intent intent) {
+			if( intent != null ){
+				if( TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED.equals( intent.getAction() ) ){
+					log.d( "tts_receiver: speech completed." );
+					tts_isSpeaking = false;
+					handler.post( proc_flushSpeechQueue );
+				}
+			}
+		}
+	};
+	
 	private void enableSpeech(){
 		this.willSpeechEnabled = isTextToSpeechRequired();
 		
@@ -215,6 +231,7 @@ class AppState {
 							log.d( "speech initialize failed. status=%s", status );
 							return;
 						}
+
 						Utils.runOnMainThread( new Runnable() {
 							@Override public void run(){
 								if( ! willSpeechEnabled ){
@@ -222,25 +239,29 @@ class AppState {
 									log.d( "shutdown TextToSpeech…" );
 									tmp_tts.shutdown();
 								}else{
+									
 									tts_queue.clear();
 									duplication_check.clear();
 									tts = tmp_tts;
 									tts_status = TTS_STATUS_INITIALIZED;
-									tts.setOnUtteranceProgressListener( new UtteranceProgressListener() {
-										@Override public void onStart( String utteranceId ){
-											log.d( "UtteranceProgressListener.onStart id=%s", utteranceId );
-										}
-										
-										@Override public void onDone( String utteranceId ){
-											log.d( "UtteranceProgressListener.onDone id=%s", utteranceId );
-											handler.post( proc_flushSpeechQueue );
-										}
-										
-										@Override public void onError( String utteranceId ){
-											log.d( "UtteranceProgressListener.onError id=%s", utteranceId );
-											handler.post( proc_flushSpeechQueue );
-										}
-									} );
+									context.registerReceiver(tts_receiver, new IntentFilter(TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED));
+									tts_isSpeaking = false;
+
+//									tts.setOnUtteranceProgressListener( new UtteranceProgressListener() {
+//										@Override public void onStart( String utteranceId ){
+//											log.d( "UtteranceProgressListener.onStart id=%s", utteranceId );
+//										}
+//
+//										@Override public void onDone( String utteranceId ){
+//											log.d( "UtteranceProgressListener.onDone id=%s", utteranceId );
+//											handler.post( proc_flushSpeechQueue );
+//										}
+//
+//										@Override public void onError( String utteranceId ){
+//											log.d( "UtteranceProgressListener.onError id=%s", utteranceId );
+//											handler.post( proc_flushSpeechQueue );
+//										}
+//									} );
 								}
 							}
 						} );
@@ -368,12 +389,15 @@ class AppState {
 					return;
 				}
 				
-				if( tts.isSpeaking() ){
+				// if( tts.isSpeaking() )
+				if( tts_isSpeaking )
+				{
 					log.d( "proc_flushSpeechQueue: tts is speaking. retry later." );
-					handler.postDelayed( proc_flushSpeechQueue, 333L );
+					handler.postDelayed( proc_flushSpeechQueue, 1000L );
 					return;
 				}
 				
+				tts_isSpeaking = true;
 				String sv = tts_queue.removeFirst();
 				tts.speak(
 					sv

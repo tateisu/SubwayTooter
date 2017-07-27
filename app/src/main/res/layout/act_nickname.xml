@@ -2,21 +2,20 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/llContent"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+
     android:orientation="vertical"
-
-    android:id="@+id/llContent"
-
 
     >
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
         android:paddingEnd="12dp"
         android:paddingStart="12dp"
-        android:layout_marginTop="4dp"
         android:text="@string/preview"
         />
 
@@ -48,7 +47,6 @@
             android:padding="12dp"
             >
 
-
             <View style="@style/setting_divider"/>
 
             <TextView
@@ -69,8 +67,8 @@
 
             <TextView
                 style="@style/setting_row_label"
-                android:text="@string/nickname_label"
                 android:labelFor="@+id/etNickname"
+                android:text="@string/nickname"
                 />
 
             <LinearLayout style="@style/setting_row_form">
@@ -141,6 +139,40 @@
 
             <View style="@style/setting_divider"/>
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:id="@+id/llNotificationSound"
+                >
+
+                <TextView
+                    style="@style/setting_row_label"
+                    android:text="@string/notification_sound"
+                    />
+
+                <LinearLayout style="@style/setting_row_form">
+
+                    <Button
+                        android:id="@+id/btnNotificationSoundEdit"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/edit"
+                        android:textAllCaps="false"
+                        />
+
+                    <Button
+                        android:id="@+id/btnNotificationSoundReset"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/reset"
+                        android:textAllCaps="false"
+                        />
+
+                </LinearLayout>
+
+                <View style="@style/setting_divider"/>
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 

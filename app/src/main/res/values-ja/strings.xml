@@ -450,7 +450,7 @@
     <!---->
     <string name="edit">編集</string>
     <!---->
-    <string name="nickname">色</string>
+    <string name="nickname">通称</string>
     <!---->
     <string name="nickname_label">通称と色 (指定するとAcctの代わりに表示されます)</string>
     <!---->
@@ -462,6 +462,7 @@
     <!---->
     <string name="text_color">文字色</string>
     <!---->
+    <string name="nickname_and_color_and_notification_sound">通称と色と通知音</string>
     <string name="nickname_and_color">通称と色</string>
     <!---->
     <string name="nickname_applied_after_reload">通称と色の変更はカラムをリロードした後に反映されます</string>
@@ -613,7 +614,7 @@
     <string name="app_data_export">アプリデータのエクスポート</string>
     <string name="app_data_import">アプリデータのインポート</string>
     <string name="app_data_import_confirm">アプリに今あるデータは消えてしまいます。よろしいですか？</string>
-    <string name="app_data_import_desc">エクスポート先はいくつか選べますが、インポートするには端末のストレージかGoogleドライブにデータを置く必要があります。カラム背景画像とタイムラインのフォントはエクスポート/インポートの対象外です。</string>
+    <string name="app_data_import_desc">エクスポート先はいくつか選べますが、インポートするには端末のストレージかGoogleドライブにデータを置く必要があります。カラム背景画像、タイムラインのフォント、カスタム通知音はエクスポート/インポートの対象外です。</string>
     <string name="user_id_conversion_failed">ユーザIDを変換できません</string>
     <string name="draft_deleted">下書きを削除しました</string>
     <string name="draft_picker_desc">長押しで削除</string>

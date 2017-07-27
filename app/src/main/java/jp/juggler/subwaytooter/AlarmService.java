@@ -38,6 +38,7 @@ import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.MutedWord;
 import jp.juggler.subwaytooter.table.NotificationTracking;
@@ -722,12 +723,26 @@ public class AlarmService extends IntentService {
 		
 		int iv = 0;
 		if( pref.getBoolean( Pref.KEY_NOTIFICATION_SOUND, true ) ){
+
 			Uri sound_uri = null;
+			
 			try{
-				String sv = account.sound_uri;
-				sound_uri = TextUtils.isEmpty( sv ) ? null : Uri.parse( sv );
+				String acct = item.access_info.getFullAcct( item.notification.account );
+				if( acct != null){
+					String sv = AcctColor.getNotificationSound( acct );
+					sound_uri = TextUtils.isEmpty( sv ) ? null : Uri.parse( sv );
+				}
 			}catch( Throwable ignored ){
 			}
+			
+			if( sound_uri == null ){
+				try{
+					String sv = account.sound_uri;
+					sound_uri = TextUtils.isEmpty( sv ) ? null : Uri.parse( sv );
+				}catch( Throwable ignored ){
+				}
+			}
+			
 			if( sound_uri != null ){
 				builder.setSound( sound_uri );
 			}else{

@@ -28,6 +28,7 @@ public class AcctColor {
 	private static final String COL_COLOR_FG = "cf"; // 未設定なら0、それ以外は色
 	private static final String COL_COLOR_BG = "cb"; // 未設定なら0、それ以外は色
 	private static final String COL_NICKNAME = "nick"; // 未設定ならnullか空文字列
+	private static final String COL_NOTIFICATION_SOUND = "notification_sound"; // 未設定ならnullか空文字列
 	
 	public static void onDBCreate( SQLiteDatabase db ){
 		log.d( "onDBCreate!" );
@@ -39,6 +40,7 @@ public class AcctColor {
 				+ "," + COL_COLOR_FG + " integer"
 				+ "," + COL_COLOR_BG + " integer"
 				+ "," + COL_NICKNAME + " text "
+				+ "," + COL_NOTIFICATION_SOUND + " text default ''"
 				+ ")"
 		);
 		db.execSQL(
@@ -52,6 +54,15 @@ public class AcctColor {
 	public static void onDBUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ){
 		if( oldVersion < 9 && newVersion >= 9 ){
 			onDBCreate( db );
+			return;
+		}
+
+		if( oldVersion < 17 && newVersion >= 17 ){
+			try{
+				db.execSQL( "alter table " + table + " add column " + COL_NOTIFICATION_SOUND + " text default ''" );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+			}
 		}
 	}
 	
@@ -59,12 +70,14 @@ public class AcctColor {
 	public int color_fg;
 	public int color_bg;
 	public String nickname;
+	public String notification_sound ;
 	
-	public AcctColor( @NonNull String acct, String nickname, int color_fg, int color_bg ){
+	public AcctColor( @NonNull String acct, String nickname, int color_fg, int color_bg ,String notification_sound){
 		this.acct = acct;
 		this.nickname = nickname;
 		this.color_fg = color_fg;
 		this.color_bg = color_bg;
+		this.notification_sound = notification_sound;
 	}
 	
 	private AcctColor( @NonNull String acct ){
@@ -82,6 +95,7 @@ public class AcctColor {
 			cv.put( COL_COLOR_FG, color_fg );
 			cv.put( COL_COLOR_BG, color_bg );
 			cv.put( COL_NICKNAME, nickname == null ? "" : nickname );
+			cv.put( COL_NOTIFICATION_SOUND, notification_sound == null ? "" : notification_sound );
 			App1.getDB().replace( table, null, cv );
 			mMemoryCache.remove( acct );
 		}catch( Throwable ex ){
@@ -127,6 +141,9 @@ public class AcctColor {
 						idx = cursor.getColumnIndex( COL_NICKNAME );
 						dst.nickname = cursor.isNull( idx ) ? null : cursor.getString( idx );
 						
+						idx = cursor.getColumnIndex( COL_NOTIFICATION_SOUND );
+						dst.notification_sound = cursor.isNull( idx ) ? null : cursor.getString( idx );
+						
 						mMemoryCache.put( acct, dst );
 						return dst;
 					}
@@ -149,6 +166,11 @@ public class AcctColor {
 		return ac != null && ! TextUtils.isEmpty( ac.nickname ) ? Utils.sanitizeBDI( ac.nickname ) : acct;
 	}
 	
+	@Nullable public static String getNotificationSound( @NonNull String acct ){
+		AcctColor ac = load( acct );
+		return ac != null && ! TextUtils.isEmpty( ac.notification_sound ) ? ac.notification_sound : null;
+	}
+	
 	public static boolean hasNickname( @Nullable AcctColor ac ){
 		return ac != null && ! TextUtils.isEmpty( ac.nickname );
 	}
@@ -164,4 +186,5 @@ public class AcctColor {
 	public static void clearMemoryCache(){
 		mMemoryCache.evictAll ();
 	}
+	
 }

@@ -159,7 +159,7 @@
 
         <activity
             android:name=".ActNickname"
-            android:label="@string/nickname_and_color"
+            android:label="@string/nickname_and_color_and_notification_sound"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
             />
         <activity

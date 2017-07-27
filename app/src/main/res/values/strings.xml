@@ -233,6 +233,7 @@
     <string name="background_color">Background color</string>
     <string name="save">Save</string>
     <string name="discard">Discard</string>
+    <string name="nickname_and_color_and_notification_sound">Nickname, Color, Notification sound</string>
     <string name="nickname_and_color">Nickname and Color</string>
     <string name="nickname_applied_after_reload">The change of nickname/color will be applied after reload column.</string>
     <string name="show_follow_button_in_button_bar">Show follow button in button bar (app restart required)</string>
@@ -321,7 +322,7 @@
     <string name="attachment_in_draft_is_lost">Some of media attachment in the draft have been lost.</string>
     <string name="app_data_export">Export app data</string>
     <string name="app_data_import">Import app data</string>
-    <string name="app_data_import_desc">You can export data to any app that can receive data, But maybe you can import data only from device\'s storage or Google drive.\nColumn background image may be not exported/imported over device.\nTimeline font is not exported/imported.</string>
+    <string name="app_data_import_desc">You can export data to any app that can receive data, But maybe you can import data only from device\'s storage or Google drive.\nColumn background image may be not exported/imported over device.\nTimeline font is not exported/imported.\nCustom notification sound may be not exported/imported over device.</string>
     <string name="app_data_import_confirm">existing data ( before import ) will be cleared. Are you sure?</string>
     <string name="user_id_conversion_failed">User id conversion failed.</string>
     <string name="draft_picker_desc">Long tap to delete.</string>

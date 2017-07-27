@@ -2,6 +2,8 @@ package jp.juggler.subwaytooter;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
@@ -10,6 +12,7 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -22,10 +25,12 @@ import jp.juggler.subwaytooter.util.Utils;
 public class ActNickname extends AppCompatActivity implements View.OnClickListener, ColorPickerDialogListener {
 	
 	static final String EXTRA_ACCT = "acct";
+	static final String EXTRA_SHOW_NOTIFICATION_SOUND = "show_notification_sound";
 	
-	public static void open( Activity activity, String full_acct, int requestCode ){
+	public static void open( Activity activity, String full_acct, boolean bShowNotificationSound, int requestCode ){
 		Intent intent = new Intent( activity, ActNickname.class );
 		intent.putExtra( EXTRA_ACCT, full_acct );
+		intent.putExtra( EXTRA_SHOW_NOTIFICATION_SOUND, bShowNotificationSound );
 		activity.startActivityForResult( intent, requestCode );
 	}
 	
@@ -34,16 +39,22 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 		super.onBackPressed();
 	}
 	
+	boolean show_notification_sound;
 	String acct;
 	int color_fg;
 	int color_bg;
+	String notification_sound_uri;
 	
 	@Override protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
 		App1.setActivityTheme( this, false );
+		
+		Intent intent = getIntent();
+		this.acct = intent.getStringExtra( EXTRA_ACCT );
+		this.show_notification_sound = intent.getBooleanExtra( EXTRA_SHOW_NOTIFICATION_SOUND ,false);
+
 		initUI();
 		
-		this.acct = getIntent().getStringExtra( EXTRA_ACCT );
 		load();
 	}
 	
@@ -56,8 +67,12 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 	View btnBackgroundColorReset;
 	View btnSave;
 	View btnDiscard;
+	Button btnNotificationSoundEdit;
+	Button btnNotificationSoundReset;
 	
 	private void initUI(){
+		
+		setTitle( getString( show_notification_sound ? R.string.nickname_and_color_and_notification_sound : R.string.nickname_and_color ) );
 		setContentView( R.layout.act_nickname );
 		
 		Styler.fixHorizontalPadding(findViewById( R.id.llContent ));
@@ -81,6 +96,12 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 		btnSave.setOnClickListener( this );
 		btnDiscard.setOnClickListener( this );
 		
+		btnNotificationSoundEdit = (Button) findViewById( R.id.btnNotificationSoundEdit );
+		btnNotificationSoundReset = (Button) findViewById( R.id.btnNotificationSoundReset );
+		btnNotificationSoundEdit.setOnClickListener( this );
+		btnNotificationSoundReset.setOnClickListener( this );
+		
+		
 		etNickname.addTextChangedListener( new TextWatcher() {
 			@Override
 			public void beforeTextChanged( CharSequence s, int start, int count, int after ){
@@ -102,6 +123,8 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 	private void load(){
 		bLoading = true;
 		
+		findViewById( R.id.llNotificationSound ).setVisibility( show_notification_sound ? View.VISIBLE: View.GONE );
+		
 		tvAcct.setText( acct );
 		
 		AcctColor ac = AcctColor.load( acct );
@@ -109,6 +132,7 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 			color_bg = ac.color_bg;
 			color_fg = ac.color_fg;
 			etNickname.setText( ac.nickname == null ? "" : ac.nickname );
+			notification_sound_uri = ac.notification_sound;
 		}
 		
 		bLoading = false;
@@ -122,6 +146,7 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 			,etNickname.getText().toString().trim()
 			,color_fg
 			,color_bg
+			,notification_sound_uri
 		).save( System.currentTimeMillis() );
 	}
 	
@@ -180,6 +205,15 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 			setResult( RESULT_CANCELED );
 			finish();
 			break;
+		
+		case R.id.btnNotificationSoundEdit:
+			openNotificationSoundPicker();
+			break;
+		
+		case R.id.btnNotificationSoundReset:
+			notification_sound_uri = "";
+			break;
+		
 		}
 	}
 	
@@ -196,5 +230,43 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 	}
 	
 	@Override public void onDialogDismissed( int dialogId ){
+	}
+	
+	private void openNotificationSoundPicker(){
+		Intent intent = new Intent( RingtoneManager.ACTION_RINGTONE_PICKER );
+		intent.putExtra( RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION );
+		intent.putExtra( RingtoneManager.EXTRA_RINGTONE_TITLE, R.string.notification_sound );
+		intent.putExtra( RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false );
+		intent.putExtra( RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false );
+		try{
+			Uri uri = TextUtils.isEmpty( notification_sound_uri ) ? null : Uri.parse( notification_sound_uri );
+			if( uri != null ){
+				intent.putExtra( RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri );
+			}
+		}catch( Throwable ignored ){
+		}
+		
+		Intent chooser = Intent.createChooser( intent, getString( R.string.notification_sound ) );
+		startActivityForResult( chooser, REQUEST_CODE_NOTIFICATION_SOUND );
+	}
+	
+	static final int REQUEST_CODE_NOTIFICATION_SOUND = 2;
+	
+	@Override protected void onActivityResult( int requestCode, int resultCode, Intent data ){
+		if( resultCode == RESULT_OK && requestCode == REQUEST_CODE_NOTIFICATION_SOUND ){
+			// RINGTONE_PICKERからの選択されたデータを取得する
+			Uri uri = (Uri) data.getExtras().get( RingtoneManager.EXTRA_RINGTONE_PICKED_URI );
+			if( uri != null ){
+				notification_sound_uri = uri.toString();
+				//			Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), uri);
+				//			TextView ringView = (TextView) findViewById(R.id.ringtone);
+				//			ringView.setText(ringtone.getTitle(getApplicationContext()));
+				//			ringtone.setStreamType(AudioManager.STREAM_ALARM);
+				//			ringtone.play();
+				//			SystemClock.sleep(1000);
+				//			ringtone.stop();
+			}
+		}
+		super.onActivityResult( requestCode, resultCode, data );
 	}
 }

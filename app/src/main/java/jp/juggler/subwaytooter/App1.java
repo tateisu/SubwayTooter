@@ -51,7 +51,7 @@ public class App1 extends Application {
 	static final LogCategory log = new LogCategory( "App1" );
 	
 	static final String DB_NAME = "app_db";
-	static final int DB_VERSION = 16;
+	static final int DB_VERSION = 17;
 	public static final String FILE_PROVIDER_AUTHORITY = "jp.juggler.subwaytooter.FileProvider";
 	// 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
 	// 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加
@@ -67,6 +67,7 @@ public class App1 extends Application {
 	// 2017/5/25 v69 13=>14 SavedAccountに項目追加
 	// 2017/5/27 v73 14=>15 TagSetテーブルの追加
 	// 2017/7/22 v99 15=>16 SavedAccountに項目追加
+	// 2017/7/22 v106 16=>17 AcctColor に項目追加
 	
 	private static DBOpenHelper db_open_helper;
 	

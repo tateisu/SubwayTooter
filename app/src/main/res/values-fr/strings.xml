@@ -197,7 +197,8 @@
 	<string name="network_error">Erreur réseau.</string>
 	<string name="network_error_arg">Erreur réseau. %1$s</string>
 	<string name="nickname">Pseudonyme</string>
-	<string name="nickname_and_color">Pseudo et couleur</string>
+	<string name="nickname_and_color_and_notification_sound">Pseudo, Couleur, Notification sound</string>
+	<string name="nickname_and_color">Pseudo et Couleur</string>
 	<string name="nickname_applied_after_reload">Le changement de pseudo/couleur sera appliqué après actualisation.</string>
 	<string name="nickname_label">Pseudo et couleur. (s\'il est spécifié, il remplacera le nom du compte affiché)</string>
 	<string name="not_available_for_pseudo_account">Non disponible pour les personnes non connectés</string>
@@ -325,7 +326,7 @@
 	<string name="app_data_export">Exporter les données de Subway Tooter</string>
 	<string name="app_data_import">Importer les données dans Subway Tooter</string>
 	<string name="app_data_import_confirm">Toutes les données actuelles seront remplacées lors de l\'importation.\nÊtes-vous sur ?</string>
-	<string name="app_data_import_desc">Vous pouvez exporter les données vers toute application qui pourra les recevoir. L\'importation ne peut s\'effectuer que depuis le stockage de votre appareil ou Google Drive !</string>
+	<string name="app_data_import_desc">Vous pouvez exporter les données vers toute application qui pourra les recevoir. L\'importation ne peut s\'effectuer que depuis le stockage de votre appareil ou Google Drive !\nColumn background image may be not exported/imported over device.\nTimeline font is not exported/imported.\nCustom notification sound may be not exported/imported over device.</string>
 
 	<string name="user_id_conversion_failed">Conversion de l\'identification utilisateur échouée.</string>
 	<string name="draft_deleted">Brouillon effacé !</string>

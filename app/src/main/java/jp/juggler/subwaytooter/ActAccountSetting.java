@@ -267,10 +267,11 @@ public class ActAccountSetting extends AppCompatActivity
 		case R.id.btnOpenBrowser:
 			open_browser( "https://" + account.host + "/" );
 			break;
+
 		case R.id.btnUserCustom:
-			ActNickname.open( this, full_acct, REQUEST_CODE_ACCT_CUSTOMIZE );
+			ActNickname.open( this, full_acct, false, REQUEST_CODE_ACCT_CUSTOMIZE );
 			break;
-		
+
 		case R.id.btnNotificationSoundEdit:
 			openNotificationSoundPicker();
 			break;

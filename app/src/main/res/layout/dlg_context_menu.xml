@@ -451,7 +451,7 @@
                     android:paddingEnd="8dp"
                     android:paddingStart="8dp"
                     android:paddingTop="4dp"
-                    android:text="@string/nickname_and_color"
+                    android:text="@string/nickname_and_color_and_notification_sound"
                     android:textAllCaps="false"
                     />
 

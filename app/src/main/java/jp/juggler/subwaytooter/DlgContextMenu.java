@@ -429,7 +429,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnNickname:
 			if( who != null ){
-				ActNickname.open( activity, access_info.getFullAcct( who ), ActMain.REQUEST_CODE_NICKNAME );
+				ActNickname.open( activity, access_info.getFullAcct( who ), true, ActMain.REQUEST_CODE_NICKNAME );
 			}
 			break;
 		

@@ -62,6 +62,9 @@ public class PostHelper {
 		"(?:^|[^/)\\w])#(" + word + "*" + alpha + word + "*)"
 		, Pattern.CASE_INSENSITIVE
 	);
+
+	private static final Pattern reCharsNotTag = Pattern.compile( "[\\s\\-+.,:;/]" );
+	
 	
 	public String content;
 	public String spoiler_text;
@@ -332,8 +335,6 @@ public class PostHelper {
 
 	
 	
-	private static final Pattern reCharsNotTag = Pattern.compile( "[\\s\\-+.,:;/]" );
-	
 	private final Runnable proc_text_changed = new Runnable() {
 		@Override public void run(){
 			if(! callback2.canOpenPopup() ){
@@ -413,6 +414,7 @@ public class PostHelper {
 			
 			String part = src.substring( last_sharp + 1, end );
 			if( reCharsNotTag.matcher( part ).find() ){
+				log.d("checkTag: character not tag in string %s",part);
 				closeAcctPopup();
 				return;
 			}

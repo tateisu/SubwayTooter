@@ -1409,7 +1409,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			llReply.setVisibility( View.GONE );
 		}else{
 			llReply.setVisibility( View.VISIBLE );
-			tvReplyTo.setText( HTMLDecoder.decodeHTML( ActPost.this, account, in_reply_to_text, true, null ) );
+			tvReplyTo.setText( HTMLDecoder.decodeHTML( ActPost.this, account, in_reply_to_text, true,true, null ) );
 			ivReply.setCornerRadius( pref, 16f );
 			ivReply.setImageUrl( in_reply_to_image );
 		}
@@ -1759,7 +1759,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					return null;
 				}
 			};
-			CharSequence sv = HTMLDecoder.decodeHTML( ActPost.this,lcc, text, false, null );
+			CharSequence sv = HTMLDecoder.decodeHTML( ActPost.this,lcc, text, false, false, null );
 			tvText.setText( sv );
 			tvText.setMovementMethod( LinkMovementMethod.getInstance() );
 			

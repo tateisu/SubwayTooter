@@ -512,12 +512,6 @@ class Column implements StreamReader.Callback {
 		return getIconAttrId( access_info.acct, type );
 	}
 	
-	private static final Pattern reNicoruHost = Pattern.compile( "@friends\\.nico", Pattern.CASE_INSENSITIVE );
-	
-	public static boolean isNicoru( String acct ){
-		return acct != null && reNicoruHost.matcher( acct ).find();
-	}
-	
 	static int getIconAttrId( String acct, int type ){
 		switch( type ){
 		
@@ -538,7 +532,7 @@ class Column implements StreamReader.Callback {
 			return R.attr.btn_statuses;
 		
 		case TYPE_FAVOURITES:
-			return isNicoru(acct) ? R.attr.ic_nicoru : R.attr.btn_favourite;
+			return SavedAccount.isNicoru(acct) ? R.attr.ic_nicoru : R.attr.btn_favourite;
 		
 		case TYPE_NOTIFICATIONS:
 			return R.attr.btn_notification;
@@ -550,7 +544,7 @@ class Column implements StreamReader.Callback {
 			return R.attr.btn_boost;
 		
 		case TYPE_FAVOURITED_BY:
-			return isNicoru(acct) ? R.attr.ic_nicoru : R.attr.btn_favourite;
+			return SavedAccount.isNicoru(acct) ? R.attr.ic_nicoru : R.attr.btn_favourite;
 		
 		case TYPE_HASHTAG:
 			return R.attr.ic_hashtag;

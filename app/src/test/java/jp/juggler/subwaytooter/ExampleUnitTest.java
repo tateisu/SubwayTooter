@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter;
 
 import org.junit.Test;
 
+
 import jp.juggler.subwaytooter.util.WordTrieTree;
 
 import static org.junit.Assert.*;
@@ -21,9 +22,9 @@ public class ExampleUnitTest {
 	public void checkWordTrieTree() throws Exception{
 		WordTrieTree wtt = new WordTrieTree();
 		
-		assertEquals( false, wtt.containsWord( null) );
+		assertEquals( false, wtt.containsWord(  null) );
 		assertEquals( false, wtt.containsWord( "") );
-		assertEquals( false, wtt.containsWord( "1") );
+		assertEquals( false, wtt.containsWord(  "1") );
 		
 		wtt.add("abc");
 		wtt.add("abd");

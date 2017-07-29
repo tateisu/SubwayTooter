@@ -75,7 +75,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		int color_normal = Styler.getAttributeColor( activity, R.attr.colorImageButton );
 		int color_accent = Styler.getAttributeColor( activity, R.attr.colorImageButtonAccent );
 		
-		int fav_icon_attr =  Column.isNicoru( access_info.getFullAcct( status.account ) ) ? R.attr.ic_nicoru : R.attr.btn_favourite;
+		int fav_icon_attr =  access_info.isNicoru( status.account ) ? R.attr.ic_nicoru : R.attr.btn_favourite;
 		
 		if( status instanceof MSPToot ){
 			setButton( btnBoost, true, color_normal, R.attr.btn_boost, "" );

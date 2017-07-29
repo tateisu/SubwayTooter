@@ -3,13 +3,10 @@ package jp.juggler.subwaytooter.view;
 import android.content.Context;
 import android.support.v7.widget.AppCompatEditText;
 import android.util.AttributeSet;
-import android.widget.EditText;
-
-/**
- * Created by tateisu on 2017/05/01.
- */
+import android.view.MotionEvent;
 
 public class MyEditText extends AppCompatEditText {
+	
 	public MyEditText( Context context ){
 		super( context );
 	}
@@ -21,6 +18,9 @@ public class MyEditText extends AppCompatEditText {
 	public MyEditText( Context context, AttributeSet attrs, int defStyleAttr ){
 		super( context, attrs, defStyleAttr );
 	}
+
+	////////////////////////////////////////////////////
+	// 選択範囲変更イベントをコールバックに渡す
 	
 	public interface OnSelectionChangeListener {
 		void onSelectionChanged( int selStart, int selEnd );
@@ -38,5 +38,22 @@ public class MyEditText extends AppCompatEditText {
 		if( mOnSelectionChangeListener != null ){
 			mOnSelectionChangeListener.onSelectionChanged( selStart, selEnd );
 		}
+	}
+	
+	////////////////////////////////////////////////////
+	// Android 6.0 でのクラッシュ対応
+
+	@Override public boolean onTouchEvent( MotionEvent event ){
+		try{
+			return super.onTouchEvent( event );
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			return false;
+		}
+		//		java.lang.NullPointerException:
+		//		at android.widget.Editor$SelectionModifierCursorController.onTouchEvent (Editor.java:4889)
+		//		at android.widget.Editor.onTouchEvent (Editor.java:1223)
+		//		at android.widget.TextView.onTouchEvent (TextView.java:8304)
+		//		at android.view.View.dispatchTouchEvent (View.java:9303)
 	}
 }

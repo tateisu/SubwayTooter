@@ -27,9 +27,7 @@ import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirec
 import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.table.AcctColor;
-import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
-import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
 import jp.juggler.subwaytooter.view.MyListView;
 import jp.juggler.subwaytooter.util.ScrollPosition;
 import jp.juggler.subwaytooter.util.Utils;
@@ -58,7 +56,7 @@ class ColumnViewHolder
 	private final TextView tvColumnName;
 	
 	private final View llColumnSetting;
-
+	
 	private final View btnSearch;
 	private final EditText etSearch;
 	private final CheckBox cbResolve;
@@ -83,7 +81,6 @@ class ColumnViewHolder
 	private final View llRegexFilter;
 	private final Button btnDeleteNotification;
 	
-
 	ColumnViewHolder( ActMain arg_activity, View root ){
 		this.activity = arg_activity;
 		
@@ -96,13 +93,12 @@ class ColumnViewHolder
 						}else if( v instanceof TextView ){
 							( (TextView) v ).setTypeface( activity.timeline_font );
 						}
-					}catch(Throwable ex){
+					}catch( Throwable ex ){
 						ex.printStackTrace();
 					}
 				}
 			} );
 		}
-		
 		
 		flColumnBackground = root.findViewById( R.id.flColumnBackground );
 		ivColumnBackgroundImage = (ImageView) root.findViewById( R.id.ivColumnBackgroundImage );
@@ -141,7 +137,6 @@ class ColumnViewHolder
 		llRegexFilter = root.findViewById( R.id.llRegexFilter );
 		tvRegexFilterError = (TextView) root.findViewById( R.id.tvRegexFilterError );
 		
-
 		btnDeleteNotification = (Button) root.findViewById( R.id.btnDeleteNotification );
 		
 		llColumnHeader.setOnClickListener( this );
@@ -187,7 +182,7 @@ class ColumnViewHolder
 		btnSearch.setOnClickListener( this );
 		etSearch.setOnEditorActionListener( new TextView.OnEditorActionListener() {
 			@Override public boolean onEditorAction( TextView v, int actionId, KeyEvent event ){
-				if( !loading_busy ){
+				if( ! loading_busy ){
 					if( actionId == EditorInfo.IME_ACTION_SEARCH ){
 						btnSearch.performClick();
 						return true;
@@ -200,20 +195,20 @@ class ColumnViewHolder
 	}
 	
 	private boolean isPageDestroyed(){
-		return column ==null || activity.isFinishing();
+		return column == null || activity.isFinishing();
 	}
 	
-	void onPageDestroy(int page_idx){
+	void onPageDestroy( int page_idx ){
 		// タブレットモードの場合、onPageCreateより前に呼ばれる
 		
 		if( column != null ){
-			log.d( "onPageDestroy [%d] %s",page_idx, tvColumnName.getText() );
+			log.d( "onPageDestroy [%d] %s", page_idx, tvColumnName.getText() );
 			saveScrollPosition();
 			listView.setAdapter( null );
 			column.removeColumnViewHolder( this );
 			column = null;
 		}
-
+		
 		closeBitmaps();
 		
 		activity.closeListItemPopup();
@@ -231,7 +226,7 @@ class ColumnViewHolder
 			this.column = column;
 			this.page_idx = page_idx;
 			
-			log.d( "onPageCreate [%d] %s",page_idx, column.getColumnName( true ) );
+			log.d( "onPageCreate [%d] %s", page_idx, column.getColumnName( true ) );
 			
 			boolean bSimpleList = ( column.column_type != Column.TYPE_CONVERSATION && activity.pref.getBoolean( Pref.KEY_SIMPLE_LIST, false ) );
 			
@@ -239,23 +234,23 @@ class ColumnViewHolder
 			
 			listView.setAdapter( null );
 			
-			this.status_adapter = new ItemListAdapter( activity, column , bSimpleList );
+			this.status_adapter = new ItemListAdapter( activity, column, bSimpleList );
 			
 			switch( column.column_type ){
 			default:
 				status_adapter.header = null;
 				break;
-
+			
 			case Column.TYPE_PROFILE:
-				status_adapter.header =new HeaderViewHolderProfile( activity, column, listView );
+				status_adapter.header = new HeaderViewHolderProfile( activity, column, listView );
 				break;
-				
+			
 			case Column.TYPE_SEARCH:
-				status_adapter.header =new HeaderViewHolderSearchDesc( activity, column, listView , activity.getString( R.string.search_desc_mastodon_api ) );
+				status_adapter.header = new HeaderViewHolderSearchDesc( activity, column, listView, activity.getString( R.string.search_desc_mastodon_api ) );
 				break;
-
+			
 			case Column.TYPE_SEARCH_PORTAL:
-				status_adapter.header =new HeaderViewHolderSearchDesc( activity, column, listView , getSearchDescPortal() );
+				status_adapter.header = new HeaderViewHolderSearchDesc( activity, column, listView, getSearchDescPortal() );
 				break;
 			}
 			
@@ -305,19 +300,18 @@ class ColumnViewHolder
 			vg( cbWithAttachment, bAllowFilter );
 			vg( etRegexFilter, bAllowFilter );
 			vg( llRegexFilter, bAllowFilter );
-
+			
 			vg( cbDontShowBoost, bAllowFilterBoost );
 			vg( cbDontShowReply, bAllowFilterBoost );
-
+			
 			vg( cbDontStreaming, column.canStreaming() );
 			vg( cbDontAutoRefresh, column.canAutoRefresh() );
 			vg( cbHideMediaDefault, column.canShowMedia() );
 			vg( cbEnableSpeech, column.canSpeech() );
 			
-			
 			vg( btnDeleteNotification, column.column_type == Column.TYPE_NOTIFICATIONS );
-			vg( llSearch, (column.column_type == Column.TYPE_SEARCH  || column.column_type == Column.TYPE_SEARCH_PORTAL ) );
-			vg( cbResolve, (column.column_type == Column.TYPE_SEARCH ) );
+			vg( llSearch, ( column.column_type == Column.TYPE_SEARCH || column.column_type == Column.TYPE_SEARCH_PORTAL ) );
+			vg( cbResolve, ( column.column_type == Column.TYPE_SEARCH ) );
 			
 			// tvRegexFilterErrorの表示を更新
 			if( bAllowFilter ){
@@ -329,7 +323,7 @@ class ColumnViewHolder
 				swipyRefreshLayout.setEnabled( true );
 				swipyRefreshLayout.setDirection( SwipyRefreshLayoutDirection.BOTH );
 				break;
-
+			
 			case Column.TYPE_CONVERSATION:
 				swipyRefreshLayout.setEnabled( false );
 				break;
@@ -341,7 +335,6 @@ class ColumnViewHolder
 				
 			}
 			
-
 			//
 			listView.setAdapter( status_adapter );
 			listView.setFastScrollEnabled( ! Pref.pref( activity ).getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
@@ -365,11 +358,9 @@ class ColumnViewHolder
 		}else{
 			res_id = R.raw.search_desc_portal_en;
 		}
-		byte[] data = Utils.loadRawResource(activity,res_id);
+		byte[] data = Utils.loadRawResource( activity, res_id );
 		return data == null ? null : Utils.decodeUTF8( data );
 	}
-	
-
 	
 	void showColumnColor(){
 		if( column == null ) return;
@@ -413,34 +404,32 @@ class ColumnViewHolder
 		
 		loadBackgroundImage( ivColumnBackgroundImage, column.column_bg_image );
 		
-		
-		if( status_adapter != null &&  status_adapter.header != null ){
+		if( status_adapter != null && status_adapter.header != null ){
 			status_adapter.header.showColor();
 		}
 	}
 	
-	
 	private String last_image_uri;
 	private Bitmap last_image_bitmap;
-	private AsyncTask<Void,Void,Bitmap> last_image_task;
+	private AsyncTask< Void, Void, Bitmap > last_image_task;
 	
 	private void closeBitmaps(){
 		try{
 			ivColumnBackgroundImage.setVisibility( View.GONE );
 			ivColumnBackgroundImage.setImageDrawable( null );
-
+			
 			if( last_image_bitmap != null ){
 				last_image_bitmap.recycle();
 				last_image_bitmap = null;
 			}
-
+			
 			if( last_image_task != null ){
 				last_image_task.cancel( true );
 				last_image_task = null;
 			}
-
+			
 			last_image_uri = null;
-
+			
 		}catch( Throwable ex ){
 			ex.printStackTrace();
 		}
@@ -461,7 +450,7 @@ class ColumnViewHolder
 			
 			// 直前の処理をキャンセルする。Bitmapも破棄する
 			closeBitmaps();
-
+			
 			if( TextUtils.isEmpty( url ) ){
 				// この状態でOK
 				return;
@@ -479,8 +468,7 @@ class ColumnViewHolder
 						Uri uri = Uri.parse( url );
 						return Utils.createResizedBitmap( log, activity, uri, false, resize_max );
 						
-					
-					}catch(Throwable ex){
+					}catch( Throwable ex ){
 						ex.printStackTrace();
 					}
 					return null;
@@ -489,8 +477,9 @@ class ColumnViewHolder
 				@Override protected void onCancelled( Bitmap bitmap ){
 					onPostExecute( bitmap );
 				}
+				
 				@Override protected void onPostExecute( Bitmap bitmap ){
-					if( bitmap !=null ){
+					if( bitmap != null ){
 						if( isCancelled() || ! url.equals( last_image_uri ) ){
 							bitmap.recycle();
 						}else{
@@ -512,7 +501,7 @@ class ColumnViewHolder
 		@Override public void run(){
 			if( isPageDestroyed() ) return;
 			if( column == null ) return;
-
+			
 			if( isRegexValid() ){
 				column.regex_text = etRegexFilter.getText().toString();
 				activity.app_state.saveColumnList();
@@ -557,22 +546,22 @@ class ColumnViewHolder
 		column.addColumnViewHolder( this );
 		
 		if( direction == SwipyRefreshLayoutDirection.TOP &&
-			(column.column_type == Column.TYPE_SEARCH_PORTAL || column.column_type == Column.TYPE_SEARCH)
-		){
+			( column.column_type == Column.TYPE_SEARCH_PORTAL || column.column_type == Column.TYPE_SEARCH )
+			){
 			swipyRefreshLayout.setRefreshing( false );
 			activity.handler.post( new Runnable() {
 				@Override public void run(){
-					if(column!=null) column.startLoading();
+					if( column != null ) column.startLoading();
 				}
 			} );
 			return;
 		}
-
+		
 		column.startRefresh( false, direction == SwipyRefreshLayoutDirection.BOTTOM, - 1L, - 1 );
 	}
 	
 	@Override public void onCheckedChanged( CompoundButton view, boolean isChecked ){
-		if( loading_busy || column ==null || status_adapter ==null ) return;
+		if( loading_busy || column == null || status_adapter == null ) return;
 		
 		// カラムを追加/削除したときに ColumnからColumnViewHolderへの参照が外れることがある
 		// リロードやリフレッシュ操作で直るようにする
@@ -624,7 +613,7 @@ class ColumnViewHolder
 			activity.app_state.saveColumnList();
 			column.fireShowContent();
 			break;
-
+		
 		case R.id.cbEnableSpeech:
 			column.enable_speech = isChecked;
 			activity.app_state.saveColumnList();
@@ -635,7 +624,7 @@ class ColumnViewHolder
 	
 	@Override
 	public void onClick( View v ){
-		if( loading_busy || column ==null || status_adapter ==null ) return;
+		if( loading_busy || column == null || status_adapter == null ) return;
 		
 		// カラムを追加/削除したときに ColumnからColumnViewHolderへの参照が外れることがある
 		// リロードやリフレッシュ操作で直るようにする
@@ -775,14 +764,13 @@ class ColumnViewHolder
 			return;
 		}
 		
-		
 		if( status_adapter.getCount() == 0 ){
 			showError( activity.getString( R.string.list_empty ) );
 			return;
 		}
 		
 		tvLoading.setVisibility( View.GONE );
-
+		
 		swipyRefreshLayout.setVisibility( View.VISIBLE );
 		
 		if( status_adapter.header != null ){
@@ -806,34 +794,34 @@ class ColumnViewHolder
 	private final Runnable proc_restoreScrollPosition = new Runnable() {
 		@Override public void run(){
 			activity.handler.removeCallbacks( proc_restoreScrollPosition );
-
+			
 			if( isPageDestroyed() ){
-				log.d( "restoreScrollPosition [%d], page is destroyed.");
-				return;
-			}
-				
-			if( column == null ){
-				log.d( "restoreScrollPosition [%d], column==null",page_idx);
+				log.d( "restoreScrollPosition [%d], page is destroyed." );
 				return;
 			}
 			
-			if( column .is_dispose.get()  ){
-				log.d( "restoreScrollPosition [%d], column is disposed",page_idx);
+			if( column == null ){
+				log.d( "restoreScrollPosition [%d], column==null", page_idx );
+				return;
+			}
+			
+			if( column.is_dispose.get() ){
+				log.d( "restoreScrollPosition [%d], column is disposed", page_idx );
 				return;
 			}
 			
 			if( column.hasMultipleViewHolder() ){
-				log.d( "restoreScrollPosition [%d] %s , column has multiple view holder. retry later.", page_idx, column.getColumnName( true ));
-
+				log.d( "restoreScrollPosition [%d] %s , column has multiple view holder. retry later.", page_idx, column.getColumnName( true ) );
+				
 				// タブレットモードでカラムを追加/削除した際に発生する。
 				// このタイミングでスクロール位置を復元してもうまくいかないので延期する
-				activity.handler.postDelayed( proc_restoreScrollPosition ,100L);
+				activity.handler.postDelayed( proc_restoreScrollPosition, 100L );
 				return;
 			}
 			
 			ScrollPosition sp = column.scroll_save;
 			if( sp == null ){
-				log.d( "restoreScrollPosition [%d] %s , column has no saved scroll position.", page_idx, column.getColumnName( true ));
+				log.d( "restoreScrollPosition [%d] %s , column has no saved scroll position.", page_idx, column.getColumnName( true ) );
 				return;
 			}
 			
@@ -842,14 +830,14 @@ class ColumnViewHolder
 			if( listView.getVisibility() != View.VISIBLE ){
 				log.d( "restoreScrollPosition [%d] %s , listView is not visible. saved position %s,%s is dropped."
 					, page_idx, column.getColumnName( true )
-					,sp.pos
-					,sp.top
+					, sp.pos
+					, sp.top
 				);
 			}else{
 				log.d( "restoreScrollPosition [%d] %s , listView is visible. resume %s,%s"
 					, page_idx, column.getColumnName( true )
-					,sp.pos
-					,sp.top
+					, sp.pos
+					, sp.top
 				);
 				sp.restore( listView );
 			}
@@ -857,30 +845,29 @@ class ColumnViewHolder
 		}
 	};
 	
-	
 	private void saveScrollPosition(){
-
+		
 		if( column == null ){
-			log.d( "saveScrollPosition [%d] , column==null",page_idx );
-
+			log.d( "saveScrollPosition [%d] , column==null", page_idx );
+			
 		}else if( column.is_dispose.get() ){
-			log.d( "saveScrollPosition [%d] , column is disposed",page_idx );
-
+			log.d( "saveScrollPosition [%d] , column is disposed", page_idx );
+			
 		}else if( listView.getVisibility() != View.VISIBLE ){
-
+			
 			column.scroll_save = new ScrollPosition( 0, 0 );
 			log.d( "saveScrollPosition [%d] %s , listView is not visible, save %s,%s"
 				, page_idx, column.getColumnName( true )
-				,column.scroll_save.pos
-				,column.scroll_save.top
+				, column.scroll_save.pos
+				, column.scroll_save.top
 			);
 		}else{
-
+			
 			column.scroll_save = new ScrollPosition( listView );
 			log.d( "saveScrollPosition [%d] %s , listView is visible, save %s,%s"
 				, page_idx, column.getColumnName( true )
-				,column.scroll_save.pos
-				,column.scroll_save.top
+				, column.scroll_save.pos
+				, column.scroll_save.top
 			);
 		}
 	}
@@ -894,7 +881,7 @@ class ColumnViewHolder
 		if( column == null || last_adapter == null ) return;
 		
 		sp.restore( listView );
-
+		
 		listView.postDelayed( new Runnable() {
 			@Override public void run(){
 				if( column == null || listView.getAdapter() != last_adapter ) return;

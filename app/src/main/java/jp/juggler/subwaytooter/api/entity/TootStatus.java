@@ -120,12 +120,12 @@ public class TootStatus extends TootStatusLike {
 			status.application = TootApplication.parse( log, src.optJSONObject( "application" ) ); // null
 			
 			status.time_created_at = parseTime( log, status.created_at );
-			status.decoded_content = HTMLDecoder.decodeHTML( context, lcc, status.content, true, status.media_attachments );
+			status.decoded_content = HTMLDecoder.decodeHTML( context, lcc, status.content, true, true, status.media_attachments );
 			// status.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
 			status.decoded_mentions = HTMLDecoder.decodeMentions( lcc, status.mentions );
 			
 			if( ! TextUtils.isEmpty( status.spoiler_text ) ){
-				status.decoded_spoiler_text = HTMLDecoder.decodeHTML( context, lcc, status.spoiler_text, true, status.media_attachments );
+				status.decoded_spoiler_text = TootAccount.filterDisplayName( context, status.spoiler_text );
 			}
 			return status;
 		}catch( Throwable ex ){

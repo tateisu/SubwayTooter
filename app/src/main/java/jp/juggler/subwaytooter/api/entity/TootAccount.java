@@ -125,7 +125,7 @@ public class TootAccount {
 			dst.statuses_count = src.optLong( "statuses_count" );
 			
 			dst.note = Utils.optStringX( src, "note" );
-			dst.decoded_note = HTMLDecoder.decodeHTML( context, account, ( dst.note != null ? dst.note : null ), true, null );
+			dst.decoded_note = HTMLDecoder.decodeHTML( context, account, ( dst.note != null ? dst.note : null ), true,true, null );
 			
 			dst.url = Utils.optStringX( src, "url" );
 			dst.avatar = Utils.optStringX( src, "avatar" ); // "https:\/\/mastodon.juggler.jp\/system\/accounts\/avatars\/000\/000\/148\/original\/0a468974fac5a448.PNG?1492081886",
@@ -177,17 +177,17 @@ public class TootAccount {
 		return result;
 	}
 	
-	static final Pattern reLineFeed = Pattern.compile( "[\\s\\t\\x0d\\x0a]+" );
+	private static final Pattern reWhitespace = Pattern.compile( "[\\s\\t\\x0d\\x0a]+" );
 	
-	public static CharSequence filterDisplayName( Context context, String sv ){
+	public static Spannable filterDisplayName( Context context, String sv ){
 		// decode HTML entity
-		sv = HTMLDecoder.decodeEntity( sv );
+		// CWとdisplay_nameはHTMLではない。絵文字を含むだけ sv = HTMLDecoder.decodeEntity( sv );
 		
 		// sanitize LRO,RLO
 		sv = Utils.sanitizeBDI( sv );
 		
 		// remove white spaces
-		sv = reLineFeed.matcher( sv ).replaceAll( " " );
+		sv = reWhitespace.matcher( sv ).replaceAll( " " );
 		
 		// decode emoji code
 		return Emojione.decodeEmoji(context, sv );

@@ -91,8 +91,8 @@ public class AlarmService extends IntentService {
 	SharedPreferences pref;
 	
 	@Override public void onCreate(){
+		log.d( "onCreate" );
 		super.onCreate();
-		log.d( "ctor" );
 		
 		alarm_manager = (AlarmManager) getApplicationContext().getSystemService( ALARM_SERVICE );
 		power_manager = (PowerManager) getApplicationContext().getSystemService( POWER_SERVICE );
@@ -111,7 +111,7 @@ public class AlarmService extends IntentService {
 	}
 	
 	@Override public void onDestroy(){
-		log.d( "dtor" );
+		log.d( "onDestroy" );
 		wake_lock.release();
 		
 		super.onDestroy();
@@ -157,7 +157,7 @@ public class AlarmService extends IntentService {
 			
 			if( ACTION_APP_DATA_IMPORT_BEFORE.equals( action ) ){
 				alarm_manager.cancel( pi_next );
-				for( SavedAccount a : SavedAccount.loadAccountList( AlarmService.this,log ) ){
+				for( SavedAccount a : SavedAccount.loadAccountList( AlarmService.this, log ) ){
 					try{
 						String notification_tag = Long.toString( a.db_id );
 						notification_manager.cancel( notification_tag, NOTIFICATION_ID );
@@ -175,7 +175,7 @@ public class AlarmService extends IntentService {
 		
 		if( mBusyAppDataImportAfter.get() ) return;
 		
-		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( AlarmService.this,log );
+		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( AlarmService.this, log );
 		
 		if( intent != null ){
 			String action = intent.getAction();
@@ -187,7 +187,7 @@ public class AlarmService extends IntentService {
 				boolean bDone = false;
 				String tag = intent.getStringExtra( EXTRA_TAG );
 				if( tag != null ){
-					for( SavedAccount sa : SavedAccount.loadByTag( AlarmService.this,log, tag ) ){
+					for( SavedAccount sa : SavedAccount.loadByTag( AlarmService.this, log, tag ) ){
 						bDone = true;
 						NotificationTracking.resetLastLoad( sa.db_id );
 					}
@@ -630,7 +630,7 @@ public class AlarmService extends IntentService {
 			return;
 		}
 		
-		TootNotification notification = TootNotification.parse( AlarmService.this,log, account, account.host, src );
+		TootNotification notification = TootNotification.parse( AlarmService.this, log, account, account.host, src );
 		if( notification == null ){
 			return;
 		}
@@ -673,12 +673,10 @@ public class AlarmService extends IntentService {
 	private void showNotification( @NonNull SavedAccount account, @NonNull ArrayList< Data > data_list ){
 		String notification_tag = Long.toString( account.db_id );
 		if( data_list.isEmpty() ){
-			log.d("showNotification[%s] cancel notification.",account.acct);
+			log.d( "showNotification[%s] cancel notification.", account.acct );
 			notification_manager.cancel( notification_tag, NOTIFICATION_ID );
 			return;
 		}
-
-		log.d("showNotification[%s] sorting...",account.acct);
 		
 		Collections.sort( data_list, new Comparator< Data >() {
 			@Override public int compare( Data a, Data b ){
@@ -692,8 +690,6 @@ public class AlarmService extends IntentService {
 		} );
 		Data item = data_list.get( 0 );
 		
-		log.d("showNotification[%s] sort complete.",account.acct);
-
 		NotificationTracking nt = NotificationTracking.load( account.db_id );
 		if( item.notification.time_created_at == nt.post_time
 			&& item.notification.id == nt.post_id
@@ -701,15 +697,15 @@ public class AlarmService extends IntentService {
 			// 先頭にあるデータが同じなら、通知を更新しない
 			// このマーカーは端末再起動時にリセットされるので、再起動後は通知が出るはず
 			
-			log.d("showNotification[%s] id=%s is already shown.",account.acct, item.notification.id);
-
+			log.d( "showNotification[%s] id=%s is already shown.", account.acct, item.notification.id );
+			
 			return;
 		}
-
+		
 		nt.updatePost( item.notification.id, item.notification.time_created_at );
 		
-		log.d("showNotification[%s] creating notification(1)",account.acct);
-
+		log.d( "showNotification[%s] creating notification(1)", account.acct );
+		
 		// 通知タップ
 		Intent intent_click = new Intent( this, AlarmReceiver.class );
 		intent_click.putExtra( EXTRA_DB_ID, account.db_id );
@@ -724,7 +720,7 @@ public class AlarmService extends IntentService {
 		// 通知を消去した時のPendingIntent
 		PendingIntent pi_delete = PendingIntent.getBroadcast( this, ( Integer.MAX_VALUE - (int) account.db_id ), intent_delete, PendingIntent.FLAG_UPDATE_CURRENT );
 		
-		log.d("showNotification[%s] creating notification(2)",account.acct);
+		log.d( "showNotification[%s] creating notification(2)", account.acct );
 		
 		NotificationCompat.Builder builder = new NotificationCompat.Builder( this )
 			.setContentIntent( pi_click )
@@ -734,16 +730,16 @@ public class AlarmService extends IntentService {
 			.setColor( ContextCompat.getColor( this, R.color.Light_colorAccent ) ) // ここは常に白テーマの色を使う
 			.setWhen( item.notification.time_created_at );
 		
-		log.d("showNotification[%s] creating notification(3)",account.acct);
-
+		log.d( "showNotification[%s] creating notification(3)", account.acct );
+		
 		int iv = 0;
 		if( pref.getBoolean( Pref.KEY_NOTIFICATION_SOUND, true ) ){
-
+			
 			Uri sound_uri = null;
 			
 			try{
 				String acct = item.access_info.getFullAcct( item.notification.account );
-				if( acct != null){
+				if( acct != null ){
 					String sv = AcctColor.getNotificationSound( acct );
 					sound_uri = TextUtils.isEmpty( sv ) ? null : Uri.parse( sv );
 				}
@@ -769,28 +765,28 @@ public class AlarmService extends IntentService {
 					ex.printStackTrace();
 				}
 			}
-			if(!bSoundSet){
+			if( ! bSoundSet ){
 				iv |= NotificationCompat.DEFAULT_SOUND;
 			}
 		}
 		
-		log.d("showNotification[%s] creating notification(4)",account.acct);
-
+		log.d( "showNotification[%s] creating notification(4)", account.acct );
+		
 		if( pref.getBoolean( Pref.KEY_NOTIFICATION_VIBRATION, true ) ){
 			iv |= NotificationCompat.DEFAULT_VIBRATE;
 		}
 		
-		log.d("showNotification[%s] creating notification(5)",account.acct);
-
+		log.d( "showNotification[%s] creating notification(5)", account.acct );
+		
 		if( pref.getBoolean( Pref.KEY_NOTIFICATION_LED, true ) ){
 			iv |= NotificationCompat.DEFAULT_LIGHTS;
 		}
 		
-		log.d("showNotification[%s] creating notification(6)",account.acct);
-
+		log.d( "showNotification[%s] creating notification(6)", account.acct );
+		
 		builder.setDefaults( iv );
 		
-		log.d("showNotification[%s] creating notification(7)",account.acct);
+		log.d( "showNotification[%s] creating notification(7)", account.acct );
 		
 		String a = getNotificationLine( item.notification.type, item.notification.account.display_name );
 		String acct = item.access_info.acct + " " + getString( R.string.app_name );
@@ -814,8 +810,8 @@ public class AlarmService extends IntentService {
 			builder.setStyle( style );
 		}
 		
-		log.d("showNotification[%s] set notification...",account.acct);
-
+		log.d( "showNotification[%s] set notification...", account.acct );
+		
 		notification_manager.notify( notification_tag, NOTIFICATION_ID, builder.build() );
 	}
 	
@@ -857,7 +853,7 @@ public class AlarmService extends IntentService {
 			
 			InjectData data = inject_queue.poll();
 			
-			SavedAccount account = SavedAccount.loadAccount( AlarmService.this,log, data.account_db_id );
+			SavedAccount account = SavedAccount.loadAccount( AlarmService.this, log, data.account_db_id );
 			if( account == null ) continue;
 			
 			NotificationTracking nr = NotificationTracking.load( data.account_db_id );
@@ -944,7 +940,7 @@ public class AlarmService extends IntentService {
 	
 	private void deleteCacheData( long db_id ){
 		
-		SavedAccount account = SavedAccount.loadAccount( AlarmService.this,log, db_id );
+		SavedAccount account = SavedAccount.loadAccount( AlarmService.this, log, db_id );
 		if( account == null ) return;
 		
 		NotificationTracking nr = NotificationTracking.load( db_id );

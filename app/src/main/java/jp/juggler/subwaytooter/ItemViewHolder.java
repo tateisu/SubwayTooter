@@ -203,7 +203,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			tvContentWarning.setTextSize( activity.timeline_font_size_sp );
 			tvContent.setTextSize( activity.timeline_font_size_sp );
 			btnShowMedia.setTextSize( activity.timeline_font_size_sp );
-			if(tvApplication != null){
+			if( tvApplication != null ){
 				tvApplication.setTextSize( activity.timeline_font_size_sp );
 			}
 			
@@ -246,7 +246,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 				showBoost(
 					n.account
 					, n.time_created_at
-					, Column.isNicoru( access_info.getFullAcct( n.account) )? R.attr.ic_nicoru : R.attr.btn_favourite
+					, access_info.isNicoru( n.account ) ? R.attr.ic_nicoru : R.attr.btn_favourite
 					, Utils.formatSpannable1( activity, R.string.display_name_favourited_by, n.account.display_name )
 				);
 				if( n.status != null ) showStatus( activity, n.status );
@@ -346,8 +346,8 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.status = status;
 		llStatus.setVisibility( View.VISIBLE );
 		
-		tvTime.setText( TootStatus.formatTime( status .time_created_at ) );
-
+		tvTime.setText( TootStatus.formatTime( status.time_created_at ) );
+		
 		ivThumbnail.setCornerRadius( activity.pref, 16f );
 		
 		account_thumbnail = status.account;
@@ -545,13 +545,13 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		switch( v.getId() ){
 		case R.id.btnHideMedia:
-			if( status != null){
+			if( status != null ){
 				MediaShown.save( status, false );
 				btnShowMedia.setVisibility( View.VISIBLE );
 			}
 			break;
 		case R.id.btnShowMedia:
-			if( status != null){
+			if( status != null ){
 				MediaShown.save( status, true );
 				btnShowMedia.setVisibility( View.GONE );
 			}
@@ -569,7 +569,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			clickMedia( 3 );
 			break;
 		case R.id.btnContentWarning:
-			if( status != null){
+			if( status != null ){
 				boolean new_shown = ( llContents.getVisibility() == View.GONE );
 				ContentWarning.save( status, new_shown );
 				list_adapter.notifyDataSetChanged();
@@ -648,7 +648,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 				new DlgContextMenu( activity, column, account_follow, null ).show();
 			}
 			return true;
-		
+			
 		}
 		
 		return false;

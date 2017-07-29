@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.dialog;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.support.annotation.NonNull;
@@ -19,30 +20,28 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.util.Utils;
 
 public class LoginForm {
 	
-	public interface LoginFormCallback{
-		void startLogin(Dialog dialog,String instance,boolean bPseudoAccount);
+	public interface LoginFormCallback {
+		void startLogin( Dialog dialog, String instance, boolean bPseudoAccount );
 	}
 	
-	static class StringArray extends ArrayList<String>{
+	private static class StringArray extends ArrayList< String > {
 		
 	}
 	
-	public static void showLoginForm( final Activity activity, final String instance , final LoginFormCallback callback){
-		final View view = activity.getLayoutInflater().inflate( R.layout.dlg_account_add, null, false );
+	public static void showLoginForm( final Activity activity, final String instance, final LoginFormCallback callback ){
+		@SuppressLint("InflateParams") final View view = activity.getLayoutInflater().inflate( R.layout.dlg_account_add, null, false );
 		final AutoCompleteTextView etInstance = (AutoCompleteTextView) view.findViewById( R.id.etInstance );
 		final View btnOk = view.findViewById( R.id.btnOk );
 		final CheckBox cbPseudoAccount = (CheckBox) view.findViewById( R.id.cbPseudoAccount );
 		
-		if( !TextUtils.isEmpty( instance ) ){
-			etInstance.setText(instance);
+		if( ! TextUtils.isEmpty( instance ) ){
+			etInstance.setText( instance );
 			etInstance.setInputType( InputType.TYPE_NULL );
 			etInstance.setEnabled( false );
 			etInstance.setFocusable( false );
@@ -63,7 +62,7 @@ public class LoginForm {
 			@Override
 			public void onClick( View v ){
 				final String instance = etInstance.getText().toString().trim();
-
+				
 				if( TextUtils.isEmpty( instance ) ){
 					Utils.showToast( activity, true, R.string.instance_not_specified );
 					return;
@@ -71,7 +70,7 @@ public class LoginForm {
 					Utils.showToast( activity, true, R.string.instance_not_need_slash );
 					return;
 				}
-				callback.startLogin( dialog,instance ,cbPseudoAccount.isChecked() );
+				callback.startLogin( dialog, instance, cbPseudoAccount.isChecked() );
 			}
 		} );
 		view.findViewById( R.id.btnCancel ).setOnClickListener( new View.OnClickListener() {
@@ -81,48 +80,49 @@ public class LoginForm {
 			}
 		} );
 		
-		final ArrayList<String> instance_list = new ArrayList<>(  );
+		final ArrayList< String > instance_list = new ArrayList<>();
 		try{
 			InputStream is = activity.getResources().openRawResource( R.raw.server_list );
 			try{
-				BufferedReader br = new BufferedReader( new InputStreamReader( is,"UTF-8" ) );
-				for(;;){
-					String s  = br.readLine();
+				BufferedReader br = new BufferedReader( new InputStreamReader( is, "UTF-8" ) );
+				for( ; ; ){
+					String s = br.readLine();
 					if( s == null ) break;
-					s= s.trim();
+					s = s.trim();
 					if( s.length() > 0 ) instance_list.add( s.toLowerCase() );
 				}
 			}finally{
 				try{
 					is.close();
-				}catch(Throwable ignored){
+				}catch( Throwable ignored ){
 					
 				}
 			}
-		}catch(Throwable ex){
-			ex.printStackTrace(  );
+		}catch( Throwable ex ){
+			ex.printStackTrace();
 		}
 		
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(
+		ArrayAdapter< String > adapter = new ArrayAdapter< String >(
 			activity
 			, R.layout.lv_spinner_dropdown
-			, new ArrayList<String>(  )
-		){
+			, new ArrayList< String >()
+		)
+		{
 			@NonNull @Override public Filter getFilter(){
 				return nameFilter;
 			}
 			
-			
 			Filter nameFilter = new Filter() {
-				@Override public CharSequence convertResultToString(Object value){
+				@Override public CharSequence convertResultToString( Object value ){
 					return (String) value;
 				}
-				@Override protected FilterResults performFiltering(CharSequence constraint) {
+				
+				@Override protected FilterResults performFiltering( CharSequence constraint ){
 					FilterResults result = new FilterResults();
-					if(! TextUtils.isEmpty( constraint ) ){
+					if( ! TextUtils.isEmpty( constraint ) ){
 						String key = constraint.toString().toLowerCase();
 						// suggestions リストは毎回生成する必要がある。publishResultsと同時にアクセスされる場合がある
-						StringArray suggestions = new StringArray(  );
+						StringArray suggestions = new StringArray();
 						for( String s : instance_list ){
 							if( s.contains( key ) ){
 								suggestions.add( s );
@@ -135,11 +135,12 @@ public class LoginForm {
 					return result;
 				}
 				
-				@Override protected void publishResults(CharSequence constraint, FilterResults results) {
+				@Override
+				protected void publishResults( CharSequence constraint, FilterResults results ){
 					clear();
 					if( results.values instanceof StringArray ){
-						for(String s  : (StringArray) results.values ){
-							add(s);
+						for( String s : (StringArray) results.values ){
+							add( s );
 						}
 					}
 					notifyDataSetChanged();
@@ -147,11 +148,11 @@ public class LoginForm {
 			};
 		};
 		adapter.setDropDownViewResource( R.layout.lv_spinner_dropdown );
-		etInstance.setAdapter(adapter);
+		etInstance.setAdapter( adapter );
 		
 		//noinspection ConstantConditions
 		dialog.getWindow().setLayout( WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT );
 		dialog.show();
 	}
-
+	
 }

@@ -2989,7 +2989,7 @@ public class ActMain extends AppCompatActivity
 					
 					if( callback != null ) callback.onRelationChanged();
 					
-				}else if( locked && result.response.code() == 422 ){
+				}else if( locked && result.response != null && result.response.code() == 422 ){
 					Utils.showToast( ActMain.this, false, R.string.cant_follow_locked_user );
 				}else{
 					Utils.showToast( ActMain.this, false, result.error );

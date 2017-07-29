@@ -7,8 +7,10 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.speech.tts.Voice;
 import android.support.annotation.NonNull;
 import android.text.Spannable;
 import android.text.TextUtils;
@@ -27,6 +29,9 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Locale;
+import java.util.Random;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.api.entity.TootStatus;
@@ -196,18 +201,24 @@ class AppState {
 		return b;
 	}
 	
-	private boolean tts_isSpeaking = false;
+	private static final long tts_speak_wait_expire = 1000L * 100;
+	private long tts_speak_start = 0L;
+	private long tts_speak_end = 0L;
+	
 	private final BroadcastReceiver tts_receiver = new BroadcastReceiver(){
 		@Override public void onReceive(Context context, Intent intent) {
 			if( intent != null ){
 				if( TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED.equals( intent.getAction() ) ){
 					log.d( "tts_receiver: speech completed." );
-					tts_isSpeaking = false;
+					tts_speak_end = SystemClock.elapsedRealtime();
 					handler.post( proc_flushSpeechQueue );
 				}
 			}
 		}
 	};
+	
+	private final ArrayList<Voice> voice_list = new ArrayList<>(  );
+	private Random random = new Random();
 	
 	private void enableSpeech(){
 		this.willSpeechEnabled = isTextToSpeechRequired();
@@ -240,12 +251,38 @@ class AppState {
 									tmp_tts.shutdown();
 								}else{
 									
-									tts_queue.clear();
-									duplication_check.clear();
 									tts = tmp_tts;
 									tts_status = TTS_STATUS_INITIALIZED;
+									tts_speak_start = 0L;
+									tts_speak_end = 0L;
+									
+									voice_list.clear();
+									try{
+										Set< Voice > voice_set = tts.getVoices();
+										if( voice_set == null || voice_set.isEmpty() ){
+											log.d( "TextToSpeech.getVoices returns null or empty set." );
+										}else{
+											String lang = Locale.getDefault().toLanguageTag();
+											for( Voice v : voice_set ){
+												log.d( "Voice %s %s %s"
+													, v.getName()
+													, v.getLocale().toLanguageTag()
+													, lang
+												);
+												if( ! lang.equals( v.getLocale().toLanguageTag() ) ){
+													continue;
+												}
+												voice_list.add( v );
+											}
+										}
+									}catch(Throwable ex){
+										ex.printStackTrace();
+										log.e(ex, "TextToSpeech.getVoices raises exception.");
+									}
+									
+									handler.post( proc_flushSpeechQueue );
+									
 									context.registerReceiver(tts_receiver, new IntentFilter(TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED));
-									tts_isSpeaking = false;
 
 //									tts.setOnUtteranceProgressListener( new UtteranceProgressListener() {
 //										@Override public void onStart( String utteranceId ){
@@ -380,7 +417,9 @@ class AppState {
 		@Override public void run(){
 			try{
 				handler.removeCallbacks( proc_flushSpeechQueue );
-				if( tts_queue.isEmpty() ){
+				
+				int queue_count = tts_queue.size();
+				if( queue_count <= 0 ){
 					return;
 				}
 				
@@ -389,25 +428,57 @@ class AppState {
 					return;
 				}
 				
-				// if( tts.isSpeaking() )
-				if( tts_isSpeaking )
-				{
-					log.d( "proc_flushSpeechQueue: tts is speaking. retry later." );
-					handler.postDelayed( proc_flushSpeechQueue, 1000L );
-					return;
+				long now = SystemClock.elapsedRealtime();
+
+				if( tts_speak_start > 0L ){
+					if( tts_speak_start >= tts_speak_end ){
+						// まだ終了イベントを受け取っていない
+						long expire_remain = tts_speak_wait_expire + tts_speak_start - now;
+						if( expire_remain <= 0 ){
+							log.d( "proc_flushSpeechQueue: tts_speak wait expired.");
+							restartTTS();
+						}else{
+							log.d( "proc_flushSpeechQueue: tts is speaking. queue_count=%d, expire_remain=%.3f"
+								,queue_count
+								,(expire_remain/1000f)
+							);
+							handler.postDelayed( proc_flushSpeechQueue, expire_remain );
+							return;
+						}
+						return;
+					}
 				}
 				
-				tts_isSpeaking = true;
 				String sv = tts_queue.removeFirst();
+				log.d( "proc_flushSpeechQueue: speak %s",sv);
+				
+				int voice_count = voice_list.size();
+				if( voice_count > 0){
+					int n = random.nextInt( voice_count );
+					tts.setVoice( voice_list.get(n) );
+				}
+				
+				
+				tts_speak_start = now;
 				tts.speak(
 					sv
-					, TextToSpeech.QUEUE_ADD // int queueMode
+					, TextToSpeech.QUEUE_ADD
 					, null // Bundle params
 					, Integer.toString( ++ utteranceIdSeed ) // String utteranceId
 				);
 			}catch( Throwable ex ){
 				ex.printStackTrace();
+				log.e( ex ,"proc_flushSpeechQueue catch exception.");
+				restartTTS();
 			}
+		}
+		
+		void restartTTS(){
+			log.d( "restart TextToSpeech" );
+			tts.shutdown();
+			tts = null;
+			tts_status = TTS_STATUS_NONE;
+			enableSpeech();
 		}
 	};
 	

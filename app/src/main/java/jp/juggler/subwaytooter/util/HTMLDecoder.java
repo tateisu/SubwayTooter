@@ -9,7 +9,6 @@ import android.text.TextUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -135,10 +134,15 @@ public class HTMLDecoder {
 			, LinkClickContext account
 			, SpannableStringBuilder sb
 			, boolean bShort
+		    , boolean bDecodeEmoji
 			, @Nullable TootAttachment.List list_attachment
 		){
 			if( TAG_TEXT.equals( tag ) ){
-				sb.append( Emojione.decodeEmoji( context,decodeEntity( text ) ) );
+				if( bDecodeEmoji ){
+					sb.append( Emojione.decodeEmoji( context,decodeEntity( text ) ) );
+				}else{
+					sb.append( decodeEntity( text ) );
+				}
 				return;
 			}
 			if( DEBUG_HTML_PARSER ) sb.append( "(start " ).append( tag ).append( ")" );
@@ -153,7 +157,7 @@ public class HTMLDecoder {
 			int start = sb_tmp.length();
 			
 			for( Node child : child_nodes ){
-				child.encodeSpan( context, account, sb_tmp, bShort, list_attachment );
+				child.encodeSpan( context, account, sb_tmp, bShort,bDecodeEmoji, list_attachment );
 			}
 			
 			int end = sb_tmp.length();
@@ -252,6 +256,7 @@ public class HTMLDecoder {
 		, LinkClickContext account
 		, String src
 		, boolean bShort
+	    , boolean bDecodeEmoji
 		, @Nullable TootAttachment.List list_attachment
 	){
 		SpannableStringBuilder sb = new SpannableStringBuilder();
@@ -261,7 +266,7 @@ public class HTMLDecoder {
 				Node rootNode = new Node();
 				rootNode.parseChild( tracker, "" );
 				
-				rootNode.encodeSpan( context,account, sb, bShort, list_attachment );
+				rootNode.encodeSpan( context,account, sb, bShort, bDecodeEmoji,list_attachment );
 				int end = sb.length();
 				while( end > 0 && isWhitespace( sb.charAt( end - 1 ) ) ) -- end;
 				if( end < sb.length() ){

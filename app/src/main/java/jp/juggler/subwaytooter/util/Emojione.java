@@ -1,8 +1,7 @@
 package jp.juggler.subwaytooter.util;
 
 import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.support.v4.content.ContextCompat;
+import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 
@@ -20,9 +19,9 @@ public abstract class Emojione
 	private static final Pattern SHORTNAME_PATTERN = Pattern.compile(":([-+\\w]+):");
 	
 	public static final HashMap<String,String> map_name2unicode = EmojiMap._shortNameToUnicode;
-	public static final HashSet<String> set_unicode = EmojiMap._unicode_set;
+	private static final HashSet<String> set_unicode = EmojiMap._unicode_set;
 
-	static class DecodeEnv{
+	private static class DecodeEnv{
 		SpannableStringBuilder sb = new SpannableStringBuilder();
 		int last_span_start = -1;
 		int last_span_end = -1;
@@ -84,10 +83,10 @@ public abstract class Emojione
 		}
 	}
 	
-	static final Pattern reNicoru = Pattern.compile( "\\Anicoru\\d*\\z",Pattern.CASE_INSENSITIVE );
-	static final Pattern reHohoemi = Pattern.compile( "\\Ahohoemi\\d*\\z",Pattern.CASE_INSENSITIVE );
+	private static final Pattern reNicoru = Pattern.compile( "\\Anicoru\\d*\\z",Pattern.CASE_INSENSITIVE );
+	private static final Pattern reHohoemi = Pattern.compile( "\\Ahohoemi\\d*\\z",Pattern.CASE_INSENSITIVE );
 	
-	public static CharSequence decodeEmoji( Context context, String s ){
+	public static Spannable decodeEmoji( Context context, String s ){
 
 		DecodeEnv decode_env = new DecodeEnv();
 		Matcher matcher = SHORTNAME_PATTERN.matcher(s);

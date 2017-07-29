@@ -50,7 +50,7 @@ public class MSPToot extends TootStatusLike {
 		dst.id = src.optLong( "id" );
 		
 		dst.note = Utils.optStringX( src, "note" );
-		dst.decoded_note = HTMLDecoder.decodeHTML( context,access_info, ( dst.note != null ? dst.note : null ), true, null );
+		dst.decoded_note = HTMLDecoder.decodeHTML( context,access_info, ( dst.note != null ? dst.note : null ), true, true,null );
 		
 		if( TextUtils.isEmpty( dst.url ) ){
 			log.e( "parseAccount: missing url" );
@@ -142,11 +142,11 @@ public class MSPToot extends TootStatusLike {
 		
 		dst.spoiler_text = Utils.optStringX( src, "spoiler_text" );
 		if( ! TextUtils.isEmpty( dst.spoiler_text ) ){
-			dst.decoded_spoiler_text = HTMLDecoder.decodeHTML( context,access_info, dst.spoiler_text, true, null );
+			dst.decoded_spoiler_text = TootAccount.filterDisplayName( context, dst.spoiler_text );
 		}
 		
 		dst.content = Utils.optStringX( src, "content" );
-		dst.decoded_content = HTMLDecoder.decodeHTML( context,access_info, dst.content, true, null );
+		dst.decoded_content = HTMLDecoder.decodeHTML( context,access_info, dst.content, true,true, null );
 		
 		return dst;
 	}

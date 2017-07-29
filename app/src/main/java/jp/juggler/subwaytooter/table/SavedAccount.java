@@ -45,7 +45,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	private static final String COL_CONFIRM_FOLLOW_LOCKED = "confirm_follow_locked";
 	private static final String COL_CONFIRM_UNFOLLOW = "confirm_unfollow";
 	private static final String COL_CONFIRM_POST = "confirm_post";
-
+	
 	// スキーマ13から
 	public static final String COL_NOTIFICATION_TAG = "notification_server";
 	
@@ -55,7 +55,6 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	
 	// スキーマ16から
 	public static final String COL_SOUND_URI = "sound_uri";
-	
 	
 	public static final long INVALID_ID = - 1L;
 	
@@ -71,7 +70,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public boolean notification_boost;
 	public boolean notification_favourite;
 	public boolean notification_follow;
-	@NonNull public String sound_uri ="";
+	@NonNull public String sound_uri = "";
 	
 	public boolean confirm_follow;
 	public boolean confirm_follow_locked;
@@ -117,14 +116,13 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 				
 				// 以下はDBスキーマ13で更新
 				+ "," + COL_NOTIFICATION_TAG + " text default ''"
-			
+				
 				// 以下はDBスキーマ14で更新
 				+ "," + COL_REGISTER_KEY + " text default ''"
 				+ "," + COL_REGISTER_TIME + " integer default 0"
-			
+				
 				// 以下はDBスキーマ16で更新
 				+ "," + COL_SOUND_URI + " text default ''"
-				
 				
 				+ ")"
 		);
@@ -207,10 +205,11 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	
 	private SavedAccount(){
 	}
-
+	
 	// 横断検索用の、何とも紐ついていないアカウント
 	// 保存しない。
 	private static SavedAccount na_account;
+	
 	public static SavedAccount getNA(){
 		if( na_account == null ){
 			SavedAccount dst = new SavedAccount();
@@ -226,19 +225,18 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		}
 		return na_account;
 	}
+	
 	public boolean isNA(){
 		return acct.equals( "?@?" );
 	}
 	
-
-	
 	private static SavedAccount parse( Context context, Cursor cursor ) throws JSONException{
 		JSONObject src = new JSONObject( cursor.getString( cursor.getColumnIndex( COL_ACCOUNT ) ) );
 		SavedAccount dst = new SavedAccount();
-		dst = (SavedAccount) parse( context,log, dst, src, dst );
+		dst = (SavedAccount) parse( context, log, dst, src, dst );
 		if( dst != null ){
 			dst.db_id = cursor.getLong( cursor.getColumnIndex( COL_ID ) );
-			dst.host = cursor.getString( cursor.getColumnIndex( COL_HOST ) );
+			dst.host = cursor.getString( cursor.getColumnIndex( COL_HOST ) ).toLowerCase();
 			dst.acct = cursor.getString( cursor.getColumnIndex( COL_USER ) );
 			
 			int colIdx_visibility = cursor.getColumnIndex( COL_VISIBILITY );
@@ -257,13 +255,13 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 			dst.confirm_unfollow = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_CONFIRM_UNFOLLOW ) ) );
 			dst.confirm_post = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_CONFIRM_POST ) ) );
 			
-			int idx_notification_tag =  cursor.getColumnIndex( COL_NOTIFICATION_TAG );
-			dst.notification_tag = cursor.isNull(idx_notification_tag) ? null : cursor.getString( idx_notification_tag );
+			int idx_notification_tag = cursor.getColumnIndex( COL_NOTIFICATION_TAG );
+			dst.notification_tag = cursor.isNull( idx_notification_tag ) ? null : cursor.getString( idx_notification_tag );
 			
-			int idx_register_key =  cursor.getColumnIndex( COL_REGISTER_KEY );
-			dst.register_key = cursor.isNull(idx_register_key) ? null : cursor.getString( idx_register_key );
+			int idx_register_key = cursor.getColumnIndex( COL_REGISTER_KEY );
+			dst.register_key = cursor.isNull( idx_register_key ) ? null : cursor.getString( idx_register_key );
 			
-			dst.register_time = cursor.getLong( cursor.getColumnIndex( COL_REGISTER_TIME ));
+			dst.register_time = cursor.getLong( cursor.getColumnIndex( COL_REGISTER_TIME ) );
 			
 			dst.token_info = new JSONObject( cursor.getString( cursor.getColumnIndex( COL_TOKEN ) ) );
 			
@@ -327,7 +325,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		cv.put( COL_CONFIRM_POST, confirm_post ? 1 : 0 );
 		
 		cv.put( COL_SOUND_URI, sound_uri );
-
+		
 		// UIからは更新しない
 		// notification_tag
 		// register_key
@@ -344,7 +342,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		
 		App1.getDB().update( table, cv, COL_ID + "=?", new String[]{ Long.toString( db_id ) } );
 	}
-
+	
 	public void saveRegisterKey(){
 		if( db_id == INVALID_ID )
 			throw new RuntimeException( "SavedAccount.saveRegisterKey missing db_id" );
@@ -362,11 +360,11 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		ContentValues cv = new ContentValues();
 		cv.put( COL_REGISTER_KEY, REGISTER_KEY_UNREGISTERED );
 		cv.put( COL_REGISTER_TIME, 0L );
-		App1.getDB().update( table, cv, null, null);
+		App1.getDB().update( table, cv, null, null );
 	}
 	
 	// onResumeの時に設定を読み直す
-	public void reloadSetting(Context context){
+	public void reloadSetting( Context context ){
 		if( db_id == INVALID_ID )
 			throw new RuntimeException( "SavedAccount.reloadSetting missing db_id" );
 		SavedAccount b = loadAccount( context, log, db_id );
@@ -384,7 +382,8 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		this.sound_uri = b.sound_uri;
 	}
 	
-	public static @Nullable SavedAccount loadAccount( @NonNull Context context,@NonNull LogCategory log, long db_id ){
+	public static @Nullable
+	SavedAccount loadAccount( @NonNull Context context, @NonNull LogCategory log, long db_id ){
 		try{
 			Cursor cursor = App1.getDB().query( table, null, COL_ID + "=?", new String[]{ Long.toString( db_id ) }, null, null, null );
 			try{
@@ -401,13 +400,14 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return null;
 	}
 	
-	public static @NonNull ArrayList< SavedAccount > loadAccountList( Context context, @NonNull LogCategory log ){
+	public static @NonNull
+	ArrayList< SavedAccount > loadAccountList( Context context, @NonNull LogCategory log ){
 		ArrayList< SavedAccount > result = new ArrayList<>();
 		try{
 			Cursor cursor = App1.getDB().query( table, null, null, null, null, null, null );
 			try{
 				while( cursor.moveToNext() ){
-					result.add( parse( context,cursor ) );
+					result.add( parse( context, cursor ) );
 				}
 			}finally{
 				cursor.close();
@@ -420,13 +420,14 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return result;
 	}
 	
-	public static @NonNull ArrayList< SavedAccount > loadByTag( Context context, @NonNull LogCategory log,String tag ){
+	public static @NonNull
+	ArrayList< SavedAccount > loadByTag( Context context, @NonNull LogCategory log, String tag ){
 		ArrayList< SavedAccount > result = new ArrayList<>();
 		try{
-			Cursor cursor = App1.getDB().query( table, null, COL_NOTIFICATION_TAG+"=?", new String[]{tag}, null, null, null );
+			Cursor cursor = App1.getDB().query( table, null, COL_NOTIFICATION_TAG + "=?", new String[]{ tag }, null, null, null );
 			try{
 				while( cursor.moveToNext() ){
-					result.add( parse( context,cursor ) );
+					result.add( parse( context, cursor ) );
 				}
 			}finally{
 				cursor.close();
@@ -446,11 +447,12 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		}
 		return this.host;
 	}
+	
 	public @NonNull String getAccountHost( @Nullable TootAccount who ){
 		if( who != null ) return getAccountHost( who.acct );
 		return this.host;
 	}
-
+	
 	public @NonNull String getFullAcct( @NonNull String acct ){
 		return acct.indexOf( '@' ) != - 1 ? acct : acct + "@" + this.host;
 	}
@@ -530,5 +532,53 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return 0L;
 	}
 	
+	private static final String strNicoruHost = "friends.nico";
+	private static final Pattern reAtNicoruHost = Pattern.compile( "@friends\\.nico\\z", Pattern.CASE_INSENSITIVE );
 	
+	public static boolean isNicoru( String acct ){
+		return acct != null && reAtNicoruHost.matcher( acct ).find();
+	}
+	
+	public boolean isNicoru( TootAccount account ){
+		String host = this.host;
+		int host_start = 0;
+		if( account != null && account.acct != null ){
+			int pos = account.acct.indexOf( '@' );
+			if( pos != - 1 ){
+				host = account.acct;
+				host_start = pos + 1;
+			}
+		}
+		return host_match( strNicoruHost, 0, host, host_start );
+	}
+	
+	private static int charAtLower( @NonNull final CharSequence src, final int pos ){
+		final int c = src.charAt( pos );
+		return ( c >= 'a' && c <= 'z' ? c - ( 'a' - 'A' ) : c );
+	}
+	
+	private static boolean host_match( @NonNull final CharSequence a, int a_start, @NonNull final CharSequence b, int b_start ){
+		
+		final int a_end = a.length();
+		final int b_end = b.length();
+		
+		int a_remain = a_end - a_start;
+		final int b_remain = b_end - b_start;
+		
+		// 文字数が違う
+		if( a_remain != b_remain ) return false;
+		
+		// 文字数がゼロ
+		if( a_remain <= 0 ) return true;
+		
+		// 末尾の文字が違う
+		if( charAtLower( a, a_end - 1 ) != charAtLower( b, b_end - 1 ) ) return false;
+		
+		// 先頭からチェック
+		while( a_remain-- > 0 ){
+			if( charAtLower( a, a_start++ ) != charAtLower( b, b_start++ ) ) return false;
+		}
+		
+		return true;
+	}
 }

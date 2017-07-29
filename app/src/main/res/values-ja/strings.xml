@@ -682,5 +682,9 @@
     <string name="conversation_from_another_account">別アカウントで会話の流れ</string>
     <string name="show_avatar_image">アバター画像を表示</string>
     <string name="quote_url">URLを引用…</string>
+    <string name="actions_for_notification">通知へのアクション</string>
+    <string name="delete_this_notification">この通知を削除</string>
+    <string name="mute_this_conversation">この会話の通知をミュート</string>
+    <string name="unmute_this_conversation">この会話の通知をミュート解除</string>
 
 </resources>

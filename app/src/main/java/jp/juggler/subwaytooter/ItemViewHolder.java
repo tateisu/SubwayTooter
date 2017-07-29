@@ -1,37 +1,37 @@
 package jp.juggler.subwaytooter;
-
-import android.content.DialogInterface;
-import android.graphics.Typeface;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.view.ViewCompat;
-import android.support.v7.app.AlertDialog;
-import android.text.TextUtils;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.TextView;
-
-import jp.juggler.subwaytooter.api.entity.TootAccount;
-import jp.juggler.subwaytooter.api.entity.TootAttachment;
-import jp.juggler.subwaytooter.api.entity.TootDomainBlock;
-import jp.juggler.subwaytooter.api.entity.TootGap;
-import jp.juggler.subwaytooter.api.entity.TootNotification;
-import jp.juggler.subwaytooter.api.entity.TootStatus;
-import jp.juggler.subwaytooter.api.entity.TootStatusLike;
-import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
-import jp.juggler.subwaytooter.table.AcctColor;
-import jp.juggler.subwaytooter.table.ContentWarning;
-import jp.juggler.subwaytooter.table.MediaShown;
-import jp.juggler.subwaytooter.table.SavedAccount;
-import jp.juggler.subwaytooter.table.UserRelation;
-import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
-import jp.juggler.subwaytooter.view.MyListView;
-import jp.juggler.subwaytooter.view.MyNetworkImageView;
-import jp.juggler.subwaytooter.view.MyTextView;
-import jp.juggler.subwaytooter.util.Utils;
+	
+	import android.content.DialogInterface;
+	import android.graphics.Typeface;
+	import android.support.annotation.NonNull;
+	import android.support.annotation.Nullable;
+	import android.support.v4.view.ViewCompat;
+	import android.support.v7.app.AlertDialog;
+	import android.text.TextUtils;
+	import android.view.View;
+	import android.view.ViewGroup;
+	import android.widget.Button;
+	import android.widget.ImageButton;
+	import android.widget.ImageView;
+	import android.widget.TextView;
+	
+	import jp.juggler.subwaytooter.api.entity.TootAccount;
+	import jp.juggler.subwaytooter.api.entity.TootAttachment;
+	import jp.juggler.subwaytooter.api.entity.TootDomainBlock;
+	import jp.juggler.subwaytooter.api.entity.TootGap;
+	import jp.juggler.subwaytooter.api.entity.TootNotification;
+	import jp.juggler.subwaytooter.api.entity.TootStatus;
+	import jp.juggler.subwaytooter.api.entity.TootStatusLike;
+	import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
+	import jp.juggler.subwaytooter.table.AcctColor;
+	import jp.juggler.subwaytooter.table.ContentWarning;
+	import jp.juggler.subwaytooter.table.MediaShown;
+	import jp.juggler.subwaytooter.table.SavedAccount;
+	import jp.juggler.subwaytooter.table.UserRelation;
+	import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
+	import jp.juggler.subwaytooter.view.MyListView;
+	import jp.juggler.subwaytooter.view.MyNetworkImageView;
+	import jp.juggler.subwaytooter.view.MyTextView;
+	import jp.juggler.subwaytooter.util.Utils;
 
 class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	
@@ -89,6 +89,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	@Nullable private String search_tag;
 	@Nullable private TootGap gap;
 	@Nullable private TootDomainBlock domain_block;
+	@Nullable private TootNotification notification;
 	
 	private final boolean bSimpleList;
 	
@@ -226,6 +227,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.search_tag = null;
 		this.gap = null;
 		this.domain_block = null;
+		this.notification = null;
 		
 		llBoosted.setVisibility( View.GONE );
 		llFollow.setVisibility( View.GONE );
@@ -241,7 +243,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		}else if( item instanceof TootAccount ){
 			showFollow( (TootAccount) item );
 		}else if( item instanceof TootNotification ){
-			TootNotification n = (TootNotification) item;
+			TootNotification n = this.notification = (TootNotification) item;
 			if( TootNotification.TYPE_FAVOURITE.equals( n.type ) ){
 				showBoost(
 					n.account
@@ -441,7 +443,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		}
 		
 		if( buttons_for_status != null ){
-			buttons_for_status.bind( status );
+			buttons_for_status.bind( status, notification );
 		}
 		
 		if( tvApplication != null ){
@@ -578,7 +580,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.ivThumbnail:
 			if( access_info.isPseudo() ){
-				new DlgContextMenu( activity, column, account_thumbnail, null ).show();
+				new DlgContextMenu( activity, column, account_thumbnail, null, notification ).show();
 			}else{
 				activity.openProfile( pos, access_info, account_thumbnail );
 			}
@@ -587,7 +589,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		case R.id.llBoosted:
 			if( account_boost != null ){
 				if( access_info.isPseudo() ){
-					new DlgContextMenu( activity, column, account_boost, null ).show();
+					new DlgContextMenu( activity, column, account_boost, null, notification ).show();
 				}else{
 					activity.openProfile( pos, access_info, account_boost );
 				}
@@ -595,13 +597,13 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		case R.id.llFollow:
 			if( access_info.isPseudo() ){
-				new DlgContextMenu( activity, column, account_follow, null ).show();
+				new DlgContextMenu( activity, column, account_follow, null, notification ).show();
 			}else{
 				activity.openProfile( pos, access_info, account_follow );
 			}
 			break;
 		case R.id.btnFollow:
-			new DlgContextMenu( activity, column, account_follow, null ).show();
+			new DlgContextMenu( activity, column, account_follow, null, notification ).show();
 			break;
 		
 		case R.id.btnSearchTag:
@@ -630,7 +632,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		switch( v.getId() ){
 		
 		case R.id.ivThumbnail:
-			new DlgContextMenu( activity, column, account_thumbnail, null ).show();
+			new DlgContextMenu( activity, column, account_thumbnail, null, notification ).show();
 			return true;
 		
 		case R.id.btnFollow:
@@ -639,13 +641,13 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.llBoosted:
 			if( account_boost != null ){
-				new DlgContextMenu( activity, column, account_boost, null ).show();
+				new DlgContextMenu( activity, column, account_boost, null, notification ).show();
 			}
 			return true;
 		
 		case R.id.llFollow:
 			if( account_follow != null ){
-				new DlgContextMenu( activity, column, account_follow, null ).show();
+				new DlgContextMenu( activity, column, account_follow, null, notification ).show();
 			}
 			return true;
 			
@@ -689,10 +691,9 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		activity.closeListItemPopup();
 		if( status != null ){
 			activity.list_item_popup = new StatusButtonsPopup( activity, column, bSimpleList );
-			activity.list_item_popup.show( listView, anchor, status );
+			activity.list_item_popup.show( listView, anchor, status, notification );
 		}
 	}
 	
 }
-	
 

@@ -100,7 +100,7 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 			if( who.locked ){
 				s += " " + Emojione.map_name2unicode.get( "lock" );
 			}
-			tvAcct.setText( Emojione.decodeEmoji( activity,s ) );
+			tvAcct.setText( Emojione.decodeEmoji( activity, s ) );
 			
 			tvNote.setText( who.decoded_note );
 			btnStatusCount.setText( activity.getString( R.string.statuses ) + "\n" + who.statuses_count );
@@ -144,13 +144,13 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 		
 		case R.id.btnMore:
 			if( who != null ){
-				new DlgContextMenu( activity, column, who, null ).show();
+				new DlgContextMenu( activity, column, who, null, null ).show();
 			}
 			break;
 		
 		case R.id.btnFollow:
 			if( who != null ){
-				new DlgContextMenu( activity, column, who, null ).show();
+				new DlgContextMenu( activity, column, who, null, null ).show();
 			}
 			break;
 		}

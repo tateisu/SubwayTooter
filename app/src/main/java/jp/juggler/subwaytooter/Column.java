@@ -579,7 +579,7 @@ class Column implements StreamReader.Callback {
 	}
 	
 	// ブーストやお気に入りの更新に使う。ステータスを列挙する。
-	void findStatus( String target_instance, long target_status_id, StatusEntryCallback callback ){
+	void findStatus( @NonNull String target_instance, long target_status_id, StatusEntryCallback callback ){
 		if( access_info.host.equalsIgnoreCase( target_instance ) ){
 			boolean bChanged = false;
 			for( Object data : list_data ){
@@ -757,6 +757,27 @@ class Column implements StreamReader.Callback {
 		fireShowContent();
 		
 		AlarmService.dataRemoved( context, access_info.db_id );
+	}
+	
+	void removeNotificationOne( SavedAccount target_account, TootNotification notification ){
+		if( column_type != TYPE_NOTIFICATIONS) return;
+		if( ! access_info.acct.equals( target_account.acct ) ) return;
+		
+		ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
+		for( Object o : list_data ){
+			if( o instanceof TootNotification ){
+				TootNotification item = (TootNotification) o;
+				if( item.id == notification.id ) continue;
+			}
+			
+			tmp_list.add( o );
+		}
+		
+		if( tmp_list.size() != list_data.size() ){
+			list_data.clear();
+			list_data.addAll( tmp_list );
+			fireShowContent();
+		}
 	}
 	
 	void removeMuteApp(){

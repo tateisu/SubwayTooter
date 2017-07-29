@@ -17,6 +17,7 @@ import android.widget.ImageView;
 import java.util.ArrayList;
 
 import jp.juggler.subwaytooter.api.entity.TootAccount;
+import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.dialog.DlgQRCode;
@@ -29,11 +30,13 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 	private static final LogCategory log = new LogCategory( "DlgContextMenu" );
 	
 	@NonNull final ActMain activity;
+	@NonNull private final Column column;
 	@NonNull private final SavedAccount access_info;
+	@NonNull private final UserRelation relation;
+	
 	@Nullable private final TootAccount who;
 	@Nullable private final TootStatusLike status;
-	@NonNull private final UserRelation relation;
-	@NonNull private final Column column;
+	@Nullable private final TootNotification notification;
 	
 	private final Dialog dialog;
 	
@@ -44,13 +47,16 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		, @NonNull Column column
 		, @Nullable TootAccount who
 		, @Nullable TootStatusLike status
+		, @Nullable TootNotification notification
 	){
 		this.activity = activity;
 		this.column = column;
 		this.access_info = column.access_info;
+		int column_type = column.column_type;
+		
 		this.who = who;
 		this.status = status;
-		int column_type = column.column_type;
+		this.notification = notification;
 		
 		this.relation = UserRelation.load( access_info.db_id, who == null ? - 1 : who.id );
 		
@@ -88,6 +94,10 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		View btnConversationAnotherAccount = viewRoot.findViewById( R.id.btnConversationAnotherAccount );
 		View btnAvatarImage = viewRoot.findViewById( R.id.btnAvatarImage );
 		
+		View llNotification = viewRoot.findViewById( R.id.llNotification );
+		View btnNotificationDelete = viewRoot.findViewById( R.id.btnNotificationDelete );
+		Button btnConversationMute = (Button) viewRoot.findViewById( R.id.btnConversationMute );
+		
 		btnStatusWebPage.setOnClickListener( this );
 		btnText.setOnClickListener( this );
 		btnFavouriteAnotherAccount.setOnClickListener( this );
@@ -111,11 +121,13 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		btnOpenTimeline.setOnClickListener( this );
 		btnConversationAnotherAccount.setOnClickListener( this );
 		btnAvatarImage.setOnClickListener( this );
+		btnNotificationDelete.setOnClickListener( this );
+		btnConversationMute.setOnClickListener( this );
 		
 		viewRoot.findViewById( R.id.btnQuoteUrlStatus ).setOnClickListener( this );
 		viewRoot.findViewById( R.id.btnQuoteUrlAccount ).setOnClickListener( this );
 		
-		final ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( activity,log );
+		final ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( activity, log );
 		//	final ArrayList< SavedAccount > account_list_non_pseudo_same_instance = new ArrayList<>();
 		
 		for( SavedAccount a : account_list ){
@@ -133,7 +145,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			boolean status_by_me = access_info.isMe( status.account );
 			
 			btnDelete.setVisibility( status_by_me ? View.VISIBLE : View.GONE );
-
+			
 			btnReport.setVisibility( status_by_me || access_info.isPseudo() ? View.GONE : View.VISIBLE );
 			
 			if( status_by_me || status.application == null || TextUtils.isEmpty( status.application.name ) ){
@@ -157,6 +169,16 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 				
 			}
 			
+		}
+		
+		if( notification == null ){
+			llNotification.setVisibility( View.GONE );
+		}else{
+			if( status == null || ! TootNotification.TYPE_MENTION.equals( notification.type ) ){
+				btnConversationMute.setVisibility( View.GONE );
+			}else{
+				btnConversationMute.setText( status.muted ? R.string.unmute_this_conversation : R.string.mute_this_conversation);
+			}
 		}
 		
 		if( access_info.isPseudo() ){
@@ -489,15 +511,26 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnQuoteUrlStatus:
 			if( status != null ){
-				String url = TextUtils.isEmpty( status.url ) ? "" : status.url +" ";
+				String url = TextUtils.isEmpty( status.url ) ? "" : status.url + " ";
 				activity.openPost( url );
 			}
 			break;
 		
 		case R.id.btnQuoteUrlAccount:
 			if( who != null ){
-				String url = TextUtils.isEmpty( who.url ) ? "" : who.url +" ";
+				String url = TextUtils.isEmpty( who.url ) ? "" : who.url + " ";
 				activity.openPost( url );
+			}
+			break;
+		
+		case R.id.btnNotificationDelete:
+			if( notification != null ){
+				activity.deleteNotificationOne( access_info, notification );
+			}
+			break;
+		case R.id.btnConversationMute:
+			if( notification != null && status != null ){
+				activity.toggleConversationMute( access_info, status );
 			}
 			break;
 		}

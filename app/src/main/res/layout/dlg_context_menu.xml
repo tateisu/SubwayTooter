@@ -23,7 +23,6 @@
             android:padding="12dp"
             >
 
-
             <LinearLayout
                 android:id="@+id/llStatus"
                 android:layout_width="match_parent"
@@ -42,7 +41,6 @@
                     android:text="@string/actions_for_status"
 
                     />
-
 
                 <Button
                     android:id="@+id/btnStatusWebPage"
@@ -118,6 +116,7 @@
                     android:text="@string/favourited_by"
                     android:textAllCaps="false"
                     />
+
                 <Button
                     android:id="@+id/btnConversationAnotherAccount"
                     android:layout_width="match_parent"
@@ -162,6 +161,7 @@
                     android:text="@string/boost_from_another_account"
                     android:textAllCaps="false"
                     />
+
                 <Button
                     android:id="@+id/btnReplyAnotherAccount"
                     android:layout_width="match_parent"
@@ -176,6 +176,7 @@
                     android:text="@string/reply_from_another_account"
                     android:textAllCaps="false"
                     />
+
                 <Button
                     android:id="@+id/btnDelete"
                     android:layout_width="match_parent"
@@ -207,7 +208,6 @@
 
                     />
 
-
                 <Button
                     android:id="@+id/btnReport"
                     android:layout_width="match_parent"
@@ -227,7 +227,64 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="?attr/colorSettingDivider"/>
+                    android:background="?attr/colorSettingDivider"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/llNotification"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+
+                android:orientation="vertical"
+
+                >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
+                    android:text="@string/actions_for_notification"
+
+                    />
+
+                <Button
+                    android:id="@+id/btnNotificationDelete"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:gravity="start|center_vertical"
+                    android:minHeight="32dp"
+                    android:paddingBottom="4dp"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+                    android:text="@string/delete_this_notification"
+                    android:textAllCaps="false"
+                    />
+
+                <Button
+                    android:id="@+id/btnConversationMute"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:gravity="start|center_vertical"
+                    android:minHeight="32dp"
+                    android:paddingBottom="4dp"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+                    android:text="@string/mute_this_conversation"
+                    android:textAllCaps="false"
+                    />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="?attr/colorSettingDivider"
+                    />
             </LinearLayout>
 
             <LinearLayout
@@ -246,7 +303,6 @@
                     android:text="@string/actions_for_user"
                     />
 
-
                 <LinearLayout
                     android:id="@+id/llAccountActionBar"
                     android:layout_width="match_parent"
@@ -256,7 +312,8 @@
 
                     <FrameLayout
                         android:layout_width="40dp"
-                        android:layout_height="40dp">
+                        android:layout_height="40dp"
+                        >
 
                         <ImageButton
                             android:id="@+id/btnFollow"
@@ -278,11 +335,11 @@
                             />
                     </FrameLayout>
 
-
                     <View
                         android:layout_width="0dp"
                         android:layout_height="0dp"
-                        android:layout_weight="1"/>
+                        android:layout_weight="1"
+                        />
 
                     <ImageButton
                         android:id="@+id/btnMute"
@@ -333,6 +390,7 @@
                     android:text="@string/open_web_page"
                     android:textAllCaps="false"
                     />
+
                 <Button
                     android:id="@+id/btnAccountText"
                     android:layout_width="match_parent"
@@ -347,6 +405,7 @@
                     android:text="@string/select_and_copy"
                     android:textAllCaps="false"
                     />
+
                 <Button
                     android:id="@+id/btnQuoteUrlAccount"
                     android:layout_width="match_parent"
@@ -499,7 +558,6 @@
                     android:textAllCaps="false"
                     />
 
-
                 <Button
                     android:id="@+id/btnAccountQrCode"
                     android:layout_width="match_parent"
@@ -536,7 +594,8 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="?attr/colorSettingDivider"/>
+        android:background="?attr/colorSettingDivider"
+        />
 
     <Button
         android:id="@+id/btnCancel"

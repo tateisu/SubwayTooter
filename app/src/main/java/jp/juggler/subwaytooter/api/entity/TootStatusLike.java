@@ -30,6 +30,12 @@ public abstract class TootStatusLike extends TootId {
 	//Whether media attachments should be hidden by default
 	public boolean sensitive;
 	
+	// Whether the authenticated user has muted the conversation this status from
+	public boolean muted;
+	
+	// The detected language for the status, if detected
+	public String language;
+	
 	//If not empty, warning text that should be displayed before the actual content
 	public String spoiler_text;
 	public Spannable decoded_spoiler_text;

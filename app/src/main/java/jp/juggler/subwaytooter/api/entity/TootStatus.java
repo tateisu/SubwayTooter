@@ -119,6 +119,9 @@ public class TootStatus extends TootStatusLike {
 			status.tags = TootTag.parseList( log, src.optJSONArray( "tags" ) );
 			status.application = TootApplication.parse( log, src.optJSONObject( "application" ) ); // null
 			
+			status.muted = src.optBoolean( "muted" );
+			status.language = Utils.optStringX( src, "language" );
+			
 			status.time_created_at = parseTime( log, status.created_at );
 			status.decoded_content = HTMLDecoder.decodeHTML( context, lcc, status.content, true, true, status.media_attachments );
 			// status.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );

@@ -395,6 +395,10 @@
 	<string name="conversation_from_another_account">Conversation view from another account</string>
     <string name="show_avatar_image">Show avatar image</string>
     <string name="quote_url">Quote URL</string>
+    <string name="actions_for_notification">Actions for notification</string>
+    <string name="delete_this_notification">Delete this notification</string>
+    <string name="mute_this_conversation">Mute more notification for this conversation</string>
+    <string name="unmute_this_conversation">Unmute more notification for this conversation</string>
 
     <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.graphics.drawable.ColorDrawable;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.view.MotionEventCompat;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.PopupWindow;
 
+import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.view.MyListView;
 
@@ -20,10 +22,11 @@ class StatusButtonsPopup {
 	private final View viewRoot;
 	private final StatusButtons buttons_for_status;
 	
-	@SuppressLint("InflateParams") StatusButtonsPopup( ActMain activity, Column column ,boolean bSimpleList ){
+	@SuppressLint("InflateParams")
+	StatusButtonsPopup( ActMain activity, Column column, boolean bSimpleList ){
 		this.activity = activity;
 		this.viewRoot = activity.getLayoutInflater().inflate( R.layout.list_item_popup, null, false );
-		this.buttons_for_status = new StatusButtons( activity,column, viewRoot , bSimpleList);
+		this.buttons_for_status = new StatusButtons( activity, column, viewRoot, bSimpleList );
 	}
 	
 	private PopupWindow window;
@@ -35,7 +38,12 @@ class StatusButtonsPopup {
 	}
 	
 	@SuppressLint("RtlHardcoded")
-	void show( @NonNull final MyListView listView, @NonNull View anchor, @NonNull TootStatusLike status ){
+	void show(
+		@NonNull final MyListView listView
+		, @NonNull View anchor
+		, @NonNull TootStatusLike status
+		, @Nullable TootNotification notification
+	){
 		
 		//
 		window = new PopupWindow( activity );
@@ -56,7 +64,7 @@ class StatusButtonsPopup {
 			}
 		} );
 		
-		buttons_for_status.bind( status );
+		buttons_for_status.bind( status, notification );
 		buttons_for_status.close_window = window;
 		
 		int[] location = new int[ 2 ];
@@ -90,12 +98,11 @@ class StatusButtonsPopup {
 		}
 		
 		int anchor_width = anchor.getWidth();
-		int popup_width =getViewWidth(viewRoot);
-		int popup_x = anchor_left + anchor_width/2 - popup_width/2;
+		int popup_width = getViewWidth( viewRoot );
+		int popup_x = anchor_left + anchor_width / 2 - popup_width / 2;
 		if( popup_x < 0 ) popup_x = 0;
 		int popup_x_max = activity.getResources().getDisplayMetrics().widthPixels - popup_width;
 		if( popup_x > popup_x_max ) popup_x = popup_x_max;
-		
 		
 		window.showAtLocation(
 			listView
@@ -105,10 +112,9 @@ class StatusButtonsPopup {
 		);
 	}
 	
-	
 	private static int getViewWidth( View v ){
-		int spec= View.MeasureSpec.makeMeasureSpec( 0, View.MeasureSpec.UNSPECIFIED );
-		v.measure( spec,spec );
+		int spec = View.MeasureSpec.makeMeasureSpec( 0, View.MeasureSpec.UNSPECIFIED );
+		v.measure( spec, spec );
 		return v.getMeasuredWidth();
 	}
 }

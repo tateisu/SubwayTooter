@@ -3,12 +3,14 @@ package jp.juggler.subwaytooter;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 
+import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
@@ -68,18 +70,20 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 	
 	private UserRelation relation;
 	private TootStatusLike status;
+	@Nullable private TootNotification notification;
 	
-	void bind( @NonNull TootStatusLike status ){
+	void bind( @NonNull TootStatusLike status, @Nullable TootNotification notification ){
 		this.status = status;
+		this.notification = notification;
 		
 		int color_normal = Styler.getAttributeColor( activity, R.attr.colorImageButton );
 		int color_accent = Styler.getAttributeColor( activity, R.attr.colorImageButtonAccent );
 		
-		int fav_icon_attr =  access_info.isNicoru( status.account ) ? R.attr.ic_nicoru : R.attr.btn_favourite;
+		int fav_icon_attr = access_info.isNicoru( status.account ) ? R.attr.ic_nicoru : R.attr.btn_favourite;
 		
 		if( status instanceof MSPToot ){
 			setButton( btnBoost, true, color_normal, R.attr.btn_boost, "" );
-			setButton( btnFavourite, true, color_normal,fav_icon_attr, "" );
+			setButton( btnFavourite, true, color_normal, fav_icon_attr, "" );
 		}else if( status instanceof TootStatus ){
 			TootStatus ts = (TootStatus) status;
 			
@@ -130,11 +134,11 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 	@Override public void onClick( View v ){
 		if( close_window != null ) close_window.dismiss();
 		switch( v.getId() ){
-
+		
 		case R.id.btnConversation:
 			activity.openStatus( activity.nextPosition( column ), access_info, status );
 			break;
-
+		
 		case R.id.btnReply:
 			if( status instanceof TootStatus && ! access_info.isPseudo() ){
 				activity.performReply( access_info, (TootStatus) status );
@@ -173,7 +177,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnMore:
-			new DlgContextMenu( activity, column, status.account, status ).show();
+			new DlgContextMenu( activity, column, status.account, status, notification ).show();
 			break;
 		
 		case R.id.btnFollow2:

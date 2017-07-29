@@ -64,6 +64,7 @@ import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootApplication;
+import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
@@ -1779,122 +1780,6 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-	public void openStatusLocal( int pos, @NonNull SavedAccount access_info, long status_id ){
-		addColumn( pos, access_info, Column.TYPE_CONVERSATION, status_id );
-	}
-	
-	public void openStatus( int pos, @NonNull SavedAccount access_info, @NonNull TootStatusLike status ){
-		if( access_info.isNA() || ! access_info.host.equalsIgnoreCase( status.host_access ) ){
-			openStatusOtherInstance( pos, access_info, status );
-		}else{
-			openStatusLocal( pos, access_info, status.id );
-		}
-	}
-	
-	public void openStatusOtherInstance( int pos, @NonNull SavedAccount access_info, @NonNull TootStatusLike status ){
-		if( status.account == null ){
-			// アカウント情報がないと出来ないことがある
-		}else if( status instanceof MSPToot ){
-			// トゥート検索の場合
-			openStatusOtherInstance( pos, access_info, status.url
-				, status.host_original, status.id
-				, null, - 1L
-			);
-		}else if( status.host_original.equals( status.host_access ) ){
-			// TLアカウントのホストとトゥートのアカウントのホストが同じ場合
-			openStatusOtherInstance( pos, access_info, status.url
-				, status.host_original, status.id
-				, null, - 1L
-			);
-		}else{
-			// TLアカウントのホストとトゥートのアカウントのホストが異なる場合
-			openStatusOtherInstance( pos, access_info, status.url
-				, null, - 1L
-				, status.host_access, status.id
-			);
-		}
-	}
-	
-	void openStatusOtherInstance(
-		final int pos
-		, @Nullable final SavedAccount access_info
-		, @NonNull final String url
-		, final String host_original, final long status_id_original
-		, final String host_access, final long status_id_access
-	){
-		ActionsDialog dialog = new ActionsDialog();
-		
-		Uri uri = Uri.parse( url );
-		String host_name = uri.getAuthority();
-		
-		// 選択肢：ブラウザで表示する
-		dialog.addAction( getString( R.string.open_web_on_host, host_name ), new Runnable() {
-			@Override public void run(){
-				openChromeTab( pos, access_info, url, true );
-			}
-		} );
-		
-		boolean has_local_account = false;
-		ArrayList< SavedAccount > account_list = new ArrayList<>();
-		for( SavedAccount a : SavedAccount.loadAccountList( ActMain.this, log ) ){
-			if( status_id_original >= 0L && host_original.equalsIgnoreCase( a.host ) ){
-				// アクセス情報＋ステータスID でアクセスできるなら
-				// 同タンスのアカウントならステータスIDの変換なしに表示できる
-				account_list.add( a );
-				has_local_account = true;
-			}else if( status_id_access >= 0L && host_access.equalsIgnoreCase( a.host ) ){
-				// 既に変換済みのステータスIDがあるなら、そのアカウントでもステータスIDの変換は必要ない
-				account_list.add( a );
-			}else if( ! a.isPseudo() ){
-				// 別タンスでも実アカウントなら検索APIでステータスIDを変換できる
-				account_list.add( a );
-			}
-		}
-		
-		// ソートする
-		Collections.sort( account_list, new Comparator< SavedAccount >() {
-			@Override public int compare( SavedAccount a, SavedAccount b ){
-				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
-			}
-		} );
-		
-		// ダイアログの選択肢に追加
-		for( SavedAccount a : account_list ){
-			final SavedAccount _a = a;
-			
-			dialog.addAction( getString( R.string.open_in_account, AcctColor.getNickname( a.acct ) ), new Runnable() {
-				@Override public void run(){
-					if( status_id_original >= 0L && host_original.equalsIgnoreCase( _a.host ) ){
-						openStatusLocal( pos, _a, status_id_original );
-					}else if( status_id_access >= 0L && host_access.equalsIgnoreCase( _a.host ) ){
-						openStatusLocal( pos, _a, status_id_access );
-					}else if( ! _a.isPseudo() ){
-						performConversationRemote( pos, _a, url );
-					}
-				}
-			} );
-		}
-		
-		// 同タンスのアカウントがないなら、疑似アカウントを作る選択肢
-		if( ! has_local_account ){
-			if( status_id_original >= 0L ){
-				dialog.addAction( getString( R.string.open_in_pseudo_account, "?@" + host_original ), new Runnable() {
-					@Override public void run(){
-						SavedAccount sa = addPseudoAccount( host_original );
-						if( sa != null ){
-							openStatusLocal( pos, sa, status_id_original );
-						}
-					}
-				} );
-			}else if( status_id_access >= 0L ){
-				// リモートから流れてきたトゥートを オリジナルのインスタンスの疑似アカウントで開きたい
-				// しかし疑似アカウントでは検索ができないので、オリジナルのインスタンス上でのステータスIDを知る方法がない
-			}
-		}
-		
-		dialog.show( this, getString( R.string.open_status_from ) );
-	}
-	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	public void openHashTag( int pos, SavedAccount access_info, String tag ){
@@ -1982,12 +1867,12 @@ public class ActMain extends AppCompatActivity
 	};
 	
 	private void performTootButton(){
-		openPost(etQuickToot.getText().toString());
+		openPost( etQuickToot.getText().toString() );
 	}
-
-	public void openPost(final String initial_text){
+	
+	public void openPost( final String initial_text ){
 		post_helper.closeAcctPopup();
-
+		
 		if( pager_adapter != null ){
 			Column c = pager_adapter.getColumn( pager.getCurrentItem() );
 			if( c != null && ! c.access_info.isPseudo() ){
@@ -2491,6 +2376,9 @@ public class ActMain extends AppCompatActivity
 		showColumnMatchAccount( access_info );
 	}
 	
+	/////////////////////////////////////////////////////////////////////////////////
+	// reply
+	
 	public void performReply(
 		final SavedAccount access_info
 		, final TootStatus arg_status
@@ -2566,7 +2454,126 @@ public class ActMain extends AppCompatActivity
 		task.executeOnExecutor( App1.task_executor );
 	}
 	
-	public void performConversationRemote(
+	/////////////////////////////////////////////////////////////////////////////////////
+	// open conversation
+	
+	public void openStatusLocal( int pos, @NonNull SavedAccount access_info, long status_id ){
+		addColumn( pos, access_info, Column.TYPE_CONVERSATION, status_id );
+	}
+	
+	public void openStatus( int pos, @NonNull SavedAccount access_info, @NonNull TootStatusLike status ){
+		if( access_info.isNA() || ! access_info.host.equalsIgnoreCase( status.host_access ) ){
+			openStatusOtherInstance( pos, access_info, status );
+		}else{
+			openStatusLocal( pos, access_info, status.id );
+		}
+	}
+	
+	public void openStatusOtherInstance( int pos, @NonNull SavedAccount access_info, @NonNull TootStatusLike status ){
+		if( status.account == null ){
+			// アカウント情報がないと出来ないことがある
+		}else if( status instanceof MSPToot ){
+			// トゥート検索の場合
+			openStatusOtherInstance( pos, access_info, status.url
+				, status.host_original, status.id
+				, null, - 1L
+			);
+		}else if( status.host_original.equals( status.host_access ) ){
+			// TLアカウントのホストとトゥートのアカウントのホストが同じ場合
+			openStatusOtherInstance( pos, access_info, status.url
+				, status.host_original, status.id
+				, null, - 1L
+			);
+		}else{
+			// TLアカウントのホストとトゥートのアカウントのホストが異なる場合
+			openStatusOtherInstance( pos, access_info, status.url
+				, null, - 1L
+				, status.host_access, status.id
+			);
+		}
+	}
+	
+	void openStatusOtherInstance(
+		final int pos
+		, @Nullable final SavedAccount access_info
+		, @NonNull final String url
+		, final String host_original, final long status_id_original
+		, final String host_access, final long status_id_access
+	){
+		ActionsDialog dialog = new ActionsDialog();
+		
+		Uri uri = Uri.parse( url );
+		String host_name = uri.getAuthority();
+		
+		// 選択肢：ブラウザで表示する
+		dialog.addAction( getString( R.string.open_web_on_host, host_name ), new Runnable() {
+			@Override public void run(){
+				openChromeTab( pos, access_info, url, true );
+			}
+		} );
+		
+		boolean has_local_account = false;
+		ArrayList< SavedAccount > account_list = new ArrayList<>();
+		for( SavedAccount a : SavedAccount.loadAccountList( ActMain.this, log ) ){
+			if( status_id_original >= 0L && host_original.equalsIgnoreCase( a.host ) ){
+				// アクセス情報＋ステータスID でアクセスできるなら
+				// 同タンスのアカウントならステータスIDの変換なしに表示できる
+				account_list.add( a );
+				has_local_account = true;
+			}else if( status_id_access >= 0L && host_access.equalsIgnoreCase( a.host ) ){
+				// 既に変換済みのステータスIDがあるなら、そのアカウントでもステータスIDの変換は必要ない
+				account_list.add( a );
+			}else if( ! a.isPseudo() ){
+				// 別タンスでも実アカウントなら検索APIでステータスIDを変換できる
+				account_list.add( a );
+			}
+		}
+		
+		// ソートする
+		Collections.sort( account_list, new Comparator< SavedAccount >() {
+			@Override public int compare( SavedAccount a, SavedAccount b ){
+				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
+			}
+		} );
+		
+		// ダイアログの選択肢に追加
+		for( SavedAccount a : account_list ){
+			final SavedAccount _a = a;
+			
+			dialog.addAction( getString( R.string.open_in_account, AcctColor.getNickname( a.acct ) ), new Runnable() {
+				@Override public void run(){
+					if( status_id_original >= 0L && host_original.equalsIgnoreCase( _a.host ) ){
+						openStatusLocal( pos, _a, status_id_original );
+					}else if( status_id_access >= 0L && host_access.equalsIgnoreCase( _a.host ) ){
+						openStatusLocal( pos, _a, status_id_access );
+					}else if( ! _a.isPseudo() ){
+						openStatusRemote( pos, _a, url );
+					}
+				}
+			} );
+		}
+		
+		// 同タンスのアカウントがないなら、疑似アカウントを作る選択肢
+		if( ! has_local_account ){
+			if( status_id_original >= 0L ){
+				dialog.addAction( getString( R.string.open_in_pseudo_account, "?@" + host_original ), new Runnable() {
+					@Override public void run(){
+						SavedAccount sa = addPseudoAccount( host_original );
+						if( sa != null ){
+							openStatusLocal( pos, sa, status_id_original );
+						}
+					}
+				} );
+			}else if( status_id_access >= 0L ){
+				// リモートから流れてきたトゥートを オリジナルのインスタンスの疑似アカウントで開きたい
+				// しかし疑似アカウントでは検索ができないので、オリジナルのインスタンス上でのステータスIDを知る方法がない
+			}
+		}
+		
+		dialog.show( this, getString( R.string.open_status_from ) );
+	}
+	
+	public void openStatusRemote(
 		final int pos
 		, final SavedAccount access_info
 		, final String remote_status_url
@@ -2632,6 +2639,122 @@ public class ActMain extends AppCompatActivity
 			}
 		} );
 		progress.show();
+		task.executeOnExecutor( App1.task_executor );
+	}
+	
+	////////////////////////////////////////
+	// delete notification
+	
+	public void deleteNotificationOne( @NonNull final SavedAccount access_info, @NonNull final TootNotification notification ){
+		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+			
+			@Override protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override public void publishApiProgress( final String s ){
+					}
+				} );
+				client.setAccount( access_info );
+				
+				Request.Builder request_builder = new Request.Builder()
+					.post( RequestBody.create( TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+						, "id=" + Long.toString( notification.id )
+					)
+				);
+				
+				return client.request(
+					"/api/v1/notifications/dismiss"
+					, request_builder );
+			}
+			
+			@Override
+			protected void onCancelled( TootApiResult result ){
+				super.onPostExecute( result );
+			}
+			
+			@Override
+			protected void onPostExecute( TootApiResult result ){
+				if( result == null ){
+					// cancelled.
+				}else if( result.object != null ){
+					// 成功したら空オブジェクトが返される
+					for( Column column : app_state.column_list ){
+						column.removeNotificationOne( access_info, notification );
+					}
+					Utils.showToast( ActMain.this, true, R.string.delete_succeeded );
+				}else{
+					Utils.showToast( ActMain.this, true, result.error );
+				}
+			}
+		};
+		
+		task.executeOnExecutor( App1.task_executor );
+	}
+	
+	////////////////////////////////////////
+	
+	public void toggleConversationMute( @NonNull final SavedAccount access_info, @NonNull final TootStatusLike status ){
+		final boolean bMute = ! status.muted;
+		
+		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+			
+			@Override protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override public void publishApiProgress( final String s ){
+					}
+				} );
+				client.setAccount( access_info );
+				
+				Request.Builder request_builder = new Request.Builder()
+					.post( RequestBody.create( TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" ) );
+				
+				TootApiResult result = client.request(
+					"/api/v1/statuses/" + status.id + ( bMute ? "/mute" : "/unmute" )
+					, request_builder
+				);
+				
+				if( result != null && result.object != null ){
+					new_status = TootStatus.parse( ActMain.this, log, access_info, access_info.host, result.object );
+				}
+				
+				return result;
+			}
+			
+			@Override protected void onCancelled( TootApiResult result ){
+				super.onPostExecute( result );
+			}
+			
+			TootStatus new_status;
+			
+			@Override protected void onPostExecute( TootApiResult result ){
+				if( result == null ){
+					// cancelled.
+				}else if( new_status != null ){
+					for( Column column : app_state.column_list ){
+						column.findStatus( access_info.host, new_status.id, new Column.StatusEntryCallback() {
+							@Override
+							public boolean onIterate( SavedAccount account, TootStatus status ){
+								if( access_info.acct.equalsIgnoreCase( account.acct ) ){
+									status.muted = bMute;
+								}
+								return true;
+							}
+						} );
+					}
+					Utils.showToast( ActMain.this, true, bMute ? R.string.mute_succeeded : R.string.unmute_succeeded );
+				}else{
+					Utils.showToast( ActMain.this, true, result.error );
+				}
+			}
+		};
+		
 		task.executeOnExecutor( App1.task_executor );
 	}
 	

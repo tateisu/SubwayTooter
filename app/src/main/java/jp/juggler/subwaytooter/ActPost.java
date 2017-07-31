@@ -26,6 +26,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
@@ -61,6 +62,7 @@ import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootMention;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.dialog.AccountPicker;
 import jp.juggler.subwaytooter.dialog.DlgDraftPicker;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.PostDraft;
@@ -694,9 +696,28 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	
 	void setAccount( SavedAccount a ){
 		this.account = a;
-		btnAccount.setText(
-			( a == null ? getString( R.string.not_selected ) : a.getFullAcct( a ) )
-		);
+		SpannableStringBuilder sb = new SpannableStringBuilder();
+		if( a == null ){
+			btnAccount.setText( getString( R.string.not_selected ) );
+			btnAccount.setTextColor( Styler.getAttributeColor( this, android.R.attr.textColorPrimary ) );
+			btnAccount.setBackgroundResource( R.drawable.btn_bg_transparent );
+		}else{
+			String acct = a.getFullAcct( a );
+			AcctColor ac = AcctColor.load( acct );
+			String nickname = AcctColor.hasNickname( ac ) ? ac.nickname : acct;
+			btnAccount.setText( nickname );
+			
+			if( AcctColor.hasColorBackground( ac ) ){
+				btnAccount.setBackgroundColor( ac.color_bg );
+			}else{
+				btnAccount.setBackgroundResource( R.drawable.btn_bg_transparent );
+			}
+			if( AcctColor.hasColorForeground( ac ) ){
+				btnAccount.setTextColor( ac.color_fg );
+			}else{
+				btnAccount.setTextColor( Styler.getAttributeColor( this, android.R.attr.textColorPrimary ) );
+			}
+		}
 	}
 	
 	private void performAccountChooser(){
@@ -707,42 +728,59 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			return;
 		}
 		
-		final ArrayList< SavedAccount > tmp_account_list = new ArrayList<>();
-		tmp_account_list.addAll( account_list );
-		
-		String[] caption_list = new String[ tmp_account_list.size() ];
-		for( int i = 0, ie = tmp_account_list.size() ; i < ie ; ++ i ){
-			caption_list[ i ] = tmp_account_list.get( i ).acct;
-		}
-		
-		new AlertDialog.Builder( this )
-			.setTitle( R.string.choose_account )
-			.setItems( caption_list, new DialogInterface.OnClickListener() {
-				@Override
-				public void onClick( DialogInterface dialog, int which ){
-					
-					if( which < 0 || which >= tmp_account_list.size() ){
-						// 範囲外
-						return;
+		AccountPicker.pick( this, false, false, getString( R.string.choose_account ), new AccountPicker.AccountPickerCallback() {
+			@Override public void onAccountPicked( @NonNull SavedAccount ai ){
+				
+				if( ! ai.host.equals( account.host ) ){
+					// 別タンスへの移動
+					if( in_reply_to_id != - 1L ){
+						// 別タンスのアカウントならin_reply_toの変換が必要
+						startReplyConversion( ai );
+						
 					}
-					
-					SavedAccount a = tmp_account_list.get( which );
-					
-					if( ! a.host.equals( account.host ) ){
-						// 別タンスへの移動
-						if( in_reply_to_id != - 1L ){
-							// 別タンスのアカウントならin_reply_toの変換が必要
-							startReplyConversion( a );
-							
-						}
-					}
-					
-					// リプライがないか、同タンスへの移動
-					setAccountWithVisibilityConversion( a );
 				}
-			} )
-			.setNegativeButton( R.string.cancel, null )
-			.show();
+				
+				// リプライがないか、同タンスへの移動
+				setAccountWithVisibilityConversion( ai );
+			}
+		} );
+		
+//		final ArrayList< SavedAccount > tmp_account_list = new ArrayList<>();
+//		tmp_account_list.addAll( account_list );
+//
+//		String[] caption_list = new String[ tmp_account_list.size() ];
+//		for( int i = 0, ie = tmp_account_list.size() ; i < ie ; ++ i ){
+//			caption_list[ i ] = tmp_account_list.get( i ).acct;
+//		}
+//
+//		new AlertDialog.Builder( this )
+//			.setTitle( R.string.choose_account )
+//			.setItems( caption_list, new DialogInterface.OnClickListener() {
+//				@Override
+//				public void onClick( DialogInterface dialog, int which ){
+//
+//					if( which < 0 || which >= tmp_account_list.size() ){
+//						// 範囲外
+//						return;
+//					}
+//
+//					SavedAccount ai = tmp_account_list.get( which );
+//
+//					if( ! ai.host.equals( account.host ) ){
+//						// 別タンスへの移動
+//						if( in_reply_to_id != - 1L ){
+//							// 別タンスのアカウントならin_reply_toの変換が必要
+//							startReplyConversion( ai );
+//
+//						}
+//					}
+//
+//					// リプライがないか、同タンスへの移動
+//					setAccountWithVisibilityConversion( ai );
+//				}
+//			} )
+//			.setNegativeButton( R.string.cancel, null )
+//			.show();
 	}
 	
 	void setAccountWithVisibilityConversion( @NonNull SavedAccount a ){

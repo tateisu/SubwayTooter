@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -23,6 +24,7 @@ import android.widget.TextView;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.dialog.DlgAccessToken;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -93,6 +95,7 @@ public class ActAccountSetting extends AppCompatActivity
 	TextView tvInstance;
 	TextView tvUser;
 	View btnAccessToken;
+	View btnInputAccessToken;
 	View btnAccountRemove;
 	Button btnVisibility;
 	Switch swNSFWOpen;
@@ -125,6 +128,7 @@ public class ActAccountSetting extends AppCompatActivity
 		tvInstance = (TextView) findViewById( R.id.tvInstance );
 		tvUser = (TextView) findViewById( R.id.tvUser );
 		btnAccessToken = findViewById( R.id.btnAccessToken );
+		btnInputAccessToken = findViewById( R.id.btnInputAccessToken );
 		btnAccountRemove = findViewById( R.id.btnAccountRemove );
 		btnVisibility = (Button) findViewById( R.id.btnVisibility );
 		swNSFWOpen = (Switch) findViewById( R.id.swNSFWOpen );
@@ -145,6 +149,7 @@ public class ActAccountSetting extends AppCompatActivity
 		
 		btnOpenBrowser.setOnClickListener( this );
 		btnAccessToken.setOnClickListener( this );
+		btnInputAccessToken.setOnClickListener( this );
 		btnAccountRemove.setOnClickListener( this );
 		btnVisibility.setOnClickListener( this );
 		btnUserCustom.setOnClickListener( this );
@@ -200,6 +205,7 @@ public class ActAccountSetting extends AppCompatActivity
 		
 		boolean enabled = ! a.isPseudo();
 		btnAccessToken.setEnabled( enabled );
+		btnInputAccessToken.setEnabled( enabled );
 		btnVisibility.setEnabled( enabled );
 		btnVisibility.setEnabled( enabled );
 		btnVisibility.setEnabled( enabled );
@@ -258,6 +264,10 @@ public class ActAccountSetting extends AppCompatActivity
 		case R.id.btnAccessToken:
 			performAccessToken();
 			break;
+		case R.id.btnInputAccessToken:
+			inputAccessToken();
+			break;
+			
 		case R.id.btnAccountRemove:
 			performAccountRemove();
 			break;
@@ -420,8 +430,6 @@ public class ActAccountSetting extends AppCompatActivity
 		
 		final AsyncTask< Void, String, TootApiResult > task = new AsyncTask< Void, String, TootApiResult >() {
 			
-			long row_id;
-			
 			@Override
 			protected TootApiResult doInBackground( Void... params ){
 				TootApiClient api_client = new TootApiClient( ActAccountSetting.this, new TootApiClient.Callback() {
@@ -479,6 +487,16 @@ public class ActAccountSetting extends AppCompatActivity
 		} );
 		progress.show();
 		task.executeOnExecutor( App1.task_executor );
+	}
+	
+	static final int RESULT_INPUT_ACCESS_TOKEN = RESULT_FIRST_USER + 10;
+	static final String EXTRA_DB_ID = "db_id";
+	private void inputAccessToken(){
+
+		Intent data = new Intent();
+		data.putExtra( EXTRA_DB_ID,account.db_id );
+		setResult( RESULT_INPUT_ACCESS_TOKEN, data );
+		finish();
 	}
 	
 	private void openNotificationSoundPicker(){

@@ -315,7 +315,7 @@ public class TootApiClient {
 		return new TootApiResult( browser_url );
 	}
 	
-	public @Nullable TootApiResult authorize2( String code ){
+public @Nullable TootApiResult authorize2( String code ){
 		
 		JSONObject client_info = ClientInfo.load( instance );
 		if( client_info == null ){
@@ -380,6 +380,68 @@ public class TootApiClient {
 		callback.publishApiProgress( context.getString( R.string.request_api, path ) );
 		
 		try{
+			
+			Request request = new Request.Builder()
+				.url( "https://" + instance + path )
+				.header( "Authorization", "Bearer " + Utils.optStringX( token_info, "access_token" ) )
+				.build();
+			
+			Call call = ok_http_client.newCall( request );
+			
+			response = call.execute();
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			return new TootApiResult( instance + ": " +Utils.formatError( ex, context.getResources(), R.string.network_error ) );
+		}
+		
+		if( callback.isApiCancelled() ) return null;
+		
+		if( ! response.isSuccessful() ){
+			return new TootApiResult( instance + ": " + context.getString( R.string.network_error_arg, response ) );
+		}
+		
+		try{
+			//noinspection ConstantConditions
+			String json = response.body().string();
+			
+			if( TextUtils.isEmpty( json ) || json.startsWith( "<" ) ){
+				return new TootApiResult( context.getString( R.string.response_not_json ) + "\n" + json );
+			}else if( json.startsWith( "[" ) ){
+				JSONArray array = new JSONArray( json );
+				return new TootApiResult( log, response, token_info, json, array );
+			}else{
+				JSONObject object = new JSONObject( json );
+				
+				String error = Utils.optStringX( object, "error" );
+				if( ! TextUtils.isEmpty( error ) ){
+					return new TootApiResult( context.getString( R.string.api_error, error ) );
+				}
+				return new TootApiResult( response, token_info, json, object );
+			}
+		}catch( Throwable ex ){
+			ex.printStackTrace();
+			return new TootApiResult( Utils.formatError( ex, "API data error" ) );
+		}
+	}
+	
+	public @Nullable TootApiResult checkAccessToken( String access_token ){
+		
+		JSONObject client_info = ClientInfo.load( instance );
+		if( client_info == null ){
+			return new TootApiResult( "missing client id" );
+		}
+		
+		JSONObject token_info;
+		Response response;
+		try{
+
+			// 指定されたアクセストークンを使って token_info を捏造する
+			token_info = new JSONObject(  );
+			token_info.put("access_token",access_token);
+			
+			// 認証されたアカウントのユーザ名を取得する
+			String path = "/api/v1/accounts/verify_credentials";
+			callback.publishApiProgress( context.getString( R.string.request_api, path ) );
 			
 			Request request = new Request.Builder()
 				.url( "https://" + instance + path )

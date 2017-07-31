@@ -71,6 +71,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
+import jp.juggler.subwaytooter.dialog.DlgAccessToken;
 import jp.juggler.subwaytooter.dialog.DlgConfirm;
 import jp.juggler.subwaytooter.dialog.LoginForm;
 import jp.juggler.subwaytooter.dialog.ReportForm;
@@ -460,19 +461,6 @@ public class ActMain extends AppCompatActivity
 					}
 				}
 				
-			}else if( requestCode == REQUEST_CODE_ACCOUNT_SETTING ){
-				
-				updateColumnStrip();
-				
-				for( Column column : app_state.column_list ){
-					column.fireShowColumnHeader();
-				}
-				
-				if( data != null ){
-					startAccessTokenUpdate( data );
-					return;
-				}
-				
 			}else if( requestCode == REQUEST_APP_ABOUT ){
 				if( data != null ){
 					String search = data.getStringExtra( ActAbout.EXTRA_SEARCH );
@@ -507,8 +495,21 @@ public class ActMain extends AppCompatActivity
 				}
 			}
 		}
-		
-		if( requestCode == REQUEST_CODE_APP_SETTING ){
+
+		if( requestCode == REQUEST_CODE_ACCOUNT_SETTING ){
+			updateColumnStrip();
+			
+			for( Column column : app_state.column_list ){
+				column.fireShowColumnHeader();
+			}
+			
+			if( resultCode == RESULT_OK && data != null ){
+				startAccessTokenUpdate( data );
+			}else if( resultCode == ActAccountSetting.RESULT_INPUT_ACCESS_TOKEN && data != null){
+				long db_id = data.getLongExtra( ActAccountSetting.EXTRA_DB_ID,-1L );
+				checkAccessToken2( db_id );
+			}
+		}else if( requestCode == REQUEST_CODE_APP_SETTING ){
 			showFooterColor();
 			
 			if( resultCode == RESULT_APP_DATA_IMPORT ){
@@ -1033,7 +1034,12 @@ public class ActMain extends AppCompatActivity
 	public void performAccountAdd(){
 		LoginForm.showLoginForm( this, null, new LoginForm.LoginFormCallback() {
 			@Override
-			public void startLogin( final Dialog dialog, final String instance, final boolean bPseudoAccount ){
+			public void startLogin(
+				final Dialog dialog
+				, final String instance
+				, final boolean bPseudoAccount
+				, final boolean bInputAccessToken
+			){
 				
 				final ProgressDialog progress = new ProgressDialog( ActMain.this );
 				
@@ -1061,7 +1067,6 @@ public class ActMain extends AppCompatActivity
 							return api_client.checkInstance();
 						}else{
 							return api_client.authorize1( Pref.pref( ActMain.this ).getString( Pref.KEY_CLIENT_NAME, "" ) );
-							
 						}
 					}
 					
@@ -1088,11 +1093,21 @@ public class ActMain extends AppCompatActivity
 							
 							// エラーはブラウザ用URLかもしれない
 							if( sv.startsWith( "https" ) ){
-								// OAuth認証が必要
-								Intent data = new Intent();
-								data.setData( Uri.parse( sv ) );
-								startAccessTokenUpdate( data );
-								dialog.dismiss();
+								
+								if( bInputAccessToken ){
+									// アクセストークンの手動入力
+									DlgAccessToken.show( ActMain.this, new DlgAccessToken.Callback() {
+										@Override public void startCheck( Dialog dialog_token, String access_token ){
+											checkAccessToken( dialog,dialog_token,instance,access_token ,null);
+										}
+									} );
+								}else{
+									// OAuth認証が必要
+									Intent data = new Intent();
+									data.setData( Uri.parse( sv ) );
+									startAccessTokenUpdate( data );
+									dialog.dismiss();
+								}
 								return;
 							}
 							
@@ -1367,79 +1382,7 @@ public class ActMain extends AppCompatActivity
 					// at android.app.Dialog.dismiss(Dialog.java:529)
 				}
 				
-				//noinspection StatementWithEmptyBody
-				if( result == null ){
-					// cancelled.
-				}else if( result.error != null ){
-					Utils.showToast( ActMain.this, true, result.error );
-				}else if( ta == null ){
-					// 自分のユーザネームを取れなかった
-					// …普通はエラーメッセージが設定されてるはずだが
-					Utils.showToast( ActMain.this, true, "missing TootAccount" );
-				}else if( this.sa != null ){
-					// アクセストークン更新時
-					
-					// インスタンスは同じだと思うが、ユーザ名が異なる可能性がある
-					if( ! sa.username.equals( ta.username ) ){
-						Utils.showToast( ActMain.this, true, R.string.user_name_not_match );
-					}else{
-						Utils.showToast( ActMain.this, false, R.string.access_token_updated_for, sa.acct );
-						
-						// DBの情報を更新する
-						sa.updateTokenInfo( result.token_info );
-						
-						// 各カラムの持つアカウント情報をリロードする
-						reloadAccountSetting();
-						
-						// 自動でリロードする
-						for( Column c : app_state.column_list ){
-							if( c.access_info.acct.equals( sa.acct ) ){
-								c.startLoading();
-							}
-						}
-						
-						// 通知の更新が必要かもしれない
-						AlarmService.startCheck( ActMain.this );
-					}
-				}else{
-					// アカウント追加時
-					String user = ta.username + "@" + host;
-					long row_id = SavedAccount.insert( host, user, result.object, result.token_info );
-					SavedAccount account = SavedAccount.loadAccount( ActMain.this, log, row_id );
-					if( account != null ){
-						boolean bModified = false;
-						if( account.locked ){
-							bModified = true;
-							account.visibility = TootStatus.VISIBILITY_PRIVATE;
-						}
-						if( ta != null && ta.source != null ){
-							if( ta.source.privacy != null ){
-								bModified = true;
-								account.visibility = ta.source.privacy;
-							}
-							// FIXME  ta.source.sensitive パラメータを読んで「添付画像をデフォルトでNSFWにする」を実現する
-						}
-						
-						if( bModified ){
-							account.saveSetting();
-						}
-						Utils.showToast( ActMain.this, false, R.string.account_confirmed );
-						
-						// 通知の更新が必要かもしれない
-						AlarmService.startCheck( ActMain.this );
-						
-						// 適当にカラムを追加する
-						long count = SavedAccount.getCount();
-						if( count > 1 ){
-							addColumn( getDefaultInsertPosition(), account, Column.TYPE_HOME );
-						}else{
-							addColumn( getDefaultInsertPosition(), account, Column.TYPE_HOME );
-							addColumn( getDefaultInsertPosition(), account, Column.TYPE_NOTIFICATIONS );
-							addColumn( getDefaultInsertPosition(), account, Column.TYPE_LOCAL );
-							addColumn( getDefaultInsertPosition(), account, Column.TYPE_FEDERATE );
-						}
-					}
-				}
+				afterAccountVerify( result,ta,sa,host );
 			}
 		};
 		progress.setIndeterminate( true );
@@ -1452,6 +1395,180 @@ public class ActMain extends AppCompatActivity
 		} );
 		progress.show();
 		task.executeOnExecutor( App1.task_executor );
+	}
+	
+	boolean afterAccountVerify( @Nullable TootApiResult result, @Nullable TootAccount ta, @Nullable SavedAccount sa, @Nullable String host){
+		//noinspection StatementWithEmptyBody
+		if( result == null ){
+			// cancelled.
+		}else if( result.error != null ){
+			Utils.showToast( ActMain.this, true, result.error );
+		}else if( ta == null ){
+			// 自分のユーザネームを取れなかった
+			// …普通はエラーメッセージが設定されてるはずだが
+			Utils.showToast( ActMain.this, true, "missing TootAccount" );
+		}else if( sa != null ){
+			// アクセストークン更新時
+			
+			// インスタンスは同じだと思うが、ユーザ名が異なる可能性がある
+			if( ! sa.username.equals( ta.username ) ){
+				Utils.showToast( ActMain.this, true, R.string.user_name_not_match );
+			}else{
+				Utils.showToast( ActMain.this, false, R.string.access_token_updated_for, sa.acct );
+				
+				// DBの情報を更新する
+				sa.updateTokenInfo( result.token_info );
+				
+				// 各カラムの持つアカウント情報をリロードする
+				reloadAccountSetting();
+				
+				// 自動でリロードする
+				for( Column c : app_state.column_list ){
+					if( c.access_info.acct.equals( sa.acct ) ){
+						c.startLoading();
+					}
+				}
+				
+				// 通知の更新が必要かもしれない
+				AlarmService.startCheck( ActMain.this );
+				return true;
+			}
+		}else{
+			// アカウント追加時
+			String user = ta.username + "@" + host;
+			long row_id = SavedAccount.insert( host, user, result.object, result.token_info );
+			SavedAccount account = SavedAccount.loadAccount( ActMain.this, log, row_id );
+			if( account != null ){
+				boolean bModified = false;
+				if( account.locked ){
+					bModified = true;
+					account.visibility = TootStatus.VISIBILITY_PRIVATE;
+				}
+				if( ta.source != null ){
+					if( ta.source.privacy != null ){
+						bModified = true;
+						account.visibility = ta.source.privacy;
+					}
+					// FIXME  ta.source.sensitive パラメータを読んで「添付画像をデフォルトでNSFWにする」を実現する
+				}
+				
+				if( bModified ){
+					account.saveSetting();
+				}
+				Utils.showToast( ActMain.this, false, R.string.account_confirmed );
+				
+				// 通知の更新が必要かもしれない
+				AlarmService.startCheck( ActMain.this );
+				
+				// 適当にカラムを追加する
+				long count = SavedAccount.getCount();
+				if( count > 1 ){
+					addColumn( getDefaultInsertPosition(), account, Column.TYPE_HOME );
+				}else{
+					addColumn( getDefaultInsertPosition(), account, Column.TYPE_HOME );
+					addColumn( getDefaultInsertPosition(), account, Column.TYPE_NOTIFICATIONS );
+					addColumn( getDefaultInsertPosition(), account, Column.TYPE_LOCAL );
+					addColumn( getDefaultInsertPosition(), account, Column.TYPE_FEDERATE );
+				}
+				
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// アクセストークンを手動で入力した場合
+	void checkAccessToken(
+		@Nullable final Dialog dialog_host
+		, @Nullable final Dialog dialog_token
+		, @NonNull final String host
+		, @NonNull final String access_token
+	    , @Nullable final SavedAccount sa
+	){
+		
+		final ProgressDialog progress = new ProgressDialog( ActMain.this );
+		
+		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+			
+			TootAccount ta;
+			
+			@Override
+			protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override public void publishApiProgress( final String s ){
+						Utils.runOnMainThread( new Runnable() {
+							@Override
+							public void run(){
+								progress.setMessage( s );
+							}
+						} );
+					}
+				} );
+				
+				client.setInstance( host );
+				
+				TootApiResult result = client.checkAccessToken( access_token );
+				if( result != null && result.object != null ){
+					// taは使い捨てなので、生成に使うLinkClickContextはダミーで問題ない
+					LinkClickContext lcc = new LinkClickContext() {
+						@Override public AcctColor findAcctColor( String url ){
+							return null;
+						}
+					};
+					this.ta = TootAccount.parse( ActMain.this, log, lcc, result.object );
+				}
+				return result;
+			}
+			
+			@Override
+			protected void onPostExecute( TootApiResult result ){
+				try{
+					progress.dismiss();
+				}catch( Throwable ex ){
+					ex.printStackTrace();
+					// java.lang.IllegalArgumentException:
+					// at android.view.WindowManagerGlobal.findViewLocked(WindowManagerGlobal.java:451)
+					// at android.view.WindowManagerGlobal.removeView(WindowManagerGlobal.java:377)
+					// at android.view.WindowManagerImpl.removeViewImmediate(WindowManagerImpl.java:122)
+					// at android.app.Dialog.dismissDialog(Dialog.java:546)
+					// at android.app.Dialog.dismiss(Dialog.java:529)
+				}
+				
+				if( afterAccountVerify( result,ta,sa,host ) ){
+					if(dialog_host!=null ) dialog_host.dismiss();
+					if(dialog_token!=null ) dialog_token.dismiss();
+				}
+				
+				
+			}
+		};
+		progress.setIndeterminate( true );
+		progress.setCancelable( true );
+		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
+			@Override
+			public void onCancel( DialogInterface dialog ){
+				task.cancel( true );
+			}
+		} );
+		progress.show();
+		task.executeOnExecutor( App1.task_executor );
+	}
+	
+	// アクセストークンの手動入力(更新)
+	void checkAccessToken2(long db_id){
+
+		final SavedAccount sa = SavedAccount.loadAccount( this,log,db_id );
+		if( sa == null ) return;
+		
+		DlgAccessToken.show( this, new DlgAccessToken.Callback() {
+			@Override public void startCheck( Dialog dialog_token, String access_token ){
+				checkAccessToken( null, dialog_token, sa.host, access_token ,sa);
+			}
+		});
 	}
 	
 	void reloadAccountSetting(){
@@ -2662,8 +2779,8 @@ public class ActMain extends AppCompatActivity
 				Request.Builder request_builder = new Request.Builder()
 					.post( RequestBody.create( TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
 						, "id=" + Long.toString( notification.id )
-					)
-				);
+						)
+					);
 				
 				return client.request(
 					"/api/v1/notifications/dismiss"

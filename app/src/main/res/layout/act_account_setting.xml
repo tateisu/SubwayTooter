@@ -112,7 +112,17 @@
                 />
 
         </LinearLayout>
+        <LinearLayout style="@style/setting_row_form">
 
+            <Button
+                android:id="@+id/btnInputAccessToken"
+                style="@style/setting_horizontal_stretch"
+                android:ellipsize="start"
+                android:text="@string/input_access_token"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
         <LinearLayout style="@style/setting_row_form">
 
             <Button

@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
@@ -32,7 +33,7 @@ public class AccountPicker {
 	
 	
 	public static void pick(
-		@NonNull ActMain activity
+		@NonNull AppCompatActivity activity
 		, boolean bAllowPseudo
 		, boolean bAuto
 		, String message
@@ -44,7 +45,7 @@ public class AccountPicker {
 	}
 	
 	public static void pick(
-		@NonNull ActMain activity
+		@NonNull AppCompatActivity activity
 		, boolean bAllowPseudo
 		, boolean bAuto
 		, String message
@@ -56,7 +57,7 @@ public class AccountPicker {
 	}
 	
 	public static void pick(
-		@NonNull ActMain activity
+		@NonNull AppCompatActivity activity
 		, boolean bAllowPseudo
 		, boolean bAuto
 		, String message
@@ -67,7 +68,7 @@ public class AccountPicker {
 	}
 	
 	public static void pick(
-		@NonNull ActMain activity
+		@NonNull AppCompatActivity activity
 		, boolean bAllowPseudo
 		, boolean bAuto
 		, String message
@@ -135,11 +136,12 @@ public class AccountPicker {
 		} );
 		
 		
+		float density = activity.getResources().getDisplayMetrics().density;
 		
 		
 		LinearLayout llAccounts = (LinearLayout) viewRoot.findViewById( R.id.llAccounts );
-		int pad_se = (int) ( 0.5f + 12f * activity.density );
-		int pad_tb = (int) ( 0.5f + 6f * activity.density );
+		int pad_se = (int) ( 0.5f + 12f * density );
+		int pad_tb = (int) ( 0.5f + 6f * density );
 		
 		for( SavedAccount a : account_list ){
 			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams( LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT );
@@ -161,7 +163,7 @@ public class AccountPicker {
 			b.setGravity( Gravity.START | Gravity.CENTER_VERTICAL );
 			b.setAllCaps( false );
 			b.setLayoutParams( lp );
-			b.setMinHeight( (int) ( 0.5f + 32f * activity.density ) );
+			b.setMinHeight( (int) ( 0.5f + 32f * density ) );
 			b.setText( AcctColor.hasNickname( ac ) ? ac.nickname : a.acct );
 			
 			final SavedAccount _a = a;

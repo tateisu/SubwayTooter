@@ -12,37 +12,18 @@
         android:layout_marginEnd="12dp"
         android:layout_marginStart="12dp"
         android:layout_marginTop="12dp"
-        android:labelFor="@+id/etInstance"
-        android:text="@string/instance"
+        android:labelFor="@+id/etToken"
+        android:text="@string/access_token"
         />
 
-    <AutoCompleteTextView
-        android:id="@+id/etInstance"
+    <EditText
+        android:id="@+id/etToken"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginEnd="12dp"
         android:layout_marginStart="12dp"
-        android:hint="@string/instance_hint"
         android:imeOptions="actionDone"
-        android:inputType="textUri"
-        />
-
-    <CheckBox
-        android:id="@+id/cbPseudoAccount"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
-        android:layout_marginStart="12dp"
-        android:text="@string/pseudo_account"
-        />
-
-    <CheckBox
-        android:id="@+id/cbInputAccessToken"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
-        android:layout_marginStart="12dp"
-        android:text="@string/input_access_token"
+        android:inputType="text"
         />
 
     <LinearLayout

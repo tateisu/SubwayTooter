@@ -392,7 +392,10 @@
     <string name="quote_url">Quote URL</string>
     <string name="actions_for_notification">Actions for notification</string>
     <string name="delete_this_notification">Delete this notification</string>
-    <string name="mute_this_conversation">Mute this conversation</string>
-    <string name="unmute_this_conversation">Unmute this conversation</string>
+    <string name="mute_this_conversation">Mute more notifications for this conversation</string>
+    <string name="unmute_this_conversation">Unmute more notifications for this conversation</string>
+    <string name="input_access_token">Specify access token (for advanced users)</string>
+    <string name="access_token">Access token</string>
+    <string name="token_not_specified">Please input access token.</string>
 
 </resources>

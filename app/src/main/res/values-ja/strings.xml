@@ -684,7 +684,10 @@
     <string name="quote_url">URLを引用…</string>
     <string name="actions_for_notification">通知へのアクション</string>
     <string name="delete_this_notification">この通知を削除</string>
-    <string name="mute_this_conversation">この会話の通知をミュート</string>
-    <string name="unmute_this_conversation">この会話の通知をミュート解除</string>
+    <string name="mute_this_conversation">この会話の次回以降の通知をミュート</string>
+    <string name="unmute_this_conversation">この会話の次回以降の通知をミュート解除</string>
+    <string name="access_token">アクセストークン</string>
+    <string name="input_access_token">アクセストークンを指定する(上級者向け)</string>
+    <string name="token_not_specified">アクセストークンを入力してください</string>
 
 </resources>

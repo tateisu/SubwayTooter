@@ -13,6 +13,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.Filter;
 import android.widget.TextView;
 
@@ -27,7 +28,10 @@ import jp.juggler.subwaytooter.util.Utils;
 public class LoginForm {
 	
 	public interface LoginFormCallback {
-		void startLogin( Dialog dialog, String instance, boolean bPseudoAccount );
+		void startLogin( Dialog dialog, String instance
+			, boolean bPseudoAccount
+			, boolean bInputAccessToken
+		);
 	}
 	
 	private static class StringArray extends ArrayList< String > {
@@ -39,6 +43,13 @@ public class LoginForm {
 		final AutoCompleteTextView etInstance = (AutoCompleteTextView) view.findViewById( R.id.etInstance );
 		final View btnOk = view.findViewById( R.id.btnOk );
 		final CheckBox cbPseudoAccount = (CheckBox) view.findViewById( R.id.cbPseudoAccount );
+		final CheckBox cbInputAccessToken = (CheckBox) view.findViewById( R.id.cbInputAccessToken );
+		
+		cbPseudoAccount.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
+			@Override public void onCheckedChanged( CompoundButton buttonView, boolean isChecked ){
+				cbInputAccessToken.setEnabled( ! cbPseudoAccount.isChecked() );
+			}
+		} );
 		
 		if( ! TextUtils.isEmpty( instance ) ){
 			etInstance.setText( instance );
@@ -70,7 +81,10 @@ public class LoginForm {
 					Utils.showToast( activity, true, R.string.instance_not_need_slash );
 					return;
 				}
-				callback.startLogin( dialog, instance, cbPseudoAccount.isChecked() );
+				callback.startLogin( dialog, instance
+					, cbPseudoAccount.isChecked()
+					, cbInputAccessToken.isChecked()
+				);
 			}
 		} );
 		view.findViewById( R.id.btnCancel ).setOnClickListener( new View.OnClickListener() {

@@ -112,12 +112,13 @@ public class TootStatus extends TootStatusLike {
 			status.reblogged = src.optBoolean( "reblogged" );
 			status.favourited = src.optBoolean( "favourited" );
 			status.sensitive = src.optBoolean( "sensitive" ); // false
-			status.spoiler_text = Utils.optStringX( src, "spoiler_text" ); // "",null, or CW text
 			status.visibility = Utils.optStringX( src, "visibility" );
 			status.media_attachments = TootAttachment.parseList( log, src.optJSONArray( "media_attachments" ) );
 			status.mentions = TootMention.parseList( log, src.optJSONArray( "mentions" ) );
 			status.tags = TootTag.parseList( log, src.optJSONArray( "tags" ) );
 			status.application = TootApplication.parse( log, src.optJSONObject( "application" ) ); // null
+			
+			status.setSpoilerText( context, Utils.optStringX( src, "spoiler_text" ) );
 			
 			status.muted = src.optBoolean( "muted" );
 			status.language = Utils.optStringX( src, "language" );
@@ -127,9 +128,6 @@ public class TootStatus extends TootStatusLike {
 			// status.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
 			status.decoded_mentions = HTMLDecoder.decodeMentions( lcc, status.mentions );
 			
-			if( ! TextUtils.isEmpty( status.spoiler_text ) ){
-				status.decoded_spoiler_text = TootAccount.filterDisplayName( context, status.spoiler_text );
-			}
 			return status;
 		}catch( Throwable ex ){
 			ex.printStackTrace();

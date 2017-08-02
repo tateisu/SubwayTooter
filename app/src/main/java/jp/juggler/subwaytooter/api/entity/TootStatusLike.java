@@ -1,8 +1,14 @@
 package jp.juggler.subwaytooter.api.entity;
 
+import android.content.Context;
 import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.TextUtils;
+
+import java.util.regex.Pattern;
+
+import jp.juggler.subwaytooter.util.Emojione;
+import jp.juggler.subwaytooter.util.Utils;
 
 public abstract class TootStatusLike extends TootId {
 	
@@ -61,5 +67,21 @@ public abstract class TootStatusLike extends TootId {
 	
 	public String getBusyKey(){
 		return getHostAccessOrOriginal() + ":" + getIdAccessOrOriginal();
+	}
+	
+	private static final Pattern reWhitespace = Pattern.compile( "[\\s\\t\\x0d\\x0a]+" );
+	
+	
+	public void setSpoilerText( Context context, String sv){
+		if( TextUtils.isEmpty( sv ) ){
+			this.spoiler_text = null;
+			this.decoded_spoiler_text = null;
+		}else{
+			this.spoiler_text = Utils.sanitizeBDI( sv );
+			// remove white spaces
+			sv = reWhitespace.matcher( this.spoiler_text ).replaceAll( " " );
+			// decode emoji code
+			this.decoded_spoiler_text = Emojione.decodeEmoji( context, sv );
+		}
 	}
 }

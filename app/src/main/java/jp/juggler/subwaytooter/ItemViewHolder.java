@@ -249,7 +249,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 					n.account
 					, n.time_created_at
 					, access_info.isNicoru( n.account ) ? R.attr.ic_nicoru : R.attr.btn_favourite
-					, Utils.formatSpannable1( activity, R.string.display_name_favourited_by, n.account.display_name )
+					, Utils.formatSpannable1( activity, R.string.display_name_favourited_by, n.account.decoded_display_name )
 				);
 				if( n.status != null ) showStatus( activity, n.status );
 			}else if( TootNotification.TYPE_REBLOG.equals( n.type ) ){
@@ -257,7 +257,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 					n.account
 					, n.time_created_at
 					, R.attr.btn_boost
-					, Utils.formatSpannable1( activity, R.string.display_name_boosted_by, n.account.display_name )
+					, Utils.formatSpannable1( activity, R.string.display_name_boosted_by, n.account.decoded_display_name )
 				);
 				if( n.status != null ) showStatus( activity, n.status );
 			}else if( TootNotification.TYPE_FOLLOW.equals( n.type ) ){
@@ -265,7 +265,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 					n.account
 					, n.time_created_at
 					, R.attr.ic_follow_plus
-					, Utils.formatSpannable1( activity, R.string.display_name_followed_by, n.account.display_name )
+					, Utils.formatSpannable1( activity, R.string.display_name_followed_by, n.account.decoded_display_name )
 				);
 				//
 				showFollow( n.account );
@@ -275,7 +275,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 						n.account
 						, n.time_created_at
 						, R.attr.btn_reply
-						, Utils.formatSpannable1( activity, R.string.display_name_replied_by, n.account.display_name )
+						, Utils.formatSpannable1( activity, R.string.display_name_replied_by, n.account.decoded_display_name )
 					);
 				}
 				if( n.status != null ) showStatus( activity, n.status );
@@ -288,7 +288,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 						status.account
 						, status.time_created_at
 						, R.attr.btn_boost
-						, Utils.formatSpannable1( activity, R.string.display_name_boosted_by, status.account.display_name )
+						, Utils.formatSpannable1( activity, R.string.display_name_boosted_by, status.account.decoded_display_name )
 					);
 				}
 				showStatus( activity, status.reblog );
@@ -337,7 +337,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		llFollow.setVisibility( View.VISIBLE );
 		ivFollow.setCornerRadius( activity.pref, 16f );
 		ivFollow.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ) );
-		tvFollowerName.setText( who.display_name );
+		tvFollowerName.setText( who.decoded_display_name );
 		setAcct( tvFollowerAcct, access_info.getFullAcct( who ), R.attr.colorAcctSmall );
 		
 		UserRelation relation = UserRelation.load( access_info.db_id, who.id );
@@ -359,7 +359,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			tvName.setText( "?" );
 			ivThumbnail.setImageUrl( null, null );
 		}else{
-			tvName.setText( status.account.display_name );
+			tvName.setText( status.account.decoded_display_name );
 			ivThumbnail.setImageUrl(
 				access_info.supplyBaseUrl( status.account.avatar_static )
 				, access_info.supplyBaseUrl( status.account.avatar )

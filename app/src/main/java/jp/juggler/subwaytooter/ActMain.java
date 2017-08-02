@@ -2941,7 +2941,7 @@ public class ActMain extends AppCompatActivity
 		if( ! bConfirmed ){
 			if( bFollow && who.locked ){
 				DlgConfirm.open( this
-					, getString( R.string.confirm_follow_request_who_from, who.display_name, AcctColor.getNickname( access_info.acct ) )
+					, getString( R.string.confirm_follow_request_who_from, who.decoded_display_name, AcctColor.getNickname( access_info.acct ) )
 					, new DlgConfirm.Callback() {
 						@Override public boolean isConfirmEnabled(){
 							return access_info.confirm_follow_locked;
@@ -2961,9 +2961,8 @@ public class ActMain extends AppCompatActivity
 				);
 				return;
 			}else if( bFollow ){
-				BidiFormatter bidiFormatter = BidiFormatter.getInstance();
 				String msg = getString( R.string.confirm_follow_who_from
-					, bidiFormatter.unicodeWrap( who.display_name )
+					, who.decoded_display_name
 					, AcctColor.getNickname( access_info.acct )
 				);
 				
@@ -2989,7 +2988,7 @@ public class ActMain extends AppCompatActivity
 				return;
 			}else{
 				DlgConfirm.open( this
-					, getString( R.string.confirm_unfollow_who_from, who.display_name, AcctColor.getNickname( access_info.acct ) )
+					, getString( R.string.confirm_unfollow_who_from, who.decoded_display_name, AcctColor.getNickname( access_info.acct ) )
 					, new DlgConfirm.Callback() {
 						@Override public boolean isConfirmEnabled(){
 							return access_info.confirm_unfollow;
@@ -3488,7 +3487,7 @@ public class ActMain extends AppCompatActivity
 						column.removeFollowRequest( access_info, who.id );
 					}
 					
-					Utils.showToast( ActMain.this, false, ( bAllow ? R.string.follow_request_authorized : R.string.follow_request_rejected ), who.display_name );
+					Utils.showToast( ActMain.this, false, ( bAllow ? R.string.follow_request_authorized : R.string.follow_request_rejected ), who.decoded_display_name );
 				}else{
 					Utils.showToast( ActMain.this, false, result.error );
 				}

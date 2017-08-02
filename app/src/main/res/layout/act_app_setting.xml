@@ -78,8 +78,6 @@
                 />
         </LinearLayout>
 
-
-
         <View style="@style/setting_divider"/>
 
         <TextView
@@ -211,8 +209,8 @@
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/client_name"
             android:labelFor="@+id/etClientName"
+            android:text="@string/client_name"
             />
 
         <LinearLayout style="@style/setting_row_form">
@@ -237,7 +235,6 @@
             />
 
         <View style="@style/setting_divider"/>
-
 
         <TextView
             style="@style/setting_row_label"
@@ -287,8 +284,6 @@
 
         </LinearLayout>
 
-
-
         <View style="@style/setting_divider"/>
 
         <TextView
@@ -325,6 +320,23 @@
 
         <View style="@style/setting_divider"/>
 
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etQuoteNameFormat"
+            android:text="@string/format_of_quote_name"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etQuoteNameFormat"
+                style="@style/setting_horizontal_stretch"
+                android:inputType="text"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
 
         <!-- =============================================== -->
 
@@ -388,7 +400,6 @@
         </LinearLayout>
 
         <View style="@style/setting_divider"/>
-
 
         <!-- =============================================== -->
         <TextView
@@ -823,10 +834,10 @@
         <View style="@style/setting_divider"/>
 
         <TextView
+            android:id="@+id/tvTimelineFontSize"
             style="@style/setting_row_label"
             android:labelFor="@+id/etTimelineFontSize"
             android:text="@string/timeline_font_size"
-            android:id="@+id/tvTimelineFontSize"
             />
 
         <LinearLayout style="@style/setting_row_form">
@@ -843,10 +854,10 @@
         <View style="@style/setting_divider"/>
 
         <TextView
+            android:id="@+id/tvAcctFontSize"
             style="@style/setting_row_label"
             android:labelFor="@+id/etAcctFontSize"
             android:text="@string/acct_font_size"
-            android:id="@+id/tvAcctFontSize"
             />
 
         <LinearLayout style="@style/setting_row_form">

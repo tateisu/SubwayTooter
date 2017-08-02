@@ -788,7 +788,7 @@ public class AlarmService extends IntentService {
 		
 		log.d( "showNotification[%s] creating notification(7)", account.acct );
 		
-		String a = getNotificationLine( item.notification.type, item.notification.account.display_name );
+		String a = getNotificationLine( item.notification.type, item.notification.account.decoded_display_name );
 		String acct = item.access_info.acct + " " + getString( R.string.app_name );
 		if( data_list.size() == 1 ){
 			builder.setContentTitle( a );
@@ -804,7 +804,7 @@ public class AlarmService extends IntentService {
 			for( int i = 0 ; i < 5 ; ++ i ){
 				if( i >= data_list.size() ) break;
 				item = data_list.get( i );
-				a = getNotificationLine( item.notification.type, item.notification.account.display_name );
+				a = getNotificationLine( item.notification.type, item.notification.account.decoded_display_name );
 				style.addLine( a );
 			}
 			builder.setStyle( style );

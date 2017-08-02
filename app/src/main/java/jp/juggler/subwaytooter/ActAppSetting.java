@@ -96,7 +96,7 @@ public class ActAppSetting extends AppCompatActivity
 	Switch swDontCropMediaThumb;
 	Switch swPriorChrome;
 	Switch swPostButtonBarTop;
-	Switch swDontDuplicationCheck ;
+	Switch swDontDuplicationCheck;
 	Switch swQuickTootBar;
 	
 	Spinner spBackButtonAction;
@@ -130,6 +130,7 @@ public class ActAppSetting extends AppCompatActivity
 	EditText etColumnWidth;
 	EditText etMediaThumbHeight;
 	EditText etClientName;
+	EditText etQuoteNameFormat;
 	
 	TextView tvTimelineFontUrl;
 	String timeline_font;
@@ -194,7 +195,7 @@ public class ActAppSetting extends AppCompatActivity
 		
 		swQuickTootBar = (Switch) findViewById( R.id.swQuickTootBar );
 		swQuickTootBar.setOnCheckedChangeListener( this );
-			
+		
 		cbNotificationSound = (CheckBox) findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = (CheckBox) findViewById( R.id.cbNotificationVibration );
 		cbNotificationLED = (CheckBox) findViewById( R.id.cbNotificationLED );
@@ -300,6 +301,9 @@ public class ActAppSetting extends AppCompatActivity
 		etClientName = (EditText) findViewById( R.id.etClientName );
 		etClientName.addTextChangedListener( this );
 		
+		etQuoteNameFormat = (EditText) findViewById( R.id.etQuoteNameFormat );
+		etQuoteNameFormat.addTextChangedListener( this );
+		
 		tvTimelineFontSize = (TextView) findViewById( R.id.tvTimelineFontSize );
 		tvAcctFontSize = (TextView) findViewById( R.id.tvAcctFontSize );
 		
@@ -359,6 +363,7 @@ public class ActAppSetting extends AppCompatActivity
 		etColumnWidth.setText( pref.getString( Pref.KEY_COLUMN_WIDTH, "" ) );
 		etMediaThumbHeight.setText( pref.getString( Pref.KEY_MEDIA_THUMB_HEIGHT, "" ) );
 		etClientName.setText( pref.getString( Pref.KEY_CLIENT_NAME, "" ) );
+		etQuoteNameFormat.setText( pref.getString( Pref.KEY_QUOTE_NAME_FORMAT, "" ) );
 		
 		etTimelineFontSize.setText( formatFontSize( pref.getFloat( Pref.KEY_TIMELINE_FONT_SIZE, Float.NaN ) ) );
 		etAcctFontSize.setText( formatFontSize( pref.getFloat( Pref.KEY_ACCT_FONT_SIZE, Float.NaN ) ) );
@@ -393,8 +398,7 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_POST_BUTTON_BAR_AT_TOP, swPostButtonBarTop.isChecked() )
 			.putBoolean( Pref.KEY_DONT_DUPLICATION_CHECK, swDontDuplicationCheck.isChecked() )
 			.putBoolean( Pref.KEY_QUICK_TOOT_BAR, swQuickTootBar.isChecked() )
-		
-	
+			
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_LED, cbNotificationLED.isChecked() )
@@ -417,6 +421,8 @@ public class ActAppSetting extends AppCompatActivity
 			.putString( Pref.KEY_COLUMN_WIDTH, etColumnWidth.getText().toString().trim() )
 			.putString( Pref.KEY_MEDIA_THUMB_HEIGHT, etMediaThumbHeight.getText().toString().trim() )
 			.putString( Pref.KEY_CLIENT_NAME, etClientName.getText().toString().trim() )
+			.putString( Pref.KEY_QUOTE_NAME_FORMAT, etQuoteNameFormat.getText().toString() ) // not trimmed
+			
 			.putFloat( Pref.KEY_TIMELINE_FONT_SIZE, parseFontSize( etTimelineFontSize.getText().toString().trim() ) )
 			.putFloat( Pref.KEY_ACCT_FONT_SIZE, parseFontSize( etAcctFontSize.getText().toString().trim() ) )
 			
@@ -906,7 +912,7 @@ public class ActAppSetting extends AppCompatActivity
 		final ArrayList< SavedAccount > list = new ArrayList<>();
 		
 		AccountAdapter(){
-			for( SavedAccount a : SavedAccount.loadAccountList( ActAppSetting.this,log ) ){
+			for( SavedAccount a : SavedAccount.loadAccountList( ActAppSetting.this, log ) ){
 				if( a.isPseudo() ) continue;
 				list.add( a );
 			}

@@ -94,7 +94,7 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 			ivBackground.setImageUrl( access_info.supplyBaseUrl( who.header_static ) );
 			ivAvatar.setCornerRadius( activity.pref, 16f );
 			ivAvatar.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ) );
-			tvDisplayName.setText( who.display_name );
+			tvDisplayName.setText( who.decoded_display_name );
 			
 			String s = "@" + access_info.getFullAcct( who );
 			if( who.locked ){

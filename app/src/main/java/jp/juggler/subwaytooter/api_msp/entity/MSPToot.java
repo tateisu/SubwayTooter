@@ -41,11 +41,7 @@ public class MSPToot extends TootStatusLike {
 		dst.avatar = dst.avatar_static = Utils.optStringX( src, "avatar" );
 		
 		String sv = Utils.optStringX( src, "display_name" );
-		if( TextUtils.isEmpty( sv ) ){
-			dst.display_name = dst.username;
-		}else{
-			dst.display_name = TootAccount.filterDisplayName( context,sv );
-		}
+		dst.setDisplayName( context, dst.username , sv );
 		
 		dst.id = src.optLong( "id" );
 		
@@ -140,10 +136,7 @@ public class MSPToot extends TootStatusLike {
 		// dst.msp_id = src.optLong( "msp_id" );
 		dst.sensitive = ( src.optInt( "sensitive", 0 ) != 0 );
 		
-		dst.spoiler_text = Utils.optStringX( src, "spoiler_text" );
-		if( ! TextUtils.isEmpty( dst.spoiler_text ) ){
-			dst.decoded_spoiler_text = TootAccount.filterDisplayName( context, dst.spoiler_text );
-		}
+		dst.setSpoilerText(context,Utils.optStringX( src, "spoiler_text" ));
 		
 		dst.content = Utils.optStringX( src, "content" );
 		dst.decoded_content = HTMLDecoder.decodeHTML( context,access_info, dst.content, true,true, null );

@@ -244,7 +244,7 @@ public class AppDataExporter {
 		}
 	}
 	
-	static final double MAGIC_NAN = (double) -76287755398823900d;
+	static final double MAGIC_NAN = (double) - 76287755398823900d;
 	
 	private static void writePref( JsonWriter writer, SharedPreferences pref ) throws IOException{
 		writer.beginObject();
@@ -346,6 +346,7 @@ public class AppDataExporter {
 			case Pref.KEY_STREAM_LISTENER_CONFIG_DATA:
 			case Pref.KEY_CLIENT_NAME:
 			case Pref.KEY_MASTODON_SEARCH_PORTAL_USER_TOKEN:
+			case Pref.KEY_QUOTE_NAME_FORMAT:
 				String sv = reader.nextString();
 				e.putString( k, sv );
 				break;
@@ -397,7 +398,7 @@ public class AppDataExporter {
 		while( reader.hasNext() ){
 			JSONObject item = readJsonObject( reader );
 			long old_id = item.optLong( Column.KEY_ACCOUNT_ROW_ID, - 1L );
-			if( old_id == -1L ){
+			if( old_id == - 1L ){
 				// 検索カラムは NAアカウントと紐ついている。変換の必要はない
 			}else{
 				Long new_id = id_map.get( old_id );
@@ -488,7 +489,7 @@ public class AppDataExporter {
 		
 		{
 			long old_id = app_state.pref.getLong( Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, - 1L );
-			if( old_id != -1L ){
+			if( old_id != - 1L ){
 				Long new_id = account_id_map.get( old_id );
 				app_state.pref.edit().putLong( Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, ( new_id != null ? new_id : - 1L ) ).apply();
 			}

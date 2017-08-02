@@ -126,6 +126,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		
 		viewRoot.findViewById( R.id.btnQuoteUrlStatus ).setOnClickListener( this );
 		viewRoot.findViewById( R.id.btnQuoteUrlAccount ).setOnClickListener( this );
+		viewRoot.findViewById( R.id.btnQuoteName ).setOnClickListener( this );
 		
 		final ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( activity, log );
 		//	final ArrayList< SavedAccount > account_list_non_pseudo_same_instance = new ArrayList<>();
@@ -177,7 +178,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			if( status == null || ! TootNotification.TYPE_MENTION.equals( notification.type ) ){
 				btnConversationMute.setVisibility( View.GONE );
 			}else{
-				btnConversationMute.setText( status.muted ? R.string.unmute_this_conversation : R.string.mute_this_conversation);
+				btnConversationMute.setText( status.muted ? R.string.unmute_this_conversation : R.string.mute_this_conversation );
 			}
 		}
 		
@@ -464,7 +465,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnAccountQrCode:
 			if( who != null ){
-				DlgQRCode.open( activity, who.display_name, access_info.getUserUrl( who.acct ) );
+				DlgQRCode.open( activity, who.decoded_display_name, access_info.getUserUrl( who.acct ) );
 			}
 			break;
 		
@@ -528,9 +529,25 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 				activity.deleteNotificationOne( access_info, notification );
 			}
 			break;
+		
 		case R.id.btnConversationMute:
 			if( notification != null && status != null ){
 				activity.toggleConversationMute( access_info, status );
+			}
+			break;
+		
+		case R.id.btnQuoteName:
+			if( who != null ){
+				String sv = who.display_name;
+				try{
+					String fmt = activity.pref.getString( Pref.KEY_QUOTE_NAME_FORMAT, null );
+					if( fmt != null && fmt.contains( "%1$s" ) ){
+						sv = String.format( fmt, sv );
+					}
+				}catch( Throwable ex ){
+					ex.printStackTrace();
+				}
+				activity.openPost( sv );
 			}
 			break;
 		}

@@ -35,7 +35,10 @@ public class TootAccount {
 	public String acct;
 	
 	//	The account's display name
-	public CharSequence display_name;
+	public String display_name;
+	
+	//	The account's display name
+	public CharSequence decoded_display_name;
 	
 	//Boolean for when the account cannot be followed without waiting for approval first
 	public boolean locked;
@@ -88,8 +91,8 @@ public class TootAccount {
 		@Nullable public String note;
 		
 	}
-	@Nullable public Source source;
 	
+	@Nullable public Source source;
 	
 	public TootAccount(){
 		
@@ -101,7 +104,9 @@ public class TootAccount {
 		this.username = username;
 	}
 	
-	public static TootAccount parse( Context context,LogCategory log, LinkClickContext account, JSONObject src, TootAccount dst ){
+
+	
+	public static TootAccount parse( Context context, LogCategory log, LinkClickContext account, JSONObject src, TootAccount dst ){
 		if( src == null ) return null;
 		try{
 			dst.id = src.optLong( "id", - 1L );
@@ -112,11 +117,8 @@ public class TootAccount {
 			}
 			
 			String sv = Utils.optStringX( src, "display_name" );
-			if( TextUtils.isEmpty( sv ) ){
-				dst.display_name = dst.username;
-			}else{
-				dst.display_name = filterDisplayName(  context,sv );
-			}
+			dst.setDisplayName( context, dst.username , sv );
+			
 			
 			dst.locked = src.optBoolean( "locked" );
 			dst.created_at = Utils.optStringX( src, "created_at" );
@@ -125,7 +127,7 @@ public class TootAccount {
 			dst.statuses_count = src.optLong( "statuses_count" );
 			
 			dst.note = Utils.optStringX( src, "note" );
-			dst.decoded_note = HTMLDecoder.decodeHTML( context, account, ( dst.note != null ? dst.note : null ), true,true, null );
+			dst.decoded_note = HTMLDecoder.decodeHTML( context, account, ( dst.note != null ? dst.note : null ), true, true, null );
 			
 			dst.url = Utils.optStringX( src, "url" );
 			dst.avatar = Utils.optStringX( src, "avatar" ); // "https:\/\/mastodon.juggler.jp\/system\/accounts\/avatars\/000\/000\/148\/original\/0a468974fac5a448.PNG?1492081886",
@@ -135,7 +137,7 @@ public class TootAccount {
 			
 			dst.time_created_at = TootStatus.parseTime( log, dst.created_at );
 			
-			dst.source = parseSource( log, src.optJSONObject( "source" ));
+			dst.source = parseSource( log, src.optJSONObject( "source" ) );
 			
 			return dst;
 			
@@ -147,18 +149,18 @@ public class TootAccount {
 	}
 	
 	private static Source parseSource( LogCategory log, JSONObject src ){
-		if( src==null) return null;
+		if( src == null ) return null;
 		Source dst = new Source();
-		dst.privacy =  Utils.optStringX( src, "privacy" );
-		dst.note =  Utils.optStringX( src, "note" );
+		dst.privacy = Utils.optStringX( src, "privacy" );
+		dst.note = Utils.optStringX( src, "note" );
 		
 		// null,true,
-		dst.sensitive = src.optBoolean( "sensitive" ,false );
+		dst.sensitive = src.optBoolean( "sensitive", false );
 		return dst;
 	}
 	
 	public static TootAccount parse( Context context, LogCategory log, LinkClickContext account, JSONObject src ){
-		return parse(  context,log, account, src, new TootAccount() );
+		return parse( context, log, account, src, new TootAccount() );
 	}
 	
 	@NonNull
@@ -178,20 +180,22 @@ public class TootAccount {
 	}
 	
 	private static final Pattern reWhitespace = Pattern.compile( "[\\s\\t\\x0d\\x0a]+" );
-	
-	public static Spannable filterDisplayName( Context context, String sv ){
-		// decode HTML entity
-		// CWとdisplay_nameはHTMLではない。絵文字を含むだけ sv = HTMLDecoder.decodeEntity( sv );
-		
-		// sanitize LRO,RLO
-		sv = Utils.sanitizeBDI( sv );
+
+	public void setDisplayName(Context context,String username,String sv){
+		if( TextUtils.isEmpty( sv ) ){
+			this.display_name = username;
+		}else{
+			this.display_name = Utils.sanitizeBDI(sv);
+		}
 		
 		// remove white spaces
-		sv = reWhitespace.matcher( sv ).replaceAll( " " );
+		sv = reWhitespace.matcher( this.display_name ).replaceAll( " " );
 		
 		// decode emoji code
-		return Emojione.decodeEmoji(context, sv );
+		this.decoded_display_name = Emojione.decodeEmoji( context, sv );
+
 	}
+	
 	
 	public String getAcctHost(){
 		try{

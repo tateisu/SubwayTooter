@@ -173,8 +173,8 @@
     <string name="ui_theme">UI theme (app restart required)</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
-    <string name="dont_show_boost">Dont show boost</string>
-    <string name="dont_show_reply">Dont show reply</string>
+    <string name="dont_show_boost">Don\'t show boost</string>
+    <string name="dont_show_reply">Don\'t show reply</string>
     <string name="regex_filter">Regex filter</string>
     <string name="regex_error">Regex error</string>
     <string name="notification_delete">Empty notifications</string>
@@ -399,5 +399,7 @@
     <string name="token_not_specified">Please input access token.</string>
     <string name="quote_name">Quote name…</string>
     <string name="format_of_quote_name">Format of \'Quote name\' (set text that contains %1$s)</string>
+    <string name="dont_show_favourite">Don\'t show favourite</string>
+    <string name="dont_show_follow">Don\'t show follow</string>
 
 </resources>

@@ -73,6 +73,8 @@ class ColumnViewHolder
 	private final CheckBox cbDontCloseColumn;
 	private final CheckBox cbWithAttachment;
 	private final CheckBox cbDontShowBoost;
+	private final CheckBox cbDontShowFollow;
+	private final CheckBox cbDontShowFavourite;
 	private final CheckBox cbDontShowReply;
 	private final CheckBox cbDontStreaming;
 	private final CheckBox cbDontAutoRefresh;
@@ -128,6 +130,8 @@ class ColumnViewHolder
 		cbDontCloseColumn = (CheckBox) root.findViewById( R.id.cbDontCloseColumn );
 		cbWithAttachment = (CheckBox) root.findViewById( R.id.cbWithAttachment );
 		cbDontShowBoost = (CheckBox) root.findViewById( R.id.cbDontShowBoost );
+		cbDontShowFollow = (CheckBox) root.findViewById( R.id.cbDontShowFollow );
+		cbDontShowFavourite = (CheckBox) root.findViewById( R.id.cbDontShowFavourite );
 		cbDontShowReply = (CheckBox) root.findViewById( R.id.cbDontShowReply );
 		cbDontStreaming = (CheckBox) root.findViewById( R.id.cbDontStreaming );
 		cbDontAutoRefresh = (CheckBox) root.findViewById( R.id.cbDontAutoRefresh );
@@ -154,6 +158,8 @@ class ColumnViewHolder
 		cbDontCloseColumn.setOnCheckedChangeListener( this );
 		cbWithAttachment.setOnCheckedChangeListener( this );
 		cbDontShowBoost.setOnCheckedChangeListener( this );
+		cbDontShowFollow.setOnCheckedChangeListener( this );
+		cbDontShowFavourite.setOnCheckedChangeListener( this );
 		cbDontShowReply.setOnCheckedChangeListener( this );
 		cbDontStreaming.setOnCheckedChangeListener( this );
 		cbDontAutoRefresh.setOnCheckedChangeListener( this );
@@ -254,6 +260,7 @@ class ColumnViewHolder
 				break;
 			}
 			
+			// 添付メディアや正規表現のフィルタ
 			boolean bAllowFilter;
 			switch( column.column_type ){
 			default:
@@ -271,6 +278,7 @@ class ColumnViewHolder
 				break;
 			}
 			
+			// ブーストを表示しないフィルタ
 			boolean bAllowFilterBoost;
 			switch( column.column_type ){
 			default:
@@ -278,15 +286,33 @@ class ColumnViewHolder
 				break;
 			case Column.TYPE_HOME:
 			case Column.TYPE_PROFILE:
+			case Column.TYPE_NOTIFICATIONS:
 				bAllowFilterBoost = true;
 				break;
 			}
+			
+			// 返信を表示しないフィルタ
+			boolean bAllowFilterReply;
+			switch( column.column_type ){
+			default:
+				bAllowFilterReply = false;
+				break;
+			case Column.TYPE_HOME:
+			case Column.TYPE_PROFILE:
+				bAllowFilterReply = true;
+				break;
+			}
+			
+			boolean isNotificationColumn = (column.column_type == Column.TYPE_NOTIFICATIONS);
+			
 			
 			llColumnSetting.setVisibility( View.GONE );
 			
 			cbDontCloseColumn.setChecked( column.dont_close );
 			cbWithAttachment.setChecked( column.with_attachment );
 			cbDontShowBoost.setChecked( column.dont_show_boost );
+			cbDontShowFollow.setChecked( column.dont_show_follow );
+			cbDontShowFavourite.setChecked( column.dont_show_favourite );
 			cbDontShowReply.setChecked( column.dont_show_reply );
 			cbDontStreaming.setChecked( column.dont_streaming );
 			cbDontAutoRefresh.setChecked( column.dont_auto_refresh );
@@ -300,9 +326,11 @@ class ColumnViewHolder
 			vg( cbWithAttachment, bAllowFilter );
 			vg( etRegexFilter, bAllowFilter );
 			vg( llRegexFilter, bAllowFilter );
-			
+
 			vg( cbDontShowBoost, bAllowFilterBoost );
-			vg( cbDontShowReply, bAllowFilterBoost );
+			vg( cbDontShowReply, bAllowFilterReply );
+			vg( cbDontShowFavourite, isNotificationColumn );
+			vg( cbDontShowFollow, isNotificationColumn );
 			
 			vg( cbDontStreaming, column.canStreaming() );
 			vg( cbDontAutoRefresh, column.canAutoRefresh() );
@@ -589,6 +617,18 @@ class ColumnViewHolder
 		
 		case R.id.cbDontShowReply:
 			column.dont_show_reply = isChecked;
+			activity.app_state.saveColumnList();
+			column.startLoading();
+			break;
+		
+		case R.id.cbDontShowFavourite:
+			column.dont_show_favourite = isChecked;
+			activity.app_state.saveColumnList();
+			column.startLoading();
+			break;
+		
+		case R.id.cbDontShowFollow:
+			column.dont_show_follow = isChecked;
 			activity.app_state.saveColumnList();
 			column.startLoading();
 			break;

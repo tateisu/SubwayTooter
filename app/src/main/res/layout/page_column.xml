@@ -159,6 +159,19 @@
                     />
 
                 <CheckBox
+                    android:id="@+id/cbDontShowFavourite"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dont_show_favourite"
+                    />
+
+                <CheckBox
+                    android:id="@+id/cbDontShowFollow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dont_show_follow"
+                    />
+                <CheckBox
                     android:id="@+id/cbDontShowReply"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

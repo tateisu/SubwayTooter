@@ -730,6 +730,11 @@ public class AlarmService extends IntentService {
 			.setColor( ContextCompat.getColor( this, R.color.Light_colorAccent ) ) // ここは常に白テーマの色を使う
 			.setWhen( item.notification.time_created_at );
 		
+		// Android 7.0 ではグループを指定しないと勝手に通知が束ねられてしまう。
+		// 束ねられた通知をタップしても pi_click が実行されないので困るため、
+		// アカウント別にグループキーを設定する
+		builder.setGroup( getPackageName() + ":" + account.acct  );
+		
 		log.d( "showNotification[%s] creating notification(3)", account.acct );
 		
 		int iv = 0;

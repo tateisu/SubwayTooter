@@ -120,6 +120,8 @@ class Column implements StreamReader.Callback {
 	static final String KEY_DONT_CLOSE = "dont_close";
 	private static final String KEY_WITH_ATTACHMENT = "with_attachment";
 	private static final String KEY_DONT_SHOW_BOOST = "dont_show_boost";
+	private static final String KEY_DONT_SHOW_FAVOURITE = "dont_show_favourite";
+	private static final String KEY_DONT_SHOW_FOLLOW = "dont_show_follow";
 	private static final String KEY_DONT_SHOW_REPLY = "dont_show_reply";
 	private static final String KEY_DONT_STREAMING = "dont_streaming";
 	private static final String KEY_DONT_AUTO_REFRESH = "dont_auto_refresh";
@@ -176,6 +178,8 @@ class Column implements StreamReader.Callback {
 	boolean with_attachment;
 	boolean dont_show_boost;
 	boolean dont_show_reply;
+	boolean dont_show_favourite; // 通知カラムのみ
+	boolean dont_show_follow; // 通知カラムのみ
 	boolean dont_streaming;
 	boolean dont_auto_refresh;
 	boolean hide_media_default;
@@ -245,6 +249,8 @@ class Column implements StreamReader.Callback {
 		item.put( KEY_DONT_CLOSE, dont_close );
 		item.put( KEY_WITH_ATTACHMENT, with_attachment );
 		item.put( KEY_DONT_SHOW_BOOST, dont_show_boost );
+		item.put( KEY_DONT_SHOW_FOLLOW, dont_show_follow );
+		item.put( KEY_DONT_SHOW_FAVOURITE,dont_show_favourite);
 		item.put( KEY_DONT_SHOW_REPLY, dont_show_reply );
 		item.put( KEY_DONT_STREAMING, dont_streaming );
 		item.put( KEY_DONT_AUTO_REFRESH, dont_auto_refresh );
@@ -307,6 +313,8 @@ class Column implements StreamReader.Callback {
 		this.dont_close = src.optBoolean( KEY_DONT_CLOSE );
 		this.with_attachment = src.optBoolean( KEY_WITH_ATTACHMENT );
 		this.dont_show_boost = src.optBoolean( KEY_DONT_SHOW_BOOST );
+		this.dont_show_follow = src.optBoolean( KEY_DONT_SHOW_FOLLOW );
+		this.dont_show_favourite = src.optBoolean( KEY_DONT_SHOW_FAVOURITE );
 		this.dont_show_reply = src.optBoolean( KEY_DONT_SHOW_REPLY );
 		this.dont_streaming = src.optBoolean( KEY_DONT_STREAMING );
 		this.dont_auto_refresh = src.optBoolean( KEY_DONT_AUTO_REFRESH );
@@ -957,6 +965,8 @@ class Column implements StreamReader.Callback {
 	private boolean isFilterEnabled(){
 		return ( with_attachment
 			|| dont_show_boost
+			|| dont_show_favourite
+			|| dont_show_follow
 			|| dont_show_reply
 			|| ! TextUtils.isEmpty( regex_text )
 		);
@@ -1020,14 +1030,6 @@ class Column implements StreamReader.Callback {
 			if( ! hasMedia ) return true;
 		}
 		
-		if( dont_show_boost ){
-			// MSPToot には関連パラメータはない
-		}
-		
-		if( dont_show_reply ){
-			// MSPToot には関連パラメータはない
-		}
-		
 		if( column_regex_filter != null ){
 			if( column_regex_filter.matcher( status.decoded_content.toString() ).find() )
 				return true;
@@ -1061,10 +1063,25 @@ class Column implements StreamReader.Callback {
 	
 	private boolean isFiltered( TootNotification item ){
 		
+		if( dont_show_favourite && TootNotification.TYPE_FAVOURITE.equals( item.type ) ){
+			log.d("isFiltered: favourite notification filtered.");
+			return true;
+		}
+		
+		if( dont_show_boost && TootNotification.TYPE_REBLOG.equals( item.type ) ){
+			log.d("isFiltered: reblog notification filtered.");
+			return true;
+		}
+		
+		if( dont_show_follow && TootNotification.TYPE_FOLLOW.equals( item.type ) ){
+			log.d("isFiltered: follow notification filtered.");
+			return true;
+		}
+		
 		TootStatus status = item.status;
 		if( status != null ){
 			if( status.checkMuted( muted_app, muted_word ) ){
-				log.d( "addWithFilter: status muted." );
+				log.d( "isFiltered: status muted." );
 				return true;
 			}
 		}
@@ -1199,18 +1216,62 @@ class Column implements StreamReader.Callback {
 			}
 			
 			TootApiResult parseNotifications( TootApiClient client, String path_base ){
+				
+				long time_start = SystemClock.elapsedRealtime();
 				TootApiResult result = client.request( path_base );
-				if( result != null ){
+				if( result != null && result.array != null ){
 					saveRange( result, true, true );
+					//
 					TootNotification.List src = TootNotification.parseList( context, log, access_info, access_info.host, result.array );
-					
-					list_tmp = new ArrayList<>();
+					list_tmp = new ArrayList<>( src.size() );
 					addWithFilter( list_tmp, src );
 					//
 					if( ! src.isEmpty() ){
 						AlarmService.injectData( context, access_info.db_id, src );
 					}
-					
+					//
+					char delimiter = ( - 1 != path_base.indexOf( '?' ) ? '&' : '?' );
+					for( ; ; ){
+						if( client.isCancelled() ){
+							log.d( "loading-notifications: cancelled." );
+							break;
+						}
+						if( ! isFilterEnabled() ){
+							log.d( "loading-notifications: isFiltered is false." );
+							break;
+						}
+						if( max_id == null ){
+							log.d( "loading-notifications: max_id is null." );
+							break;
+						}
+						if( list_tmp.size() >= LOOP_READ_ENOUGH ){
+							log.d( "loading-notifications: read enough data." );
+							break;
+						}
+						if( src.isEmpty() ){
+							log.d( "loading-notifications: previous response is empty." );
+							break;
+						}
+						if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
+							log.d( "loading-notifications: timeout." );
+							break;
+						}
+						String path = path_base + delimiter + "max_id=" + max_id;
+						TootApiResult result2 = client.request( path );
+						if( result2 == null || result2.array == null ){
+							log.d( "loading-notifications: error or cancelled." );
+							break;
+						}
+						
+						src = TootNotification.parseList( context, log, access_info, access_info.host, result2.array );
+						
+						addWithFilter( list_tmp, src );
+						
+						if( ! saveRangeEnd( result2 ) ){
+							log.d( "loading-notifications: missing range info." );
+							break;
+						}
+					}
 				}
 				return result;
 			}
@@ -1890,11 +1951,12 @@ class Column implements StreamReader.Callback {
 					TootNotification.List src = TootNotification.parseList( context, log, access_info, access_info.host, result.array );
 					addWithFilter( list_tmp, src );
 					
-					if( ! src.isEmpty() ){
-						AlarmService.injectData( context, access_info.db_id, src );
-					}
-					
 					if( ! bBottom ){
+
+						if( ! src.isEmpty() ){
+							AlarmService.injectData( context, access_info.db_id, src );
+						}
+						
 						for( ; ; ){
 							if( isCancelled() ){
 								log.d( "refresh-notification-top: cancelled." );
@@ -1935,6 +1997,54 @@ class Column implements StreamReader.Callback {
 							if( ! src.isEmpty() ){
 								addWithFilter( list_tmp, src );
 								AlarmService.injectData( context, access_info.db_id, src );
+							}
+						}
+					}else{
+						for( ; ; ){
+							if( isCancelled() ){
+								log.d( "refresh-notification-bottom: cancelled." );
+								break;
+							}
+							
+							// bottomの場合、フィルタなしなら繰り返さない
+							if( ! isFilterEnabled() ){
+								log.d( "refresh-notification-bottom: isFiltered is false." );
+								break;
+							}
+							
+							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
+							// 直前のデータが0個なら終了とみなすしかなさそう
+							if( src.isEmpty() ){
+								log.d( "refresh-notification-bottom: previous size == 0." );
+								break;
+							}
+							
+							// 十分読んだらそれで終了
+							if( list_tmp.size() >= LOOP_READ_ENOUGH ){
+								log.d( "refresh-notification-bottom: read enough data." );
+								break;
+							}
+							
+							if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
+								// タイムアウト
+								log.d( "refresh-notification-bottom: loop timeout." );
+								break;
+							}
+							
+							String path = path_base + delimiter + "max_id=" + max_id;
+							TootApiResult result2 = client.request( path );
+							if( result2 == null || result2.array == null ){
+								log.d( "refresh-notification-bottom: error or cancelled." );
+								break;
+							}
+							
+							src = TootNotification.parseList( context, log, access_info, access_info.host, result2.array );
+							
+							addWithFilter( list_tmp, src );
+							
+							if( ! saveRangeEnd( result2 ) ){
+								log.d( "refresh-notification-bottom: saveRangeEnd failed." );
+								break;
 							}
 						}
 					}

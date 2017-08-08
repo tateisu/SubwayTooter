@@ -404,6 +404,8 @@
 	<string name="token_not_specified">Please input access token.</string>
     <string name="quote_name">Quote name…</string>
 	<string name="format_of_quote_name">Format of \'Quote name\' (set text that contains %1$s)</string>
+    <string name="dont_show_favourite">Masquer les favourite</string>
+	<string name="dont_show_follow">Masquer les follow</string>
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

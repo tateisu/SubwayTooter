@@ -691,5 +691,7 @@
     <string name="token_not_specified">アクセストークンを入力してください</string>
     <string name="quote_name">名前を引用…</string>
     <string name="format_of_quote_name">\'名前を引用\'のフォーマット ( %1$s を含むテキストを指定する)</string>
+    <string name="dont_show_favourite">お気に入りを表示しない</string>
+    <string name="dont_show_follow">フォローを表示しない</string>
 
 </resources>

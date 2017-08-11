@@ -411,7 +411,7 @@
 	<string name="acct_color">Acct text color</string>
 	<string name="content_color">Content text color</string>
 	<string name="content_sample">(sample)Le cœur déçu mais l\'âme plutôt naïve, Louÿs rêva de crapaüter en canoë au delà des îles, près du mälströn où brûlent les novæ.</string>
-    <string name="disable_gif_animation">Disable GIF animation (app restart required)</string>
+	<string name="enable_gif_animation">Enable GIF animation (It wastes the battery very much)</string>
 	<string name="acct_sample">(sample)username@instance</string>
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->

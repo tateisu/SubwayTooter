@@ -313,7 +313,7 @@ public class AppDataExporter {
 			case Pref.KEY_POST_BUTTON_BAR_AT_TOP:
 			case Pref.KEY_DONT_DUPLICATION_CHECK:
 			case Pref.KEY_QUICK_TOOT_BAR:
-			case Pref.KEY_DISABLE_GIF_ANIMATION:
+			case Pref.KEY_ENABLE_GIF_ANIMATION:
 				boolean bv = reader.nextBoolean();
 				e.putBoolean( k, bv );
 				break;
@@ -373,6 +373,7 @@ public class AppDataExporter {
 			// just ignore
 			case "device_token":
 			case "install_id":
+			case "disable_gif_animation":
 				reader.skipValue();
 				e.remove( k );
 				break;

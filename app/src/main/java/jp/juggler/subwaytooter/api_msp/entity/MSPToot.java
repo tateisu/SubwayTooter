@@ -15,7 +15,6 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
@@ -27,40 +26,6 @@ public class MSPToot extends TootStatusLike {
 	
 	public static class List extends ArrayList< MSPToot > {
 		
-	}
-	
-	private static final Pattern reAccountUrl = Pattern.compile( "\\Ahttps://([^/#?]+)/@([^/#?]+)\\z" );
-	
-	private static TootAccount parseAccount( @NonNull Context context, LogCategory log, SavedAccount access_info, JSONObject src ){
-		
-		if( src == null ) return null;
-		
-		MSPAccount dst = new MSPAccount();
-		dst.url = Utils.optStringX( src, "url" );
-		dst.username = Utils.optStringX( src, "username" );
-		dst.avatar = dst.avatar_static = Utils.optStringX( src, "avatar" );
-		
-		String sv = Utils.optStringX( src, "display_name" );
-		dst.setDisplayName( context, dst.username , sv );
-		
-		dst.id = src.optLong( "id" );
-		
-		dst.note = Utils.optStringX( src, "note" );
-		dst.decoded_note = HTMLDecoder.decodeHTML( context,access_info, ( dst.note != null ? dst.note : null ), true, true,null );
-		
-		if( TextUtils.isEmpty( dst.url ) ){
-			log.e( "parseAccount: missing url" );
-			return null;
-		}
-		Matcher m = reAccountUrl.matcher( dst.url );
-		if( ! m.find() ){
-			log.e( "parseAccount: not account url: %s", dst.url );
-			return null;
-		}else{
-			dst.acct = dst.username + "@" + m.group( 1 );
-		}
-		
-		return dst;
 	}
 	
 	//	private static final Pattern reTime = Pattern.compile( "\\A(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)" );
@@ -103,7 +68,7 @@ public class MSPToot extends TootStatusLike {
 		if( src == null ) return null;
 		MSPToot dst = new MSPToot();
 		
-		dst.account = parseAccount( context,log, access_info, src.optJSONObject( "account" ) );
+		dst.account = MSPAccount.parseAccount( context, log, access_info, src.optJSONObject( "account" ) );
 		if( dst.account == null ){
 			log.e( "missing status account" );
 			return null;
@@ -136,20 +101,20 @@ public class MSPToot extends TootStatusLike {
 		// dst.msp_id = src.optLong( "msp_id" );
 		dst.sensitive = ( src.optInt( "sensitive", 0 ) != 0 );
 		
-		dst.setSpoilerText(context,Utils.optStringX( src, "spoiler_text" ));
+		dst.setSpoilerText( context, Utils.optStringX( src, "spoiler_text" ) );
 		
 		dst.content = Utils.optStringX( src, "content" );
-		dst.decoded_content = HTMLDecoder.decodeHTML( context,access_info, dst.content, true,true, null );
+		dst.decoded_content = HTMLDecoder.decodeHTML( context, access_info, dst.content, true, true, null );
 		
 		return dst;
 	}
 	
-	public static List parseList(  @NonNull Context context, LogCategory log, SavedAccount access_info, JSONArray array ){
+	public static List parseList( @NonNull Context context, LogCategory log, SavedAccount access_info, JSONArray array ){
 		List list = new List();
 		for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
 			JSONObject src = array.optJSONObject( i );
 			if( src == null ) continue;
-			MSPToot item = parse( context,log, access_info, src );
+			MSPToot item = parse( context, log, access_info, src );
 			if( item == null ) continue;
 			list.add( item );
 		}

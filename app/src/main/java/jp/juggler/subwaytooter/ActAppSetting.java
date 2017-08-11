@@ -98,7 +98,7 @@ public class ActAppSetting extends AppCompatActivity
 	Switch swPostButtonBarTop;
 	Switch swDontDuplicationCheck;
 	Switch swQuickTootBar;
-	Switch swDisableGifAnimation;
+	Switch swEnableGifAnimation;
 	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
@@ -197,8 +197,8 @@ public class ActAppSetting extends AppCompatActivity
 		swQuickTootBar = (Switch) findViewById( R.id.swQuickTootBar );
 		swQuickTootBar.setOnCheckedChangeListener( this );
 		
-		swDisableGifAnimation = (Switch) findViewById( R.id.swDisableGifAnimation );
-		swDisableGifAnimation.setOnCheckedChangeListener( this );
+		swEnableGifAnimation = (Switch) findViewById( R.id.swEnableGifAnimation );
+		swEnableGifAnimation.setOnCheckedChangeListener( this );
 		
 		cbNotificationSound = (CheckBox) findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = (CheckBox) findViewById( R.id.cbNotificationVibration );
@@ -340,7 +340,7 @@ public class ActAppSetting extends AppCompatActivity
 		swPostButtonBarTop.setChecked( pref.getBoolean( Pref.KEY_POST_BUTTON_BAR_AT_TOP, false ) );
 		swDontDuplicationCheck.setChecked( pref.getBoolean( Pref.KEY_DONT_DUPLICATION_CHECK, false ) );
 		swQuickTootBar.setChecked( pref.getBoolean( Pref.KEY_QUICK_TOOT_BAR, false ) );
-		swDisableGifAnimation.setChecked( pref.getBoolean( Pref.KEY_DISABLE_GIF_ANIMATION, false ) );
+		swEnableGifAnimation.setChecked( pref.getBoolean( Pref.KEY_ENABLE_GIF_ANIMATION, false ) );
 		
 		// Switch with default true
 		swDisableFastScroller.setChecked( pref.getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
@@ -403,7 +403,7 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_POST_BUTTON_BAR_AT_TOP, swPostButtonBarTop.isChecked() )
 			.putBoolean( Pref.KEY_DONT_DUPLICATION_CHECK, swDontDuplicationCheck.isChecked() )
 			.putBoolean( Pref.KEY_QUICK_TOOT_BAR, swQuickTootBar.isChecked() )
-			.putBoolean( Pref.KEY_DISABLE_GIF_ANIMATION, swDisableGifAnimation.isChecked() )
+			.putBoolean( Pref.KEY_ENABLE_GIF_ANIMATION, swEnableGifAnimation.isChecked() )
 		
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )

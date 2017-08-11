@@ -406,7 +406,7 @@
     <string name="acct_color">Acct text color</string>
     <string name="content_color">Content text color</string>
     <string name="content_sample">(sample)The quick brown fox jumps over the lazy dog.</string>
-    <string name="disable_gif_animation">Disable GIF animation (app restart required)</string>
+    <string name="enable_gif_animation">Enable GIF animation (It wastes the battery very much)</string>
     <string name="acct_sample">(sample)username@instance</string>
 
 </resources>

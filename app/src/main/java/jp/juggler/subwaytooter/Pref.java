@@ -72,7 +72,7 @@ public class Pref {
 	
 	public static final String KEY_QUOTE_NAME_FORMAT = "quote_name_format";
 
-	public static final String KEY_DISABLE_GIF_ANIMATION = "disable_gif_animation";
+	public static final String KEY_ENABLE_GIF_ANIMATION = "enable_gif_animation";
 	
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

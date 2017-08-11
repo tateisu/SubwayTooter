@@ -892,12 +892,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			iv.setVisibility( View.GONE );
 		}else{
 			iv.setVisibility( View.VISIBLE );
-			iv.setCornerRadius( pref, 16f );
 			PostAttachment a = attachment_list.get( idx );
 			if( a.attachment != null && a.status == PostAttachment.ATTACHMENT_UPLOADED ){
-				iv.setImageUrl( a.attachment.preview_url );
+				iv.setImageUrl(  pref, 16f ,a.attachment.preview_url );
 			}else{
-				iv.setImageUrl( null );
+				iv.setImageUrl(  pref, 16f ,null );
 			}
 		}
 	}
@@ -1448,8 +1447,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}else{
 			llReply.setVisibility( View.VISIBLE );
 			tvReplyTo.setText( HTMLDecoder.decodeHTML( ActPost.this, account, in_reply_to_text, true,true, null ) );
-			ivReply.setCornerRadius( pref, 16f );
-			ivReply.setImageUrl( in_reply_to_image );
+			ivReply.setImageUrl( pref, 16f, in_reply_to_image );
 		}
 	}
 	

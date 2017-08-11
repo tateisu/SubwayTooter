@@ -1,9 +1,17 @@
 package jp.juggler.subwaytooter.view;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapShader;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
@@ -11,20 +19,30 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
+import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
 import android.support.v7.widget.AppCompatImageView;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool;
+import com.bumptech.glide.load.resource.bitmap.BitmapTransformation;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
+import com.bumptech.glide.load.resource.gif.GifDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.BaseTarget;
-import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
+import com.bumptech.glide.request.target.ImageViewTarget;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.target.SquaringDrawable;
 import com.bumptech.glide.request.target.Target;
 
 import jp.juggler.subwaytooter.Pref;
+import jp.juggler.subwaytooter.util.LogCategory;
 
 public class MyNetworkImageView extends AppCompatImageView {
+	
+	static final LogCategory log = new LogCategory( "MyNetworkImageView" );
 	
 	public MyNetworkImageView( Context context ){
 		this( context, null );
@@ -37,6 +55,8 @@ public class MyNetworkImageView extends AppCompatImageView {
 	public MyNetworkImageView( Context context, AttributeSet attrs, int defStyle ){
 		super( context, attrs, defStyle );
 	}
+	
+	@SuppressLint("StaticFieldLeak") static Context app_context;
 	
 	// ロード中などに表示するDrawableのリソースID
 	private int mDefaultImageId;
@@ -55,28 +75,38 @@ public class MyNetworkImageView extends AppCompatImageView {
 	// 角丸の半径。元画像の短辺に対する割合を指定するらしい
 	float mCornerRadius;
 	
-	public void setCornerRadius( SharedPreferences pref, float r ){
-		if( ! pref.getBoolean( Pref.KEY_DONT_ROUND, false ) ){
-			mCornerRadius = r;
-		}
-	}
-	
 	// 表示したい画像のURL
 	private String mUrl;
-	private boolean mIsUrlGif;
+	private boolean mMayGif;
 	
-	public void setImageUrl( String url ){
-		setImageUrl( url, null );
+	public void setImageUrl( SharedPreferences pref, float r, String url ){
+		setImageUrl( pref, r, url, null );
 	}
 	
-	public void setImageUrl( String url, String gif_url ){
-		//		if( gif_url != null && mCornerRadius <= 0f && ! gif_url.equals( url ) ){
-		//			mUrl = gif_url;
-		//			mIsUrlGif = true;
-		//		}else
-		{
+	public void setImageUrl( SharedPreferences pref, float r, String url, String gif_url ){
+		if( app_context == null ){
+			Context context = getContext();
+			if( context != null ){
+				app_context = context.getApplicationContext();
+			}
+		}
+		
+		if( pref.getBoolean( Pref.KEY_DONT_ROUND, false ) ){
+			mCornerRadius = 0f;
+		}else{
+			mCornerRadius = r;
+		}
+		
+		if( pref.getBoolean( Pref.KEY_DISABLE_GIF_ANIMATION, false ) ){
+			gif_url = null;
+		}
+		
+		if( ! TextUtils.isEmpty( gif_url ) ){
+			mUrl = gif_url;
+			mMayGif = true;
+		}else{
 			mUrl = url;
-			mIsUrlGif = false;
+			mMayGif = false;
 		}
 		loadImageIfNecessary();
 	}
@@ -104,7 +134,6 @@ public class MyNetworkImageView extends AppCompatImageView {
 	// 必要なら非同期処理を開始する
 	void loadImageIfNecessary(){
 		try{
-			
 			if( TextUtils.isEmpty( mUrl ) ){
 				// if the URL to be loaded in this view is empty,
 				// cancel any old requests and clear the currently loaded image.
@@ -123,9 +152,10 @@ public class MyNetworkImageView extends AppCompatImageView {
 			setDefaultImageOrNull();
 			
 			boolean wrapWidth = false, wrapHeight = false;
-			if( getLayoutParams() != null ){
-				wrapWidth = getLayoutParams().width == ViewGroup.LayoutParams.WRAP_CONTENT;
-				wrapHeight = getLayoutParams().height == ViewGroup.LayoutParams.WRAP_CONTENT;
+			ViewGroup.LayoutParams lp = getLayoutParams();
+			if( lp != null ){
+				wrapWidth = lp.width == ViewGroup.LayoutParams.WRAP_CONTENT;
+				wrapHeight = lp.height == ViewGroup.LayoutParams.WRAP_CONTENT;
 			}
 			
 			// Calculate the max image width / height to use while ignoring WRAP_CONTENT dimens.
@@ -140,11 +170,18 @@ public class MyNetworkImageView extends AppCompatImageView {
 				return;
 			}
 			
-			if( mIsUrlGif ){
-				mTarget = Glide.with( getContext() )
-					.load( mUrl )
-					.into( new MyTargetGif( mUrl ) );
-				
+			if( mMayGif ){
+				if( mCornerRadius > 0f ){
+					mTarget = Glide.with( getContext() )
+						.load( mUrl )
+						.transform( new RoundTransformation( mCornerRadius ) )
+						.into( new MyTargetGif( mUrl ) );
+				}else{
+					mTarget = Glide.with( getContext() )
+						.load( mUrl )
+						.into( new MyTargetGif( mUrl ) );
+					
+				}
 			}else{
 				mTarget = Glide.with( getContext() )
 					.load( mUrl )
@@ -164,80 +201,6 @@ public class MyNetworkImageView extends AppCompatImageView {
 	
 	private interface UrlTarget {
 		@NonNull String getUrl();
-	}
-	
-	private class MyTargetGif extends GlideDrawableImageViewTarget implements UrlTarget {
-		
-		@NonNull final String url;
-		
-		@Override @NonNull public String getUrl(){
-			return url;
-		}
-		
-		MyTargetGif( @NonNull String url ){
-			super( MyNetworkImageView.this, GlideDrawable.LOOP_FOREVER );
-			this.url = url;
-		}
-		
-		@Override public void onLoadFailed( Exception e, Drawable errorDrawable ){
-			try{
-				// このViewは別の画像を表示するように指定が変わっていた
-				if( ! url.equals( mUrl ) ) return;
-				
-				e.printStackTrace();
-				if( mErrorImageId != 0 ) setImageResource( mErrorImageId );
-			}catch( Throwable ex ){
-				ex.printStackTrace();
-				// java.lang.NullPointerException:
-				// at jp.juggler.subwaytooter.view.MyNetworkImageView$1.onLoadFailed(MyNetworkImageView.java:147)
-				// at com.bumptech.glide.request.GenericRequest.setErrorPlaceholder(GenericRequest.java:404)
-				// at com.bumptech.glide.request.GenericRequest.onException(GenericRequest.java:548)
-				// at com.bumptech.glide.load.engine.EngineJob.handleExceptionOnMainThread(EngineJob.java:183)
-			}
-		}
-		
-		@Override public void onResourceReady(
-			final GlideDrawable resource
-			, final GlideAnimation< ? super GlideDrawable > glideAnimation
-		){
-			try{
-				// このViewは別の画像を表示するように指定が変わっていた
-				if( ! url.equals( mUrl ) ) return;
-				
-				super.onResourceReady( resource, glideAnimation );
-				
-				//				}else if( mCornerRadius <= 0f ){
-				//					setImageBitmap( bitmap );
-				//				}else{
-				//					RoundedBitmapDrawable d = RoundedBitmapDrawableFactory
-				//						.create( getResources(), bitmap );
-				//					d.setCornerRadius( mCornerRadius );
-				//					setImageDrawable( d );
-				//				}
-				
-			}catch( Throwable ex ){
-				ex.printStackTrace();
-			}
-		}
-		
-		/**
-		 * Sets the given {@link android.graphics.drawable.Drawable} on the view using
-		 * {@link android.widget.ImageView#setImageDrawable(android.graphics.drawable.Drawable)}.
-		 *
-		 * @param drawable {@inheritDoc}
-		 */
-		@Override
-		public void setDrawable( Drawable drawable ){
-			
-			//			if( mCornerRadius > 0f ){
-			//				RoundedBitmapDrawable d = RoundedBitmapDrawableFactory.create( getResources(), bitmap );
-			//				d.setCornerRadius( mCornerRadius );
-			//				setImageDrawable( d );
-			//			}
-			
-			view.setImageDrawable( drawable );
-		}
-		
 	}
 	
 	private class MyTarget extends SimpleTarget< Bitmap > implements UrlTarget {
@@ -294,6 +257,214 @@ public class MyNetworkImageView extends AppCompatImageView {
 			}catch( Throwable ex ){
 				ex.printStackTrace();
 			}
+		}
+	}
+	
+	private class MyTargetGif
+		extends ImageViewTarget< GlideDrawable >
+		implements UrlTarget
+	
+	{
+		private static final float SQUARE_RATIO_MARGIN = 0.05f;
+		private int maxLoopCount = GlideDrawable.LOOP_FOREVER;
+		private GlideDrawable glide_drawable;
+		
+		@NonNull final String url;
+		
+		@Override @NonNull public String getUrl(){
+			return url;
+		}
+		
+		MyTargetGif( @NonNull String url ){
+			super( MyNetworkImageView.this );
+			this.url = url;
+		}
+		
+		@Override public void onLoadFailed( Exception e, Drawable errorDrawable ){
+			try{
+				// このViewは別の画像を表示するように指定が変わっていた
+				if( ! url.equals( mUrl ) ) return;
+				
+				e.printStackTrace();
+				if( mErrorImageId != 0 ) setImageResource( mErrorImageId );
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+			}
+		}
+		
+		/**
+		 * {@inheritDoc}
+		 * If no {@link com.bumptech.glide.request.animation.GlideAnimation} is given or if the animation does not set the
+		 * {@link android.graphics.drawable.Drawable} on the view, the drawable is set using
+		 * {@link android.widget.ImageView#setImageDrawable(android.graphics.drawable.Drawable)}.
+		 *
+		 * @param resource  {@inheritDoc}
+		 * @param animation {@inheritDoc}
+		 */
+		@Override
+		public void onResourceReady(
+			GlideDrawable resource
+			, GlideAnimation< ? super GlideDrawable > animation
+		){
+			try{
+				// このViewは別の画像を表示するように指定が変わっていた
+				if( ! url.equals( mUrl ) ) return;
+				
+				// ディスクキャッシュから読んだ画像は角丸が正しく扱われない
+				// transformを設定しなおす
+				if( ( resource instanceof GifDrawable ) && ! ( resource instanceof MyGifDrawable ) ){
+					GifDrawable src = (GifDrawable) resource;
+					if( app_context != null && mCornerRadius > 0f ){
+						RoundTransformation t = new RoundTransformation( mCornerRadius );
+						try{
+							BitmapPool pool = Glide.get( app_context ).getBitmapPool();
+							Bitmap first_frame =  t.transform( pool, src.getFirstFrame(), getWidth(), getHeight() );
+							resource = new MyGifDrawable( src,first_frame, t );
+						}catch( Throwable ex ){
+							ex.printStackTrace();
+							// view#getWidth() が 0 だと firstFrame の transform がnullを返してGifDrawableを作れない
+							resource = new MyGifDrawable( src,src.getFirstFrame(), t );
+						}
+					}
+				}
+				
+				if( ! resource.isAnimated() ){
+					//TODO: Try to generalize this to other sizes/shapes.
+					// This is a dirty hack that tries to make loading square thumbnails and then square full images less costly
+					// by forcing both the smaller thumb and the larger version to have exactly the same intrinsic dimensions.
+					// If a drawable is replaced in an ImageView by another drawable with different intrinsic dimensions,
+					// the ImageView requests a layout. Scrolling rapidly while replacing thumbs with larger images triggers
+					// lots of these calls and causes significant amounts of jank.
+					float viewRatio = view.getWidth() / (float) view.getHeight();
+					float drawableRatio = resource.getIntrinsicWidth() / (float) resource.getIntrinsicHeight();
+					if( Math.abs( viewRatio - 1f ) <= SQUARE_RATIO_MARGIN
+						&& Math.abs( drawableRatio - 1f ) <= SQUARE_RATIO_MARGIN ){
+						resource = new SquaringDrawable( resource, view.getWidth() );
+					}
+				}
+				super.onResourceReady( resource, animation );
+				this.glide_drawable = resource;
+				resource.setLoopCount( maxLoopCount );
+				resource.start();
+				
+			}catch( Throwable ex ){
+				ex.printStackTrace();
+			}
+		}
+		
+		/**
+		 * Sets the drawable on the view using
+		 * {@link android.widget.ImageView#setImageDrawable(android.graphics.drawable.Drawable)}.
+		 *
+		 * @param resource The {@link android.graphics.drawable.Drawable} to display in the view.
+		 */
+		@Override
+		protected void setResource( GlideDrawable resource ){
+			// GifDrawable かもしれない
+			MyNetworkImageView.this.setImageDrawable( resource );
+		}
+		
+		@Override
+		public void onStart(){
+			log.d( "MyTargetGif onStart glide_drawable=%s", glide_drawable );
+			if( glide_drawable != null ){
+				glide_drawable.start();
+			}
+		}
+		
+		@Override
+		public void onStop(){
+			log.d( "MyTargetGif onStop glide_drawable=%s", glide_drawable );
+			if( glide_drawable != null ){
+				glide_drawable.stop();
+			}
+		}
+		
+		@Override
+		public void onDestroy(){
+			log.d( "MyTargetGif onDestroy glide_drawable=%s", glide_drawable );
+			super.onDestroy();
+		}
+		
+	}
+	
+	private static class RoundTransformation extends BitmapTransformation {
+		private final float radius;
+		
+		RoundTransformation( float radius ){
+			super( app_context );
+			this.radius = radius;
+			mPaint.setAntiAlias( true );
+			mPaint.setFilterBitmap( true );
+		}
+		
+		@Override public String getId(){
+			return getClass().getName();
+		}
+		
+		final Matrix mShaderMatrix = new Matrix();
+		final Rect mViewContainer = new Rect();
+		final Rect mDstRect = new Rect();
+		final RectF mDstRectF = new RectF();
+		final Paint mPaint = new Paint( Paint.FILTER_BITMAP_FLAG | Paint.ANTI_ALIAS_FLAG );
+		
+		@Override
+		protected Bitmap transform( BitmapPool pool, Bitmap source, int outWidth, int outHeight ){
+			if( source == null ) return null;
+			int src_w = source.getWidth();
+			int src_h = source.getHeight();
+			if( src_w < 1 || src_h < 1 ) return null;
+			if( outWidth < 1 || outHeight < 1 ) return null;
+			
+			int mTargetDensity = DisplayMetrics.DENSITY_DEFAULT;
+			int mBitmapWidth = source.getScaledWidth( mTargetDensity );
+			int mBitmapHeight = source.getScaledHeight( mTargetDensity );
+			
+			mViewContainer.left = 0;
+			mViewContainer.top = 0;
+			mViewContainer.right = outWidth;
+			mViewContainer.bottom = outHeight;
+			
+			int mGravity = Gravity.FILL;
+			Gravity.apply( mGravity, mBitmapWidth, mBitmapHeight, mViewContainer, mDstRect, View.LAYOUT_DIRECTION_LTR );
+			mDstRectF.set( mDstRect );
+			
+			mShaderMatrix.setTranslate( mDstRectF.left, mDstRectF.top );
+			mShaderMatrix.preScale( mDstRectF.width() / src_w, mDstRectF.height() / src_h );
+			
+			BitmapShader mBitmapShader = new BitmapShader( source, BitmapShader.TileMode.CLAMP, BitmapShader.TileMode.CLAMP );
+			mBitmapShader.setLocalMatrix( mShaderMatrix );
+			
+			Bitmap result = pool.getDirty( outWidth, outHeight, Bitmap.Config.ARGB_8888 );
+			if( result == null ){
+				result = Bitmap.createBitmap( outWidth, outHeight, Bitmap.Config.ARGB_8888 );
+			}
+			Canvas canvas = new Canvas( result );
+			canvas.drawColor( Color.TRANSPARENT, PorterDuff.Mode.CLEAR );
+			mPaint.setShader( mBitmapShader );
+			// mPaint.setColor( 0xffff0000 );
+			canvas.drawRoundRect( mDstRectF, radius, radius, mPaint );
+			
+			//	log.d("transform radius=%.2f,outWidth=%d,outHeight=%d",radius,outWidth,outHeight);
+			
+			//			int dst_wh = Math.min( src_w,src_h );
+			//			int offset_x = ( src_w - dst_wh ) / 2;
+			//			int offset_y = ( src_h - dst_wh ) / 2;
+			//
+			//
+			//			// TODO this could be acquired from the pool too
+			//			pool.
+			//			Bitmap squared = Bitmap.createBitmap( source, x, y, size, size );
+			//
+			//
+			//			Paint paint = new Paint();
+			//			paint.setShader( new BitmapShader( squared, BitmapShader.TileMode.CLAMP, BitmapShader.TileMode.CLAMP ) );
+			//			paint.setAntiAlias( true );
+			//			float r = size / 2f;
+			//			canvas.drawCircle( r, r, r, paint );
+			//			// canvas.drawRoundRect( float left, float top, float right, float bottom, float rx, float ry,
+			
+			return result;
 		}
 	}
 	

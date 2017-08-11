@@ -301,7 +301,7 @@ public class App1 extends Application {
 		// Glide.isSetup は Glide 4.0 で廃止になるらしいが、俺が使ってるのは3.xだ
 		//noinspection deprecation
 		if( ! Glide.isSetup() ){
-			Context context = getApplicationContext();
+			final Context context = getApplicationContext();
 			
 			GlideBuilder builder = new GlideBuilder( context );
 			builder.setDiskCache( new InternalCacheDiskCacheFactory( context, 10 * 1024 * 1024 ) );
@@ -333,6 +333,14 @@ public class App1 extends Application {
 			// Glide.setupはGLide 4.0 で廃止になるらしいが、俺が使ってるのは3.xだ
 			//noinspection deprecation
 			Glide.setup( builder );
+
+			// DEBUG 画像のディスクキャッシュの消去
+//			new Thread(new Runnable() {
+//				@Override
+//				public void run() {
+//					Glide.get(context).clearDiskCache();
+//				}
+//			}).start();
 			
 			glide_okhttp3_factory = new OkHttpUrlLoader.Factory( ok_http_client );
 			Glide.get( getApplicationContext() ).register( GlideUrl.class, InputStream.class, glide_okhttp3_factory );

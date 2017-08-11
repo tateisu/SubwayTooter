@@ -91,9 +91,8 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 			btnFollow.setImageDrawable( null );
 		}else{
 			tvCreated.setText( TootStatus.formatTime( who.time_created_at ) );
-			ivBackground.setImageUrl( access_info.supplyBaseUrl( who.header_static ) );
-			ivAvatar.setCornerRadius( activity.pref, 16f );
-			ivAvatar.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ) );
+			ivBackground.setImageUrl(  activity.pref, 0f,access_info.supplyBaseUrl( who.header_static ) );
+			ivAvatar.setImageUrl(  activity.pref, 16f,access_info.supplyBaseUrl( who.avatar_static ) , access_info.supplyBaseUrl( who.avatar ));
 			tvDisplayName.setText( who.decoded_display_name );
 			
 			String s = "@" + access_info.getFullAcct( who );

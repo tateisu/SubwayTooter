@@ -697,5 +697,8 @@
     <string name="background_image">背景画像</string>
     <string name="background_image_alpha">背景画像のアルファ値</string>
     <string name="content_color">本文の文字色</string>
+    <string name="content_sample">(見本)色はにほへど 散りぬるを 我が世たれぞ 常ならむ 有為の奥山 今日越えて 浅き夢見じ 酔ひもせず</string>
+    <string name="disable_gif_animation">GIFアニメ表示を無効(アプリ再起動が必要)</string>
+    <string name="acct_sample">(見本)username@instance</string>
 
 </resources>

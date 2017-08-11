@@ -313,6 +313,7 @@ public class AppDataExporter {
 			case Pref.KEY_POST_BUTTON_BAR_AT_TOP:
 			case Pref.KEY_DONT_DUPLICATION_CHECK:
 			case Pref.KEY_QUICK_TOOT_BAR:
+			case Pref.KEY_DISABLE_GIF_ANIMATION:
 				boolean bv = reader.nextBoolean();
 				e.putBoolean( k, bv );
 				break;

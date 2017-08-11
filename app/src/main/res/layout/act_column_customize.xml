@@ -150,11 +150,11 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:ellipsize="end"
-                        android:gravity="center"
+                        android:gravity="left"
                         android:maxLines="1"
                         android:textColor="?attr/colorTimeSmall"
                         android:textSize="12sp"
-                        android:text="username@instance"
+                        android:text="@string/acct_sample"
                         android:id="@+id/tvSampleAcct"
                         />
 
@@ -163,8 +163,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
                         android:lineSpacingMultiplier="1.1"
-                        android:gravity="center"
-                        android:text="@string/content"
+                        android:gravity="left"
+                        android:text="@string/content_sample"
                         android:id="@+id/tvSampleContent"
                         />
                 </LinearLayout>

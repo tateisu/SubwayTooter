@@ -6,6 +6,7 @@ import android.preference.PreferenceManager;
 
 public class Pref {
 	
+	
 	public static SharedPreferences pref( Context context ){
 		return PreferenceManager.getDefaultSharedPreferences( context );
 	}
@@ -70,6 +71,8 @@ public class Pref {
 	public static final String KEY_QUICK_TOOT_BAR = "quick_toot_bar";
 	
 	public static final String KEY_QUOTE_NAME_FORMAT = "quote_name_format";
+
+	public static final String KEY_DISABLE_GIF_ANIMATION = "disable_gif_animation";
 	
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

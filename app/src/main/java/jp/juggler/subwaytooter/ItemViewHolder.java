@@ -249,7 +249,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			tvMentions.setTextColor( c );
 			tvContentWarning.setTextColor( c );
 			tvContent.setTextColor( c );
-			btnShowMedia.setTextColor( c );
+			//NSFWは文字色固定 btnShowMedia.setTextColor( c );
 			if( tvApplication != null ){
 				tvApplication.setTextColor( c );
 			}
@@ -363,8 +363,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private void showFollow( @NonNull TootAccount who ){
 		account_follow = who;
 		llFollow.setVisibility( View.VISIBLE );
-		ivFollow.setCornerRadius( activity.pref, 16f );
-		ivFollow.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ) );
+		ivFollow.setImageUrl( activity.pref, 16f,access_info.supplyBaseUrl( who.avatar_static ) );
 		tvFollowerName.setText( who.decoded_display_name );
 		setAcct( tvFollowerAcct, access_info.getFullAcct( who ) );
 		
@@ -378,18 +377,17 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		tvTime.setText( TootStatus.formatTime( status.time_created_at ) );
 		
-		ivThumbnail.setCornerRadius( activity.pref, 16f );
-		
 		account_thumbnail = status.account;
 		setAcct( tvAcct, access_info.getFullAcct( status.account ) );
 		
 		if( status.account == null ){
 			tvName.setText( "?" );
-			ivThumbnail.setImageUrl( null, null );
+			ivThumbnail.setImageUrl( activity.pref, 16f,null, null );
 		}else{
 			tvName.setText( status.account.decoded_display_name );
 			ivThumbnail.setImageUrl(
-				access_info.supplyBaseUrl( status.account.avatar_static )
+				activity.pref, 16f
+				, access_info.supplyBaseUrl( status.account.avatar_static )
 				, access_info.supplyBaseUrl( status.account.avatar )
 			);
 		}
@@ -550,8 +548,8 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 					url = ta.url;
 				}
 			}
-			iv.setCornerRadius( activity.pref, 0f ); // 正方形じゃないせいか、うまく動かない activity.density * 4f );
-			iv.setImageUrl( access_info.supplyBaseUrl( url ) );
+			// 正方形じゃないせいか、うまく動かない activity.density * 4f );
+			iv.setImageUrl( activity.pref, 0f, access_info.supplyBaseUrl( url ) , access_info.supplyBaseUrl( url ) );
 		}
 	}
 	
@@ -564,8 +562,8 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			
 			String url = msp_toot.media_attachments.get( idx );
 			iv.setMediaType( 0 );
-			iv.setCornerRadius( activity.pref, 0f ); // 正方形じゃないせいか、うまく動かない activity.density * 4f );
-			iv.setImageUrl( access_info.supplyBaseUrl( url ) );
+			// 正方形じゃないせいか、うまく動かない activity.density * 4f );
+			iv.setImageUrl( activity.pref, 0f, access_info.supplyBaseUrl( url ) );
 		}
 	}
 	

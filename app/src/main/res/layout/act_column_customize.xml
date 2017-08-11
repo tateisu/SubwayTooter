@@ -121,7 +121,7 @@
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/column_background"
+            android:text="@string/column"
             />
 
         <LinearLayout style="@style/setting_row_form">
@@ -129,7 +129,7 @@
             <FrameLayout
                 android:id="@+id/flColumnBackground"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
+                android:layout_height="wrap_content"
                 >
 
                 <ImageView
@@ -139,6 +139,35 @@
                     android:importantForAccessibility="no"
                     android:scaleType="centerCrop"
                     />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp"
+                    android:orientation="vertical"
+                    >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:textColor="?attr/colorTimeSmall"
+                        android:textSize="12sp"
+                        android:text="username@instance"
+                        android:id="@+id/tvSampleAcct"
+                        />
+
+                    <jp.juggler.subwaytooter.view.MyTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:lineSpacingMultiplier="1.1"
+                        android:gravity="center"
+                        android:text="@string/content"
+                        android:id="@+id/tvSampleContent"
+                        />
+                </LinearLayout>
             </FrameLayout>
 
         </LinearLayout>
@@ -147,7 +176,7 @@
 
             <TextView
                 style="@style/setting_row_label"
-                android:text="@string/color"
+                android:text="@string/background_color"
                 />
         </LinearLayout>
 
@@ -176,7 +205,7 @@
 
             <TextView
                 style="@style/setting_row_label"
-                android:text="@string/image"
+                android:text="@string/background_image"
                 />
         </LinearLayout>
 
@@ -205,7 +234,7 @@
             <TextView
                 style="@style/setting_row_label"
                 android:labelFor="@+id/etAlpha"
-                android:text="@string/image_alpha"
+                android:text="@string/background_image_alpha"
                 />
         </LinearLayout>
 
@@ -242,6 +271,65 @@
                 />
         </LinearLayout>
 
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                style="@style/setting_row_label"
+                android:text="@string/acct_color"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnAcctColor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnAcctColorReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+
+        </LinearLayout>
+
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                style="@style/setting_row_label"
+                android:text="@string/content_color"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnContentColor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnContentColorReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+        </LinearLayout>
+
         <View style="@style/setting_divider"/>
+
     </LinearLayout>
 </ScrollView>

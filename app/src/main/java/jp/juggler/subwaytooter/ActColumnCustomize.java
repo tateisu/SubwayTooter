@@ -77,6 +77,8 @@ public class ActColumnCustomize extends AppCompatActivity
 	static final int COLOR_DIALOG_ID_HEADER_BACKGROUND = 1;
 	static final int COLOR_DIALOG_ID_HEADER_FOREGROUND = 2;
 	static final int COLOR_DIALOG_ID_COLUMN_BACKGROUND = 3;
+	static final int COLOR_DIALOG_ID_ACCT_TEXT = 4;
+	static final int COLOR_DIALOG_ID_CONTENT_TEXT = 5;
 	
 	@Override public void onClick( View v ){
 		ColorPickerDialog.Builder builder;
@@ -130,6 +132,38 @@ public class ActColumnCustomize extends AppCompatActivity
 			show();
 			break;
 		
+		case R.id.btnAcctColor:
+			builder = ColorPickerDialog.newBuilder()
+				.setDialogType( ColorPickerDialog.TYPE_CUSTOM )
+				.setAllowPresets( true )
+				.setShowAlphaSlider( true )
+				.setDialogId( COLOR_DIALOG_ID_ACCT_TEXT )
+			;
+			if( column.acct_color != 0 ) builder.setColor( column.acct_color );
+			builder.show( this );
+			break;
+		
+		case R.id.btnAcctColorReset:
+			column.acct_color = 0;
+			show();
+			break;
+		
+		case R.id.btnContentColor:
+			builder = ColorPickerDialog.newBuilder()
+				.setDialogType( ColorPickerDialog.TYPE_CUSTOM )
+				.setAllowPresets( true )
+				.setShowAlphaSlider( true )
+				.setDialogId( COLOR_DIALOG_ID_CONTENT_TEXT )
+			;
+			if( column.content_color != 0 ) builder.setColor( column.content_color );
+			builder.show( this );
+			break;
+		
+		case R.id.btnContentColorReset:
+			column.content_color = 0;
+			show();
+			break;
+		
 		case R.id.btnColumnBackgroundImage:
 			Intent intent = new Intent( Intent.ACTION_OPEN_DOCUMENT );
 			intent.addCategory( Intent.CATEGORY_OPENABLE );
@@ -154,6 +188,14 @@ public class ActColumnCustomize extends AppCompatActivity
 			break;
 		case COLOR_DIALOG_ID_COLUMN_BACKGROUND:
 			column.column_bg_color = 0xff000000 | color;
+			break;
+		case COLOR_DIALOG_ID_ACCT_TEXT:
+			if( color == 0 ) color = 1;
+			column.acct_color = color;
+			break;
+		case COLOR_DIALOG_ID_CONTENT_TEXT:
+			if( color == 0 ) color = 1;
+			column.content_color = color;
 			break;
 		}
 		show();
@@ -184,8 +226,12 @@ public class ActColumnCustomize extends AppCompatActivity
 	ImageView ivColumnHeader;
 	TextView tvColumnName;
 	EditText etAlpha;
+	TextView tvSampleAcct;
+	TextView tvSampleContent;
 	
 	static final int PROGRESS_MAX = 65536;
+	
+	int content_color_default;
 	
 	private void initUI(){
 		setContentView( R.layout.act_column_customize );
@@ -200,6 +246,10 @@ public class ActColumnCustomize extends AppCompatActivity
 		findViewById( R.id.btnColumnBackgroundColorReset ).setOnClickListener( this );
 		findViewById( R.id.btnColumnBackgroundImage ).setOnClickListener( this );
 		findViewById( R.id.btnColumnBackgroundImageReset ).setOnClickListener( this );
+		findViewById( R.id.btnAcctColor ).setOnClickListener( this );
+		findViewById( R.id.btnAcctColorReset ).setOnClickListener( this );
+		findViewById( R.id.btnContentColor ).setOnClickListener( this );
+		findViewById( R.id.btnContentColorReset ).setOnClickListener( this );
 		
 		llColumnHeader = findViewById( R.id.llColumnHeader );
 		ivColumnHeader = (ImageView) findViewById( R.id.ivColumnHeader );
@@ -207,6 +257,10 @@ public class ActColumnCustomize extends AppCompatActivity
 		
 		flColumnBackground = findViewById( R.id.flColumnBackground );
 		ivColumnBackground = (ImageView) findViewById( R.id.ivColumnBackground );
+		tvSampleAcct = (TextView) findViewById( R.id.tvSampleAcct );
+		tvSampleContent = (TextView) findViewById( R.id.tvSampleContent );
+		
+		content_color_default = tvSampleContent.getTextColors().getDefaultColor();
 		
 		sbColumnBackgroundAlpha = (SeekBar) findViewById( R.id.sbColumnBackgroundAlpha );
 		sbColumnBackgroundAlpha.setMax( PROGRESS_MAX );
@@ -225,7 +279,7 @@ public class ActColumnCustomize extends AppCompatActivity
 				if( ! fromUser ) return;
 				column.column_bg_image_alpha = progress / (float) PROGRESS_MAX;
 				ivColumnBackground.setAlpha( column.column_bg_image_alpha );
-				etAlpha.setText( String.format( Locale.getDefault() , "%.4f", column.column_bg_image_alpha ) );
+				etAlpha.setText( String.format( Locale.getDefault(), "%.4f", column.column_bg_image_alpha ) );
 			}
 			
 		} );
@@ -304,6 +358,14 @@ public class ActColumnCustomize extends AppCompatActivity
 			etAlpha.setText( String.format( Locale.getDefault(), "%.4f", column.column_bg_image_alpha ) );
 			
 			loadImage( ivColumnBackground, column.column_bg_image );
+			
+			c = column.acct_color != 0 ? column.acct_color :  Styler.getAttributeColor( this, R.attr.colorTimeSmall );
+			tvSampleAcct.setTextColor( c );
+			
+			c = column.content_color != 0 ?column.content_color : content_color_default;
+			tvSampleContent.setTextColor( c );
+			
+			
 		}finally{
 			loading_busy = false;
 		}

@@ -489,13 +489,13 @@ public class ActMain extends AppCompatActivity
 					app_state.saveColumnList();
 					int idx = data.getIntExtra( ActColumnCustomize.EXTRA_COLUMN_INDEX, 0 );
 					if( idx >= 0 && idx < app_state.column_list.size() ){
-						app_state.column_list.get( idx ).fireColumnColor();
+						app_state.column_list.get( idx ).fireShowContent();
 					}
 					updateColumnStrip();
 				}
 			}
 		}
-
+		
 		if( requestCode == REQUEST_CODE_ACCOUNT_SETTING ){
 			updateColumnStrip();
 			
@@ -505,8 +505,8 @@ public class ActMain extends AppCompatActivity
 			
 			if( resultCode == RESULT_OK && data != null ){
 				startAccessTokenUpdate( data );
-			}else if( resultCode == ActAccountSetting.RESULT_INPUT_ACCESS_TOKEN && data != null){
-				long db_id = data.getLongExtra( ActAccountSetting.EXTRA_DB_ID,-1L );
+			}else if( resultCode == ActAccountSetting.RESULT_INPUT_ACCESS_TOKEN && data != null ){
+				long db_id = data.getLongExtra( ActAccountSetting.EXTRA_DB_ID, - 1L );
 				checkAccessToken2( db_id );
 			}
 		}else if( requestCode == REQUEST_CODE_APP_SETTING ){
@@ -1097,8 +1097,9 @@ public class ActMain extends AppCompatActivity
 								if( bInputAccessToken ){
 									// アクセストークンの手動入力
 									DlgAccessToken.show( ActMain.this, new DlgAccessToken.Callback() {
-										@Override public void startCheck( Dialog dialog_token, String access_token ){
-											checkAccessToken( dialog,dialog_token,instance,access_token ,null);
+										@Override
+										public void startCheck( Dialog dialog_token, String access_token ){
+											checkAccessToken( dialog, dialog_token, instance, access_token, null );
 										}
 									} );
 								}else{
@@ -1106,7 +1107,11 @@ public class ActMain extends AppCompatActivity
 									Intent data = new Intent();
 									data.setData( Uri.parse( sv ) );
 									startAccessTokenUpdate( data );
-									dialog.dismiss();
+									try{
+										dialog.dismiss();
+									}catch( Throwable ignored ){
+										// IllegalArgumentException がたまに出る
+									}
 								}
 								return;
 							}
@@ -1133,7 +1138,11 @@ public class ActMain extends AppCompatActivity
 								Utils.showToast( ActMain.this, false, R.string.server_confirmed );
 								int pos = app_state.column_list.size();
 								addColumn( pos, a, Column.TYPE_LOCAL );
-								dialog.dismiss();
+								try{
+									dialog.dismiss();
+								}catch( Throwable ignored ){
+									// IllegalArgumentException がたまに出る
+								}
 							}
 						}
 					}
@@ -1382,7 +1391,7 @@ public class ActMain extends AppCompatActivity
 					// at android.app.Dialog.dismiss(Dialog.java:529)
 				}
 				
-				afterAccountVerify( result,ta,sa,host );
+				afterAccountVerify( result, ta, sa, host );
 			}
 		};
 		progress.setIndeterminate( true );
@@ -1397,7 +1406,7 @@ public class ActMain extends AppCompatActivity
 		task.executeOnExecutor( App1.task_executor );
 	}
 	
-	boolean afterAccountVerify( @Nullable TootApiResult result, @Nullable TootAccount ta, @Nullable SavedAccount sa, @Nullable String host){
+	boolean afterAccountVerify( @Nullable TootApiResult result, @Nullable TootAccount ta, @Nullable SavedAccount sa, @Nullable String host ){
 		//noinspection StatementWithEmptyBody
 		if( result == null ){
 			// cancelled.
@@ -1476,14 +1485,14 @@ public class ActMain extends AppCompatActivity
 		}
 		return false;
 	}
-
+	
 	// アクセストークンを手動で入力した場合
 	void checkAccessToken(
 		@Nullable final Dialog dialog_host
 		, @Nullable final Dialog dialog_token
 		, @NonNull final String host
 		, @NonNull final String access_token
-	    , @Nullable final SavedAccount sa
+		, @Nullable final SavedAccount sa
 	){
 		
 		final ProgressDialog progress = new ProgressDialog( ActMain.this );
@@ -1538,11 +1547,18 @@ public class ActMain extends AppCompatActivity
 					// at android.app.Dialog.dismiss(Dialog.java:529)
 				}
 				
-				if( afterAccountVerify( result,ta,sa,host ) ){
-					if(dialog_host!=null ) dialog_host.dismiss();
-					if(dialog_token!=null ) dialog_token.dismiss();
+				if( afterAccountVerify( result, ta, sa, host ) ){
+					try{
+						if( dialog_host != null ) dialog_host.dismiss();
+					}catch( Throwable ignored ){
+						// IllegalArgumentException がたまに出る
+					}
+					try{
+						if( dialog_token != null ) dialog_token.dismiss();
+					}catch( Throwable ignored ){
+						// IllegalArgumentException がたまに出る
+					}
 				}
-				
 				
 			}
 		};
@@ -1559,16 +1575,16 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	// アクセストークンの手動入力(更新)
-	void checkAccessToken2(long db_id){
-
-		final SavedAccount sa = SavedAccount.loadAccount( this,log,db_id );
+	void checkAccessToken2( long db_id ){
+		
+		final SavedAccount sa = SavedAccount.loadAccount( this, log, db_id );
 		if( sa == null ) return;
 		
 		DlgAccessToken.show( this, new DlgAccessToken.Callback() {
 			@Override public void startCheck( Dialog dialog_token, String access_token ){
-				checkAccessToken( null, dialog_token, sa.host, access_token ,sa);
+				checkAccessToken( null, dialog_token, sa.host, access_token, sa );
 			}
-		});
+		} );
 	}
 	
 	void reloadAccountSetting(){
@@ -3607,7 +3623,11 @@ public class ActMain extends AppCompatActivity
 					@Override public void onReportComplete( TootApiResult result ){
 						
 						// 成功したらダイアログを閉じる
-						dialog.dismiss();
+						try{
+							dialog.dismiss();
+						}catch( Throwable ignored ){
+							// IllegalArgumentException がたまに出る
+						}
 						Utils.showToast( ActMain.this, false, R.string.report_completed );
 					}
 				} );

@@ -133,6 +133,8 @@ class Column implements StreamReader.Callback {
 	private static final String KEY_HEADER_BACKGROUND_COLOR = "header_background_color";
 	private static final String KEY_HEADER_TEXT_COLOR = "header_text_color";
 	private static final String KEY_COLUMN_BACKGROUND_COLOR = "column_background_color";
+	private static final String KEY_COLUMN_ACCT_TEXT_COLOR = "column_acct_text_color";
+	private static final String KEY_COLUMN_CONTENT_TEXT_COLOR = "column_content_text_color";
 	private static final String KEY_COLUMN_BACKGROUND_IMAGE = "column_background_image";
 	private static final String KEY_COLUMN_BACKGROUND_IMAGE_ALPHA = "column_background_image_alpha";
 	
@@ -190,6 +192,8 @@ class Column implements StreamReader.Callback {
 	int header_bg_color;
 	int header_fg_color;
 	int column_bg_color;
+	int acct_color;
+	int content_color;
 	String column_bg_image;
 	float column_bg_image_alpha = 1f;
 	
@@ -262,6 +266,8 @@ class Column implements StreamReader.Callback {
 		item.put( KEY_HEADER_BACKGROUND_COLOR, header_bg_color );
 		item.put( KEY_HEADER_TEXT_COLOR, header_fg_color );
 		item.put( KEY_COLUMN_BACKGROUND_COLOR, column_bg_color );
+		item.put( KEY_COLUMN_ACCT_TEXT_COLOR, acct_color );
+		item.put( KEY_COLUMN_CONTENT_TEXT_COLOR, content_color );
 		item.put( KEY_COLUMN_BACKGROUND_IMAGE, column_bg_image );
 		item.put( KEY_COLUMN_BACKGROUND_IMAGE_ALPHA, (double) column_bg_image_alpha );
 		
@@ -326,6 +332,8 @@ class Column implements StreamReader.Callback {
 		this.header_bg_color = src.optInt( KEY_HEADER_BACKGROUND_COLOR );
 		this.header_fg_color = src.optInt( KEY_HEADER_TEXT_COLOR );
 		this.column_bg_color = src.optInt( KEY_COLUMN_BACKGROUND_COLOR );
+		this.acct_color = src.optInt( KEY_COLUMN_ACCT_TEXT_COLOR );
+		this.content_color = src.optInt( KEY_COLUMN_CONTENT_TEXT_COLOR );
 		this.column_bg_image = Utils.optStringX( src, KEY_COLUMN_BACKGROUND_IMAGE );
 		this.column_bg_image_alpha = (float) src.optDouble( KEY_COLUMN_BACKGROUND_IMAGE_ALPHA, 1.0f );
 		

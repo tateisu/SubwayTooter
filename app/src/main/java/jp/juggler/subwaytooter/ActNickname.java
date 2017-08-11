@@ -156,7 +156,7 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 		int c;
 		
 		c = color_fg;
-		if( c == 0 ) c = Styler.getAttributeColor( this, R.attr.colorAcctSmall );
+		if( c == 0 ) c = Styler.getAttributeColor( this, R.attr.colorTimeSmall );
 		tvPreview.setTextColor( c );
 		
 		c = color_bg;

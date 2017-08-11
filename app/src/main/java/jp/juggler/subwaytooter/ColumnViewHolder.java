@@ -755,7 +755,7 @@ class ColumnViewHolder
 		tvColumnContext.setText( ac != null && ! TextUtils.isEmpty( ac.nickname ) ? ac.nickname : acct );
 		
 		c = ( ac != null ? ac.color_fg : 0 );
-		tvColumnContext.setTextColor( c != 0 ? c : Styler.getAttributeColor( activity, R.attr.colorAcctSmall ) );
+		tvColumnContext.setTextColor( c != 0 ? c : Styler.getAttributeColor( activity, R.attr.colorTimeSmall ) );
 		
 		c = ( ac != null ? ac.color_bg : 0 );
 		if( c == 0 ){

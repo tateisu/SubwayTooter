@@ -230,7 +230,7 @@ public class ActAccountSetting extends AppCompatActivity
 	private void showAcctColor(){
 		AcctColor ac = AcctColor.load( full_acct );
 		tvUserCustom.setText( ac != null && ! TextUtils.isEmpty( ac.nickname ) ? ac.nickname : full_acct );
-		tvUserCustom.setTextColor( ac != null && ac.color_fg != 0 ? ac.color_fg : Styler.getAttributeColor( this, R.attr.colorAcctSmall ) );
+		tvUserCustom.setTextColor( ac != null && ac.color_fg != 0 ? ac.color_fg : Styler.getAttributeColor( this, R.attr.colorTimeSmall ) );
 		tvUserCustom.setBackgroundColor( ac != null && ac.color_bg != 0 ? ac.color_bg : 0 );
 	}
 	

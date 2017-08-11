@@ -50,7 +50,7 @@
                     android:ellipsize="end"
                     android:gravity="end"
                     android:maxLines="1"
-                    android:textColor="?attr/colorAcctSmall"
+                    android:textColor="?attr/colorTimeSmall"
                     android:textSize="12sp"
                     tools:text="who@hoge"
                     />
@@ -119,7 +119,7 @@
                 android:layout_height="wrap_content"
                 android:paddingEnd="4dp"
                 android:paddingStart="4dp"
-                android:textColor="?attr/colorAcctSmall"
+                android:textColor="?attr/colorTimeSmall"
                 android:textSize="12sp"
                 tools:text="aaaaaaaaaaaaaaaa"
                 />
@@ -177,7 +177,7 @@
                 android:ellipsize="end"
                 android:gravity="end"
                 android:maxLines="1"
-                android:textColor="?attr/colorAcctSmall"
+                android:textColor="?attr/colorTimeSmall"
                 android:textSize="12sp"
                 tools:text="who@hoge"
                 />

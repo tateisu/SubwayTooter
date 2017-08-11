@@ -693,5 +693,9 @@
     <string name="format_of_quote_name">\'名前を引用\'のフォーマット ( %1$s を含むテキストを指定する)</string>
     <string name="dont_show_favourite">お気に入りを表示しない</string>
     <string name="dont_show_follow">フォローを表示しない</string>
+    <string name="acct_color">Acctの文字色</string>
+    <string name="background_image">背景画像</string>
+    <string name="background_image_alpha">背景画像のアルファ値</string>
+    <string name="content_color">本文の文字色</string>
 
 </resources>

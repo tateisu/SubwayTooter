@@ -29,7 +29,7 @@ public abstract class Emojione
 		void closeSpan(){
 			if( last_span_start >= 0 ){
 				if( last_span_end > last_span_start ){
-					CalligraphyTypefaceSpan typefaceSpan = new CalligraphyTypefaceSpan( App1.typeface_emoji );
+					EmojiSpan typefaceSpan = new EmojiSpan( App1.typeface_emoji );
 					sb.setSpan( typefaceSpan, last_span_start, last_span_end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 				}
 				last_span_start = -1;

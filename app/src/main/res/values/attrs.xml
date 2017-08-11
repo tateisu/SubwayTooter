@@ -40,9 +40,6 @@
     <!-- プロフ背景を薄くするマスク #C0FFFFFF -->
     <attr name="colorProfileBackgroundMask" format="color"/>
 
-    <!-- Acct の小さな表記 #888888 -->
-    <attr name="colorAcctSmall" format="color"/>
-
     <!-- NSFWを隠す表示の背景色 #000 -->
     <attr name="colorShowMediaBackground" format="color"/>
 

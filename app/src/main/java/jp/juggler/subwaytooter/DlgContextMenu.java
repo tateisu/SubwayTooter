@@ -277,7 +277,11 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 	
 	@Override public void onClick( View v ){
 		
-		dialog.dismiss();
+		try{
+			dialog.dismiss();
+		}catch( Throwable ignored ){
+			// IllegalArgumentException がたまに出る
+		}
 		
 		int pos = activity.nextPosition( column );
 		
@@ -557,7 +561,11 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		
 		switch( v.getId() ){
 		case R.id.btnFollow:
-			dialog.dismiss();
+			try{
+				dialog.dismiss();
+			}catch( Throwable ignored ){
+				// IllegalArgumentException がたまに出る
+			}
 			activity.openFollowFromAnotherAccount( access_info, who );
 			return true;
 			

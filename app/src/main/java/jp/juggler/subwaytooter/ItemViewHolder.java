@@ -1,37 +1,37 @@
 package jp.juggler.subwaytooter;
-	
-	import android.content.DialogInterface;
-	import android.graphics.Typeface;
-	import android.support.annotation.NonNull;
-	import android.support.annotation.Nullable;
-	import android.support.v4.view.ViewCompat;
-	import android.support.v7.app.AlertDialog;
-	import android.text.TextUtils;
-	import android.view.View;
-	import android.view.ViewGroup;
-	import android.widget.Button;
-	import android.widget.ImageButton;
-	import android.widget.ImageView;
-	import android.widget.TextView;
-	
-	import jp.juggler.subwaytooter.api.entity.TootAccount;
-	import jp.juggler.subwaytooter.api.entity.TootAttachment;
-	import jp.juggler.subwaytooter.api.entity.TootDomainBlock;
-	import jp.juggler.subwaytooter.api.entity.TootGap;
-	import jp.juggler.subwaytooter.api.entity.TootNotification;
-	import jp.juggler.subwaytooter.api.entity.TootStatus;
-	import jp.juggler.subwaytooter.api.entity.TootStatusLike;
-	import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
-	import jp.juggler.subwaytooter.table.AcctColor;
-	import jp.juggler.subwaytooter.table.ContentWarning;
-	import jp.juggler.subwaytooter.table.MediaShown;
-	import jp.juggler.subwaytooter.table.SavedAccount;
-	import jp.juggler.subwaytooter.table.UserRelation;
-	import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
-	import jp.juggler.subwaytooter.view.MyListView;
-	import jp.juggler.subwaytooter.view.MyNetworkImageView;
-	import jp.juggler.subwaytooter.view.MyTextView;
-	import jp.juggler.subwaytooter.util.Utils;
+
+import android.content.DialogInterface;
+import android.graphics.Typeface;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.view.ViewCompat;
+import android.support.v7.app.AlertDialog;
+import android.text.TextUtils;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import jp.juggler.subwaytooter.api.entity.TootAccount;
+import jp.juggler.subwaytooter.api.entity.TootAttachment;
+import jp.juggler.subwaytooter.api.entity.TootDomainBlock;
+import jp.juggler.subwaytooter.api.entity.TootGap;
+import jp.juggler.subwaytooter.api.entity.TootNotification;
+import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.api.entity.TootStatusLike;
+import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
+import jp.juggler.subwaytooter.table.AcctColor;
+import jp.juggler.subwaytooter.table.ContentWarning;
+import jp.juggler.subwaytooter.table.MediaShown;
+import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.table.UserRelation;
+import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
+import jp.juggler.subwaytooter.view.MyListView;
+import jp.juggler.subwaytooter.view.MyNetworkImageView;
+import jp.juggler.subwaytooter.view.MyTextView;
+import jp.juggler.subwaytooter.util.Utils;
 
 class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	
@@ -92,6 +92,9 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	@Nullable private TootNotification notification;
 	
 	private final boolean bSimpleList;
+	
+	private final int content_color_default;
+	private int acct_color;
 	
 	ItemViewHolder( ActMain arg_activity, Column column, ItemListAdapter list_adapter, View view, boolean bSimpleList ){
 		this.activity = arg_activity;
@@ -196,6 +199,8 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		ViewGroup.LayoutParams lp = flMedia.getLayoutParams();
 		lp.height = activity.app_state.media_thumb_height;
 		
+		this.content_color_default = tvContent.getTextColors().getDefaultColor();
+		
 		if( ! Float.isNaN( activity.timeline_font_size_sp ) ){
 			tvBoosted.setTextSize( activity.timeline_font_size_sp );
 			tvFollowerName.setTextSize( activity.timeline_font_size_sp );
@@ -235,6 +240,29 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		llSearchTag.setVisibility( View.GONE );
 		
 		if( item == null ) return;
+		
+		{
+			int c = column.content_color != 0 ? column.content_color : content_color_default;
+			tvBoosted.setTextColor( c );
+			tvFollowerName.setTextColor( c );
+			tvName.setTextColor( c );
+			tvMentions.setTextColor( c );
+			tvContentWarning.setTextColor( c );
+			tvContent.setTextColor( c );
+			btnShowMedia.setTextColor( c );
+			if( tvApplication != null ){
+				tvApplication.setTextColor( c );
+			}
+		}
+		
+		{
+			int c = this.acct_color = column.acct_color != 0 ? column.acct_color : Styler.getAttributeColor( activity, R.attr.colorTimeSmall );
+			tvBoostedTime.setTextColor( c );
+			tvTime.setTextColor( c );
+//			tvBoostedAcct.setTextColor( c );
+//			tvFollowerAcct.setTextColor( c );
+//			tvAcct.setTextColor( c );
+		}
 		
 		if( item instanceof MSPToot ){
 			showStatus( activity, (MSPToot) item );
@@ -329,7 +357,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		ivBoosted.setImageResource( Styler.getAttributeResourceId( activity, icon_attr_id ) );
 		tvBoostedTime.setText( TootStatus.formatTime( time ) );
 		tvBoosted.setText( text );
-		setAcct( tvBoostedAcct, access_info.getFullAcct( who ), R.attr.colorAcctSmall );
+		setAcct( tvBoostedAcct, access_info.getFullAcct( who ) );
 	}
 	
 	private void showFollow( @NonNull TootAccount who ){
@@ -338,7 +366,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		ivFollow.setCornerRadius( activity.pref, 16f );
 		ivFollow.setImageUrl( access_info.supplyBaseUrl( who.avatar_static ) );
 		tvFollowerName.setText( who.decoded_display_name );
-		setAcct( tvFollowerAcct, access_info.getFullAcct( who ), R.attr.colorAcctSmall );
+		setAcct( tvFollowerAcct, access_info.getFullAcct( who ) );
 		
 		UserRelation relation = UserRelation.load( access_info.db_id, who.id );
 		Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation );
@@ -353,7 +381,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		ivThumbnail.setCornerRadius( activity.pref, 16f );
 		
 		account_thumbnail = status.account;
-		setAcct( tvAcct, access_info.getFullAcct( status.account ), R.attr.colorAcctSmall );
+		setAcct( tvAcct, access_info.getFullAcct( status.account ) );
 		
 		if( status.account == null ){
 			tvName.setText( "?" );
@@ -465,10 +493,10 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		}
 	}
 	
-	private void setAcct( TextView tv, String acct, int color_attr_id ){
+	private void setAcct( TextView tv, String acct ){
 		AcctColor ac = AcctColor.load( acct );
 		tv.setText( AcctColor.hasNickname( ac ) ? ac.nickname : acct );
-		tv.setTextColor( AcctColor.hasColorForeground( ac ) ? ac.color_fg : Styler.getAttributeColor( activity, color_attr_id ) );
+		tv.setTextColor( AcctColor.hasColorForeground( ac ) ? ac.color_fg : this.acct_color );
 		
 		if( AcctColor.hasColorBackground( ac ) ){
 			tv.setBackgroundColor( ac.color_bg );

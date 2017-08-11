@@ -366,7 +366,7 @@ public class MyNetworkImageView extends AppCompatImageView {
 		
 		@Override
 		public void onStart(){
-			log.d( "MyTargetGif onStart glide_drawable=%s", glide_drawable );
+			// log.d( "MyTargetGif onStart glide_drawable=%s", glide_drawable );
 			if( glide_drawable != null ){
 				glide_drawable.start();
 			}

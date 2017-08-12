@@ -489,6 +489,7 @@ public class ActMain extends AppCompatActivity
 					app_state.saveColumnList();
 					int idx = data.getIntExtra( ActColumnCustomize.EXTRA_COLUMN_INDEX, 0 );
 					if( idx >= 0 && idx < app_state.column_list.size() ){
+						app_state.column_list.get( idx ).fireColumnColor();
 						app_state.column_list.get( idx ).fireShowContent();
 					}
 					updateColumnStrip();

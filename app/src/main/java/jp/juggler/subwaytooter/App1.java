@@ -10,7 +10,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
 
-
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.GlideBuilder;
 import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader;
@@ -50,9 +49,22 @@ public class App1 extends Application {
 	
 	static final LogCategory log = new LogCategory( "App1" );
 	
+	@Override public void onCreate(){
+		log.d("onCreate");
+		super.onCreate();
+		prepare( getApplicationContext() );
+	}
+	
+	@Override public void onTerminate(){
+		log.d("onTerminate");
+		super.onTerminate();
+	}
+	
+	public static final String FILE_PROVIDER_AUTHORITY = "jp.juggler.subwaytooter.FileProvider";
+
 	static final String DB_NAME = "app_db";
 	static final int DB_VERSION = 17;
-	public static final String FILE_PROVIDER_AUTHORITY = "jp.juggler.subwaytooter.FileProvider";
+
 	// 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
 	// 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加
 	// 2017/4/29 v20 2=>5 MediaShown,ContentWarningのインデクスが間違っていたので貼り直す
@@ -75,35 +87,8 @@ public class App1 extends Application {
 		return db_open_helper.getWritableDatabase();
 	}
 	
-	public static void setActivityTheme( Activity activity, boolean bNoActionBar ){
-		int theme_idx = pref.getInt( Pref.KEY_UI_THEME, 0 );
-		switch( theme_idx ){
-		
-		default:
-		case 0:
-			activity.setTheme( bNoActionBar ? R.style.AppTheme_Light_NoActionBar : R.style.AppTheme_Light );
-			break;
-		
-		case 1:
-			activity.setTheme( bNoActionBar ? R.style.AppTheme_Dark_NoActionBar : R.style.AppTheme_Dark );
-			break;
-			
-		}
-	}
-	
-	public static void prepareDB( Context applicationContext ){
-		if( db_open_helper == null ){
-			db_open_helper = new DBOpenHelper( applicationContext );
-			
-			//			if( BuildConfig.DEBUG){
-			//				SQLiteDatabase db = db_open_helper.getWritableDatabase();
-			//				db_open_helper.onCreate( db );
-			//			}
-			UserRelation.deleteOld( System.currentTimeMillis() );
-			AcctSet.deleteOld( System.currentTimeMillis() );
-		}
-	}
-	
+
+
 	private static class DBOpenHelper extends SQLiteOpenHelper {
 		
 		private DBOpenHelper( Context context ){
@@ -125,7 +110,7 @@ public class App1 extends Application {
 			AcctColor.onDBCreate( db );
 			MutedWord.onDBCreate( db );
 			PostDraft.onDBCreate( db );
-			TagSet.onDBCreate(db);
+			TagSet.onDBCreate( db );
 		}
 		
 		@Override
@@ -215,9 +200,11 @@ public class App1 extends Application {
 	
 	static OkHttpUrlLoader.Factory glide_okhttp3_factory;
 	
-	@Override
-	public void onCreate(){
-		super.onCreate();
+	private static boolean bPrepared = false;
+	
+	public static void prepare( final Context app_context ){
+		if( bPrepared ) return;
+		bPrepared = true;
 		
 		CalligraphyConfig.initDefault( new CalligraphyConfig.Builder()
 			.setFontAttrId( R.attr.fontPath )
@@ -259,17 +246,25 @@ public class App1 extends Application {
 		}
 		
 		if( pref == null ){
-			pref = Pref.pref( getApplicationContext() );
+			pref = Pref.pref( app_context );
 		}
 		
-		prepareDB(getApplicationContext());
-		
+		if( db_open_helper == null ){
+			log.d("prepareDB");
+			db_open_helper = new DBOpenHelper( app_context );
+			
+			//			if( BuildConfig.DEBUG){
+			//				SQLiteDatabase db = db_open_helper.getWritableDatabase();
+			//				db_open_helper.onCreate( db );
+			//			}
+			
+			UserRelation.deleteOld( System.currentTimeMillis() );
+			AcctSet.deleteOld( System.currentTimeMillis() );
+		}
 		
 		if( typeface_emoji == null ){
-			typeface_emoji = TypefaceUtils.load( getAssets(), "emojione_android.ttf" );
+			typeface_emoji = TypefaceUtils.load( app_context.getAssets(), "emojione_android.ttf" );
 		}
-		
-		
 		
 		//		if( image_loader == null ){
 		//			image_loader = new MyImageLoader(
@@ -301,10 +296,9 @@ public class App1 extends Application {
 		// Glide.isSetup は Glide 4.0 で廃止になるらしいが、俺が使ってるのは3.xだ
 		//noinspection deprecation
 		if( ! Glide.isSetup() ){
-			final Context context = getApplicationContext();
 			
-			GlideBuilder builder = new GlideBuilder( context );
-			builder.setDiskCache( new InternalCacheDiskCacheFactory( context, 10 * 1024 * 1024 ) );
+			GlideBuilder builder = new GlideBuilder( app_context );
+			builder.setDiskCache( new InternalCacheDiskCacheFactory( app_context, 10 * 1024 * 1024 ) );
 			
 			// 割とGlide任せで十分いけるっぽい
 			//			MemorySizeCalculator calculator = new MemorySizeCalculator(context);
@@ -329,37 +323,55 @@ public class App1 extends Application {
 			//			}
 			//			builder.setMemoryCache(new LruResourceCache(getMemoryCacheSize(getApplicationContext())));
 			//			builder.setBitmapPool(new LruBitmapPool(getBitmapPoolSize(getApplicationContext())));
-
+			
 			// Glide.setupはGLide 4.0 で廃止になるらしいが、俺が使ってるのは3.xだ
 			//noinspection deprecation
 			Glide.setup( builder );
-
+			
 			// DEBUG 画像のディスクキャッシュの消去
-//			new Thread(new Runnable() {
-//				@Override
-//				public void run() {
-//					Glide.get(context).clearDiskCache();
-//				}
-//			}).start();
+			//			new Thread(new Runnable() {
+			//				@Override
+			//				public void run() {
+			//					Glide.get(context).clearDiskCache();
+			//				}
+			//			}).start();
 			
 			glide_okhttp3_factory = new OkHttpUrlLoader.Factory( ok_http_client );
-			Glide.get( getApplicationContext() ).register( GlideUrl.class, InputStream.class, glide_okhttp3_factory );
+			Glide.get( app_context ).register( GlideUrl.class, InputStream.class, glide_okhttp3_factory );
 		}
+		
 	}
 	
-	@Override
-	public void onTerminate(){
-		super.onTerminate();
-	}
-	
+
 	@SuppressLint("StaticFieldLeak")
 	private static AppState app_state;
 	
-	static AppState getAppState( Context context ){
+	static AppState getAppState( @NonNull Context context ){
+		
 		if( app_state == null ){
-			app_state = new AppState( context.getApplicationContext(), pref );
+			context = context.getApplicationContext();
+			prepare( context );
+			app_state = new AppState( context, pref );
 		}
 		return app_state;
 	}
 	
+	public static void setActivityTheme( @NonNull Activity activity, boolean bNoActionBar ){
+
+		prepare( activity.getApplicationContext() );
+
+		int theme_idx = pref.getInt( Pref.KEY_UI_THEME, 0 );
+		switch( theme_idx ){
+		
+		default:
+		case 0:
+			activity.setTheme( bNoActionBar ? R.style.AppTheme_Light_NoActionBar : R.style.AppTheme_Light );
+			break;
+		
+		case 1:
+			activity.setTheme( bNoActionBar ? R.style.AppTheme_Dark_NoActionBar : R.style.AppTheme_Dark );
+			break;
+			
+		}
+	}
 }

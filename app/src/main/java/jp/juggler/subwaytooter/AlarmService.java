@@ -144,7 +144,7 @@ public class AlarmService extends IntentService {
 		
 		// クラッシュレポートによると App1.onCreate より前にここを通る場合がある
 		// データベースへアクセスできるようにする
-		App1.prepareDB( this.getApplicationContext() );
+		App1.prepare( this.getApplicationContext() );
 		
 		// インストールIDを生成する
 		// インストールID生成時にSavedAccountテーブルを操作することがあるので

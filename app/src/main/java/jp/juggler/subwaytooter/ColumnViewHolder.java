@@ -861,7 +861,8 @@ class ColumnViewHolder
 			
 			ScrollPosition sp = column.scroll_save;
 			if( sp == null ){
-				log.d( "restoreScrollPosition [%d] %s , column has no saved scroll position.", page_idx, column.getColumnName( true ) );
+				//復元後にもここを通るがこれは正常である
+				// log.d( "restoreScrollPosition [%d] %s , column has no saved scroll position.", page_idx, column.getColumnName( true ) );
 				return;
 			}
 			

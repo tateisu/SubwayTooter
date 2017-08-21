@@ -19,8 +19,11 @@ import com.woxthebox.draglistview.swipe.ListSwipeItem;
 import java.util.ArrayList;
 
 import jp.juggler.subwaytooter.table.MutedWord;
+import jp.juggler.subwaytooter.util.LogCategory;
 
 public class ActMutedWord extends AppCompatActivity {
+	
+	private static final LogCategory log = new LogCategory( "ActMutedWord" );
 	
 	DragListView listView;
 	MyListAdapter listAdapter;
@@ -28,7 +31,7 @@ public class ActMutedWord extends AppCompatActivity {
 	@Override
 	protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
-		App1.setActivityTheme(this,false);
+		App1.setActivityTheme( this, false );
 		initUI();
 		loadData();
 	}
@@ -41,7 +44,7 @@ public class ActMutedWord extends AppCompatActivity {
 	private void initUI(){
 		setContentView( R.layout.act_mute_app );
 		
-		Styler.fixHorizontalPadding2(findViewById( R.id.llContent ));
+		Styler.fixHorizontalPadding2( findViewById( R.id.llContent ) );
 		
 		// リストのアダプター
 		listAdapter = new MyListAdapter();
@@ -50,29 +53,29 @@ public class ActMutedWord extends AppCompatActivity {
 		listView = (DragListView) findViewById( R.id.drag_list_view );
 		listView.setLayoutManager( new LinearLayoutManager( this ) );
 		listView.setAdapter( listAdapter, false );
-
+		
 		listView.setCanDragHorizontally( true );
 		listView.setDragEnabled( false );
 		listView.setCustomDragItem( new MyDragItem( this, R.layout.lv_mute_app ) );
 		
 		listView.getRecyclerView().setVerticalScrollBarEnabled( true );
-//		listView.setDragListListener( new DragListView.DragListListenerAdapter() {
-//			@Override
-//			public void onItemDragStarted( int position ){
-//				// 操作中はリフレッシュ禁止
-//				// mRefreshLayout.setEnabled( false );
-//			}
-//
-//			@Override
-//			public void onItemDragEnded( int fromPosition, int toPosition ){
-//				// 操作完了でリフレッシュ許可
-//				// mRefreshLayout.setEnabled( USE_SWIPE_REFRESH );
-//
-////				if( fromPosition != toPosition ){
-////					// 並べ替えが発生した
-////				}
-//			}
-//		} );
+		//		listView.setDragListListener( new DragListView.DragListListenerAdapter() {
+		//			@Override
+		//			public void onItemDragStarted( int position ){
+		//				// 操作中はリフレッシュ禁止
+		//				// mRefreshLayout.setEnabled( false );
+		//			}
+		//
+		//			@Override
+		//			public void onItemDragEnded( int fromPosition, int toPosition ){
+		//				// 操作完了でリフレッシュ許可
+		//				// mRefreshLayout.setEnabled( USE_SWIPE_REFRESH );
+		//
+		////				if( fromPosition != toPosition ){
+		////					// 並べ替えが発生した
+		////				}
+		//			}
+		//		} );
 		
 		// リストを左右スワイプした
 		listView.setSwipeListener( new ListSwipeHelper.OnSwipeListenerAdapter() {
@@ -91,8 +94,8 @@ public class ActMutedWord extends AppCompatActivity {
 				// 左にスワイプした(右端に青が見えた) なら要素を削除する
 				if( swipedDirection == ListSwipeItem.SwipeDirection.LEFT ){
 					Object o = item.getTag();
-					if( o instanceof  MyItem){
-						MyItem adapterItem = ( MyItem ) o;
+					if( o instanceof MyItem ){
+						MyItem adapterItem = (MyItem) o;
 						MutedWord.delete( adapterItem.name );
 						listAdapter.removeItem( listAdapter.getPositionForItem( adapterItem ) );
 					}
@@ -100,7 +103,7 @@ public class ActMutedWord extends AppCompatActivity {
 			}
 		} );
 	}
-
+	
 	private void loadData(){
 		
 		ArrayList< MyItem > tmp_list = new ArrayList<>();
@@ -110,7 +113,7 @@ public class ActMutedWord extends AppCompatActivity {
 				try{
 					int idx_name = cursor.getColumnIndex( MutedWord.COL_NAME );
 					while( cursor.moveToNext() ){
-						String name = cursor.getString( idx_name);
+						String name = cursor.getString( idx_name );
 						MyItem item = new MyItem( name );
 						tmp_list.add( item );
 					}
@@ -120,26 +123,25 @@ public class ActMutedWord extends AppCompatActivity {
 				}
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		listAdapter.setItemList( tmp_list );
 	}
-
-
+	
 	// リスト要素のデータ
 	static class MyItem {
 		String name;
-		MyItem(String name ){
+		
+		MyItem( String name ){
 			this.name = name;
 		}
 	}
 	
-	
 	// リスト要素のViewHolder
 	static class MyViewHolder extends DragItemAdapter.ViewHolder {
-
+		
 		final TextView tvName;
-			
+		
 		MyViewHolder( final View viewRoot ){
 			super( viewRoot
 				, R.id.ivDragHandle // View ID。 ここを押すとドラッグ操作をすぐに開始する
@@ -157,19 +159,19 @@ public class ActMutedWord extends AppCompatActivity {
 			
 		}
 		
-		void bind( MyItem item  ){
+		void bind( MyItem item ){
 			itemView.setTag( item ); // itemView は親クラスのメンバ変数
 			tvName.setText( item.name );
 		}
-
-//		@Override
-//		public boolean onItemLongClicked( View view ){
-//			return false;
-//		}
 		
-//		@Override
-//		public void onItemClicked( View view ){
-//		}
+		//		@Override
+		//		public boolean onItemLongClicked( View view ){
+		//			return false;
+		//		}
+		
+		//		@Override
+		//		public void onItemClicked( View view ){
+		//		}
 	}
 	
 	// ドラッグ操作中のデータ
@@ -180,12 +182,12 @@ public class ActMutedWord extends AppCompatActivity {
 		
 		@Override
 		public void onBindDragView( View clickedView, View dragView ){
-			((TextView)dragView.findViewById( R.id.tvName )).setText(
-				((TextView)clickedView.findViewById( R.id.tvName )).getText()
+			( (TextView) dragView.findViewById( R.id.tvName ) ).setText(
+				( (TextView) clickedView.findViewById( R.id.tvName ) ).getText()
 			);
 			
-			dragView.findViewById(R.id.item_layout).setBackgroundColor(
-				Styler.getAttributeColor( ActMutedWord.this, R.attr.list_item_bg_pressed_dragged)
+			dragView.findViewById( R.id.item_layout ).setBackgroundColor(
+				Styler.getAttributeColor( ActMutedWord.this, R.attr.list_item_bg_pressed_dragged )
 			);
 		}
 	}

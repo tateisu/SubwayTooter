@@ -1,11 +1,14 @@
 package jp.juggler.subwaytooter.api.entity;
 
+import android.support.annotation.Nullable;
+
 import org.json.JSONObject;
 
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 public class TootInstance {
+	private static final LogCategory log = new LogCategory( "TootInstance" );
 	
 	//	URI of the current instance
 	public String uri;
@@ -19,7 +22,8 @@ public class TootInstance {
 	//	An email address which can be used to contact the instance administrator
 	public String email;
 	
-	public static TootInstance parse( LogCategory log, JSONObject src ){
+	@Nullable
+	public static TootInstance parse( JSONObject src ){
 		if( src == null ) return null;
 		try{
 			TootInstance dst = new TootInstance();
@@ -29,7 +33,7 @@ public class TootInstance {
 			dst.email = Utils.optStringX( src, "email" );
 			return dst;
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "TootInstance.parse failed." );
 			return null;
 		}

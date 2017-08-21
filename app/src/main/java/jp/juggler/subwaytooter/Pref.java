@@ -74,5 +74,7 @@ public class Pref {
 
 	public static final String KEY_ENABLE_GIF_ANIMATION = "enable_gif_animation";
 	
+	public static final String KEY_MENTION_FULL_ACCT = "mention_full_acct";
+	
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

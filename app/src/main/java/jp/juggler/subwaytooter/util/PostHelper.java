@@ -190,7 +190,7 @@ public class PostHelper {
 				
 				TootApiResult result = client.request( "/api/v1/statuses", request_builder );
 				if( result != null && result.object != null ){
-					status = TootStatus.parse( activity, log, account, account.host, result.object );
+					status = TootStatus.parse( activity,  account, result.object );
 					
 					Spannable s = status.decoded_content;
 					MyClickableSpan[] span_list = s.getSpans( 0, s.length(), MyClickableSpan.class );

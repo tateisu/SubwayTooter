@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.entity;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -11,6 +12,7 @@ import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 public class TootMention {
+	private static final LogCategory log = new LogCategory( "TootMention" );
 	
 	public static class List extends ArrayList< TootMention > {
 		
@@ -28,7 +30,8 @@ public class TootMention {
 	//	Account ID
 	public long id;
 	
-	public static TootMention parse( LogCategory log, JSONObject src ){
+	@Nullable
+	public static TootMention parse( JSONObject src ){
 		if( src == null ) return null;
 		try{
 			TootMention dst = new TootMention();
@@ -38,14 +41,13 @@ public class TootMention {
 			dst.id = src.optLong( "id" );
 			return dst;
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "TootMention.parse failed." );
 			return null;
 		}
 	}
 	
-	@NonNull
-	public static List parseList( LogCategory log, JSONArray array ){
+	@NonNull public static List parseList( JSONArray array ){
 		List result = new List();
 		if( array != null ){
 			int array_size = array.length();
@@ -53,7 +55,7 @@ public class TootMention {
 			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootMention item = parse( log, src );
+				TootMention item = parse( src );
 				if( item != null ) result.add( item );
 			}
 		}

@@ -9,7 +9,6 @@ import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.speech.tts.TextToSpeech;
-import android.speech.tts.UtteranceProgressListener;
 import android.speech.tts.Voice;
 import android.support.annotation.NonNull;
 import android.text.Spannable;
@@ -74,7 +73,7 @@ class AppState {
 				os.close();
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			Utils.showToast( context, ex, "saveColumnList failed." );
 		}
 	}
@@ -92,7 +91,7 @@ class AppState {
 			}
 		}catch( FileNotFoundException ignored ){
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			Utils.showToast( context, ex, "loadColumnList failed." );
 		}
 		return null;
@@ -110,7 +109,7 @@ class AppState {
 				column.encodeJSON( dst, i );
 				array.put( dst );
 			}catch( JSONException ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 		return array;
@@ -131,7 +130,7 @@ class AppState {
 					Column col = new Column( this, src );
 					column_list.add( col );
 				}catch( Throwable ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 				}
 			}
 		}
@@ -172,7 +171,7 @@ class AppState {
 	}
 	
 	boolean resetBusyBoost( SavedAccount account, @NonNull TootStatusLike status ){
-		final String key = account.acct + ":"+ status.getBusyKey();
+		final String key = account.acct + ":" + status.getBusyKey();
 		return map_busy_boost.remove( key );
 	}
 	//////////////////////////////////////////////////////
@@ -205,8 +204,8 @@ class AppState {
 	private long tts_speak_start = 0L;
 	private long tts_speak_end = 0L;
 	
-	private final BroadcastReceiver tts_receiver = new BroadcastReceiver(){
-		@Override public void onReceive(Context context, Intent intent) {
+	private final BroadcastReceiver tts_receiver = new BroadcastReceiver() {
+		@Override public void onReceive( Context context, Intent intent ){
 			if( intent != null ){
 				if( TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED.equals( intent.getAction() ) ){
 					log.d( "tts_receiver: speech completed." );
@@ -217,7 +216,7 @@ class AppState {
 		}
 	};
 	
-	private final ArrayList<Voice> voice_list = new ArrayList<>(  );
+	private final ArrayList< Voice > voice_list = new ArrayList<>();
 	private Random random = new Random();
 	
 	private void enableSpeech(){
@@ -242,7 +241,7 @@ class AppState {
 							log.d( "speech initialize failed. status=%s", status );
 							return;
 						}
-
+						
 						Utils.runOnMainThread( new Runnable() {
 							@Override public void run(){
 								if( ! willSpeechEnabled ){
@@ -275,30 +274,30 @@ class AppState {
 												voice_list.add( v );
 											}
 										}
-									}catch(Throwable ex){
-										ex.printStackTrace();
-										log.e(ex, "TextToSpeech.getVoices raises exception.");
+									}catch( Throwable ex ){
+										log.trace( ex );
+										log.e( ex, "TextToSpeech.getVoices raises exception." );
 									}
 									
 									handler.post( proc_flushSpeechQueue );
 									
-									context.registerReceiver(tts_receiver, new IntentFilter(TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED));
-
-//									tts.setOnUtteranceProgressListener( new UtteranceProgressListener() {
-//										@Override public void onStart( String utteranceId ){
-//											log.d( "UtteranceProgressListener.onStart id=%s", utteranceId );
-//										}
-//
-//										@Override public void onDone( String utteranceId ){
-//											log.d( "UtteranceProgressListener.onDone id=%s", utteranceId );
-//											handler.post( proc_flushSpeechQueue );
-//										}
-//
-//										@Override public void onError( String utteranceId ){
-//											log.d( "UtteranceProgressListener.onError id=%s", utteranceId );
-//											handler.post( proc_flushSpeechQueue );
-//										}
-//									} );
+									context.registerReceiver( tts_receiver, new IntentFilter( TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED ) );
+									
+									//									tts.setOnUtteranceProgressListener( new UtteranceProgressListener() {
+									//										@Override public void onStart( String utteranceId ){
+									//											log.d( "UtteranceProgressListener.onStart id=%s", utteranceId );
+									//										}
+									//
+									//										@Override public void onDone( String utteranceId ){
+									//											log.d( "UtteranceProgressListener.onDone id=%s", utteranceId );
+									//											handler.post( proc_flushSpeechQueue );
+									//										}
+									//
+									//										@Override public void onError( String utteranceId ){
+									//											log.d( "UtteranceProgressListener.onError id=%s", utteranceId );
+									//											handler.post( proc_flushSpeechQueue );
+									//										}
+									//									} );
 								}
 							}
 						} );
@@ -429,18 +428,18 @@ class AppState {
 				}
 				
 				long now = SystemClock.elapsedRealtime();
-
+				
 				if( tts_speak_start > 0L ){
 					if( tts_speak_start >= tts_speak_end ){
 						// まだ終了イベントを受け取っていない
 						long expire_remain = tts_speak_wait_expire + tts_speak_start - now;
 						if( expire_remain <= 0 ){
-							log.d( "proc_flushSpeechQueue: tts_speak wait expired.");
+							log.d( "proc_flushSpeechQueue: tts_speak wait expired." );
 							restartTTS();
 						}else{
 							log.d( "proc_flushSpeechQueue: tts is speaking. queue_count=%d, expire_remain=%.3f"
-								,queue_count
-								,(expire_remain/1000f)
+								, queue_count
+								, ( expire_remain / 1000f )
 							);
 							handler.postDelayed( proc_flushSpeechQueue, expire_remain );
 							return;
@@ -450,14 +449,13 @@ class AppState {
 				}
 				
 				String sv = tts_queue.removeFirst();
-				log.d( "proc_flushSpeechQueue: speak %s",sv);
+				log.d( "proc_flushSpeechQueue: speak %s", sv );
 				
 				int voice_count = voice_list.size();
-				if( voice_count > 0){
+				if( voice_count > 0 ){
 					int n = random.nextInt( voice_count );
-					tts.setVoice( voice_list.get(n) );
+					tts.setVoice( voice_list.get( n ) );
 				}
-				
 				
 				tts_speak_start = now;
 				tts.speak(
@@ -467,8 +465,8 @@ class AppState {
 					, Integer.toString( ++ utteranceIdSeed ) // String utteranceId
 				);
 			}catch( Throwable ex ){
-				ex.printStackTrace();
-				log.e( ex ,"proc_flushSpeechQueue catch exception.");
+				log.trace( ex );
+				log.e( ex, "proc_flushSpeechQueue catch exception." );
 				restartTTS();
 			}
 		}

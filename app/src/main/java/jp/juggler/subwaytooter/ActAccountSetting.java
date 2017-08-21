@@ -56,7 +56,7 @@ public class ActAccountSetting extends AppCompatActivity
 		super.onCreate( savedInstanceState );
 		App1.setActivityTheme( this, false );
 		initUI();
-		account = SavedAccount.loadAccount( this,log, getIntent().getLongExtra( KEY_ACCOUNT_DB_ID, - 1L ) );
+		account = SavedAccount.loadAccount( this, log, getIntent().getLongExtra( KEY_ACCOUNT_DB_ID, - 1L ) );
 		if( account == null ) finish();
 		loadUIFromData( account );
 		
@@ -244,7 +244,7 @@ public class ActAccountSetting extends AppCompatActivity
 		account.notification_follow = cbNotificationFollow.isChecked();
 		
 		account.sound_uri = notification_sound_uri == null ? "" : notification_sound_uri;
-
+		
 		account.confirm_follow = cbConfirmFollow.isChecked();
 		account.confirm_follow_locked = cbConfirmFollowLockedUser.isChecked();
 		account.confirm_unfollow = cbConfirmUnfollow.isChecked();
@@ -267,7 +267,7 @@ public class ActAccountSetting extends AppCompatActivity
 		case R.id.btnInputAccessToken:
 			inputAccessToken();
 			break;
-			
+		
 		case R.id.btnAccountRemove:
 			performAccountRemove();
 			break;
@@ -277,11 +277,11 @@ public class ActAccountSetting extends AppCompatActivity
 		case R.id.btnOpenBrowser:
 			open_browser( "https://" + account.host + "/" );
 			break;
-
+		
 		case R.id.btnUserCustom:
 			ActNickname.open( this, full_acct, false, REQUEST_CODE_ACCT_CUSTOMIZE );
 			break;
-
+		
 		case R.id.btnNotificationSoundEdit:
 			openNotificationSoundPicker();
 			break;
@@ -298,7 +298,7 @@ public class ActAccountSetting extends AppCompatActivity
 			Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse( url ) );
 			startActivity( intent );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 	}
 	
@@ -372,8 +372,8 @@ public class ActAccountSetting extends AppCompatActivity
 						
 						void unregister(){
 							try{
-
-								String install_id = PrefDevice.prefDevice( ActAccountSetting.this ).getString( PrefDevice.KEY_INSTALL_ID,null);
+								
+								String install_id = PrefDevice.prefDevice( ActAccountSetting.this ).getString( PrefDevice.KEY_INSTALL_ID, null );
 								if( TextUtils.isEmpty( install_id ) ){
 									log.d( "performAccountRemove: missing install_id" );
 									return;
@@ -401,7 +401,7 @@ public class ActAccountSetting extends AppCompatActivity
 								log.e( "performAccountRemove: %s", response );
 								
 							}catch( Throwable ex ){
-								ex.printStackTrace();
+								log.trace( ex );
 							}
 						}
 						
@@ -450,7 +450,7 @@ public class ActAccountSetting extends AppCompatActivity
 				} );
 				
 				api_client.setAccount( account );
-				return api_client.authorize1( Pref.pref(ActAccountSetting.this).getString(Pref.KEY_CLIENT_NAME,""));
+				return api_client.authorize1( Pref.pref( ActAccountSetting.this ).getString( Pref.KEY_CLIENT_NAME, "" ) );
 			}
 			
 			@Override protected void onPostExecute( TootApiResult result ){
@@ -491,10 +491,11 @@ public class ActAccountSetting extends AppCompatActivity
 	
 	static final int RESULT_INPUT_ACCESS_TOKEN = RESULT_FIRST_USER + 10;
 	static final String EXTRA_DB_ID = "db_id";
+	
 	private void inputAccessToken(){
-
+		
 		Intent data = new Intent();
-		data.putExtra( EXTRA_DB_ID,account.db_id );
+		data.putExtra( EXTRA_DB_ID, account.db_id );
 		setResult( RESULT_INPUT_ACCESS_TOKEN, data );
 		finish();
 	}

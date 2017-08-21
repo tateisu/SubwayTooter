@@ -24,10 +24,11 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 public class ActColumnList extends AppCompatActivity {
-	
+	private static final LogCategory log = new LogCategory( "ActColumnList" );
 	static final String TMP_FILE_COLUMN_LIST = "tmp_column_list";
 	
 	public static final String EXTRA_ORDER = "order";
@@ -66,7 +67,7 @@ public class ActColumnList extends AppCompatActivity {
 		for( int i = 0, ie = item_list.size() ; i < ie ; ++ i ){
 			array.put( item_list.get( i ).json );
 		}
-		AppState.saveColumnList( this,TMP_FILE_COLUMN_LIST, array );
+		AppState.saveColumnList( this, TMP_FILE_COLUMN_LIST, array );
 	}
 	
 	@Override
@@ -82,8 +83,7 @@ public class ActColumnList extends AppCompatActivity {
 	private void initUI(){
 		setContentView( R.layout.act_column_list );
 		
-		Styler.fixHorizontalPadding2(findViewById( R.id.llContent ));
-		
+		Styler.fixHorizontalPadding2( findViewById( R.id.llContent ) );
 		
 		// リストのアダプター
 		listAdapter = new MyListAdapter();
@@ -148,7 +148,7 @@ public class ActColumnList extends AppCompatActivity {
 		
 		ArrayList< MyItem > tmp_list = new ArrayList<>();
 		try{
-			JSONArray array = AppState.loadColumnList( this,TMP_FILE_COLUMN_LIST );
+			JSONArray array = AppState.loadColumnList( this, TMP_FILE_COLUMN_LIST );
 			if( array != null ){
 				for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
 					try{
@@ -160,13 +160,13 @@ public class ActColumnList extends AppCompatActivity {
 								item.setOldSelection( true );
 							}
 						}
-					}catch( Throwable ex2 ){
-						ex2.printStackTrace();
+					}catch( Throwable ex ){
+						log.trace( ex );
 					}
 				}
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		listAdapter.setItemList( tmp_list );
 	}

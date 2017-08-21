@@ -413,8 +413,9 @@
 	<string name="content_sample">(sample)Le cœur déçu mais l\'âme plutôt naïve, Louÿs rêva de crapaüter en canoë au delà des îles, près du mälströn où brûlent les novæ.</string>
 	<string name="enable_gif_animation">Enable GIF animation (It wastes the battery very much)</string>
 	<string name="acct_sample">(sample)username@instance</string>
+	<string name="mention_full_acct">Show mention as full acct (app restart required)</string>
 
-	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

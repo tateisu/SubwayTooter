@@ -9,8 +9,8 @@ android {
         applicationId "jp.juggler.subwaytooter"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 117
-        versionName "1.1.7"
+        versionCode 118
+        versionName "1.1.8"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -62,7 +62,7 @@ dependencies {
 
     testCompile 'junit:junit:4.12'
 //    compile 'com.android.volley:volley:1.0.0'
-    compile 'com.squareup.okhttp3:okhttp:3.8.0'
+    compile 'com.squareup.okhttp3:okhttp:3.8.1'
  //   compile 'com.squareup.okhttp3:okhttp-urlconnection:3.8.0' // Vollery に使う
     compile 'commons-io:commons-io:2.4'
     compile 'uk.co.chrisjenx:calligraphy:2.2.0'

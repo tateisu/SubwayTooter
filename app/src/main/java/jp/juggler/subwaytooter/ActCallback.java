@@ -17,9 +17,11 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
+import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 public class ActCallback extends AppCompatActivity {
+	private static final LogCategory log = new LogCategory( "ActCallback" );
 	static final AtomicReference< Uri > last_uri = new AtomicReference<>( null );
 	static final AtomicReference< Intent > sent_intent = new AtomicReference<>( null );
 	
@@ -64,17 +66,17 @@ public class ActCallback extends AppCompatActivity {
 			final String action = src.getAction();
 			final String type = src.getType();
 			
-			if( type!= null && type.startsWith( "image/" ) ){
+			if( type != null && type.startsWith( "image/" ) ){
 				if( Intent.ACTION_VIEW.equals( action ) ){
 					Uri uri = src.getData();
 					if( uri == null ) return null;
 					try{
 						uri = saveToCache( uri );
 						Intent dst = new Intent( action );
-						dst.setDataAndType( uri,type );
+						dst.setDataAndType( uri, type );
 						return dst;
 					}catch( Throwable ex ){
-						ex.printStackTrace();
+						log.trace( ex );
 					}
 				}else if( Intent.ACTION_SEND.equals( action ) ){
 					Uri uri = src.getParcelableExtra( Intent.EXTRA_STREAM );
@@ -90,7 +92,7 @@ public class ActCallback extends AppCompatActivity {
 							dst.putExtra( Intent.EXTRA_STREAM, uri );
 							return dst;
 						}catch( Throwable ex ){
-							ex.printStackTrace();
+							log.trace( ex );
 						}
 					}
 				}else if( Intent.ACTION_SEND_MULTIPLE.equals( action ) ){
@@ -103,7 +105,7 @@ public class ActCallback extends AppCompatActivity {
 								uri = saveToCache( uri );
 								list_dst.add( uri );
 							}catch( Throwable ex ){
-								ex.printStackTrace();
+								log.trace( ex );
 							}
 						}
 					}
@@ -117,12 +119,12 @@ public class ActCallback extends AppCompatActivity {
 				
 				// Swarmアプリから送られたインテントは getType()==null だが EXTRA_TEXT は含まれている
 				// EXTRA_TEXT の存在を確認してからtypeがnullもしくは text/plain なら受け取る
-
+				
 				String sv = src.getStringExtra( Intent.EXTRA_TEXT );
-				if( ! TextUtils.isEmpty(sv) && ( type==null || type.startsWith( "text/" ) ) ){
+				if( ! TextUtils.isEmpty( sv ) && ( type == null || type.startsWith( "text/" ) ) ){
 					String subject = src.getStringExtra( Intent.EXTRA_SUBJECT );
-					if(! TextUtils.isEmpty(subject) ){
-						sv = subject + " " +sv;
+					if( ! TextUtils.isEmpty( subject ) ){
+						sv = subject + " " + sv;
 					}
 					Intent dst = new Intent( action );
 					dst.setType( "text/plain" );
@@ -131,19 +133,17 @@ public class ActCallback extends AppCompatActivity {
 				}
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		return null;
 	}
 	
 	private Uri saveToCache( Uri uri ) throws Throwable{
-
+		
 		// prepare cache directory
 		File cache_dir = getCacheDir();
 		//noinspection ResultOfMethodCallIgnored
 		cache_dir.mkdirs();
-		
-		
 		
 		String name = "img." + Long.toString( System.currentTimeMillis() ) + "." + Utils.digestSHA256( uri.toString() );
 		
@@ -183,12 +183,12 @@ public class ActCallback extends AppCompatActivity {
 						//noinspection ResultOfMethodCallIgnored
 						f.delete();
 					}
-				}catch(Throwable ex){
-					ex.printStackTrace();
+				}catch( Throwable ex ){
+					log.trace( ex );
 				}
 			}
-		}catch(Throwable ex){
-			ex.printStackTrace();
+		}catch( Throwable ex ){
+			log.trace( ex );
 		}
 	}
 }

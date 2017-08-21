@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.entity;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -12,13 +13,16 @@ import jp.juggler.subwaytooter.util.Utils;
 
 public class TootTag {
 	
+	private static final LogCategory log = new LogCategory( "TootTag" );
+	
 	// The hashtag, not including the preceding #
 	public String name;
 	
 	// The URL of the hashtag
 	public String url;
 	
-	public static TootTag parse( LogCategory log, JSONObject src ){
+	@Nullable
+	public static TootTag parse( JSONObject src ){
 		if( src == null ) return null;
 		try{
 			TootTag dst = new TootTag();
@@ -26,8 +30,8 @@ public class TootTag {
 			dst.url = Utils.optStringX( src, "url" );
 			return dst;
 		}catch( Throwable ex ){
-			ex.printStackTrace();
-			log.e( ex, "TootTag.parse failed." );
+			log.trace( ex );
+			log.e( ex, "parse failed." );
 			return null;
 		}
 	}
@@ -37,7 +41,7 @@ public class TootTag {
 	}
 	
 	@NonNull
-	public static List parseList( LogCategory log, JSONArray array ){
+	public static List parseList( JSONArray array ){
 		List result = new List();
 		if( array != null ){
 			int array_size = array.length();
@@ -45,7 +49,7 @@ public class TootTag {
 			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootTag item = parse( log, src );
+				TootTag item = parse( src );
 				if( item != null ) result.add( item );
 			}
 		}

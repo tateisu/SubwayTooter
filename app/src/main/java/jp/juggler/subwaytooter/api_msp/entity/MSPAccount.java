@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.api_msp.entity;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.json.JSONObject;
@@ -16,11 +17,12 @@ import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 public class MSPAccount extends TootAccount {
+	private static final LogCategory log = new LogCategory( "MSPAccount" );
 	
 	private static final Pattern reAccountUrl = Pattern.compile( "\\Ahttps://([^/#?]+)/@([^/#?]+)\\z" );
 	
-	
-	static TootAccount parseAccount( @NonNull Context context, LogCategory log, SavedAccount access_info, JSONObject src ){
+	@Nullable
+	static TootAccount parseAccount( @NonNull Context context, SavedAccount access_info, JSONObject src ){
 		
 		if( src == null ) return null;
 		
@@ -30,12 +32,12 @@ public class MSPAccount extends TootAccount {
 		dst.avatar = dst.avatar_static = Utils.optStringX( src, "avatar" );
 		
 		String sv = Utils.optStringX( src, "display_name" );
-		dst.setDisplayName( context, dst.username , sv );
+		dst.setDisplayName( context, dst.username, sv );
 		
 		dst.id = src.optLong( "id" );
 		
 		dst.note = Utils.optStringX( src, "note" );
-		dst.decoded_note = HTMLDecoder.decodeHTML( context,access_info, ( dst.note != null ? dst.note : null ), true, true,null );
+		dst.decoded_note = HTMLDecoder.decodeHTML( context, access_info, ( dst.note != null ? dst.note : null ), true, true, null );
 		
 		if( TextUtils.isEmpty( dst.url ) ){
 			log.e( "parseAccount: missing url" );

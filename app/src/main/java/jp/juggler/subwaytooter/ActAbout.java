@@ -12,7 +12,10 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import jp.juggler.subwaytooter.util.LogCategory;
+
 public class ActAbout extends AppCompatActivity {
+	private static final LogCategory log = new LogCategory( "ActAbout" );
 	
 	static final String EXTRA_SEARCH = "search";
 	
@@ -39,7 +42,7 @@ public class ActAbout extends AppCompatActivity {
 			PackageInfo pInfo = getPackageManager().getPackageInfo( getPackageName(), 0 );
 			( (TextView) findViewById( R.id.tvVersion ) ).setText( getString( R.string.version_is, pInfo.versionName ) );
 		}catch( PackageManager.NameNotFoundException ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		Button b;
 		
@@ -117,7 +120,7 @@ public class ActAbout extends AppCompatActivity {
 			Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse( url ) );
 			startActivity( intent );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 	}
 }

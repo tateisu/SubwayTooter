@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.api.entity;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.TextUtils;
 
@@ -19,13 +20,15 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
-import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.util.WordTrieTree;
 
 public class TootStatus extends TootStatusLike {
+	
+	private static final LogCategory log = new LogCategory( "TootStatus" );
 	
 	public static class List extends ArrayList< TootStatus > {
 		
@@ -79,7 +82,8 @@ public class TootStatus extends TootStatusLike {
 	
 	public boolean conversation_main;
 	
-	public static TootStatus parse( @NonNull Context context, @NonNull LogCategory log, @NonNull LinkClickContext lcc, @NonNull String host_access, JSONObject src ){
+	@Nullable
+	public static TootStatus parse( @NonNull Context context, @NonNull SavedAccount access_info, JSONObject src ){
 		
 		if( src == null ) return null;
 		//	log.d( "parse: %s", src.toString() );
@@ -88,7 +92,7 @@ public class TootStatus extends TootStatusLike {
 			TootStatus status = new TootStatus();
 			status.json = src;
 			
-			status.account = TootAccount.parse( context,log, lcc, src.optJSONObject( "account" ) );
+			status.account = TootAccount.parse( context, access_info, src.optJSONObject( "account" ) );
 			
 			if( status.account == null ) return null;
 			
@@ -96,15 +100,15 @@ public class TootStatus extends TootStatusLike {
 			status.uri = Utils.optStringX( src, "uri" );
 			status.url = Utils.optStringX( src, "url" );
 			
-			status.host_access = host_access;
+			status.host_access = access_info.host;
 			status.host_original = status.account.getAcctHost();
 			if( status.host_original == null ){
-				status.host_original = host_access;
+				status.host_original = access_info.host;
 			}
 			
 			status.in_reply_to_id = Utils.optStringX( src, "in_reply_to_id" ); // null
 			status.in_reply_to_account_id = Utils.optStringX( src, "in_reply_to_account_id" ); // null
-			status.reblog = TootStatus.parse( context, log, lcc, host_access, src.optJSONObject( "reblog" ) );
+			status.reblog = TootStatus.parse( context, access_info, src.optJSONObject( "reblog" ) );
 			status.content = Utils.optStringX( src, "content" );
 			status.created_at = Utils.optStringX( src, "created_at" ); // "2017-04-16T09:37:14.000Z"
 			status.reblogs_count = src.optLong( "reblogs_count" );
@@ -113,31 +117,31 @@ public class TootStatus extends TootStatusLike {
 			status.favourited = src.optBoolean( "favourited" );
 			status.sensitive = src.optBoolean( "sensitive" ); // false
 			status.visibility = Utils.optStringX( src, "visibility" );
-			status.media_attachments = TootAttachment.parseList( log, src.optJSONArray( "media_attachments" ) );
-			status.mentions = TootMention.parseList( log, src.optJSONArray( "mentions" ) );
-			status.tags = TootTag.parseList( log, src.optJSONArray( "tags" ) );
-			status.application = TootApplication.parse( log, src.optJSONObject( "application" ) ); // null
+			status.media_attachments = TootAttachment.parseList( src.optJSONArray( "media_attachments" ) );
+			status.mentions = TootMention.parseList( src.optJSONArray( "mentions" ) );
+			status.tags = TootTag.parseList( src.optJSONArray( "tags" ) );
+			status.application = TootApplication.parse( src.optJSONObject( "application" ) ); // null
 			
 			status.setSpoilerText( context, Utils.optStringX( src, "spoiler_text" ) );
 			
 			status.muted = src.optBoolean( "muted" );
 			status.language = Utils.optStringX( src, "language" );
 			
-			status.time_created_at = parseTime( log, status.created_at );
-			status.decoded_content = HTMLDecoder.decodeHTML( context, lcc, status.content, true, true, status.media_attachments );
+			status.time_created_at = parseTime( status.created_at );
+			status.decoded_content = HTMLDecoder.decodeHTML( context, access_info, status.content, true, true, status.media_attachments );
 			// status.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
-			status.decoded_mentions = HTMLDecoder.decodeMentions( lcc, status.mentions );
+			status.decoded_mentions = HTMLDecoder.decodeMentions( access_info, status.mentions );
 			
 			return status;
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "TootStatus.parse failed." );
 			return null;
 		}
 	}
 	
 	@NonNull
-	public static List parseList(@NonNull Context context, @NonNull LogCategory log, @NonNull LinkClickContext lcc, @NonNull String status_host, JSONArray array ){
+	public static List parseList( @NonNull Context context, @NonNull SavedAccount access_info, JSONArray array ){
 		List result = new List();
 		if( array != null ){
 			int array_size = array.length();
@@ -145,7 +149,7 @@ public class TootStatus extends TootStatusLike {
 			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootStatus item = parse( context, log, lcc, status_host, src );
+				TootStatus item = parse( context, access_info, src );
 				if( item != null ) result.add( item );
 			}
 		}
@@ -156,7 +160,7 @@ public class TootStatus extends TootStatusLike {
 	
 	private static final TimeZone tz_utc = TimeZone.getTimeZone( "UTC" );
 	
-	static long parseTime( LogCategory log, String strTime ){
+	static long parseTime( String strTime ){
 		if( ! TextUtils.isEmpty( strTime ) ){
 			try{
 				Matcher m = reTime.matcher( strTime );
@@ -176,7 +180,7 @@ public class TootStatus extends TootStatusLike {
 					return g.getTimeInMillis();
 				}
 			}catch( Throwable ex ){// ParseException,  ArrayIndexOutOfBoundsException
-				ex.printStackTrace();
+				log.trace( ex );
 				log.e( ex, "TootStatus.parseTime failed. src=%s", strTime );
 			}
 		}

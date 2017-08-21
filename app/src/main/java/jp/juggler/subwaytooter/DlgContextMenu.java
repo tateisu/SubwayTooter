@@ -549,7 +549,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 						sv = String.format( fmt, sv );
 					}
 				}catch( Throwable ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 				}
 				activity.openPost( sv );
 			}

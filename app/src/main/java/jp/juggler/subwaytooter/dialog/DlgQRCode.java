@@ -15,11 +15,13 @@ import android.widget.TextView;
 import jp.juggler.subwaytooter.ActMain;
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.R;
+import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 import net.glxn.qrgen.android.QRCode;
 
 public class DlgQRCode {
+	private static final LogCategory log = new LogCategory( "DlgQRCode" );
 	
 	interface QrCodeCallback{
 		void onQrCode(Bitmap bitmap);
@@ -32,7 +34,7 @@ public class DlgQRCode {
 				try{
 					return QRCode.from(url).withSize( size,size ).bitmap();
 				}catch(Throwable ex){
-					ex.printStackTrace(  );
+					log.trace( ex );
 					Utils.showToast( activity,ex,"makeQrCode failed." );
 					return null;
 				}

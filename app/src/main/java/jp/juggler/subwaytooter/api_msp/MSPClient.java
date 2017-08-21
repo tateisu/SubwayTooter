@@ -12,6 +12,7 @@ import org.json.JSONObject;
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.Pref;
 import jp.juggler.subwaytooter.R;
+import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;
@@ -19,7 +20,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class MSPClient {
-	// static final LogCategory log = new LogCategory("MSPClient");
+	private static final LogCategory log = new LogCategory("MSPClient");
 	
 	private static final String url_token = "http://mastodonsearch.jp/api/v1.0.1/utoken";
 	private static final String url_search = "http://mastodonsearch.jp/api/v1.0.1/cross";
@@ -57,7 +58,7 @@ public class MSPClient {
 					Call call = ok_http_client.newCall( request );
 					response = call.execute();
 				}catch( Throwable ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 					return new MSPApiResult( Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 				}
 				
@@ -75,7 +76,7 @@ public class MSPClient {
 								, error.optString( "detail" )
 							) );
 						}catch( Throwable ex ){
-							ex.printStackTrace();
+							log.trace( ex );
 							return new MSPApiResult( Utils.formatError( ex, "API returns error response %s, but can't parse response body.", response.code() ) );
 						}
 					}else{
@@ -94,7 +95,7 @@ public class MSPClient {
 						pref.edit().putString( Pref.KEY_MASTODON_SEARCH_PORTAL_USER_TOKEN, user_token ).apply();
 					}
 				}catch( Throwable ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 					return new MSPApiResult( Utils.formatError( ex, "API data error" ) );
 				}
 			}
@@ -115,7 +116,7 @@ public class MSPClient {
 					Call call = ok_http_client.newCall( request );
 					response = call.execute();
 				}catch( Throwable ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 					return new MSPApiResult( Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 				}
 				
@@ -138,7 +139,7 @@ public class MSPClient {
 								, error.optString( "detail" )
 							) );
 						}catch( Throwable ex ){
-							ex.printStackTrace();
+							log.trace( ex );
 							return new MSPApiResult( Utils.formatError( ex, "API returns error response %s, but can't parse response body.", response.code() ) );
 						}
 					}else{
@@ -152,7 +153,7 @@ public class MSPClient {
 					JSONArray array = new JSONArray( json );
 					return new MSPApiResult( response, json, array );
 				}catch( Throwable ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 					return new MSPApiResult( Utils.formatError( ex, "API data error" ) );
 				}
 			}

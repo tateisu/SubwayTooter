@@ -61,7 +61,7 @@ public class AcctColor {
 			try{
 				db.execSQL( "alter table " + table + " add column " + COL_NOTIFICATION_SOUND + " text default ''" );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 	}
@@ -99,7 +99,7 @@ public class AcctColor {
 			App1.getDB().replace( table, null, cv );
 			mMemoryCache.remove( acct );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "save failed." );
 		}
 	}
@@ -152,7 +152,7 @@ public class AcctColor {
 				}
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "load failed." );
 		}
 		log.d( "lruCache size=%s,hit=%s,miss=%s", mMemoryCache.size(), mMemoryCache.hitCount(), mMemoryCache.missCount() );

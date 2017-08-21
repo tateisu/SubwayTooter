@@ -7,8 +7,6 @@ import org.json.JSONArray;
 
 import java.util.ArrayList;
 
-import jp.juggler.subwaytooter.util.LogCategory;
-
 public class TootDomainBlock {
 	
 	public static class List extends ArrayList< TootDomainBlock > {
@@ -21,17 +19,17 @@ public class TootDomainBlock {
 	private TootDomainBlock( String sv ){
 		this.domain = sv;
 	}
-
+	
 	@NonNull
-	public static List parseList( LogCategory log, JSONArray array ){
+	public static List parseList( JSONArray array ){
 		List result = new List();
 		if( array != null ){
 			int array_size = array.length();
 			result.ensureCapacity( array_size );
-			for( int i=0;i<array_size;++i){
-				String sv = array.optString( i);
-				if(!TextUtils.isEmpty( sv )){
-					result.add( new TootDomainBlock(sv));
+			for( int i = 0 ; i < array_size ; ++ i ){
+				String sv = array.optString( i );
+				if( ! TextUtils.isEmpty( sv ) ){
+					result.add( new TootDomainBlock( sv ) );
 				}
 			}
 		}

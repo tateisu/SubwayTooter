@@ -190,7 +190,7 @@ public class MyNetworkImageView extends AppCompatImageView {
 				
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			// java.lang.IllegalArgumentException:
 			//			at com.bumptech.glide.manager.RequestManagerRetriever.assertNotDestroyed(RequestManagerRetriever.java:134)
 			//			at com.bumptech.glide.manager.RequestManagerRetriever.get(RequestManagerRetriever.java:102)
@@ -221,10 +221,10 @@ public class MyNetworkImageView extends AppCompatImageView {
 				// このViewは別の画像を表示するように指定が変わっていた
 				if( ! url.equals( mUrl ) ) return;
 				
-				e.printStackTrace();
+				log.trace( e );
 				if( mErrorImageId != 0 ) setImageResource( mErrorImageId );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 				// java.lang.NullPointerException:
 				// at jp.juggler.subwaytooter.view.MyNetworkImageView$1.onLoadFailed(MyNetworkImageView.java:147)
 				// at com.bumptech.glide.request.GenericRequest.setErrorPlaceholder(GenericRequest.java:404)
@@ -255,7 +255,7 @@ public class MyNetworkImageView extends AppCompatImageView {
 				//				}
 				
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 	}
@@ -285,10 +285,10 @@ public class MyNetworkImageView extends AppCompatImageView {
 				// このViewは別の画像を表示するように指定が変わっていた
 				if( ! url.equals( mUrl ) ) return;
 				
-				e.printStackTrace();
+				log.trace( e );
 				if( mErrorImageId != 0 ) setImageResource( mErrorImageId );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 		
@@ -320,7 +320,7 @@ public class MyNetworkImageView extends AppCompatImageView {
 							try{
 								resource = new MyGifDrawable( src, mCornerRadius );
 							}catch( Throwable ex ){
-								ex.printStackTrace();
+								log.trace( ex );
 							}
 						}
 					}else if ( resource instanceof GlideBitmapDrawable ){
@@ -329,7 +329,7 @@ public class MyNetworkImageView extends AppCompatImageView {
 							try{
 								resource = new MyGlideBitmapDrawable( getResources(), src, mCornerRadius );
 							}catch( Throwable ex ){
-								ex.printStackTrace();
+								log.trace( ex );
 							}
 						}
 					}else{
@@ -357,7 +357,7 @@ public class MyNetworkImageView extends AppCompatImageView {
 				resource.start();
 				
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 		

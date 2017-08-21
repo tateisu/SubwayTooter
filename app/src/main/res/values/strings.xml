@@ -408,5 +408,6 @@
     <string name="content_sample">(sample)The quick brown fox jumps over the lazy dog.</string>
     <string name="enable_gif_animation">Enable GIF animation (It wastes the battery very much)</string>
     <string name="acct_sample">(sample)username@instance</string>
+    <string name="mention_full_acct">Show mention as full acct (app restart required)</string>
 
 </resources>

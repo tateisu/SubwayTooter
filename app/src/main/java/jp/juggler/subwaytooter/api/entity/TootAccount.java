@@ -20,6 +20,7 @@ import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 public class TootAccount {
+	private static final LogCategory log = new LogCategory( "TootAccount" );
 	
 	public static class List extends ArrayList< TootAccount > {
 		
@@ -104,9 +105,8 @@ public class TootAccount {
 		this.username = username;
 	}
 	
-
-	
-	public static TootAccount parse( Context context, LogCategory log, LinkClickContext account, JSONObject src, TootAccount dst ){
+	@Nullable
+	public static TootAccount parse( Context context, LinkClickContext account, JSONObject src, TootAccount dst ){
 		if( src == null ) return null;
 		try{
 			dst.id = src.optLong( "id", - 1L );
@@ -117,8 +117,7 @@ public class TootAccount {
 			}
 			
 			String sv = Utils.optStringX( src, "display_name" );
-			dst.setDisplayName( context, dst.username , sv );
-			
+			dst.setDisplayName( context, dst.username, sv );
 			
 			dst.locked = src.optBoolean( "locked" );
 			dst.created_at = Utils.optStringX( src, "created_at" );
@@ -135,20 +134,20 @@ public class TootAccount {
 			dst.header = Utils.optStringX( src, "header" ); // "https:\/\/mastodon.juggler.jp\/headers\/original\/missing.png"
 			dst.header_static = Utils.optStringX( src, "header_static" ); // "https:\/\/mastodon.juggler.jp\/headers\/original\/missing.png"}
 			
-			dst.time_created_at = TootStatus.parseTime( log, dst.created_at );
+			dst.time_created_at = TootStatus.parseTime( dst.created_at );
 			
-			dst.source = parseSource( log, src.optJSONObject( "source" ) );
+			dst.source = parseSource( src.optJSONObject( "source" ) );
 			
 			return dst;
 			
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "TootAccount.parse failed." );
 			return null;
 		}
 	}
 	
-	private static Source parseSource( LogCategory log, JSONObject src ){
+	private static Source parseSource( JSONObject src ){
 		if( src == null ) return null;
 		Source dst = new Source();
 		dst.privacy = Utils.optStringX( src, "privacy" );
@@ -159,12 +158,12 @@ public class TootAccount {
 		return dst;
 	}
 	
-	public static TootAccount parse( Context context, LogCategory log, LinkClickContext account, JSONObject src ){
-		return parse( context, log, account, src, new TootAccount() );
+	public static TootAccount parse( Context context, LinkClickContext account, JSONObject src ){
+		return parse( context, account, src, new TootAccount() );
 	}
 	
 	@NonNull
-	public static List parseList( Context context, LogCategory log, LinkClickContext account, JSONArray array ){
+	public static List parseList( Context context, LinkClickContext account, JSONArray array ){
 		List result = new List();
 		if( array != null ){
 			int array_size = array.length();
@@ -172,7 +171,7 @@ public class TootAccount {
 			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootAccount item = parse( context, log, account, src );
+				TootAccount item = parse( context, account, src );
 				if( item != null ) result.add( item );
 			}
 		}
@@ -180,12 +179,12 @@ public class TootAccount {
 	}
 	
 	private static final Pattern reWhitespace = Pattern.compile( "[\\s\\t\\x0d\\x0a]+" );
-
-	public void setDisplayName(Context context,String username,String sv){
+	
+	public void setDisplayName( Context context, String username, String sv ){
 		if( TextUtils.isEmpty( sv ) ){
 			this.display_name = username;
 		}else{
-			this.display_name = Utils.sanitizeBDI(sv);
+			this.display_name = Utils.sanitizeBDI( sv );
 		}
 		
 		// remove white spaces
@@ -193,16 +192,15 @@ public class TootAccount {
 		
 		// decode emoji code
 		this.decoded_display_name = Emojione.decodeEmoji( context, sv );
-
+		
 	}
-	
 	
 	public String getAcctHost(){
 		try{
 			int pos = acct.indexOf( '@' );
 			if( pos != - 1 ) return acct.substring( pos + 1 );
-		}catch( Throwable ignored ){
-			
+		}catch( Throwable ex ){
+			log.trace( ex );
 		}
 		return null;
 	}

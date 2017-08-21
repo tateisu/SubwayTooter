@@ -27,6 +27,7 @@ import jp.juggler.subwaytooter.table.ContentWarning;
 import jp.juggler.subwaytooter.table.MediaShown;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
+import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
 import jp.juggler.subwaytooter.view.MyListView;
 import jp.juggler.subwaytooter.view.MyNetworkImageView;
@@ -34,6 +35,7 @@ import jp.juggler.subwaytooter.view.MyTextView;
 import jp.juggler.subwaytooter.util.Utils;
 
 class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
+	private static final LogCategory log = new LogCategory( "ItemViewHolder" );
 	
 	final ActMain activity;
 	final Column column;
@@ -117,7 +119,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 							( (TextView) v ).setTypeface( activity.timeline_font );
 						}
 					}catch( Throwable ex ){
-						ex.printStackTrace();
+						log.trace( ex );
 					}
 				}
 			} );
@@ -707,7 +709,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 				activity.openChromeTab( pos, access_info, sv, false );
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 	}
 	

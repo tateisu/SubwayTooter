@@ -12,8 +12,11 @@ import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jp.juggler.subwaytooter.App1;
+import jp.juggler.subwaytooter.Pref;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootMention;
+import jp.juggler.subwaytooter.table.SavedAccount;
 
 public class HTMLDecoder {
 	private static final LogCategory log = new LogCategory( "HTMLDecoder" );
@@ -90,6 +93,8 @@ public class HTMLDecoder {
 	
 	private static final boolean DEBUG_HTML_PARSER = false;
 	
+	static final Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)(?:\\z|\\?)" );
+	
 	private static class Node {
 		final ArrayList< Node > child_nodes = new ArrayList<>();
 		
@@ -134,12 +139,12 @@ public class HTMLDecoder {
 			, LinkClickContext account
 			, SpannableStringBuilder sb
 			, boolean bShort
-		    , boolean bDecodeEmoji
+			, boolean bDecodeEmoji
 			, @Nullable TootAttachment.List list_attachment
 		){
 			if( TAG_TEXT.equals( tag ) ){
 				if( bDecodeEmoji ){
-					sb.append( Emojione.decodeEmoji( context,decodeEntity( text ) ) );
+					sb.append( Emojione.decodeEmoji( context, decodeEntity( text ) ) );
 				}else{
 					sb.append( decodeEntity( text ) );
 				}
@@ -148,7 +153,7 @@ public class HTMLDecoder {
 			if( DEBUG_HTML_PARSER ) sb.append( "(start " ).append( tag ).append( ")" );
 			
 			SpannableStringBuilder sb_tmp;
-			if( bShort && "a".equals( tag ) ){
+			if( "a".equals( tag ) ){
 				sb_tmp = new SpannableStringBuilder();
 			}else{
 				sb_tmp = sb;
@@ -157,14 +162,14 @@ public class HTMLDecoder {
 			int start = sb_tmp.length();
 			
 			for( Node child : child_nodes ){
-				child.encodeSpan( context, account, sb_tmp, bShort,bDecodeEmoji, list_attachment );
+				child.encodeSpan( context, account, sb_tmp, bShort, bDecodeEmoji, list_attachment );
 			}
 			
 			int end = sb_tmp.length();
 			
-			if( bShort && "a".equals( tag ) ){
+			if( "a".equals( tag ) ){
 				start = sb.length();
-				sb.append( encodeShortUrl( context,sb_tmp.toString(), getHref(), list_attachment ) );
+				sb.append( encodeUrl( bShort, context, sb_tmp.toString(), getHref(), list_attachment ) );
 				end = sb.length();
 			}
 			
@@ -210,14 +215,26 @@ public class HTMLDecoder {
 			return false;
 		}
 		
-		private CharSequence encodeShortUrl(
-			Context context
+		private CharSequence encodeUrl(
+			boolean bShort
+			, Context context
 			, String display_url
 			, @Nullable String href
 			, @Nullable TootAttachment.List list_attachment
 		){
 			if( ! display_url.startsWith( "http" ) ){
-				// ハッシュタグやメンションはいじらない
+				if( display_url.startsWith( "@" ) && href != null && App1.pref.getBoolean( Pref.KEY_MENTION_FULL_ACCT, false ) ){
+					// メンションをfull acct にする
+					Matcher m = reUserPage.matcher( href );
+					if( m.find() ){
+						return "@" + m.group( 2 ) + "@" + m.group( 1 );
+					}
+				}
+				// ハッシュタグやメンションは変更しない
+				return display_url;
+			}
+			
+			if( ! bShort ){
 				return display_url;
 			}
 			
@@ -241,7 +258,7 @@ public class HTMLDecoder {
 				}
 				return sb;
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 				return display_url;
 			}
 		}
@@ -256,7 +273,7 @@ public class HTMLDecoder {
 		, LinkClickContext account
 		, String src
 		, boolean bShort
-	    , boolean bDecodeEmoji
+		, boolean bDecodeEmoji
 		, @Nullable TootAttachment.List list_attachment
 	){
 		SpannableStringBuilder sb = new SpannableStringBuilder();
@@ -266,7 +283,7 @@ public class HTMLDecoder {
 				Node rootNode = new Node();
 				rootNode.parseChild( tracker, "" );
 				
-				rootNode.encodeSpan( context,account, sb, bShort, bDecodeEmoji,list_attachment );
+				rootNode.encodeSpan( context, account, sb, bShort, bDecodeEmoji, list_attachment );
 				int end = sb.length();
 				while( end > 0 && isWhitespace( sb.charAt( end - 1 ) ) ) -- end;
 				if( end < sb.length() ){
@@ -277,7 +294,7 @@ public class HTMLDecoder {
 				//				sb.append(src);
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		
 		return sb;
@@ -306,17 +323,21 @@ public class HTMLDecoder {
 	//		return sb;
 	//	}
 	
-	public static Spannable decodeMentions( final LinkClickContext account, TootMention.List src_list ){
+	public static Spannable decodeMentions( final SavedAccount access_info, TootMention.List src_list ){
 		if( src_list == null || src_list.isEmpty() ) return null;
 		SpannableStringBuilder sb = new SpannableStringBuilder();
 		for( TootMention item : src_list ){
 			if( sb.length() > 0 ) sb.append( " " );
 			int start = sb.length();
 			sb.append( '@' );
-			sb.append( item.acct );
+			if( App1.pref.getBoolean( Pref.KEY_MENTION_FULL_ACCT, false ) ){
+				sb.append( access_info.getFullAcct( item.acct ) );
+			}else{
+				sb.append( item.acct );
+			}
 			int end = sb.length();
 			if( end > start ){
-				MyClickableSpan span = new MyClickableSpan( account, item.url, account.findAcctColor( item.url ) );
+				MyClickableSpan span = new MyClickableSpan( access_info, item.url, access_info.findAcctColor( item.url ) );
 				
 				sb.setSpan( span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}
@@ -369,7 +390,7 @@ public class HTMLDecoder {
 						sb.append( (char) c );
 						continue;
 					}catch( Throwable ex ){
-						ex.printStackTrace();
+						log.trace( ex );
 					}
 				}
 				sb.append( src.substring( start, end ) );

@@ -234,7 +234,7 @@ public class AppDataExporter {
 			reader.endArray();
 			db.execSQL( "COMMIT TRANSACTION" );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "importTable failed." );
 			try{
 				db.execSQL( "ROLLBACK TRANSACTION" );
@@ -314,6 +314,7 @@ public class AppDataExporter {
 			case Pref.KEY_DONT_DUPLICATION_CHECK:
 			case Pref.KEY_QUICK_TOOT_BAR:
 			case Pref.KEY_ENABLE_GIF_ANIMATION:
+			case Pref.KEY_MENTION_FULL_ACCT:
 				boolean bv = reader.nextBoolean();
 				e.putBoolean( k, bv );
 				break;
@@ -412,7 +413,7 @@ public class AppDataExporter {
 			try{
 				result.add( new Column( app_state, item ) );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 				log.e( ex, "column load failed." );
 				throw ex;
 			}

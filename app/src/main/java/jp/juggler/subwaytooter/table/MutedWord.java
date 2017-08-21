@@ -80,7 +80,7 @@ public class MutedWord {
 				}
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		return dst;
 	}

@@ -2,14 +2,12 @@ package jp.juggler.subwaytooter.util;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Context;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -42,7 +40,6 @@ import android.util.SparseBooleanArray;
 
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -65,6 +62,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import it.sephiroth.android.library.exif2.ExifInterface;
 
 public class Utils {
+	private static final LogCategory log = new LogCategory( "Utils" );
 	
 	@SuppressLint("DefaultLocale")
 	public static String formatTimeDuration( long t ){
@@ -177,7 +175,7 @@ public class Utils {
 		return src.isNull( key ) ? null : src.optString( key );
 	}
 	
-	public static ArrayList< String > parseStringArray( LogCategory log, JSONArray array ){
+	public static ArrayList< String > parseStringArray( JSONArray array ){
 		ArrayList< String > dst_list = new ArrayList<>();
 		if( array != null ){
 			for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
@@ -311,7 +309,7 @@ public class Utils {
 			md.reset();
 			return encodeHex( md.digest( s.getBytes( "UTF-8" ) ) );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		return null;
 	}
@@ -323,7 +321,7 @@ public class Utils {
 			md.reset();
 			return encodeHex( md.digest( src.getBytes( "UTF-8" ) ) );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		return null;
 	}
@@ -776,7 +774,7 @@ public class Utils {
 		}catch(SecurityException ex){
 			log.e(ex,"maybe we need pick up image again.");
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		return null;
 	}
@@ -852,7 +850,7 @@ public class Utils {
 				}
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		return result;
 	}
@@ -874,14 +872,14 @@ public class Utils {
 			try{
 				xml_builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 				return null;
 			}
 		}
 		try{
 			return xml_builder.parse( new ByteArrayInputStream( src ) ).getDocumentElement();
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			return null;
 		}
 	}
@@ -1019,8 +1017,8 @@ public class Utils {
 								}
 							}
 						}
-					}catch( Throwable ex2 ){
-						ex2.printStackTrace();
+					}catch( Throwable ex ){
+						log.trace( ex );
 					}
 				}
 			}
@@ -1047,7 +1045,7 @@ public class Utils {
 				}
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		return null;
 	}
@@ -1124,7 +1122,7 @@ public class Utils {
 			}
 			
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		return null;
 	}

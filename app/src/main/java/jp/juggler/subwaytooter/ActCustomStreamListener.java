@@ -29,7 +29,7 @@ import okhttp3.Response;
 
 public class ActCustomStreamListener extends AppCompatActivity implements View.OnClickListener, TextWatcher {
 	
-	static final LogCategory log = new LogCategory("ActCustomStreamListener");
+	static final LogCategory log = new LogCategory( "ActCustomStreamListener" );
 	
 	static final String EXTRA_ACCT = "acct";
 	
@@ -45,7 +45,7 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 		initUI();
 		
 		if( savedInstanceState != null ){
-			stream_config_json = savedInstanceState.getString(STATE_STREAM_CONFIG_JSON);
+			stream_config_json = savedInstanceState.getString( STATE_STREAM_CONFIG_JSON );
 		}else{
 			load();
 		}
@@ -53,10 +53,11 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 		showButtonState();
 	}
 	
-	static final String STATE_STREAM_CONFIG_JSON = "stream_config_json" ;
+	static final String STATE_STREAM_CONFIG_JSON = "stream_config_json";
+	
 	@Override protected void onSaveInstanceState( Bundle outState ){
 		super.onSaveInstanceState( outState );
-		outState.putString( STATE_STREAM_CONFIG_JSON,stream_config_json );
+		outState.putString( STATE_STREAM_CONFIG_JSON, stream_config_json );
 		
 	}
 	
@@ -72,18 +73,18 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 	private void initUI(){
 		setContentView( R.layout.act_custom_stream_listener );
 		
-		Styler.fixHorizontalPadding(findViewById( R.id.llContent ));
+		Styler.fixHorizontalPadding( findViewById( R.id.llContent ) );
 		
-		etStreamListenerConfigurationUrl= (EditText) findViewById( R.id.etStreamListenerConfigurationUrl );
-		etStreamListenerSecret= (EditText) findViewById( R.id.etStreamListenerSecret );
+		etStreamListenerConfigurationUrl = (EditText) findViewById( R.id.etStreamListenerConfigurationUrl );
+		etStreamListenerSecret = (EditText) findViewById( R.id.etStreamListenerSecret );
 		etStreamListenerConfigurationUrl.addTextChangedListener( this );
 		etStreamListenerSecret.addTextChangedListener( this );
-
-		tvLog= (TextView) findViewById( R.id.tvLog );
 		
-		btnDiscard=  findViewById( R.id.btnDiscard );
-		btnTest=  findViewById( R.id.btnTest );
-		btnSave=  findViewById( R.id.btnSave );
+		tvLog = (TextView) findViewById( R.id.tvLog );
+		
+		btnDiscard = findViewById( R.id.btnDiscard );
+		btnTest = findViewById( R.id.btnTest );
+		btnSave = findViewById( R.id.btnSave );
 		
 		btnDiscard.setOnClickListener( this );
 		btnTest.setOnClickListener( this );
@@ -148,38 +149,36 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 			break;
 		}
 	}
-
 	
 	private boolean save(){
 		if( stream_config_json == null ){
-			Utils.showToast( this,false,"please test before save." );
+			Utils.showToast( this, false, "please test before save." );
 			return false;
 		}
 		
 		Pref.pref( this ).edit()
-			.putString(Pref.KEY_STREAM_LISTENER_CONFIG_URL,etStreamListenerConfigurationUrl.getText().toString().trim() )
-			.putString(Pref.KEY_STREAM_LISTENER_SECRET,etStreamListenerSecret.getText().toString().trim() )
-			.putString(Pref.KEY_STREAM_LISTENER_CONFIG_DATA,stream_config_json)
+			.putString( Pref.KEY_STREAM_LISTENER_CONFIG_URL, etStreamListenerConfigurationUrl.getText().toString().trim() )
+			.putString( Pref.KEY_STREAM_LISTENER_SECRET, etStreamListenerSecret.getText().toString().trim() )
+			.putString( Pref.KEY_STREAM_LISTENER_CONFIG_DATA, stream_config_json )
 			.apply();
 		return true;
 	}
-
-	AsyncTask<Void,Void,String> last_task;
+	
+	AsyncTask< Void, Void, String > last_task;
 	static final Pattern reInstanceURL = Pattern.compile( "\\Ahttps://[a-z0-9.-_:]+\\z" );
 	static final Pattern reUpperCase = Pattern.compile( "[A-Z]" );
 	static final Pattern reUrl = Pattern.compile( "\\Ahttps?://[\\w\\-?&#%~!$'()*+,/:;=@._\\[\\]]+\\z" );
 	
-	
-	void addLog(final String line){
+	void addLog( final String line ){
 		Utils.runOnMainThread( new Runnable() {
 			@Override public void run(){
 				String sv = tvLog.getText().toString();
 				if( sv.isEmpty() ){
 					sv = line;
 				}else{
-					sv = sv +"\n" + line;
+					sv = sv + "\n" + line;
 				}
-				tvLog.setText( sv);
+				tvLog.setText( sv );
 			}
 		} );
 	}
@@ -193,7 +192,7 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 		last_task = new AsyncTask< Void, Void, String >() {
 			@Override protected String doInBackground( Void... params ){
 				try{
-					for(;;){
+					for( ; ; ){
 						if( TextUtils.isEmpty( strSecret ) ){
 							addLog( "Secret is empty. Custom Listener is not used." );
 							break;
@@ -219,7 +218,7 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 							//noinspection ConstantConditions
 							json = response.body().string();
 						}catch( Throwable ex ){
-							ex.printStackTrace();
+							log.trace( ex );
 							addLog( "Can't get content body" );
 							break;
 						}
@@ -233,11 +232,11 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 						try{
 							jv = JsonValue.readHjson( json );
 						}catch( Throwable ex ){
-							ex.printStackTrace();
+							log.trace( ex );
 							addLog( Utils.formatError( ex, "Can't parse configuration data." ) );
 							break;
 						}
-
+						
 						if( ! jv.isObject() ){
 							addLog( "configuration data is not JSON Object." );
 							break;
@@ -289,34 +288,34 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 								}
 								
 								if( ! "appId".equals( key ) ){
-									if(! reUrl.matcher( sv ).find() ){
+									if( ! reUrl.matcher( sv ).find() ){
 										addLog( strInstance + "." + key + " : not like Url." );
 										has_error = true;
-									}else if( Uri.parse(sv).getScheme().equals( "https" ) ){
+									}else if( Uri.parse( sv ).getScheme().equals( "https" ) ){
 										try{
-											addLog("check access to "+sv+" …");
-											builder = new Request.Builder() .url( sv );
+											addLog( "check access to " + sv + " …" );
+											builder = new Request.Builder().url( sv );
 											call = App1.ok_http_client.newCall( builder.build() );
 											call.execute();
-										}catch(Throwable ex){
-											ex.printStackTrace(  );
-											addLog( strInstance + "." + key + " : "+ Utils.formatError( ex,"connect failed." ) );
+										}catch( Throwable ex ){
+											log.trace( ex );
+											addLog( strInstance + "." + key + " : " + Utils.formatError( ex, "connect failed." ) );
 											has_error = true;
 										}
 									}
 								}
 							}
 						}
-
+						
 						if( ! has_wildcard ){
 							addLog( "Warning: This configuration has no wildcard entry." );
-							if(! has_error){
-								for( SavedAccount sa : SavedAccount.loadAccountList( ActCustomStreamListener.this,log )){
+							if( ! has_error ){
+								for( SavedAccount sa : SavedAccount.loadAccountList( ActCustomStreamListener.this, log ) ){
 									if( sa.isPseudo() ) continue;
-									String instanceUrl = ("https://" + sa.host ).toLowerCase();
+									String instanceUrl = ( "https://" + sa.host ).toLowerCase();
 									JsonValue v = root.get( instanceUrl );
 									if( v == null || ! v.isObject() ){
-										addLog( "Warning: "+ instanceUrl + " : is found in account, but not found in configuration data." );
+										addLog( "Warning: " + instanceUrl + " : is found in account, but not found in configuration data." );
 									}
 								}
 							}
@@ -329,10 +328,10 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 						
 						return json;
 					}
-						
-				}catch(Throwable ex){
-					ex.printStackTrace();
-					addLog( Utils.formatError( ex,"Can't read configuration from URL." ));
+					
+				}catch( Throwable ex ){
+					log.trace( ex );
+					addLog( Utils.formatError( ex, "Can't read configuration from URL." ) );
 				}
 				return null;
 			}
@@ -343,7 +342,7 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 			
 			@Override protected void onPostExecute( String s ){
 				last_task = null;
-				if( s!= null ){
+				if( s != null ){
 					stream_config_json = s;
 					addLog( "seems configuration is ok." );
 				}else{

@@ -42,8 +42,6 @@ class StreamReader {
 		final String end_point;
 		final LinkedList< Callback > callback_list = new LinkedList<>();
 		
-
-		
 		Reader( SavedAccount access_info, String end_point ){
 			this.access_info = access_info;
 			this.end_point = end_point;
@@ -104,7 +102,7 @@ class StreamReader {
 									try{
 										callback.onStreamingMessage( event, payload );
 									}catch( Throwable ex ){
-										ex.printStackTrace();
+										log.trace( ex );
 									}
 								}
 							}
@@ -112,21 +110,21 @@ class StreamReader {
 					} );
 				}
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 		
 		private Object parsePayload( String event, JSONObject obj ){
 			try{
 				if( "update".equals( event ) ){
-					return TootStatus.parse( context, log, access_info, access_info.host,new JSONObject( obj.optString( "payload" ) ) );
+					return TootStatus.parse( context, access_info, new JSONObject( obj.optString( "payload" ) ) );
 				}else if( "notification".equals( event ) ){
-					return TootNotification.parse( context, log, access_info, access_info.host,new JSONObject( obj.optString( "payload" ) ) );
+					return TootNotification.parse( context, access_info, new JSONObject( obj.optString( "payload" ) ) );
 				}else if( "delete".equals( event ) ){
 					return obj.optLong( "payload", - 1L );
 				}
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 			return null;
 		}
@@ -218,7 +216,7 @@ class StreamReader {
 	final SharedPreferences pref;
 	private final Handler handler;
 	
-	StreamReader( Context context, Handler handler,SharedPreferences pref ){
+	StreamReader( Context context, Handler handler, SharedPreferences pref ){
 		this.context = context;
 		this.pref = pref;
 		this.handler = handler;
@@ -258,10 +256,10 @@ class StreamReader {
 				if( reader.access_info.db_id == access_info.db_id
 					&& reader.end_point.equals( end_point )
 					){
-					log.d("unregister: removeCallback %s",end_point);
+					log.d( "unregister: removeCallback %s", end_point );
 					reader.removeCallback( stream_callback );
 					if( reader.callback_list.isEmpty() ){
-						log.d("unregister: dispose %s",end_point);
+						log.d( "unregister: dispose %s", end_point );
 						reader.dispose();
 						it.remove();
 					}

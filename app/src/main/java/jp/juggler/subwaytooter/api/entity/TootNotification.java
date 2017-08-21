@@ -2,17 +2,19 @@ package jp.juggler.subwaytooter.api.entity;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import jp.juggler.subwaytooter.util.LinkClickContext;
+import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 public class TootNotification extends TootId {
+	private static final LogCategory log = new LogCategory( "TootNotification" );
 	
 	//	The notification ID
 	//TootId public long id;
@@ -38,7 +40,8 @@ public class TootNotification extends TootId {
 	
 	public JSONObject json;
 	
-	public static TootNotification parse( @NonNull Context context, LogCategory log, LinkClickContext lcc, String status_host, JSONObject src ){
+	@Nullable
+	public static TootNotification parse( @NonNull Context context, @NonNull SavedAccount access_info, JSONObject src ){
 		if( src == null ) return null;
 		try{
 			TootNotification dst = new TootNotification();
@@ -46,14 +49,14 @@ public class TootNotification extends TootId {
 			dst.id = src.optLong( "id" );
 			dst.type = Utils.optStringX( src, "type" );
 			dst.created_at = Utils.optStringX( src, "created_at" );
-			dst.account = TootAccount.parse( context, log, lcc, src.optJSONObject( "account" ) );
-			dst.status = TootStatus.parse( context, log, lcc, status_host, src.optJSONObject( "status" ) );
+			dst.account = TootAccount.parse( context, access_info, src.optJSONObject( "account" ) );
+			dst.status = TootStatus.parse( context, access_info, src.optJSONObject( "status" ) );
 			
-			dst.time_created_at = TootStatus.parseTime( log, dst.created_at );
+			dst.time_created_at = TootStatus.parseTime( dst.created_at );
 			
 			return dst;
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "TootNotification.parse failed." );
 			return null;
 		}
@@ -70,7 +73,7 @@ public class TootNotification extends TootId {
 	}
 	
 	@NonNull
-	public static List parseList( @NonNull Context context, LogCategory log, LinkClickContext lcc, String status_host, JSONArray array ){
+	public static List parseList( @NonNull Context context, @NonNull SavedAccount access_info, JSONArray array ){
 		List result = new List();
 		if( array != null ){
 			int array_size = array.length();
@@ -78,7 +81,7 @@ public class TootNotification extends TootId {
 			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootNotification item = parse( context, log, lcc, status_host, src );
+				TootNotification item = parse( context, access_info, src );
 				if( item != null ) result.add( item );
 			}
 		}

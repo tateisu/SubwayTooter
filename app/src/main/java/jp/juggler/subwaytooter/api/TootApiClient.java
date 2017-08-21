@@ -110,10 +110,8 @@ public class TootApiClient {
 			
 			response = call.execute();
 		}catch( Throwable ex ){
-			ex.printStackTrace();
-			return new TootApiResult(
-				Utils.formatError( ex, instance + ": " +context.getResources(), R.string.network_error )
-			);
+			log.trace( ex );
+			return new TootApiResult( instance + ": " + Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		
 		if( callback.isApiCancelled() ) return null;
@@ -141,7 +139,7 @@ public class TootApiClient {
 				return new TootApiResult( response, token_info, json, object );
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			return new TootApiResult( Utils.formatError( ex, "API data error" ) );
 		}
 	}
@@ -177,10 +175,8 @@ public class TootApiClient {
 			}
 			return new TootApiResult( ws );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
-			return new TootApiResult(
-				Utils.formatError( ex, instance + ": " +context.getResources(), R.string.network_error )
-			);
+			log.trace( ex );
+			return new TootApiResult( instance + ": " + Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 	}
 	
@@ -201,7 +197,7 @@ public class TootApiClient {
 			
 			response = call.execute();
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			return new TootApiResult( instance + ": " +Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		
@@ -230,7 +226,7 @@ public class TootApiClient {
 				return new TootApiResult( response, null, json, object );
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			return new TootApiResult( Utils.formatError( ex, "API data error" ) );
 		}
 	}
@@ -265,7 +261,7 @@ public class TootApiClient {
 			
 			response = call.execute();
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			return new TootApiResult( instance + ": " +Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		if( callback.isApiCancelled() ) return null;
@@ -291,7 +287,7 @@ public class TootApiClient {
 			ClientInfo.save( instance, client_info.toString() );
 			
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			return new TootApiResult( Utils.formatError( ex, "API data error" ) );
 		}
 		
@@ -344,7 +340,7 @@ public @Nullable TootApiResult authorize2( String code ){
 			
 			response = call.execute();
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			return new TootApiResult( instance + ": " +Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		if( callback.isApiCancelled() ) return null;
@@ -370,7 +366,7 @@ public @Nullable TootApiResult authorize2( String code ){
 			}
 			token_info.put( KEY_AUTH_VERSION, AUTH_VERSION );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			return new TootApiResult( Utils.formatError( ex, "API data error" ) );
 		}
 		
@@ -390,7 +386,7 @@ public @Nullable TootApiResult authorize2( String code ){
 			
 			response = call.execute();
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			return new TootApiResult( instance + ": " +Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		
@@ -419,7 +415,7 @@ public @Nullable TootApiResult authorize2( String code ){
 				return new TootApiResult( response, token_info, json, object );
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			return new TootApiResult( Utils.formatError( ex, "API data error" ) );
 		}
 	}
@@ -452,7 +448,7 @@ public @Nullable TootApiResult authorize2( String code ){
 			
 			response = call.execute();
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			return new TootApiResult( instance + ": " +Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		
@@ -481,7 +477,7 @@ public @Nullable TootApiResult authorize2( String code ){
 				return new TootApiResult( response, token_info, json, object );
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			return new TootApiResult( Utils.formatError( ex, "API data error" ) );
 		}
 	}

@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.api_msp.entity;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.json.JSONArray;
@@ -24,51 +25,23 @@ import jp.juggler.subwaytooter.util.WordTrieTree;
 
 public class MSPToot extends TootStatusLike {
 	
+	private static final LogCategory log = new LogCategory( "MSPToot" );
+	
 	public static class List extends ArrayList< MSPToot > {
 		
 	}
-	
-	//	private static final Pattern reTime = Pattern.compile( "\\A(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)" );
-	//
-	//	private static final TimeZone tz_tokyo = TimeZone.getTimeZone( "Asia/Tokyo" );
-	//
-	//	private static long parseMSPTime( LogCategory log, String strTime ){
-	//		if( ! TextUtils.isEmpty( strTime ) ){
-	//			try{
-	//				Matcher m = reTime.matcher( strTime );
-	//				if( ! m.find() ){
-	//					log.d( "!!invalid time format: %s", strTime );
-	//				}else{
-	//					GregorianCalendar g = new GregorianCalendar( tz_tokyo );
-	//					g.set(
-	//						Utils.parse_int( m.group( 1 ), 1 ),
-	//						Utils.parse_int( m.group( 2 ), 1 ) - 1,
-	//						Utils.parse_int( m.group( 3 ), 1 ),
-	//						Utils.parse_int( m.group( 4 ), 0 ),
-	//						Utils.parse_int( m.group( 5 ), 0 ),
-	//						Utils.parse_int( m.group( 6 ), 0 )
-	//					);
-	//					g.set( Calendar.MILLISECOND,  0 );
-	//					return g.getTimeInMillis();
-	//				}
-	//			}catch( Throwable ex ){// ParseException,  ArrayIndexOutOfBoundsException
-	//				ex.printStackTrace();
-	//				log.e( ex, "parseMSPTime failed. src=%s", strTime );
-	//			}
-	//		}
-	//		return 0L;
-	//	}
 	
 	private String created_at;
 	
 	public ArrayList< String > media_attachments;
 	// private long msp_id;
 	
-	private static MSPToot parse( @NonNull Context context, LogCategory log, SavedAccount access_info, JSONObject src ){
+	@Nullable
+	private static MSPToot parse( @NonNull Context context, SavedAccount access_info, JSONObject src ){
 		if( src == null ) return null;
 		MSPToot dst = new MSPToot();
 		
-		dst.account = MSPAccount.parseAccount( context, log, access_info, src.optJSONObject( "account" ) );
+		dst.account = MSPAccount.parseAccount( context, access_info, src.optJSONObject( "account" ) );
 		if( dst.account == null ){
 			log.e( "missing status account" );
 			return null;
@@ -85,7 +58,7 @@ public class MSPToot extends TootStatusLike {
 		}
 		
 		dst.created_at = Utils.optStringX( src, "created_at" );
-		dst.time_created_at = parseTime( log, dst.created_at );
+		dst.time_created_at = parseTime( dst.created_at );
 		
 		JSONArray a = src.optJSONArray( "media_attachments" );
 		if( a != null && a.length() > 0 ){
@@ -109,12 +82,12 @@ public class MSPToot extends TootStatusLike {
 		return dst;
 	}
 	
-	public static List parseList( @NonNull Context context, LogCategory log, SavedAccount access_info, JSONArray array ){
+	public static List parseList( @NonNull Context context, SavedAccount access_info, JSONArray array ){
 		List list = new List();
 		for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
 			JSONObject src = array.optJSONObject( i );
 			if( src == null ) continue;
-			MSPToot item = parse( context, log, access_info, src );
+			MSPToot item = parse( context, access_info, src );
 			if( item == null ) continue;
 			list.add( item );
 		}
@@ -125,7 +98,7 @@ public class MSPToot extends TootStatusLike {
 	
 	private static final TimeZone tz_utc = TimeZone.getTimeZone( "UTC" );
 	
-	private static long parseTime( LogCategory log, String strTime ){
+	private static long parseTime( String strTime ){
 		if( ! TextUtils.isEmpty( strTime ) ){
 			try{
 				Matcher m = reTime.matcher( strTime );
@@ -145,7 +118,7 @@ public class MSPToot extends TootStatusLike {
 					return g.getTimeInMillis();
 				}
 			}catch( Throwable ex ){// ParseException,  ArrayIndexOutOfBoundsException
-				ex.printStackTrace();
+				log.trace( ex );
 				log.e( ex, "TootStatus.parseTime failed. src=%s", strTime );
 			}
 		}

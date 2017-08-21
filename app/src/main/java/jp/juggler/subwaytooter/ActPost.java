@@ -267,8 +267,6 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		
 		initUI();
 		
-		
-		
 		if( account_list.isEmpty() ){
 			Utils.showToast( this, true, R.string.please_add_account );
 			finish();
@@ -314,16 +312,16 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					JSONArray array = new JSONArray( sv );
 					for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
 						try{
-							TootAttachment a = TootAttachment.parse( log, array.optJSONObject( i ) );
+							TootAttachment a = TootAttachment.parse(  array.optJSONObject( i ) );
 							if( a != null ){
 								attachment_list.add( new PostAttachment( a ) );
 							}
-						}catch( Throwable ex2 ){
-							ex2.printStackTrace();
+						}catch( Throwable ex ){
+							log.trace( ex );
 						}
 					}
 				}catch( Throwable ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 				}
 			}
 			
@@ -395,7 +393,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			sv = intent.getStringExtra( KEY_REPLY_STATUS );
 			if( sv != null ){
 				try{
-					TootStatus reply_status = TootStatus.parse( ActPost.this, log, account, account.host, new JSONObject( sv ) );
+					TootStatus reply_status = TootStatus.parse( ActPost.this, account, new JSONObject( sv ) );
 					
 					// CW をリプライ元に合わせる
 					if( ! TextUtils.isEmpty( reply_status.spoiler_text ) ){
@@ -463,11 +461,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 							this.visibility = reply_status.visibility;
 						}
 					}catch( Throwable ex ){
-						ex.printStackTrace();
+						log.trace( ex );
 					}
 					
 				}catch( Throwable ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 				}
 			}
 		}
@@ -493,7 +491,6 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	
 	@Override protected void onDestroy(){
 		post_helper.onDestroy();
-		
 		
 		super.onDestroy();
 		
@@ -602,7 +599,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		btnRemoveReply = findViewById( R.id.btnRemoveReply );
 		ivReply = (MyNetworkImageView) findViewById( R.id.ivReply );
 		
-		account_list = SavedAccount.loadAccountList( ActPost.this,log );
+		account_list = SavedAccount.loadAccountList( ActPost.this, log );
 		Collections.sort( account_list, new Comparator< SavedAccount >() {
 			@Override
 			public int compare( SavedAccount a, SavedAccount b ){
@@ -632,8 +629,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			}
 		} );
 		
-		post_helper = new PostHelper( this, pref ,app_state.handler );
-		post_helper.attachEditText( formRoot,etContent,false, new PostHelper.Callback2() {
+		post_helper = new PostHelper( this, pref, app_state.handler );
+		post_helper.attachEditText( formRoot, etContent, false, new PostHelper.Callback2() {
 			@Override public void onTextUpdate(){
 				updateTextCount();
 			}
@@ -658,8 +655,6 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			}
 		} );
 		
-		
-		
 		scrollView.getViewTreeObserver().addOnScrollChangedListener( scroll_listener );
 		
 		View v = findViewById( R.id.btnMore );
@@ -672,7 +667,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			
 		}
 	};
-
+	
 	private void updateTextCount(){
 		String s = etContent.getText().toString();
 		int count_content = s.codePointCount( 0, s.length() );
@@ -745,42 +740,42 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			}
 		} );
 		
-//		final ArrayList< SavedAccount > tmp_account_list = new ArrayList<>();
-//		tmp_account_list.addAll( account_list );
-//
-//		String[] caption_list = new String[ tmp_account_list.size() ];
-//		for( int i = 0, ie = tmp_account_list.size() ; i < ie ; ++ i ){
-//			caption_list[ i ] = tmp_account_list.get( i ).acct;
-//		}
-//
-//		new AlertDialog.Builder( this )
-//			.setTitle( R.string.choose_account )
-//			.setItems( caption_list, new DialogInterface.OnClickListener() {
-//				@Override
-//				public void onClick( DialogInterface dialog, int which ){
-//
-//					if( which < 0 || which >= tmp_account_list.size() ){
-//						// 範囲外
-//						return;
-//					}
-//
-//					SavedAccount ai = tmp_account_list.get( which );
-//
-//					if( ! ai.host.equals( account.host ) ){
-//						// 別タンスへの移動
-//						if( in_reply_to_id != - 1L ){
-//							// 別タンスのアカウントならin_reply_toの変換が必要
-//							startReplyConversion( ai );
-//
-//						}
-//					}
-//
-//					// リプライがないか、同タンスへの移動
-//					setAccountWithVisibilityConversion( ai );
-//				}
-//			} )
-//			.setNegativeButton( R.string.cancel, null )
-//			.show();
+		//		final ArrayList< SavedAccount > tmp_account_list = new ArrayList<>();
+		//		tmp_account_list.addAll( account_list );
+		//
+		//		String[] caption_list = new String[ tmp_account_list.size() ];
+		//		for( int i = 0, ie = tmp_account_list.size() ; i < ie ; ++ i ){
+		//			caption_list[ i ] = tmp_account_list.get( i ).acct;
+		//		}
+		//
+		//		new AlertDialog.Builder( this )
+		//			.setTitle( R.string.choose_account )
+		//			.setItems( caption_list, new DialogInterface.OnClickListener() {
+		//				@Override
+		//				public void onClick( DialogInterface dialog, int which ){
+		//
+		//					if( which < 0 || which >= tmp_account_list.size() ){
+		//						// 範囲外
+		//						return;
+		//					}
+		//
+		//					SavedAccount ai = tmp_account_list.get( which );
+		//
+		//					if( ! ai.host.equals( account.host ) ){
+		//						// 別タンスへの移動
+		//						if( in_reply_to_id != - 1L ){
+		//							// 別タンスのアカウントならin_reply_toの変換が必要
+		//							startReplyConversion( ai );
+		//
+		//						}
+		//					}
+		//
+		//					// リプライがないか、同タンスへの移動
+		//					setAccountWithVisibilityConversion( ai );
+		//				}
+		//			} )
+		//			.setNegativeButton( R.string.cancel, null )
+		//			.show();
 	}
 	
 	void setAccountWithVisibilityConversion( @NonNull SavedAccount a ){
@@ -792,7 +787,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				showVisibility();
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 	}
 	
@@ -827,7 +822,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				
 				TootApiResult result = client.request( path );
 				if( result != null && result.object != null ){
-					TootResults tmp = TootResults.parse( ActPost.this, log, access_info, access_info.host, result.object );
+					TootResults tmp = TootResults.parse( ActPost.this, access_info, result.object );
 					if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 						target_status = tmp.statuses.get( 0 );
 					}
@@ -846,7 +841,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				try{
 					progress.dismiss();
 				}catch( Throwable ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 				}
 				if( isCancelled() ) return;
 				
@@ -894,9 +889,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			iv.setVisibility( View.VISIBLE );
 			PostAttachment a = attachment_list.get( idx );
 			if( a.attachment != null && a.status == PostAttachment.ATTACHMENT_UPLOADED ){
-				iv.setImageUrl(  pref, 16f ,a.attachment.preview_url );
+				iv.setImageUrl( pref, 16f, a.attachment.preview_url );
 			}else{
-				iv.setImageUrl(  pref, 16f ,null );
+				iv.setImageUrl( pref, 16f, null );
 			}
 		}
 	}
@@ -964,7 +959,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			intent.putExtra( Intent.EXTRA_MIME_TYPES, new String[]{ "image/*", "video/*" } );
 			startActivityForResult( intent, REQUEST_CODE_ATTACHMENT );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			Utils.showToast( this, ex, "ACTION_OPEN_DOCUMENT failed." );
 		}
 	}
@@ -1049,7 +1044,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				}
 				
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 				Utils.showToast( this, ex, "Resizing image failed." );
 			}
 			
@@ -1159,7 +1154,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					opener.deleteTempFile();
 					
 					if( result != null && result.object != null ){
-						pa.attachment = TootAttachment.parse( log, result.object );
+						pa.attachment = TootAttachment.parse(  result.object );
 						if( pa.attachment == null ){
 							result.error = "TootAttachment.parse failed";
 						}
@@ -1239,7 +1234,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			
 			startActivityForResult( intent, REQUEST_CODE_CAMERA );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			Utils.showToast( this, ex, "opening camera app failed." );
 		}
 	}
@@ -1446,7 +1441,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			llReply.setVisibility( View.GONE );
 		}else{
 			llReply.setVisibility( View.VISIBLE );
-			tvReplyTo.setText( HTMLDecoder.decodeHTML( ActPost.this, account, in_reply_to_text, true,true, null ) );
+			tvReplyTo.setText( HTMLDecoder.decodeHTML( ActPost.this, account, in_reply_to_text, true, true, null ) );
 			ivReply.setImageUrl( pref, 16f, in_reply_to_image );
 		}
 	}
@@ -1504,7 +1499,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			PostDraft.save( System.currentTimeMillis(), json );
 			
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 	}
 	
@@ -1524,7 +1519,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			Call call = App1.ok_http_client.newCall( request );
 			return call.execute().isSuccessful();
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		return false;
 	}
@@ -1549,7 +1544,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					list_warning.add( getString( R.string.account_in_draft_is_lost ) );
 					try{
 						for( int i = 0, ie = tmp_attachment_list.length() ; i < ie ; ++ i ){
-							TootAttachment ta = TootAttachment.parse( log, tmp_attachment_list.optJSONObject( i ) );
+							TootAttachment ta = TootAttachment.parse(  tmp_attachment_list.optJSONObject( i ) );
 							if( ta != null ){
 								content = content.replace( ta.text_url, "" );
 							}
@@ -1595,7 +1590,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					boolean isSomeAttachmentRemoved = false;
 					for( int i = tmp_attachment_list.length() - 1 ; i >= 0 ; -- i ){
 						if( isCancelled() ) return null;
-						TootAttachment ta = TootAttachment.parse( log, tmp_attachment_list.optJSONObject( i ) );
+						TootAttachment ta = TootAttachment.parse(  tmp_attachment_list.optJSONObject( i ) );
 						if( ta == null ){
 							isSomeAttachmentRemoved = true;
 							tmp_attachment_list.remove( i );
@@ -1611,7 +1606,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 						draft.put( DRAFT_CONTENT, content );
 					}
 				}catch( JSONException ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 				}
 				
 				return "OK";
@@ -1656,7 +1651,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 						attachment_list = new ArrayList<>();
 					}
 					for( int i = 0, ie = tmp_attachment_list.length() ; i < ie ; ++ i ){
-						TootAttachment ta = TootAttachment.parse( log, tmp_attachment_list.optJSONObject( i ) );
+						TootAttachment ta = TootAttachment.parse(  tmp_attachment_list.optJSONObject( i ) );
 						if( ta != null ){
 							PostAttachment pa = new PostAttachment( ta );
 							attachment_list.add( pa );
@@ -1760,7 +1755,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			startActivityForResult( chooser, REQUEST_CODE_MUSHROOM );
 			
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			showRecommendedPlugin( getString( R.string.plugin_not_installed ) );
 		}
 	}
@@ -1795,7 +1790,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					return null;
 				}
 			};
-			CharSequence sv = HTMLDecoder.decodeHTML( ActPost.this,lcc, text, false, false, null );
+			CharSequence sv = HTMLDecoder.decodeHTML( ActPost.this, lcc, text, false, false, null );
 			tvText.setText( sv );
 			tvText.setMovementMethod( LinkMovementMethod.getInstance() );
 			
@@ -1824,7 +1819,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse( url ) );
 				startActivity( intent );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 	};

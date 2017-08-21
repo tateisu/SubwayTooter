@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.entity;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -10,6 +11,8 @@ import java.util.ArrayList;
 import jp.juggler.subwaytooter.util.LogCategory;
 
 public class TootRelationShip {
+	
+	private static final LogCategory log = new LogCategory( "TootRelationShip" );
 	
 	//	Target account id
 	public long id;
@@ -29,7 +32,8 @@ public class TootRelationShip {
 	//	Whether the user has requested to follow the account
 	public boolean requested;
 	
-	public static TootRelationShip parse( LogCategory log, JSONObject src ){
+	@Nullable
+	public static TootRelationShip parse( JSONObject src ){
 		if( src == null ) return null;
 		try{
 			TootRelationShip dst = new TootRelationShip();
@@ -41,7 +45,7 @@ public class TootRelationShip {
 			dst.requested = src.optBoolean( "requested" );
 			return dst;
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "TootRelationShip.parse failed." );
 			return null;
 		}
@@ -57,8 +61,7 @@ public class TootRelationShip {
 		}
 	}
 	
-	@NonNull
-	public static List parseList( LogCategory log, JSONArray array ){
+	@NonNull public static List parseList( JSONArray array ){
 		List result = new List();
 		if( array != null ){
 			int array_size = array.length();
@@ -66,7 +69,7 @@ public class TootRelationShip {
 			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootRelationShip item = parse( log, src );
+				TootRelationShip item = parse( src );
 				if( item != null ) result.add( item );
 			}
 		}

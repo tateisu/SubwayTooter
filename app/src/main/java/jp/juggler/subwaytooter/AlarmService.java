@@ -132,7 +132,7 @@ public class AlarmService extends IntentService {
 				mCustomStreamListenerSetting = JsonValue.readHjson( mCustomStreamListenerSettingString ).asObject();
 				mCustomStreamListenerSecret = pref.getString( Pref.KEY_STREAM_LISTENER_SECRET, null );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 	}
@@ -162,7 +162,7 @@ public class AlarmService extends IntentService {
 						String notification_tag = Long.toString( a.db_id );
 						notification_manager.cancel( notification_tag, NOTIFICATION_ID );
 					}catch( Throwable ex ){
-						ex.printStackTrace();
+						log.trace( ex );
 					}
 				}
 				mBusyAppDataImportBefore.set( false );
@@ -285,7 +285,7 @@ public class AlarmService extends IntentService {
 						showNotification( account, data_list );
 						
 					}catch( Throwable ex ){
-						ex.printStackTrace();
+						log.trace( ex );
 					}
 				}
 			} );
@@ -297,7 +297,7 @@ public class AlarmService extends IntentService {
 			try{
 				t.join();
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 		
@@ -337,9 +337,9 @@ public class AlarmService extends IntentService {
 					}else{
 						prefDevice.edit().putString( PrefDevice.KEY_DEVICE_TOKEN, device_token ).apply();
 					}
-				}catch( Throwable ex2 ){
+				}catch( Throwable ex ){
 					log.e( "getInstallId: could not get device token." );
-					ex2.printStackTrace();
+					log.trace( ex );
 					return null;
 				}
 			}
@@ -364,7 +364,7 @@ public class AlarmService extends IntentService {
 			return sv;
 			
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			return null;
 		}
 	}
@@ -410,7 +410,7 @@ public class AlarmService extends IntentService {
 			}
 			
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 	}
 	
@@ -509,7 +509,7 @@ public class AlarmService extends IntentService {
 			}
 			
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		return false;
 	}
@@ -543,7 +543,7 @@ public class AlarmService extends IntentService {
 					update_sub( src, nr, account, dst_array, data_list, duplicate_check, muted_app, muted_word );
 				}
 			}catch( JSONException ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 		
@@ -567,7 +567,7 @@ public class AlarmService extends IntentService {
 							update_sub( src, nr, account, dst_array, data_list, duplicate_check, muted_app, muted_word );
 						}
 					}catch( JSONException ex ){
-						ex.printStackTrace();
+						log.trace( ex );
 					}
 					break;
 				}else{
@@ -630,7 +630,7 @@ public class AlarmService extends IntentService {
 			return;
 		}
 		
-		TootNotification notification = TootNotification.parse( AlarmService.this, log, account, account.host, src );
+		TootNotification notification = TootNotification.parse( AlarmService.this,  account, src );
 		if( notification == null ){
 			return;
 		}
@@ -733,7 +733,7 @@ public class AlarmService extends IntentService {
 		// Android 7.0 ではグループを指定しないと勝手に通知が束ねられてしまう。
 		// 束ねられた通知をタップしても pi_click が実行されないので困るため、
 		// アカウント別にグループキーを設定する
-		builder.setGroup( getPackageName() + ":" + account.acct  );
+		builder.setGroup( getPackageName() + ":" + account.acct );
 		
 		log.d( "showNotification[%s] creating notification(3)", account.acct );
 		
@@ -749,7 +749,7 @@ public class AlarmService extends IntentService {
 					sound_uri = TextUtils.isEmpty( sv ) ? null : Uri.parse( sv );
 				}
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 			
 			if( sound_uri == null ){
@@ -757,7 +757,7 @@ public class AlarmService extends IntentService {
 					String sv = account.sound_uri;
 					sound_uri = TextUtils.isEmpty( sv ) ? null : Uri.parse( sv );
 				}catch( Throwable ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 				}
 			}
 			
@@ -767,7 +767,7 @@ public class AlarmService extends IntentService {
 					builder.setSound( sound_uri );
 					bSoundSet = true;
 				}catch( Throwable ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 				}
 			}
 			if( ! bSoundSet ){
@@ -878,7 +878,7 @@ public class AlarmService extends IntentService {
 						log.d( "add old. id=%s", id );
 					}
 				}catch( JSONException ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 				}
 			}
 			for( TootNotification item : data.list ){
@@ -905,7 +905,7 @@ public class AlarmService extends IntentService {
 					src.put( KEY_TIME, item.time_created_at );
 					dst_array.add( src );
 				}catch( JSONException ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 				}
 			}
 			

@@ -95,7 +95,12 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 				setButton( btnBoost, false, color_normal, R.attr.btn_refresh, "?" );
 			}else{
 				int color = ( ts.reblogged ? color_accent : color_normal );
-				setButton( btnBoost, true, color, R.attr.btn_boost, Long.toString( ts.reblogs_count ) );
+				
+				if( TootStatus.VISIBILITY_UNLISTED.equals( ts.visibility ) ){
+					setButton( btnBoost, true, color, R.attr.btn_boost, Long.toString( ts.reblogs_count ) );
+				}else{
+					setButton( btnBoost, true, color, R.attr.btn_boost, Long.toString( ts.reblogs_count ) );
+				}
 			}
 			
 			if( activity.app_state.isBusyFav( access_info, status ) ){

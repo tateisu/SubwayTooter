@@ -54,7 +54,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public static final String COL_REGISTER_TIME = "register_time";
 	
 	// スキーマ16から
-	public static final String COL_SOUND_URI = "sound_uri";
+	private static final String COL_SOUND_URI = "sound_uri";
 	
 	public static final long INVALID_ID = - 1L;
 	
@@ -86,7 +86,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		try{
 			db.execSQL( "drop table if exists " + table );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 	}
 	
@@ -135,70 +135,70 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 			try{
 				db.execSQL( "alter table " + table + " add column notification_mention integer default 1" );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 			try{
 				db.execSQL( "alter table " + table + " add column notification_boost integer default 1" );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 			try{
 				db.execSQL( "alter table " + table + " add column notification_favourite integer default 1" );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 			try{
 				db.execSQL( "alter table " + table + " add column notification_follow integer default 1" );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 		if( oldVersion < 10 && newVersion >= 10 ){
 			try{
 				db.execSQL( "alter table " + table + " add column " + COL_CONFIRM_FOLLOW + " integer default 1" );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 			try{
 				db.execSQL( "alter table " + table + " add column " + COL_CONFIRM_FOLLOW_LOCKED + " integer default 1" );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 			try{
 				db.execSQL( "alter table " + table + " add column " + COL_CONFIRM_UNFOLLOW + " integer default 1" );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 			try{
 				db.execSQL( "alter table " + table + " add column " + COL_CONFIRM_POST + " integer default 1" );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 		if( oldVersion < 13 && newVersion >= 13 ){
 			try{
 				db.execSQL( "alter table " + table + " add column " + COL_NOTIFICATION_TAG + " text default ''" );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 		if( oldVersion < 14 && newVersion >= 14 ){
 			try{
 				db.execSQL( "alter table " + table + " add column " + COL_REGISTER_KEY + " text default ''" );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 			try{
 				db.execSQL( "alter table " + table + " add column " + COL_REGISTER_TIME + " integer default 0" );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 		if( oldVersion < 16 && newVersion >= 16 ){
 			try{
 				db.execSQL( "alter table " + table + " add column " + COL_SOUND_URI + " text default ''" );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 	}
@@ -233,7 +233,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	private static SavedAccount parse( Context context, Cursor cursor ) throws JSONException{
 		JSONObject src = new JSONObject( cursor.getString( cursor.getColumnIndex( COL_ACCOUNT ) ) );
 		SavedAccount dst = new SavedAccount();
-		dst = (SavedAccount) parse( context, log, dst, src, dst );
+		dst = (SavedAccount) parse( context, dst, src, dst );
 		if( dst != null ){
 			dst.db_id = cursor.getLong( cursor.getColumnIndex( COL_ID ) );
 			dst.host = cursor.getString( cursor.getColumnIndex( COL_HOST ) ).toLowerCase();
@@ -284,7 +284,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 			cv.put( COL_TOKEN, token.toString() );
 			return App1.getDB().insert( table, null, cv );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			throw new RuntimeException( "SavedAccount.insert failed.", ex );
 		}
 	}
@@ -293,7 +293,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		try{
 			App1.getDB().delete( table, COL_ID + "=?", new String[]{ Long.toString( db_id ) } );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			throw new RuntimeException( "SavedAccount.delete failed.", ex );
 		}
 	}
@@ -394,7 +394,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 				cursor.close();
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "loadAccount failed." );
 		}
 		return null;
@@ -413,7 +413,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 				cursor.close();
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "loadAccountList failed." );
 			throw new RuntimeException( "SavedAccount.loadAccountList failed.", ex );
 		}
@@ -433,7 +433,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 				cursor.close();
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "loadByTag failed." );
 			throw new RuntimeException( "SavedAccount.loadByTag failed.", ex );
 		}
@@ -525,7 +525,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 				cursor.close();
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "getCount failed." );
 			throw new RuntimeException( "SavedAccount.getCount failed.", ex );
 		}

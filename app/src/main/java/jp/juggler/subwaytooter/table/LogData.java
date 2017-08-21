@@ -57,8 +57,7 @@ public class LogData {
 //			cv.put( COL_MESSAGE, message );
 //			cv.put( COL_CATEGORY, category );
 //			return App1.getDB().insert( table, null, cv );
-//		}catch( Throwable ex ){
-//			ex.printStackTrace();
+//		}catch( Throwable ignored ){
 //		}
 		return -1L;
 	}

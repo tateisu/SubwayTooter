@@ -96,7 +96,7 @@ class ColumnViewHolder
 							( (TextView) v ).setTypeface( activity.timeline_font );
 						}
 					}catch( Throwable ex ){
-						ex.printStackTrace();
+						log.trace( ex );
 					}
 				}
 			} );
@@ -459,7 +459,7 @@ class ColumnViewHolder
 			last_image_uri = null;
 			
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 	}
 	
@@ -497,7 +497,7 @@ class ColumnViewHolder
 						return Utils.createResizedBitmap( log, activity, uri, false, resize_max );
 						
 					}catch( Throwable ex ){
-						ex.printStackTrace();
+						log.trace( ex );
 					}
 					return null;
 				}
@@ -521,7 +521,7 @@ class ColumnViewHolder
 			last_image_task.executeOnExecutor( App1.task_executor );
 			
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 	}
 	
@@ -777,7 +777,7 @@ class ColumnViewHolder
 		try{
 			if( status_adapter != null ) status_adapter.notifyDataSetChanged();
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		
 		showColumnHeader();

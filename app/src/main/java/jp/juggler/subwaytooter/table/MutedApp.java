@@ -83,7 +83,7 @@ public class MutedApp {
 				}
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		return dst;
 	}

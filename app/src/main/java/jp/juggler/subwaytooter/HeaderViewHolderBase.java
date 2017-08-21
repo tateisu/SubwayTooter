@@ -7,9 +7,14 @@ import android.widget.TextView;
 
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 abstract class HeaderViewHolderBase {
+	
+	private static final LogCategory log = new LogCategory( "HeaderViewHolderBase" );
+	
+	
 	@NonNull final ActMain activity;
 	@NonNull final Column column;
 	@NonNull final SavedAccount access_info;
@@ -33,7 +38,7 @@ abstract class HeaderViewHolderBase {
 							( (TextView) v ).setTypeface( activity.timeline_font );
 						}
 					}catch( Throwable ex ){
-						ex.printStackTrace();
+						log.trace( ex );
 					}
 				}
 			} );

@@ -8,8 +8,11 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.widget.ListView;
 
+import jp.juggler.subwaytooter.util.LogCategory;
 
 public class MyListView extends ListView {
+	private static final LogCategory log = new LogCategory( "MyListView" );
+	
 	public MyListView( Context context ){
 		super( context );
 	}
@@ -27,7 +30,6 @@ public class MyListView extends ListView {
 	}
 	
 	public long last_popup_close = 0L;
-	static final String TAG="SubwayTooter";
 	
 //	@Override public boolean onInterceptTouchEvent( MotionEvent ev ){
 //		boolean rv = super.onInterceptTouchEvent( ev );
@@ -51,7 +53,7 @@ public class MyListView extends ListView {
 				return false;
 			}
 			boolean rv = super.onTouchEvent( ev );
-			Log.d(TAG,"MyListView onTouchEvent action=" + action +" rv="+rv );
+			log.d("onTouchEvent action=%s, rv=%s",action ,rv );
 			return rv;
 		}
 
@@ -62,7 +64,7 @@ public class MyListView extends ListView {
 		try{
 			super.layoutChildren();
 		}catch(Throwable ex){
-			ex.printStackTrace(  );
+			log.trace( ex );
 		}
 	}
 }

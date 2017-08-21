@@ -99,6 +99,7 @@ public class ActAppSetting extends AppCompatActivity
 	Switch swDontDuplicationCheck;
 	Switch swQuickTootBar;
 	Switch swEnableGifAnimation;
+	Switch swMentionFullAcct;
 	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
@@ -199,6 +200,9 @@ public class ActAppSetting extends AppCompatActivity
 		
 		swEnableGifAnimation = (Switch) findViewById( R.id.swEnableGifAnimation );
 		swEnableGifAnimation.setOnCheckedChangeListener( this );
+		
+		swMentionFullAcct = (Switch) findViewById( R.id.swMentionFullAcct );
+		swMentionFullAcct.setOnCheckedChangeListener( this );
 		
 		cbNotificationSound = (CheckBox) findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = (CheckBox) findViewById( R.id.cbNotificationVibration );
@@ -341,7 +345,7 @@ public class ActAppSetting extends AppCompatActivity
 		swDontDuplicationCheck.setChecked( pref.getBoolean( Pref.KEY_DONT_DUPLICATION_CHECK, false ) );
 		swQuickTootBar.setChecked( pref.getBoolean( Pref.KEY_QUICK_TOOT_BAR, false ) );
 		swEnableGifAnimation.setChecked( pref.getBoolean( Pref.KEY_ENABLE_GIF_ANIMATION, false ) );
-		
+		swMentionFullAcct.setChecked( pref.getBoolean( Pref.KEY_MENTION_FULL_ACCT, false ) );
 		// Switch with default true
 		swDisableFastScroller.setChecked( pref.getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
 		swPriorChrome.setChecked( pref.getBoolean( Pref.KEY_PRIOR_CHROME, true ) );
@@ -404,6 +408,7 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_DONT_DUPLICATION_CHECK, swDontDuplicationCheck.isChecked() )
 			.putBoolean( Pref.KEY_QUICK_TOOT_BAR, swQuickTootBar.isChecked() )
 			.putBoolean( Pref.KEY_ENABLE_GIF_ANIMATION, swEnableGifAnimation.isChecked() )
+			.putBoolean( Pref.KEY_MENTION_FULL_ACCT, swMentionFullAcct.isChecked() )
 		
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )
@@ -727,7 +732,7 @@ public class ActAppSetting extends AppCompatActivity
 				return f;
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		return Float.NaN;
 	}
@@ -753,7 +758,7 @@ public class ActAppSetting extends AppCompatActivity
 				return;
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		// fallback
 		tvTimelineFontUrl.setText( getString( R.string.not_selected ) );
@@ -805,7 +810,7 @@ public class ActAppSetting extends AppCompatActivity
 			showTimelineFont();
 			
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			Utils.showToast( this, ex, "saveTimelineFont failed." );
 		}
 	}
@@ -832,7 +837,7 @@ public class ActAppSetting extends AppCompatActivity
 					}
 					return file;
 				}catch( Throwable ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 					Utils.showToast( ActAppSetting.this, ex, "exportAppData failed." );
 				}
 				return null;
@@ -860,7 +865,7 @@ public class ActAppSetting extends AppCompatActivity
 					intent.addFlags( Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION );
 					startActivityForResult( intent, REQUEST_CODE_APP_DATA_EXPORT );
 				}catch( Throwable ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 					Utils.showToast( ActAppSetting.this, ex, "exportAppData failed." );
 				}
 			}

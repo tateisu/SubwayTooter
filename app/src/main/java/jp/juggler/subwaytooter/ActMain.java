@@ -15,7 +15,6 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
-import android.support.v4.text.BidiFormatter;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
@@ -311,7 +310,10 @@ public class ActMain extends AppCompatActivity
 	
 	void closeListItemPopup(){
 		if( list_item_popup != null ){
-			list_item_popup.dismiss();
+			try{
+				list_item_popup.dismiss();
+			}catch(Throwable ignored){
+			}
 			list_item_popup = null;
 		}
 	}
@@ -775,7 +777,7 @@ public class ActMain extends AppCompatActivity
 			try{
 				timeline_font = Typeface.createFromFile( sv );
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 		
@@ -838,7 +840,7 @@ public class ActMain extends AppCompatActivity
 					media_thumb_height = iv;
 				}
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 		app_state.media_thumb_height = (int) ( 0.5f + media_thumb_height * density );
@@ -852,7 +854,7 @@ public class ActMain extends AppCompatActivity
 					column_w_min_dp = iv;
 				}
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 		int column_w_min = (int) ( 0.5f + column_w_min_dp * density );
@@ -1184,7 +1186,7 @@ public class ActMain extends AppCompatActivity
 			account.saveSetting();
 			return account;
 		}catch( JSONException ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "addPseudoAccount failed." );
 			Utils.showToast( this, ex, "addPseudoAccount failed." );
 		}
@@ -1199,7 +1201,7 @@ public class ActMain extends AppCompatActivity
 			Intent intent = new Intent( Intent.ACTION_VIEW, uri );
 			startActivity( intent );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 	}
 	
@@ -1286,7 +1288,7 @@ public class ActMain extends AppCompatActivity
 					}
 				}
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 			return;
 		}
@@ -1351,7 +1353,7 @@ public class ActMain extends AppCompatActivity
 						}
 						client.setAccount( sa );
 					}catch( Throwable ex ){
-						ex.printStackTrace();
+						log.trace( ex );
 						return new TootApiResult( Utils.formatError( ex, "invalid state" ) );
 					}
 				}else if( sv.startsWith( "host:" ) ){
@@ -1373,7 +1375,7 @@ public class ActMain extends AppCompatActivity
 							return null;
 						}
 					};
-					this.ta = TootAccount.parse( ActMain.this, log, lcc, result.object );
+					this.ta = TootAccount.parse( ActMain.this, lcc, result.object );
 				}
 				return result;
 			}
@@ -1383,7 +1385,7 @@ public class ActMain extends AppCompatActivity
 				try{
 					progress.dismiss();
 				}catch( Throwable ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 					// java.lang.IllegalArgumentException:
 					// at android.view.WindowManagerGlobal.findViewLocked(WindowManagerGlobal.java:451)
 					// at android.view.WindowManagerGlobal.removeView(WindowManagerGlobal.java:377)
@@ -1529,7 +1531,7 @@ public class ActMain extends AppCompatActivity
 							return null;
 						}
 					};
-					this.ta = TootAccount.parse( ActMain.this, log, lcc, result.object );
+					this.ta = TootAccount.parse( ActMain.this, lcc, result.object );
 				}
 				return result;
 			}
@@ -1539,7 +1541,7 @@ public class ActMain extends AppCompatActivity
 				try{
 					progress.dismiss();
 				}catch( Throwable ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 					// java.lang.IllegalArgumentException:
 					// at android.view.WindowManagerGlobal.findViewLocked(WindowManagerGlobal.java:451)
 					// at android.view.WindowManagerGlobal.removeView(WindowManagerGlobal.java:377)
@@ -1749,7 +1751,7 @@ public class ActMain extends AppCompatActivity
 				if( result != null && result.array != null ){
 					for( int i = 0, ie = result.array.length() ; i < ie ; ++ i ){
 						
-						TootAccount item = TootAccount.parse( ActMain.this, log, access_info, result.array.optJSONObject( i ) );
+						TootAccount item = TootAccount.parse( ActMain.this, access_info, result.array.optJSONObject( i ) );
 						
 						if( ! item.username.equals( user ) ) continue;
 						
@@ -1770,7 +1772,10 @@ public class ActMain extends AppCompatActivity
 			
 			@Override
 			protected void onPostExecute( TootAccount result ){
-				progress.dismiss();
+				try{
+					progress.dismiss();
+				}catch(Throwable ignored){
+				}
 				callback.onFindAccount( result );
 			}
 			
@@ -1909,7 +1914,7 @@ public class ActMain extends AppCompatActivity
 			}while( false );
 			
 		}catch( Throwable ex ){
-			// ex.printStackTrace();
+			// log.trace( ex );
 			log.e( ex, "openChromeTab failed. url=%s", url );
 		}
 	}
@@ -2081,7 +2086,7 @@ public class ActMain extends AppCompatActivity
 				
 				if( result != null && result.object != null ){
 					
-					TootResults tmp = TootResults.parse( ActMain.this, log, access_info, access_info.host, result.object );
+					TootResults tmp = TootResults.parse( ActMain.this, access_info, result.object );
 					if( tmp != null ){
 						if( tmp.accounts != null && ! tmp.accounts.isEmpty() ){
 							who_local = tmp.accounts.get( 0 );
@@ -2243,7 +2248,7 @@ public class ActMain extends AppCompatActivity
 						return result;
 					}
 					target_status = null;
-					TootResults tmp = TootResults.parse( ActMain.this, log, access_info, access_info.host, result.object );
+					TootResults tmp = TootResults.parse( ActMain.this, access_info, result.object );
 					if( tmp != null ){
 						if( tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 							target_status = tmp.statuses.get( 0 );
@@ -2273,7 +2278,7 @@ public class ActMain extends AppCompatActivity
 					)
 					, request_builder );
 				if( result != null && result.object != null ){
-					new_status = TootStatus.parse( ActMain.this, log, access_info, access_info.host, result.object );
+					new_status = TootStatus.parse( ActMain.this, access_info, result.object );
 				}
 				
 				return result;
@@ -2413,7 +2418,7 @@ public class ActMain extends AppCompatActivity
 						return result;
 					}
 					target_status = null;
-					TootResults tmp = TootResults.parse( ActMain.this, log, access_info, access_info.host, result.object );
+					TootResults tmp = TootResults.parse( ActMain.this, access_info, result.object );
 					if( tmp != null ){
 						if( tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 							target_status = tmp.statuses.get( 0 );
@@ -2441,7 +2446,7 @@ public class ActMain extends AppCompatActivity
 				
 				if( result != null && result.object != null ){
 					
-					new_status = TootStatus.parse( ActMain.this, log, access_info, access_info.host, result.object );
+					new_status = TootStatus.parse( ActMain.this, access_info, result.object );
 					
 					// reblogはreblogを表すStatusを返す
 					// unreblogはreblogしたStatusを返す
@@ -2546,7 +2551,7 @@ public class ActMain extends AppCompatActivity
 				
 				TootApiResult result = client.request( path );
 				if( result != null && result.object != null ){
-					TootResults tmp = TootResults.parse( ActMain.this, log, access_info, access_info.host, result.object );
+					TootResults tmp = TootResults.parse( ActMain.this, access_info, result.object );
 					if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 						target_status = tmp.statuses.get( 0 );
 						log.d( "status id conversion %s => %s", remote_status_url, target_status.id );
@@ -2565,7 +2570,10 @@ public class ActMain extends AppCompatActivity
 			
 			@Override
 			protected void onPostExecute( TootApiResult result ){
-				progress.dismiss();
+				try{
+					progress.dismiss();
+				}catch(Throwable ignored){
+				}
 				if( result == null ){
 					// cancelled.
 				}else if( target_status != null ){
@@ -2734,7 +2742,7 @@ public class ActMain extends AppCompatActivity
 				
 				TootApiResult result = client.request( path );
 				if( result != null && result.object != null ){
-					TootResults tmp = TootResults.parse( ActMain.this, log, access_info, access_info.host, result.object );
+					TootResults tmp = TootResults.parse( ActMain.this, access_info, result.object );
 					if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 						target_status = tmp.statuses.get( 0 );
 						log.d( "status id conversion %s => %s", remote_status_url, target_status.id );
@@ -2753,7 +2761,10 @@ public class ActMain extends AppCompatActivity
 			
 			@Override
 			protected void onPostExecute( TootApiResult result ){
-				progress.dismiss();
+				try{
+					progress.dismiss();
+				}catch(Throwable ignored){
+				}
 				if( result == null ){
 					// cancelled.
 				}else if( target_status != null ){
@@ -2855,7 +2866,7 @@ public class ActMain extends AppCompatActivity
 				);
 				
 				if( result != null && result.object != null ){
-					new_status = TootStatus.parse( ActMain.this, log, access_info, access_info.host, result.object );
+					new_status = TootStatus.parse( ActMain.this, access_info, result.object );
 				}
 				
 				return result;
@@ -2933,7 +2944,7 @@ public class ActMain extends AppCompatActivity
 		RelationResult rr = new RelationResult();
 		TootApiResult r2 = rr.result = client.request( "/api/v1/accounts/relationships?id=" + who_id );
 		if( r2 != null && r2.array != null ){
-			TootRelationShip.List list = TootRelationShip.parseList( log, r2.array );
+			TootRelationShip.List list = TootRelationShip.parseList( r2.array );
 			if( ! list.isEmpty() ){
 				TootRelationShip item = rr.relation = list.get( 0 );
 				long now = System.currentTimeMillis();
@@ -3055,7 +3066,7 @@ public class ActMain extends AppCompatActivity
 					result = client.request( "/api/v1/follows", request_builder );
 					if( result != null ){
 						if( result.object != null ){
-							TootAccount remote_who = TootAccount.parse( ActMain.this, log, access_info, result.object );
+							TootAccount remote_who = TootAccount.parse( ActMain.this, access_info, result.object );
 							if( remote_who != null ){
 								RelationResult rr = loadRelation1( client, access_info, remote_who.id );
 								result = rr.result;
@@ -3078,7 +3089,7 @@ public class ActMain extends AppCompatActivity
 						, request_builder );
 					if( result != null ){
 						if( result.object != null ){
-							relation = TootRelationShip.parse( log, result.object );
+							relation = TootRelationShip.parse( result.object );
 							if( relation != null ){
 								long now = System.currentTimeMillis();
 								UserRelation.save1( now, access_info.db_id, relation );
@@ -3215,7 +3226,7 @@ public class ActMain extends AppCompatActivity
 				
 				if( result != null ){
 					if( result.object != null ){
-						TootAccount remote_who = TootAccount.parse( ActMain.this, log, access_info, result.object );
+						TootAccount remote_who = TootAccount.parse( ActMain.this, access_info, result.object );
 						if( remote_who != null ){
 							RelationResult rr = loadRelation1( client, access_info, remote_who.id );
 							result = rr.result;
@@ -3280,7 +3291,7 @@ public class ActMain extends AppCompatActivity
 					, request_builder );
 				if( result != null ){
 					if( result.object != null ){
-						relation = TootRelationShip.parse( log, result.object );
+						relation = TootRelationShip.parse( result.object );
 						if( relation != null ){
 							long now = System.currentTimeMillis();
 							UserRelation.save1( now, access_info.db_id, relation );
@@ -3349,7 +3360,7 @@ public class ActMain extends AppCompatActivity
 				
 				if( result != null ){
 					if( result.object != null ){
-						relation = TootRelationShip.parse( log, result.object );
+						relation = TootRelationShip.parse( result.object );
 						if( relation != null ){
 							long now = System.currentTimeMillis();
 							UserRelation.save1( now, access_info.db_id, relation );
@@ -4022,7 +4033,7 @@ public class ActMain extends AppCompatActivity
 					column_w_min_dp = iv;
 				}
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 			}
 		}
 		
@@ -4168,7 +4179,7 @@ public class ActMain extends AppCompatActivity
 						IOUtils.closeQuietly( r );
 					}
 				}catch( Throwable ex ){
-					ex.printStackTrace();
+					log.trace( ex );
 					Utils.showToast( ActMain.this, ex, "importAppData failed." );
 				}
 				return null;
@@ -4179,7 +4190,10 @@ public class ActMain extends AppCompatActivity
 			}
 			
 			@Override protected void onPostExecute( ArrayList< Column > result ){
-				progress.dismiss();
+				try{
+					progress.dismiss();
+				}catch( Throwable ignored ){
+				}
 				
 				try{
 					getWindow().clearFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );

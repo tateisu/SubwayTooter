@@ -81,7 +81,7 @@ public class TagSet {
 				}
 				bOK = true;
 			}catch( Throwable ex ){
-				ex.printStackTrace();
+				log.trace( ex );
 				log.e( ex, "saveList failed." );
 			}
 			if( bOK ){
@@ -90,7 +90,7 @@ public class TagSet {
 				db.execSQL( "ROLLBACK TRANSACTION" );
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "saveList failed." );
 		}
 	}
@@ -135,7 +135,7 @@ public class TagSet {
 				}
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "searchPrefix failed." );
 		}
 		return new ArrayList<>();

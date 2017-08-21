@@ -13,6 +13,8 @@ import jp.juggler.subwaytooter.util.Utils;
 
 public class TootAttachment {
 	
+	private static final LogCategory log = new LogCategory( "TootAttachment" );
+	
 	public static class List extends ArrayList< TootAttachment > {
 		
 	}
@@ -41,7 +43,8 @@ public class TootAttachment {
 	
 	public JSONObject json;
 	
-	public static TootAttachment parse( LogCategory log, JSONObject src ){
+	@Nullable
+	public static TootAttachment parse( JSONObject src ){
 		if( src == null ) return null;
 		try{
 			TootAttachment dst = new TootAttachment();
@@ -54,21 +57,21 @@ public class TootAttachment {
 			dst.text_url = Utils.optStringX( src, "text_url" );
 			return dst;
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "TootAttachment.parse failed." );
 			return null;
 		}
 	}
 	
-	@NonNull public static List parseList( LogCategory log, JSONArray array ){
+	@NonNull public static List parseList( JSONArray array ){
 		List result = new List();
 		if( array != null ){
 			int array_size = array.length();
 			result.ensureCapacity( array_size );
-			for( int i=0;i<array_size;++i){
+			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootAttachment item = parse( log, src );
+				TootAttachment item = parse( src );
 				if( item != null ) result.add( item );
 			}
 		}

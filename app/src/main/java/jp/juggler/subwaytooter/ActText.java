@@ -236,7 +236,7 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 			
 			Utils.showToast( this, false, R.string.copy_complete );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			Utils.showToast( this, ex, "copy failed." );
 		}
 	}
@@ -251,7 +251,7 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 			startActivity( intent );
 			
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			Utils.showToast( this, ex, "send failed." );
 		}
 	}
@@ -269,7 +269,7 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 				startActivity( intent );
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			Utils.showToast( this, ex, "search failed." );
 		}
 		
@@ -289,7 +289,7 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 			setResult( RESULT_TOOT_SEARCH,data);
 			finish();
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 	}
 	
@@ -301,7 +301,7 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 			}
 			Utils.showToast( this, false, R.string.word_was_muted );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			Utils.showToast( this, ex, "muteWord failed." );
 		}
 	}

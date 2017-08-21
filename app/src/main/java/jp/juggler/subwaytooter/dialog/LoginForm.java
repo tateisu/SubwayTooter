@@ -23,9 +23,11 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 import jp.juggler.subwaytooter.R;
+import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 public class LoginForm {
+	private static final LogCategory log = new LogCategory( "LoginForm" );
 	
 	public interface LoginFormCallback {
 		void startLogin( Dialog dialog, String instance
@@ -113,7 +115,7 @@ public class LoginForm {
 				}
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 		
 		ArrayAdapter< String > adapter = new ArrayAdapter< String >(

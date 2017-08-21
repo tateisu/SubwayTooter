@@ -6,8 +6,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 import android.support.v4.util.LruCache;
 
-import java.util.HashSet;
-
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -18,8 +16,8 @@ public class UserRelation {
 	
 	private static final String table = "user_relation";
 	private static final String COL_TIME_SAVE = "time_save";
-	public static final String COL_DB_ID = "db_id"; // SavedAccount のDB_ID
-	public static final String COL_WHO_ID = "who_id"; // ターゲットアカウントのID
+	private static final String COL_DB_ID = "db_id"; // SavedAccount のDB_ID
+	private static final String COL_WHO_ID = "who_id"; // ターゲットアカウントのID
 	private static final String COL_FOLLOWING = "following";
 	private static final String COL_FOLLOWED_BY = "followed_by";
 	private static final String COL_BLOCKING = "blocking";
@@ -108,7 +106,7 @@ public class UserRelation {
 			}
 			bOK = true;
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "saveList failed." );
 		}
 		if( bOK ){
@@ -128,12 +126,12 @@ public class UserRelation {
 	public boolean muting;
 	public boolean requested;
 	
-	public UserRelation(){
+	private UserRelation(){
 	}
 	
 	private static final LruCache< String, UserRelation > mMemoryCache = new LruCache<>( 2048 );
 	
-	static final String load_where = COL_DB_ID + "=? and " + COL_WHO_ID + "=?";
+	private static final String load_where = COL_DB_ID + "=? and " + COL_WHO_ID + "=?";
 	private static final ThreadLocal< String[] > load_where_arg = new ThreadLocal< String[] >() {
 		@Override protected String[] initialValue(){
 			return new String[ 2 ];
@@ -168,7 +166,7 @@ public class UserRelation {
 				}
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "load failed." );
 		}
 		dst = new UserRelation();

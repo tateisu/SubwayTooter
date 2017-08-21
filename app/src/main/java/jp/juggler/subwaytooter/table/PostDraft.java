@@ -106,7 +106,7 @@ public class PostDraft {
 				}
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "hasDraft failed." );
 		}
 		return false;
@@ -116,7 +116,7 @@ public class PostDraft {
 		try{
 			return App1.getDB().query( table, null, null, null, null, null, COL_TIME_SAVE + " desc" );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "createCursor failed." );
 		}
 		return null;
@@ -156,7 +156,7 @@ public class PostDraft {
 		try{
 			dst.json = new JSONObject( cursor.getString( colIdx.idx_json ) );
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			dst.json = new JSONObject();
 		}
 		dst.hash = cursor.getString( colIdx.idx_hash );

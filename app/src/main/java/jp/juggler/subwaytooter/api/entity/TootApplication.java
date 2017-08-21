@@ -1,15 +1,21 @@
 package jp.juggler.subwaytooter.api.entity;
 
+import android.support.annotation.Nullable;
+
 import org.json.JSONObject;
 
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 public class TootApplication {
+	
+	private static final LogCategory log = new LogCategory( "TootApplication" );
+	
 	public String name;
 	public String website;
 	
-	public static TootApplication parse( LogCategory log, JSONObject src ){
+	@Nullable
+	public static TootApplication parse( JSONObject src ){
 		if( src == null ) return null;
 		try{
 			TootApplication dst = new TootApplication();
@@ -17,7 +23,7 @@ public class TootApplication {
 			dst.website = Utils.optStringX( src, "website" );
 			return dst;
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 			log.e( ex, "TootApplication.parse failed." );
 			return null;
 		}

@@ -359,12 +359,11 @@ public class ActColumnCustomize extends AppCompatActivity
 			
 			loadImage( ivColumnBackground, column.column_bg_image );
 			
-			c = column.acct_color != 0 ? column.acct_color :  Styler.getAttributeColor( this, R.attr.colorTimeSmall );
+			c = column.acct_color != 0 ? column.acct_color : Styler.getAttributeColor( this, R.attr.colorTimeSmall );
 			tvSampleAcct.setTextColor( c );
 			
-			c = column.content_color != 0 ?column.content_color : content_color_default;
+			c = column.content_color != 0 ? column.content_color : content_color_default;
 			tvSampleContent.setTextColor( c );
-			
 			
 		}finally{
 			loading_busy = false;
@@ -383,8 +382,7 @@ public class ActColumnCustomize extends AppCompatActivity
 				last_image_bitmap = null;
 			}
 		}catch( Throwable ex ){
-			ex.printStackTrace();
-			
+			log.trace( ex );
 		}
 	}
 	
@@ -412,7 +410,7 @@ public class ActColumnCustomize extends AppCompatActivity
 			}
 			
 		}catch( Throwable ex ){
-			ex.printStackTrace();
+			log.trace( ex );
 		}
 	}
 }

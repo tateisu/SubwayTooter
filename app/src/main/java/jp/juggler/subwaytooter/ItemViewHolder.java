@@ -6,6 +6,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +29,7 @@ import jp.juggler.subwaytooter.table.ContentWarning;
 import jp.juggler.subwaytooter.table.MediaShown;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
+import jp.juggler.subwaytooter.util.EmojiImageSpan;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
 import jp.juggler.subwaytooter.view.MyListView;
@@ -377,7 +380,21 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.status = status;
 		llStatus.setVisibility( View.VISIBLE );
 		
-		tvTime.setText( TootStatus.formatTime( status.time_created_at ) );
+		if( status instanceof MSPToot ){
+			tvTime.setText( TootStatus.formatTime( status.time_created_at ) );
+		}else if( status instanceof TootStatus ){
+			TootStatus ts = (TootStatus) status;
+			int icon_id = Styler.getVisibilityIcon( activity, ts.visibility );
+			
+			SpannableStringBuilder sb = new SpannableStringBuilder(  );
+			int start = sb.length();
+			sb.append(ts.visibility);
+			int end = sb.length();
+			sb.setSpan( new EmojiImageSpan( activity, icon_id ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+			sb.append(' ');
+			sb.append(TootStatus.formatTime( status.time_created_at ));
+			tvTime.setText(sb);
+		}
 		
 		account_thumbnail = status.account;
 		setAcct( tvAcct, access_info.getFullAcct( status.account ) );

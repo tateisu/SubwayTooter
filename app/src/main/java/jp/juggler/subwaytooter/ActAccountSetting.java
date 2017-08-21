@@ -1,34 +1,58 @@
 package jp.juggler.subwaytooter;
 
+import android.Manifest;
 import android.app.Activity;
-import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.ClipData;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Base64;
+import android.util.Base64OutputStream;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import org.apache.commons.io.IOUtils;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
+import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
-import jp.juggler.subwaytooter.dialog.DlgAccessToken;
+import jp.juggler.subwaytooter.dialog.ActionsDialog;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.util.Emojione;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
+import jp.juggler.subwaytooter.view.MyNetworkImageView;
 import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -50,15 +74,21 @@ public class ActAccountSetting extends AppCompatActivity
 	}
 	
 	SavedAccount account;
+	SharedPreferences pref;
 	
 	@Override
 	protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
+		
 		App1.setActivityTheme( this, false );
+		this.pref = App1.pref;
+		
 		initUI();
 		account = SavedAccount.loadAccount( this, log, getIntent().getLongExtra( KEY_ACCOUNT_DB_ID, - 1L ) );
 		if( account == null ) finish();
 		loadUIFromData( account );
+		
+		initializeProfile();
 		
 		btnOpenBrowser.setText( getString( R.string.open_instance_website, account.host ) );
 	}
@@ -70,26 +100,89 @@ public class ActAccountSetting extends AppCompatActivity
 	
 	static final int REQUEST_CODE_ACCT_CUSTOMIZE = 1;
 	static final int REQUEST_CODE_NOTIFICATION_SOUND = 2;
+	private static final int REQUEST_CODE_AVATAR_ATTACHMENT = 3;
+	private static final int REQUEST_CODE_HEADER_ATTACHMENT = 4;
+	private static final int REQUEST_CODE_AVATAR_CAMERA = 5;
+	private static final int REQUEST_CODE_HEADER_CAMERA = 6;
 	
 	@Override protected void onActivityResult( int requestCode, int resultCode, Intent data ){
-		if( requestCode == REQUEST_CODE_ACCT_CUSTOMIZE && resultCode == RESULT_OK ){
-			showAcctColor();
-		}else if( resultCode == RESULT_OK && requestCode == REQUEST_CODE_NOTIFICATION_SOUND ){
-			// RINGTONE_PICKERからの選択されたデータを取得する
-			Uri uri = (Uri) data.getExtras().get( RingtoneManager.EXTRA_RINGTONE_PICKED_URI );
-			if( uri != null ){
-				notification_sound_uri = uri.toString();
-				saveUIToData();
-				//			Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), uri);
-				//			TextView ringView = (TextView) findViewById(R.id.ringtone);
-				//			ringView.setText(ringtone.getTitle(getApplicationContext()));
-				//			ringtone.setStreamType(AudioManager.STREAM_ALARM);
-				//			ringtone.play();
-				//			SystemClock.sleep(1000);
-				//			ringtone.stop();
+		switch( requestCode ){
+		default:
+			super.onActivityResult( requestCode, resultCode, data );
+			break;
+		case REQUEST_CODE_ACCT_CUSTOMIZE:{
+			if( resultCode == RESULT_OK ){
+				showAcctColor();
 			}
+			break;
 		}
-		super.onActivityResult( requestCode, resultCode, data );
+		case REQUEST_CODE_NOTIFICATION_SOUND:{
+			if( resultCode == RESULT_OK ){
+				// RINGTONE_PICKERからの選択されたデータを取得する
+				Uri uri = (Uri) data.getExtras().get( RingtoneManager.EXTRA_RINGTONE_PICKED_URI );
+				if( uri != null ){
+					notification_sound_uri = uri.toString();
+					saveUIToData();
+					//			Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), uri);
+					//			TextView ringView = (TextView) findViewById(R.id.ringtone);
+					//			ringView.setText(ringtone.getTitle(getApplicationContext()));
+					//			ringtone.setStreamType(AudioManager.STREAM_ALARM);
+					//			ringtone.play();
+					//			SystemClock.sleep(1000);
+					//			ringtone.stop();
+				}
+			}
+			break;
+		}
+		case REQUEST_CODE_AVATAR_ATTACHMENT:
+		case REQUEST_CODE_HEADER_ATTACHMENT:{
+			
+			if( resultCode == RESULT_OK && data != null ){
+				Uri uri = data.getData();
+				if( uri != null ){
+					// 単一選択
+					String type = data.getType();
+					if( TextUtils.isEmpty( type ) ){
+						type = getContentResolver().getType( uri );
+					}
+					addAttachment( requestCode, uri, type );
+					break;
+				}
+				ClipData cd = data.getClipData();
+				if( cd != null ){
+					int count = cd.getItemCount();
+					if( count > 0 ){
+						ClipData.Item item = cd.getItemAt( 0 );
+						uri = item.getUri();
+						String type = getContentResolver().getType( uri );
+						addAttachment( requestCode, uri, type );
+					}
+				}
+			}
+			break;
+		}
+		case REQUEST_CODE_AVATAR_CAMERA:
+		case REQUEST_CODE_HEADER_CAMERA:{
+			
+			if( resultCode != RESULT_OK ){
+				// 失敗したら DBからデータを削除
+				if( uriCameraImage != null ){
+					getContentResolver().delete( uriCameraImage, null, null );
+					uriCameraImage = null;
+				}
+			}else{
+				// 画像のURL
+				Uri uri = ( data == null ? null : data.getData() );
+				if( uri == null ) uri = uriCameraImage;
+				
+				if( uri != null ){
+					String type = getContentResolver().getType( uri );
+					addAttachment( requestCode, uri, type );
+				}
+			}
+			break;
+		}
+		}
 	}
 	
 	TextView tvInstance;
@@ -120,6 +213,15 @@ public class ActAccountSetting extends AppCompatActivity
 	
 	String notification_sound_uri;
 	
+	MyNetworkImageView ivProfileHeader;
+	MyNetworkImageView ivProfileAvatar;
+	View btnProfileAvatar;
+	View btnProfileHeader;
+	EditText etDisplayName;
+	View btnDisplayName;
+	EditText etNote;
+	View btnNote;
+	
 	private void initUI(){
 		setContentView( R.layout.act_account_setting );
 		
@@ -147,12 +249,25 @@ public class ActAccountSetting extends AppCompatActivity
 		tvUserCustom = (TextView) findViewById( R.id.tvUserCustom );
 		btnUserCustom = findViewById( R.id.btnUserCustom );
 		
+		ivProfileHeader = (MyNetworkImageView) findViewById( R.id.ivProfileHeader );
+		ivProfileAvatar = (MyNetworkImageView) findViewById( R.id.ivProfileAvatar );
+		btnProfileAvatar = findViewById( R.id.btnProfileAvatar );
+		btnProfileHeader = findViewById( R.id.btnProfileHeader );
+		etDisplayName = (EditText) findViewById( R.id.etDisplayName );
+		btnDisplayName = findViewById( R.id.btnDisplayName );
+		etNote = (EditText) findViewById( R.id.etNote );
+		btnNote = findViewById( R.id.btnNote );
+		
 		btnOpenBrowser.setOnClickListener( this );
 		btnAccessToken.setOnClickListener( this );
 		btnInputAccessToken.setOnClickListener( this );
 		btnAccountRemove.setOnClickListener( this );
 		btnVisibility.setOnClickListener( this );
 		btnUserCustom.setOnClickListener( this );
+		btnProfileAvatar.setOnClickListener( this );
+		btnProfileHeader.setOnClickListener( this );
+		btnDisplayName.setOnClickListener( this );
+		btnNote.setOnClickListener( this );
 		
 		swNSFWOpen.setOnCheckedChangeListener( this );
 		cbNotificationMention.setOnCheckedChangeListener( this );
@@ -290,6 +405,23 @@ public class ActAccountSetting extends AppCompatActivity
 			notification_sound_uri = "";
 			saveUIToData();
 			break;
+		
+		case R.id.btnProfileAvatar:
+			pickAvatarImage();
+			break;
+		
+		case R.id.btnProfileHeader:
+			pickHeaderImage();
+			break;
+		
+		case R.id.btnDisplayName:
+			sendDisplayName();
+			break;
+		
+		case R.id.btnNote:
+			sendNote();
+			break;
+			
 		}
 	}
 	
@@ -518,5 +650,437 @@ public class ActAccountSetting extends AppCompatActivity
 		startActivityForResult( chooser, REQUEST_CODE_NOTIFICATION_SOUND );
 	}
 	
+	//////////////////////////////////////////////////////////////////////////
+	
+	private void initializeProfile(){
+		// 初期状態
+		ivProfileAvatar.setErrorImageResId( Styler.getAttributeResourceId( this, R.attr.ic_question ) );
+		ivProfileAvatar.setDefaultImageResId( Styler.getAttributeResourceId( this, R.attr.ic_question ) );
+		etDisplayName.setText( "(loading...)" );
+		etNote.setText( "(loading...)" );
+		// 初期状態では編集不可能
+		btnProfileAvatar.setEnabled( false );
+		btnProfileHeader.setEnabled( false );
+		etDisplayName.setEnabled( false );
+		btnDisplayName.setEnabled( false );
+		etNote.setEnabled( false );
+		btnNote.setEnabled( false );
+		// 疑似アカウントなら編集不可のまま
+		if( account.isPseudo() ) return;
+		
+		loadProfile();
+	}
+	
+	void loadProfile(){
+		// サーバから情報をロードする
+		
+		final ProgressDialog progress = new ProgressDialog( this );
+		
+		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+			
+			TootAccount data;
+			
+			@Override protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActAccountSetting.this, new TootApiClient.Callback() {
+					@Override public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override public void publishApiProgress( final String s ){
+					}
+				} );
+				client.setAccount( account );
+				
+				TootApiResult result = client.request( "/api/v1/accounts/verify_credentials" );
+				if( result != null && result.object != null ){
+					data = TootAccount.parse( ActAccountSetting.this, account, result.object );
+					if( data == null ) return new TootApiResult( "TootAccount parse failed." );
+				}
+				return result;
+			}
+			
+			@Override
+			protected void onCancelled( TootApiResult result ){
+				super.onPostExecute( result );
+			}
+			
+			@Override
+			protected void onPostExecute( TootApiResult result ){
+				try{
+					progress.dismiss();
+				}catch( Throwable ignored ){
+				}
+				if( result == null ){
+					// cancelled.
+				}else if( data != null ){
+					showProfile( data );
+				}else{
+					Utils.showToast( ActAccountSetting.this, true, result.error );
+				}
+			}
+			
+		};
+		task.executeOnExecutor( App1.task_executor );
+		progress.setIndeterminate( true );
+		progress.setOnDismissListener( new DialogInterface.OnDismissListener() {
+			@Override public void onDismiss( DialogInterface dialog ){
+				task.cancel( true );
+			}
+		} );
+		progress.show();
+	}
+	
+	void showProfile( TootAccount src ){
+		ivProfileAvatar.setImageUrl( App1.pref, 16f, src.avatar_static, src.avatar );
+		ivProfileHeader.setImageUrl( App1.pref, 0f, src.header_static, src.header );
+		
+		etDisplayName.setText( Emojione.decodeEmoji( this, src.display_name == null ? "" : src.display_name ) );
+		
+		String note;
+		if( src.source != null && src.source.note != null ){
+			note = src.source.note;
+		}else{
+			note = src.note;
+		}
+		etNote.setText( Emojione.decodeEmoji( this, note == null ? "" : note ) );
+		
+		// 編集可能にする
+		btnProfileAvatar.setEnabled( true );
+		btnProfileHeader.setEnabled( true );
+		etDisplayName.setEnabled( true );
+		btnDisplayName.setEnabled( true );
+		etNote.setEnabled( true );
+		btnNote.setEnabled( true );
+	}
+	
+	void updateCredential( final String form_data ){
+		final ProgressDialog progress = new ProgressDialog( this );
+		
+		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+			
+			TootAccount data;
+			
+			@Override protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActAccountSetting.this, new TootApiClient.Callback() {
+					@Override public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override public void publishApiProgress( final String s ){
+					}
+				} );
+				client.setAccount( account );
+				
+				Request.Builder request_builder = new Request.Builder()
+					.patch( RequestBody.create(
+						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+						, form_data
+					) );
+				
+				TootApiResult result = client.request( "/api/v1/accounts/update_credentials", request_builder );
+				if( result != null && result.object != null ){
+					data = TootAccount.parse( ActAccountSetting.this, account, result.object );
+					if( data == null ) return new TootApiResult( "TootAccount parse failed." );
+				}
+				return result;
+			}
+			
+			@Override
+			protected void onCancelled( TootApiResult result ){
+				super.onPostExecute( result );
+			}
+			
+			@Override
+			protected void onPostExecute( TootApiResult result ){
+				try{
+					progress.dismiss();
+				}catch( Throwable ignored ){
+				}
+				loadProfile();
+				if( result == null ){
+					// cancelled.
+				}else if( data != null ){
+					showProfile( data );
+				}else{
+					Utils.showToast( ActAccountSetting.this, true, result.error );
+				}
+			}
+			
+		};
+		task.executeOnExecutor( App1.task_executor );
+		progress.setIndeterminate( true );
+		progress.setOnDismissListener( new DialogInterface.OnDismissListener() {
+			@Override public void onDismiss( DialogInterface dialog ){
+				task.cancel( true );
+			}
+		} );
+		progress.show();
+	}
+	
+	private void sendDisplayName(){
+		updateCredential( "display_name=" + Uri.encode( etDisplayName.getText().toString() ) );
+	}
+	
+	private void sendNote(){
+		updateCredential( "note=" + Uri.encode( etNote.getText().toString() ) );
+	}
+	
+	private static final int PERMISSION_REQUEST_AVATAR = 1;
+	private static final int PERMISSION_REQUEST_HEADER = 2;
+	
+	private void pickAvatarImage(){
+		openPicker( PERMISSION_REQUEST_AVATAR );
+	}
+	
+	private void pickHeaderImage(){
+		openPicker( PERMISSION_REQUEST_HEADER );
+	}
+	
+	void openPicker( final int permission_request_code ){
+		int permissionCheck = ContextCompat.checkSelfPermission( this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE );
+		if( permissionCheck != PackageManager.PERMISSION_GRANTED ){
+			preparePermission( permission_request_code );
+			return;
+		}
+		
+		ActionsDialog a = new ActionsDialog();
+		a.addAction( getString( R.string.image_pick ), new Runnable() {
+			@Override public void run(){
+				performAttachment( permission_request_code == PERMISSION_REQUEST_AVATAR ? REQUEST_CODE_AVATAR_ATTACHMENT : REQUEST_CODE_HEADER_ATTACHMENT );
+			}
+		} );
+		a.addAction( getString( R.string.image_capture ), new Runnable() {
+			@Override public void run(){
+				performCamera( permission_request_code == PERMISSION_REQUEST_AVATAR ? REQUEST_CODE_AVATAR_CAMERA : REQUEST_CODE_HEADER_CAMERA );
+			}
+		} );
+		a.show( this, null );
+	}
+	
+	private void preparePermission( int request_code ){
+		if( Build.VERSION.SDK_INT >= 23 ){
+			// No explanation needed, we can request the permission.
+			
+			ActivityCompat.requestPermissions( this
+				, new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE }
+				, request_code
+			);
+			return;
+		}
+		Utils.showToast( this, true, R.string.missing_storage_permission );
+	}
+	
+	@Override public void onRequestPermissionsResult(
+		int requestCode
+		, @NonNull String permissions[]
+		, @NonNull int[] grantResults
+	){
+		switch( requestCode ){
+		case PERMISSION_REQUEST_AVATAR:
+		case PERMISSION_REQUEST_HEADER:
+			// If request is cancelled, the result arrays are empty.
+			if( grantResults.length > 0 &&
+				grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED
+				){
+				openPicker( requestCode );
+			}else{
+				Utils.showToast( this, true, R.string.missing_storage_permission );
+			}
+			break;
+		}
+	}
+	
+	private void performAttachment( final int request_code ){
+		// SAFのIntentで開く
+		try{
+			Intent intent = new Intent( Intent.ACTION_OPEN_DOCUMENT );
+			intent.addCategory( Intent.CATEGORY_OPENABLE );
+			intent.setType( "*/*" );
+			intent.putExtra( Intent.EXTRA_ALLOW_MULTIPLE, false );
+			intent.putExtra( Intent.EXTRA_MIME_TYPES, new String[]{ "image/*", "video/*" } );
+			startActivityForResult( intent
+				, request_code );
+		}catch( Throwable ex ){
+			log.trace( ex );
+			Utils.showToast( this, ex, "ACTION_OPEN_DOCUMENT failed." );
+		}
+	}
+	
+	Uri uriCameraImage;
+	
+	private void performCamera( final int request_code ){
+		
+		try{
+			// カメラで撮影
+			String filename = System.currentTimeMillis() + ".jpg";
+			ContentValues values = new ContentValues();
+			values.put( MediaStore.Images.Media.TITLE, filename );
+			values.put( MediaStore.Images.Media.MIME_TYPE, "image/jpeg" );
+			uriCameraImage = getContentResolver().insert( MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values );
+			
+			Intent intent = new Intent( MediaStore.ACTION_IMAGE_CAPTURE );
+			intent.putExtra( MediaStore.EXTRA_OUTPUT, uriCameraImage );
+			
+			startActivityForResult( intent, request_code );
+		}catch( Throwable ex ){
+			log.trace( ex );
+			Utils.showToast( this, ex, "opening camera app failed." );
+		}
+	}
+	
+	interface InputStreamOpener {
+		InputStream open() throws IOException;
+		
+		String getMimeType();
+		
+		void deleteTempFile();
+	}
+	
+	static final String MIME_TYPE_JPEG = "image/jpeg";
+	static final String MIME_TYPE_PNG = "image/png";
+	
+	private InputStreamOpener createOpener( final Uri uri, final String mime_type ){
+		//noinspection LoopStatementThatDoesntLoop
+		for( ; ; ){
+			try{
+				
+				// 画像の種別
+				boolean is_jpeg = MIME_TYPE_JPEG.equals( mime_type );
+				boolean is_png = MIME_TYPE_PNG.equals( mime_type );
+				if( ! is_jpeg && ! is_png ){
+					log.d( "createOpener: source is not jpeg or png" );
+					break;
+				}
+				
+				// 設定からリサイズ指定を読む
+				int resize_to = 1280;
+				
+				Bitmap bitmap = Utils.createResizedBitmap( log, this, uri, false, resize_to );
+				if( bitmap != null ){
+					try{
+						File cache_dir = getExternalCacheDir();
+						if( cache_dir == null ){
+							Utils.showToast( this, false, "getExternalCacheDir returns null." );
+							break;
+						}
+						
+						//noinspection ResultOfMethodCallIgnored
+						cache_dir.mkdir();
+						
+						final File temp_file = new File( cache_dir, "tmp." + Thread.currentThread().getId() );
+						FileOutputStream os = new FileOutputStream( temp_file );
+						try{
+							if( is_jpeg ){
+								bitmap.compress( Bitmap.CompressFormat.JPEG, 95, os );
+							}else{
+								bitmap.compress( Bitmap.CompressFormat.PNG, 100, os );
+							}
+						}finally{
+							os.close();
+						}
+						
+						return new InputStreamOpener() {
+							@Override public InputStream open() throws IOException{
+								return new FileInputStream( temp_file );
+							}
+							
+							@Override public String getMimeType(){
+								return mime_type;
+							}
+							
+							@Override public void deleteTempFile(){
+								//noinspection ResultOfMethodCallIgnored
+								temp_file.delete();
+							}
+						};
+					}finally{
+						bitmap.recycle();
+					}
+				}
+				
+			}catch( Throwable ex ){
+				log.trace( ex );
+				Utils.showToast( this, ex, "Resizing image failed." );
+			}
+			
+			break;
+		}
+		return new InputStreamOpener() {
+			@Override public InputStream open() throws IOException{
+				return getContentResolver().openInputStream( uri );
+			}
+			
+			@Override public String getMimeType(){
+				return mime_type;
+			}
+			
+			@Override public void deleteTempFile(){
+				
+			}
+		};
+	}
+	
+	void addAttachment( final int request_code, final Uri uri, final String mime_type ){
+		
+		if( mime_type == null ){
+			Utils.showToast( this, false, "mime type is not provided." );
+			return;
+		}
+		
+		if( ! mime_type.startsWith( "image/" ) ){
+			Utils.showToast( this, false, "mime type is not image." );
+			return;
+		}
+		
+		new AsyncTask< Void, Void, String >() {
+			
+			@Override protected String doInBackground( Void... params ){
+				try{
+					final InputStreamOpener opener = createOpener( uri, mime_type );
+					try{
+						InputStream is = opener.open();
+						try{
+							ByteArrayOutputStream bao = new ByteArrayOutputStream();
+							//
+							bao.write( Utils.encodeUTF8( "data:" + opener.getMimeType() + ";base64," ) );
+							//
+							Base64OutputStream base64 = new Base64OutputStream( bao, Base64.NO_WRAP );
+							try{
+								IOUtils.copy( is, base64 );
+							}finally{
+								base64.close();
+							}
+							String value = Utils.decodeUTF8( bao.toByteArray() );
+							
+							switch( request_code ){
+							case REQUEST_CODE_AVATAR_ATTACHMENT:
+							case REQUEST_CODE_AVATAR_CAMERA:
+								return "avatar=" + Uri.encode( value );
+							case REQUEST_CODE_HEADER_ATTACHMENT:
+							case REQUEST_CODE_HEADER_CAMERA:
+								return "header=" + Uri.encode( value );
+							}
+						}finally{
+							IOUtils.closeQuietly( is );
+						}
+					}finally{
+						opener.deleteTempFile();
+					}
+					
+				}catch( Throwable ex ){
+					Utils.showToast( ActAccountSetting.this, ex, "image converting failed." );
+				}
+				return null;
+			}
+			
+			@Override
+			protected void onPostExecute( String form_data ){
+				if( form_data != null ){
+					updateCredential( form_data );
+				}
+			}
+			
+		}.executeOnExecutor( App1.task_executor );
+	}
 }
 

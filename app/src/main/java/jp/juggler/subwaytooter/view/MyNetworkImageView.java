@@ -53,6 +53,7 @@ public class MyNetworkImageView extends AppCompatImageView {
 	
 	public void setDefaultImageResId( int defaultImage ){
 		mDefaultImageId = defaultImage;
+		loadImageIfNecessary();
 	}
 	
 	// エラー時に表示するDrawableのリソースID
@@ -60,6 +61,7 @@ public class MyNetworkImageView extends AppCompatImageView {
 	
 	public void setErrorImageResId( int errorImage ){
 		mErrorImageId = errorImage;
+		loadImageIfNecessary();
 	}
 	
 	// 角丸の半径。元画像の短辺に対する割合を指定するらしい

@@ -701,5 +701,11 @@
     <string name="acct_sample">(見本)username@instance</string>
     <string name="enable_gif_animation">GIFアニメーションを有効にする(バッテリーをとても浪費します)</string>
     <string name="mention_full_acct">メンションのインスタンス名部分を省略しない(アプリ再起動が必要)</string>
+    <string name="remote_profile_warning">リモートユーザのプロフィールは情報が不十分な可能性があります。より正確な情報をWebページで確認することができます。</string>
+    <string name="change_avatar">アバター画像を変更</string>
+    <string name="change_header">ヘッダー画像を変更</string>
+    <string name="display_name">表示名</string>
+    <string name="note">ノート</string>
+    <string name="public_profile">公開プロフィール</string>
 
 </resources>

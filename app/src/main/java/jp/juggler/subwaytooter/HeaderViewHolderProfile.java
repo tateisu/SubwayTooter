@@ -28,6 +28,7 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 	private final ImageButton btnFollow;
 	private final ImageView ivFollowedBy;
 	private final View llProfile;
+	private final TextView tvRemoteProfileWarning;
 	
 	private TootAccount who;
 	
@@ -49,13 +50,15 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 		View btnMore = viewRoot.findViewById( R.id.btnMore );
 		btnFollow = (ImageButton) viewRoot.findViewById( R.id.btnFollow );
 		ivFollowedBy = (ImageView) viewRoot.findViewById( R.id.ivFollowedBy );
-		
+		tvRemoteProfileWarning = (TextView) viewRoot.findViewById( R.id.tvRemoteProfileWarning );
+			
 		ivBackground.setOnClickListener( this );
 		btnFollowing.setOnClickListener( this );
 		btnFollowers.setOnClickListener( this );
 		btnStatusCount.setOnClickListener( this );
 		btnMore.setOnClickListener( this );
 		btnFollow.setOnClickListener( this );
+		tvRemoteProfileWarning.setOnClickListener( this );
 		
 		btnFollow.setOnLongClickListener( this );
 		
@@ -77,6 +80,7 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 		
 		showColor();
 		
+		
 		if( who == null ){
 			tvCreated.setText( "" );
 			ivBackground.setImageDrawable( null );
@@ -89,11 +93,14 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 			btnFollowers.setText( activity.getString( R.string.followers ) + "\n" + "?" );
 			
 			btnFollow.setImageDrawable( null );
+			tvRemoteProfileWarning.setVisibility( View.GONE );
 		}else{
 			tvCreated.setText( TootStatus.formatTime( who.time_created_at ) );
 			ivBackground.setImageUrl(  activity.pref, 0f,access_info.supplyBaseUrl( who.header_static ) );
 			ivAvatar.setImageUrl(  activity.pref, 16f,access_info.supplyBaseUrl( who.avatar_static ) , access_info.supplyBaseUrl( who.avatar ));
 			tvDisplayName.setText( who.decoded_display_name );
+
+			tvRemoteProfileWarning.setVisibility( column.access_info.isRemoteUser(who) ? View.VISIBLE : View.GONE );
 			
 			String s = "@" + access_info.getFullAcct( who );
 			if( who.locked ){
@@ -117,6 +124,7 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 		switch( v.getId() ){
 		
 		case R.id.ivBackground:
+		case R.id.tvRemoteProfileWarning:
 			if( who != null ){
 				// 強制的にブラウザで開く
 				activity.openChromeTab( activity.nextPosition( column ), access_info, who.url, true );
@@ -152,6 +160,7 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 				new DlgContextMenu( activity, column, who, null, null ).show();
 			}
 			break;
+		
 		}
 	}
 	

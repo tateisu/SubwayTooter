@@ -1323,10 +1323,10 @@ class Column implements StreamReader.Callback {
 						return getStatuses( client, PATH_FEDERATE );
 					
 					case TYPE_PROFILE:
-						if( who_account == null ){
-							parseAccount1( client, String.format( Locale.JAPAN, PATH_ACCOUNT, profile_id ) );
-							client.callback.publishApiProgress( "" );
-						}
+
+						parseAccount1( client, String.format( Locale.JAPAN, PATH_ACCOUNT, profile_id ) );
+						client.callback.publishApiProgress( "" );
+
 						switch( profile_tab ){
 						
 						default:

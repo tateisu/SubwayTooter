@@ -409,5 +409,11 @@
     <string name="enable_gif_animation">Enable GIF animation (It wastes the battery very much)</string>
     <string name="acct_sample">(sample)username@instance</string>
     <string name="mention_full_acct">Show mention as full acct (app restart required)</string>
+    <string name="remote_profile_warning">Remote users\' profile may be inadequate information. You can check more accurate information on the web page.</string>
+    <string name="public_profile">Public profile</string>
+    <string name="change_avatar">Change avatar icon</string>
+    <string name="change_header">Change header image</string>
+    <string name="display_name">Display name</string>
+    <string name="note">Note</string>
 
 </resources>

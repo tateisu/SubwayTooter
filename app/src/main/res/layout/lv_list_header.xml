@@ -153,5 +153,13 @@
             />
 
     </LinearLayout>
-
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        android:text="@string/remote_profile_warning"
+        android:id="@+id/tvRemoteProfileWarning"
+        android:gravity="center"
+        android:background="@drawable/btn_bg_transparent"
+        />
 </LinearLayout>

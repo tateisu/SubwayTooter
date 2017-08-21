@@ -464,6 +464,24 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return "?@?";
 	}
 	
+	public boolean isLocalUser( @NonNull TootAccount who ){
+		return isLocalUser(who.acct);
+	}
+	
+	public boolean isLocalUser( @NonNull String acct ){
+		int delm = acct.indexOf( '@' );
+		if( delm == -1 ) return true;
+		return host.equalsIgnoreCase( acct.substring( delm+1 ) );
+	}
+	
+	public boolean isRemoteUser( @NonNull TootAccount who ){
+		return ! isLocalUser(who);
+	}
+	
+	public boolean isRemoteUser( @NonNull String acct ){
+		return ! isLocalUser(acct);
+	}
+	
 	public String getUserUrl( @NonNull String who_acct ){
 		int p = who_acct.indexOf( '@' );
 		if( - 1 != p ){
@@ -581,4 +599,5 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		
 		return true;
 	}
+	
 }

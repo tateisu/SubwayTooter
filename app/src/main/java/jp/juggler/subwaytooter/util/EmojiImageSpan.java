@@ -15,7 +15,7 @@ import android.text.style.ReplacementSpan;
 
 import java.lang.ref.WeakReference;
 
-class EmojiImageSpan extends ReplacementSpan {
+public class EmojiImageSpan extends ReplacementSpan {
 	
 	static DynamicDrawableSpan x = null;
 	
@@ -28,7 +28,7 @@ class EmojiImageSpan extends ReplacementSpan {
 	private final int res_id;
 	private WeakReference< Drawable > mDrawableRef;
 	
-	EmojiImageSpan( @NonNull Context context, int res_id ){
+	public EmojiImageSpan( @NonNull Context context, int res_id ){
 		super();
 		this.context = context.getApplicationContext();
 		this.res_id = res_id;

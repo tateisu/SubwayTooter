@@ -51,7 +51,7 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 		btnFollow = (ImageButton) viewRoot.findViewById( R.id.btnFollow );
 		ivFollowedBy = (ImageView) viewRoot.findViewById( R.id.ivFollowedBy );
 		tvRemoteProfileWarning = (TextView) viewRoot.findViewById( R.id.tvRemoteProfileWarning );
-			
+		
 		ivBackground.setOnClickListener( this );
 		btnFollowing.setOnClickListener( this );
 		btnFollowers.setOnClickListener( this );
@@ -75,11 +75,10 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 		llProfile.setBackgroundColor( c );
 	}
 	
-	void bindData(Column column){
+	void bindData( Column column ){
 		this.who = column.who_account;
 		
 		showColor();
-		
 		
 		if( who == null ){
 			tvCreated.setText( "" );
@@ -95,12 +94,12 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 			btnFollow.setImageDrawable( null );
 			tvRemoteProfileWarning.setVisibility( View.GONE );
 		}else{
-			tvCreated.setText( TootStatus.formatTime( tvCreated.getContext(),who.time_created_at ,true ) );
-			ivBackground.setImageUrl(  activity.pref, 0f,access_info.supplyBaseUrl( who.header_static ) );
-			ivAvatar.setImageUrl(  activity.pref, 16f,access_info.supplyBaseUrl( who.avatar_static ) , access_info.supplyBaseUrl( who.avatar ));
+			tvCreated.setText( TootStatus.formatTime( tvCreated.getContext(), who.time_created_at, true ) );
+			ivBackground.setImageUrl( activity.pref, 0f, access_info.supplyBaseUrl( who.header_static ) );
+			ivAvatar.setImageUrl( activity.pref, 16f, access_info.supplyBaseUrl( who.avatar_static ), access_info.supplyBaseUrl( who.avatar ) );
 			tvDisplayName.setText( who.decoded_display_name );
-
-			tvRemoteProfileWarning.setVisibility( column.access_info.isRemoteUser(who) ? View.VISIBLE : View.GONE );
+			
+			tvRemoteProfileWarning.setVisibility( column.access_info.isRemoteUser( who ) ? View.VISIBLE : View.GONE );
 			
 			String s = "@" + access_info.getFullAcct( who );
 			if( who.locked ){
@@ -160,7 +159,7 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 				new DlgContextMenu( activity, column, who, null, null ).show();
 			}
 			break;
-		
+			
 		}
 	}
 	

@@ -264,9 +264,9 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			int c = this.acct_color = column.acct_color != 0 ? column.acct_color : Styler.getAttributeColor( activity, R.attr.colorTimeSmall );
 			tvBoostedTime.setTextColor( c );
 			tvTime.setTextColor( c );
-//			tvBoostedAcct.setTextColor( c );
-//			tvFollowerAcct.setTextColor( c );
-//			tvAcct.setTextColor( c );
+			//			tvBoostedAcct.setTextColor( c );
+			//			tvFollowerAcct.setTextColor( c );
+			//			tvAcct.setTextColor( c );
 		}
 		
 		if( item instanceof MSPToot ){
@@ -360,7 +360,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		account_boost = who;
 		llBoosted.setVisibility( View.VISIBLE );
 		ivBoosted.setImageResource( Styler.getAttributeResourceId( activity, icon_attr_id ) );
-		tvBoostedTime.setText( TootStatus.formatTime( tvBoostedTime.getContext(),time ,true) );
+		tvBoostedTime.setText( TootStatus.formatTime( tvBoostedTime.getContext(), time, true ) );
 		tvBoosted.setText( text );
 		setAcct( tvBoostedAcct, access_info.getFullAcct( who ) );
 	}
@@ -368,7 +368,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private void showFollow( @NonNull TootAccount who ){
 		account_follow = who;
 		llFollow.setVisibility( View.VISIBLE );
-		ivFollow.setImageUrl( activity.pref, 16f,access_info.supplyBaseUrl( who.avatar_static ) );
+		ivFollow.setImageUrl( activity.pref, 16f, access_info.supplyBaseUrl( who.avatar_static ) );
 		tvFollowerName.setText( who.decoded_display_name );
 		setAcct( tvFollowerAcct, access_info.getFullAcct( who ) );
 		
@@ -381,19 +381,19 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		llStatus.setVisibility( View.VISIBLE );
 		
 		if( status instanceof MSPToot ){
-			tvTime.setText( TootStatus.formatTime( tvTime.getContext(), status.time_created_at , column.column_type != Column.TYPE_CONVERSATION ) );
+			tvTime.setText( TootStatus.formatTime( tvTime.getContext(), status.time_created_at, column.column_type != Column.TYPE_CONVERSATION ) );
 		}else if( status instanceof TootStatus ){
 			TootStatus ts = (TootStatus) status;
 			int icon_id = Styler.getVisibilityIcon( activity, ts.visibility );
 			
-			SpannableStringBuilder sb = new SpannableStringBuilder(  );
+			SpannableStringBuilder sb = new SpannableStringBuilder();
 			int start = sb.length();
-			sb.append(ts.visibility);
+			sb.append( ts.visibility );
 			int end = sb.length();
 			sb.setSpan( new EmojiImageSpan( activity, icon_id ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-			sb.append(' ');
-			sb.append(TootStatus.formatTime( activity,status.time_created_at, column.column_type != Column.TYPE_CONVERSATION ));
-			tvTime.setText(sb);
+			sb.append( ' ' );
+			sb.append( TootStatus.formatTime( activity, status.time_created_at, column.column_type != Column.TYPE_CONVERSATION ) );
+			tvTime.setText( sb );
 		}
 		
 		account_thumbnail = status.account;
@@ -401,7 +401,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		if( status.account == null ){
 			tvName.setText( "?" );
-			ivThumbnail.setImageUrl( activity.pref, 16f,null, null );
+			ivThumbnail.setImageUrl( activity.pref, 16f, null, null );
 		}else{
 			tvName.setText( status.account.decoded_display_name );
 			ivThumbnail.setImageUrl(
@@ -568,7 +568,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 				}
 			}
 			// 正方形じゃないせいか、うまく動かない activity.density * 4f );
-			iv.setImageUrl( activity.pref, 0f, access_info.supplyBaseUrl( url ) , access_info.supplyBaseUrl( url ) );
+			iv.setImageUrl( activity.pref, 0f, access_info.supplyBaseUrl( url ), access_info.supplyBaseUrl( url ) );
 		}
 	}
 	

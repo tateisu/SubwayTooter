@@ -1,64 +1,63 @@
 package jp.juggler.subwaytooter;
-
-import android.Manifest;
-import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.ClipData;
-import android.content.ContentValues;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.media.RingtoneManager;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Bundle;
-import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
-import android.util.Base64;
-import android.util.Base64OutputStream;
-import android.view.View;
-import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.EditText;
-import android.widget.Switch;
-import android.widget.TextView;
-
-import org.apache.commons.io.IOUtils;
-
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
-import jp.juggler.subwaytooter.api.TootApiClient;
-import jp.juggler.subwaytooter.api.TootApiResult;
-import jp.juggler.subwaytooter.api.entity.TootAccount;
-import jp.juggler.subwaytooter.api.entity.TootInstance;
-import jp.juggler.subwaytooter.api.entity.TootStatus;
-import jp.juggler.subwaytooter.dialog.ActionsDialog;
-import jp.juggler.subwaytooter.table.AcctColor;
-import jp.juggler.subwaytooter.table.SavedAccount;
-import jp.juggler.subwaytooter.util.Emojione;
-import jp.juggler.subwaytooter.util.HTMLDecoder;
-import jp.juggler.subwaytooter.util.LogCategory;
-import jp.juggler.subwaytooter.util.Utils;
-import jp.juggler.subwaytooter.view.MyNetworkImageView;
-import okhttp3.Call;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
+	
+	import android.Manifest;
+	import android.app.Activity;
+	import android.app.ProgressDialog;
+	import android.content.ClipData;
+	import android.content.ContentValues;
+	import android.content.DialogInterface;
+	import android.content.Intent;
+	import android.content.SharedPreferences;
+	import android.content.pm.PackageManager;
+	import android.graphics.Bitmap;
+	import android.media.RingtoneManager;
+	import android.net.Uri;
+	import android.os.AsyncTask;
+	import android.os.Build;
+	import android.os.Bundle;
+	import android.provider.MediaStore;
+	import android.support.annotation.NonNull;
+	import android.support.annotation.Nullable;
+	import android.support.v4.app.ActivityCompat;
+	import android.support.v4.content.ContextCompat;
+	import android.support.v7.app.AlertDialog;
+	import android.support.v7.app.AppCompatActivity;
+	import android.text.TextUtils;
+	import android.util.Base64;
+	import android.util.Base64OutputStream;
+	import android.view.View;
+	import android.widget.Button;
+	import android.widget.CheckBox;
+	import android.widget.CompoundButton;
+	import android.widget.EditText;
+	import android.widget.Switch;
+	import android.widget.TextView;
+	
+	import org.apache.commons.io.IOUtils;
+	
+	import java.io.ByteArrayOutputStream;
+	import java.io.File;
+	import java.io.FileInputStream;
+	import java.io.FileOutputStream;
+	import java.io.IOException;
+	import java.io.InputStream;
+	
+	import jp.juggler.subwaytooter.api.TootApiClient;
+	import jp.juggler.subwaytooter.api.TootApiResult;
+	import jp.juggler.subwaytooter.api.entity.TootAccount;
+	import jp.juggler.subwaytooter.api.entity.TootStatus;
+	import jp.juggler.subwaytooter.dialog.ActionsDialog;
+	import jp.juggler.subwaytooter.table.AcctColor;
+	import jp.juggler.subwaytooter.table.SavedAccount;
+	import jp.juggler.subwaytooter.util.Emojione;
+	import jp.juggler.subwaytooter.util.HTMLDecoder;
+	import jp.juggler.subwaytooter.util.LogCategory;
+	import jp.juggler.subwaytooter.util.Utils;
+	import jp.juggler.subwaytooter.view.MyNetworkImageView;
+	import okhttp3.Call;
+	import okhttp3.Request;
+	import okhttp3.RequestBody;
+	import okhttp3.Response;
 
 public class ActAccountSetting extends AppCompatActivity
 	implements View.OnClickListener
@@ -91,8 +90,6 @@ public class ActAccountSetting extends AppCompatActivity
 		loadUIFromData( account );
 		
 		initializeProfile();
-		
-		initializeInstanceInformation();
 		
 		btnOpenBrowser.setText( getString( R.string.open_instance_website, account.host ) );
 	}
@@ -1085,76 +1082,6 @@ public class ActAccountSetting extends AppCompatActivity
 			}
 			
 		}.executeOnExecutor( App1.task_executor );
-	}
-	
-	///////////////////////////////////////////////////////////////////////////////////////////
-	
-	private void initializeInstanceInformation(){
-		
-		loadInstanceInformation();
-	}
-	
-	void loadInstanceInformation(){
-		// サーバから情報をロードする
-		
-		final ProgressDialog progress = new ProgressDialog( this );
-		
-		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
-			
-			TootInstance data;
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActAccountSetting.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-					}
-				} );
-				client.setAccount( account );
-				
-				TootApiResult result = client.request( "/api/v1/instance" );
-				if( result != null && result.object != null ){
-					data = TootInstance.parse( result.object );
-					if( data == null ) return new TootApiResult( "TootInstance parse failed." );
-				}
-				return result;
-			}
-			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				super.onPostExecute( result );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				try{
-					progress.dismiss();
-				}catch( Throwable ignored ){
-				}
-				if( result == null ){
-					// cancelled.
-				}else if( data != null ){
-					showInstanceInformation( data );
-				}else{
-					Utils.showToast( ActAccountSetting.this, true, result.error );
-				}
-			}
-			
-		};
-		task.executeOnExecutor( App1.task_executor );
-		progress.setIndeterminate( true );
-		progress.setOnDismissListener( new DialogInterface.OnDismissListener() {
-			@Override public void onDismiss( DialogInterface dialog ){
-				task.cancel( true );
-			}
-		} );
-		progress.show();
-	}
-	
-	private void showInstanceInformation( TootInstance data ){
-		
 	}
 	
 }

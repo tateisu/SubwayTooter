@@ -28,9 +28,8 @@ public class DlgDraftPicker
 	, DialogInterface.OnDismissListener
 {
 	
-
-	public interface Callback{
-		void onDraftSelected(JSONObject draft);
+	public interface Callback {
+		void onDraftSelected( JSONObject draft );
 	}
 	
 	private ActPost activity;
@@ -41,7 +40,7 @@ public class DlgDraftPicker
 	private Cursor cursor;
 	private PostDraft.ColIdx colIdx;
 	
-	private AsyncTask<Void,Void,Cursor> task;
+	private AsyncTask< Void, Void, Cursor > task;
 	
 	public DlgDraftPicker(){
 	}
@@ -53,34 +52,35 @@ public class DlgDraftPicker
 			dialog.dismiss();
 		}
 	}
-
-	@Override public boolean onItemLongClick( AdapterView< ? > parent, View view, int position, long id ){
-
+	
+	@Override
+	public boolean onItemLongClick( AdapterView< ? > parent, View view, int position, long id ){
+		
 		PostDraft draft = getPostDraft( position );
 		if( draft != null ){
-			Utils.showToast( activity,false,R.string.draft_deleted );
+			Utils.showToast( activity, false, R.string.draft_deleted );
 			draft.delete();
 			reload();
 			return true;
 		}
-
+		
 		return false;
 	}
 	
 	@Override public void onDismiss( DialogInterface dialog ){
-		if( task != null){
+		if( task != null ){
 			task.cancel( true );
 			task = null;
 		}
-
+		
 		lvDraft.setAdapter( null );
-
+		
 		if( cursor != null ){
 			cursor.close();
 		}
 	}
 	
-	public void open(final ActPost _activity,final Callback _callback){
+	public void open( final ActPost _activity, final Callback _callback ){
 		this.activity = _activity;
 		this.callback = _callback;
 		
@@ -102,7 +102,6 @@ public class DlgDraftPicker
 		;
 		dialog.setOnDismissListener( this );
 		
-		
 		dialog.show();
 		
 		reload();
@@ -110,7 +109,7 @@ public class DlgDraftPicker
 	
 	private void reload(){
 		
-		if( task != null){
+		if( task != null ){
 			task.cancel( true );
 			task = null;
 		}
@@ -123,6 +122,7 @@ public class DlgDraftPicker
 			@Override protected void onCancelled( Cursor cursor ){
 				super.onCancelled( cursor );
 			}
+			
 			@Override protected void onPostExecute( Cursor cursor ){
 				if( ! dialog.isShowing() ){
 					// dialog is already closed.
@@ -135,7 +135,7 @@ public class DlgDraftPicker
 					Utils.showToast( activity, true, "failed to loading drafts." );
 				}else{
 					DlgDraftPicker.this.cursor = cursor;
-					colIdx = new PostDraft.ColIdx(cursor);
+					colIdx = new PostDraft.ColIdx( cursor );
 					adapter.notifyDataSetChanged();
 				}
 			}
@@ -145,7 +145,7 @@ public class DlgDraftPicker
 	
 	private PostDraft getPostDraft( int position ){
 		if( cursor == null ) return null;
-		return PostDraft.loadFromCursor( cursor,colIdx, position);
+		return PostDraft.loadFromCursor( cursor, colIdx, position );
 	}
 	
 	private class MyViewHolder {
@@ -161,7 +161,7 @@ public class DlgDraftPicker
 			PostDraft draft = getPostDraft( position );
 			if( draft == null ) return;
 			
-			tvTime.setText( TootStatus.formatTime( tvTime.getContext(),draft.time_save ,false ));
+			tvTime.setText( TootStatus.formatTime( tvTime.getContext(), draft.time_save, false ) );
 			
 			String cw = draft.json.optString( ActPost.DRAFT_CONTENT_WARNING );
 			String c = draft.json.optString( ActPost.DRAFT_CONTENT );
@@ -177,7 +177,7 @@ public class DlgDraftPicker
 		}
 	}
 	
-	private class MyAdapter extends BaseAdapter{
+	private class MyAdapter extends BaseAdapter {
 		
 		@Override public int getCount(){
 			if( cursor == null ) return 0;
@@ -185,7 +185,7 @@ public class DlgDraftPicker
 		}
 		
 		@Override public Object getItem( int position ){
-			return getPostDraft(position);
+			return getPostDraft( position );
 		}
 		
 		@Override public long getItemId( int position ){
@@ -197,7 +197,7 @@ public class DlgDraftPicker
 			if( view == null ){
 				view = activity.getLayoutInflater().inflate( R.layout.lv_draft_picker, parent, false );
 				holder = new MyViewHolder( view );
-				view.setTag(holder);
+				view.setTag( holder );
 			}else{
 				holder = (MyViewHolder) view.getTag();
 			}

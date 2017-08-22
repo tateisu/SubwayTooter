@@ -50,6 +50,7 @@ import jp.juggler.subwaytooter.dialog.ActionsDialog;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.Emojione;
+import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.view.MyNetworkImageView;
@@ -736,13 +737,13 @@ public class ActAccountSetting extends AppCompatActivity
 		
 		etDisplayName.setText( Emojione.decodeEmoji( this, src.display_name == null ? "" : src.display_name ) );
 		
-		String note;
 		if( src.source != null && src.source.note != null ){
-			note = src.source.note;
+			etNote.setText( Emojione.decodeEmoji( this, src.source.note ) );
+		}else if( src.note != null ){
+			etNote.setText( HTMLDecoder.decodeHTML( ActAccountSetting.this, account, src.note, false, false, null ) );
 		}else{
-			note = src.note;
+			etNote.setText( "" );
 		}
-		etNote.setText( Emojione.decodeEmoji( this, note == null ? "" : note ) );
 		
 		// 編集可能にする
 		btnProfileAvatar.setEnabled( true );

@@ -101,7 +101,7 @@ public class TootApiClient {
 			
 			request_builder.url( "https://" + instance + path );
 			
-			String access_token = Utils.optStringX( token_info, "access_token" );
+			String access_token = token_info == null ? null : Utils.optStringX( token_info, "access_token" );
 			if( ! TextUtils.isEmpty( access_token ) ){
 				request_builder.header( "Authorization", "Bearer " + access_token );
 			}

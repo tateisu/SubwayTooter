@@ -34,7 +34,7 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 	
 	HeaderViewHolderProfile( ActMain arg_activity, Column column, ListView parent ){
 		super( arg_activity, column
-			, arg_activity.getLayoutInflater().inflate( R.layout.lv_list_header, parent, false )
+			, arg_activity.getLayoutInflater().inflate( R.layout.lv_header_account, parent, false )
 		);
 		
 		ivBackground = (MyNetworkImageView) viewRoot.findViewById( R.id.ivBackground );
@@ -75,8 +75,8 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 		llProfile.setBackgroundColor( c );
 	}
 	
-	void bindAccount( TootAccount who ){
-		this.who = who;
+	void bindData(Column column){
+		this.who = column.who_account;
 		
 		showColor();
 		
@@ -95,7 +95,7 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 			btnFollow.setImageDrawable( null );
 			tvRemoteProfileWarning.setVisibility( View.GONE );
 		}else{
-			tvCreated.setText( TootStatus.formatTime( who.time_created_at ) );
+			tvCreated.setText( TootStatus.formatTime( tvCreated.getContext(),who.time_created_at ,true ) );
 			ivBackground.setImageUrl(  activity.pref, 0f,access_info.supplyBaseUrl( who.header_static ) );
 			ivAvatar.setImageUrl(  activity.pref, 16f,access_info.supplyBaseUrl( who.avatar_static ) , access_info.supplyBaseUrl( who.avatar ));
 			tvDisplayName.setText( who.decoded_display_name );

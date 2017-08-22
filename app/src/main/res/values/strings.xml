@@ -408,12 +408,33 @@
     <string name="content_sample">(sample)The quick brown fox jumps over the lazy dog.</string>
     <string name="enable_gif_animation">Enable GIF animation (It wastes the battery very much)</string>
     <string name="acct_sample">(sample)username@instance</string>
-    <string name="mention_full_acct">Show mention as full acct (app restart required)</string>
+    <string name="mention_full_acct">Show mention as full acct (column reload required)</string>
     <string name="remote_profile_warning">Remote users\' profile may be inadequate information. You can check more accurate information on the web page.</string>
     <string name="public_profile">Public profile</string>
     <string name="change_avatar">Change avatar icon</string>
     <string name="change_header">Change header image</string>
     <string name="display_name">Display name</string>
     <string name="note">Note</string>
+    <string name="uri">URI</string>
+    <string name="title">Title</string>
+    <string name="email">E-mail</string>
+    <string name="description">Description</string>
+    <string name="version">Version</string>
+    <string name="instance_information_of">%1$s Instance information</string>
+    <string name="instance_information">Instance information</string>
+    <string name="missing_mail_app">Missing E-mail  app.</string>
+    <string name="relative_timestamp">Show relative timestamps</string>
+    <string name="ago">ago</string>
+    <string name="later">later</string>
+    <string name="time_within_second">just now</string>
+
+    <string name="relative_time_second_1">%1$d second %2$s</string>
+    <string name="relative_time_second_2">%1$d seconds %2$s</string>
+    <string name="relative_time_minute_1">%1$d minute %2$s</string>
+    <string name="relative_time_minute_2">%1$d minutes %2$s</string>
+    <string name="relative_time_hour_1">%1$d hour %2$s</string>
+    <string name="relative_time_hour_2">%1$d hours %2$s</string>
+    <string name="relative_time_day_1">%1$d day %2$s</string>
+    <string name="relative_time_day_2">%1$d days %2$s</string>
 
 </resources>

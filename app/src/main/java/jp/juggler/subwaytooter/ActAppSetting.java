@@ -100,6 +100,7 @@ public class ActAppSetting extends AppCompatActivity
 	Switch swQuickTootBar;
 	Switch swEnableGifAnimation;
 	Switch swMentionFullAcct;
+	Switch swRelativeTimestamp;
 	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
@@ -203,6 +204,9 @@ public class ActAppSetting extends AppCompatActivity
 		
 		swMentionFullAcct = (Switch) findViewById( R.id.swMentionFullAcct );
 		swMentionFullAcct.setOnCheckedChangeListener( this );
+		
+		swRelativeTimestamp = (Switch) findViewById( R.id.swRelativeTimestamp );
+		swRelativeTimestamp.setOnCheckedChangeListener( this );
 		
 		cbNotificationSound = (CheckBox) findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = (CheckBox) findViewById( R.id.cbNotificationVibration );
@@ -346,6 +350,8 @@ public class ActAppSetting extends AppCompatActivity
 		swQuickTootBar.setChecked( pref.getBoolean( Pref.KEY_QUICK_TOOT_BAR, false ) );
 		swEnableGifAnimation.setChecked( pref.getBoolean( Pref.KEY_ENABLE_GIF_ANIMATION, false ) );
 		swMentionFullAcct.setChecked( pref.getBoolean( Pref.KEY_MENTION_FULL_ACCT, false ) );
+		swRelativeTimestamp.setChecked( pref.getBoolean( Pref.KEY_RELATIVE_TIMESTAMP, false ) );
+		
 		// Switch with default true
 		swDisableFastScroller.setChecked( pref.getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
 		swPriorChrome.setChecked( pref.getBoolean( Pref.KEY_PRIOR_CHROME, true ) );
@@ -409,6 +415,7 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_QUICK_TOOT_BAR, swQuickTootBar.isChecked() )
 			.putBoolean( Pref.KEY_ENABLE_GIF_ANIMATION, swEnableGifAnimation.isChecked() )
 			.putBoolean( Pref.KEY_MENTION_FULL_ACCT, swMentionFullAcct.isChecked() )
+			.putBoolean( Pref.KEY_RELATIVE_TIMESTAMP, swRelativeTimestamp.isChecked() )
 		
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )

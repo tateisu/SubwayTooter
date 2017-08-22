@@ -360,7 +360,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		account_boost = who;
 		llBoosted.setVisibility( View.VISIBLE );
 		ivBoosted.setImageResource( Styler.getAttributeResourceId( activity, icon_attr_id ) );
-		tvBoostedTime.setText( TootStatus.formatTime( time ) );
+		tvBoostedTime.setText( TootStatus.formatTime( tvBoostedTime.getContext(),time ,true) );
 		tvBoosted.setText( text );
 		setAcct( tvBoostedAcct, access_info.getFullAcct( who ) );
 	}
@@ -381,7 +381,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		llStatus.setVisibility( View.VISIBLE );
 		
 		if( status instanceof MSPToot ){
-			tvTime.setText( TootStatus.formatTime( status.time_created_at ) );
+			tvTime.setText( TootStatus.formatTime( tvTime.getContext(), status.time_created_at , column.column_type != Column.TYPE_CONVERSATION ) );
 		}else if( status instanceof TootStatus ){
 			TootStatus ts = (TootStatus) status;
 			int icon_id = Styler.getVisibilityIcon( activity, ts.visibility );
@@ -392,7 +392,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			int end = sb.length();
 			sb.setSpan( new EmojiImageSpan( activity, icon_id ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 			sb.append(' ');
-			sb.append(TootStatus.formatTime( status.time_created_at ));
+			sb.append(TootStatus.formatTime( activity,status.time_created_at, column.column_type != Column.TYPE_CONVERSATION ));
 			tvTime.setText(sb);
 		}
 		

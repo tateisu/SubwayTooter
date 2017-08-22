@@ -32,7 +32,6 @@
             <TextView
                 android:id="@+id/tvInstance"
                 style="@style/setting_horizontal_stretch"
-                android:ellipsize="start"
                 />
 
         </LinearLayout>

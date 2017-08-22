@@ -48,5 +48,5 @@ abstract class HeaderViewHolderBase {
 	
 	abstract void showColor();
 	
-	abstract void bindAccount( TootAccount who_account );
+	abstract void bindData( Column column );
 }

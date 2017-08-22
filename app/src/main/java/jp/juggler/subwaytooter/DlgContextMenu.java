@@ -89,6 +89,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		View btnSendMessageFromAnotherAccount = viewRoot.findViewById( R.id.btnSendMessageFromAnotherAccount );
 		View btnOpenProfileFromAnotherAccount = viewRoot.findViewById( R.id.btnOpenProfileFromAnotherAccount );
 		Button btnDomainBlock = (Button) viewRoot.findViewById( R.id.btnDomainBlock );
+		Button btnInstanceInformation = (Button) viewRoot.findViewById( R.id.btnInstanceInformation );
 		ImageView ivFollowedBy = (ImageView) viewRoot.findViewById( R.id.ivFollowedBy );
 		Button btnOpenTimeline = (Button) viewRoot.findViewById( R.id.btnOpenTimeline );
 		View btnConversationAnotherAccount = viewRoot.findViewById( R.id.btnConversationAnotherAccount );
@@ -220,18 +221,26 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
 			btnBlock.setImageDrawable( d );
 			
-			if( who == null ){
+		}
+		
+		
+		if( who == null ){
+			btnInstanceInformation.setVisibility( View.GONE );
+			btnDomainBlock.setVisibility( View.GONE );
+		}else{
+			btnInstanceInformation.setVisibility( View.VISIBLE );
+			btnInstanceInformation.setOnClickListener( this );
+			btnInstanceInformation.setText( activity.getString( R.string.instance_information_of, access_info.getAccountHost( who )));
+			
+			int acct_delm = who.acct.indexOf( "@" );
+			if( - 1 == acct_delm || access_info.isPseudo() ){
+				// 疑似アカウントではドメインブロックできない
+				// 自ドメインはブロックできない
 				btnDomainBlock.setVisibility( View.GONE );
 			}else{
-				int acct_delm = who.acct.indexOf( "@" );
-				if( - 1 == acct_delm || access_info.isPseudo() ){
-					// 疑似アカウントではドメインブロックできない
-					// 自ドメインはブロックできない
-					btnDomainBlock.setVisibility( View.GONE );
-				}else{
-					btnDomainBlock.setText( activity.getString( R.string.block_domain_that, who.acct.substring( acct_delm + 1 ) ) );
-					btnDomainBlock.setOnClickListener( this );
-				}
+				btnInstanceInformation.setVisibility( View.VISIBLE );
+				btnInstanceInformation.setOnClickListener( this );
+				btnDomainBlock.setText( activity.getString( R.string.block_domain_that, who.acct.substring( acct_delm + 1 ) ) );
 			}
 		}
 		
@@ -552,6 +561,11 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 					log.trace( ex );
 				}
 				activity.openPost( sv );
+			}
+			break;
+		case R.id.btnInstanceInformation:
+			if( who != null ){
+				activity.openInstanceInformation( pos, access_info.getAccountHost( who ).toLowerCase() );
 			}
 			break;
 		}

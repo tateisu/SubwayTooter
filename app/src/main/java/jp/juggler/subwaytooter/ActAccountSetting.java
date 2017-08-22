@@ -45,6 +45,7 @@ import java.io.InputStream;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
+import jp.juggler.subwaytooter.api.entity.TootInstance;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.dialog.ActionsDialog;
 import jp.juggler.subwaytooter.table.AcctColor;
@@ -90,6 +91,8 @@ public class ActAccountSetting extends AppCompatActivity
 		loadUIFromData( account );
 		
 		initializeProfile();
+		
+		initializeInstanceInformation();
 		
 		btnOpenBrowser.setText( getString( R.string.open_instance_website, account.host ) );
 	}
@@ -1083,5 +1086,76 @@ public class ActAccountSetting extends AppCompatActivity
 			
 		}.executeOnExecutor( App1.task_executor );
 	}
+	
+	///////////////////////////////////////////////////////////////////////////////////////////
+	
+	private void initializeInstanceInformation(){
+		
+		loadInstanceInformation();
+	}
+	
+	void loadInstanceInformation(){
+		// サーバから情報をロードする
+		
+		final ProgressDialog progress = new ProgressDialog( this );
+		
+		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+			
+			TootInstance data;
+			
+			@Override protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActAccountSetting.this, new TootApiClient.Callback() {
+					@Override public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override public void publishApiProgress( final String s ){
+					}
+				} );
+				client.setAccount( account );
+				
+				TootApiResult result = client.request( "/api/v1/instance" );
+				if( result != null && result.object != null ){
+					data = TootInstance.parse( result.object );
+					if( data == null ) return new TootApiResult( "TootInstance parse failed." );
+				}
+				return result;
+			}
+			
+			@Override
+			protected void onCancelled( TootApiResult result ){
+				super.onPostExecute( result );
+			}
+			
+			@Override
+			protected void onPostExecute( TootApiResult result ){
+				try{
+					progress.dismiss();
+				}catch( Throwable ignored ){
+				}
+				if( result == null ){
+					// cancelled.
+				}else if( data != null ){
+					showInstanceInformation( data );
+				}else{
+					Utils.showToast( ActAccountSetting.this, true, result.error );
+				}
+			}
+			
+		};
+		task.executeOnExecutor( App1.task_executor );
+		progress.setIndeterminate( true );
+		progress.setOnDismissListener( new DialogInterface.OnDismissListener() {
+			@Override public void onDismiss( DialogInterface dialog ){
+				task.cancel( true );
+			}
+		} );
+		progress.show();
+	}
+	
+	private void showInstanceInformation( TootInstance data ){
+		
+	}
+	
 }
 

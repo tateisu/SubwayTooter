@@ -315,6 +315,7 @@ public class AppDataExporter {
 			case Pref.KEY_QUICK_TOOT_BAR:
 			case Pref.KEY_ENABLE_GIF_ANIMATION:
 			case Pref.KEY_MENTION_FULL_ACCT:
+			case Pref.KEY_RELATIVE_TIMESTAMP:
 				boolean bv = reader.nextBoolean();
 				e.putBoolean( k, bv );
 				break;

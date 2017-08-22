@@ -20,6 +20,9 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jp.juggler.subwaytooter.App1;
+import jp.juggler.subwaytooter.Pref;
+import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -189,7 +192,28 @@ public class TootStatus extends TootStatusLike {
 	
 	private static final SimpleDateFormat date_format = new SimpleDateFormat( "yyyy-MM-dd HH:mm:ss", Locale.getDefault() );
 	
-	public static String formatTime( long t ){
+	public static String formatTime( Context context,long t ,boolean bAllowRelative){
+		if( bAllowRelative && App1.pref.getBoolean( Pref.KEY_RELATIVE_TIMESTAMP,false ) ){
+			long now = System.currentTimeMillis();
+			long delta = now - t;
+			String sign = context.getString( delta > 0 ? R.string.ago : R.string.later );
+			delta = delta >= 0 ? delta : -delta;
+			if( delta < 2000L ){
+				return context.getString( R.string.time_within_second );
+			}else if( delta < 60000L ){
+				int v = (int)(delta /1000L);
+				return context.getString( v > 1 ? R.string.relative_time_second_2 : R.string.relative_time_second_1 ,v,sign);
+			}else if( delta < 3600000L ){
+				int v =(int) (delta / 60000L );
+				return context.getString( v > 1 ? R.string.relative_time_minute_2 : R.string.relative_time_minute_1 ,v,sign);
+			}else if( delta < 86400000L ){
+				int v =(int) (delta / 3600000L );
+				return context.getString( v > 1 ? R.string.relative_time_hour_2 : R.string.relative_time_hour_1 ,v,sign);
+			}else if( delta < 65 * 86400000L ){
+				int v =(int) (delta / 3600000L );
+				return context.getString( v > 1 ? R.string.relative_time_day_2 : R.string.relative_time_day_1 ,v,sign);
+			}
+		}
 		date_format.setTimeZone( TimeZone.getDefault() );
 		return date_format.format( new Date( t ) );
 	}

@@ -56,7 +56,7 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 		
 		addHeader( context, sb, R.string.send_header_url, status.url );
 		
-		addHeader( context, sb, R.string.send_header_date, TootStatus.formatTime( status.time_created_at ) );
+		addHeader( context, sb, R.string.send_header_date, TootStatus.formatTime( context,status.time_created_at ,false) );
 		
 		if( status.account != null ){
 			addHeader( context, sb, R.string.send_header_from_acct, access_info.getFullAcct( status.account ) );

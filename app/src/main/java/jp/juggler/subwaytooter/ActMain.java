@@ -265,6 +265,8 @@ public class ActMain extends AppCompatActivity
 		}
 		
 		updateColumnStripSelection( - 1, - 1f );
+		
+		proc_updateRelativeTime.run();
 	}
 	
 	void refreshAfterPost(){
@@ -320,6 +322,8 @@ public class ActMain extends AppCompatActivity
 	
 	@Override protected void onPause(){
 		bResume = false;
+		
+		handler.removeCallbacks( proc_updateRelativeTime );
 		
 		post_helper.closeAcctPopup();
 		
@@ -1712,6 +1716,7 @@ public class ActMain extends AppCompatActivity
 		Utils.showToast( ActMain.this, false, R.string.app_was_muted );
 	}
 	
+
 	//////////////////////////////////////////////////////////////
 	
 	interface FindAccountCallback {
@@ -4292,4 +4297,22 @@ public class ActMain extends AppCompatActivity
 			post_helper.closeAcctPopup();
 		}
 	}
+	
+	public void openInstanceInformation( int pos, String host ){
+		addColumn( pos , SavedAccount.getNA(), Column.TYPE_INSTANCE_INFORMATION, host );
+	}
+	
+	private final Runnable proc_updateRelativeTime = new Runnable() {
+		@Override public void run(){
+			handler.removeCallbacks( proc_updateRelativeTime );
+			if(!bResume) return;
+			for( Column c: app_state.column_list ){
+				c.fireShowContent();
+			}
+			if( pref.getBoolean( Pref.KEY_RELATIVE_TIMESTAMP ,false) ){
+				handler.postDelayed( proc_updateRelativeTime, 10000L);
+			}
+		}
+	};
+	
 }

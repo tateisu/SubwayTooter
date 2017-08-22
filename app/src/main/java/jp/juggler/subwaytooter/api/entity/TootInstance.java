@@ -22,6 +22,8 @@ public class TootInstance {
 	//	An email address which can be used to contact the instance administrator
 	public String email;
 	
+	public String version;
+	
 	@Nullable
 	public static TootInstance parse( JSONObject src ){
 		if( src == null ) return null;
@@ -31,6 +33,7 @@ public class TootInstance {
 			dst.title = Utils.optStringX( src, "title" );
 			dst.description = Utils.optStringX( src, "description" );
 			dst.email = Utils.optStringX( src, "email" );
+			dst.version = Utils.optStringX( src, "version" );
 			return dst;
 		}catch( Throwable ex ){
 			log.trace( ex );

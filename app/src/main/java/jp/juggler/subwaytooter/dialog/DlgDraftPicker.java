@@ -161,7 +161,7 @@ public class DlgDraftPicker
 			PostDraft draft = getPostDraft( position );
 			if( draft == null ) return;
 			
-			tvTime.setText( TootStatus.formatTime( draft.time_save ));
+			tvTime.setText( TootStatus.formatTime( tvTime.getContext(),draft.time_save ,false ));
 			
 			String cw = draft.json.optString( ActPost.DRAFT_CONTENT_WARNING );
 			String c = draft.json.optString( ActPost.DRAFT_CONTENT );

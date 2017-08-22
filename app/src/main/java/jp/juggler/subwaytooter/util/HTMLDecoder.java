@@ -9,6 +9,7 @@ import android.text.TextUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,6 +19,7 @@ import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootMention;
 import jp.juggler.subwaytooter.table.SavedAccount;
 
+@SuppressWarnings("WeakerAccess")
 public class HTMLDecoder {
 	private static final LogCategory log = new LogCategory( "HTMLDecoder" );
 	
@@ -72,6 +74,7 @@ public class HTMLDecoder {
 				++ end;
 			}
 			text = src.substring( next, end );
+			
 			next = end;
 			Matcher m = reTag.matcher( text );
 			if( m.find() ){
@@ -95,6 +98,25 @@ public class HTMLDecoder {
 	
 	static final Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)(?:\\z|\\?)" );
 	
+	static HashSet< String > block_tag;
+	
+	private static void prepareTagInformation(){
+		synchronized( reUserPage ){
+			if( block_tag == null ){
+				block_tag = new HashSet<>();
+				block_tag.add( "div" );
+				block_tag.add( "p" );
+				block_tag.add( "li" );
+				block_tag.add( "h1" );
+				block_tag.add( "h2" );
+				block_tag.add( "h3" );
+				block_tag.add( "h4" );
+				block_tag.add( "h5" );
+				block_tag.add( "body" );
+			}
+		}
+	}
+	
 	private static class Node {
 		final ArrayList< Node > child_nodes = new ArrayList<>();
 		
@@ -111,7 +133,7 @@ public class HTMLDecoder {
 			this.text = t.text;
 		}
 		
-		void parseChild( TokenParser t, String indent ){
+		void addChild( TokenParser t, String indent ){
 			if( DEBUG_HTML_PARSER ) log.d( "parseChild: %s(%s", indent, tag );
 			for( ; ; ){
 				if( TAG_END.equals( t.tag ) ) break;
@@ -128,7 +150,7 @@ public class HTMLDecoder {
 					log.d( "parseChild: %s|%s %s [%s]", indent, child.tag, open_type, child.text );
 				
 				if( OPEN_TYPE_OPEN == open_type ){
-					child.parseChild( t, indent + "--" );
+					child.addChild( t, indent + "--" );
 				}
 			}
 			if( DEBUG_HTML_PARSER ) log.d( "parseChild: %s)%s", indent, tag );
@@ -153,7 +175,7 @@ public class HTMLDecoder {
 			if( DEBUG_HTML_PARSER ) sb.append( "(start " ).append( tag ).append( ")" );
 			
 			SpannableStringBuilder sb_tmp;
-			if( "a".equals( tag ) ){
+			if( "a".equals( tag ) || "style".equals( tag ) || "script".equals( tag ) ){
 				sb_tmp = new SpannableStringBuilder();
 			}else{
 				sb_tmp = sb;
@@ -161,8 +183,12 @@ public class HTMLDecoder {
 			
 			int start = sb_tmp.length();
 			
-			for( Node child : child_nodes ){
-				child.encodeSpan( context, account, sb_tmp, bShort, bDecodeEmoji, list_attachment );
+			if( "img".equals( tag ) ){
+				sb_tmp.append( "<img/>" );
+			}else{
+				for( Node child : child_nodes ){
+					child.encodeSpan( context, account, sb_tmp, bShort, bDecodeEmoji, list_attachment );
+				}
 			}
 			
 			int end = sb_tmp.length();
@@ -171,6 +197,8 @@ public class HTMLDecoder {
 				start = sb.length();
 				sb.append( encodeUrl( bShort, context, sb_tmp.toString(), getHref(), list_attachment ) );
 				end = sb.length();
+			}else if( sb_tmp != sb ){
+				// style もscript も読み捨てる
 			}
 			
 			if( end > start && "a".equals( tag ) ){
@@ -185,10 +213,22 @@ public class HTMLDecoder {
 			
 			if( "br".equals( tag ) ) sb.append( '\n' );
 			
-			if( "p".equals( tag ) || "li".equals( tag ) ){
+			if( block_tag.contains( tag ) ){
 				if( sb.length() > 0 ){
-					if( sb.charAt( sb.length() - 1 ) != '\n' ) sb.append( '\n' );
-					sb.append( '\n' );
+					// 末尾の改行を数える
+					int last_br_count = 0;
+					int last = sb.length() - 1;
+					while( last >= 0 ){
+						char c = sb.charAt( last-- );
+						if( c == '\n' ){
+							++ last_br_count;
+							continue;
+						}
+						if( Character.isWhitespace( c ) ) continue;
+						break;
+					}
+					// 末尾の改行が２文字未満なら改行を追加する
+					while( last_br_count++ < 2 ) sb.append( '\n' );
 				}
 			}
 		}
@@ -276,12 +316,15 @@ public class HTMLDecoder {
 		, boolean bDecodeEmoji
 		, @Nullable TootAttachment.List list_attachment
 	){
+		prepareTagInformation();
 		SpannableStringBuilder sb = new SpannableStringBuilder();
 		try{
 			if( src != null ){
 				TokenParser tracker = new TokenParser( src );
 				Node rootNode = new Node();
-				rootNode.parseChild( tracker, "" );
+				while( ! TAG_END.equals( tracker.tag ) ){
+					rootNode.addChild( tracker, "" );
+				}
 				
 				rootNode.encodeSpan( context, account, sb, bShort, bDecodeEmoji, list_attachment );
 				int end = sb.length();

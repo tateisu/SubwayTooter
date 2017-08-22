@@ -76,5 +76,7 @@ public class Pref {
 	
 	public static final String KEY_MENTION_FULL_ACCT = "mention_full_acct";
 	
+	public static final String KEY_RELATIVE_TIMESTAMP = "relative_timestamp";
+	
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

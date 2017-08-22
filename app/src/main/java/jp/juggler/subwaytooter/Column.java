@@ -28,6 +28,7 @@ import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootContext;
 import jp.juggler.subwaytooter.api.entity.TootDomainBlock;
 import jp.juggler.subwaytooter.api.entity.TootGap;
+import jp.juggler.subwaytooter.api.entity.TootInstance;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootReport;
@@ -144,6 +145,7 @@ class Column implements StreamReader.Callback {
 	private static final String KEY_HASHTAG = "hashtag";
 	private static final String KEY_SEARCH_QUERY = "search_query";
 	private static final String KEY_SEARCH_RESOLVE = "search_resolve";
+	private static final String KEY_INSTANCE_URI = "instance_uri";
 	
 	static final String KEY_COLUMN_ACCESS = "column_access";
 	static final String KEY_COLUMN_ACCESS_COLOR = "column_access_color";
@@ -168,6 +170,7 @@ class Column implements StreamReader.Callback {
 	static final int TYPE_FAVOURITED_BY = 15;
 	static final int TYPE_DOMAIN_BLOCKS = 16;
 	static final int TYPE_SEARCH_PORTAL = 17;
+	static final int TYPE_INSTANCE_INFORMATION = 18;
 	
 	@NonNull final Context context;
 	@NonNull private final AppState app_state;
@@ -211,6 +214,9 @@ class Column implements StreamReader.Callback {
 	String search_query;
 	boolean search_resolve;
 	
+	String instance_uri;
+	TootInstance instance_information;
+	
 	ScrollPosition scroll_save;
 	
 	Column( @NonNull AppState app_state, @NonNull SavedAccount access_info, @NonNull Callback callback, int type, Object... params ){
@@ -243,6 +249,11 @@ class Column implements StreamReader.Callback {
 		case TYPE_SEARCH_PORTAL:
 			this.search_query = (String) getParamAt( params, 0 );
 			break;
+
+		case TYPE_INSTANCE_INFORMATION:
+			this.instance_uri = (String) getParamAt( params, 0 );
+			break;
+			
 		}
 		init();
 	}
@@ -291,6 +302,11 @@ class Column implements StreamReader.Callback {
 		case TYPE_SEARCH_PORTAL:
 			item.put( KEY_SEARCH_QUERY, search_query );
 			break;
+
+		case TYPE_INSTANCE_INFORMATION:
+			item.put( KEY_INSTANCE_URI, instance_uri );
+			break;
+
 		}
 		
 		// 以下は保存には必要ないが、カラムリスト画面で使う
@@ -361,6 +377,9 @@ class Column implements StreamReader.Callback {
 		case TYPE_SEARCH_PORTAL:
 			this.search_query = src.optString( KEY_SEARCH_QUERY );
 			break;
+		case TYPE_INSTANCE_INFORMATION:
+			this.instance_uri = src.optString( KEY_INSTANCE_URI );
+			break;
 		}
 		init();
 	}
@@ -414,6 +433,13 @@ class Column implements StreamReader.Callback {
 			}catch( Throwable ex ){
 				return false;
 			}
+		case TYPE_INSTANCE_INFORMATION:
+			try{
+				String q = (String) getParamAt( params, 0 );
+				return Utils.equalsNullable( q, this.instance_uri );
+			}catch( Throwable ex ){
+				return false;
+			}
 		}
 	}
 	
@@ -458,6 +484,12 @@ class Column implements StreamReader.Callback {
 		case TYPE_SEARCH_PORTAL:
 			if( bLong ){
 				return context.getString( R.string.toot_search_of, search_query );
+			}else{
+				return getColumnTypeName( context, column_type );
+			}
+		case TYPE_INSTANCE_INFORMATION:
+			if( bLong ){
+				return context.getString( R.string.instance_information_of, instance_uri );
 			}else{
 				return getColumnTypeName( context, column_type );
 			}
@@ -519,6 +551,9 @@ class Column implements StreamReader.Callback {
 		case TYPE_SEARCH_PORTAL:
 			return context.getString( R.string.toot_search );
 		
+		case TYPE_INSTANCE_INFORMATION:
+			return context.getString( R.string.instance_information );
+		
 		case TYPE_FOLLOW_REQUESTS:
 			return context.getString( R.string.follow_requests );
 		}
@@ -579,6 +614,9 @@ class Column implements StreamReader.Callback {
 		
 		case TYPE_SEARCH_PORTAL:
 			return R.attr.ic_search;
+		
+		case TYPE_INSTANCE_INFORMATION:
+			return R.attr.ic_info;
 		
 		case TYPE_FOLLOW_REQUESTS:
 			return R.attr.ic_account_add;
@@ -1135,6 +1173,16 @@ class Column implements StreamReader.Callback {
 				return result;
 			}
 			
+			TootApiResult getInstanceInformation( TootApiClient client ){
+				client.setInstance( instance_uri );
+				TootApiResult result = client.request( "/api/v1/instance" );
+				if( result != null && result.object != null ){
+					Column.this.instance_information = TootInstance.parse( result.object );
+				}
+				return result;
+			}
+			
+			
 			ArrayList< Object > list_tmp;
 			
 			TootApiResult getStatuses( TootApiClient client, String path_base ){
@@ -1475,6 +1523,9 @@ class Column implements StreamReader.Callback {
 							}
 						}
 						return result;
+					
+					case TYPE_INSTANCE_INFORMATION:
+						return getInstanceInformation( client );
 					}
 				}finally{
 					try{
@@ -3116,6 +3167,7 @@ class Column implements StreamReader.Callback {
 		case TYPE_FOLLOW_REQUESTS:
 		case TYPE_BOOSTED_BY:
 		case TYPE_FAVOURITED_BY:
+		case TYPE_INSTANCE_INFORMATION:
 			return false;
 		
 		default:

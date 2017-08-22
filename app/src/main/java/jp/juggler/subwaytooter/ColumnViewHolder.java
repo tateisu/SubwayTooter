@@ -258,6 +258,9 @@ class ColumnViewHolder
 			case Column.TYPE_SEARCH_PORTAL:
 				status_adapter.header = new HeaderViewHolderSearchDesc( activity, column, listView, getSearchDescPortal() );
 				break;
+			
+			case Column.TYPE_INSTANCE_INFORMATION:
+				status_adapter.header = new HeaderViewHolderInstance(activity, column, listView );
 			}
 			
 			// 添付メディアや正規表現のフィルタ
@@ -274,6 +277,7 @@ class ColumnViewHolder
 			case Column.TYPE_MUTES:
 			case Column.TYPE_FOLLOW_REQUESTS:
 			case Column.TYPE_NOTIFICATIONS:
+			case Column.TYPE_INSTANCE_INFORMATION:
 				bAllowFilter = false;
 				break;
 			}
@@ -353,6 +357,7 @@ class ColumnViewHolder
 				break;
 			
 			case Column.TYPE_CONVERSATION:
+			case Column.TYPE_INSTANCE_INFORMATION:
 				swipyRefreshLayout.setEnabled( false );
 				break;
 			
@@ -814,7 +819,7 @@ class ColumnViewHolder
 		swipyRefreshLayout.setVisibility( View.VISIBLE );
 		
 		if( status_adapter.header != null ){
-			status_adapter.header.bindAccount( column.who_account );
+			status_adapter.header.bindData( column );
 		}
 		
 		if( ! column.bRefreshLoading ){

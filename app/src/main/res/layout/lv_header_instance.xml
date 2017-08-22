@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:descendantFocusability="blocksDescendants"
+    android:orientation="vertical"
+    android:paddingBottom="128dp"
+    android:paddingTop="12dp"
+    android:id="@+id/llInstanceInformation"
+
+    >
+
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/instance"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <Button
+            android:id="@+id/btnInstance"
+            style="@style/setting_horizontal_stretch"
+            android:textAllCaps="false"
+            android:background="@drawable/btn_bg_transparent"
+            android:gravity="start|center_vertical"
+            />
+
+    </LinearLayout>
+
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/version"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <TextView
+            android:id="@+id/tvVersion"
+            style="@style/setting_horizontal_stretch"
+            />
+
+    </LinearLayout>
+
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/title"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <TextView
+            android:id="@+id/tvTitle"
+            style="@style/setting_horizontal_stretch"
+            />
+
+    </LinearLayout>
+
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/email"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <Button
+            android:id="@+id/btnEmail"
+            style="@style/setting_horizontal_stretch"
+            android:textAllCaps="false"
+            android:background="@drawable/btn_bg_transparent"
+            android:gravity="start|center_vertical"
+            />
+    </LinearLayout>
+
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/description"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <jp.juggler.subwaytooter.view.MyTextView
+            android:id="@+id/tvDescription"
+            style="@style/setting_horizontal_stretch"
+            />
+
+    </LinearLayout>
+
+    <View style="@style/setting_divider"/>
+
+</LinearLayout>

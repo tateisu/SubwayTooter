@@ -47,7 +47,7 @@ class HeaderViewHolderSearchDesc extends HeaderViewHolderBase {
 		//
 	}
 	
-	@Override void bindAccount( TootAccount who_account ){
+	@Override void bindData( Column column ){
 		//
 	}
 }

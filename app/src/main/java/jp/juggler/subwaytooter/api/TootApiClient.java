@@ -117,7 +117,7 @@ public class TootApiClient {
 		if( callback.isApiCancelled() ) return null;
 		
 		if( ! response.isSuccessful() ){
-			return new TootApiResult( instance + ": " +context.getString( R.string.network_error_arg, response ) );
+			return new TootApiResult( instance + ": " + context.getString( R.string.network_error_arg, response ) );
 		}
 		
 		try{
@@ -198,13 +198,13 @@ public class TootApiClient {
 			response = call.execute();
 		}catch( Throwable ex ){
 			log.trace( ex );
-			return new TootApiResult( instance + ": " +Utils.formatError( ex, context.getResources(), R.string.network_error ) );
+			return new TootApiResult( instance + ": " + Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		
 		if( callback.isApiCancelled() ) return null;
 		
 		if( ! response.isSuccessful() ){
-			return new TootApiResult( instance + ": " +context.getString( R.string.network_error_arg, response ) );
+			return new TootApiResult( instance + ": " + context.getString( R.string.network_error_arg, response ) );
 		}
 		
 		try{
@@ -231,7 +231,7 @@ public class TootApiClient {
 		}
 	}
 	
-	public @Nullable TootApiResult authorize1(String client_name){
+	public @Nullable TootApiResult authorize1( String client_name ){
 		
 		JSONObject client_info;
 		
@@ -244,7 +244,7 @@ public class TootApiClient {
 		
 		Response response;
 		try{
-			if( TextUtils.isEmpty( client_name )){
+			if( TextUtils.isEmpty( client_name ) ){
 				client_name = "SubwayTooter";
 			}
 			
@@ -262,12 +262,12 @@ public class TootApiClient {
 			response = call.execute();
 		}catch( Throwable ex ){
 			log.trace( ex );
-			return new TootApiResult( instance + ": " +Utils.formatError( ex, context.getResources(), R.string.network_error ) );
+			return new TootApiResult( instance + ": " + Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		if( callback.isApiCancelled() ) return null;
 		
 		if( ! response.isSuccessful() ){
-			return new TootApiResult( instance + ": " +context.getString( R.string.network_error_arg, response ) );
+			return new TootApiResult( instance + ": " + context.getString( R.string.network_error_arg, response ) );
 		}
 		try{
 			//noinspection ConstantConditions
@@ -311,7 +311,7 @@ public class TootApiClient {
 		return new TootApiResult( browser_url );
 	}
 	
-public @Nullable TootApiResult authorize2( String code ){
+	public @Nullable TootApiResult authorize2( String code ){
 		
 		JSONObject client_info = ClientInfo.load( instance );
 		if( client_info == null ){
@@ -341,7 +341,7 @@ public @Nullable TootApiResult authorize2( String code ){
 			response = call.execute();
 		}catch( Throwable ex ){
 			log.trace( ex );
-			return new TootApiResult( instance + ": " +Utils.formatError( ex, context.getResources(), R.string.network_error ) );
+			return new TootApiResult( instance + ": " + Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		if( callback.isApiCancelled() ) return null;
 		
@@ -387,7 +387,7 @@ public @Nullable TootApiResult authorize2( String code ){
 			response = call.execute();
 		}catch( Throwable ex ){
 			log.trace( ex );
-			return new TootApiResult( instance + ": " +Utils.formatError( ex, context.getResources(), R.string.network_error ) );
+			return new TootApiResult( instance + ": " + Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		
 		if( callback.isApiCancelled() ) return null;
@@ -430,10 +430,10 @@ public @Nullable TootApiResult authorize2( String code ){
 		JSONObject token_info;
 		Response response;
 		try{
-
+			
 			// 指定されたアクセストークンを使って token_info を捏造する
-			token_info = new JSONObject(  );
-			token_info.put("access_token",access_token);
+			token_info = new JSONObject();
+			token_info.put( "access_token", access_token );
 			
 			// 認証されたアカウントのユーザ名を取得する
 			String path = "/api/v1/accounts/verify_credentials";
@@ -449,7 +449,7 @@ public @Nullable TootApiResult authorize2( String code ){
 			response = call.execute();
 		}catch( Throwable ex ){
 			log.trace( ex );
-			return new TootApiResult( instance + ": " +Utils.formatError( ex, context.getResources(), R.string.network_error ) );
+			return new TootApiResult( instance + ": " + Utils.formatError( ex, context.getResources(), R.string.network_error ) );
 		}
 		
 		if( callback.isApiCancelled() ) return null;
@@ -482,4 +482,35 @@ public @Nullable TootApiResult authorize2( String code ){
 		}
 	}
 	
+	public TootApiResult getHttp( String url ){
+		Response response;
+		try{
+			Request.Builder request_builder = new Request.Builder();
+			request_builder.url( url );
+			
+			Call call = ok_http_client.newCall( request_builder.build() );
+			
+			response = call.execute();
+		}catch( Throwable ex ){
+			log.trace( ex );
+			return new TootApiResult( url + ": " + Utils.formatError( ex, context.getResources(), R.string.network_error ) );
+		}
+		
+		if( callback.isApiCancelled() ) return null;
+		
+		if( ! response.isSuccessful() ){
+			return new TootApiResult( url + ": " + context.getString( R.string.network_error_arg, response ) );
+		}
+		
+		try{
+			//noinspection ConstantConditions
+			String body = response.body().string();
+			JSONObject data = new JSONObject();
+			data.put( "body", body );
+			return new TootApiResult( response, null, body, data );
+		}catch( Throwable ex ){
+			log.trace( ex );
+			return new TootApiResult( Utils.formatError( ex, "API data error" ) );
+		}
+	}
 }

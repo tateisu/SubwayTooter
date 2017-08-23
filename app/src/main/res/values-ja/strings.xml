@@ -434,9 +434,9 @@
     <!---->
     <string name="actions_for_status">発言へのアクション</string>
     <!---->
-    <string name="confirm_block_user">ユーザ \'%1$s\' をブロックします。よろしいですか?</string>
+    <string name="confirm_block_user">ユーザ \"%1$s\" をブロックします。よろしいですか?</string>
     <!---->
-    <string name="confirm_mute_user">ユーザ \'%1$s\' をミュートします。よろしいですか?</string>
+    <string name="confirm_mute_user">ユーザ \"%1$s\" をミュートします。よろしいですか?</string>
     <!---->
     <string name="confirm_delete_status">この発言を削除します。よろしいですか?</string>
     <!---->
@@ -644,10 +644,10 @@
     <string name="prior_chrome_custom_tabs">Chrome Custom Tabs を優先的に利用する</string>
     <string name="enable_speech">読み上げを有効にする</string>
     <string name="url_omitted">(URL略)</string>
-    <string name="block_domain_that">\'%1$s\' ドメインをブロック</string>
+    <string name="block_domain_that">\"%1$s\" ドメインをブロック</string>
     <string name="blocked_domains">ブロックしたドメイン</string>
-    <string name="confirm_block_domain">ドメイン \'%1$s\' 全体をブロックします。よろしいですか？</string>
-    <string name="confirm_unblock_domain">ドメイン \'%1$s\' のブロックを解除しますか？</string>
+    <string name="confirm_block_domain">ドメイン \"%1$s\" 全体をブロックします。よろしいですか？</string>
+    <string name="confirm_unblock_domain">ドメイン \"%1$s\" のブロックを解除しますか？</string>
 
     <string name="text_to_speech_initializing">TextToSpeechの初期化中…</string>
     <string name="text_to_speech_initialize_failed">TextToSpeechの初期化に失敗。status=%1$s</string>
@@ -690,7 +690,7 @@
     <string name="input_access_token">アクセストークンを指定する(上級者向け)</string>
     <string name="token_not_specified">アクセストークンを入力してください</string>
     <string name="quote_name">名前を引用…</string>
-    <string name="format_of_quote_name">\'名前を引用\'のフォーマット ( %1$s を含むテキストを指定する)</string>
+    <string name="format_of_quote_name">\"名前を引用\"のフォーマット ( %1$s を含むテキストを指定する)</string>
     <string name="dont_show_favourite">お気に入りを表示しない</string>
     <string name="dont_show_follow">フォローを表示しない</string>
     <string name="acct_color">Acctの文字色</string>
@@ -712,7 +712,7 @@
     <string name="email">メールアドレス</string>
     <string name="description">説明</string>
     <string name="version">バージョン</string>
-    <string name="instance_information_of">%1$sのインスタンス情報</string>
+    <string name="instance_information_of">\"%1$s\"のインスタンス情報</string>
     <string name="instance_information">インスタンス情報</string>
     <string name="missing_mail_app">メールアドレスを共有できるアプリがありません</string>
     <string name="relative_timestamp">相対時刻を表示</string>

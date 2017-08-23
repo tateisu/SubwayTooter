@@ -87,8 +87,10 @@ import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.view.ColumnStripLinearLayout;
 import jp.juggler.subwaytooter.view.GravitySnapHelper;
 import jp.juggler.subwaytooter.view.MyEditText;
+import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class ActMain extends AppCompatActivity
 	implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, ViewPager.OnPageChangeListener, Column.Callback, DrawerLayout.DrawerListener
@@ -2616,6 +2618,8 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
+	static final Pattern reUriOStatusToot = Pattern.compile( "tag:([^,]*),[^:]*:objectId=(\\d+):objectType=Status" ,Pattern.CASE_INSENSITIVE);
+	
 	public void openStatusOtherInstance( int pos, @NonNull SavedAccount access_info, @NonNull TootStatusLike status ){
 		if( status.account == null ){
 			// アカウント情報がないと出来ないことがある
@@ -2625,18 +2629,36 @@ public class ActMain extends AppCompatActivity
 				, status.host_original, status.id
 				, null, - 1L
 			);
-		}else if( status.host_original.equals( status.host_access ) ){
-			// TLアカウントのホストとトゥートのアカウントのホストが同じ場合
-			openStatusOtherInstance( pos, access_info, status.url
-				, status.host_original, status.id
-				, null, - 1L
-			);
-		}else{
-			// TLアカウントのホストとトゥートのアカウントのホストが異なる場合
-			openStatusOtherInstance( pos, access_info, status.url
-				, null, - 1L
-				, status.host_access, status.id
-			);
+		}else if( status instanceof TootStatus ){
+			TootStatus ts = (TootStatus)status;
+			if( status.host_original.equals( status.host_access ) ){
+				// TLアカウントのホストとトゥートのアカウントのホストが同じ場合
+				openStatusOtherInstance( pos, access_info, status.url
+					, status.host_original, status.id
+					, null, - 1L
+				);
+			}else{
+				// TLアカウントのホストとトゥートのアカウントのホストが異なる場合
+
+				long status_id_original = -1L;
+				String host_original = null;
+				
+				try{
+					// OStatusでフィードされたトゥートの場合、UriにステータスIDが含まれている
+					Matcher m = reUriOStatusToot.matcher( ts.uri );
+					if( m.find() ){
+						status_id_original = Long.parseLong( m.group( 2 ), 10 );
+						host_original = m.group( 1 );
+					}
+				}catch(Throwable ex){
+					log.e(ex,"openStatusOtherInstance: cant parse tag: %s",ts.uri);
+				}
+
+				openStatusOtherInstance( pos, access_info, status.url
+					, host_original,status_id_original
+					, status.host_access, status.id
+				);
+			}
 		}
 	}
 	
@@ -2644,64 +2666,41 @@ public class ActMain extends AppCompatActivity
 		final int pos
 		, @Nullable final SavedAccount access_info
 		, @NonNull final String url
-		, final String host_original, final long status_id_original
+		, final String host_original_unused, final long status_id_original
 		, final String host_access, final long status_id_access
 	){
 		ActionsDialog dialog = new ActionsDialog();
 		
-		Uri uri = Uri.parse( url );
-		String host_name = uri.getAuthority();
+		final String host_original = Uri.parse( url ).getAuthority();
 		
 		// 選択肢：ブラウザで表示する
-		dialog.addAction( getString( R.string.open_web_on_host, host_name ), new Runnable() {
+		dialog.addAction( getString( R.string.open_web_on_host, host_original ), new Runnable() {
 			@Override public void run(){
 				openChromeTab( pos, access_info, url, true );
 			}
 		} );
 		
-		boolean has_local_account = false;
-		ArrayList< SavedAccount > account_list = new ArrayList<>();
+		ArrayList<SavedAccount> local_account_list = new ArrayList<>(  );
+		ArrayList<SavedAccount> access_account_list = new ArrayList<>(  );
+		ArrayList<SavedAccount> other_account_list = new ArrayList<>(  );
 		for( SavedAccount a : SavedAccount.loadAccountList( ActMain.this, log ) ){
+			// 疑似アカウントは後でまとめて処理する
+			if( a.isPseudo() ) continue;
 			if( status_id_original >= 0L && host_original.equalsIgnoreCase( a.host ) ){
 				// アクセス情報＋ステータスID でアクセスできるなら
 				// 同タンスのアカウントならステータスIDの変換なしに表示できる
-				account_list.add( a );
-				has_local_account = true;
+				local_account_list.add( a );
 			}else if( status_id_access >= 0L && host_access.equalsIgnoreCase( a.host ) ){
 				// 既に変換済みのステータスIDがあるなら、そのアカウントでもステータスIDの変換は必要ない
-				account_list.add( a );
-			}else if( ! a.isPseudo() ){
+				access_account_list.add( a );
+			}else{
 				// 別タンスでも実アカウントなら検索APIでステータスIDを変換できる
-				account_list.add( a );
+				other_account_list.add(a);
 			}
 		}
 		
-		// ソートする
-		Collections.sort( account_list, new Comparator< SavedAccount >() {
-			@Override public int compare( SavedAccount a, SavedAccount b ){
-				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
-			}
-		} );
-		
-		// ダイアログの選択肢に追加
-		for( SavedAccount a : account_list ){
-			final SavedAccount _a = a;
-			
-			dialog.addAction( getString( R.string.open_in_account, AcctColor.getNickname( a.acct ) ), new Runnable() {
-				@Override public void run(){
-					if( status_id_original >= 0L && host_original.equalsIgnoreCase( _a.host ) ){
-						openStatusLocal( pos, _a, status_id_original );
-					}else if( status_id_access >= 0L && host_access.equalsIgnoreCase( _a.host ) ){
-						openStatusLocal( pos, _a, status_id_access );
-					}else if( ! _a.isPseudo() ){
-						openStatusRemote( pos, _a, url );
-					}
-				}
-			} );
-		}
-		
-		// 同タンスのアカウントがないなら、疑似アカウントを作る選択肢
-		if( ! has_local_account ){
+		// 同タンスのアカウントがないなら、疑似アカウントで開く選択肢
+		if( local_account_list.isEmpty() ){
 			if( status_id_original >= 0L ){
 				dialog.addAction( getString( R.string.open_in_pseudo_account, "?@" + host_original ), new Runnable() {
 					@Override public void run(){
@@ -2711,15 +2710,68 @@ public class ActMain extends AppCompatActivity
 						}
 					}
 				} );
-			}else if( status_id_access >= 0L ){
-				// リモートから流れてきたトゥートを オリジナルのインスタンスの疑似アカウントで開きたい
-				// しかし疑似アカウントでは検索ができないので、オリジナルのインスタンス上でのステータスIDを知る方法がない
+			}else{
+				dialog.addAction( getString( R.string.open_in_pseudo_account, "?@" + host_original ), new Runnable() {
+					@Override public void run(){
+						SavedAccount sa = addPseudoAccount( host_original );
+						if( sa != null ){
+							openStatusRemote(pos, sa, url );
+						}
+					}
+				} );
 			}
+		}
+		
+		// ローカルアカウント
+		Collections.sort( local_account_list, new Comparator< SavedAccount >() {
+			@Override public int compare( SavedAccount a, SavedAccount b ){
+				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
+			}
+		} );
+		for( SavedAccount a : local_account_list ){
+			final SavedAccount _a = a;
+			dialog.addAction( getString( R.string.open_in_account, AcctColor.getNickname( a.acct ) ), new Runnable() {
+				@Override public void run(){
+					openStatusLocal( pos, _a, status_id_original );
+				}
+			} );
+		}
+		
+		// アクセスしたアカウント
+		Collections.sort( access_account_list, new Comparator< SavedAccount >() {
+			@Override public int compare( SavedAccount a, SavedAccount b ){
+				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
+			}
+		} );
+		for( SavedAccount a : access_account_list ){
+			final SavedAccount _a = a;
+			dialog.addAction( getString( R.string.open_in_account, AcctColor.getNickname( a.acct ) ), new Runnable() {
+				@Override public void run(){
+					openStatusLocal( pos, _a, status_id_access );
+				}
+			} );
+		}
+		
+		// その他の実アカウント
+		Collections.sort( other_account_list, new Comparator< SavedAccount >() {
+			@Override public int compare( SavedAccount a, SavedAccount b ){
+				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
+			}
+		} );
+		for( SavedAccount a : other_account_list ){
+			final SavedAccount _a = a;
+			dialog.addAction( getString( R.string.open_in_account, AcctColor.getNickname( a.acct ) ), new Runnable() {
+				@Override public void run(){
+					openStatusRemote( pos, _a, url );
+				}
+			} );
 		}
 		
 		dialog.show( this, getString( R.string.open_status_from ) );
 	}
 	
+	static final Pattern reDetailedStatusTime = Pattern.compile( "<a\\b[^>]*?\\bdetailed-status__datetime\\b[^>]*href=\"https://[^/]+/@[^/]+/(\\d+)\"");
+
 	public void openStatusRemote(
 		final int pos
 		, final SavedAccount access_info
@@ -2728,7 +2780,8 @@ public class ActMain extends AppCompatActivity
 		final ProgressDialog progress = new ProgressDialog( this );
 		
 		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
-			TootStatus target_status;
+
+			long  local_status_id = -1L;
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
 				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
@@ -2741,19 +2794,37 @@ public class ActMain extends AppCompatActivity
 				} );
 				client.setAccount( access_info );
 				
-				// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
-				String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( remote_status_url ) );
-				path = path + "&resolve=1";
-				
-				TootApiResult result = client.request( path );
-				if( result != null && result.object != null ){
-					TootResults tmp = TootResults.parse( ActMain.this, access_info, result.object );
-					if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
-						target_status = tmp.statuses.get( 0 );
-						log.d( "status id conversion %s => %s", remote_status_url, target_status.id );
+				TootApiResult result;
+				if( access_info.isPseudo() ){
+					result = client.getHttp(remote_status_url);
+					if( result != null && result.json != null ){
+						try{
+							Matcher m = reDetailedStatusTime.matcher( result.json );
+							if( m.find() ){
+								local_status_id = Long.parseLong( m.group(1) ,10);
+							}
+						}catch(Throwable ex){
+							log.e(ex,"openStatusRemote: can't parse status id from HTML data.");
+						}
+						if( local_status_id == -1L ){
+							result = new TootApiResult( getString( R.string.status_id_conversion_failed ) );
+						}
 					}
-					if( target_status == null ){
-						return new TootApiResult( getString( R.string.status_id_conversion_failed ) );
+				}else{
+					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
+					String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( remote_status_url ) );
+					path = path + "&resolve=1";
+					result = client.request( path );
+					if( result != null && result.object != null ){
+						TootResults tmp = TootResults.parse( ActMain.this, access_info, result.object );
+						if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
+							TootStatus status = tmp.statuses.get( 0 );
+							local_status_id = status.id;
+							log.d( "status id conversion %s => %s", remote_status_url, status.id );
+						}
+						if( local_status_id == -1L ){
+							result = new TootApiResult( getString( R.string.status_id_conversion_failed ) );
+						}
 					}
 				}
 				return result;
@@ -2772,8 +2843,8 @@ public class ActMain extends AppCompatActivity
 				}
 				if( result == null ){
 					// cancelled.
-				}else if( target_status != null ){
-					openStatus( pos, access_info, target_status );
+				}else if( local_status_id != -1L ){
+					openStatusLocal( pos, access_info, local_status_id );
 				}else{
 					Utils.showToast( ActMain.this, true, result.error );
 				}
@@ -2791,6 +2862,7 @@ public class ActMain extends AppCompatActivity
 		progress.show();
 		task.executeOnExecutor( App1.task_executor );
 	}
+
 	
 	////////////////////////////////////////
 	// delete notification

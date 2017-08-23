@@ -198,7 +198,7 @@ public class TootStatus extends TootStatusLike {
 			long delta = now - t;
 			String sign = context.getString( delta > 0 ? R.string.ago : R.string.later );
 			delta = delta >= 0 ? delta : - delta;
-			if( delta < 2000L ){
+			if( delta < 1000L ){
 				return context.getString( R.string.time_within_second );
 			}else if( delta < 60000L ){
 				int v = (int) ( delta / 1000L );
@@ -209,8 +209,8 @@ public class TootStatus extends TootStatusLike {
 			}else if( delta < 86400000L ){
 				int v = (int) ( delta / 3600000L );
 				return context.getString( v > 1 ? R.string.relative_time_hour_2 : R.string.relative_time_hour_1, v, sign );
-			}else if( delta < 65 * 86400000L ){
-				int v = (int) ( delta / 3600000L );
+			}else if( delta < 40 * 86400000L ){
+				int v = (int) ( delta / 86400000L );
 				return context.getString( v > 1 ? R.string.relative_time_day_2 : R.string.relative_time_day_1, v, sign );
 			}
 		}

@@ -14,8 +14,10 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import jp.juggler.subwaytooter.api.entity.NicoEnquete;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootDomainBlock;
@@ -85,6 +87,8 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private final View llSearchTag;
 	private final Button btnSearchTag;
 	
+	private final LinearLayout llExtra;
+	
 	@Nullable private final TextView tvApplication;
 	
 	@Nullable private TootStatusLike status;
@@ -108,9 +112,9 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.list_adapter = list_adapter;
 		this.bSimpleList = bSimpleList;
 		
-		this.tvName = (TextView) view.findViewById( R.id.tvName );
-		this.tvFollowerName = (TextView) view.findViewById( R.id.tvFollowerName );
-		this.tvBoosted = (TextView) view.findViewById( R.id.tvBoosted );
+		this.tvName = view.findViewById( R.id.tvName );
+		this.tvFollowerName = view.findViewById( R.id.tvFollowerName );
+		this.tvBoosted = view.findViewById( R.id.tvBoosted );
 		
 		if( activity.timeline_font != null ){
 			Utils.scanView( view, new Utils.ScanViewCallback() {
@@ -133,42 +137,44 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		}
 		
 		this.llBoosted = view.findViewById( R.id.llBoosted );
-		this.ivBoosted = (ImageView) view.findViewById( R.id.ivBoosted );
-		this.tvBoostedTime = (TextView) view.findViewById( R.id.tvBoostedTime );
-		this.tvBoostedAcct = (TextView) view.findViewById( R.id.tvBoostedAcct );
+		this.ivBoosted = view.findViewById( R.id.ivBoosted );
+		this.tvBoostedTime = view.findViewById( R.id.tvBoostedTime );
+		this.tvBoostedAcct = view.findViewById( R.id.tvBoostedAcct );
 		
 		this.llFollow = view.findViewById( R.id.llFollow );
-		this.ivFollow = (MyNetworkImageView) view.findViewById( R.id.ivFollow );
-		this.tvFollowerAcct = (TextView) view.findViewById( R.id.tvFollowerAcct );
-		this.btnFollow = (ImageButton) view.findViewById( R.id.btnFollow );
-		this.ivFollowedBy = (ImageView) view.findViewById( R.id.ivFollowedBy );
+		this.ivFollow = view.findViewById( R.id.ivFollow );
+		this.tvFollowerAcct = view.findViewById( R.id.tvFollowerAcct );
+		this.btnFollow = view.findViewById( R.id.btnFollow );
+		this.ivFollowedBy = view.findViewById( R.id.ivFollowedBy );
 		
 		this.llStatus = view.findViewById( R.id.llStatus );
 		
-		this.ivThumbnail = (MyNetworkImageView) view.findViewById( R.id.ivThumbnail );
-		this.tvTime = (TextView) view.findViewById( R.id.tvTime );
-		this.tvAcct = (TextView) view.findViewById( R.id.tvAcct );
+		this.ivThumbnail = view.findViewById( R.id.ivThumbnail );
+		this.tvTime = view.findViewById( R.id.tvTime );
+		this.tvAcct = view.findViewById( R.id.tvAcct );
 		
 		this.llContentWarning = view.findViewById( R.id.llContentWarning );
-		this.tvContentWarning = (MyTextView) view.findViewById( R.id.tvContentWarning );
-		this.btnContentWarning = (Button) view.findViewById( R.id.btnContentWarning );
+		this.tvContentWarning = view.findViewById( R.id.tvContentWarning );
+		this.btnContentWarning = view.findViewById( R.id.btnContentWarning );
 		
 		this.llContents = view.findViewById( R.id.llContents );
-		this.tvContent = (MyTextView) view.findViewById( R.id.tvContent );
-		this.tvMentions = (MyTextView) view.findViewById( R.id.tvMentions );
+		this.tvContent = view.findViewById( R.id.tvContent );
+		this.tvMentions = view.findViewById( R.id.tvMentions );
+		
+		this.llExtra = view.findViewById( R.id.llExtra );
 		
 		this.buttons_for_status = bSimpleList ? null : new StatusButtons( activity, column, view, false );
 		
 		this.flMedia = view.findViewById( R.id.flMedia );
-		this.btnShowMedia = (TextView) view.findViewById( R.id.btnShowMedia );
-		this.ivMedia1 = (MyNetworkImageView) view.findViewById( R.id.ivMedia1 );
-		this.ivMedia2 = (MyNetworkImageView) view.findViewById( R.id.ivMedia2 );
-		this.ivMedia3 = (MyNetworkImageView) view.findViewById( R.id.ivMedia3 );
-		this.ivMedia4 = (MyNetworkImageView) view.findViewById( R.id.ivMedia4 );
+		this.btnShowMedia = view.findViewById( R.id.btnShowMedia );
+		this.ivMedia1 = view.findViewById( R.id.ivMedia1 );
+		this.ivMedia2 = view.findViewById( R.id.ivMedia2 );
+		this.ivMedia3 = view.findViewById( R.id.ivMedia3 );
+		this.ivMedia4 = view.findViewById( R.id.ivMedia4 );
 		
 		this.llSearchTag = view.findViewById( R.id.llSearchTag );
-		this.btnSearchTag = (Button) view.findViewById( R.id.btnSearchTag );
-		this.tvApplication = (TextView) view.findViewById( R.id.tvApplication );
+		this.btnSearchTag = view.findViewById( R.id.btnSearchTag );
+		this.tvApplication = view.findViewById( R.id.tvApplication );
 		
 		btnSearchTag.setOnClickListener( this );
 		btnContentWarning.setOnClickListener( this );
@@ -243,6 +249,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		llFollow.setVisibility( View.GONE );
 		llStatus.setVisibility( View.GONE );
 		llSearchTag.setVisibility( View.GONE );
+		llExtra.removeAllViews();
 		
 		if( item == null ) return;
 		
@@ -425,7 +432,23 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			);
 		}
 		
-		tvContent.setText( status.decoded_content );
+		CharSequence content = status.decoded_content;
+		llExtra.removeAllViews();
+		
+		if( status instanceof TootStatus ){
+			TootStatus ts = (TootStatus) status;
+			NicoEnquete enquete = ts.enquete;
+			if( enquete != null && NicoEnquete.TYPE_ENQUETE.equals( enquete.type ) ){
+				if( enquete.question != null ) content = enquete.question;
+				int n=0;
+				for( CharSequence item : enquete.items){
+					enquete.makeChoiceView( activity,access_info,llExtra, n++, item );
+				}
+				enquete.makeTimerView(activity,llExtra);
+			}
+		}
+		
+		tvContent.setText( content  );
 		
 		//			if( status.decoded_tags == null ){
 		//				tvTags.setVisibility( View.GONE );

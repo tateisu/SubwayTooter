@@ -5,6 +5,8 @@ import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.TextUtils;
 
+import org.json.JSONObject;
+
 import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.util.Emojione;
@@ -54,6 +56,8 @@ public abstract class TootStatusLike extends TootId {
 	@Nullable public TootApplication application;
 	
 	public long time_created_at;
+	
+	public JSONObject json;
 	
 	public abstract boolean hasMedia();
 	

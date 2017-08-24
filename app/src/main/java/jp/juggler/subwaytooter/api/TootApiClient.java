@@ -76,6 +76,7 @@ public class TootApiClient {
 	}
 	
 	public static final MediaType MEDIA_TYPE_FORM_URL_ENCODED = MediaType.parse( "application/x-www-form-urlencoded" );
+	public static final MediaType MEDIA_TYPE_JSON = MediaType.parse( "application/json;charset=UTF-8" );
 	
 	public @Nullable TootApiResult request( @NonNull String path ){
 		return request( path, new Request.Builder() );

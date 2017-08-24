@@ -31,6 +31,7 @@ public class MSPToot extends TootStatusLike {
 		
 	}
 	
+
 	private String created_at;
 	
 	public ArrayList< String > media_attachments;
@@ -46,6 +47,8 @@ public class MSPToot extends TootStatusLike {
 			log.e( "missing status account" );
 			return null;
 		}
+		
+		dst.json = src;
 		
 		dst.url = Utils.optStringX( src, "url" );
 		dst.host_original = dst.account.getAcctHost();

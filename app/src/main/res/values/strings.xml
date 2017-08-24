@@ -441,5 +441,8 @@
     <string name="notification_style_after_oreo">Notification style (Android 8.0 or later)</string>
     <string name="notification_for">Notification for %1$s</string>
     <string name="notification_style_before_oreo">Notification style(before Android 8. if your device is Android 8.0 or later, please check Account Setting )</string>
+    <string name="enquete_was_end">Enquete was end.</string>
+    <string name="enquete_voted">Voted!</string>
+    <string name="enquete_vote_failed">Vote failed. %1$s</string>
 
 </resources>

@@ -81,9 +81,9 @@ public class TootStatus extends TootStatusLike {
 	// public Spannable decoded_tags;
 	public Spannable decoded_mentions;
 	
-	public JSONObject json;
-	
 	public boolean conversation_main;
+	
+	public NicoEnquete enquete;
 	
 	@Nullable
 	public static TootStatus parse( @NonNull Context context, @NonNull SavedAccount access_info, JSONObject src ){
@@ -134,6 +134,9 @@ public class TootStatus extends TootStatusLike {
 			status.decoded_content = HTMLDecoder.decodeHTML( context, access_info, status.content, true, true, status.media_attachments );
 			// status.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
 			status.decoded_mentions = HTMLDecoder.decodeMentions( access_info, status.mentions );
+			
+			
+			status.enquete = NicoEnquete.parse( context,access_info , status.media_attachments , Utils.optStringX( src, "enquete"),status.id,status.time_created_at );
 			
 			return status;
 		}catch( Throwable ex ){

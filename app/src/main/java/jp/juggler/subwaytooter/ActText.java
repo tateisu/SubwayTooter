@@ -99,6 +99,8 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 			}
 		}
 		
+		addAfterLine( sb, String.format( Locale.JAPAN, "Status-Source: %s", status.json ) );
+		
 		addAfterLine( sb, "" );
 		intent.putExtra( EXTRA_TEXT, sb.toString() );
 	}

@@ -436,5 +436,10 @@
     <string name="relative_time_hour_2">%1$d hours %2$s</string>
     <string name="relative_time_day_1">%1$d day %2$s</string>
     <string name="relative_time_day_2">%1$d days %2$s</string>
+    <string name="notification_channel_description">These setting is used to notification for %1$s</string>
+    <string name="notification_sound_before_oreo">Notification sound (before Android 8.0)</string>
+    <string name="notification_style_after_oreo">Notification style (Android 8.0 or later)</string>
+    <string name="notification_for">Notification for %1$s</string>
+    <string name="notification_style_before_oreo">Notification style(before Android 8. if your device is Android 8.0 or later, please check Account Setting )</string>
 
 </resources>

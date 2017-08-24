@@ -1,7 +1,5 @@
 package jp.juggler.subwaytooter;
 
-import android.content.Intent;
-
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 
@@ -20,9 +18,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
 			
 			PrefDevice.prefDevice( this ).edit().putString( PrefDevice.KEY_DEVICE_TOKEN, token ).apply();
 			
-			Intent intent = new Intent( this, AlarmService.class );
-			intent.setAction( AlarmService.ACTION_DEVICE_TOKEN );
-			startService( intent );
+			PollingService.queueFCMTokenUpdated(this);
 			
 		}catch( Throwable ex ){
 			log.trace( ex );

@@ -17,7 +17,8 @@
         android:largeHeap="true"
         android:fullBackupContent="@xml/backup_spec"
         >
-        <receiver android:name=".AlarmReceiver">
+
+        <receiver android:name=".EventReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
                 <category android:name="android.intent.category.DEFAULT"/>
@@ -25,11 +26,15 @@
 
             <intent-filter>
                 <action android:name="android.intent.action.ACTION_MY_PACKAGE_REPLACED"/>
+                <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
 
         </receiver>
 
-        <service android:name=".AlarmService"/>
+        <service
+            android:name=".PollingService"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            />
 
         <activity
             android:name=".ActMain"
@@ -117,7 +122,7 @@
             android:name=".ActAccountSetting"
             android:label="@string/account_setting"
 
-            android:windowSoftInputMode="adjustResize"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
             />
 
         <activity

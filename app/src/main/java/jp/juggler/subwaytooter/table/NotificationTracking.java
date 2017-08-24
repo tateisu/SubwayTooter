@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
-import android.support.annotation.Nullable;
 
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -165,19 +164,23 @@ public class NotificationTracking {
 	public static void updateRead(long account_db_id){
 		try{
 			String[] where_args = new String[]{ Long.toString( account_db_id ) };
-			Cursor cursor = App1.getDB().query( table, new String[]{ COL_NID_SHOW }, WHERE_AID, where_args, null, null, null );
+			Cursor cursor = App1.getDB().query( table, new String[]{ COL_NID_SHOW,COL_NID_READ }, WHERE_AID, where_args, null, null, null );
 			try{
 				if( cursor.moveToFirst() ){
-					long nid = cursor.getLong( cursor.getColumnIndex( COL_NID_SHOW ) );
+					long nid_show = cursor.getLong( cursor.getColumnIndex( COL_NID_SHOW ) );
+					long nid_read = cursor.getLong( cursor.getColumnIndex( COL_NID_READ ) );
+					log.d("updateRead account_db_id=%s, nid_show=%s, nid_read=%s",account_db_id,nid_show,nid_read);
 					ContentValues cv = new ContentValues();
-					cv.put( COL_NID_READ, nid );
+					cv.put( COL_NID_READ, nid_show );
 					App1.getDB().update( table, cv, WHERE_AID,where_args );
+				}else{
+					log.e("updateRead no row in query.");
 				}
 			}finally{
 				cursor.close();
 			}
 		}catch( Throwable ex ){
-			log.e( ex, "load failed." );
+			log.e( ex, "updateRead failed." );
 		}
 	}
 	

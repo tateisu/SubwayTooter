@@ -810,7 +810,7 @@ class Column implements StreamReader.Callback {
 		
 		fireShowContent();
 		
-		AlarmService.dataRemoved( context, access_info.db_id );
+		PollingService.queueNotificationCleared( context, access_info.db_id );
 	}
 	
 	void removeNotificationOne( SavedAccount target_account, TootNotification notification ){
@@ -1283,7 +1283,7 @@ class Column implements StreamReader.Callback {
 					addWithFilter( list_tmp, src );
 					//
 					if( ! src.isEmpty() ){
-						AlarmService.injectData( context, access_info.db_id, src );
+						PollingService.injectData( context, access_info.db_id, src );
 					}
 					//
 					char delimiter = ( - 1 != path_base.indexOf( '?' ) ? '&' : '?' );
@@ -2022,7 +2022,7 @@ class Column implements StreamReader.Callback {
 					if( ! bBottom ){
 						
 						if( ! src.isEmpty() ){
-							AlarmService.injectData( context, access_info.db_id, src );
+							PollingService.injectData( context, access_info.db_id, src );
 						}
 						
 						for( ; ; ){
@@ -2064,7 +2064,7 @@ class Column implements StreamReader.Callback {
 							src = TootNotification.parseList( context, access_info, result2.array );
 							if( ! src.isEmpty() ){
 								addWithFilter( list_tmp, src );
-								AlarmService.injectData( context, access_info.db_id, src );
+								PollingService.injectData( context, access_info.db_id, src );
 							}
 						}
 					}else{
@@ -2642,7 +2642,7 @@ class Column implements StreamReader.Callback {
 					
 					addWithFilter( list_tmp, src );
 					
-					AlarmService.injectData( context, access_info.db_id, src );
+					PollingService.injectData( context, access_info.db_id, src );
 					
 				}
 				return result;
@@ -2967,7 +2967,7 @@ class Column implements StreamReader.Callback {
 						}
 					}
 					if( ! list.isEmpty() ){
-						AlarmService.injectData( context, access_info.db_id, list );
+						PollingService.injectData( context, access_info.db_id, list );
 					}
 				}
 				

@@ -37,7 +37,7 @@
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/notification_option"
+            android:text="@string/notification_style_before_oreo"
             />
 
         <LinearLayout style="@style/setting_row_form">

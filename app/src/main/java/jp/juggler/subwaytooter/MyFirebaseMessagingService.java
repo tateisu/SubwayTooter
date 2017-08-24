@@ -24,6 +24,6 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 				}
 			}
 		}
-		AlarmService.onFirebaseMessage( getApplicationContext() ,tag);
+		PollingService.queueFCMMessage( getApplicationContext() ,tag);
 	}
 }

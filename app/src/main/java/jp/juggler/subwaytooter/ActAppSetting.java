@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
@@ -151,69 +152,74 @@ public class ActAppSetting extends AppCompatActivity
 		
 		Styler.fixHorizontalPadding( findViewById( R.id.svContent ) );
 		
-		swDontConfirmBeforeCloseColumn = (Switch) findViewById( R.id.swDontConfirmBeforeCloseColumn );
+		swDontConfirmBeforeCloseColumn = findViewById( R.id.swDontConfirmBeforeCloseColumn );
 		swDontConfirmBeforeCloseColumn.setOnCheckedChangeListener( this );
 		
-		swPriorLocalURL = (Switch) findViewById( R.id.swPriorLocalURL );
+		swPriorLocalURL = findViewById( R.id.swPriorLocalURL );
 		swPriorLocalURL.setOnCheckedChangeListener( this );
 		
-		swDisableFastScroller = (Switch) findViewById( R.id.swDisableFastScroller );
+		swDisableFastScroller = findViewById( R.id.swDisableFastScroller );
 		swDisableFastScroller.setOnCheckedChangeListener( this );
 		
-		swSimpleList = (Switch) findViewById( R.id.swSimpleList );
+		swSimpleList = findViewById( R.id.swSimpleList );
 		swSimpleList.setOnCheckedChangeListener( this );
 		
-		swExitAppWhenCloseProtectedColumn = (Switch) findViewById( R.id.swExitAppWhenCloseProtectedColumn );
+		swExitAppWhenCloseProtectedColumn = findViewById( R.id.swExitAppWhenCloseProtectedColumn );
 		swExitAppWhenCloseProtectedColumn.setOnCheckedChangeListener( this );
 		
-		swShowFollowButtonInButtonBar = (Switch) findViewById( R.id.swShowFollowButtonInButtonBar );
+		swShowFollowButtonInButtonBar = findViewById( R.id.swShowFollowButtonInButtonBar );
 		swShowFollowButtonInButtonBar.setOnCheckedChangeListener( this );
 		
-		swDontRound = (Switch) findViewById( R.id.swDontRound );
+		swDontRound = findViewById( R.id.swDontRound );
 		swDontRound.setOnCheckedChangeListener( this );
 		
-		swDontUseStreaming = (Switch) findViewById( R.id.swDontUseStreaming );
+		swDontUseStreaming = findViewById( R.id.swDontUseStreaming );
 		swDontUseStreaming.setOnCheckedChangeListener( this );
 		
-		swDontRefreshOnResume = (Switch) findViewById( R.id.swDontRefreshOnResume );
+		swDontRefreshOnResume = findViewById( R.id.swDontRefreshOnResume );
 		swDontRefreshOnResume.setOnCheckedChangeListener( this );
 		
-		swDontScreenOff = (Switch) findViewById( R.id.swDontScreenOff );
+		swDontScreenOff = findViewById( R.id.swDontScreenOff );
 		swDontScreenOff.setOnCheckedChangeListener( this );
 		
-		swDisableTabletMode = (Switch) findViewById( R.id.swDisableTabletMode );
+		swDisableTabletMode = findViewById( R.id.swDisableTabletMode );
 		swDisableTabletMode.setOnCheckedChangeListener( this );
 		
-		swDontCropMediaThumb = (Switch) findViewById( R.id.swDontCropMediaThumb );
+		swDontCropMediaThumb = findViewById( R.id.swDontCropMediaThumb );
 		swDontCropMediaThumb.setOnCheckedChangeListener( this );
 		
-		swPriorChrome = (Switch) findViewById( R.id.swPriorChrome );
+		swPriorChrome = findViewById( R.id.swPriorChrome );
 		swPriorChrome.setOnCheckedChangeListener( this );
 		
-		swPostButtonBarTop = (Switch) findViewById( R.id.swPostButtonBarTop );
+		swPostButtonBarTop = findViewById( R.id.swPostButtonBarTop );
 		swPostButtonBarTop.setOnCheckedChangeListener( this );
 		
-		swDontDuplicationCheck = (Switch) findViewById( R.id.swDontDuplicationCheck );
+		swDontDuplicationCheck = findViewById( R.id.swDontDuplicationCheck );
 		swDontDuplicationCheck.setOnCheckedChangeListener( this );
 		
-		swQuickTootBar = (Switch) findViewById( R.id.swQuickTootBar );
+		swQuickTootBar = findViewById( R.id.swQuickTootBar );
 		swQuickTootBar.setOnCheckedChangeListener( this );
 		
-		swEnableGifAnimation = (Switch) findViewById( R.id.swEnableGifAnimation );
+		swEnableGifAnimation = findViewById( R.id.swEnableGifAnimation );
 		swEnableGifAnimation.setOnCheckedChangeListener( this );
 		
-		swMentionFullAcct = (Switch) findViewById( R.id.swMentionFullAcct );
+		swMentionFullAcct = findViewById( R.id.swMentionFullAcct );
 		swMentionFullAcct.setOnCheckedChangeListener( this );
 		
-		swRelativeTimestamp = (Switch) findViewById( R.id.swRelativeTimestamp );
+		swRelativeTimestamp = findViewById( R.id.swRelativeTimestamp );
 		swRelativeTimestamp.setOnCheckedChangeListener( this );
 		
-		cbNotificationSound = (CheckBox) findViewById( R.id.cbNotificationSound );
-		cbNotificationVibration = (CheckBox) findViewById( R.id.cbNotificationVibration );
-		cbNotificationLED = (CheckBox) findViewById( R.id.cbNotificationLED );
+		cbNotificationSound = findViewById( R.id.cbNotificationSound );
+		cbNotificationVibration = findViewById( R.id.cbNotificationVibration );
+		cbNotificationLED = findViewById( R.id.cbNotificationLED );
 		cbNotificationSound.setOnCheckedChangeListener( this );
 		cbNotificationVibration.setOnCheckedChangeListener( this );
 		cbNotificationLED.setOnCheckedChangeListener( this );
+		
+		boolean bBefore8 = Build.VERSION.SDK_INT < 26;
+		cbNotificationSound.setEnabled( bBefore8 );
+		cbNotificationVibration.setEnabled( bBefore8 );
+		cbNotificationLED.setEnabled( bBefore8 );
 		
 		{
 			String[] caption_list = new String[]{
@@ -556,7 +562,7 @@ public class ActAppSetting extends AppCompatActivity
 				.remove( Pref.KEY_STREAM_LISTENER_CONFIG_DATA )
 				.apply();
 			SavedAccount.clearRegistrationCache();
-			AlarmService.startCheck( this );
+			PollingService.queueUpdateListener( this );
 			Utils.showToast( this, false, getString( R.string.custom_stream_listener_was_reset ) );
 			break;
 			
@@ -730,13 +736,15 @@ public class ActAppSetting extends AppCompatActivity
 	
 	private float parseFontSize( String src ){
 		try{
-			NumberFormat format = NumberFormat.getInstance( Locale.getDefault() );
-			Number number = format.parse( src );
-			float f = number.floatValue();
-			if( ! Float.isNaN( f ) ){
-				if( f < 0f ) f = 0f;
-				if( f > 999f ) f = 999f;
-				return f;
+			if( !TextUtils.isEmpty( src ) ){
+				NumberFormat format = NumberFormat.getInstance( Locale.getDefault() );
+				Number number = format.parse( src );
+				float f = number.floatValue();
+				if( ! Float.isNaN( f ) ){
+					if( f < 0f ) f = 0f;
+					if( f > 999f ) f = 999f;
+					return f;
+				}
 			}
 		}catch( Throwable ex ){
 			log.trace( ex );

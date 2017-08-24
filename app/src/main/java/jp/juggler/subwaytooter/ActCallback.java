@@ -22,6 +22,9 @@ import jp.juggler.subwaytooter.util.Utils;
 
 public class ActCallback extends AppCompatActivity {
 	private static final LogCategory log = new LogCategory( "ActCallback" );
+	
+	public static final String ACTION_NOTIFICATION_CLICK = "notification_click";
+	
 	static final AtomicReference< Uri > last_uri = new AtomicReference<>( null );
 	static final AtomicReference< Intent > sent_intent = new AtomicReference<>( null );
 	

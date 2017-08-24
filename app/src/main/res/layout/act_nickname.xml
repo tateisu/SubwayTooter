@@ -148,7 +148,7 @@
 
                 <TextView
                     style="@style/setting_row_label"
-                    android:text="@string/notification_sound"
+                    android:text="@string/notification_sound_before_oreo"
                     />
 
                 <LinearLayout style="@style/setting_row_form">

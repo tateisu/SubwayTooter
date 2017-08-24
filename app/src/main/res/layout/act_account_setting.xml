@@ -11,7 +11,7 @@
     android:paddingBottom="128dp"
     android:paddingTop="12dp"
     android:scrollbarStyle="outsideOverlay"
-
+    tools:ignore="TooManyViews"
     >
 
     <LinearLayout
@@ -87,27 +87,29 @@
             android:text="@string/public_profile"
             />
 
-    <LinearLayout style="@style/setting_row_form">
-        <FrameLayout
-            style="@style/setting_horizontal_stretch"
-            android:layout_height="64dp"
-            >
+        <LinearLayout style="@style/setting_row_form">
 
-            <jp.juggler.subwaytooter.view.MyNetworkImageView
-                android:id="@+id/ivProfileHeader"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                />
+            <FrameLayout
+                style="@style/setting_horizontal_stretch"
+                android:layout_height="64dp"
+                >
 
-            <jp.juggler.subwaytooter.view.MyNetworkImageView
-                android:id="@+id/ivProfileAvatar"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:layout_gravity="center"
-                android:scaleType="fitCenter"
-                />
-        </FrameLayout>
-    </LinearLayout>
+                <jp.juggler.subwaytooter.view.MyNetworkImageView
+                    android:id="@+id/ivProfileHeader"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    />
+
+                <jp.juggler.subwaytooter.view.MyNetworkImageView
+                    android:id="@+id/ivProfileAvatar"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_gravity="center"
+                    android:scaleType="fitCenter"
+                    />
+            </FrameLayout>
+        </LinearLayout>
+
         <LinearLayout style="@style/setting_row_form">
 
             <Button
@@ -380,7 +382,7 @@
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/notification_sound"
+            android:text="@string/notification_sound_before_oreo"
             />
 
         <LinearLayout style="@style/setting_row_form">
@@ -398,6 +400,25 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/notification_style_after_oreo"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnNotificationStyleEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
                 android:textAllCaps="false"
                 />
 

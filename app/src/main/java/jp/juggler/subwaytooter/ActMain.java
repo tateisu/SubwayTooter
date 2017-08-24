@@ -87,10 +87,8 @@ import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.view.ColumnStripLinearLayout;
 import jp.juggler.subwaytooter.view.GravitySnapHelper;
 import jp.juggler.subwaytooter.view.MyEditText;
-import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.RequestBody;
-import okhttp3.Response;
 
 public class ActMain extends AppCompatActivity
 	implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, ViewPager.OnPageChangeListener, Column.Callback, DrawerLayout.DrawerListener
@@ -159,7 +157,7 @@ public class ActMain extends AppCompatActivity
 			}
 		}
 		
-		AlarmService.startCheck( this );
+		PollingService.queueUpdateNotification( this );
 		
 		if( savedInstanceState != null && sent_intent2 != null ){
 			handleSentIntent( sent_intent2 );
@@ -316,7 +314,7 @@ public class ActMain extends AppCompatActivity
 		if( list_item_popup != null ){
 			try{
 				list_item_popup.dismiss();
-			}catch(Throwable ignored){
+			}catch( Throwable ignored ){
 			}
 			list_item_popup = null;
 		}
@@ -1292,6 +1290,9 @@ public class ActMain extends AppCompatActivity
 					if( ! column.bInitialLoading ){
 						column.startLoading();
 					}
+					
+					PollingService.queueNotificationClicked( this, db_id );
+					
 				}
 			}catch( Throwable ex ){
 				log.trace( ex );
@@ -1448,7 +1449,7 @@ public class ActMain extends AppCompatActivity
 				}
 				
 				// 通知の更新が必要かもしれない
-				AlarmService.startCheck( ActMain.this );
+				PollingService.queueUpdateNotification( ActMain.this );
 				return true;
 			}
 		}else{
@@ -1476,7 +1477,7 @@ public class ActMain extends AppCompatActivity
 				Utils.showToast( ActMain.this, false, R.string.account_confirmed );
 				
 				// 通知の更新が必要かもしれない
-				AlarmService.startCheck( ActMain.this );
+				PollingService.queueUpdateNotification( ActMain.this );
 				
 				// 適当にカラムを追加する
 				long count = SavedAccount.getCount();
@@ -1718,7 +1719,6 @@ public class ActMain extends AppCompatActivity
 		Utils.showToast( ActMain.this, false, R.string.app_was_muted );
 	}
 	
-
 	//////////////////////////////////////////////////////////////
 	
 	interface FindAccountCallback {
@@ -1781,7 +1781,7 @@ public class ActMain extends AppCompatActivity
 			protected void onPostExecute( TootAccount result ){
 				try{
 					progress.dismiss();
-				}catch(Throwable ignored){
+				}catch( Throwable ignored ){
 				}
 				callback.onFindAccount( result );
 			}
@@ -2579,7 +2579,7 @@ public class ActMain extends AppCompatActivity
 			protected void onPostExecute( TootApiResult result ){
 				try{
 					progress.dismiss();
-				}catch(Throwable ignored){
+				}catch( Throwable ignored ){
 				}
 				if( result == null ){
 					// cancelled.
@@ -2618,7 +2618,7 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-	static final Pattern reUriOStatusToot = Pattern.compile( "tag:([^,]*),[^:]*:objectId=(\\d+):objectType=Status" ,Pattern.CASE_INSENSITIVE);
+	static final Pattern reUriOStatusToot = Pattern.compile( "tag:([^,]*),[^:]*:objectId=(\\d+):objectType=Status", Pattern.CASE_INSENSITIVE );
 	
 	public void openStatusOtherInstance( int pos, @NonNull SavedAccount access_info, @NonNull TootStatusLike status ){
 		if( status.account == null ){
@@ -2630,7 +2630,7 @@ public class ActMain extends AppCompatActivity
 				, null, - 1L
 			);
 		}else if( status instanceof TootStatus ){
-			TootStatus ts = (TootStatus)status;
+			TootStatus ts = (TootStatus) status;
 			if( status.host_original.equals( status.host_access ) ){
 				// TLアカウントのホストとトゥートのアカウントのホストが同じ場合
 				openStatusOtherInstance( pos, access_info, status.url
@@ -2639,8 +2639,8 @@ public class ActMain extends AppCompatActivity
 				);
 			}else{
 				// TLアカウントのホストとトゥートのアカウントのホストが異なる場合
-
-				long status_id_original = -1L;
+				
+				long status_id_original = - 1L;
 				String host_original = null;
 				
 				try{
@@ -2650,12 +2650,12 @@ public class ActMain extends AppCompatActivity
 						status_id_original = Long.parseLong( m.group( 2 ), 10 );
 						host_original = m.group( 1 );
 					}
-				}catch(Throwable ex){
-					log.e(ex,"openStatusOtherInstance: cant parse tag: %s",ts.uri);
+				}catch( Throwable ex ){
+					log.e( ex, "openStatusOtherInstance: cant parse tag: %s", ts.uri );
 				}
-
+				
 				openStatusOtherInstance( pos, access_info, status.url
-					, host_original,status_id_original
+					, host_original, status_id_original
 					, status.host_access, status.id
 				);
 			}
@@ -2680,9 +2680,9 @@ public class ActMain extends AppCompatActivity
 			}
 		} );
 		
-		ArrayList<SavedAccount> local_account_list = new ArrayList<>(  );
-		ArrayList<SavedAccount> access_account_list = new ArrayList<>(  );
-		ArrayList<SavedAccount> other_account_list = new ArrayList<>(  );
+		ArrayList< SavedAccount > local_account_list = new ArrayList<>();
+		ArrayList< SavedAccount > access_account_list = new ArrayList<>();
+		ArrayList< SavedAccount > other_account_list = new ArrayList<>();
 		for( SavedAccount a : SavedAccount.loadAccountList( ActMain.this, log ) ){
 			// 疑似アカウントは後でまとめて処理する
 			if( a.isPseudo() ) continue;
@@ -2695,7 +2695,7 @@ public class ActMain extends AppCompatActivity
 				access_account_list.add( a );
 			}else{
 				// 別タンスでも実アカウントなら検索APIでステータスIDを変換できる
-				other_account_list.add(a);
+				other_account_list.add( a );
 			}
 		}
 		
@@ -2715,7 +2715,7 @@ public class ActMain extends AppCompatActivity
 					@Override public void run(){
 						SavedAccount sa = addPseudoAccount( host_original );
 						if( sa != null ){
-							openStatusRemote(pos, sa, url );
+							openStatusRemote( pos, sa, url );
 						}
 					}
 				} );
@@ -2770,8 +2770,8 @@ public class ActMain extends AppCompatActivity
 		dialog.show( this, getString( R.string.open_status_from ) );
 	}
 	
-	static final Pattern reDetailedStatusTime = Pattern.compile( "<a\\b[^>]*?\\bdetailed-status__datetime\\b[^>]*href=\"https://[^/]+/@[^/]+/(\\d+)\"");
-
+	static final Pattern reDetailedStatusTime = Pattern.compile( "<a\\b[^>]*?\\bdetailed-status__datetime\\b[^>]*href=\"https://[^/]+/@[^/]+/(\\d+)\"" );
+	
 	public void openStatusRemote(
 		final int pos
 		, final SavedAccount access_info
@@ -2780,8 +2780,8 @@ public class ActMain extends AppCompatActivity
 		final ProgressDialog progress = new ProgressDialog( this );
 		
 		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
-
-			long  local_status_id = -1L;
+			
+			long local_status_id = - 1L;
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
 				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
@@ -2796,17 +2796,17 @@ public class ActMain extends AppCompatActivity
 				
 				TootApiResult result;
 				if( access_info.isPseudo() ){
-					result = client.getHttp(remote_status_url);
+					result = client.getHttp( remote_status_url );
 					if( result != null && result.json != null ){
 						try{
 							Matcher m = reDetailedStatusTime.matcher( result.json );
 							if( m.find() ){
-								local_status_id = Long.parseLong( m.group(1) ,10);
+								local_status_id = Long.parseLong( m.group( 1 ), 10 );
 							}
-						}catch(Throwable ex){
-							log.e(ex,"openStatusRemote: can't parse status id from HTML data.");
+						}catch( Throwable ex ){
+							log.e( ex, "openStatusRemote: can't parse status id from HTML data." );
 						}
-						if( local_status_id == -1L ){
+						if( local_status_id == - 1L ){
 							result = new TootApiResult( getString( R.string.status_id_conversion_failed ) );
 						}
 					}
@@ -2822,7 +2822,7 @@ public class ActMain extends AppCompatActivity
 							local_status_id = status.id;
 							log.d( "status id conversion %s => %s", remote_status_url, status.id );
 						}
-						if( local_status_id == -1L ){
+						if( local_status_id == - 1L ){
 							result = new TootApiResult( getString( R.string.status_id_conversion_failed ) );
 						}
 					}
@@ -2839,11 +2839,11 @@ public class ActMain extends AppCompatActivity
 			protected void onPostExecute( TootApiResult result ){
 				try{
 					progress.dismiss();
-				}catch(Throwable ignored){
+				}catch( Throwable ignored ){
 				}
 				if( result == null ){
 					// cancelled.
-				}else if( local_status_id != -1L ){
+				}else if( local_status_id != - 1L ){
 					openStatusLocal( pos, access_info, local_status_id );
 				}else{
 					Utils.showToast( ActMain.this, true, result.error );
@@ -2862,7 +2862,6 @@ public class ActMain extends AppCompatActivity
 		progress.show();
 		task.executeOnExecutor( App1.task_executor );
 	}
-
 	
 	////////////////////////////////////////
 	// delete notification
@@ -4234,16 +4233,9 @@ public class ActMain extends AppCompatActivity
 					
 					// 通知サービスを止める
 					setProgressMessage( "reset Notification..." );
-					{
-						AlarmService.mBusyAppDataImportBefore.set( true );
-						AlarmService.mBusyAppDataImportAfter.set( true );
-						
-						Intent intent = new Intent( ActMain.this, AlarmService.class );
-						intent.setAction( AlarmService.ACTION_APP_DATA_IMPORT_BEFORE );
-						startService( intent );
-						while( AlarmService.mBusyAppDataImportBefore.get() ){
-							Thread.sleep( 100L );
-						}
+					PollingService.queueAppDataImportBefore(ActMain.this);
+					while( PollingService.mBusyAppDataImportBefore.get() ){
+						Thread.sleep( 100L );
 					}
 					
 					// JSONを読みだす
@@ -4299,11 +4291,8 @@ public class ActMain extends AppCompatActivity
 				}
 				
 				// 通知サービスをリスタート
-				{
-					Intent intent = new Intent( ActMain.this, AlarmService.class );
-					intent.setAction( AlarmService.ACTION_APP_DATA_IMPORT_AFTER );
-					startService( intent );
-				}
+				PollingService.queueAppDataImportAfter(ActMain.this);
+				
 			}
 		};
 		
@@ -4371,18 +4360,18 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	public void openInstanceInformation( int pos, String host ){
-		addColumn( pos , SavedAccount.getNA(), Column.TYPE_INSTANCE_INFORMATION, host );
+		addColumn( pos, SavedAccount.getNA(), Column.TYPE_INSTANCE_INFORMATION, host );
 	}
 	
 	private final Runnable proc_updateRelativeTime = new Runnable() {
 		@Override public void run(){
 			handler.removeCallbacks( proc_updateRelativeTime );
-			if(!bResume) return;
-			for( Column c: app_state.column_list ){
+			if( ! bResume ) return;
+			for( Column c : app_state.column_list ){
 				c.fireShowContent();
 			}
-			if( pref.getBoolean( Pref.KEY_RELATIVE_TIMESTAMP ,false) ){
-				handler.postDelayed( proc_updateRelativeTime, 10000L);
+			if( pref.getBoolean( Pref.KEY_RELATIVE_TIMESTAMP, false ) ){
+				handler.postDelayed( proc_updateRelativeTime, 10000L );
 			}
 		}
 	};

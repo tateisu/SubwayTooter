@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter;
 	
 	import android.Manifest;
 	import android.app.Activity;
+	import android.app.NotificationChannel;
 	import android.app.ProgressDialog;
 	import android.content.ClipData;
 	import android.content.ContentValues;
@@ -16,6 +17,7 @@ package jp.juggler.subwaytooter;
 	import android.os.Build;
 	import android.os.Bundle;
 	import android.provider.MediaStore;
+	import android.provider.Settings;
 	import android.support.annotation.NonNull;
 	import android.support.annotation.Nullable;
 	import android.support.v4.app.ActivityCompat;
@@ -52,6 +54,7 @@ package jp.juggler.subwaytooter;
 	import jp.juggler.subwaytooter.util.Emojione;
 	import jp.juggler.subwaytooter.util.HTMLDecoder;
 	import jp.juggler.subwaytooter.util.LogCategory;
+	import jp.juggler.subwaytooter.util.NotificationHelper;
 	import jp.juggler.subwaytooter.util.Utils;
 	import jp.juggler.subwaytooter.view.MyNetworkImageView;
 	import okhttp3.Call;
@@ -95,7 +98,7 @@ public class ActAccountSetting extends AppCompatActivity
 	}
 	
 	@Override protected void onStop(){
-		AlarmService.startCheck( this );
+		PollingService.queueUpdateNotification( this );
 		super.onStop();
 	}
 	
@@ -211,6 +214,7 @@ public class ActAccountSetting extends AppCompatActivity
 	
 	Button btnNotificationSoundEdit;
 	Button btnNotificationSoundReset;
+	Button btnNotificationStyleEdit;
 	
 	String notification_sound_uri;
 	
@@ -228,35 +232,35 @@ public class ActAccountSetting extends AppCompatActivity
 		
 		Styler.fixHorizontalPadding( findViewById( R.id.svContent ) );
 		
-		tvInstance = (TextView) findViewById( R.id.tvInstance );
-		tvUser = (TextView) findViewById( R.id.tvUser );
+		tvInstance = findViewById( R.id.tvInstance );
+		tvUser = findViewById( R.id.tvUser );
 		btnAccessToken = findViewById( R.id.btnAccessToken );
 		btnInputAccessToken = findViewById( R.id.btnInputAccessToken );
 		btnAccountRemove = findViewById( R.id.btnAccountRemove );
-		btnVisibility = (Button) findViewById( R.id.btnVisibility );
-		swNSFWOpen = (Switch) findViewById( R.id.swNSFWOpen );
-		btnOpenBrowser = (Button) findViewById( R.id.btnOpenBrowser );
-		cbNotificationMention = (CheckBox) findViewById( R.id.cbNotificationMention );
-		cbNotificationBoost = (CheckBox) findViewById( R.id.cbNotificationBoost );
-		cbNotificationFavourite = (CheckBox) findViewById( R.id.cbNotificationFavourite );
-		cbNotificationFollow = (CheckBox) findViewById( R.id.cbNotificationFollow );
+		btnVisibility = findViewById( R.id.btnVisibility );
+		swNSFWOpen = findViewById( R.id.swNSFWOpen );
+		btnOpenBrowser = findViewById( R.id.btnOpenBrowser );
+		cbNotificationMention = findViewById( R.id.cbNotificationMention );
+		cbNotificationBoost = findViewById( R.id.cbNotificationBoost );
+		cbNotificationFavourite = findViewById( R.id.cbNotificationFavourite );
+		cbNotificationFollow = findViewById( R.id.cbNotificationFollow );
 		
-		cbConfirmFollow = (CheckBox) findViewById( R.id.cbConfirmFollow );
-		cbConfirmFollowLockedUser = (CheckBox) findViewById( R.id.cbConfirmFollowLockedUser );
-		cbConfirmUnfollow = (CheckBox) findViewById( R.id.cbConfirmUnfollow );
-		cbConfirmBoost = (CheckBox) findViewById( R.id.cbConfirmBoost );
-		cbConfirmToot = (CheckBox) findViewById( R.id.cbConfirmToot );
+		cbConfirmFollow = findViewById( R.id.cbConfirmFollow );
+		cbConfirmFollowLockedUser = findViewById( R.id.cbConfirmFollowLockedUser );
+		cbConfirmUnfollow = findViewById( R.id.cbConfirmUnfollow );
+		cbConfirmBoost = findViewById( R.id.cbConfirmBoost );
+		cbConfirmToot = findViewById( R.id.cbConfirmToot );
 		
-		tvUserCustom = (TextView) findViewById( R.id.tvUserCustom );
+		tvUserCustom = findViewById( R.id.tvUserCustom );
 		btnUserCustom = findViewById( R.id.btnUserCustom );
 		
-		ivProfileHeader = (MyNetworkImageView) findViewById( R.id.ivProfileHeader );
-		ivProfileAvatar = (MyNetworkImageView) findViewById( R.id.ivProfileAvatar );
+		ivProfileHeader = findViewById( R.id.ivProfileHeader );
+		ivProfileAvatar = findViewById( R.id.ivProfileAvatar );
 		btnProfileAvatar = findViewById( R.id.btnProfileAvatar );
 		btnProfileHeader = findViewById( R.id.btnProfileHeader );
-		etDisplayName = (EditText) findViewById( R.id.etDisplayName );
+		etDisplayName = findViewById( R.id.etDisplayName );
 		btnDisplayName = findViewById( R.id.btnDisplayName );
-		etNote = (EditText) findViewById( R.id.etNote );
+		etNote = findViewById( R.id.etNote );
 		btnNote = findViewById( R.id.btnNote );
 		
 		btnOpenBrowser.setOnClickListener( this );
@@ -282,10 +286,12 @@ public class ActAccountSetting extends AppCompatActivity
 		cbConfirmBoost.setOnCheckedChangeListener( this );
 		cbConfirmToot.setOnCheckedChangeListener( this );
 		
-		btnNotificationSoundEdit = (Button) findViewById( R.id.btnNotificationSoundEdit );
-		btnNotificationSoundReset = (Button) findViewById( R.id.btnNotificationSoundReset );
+		btnNotificationSoundEdit = findViewById( R.id.btnNotificationSoundEdit );
+		btnNotificationSoundReset = findViewById( R.id.btnNotificationSoundReset );
+		btnNotificationStyleEdit = findViewById( R.id.btnNotificationStyleEdit );
 		btnNotificationSoundEdit.setOnClickListener( this );
 		btnNotificationSoundReset.setOnClickListener( this );
+		btnNotificationStyleEdit.setOnClickListener( this );
 	}
 	
 	boolean loading = false;
@@ -325,8 +331,10 @@ public class ActAccountSetting extends AppCompatActivity
 		btnVisibility.setEnabled( enabled );
 		btnVisibility.setEnabled( enabled );
 		btnVisibility.setEnabled( enabled );
-		btnNotificationSoundEdit.setEnabled( enabled );
-		btnNotificationSoundReset.setEnabled( enabled );
+		
+		btnNotificationSoundEdit.setEnabled( Build.VERSION.SDK_INT < 26 && enabled );
+		btnNotificationSoundReset.setEnabled( Build.VERSION.SDK_INT < 26 && enabled );
+		btnNotificationStyleEdit.setEnabled( Build.VERSION.SDK_INT >= 26 && enabled );
 		
 		cbNotificationMention.setEnabled( enabled );
 		cbNotificationBoost.setEnabled( enabled );
@@ -423,6 +431,15 @@ public class ActAccountSetting extends AppCompatActivity
 			sendNote();
 			break;
 			
+		case R.id.btnNotificationStyleEdit:
+			if( Build.VERSION.SDK_INT >= 26 ){
+				NotificationChannel channel = NotificationHelper.createNotificationChannel( this,account );
+				Intent intent = new Intent( Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS );
+				intent.putExtra( Settings.EXTRA_CHANNEL_ID, channel.getId() );
+				intent.putExtra( Settings.EXTRA_APP_PACKAGE, getPackageName() );
+				startActivity( intent );
+			}
+			break;
 		}
 	}
 	
@@ -523,7 +540,7 @@ public class ActAccountSetting extends AppCompatActivity
 									+ "&tag=" + tag;
 								
 								Request request = new Request.Builder()
-									.url( AlarmService.APP_SERVER + "/unregister" )
+									.url( PollingService.APP_SERVER + "/unregister" )
 									.post( RequestBody.create( TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, post_data ) )
 									.build();
 								

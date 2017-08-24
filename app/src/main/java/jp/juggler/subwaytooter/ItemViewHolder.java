@@ -380,21 +380,35 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.status = status;
 		llStatus.setVisibility( View.VISIBLE );
 		
-		if( status instanceof MSPToot ){
-			tvTime.setText( TootStatus.formatTime( tvTime.getContext(), status.time_created_at, column.column_type != Column.TYPE_CONVERSATION ) );
-		}else if( status instanceof TootStatus ){
-			TootStatus ts = (TootStatus) status;
-			int icon_id = Styler.getVisibilityIcon( activity, ts.visibility );
+		SpannableStringBuilder sb = new SpannableStringBuilder();
+		
+		if( status.hasMedia() && status.sensitive ){
+			// if( sb.length() > 0 ) sb.append( ' ' );
 			
-			SpannableStringBuilder sb = new SpannableStringBuilder();
 			int start = sb.length();
-			sb.append( ts.visibility );
+			sb.append( "NSFW" );
 			int end = sb.length();
+			int icon_id = Styler.getAttributeResourceId( activity, R.attr.ic_eye_off );
 			sb.setSpan( new EmojiImageSpan( activity, icon_id ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-			sb.append( ' ' );
-			sb.append( TootStatus.formatTime( activity, status.time_created_at, column.column_type != Column.TYPE_CONVERSATION ) );
-			tvTime.setText( sb );
 		}
+		
+		if( status instanceof TootStatus ){
+			TootStatus ts = (TootStatus) status;
+			
+			if( ! TootStatus.VISIBILITY_PUBLIC.equals( ts.visibility ) ){
+				if( sb.length() > 0 ) sb.append( ' ' );
+				
+				int start = sb.length();
+				sb.append( ts.visibility );
+				int end = sb.length();
+				int icon_id = Styler.getVisibilityIcon( activity, ts.visibility );
+				sb.setSpan( new EmojiImageSpan( activity, icon_id ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+			}
+		}
+		
+		if( sb.length() > 0 ) sb.append( ' ' );
+		sb.append( TootStatus.formatTime( activity, status.time_created_at, column.column_type != Column.TYPE_CONVERSATION ) );
+		tvTime.setText( sb );
 		
 		account_thumbnail = status.account;
 		setAcct( tvAcct, access_info.getFullAcct( status.account ) );
@@ -443,48 +457,35 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			showContent( cw_shown );
 		}
 		
-		if( status instanceof TootStatus ){
-			TootStatus ts = (TootStatus) status;
-			if( ts.media_attachments == null || ts.media_attachments.isEmpty() ){
-				flMedia.setVisibility( View.GONE );
-			}else{
+		if( ! status.hasMedia() ){
+			flMedia.setVisibility( View.GONE );
+		}else{
+			flMedia.setVisibility( View.VISIBLE );
+			
+			if( status instanceof TootStatus ){
+				TootStatus ts = (TootStatus) status;
+				setMedia( ivMedia1, ts, 0 );
+				setMedia( ivMedia2, ts, 1 );
+				setMedia( ivMedia3, ts, 2 );
+				setMedia( ivMedia4, ts, 3 );
+			}else if( status instanceof MSPToot ){
+				MSPToot ts = (MSPToot) status;
 				flMedia.setVisibility( View.VISIBLE );
 				setMedia( ivMedia1, ts, 0 );
 				setMedia( ivMedia2, ts, 1 );
 				setMedia( ivMedia3, ts, 2 );
 				setMedia( ivMedia4, ts, 3 );
-				
-				@SuppressWarnings("SimplifiableConditionalExpression")
-				boolean default_shown =
-					column.hide_media_default ? false :
-						access_info.dont_hide_nsfw ? true :
-							! status.sensitive;
-				
-				// hide sensitive media
-				boolean is_shown = MediaShown.isShown( status, default_shown );
-				btnShowMedia.setVisibility( ! is_shown ? View.VISIBLE : View.GONE );
 			}
-		}else if( status instanceof MSPToot ){
-			MSPToot ts = (MSPToot) status;
-			if( ts.media_attachments == null || ts.media_attachments.isEmpty() ){
-				flMedia.setVisibility( View.GONE );
-			}else{
-				flMedia.setVisibility( View.VISIBLE );
-				setMedia( ivMedia1, ts, 0 );
-				setMedia( ivMedia2, ts, 1 );
-				setMedia( ivMedia3, ts, 2 );
-				setMedia( ivMedia4, ts, 3 );
-				
-				@SuppressWarnings("SimplifiableConditionalExpression")
-				boolean default_shown =
-					column.hide_media_default ? false :
-						access_info.dont_hide_nsfw ? true :
-							! status.sensitive;
-				
-				// hide sensitive media
-				boolean is_shown = MediaShown.isShown( status, default_shown );
-				btnShowMedia.setVisibility( ! is_shown ? View.VISIBLE : View.GONE );
-			}
+			
+			// hide sensitive media
+			@SuppressWarnings("SimplifiableConditionalExpression")
+			boolean default_shown =
+				column.hide_media_default ? false :
+					access_info.dont_hide_nsfw ? true :
+						! status.sensitive;
+
+			boolean is_shown = MediaShown.isShown( status, default_shown );
+			btnShowMedia.setVisibility( ! is_shown ? View.VISIBLE : View.GONE );
 		}
 		
 		if( buttons_for_status != null ){

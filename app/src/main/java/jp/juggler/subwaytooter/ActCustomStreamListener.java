@@ -143,7 +143,7 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 			Utils.hideKeyboard( this, etStreamListenerConfigurationUrl );
 			if( save() ){
 				SavedAccount.clearRegistrationCache();
-				AlarmService.startCheck( this );
+				PollingService.queueUpdateListener( this );
 				finish();
 			}
 			break;

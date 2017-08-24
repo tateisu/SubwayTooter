@@ -10,6 +10,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import jp.juggler.subwaytooter.App1;
+import jp.juggler.subwaytooter.PollingService;
 import jp.juggler.subwaytooter.table.ClientInfo;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -33,6 +34,7 @@ public class TootApiClient {
 		boolean isApiCancelled();
 		
 		void publishApiProgress( String s );
+		
 	}
 	
 	private final Context context;
@@ -41,6 +43,16 @@ public class TootApiClient {
 	public TootApiClient( @NonNull Context context, @NonNull Callback callback ){
 		this.context = context;
 		this.callback = callback;
+	}
+	
+	public interface CurrentCallCallback {
+		void onCallCreated( Call call );
+	}
+	
+	CurrentCallCallback call_callback;
+	
+	public void setCurrentCallCallback( CurrentCallCallback call_callback ){
+		this.call_callback = call_callback;
 	}
 	
 	// インスタンスのホスト名
@@ -107,7 +119,7 @@ public class TootApiClient {
 			}
 			
 			Call call = ok_http_client.newCall( request_builder.build() );
-			
+			if( call_callback != null ) call_callback.onCallCreated( call );
 			response = call.execute();
 		}catch( Throwable ex ){
 			log.trace( ex );
@@ -194,6 +206,7 @@ public class TootApiClient {
 				.build();
 			
 			Call call = ok_http_client.newCall( request );
+			if( call_callback != null ) call_callback.onCallCreated( call );
 			
 			response = call.execute();
 		}catch( Throwable ex ){
@@ -258,6 +271,7 @@ public class TootApiClient {
 				.build();
 			
 			Call call = ok_http_client.newCall( request );
+			if( call_callback != null ) call_callback.onCallCreated( call );
 			
 			response = call.execute();
 		}catch( Throwable ex ){
@@ -337,6 +351,7 @@ public class TootApiClient {
 				.post( RequestBody.create( MEDIA_TYPE_FORM_URL_ENCODED, post_content ) )
 				.build();
 			Call call = ok_http_client.newCall( request );
+			if( call_callback != null ) call_callback.onCallCreated( call );
 			
 			response = call.execute();
 		}catch( Throwable ex ){
@@ -383,6 +398,7 @@ public class TootApiClient {
 				.build();
 			
 			Call call = ok_http_client.newCall( request );
+			if( call_callback != null ) call_callback.onCallCreated( call );
 			
 			response = call.execute();
 		}catch( Throwable ex ){
@@ -445,6 +461,7 @@ public class TootApiClient {
 				.build();
 			
 			Call call = ok_http_client.newCall( request );
+			if( call_callback != null ) call_callback.onCallCreated( call );
 			
 			response = call.execute();
 		}catch( Throwable ex ){
@@ -489,6 +506,7 @@ public class TootApiClient {
 			request_builder.url( url );
 			
 			Call call = ok_http_client.newCall( request_builder.build() );
+			if( call_callback != null ) call_callback.onCallCreated( call );
 			
 			response = call.execute();
 		}catch( Throwable ex ){

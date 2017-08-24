@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.ColorInt;
 import android.support.annotation.Nullable;
@@ -51,8 +52,8 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 		
 		Intent intent = getIntent();
 		this.acct = intent.getStringExtra( EXTRA_ACCT );
-		this.show_notification_sound = intent.getBooleanExtra( EXTRA_SHOW_NOTIFICATION_SOUND ,false);
-
+		this.show_notification_sound = intent.getBooleanExtra( EXTRA_SHOW_NOTIFICATION_SOUND, false );
+		
 		initUI();
 		
 		load();
@@ -75,12 +76,12 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 		setTitle( getString( show_notification_sound ? R.string.nickname_and_color_and_notification_sound : R.string.nickname_and_color ) );
 		setContentView( R.layout.act_nickname );
 		
-		Styler.fixHorizontalPadding(findViewById( R.id.llContent ));
+		Styler.fixHorizontalPadding( findViewById( R.id.llContent ) );
 		
-		tvPreview = (TextView) findViewById( R.id.tvPreview );
-		tvAcct = (TextView) findViewById( R.id.tvAcct );
+		tvPreview = findViewById( R.id.tvPreview );
+		tvAcct = findViewById( R.id.tvAcct );
 		
-		etNickname = (EditText) findViewById( R.id.etNickname );
+		etNickname = findViewById( R.id.etNickname );
 		btnTextColorEdit = findViewById( R.id.btnTextColorEdit );
 		btnTextColorReset = findViewById( R.id.btnTextColorReset );
 		btnBackgroundColorEdit = findViewById( R.id.btnBackgroundColorEdit );
@@ -88,7 +89,7 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 		btnSave = findViewById( R.id.btnSave );
 		btnDiscard = findViewById( R.id.btnDiscard );
 		
-		etNickname = (EditText) findViewById( R.id.etNickname );
+		etNickname = findViewById( R.id.etNickname );
 		btnTextColorEdit.setOnClickListener( this );
 		btnTextColorReset.setOnClickListener( this );
 		btnBackgroundColorEdit.setOnClickListener( this );
@@ -96,11 +97,14 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 		btnSave.setOnClickListener( this );
 		btnDiscard.setOnClickListener( this );
 		
-		btnNotificationSoundEdit = (Button) findViewById( R.id.btnNotificationSoundEdit );
-		btnNotificationSoundReset = (Button) findViewById( R.id.btnNotificationSoundReset );
+		btnNotificationSoundEdit = findViewById( R.id.btnNotificationSoundEdit );
+		btnNotificationSoundReset = findViewById( R.id.btnNotificationSoundReset );
 		btnNotificationSoundEdit.setOnClickListener( this );
 		btnNotificationSoundReset.setOnClickListener( this );
 		
+		boolean bBefore8 = Build.VERSION.SDK_INT < 26;
+		btnNotificationSoundEdit.setEnabled( bBefore8 );
+		btnNotificationSoundReset.setEnabled( bBefore8 );
 		
 		etNickname.addTextChangedListener( new TextWatcher() {
 			@Override
@@ -123,7 +127,7 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 	private void load(){
 		bLoading = true;
 		
-		findViewById( R.id.llNotificationSound ).setVisibility( show_notification_sound ? View.VISIBLE: View.GONE );
+		findViewById( R.id.llNotificationSound ).setVisibility( show_notification_sound ? View.VISIBLE : View.GONE );
 		
 		tvAcct.setText( acct );
 		
@@ -143,10 +147,10 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 		if( bLoading ) return;
 		new AcctColor(
 			acct
-			,etNickname.getText().toString().trim()
-			,color_fg
-			,color_bg
-			,notification_sound_uri
+			, etNickname.getText().toString().trim()
+			, color_fg
+			, color_bg
+			, notification_sound_uri
 		).save( System.currentTimeMillis() );
 	}
 	
@@ -213,7 +217,7 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 		case R.id.btnNotificationSoundReset:
 			notification_sound_uri = "";
 			break;
-		
+			
 		}
 	}
 	

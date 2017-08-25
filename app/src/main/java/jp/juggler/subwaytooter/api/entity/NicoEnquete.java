@@ -118,6 +118,9 @@ public class NicoEnquete {
 	static final long ENQUETE_EXPIRE = 30000L;
 	
 	public void makeChoiceView( final ActMain activity, @NonNull final SavedAccount access_info, LinearLayout llExtra, final int i, CharSequence item ){
+		long now = System.currentTimeMillis();
+		long remain = time_start + ENQUETE_EXPIRE - now;
+		
 		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams( LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT );
 		if( i == 0 )
 			lp.topMargin = (int) ( 0.5f + llExtra.getResources().getDisplayMetrics().density * 3f );
@@ -125,14 +128,18 @@ public class NicoEnquete {
 		b.setLayoutParams( lp );
 		b.setAllCaps( false );
 		b.setText( item );
-		b.setOnClickListener( new View.OnClickListener() {
-			@Override public void onClick( View view ){
-				Context c = view.getContext();
-				if( c != null ){
-					enquete_click( view.getContext(), access_info, i );
+		if( remain <= 0 ){
+			b.setEnabled( false );
+		}else{
+			b.setOnClickListener( new View.OnClickListener() {
+				@Override public void onClick( View view ){
+					Context c = view.getContext();
+					if( c != null ){
+						enquete_click( view.getContext(), access_info, i );
+					}
 				}
-			}
-		} );
+			} );
+		}
 		llExtra.addView( b );
 	}
 	

@@ -81,9 +81,9 @@ public class TaskList {
 		return list.size() > 0 ;
 	}
 	
-	public synchronized @NonNull JSONObject next( @NonNull Context context ){
+	public synchronized @Nullable JSONObject next( @NonNull Context context ){
 		prepareArray( context );
-		JSONObject item = list.removeFirst();
+		JSONObject item = list.isEmpty() ? null : list.removeFirst();
 		saveArray( context );
 		return item;
 	}

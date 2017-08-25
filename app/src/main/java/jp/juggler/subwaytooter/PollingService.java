@@ -13,7 +13,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Build;
-import android.os.PowerManager;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
@@ -37,6 +37,7 @@ import java.util.LinkedList;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
@@ -52,6 +53,7 @@ import jp.juggler.subwaytooter.util.NotificationHelper;
 import jp.juggler.subwaytooter.util.TaskList;
 import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.util.WordTrieTree;
+import jp.juggler.subwaytooter.util.WorkerBase;
 import okhttp3.Call;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -133,129 +135,223 @@ public class PollingService extends JobService {
 		scheduler.schedule( builder.build() );
 	}
 	
-	@Override public boolean onStartJob( JobParameters params ){
-		while( worker != null && worker.isAlive() ){
-			worker.cancel();
-			try{
-				worker.join( 333L );
-			}catch( InterruptedException ex ){
-				log.e( ex, "onStartJob: worker cancel loop is interrupted." );
-				return false;
-			}
-		}
-		try{
-			worker = new Worker( params );
-			worker.start();
-			return true;
-		}catch( Throwable ex ){
-			log.trace( ex );
-			log.e( ex, "onStartJob: worker creation failed" );
-			return false;
-		}
-	}
+	//////////////////////////////////////////////////////////////////////
+	// ワーカースレッドの管理
 	
-	@Override
-	public boolean onStopJob( JobParameters params ){
-		while( worker != null && worker.isAlive() ){
-			worker.cancel();
-			try{
-				worker.join( 333L );
-			}catch( Throwable ex ){
-				log.e( ex, "onStopJob: worker cancel loop is interrupted." );
-				return false;
-			}
-		}
-		return true;
-	}
+	PollingService service;
+	SharedPreferences pref;
+	NotificationManager notification_manager;
+	JobScheduler scheduler;
+	Handler handler;
 	
-	static final TaskList task_list = new TaskList();
-	
-	private Worker worker;
-	
-	private class Worker extends Thread {
+	@Override public void onCreate(){
+		super.onCreate();
+		log.d( "service onCreate" );
 		
-		AtomicBoolean bCancelled = new AtomicBoolean( false );
+		this.handler = new Handler();
+		
+		// クラッシュレポートによると App1.onCreate より前にここを通る場合がある
+		// データベースへアクセスできるようにする
+		App1.prepare( getApplicationContext() );
+		
+		service = PollingService.this;
+		
+		scheduler = (JobScheduler) getApplicationContext().getSystemService( Context.JOB_SCHEDULER_SERVICE );
+		notification_manager = (NotificationManager) getApplicationContext().getSystemService( NOTIFICATION_SERVICE );
+		pref = Pref.pref( service );
+		
+		worker = new Worker();
+		worker.start();
+	}
+	
+	@Override public void onDestroy(){
+		super.onDestroy();
+		log.d( "service onDestroy" );
+		
+		for( JobItem item : job_list ){
+			item.cancel( false );
+		}
+		
+		worker.cancel();
+		
+		try{
+			worker.join();
+		}catch( InterruptedException ex ){
+			log.e( ex, "onDestroy: can't stop worker thread." );
+		}
+	}
+	
+	Worker worker;
+	
+	class Worker extends WorkerBase {
+		
+		AtomicBoolean bThreadCancelled = new AtomicBoolean( false );
+		
+		public void cancel(){
+			bThreadCancelled.set( true );
+			notifyEx();
+		}
+		
+		public void run(){
+			log.e( "worker thread start." );
+			while( ! bThreadCancelled.get() ){
+				
+				JobItem item = null;
+				synchronized( job_list ){
+					for( JobItem ji : job_list ){
+						if( ji.mWorkerAttached.get() || ji.mJobCancelled.get() ) continue;
+						item = ji;
+						item.mWorkerAttached.set( true );
+						break;
+					}
+				}
+				
+				if( item == null ){
+					waitEx( 86400000L );
+					continue;
+				}
+				
+				try{
+					item.refWorker.set( Worker.this );
+					item.run();
+				}catch( Throwable ex ){
+					log.trace( ex );
+				}finally{
+					item.refWorker.set( null );
+				}
+			}
+			log.e( "worker thread end." );
+		}
+	}
+	
+	//////////////////////////////////////////////////////////////////////
+	// ジョブの管理
+	
+	@Override public boolean onStartJob( JobParameters params ){
+		
+		int jobId = params.getJobId();
+		JobItem item = new JobItem( params );
+		
+		// 同じジョブ番号がジョブリストにあるか？
+		synchronized( job_list ){
+			Iterator< JobItem > it = job_list.iterator();
+			while( it.hasNext() ){
+				JobItem itemOld = it.next();
+				if( itemOld.jobId == jobId ){
+					log.w( "onStartJob: jobId=%s, old job cancelled." );
+					// 同じジョブをすぐに始めるのだからrescheduleはfalse
+					itemOld.cancel( false );
+					it.remove();
+				}
+			}
+			log.d( "onStartJob: jobId=%s, add to list.", jobId );
+			job_list.add( item );
+		}
+		
+		worker.notifyEx();
+		return true;
+		// return True if your service needs to process the work (on a separate thread).
+		// return False if there's no more work to be done for this job.
+	}
+	
+	// ジョブをキャンセルする
+	@Override public boolean onStopJob( JobParameters params ){
+		int jobId = params.getJobId();
+		
+		// 同じジョブ番号がジョブリストにあるか？
+		synchronized( job_list ){
+			Iterator< JobItem > it = job_list.iterator();
+			while( it.hasNext() ){
+				JobItem item = it.next();
+				if( item.jobId == jobId ){
+					log.w( "onStopJob: jobId=%s, set cancel flag." );
+					// リソースがなくてStopされるのだからrescheduleはtrue
+					item.cancel( true );
+					it.remove();
+					return item.mReschedule.get();
+				}
+			}
+		}
+		
+		// 該当するジョブを依頼されていない
+		log.w( "onStopJob: jobId=%s, not started.." );
+		return false;
+		// return True to indicate to the JobManager whether you'd like to reschedule this job based on the retry criteria provided at job creation-time.
+		// return False to drop the job. Regardless of the value returned, your job must stop executing.
+	}
+	
+	final LinkedList< JobItem > job_list = new LinkedList<>();
+	
+	static class JobCancelledException extends RuntimeException {
+		public JobCancelledException(){
+			super( "job is cancelled." );
+		}
+	}
+	
+	class JobItem {
+		int jobId;
+		JobParameters jobParams;
+		final AtomicBoolean mJobCancelled = new AtomicBoolean();
+		final AtomicBoolean mReschedule = new AtomicBoolean();
+		final AtomicBoolean mWorkerAttached = new AtomicBoolean();
+		
+		final AtomicBoolean bPollingRequired = new AtomicBoolean( false );
+		HashSet< String > muted_app;
+		WordTrieTree muted_word;
+		boolean bPollingComplete = false;
+		String install_id;
 		
 		Call current_call;
 		
-		void cancel(){
-			bCancelled.set( true );
+		final AtomicReference< Worker > refWorker = new AtomicReference<>( null );
+		
+		public void notifyWorkerThread(){
+			Worker worker = refWorker.get();
+			if( worker != null ) worker.notifyEx();
+		}
+		
+		public void waitWorkerThread( long ms ){
+			Worker worker = refWorker.get();
+			if( worker != null ) worker.waitEx( ms );
+		}
+		
+		public void cancel( boolean bReschedule ){
+			mJobCancelled.set( true );
+			mReschedule.set( bReschedule );
 			if( current_call != null ) current_call.cancel();
-			synchronized( this ){
-				try{
-					notify();
-				}catch(Throwable ex){
-					log.trace(ex);
-				}
-			}
+			notifyWorkerThread();
 		}
 		
-		final JobParameters params;
-		final PollingService service;
-		final SharedPreferences pref;
-		final PowerManager power_manager;
-		final NotificationManager notification_manager;
-		final JobScheduler scheduler;
-		
-		PowerManager.WakeLock wake_lock;
-		final AtomicBoolean bPollingRequired = new AtomicBoolean( false );
-		final HashSet< String > muted_app = MutedApp.getNameSet();
-		final WordTrieTree muted_word = MutedWord.getNameSet();
-		
-		String install_id;
-		String mCustomStreamListenerSecret;
-		String mCustomStreamListenerSettingString;
-		JsonObject mCustomStreamListenerSetting;
-		
-		void dispose(){
-			if( wake_lock != null ){
-				wake_lock.release();
-				wake_lock = null;
-			}
+		public JobItem( JobParameters params ){
+			this.jobParams = params;
+			this.jobId = params.getJobId();
 		}
 		
-		Worker( JobParameters params ){
-			this.params = params;
+		public void run(){
 			
-			service = PollingService.this;
-			
-			// クラッシュレポートによると App1.onCreate より前にここを通る場合がある
-			// データベースへアクセスできるようにする
-			App1.prepare( service.getApplicationContext() );
-			
-			scheduler = (JobScheduler) getApplicationContext().getSystemService( Context.JOB_SCHEDULER_SERVICE );
-			power_manager = (PowerManager) getApplicationContext().getSystemService( POWER_SERVICE );
-			notification_manager = (NotificationManager) getApplicationContext().getSystemService( NOTIFICATION_SERVICE );
-			
-			wake_lock = power_manager.newWakeLock( PowerManager.PARTIAL_WAKE_LOCK, PollingService.class.getName() );
-			wake_lock.setReferenceCounted( false );
-			wake_lock.acquire();
-			
-			pref = Pref.pref( service );
-		}
-		
-		boolean needsReschedule = false;
-		boolean bPollingComplete = false;
-		
-		@Override public void run(){
-			int jobId = params.getJobId();
-			log.e( "Worker start. getJobId=%s", jobId );
 			try{
+				log.d( "(JobItem.run jobId=%s", jobId );
+				
+				if( mJobCancelled.get() ) throw new JobCancelledException();
+				
+				muted_app = MutedApp.getNameSet();
+				muted_word = MutedWord.getNameSet();
 				
 				// タスクがあれば処理する
-				while( task_list.hasNext( service ) ){
-					if( bCancelled.get() ) break;
-					JSONObject data = task_list.next( service );
+				for( ; ; ){
+					if( mJobCancelled.get() ) throw new JobCancelledException();
+					final JSONObject data = task_list.next( service );
+					if( data == null ) break;
 					int task_id = data.optInt( EXTRA_TASK_ID, 0 );
-					runTask( task_id, data );
+					new TaskRunner().runTask( JobItem.this, task_id, data );
 				}
 				
-				if( ! bCancelled.get() && ! bPollingComplete && jobId == JOB_POLLING ){
+				if( ! mJobCancelled.get() && ! bPollingComplete && jobId == JOB_POLLING ){
 					// タスクがなかった場合でも定期実行ジョブからの実行ならポーリングを行う
-					runTask( TASK_POLLING, null );
+					new TaskRunner().runTask( JobItem.this, TASK_POLLING, null );
 				}
 				
-				if( ! bCancelled.get() && bPollingComplete ){
+				if( ! mJobCancelled.get() && bPollingComplete ){
 					// ポーリングが完了したのならポーリングが必要かどうかに合わせてジョブのスケジュールを変更する
 					if( ! bPollingRequired.get() ){
 						log.d( "polling job is no longer required." );
@@ -272,36 +368,69 @@ public class PollingService extends JobService {
 								break;
 							}
 						}
-						if( bRegistered ){
-							log.d( "polling job is already registered." );
-						}else{
+						if( ! bRegistered ){
 							scheduleJob( service, JOB_POLLING );
-							log.d( "polling job is set!" );
+							log.d( "polling job is registered!" );
 						}
 					}
 				}
-				
+			}catch( JobCancelledException ex ){
+				log.e( "job execution cancelled." );
 			}catch( Throwable ex ){
 				log.trace( ex );
 				log.e( ex, "job execution failed." );
-			}finally{
-				jobFinished( params, jobId != JOB_POLLING && bCancelled.get() );
-				dispose();
 			}
-			
+			// ジョブ終了報告
+			if( ! mJobCancelled.get() ){
+				handler.post( new Runnable() {
+					@Override public void run(){
+						if( mJobCancelled.get() ) return;
+
+						synchronized( job_list ){
+							job_list.remove( JobItem.this );
+						}
+
+						try{
+							log.d( "sending jobFinished. reschedule=%s",mReschedule.get() );
+							jobFinished( jobParams, mReschedule.get() );
+						}catch( Throwable ex ){
+							log.trace( ex );
+							log.e( ex, "jobFinished failed(1)." );
+						}
+					}
+				} );
+			}
+			log.d( ")JobItem.run jobId=%s, cancel=%s", jobId, mJobCancelled.get() );
 		}
 		
-		int current_task_id;
+	}
+	
+	//////////////////////////////////////////////////////////////////////
+	// タスクの管理
+	
+	static final TaskList task_list = new TaskList();
+	
+	class TaskRunner {
 		
-		public void runTask( int taskId, JSONObject taskData ){
-			log.e( "runTask: taskId=%s", taskId );
+		String mCustomStreamListenerSecret;
+		String mCustomStreamListenerSettingString;
+		JsonObject mCustomStreamListenerSetting;
+		
+		JobItem job;
+		int taskId;
+		
+		public void runTask( JobItem job, int taskId, JSONObject taskData ){
 			try{
-				current_task_id = taskId;
+				log.e( "(runTask: taskId=%s", taskId );
+				this.job = job;
+				this.taskId = taskId;
 				
 				// インストールIDを生成する
 				// インストールID生成時にSavedAccountテーブルを操作することがあるので
 				// アカウントリストの取得より先に行う
-				install_id = getInstallId();
+				if( job.install_id == null ){
+					job.install_id = getInstallId();
+				}
 				
 				if( taskId == TASK_APP_DATA_IMPORT_BEFORE ){
 					scheduler.cancelAll();
@@ -382,37 +511,30 @@ public class PollingService extends JobService {
 					t.start();
 				}
 				
-				for(;;){
-					Iterator<AccountThread> it = thread_list.iterator();
+				for( ; ; ){
+					Iterator< AccountThread > it = thread_list.iterator();
 					while( it.hasNext() ){
 						AccountThread t = it.next();
 						if( ! t.isAlive() ){
 							it.remove();
 							continue;
 						}
-						if( bCancelled.get() ){
+						if( job.mJobCancelled.get() ){
 							t.cancel();
 						}
 					}
 					if( thread_list.isEmpty() ) break;
 					
-					synchronized( this ){
-						try{
-							wait( bCancelled.get() ? 50L : 1000L );
-						}catch( InterruptedException ex ){
-							log.trace( ex );
-						}
-					}
+					job.waitWorkerThread( job.mJobCancelled.get() ? 50L : 1000L );
 				}
 				
-				if( ! bCancelled.get() ) bPollingComplete = true;
+				if( ! job.mJobCancelled.get() ) job.bPollingComplete = true;
 				
 			}catch( Throwable ex ){
 				log.trace( ex );
 				log.e( ex, "task execution failed." );
 			}finally{
-				//noinspection ConstantConditions
-				jobFinished( params, needsReschedule );
+				log.e( ")runTask: taskId=%s", taskId );
 			}
 		}
 		
@@ -462,7 +584,7 @@ public class PollingService extends JobService {
 					.url( APP_SERVER + "/counter" )
 					.build();
 				
-				Call call = current_call = App1.ok_http_client.newCall( request );
+				Call call = job.current_call = App1.ok_http_client.newCall( request );
 				
 				Response response = call.execute();
 				
@@ -508,7 +630,7 @@ public class PollingService extends JobService {
 			
 			final TootApiClient client = new TootApiClient( PollingService.this, new TootApiClient.Callback() {
 				@Override public boolean isApiCancelled(){
-					return bCancelled.get();
+					return job.mJobCancelled.get();
 				}
 				
 				@Override public void publishApiProgress( String s ){
@@ -532,14 +654,14 @@ public class PollingService extends JobService {
 						return;
 					}
 					
-					bPollingRequired.set( true );
+					job.bPollingRequired.set( true );
 					
-					if( bCancelled.get() ) return;
+					if( job.mJobCancelled.get() ) return;
 					
 					ArrayList< Data > data_list = new ArrayList<>();
-					checkAccount( data_list, muted_app, muted_word );
+					checkAccount( data_list, job.muted_app, job.muted_word );
 					
-					if( bCancelled.get() ) return;
+					if( job.mJobCancelled.get() ) return;
 					
 					showNotification( data_list );
 					
@@ -556,7 +678,7 @@ public class PollingService extends JobService {
 					}
 					
 					// ネットワーク的な事情でインストールIDを取得できなかったのなら、何もしない
-					if( TextUtils.isEmpty( install_id ) ){
+					if( TextUtils.isEmpty( job.install_id ) ){
 						log.d( "unregisterDeviceToken: missing install_id" );
 						return;
 					}
@@ -597,7 +719,7 @@ public class PollingService extends JobService {
 			private boolean registerDeviceToken(){
 				try{
 					// ネットワーク的な事情でインストールIDを取得できなかったのなら、何もしない
-					if( TextUtils.isEmpty( install_id ) ){
+					if( TextUtils.isEmpty( job.install_id ) ){
 						log.d( "registerDeviceToken: missing install id" );
 						return false;
 					}
@@ -623,7 +745,7 @@ public class PollingService extends JobService {
 					}
 					
 					if( TextUtils.isEmpty( tag ) ){
-						tag = account.notification_tag = Utils.digestSHA256( install_id + account.db_id + account.acct );
+						tag = account.notification_tag = Utils.digestSHA256( job.install_id + account.db_id + account.acct );
 						account.saveNotificationTag();
 					}
 					
@@ -709,7 +831,7 @@ public class PollingService extends JobService {
 					try{
 						JSONArray array = new JSONArray( nr.last_data );
 						for( int i = array.length() - 1 ; i >= 0 ; -- i ){
-							if( bCancelled.get() ) return;
+							if( job.mJobCancelled.get() ) return;
 							JSONObject src = array.optJSONObject( i );
 							update_sub( src, data_list, muted_app, muted_word );
 						}
@@ -718,7 +840,7 @@ public class PollingService extends JobService {
 					}
 				}
 				
-				if( bCancelled.get() ) return;
+				if( job.mJobCancelled.get() ) return;
 				
 				// 前回の更新から一定時刻が経過したら新しいデータを読んでリストに追加する
 				long now = System.currentTimeMillis();
@@ -728,7 +850,7 @@ public class PollingService extends JobService {
 					client.setAccount( account );
 					
 					for( int nTry = 0 ; nTry < 4 ; ++ nTry ){
-						if( bCancelled.get() ) return;
+						if( job.mJobCancelled.get() ) return;
 						
 						TootApiResult result = client.request( PATH_NOTIFICATIONS );
 						if( result == null ){
@@ -751,7 +873,7 @@ public class PollingService extends JobService {
 					}
 				}
 				
-				if( bCancelled.get() ) return;
+				if( job.mJobCancelled.get() ) return;
 				
 				Collections.sort( dst_array, new Comparator< JSONObject >() {
 					@Override public int compare( JSONObject a, JSONObject b ){
@@ -764,7 +886,7 @@ public class PollingService extends JobService {
 					}
 				} );
 				
-				if( bCancelled.get() ) return;
+				if( job.mJobCancelled.get() ) return;
 				
 				JSONArray d = new JSONArray();
 				for( int i = 0 ; i < 10 ; ++ i ){
@@ -1114,6 +1236,7 @@ public class PollingService extends JobService {
 			
 			nr.save();
 		}
+		
 	}
 	
 	////////////////////////////////////////////////////////////////////////////

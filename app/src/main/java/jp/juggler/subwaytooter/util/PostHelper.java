@@ -14,6 +14,10 @@ import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,7 +40,6 @@ import okhttp3.RequestBody;
 
 public class PostHelper {
 	private static final LogCategory log = new LogCategory( "PostHelper" );
-	
 	
 	public interface Callback{
 		void onPostComplete(SavedAccount target_account,TootStatus status);
@@ -72,6 +75,7 @@ public class PostHelper {
 	public boolean bNSFW;
 	public long in_reply_to_id;
 	public ArrayList< PostAttachment > attachment_list;
+	public ArrayList< String > enquete_items;
 	
 	public void post( final SavedAccount account,final boolean bConfirmTag, final boolean bConfirmAccount ,final Callback callback){
 		if( TextUtils.isEmpty( content ) ){
@@ -122,35 +126,83 @@ public class PostHelper {
 			}
 		}
 		
-		final StringBuilder sb = new StringBuilder();
+		RequestBody request_body;
+		String body_string;
 		
-		sb.append( "status=" );
-		sb.append( Uri.encode( content ) );
-		
-		sb.append( "&visibility=" );
-		sb.append( Uri.encode( visibility ) );
-		
-		if( bNSFW ){
-			sb.append( "&sensitive=1" );
-		}
-		
-		if( spoiler_text != null ){
-			sb.append( "&spoiler_text=" );
-			sb.append( Uri.encode( spoiler_text ) );
-		}
-		
-		if( in_reply_to_id != - 1L ){
-			sb.append( "&in_reply_to_id=" );
-			sb.append( Long.toString( in_reply_to_id ) );
-		}
-		
-		if( attachment_list != null ){
-			for( PostAttachment pa : attachment_list ){
-				if( pa.attachment != null ){
-					sb.append( "&media_ids[]=" ).append( pa.attachment.id );
+		if( enquete_items == null || enquete_items.isEmpty() ){
+			StringBuilder sb = new StringBuilder();
+			
+			sb.append( "status=" );
+			sb.append( Uri.encode( content ) );
+			
+			sb.append( "&visibility=" );
+			sb.append( Uri.encode( visibility ) );
+			
+			if( bNSFW ){
+				sb.append( "&sensitive=1" );
+			}
+			
+			if( spoiler_text != null ){
+				sb.append( "&spoiler_text=" );
+				sb.append( Uri.encode( spoiler_text ) );
+			}
+			
+			if( in_reply_to_id != - 1L ){
+				sb.append( "&in_reply_to_id=" );
+				sb.append( Long.toString( in_reply_to_id ) );
+			}
+			
+			if( attachment_list != null ){
+				for( PostAttachment pa : attachment_list ){
+					if( pa.attachment != null ){
+						sb.append( "&media_ids[]=" ).append( pa.attachment.id );
+					}
 				}
 			}
+			
+			body_string = sb.toString();
+			request_body = RequestBody.create(
+				TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+				, body_string
+			);
+		}else{
+			JSONObject json = new JSONObject(  );
+			try{
+				json.put("status",content);
+				json.put("visibility",visibility);
+				json.put("sensitive",bNSFW);
+				json.put("spoiler_text",TextUtils.isEmpty( spoiler_text ) ? "" : spoiler_text );
+				json.put("in_reply_to_id", in_reply_to_id == -1L ? null : in_reply_to_id );
+				JSONArray array = new JSONArray();
+				if( attachment_list != null ){
+					for( PostAttachment pa : attachment_list ){
+						if( pa.attachment != null ){
+							array.put( pa.attachment.id );
+						}
+					}
+				}
+				json.put("media_ids",array);
+				json.put("isEnquete",true);
+				array = new JSONArray();
+				for( String item  : enquete_items ){
+					array.put( item );
+				}
+				json.put("enquete_items",array);
+			}catch(JSONException ex){
+				log.trace( ex );
+				log.e(ex,"status encoding failed.");
+			}
+			
+			body_string = json.toString();
+			request_body = RequestBody.create(
+				TootApiClient.MEDIA_TYPE_JSON
+				, body_string
+			);
 		}
+		
+		final Request.Builder request_builder = new Request.Builder()
+			.post(request_body );
+		final String digest =Utils.digestSHA256( body_string + account.acct );
 		
 		final ProgressDialog progress = new ProgressDialog( activity );
 		
@@ -175,14 +227,7 @@ public class PostHelper {
 				} );
 				
 				client.setAccount( target_account );
-				String post_content = sb.toString();
-				String digest = Utils.digestSHA256( post_content + target_account.acct );
 				
-				Request.Builder request_builder = new Request.Builder()
-					.post( RequestBody.create(
-						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
-						, post_content
-					) );
 				
 				if( ! pref.getBoolean( Pref.KEY_DONT_DUPLICATION_CHECK, false ) ){
 					request_builder.header( "Idempotency-Key", digest );
@@ -191,29 +236,30 @@ public class PostHelper {
 				TootApiResult result = client.request( "/api/v1/statuses", request_builder );
 				if( result != null && result.object != null ){
 					status = TootStatus.parse( activity,  account, result.object );
-					
-					Spannable s = status.decoded_content;
-					MyClickableSpan[] span_list = s.getSpans( 0, s.length(), MyClickableSpan.class );
-					if( span_list != null ){
-						ArrayList< String > tag_list = new ArrayList<>();
-						for( MyClickableSpan span : span_list ){
-							int start = s.getSpanStart( span );
-							int end = s.getSpanEnd( span );
-							String text = s.subSequence( start, end ).toString();
-							if( text.startsWith( "#" ) ){
-								tag_list.add( text.substring( 1 ) );
+					if( status != null ){
+						Spannable s = status.decoded_content;
+						MyClickableSpan[] span_list = s.getSpans( 0, s.length(), MyClickableSpan.class );
+						if( span_list != null ){
+							ArrayList< String > tag_list = new ArrayList<>();
+							for( MyClickableSpan span : span_list ){
+								int start = s.getSpanStart( span );
+								int end = s.getSpanEnd( span );
+								String text = s.subSequence( start, end ).toString();
+								if( text.startsWith( "#" ) ){
+									tag_list.add( text.substring( 1 ) );
+								}
 							}
+							int count = tag_list.size();
+							if( count > 0 ){
+								TagSet.saveList(
+									System.currentTimeMillis()
+									, tag_list.toArray( new String[ count ] )
+									, 0
+									, count
+								);
+							}
+							
 						}
-						int count = tag_list.size();
-						if( count > 0 ){
-							TagSet.saveList(
-								System.currentTimeMillis()
-								, tag_list.toArray( new String[ count ] )
-								, 0
-								, count
-							);
-						}
-						
 					}
 					
 				}

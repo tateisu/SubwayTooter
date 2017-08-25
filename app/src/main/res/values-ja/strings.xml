@@ -736,5 +736,10 @@
     <string name="enquete_was_end">投票は終わってる</string>
     <string name="enquete_voted">投票しました</string>
     <string name="enquete_vote_failed">投票に失敗。%1$s</string>
+    <string name="choice1">項目1</string>
+    <string name="choice2">項目2</string>
+    <string name="choice3">項目3(オプション)</string>
+    <string name="choice4">項目4(オプション)</string>
+    <string name="make_enquete">アンケートを作成する(一部タンスのみ有効)</string>
 
 </resources>

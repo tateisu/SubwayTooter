@@ -312,7 +312,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					JSONArray array = new JSONArray( sv );
 					for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
 						try{
-							TootAttachment a = TootAttachment.parse(  array.optJSONObject( i ) );
+							TootAttachment a = TootAttachment.parse( array.optJSONObject( i ) );
 							if( a != null ){
 								attachment_list.add( new PostAttachment( a ) );
 							}
@@ -395,73 +395,76 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				try{
 					TootStatus reply_status = TootStatus.parse( ActPost.this, account, new JSONObject( sv ) );
 					
-					// CW をリプライ元に合わせる
-					if( ! TextUtils.isEmpty( reply_status.spoiler_text ) ){
-						cbContentWarning.setChecked( true );
-						etContentWarning.setText( reply_status.spoiler_text );
-					}
-					
-					ArrayList< String > mention_list = new ArrayList<>();
-					
-					// 元レスにあった mention
-					if( reply_status.mentions != null ){
-						for( TootMention mention : reply_status.mentions ){
-							
-							if( account.isMe( mention.acct ) ) continue;
-							
-							sv = "@" + account.getFullAcct( mention.acct );
-							if( ! mention_list.contains( sv ) ){
-								mention_list.add( sv );
-							}
+					if( reply_status !=null ){
+						// CW をリプライ元に合わせる
+						if( ! TextUtils.isEmpty( reply_status.spoiler_text ) ){
+							cbContentWarning.setChecked( true );
+							etContentWarning.setText( reply_status.spoiler_text );
 						}
-					}
-					
-					// 今回メンションを追加する？
-					{
-						sv = account.getFullAcct( reply_status.account );
-						//noinspection StatementWithEmptyBody
-						if( mention_list.contains( "@" + sv ) ){
-							// 既に含まれている
-						}else if( ! account.isMe( reply_status.account ) || mention_list.isEmpty() ){
-							// 自分ではない、もしくは、メンションが空
-							mention_list.add( "@" + sv );
-						}
-					}
-					
-					StringBuilder sb = new StringBuilder();
-					for( String acct : mention_list ){
-						if( sb.length() > 0 ) sb.append( ' ' );
-						sb.append( acct );
-					}
-					if( sb.length() > 0 ){
-						sb.append( ' ' );
-						etContent.setText( sb.toString() );
-						etContent.setSelection( sb.length() );
-					}
-					
-					// リプライ表示をつける
-					in_reply_to_id = reply_status.id;
-					in_reply_to_text = reply_status.content;
-					in_reply_to_image = reply_status.account == null ? null : reply_status.account.avatar_static;
-					in_reply_to_url = reply_status.url;
-					
-					// 公開範囲
-					try{
-						// 比較する前にデフォルトの公開範囲を計算する
-						if( TextUtils.isEmpty( visibility ) ){
-							visibility = account.visibility;
-							if( TextUtils.isEmpty( visibility ) ){
-								visibility = TootStatus.VISIBILITY_PUBLIC;
+						
+						ArrayList< String > mention_list = new ArrayList<>();
+						
+						// 元レスにあった mention
+						if( reply_status.mentions != null ){
+							for( TootMention mention : reply_status.mentions ){
+								
+								if( account.isMe( mention.acct ) ) continue;
+								
+								sv = "@" + account.getFullAcct( mention.acct );
+								if( ! mention_list.contains( sv ) ){
+									mention_list.add( sv );
+								}
 							}
 						}
 						
-						// デフォルトの方が公開範囲が大きい場合、リプライ元に合わせて公開範囲を狭める
-						int i = TootStatus.compareVisibility( this.visibility, reply_status.visibility );
-						if( i > 0 ){ // より大きい=>より公開範囲が広い
-							this.visibility = reply_status.visibility;
+						// 今回メンションを追加する？
+						{
+							sv = account.getFullAcct( reply_status.account );
+							//noinspection StatementWithEmptyBody
+							if( mention_list.contains( "@" + sv ) ){
+								// 既に含まれている
+							}else if( ! account.isMe( reply_status.account ) || mention_list.isEmpty() ){
+								// 自分ではない、もしくは、メンションが空
+								mention_list.add( "@" + sv );
+							}
 						}
-					}catch( Throwable ex ){
-						log.trace( ex );
+						
+						StringBuilder sb = new StringBuilder();
+						for( String acct : mention_list ){
+							if( sb.length() > 0 ) sb.append( ' ' );
+							sb.append( acct );
+						}
+						if( sb.length() > 0 ){
+							sb.append( ' ' );
+							etContent.setText( sb.toString() );
+							etContent.setSelection( sb.length() );
+						}
+						
+						// リプライ表示をつける
+						in_reply_to_id = reply_status.id;
+						in_reply_to_text = reply_status.content;
+						in_reply_to_image = reply_status.account == null ? null : reply_status.account.avatar_static;
+						in_reply_to_url = reply_status.url;
+						
+						// 公開範囲
+						try{
+							// 比較する前にデフォルトの公開範囲を計算する
+							if( TextUtils.isEmpty( visibility ) ){
+								visibility = account.visibility;
+								if( TextUtils.isEmpty( visibility ) ){
+									visibility = TootStatus.VISIBILITY_PUBLIC;
+								}
+							}
+							
+							// デフォルトの方が公開範囲が大きい場合、リプライ元に合わせて公開範囲を狭める
+							int i = TootStatus.compareVisibility( this.visibility, reply_status.visibility );
+							if( i > 0 ){ // より大きい=>より公開範囲が広い
+								this.visibility = reply_status.visibility;
+							}
+						}catch( Throwable ex ){
+							log.trace( ex );
+						}
+						
 					}
 					
 				}catch( Throwable ex ){
@@ -487,7 +490,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		showVisibility();
 		updateTextCount();
 		showReplyTo();
+		showEnquete();
 	}
+	
 	
 	@Override protected void onDestroy(){
 		post_helper.onDestroy();
@@ -536,6 +541,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		showVisibility();
 		updateTextCount();
 		showReplyTo();
+		showEnquete();
 	}
 	
 	Button btnAccount;
@@ -548,6 +554,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	CheckBox cbContentWarning;
 	MyEditText etContentWarning;
 	MyEditText etContent;
+	
+	CheckBox cbEnquete;
+	View llEnquete;
+	final MyEditText[] list_etChoice = new MyEditText[4];
+	
 	TextView tvCharCount;
 	Handler handler;
 	View formRoot;
@@ -578,26 +589,34 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		Styler.fixHorizontalMargin( findViewById( R.id.llFooterBar ) );
 		
 		formRoot = findViewById( R.id.viewRoot );
-		scrollView = (ScrollView) findViewById( R.id.scrollView );
-		btnAccount = (Button) findViewById( R.id.btnAccount );
-		btnVisibility = (ImageButton) findViewById( R.id.btnVisibility );
+		scrollView = findViewById( R.id.scrollView );
+		btnAccount = findViewById( R.id.btnAccount );
+		btnVisibility = findViewById( R.id.btnVisibility );
 		btnAttachment = findViewById( R.id.btnAttachment );
 		btnPost = findViewById( R.id.btnPost );
 		llAttachment = findViewById( R.id.llAttachment );
-		ivMedia[ 0 ] = (MyNetworkImageView) findViewById( R.id.ivMedia1 );
-		ivMedia[ 1 ] = (MyNetworkImageView) findViewById( R.id.ivMedia2 );
-		ivMedia[ 2 ] = (MyNetworkImageView) findViewById( R.id.ivMedia3 );
-		ivMedia[ 3 ] = (MyNetworkImageView) findViewById( R.id.ivMedia4 );
-		cbNSFW = (CheckBox) findViewById( R.id.cbNSFW );
-		cbContentWarning = (CheckBox) findViewById( R.id.cbContentWarning );
-		etContentWarning = (MyEditText) findViewById( R.id.etContentWarning );
-		etContent = (MyEditText) findViewById( R.id.etContent );
-		tvCharCount = (TextView) findViewById( R.id.tvCharCount );
+		ivMedia[ 0 ] = findViewById( R.id.ivMedia1 );
+		ivMedia[ 1 ] = findViewById( R.id.ivMedia2 );
+		ivMedia[ 2 ] = findViewById( R.id.ivMedia3 );
+		ivMedia[ 3 ] = findViewById( R.id.ivMedia4 );
+		cbNSFW = findViewById( R.id.cbNSFW );
+		cbContentWarning = findViewById( R.id.cbContentWarning );
+		etContentWarning = findViewById( R.id.etContentWarning );
+		etContent = findViewById( R.id.etContent );
+		
+		cbEnquete = findViewById( R.id.cbEnquete );
+		llEnquete = findViewById( R.id.llEnquete );
+		list_etChoice[0] = findViewById( R.id.etChoice1 );
+		list_etChoice[1] = findViewById( R.id.etChoice2 );
+		list_etChoice[2] = findViewById( R.id.etChoice3 );
+		list_etChoice[3] = findViewById( R.id.etChoice4 );
+		
+		tvCharCount = findViewById( R.id.tvCharCount );
 		
 		llReply = findViewById( R.id.llReply );
-		tvReplyTo = (TextView) findViewById( R.id.tvReplyTo );
+		tvReplyTo = findViewById( R.id.tvReplyTo );
 		btnRemoveReply = findViewById( R.id.btnRemoveReply );
-		ivReply = (MyNetworkImageView) findViewById( R.id.ivReply );
+		ivReply = findViewById( R.id.ivReply );
 		
 		account_list = SavedAccount.loadAccountList( ActPost.this, log );
 		Collections.sort( account_list, new Comparator< SavedAccount >() {
@@ -626,6 +645,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			@Override
 			public void onCheckedChanged( CompoundButton buttonView, boolean isChecked ){
 				updateContentWarning();
+			}
+		} );
+		cbEnquete.setOnCheckedChangeListener(  new CompoundButton.OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged( CompoundButton buttonView, boolean isChecked ){
+				showEnquete();
 			}
 		} );
 		
@@ -1154,7 +1179,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					opener.deleteTempFile();
 					
 					if( result != null && result.object != null ){
-						pa.attachment = TootAttachment.parse(  result.object );
+						pa.attachment = TootAttachment.parse( result.object );
 						if( pa.attachment == null ){
 							result.error = "TootAttachment.parse failed";
 						}
@@ -1402,6 +1427,15 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	private void performPost(){
 		post_helper.content = etContent.getText().toString().trim();
 		
+		if( ! cbEnquete.isChecked() ){
+			post_helper.enquete_items = null;
+		}else{
+			post_helper.enquete_items = new ArrayList<>();
+			for( MyEditText et : list_etChoice ){
+				post_helper.enquete_items.add( et.getText().toString().trim() );
+			}
+		}
+		
 		if( ! cbContentWarning.isChecked() ){
 			post_helper.spoiler_text = null;
 		}else{
@@ -1467,14 +1501,30 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	static final String DRAFT_REPLY_TEXT = "reply_text";
 	static final String DRAFT_REPLY_IMAGE = "reply_image";
 	static final String DRAFT_REPLY_URL = "reply_url";
+	static final String DRAFT_IS_ENQUETE = "is_enquete";
+	static final String DRAFT_ENQUETE_ITEMS = "enquete_items";
 	
 	private void saveDraft(){
 		String content = etContent.getText().toString();
-		String content_warning = etContentWarning.getText().toString();
-		if( TextUtils.isEmpty( content.trim() ) && TextUtils.isEmpty( content_warning.trim() ) ){
+		String content_warning = cbContentWarning.isChecked() ? etContentWarning.getText().toString() : "";
+		boolean isEnquete = cbEnquete.isChecked();
+		String[] str_choice = new String[]{
+			isEnquete ? list_etChoice[0].getText().toString():"",
+			isEnquete ? list_etChoice[1].getText().toString():"",
+			isEnquete ? list_etChoice[2].getText().toString():"",
+			isEnquete ? list_etChoice[3].getText().toString():"",
+		};
+		boolean hasContent = false;
+		if( !TextUtils.isEmpty( content.trim() ) ) hasContent = true;
+		if( !TextUtils.isEmpty( content_warning.trim() ) ) hasContent = true;
+		for(String s :str_choice ){
+			if( !TextUtils.isEmpty( s.trim() ) ) hasContent = true;
+		}
+		if(!hasContent ){
 			log.d( "saveDraft: dont save empty content" );
 			return;
 		}
+
 		try{
 			JSONArray tmp_attachment_list = new JSONArray();
 			if( attachment_list != null ){
@@ -1495,6 +1545,13 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			json.put( DRAFT_REPLY_TEXT, in_reply_to_text );
 			json.put( DRAFT_REPLY_IMAGE, in_reply_to_image );
 			json.put( DRAFT_REPLY_URL, in_reply_to_url );
+			
+			json.put( DRAFT_IS_ENQUETE, isEnquete );
+			JSONArray array = new JSONArray(  );
+			for(String s : str_choice){
+				array.put(s);
+			}
+			json.put( DRAFT_ENQUETE_ITEMS, array );
 			
 			PostDraft.save( System.currentTimeMillis(), json );
 			
@@ -1544,7 +1601,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					list_warning.add( getString( R.string.account_in_draft_is_lost ) );
 					try{
 						for( int i = 0, ie = tmp_attachment_list.length() ; i < ie ; ++ i ){
-							TootAttachment ta = TootAttachment.parse(  tmp_attachment_list.optJSONObject( i ) );
+							TootAttachment ta = TootAttachment.parse( tmp_attachment_list.optJSONObject( i ) );
 							if( ta != null ){
 								content = content.replace( ta.text_url, "" );
 							}
@@ -1590,7 +1647,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					boolean isSomeAttachmentRemoved = false;
 					for( int i = tmp_attachment_list.length() - 1 ; i >= 0 ; -- i ){
 						if( isCancelled() ) return null;
-						TootAttachment ta = TootAttachment.parse(  tmp_attachment_list.optJSONObject( i ) );
+						TootAttachment ta = TootAttachment.parse( tmp_attachment_list.optJSONObject( i ) );
 						if( ta == null ){
 							isSomeAttachmentRemoved = true;
 							tmp_attachment_list.remove( i );
@@ -1642,6 +1699,20 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				cbNSFW.setChecked( nsfw_checked );
 				ActPost.this.visibility = visibility;
 				
+				cbEnquete.setChecked( draft.optBoolean( DRAFT_IS_ENQUETE ,false) );
+				JSONArray array = draft.optJSONArray( DRAFT_ENQUETE_ITEMS );
+				if( array != null ){
+					int src_index = 0;
+					for(MyEditText et : list_etChoice){
+						if( src_index < array.length() ){
+							et.setText( array.optString( src_index ));
+							++src_index;
+						}else{
+							et.setText( "");
+						}
+					}
+				}
+				
 				if( account != null ) setAccount( account );
 				
 				if( tmp_attachment_list.length() > 0 ){
@@ -1651,7 +1722,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 						attachment_list = new ArrayList<>();
 					}
 					for( int i = 0, ie = tmp_attachment_list.length() ; i < ie ; ++ i ){
-						TootAttachment ta = TootAttachment.parse(  tmp_attachment_list.optJSONObject( i ) );
+						TootAttachment ta = TootAttachment.parse( tmp_attachment_list.optJSONObject( i ) );
 						if( ta != null ){
 							PostAttachment pa = new PostAttachment( ta );
 							attachment_list.add( pa );
@@ -1670,6 +1741,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				showVisibility();
 				updateTextCount();
 				showReplyTo();
+				showEnquete();
 				
 				if( ! list_warning.isEmpty() ){
 					StringBuilder sb = new StringBuilder();
@@ -1784,7 +1856,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			@SuppressLint("InflateParams")
 			View viewRoot = getLayoutInflater().inflate( R.layout.dlg_plugin_missing, null, false );
 			
-			TextView tvText = (TextView) viewRoot.findViewById( R.id.tvText );
+			TextView tvText = viewRoot.findViewById( R.id.tvText );
 			LinkClickContext lcc = new LinkClickContext() {
 				@Override public AcctColor findAcctColor( String url ){
 					return null;
@@ -1794,7 +1866,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			tvText.setText( sv );
 			tvText.setMovementMethod( LinkMovementMethod.getInstance() );
 			
-			TextView tvTitle = (TextView) viewRoot.findViewById( R.id.tvTitle );
+			TextView tvTitle = viewRoot.findViewById( R.id.tvTitle );
 			if( TextUtils.isEmpty( title ) ){
 				tvTitle.setVisibility( View.GONE );
 			}else{
@@ -1823,4 +1895,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			}
 		}
 	};
+	
+	
+	private void showEnquete(){
+		llEnquete.setVisibility(  cbEnquete.isChecked() ? View.VISIBLE : View.GONE );
+	}
+
 }

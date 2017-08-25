@@ -444,5 +444,10 @@
     <string name="enquete_was_end">Enquete was end.</string>
     <string name="enquete_voted">Voted!</string>
     <string name="enquete_vote_failed">Vote failed. %1$s</string>
+    <string name="choice1">choice 1</string>
+    <string name="choice2">choice 2</string>
+    <string name="choice3">choice 3(optional)</string>
+    <string name="choice4">choice 4(optional)</string>
+    <string name="make_enquete">Make enquete</string>
 
 </resources>

@@ -78,9 +78,9 @@
                         android:layout_height="40dp"
                         android:layout_marginStart="4dp"
                         android:background="@drawable/btn_bg_transparent"
+                        android:contentDescription="@string/delete"
                         android:gravity="center_vertical"
                         android:src="?attr/btn_close"
-                        android:contentDescription="@string/delete"
                         />
                 </LinearLayout>
             </LinearLayout>
@@ -166,7 +166,6 @@
                     />
             </LinearLayout>
 
-
             <CheckBox
                 android:id="@+id/cbContentWarning"
                 android:layout_width="match_parent"
@@ -214,6 +213,115 @@
                     />
 
             </FrameLayout>
+
+            <CheckBox
+                android:id="@+id/cbEnquete"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/make_enquete"
+                />
+
+            <LinearLayout
+                android:id="@+id/llEnquete"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                >
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="@string/choice1"
+                    />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/colorPostFormBackground"
+                    >
+
+                    <jp.juggler.subwaytooter.view.MyEditText
+                        android:id="@+id/etChoice1"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="start|top"
+                        android:inputType="text"
+                        />
+
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="@string/choice2"
+                    />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/colorPostFormBackground"
+                    >
+
+                    <jp.juggler.subwaytooter.view.MyEditText
+                        android:id="@+id/etChoice2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="start|top"
+                        android:inputType="text"
+                        />
+
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="@string/choice3"
+                    />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/colorPostFormBackground"
+                    >
+
+                    <jp.juggler.subwaytooter.view.MyEditText
+                        android:id="@+id/etChoice3"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="start|top"
+                        android:inputType="text"
+                        />
+
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="@string/choice4"
+                    />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="?attr/colorPostFormBackground"
+                    >
+
+                    <jp.juggler.subwaytooter.view.MyEditText
+                        android:id="@+id/etChoice4"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="start|top"
+                        android:inputType="text"
+                        />
+
+                </FrameLayout>
+
+            </LinearLayout>
 
         </LinearLayout>
 
@@ -274,7 +382,6 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             />
-
 
         <TextView
             android:id="@+id/tvCharCount"

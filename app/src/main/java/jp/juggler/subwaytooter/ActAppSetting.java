@@ -136,6 +136,7 @@ public class ActAppSetting extends AppCompatActivity
 	EditText etMediaThumbHeight;
 	EditText etClientName;
 	EditText etQuoteNameFormat;
+	EditText etAutoCWLines;
 	
 	TextView tvTimelineFontUrl;
 	String timeline_font;
@@ -212,6 +213,7 @@ public class ActAppSetting extends AppCompatActivity
 		
 		swDontUseActionButtonWithQuickTootBar = findViewById( R.id.swDontUseActionButtonWithQuickTootBar );
 		swDontUseActionButtonWithQuickTootBar.setOnCheckedChangeListener( this );
+		
 		
 		cbNotificationSound = findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = findViewById( R.id.cbNotificationVibration );
@@ -326,6 +328,9 @@ public class ActAppSetting extends AppCompatActivity
 		etQuoteNameFormat = findViewById( R.id.etQuoteNameFormat );
 		etQuoteNameFormat.addTextChangedListener( this );
 		
+		etAutoCWLines = findViewById( R.id.etAutoCWLines );
+		etAutoCWLines.addTextChangedListener( this );
+			
 		tvTimelineFontSize = findViewById( R.id.tvTimelineFontSize );
 		tvAcctFontSize = findViewById( R.id.tvAcctFontSize );
 		
@@ -390,6 +395,7 @@ public class ActAppSetting extends AppCompatActivity
 		etMediaThumbHeight.setText( pref.getString( Pref.KEY_MEDIA_THUMB_HEIGHT, "" ) );
 		etClientName.setText( pref.getString( Pref.KEY_CLIENT_NAME, "" ) );
 		etQuoteNameFormat.setText( pref.getString( Pref.KEY_QUOTE_NAME_FORMAT, "" ) );
+		etAutoCWLines.setText( pref.getString( Pref.KEY_AUTO_CW_LINES, "0" ) );
 		
 		etTimelineFontSize.setText( formatFontSize( pref.getFloat( Pref.KEY_TIMELINE_FONT_SIZE, Float.NaN ) ) );
 		etAcctFontSize.setText( formatFontSize( pref.getFloat( Pref.KEY_ACCT_FONT_SIZE, Float.NaN ) ) );
@@ -428,7 +434,7 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_MENTION_FULL_ACCT, swMentionFullAcct.isChecked() )
 			.putBoolean( Pref.KEY_RELATIVE_TIMESTAMP, swRelativeTimestamp.isChecked() )
 			.putBoolean( Pref.KEY_DONT_USE_ACTION_BUTTON, swDontUseActionButtonWithQuickTootBar.isChecked() )
-			
+		
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_LED, cbNotificationLED.isChecked() )
@@ -452,7 +458,7 @@ public class ActAppSetting extends AppCompatActivity
 			.putString( Pref.KEY_MEDIA_THUMB_HEIGHT, etMediaThumbHeight.getText().toString().trim() )
 			.putString( Pref.KEY_CLIENT_NAME, etClientName.getText().toString().trim() )
 			.putString( Pref.KEY_QUOTE_NAME_FORMAT, etQuoteNameFormat.getText().toString() ) // not trimmed
-			
+			.putString( Pref.KEY_AUTO_CW_LINES, etAutoCWLines.getText().toString() ) // not trimmed
 			.putFloat( Pref.KEY_TIMELINE_FONT_SIZE, parseFontSize( etTimelineFontSize.getText().toString().trim() ) )
 			.putFloat( Pref.KEY_ACCT_FONT_SIZE, parseFontSize( etAcctFontSize.getText().toString().trim() ) )
 			

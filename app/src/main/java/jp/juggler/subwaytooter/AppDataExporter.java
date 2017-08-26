@@ -351,6 +351,7 @@ public class AppDataExporter {
 			case Pref.KEY_CLIENT_NAME:
 			case Pref.KEY_MASTODON_SEARCH_PORTAL_USER_TOKEN:
 			case Pref.KEY_QUOTE_NAME_FORMAT:
+			case Pref.KEY_AUTO_CW_LINES:
 				String sv = reader.nextString();
 				e.putString( k, sv );
 				break;

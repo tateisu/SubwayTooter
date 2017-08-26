@@ -383,39 +383,12 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation );
 	}
 	
+
 	private void showStatus( @NonNull ActMain activity, @NonNull TootStatusLike status ){
 		this.status = status;
 		llStatus.setVisibility( View.VISIBLE );
 		
-		SpannableStringBuilder sb = new SpannableStringBuilder();
-		
-		if( status.hasMedia() && status.sensitive ){
-			// if( sb.length() > 0 ) sb.append( ' ' );
-			
-			int start = sb.length();
-			sb.append( "NSFW" );
-			int end = sb.length();
-			int icon_id = Styler.getAttributeResourceId( activity, R.attr.ic_eye_off );
-			sb.setSpan( new EmojiImageSpan( activity, icon_id ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-		}
-		
-		if( status instanceof TootStatus ){
-			TootStatus ts = (TootStatus) status;
-			
-			if( ! TootStatus.VISIBILITY_PUBLIC.equals( ts.visibility ) ){
-				if( sb.length() > 0 ) sb.append( ' ' );
-				
-				int start = sb.length();
-				sb.append( ts.visibility );
-				int end = sb.length();
-				int icon_id = Styler.getVisibilityIcon( activity, ts.visibility );
-				sb.setSpan( new EmojiImageSpan( activity, icon_id ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-			}
-		}
-		
-		if( sb.length() > 0 ) sb.append( ' ' );
-		sb.append( TootStatus.formatTime( activity, status.time_created_at, column.column_type != Column.TYPE_CONVERSATION ) );
-		tvTime.setText( sb );
+		showStatusTime(activity,status);
 		
 		account_thumbnail = status.account;
 		setAcct( tvAcct, access_info.getFullAcct( status.account ) );
@@ -448,8 +421,6 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			}
 		}
 		
-		tvContent.setText( content  );
-		
 		//			if( status.decoded_tags == null ){
 		//				tvTags.setVisibility( View.GONE );
 		//			}else{
@@ -469,15 +440,28 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			tvMentions.setVisibility( View.GONE );
 		}
 		
-		// Content warning
-		if( TextUtils.isEmpty( status.spoiler_text ) ){
-			llContentWarning.setVisibility( View.GONE );
-			llContents.setVisibility( View.VISIBLE );
-		}else{
+		tvContent.setText( content  );
+		
+		if( !TextUtils.isEmpty( status.spoiler_text ) ){
+			// 元データに含まれるContent Warning を使う
 			llContentWarning.setVisibility( View.VISIBLE );
 			tvContentWarning.setText( status.decoded_spoiler_text );
 			boolean cw_shown = ContentWarning.isShown( status, false );
 			showContent( cw_shown );
+		}else{
+			// 自動CWを使うかもしれない
+			TootStatusLike.AutoCW r = activity.checkAutoCW( status, content );
+			if( r != null && r.decoded_spoiler_text != null ){
+				// 自動CWされた内容を表示
+				llContentWarning.setVisibility( View.VISIBLE );
+				tvContentWarning.setText( r.decoded_spoiler_text );
+				boolean cw_shown = ContentWarning.isShown( status, false );
+				showContent( cw_shown );
+			}else{
+				// CWしない
+				llContentWarning.setVisibility( View.GONE );
+				llContents.setVisibility( View.VISIBLE );
+			}
 		}
 		
 		if( ! status.hasMedia() ){
@@ -533,6 +517,40 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			}
 		}
 	}
+	
+	private void showStatusTime( @NonNull ActMain activity, @NonNull TootStatusLike status ){
+		SpannableStringBuilder sb = new SpannableStringBuilder();
+		
+		if( status.hasMedia() && status.sensitive ){
+			// if( sb.length() > 0 ) sb.append( ' ' );
+			
+			int start = sb.length();
+			sb.append( "NSFW" );
+			int end = sb.length();
+			int icon_id = Styler.getAttributeResourceId( activity, R.attr.ic_eye_off );
+			sb.setSpan( new EmojiImageSpan( activity, icon_id ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		}
+		
+		if( status instanceof TootStatus ){
+			TootStatus ts = (TootStatus) status;
+			
+			if( ! TootStatus.VISIBILITY_PUBLIC.equals( ts.visibility ) ){
+				if( sb.length() > 0 ) sb.append( ' ' );
+				
+				int start = sb.length();
+				sb.append( ts.visibility );
+				int end = sb.length();
+				int icon_id = Styler.getVisibilityIcon( activity, ts.visibility );
+				sb.setSpan( new EmojiImageSpan( activity, icon_id ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+			}
+		}
+		
+		if( sb.length() > 0 ) sb.append( ' ' );
+		sb.append( TootStatus.formatTime( activity, status.time_created_at, column.column_type != Column.TYPE_CONVERSATION ) );
+		tvTime.setText( sb );
+	}
+	
+	
 	
 	private void setAcct( TextView tv, String acct ){
 		AcctColor ac = AcctColor.load( acct );

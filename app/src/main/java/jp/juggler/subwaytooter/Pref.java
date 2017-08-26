@@ -80,6 +80,8 @@ public class Pref {
 	
 	public static final String KEY_DONT_USE_ACTION_BUTTON = "dont_use_action_button";
 	
+	public static final String KEY_AUTO_CW_LINES = "auto_cw_lines";
+	
 	
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

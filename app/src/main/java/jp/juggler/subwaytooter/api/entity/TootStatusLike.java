@@ -7,6 +7,7 @@ import android.text.TextUtils;
 
 import org.json.JSONObject;
 
+import java.lang.ref.WeakReference;
 import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.util.Emojione;
@@ -88,4 +89,11 @@ public abstract class TootStatusLike extends TootId {
 			this.decoded_spoiler_text = Emojione.decodeEmoji( context, sv );
 		}
 	}
+	
+	public static class AutoCW {
+		public WeakReference< Object > refActivity;
+		public int cell_width;
+		public CharSequence decoded_spoiler_text;
+	}
+	public AutoCW auto_cw;
 }

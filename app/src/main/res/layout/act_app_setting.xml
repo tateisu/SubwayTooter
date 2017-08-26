@@ -608,6 +608,45 @@
 
         <View style="@style/setting_divider"/>
 
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etAutoCWMaxLines"
+            android:text="@string/auto_cw"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etAutoCWLines"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="numberDecimal"
+                />
+        </LinearLayout>
+
+        <!--<LinearLayout style="@style/setting_row_form">-->
+
+            <!--<TextView-->
+                <!--style="@style/setting_row_label"-->
+                <!--android:text="@string/char_per_lines"-->
+                <!--/>-->
+
+        <!--</LinearLayout>-->
+
+        <!--<LinearLayout style="@style/setting_row_form">-->
+
+            <!--<EditText-->
+                <!--android:id="@+id/etTimelineFontSize"-->
+                <!--style="@style/setting_horizontal_stretch"-->
+                <!--android:gravity="center"-->
+                <!--android:inputType="numberDecimal"-->
+                <!--/>-->
+
+        <!--</LinearLayout>-->
+
+        <View style="@style/setting_divider"/>
+
         <TextView
             style="@style/setting_row_label"
             android:text="@string/ui_theme"

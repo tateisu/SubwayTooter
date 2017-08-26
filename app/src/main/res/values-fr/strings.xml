@@ -455,7 +455,10 @@
     <string name="make_enquete">Make enquete</string>
 	<string name="dont_use_action_button_with_quick_toot_bar">Disable IME Action button when using \"Quick Toot\" bar (app restart required)</string>
 
-	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+	<string name="auto_cw">Automatically hide long sentences (set line counts greater than 0 to enable this option. app restart required)</string>
+    <string name="auto_cw_prefix">(Automatic CW)</string>
+
+    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

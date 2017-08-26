@@ -21,6 +21,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
+import android.text.Layout;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.JsonReader;
@@ -40,6 +42,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.apache.commons.io.IOUtils;
@@ -52,6 +55,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -891,6 +895,8 @@ public class ActMain extends AppCompatActivity
 			pager_adapter = new ColumnPagerAdapter( this );
 			pager.setAdapter( pager_adapter );
 			pager.addOnPageChangeListener( this );
+			
+			resizeAutoCW( sw );
 		}else{
 			pager.setVisibility( View.GONE );
 			
@@ -4152,6 +4158,7 @@ public class ActMain extends AppCompatActivity
 		if( sw < column_w_min * 2 ){
 			// 最小幅で2つ表示できないのなら1カラム表示
 			tablet_pager_adapter.setColumnWidth( sw );
+			resizeAutoCW( sw );
 		}else{
 			
 			// カラム最小幅から計算した表示カラム数
@@ -4175,6 +4182,7 @@ public class ActMain extends AppCompatActivity
 			if( column_w > column_w_max ){
 				column_w = column_w_max;
 			}
+			resizeAutoCW( column_w );
 			
 			nColumnWidth = column_w;
 			tablet_pager_adapter.setColumnWidth( column_w );
@@ -4184,6 +4192,8 @@ public class ActMain extends AppCompatActivity
 		// 並べ直す
 		tablet_pager_adapter.notifyDataSetChanged();
 	}
+	
+
 	
 	private void scrollToColumn( int index, boolean bAlign ){
 		scrollColumnStrip( index );
@@ -4405,4 +4415,67 @@ public class ActMain extends AppCompatActivity
 		}
 	};
 	
+	int nAutoCwCellWidth = 0;
+	int nAutoCwLines =0;
+	
+	private void resizeAutoCW( int column_w ){
+		String sv = pref.getString( Pref.KEY_AUTO_CW_LINES, "" );
+		nAutoCwLines = Utils.parse_int( sv, - 1 );
+		if( nAutoCwLines > 0 ){
+			int lv_pad = (int) ( 0.5f + 12 * density );
+			int icon_width = (int) ( 0.5f + 48 * density );
+			int icon_end = (int) ( 0.5f + 4 * density );
+			nAutoCwCellWidth = column_w - lv_pad - icon_width - icon_end;
+		}
+		// この後各カラムは再描画される
+	}
+
+	TootStatusLike.AutoCW checkAutoCW( @NonNull TootStatusLike status, @NonNull CharSequence text ){
+		if( nAutoCwLines <= 0 || nAutoCwCellWidth <= 0 ){
+			// 設定が無効
+			status.auto_cw = null;
+			return null;
+		}
+		TootStatusLike.AutoCW a = status.auto_cw;
+		if( a != null && a.refActivity.get() == ActMain.this && a.cell_width == nAutoCwCellWidth ){
+			// 以前に計算した値がまだ使える
+			return a;
+		}
+		if( a == null ) a = status.auto_cw = new TootStatusLike.AutoCW();
+
+		// 計算時の条件(文字フォント、文字サイズ、カラム幅）を覚えておいて、再利用時に同じか確認する
+		a.refActivity =new WeakReference< Object >( ActMain.this );
+		a.cell_width = nAutoCwCellWidth;
+
+		a.decoded_spoiler_text = null;
+		
+		// テキストをレイアウトして行数を測定
+
+		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams( nAutoCwCellWidth,LinearLayout.LayoutParams.WRAP_CONTENT );
+		TextView tv = new TextView(this);
+		tv.setLayoutParams( lp );
+		if( ! Float.isNaN( timeline_font_size_sp ) ){
+			tv.setTextSize( timeline_font_size_sp );
+		}
+		if( timeline_font != null ){
+			tv.setTypeface( timeline_font );
+		}
+		tv.setText( text );
+		tv.measure(
+			View.MeasureSpec.makeMeasureSpec( nAutoCwCellWidth, View.MeasureSpec.EXACTLY)
+			,View.MeasureSpec.makeMeasureSpec( 0, View.MeasureSpec.UNSPECIFIED)
+		);
+		Layout l = tv.getLayout();
+		if( l != null ){
+			int line_count = l.getLineCount();
+			if( line_count > nAutoCwLines ){
+				SpannableStringBuilder sb = new SpannableStringBuilder(  );
+				sb.append( getString(R.string.auto_cw_prefix));
+				sb.append( text,0, l.getLineEnd( nAutoCwLines-1 ) );
+				a.decoded_spoiler_text = sb;
+			}
+		}
+
+		return a;
+	}
 }

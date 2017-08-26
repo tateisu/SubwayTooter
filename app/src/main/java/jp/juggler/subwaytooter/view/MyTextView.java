@@ -26,4 +26,19 @@ public class MyTextView extends AppCompatTextView {
 		super.onTouchEvent(event);
 		return linkHit;
 	}
+	
+	public interface SizeChangedCallback {
+		void onSizeChanged(int w,int h);
+	}
+	
+	SizeChangedCallback size_callback;
+	
+	public void setSizeChangedCallback(SizeChangedCallback cb){
+		size_callback = cb;
+	}
+	
+	@Override protected void onSizeChanged( int w, int h, int oldw, int oldh ){
+		super.onSizeChanged( w, h, oldw, oldh );
+		if( w>0 && h > 0 && size_callback != null ) size_callback.onSizeChanged( w,h );
+	}
 }

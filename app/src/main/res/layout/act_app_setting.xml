@@ -322,6 +322,23 @@
 
         <TextView
             style="@style/setting_row_label"
+            android:text="@string/dont_use_action_button_with_quick_toot_bar"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swDontUseActionButtonWithQuickTootBar"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
             android:labelFor="@+id/etQuoteNameFormat"
             android:text="@string/format_of_quote_name"
             />

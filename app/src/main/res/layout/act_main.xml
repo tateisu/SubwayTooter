@@ -131,9 +131,9 @@
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
                 android:inputType="text"
-                android:maxLines="1"
                 android:hint="@string/quick_toot_hint"
                 android:imeOptions="actionSend"
+                android:scrollbars = "vertical"
                 />
 
             <ImageButton

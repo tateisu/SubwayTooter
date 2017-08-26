@@ -78,5 +78,8 @@ public class Pref {
 	
 	public static final String KEY_RELATIVE_TIMESTAMP = "relative_timestamp";
 	
+	public static final String KEY_DONT_USE_ACTION_BUTTON = "dont_use_action_button";
+	
+	
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

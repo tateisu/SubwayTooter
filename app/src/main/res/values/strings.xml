@@ -449,5 +449,6 @@
     <string name="choice3">choice 3(optional)</string>
     <string name="choice4">choice 4(optional)</string>
     <string name="make_enquete">Make enquete</string>
+    <string name="dont_use_action_button_with_quick_toot_bar">Disable IME Action button when using \"Quick Toot\" bar (app restart required)</string>
 
 </resources>

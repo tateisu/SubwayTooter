@@ -20,6 +20,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.JsonReader;
@@ -539,7 +540,7 @@ public class ActMain extends AppCompatActivity
 	public void onBackPressed(){
 		
 		// メニューが開いていたら閉じる
-		DrawerLayout drawer = (DrawerLayout) findViewById( R.id.drawer_layout );
+		DrawerLayout drawer = findViewById( R.id.drawer_layout );
 		if( drawer.isDrawerOpen( GravityCompat.START ) ){
 			drawer.closeDrawer( GravityCompat.START );
 			return;
@@ -738,7 +739,7 @@ public class ActMain extends AppCompatActivity
 			
 		}
 		
-		DrawerLayout drawer = (DrawerLayout) findViewById( R.id.drawer_layout );
+		DrawerLayout drawer = findViewById( R.id.drawer_layout );
 		drawer.closeDrawer( GravityCompat.START );
 		return true;
 	}
@@ -792,24 +793,24 @@ public class ActMain extends AppCompatActivity
 		//		setSupportActionBar( toolbar );
 		
 		// navigation drawer
-		drawer = (DrawerLayout) findViewById( R.id.drawer_layout );
+		drawer = findViewById( R.id.drawer_layout );
 		//		ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
 		//			this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close );
 		drawer.addDrawerListener( this );
 		//		toggle.syncState();
 		
-		NavigationView navigationView = (NavigationView) findViewById( R.id.nav_view );
+		NavigationView navigationView = findViewById( R.id.nav_view );
 		navigationView.setNavigationItemSelectedListener( this );
 		
-		btnMenu = (ImageButton) findViewById( R.id.btnMenu );
-		btnToot = (ImageButton) findViewById( R.id.btnToot );
+		btnMenu = findViewById( R.id.btnMenu );
+		btnToot = findViewById( R.id.btnToot );
 		vFooterDivider1 = findViewById( R.id.vFooterDivider1 );
 		vFooterDivider2 = findViewById( R.id.vFooterDivider2 );
-		llColumnStrip = (ColumnStripLinearLayout) findViewById( R.id.llColumnStrip );
-		svColumnStrip = (HorizontalScrollView) findViewById( R.id.svColumnStrip );
+		llColumnStrip = findViewById( R.id.llColumnStrip );
+		svColumnStrip = findViewById( R.id.svColumnStrip );
 		llQuickTootBar = findViewById( R.id.llQuickTootBar );
-		etQuickToot = (MyEditText) findViewById( R.id.etQuickToot );
-		btnQuickToot = (ImageButton) findViewById( R.id.btnQuickToot );
+		etQuickToot = findViewById( R.id.etQuickToot );
+		btnQuickToot = findViewById( R.id.btnQuickToot );
 		
 		if( ! pref.getBoolean( Pref.KEY_QUICK_TOOT_BAR, false ) ){
 			llQuickTootBar.setVisibility( View.GONE );
@@ -818,15 +819,30 @@ public class ActMain extends AppCompatActivity
 		btnToot.setOnClickListener( this );
 		btnMenu.setOnClickListener( this );
 		btnQuickToot.setOnClickListener( this );
-		etQuickToot.setOnEditorActionListener( new TextView.OnEditorActionListener() {
-			@Override public boolean onEditorAction( TextView v, int actionId, KeyEvent event ){
-				if( actionId == EditorInfo.IME_ACTION_SEND ){
-					btnQuickToot.performClick();
-					return true;
+		
+		if( pref.getBoolean( Pref.KEY_DONT_USE_ACTION_BUTTON, false ) ){
+			etQuickToot.setInputType( InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_MULTI_LINE );
+			etQuickToot.setImeOptions( EditorInfo.IME_ACTION_NONE );
+			// 最後に指定する必要がある？
+			etQuickToot.setMaxLines( 5 );
+			etQuickToot.setVerticalScrollBarEnabled(true);
+			etQuickToot.setScrollbarFadingEnabled(false);
+		}else{
+			etQuickToot.setInputType( InputType.TYPE_CLASS_TEXT );
+			etQuickToot.setImeOptions( EditorInfo.IME_ACTION_SEND );
+			etQuickToot.setOnEditorActionListener( new TextView.OnEditorActionListener() {
+				@Override public boolean onEditorAction( TextView v, int actionId, KeyEvent event ){
+					if( actionId == EditorInfo.IME_ACTION_SEND ){
+						btnQuickToot.performClick();
+						return true;
+					}
+					return false;
 				}
-				return false;
-			}
-		} );
+			} );
+			// 最後に指定する必要がある？
+			etQuickToot.setMaxLines( 1 );
+		}
+		
 		svColumnStrip.setHorizontalFadingEdgeEnabled( true );
 		
 		post_helper = new PostHelper( this, pref, app_state.handler );
@@ -865,8 +881,8 @@ public class ActMain extends AppCompatActivity
 		
 		int sw = dm.widthPixels;
 		
-		pager = (ViewPager) findViewById( R.id.viewPager );
-		tablet_pager = (RecyclerView) findViewById( R.id.rvPager );
+		pager = findViewById( R.id.viewPager );
+		tablet_pager = findViewById( R.id.rvPager );
 		
 		if( pref.getBoolean( Pref.KEY_DISABLE_TABLET_MODE, false ) || sw < column_w_min * 2 ){
 			tablet_pager.setVisibility( View.GONE );
@@ -932,7 +948,7 @@ public class ActMain extends AppCompatActivity
 			final Column column = app_state.column_list.get( i );
 			
 			View viewRoot = getLayoutInflater().inflate( R.layout.lv_column_strip, llColumnStrip, false );
-			ImageView ivIcon = (ImageView) viewRoot.findViewById( R.id.ivIcon );
+			ImageView ivIcon = viewRoot.findViewById( R.id.ivIcon );
 			
 			viewRoot.setTag( i );
 			viewRoot.setOnClickListener( new View.OnClickListener() {
@@ -1048,6 +1064,7 @@ public class ActMain extends AppCompatActivity
 				, final boolean bInputAccessToken
 			){
 				
+				//noinspection deprecation
 				final ProgressDialog progress = new ProgressDialog( ActMain.this );
 				
 				final AsyncTask< Void, String, TootApiResult > task = new AsyncTask< Void, String, TootApiResult >() {
@@ -1223,7 +1240,7 @@ public class ActMain extends AppCompatActivity
 						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
 						final String host = m.group( 1 );
 						final long status_id = Long.parseLong( m.group( 3 ), 10 );
-						openStatusOtherInstance( getDefaultInsertPosition(), null, uri.toString(), host, status_id, host, status_id );
+						openStatusOtherInstance( getDefaultInsertPosition(), null, uri.toString(), status_id, host, status_id );
 						
 						//
 						//						ArrayList< SavedAccount > account_list_same_host = new ArrayList<>();
@@ -1302,6 +1319,7 @@ public class ActMain extends AppCompatActivity
 		
 		// OAuth2 認証コールバック
 		
+		//noinspection deprecation
 		final ProgressDialog progress = new ProgressDialog( ActMain.this );
 		
 		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
@@ -1452,7 +1470,7 @@ public class ActMain extends AppCompatActivity
 				PollingService.queueUpdateNotification( ActMain.this );
 				return true;
 			}
-		}else{
+		}else if( host != null ){
 			// アカウント追加時
 			String user = ta.username + "@" + host;
 			long row_id = SavedAccount.insert( host, user, result.object, result.token_info );
@@ -1469,6 +1487,11 @@ public class ActMain extends AppCompatActivity
 						account.visibility = ta.source.privacy;
 					}
 					// FIXME  ta.source.sensitive パラメータを読んで「添付画像をデフォルトでNSFWにする」を実現する
+					if( ta.source.sensitive ){
+						bModified = true;
+						account.dont_hide_nsfw = true;
+						
+					}
 				}
 				
 				if( bModified ){
@@ -1505,6 +1528,7 @@ public class ActMain extends AppCompatActivity
 		, @Nullable final SavedAccount sa
 	){
 		
+		//noinspection deprecation
 		final ProgressDialog progress = new ProgressDialog( ActMain.this );
 		
 		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
@@ -1730,7 +1754,9 @@ public class ActMain extends AppCompatActivity
 	// ユーザ名からアカウントIDを取得するために検索APIを使う
 	void startFindAccount( final SavedAccount access_info, final String host, final String user, final FindAccountCallback callback ){
 		
+		//noinspection deprecation
 		final ProgressDialog progress = new ProgressDialog( this );
+		
 		final AsyncTask< Void, Void, TootAccount > task = new AsyncTask< Void, Void, TootAccount >() {
 			@Override
 			protected TootAccount doInBackground( Void... params ){
@@ -1827,7 +1853,7 @@ public class ActMain extends AppCompatActivity
 						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
 						final String host = m.group( 1 );
 						final long status_id = Long.parseLong( m.group( 3 ), 10 );
-						openStatusOtherInstance( pos, access_info, url, host, status_id, host, status_id );
+						openStatusOtherInstance( pos, access_info, url, status_id, host, status_id );
 						return;
 					}catch( Throwable ex ){
 						Utils.showToast( this, ex, "can't parse status id." );
@@ -1875,7 +1901,7 @@ public class ActMain extends AppCompatActivity
 							openStatusLocal( pos, access_info, status_id );
 							return;
 						}else{
-							openStatusOtherInstance( pos, access_info, url, host, status_id, host, status_id );
+							openStatusOtherInstance( pos, access_info, url, status_id, host, status_id );
 							return;
 						}
 					}catch( Throwable ex ){
@@ -2536,6 +2562,7 @@ public class ActMain extends AppCompatActivity
 		final SavedAccount access_info
 		, final String remote_status_url
 	){
+		//noinspection deprecation
 		final ProgressDialog progress = new ProgressDialog( this );
 		
 		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
@@ -2626,7 +2653,7 @@ public class ActMain extends AppCompatActivity
 		}else if( status instanceof MSPToot ){
 			// トゥート検索の場合
 			openStatusOtherInstance( pos, access_info, status.url
-				, status.host_original, status.id
+				, status.id
 				, null, - 1L
 			);
 		}else if( status instanceof TootStatus ){
@@ -2634,28 +2661,28 @@ public class ActMain extends AppCompatActivity
 			if( status.host_original.equals( status.host_access ) ){
 				// TLアカウントのホストとトゥートのアカウントのホストが同じ場合
 				openStatusOtherInstance( pos, access_info, status.url
-					, status.host_original, status.id
+					, status.id
 					, null, - 1L
 				);
 			}else{
 				// TLアカウントのホストとトゥートのアカウントのホストが異なる場合
 				
 				long status_id_original = - 1L;
-				String host_original = null;
+				//String host_original = null;
 				
 				try{
 					// OStatusでフィードされたトゥートの場合、UriにステータスIDが含まれている
 					Matcher m = reUriOStatusToot.matcher( ts.uri );
 					if( m.find() ){
 						status_id_original = Long.parseLong( m.group( 2 ), 10 );
-						host_original = m.group( 1 );
+						// host_original = m.group( 1 );
 					}
 				}catch( Throwable ex ){
 					log.e( ex, "openStatusOtherInstance: cant parse tag: %s", ts.uri );
 				}
 				
 				openStatusOtherInstance( pos, access_info, status.url
-					, host_original, status_id_original
+					, status_id_original
 					, status.host_access, status.id
 				);
 			}
@@ -2666,7 +2693,7 @@ public class ActMain extends AppCompatActivity
 		final int pos
 		, @Nullable final SavedAccount access_info
 		, @NonNull final String url
-		, final String host_original_unused, final long status_id_original
+		, final long status_id_original
 		, final String host_access, final long status_id_access
 	){
 		ActionsDialog dialog = new ActionsDialog();
@@ -2777,6 +2804,7 @@ public class ActMain extends AppCompatActivity
 		, final SavedAccount access_info
 		, final String remote_status_url
 	){
+		//noinspection deprecation
 		final ProgressDialog progress = new ProgressDialog( this );
 		
 		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
@@ -4191,6 +4219,7 @@ public class ActMain extends AppCompatActivity
 			updateColumnStrip();
 		}
 		
+		//noinspection deprecation
 		final ProgressDialog progress = new ProgressDialog( this );
 		
 		final AsyncTask< Void, String, ArrayList< Column > > task = new AsyncTask< Void, String, ArrayList< Column > >() {
@@ -4233,7 +4262,7 @@ public class ActMain extends AppCompatActivity
 					
 					// 通知サービスを止める
 					setProgressMessage( "reset Notification..." );
-					PollingService.queueAppDataImportBefore(ActMain.this);
+					PollingService.queueAppDataImportBefore( ActMain.this );
 					while( PollingService.mBusyAppDataImportBefore.get() ){
 						Thread.sleep( 100L );
 					}
@@ -4291,7 +4320,7 @@ public class ActMain extends AppCompatActivity
 				}
 				
 				// 通知サービスをリスタート
-				PollingService.queueAppDataImportAfter(ActMain.this);
+				PollingService.queueAppDataImportAfter( ActMain.this );
 				
 			}
 		};

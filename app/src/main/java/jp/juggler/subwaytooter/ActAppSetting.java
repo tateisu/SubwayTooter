@@ -102,6 +102,7 @@ public class ActAppSetting extends AppCompatActivity
 	Switch swEnableGifAnimation;
 	Switch swMentionFullAcct;
 	Switch swRelativeTimestamp;
+	Switch swDontUseActionButtonWithQuickTootBar;
 	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
@@ -209,6 +210,9 @@ public class ActAppSetting extends AppCompatActivity
 		swRelativeTimestamp = findViewById( R.id.swRelativeTimestamp );
 		swRelativeTimestamp.setOnCheckedChangeListener( this );
 		
+		swDontUseActionButtonWithQuickTootBar = findViewById( R.id.swDontUseActionButtonWithQuickTootBar );
+		swDontUseActionButtonWithQuickTootBar.setOnCheckedChangeListener( this );
+		
 		cbNotificationSound = findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = findViewById( R.id.cbNotificationVibration );
 		cbNotificationLED = findViewById( R.id.cbNotificationLED );
@@ -230,7 +234,7 @@ public class ActAppSetting extends AppCompatActivity
 			};
 			ArrayAdapter< String > adapter = new ArrayAdapter<>( this, android.R.layout.simple_spinner_item, caption_list );
 			adapter.setDropDownViewResource( R.layout.lv_spinner_dropdown );
-			spBackButtonAction = (Spinner) findViewById( R.id.spBackButtonAction );
+			spBackButtonAction = findViewById( R.id.spBackButtonAction );
 			spBackButtonAction.setAdapter( adapter );
 			spBackButtonAction.setOnItemSelectedListener( this );
 		}
@@ -242,7 +246,7 @@ public class ActAppSetting extends AppCompatActivity
 			};
 			ArrayAdapter< String > adapter = new ArrayAdapter<>( this, android.R.layout.simple_spinner_item, caption_list );
 			adapter.setDropDownViewResource( R.layout.lv_spinner_dropdown );
-			spUITheme = (Spinner) findViewById( R.id.spUITheme );
+			spUITheme = findViewById( R.id.spUITheme );
 			spUITheme.setAdapter( adapter );
 			spUITheme.setOnItemSelectedListener( this );
 		}
@@ -259,7 +263,7 @@ public class ActAppSetting extends AppCompatActivity
 			};
 			ArrayAdapter< String > adapter = new ArrayAdapter<>( this, android.R.layout.simple_spinner_item, caption_list );
 			adapter.setDropDownViewResource( R.layout.lv_spinner_dropdown );
-			spResizeImage = (Spinner) findViewById( R.id.spResizeImage );
+			spResizeImage = findViewById( R.id.spResizeImage );
 			spResizeImage.setAdapter( adapter );
 			spResizeImage.setOnItemSelectedListener( this );
 		}
@@ -272,7 +276,7 @@ public class ActAppSetting extends AppCompatActivity
 			};
 			ArrayAdapter< String > adapter = new ArrayAdapter<>( this, android.R.layout.simple_spinner_item, caption_list );
 			adapter.setDropDownViewResource( R.layout.lv_spinner_dropdown );
-			spRefreshAfterToot = (Spinner) findViewById( R.id.spRefreshAfterToot );
+			spRefreshAfterToot = findViewById( R.id.spRefreshAfterToot );
 			spRefreshAfterToot.setAdapter( adapter );
 			spRefreshAfterToot.setOnItemSelectedListener( this );
 		}
@@ -280,7 +284,7 @@ public class ActAppSetting extends AppCompatActivity
 		{
 			
 			AccountAdapter adapter = new AccountAdapter();
-			spDefaultAccount = (Spinner) findViewById( R.id.spDefaultAccount );
+			spDefaultAccount = findViewById( R.id.spDefaultAccount );
 			spDefaultAccount.setAdapter( adapter );
 			spDefaultAccount.setOnItemSelectedListener( this );
 		}
@@ -303,35 +307,35 @@ public class ActAppSetting extends AppCompatActivity
 		findViewById( R.id.btnCustomStreamListenerEdit ).setOnClickListener( this );
 		findViewById( R.id.btnCustomStreamListenerReset ).setOnClickListener( this );
 		
-		ivFooterToot = (ImageView) findViewById( R.id.ivFooterToot );
-		ivFooterMenu = (ImageView) findViewById( R.id.ivFooterMenu );
+		ivFooterToot = findViewById( R.id.ivFooterToot );
+		ivFooterMenu = findViewById( R.id.ivFooterMenu );
 		llFooterBG = findViewById( R.id.llFooterBG );
 		vFooterDivider1 = findViewById( R.id.vFooterDivider1 );
 		vFooterDivider2 = findViewById( R.id.vFooterDivider2 );
 		vIndicator = findViewById( R.id.vIndicator );
 		
-		etColumnWidth = (EditText) findViewById( R.id.etColumnWidth );
+		etColumnWidth = findViewById( R.id.etColumnWidth );
 		etColumnWidth.addTextChangedListener( this );
 		
-		etMediaThumbHeight = (EditText) findViewById( R.id.etMediaThumbHeight );
+		etMediaThumbHeight = findViewById( R.id.etMediaThumbHeight );
 		etMediaThumbHeight.addTextChangedListener( this );
 		
-		etClientName = (EditText) findViewById( R.id.etClientName );
+		etClientName = findViewById( R.id.etClientName );
 		etClientName.addTextChangedListener( this );
 		
-		etQuoteNameFormat = (EditText) findViewById( R.id.etQuoteNameFormat );
+		etQuoteNameFormat = findViewById( R.id.etQuoteNameFormat );
 		etQuoteNameFormat.addTextChangedListener( this );
 		
-		tvTimelineFontSize = (TextView) findViewById( R.id.tvTimelineFontSize );
-		tvAcctFontSize = (TextView) findViewById( R.id.tvAcctFontSize );
+		tvTimelineFontSize = findViewById( R.id.tvTimelineFontSize );
+		tvAcctFontSize = findViewById( R.id.tvAcctFontSize );
 		
-		etTimelineFontSize = (EditText) findViewById( R.id.etTimelineFontSize );
+		etTimelineFontSize = findViewById( R.id.etTimelineFontSize );
 		etTimelineFontSize.addTextChangedListener( new SizeCheckTextWatcher( tvTimelineFontSize, etTimelineFontSize, default_timeline_font_size ) );
 		
-		etAcctFontSize = (EditText) findViewById( R.id.etAcctFontSize );
+		etAcctFontSize = findViewById( R.id.etAcctFontSize );
 		etAcctFontSize.addTextChangedListener( new SizeCheckTextWatcher( tvAcctFontSize, etAcctFontSize, default_acct_font_size ) );
 		
-		tvTimelineFontUrl = (TextView) findViewById( R.id.tvTimelineFontUrl );
+		tvTimelineFontUrl = findViewById( R.id.tvTimelineFontUrl );
 		
 	}
 	
@@ -357,6 +361,7 @@ public class ActAppSetting extends AppCompatActivity
 		swEnableGifAnimation.setChecked( pref.getBoolean( Pref.KEY_ENABLE_GIF_ANIMATION, false ) );
 		swMentionFullAcct.setChecked( pref.getBoolean( Pref.KEY_MENTION_FULL_ACCT, false ) );
 		swRelativeTimestamp.setChecked( pref.getBoolean( Pref.KEY_RELATIVE_TIMESTAMP, false ) );
+		swDontUseActionButtonWithQuickTootBar.setChecked( pref.getBoolean( Pref.KEY_DONT_USE_ACTION_BUTTON, false ) );
 		
 		// Switch with default true
 		swDisableFastScroller.setChecked( pref.getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
@@ -422,7 +427,8 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_ENABLE_GIF_ANIMATION, swEnableGifAnimation.isChecked() )
 			.putBoolean( Pref.KEY_MENTION_FULL_ACCT, swMentionFullAcct.isChecked() )
 			.putBoolean( Pref.KEY_RELATIVE_TIMESTAMP, swRelativeTimestamp.isChecked() )
-		
+			.putBoolean( Pref.KEY_DONT_USE_ACTION_BUTTON, swDontUseActionButtonWithQuickTootBar.isChecked() )
+			
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_LED, cbNotificationLED.isChecked() )
@@ -736,7 +742,7 @@ public class ActAppSetting extends AppCompatActivity
 	
 	private float parseFontSize( String src ){
 		try{
-			if( !TextUtils.isEmpty( src ) ){
+			if( ! TextUtils.isEmpty( src ) ){
 				NumberFormat format = NumberFormat.getInstance( Locale.getDefault() );
 				Number number = format.parse( src );
 				float f = number.floatValue();
@@ -831,6 +837,7 @@ public class ActAppSetting extends AppCompatActivity
 	}
 	
 	private void exportAppData(){
+		//noinspection deprecation
 		final ProgressDialog progress = new ProgressDialog( this );
 		
 		final AsyncTask< Void, String, File > task = new AsyncTask< Void, String, File >() {

@@ -741,5 +741,6 @@
     <string name="choice3">項目3(オプション)</string>
     <string name="choice4">項目4(オプション)</string>
     <string name="make_enquete">アンケートを作成する(一部タンスのみ有効)</string>
+    <string name="dont_use_action_button_with_quick_toot_bar">簡易投稿バーではIMEのアクションボタンを無効にする(アプリ再起動が必要)</string>
 
 </resources>

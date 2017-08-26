@@ -1804,14 +1804,26 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	
 	void openMushroom(){
 		try{
-			String text;
+			String text = null;
 			if( etContentWarning.hasFocus() ){
 				mushroom_input = 1;
 				text = prepareMushroomText( etContentWarning );
+			}else if( etContent.hasFocus() ){
+				mushroom_input = 0;
+				text = prepareMushroomText( etContent );
 			}else{
+				for( int i = 0 ; i < 4 ; ++ i ){
+					if( list_etChoice[ i ].hasFocus() ){
+						mushroom_input = i + 2;
+						text = prepareMushroomText( list_etChoice[ i ] );
+					}
+				}
+			}
+			if( text == null ){
 				mushroom_input = 0;
 				text = prepareMushroomText( etContent );
 			}
+			
 			Intent intent = new Intent( "com.adamrocker.android.simeji.ACTION_INTERCEPT" );
 			intent.addCategory( "com.adamrocker.android.simeji.REPLACE" );
 			intent.putExtra( "replace_key", text );
@@ -1833,10 +1845,16 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	}
 	
 	private void applyMushroomResult( String text ){
-		if( mushroom_input == 1 ){
+		if( mushroom_input == 0 ){
+			applyMushroomText( etContent, text );
+		}else if( mushroom_input == 1 ){
 			applyMushroomText( etContentWarning, text );
 		}else{
-			applyMushroomText( etContent, text );
+			for( int i = 0 ; i < 4 ; ++ i ){
+				if( mushroom_input == i+ 2 ){
+					applyMushroomText(  list_etChoice[ i ], text );
+				}
+			}
 		}
 	}
 	

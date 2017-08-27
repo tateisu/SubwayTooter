@@ -450,7 +450,8 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			showContent( cw_shown );
 		}else{
 			// 自動CWを使うかもしれない
-			TootStatusLike.AutoCW r = activity.checkAutoCW( status, content );
+			activity.checkAutoCW( status, content );
+			TootStatusLike.AutoCW r = status.auto_cw;
 			if( r != null && r.decoded_spoiler_text != null ){
 				// 自動CWされた内容を表示
 				llContentWarning.setVisibility( View.VISIBLE );
@@ -567,9 +568,15 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	}
 	
 	private void showContent( boolean shown ){
-		btnContentWarning.setText( shown ? R.string.hide : R.string.show );
 		llContents.setVisibility( shown ? View.VISIBLE : View.GONE );
-		
+		btnContentWarning.setText( shown ? R.string.hide : R.string.show );
+		if(status!=null){
+			TootStatusLike.AutoCW r = status.auto_cw;
+			if( r != null && r.decoded_spoiler_text != null ){
+				// 自動CWの場合はContentWarningのテキストを切り替える
+				tvContentWarning.setText( shown ? activity.getString( R.string.auto_cw_prefix ) : r.decoded_spoiler_text );
+			}
+		}
 	}
 	
 	private void setMedia( MyNetworkImageView iv, TootStatus status, int idx ){

@@ -4425,22 +4425,23 @@ public class ActMain extends AppCompatActivity
 			int lv_pad = (int) ( 0.5f + 12 * density );
 			int icon_width = (int) ( 0.5f + 48 * density );
 			int icon_end = (int) ( 0.5f + 4 * density );
-			nAutoCwCellWidth = column_w - lv_pad - icon_width - icon_end;
+			nAutoCwCellWidth = column_w - lv_pad*2 - icon_width - icon_end;
 		}
 		// この後各カラムは再描画される
 	}
 
-	TootStatusLike.AutoCW checkAutoCW( @NonNull TootStatusLike status, @NonNull CharSequence text ){
+	void checkAutoCW( @NonNull TootStatusLike status, @NonNull CharSequence text ){
 		if( nAutoCwLines <= 0 || nAutoCwCellWidth <= 0 ){
 			// 設定が無効
 			status.auto_cw = null;
-			return null;
+			return;
 		}
 		TootStatusLike.AutoCW a = status.auto_cw;
 		if( a != null && a.refActivity.get() == ActMain.this && a.cell_width == nAutoCwCellWidth ){
 			// 以前に計算した値がまだ使える
-			return a;
+			return;
 		}
+
 		if( a == null ) a = status.auto_cw = new TootStatusLike.AutoCW();
 
 		// 計算時の条件(文字フォント、文字サイズ、カラム幅）を覚えておいて、再利用時に同じか確認する
@@ -4469,13 +4470,24 @@ public class ActMain extends AppCompatActivity
 		if( l != null ){
 			int line_count = l.getLineCount();
 			if( line_count > nAutoCwLines ){
-				SpannableStringBuilder sb = new SpannableStringBuilder(  );
-				sb.append( getString(R.string.auto_cw_prefix));
-				sb.append( text,0, l.getLineEnd( nAutoCwLines-1 ) );
+				SpannableStringBuilder sb = new SpannableStringBuilder();
+				sb.append( getString( R.string.auto_cw_prefix ) );
+				sb.append( text, 0, l.getLineEnd( nAutoCwLines - 1 ) );
+				int last = sb.length();
+				while( last > 0 ){
+					char c = sb.charAt( last - 1 );
+					if( c == '\n' || Character.isWhitespace( c ) ){
+						-- last;
+						continue;
+					}
+					break;
+				}
+				if( last < sb.length() ){
+					sb.delete( last, sb.length() );
+				}
+				sb.append( '…' );
 				a.decoded_spoiler_text = sb;
 			}
 		}
-
-		return a;
 	}
 }

@@ -4431,11 +4431,12 @@ public class ActMain extends AppCompatActivity
 	}
 
 	void checkAutoCW( @NonNull TootStatusLike status, @NonNull CharSequence text ){
-		if( nAutoCwLines <= 0 || nAutoCwCellWidth <= 0 ){
+		if( nAutoCwCellWidth <= 0 ){
 			// 設定が無効
 			status.auto_cw = null;
 			return;
 		}
+
 		TootStatusLike.AutoCW a = status.auto_cw;
 		if( a != null && a.refActivity.get() == ActMain.this && a.cell_width == nAutoCwCellWidth ){
 			// 以前に計算した値がまだ使える
@@ -4447,7 +4448,6 @@ public class ActMain extends AppCompatActivity
 		// 計算時の条件(文字フォント、文字サイズ、カラム幅）を覚えておいて、再利用時に同じか確認する
 		a.refActivity =new WeakReference< Object >( ActMain.this );
 		a.cell_width = nAutoCwCellWidth;
-
 		a.decoded_spoiler_text = null;
 		
 		// テキストをレイアウトして行数を測定
@@ -4468,25 +4468,29 @@ public class ActMain extends AppCompatActivity
 		);
 		Layout l = tv.getLayout();
 		if( l != null ){
-			int line_count = l.getLineCount();
-			if( line_count > nAutoCwLines ){
-				SpannableStringBuilder sb = new SpannableStringBuilder();
-				sb.append( getString( R.string.auto_cw_prefix ) );
-				sb.append( text, 0, l.getLineEnd( nAutoCwLines - 1 ) );
-				int last = sb.length();
-				while( last > 0 ){
-					char c = sb.charAt( last - 1 );
-					if( c == '\n' || Character.isWhitespace( c ) ){
-						-- last;
-						continue;
+			a.originalLineCount = l.getLineCount();
+			
+			if( nAutoCwLines > 0 ){
+				int line_count = l.getLineCount();
+				if( line_count > nAutoCwLines ){
+					SpannableStringBuilder sb = new SpannableStringBuilder();
+					sb.append( getString( R.string.auto_cw_prefix ) );
+					sb.append( text, 0, l.getLineEnd( nAutoCwLines - 1 ) );
+					int last = sb.length();
+					while( last > 0 ){
+						char c = sb.charAt( last - 1 );
+						if( c == '\n' || Character.isWhitespace( c ) ){
+							-- last;
+							continue;
+						}
+						break;
 					}
-					break;
+					if( last < sb.length() ){
+						sb.delete( last, sb.length() );
+					}
+					sb.append( '…' );
+					a.decoded_spoiler_text = sb;
 				}
-				if( last < sb.length() ){
-					sb.delete( last, sb.length() );
-				}
-				sb.append( '…' );
-				a.decoded_spoiler_text = sb;
 			}
 		}
 	}

@@ -383,12 +383,11 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation );
 	}
 	
-
 	private void showStatus( @NonNull ActMain activity, @NonNull TootStatusLike status ){
 		this.status = status;
 		llStatus.setVisibility( View.VISIBLE );
 		
-		showStatusTime(activity,status);
+		showStatusTime( activity, status );
 		
 		account_thumbnail = status.account;
 		setAcct( tvAcct, access_info.getFullAcct( status.account ) );
@@ -413,11 +412,11 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			NicoEnquete enquete = ts.enquete;
 			if( enquete != null && NicoEnquete.TYPE_ENQUETE.equals( enquete.type ) ){
 				if( enquete.question != null ) content = enquete.question;
-				int n=0;
-				for( CharSequence item : enquete.items){
-					enquete.makeChoiceView( activity,access_info,llExtra, n++, item );
+				int n = 0;
+				for( CharSequence item : enquete.items ){
+					enquete.makeChoiceView( activity, access_info, llExtra, n++, item );
 				}
-				enquete.makeTimerView(activity,llExtra);
+				enquete.makeTimerView( activity, llExtra );
 			}
 		}
 		
@@ -440,29 +439,29 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			tvMentions.setVisibility( View.GONE );
 		}
 		
-		tvContent.setText( content  );
+		tvContent.setText( content );
 		
-		if( !TextUtils.isEmpty( status.spoiler_text ) ){
+		activity.checkAutoCW( status, content );
+		TootStatusLike.AutoCW r = status.auto_cw;
+		
+		tvContent.setMinLines( r != null ? r.originalLineCount : -1 );
+
+		if( ! TextUtils.isEmpty( status.spoiler_text ) ){
 			// 元データに含まれるContent Warning を使う
 			llContentWarning.setVisibility( View.VISIBLE );
 			tvContentWarning.setText( status.decoded_spoiler_text );
 			boolean cw_shown = ContentWarning.isShown( status, false );
 			showContent( cw_shown );
+		}else if( r != null && r.decoded_spoiler_text != null ){
+			// 自動CW
+			llContentWarning.setVisibility( View.VISIBLE );
+			tvContentWarning.setText( r.decoded_spoiler_text );
+			boolean cw_shown = ContentWarning.isShown( status, false );
+			showContent( cw_shown );
 		}else{
-			// 自動CWを使うかもしれない
-			activity.checkAutoCW( status, content );
-			TootStatusLike.AutoCW r = status.auto_cw;
-			if( r != null && r.decoded_spoiler_text != null ){
-				// 自動CWされた内容を表示
-				llContentWarning.setVisibility( View.VISIBLE );
-				tvContentWarning.setText( r.decoded_spoiler_text );
-				boolean cw_shown = ContentWarning.isShown( status, false );
-				showContent( cw_shown );
-			}else{
-				// CWしない
-				llContentWarning.setVisibility( View.GONE );
-				llContents.setVisibility( View.VISIBLE );
-			}
+			// CWしない
+			llContentWarning.setVisibility( View.GONE );
+			llContents.setVisibility( View.VISIBLE );
 		}
 		
 		if( ! status.hasMedia() ){
@@ -491,7 +490,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 				column.hide_media_default ? false :
 					access_info.dont_hide_nsfw ? true :
 						! status.sensitive;
-
+			
 			boolean is_shown = MediaShown.isShown( status, default_shown );
 			btnShowMedia.setVisibility( ! is_shown ? View.VISIBLE : View.GONE );
 		}
@@ -551,8 +550,6 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		tvTime.setText( sb );
 	}
 	
-	
-	
 	private void setAcct( TextView tv, String acct ){
 		AcctColor ac = AcctColor.load( acct );
 		tv.setText( AcctColor.hasNickname( ac ) ? ac.nickname : acct );
@@ -570,8 +567,9 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private void showContent( boolean shown ){
 		llContents.setVisibility( shown ? View.VISIBLE : View.GONE );
 		btnContentWarning.setText( shown ? R.string.hide : R.string.show );
-		if(status!=null){
+		if( status != null ){
 			TootStatusLike.AutoCW r = status.auto_cw;
+			tvContent.setMinLines( r != null ? r.originalLineCount : -1 );
 			if( r != null && r.decoded_spoiler_text != null ){
 				// 自動CWの場合はContentWarningのテキストを切り替える
 				tvContentWarning.setText( shown ? activity.getString( R.string.auto_cw_prefix ) : r.decoded_spoiler_text );

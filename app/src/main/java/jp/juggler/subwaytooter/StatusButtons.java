@@ -39,10 +39,10 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		this.access_info = column.access_info;
 		this.bSimpleList = bSimpleList;
 		
-		btnBoost = (Button) viewRoot.findViewById( R.id.btnBoost );
-		btnFavourite = (Button) viewRoot.findViewById( R.id.btnFavourite );
-		btnFollow2 = (ImageButton) viewRoot.findViewById( R.id.btnFollow2 );
-		ivFollowedBy2 = (ImageView) viewRoot.findViewById( R.id.ivFollowedBy2 );
+		btnBoost = viewRoot.findViewById( R.id.btnBoost );
+		btnFavourite = viewRoot.findViewById( R.id.btnFavourite );
+		btnFollow2 = viewRoot.findViewById( R.id.btnFollow2 );
+		ivFollowedBy2 = viewRoot.findViewById( R.id.ivFollowedBy2 );
 		llFollow2 = viewRoot.findViewById( R.id.llFollow2 );
 		
 		btnBoost.setOnClickListener( this );

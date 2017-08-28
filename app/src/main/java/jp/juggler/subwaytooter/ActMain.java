@@ -3988,6 +3988,8 @@ public class ActMain extends AppCompatActivity
 					}else if( status instanceof TootStatus ){
 						if( ai.host.equalsIgnoreCase( status.host_access ) ){
 							performReply( ai, (TootStatus) status );
+						}else{
+							performReplyRemote( ai, status.url );
 						}
 					}
 				}

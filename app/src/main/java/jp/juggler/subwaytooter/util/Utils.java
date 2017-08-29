@@ -1126,4 +1126,14 @@ public class Utils {
 		}
 		return null;
 	}
+	
+	// defined or
+	public static <T> T dor(T... args){
+		if( args != null ){
+			for( T a : args){
+				if(a != null ) return a;
+			}
+		}
+		return null;
+	}
 }

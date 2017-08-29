@@ -116,14 +116,24 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.tvFollowerName = view.findViewById( R.id.tvFollowerName );
 		this.tvBoosted = view.findViewById( R.id.tvBoosted );
 		
-		if( activity.timeline_font != null ){
+		if( activity.timeline_font != null || activity.timeline_font_bold != null ){
 			Utils.scanView( view, new Utils.ScanViewCallback() {
 				@Override public void onScanView( View v ){
 					try{
 						if( v instanceof Button ){
 							// ボタンは太字なので触らない
 						}else if( v instanceof TextView ){
-							( (TextView) v ).setTypeface( activity.timeline_font );
+							switch( v.getId() ){
+							default:
+								( (TextView) v ).setTypeface( Utils.dor( activity.timeline_font, activity.timeline_font_bold ) );
+								break;
+							
+							case R.id.tvName:
+							case R.id.tvFollowerName:
+							case R.id.tvBoosted:
+								( (TextView) v ).setTypeface( Utils.dor( activity.timeline_font_bold, activity.timeline_font ) );
+								break;
+							}
 						}
 					}catch( Throwable ex ){
 						log.trace( ex );
@@ -444,8 +454,8 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		activity.checkAutoCW( status, content );
 		TootStatusLike.AutoCW r = status.auto_cw;
 		
-		tvContent.setMinLines( r != null ? r.originalLineCount : -1 );
-
+		tvContent.setMinLines( r != null ? r.originalLineCount : - 1 );
+		
 		if( ! TextUtils.isEmpty( status.spoiler_text ) ){
 			// 元データに含まれるContent Warning を使う
 			llContentWarning.setVisibility( View.VISIBLE );
@@ -569,7 +579,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		btnContentWarning.setText( shown ? R.string.hide : R.string.show );
 		if( status != null ){
 			TootStatusLike.AutoCW r = status.auto_cw;
-			tvContent.setMinLines( r != null ? r.originalLineCount : -1 );
+			tvContent.setMinLines( r != null ? r.originalLineCount : - 1 );
 			if( r != null && r.decoded_spoiler_text != null ){
 				// 自動CWの場合はContentWarningのテキストを切り替える
 				tvContentWarning.setText( shown ? activity.getString( R.string.auto_cw_prefix ) : r.decoded_spoiler_text );

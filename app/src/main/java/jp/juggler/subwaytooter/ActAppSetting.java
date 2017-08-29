@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.ColorInt;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewCompat;
@@ -140,6 +141,8 @@ public class ActAppSetting extends AppCompatActivity
 	
 	TextView tvTimelineFontUrl;
 	String timeline_font;
+	TextView tvTimelineFontBoldUrl;
+	String timeline_font_bold;
 	
 	EditText etTimelineFontSize;
 	EditText etAcctFontSize;
@@ -213,7 +216,6 @@ public class ActAppSetting extends AppCompatActivity
 		
 		swDontUseActionButtonWithQuickTootBar = findViewById( R.id.swDontUseActionButtonWithQuickTootBar );
 		swDontUseActionButtonWithQuickTootBar.setOnCheckedChangeListener( this );
-		
 		
 		cbNotificationSound = findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = findViewById( R.id.cbNotificationVibration );
@@ -304,6 +306,8 @@ public class ActAppSetting extends AppCompatActivity
 		
 		findViewById( R.id.btnTimelineFontEdit ).setOnClickListener( this );
 		findViewById( R.id.btnTimelineFontReset ).setOnClickListener( this );
+		findViewById( R.id.btnTimelineFontBoldEdit ).setOnClickListener( this );
+		findViewById( R.id.btnTimelineFontBoldReset ).setOnClickListener( this );
 		findViewById( R.id.btnSettingExport ).setOnClickListener( this );
 		findViewById( R.id.btnSettingImport ).setOnClickListener( this );
 		findViewById( R.id.btnCustomStreamListenerEdit ).setOnClickListener( this );
@@ -330,7 +334,7 @@ public class ActAppSetting extends AppCompatActivity
 		
 		etAutoCWLines = findViewById( R.id.etAutoCWLines );
 		etAutoCWLines.addTextChangedListener( this );
-			
+		
 		tvTimelineFontSize = findViewById( R.id.tvTimelineFontSize );
 		tvAcctFontSize = findViewById( R.id.tvAcctFontSize );
 		
@@ -341,6 +345,7 @@ public class ActAppSetting extends AppCompatActivity
 		etAcctFontSize.addTextChangedListener( new SizeCheckTextWatcher( tvAcctFontSize, etAcctFontSize, default_acct_font_size ) );
 		
 		tvTimelineFontUrl = findViewById( R.id.tvTimelineFontUrl );
+		tvTimelineFontBoldUrl = findViewById( R.id.tvTimelineFontBoldUrl );
 		
 	}
 	
@@ -401,11 +406,13 @@ public class ActAppSetting extends AppCompatActivity
 		etAcctFontSize.setText( formatFontSize( pref.getFloat( Pref.KEY_ACCT_FONT_SIZE, Float.NaN ) ) );
 		
 		timeline_font = pref.getString( Pref.KEY_TIMELINE_FONT, "" );
+		timeline_font_bold = pref.getString( Pref.KEY_TIMELINE_FONT_BOLD, "" );
 		
 		load_busy = false;
 		
 		showFooterColor();
-		showTimelineFont();
+		showTimelineFont( tvTimelineFontUrl,timeline_font);
+		showTimelineFont( tvTimelineFontBoldUrl,timeline_font_bold);
 		
 		showFontSize( tvTimelineFontSize, etTimelineFontSize, default_timeline_font_size );
 		showFontSize( tvAcctFontSize, etAcctFontSize, default_acct_font_size );
@@ -434,7 +441,7 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_MENTION_FULL_ACCT, swMentionFullAcct.isChecked() )
 			.putBoolean( Pref.KEY_RELATIVE_TIMESTAMP, swRelativeTimestamp.isChecked() )
 			.putBoolean( Pref.KEY_DONT_USE_ACTION_BUTTON, swDontUseActionButtonWithQuickTootBar.isChecked() )
-		
+			
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_LED, cbNotificationLED.isChecked() )
@@ -454,6 +461,7 @@ public class ActAppSetting extends AppCompatActivity
 				.getIdFromIndex( spDefaultAccount.getSelectedItemPosition() ) )
 			
 			.putString( Pref.KEY_TIMELINE_FONT, timeline_font )
+			.putString( Pref.KEY_TIMELINE_FONT_BOLD, timeline_font_bold )
 			.putString( Pref.KEY_COLUMN_WIDTH, etColumnWidth.getText().toString().trim() )
 			.putString( Pref.KEY_MEDIA_THUMB_HEIGHT, etMediaThumbHeight.getText().toString().trim() )
 			.putString( Pref.KEY_CLIENT_NAME, etClientName.getText().toString().trim() )
@@ -540,7 +548,7 @@ public class ActAppSetting extends AppCompatActivity
 		case R.id.btnTimelineFontReset:
 			timeline_font = "";
 			saveUIToData();
-			showTimelineFont();
+			showTimelineFont( tvTimelineFontUrl,timeline_font);
 			break;
 		
 		case R.id.btnTimelineFontEdit:
@@ -550,7 +558,24 @@ public class ActAppSetting extends AppCompatActivity
 				intent.setType( "*/*" );
 				startActivityForResult( intent, REQUEST_CODE_TIMELINE_FONT );
 			}catch( Throwable ex ){
-				Utils.showToast( this, ex, "could not open picker for font/*" );
+				Utils.showToast( this, ex, "could not open picker for font" );
+			}
+			break;
+		
+		case R.id.btnTimelineFontBoldReset:
+			timeline_font_bold = "";
+			saveUIToData();
+			showTimelineFont( tvTimelineFontBoldUrl,timeline_font_bold);
+			break;
+		
+		case R.id.btnTimelineFontBoldEdit:
+			try{
+				Intent intent = new Intent( Intent.ACTION_OPEN_DOCUMENT );
+				intent.addCategory( Intent.CATEGORY_OPENABLE );
+				intent.setType( "*/*" );
+				startActivityForResult( intent, REQUEST_CODE_TIMELINE_FONT_BOLD );
+			}catch( Throwable ex ){
+				Utils.showToast( this, ex, "could not open picker for font" );
 			}
 			break;
 		
@@ -582,17 +607,24 @@ public class ActAppSetting extends AppCompatActivity
 	}
 	
 	static final int REQUEST_CODE_TIMELINE_FONT = 1;
-	static final int REQUEST_CODE_APP_DATA_EXPORT = 2;
-	static final int REQUEST_CODE_APP_DATA_IMPORT = 3;
+	static final int REQUEST_CODE_TIMELINE_FONT_BOLD = 2;
+	static final int REQUEST_CODE_APP_DATA_EXPORT = 3;
+	static final int REQUEST_CODE_APP_DATA_IMPORT = 4;
 	
 	@Override protected void onActivityResult( int requestCode, int resultCode, Intent data ){
-		if( resultCode == RESULT_OK && requestCode == REQUEST_CODE_TIMELINE_FONT ){
-			if( data != null ){
-				Uri uri = data.getData();
-				if( uri != null ){
-					getContentResolver().takePersistableUriPermission( uri, Intent.FLAG_GRANT_READ_URI_PERMISSION );
-					saveTimelineFont( uri );
-				}
+		if( resultCode == RESULT_OK && data != null && requestCode == REQUEST_CODE_TIMELINE_FONT ){
+			File file = saveTimelineFont( data.getData(), "TimelineFont" );
+			if( file != null ){
+				timeline_font = file.getAbsolutePath();
+				saveUIToData();
+				showTimelineFont( tvTimelineFontUrl,timeline_font);
+			}
+		}else if( resultCode == RESULT_OK && data != null && requestCode == REQUEST_CODE_TIMELINE_FONT_BOLD ){
+			File file = saveTimelineFont( data.getData(), "TimelineFontBold" );
+			if( file != null ){
+				timeline_font_bold = file.getAbsolutePath();
+				saveUIToData();
+				showTimelineFont( tvTimelineFontBoldUrl,timeline_font_bold);
 			}
 		}else if( resultCode == RESULT_OK && requestCode == REQUEST_CODE_APP_DATA_IMPORT ){
 			if( data != null ){
@@ -774,40 +806,48 @@ public class ActAppSetting extends AppCompatActivity
 		}
 	}
 	
-	private void showTimelineFont(){
+	private void showTimelineFont(
+		TextView tvFontUrl
+	    ,String font_url
+	){
 		try{
-			if( ! TextUtils.isEmpty( timeline_font ) ){
+			if( ! TextUtils.isEmpty( font_url ) ){
 				
-				tvTimelineFontUrl.setTypeface( Typeface.DEFAULT );
-				Typeface face = Typeface.createFromFile( timeline_font );
-				tvTimelineFontUrl.setTypeface( face );
-				tvTimelineFontUrl.setText( timeline_font );
+				tvFontUrl.setTypeface( Typeface.DEFAULT );
+				Typeface face = Typeface.createFromFile( font_url );
+				tvFontUrl.setTypeface( face );
+				tvFontUrl.setText( font_url );
 				return;
 			}
 		}catch( Throwable ex ){
 			log.trace( ex );
 		}
 		// fallback
-		tvTimelineFontUrl.setText( getString( R.string.not_selected ) );
-		tvTimelineFontUrl.setTypeface( Typeface.DEFAULT );
+		tvFontUrl.setText( getString( R.string.not_selected ) );
+		tvFontUrl.setTypeface( Typeface.DEFAULT );
 	}
 	
-	static final String TIMELINE_FONT_FILE_NAME = "TimelineFont";
-	
-	private void saveTimelineFont( Uri uri ){
+	private @Nullable File saveTimelineFont( @Nullable Uri uri, @NonNull String file_name ){
 		try{
-			File dir = getFilesDir();
+			if( uri == null ){
+				Utils.showToast( this, false, "missing uri.");
+				return null;
+			}
 			
+			getContentResolver().takePersistableUriPermission( uri, Intent.FLAG_GRANT_READ_URI_PERMISSION );
+			
+			File dir = getFilesDir();
 			//noinspection ResultOfMethodCallIgnored
 			dir.mkdir();
 			
-			File tmp_file = new File( dir, TIMELINE_FONT_FILE_NAME + ".tmp" );
+			File tmp_file = new File( dir, file_name + ".tmp" );
 			
 			InputStream is = getContentResolver().openInputStream( uri );
 			if( is == null ){
-				Utils.showToast( this, false, "openInputStream returns null." );
-				return;
+				Utils.showToast( this, false, "openInputStream returns null. uri=%s", uri );
+				return null;
 			}
+			
 			try{
 				FileOutputStream os = new FileOutputStream( tmp_file );
 				try{
@@ -815,7 +855,6 @@ public class ActAppSetting extends AppCompatActivity
 				}finally{
 					IOUtils.closeQuietly( os );
 				}
-				
 			}finally{
 				IOUtils.closeQuietly( is );
 			}
@@ -823,22 +862,20 @@ public class ActAppSetting extends AppCompatActivity
 			Typeface face = Typeface.createFromFile( tmp_file );
 			if( face == null ){
 				Utils.showToast( this, false, "Typeface.createFromFile() failed." );
-				return;
+				return null;
 			}
 			
-			File file = new File( dir, TIMELINE_FONT_FILE_NAME );
+			File file = new File( dir, file_name );
 			if( ! tmp_file.renameTo( file ) ){
 				Utils.showToast( this, false, "File operation failed." );
-				return;
+				return null;
 			}
 			
-			timeline_font = file.getAbsolutePath();
-			saveUIToData();
-			showTimelineFont();
-			
+			return file;
 		}catch( Throwable ex ){
 			log.trace( ex );
 			Utils.showToast( this, ex, "saveTimelineFont failed." );
+			return null;
 		}
 	}
 	

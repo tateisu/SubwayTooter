@@ -767,6 +767,7 @@ public class ActMain extends AppCompatActivity
 	static final int COLUMN_WIDTH_MIN_DP = 300;
 	
 	Typeface timeline_font;
+	Typeface timeline_font_bold;
 	
 	boolean dont_crop_media_thumbnail;
 	
@@ -778,10 +779,9 @@ public class ActMain extends AppCompatActivity
 	void initUI(){
 		setContentView( R.layout.act_main );
 		
-		String sv = pref.getString( Pref.KEY_TIMELINE_FONT, "" );
-		
 		dont_crop_media_thumbnail = pref.getBoolean( Pref.KEY_DONT_CROP_MEDIA_THUMBNAIL, false );
-		
+
+		String sv = pref.getString( Pref.KEY_TIMELINE_FONT, null );
 		if( ! TextUtils.isEmpty( sv ) ){
 			try{
 				timeline_font = Typeface.createFromFile( sv );
@@ -789,6 +789,22 @@ public class ActMain extends AppCompatActivity
 				log.trace( ex );
 			}
 		}
+		
+		sv = pref.getString( Pref.KEY_TIMELINE_FONT_BOLD, null );
+		if( ! TextUtils.isEmpty( sv ) ){
+			try{
+				timeline_font_bold = Typeface.createFromFile( sv );
+			}catch( Throwable ex ){
+				log.trace( ex );
+			}
+		}else if( timeline_font != null ){
+			try{
+				timeline_font_bold = Typeface.create( timeline_font ,Typeface.BOLD );
+			}catch( Throwable ex ){
+				log.trace( ex );
+			}
+		}
+
 		
 		llEmpty = findViewById( R.id.llEmpty );
 		

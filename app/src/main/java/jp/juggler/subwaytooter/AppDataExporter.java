@@ -370,6 +370,7 @@ public class AppDataExporter {
 			// force reset
 			default:
 			case Pref.KEY_TIMELINE_FONT:
+			case Pref.KEY_TIMELINE_FONT_BOLD:
 				reader.skipValue();
 				e.remove( k );
 				break;

@@ -941,6 +941,42 @@
         <View style="@style/setting_divider"/>
 
         <TextView
+            style="@style/setting_row_label"
+            android:text="@string/timeline_font_bold"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                android:id="@+id/tvTimelineFontBoldUrl"
+                style="@style/setting_horizontal_stretch"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnTimelineFontBoldEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnTimelineFontBoldReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
             android:id="@+id/tvTimelineFontSize"
             style="@style/setting_row_label"
             android:labelFor="@+id/etTimelineFontSize"

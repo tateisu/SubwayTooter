@@ -47,6 +47,8 @@ public class Pref {
 	static final String KEY_COLUMN_WIDTH = "ColumnWidth";
 	static final String KEY_MEDIA_THUMB_HEIGHT = "MediaThumbHeight";
 	static final String KEY_TIMELINE_FONT = "timeline_font";
+	static final String KEY_TIMELINE_FONT_BOLD = "timeline_font_bold";
+	
 	static final String KEY_DONT_CROP_MEDIA_THUMBNAIL = "DontCropMediaThumb";
 	
 	static final String KEY_STREAM_LISTENER_SECRET = "stream_listener_secret";

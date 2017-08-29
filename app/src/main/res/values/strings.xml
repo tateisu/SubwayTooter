@@ -315,6 +315,7 @@
     <string name="launcher_icon_by">Thanks to フタバ for the application icon.</string>
     <string name="ssl_bug_7_0">Android 7.0 can only use the elliptic curve \"prime256v1\".\nUnfortunately your instance seems to not support it.\nThis bug has been fixed in Android 7.1.1.\nYou can either upgrade your OS or ask the administrator of your instance to add support to the elliptic curve \"prime256v1\".\nSee also https://code.google.com/p/android/issues/detail?id=224438</string>
     <string name="timeline_font">Timeline font (app restart required)</string>
+    <string name="timeline_font_bold">Timeline font (bold, app restart required)</string>
     <string name="restore_draft">Restore from draft</string>
     <string name="select_draft">Which draft to restore ?</string>
     <string name="account_in_draft_is_lost">The account used for this draft has been removed from app. The following context can not be restored. in_reply_to, media attachment.</string>

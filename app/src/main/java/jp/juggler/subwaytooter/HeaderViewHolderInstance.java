@@ -54,11 +54,11 @@ class HeaderViewHolderInstance extends HeaderViewHolderBase implements View.OnCl
 		//		tvSearchDesc.setMovementMethod( MyLinkMovementMethod.getInstance() );
 		//		tvSearchDesc.setText( sv );
 		
-		btnInstance = (TextView) viewRoot.findViewById( R.id.btnInstance );
-		tvVersion = (TextView) viewRoot.findViewById( R.id.tvVersion );
-		tvTitle = (TextView) viewRoot.findViewById( R.id.tvTitle );
-		btnEmail = (TextView) viewRoot.findViewById( R.id.btnEmail );
-		tvDescription = (TextView) viewRoot.findViewById( R.id.tvDescription );
+		btnInstance = viewRoot.findViewById( R.id.btnInstance );
+		tvVersion = viewRoot.findViewById( R.id.tvVersion );
+		tvTitle = viewRoot.findViewById( R.id.tvTitle );
+		btnEmail = viewRoot.findViewById( R.id.btnEmail );
+		tvDescription = viewRoot.findViewById( R.id.tvDescription );
 		
 		btnInstance.setOnClickListener( this );
 		btnEmail.setOnClickListener( this );

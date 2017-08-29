@@ -4,7 +4,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
@@ -37,7 +36,7 @@ class HeaderViewHolderSearchDesc extends HeaderViewHolderBase {
 		
 		CharSequence sv = HTMLDecoder.decodeHTML( activity, access_info, html, false, true, null );
 		
-		TextView tvSearchDesc = (TextView) viewRoot.findViewById( R.id.tvSearchDesc );
+		TextView tvSearchDesc = viewRoot.findViewById( R.id.tvSearchDesc );
 		tvSearchDesc.setVisibility( View.VISIBLE );
 		tvSearchDesc.setMovementMethod( MyLinkMovementMethod.getInstance() );
 		tvSearchDesc.setText( sv );

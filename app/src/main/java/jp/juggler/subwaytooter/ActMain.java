@@ -1765,6 +1765,7 @@ public class ActMain extends AppCompatActivity
 		Utils.showToast( ActMain.this, false, R.string.app_was_muted );
 	}
 	
+	
 	//////////////////////////////////////////////////////////////
 	
 	interface FindAccountCallback {
@@ -2910,6 +2911,101 @@ public class ActMain extends AppCompatActivity
 			}
 		} );
 		progress.show();
+		task.executeOnExecutor( App1.task_executor );
+	}
+	
+	////////////////////////////////////////
+	// profile pin
+	
+	public void setProfilePin( @NonNull final SavedAccount access_info, final TootStatusLike status, final boolean bSet ){
+		if( status == null ) return;
+		
+		//noinspection deprecation
+		final ProgressDialog progress = new ProgressDialog( this );
+		
+		//
+		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+			TootStatus new_status;
+			
+			@Override protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override public void publishApiProgress( final String s ){
+					}
+				} );
+				client.setAccount( access_info );
+				TootApiResult result;
+
+				Request.Builder request_builder = new Request.Builder()
+					.post( RequestBody.create(
+						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+						, ""
+					) );
+				
+				result = client.request(
+					( bSet
+						? "/api/v1/statuses/" + status.id + "/pin"
+						: "/api/v1/statuses/" + status.id + "/unpin"
+					)
+					, request_builder );
+				if( result != null && result.object != null ){
+					new_status = TootStatus.parse( ActMain.this, access_info, result.object );
+				}
+				
+				return result;
+				
+			}
+			
+			@Override
+			protected void onCancelled( TootApiResult result ){
+				super.onPostExecute( result );
+			}
+			
+			@Override
+			protected void onPostExecute( TootApiResult result ){
+
+				try{
+					progress.dismiss();
+				}catch(Throwable ignored){
+					
+				}
+
+				//noinspection StatementWithEmptyBody
+				if( result == null ){
+					// cancelled.
+				}else if( new_status != null ){
+
+					for( Column column : app_state.column_list ){
+						column.findStatus( access_info.host, new_status.id, new Column.StatusEntryCallback() {
+							@Override public boolean onIterate( SavedAccount account, TootStatus status ){
+								status.pinned = bSet;
+								return true;
+							}
+						} );
+					}
+				}else{
+					Utils.showToast( ActMain.this, true, result.error );
+				}
+
+				// 結果に関わらず、更新中状態から復帰させる
+				showColumnMatchAccount( access_info );
+			}
+			
+		};
+		
+		progress.setIndeterminate( true );
+		progress.setCancelable( true );
+		progress.setMessage( getString(R.string.profile_pin_progress));
+		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
+			@Override public void onCancel( DialogInterface dialog ){
+				task.cancel( true );
+			}
+		} );
+		progress.show();
+
 		task.executeOnExecutor( App1.task_executor );
 	}
 	

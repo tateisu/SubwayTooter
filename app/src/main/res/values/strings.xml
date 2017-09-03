@@ -456,5 +456,8 @@
     <string name="enquete_item_is_empty">Enquete choice %1$d is empty.</string>
     <string name="enquete_item_too_long">Enquete choice %1$d is too long. please decrease %2$d character(s).</string>
     <string name="enquete_item_duplicate">Enquete choice %1$d is a duplicate of other choice.</string>
+    <string name="profile_pin">Pin on profile</string>
+    <string name="profile_unpin">Unpin from profile</string>
+    <string name="profile_pin_progress">Changing pinned status…</string>
 
 </resources>

@@ -125,6 +125,8 @@ public class TootStatus extends TootStatusLike {
 			status.tags = TootTag.parseList( src.optJSONArray( "tags" ) );
 			status.application = TootApplication.parse( src.optJSONObject( "application" ) ); // null
 			
+			status.pinned = src.optBoolean( "pinned" );
+			
 			status.setSpoilerText( context, Utils.optStringX( src, "spoiler_text" ) );
 			
 			status.muted = src.optBoolean( "muted" );
@@ -280,4 +282,11 @@ public class TootStatus extends TootStatusLike {
 	public boolean hasMedia(){
 		return media_attachments != null && media_attachments.size() > 0;
 	}
+	
+	@Override public boolean canPin( SavedAccount access_info ){
+		return reblog == null
+			&& access_info.isMe( account )
+			&& ( VISIBILITY_PUBLIC.equals( visibility ) || VISIBILITY_UNLISTED.equals( visibility ) );
+	}
+	
 }

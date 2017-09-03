@@ -74,12 +74,12 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		View btnReplyAnotherAccount = viewRoot.findViewById( R.id.btnReplyAnotherAccount );
 		View btnDelete = viewRoot.findViewById( R.id.btnDelete );
 		View btnReport = viewRoot.findViewById( R.id.btnReport );
-		Button btnMuteApp = (Button) viewRoot.findViewById( R.id.btnMuteApp );
+		Button btnMuteApp = viewRoot.findViewById( R.id.btnMuteApp );
 		View llAccountActionBar = viewRoot.findViewById( R.id.llAccountActionBar );
-		ImageView btnFollow = (ImageView) viewRoot.findViewById( R.id.btnFollow );
+		ImageView btnFollow = viewRoot.findViewById( R.id.btnFollow );
 		
-		ImageView btnMute = (ImageView) viewRoot.findViewById( R.id.btnMute );
-		ImageView btnBlock = (ImageView) viewRoot.findViewById( R.id.btnBlock );
+		ImageView btnMute = viewRoot.findViewById( R.id.btnMute );
+		ImageView btnBlock = viewRoot.findViewById( R.id.btnBlock );
 		View btnProfile = viewRoot.findViewById( R.id.btnProfile );
 		View btnSendMessage = viewRoot.findViewById( R.id.btnSendMessage );
 		View btnAccountWebPage = viewRoot.findViewById( R.id.btnAccountWebPage );
@@ -88,16 +88,16 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		View btnFollowFromAnotherAccount = viewRoot.findViewById( R.id.btnFollowFromAnotherAccount );
 		View btnSendMessageFromAnotherAccount = viewRoot.findViewById( R.id.btnSendMessageFromAnotherAccount );
 		View btnOpenProfileFromAnotherAccount = viewRoot.findViewById( R.id.btnOpenProfileFromAnotherAccount );
-		Button btnDomainBlock = (Button) viewRoot.findViewById( R.id.btnDomainBlock );
-		Button btnInstanceInformation = (Button) viewRoot.findViewById( R.id.btnInstanceInformation );
-		ImageView ivFollowedBy = (ImageView) viewRoot.findViewById( R.id.ivFollowedBy );
-		Button btnOpenTimeline = (Button) viewRoot.findViewById( R.id.btnOpenTimeline );
+		Button btnDomainBlock = viewRoot.findViewById( R.id.btnDomainBlock );
+		Button btnInstanceInformation = viewRoot.findViewById( R.id.btnInstanceInformation );
+		ImageView ivFollowedBy = viewRoot.findViewById( R.id.ivFollowedBy );
+		Button btnOpenTimeline = viewRoot.findViewById( R.id.btnOpenTimeline );
 		View btnConversationAnotherAccount = viewRoot.findViewById( R.id.btnConversationAnotherAccount );
 		View btnAvatarImage = viewRoot.findViewById( R.id.btnAvatarImage );
 		
 		View llNotification = viewRoot.findViewById( R.id.llNotification );
 		View btnNotificationDelete = viewRoot.findViewById( R.id.btnNotificationDelete );
-		Button btnConversationMute = (Button) viewRoot.findViewById( R.id.btnConversationMute );
+		Button btnConversationMute = viewRoot.findViewById( R.id.btnConversationMute );
 		
 		btnStatusWebPage.setOnClickListener( this );
 		btnText.setOnClickListener( this );
@@ -155,21 +155,23 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			}else{
 				btnMuteApp.setText( activity.getString( R.string.mute_app_of, status.application.name ) );
 			}
+
+			View btnBoostedBy = viewRoot.findViewById( R.id.btnBoostedBy );
+			View btnFavouritedBy= viewRoot.findViewById( R.id.btnFavouritedBy );
+			btnBoostedBy.setOnClickListener( this );
+			btnFavouritedBy.setOnClickListener( this );
+			boolean isNA = access_info.isNA();
+			btnBoostedBy.setVisibility( isNA ? View.GONE : View.VISIBLE );
+			btnFavouritedBy.setVisibility( isNA ? View.GONE : View.VISIBLE );
 			
-			View v;
-			if( access_info.isNA() ){
-				v = viewRoot.findViewById( R.id.btnBoostedBy );
-				v.setVisibility( View.GONE );
-				
-				v = viewRoot.findViewById( R.id.btnFavouritedBy );
-				v.setVisibility( View.GONE );
-			}else{
-				v = viewRoot.findViewById( R.id.btnBoostedBy );
-				v.setOnClickListener( this );
-				v = viewRoot.findViewById( R.id.btnFavouritedBy );
-				v.setOnClickListener( this );
-				
-			}
+			View btnProfilePin= viewRoot.findViewById( R.id.btnProfilePin );
+			View btnProfileUnpin = viewRoot.findViewById( R.id.btnProfileUnpin );
+			btnProfilePin.setOnClickListener( this );
+			btnProfileUnpin.setOnClickListener( this );
+			boolean canPin = status.canPin( access_info);
+			btnProfileUnpin.setVisibility(canPin && status.pinned ? View.VISIBLE : View.GONE );
+			btnProfilePin.setVisibility( canPin && !status.pinned ? View.VISIBLE : View.GONE );
+			
 			
 		}
 		
@@ -567,6 +569,13 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			if( who != null ){
 				activity.openInstanceInformation( pos, access_info.getAccountHost( who ).toLowerCase() );
 			}
+			break;
+		
+		case R.id.btnProfilePin:
+			activity.setProfilePin( access_info, status, true);
+			break;
+		case R.id.btnProfileUnpin:
+			activity.setProfilePin( access_info, status, false);
 			break;
 		}
 	}

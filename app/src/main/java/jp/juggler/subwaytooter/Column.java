@@ -1144,6 +1144,14 @@ class Column implements StreamReader.Callback {
 		}
 	}
 	
+	String parseMaxId(TootApiResult result){
+		if( result != null && result.link_older != null ){
+			Matcher m = reMaxId.matcher( result.link_older );
+			if( m.find() ) return m.group( 1 );
+		}
+		return null;
+	}
+	
 	void startLoading(){
 		cancelLastTask();
 		
@@ -1182,6 +1190,57 @@ class Column implements StreamReader.Callback {
 				return result;
 			}
 			
+			ArrayList< Object > list_pinned;
+			TootApiResult getStatusesPinned( TootApiClient client, String path_base ){
+				long time_start = SystemClock.elapsedRealtime();
+				TootApiResult result = client.request( path_base );
+				if( result != null && result.array != null ){
+					//
+					TootStatus.List src = TootStatus.parseList( context, access_info, result.array );
+					list_pinned = new ArrayList<>( src.size() );
+					addWithFilter( list_pinned, src );
+					
+					// pinステータスは独自にページ管理する
+					String max_id = parseMaxId( result );
+
+					//
+					char delimiter = ( - 1 != path_base.indexOf( '?' ) ? '&' : '?' );
+					for( ; ; ){
+						if( client.isCancelled() ){
+							log.d( "loading-statuses-pinned: cancelled." );
+							break;
+						}
+						if( max_id == null ){
+							log.d( "loading-statuses-pinned: max_id is null." );
+							break;
+						}
+						if( src.isEmpty() ){
+							log.d( "loading-statuses-pinned: previous response is empty." );
+							break;
+						}
+						if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
+							log.d( "loading-statuses-pinned: timeout." );
+							break;
+						}
+
+						String path = path_base + delimiter + "max_id=" + max_id;
+						TootApiResult result2 = client.request( path );
+						if( result2 == null || result2.array == null ){
+							log.d( "loading-statuses-pinned: error or cancelled." );
+							break;
+						}
+						
+						src = TootStatus.parseList( context, access_info, result2.array );
+						
+						addWithFilter( list_pinned, src );
+						
+						// pinnedステータスは独自にページ管理する
+						max_id = parseMaxId( result2 );
+					}
+				}
+				log.d("getStatusesPinned: list size=%s",list_pinned==null? -1 : list_pinned.size() );
+				return result;
+			}
 			
 			ArrayList< Object > list_tmp;
 			
@@ -1381,10 +1440,12 @@ class Column implements StreamReader.Callback {
 						case TAB_STATUS:
 							if( access_info.isPseudo() ){
 								return client.request( PATH_INSTANCE );
-								
 							}else{
 								String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
 								if( with_attachment ) s = s + "&only_media=1";
+
+								getStatusesPinned( client, s + "&pinned=1");
+								
 								return getStatuses( client, s );
 								
 							}
@@ -1555,9 +1616,13 @@ class Column implements StreamReader.Callback {
 				if( result.error != null ){
 					Column.this.mInitialLoadingError = result.error;
 				}else{
+					list_data.clear();
 					if( list_tmp != null ){
+						if( list_pinned != null && ! list_pinned.isEmpty() ){
+							ArrayList< Object > list_new = duplicate_map.filterDuplicate( list_pinned );
+							list_data.addAll( list_new );
+						}
 						ArrayList< Object > list_new = duplicate_map.filterDuplicate( list_tmp );
-						list_data.clear();
 						list_data.addAll( list_new );
 					}
 					
@@ -2772,7 +2837,6 @@ class Column implements StreamReader.Callback {
 							
 							if( access_info.isPseudo() ){
 								return client.request( PATH_INSTANCE );
-								
 							}else{
 								String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
 								if( with_attachment ) s = s + "&only_media=1";

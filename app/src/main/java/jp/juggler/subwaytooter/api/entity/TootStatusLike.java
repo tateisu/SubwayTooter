@@ -10,6 +10,7 @@ import org.json.JSONObject;
 import java.lang.ref.WeakReference;
 import java.util.regex.Pattern;
 
+import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.Emojione;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -41,6 +42,9 @@ public abstract class TootStatusLike extends TootId {
 	
 	// Whether the authenticated user has muted the conversation this status from
 	public boolean muted;
+	
+	// 固定されたトゥート
+	public boolean pinned;
 	
 	// The detected language for the status, if detected
 	public String language;
@@ -89,6 +93,8 @@ public abstract class TootStatusLike extends TootId {
 			this.decoded_spoiler_text = Emojione.decodeEmoji( context, sv );
 		}
 	}
+	
+	public abstract boolean canPin( SavedAccount access_info );
 	
 	public static class AutoCW {
 		public WeakReference< Object > refActivity;

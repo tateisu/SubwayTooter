@@ -749,4 +749,7 @@
     <string name="enquete_item_is_empty">アンケート項目%1$dがカラです</string>
     <string name="enquete_item_too_long">アンケート項目%1$dが長すぎます。あと%2$d文字削ってください</string>
     <string name="enquete_item_duplicate">アンケート項目%1$dは他の項目と重複してます</string>
+    <string name="profile_pin">プロフィールに固定表示</string>
+    <string name="profile_unpin">プロフィールの固定表示を解除</string>
+    <string name="profile_pin_progress">固定表示の変更中…</string>
 </resources>

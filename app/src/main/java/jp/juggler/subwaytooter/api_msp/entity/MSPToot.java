@@ -159,4 +159,8 @@ public class MSPToot extends TootStatusLike {
 	public boolean hasMedia(){
 		return media_attachments != null && media_attachments.size() > 0;
 	}
+	
+	@Override public boolean canPin( SavedAccount access_info ){
+		return false;
+	}
 }

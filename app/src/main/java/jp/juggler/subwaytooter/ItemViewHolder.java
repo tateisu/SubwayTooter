@@ -555,6 +555,16 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			}
 		}
 		
+		if( status.pinned ){
+			if( sb.length() > 0 ) sb.append( ' ' );
+			int start = sb.length();
+			sb.append( "pinned" );
+			int end = sb.length();
+			int icon_id = Styler.getAttributeResourceId( activity, R.attr.ic_pin );
+			sb.setSpan( new EmojiImageSpan( activity, icon_id ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		}
+		
+		
 		if( sb.length() > 0 ) sb.append( ' ' );
 		sb.append( TootStatus.formatTime( activity, status.time_created_at, column.column_type != Column.TYPE_CONVERSATION ) );
 		tvTime.setText( sb );

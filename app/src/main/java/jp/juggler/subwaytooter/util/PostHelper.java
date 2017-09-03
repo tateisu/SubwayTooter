@@ -88,6 +88,32 @@ public class PostHelper {
 			return;
 		}
 		
+		if( enquete_items != null && ! enquete_items.isEmpty() ){
+			for(int n=0,ne =enquete_items.size();n<ne;++n){
+				String item = enquete_items.get(n);
+				if( TextUtils.isEmpty( item ) ){
+					if( n < 2 ){
+						Utils.showToast( activity, true, R.string.enquete_item_is_empty, n + 1 );
+						return;
+					}
+				}else{
+					int code_count = item.codePointCount( 0,item.length() );
+					if( code_count > 15 ){
+						int over = code_count - 15;
+						Utils.showToast( activity, true, R.string.enquete_item_too_long, n + 1, over );
+						return;
+					}else if( n > 0 ){
+						for( int i = 0 ; i < n ; ++ i ){
+							if( item.equals( enquete_items.get( i ) ) ){
+								Utils.showToast( activity, true, R.string.enquete_item_duplicate, n + 1 );
+								return;
+							}
+						}
+					}
+				}
+			}
+		}
+		
 		if( ! bConfirmAccount ){
 			DlgConfirm.open( activity
 				, activity.getString( R.string.confirm_post_from, AcctColor.getNickname( account.acct ) )
@@ -166,6 +192,8 @@ public class PostHelper {
 				, body_string
 			);
 		}else{
+			
+			
 			JSONObject json = new JSONObject(  );
 			try{
 				json.put("status",content);

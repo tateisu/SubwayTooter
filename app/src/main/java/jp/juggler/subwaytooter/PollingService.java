@@ -1042,7 +1042,7 @@ public class PollingService extends JobService {
 				builder
 					.setContentIntent( pi_click )
 					.setDeleteIntent( pi_delete )
-					.setAutoCancel( false )
+					.setAutoCancel( true )
 					.setSmallIcon( R.drawable.ic_notification ) // ここは常に白テーマのアイコンを使う
 					.setColor( ContextCompat.getColor( service, R.color.Light_colorAccent ) ) // ここは常に白テーマの色を使う
 					.setWhen( item.notification.time_created_at );

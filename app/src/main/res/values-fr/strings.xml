@@ -459,7 +459,11 @@
 	<string name="auto_cw">Automatically hide long text (set line counts greater than 0 to enable this option. app restart required)</string>
     <string name="auto_cw_prefix">(Automatic CW)</string>
 
-    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+	<string name="enquete_item_is_empty">Enquete choice %1$d is empty.</string>
+	<string name="enquete_item_too_long">Enquete choice %1$d is too long. please decrease %2$d character(s).</string>
+	<string name="enquete_item_duplicate">Enquete choice %1$d is a duplicate of other choice.</string>
+
+	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

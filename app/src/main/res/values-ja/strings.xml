@@ -745,4 +745,8 @@
     <string name="dont_use_action_button_with_quick_toot_bar">簡易投稿バーではIMEのアクションボタンを無効にする(アプリ再起動が必要)</string>
     <string name="auto_cw">自動的に長文を隠す (0より大きい行数を指定すると有効になります。アプリ再起動が必要)</string>
     <string name="auto_cw_prefix">(自動CW)</string>
+
+    <string name="enquete_item_is_empty">アンケート項目%1$dがカラです</string>
+    <string name="enquete_item_too_long">アンケート項目%1$dが長すぎます。あと%2$d文字削ってください</string>
+    <string name="enquete_item_duplicate">アンケート項目%1$dは他の項目と重複してます</string>
 </resources>

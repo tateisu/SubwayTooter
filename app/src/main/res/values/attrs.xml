@@ -120,5 +120,6 @@
     <attr name="ic_question" format="reference" />
     <attr name="ic_eye_off" format="reference" />
     <attr name="ic_pin" format="reference" />
+    <attr name="ic_follow_wait" format="reference" />
 
 </resources>

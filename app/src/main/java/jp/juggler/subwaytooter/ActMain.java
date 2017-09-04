@@ -3161,8 +3161,11 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	// relationshipを取得
-	@NonNull
-	RelationResult loadRelation1( TootApiClient client, SavedAccount access_info, long who_id ){
+	@NonNull RelationResult loadRelation1(
+		TootApiClient client
+		, SavedAccount access_info
+		, long who_id
+	){
 		RelationResult rr = new RelationResult();
 		TootApiResult r2 = rr.result = client.request( "/api/v1/accounts/relationships?id=" + who_id );
 		if( r2 != null && r2.array != null ){
@@ -3309,8 +3312,15 @@ public class ActMain extends AppCompatActivity
 					result = client.request( "/api/v1/accounts/" + who.id
 							+ ( bFollow ? "/follow" : "/unfollow" )
 						, request_builder );
-					if( result != null ){
-						if( result.object != null ){
+					if( result != null && result.object != null  ){
+						// 1.6.0 rc2 から、フォローAPIのレスポンスに含まれるrelationは虚偽の内容を返すようになるらしい
+						// https://github.com/tootsuite/mastodon/pull/4799
+						// 実際の情報を取得するため、リレーションを読み直す
+						RelationResult rr = loadRelation1( client, access_info, who.id );
+						if( rr.relation != null ){
+							relation = rr.relation;
+						}else{
+							// リレーションを読めなかった場合、フォローAPIの応答に含まれるRelationshipを使う
 							relation = TootRelationShip.parse( result.object );
 							if( relation != null ){
 								long now = System.currentTimeMillis();

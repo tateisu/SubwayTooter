@@ -198,7 +198,9 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			}
 			
 			// follow button
-			int icon_attr = ( relation.following ? R.attr.ic_follow_cross : R.attr.ic_follow_plus );
+			int icon_attr = ( relation.requested ? R.attr.ic_follow_wait
+				: relation.following ? R.attr.ic_follow_cross
+				: R.attr.ic_follow_plus );
 			int color_attr = ( relation.requested ? R.attr.colorRegexFilterError
 				: relation.following ? R.attr.colorImageButtonAccent
 				: R.attr.colorImageButton );
@@ -371,10 +373,15 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 				// サーバのバグで誰のことか分からないので何もできない
 			}else if( access_info.isPseudo() ){
 				activity.openFollowFromAnotherAccount( access_info, who );
-			}else if( relation.following || relation.requested ){
-				activity.callFollow( access_info, who, false, false, activity.unfollow_complete_callback );
 			}else{
-				activity.callFollow( access_info, who, true, false, activity.follow_complete_callback );
+				boolean bSet = !( relation.following || relation.requested );
+				activity.callFollow(
+					access_info
+					, who
+					, bSet
+					, false
+					, bSet ? activity.follow_complete_callback: activity.unfollow_complete_callback
+				);
 			}
 			break;
 		

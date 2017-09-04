@@ -113,7 +113,7 @@ public class Styler {
 			color_attr = R.attr.colorImageButtonAccent;
 			
 		}else if( relation.requested ){
-			icon_attr =R.attr.ic_follow_plus;
+			icon_attr =R.attr.ic_follow_wait;
 			color_attr = R.attr.colorRegexFilterError;
 		}else{
 			icon_attr =R.attr.ic_follow_plus;

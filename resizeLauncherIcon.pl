@@ -98,5 +98,9 @@ my $res_dir = "app/src/main/res";
 #resize_scales( "_ArtWork/ic_nicoru.png"			,$res_dir,"drawable","ic_nicoru",0,32);
 #resize_scales( "_ArtWork/ic_nicoru_dark.png"		,$res_dir,"drawable","ic_nicoru_dark",0,32);
 
-resize_scales( "_ArtWork/ic_pin.png"	,$res_dir,"drawable","ic_pin",0,32);
-resize_scales( "_ArtWork/ic_pin_dark.png"	,$res_dir,"drawable","ic_pin_dark",0,32);
+#resize_scales( "_ArtWork/ic_pin.png"	,$res_dir,"drawable","ic_pin",0,32);
+#resize_scales( "_ArtWork/ic_pin_dark.png"	,$res_dir,"drawable","ic_pin_dark",0,32);
+
+resize_scales( "_ArtWork/ic_follow_wait.png"	,$res_dir,"drawable","ic_follow_wait",0,32);
+resize_scales( "_ArtWork/ic_follow_wait_dark.png"	,$res_dir,"drawable","ic_follow_wait_dark",0,32);
+

@@ -1,12 +1,15 @@
 package jp.juggler.subwaytooter.api.entity;
 
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import org.json.JSONObject;
 
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
+import jp.juggler.subwaytooter.util.VersionString;
 
+@SuppressWarnings("WeakerAccess")
 public class TootInstance {
 	private static final LogCategory log = new LogCategory( "TootInstance" );
 	
@@ -24,6 +27,8 @@ public class TootInstance {
 	
 	public String version;
 	
+	public VersionString decoded_version;
+	
 	@Nullable
 	public static TootInstance parse( JSONObject src ){
 		if( src == null ) return null;
@@ -34,11 +39,20 @@ public class TootInstance {
 			dst.description = Utils.optStringX( src, "description" );
 			dst.email = Utils.optStringX( src, "email" );
 			dst.version = Utils.optStringX( src, "version" );
+			dst.decoded_version = new VersionString( dst.version );
 			return dst;
 		}catch( Throwable ex ){
 			log.trace( ex );
 			log.e( ex, "TootInstance.parse failed." );
 			return null;
 		}
+	}
+	
+	
+	
+	public boolean isEnoughVersion( @NonNull VersionString check ){
+		if( decoded_version.isEmpty() || check.isEmpty() ) return false;
+		int i = VersionString.compare( decoded_version ,check );
+		return i >= 0;
 	}
 }

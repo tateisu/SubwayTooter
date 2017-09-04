@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ListView;
@@ -47,11 +48,13 @@ import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.BucketList;
 import jp.juggler.subwaytooter.api.DuplicateMap;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.VersionString;
 import jp.juggler.subwaytooter.util.WordTrieTree;
 import jp.juggler.subwaytooter.view.MyListView;
 import jp.juggler.subwaytooter.util.ScrollPosition;
 import jp.juggler.subwaytooter.util.Utils;
 
+@SuppressWarnings("WeakerAccess")
 class Column implements StreamReader.Callback {
 	private static final LogCategory log = new LogCategory( "Column" );
 	
@@ -1144,13 +1147,15 @@ class Column implements StreamReader.Callback {
 		}
 	}
 	
-	String parseMaxId(TootApiResult result){
+	@Nullable String parseMaxId( TootApiResult result ){
 		if( result != null && result.link_older != null ){
 			Matcher m = reMaxId.matcher( result.link_older );
 			if( m.find() ) return m.group( 1 );
 		}
 		return null;
 	}
+	
+	@NonNull static final VersionString version_1_6 = new VersionString("1.6");
 	
 	void startLoading(){
 		cancelLastTask();
@@ -1181,8 +1186,8 @@ class Column implements StreamReader.Callback {
 				return result;
 			}
 			
-			TootApiResult getInstanceInformation( TootApiClient client ){
-				client.setInstance( instance_uri );
+			TootApiResult getInstanceInformation( @NonNull TootApiClient client ,@Nullable String instance){
+				if( instance != null ) client.setInstance( instance );
 				TootApiResult result = client.request( "/api/v1/instance" );
 				if( result != null && result.object != null ){
 					Column.this.instance_information = TootInstance.parse( result.object );
@@ -1438,13 +1443,17 @@ class Column implements StreamReader.Callback {
 						
 						default:
 						case TAB_STATUS:
-							if( access_info.isPseudo() ){
-								return client.request( PATH_INSTANCE );
-							}else{
+							if( access_info.isPseudo() || Column.this.instance_information == null ){
+								TootApiResult r2 = getInstanceInformation( client ,null );
+								if( access_info.isPseudo() ) return r2;
+							}
+							{
 								String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
 								if( with_attachment ) s = s + "&only_media=1";
 
-								getStatusesPinned( client, s + "&pinned=1");
+								if( Column.this.instance_information != null && Column.this.instance_information.isEnoughVersion(version_1_6) ){
+									getStatusesPinned( client, s + "&pinned=1");
+								}
 								
 								return getStatuses( client, s );
 								
@@ -1586,7 +1595,7 @@ class Column implements StreamReader.Callback {
 						return result;
 					
 					case TYPE_INSTANCE_INFORMATION:
-						return getInstanceInformation( client );
+						return getInstanceInformation( client ,instance_uri);
 					}
 				}finally{
 					try{

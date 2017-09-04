@@ -218,8 +218,7 @@ class Column implements StreamReader.Callback {
 	boolean search_resolve;
 	
 	String instance_uri;
-	TootInstance instance_information;
-	
+
 	ScrollPosition scroll_save;
 	
 	Column( @NonNull AppState app_state, @NonNull SavedAccount access_info, @NonNull Callback callback, int type, Object... params ){
@@ -1186,62 +1185,79 @@ class Column implements StreamReader.Callback {
 				return result;
 			}
 			
-			TootApiResult getInstanceInformation( @NonNull TootApiClient client ,@Nullable String instance){
-				if( instance != null ) client.setInstance( instance );
+			TootApiResult getInstanceInformation( @NonNull TootApiClient client ,@Nullable String instance_name){
+				if( instance_name != null ) client.setInstance( instance_name );
 				TootApiResult result = client.request( "/api/v1/instance" );
 				if( result != null && result.object != null ){
-					Column.this.instance_information = TootInstance.parse( result.object );
+					TootInstance instance = TootInstance.parse( result.object );
+					if( instance != null ){
+						access_info.refInstance.set( instance );
+					}
 				}
 				return result;
 			}
 			
 			ArrayList< Object > list_pinned;
 			TootApiResult getStatusesPinned( TootApiClient client, String path_base ){
-				long time_start = SystemClock.elapsedRealtime();
 				TootApiResult result = client.request( path_base );
 				if( result != null && result.array != null ){
 					//
 					TootStatus.List src = TootStatus.parseList( context, access_info, result.array );
+					
+					for(TootStatus status : src ){
+						log.d("pinned: %s %s",status.id, status.decoded_content);
+					}
+					
 					list_pinned = new ArrayList<>( src.size() );
 					addWithFilter( list_pinned, src );
 					
-					// pinステータスは独自にページ管理する
-					String max_id = parseMaxId( result );
 
-					//
-					char delimiter = ( - 1 != path_base.indexOf( '?' ) ? '&' : '?' );
-					for( ; ; ){
-						if( client.isCancelled() ){
-							log.d( "loading-statuses-pinned: cancelled." );
-							break;
-						}
-						if( max_id == null ){
-							log.d( "loading-statuses-pinned: max_id is null." );
-							break;
-						}
-						if( src.isEmpty() ){
-							log.d( "loading-statuses-pinned: previous response is empty." );
-							break;
-						}
-						if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
-							log.d( "loading-statuses-pinned: timeout." );
-							break;
-						}
-
-						String path = path_base + delimiter + "max_id=" + max_id;
-						TootApiResult result2 = client.request( path );
-						if( result2 == null || result2.array == null ){
-							log.d( "loading-statuses-pinned: error or cancelled." );
-							break;
-						}
-						
-						src = TootStatus.parseList( context, access_info, result2.array );
-						
-						addWithFilter( list_pinned, src );
-						
-						// pinnedステータスは独自にページ管理する
-						max_id = parseMaxId( result2 );
-					}
+					// 1.6rc では以下の理由により、40overの固定トゥートを取得することは困難である
+//					- max_idを指定せずにAPIで取得すると適当な件数のリストが返ってくる。ソート順はpinした日時。max_idはリスト中の最後の要素のIDを返す
+//					- max_idを指定してAPIで取得すると「ステータスIDがmax_idより小さい&pinされている」トゥートをpin日時順にソートしたものが返ってくる
+//					- max_idはpin日時を考慮していないのだからページング用のパラメータとしては全く不適切である
+//					- 取得できるステータスにはpinされた日時は含まれない
+//					//
+//					// pinステータスは独自にページ管理する
+//					long time_start = SystemClock.elapsedRealtime();
+//					String max_id = parseMaxId( result );
+//					char delimiter = ( - 1 != path_base.indexOf( '?' ) ? '&' : '?' );
+//					for( ; ; ){
+//
+//						if( client.isCancelled() ){
+//							log.d( "loading-statuses-pinned: cancelled." );
+//							break;
+//						}
+//						if( max_id == null ){
+//							log.d( "loading-statuses-pinned: max_id is null." );
+//							break;
+//						}
+//						if( src.isEmpty() ){
+//							log.d( "loading-statuses-pinned: previous response is empty." );
+//							break;
+//						}
+//						if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
+//							log.d( "loading-statuses-pinned: timeout." );
+//							break;
+//						}
+//
+//						String path = path_base + delimiter + "max_id=" + max_id;
+//						TootApiResult result2 = client.request( path );
+//						if( result2 == null || result2.array == null ){
+//							log.d( "loading-statuses-pinned: error or cancelled." );
+//							break;
+//						}
+//
+//						src = TootStatus.parseList( context, access_info, result2.array );
+//						for(TootStatus status : src ){
+//							log.d("pinned: %s %s",status.id, status.decoded_content);
+//						}
+//
+//						addWithFilter( list_pinned, src );
+//
+//						// pinnedステータスは独自にページ管理する
+//						max_id = parseMaxId( result2 );
+//					}
 				}
 				log.d("getStatusesPinned: list size=%s",list_pinned==null? -1 : list_pinned.size() );
 				return result;
@@ -1443,15 +1459,17 @@ class Column implements StreamReader.Callback {
 						
 						default:
 						case TAB_STATUS:
-							if( access_info.isPseudo() || Column.this.instance_information == null ){
+							TootInstance instance = access_info.refInstance.get();
+							if( access_info.isPseudo() || instance == null ){
 								TootApiResult r2 = getInstanceInformation( client ,null );
+								instance = access_info.refInstance.get();
 								if( access_info.isPseudo() ) return r2;
 							}
 							{
 								String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
 								if( with_attachment ) s = s + "&only_media=1";
 
-								if( Column.this.instance_information != null && Column.this.instance_information.isEnoughVersion(version_1_6) ){
+								if( instance != null && instance.isEnoughVersion(version_1_6) ){
 									getStatusesPinned( client, s + "&pinned=1");
 								}
 								

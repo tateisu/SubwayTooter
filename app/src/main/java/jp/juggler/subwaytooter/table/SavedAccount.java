@@ -13,11 +13,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
+import jp.juggler.subwaytooter.api.entity.TootInstance;
 import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 
@@ -80,6 +82,11 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public String notification_tag;
 	public String register_key;
 	public long register_time;
+	
+	
+	// DBには保存しない
+	public final AtomicReference<TootInstance> refInstance = new AtomicReference<>( null );
+	
 	
 	// アプリデータのインポート時に呼ばれる
 	public static void onDBDelete( SQLiteDatabase db ){

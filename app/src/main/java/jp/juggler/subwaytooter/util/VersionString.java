@@ -2,18 +2,16 @@ package jp.juggler.subwaytooter.util;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.text.TextUtils;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 
 public class VersionString {
-	static final LogCategory log = new LogCategory( "VersionString" );
+	// static final LogCategory log = new LogCategory( "VersionString" );
 	
-	final String src;
+	private final String src;
 
-	final ArrayList<Object> node_list = new ArrayList<>(  );
-	
+	private final ArrayList<Object> node_list = new ArrayList<>(  );
 
 	private static boolean isDelimiter( char c ){
 		return c == '.' || c == ' ';

@@ -4619,29 +4619,29 @@ public class ActMain extends AppCompatActivity
 		);
 		Layout l = tv.getLayout();
 		if( l != null ){
-			a.originalLineCount = l.getLineCount();
+			int line_count = a.originalLineCount = l.getLineCount();
 			
-			if( nAutoCwLines > 0 ){
-				int line_count = l.getLineCount();
-				if( line_count > nAutoCwLines ){
-					SpannableStringBuilder sb = new SpannableStringBuilder();
-					sb.append( getString( R.string.auto_cw_prefix ) );
-					sb.append( text, 0, l.getLineEnd( nAutoCwLines - 1 ) );
-					int last = sb.length();
-					while( last > 0 ){
-						char c = sb.charAt( last - 1 );
-						if( c == '\n' || Character.isWhitespace( c ) ){
-							-- last;
-							continue;
-						}
-						break;
+			if( nAutoCwLines > 0
+				&& line_count > nAutoCwLines
+				&& TextUtils.isEmpty( status.spoiler_text )
+				){
+				SpannableStringBuilder sb = new SpannableStringBuilder();
+				sb.append( getString( R.string.auto_cw_prefix ) );
+				sb.append( text, 0, l.getLineEnd( nAutoCwLines - 1 ) );
+				int last = sb.length();
+				while( last > 0 ){
+					char c = sb.charAt( last - 1 );
+					if( c == '\n' || Character.isWhitespace( c ) ){
+						-- last;
+						continue;
 					}
-					if( last < sb.length() ){
-						sb.delete( last, sb.length() );
-					}
-					sb.append( '…' );
-					a.decoded_spoiler_text = sb;
+					break;
 				}
+				if( last < sb.length() ){
+					sb.delete( last, sb.length() );
+				}
+				sb.append( '…' );
+				a.decoded_spoiler_text = sb;
 			}
 		}
 	}

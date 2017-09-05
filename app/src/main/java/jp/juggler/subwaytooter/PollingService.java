@@ -174,11 +174,8 @@ public class PollingService extends JobService {
 		
 		worker.cancel();
 		
-		try{
-			worker.join();
-		}catch( InterruptedException ex ){
-			log.e( ex, "onDestroy: can't stop worker thread." );
-		}
+		// join するとANRの要因になるので、しない
+		
 	}
 	
 	Worker worker;
@@ -195,29 +192,29 @@ public class PollingService extends JobService {
 		public void run(){
 			log.e( "worker thread start." );
 			while( ! bThreadCancelled.get() ){
-				
 				JobItem item = null;
-				synchronized( job_list ){
-					for( JobItem ji : job_list ){
-						if( ji.mWorkerAttached.get() || ji.mJobCancelled.get() ) continue;
-						item = ji;
-						item.mWorkerAttached.set( true );
-						break;
-					}
-				}
-				
-				if( item == null ){
-					waitEx( 86400000L );
-					continue;
-				}
-				
 				try{
+					synchronized( job_list ){
+						for( JobItem ji : job_list ){
+							if( bThreadCancelled.get() ) break;
+							if( ji.mWorkerAttached.get() || ji.mJobCancelled_.get() ) continue;
+							item = ji;
+							item.mWorkerAttached.set( true );
+							break;
+						}
+					}
+					if( item == null ){
+						waitEx( 86400000L );
+						continue;
+					}
 					item.refWorker.set( Worker.this );
 					item.run();
 				}catch( Throwable ex ){
 					log.trace( ex );
 				}finally{
-					item.refWorker.set( null );
+					if( item != null ){
+						item.refWorker.set( null );
+					}
 				}
 			}
 			log.e( "worker thread end." );
@@ -291,7 +288,7 @@ public class PollingService extends JobService {
 	class JobItem {
 		int jobId;
 		JobParameters jobParams;
-		final AtomicBoolean mJobCancelled = new AtomicBoolean();
+		final AtomicBoolean mJobCancelled_ = new AtomicBoolean();
 		final AtomicBoolean mReschedule = new AtomicBoolean();
 		final AtomicBoolean mWorkerAttached = new AtomicBoolean();
 		
@@ -316,7 +313,7 @@ public class PollingService extends JobService {
 		}
 		
 		public void cancel( boolean bReschedule ){
-			mJobCancelled.set( true );
+			mJobCancelled_.set( true );
 			mReschedule.set( bReschedule );
 			if( current_call != null ) current_call.cancel();
 			notifyWorkerThread();
@@ -327,31 +324,37 @@ public class PollingService extends JobService {
 			this.jobId = params.getJobId();
 		}
 		
+		public boolean isJobCancelled(){
+			if( mJobCancelled_.get() ) return true;
+			Worker worker = refWorker.get();
+			return worker != null && worker.bThreadCancelled.get();
+		}
+		
 		public void run(){
 			
 			try{
 				log.d( "(JobItem.run jobId=%s", jobId );
 				
-				if( mJobCancelled.get() ) throw new JobCancelledException();
+				if( isJobCancelled() ) throw new JobCancelledException();
 				
 				muted_app = MutedApp.getNameSet();
 				muted_word = MutedWord.getNameSet();
 				
 				// タスクがあれば処理する
 				for( ; ; ){
-					if( mJobCancelled.get() ) throw new JobCancelledException();
+					if( isJobCancelled() ) throw new JobCancelledException();
 					final JSONObject data = task_list.next( service );
 					if( data == null ) break;
 					int task_id = data.optInt( EXTRA_TASK_ID, 0 );
 					new TaskRunner().runTask( JobItem.this, task_id, data );
 				}
 				
-				if( ! mJobCancelled.get() && ! bPollingComplete && jobId == JOB_POLLING ){
+				if( ! isJobCancelled() && ! bPollingComplete && jobId == JOB_POLLING ){
 					// タスクがなかった場合でも定期実行ジョブからの実行ならポーリングを行う
 					new TaskRunner().runTask( JobItem.this, TASK_POLLING, null );
 				}
 				
-				if( ! mJobCancelled.get() && bPollingComplete ){
+				if( ! isJobCancelled() && bPollingComplete ){
 					// ポーリングが完了したのならポーリングが必要かどうかに合わせてジョブのスケジュールを変更する
 					if( ! bPollingRequired.get() ){
 						log.d( "polling job is no longer required." );
@@ -381,17 +384,17 @@ public class PollingService extends JobService {
 				log.e( ex, "job execution failed." );
 			}
 			// ジョブ終了報告
-			if( ! mJobCancelled.get() ){
+			if( ! isJobCancelled() ){
 				handler.post( new Runnable() {
 					@Override public void run(){
-						if( mJobCancelled.get() ) return;
-
+						if( isJobCancelled() ) return;
+						
 						synchronized( job_list ){
 							job_list.remove( JobItem.this );
 						}
-
+						
 						try{
-							log.d( "sending jobFinished. reschedule=%s",mReschedule.get() );
+							log.d( "sending jobFinished. reschedule=%s", mReschedule.get() );
 							jobFinished( jobParams, mReschedule.get() );
 						}catch( Throwable ex ){
 							log.trace( ex );
@@ -400,7 +403,7 @@ public class PollingService extends JobService {
 					}
 				} );
 			}
-			log.d( ")JobItem.run jobId=%s, cancel=%s", jobId, mJobCancelled.get() );
+			log.d( ")JobItem.run jobId=%s, cancel=%s", jobId, isJobCancelled() );
 		}
 		
 	}
@@ -519,16 +522,16 @@ public class PollingService extends JobService {
 							it.remove();
 							continue;
 						}
-						if( job.mJobCancelled.get() ){
+						if( job.isJobCancelled() ){
 							t.cancel();
 						}
 					}
 					if( thread_list.isEmpty() ) break;
 					
-					job.waitWorkerThread( job.mJobCancelled.get() ? 50L : 1000L );
+					job.waitWorkerThread( job.isJobCancelled() ? 50L : 1000L );
 				}
 				
-				if( ! job.mJobCancelled.get() ) job.bPollingComplete = true;
+				if( ! job.isJobCancelled() ) job.bPollingComplete = true;
 				
 			}catch( Throwable ex ){
 				log.trace( ex );
@@ -630,7 +633,7 @@ public class PollingService extends JobService {
 			
 			final TootApiClient client = new TootApiClient( PollingService.this, new TootApiClient.Callback() {
 				@Override public boolean isApiCancelled(){
-					return job.mJobCancelled.get();
+					return job.isJobCancelled();
 				}
 				
 				@Override public void publishApiProgress( String s ){
@@ -656,12 +659,12 @@ public class PollingService extends JobService {
 					
 					job.bPollingRequired.set( true );
 					
-					if( job.mJobCancelled.get() ) return;
+					if( job.isJobCancelled() ) return;
 					
 					ArrayList< Data > data_list = new ArrayList<>();
 					checkAccount( data_list, job.muted_app, job.muted_word );
 					
-					if( job.mJobCancelled.get() ) return;
+					if( job.isJobCancelled() ) return;
 					
 					showNotification( data_list );
 					
@@ -831,7 +834,7 @@ public class PollingService extends JobService {
 					try{
 						JSONArray array = new JSONArray( nr.last_data );
 						for( int i = array.length() - 1 ; i >= 0 ; -- i ){
-							if( job.mJobCancelled.get() ) return;
+							if( job.isJobCancelled() ) return;
 							JSONObject src = array.optJSONObject( i );
 							update_sub( src, data_list, muted_app, muted_word );
 						}
@@ -840,7 +843,7 @@ public class PollingService extends JobService {
 					}
 				}
 				
-				if( job.mJobCancelled.get() ) return;
+				if( job.isJobCancelled() ) return;
 				
 				// 前回の更新から一定時刻が経過したら新しいデータを読んでリストに追加する
 				long now = System.currentTimeMillis();
@@ -850,7 +853,7 @@ public class PollingService extends JobService {
 					client.setAccount( account );
 					
 					for( int nTry = 0 ; nTry < 4 ; ++ nTry ){
-						if( job.mJobCancelled.get() ) return;
+						if( job.isJobCancelled() ) return;
 						
 						TootApiResult result = client.request( PATH_NOTIFICATIONS );
 						if( result == null ){
@@ -873,7 +876,7 @@ public class PollingService extends JobService {
 					}
 				}
 				
-				if( job.mJobCancelled.get() ) return;
+				if( job.isJobCancelled() ) return;
 				
 				Collections.sort( dst_array, new Comparator< JSONObject >() {
 					@Override public int compare( JSONObject a, JSONObject b ){
@@ -886,7 +889,7 @@ public class PollingService extends JobService {
 					}
 				} );
 				
-				if( job.mJobCancelled.get() ) return;
+				if( job.isJobCancelled() ) return;
 				
 				JSONArray d = new JSONArray();
 				for( int i = 0 ; i < 10 ; ++ i ){

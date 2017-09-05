@@ -4574,7 +4574,7 @@ public class ActMain extends AppCompatActivity
 		nAutoCwLines = Utils.parse_int( sv, - 1 );
 		if( nAutoCwLines > 0 ){
 			int lv_pad = (int) ( 0.5f + 12 * density );
-			int icon_width = (int) ( 0.5f + 48 * density );
+			int icon_width = mAvatarIconSize;
 			int icon_end = (int) ( 0.5f + 4 * density );
 			nAutoCwCellWidth = column_w - lv_pad*2 - icon_width - icon_end;
 		}

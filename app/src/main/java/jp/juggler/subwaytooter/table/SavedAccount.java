@@ -84,8 +84,20 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public long register_time;
 	
 	
+	private final AtomicReference<TootInstance> refInstance = new AtomicReference<>( null );
+	private static final long INSTANCE_INFORMATION_EXPIRE = 60000L * 5;
+
 	// DBには保存しない
-	public final AtomicReference<TootInstance> refInstance = new AtomicReference<>( null );
+	public @Nullable TootInstance getInstance(){
+		TootInstance instance = refInstance.get();
+		if( instance != null && System.currentTimeMillis() - instance.time_parse > INSTANCE_INFORMATION_EXPIRE ){
+			return null;
+		}
+		return instance;
+	}
+	public void setInstance(@NonNull TootInstance instance){
+		if( instance != null ) refInstance.set(instance);
+	}
 	
 	
 	// アプリデータのインポート時に呼ばれる

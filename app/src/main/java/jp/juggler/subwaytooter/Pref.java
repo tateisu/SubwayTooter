@@ -84,6 +84,9 @@ public class Pref {
 	
 	public static final String KEY_AUTO_CW_LINES = "auto_cw_lines";
 	
+	public static final String KEY_SHORT_ACCT_LOCAL_USER = "short_acct_local_user";
+	
+	public static final String KEY_AVATAR_ICON_SIZE = "avatar_icon_size";
 	
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

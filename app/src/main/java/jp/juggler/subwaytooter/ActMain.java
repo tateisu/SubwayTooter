@@ -770,6 +770,8 @@ public class ActMain extends AppCompatActivity
 	Typeface timeline_font_bold;
 	
 	boolean dont_crop_media_thumbnail;
+	boolean mShortAcctLocalUser;
+	int mAvatarIconSize;
 	
 	View llQuickTootBar;
 	MyEditText etQuickToot;
@@ -804,7 +806,24 @@ public class ActMain extends AppCompatActivity
 				log.trace( ex );
 			}
 		}
-
+		
+		mShortAcctLocalUser = pref.getBoolean( Pref.KEY_SHORT_ACCT_LOCAL_USER ,false);
+		
+		{
+			float icon_size_dp = 48f;
+			try{
+				sv = pref.getString( Pref.KEY_AVATAR_ICON_SIZE, "48" );
+				float fv = Float.parseFloat( sv );
+				if( Float.isNaN( fv ) || Float.isInfinite( fv ) || fv < 1f ){
+					// error or bad range
+				}else{
+					icon_size_dp = fv;
+				}
+			}catch(Throwable ex){
+				log.trace( ex );
+			}
+			mAvatarIconSize = (int)(0.5f + icon_size_dp * density );
+		}
 		
 		llEmpty = findViewById( R.id.llEmpty );
 		
@@ -2669,6 +2688,7 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	static final Pattern reUriOStatusToot = Pattern.compile( "tag:([^,]*),[^:]*:objectId=(\\d+):objectType=Status", Pattern.CASE_INSENSITIVE );
+	// static final Pattern reUriActivityPubToot = Pattern.compile( "tag:([^,]*),[^:]*:objectId=(\\d+):objectType=Status", Pattern.CASE_INSENSITIVE );
 	
 	public void openStatusOtherInstance( int pos, @NonNull SavedAccount access_info, @NonNull TootStatusLike status ){
 		if( status.account == null ){
@@ -2699,6 +2719,13 @@ public class ActMain extends AppCompatActivity
 					if( m.find() ){
 						status_id_original = Long.parseLong( m.group( 2 ), 10 );
 						// host_original = m.group( 1 );
+					}else{
+						// TODO ActivityPub対応
+//						m = reUriOStatusToot.matcher( ts.uri );
+//						if( m.find() ){
+//							status_id_original = Long.parseLong( m.group( 2 ), 10 );
+//							// host_original = m.group( 1 );
+//						}
 					}
 				}catch( Throwable ex ){
 					log.e( ex, "openStatusOtherInstance: cant parse tag: %s", ts.uri );

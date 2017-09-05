@@ -285,8 +285,8 @@ public class App1 extends Application {
 			
 			OkHttpClient.Builder builder = new OkHttpClient.Builder()
 				.connectTimeout( 30, TimeUnit.SECONDS )
-				.readTimeout( 30, TimeUnit.SECONDS )
-				.writeTimeout( 30, TimeUnit.SECONDS )
+				.readTimeout( 60, TimeUnit.SECONDS )
+				.writeTimeout( 60, TimeUnit.SECONDS )
 				.pingInterval( 10, TimeUnit.SECONDS )
 				.connectionSpecs( spec_list );
 			

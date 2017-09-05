@@ -459,5 +459,8 @@
     <string name="profile_pin">Pin on profile</string>
     <string name="profile_unpin">Unpin from profile</string>
     <string name="profile_pin_progress">Changing pinned status…</string>
+    <string name="length_warning">\"%1$s\" is too long (%2$d/%3$d characters).\nIt is not acceptable in the standard instance, but it may be acceptable in some instances.\nAre you sure?</string>
+    <string name="avatar_icon_size">Avatar icon size (unit:dp. default:48. app restart required)</string>
+    <string name="short_acct_local_user">Short acct for local user (app restart required)</string>
 
 </resources>

@@ -18,21 +18,24 @@ class HeaderViewHolderSearchDesc extends HeaderViewHolderBase {
 			, arg_activity.getLayoutInflater().inflate( R.layout.lv_header_search_desc, parent, false )
 		);
 		
-		if( activity.timeline_font != null ){
-			Utils.scanView( viewRoot, new Utils.ScanViewCallback() {
-				@Override public void onScanView( View v ){
-					try{
-						if( v instanceof Button ){
-							// ボタンは太字なので触らない
-						}else if( v instanceof TextView ){
+		Utils.scanView( viewRoot, new Utils.ScanViewCallback() {
+			@Override public void onScanView( View v ){
+				try{
+					if( v instanceof Button ){
+						// ボタンは太字なので触らない
+					}else if( v instanceof TextView ){
+						if( activity.timeline_font != null ){
 							( (TextView) v ).setTypeface( activity.timeline_font );
 						}
-					}catch( Throwable ex ){
-						log.trace( ex );
+						if( ! Float.isNaN( activity.timeline_font_size_sp ) ){
+							( (TextView) v ).setTextSize( activity.timeline_font_size_sp );
+						}
 					}
+				}catch( Throwable ex ){
+					log.trace( ex );
 				}
-			} );
-		}
+			}
+		} );
 		
 		CharSequence sv = HTMLDecoder.decodeHTML( activity, access_info, html, false, true, null );
 		

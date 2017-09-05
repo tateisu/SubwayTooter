@@ -218,6 +218,10 @@ class Column implements StreamReader.Callback {
 	boolean search_resolve;
 	
 	String instance_uri;
+	
+	// 「インスタンス情報」カラムに表示するインスタンス情報
+	// (SavedAccount中のインスタンス情報とは異なるので注意)
+	TootInstance instance_information;
 
 	ScrollPosition scroll_save;
 	
@@ -1185,14 +1189,15 @@ class Column implements StreamReader.Callback {
 				return result;
 			}
 			
+			TootInstance instance_tmp;
+			
 			TootApiResult getInstanceInformation( @NonNull TootApiClient client ,@Nullable String instance_name){
+				instance_tmp = null;
 				if( instance_name != null ) client.setInstance( instance_name );
 				TootApiResult result = client.request( "/api/v1/instance" );
 				if( result != null && result.object != null ){
-					TootInstance instance = TootInstance.parse( result.object );
-					if( instance != null ){
-						access_info.refInstance.set( instance );
-					}
+					instance_tmp = TootInstance.parse( result.object );
+
 				}
 				return result;
 			}
@@ -1202,7 +1207,7 @@ class Column implements StreamReader.Callback {
 				TootApiResult result = client.request( path_base );
 				if( result != null && result.array != null ){
 					//
-					TootStatus.List src = TootStatus.parseList( context, access_info, result.array );
+					TootStatus.List src = TootStatus.parseList( context, access_info, result.array ,true);
 					
 					for(TootStatus status : src ){
 						log.d("pinned: %s %s",status.id, status.decoded_content);
@@ -1248,7 +1253,7 @@ class Column implements StreamReader.Callback {
 //							break;
 //						}
 //
-//						src = TootStatus.parseList( context, access_info, result2.array );
+//						src = TootStatus.parseList( context, access_info, result2.array  ,true);
 //						for(TootStatus status : src ){
 //							log.d("pinned: %s %s",status.id, status.decoded_content);
 //						}
@@ -1459,12 +1464,16 @@ class Column implements StreamReader.Callback {
 						
 						default:
 						case TAB_STATUS:
-							TootInstance instance = access_info.refInstance.get();
+							TootInstance instance = access_info.getInstance();
 							if( access_info.isPseudo() || instance == null ){
 								TootApiResult r2 = getInstanceInformation( client ,null );
-								instance = access_info.refInstance.get();
+								if( instance_tmp != null ){
+									instance = instance_tmp;
+									access_info.setInstance( instance_tmp );
+								}
 								if( access_info.isPseudo() ) return r2;
 							}
+
 							{
 								String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
 								if( with_attachment ) s = s + "&only_media=1";
@@ -1612,8 +1621,13 @@ class Column implements StreamReader.Callback {
 						}
 						return result;
 					
-					case TYPE_INSTANCE_INFORMATION:
-						return getInstanceInformation( client ,instance_uri);
+					case TYPE_INSTANCE_INFORMATION:{
+						result = getInstanceInformation( client, instance_uri );
+						if( instance_tmp != null ){
+							instance_information = instance_tmp;
+						}
+						return result;
+					}
 					}
 				}finally{
 					try{

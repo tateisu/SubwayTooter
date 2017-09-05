@@ -424,11 +424,11 @@ public class ActAccountSetting extends AppCompatActivity
 			break;
 		
 		case R.id.btnDisplayName:
-			sendDisplayName();
+			sendDisplayName(false);
 			break;
 		
 		case R.id.btnNote:
-			sendNote();
+			sendNote(false);
 			break;
 			
 		case R.id.btnNotificationStyleEdit:
@@ -576,6 +576,7 @@ public class ActAccountSetting extends AppCompatActivity
 	///////////////////////////////////////////////////
 	private void performAccessToken(){
 		
+		//noinspection deprecation
 		final ProgressDialog progress = new ProgressDialog( ActAccountSetting.this );
 		
 		final AsyncTask< Void, String, TootApiResult > task = new AsyncTask< Void, String, TootApiResult >() {
@@ -692,6 +693,7 @@ public class ActAccountSetting extends AppCompatActivity
 	void loadProfile(){
 		// サーバから情報をロードする
 		
+		//noinspection deprecation
 		final ProgressDialog progress = new ProgressDialog( this );
 		
 		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
@@ -772,6 +774,8 @@ public class ActAccountSetting extends AppCompatActivity
 	}
 	
 	void updateCredential( final String form_data ){
+		
+		//noinspection deprecation
 		final ProgressDialog progress = new ProgressDialog( this );
 		
 		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
@@ -814,7 +818,7 @@ public class ActAccountSetting extends AppCompatActivity
 					progress.dismiss();
 				}catch( Throwable ignored ){
 				}
-				loadProfile();
+				
 				if( result == null ){
 					// cancelled.
 				}else if( data != null ){
@@ -835,12 +839,55 @@ public class ActAccountSetting extends AppCompatActivity
 		progress.show();
 	}
 	
-	private void sendDisplayName(){
-		updateCredential( "display_name=" + Uri.encode( etDisplayName.getText().toString() ) );
+	static final int max_length_display_name = 30;
+	static final int max_length_note = 160;
+	
+	private void sendDisplayName(boolean bConfirmed){
+		String sv = etDisplayName.getText().toString();
+		if( !bConfirmed ){
+			int length = sv.codePointCount( 0,sv.length() );
+			if( length > max_length_display_name ){
+				new AlertDialog.Builder( this )
+					.setMessage( getString(R.string.length_warning
+						,getString(R.string.display_name)
+						,length,max_length_display_name
+					))
+					.setNegativeButton( R.string.cancel ,null)
+					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
+						@Override public void onClick( DialogInterface dialogInterface, int i ){
+							sendDisplayName(true);
+						}
+					} )
+					.setCancelable( true )
+					.show();
+				return;
+			}
+		}
+		updateCredential( "display_name=" + Uri.encode(sv ) );
 	}
 	
-	private void sendNote(){
-		updateCredential( "note=" + Uri.encode( etNote.getText().toString() ) );
+	private void sendNote(boolean bConfirmed){
+		String sv = etNote.getText().toString();
+		if( !bConfirmed ){
+			int length = sv.codePointCount( 0,sv.length() );
+			if( length > max_length_note ){
+				new AlertDialog.Builder( this )
+					.setMessage( getString(R.string.length_warning
+						,getString(R.string.note)
+						,length,max_length_note
+					))
+					.setNegativeButton( R.string.cancel ,null)
+					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
+						@Override public void onClick( DialogInterface dialogInterface, int i ){
+							sendNote(true);
+						}
+					} )
+					.setCancelable( true )
+					.show();
+				return;
+			}
+		}
+		updateCredential( "note=" + Uri.encode(sv ) );
 	}
 	
 	private static final int PERMISSION_REQUEST_AVATAR = 1;

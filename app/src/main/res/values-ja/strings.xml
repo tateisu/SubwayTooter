@@ -752,4 +752,8 @@
     <string name="profile_pin">プロフィールに固定表示</string>
     <string name="profile_unpin">プロフィールの固定表示を解除</string>
     <string name="profile_pin_progress">固定表示の変更中…</string>
+    <string name="length_warning">\"%1$s\"が長すぎます(%2$d/%3$d文字).\n標準的なインスタンスではエラーとなりますが、いくつかのインスタンスでは許容されるかも。\nよろしいですか?</string>
+    <string name="avatar_icon_size">アバターアイコンサイズ(単位:dp. デフォルト:48. アプリ再起動が必要)</string>
+    <string name="short_acct_local_user">ローカルユーザのAcct表記を短くする(アプリ再起動が必要)</string>
+
 </resources>

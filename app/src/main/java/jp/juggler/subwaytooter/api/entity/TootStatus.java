@@ -87,6 +87,14 @@ public class TootStatus extends TootStatusLike {
 	
 	@Nullable
 	public static TootStatus parse( @NonNull Context context, @NonNull SavedAccount access_info, JSONObject src ){
+		return parse( context,access_info,src,false);
+	}
+
+	@Nullable
+	public static TootStatus parse( @NonNull Context context, @NonNull SavedAccount access_info, JSONObject src ,boolean bPinned){
+		/*
+			bPinned 引数がtrueになるのはプロフィールカラムからpinned TL を読んだ時だけである
+		*/
 		
 		if( src == null ) return null;
 		//	log.d( "parse: %s", src.toString() );
@@ -111,7 +119,8 @@ public class TootStatus extends TootStatusLike {
 			
 			status.in_reply_to_id = Utils.optStringX( src, "in_reply_to_id" ); // null
 			status.in_reply_to_account_id = Utils.optStringX( src, "in_reply_to_account_id" ); // null
-			status.reblog = TootStatus.parse( context, access_info, src.optJSONObject( "reblog" ) );
+			status.reblog = TootStatus.parse( context, access_info, src.optJSONObject( "reblog" ) ,false  );
+			/* Pinned TL を取得した時にreblogが登場することはないので、reblogをパースするときのbPinnedはfalseでよい */
 			status.content = Utils.optStringX( src, "content" );
 			status.created_at = Utils.optStringX( src, "created_at" ); // "2017-04-16T09:37:14.000Z"
 			status.reblogs_count = src.optLong( "reblogs_count" );
@@ -125,7 +134,7 @@ public class TootStatus extends TootStatusLike {
 			status.tags = TootTag.parseList( src.optJSONArray( "tags" ) );
 			status.application = TootApplication.parse( src.optJSONObject( "application" ) ); // null
 			
-			status.pinned = src.optBoolean( "pinned" );
+			status.pinned = bPinned || src.optBoolean( "pinned" );
 			
 			status.setSpoilerText( context, Utils.optStringX( src, "spoiler_text" ) );
 			
@@ -136,7 +145,6 @@ public class TootStatus extends TootStatusLike {
 			status.decoded_content = HTMLDecoder.decodeHTML( context, access_info, status.content, true, true, status.media_attachments );
 			// status.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
 			status.decoded_mentions = HTMLDecoder.decodeMentions( access_info, status.mentions );
-			
 			
 			status.enquete = NicoEnquete.parse( context,access_info , status.media_attachments , Utils.optStringX( src, "enquete"),status.id,status.time_created_at );
 			
@@ -150,6 +158,11 @@ public class TootStatus extends TootStatusLike {
 	
 	@NonNull
 	public static List parseList( @NonNull Context context, @NonNull SavedAccount access_info, JSONArray array ){
+		return parseList( context,access_info,array,false );
+	}
+
+	@NonNull
+	public static List parseList( @NonNull Context context, @NonNull SavedAccount access_info, JSONArray array ,boolean bPinned){
 		List result = new List();
 		if( array != null ){
 			int array_size = array.length();
@@ -157,7 +170,7 @@ public class TootStatus extends TootStatusLike {
 			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootStatus item = parse( context, access_info, src );
+				TootStatus item = parse( context, access_info, src ,bPinned );
 				if( item != null ) result.add( item );
 			}
 		}

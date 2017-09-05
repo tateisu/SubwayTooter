@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.util;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -9,17 +10,25 @@ import java.util.ArrayList;
 public class VersionString {
 	// static final LogCategory log = new LogCategory( "VersionString" );
 	
-	private final String src;
-
-	private final ArrayList<Object> node_list = new ArrayList<>(  );
-
+	@NonNull private final String src;
+	
+	@Override public String toString(){
+		return src;
+	}
+	
+	private final ArrayList< Object > node_list = new ArrayList<>();
+	
+	public boolean isEmpty(){
+		return node_list.isEmpty();
+	}
+	
 	private static boolean isDelimiter( char c ){
 		return c == '.' || c == ' ';
 	}
 	
 	public VersionString( @Nullable String src ){
-		this.src = src;
-		if( src == null ) return;
+		this.src = src == null ? "" : src;
+		if( TextUtils.isEmpty( src ) ) return;
 		int end = src.length();
 		int next = 0;
 		while( next < end ){
@@ -49,14 +58,10 @@ public class VersionString {
 		}
 	}
 	
-	public boolean isEmpty(){
-		return node_list.isEmpty();
-	}
-	
 	// return -1 if a<b , return 1 if a>b , return 0 if a==b
 	public static int compare( @NonNull VersionString a, @NonNull VersionString b ){
 		
-		for( int idx =0 ;; ++idx){
+		for( int idx = 0 ; ; ++ idx ){
 			Object ao = ( idx >= a.node_list.size() ? null : a.node_list.get( idx ) );
 			Object bo = ( idx >= b.node_list.size() ? null : b.node_list.get( idx ) );
 			if( ao == null ){

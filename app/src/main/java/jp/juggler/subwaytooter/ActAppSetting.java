@@ -104,6 +104,7 @@ public class ActAppSetting extends AppCompatActivity
 	Switch swMentionFullAcct;
 	Switch swRelativeTimestamp;
 	Switch swDontUseActionButtonWithQuickTootBar;
+	Switch swShortAcctLocalUser;
 	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
@@ -148,6 +149,7 @@ public class ActAppSetting extends AppCompatActivity
 	EditText etAcctFontSize;
 	TextView tvTimelineFontSize;
 	TextView tvAcctFontSize;
+	EditText etAvatarIconSize;
 	
 	static final float default_timeline_font_size = 14f;
 	static final float default_acct_font_size = 12f;
@@ -216,6 +218,9 @@ public class ActAppSetting extends AppCompatActivity
 		
 		swDontUseActionButtonWithQuickTootBar = findViewById( R.id.swDontUseActionButtonWithQuickTootBar );
 		swDontUseActionButtonWithQuickTootBar.setOnCheckedChangeListener( this );
+		
+		swShortAcctLocalUser = findViewById( R.id.swShortAcctLocalUser );
+		swShortAcctLocalUser.setOnCheckedChangeListener( this );
 		
 		cbNotificationSound = findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = findViewById( R.id.cbNotificationVibration );
@@ -344,6 +349,8 @@ public class ActAppSetting extends AppCompatActivity
 		etAcctFontSize = findViewById( R.id.etAcctFontSize );
 		etAcctFontSize.addTextChangedListener( new SizeCheckTextWatcher( tvAcctFontSize, etAcctFontSize, default_acct_font_size ) );
 		
+		etAvatarIconSize = findViewById( R.id.etAvatarIconSize );
+		
 		tvTimelineFontUrl = findViewById( R.id.tvTimelineFontUrl );
 		tvTimelineFontBoldUrl = findViewById( R.id.tvTimelineFontBoldUrl );
 		
@@ -372,6 +379,7 @@ public class ActAppSetting extends AppCompatActivity
 		swMentionFullAcct.setChecked( pref.getBoolean( Pref.KEY_MENTION_FULL_ACCT, false ) );
 		swRelativeTimestamp.setChecked( pref.getBoolean( Pref.KEY_RELATIVE_TIMESTAMP, false ) );
 		swDontUseActionButtonWithQuickTootBar.setChecked( pref.getBoolean( Pref.KEY_DONT_USE_ACTION_BUTTON, false ) );
+		swShortAcctLocalUser.setChecked( pref.getBoolean( Pref.KEY_SHORT_ACCT_LOCAL_USER, false ) );
 		
 		// Switch with default true
 		swDisableFastScroller.setChecked( pref.getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
@@ -401,6 +409,7 @@ public class ActAppSetting extends AppCompatActivity
 		etClientName.setText( pref.getString( Pref.KEY_CLIENT_NAME, "" ) );
 		etQuoteNameFormat.setText( pref.getString( Pref.KEY_QUOTE_NAME_FORMAT, "" ) );
 		etAutoCWLines.setText( pref.getString( Pref.KEY_AUTO_CW_LINES, "0" ) );
+		etAvatarIconSize.setText( pref.getString( Pref.KEY_AVATAR_ICON_SIZE, "48" ) );
 		
 		etTimelineFontSize.setText( formatFontSize( pref.getFloat( Pref.KEY_TIMELINE_FONT_SIZE, Float.NaN ) ) );
 		etAcctFontSize.setText( formatFontSize( pref.getFloat( Pref.KEY_ACCT_FONT_SIZE, Float.NaN ) ) );
@@ -441,6 +450,9 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_MENTION_FULL_ACCT, swMentionFullAcct.isChecked() )
 			.putBoolean( Pref.KEY_RELATIVE_TIMESTAMP, swRelativeTimestamp.isChecked() )
 			.putBoolean( Pref.KEY_DONT_USE_ACTION_BUTTON, swDontUseActionButtonWithQuickTootBar.isChecked() )
+			.putBoolean( Pref.KEY_SHORT_ACCT_LOCAL_USER, swShortAcctLocalUser.isChecked() )
+		
+
 			
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )
@@ -467,6 +479,8 @@ public class ActAppSetting extends AppCompatActivity
 			.putString( Pref.KEY_CLIENT_NAME, etClientName.getText().toString().trim() )
 			.putString( Pref.KEY_QUOTE_NAME_FORMAT, etQuoteNameFormat.getText().toString() ) // not trimmed
 			.putString( Pref.KEY_AUTO_CW_LINES, etAutoCWLines.getText().toString() ) // not trimmed
+			.putString( Pref.KEY_AVATAR_ICON_SIZE, etAvatarIconSize.getText().toString().trim() )
+			
 			.putFloat( Pref.KEY_TIMELINE_FONT_SIZE, parseFontSize( etTimelineFontSize.getText().toString().trim() ) )
 			.putFloat( Pref.KEY_ACCT_FONT_SIZE, parseFontSize( etAcctFontSize.getText().toString().trim() ) )
 			

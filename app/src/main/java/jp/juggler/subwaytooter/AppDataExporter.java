@@ -317,6 +317,7 @@ public class AppDataExporter {
 			case Pref.KEY_MENTION_FULL_ACCT:
 			case Pref.KEY_RELATIVE_TIMESTAMP:
 			case Pref.KEY_DONT_USE_ACTION_BUTTON:
+			case Pref.KEY_SHORT_ACCT_LOCAL_USER:
 				boolean bv = reader.nextBoolean();
 				e.putBoolean( k, bv );
 				break;
@@ -352,6 +353,7 @@ public class AppDataExporter {
 			case Pref.KEY_MASTODON_SEARCH_PORTAL_USER_TOKEN:
 			case Pref.KEY_QUOTE_NAME_FORMAT:
 			case Pref.KEY_AUTO_CW_LINES:
+			case Pref.KEY_AVATAR_ICON_SIZE:
 				String sv = reader.nextString();
 				e.putString( k, sv );
 				break;

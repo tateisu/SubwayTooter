@@ -75,7 +75,7 @@ class HeaderViewHolderInstance extends HeaderViewHolderBase implements View.OnCl
 	
 	@Override void bindData( Column column ){
 		this.column = column;
-		this.instance = column.access_info.refInstance.get();
+		this.instance = column.instance_information;
 		
 		if( instance == null ){
 			btnInstance.setText( "?" );

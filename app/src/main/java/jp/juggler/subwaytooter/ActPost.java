@@ -651,6 +651,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			@Override
 			public void onCheckedChanged( CompoundButton buttonView, boolean isChecked ){
 				showEnquete();
+				updateTextCount();
 			}
 		} );
 		
@@ -665,26 +666,30 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			}
 		} );
 		
-		etContentWarning.addTextChangedListener( new TextWatcher() {
-			@Override
-			public void beforeTextChanged( CharSequence s, int start, int count, int after ){
-				
-			}
-			
-			@Override public void onTextChanged( CharSequence s, int start, int before, int count ){
-				
-			}
-			
-			@Override public void afterTextChanged( Editable s ){
-				updateTextCount();
-			}
-		} );
+		etContentWarning.addTextChangedListener( text_watcher);
+		for(MyEditText et : list_etChoice ){
+			et.addTextChangedListener( text_watcher);
+		}
 		
 		scrollView.getViewTreeObserver().addOnScrollChangedListener( scroll_listener );
 		
 		View v = findViewById( R.id.btnMore );
 		v.setOnClickListener( this );
 	}
+	
+	final TextWatcher text_watcher = new TextWatcher() {
+		@Override public void beforeTextChanged( CharSequence charSequence, int i, int i1, int i2 ){
+			
+		}
+		
+		@Override public void onTextChanged( CharSequence charSequence, int i, int i1, int i2 ){
+			
+		}
+		
+		@Override public void afterTextChanged( Editable editable ){
+			updateTextCount();
+		}
+	};
 	
 	final ViewTreeObserver.OnScrollChangedListener scroll_listener = new ViewTreeObserver.OnScrollChangedListener() {
 		@Override public void onScrollChanged(){
@@ -694,12 +699,26 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	};
 	
 	private void updateTextCount(){
-		String s = etContent.getText().toString();
-		int count_content = s.codePointCount( 0, s.length() );
-		s = cbContentWarning.isChecked() ? etContentWarning.getText().toString() : "";
-		int count_spoiler = s.codePointCount( 0, s.length() );
+		int length = 0;
 		
-		int remain = 500 - count_content - count_spoiler;
+		String s = etContent.getText().toString();
+		length += s.codePointCount( 0, s.length() );
+
+		s = cbContentWarning.isChecked() ? etContentWarning.getText().toString() : "";
+		length +=  s.codePointCount( 0, s.length() );
+		
+		int max;
+		if( !cbEnquete.isChecked() ){
+			max = 500;
+		}else{
+			max = 350;
+			for( MyEditText et : list_etChoice){
+				s = et.getText().toString();
+				length += s.codePointCount( 0, s.length() );
+			}
+		}
+		
+		int remain = max - length;
 		tvCharCount.setText( Integer.toString( remain ) );
 		int color = Styler.getAttributeColor( this, remain < 0 ? R.attr.colorRegexFilterError : android.R.attr.textColorPrimary );
 		tvCharCount.setTextColor( color );

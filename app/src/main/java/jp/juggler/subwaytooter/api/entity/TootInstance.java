@@ -1,13 +1,13 @@
 package jp.juggler.subwaytooter.api.entity;
-
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-
-import org.json.JSONObject;
-
-import jp.juggler.subwaytooter.util.LogCategory;
-import jp.juggler.subwaytooter.util.Utils;
-import jp.juggler.subwaytooter.util.VersionString;
+	
+	import android.support.annotation.NonNull;
+	import android.support.annotation.Nullable;
+	
+	import org.json.JSONObject;
+	
+	import jp.juggler.subwaytooter.util.LogCategory;
+	import jp.juggler.subwaytooter.util.Utils;
+	import jp.juggler.subwaytooter.util.VersionString;
 
 @SuppressWarnings("WeakerAccess")
 public class TootInstance {
@@ -27,7 +27,11 @@ public class TootInstance {
 	
 	public String version;
 	
+	// バージョンの内部表現
 	public VersionString decoded_version;
+	
+	// いつ取得したか
+	public long time_parse;
 	
 	@Nullable
 	public static TootInstance parse( JSONObject src ){
@@ -40,6 +44,7 @@ public class TootInstance {
 			dst.email = Utils.optStringX( src, "email" );
 			dst.version = Utils.optStringX( src, "version" );
 			dst.decoded_version = new VersionString( dst.version );
+			dst.time_parse = System.currentTimeMillis();
 			return dst;
 		}catch( Throwable ex ){
 			log.trace( ex );
@@ -48,11 +53,9 @@ public class TootInstance {
 		}
 	}
 	
-	
-	
 	public boolean isEnoughVersion( @NonNull VersionString check ){
 		if( decoded_version.isEmpty() || check.isEmpty() ) return false;
-		int i = VersionString.compare( decoded_version ,check );
+		int i = VersionString.compare( decoded_version, check );
 		return i >= 0;
 	}
 }

@@ -243,6 +243,12 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			tvAcct.setTextSize( activity.acct_font_size_sp );
 			tvTime.setTextSize( activity.acct_font_size_sp );
 		}
+		
+		ivBoosted.getLayoutParams().width =
+		ivFollow.getLayoutParams().width =
+		ivThumbnail.getLayoutParams().width =
+		ivThumbnail.getLayoutParams().height = activity.mAvatarIconSize;
+		
 	}
 	
 	void bind( Object item ){
@@ -379,7 +385,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		ivBoosted.setImageResource( Styler.getAttributeResourceId( activity, icon_attr_id ) );
 		tvBoostedTime.setText( TootStatus.formatTime( tvBoostedTime.getContext(), time, true ) );
 		tvBoosted.setText( text );
-		setAcct( tvBoostedAcct, access_info.getFullAcct( who ) );
+		setAcct( tvBoostedAcct, access_info.getFullAcct( who ) ,who.acct);
 	}
 	
 	private void showFollow( @NonNull TootAccount who ){
@@ -387,7 +393,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		llFollow.setVisibility( View.VISIBLE );
 		ivFollow.setImageUrl( activity.pref, 16f, access_info.supplyBaseUrl( who.avatar_static ) );
 		tvFollowerName.setText( who.decoded_display_name );
-		setAcct( tvFollowerAcct, access_info.getFullAcct( who ) );
+		setAcct( tvFollowerAcct, access_info.getFullAcct( who ) ,who.acct );
 		
 		UserRelation relation = UserRelation.load( access_info.db_id, who.id );
 		Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation );
@@ -399,8 +405,9 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		showStatusTime( activity, status );
 		
-		account_thumbnail = status.account;
-		setAcct( tvAcct, access_info.getFullAcct( status.account ) );
+		TootAccount who = account_thumbnail = status.account;
+		
+		setAcct( tvAcct, access_info.getFullAcct( who ) ,who == null ? "?" : who.acct  );
 		
 		if( status.account == null ){
 			tvName.setText( "?" );
@@ -570,9 +577,9 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		tvTime.setText( sb );
 	}
 	
-	private void setAcct( TextView tv, String acct ){
-		AcctColor ac = AcctColor.load( acct );
-		tv.setText( AcctColor.hasNickname( ac ) ? ac.nickname : acct );
+	private void setAcct( @NonNull TextView tv, @NonNull String acctLong,@NonNull String acctShort ){
+		AcctColor ac = AcctColor.load( acctLong );
+		tv.setText( AcctColor.hasNickname( ac ) ? ac.nickname : activity.mShortAcctLocalUser ? "@"+acctShort : acctLong );
 		tv.setTextColor( AcctColor.hasColorForeground( ac ) ? ac.color_fg : this.acct_color );
 		
 		if( AcctColor.hasColorBackground( ac ) ){

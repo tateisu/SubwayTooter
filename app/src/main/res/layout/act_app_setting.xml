@@ -593,6 +593,23 @@
 
         <TextView
             style="@style/setting_row_label"
+            android:text="@string/short_acct_local_user"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swShortAcctLocalUser"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
             android:text="@string/relative_timestamp"
             />
 
@@ -1007,6 +1024,25 @@
 
             <EditText
                 android:id="@+id/etAcctFontSize"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="numberDecimal"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etAvatarIconSize"
+            android:text="@string/avatar_icon_size"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etAvatarIconSize"
                 style="@style/setting_horizontal_stretch"
                 android:gravity="center"
                 android:inputType="numberDecimal"

@@ -46,6 +46,7 @@ public class TaskList {
 	
 	private synchronized void saveArray( @NonNull Context context ){
 		try{
+			log.d("saveArray size=%s",list.size());
 			JSONArray array = new JSONArray();
 			for( JSONObject item : list ){
 				array.put( item );
@@ -59,7 +60,7 @@ public class TaskList {
 			}
 		}catch( Throwable ex ){
 			log.trace( ex );
-			log.e( ex, "TaskList: saveArray failed." );
+			log.e( ex, "TaskList: saveArray failed.size=%s",list.size());
 		}
 	}
 	

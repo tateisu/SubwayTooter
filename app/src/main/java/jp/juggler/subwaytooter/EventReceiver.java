@@ -16,14 +16,14 @@ public class EventReceiver extends BroadcastReceiver {
 			String action = intent.getAction();
 			
 			if( Intent.ACTION_BOOT_COMPLETED.equals( action ) ){
-				PollingService.queueBootCompleted( context );
+				PollingWorker.queueBootCompleted( context );
 				
 			}else if( Intent.ACTION_MY_PACKAGE_REPLACED.equals( action ) ){
-				PollingService.queuePackageReplaced( context );
+				PollingWorker.queuePackageReplaced( context );
 				
 			}else if( ACTION_NOTIFICATION_DELETE.equals( action ) ){
-				long db_id = intent.getLongExtra( PollingService.EXTRA_DB_ID, - 1L );
-				PollingService.queueNotificationDeleted( context, db_id );
+				long db_id = intent.getLongExtra( PollingWorker.EXTRA_DB_ID, - 1L );
+				PollingWorker.queueNotificationDeleted( context, db_id );
 				
 			}else{
 				log.e( "onReceive: unsupported action %s", action );

@@ -98,7 +98,7 @@ public class ActAccountSetting extends AppCompatActivity
 	}
 	
 	@Override protected void onStop(){
-		PollingService.queueUpdateNotification( this );
+		PollingWorker.queueUpdateNotification( this );
 		super.onStop();
 	}
 	
@@ -540,7 +540,7 @@ public class ActAccountSetting extends AppCompatActivity
 									+ "&tag=" + tag;
 								
 								Request request = new Request.Builder()
-									.url( PollingService.APP_SERVER + "/unregister" )
+									.url( PollingWorker.APP_SERVER + "/unregister" )
 									.post( RequestBody.create( TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, post_data ) )
 									.build();
 								

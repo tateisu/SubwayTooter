@@ -162,7 +162,7 @@ public class ActMain extends AppCompatActivity
 			}
 		}
 		
-		PollingService.queueUpdateNotification( this );
+		PollingWorker.queueUpdateNotification( this );
 		
 		if( savedInstanceState != null && sent_intent2 != null ){
 			handleSentIntent( sent_intent2 );
@@ -1349,7 +1349,7 @@ public class ActMain extends AppCompatActivity
 						column.startLoading();
 					}
 					
-					PollingService.queueNotificationClicked( this, db_id );
+					PollingWorker.queueNotificationClicked( this, db_id );
 					
 				}
 			}catch( Throwable ex ){
@@ -1508,7 +1508,7 @@ public class ActMain extends AppCompatActivity
 				}
 				
 				// 通知の更新が必要かもしれない
-				PollingService.queueUpdateNotification( ActMain.this );
+				PollingWorker.queueUpdateNotification( ActMain.this );
 				return true;
 			}
 		}else if( host != null ){
@@ -1541,7 +1541,7 @@ public class ActMain extends AppCompatActivity
 				Utils.showToast( ActMain.this, false, R.string.account_confirmed );
 				
 				// 通知の更新が必要かもしれない
-				PollingService.queueUpdateNotification( ActMain.this );
+				PollingWorker.queueUpdateNotification( ActMain.this );
 				
 				// 適当にカラムを追加する
 				long count = SavedAccount.getCount();
@@ -4423,8 +4423,8 @@ public class ActMain extends AppCompatActivity
 					
 					// 通知サービスを止める
 					setProgressMessage( "reset Notification..." );
-					PollingService.queueAppDataImportBefore( ActMain.this );
-					while( PollingService.mBusyAppDataImportBefore.get() ){
+					PollingWorker.queueAppDataImportBefore( ActMain.this );
+					while( PollingWorker.mBusyAppDataImportBefore.get() ){
 						Thread.sleep( 100L );
 					}
 					
@@ -4481,7 +4481,7 @@ public class ActMain extends AppCompatActivity
 				}
 				
 				// 通知サービスをリスタート
-				PollingService.queueAppDataImportAfter( ActMain.this );
+				PollingWorker.queueAppDataImportAfter( ActMain.this );
 				
 			}
 		};

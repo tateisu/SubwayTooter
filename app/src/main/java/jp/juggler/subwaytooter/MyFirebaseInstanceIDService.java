@@ -18,7 +18,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
 			
 			PrefDevice.prefDevice( this ).edit().putString( PrefDevice.KEY_DEVICE_TOKEN, token ).apply();
 			
-			PollingService.queueFCMTokenUpdated(this);
+			PollingWorker.queueFCMTokenUpdated(this);
 			
 		}catch( Throwable ex ){
 			log.trace( ex );

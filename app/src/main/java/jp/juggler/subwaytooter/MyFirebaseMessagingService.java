@@ -24,6 +24,8 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 				}
 			}
 		}
-		PollingService.queueFCMMessage( getApplicationContext() ,tag);
+		
+		PollingWorker.handleFCMMessage( getApplicationContext() ,tag);
+		
 	}
 }

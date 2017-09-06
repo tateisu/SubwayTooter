@@ -613,7 +613,7 @@ public class ActAppSetting extends AppCompatActivity
 				.remove( Pref.KEY_STREAM_LISTENER_CONFIG_DATA )
 				.apply();
 			SavedAccount.clearRegistrationCache();
-			PollingService.queueUpdateListener( this );
+			PollingWorker.queueUpdateListener( this );
 			Utils.showToast( this, false, getString( R.string.custom_stream_listener_was_reset ) );
 			break;
 			

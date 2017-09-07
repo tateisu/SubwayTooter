@@ -162,7 +162,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 					, ActMain.NOT_CROSS_ACCOUNT
 					, ! status.reblogged
 					, false
-					, bSimpleList ? activity.boost_complete_callback : null
+					, !bSimpleList ? null :  status.reblogged ? activity.boost_complete_callback : activity.unboost_complete_callback
 				);
 			}
 			break;
@@ -176,7 +176,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 					, status
 					, ActMain.NOT_CROSS_ACCOUNT
 					, ! status.favourited
-					, bSimpleList ? activity.favourite_complete_callback : null
+					, !bSimpleList ? null : status.favourited ? activity.unfavourite_complete_callback : activity.favourite_complete_callback
 				);
 			}
 			break;

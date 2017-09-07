@@ -3925,12 +3925,21 @@ public class ActMain extends AppCompatActivity
 			Utils.showToast( ActMain.this, false, R.string.favourite_succeeded );
 		}
 	};
+	final ActMain.RelationChangedCallback unfavourite_complete_callback = new ActMain.RelationChangedCallback() {
+		@Override public void onRelationChanged(){
+			Utils.showToast( ActMain.this, false, R.string.unfavourite_succeeded );
+		}
+	};
 	final ActMain.RelationChangedCallback boost_complete_callback = new ActMain.RelationChangedCallback() {
 		@Override public void onRelationChanged(){
 			Utils.showToast( ActMain.this, false, R.string.boost_succeeded );
 		}
 	};
-	
+	final ActMain.RelationChangedCallback unboost_complete_callback = new ActMain.RelationChangedCallback() {
+		@Override public void onRelationChanged(){
+			Utils.showToast( ActMain.this, false, R.string.unboost_succeeded );
+		}
+	};
 	private void openOSSLicense(){
 		startActivity( new Intent( this, ActOSSLicense.class ) );
 	}

@@ -11,6 +11,8 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
@@ -38,6 +40,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -68,6 +71,7 @@ public class PollingWorker {
 	static final LogCategory log = new LogCategory( "PollingWorker" );
 	
 	static final int NOTIFICATION_ID = 1;
+	static final int NOTIFICATION_ID_ERROR = 3;
 	
 	// Notification のJSONObject を日時でソートするためにデータを追加する
 	static final String KEY_TIME = "<>time";
@@ -125,6 +129,7 @@ public class PollingWorker {
 	final Context context;
 	final Handler handler;
 	final SharedPreferences pref;
+	final ConnectivityManager connectivityManager;
 	final NotificationManager notification_manager;
 	final JobScheduler scheduler;
 	final PowerManager power_manager;
@@ -136,6 +141,7 @@ public class PollingWorker {
 		log.d( "ctor" );
 		
 		this.context = c.getApplicationContext();
+		this.connectivityManager = (ConnectivityManager) context.getSystemService( Context.CONNECTIVITY_SERVICE );
 		this.notification_manager = (NotificationManager) context.getSystemService( Context.NOTIFICATION_SERVICE );
 		this.scheduler = (JobScheduler) context.getSystemService( Context.JOB_SCHEDULER_SERVICE );
 		
@@ -209,6 +215,7 @@ public class PollingWorker {
 		
 		public void run(){
 			log.e( "worker thread start." );
+			job_status.set( "worker thread start." );
 			while( ! bThreadCancelled.get() ){
 				JobItem item = null;
 				try{
@@ -221,15 +228,19 @@ public class PollingWorker {
 							break;
 						}
 					}
+					
 					if( item == null ){
+						job_status.set( "no job to run." );
 						waitEx( 86400000L );
 						continue;
 					}
+					job_status.set( "start job " + item.jobId );
 					acquirePowerLock();
 					try{
 						item.refWorker.set( Worker.this );
 						item.run();
 					}finally{
+						job_status.set( "end job " + item.jobId );
 						item.refWorker.set( null );
 						releasePowerLock();
 					}
@@ -237,6 +248,7 @@ public class PollingWorker {
 					log.trace( ex );
 				}
 			}
+			job_status.set( "worker thread end." );
 			log.e( "worker thread end." );
 		}
 	}
@@ -263,7 +275,7 @@ public class PollingWorker {
 	// JobService#onStartJob から呼ばれる
 	public boolean onStartJob( @NonNull JobService jobService, @NonNull JobParameters params ){
 		JobItem item = new JobItem( jobService, params );
-		addJob( item );
+		addJob( item, true );
 		return true;
 		// return True if your context needs to process the work (on a separate thread).
 		// return False if there's no more work to be done for this job.
@@ -272,9 +284,7 @@ public class PollingWorker {
 	// FCMメッセージイベントから呼ばれる
 	private boolean hasJob( int jobId ){
 		synchronized( job_list ){
-			Iterator< JobItem > it = job_list.iterator();
-			while( it.hasNext() ){
-				JobItem itemOld = it.next();
+			for( JobItem itemOld : job_list ){
 				if( itemOld.jobId == jobId ) return true;
 			}
 		}
@@ -282,23 +292,25 @@ public class PollingWorker {
 	}
 	
 	// FCMメッセージイベントから呼ばれる
-	private void addJob( int jobId ){
-		addJob( new JobItem( jobId ) );
+	private void addJob( int jobId, boolean bRemoveOld ){
+		addJob( new JobItem( jobId ), bRemoveOld );
 	}
 	
-	private void addJob( @NonNull JobItem item ){
+	private void addJob( @NonNull JobItem item, boolean bRemoveOld ){
 		int jobId = item.jobId;
 		
 		// 同じジョブ番号がジョブリストにあるか？
 		synchronized( job_list ){
-			Iterator< JobItem > it = job_list.iterator();
-			while( it.hasNext() ){
-				JobItem itemOld = it.next();
-				if( itemOld.jobId == jobId ){
-					log.w( "onStartJob: jobId=%s, old job cancelled." );
-					// 同じジョブをすぐに始めるのだからrescheduleはfalse
-					itemOld.cancel( false );
-					it.remove();
+			if( bRemoveOld ){
+				Iterator< JobItem > it = job_list.iterator();
+				while( it.hasNext() ){
+					JobItem itemOld = it.next();
+					if( itemOld.jobId == jobId ){
+						log.w( "addJob: jobId=%s, old job cancelled.", jobId );
+						// 同じジョブをすぐに始めるのだからrescheduleはfalse
+						itemOld.cancel( false );
+						it.remove();
+					}
 				}
 			}
 			log.d( "addJob: jobId=%s, add to list.", jobId );
@@ -397,10 +409,24 @@ public class PollingWorker {
 		
 		public void run(){
 			
+			job_status.set( "job start." );
 			try{
 				log.d( "(JobItem.run jobId=%s", jobId );
-				
 				if( isJobCancelled() ) throw new JobCancelledException();
+				
+				job_status.set( "check network status.." );
+				
+				long net_wait_start = SystemClock.elapsedRealtime();
+				while( ! checkNetwork() ){
+					if( isJobCancelled() ) throw new JobCancelledException();
+					long now = SystemClock.elapsedRealtime();
+					long delta = now - net_wait_start;
+					if( delta >= 10000L ){
+						log.d( "network state timeout." );
+						break;
+					}
+					waitWorkerThread( 333L );
+				}
 				
 				muted_app = MutedApp.getNameSet();
 				muted_word = MutedWord.getNameSet();
@@ -418,6 +444,7 @@ public class PollingWorker {
 					// タスクがなかった場合でも定期実行ジョブからの実行ならポーリングを行う
 					new TaskRunner().runTask( JobItem.this, TASK_POLLING, null );
 				}
+				job_status.set( "make next schedule." );
 				
 				if( ! isJobCancelled() && bPollingComplete ){
 					// ポーリングが完了したのならポーリングが必要かどうかに合わせてジョブのスケジュールを変更する
@@ -447,6 +474,8 @@ public class PollingWorker {
 			}catch( Throwable ex ){
 				log.trace( ex );
 				log.e( ex, "job execution failed." );
+			}finally{
+				job_status.set( "job finished." );
 			}
 			// ジョブ終了報告
 			if( ! isJobCancelled() ){
@@ -474,6 +503,23 @@ public class PollingWorker {
 			log.d( ")JobItem.run jobId=%s, cancel=%s", jobId, isJobCancelled() );
 		}
 		
+		private boolean checkNetwork(){
+			NetworkInfo ni = connectivityManager.getActiveNetworkInfo();
+			if( ni == null ){
+				log.d( "checkNetwork: getActiveNetworkInfo() returns null." );
+				return false;
+			}else{
+				NetworkInfo.State state = ni.getState();
+				NetworkInfo.DetailedState detail = ni.getDetailedState();
+				log.d( "checkNetwork: state=%s,detail=%s", state, detail );
+				if( state != NetworkInfo.State.CONNECTED ){
+					log.d( "checkNetwork: not connected." );
+					return false;
+				}else{
+					return true;
+				}
+			}
+		}
 	}
 	
 	//////////////////////////////////////////////////////////////////////
@@ -490,13 +536,17 @@ public class PollingWorker {
 		JobItem job;
 		int taskId;
 		
+		final ArrayList< String > error_instance = new ArrayList<>();
+		
 		public void runTask( JobItem job, int taskId, JSONObject taskData ){
 			try{
 				log.e( "(runTask: taskId=%s", taskId );
+				job_status.set( "start task " + taskId );
+				
 				this.job = job;
 				this.taskId = taskId;
 				
-				long process_db_id = -1L;
+				long process_db_id = - 1L;
 				
 				if( taskId == TASK_APP_DATA_IMPORT_BEFORE ){
 					scheduler.cancelAll();
@@ -569,6 +619,8 @@ public class PollingWorker {
 				
 				loadCustomStreamListenerSetting();
 				
+				job_status.set( "make install id" );
+				
 				// インストールIDを生成する
 				// インストールID生成時にSavedAccountテーブルを操作することがあるので
 				// アカウントリストの取得より先に行う
@@ -576,16 +628,19 @@ public class PollingWorker {
 					job.install_id = getInstallId();
 				}
 				
+				job_status.set( "create account thread" );
+				
 				LinkedList< AccountThread > thread_list = new LinkedList<>();
 				for( SavedAccount _a : SavedAccount.loadAccountList( context, log ) ){
 					if( _a.isPseudo() ) continue;
-					if( process_db_id != -1L && _a.db_id != process_db_id ) continue;
+					if( process_db_id != - 1L && _a.db_id != process_db_id ) continue;
 					AccountThread t = new AccountThread( _a );
 					thread_list.add( t );
 					t.start();
 				}
 				
 				for( ; ; ){
+					TreeSet< String > set = new TreeSet<>();
 					Iterator< AccountThread > it = thread_list.iterator();
 					while( it.hasNext() ){
 						AccountThread t = it.next();
@@ -593,13 +648,26 @@ public class PollingWorker {
 							it.remove();
 							continue;
 						}
+						set.add( t.account.host );
 						if( job.isJobCancelled() ){
 							t.cancel();
 						}
 					}
-					if( thread_list.isEmpty() ) break;
-					
+					int remain = thread_list.size();
+					if( remain <= 0 ) break;
+					//
+					StringBuilder sb = new StringBuilder();
+					for( String s : set ){
+						if( sb.length() > 0 ) sb.append( ", " );
+						sb.append( s );
+					}
+					job_status.set( "waiting " + sb.toString() );
+					//
 					job.waitWorkerThread( job.isJobCancelled() ? 50L : 1000L );
+				}
+				
+				synchronized( error_instance ){
+					createErrorNotification( error_instance );
 				}
 				
 				if( ! job.isJobCancelled() ) job.bPollingComplete = true;
@@ -609,7 +677,65 @@ public class PollingWorker {
 				log.e( ex, "task execution failed." );
 			}finally{
 				log.e( ")runTask: taskId=%s", taskId );
+				job_status.set( "end task " + taskId );
 			}
+		}
+		
+		private void createErrorNotification( ArrayList< String > error_instance ){
+			if( error_instance.isEmpty() ){
+				return;
+			}
+			
+			// 通知タップ時のPendingIntent
+			Intent intent_click = new Intent( context, ActCallback.class );
+			intent_click.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+			PendingIntent pi_click = PendingIntent.getActivity( context, 3, intent_click, PendingIntent.FLAG_UPDATE_CURRENT );
+			
+			NotificationCompat.Builder builder;
+			if( Build.VERSION.SDK_INT >= 26 ){
+				// Android 8 から、通知のスタイルはユーザが管理することになった
+				// NotificationChannel を端末に登録しておけば、チャネルごとに管理画面が作られる
+				NotificationChannel channel = NotificationHelper.createNotificationChannel(
+					context
+					, "ErrorNotification"
+					, "Error"
+					, null
+					, NotificationManager.IMPORTANCE_LOW
+				);
+				
+				builder = new NotificationCompat.Builder( context, channel.getId() );
+			}else{
+				builder = new NotificationCompat.Builder( context, "not_used" );
+			}
+			
+			builder
+				.setContentIntent( pi_click )
+				.setAutoCancel( true )
+				.setSmallIcon( R.drawable.ic_notification ) // ここは常に白テーマのアイコンを使う
+				.setColor( ContextCompat.getColor( context, R.color.Light_colorAccent ) ) // ここは常に白テーマの色を使う
+				.setWhen( System.currentTimeMillis() )
+				.setGroup( context.getPackageName() + ":" + "Error" )
+			;
+			
+			{
+				String header = context.getString( R.string.error_notification_title );
+				String summary = context.getString( R.string.error_notification_summary );
+				
+				builder
+					.setContentTitle( header )
+					.setContentText( summary + ": " + error_instance.get( 0 ) )
+				;
+				
+				NotificationCompat.InboxStyle style = new NotificationCompat.InboxStyle()
+					.setBigContentTitle( header )
+					.setSummaryText( summary );
+				for( int i = 0 ; i < 5 ; ++ i ){
+					if( i >= error_instance.size() ) break;
+					style.addLine( error_instance.get( i ) );
+				}
+				builder.setStyle( style );
+			}
+			notification_manager.notify( NOTIFICATION_ID_ERROR, builder.build() );
 		}
 		
 		void loadCustomStreamListenerSetting(){
@@ -950,6 +1076,22 @@ public class PollingWorker {
 							break;
 						}else{
 							log.d( "error. %s", result.error );
+							
+							String sv = result.error;
+							if( sv.contains( "Timeout" ) ){
+								synchronized( error_instance ){
+									boolean bFound = false;
+									for( String x : error_instance ){
+										if( x.equals( sv ) ){
+											bFound = true;
+											break;
+										}
+									}
+									if( ! bFound ){
+										error_instance.add( sv );
+									}
+								}
+							}
 						}
 					}
 				}
@@ -1356,43 +1498,6 @@ public class PollingWorker {
 	// FCMメッセージの処理
 	//
 	
-	public static void handleFCMMessage( @NonNull Context context, long time_start, @Nullable String tag ){
-		// FirebaseMessagingService#onMessageReceived はバックグラウンドスレッドから実行されるので、少しなら待機してもよい
-		// https://firebase.google.com/docs/cloud-messaging/android/receive
-		// 10秒を超えるとプロセスごと殺されるかもしれない
-
-		// タスクを追加
-		JSONObject data = new JSONObject();
-		try{
-			if( tag != null ) data.putOpt( EXTRA_TAG, tag );
-			data.put( EXTRA_TASK_ID, TASK_FCM_MESSAGE );
-		}catch( JSONException ignored ){
-		}
-		task_list.addLast( context, true, data );
-		
-		
-		// JobScheduler 経由ではないがジョブを追加して実行開始
-		PollingWorker pw = getInstance( context );
-		pw.addJob( JOB_FCM );
-		
-		for( ; ; ){
-			long now = SystemClock.elapsedRealtime();
-			if( ! pw.hasJob( JOB_FCM ) ){
-				log.d( "handleFCMMessage: JOB_FCM completed. time=%.2f",(now-time_start)/1000f );
-				break;
-			}
-			if( now - time_start >= ( 1000L * 300 ) ){
-				log.d( "handleFCMMessage: JOB_FCM timeout. exit onMessageReceived..." );
-				break;
-			}
-			try{
-				Thread.sleep( 50L );
-			}catch( InterruptedException ex ){
-				break;
-			}
-		}
-	}
-	
 	////////////////////////////////////////////////////////////////////////////
 	// タスクの追加
 	
@@ -1478,4 +1583,55 @@ public class PollingWorker {
 	public static void queuePackageReplaced( Context context ){
 		addTask( context, true, TASK_PACKAGE_REPLACED, null );
 	}
+	
+	public interface JobStatusCallback {
+		void onStatus( String sv );
+	}
+	
+	static final AtomicReference< String > job_status = new AtomicReference<>( null );
+	
+	public static void handleFCMMessage( Context context, String tag, JobStatusCallback callback ){
+		log.d( "handleFCMMessage: start. tag=%s", tag );
+		long time_start = SystemClock.elapsedRealtime();
+		
+		callback.onStatus( "=>" );
+		
+		// タスクを追加
+		JSONObject data = new JSONObject();
+		try{
+			if( tag != null ) data.putOpt( EXTRA_TAG, tag );
+			data.put( EXTRA_TASK_ID, TASK_FCM_MESSAGE );
+		}catch( JSONException ignored ){
+		}
+		task_list.addLast( context, true, data );
+		
+		callback.onStatus( "==>" );
+		
+		// 疑似ジョブを開始
+		PollingWorker pw = getInstance( context );
+		pw.addJob( JOB_FCM, false );
+		
+		// 疑似ジョブが終了するまで待機する
+		for( ; ; ){
+			// ジョブが完了した？
+			long now = SystemClock.elapsedRealtime();
+			if( ! pw.hasJob( JOB_FCM ) ){
+				log.d( "handleFCMMessage: JOB_FCM completed. time=%.2f", ( now - time_start ) / 1000f );
+				break;
+			}
+			// ジョブの状況を通知する
+			String sv = job_status.get();
+			if( sv == null ) sv = "(null)";
+			callback.onStatus( sv );
+			
+			// 少し待機
+			try{
+				Thread.sleep( 50L );
+			}catch( InterruptedException ex ){
+				log.e( ex, "handleFCMMessage: blocking is interrupted." );
+				break;
+			}
+		}
+	}
+	
 }

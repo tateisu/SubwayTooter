@@ -51,6 +51,7 @@
 	<string name="boost">Partager</string>
 	<string name="boost_from_another_account">Partager à partir d\'un autre compte</string>
 	<string name="boost_succeeded">Partagé avec succès</string>
+	<string name="unboost_succeeded">boost removed</string>
 	<string name="boosted_by">Partagé par …</string>
 	<string name="button_background_color">Couleur d\'arrière plan des onglets</string>
 	<string name="button_foreground_color">Couleur des onglets</string>
@@ -132,6 +133,7 @@
 	<string name="favourite">Favori</string>
 	<string name="favourite_from_another_account">Placer dans les favoris à partir d\'un autre compte</string>
 	<string name="favourite_succeeded">Mis en favori avec succès</string>
+	<string name="unfavourite_succeeded">Mis en unfavori avec succès</string>
 	<string name="favourited_by">Mis en favori par …</string>
 	<string name="favourites">Favoris</string>
 	<string name="federate_timeline">Chronologie fédérée</string>
@@ -468,6 +470,9 @@
 	<string name="length_warning">\"%1$s\" is too long (%2$d/%3$d characters).\nIt is not acceptable in the standard instance, but it may be acceptable in some instances.\nAre you sure?</string>
 	<string name="avatar_icon_size">Avatar icon size (unit:dp. default:48. app restart required)</string>
 	<string name="short_acct_local_user">Short acct for local user (app restart required)</string>
+    <string name="loading_notification_title">Loading notification…</string>
+	<string name="error_notification_title">Server Timeout</string>
+	<string name="error_notification_summary">If it\'s dead instance, please remove account on that server.</string>
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

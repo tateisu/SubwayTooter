@@ -1,6 +1,11 @@
 package jp.juggler.subwaytooter;
 
+import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
 import android.os.SystemClock;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
@@ -14,14 +19,10 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 	
 	@Override public void onCreate(){
 		super.onCreate();
-		
-		// メインスレッド上でPollingWorkerを初期化しておく
-		PollingWorker.getInstance( getApplicationContext() );
 	}
 	
 	@Override public void onMessageReceived( RemoteMessage remoteMessage ){
-		long time_start = SystemClock.elapsedRealtime();
-		
+
 		super.onMessageReceived( remoteMessage );
 		
 		String tag = null;
@@ -35,8 +36,15 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
 				}
 			}
 		}
-		
-		PollingWorker.handleFCMMessage( getApplicationContext(), time_start, tag );
-		
+
+		Context context = getApplicationContext();
+		Intent intent = new Intent( context,PollingForegrounder.class);
+		if(tag != null ) intent.putExtra(PollingWorker.EXTRA_TAG,tag);
+		if( Build.VERSION.SDK_INT >= 26 ){
+			context.startForegroundService( intent );
+		}else{
+			context.startService(intent);
+		}
 	}
+	
 }

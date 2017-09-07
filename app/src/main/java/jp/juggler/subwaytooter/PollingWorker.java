@@ -133,9 +133,9 @@ public class PollingWorker {
 	final WifiManager.WifiLock wifi_lock;
 	
 	private PollingWorker( Context c ){
+		log.d( "ctor" );
+		
 		this.context = c.getApplicationContext();
-		this.handler = new Handler( c.getMainLooper() );
-		this.pref = Pref.pref( context );
 		this.notification_manager = (NotificationManager) context.getSystemService( Context.NOTIFICATION_SERVICE );
 		this.scheduler = (JobScheduler) context.getSystemService( Context.JOB_SCHEDULER_SERVICE );
 		
@@ -147,6 +147,13 @@ public class PollingWorker {
 		this.wifi_manager = (WifiManager) context.getApplicationContext().getSystemService( Context.WIFI_SERVICE );
 		wifi_lock = wifi_manager.createWifiLock( PollingWorker.class.getName() );
 		wifi_lock.setReferenceCounted( false );
+		
+		// クラッシュレポートによると App1.onCreate より前にここを通る場合がある
+		// データベースへアクセスできるようにする
+		App1.prepare( context );
+		
+		this.pref = App1.pref;
+		this.handler = new Handler( context.getMainLooper() );
 		
 		//
 		worker = new Worker();
@@ -238,7 +245,9 @@ public class PollingWorker {
 	// ジョブの管理
 	
 	// JobService#onDestroy から呼ばれる
-	public void cancelAllJob(){
+	public void onJobServiceDestroy(){
+		log.d( "onJobServiceDestroy" );
+		
 		synchronized( job_list ){
 			Iterator< JobItem > it = job_list.iterator();
 			while( it.hasNext() ){
@@ -487,6 +496,8 @@ public class PollingWorker {
 				this.job = job;
 				this.taskId = taskId;
 				
+				long process_db_id = -1L;
+				
 				if( taskId == TASK_APP_DATA_IMPORT_BEFORE ){
 					scheduler.cancelAll();
 					for( SavedAccount a : SavedAccount.loadAccountList( context, log ) ){
@@ -519,6 +530,7 @@ public class PollingWorker {
 					if( tag != null ){
 						for( SavedAccount sa : SavedAccount.loadByTag( context, log, tag ) ){
 							NotificationTracking.resetLastLoad( sa.db_id );
+							process_db_id = sa.db_id;
 							bDone = true;
 						}
 					}
@@ -567,6 +579,7 @@ public class PollingWorker {
 				LinkedList< AccountThread > thread_list = new LinkedList<>();
 				for( SavedAccount _a : SavedAccount.loadAccountList( context, log ) ){
 					if( _a.isPseudo() ) continue;
+					if( process_db_id != -1L && _a.db_id != process_db_id ) continue;
 					AccountThread t = new AccountThread( _a );
 					thread_list.add( t );
 					t.start();
@@ -728,6 +741,8 @@ public class PollingWorker {
 					
 				}catch( Throwable ex ){
 					log.trace( ex );
+				}finally{
+					job.notifyWorkerThread();
 				}
 			}
 			
@@ -1341,7 +1356,10 @@ public class PollingWorker {
 	// FCMメッセージの処理
 	//
 	
-	public static void handleFCMMessage( @NonNull Context context, @Nullable String tag ){
+	public static void handleFCMMessage( @NonNull Context context, long time_start, @Nullable String tag ){
+		// FirebaseMessagingService#onMessageReceived はバックグラウンドスレッドから実行されるので、少しなら待機してもよい
+		// https://firebase.google.com/docs/cloud-messaging/android/receive
+		// 10秒を超えるとプロセスごと殺されるかもしれない
 
 		// タスクを追加
 		JSONObject data = new JSONObject();
@@ -1357,16 +1375,14 @@ public class PollingWorker {
 		PollingWorker pw = getInstance( context );
 		pw.addJob( JOB_FCM );
 		
-		// FirebaseMessagingService#onMessageReceived はバックグラウンドスレッドから実行されるので、少しなら待機してもよい
-		long start = SystemClock.elapsedRealtime();
 		for( ; ; ){
+			long now = SystemClock.elapsedRealtime();
 			if( ! pw.hasJob( JOB_FCM ) ){
-				log.d( "handleFCMMessage: JOB_FCM completed." );
+				log.d( "handleFCMMessage: JOB_FCM completed. time=%.2f",(now-time_start)/1000f );
 				break;
 			}
-			long now = SystemClock.elapsedRealtime();
-			if( now - start >= ( 1000L * 60 ) ){
-				log.d( "handleFCMMessage: JOB_FCM is not completed. exit onMessageReceived..." );
+			if( now - time_start >= ( 1000L * 300 ) ){
+				log.d( "handleFCMMessage: JOB_FCM timeout. exit onMessageReceived..." );
 				break;
 			}
 			try{

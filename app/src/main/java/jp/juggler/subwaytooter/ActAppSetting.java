@@ -1006,13 +1006,7 @@ public class ActAppSetting extends AppCompatActivity
 				if( a.isPseudo() ) continue;
 				list.add( a );
 			}
-			Collections.sort( list, new Comparator< SavedAccount >() {
-				@Override
-				public int compare( SavedAccount a, SavedAccount b ){
-					return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
-					
-				}
-			} );
+			SavedAccount.sort( list );
 		}
 		
 		@Override public int getCount(){

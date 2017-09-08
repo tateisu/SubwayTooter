@@ -37,7 +37,7 @@ public class MSPAccount extends TootAccount {
 		dst.id = src.optLong( "id" );
 		
 		dst.note = Utils.optStringX( src, "note" );
-		dst.decoded_note = HTMLDecoder.decodeHTML( context, access_info, ( dst.note != null ? dst.note : null ), true, true, null );
+		dst.decoded_note = HTMLDecoder.decodeHTML( context, access_info, ( dst.note != null ? dst.note : null ), true, true, null ,null);
 		
 		if( TextUtils.isEmpty( dst.url ) ){
 			log.e( "parseAccount: missing url" );

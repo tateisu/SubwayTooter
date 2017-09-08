@@ -92,7 +92,7 @@ class HeaderViewHolderInstance extends HeaderViewHolderBase implements View.OnCl
 			btnEmail.setText( supplyEmpty( instance.email ) );
 			btnEmail.setEnabled( ! TextUtils.isEmpty( instance.email ) );
 			
-			SpannableStringBuilder sb = HTMLDecoder.decodeHTML( activity, access_info, "<p>"+supplyEmpty( instance.description )+"</p>", false, true, null );
+			SpannableStringBuilder sb = HTMLDecoder.decodeHTML( activity, access_info, "<p>"+supplyEmpty( instance.description )+"</p>", false, true, null ,null);
 			int previous_br_count =0;
 			for(int i=0;i<sb.length();++i){
 				char c = sb.charAt( i );

@@ -2,6 +2,8 @@ package jp.juggler.subwaytooter.dialog;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
 
@@ -11,22 +13,27 @@ import jp.juggler.subwaytooter.R;
 
 public class ActionsDialog {
 	
-	static class Action {
-		String caption;
-		Runnable r;
+	private static class Action {
+		@NonNull final CharSequence caption;
+		@NonNull final Runnable r;
+		
+		Action( @NonNull CharSequence caption, @NonNull Runnable r ){
+			this.caption = caption;
+			this.r = r;
+		}
 	}
 	
-	final ArrayList< Action > action_list = new ArrayList<>();
+	private final ArrayList< Action > action_list = new ArrayList<>();
 	
-	public void addAction( String caption, Runnable r ){
-		Action action = new Action();
-		action.caption = caption;
-		action.r = r;
-		action_list.add( action );
+	public ActionsDialog addAction( @NonNull CharSequence caption, @NonNull Runnable r ){
+		
+		action_list.add( new Action( caption, r ) );
+		
+		return this;
 	}
 	
-	public void show( Context context, String title ){
-		String[] caption_list = new String[ action_list.size() ];
+	public ActionsDialog show( @NonNull Context context, @Nullable CharSequence title ){
+		CharSequence[] caption_list = new CharSequence[ action_list.size() ];
 		for( int i = 0, ie = caption_list.length ; i < ie ; ++ i ){
 			caption_list[ i ] = action_list.get( i ).caption;
 		}
@@ -44,5 +51,6 @@ public class ActionsDialog {
 		
 		b.show();
 		
+		return this;
 	}
 }

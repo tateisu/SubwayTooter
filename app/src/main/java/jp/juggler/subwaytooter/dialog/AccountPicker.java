@@ -100,11 +100,7 @@ public class AccountPicker {
 			return;
 		}
 		
-		Collections.sort( account_list, new Comparator< SavedAccount >() {
-			@Override public int compare( SavedAccount a, SavedAccount b ){
-				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
-			}
-		} );
+		SavedAccount.sort( account_list );
 		
 		@SuppressLint("InflateParams") View viewRoot = activity.getLayoutInflater().inflate( R.layout.dlg_account_picker, null, false );
 

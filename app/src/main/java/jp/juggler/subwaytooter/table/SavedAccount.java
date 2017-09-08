@@ -13,6 +13,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -622,4 +624,25 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return true;
 	}
 	
+	private static final  Comparator< SavedAccount > account_comparator = new Comparator< SavedAccount >() {
+		@Override public int compare( SavedAccount a, SavedAccount b ){
+			int i;
+
+			// NA > !NA
+			i = (a.isNA()? 1:0 ) - (b.isNA()? 1:0);
+			if(i!=0) return i;
+
+			// pseudo > real
+			i = (a.isPseudo()? 1:0 ) - (b.isPseudo()? 1:0);
+			if(i!=0) return i;
+			
+			String sa = AcctColor.getNickname( a.acct );
+			String sb = AcctColor.getNickname( b.acct );
+			return sa.compareToIgnoreCase( sb );
+		}
+	};
+	
+	public static void sort( ArrayList< SavedAccount > account_list ){
+		Collections.sort( account_list, account_comparator );
+	}
 }

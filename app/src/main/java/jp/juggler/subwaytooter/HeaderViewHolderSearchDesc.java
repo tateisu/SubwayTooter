@@ -37,7 +37,7 @@ class HeaderViewHolderSearchDesc extends HeaderViewHolderBase {
 			}
 		} );
 		
-		CharSequence sv = HTMLDecoder.decodeHTML( activity, access_info, html, false, true, null );
+		CharSequence sv = HTMLDecoder.decodeHTML( activity, access_info, html, false, true, null ,null);
 		
 		TextView tvSearchDesc = viewRoot.findViewById( R.id.tvSearchDesc );
 		tvSearchDesc.setVisibility( View.VISIBLE );

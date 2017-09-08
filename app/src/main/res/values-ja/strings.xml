@@ -760,4 +760,8 @@
     <string name="loading_notification_title">通知の取得中…</string>
     <string name="error_notification_title">サーバータイムアウト</string>
     <string name="error_notification_summary">もし死んだインスタンスなら、そのサーバ上のアカウントを除去してください</string>
+    <string name="open_hashtag_column">ハッシュタグのカラムを開く</string>
+    <string name="quote_hashtag_of">ハッシュタグ \"%1$s\" を引用</string>
+    <string name="quote_all_hashtag_of">全てのハッシュタグ \"%1$s\" を引用</string>
+    <string name="parsing_response">応答の解析中…</string>
 </resources>

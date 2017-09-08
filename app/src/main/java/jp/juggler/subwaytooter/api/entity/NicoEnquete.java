@@ -56,7 +56,15 @@ public class NicoEnquete {
 	long time_start;
 	long status_id;
 	
-	public static NicoEnquete parse( @NonNull Context context, @NonNull SavedAccount access_info, @Nullable TootAttachment.List list_attachment, @Nullable String sv, long status_id, long time_start ){
+	public static NicoEnquete parse(
+		@NonNull Context context,
+		@NonNull SavedAccount access_info,
+		@Nullable TootAttachment.List list_attachment,
+		@Nullable String sv,
+		long status_id,
+		long time_start ,
+	    @NonNull TootStatusLike status
+	){
 		try{
 			if( sv != null ){
 				JSONObject src = new JSONObject( sv );
@@ -69,7 +77,7 @@ public class NicoEnquete {
 				dst.time_start = time_start;
 				dst.status_id = status_id;
 				if( dst.question != null ){
-					dst.question = HTMLDecoder.decodeHTML( context, access_info, dst.question.toString(), true, true, list_attachment );
+					dst.question = HTMLDecoder.decodeHTML( context, access_info, dst.question.toString(), true, true, list_attachment ,status);
 				}
 				if( dst.items != null ){
 					for( int i = 0, ie = dst.items.size() ; i < ie ; ++ i ){

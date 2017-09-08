@@ -759,7 +759,7 @@ public class ActAccountSetting extends AppCompatActivity
 		if( src.source != null && src.source.note != null ){
 			etNote.setText( Emojione.decodeEmoji( this, src.source.note ) );
 		}else if( src.note != null ){
-			etNote.setText( HTMLDecoder.decodeHTML( ActAccountSetting.this, account, src.note, false, false, null ) );
+			etNote.setText( HTMLDecoder.decodeHTML( ActAccountSetting.this, account, src.note, false, false, null ,null) );
 		}else{
 			etNote.setText( "" );
 		}

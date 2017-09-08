@@ -163,6 +163,7 @@ public class HTMLDecoder {
 			, boolean bShort
 			, boolean bDecodeEmoji
 			, @Nullable TootAttachment.List list_attachment
+		    , @Nullable Object link_tag
 		){
 			if( TAG_TEXT.equals( tag ) ){
 				if( bDecodeEmoji ){
@@ -187,7 +188,7 @@ public class HTMLDecoder {
 				sb_tmp.append( "<img/>" );
 			}else{
 				for( Node child : child_nodes ){
-					child.encodeSpan( context, account, sb_tmp, bShort, bDecodeEmoji, list_attachment );
+					child.encodeSpan( context, account, sb_tmp, bShort, bDecodeEmoji, list_attachment ,link_tag);
 				}
 			}
 			
@@ -204,7 +205,8 @@ public class HTMLDecoder {
 			if( end > start && "a".equals( tag ) ){
 				String href = getHref();
 				if( href != null ){
-					MyClickableSpan span = new MyClickableSpan( account, href, account.findAcctColor( href ) );
+					String link_text = sb.subSequence( start,end ).toString();
+					MyClickableSpan span = new MyClickableSpan( account, link_text, href, account.findAcctColor( href ),link_tag );
 					sb.setSpan( span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
 				}
 			}
@@ -315,6 +317,7 @@ public class HTMLDecoder {
 		, boolean bShort
 		, boolean bDecodeEmoji
 		, @Nullable TootAttachment.List list_attachment
+	    , @Nullable Object link_tag
 	){
 		prepareTagInformation();
 		SpannableStringBuilder sb = new SpannableStringBuilder();
@@ -326,7 +329,7 @@ public class HTMLDecoder {
 					rootNode.addChild( tracker, "" );
 				}
 				
-				rootNode.encodeSpan( context, account, sb, bShort, bDecodeEmoji, list_attachment );
+				rootNode.encodeSpan( context, account, sb, bShort, bDecodeEmoji, list_attachment , link_tag );
 				int end = sb.length();
 				while( end > 0 && isWhitespace( sb.charAt( end - 1 ) ) ) -- end;
 				if( end < sb.length() ){
@@ -366,7 +369,7 @@ public class HTMLDecoder {
 	//		return sb;
 	//	}
 	
-	public static Spannable decodeMentions( final SavedAccount access_info, TootMention.List src_list ){
+	public static Spannable decodeMentions( final SavedAccount access_info, TootMention.List src_list ,@Nullable Object link_tag ){
 		if( src_list == null || src_list.isEmpty() ) return null;
 		SpannableStringBuilder sb = new SpannableStringBuilder();
 		for( TootMention item : src_list ){
@@ -380,7 +383,8 @@ public class HTMLDecoder {
 			}
 			int end = sb.length();
 			if( end > start ){
-				MyClickableSpan span = new MyClickableSpan( access_info, item.url, access_info.findAcctColor( item.url ) );
+				String link_text = sb.subSequence( start,end ).toString();
+				MyClickableSpan span = new MyClickableSpan( access_info, link_text,item.url, access_info.findAcctColor( item.url ) ,link_tag );
 				
 				sb.setSpan( span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}

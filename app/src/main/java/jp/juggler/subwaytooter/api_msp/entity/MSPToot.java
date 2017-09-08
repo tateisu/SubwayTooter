@@ -80,7 +80,7 @@ public class MSPToot extends TootStatusLike {
 		dst.setSpoilerText( context, Utils.optStringX( src, "spoiler_text" ) );
 		
 		dst.content = Utils.optStringX( src, "content" );
-		dst.decoded_content = HTMLDecoder.decodeHTML( context, access_info, dst.content, true, true, null );
+		dst.decoded_content = HTMLDecoder.decodeHTML( context, access_info, dst.content, true, true, null ,dst);
 		
 		return dst;
 	}

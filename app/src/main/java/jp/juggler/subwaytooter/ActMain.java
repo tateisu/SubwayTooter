@@ -22,6 +22,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
 import android.text.Layout;
+import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
@@ -218,7 +219,7 @@ public class ActMain extends AppCompatActivity
 		log.d( "onResume" );
 		super.onResume();
 		
-		MyClickableSpan.link_callback = link_click_listener;
+		MyClickableSpan.link_callback = new WeakReference<>( link_click_listener );
 		
 		if( pref.getBoolean( Pref.KEY_DONT_SCREEN_OFF, false ) ){
 			getWindow().addFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
@@ -345,7 +346,6 @@ public class ActMain extends AppCompatActivity
 		
 		app_state.stream_reader.onPause();
 		
-		MyClickableSpan.link_callback = null;
 		super.onPause();
 	}
 	
@@ -1867,7 +1867,7 @@ public class ActMain extends AppCompatActivity
 		task.executeOnExecutor( App1.task_executor );
 	}
 	
-	static final Pattern reHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#]+)(?:\\z|\\?)" );
+	static final Pattern reUrlHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#]+)(?:\\z|\\?)" );
 	static final Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)(?:\\z|\\?)" );
 	static final Pattern reStatusPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)/(\\d+)(?:\\z|\\?)" );
 	
@@ -1879,7 +1879,7 @@ public class ActMain extends AppCompatActivity
 				// トゥート検索カラムではaccess_infoは何にも紐ついていない
 				
 				// ハッシュタグをアプリ内で開く
-				Matcher m = reHashTag.matcher( url );
+				Matcher m = reUrlHashTag.matcher( url );
 				if( m.find() ){
 					// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
 					String host = m.group( 1 );
@@ -1918,7 +1918,7 @@ public class ActMain extends AppCompatActivity
 			
 			if( ! noIntercept && access_info != null ){
 				// ハッシュタグをアプリ内で開く
-				Matcher m = reHashTag.matcher( url );
+				Matcher m = reUrlHashTag.matcher( url );
 				if( m.find() ){
 					// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
 					String host = m.group( 1 );
@@ -1997,13 +1997,41 @@ public class ActMain extends AppCompatActivity
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	public void openHashTag( int pos, SavedAccount access_info, String tag ){
+		while(  tag.startsWith( "#" ) ) tag = tag.substring( 1 );
 		addColumn( pos, access_info, Column.TYPE_HASHTAG, tag );
 	}
 	
 	// 他インスタンスのハッシュタグの表示
-	private void openHashTagOtherInstance( final int pos, final SavedAccount access_info, final String url, final String host, final String tag ){
+	private void openHashTagOtherInstance( final int pos, final SavedAccount access_info, final String url, final String host, String tag ){
+		while(  tag.startsWith( "#" ) ) tag = tag.substring( 1 );
+		openHashTagOtherInstance_sub(pos,access_info,url,host,tag);
+	}
+
+	// 他インスタンスのハッシュタグの表示
+	private void openHashTagOtherInstance_sub( final int pos, final SavedAccount access_info, final String url, final String host, final String tag ){
 		
 		ActionsDialog dialog = new ActionsDialog();
+		
+		// 各アカウント
+		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( ActMain.this, log );
+		
+		// ソートする
+		SavedAccount.sort( account_list );
+
+		
+		ArrayList< SavedAccount > list_original = new ArrayList<>(  );
+		ArrayList< SavedAccount > list_original_pseudo = new ArrayList<>(  );
+		ArrayList< SavedAccount > list_other = new ArrayList<>(  );
+		for( SavedAccount a : account_list ){
+			log.d("sort? %s",a.acct);
+			if( ! host.equalsIgnoreCase( a.host ) ){
+				list_other.add( a );
+			}else if( a.isPseudo() ){
+				list_original_pseudo.add( a );
+			}else{
+				list_original.add( a );
+			}
+		}
 		
 		// ブラウザで表示する
 		dialog.addAction( getString( R.string.open_web_on_host, host ), new Runnable() {
@@ -2012,33 +2040,8 @@ public class ActMain extends AppCompatActivity
 			}
 		} );
 		
-		// 各アカウント
-		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( ActMain.this, log );
-		
-		// ソートする
-		Collections.sort( account_list, new Comparator< SavedAccount >() {
-			@Override public int compare( SavedAccount a, SavedAccount b ){
-				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
-			}
-		} );
-		
-		// 各アカウントで開く選択肢
-		boolean has_host = false;
-		for( SavedAccount a : account_list ){
-			
-			if( host.equalsIgnoreCase( a.host ) ){
-				has_host = true;
-			}
-			
-			final SavedAccount _a = a;
-			dialog.addAction( getString( R.string.open_in_account, a.acct ), new Runnable() {
-				@Override public void run(){
-					openHashTag( pos, _a, tag );
-				}
-			} );
-		}
-		
-		if( ! has_host ){
+		if( list_original.isEmpty() && list_original_pseudo.isEmpty() ){
+			// 疑似アカウントを作成して開く
 			dialog.addAction( getString( R.string.open_in_pseudo_account, "?@" + host ), new Runnable() {
 				@Override public void run(){
 					SavedAccount sa = addPseudoAccount( host );
@@ -2049,12 +2052,43 @@ public class ActMain extends AppCompatActivity
 			} );
 		}
 		
-		dialog.show( this, "#" + tag );
-		
+		//
+		for( SavedAccount a : list_original ){
+			final SavedAccount _a = a;
+			
+			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this,R.string.open_in_account,a.acct ), new Runnable() {
+				@Override public void run(){
+					openHashTag( pos, _a, tag );
+				}
+			} );
+		}
+		//
+		for( SavedAccount a : list_original_pseudo ){
+			final SavedAccount _a = a;
+			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this,R.string.open_in_account,a.acct ), new Runnable() {
+				@Override public void run(){
+					openHashTag( pos, _a, tag );
+				}
+			} );
+		}
+		//
+		for( SavedAccount a : list_other ){
+			final SavedAccount _a = a;
+			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this,R.string.open_in_account,a.acct ), new Runnable() {
+				@Override public void run(){
+					openHashTag( pos, _a, tag );
+				}
+			} );
+		}
+
+		dialog.show( this,"#"+ tag );
 	}
 	
 	final MyClickableSpan.LinkClickCallback link_click_listener = new MyClickableSpan.LinkClickCallback() {
-		@Override public void onClickLink( View view, LinkClickContext lcc, String url ){
+		@Override public void onClickLink( View view, @NonNull final MyClickableSpan span){
+			
+			View view_orig = view;
+			
 			Column column = null;
 			while( view != null ){
 				Object tag = view.getTag();
@@ -2076,7 +2110,65 @@ public class ActMain extends AppCompatActivity
 					}
 				}
 			}
-			openChromeTab( nextPosition( column ), (SavedAccount) lcc, url, false );
+			final int pos = nextPosition( column );
+			
+			// ハッシュタグはいきなり開くのではなくメニューがある
+			Matcher m = reUrlHashTag.matcher( span.url );
+			if( m.find() ){
+				// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
+				final String host = m.group( 1 );
+				final String tag = span.text.startsWith( "#" )? span.text : "#"+ Uri.decode( m.group( 2 ) );
+				
+				ActionsDialog d = new ActionsDialog()
+					.addAction( getString( R.string.open_hashtag_column ), new Runnable() {
+						@Override public void run(){
+							openHashTagOtherInstance( pos, (SavedAccount) span.lcc, span.url, host, tag );
+						}
+					} )
+					.addAction( getString( R.string.quote_hashtag_of ,tag ), new Runnable() {
+						@Override public void run(){
+							openPost( tag + " ");
+						}
+					} );
+				
+				final ArrayList<String> tag_list = new ArrayList<>(  );
+				try{
+					//noinspection ConstantConditions
+					CharSequence cs = ((TextView)view_orig).getText();
+					if( cs instanceof Spannable){
+						Spannable content = (Spannable) cs;
+						for( MyClickableSpan s : content.getSpans( 0,content.length(), MyClickableSpan.class ) ){
+							m = reUrlHashTag.matcher( s.url );
+							if( m.find() ){
+								String s_tag = s.text.startsWith( "#" )? s.text : "#"+Uri.decode( m.group( 2 ) );
+								tag_list.add( s_tag );
+							}
+						}
+					}
+				}catch(Throwable ex){
+					log.trace(ex);
+				}
+				if(tag_list.size() > 1 ){
+					StringBuilder sb = new StringBuilder(  );
+					for( String s : tag_list){
+						if( sb.length() > 0 ) sb.append(' ');
+						sb.append( s );
+					}
+					final String tag_all = sb.toString();
+					d.addAction( getString( R.string.quote_all_hashtag_of ,tag_all), new Runnable() {
+						@Override public void run(){
+							openPost( tag_all +" ");
+						}
+					} );
+				}
+				
+				d.show(ActMain.this,tag);
+				return;
+			}
+			
+			
+			
+			openChromeTab( pos, (SavedAccount) span.lcc, span.url, false );
 		}
 	};
 	
@@ -2800,14 +2892,10 @@ public class ActMain extends AppCompatActivity
 		}
 		
 		// ローカルアカウント
-		Collections.sort( local_account_list, new Comparator< SavedAccount >() {
-			@Override public int compare( SavedAccount a, SavedAccount b ){
-				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
-			}
-		} );
+		SavedAccount.sort( local_account_list );
 		for( SavedAccount a : local_account_list ){
 			final SavedAccount _a = a;
-			dialog.addAction( getString( R.string.open_in_account, AcctColor.getNickname( a.acct ) ), new Runnable() {
+			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this,R.string.open_in_account,a.acct ), new Runnable() {
 				@Override public void run(){
 					openStatusLocal( pos, _a, status_id_original );
 				}
@@ -2815,14 +2903,10 @@ public class ActMain extends AppCompatActivity
 		}
 		
 		// アクセスしたアカウント
-		Collections.sort( access_account_list, new Comparator< SavedAccount >() {
-			@Override public int compare( SavedAccount a, SavedAccount b ){
-				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
-			}
-		} );
+		SavedAccount.sort( access_account_list );
 		for( SavedAccount a : access_account_list ){
 			final SavedAccount _a = a;
-			dialog.addAction( getString( R.string.open_in_account, AcctColor.getNickname( a.acct ) ), new Runnable() {
+			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this,R.string.open_in_account,a.acct ), new Runnable() {
 				@Override public void run(){
 					openStatusLocal( pos, _a, status_id_access );
 				}
@@ -2830,14 +2914,10 @@ public class ActMain extends AppCompatActivity
 		}
 		
 		// その他の実アカウント
-		Collections.sort( other_account_list, new Comparator< SavedAccount >() {
-			@Override public int compare( SavedAccount a, SavedAccount b ){
-				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
-			}
-		} );
+		SavedAccount.sort( other_account_list);
 		for( SavedAccount a : other_account_list ){
 			final SavedAccount _a = a;
-			dialog.addAction( getString( R.string.open_in_account, AcctColor.getNickname( a.acct ) ), new Runnable() {
+			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this,R.string.open_in_account,a.acct ), new Runnable() {
 				@Override public void run(){
 					openStatusRemote( pos, _a, url );
 				}
@@ -4075,11 +4155,7 @@ public class ActMain extends AppCompatActivity
 				dst.add( a );
 			}
 		}
-		Collections.sort( dst, new Comparator< SavedAccount >() {
-			@Override public int compare( SavedAccount a, SavedAccount b ){
-				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
-			}
-		} );
+		SavedAccount.sort( dst );
 		return dst;
 	}
 	

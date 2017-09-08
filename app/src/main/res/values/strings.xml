@@ -467,5 +467,9 @@
     <string name="loading_notification_title">Loading notification…</string>
     <string name="error_notification_title">Server Timeout</string>
     <string name="error_notification_summary">If it\'s dead instance, please remove account on that server.</string>
+    <string name="open_hashtag_column">Open hashtag column</string>
+    <string name="quote_hashtag_of">Quote hashtag \"%1$s\"</string>
+    <string name="quote_all_hashtag_of">Quote all hashtags \"%1$s\"</string>
+    <string name="parsing_response">Parsing response…</string>
 
 </resources>

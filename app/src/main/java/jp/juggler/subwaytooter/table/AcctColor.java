@@ -1,18 +1,24 @@
 package jp.juggler.subwaytooter.table;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.AppDataExporter;
+import jp.juggler.subwaytooter.Styler;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.util.LruCache;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
+import android.text.style.BackgroundColorSpan;
+import android.text.style.ForegroundColorSpan;
 import android.util.JsonWriter;
 
 import java.io.IOException;
@@ -185,6 +191,29 @@ public class AcctColor {
 	
 	public static void clearMemoryCache(){
 		mMemoryCache.evictAll ();
+	}
+	
+	private static final char CHAR_REPLACE = 0x328A;
+	
+	@NonNull public static CharSequence getStringWithNickname( @NonNull Context context, @NonNull int string_id , @NonNull String acct ){
+		AcctColor ac = load( acct );
+		if( ac == null ) return context.getString( string_id,acct );
+		String name = ! TextUtils.isEmpty( ac.nickname ) ? Utils.sanitizeBDI( ac.nickname ) : acct ;
+		int color_fg = hasColorForeground( ac ) ? ac.color_fg : Styler.getAttributeColor( context, android.R.attr.textColorPrimary );
+		int color_bg = hasColorBackground( ac ) ? ac.color_bg : 0;
+		SpannableStringBuilder sb = new SpannableStringBuilder( context.getString( string_id,new String(new char[]{CHAR_REPLACE})) );
+		for(int i=sb.length()-1;i>=0;--i){
+			char c = sb.charAt( i );
+			if( c != CHAR_REPLACE) continue;
+			sb.replace( i,i+1,name );
+			if( ac.color_fg != 0){
+				sb.setSpan( new ForegroundColorSpan( ac.color_fg ), i, i + name.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+			}
+			if( ac.color_bg != 0){
+				sb.setSpan( new BackgroundColorSpan( ac.color_bg ), i, i + name.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+			}
+		}
+		return sb;
 	}
 	
 }

@@ -142,11 +142,11 @@ public class TootStatus extends TootStatusLike {
 			status.language = Utils.optStringX( src, "language" );
 			
 			status.time_created_at = parseTime( status.created_at );
-			status.decoded_content = HTMLDecoder.decodeHTML( context, access_info, status.content, true, true, status.media_attachments );
+			status.decoded_content = HTMLDecoder.decodeHTML( context, access_info, status.content, true, true, status.media_attachments ,status);
 			// status.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
-			status.decoded_mentions = HTMLDecoder.decodeMentions( access_info, status.mentions );
+			status.decoded_mentions = HTMLDecoder.decodeMentions( access_info, status.mentions ,status);
 			
-			status.enquete = NicoEnquete.parse( context,access_info , status.media_attachments , Utils.optStringX( src, "enquete"),status.id,status.time_created_at );
+			status.enquete = NicoEnquete.parse( context,access_info , status.media_attachments , Utils.optStringX( src, "enquete"),status.id,status.time_created_at,status );
 			
 			return status;
 		}catch( Throwable ex ){

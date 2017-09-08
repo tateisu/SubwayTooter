@@ -126,7 +126,7 @@ public class TootAccount {
 			dst.statuses_count = src.optLong( "statuses_count" );
 			
 			dst.note = Utils.optStringX( src, "note" );
-			dst.decoded_note = HTMLDecoder.decodeHTML( context, account, ( dst.note != null ? dst.note : null ), true, true, null );
+			dst.decoded_note = HTMLDecoder.decodeHTML( context, account, ( dst.note != null ? dst.note : null ), true, true, null ,null );
 			
 			dst.url = Utils.optStringX( src, "url" );
 			dst.avatar = Utils.optStringX( src, "avatar" ); // "https:\/\/mastodon.juggler.jp\/system\/accounts\/avatars\/000\/000\/148\/original\/0a468974fac5a448.PNG?1492081886",

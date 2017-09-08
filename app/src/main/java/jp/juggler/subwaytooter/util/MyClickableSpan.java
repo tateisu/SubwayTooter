@@ -1,27 +1,42 @@
 package jp.juggler.subwaytooter.util;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextPaint;
 import android.text.style.ClickableSpan;
 import android.view.View;
+
+import java.lang.ref.WeakReference;
 
 import jp.juggler.subwaytooter.table.AcctColor;
 
 public class MyClickableSpan extends ClickableSpan {
 	
 	public interface LinkClickCallback {
-		void onClickLink( View widget,LinkClickContext account, String url );
+		void onClickLink( View widget,@NonNull MyClickableSpan span);
 	}
 	
-	public static LinkClickCallback link_callback;
+	public static WeakReference<LinkClickCallback> link_callback = null;
 	
-	public LinkClickContext account;
-	public String url;
-	private int color_fg;
-	private int color_bg;
+	public @NonNull LinkClickContext lcc;
+	public @NonNull String text;
+	public @NonNull String url;
+	public @Nullable Object tag;
+	public int color_fg;
+	public int color_bg;
 	
-	MyClickableSpan( LinkClickContext account, String url, AcctColor ac ){
-		this.account = account;
+	MyClickableSpan(
+		@NonNull LinkClickContext lcc
+	    ,@NonNull  String text
+		,@NonNull  String url
+		, AcctColor ac
+		,@Nullable Object tag
+	){
+		this.lcc = lcc;
+		this.text = text;
 		this.url = url;
+		this.tag = tag;
+		
 		if( ac != null ){
 			this.color_fg = ac.color_fg;
 			this.color_bg = ac.color_bg;
@@ -29,8 +44,9 @@ public class MyClickableSpan extends ClickableSpan {
 	}
 	
 	@Override public void onClick( View widget ){
-		if( link_callback != null ){
-			link_callback.onClickLink( widget,this.account, url );
+		LinkClickCallback cb = (link_callback == null ? null : link_callback.get() );
+		if( cb != null ){
+			cb.onClickLink( widget, this );
 		}
 	}
 	

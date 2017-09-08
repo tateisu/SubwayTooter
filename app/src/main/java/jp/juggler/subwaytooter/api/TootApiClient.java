@@ -134,6 +134,8 @@ public class TootApiClient {
 		}
 		
 		try{
+			callback.publishApiProgress( context.getString( R.string.parsing_response ) );
+			
 			//noinspection ConstantConditions
 			String json = response.body().string();
 			

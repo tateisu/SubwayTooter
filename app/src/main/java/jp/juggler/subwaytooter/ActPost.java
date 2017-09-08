@@ -51,6 +51,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -235,12 +236,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	
 	@Override protected void onResume(){
 		super.onResume();
-		MyClickableSpan.link_callback = link_click_listener;
+		MyClickableSpan.link_callback = new WeakReference<>( link_click_listener );
 	}
 	
 	@Override protected void onPause(){
 		super.onPause();
-		MyClickableSpan.link_callback = null;
 		
 		// 編集中にホーム画面を押したり他アプリに移動する場合は下書きを保存する
 		// やや過剰な気がするが、自アプリに戻ってくるときにランチャーからアイコンタップされると
@@ -619,13 +619,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		ivReply = findViewById( R.id.ivReply );
 		
 		account_list = SavedAccount.loadAccountList( ActPost.this, log );
-		Collections.sort( account_list, new Comparator< SavedAccount >() {
-			@Override
-			public int compare( SavedAccount a, SavedAccount b ){
-				return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
-				
-			}
-		} );
+		SavedAccount.sort( account_list);
 		
 		btnAccount.setOnClickListener( this );
 		btnVisibility.setOnClickListener( this );
@@ -1494,7 +1488,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			llReply.setVisibility( View.GONE );
 		}else{
 			llReply.setVisibility( View.VISIBLE );
-			tvReplyTo.setText( HTMLDecoder.decodeHTML( ActPost.this, account, in_reply_to_text, true, true, null ) );
+			tvReplyTo.setText( HTMLDecoder.decodeHTML( ActPost.this, account, in_reply_to_text, true, true, null ,null) );
 			ivReply.setImageUrl( pref, 16f, in_reply_to_image );
 		}
 	}
@@ -1899,7 +1893,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					return null;
 				}
 			};
-			CharSequence sv = HTMLDecoder.decodeHTML( ActPost.this, lcc, text, false, false, null );
+			CharSequence sv = HTMLDecoder.decodeHTML( ActPost.this, lcc, text, false, false, null ,null);
 			tvText.setText( sv );
 			tvText.setMovementMethod( LinkMovementMethod.getInstance() );
 			
@@ -1921,11 +1915,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	}
 	
 	final MyClickableSpan.LinkClickCallback link_click_listener = new MyClickableSpan.LinkClickCallback() {
-		@Override public void onClickLink( View view, LinkClickContext lcc, String url ){
-			if( url == null ) return;
+		@Override public void onClickLink( View view, @NonNull MyClickableSpan span ){
 			// ブラウザで開く
 			try{
-				Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse( url ) );
+				Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse( span.url ) );
 				startActivity( intent );
 			}catch( Throwable ex ){
 				log.trace( ex );

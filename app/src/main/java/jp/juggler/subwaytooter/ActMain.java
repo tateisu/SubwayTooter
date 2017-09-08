@@ -47,7 +47,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.apache.commons.io.IOUtils;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -58,8 +57,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -184,6 +181,7 @@ public class ActMain extends AppCompatActivity
 	static final String STATE_CURRENT_PAGE = "current_page";
 	
 	@Override protected void onSaveInstanceState( Bundle outState ){
+		log.d("onSaveInstanceState");
 		super.onSaveInstanceState( outState );
 		
 		if( pager_adapter != null ){
@@ -197,6 +195,7 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	@Override protected void onRestoreInstanceState( Bundle savedInstanceState ){
+		log.d("onRestoreInstanceState");
 		super.onRestoreInstanceState( savedInstanceState );
 		int pos = savedInstanceState.getInt( STATE_CURRENT_PAGE );
 		if( pos > 0 && pos < app_state.column_list.size() ){
@@ -208,16 +207,90 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-	boolean bResume;
+	boolean bStart;
 	
-	@Override public boolean isActivityResume(){
-		return bResume;
+	@Override public boolean isActivityStart(){
+		return bStart;
+	}
+	
+	@Override protected void onStart(){
+		super.onStart();
+
+		bStart = true;
+		log.d( "onStart" );
+		
+		// アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
+		{
+			ArrayList< Integer > new_order = new ArrayList<>();
+			for( int i = 0, ie = app_state.column_list.size() ; i < ie ; ++ i ){
+				Column column = app_state.column_list.get( i );
+				
+				if( ! column.access_info.isNA() ){
+					SavedAccount sa = SavedAccount.loadAccount( ActMain.this, log, column.access_info.db_id );
+					if( sa == null ) continue;
+				}
+
+				new_order.add( i );
+			}
+
+			if( new_order.size() != app_state.column_list.size() ){
+				setOrder( new_order );
+			}
+		}
+		
+		
+		// 各カラムのアカウント設定を読み直す
+		reloadAccountSetting();
+		
+		// 投稿直後ならカラムの再取得を行う
+		refreshAfterPost();
+
+		// 外部から受け取ったUriの処理
+		Uri uri = ActCallback.last_uri.getAndSet( null );
+		if( uri != null ){
+			handleIntentUri( uri );
+		}
+		
+		// 外部から受け取ったUriの処理
+		Intent intent = ActCallback.sent_intent.getAndSet( null );
+		if( intent != null ){
+			handleSentIntent( intent );
+		}
+		
+		// 画面復帰時に再取得やストリーミング開始を行う
+		for( Column column : app_state.column_list ){
+			column.onStart( this );
+		}
+
+		// カラムの表示範囲インジケータを更新
+		updateColumnStripSelection( - 1, - 1f );
+
+		// 相対時刻表示
+		proc_updateRelativeTime.run();
+		
+	}
+	
+	@Override protected void onStop(){
+
+		log.d( "onStop" );
+
+		bStart = false;
+		
+		handler.removeCallbacks( proc_updateRelativeTime );
+		
+		post_helper.closeAcctPopup();
+		
+		closeListItemPopup();
+		
+		app_state.stream_reader.stopAll();
+		
+		super.onStop();
+
 	}
 	
 	@Override protected void onResume(){
-		bResume = true;
-		log.d( "onResume" );
 		super.onResume();
+		log.d( "onResume" );
 		
 		MyClickableSpan.link_callback = new WeakReference<>( link_click_listener );
 		
@@ -226,53 +299,22 @@ public class ActMain extends AppCompatActivity
 		}else{
 			getWindow().clearFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
 		}
+	}
+	
+	@Override protected void onPause(){
+		log.d( "onPause" );
 		
-		// アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
-		{
-			
-			ArrayList< Integer > new_order = new ArrayList<>();
-			boolean bRemoved = false;
-			for( int i = 0, ie = app_state.column_list.size() ; i < ie ; ++ i ){
-				Column column = app_state.column_list.get( i );
-				
-				if( column.access_info.isNA() ){
-					// 検索カラムはアカウント削除とか無関係
-				}else{
-					SavedAccount sa = SavedAccount.loadAccount( ActMain.this, log, column.access_info.db_id );
-					if( sa == null ){
-						bRemoved = true;
-					}else{
-						new_order.add( i );
-					}
-				}
-			}
-			if( bRemoved ){
-				setOrder( new_order );
-			}
+		// 最後に表示していたカラムの位置
+		int column_pos;
+		if( pager_adapter != null ){
+			column_pos = pager.getCurrentItem();
+		}else{
+			column_pos = tablet_layout_manager.findFirstVisibleItemPosition();
 		}
+		pref.edit().putInt( Pref.KEY_LAST_COLUMN_POS, column_pos ).apply();
 		
-		// 各カラムのアカウント設定を読み直す
-		reloadAccountSetting();
 		
-		refreshAfterPost();
-		
-		Uri uri = ActCallback.last_uri.getAndSet( null );
-		if( uri != null ){
-			handleIntentUri( uri );
-		}
-		
-		Intent intent = ActCallback.sent_intent.getAndSet( null );
-		if( intent != null ){
-			handleSentIntent( intent );
-		}
-		
-		for( Column column : app_state.column_list ){
-			column.onResume( this );
-		}
-		
-		updateColumnStripSelection( - 1, - 1f );
-		
-		proc_updateRelativeTime.run();
+		super.onPause();
 	}
 	
 	void refreshAfterPost(){
@@ -326,28 +368,7 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-	@Override protected void onPause(){
-		bResume = false;
-		
-		handler.removeCallbacks( proc_updateRelativeTime );
-		
-		post_helper.closeAcctPopup();
-		
-		// 最後に表示していたカラムの位置
-		int column_pos;
-		if( pager_adapter != null ){
-			column_pos = pager.getCurrentItem();
-		}else{
-			column_pos = tablet_layout_manager.findFirstVisibleItemPosition();
-		}
-		pref.edit().putInt( Pref.KEY_LAST_COLUMN_POS, column_pos ).apply();
-		
-		closeListItemPopup();
-		
-		app_state.stream_reader.onPause();
-		
-		super.onPause();
-	}
+
 	
 	@Override public void onClick( View v ){
 		switch( v.getId() ){
@@ -812,8 +833,8 @@ public class ActMain extends AppCompatActivity
 		{
 			float icon_size_dp = 48f;
 			try{
-				sv = pref.getString( Pref.KEY_AVATAR_ICON_SIZE, "48" );
-				float fv = Float.parseFloat( sv );
+				sv = pref.getString( Pref.KEY_AVATAR_ICON_SIZE, null );
+				float fv = TextUtils.isEmpty( sv ) ? Float.NaN : Float.parseFloat( sv );
 				if( Float.isNaN( fv ) || Float.isInfinite( fv ) || fv < 1f ){
 					// error or bad range
 				}else{
@@ -4641,7 +4662,7 @@ public class ActMain extends AppCompatActivity
 	private final Runnable proc_updateRelativeTime = new Runnable() {
 		@Override public void run(){
 			handler.removeCallbacks( proc_updateRelativeTime );
-			if( ! bResume ) return;
+			if( ! bStart ) return;
 			for( Column c : app_state.column_list ){
 				c.fireShowContent();
 			}

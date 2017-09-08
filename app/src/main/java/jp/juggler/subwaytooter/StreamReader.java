@@ -238,7 +238,7 @@ class StreamReader {
 	}
 	
 	// onPauseのタイミングで全てのStreaming接続を破棄する
-	void onPause(){
+	void stopAll(){
 		synchronized( reader_list ){
 			for( Reader reader : reader_list ){
 				reader.dispose();

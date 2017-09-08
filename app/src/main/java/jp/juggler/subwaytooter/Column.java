@@ -59,22 +59,22 @@ class Column implements StreamReader.Callback {
 	private static final LogCategory log = new LogCategory( "Column" );
 	
 	interface Callback {
-		boolean isActivityResume();
+		boolean isActivityStart();
 	}
 	
 	private WeakReference< Callback > callback_ref;
 	
-	private boolean isResume(){
+	private boolean isActivityStart(){
 		if( callback_ref == null ){
-			log.d( "isResume: callback_ref is not set" );
+			log.d( "isActivityStart: callback_ref is not set" );
 			return false;
 		}
 		Callback cb = callback_ref.get();
 		if( cb == null ){
-			log.d( "isResume: callback was lost." );
+			log.d( "isActivityStart: callback was lost." );
 			return false;
 		}
-		return cb.isActivityResume();
+		return cb.isActivityStart();
 	}
 	
 	private static Object getParamAt( Object[] params, int idx ){
@@ -3218,7 +3218,7 @@ class Column implements StreamReader.Callback {
 		}
 	}
 	
-	void onResume( Callback callback ){
+	void onStart( Callback callback ){
 		this.callback_ref = new WeakReference<>( callback );
 		
 		// 破棄されたカラムなら何もしない
@@ -3320,8 +3320,8 @@ class Column implements StreamReader.Callback {
 			return;
 		}
 		
-		if( ! isResume() ){
-			log.d( "resumeStreaming: not resumed." );
+		if( ! isActivityStart() ){
+			log.d( "resumeStreaming: isActivityStart is false." );
 			return;
 		}
 		

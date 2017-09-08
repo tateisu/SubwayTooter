@@ -644,7 +644,7 @@ class ColumnViewHolder
 			if( isChecked ){
 				column.stopStreaming();
 			}else{
-				column.onResume( activity );
+				column.onStart( activity );
 			}
 			break;
 		

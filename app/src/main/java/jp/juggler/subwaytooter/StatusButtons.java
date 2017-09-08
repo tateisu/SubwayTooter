@@ -162,7 +162,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 					, ActMain.NOT_CROSS_ACCOUNT
 					, ! status.reblogged
 					, false
-					, !bSimpleList ? null :  status.reblogged ? activity.boost_complete_callback : activity.unboost_complete_callback
+					, !bSimpleList ? null :  status.reblogged ? activity.unboost_complete_callback : activity.boost_complete_callback
 				);
 			}
 			break;

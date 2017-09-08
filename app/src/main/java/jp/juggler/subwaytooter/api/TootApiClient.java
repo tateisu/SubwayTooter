@@ -96,10 +96,15 @@ public class TootApiClient {
 	private static final int AUTH_VERSION = 1;
 	private static final String REDIRECT_URL = "subwaytooter://oauth";
 	
+	public static final String MIMUMEDON = "mimumedon.com";
+	public static final String MIMUMEDON_ERROR = "mimumedon.comには対応しません";
+	
 	private @Nullable
 	TootApiResult request_sub( @NonNull String path, @NonNull Request.Builder request_builder ){
 		
 		if( callback.isApiCancelled() ) return null;
+		
+		if( MIMUMEDON.equalsIgnoreCase( instance ) ) return new TootApiResult( MIMUMEDON_ERROR );
 		
 		callback.publishApiProgress( context.getString( R.string.request_api, path ) );
 		
@@ -162,6 +167,8 @@ public class TootApiClient {
 	public @Nullable
 	TootApiResult webSocket( @NonNull String path, @NonNull Request.Builder request_builder, @NonNull WebSocketListener ws_listener ){
 		
+		if( MIMUMEDON.equalsIgnoreCase( instance ) ) return new TootApiResult( MIMUMEDON_ERROR );
+		
 		if( callback.isApiCancelled() ) return null;
 		
 		// アクセストークンを使ってAPIを呼び出す
@@ -197,6 +204,8 @@ public class TootApiClient {
 	
 	// 疑似アカウントの追加時に、インスタンスの検証を行う
 	public @Nullable TootApiResult checkInstance(){
+		
+		if( MIMUMEDON.equalsIgnoreCase( instance ) ) return new TootApiResult( MIMUMEDON_ERROR );
 		
 		// サーバ情報APIを使う
 		String path = "/api/v1/instance";
@@ -248,6 +257,8 @@ public class TootApiClient {
 	}
 	
 	public @Nullable TootApiResult authorize1( String client_name ){
+		
+		if( MIMUMEDON.equalsIgnoreCase( instance ) ) return new TootApiResult( MIMUMEDON_ERROR );
 		
 		JSONObject client_info;
 		
@@ -329,6 +340,8 @@ public class TootApiClient {
 	}
 	
 	public @Nullable TootApiResult authorize2( String code ){
+		
+		if( MIMUMEDON.equalsIgnoreCase( instance ) ) return new TootApiResult( MIMUMEDON_ERROR );
 		
 		JSONObject client_info = ClientInfo.load( instance );
 		if( client_info == null ){
@@ -440,6 +453,8 @@ public class TootApiClient {
 	}
 	
 	public @Nullable TootApiResult checkAccessToken( String access_token ){
+		
+		if( MIMUMEDON.equalsIgnoreCase( instance ) ) return new TootApiResult( MIMUMEDON_ERROR );
 		
 		JSONObject client_info = ClientInfo.load( instance );
 		if( client_info == null ){

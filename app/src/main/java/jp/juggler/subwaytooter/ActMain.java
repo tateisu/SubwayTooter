@@ -1227,7 +1227,7 @@ public class ActMain extends AppCompatActivity
 		
 	}
 	
-	SavedAccount addPseudoAccount( String host ){
+	@Nullable SavedAccount addPseudoAccount( String host ){
 		try{
 			String username = "?";
 			String full_acct = username + "@" + host;
@@ -1247,7 +1247,7 @@ public class ActMain extends AppCompatActivity
 			account.notification_mention = false;
 			account.saveSetting();
 			return account;
-		}catch( JSONException ex ){
+		}catch( Throwable ex ){
 			log.trace( ex );
 			log.e( ex, "addPseudoAccount failed." );
 			Utils.showToast( this, ex, "addPseudoAccount failed." );

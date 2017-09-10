@@ -69,7 +69,7 @@ public class ActCallback extends AppCompatActivity {
 			final String action = src.getAction();
 			final String type = src.getType();
 			
-			if( type != null && type.startsWith( "image/" ) ){
+			if( type != null && (type.startsWith( "image/" ) || type.startsWith( "video/" )) ){
 				if( Intent.ACTION_VIEW.equals( action ) ){
 					Uri uri = src.getData();
 					if( uri == null ) return null;

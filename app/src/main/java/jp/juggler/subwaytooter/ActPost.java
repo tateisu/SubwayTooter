@@ -357,7 +357,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				//noinspection StatementWithEmptyBody
 				if( type == null ){
 					//
-				}else if( type.startsWith( "image/" ) ){
+				}else if( type.startsWith( "image/" ) ||  type.startsWith( "video/" ) ){
 					if( Intent.ACTION_VIEW.equals( action ) ){
 						Uri uri = sent_intent.getData();
 						if( uri != null ){

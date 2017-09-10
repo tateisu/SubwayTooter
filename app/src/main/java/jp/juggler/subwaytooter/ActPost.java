@@ -53,8 +53,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Locale;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
@@ -179,6 +177,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	private static final int REQUEST_CODE_ATTACHMENT = 1;
 	private static final int REQUEST_CODE_CAMERA = 2;
 	private static final int REQUEST_CODE_MUSHROOM = 3;
+	private static final int REQUEST_CODE_VIDEO = 4;
 	
 	@Override
 	protected void onActivityResult( int requestCode, int resultCode, Intent data ){
@@ -222,6 +221,13 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					addAttachment( uri, type );
 				}
 			}
+		}else if( requestCode == REQUEST_CODE_VIDEO && resultCode == RESULT_OK ){
+			Uri uri = ( data == null ? null : data.getData() );
+			if( uri != null ){
+				String type = getContentResolver().getType( uri );
+				addAttachment( uri, type );
+			}
+			
 		}else if( requestCode == REQUEST_CODE_MUSHROOM && resultCode == RESULT_OK ){
 			String text = data.getStringExtra( "replace_key" );
 			applyMushroomResult( text );
@@ -954,8 +960,14 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		
 	}
 	
+	
 	void openAttachment(){
 		int permissionCheck = ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_EXTERNAL_STORAGE );
+		if( permissionCheck != PackageManager.PERMISSION_GRANTED ){
+			preparePermission();
+			return;
+		}
+		permissionCheck = ContextCompat.checkSelfPermission( this, Manifest.permission.CAMERA );
 		if( permissionCheck != PackageManager.PERMISSION_GRANTED ){
 			preparePermission();
 			return;
@@ -972,6 +984,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				performCamera();
 			}
 		} );
+
+//		a.addAction( getString( R.string.video_capture ), new Runnable() {
+//			@Override public void run(){
+//				performCameraVideo();
+//			}
+//		} );
 		a.show( this, null );
 		
 	}
@@ -1002,6 +1020,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}
 	}
 	
+
 	interface InputStreamOpener {
 		InputStream open() throws IOException;
 		
@@ -1276,7 +1295,16 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			Utils.showToast( this, ex, "opening camera app failed." );
 		}
 	}
-	
+	private void performCameraVideo(){
+		
+		try{
+			Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
+			startActivityForResult(takeVideoIntent, REQUEST_CODE_VIDEO);
+		}catch( Throwable ex ){
+			log.trace( ex );
+			Utils.showToast( this, ex, "opening video app failed." );
+		}
+	}
 	private static final int PERMISSION_REQUEST_CODE = 1;
 	
 	private void preparePermission(){
@@ -1284,12 +1312,15 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			// No explanation needed, we can request the permission.
 			
 			ActivityCompat.requestPermissions( this
-				, new String[]{ Manifest.permission.WRITE_EXTERNAL_STORAGE }
+				, new String[]{
+					Manifest.permission.WRITE_EXTERNAL_STORAGE,
+					Manifest.permission.CAMERA,
+				}
 				, PERMISSION_REQUEST_CODE
 			);
 			return;
 		}
-		Utils.showToast( this, true, R.string.missing_storage_permission );
+		Utils.showToast( this, true, R.string.missing_permission_to_access_media );
 	}
 	
 	@Override public void onRequestPermissionsResult(
@@ -1299,13 +1330,16 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	){
 		switch( requestCode ){
 		case PERMISSION_REQUEST_CODE:
-			// If request is cancelled, the result arrays are empty.
-			if( grantResults.length > 0 &&
-				grantResults[ 0 ] == PackageManager.PERMISSION_GRANTED
-				){
-				openAttachment();
+			boolean bNotGranted = false;
+			for(int i=0,ie=permissions.length;i<ie;++i){
+				if( grantResults[ i ] != PackageManager.PERMISSION_GRANTED ){
+					bNotGranted = true;
+				}
+			}
+			if( bNotGranted ){
+				Utils.showToast( this, true, R.string.missing_permission_to_access_media );
 			}else{
-				Utils.showToast( this, true, R.string.missing_storage_permission );
+				openAttachment();
 			}
 			break;
 		}

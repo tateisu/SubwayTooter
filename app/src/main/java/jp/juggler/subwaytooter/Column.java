@@ -54,8 +54,7 @@ import jp.juggler.subwaytooter.view.MyListView;
 import jp.juggler.subwaytooter.util.ScrollPosition;
 import jp.juggler.subwaytooter.util.Utils;
 
-@SuppressWarnings("WeakerAccess")
-class Column implements StreamReader.Callback {
+@SuppressWarnings("WeakerAccess") class Column implements StreamReader.Callback {
 	private static final LogCategory log = new LogCategory( "Column" );
 	
 	interface Callback {
@@ -222,7 +221,7 @@ class Column implements StreamReader.Callback {
 	// 「インスタンス情報」カラムに表示するインスタンス情報
 	// (SavedAccount中のインスタンス情報とは異なるので注意)
 	TootInstance instance_information;
-
+	
 	ScrollPosition scroll_save;
 	
 	Column( @NonNull AppState app_state, @NonNull SavedAccount access_info, @NonNull Callback callback, int type, Object... params ){
@@ -255,7 +254,7 @@ class Column implements StreamReader.Callback {
 		case TYPE_SEARCH_PORTAL:
 			this.search_query = (String) getParamAt( params, 0 );
 			break;
-
+		
 		case TYPE_INSTANCE_INFORMATION:
 			this.instance_uri = (String) getParamAt( params, 0 );
 			break;
@@ -308,11 +307,11 @@ class Column implements StreamReader.Callback {
 		case TYPE_SEARCH_PORTAL:
 			item.put( KEY_SEARCH_QUERY, search_query );
 			break;
-
+		
 		case TYPE_INSTANCE_INFORMATION:
 			item.put( KEY_INSTANCE_URI, instance_uri );
 			break;
-
+			
 		}
 		
 		// 以下は保存には必要ないが、カラムリスト画面で使う
@@ -1158,7 +1157,7 @@ class Column implements StreamReader.Callback {
 		return null;
 	}
 	
-	@NonNull static final VersionString version_1_6 = new VersionString("1.6");
+	@NonNull static final VersionString version_1_6 = new VersionString( "1.6" );
 	
 	void startLoading(){
 		cancelLastTask();
@@ -1191,80 +1190,80 @@ class Column implements StreamReader.Callback {
 			
 			TootInstance instance_tmp;
 			
-			TootApiResult getInstanceInformation( @NonNull TootApiClient client ,@Nullable String instance_name){
+			TootApiResult getInstanceInformation( @NonNull TootApiClient client, @Nullable String instance_name ){
 				instance_tmp = null;
 				if( instance_name != null ) client.setInstance( instance_name );
 				TootApiResult result = client.request( "/api/v1/instance" );
 				if( result != null && result.object != null ){
 					instance_tmp = TootInstance.parse( result.object );
-
+					
 				}
 				return result;
 			}
 			
 			ArrayList< Object > list_pinned;
+			
 			TootApiResult getStatusesPinned( TootApiClient client, String path_base ){
 				TootApiResult result = client.request( path_base );
 				if( result != null && result.array != null ){
 					//
-					TootStatus.List src = TootStatus.parseList( context, access_info, result.array ,true);
+					TootStatus.List src = TootStatus.parseList( context, access_info, result.array, true );
 					
-					for(TootStatus status : src ){
-						log.d("pinned: %s %s",status.id, status.decoded_content);
+					for( TootStatus status : src ){
+						log.d( "pinned: %s %s", status.id, status.decoded_content );
 					}
 					
 					list_pinned = new ArrayList<>( src.size() );
 					addWithFilter( list_pinned, src );
 					
-
 					// 1.6rc では以下の理由により、40overの固定トゥートを取得することは困難である
-//					- max_idを指定せずにAPIで取得すると適当な件数のリストが返ってくる。ソート順はpinした日時。max_idはリスト中の最後の要素のIDを返す
-//					- max_idを指定してAPIで取得すると「ステータスIDがmax_idより小さい&pinされている」トゥートをpin日時順にソートしたものが返ってくる
-//					- max_idはpin日時を考慮していないのだからページング用のパラメータとしては全く不適切である
-//					- 取得できるステータスにはpinされた日時は含まれない
-//					//
-//					// pinステータスは独自にページ管理する
-//					long time_start = SystemClock.elapsedRealtime();
-//					String max_id = parseMaxId( result );
-//					char delimiter = ( - 1 != path_base.indexOf( '?' ) ? '&' : '?' );
-//					for( ; ; ){
-//
-//						if( client.isCancelled() ){
-//							log.d( "loading-statuses-pinned: cancelled." );
-//							break;
-//						}
-//						if( max_id == null ){
-//							log.d( "loading-statuses-pinned: max_id is null." );
-//							break;
-//						}
-//						if( src.isEmpty() ){
-//							log.d( "loading-statuses-pinned: previous response is empty." );
-//							break;
-//						}
-//						if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
-//							log.d( "loading-statuses-pinned: timeout." );
-//							break;
-//						}
-//
-//						String path = path_base + delimiter + "max_id=" + max_id;
-//						TootApiResult result2 = client.request( path );
-//						if( result2 == null || result2.array == null ){
-//							log.d( "loading-statuses-pinned: error or cancelled." );
-//							break;
-//						}
-//
-//						src = TootStatus.parseList( context, access_info, result2.array  ,true);
-//						for(TootStatus status : src ){
-//							log.d("pinned: %s %s",status.id, status.decoded_content);
-//						}
-//
-//						addWithFilter( list_pinned, src );
-//
-//						// pinnedステータスは独自にページ管理する
-//						max_id = parseMaxId( result2 );
-//					}
+					//					- max_idを指定せずにAPIで取得すると適当な件数のリストが返ってくる。ソート順はpinした日時。max_idはリスト中の最後の要素のIDを返す
+					//					- max_idを指定してAPIで取得すると「ステータスIDがmax_idより小さい&pinされている」トゥートをpin日時順にソートしたものが返ってくる
+					//					- max_idはpin日時を考慮していないのだからページング用のパラメータとしては全く不適切である
+					//					- 取得できるステータスにはpinされた日時は含まれない
+					//					//
+					//					// pinステータスは独自にページ管理する
+					//					long time_start = SystemClock.elapsedRealtime();
+					//					String max_id = parseMaxId( result );
+					//					char delimiter = ( - 1 != path_base.indexOf( '?' ) ? '&' : '?' );
+					//					for( ; ; ){
+					//
+					//						if( client.isCancelled() ){
+					//							log.d( "loading-statuses-pinned: cancelled." );
+					//							break;
+					//						}
+					//						if( max_id == null ){
+					//							log.d( "loading-statuses-pinned: max_id is null." );
+					//							break;
+					//						}
+					//						if( src.isEmpty() ){
+					//							log.d( "loading-statuses-pinned: previous response is empty." );
+					//							break;
+					//						}
+					//						if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
+					//							log.d( "loading-statuses-pinned: timeout." );
+					//							break;
+					//						}
+					//
+					//						String path = path_base + delimiter + "max_id=" + max_id;
+					//						TootApiResult result2 = client.request( path );
+					//						if( result2 == null || result2.array == null ){
+					//							log.d( "loading-statuses-pinned: error or cancelled." );
+					//							break;
+					//						}
+					//
+					//						src = TootStatus.parseList( context, access_info, result2.array  ,true);
+					//						for(TootStatus status : src ){
+					//							log.d("pinned: %s %s",status.id, status.decoded_content);
+					//						}
+					//
+					//						addWithFilter( list_pinned, src );
+					//
+					//						// pinnedステータスは独自にページ管理する
+					//						max_id = parseMaxId( result2 );
+					//					}
 				}
-				log.d("getStatusesPinned: list size=%s",list_pinned==null? -1 : list_pinned.size() );
+				log.d( "getStatusesPinned: list size=%s", list_pinned == null ? - 1 : list_pinned.size() );
 				return result;
 			}
 			
@@ -1456,35 +1455,35 @@ class Column implements StreamReader.Callback {
 						return getStatuses( client, PATH_FEDERATE );
 					
 					case TYPE_PROFILE:
-
+						
 						parseAccount1( client, String.format( Locale.JAPAN, PATH_ACCOUNT, profile_id ) );
 						client.callback.publishApiProgress( "" );
-
+						
 						switch( profile_tab ){
 						
 						default:
 						case TAB_STATUS:
 							TootInstance instance = access_info.getInstance();
 							if( access_info.isPseudo() || instance == null ){
-								TootApiResult r2 = getInstanceInformation( client ,null );
+								TootApiResult r2 = getInstanceInformation( client, null );
 								if( instance_tmp != null ){
 									instance = instance_tmp;
 									access_info.setInstance( instance_tmp );
 								}
 								if( access_info.isPseudo() ) return r2;
 							}
-
-							{
-								String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
-								if( with_attachment ) s = s + "&only_media=1";
-
-								if( instance != null && instance.isEnoughVersion(version_1_6) ){
-									getStatusesPinned( client, s + "&pinned=1");
-								}
-								
-								return getStatuses( client, s );
-								
+						
+						{
+							String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
+							if( with_attachment ) s = s + "&only_media=1";
+							
+							if( instance != null && instance.isEnoughVersion( version_1_6 ) ){
+								getStatusesPinned( client, s + "&pinned=1" );
 							}
+							
+							return getStatuses( client, s );
+							
+						}
 						
 						case TAB_FOLLOWING:
 							return parseAccountList( client,
@@ -1533,7 +1532,7 @@ class Column implements StreamReader.Callback {
 						result = client.request(
 							String.format( Locale.JAPAN, PATH_STATUSES, status_id ) );
 						if( result == null || result.object == null ) return result;
-						TootStatus target_status = TootStatus.parse( context,access_info, result.object );
+						TootStatus target_status = TootStatus.parse( context, access_info, result.object );
 						if( target_status == null ){
 							return new TootApiResult( "TootStatus parse failed." );
 						}
@@ -3223,42 +3222,44 @@ class Column implements StreamReader.Callback {
 		
 		// 破棄されたカラムなら何もしない
 		if( is_dispose.get() ){
-			log.d( "onResume: column was disposed." );
+			log.d( "onStart: column was disposed." );
 			return;
 		}
 		
 		// 未初期化なら何もしない
 		if( ! bFirstInitialized ){
-			log.d( "onResume: column is not initialized." );
+			log.d( "onStart: column is not initialized." );
 			return;
 		}
 		
 		// 初期ロード中なら何もしない
 		if( bInitialLoading ){
-			log.d( "onResume: column is in initial loading." );
+			log.d( "onStart: column is in initial loading." );
 			return;
 		}
 		
+		// 始端リフレッシュの最中だった
+		// リフレッシュ終了時に自動でストリーミング開始するはず
 		if( bRefreshingTop ){
-			// 始端リフレッシュの最中だった
-			// リフレッシュ終了時に自動でストリーミング開始するはず
-			log.d( "onResume: bRefreshingTop is true." );
-		}else if(
-			! bRefreshLoading
-				&& canAutoRefresh()
-				&& ! App1.getAppState( context ).pref.getBoolean( Pref.KEY_DONT_REFRESH_ON_RESUME, false )
-				&& ! dont_auto_refresh
+			log.d( "onStart: bRefreshingTop is true." );
+			return;
+		}
+		
+		if( ! bRefreshLoading
+			&& canAutoRefresh()
+			&& ! App1.getAppState( context ).pref.getBoolean( Pref.KEY_DONT_REFRESH_ON_RESUME, false )
+			&& ! dont_auto_refresh
 			){
 			
 			// リフレッシュしてからストリーミング開始
-			log.d( "onResume: start auto refresh." );
+			log.d( "onStart: start auto refresh." );
 			startRefresh( true, false, - 1L, - 1 );
 		}else if( column_type == TYPE_SEARCH || column_type == TYPE_SEARCH_PORTAL ){
-			// 検索カラムはリフレッシュもストリーミングもないが、resumeのタイミングでリストの再描画を行いたい
+			// 検索カラムはリフレッシュもストリーミングもないが、表示開始のタイミングでリストの再描画を行いたい
 			fireShowContent();
 		}else{
 			// ギャップつきでストリーミング開始
-			log.d( "onResume: start streaming with gap." );
+			log.d( "onStart: start streaming with gap." );
 			resumeStreaming( true );
 		}
 	}

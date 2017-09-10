@@ -212,7 +212,7 @@
     <string name="long_side_pixel">Resize to %1$d pixels</string>
     <string name="image_pick">Pick an image</string>
     <string name="image_capture">Take a picture</string>
-    <string name="missing_storage_permission">Permission to write storage is missing.</string>
+    <string name="missing_permission_to_access_media">Missing app permission to access media.</string>
     <string name="attachment_uploading">Media attachment  is uploading…</string>
     <string name="attachment_uploaded">Media attachment upload completed.</string>
     <string name="actions_for_status">Actions for this toot</string>
@@ -466,10 +466,13 @@
     <string name="short_acct_local_user">Short acct for local user (app restart required)</string>
     <string name="loading_notification_title">Loading notification…</string>
     <string name="error_notification_title">Server Timeout</string>
-    <string name="error_notification_summary">If it\'s dead instance, please remove account on that server.</string>
+    <string name="error_notification_summary">If it is destructed instance, please remove account on that server.</string>
     <string name="open_hashtag_column">Open hashtag column</string>
     <string name="quote_hashtag_of">Quote hashtag \"%1$s\"</string>
     <string name="quote_all_hashtag_of">Quote all hashtags \"%1$s\"</string>
     <string name="parsing_response">Parsing response…</string>
+    <string name="video_pick">Pick video</string>
+    <string name="video_capture">Capture video</string>
+    <string name="already_followed">Already followed.</string>
 
 </resources>

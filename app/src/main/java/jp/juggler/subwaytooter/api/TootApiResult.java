@@ -27,6 +27,10 @@ public class TootApiResult {
 	public TootApiResult( String error ){
 		this.error = error;
 	}
+	public TootApiResult( Response response, String error ){
+		this.response =response;
+		this.error = error;
+	}
 	
 	TootApiResult( Response response, JSONObject token_info, String json, JSONObject object ){
 		this.token_info = token_info;
@@ -52,6 +56,8 @@ public class TootApiResult {
 	public String link_newer; // より新しいデータへの
 	
 	private static final Pattern reLinkURL = Pattern.compile("<([^>]+)>;\\s*rel=\"([^\"]+)\"");
+	
+
 	
 	private void parseLinkHeader(LogCategory log,Response response, JSONArray array){
 		// Link:  <https://mastodon.juggler.jp/api/v1/timelines/home?limit=XX&max_id=405228>; rel="next",

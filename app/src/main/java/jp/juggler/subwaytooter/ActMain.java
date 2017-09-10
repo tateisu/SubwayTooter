@@ -244,23 +244,13 @@ public class ActMain extends AppCompatActivity
 		
 		// 投稿直後ならカラムの再取得を行う
 		refreshAfterPost();
-
-		// 外部から受け取ったUriの処理
-		Uri uri = ActCallback.last_uri.getAndSet( null );
-		if( uri != null ){
-			handleIntentUri( uri );
-		}
-		
-		// 外部から受け取ったUriの処理
-		Intent intent = ActCallback.sent_intent.getAndSet( null );
-		if( intent != null ){
-			handleSentIntent( intent );
-		}
 		
 		// 画面復帰時に再取得やストリーミング開始を行う
 		for( Column column : app_state.column_list ){
 			column.onStart( this );
 		}
+		
+
 
 		// カラムの表示範囲インジケータを更新
 		updateColumnStripSelection( - 1, - 1f );
@@ -299,6 +289,19 @@ public class ActMain extends AppCompatActivity
 		}else{
 			getWindow().clearFlags( WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON );
 		}
+		
+		// 外部から受け取ったUriの処理
+		Uri uri = ActCallback.last_uri.getAndSet( null );
+		if( uri != null ){
+			handleIntentUri( uri );
+		}
+		
+		// 外部から受け取ったUriの処理
+		Intent intent = ActCallback.sent_intent.getAndSet( null );
+		if( intent != null ){
+			handleSentIntent( intent );
+		}
+		
 	}
 	
 	@Override protected void onPause(){
@@ -3498,7 +3501,8 @@ public class ActMain extends AppCompatActivity
 					
 				}else if( bFollow && who.locked && result.response != null && result.response.code() == 422 ){
 					Utils.showToast( ActMain.this, false, R.string.cant_follow_locked_user );
-					
+				}else if(result.response !=null && result.response.code()==500){
+					Utils.showToast( ActMain.this, false, R.string.already_followed );
 				}else{
 					Utils.showToast( ActMain.this, false, result.error );
 				}
@@ -3618,6 +3622,8 @@ public class ActMain extends AppCompatActivity
 					
 				}else if( locked && result.response != null && result.response.code() == 422 ){
 					Utils.showToast( ActMain.this, false, R.string.cant_follow_locked_user );
+				}else if(result.response !=null && result.response.code()==500){
+					Utils.showToast( ActMain.this, false, R.string.already_followed );
 				}else{
 					Utils.showToast( ActMain.this, false, result.error );
 				}

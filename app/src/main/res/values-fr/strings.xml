@@ -186,8 +186,9 @@
 	<string name="mention2">Mention</string>
 	<string name="menu">Menu</string>
 	<string name="minimum_column_width">Largeur minimum des colonnes \n(défaut=300(dp), redémarrage nécessaire)</string>
-	<string name="missing_storage_permission">Permission d\'écrire sur la SDCard manquante.</string>
-	<string name="more">Plus</string>
+    <string name="missing_permission_to_access_media">Missing app permission to access media.</string>
+
+    <string name="more">Plus</string>
 	<string name="mute">Désactiver le son</string>
 	<string name="mute_app_desc">Faire glisser pour supprimer. Vous devez rafraîchir pour voir les changements effectués.</string>
 	<string name="mute_app_of">Interdire l\'application \"%1$s\""</string>
@@ -472,11 +473,14 @@
 	<string name="short_acct_local_user">Short acct for local user (app restart required)</string>
     <string name="loading_notification_title">Loading notification…</string>
 	<string name="error_notification_title">Server Timeout</string>
-	<string name="error_notification_summary">If it\'s dead instance, please remove account on that server.</string>
+	<string name="error_notification_summary">If it is destructed instance, please remove account on that server.</string>
     <string name="open_hashtag_column">Open hashtag column</string>
 	<string name="quote_hashtag_of">Quote hashtag \"%1$s\"</string>
 	<string name="quote_all_hashtag_of">Quote all hashtags \"%1$s\"</string>
     <string name="parsing_response">Parsing response…</string>
+    <string name="video_pick">Pick video</string>
+    <string name="video_capture">Capture video</string>
+    <string name="already_followed">Already followed.</string>
 
     <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

@@ -932,7 +932,7 @@ public class ActAccountSetting extends AppCompatActivity
 			);
 			return;
 		}
-		Utils.showToast( this, true, R.string.missing_storage_permission );
+		Utils.showToast( this, true, R.string.missing_permission_to_access_media );
 	}
 	
 	@Override public void onRequestPermissionsResult(
@@ -949,7 +949,7 @@ public class ActAccountSetting extends AppCompatActivity
 				){
 				openPicker( requestCode );
 			}else{
-				Utils.showToast( this, true, R.string.missing_storage_permission );
+				Utils.showToast( this, true, R.string.missing_permission_to_access_media );
 			}
 			break;
 		}

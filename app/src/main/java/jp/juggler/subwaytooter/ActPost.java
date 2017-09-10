@@ -967,11 +967,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			preparePermission();
 			return;
 		}
-		permissionCheck = ContextCompat.checkSelfPermission( this, Manifest.permission.CAMERA );
-		if( permissionCheck != PackageManager.PERMISSION_GRANTED ){
-			preparePermission();
-			return;
-		}
+
+//		permissionCheck = ContextCompat.checkSelfPermission( this, Manifest.permission.CAMERA );
+//		if( permissionCheck != PackageManager.PERMISSION_GRANTED ){
+//			preparePermission();
+//			return;
+//		}
 		
 		ActionsDialog a = new ActionsDialog();
 		a.addAction( getString( R.string.image_pick ), new Runnable() {
@@ -1314,13 +1315,14 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			ActivityCompat.requestPermissions( this
 				, new String[]{
 					Manifest.permission.WRITE_EXTERNAL_STORAGE,
-					Manifest.permission.CAMERA,
+			//		Manifest.permission.CAMERA,
 				}
 				, PERMISSION_REQUEST_CODE
 			);
 			return;
+		}else{
+			Utils.showToast( this, true, R.string.missing_permission_to_access_media );
 		}
-		Utils.showToast( this, true, R.string.missing_permission_to_access_media );
 	}
 	
 	@Override public void onRequestPermissionsResult(

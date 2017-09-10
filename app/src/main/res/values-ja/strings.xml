@@ -765,7 +765,7 @@
     <string name="quote_hashtag_of">ハッシュタグ \"%1$s\" を引用</string>
     <string name="quote_all_hashtag_of">全てのハッシュタグ \"%1$s\" を引用</string>
     <string name="parsing_response">応答の解析中…</string>
-    <string name="video_pick">Pick video</string>
-    <string name="video_capture">Capture video</string>
-    <string name="already_followed">既にフォロー済みです</string>
+    <string name="video_pick">動画の選択</string>
+    <string name="video_capture">動画の撮影</string>
+    <string name="already_followed">既にフォローしてます</string>
 </resources>

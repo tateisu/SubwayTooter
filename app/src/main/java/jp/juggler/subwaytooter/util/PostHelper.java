@@ -6,6 +6,8 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -27,6 +29,8 @@ import jp.juggler.subwaytooter.Pref;
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
+import jp.juggler.subwaytooter.api.entity.TootAccount;
+import jp.juggler.subwaytooter.api.entity.TootInstance;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.dialog.DlgConfirm;
 import jp.juggler.subwaytooter.table.AcctColor;
@@ -76,6 +80,8 @@ public class PostHelper {
 	public long in_reply_to_id;
 	public ArrayList< PostAttachment > attachment_list;
 	public ArrayList< String > enquete_items;
+	
+	static final VersionString version_1_6 = new VersionString( "1.6" );
 	
 	public void post( final SavedAccount account,final boolean bConfirmTag, final boolean bConfirmAccount ,final Callback callback){
 		if( TextUtils.isEmpty( content ) ){
@@ -152,86 +158,7 @@ public class PostHelper {
 			}
 		}
 		
-		RequestBody request_body;
-		String body_string;
-		
-		if( enquete_items == null || enquete_items.isEmpty() ){
-			StringBuilder sb = new StringBuilder();
-			
-			sb.append( "status=" );
-			sb.append( Uri.encode( content ) );
-			
-			sb.append( "&visibility=" );
-			sb.append( Uri.encode( visibility ) );
-			
-			if( bNSFW ){
-				sb.append( "&sensitive=1" );
-			}
-			
-			if( spoiler_text != null ){
-				sb.append( "&spoiler_text=" );
-				sb.append( Uri.encode( spoiler_text ) );
-			}
-			
-			if( in_reply_to_id != - 1L ){
-				sb.append( "&in_reply_to_id=" );
-				sb.append( Long.toString( in_reply_to_id ) );
-			}
-			
-			if( attachment_list != null ){
-				for( PostAttachment pa : attachment_list ){
-					if( pa.attachment != null ){
-						sb.append( "&media_ids[]=" ).append( pa.attachment.id );
-					}
-				}
-			}
-			
-			body_string = sb.toString();
-			request_body = RequestBody.create(
-				TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
-				, body_string
-			);
-		}else{
-			
-			
-			JSONObject json = new JSONObject(  );
-			try{
-				json.put("status",content);
-				json.put("visibility",visibility);
-				json.put("sensitive",bNSFW);
-				json.put("spoiler_text",TextUtils.isEmpty( spoiler_text ) ? "" : spoiler_text );
-				json.put("in_reply_to_id", in_reply_to_id == -1L ? null : in_reply_to_id );
-				JSONArray array = new JSONArray();
-				if( attachment_list != null ){
-					for( PostAttachment pa : attachment_list ){
-						if( pa.attachment != null ){
-							array.put( pa.attachment.id );
-						}
-					}
-				}
-				json.put("media_ids",array);
-				json.put("isEnquete",true);
-				array = new JSONArray();
-				for( String item  : enquete_items ){
-					array.put( item );
-				}
-				json.put("enquete_items",array);
-			}catch(JSONException ex){
-				log.trace( ex );
-				log.e(ex,"status encoding failed.");
-			}
-			
-			body_string = json.toString();
-			request_body = RequestBody.create(
-				TootApiClient.MEDIA_TYPE_JSON
-				, body_string
-			);
-		}
-		
-		final Request.Builder request_builder = new Request.Builder()
-			.post(request_body );
-		final String digest =Utils.digestSHA256( body_string + account.acct );
-		
+		//noinspection deprecation
 		final ProgressDialog progress = new ProgressDialog( activity );
 		
 		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
@@ -239,6 +166,28 @@ public class PostHelper {
 			
 			TootStatus status;
 			
+			TootInstance instance_tmp;
+			
+			TootApiResult getInstanceInformation( @NonNull TootApiClient client, @Nullable String instance_name ){
+				instance_tmp = null;
+				TootApiResult result = client.request( "/api/v1/instance" );
+				if( result != null && result.object != null ){
+					instance_tmp = TootInstance.parse( result.object );
+					
+				}
+				return result;
+			}
+			TootAccount credential_tmp;
+			
+			TootApiResult getCredential( @NonNull TootApiClient client ){
+				credential_tmp = null;
+				TootApiResult result = client.request("/api/v1/accounts/verify_credentials" );
+				if( result != null && result.object != null ){
+					credential_tmp = TootAccount.parse( activity,target_account,result.object );
+					
+				}
+				return result;
+			}
 			@Override protected TootApiResult doInBackground( Void... params ){
 				TootApiClient client = new TootApiClient( activity, new TootApiClient.Callback() {
 					@Override public boolean isApiCancelled(){
@@ -255,6 +204,112 @@ public class PostHelper {
 				} );
 				
 				client.setAccount( target_account );
+				
+				String visibility_checked = visibility;
+				if( TootStatus.VISIBILITY_WEB_SETTING.equals( visibility) ){
+					TootInstance instance = target_account.getInstance();
+					if( instance == null ){
+						TootApiResult r2 = getInstanceInformation( client, null );
+						if( instance_tmp == null ) return r2;
+						instance = instance_tmp;
+						target_account.setInstance( instance_tmp );
+					}
+					if( instance.isEnoughVersion( version_1_6 )){
+						visibility_checked = null;
+					}else{
+						TootApiResult r2 = getCredential(client);
+						if( credential_tmp == null ) return r2;
+						if( credential_tmp.source == null || credential_tmp.source.privacy ==null ){
+							return new TootApiResult( activity.getString(R.string.cant_get_web_setting_visibility) );
+						}
+						visibility_checked =  credential_tmp.source.privacy;
+					}
+				}
+				
+				RequestBody request_body;
+				String body_string;
+				
+				if( enquete_items == null || enquete_items.isEmpty() ){
+					StringBuilder sb = new StringBuilder();
+					
+					sb.append( "status=" );
+					sb.append( Uri.encode( content ) );
+					
+					if( visibility_checked != null ){
+						sb.append( "&visibility=" );
+						sb.append( Uri.encode( visibility_checked ) );
+					}
+					
+					if( bNSFW ){
+						sb.append( "&sensitive=1" );
+					}
+					
+					if( spoiler_text != null ){
+						sb.append( "&spoiler_text=" );
+						sb.append( Uri.encode( spoiler_text ) );
+					}
+					
+					if( in_reply_to_id != - 1L ){
+						sb.append( "&in_reply_to_id=" );
+						sb.append( Long.toString( in_reply_to_id ) );
+					}
+					
+					if( attachment_list != null ){
+						for( PostAttachment pa : attachment_list ){
+							if( pa.attachment != null ){
+								sb.append( "&media_ids[]=" ).append( pa.attachment.id );
+							}
+						}
+					}
+					
+					body_string = sb.toString();
+					request_body = RequestBody.create(
+						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+						, body_string
+					);
+				}else{
+					
+					
+					JSONObject json = new JSONObject(  );
+					try{
+						json.put("status",content);
+						if( visibility_checked != null ){
+							json.put( "visibility", visibility_checked );
+						}
+						json.put("sensitive",bNSFW);
+						json.put("spoiler_text",TextUtils.isEmpty( spoiler_text ) ? "" : spoiler_text );
+						json.put("in_reply_to_id", in_reply_to_id == -1L ? null : in_reply_to_id );
+						JSONArray array = new JSONArray();
+						if( attachment_list != null ){
+							for( PostAttachment pa : attachment_list ){
+								if( pa.attachment != null ){
+									array.put( pa.attachment.id );
+								}
+							}
+						}
+						json.put("media_ids",array);
+						json.put("isEnquete",true);
+						array = new JSONArray();
+						for( String item  : enquete_items ){
+							array.put( item );
+						}
+						json.put("enquete_items",array);
+					}catch(JSONException ex){
+						log.trace( ex );
+						log.e(ex,"status encoding failed.");
+					}
+					
+					body_string = json.toString();
+					request_body = RequestBody.create(
+						TootApiClient.MEDIA_TYPE_JSON
+						, body_string
+					);
+				}
+				
+				final Request.Builder request_builder = new Request.Builder()
+					.post(request_body );
+				final String digest =Utils.digestSHA256( body_string + account.acct );
+				
 				
 				
 				if( ! pref.getBoolean( Pref.KEY_DONT_DUPLICATION_CHECK, false ) ){

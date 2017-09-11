@@ -2803,7 +2803,13 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-	static final Pattern reUriOStatusToot = Pattern.compile( "tag:([^,]*),[^:]*:objectId=(\\d+):objectType=Status", Pattern.CASE_INSENSITIVE );
+	// OStatus
+	static final Pattern reTootUriOS = Pattern.compile( "tag:([^,]*),[^:]*:objectId=(\\d+):objectType=Status", Pattern.CASE_INSENSITIVE );
+	// ActivityPub 1
+	static final Pattern reTootUriAP1 = Pattern.compile( "https?://([^/]+)/users/[^/]+/statuses/(\\d+)" );
+	// ActivityPub 2
+	static final Pattern reTootUriAP2 = Pattern.compile( "https?://([^/]+)/@[^/]+/(\\d+)" );
+	
 	// static final Pattern reUriActivityPubToot = Pattern.compile( "tag:([^,]*),[^:]*:objectId=(\\d+):objectType=Status", Pattern.CASE_INSENSITIVE );
 	
 	public void openStatusOtherInstance( int pos, @NonNull SavedAccount access_info, @NonNull TootStatusLike status ){
@@ -2827,21 +2833,22 @@ public class ActMain extends AppCompatActivity
 				// TLアカウントのホストとトゥートのアカウントのホストが異なる場合
 				
 				long status_id_original = - 1L;
-				//String host_original = null;
 				
 				try{
-					// OStatusでフィードされたトゥートの場合、UriにステータスIDが含まれている
-					Matcher m = reUriOStatusToot.matcher( ts.uri );
+					// UriにステータスIDが含まれている場合がある
+					Matcher m = reTootUriOS.matcher( ts.uri );
 					if( m.find() ){
 						status_id_original = Long.parseLong( m.group( 2 ), 10 );
-						// host_original = m.group( 1 );
 					}else{
-						// TODO ActivityPub対応
-//						m = reUriOStatusToot.matcher( ts.uri );
-//						if( m.find() ){
-//							status_id_original = Long.parseLong( m.group( 2 ), 10 );
-//							// host_original = m.group( 1 );
-//						}
+						m = reTootUriAP1.matcher( ts.uri );
+						if( m.find() ){
+							status_id_original = Long.parseLong( m.group( 2 ), 10 );
+						}else{
+							m = reTootUriAP2.matcher( ts.uri );
+							if( m.find() ){
+								status_id_original = Long.parseLong( m.group( 2 ), 10 );
+							}
+						}
 					}
 				}catch( Throwable ex ){
 					log.e( ex, "openStatusOtherInstance: cant parse tag: %s", ts.uri );

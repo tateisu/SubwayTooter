@@ -1,13 +1,13 @@
 package jp.juggler.subwaytooter.api.entity;
-	
-	import android.support.annotation.NonNull;
-	import android.support.annotation.Nullable;
-	
-	import org.json.JSONObject;
-	
-	import jp.juggler.subwaytooter.util.LogCategory;
-	import jp.juggler.subwaytooter.util.Utils;
-	import jp.juggler.subwaytooter.util.VersionString;
+
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+
+import org.json.JSONObject;
+
+import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.Utils;
+import jp.juggler.subwaytooter.util.VersionString;
 
 @SuppressWarnings("WeakerAccess")
 public class TootInstance {
@@ -33,6 +33,14 @@ public class TootInstance {
 	// いつ取得したか
 	public long time_parse;
 	
+	public static class Stats {
+		public long user_count;
+		public long status_count;
+		public long domain_count;
+	}
+	
+	public Stats stats;
+	
 	@Nullable
 	public static TootInstance parse( JSONObject src ){
 		if( src == null ) return null;
@@ -45,12 +53,24 @@ public class TootInstance {
 			dst.version = Utils.optStringX( src, "version" );
 			dst.decoded_version = new VersionString( dst.version );
 			dst.time_parse = System.currentTimeMillis();
+			
+			dst.stats = parseStats( src.optJSONObject( "stats" ) );
+			
 			return dst;
 		}catch( Throwable ex ){
 			log.trace( ex );
 			log.e( ex, "TootInstance.parse failed." );
 			return null;
 		}
+	}
+	
+	private static @Nullable Stats parseStats( JSONObject src ){
+		if( src == null ) return null;
+		Stats dst = new Stats();
+		dst.user_count = src.optLong( "user_count", - 1L );
+		dst.status_count = src.optLong( "status_count", - 1L );
+		dst.domain_count = src.optLong( "domain_count", - 1L );
+		return dst;
 	}
 	
 	public boolean isEnoughVersion( @NonNull VersionString check ){

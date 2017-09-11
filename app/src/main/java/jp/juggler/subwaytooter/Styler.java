@@ -14,6 +14,8 @@ import android.graphics.drawable.shapes.RectShape;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +26,7 @@ import java.util.Locale;
 
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.UserRelation;
+import jp.juggler.subwaytooter.util.EmojiImageSpan;
 
 public class Styler {
 	static int getVisibilityIcon( Context context,String visibility ){
@@ -33,7 +36,8 @@ public class Styler {
 				: TootStatus.VISIBILITY_UNLISTED.equals( visibility ) ? R.attr.ic_lock_open
 				: TootStatus.VISIBILITY_PRIVATE.equals( visibility ) ? R.attr.ic_lock
 				: TootStatus.VISIBILITY_DIRECT.equals( visibility ) ? R.attr.ic_mail
-				: R.attr.ic_public );
+				: TootStatus.VISIBILITY_WEB_SETTING.equals( visibility ) ? R.attr.ic_question
+				: R.attr.ic_question );
 		
 	}
 	
@@ -43,7 +47,26 @@ public class Styler {
 				: TootStatus.VISIBILITY_UNLISTED.equals( visibility ) ? context.getString( R.string.visibility_unlisted )
 				: TootStatus.VISIBILITY_PRIVATE.equals( visibility ) ? context.getString( R.string.visibility_private )
 				: TootStatus.VISIBILITY_DIRECT.equals( visibility ) ? context.getString( R.string.visibility_direct )
+				: TootStatus.VISIBILITY_WEB_SETTING.equals( visibility ) ? context.getString( R.string.visibility_web_setting )
 				: "?";
+	}
+	
+	static CharSequence getVisibilityCaption(Context context, String visibility ){
+		SpannableStringBuilder sb = new SpannableStringBuilder();
+
+		int icon_id = getVisibilityIcon( context,visibility );
+		int start = sb.length();
+		sb.append( visibility );
+		int end = sb.length();
+		sb.setSpan( new EmojiImageSpan( context, icon_id ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+		sb.append(' ');
+		sb.append(getVisibilityString( context,visibility ));
+		if( TootStatus.VISIBILITY_WEB_SETTING.equals( visibility )){
+			sb.append("\n　　(");
+			sb.append(context.getString(R.string.mastodon_1_6_later));
+			sb.append(")");
+		}
+		return sb;
 	}
 	
 	public static int getAttributeColor( @NonNull Context context, int attr_id ){
@@ -205,4 +228,6 @@ public class Styler {
 		lp.leftMargin = pad_lr;
 		lp.rightMargin = pad_lr;
 	}
+	
+
 }

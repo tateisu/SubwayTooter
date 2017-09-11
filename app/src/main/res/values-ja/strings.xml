@@ -123,6 +123,9 @@
     <string name="visibility_private">非公開</string>
     <!---->
     <string name="visibility_direct">ダイレクト</string>
+
+    <string name="visibility_web_setting">Webアプリの設定に追従する</string>
+
     <!---->
     <string name="choose_visibility">公開範囲の選択</string>
     <!---->
@@ -768,4 +771,10 @@
     <string name="video_pick">動画の選択</string>
     <string name="video_capture">動画の撮影</string>
     <string name="already_followed">既にフォローしてます</string>
+    <string name="cant_get_web_setting_visibility">Webアプリの公開範囲の設定を取得できません。インスタンスのマストドンバージョンが古いです。</string>
+    <string name="mastodon_1_6_later">マストドン1.6以降</string>
+    <string name="user_count">ユーザー数</string>
+    <string name="toot_count">トゥート数</string>
+    <string name="domain_count">接続中のインスタンス数</string>
+    <string name="not_provided_mastodon_under_1_6">マストドン1.6未満では利用できません</string>
 </resources>

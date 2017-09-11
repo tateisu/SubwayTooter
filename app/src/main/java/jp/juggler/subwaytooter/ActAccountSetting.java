@@ -329,8 +329,6 @@ public class ActAccountSetting extends AppCompatActivity
 		btnAccessToken.setEnabled( enabled );
 		btnInputAccessToken.setEnabled( enabled );
 		btnVisibility.setEnabled( enabled );
-		btnVisibility.setEnabled( enabled );
-		btnVisibility.setEnabled( enabled );
 		
 		btnNotificationSoundEdit.setEnabled( Build.VERSION.SDK_INT < 26 && enabled );
 		btnNotificationSoundReset.setEnabled( Build.VERSION.SDK_INT < 26 && enabled );
@@ -461,17 +459,13 @@ public class ActAccountSetting extends AppCompatActivity
 	}
 	
 	private void performVisibility(){
-		final String[] caption_list = new String[]{
-			getString( R.string.visibility_public ),
-			getString( R.string.visibility_unlisted ),
-			getString( R.string.visibility_private ),
-			getString( R.string.visibility_direct ),
+		final CharSequence[] caption_list = new CharSequence[]{
+			Styler.getVisibilityCaption( this, TootStatus.VISIBILITY_WEB_SETTING ),
+			Styler.getVisibilityCaption( this, TootStatus.VISIBILITY_PUBLIC ),
+			Styler.getVisibilityCaption( this, TootStatus.VISIBILITY_UNLISTED ),
+			Styler.getVisibilityCaption( this, TootStatus.VISIBILITY_PRIVATE),
+			Styler.getVisibilityCaption( this, TootStatus.VISIBILITY_DIRECT),
 		};
-		
-		//		public static final String VISIBILITY_PUBLIC ="public";
-		//		public static final String VISIBILITY_UNLISTED ="unlisted";
-		//		public static final String VISIBILITY_PRIVATE ="private";
-		//		public static final String VISIBILITY_DIRECT ="direct";
 		
 		new AlertDialog.Builder( this )
 			.setTitle( R.string.choose_visibility )
@@ -480,15 +474,18 @@ public class ActAccountSetting extends AppCompatActivity
 				public void onClick( DialogInterface dialog, int which ){
 					switch( which ){
 					case 0:
-						visibility = TootStatus.VISIBILITY_PUBLIC;
+						visibility = TootStatus.VISIBILITY_WEB_SETTING;
 						break;
 					case 1:
-						visibility = TootStatus.VISIBILITY_UNLISTED;
+						visibility = TootStatus.VISIBILITY_PUBLIC;
 						break;
 					case 2:
-						visibility = TootStatus.VISIBILITY_PRIVATE;
+						visibility = TootStatus.VISIBILITY_UNLISTED;
 						break;
 					case 3:
+						visibility = TootStatus.VISIBILITY_PRIVATE;
+						break;
+					case 4:
 						visibility = TootStatus.VISIBILITY_DIRECT;
 						break;
 					}

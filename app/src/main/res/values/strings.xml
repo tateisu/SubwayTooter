@@ -64,6 +64,7 @@
     <string name="visibility_unlisted">Unlisted</string>
     <string name="visibility_private">Private</string>
     <string name="visibility_direct">Direct</string>
+    <string name="visibility_web_setting">Trace web app setting</string>
     <string name="choose_visibility">Choose visibility</string>
     <string name="confirm_delete_attachment">Remove this attachment?</string>
     <string name="post_error_contents_empty">You can\'t post an empty toot.</string>
@@ -474,5 +475,11 @@
     <string name="video_pick">Pick video</string>
     <string name="video_capture">Capture video</string>
     <string name="already_followed">Already followed.</string>
+    <string name="cant_get_web_setting_visibility">Can\'t get visibility setting in web app.</string>
+    <string name="mastodon_1_6_later">Mastodon 1.6 or later</string>
+    <string name="user_count">User count</string>
+    <string name="toot_count">Toot count</string>
+    <string name="domain_count">Connected domain count</string>
+    <string name="not_provided_mastodon_under_1_6">Not provided under Mastodon 1.6</string>
 
 </resources>

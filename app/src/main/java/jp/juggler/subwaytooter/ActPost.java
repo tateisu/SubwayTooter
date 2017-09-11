@@ -458,15 +458,21 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 							if( TextUtils.isEmpty( visibility ) ){
 								visibility = account.visibility;
 								if( TextUtils.isEmpty( visibility ) ){
-									visibility = TootStatus.VISIBILITY_PUBLIC;
+									visibility = TootStatus.VISIBILITY_WEB_SETTING;
 								}
 							}
 							
-							// デフォルトの方が公開範囲が大きい場合、リプライ元に合わせて公開範囲を狭める
-							int i = TootStatus.compareVisibility( this.visibility, reply_status.visibility );
-							if( i > 0 ){ // より大きい=>より公開範囲が広い
+							if( TootStatus.VISIBILITY_WEB_SETTING.equals( visibility) ){
+								// 「Web設定に合わせる」だった場合は無条件にリプライ元の公開範囲に変更する
 								this.visibility = reply_status.visibility;
+							}else{
+								// デフォルトの方が公開範囲が大きい場合、リプライ元に合わせて公開範囲を狭める
+								int i = TootStatus.compareVisibility( this.visibility, reply_status.visibility );
+								if( i > 0 ){ // より大きい=>より公開範囲が広い
+									this.visibility = reply_status.visibility;
+								}
 							}
+							
 						}catch( Throwable ex ){
 							log.trace( ex );
 						}
@@ -482,7 +488,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		if( TextUtils.isEmpty( visibility ) ){
 			visibility = account.visibility;
 			if( TextUtils.isEmpty( visibility ) ){
-				visibility = TootStatus.VISIBILITY_PUBLIC;
+				visibility = TootStatus.VISIBILITY_WEB_SETTING;
 			}
 		}
 		
@@ -825,7 +831,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	void setAccountWithVisibilityConversion( @NonNull SavedAccount a ){
 		setAccount( a );
 		try{
-			if( account.visibility != null && TootStatus.compareVisibility( visibility, a.visibility ) > 0 ){
+			if( a.visibility != null && TootStatus.compareVisibility( visibility, a.visibility ) > 0 ){
 				Utils.showToast( ActPost.this, true, R.string.spoil_visibility_for_account );
 				visibility = a.visibility;
 				showVisibility();
@@ -1386,11 +1392,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	}
 	
 	private void performVisibility(){
-		final String[] caption_list = new String[]{
-			getString( R.string.visibility_public ),
-			getString( R.string.visibility_unlisted ),
-			getString( R.string.visibility_private ),
-			getString( R.string.visibility_direct ),
+		final CharSequence[] caption_list = new CharSequence[]{
+			Styler.getVisibilityCaption( this,TootStatus.VISIBILITY_WEB_SETTING ),
+			Styler.getVisibilityCaption( this,TootStatus.VISIBILITY_PUBLIC ),
+			Styler.getVisibilityCaption( this,TootStatus.VISIBILITY_UNLISTED ),
+			Styler.getVisibilityCaption( this,TootStatus.VISIBILITY_PRIVATE ),
+			Styler.getVisibilityCaption( this,TootStatus.VISIBILITY_DIRECT ),
 		};
 		
 		new AlertDialog.Builder( this )
@@ -1400,15 +1407,18 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				public void onClick( DialogInterface dialog, int which ){
 					switch( which ){
 					case 0:
-						visibility = TootStatus.VISIBILITY_PUBLIC;
+						visibility = TootStatus.VISIBILITY_WEB_SETTING;
 						break;
 					case 1:
-						visibility = TootStatus.VISIBILITY_UNLISTED;
+						visibility = TootStatus.VISIBILITY_PUBLIC;
 						break;
 					case 2:
-						visibility = TootStatus.VISIBILITY_PRIVATE;
+						visibility = TootStatus.VISIBILITY_UNLISTED;
 						break;
 					case 3:
+						visibility = TootStatus.VISIBILITY_PRIVATE;
+						break;
+					case 4:
 						visibility = TootStatus.VISIBILITY_DIRECT;
 						break;
 					}

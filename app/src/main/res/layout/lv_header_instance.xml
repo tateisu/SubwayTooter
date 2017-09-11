@@ -84,6 +84,54 @@
 
     <TextView
         style="@style/setting_row_label"
+        android:text="@string/user_count"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <TextView
+            android:id="@+id/tvUserCount"
+            style="@style/setting_horizontal_stretch"
+            />
+
+    </LinearLayout>
+
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/toot_count"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <TextView
+            android:id="@+id/tvTootCount"
+            style="@style/setting_horizontal_stretch"
+            />
+
+    </LinearLayout>
+
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/domain_count"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <TextView
+            android:id="@+id/tvDomainCount"
+            style="@style/setting_horizontal_stretch"
+            />
+
+    </LinearLayout>
+
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
         android:text="@string/description"
         />
 

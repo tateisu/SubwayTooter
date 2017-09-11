@@ -25,6 +25,9 @@ class HeaderViewHolderInstance extends HeaderViewHolderBase implements View.OnCl
 	private final TextView tvTitle;
 	private final TextView btnEmail;
 	private final TextView tvDescription;
+	private final TextView tvUserCount;
+	private final TextView tvTootCount;
+	private final TextView tvDomainCount;
 	
 	HeaderViewHolderInstance( ActMain arg_activity, Column arg_column, MyListView parent ){
 		super( arg_activity, arg_column
@@ -59,7 +62,9 @@ class HeaderViewHolderInstance extends HeaderViewHolderBase implements View.OnCl
 		tvTitle = viewRoot.findViewById( R.id.tvTitle );
 		btnEmail = viewRoot.findViewById( R.id.btnEmail );
 		tvDescription = viewRoot.findViewById( R.id.tvDescription );
-		
+		tvUserCount = viewRoot.findViewById( R.id.tvUserCount );
+		tvTootCount = viewRoot.findViewById( R.id.tvTootCount );
+		tvDomainCount = viewRoot.findViewById( R.id.tvDomainCount );
 		btnInstance.setOnClickListener( this );
 		btnEmail.setOnClickListener( this );
 		
@@ -92,22 +97,33 @@ class HeaderViewHolderInstance extends HeaderViewHolderBase implements View.OnCl
 			btnEmail.setText( supplyEmpty( instance.email ) );
 			btnEmail.setEnabled( ! TextUtils.isEmpty( instance.email ) );
 			
-			SpannableStringBuilder sb = HTMLDecoder.decodeHTML( activity, access_info, "<p>"+supplyEmpty( instance.description )+"</p>", false, true, null ,null);
-			int previous_br_count =0;
-			for(int i=0;i<sb.length();++i){
+			SpannableStringBuilder sb = HTMLDecoder.decodeHTML( activity, access_info, "<p>" + supplyEmpty( instance.description ) + "</p>", false, true, null, null );
+			int previous_br_count = 0;
+			for( int i = 0 ; i < sb.length() ; ++ i ){
 				char c = sb.charAt( i );
 				if( c != '\n' ){
 					previous_br_count = 0;
 				}else{
-					++previous_br_count;
-					if( previous_br_count >= 3){
-						sb.delete(  i,i+1 );
-						--previous_br_count;
-						--i;
+					++ previous_br_count;
+					if( previous_br_count >= 3 ){
+						sb.delete( i, i + 1 );
+						-- previous_br_count;
+						-- i;
 					}
 				}
 			}
 			tvDescription.setText( sb );
+			
+			if( instance.stats == null ){
+				tvUserCount.setText( R.string.not_provided_mastodon_under_1_6 );
+				tvTootCount.setText( R.string.not_provided_mastodon_under_1_6 );
+				tvDomainCount.setText( R.string.not_provided_mastodon_under_1_6 );
+			}else{
+				tvUserCount.setText( "" + instance.stats.user_count );
+				tvTootCount.setText( "" + instance.stats.status_count );
+				tvDomainCount.setText( "" + instance.stats.domain_count );
+				
+			}
 		}
 	}
 	
@@ -115,7 +131,7 @@ class HeaderViewHolderInstance extends HeaderViewHolderBase implements View.OnCl
 		switch( v.getId() ){
 		case R.id.btnInstance:
 			if( instance != null && instance.uri != null ){
-				activity.openChromeTab( activity.nextPosition( column ), column.access_info, "https://"+ instance.uri +"/about" ,true);
+				activity.openChromeTab( activity.nextPosition( column ), column.access_info, "https://" + instance.uri + "/about", true );
 			}
 			break;
 		case R.id.btnEmail:

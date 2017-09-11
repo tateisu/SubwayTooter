@@ -155,35 +155,40 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			}else{
 				btnMuteApp.setText( activity.getString( R.string.mute_app_of, status.application.name ) );
 			}
-
+			
 			View btnBoostedBy = viewRoot.findViewById( R.id.btnBoostedBy );
-			View btnFavouritedBy= viewRoot.findViewById( R.id.btnFavouritedBy );
+			View btnFavouritedBy = viewRoot.findViewById( R.id.btnFavouritedBy );
 			btnBoostedBy.setOnClickListener( this );
 			btnFavouritedBy.setOnClickListener( this );
 			boolean isNA = access_info.isNA();
 			btnBoostedBy.setVisibility( isNA ? View.GONE : View.VISIBLE );
 			btnFavouritedBy.setVisibility( isNA ? View.GONE : View.VISIBLE );
 			
-			View btnProfilePin= viewRoot.findViewById( R.id.btnProfilePin );
+			View btnProfilePin = viewRoot.findViewById( R.id.btnProfilePin );
 			View btnProfileUnpin = viewRoot.findViewById( R.id.btnProfileUnpin );
 			btnProfilePin.setOnClickListener( this );
 			btnProfileUnpin.setOnClickListener( this );
-			boolean canPin = status.canPin( access_info);
-			btnProfileUnpin.setVisibility(canPin && status.pinned ? View.VISIBLE : View.GONE );
-			btnProfilePin.setVisibility( canPin && !status.pinned ? View.VISIBLE : View.GONE );
-			
+			boolean canPin = status.canPin( access_info );
+			btnProfileUnpin.setVisibility( canPin && status.pinned ? View.VISIBLE : View.GONE );
+			btnProfilePin.setVisibility( canPin && ! status.pinned ? View.VISIBLE : View.GONE );
 			
 		}
-		
-		if( notification == null ){
-			llNotification.setVisibility( View.GONE );
-		}else{
-			if( status == null || ! TootNotification.TYPE_MENTION.equals( notification.type ) ){
-				btnConversationMute.setVisibility( View.GONE );
-			}else{
-				btnConversationMute.setText( status.muted ? R.string.unmute_this_conversation : R.string.mute_this_conversation );
+		boolean bShowConversationMute = false;
+		if( status != null ){
+			if( status.account != null && access_info.isMe( status.account ) ){
+				bShowConversationMute = true;
+			}else if( notification != null && TootNotification.TYPE_MENTION.equals( notification.type ) ){
+				bShowConversationMute = true;
 			}
 		}
+		
+		if( ! bShowConversationMute ){
+			btnConversationMute.setVisibility( View.GONE );
+		}else{
+			btnConversationMute.setText( status.muted ? R.string.unmute_this_conversation : R.string.mute_this_conversation );
+		}
+		
+		llNotification.setVisibility( notification == null ? View.GONE : View.VISIBLE );
 		
 		if( access_info.isPseudo() ){
 			llAccountActionBar.setVisibility( View.GONE );
@@ -227,14 +232,13 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			
 		}
 		
-		
 		if( who == null ){
 			btnInstanceInformation.setVisibility( View.GONE );
 			btnDomainBlock.setVisibility( View.GONE );
 		}else{
 			btnInstanceInformation.setVisibility( View.VISIBLE );
 			btnInstanceInformation.setOnClickListener( this );
-			btnInstanceInformation.setText( activity.getString( R.string.instance_information_of, access_info.getAccountHost( who )));
+			btnInstanceInformation.setText( activity.getString( R.string.instance_information_of, access_info.getAccountHost( who ) ) );
 			
 			int acct_delm = who.acct.indexOf( "@" );
 			if( - 1 == acct_delm || access_info.isPseudo() ){
@@ -374,13 +378,13 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			}else if( access_info.isPseudo() ){
 				activity.openFollowFromAnotherAccount( access_info, who );
 			}else{
-				boolean bSet = !( relation.following || relation.requested );
+				boolean bSet = ! ( relation.following || relation.requested );
 				activity.callFollow(
 					access_info
 					, who
 					, bSet
 					, false
-					, bSet ? activity.follow_complete_callback: activity.unfollow_complete_callback
+					, bSet ? activity.follow_complete_callback : activity.unfollow_complete_callback
 				);
 			}
 			break;
@@ -553,7 +557,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnConversationMute:
-			if( notification != null && status != null ){
+			if( status != null ){
 				activity.toggleConversationMute( access_info, status );
 			}
 			break;
@@ -579,10 +583,10 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnProfilePin:
-			activity.setProfilePin( access_info, status, true);
+			activity.setProfilePin( access_info, status, true );
 			break;
 		case R.id.btnProfileUnpin:
-			activity.setProfilePin( access_info, status, false);
+			activity.setProfilePin( access_info, status, false );
 			break;
 		}
 	}

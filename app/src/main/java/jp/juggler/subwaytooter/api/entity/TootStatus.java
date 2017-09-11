@@ -68,6 +68,7 @@ public class TootStatus extends TootStatusLike {
 	public static final String VISIBILITY_UNLISTED = "unlisted";
 	public static final String VISIBILITY_PRIVATE = "private";
 	public static final String VISIBILITY_DIRECT = "direct";
+	public static final String VISIBILITY_WEB_SETTING = "web_setting";
 	
 	//	An array of Attachments
 	public TootAttachment.List media_attachments;
@@ -254,6 +255,7 @@ public class TootStatus extends TootStatusLike {
 		if( TootStatus.VISIBILITY_PRIVATE.equals( a ) ) return 1;
 		if( TootStatus.VISIBILITY_UNLISTED.equals( a ) ) return 2;
 		if( TootStatus.VISIBILITY_PUBLIC.equals( a ) ) return 3;
+		if( TootStatus.VISIBILITY_WEB_SETTING.equals( a ) ) return 4;
 		throw new IndexOutOfBoundsException( "visibility not in range" );
 	}
 	

@@ -205,6 +205,9 @@ public class PostHelper {
 				
 				client.setAccount( target_account );
 				
+				if( TextUtils.isEmpty( visibility ) ){
+					visibility = TootStatus.VISIBILITY_PUBLIC;
+				}
 				String visibility_checked = visibility;
 				if( TootStatus.VISIBILITY_WEB_SETTING.equals( visibility) ){
 					TootInstance instance = target_account.getInstance();
@@ -218,11 +221,13 @@ public class PostHelper {
 						visibility_checked = null;
 					}else{
 						TootApiResult r2 = getCredential(client);
-						if( credential_tmp == null ) return r2;
-						if( credential_tmp.source == null || credential_tmp.source.privacy ==null ){
+						if( credential_tmp == null ){
+							return r2;
+						}else if( credential_tmp.source == null || credential_tmp.source.privacy ==null ){
 							return new TootApiResult( activity.getString(R.string.cant_get_web_setting_visibility) );
+						}else{
+							visibility_checked =  credential_tmp.source.privacy;
 						}
-						visibility_checked =  credential_tmp.source.privacy;
 					}
 				}
 				

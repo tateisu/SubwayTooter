@@ -251,7 +251,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return acct.equals( "?@?" );
 	}
 	
-	private static SavedAccount parse( Context context, Cursor cursor ) throws JSONException{
+	private static @Nullable SavedAccount parse( Context context, Cursor cursor ) throws JSONException{
 		JSONObject src = new JSONObject( cursor.getString( cursor.getColumnIndex( COL_ACCOUNT ) ) );
 		SavedAccount dst = new SavedAccount();
 		dst = (SavedAccount) parse( context, dst, src, dst );
@@ -461,6 +461,25 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return result;
 	}
 	
+	@Nullable
+	public static SavedAccount loadPseudoAccount( Context context, @NonNull LogCategory log, String full_acct ){
+		try{
+			Cursor cursor = App1.getDB().query( table, null, COL_USER + "=?", new String[]{ full_acct }, null, null, null );
+			try{
+				if( cursor.moveToNext() ){
+					return parse( context, cursor );
+				}
+			}finally{
+				cursor.close();
+			}
+		}catch( Throwable ex ){
+			log.trace( ex );
+			log.e( ex, "loadPseudoAccount failed." );
+		}
+		return null;
+	}
+	
+	
 	@SuppressWarnings("WeakerAccess")
 	public @NonNull String getAccountHost( @Nullable String acct ){
 		if( acct != null ){
@@ -645,4 +664,5 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public static void sort( ArrayList< SavedAccount > account_list ){
 		Collections.sort( account_list, account_comparator );
 	}
+	
 }

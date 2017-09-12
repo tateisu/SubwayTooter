@@ -777,4 +777,6 @@
     <string name="toot_count">トゥート数</string>
     <string name="domain_count">接続中のインスタンス数</string>
     <string name="not_provided_mastodon_under_1_6">マストドン1.6未満では利用できません</string>
+    <string name="mime_type_missing">MIMEタイプが不明です</string>
+    <string name="mime_type_not_acceptable">MIMEタイプ %1$s には対応できません。対応できるMIMEタイプは image/jpeg, image/png, image/gif, video/webm, video/mp4 です</string>
 </resources>

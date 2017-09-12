@@ -410,14 +410,10 @@ public class ActMain extends AppCompatActivity
 			}
 		}
 		
-		String visibility = account.visibility;
-		if( TextUtils.isEmpty( visibility ) ){
-			visibility = TootStatus.VISIBILITY_PUBLIC;
-		}
-		
+
 		post_helper.content = etQuickToot.getText().toString().trim();
 		post_helper.spoiler_text = null;
-		post_helper.visibility = visibility;
+		post_helper.visibility =  account.visibility;
 		post_helper.bNSFW = false;
 		post_helper.in_reply_to_id = - 1L;
 		post_helper.attachment_list = null;
@@ -1256,12 +1252,17 @@ public class ActMain extends AppCompatActivity
 			String username = "?";
 			String full_acct = username + "@" + host;
 			
+			SavedAccount account = SavedAccount.loadPseudoAccount( this,log, full_acct );
+			if( account != null ){
+				return account;
+			}
+			
 			JSONObject account_info = new JSONObject();
 			account_info.put( "username", username );
 			account_info.put( "acct", username );
 			
 			long row_id = SavedAccount.insert( host, full_acct, account_info, new JSONObject() );
-			SavedAccount account = SavedAccount.loadAccount( ActMain.this, log, row_id );
+			account = SavedAccount.loadAccount( ActMain.this, log, row_id );
 			if( account == null ){
 				throw new RuntimeException( "loadAccount returns null." );
 			}

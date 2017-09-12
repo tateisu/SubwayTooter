@@ -53,6 +53,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Locale;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
@@ -488,7 +489,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		if( TextUtils.isEmpty( visibility ) ){
 			visibility = account.visibility;
 			if( TextUtils.isEmpty( visibility ) ){
-				visibility = TootStatus.VISIBILITY_WEB_SETTING;
+				visibility = TootStatus.VISIBILITY_PUBLIC;
+				// 2017/9/13 VISIBILITY_WEB_SETTING から VISIBILITY_PUBLICに変更した
+				// VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになるので…
 			}
 		}
 		
@@ -1129,6 +1132,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		};
 	}
 	
+	static HashSet<String> acceptable_mime_types ;
+	
+	
 	void addAttachment( final Uri uri, final String mime_type ){
 		if( attachment_list != null && attachment_list.size() >= 4 ){
 			Utils.showToast( this, false, R.string.attachment_too_many );
@@ -1138,6 +1144,24 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			Utils.showToast( this, false, R.string.account_select_please );
 			return;
 		}
+		
+		if( acceptable_mime_types == null ){
+			acceptable_mime_types= new HashSet<>();
+			acceptable_mime_types.add("image/jpeg");
+			acceptable_mime_types.add("image/png");
+			acceptable_mime_types.add("image/gif");
+			acceptable_mime_types.add("video/webm");
+			acceptable_mime_types.add("video/mp4");
+		}
+		
+		if( TextUtils.isEmpty( mime_type ) ){
+			Utils.showToast( this, false, R.string.mime_type_missing );
+			return;
+		}else if( ! acceptable_mime_types.contains( mime_type  ) ){
+			Utils.showToast( this, true, R.string.mime_type_not_acceptable ,mime_type);
+			return;
+		}
+		
 		
 		if( attachment_list == null ){
 			this.attachment_list = app_state.attachment_list = new ArrayList<>();

@@ -325,7 +325,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnReplyAnotherAccount:
-			activity.openReplyFromAnotherAccount( status );
+			activity.openReplyFromAnotherAccount(  access_info,status );
 			break;
 		
 		case R.id.btnConversationAnotherAccount:
@@ -462,21 +462,15 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnFollowFromAnotherAccount:
-			if( who != null ){
-				activity.openFollowFromAnotherAccount( access_info, who );
-			}
+			activity.openFollowFromAnotherAccount( access_info, who );
 			break;
 		
 		case R.id.btnSendMessageFromAnotherAccount:
-			if( who != null ){
-				activity.performMentionFromAnotherAccount( access_info, who, account_list_non_pseudo );
-			}
+			activity.performMentionFromAnotherAccount( access_info, who );
 			break;
 		
 		case R.id.btnOpenProfileFromAnotherAccount:
-			if( who != null ){
-				activity.openProfileFromAnotherAccount( pos, access_info, who );
-			}
+			activity.openProfileFromAnotherAccount( pos, access_info, who );
 			break;
 		
 		case R.id.btnNickname:

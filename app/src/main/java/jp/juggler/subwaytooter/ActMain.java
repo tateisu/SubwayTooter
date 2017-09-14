@@ -181,7 +181,7 @@ public class ActMain extends AppCompatActivity
 	static final String STATE_CURRENT_PAGE = "current_page";
 	
 	@Override protected void onSaveInstanceState( Bundle outState ){
-		log.d("onSaveInstanceState");
+		log.d( "onSaveInstanceState" );
 		super.onSaveInstanceState( outState );
 		
 		if( pager_adapter != null ){
@@ -195,7 +195,7 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	@Override protected void onRestoreInstanceState( Bundle savedInstanceState ){
-		log.d("onRestoreInstanceState");
+		log.d( "onRestoreInstanceState" );
 		super.onRestoreInstanceState( savedInstanceState );
 		int pos = savedInstanceState.getInt( STATE_CURRENT_PAGE );
 		if( pos > 0 && pos < app_state.column_list.size() ){
@@ -215,7 +215,7 @@ public class ActMain extends AppCompatActivity
 	
 	@Override protected void onStart(){
 		super.onStart();
-
+		
 		bStart = true;
 		log.d( "onStart" );
 		
@@ -229,15 +229,14 @@ public class ActMain extends AppCompatActivity
 					SavedAccount sa = SavedAccount.loadAccount( ActMain.this, log, column.access_info.db_id );
 					if( sa == null ) continue;
 				}
-
+				
 				new_order.add( i );
 			}
-
+			
 			if( new_order.size() != app_state.column_list.size() ){
 				setOrder( new_order );
 			}
 		}
-		
 		
 		// 各カラムのアカウント設定を読み直す
 		reloadAccountSetting();
@@ -250,20 +249,18 @@ public class ActMain extends AppCompatActivity
 			column.onStart( this );
 		}
 		
-
-
 		// カラムの表示範囲インジケータを更新
 		updateColumnStripSelection( - 1, - 1f );
-
+		
 		// 相対時刻表示
 		proc_updateRelativeTime.run();
 		
 	}
 	
 	@Override protected void onStop(){
-
+		
 		log.d( "onStop" );
-
+		
 		bStart = false;
 		
 		handler.removeCallbacks( proc_updateRelativeTime );
@@ -275,7 +272,7 @@ public class ActMain extends AppCompatActivity
 		app_state.stream_reader.stopAll();
 		
 		super.onStop();
-
+		
 	}
 	
 	@Override protected void onResume(){
@@ -315,7 +312,6 @@ public class ActMain extends AppCompatActivity
 			column_pos = tablet_layout_manager.findFirstVisibleItemPosition();
 		}
 		pref.edit().putInt( Pref.KEY_LAST_COLUMN_POS, column_pos ).apply();
-		
 		
 		super.onPause();
 	}
@@ -371,8 +367,6 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-
-	
 	@Override public void onClick( View v ){
 		switch( v.getId() ){
 		case R.id.btnMenu:
@@ -410,10 +404,9 @@ public class ActMain extends AppCompatActivity
 			}
 		}
 		
-
 		post_helper.content = etQuickToot.getText().toString().trim();
 		post_helper.spoiler_text = null;
-		post_helper.visibility =  account.visibility;
+		post_helper.visibility = account.visibility;
 		post_helper.bNSFW = false;
 		post_helper.in_reply_to_id = - 1L;
 		post_helper.attachment_list = null;
@@ -802,7 +795,7 @@ public class ActMain extends AppCompatActivity
 		setContentView( R.layout.act_main );
 		
 		dont_crop_media_thumbnail = pref.getBoolean( Pref.KEY_DONT_CROP_MEDIA_THUMBNAIL, false );
-
+		
 		String sv = pref.getString( Pref.KEY_TIMELINE_FONT, null );
 		if( ! TextUtils.isEmpty( sv ) ){
 			try{
@@ -821,13 +814,13 @@ public class ActMain extends AppCompatActivity
 			}
 		}else if( timeline_font != null ){
 			try{
-				timeline_font_bold = Typeface.create( timeline_font ,Typeface.BOLD );
+				timeline_font_bold = Typeface.create( timeline_font, Typeface.BOLD );
 			}catch( Throwable ex ){
 				log.trace( ex );
 			}
 		}
 		
-		mShortAcctLocalUser = pref.getBoolean( Pref.KEY_SHORT_ACCT_LOCAL_USER ,false);
+		mShortAcctLocalUser = pref.getBoolean( Pref.KEY_SHORT_ACCT_LOCAL_USER, false );
 		
 		{
 			float icon_size_dp = 48f;
@@ -839,10 +832,10 @@ public class ActMain extends AppCompatActivity
 				}else{
 					icon_size_dp = fv;
 				}
-			}catch(Throwable ex){
+			}catch( Throwable ex ){
 				log.trace( ex );
 			}
-			mAvatarIconSize = (int)(0.5f + icon_size_dp * density );
+			mAvatarIconSize = (int) ( 0.5f + icon_size_dp * density );
 		}
 		
 		llEmpty = findViewById( R.id.llEmpty );
@@ -884,8 +877,8 @@ public class ActMain extends AppCompatActivity
 			etQuickToot.setImeOptions( EditorInfo.IME_ACTION_NONE );
 			// 最後に指定する必要がある？
 			etQuickToot.setMaxLines( 5 );
-			etQuickToot.setVerticalScrollBarEnabled(true);
-			etQuickToot.setScrollbarFadingEnabled(false);
+			etQuickToot.setVerticalScrollBarEnabled( true );
+			etQuickToot.setScrollbarFadingEnabled( false );
 		}else{
 			etQuickToot.setInputType( InputType.TYPE_CLASS_TEXT );
 			etQuickToot.setImeOptions( EditorInfo.IME_ACTION_SEND );
@@ -1252,7 +1245,7 @@ public class ActMain extends AppCompatActivity
 			String username = "?";
 			String full_acct = username + "@" + host;
 			
-			SavedAccount account = SavedAccount.loadPseudoAccount( this,log, full_acct );
+			SavedAccount account = SavedAccount.loadAccountByAcct( this, log, full_acct );
 			if( account != null ){
 				return account;
 			}
@@ -1809,7 +1802,6 @@ public class ActMain extends AppCompatActivity
 		Utils.showToast( ActMain.this, false, R.string.app_was_muted );
 	}
 	
-	
 	//////////////////////////////////////////////////////////////
 	
 	interface FindAccountCallback {
@@ -2022,16 +2014,16 @@ public class ActMain extends AppCompatActivity
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	public void openHashTag( int pos, SavedAccount access_info, String tag ){
-		while(  tag.startsWith( "#" ) ) tag = tag.substring( 1 );
+		while( tag.startsWith( "#" ) ) tag = tag.substring( 1 );
 		addColumn( pos, access_info, Column.TYPE_HASHTAG, tag );
 	}
 	
 	// 他インスタンスのハッシュタグの表示
 	private void openHashTagOtherInstance( final int pos, final SavedAccount access_info, final String url, final String host, String tag ){
-		while(  tag.startsWith( "#" ) ) tag = tag.substring( 1 );
-		openHashTagOtherInstance_sub(pos,access_info,url,host,tag);
+		while( tag.startsWith( "#" ) ) tag = tag.substring( 1 );
+		openHashTagOtherInstance_sub( pos, access_info, url, host, tag );
 	}
-
+	
 	// 他インスタンスのハッシュタグの表示
 	private void openHashTagOtherInstance_sub( final int pos, final SavedAccount access_info, final String url, final String host, final String tag ){
 		
@@ -2042,13 +2034,12 @@ public class ActMain extends AppCompatActivity
 		
 		// ソートする
 		SavedAccount.sort( account_list );
-
 		
-		ArrayList< SavedAccount > list_original = new ArrayList<>(  );
-		ArrayList< SavedAccount > list_original_pseudo = new ArrayList<>(  );
-		ArrayList< SavedAccount > list_other = new ArrayList<>(  );
+		ArrayList< SavedAccount > list_original = new ArrayList<>();
+		ArrayList< SavedAccount > list_original_pseudo = new ArrayList<>();
+		ArrayList< SavedAccount > list_other = new ArrayList<>();
 		for( SavedAccount a : account_list ){
-			log.d("sort? %s",a.acct);
+			log.d( "sort? %s", a.acct );
 			if( ! host.equalsIgnoreCase( a.host ) ){
 				list_other.add( a );
 			}else if( a.isPseudo() ){
@@ -2081,7 +2072,7 @@ public class ActMain extends AppCompatActivity
 		for( SavedAccount a : list_original ){
 			final SavedAccount _a = a;
 			
-			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this,R.string.open_in_account,a.acct ), new Runnable() {
+			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this, R.string.open_in_account, a.acct ), new Runnable() {
 				@Override public void run(){
 					openHashTag( pos, _a, tag );
 				}
@@ -2090,7 +2081,7 @@ public class ActMain extends AppCompatActivity
 		//
 		for( SavedAccount a : list_original_pseudo ){
 			final SavedAccount _a = a;
-			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this,R.string.open_in_account,a.acct ), new Runnable() {
+			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this, R.string.open_in_account, a.acct ), new Runnable() {
 				@Override public void run(){
 					openHashTag( pos, _a, tag );
 				}
@@ -2099,18 +2090,18 @@ public class ActMain extends AppCompatActivity
 		//
 		for( SavedAccount a : list_other ){
 			final SavedAccount _a = a;
-			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this,R.string.open_in_account,a.acct ), new Runnable() {
+			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this, R.string.open_in_account, a.acct ), new Runnable() {
 				@Override public void run(){
 					openHashTag( pos, _a, tag );
 				}
 			} );
 		}
-
-		dialog.show( this,"#"+ tag );
+		
+		dialog.show( this, "#" + tag );
 	}
 	
 	final MyClickableSpan.LinkClickCallback link_click_listener = new MyClickableSpan.LinkClickCallback() {
-		@Override public void onClickLink( View view, @NonNull final MyClickableSpan span){
+		@Override public void onClickLink( View view, @NonNull final MyClickableSpan span ){
 			
 			View view_orig = view;
 			
@@ -2142,7 +2133,7 @@ public class ActMain extends AppCompatActivity
 			if( m.find() ){
 				// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
 				final String host = m.group( 1 );
-				final String tag = span.text.startsWith( "#" )? span.text : "#"+ Uri.decode( m.group( 2 ) );
+				final String tag = span.text.startsWith( "#" ) ? span.text : "#" + Uri.decode( m.group( 2 ) );
 				
 				ActionsDialog d = new ActionsDialog()
 					.addAction( getString( R.string.open_hashtag_column ), new Runnable() {
@@ -2150,48 +2141,46 @@ public class ActMain extends AppCompatActivity
 							openHashTagOtherInstance( pos, (SavedAccount) span.lcc, span.url, host, tag );
 						}
 					} )
-					.addAction( getString( R.string.quote_hashtag_of ,tag ), new Runnable() {
+					.addAction( getString( R.string.quote_hashtag_of, tag ), new Runnable() {
 						@Override public void run(){
-							openPost( tag + " ");
+							openPost( tag + " " );
 						}
 					} );
 				
-				final ArrayList<String> tag_list = new ArrayList<>(  );
+				final ArrayList< String > tag_list = new ArrayList<>();
 				try{
 					//noinspection ConstantConditions
-					CharSequence cs = ((TextView)view_orig).getText();
-					if( cs instanceof Spannable){
+					CharSequence cs = ( (TextView) view_orig ).getText();
+					if( cs instanceof Spannable ){
 						Spannable content = (Spannable) cs;
-						for( MyClickableSpan s : content.getSpans( 0,content.length(), MyClickableSpan.class ) ){
+						for( MyClickableSpan s : content.getSpans( 0, content.length(), MyClickableSpan.class ) ){
 							m = reUrlHashTag.matcher( s.url );
 							if( m.find() ){
-								String s_tag = s.text.startsWith( "#" )? s.text : "#"+Uri.decode( m.group( 2 ) );
+								String s_tag = s.text.startsWith( "#" ) ? s.text : "#" + Uri.decode( m.group( 2 ) );
 								tag_list.add( s_tag );
 							}
 						}
 					}
-				}catch(Throwable ex){
-					log.trace(ex);
+				}catch( Throwable ex ){
+					log.trace( ex );
 				}
-				if(tag_list.size() > 1 ){
-					StringBuilder sb = new StringBuilder(  );
-					for( String s : tag_list){
-						if( sb.length() > 0 ) sb.append(' ');
+				if( tag_list.size() > 1 ){
+					StringBuilder sb = new StringBuilder();
+					for( String s : tag_list ){
+						if( sb.length() > 0 ) sb.append( ' ' );
 						sb.append( s );
 					}
 					final String tag_all = sb.toString();
-					d.addAction( getString( R.string.quote_all_hashtag_of ,tag_all), new Runnable() {
+					d.addAction( getString( R.string.quote_all_hashtag_of, tag_all ), new Runnable() {
 						@Override public void run(){
-							openPost( tag_all +" ");
+							openPost( tag_all + " " );
 						}
 					} );
 				}
 				
-				d.show(ActMain.this,tag);
+				d.show( ActMain.this, tag );
 				return;
 			}
-			
-			
 			
 			openChromeTab( pos, (SavedAccount) span.lcc, span.url, false );
 		}
@@ -2230,11 +2219,15 @@ public class ActMain extends AppCompatActivity
 		ActPost.open( this, REQUEST_CODE_POST, account.db_id, "@" + account.getFullAcct( who ) + " " );
 	}
 	
-	public void performMentionFromAnotherAccount( SavedAccount access_info, final TootAccount who, ArrayList< SavedAccount > account_list_non_pseudo ){
+	public void performMentionFromAnotherAccount( SavedAccount access_info, @Nullable final TootAccount who ){
+		if( who == null ) return;
+		String who_host = access_info.getAccountHost( who );
+		
 		final String initial_text = "@" + access_info.getFullAcct( who ) + " ";
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_toot )
-			, account_list_non_pseudo, new AccountPicker.AccountPickerCallback() {
+			, makeAccountList( log, false, who_host )
+			, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 					ActPost.open( ActMain.this, REQUEST_CODE_POST, ai.db_id, initial_text );
 				}
@@ -2314,9 +2307,13 @@ public class ActMain extends AppCompatActivity
 		}.executeOnExecutor( App1.task_executor );
 	}
 	
-	void openProfileFromAnotherAccount( final int pos, @NonNull final SavedAccount access_info, final TootAccount who ){
+	void openProfileFromAnotherAccount( final int pos, @NonNull final SavedAccount access_info, @Nullable final TootAccount who ){
+		if( who == null ) return;
+		String who_host = access_info.getAccountHost( who );
+		
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_open_user_who, AcctColor.getNickname( who.acct ) )
+			, makeAccountList( log, false, who_host )
 			, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 					if( ai.host.equalsIgnoreCase( access_info.host ) ){
@@ -2370,23 +2367,18 @@ public class ActMain extends AppCompatActivity
 		
 		// 文脈がない、もしくは疑似アカウントだった
 		
-		// 疑似アカウントではユーザ情報APIを呼べないし検索APIも使えない
 		
 		// 疑似ではないアカウントの一覧
-		ArrayList< SavedAccount > account_list_filtered = new ArrayList<>();
-		for( SavedAccount a : SavedAccount.loadAccountList( ActMain.this, log ) ){
-			if( a.isPseudo() ) continue;
-			account_list_filtered.add( a );
-		}
 		
-		if( account_list_filtered.isEmpty() ){
-			// アカウントがないのでchrome tab で開くしかない
+		if( ! SavedAccount.hasRealAccount(log) ){
+			// 疑似アカウントではユーザ情報APIを呼べないし検索APIも使えない
+			// chrome tab で開くしかない
 			openChromeTab( pos, access_info, url, true );
 		}else{
 			// アカウントを選択して開く
 			AccountPicker.pick( this, false, false
 				, getString( R.string.account_picker_open_user_who, AcctColor.getNickname( user + "@" + host ) )
-				, account_list_filtered
+				, makeAccountList( log,false,host )
 				, new AccountPicker.AccountPickerCallback() {
 					@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 						openProfileRemote( pos, ai, url );
@@ -2813,10 +2805,11 @@ public class ActMain extends AppCompatActivity
 	
 	// static final Pattern reUriActivityPubToot = Pattern.compile( "tag:([^,]*),[^:]*:objectId=(\\d+):objectType=Status", Pattern.CASE_INSENSITIVE );
 	
-	public void openStatusOtherInstance( int pos, @NonNull SavedAccount access_info, @NonNull TootStatusLike status ){
-		if( status.account == null ){
-			// アカウント情報がないと出来ないことがある
-		}else if( status instanceof MSPToot ){
+	public void openStatusOtherInstance( int pos, @NonNull SavedAccount access_info, @Nullable TootStatusLike status ){
+		// アカウント情報がないと出来ないことがある
+		if( status == null || status.account == null ) return;
+		
+		if( status instanceof MSPToot ){
 			// トゥート検索の場合
 			openStatusOtherInstance( pos, access_info, status.url
 				, status.id
@@ -2927,7 +2920,7 @@ public class ActMain extends AppCompatActivity
 		SavedAccount.sort( local_account_list );
 		for( SavedAccount a : local_account_list ){
 			final SavedAccount _a = a;
-			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this,R.string.open_in_account,a.acct ), new Runnable() {
+			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this, R.string.open_in_account, a.acct ), new Runnable() {
 				@Override public void run(){
 					openStatusLocal( pos, _a, status_id_original );
 				}
@@ -2938,7 +2931,7 @@ public class ActMain extends AppCompatActivity
 		SavedAccount.sort( access_account_list );
 		for( SavedAccount a : access_account_list ){
 			final SavedAccount _a = a;
-			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this,R.string.open_in_account,a.acct ), new Runnable() {
+			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this, R.string.open_in_account, a.acct ), new Runnable() {
 				@Override public void run(){
 					openStatusLocal( pos, _a, status_id_access );
 				}
@@ -2946,10 +2939,10 @@ public class ActMain extends AppCompatActivity
 		}
 		
 		// その他の実アカウント
-		SavedAccount.sort( other_account_list);
+		SavedAccount.sort( other_account_list );
 		for( SavedAccount a : other_account_list ){
 			final SavedAccount _a = a;
-			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this,R.string.open_in_account,a.acct ), new Runnable() {
+			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this, R.string.open_in_account, a.acct ), new Runnable() {
 				@Override public void run(){
 					openStatusRemote( pos, _a, url );
 				}
@@ -3077,7 +3070,7 @@ public class ActMain extends AppCompatActivity
 				} );
 				client.setAccount( access_info );
 				TootApiResult result;
-
+				
 				Request.Builder request_builder = new Request.Builder()
 					.post( RequestBody.create(
 						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
@@ -3105,21 +3098,22 @@ public class ActMain extends AppCompatActivity
 			
 			@Override
 			protected void onPostExecute( TootApiResult result ){
-
+				
 				try{
 					progress.dismiss();
-				}catch(Throwable ignored){
+				}catch( Throwable ignored ){
 					
 				}
-
+				
 				//noinspection StatementWithEmptyBody
 				if( result == null ){
 					// cancelled.
 				}else if( new_status != null ){
-
+					
 					for( Column column : app_state.column_list ){
 						column.findStatus( access_info.host, new_status.id, new Column.StatusEntryCallback() {
-							@Override public boolean onIterate( SavedAccount account, TootStatus status ){
+							@Override
+							public boolean onIterate( SavedAccount account, TootStatus status ){
 								status.pinned = bSet;
 								return true;
 							}
@@ -3128,7 +3122,7 @@ public class ActMain extends AppCompatActivity
 				}else{
 					Utils.showToast( ActMain.this, true, result.error );
 				}
-
+				
 				// 結果に関わらず、更新中状態から復帰させる
 				showColumnMatchAccount( access_info );
 			}
@@ -3137,14 +3131,14 @@ public class ActMain extends AppCompatActivity
 		
 		progress.setIndeterminate( true );
 		progress.setCancelable( true );
-		progress.setMessage( getString(R.string.profile_pin_progress));
+		progress.setMessage( getString( R.string.profile_pin_progress ) );
 		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
 			@Override public void onCancel( DialogInterface dialog ){
 				task.cancel( true );
 			}
 		} );
 		progress.show();
-
+		
 		task.executeOnExecutor( App1.task_executor );
 	}
 	
@@ -3451,7 +3445,7 @@ public class ActMain extends AppCompatActivity
 					result = client.request( "/api/v1/accounts/" + who.id
 							+ ( bFollow ? "/follow" : "/unfollow" )
 						, request_builder );
-					if( result != null && result.object != null  ){
+					if( result != null && result.object != null ){
 						// 1.6.0 rc2 から、フォローAPIのレスポンスに含まれるrelationは虚偽の内容を返すようになるらしい
 						// https://github.com/tootsuite/mastodon/pull/4799
 						// 実際の情報を取得するため、リレーションを読み直す
@@ -3509,7 +3503,7 @@ public class ActMain extends AppCompatActivity
 					
 				}else if( bFollow && who.locked && result.response != null && result.response.code() == 422 ){
 					Utils.showToast( ActMain.this, false, R.string.cant_follow_locked_user );
-				}else if(result.response !=null && result.response.code()==500){
+				}else if( result.response != null && result.response.code() == 500 ){
 					Utils.showToast( ActMain.this, false, R.string.already_followed );
 				}else{
 					Utils.showToast( ActMain.this, false, result.error );
@@ -3630,7 +3624,7 @@ public class ActMain extends AppCompatActivity
 					
 				}else if( locked && result.response != null && result.response.code() == 422 ){
 					Utils.showToast( ActMain.this, false, R.string.cant_follow_locked_user );
-				}else if(result.response !=null && result.response.code()==500){
+				}else if( result.response != null && result.response.code() == 500 ){
 					Utils.showToast( ActMain.this, false, R.string.already_followed );
 				}else{
 					Utils.showToast( ActMain.this, false, result.error );
@@ -4055,6 +4049,7 @@ public class ActMain extends AppCompatActivity
 			Utils.showToast( ActMain.this, false, R.string.unboost_succeeded );
 		}
 	};
+	
 	private void openOSSLicense(){
 		startActivity( new Intent( this, ActOSSLicense.class ) );
 	}
@@ -4194,6 +4189,20 @@ public class ActMain extends AppCompatActivity
 		return dst;
 	}
 	
+	private ArrayList< SavedAccount > makeAccountList( @NonNull LogCategory log, boolean bAllowPseudo, @Nullable String pickup_host ){
+		
+		ArrayList< SavedAccount > list_same_host = new ArrayList<>();
+		ArrayList< SavedAccount > list_other_host = new ArrayList<>();
+		for( SavedAccount a : SavedAccount.loadAccountList( ActMain.this, log ) ){
+			if( a.isPseudo() && ( a.isNA() || ! bAllowPseudo ) ) continue;
+			( pickup_host == null || pickup_host.equalsIgnoreCase( a.host ) ? list_same_host : list_other_host ).add( a );
+		}
+		SavedAccount.sort( list_same_host );
+		SavedAccount.sort( list_other_host );
+		list_same_host.addAll( list_other_host );
+		return list_same_host;
+	}
+	
 	// 別アカ操作と別タンスの関係
 	static final int NOT_CROSS_ACCOUNT = 1;
 	static final int CROSS_ACCOUNT_SAME_INSTANCE = 2;
@@ -4211,9 +4220,11 @@ public class ActMain extends AppCompatActivity
 	
 	void openBoostFromAnotherAccount( @NonNull final SavedAccount timeline_account, @Nullable final TootStatusLike status ){
 		if( status == null ) return;
+		String who_host = status.account == null ? null : timeline_account.getAccountHost( status.account );
+		
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_boost )
-			, makeAccountListNonPseudo( log )
+			, makeAccountList( log, false, who_host )
 			, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount action_account ){
 					performBoost(
@@ -4228,11 +4239,13 @@ public class ActMain extends AppCompatActivity
 			} );
 	}
 	
-	void openFavouriteFromAnotherAccount( @NonNull final SavedAccount timeline_account, final TootStatusLike status ){
+	void openFavouriteFromAnotherAccount( @NonNull final SavedAccount timeline_account, @Nullable final TootStatusLike status ){
 		if( status == null ) return;
+		String who_host = status.account == null ? null : timeline_account.getAccountHost( status.account );
+		
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_favourite )
-			, makeAccountListNonPseudo( log )
+			, makeAccountList( log, false, who_host )
 			, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount action_account ){
 					performFavourite(
@@ -4246,10 +4259,13 @@ public class ActMain extends AppCompatActivity
 			} );
 	}
 	
-	void openReplyFromAnotherAccount( final TootStatusLike status ){
+	void openReplyFromAnotherAccount( @NonNull final SavedAccount timeline_account, @Nullable final TootStatusLike status ){
+		if( status == null ) return;
+		String who_host = status.account == null ? null : timeline_account.getAccountHost( status.account );
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_reply )
-			, makeAccountListNonPseudo( log ), new AccountPicker.AccountPickerCallback() {
+			, makeAccountList( log, false, who_host )
+			, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 					if( status instanceof MSPToot ){
 						// MSPの場合、status.url は https://instance/@user/:status_id の形式になる
@@ -4283,12 +4299,15 @@ public class ActMain extends AppCompatActivity
 	//		openFollowFromAnotherAccount( access_info, status.account );
 	//	}
 	
-	void openFollowFromAnotherAccount( @NonNull SavedAccount access_info, final TootAccount account ){
+	void openFollowFromAnotherAccount( @NonNull SavedAccount access_info, @Nullable final TootAccount account ){
 		if( account == null ) return;
+		String who_host = access_info.getAccountHost( account );
+		
 		final String who_acct = access_info.getFullAcct( account );
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_follow )
-			, makeAccountListNonPseudo( log ), new AccountPicker.AccountPickerCallback() {
+			, makeAccountList( log, false, who_host )
+			, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 					callRemoteFollow( ai, who_acct, account.locked, false, follow_complete_callback );
 				}
@@ -4464,8 +4483,6 @@ public class ActMain extends AppCompatActivity
 		tablet_pager_adapter.notifyDataSetChanged();
 	}
 	
-
-	
 	private void scrollToColumn( int index, boolean bAlign ){
 		scrollColumnStrip( index );
 		
@@ -4628,16 +4645,16 @@ public class ActMain extends AppCompatActivity
 			if( host.equalsIgnoreCase( a.host ) ) account_list.add( a );
 		}
 		if( account_list.isEmpty() ){
-			
 			SavedAccount ai = addPseudoAccount( host );
 			if( ai != null ){
 				addColumn( getDefaultInsertPosition(), ai, Column.TYPE_LOCAL );
 			}
-			
 		}else{
+			SavedAccount.sort( account_list);
 			AccountPicker.pick( this, true, false
 				, getString( R.string.account_picker_add_timeline_of, host )
-				, account_list, new AccountPicker.AccountPickerCallback() {
+				, account_list
+				, new AccountPicker.AccountPickerCallback() {
 					@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 						addColumn( getDefaultInsertPosition(), ai, Column.TYPE_LOCAL );
 					}
@@ -4687,7 +4704,7 @@ public class ActMain extends AppCompatActivity
 	};
 	
 	int nAutoCwCellWidth = 0;
-	int nAutoCwLines =0;
+	int nAutoCwLines = 0;
 	
 	private void resizeAutoCW( int column_w ){
 		String sv = pref.getString( Pref.KEY_AUTO_CW_LINES, "" );
@@ -4696,35 +4713,35 @@ public class ActMain extends AppCompatActivity
 			int lv_pad = (int) ( 0.5f + 12 * density );
 			int icon_width = mAvatarIconSize;
 			int icon_end = (int) ( 0.5f + 4 * density );
-			nAutoCwCellWidth = column_w - lv_pad*2 - icon_width - icon_end;
+			nAutoCwCellWidth = column_w - lv_pad * 2 - icon_width - icon_end;
 		}
 		// この後各カラムは再描画される
 	}
-
+	
 	void checkAutoCW( @NonNull TootStatusLike status, @NonNull CharSequence text ){
 		if( nAutoCwCellWidth <= 0 ){
 			// 設定が無効
 			status.auto_cw = null;
 			return;
 		}
-
+		
 		TootStatusLike.AutoCW a = status.auto_cw;
 		if( a != null && a.refActivity.get() == ActMain.this && a.cell_width == nAutoCwCellWidth ){
 			// 以前に計算した値がまだ使える
 			return;
 		}
-
+		
 		if( a == null ) a = status.auto_cw = new TootStatusLike.AutoCW();
-
+		
 		// 計算時の条件(文字フォント、文字サイズ、カラム幅）を覚えておいて、再利用時に同じか確認する
-		a.refActivity =new WeakReference< Object >( ActMain.this );
+		a.refActivity = new WeakReference< Object >( ActMain.this );
 		a.cell_width = nAutoCwCellWidth;
 		a.decoded_spoiler_text = null;
 		
 		// テキストをレイアウトして行数を測定
-
-		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams( nAutoCwCellWidth,LinearLayout.LayoutParams.WRAP_CONTENT );
-		TextView tv = new TextView(this);
+		
+		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams( nAutoCwCellWidth, LinearLayout.LayoutParams.WRAP_CONTENT );
+		TextView tv = new TextView( this );
 		tv.setLayoutParams( lp );
 		if( ! Float.isNaN( timeline_font_size_sp ) ){
 			tv.setTextSize( timeline_font_size_sp );
@@ -4734,8 +4751,8 @@ public class ActMain extends AppCompatActivity
 		}
 		tv.setText( text );
 		tv.measure(
-			View.MeasureSpec.makeMeasureSpec( nAutoCwCellWidth, View.MeasureSpec.EXACTLY)
-			,View.MeasureSpec.makeMeasureSpec( 0, View.MeasureSpec.UNSPECIFIED)
+			View.MeasureSpec.makeMeasureSpec( nAutoCwCellWidth, View.MeasureSpec.EXACTLY )
+			, View.MeasureSpec.makeMeasureSpec( 0, View.MeasureSpec.UNSPECIFIED )
 		);
 		Layout l = tv.getLayout();
 		if( l != null ){

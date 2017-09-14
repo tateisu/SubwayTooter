@@ -41,7 +41,8 @@ public class AccountPicker {
 	){
 		
 		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( activity,ActMain.log );
-		pick( activity, bAllowPseudo, bAuto, message, account_list, callback ,null );
+		SavedAccount.sort( account_list );
+		pick( activity, bAllowPseudo, bAuto, message, account_list, true,callback ,null );
 	}
 	
 	public static void pick(
@@ -50,10 +51,10 @@ public class AccountPicker {
 		, boolean bAuto
 		, String message
 		, @NonNull final AccountPickerCallback callback
-		, @Nullable final DialogInterface.OnDismissListener dissmiss_callback
+		, @Nullable final DialogInterface.OnDismissListener dismiss_callback
 	){
 		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( activity,ActMain.log );
-		pick( activity, bAllowPseudo, bAuto, message, account_list, callback ,dissmiss_callback );
+		pick( activity, bAllowPseudo, bAuto, message, account_list, true, callback ,dismiss_callback );
 	}
 	
 	public static void pick(
@@ -64,15 +65,16 @@ public class AccountPicker {
 		, @NonNull final ArrayList< SavedAccount > account_list
 		, @NonNull final AccountPickerCallback callback
 	){
-		pick( activity, bAllowPseudo, bAuto, message, account_list, callback ,null );
+		pick( activity, bAllowPseudo, bAuto, message, account_list, false, callback ,null );
 	}
 	
-	public static void pick(
+	private static void pick(
 		@NonNull AppCompatActivity activity
 		, boolean bAllowPseudo
 		, boolean bAuto
 		, String message
 		, @NonNull final ArrayList< SavedAccount > account_list
+	    ,boolean bSort
 		, @NonNull final AccountPickerCallback callback
 		, @Nullable final DialogInterface.OnDismissListener dismiss_callback
 	){
@@ -95,12 +97,16 @@ public class AccountPicker {
 			}
 		}
 		
+		if(bSort){
+			SavedAccount.sort( account_list );
+		}
+		
 		if( bAuto && account_list.size() == 1 ){
 			callback.onAccountPicked( account_list.get( 0 ) );
 			return;
 		}
 		
-		SavedAccount.sort( account_list );
+		
 		
 		@SuppressLint("InflateParams") View viewRoot = activity.getLayoutInflater().inflate( R.layout.dlg_account_picker, null, false );
 

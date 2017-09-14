@@ -98,7 +98,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return instance;
 	}
 	public void setInstance(@NonNull TootInstance instance){
-		if( instance != null ) refInstance.set(instance);
+		refInstance.set(instance);
 	}
 	
 	
@@ -462,7 +462,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	}
 	
 	@Nullable
-	public static SavedAccount loadPseudoAccount( Context context, @NonNull LogCategory log, String full_acct ){
+	public static SavedAccount loadAccountByAcct( Context context, @NonNull LogCategory log, String full_acct ){
 		try{
 			Cursor cursor = App1.getDB().query( table, null, COL_USER + "=?", new String[]{ full_acct }, null, null, null );
 			try{
@@ -474,9 +474,26 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 			}
 		}catch( Throwable ex ){
 			log.trace( ex );
-			log.e( ex, "loadPseudoAccount failed." );
+			log.e( ex, "loadAccountByAcct failed." );
 		}
 		return null;
+	}
+	
+	public static boolean hasRealAccount( @NonNull LogCategory log ){
+		try{
+			Cursor cursor = App1.getDB().query( table, null, COL_USER + " NOT LIKE '?@%'", null , null, null, null, "1");
+			try{
+				if( cursor.moveToNext() ){
+					return true;
+				}
+			}finally{
+				cursor.close();
+			}
+		}catch( Throwable ex ){
+			log.trace( ex );
+			log.e( ex, "hasNonPseudoAccount failed." );
+		}
+		return false;
 	}
 	
 	
@@ -665,4 +682,8 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		Collections.sort( account_list, account_comparator );
 	}
 	
+	public @NonNull String getAcctHost( @NonNull TootAccount who ){
+		String host = who.getAcctHost();
+		return host != null ? host : this.host;
+	}
 }

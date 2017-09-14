@@ -148,7 +148,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			if( status instanceof TootStatus && ! access_info.isPseudo() ){
 				activity.performReply( access_info, (TootStatus) status );
 			}else{
-				activity.openReplyFromAnotherAccount( status );
+				activity.openReplyFromAnotherAccount( access_info, status );
 			}
 			break;
 		
@@ -218,13 +218,13 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnFollow2:
-			if( status != null && status.account != null ){
+			if( status != null ){
 				activity.openFollowFromAnotherAccount( access_info, status.account );
 			}
 			break;
 		
 		case R.id.btnReply:
-			activity.openReplyFromAnotherAccount( status );
+			activity.openReplyFromAnotherAccount( access_info, status );
 			break;
 			
 		}

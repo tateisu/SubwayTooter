@@ -278,8 +278,8 @@ public class MyGifDrawable extends GlideDrawable implements GifFrameLoader.Frame
 		int src_w = src.getWidth();
 		int src_h = src.getHeight();
 		if( src_w < 1 || src_h < 1 ) return;
-		int outWidth = destRect.width();
-		int outHeight = destRect.height();
+//		int outWidth = destRect.width();
+//		int outHeight = destRect.height();
 		
 		mDstRectF.set( destRect );
 		mShaderMatrix.preScale( mDstRectF.width() / src_w, mDstRectF.height() / src_h );

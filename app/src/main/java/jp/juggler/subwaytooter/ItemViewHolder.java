@@ -396,7 +396,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		setAcct( tvFollowerAcct, access_info.getFullAcct( who ) ,who.acct );
 		
 		UserRelation relation = UserRelation.load( access_info.db_id, who.id );
-		Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation );
+		Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation ,who );
 	}
 	
 	private void showStatus( @NonNull ActMain activity, @NonNull TootStatusLike status ){

@@ -4,9 +4,11 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.util.LruCache;
 
 import jp.juggler.subwaytooter.App1;
+import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.util.LogCategory;
 
@@ -64,17 +66,17 @@ public class UserRelation {
 		}
 	}
 	
-	public static void save1( long now, long db_id, TootRelationShip src ){
+	public static @NonNull UserRelation save1( long now, long db_id, @NonNull TootRelationShip src ){
 		try{
 			ContentValues cv = new ContentValues();
 			cv.put( COL_TIME_SAVE, now );
 			cv.put( COL_DB_ID, db_id );
 			cv.put( COL_WHO_ID, src.id );
-			cv.put( COL_FOLLOWING, src.following ? 1 : 0 );
+			cv.put( COL_FOLLOWING, src._getRealFollowing() ? 1 : 0 );
 			cv.put( COL_FOLLOWED_BY, src.followed_by ? 1 : 0 );
 			cv.put( COL_BLOCKING, src.blocking ? 1 : 0 );
 			cv.put( COL_MUTING, src.muting ? 1 : 0 );
-			cv.put( COL_REQUESTED, src.requested ? 1 : 0 );
+			cv.put( COL_REQUESTED, src._getRealRequested() ? 1 : 0 );
 			App1.getDB().replace( table, null, cv );
 			
 			String key = String.format( "%s:%s", db_id, src.id );
@@ -82,6 +84,7 @@ public class UserRelation {
 		}catch( Throwable ex ){
 			log.e( ex, "save failed." );
 		}
+		return load( db_id,src.id );
 	}
 	
 	public static void saveList( long now, long db_id, TootRelationShip.List src_list ){
@@ -96,11 +99,11 @@ public class UserRelation {
 		try{
 			for( TootRelationShip src : src_list ){
 				cv.put( COL_WHO_ID, src.id );
-				cv.put( COL_FOLLOWING, src.following ? 1 : 0 );
+				cv.put( COL_FOLLOWING, src._getRealFollowing() ? 1 : 0 );
 				cv.put( COL_FOLLOWED_BY, src.followed_by ? 1 : 0 );
 				cv.put( COL_BLOCKING, src.blocking ? 1 : 0 );
 				cv.put( COL_MUTING, src.muting ? 1 : 0 );
-				cv.put( COL_REQUESTED, src.requested ? 1 : 0 );
+				cv.put( COL_REQUESTED, src._getRealRequested() ? 1 : 0 );
 				db.replace( table, null, cv );
 				
 			}
@@ -120,11 +123,29 @@ public class UserRelation {
 		}
 	}
 	
-	public boolean following;   // 認証ユーザからのフォロー状態にある
+	private boolean following;   // 認証ユーザからのフォロー状態にある
 	public boolean followed_by; // 認証ユーザは被フォロー状態にある
 	public boolean blocking;
 	public boolean muting;
-	public boolean requested;  // 認証ユーザからのフォローは申請中である
+	private boolean requested;  // 認証ユーザからのフォローは申請中である
+	
+	// 認証ユーザからのフォロー状態
+	public boolean getFollowing(@Nullable TootAccount who){
+		//noinspection SimplifiableIfStatement
+		if( requested && ! following && who != null && ! who.locked ){
+			return true;
+		}
+		return following;
+	}
+	
+	// 認証ユーザからのフォローリクエスト申請中状態
+	public boolean getRequested(@Nullable TootAccount who){
+		//noinspection SimplifiableIfStatement
+		if( requested && ! following && who != null && ! who.locked ){
+			return false;
+		}
+		return requested;
+	}
 	
 	private UserRelation(){
 	}

@@ -150,11 +150,12 @@ public class NotificationTracking {
 			cv.put( COL_POST_ID, post_id );
 			cv.put( COL_POST_TIME, post_time );
 			int rows = App1.getDB().update( table, cv,WHERE_AID, new String[]{ Long.toString( account_db_id ) } );
-			log.d("updatePost account_db_id=%s,post=%s,%s last_data=%s"
+			log.d("updatePost account_db_id=%s,post=%s,%s last_data=%s,update_rows=%s"
 				,account_db_id
 				,post_id
 				,post_time
 				,(last_data ==null ? "null" : ""+last_data.length())
+				,rows
 			);
 		}catch( Throwable ex ){
 			log.e( ex, "updatePost failed." );

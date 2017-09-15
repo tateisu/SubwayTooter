@@ -120,7 +120,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		}else{
 			llFollow2.setVisibility( View.VISIBLE );
 			this.relation = UserRelation.load( access_info.db_id, status.account.id );
-			Styler.setFollowIcon( activity, btnFollow2, ivFollowedBy2, relation );
+			Styler.setFollowIcon( activity, btnFollow2, ivFollowedBy2, relation ,status.account );
 		}
 		
 	}
@@ -192,7 +192,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 				activity.openFollowFromAnotherAccount( access_info, status.account );
 			}else if( relation.blocking || relation.muting ){
 				// 何もしない
-			}else if( relation.following || relation.requested ){
+			}else if( relation.getFollowing( status.account ) || relation.getRequested( status.account ) ){
 				activity.callFollow( access_info, status.account, false, false, activity.unfollow_complete_callback );
 			}else{
 				activity.callFollow( access_info, status.account, true, false, activity.follow_complete_callback );

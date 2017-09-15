@@ -358,7 +358,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				//noinspection StatementWithEmptyBody
 				if( type == null ){
 					//
-				}else if( type.startsWith( "image/" ) ||  type.startsWith( "video/" ) ){
+				}else if( type.startsWith( "image/" ) || type.startsWith( "video/" ) ){
 					if( Intent.ACTION_VIEW.equals( action ) ){
 						Uri uri = sent_intent.getData();
 						if( uri != null ){
@@ -402,7 +402,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				try{
 					TootStatus reply_status = TootStatus.parse( ActPost.this, account, new JSONObject( sv ) );
 					
-					if( reply_status !=null ){
+					if( reply_status != null ){
 						// CW をリプライ元に合わせる
 						if( ! TextUtils.isEmpty( reply_status.spoiler_text ) ){
 							cbContentWarning.setChecked( true );
@@ -463,7 +463,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 								}
 							}
 							
-							if( TootStatus.VISIBILITY_WEB_SETTING.equals( visibility) ){
+							if( TootStatus.VISIBILITY_WEB_SETTING.equals( visibility ) ){
 								// 「Web設定に合わせる」だった場合は無条件にリプライ元の公開範囲に変更する
 								this.visibility = reply_status.visibility;
 							}else{
@@ -507,7 +507,6 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		showReplyTo();
 		showEnquete();
 	}
-	
 	
 	@Override protected void onDestroy(){
 		post_helper.onDestroy();
@@ -572,7 +571,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	
 	CheckBox cbEnquete;
 	View llEnquete;
-	final MyEditText[] list_etChoice = new MyEditText[4];
+	final MyEditText[] list_etChoice = new MyEditText[ 4 ];
 	
 	TextView tvCharCount;
 	Handler handler;
@@ -621,10 +620,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		
 		cbEnquete = findViewById( R.id.cbEnquete );
 		llEnquete = findViewById( R.id.llEnquete );
-		list_etChoice[0] = findViewById( R.id.etChoice1 );
-		list_etChoice[1] = findViewById( R.id.etChoice2 );
-		list_etChoice[2] = findViewById( R.id.etChoice3 );
-		list_etChoice[3] = findViewById( R.id.etChoice4 );
+		list_etChoice[ 0 ] = findViewById( R.id.etChoice1 );
+		list_etChoice[ 1 ] = findViewById( R.id.etChoice2 );
+		list_etChoice[ 2 ] = findViewById( R.id.etChoice3 );
+		list_etChoice[ 3 ] = findViewById( R.id.etChoice4 );
 		
 		tvCharCount = findViewById( R.id.tvCharCount );
 		
@@ -634,7 +633,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		ivReply = findViewById( R.id.ivReply );
 		
 		account_list = SavedAccount.loadAccountList( ActPost.this, log );
-		SavedAccount.sort( account_list);
+		SavedAccount.sort( account_list );
 		
 		btnAccount.setOnClickListener( this );
 		btnVisibility.setOnClickListener( this );
@@ -656,7 +655,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				updateContentWarning();
 			}
 		} );
-		cbEnquete.setOnCheckedChangeListener(  new CompoundButton.OnCheckedChangeListener() {
+		cbEnquete.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged( CompoundButton buttonView, boolean isChecked ){
 				showEnquete();
@@ -675,9 +674,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			}
 		} );
 		
-		etContentWarning.addTextChangedListener( text_watcher);
-		for(MyEditText et : list_etChoice ){
-			et.addTextChangedListener( text_watcher);
+		etContentWarning.addTextChangedListener( text_watcher );
+		for( MyEditText et : list_etChoice ){
+			et.addTextChangedListener( text_watcher );
 		}
 		
 		scrollView.getViewTreeObserver().addOnScrollChangedListener( scroll_listener );
@@ -712,16 +711,16 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		
 		String s = etContent.getText().toString();
 		length += s.codePointCount( 0, s.length() );
-
+		
 		s = cbContentWarning.isChecked() ? etContentWarning.getText().toString() : "";
-		length +=  s.codePointCount( 0, s.length() );
+		length += s.codePointCount( 0, s.length() );
 		
 		int max;
-		if( !cbEnquete.isChecked() ){
+		if( ! cbEnquete.isChecked() ){
 			max = 500;
 		}else{
 			max = 350;
-			for( MyEditText et : list_etChoice){
+			for( MyEditText et : list_etChoice ){
 				s = et.getText().toString();
 				length += s.codePointCount( 0, s.length() );
 			}
@@ -744,7 +743,6 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	
 	void setAccount( SavedAccount a ){
 		this.account = a;
-		SpannableStringBuilder sb = new SpannableStringBuilder();
 		if( a == null ){
 			btnAccount.setText( getString( R.string.not_selected ) );
 			btnAccount.setTextColor( Styler.getAttributeColor( this, android.R.attr.textColorPrimary ) );
@@ -969,19 +967,18 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		
 	}
 	
-	
 	void openAttachment(){
 		int permissionCheck = ContextCompat.checkSelfPermission( this, Manifest.permission.WRITE_EXTERNAL_STORAGE );
 		if( permissionCheck != PackageManager.PERMISSION_GRANTED ){
 			preparePermission();
 			return;
 		}
-
-//		permissionCheck = ContextCompat.checkSelfPermission( this, Manifest.permission.CAMERA );
-//		if( permissionCheck != PackageManager.PERMISSION_GRANTED ){
-//			preparePermission();
-//			return;
-//		}
+		
+		//		permissionCheck = ContextCompat.checkSelfPermission( this, Manifest.permission.CAMERA );
+		//		if( permissionCheck != PackageManager.PERMISSION_GRANTED ){
+		//			preparePermission();
+		//			return;
+		//		}
 		
 		ActionsDialog a = new ActionsDialog();
 		a.addAction( getString( R.string.image_pick ), new Runnable() {
@@ -994,12 +991,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				performCamera();
 			}
 		} );
-
-//		a.addAction( getString( R.string.video_capture ), new Runnable() {
-//			@Override public void run(){
-//				performCameraVideo();
-//			}
-//		} );
+		
+		//		a.addAction( getString( R.string.video_capture ), new Runnable() {
+		//			@Override public void run(){
+		//				performCameraVideo();
+		//			}
+		//		} );
 		a.show( this, null );
 		
 	}
@@ -1030,7 +1027,6 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}
 	}
 	
-
 	interface InputStreamOpener {
 		InputStream open() throws IOException;
 		
@@ -1132,8 +1128,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		};
 	}
 	
-	static HashSet<String> acceptable_mime_types ;
-	
+	static HashSet< String > acceptable_mime_types;
 	
 	void addAttachment( final Uri uri, final String mime_type ){
 		if( attachment_list != null && attachment_list.size() >= 4 ){
@@ -1146,22 +1141,21 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}
 		
 		if( acceptable_mime_types == null ){
-			acceptable_mime_types= new HashSet<>();
-			acceptable_mime_types.add("image/jpeg");
-			acceptable_mime_types.add("image/png");
-			acceptable_mime_types.add("image/gif");
-			acceptable_mime_types.add("video/webm");
-			acceptable_mime_types.add("video/mp4");
+			acceptable_mime_types = new HashSet<>();
+			acceptable_mime_types.add( "image/jpeg" );
+			acceptable_mime_types.add( "image/png" );
+			acceptable_mime_types.add( "image/gif" );
+			acceptable_mime_types.add( "video/webm" );
+			acceptable_mime_types.add( "video/mp4" );
 		}
 		
 		if( TextUtils.isEmpty( mime_type ) ){
 			Utils.showToast( this, false, R.string.mime_type_missing );
 			return;
-		}else if( ! acceptable_mime_types.contains( mime_type  ) ){
-			Utils.showToast( this, true, R.string.mime_type_not_acceptable ,mime_type);
+		}else if( ! acceptable_mime_types.contains( mime_type ) ){
+			Utils.showToast( this, true, R.string.mime_type_not_acceptable, mime_type );
 			return;
 		}
-		
 		
 		if( attachment_list == null ){
 			this.attachment_list = app_state.attachment_list = new ArrayList<>();
@@ -1326,16 +1320,18 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			Utils.showToast( this, ex, "opening camera app failed." );
 		}
 	}
+	
 	private void performCameraVideo(){
 		
 		try{
-			Intent takeVideoIntent = new Intent(MediaStore.ACTION_VIDEO_CAPTURE);
-			startActivityForResult(takeVideoIntent, REQUEST_CODE_VIDEO);
+			Intent takeVideoIntent = new Intent( MediaStore.ACTION_VIDEO_CAPTURE );
+			startActivityForResult( takeVideoIntent, REQUEST_CODE_VIDEO );
 		}catch( Throwable ex ){
 			log.trace( ex );
 			Utils.showToast( this, ex, "opening video app failed." );
 		}
 	}
+	
 	private static final int PERMISSION_REQUEST_CODE = 1;
 	
 	private void preparePermission(){
@@ -1345,11 +1341,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			ActivityCompat.requestPermissions( this
 				, new String[]{
 					Manifest.permission.WRITE_EXTERNAL_STORAGE,
-			//		Manifest.permission.CAMERA,
+					//		Manifest.permission.CAMERA,
 				}
 				, PERMISSION_REQUEST_CODE
 			);
-			return;
 		}else{
 			Utils.showToast( this, true, R.string.missing_permission_to_access_media );
 		}
@@ -1363,7 +1358,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		switch( requestCode ){
 		case PERMISSION_REQUEST_CODE:
 			boolean bNotGranted = false;
-			for(int i=0,ie=permissions.length;i<ie;++i){
+			for( int i = 0, ie = permissions.length ; i < ie ; ++ i ){
 				if( grantResults[ i ] != PackageManager.PERMISSION_GRANTED ){
 					bNotGranted = true;
 				}
@@ -1417,11 +1412,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	
 	private void performVisibility(){
 		final CharSequence[] caption_list = new CharSequence[]{
-			Styler.getVisibilityCaption( this,TootStatus.VISIBILITY_WEB_SETTING ),
-			Styler.getVisibilityCaption( this,TootStatus.VISIBILITY_PUBLIC ),
-			Styler.getVisibilityCaption( this,TootStatus.VISIBILITY_UNLISTED ),
-			Styler.getVisibilityCaption( this,TootStatus.VISIBILITY_PRIVATE ),
-			Styler.getVisibilityCaption( this,TootStatus.VISIBILITY_DIRECT ),
+			Styler.getVisibilityCaption( this, TootStatus.VISIBILITY_WEB_SETTING ),
+			Styler.getVisibilityCaption( this, TootStatus.VISIBILITY_PUBLIC ),
+			Styler.getVisibilityCaption( this, TootStatus.VISIBILITY_UNLISTED ),
+			Styler.getVisibilityCaption( this, TootStatus.VISIBILITY_PRIVATE ),
+			Styler.getVisibilityCaption( this, TootStatus.VISIBILITY_DIRECT ),
 		};
 		
 		new AlertDialog.Builder( this )
@@ -1558,7 +1553,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			llReply.setVisibility( View.GONE );
 		}else{
 			llReply.setVisibility( View.VISIBLE );
-			tvReplyTo.setText( HTMLDecoder.decodeHTML( ActPost.this, account, in_reply_to_text, true, true, null ,null) );
+			tvReplyTo.setText( HTMLDecoder.decodeHTML( ActPost.this, account, in_reply_to_text, true, true, null, null ) );
 			ivReply.setImageUrl( pref, 16f, in_reply_to_image );
 		}
 	}
@@ -1592,22 +1587,22 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		String content_warning = cbContentWarning.isChecked() ? etContentWarning.getText().toString() : "";
 		boolean isEnquete = cbEnquete.isChecked();
 		String[] str_choice = new String[]{
-			isEnquete ? list_etChoice[0].getText().toString():"",
-			isEnquete ? list_etChoice[1].getText().toString():"",
-			isEnquete ? list_etChoice[2].getText().toString():"",
-			isEnquete ? list_etChoice[3].getText().toString():"",
+			isEnquete ? list_etChoice[ 0 ].getText().toString() : "",
+			isEnquete ? list_etChoice[ 1 ].getText().toString() : "",
+			isEnquete ? list_etChoice[ 2 ].getText().toString() : "",
+			isEnquete ? list_etChoice[ 3 ].getText().toString() : "",
 		};
 		boolean hasContent = false;
-		if( !TextUtils.isEmpty( content.trim() ) ) hasContent = true;
-		if( !TextUtils.isEmpty( content_warning.trim() ) ) hasContent = true;
-		for(String s :str_choice ){
-			if( !TextUtils.isEmpty( s.trim() ) ) hasContent = true;
+		if( ! TextUtils.isEmpty( content.trim() ) ) hasContent = true;
+		if( ! TextUtils.isEmpty( content_warning.trim() ) ) hasContent = true;
+		for( String s : str_choice ){
+			if( ! TextUtils.isEmpty( s.trim() ) ) hasContent = true;
 		}
-		if(!hasContent ){
+		if( ! hasContent ){
 			log.d( "saveDraft: dont save empty content" );
 			return;
 		}
-
+		
 		try{
 			JSONArray tmp_attachment_list = new JSONArray();
 			if( attachment_list != null ){
@@ -1630,9 +1625,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			json.put( DRAFT_REPLY_URL, in_reply_to_url );
 			
 			json.put( DRAFT_IS_ENQUETE, isEnquete );
-			JSONArray array = new JSONArray(  );
-			for(String s : str_choice){
-				array.put(s);
+			JSONArray array = new JSONArray();
+			for( String s : str_choice ){
+				array.put( s );
 			}
 			json.put( DRAFT_ENQUETE_ITEMS, array );
 			
@@ -1685,7 +1680,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					try{
 						for( int i = 0, ie = tmp_attachment_list.length() ; i < ie ; ++ i ){
 							TootAttachment ta = TootAttachment.parse( tmp_attachment_list.optJSONObject( i ) );
-							if( ta != null ){
+							if( ta != null && ! TextUtils.isEmpty( ta.text_url ) ){
 								content = content.replace( ta.text_url, "" );
 							}
 						}
@@ -1737,7 +1732,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 						}else if( ! check_exist( ta.url ) ){
 							isSomeAttachmentRemoved = true;
 							tmp_attachment_list.remove( i );
-							content = content.replace( ta.text_url, "" );
+							if( ! TextUtils.isEmpty( ta.text_url ) ){
+								content = content.replace( ta.text_url, "" );
+							}
 						}
 					}
 					if( isSomeAttachmentRemoved ){
@@ -1782,16 +1779,16 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				cbNSFW.setChecked( nsfw_checked );
 				ActPost.this.visibility = visibility;
 				
-				cbEnquete.setChecked( draft.optBoolean( DRAFT_IS_ENQUETE ,false) );
+				cbEnquete.setChecked( draft.optBoolean( DRAFT_IS_ENQUETE, false ) );
 				JSONArray array = draft.optJSONArray( DRAFT_ENQUETE_ITEMS );
 				if( array != null ){
 					int src_index = 0;
-					for(MyEditText et : list_etChoice){
+					for( MyEditText et : list_etChoice ){
 						if( src_index < array.length() ){
-							et.setText( array.optString( src_index ));
-							++src_index;
+							et.setText( array.optString( src_index ) );
+							++ src_index;
 						}else{
-							et.setText( "");
+							et.setText( "" );
 						}
 					}
 				}
@@ -1934,8 +1931,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			applyMushroomText( etContentWarning, text );
 		}else{
 			for( int i = 0 ; i < 4 ; ++ i ){
-				if( mushroom_input == i+ 2 ){
-					applyMushroomText(  list_etChoice[ i ], text );
+				if( mushroom_input == i + 2 ){
+					applyMushroomText( list_etChoice[ i ], text );
 				}
 			}
 		}
@@ -1963,7 +1960,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					return null;
 				}
 			};
-			CharSequence sv = HTMLDecoder.decodeHTML( ActPost.this, lcc, text, false, false, null ,null);
+			CharSequence sv = HTMLDecoder.decodeHTML( ActPost.this, lcc, text, false, false, null, null );
 			tvText.setText( sv );
 			tvText.setMovementMethod( LinkMovementMethod.getInstance() );
 			
@@ -1996,9 +1993,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}
 	};
 	
-	
 	private void showEnquete(){
-		llEnquete.setVisibility(  cbEnquete.isChecked() ? View.VISIBLE : View.GONE );
+		llEnquete.setVisibility( cbEnquete.isChecked() ? View.VISIBLE : View.GONE );
 	}
-
+	
 }

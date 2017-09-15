@@ -18,7 +18,7 @@ public class TootRelationShip {
 	public long id;
 	
 	//	Whether the user is currently following the account
-	public boolean following;
+	private  boolean following;
 	
 	//	Whether the user is currently being followed by the account
 	public boolean followed_by;
@@ -30,7 +30,33 @@ public class TootRelationShip {
 	public boolean muting;
 	
 	//	Whether the user has requested to follow the account
-	public boolean requested;
+	private boolean requested;
+	
+	// 認証ユーザからのフォロー状態
+	public boolean getFollowing(@NonNull TootAccount who){
+		//noinspection SimplifiableIfStatement
+		if( requested && ! following && ! who.locked ){
+			return true;
+		}
+		return following;
+	}
+	
+	public boolean _getRealFollowing(){
+		return following;
+	}
+	
+	// 認証ユーザからのフォローリクエスト申請中状態
+	public boolean getRequested(@NonNull TootAccount who){
+		//noinspection SimplifiableIfStatement
+		if( requested && ! following && ! who.locked ){
+			return false;
+		}
+		return requested;
+	}
+	
+	public boolean _getRealRequested(){
+		return requested;
+	}
 	
 	@Nullable
 	public static TootRelationShip parse( JSONObject src ){
@@ -50,6 +76,7 @@ public class TootRelationShip {
 			return null;
 		}
 	}
+	
 	
 	public static class List extends ArrayList< TootRelationShip > {
 		public List(){

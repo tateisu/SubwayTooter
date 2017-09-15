@@ -1546,11 +1546,7 @@ public class ActMain extends AppCompatActivity
 						account.visibility = ta.source.privacy;
 					}
 					// FIXME  ta.source.sensitive パラメータを読んで「添付画像をデフォルトでNSFWにする」を実現する
-					if( ta.source.sensitive ){
-						bModified = true;
-						account.dont_hide_nsfw = true;
-						
-					}
+					// 現在、アカウント設定にはこの項目はない( 「NSFWな添付メディアを隠さない」はあるが全く別の効果)
 				}
 				
 				if( bModified ){
@@ -3283,34 +3279,33 @@ public class ActMain extends AppCompatActivity
 	////////////////////////////////////////////////////////////////////////////
 	
 	interface RelationChangedCallback {
-		// void onRelationChanged( TootRelationShip relationship );
 		void onRelationChanged();
 	}
 	
 	private static class RelationResult {
 		TootApiResult result;
-		TootRelationShip relation;
+		@Nullable UserRelation relation;
 	}
+	
+	private @Nullable UserRelation saveUserRelation( @NonNull SavedAccount access_info, @Nullable TootRelationShip src ){
+		if( src == null ) return null;
+		long now = System.currentTimeMillis();
+		return UserRelation.save1( now, access_info.db_id, src );
+	}
+	
 	
 	// relationshipを取得
 	@NonNull RelationResult loadRelation1(
-		TootApiClient client
-		, SavedAccount access_info
+		@NonNull TootApiClient client
+		,@NonNull SavedAccount access_info
 		, long who_id
-		, boolean fix_follow_requesting
 	){
 		RelationResult rr = new RelationResult();
 		TootApiResult r2 = rr.result = client.request( "/api/v1/accounts/relationships?id=" + who_id );
 		if( r2 != null && r2.array != null ){
 			TootRelationShip.List list = TootRelationShip.parseList( r2.array );
 			if( ! list.isEmpty() ){
-				TootRelationShip relation = rr.relation = list.get( 0 );
-				if( fix_follow_requesting && relation.requested && ! relation.following ){
-					relation.requested = false;
-					relation.following = true;
-				}
-				long now = System.currentTimeMillis();
-				UserRelation.save1( now, access_info.db_id, relation );
+				rr.relation = saveUserRelation( access_info,list.get( 0 ) );
 			}
 		}
 		return rr;
@@ -3430,9 +3425,7 @@ public class ActMain extends AppCompatActivity
 						if( result.object != null ){
 							TootAccount remote_who = TootAccount.parse( ActMain.this, access_info, result.object );
 							if( remote_who != null ){
-								RelationResult rr = loadRelation1( client, access_info, remote_who.id
-									, ( bFollow && ! who.locked )
-								);
+								RelationResult rr = loadRelation1( client, access_info, remote_who.id );
 								result = rr.result;
 								relation = rr.relation;
 							}
@@ -3452,18 +3445,14 @@ public class ActMain extends AppCompatActivity
 							+ ( bFollow ? "/follow" : "/unfollow" )
 						, request_builder );
 					if( result != null && result.object != null ){
-						relation = TootRelationShip.parse( result.object );
-						if( relation != null ){
-							long now = System.currentTimeMillis();
-							UserRelation.save1( now, access_info.db_id, relation );
-						}
+						relation = saveUserRelation( access_info, TootRelationShip.parse( result.object ) );
 					}
 				}
 				
 				return result;
 			}
 			
-			TootRelationShip relation;
+			UserRelation relation;
 			
 			@Override
 			protected void onCancelled( TootApiResult result ){
@@ -3488,10 +3477,10 @@ public class ActMain extends AppCompatActivity
 					
 					showColumnMatchAccount( access_info );
 					
-					if( bFollow && relation.requested ){
+					if( bFollow && relation.getRequested( who ) ){
 						// 鍵付きアカウントにフォローリクエストを申請した状態
 						Utils.showToast( ActMain.this, false, R.string.follow_requested );
-					}else if( ! bFollow && relation.requested ){
+					}else if( ! bFollow && relation.getRequested( who ) ){
 						Utils.showToast( ActMain.this, false, R.string.follow_request_cant_remove_by_sender );
 					}else{
 						// ローカル操作成功、もしくはリモートフォロー成功
@@ -3562,6 +3551,8 @@ public class ActMain extends AppCompatActivity
 			}
 		}
 		
+		
+		
 		new AsyncTask< Void, Void, TootApiResult >() {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
@@ -3587,9 +3578,9 @@ public class ActMain extends AppCompatActivity
 				
 				if( result != null ){
 					if( result.object != null ){
-						TootAccount remote_who = TootAccount.parse( ActMain.this, access_info, result.object );
+						remote_who = TootAccount.parse( ActMain.this, access_info, result.object );
 						if( remote_who != null ){
-							RelationResult rr = loadRelation1( client, access_info, remote_who.id, ! remote_who.locked );
+							RelationResult rr = loadRelation1( client, access_info, remote_who.id );
 							result = rr.result;
 							relation = rr.relation;
 						}
@@ -3599,7 +3590,8 @@ public class ActMain extends AppCompatActivity
 				return result;
 			}
 			
-			TootRelationShip relation;
+			TootAccount remote_who;
+			UserRelation relation;
 			
 			@Override
 			protected void onCancelled( TootApiResult result ){
@@ -3652,17 +3644,13 @@ public class ActMain extends AppCompatActivity
 					, request_builder );
 				if( result != null ){
 					if( result.object != null ){
-						relation = TootRelationShip.parse( result.object );
-						if( relation != null ){
-							long now = System.currentTimeMillis();
-							UserRelation.save1( now, access_info.db_id, relation );
-						}
+						relation = saveUserRelation( access_info, TootRelationShip.parse( result.object ) );
 					}
 				}
 				return result;
 			}
 			
-			TootRelationShip relation;
+			UserRelation relation;
 			
 			@Override
 			protected void onCancelled( TootApiResult result ){
@@ -3721,18 +3709,15 @@ public class ActMain extends AppCompatActivity
 				
 				if( result != null ){
 					if( result.object != null ){
-						relation = TootRelationShip.parse( result.object );
-						if( relation != null ){
-							long now = System.currentTimeMillis();
-							UserRelation.save1( now, access_info.db_id, relation );
-						}
+						relation = saveUserRelation( access_info, TootRelationShip.parse( result.object )   );
+						
 					}
 				}
 				
 				return result;
 			}
 			
-			TootRelationShip relation;
+			UserRelation relation;
 			
 			@Override
 			protected void onCancelled( TootApiResult result ){
@@ -3764,6 +3749,7 @@ public class ActMain extends AppCompatActivity
 		}.executeOnExecutor( App1.task_executor );
 	}
 	
+
 	void callDomainBlock( final SavedAccount access_info, final String domain, final boolean bBlock, final RelationChangedCallback callback ){
 		new AsyncTask< Void, Void, TootApiResult >() {
 			
@@ -4169,17 +4155,6 @@ public class ActMain extends AppCompatActivity
 		
 		c = footer_tab_indicator_color;
 		llColumnStrip.setColor( c );
-	}
-	
-	ArrayList< SavedAccount > makeAccountListNonPseudo( LogCategory log ){
-		ArrayList< SavedAccount > dst = new ArrayList<>();
-		for( SavedAccount a : SavedAccount.loadAccountList( ActMain.this, log ) ){
-			if( ! a.isPseudo() ){
-				dst.add( a );
-			}
-		}
-		SavedAccount.sort( dst );
-		return dst;
 	}
 	
 	private ArrayList< SavedAccount > makeAccountList( @NonNull LogCategory log, boolean bAllowPseudo, @Nullable String pickup_host ){

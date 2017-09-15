@@ -195,12 +195,10 @@ public class AcctColor {
 	
 	private static final char CHAR_REPLACE = 0x328A;
 	
-	@NonNull public static CharSequence getStringWithNickname( @NonNull Context context, @NonNull int string_id , @NonNull String acct ){
+	@NonNull public static CharSequence getStringWithNickname( @NonNull Context context, int string_id , @NonNull String acct ){
 		AcctColor ac = load( acct );
 		if( ac == null ) return context.getString( string_id,acct );
 		String name = ! TextUtils.isEmpty( ac.nickname ) ? Utils.sanitizeBDI( ac.nickname ) : acct ;
-		int color_fg = hasColorForeground( ac ) ? ac.color_fg : Styler.getAttributeColor( context, android.R.attr.textColorPrimary );
-		int color_bg = hasColorBackground( ac ) ? ac.color_bg : 0;
 		SpannableStringBuilder sb = new SpannableStringBuilder( context.getString( string_id,new String(new char[]{CHAR_REPLACE})) );
 		for(int i=sb.length()-1;i>=0;--i){
 			char c = sb.charAt( i );

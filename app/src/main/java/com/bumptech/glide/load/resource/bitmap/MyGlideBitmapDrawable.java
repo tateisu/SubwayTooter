@@ -149,8 +149,8 @@ import jp.juggler.subwaytooter.util.LogCategory;
 		if( src_w < 1 || src_h < 1 ) return;
 		
 		if( mBitmapShader == null ){
-			int outWidth = destRect.width();
-			int outHeight = destRect.height();
+//			int outWidth = destRect.width();
+//			int outHeight = destRect.height();
 			mDstRectF.set( destRect );
 			mShaderMatrix.preScale( mDstRectF.width() / src_w, mDstRectF.height() / src_h );
 

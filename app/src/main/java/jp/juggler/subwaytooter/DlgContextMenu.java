@@ -203,11 +203,11 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			}
 			
 			// follow button
-			int icon_attr = ( relation.requested ? R.attr.ic_follow_wait
-				: relation.following ? R.attr.ic_follow_cross
+			int icon_attr = ( relation.getRequested( who ) ? R.attr.ic_follow_wait
+				: relation.getFollowing( who ) ? R.attr.ic_follow_cross
 				: R.attr.ic_follow_plus );
-			int color_attr = ( relation.requested ? R.attr.colorRegexFilterError
-				: relation.following ? R.attr.colorImageButtonAccent
+			int color_attr = ( relation.getRequested( who ) ? R.attr.colorRegexFilterError
+				: relation.getFollowing( who ) ? R.attr.colorImageButtonAccent
 				: R.attr.colorImageButton );
 			int color = Styler.getAttributeColor( activity, color_attr );
 			Drawable d = Styler.getAttributeDrawable( activity, icon_attr ).mutate();
@@ -325,7 +325,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnReplyAnotherAccount:
-			activity.openReplyFromAnotherAccount(  access_info,status );
+			activity.openReplyFromAnotherAccount( access_info, status );
 			break;
 		
 		case R.id.btnConversationAnotherAccount:
@@ -378,7 +378,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			}else if( access_info.isPseudo() ){
 				activity.openFollowFromAnotherAccount( access_info, who );
 			}else{
-				boolean bSet = ! ( relation.following || relation.requested );
+				boolean bSet = ! ( relation.getFollowing( who ) || relation.getRequested( who ) );
 				activity.callFollow(
 					access_info
 					, who

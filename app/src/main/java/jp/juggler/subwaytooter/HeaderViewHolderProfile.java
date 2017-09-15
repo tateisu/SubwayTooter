@@ -113,7 +113,7 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 			btnFollowers.setText( activity.getString( R.string.followers ) + "\n" + who.followers_count );
 			
 			UserRelation relation = UserRelation.load( access_info.db_id, who.id );
-			Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation );
+			Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation ,who );
 		}
 	}
 	

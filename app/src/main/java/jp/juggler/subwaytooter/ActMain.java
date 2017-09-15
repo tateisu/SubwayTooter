@@ -2367,10 +2367,9 @@ public class ActMain extends AppCompatActivity
 		
 		// 文脈がない、もしくは疑似アカウントだった
 		
-		
 		// 疑似ではないアカウントの一覧
 		
-		if( ! SavedAccount.hasRealAccount(log) ){
+		if( ! SavedAccount.hasRealAccount( log ) ){
 			// 疑似アカウントではユーザ情報APIを呼べないし検索APIも使えない
 			// chrome tab で開くしかない
 			openChromeTab( pos, access_info, url, true );
@@ -2378,7 +2377,7 @@ public class ActMain extends AppCompatActivity
 			// アカウントを選択して開く
 			AccountPicker.pick( this, false, false
 				, getString( R.string.account_picker_open_user_who, AcctColor.getNickname( user + "@" + host ) )
-				, makeAccountList( log,false,host )
+				, makeAccountList( log, false, host )
 				, new AccountPicker.AccountPickerCallback() {
 					@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 						openProfileRemote( pos, ai, url );
@@ -3298,15 +3297,20 @@ public class ActMain extends AppCompatActivity
 		TootApiClient client
 		, SavedAccount access_info
 		, long who_id
+		, boolean fix_follow_requesting
 	){
 		RelationResult rr = new RelationResult();
 		TootApiResult r2 = rr.result = client.request( "/api/v1/accounts/relationships?id=" + who_id );
 		if( r2 != null && r2.array != null ){
 			TootRelationShip.List list = TootRelationShip.parseList( r2.array );
 			if( ! list.isEmpty() ){
-				TootRelationShip item = rr.relation = list.get( 0 );
+				TootRelationShip relation = rr.relation = list.get( 0 );
+				if( fix_follow_requesting && relation.requested && ! relation.following ){
+					relation.requested = false;
+					relation.following = true;
+				}
 				long now = System.currentTimeMillis();
-				UserRelation.save1( now, access_info.db_id, item );
+				UserRelation.save1( now, access_info.db_id, relation );
 			}
 		}
 		return rr;
@@ -3426,7 +3430,9 @@ public class ActMain extends AppCompatActivity
 						if( result.object != null ){
 							TootAccount remote_who = TootAccount.parse( ActMain.this, access_info, result.object );
 							if( remote_who != null ){
-								RelationResult rr = loadRelation1( client, access_info, remote_who.id );
+								RelationResult rr = loadRelation1( client, access_info, remote_who.id
+									, ( bFollow && ! who.locked )
+								);
 								result = rr.result;
 								relation = rr.relation;
 							}
@@ -3446,19 +3452,10 @@ public class ActMain extends AppCompatActivity
 							+ ( bFollow ? "/follow" : "/unfollow" )
 						, request_builder );
 					if( result != null && result.object != null ){
-						// 1.6.0 rc2 から、フォローAPIのレスポンスに含まれるrelationは虚偽の内容を返すようになるらしい
-						// https://github.com/tootsuite/mastodon/pull/4799
-						// 実際の情報を取得するため、リレーションを読み直す
-						RelationResult rr = loadRelation1( client, access_info, who.id );
-						if( rr.relation != null ){
-							relation = rr.relation;
-						}else{
-							// リレーションを読めなかった場合、フォローAPIの応答に含まれるRelationshipを使う
-							relation = TootRelationShip.parse( result.object );
-							if( relation != null ){
-								long now = System.currentTimeMillis();
-								UserRelation.save1( now, access_info.db_id, relation );
-							}
+						relation = TootRelationShip.parse( result.object );
+						if( relation != null ){
+							long now = System.currentTimeMillis();
+							UserRelation.save1( now, access_info.db_id, relation );
 						}
 					}
 				}
@@ -3503,8 +3500,6 @@ public class ActMain extends AppCompatActivity
 					
 				}else if( bFollow && who.locked && result.response != null && result.response.code() == 422 ){
 					Utils.showToast( ActMain.this, false, R.string.cant_follow_locked_user );
-				}else if( result.response != null && result.response.code() == 500 ){
-					Utils.showToast( ActMain.this, false, R.string.already_followed );
 				}else{
 					Utils.showToast( ActMain.this, false, result.error );
 				}
@@ -3594,7 +3589,7 @@ public class ActMain extends AppCompatActivity
 					if( result.object != null ){
 						TootAccount remote_who = TootAccount.parse( ActMain.this, access_info, result.object );
 						if( remote_who != null ){
-							RelationResult rr = loadRelation1( client, access_info, remote_who.id );
+							RelationResult rr = loadRelation1( client, access_info, remote_who.id, ! remote_who.locked );
 							result = rr.result;
 							relation = rr.relation;
 						}
@@ -3624,8 +3619,6 @@ public class ActMain extends AppCompatActivity
 					
 				}else if( locked && result.response != null && result.response.code() == 422 ){
 					Utils.showToast( ActMain.this, false, R.string.cant_follow_locked_user );
-				}else if( result.response != null && result.response.code() == 500 ){
-					Utils.showToast( ActMain.this, false, R.string.already_followed );
 				}else{
 					Utils.showToast( ActMain.this, false, result.error );
 				}
@@ -4650,7 +4643,7 @@ public class ActMain extends AppCompatActivity
 				addColumn( getDefaultInsertPosition(), ai, Column.TYPE_LOCAL );
 			}
 		}else{
-			SavedAccount.sort( account_list);
+			SavedAccount.sort( account_list );
 			AccountPicker.pick( this, true, false
 				, getString( R.string.account_picker_add_timeline_of, host )
 				, account_list

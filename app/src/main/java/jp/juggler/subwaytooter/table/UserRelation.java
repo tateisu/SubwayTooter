@@ -120,11 +120,11 @@ public class UserRelation {
 		}
 	}
 	
-	public boolean following;
-	public boolean followed_by;
+	public boolean following;   // 認証ユーザからのフォロー状態にある
+	public boolean followed_by; // 認証ユーザは被フォロー状態にある
 	public boolean blocking;
 	public boolean muting;
-	public boolean requested;
+	public boolean requested;  // 認証ユーザからのフォローは申請中である
 	
 	private UserRelation(){
 	}

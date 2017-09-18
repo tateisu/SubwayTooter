@@ -483,5 +483,6 @@
     <string name="not_provided_mastodon_under_1_6">Not provided under Mastodon 1.6</string>
     <string name="mime_type_missing">Missing MIME type.</string>
     <string name="mime_type_not_acceptable">MIME type %1$s is not acceptable.\nSupported MIME types are image/jpeg, image/png, image/gif, video/webm, video/mp4 .</string>
+    <string name="thumbnail_1_6_1_later">Thumbnail (Mastodon 1.6.1 or later)</string>
 
 </resources>

@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.SpannableStringBuilder;
@@ -15,6 +16,7 @@ import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
 import jp.juggler.subwaytooter.view.MyListView;
+import jp.juggler.subwaytooter.view.MyNetworkImageView;
 
 class HeaderViewHolderInstance extends HeaderViewHolderBase implements View.OnClickListener {
 	
@@ -28,6 +30,7 @@ class HeaderViewHolderInstance extends HeaderViewHolderBase implements View.OnCl
 	private final TextView tvUserCount;
 	private final TextView tvTootCount;
 	private final TextView tvDomainCount;
+	private final MyNetworkImageView ivThumbnail;
 	
 	HeaderViewHolderInstance( ActMain arg_activity, Column arg_column, MyListView parent ){
 		super( arg_activity, arg_column
@@ -65,8 +68,11 @@ class HeaderViewHolderInstance extends HeaderViewHolderBase implements View.OnCl
 		tvUserCount = viewRoot.findViewById( R.id.tvUserCount );
 		tvTootCount = viewRoot.findViewById( R.id.tvTootCount );
 		tvDomainCount = viewRoot.findViewById( R.id.tvDomainCount );
+		ivThumbnail = viewRoot.findViewById( R.id.ivThumbnail );
+
 		btnInstance.setOnClickListener( this );
 		btnEmail.setOnClickListener( this );
+		ivThumbnail.setOnClickListener( this );
 		
 		tvDescription.setMovementMethod( MyLinkMovementMethod.getInstance() );
 	}
@@ -89,6 +95,7 @@ class HeaderViewHolderInstance extends HeaderViewHolderBase implements View.OnCl
 			btnEmail.setText( "?" );
 			btnEmail.setEnabled( false );
 			tvDescription.setText( "?" );
+			ivThumbnail.setImageUrl(App1.pref,0f,null);
 		}else{
 			btnInstance.setText( supplyEmpty( instance.uri ) );
 			btnInstance.setEnabled( ! TextUtils.isEmpty( instance.uri ) );
@@ -124,16 +131,24 @@ class HeaderViewHolderInstance extends HeaderViewHolderBase implements View.OnCl
 				tvDomainCount.setText( "" + instance.stats.domain_count );
 				
 			}
+			
+			if( TextUtils.isEmpty( instance.thumbnail )){
+				ivThumbnail.setImageUrl(App1.pref,0f,null);
+			}else{
+				ivThumbnail.setImageUrl(App1.pref,0f,instance.thumbnail,instance.thumbnail);
+			}
 		}
 	}
 	
 	@Override public void onClick( View v ){
 		switch( v.getId() ){
+
 		case R.id.btnInstance:
 			if( instance != null && instance.uri != null ){
 				activity.openChromeTab( activity.nextPosition( column ), column.access_info, "https://" + instance.uri + "/about", true );
 			}
 			break;
+
 		case R.id.btnEmail:
 			if( instance != null && instance.email != null ){
 				try{
@@ -146,6 +161,20 @@ class HeaderViewHolderInstance extends HeaderViewHolderBase implements View.OnCl
 				}catch( Throwable ex ){
 					ex.printStackTrace();
 					Utils.showToast( activity, true, R.string.missing_mail_app );
+				}
+			}
+			break;
+
+		case  R.id.ivThumbnail:
+			if( instance != null && !TextUtils.isEmpty( instance.thumbnail )){
+				try{
+					Intent intent = new Intent( Intent.ACTION_VIEW );
+					intent.setData( Uri.parse(instance.thumbnail) );
+					activity.startActivity( intent );
+					
+				}catch( Throwable ex ){
+					ex.printStackTrace();
+					Utils.showToast( activity, true, "missing web browser" );
 				}
 			}
 			break;

@@ -128,6 +128,28 @@
 
     </LinearLayout>
 
+
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/thumbnail_1_6_1_later"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+
+        <jp.juggler.subwaytooter.view.MyNetworkImageView
+            android:id="@+id/ivThumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:scaleType="fitCenter"
+            />
+
+
+    </LinearLayout>
+
+
     <View style="@style/setting_divider"/>
 
     <TextView

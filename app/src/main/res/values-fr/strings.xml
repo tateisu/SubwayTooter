@@ -492,8 +492,9 @@
 
 	<string name="mime_type_missing">Missing MIME type.</string>
 	<string name="mime_type_not_acceptable">MIME type %1$s is not acceptable.\nSupported MIME types are image/jpeg, image/png, image/gif, video/webm, video/mp4 .</string>
+    <string name="thumbnail_1_6_1_later">Thumbnail (Mastodon 1.6.1 or later)</string>
 
-	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

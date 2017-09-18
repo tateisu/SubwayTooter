@@ -27,19 +27,26 @@ public class TootInstance {
 	
 	public String version;
 	
-	// バージョンの内部表現
-	public VersionString decoded_version;
-	
-	// いつ取得したか
-	public long time_parse;
-	
+	// インスタンスのサムネイル。推奨サイズ1200x630px。マストドン1.6.1以降。
+	public String thumbnail;
+
+	// ユーザ数等の数字。マストドン1.6以降。
+	public Stats stats;
 	public static class Stats {
 		public long user_count;
 		public long status_count;
 		public long domain_count;
 	}
 	
-	public Stats stats;
+	////////////////////////////////////////////////
+	// 以下は内部で使用する
+	
+	// バージョンの内部表現
+	public VersionString decoded_version;
+	
+	// いつ取得したか
+	public long time_parse;
+	
 	
 	@Nullable
 	public static TootInstance parse( JSONObject src ){
@@ -56,6 +63,8 @@ public class TootInstance {
 			
 			dst.stats = parseStats( src.optJSONObject( "stats" ) );
 			
+			dst.thumbnail =  Utils.optStringX( src, "thumbnail" );
+
 			return dst;
 		}catch( Throwable ex ){
 			log.trace( ex );

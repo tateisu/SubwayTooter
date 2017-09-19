@@ -38,6 +38,7 @@ import jp.juggler.subwaytooter.table.PostDraft;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.TagSet;
 import jp.juggler.subwaytooter.table.UserRelation;
+import jp.juggler.subwaytooter.util.CustomEmojiCache;
 import jp.juggler.subwaytooter.util.LogCategory;
 import okhttp3.CipherSuite;
 import okhttp3.ConnectionSpec;
@@ -200,6 +201,8 @@ public class App1 extends Application {
 	
 	static OkHttpUrlLoader.Factory glide_okhttp3_factory;
 	
+	public static CustomEmojiCache custom_emoji_cache;
+	
 	private static boolean bPrepared = false;
 	
 	public static void prepare( final Context app_context ){
@@ -338,6 +341,10 @@ public class App1 extends Application {
 			
 			glide_okhttp3_factory = new OkHttpUrlLoader.Factory( ok_http_client );
 			Glide.get( app_context ).register( GlideUrl.class, InputStream.class, glide_okhttp3_factory );
+		}
+		
+		if( custom_emoji_cache == null ){
+			custom_emoji_cache = new CustomEmojiCache(app_context);
 		}
 		
 	}

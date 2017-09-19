@@ -75,7 +75,7 @@ class ItemListAdapter extends BaseAdapter implements AdapterView.OnItemClickList
 		}else{
 			holder = (ItemViewHolder) view.getTag();
 		}
-		holder.bind( o );
+		holder.bind( o ,column.getViewHolder() );
 		return view;
 	}
 	

@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.TextUtils;
 
+import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.Emojione;
 
 import org.json.JSONArray;
@@ -126,7 +127,7 @@ public class TootAccount {
 			dst.statuses_count = src.optLong( "statuses_count" );
 			
 			dst.note = Utils.optStringX( src, "note" );
-			dst.decoded_note = HTMLDecoder.decodeHTML( context, account, ( dst.note != null ? dst.note : null ), true, true, null ,null );
+			dst.decoded_note = new DecodeOptions().setShort( true).setDecodeEmoji( true).decodeHTML( context, account, ( dst.note != null ? dst.note : null ));
 			
 			dst.url = Utils.optStringX( src, "url" );
 			dst.avatar = Utils.optStringX( src, "avatar" ); // "https:\/\/mastodon.juggler.jp\/system\/accounts\/avatars\/000\/000\/148\/original\/0a468974fac5a448.PNG?1492081886",
@@ -191,7 +192,7 @@ public class TootAccount {
 		sv = reWhitespace.matcher( this.display_name ).replaceAll( " " );
 		
 		// decode emoji code
-		this.decoded_display_name = Emojione.decodeEmoji( context, sv );
+		this.decoded_display_name = Emojione.decodeEmoji( context, sv ,null);
 		
 	}
 	

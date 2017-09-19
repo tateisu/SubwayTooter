@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
@@ -37,7 +38,10 @@ public class MSPAccount extends TootAccount {
 		dst.id = src.optLong( "id" );
 		
 		dst.note = Utils.optStringX( src, "note" );
-		dst.decoded_note = HTMLDecoder.decodeHTML( context, access_info, ( dst.note != null ? dst.note : null ), true, true, null ,null);
+		dst.decoded_note = new DecodeOptions()
+			.setShort( true )
+			.setDecodeEmoji( true )
+			.decodeHTML( context, access_info, dst.note != null ? dst.note : null );
 		
 		if( TextUtils.isEmpty( dst.url ) ){
 			log.e( "parseAccount: missing url" );

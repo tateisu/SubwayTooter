@@ -23,6 +23,7 @@ import jp.juggler.subwaytooter.api_msp.entity.MSPAccount;
 import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
 import jp.juggler.subwaytooter.table.MutedWord;
 import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
@@ -71,7 +72,7 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 		addAfterLine( sb, "\n" );
 		
 		intent.putExtra( EXTRA_CONTENT_START, sb.length() );
-		sb.append( HTMLDecoder.decodeHTML( context,access_info, status.content, false, false, null ,null) );
+		sb.append( new DecodeOptions().decodeHTML( context,access_info, status.content));
 		intent.putExtra( EXTRA_CONTENT_END, sb.length() );
 		
 		if( status instanceof TootStatus ){
@@ -121,7 +122,7 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 		
 		addAfterLine( sb, "\n" );
 		
-		sb.append( HTMLDecoder.decodeHTML( context, access_info, ( who.note != null ? who.note : null ), false, false, null ,null) );
+		sb.append( new DecodeOptions().decodeHTML( context, access_info, who.note != null ? who.note : null ) );
 		
 		addAfterLine( sb, "\n" );
 		

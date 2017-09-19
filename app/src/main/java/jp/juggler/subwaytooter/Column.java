@@ -57,6 +57,7 @@ import jp.juggler.subwaytooter.util.Utils;
 @SuppressWarnings("WeakerAccess") class Column implements StreamReader.Callback {
 	private static final LogCategory log = new LogCategory( "Column" );
 	
+	
 	interface Callback {
 		boolean isActivityStart();
 	}
@@ -956,7 +957,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		return _holder_list.size() > 1;
 	}
 	
-	private ColumnViewHolder getViewHolder(){
+	ColumnViewHolder getViewHolder(){
 		if( is_dispose.get() ) return null;
 		// 複数のリスナがある場合、最も新しいものを返す
 		return _holder_list.isEmpty() ? null : _holder_list.getFirst();

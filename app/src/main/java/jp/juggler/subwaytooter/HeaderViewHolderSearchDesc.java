@@ -4,6 +4,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
@@ -37,7 +38,7 @@ class HeaderViewHolderSearchDesc extends HeaderViewHolderBase {
 			}
 		} );
 		
-		CharSequence sv = HTMLDecoder.decodeHTML( activity, access_info, html, false, true, null ,null);
+		CharSequence sv = new DecodeOptions().setDecodeEmoji( true ).decodeHTML( activity, access_info, html);
 		
 		TextView tvSearchDesc = viewRoot.findViewById( R.id.tvSearchDesc );
 		tvSearchDesc.setVisibility( View.VISIBLE );

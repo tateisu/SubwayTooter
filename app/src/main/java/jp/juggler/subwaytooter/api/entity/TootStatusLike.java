@@ -60,6 +60,12 @@ public abstract class TootStatusLike extends TootId {
 	//Application from which the status was posted
 	@Nullable public TootApplication application;
 	
+	@Nullable public CustomEmojiMap emojis;
+	
+	
+	/////////////////////////
+	// 以下はアプリ内部で使用する
+	
 	public long time_created_at;
 	
 	public JSONObject json;
@@ -81,7 +87,7 @@ public abstract class TootStatusLike extends TootId {
 	private static final Pattern reWhitespace = Pattern.compile( "[\\s\\t\\x0d\\x0a]+" );
 	
 	
-	public void setSpoilerText( Context context, String sv){
+	public void setSpoilerText( Context context, String sv ){
 		if( TextUtils.isEmpty( sv ) ){
 			this.spoiler_text = null;
 			this.decoded_spoiler_text = null;
@@ -90,7 +96,7 @@ public abstract class TootStatusLike extends TootId {
 			// remove white spaces
 			sv = reWhitespace.matcher( this.spoiler_text ).replaceAll( " " );
 			// decode emoji code
-			this.decoded_spoiler_text = Emojione.decodeEmoji( context, sv );
+			this.decoded_spoiler_text = Emojione.decodeEmoji( context, sv ,emojis);
 		}
 	}
 	

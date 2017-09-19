@@ -105,7 +105,7 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 			if( who.locked ){
 				s += " " + Emojione.map_name2unicode.get( "lock" );
 			}
-			tvAcct.setText( Emojione.decodeEmoji( activity, s ) );
+			tvAcct.setText( Emojione.decodeEmoji( activity, s ,null) );
 			
 			tvNote.setText( who.decoded_note );
 			btnStatusCount.setText( activity.getString( R.string.statuses ) + "\n" + who.statuses_count );

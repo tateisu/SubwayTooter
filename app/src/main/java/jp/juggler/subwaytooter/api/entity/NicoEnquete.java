@@ -22,6 +22,7 @@ import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.Emojione;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -77,7 +78,13 @@ public class NicoEnquete {
 				dst.time_start = time_start;
 				dst.status_id = status_id;
 				if( dst.question != null ){
-					dst.question = HTMLDecoder.decodeHTML( context, access_info, dst.question.toString(), true, true, list_attachment ,status);
+					dst.question = new DecodeOptions()
+						.setShort(true)
+						.setDecodeEmoji( true )
+						.setAttachment( list_attachment )
+						.setLinkTag( status )
+						.setEmojiMap( status.emojis )
+						.decodeHTML( context, access_info, dst.question.toString());
 				}
 				if( dst.items != null ){
 					for( int i = 0, ie = dst.items.size() ; i < ie ; ++ i ){
@@ -86,7 +93,7 @@ public class NicoEnquete {
 						// remove white spaces
 						sv = reWhitespace.matcher( sv ).replaceAll( " " );
 						// decode emoji code
-						dst.items.set( i, Emojione.decodeEmoji( context, sv ) );
+						dst.items.set( i, Emojione.decodeEmoji( context, sv ,status.emojis) );
 					}
 				}
 				return dst;

@@ -68,6 +68,7 @@ import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.PostDraft;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.dialog.ActionsDialog;
+import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -1553,7 +1554,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			llReply.setVisibility( View.GONE );
 		}else{
 			llReply.setVisibility( View.VISIBLE );
-			tvReplyTo.setText( HTMLDecoder.decodeHTML( ActPost.this, account, in_reply_to_text, true, true, null, null ) );
+			tvReplyTo.setText( new DecodeOptions()
+				.setShort( true )
+				.setDecodeEmoji( true )
+				.decodeHTML( ActPost.this, account, in_reply_to_text));
 			ivReply.setImageUrl( pref, 16f, in_reply_to_image );
 		}
 	}
@@ -1960,7 +1964,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					return null;
 				}
 			};
-			CharSequence sv = HTMLDecoder.decodeHTML( ActPost.this, lcc, text, false, false, null, null );
+			CharSequence sv = new DecodeOptions().decodeHTML( ActPost.this, lcc, text);
 			tvText.setText( sv );
 			tvText.setMovementMethod( LinkMovementMethod.getInstance() );
 			

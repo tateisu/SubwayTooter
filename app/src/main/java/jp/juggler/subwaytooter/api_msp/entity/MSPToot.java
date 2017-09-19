@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
@@ -80,7 +81,12 @@ public class MSPToot extends TootStatusLike {
 		dst.setSpoilerText( context, Utils.optStringX( src, "spoiler_text" ) );
 		
 		dst.content = Utils.optStringX( src, "content" );
-		dst.decoded_content = HTMLDecoder.decodeHTML( context, access_info, dst.content, true, true, null ,dst);
+		dst.decoded_content = new DecodeOptions()
+			.setShort( true )
+			.setDecodeEmoji( true )
+			.setEmojiMap( dst.emojis )
+			.setLinkTag( dst )
+			.decodeHTML( context, access_info, dst.content);
 		
 		return dst;
 	}

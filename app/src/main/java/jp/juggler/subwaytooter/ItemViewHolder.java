@@ -251,7 +251,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 	}
 	
-	void bind( Object item ){
+	void bind( Object item ,@Nullable ColumnViewHolder cvh){
 		this.status = null;
 		this.account_thumbnail = null;
 		this.account_boost = null;
@@ -293,7 +293,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		}
 		
 		if( item instanceof MSPToot ){
-			showStatus( activity, (MSPToot) item );
+			showStatus( activity, (MSPToot) item ,cvh );
 		}else if( item instanceof String ){
 			showSearchTag( (String) item );
 		}else if( item instanceof TootAccount ){
@@ -307,7 +307,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 					, access_info.isNicoru( n.account ) ? R.attr.ic_nicoru : R.attr.btn_favourite
 					, Utils.formatSpannable1( activity, R.string.display_name_favourited_by, n.account.decoded_display_name )
 				);
-				if( n.status != null ) showStatus( activity, n.status );
+				if( n.status != null ) showStatus( activity, n.status,cvh );
 			}else if( TootNotification.TYPE_REBLOG.equals( n.type ) ){
 				showBoost(
 					n.account
@@ -315,7 +315,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 					, R.attr.btn_boost
 					, Utils.formatSpannable1( activity, R.string.display_name_boosted_by, n.account.decoded_display_name )
 				);
-				if( n.status != null ) showStatus( activity, n.status );
+				if( n.status != null ) showStatus( activity, n.status,cvh );
 			}else if( TootNotification.TYPE_FOLLOW.equals( n.type ) ){
 				showBoost(
 					n.account
@@ -334,7 +334,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 						, Utils.formatSpannable1( activity, R.string.display_name_replied_by, n.account.decoded_display_name )
 					);
 				}
-				if( n.status != null ) showStatus( activity, n.status );
+				if( n.status != null ) showStatus( activity, n.status ,cvh);
 			}
 		}else if( item instanceof TootStatus ){
 			TootStatus status = (TootStatus) item;
@@ -347,9 +347,9 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 						, Utils.formatSpannable1( activity, R.string.display_name_boosted_by, status.account.decoded_display_name )
 					);
 				}
-				showStatus( activity, status.reblog );
+				showStatus( activity, status.reblog ,cvh);
 			}else{
-				showStatus( activity, status );
+				showStatus( activity, status ,cvh);
 			}
 		}else if( item instanceof TootGap ){
 			showGap( (TootGap) item );
@@ -399,9 +399,14 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation ,who );
 	}
 	
-	private void showStatus( @NonNull ActMain activity, @NonNull TootStatusLike status ){
+	private void showStatus( @NonNull ActMain activity, @NonNull TootStatusLike status ,@Nullable ColumnViewHolder cvh){
 		this.status = status;
 		llStatus.setVisibility( View.VISIBLE );
+		
+		if( cvh != null ){
+			cvh.applyEmojiLoadCallback( status.decoded_content );
+			cvh.applyEmojiLoadCallback( status.decoded_spoiler_text );
+		}
 		
 		showStatusTime( activity, status );
 		
@@ -462,6 +467,8 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		TootStatusLike.AutoCW r = status.auto_cw;
 		
 		tvContent.setMinLines( r != null ? r.originalLineCount : - 1 );
+		
+		
 		
 		if( ! TextUtils.isEmpty( status.spoiler_text ) ){
 			// 元データに含まれるContent Warning を使う

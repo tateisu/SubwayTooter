@@ -24,6 +24,7 @@ import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.Pref;
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
@@ -104,6 +105,10 @@ public class TootStatus extends TootStatusLike {
 			TootStatus status = new TootStatus();
 			status.json = src;
 			
+			// 絵文字マップは割と最初の方で読み込んでおきたい
+			status.emojis = CustomEmojiMap.parse( src.optJSONArray( "emojis" ));
+			
+			
 			status.account = TootAccount.parse( context, access_info, src.optJSONObject( "account" ) );
 			
 			if( status.account == null ) return null;
@@ -142,12 +147,21 @@ public class TootStatus extends TootStatusLike {
 			status.muted = src.optBoolean( "muted" );
 			status.language = Utils.optStringX( src, "language" );
 			
+			
 			status.time_created_at = parseTime( status.created_at );
-			status.decoded_content = HTMLDecoder.decodeHTML( context, access_info, status.content, true, true, status.media_attachments ,status);
+			status.decoded_content = new DecodeOptions()
+				.setShort( true )
+				.setDecodeEmoji( true)
+				.setAttachment( status.media_attachments )
+				.setEmojiMap( status.emojis )
+				.setLinkTag( status )
+				.decodeHTML( context, access_info, status.content );
+
 			// status.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
 			status.decoded_mentions = HTMLDecoder.decodeMentions( access_info, status.mentions ,status);
 			
 			status.enquete = NicoEnquete.parse( context,access_info , status.media_attachments , Utils.optStringX( src, "enquete"),status.id,status.time_created_at,status );
+			
 			
 			return status;
 		}catch( Throwable ex ){

@@ -105,7 +105,7 @@ public abstract class TootStatusLike extends TootId {
 	public static class AutoCW {
 		public WeakReference< Object > refActivity;
 		public int cell_width;
-		public CharSequence decoded_spoiler_text;
+		public Spannable decoded_spoiler_text;
 		public int originalLineCount;
 	}
 	public AutoCW auto_cw;

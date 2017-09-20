@@ -27,6 +27,7 @@ import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirec
 
 import java.util.regex.Pattern;
 
+import jp.juggler.subwaytooter.apng.APNGFrames;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.util.CustomEmojiCache;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -939,16 +940,5 @@ class ColumnViewHolder
 		}, 20L );
 	}
 	
-	private final CustomEmojiCache.Callback emoji_load_callback = new CustomEmojiCache.Callback() {
-		@Override public void onComplete( Bitmap b ){
-			showContent();
-		}
-	};
-	void applyEmojiLoadCallback( @Nullable Spannable dst){
-		if( dst == null ) return;
-		
-		for( NetworkEmojiSpan span : dst.getSpans( 0,dst.length(), NetworkEmojiSpan.class ) ){
-			span.setLoadCompleteCallback( emoji_load_callback );
-		}
-	}
+
 }

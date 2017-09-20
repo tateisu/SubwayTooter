@@ -6,6 +6,8 @@ import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -24,7 +26,6 @@ import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.Emojione;
-import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.view.EnqueteTimerView;
@@ -36,7 +37,7 @@ public class NicoEnquete {
 	static final LogCategory log = new LogCategory( "NicoEnquete" );
 	
 	// HTML text
-	public CharSequence question;
+	public Spannable question;
 	
 	// array of text with emoji
 	public ArrayList< CharSequence > items;
@@ -70,21 +71,24 @@ public class NicoEnquete {
 			if( sv != null ){
 				JSONObject src = new JSONObject( sv );
 				NicoEnquete dst = new NicoEnquete();
-				dst.question = Utils.optStringX( src, "question" );
+				String strQuestion = Utils.optStringX( src, "question" );
 				dst.items = parseStringArray( src, "items" );
 				dst.ratios = parseFloatArray( src, "ratios" );
 				dst.ratios_text = parseStringArray( src, "ratios_text" );
 				dst.type = Utils.optStringX( src, "type" );
 				dst.time_start = time_start;
 				dst.status_id = status_id;
-				if( dst.question != null ){
+				if( strQuestion != null ){
 					dst.question = new DecodeOptions()
 						.setShort(true)
 						.setDecodeEmoji( true )
 						.setAttachment( list_attachment )
 						.setLinkTag( status )
 						.setEmojiMap( status.emojis )
-						.decodeHTML( context, access_info, dst.question.toString());
+						.decodeHTML( context, access_info, strQuestion);
+				}else{
+					SpannableStringBuilder sb = new SpannableStringBuilder( "?" );
+					dst.question = sb;
 				}
 				if( dst.items != null ){
 					for( int i = 0, ie = dst.items.size() ; i < ie ; ++ i ){

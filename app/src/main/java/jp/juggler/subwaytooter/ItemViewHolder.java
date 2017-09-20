@@ -2,10 +2,12 @@ package jp.juggler.subwaytooter;
 
 import android.content.DialogInterface;
 import android.graphics.Typeface;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
+import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
@@ -33,6 +35,7 @@ import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.EmojiImageSpan;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.NetworkEmojiSpan;
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
 import jp.juggler.subwaytooter.view.MyListView;
 import jp.juggler.subwaytooter.view.MyNetworkImageView;
@@ -245,13 +248,13 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		}
 		
 		ivBoosted.getLayoutParams().width =
-		ivFollow.getLayoutParams().width =
-		ivThumbnail.getLayoutParams().width =
-		ivThumbnail.getLayoutParams().height = activity.mAvatarIconSize;
+			ivFollow.getLayoutParams().width =
+				ivThumbnail.getLayoutParams().width =
+					ivThumbnail.getLayoutParams().height = activity.mAvatarIconSize;
 		
 	}
 	
-	void bind( Object item ,@Nullable ColumnViewHolder cvh){
+	void bind( Object item ){
 		this.status = null;
 		this.account_thumbnail = null;
 		this.account_boost = null;
@@ -293,7 +296,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		}
 		
 		if( item instanceof MSPToot ){
-			showStatus( activity, (MSPToot) item ,cvh );
+			showStatus( activity, (MSPToot) item );
 		}else if( item instanceof String ){
 			showSearchTag( (String) item );
 		}else if( item instanceof TootAccount ){
@@ -307,7 +310,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 					, access_info.isNicoru( n.account ) ? R.attr.ic_nicoru : R.attr.btn_favourite
 					, Utils.formatSpannable1( activity, R.string.display_name_favourited_by, n.account.decoded_display_name )
 				);
-				if( n.status != null ) showStatus( activity, n.status,cvh );
+				if( n.status != null ) showStatus( activity, n.status );
 			}else if( TootNotification.TYPE_REBLOG.equals( n.type ) ){
 				showBoost(
 					n.account
@@ -315,7 +318,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 					, R.attr.btn_boost
 					, Utils.formatSpannable1( activity, R.string.display_name_boosted_by, n.account.decoded_display_name )
 				);
-				if( n.status != null ) showStatus( activity, n.status,cvh );
+				if( n.status != null ) showStatus( activity, n.status );
 			}else if( TootNotification.TYPE_FOLLOW.equals( n.type ) ){
 				showBoost(
 					n.account
@@ -334,7 +337,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 						, Utils.formatSpannable1( activity, R.string.display_name_replied_by, n.account.decoded_display_name )
 					);
 				}
-				if( n.status != null ) showStatus( activity, n.status ,cvh);
+				if( n.status != null ) showStatus( activity, n.status );
 			}
 		}else if( item instanceof TootStatus ){
 			TootStatus status = (TootStatus) item;
@@ -347,9 +350,9 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 						, Utils.formatSpannable1( activity, R.string.display_name_boosted_by, status.account.decoded_display_name )
 					);
 				}
-				showStatus( activity, status.reblog ,cvh);
+				showStatus( activity, status.reblog );
 			}else{
-				showStatus( activity, status ,cvh);
+				showStatus( activity, status );
 			}
 		}else if( item instanceof TootGap ){
 			showGap( (TootGap) item );
@@ -385,7 +388,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		ivBoosted.setImageResource( Styler.getAttributeResourceId( activity, icon_attr_id ) );
 		tvBoostedTime.setText( TootStatus.formatTime( tvBoostedTime.getContext(), time, true ) );
 		tvBoosted.setText( text );
-		setAcct( tvBoostedAcct, access_info.getFullAcct( who ) ,who.acct);
+		setAcct( tvBoostedAcct, access_info.getFullAcct( who ), who.acct );
 	}
 	
 	private void showFollow( @NonNull TootAccount who ){
@@ -393,26 +396,57 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		llFollow.setVisibility( View.VISIBLE );
 		ivFollow.setImageUrl( activity.pref, 16f, access_info.supplyBaseUrl( who.avatar_static ) );
 		tvFollowerName.setText( who.decoded_display_name );
-		setAcct( tvFollowerAcct, access_info.getFullAcct( who ) ,who.acct );
+		setAcct( tvFollowerAcct, access_info.getFullAcct( who ), who.acct );
 		
 		UserRelation relation = UserRelation.load( access_info.db_id, who.id );
-		Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation ,who );
+		Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation, who );
 	}
 	
-	private void showStatus( @NonNull ActMain activity, @NonNull TootStatusLike status ,@Nullable ColumnViewHolder cvh){
+	final Runnable invalidate_content = new Runnable() {
+		@Override public void run(){
+			tvContent.invalidate();
+		}
+	};
+	final Runnable invalidate_spoiler = new Runnable() {
+		@Override public void run(){
+			tvContentWarning.invalidate();
+		}
+	};
+	
+	private final NetworkEmojiSpan.InvalidateCallback invalidate_callback1 = new NetworkEmojiSpan.InvalidateCallback() {
+		@Override public void invalidate( long delay ){
+			Handler handler = tvContent.getHandler();
+			handler.removeCallbacks( invalidate_content );
+			if( delay > 1000000L ) delay = 1000000L;
+			handler.postDelayed( invalidate_content, delay );
+		}
+
+	};
+	private final NetworkEmojiSpan.InvalidateCallback invalidate_callback2 = new NetworkEmojiSpan.InvalidateCallback() {
+		@Override public void invalidate( long delay ){
+			Handler handler = tvContentWarning.getHandler();
+			handler.removeCallbacks( invalidate_spoiler );
+			if( delay > 1000000L ) delay = 1000000L;
+			handler.postDelayed( invalidate_spoiler, delay );
+		}
+	};
+	
+	private void applyEmojiLoadCallback( @Nullable Spannable dst, NetworkEmojiSpan.InvalidateCallback callback ){
+		if( dst == null ) return;
+		for( NetworkEmojiSpan span : dst.getSpans( 0, dst.length(), NetworkEmojiSpan.class ) ){
+			span.setInvalidateCallback( callback );
+		}
+	}
+	
+	private void showStatus( @NonNull ActMain activity, @NonNull TootStatusLike status ){
 		this.status = status;
 		llStatus.setVisibility( View.VISIBLE );
-		
-		if( cvh != null ){
-			cvh.applyEmojiLoadCallback( status.decoded_content );
-			cvh.applyEmojiLoadCallback( status.decoded_spoiler_text );
-		}
 		
 		showStatusTime( activity, status );
 		
 		TootAccount who = account_thumbnail = status.account;
 		
-		setAcct( tvAcct, access_info.getFullAcct( who ) ,who == null ? "?" : who.acct  );
+		setAcct( tvAcct, access_info.getFullAcct( who ), who == null ? "?" : who.acct );
 		
 		if( status.account == null ){
 			tvName.setText( "?" );
@@ -426,7 +460,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			);
 		}
 		
-		CharSequence content = status.decoded_content;
+		Spannable content = status.decoded_content;
 		llExtra.removeAllViews();
 		
 		if( status instanceof TootStatus ){
@@ -462,24 +496,25 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		}
 		
 		tvContent.setText( content );
+		applyEmojiLoadCallback( content, invalidate_callback1 );
 		
 		activity.checkAutoCW( status, content );
 		TootStatusLike.AutoCW r = status.auto_cw;
 		
 		tvContent.setMinLines( r != null ? r.originalLineCount : - 1 );
 		
-		
-		
 		if( ! TextUtils.isEmpty( status.spoiler_text ) ){
 			// 元データに含まれるContent Warning を使う
 			llContentWarning.setVisibility( View.VISIBLE );
 			tvContentWarning.setText( status.decoded_spoiler_text );
+			applyEmojiLoadCallback( status.decoded_spoiler_text, invalidate_callback2 );
 			boolean cw_shown = ContentWarning.isShown( status, false );
 			showContent( cw_shown );
 		}else if( r != null && r.decoded_spoiler_text != null ){
 			// 自動CW
 			llContentWarning.setVisibility( View.VISIBLE );
 			tvContentWarning.setText( r.decoded_spoiler_text );
+			applyEmojiLoadCallback( r.decoded_spoiler_text, invalidate_callback2 );
 			boolean cw_shown = ContentWarning.isShown( status, false );
 			showContent( cw_shown );
 		}else{
@@ -578,15 +613,14 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			sb.setSpan( new EmojiImageSpan( activity, icon_id ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 		}
 		
-		
 		if( sb.length() > 0 ) sb.append( ' ' );
 		sb.append( TootStatus.formatTime( activity, status.time_created_at, column.column_type != Column.TYPE_CONVERSATION ) );
 		tvTime.setText( sb );
 	}
 	
-	private void setAcct( @NonNull TextView tv, @NonNull String acctLong,@NonNull String acctShort ){
+	private void setAcct( @NonNull TextView tv, @NonNull String acctLong, @NonNull String acctShort ){
 		AcctColor ac = AcctColor.load( acctLong );
-		tv.setText( AcctColor.hasNickname( ac ) ? ac.nickname : activity.mShortAcctLocalUser ? "@"+acctShort : acctLong );
+		tv.setText( AcctColor.hasNickname( ac ) ? ac.nickname : activity.mShortAcctLocalUser ? "@" + acctShort : acctLong );
 		tv.setTextColor( AcctColor.hasColorForeground( ac ) ? ac.color_fg : this.acct_color );
 		
 		if( AcctColor.hasColorBackground( ac ) ){

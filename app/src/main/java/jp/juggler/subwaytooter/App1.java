@@ -16,6 +16,7 @@ import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader;
 import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory;
 import com.bumptech.glide.load.model.GlideUrl;
 
+import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
@@ -40,6 +41,7 @@ import jp.juggler.subwaytooter.table.TagSet;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.CustomEmojiCache;
 import jp.juggler.subwaytooter.util.LogCategory;
+import okhttp3.Cache;
 import okhttp3.CipherSuite;
 import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
@@ -191,7 +193,28 @@ public class App1 extends Application {
 	//		return maxSize * 1024;
 	//	}
 	
+	static OkHttpClient.Builder prepareOkHttp(){
+		ConnectionSpec spec = new ConnectionSpec.Builder( ConnectionSpec.MODERN_TLS )
+			.cipherSuites( APPROVED_CIPHER_SUITES )
+			.build();
+		
+		ArrayList< ConnectionSpec > spec_list = new ArrayList<>();
+		spec_list.add( spec );
+		spec_list.add( ConnectionSpec.CLEARTEXT );
+		
+		OkHttpClient.Builder builder = new OkHttpClient.Builder()
+			.connectTimeout( 30, TimeUnit.SECONDS )
+			.readTimeout( 60, TimeUnit.SECONDS )
+			.writeTimeout( 60, TimeUnit.SECONDS )
+			.pingInterval( 10, TimeUnit.SECONDS )
+			.connectionSpecs( spec_list );
+		
+		return builder;
+	}
+	
 	public static OkHttpClient ok_http_client;
+
+	public static OkHttpClient ok_http_client2;
 	
 	public static Typeface typeface_emoji;
 	
@@ -277,23 +300,18 @@ public class App1 extends Application {
 		//		}
 		
 		if( ok_http_client == null ){
-			
-			ConnectionSpec spec = new ConnectionSpec.Builder( ConnectionSpec.MODERN_TLS )
-				.cipherSuites( APPROVED_CIPHER_SUITES )
-				.build();
-			
-			ArrayList< ConnectionSpec > spec_list = new ArrayList<>();
-			spec_list.add( spec );
-			spec_list.add( ConnectionSpec.CLEARTEXT );
-			
-			OkHttpClient.Builder builder = new OkHttpClient.Builder()
-				.connectTimeout( 30, TimeUnit.SECONDS )
-				.readTimeout( 60, TimeUnit.SECONDS )
-				.writeTimeout( 60, TimeUnit.SECONDS )
-				.pingInterval( 10, TimeUnit.SECONDS )
-				.connectionSpecs( spec_list );
-			
+			OkHttpClient.Builder builder = prepareOkHttp();
 			ok_http_client = builder.build();
+		}
+		
+		if( ok_http_client2 == null ){
+			OkHttpClient.Builder builder = prepareOkHttp();
+			
+			File cacheDir = new File( app_context.getCacheDir(), "http2" );
+			Cache cache = new Cache( cacheDir, 30000000L );
+			builder.cache( cache );
+			
+			ok_http_client2 = builder.build();
 		}
 		
 		// Glide.isSetup は Glide 4.0 で廃止になるらしいが、俺が使ってるのは3.xだ

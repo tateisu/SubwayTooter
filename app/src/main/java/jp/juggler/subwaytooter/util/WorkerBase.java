@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter.util;
 
 public abstract  class WorkerBase extends Thread{
 
-	static final LogCategory log = new LogCategory( "WorkerBase" );
+	private static final LogCategory log = new LogCategory( "WorkerBase" );
 
 	public abstract void cancel();
 	public abstract void run();

@@ -1,13 +1,12 @@
 package jp.juggler.subwaytooter.util;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -16,6 +15,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import jp.juggler.subwaytooter.App1;
+import jp.juggler.subwaytooter.apng.APNGFrames;
 import okhttp3.Call;
 import okhttp3.Response;
 
@@ -24,7 +24,7 @@ public class CustomEmojiCache {
 	
 	private static final LogCategory log = new LogCategory( "CustomEmojiCache" );
 
-	static final int PIXEL_MAX = 64;
+
 	static final int CACHE_MAX = 512; // 使用中のビットマップは掃除しないので、頻度によってはこれより多くなることもある
 	static final long ERROR_EXPIRE = ( 60000L * 10 );
 	
@@ -45,14 +45,14 @@ public class CustomEmojiCache {
 		
 		@NonNull String url;
 		
-		@NonNull Bitmap bitmap;
+		@NonNull APNGFrames frames;
 		
 		// 参照された時刻
 		long time_used;
 		
-		CacheItem( @NonNull String url, @NonNull Bitmap bitmap ){
+		CacheItem( @NonNull String url, @NonNull APNGFrames frames ){
 			this.url = url;
-			this.bitmap = bitmap;
+			this.frames = frames;
 			time_used = getNow();
 		}
 	}
@@ -63,7 +63,7 @@ public class CustomEmojiCache {
 	// リクエスト
 	
 	public interface Callback {
-		void onComplete( Bitmap b );
+		void onComplete( APNGFrames b );
 	}
 	
 	static class Request {
@@ -80,15 +80,16 @@ public class CustomEmojiCache {
 	
 	////////////////////////////////
 	
-	@Nullable public Bitmap get( @NonNull String url, @NonNull Callback callback ){
+	@Nullable public APNGFrames get( @NonNull String url, @NonNull Callback callback ){
+		
 		synchronized( cache ){
 			long now = getNow();
 			
 			// 成功キャッシュ
 			CacheItem item = cache.get( url );
-			if( item != null && ! item.bitmap.isRecycled() ){
+			if( item != null ){
 				item.time_used = now;
-				return item.bitmap;
+				return item.frames;
 			}
 			
 			// エラーキャッシュ
@@ -104,9 +105,11 @@ public class CustomEmojiCache {
 	
 	////////////////////////////////
 	
+	Context context;
 	Handler handler;
 	
 	public CustomEmojiCache( Context context ){
+		this.context = context;
 		this.handler = new Handler( context.getMainLooper() );
 		this.worker = new Worker();
 		worker.start();
@@ -133,8 +136,8 @@ public class CustomEmojiCache {
 					
 					// 成功キャッシュ
 					CacheItem item = cache.get( request.url );
-					if( item != null && ! item.bitmap.isRecycled() ){
-						fireCallback( request.callback, item.bitmap );
+					if( item != null ){
+						fireCallback( request.callback, item.frames );
 						continue;
 					}
 					
@@ -147,26 +150,27 @@ public class CustomEmojiCache {
 					sweep_cache();
 				}
 				
-				Bitmap b = null;
+				APNGFrames frames = null;
 				try{
 					byte[] data = getHttp( request.url );
 					if( data != null ){
-						b = decode( data, request.url );
+						frames = decode( data, request.url );
 					}
 				}catch( Throwable ex ){
 					log.trace( ex );
 				}
 				
 				synchronized( cache ){
-					if( b != null ){
+					if( frames != null ){
 						CacheItem item = cache.get( request.url );
 						if( item == null ){
-							item = new CacheItem( request.url, b );
+							item = new CacheItem( request.url, frames );
 							cache.put( request.url, item );
 						}else{
-							item.bitmap = b;
+							item.frames.dispose();
+							item.frames = frames;
 						}
-						fireCallback( request.callback, b );
+						fireCallback( request.callback, frames );
 					}else{
 						cache_error.put( request.url, getNow() );
 					}
@@ -174,10 +178,10 @@ public class CustomEmojiCache {
 			}
 		}
 		
-		private void fireCallback( final Callback callback, final Bitmap bitmap ){
+		private void fireCallback( final Callback callback, final APNGFrames frames ){
 			handler.post( new Runnable() {
 				@Override public void run(){
-					callback.onComplete( bitmap );
+					callback.onComplete( frames );
 				}
 			} );
 		}
@@ -187,7 +191,7 @@ public class CustomEmojiCache {
 			try{
 				okhttp3.Request.Builder request_builder = new okhttp3.Request.Builder();
 				request_builder.url( url );
-				Call call = App1.ok_http_client.newCall( request_builder.build() );
+				Call call = App1.ok_http_client2.newCall( request_builder.build() );
 				response = call.execute();
 			}catch( Throwable ex ){
 				log.e( ex, "getHttp network error." );
@@ -230,35 +234,19 @@ public class CustomEmojiCache {
 					// あまり古くないなら無理に掃除しない
 					if( now - item.time_used < 1000L ) break;
 					cache.remove( item.url );
-					item.bitmap.recycle();
+					item.frames.dispose();
 				}
 			}
 			
 		}
-		
-		private final BitmapFactory.Options options = new BitmapFactory.Options();
-		
-		private Bitmap decode( byte[] data, String url ){
-			options.inJustDecodeBounds = true;
-			options.inScaled = false;
-			options.outWidth = 0;
-			options.outHeight = 0;
-			BitmapFactory.decodeByteArray( data, 0, data.length, options );
-			int w = options.outWidth;
-			int h = options.outHeight;
-			if( w <= 0 || h <= 0 ){
-				log.e( "can't decode bounds. %s", url );
-				return null;
+
+		@Nullable private APNGFrames decode( byte[] data, String url ){
+			try{
+				return APNGFrames.parseAPNG( context, new ByteArrayInputStream( data ) ,64 );
+			}catch(Throwable ex){
+				log.e(ex,"PNG decode failed. %s",url);
 			}
-			int bits = 0;
-			while( w > PIXEL_MAX || h > PIXEL_MAX ){
-				++ bits;
-				w >>= 1;
-				h >>= 1;
-			}
-			options.inJustDecodeBounds = false;
-			options.inSampleSize = 1 << bits;
-			return BitmapFactory.decodeByteArray( data, 0, data.length, options );
+			return null;
 		}
 	}
 }

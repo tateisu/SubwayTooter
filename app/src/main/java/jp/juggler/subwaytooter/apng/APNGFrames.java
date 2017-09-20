@@ -136,7 +136,7 @@ public class APNGFrames {
 	}
 	
 	public void onParseComplete(){
-		if( frames.size() <= 1 ){
+		if( frames != null && frames.size() <= 1 ){
 			mBitmapNonAnimation = toBitmap( scanlineProcessor.getBitmap(), size_max );
 		}
 		if( canvasBitmap != null ){

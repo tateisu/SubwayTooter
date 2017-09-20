@@ -1,6 +1,8 @@
 package jp.juggler.subwaytooter.util;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
@@ -153,7 +155,7 @@ public class CustomEmojiCache {
 				try{
 					byte[] data = getHttp( request.url );
 					if( data != null ){
-						frames = decode( data, request.url );
+						frames = decodeAPNG( data, request.url );
 					}
 				}catch( Throwable ex ){
 					log.trace( ex );
@@ -239,13 +241,51 @@ public class CustomEmojiCache {
 			
 		}
 
-		@Nullable private APNGFrames decode( byte[] data, String url ){
+		@Nullable private APNGFrames decodeAPNG( byte[] data, String url ){
 			try{
 				return APNGFrames.parseAPNG( context, new ByteArrayInputStream( data ) ,64 );
 			}catch(Throwable ex){
-				log.e(ex,"PNG decode failed. %s",url);
+				log.e( ex, "PNG decode failed. %s", url );
+				// PngFeatureException Interlaced images are not yet supported
+			}
+				
+			// 通常のビットマップでのロードを試みる
+			try{
+				Bitmap b = decodeBitmap( data, 128 );
+				if( b != null ){
+					return new APNGFrames( b );
+				}else{
+					log.e("Bitmap decode returns null. %s",url);
+				}
+			}catch(Throwable ex2){
+				log.e(ex2,"Bitmap decode failed. %s",url);
 			}
 			return null;
+		}
+		
+		private final BitmapFactory.Options options = new BitmapFactory.Options();
+		
+		private Bitmap decodeBitmap( byte[] data, int pixel_max ){
+			options.inJustDecodeBounds = true;
+			options.inScaled = false;
+			options.outWidth = 0;
+			options.outHeight = 0;
+			BitmapFactory.decodeByteArray( data, 0, data.length, options );
+			int w = options.outWidth;
+			int h = options.outHeight;
+			if( w <= 0 || h <= 0 ){
+				log.e( "can't decode bounds.");
+				return null;
+			}
+			int bits = 0;
+			while( w > pixel_max || h > pixel_max ){
+				++ bits;
+				w >>= 1;
+				h >>= 1;
+			}
+			options.inJustDecodeBounds = false;
+			options.inSampleSize = 1 << bits;
+			return BitmapFactory.decodeByteArray( data, 0, data.length, options );
 		}
 	}
 }

@@ -49,7 +49,7 @@ public class TootAttachment {
 		try{
 			TootAttachment dst = new TootAttachment();
 			dst.json = src;
-			dst.id = src.optLong( "id" );
+			dst.id = Utils.optLongX(src, "id" );
 			dst.type = Utils.optStringX( src, "type" );
 			dst.url = Utils.optStringX( src, "url" );
 			dst.remote_url = Utils.optStringX( src, "remote_url" );

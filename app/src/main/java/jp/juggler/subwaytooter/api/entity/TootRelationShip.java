@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.Utils;
 
 public class TootRelationShip {
 	
@@ -63,7 +64,7 @@ public class TootRelationShip {
 		if( src == null ) return null;
 		try{
 			TootRelationShip dst = new TootRelationShip();
-			dst.id = src.optLong( "id" );
+			dst.id = Utils.optLongX(src, "id" );
 			dst.following = src.optBoolean( "following" );
 			dst.followed_by = src.optBoolean( "followed_by" );
 			dst.blocking = src.optBoolean( "blocking" );

@@ -1557,7 +1557,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			tvReplyTo.setText( new DecodeOptions()
 				.setShort( true )
 				.setDecodeEmoji( true )
-				.decodeHTML( ActPost.this, account, in_reply_to_text));
+				.decodeHTML( ActPost.this, account, in_reply_to_text ) );
 			ivReply.setImageUrl( pref, 16f, in_reply_to_image );
 		}
 	}
@@ -1675,7 +1675,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			@Override protected String doInBackground( Void... params ){
 				
 				String content = draft.optString( DRAFT_CONTENT );
-				long account_db_id = draft.optLong( DRAFT_ACCOUNT_DB_ID );
+				long account_db_id = Utils.optLongX( draft, DRAFT_ACCOUNT_DB_ID, - 1L );
 				JSONArray tmp_attachment_list = draft.optJSONArray( DRAFT_ATTACHMENT_LIST );
 				
 				account = SavedAccount.loadAccount( ActPost.this, log, account_db_id );
@@ -1770,7 +1770,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				boolean content_warning_checked = draft.optBoolean( DRAFT_CONTENT_WARNING_CHECK );
 				boolean nsfw_checked = draft.optBoolean( DRAFT_NSFW_CHECK );
 				JSONArray tmp_attachment_list = draft.optJSONArray( DRAFT_ATTACHMENT_LIST );
-				long reply_id = draft.optLong( DRAFT_REPLY_ID, - 1L );
+				long reply_id = Utils.optLongX( draft, DRAFT_REPLY_ID, - 1L );
 				String reply_text = draft.optString( DRAFT_REPLY_TEXT, null );
 				String reply_image = draft.optString( DRAFT_REPLY_IMAGE, null );
 				String reply_url = draft.optString( DRAFT_REPLY_URL, null );
@@ -1964,7 +1964,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					return null;
 				}
 			};
-			CharSequence sv = new DecodeOptions().decodeHTML( ActPost.this, lcc, text);
+			CharSequence sv = new DecodeOptions().decodeHTML( ActPost.this, lcc, text );
 			tvText.setText( sv );
 			tvText.setMovementMethod( LinkMovementMethod.getInstance() );
 			

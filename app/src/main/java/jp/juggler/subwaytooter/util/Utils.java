@@ -175,6 +175,25 @@ public class Utils {
 		return src.isNull( key ) ? null : src.optString( key );
 	}
 	
+	public static long optLongX( JSONObject src, String key ){
+		return optLongX( src, key, 0L );
+	}
+	
+	// 文字列データをLong精度で取得できる
+	public static long optLongX( JSONObject src, String key, long defaultValue ){
+		Object o = src.opt( key );
+		if( o instanceof String ){
+			String sv = (String) o;
+			if( sv.indexOf( '.' ) == - 1 ){
+				try{
+					return Long.parseLong( sv, 10 );
+				}catch( NumberFormatException ignored ){
+				}
+			}
+		}
+		return src.optLong( key, defaultValue );
+	}
+	
 	public static ArrayList< String > parseStringArray( JSONArray array ){
 		ArrayList< String > dst_list = new ArrayList<>();
 		if( array != null ){
@@ -771,8 +790,8 @@ public class Utils {
 			}finally{
 				src.recycle();
 			}
-		}catch(SecurityException ex){
-			log.e(ex,"maybe we need pick up image again.");
+		}catch( SecurityException ex ){
+			log.e( ex, "maybe we need pick up image again." );
 		}catch( Throwable ex ){
 			log.trace( ex );
 		}
@@ -1108,7 +1127,7 @@ public class Utils {
 		return sb.toString();
 	}
 	
-	public static byte[] loadRawResource(Context context,int res_id){
+	public static byte[] loadRawResource( Context context, int res_id ){
 		try{
 			InputStream is = context.getResources().openRawResource( res_id );
 			try{
@@ -1128,10 +1147,10 @@ public class Utils {
 	}
 	
 	// defined or
-	public static <T> T dor(T... args){
+	public static < T > T dor( T... args ){
 		if( args != null ){
-			for( T a : args){
-				if(a != null ) return a;
+			for( T a : args ){
+				if( a != null ) return a;
 			}
 		}
 		return null;

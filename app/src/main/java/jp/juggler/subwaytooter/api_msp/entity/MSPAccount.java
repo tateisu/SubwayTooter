@@ -35,7 +35,7 @@ public class MSPAccount extends TootAccount {
 		String sv = Utils.optStringX( src, "display_name" );
 		dst.setDisplayName( context, dst.username, sv );
 		
-		dst.id = src.optLong( "id" );
+		dst.id = Utils.optLongX( src, "id" );
 		
 		dst.note = Utils.optStringX( src, "note" );
 		dst.decoded_note = new DecodeOptions()

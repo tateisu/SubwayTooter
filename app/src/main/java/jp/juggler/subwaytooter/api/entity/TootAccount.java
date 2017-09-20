@@ -110,7 +110,7 @@ public class TootAccount {
 	public static TootAccount parse( Context context, LinkClickContext account, JSONObject src, TootAccount dst ){
 		if( src == null ) return null;
 		try{
-			dst.id = src.optLong( "id", - 1L );
+			dst.id = Utils.optLongX( src, "id", - 1L );
 			dst.username = Utils.optStringX( src, "username" );
 			dst.acct = Utils.optStringX( src, "acct" );
 			if( dst.acct == null ){
@@ -122,12 +122,12 @@ public class TootAccount {
 			
 			dst.locked = src.optBoolean( "locked" );
 			dst.created_at = Utils.optStringX( src, "created_at" );
-			dst.followers_count = src.optLong( "followers_count" );
-			dst.following_count = src.optLong( "following_count" );
-			dst.statuses_count = src.optLong( "statuses_count" );
+			dst.followers_count = Utils.optLongX( src, "followers_count" );
+			dst.following_count = Utils.optLongX( src, "following_count" );
+			dst.statuses_count = Utils.optLongX( src, "statuses_count" );
 			
 			dst.note = Utils.optStringX( src, "note" );
-			dst.decoded_note = new DecodeOptions().setShort( true).setDecodeEmoji( true).decodeHTML( context, account, ( dst.note != null ? dst.note : null ));
+			dst.decoded_note = new DecodeOptions().setShort( true ).setDecodeEmoji( true ).decodeHTML( context, account, ( dst.note != null ? dst.note : null ) );
 			
 			dst.url = Utils.optStringX( src, "url" );
 			dst.avatar = Utils.optStringX( src, "avatar" ); // "https:\/\/mastodon.juggler.jp\/system\/accounts\/avatars\/000\/000\/148\/original\/0a468974fac5a448.PNG?1492081886",
@@ -192,7 +192,7 @@ public class TootAccount {
 		sv = reWhitespace.matcher( this.display_name ).replaceAll( " " );
 		
 		// decode emoji code
-		this.decoded_display_name = Emojione.decodeEmoji( context, sv ,null);
+		this.decoded_display_name = Emojione.decodeEmoji( context, sv, null );
 		
 	}
 	

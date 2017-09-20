@@ -38,7 +38,7 @@ public class TootMention {
 			dst.url = Utils.optStringX( src, "url" );
 			dst.username = Utils.optStringX( src, "username" );
 			dst.acct = Utils.optStringX( src, "acct" );
-			dst.id = src.optLong( "id" );
+			dst.id = Utils.optLongX(src, "id" );
 			return dst;
 		}catch( Throwable ex ){
 			log.trace( ex );

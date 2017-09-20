@@ -29,9 +29,10 @@ public class TootInstance {
 	
 	// インスタンスのサムネイル。推奨サイズ1200x630px。マストドン1.6.1以降。
 	public String thumbnail;
-
+	
 	// ユーザ数等の数字。マストドン1.6以降。
 	public Stats stats;
+	
 	public static class Stats {
 		public long user_count;
 		public long status_count;
@@ -46,7 +47,6 @@ public class TootInstance {
 	
 	// いつ取得したか
 	public long time_parse;
-	
 	
 	@Nullable
 	public static TootInstance parse( JSONObject src ){
@@ -63,8 +63,8 @@ public class TootInstance {
 			
 			dst.stats = parseStats( src.optJSONObject( "stats" ) );
 			
-			dst.thumbnail =  Utils.optStringX( src, "thumbnail" );
-
+			dst.thumbnail = Utils.optStringX( src, "thumbnail" );
+			
 			return dst;
 		}catch( Throwable ex ){
 			log.trace( ex );
@@ -76,9 +76,9 @@ public class TootInstance {
 	private static @Nullable Stats parseStats( JSONObject src ){
 		if( src == null ) return null;
 		Stats dst = new Stats();
-		dst.user_count = src.optLong( "user_count", - 1L );
-		dst.status_count = src.optLong( "status_count", - 1L );
-		dst.domain_count = src.optLong( "domain_count", - 1L );
+		dst.user_count = Utils.optLongX( src, "user_count", - 1L );
+		dst.status_count = Utils.optLongX( src, "status_count", - 1L );
+		dst.domain_count = Utils.optLongX( src, "domain_count", - 1L );
 		return dst;
 	}
 	

@@ -113,7 +113,7 @@ public class TootStatus extends TootStatusLike {
 			
 			if( status.account == null ) return null;
 			
-			status.id = src.optLong( "id" ); // host_remote の上のID
+			status.id = Utils.optLongX( src, "id" ); // host_remote の上のID
 			status.uri = Utils.optStringX( src, "uri" );
 			status.url = Utils.optStringX( src, "url" );
 			
@@ -129,8 +129,8 @@ public class TootStatus extends TootStatusLike {
 			/* Pinned TL を取得した時にreblogが登場することはないので、reblogをパースするときのbPinnedはfalseでよい */
 			status.content = Utils.optStringX( src, "content" );
 			status.created_at = Utils.optStringX( src, "created_at" ); // "2017-04-16T09:37:14.000Z"
-			status.reblogs_count = src.optLong( "reblogs_count" );
-			status.favourites_count = src.optLong( "favourites_count" );
+			status.reblogs_count = Utils.optLongX(src,  "reblogs_count" );
+			status.favourites_count = Utils.optLongX(src, "favourites_count" );
 			status.reblogged = src.optBoolean( "reblogged" );
 			status.favourited = src.optBoolean( "favourited" );
 			status.sensitive = src.optBoolean( "sensitive" ); // false

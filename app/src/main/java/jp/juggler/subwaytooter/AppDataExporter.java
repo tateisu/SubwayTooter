@@ -27,6 +27,7 @@ import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.MutedWord;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.Utils;
 
 public class AppDataExporter {
 	
@@ -406,7 +407,7 @@ public class AppDataExporter {
 		reader.beginArray();
 		while( reader.hasNext() ){
 			JSONObject item = readJsonObject( reader );
-			long old_id = item.optLong( Column.KEY_ACCOUNT_ROW_ID, - 1L );
+			long old_id = Utils.optLongX( item, Column.KEY_ACCOUNT_ROW_ID, - 1L );
 			if( old_id == - 1L ){
 				// 検索カラムは NAアカウントと紐ついている。変換の必要はない
 			}else{

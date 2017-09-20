@@ -590,7 +590,7 @@ public class PollingWorker {
 					}
 					
 				}else if( taskId == TASK_NOTIFICATION_CLEAR ){
-					long db_id = taskData.optLong( EXTRA_DB_ID, - 1L );
+					long db_id = Utils.optLongX( taskData, EXTRA_DB_ID, - 1L );
 					deleteCacheData( db_id );
 					
 				}else if( taskId == TASK_DATA_INJECTED ){
@@ -602,12 +602,12 @@ public class PollingWorker {
 					NotificationTracking.resetPostAll();
 					
 				}else if( taskId == TASK_NOTIFICATION_DELETE ){
-					long db_id = taskData.optLong( EXTRA_DB_ID, - 1L );
+					long db_id = Utils.optLongX( taskData, EXTRA_DB_ID, - 1L );
 					log.d( "Notification deleted! db_id=%s", db_id );
 					NotificationTracking.updateRead( db_id );
 					return;
 				}else if( taskId == TASK_NOTIFICATION_CLICK ){
-					long db_id = taskData.optLong( EXTRA_DB_ID, - 1L );
+					long db_id = Utils.optLongX( taskData, EXTRA_DB_ID, - 1L );
 					log.d( "Notification clicked! db_id=%s", db_id );
 					
 					// 通知をキャンセル
@@ -1100,8 +1100,8 @@ public class PollingWorker {
 				
 				Collections.sort( dst_array, new Comparator< JSONObject >() {
 					@Override public int compare( JSONObject a, JSONObject b ){
-						long la = a.optLong( KEY_TIME, 0 );
-						long lb = b.optLong( KEY_TIME, 0 );
+						long la = Utils.optLongX( a, KEY_TIME, 0 );
+						long lb = Utils.optLongX( b, KEY_TIME, 0 );
 						// 新しい順
 						if( la < lb ) return + 1;
 						if( la > lb ) return - 1;
@@ -1133,7 +1133,7 @@ public class PollingWorker {
 					log.d( "update_sub account_db_id=%s, nid_read=%s, nid_show=%s", account.db_id, nr.nid_read, nr.nid_show );
 				}
 				
-				long id = src.optLong( "id" );
+				long id = Utils.optLongX( src, "id" );
 				
 				if( duplicate_check.contains( id ) ) return;
 				duplicate_check.add( id );
@@ -1390,7 +1390,7 @@ public class PollingWorker {
 						JSONArray array = new JSONArray( nr.last_data );
 						for( int i = array.length() - 1 ; i >= 0 ; -- i ){
 							JSONObject src = array.optJSONObject( i );
-							long id = src.optLong( "id" );
+							long id = Utils.optLongX( src, "id" );
 							dst_array.add( src );
 							duplicate_check.add( id );
 							log.d( "add old. id=%s", id );
@@ -1430,8 +1430,8 @@ public class PollingWorker {
 				// 新しい順にソート
 				Collections.sort( dst_array, new Comparator< JSONObject >() {
 					@Override public int compare( JSONObject a, JSONObject b ){
-						long la = a.optLong( KEY_TIME, 0 );
-						long lb = b.optLong( KEY_TIME, 0 );
+						long la = Utils.optLongX( a, KEY_TIME, 0 );
+						long lb = Utils.optLongX( b, KEY_TIME, 0 );
 						// 新しい順
 						if( la < lb ) return + 1;
 						if( la > lb ) return - 1;

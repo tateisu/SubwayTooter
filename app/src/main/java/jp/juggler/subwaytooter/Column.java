@@ -328,7 +328,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		this.app_state = app_state;
 		this.context = app_state.context;
 		
-		long account_db_id = src.optLong( KEY_ACCOUNT_ROW_ID );
+		long account_db_id = Utils.optLongX( src,  KEY_ACCOUNT_ROW_ID );
 		if( account_db_id >= 0 ){
 			SavedAccount ac = SavedAccount.loadAccount( context, log, account_db_id );
 			if( ac == null ) throw new RuntimeException( "missing account" );
@@ -364,11 +364,11 @@ import jp.juggler.subwaytooter.util.Utils;
 		case TYPE_CONVERSATION:
 		case TYPE_BOOSTED_BY:
 		case TYPE_FAVOURITED_BY:
-			this.status_id = src.optLong( KEY_STATUS_ID );
+			this.status_id =  Utils.optLongX( src , KEY_STATUS_ID );
 			break;
 		
 		case TYPE_PROFILE:
-			this.profile_id = src.optLong( KEY_PROFILE_ID );
+			this.profile_id =  Utils.optLongX( src , KEY_PROFILE_ID );
 			this.profile_tab = src.optInt( KEY_PROFILE_TAB );
 			break;
 		

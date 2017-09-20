@@ -19,7 +19,6 @@ import java.util.regex.Pattern;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.DecodeOptions;
-import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.util.WordTrieTree;
@@ -32,7 +31,6 @@ public class MSPToot extends TootStatusLike {
 		
 	}
 	
-
 	private String created_at;
 	
 	public ArrayList< String > media_attachments;
@@ -54,7 +52,7 @@ public class MSPToot extends TootStatusLike {
 		dst.url = Utils.optStringX( src, "url" );
 		dst.host_original = dst.account.getAcctHost();
 		dst.host_access = "?";
-		dst.id = src.optLong( "id", - 1L );
+		dst.id = Utils.optLongX( src, "id", - 1L );
 		
 		if( TextUtils.isEmpty( dst.url ) || TextUtils.isEmpty( dst.host_original ) || dst.id == - 1L ){
 			log.e( "missing status url or host or id" );
@@ -75,7 +73,7 @@ public class MSPToot extends TootStatusLike {
 			}
 		}
 		
-		// dst.msp_id = src.optLong( "msp_id" );
+		// dst.msp_id =  Utils.optLongX(src, "msp_id" );
 		dst.sensitive = ( src.optInt( "sensitive", 0 ) != 0 );
 		
 		dst.setSpoilerText( context, Utils.optStringX( src, "spoiler_text" ) );
@@ -86,7 +84,7 @@ public class MSPToot extends TootStatusLike {
 			.setDecodeEmoji( true )
 			.setEmojiMap( dst.emojis )
 			.setLinkTag( dst )
-			.decodeHTML( context, access_info, dst.content);
+			.decodeHTML( context, access_info, dst.content );
 		
 		return dst;
 	}

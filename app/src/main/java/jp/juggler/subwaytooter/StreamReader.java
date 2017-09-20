@@ -121,7 +121,7 @@ class StreamReader {
 				}else if( "notification".equals( event ) ){
 					return TootNotification.parse( context, access_info, new JSONObject( obj.optString( "payload" ) ) );
 				}else if( "delete".equals( event ) ){
-					return obj.optLong( "payload", - 1L );
+					return Utils.optLongX( obj, "payload", - 1L );
 				}
 			}catch( Throwable ex ){
 				log.trace( ex );

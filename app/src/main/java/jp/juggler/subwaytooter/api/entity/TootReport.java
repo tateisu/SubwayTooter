@@ -26,7 +26,7 @@ public class TootReport extends TootId {
 		if( src == null ) return null;
 		try{
 			TootReport dst = new TootReport();
-			dst.id = src.optLong( "id" );
+			dst.id = Utils.optLongX(src, "id" );
 			dst.action_taken = Utils.optStringX( src, "action_taken" );
 			return dst;
 		}catch( Throwable ex ){

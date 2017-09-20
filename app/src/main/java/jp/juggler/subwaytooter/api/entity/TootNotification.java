@@ -46,7 +46,7 @@ public class TootNotification extends TootId {
 		try{
 			TootNotification dst = new TootNotification();
 			dst.json = src;
-			dst.id = src.optLong( "id" );
+			dst.id = Utils.optLongX(src, "id" );
 			dst.type = Utils.optStringX( src, "type" );
 			dst.created_at = Utils.optStringX( src, "created_at" );
 			dst.account = TootAccount.parse( context, access_info, src.optJSONObject( "account" ) );

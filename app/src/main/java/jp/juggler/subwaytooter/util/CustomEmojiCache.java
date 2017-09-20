@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import jp.juggler.subwaytooter.App1;
-import jp.juggler.subwaytooter.apng.APNGFrames;
 import okhttp3.Call;
 import okhttp3.Response;
 
@@ -63,7 +62,7 @@ public class CustomEmojiCache {
 	// リクエスト
 	
 	public interface Callback {
-		void onComplete( APNGFrames b );
+		void onAPNGLoadComplete( APNGFrames b );
 	}
 	
 	static class Request {
@@ -181,7 +180,7 @@ public class CustomEmojiCache {
 		private void fireCallback( final Callback callback, final APNGFrames frames ){
 			handler.post( new Runnable() {
 				@Override public void run(){
-					callback.onComplete( frames );
+					callback.onAPNGLoadComplete( frames );
 				}
 			} );
 		}

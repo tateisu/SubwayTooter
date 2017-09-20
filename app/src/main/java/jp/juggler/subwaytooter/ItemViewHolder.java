@@ -252,6 +252,8 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 				ivThumbnail.getLayoutParams().width =
 					ivThumbnail.getLayoutParams().height = activity.mAvatarIconSize;
 		
+		this.content_invalidator = new EmojiInvalidator( activity.handler, tvContent );
+		this.spoiler_invalidator = new EmojiInvalidator( activity.handler, tvContentWarning );
 	}
 	
 	void bind( Object item ){
@@ -402,39 +404,38 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation, who );
 	}
 	
-	final Runnable invalidate_content = new Runnable() {
-		@Override public void run(){
-			tvContent.invalidate();
-		}
-	};
-	final Runnable invalidate_spoiler = new Runnable() {
-		@Override public void run(){
-			tvContentWarning.invalidate();
-		}
-	};
+	private final EmojiInvalidator content_invalidator;
+	private final EmojiInvalidator spoiler_invalidator;
 	
-	private final NetworkEmojiSpan.InvalidateCallback invalidate_callback1 = new NetworkEmojiSpan.InvalidateCallback() {
-		@Override public void invalidate( long delay ){
-			Handler handler = tvContent.getHandler();
-			handler.removeCallbacks( invalidate_content );
-			if( delay > 1000000L ) delay = 1000000L;
-			handler.postDelayed( invalidate_content, delay );
+	private static class EmojiInvalidator implements Runnable, NetworkEmojiSpan.InvalidateCallback {
+		View view;
+		Handler handler;
+		
+		EmojiInvalidator( Handler handler, View view ){
+			this.handler = handler;
+			this.view = view;
 		}
-
-	};
-	private final NetworkEmojiSpan.InvalidateCallback invalidate_callback2 = new NetworkEmojiSpan.InvalidateCallback() {
-		@Override public void invalidate( long delay ){
-			Handler handler = tvContentWarning.getHandler();
-			handler.removeCallbacks( invalidate_spoiler );
-			if( delay > 1000000L ) delay = 1000000L;
-			handler.postDelayed( invalidate_spoiler, delay );
+		
+		// 装飾テキスト中のカスタム絵文字スパンにコールバックを登録する
+		void register( @Nullable Spannable dst ){
+			if( dst == null ) return;
+			for( NetworkEmojiSpan span : dst.getSpans( 0, dst.length(), NetworkEmojiSpan.class ) ){
+				span.setInvalidateCallback( this );
+			}
 		}
-	};
-	
-	private void applyEmojiLoadCallback( @Nullable Spannable dst, NetworkEmojiSpan.InvalidateCallback callback ){
-		if( dst == null ) return;
-		for( NetworkEmojiSpan span : dst.getSpans( 0, dst.length(), NetworkEmojiSpan.class ) ){
-			span.setInvalidateCallback( callback );
+		
+		// 絵文字スパンを描画した直後に呼ばれる
+		// (絵文字が多いと描画の度に大量に呼び出される)
+		@Override public void delayInvalidate( long delay ){
+			handler.postDelayed( this, delay <10L ? 10L : delay );
+		}
+		
+		// Handler経由で遅延実行される
+		@Override public void run(){
+			handler.removeCallbacks( this );
+			if( view.isAttachedToWindow() ){
+				view.postInvalidateOnAnimation();
+			}
 		}
 	}
 	
@@ -496,7 +497,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		}
 		
 		tvContent.setText( content );
-		applyEmojiLoadCallback( content, invalidate_callback1 );
+		content_invalidator.register( content );
 		
 		activity.checkAutoCW( status, content );
 		TootStatusLike.AutoCW r = status.auto_cw;
@@ -507,14 +508,14 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			// 元データに含まれるContent Warning を使う
 			llContentWarning.setVisibility( View.VISIBLE );
 			tvContentWarning.setText( status.decoded_spoiler_text );
-			applyEmojiLoadCallback( status.decoded_spoiler_text, invalidate_callback2 );
+			spoiler_invalidator.register( status.decoded_spoiler_text );
 			boolean cw_shown = ContentWarning.isShown( status, false );
 			showContent( cw_shown );
 		}else if( r != null && r.decoded_spoiler_text != null ){
 			// 自動CW
 			llContentWarning.setVisibility( View.VISIBLE );
 			tvContentWarning.setText( r.decoded_spoiler_text );
-			applyEmojiLoadCallback( r.decoded_spoiler_text, invalidate_callback2 );
+			spoiler_invalidator.register( r.decoded_spoiler_text );
 			boolean cw_shown = ContentWarning.isShown( status, false );
 			showContent( cw_shown );
 		}else{

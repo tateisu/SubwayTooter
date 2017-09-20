@@ -1,4 +1,4 @@
-package jp.juggler.subwaytooter.apng;
+package jp.juggler.subwaytooter.util;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -11,7 +11,6 @@ import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
 import net.ellerton.japng.PngScanlineBuffer;
 import net.ellerton.japng.argb8888.Argb8888Bitmap;
@@ -30,35 +29,39 @@ import java.io.InputStream;
 import java.util.ArrayList;
 
 import jp.juggler.subwaytooter.R;
-import jp.juggler.subwaytooter.util.LogCategory;
 
 // APNGを解釈した結果を保持する
 // (フレーム数分のbitmapと時間情報)
 
-@SuppressWarnings({ "WeakerAccess", "unused" })
-public class APNGFrames {
+@SuppressWarnings("WeakerAccess") class APNGFrames {
 	
+	static final LogCategory log = new LogCategory( "APNGFrames" );
 	
-	static final LogCategory log = new LogCategory("APNGFrames");
+	// ピクセルサイズ制限
+	int mPixelSizeMax;
+	
+	// APNGじゃなかった場合に使われる
+	Bitmap mBitmapNonAnimation;
 	
 	// フレーム計算中に使われる
-	private PngHeader header;
-	private Argb8888ScanlineProcessor scanlineProcessor;
-	private Bitmap canvasBitmap;
-	private Canvas canvas;
-	private Paint srcModePaint;
+	PngHeader header;
+	Argb8888ScanlineProcessor scanlineProcessor;
+	Bitmap canvasBitmap;
+	Canvas canvas;
+	Paint srcModePaint;
 	
-	// 各フレームはDrawableを持つ。フレーム制御情報にはコマの時間などが含まれる
+	PngAnimationControl animationControl;
+	
 	long time_total = 0L;
-	private PngAnimationControl animationControl;
-	private ArrayList< Frame > frames;
 	
-	public static class Frame {
-		public final Bitmap bitmap;
-		public final long time_start;
-		public final long time_width;
+	ArrayList< Frame > frames;
+	
+	static class Frame {
+		final Bitmap bitmap;
+		final long time_start;
+		final long time_width;
 		
-		public Frame( Bitmap bitmap, long time_start, long time_width ){
+		Frame( Bitmap bitmap, long time_start, long time_width ){
 			this.bitmap = bitmap;
 			this.time_start = time_start;
 			this.time_width = time_width;
@@ -78,7 +81,7 @@ public class APNGFrames {
 	 */
 	static Bitmap referenceImage = null;
 	
-	private static Bitmap getReferenceImage( Resources resources ){
+	static Bitmap getReferenceImage( Resources resources ){
 		if( referenceImage == null ){
 			referenceImage = BitmapFactory.decodeResource( resources, R.drawable.onepxtransparent );
 		}
@@ -87,34 +90,11 @@ public class APNGFrames {
 	
 	///////////////////////////////////////////////////////////////
 	
-	public static APNGFrames parseAPNG( Context context, InputStream is, int size_max) throws PngException{
-		Argb8888Processor< APNGFrames > processor = new Argb8888Processor<>( new APNGParseEventHandler( context ,size_max) );
-		APNGFrames result = PngReadHelper.read( is, new DefaultPngChunkReader<>( processor ) );
-		if( result != null ) result.onParseComplete();
-		return result;
-	}
-	
-	//	public static Drawable readDrawable( Context context, int id ) throws PngException, IOException{
-	//		final TypedValue value = new TypedValue();
-	//		InputStream is = context.getResources().openRawResource( id, value );
-	//		try{
-	//			return readDrawable( context, is );
-	//		}finally{
-	//			IOUtils.closeQuietly( is );
-	//		}
-	//	}
-	
-	
-	// APNGじゃなかった場合に使われる
-	@Nullable private Bitmap mBitmapNonAnimation;
-	
-	int size_max;
-	
-	public APNGFrames( @NonNull Bitmap bitmap ){
+	APNGFrames( @NonNull Bitmap bitmap ){
 		this.mBitmapNonAnimation = bitmap;
 	}
 	
-	public APNGFrames(
+	APNGFrames(
 		@NonNull Resources resources
 		, @NonNull PngHeader header
 		, @NonNull Argb8888ScanlineProcessor scanlineProcessor
@@ -124,7 +104,7 @@ public class APNGFrames {
 		this.header = header;
 		this.scanlineProcessor = scanlineProcessor;
 		this.animationControl = animationControl;
-		this.size_max = size_max;
+		this.mPixelSizeMax = size_max;
 		
 		//this.canvasBitmap = Bitmap.createBitmap(this.header.width, this.header.height, Bitmap.Config.ARGB_8888);
 		this.canvasBitmap = Bitmap.createScaledBitmap( getReferenceImage( resources ), this.header.width, this.header.height, false );
@@ -135,9 +115,9 @@ public class APNGFrames {
 		
 	}
 	
-	public void onParseComplete(){
+	void onParseComplete(){
 		if( frames != null && frames.size() <= 1 ){
-			mBitmapNonAnimation = toBitmap( scanlineProcessor.getBitmap(), size_max );
+			mBitmapNonAnimation = toBitmap( scanlineProcessor.getBitmap(), mPixelSizeMax );
 		}
 		if( canvasBitmap != null ){
 			canvasBitmap.recycle();
@@ -145,7 +125,7 @@ public class APNGFrames {
 		}
 	}
 	
-	public void dispose(){
+	void dispose(){
 		if( canvasBitmap != null ){
 			canvasBitmap.recycle();
 		}
@@ -159,34 +139,34 @@ public class APNGFrames {
 		}
 	}
 	
-	private PngFrameControl currentFrame;
+	PngFrameControl currentFrame;
 	
 	// フレームが追加される
-	public Argb8888ScanlineProcessor beginFrame( PngFrameControl frameControl ){
+	Argb8888ScanlineProcessor beginFrame( PngFrameControl frameControl ){
 		currentFrame = frameControl;
 		return scanlineProcessor.cloneWithSharedBitmap( header.adjustFor( currentFrame ) );
 	}
 	
 	// フレームが追加される
-	public void completeFrame( Argb8888Bitmap frameImage ){
-		
+	void completeFrame( Argb8888Bitmap frameImage ){
+		// APNGのフレーム画像をAndroidの形式に変換する
 		Bitmap frame = toBitmap( frameImage );
-		// boolean isFull = currentFrame.height == header.height && currentFrame.width == header.width;
-		Paint paint = null;
-		Drawable d;
-		Bitmap previous = null;
 		
+		Bitmap previous = null;
 		// Capture the current bitmap region IF it needs to be reverted after rendering
 		if( 2 == currentFrame.disposeOp ){
 			previous = Bitmap.createBitmap( canvasBitmap, currentFrame.xOffset, currentFrame.yOffset, currentFrame.width, currentFrame.height ); // or could use from frames?
 			//System.out.println(String.format("Captured previous %d x %d", previous.getWidth(), previous.getHeight()));
 		}
 		
+		Paint paint = null;
 		if( 0 == currentFrame.blendOp ){ // SRC_OVER, not blend (for blend, leave paint null)
 			//paint = new Paint();
 			//paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
 			paint = srcModePaint;
 		}
+		
+		// boolean isFull = currentFrame.height == header.height && currentFrame.width == header.width;
 		
 		// Draw the new frame into place
 		canvas.drawBitmap( frame, currentFrame.xOffset, currentFrame.yOffset, paint );
@@ -199,7 +179,7 @@ public class APNGFrames {
 		time_total = time_start + time_width;
 		
 		frames.add( new Frame(
-			scaleBitmap( size_max, canvasBitmap.copy( Bitmap.Config.ARGB_8888, false ) )
+			scaleBitmap( mPixelSizeMax, canvasBitmap.copy( Bitmap.Config.ARGB_8888, false ) )
 			, time_start
 			, time_width
 		) );
@@ -240,8 +220,6 @@ public class APNGFrames {
 				
 				//System.out.println("  Restored previous "+previous.getWidth()+" x "+previous.getHeight());
 				previous.recycle();
-			}else{
-				System.out.println( "  Huh, no previous?" );
 			}
 			break;
 		
@@ -259,39 +237,39 @@ public class APNGFrames {
 	///////////////////////////////////////////////////////////////
 	
 	// 再生速度の調整
-	private float durationScale = 1f;
+	float durationScale = 1f;
 	
-	public float getDurationScale(){
+	@SuppressWarnings("unused") public float getDurationScale(){
 		return durationScale;
 	}
 	
-	public void setDurationScale( float durationScale ){
+	@SuppressWarnings("unused") public void setDurationScale( float durationScale ){
 		this.durationScale = durationScale;
 	}
 	
-	public boolean isSingleFrame(){
+	@SuppressWarnings("unused") public boolean isSingleFrame(){
 		return animationControl == null || 1 == animationControl.numFrames;
 	}
 	
-	public int getNumFrames() {
+	@SuppressWarnings("unused") public int getNumFrames(){
 		return animationControl == null ? 1 : animationControl.numFrames;
 	}
 	
 	static final long DELAY_AFTER_END = 3000L;
 	
-	public static class FindFrameResult {
+	static class FindFrameResult {
 		public Bitmap bitmap;
-		public long delay;
+		long delay;
 	}
 	
-	public void findFrame( @NonNull FindFrameResult result, long t ){
+	void findFrame( @NonNull FindFrameResult result, long t ){
 		
 		if( mBitmapNonAnimation != null ){
 			result.bitmap = mBitmapNonAnimation;
 			result.delay = Long.MAX_VALUE;
 			return;
 		}
-
+		
 		int frame_count = frames.size();
 		
 		boolean isFinite = ! animationControl.loopForever();
@@ -299,15 +277,15 @@ public class APNGFrames {
 		long end_wait = ( isFinite ? DELAY_AFTER_END : 0L );
 		long loop_total = ( time_total * repeatSequenceCount ) + end_wait;
 		if( loop_total <= 0 ) loop_total = 1;
-
-		long tf = (long)(0.5f + t < 0f ? 0f : t / durationScale );
+		
+		long tf = (long) ( 0.5f + t < 0f ? 0f : t / durationScale );
 		
 		// 全体の繰り返し時刻で余りを計算
 		long tl = tf % loop_total;
 		if( tl >= loop_total - end_wait ){
 			// 終端で待機状態
 			result.bitmap = frames.get( frame_count - 1 ).bitmap;
-			result.delay = (long)(0.5f + ( loop_total - tl ) * durationScale );
+			result.delay = (long) ( 0.5f + ( loop_total - tl ) * durationScale );
 			return;
 		}
 		// １ループの繰り返し時刻で余りを計算
@@ -332,31 +310,12 @@ public class APNGFrames {
 		Frame frame = frames.get( s );
 		long delay = frame.time_start + frame.time_width - tt;
 		result.bitmap = frames.get( s ).bitmap;
-		result.delay = (long)(0.5f + durationScale * ( delay < 0f ? 0f : delay ) );
+		result.delay = (long) ( 0.5f + durationScale * ( delay < 0f ? 0f : delay ) );
 		
 		//log.d("findFrame tf=%d,tl=%d/%d,tt=%d/%d,s=%d,w=%d",tf,tl,loop_total,tt,time_total,s,frame.time_width);
 	}
 	
-	//	// AnimationDrawableを合成する。AnimationDrawableは複数のフレームを持つ。
-	//	public AnimationDrawable assemble(){
-	//		// FIXME: handle special case of one frame animation as a plain ImageView
-	//		boolean isFinite = ! animationControl.loopForever();
-	//		AnimationDrawable ad = new AnimationDrawable();
-	//		ad.setOneShot( isFinite );
-	//
-	//		// The AnimationDrawable doesn't support a repeat count so add
-	//		// frames as required. At least the frames can re-use drawables.
-	//		int repeatSequenceCount = isFinite ? animationControl.numPlays : 1;
-	//
-	//		for( int i = 0 ; i < repeatSequenceCount ; i++ ){
-	//			for( Frame frame : frames ){
-	//				ad.addFrame( frame.drawable, (int)(0.5f + durationScale * frame.control.getDelayMilliseconds() ) );
-	//			}
-	//		}
-	//		return ad;
-	//	}
-	
-	static Bitmap scaleBitmap( int size_max,Bitmap src){
+	static Bitmap scaleBitmap( int size_max, Bitmap src ){
 		if( src == null ) return null;
 		
 		int src_w = src.getWidth();
@@ -365,21 +324,21 @@ public class APNGFrames {
 		
 		int dst_w;
 		int dst_h;
-		if( src_w >= src_h  ){
+		if( src_w >= src_h ){
 			dst_w = size_max;
-			dst_h = (int)(0.5f+ src_h * size_max / (float)src_w);
+			dst_h = (int) ( 0.5f + src_h * size_max / (float) src_w );
 		}else{
 			dst_h = size_max;
-			dst_w = (int)(0.5f+ src_w * size_max / (float)src_h);
+			dst_w = (int) ( 0.5f + src_w * size_max / (float) src_h );
 		}
-		Rect rect_src = new Rect( 0,0,src_w,src_h );
-		Rect rect_dst = new Rect( 0,0,dst_w,dst_h );
+		Rect rect_src = new Rect( 0, 0, src_w, src_h );
+		Rect rect_dst = new Rect( 0, 0, dst_w, dst_h );
 		
-		Bitmap b2 = Bitmap.createBitmap(dst_w,dst_h,Bitmap.Config.ARGB_8888 );
+		Bitmap b2 = Bitmap.createBitmap( dst_w, dst_h, Bitmap.Config.ARGB_8888 );
 		Canvas canvas = new Canvas( b2 );
 		Paint srcModePaint = new Paint();
 		srcModePaint.setXfermode( new PorterDuffXfermode( PorterDuff.Mode.SRC ) );
-		canvas.drawBitmap( src,rect_src,rect_dst,srcModePaint );
+		canvas.drawBitmap( src, rect_src, rect_dst, srcModePaint );
 		src.recycle();
 		return b2;
 	}
@@ -390,13 +349,12 @@ public class APNGFrames {
 		return Bitmap.createBitmap( src.getPixelArray(), offset, stride, src.width, src.height, Bitmap.Config.ARGB_8888 );
 	}
 	
-	static Bitmap toBitmap( Argb8888Bitmap src ,int size_max){
+	static Bitmap toBitmap( Argb8888Bitmap src, int size_max ){
 		int offset = 0;
 		int stride = src.width;
 		Bitmap bitmap = Bitmap.createBitmap( src.getPixelArray(), offset, stride, src.width, src.height, Bitmap.Config.ARGB_8888 );
-		return scaleBitmap(size_max,bitmap);
+		return scaleBitmap( size_max, bitmap );
 	}
-	
 	
 	static class APNGParseEventHandler extends BasicArgb8888Director< APNGFrames > {
 		
@@ -404,7 +362,7 @@ public class APNGFrames {
 		int size_max;
 		
 		// 作成
-		public APNGParseEventHandler( @NonNull Context context, int size_max ){
+		APNGParseEventHandler( @NonNull Context context, int size_max ){
 			this.context = context;
 			this.size_max = size_max;
 		}
@@ -430,34 +388,31 @@ public class APNGFrames {
 			return scanlineProcessor;
 		}
 		
-		// デフォルト画像が分かった
-		// おそらく receiveAnimationControl より先に呼ばれる
 		Bitmap defaultImage = null;
 		
-		@Override
-		public void receiveDefaultImage( Argb8888Bitmap srcDefaultImage ){
+		// デフォルト画像が分かった
+		// おそらく receiveAnimationControl より先に呼ばれる
+		@Override public void receiveDefaultImage( Argb8888Bitmap srcDefaultImage ){
 			this.defaultImage = toBitmap( srcDefaultImage, size_max );
 		}
 		
-		// アニメーション制御情報が分かった
 		APNGFrames animationComposer = null;
 		
+		// アニメーション制御情報が分かった
 		@Override
 		public void receiveAnimationControl( PngAnimationControl animationControl ){
 			this.animationComposer = new APNGFrames( context.getResources(), header, scanlineProcessor, animationControl, size_max );
 		}
 		
-		public boolean isAnimated(){
+		boolean isAnimated(){
 			return animationComposer != null;
 		}
 		
-		@Override
-		public boolean wantDefaultImage(){
+		@Override public boolean wantDefaultImage(){
 			return ! isAnimated();
 		}
 		
-		@Override
-		public boolean wantAnimationFrames(){
+		@Override public boolean wantAnimationFrames(){
 			return true; // isAnimated;
 		}
 		
@@ -469,18 +424,23 @@ public class APNGFrames {
 		}
 		
 		// フレーム画像が分かった
-		@Override
-		public void receiveFrameImage( Argb8888Bitmap frameImage ){
+		@Override public void receiveFrameImage( Argb8888Bitmap frameImage ){
 			if( ! isAnimated() ) throw new RuntimeException( "not animation image" );
 			animationComposer.completeFrame( frameImage );
 		}
 		
 		// 画像を取得する
-		@Override
-		public APNGFrames getResult(){
+		@Override public APNGFrames getResult(){
 			return animationComposer != null ? animationComposer : new APNGFrames( defaultImage );
 		}
 		
+	}
+	
+	static APNGFrames parseAPNG( Context context, InputStream is, int size_max ) throws PngException{
+		Argb8888Processor< APNGFrames > processor = new Argb8888Processor<>( new APNGParseEventHandler( context, size_max ) );
+		APNGFrames result = PngReadHelper.read( is, new DefaultPngChunkReader<>( processor ) );
+		if( result != null ) result.onParseComplete();
+		return result;
 	}
 	
 }

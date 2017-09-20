@@ -12,11 +12,11 @@ import android.support.annotation.Nullable;
 import android.text.style.ReplacementSpan;
 
 import jp.juggler.subwaytooter.App1;
-import jp.juggler.subwaytooter.apng.APNGFrames;
 
-public class NetworkEmojiSpan extends ReplacementSpan {
+public class NetworkEmojiSpan extends ReplacementSpan implements CustomEmojiCache.Callback {
 	
-	static final LogCategory log = new LogCategory("NetworkEmojiSpan");
+	@SuppressWarnings("unused")
+	static final LogCategory log = new LogCategory( "NetworkEmojiSpan" );
 	
 	private static final float scale_ratio = 1.14f;
 	private static final float descent_ratio = 0.211f;
@@ -33,13 +33,20 @@ public class NetworkEmojiSpan extends ReplacementSpan {
 	}
 	
 	public interface InvalidateCallback {
-		void invalidate( long delay );
+		void delayInvalidate( long delay );
 	}
 	
 	private InvalidateCallback invalidate_callback;
 	
 	public void setInvalidateCallback( InvalidateCallback invalidate_callback ){
 		this.invalidate_callback = invalidate_callback;
+	}
+	
+	// implements CustomEmojiCache.Callback
+	@Override public void onAPNGLoadComplete( APNGFrames b ){
+		if( invalidate_callback != null ){
+			invalidate_callback.delayInvalidate( 0 );
+		}
 	}
 	
 	@Override
@@ -63,10 +70,14 @@ public class NetworkEmojiSpan extends ReplacementSpan {
 		return size;
 	}
 	
-	final APNGFrames.FindFrameResult mFrameFindResult = new APNGFrames.FindFrameResult();
+	// フレーム探索結果を格納する構造体を確保しておく
+	private final APNGFrames.FindFrameResult mFrameFindResult = new APNGFrames.FindFrameResult();
 	
-	long t_start;
-	long t_last_draw;
+	// 最後に描画した時刻
+	private long t_last_draw;
+	
+	// アニメーション開始時刻
+	private long t_start;
 	
 	@Override public void draw(
 		@NonNull Canvas canvas
@@ -76,42 +87,39 @@ public class NetworkEmojiSpan extends ReplacementSpan {
 	){
 		if( invalidate_callback == null ) return;
 		
+		// APNGデータの取得
+		APNGFrames frames = App1.custom_emoji_cache.get( url, this );
+		if( frames == null ) return;
+		
+		long now = SystemClock.elapsedRealtime();
+		
+		// アニメーション開始時刻を計算する
+		if( t_start == 0L || now - t_last_draw >= 60000L ){
+			t_start = now;
+		}
+		t_last_draw = now;
+		
+		// アニメーション開始時刻からの経過時間に応じたフレームを探索
+		frames.findFrame( mFrameFindResult, now - t_start );
+
+		Bitmap b = mFrameFindResult.bitmap;
+		if( b == null || b.isRecycled() ) return;
+		
 		int size = (int) ( 0.5f + scale_ratio * textPaint.getTextSize() );
 		int c_descent = (int) ( 0.5f + size * descent_ratio );
+		int transY = baseline - size + c_descent;
 		
-		APNGFrames frames = App1.custom_emoji_cache.get( url, load_callback );
-		if( frames != null ){
-			long now = SystemClock.elapsedRealtime();
-			if( t_start == 0L || now - t_last_draw >= 60000L ){
-				t_start = now;
-				log.d("t_start changed!");
-			}
-			t_last_draw = now;
-			long delta = now - t_start;
-			frames.findFrame( mFrameFindResult, delta );
-			Bitmap b = mFrameFindResult.bitmap;
-			if( b != null && ! b.isRecycled() ){
-				rect_src.set( 0, 0, b.getWidth(), b.getHeight() );
-				rect_dst.set( 0, 0, size, size );
-				int transY = baseline - size + c_descent;
-				canvas.save();
-				canvas.translate( x, transY );
-				canvas.drawBitmap( b, rect_src, rect_dst, mPaint );
-				canvas.restore();
-				
-				long delay = mFrameFindResult.delay;
-				if( delay != Long.MAX_VALUE ){
-					invalidate_callback.invalidate( delay );
-				}
-			}
+		canvas.save();
+		canvas.translate( x, transY );
+		rect_src.set( 0, 0, b.getWidth(), b.getHeight() );
+		rect_dst.set( 0, 0, size, size );
+		canvas.drawBitmap( b, rect_src, rect_dst, mPaint );
+		canvas.restore();
+		
+		// 少し後に描画しなおす
+		long delay = mFrameFindResult.delay;
+		if( delay != Long.MAX_VALUE ){
+			invalidate_callback.delayInvalidate( delay );
 		}
 	}
-	
-	final CustomEmojiCache.Callback load_callback = new CustomEmojiCache.Callback() {
-		@Override public void onComplete( APNGFrames b ){
-			if( invalidate_callback != null ){
-				invalidate_callback.invalidate( 0 );
-			}
-		}
-	};
 }

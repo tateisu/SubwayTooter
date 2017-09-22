@@ -7,7 +7,7 @@ import android.text.Spannable;
 import android.text.TextUtils;
 
 import jp.juggler.subwaytooter.util.DecodeOptions;
-import jp.juggler.subwaytooter.util.Emojione;
+import jp.juggler.subwaytooter.util.EmojiDecoder;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -15,7 +15,6 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
-import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
@@ -192,7 +191,7 @@ public class TootAccount {
 		sv = reWhitespace.matcher( this.display_name ).replaceAll( " " );
 		
 		// decode emoji code
-		this.decoded_display_name = Emojione.decodeEmoji( context, sv, null );
+		this.decoded_display_name = EmojiDecoder.decodeEmoji( context, sv, null );
 		
 	}
 	

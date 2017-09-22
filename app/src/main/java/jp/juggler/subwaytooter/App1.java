@@ -40,6 +40,7 @@ import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.TagSet;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.CustomEmojiCache;
+import jp.juggler.subwaytooter.util.EmojiDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import okhttp3.Cache;
 import okhttp3.CipherSuite;
@@ -53,21 +54,21 @@ public class App1 extends Application {
 	static final LogCategory log = new LogCategory( "App1" );
 	
 	@Override public void onCreate(){
-		log.d("onCreate");
+		log.d( "onCreate" );
 		super.onCreate();
 		prepare( getApplicationContext() );
 	}
 	
 	@Override public void onTerminate(){
-		log.d("onTerminate");
+		log.d( "onTerminate" );
 		super.onTerminate();
 	}
 	
 	public static final String FILE_PROVIDER_AUTHORITY = "jp.juggler.subwaytooter.FileProvider";
-
+	
 	static final String DB_NAME = "app_db";
 	static final int DB_VERSION = 17;
-
+	
 	// 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
 	// 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加
 	// 2017/4/29 v20 2=>5 MediaShown,ContentWarningのインデクスが間違っていたので貼り直す
@@ -90,8 +91,6 @@ public class App1 extends Application {
 		return db_open_helper.getWritableDatabase();
 	}
 	
-
-
 	private static class DBOpenHelper extends SQLiteOpenHelper {
 		
 		private DBOpenHelper( Context context ){
@@ -213,9 +212,10 @@ public class App1 extends Application {
 	}
 	
 	public static OkHttpClient ok_http_client;
-
+	
 	public static OkHttpClient ok_http_client2;
 	
+	public static final boolean USE_OLD_EMOJIONE = false;
 	public static Typeface typeface_emoji;
 	
 	public static SharedPreferences pref;
@@ -276,7 +276,7 @@ public class App1 extends Application {
 		}
 		
 		if( db_open_helper == null ){
-			log.d("prepareDB");
+			log.d( "prepareDB" );
 			db_open_helper = new DBOpenHelper( app_context );
 			
 			//			if( BuildConfig.DEBUG){
@@ -288,8 +288,10 @@ public class App1 extends Application {
 			AcctSet.deleteOld( System.currentTimeMillis() );
 		}
 		
-		if( typeface_emoji == null ){
-			typeface_emoji = TypefaceUtils.load( app_context.getAssets(), "emojione_android.ttf" );
+		if( USE_OLD_EMOJIONE ){
+			if( typeface_emoji == null ){
+				typeface_emoji = TypefaceUtils.load( app_context.getAssets(), "emojione_android.ttf" );
+			}
 		}
 		
 		//		if( image_loader == null ){
@@ -362,12 +364,11 @@ public class App1 extends Application {
 		}
 		
 		if( custom_emoji_cache == null ){
-			custom_emoji_cache = new CustomEmojiCache(app_context);
+			custom_emoji_cache = new CustomEmojiCache( app_context );
 		}
 		
 	}
 	
-
 	@SuppressLint("StaticFieldLeak")
 	private static AppState app_state;
 	
@@ -382,9 +383,9 @@ public class App1 extends Application {
 	}
 	
 	public static void setActivityTheme( @NonNull Activity activity, boolean bNoActionBar ){
-
+		
 		prepare( activity.getApplicationContext() );
-
+		
 		int theme_idx = pref.getInt( Pref.KEY_UI_THEME, 0 );
 		switch( theme_idx ){
 		

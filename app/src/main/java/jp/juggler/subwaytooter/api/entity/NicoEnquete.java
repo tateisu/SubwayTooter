@@ -25,7 +25,7 @@ import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.DecodeOptions;
-import jp.juggler.subwaytooter.util.Emojione;
+import jp.juggler.subwaytooter.util.EmojiDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.view.EnqueteTimerView;
@@ -97,7 +97,7 @@ public class NicoEnquete {
 						// remove white spaces
 						sv = reWhitespace.matcher( sv ).replaceAll( " " );
 						// decode emoji code
-						dst.items.set( i, Emojione.decodeEmoji( context, sv ,status.emojis) );
+						dst.items.set( i, EmojiDecoder.decodeEmoji( context, sv ,status.emojis) );
 					}
 				}
 				return dst;

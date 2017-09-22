@@ -52,8 +52,7 @@ package jp.juggler.subwaytooter;
 	import jp.juggler.subwaytooter.table.AcctColor;
 	import jp.juggler.subwaytooter.table.SavedAccount;
 	import jp.juggler.subwaytooter.util.DecodeOptions;
-	import jp.juggler.subwaytooter.util.Emojione;
-	import jp.juggler.subwaytooter.util.HTMLDecoder;
+	import jp.juggler.subwaytooter.util.EmojiDecoder;
 	import jp.juggler.subwaytooter.util.LogCategory;
 	import jp.juggler.subwaytooter.util.NotificationHelper;
 	import jp.juggler.subwaytooter.util.Utils;
@@ -752,10 +751,10 @@ public class ActAccountSetting extends AppCompatActivity
 		ivProfileAvatar.setImageUrl( App1.pref, 16f, src.avatar_static, src.avatar );
 		ivProfileHeader.setImageUrl( App1.pref, 0f, src.header_static, src.header );
 		
-		etDisplayName.setText( Emojione.decodeEmoji( this, src.display_name == null ? "" : src.display_name ,null) );
+		etDisplayName.setText( EmojiDecoder.decodeEmoji( this, src.display_name == null ? "" : src.display_name ,null) );
 		
 		if( src.source != null && src.source.note != null ){
-			etNote.setText( Emojione.decodeEmoji( this, src.source.note ,null) );
+			etNote.setText( EmojiDecoder.decodeEmoji( this, src.source.note ,null) );
 		}else if( src.note != null ){
 			
 			etNote.setText( new DecodeOptions().decodeHTML(ActAccountSetting.this, account, src.note) );

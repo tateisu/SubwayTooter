@@ -16,7 +16,6 @@ import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.Pref;
-import jp.juggler.subwaytooter.api.entity.CustomEmojiMap;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootMention;
 import jp.juggler.subwaytooter.table.SavedAccount;
@@ -166,7 +165,7 @@ public class HTMLDecoder {
 			){
 			if( TAG_TEXT.equals( tag ) ){
 				if( options.bDecodeEmoji ){
-					sb.append( Emojione.decodeEmoji( context, decodeEntity( text ) ,options.customEmojiMap ) );
+					sb.append( EmojiDecoder.decodeEmoji( context, decodeEntity( text ) ,options.customEmojiMap ) );
 				}else{
 					sb.append( decodeEntity( text ) );
 				}
@@ -280,7 +279,7 @@ public class HTMLDecoder {
 			}
 			
 			if( is_media_attachment( list_attachment, href ) ){
-				return Emojione.decodeEmoji( context, ":frame_photo:",null );
+				return EmojiDecoder.decodeEmoji( context, ":frame_photo:",null );
 			}
 			
 			try{

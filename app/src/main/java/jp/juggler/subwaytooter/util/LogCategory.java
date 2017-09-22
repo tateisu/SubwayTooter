@@ -217,7 +217,7 @@ public class LogCategory {
 			int framesInCommon = trace.length - 1 - m;
 			
 			// Print our stack trace
-			e( prefix + caption + this );
+			e( prefix + caption + ex );
 			for( int i = 0 ; i <= m ; i++ )
 				e( prefix + "\tat " + trace[ i ] );
 			if( framesInCommon != 0 )

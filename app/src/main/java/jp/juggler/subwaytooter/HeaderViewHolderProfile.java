@@ -10,7 +10,7 @@ import android.widget.TextView;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.UserRelation;
-import jp.juggler.subwaytooter.util.Emojione;
+import jp.juggler.subwaytooter.util.EmojiDecoder;
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
 import jp.juggler.subwaytooter.view.MyNetworkImageView;
 
@@ -103,9 +103,9 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 			
 			String s = "@" + access_info.getFullAcct( who );
 			if( who.locked ){
-				s += " " + Emojione.map_name2unicode.get( "lock" );
+				s += " " + EmojiDecoder.map_name2unicode.get( "lock" );
 			}
-			tvAcct.setText( Emojione.decodeEmoji( activity, s ,null) );
+			tvAcct.setText( EmojiDecoder.decodeEmoji( activity, s ,null) );
 			
 			tvNote.setText( who.decoded_note );
 			btnStatusCount.setText( activity.getString( R.string.statuses ) + "\n" + who.statuses_count );

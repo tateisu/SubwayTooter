@@ -40,7 +40,6 @@ import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.TagSet;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.CustomEmojiCache;
-import jp.juggler.subwaytooter.util.EmojiDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import okhttp3.Cache;
 import okhttp3.CipherSuite;
@@ -67,7 +66,7 @@ public class App1 extends Application {
 	public static final String FILE_PROVIDER_AUTHORITY = "jp.juggler.subwaytooter.FileProvider";
 	
 	static final String DB_NAME = "app_db";
-	static final int DB_VERSION = 17;
+	static final int DB_VERSION = 18;
 	
 	// 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
 	// 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加
@@ -84,6 +83,7 @@ public class App1 extends Application {
 	// 2017/5/27 v73 14=>15 TagSetテーブルの追加
 	// 2017/7/22 v99 15=>16 SavedAccountに項目追加
 	// 2017/7/22 v106 16=>17 AcctColor に項目追加
+	// 2017/9/23 v161 17=>18 SavedAccountに項目追加
 	
 	private static DBOpenHelper db_open_helper;
 	
@@ -201,6 +201,7 @@ public class App1 extends Application {
 		spec_list.add( spec );
 		spec_list.add( ConnectionSpec.CLEARTEXT );
 		
+		//noinspection UnnecessaryLocalVariable
 		OkHttpClient.Builder builder = new OkHttpClient.Builder()
 			.connectTimeout( 30, TimeUnit.SECONDS )
 			.readTimeout( 60, TimeUnit.SECONDS )
@@ -224,6 +225,7 @@ public class App1 extends Application {
 	
 	static OkHttpUrlLoader.Factory glide_okhttp3_factory;
 	
+	@SuppressLint("StaticFieldLeak")
 	public static CustomEmojiCache custom_emoji_cache;
 	
 	private static boolean bPrepared = false;

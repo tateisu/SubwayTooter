@@ -196,6 +196,7 @@ public class ActAccountSetting extends AppCompatActivity
 	View btnAccountRemove;
 	Button btnVisibility;
 	Switch swNSFWOpen;
+	Switch swDontShowTimeout;
 	Button btnOpenBrowser;
 	CheckBox cbNotificationMention;
 	CheckBox cbNotificationBoost;
@@ -239,6 +240,7 @@ public class ActAccountSetting extends AppCompatActivity
 		btnAccountRemove = findViewById( R.id.btnAccountRemove );
 		btnVisibility = findViewById( R.id.btnVisibility );
 		swNSFWOpen = findViewById( R.id.swNSFWOpen );
+		swDontShowTimeout = findViewById( R.id.swDontShowTimeout );
 		btnOpenBrowser = findViewById( R.id.btnOpenBrowser );
 		cbNotificationMention = findViewById( R.id.cbNotificationMention );
 		cbNotificationBoost = findViewById( R.id.cbNotificationBoost );
@@ -275,6 +277,7 @@ public class ActAccountSetting extends AppCompatActivity
 		btnNote.setOnClickListener( this );
 		
 		swNSFWOpen.setOnCheckedChangeListener( this );
+		swDontShowTimeout.setOnCheckedChangeListener( this );
 		cbNotificationMention.setOnCheckedChangeListener( this );
 		cbNotificationBoost.setOnCheckedChangeListener( this );
 		cbNotificationFavourite.setOnCheckedChangeListener( this );
@@ -310,6 +313,7 @@ public class ActAccountSetting extends AppCompatActivity
 		loading = true;
 		
 		swNSFWOpen.setChecked( a.dont_hide_nsfw );
+		swDontShowTimeout.setChecked( a.dont_show_timeout );
 		cbNotificationMention.setChecked( a.notification_mention );
 		cbNotificationBoost.setChecked( a.notification_boost );
 		cbNotificationFavourite.setChecked( a.notification_favourite );
@@ -360,6 +364,7 @@ public class ActAccountSetting extends AppCompatActivity
 		if( loading ) return;
 		account.visibility = visibility;
 		account.dont_hide_nsfw = swNSFWOpen.isChecked();
+		account.dont_show_timeout = swDontShowTimeout.isChecked();
 		account.notification_mention = cbNotificationMention.isChecked();
 		account.notification_boost = cbNotificationBoost.isChecked();
 		account.notification_favourite = cbNotificationFavourite.isChecked();

@@ -1078,7 +1078,7 @@ public class PollingWorker {
 							log.d( "error. %s", result.error );
 							
 							String sv = result.error;
-							if( sv.contains( "Timeout" ) ){
+							if( sv.contains( "Timeout" ) && ! account.dont_show_timeout ){
 								synchronized( error_instance ){
 									boolean bFound = false;
 									for( String x : error_instance ){

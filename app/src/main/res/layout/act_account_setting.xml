@@ -282,6 +282,28 @@
 
         <TextView
             style="@style/setting_row_label"
+            android:text="@string/dont_show_timeout"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swDontShowTimeout"
+                style="@style/setting_wrap"
+                />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                />
+        </LinearLayout>
+
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
             android:text="@string/confirmation"
             />
 

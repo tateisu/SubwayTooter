@@ -60,16 +60,22 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	// スキーマ16から
 	private static final String COL_SOUND_URI = "sound_uri";
 	
-	public static final long INVALID_ID = - 1L;
+	// スキーマ18から
+	private static final String COL_DONT_SHOW_TIMEOUT = "dont_show_timeout";
 	
+	/////////////////////////////////
 	// login information
+	public static final long INVALID_ID = - 1L;
 	public long db_id = INVALID_ID;
 	public String host;
 	public String acct; // user@host
 	public JSONObject token_info;
 	public String visibility;
 	public boolean confirm_boost;
+
 	public boolean dont_hide_nsfw;
+	public boolean dont_show_timeout;
+
 	public boolean notification_mention;
 	public boolean notification_boost;
 	public boolean notification_favourite;
@@ -80,6 +86,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public boolean confirm_follow_locked;
 	public boolean confirm_unfollow;
 	public boolean confirm_post;
+	
 	
 	public String notification_tag;
 	public String register_key;
@@ -145,6 +152,9 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 				// 以下はDBスキーマ16で更新
 				+ "," + COL_SOUND_URI + " text default ''"
 				
+				// 以下はDBスキーマ18で更新
+				+ "," + COL_DONT_SHOW_TIMEOUT + " integer default 0"
+			
 				+ ")"
 		);
 		db.execSQL( "create index if not exists " + table + "_user on " + table + "(u)" );
@@ -222,6 +232,13 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 				log.trace( ex );
 			}
 		}
+		if( oldVersion < 18 && newVersion >= 18 ){
+			try{
+				db.execSQL( "alter table " + table + " add column " + COL_DONT_SHOW_TIMEOUT + " integer default 0" );
+			}catch( Throwable ex ){
+				log.trace( ex );
+			}
+		}
 	}
 	
 	private SavedAccount(){
@@ -265,7 +282,8 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 			
 			dst.confirm_boost = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_CONFIRM_BOOST ) ) );
 			dst.dont_hide_nsfw = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_DONT_HIDE_NSFW ) ) );
-			
+			dst.dont_show_timeout = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_DONT_SHOW_TIMEOUT ) ) );
+
 			dst.notification_mention = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_NOTIFICATION_MENTION ) ) );
 			dst.notification_boost = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_NOTIFICATION_BOOST ) ) );
 			dst.notification_favourite = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_NOTIFICATION_FAVOURITE ) ) );
@@ -335,6 +353,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		cv.put( COL_VISIBILITY, visibility );
 		cv.put( COL_CONFIRM_BOOST, confirm_boost ? 1 : 0 );
 		cv.put( COL_DONT_HIDE_NSFW, dont_hide_nsfw ? 1 : 0 );
+		cv.put( COL_DONT_SHOW_TIMEOUT, dont_show_timeout ? 1 : 0 );
 		cv.put( COL_NOTIFICATION_MENTION, notification_mention ? 1 : 0 );
 		cv.put( COL_NOTIFICATION_BOOST, notification_boost ? 1 : 0 );
 		cv.put( COL_NOTIFICATION_FAVOURITE, notification_favourite ? 1 : 0 );
@@ -393,6 +412,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		this.visibility = b.visibility;
 		this.confirm_boost = b.confirm_boost;
 		this.dont_hide_nsfw = b.dont_hide_nsfw;
+		this.dont_show_timeout = b.dont_show_timeout;
 		this.token_info = b.token_info;
 		this.notification_mention = b.notification_follow;
 		this.notification_boost = b.notification_boost;

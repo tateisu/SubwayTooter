@@ -780,4 +780,5 @@
     <string name="mime_type_missing">MIMEタイプが不明です</string>
     <string name="mime_type_not_acceptable">MIMEタイプ %1$s には対応できません。対応できるMIMEタイプは image/jpeg, image/png, image/gif, video/webm, video/mp4 です</string>
     <string name="thumbnail_1_6_1_later">サムネイル(マストドン1.6.1以降)</string>
+    <string name="dont_show_timeout">\"サーバータイムアウト\"を通知しない</string>
 </resources>

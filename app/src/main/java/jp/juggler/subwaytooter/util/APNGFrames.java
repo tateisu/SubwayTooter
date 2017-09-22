@@ -1,16 +1,13 @@
 package jp.juggler.subwaytooter.util;
 
-import android.content.Context;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import net.ellerton.japng.PngScanlineBuffer;
 import net.ellerton.japng.argb8888.Argb8888Bitmap;
@@ -24,11 +21,10 @@ import net.ellerton.japng.chunks.PngHeader;
 import net.ellerton.japng.error.PngException;
 import net.ellerton.japng.reader.DefaultPngChunkReader;
 import net.ellerton.japng.reader.PngReadHelper;
+import net.ellerton.japng.reader.PngReader;
 
 import java.io.InputStream;
 import java.util.ArrayList;
-
-import jp.juggler.subwaytooter.R;
 
 // APNGを解釈した結果を保持する
 // (フレーム数分のbitmapと時間情報)
@@ -36,37 +32,6 @@ import jp.juggler.subwaytooter.R;
 @SuppressWarnings("WeakerAccess") class APNGFrames {
 	
 	static final LogCategory log = new LogCategory( "APNGFrames" );
-	
-	// ピクセルサイズ制限
-	int mPixelSizeMax;
-	
-	// APNGじゃなかった場合に使われる
-	Bitmap mBitmapNonAnimation;
-	
-	// フレーム計算中に使われる
-	PngHeader header;
-	Argb8888ScanlineProcessor scanlineProcessor;
-	Bitmap canvasBitmap;
-	Canvas canvas;
-	Paint srcModePaint;
-	
-	PngAnimationControl animationControl;
-	
-	long time_total = 0L;
-	
-	ArrayList< Frame > frames;
-	
-	static class Frame {
-		final Bitmap bitmap;
-		final long time_start;
-		final long time_width;
-		
-		Frame( Bitmap bitmap, long time_start, long time_width ){
-			this.bitmap = bitmap;
-			this.time_start = time_start;
-			this.time_width = time_width;
-		}
-	}
 	
 	/**
 	 * Keep a 1x1 transparent image around as reference for creating a scaled starting bitmap.
@@ -79,13 +44,93 @@ import jp.juggler.subwaytooter.R;
 	 * Instead the 1x1 image (68 bytes of resources) is scaled up to the needed size.
 	 * Whether or not this fixes the OOM problems is TBD...
 	 */
-	static Bitmap referenceImage = null;
+	//static Bitmap sOnePxTransparent;
+	static Paint sSrcModePaint;
 	
-	static Bitmap getReferenceImage( Resources resources ){
-		if( referenceImage == null ){
-			referenceImage = BitmapFactory.decodeResource( resources, R.drawable.onepxtransparent );
+	static Bitmap createBlankBitmap( int w, int h ){
+		if( sSrcModePaint == null ){
+			sSrcModePaint = new Paint();
+			sSrcModePaint.setXfermode( new PorterDuffXfermode( PorterDuff.Mode.SRC ) );
+			sSrcModePaint.setFilterBitmap( true );
 		}
-		return referenceImage;
+		//		if( sOnePxTransparent == null ){
+		//			sOnePxTransparent = BitmapFactory.decodeResource( resources, R.drawable.onepxtransparent );
+		//		}
+		return Bitmap.createBitmap( w, h, Bitmap.Config.ARGB_8888 );
+	}
+	
+	// WARNING: ownership of "src" will be moved or recycled.
+	static Bitmap scaleBitmap( Bitmap src, int size_max ){
+		if( src == null ) return null;
+		
+		int src_w = src.getWidth();
+		int src_h = src.getHeight();
+		if( src_w <= size_max && src_h <= size_max ) return src;
+		
+		int dst_w;
+		int dst_h;
+		if( src_w >= src_h ){
+			dst_w = size_max;
+			dst_h = (int) ( 0.5f + src_h * size_max / (float) src_w );
+			if( dst_h < 1 ) dst_h = 1;
+		}else{
+			dst_h = size_max;
+			dst_w = (int) ( 0.5f + src_w * size_max / (float) src_h );
+			if( dst_w < 1 ) dst_w = 1;
+		}
+		
+		// この方法だとリークがあるらしい？？？
+		// http://stackoverflow.com/a/8527745/963195
+		// return Bitmap.createScaledBitmap( src, dst_w , dst_h , true );
+		
+		Bitmap b2 = createBlankBitmap( dst_w, dst_h );
+		Canvas canvas = new Canvas( b2 );
+		Rect rect_src = new Rect( 0, 0, src_w, src_h );
+		Rect rect_dst = new Rect( 0, 0, dst_w, dst_h );
+		canvas.drawBitmap( src, rect_src, rect_dst, sSrcModePaint );
+		src.recycle();
+		return b2;
+	}
+	
+	static Bitmap toBitmap( Argb8888Bitmap src ){
+		int offset = 0;
+		int stride = src.width;
+		return Bitmap.createBitmap( src.getPixelArray(), offset, stride, src.width, src.height, Bitmap.Config.ARGB_8888 );
+	}
+	
+	static Bitmap toBitmap( Argb8888Bitmap src, int size_max ){
+		return scaleBitmap( toBitmap( src ), size_max );
+	}
+	
+	//////////////////////////////////////////////////////
+	
+	// ピクセルサイズ制限
+	private int mPixelSizeMax;
+	
+	// APNGじゃなかった場合に使われる
+	private Bitmap mBitmapNonAnimation;
+	
+	private PngHeader header;
+	private Argb8888ScanlineProcessor scanlineProcessor;
+	private Bitmap canvasBitmap;
+	private Canvas canvas;
+	
+	private PngAnimationControl animationControl;
+	
+	private long time_total = 0L;
+	
+	private ArrayList< Frame > frames;
+	
+	private static class Frame {
+		final Bitmap bitmap;
+		final long time_start;
+		final long time_width;
+		
+		Frame( Bitmap bitmap, long time_start, long time_width ){
+			this.bitmap = bitmap;
+			this.time_start = time_start;
+			this.time_width = time_width;
+		}
 	}
 	
 	///////////////////////////////////////////////////////////////
@@ -95,8 +140,7 @@ import jp.juggler.subwaytooter.R;
 	}
 	
 	APNGFrames(
-		@NonNull Resources resources
-		, @NonNull PngHeader header
+		@NonNull PngHeader header
 		, @NonNull Argb8888ScanlineProcessor scanlineProcessor
 		, @NonNull PngAnimationControl animationControl
 		, int size_max
@@ -106,12 +150,9 @@ import jp.juggler.subwaytooter.R;
 		this.animationControl = animationControl;
 		this.mPixelSizeMax = size_max;
 		
-		//this.canvasBitmap = Bitmap.createBitmap(this.header.width, this.header.height, Bitmap.Config.ARGB_8888);
-		this.canvasBitmap = Bitmap.createScaledBitmap( getReferenceImage( resources ), this.header.width, this.header.height, false );
+		this.canvasBitmap = createBlankBitmap( this.header.width, this.header.height );
 		this.canvas = new Canvas( this.canvasBitmap );
 		this.frames = new ArrayList<>( animationControl.numFrames );
-		this.srcModePaint = new Paint();
-		this.srcModePaint.setXfermode( new PorterDuffXfermode( PorterDuff.Mode.SRC ) );
 		
 	}
 	
@@ -119,6 +160,7 @@ import jp.juggler.subwaytooter.R;
 		if( frames != null && frames.size() <= 1 ){
 			mBitmapNonAnimation = toBitmap( scanlineProcessor.getBitmap(), mPixelSizeMax );
 		}
+		
 		if( canvasBitmap != null ){
 			canvasBitmap.recycle();
 			canvasBitmap = null;
@@ -126,11 +168,11 @@ import jp.juggler.subwaytooter.R;
 	}
 	
 	void dispose(){
-		if( canvasBitmap != null ){
-			canvasBitmap.recycle();
-		}
 		if( mBitmapNonAnimation != null ){
 			mBitmapNonAnimation.recycle();
+		}
+		if( canvasBitmap != null ){
+			canvasBitmap.recycle();
 		}
 		if( frames != null ){
 			for( Frame f : frames ){
@@ -159,11 +201,9 @@ import jp.juggler.subwaytooter.R;
 			//System.out.println(String.format("Captured previous %d x %d", previous.getWidth(), previous.getHeight()));
 		}
 		
-		Paint paint = null;
-		if( 0 == currentFrame.blendOp ){ // SRC_OVER, not blend (for blend, leave paint null)
-			//paint = new Paint();
-			//paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
-			paint = srcModePaint;
+		Paint paint = null; // (for blend, leave paint null)
+		if( 0 == currentFrame.blendOp ){ // SRC_OVER, not blend
+			paint = sSrcModePaint;
 		}
 		
 		// boolean isFull = currentFrame.height == header.height && currentFrame.width == header.width;
@@ -179,21 +219,26 @@ import jp.juggler.subwaytooter.R;
 		time_total = time_start + time_width;
 		
 		frames.add( new Frame(
-			scaleBitmap( mPixelSizeMax, canvasBitmap.copy( Bitmap.Config.ARGB_8888, false ) )
+			scaleBitmap( canvasBitmap.copy( Bitmap.Config.ARGB_8888, false ), mPixelSizeMax )
 			, time_start
 			, time_width
 		) );
 		
 		// Now "dispose" of the frame in preparation for the next.
-		
 		// https://wiki.mozilla.org/APNG_Specification#.60fcTL.60:_The_Frame_Control_Chunk
-		//
-		// APNG_DISPOSE_OP_NONE: no disposal is done on this frame before rendering the next; the contents of the output buffer are left as is.
-		// APNG_DISPOSE_OP_BACKGROUND: the frame's region of the output buffer is to be cleared to fully transparent black before rendering the next frame.
-		// APNG_DISPOSE_OP_PREVIOUS: the frame's region of the output buffer is to be reverted to the previous contents before rendering the next frame.
-		//
+		
 		switch( currentFrame.disposeOp ){
-		case 1: // APNG_DISPOSE_OP_BACKGROUND
+		default:
+			// Default should never happen
+		
+		case 0:
+			// APNG_DISPOSE_OP_NONE: no disposal is done on this frame before rendering the next; the contents of the output buffer are left as is.
+			//System.out.println("Frame "+currentFrame.sequenceNumber+" do nothing dispose");
+			// do nothing
+			break;
+		
+		case 1:
+			// APNG_DISPOSE_OP_BACKGROUND: the frame's region of the output buffer is to be cleared to fully transparent black before rendering the next frame.
 			//System.out.println(String.format("Frame %d clear background (full=%s, x=%d y=%d w=%d h=%d) previous=%s", currentFrame.sequenceNumber,
 			//        isFull, currentFrame.xOffset, currentFrame.yOffset, currentFrame.width, currentFrame.height, previous));
 			//if (true || isFull) {
@@ -207,28 +252,16 @@ import jp.juggler.subwaytooter.R;
 			//                }
 			break;
 		
-		case 2: // APNG_DISPOSE_OP_PREVIOUS
+		case 2:
+			// APNG_DISPOSE_OP_PREVIOUS: the frame's region of the output buffer is to be reverted to the previous contents before rendering the next frame.
 			//System.out.println(String.format("Frame %d restore previous (full=%s, x=%d y=%d w=%d h=%d) previous=%s", currentFrame.sequenceNumber,
 			//        isFull, currentFrame.xOffset, currentFrame.yOffset, currentFrame.width, currentFrame.height, previous));
-			
 			// Put the original section back
-			if( null != previous ){
-				//paint = new Paint();
-				//paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC));
-				paint = srcModePaint;
-				canvas.drawBitmap( previous, currentFrame.xOffset, currentFrame.yOffset, paint );
-				
-				//System.out.println("  Restored previous "+previous.getWidth()+" x "+previous.getHeight());
+			if( previous != null ){
+				canvas.drawBitmap( previous, currentFrame.xOffset, currentFrame.yOffset, sSrcModePaint );
 				previous.recycle();
 			}
 			break;
-		
-		case 0: // APNG_DISPOSE_OP_NONE
-		default: // Default should never happen
-			// do nothing
-			//System.out.println("Frame "+currentFrame.sequenceNumber+" do nothing dispose");
-			break;
-			
 		}
 		
 		currentFrame = null;
@@ -255,14 +288,15 @@ import jp.juggler.subwaytooter.R;
 		return animationControl == null ? 1 : animationControl.numFrames;
 	}
 	
-	static final long DELAY_AFTER_END = 3000L;
+	private static final long DELAY_AFTER_END = 3000L;
 	
-	static class FindFrameResult {
+	public static class FindFrameResult {
 		public Bitmap bitmap;
-		long delay;
+		public long delay; // 再描画が必要ない場合は Long.MAX_VALUE
 	}
 	
-	void findFrame( @NonNull FindFrameResult result, long t ){
+	// シーク位置に応じたコマ画像と次のコマまでの残り時間をresultに格納する
+	public void findFrame( @NonNull FindFrameResult result, long t ){
 		
 		if( mBitmapNonAnimation != null ){
 			result.bitmap = mBitmapNonAnimation;
@@ -296,7 +330,7 @@ import jp.juggler.subwaytooter.R;
 		while( e - s > 1 ){
 			int mid = ( s + e ) >> 1;
 			Frame frame = frames.get( mid );
-			//log.d("s=%d,m=%d,e=%d tt=%d,fs=%s,fe=%d",s,mid,e,tt,frame.time_start,frame.time_start+frame.time_width );
+			// log.d("s=%d,m=%d,e=%d tt=%d,fs=%s,fe=%d",s,mid,e,tt,frame.time_start,frame.time_start+frame.time_width );
 			if( tt < frame.time_start ){
 				e = mid;
 			}else if( tt >= frame.time_start + frame.time_width ){
@@ -312,100 +346,58 @@ import jp.juggler.subwaytooter.R;
 		result.bitmap = frames.get( s ).bitmap;
 		result.delay = (long) ( 0.5f + durationScale * ( delay < 0f ? 0f : delay ) );
 		
-		//log.d("findFrame tf=%d,tl=%d/%d,tt=%d/%d,s=%d,w=%d",tf,tl,loop_total,tt,time_total,s,frame.time_width);
+		// log.d("findFrame tf=%d,tl=%d/%d,tt=%d/%d,s=%d,w=%d,delay=%d",tf,tl,loop_total,tt,time_total,s,frame.time_width,result.delay);
 	}
 	
-	static Bitmap scaleBitmap( int size_max, Bitmap src ){
-		if( src == null ) return null;
-		
-		int src_w = src.getWidth();
-		int src_h = src.getHeight();
-		if( src_w <= size_max && src_h <= size_max ) return src;
-		
-		int dst_w;
-		int dst_h;
-		if( src_w >= src_h ){
-			dst_w = size_max;
-			dst_h = (int) ( 0.5f + src_h * size_max / (float) src_w );
-		}else{
-			dst_h = size_max;
-			dst_w = (int) ( 0.5f + src_w * size_max / (float) src_h );
-		}
-		Rect rect_src = new Rect( 0, 0, src_w, src_h );
-		Rect rect_dst = new Rect( 0, 0, dst_w, dst_h );
-		
-		Bitmap b2 = Bitmap.createBitmap( dst_w, dst_h, Bitmap.Config.ARGB_8888 );
-		Canvas canvas = new Canvas( b2 );
-		Paint srcModePaint = new Paint();
-		srcModePaint.setXfermode( new PorterDuffXfermode( PorterDuff.Mode.SRC ) );
-		canvas.drawBitmap( src, rect_src, rect_dst, srcModePaint );
-		src.recycle();
-		return b2;
-	}
+	/////////////////////////////////////////////////////////////////////
 	
-	static Bitmap toBitmap( Argb8888Bitmap src ){
-		int offset = 0;
-		int stride = src.width;
-		return Bitmap.createBitmap( src.getPixelArray(), offset, stride, src.width, src.height, Bitmap.Config.ARGB_8888 );
-	}
-	
-	static Bitmap toBitmap( Argb8888Bitmap src, int size_max ){
-		int offset = 0;
-		int stride = src.width;
-		Bitmap bitmap = Bitmap.createBitmap( src.getPixelArray(), offset, stride, src.width, src.height, Bitmap.Config.ARGB_8888 );
-		return scaleBitmap( size_max, bitmap );
-	}
-	
+	// APNGのパース中に随時呼び出される
 	static class APNGParseEventHandler extends BasicArgb8888Director< APNGFrames > {
 		
-		@NonNull final Context context;
-		int size_max;
+		private final int size_max;
 		
 		// 作成
-		APNGParseEventHandler( @NonNull Context context, int size_max ){
-			this.context = context;
+		APNGParseEventHandler( int size_max ){
 			this.size_max = size_max;
 		}
 		
-		PngHeader header;
-		PngScanlineBuffer buffer;
-		Argb8888Bitmap pngBitmap;
+		private PngHeader header;
+		private Argb8888Bitmap pngBitmap;
 		
 		// ヘッダが分かった
 		@Override
 		public void receiveHeader( PngHeader header, PngScanlineBuffer buffer ) throws PngException{
 			
 			this.header = header;
-			this.buffer = buffer;
 			this.pngBitmap = new Argb8888Bitmap( header.width, header.height );
-			this.scanlineProcessor = Argb8888Processors.from( header, buffer, pngBitmap );
 			
+			// 親クラスのprotectedフィールド
+			this.scanlineProcessor = Argb8888Processors.from( header, buffer, pngBitmap );
 		}
 		
-		// デフォルト画像の手前
-		@Override
-		public Argb8888ScanlineProcessor beforeDefaultImage(){
+		// デフォルト画像の手前で呼ばれる
+		@Override public Argb8888ScanlineProcessor beforeDefaultImage(){
 			return scanlineProcessor;
 		}
 		
-		Bitmap defaultImage = null;
+		private Bitmap defaultImage = null;
 		
 		// デフォルト画像が分かった
 		// おそらく receiveAnimationControl より先に呼ばれる
-		@Override public void receiveDefaultImage( Argb8888Bitmap srcDefaultImage ){
-			this.defaultImage = toBitmap( srcDefaultImage, size_max );
+		@Override public void receiveDefaultImage( Argb8888Bitmap defaultImage ){
+			this.defaultImage = toBitmap( defaultImage, size_max );
 		}
 		
-		APNGFrames animationComposer = null;
+		private APNGFrames mFrames = null;
 		
 		// アニメーション制御情報が分かった
 		@Override
 		public void receiveAnimationControl( PngAnimationControl animationControl ){
-			this.animationComposer = new APNGFrames( context.getResources(), header, scanlineProcessor, animationControl, size_max );
+			this.mFrames = new APNGFrames( header, scanlineProcessor, animationControl, size_max );
 		}
 		
 		boolean isAnimated(){
-			return animationComposer != null;
+			return mFrames != null;
 		}
 		
 		@Override public boolean wantDefaultImage(){
@@ -420,27 +412,57 @@ import jp.juggler.subwaytooter.R;
 		@Override
 		public Argb8888ScanlineProcessor receiveFrameControl( PngFrameControl frameControl ){
 			if( ! isAnimated() ) throw new RuntimeException( "not animation image" );
-			return animationComposer.beginFrame( frameControl );
+			return mFrames.beginFrame( frameControl );
 		}
 		
 		// フレーム画像が分かった
 		@Override public void receiveFrameImage( Argb8888Bitmap frameImage ){
 			if( ! isAnimated() ) throw new RuntimeException( "not animation image" );
-			animationComposer.completeFrame( frameImage );
+			mFrames.completeFrame( frameImage );
 		}
 		
-		// 画像を取得する
+		// 結果を取得する
 		@Override public APNGFrames getResult(){
-			return animationComposer != null ? animationComposer : new APNGFrames( defaultImage );
+			if( mFrames != null ){
+				if( defaultImage != null ){
+					defaultImage.recycle();
+				}
+				return mFrames;
+			}
+			if( defaultImage != null ){
+				return new APNGFrames( defaultImage );
+			}
+			throw new RuntimeException( "missing frames nor default image." );
 		}
 		
+		// 処理中に例外が起きた場合、Bitmapリソースを解放する
+		void dispose(){
+			if( defaultImage != null ){
+				defaultImage.recycle();
+			}
+			if( mFrames != null ){
+				mFrames.dispose();
+			}
+		}
 	}
 	
-	static APNGFrames parseAPNG( Context context, InputStream is, int size_max ) throws PngException{
-		Argb8888Processor< APNGFrames > processor = new Argb8888Processor<>( new APNGParseEventHandler( context, size_max ) );
-		APNGFrames result = PngReadHelper.read( is, new DefaultPngChunkReader<>( processor ) );
-		if( result != null ) result.onParseComplete();
-		return result;
+	/////////////////////////////////////////////////////////////////////
+	
+	// entry point is here
+	@Nullable static APNGFrames parseAPNG( InputStream is, int size_max )
+		throws PngException{
+		APNGParseEventHandler handler = new APNGParseEventHandler( size_max );
+		try{
+			Argb8888Processor< APNGFrames > processor = new Argb8888Processor<>( handler );
+			PngReader< APNGFrames > reader = new DefaultPngChunkReader<>( processor );
+			APNGFrames result = PngReadHelper.read( is, reader );
+			if( result != null ) result.onParseComplete();
+			return result;
+		}catch( Throwable ex ){
+			log.trace( ex );
+			handler.dispose();
+			throw ex;
+		}
 	}
 	
 }

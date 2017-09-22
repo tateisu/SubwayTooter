@@ -408,10 +408,10 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private final EmojiInvalidator spoiler_invalidator;
 	
 	private static class EmojiInvalidator implements Runnable, NetworkEmojiSpan.InvalidateCallback {
-		View view;
-		Handler handler;
+		@NonNull final View view;
+		@NonNull final Handler handler;
 		
-		EmojiInvalidator( Handler handler, View view ){
+		EmojiInvalidator( @NonNull Handler handler, @NonNull View view ){
 			this.handler = handler;
 			this.view = view;
 		}
@@ -427,7 +427,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		// 絵文字スパンを描画した直後に呼ばれる
 		// (絵文字が多いと描画の度に大量に呼び出される)
 		@Override public void delayInvalidate( long delay ){
-			handler.postDelayed( this, delay <10L ? 10L : delay );
+			handler.postDelayed( this, delay <10L ? 10L : delay > 711L ? 711L :delay );
 		}
 		
 		// Handler経由で遅延実行される

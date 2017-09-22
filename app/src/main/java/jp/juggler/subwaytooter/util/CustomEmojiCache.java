@@ -24,11 +24,9 @@ import okhttp3.Response;
 public class CustomEmojiCache {
 	
 	private static final LogCategory log = new LogCategory( "CustomEmojiCache" );
-
-
+	
 	static final int CACHE_MAX = 512; // 使用中のビットマップは掃除しないので、頻度によってはこれより多くなることもある
 	static final long ERROR_EXPIRE = ( 60000L * 10 );
-	
 	
 	private static long getNow(){
 		return SystemClock.elapsedRealtime();
@@ -128,10 +126,10 @@ public class CustomEmojiCache {
 			while( ! bCancelled.get() ){
 				Request request = queue.poll();
 				if( request == null ){
-					waitEx(86400000L);
+					waitEx( 86400000L );
 					continue;
 				}
-
+				
 				long now = getNow();
 				synchronized( cache ){
 					
@@ -230,7 +228,7 @@ public class CustomEmojiCache {
 				} );
 				// 古い物から順にチェック
 				long now = getNow();
-				for( int i = list.size()-1; i>= CACHE_MAX-1; --i){
+				for( int i = list.size() - 1 ; i >= CACHE_MAX - 1 ; -- i ){
 					CacheItem item = list.get( i );
 					// あまり古くないなら無理に掃除しない
 					if( now - item.time_used < 1000L ) break;
@@ -240,25 +238,26 @@ public class CustomEmojiCache {
 			}
 			
 		}
-
+		
 		@Nullable private APNGFrames decodeAPNG( byte[] data, String url ){
 			try{
-				return APNGFrames.parseAPNG( context, new ByteArrayInputStream( data ) ,64 );
-			}catch(Throwable ex){
+				APNGFrames frames = APNGFrames.parseAPNG( new ByteArrayInputStream( data ), 64 );
+				if( frames != null ) return frames;
+			}catch( Throwable ex ){
 				log.e( ex, "PNG decode failed. %s", url );
 				// PngFeatureException Interlaced images are not yet supported
 			}
-				
+			
 			// 通常のビットマップでのロードを試みる
 			try{
 				Bitmap b = decodeBitmap( data, 128 );
 				if( b != null ){
 					return new APNGFrames( b );
 				}else{
-					log.e("Bitmap decode returns null. %s",url);
+					log.e( "Bitmap decode returns null. %s", url );
 				}
-			}catch(Throwable ex2){
-				log.e(ex2,"Bitmap decode failed. %s",url);
+			}catch( Throwable ex ){
+				log.e( ex, "Bitmap decode failed. %s", url );
 			}
 			return null;
 		}
@@ -274,7 +273,7 @@ public class CustomEmojiCache {
 			int w = options.outWidth;
 			int h = options.outHeight;
 			if( w <= 0 || h <= 0 ){
-				log.e( "can't decode bounds.");
+				log.e( "can't decode bounds." );
 				return null;
 			}
 			int bits = 0;

@@ -415,9 +415,9 @@ public class PostHelper implements CustomEmojiLister.Callback {
 	
 	private String instance;
 	public void setInstance( String instance ){
-		this.instance = instance.toLowerCase();
+		this.instance = instance == null ? null :instance.toLowerCase();
 		
-		App1.custom_emoji_lister.get( instance, PostHelper.this );
+		App1.custom_emoji_lister.get( this.instance, PostHelper.this );
 		
 		if( popup != null && popup.isShowing() ){
 			proc_text_changed.run();

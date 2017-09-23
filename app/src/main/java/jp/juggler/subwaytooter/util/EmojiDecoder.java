@@ -8,6 +8,8 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.TextUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.regex.Matcher;
@@ -15,7 +17,7 @@ import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.R;
-import jp.juggler.subwaytooter.api.entity.CustomEmojiMap;
+import jp.juggler.subwaytooter.api.entity.CustomEmoji;
 
 public abstract class EmojiDecoder {
 	private static final Pattern SHORTNAME_PATTERN = Pattern.compile( ":([-+\\w]+):" );
@@ -30,9 +32,9 @@ public abstract class EmojiDecoder {
 		int last_span_start = - 1;
 		int last_span_end = - 1;
 		
-		@Nullable CustomEmojiMap custom_map;
+		@Nullable CustomEmoji.Map custom_map;
 		
-		DecodeEnv( @NonNull Context context, @Nullable CustomEmojiMap custom_map ){
+		DecodeEnv( @NonNull Context context, @Nullable CustomEmoji.Map custom_map ){
 			this.context = context;
 			this.custom_map = custom_map;
 		}
@@ -124,7 +126,7 @@ public abstract class EmojiDecoder {
 	private static final Pattern reNicoru = Pattern.compile( "\\Anicoru\\d*\\z", Pattern.CASE_INSENSITIVE );
 	private static final Pattern reHohoemi = Pattern.compile( "\\Ahohoemi\\d*\\z", Pattern.CASE_INSENSITIVE );
 	
-	public static Spannable decodeEmoji( Context context, String s, @Nullable CustomEmojiMap custom_map ){
+	public static Spannable decodeEmoji( Context context, String s, @Nullable CustomEmoji.Map custom_map ){
 		
 		DecodeEnv decode_env = new DecodeEnv( context, custom_map );
 		Matcher matcher = SHORTNAME_PATTERN.matcher( s );
@@ -174,4 +176,27 @@ public abstract class EmojiDecoder {
 		
 		return decode_env.sb;
 	}
+	
+	public static ArrayList< CharSequence > searchShortCode( Context context, String prefix, int limit ){
+		ArrayList< CharSequence > dst = new ArrayList<>();
+		if( ! App1.USE_OLD_EMOJIONE ){
+			for( String shortCode : EmojiMap201709.sShortNameList ){
+				if( dst.size() >= limit ) break;
+				if( ! shortCode.contains( prefix )) continue;
+				
+				SpannableStringBuilder sb = new SpannableStringBuilder();
+				sb.append( ' ' );
+				int start = 0;
+				int end = sb.length();
+				sb.setSpan( new EmojiImageSpan( context, EmojiMap201709.sShortNameToImageId.get( shortCode ) ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				sb.append( ' ' );
+				sb.append( ':' );
+				sb.append( shortCode );
+				sb.append( ':' );
+				dst.add( sb );
+			}
+		}
+		return dst;
+	}
+	
 }

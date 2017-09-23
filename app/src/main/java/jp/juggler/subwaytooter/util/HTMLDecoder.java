@@ -6,6 +6,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
 
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.Pref;
+import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootMention;
 import jp.juggler.subwaytooter.table.SavedAccount;
@@ -279,7 +281,16 @@ public class HTMLDecoder {
 			}
 			
 			if( is_media_attachment( list_attachment, href ) ){
-				return EmojiDecoder.decodeEmoji( context, ":frame_photo:",null );
+				if( App1.USE_OLD_EMOJIONE ){
+					return EmojiDecoder.decodeEmoji( context, ":frame_photo:",null );
+				}else{
+					SpannableStringBuilder sb = new SpannableStringBuilder();
+					sb.append( href );
+					int start = 0;
+					int end = sb.length();
+					sb.setSpan( new EmojiImageSpan( context,  R.drawable.emj_1f5bc ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+					return sb;
+				}
 			}
 			
 			try{

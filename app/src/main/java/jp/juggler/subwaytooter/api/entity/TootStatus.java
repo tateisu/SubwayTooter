@@ -106,7 +106,7 @@ public class TootStatus extends TootStatusLike {
 			status.json = src;
 			
 			// 絵文字マップは割と最初の方で読み込んでおきたい
-			status.emojis = CustomEmojiMap.parse( src.optJSONArray( "emojis" ));
+			status.emojis = CustomEmoji.parseMap( src.optJSONArray( "emojis" ));
 			
 			
 			status.account = TootAccount.parse( context, access_info, src.optJSONObject( "account" ) );

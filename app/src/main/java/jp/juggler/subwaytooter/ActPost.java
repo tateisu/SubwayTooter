@@ -26,7 +26,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
-import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
@@ -69,7 +68,6 @@ import jp.juggler.subwaytooter.table.PostDraft;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.dialog.ActionsDialog;
 import jp.juggler.subwaytooter.util.DecodeOptions;
-import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.MyClickableSpan;
@@ -745,10 +743,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	void setAccount( SavedAccount a ){
 		this.account = a;
 		if( a == null ){
+			if(post_helper != null) post_helper.setInstance( null );
 			btnAccount.setText( getString( R.string.not_selected ) );
 			btnAccount.setTextColor( Styler.getAttributeColor( this, android.R.attr.textColorPrimary ) );
 			btnAccount.setBackgroundResource( R.drawable.btn_bg_transparent );
 		}else{
+			if(post_helper != null) post_helper.setInstance( a.host );
 			String acct = a.getFullAcct( a );
 			AcctColor ac = AcctColor.load( acct );
 			String nickname = AcctColor.hasNickname( ac ) ? ac.nickname : acct;

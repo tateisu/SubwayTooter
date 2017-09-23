@@ -12,6 +12,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.view.View;
@@ -29,6 +31,7 @@ import jp.juggler.subwaytooter.Pref;
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
+import jp.juggler.subwaytooter.api.entity.CustomEmoji;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootInstance;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
@@ -41,19 +44,18 @@ import jp.juggler.subwaytooter.view.MyEditText;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
-
-public class PostHelper {
+public class PostHelper implements CustomEmojiLister.Callback {
 	private static final LogCategory log = new LogCategory( "PostHelper" );
 	
-	public interface Callback{
-		void onPostComplete(SavedAccount target_account,TootStatus status);
+	public interface Callback {
+		void onPostComplete( SavedAccount target_account, TootStatus status );
 	}
 	
 	private final AppCompatActivity activity;
 	private final SharedPreferences pref;
 	private final Handler handler;
 	
-	public PostHelper( AppCompatActivity activity ,SharedPreferences pref,Handler handler ){
+	public PostHelper( AppCompatActivity activity, SharedPreferences pref, Handler handler ){
 		this.activity = activity;
 		this.pref = pref;
 		this.handler = handler;
@@ -69,9 +71,9 @@ public class PostHelper {
 		"(?:^|[^/)\\w])#(" + word + "*" + alpha + word + "*)"
 		, Pattern.CASE_INSENSITIVE
 	);
-
-	private static final Pattern reCharsNotTag = Pattern.compile( "[\\s\\-+.,:;/]" );
 	
+	private static final Pattern reCharsNotTag = Pattern.compile( "[\\s\\-+.,:;/]" );
+	private static final Pattern reCharsNotEmoji = Pattern.compile( "[^0-9A-Za-z_-]" );
 	
 	public String content;
 	public String spoiler_text;
@@ -83,7 +85,7 @@ public class PostHelper {
 	
 	static final VersionString version_1_6 = new VersionString( "1.6" );
 	
-	public void post( final SavedAccount account,final boolean bConfirmTag, final boolean bConfirmAccount ,final Callback callback){
+	public void post( final SavedAccount account, final boolean bConfirmTag, final boolean bConfirmAccount, final Callback callback ){
 		if( TextUtils.isEmpty( content ) ){
 			Utils.showToast( activity, true, R.string.post_error_contents_empty );
 			return;
@@ -95,15 +97,15 @@ public class PostHelper {
 		}
 		
 		if( enquete_items != null && ! enquete_items.isEmpty() ){
-			for(int n=0,ne =enquete_items.size();n<ne;++n){
-				String item = enquete_items.get(n);
+			for( int n = 0, ne = enquete_items.size() ; n < ne ; ++ n ){
+				String item = enquete_items.get( n );
 				if( TextUtils.isEmpty( item ) ){
 					if( n < 2 ){
 						Utils.showToast( activity, true, R.string.enquete_item_is_empty, n + 1 );
 						return;
 					}
 				}else{
-					int code_count = item.codePointCount( 0,item.length() );
+					int code_count = item.codePointCount( 0, item.length() );
 					if( code_count > 15 ){
 						int over = code_count - 15;
 						Utils.showToast( activity, true, R.string.enquete_item_too_long, n + 1, over );
@@ -134,7 +136,7 @@ public class PostHelper {
 					}
 					
 					@Override public void onOK(){
-						post( account,bConfirmTag, true ,callback);
+						post( account, bConfirmTag, true, callback );
 					}
 				} );
 			return;
@@ -150,7 +152,7 @@ public class PostHelper {
 					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 						@Override public void onClick( DialogInterface dialog, int which ){
 							//noinspection ConstantConditions
-							post( account,true, bConfirmAccount  ,callback);
+							post( account, true, bConfirmAccount, callback );
 						}
 					} )
 					.show();
@@ -177,17 +179,19 @@ public class PostHelper {
 				}
 				return result;
 			}
+			
 			TootAccount credential_tmp;
 			
 			TootApiResult getCredential( @NonNull TootApiClient client ){
 				credential_tmp = null;
-				TootApiResult result = client.request("/api/v1/accounts/verify_credentials" );
+				TootApiResult result = client.request( "/api/v1/accounts/verify_credentials" );
 				if( result != null && result.object != null ){
-					credential_tmp = TootAccount.parse( activity,target_account,result.object );
+					credential_tmp = TootAccount.parse( activity, target_account, result.object );
 					
 				}
 				return result;
 			}
+			
 			@Override protected TootApiResult doInBackground( Void... params ){
 				TootApiClient client = new TootApiClient( activity, new TootApiClient.Callback() {
 					@Override public boolean isApiCancelled(){
@@ -209,7 +213,7 @@ public class PostHelper {
 					visibility = TootStatus.VISIBILITY_PUBLIC;
 				}
 				String visibility_checked = visibility;
-				if( TootStatus.VISIBILITY_WEB_SETTING.equals( visibility) ){
+				if( TootStatus.VISIBILITY_WEB_SETTING.equals( visibility ) ){
 					TootInstance instance = target_account.getInstance();
 					if( instance == null ){
 						TootApiResult r2 = getInstanceInformation( client, null );
@@ -217,16 +221,16 @@ public class PostHelper {
 						instance = instance_tmp;
 						target_account.setInstance( instance_tmp );
 					}
-					if( instance.isEnoughVersion( version_1_6 )){
+					if( instance.isEnoughVersion( version_1_6 ) ){
 						visibility_checked = null;
 					}else{
-						TootApiResult r2 = getCredential(client);
+						TootApiResult r2 = getCredential( client );
 						if( credential_tmp == null ){
 							return r2;
-						}else if( credential_tmp.source == null || credential_tmp.source.privacy ==null ){
-							return new TootApiResult( activity.getString(R.string.cant_get_web_setting_visibility) );
+						}else if( credential_tmp.source == null || credential_tmp.source.privacy == null ){
+							return new TootApiResult( activity.getString( R.string.cant_get_web_setting_visibility ) );
 						}else{
-							visibility_checked =  credential_tmp.source.privacy;
+							visibility_checked = credential_tmp.source.privacy;
 						}
 					}
 				}
@@ -274,16 +278,15 @@ public class PostHelper {
 					);
 				}else{
 					
-					
-					JSONObject json = new JSONObject(  );
+					JSONObject json = new JSONObject();
 					try{
-						json.put("status",content);
+						json.put( "status", content );
 						if( visibility_checked != null ){
 							json.put( "visibility", visibility_checked );
 						}
-						json.put("sensitive",bNSFW);
-						json.put("spoiler_text",TextUtils.isEmpty( spoiler_text ) ? "" : spoiler_text );
-						json.put("in_reply_to_id", in_reply_to_id == -1L ? null : in_reply_to_id );
+						json.put( "sensitive", bNSFW );
+						json.put( "spoiler_text", TextUtils.isEmpty( spoiler_text ) ? "" : spoiler_text );
+						json.put( "in_reply_to_id", in_reply_to_id == - 1L ? null : in_reply_to_id );
 						JSONArray array = new JSONArray();
 						if( attachment_list != null ){
 							for( PostAttachment pa : attachment_list ){
@@ -292,16 +295,16 @@ public class PostHelper {
 								}
 							}
 						}
-						json.put("media_ids",array);
-						json.put("isEnquete",true);
+						json.put( "media_ids", array );
+						json.put( "isEnquete", true );
 						array = new JSONArray();
-						for( String item  : enquete_items ){
+						for( String item : enquete_items ){
 							array.put( item );
 						}
-						json.put("enquete_items",array);
-					}catch(JSONException ex){
+						json.put( "enquete_items", array );
+					}catch( JSONException ex ){
 						log.trace( ex );
-						log.e(ex,"status encoding failed.");
+						log.e( ex, "status encoding failed." );
 					}
 					
 					body_string = json.toString();
@@ -312,10 +315,8 @@ public class PostHelper {
 				}
 				
 				final Request.Builder request_builder = new Request.Builder()
-					.post(request_body );
-				final String digest =Utils.digestSHA256( body_string + account.acct );
-				
-				
+					.post( request_body );
+				final String digest = Utils.digestSHA256( body_string + account.acct );
 				
 				if( ! pref.getBoolean( Pref.KEY_DONT_DUPLICATION_CHECK, false ) ){
 					request_builder.header( "Idempotency-Key", digest );
@@ -323,7 +324,7 @@ public class PostHelper {
 				
 				TootApiResult result = client.request( "/api/v1/statuses", request_builder );
 				if( result != null && result.object != null ){
-					status = TootStatus.parse( activity,  account, result.object );
+					status = TootStatus.parse( activity, account, result.object );
 					if( status != null ){
 						Spannable s = status.decoded_content;
 						MyClickableSpan[] span_list = s.getSpans( 0, s.length(), MyClickableSpan.class );
@@ -380,7 +381,7 @@ public class PostHelper {
 					// cancelled.
 				}else if( status != null ){
 					// 連投してIdempotency が同じだった場合もエラーにはならず、ここを通る
-					callback.onPostComplete( target_account,status );
+					callback.onPostComplete( target_account, status );
 				}else{
 					Utils.showToast( activity, true, result.error );
 				}
@@ -399,17 +400,29 @@ public class PostHelper {
 		task.executeOnExecutor( App1.task_executor );
 	}
 	
-	public interface Callback2{
+	public interface Callback2 {
 		void onTextUpdate();
+		
 		boolean canOpenPopup();
 	}
 	
 	private Callback2 callback2;
-
+	
 	private MyEditText et;
 	private PopupAutoCompleteAcct popup;
 	private View formRoot;
 	private boolean bMainScreen;
+	
+	private String instance;
+	public void setInstance( String instance ){
+		this.instance = instance.toLowerCase();
+		
+		App1.custom_emoji_lister.get( instance, PostHelper.this );
+		
+		if( popup != null && popup.isShowing() ){
+			proc_text_changed.run();
+		}
+	}
 	
 	public void closeAcctPopup(){
 		if( popup != null ){
@@ -423,15 +436,13 @@ public class PostHelper {
 			popup.updatePosition();
 		}
 	}
-
+	
 	public void onDestroy(){
 		handler.removeCallbacks( proc_text_changed );
 		closeAcctPopup();
 	}
 	
-	
-	
-	public void attachEditText( View _formRoot, MyEditText _et, boolean bMainScreen, Callback2 _callback2){
+	public void attachEditText( View _formRoot, MyEditText _et, boolean bMainScreen, Callback2 _callback2 ){
 		this.formRoot = _formRoot;
 		this.et = _et;
 		this.callback2 = _callback2;
@@ -466,12 +477,9 @@ public class PostHelper {
 		} );
 	}
 	
-
-	
-	
 	private final Runnable proc_text_changed = new Runnable() {
 		@Override public void run(){
-			if(! callback2.canOpenPopup() ){
+			if( ! callback2.canOpenPopup() ){
 				closeAcctPopup();
 				return;
 			}
@@ -523,13 +531,13 @@ public class PostHelper {
 			}
 			int limit = 100;
 			String s = src.substring( start, end );
-			ArrayList< String > acct_list = AcctSet.searchPrefix( s, limit );
+			ArrayList< CharSequence > acct_list = AcctSet.searchPrefix( s, limit );
 			log.d( "search for %s, result=%d", s, acct_list.size() );
 			if( acct_list.isEmpty() ){
 				closeAcctPopup();
 			}else{
 				if( popup == null || ! popup.isShowing() ){
-					popup = new PopupAutoCompleteAcct( activity, et, formRoot,bMainScreen );
+					popup = new PopupAutoCompleteAcct( activity, et, formRoot, bMainScreen );
 				}
 				popup.setList( acct_list, start, end );
 			}
@@ -541,35 +549,90 @@ public class PostHelper {
 			String src = et.getText().toString();
 			int last_sharp = src.lastIndexOf( '#', end - 1 );
 			
-			if( last_sharp == - 1 || end - last_sharp < 3 ){
-				closeAcctPopup();
+			if( last_sharp == - 1 || end - last_sharp < 2 ){
+				checkEmoji();
 				return;
 			}
 			
 			String part = src.substring( last_sharp + 1, end );
 			if( reCharsNotTag.matcher( part ).find() ){
-				log.d("checkTag: character not tag in string %s",part);
-				closeAcctPopup();
+				log.d( "checkTag: character not tag in string %s", part );
+				checkEmoji();
 				return;
 			}
 			
 			int limit = 100;
 			String s = src.substring( last_sharp + 1, end );
-			ArrayList< String > tag_list = TagSet.searchPrefix( s, limit );
+			ArrayList< CharSequence > tag_list = TagSet.searchPrefix( s, limit );
 			log.d( "search for %s, result=%d", s, tag_list.size() );
 			if( tag_list.isEmpty() ){
 				closeAcctPopup();
 			}else{
 				if( popup == null || ! popup.isShowing() ){
-					popup = new PopupAutoCompleteAcct( activity, et, formRoot ,bMainScreen);
+					popup = new PopupAutoCompleteAcct( activity, et, formRoot, bMainScreen );
 				}
 				popup.setList( tag_list, last_sharp, end );
 			}
 		}
+		
+		private void checkEmoji(){
+			int end = et.getSelectionEnd();
+			
+			String src = et.getText().toString();
+			int last_colon = src.lastIndexOf( ':', end - 1 );
+			
+			if( last_colon == - 1 || end - last_colon < 2 ){
+				closeAcctPopup();
+				return;
+			}
+			
+			String part = src.substring( last_colon + 1, end );
+			if( reCharsNotEmoji.matcher( part ).find() ){
+				log.d( "checkEmoji: character not short code in string %s", part );
+				closeAcctPopup();
+				return;
+			}
+			// 絵文字を部分一致で検索
+			int limit = 100;
+			String s = src.substring( last_colon + 1, end ).toLowerCase().replace( '-', '_' );
+			ArrayList< CharSequence > code_list = EmojiDecoder.searchShortCode( activity, s, limit );
+			log.d( "checkEmoji: search for %s, result=%d", s, code_list.size() );
+
+			// カスタム絵文字を検索
+			if( !TextUtils.isEmpty( instance )){
+				CustomEmoji.List custom_list = App1.custom_emoji_lister.get( instance, PostHelper.this );
+				if( custom_list != null ){
+					String needle = src.substring( last_colon + 1, end );
+					for( CustomEmoji item : custom_list  ){
+						if( code_list.size() >= limit ) break;
+						if( ! item.shortcode.contains( needle )) continue;
+						
+						SpannableStringBuilder sb = new SpannableStringBuilder();
+						sb.append( ' ' );
+						sb.setSpan( new NetworkEmojiSpan( item.url ), 0, sb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+						sb.append( ' ' );
+						sb.append( ':' );
+						sb.append( item.shortcode );
+						sb.append( ':' );
+						code_list.add( sb );
+					}
+				}
+			}
+			
+			if( code_list.isEmpty() ){
+				closeAcctPopup();
+			}else{
+				if( popup == null || ! popup.isShowing() ){
+					popup = new PopupAutoCompleteAcct( activity, et, formRoot, bMainScreen );
+				}
+				popup.setList( code_list, last_colon, end );
+			}
+		}
 	};
-	
-	
-	
-	
-	
+
+	@Override public void onListLoadComplete( CustomEmoji.List list ){
+		if( popup != null && popup.isShowing() ){
+			proc_text_changed.run();
+		}
+	}
 }

@@ -40,6 +40,7 @@ import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.TagSet;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.CustomEmojiCache;
+import jp.juggler.subwaytooter.util.CustomEmojiLister;
 import jp.juggler.subwaytooter.util.LogCategory;
 import okhttp3.Cache;
 import okhttp3.CipherSuite;
@@ -227,6 +228,7 @@ public class App1 extends Application {
 	
 	@SuppressLint("StaticFieldLeak")
 	public static CustomEmojiCache custom_emoji_cache;
+	public static CustomEmojiLister custom_emoji_lister;
 	
 	private static boolean bPrepared = false;
 	
@@ -368,7 +370,9 @@ public class App1 extends Application {
 		if( custom_emoji_cache == null ){
 			custom_emoji_cache = new CustomEmojiCache( app_context );
 		}
-		
+		if( custom_emoji_lister == null ){
+			custom_emoji_lister = new CustomEmojiLister( app_context );
+		}
 	}
 	
 	@SuppressLint("StaticFieldLeak")

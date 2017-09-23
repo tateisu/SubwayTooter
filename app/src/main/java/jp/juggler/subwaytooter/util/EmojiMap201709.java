@@ -1,7 +1,10 @@
 package jp.juggler.subwaytooter.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.TreeSet;
 
 import jp.juggler.subwaytooter.R;
 
@@ -9,9 +12,11 @@ import jp.juggler.subwaytooter.R;
 	
 	static final HashMap< String, Integer > sUTF16ToImageId = new HashMap<>();
 	static final HashMap< String, Integer > sShortNameToImageId = new HashMap<>();
+	static final ArrayList<String> sShortNameList = new ArrayList<>(  );
 
 	static{
 		initAll();
+		Collections.sort( sShortNameList );
 	}
 	
 	private static void _addCodePoints( int image_id, String... list_utf16 ){
@@ -30,6 +35,7 @@ import jp.juggler.subwaytooter.R;
 		Integer iv = image_id;
 		for( String sv : list_name ){
 			sShortNameToImageId.put( sv, iv );
+			sShortNameList.add( sv );
 		}
 	}
 	

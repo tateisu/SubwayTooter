@@ -2,8 +2,10 @@ package jp.juggler.subwaytooter.util;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.text.Layout;
+import android.text.Spannable;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.CheckedTextView;
@@ -16,16 +18,16 @@ import java.util.ArrayList;
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.Styler;
 
-class PopupAutoCompleteAcct {
+@SuppressWarnings("WeakerAccess") class PopupAutoCompleteAcct {
 	final Activity activity;
-	private final EditText etContent;
-	private final PopupWindow acct_popup;
-	private final LinearLayout llItems;
-	private final View formRoot;
-	private final float density;
-	private final int popup_width;
-	
-	private int popup_rows;
+	final EditText etContent;
+	final PopupWindow acct_popup;
+	final LinearLayout llItems;
+	final View formRoot;
+	final float density;
+	final int popup_width;
+	final Handler handler;
+	int popup_rows;
 	
 	private boolean bMainScreen;
 	
@@ -43,12 +45,13 @@ class PopupAutoCompleteAcct {
 		this.formRoot = formRoot;
 		this.bMainScreen = bMainScreen;
 		this.density = activity.getResources().getDisplayMetrics().density;
+		this.handler = new Handler( activity.getMainLooper() );
 		
 		popup_width = (int) ( 0.5f + 240f * density );
 		
 		@SuppressLint("InflateParams") View viewRoot =
 			activity.getLayoutInflater().inflate( R.layout.acct_complete_popup, null, false );
-		llItems = (LinearLayout) viewRoot.findViewById( R.id.llItems );
+		llItems = viewRoot.findViewById( R.id.llItems );
 		//
 		acct_popup = new PopupWindow( activity );
 		acct_popup.setBackgroundDrawable( ContextCompat.getDrawable( activity, R.drawable.acct_popup_bg ) );
@@ -56,7 +59,7 @@ class PopupAutoCompleteAcct {
 		acct_popup.setTouchable( true );
 	}
 	
-	void setList( ArrayList< String > acct_list, final int sel_start, final int sel_end ){
+	void setList( ArrayList< CharSequence > acct_list, final int sel_start, final int sel_end ){
 		
 		llItems.removeAllViews();
 		
@@ -78,21 +81,25 @@ class PopupAutoCompleteAcct {
 		
 		for( int i = 0 ; ; ++ i ){
 			if( i >= acct_list.size() ) break;
-			final String acct = acct_list.get( i );
+			final CharSequence acct = acct_list.get( i );
 			CheckedTextView v = (CheckedTextView) activity.getLayoutInflater()
 				.inflate( R.layout.lv_spinner_dropdown, llItems, false );
 			v.setTextColor( Styler.getAttributeColor( activity, android.R.attr.textColorPrimary ) );
 			v.setText( acct );
+			if( acct instanceof Spannable ){
+				new NetworkEmojiInvalidator( handler, v ).register( (Spannable) acct );
+			}
 			v.setOnClickListener( new View.OnClickListener() {
 				@Override public void onClick( View v ){
 					String s = etContent.getText().toString();
-					s = s.substring( 0, sel_start ) + acct + " "
-						+ ( sel_end >= s.length() ? "" : s.substring( sel_end ) );
+					CharSequence svInsert = ( acct.charAt( 0 ) == ' ' ? acct.subSequence( 2, acct.length() ) : acct );
+					s = s.substring( 0, sel_start ) + svInsert + " " + ( sel_end >= s.length() ? "" : s.substring( sel_end ) );
 					etContent.setText( s );
-					etContent.setSelection( sel_start + acct.length() + 1 );
+					etContent.setSelection( sel_start + svInsert.length() + 1 );
 					acct_popup.dismiss();
 				}
 			} );
+			
 			llItems.addView( v );
 			++ popup_rows;
 		}
@@ -112,7 +119,7 @@ class PopupAutoCompleteAcct {
 		
 		if( bMainScreen ){
 			int popup_bottom = text_top + etContent.getTotalPaddingTop() - etContent.getScrollY();
-			int max = popup_bottom-(int) ( 0.5f + 48f * 1f * density );
+			int max = popup_bottom - (int) ( 0.5f + 48f * 1f * density );
 			int min = (int) ( 0.5f + 48f * 2f * density );
 			popup_height = (int) ( 0.5f + 48f * popup_rows * density );
 			if( popup_height < min ) popup_height = min;

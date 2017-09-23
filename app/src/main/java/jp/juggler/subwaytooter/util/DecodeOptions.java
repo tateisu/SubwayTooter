@@ -4,10 +4,8 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 import android.text.SpannableStringBuilder;
 
-import jp.juggler.subwaytooter.ActAccountSetting;
-import jp.juggler.subwaytooter.api.entity.CustomEmojiMap;
+import jp.juggler.subwaytooter.api.entity.CustomEmoji;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
-import jp.juggler.subwaytooter.table.SavedAccount;
 
 @SuppressWarnings("WeakerAccess")
 public class DecodeOptions {
@@ -37,8 +35,8 @@ public class DecodeOptions {
 		return this;
 	}
 	
-	@Nullable CustomEmojiMap customEmojiMap;
-	public DecodeOptions setEmojiMap(CustomEmojiMap customEmojiMap){
+	@Nullable CustomEmoji.Map customEmojiMap;
+	public DecodeOptions setEmojiMap(CustomEmoji.Map customEmojiMap){
 		this.customEmojiMap = customEmojiMap;
 		return this;
 	}

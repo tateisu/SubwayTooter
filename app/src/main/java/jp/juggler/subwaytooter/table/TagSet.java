@@ -117,14 +117,14 @@ public class TagSet {
 		return sb.toString();
 	}
 	
-	@NonNull public static ArrayList< String > searchPrefix( @NonNull String prefix ,int limit){
+	@NonNull public static ArrayList< CharSequence > searchPrefix( @NonNull String prefix ,int limit){
 		try{
 			String[] where_arg = prefix_search_where_arg.get();
 			where_arg[ 0 ] = makePattern( prefix );
 			Cursor cursor = App1.getDB().query( table, null, prefix_search_where, where_arg, null, null, COL_TAG + " asc limit "+limit );
 			if( cursor != null ){
 				try{
-					ArrayList< String > dst = new ArrayList<>( cursor.getCount() );
+					ArrayList< CharSequence > dst = new ArrayList<>( cursor.getCount() );
 					int idx_acct = cursor.getColumnIndex( COL_TAG );
 					while( cursor.moveToNext() ){
 						dst.add( "#"+cursor.getString( idx_acct ) );

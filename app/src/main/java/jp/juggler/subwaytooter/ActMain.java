@@ -436,6 +436,9 @@ public class ActMain extends AppCompatActivity
 						column.startLoading();
 					}
 					scrollColumnStrip( position );
+					if( post_helper != null ){
+						post_helper.setInstance( column.access_info.isNA() ? null : column.access_info.host );
+					}
 				}
 			}
 		} );

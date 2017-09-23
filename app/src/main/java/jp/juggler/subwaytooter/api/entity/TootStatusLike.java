@@ -60,7 +60,7 @@ public abstract class TootStatusLike extends TootId {
 	//Application from which the status was posted
 	@Nullable public TootApplication application;
 	
-	@Nullable public CustomEmojiMap emojis;
+	@Nullable public CustomEmoji.Map emojis;
 	
 	
 	/////////////////////////

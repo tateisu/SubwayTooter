@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import org.json.JSONObject;
 
@@ -12,6 +13,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
@@ -25,13 +28,15 @@ import okhttp3.Response;
 import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 
-class StreamReader {
+@SuppressWarnings("WeakerAccess") class StreamReader {
 	static final LogCategory log = new LogCategory( "StreamReader" );
 	
 	static final String EP_USER = "/api/v1/streaming/?stream=user";
 	static final String EP_PUBLIC = "/api/v1/streaming/?stream=public";
 	static final String EP_PUBLIC_LOCAL = "/api/v1/streaming/?stream=public:local";
 	static final String EP_HASHTAG = "/api/v1/streaming/?stream=hashtag"; // + &tag=hashtag (先頭の＃を含まない)
+	
+	static final Pattern reNumber = Pattern.compile( "([-]?\\d+)" );
 	
 	interface Callback {
 		void onStreamingMessage( String event_type, Object o );
@@ -92,37 +97,93 @@ class StreamReader {
 			try{
 				final JSONObject obj = new JSONObject( text );
 				final String event = obj.optString( "event" );
-				final Object payload = parsePayload( event, obj );
-				if( payload != null ){
-					Utils.runOnMainThread( new Runnable() {
-						@Override public void run(){
-							if( bDisposed.get() ) return;
-							synchronized( this ){
-								for( Callback callback : callback_list ){
-									try{
-										callback.onStreamingMessage( event, payload );
-									}catch( Throwable ex ){
-										log.trace( ex );
-									}
+				if( TextUtils.isEmpty( event ) ) return;
+				final Object payload = parsePayload( event, obj, text );
+				if( payload == null ) return;
+				Utils.runOnMainThread( new Runnable() {
+					@Override public void run(){
+						if( bDisposed.get() ) return;
+						synchronized( this ){
+							for( Callback callback : callback_list ){
+								try{
+									callback.onStreamingMessage( event, payload );
+								}catch( Throwable ex ){
+									log.trace( ex );
 								}
 							}
 						}
-					} );
-				}
+					}
+				} );
 			}catch( Throwable ex ){
 				log.trace( ex );
 			}
 		}
 		
-		private Object parsePayload( String event, JSONObject obj ){
+		static final String PAYLOAD = "payload";
+		
+		// ストリーミングAPIのペイロード部分をTootStatus,TootNotification,整数IDのどれかに解釈する
+		private Object parsePayload( @NonNull String event, @NonNull JSONObject parent, @NonNull String parent_text ){
 			try{
-				if( "update".equals( event ) ){
-					return TootStatus.parse( context, access_info, new JSONObject( obj.optString( "payload" ) ) );
-				}else if( "notification".equals( event ) ){
-					return TootNotification.parse( context, access_info, new JSONObject( obj.optString( "payload" ) ) );
-				}else if( "delete".equals( event ) ){
-					return Utils.optLongX( obj, "payload", - 1L );
+				if( parent.isNull( PAYLOAD ) ){
+					return null;
 				}
+				
+				Object payload = parent.opt( PAYLOAD );
+				
+				if( payload instanceof JSONObject ){
+					JSONObject src = (JSONObject)payload;
+					switch( event ){
+
+					case "update":
+						// ここを通るケースはまだ確認できていない
+						return TootStatus.parse( context, access_info, src );
+
+					case "notification":
+						// ここを通るケースはまだ確認できていない
+						return TootNotification.parse( context, access_info, src );
+
+					default:
+						// ここを通るケースはまだ確認できていない
+						log.e( "unknown payload(1). message=%s", parent_text );
+						return null;
+					}
+				}
+				
+				if( payload instanceof Number ){
+					// 2017/8/24 18:37 mastodon.juggler.jpでここを通った
+					return ( (Number) payload ).longValue();
+				}
+				
+				if( payload instanceof String ){
+					String sv = (String) payload;
+					
+					if( sv.charAt( 0 ) == '{' ){
+						JSONObject src = new JSONObject( sv );
+						switch( event ){
+						case "update":
+							// 2017/8/24 18:37 mastodon.juggler.jpでここを通った
+							return TootStatus.parse( context, access_info, src );
+
+						case "notification":
+							// 2017/8/24 18:37 mastodon.juggler.jpでここを通った
+							return TootNotification.parse( context, access_info, src );
+
+						default:
+							// ここを通るケースはまだ確認できていない
+							log.e( "unknown payload(2). message=%s", parent_text );
+							return null;
+						}
+					}
+					// 2017/8/24 18:37 mdx.ggtea.org でここを通った
+					Matcher m = reNumber.matcher( sv );
+					if( m.find() ){
+						return Long.parseLong( m.group( 1 ), 10 );
+					}
+				}
+				
+				// ここを通るケースはまだ確認できていない
+				log.e( "unknown payload(3). message=%s", parent_text );
+				
 			}catch( Throwable ex ){
 				log.trace( ex );
 			}

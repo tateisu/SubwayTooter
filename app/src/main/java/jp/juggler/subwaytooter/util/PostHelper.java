@@ -7,7 +7,6 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -36,6 +35,7 @@ import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootInstance;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.dialog.DlgConfirm;
+import jp.juggler.subwaytooter.dialog.EmojiPicker;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.SavedAccount;
@@ -44,7 +44,8 @@ import jp.juggler.subwaytooter.view.MyEditText;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
-public class PostHelper implements CustomEmojiLister.Callback {
+@SuppressWarnings("WeakerAccess")
+public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callback {
 	private static final LogCategory log = new LogCategory( "PostHelper" );
 	
 	public interface Callback {
@@ -54,11 +55,19 @@ public class PostHelper implements CustomEmojiLister.Callback {
 	private final AppCompatActivity activity;
 	private final SharedPreferences pref;
 	private final Handler handler;
+	private final String picker_caption_emoji;
+	private final String picker_caption_tag;
+	private final String picker_caption_mention;
 	
 	public PostHelper( AppCompatActivity activity, SharedPreferences pref, Handler handler ){
 		this.activity = activity;
 		this.pref = pref;
 		this.handler = handler;
+		
+		this.picker_caption_emoji = activity.getString( R.string.open_picker_emoji );
+		this.picker_caption_tag = activity.getString( R.string.open_picker_tag );
+		this.picker_caption_mention = activity.getString( R.string.open_picker_mention );
+		
 	}
 	
 	// [:word:] 単語構成文字 (Letter | Mark | Decimal_Number | Connector_Punctuation)
@@ -170,7 +179,7 @@ public class PostHelper implements CustomEmojiLister.Callback {
 			
 			TootInstance instance_tmp;
 			
-			TootApiResult getInstanceInformation( @NonNull TootApiClient client, @Nullable String instance_name ){
+			TootApiResult getInstanceInformation( @NonNull TootApiClient client ){
 				instance_tmp = null;
 				TootApiResult result = client.request( "/api/v1/instance" );
 				if( result != null && result.object != null ){
@@ -216,7 +225,7 @@ public class PostHelper implements CustomEmojiLister.Callback {
 				if( TootStatus.VISIBILITY_WEB_SETTING.equals( visibility ) ){
 					TootInstance instance = target_account.getInstance();
 					if( instance == null ){
-						TootApiResult r2 = getInstanceInformation( client, null );
+						TootApiResult r2 = getInstanceInformation( client );
 						if( instance_tmp == null ) return r2;
 						instance = instance_tmp;
 						target_account.setInstance( instance_tmp );
@@ -414,10 +423,13 @@ public class PostHelper implements CustomEmojiLister.Callback {
 	private boolean bMainScreen;
 	
 	private String instance;
+	
 	public void setInstance( String instance ){
-		this.instance = instance == null ? null :instance.toLowerCase();
+		this.instance = instance == null ? null : instance.toLowerCase();
 		
-		App1.custom_emoji_lister.get( this.instance, PostHelper.this );
+		if( instance != null ){
+			App1.custom_emoji_lister.get( this.instance, PostHelper.this );
+		}
 		
 		if( popup != null && popup.isShowing() ){
 			proc_text_changed.run();
@@ -457,7 +469,7 @@ public class PostHelper implements CustomEmojiLister.Callback {
 			@Override
 			public void onTextChanged( CharSequence s, int start, int before, int count ){
 				handler.removeCallbacks( proc_text_changed );
-				handler.postDelayed( proc_text_changed, ( popup != null && popup.isShowing() ? 100L : 1000L ) );
+				handler.postDelayed( proc_text_changed, ( popup != null && popup.isShowing() ? 100L : 500L ) );
 			}
 			
 			@Override
@@ -475,7 +487,46 @@ public class PostHelper implements CustomEmojiLister.Callback {
 				}
 			}
 		} );
+		
+		// 全然動いてなさそう…
+		// et.setCustomSelectionActionModeCallback( action_mode_callback );
+		
 	}
+	
+	//	final ActionMode.Callback action_mode_callback = new ActionMode.Callback() {
+	//		@Override public boolean onCreateActionMode( ActionMode actionMode, Menu menu ){
+	//			actionMode.getMenuInflater().inflate(R.menu.toot_long_tap, menu);
+	//			return true;
+	//		}
+	//		@Override public void onDestroyActionMode( ActionMode actionMode ){
+	//
+	//		}
+	//		@Override public boolean onPrepareActionMode( ActionMode actionMode, Menu menu ){
+	//			return false;
+	//		}
+	//
+	//		@Override
+	//		public boolean onActionItemClicked( ActionMode actionMode, MenuItem item ){
+	//			if (item.getItemId() == R.id.action_pick_emoji) {
+	//				actionMode.finish();
+	//				EmojiPicker.open( activity, instance, new EmojiPicker.Callback() {
+	//					@Override public void onPickedEmoji( String name ){
+	//						int end = et.getSelectionEnd();
+	//						String src = et.getText().toString();
+	//						CharSequence svInsert = ":" + name + ":";
+	//						src = src.substring( 0, end ) + svInsert + " " + ( end >= src.length() ? "" : src.substring( end ) );
+	//						et.setText( src );
+	//						et.setSelection( end + svInsert.length() + 1 );
+	//
+	//						proc_text_changed.run();
+	//					}
+	//				} );
+	//				return true;
+	//			}
+	//
+	//			return false;
+	//		}
+	//	};
 	
 	private final Runnable proc_text_changed = new Runnable() {
 		@Override public void run(){
@@ -539,7 +590,7 @@ public class PostHelper implements CustomEmojiLister.Callback {
 				if( popup == null || ! popup.isShowing() ){
 					popup = new PopupAutoCompleteAcct( activity, et, formRoot, bMainScreen );
 				}
-				popup.setList( acct_list, start, end );
+				popup.setList( start, end, acct_list, null, null );
 			}
 		}
 		
@@ -571,7 +622,7 @@ public class PostHelper implements CustomEmojiLister.Callback {
 				if( popup == null || ! popup.isShowing() ){
 					popup = new PopupAutoCompleteAcct( activity, et, formRoot, bMainScreen );
 				}
-				popup.setList( tag_list, last_sharp, end );
+				popup.setList( last_sharp, end, tag_list, null, null );
 			}
 		}
 		
@@ -581,31 +632,45 @@ public class PostHelper implements CustomEmojiLister.Callback {
 			String src = et.getText().toString();
 			int last_colon = src.lastIndexOf( ':', end - 1 );
 			
-			if( last_colon == - 1 || end - last_colon < 2 ){
+			if( last_colon == - 1 || end - last_colon < 1 ){
 				closeAcctPopup();
 				return;
 			}
-			
 			String part = src.substring( last_colon + 1, end );
+			
 			if( reCharsNotEmoji.matcher( part ).find() ){
 				log.d( "checkEmoji: character not short code in string %s", part );
 				closeAcctPopup();
 				return;
 			}
+			
+			if( part.length() == 0 ){
+				if( popup == null || ! popup.isShowing() ){
+					popup = new PopupAutoCompleteAcct( activity, et, formRoot, bMainScreen );
+				}
+				popup.setList(
+					last_colon, end
+					, null
+					, picker_caption_emoji
+					, open_picker_emoji
+				);
+				return;
+			}
+			
 			// 絵文字を部分一致で検索
 			int limit = 100;
 			String s = src.substring( last_colon + 1, end ).toLowerCase().replace( '-', '_' );
 			ArrayList< CharSequence > code_list = EmojiDecoder.searchShortCode( activity, s, limit );
 			log.d( "checkEmoji: search for %s, result=%d", s, code_list.size() );
-
+			
 			// カスタム絵文字を検索
-			if( !TextUtils.isEmpty( instance )){
+			if( ! TextUtils.isEmpty( instance ) ){
 				CustomEmoji.List custom_list = App1.custom_emoji_lister.get( instance, PostHelper.this );
 				if( custom_list != null ){
 					String needle = src.substring( last_colon + 1, end );
-					for( CustomEmoji item : custom_list  ){
+					for( CustomEmoji item : custom_list ){
 						if( code_list.size() >= limit ) break;
-						if( ! item.shortcode.contains( needle )) continue;
+						if( ! item.shortcode.contains( needle ) ) continue;
 						
 						SpannableStringBuilder sb = new SpannableStringBuilder();
 						sb.append( ' ' );
@@ -618,21 +683,52 @@ public class PostHelper implements CustomEmojiLister.Callback {
 					}
 				}
 			}
-			
 			if( code_list.isEmpty() ){
 				closeAcctPopup();
 			}else{
 				if( popup == null || ! popup.isShowing() ){
 					popup = new PopupAutoCompleteAcct( activity, et, formRoot, bMainScreen );
 				}
-				popup.setList( code_list, last_colon, end );
+				popup.setList( last_colon, end, code_list, picker_caption_emoji, open_picker_emoji );
 			}
 		}
 	};
-
+	
 	@Override public void onListLoadComplete( CustomEmoji.List list ){
 		if( popup != null && popup.isShowing() ){
 			proc_text_changed.run();
 		}
 	}
+	
+	private final Runnable open_picker_emoji = new Runnable() {
+		@Override public void run(){
+			EmojiPicker.open( activity, instance, PostHelper.this );
+		}
+	};
+	
+	@Override public void onPickedEmoji( String name ){
+		int end = et.getSelectionEnd();
+		
+		String src = et.getText().toString();
+		int last_colon = src.lastIndexOf( ':', end - 1 );
+		
+		if( last_colon == - 1 || end - last_colon < 1 ){
+			return;
+		}
+		
+		CharSequence svInsert = ":" + name + ":";
+		src = src.substring( 0, last_colon ) + svInsert + " " + ( end >= src.length() ? "" : src.substring( end ) );
+		et.setText( src );
+		et.setSelection( last_colon + svInsert.length() + 1 );
+		
+		proc_text_changed.run();
+		
+		// キーボードを再度表示する
+		new Handler( activity.getMainLooper() ).post( new Runnable() {
+			@Override public void run(){
+				Utils.showKeyboard( activity, et );
+			}
+		} );
+	}
+	
 }

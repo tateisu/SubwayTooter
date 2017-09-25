@@ -494,8 +494,25 @@
 	<string name="mime_type_not_acceptable">MIME type %1$s is not acceptable.\nSupported MIME types are image/jpeg, image/png, image/gif, video/webm, video/mp4 .</string>
     <string name="thumbnail_1_6_1_later">Thumbnail (Mastodon 1.6.1 or later)</string>
     <string name="dont_show_timeout">Don\'t show \"Server Timeout\" notification</string>
-
-    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+	<string name="emoji_category_people">People</string>
+	<string name="emoji_category_nature">Nature</string>
+	<string name="emoji_category_foods">Foods</string>
+	<string name="emoji_category_activity">Activity</string>
+	<string name="emoji_category_places">Places</string>
+	<string name="emoji_category_objects">Objects</string>
+	<string name="emoji_category_symbols">Symbols</string>
+	<string name="emoji_category_flags">Flags</string>
+	<string name="emoji_category_custom">Custom</string>
+	<string name="emoji_category_recent">Recent</string>
+	<string name="open_picker_emoji">Emoji Picker…</string>
+	<string name="open_picker_tag">Hashtag Picker…</string>
+	<string name="open_picker_mention">Mention Picker…</string>
+	<string name="skin_tone_light">light skin tone</string>
+	<string name="skin_tone_medium_light">medium light skin tone</string>
+	<string name="skin_tone_medium">medium skin tone</string>
+	<string name="skin_tone_medium_dark">medium dark skin tone</string>
+	<string name="skin_tone_dark">dark skin tone</string>
+	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

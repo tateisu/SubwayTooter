@@ -9,8 +9,8 @@ android {
         applicationId "jp.juggler.subwaytooter"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 163
-        versionName "1.6.3"
+        versionCode 164
+        versionName "1.6.4"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -79,6 +79,8 @@ dependencies {
     compile 'org.hjson:hjson:2.1.1'
 
     compile 'com.google.android:flexbox:0.3.0'
+
+    compile 'com.astuetz:pagerslidingtabstrip:1.0.1'
 }
 
 apply plugin: 'com.google.gms.google-services'

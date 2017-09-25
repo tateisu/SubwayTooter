@@ -21,7 +21,7 @@ public class MyEditText extends AppCompatEditText {
 	public MyEditText( Context context, AttributeSet attrs, int defStyleAttr ){
 		super( context, attrs, defStyleAttr );
 	}
-
+	
 	////////////////////////////////////////////////////
 	// 選択範囲変更イベントをコールバックに渡す
 	
@@ -45,7 +45,7 @@ public class MyEditText extends AppCompatEditText {
 	
 	////////////////////////////////////////////////////
 	// Android 6.0 でのクラッシュ対応
-
+	
 	@Override public boolean onTouchEvent( MotionEvent event ){
 		try{
 			return super.onTouchEvent( event );

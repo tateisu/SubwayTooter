@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="6dp"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        >
+
+        <ImageButton
+            android:id="@+id/btnSkinTone1"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/emj_1f3fb"
+            android:contentDescription="@string/skin_tone_light"
+            android:src="@drawable/emj_2714"
+            />
+
+        <ImageButton
+            android:id="@+id/btnSkinTone2"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/emj_1f3fc"
+            android:contentDescription="@string/skin_tone_medium_light"
+            />
+
+        <ImageButton
+            android:id="@+id/btnSkinTone3"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/emj_1f3fd"
+            android:contentDescription="@string/skin_tone_medium"
+            />
+
+        <ImageButton
+            android:id="@+id/btnSkinTone4"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/emj_1f3fe"
+            android:contentDescription="@string/skin_tone_medium_dark"
+            />
+
+        <ImageButton
+            android:id="@+id/btnSkinTone5"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/emj_1f3ff"
+            android:contentDescription="@string/skin_tone_dark"
+            />
+    </LinearLayout>
+
+    <com.astuetz.PagerSlidingTabStrip
+        android:id="@+id/pager_strip"
+        android:layout_width="match_parent"
+        android:layout_height="48dip"
+        android:layout_gravity="top"
+        />
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        >
+
+    </android.support.v4.view.ViewPager>
+</LinearLayout>

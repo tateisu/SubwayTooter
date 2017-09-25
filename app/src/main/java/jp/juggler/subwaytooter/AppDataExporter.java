@@ -355,6 +355,7 @@ public class AppDataExporter {
 			case Pref.KEY_QUOTE_NAME_FORMAT:
 			case Pref.KEY_AUTO_CW_LINES:
 			case Pref.KEY_AVATAR_ICON_SIZE:
+			case Pref.KEY_EMOJI_PICKER_RECENT:
 				String sv = reader.nextString();
 				e.putString( k, sv );
 				break;

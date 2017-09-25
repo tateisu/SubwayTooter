@@ -781,4 +781,22 @@
     <string name="mime_type_not_acceptable">MIMEタイプ %1$s には対応できません。対応できるMIMEタイプは image/jpeg, image/png, image/gif, video/webm, video/mp4 です</string>
     <string name="thumbnail_1_6_1_later">サムネイル(マストドン1.6.1以降)</string>
     <string name="dont_show_timeout">\"サーバータイムアウト\"を通知しない</string>
+    <string name="emoji_category_people">人物</string>
+    <string name="emoji_category_nature">自然</string>
+    <string name="emoji_category_foods">食べ物</string>
+    <string name="emoji_category_activity">活動</string>
+    <string name="emoji_category_places">場所</string>
+    <string name="emoji_category_objects">物</string>
+    <string name="emoji_category_symbols">記号</string>
+    <string name="emoji_category_flags">旗</string>
+    <string name="emoji_category_custom">カスタム</string>
+    <string name="emoji_category_recent">最近</string>
+    <string name="open_picker_emoji">絵文字を選ぶ…</string>
+    <string name="open_picker_tag">ハッシュタグを選ぶ…</string>
+    <string name="open_picker_mention">メンションを選ぶ…</string>
+    <string name="skin_tone_light">明るい肌色</string>
+    <string name="skin_tone_medium_light">少し明るい肌色</string>
+    <string name="skin_tone_medium">中間の肌色</string>
+    <string name="skin_tone_medium_dark">少し暗い肌色</string>
+    <string name="skin_tone_dark">暗い肌色</string>
 </resources>

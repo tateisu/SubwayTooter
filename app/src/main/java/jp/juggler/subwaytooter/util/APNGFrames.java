@@ -29,7 +29,7 @@ import java.util.ArrayList;
 // APNGを解釈した結果を保持する
 // (フレーム数分のbitmapと時間情報)
 
-@SuppressWarnings("WeakerAccess") class APNGFrames {
+@SuppressWarnings("WeakerAccess") public class APNGFrames {
 	
 	static final LogCategory log = new LogCategory( "APNGFrames" );
 	

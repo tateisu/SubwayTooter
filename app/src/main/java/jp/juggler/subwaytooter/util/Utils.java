@@ -457,6 +457,14 @@ public class Utils {
 		InputMethodManager imm = (InputMethodManager) context.getSystemService( Context.INPUT_METHOD_SERVICE );
 		imm.hideSoftInputFromWindow( v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS );
 	}
+	public static void showKeyboard( Context context, View v ){
+		try{
+			InputMethodManager imm = (InputMethodManager) context.getSystemService( Context.INPUT_METHOD_SERVICE );
+			imm.showSoftInput( v, InputMethodManager.HIDE_NOT_ALWAYS );
+		}catch(Throwable ignored){
+			
+		}
+	}
 	
 	public static String ellipsize( String t, int max ){
 		return ( t.length() > max ? t.substring( 0, max - 1 ) + "…" : t );

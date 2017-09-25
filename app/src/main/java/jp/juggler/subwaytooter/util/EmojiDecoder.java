@@ -84,12 +84,27 @@ public abstract class EmojiDecoder {
 						String check = s.substring( i, i + j );
 						image_id = EmojiMap201709.sUTF16ToImageId.get( check );
 						if( image_id != null ){
-							emoji = check;
+							if( j< remain && s.charAt( i+j ) == 0xFE0E){
+								// 絵文字バリエーション・シーケンス（EVS）のU+FE0E（VS-15）が直後にある場合
+								// その文字を絵文字化しない
+								emoji = s.substring( i, i + j +1);
+								image_id = 0;
+							}else{
+								emoji = check;
+							}
 							break;
 						}
 					}
+					
 					if( image_id != null ){
-						addImageSpan( emoji, image_id );
+						if( image_id == 0 ){
+							// 絵文字バリエーション・シーケンス（EVS）のU+FE0E（VS-15）が直後にある場合
+							// その文字を絵文字化しない
+							closeSpan();
+							sb.append( emoji );
+						}else{
+							addImageSpan( emoji, image_id );
+						}
 						i += emoji.length();
 						continue;
 					}

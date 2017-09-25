@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.util;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Handler;
+import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.text.Layout;
 import android.text.Spannable;
@@ -59,7 +60,13 @@ import jp.juggler.subwaytooter.Styler;
 		acct_popup.setTouchable( true );
 	}
 	
-	void setList( ArrayList< CharSequence > acct_list, final int sel_start, final int sel_end ){
+	void setList(
+		final int sel_start
+		, final int sel_end
+		, @Nullable ArrayList< CharSequence > acct_list
+		, @Nullable String picker_caption
+	    , @Nullable final Runnable picker_callback
+	){
 		
 		llItems.removeAllViews();
 		
@@ -79,29 +86,47 @@ import jp.juggler.subwaytooter.Styler;
 			++ popup_rows;
 		}
 		
-		for( int i = 0 ; ; ++ i ){
-			if( i >= acct_list.size() ) break;
-			final CharSequence acct = acct_list.get( i );
+		if( picker_caption != null && picker_callback != null ){
 			CheckedTextView v = (CheckedTextView) activity.getLayoutInflater()
 				.inflate( R.layout.lv_spinner_dropdown, llItems, false );
 			v.setTextColor( Styler.getAttributeColor( activity, android.R.attr.textColorPrimary ) );
-			v.setText( acct );
-			if( acct instanceof Spannable ){
-				new NetworkEmojiInvalidator( handler, v ).register( (Spannable) acct );
-			}
+			v.setText( picker_caption );
 			v.setOnClickListener( new View.OnClickListener() {
 				@Override public void onClick( View v ){
-					String s = etContent.getText().toString();
-					CharSequence svInsert = ( acct.charAt( 0 ) == ' ' ? acct.subSequence( 2, acct.length() ) : acct );
-					s = s.substring( 0, sel_start ) + svInsert + " " + ( sel_end >= s.length() ? "" : s.substring( sel_end ) );
-					etContent.setText( s );
-					etContent.setSelection( sel_start + svInsert.length() + 1 );
 					acct_popup.dismiss();
+					picker_callback.run();
 				}
 			} );
-			
 			llItems.addView( v );
 			++ popup_rows;
+		}
+		
+		
+		if( acct_list != null ){
+			for( int i = 0 ; ; ++ i ){
+				if( i >= acct_list.size() ) break;
+				final CharSequence acct = acct_list.get( i );
+				CheckedTextView v = (CheckedTextView) activity.getLayoutInflater()
+					.inflate( R.layout.lv_spinner_dropdown, llItems, false );
+				v.setTextColor( Styler.getAttributeColor( activity, android.R.attr.textColorPrimary ) );
+				v.setText( acct );
+				if( acct instanceof Spannable ){
+					new NetworkEmojiInvalidator( handler, v ).register( (Spannable) acct );
+				}
+				v.setOnClickListener( new View.OnClickListener() {
+					@Override public void onClick( View v ){
+						String s = etContent.getText().toString();
+						CharSequence svInsert = ( acct.charAt( 0 ) == ' ' ? acct.subSequence( 2, acct.length() ) : acct );
+						s = s.substring( 0, sel_start ) + svInsert + " " + ( sel_end >= s.length() ? "" : s.substring( sel_end ) );
+						etContent.setText( s );
+						etContent.setSelection( sel_start + svInsert.length() + 1 );
+						acct_popup.dismiss();
+					}
+				} );
+				
+				llItems.addView( v );
+				++ popup_rows;
+			}
 		}
 		
 		updatePosition();

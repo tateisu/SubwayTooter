@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.dialog;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
@@ -30,9 +31,10 @@ public class DlgConfirm {
 			return;
 		}
 		
+		@SuppressLint("InflateParams")
 		final View view = activity.getLayoutInflater().inflate( R.layout.dlg_confirm, null, false );
-		final TextView tvMessage = (TextView) view.findViewById( R.id.tvMessage );
-		final CheckBox cbSkipNext = (CheckBox) view.findViewById( R.id.cbSkipNext );
+		final TextView tvMessage = view.findViewById( R.id.tvMessage );
+		final CheckBox cbSkipNext = view.findViewById( R.id.cbSkipNext );
 		tvMessage.setText( message );
 		
 		new AlertDialog.Builder( activity )

@@ -614,6 +614,27 @@ print $fh "\t}\n";
 close($fh) or die "$out_file : $!";
 
 #########################################################################
+# shortname => unicode
+
+{
+	$out_file = "shortcode-emoji-data-and-old-emojione.json";
+	open($fh, ">",$out_file) or die "$out_file : $!";
+
+	my  @list;
+	for my $name (sort keys %name_map){
+		my $rh = $name_map{$name};
+		my @res_list = values %$rh;
+		my $res_info = $res_list[0];
+		push @list,{shortcode=>$name,unicode=>$res_info->{unified}};
+	}
+	my $json = JSON->new->allow_nonref->relaxed(1)->pretty;
+	print $fh $json->encode( \@list );
+
+	close($fh) or die "$out_file : $!";
+
+}
+
+#########################################################################
 __DATA__
 
 

@@ -39,6 +39,8 @@ public class TootInstance {
 		public long domain_count;
 	}
 	
+	// FIXME: urls をパースしてない。使ってないから…
+	
 	////////////////////////////////////////////////
 	// 以下は内部で使用する
 	

@@ -164,10 +164,10 @@ public class HTMLDecoder {
 			, LinkClickContext account
 			, SpannableStringBuilder sb
 			, @NonNull DecodeOptions options
-			){
+		){
 			if( TAG_TEXT.equals( tag ) ){
 				if( options.bDecodeEmoji ){
-					sb.append( EmojiDecoder.decodeEmoji( context, decodeEntity( text ) ,options.customEmojiMap ) );
+					sb.append( EmojiDecoder.decodeEmoji( context, decodeEntity( text ), options.customEmojiMap ) );
 				}else{
 					sb.append( decodeEntity( text ) );
 				}
@@ -188,7 +188,7 @@ public class HTMLDecoder {
 				sb_tmp.append( "<img/>" );
 			}else{
 				for( Node child : child_nodes ){
-					child.encodeSpan( context, account, sb_tmp, options);
+					child.encodeSpan( context, account, sb_tmp, options );
 				}
 			}
 			
@@ -205,8 +205,8 @@ public class HTMLDecoder {
 			if( end > start && "a".equals( tag ) ){
 				String href = getHref();
 				if( href != null ){
-					String link_text = sb.subSequence( start,end ).toString();
-					MyClickableSpan span = new MyClickableSpan( account, link_text, href, account.findAcctColor( href ),options.link_tag );
+					String link_text = sb.subSequence( start, end ).toString();
+					MyClickableSpan span = new MyClickableSpan( account, link_text, href, account.findAcctColor( href ), options.link_tag );
 					sb.setSpan( span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
 				}
 			}
@@ -281,16 +281,12 @@ public class HTMLDecoder {
 			}
 			
 			if( is_media_attachment( list_attachment, href ) ){
-				if( App1.USE_OLD_EMOJIONE ){
-					return EmojiDecoder.decodeEmoji( context, ":frame_photo:",null );
-				}else{
-					SpannableStringBuilder sb = new SpannableStringBuilder();
-					sb.append( href );
-					int start = 0;
-					int end = sb.length();
-					sb.setSpan( new EmojiImageSpan( context,  R.drawable.emj_1f5bc ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-					return sb;
-				}
+				SpannableStringBuilder sb = new SpannableStringBuilder();
+				sb.append( href );
+				int start = 0;
+				int end = sb.length();
+				sb.setSpan( new EmojiImageSpan( context, R.drawable.emj_1f5bc ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+				return sb;
 			}
 			
 			try{
@@ -319,12 +315,11 @@ public class HTMLDecoder {
 		return Character.isWhitespace( c ) || c == 0x0a || c == 0x0d;
 	}
 	
-		
 	public static SpannableStringBuilder decodeHTML(
 		Context context
 		, LinkClickContext account
 		, String src
-		,@NonNull DecodeOptions options
+		, @NonNull DecodeOptions options
 	){
 		prepareTagInformation();
 		SpannableStringBuilder sb = new SpannableStringBuilder();
@@ -336,7 +331,7 @@ public class HTMLDecoder {
 					rootNode.addChild( tracker, "" );
 				}
 				
-				rootNode.encodeSpan( context, account, sb,options);
+				rootNode.encodeSpan( context, account, sb, options );
 				int end = sb.length();
 				while( end > 0 && isWhitespace( sb.charAt( end - 1 ) ) ) -- end;
 				if( end < sb.length() ){
@@ -376,7 +371,7 @@ public class HTMLDecoder {
 	//		return sb;
 	//	}
 	
-	public static Spannable decodeMentions( final SavedAccount access_info, TootMention.List src_list ,@Nullable Object link_tag ){
+	public static Spannable decodeMentions( final SavedAccount access_info, TootMention.List src_list, @Nullable Object link_tag ){
 		if( src_list == null || src_list.isEmpty() ) return null;
 		SpannableStringBuilder sb = new SpannableStringBuilder();
 		for( TootMention item : src_list ){
@@ -390,8 +385,8 @@ public class HTMLDecoder {
 			}
 			int end = sb.length();
 			if( end > start ){
-				String link_text = sb.subSequence( start,end ).toString();
-				MyClickableSpan span = new MyClickableSpan( access_info, link_text,item.url, access_info.findAcctColor( item.url ) ,link_tag );
+				String link_text = sb.subSequence( start, end ).toString();
+				MyClickableSpan span = new MyClickableSpan( access_info, link_text, item.url, access_info.findAcctColor( item.url ), link_tag );
 				
 				sb.setSpan( span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}

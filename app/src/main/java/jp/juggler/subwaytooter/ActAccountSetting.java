@@ -866,7 +866,7 @@ public class ActAccountSetting extends AppCompatActivity
 				return;
 			}
 		}
-		updateCredential( "display_name=" + Uri.encode(sv ) );
+		updateCredential( "display_name=" + Uri.encode(EmojiDecoder.decodeShortCode(sv) ) );
 	}
 	
 	private void sendNote(boolean bConfirmed){
@@ -890,7 +890,7 @@ public class ActAccountSetting extends AppCompatActivity
 				return;
 			}
 		}
-		updateCredential( "note=" + Uri.encode(sv ) );
+		updateCredential( "note=" + Uri.encode(EmojiDecoder.decodeShortCode(sv) ) );
 	}
 	
 	private static final int PERMISSION_REQUEST_AVATAR = 1;

@@ -18,6 +18,7 @@ import java.util.ArrayList;
 
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.Styler;
+import jp.juggler.subwaytooter.view.MyEditText;
 
 @SuppressWarnings("WeakerAccess") class PopupAutoCompleteAcct {
 	final Activity activity;
@@ -61,7 +62,8 @@ import jp.juggler.subwaytooter.Styler;
 	}
 	
 	void setList(
-		final int sel_start
+		final MyEditText et
+		, final int sel_start
 		, final int sel_end
 		, @Nullable ArrayList< CharSequence > acct_list
 		, @Nullable String picker_caption
@@ -115,11 +117,11 @@ import jp.juggler.subwaytooter.Styler;
 				}
 				v.setOnClickListener( new View.OnClickListener() {
 					@Override public void onClick( View v ){
-						String s = etContent.getText().toString();
+						String s = et.getText().toString();
 						CharSequence svInsert = ( acct.charAt( 0 ) == ' ' ? acct.subSequence( 2, acct.length() ) : acct );
 						s = s.substring( 0, sel_start ) + svInsert + " " + ( sel_end >= s.length() ? "" : s.substring( sel_end ) );
-						etContent.setText( s );
-						etContent.setSelection( sel_start + svInsert.length() + 1 );
+						et.setText( s );
+						et.setSelection( sel_start + svInsert.length() + 1 );
 						acct_popup.dismiss();
 					}
 				} );

@@ -133,8 +133,8 @@ public class EmojiPicker implements View.OnClickListener, CustomEmojiLister.Call
 		SkinTone tone = (SkinTone) viewRoot.findViewById( selected_tone ).getTag();
 		for( String suffix : tone.suffix_list ){
 			String new_name = name + suffix;
-			Integer value = EmojiMap201709.sShortNameToImageId.get( new_name );
-			if( value != null ) return new_name;
+			EmojiMap201709.EmojiInfo info  = EmojiMap201709.sShortNameToImageId.get( new_name );
+			if( info != null ) return new_name;
 		}
 		return name;
 	}
@@ -334,9 +334,9 @@ public class EmojiPicker implements View.OnClickListener, CustomEmojiLister.Call
 				view.setTag( item );
 				ImageView iv = (ImageView) view;
 				if( page != null ){
-					Integer image_id = EmojiMap201709.sShortNameToImageId.get( item.name );
-					if( image_id != null ){
-						iv.setImageResource( image_id );
+					EmojiMap201709.EmojiInfo info  = EmojiMap201709.sShortNameToImageId.get( item.name );
+					if( info != null ){
+						iv.setImageResource( info.image_id );
 					}
 				}
 			}else{
@@ -361,8 +361,8 @@ public class EmojiPicker implements View.OnClickListener, CustomEmojiLister.Call
 			EmojiItem item = page.emoji_list.get( idx );
 			if( TextUtils.isEmpty( item.instance ) ){
 				String name = item.name;
-				Integer image_id = EmojiMap201709.sShortNameToImageId.get( name );
-				if( image_id == null ) return;
+				EmojiMap201709.EmojiInfo info = EmojiMap201709.sShortNameToImageId.get( name );
+				if( info == null ) return;
 				if( selected_tone != 0 ){
 					name = applySkinTone( name );
 				}

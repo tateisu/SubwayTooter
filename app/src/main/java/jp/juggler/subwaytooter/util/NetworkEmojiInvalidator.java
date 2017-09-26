@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.util;
 
 import android.os.Handler;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.Spannable;
@@ -36,4 +37,25 @@ public class NetworkEmojiInvalidator implements Runnable, NetworkEmojiSpan.Inval
 			view.postInvalidateOnAnimation();
 		}
 	}
+	
+	// 最後に描画した時刻
+	private long t_last_draw;
+	
+	// アニメーション開始時刻
+	private long t_start;
+	
+	@Override public long getTimeFromStart(){
+		
+		long now = SystemClock.elapsedRealtime();
+		
+		// アニメーション開始時刻を計算する
+		if( t_start == 0L || now - t_last_draw >= 60000L ){
+			t_start = now;
+		}
+		t_last_draw = now;
+		
+		return now - t_start;
+	}
+	
+	
 }

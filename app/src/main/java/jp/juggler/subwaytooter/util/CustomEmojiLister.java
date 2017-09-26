@@ -1,8 +1,6 @@
 package jp.juggler.subwaytooter.util;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Handler;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
@@ -11,7 +9,6 @@ import android.text.TextUtils;
 
 import org.json.JSONArray;
 
-import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -21,8 +18,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.api.entity.CustomEmoji;
-import okhttp3.Call;
-import okhttp3.Response;
 
 @SuppressWarnings("WeakerAccess")
 public class CustomEmojiLister {
@@ -175,7 +170,7 @@ public class CustomEmojiLister {
 				
 				CustomEmoji.List list = null;
 				try{
-					String data = getHttp( request.instance );
+					String data = App1.getHttpCachedString("https://"+ request.instance + "/api/v1/custom_emojis");
 					if( data != null ){
 						list = decodeEmojiList( data, request.instance );
 					}
@@ -209,31 +204,7 @@ public class CustomEmojiLister {
 			} );
 		}
 		
-		private String getHttp( String instance ){
-			Response response;
-			try{
-				okhttp3.Request.Builder request_builder = new okhttp3.Request.Builder();
-				request_builder.url( "https://"+ instance + "/api/v1/custom_emojis" );
-				Call call = App1.ok_http_client2.newCall( request_builder.build() );
-				response = call.execute();
-			}catch( Throwable ex ){
-				log.e( ex, "getHttp network error." );
-				return null;
-			}
-			
-			if( ! response.isSuccessful() ){
-				log.e( "getHttp response error. %s", response );
-				return null;
-			}
-			
-			try{
-				//noinspection ConstantConditions
-				return response.body().string();
-			}catch( Throwable ex ){
-				log.e( ex, "getHttp content error." );
-				return null;
-			}
-		}
+
 		
 		private void sweep_cache(){
 			

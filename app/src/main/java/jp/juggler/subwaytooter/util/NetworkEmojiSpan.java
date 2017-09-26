@@ -33,6 +33,7 @@ public class NetworkEmojiSpan extends ReplacementSpan implements CustomEmojiCach
 	}
 	
 	public interface InvalidateCallback {
+		long getTimeFromStart();
 		void delayInvalidate( long delay );
 	}
 	
@@ -43,7 +44,7 @@ public class NetworkEmojiSpan extends ReplacementSpan implements CustomEmojiCach
 	}
 	
 	// implements CustomEmojiCache.Callback
-	@Override public void onAPNGLoadComplete( APNGFrames b ){
+	@Override public void onAPNGLoadComplete(){
 		if( invalidate_callback != null ){
 			invalidate_callback.delayInvalidate( 0 );
 		}
@@ -73,11 +74,7 @@ public class NetworkEmojiSpan extends ReplacementSpan implements CustomEmojiCach
 	// フレーム探索結果を格納する構造体を確保しておく
 	private final APNGFrames.FindFrameResult mFrameFindResult = new APNGFrames.FindFrameResult();
 	
-	// 最後に描画した時刻
-	private long t_last_draw;
-	
-	// アニメーション開始時刻
-	private long t_start;
+
 	
 	@Override public void draw(
 		@NonNull Canvas canvas
@@ -88,19 +85,13 @@ public class NetworkEmojiSpan extends ReplacementSpan implements CustomEmojiCach
 		if( invalidate_callback == null ) return;
 		
 		// APNGデータの取得
-		APNGFrames frames = App1.custom_emoji_cache.get( url, this );
+		APNGFrames frames = App1.custom_emoji_cache.get( this, url, this );
 		if( frames == null ) return;
 		
-		long now = SystemClock.elapsedRealtime();
-		
-		// アニメーション開始時刻を計算する
-		if( t_start == 0L || now - t_last_draw >= 60000L ){
-			t_start = now;
-		}
-		t_last_draw = now;
+		long t = invalidate_callback.getTimeFromStart();
 		
 		// アニメーション開始時刻からの経過時間に応じたフレームを探索
-		frames.findFrame( mFrameFindResult, now - t_start );
+		frames.findFrame( mFrameFindResult, t );
 
 		Bitmap b = mFrameFindResult.bitmap;
 		if( b == null || b.isRecycled() ) return;

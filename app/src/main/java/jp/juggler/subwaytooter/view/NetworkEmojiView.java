@@ -59,7 +59,7 @@ public class NetworkEmojiView  extends View implements CustomEmojiCache.Callback
 		super.onDraw( canvas );
 		
 		// APNGデータの取得
-		APNGFrames frames = App1.custom_emoji_cache.get( url, this );
+		APNGFrames frames = App1.custom_emoji_cache.get( this, url, this );
 		if( frames == null ) return;
 		
 		long now = SystemClock.elapsedRealtime();
@@ -87,7 +87,7 @@ public class NetworkEmojiView  extends View implements CustomEmojiCache.Callback
 		}
 	}
 	
-	@Override public void onAPNGLoadComplete( APNGFrames b ){
+	@Override public void onAPNGLoadComplete(){
 		postInvalidateOnAnimation();;
 	}
 }

@@ -11,6 +11,7 @@ import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.EmojiDecoder;
+import jp.juggler.subwaytooter.util.EmojiMap201709;
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
 import jp.juggler.subwaytooter.view.MyNetworkImageView;
 
@@ -37,20 +38,20 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 			, arg_activity.getLayoutInflater().inflate( R.layout.lv_header_account, parent, false )
 		);
 		
-		ivBackground = (MyNetworkImageView) viewRoot.findViewById( R.id.ivBackground );
+		ivBackground = viewRoot.findViewById( R.id.ivBackground );
 		llProfile = viewRoot.findViewById( R.id.llProfile );
-		tvCreated = (TextView) viewRoot.findViewById( R.id.tvCreated );
-		ivAvatar = (MyNetworkImageView) viewRoot.findViewById( R.id.ivAvatar );
-		tvDisplayName = (TextView) viewRoot.findViewById( R.id.tvDisplayName );
-		tvAcct = (TextView) viewRoot.findViewById( R.id.tvAcct );
-		btnFollowing = (Button) viewRoot.findViewById( R.id.btnFollowing );
-		btnFollowers = (Button) viewRoot.findViewById( R.id.btnFollowers );
-		btnStatusCount = (Button) viewRoot.findViewById( R.id.btnStatusCount );
-		tvNote = (TextView) viewRoot.findViewById( R.id.tvNote );
+		tvCreated = viewRoot.findViewById( R.id.tvCreated );
+		ivAvatar = viewRoot.findViewById( R.id.ivAvatar );
+		tvDisplayName = viewRoot.findViewById( R.id.tvDisplayName );
+		tvAcct = viewRoot.findViewById( R.id.tvAcct );
+		btnFollowing = viewRoot.findViewById( R.id.btnFollowing );
+		btnFollowers = viewRoot.findViewById( R.id.btnFollowers );
+		btnStatusCount = viewRoot.findViewById( R.id.btnStatusCount );
+		tvNote = viewRoot.findViewById( R.id.tvNote );
 		View btnMore = viewRoot.findViewById( R.id.btnMore );
-		btnFollow = (ImageButton) viewRoot.findViewById( R.id.btnFollow );
-		ivFollowedBy = (ImageView) viewRoot.findViewById( R.id.ivFollowedBy );
-		tvRemoteProfileWarning = (TextView) viewRoot.findViewById( R.id.tvRemoteProfileWarning );
+		btnFollow = viewRoot.findViewById( R.id.btnFollow );
+		ivFollowedBy = viewRoot.findViewById( R.id.ivFollowedBy );
+		tvRemoteProfileWarning = viewRoot.findViewById( R.id.tvRemoteProfileWarning );
 		
 		ivBackground.setOnClickListener( this );
 		btnFollowing.setOnClickListener( this );
@@ -103,7 +104,7 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 			
 			String s = "@" + access_info.getFullAcct( who );
 			if( who.locked ){
-				s += " " + EmojiDecoder.map_name2unicode.get( "lock" );
+				s += " " + EmojiMap201709.sShortNameToImageId.get("lock" ).unified;
 			}
 			tvAcct.setText( EmojiDecoder.decodeEmoji( activity, s ,null) );
 			

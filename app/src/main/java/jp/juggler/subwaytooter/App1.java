@@ -7,8 +7,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.graphics.Typeface;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.GlideBuilder;
@@ -43,11 +44,13 @@ import jp.juggler.subwaytooter.util.CustomEmojiCache;
 import jp.juggler.subwaytooter.util.CustomEmojiLister;
 import jp.juggler.subwaytooter.util.LogCategory;
 import okhttp3.Cache;
+import okhttp3.CacheControl;
+import okhttp3.Call;
 import okhttp3.CipherSuite;
 import okhttp3.ConnectionSpec;
 import okhttp3.OkHttpClient;
+import okhttp3.Response;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
-import uk.co.chrisjenx.calligraphy.TypefaceUtils;
 
 public class App1 extends Application {
 	
@@ -215,10 +218,10 @@ public class App1 extends Application {
 	
 	public static OkHttpClient ok_http_client;
 	
-	public static OkHttpClient ok_http_client2;
+	private static OkHttpClient ok_http_client2;
 	
-	public static final boolean USE_OLD_EMOJIONE = false;
-	public static Typeface typeface_emoji;
+//	public static final boolean USE_OLD_EMOJIONE = false;
+//	public static Typeface typeface_emoji;
 	
 	public static SharedPreferences pref;
 	
@@ -292,11 +295,11 @@ public class App1 extends Application {
 			AcctSet.deleteOld( System.currentTimeMillis() );
 		}
 		
-		if( USE_OLD_EMOJIONE ){
-			if( typeface_emoji == null ){
-				typeface_emoji = TypefaceUtils.load( app_context.getAssets(), "emojione_android.ttf" );
-			}
-		}
+//		if( USE_OLD_EMOJIONE ){
+//			if( typeface_emoji == null ){
+//				typeface_emoji = TypefaceUtils.load( app_context.getAssets(), "emojione_android.ttf" );
+//			}
+//		}
 		
 		//		if( image_loader == null ){
 		//			image_loader = new MyImageLoader(
@@ -404,6 +407,76 @@ public class App1 extends Application {
 			activity.setTheme( bNoActionBar ? R.style.AppTheme_Dark_NoActionBar : R.style.AppTheme_Dark );
 			break;
 			
+		}
+	}
+	
+	static final CacheControl CACHE_5MIN = new CacheControl.Builder()
+		.maxStale(Integer.MAX_VALUE, TimeUnit.SECONDS) // キャッシュをいつまで保持するか
+	//s	.minFresh( 1, TimeUnit.HOURS ) // キャッシュが新鮮であると考えられる時間
+		.maxAge( 1, TimeUnit.HOURS ) // キャッシュが新鮮であると考えられる時間
+		.build();
+	
+	@Nullable public static byte[] getHttpCached( @NonNull String url ){
+		Response response;
+		long t_start = SystemClock.elapsedRealtime();
+		try{
+			okhttp3.Request.Builder request_builder = new okhttp3.Request.Builder();
+			request_builder.url( url );
+			request_builder.cacheControl( CACHE_5MIN );
+			
+			Call call = App1.ok_http_client2.newCall( request_builder.build() );
+			response = call.execute();
+		}catch( Throwable ex ){
+			log.e( ex, "getHttp network error." );
+			return null;
+		}finally{
+			long t_delta = SystemClock.elapsedRealtime() -t_start;
+			log.d("getHttp: time=%dms",t_delta);
+		}
+		
+		if( ! response.isSuccessful() ){
+			log.e( "getHttp response error. %s", response );
+			return null;
+		}
+		
+		try{
+			//noinspection ConstantConditions
+			return response.body().bytes();
+		}catch( Throwable ex ){
+			log.e( ex, "getHttp content error." );
+			return null;
+		}
+	}
+	
+	@Nullable public static String getHttpCachedString( @NonNull String url ){
+		Response response;
+		long t_start = SystemClock.elapsedRealtime();
+		try{
+			okhttp3.Request.Builder request_builder = new okhttp3.Request.Builder();
+			request_builder.url( url );
+			request_builder.cacheControl( CACHE_5MIN );
+			
+			Call call = App1.ok_http_client2.newCall( request_builder.build() );
+			response = call.execute();
+		}catch( Throwable ex ){
+			log.e( ex, "getHttp network error." );
+			return null;
+		}finally{
+			long t_delta = SystemClock.elapsedRealtime() -t_start;
+			log.d("getHttp: time=%dms",t_delta);
+		}
+		
+		if( ! response.isSuccessful() ){
+			log.e( "getHttp response error. %s", response );
+			return null;
+		}
+		
+		try{
+			//noinspection ConstantConditions
+			return response.body().string();
+		}catch( Throwable ex ){
+			log.e( ex, "getHttp content error." );
+			return null;
 		}
 	}
 }

@@ -9,16 +9,16 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import java.io.ByteArrayInputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import jp.juggler.subwaytooter.App1;
-import okhttp3.Call;
-import okhttp3.Response;
 
 @SuppressWarnings("WeakerAccess")
 public class CustomEmojiCache {
@@ -62,24 +62,41 @@ public class CustomEmojiCache {
 	// リクエスト
 	
 	public interface Callback {
-		void onAPNGLoadComplete( APNGFrames b );
+		void onAPNGLoadComplete();
 	}
 	
 	static class Request {
-		@NonNull String url;
-		@NonNull Callback callback;
+		@NonNull final WeakReference<Object> refTarget;
+		@NonNull final String url;
+		@NonNull final Callback callback;
 		
-		public Request( @NonNull String url, @NonNull Callback callback ){
+		public Request( @NonNull Object target_tag, @NonNull String url, @NonNull Callback callback ){
+			this.refTarget = new WeakReference<>( target_tag );
 			this.url = url;
 			this.callback = callback;
 		}
 	}
 	
-	final ConcurrentLinkedQueue< Request > queue = new ConcurrentLinkedQueue<>();
+	final LinkedList< Request > queue = new LinkedList<>();
 	
 	////////////////////////////////
 	
-	@Nullable public APNGFrames get( @NonNull String url, @NonNull Callback callback ){
+	public void cancelRequest( @NonNull Object target_tag){
+		synchronized( queue ){
+			Iterator<Request> it = queue.iterator();
+			while( it.hasNext() ){
+				Request request = it.next();
+				Object tag = request.refTarget.get();
+				if( tag == null || tag == target_tag ){
+					it.remove();
+				}
+			}
+		}
+	}
+	
+	@Nullable public APNGFrames get( @NonNull Object target_tag,@NonNull String url, @NonNull Callback callback ){
+		
+		cancelRequest( target_tag );
 		
 		synchronized( cache ){
 			long now = getNow();
@@ -97,7 +114,9 @@ public class CustomEmojiCache {
 				return null;
 			}
 		}
-		queue.add( new Request( url, callback ) );
+		synchronized( queue ){
+			queue.addLast( new Request( target_tag, url, callback ) );
+		}
 		worker.notifyEx();
 		return null;
 	}
@@ -124,9 +143,17 @@ public class CustomEmojiCache {
 		
 		@Override public void run(){
 			while( ! bCancelled.get() ){
-				Request request = queue.poll();
+				Request request;
+				synchronized( queue ){
+					request = queue.isEmpty() ? null : queue.removeFirst();
+				}
+				
 				if( request == null ){
 					waitEx( 86400000L );
+					continue;
+				}
+				
+				if( request.refTarget.get() == null ){
 					continue;
 				}
 				
@@ -136,7 +163,7 @@ public class CustomEmojiCache {
 					// 成功キャッシュ
 					CacheItem item = cache.get( request.url );
 					if( item != null ){
-						fireCallback( request.callback, item.frames );
+						fireCallback( request.callback );
 						continue;
 					}
 					
@@ -151,7 +178,7 @@ public class CustomEmojiCache {
 				
 				APNGFrames frames = null;
 				try{
-					byte[] data = getHttp( request.url );
+					byte[] data = App1.getHttpCached( request.url );
 					if( data != null ){
 						frames = decodeAPNG( data, request.url );
 					}
@@ -169,7 +196,7 @@ public class CustomEmojiCache {
 							item.frames.dispose();
 							item.frames = frames;
 						}
-						fireCallback( request.callback, frames );
+						fireCallback( request.callback );
 					}else{
 						cache_error.put( request.url, getNow() );
 					}
@@ -177,40 +204,15 @@ public class CustomEmojiCache {
 			}
 		}
 		
-		private void fireCallback( final Callback callback, final APNGFrames frames ){
+		private void fireCallback( final Callback callback ){
 			handler.post( new Runnable() {
 				@Override public void run(){
-					callback.onAPNGLoadComplete( frames );
+					callback.onAPNGLoadComplete();
 				}
 			} );
 		}
 		
-		private byte[] getHttp( String url ){
-			Response response;
-			try{
-				okhttp3.Request.Builder request_builder = new okhttp3.Request.Builder();
-				request_builder.url( url );
-				Call call = App1.ok_http_client2.newCall( request_builder.build() );
-				response = call.execute();
-			}catch( Throwable ex ){
-				log.e( ex, "getHttp network error." );
-				return null;
-			}
-			
-			if( ! response.isSuccessful() ){
-				log.e( "getHttp response error. %s", response );
-				return null;
-			}
-			
-			try{
-				//noinspection ConstantConditions
-				return response.body().bytes();
-			}catch( Throwable ex ){
-				log.e( ex, "getHttp content error." );
-				return null;
-			}
-		}
-		
+
 		private void sweep_cache(){
 			
 			// キャッシュの掃除
@@ -244,7 +246,7 @@ public class CustomEmojiCache {
 				APNGFrames frames = APNGFrames.parseAPNG( new ByteArrayInputStream( data ), 64 );
 				if( frames != null ) return frames;
 			}catch( Throwable ex ){
-				log.e( ex, "PNG decode failed. %s", url );
+				log.e( ex, "PNG decode failed. %s ", url );
 				// PngFeatureException Interlaced images are not yet supported
 			}
 			

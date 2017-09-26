@@ -459,7 +459,6 @@ import java.util.ArrayList;
 			if( result != null ) result.onParseComplete();
 			return result;
 		}catch( Throwable ex ){
-			log.trace( ex );
 			handler.dispose();
 			throw ex;
 		}

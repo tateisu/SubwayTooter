@@ -251,7 +251,7 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 					StringBuilder sb = new StringBuilder();
 					
 					sb.append( "status=" );
-					sb.append( Uri.encode( content ) );
+					sb.append( Uri.encode( EmojiDecoder.decodeShortCode(content ) ) );
 					
 					if( visibility_checked != null ){
 						sb.append( "&visibility=" );
@@ -264,7 +264,7 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 					
 					if( spoiler_text != null ){
 						sb.append( "&spoiler_text=" );
-						sb.append( Uri.encode( spoiler_text ) );
+						sb.append( Uri.encode( EmojiDecoder.decodeShortCode(spoiler_text) ) );
 					}
 					
 					if( in_reply_to_id != - 1L ){
@@ -289,12 +289,12 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 					
 					JSONObject json = new JSONObject();
 					try{
-						json.put( "status", content );
+						json.put( "status", EmojiDecoder.decodeShortCode(content) );
 						if( visibility_checked != null ){
 							json.put( "visibility", visibility_checked );
 						}
 						json.put( "sensitive", bNSFW );
-						json.put( "spoiler_text", TextUtils.isEmpty( spoiler_text ) ? "" : spoiler_text );
+						json.put( "spoiler_text", TextUtils.isEmpty( spoiler_text ) ? "" : EmojiDecoder.decodeShortCode(spoiler_text) );
 						json.put( "in_reply_to_id", in_reply_to_id == - 1L ? null : in_reply_to_id );
 						JSONArray array = new JSONArray();
 						if( attachment_list != null ){
@@ -308,7 +308,7 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 						json.put( "isEnquete", true );
 						array = new JSONArray();
 						for( String item : enquete_items ){
-							array.put( item );
+							array.put( EmojiDecoder.decodeShortCode(item) );
 						}
 						json.put( "enquete_items", array );
 					}catch( JSONException ex ){
@@ -590,7 +590,7 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 				if( popup == null || ! popup.isShowing() ){
 					popup = new PopupAutoCompleteAcct( activity, et, formRoot, bMainScreen );
 				}
-				popup.setList( start, end, acct_list, null, null );
+				popup.setList( et, start, end, acct_list, null, null );
 			}
 		}
 		
@@ -622,9 +622,11 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 				if( popup == null || ! popup.isShowing() ){
 					popup = new PopupAutoCompleteAcct( activity, et, formRoot, bMainScreen );
 				}
-				popup.setList( last_sharp, end, tag_list, null, null );
+				popup.setList( et, last_sharp, end, tag_list, null, null );
 			}
 		}
+		
+		
 		
 		private void checkEmoji(){
 			int end = et.getSelectionEnd();
@@ -644,12 +646,20 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 				return;
 			}
 			
+			// : の手前は始端か改行か空白でなければならない
+			if( last_colon > 0 && ! EmojiDecoder.isWhitespaceBeforeEmoji( src.codePointBefore( last_colon ) ) ){
+				log.d( "checkEmoji: invalid character before shortcode." );
+				closeAcctPopup();
+				return;
+			}
+			
+			
 			if( part.length() == 0 ){
 				if( popup == null || ! popup.isShowing() ){
 					popup = new PopupAutoCompleteAcct( activity, et, formRoot, bMainScreen );
 				}
 				popup.setList(
-					last_colon, end
+					et, last_colon, end
 					, null
 					, picker_caption_emoji
 					, open_picker_emoji
@@ -684,12 +694,10 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 				}
 			}
 			if( code_list.isEmpty() ){
-				closeAcctPopup();
-			}else{
 				if( popup == null || ! popup.isShowing() ){
 					popup = new PopupAutoCompleteAcct( activity, et, formRoot, bMainScreen );
 				}
-				popup.setList( last_colon, end, code_list, picker_caption_emoji, open_picker_emoji );
+				popup.setList( et, last_colon, end, code_list, picker_caption_emoji, open_picker_emoji );
 			}
 		}
 	};

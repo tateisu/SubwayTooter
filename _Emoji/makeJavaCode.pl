@@ -443,16 +443,22 @@ for(@fix_name){
 updateCodeMap();
 updateNameMap();
 
+my %name_chars;
 my $bad_name = 0;
 for my $name (sort keys %name_map){
+	for( split //,$name ){
+		$name_chars{$_}=1;
+	}
+	
 	my $rh = $name_map{$name};
 	my @res_list = values %$rh;
+	
 	next if @res_list == 1;
 	warn "name $name has multiple resource. ",join(',',map{ $_->{res_name} } @res_list),"\n";
 	$bad_name = 1;
 }
 $bad_name and die "please fix name=>resource duplicate.\n";
-
+warn "name_chars: [",join('',sort keys %name_chars),"]\n";
 
 sub decodeUnified($){
 	my($chars) = @_;
@@ -552,6 +558,8 @@ my $utf8 = Encode::find_encoding("utf8");
 my $utf16 = Encode::find_encoding("UTF-16BE");
 my $utf16_max_length = 0;
 
+
+
 # 画像リソースIDとUnidoceシーケンスの関連付けを出力する
 for my $res_name ( sort keys %res_map ){
 	my $res_info = $res_map{$res_name};
@@ -576,12 +584,29 @@ for my $res_name ( sort keys %res_map ){
 	}
 }
 
+#for my $res_name ( sort keys %res_map ){
+#	my $res_info = $res_map{$res_name};
+#	for my $short_name ( sort keys %{$res_info->{shortname_map}} ){
+#		addCode( qq{name( R.drawable.$res_name, "$short_name" );});
+#	}
+#}
+
 # 画像リソースIDとshortcodeの関連付けを出力する
-for my $res_name ( sort keys %res_map ){
-	my $res_info = $res_map{$res_name};
-	for my $short_name ( sort keys %{$res_info->{shortname_map}} ){
-		addCode( qq{name( R.drawable.$res_name, "$short_name" );});
-	}
+# 投稿時にshortcodeをユニコードに変換するため、shortcodeとUTF-16シーケンスの関連付けを出力する
+for my $name (sort keys %name_map){
+	my $rh = $name_map{$name};
+	my @res_list = values %$rh;
+	my $res_info = $res_list[0];
+
+	my $chars = parseCodePoint( $res_info->{unified} );
+	# コードポイントのリストからperl内部表現の文字列にする
+	my $str = join '',map{ chr hex $_ } @$chars;
+	# perl内部表現からUTF-16に変換する
+	my $str_utf16 = $utf16->encode( $str );
+	my @utf16_chars = unpack("n*",$str_utf16);
+	# UTF-16の文字のリストをJavaのエスケープ表現に直す
+	my $java_chars = join('',map{ sprintf qq(\\u%04x),$_} @utf16_chars );
+	addCode( qq{name( "$name", R.drawable.$res_info->{res_name}, "$java_chars" );});
 }
 
 # カテゴリを書きだす

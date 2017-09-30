@@ -5,7 +5,6 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
-import android.os.SystemClock;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -38,8 +37,10 @@ public class NetworkEmojiSpan extends ReplacementSpan implements CustomEmojiCach
 	}
 	
 	private InvalidateCallback invalidate_callback;
+	private Object draw_target_tag;
 	
-	public void setInvalidateCallback( InvalidateCallback invalidate_callback ){
+	public void setInvalidateCallback( Object draw_target_tag,InvalidateCallback invalidate_callback ){
+		this.draw_target_tag = draw_target_tag;
 		this.invalidate_callback = invalidate_callback;
 	}
 	
@@ -85,7 +86,7 @@ public class NetworkEmojiSpan extends ReplacementSpan implements CustomEmojiCach
 		if( invalidate_callback == null ) return;
 		
 		// APNGデータの取得
-		APNGFrames frames = App1.custom_emoji_cache.get( this, url, this );
+		APNGFrames frames = App1.custom_emoji_cache.get( draw_target_tag, url, this );
 		if( frames == null ) return;
 		
 		long t = invalidate_callback.getTimeFromStart();

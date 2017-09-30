@@ -7,6 +7,10 @@ import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.view.View;
 
+import java.util.ArrayList;
+
+import jp.juggler.subwaytooter.App1;
+
 public class NetworkEmojiInvalidator implements Runnable, NetworkEmojiSpan.InvalidateCallback {
 	@NonNull final View view;
 	@NonNull final Handler handler;
@@ -16,11 +20,21 @@ public class NetworkEmojiInvalidator implements Runnable, NetworkEmojiSpan.Inval
 		this.view = view;
 	}
 	
+	final ArrayList<Object> draw_target_list = new ArrayList<>(  );
+	
 	// 装飾テキスト中のカスタム絵文字スパンにコールバックを登録する
 	public void register( @Nullable Spannable dst ){
 		if( dst == null ) return;
+		
+		for(Object o :draw_target_list){
+			App1.custom_emoji_cache.cancelRequest( o );
+		}
+		draw_target_list.clear();
+		
 		for( NetworkEmojiSpan span : dst.getSpans( 0, dst.length(), NetworkEmojiSpan.class ) ){
-			span.setInvalidateCallback( this );
+			Object tag = new Object();
+			draw_target_list.add( tag);
+			span.setInvalidateCallback( tag, this );
 		}
 	}
 	

@@ -34,9 +34,12 @@ public class ActCallback extends AppCompatActivity {
 		if( intent != null ){
 			String action = intent.getAction();
 			String type = intent.getType();
-			if( Intent.ACTION_SEND.equals( action )
-				|| Intent.ACTION_SEND_MULTIPLE.equals( action )
-				|| ( type != null && type.startsWith( "image/" ) && Intent.ACTION_VIEW.equals( action ) )
+			if(
+				// ACTION_SEND か ACTION_SEND_MULTIPLE
+				Intent.ACTION_SEND.equals( action )
+					|| Intent.ACTION_SEND_MULTIPLE.equals( action )
+					// ACTION_VIEW かつ  type が 画像かビデオ
+					|| ( Intent.ACTION_VIEW.equals( action ) && type != null && ( type.startsWith( "image/" ) || type.startsWith( "video/" ) ) )
 				){
 				
 				// Google Photo などから送られるIntentに含まれるuriの有効期間はActivityが閉じられるまで
@@ -69,7 +72,7 @@ public class ActCallback extends AppCompatActivity {
 			final String action = src.getAction();
 			final String type = src.getType();
 			
-			if( type != null && (type.startsWith( "image/" ) || type.startsWith( "video/" )) ){
+			if( type != null && ( type.startsWith( "image/" ) || type.startsWith( "video/" ) ) ){
 				if( Intent.ACTION_VIEW.equals( action ) ){
 					Uri uri = src.getData();
 					if( uri == null ) return null;

@@ -418,7 +418,7 @@ public class App1 extends Application {
 	
 	@Nullable public static byte[] getHttpCached( @NonNull String url ){
 		Response response;
-		long t_start = SystemClock.elapsedRealtime();
+
 		try{
 			okhttp3.Request.Builder request_builder = new okhttp3.Request.Builder();
 			request_builder.url( url );
@@ -429,9 +429,6 @@ public class App1 extends Application {
 		}catch( Throwable ex ){
 			log.e( ex, "getHttp network error." );
 			return null;
-		}finally{
-			long t_delta = SystemClock.elapsedRealtime() -t_start;
-			log.d("getHttp: time=%dms",t_delta);
 		}
 		
 		if( ! response.isSuccessful() ){
@@ -450,7 +447,7 @@ public class App1 extends Application {
 	
 	@Nullable public static String getHttpCachedString( @NonNull String url ){
 		Response response;
-		long t_start = SystemClock.elapsedRealtime();
+
 		try{
 			okhttp3.Request.Builder request_builder = new okhttp3.Request.Builder();
 			request_builder.url( url );
@@ -461,9 +458,6 @@ public class App1 extends Application {
 		}catch( Throwable ex ){
 			log.e( ex, "getHttp network error." );
 			return null;
-		}finally{
-			long t_delta = SystemClock.elapsedRealtime() -t_start;
-			log.d("getHttp: time=%dms",t_delta);
 		}
 		
 		if( ! response.isSuccessful() ){

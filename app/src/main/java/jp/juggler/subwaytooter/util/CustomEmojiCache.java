@@ -144,11 +144,14 @@ public class CustomEmojiCache {
 		@Override public void run(){
 			while( ! bCancelled.get() ){
 				Request request;
+				int req_size;
 				synchronized( queue ){
 					request = queue.isEmpty() ? null : queue.removeFirst();
+					req_size = queue.size();
 				}
 				
 				if( request == null ){
+					log.d("wait. req_size=%d",req_size );
 					waitEx( 86400000L );
 					continue;
 				}
@@ -157,7 +160,9 @@ public class CustomEmojiCache {
 					continue;
 				}
 				
+				
 				long now = getNow();
+				int cache_size;
 				synchronized( cache ){
 					
 					// 成功キャッシュ
@@ -174,7 +179,10 @@ public class CustomEmojiCache {
 					}
 					
 					sweep_cache();
+					
+					cache_size = cache.size();
 				}
+				log.d("start get image. req_size=%d, cache_size=%d",req_size ,cache_size);
 				
 				APNGFrames frames = null;
 				try{
@@ -216,7 +224,7 @@ public class CustomEmojiCache {
 		private void sweep_cache(){
 			
 			// キャッシュの掃除
-			if( cache.size() >= CACHE_MAX ){
+			if( cache.size() >= CACHE_MAX + 64 ){
 				ArrayList< CacheItem > list = new ArrayList<>();
 				list.addAll( cache.values() );
 				

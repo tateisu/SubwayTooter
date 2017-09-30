@@ -68,6 +68,7 @@ import jp.juggler.subwaytooter.table.PostDraft;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.dialog.ActionsDialog;
 import jp.juggler.subwaytooter.util.DecodeOptions;
+import jp.juggler.subwaytooter.util.EmojiDecoder;
 import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.MyClickableSpan;
@@ -708,10 +709,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	private void updateTextCount(){
 		int length = 0;
 		
-		String s = etContent.getText().toString();
+		String s = EmojiDecoder.decodeShortCode( etContent.getText().toString() );
 		length += s.codePointCount( 0, s.length() );
 		
-		s = cbContentWarning.isChecked() ? etContentWarning.getText().toString() : "";
+		s = cbContentWarning.isChecked() ? EmojiDecoder.decodeShortCode( etContentWarning.getText().toString() ): "";
 		length += s.codePointCount( 0, s.length() );
 		
 		int max;
@@ -720,7 +721,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}else{
 			max = 350;
 			for( MyEditText et : list_etChoice ){
-				s = et.getText().toString();
+				s = EmojiDecoder.decodeShortCode(et.getText().toString());
 				length += s.codePointCount( 0, s.length() );
 			}
 		}
@@ -1143,6 +1144,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		
 		if( acceptable_mime_types == null ){
 			acceptable_mime_types = new HashSet<>();
+			//
+			acceptable_mime_types.add( "image/*" ); // Android標準のギャラリーが image/* を出してくることがあるらしい
+			acceptable_mime_types.add( "video/*" ); // Android標準のギャラリーが image/* を出してくることがあるらしい
+			//
 			acceptable_mime_types.add( "image/jpeg" );
 			acceptable_mime_types.add( "image/png" );
 			acceptable_mime_types.add( "image/gif" );

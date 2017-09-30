@@ -652,7 +652,7 @@ close($fh) or die "$out_file : $!";
 		my $res_info = $res_list[0];
 		push @list,{shortcode=>$name,unicode=>$res_info->{unified}};
 	}
-	my $json = JSON->new->allow_nonref->relaxed(1)->pretty;
+	my $json = JSON->new->allow_nonref->relaxed(1)->pretty->canonical(1);
 	print $fh $json->encode( \@list );
 
 	close($fh) or die "$out_file : $!";

@@ -33,6 +33,8 @@ import android.os.Looper;
 import android.os.storage.StorageManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.util.Base64;
@@ -60,6 +62,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import it.sephiroth.android.library.exif2.ExifInterface;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class Utils {
 	private static final LogCategory log = new LogCategory( "Utils" );
@@ -457,11 +461,12 @@ public class Utils {
 		InputMethodManager imm = (InputMethodManager) context.getSystemService( Context.INPUT_METHOD_SERVICE );
 		imm.hideSoftInputFromWindow( v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS );
 	}
+	
 	public static void showKeyboard( Context context, View v ){
 		try{
 			InputMethodManager imm = (InputMethodManager) context.getSystemService( Context.INPUT_METHOD_SERVICE );
 			imm.showSoftInput( v, InputMethodManager.HIDE_NOT_ALWAYS );
-		}catch(Throwable ignored){
+		}catch( Throwable ignored ){
 			
 		}
 	}
@@ -605,11 +610,12 @@ public class Utils {
 		return MIME_TYPE_APPLICATION_OCTET_STREAM;
 	}
 	
-	public static CharSequence formatSpannable1( Context context, int string_id, CharSequence display_name ){
+	public static Spannable formatSpannable1( Context context, int string_id, CharSequence display_name ){
 		String s = context.getString( string_id );
 		int end = s.length();
 		int pos = s.indexOf( "%1$s" );
-		if( pos == - 1 ) return s;
+		if( pos == - 1 ) return new SpannableString( s );
+
 		SpannableStringBuilder sb = new SpannableStringBuilder();
 		if( pos > 0 ) sb.append( s.substring( 0, pos ) );
 		sb.append( display_name );
@@ -804,6 +810,49 @@ public class Utils {
 			log.trace( ex );
 		}
 		return null;
+	}
+	
+	public static String formatResponse( @NonNull Response response, String caption ){
+		StringBuilder sb = new StringBuilder();
+		try{
+			int empty_length = sb.length();
+			
+			ResponseBody body = response.body();
+			if( body != null ){
+				try{
+					String sv = body.string();
+					if( ! TextUtils.isEmpty( sv ) ){
+						try{
+							JSONObject data = new JSONObject( sv );
+							String error = data.getString( "error" );
+							sb.append( error );
+						}catch( Throwable ex ){
+							log.e( ex, "response body is not JSON or missing 'error' attribute." );
+						}
+						if( sb.length() == empty_length ) sb.append( sv );
+					}
+				}catch( Throwable ex ){
+					log.e( ex, "response body is not String." );
+				}
+			}
+			
+			if( sb.length() == empty_length ) sb.append( ' ' );
+			sb.append( "(HTTP " ).append( Integer.toString( response.code() ) );
+			
+			String message = response.message();
+			if( ! TextUtils.isEmpty( message ) ){
+				sb.append( ' ' ).append( message );
+			}
+			sb.append( ")" );
+			
+			if( ! TextUtils.isEmpty( caption ) ){
+				sb.append( ' ' ).append( caption );
+			}
+			
+		}catch( Throwable ex ){
+			log.trace( ex );
+		}
+		return sb.toString();
 	}
 	
 	public interface ScanViewCallback {

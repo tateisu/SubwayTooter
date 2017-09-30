@@ -16,6 +16,7 @@ package jp.juggler.subwaytooter;
 	import android.os.AsyncTask;
 	import android.os.Build;
 	import android.os.Bundle;
+	import android.os.Handler;
 	import android.provider.MediaStore;
 	import android.provider.Settings;
 	import android.support.annotation.NonNull;
@@ -24,6 +25,8 @@ package jp.juggler.subwaytooter;
 	import android.support.v4.content.ContextCompat;
 	import android.support.v7.app.AlertDialog;
 	import android.support.v7.app.AppCompatActivity;
+	import android.text.Spannable;
+	import android.text.SpannableString;
 	import android.text.TextUtils;
 	import android.util.Base64;
 	import android.util.Base64OutputStream;
@@ -54,6 +57,7 @@ package jp.juggler.subwaytooter;
 	import jp.juggler.subwaytooter.util.DecodeOptions;
 	import jp.juggler.subwaytooter.util.EmojiDecoder;
 	import jp.juggler.subwaytooter.util.LogCategory;
+	import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator;
 	import jp.juggler.subwaytooter.util.NotificationHelper;
 	import jp.juggler.subwaytooter.util.Utils;
 	import jp.juggler.subwaytooter.view.MyNetworkImageView;
@@ -227,8 +231,12 @@ public class ActAccountSetting extends AppCompatActivity
 	View btnDisplayName;
 	EditText etNote;
 	View btnNote;
+	NetworkEmojiInvalidator name_invalidator;
+	NetworkEmojiInvalidator note_invalidator;
+	Handler handler;
 	
 	private void initUI(){
+		this.handler = new Handler(  );
 		setContentView( R.layout.act_account_setting );
 		
 		Styler.fixHorizontalPadding( findViewById( R.id.svContent ) );
@@ -295,6 +303,10 @@ public class ActAccountSetting extends AppCompatActivity
 		btnNotificationSoundEdit.setOnClickListener( this );
 		btnNotificationSoundReset.setOnClickListener( this );
 		btnNotificationStyleEdit.setOnClickListener( this );
+		
+		name_invalidator = new NetworkEmojiInvalidator(handler,etDisplayName) ;
+		note_invalidator = new NetworkEmojiInvalidator(handler,etNote);
+		
 	}
 	
 	boolean loading = false;
@@ -756,16 +768,20 @@ public class ActAccountSetting extends AppCompatActivity
 		ivProfileAvatar.setImageUrl( App1.pref, 16f, src.avatar_static, src.avatar );
 		ivProfileHeader.setImageUrl( App1.pref, 0f, src.header_static, src.header );
 		
-		etDisplayName.setText( EmojiDecoder.decodeEmoji( this, src.display_name == null ? "" : src.display_name ,null) );
+		Spannable name = new DecodeOptions().setProfileEmojis( src.profile_emojis ).decodeEmoji( this, src.display_name == null ? "" : src.display_name );
+		etDisplayName.setText( name);
+		name_invalidator.register( name );
 		
+		Spannable note;
 		if( src.source != null && src.source.note != null ){
-			etNote.setText( EmojiDecoder.decodeEmoji( this, src.source.note ,null) );
+			note=(  new DecodeOptions().setProfileEmojis( src.profile_emojis ).decodeEmoji( this, src.source.note ) );
 		}else if( src.note != null ){
-			
-			etNote.setText( new DecodeOptions().decodeHTML(ActAccountSetting.this, account, src.note) );
+			note=( new DecodeOptions().setProfileEmojis( src.profile_emojis ).decodeHTML(ActAccountSetting.this, account, src.note) );
 		}else{
-			etNote.setText( "" );
+			note=new SpannableString( "" );
 		}
+		etNote.setText( note );
+		note_invalidator.register( note );
 		
 		// 編集可能にする
 		btnProfileAvatar.setEnabled( true );

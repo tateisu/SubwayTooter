@@ -43,6 +43,7 @@ import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.CustomEmojiCache;
 import jp.juggler.subwaytooter.util.CustomEmojiLister;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.Utils;
 import okhttp3.Cache;
 import okhttp3.CacheControl;
 import okhttp3.Call;
@@ -220,8 +221,8 @@ public class App1 extends Application {
 	
 	private static OkHttpClient ok_http_client2;
 	
-//	public static final boolean USE_OLD_EMOJIONE = false;
-//	public static Typeface typeface_emoji;
+	//	public static final boolean USE_OLD_EMOJIONE = false;
+	//	public static Typeface typeface_emoji;
 	
 	public static SharedPreferences pref;
 	
@@ -295,11 +296,11 @@ public class App1 extends Application {
 			AcctSet.deleteOld( System.currentTimeMillis() );
 		}
 		
-//		if( USE_OLD_EMOJIONE ){
-//			if( typeface_emoji == null ){
-//				typeface_emoji = TypefaceUtils.load( app_context.getAssets(), "emojione_android.ttf" );
-//			}
-//		}
+		//		if( USE_OLD_EMOJIONE ){
+		//			if( typeface_emoji == null ){
+		//				typeface_emoji = TypefaceUtils.load( app_context.getAssets(), "emojione_android.ttf" );
+		//			}
+		//		}
 		
 		//		if( image_loader == null ){
 		//			image_loader = new MyImageLoader(
@@ -411,14 +412,14 @@ public class App1 extends Application {
 	}
 	
 	static final CacheControl CACHE_5MIN = new CacheControl.Builder()
-		.maxStale(Integer.MAX_VALUE, TimeUnit.SECONDS) // キャッシュをいつまで保持するか
-	//s	.minFresh( 1, TimeUnit.HOURS ) // キャッシュが新鮮であると考えられる時間
+		.maxStale( Integer.MAX_VALUE, TimeUnit.SECONDS ) // キャッシュをいつまで保持するか
+		//s	.minFresh( 1, TimeUnit.HOURS ) // キャッシュが新鮮であると考えられる時間
 		.maxAge( 1, TimeUnit.HOURS ) // キャッシュが新鮮であると考えられる時間
 		.build();
 	
 	@Nullable public static byte[] getHttpCached( @NonNull String url ){
 		Response response;
-
+		
 		try{
 			okhttp3.Request.Builder request_builder = new okhttp3.Request.Builder();
 			request_builder.url( url );
@@ -432,7 +433,7 @@ public class App1 extends Application {
 		}
 		
 		if( ! response.isSuccessful() ){
-			log.e( "getHttp response error. %s", response );
+			log.e( Utils.formatResponse( response, "getHttp response error." ) );
 			return null;
 		}
 		
@@ -447,7 +448,7 @@ public class App1 extends Application {
 	
 	@Nullable public static String getHttpCachedString( @NonNull String url ){
 		Response response;
-
+		
 		try{
 			okhttp3.Request.Builder request_builder = new okhttp3.Request.Builder();
 			request_builder.url( url );
@@ -461,7 +462,7 @@ public class App1 extends Application {
 		}
 		
 		if( ! response.isSuccessful() ){
-			log.e( "getHttp response error. %s", response );
+			log.e( Utils.formatResponse( response, "getHttp response error." ) );
 			return null;
 		}
 		

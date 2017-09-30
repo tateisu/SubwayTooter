@@ -82,6 +82,7 @@ import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.Response;
 import okio.BufferedSink;
 
 public class ActPost extends AppCompatActivity implements View.OnClickListener, PostAttachment.Callback {
@@ -359,6 +360,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				if( type == null ){
 					//
 				}else if( type.startsWith( "image/" ) || type.startsWith( "video/" ) ){
+					
 					if( Intent.ACTION_VIEW.equals( action ) ){
 						Uri uri = sent_intent.getData();
 						if( uri != null ){
@@ -712,7 +714,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		String s = EmojiDecoder.decodeShortCode( etContent.getText().toString() );
 		length += s.codePointCount( 0, s.length() );
 		
-		s = cbContentWarning.isChecked() ? EmojiDecoder.decodeShortCode( etContentWarning.getText().toString() ): "";
+		s = cbContentWarning.isChecked() ? EmojiDecoder.decodeShortCode( etContentWarning.getText().toString() ) : "";
 		length += s.codePointCount( 0, s.length() );
 		
 		int max;
@@ -721,7 +723,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}else{
 			max = 350;
 			for( MyEditText et : list_etChoice ){
-				s = EmojiDecoder.decodeShortCode(et.getText().toString());
+				s = EmojiDecoder.decodeShortCode( et.getText().toString() );
 				length += s.codePointCount( 0, s.length() );
 			}
 		}
@@ -744,12 +746,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	void setAccount( SavedAccount a ){
 		this.account = a;
 		if( a == null ){
-			if(post_helper != null) post_helper.setInstance( null );
+			if( post_helper != null ) post_helper.setInstance( null );
 			btnAccount.setText( getString( R.string.not_selected ) );
 			btnAccount.setTextColor( Styler.getAttributeColor( this, android.R.attr.textColorPrimary ) );
 			btnAccount.setBackgroundResource( R.drawable.btn_bg_transparent );
 		}else{
-			if(post_helper != null) post_helper.setInstance( a.host );
+			if( post_helper != null ) post_helper.setInstance( a.host );
 			String acct = a.getFullAcct( a );
 			AcctColor ac = AcctColor.load( acct );
 			String nickname = AcctColor.hasNickname( ac ) ? ac.nickname : acct;
@@ -1661,7 +1663,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		try{
 			Request request = new Request.Builder().url( url ).build();
 			Call call = App1.ok_http_client.newCall( request );
-			return call.execute().isSuccessful();
+			Response response = call.execute();
+			if( response.isSuccessful() ){
+				return true;
+			}
+			log.e( Utils.formatResponse( response, "check_exist failed." ) );
 		}catch( Throwable ex ){
 			log.trace( ex );
 		}

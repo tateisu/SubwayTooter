@@ -41,6 +41,7 @@ public class MSPAccount extends TootAccount {
 		dst.decoded_note = new DecodeOptions()
 			.setShort( true )
 			.setDecodeEmoji( true )
+			.setProfileEmojis( dst.profile_emojis )
 			.decodeHTML( context, access_info, dst.note != null ? dst.note : null );
 		
 		if( TextUtils.isEmpty( dst.url ) ){

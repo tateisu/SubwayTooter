@@ -14,6 +14,7 @@ import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.api.entity.CustomEmoji;
+import jp.juggler.subwaytooter.api.entity.NicoProfileEmoji;
 
 @SuppressWarnings("WeakerAccess")
 public class EmojiDecoder {
@@ -134,6 +135,7 @@ public class EmojiDecoder {
 			|| cp == '-'
 			|| cp == '+'
 			|| cp == '_'
+			|| cp == '@'
 			;
 	}
 	
@@ -150,14 +152,19 @@ public class EmojiDecoder {
 			start = i;
 			while( i < end ){
 				int c = s.codePointAt( i );
+				int width = Character.charCount( c );
 				if( c == ':' ){
-					// ショートコードの手前は始端か改行か空白文字でないとならない
-					// 空白文字の判定はサーバサイドのそれにあわせる
-					if( i == 0 || isWhitespaceBeforeEmoji( s.codePointBefore( i ) ) ){
+					if( i + width < end && s.codePointAt( i + width ) == '@' ){
+						// 例外として、フレニコのプロフ絵文字 :@who: は手前の空白を要求しない
+						break;
+					}else if( i == 0 || isWhitespaceBeforeEmoji( s.codePointBefore( i ) ) ){
+						// ショートコードの手前は始端か改行か空白文字でないとならない
+						// 空白文字の判定はサーバサイドのそれにあわせる
 						break;
 					}
+					// shortcodeの開始とみなせないケースだった
 				}
-				i += Character.charCount( c );
+				i += width;
 			}
 			if( i > start ){
 				callback.onString( s.substring( start, i ) );
@@ -198,9 +205,15 @@ public class EmojiDecoder {
 	private static final Pattern reNicoru = Pattern.compile( "\\Anicoru\\d*\\z", Pattern.CASE_INSENSITIVE );
 	private static final Pattern reHohoemi = Pattern.compile( "\\Ahohoemi\\d*\\z", Pattern.CASE_INSENSITIVE );
 	
-	public static Spannable decodeEmoji( @NonNull final Context context, @NonNull final String s, @Nullable final CustomEmoji.Map custom_map ){
-		
+	public static Spannable decodeEmoji(
+		@NonNull final Context context
+		, @NonNull final String s
+		, @NonNull DecodeOptions options
+	){
 		final DecodeEnv decode_env = new DecodeEnv( context );
+		final CustomEmoji.Map custom_map = options.customEmojiMap;
+		final NicoProfileEmoji.Map profile_emojis = options.profile_emojis;
+		
 		splitShortCode( s, 0, s.length(), new ShortCodeSplitterCallback() {
 			@Override public void onString( @NonNull String part ){
 				decode_env.addUnicodeString( part );
@@ -211,6 +224,15 @@ public class EmojiDecoder {
 				if( info != null ){
 					decode_env.addImageSpan( part, info.image_id );
 					return;
+				}
+				
+				// part=":@name:" name="@name"
+				if( name.length() >= 2 && name.charAt( 0 ) == '@' ){
+					NicoProfileEmoji emoji = ( profile_emojis == null ? null : profile_emojis.get( name.substring( 1 ) ) );
+					if( emoji != null ){
+						decode_env.addNetworkEmojiSpan( part, emoji.url );
+						return;
+					}
 				}
 				
 				String url = ( custom_map == null ? null : custom_map.get( name ) );

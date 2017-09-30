@@ -198,7 +198,7 @@
 	<string name="muted_users">Utilisateurs muets</string>
 	<string name="muted_word">Mot(s) Interdit(s)</string>
 	<string name="network_error">Erreur réseau.</string>
-	<string name="network_error_arg">Erreur réseau. %1$s</string>
+	<string name="error_response">Erreur response.</string>
 	<string name="nickname">Pseudonyme</string>
 	<string name="nickname_and_color_and_notification_sound">Pseudo, Couleur, Notification sound</string>
 	<string name="nickname_and_color">Pseudo et Couleur</string>

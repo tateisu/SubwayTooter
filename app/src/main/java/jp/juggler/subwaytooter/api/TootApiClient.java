@@ -10,7 +10,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import jp.juggler.subwaytooter.App1;
-import jp.juggler.subwaytooter.PollingService;
 import jp.juggler.subwaytooter.table.ClientInfo;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -135,7 +134,7 @@ public class TootApiClient {
 		if( callback.isApiCancelled() ) return null;
 		
 		if( ! response.isSuccessful() ){
-			return new TootApiResult( response,instance + ": " + context.getString( R.string.network_error_arg, response ) );
+			return new TootApiResult( response, Utils.formatResponse( response, instance ) );
 		}
 		
 		try{
@@ -229,7 +228,7 @@ public class TootApiClient {
 		if( callback.isApiCancelled() ) return null;
 		
 		if( ! response.isSuccessful() ){
-			return new TootApiResult( response,instance + ": " + context.getString( R.string.network_error_arg, response ) );
+			return new TootApiResult( response, Utils.formatResponse( response, instance ) );
 		}
 		
 		try{
@@ -295,7 +294,7 @@ public class TootApiClient {
 		if( callback.isApiCancelled() ) return null;
 		
 		if( ! response.isSuccessful() ){
-			return new TootApiResult( response,instance + ": " + context.getString( R.string.network_error_arg, response ) );
+			return new TootApiResult( response, Utils.formatResponse( response, instance ) );
 		}
 		try{
 			//noinspection ConstantConditions
@@ -377,7 +376,7 @@ public class TootApiClient {
 		if( callback.isApiCancelled() ) return null;
 		
 		if( ! response.isSuccessful() ){
-			return new TootApiResult( response,instance + ": " + context.getString( R.string.network_error_arg, response ) );
+			return new TootApiResult( response, Utils.formatResponse( response, instance ) );
 		}
 		
 		JSONObject token_info;
@@ -425,7 +424,7 @@ public class TootApiClient {
 		if( callback.isApiCancelled() ) return null;
 		
 		if( ! response.isSuccessful() ){
-			return new TootApiResult( response,instance + ": " + context.getString( R.string.network_error_arg, response ) );
+			return new TootApiResult( response, Utils.formatResponse( response, instance ) );
 		}
 		
 		try{
@@ -490,7 +489,7 @@ public class TootApiClient {
 		if( callback.isApiCancelled() ) return null;
 		
 		if( ! response.isSuccessful() ){
-			return new TootApiResult( response,instance + ": " + context.getString( R.string.network_error_arg, response ) );
+			return new TootApiResult( response, Utils.formatResponse( response, instance ) );
 		}
 		
 		try{
@@ -535,7 +534,7 @@ public class TootApiClient {
 		if( callback.isApiCancelled() ) return null;
 		
 		if( ! response.isSuccessful() ){
-			return new TootApiResult( response,url + ": " + context.getString( R.string.network_error_arg, response ) );
+			return new TootApiResult( response, Utils.formatResponse( response, url ) );
 		}
 		
 		try{

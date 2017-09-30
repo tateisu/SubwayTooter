@@ -39,7 +39,7 @@ public class TootAccount {
 	public String display_name;
 	
 	//	The account's display name
-	public CharSequence decoded_display_name;
+	public Spannable decoded_display_name;
 	
 	//Boolean for when the account cannot be followed without waiting for approval first
 	public boolean locked;
@@ -95,6 +95,8 @@ public class TootAccount {
 	
 	@Nullable public Source source;
 	
+	@Nullable public NicoProfileEmoji.Map profile_emojis;
+	
 	public TootAccount(){
 		
 	}
@@ -116,6 +118,9 @@ public class TootAccount {
 				dst.acct = "?@?";
 			}
 			
+			// 絵文字データは先に読んでおく
+			dst.profile_emojis = NicoProfileEmoji.parseMap( src.optJSONArray( "profile_emojis" ) );
+			
 			String sv = Utils.optStringX( src, "display_name" );
 			dst.setDisplayName( context, dst.username, sv );
 			
@@ -126,7 +131,11 @@ public class TootAccount {
 			dst.statuses_count = Utils.optLongX( src, "statuses_count" );
 			
 			dst.note = Utils.optStringX( src, "note" );
-			dst.decoded_note = new DecodeOptions().setShort( true ).setDecodeEmoji( true ).decodeHTML( context, account, ( dst.note != null ? dst.note : null ) );
+			dst.decoded_note = new DecodeOptions()
+				.setShort( true )
+				.setDecodeEmoji( true )
+				.setProfileEmojis( dst.profile_emojis )
+				.decodeHTML( context, account, ( dst.note != null ? dst.note : null ) );
 			
 			dst.url = Utils.optStringX( src, "url" );
 			dst.avatar = Utils.optStringX( src, "avatar" ); // "https:\/\/mastodon.juggler.jp\/system\/accounts\/avatars\/000\/000\/148\/original\/0a468974fac5a448.PNG?1492081886",
@@ -137,6 +146,7 @@ public class TootAccount {
 			dst.time_created_at = TootStatus.parseTime( dst.created_at );
 			
 			dst.source = parseSource( src.optJSONObject( "source" ) );
+			
 			
 			return dst;
 			
@@ -191,7 +201,7 @@ public class TootAccount {
 		sv = reWhitespace.matcher( this.display_name ).replaceAll( " " );
 		
 		// decode emoji code
-		this.decoded_display_name = EmojiDecoder.decodeEmoji( context, sv, null );
+		this.decoded_display_name = new DecodeOptions().setProfileEmojis( this.profile_emojis ).decodeEmoji( context, sv );
 		
 	}
 	

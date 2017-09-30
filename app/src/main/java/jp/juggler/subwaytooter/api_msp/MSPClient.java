@@ -20,7 +20,7 @@ import okhttp3.Request;
 import okhttp3.Response;
 
 public class MSPClient {
-	private static final LogCategory log = new LogCategory("MSPClient");
+	private static final LogCategory log = new LogCategory( "MSPClient" );
 	
 	private static final String url_token = "http://mastodonsearch.jp/api/v1.0.1/utoken";
 	private static final String url_search = "http://mastodonsearch.jp/api/v1.0.1/cross";
@@ -28,21 +28,20 @@ public class MSPClient {
 	
 	private static final OkHttpClient ok_http_client = App1.ok_http_client;
 	
-	
 	public interface Callback {
 		boolean isApiCancelled();
 		
 		void publishApiProgress( String s );
 	}
 	
-	public static MSPApiResult search( @NonNull Context context, @NonNull String query, @NonNull String max_id ,@NonNull Callback callback ){
+	public static MSPApiResult search( @NonNull Context context, @NonNull String query, @NonNull String max_id, @NonNull Callback callback ){
 		// ユーザトークンを読む
-		SharedPreferences pref = Pref.pref(context);
-		String user_token = pref.getString(Pref.KEY_MASTODON_SEARCH_PORTAL_USER_TOKEN,null);
+		SharedPreferences pref = Pref.pref( context );
+		String user_token = pref.getString( Pref.KEY_MASTODON_SEARCH_PORTAL_USER_TOKEN, null );
 		
 		Response response;
 		
-		for(int nTry=0;nTry<10;++nTry){
+		for( int nTry = 0 ; nTry < 10 ; ++ nTry ){
 			// ユーザトークンがなければ取得する
 			if( TextUtils.isEmpty( user_token ) ){
 				
@@ -80,7 +79,7 @@ public class MSPClient {
 							return new MSPApiResult( Utils.formatError( ex, "API returns error response %s, but can't parse response body.", response.code() ) );
 						}
 					}else{
-						return new MSPApiResult( context.getString( R.string.network_error_arg, response ) );
+						return new MSPApiResult( Utils.formatResponse( response, url ) );
 					}
 				}
 				
@@ -143,7 +142,7 @@ public class MSPClient {
 							return new MSPApiResult( Utils.formatError( ex, "API returns error response %s, but can't parse response body.", response.code() ) );
 						}
 					}else{
-						return new MSPApiResult( context.getString( R.string.network_error_arg, response ) );
+						return new MSPApiResult( Utils.formatResponse( response, url ) );
 					}
 				}
 				
@@ -158,7 +157,7 @@ public class MSPClient {
 				}
 			}
 		}
-		return new MSPApiResult( "MSP user token retry exceeded.");
+		return new MSPApiResult( "MSP user token retry exceeded." );
 	}
 	
 	public static String getMaxId( JSONArray array, String max_id ){
@@ -175,5 +174,5 @@ public class MSPClient {
 		}
 		return max_id;
 	}
-
+	
 }

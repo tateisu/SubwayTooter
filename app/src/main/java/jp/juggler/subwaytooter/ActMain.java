@@ -107,7 +107,7 @@ public class ActMain extends AppCompatActivity
 	int acct_pad_lr;
 	
 	SharedPreferences pref;
-	Handler handler;
+	public Handler handler;
 	AppState app_state;
 	
 	// onActivityResultで設定されてonResumeで消化される

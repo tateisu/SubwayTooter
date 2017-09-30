@@ -27,6 +27,7 @@ import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.EmojiDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator;
 import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.view.EnqueteTimerView;
 import okhttp3.Request;
@@ -40,13 +41,13 @@ public class NicoEnquete {
 	public Spannable question;
 	
 	// array of text with emoji
-	public ArrayList< CharSequence > items;
+	public ArrayList< Spannable > items;
 	
 	// 結果の数値 // null or array of number
 	public ArrayList< Float > ratios;
 	
 	// 結果の数値のテキスト // null or array of string
-	public ArrayList< CharSequence > ratios_text;
+	// public ArrayList< CharSequence > ratios_text;
 	
 	// one of enquete,enquete_result
 	public String type;
@@ -64,42 +65,50 @@ public class NicoEnquete {
 		@Nullable TootAttachment.List list_attachment,
 		@Nullable String sv,
 		long status_id,
-		long time_start ,
-	    @NonNull TootStatusLike status
+		long time_start,
+		@NonNull TootStatusLike status
 	){
 		try{
 			if( sv != null ){
 				JSONObject src = new JSONObject( sv );
 				NicoEnquete dst = new NicoEnquete();
 				String strQuestion = Utils.optStringX( src, "question" );
-				dst.items = parseStringArray( src, "items" );
+				
+				ArrayList< String > tmp_items = parseStringArray( src, "items" );
 				dst.ratios = parseFloatArray( src, "ratios" );
-				dst.ratios_text = parseStringArray( src, "ratios_text" );
+				//dst.ratios_text = parseStringArray( src, "ratios_text" );
 				dst.type = Utils.optStringX( src, "type" );
 				dst.time_start = time_start;
 				dst.status_id = status_id;
 				if( strQuestion != null ){
 					dst.question = new DecodeOptions()
-						.setShort(true)
+						.setShort( true )
 						.setDecodeEmoji( true )
 						.setAttachment( list_attachment )
 						.setLinkTag( status )
 						.setEmojiMap( status.emojis )
-						.decodeHTML( context, access_info, strQuestion);
+						.setProfileEmojis( status.profile_emojis )
+						.decodeHTML( context, access_info, strQuestion );
 				}else{
-					SpannableStringBuilder sb = new SpannableStringBuilder( "?" );
-					dst.question = sb;
+					dst.question = new SpannableStringBuilder( "?" );
 				}
-				if( dst.items != null ){
-					for( int i = 0, ie = dst.items.size() ; i < ie ; ++ i ){
-						sv = (String) dst.items.get( i );
-						sv = Utils.sanitizeBDI( sv );
+				
+				if( tmp_items != null ){
+					dst.items = new ArrayList<>();
+					for( int i = 0, ie = tmp_items.size() ; i < ie ; ++ i ){
+						sv = Utils.sanitizeBDI( tmp_items.get( i ) );
 						// remove white spaces
 						sv = reWhitespace.matcher( sv ).replaceAll( " " );
 						// decode emoji code
-						dst.items.set( i, EmojiDecoder.decodeEmoji( context, sv ,status.emojis) );
+						dst.items.add(
+							new DecodeOptions()
+								.setEmojiMap( status.emojis )
+								.setProfileEmojis( status.profile_emojis )
+								.decodeEmoji( context, sv )
+						);
 					}
 				}
+				
 				return dst;
 			}
 		}catch( Throwable ex ){
@@ -108,10 +117,10 @@ public class NicoEnquete {
 		return null;
 	}
 	
-	private static ArrayList< CharSequence > parseStringArray( JSONObject src, String name ){
+	private static ArrayList< String > parseStringArray( JSONObject src, String name ){
 		JSONArray array = src.optJSONArray( name );
 		if( array != null ){
-			ArrayList< CharSequence > dst = new ArrayList<>();
+			ArrayList< String > dst = new ArrayList<>();
 			for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
 				String sv = Utils.optStringX( array, i );
 				if( sv != null ) dst.add( sv );
@@ -136,7 +145,14 @@ public class NicoEnquete {
 	
 	static final long ENQUETE_EXPIRE = 30000L;
 	
-	public void makeChoiceView( final ActMain activity, @NonNull final SavedAccount access_info, LinearLayout llExtra, final int i, CharSequence item ){
+	public void makeChoiceView(
+		final ActMain activity
+		, @NonNull final SavedAccount access_info
+		, @NonNull LinearLayout llExtra
+		, @NonNull ArrayList< NetworkEmojiInvalidator > invalidator_list
+		, final int i
+		, @NonNull Spannable item
+	){
 		long now = System.currentTimeMillis();
 		long remain = time_start + ENQUETE_EXPIRE - now;
 		
@@ -147,6 +163,9 @@ public class NicoEnquete {
 		b.setLayoutParams( lp );
 		b.setAllCaps( false );
 		b.setText( item );
+		NetworkEmojiInvalidator invalidator = new NetworkEmojiInvalidator( activity.handler, b );
+		invalidator_list.add( invalidator );
+		invalidator.register( item );
 		if( remain <= 0 ){
 			b.setEnabled( false );
 		}else{
@@ -198,17 +217,17 @@ public class NicoEnquete {
 				
 				JSONObject form = new JSONObject();
 				try{
-					form.put("item_index",Integer.toString( idx));
-				}catch(Throwable ex){
+					form.put( "item_index", Integer.toString( idx ) );
+				}catch( Throwable ex ){
 					ex.printStackTrace();
 				}
 				
 				Request.Builder request_builder = new Request.Builder()
-					.post( RequestBody.create( TootApiClient.MEDIA_TYPE_JSON , form.toString() ) );
+					.post( RequestBody.create( TootApiClient.MEDIA_TYPE_JSON, form.toString() ) );
 				
 				TootApiResult result;
 				{
-					result = client.request( "/api/v1/votes/" + status_id ,request_builder );
+					result = client.request( "/api/v1/votes/" + status_id, request_builder );
 				}
 				return result;
 			}
@@ -228,12 +247,12 @@ public class NicoEnquete {
 				if( result == null ){
 					// cancelled.
 				}else if( result.object != null ){
-					String message = Utils.optStringX( result.object,"message" );
+					String message = Utils.optStringX( result.object, "message" );
 					boolean valid = result.object.optBoolean( "valid" );
-					if(valid){
-						Utils.showToast( context,false,R.string.enquete_voted );
+					if( valid ){
+						Utils.showToast( context, false, R.string.enquete_voted );
 					}else{
-						Utils.showToast( context,true,R.string.enquete_vote_failed,message );
+						Utils.showToast( context, true, R.string.enquete_vote_failed, message );
 					}
 				}else{
 					Utils.showToast( context, true, result.error );

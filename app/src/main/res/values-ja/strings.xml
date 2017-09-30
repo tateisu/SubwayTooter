@@ -24,7 +24,7 @@
     <!---->
     <string name="network_error">通信エラー</string>
     <!---->
-    <string name="network_error_arg">応答エラー %1$s</string>
+    <string name="error_response">エラー応答。</string>
     <!---->
     <string name="api_error">APIエラー %1$s</string>
     <!---->

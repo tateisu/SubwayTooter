@@ -13,7 +13,7 @@
     <string name="password_not_specified">Password not specified</string>
 
     <string name="network_error">Network error.</string>
-    <string name="network_error_arg">Network error. %1$s</string>
+    <string name="error_response">Error response.</string>
     <string name="api_error">API error. %1$s</string>
 
     <string name="register_app_to_server">Registering this app to %1$s…</string>

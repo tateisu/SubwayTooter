@@ -167,7 +167,7 @@ public class HTMLDecoder {
 		){
 			if( TAG_TEXT.equals( tag ) ){
 				if( options.bDecodeEmoji ){
-					sb.append( EmojiDecoder.decodeEmoji( context, decodeEntity( text ), options.customEmojiMap ) );
+					sb.append( options.decodeEmoji( context, decodeEntity( text ) ) );
 				}else{
 					sb.append( decodeEntity( text ) );
 				}
@@ -316,9 +316,9 @@ public class HTMLDecoder {
 	}
 	
 	public static SpannableStringBuilder decodeHTML(
-		Context context
-		, LinkClickContext account
-		, String src
+		@NonNull Context context
+		, @NonNull LinkClickContext account
+		, @Nullable String src
 		, @NonNull DecodeOptions options
 	){
 		prepareTagInformation();

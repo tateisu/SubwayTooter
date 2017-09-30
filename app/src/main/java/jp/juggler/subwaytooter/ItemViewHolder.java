@@ -19,6 +19,8 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+
 import jp.juggler.subwaytooter.api.entity.NicoEnquete;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
@@ -109,6 +111,13 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private final int content_color_default;
 	private int acct_color;
 	
+	private final NetworkEmojiInvalidator boost_invalidator;
+	private final NetworkEmojiInvalidator follow_invalidator;
+	private final NetworkEmojiInvalidator name_invalidator;
+	private final NetworkEmojiInvalidator content_invalidator;
+	private final NetworkEmojiInvalidator spoiler_invalidator;
+	private final ArrayList<NetworkEmojiInvalidator> extra_invalidator_list = new ArrayList<>(  );
+
 	ItemViewHolder( ActMain arg_activity, Column column, ItemListAdapter list_adapter, View view, boolean bSimpleList ){
 		this.activity = arg_activity;
 		this.column = column;
@@ -255,6 +264,9 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		this.content_invalidator = new NetworkEmojiInvalidator( activity.handler, tvContent );
 		this.spoiler_invalidator = new NetworkEmojiInvalidator( activity.handler, tvContentWarning );
+		this.boost_invalidator = new NetworkEmojiInvalidator( activity.handler, tvBoosted );
+		this.follow_invalidator = new NetworkEmojiInvalidator( activity.handler, tvFollowerName );
+		this.name_invalidator = new NetworkEmojiInvalidator( activity.handler, tvName );
 	}
 	
 	void bind( Object item ){
@@ -385,12 +397,13 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		btnSearchTag.setText( activity.getString( R.string.read_gap ) );
 	}
 	
-	private void showBoost( @NonNull TootAccount who, long time, int icon_attr_id, CharSequence text ){
+	private void showBoost( @NonNull TootAccount who, long time, int icon_attr_id, Spannable text ){
 		account_boost = who;
 		llBoosted.setVisibility( View.VISIBLE );
 		ivBoosted.setImageResource( Styler.getAttributeResourceId( activity, icon_attr_id ) );
 		tvBoostedTime.setText( TootStatus.formatTime( tvBoostedTime.getContext(), time, true ) );
 		tvBoosted.setText( text );
+		boost_invalidator.register( text );
 		setAcct( tvBoostedAcct, access_info.getFullAcct( who ), who.acct );
 	}
 	
@@ -399,15 +412,13 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		llFollow.setVisibility( View.VISIBLE );
 		ivFollow.setImageUrl( activity.pref, 16f, access_info.supplyBaseUrl( who.avatar_static ) );
 		tvFollowerName.setText( who.decoded_display_name );
+		follow_invalidator.register( who.decoded_display_name );
+		
 		setAcct( tvFollowerAcct, access_info.getFullAcct( who ), who.acct );
 		
 		UserRelation relation = UserRelation.load( access_info.db_id, who.id );
 		Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation, who );
 	}
-	
-	private final NetworkEmojiInvalidator content_invalidator;
-	private final NetworkEmojiInvalidator spoiler_invalidator;
-	
 	
 	private void showStatus( @NonNull ActMain activity, @NonNull TootStatusLike status ){
 		this.status = status;
@@ -421,9 +432,11 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		if( status.account == null ){
 			tvName.setText( "?" );
+			name_invalidator.register( null );
 			ivThumbnail.setImageUrl( activity.pref, 16f, null, null );
 		}else{
 			tvName.setText( status.account.decoded_display_name );
+			name_invalidator.register( status.account.decoded_display_name );
 			ivThumbnail.setImageUrl(
 				activity.pref, 16f
 				, access_info.supplyBaseUrl( status.account.avatar_static )
@@ -433,6 +446,10 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		Spannable content = status.decoded_content;
 		llExtra.removeAllViews();
+		for( NetworkEmojiInvalidator invalidator : extra_invalidator_list ){
+			invalidator.register( null );
+		}
+		extra_invalidator_list.clear();
 		
 		if( status instanceof TootStatus ){
 			TootStatus ts = (TootStatus) status;
@@ -440,8 +457,8 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			if( enquete != null && NicoEnquete.TYPE_ENQUETE.equals( enquete.type ) ){
 				if( enquete.question != null ) content = enquete.question;
 				int n = 0;
-				for( CharSequence item : enquete.items ){
-					enquete.makeChoiceView( activity, access_info, llExtra, n++, item );
+				for( Spannable item : enquete.items ){
+					enquete.makeChoiceView( activity, access_info, llExtra, extra_invalidator_list,n++, item );
 				}
 				enquete.makeTimerView( activity, llExtra );
 			}

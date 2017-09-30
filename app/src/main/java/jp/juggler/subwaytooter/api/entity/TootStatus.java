@@ -107,8 +107,8 @@ public class TootStatus extends TootStatusLike {
 			
 			// 絵文字マップは割と最初の方で読み込んでおきたい
 			status.emojis = CustomEmoji.parseMap( src.optJSONArray( "emojis" ));
-			
-			
+			status.profile_emojis = NicoProfileEmoji.parseMap( src.optJSONArray( "profile_emojis" ) );
+
 			status.account = TootAccount.parse( context, access_info, src.optJSONObject( "account" ) );
 			
 			if( status.account == null ) return null;
@@ -154,6 +154,7 @@ public class TootStatus extends TootStatusLike {
 				.setDecodeEmoji( true)
 				.setAttachment( status.media_attachments )
 				.setEmojiMap( status.emojis )
+				.setProfileEmojis( status.profile_emojis )
 				.setLinkTag( status )
 				.decodeHTML( context, access_info, status.content );
 

@@ -24,18 +24,20 @@ public class NetworkEmojiInvalidator implements Runnable, NetworkEmojiSpan.Inval
 	
 	// 装飾テキスト中のカスタム絵文字スパンにコールバックを登録する
 	public void register( @Nullable Spannable dst ){
-		if( dst == null ) return;
-		
 		for(Object o :draw_target_list){
 			App1.custom_emoji_cache.cancelRequest( o );
 		}
 		draw_target_list.clear();
-		
-		for( NetworkEmojiSpan span : dst.getSpans( 0, dst.length(), NetworkEmojiSpan.class ) ){
-			Object tag = new Object();
-			draw_target_list.add( tag);
-			span.setInvalidateCallback( tag, this );
+
+		if( dst != null ){
+			for( NetworkEmojiSpan span : dst.getSpans( 0, dst.length(), NetworkEmojiSpan.class ) ){
+				Object tag = new Object();
+				draw_target_list.add( tag);
+				span.setInvalidateCallback( tag, this );
+			}
 		}
+		
+		
 	}
 	
 	// 絵文字スパンを描画した直後に呼ばれる

@@ -789,7 +789,7 @@ public class PollingWorker {
 				Response response = call.execute();
 				
 				if( ! response.isSuccessful() ){
-					log.e( "getInstallId: get /counter failed. %s", response );
+					log.e( Utils.formatResponse( response, "getInstallId: get /counter failed.") );
 					return null;
 				}
 				

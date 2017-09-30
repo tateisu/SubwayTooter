@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter;
 
+import android.text.Spannable;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -10,8 +11,10 @@ import android.widget.TextView;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.UserRelation;
+import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.EmojiDecoder;
 import jp.juggler.subwaytooter.util.EmojiMap201709;
+import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator;
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
 import jp.juggler.subwaytooter.view.MyNetworkImageView;
 
@@ -30,6 +33,8 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 	private final ImageView ivFollowedBy;
 	private final View llProfile;
 	private final TextView tvRemoteProfileWarning;
+	private final NetworkEmojiInvalidator name_invalidator;
+	private final NetworkEmojiInvalidator note_invalidator;
 	
 	private TootAccount who;
 	
@@ -64,6 +69,9 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 		btnFollow.setOnLongClickListener( this );
 		
 		tvNote.setMovementMethod( MyLinkMovementMethod.getInstance() );
+		
+		name_invalidator = new NetworkEmojiInvalidator( activity.handler, tvAcct );
+		note_invalidator = new NetworkEmojiInvalidator( activity.handler, tvNote );
 	}
 	
 	void showColor(){
@@ -85,9 +93,15 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 			tvCreated.setText( "" );
 			ivBackground.setImageDrawable( null );
 			ivAvatar.setImageDrawable( null );
-			tvDisplayName.setText( "" );
+			
 			tvAcct.setText( "@" );
+
+			tvDisplayName.setText( "" );
+			name_invalidator.register( null );
+
 			tvNote.setText( "" );
+			note_invalidator.register( null );
+
 			btnStatusCount.setText( activity.getString( R.string.statuses ) + "\n" + "?" );
 			btnFollowing.setText( activity.getString( R.string.following ) + "\n" + "?" );
 			btnFollowers.setText( activity.getString( R.string.followers ) + "\n" + "?" );
@@ -97,8 +111,12 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 		}else{
 			tvCreated.setText( TootStatus.formatTime( tvCreated.getContext(), who.time_created_at, true ) );
 			ivBackground.setImageUrl( activity.pref, 0f, access_info.supplyBaseUrl( who.header_static ) );
+
 			ivAvatar.setImageUrl( activity.pref, 16f, access_info.supplyBaseUrl( who.avatar_static ), access_info.supplyBaseUrl( who.avatar ) );
-			tvDisplayName.setText( who.decoded_display_name );
+			
+			Spannable name =who.decoded_display_name ;
+			tvDisplayName.setText( name );
+			name_invalidator.register( name );
 			
 			tvRemoteProfileWarning.setVisibility( column.access_info.isRemoteUser( who ) ? View.VISIBLE : View.GONE );
 			
@@ -106,9 +124,11 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 			if( who.locked ){
 				s += " " + EmojiMap201709.sShortNameToImageId.get("lock" ).unified;
 			}
-			tvAcct.setText( EmojiDecoder.decodeEmoji( activity, s ,null) );
+
+			Spannable note = who.decoded_note;
+			tvNote.setText(note );
+			note_invalidator.register( note );
 			
-			tvNote.setText( who.decoded_note );
 			btnStatusCount.setText( activity.getString( R.string.statuses ) + "\n" + who.statuses_count );
 			btnFollowing.setText( activity.getString( R.string.following ) + "\n" + who.following_count );
 			btnFollowers.setText( activity.getString( R.string.followers ) + "\n" + who.followers_count );

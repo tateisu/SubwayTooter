@@ -209,7 +209,7 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 						
 						Response response = call.execute();
 						if( ! response.isSuccessful() ){
-							addLog( "Can't get configuration from URL. " + response );
+							addLog( Utils.formatResponse( response, "Can't get configuration from URL." ) );
 							break;
 						}
 						

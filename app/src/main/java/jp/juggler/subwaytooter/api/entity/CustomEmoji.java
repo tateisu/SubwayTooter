@@ -12,16 +12,18 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 
+import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 public class CustomEmoji {
+	static final LogCategory log = new LogCategory( "CustomEmoji" );
 	
 	// shortcode (コロンを含まない)
 	@NonNull final public String shortcode;
-
+	
 	// 画像URL
 	@NonNull final public String url;
-
+	
 	// アニメーションなしの画像URL
 	@Nullable final public String static_url;
 	
@@ -45,7 +47,7 @@ public class CustomEmoji {
 	public static class List extends ArrayList< CustomEmoji > {
 	}
 	
-	public static List parseList( JSONArray src ){
+	public static List parseList( JSONArray src, @NonNull String instance ){
 		if( src == null ) return null;
 		List dst = new List();
 		for( int i = 0, ie = src.length() ; i < ie ; ++ i ){
@@ -57,20 +59,22 @@ public class CustomEmoji {
 				return a.shortcode.compareToIgnoreCase( b.shortcode );
 			}
 		} );
+		log.d( "parseList: parse %d emojis for %s.", dst.size(), instance );
 		return dst;
 	}
-
-	public static class Map extends HashMap<String,CustomEmoji> {
+	
+	public static class Map extends HashMap< String, CustomEmoji > {
 		// キー： shortcode (コロンを含まない)
 	}
 	
-	public static Map parseMap( JSONArray src  ){
-		if( src==null ) return null;
+	public static Map parseMap( JSONArray src, @NonNull String instance ){
+		if( src == null ) return null;
 		Map dst = new Map();
-		for(int i=0,ie=src.length();i<ie;++i){
+		for( int i = 0, ie = src.length() ; i < ie ; ++ i ){
 			CustomEmoji item = parse( src.optJSONObject( i ) );
-			if( item != null ) dst.put( item.shortcode,item );
+			if( item != null ) dst.put( item.shortcode, item );
 		}
+		log.d( "parseMap: parse %d emojis for %s.", dst.size(), instance );
 		return dst;
 	}
 	

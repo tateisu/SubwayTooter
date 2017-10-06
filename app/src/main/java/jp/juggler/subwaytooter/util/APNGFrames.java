@@ -362,16 +362,14 @@ import java.util.ArrayList;
 		}
 		
 		private PngHeader header;
-		private Argb8888Bitmap pngBitmap;
 		
 		// ヘッダが分かった
 		@Override
 		public void receiveHeader( PngHeader header, PngScanlineBuffer buffer ) throws PngException{
-			
 			this.header = header;
-			this.pngBitmap = new Argb8888Bitmap( header.width, header.height );
 			
-			// 親クラスのprotectedフィールド
+			// 親クラスのprotectedフィールドを更新する
+			Argb8888Bitmap pngBitmap = new Argb8888Bitmap( header.width, header.height );
 			this.scanlineProcessor = Argb8888Processors.from( header, buffer, pngBitmap );
 		}
 		
@@ -380,12 +378,10 @@ import java.util.ArrayList;
 			return scanlineProcessor;
 		}
 		
-		private Bitmap defaultImage = null;
-		
 		// デフォルト画像が分かった
 		// おそらく receiveAnimationControl より先に呼ばれる
 		@Override public void receiveDefaultImage( Argb8888Bitmap defaultImage ){
-			this.defaultImage = toBitmap( defaultImage, size_max );
+			// japng ライブラリの返すデフォルトイメージはあまり信用できないので使わない
 		}
 		
 		private APNGFrames mFrames = null;
@@ -424,24 +420,20 @@ import java.util.ArrayList;
 		// 結果を取得する
 		@Override public APNGFrames getResult(){
 			if( mFrames != null ){
-				if( defaultImage != null ){
-					defaultImage.recycle();
+				if( ! mFrames.isSingleFrame() ){
+					return mFrames;
 				}
-				return mFrames;
+				mFrames.dispose();
+				mFrames = null;
 			}
-			if( defaultImage != null ){
-				return new APNGFrames( defaultImage );
-			}
-			throw new RuntimeException( "missing frames nor default image." );
+			return null;
 		}
 		
 		// 処理中に例外が起きた場合、Bitmapリソースを解放する
 		void dispose(){
-			if( defaultImage != null ){
-				defaultImage.recycle();
-			}
 			if( mFrames != null ){
 				mFrames.dispose();
+				mFrames = null;
 			}
 		}
 	}

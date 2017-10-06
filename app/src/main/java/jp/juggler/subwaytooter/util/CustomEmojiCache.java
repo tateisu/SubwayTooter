@@ -25,6 +25,8 @@ public class CustomEmojiCache {
 	
 	private static final LogCategory log = new LogCategory( "CustomEmojiCache" );
 	
+	static final boolean DEBUG = false;
+	
 	static final int CACHE_MAX = 512; // 使用中のビットマップは掃除しないので、頻度によってはこれより多くなることもある
 	static final long ERROR_EXPIRE = ( 60000L * 10 );
 	
@@ -66,7 +68,7 @@ public class CustomEmojiCache {
 	}
 	
 	static class Request {
-		@NonNull final WeakReference<Object> refTarget;
+		@NonNull final WeakReference< Object > refTarget;
 		@NonNull final String url;
 		@NonNull final Callback callback;
 		
@@ -81,9 +83,9 @@ public class CustomEmojiCache {
 	
 	////////////////////////////////
 	
-	public void cancelRequest( @NonNull Object target_tag){
+	public void cancelRequest( @NonNull Object target_tag ){
 		synchronized( queue ){
-			Iterator<Request> it = queue.iterator();
+			Iterator< Request > it = queue.iterator();
 			while( it.hasNext() ){
 				Request request = it.next();
 				Object tag = request.refTarget.get();
@@ -94,7 +96,8 @@ public class CustomEmojiCache {
 		}
 	}
 	
-	@Nullable public APNGFrames get( @NonNull Object target_tag,@NonNull String url, @NonNull Callback callback ){
+	@Nullable
+	public APNGFrames get( @NonNull Object target_tag, @NonNull String url, @NonNull Callback callback ){
 		
 		cancelRequest( target_tag );
 		
@@ -147,11 +150,12 @@ public class CustomEmojiCache {
 				int req_size;
 				synchronized( queue ){
 					request = queue.isEmpty() ? null : queue.removeFirst();
+					//noinspection UnusedAssignment
 					req_size = queue.size();
 				}
 				
 				if( request == null ){
-					log.d("wait. req_size=%d",req_size );
+					if(DEBUG) log.d( "wait. req_size=%d", req_size );
 					waitEx( 86400000L );
 					continue;
 				}
@@ -159,7 +163,6 @@ public class CustomEmojiCache {
 				if( request.refTarget.get() == null ){
 					continue;
 				}
-				
 				
 				long now = getNow();
 				int cache_size;
@@ -180,14 +183,17 @@ public class CustomEmojiCache {
 					
 					sweep_cache();
 					
+					//noinspection UnusedAssignment
 					cache_size = cache.size();
 				}
-				log.d("start get image. req_size=%d, cache_size=%d",req_size ,cache_size);
+				if(DEBUG) log.d( "start get image. req_size=%d, cache_size=%d url=%s", req_size, cache_size, request.url );
 				
 				APNGFrames frames = null;
 				try{
 					byte[] data = App1.getHttpCached( request.url );
-					if( data != null ){
+					if( data == null ){
+						log.e("get failed. url=%s",request.url );
+					}else{
 						frames = decodeAPNG( data, request.url );
 					}
 				}catch( Throwable ex ){
@@ -220,7 +226,6 @@ public class CustomEmojiCache {
 			} );
 		}
 		
-
 		private void sweep_cache(){
 			
 			// キャッシュの掃除
@@ -252,7 +257,17 @@ public class CustomEmojiCache {
 		@Nullable private APNGFrames decodeAPNG( byte[] data, String url ){
 			try{
 				APNGFrames frames = APNGFrames.parseAPNG( new ByteArrayInputStream( data ), 64 );
-				if( frames != null ) return frames;
+				if( frames == null ){
+					if(DEBUG) log.d("parseAPNG returns null.");
+					// fall thru
+				}else if( frames.isSingleFrame() ){
+					if(DEBUG) log.d( "parseAPNG returns single frame." );
+					// mastodonのstatic_urlが返すPNG画像はAPNGだと透明になってる場合がある。BitmapFactoryでデコードしなおすべき
+					frames.dispose();
+					// fall thru
+				}else{
+					return frames;
+				}
 			}catch( Throwable ex ){
 				log.e( ex, "PNG decode failed. %s ", url );
 				// PngFeatureException Interlaced images are not yet supported
@@ -262,6 +277,7 @@ public class CustomEmojiCache {
 			try{
 				Bitmap b = decodeBitmap( data, 128 );
 				if( b != null ){
+					if(DEBUG) log.d("bitmap decoded.");
 					return new APNGFrames( b );
 				}else{
 					log.e( "Bitmap decode returns null. %s", url );

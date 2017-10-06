@@ -48,7 +48,7 @@ public class CustomEmojiLister {
 		
 		// 参照された時刻
 		long time_used;
-
+		
 		// ロードした時刻
 		long time_update;
 		
@@ -84,9 +84,9 @@ public class CustomEmojiLister {
 	
 	@Nullable
 	public CustomEmoji.List get( @NonNull String instance, @NonNull Callback callback ){
-
-		if( TextUtils.isEmpty( instance )) return null;
-
+		
+		if( TextUtils.isEmpty( instance ) ) return null;
+		
 		instance = instance.toLowerCase();
 		
 		synchronized( cache ){
@@ -100,7 +100,7 @@ public class CustomEmojiLister {
 				if( time_error != null && now < time_error + ERROR_EXPIRE ){
 					// エラーキャッシュ期間の中にいる
 				}else{
-					addRequest( instance,callback );
+					addRequest( instance, callback );
 				}
 				return null;
 			}else{
@@ -113,7 +113,7 @@ public class CustomEmojiLister {
 		}
 	}
 	
-	private void addRequest(@NonNull String instance, @NonNull Callback callback){
+	private void addRequest( @NonNull String instance, @NonNull Callback callback ){
 		queue.add( new Request( instance, callback ) );
 		worker.notifyEx();
 	}
@@ -153,7 +153,7 @@ public class CustomEmojiLister {
 					CacheItem item = cache.get( request.instance );
 					if( item != null ){
 						fireCallback( request.callback, item.list );
-
+						
 						if( now - item.time_update <= ERROR_EXPIRE ){
 							continue;
 						}
@@ -170,7 +170,7 @@ public class CustomEmojiLister {
 				
 				CustomEmoji.List list = null;
 				try{
-					String data = App1.getHttpCachedString("https://"+ request.instance + "/api/v1/custom_emojis");
+					String data = App1.getHttpCachedString( "https://" + request.instance + "/api/v1/custom_emojis" );
 					if( data != null ){
 						list = decodeEmojiList( data, request.instance );
 					}
@@ -204,8 +204,6 @@ public class CustomEmojiLister {
 			} );
 		}
 		
-
-		
 		private void sweep_cache(){
 			
 			// キャッシュの掃除
@@ -236,7 +234,7 @@ public class CustomEmojiLister {
 		@Nullable private CustomEmoji.List decodeEmojiList( String data, String instance ){
 			try{
 				JSONArray array = new JSONArray( data );
-				return CustomEmoji.parseList( array );
+				return CustomEmoji.parseList( array, instance );
 			}catch( Throwable ex ){
 				log.e( ex, "decodeEmojiList failed. instance=%s", instance );
 				return null;

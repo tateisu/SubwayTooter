@@ -81,11 +81,16 @@ public class NetworkEmojiSpan extends ReplacementSpan implements CustomEmojiCach
 		, float x, int top, int baseline, int bottom
 		, @NonNull Paint textPaint
 	){
-		if( invalidate_callback == null ) return;
+		if( invalidate_callback == null ){
+			log.e("draw: invalidate_callback is null.");
+			return;
+		}
 		
 		// APNGデータの取得
 		APNGFrames frames = App1.custom_emoji_cache.get( draw_target_tag, url, this );
-		if( frames == null ) return;
+		if( frames == null ){
+			return;
+		}
 
 		
 		long t = App1.disable_emoji_animation ? 0L : invalidate_callback.getTimeFromStart();
@@ -94,7 +99,10 @@ public class NetworkEmojiSpan extends ReplacementSpan implements CustomEmojiCach
 		frames.findFrame( mFrameFindResult, t );
 
 		Bitmap b = mFrameFindResult.bitmap;
-		if( b == null || b.isRecycled() ) return;
+		if( b == null || b.isRecycled() ){
+			log.e("draw: bitmap is null or recycled.");
+			return;
+		}
 		
 		int size = (int) ( 0.5f + scale_ratio * textPaint.getTextSize() );
 		int c_descent = (int) ( 0.5f + size * descent_ratio );

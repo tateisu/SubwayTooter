@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
+import jp.juggler.subwaytooter.api.entity.TootCard;
 import jp.juggler.subwaytooter.api.entity.TootContext;
 import jp.juggler.subwaytooter.api.entity.TootDomainBlock;
 import jp.juggler.subwaytooter.api.entity.TootGap;
@@ -35,6 +36,7 @@ import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootReport;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.api.entity.TootTag;
 import jp.juggler.subwaytooter.api_msp.MSPClient;
 import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
@@ -1557,6 +1559,17 @@ import jp.juggler.subwaytooter.util.Utils;
 							Utils.showToast( context, true, "TootContext parse failed." );
 							list_tmp = new ArrayList<>( 1 );
 							list_tmp.add( target_status );
+						}
+						
+						// カードを取得する
+						for( Object o : list_tmp ){
+							if( o instanceof TootStatus ){
+								TootStatus status = (TootStatus) o;
+								TootApiResult r2 = client.request( "/api/v1/statuses/" + status.id + "/card" );
+								if( r2 != null && r2.object != null ){
+									status.card = TootCard.parse( r2.object );
+								}
+							}
 						}
 						
 						//

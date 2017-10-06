@@ -105,6 +105,7 @@ public class ActAppSetting extends AppCompatActivity
 	Switch swRelativeTimestamp;
 	Switch swDontUseActionButtonWithQuickTootBar;
 	Switch swShortAcctLocalUser;
+	Switch swDisableEmojiAnimation;
 	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
@@ -221,6 +222,9 @@ public class ActAppSetting extends AppCompatActivity
 		
 		swShortAcctLocalUser = findViewById( R.id.swShortAcctLocalUser );
 		swShortAcctLocalUser.setOnCheckedChangeListener( this );
+		
+		swDisableEmojiAnimation = findViewById( R.id.swDisableEmojiAnimation );
+		swDisableEmojiAnimation.setOnCheckedChangeListener( this );
 		
 		cbNotificationSound = findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = findViewById( R.id.cbNotificationVibration );
@@ -380,6 +384,7 @@ public class ActAppSetting extends AppCompatActivity
 		swRelativeTimestamp.setChecked( pref.getBoolean( Pref.KEY_RELATIVE_TIMESTAMP, false ) );
 		swDontUseActionButtonWithQuickTootBar.setChecked( pref.getBoolean( Pref.KEY_DONT_USE_ACTION_BUTTON, false ) );
 		swShortAcctLocalUser.setChecked( pref.getBoolean( Pref.KEY_SHORT_ACCT_LOCAL_USER, false ) );
+		swDisableEmojiAnimation.setChecked( pref.getBoolean( Pref.KEY_DISABLE_EMOJI_ANIMATION, false ) );
 		
 		// Switch with default true
 		swDisableFastScroller.setChecked( pref.getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
@@ -420,8 +425,8 @@ public class ActAppSetting extends AppCompatActivity
 		load_busy = false;
 		
 		showFooterColor();
-		showTimelineFont( tvTimelineFontUrl,timeline_font);
-		showTimelineFont( tvTimelineFontBoldUrl,timeline_font_bold);
+		showTimelineFont( tvTimelineFontUrl, timeline_font );
+		showTimelineFont( tvTimelineFontBoldUrl, timeline_font_bold );
 		
 		showFontSize( tvTimelineFontSize, etTimelineFontSize, default_timeline_font_size );
 		showFontSize( tvAcctFontSize, etAcctFontSize, default_acct_font_size );
@@ -451,8 +456,7 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_RELATIVE_TIMESTAMP, swRelativeTimestamp.isChecked() )
 			.putBoolean( Pref.KEY_DONT_USE_ACTION_BUTTON, swDontUseActionButtonWithQuickTootBar.isChecked() )
 			.putBoolean( Pref.KEY_SHORT_ACCT_LOCAL_USER, swShortAcctLocalUser.isChecked() )
-		
-
+			.putBoolean( Pref.KEY_DISABLE_EMOJI_ANIMATION, swDisableEmojiAnimation.isChecked() )
 			
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )
@@ -562,7 +566,7 @@ public class ActAppSetting extends AppCompatActivity
 		case R.id.btnTimelineFontReset:
 			timeline_font = "";
 			saveUIToData();
-			showTimelineFont( tvTimelineFontUrl,timeline_font);
+			showTimelineFont( tvTimelineFontUrl, timeline_font );
 			break;
 		
 		case R.id.btnTimelineFontEdit:
@@ -579,7 +583,7 @@ public class ActAppSetting extends AppCompatActivity
 		case R.id.btnTimelineFontBoldReset:
 			timeline_font_bold = "";
 			saveUIToData();
-			showTimelineFont( tvTimelineFontBoldUrl,timeline_font_bold);
+			showTimelineFont( tvTimelineFontBoldUrl, timeline_font_bold );
 			break;
 		
 		case R.id.btnTimelineFontBoldEdit:
@@ -631,14 +635,14 @@ public class ActAppSetting extends AppCompatActivity
 			if( file != null ){
 				timeline_font = file.getAbsolutePath();
 				saveUIToData();
-				showTimelineFont( tvTimelineFontUrl,timeline_font);
+				showTimelineFont( tvTimelineFontUrl, timeline_font );
 			}
 		}else if( resultCode == RESULT_OK && data != null && requestCode == REQUEST_CODE_TIMELINE_FONT_BOLD ){
 			File file = saveTimelineFont( data.getData(), "TimelineFontBold" );
 			if( file != null ){
 				timeline_font_bold = file.getAbsolutePath();
 				saveUIToData();
-				showTimelineFont( tvTimelineFontBoldUrl,timeline_font_bold);
+				showTimelineFont( tvTimelineFontBoldUrl, timeline_font_bold );
 			}
 		}else if( resultCode == RESULT_OK && requestCode == REQUEST_CODE_APP_DATA_IMPORT ){
 			if( data != null ){
@@ -822,7 +826,7 @@ public class ActAppSetting extends AppCompatActivity
 	
 	private void showTimelineFont(
 		TextView tvFontUrl
-	    ,String font_url
+		, String font_url
 	){
 		try{
 			if( ! TextUtils.isEmpty( font_url ) ){
@@ -844,7 +848,7 @@ public class ActAppSetting extends AppCompatActivity
 	private @Nullable File saveTimelineFont( @Nullable Uri uri, @NonNull String file_name ){
 		try{
 			if( uri == null ){
-				Utils.showToast( this, false, "missing uri.");
+				Utils.showToast( this, false, "missing uri." );
 				return null;
 			}
 			

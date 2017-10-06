@@ -12,6 +12,7 @@ import android.text.TextUtils;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
+import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.api.entity.CustomEmoji;
 import jp.juggler.subwaytooter.api.entity.NicoProfileEmoji;
@@ -235,10 +236,13 @@ public class EmojiDecoder {
 					}
 				}
 				
-				String url = ( custom_map == null ? null : custom_map.get( name ) );
-				if( ! TextUtils.isEmpty( url ) ){
-					decode_env.addNetworkEmojiSpan( part, url );
-					return;
+				{
+					CustomEmoji emoji = ( custom_map == null ? null : custom_map.get( name ) );
+					if( emoji != null ){
+						String url =  ( App1.disable_emoji_animation && !TextUtils.isEmpty( emoji.static_url) ) ? emoji.static_url : emoji.url;
+						decode_env.addNetworkEmojiSpan( part, url );
+						return;
+					}
 				}
 				
 				if( reHohoemi.matcher( name ).find() ){

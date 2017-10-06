@@ -458,6 +458,37 @@ public class HTMLDecoder {
 		return sb.toString();
 	}
 	
+	
+	static final Pattern reEntityEscape = Pattern.compile("[<>\"'&]");
+	
+	public static String encodeEntity( @NonNull String src ){
+		StringBuffer sb = new StringBuffer();
+		for(int i=0,ie=src.length();i<ie;++i){
+			char c = src.charAt( i );
+			switch(c){
+			case '<':
+				sb.append("&lt;");
+				break;
+			case '>':
+				sb.append("&gt;");
+				break;
+			case '"':
+				sb.append("&quot;");
+				break;
+			case '\'':
+				sb.append("&#039;");
+				break;
+			case '&':
+				sb.append("&amp;");
+				break;
+			default:
+				sb.append(c);
+				break;
+			}
+		}
+		return sb.toString();
+	}
+
 	private static void init1(){
 		_addEntity( "amp", '&' ); // ampersand
 		_addEntity( "gt", '>' ); // greater than

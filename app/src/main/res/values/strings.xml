@@ -503,5 +503,9 @@
     <string name="skin_tone_medium">medium skin tone</string>
     <string name="skin_tone_medium_dark">medium dark skin tone</string>
     <string name="skin_tone_dark">dark skin tone</string>
+    <string name="disable_custom_emoji_animation">Disable Custom Emoji animation (app restart required)</string>
+    <string name="card_header_card">Card</string>
+    <string name="card_header_author">Author</string>
+    <string name="card_header_provider">Provider</string>
 
 </resources>

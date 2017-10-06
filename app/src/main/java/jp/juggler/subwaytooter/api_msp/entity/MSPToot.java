@@ -82,7 +82,7 @@ public class MSPToot extends TootStatusLike {
 		dst.decoded_content = new DecodeOptions()
 			.setShort( true )
 			.setDecodeEmoji( true )
-			.setEmojiMap( dst.emojis )
+			.setCustomEmojiMap( dst.custom_emojis )
 			.setProfileEmojis( dst.profile_emojis )
 			.setLinkTag( dst )
 			.decodeHTML( context, access_info, dst.content );

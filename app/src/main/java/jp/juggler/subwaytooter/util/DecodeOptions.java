@@ -43,7 +43,7 @@ public class DecodeOptions {
 	
 	@Nullable CustomEmoji.Map customEmojiMap;
 	
-	public DecodeOptions setEmojiMap( CustomEmoji.Map customEmojiMap ){
+	public DecodeOptions setCustomEmojiMap( CustomEmoji.Map customEmojiMap ){
 		this.customEmojiMap = customEmojiMap;
 		return this;
 	}

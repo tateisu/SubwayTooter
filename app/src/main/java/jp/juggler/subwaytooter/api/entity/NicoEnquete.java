@@ -25,7 +25,6 @@ import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.DecodeOptions;
-import jp.juggler.subwaytooter.util.EmojiDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator;
 import jp.juggler.subwaytooter.util.Utils;
@@ -86,7 +85,7 @@ public class NicoEnquete {
 						.setDecodeEmoji( true )
 						.setAttachment( list_attachment )
 						.setLinkTag( status )
-						.setEmojiMap( status.emojis )
+						.setCustomEmojiMap( status.custom_emojis )
 						.setProfileEmojis( status.profile_emojis )
 						.decodeHTML( context, access_info, strQuestion );
 				}else{
@@ -102,7 +101,7 @@ public class NicoEnquete {
 						// decode emoji code
 						dst.items.add(
 							new DecodeOptions()
-								.setEmojiMap( status.emojis )
+								.setCustomEmojiMap( status.custom_emojis )
 								.setProfileEmojis( status.profile_emojis )
 								.decodeEmoji( context, sv )
 						);

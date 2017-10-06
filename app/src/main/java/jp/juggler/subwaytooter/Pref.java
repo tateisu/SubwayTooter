@@ -89,6 +89,8 @@ public class Pref {
 	public static final String KEY_AVATAR_ICON_SIZE = "avatar_icon_size";
 	
 	public static final String KEY_EMOJI_PICKER_RECENT = "emoji_picker_recent";
+	
+	public static final String KEY_DISABLE_EMOJI_ANIMATION = "disable_emoji_animation";
 
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

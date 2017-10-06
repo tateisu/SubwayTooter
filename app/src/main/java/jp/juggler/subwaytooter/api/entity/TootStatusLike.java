@@ -12,7 +12,6 @@ import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.DecodeOptions;
-import jp.juggler.subwaytooter.util.EmojiDecoder;
 import jp.juggler.subwaytooter.util.Utils;
 
 public abstract class TootStatusLike extends TootId {
@@ -61,9 +60,11 @@ public abstract class TootStatusLike extends TootId {
 	//Application from which the status was posted
 	@Nullable public TootApplication application;
 	
-	@Nullable public CustomEmoji.Map emojis;
+	@Nullable public CustomEmoji.Map custom_emojis;
 	
 	@Nullable public NicoProfileEmoji.Map profile_emojis;
+	
+	@Nullable public TootCard card;
 	
 	/////////////////////////
 	// 以下はアプリ内部で使用する
@@ -99,7 +100,7 @@ public abstract class TootStatusLike extends TootId {
 			sv = reWhitespace.matcher( this.spoiler_text ).replaceAll( " " );
 			// decode emoji code
 			this.decoded_spoiler_text = new DecodeOptions()
-				.setEmojiMap( emojis )
+				.setCustomEmojiMap( custom_emojis )
 				.setProfileEmojis( this.profile_emojis )
 				.decodeEmoji( context, sv );
 		}

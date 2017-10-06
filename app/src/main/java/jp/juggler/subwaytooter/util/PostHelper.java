@@ -693,12 +693,11 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 					}
 				}
 			}
-			if( code_list.isEmpty() ){
-				if( popup == null || ! popup.isShowing() ){
-					popup = new PopupAutoCompleteAcct( activity, et, formRoot, bMainScreen );
-				}
-				popup.setList( et, last_colon, end, code_list, picker_caption_emoji, open_picker_emoji );
+
+			if( popup == null || ! popup.isShowing() ){
+				popup = new PopupAutoCompleteAcct( activity, et, formRoot, bMainScreen );
 			}
+			popup.setList( et, last_colon, end, code_list, picker_caption_emoji, open_picker_emoji );
 		}
 	};
 	

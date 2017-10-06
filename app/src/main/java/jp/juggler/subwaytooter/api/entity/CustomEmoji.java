@@ -1,5 +1,7 @@
 package jp.juggler.subwaytooter.api.entity;
 
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.json.JSONArray;
@@ -15,28 +17,32 @@ import jp.juggler.subwaytooter.util.Utils;
 public class CustomEmoji {
 	
 	// shortcode (コロンを含まない)
-	public String shortcode;
-	// url
-	public String url;
+	@NonNull final public String shortcode;
+
+	// 画像URL
+	@NonNull final public String url;
+
+	// アニメーションなしの画像URL
+	@Nullable final public String static_url;
 	
-	public static class List extends ArrayList< CustomEmoji > {
-	}
-	
-	public static class Map extends HashMap<String,String> {
-		// キー： shortcode (コロンを含まない)
-		// 値： url
+	private CustomEmoji( @NonNull String shortcode, @NonNull String url, @Nullable String static_url ){
+		this.shortcode = shortcode;
+		this.url = url;
+		this.static_url = static_url;
 	}
 	
 	public static CustomEmoji parse( JSONObject src ){
 		if( src == null ) return null;
-		CustomEmoji dst = new CustomEmoji();
-		String k = dst.shortcode = Utils.optStringX( src, "shortcode" );
-		String v = dst.url = Utils.optStringX( src, "url" );
-		if( ! TextUtils.isEmpty( k ) && ! TextUtils.isEmpty( v ) ){
-			return dst;
+		String shortcode = Utils.optStringX( src, "shortcode" );
+		String url = Utils.optStringX( src, "url" );
+		String static_url = Utils.optStringX( src, "static_url" ); // may null
+		if( TextUtils.isEmpty( shortcode ) || TextUtils.isEmpty( url ) ){
+			return null;
 		}
-		
-		return null;
+		return new CustomEmoji( shortcode, url, static_url );
+	}
+	
+	public static class List extends ArrayList< CustomEmoji > {
 	}
 	
 	public static List parseList( JSONArray src ){
@@ -54,17 +60,16 @@ public class CustomEmoji {
 		return dst;
 	}
 
+	public static class Map extends HashMap<String,CustomEmoji> {
+		// キー： shortcode (コロンを含まない)
+	}
 	
 	public static Map parseMap( JSONArray src  ){
 		if( src==null ) return null;
 		Map dst = new Map();
 		for(int i=0,ie=src.length();i<ie;++i){
-			JSONObject it = src.optJSONObject( i );
-			String k = Utils.optStringX(it,"shortcode");
-			String v = Utils.optStringX(it,"url");
-			if( ! TextUtils.isEmpty( k ) && ! TextUtils.isEmpty( v )  ){
-				dst.put( k,v);
-			}
+			CustomEmoji item = parse( src.optJSONObject( i ) );
+			if( item != null ) dst.put( item.shortcode,item );
 		}
 		return dst;
 	}

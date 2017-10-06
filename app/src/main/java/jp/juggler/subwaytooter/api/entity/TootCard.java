@@ -12,16 +12,22 @@ public class TootCard {
 	
 	
 	//	The url associated with the card
-	public String url;
+	@Nullable public String url;
 
 	//	The title of the card
-	public String title;
+	@Nullable public String title;
 
 	//	The card description
-	public String description;
+	@Nullable public String description;
 
 	//	The image associated with the card, if any
-	public String image;
+	@Nullable public String image;
+	
+	@Nullable public String type;
+	@Nullable public String author_name;
+	@Nullable public String author_url;
+	@Nullable public String provider_name;
+	@Nullable public String provider_url;
 	
 	@Nullable
 	public static TootCard parse( JSONObject src ){
@@ -32,6 +38,13 @@ public class TootCard {
 			dst.title = Utils.optStringX( src, "title" );
 			dst.description = Utils.optStringX( src, "description" );
 			dst.image = Utils.optStringX( src, "image" );
+			
+			dst.type = Utils.optStringX( src, "type" );
+			dst.author_name = Utils.optStringX( src, "author_name" );
+			dst.author_url = Utils.optStringX( src, "author_url" );
+			dst.provider_name = Utils.optStringX( src, "provider_name" );
+			dst.provider_url = Utils.optStringX( src, "provider_url" );
+
 			return dst;
 		}catch( Throwable ex ){
 			log.trace( ex );

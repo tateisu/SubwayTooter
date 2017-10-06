@@ -75,8 +75,6 @@ public class NetworkEmojiSpan extends ReplacementSpan implements CustomEmojiCach
 	// フレーム探索結果を格納する構造体を確保しておく
 	private final APNGFrames.FindFrameResult mFrameFindResult = new APNGFrames.FindFrameResult();
 	
-
-	
 	@Override public void draw(
 		@NonNull Canvas canvas
 		, CharSequence text, int start, int end
@@ -88,8 +86,9 @@ public class NetworkEmojiSpan extends ReplacementSpan implements CustomEmojiCach
 		// APNGデータの取得
 		APNGFrames frames = App1.custom_emoji_cache.get( draw_target_tag, url, this );
 		if( frames == null ) return;
+
 		
-		long t = invalidate_callback.getTimeFromStart();
+		long t = App1.disable_emoji_animation ? 0L : invalidate_callback.getTimeFromStart();
 		
 		// アニメーション開始時刻からの経過時間に応じたフレームを探索
 		frames.findFrame( mFrameFindResult, t );
@@ -110,7 +109,7 @@ public class NetworkEmojiSpan extends ReplacementSpan implements CustomEmojiCach
 		
 		// 少し後に描画しなおす
 		long delay = mFrameFindResult.delay;
-		if( delay != Long.MAX_VALUE ){
+		if( delay != Long.MAX_VALUE && ! App1.disable_emoji_animation ){
 			invalidate_callback.delayInvalidate( delay );
 		}
 	}

@@ -409,6 +409,8 @@ public class App1 extends Application {
 			break;
 			
 		}
+		
+		reloadConfig();
 	}
 	
 	static final CacheControl CACHE_5MIN = new CacheControl.Builder()
@@ -474,4 +476,14 @@ public class App1 extends Application {
 			return null;
 		}
 	}
+	
+	
+	
+	// Activity開始時に設定を読み直す
+	public static boolean disable_emoji_animation;
+	private static void reloadConfig(){
+		disable_emoji_animation = pref.getBoolean( Pref.KEY_DISABLE_EMOJI_ANIMATION,false );
+	}
+	
+	
 }

@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.os.Handler;
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import jp.juggler.subwaytooter.api.entity.NicoEnquete;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
+import jp.juggler.subwaytooter.api.entity.TootCard;
 import jp.juggler.subwaytooter.api.entity.TootDomainBlock;
 import jp.juggler.subwaytooter.api.entity.TootGap;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
@@ -35,10 +37,13 @@ import jp.juggler.subwaytooter.table.ContentWarning;
 import jp.juggler.subwaytooter.table.MediaShown;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
+import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.EmojiImageSpan;
+import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator;
 import jp.juggler.subwaytooter.util.NetworkEmojiSpan;
+import jp.juggler.subwaytooter.view.MyEditText;
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
 import jp.juggler.subwaytooter.view.MyListView;
 import jp.juggler.subwaytooter.view.MyNetworkImageView;
@@ -116,8 +121,8 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private final NetworkEmojiInvalidator name_invalidator;
 	private final NetworkEmojiInvalidator content_invalidator;
 	private final NetworkEmojiInvalidator spoiler_invalidator;
-	private final ArrayList<NetworkEmojiInvalidator> extra_invalidator_list = new ArrayList<>(  );
-
+	private final ArrayList< NetworkEmojiInvalidator > extra_invalidator_list = new ArrayList<>();
+	
 	ItemViewHolder( ActMain arg_activity, Column column, ItemListAdapter list_adapter, View view, boolean bSimpleList ){
 		this.activity = arg_activity;
 		this.column = column;
@@ -257,10 +262,11 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			tvTime.setTextSize( activity.acct_font_size_sp );
 		}
 		
-		ivBoosted.getLayoutParams().width =
-			ivFollow.getLayoutParams().width =
-				ivThumbnail.getLayoutParams().width =
-					ivThumbnail.getLayoutParams().height = activity.mAvatarIconSize;
+		ivBoosted.getLayoutParams().width
+			= ivFollow.getLayoutParams().width
+			= ivThumbnail.getLayoutParams().width
+			= ivThumbnail.getLayoutParams().height
+			= activity.mAvatarIconSize;
 		
 		this.content_invalidator = new NetworkEmojiInvalidator( activity.handler, tvContent );
 		this.spoiler_invalidator = new NetworkEmojiInvalidator( activity.handler, tvContentWarning );
@@ -453,14 +459,22 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		if( status instanceof TootStatus ){
 			TootStatus ts = (TootStatus) status;
+			
+			// ニコフレのアンケートの表示
 			NicoEnquete enquete = ts.enquete;
 			if( enquete != null && NicoEnquete.TYPE_ENQUETE.equals( enquete.type ) ){
 				if( enquete.question != null ) content = enquete.question;
 				int n = 0;
 				for( Spannable item : enquete.items ){
-					enquete.makeChoiceView( activity, access_info, llExtra, extra_invalidator_list,n++, item );
+					enquete.makeChoiceView( activity, access_info, llExtra, extra_invalidator_list, n++, item );
 				}
 				enquete.makeTimerView( activity, llExtra );
+			}
+			
+			// カードの表示(会話ビューのみ)
+			TootCard card = status.card;
+			if( card != null ){
+				makeCardView( activity, llExtra, card );
 			}
 		}
 		
@@ -718,6 +732,13 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		case R.id.ivMedia4:
 			clickMedia( 3 );
 			break;
+		
+		case R.id.ivCardThumbnail:
+			if( status!=null && status.card != null){
+				activity.openChromeTab( pos,access_info,status.card.url,false );
+			}
+			break;
+		
 		case R.id.btnContentWarning:
 			if( status != null ){
 				boolean new_shown = ( llContents.getVisibility() == View.GONE );
@@ -841,6 +862,65 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			activity.list_item_popup = new StatusButtonsPopup( activity, column, bSimpleList );
 			activity.list_item_popup.show( listView, anchor, status, notification );
 		}
+	}
+	
+	private void makeCardView( @NonNull ActMain activity, @NonNull LinearLayout llExtra, @NonNull TootCard card ){
+		LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams( LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT );
+		lp.topMargin = (int) ( 0.5f + llExtra.getResources().getDisplayMetrics().density * 3f );
+		MyTextView tv = new MyTextView( activity );
+		tv.setLayoutParams( lp );
+		//
+		tv.setMovementMethod( MyLinkMovementMethod.getInstance() );
+		if( ! Float.isNaN( activity.timeline_font_size_sp ) ){
+			tv.setTextSize( activity.timeline_font_size_sp );
+		}
+		int c = column.content_color != 0 ? column.content_color : content_color_default;
+		tv.setTextColor( c );
+		
+		StringBuilder sb = new StringBuilder();
+		addLinkAndCaption( sb, activity.getString( R.string.card_header_card ), card.url, card.title );
+		addLinkAndCaption( sb, activity.getString( R.string.card_header_author ), card.author_url, card.author_name );
+		addLinkAndCaption( sb, activity.getString( R.string.card_header_provider ), card.provider_url, card.provider_name );
+		if( ! TextUtils.isEmpty( card.description ) ){
+			if( sb.length() > 0 ) sb.append( "<br>" );
+			sb.append( HTMLDecoder.encodeEntity( card.description ) );
+		}
+		String html = sb.toString();
+		//
+		tv.setText( new DecodeOptions().decodeHTML( activity, access_info, html ) );
+		llExtra.addView( tv );
+		
+		if( ! TextUtils.isEmpty( card.image ) ){
+			lp = new LinearLayout.LayoutParams( LinearLayout.LayoutParams.MATCH_PARENT, activity.app_state.media_thumb_height );
+			lp.topMargin = (int) ( 0.5f + llExtra.getResources().getDisplayMetrics().density * 3f );
+			MyNetworkImageView iv = new MyNetworkImageView( activity );
+			iv.setLayoutParams( lp );
+			//
+			iv.setId( R.id.ivCardThumbnail );
+			iv.setOnClickListener( this );
+			iv.setScaleType( activity.dont_crop_media_thumbnail ? ImageView.ScaleType.FIT_CENTER : ImageView.ScaleType.CENTER_CROP );
+			iv.setImageUrl( activity.pref, 0f, access_info.supplyBaseUrl( card.image ), access_info.supplyBaseUrl( card.image ) );
+			
+			llExtra.addView( iv );
+		}
+	}
+	
+	private void addLinkAndCaption( @NonNull StringBuilder sb, @NonNull String header, @Nullable String url, @Nullable String caption ){
+		if( TextUtils.isEmpty( url ) && TextUtils.isEmpty( caption ) ) return;
+		if( sb.length() > 0 ) sb.append( "<br>" );
+		
+		sb.append( HTMLDecoder.encodeEntity( header ) )
+			.append(": ");
+		
+		if( ! TextUtils.isEmpty( url ) ){
+			sb.append( "<a href=\"" ).append( HTMLDecoder.encodeEntity( url ) ).append( "\">" );
+		}
+		sb.append( HTMLDecoder.encodeEntity( ! TextUtils.isEmpty( caption ) ? caption : ! TextUtils.isEmpty( url ) ? url : "???" ) );
+		
+		if( ! TextUtils.isEmpty( url ) ){
+			sb.append( "</a>" );
+		}
+		
 	}
 	
 }

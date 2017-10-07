@@ -106,6 +106,7 @@ public class ActAppSetting extends AppCompatActivity
 	Switch swDontUseActionButtonWithQuickTootBar;
 	Switch swShortAcctLocalUser;
 	Switch swDisableEmojiAnimation;
+	Switch swAllowNonSpaceBeforeEmojiShortcode;
 	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
@@ -225,6 +226,10 @@ public class ActAppSetting extends AppCompatActivity
 		
 		swDisableEmojiAnimation = findViewById( R.id.swDisableEmojiAnimation );
 		swDisableEmojiAnimation.setOnCheckedChangeListener( this );
+		
+		swAllowNonSpaceBeforeEmojiShortcode= findViewById( R.id.swAllowNonSpaceBeforeEmojiShortcode );
+		swAllowNonSpaceBeforeEmojiShortcode.setOnCheckedChangeListener( this );
+		
 		
 		cbNotificationSound = findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = findViewById( R.id.cbNotificationVibration );
@@ -385,7 +390,8 @@ public class ActAppSetting extends AppCompatActivity
 		swDontUseActionButtonWithQuickTootBar.setChecked( pref.getBoolean( Pref.KEY_DONT_USE_ACTION_BUTTON, false ) );
 		swShortAcctLocalUser.setChecked( pref.getBoolean( Pref.KEY_SHORT_ACCT_LOCAL_USER, false ) );
 		swDisableEmojiAnimation.setChecked( pref.getBoolean( Pref.KEY_DISABLE_EMOJI_ANIMATION, false ) );
-		
+		swAllowNonSpaceBeforeEmojiShortcode.setChecked( pref.getBoolean( Pref.KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE, false ) );
+
 		// Switch with default true
 		swDisableFastScroller.setChecked( pref.getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
 		swPriorChrome.setChecked( pref.getBoolean( Pref.KEY_PRIOR_CHROME, true ) );
@@ -457,6 +463,8 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_DONT_USE_ACTION_BUTTON, swDontUseActionButtonWithQuickTootBar.isChecked() )
 			.putBoolean( Pref.KEY_SHORT_ACCT_LOCAL_USER, swShortAcctLocalUser.isChecked() )
 			.putBoolean( Pref.KEY_DISABLE_EMOJI_ANIMATION, swDisableEmojiAnimation.isChecked() )
+			.putBoolean( Pref.KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE, swAllowNonSpaceBeforeEmojiShortcode.isChecked() )
+		
 			
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )
 			.putBoolean( Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked() )

@@ -6,7 +6,6 @@ import android.preference.PreferenceManager;
 
 public class Pref {
 	
-	
 	public static SharedPreferences pref( Context context ){
 		return PreferenceManager.getDefaultSharedPreferences( context );
 	}
@@ -73,7 +72,7 @@ public class Pref {
 	public static final String KEY_QUICK_TOOT_BAR = "quick_toot_bar";
 	
 	public static final String KEY_QUOTE_NAME_FORMAT = "quote_name_format";
-
+	
 	public static final String KEY_ENABLE_GIF_ANIMATION = "enable_gif_animation";
 	
 	public static final String KEY_MENTION_FULL_ACCT = "mention_full_acct";
@@ -91,6 +90,8 @@ public class Pref {
 	public static final String KEY_EMOJI_PICKER_RECENT = "emoji_picker_recent";
 	
 	public static final String KEY_DISABLE_EMOJI_ANIMATION = "disable_emoji_animation";
-
+	
+	public static final String KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE = "allow_non_space_before_emoji_shortcode";
+	
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

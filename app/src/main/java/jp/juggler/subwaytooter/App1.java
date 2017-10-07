@@ -481,9 +481,10 @@ public class App1 extends Application {
 	
 	// Activity開始時に設定を読み直す
 	public static boolean disable_emoji_animation;
+	public static boolean allow_non_space_before_emoji_shortcode;
 	private static void reloadConfig(){
 		disable_emoji_animation = pref.getBoolean( Pref.KEY_DISABLE_EMOJI_ANIMATION,false );
+		allow_non_space_before_emoji_shortcode = pref.getBoolean(  Pref.KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE,false );
 	}
-	
 	
 }

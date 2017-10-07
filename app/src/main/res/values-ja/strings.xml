@@ -803,4 +803,6 @@
     <string name="card_header_card">Card</string>
     <string name="card_header_author">Author</string>
     <string name="card_header_provider">Provider</string>
+    <string name="allow_non_space_before_emoji_code">絵文字コードの手前に空白以外の文字があっても変換する (投稿と表示の両方に影響します。表示の反映にはアプリ再起動とカラムのリロードが必要です。投稿時に変換された絵文字を元のコードに戻すことはできません。)</string>
+    <string name="emoji">絵文字</string>
 </resources>

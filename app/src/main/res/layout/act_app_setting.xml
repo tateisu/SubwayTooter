@@ -231,6 +231,52 @@
             style="@style/setting_group_header"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:text="@string/emoji"
+            />
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/disable_custom_emoji_animation"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swDisableEmojiAnimation"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/allow_non_space_before_emoji_code"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swAllowNonSpaceBeforeEmojiShortcode"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <!-- =============================================== -->
+
+        <TextView
+            style="@style/setting_group_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:text="@string/post"
             />
 
@@ -300,6 +346,10 @@
                 />
 
         </LinearLayout>
+
+
+
+
 
         <View style="@style/setting_divider"/>
 
@@ -572,17 +622,18 @@
 
         </LinearLayout>
 
+
         <View style="@style/setting_divider"/>
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/disable_custom_emoji_animation"
+            android:text="@string/short_acct_local_user"
             />
 
         <LinearLayout style="@style/setting_row_form">
 
             <Switch
-                android:id="@+id/swDisableEmojiAnimation"
+                android:id="@+id/swShortAcctLocalUser"
                 style="@style/setting_horizontal_stretch"
                 android:gravity="center"
                 />
@@ -600,23 +651,6 @@
 
             <Switch
                 android:id="@+id/swMentionFullAcct"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
-
-        <TextView
-            style="@style/setting_row_label"
-            android:text="@string/short_acct_local_user"
-            />
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <Switch
-                android:id="@+id/swShortAcctLocalUser"
                 style="@style/setting_horizontal_stretch"
                 android:gravity="center"
                 />

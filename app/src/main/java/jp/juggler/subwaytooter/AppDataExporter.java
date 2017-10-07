@@ -320,6 +320,7 @@ public class AppDataExporter {
 			case Pref.KEY_DONT_USE_ACTION_BUTTON:
 			case Pref.KEY_SHORT_ACCT_LOCAL_USER:
 			case Pref.KEY_DISABLE_EMOJI_ANIMATION:
+			case Pref.KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE:
 				boolean bv = reader.nextBoolean();
 				e.putBoolean( k, bv );
 				break;

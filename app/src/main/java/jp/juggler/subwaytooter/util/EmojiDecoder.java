@@ -155,8 +155,11 @@ public class EmojiDecoder {
 				int c = s.codePointAt( i );
 				int width = Character.charCount( c );
 				if( c == ':' ){
-					if( i + width < end && s.codePointAt( i + width ) == '@' ){
-						// 例外として、フレニコのプロフ絵文字 :@who: は手前の空白を要求しない
+					if( App1.allow_non_space_before_emoji_shortcode ){
+						// アプリ設定により、: の手前に空白を要求しない
+						break;
+					}else if( i + width < end && s.codePointAt( i + width ) == '@' ){
+						// フレニコのプロフ絵文字 :@who: は手前の空白を要求しない
 						break;
 					}else if( i == 0 || isWhitespaceBeforeEmoji( s.codePointBefore( i ) ) ){
 						// ショートコードの手前は始端か改行か空白文字でないとならない
@@ -239,7 +242,7 @@ public class EmojiDecoder {
 				{
 					CustomEmoji emoji = ( custom_map == null ? null : custom_map.get( name ) );
 					if( emoji != null ){
-						String url =  ( App1.disable_emoji_animation && !TextUtils.isEmpty( emoji.static_url) ) ? emoji.static_url : emoji.url;
+						String url = ( App1.disable_emoji_animation && ! TextUtils.isEmpty( emoji.static_url ) ) ? emoji.static_url : emoji.url;
 						decode_env.addNetworkEmojiSpan( part, url );
 						return;
 					}

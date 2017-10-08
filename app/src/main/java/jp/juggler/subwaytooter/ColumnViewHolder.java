@@ -103,45 +103,45 @@ class ColumnViewHolder
 		}
 		
 		flColumnBackground = root.findViewById( R.id.flColumnBackground );
-		ivColumnBackgroundImage = (ImageView) root.findViewById( R.id.ivColumnBackgroundImage );
+		ivColumnBackgroundImage = root.findViewById( R.id.ivColumnBackgroundImage );
 		llColumnHeader = root.findViewById( R.id.llColumnHeader );
 		
-		tvColumnIndex = (TextView) root.findViewById( R.id.tvColumnIndex );
+		tvColumnIndex = root.findViewById( R.id.tvColumnIndex );
 		
-		tvColumnName = (TextView) root.findViewById( R.id.tvColumnName );
-		tvColumnContext = (TextView) root.findViewById( R.id.tvColumnContext );
-		ivColumnIcon = (ImageView) root.findViewById( R.id.ivColumnIcon );
+		tvColumnName = root.findViewById( R.id.tvColumnName );
+		tvColumnContext = root.findViewById( R.id.tvColumnContext );
+		ivColumnIcon = root.findViewById( R.id.ivColumnIcon );
 		
-		btnColumnSetting = (ImageButton) root.findViewById( R.id.btnColumnSetting );
-		btnColumnReload = (ImageButton) root.findViewById( R.id.btnColumnReload );
-		btnColumnClose = (ImageButton) root.findViewById( R.id.btnColumnClose );
+		btnColumnSetting = root.findViewById( R.id.btnColumnSetting );
+		btnColumnReload = root.findViewById( R.id.btnColumnReload );
+		btnColumnClose = root.findViewById( R.id.btnColumnClose );
 		
-		tvLoading = (TextView) root.findViewById( R.id.tvLoading );
-		listView = (MyListView) root.findViewById( R.id.listView );
+		tvLoading = root.findViewById( R.id.tvLoading );
+		listView = root.findViewById( R.id.listView );
 		
 		btnSearch = root.findViewById( R.id.btnSearch );
-		etSearch = (EditText) root.findViewById( R.id.etSearch );
-		cbResolve = (CheckBox) root.findViewById( R.id.cbResolve );
+		etSearch = root.findViewById( R.id.etSearch );
+		cbResolve = root.findViewById( R.id.cbResolve );
 		
 		llSearch = root.findViewById( R.id.llSearch );
 		
 		llColumnSetting = root.findViewById( R.id.llColumnSetting );
 		
-		cbDontCloseColumn = (CheckBox) root.findViewById( R.id.cbDontCloseColumn );
-		cbWithAttachment = (CheckBox) root.findViewById( R.id.cbWithAttachment );
-		cbDontShowBoost = (CheckBox) root.findViewById( R.id.cbDontShowBoost );
-		cbDontShowFollow = (CheckBox) root.findViewById( R.id.cbDontShowFollow );
-		cbDontShowFavourite = (CheckBox) root.findViewById( R.id.cbDontShowFavourite );
-		cbDontShowReply = (CheckBox) root.findViewById( R.id.cbDontShowReply );
-		cbDontStreaming = (CheckBox) root.findViewById( R.id.cbDontStreaming );
-		cbDontAutoRefresh = (CheckBox) root.findViewById( R.id.cbDontAutoRefresh );
-		cbHideMediaDefault = (CheckBox) root.findViewById( R.id.cbHideMediaDefault );
-		cbEnableSpeech = (CheckBox) root.findViewById( R.id.cbEnableSpeech );
-		etRegexFilter = (EditText) root.findViewById( R.id.etRegexFilter );
+		cbDontCloseColumn = root.findViewById( R.id.cbDontCloseColumn );
+		cbWithAttachment = root.findViewById( R.id.cbWithAttachment );
+		cbDontShowBoost = root.findViewById( R.id.cbDontShowBoost );
+		cbDontShowFollow = root.findViewById( R.id.cbDontShowFollow );
+		cbDontShowFavourite = root.findViewById( R.id.cbDontShowFavourite );
+		cbDontShowReply = root.findViewById( R.id.cbDontShowReply );
+		cbDontStreaming = root.findViewById( R.id.cbDontStreaming );
+		cbDontAutoRefresh = root.findViewById( R.id.cbDontAutoRefresh );
+		cbHideMediaDefault = root.findViewById( R.id.cbHideMediaDefault );
+		cbEnableSpeech = root.findViewById( R.id.cbEnableSpeech );
+		etRegexFilter = root.findViewById( R.id.etRegexFilter );
 		llRegexFilter = root.findViewById( R.id.llRegexFilter );
-		tvRegexFilterError = (TextView) root.findViewById( R.id.tvRegexFilterError );
+		tvRegexFilterError = root.findViewById( R.id.tvRegexFilterError );
 		
-		btnDeleteNotification = (Button) root.findViewById( R.id.btnDeleteNotification );
+		btnDeleteNotification = root.findViewById( R.id.btnDeleteNotification );
 		
 		llColumnHeader.setOnClickListener( this );
 		btnColumnSetting.setOnClickListener( this );
@@ -151,7 +151,7 @@ class ColumnViewHolder
 		
 		root.findViewById( R.id.btnColor ).setOnClickListener( this );
 		
-		this.swipyRefreshLayout = (SwipyRefreshLayout) root.findViewById( R.id.swipyRefreshLayout );
+		this.swipyRefreshLayout = root.findViewById( R.id.swipyRefreshLayout );
 		swipyRefreshLayout.setOnRefreshListener( this );
 		swipyRefreshLayout.setDistanceToTriggerSync( (int) ( 0.5f + 20f * activity.density ) );
 		

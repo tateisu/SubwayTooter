@@ -578,9 +578,7 @@ class ColumnViewHolder
 		// リロードやリフレッシュ操作で直るようにする
 		column.addColumnViewHolder( this );
 		
-		if( direction == SwipyRefreshLayoutDirection.TOP &&
-			( column.column_type == Column.TYPE_SEARCH_PORTAL || column.column_type == Column.TYPE_SEARCH )
-			){
+		if( direction == SwipyRefreshLayoutDirection.TOP && column.canReloadWhenRefreshTop() ){
 			swipyRefreshLayout.setRefreshing( false );
 			activity.handler.post( new Runnable() {
 				@Override public void run(){

@@ -59,7 +59,6 @@ import jp.juggler.subwaytooter.util.Utils;
 @SuppressWarnings("WeakerAccess") class Column implements StreamReader.Callback {
 	private static final LogCategory log = new LogCategory( "Column" );
 	
-	
 	interface Callback {
 		boolean isActivityStart();
 	}
@@ -3308,6 +3307,27 @@ import jp.juggler.subwaytooter.util.Utils;
 			return true;
 		}
 	}
+	
+	public boolean canReloadWhenRefreshTop(){
+		switch( column_type ){
+		default:
+			return false;
+		case TYPE_SEARCH_PORTAL:
+		case TYPE_SEARCH:
+		case TYPE_CONVERSATION:
+			return true;
+		}
+//			static final int TYPE_FAVOURITES = 5;
+//			static final int TYPE_REPORTS = 6;
+//			static final int TYPE_MUTES = 11;
+//			static final int TYPE_BLOCKS = 12;
+//			static final int TYPE_FOLLOW_REQUESTS = 13;
+//			static final int TYPE_BOOSTED_BY = 14;
+//			static final int TYPE_FAVOURITED_BY = 15;
+//			static final int TYPE_DOMAIN_BLOCKS = 16;
+	}
+	
+	
 	
 	boolean canStreaming(){
 		switch( column_type ){

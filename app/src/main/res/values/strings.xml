@@ -503,11 +503,13 @@
     <string name="skin_tone_medium">medium skin tone</string>
     <string name="skin_tone_medium_dark">medium dark skin tone</string>
     <string name="skin_tone_dark">dark skin tone</string>
-    <string name="disable_custom_emoji_animation">Disable Custom Emoji animation (app restart required)</string>
+    <string name="disable_custom_emoji_animation">Disable Custom Emoji animation (app restart and column reload required)</string>
     <string name="card_header_card">Card</string>
     <string name="card_header_author">Author</string>
     <string name="card_header_provider">Provider</string>
     <string name="allow_non_space_before_emoji_code">Allow non-space character before emoji shortcode (Affect to display and post. to update display, please restart app and reload column. The emojis converted at posting can\'t be restored to shortcode.)</string>
     <string name="emoji">Emoji</string>
+    <string name="not_blocked">Not blocked.</string>
+    <string name="not_muted">Not muted.</string>
 
 </resources>

@@ -232,6 +232,8 @@ public class App1 extends Application {
 	
 	@SuppressLint("StaticFieldLeak")
 	public static CustomEmojiCache custom_emoji_cache;
+
+	@SuppressLint("StaticFieldLeak")
 	public static CustomEmojiLister custom_emoji_lister;
 	
 	private static boolean bPrepared = false;

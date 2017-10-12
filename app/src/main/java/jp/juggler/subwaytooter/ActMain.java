@@ -3290,17 +3290,17 @@ public class ActMain extends AppCompatActivity
 		@Nullable UserRelation relation;
 	}
 	
-	private @Nullable UserRelation saveUserRelation( @NonNull SavedAccount access_info, @Nullable TootRelationShip src ){
+	private @Nullable
+	UserRelation saveUserRelation( @NonNull SavedAccount access_info, @Nullable TootRelationShip src ){
 		if( src == null ) return null;
 		long now = System.currentTimeMillis();
 		return UserRelation.save1( now, access_info.db_id, src );
 	}
 	
-	
 	// relationshipを取得
 	@NonNull RelationResult loadRelation1(
 		@NonNull TootApiClient client
-		,@NonNull SavedAccount access_info
+		, @NonNull SavedAccount access_info
 		, long who_id
 	){
 		RelationResult rr = new RelationResult();
@@ -3308,7 +3308,7 @@ public class ActMain extends AppCompatActivity
 		if( r2 != null && r2.array != null ){
 			TootRelationShip.List list = TootRelationShip.parseList( r2.array );
 			if( ! list.isEmpty() ){
-				rr.relation = saveUserRelation( access_info,list.get( 0 ) );
+				rr.relation = saveUserRelation( access_info, list.get( 0 ) );
 			}
 		}
 		return rr;
@@ -3500,8 +3500,12 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	// acct で指定したユーザをリモートフォローする
-	void callRemoteFollow( final SavedAccount access_info
-		, final String acct, final boolean locked, boolean bConfirmed, final RelationChangedCallback callback
+	void callRemoteFollow(
+		@NonNull final SavedAccount access_info
+		, @NonNull final String acct
+		, final boolean locked
+		, final boolean bConfirmed
+		, @Nullable final RelationChangedCallback callback
 	){
 		if( access_info.isMe( acct ) ){
 			Utils.showToast( this, false, R.string.it_is_you );
@@ -3553,8 +3557,6 @@ public class ActMain extends AppCompatActivity
 				return;
 			}
 		}
-		
-		
 		
 		new AsyncTask< Void, Void, TootApiResult >() {
 			
@@ -3623,7 +3625,18 @@ public class ActMain extends AppCompatActivity
 	
 	////////////////////////////////////////
 	
-	void callMute( final SavedAccount access_info, final TootAccount who, final boolean bMute, final RelationChangedCallback callback ){
+	void callMute(
+		@NonNull final SavedAccount access_info
+		, @NonNull final TootAccount who
+		, final boolean bMute
+		, @Nullable final RelationChangedCallback callback
+	){
+		
+		if( access_info.isMe( who ) ){
+			Utils.showToast( this, false, R.string.it_is_you );
+			return;
+		}
+		
 		new AsyncTask< Void, Void, TootApiResult >() {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
@@ -3666,9 +3679,13 @@ public class ActMain extends AppCompatActivity
 				if( result == null ){
 					// cancelled.
 				}else if( relation != null ){
-					Utils.showToast( ActMain.this, false, bMute ? R.string.mute_succeeded : R.string.unmute_succeeded );
+					// 未確認だが、自分をミュートしようとするとリクエストは成功するがレスポンス中のmutingはfalseになるはず
+					if( bMute && ! relation.muting ){
+						Utils.showToast( ActMain.this, false, R.string.not_muted );
+						return;
+					}
 					
-					if( bMute ){
+					if( relation.muting ){
 						for( Column column : app_state.column_list ){
 							column.removeStatusByAccount( access_info, who.id );
 						}
@@ -3677,6 +3694,8 @@ public class ActMain extends AppCompatActivity
 							column.removeFromMuteList( access_info, who.id );
 						}
 					}
+					
+					Utils.showToast( ActMain.this, false, relation.muting ? R.string.mute_succeeded : R.string.unmute_succeeded );
 					
 					if( callback != null ) callback.onRelationChanged();
 					
@@ -3688,7 +3707,13 @@ public class ActMain extends AppCompatActivity
 		}.executeOnExecutor( App1.task_executor );
 	}
 	
-	void callBlock( final SavedAccount access_info, final TootAccount who, final boolean bBlock, final RelationChangedCallback callback ){
+	void callBlock( @NonNull final SavedAccount access_info, @NonNull final TootAccount who, final boolean bBlock, @Nullable final RelationChangedCallback callback ){
+		
+		if( access_info.isMe( who ) ){
+			Utils.showToast( this, false, R.string.it_is_you );
+			return;
+		}
+		
 		new AsyncTask< Void, Void, TootApiResult >() {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
@@ -3712,7 +3737,7 @@ public class ActMain extends AppCompatActivity
 				
 				if( result != null ){
 					if( result.object != null ){
-						relation = saveUserRelation( access_info, TootRelationShip.parse( result.object )   );
+						relation = saveUserRelation( access_info, TootRelationShip.parse( result.object ) );
 						
 					}
 				}
@@ -3734,15 +3759,21 @@ public class ActMain extends AppCompatActivity
 					// cancelled.
 				}else if( relation != null ){
 					
+					// 自分をブロックしようとすると、blocking==falseで帰ってくる
+					if( bBlock && ! relation.blocking ){
+						Utils.showToast( ActMain.this, false, R.string.not_blocked );
+						return;
+					}
+					
 					for( Column column : app_state.column_list ){
-						if( bBlock ){
+						if( relation.blocking ){
 							column.removeStatusByAccount( access_info, who.id );
 						}else{
 							column.removeFromBlockList( access_info, who.id );
 						}
 					}
 					
-					Utils.showToast( ActMain.this, false, bBlock ? R.string.block_succeeded : R.string.unblock_succeeded );
+					Utils.showToast( ActMain.this, false, relation.blocking ? R.string.block_succeeded : R.string.unblock_succeeded );
 					
 					if( callback != null ) callback.onRelationChanged();
 				}else{
@@ -3752,8 +3783,13 @@ public class ActMain extends AppCompatActivity
 		}.executeOnExecutor( App1.task_executor );
 	}
 	
-
-	void callDomainBlock( final SavedAccount access_info, final String domain, final boolean bBlock, final RelationChangedCallback callback ){
+	void callDomainBlock( @NonNull final SavedAccount access_info, @NonNull final String domain, final boolean bBlock, @Nullable final RelationChangedCallback callback ){
+		
+		if( access_info.host.equalsIgnoreCase( domain ) ){
+			Utils.showToast( this, false, R.string.it_is_you );
+			return;
+		}
+		
 		new AsyncTask< Void, Void, TootApiResult >() {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
@@ -3822,9 +3858,16 @@ public class ActMain extends AppCompatActivity
 		}.executeOnExecutor( App1.task_executor );
 	}
 	
-	void callFollowRequestAuthorize( final SavedAccount access_info
-		, final TootAccount who, final boolean bAllow
+	void callFollowRequestAuthorize(
+		@NonNull final SavedAccount access_info
+		, @NonNull final TootAccount who
+		, final boolean bAllow
 	){
+		if( access_info.isMe( who ) ){
+			Utils.showToast( this, false, R.string.it_is_you );
+			return;
+		}
+		
 		new AsyncTask< Void, Void, TootApiResult >() {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
@@ -3920,17 +3963,20 @@ public class ActMain extends AppCompatActivity
 	
 	interface ReportCompleteCallback {
 		void onReportComplete( TootApiResult result );
-		
 	}
 	
 	private void callReport(
 		@NonNull final SavedAccount access_info
-		
 		, @NonNull final TootAccount who
 		, @NonNull final TootStatus status
 		, @NonNull final String comment
-		, final ReportCompleteCallback callback
+		, @Nullable final ReportCompleteCallback callback
 	){
+		if( access_info.isMe( who ) ){
+			Utils.showToast( this, false, R.string.it_is_you );
+			return;
+		}
+		
 		new AsyncTask< Void, Void, TootApiResult >() {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
@@ -3966,7 +4012,7 @@ public class ActMain extends AppCompatActivity
 				if( result == null ){
 					// cancelled.
 				}else if( result.object != null ){
-					callback.onReportComplete( result );
+					if( callback != null ) callback.onReportComplete( result );
 				}else{
 					Utils.showToast( ActMain.this, true, result.error );
 				}

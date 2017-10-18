@@ -73,7 +73,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
-import jp.juggler.subwaytooter.dialog.DlgAccessToken;
+import jp.juggler.subwaytooter.dialog.DlgTextInput;
 import jp.juggler.subwaytooter.dialog.DlgConfirm;
 import jp.juggler.subwaytooter.dialog.LoginForm;
 import jp.juggler.subwaytooter.dialog.ReportForm;
@@ -1147,7 +1147,8 @@ public class ActMain extends AppCompatActivity
 						if( bPseudoAccount ){
 							return api_client.checkInstance();
 						}else{
-							return api_client.authorize1( Pref.pref( ActMain.this ).getString( Pref.KEY_CLIENT_NAME, "" ) );
+							String client_name = Pref.pref( ActMain.this ).getString( Pref.KEY_CLIENT_NAME, "" );
+							return api_client.authorize1( client_name );
 						}
 					}
 					
@@ -1177,10 +1178,14 @@ public class ActMain extends AppCompatActivity
 								
 								if( bInputAccessToken ){
 									// アクセストークンの手動入力
-									DlgAccessToken.show( ActMain.this, new DlgAccessToken.Callback() {
+									DlgTextInput.show( ActMain.this, getString( R.string.access_token ), null, new DlgTextInput.Callback() {
 										@Override
-										public void startCheck( Dialog dialog_token, String access_token ){
+										public void onOK( Dialog dialog_token, String access_token ){
 											checkAccessToken( dialog, dialog_token, instance, access_token, null );
+										}
+										
+										@Override public void onEmptyError(){
+											Utils.showToast( ActMain.this, true, R.string.token_not_specified );
 										}
 									} );
 								}else{
@@ -1453,8 +1458,9 @@ public class ActMain extends AppCompatActivity
 				}
 				
 				this.host = client.instance;
+				String client_name = Pref.pref( ActMain.this ).getString( Pref.KEY_CLIENT_NAME, "" );
 				
-				TootApiResult result = client.authorize2( code );
+				TootApiResult result = client.authorize2( client_name,code );
 				if( result != null && result.object != null ){
 					// taは使い捨てなので、生成に使うLinkClickContextはダミーで問題ない
 					LinkClickContext lcc = new LinkClickContext() {
@@ -1672,9 +1678,13 @@ public class ActMain extends AppCompatActivity
 		final SavedAccount sa = SavedAccount.loadAccount( this, log, db_id );
 		if( sa == null ) return;
 		
-		DlgAccessToken.show( this, new DlgAccessToken.Callback() {
-			@Override public void startCheck( Dialog dialog_token, String access_token ){
+		DlgTextInput.show( this, getString( R.string.access_token ), null, new DlgTextInput.Callback() {
+			@Override public void onOK( Dialog dialog_token, String access_token ){
 				checkAccessToken( null, dialog_token, sa.host, access_token, sa );
+			}
+			
+			@Override public void onEmptyError(){
+				Utils.showToast( ActMain.this, true, R.string.token_not_specified );
 			}
 		} );
 	}

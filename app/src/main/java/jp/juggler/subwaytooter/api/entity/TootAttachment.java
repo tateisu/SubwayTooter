@@ -41,6 +41,9 @@ public class TootAttachment {
 	//	Shorter URL for the image, for insertion into text (only present on local images)
 	@Nullable public String text_url;
 	
+	// ALT text (Mastodon 2.0.0 or later)
+	@Nullable public String description;
+	
 	public JSONObject json;
 	
 	@Nullable
@@ -55,6 +58,7 @@ public class TootAttachment {
 			dst.remote_url = Utils.optStringX( src, "remote_url" );
 			dst.preview_url = Utils.optStringX( src, "preview_url" );
 			dst.text_url = Utils.optStringX( src, "text_url" );
+			dst.description = Utils.optStringX( src, "description" );
 			return dst;
 		}catch( Throwable ex ){
 			log.trace( ex );

@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import jp.juggler.subwaytooter.App1;
@@ -48,7 +49,7 @@ public class TootApiClient {
 		void onCallCreated( Call call );
 	}
 	
-	CurrentCallCallback call_callback;
+	private CurrentCallCallback call_callback;
 	
 	public void setCurrentCallCallback( CurrentCallCallback call_callback ){
 		this.call_callback = call_callback;
@@ -91,12 +92,15 @@ public class TootApiClient {
 		return result;
 	}
 	
+	private static final String DEFAULT_CLIENT_NAME = "SubwayTooter";
+	private static final String KEY_CLIENT_CREDENTIAL = "SubwayTooterClientCredential";
+	
 	private static final String KEY_AUTH_VERSION = "SubwayTooterAuthVersion";
 	private static final int AUTH_VERSION = 1;
 	private static final String REDIRECT_URL = "subwaytooter://oauth";
 	
-	public static final String MIMUMEDON = "mimumedon.com";
-	public static final String MIMUMEDON_ERROR = "mimumedon.comには対応しません";
+	private static final String MIMUMEDON = "mimumedon.com";
+	private static final String MIMUMEDON_ERROR = "mimumedon.comには対応しません";
 	
 	private @Nullable
 	TootApiResult request_sub( @NonNull String path, @NonNull Request.Builder request_builder ){
@@ -255,24 +259,163 @@ public class TootApiClient {
 		}
 	}
 	
+	// クライアントアプリの登録を確認するためのトークンを生成する
+	// oAuth2 Client Credentials の取得
+	// https://github.com/doorkeeper-gem/doorkeeper/wiki/Client-Credentials-flow
+	// このトークンはAPIを呼び出すたびに新しく生成される…
+	private @Nullable String getClientCredential( JSONObject client_info ){
+		try{
+			Request request = new Request.Builder()
+				.url( "https://" + instance + "/oauth/token" )
+				.post( RequestBody.create( MEDIA_TYPE_FORM_URL_ENCODED
+					, "grant_type=client_credentials"
+						+ "&client_id=" + Uri.encode( client_info.optString( "client_id" ) )
+						+ "&client_secret=" + Uri.encode( client_info.optString( "client_secret" ) )
+				) )
+				.build();
+			Call call = ok_http_client.newCall( request );
+			if( call_callback != null ) call_callback.onCallCreated( call );
+			Response response = call.execute();
+			if( callback.isApiCancelled() ){
+				return null;
+			}
+			
+			if( ! response.isSuccessful() ){
+				log.e( "getClientCredential: " + Utils.formatResponse( response, instance ) );
+				return null;
+			}
+			
+			//noinspection ConstantConditions
+			String body = response.body().string();
+			if( TextUtils.isEmpty( body ) || body.startsWith( "<" ) ){
+				log.e( "getClientCredential: " + context.getString( R.string.response_not_json ) + ": " + body );
+				return null;
+			}
+			
+			JSONObject json = new JSONObject( body );
+			String error = Utils.optStringX( json, "error" );
+			if( ! TextUtils.isEmpty( error ) ){
+				log.e( "getClientCredential: API returns error: %s", error );
+				return null;
+			}
+			
+			String client_credential = Utils.optStringX( json, "access_token" );
+			if( TextUtils.isEmpty( client_credential ) ){
+				log.e( "getClientCredential: API returns empty client_credential." );
+				return null;
+			}
+			return client_credential;
+			
+		}catch( Throwable ex ){
+			log.trace( ex );
+			log.e( "getClientCredential: " + instance + ": " + Utils.formatError( ex, context.getResources(), R.string.network_error ) );
+			return null;
+		}
+	}
+	
+	private boolean verifyClientCredential( @NonNull String client_credential ){
+		try{
+			Request request = new Request.Builder()
+				.url( "https://" + instance + "/api/v1/apps/verify_credentials" )
+				.header( "Authorization", "Bearer " + client_credential )
+				.build();
+			
+			Call call = ok_http_client.newCall( request );
+			if( call_callback != null ) call_callback.onCallCreated( call );
+			Response response = call.execute();
+			if( callback.isApiCancelled() ){
+				return false;
+			}
+			
+			if( ! response.isSuccessful() ){
+				log.e( "verifyClientCredential: " + Utils.formatResponse( response, instance ) );
+				return false;
+			}
+			
+			//noinspection ConstantConditions
+			String body = response.body().string();
+			if( TextUtils.isEmpty( body ) || body.startsWith( "<" ) ){
+				log.e( "verifyClientCredential: " + context.getString( R.string.response_not_json ) + ": " + body );
+				return false;
+			}
+			
+			JSONObject json = new JSONObject( body );
+			String error = Utils.optStringX( json, "error" );
+			if( ! TextUtils.isEmpty( error ) ){
+				log.e( "verifyClientCredential: API returns error: %s", error );
+				return false;
+			}
+			
+			// {"name":"SubwayTooter","website":null}
+			
+			return true;
+			
+		}catch( Throwable ex ){
+			log.trace( ex );
+			log.e( "verifyClientCredential: " + instance + ": " + Utils.formatError( ex, context.getResources(), R.string.network_error ) );
+			return false;
+		}
+	}
+	
+	private TootApiResult prepareBrowserUrl( @NonNull JSONObject client_info ){
+		// 認証ページURLを作る
+		final String browser_url = "https://" + instance + "/oauth/authorize"
+			+ "?client_id=" + Uri.encode( Utils.optStringX( client_info, "client_id" ) )
+			// この段階では要らない		+ "&client_secret=" + Uri.encode( Utils.optStringX( client_info, "client_secret" ) )
+			+ "&response_type=code"
+			+ "&redirect_uri=" + Uri.encode( REDIRECT_URL )
+			+ "&scope=read write follow"
+			+ "&scopes=read write follow"
+			+ "&state=" + ( account != null ? "db:" + account.db_id : "host:" + instance )
+			+ "&grant_type=authorization_code"
+			//	+ "&username=" + Uri.encode( user_mail )
+			//	+ "&password=" + Uri.encode( password )
+			+ "&approval_prompt=force"
+			//		+"&access_type=offline"
+			;
+		// APIリクエストは失敗?する
+		// URLをエラーとして返す
+		return new TootApiResult( browser_url );
+		
+	}
+	
 	public @Nullable TootApiResult authorize1( String client_name ){
 		
 		if( MIMUMEDON.equalsIgnoreCase( instance ) ) return new TootApiResult( MIMUMEDON_ERROR );
 		
-		JSONObject client_info;
+		if( TextUtils.isEmpty( client_name ) ){
+			client_name = DEFAULT_CLIENT_NAME;
+		}
 		
-		// サーバ側がクライアント情報を消した場合、今の認証フローではアプリがそれを知ることができない
-		// 毎回クライアント情報を作ることでしか対策できない
-		
-		callback.publishApiProgress( context.getString( R.string.register_app_to_server, instance ) );
+		// クライアントIDがアプリ上に保存されているか？
+		JSONObject client_info = ClientInfo.load( instance, client_name );
+		if( client_info != null ){
+			// client_credential をまだ取得していないなら取得する
+			String client_credential = Utils.optStringX( client_info, KEY_CLIENT_CREDENTIAL );
+			if( TextUtils.isEmpty( client_credential ) ){
+				client_credential = getClientCredential( client_info );
+				if( ! TextUtils.isEmpty( client_credential ) ){
+					try{
+						client_info.put( KEY_CLIENT_CREDENTIAL, client_credential );
+						ClientInfo.save( instance, client_name, client_info.toString() );
+					}catch( JSONException ignored ){
+					}
+				}
+			}
+			// client_credential があるならcredentialがまだ使えるか確認する
+			if( ! TextUtils.isEmpty( client_credential ) ){
+				boolean isClientOk = verifyClientCredential( client_credential );
+				if( isClientOk ){
+					return prepareBrowserUrl( client_info );
+				}
+			}
+		}
 		
 		// OAuth2 クライアント登録
-		
+		callback.publishApiProgress( context.getString( R.string.register_app_to_server, instance ) );
 		Response response;
+		
 		try{
-			if( TextUtils.isEmpty( client_name ) ){
-				client_name = "SubwayTooter";
-			}
 			
 			Request request = new Request.Builder()
 				.url( "https://" + instance + "/api/v1/apps" )
@@ -296,6 +439,7 @@ public class TootApiClient {
 		if( ! response.isSuccessful() ){
 			return new TootApiResult( response, Utils.formatResponse( response, instance ) );
 		}
+		
 		try{
 			//noinspection ConstantConditions
 			String json = response.body().string();
@@ -311,38 +455,25 @@ public class TootApiClient {
 			client_info.put( KEY_AUTH_VERSION, AUTH_VERSION );
 			
 			// authorize2 で使う
-			ClientInfo.save( instance, client_info.toString() );
+			ClientInfo.save( instance, client_name, client_info.toString() );
 			
 		}catch( Throwable ex ){
 			log.trace( ex );
 			return new TootApiResult( Utils.formatError( ex, "API data error" ) );
 		}
 		
-		// 認証ページURLを作る
-		final String browser_url = "https://" + instance + "/oauth/authorize"
-			+ "?client_id=" + Uri.encode( Utils.optStringX( client_info, "client_id" ) )
-			// この段階では要らない		+ "&client_secret=" + Uri.encode( Utils.optStringX( client_info, "client_secret" ) )
-			+ "&response_type=code"
-			+ "&redirect_uri=" + Uri.encode( REDIRECT_URL )
-			+ "&scope=read write follow"
-			+ "&scopes=read write follow"
-			+ "&state=" + ( account != null ? "db:" + account.db_id : "host:" + instance )
-			+ "&grant_type=authorization_code"
-			//	+ "&username=" + Uri.encode( user_mail )
-			//	+ "&password=" + Uri.encode( password )
-			+ "&approval_prompt=force"
-			//		+"&access_type=offline"
-			;
-		// APIリクエストは失敗?する
-		// URLをエラーとして返す
-		return new TootApiResult( browser_url );
+		return prepareBrowserUrl( client_info );
 	}
 	
-	public @Nullable TootApiResult authorize2( String code ){
+	public @Nullable TootApiResult authorize2( String client_name, String code ){
 		
 		if( MIMUMEDON.equalsIgnoreCase( instance ) ) return new TootApiResult( MIMUMEDON_ERROR );
 		
-		JSONObject client_info = ClientInfo.load( instance );
+		if( TextUtils.isEmpty( client_name ) ){
+			client_name = DEFAULT_CLIENT_NAME;
+		}
+		
+		JSONObject client_info = ClientInfo.load( instance, client_name );
 		if( client_info == null ){
 			return new TootApiResult( "missing client id" );
 		}
@@ -454,11 +585,6 @@ public class TootApiClient {
 	public @Nullable TootApiResult checkAccessToken( String access_token ){
 		
 		if( MIMUMEDON.equalsIgnoreCase( instance ) ) return new TootApiResult( MIMUMEDON_ERROR );
-		
-		JSONObject client_info = ClientInfo.load( instance );
-		if( client_info == null ){
-			return new TootApiResult( "missing client id" );
-		}
 		
 		JSONObject token_info;
 		Response response;

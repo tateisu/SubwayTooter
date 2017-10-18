@@ -684,8 +684,31 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 					url = ta.url;
 				}
 			}
-			// 正方形じゃないせいか、うまく動かない activity.density * 4f );
+			// 正方形じゃないせいか、うまく動かない // activity.density * 4f );
 			iv.setImageUrl( activity.pref, 0f, access_info.supplyBaseUrl( url ), access_info.supplyBaseUrl( url ) );
+			
+			if(!TextUtils.isEmpty( ta.description )){
+				LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams( LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT );
+				lp.topMargin = (int) ( 0.5f + llExtra.getResources().getDisplayMetrics().density * 3f );
+				MyTextView tv = new MyTextView( activity );
+				tv.setLayoutParams( lp );
+				//
+				tv.setMovementMethod( MyLinkMovementMethod.getInstance() );
+				if( ! Float.isNaN( activity.timeline_font_size_sp ) ){
+					tv.setTextSize( activity.timeline_font_size_sp );
+				}
+				int c = column.content_color != 0 ? column.content_color : content_color_default;
+				tv.setTextColor( c );
+				
+				//
+				String desc = activity.getString( R.string.media_description,idx+1,ta.description );
+				tv.setText( new DecodeOptions()
+					.setCustomEmojiMap(status.custom_emojis )
+					.setProfileEmojis( status.profile_emojis )
+					.decodeEmoji( activity, desc )
+				);
+				llExtra.addView( tv );
+			}
 		}
 	}
 	

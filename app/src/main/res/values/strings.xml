@@ -511,5 +511,11 @@
     <string name="emoji">Emoji</string>
     <string name="not_blocked">Not blocked.</string>
     <string name="not_muted">Not muted.</string>
+    <string name="media_description">(attachment %1$d) %2$s</string>
+    <string name="set_description">set description(Mastodon 2.0.0 or later)</string>
+    <string name="attachment_description_cant_edit_while_uploading">Attachment description can\'t be edit while uploading.</string>
+    <string name="attachment_description">attachment description</string>
+    <string name="description_empty">description is not specified.</string>
+    <string name="attachment_description_sending">sending attachment description…</string>
 
 </resources>

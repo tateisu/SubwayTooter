@@ -679,6 +679,8 @@ class ColumnViewHolder
 			break;
 		
 		case R.id.btnColumnReload:
+			App1.custom_emoji_cache.clearErrorCache();
+			
 			if( column.column_type == Column.TYPE_SEARCH || column.column_type == Column.TYPE_SEARCH_PORTAL ){
 				Utils.hideKeyboard( activity, etSearch );
 				etSearch.setText( column.search_query );

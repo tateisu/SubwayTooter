@@ -39,6 +39,11 @@ public class CustomEmojiCache {
 	
 	final ConcurrentHashMap< String, Long > cache_error = new ConcurrentHashMap<>();
 	
+	// カラムのリロードボタンを押したタイミングでエラーキャッシュをクリアする
+	public void clearErrorCache(){
+		cache_error.clear();
+	}
+	
 	////////////////////////////////
 	// 成功キャッシュ
 	

@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import jp.juggler.subwaytooter.table.AcctColor;
+import jp.juggler.subwaytooter.table.ClientInfo;
 import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.MutedWord;
 import jp.juggler.subwaytooter.table.SavedAccount;
@@ -438,6 +439,7 @@ public class AppDataExporter {
 	private static final String KEY_ACCT_COLOR = "acct_color";
 	private static final String KEY_MUTED_APP = "muted_app";
 	private static final String KEY_MUTED_WORD = "muted_word";
+	private static final String KEY_CLIENT_INFO = "client_info2";
 	
 	static void encodeAppData( Context context, JsonWriter writer )
 		throws IOException, JSONException{
@@ -455,6 +457,7 @@ public class AppDataExporter {
 		writeFromTable( writer, KEY_ACCT_COLOR, AcctColor.table );
 		writeFromTable( writer, KEY_MUTED_APP, MutedApp.table );
 		writeFromTable( writer, KEY_MUTED_WORD, MutedWord.table );
+		writeFromTable( writer, KEY_CLIENT_INFO, ClientInfo.table );
 		
 		//////////////////////////////////////
 		{
@@ -494,6 +497,9 @@ public class AppDataExporter {
 				
 			}else if( KEY_MUTED_WORD.equals( name ) ){
 				importTable( reader, MutedWord.table, null );
+
+			}else if( KEY_CLIENT_INFO.equals( name ) ){
+				importTable( reader, ClientInfo.table, null );
 				
 			}else if( KEY_COLUMN.equals( name ) ){
 				result = readColumn( app_state, reader, account_id_map );

@@ -71,7 +71,7 @@ public class App1 extends Application {
 	public static final String FILE_PROVIDER_AUTHORITY = "jp.juggler.subwaytooter.FileProvider";
 	
 	static final String DB_NAME = "app_db";
-	static final int DB_VERSION = 18;
+	static final int DB_VERSION = 19;
 	
 	// 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
 	// 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加
@@ -89,6 +89,7 @@ public class App1 extends Application {
 	// 2017/7/22 v99 15=>16 SavedAccountに項目追加
 	// 2017/7/22 v106 16=>17 AcctColor に項目追加
 	// 2017/9/23 v161 17=>18 SavedAccountに項目追加
+	// 2017/9/23 v161 18=>19 ClientInfoテーブルを置き換える
 	
 	private static DBOpenHelper db_open_helper;
 	

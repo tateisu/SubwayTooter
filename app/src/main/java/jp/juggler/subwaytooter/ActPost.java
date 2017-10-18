@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ContentValues;
@@ -57,12 +58,14 @@ import java.util.Locale;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
+import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootMention;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
 import jp.juggler.subwaytooter.dialog.DlgDraftPicker;
+import jp.juggler.subwaytooter.dialog.DlgTextInput;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.PostDraft;
 import jp.juggler.subwaytooter.table.SavedAccount;
@@ -147,16 +150,16 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			break;
 		
 		case R.id.ivMedia1:
-			performAttachmentDelete( 0 );
+			performAttachmentClick( 0 );
 			break;
 		case R.id.ivMedia2:
-			performAttachmentDelete( 1 );
+			performAttachmentClick( 1 );
 			break;
 		case R.id.ivMedia3:
-			performAttachmentDelete( 2 );
+			performAttachmentClick( 2 );
 			break;
 		case R.id.ivMedia4:
-			performAttachmentDelete( 3 );
+			performAttachmentClick( 3 );
 			break;
 		
 		case R.id.btnPost:
@@ -952,8 +955,31 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	}
 	
 	// 添付した画像をタップ
-	void performAttachmentDelete( int idx ){
+	void performAttachmentClick( int idx ){
 		final PostAttachment pa = attachment_list.get( idx );
+		
+		new AlertDialog.Builder( this )
+			.setTitle( R.string.media_attachment )
+			.setItems( new CharSequence[]{
+				getString( R.string.set_description ),
+				getString( R.string.delete )
+			}, new DialogInterface.OnClickListener() {
+				@Override public void onClick( DialogInterface dialogInterface, int i ){
+					switch( i ){
+					case 0:
+						editAttachmentDescription( pa );
+						break;
+					case 1:
+						deleteAttachment( pa );
+						break;
+					}
+				}
+			} )
+			.setNegativeButton( R.string.cancel, null )
+			.show();
+	}
+	
+	void deleteAttachment( @NonNull final PostAttachment pa ){
 		new AlertDialog.Builder( this )
 			.setTitle( R.string.confirm_delete_attachment )
 			.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
@@ -969,6 +995,107 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			.setNegativeButton( R.string.cancel, null )
 			.show();
 		
+	}
+	
+	void editAttachmentDescription( @NonNull final PostAttachment pa ){
+		if( pa.attachment == null ){
+			Utils.showToast( this, true, R.string.attachment_description_cant_edit_while_uploading );
+		}
+		DlgTextInput.show( this, getString( R.string.attachment_description ), pa.attachment.description, new DlgTextInput.Callback() {
+			@Override public void onOK( Dialog dialog, String text ){
+				setAttachmentDescription( pa, dialog, text );
+			}
+			
+			@Override public void onEmptyError(){
+				Utils.showToast( ActPost.this, true, R.string.description_empty );
+			}
+		} );
+	}
+	
+	private void setAttachmentDescription( final PostAttachment pa, final Dialog dialog, final String text ){
+		//noinspection deprecation
+		final ProgressDialog progress = new ProgressDialog( ActPost.this );
+		
+		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+			
+			final SavedAccount target_account = account;
+			
+			@Override protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActPost.this, new TootApiClient.Callback() {
+					@Override public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override public void publishApiProgress( String s ){
+						progress.setMessage( s );
+					}
+				} );
+				client.setAccount( target_account );
+				
+				JSONObject json = new JSONObject();
+				try{
+					json.put( "description", text );
+				}catch( JSONException ex ){
+					log.trace( ex );
+					log.e( ex, "description encoding failed." );
+				}
+				
+				String body_string = json.toString();
+				RequestBody request_body = RequestBody.create(
+					TootApiClient.MEDIA_TYPE_JSON
+					, body_string
+				);
+				final Request.Builder request_builder = new Request.Builder().put( request_body );
+				
+				TootApiResult result = client.request( "/api/v1/media/" + pa.attachment.id, request_builder );
+				if( result != null && result.object != null ){
+					this.attachment = TootAttachment.parse( result.object );
+				}
+				return result;
+			}
+			
+			TootAttachment attachment;
+			
+			@Override protected void onCancelled( TootApiResult result ){
+				super.onCancelled( result );
+			}
+			
+			@Override protected void onPostExecute( TootApiResult result ){
+				
+				try{
+					progress.dismiss();
+				}catch( Throwable ignored ){
+					
+				}
+				
+				if( result == null ){
+					// cancelled.
+				}else if( attachment != null ){
+					pa.attachment = attachment;
+					showMediaAttachment();
+					
+					try{
+						dialog.dismiss();
+					}catch( Throwable ignored ){
+						
+					}
+					
+				}else{
+					Utils.showToast( ActPost.this, true, result.error );
+				}
+			}
+		};
+		
+		progress.setIndeterminate( true );
+		progress.setCancelable( true );
+		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
+			@Override public void onCancel( DialogInterface dialog ){
+				task.cancel( true );
+			}
+		} );
+		progress.show();
+		
+		task.executeOnExecutor( App1.task_executor );
 	}
 	
 	void openAttachment(){
@@ -1291,16 +1418,18 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				
 				Utils.showToast( ActPost.this, false, R.string.attachment_uploaded );
 				
-				// 投稿欄に追記する
-				String sv = etContent.getText().toString();
-				int l = sv.length();
-				if( l > 0 ){
-					char c = sv.charAt( l - 1 );
-					if( c > 0x20 ) sv = sv + " ";
+				// 投稿欄の末尾に追記する
+				int selStart = etContent.getSelectionStart();
+				int selEnd = etContent.getSelectionEnd();
+				Editable e = etContent.getEditableText();
+				int len = e.length();
+				char last_char = ( len <= 0 ? ' ' : e.charAt( len - 1 ) );
+				if( ! EmojiDecoder.isWhitespaceBeforeEmoji( last_char ) ){
+					e.append( " " + pa.attachment.text_url );
+				}else{
+					e.append( pa.attachment.text_url );
 				}
-				sv = sv + pa.attachment.text_url + " ";
-				etContent.setText( sv );
-				etContent.setSelection( sv.length() );
+				etContent.setSelection( selStart, selEnd );
 				
 				showMediaAttachment();
 			}

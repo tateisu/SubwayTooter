@@ -807,4 +807,10 @@
     <string name="emoji">絵文字</string>
     <string name="not_blocked">ブロックできません</string>
     <string name="not_muted">ミュートできません</string>
+    <string name="media_description">(添付 %1$d) %2$s</string>
+    <string name="set_description">説明文を設定(マストドン2.0.0以降)</string>
+    <string name="attachment_description_cant_edit_while_uploading">添付メディアのアップロード中は説明文を設定できません</string>
+    <string name="attachment_description">添付メディアの説明文</string>
+    <string name="description_empty">説明文が指定されてません</string>
+    <string name="attachment_description_sending">添付メディアの説明文の送信中…</string>
 </resources>

@@ -12,12 +12,12 @@
         android:layout_marginEnd="12dp"
         android:layout_marginStart="12dp"
         android:layout_marginTop="12dp"
-        android:labelFor="@+id/etToken"
-        android:text="@string/access_token"
+        android:id="@+id/tvCaption"
+        android:labelFor="@+id/etInput"
         />
 
     <EditText
-        android:id="@+id/etToken"
+        android:id="@+id/etInput"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginEnd="12dp"

@@ -1026,8 +1026,13 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 						return isCancelled();
 					}
 					
-					@Override public void publishApiProgress( String s ){
-						progress.setMessage( s );
+					@Override public void publishApiProgress( final String s ){
+						Utils.runOnMainThread( new Runnable() {
+							@Override public void run(){
+								progress.setMessage( s );
+							}
+						} );
+						
 					}
 				} );
 				client.setAccount( target_account );

@@ -43,19 +43,19 @@ public class DecodeOptions {
 	
 	@Nullable CustomEmoji.Map customEmojiMap;
 	
-	public DecodeOptions setCustomEmojiMap( CustomEmoji.Map customEmojiMap ){
+	public DecodeOptions setCustomEmojiMap( @Nullable CustomEmoji.Map customEmojiMap ){
 		this.customEmojiMap = customEmojiMap;
 		return this;
 	}
 	
 	@Nullable NicoProfileEmoji.Map profile_emojis;
 	
-	public DecodeOptions setProfileEmojis( NicoProfileEmoji.Map profile_emojis ){
+	public DecodeOptions setProfileEmojis( @Nullable NicoProfileEmoji.Map profile_emojis ){
 		this.profile_emojis = profile_emojis;
 		return this;
 	}
 	
-	public SpannableStringBuilder decodeHTML( @NonNull Context context, @NonNull LinkClickContext lcc, String html ){
+	public SpannableStringBuilder decodeHTML( @Nullable Context context, @Nullable LinkClickContext lcc, String html ){
 		return HTMLDecoder.decodeHTML( context, lcc, html, this );
 	}
 	

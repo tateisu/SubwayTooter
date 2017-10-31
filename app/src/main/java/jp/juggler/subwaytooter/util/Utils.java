@@ -829,7 +829,17 @@ public class Utils {
 						}catch( Throwable ex ){
 							log.e( ex, "response body is not JSON or missing 'error' attribute." );
 						}
-						if( sb.length() == empty_length ) sb.append( sv );
+						if( sb.length() == empty_length ){
+							// JSONではなかった
+
+							// HTMLならタグの除去を試みる
+							String ct = response.header("content-type");
+							if( ct != null && ct.contains( "/html" ) ){
+								sv = new DecodeOptions().decodeHTML( null,null,sv ).toString();
+							}
+
+							sb.append( sv );
+						}
 					}
 				}catch( Throwable ex ){
 					log.e( ex, "response body is not String." );

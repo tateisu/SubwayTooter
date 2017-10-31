@@ -232,11 +232,14 @@ public class EmojiDecoder {
 				
 				// part=":@name:" name="@name"
 				if( name.length() >= 2 && name.charAt( 0 ) == '@' ){
-					NicoProfileEmoji emoji = ( profile_emojis == null ? null : profile_emojis.get( name.substring( 1 ) ) );
-					if( emoji != null ){
-						decode_env.addNetworkEmojiSpan( part, emoji.url );
-						return;
+					if( profile_emojis != null ){
+						NicoProfileEmoji emoji = profile_emojis.get( name );
+						if( emoji == null) emoji = profile_emojis.get( name.substring( 1 ) );
+						if( emoji != null ){
+							decode_env.addNetworkEmojiSpan( part, emoji.url );
+						}
 					}
+					return;
 				}
 				
 				{

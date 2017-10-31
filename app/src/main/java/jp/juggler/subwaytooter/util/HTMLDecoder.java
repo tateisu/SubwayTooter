@@ -160,13 +160,13 @@ public class HTMLDecoder {
 		}
 		
 		void encodeSpan(
-			Context context
-			, LinkClickContext account
+			@Nullable Context context
+			, @Nullable LinkClickContext account
 			, SpannableStringBuilder sb
 			, @NonNull DecodeOptions options
 		){
 			if( TAG_TEXT.equals( tag ) ){
-				if( options.bDecodeEmoji ){
+				if( context != null && options.bDecodeEmoji ){
 					sb.append( options.decodeEmoji( context, decodeEntity( text ) ) );
 				}else{
 					sb.append( decodeEntity( text ) );
@@ -196,18 +196,24 @@ public class HTMLDecoder {
 			
 			if( "a".equals( tag ) ){
 				start = sb.length();
-				sb.append( encodeUrl( options.bShort, context, sb_tmp.toString(), getHref(), options.list_attachment ) );
+				if( context != null ){
+					sb.append( encodeUrl( options.bShort, context, sb_tmp.toString(), getHref(), options.list_attachment ) );
+				}else{
+					sb.append( sb_tmp.toString() );
+				}
 				end = sb.length();
 			}else if( sb_tmp != sb ){
 				// style もscript も読み捨てる
 			}
 			
 			if( end > start && "a".equals( tag ) ){
-				String href = getHref();
-				if( href != null ){
-					String link_text = sb.subSequence( start, end ).toString();
-					MyClickableSpan span = new MyClickableSpan( account, link_text, href, account.findAcctColor( href ), options.link_tag );
-					sb.setSpan( span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+				if( account != null ){
+					String href = getHref();
+					if( href != null ){
+						String link_text = sb.subSequence( start, end ).toString();
+						MyClickableSpan span = new MyClickableSpan( account, link_text, href, account.findAcctColor( href ), options.link_tag );
+						sb.setSpan( span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+					}
 				}
 			}
 			
@@ -316,8 +322,8 @@ public class HTMLDecoder {
 	}
 	
 	public static SpannableStringBuilder decodeHTML(
-		@NonNull Context context
-		, @NonNull LinkClickContext account
+		@Nullable Context context
+		, @Nullable LinkClickContext account
 		, @Nullable String src
 		, @NonNull DecodeOptions options
 	){
@@ -458,37 +464,36 @@ public class HTMLDecoder {
 		return sb.toString();
 	}
 	
-	
-	static final Pattern reEntityEscape = Pattern.compile("[<>\"'&]");
+	static final Pattern reEntityEscape = Pattern.compile( "[<>\"'&]" );
 	
 	public static String encodeEntity( @NonNull String src ){
 		StringBuffer sb = new StringBuffer();
-		for(int i=0,ie=src.length();i<ie;++i){
+		for( int i = 0, ie = src.length() ; i < ie ; ++ i ){
 			char c = src.charAt( i );
-			switch(c){
+			switch( c ){
 			case '<':
-				sb.append("&lt;");
+				sb.append( "&lt;" );
 				break;
 			case '>':
-				sb.append("&gt;");
+				sb.append( "&gt;" );
 				break;
 			case '"':
-				sb.append("&quot;");
+				sb.append( "&quot;" );
 				break;
 			case '\'':
-				sb.append("&#039;");
+				sb.append( "&#039;" );
 				break;
 			case '&':
-				sb.append("&amp;");
+				sb.append( "&amp;" );
 				break;
 			default:
-				sb.append(c);
+				sb.append( c );
 				break;
 			}
 		}
 		return sb.toString();
 	}
-
+	
 	private static void init1(){
 		_addEntity( "amp", '&' ); // ampersand
 		_addEntity( "gt", '>' ); // greater than

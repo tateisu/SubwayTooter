@@ -1,16 +1,17 @@
 import java.text.SimpleDateFormat
 
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion '26.0.1'
+    buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "jp.juggler.subwaytooter"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 172
-        versionName "1.7.2"
+        versionCode 173
+        versionName "1.7.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -21,27 +22,33 @@ android {
         }
     }
 
+    // Specifies comma-separated list of flavor dimensions.
+    flavorDimensions "rcOrDev"
+
     productFlavors {
         rc {
+            dimension "rcOrDev"
         }
     }
 
+    dexOptions {
+        jumboMode = true
+    }
+
     // Generate Signed APK のファイル名を変更
-    applicationVariants.all { variant ->
+    android.applicationVariants.all { variant ->
         if (variant.buildType.name == "release") {
-            variant.outputs.each { output ->
-                if (output.outputFile != null && output.outputFile.name.endsWith('.apk')) {
-                    // Rename APK
-                    def versionCode = defaultConfig.versionCode
-                    def versionName = defaultConfig.versionName
-                    def flavor = variant.flavorName
-                    def date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())
-                    def newName = "SubwayTooter-${flavor}-${versionCode}-${versionName}-${date}.apk"
-                    output.outputFile = new File((String) output.outputFile.parent, (String) newName)
-                }
+            variant.outputs.all {
+                // Rename APK
+                def versionCode = defaultConfig.versionCode
+                def versionName = defaultConfig.versionName
+                def flavor = variant.flavorName
+                def date = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date())
+                outputFileName = "../../SubwayTooter-${flavor}-${versionCode}-${versionName}-${date}.apk"
             }
         }
     }
+
 }
 
 dependencies {
@@ -49,13 +56,13 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:support-v4:26.0.1'
-    compile 'com.android.support:appcompat-v7:26.0.1'
-    compile 'com.android.support:design:26.0.1'
-    compile 'com.android.support:customtabs:26.0.1'
+    compile 'com.android.support:support-v4:26.1.0'
+    compile 'com.android.support:appcompat-v7:26.1.0'
+    compile 'com.android.support:design:26.1.0'
+    compile 'com.android.support:customtabs:26.1.0'
 
-    compile 'com.google.firebase:firebase-core:10.2.6'
-    compile 'com.google.firebase:firebase-messaging:10.2.6'
+    compile 'com.google.firebase:firebase-core:11.4.2'
+    compile 'com.google.firebase:firebase-messaging:11.4.2'
 
 //    compile 'com.android.support.constraint:constraint-layout:1.0.2'
 
@@ -81,6 +88,10 @@ dependencies {
     compile 'com.google.android:flexbox:0.3.0'
 
     compile 'com.astuetz:pagerslidingtabstrip:1.0.1'
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
 }
 
 apply plugin: 'com.google.gms.google-services'
+repositories {
+    mavenCentral()
+}

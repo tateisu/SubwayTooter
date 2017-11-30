@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -36,7 +37,6 @@ import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootReport;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
-import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.api.entity.TootTag;
 import jp.juggler.subwaytooter.api_msp.MSPClient;
 import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
@@ -1151,13 +1151,13 @@ import jp.juggler.subwaytooter.util.Utils;
 		}
 	}
 	
-	@Nullable String parseMaxId( TootApiResult result ){
-		if( result != null && result.link_older != null ){
-			Matcher m = reMaxId.matcher( result.link_older );
-			if( m.find() ) return m.group( 1 );
-		}
-		return null;
-	}
+//	@Nullable String parseMaxId( TootApiResult result ){
+//		if( result != null && result.link_older != null ){
+//			Matcher m = reMaxId.matcher( result.link_older );
+//			if( m.find() ) return m.group( 1 );
+//		}
+//		return null;
+//	}
 	
 	@NonNull static final VersionString version_1_6 = new VersionString( "1.6" );
 	
@@ -1180,14 +1180,13 @@ import jp.juggler.subwaytooter.util.Utils;
 		list_data.clear();
 		fireShowContent();
 		
-		AsyncTask< Void, Void, TootApiResult > task = this.last_task = new AsyncTask< Void, Void, TootApiResult >() {
+		@SuppressLint("StaticFieldLeak") AsyncTask< Void, Void, TootApiResult > task = this.last_task = new AsyncTask< Void, Void, TootApiResult >() {
 			
-			TootApiResult parseAccount1( TootApiClient client, String path_base ){
+			void parseAccount1( TootApiClient client, String path_base ){
 				TootApiResult result = client.request( path_base );
 				if( result != null && result.object != null ){
 					Column.this.who_account = TootAccount.parse( context, access_info, result.object );
 				}
-				return result;
 			}
 			
 			TootInstance instance_tmp;
@@ -1205,7 +1204,7 @@ import jp.juggler.subwaytooter.util.Utils;
 			
 			ArrayList< Object > list_pinned;
 			
-			TootApiResult getStatusesPinned( TootApiClient client, String path_base ){
+			void getStatusesPinned( TootApiClient client, String path_base ){
 				TootApiResult result = client.request( path_base );
 				if( result != null && result.array != null ){
 					//
@@ -1266,7 +1265,6 @@ import jp.juggler.subwaytooter.util.Utils;
 					//					}
 				}
 				log.d( "getStatusesPinned: list size=%s", list_pinned == null ? - 1 : list_pinned.size() );
-				return result;
 			}
 			
 			ArrayList< Object > list_tmp;
@@ -1695,8 +1693,8 @@ import jp.juggler.subwaytooter.util.Utils;
 		task.executeOnExecutor( App1.task_executor );
 	}
 	
-	private static final Pattern reMaxId = Pattern.compile( "&max_id=(\\d+)" ); // より古いデータの取得に使う
-	private static final Pattern reSinceId = Pattern.compile( "&since_id=(\\d+)" ); // より新しいデータの取得に使う
+	private static final Pattern reMaxId = Pattern.compile( "[&?]max_id=(\\d+)" ); // より古いデータの取得に使う
+	private static final Pattern reSinceId = Pattern.compile( "[&?]since_id=(\\d+)" ); // より新しいデータの取得に使う
 	
 	private String max_id;
 	private String since_id;
@@ -1958,13 +1956,12 @@ import jp.juggler.subwaytooter.util.Utils;
 		bRefreshLoading = true;
 		mRefreshLoadingError = null;
 		
-		AsyncTask< Void, Void, TootApiResult > task = this.last_task = new AsyncTask< Void, Void, TootApiResult >() {
+		@SuppressLint("StaticFieldLeak") AsyncTask< Void, Void, TootApiResult > task = this.last_task = new AsyncTask< Void, Void, TootApiResult >() {
 			
-			TootApiResult parseAccount1( TootApiResult result ){
+			void parseAccount1( TootApiResult result ){
 				if( result != null ){
 					who_account = TootAccount.parse( context, access_info, result.object );
 				}
-				return result;
 			}
 			
 			TootApiResult getAccountList( TootApiClient client, String path_base ){
@@ -2616,7 +2613,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		bRefreshLoading = true;
 		mRefreshLoadingError = null;
 		
-		AsyncTask< Void, Void, TootApiResult > task = this.last_task = new AsyncTask< Void, Void, TootApiResult >() {
+		@SuppressLint("StaticFieldLeak") AsyncTask< Void, Void, TootApiResult > task = this.last_task = new AsyncTask< Void, Void, TootApiResult >() {
 			String max_id = gap.max_id;
 			String since_id = gap.since_id;
 			ArrayList< Object > list_tmp;

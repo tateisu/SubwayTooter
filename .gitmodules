@@ -1,6 +1,0 @@
-[submodule "_Emoji/emoji-data"]
-	path = _Emoji/emoji-data
-	url = git@github.com:iamcal/emoji-data.git
-[submodule "_Emoji/emojione2.x"]
-	path = _Emoji/emojione2.x
-	url = git@github.com:emojione/emojione.git

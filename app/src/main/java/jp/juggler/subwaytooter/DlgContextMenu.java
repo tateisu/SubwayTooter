@@ -99,6 +99,9 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		View btnNotificationDelete = viewRoot.findViewById( R.id.btnNotificationDelete );
 		Button btnConversationMute = viewRoot.findViewById( R.id.btnConversationMute );
 		
+		View btnHideBoost = viewRoot.findViewById( R.id.btnHideBoost );
+		View btnShowBoost = viewRoot.findViewById( R.id.btnShowBoost );
+		
 		btnStatusWebPage.setOnClickListener( this );
 		btnText.setOnClickListener( this );
 		btnFavouriteAnotherAccount.setOnClickListener( this );
@@ -124,6 +127,8 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		btnAvatarImage.setOnClickListener( this );
 		btnNotificationDelete.setOnClickListener( this );
 		btnConversationMute.setOnClickListener( this );
+		btnHideBoost.setOnClickListener( this );
+		btnShowBoost.setOnClickListener( this );
 		
 		viewRoot.findViewById( R.id.btnQuoteUrlStatus ).setOnClickListener( this );
 		viewRoot.findViewById( R.id.btnQuoteUrlAccount ).setOnClickListener( this );
@@ -272,6 +277,18 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		viewRoot.findViewById( R.id.btnNickname ).setOnClickListener( this );
 		viewRoot.findViewById( R.id.btnCancel ).setOnClickListener( this );
 		viewRoot.findViewById( R.id.btnAccountQrCode ).setOnClickListener( this );
+		
+		if( access_info.isPseudo() || who == null || !relation.getFollowing( who ) ){
+			btnHideBoost.setVisibility( View.GONE );
+			btnShowBoost.setVisibility( View.GONE );
+		}else if( relation.following_reblogs ){
+			btnHideBoost.setVisibility( View.VISIBLE );
+			btnShowBoost.setVisibility( View.GONE );
+		}else{
+			btnHideBoost.setVisibility( View.GONE );
+			btnShowBoost.setVisibility( View.VISIBLE );
+		}
+		
 		
 		String host = access_info.getAccountHost( who );
 		if( TextUtils.isEmpty( host ) || host.equals( "?" ) ){
@@ -582,6 +599,15 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		case R.id.btnProfileUnpin:
 			activity.setProfilePin( access_info, status, false );
 			break;
+			
+		case R.id.btnHideBoost:
+			activity.callFollowingReblogs( access_info,who,false);
+			break;
+
+		case R.id.btnShowBoost:
+			activity.callFollowingReblogs( access_info,who,true);
+			break;
+			
 		}
 	}
 	

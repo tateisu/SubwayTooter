@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter;
 
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
@@ -93,6 +94,7 @@ import jp.juggler.subwaytooter.view.MyEditText;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
+@SuppressLint("StaticFieldLeak")
 public class ActMain extends AppCompatActivity
 	implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, ViewPager.OnPageChangeListener, Column.Callback, DrawerLayout.DrawerListener
 {
@@ -1460,7 +1462,7 @@ public class ActMain extends AppCompatActivity
 				this.host = client.instance;
 				String client_name = Pref.pref( ActMain.this ).getString( Pref.KEY_CLIENT_NAME, "" );
 				
-				TootApiResult result = client.authorize2( client_name,code );
+				TootApiResult result = client.authorize2( client_name, code );
 				if( result != null && result.object != null ){
 					// taは使い捨てなので、生成に使うLinkClickContextはダミーで問題ない
 					LinkClickContext lcc = new LinkClickContext() {
@@ -2559,8 +2561,8 @@ public class ActMain extends AppCompatActivity
 			}
 		}
 		
-		// 操作確認が必要なら確認を出す
-		if( ! bConfirmed ){
+		// 必要なら確認を出す
+		if( bSet && ! bConfirmed ){
 			DlgConfirm.open( this, getString( R.string.confirm_boost_from, AcctColor.getNickname( access_info.acct ) ), new DlgConfirm.Callback() {
 				@Override public boolean isConfirmEnabled(){
 					return access_info.confirm_boost;
@@ -4023,6 +4025,67 @@ public class ActMain extends AppCompatActivity
 					// cancelled.
 				}else if( result.object != null ){
 					if( callback != null ) callback.onReportComplete( result );
+				}else{
+					Utils.showToast( ActMain.this, true, result.error );
+				}
+			}
+			
+		}.executeOnExecutor( App1.task_executor );
+	}
+	
+	public void callFollowingReblogs( final SavedAccount access_info, final TootAccount who, final boolean bShow ){
+		if( access_info.isMe( who ) ){
+			Utils.showToast( this, false, R.string.it_is_you );
+			return;
+		}
+		
+		new AsyncTask< Void, Void, TootApiResult >() {
+			
+			@Override protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					
+					@Override public void publishApiProgress( String s ){
+					}
+				} );
+				
+				client.setAccount( access_info );
+				
+				JSONObject content = new JSONObject(  );
+				try{
+					content.put( "reblogs", bShow);
+				}catch(Throwable ex){
+					return new TootApiResult( Utils.formatError( ex,"json encoding error" ) );
+				}
+				
+				Request.Builder request_builder = new Request.Builder().post(
+					RequestBody.create(
+						TootApiClient.MEDIA_TYPE_JSON
+						, content.toString()
+					) );
+				
+				TootApiResult result =client.request( "/api/v1/accounts/"+who.id+"/follow", request_builder );
+				if( result !=null && result.object != null ){
+					relation = TootRelationShip.parse( result.object );
+				}
+				return result;
+			}
+			
+			TootRelationShip relation ;
+			
+			@Override protected void onCancelled( TootApiResult result ){
+				super.onPostExecute( result );
+			}
+			
+			@Override protected void onPostExecute( TootApiResult result ){
+				//noinspection StatementWithEmptyBody
+				if( result == null ){
+					// cancelled.
+				}else if( relation != null ){
+					saveUserRelation( access_info,relation );
+					Utils.showToast( ActMain.this, true, R.string.operation_succeeded );
 				}else{
 					Utils.showToast( ActMain.this, true, result.error );
 				}

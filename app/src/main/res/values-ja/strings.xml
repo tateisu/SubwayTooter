@@ -813,4 +813,7 @@
     <string name="attachment_description">添付メディアの説明文</string>
     <string name="description_empty">説明文が指定されてません</string>
     <string name="attachment_description_sending">添付メディアの説明文の送信中…</string>
+    <string name="hide_boost_in_home">このユーザのブーストをホームに表示しない</string>
+    <string name="show_boost_in_home">このユーザのブーストをホームに表示する</string>
+    <string name="operation_succeeded">変更できました</string>
 </resources>

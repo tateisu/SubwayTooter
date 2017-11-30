@@ -606,6 +606,37 @@
                     />
 
                 <Button
+                    android:id="@+id/btnHideBoost"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:gravity="start|center_vertical"
+                    android:minHeight="32dp"
+                    android:paddingBottom="4dp"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+                    android:text="@string/hide_boost_in_home"
+                    android:textAllCaps="false"
+                    />
+
+                <Button
+                    android:id="@+id/btnShowBoost"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:gravity="start|center_vertical"
+                    android:minHeight="32dp"
+                    android:paddingBottom="4dp"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+                    android:text="@string/show_boost_in_home"
+                    android:textAllCaps="false"
+                    />
+
+
+                <Button
                     android:id="@+id/btnOpenTimeline"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"

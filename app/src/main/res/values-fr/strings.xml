@@ -526,7 +526,10 @@
     <string name="attachment_description">attachment description</string>
     <string name="description_empty">description is not specified.</string>
     <string name="attachment_description_sending">sending attachment description…</string>
-    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+	<string name="hide_boost_in_home">Hide boosts from this user to your home</string>
+	<string name="show_boost_in_home">Show boosts from this user to your home</string>
+	<string name="operation_succeeded">Operation succeeded.</string>
+	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

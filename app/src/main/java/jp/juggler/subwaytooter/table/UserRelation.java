@@ -25,6 +25,7 @@ public class UserRelation {
 	private static final String COL_BLOCKING = "blocking";
 	private static final String COL_MUTING = "muting";
 	private static final String COL_REQUESTED = "requested";
+	private static final String COL_FOLLOWING_REBLOGS = "following_reblogs";
 	
 	public static void onDBCreate( SQLiteDatabase db ){
 		log.d( "onDBCreate!" );
@@ -39,6 +40,7 @@ public class UserRelation {
 				+ "," + COL_BLOCKING + " integer not null"
 				+ "," + COL_MUTING + " integer not null"
 				+ "," + COL_REQUESTED + " integer not null"
+				+ "," + COL_FOLLOWING_REBLOGS + " integer not null"
 				+ ")"
 		);
 		db.execSQL(
@@ -52,6 +54,13 @@ public class UserRelation {
 	public static void onDBUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ){
 		if( oldVersion < 6 && newVersion >= 6 ){
 			onDBCreate( db );
+		}
+		if( oldVersion < 20 && newVersion >= 20 ){
+			try{
+				db.execSQL( "alter table " + table + " add column "+ COL_FOLLOWING_REBLOGS+" integer default 1" );
+			}catch( Throwable ex ){
+				log.trace( ex );
+			}
 		}
 	}
 	
@@ -77,6 +86,7 @@ public class UserRelation {
 			cv.put( COL_BLOCKING, src.blocking ? 1 : 0 );
 			cv.put( COL_MUTING, src.muting ? 1 : 0 );
 			cv.put( COL_REQUESTED, src._getRealRequested() ? 1 : 0 );
+			cv.put( COL_FOLLOWING_REBLOGS, src.following_reblogs ? 1 : 0 );
 			App1.getDB().replace( table, null, cv );
 			
 			String key = String.format( "%s:%s", db_id, src.id );
@@ -104,6 +114,7 @@ public class UserRelation {
 				cv.put( COL_BLOCKING, src.blocking ? 1 : 0 );
 				cv.put( COL_MUTING, src.muting ? 1 : 0 );
 				cv.put( COL_REQUESTED, src._getRealRequested() ? 1 : 0 );
+				cv.put( COL_FOLLOWING_REBLOGS, src.following_reblogs ? 1 : 0 );
 				db.replace( table, null, cv );
 				
 			}
@@ -128,6 +139,7 @@ public class UserRelation {
 	public boolean blocking;
 	public boolean muting;
 	private boolean requested;  // 認証ユーザからのフォローは申請中である
+	public boolean following_reblogs; // このユーザからのブーストをTLに表示する
 	
 	// 認証ユーザからのフォロー状態
 	public boolean getFollowing(@Nullable TootAccount who){
@@ -180,6 +192,7 @@ public class UserRelation {
 						dst.blocking = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_BLOCKING ) ) );
 						dst.muting = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_MUTING ) ) );
 						dst.requested = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_REQUESTED ) ) );
+						dst.following_reblogs = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_FOLLOWING_REBLOGS ) ) );
 						return dst;
 					}
 				}finally{

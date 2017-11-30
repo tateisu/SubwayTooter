@@ -19,7 +19,7 @@ public class TootRelationShip {
 	public long id;
 	
 	//	Whether the user is currently following the account
-	private  boolean following;
+	private boolean following;
 	
 	//	Whether the user is currently being followed by the account
 	public boolean followed_by;
@@ -32,6 +32,8 @@ public class TootRelationShip {
 	
 	//	Whether the user has requested to follow the account
 	private boolean requested;
+	
+	public boolean following_reblogs;
 	
 	// 認証ユーザからのフォロー状態
 	public boolean getFollowing(@NonNull TootAccount who){
@@ -67,18 +69,21 @@ public class TootRelationShip {
 			dst.id = Utils.optLongX(src, "id" );
 			
 			Object ov = src.opt("following");
-			if( ov instanceof Boolean ){
+			if( ov instanceof JSONObject ){
+				// https://github.com/tootsuite/mastodon/issues/5856
+
+				dst.following = true;
+				dst.following_reblogs = ((JSONObject)ov).optBoolean( "reblogs" );
+				
+			}else if( ov instanceof Boolean ){
 				// 2.0 まで : following はboolean
 				dst.following = (Boolean) ov;
-			}else if( ov instanceof JSONObject ){
-				// https://github.com/tootsuite/mastodon/issues/5856
-				// issueに上げられたコミット： object ?
-				dst.following = true;
+				dst.following_reblogs = dst.following;
 
-				// TODO: 2.1リリース後に reblogs: true , false に対応する
 			}else{
+
 				dst.following = false;
-				log.d("'following' is not boolean ,not object.");
+				dst.following_reblogs = false;
 			}
 
 			dst.followed_by = src.optBoolean( "followed_by" );

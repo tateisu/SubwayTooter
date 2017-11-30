@@ -517,5 +517,8 @@
     <string name="attachment_description">attachment description</string>
     <string name="description_empty">description is not specified.</string>
     <string name="attachment_description_sending">sending attachment description…</string>
+    <string name="hide_boost_in_home">Hide boosts from this user to your home</string>
+    <string name="show_boost_in_home">Show boosts from this user to your home</string>
+    <string name="operation_succeeded">Operation succeeded.</string>
 
 </resources>

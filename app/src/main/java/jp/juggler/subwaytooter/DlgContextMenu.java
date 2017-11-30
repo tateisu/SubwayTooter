@@ -278,17 +278,20 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		viewRoot.findViewById( R.id.btnCancel ).setOnClickListener( this );
 		viewRoot.findViewById( R.id.btnAccountQrCode ).setOnClickListener( this );
 		
-		if( access_info.isPseudo() || who == null || !relation.getFollowing( who ) ){
+		if( access_info.isPseudo()
+			|| who == null
+			|| ! relation.getFollowing( who )
+			|| relation.following_reblogs == UserRelation.REBLOG_UNKNOWN
+			){
 			btnHideBoost.setVisibility( View.GONE );
 			btnShowBoost.setVisibility( View.GONE );
-		}else if( relation.following_reblogs ){
+		}else if( relation.following_reblogs == UserRelation.REBLOG_SHOW ){
 			btnHideBoost.setVisibility( View.VISIBLE );
 			btnShowBoost.setVisibility( View.GONE );
 		}else{
 			btnHideBoost.setVisibility( View.GONE );
 			btnShowBoost.setVisibility( View.VISIBLE );
 		}
-		
 		
 		String host = access_info.getAccountHost( who );
 		if( TextUtils.isEmpty( host ) || host.equals( "?" ) ){
@@ -594,18 +597,27 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnProfilePin:
-			activity.setProfilePin( access_info, status, true );
+			if( status != null ){
+				activity.setProfilePin( access_info, status, true );
+			}
 			break;
+		
 		case R.id.btnProfileUnpin:
-			activity.setProfilePin( access_info, status, false );
+			if( status != null ){
+				activity.setProfilePin( access_info, status, false );
+			}
 			break;
-			
+		
 		case R.id.btnHideBoost:
-			activity.callFollowingReblogs( access_info,who,false);
+			if( who != null ){
+				activity.callFollowingReblogs( access_info, who, false );
+			}
 			break;
-
+		
 		case R.id.btnShowBoost:
-			activity.callFollowingReblogs( access_info,who,true);
+			if( who != null ){
+				activity.callFollowingReblogs( access_info, who, true );
+			}
 			break;
 			
 		}

@@ -3059,8 +3059,7 @@ public class ActMain extends AppCompatActivity
 	////////////////////////////////////////
 	// profile pin
 	
-	public void setProfilePin( @NonNull final SavedAccount access_info, final TootStatusLike status, final boolean bSet ){
-		if( status == null ) return;
+	public void setProfilePin( @NonNull final SavedAccount access_info, @NonNull final TootStatusLike status, final boolean bSet ){
 		
 		//noinspection deprecation
 		final ProgressDialog progress = new ProgressDialog( this );
@@ -4033,7 +4032,7 @@ public class ActMain extends AppCompatActivity
 		}.executeOnExecutor( App1.task_executor );
 	}
 	
-	public void callFollowingReblogs( final SavedAccount access_info, final TootAccount who, final boolean bShow ){
+	public void callFollowingReblogs( @NonNull final SavedAccount access_info, @NonNull final TootAccount who, final boolean bShow ){
 		if( access_info.isMe( who ) ){
 			Utils.showToast( this, false, R.string.it_is_you );
 			return;

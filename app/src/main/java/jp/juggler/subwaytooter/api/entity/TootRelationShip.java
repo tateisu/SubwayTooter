@@ -33,10 +33,13 @@ public class TootRelationShip {
 	//	Whether the user has requested to follow the account
 	private boolean requested;
 	
-	public boolean following_reblogs;
+	public int following_reblogs = REBLOG_UNKNOWN;
+	public static final int REBLOG_HIDE = 0;
+	public static final int REBLOG_SHOW = 1;
+	public static final int REBLOG_UNKNOWN = 2;
 	
 	// 認証ユーザからのフォロー状態
-	public boolean getFollowing(@NonNull TootAccount who){
+	public boolean getFollowing( @NonNull TootAccount who ){
 		//noinspection SimplifiableIfStatement
 		if( requested && ! following && ! who.locked ){
 			return true;
@@ -49,7 +52,7 @@ public class TootRelationShip {
 	}
 	
 	// 認証ユーザからのフォローリクエスト申請中状態
-	public boolean getRequested(@NonNull TootAccount who){
+	public boolean getRequested( @NonNull TootAccount who ){
 		//noinspection SimplifiableIfStatement
 		if( requested && ! following && ! who.locked ){
 			return false;
@@ -66,26 +69,27 @@ public class TootRelationShip {
 		if( src == null ) return null;
 		try{
 			TootRelationShip dst = new TootRelationShip();
-			dst.id = Utils.optLongX(src, "id" );
+			dst.id = Utils.optLongX( src, "id" );
 			
-			Object ov = src.opt("following");
+			Object ov = src.opt( "following" );
 			if( ov instanceof JSONObject ){
 				// https://github.com/tootsuite/mastodon/issues/5856
-
-				dst.following = true;
-				dst.following_reblogs = ((JSONObject)ov).optBoolean( "reblogs" );
 				
-			}else if( ov instanceof Boolean ){
-				// 2.0 まで : following はboolean
-				dst.following = (Boolean) ov;
-				dst.following_reblogs = dst.following;
-
+				dst.following = true;
+				
+				ov = ( (JSONObject) ov ).opt( "reblogs" );
+				if( ov instanceof Boolean ){
+					dst.following_reblogs = (Boolean) ov ? REBLOG_SHOW : REBLOG_HIDE;
+				}else{
+					dst.following_reblogs = REBLOG_UNKNOWN;
+				}
+				
 			}else{
-
-				dst.following = false;
-				dst.following_reblogs = false;
+				// 2.0 までの挙動
+				dst.following = ( ov instanceof Boolean ? (Boolean) ov : false );
+				dst.following_reblogs = REBLOG_UNKNOWN;
 			}
-
+			
 			dst.followed_by = src.optBoolean( "followed_by" );
 			dst.blocking = src.optBoolean( "blocking" );
 			dst.muting = src.optBoolean( "muting" );
@@ -97,8 +101,6 @@ public class TootRelationShip {
 			return null;
 		}
 	}
-	
-	
 	
 	public static class List extends ArrayList< TootRelationShip > {
 		public List(){

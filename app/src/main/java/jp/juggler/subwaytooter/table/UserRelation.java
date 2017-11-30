@@ -86,7 +86,7 @@ public class UserRelation {
 			cv.put( COL_BLOCKING, src.blocking ? 1 : 0 );
 			cv.put( COL_MUTING, src.muting ? 1 : 0 );
 			cv.put( COL_REQUESTED, src._getRealRequested() ? 1 : 0 );
-			cv.put( COL_FOLLOWING_REBLOGS, src.following_reblogs ? 1 : 0 );
+			cv.put( COL_FOLLOWING_REBLOGS, src.following_reblogs );
 			App1.getDB().replace( table, null, cv );
 			
 			String key = String.format( "%s:%s", db_id, src.id );
@@ -114,7 +114,7 @@ public class UserRelation {
 				cv.put( COL_BLOCKING, src.blocking ? 1 : 0 );
 				cv.put( COL_MUTING, src.muting ? 1 : 0 );
 				cv.put( COL_REQUESTED, src._getRealRequested() ? 1 : 0 );
-				cv.put( COL_FOLLOWING_REBLOGS, src.following_reblogs ? 1 : 0 );
+				cv.put( COL_FOLLOWING_REBLOGS, src.following_reblogs );
 				db.replace( table, null, cv );
 				
 			}
@@ -139,7 +139,13 @@ public class UserRelation {
 	public boolean blocking;
 	public boolean muting;
 	private boolean requested;  // 認証ユーザからのフォローは申請中である
-	public boolean following_reblogs; // このユーザからのブーストをTLに表示する
+
+	public int following_reblogs; // このユーザからのブーストをTLに表示する
+
+	@SuppressWarnings("unused")
+	public static final int REBLOG_HIDE = TootRelationShip.REBLOG_HIDE;
+	public static final int REBLOG_SHOW = TootRelationShip.REBLOG_SHOW;
+	public static final int REBLOG_UNKNOWN = TootRelationShip.REBLOG_UNKNOWN;
 	
 	// 認証ユーザからのフォロー状態
 	public boolean getFollowing(@Nullable TootAccount who){
@@ -192,7 +198,7 @@ public class UserRelation {
 						dst.blocking = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_BLOCKING ) ) );
 						dst.muting = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_MUTING ) ) );
 						dst.requested = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_REQUESTED ) ) );
-						dst.following_reblogs = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_FOLLOWING_REBLOGS ) ) );
+						dst.following_reblogs = cursor.getInt( cursor.getColumnIndex( COL_FOLLOWING_REBLOGS ) );
 						return dst;
 					}
 				}finally{

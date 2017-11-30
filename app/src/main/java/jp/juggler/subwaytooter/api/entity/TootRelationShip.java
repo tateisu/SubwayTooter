@@ -65,7 +65,22 @@ public class TootRelationShip {
 		try{
 			TootRelationShip dst = new TootRelationShip();
 			dst.id = Utils.optLongX(src, "id" );
-			dst.following = src.optBoolean( "following" );
+			
+			Object ov = src.opt("following");
+			if( ov instanceof Boolean ){
+				// 2.0 まで : following はboolean
+				dst.following = (Boolean) ov;
+			}else if( ov instanceof JSONObject ){
+				// https://github.com/tootsuite/mastodon/issues/5856
+				// issueに上げられたコミット： object ?
+				dst.following = true;
+
+				// TODO: 2.1リリース後に reblogs: true , false に対応する
+			}else{
+				dst.following = false;
+				log.d("'following' is not boolean ,not object.");
+			}
+
 			dst.followed_by = src.optBoolean( "followed_by" );
 			dst.blocking = src.optBoolean( "blocking" );
 			dst.muting = src.optBoolean( "muting" );
@@ -77,6 +92,7 @@ public class TootRelationShip {
 			return null;
 		}
 	}
+	
 	
 	
 	public static class List extends ArrayList< TootRelationShip > {

@@ -25,7 +25,14 @@ public class UserRelation {
 	private static final String COL_BLOCKING = "blocking";
 	private static final String COL_MUTING = "muting";
 	private static final String COL_REQUESTED = "requested";
+	
+	// (mastodon 2.1 or later) per-following-user setting.
+	// Whether the boosts from target account will be shown on authorized user's home TL.
 	private static final String COL_FOLLOWING_REBLOGS = "following_reblogs";
+	
+	public static final int REBLOG_HIDE = 0; // don't show the boosts from target account will be shown on authorized user's home TL.
+	public static final int REBLOG_SHOW = 1; // show the boosts from target account will be shown on authorized user's home TL.
+	public static final int REBLOG_UNKNOWN = 2; // not following, or instance don't support hide reblog.
 	
 	public static void onDBCreate( SQLiteDatabase db ){
 		log.d( "onDBCreate!" );
@@ -57,7 +64,13 @@ public class UserRelation {
 		}
 		if( oldVersion < 20 && newVersion >= 20 ){
 			try{
-				db.execSQL( "alter table " + table + " add column "+ COL_FOLLOWING_REBLOGS+" integer default 1" );
+				db.execSQL( "alter table " + table + " add column " + COL_FOLLOWING_REBLOGS + " integer default 1" );
+/*
+	(COL_FOLLOWING_REBLOGS カラムのデフォルト値について)
+	1.7.5でboolean値を保存していた関係でデフォルト値は1(REBLOG_SHOW)になってしまっている
+	1.7.6以降では3値論理にしたのでデフォルトは2(REBLOG_UNKNOWN)の方が適切だが、SQLiteにはカラムのデフォルト制約の変更を行う機能がない
+	データは適当に更新されるはずだから、今のままでも多分問題ないはず…
+ */
 			}catch( Throwable ex ){
 				log.trace( ex );
 			}
@@ -75,17 +88,18 @@ public class UserRelation {
 		}
 	}
 	
-	public static @NonNull UserRelation save1( long now, long db_id, @NonNull TootRelationShip src ){
+	public static @NonNull
+	UserRelation save1( long now, long db_id, @NonNull TootRelationShip src ){
 		try{
 			ContentValues cv = new ContentValues();
 			cv.put( COL_TIME_SAVE, now );
 			cv.put( COL_DB_ID, db_id );
 			cv.put( COL_WHO_ID, src.id );
-			cv.put( COL_FOLLOWING, src._getRealFollowing() ? 1 : 0 );
+			cv.put( COL_FOLLOWING, src.following ? 1 : 0 );
 			cv.put( COL_FOLLOWED_BY, src.followed_by ? 1 : 0 );
 			cv.put( COL_BLOCKING, src.blocking ? 1 : 0 );
 			cv.put( COL_MUTING, src.muting ? 1 : 0 );
-			cv.put( COL_REQUESTED, src._getRealRequested() ? 1 : 0 );
+			cv.put( COL_REQUESTED, src.requested ? 1 : 0 );
 			cv.put( COL_FOLLOWING_REBLOGS, src.following_reblogs );
 			App1.getDB().replace( table, null, cv );
 			
@@ -94,7 +108,7 @@ public class UserRelation {
 		}catch( Throwable ex ){
 			log.e( ex, "save failed." );
 		}
-		return load( db_id,src.id );
+		return load( db_id, src.id );
 	}
 	
 	public static void saveList( long now, long db_id, TootRelationShip.List src_list ){
@@ -109,11 +123,11 @@ public class UserRelation {
 		try{
 			for( TootRelationShip src : src_list ){
 				cv.put( COL_WHO_ID, src.id );
-				cv.put( COL_FOLLOWING, src._getRealFollowing() ? 1 : 0 );
+				cv.put( COL_FOLLOWING, src.following ? 1 : 0 );
 				cv.put( COL_FOLLOWED_BY, src.followed_by ? 1 : 0 );
 				cv.put( COL_BLOCKING, src.blocking ? 1 : 0 );
 				cv.put( COL_MUTING, src.muting ? 1 : 0 );
-				cv.put( COL_REQUESTED, src._getRealRequested() ? 1 : 0 );
+				cv.put( COL_REQUESTED, src.requested ? 1 : 0 );
 				cv.put( COL_FOLLOWING_REBLOGS, src.following_reblogs );
 				db.replace( table, null, cv );
 				
@@ -139,16 +153,11 @@ public class UserRelation {
 	public boolean blocking;
 	public boolean muting;
 	private boolean requested;  // 認証ユーザからのフォローは申請中である
-
+	
 	public int following_reblogs; // このユーザからのブーストをTLに表示する
-
-	@SuppressWarnings("unused")
-	public static final int REBLOG_HIDE = TootRelationShip.REBLOG_HIDE;
-	public static final int REBLOG_SHOW = TootRelationShip.REBLOG_SHOW;
-	public static final int REBLOG_UNKNOWN = TootRelationShip.REBLOG_UNKNOWN;
 	
 	// 認証ユーザからのフォロー状態
-	public boolean getFollowing(@Nullable TootAccount who){
+	public boolean getFollowing( @Nullable TootAccount who ){
 		//noinspection SimplifiableIfStatement
 		if( requested && ! following && who != null && ! who.locked ){
 			return true;
@@ -157,7 +166,7 @@ public class UserRelation {
 	}
 	
 	// 認証ユーザからのフォローリクエスト申請中状態
-	public boolean getRequested(@Nullable TootAccount who){
+	public boolean getRequested( @Nullable TootAccount who ){
 		//noinspection SimplifiableIfStatement
 		if( requested && ! following && who != null && ! who.locked ){
 			return false;
@@ -213,64 +222,64 @@ public class UserRelation {
 		mMemoryCache.put( key, dst );
 		return dst;
 	}
-
-//	public static Cursor createCursor(){
-//		return App1.getDB().query( table, null, null, null, null, null, COL_NAME + " asc" );
-//	}
-//
-//	public static void delete( String name ){
-//		try{
-//			App1.getDB().delete( table, COL_NAME + "=?", new String[]{ name } );
-//		}catch( Throwable ex ){
-//			log.e( ex, "delete failed." );
-//		}
-//	}
-//
-//	public static HashSet< String > getNameSet(){
-//		HashSet< String > dst = new HashSet<>();
-//		try{
-//			Cursor cursor = App1.getDB().query( table, null, null, null, null, null, null );
-//			if( cursor != null ){
-//				try{
-//					int idx_name = cursor.getColumnIndex( COL_NAME );
-//					while( cursor.moveToNext() ){
-//						String s = cursor.getString( idx_name );
-//						dst.add( s );
-//					}
-//				}finally{
-//					cursor.close();
-//				}
-//			}
-//		}catch( Throwable ex ){
-//			ex.printStackTrace();
-//		}
-//		return dst;
-//	}
-
-//	private static final String[] isMuted_projection = new String[]{COL_NAME};
-//	private static final String   isMuted_where = COL_NAME+"=?";
-//	private static final ThreadLocal<String[]> isMuted_where_arg = new ThreadLocal<String[]>() {
-//		@Override protected String[] initialValue() {
-//			return new String[1];
-//		}
-//	};
-//	public static boolean isMuted( String app_name ){
-//		if( app_name == null ) return false;
-//		try{
-//			String[] where_arg = isMuted_where_arg.get();
-//			where_arg[0] = app_name;
-//			Cursor cursor = App1.getDB().query( table, isMuted_projection,isMuted_where , where_arg, null, null, null );
-//			try{
-//				if( cursor.moveToFirst() ){
-//					return true;
-//				}
-//			}finally{
-//				cursor.close();
-//			}
-//		}catch( Throwable ex ){
-//			log.e( ex, "load failed." );
-//		}
-//		return false;
-//	}
+	
+	//	public static Cursor createCursor(){
+	//		return App1.getDB().query( table, null, null, null, null, null, COL_NAME + " asc" );
+	//	}
+	//
+	//	public static void delete( String name ){
+	//		try{
+	//			App1.getDB().delete( table, COL_NAME + "=?", new String[]{ name } );
+	//		}catch( Throwable ex ){
+	//			log.e( ex, "delete failed." );
+	//		}
+	//	}
+	//
+	//	public static HashSet< String > getNameSet(){
+	//		HashSet< String > dst = new HashSet<>();
+	//		try{
+	//			Cursor cursor = App1.getDB().query( table, null, null, null, null, null, null );
+	//			if( cursor != null ){
+	//				try{
+	//					int idx_name = cursor.getColumnIndex( COL_NAME );
+	//					while( cursor.moveToNext() ){
+	//						String s = cursor.getString( idx_name );
+	//						dst.add( s );
+	//					}
+	//				}finally{
+	//					cursor.close();
+	//				}
+	//			}
+	//		}catch( Throwable ex ){
+	//			ex.printStackTrace();
+	//		}
+	//		return dst;
+	//	}
+	
+	//	private static final String[] isMuted_projection = new String[]{COL_NAME};
+	//	private static final String   isMuted_where = COL_NAME+"=?";
+	//	private static final ThreadLocal<String[]> isMuted_where_arg = new ThreadLocal<String[]>() {
+	//		@Override protected String[] initialValue() {
+	//			return new String[1];
+	//		}
+	//	};
+	//	public static boolean isMuted( String app_name ){
+	//		if( app_name == null ) return false;
+	//		try{
+	//			String[] where_arg = isMuted_where_arg.get();
+	//			where_arg[0] = app_name;
+	//			Cursor cursor = App1.getDB().query( table, isMuted_projection,isMuted_where , where_arg, null, null, null );
+	//			try{
+	//				if( cursor.moveToFirst() ){
+	//					return true;
+	//				}
+	//			}finally{
+	//				cursor.close();
+	//			}
+	//		}catch( Throwable ex ){
+	//			log.e( ex, "load failed." );
+	//		}
+	//		return false;
+	//	}
 	
 }

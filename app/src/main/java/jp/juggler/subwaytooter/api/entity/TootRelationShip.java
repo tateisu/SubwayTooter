@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -15,54 +16,29 @@ public class TootRelationShip {
 	
 	private static final LogCategory log = new LogCategory( "TootRelationShip" );
 	
-	//	Target account id
+	// Target account id
 	public long id;
 	
-	//	Whether the user is currently following the account
-	private boolean following;
+	// Whether the authorized user is currently following the target account.
+	// maybe faked in response of follow-request.
+	public boolean following;
 	
-	//	Whether the user is currently being followed by the account
+	// Whether the authorized user is currently being followed by the target account.
 	public boolean followed_by;
 	
-	//	Whether the user is currently blocking the account
+	// Whether the authorized user is currently blocking the target account.
 	public boolean blocking;
 	
-	//	Whether the user is currently muting the account
+	// Whether the authorized user is currently muting the target account.
 	public boolean muting;
 	
-	//	Whether the user has requested to follow the account
-	private boolean requested;
+	// Whether the authorized user has requested to follow the target account.
+	// maybe true while follow-request is progress on server, even if the user is not locked.
+	public boolean requested;
 	
-	public int following_reblogs = REBLOG_UNKNOWN;
-	public static final int REBLOG_HIDE = 0;
-	public static final int REBLOG_SHOW = 1;
-	public static final int REBLOG_UNKNOWN = 2;
-	
-	// 認証ユーザからのフォロー状態
-	public boolean getFollowing( @NonNull TootAccount who ){
-		//noinspection SimplifiableIfStatement
-		if( requested && ! following && ! who.locked ){
-			return true;
-		}
-		return following;
-	}
-	
-	public boolean _getRealFollowing(){
-		return following;
-	}
-	
-	// 認証ユーザからのフォローリクエスト申請中状態
-	public boolean getRequested( @NonNull TootAccount who ){
-		//noinspection SimplifiableIfStatement
-		if( requested && ! following && ! who.locked ){
-			return false;
-		}
-		return requested;
-	}
-	
-	public boolean _getRealRequested(){
-		return requested;
-	}
+	// (mastodon 2.1 or later) per-following-user setting.
+	// Whether the boosts from target account will be shown on authorized user's home TL.
+	public int following_reblogs = UserRelation.REBLOG_UNKNOWN;
 	
 	@Nullable
 	public static TootRelationShip parse( JSONObject src ){
@@ -79,15 +55,15 @@ public class TootRelationShip {
 				
 				ov = ( (JSONObject) ov ).opt( "reblogs" );
 				if( ov instanceof Boolean ){
-					dst.following_reblogs = (Boolean) ov ? REBLOG_SHOW : REBLOG_HIDE;
+					dst.following_reblogs = (Boolean) ov ? UserRelation.REBLOG_SHOW : UserRelation.REBLOG_HIDE;
 				}else{
-					dst.following_reblogs = REBLOG_UNKNOWN;
+					dst.following_reblogs = UserRelation.REBLOG_UNKNOWN;
 				}
 				
 			}else{
 				// 2.0 までの挙動
 				dst.following = ( ov instanceof Boolean ? (Boolean) ov : false );
-				dst.following_reblogs = REBLOG_UNKNOWN;
+				dst.following_reblogs = UserRelation.REBLOG_UNKNOWN;
 			}
 			
 			dst.followed_by = src.optBoolean( "followed_by" );

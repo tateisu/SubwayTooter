@@ -100,7 +100,7 @@ public class UserRelation {
 			cv.put( COL_BLOCKING, src.blocking ? 1 : 0 );
 			cv.put( COL_MUTING, src.muting ? 1 : 0 );
 			cv.put( COL_REQUESTED, src.requested ? 1 : 0 );
-			cv.put( COL_FOLLOWING_REBLOGS, src.following_reblogs );
+			cv.put( COL_FOLLOWING_REBLOGS, src.showing_reblogs );
 			App1.getDB().replace( table, null, cv );
 			
 			String key = String.format( "%s:%s", db_id, src.id );
@@ -128,7 +128,7 @@ public class UserRelation {
 				cv.put( COL_BLOCKING, src.blocking ? 1 : 0 );
 				cv.put( COL_MUTING, src.muting ? 1 : 0 );
 				cv.put( COL_REQUESTED, src.requested ? 1 : 0 );
-				cv.put( COL_FOLLOWING_REBLOGS, src.following_reblogs );
+				cv.put( COL_FOLLOWING_REBLOGS, src.showing_reblogs );
 				db.replace( table, null, cv );
 				
 			}

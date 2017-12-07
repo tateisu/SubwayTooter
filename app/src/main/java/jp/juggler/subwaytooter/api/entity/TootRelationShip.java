@@ -38,7 +38,9 @@ public class TootRelationShip {
 	
 	// (mastodon 2.1 or later) per-following-user setting.
 	// Whether the boosts from target account will be shown on authorized user's home TL.
-	public int following_reblogs = UserRelation.REBLOG_UNKNOWN;
+	public int showing_reblogs = UserRelation.REBLOG_UNKNOWN;
+	
+	
 	
 	@Nullable
 	public static TootRelationShip parse( JSONObject src ){
@@ -50,20 +52,28 @@ public class TootRelationShip {
 			Object ov = src.opt( "following" );
 			if( ov instanceof JSONObject ){
 				// https://github.com/tootsuite/mastodon/issues/5856
+				// 一部の開発版ではこうなっていた
 				
 				dst.following = true;
 				
 				ov = ( (JSONObject) ov ).opt( "reblogs" );
 				if( ov instanceof Boolean ){
-					dst.following_reblogs = (Boolean) ov ? UserRelation.REBLOG_SHOW : UserRelation.REBLOG_HIDE;
+					dst.showing_reblogs = (Boolean) ov ? UserRelation.REBLOG_SHOW : UserRelation.REBLOG_HIDE;
 				}else{
-					dst.following_reblogs = UserRelation.REBLOG_UNKNOWN;
+					dst.showing_reblogs = UserRelation.REBLOG_UNKNOWN;
 				}
 				
 			}else{
 				// 2.0 までの挙動
 				dst.following = ( ov instanceof Boolean ? (Boolean) ov : false );
-				dst.following_reblogs = UserRelation.REBLOG_UNKNOWN;
+				
+				// 2.1 の挙動
+				ov = src.opt( "showing_reblogs" );
+				if( dst.following && ov instanceof Boolean ){
+					dst.showing_reblogs = (Boolean) ov ? UserRelation.REBLOG_SHOW : UserRelation.REBLOG_HIDE;
+				}else{
+					dst.showing_reblogs = UserRelation.REBLOG_UNKNOWN;
+				}
 			}
 			
 			dst.followed_by = src.optBoolean( "followed_by" );

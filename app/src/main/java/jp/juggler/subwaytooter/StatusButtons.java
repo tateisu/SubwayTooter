@@ -189,13 +189,13 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			if( status == null || status.account == null ){
 				// 何もしない
 			}else if( access_info.isPseudo() ){
-				activity.openFollowFromAnotherAccount( access_info, status.account );
+				activity.openFollowFromAnotherAccount( activity.nextPosition( column ), access_info, status.account );
 			}else if( relation.blocking || relation.muting ){
 				// 何もしない
 			}else if( relation.getFollowing( status.account ) || relation.getRequested( status.account ) ){
-				activity.callFollow( access_info, status.account, false, false, activity.unfollow_complete_callback );
+				activity.callFollow( activity.nextPosition( column ), access_info, status.account, false,  activity.unfollow_complete_callback );
 			}else{
-				activity.callFollow( access_info, status.account, true, false, activity.follow_complete_callback );
+				activity.callFollow( activity.nextPosition( column ), access_info, status.account, true,  activity.follow_complete_callback );
 			}
 			break;
 		}
@@ -219,7 +219,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnFollow2:
 			if( status != null ){
-				activity.openFollowFromAnotherAccount( access_info, status.account );
+				activity.openFollowFromAnotherAccount( activity.nextPosition( column ), access_info, status.account );
 			}
 			break;
 		

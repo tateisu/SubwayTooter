@@ -60,7 +60,6 @@ import jp.juggler.subwaytooter.util.Utils;
 @SuppressWarnings("WeakerAccess") public class Column implements StreamReader.Callback {
 	private static final LogCategory log = new LogCategory( "Column" );
 	
-	
 	interface Callback {
 		boolean isActivityStart();
 	}
@@ -749,7 +748,7 @@ import jp.juggler.subwaytooter.util.Utils;
 					if( item.status.reblog != null && item.status.reblog.account != null && item.status.reblog.account.id == who_id )
 						continue;
 				}
-			}else if( o instanceof  TootAccount ){
+			}else if( o instanceof TootAccount ){
 				TootAccount item = (TootAccount) o;
 				if( item.id == who_id ) continue;
 			}
@@ -1749,7 +1748,7 @@ import jp.juggler.subwaytooter.util.Utils;
 					}
 				}finally{
 					try{
-						updateRelation( client, list_tmp );
+						updateRelation( client, list_tmp, who_account );
 					}catch( Throwable ex ){
 						log.trace( ex );
 					}
@@ -1850,164 +1849,132 @@ import jp.juggler.subwaytooter.util.Utils;
 		return path;
 	}
 	
-	private void updateRelation( TootApiClient client, ArrayList< Object > list_tmp ){
-		if( list_tmp == null || list_tmp.isEmpty() ) return;
-		if( access_info.isPseudo() ) return;
-		
+	private class UpdateRelationEnv {
 		HashSet< Long > who_set = new HashSet<>();
 		HashSet< String > acct_set = new HashSet<>();
 		HashSet< String > tag_set = new HashSet<>();
-		{
-			TootAccount a;
-			TootStatus s;
-			TootNotification n;
+		
+		void add( @Nullable TootAccount a ){
+			if( a == null ) return;
+			who_set.add( a.id );
+			acct_set.add( "@" + access_info.getFullAcct( a ) );
+			//
+			add( a.moved );
+		}
+		
+		void add( @Nullable TootStatus s ){
+			if( s==null) return;
+			add( s.account );
+			add( s.reblog );
+			//
+			if( s.tags != null ){
+				for( TootTag tag : s.tags ){
+					tag_set.add( tag.name );
+				}
+			}
+		}
+		
+		void add( @Nullable TootNotification n ){
+			if( n == null ) return;
+			add( n.account );
+			add( n.status );
+		}
+		
+		void update(@NonNull TootApiClient client){
+			int size = who_set.size();
+			if( size > 0 ){
+				long[] who_list = new long[ size ];
+				{
+					int n = 0;
+					for( Long l : who_set ){
+						who_list[ n++ ] = l;
+					}
+				}
+				
+				long now = System.currentTimeMillis();
+				int n = 0;
+				while( n < size ){
+					StringBuilder sb = new StringBuilder();
+					sb.append( "/api/v1/accounts/relationships" );
+					for( int i = 0 ; i < RELATIONSHIP_LOAD_STEP ; ++ i ){
+						if( n >= size ) break;
+						sb.append( i == 0 ? '?' : '&' );
+						sb.append( "id[]=" );
+						sb.append( Long.toString( who_list[ n++ ] ) );
+					}
+					TootApiResult result = client.request( sb.toString() );
+					if( result == null ){
+						// cancelled.
+						break;
+					}else if( result.array != null ){
+						TootRelationShip.List list = TootRelationShip.parseList( result.array );
+						UserRelation.saveList( now, access_info.db_id, list );
+					}
+				}
+				log.d( "updateRelation: update %d relations.", n );
+				
+			}
+			size = acct_set.size();
+			if( size > 0 ){
+				String[] acct_list = new String[ size ];
+				{
+					int n = 0;
+					for( String l : acct_set ){
+						acct_list[ n++ ] = l;
+					}
+				}
+				long now = System.currentTimeMillis();
+				int n = 0;
+				while( n < size ){
+					int length = size - n;
+					if( length > ACCT_DB_STEP ) length = ACCT_DB_STEP;
+					AcctSet.saveList( now, acct_list, n, length );
+					n += length;
+				}
+				log.d( "updateRelation: update %d acct.", n );
+				
+			}
+			size = tag_set.size();
+			if( size > 0 ){
+				String[] tag_list = new String[ size ];
+				{
+					int n = 0;
+					for( String l : tag_set ){
+						tag_list[ n++ ] = l;
+					}
+				}
+				long now = System.currentTimeMillis();
+				int n = 0;
+				while( n < size ){
+					int length = size - n;
+					if( length > ACCT_DB_STEP ) length = ACCT_DB_STEP;
+					TagSet.saveList( now, tag_list, n, length );
+					n += length;
+				}
+				log.d( "updateRelation: update %d tag.", n );
+			}
+		}
+	}
+	
+	private void updateRelation( @NonNull TootApiClient client, @Nullable ArrayList< Object > list_tmp, @Nullable TootAccount who ){
+		if( access_info.isPseudo() ) return;
+		
+		UpdateRelationEnv env = new UpdateRelationEnv();
+		
+		env.add( who );
+		
+		if( list_tmp != null ){
 			for( Object o : list_tmp ){
 				if( o instanceof TootAccount ){
-					a = (TootAccount) o;
-					who_set.add( a.id );
-					acct_set.add( "@" + access_info.getFullAcct( a ) );
+					env.add( (TootAccount) o );
 				}else if( o instanceof TootStatus ){
-					s = (TootStatus) o;
-					if( s.tags != null ){
-						for( TootTag tag : s.tags ){
-							tag_set.add( tag.name );
-						}
-					}
-					a = s.account;
-					if( a != null ){
-						who_set.add( a.id );
-						acct_set.add( "@" + access_info.getFullAcct( a ) );
-					}
-					s = s.reblog;
-					if( s != null ){
-						
-						if( s.tags != null ){
-							for( TootTag tag : s.tags ){
-								tag_set.add( tag.name );
-							}
-						}
-						
-						a = s.account;
-						if( a != null ){
-							who_set.add( a.id );
-							acct_set.add( "@" + access_info.getFullAcct( a ) );
-						}
-					}
+					env.add( (TootStatus) o );
 				}else if( o instanceof TootNotification ){
-					n = (TootNotification) o;
-					//
-					a = n.account;
-					if( a != null ){
-						who_set.add( a.id );
-						acct_set.add( "@" + access_info.getFullAcct( a ) );
-					}
-					//
-					s = n.status;
-					if( s != null ){
-						
-						if( s.tags != null ){
-							for( TootTag tag : s.tags ){
-								tag_set.add( tag.name );
-							}
-						}
-						
-						a = s.account;
-						if( a != null ){
-							who_set.add( a.id );
-							acct_set.add( "@" + access_info.getFullAcct( a ) );
-						}
-						s = s.reblog;
-						if( s != null ){
-							
-							if( s.tags != null ){
-								for( TootTag tag : s.tags ){
-									tag_set.add( tag.name );
-								}
-							}
-							
-							a = s.account;
-							if( a != null ){
-								who_set.add( a.id );
-								acct_set.add( "@" + access_info.getFullAcct( a ) );
-							}
-						}
-					}
+					env.add( (TootNotification) o );
 				}
 			}
 		}
-		int size = who_set.size();
-		if( size > 0 ){
-			long[] who_list = new long[ size ];
-			{
-				int n = 0;
-				for( Long l : who_set ){
-					who_list[ n++ ] = l;
-				}
-			}
-			
-			long now = System.currentTimeMillis();
-			int n = 0;
-			while( n < size ){
-				StringBuilder sb = new StringBuilder();
-				sb.append( "/api/v1/accounts/relationships" );
-				for( int i = 0 ; i < RELATIONSHIP_LOAD_STEP ; ++ i ){
-					if( n >= size ) break;
-					sb.append( i == 0 ? '?' : '&' );
-					sb.append( "id[]=" );
-					sb.append( Long.toString( who_list[ n++ ] ) );
-				}
-				TootApiResult result = client.request( sb.toString() );
-				if( result == null ){
-					// cancelled.
-					break;
-				}else if( result.array != null ){
-					TootRelationShip.List list = TootRelationShip.parseList( result.array );
-					UserRelation.saveList( now, access_info.db_id, list );
-				}
-			}
-			log.d( "updateRelation: update %d relations.", n );
-			
-		}
-		size = acct_set.size();
-		if( size > 0 ){
-			String[] acct_list = new String[ size ];
-			{
-				int n = 0;
-				for( String l : acct_set ){
-					acct_list[ n++ ] = l;
-				}
-			}
-			long now = System.currentTimeMillis();
-			int n = 0;
-			while( n < size ){
-				int length = size - n;
-				if( length > ACCT_DB_STEP ) length = ACCT_DB_STEP;
-				AcctSet.saveList( now, acct_list, n, length );
-				n += length;
-			}
-			log.d( "updateRelation: update %d acct.", n );
-			
-		}
-		size = tag_set.size();
-		if( size > 0 ){
-			String[] tag_list = new String[ size ];
-			{
-				int n = 0;
-				for( String l : tag_set ){
-					tag_list[ n++ ] = l;
-				}
-			}
-			long now = System.currentTimeMillis();
-			int n = 0;
-			while( n < size ){
-				int length = size - n;
-				if( length > ACCT_DB_STEP ) length = ACCT_DB_STEP;
-				TagSet.saveList( now, tag_list, n, length );
-				n += length;
-			}
-			log.d( "updateRelation: update %d tag.", n );
-			
-		}
+		env.update(client);
 	}
 	
 	void startRefreshForPost( long status_id, int refresh_after_toot ){
@@ -2072,7 +2039,8 @@ import jp.juggler.subwaytooter.util.Utils;
 		
 		@SuppressLint("StaticFieldLeak") AsyncTask< Void, Void, TootApiResult > task = this.last_task = new AsyncTask< Void, Void, TootApiResult >() {
 			
-			void parseAccount1( TootApiResult result ){
+			void parseAccount1( TootApiClient client, String path ){
+				TootApiResult result = client.request( path );
 				if( result != null ){
 					who_account = TootAccount.parse( context, access_info, result.object );
 				}
@@ -2084,7 +2052,6 @@ import jp.juggler.subwaytooter.util.Utils;
 					Column.this.list_info = TootList.parse( result.object );
 				}
 			}
-			
 			
 			TootApiResult getAccountList( TootApiClient client, String path_base ){
 				long time_start = SystemClock.elapsedRealtime();
@@ -2584,10 +2551,9 @@ import jp.juggler.subwaytooter.util.Utils;
 					
 					case TYPE_PROFILE:
 						if( who_account == null ){
-							parseAccount1( client.request(
-								String.format( Locale.JAPAN, PATH_ACCOUNT, profile_id ) ) );
-							
+							parseAccount1( client, String.format( Locale.JAPAN, PATH_ACCOUNT, profile_id ) );
 							client.callback.publishApiProgress( "" );
+							
 						}
 						switch( profile_tab ){
 						
@@ -2688,7 +2654,7 @@ import jp.juggler.subwaytooter.util.Utils;
 					}
 				}finally{
 					try{
-						updateRelation( client, list_tmp );
+						updateRelation( client, list_tmp, who_account );
 					}catch( Throwable ex ){
 						log.trace( ex );
 					}
@@ -3104,7 +3070,7 @@ import jp.juggler.subwaytooter.util.Utils;
 					}
 				}finally{
 					try{
-						updateRelation( client, list_tmp );
+						updateRelation( client, list_tmp, who_account );
 					}catch( Throwable ex ){
 						log.trace( ex );
 					}
@@ -3649,20 +3615,21 @@ import jp.juggler.subwaytooter.util.Utils;
 	}
 	
 	public @NonNull String getListTitle(){
-		switch(column_type){
+		switch( column_type ){
 		default:
 			return "?";
-			
+		
 		case TYPE_LIST_MEMBER:
 		case TYPE_LIST_TL:
 			String sv = list_info == null ? null : list_info.title;
-			return !TextUtils.isEmpty( sv ) ? sv : Long.toString( profile_id );
+			return ! TextUtils.isEmpty( sv ) ? sv : Long.toString( profile_id );
 		}
 	}
+	
 	public long getListId(){
-		switch(column_type){
+		switch( column_type ){
 		default:
-			return -1L;
+			return - 1L;
 		
 		case TYPE_LIST_MEMBER:
 		case TYPE_LIST_TL:

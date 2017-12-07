@@ -549,4 +549,8 @@
     <string name="cant_add_list_follow_failed">Can\'t add user to list:\nfollow operation failed.</string>
     <string name="list_member_added">User has been added to the list.</string>
     <string name="confirm_mute_notification_for_user">Mute notification from this user</string>
+    <string name="account_moved_to">%1$s has moved to:</string>
+    <string name="jump_moved_user">%1$s has been moved. Would you like to check %2$s ?</string>
+    <string name="ignore_suggestion">ignore suggestion</string>
+
 </resources>

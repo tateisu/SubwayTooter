@@ -1,5 +1,7 @@
 package jp.juggler.subwaytooter;
 
+import android.support.annotation.NonNull;
+import android.support.v4.view.ViewCompat;
 import android.text.Spannable;
 import android.view.View;
 import android.widget.Button;
@@ -10,11 +12,13 @@ import android.widget.TextView;
 
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.EmojiDecoder;
 import jp.juggler.subwaytooter.util.EmojiMap201709;
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator;
+import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
 import jp.juggler.subwaytooter.view.MyNetworkImageView;
 
@@ -38,6 +42,19 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 	
 	private TootAccount who;
 	
+	private TootAccount who_moved;
+	
+	private final View llMoved;
+	private final TextView tvMoved;
+	private final MyNetworkImageView ivMoved;
+	private final TextView tvMovedName;
+	private final TextView tvMovedAcct;
+	private final ImageButton btnMoved;
+	private final ImageView ivMovedBy;
+	private final NetworkEmojiInvalidator moved_caption_invalidator;
+	private final NetworkEmojiInvalidator moved_name_invalidator;
+	
+	
 	HeaderViewHolderProfile( ActMain arg_activity, Column column, ListView parent ){
 		super( arg_activity, column
 			, arg_activity.getLayoutInflater().inflate( R.layout.lv_header_account, parent, false )
@@ -58,6 +75,15 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 		ivFollowedBy = viewRoot.findViewById( R.id.ivFollowedBy );
 		tvRemoteProfileWarning = viewRoot.findViewById( R.id.tvRemoteProfileWarning );
 		
+		llMoved = viewRoot.findViewById( R.id.llMoved );
+		tvMoved = viewRoot.findViewById( R.id.tvMoved );
+		ivMoved = viewRoot.findViewById( R.id.ivMoved );
+		tvMovedName = viewRoot.findViewById( R.id.tvMovedName );
+		tvMovedAcct = viewRoot.findViewById( R.id.tvMovedAcct );
+		btnMoved = viewRoot.findViewById( R.id.btnMoved );
+		ivMovedBy = viewRoot.findViewById( R.id.ivMovedBy );
+		
+		
 		ivBackground.setOnClickListener( this );
 		btnFollowing.setOnClickListener( this );
 		btnFollowers.setOnClickListener( this );
@@ -65,13 +91,29 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 		btnMore.setOnClickListener( this );
 		btnFollow.setOnClickListener( this );
 		tvRemoteProfileWarning.setOnClickListener( this );
+
+		btnMoved.setOnClickListener( this );
+		llMoved.setOnClickListener( this );
 		
+		btnMoved.setOnLongClickListener( this );
 		btnFollow.setOnLongClickListener( this );
 		
 		tvNote.setMovementMethod( MyLinkMovementMethod.getInstance() );
 		
-		name_invalidator = new NetworkEmojiInvalidator( activity.handler, tvAcct );
+		name_invalidator = new NetworkEmojiInvalidator( activity.handler, tvDisplayName );
 		note_invalidator = new NetworkEmojiInvalidator( activity.handler, tvNote );
+		moved_caption_invalidator = new NetworkEmojiInvalidator( activity.handler, tvMoved );
+		moved_name_invalidator = new NetworkEmojiInvalidator( activity.handler, tvMovedName );
+		
+		if( ! Float.isNaN( activity.timeline_font_size_sp ) ){
+			tvMovedName.setTextSize( activity.timeline_font_size_sp );
+			tvMoved.setTextSize( activity.timeline_font_size_sp );
+		}
+		
+		if( ! Float.isNaN( activity.acct_font_size_sp ) ){
+			tvMovedAcct.setTextSize( activity.acct_font_size_sp );
+			tvCreated.setTextSize( activity.acct_font_size_sp );
+		}
 	}
 	
 	void showColor(){
@@ -88,6 +130,9 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 		this.who = column.who_account;
 		
 		showColor();
+		
+		llMoved.setVisibility( View.GONE );
+		tvMovedAcct.setVisibility( View.GONE );
 		
 		if( who == null ){
 			tvCreated.setText( "" );
@@ -114,6 +159,8 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 
 			ivAvatar.setImageUrl( activity.pref, 16f, access_info.supplyBaseUrl( who.avatar_static ), access_info.supplyBaseUrl( who.avatar ) );
 			
+			tvAcct.setText( access_info.getFullAcct( who ) );
+			
 			Spannable name =who.decoded_display_name ;
 			tvDisplayName.setText( name );
 			name_invalidator.register( name );
@@ -135,8 +182,51 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 			
 			UserRelation relation = UserRelation.load( access_info.db_id, who.id );
 			Styler.setFollowIcon( activity, btnFollow, ivFollowedBy, relation ,who );
+			
+			if( who.moved != null ){
+				showMoved(who, who.moved);
+			}
 		}
 	}
+	
+	private void showMoved( @NonNull TootAccount who, @NonNull TootAccount who_moved ){
+		this.who_moved = who_moved;
+		
+		llMoved.setVisibility( View.VISIBLE );
+		tvMoved.setVisibility( View.VISIBLE );
+		
+		Spannable caption = Utils.formatSpannable1( activity, R.string.account_moved_to , who.decodeDisplayName( activity ));
+		tvMoved.setText( caption);
+		moved_caption_invalidator.register( caption );
+
+		ivMoved.getLayoutParams().width = activity.mAvatarIconSize;
+		ivMoved.setImageUrl( activity.pref, 16f, access_info.supplyBaseUrl( who_moved.avatar_static ) );
+
+		tvMovedName.setText( who_moved.decoded_display_name );
+		moved_name_invalidator.register( who_moved.decoded_display_name );
+		
+		setAcct( tvMovedAcct, access_info.getFullAcct( who_moved ), who_moved.acct );
+		
+		UserRelation relation = UserRelation.load( access_info.db_id, who_moved.id );
+		Styler.setFollowIcon( activity, btnMoved, ivMovedBy, relation, who_moved );
+	}
+	
+	private void setAcct( @NonNull TextView tv, @NonNull String acctLong, @NonNull String acctShort ){
+		AcctColor ac = AcctColor.load( acctLong );
+		tv.setText( AcctColor.hasNickname( ac ) ? ac.nickname : activity.mShortAcctLocalUser ? "@" + acctShort : acctLong );
+		
+		int acct_color = column.acct_color != 0 ? column.acct_color : Styler.getAttributeColor( activity, R.attr.colorTimeSmall );
+		tv.setTextColor( AcctColor.hasColorForeground( ac ) ? ac.color_fg : acct_color );
+		
+		if( AcctColor.hasColorBackground( ac ) ){
+			tv.setBackgroundColor( ac.color_bg );
+		}else{
+			ViewCompat.setBackground( tv, null );
+		}
+		tv.setPaddingRelative( activity.acct_pad_lr, 0, activity.acct_pad_lr, 0 );
+		
+	}
+	
 	
 	@Override
 	public void onClick( View v ){
@@ -181,13 +271,31 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 			}
 			break;
 			
+		case R.id.btnMoved:
+			if( who_moved != null ){
+				new DlgContextMenu( activity, column, who_moved, null, null ).show();
+			}
+			break;
+		
+		case R.id.llMoved:
+			if( access_info.isPseudo() ){
+				new DlgContextMenu( activity, column, who_moved, null, null ).show();
+			}else{
+				activity.openProfile( activity.nextPosition( column ), access_info, who_moved );
+			}
+			break;
 		}
 	}
 	
 	@Override public boolean onLongClick( View v ){
 		switch( v.getId() ){
+
 		case R.id.btnFollow:
-			activity.openFollowFromAnotherAccount( access_info, who );
+			activity.openFollowFromAnotherAccount( activity.nextPosition( column),access_info, who );
+			return true;
+
+		case R.id.btnMoved:
+			activity.openFollowFromAnotherAccount( activity.nextPosition( column),access_info, who_moved );
 			return true;
 		}
 		

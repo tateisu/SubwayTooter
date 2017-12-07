@@ -3329,15 +3329,48 @@ public class ActMain extends AppCompatActivity
 		return rr;
 	}
 	
-	void callFollow(
-		@NonNull final SavedAccount access_info
+	public void callFollow(
+		int pos
+		, @NonNull final SavedAccount access_info
 		, @NonNull final TootAccount who
 		, final boolean bFollow
-		, boolean bConfirmed
+		, @Nullable final RelationChangedCallback callback
+	){
+			callFollow( pos ,access_info,who,bFollow,false,false,callback );
+	}
+
+	private void callFollow(
+		final int pos
+		, @NonNull final SavedAccount access_info
+		, @NonNull final TootAccount who
+		, final boolean bFollow
+		,  final boolean bConfirmMoved
+		, final  boolean bConfirmed
 		, @Nullable final RelationChangedCallback callback
 	){
 		if( access_info.isMe( who ) ){
 			Utils.showToast( this, false, R.string.it_is_you );
+			return;
+		}
+		
+		if( ! bConfirmMoved && bFollow && who.moved != null ){
+			new AlertDialog.Builder( this )
+				.setMessage( getString( R.string.jump_moved_user
+					, access_info.getFullAcct( who )
+					, access_info.getFullAcct( who.moved )
+				) )
+				.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
+					@Override public void onClick( DialogInterface dialog, int which ){
+						openProfileFromAnotherAccount( pos,access_info,who.moved );
+					}
+				} )
+				.setNeutralButton( R.string.ignore_suggestion, new DialogInterface.OnClickListener() {
+					@Override public void onClick( DialogInterface dialog, int which ){
+						callFollow( pos, access_info, who, true, true, false, callback );
+					}
+				} )
+				.setNegativeButton( android.R.string.cancel,null)
+				.show();
 			return;
 		}
 		
@@ -3358,7 +3391,7 @@ public class ActMain extends AppCompatActivity
 						
 						@Override public void onOK(){
 							//noinspection ConstantConditions
-							callFollow( access_info, who, bFollow, true, callback );
+							callFollow( pos,access_info, who, bFollow, bConfirmMoved, true, callback );
 						}
 					}
 				);
@@ -3384,7 +3417,7 @@ public class ActMain extends AppCompatActivity
 						
 						@Override public void onOK(){
 							//noinspection ConstantConditions
-							callFollow( access_info, who, bFollow, true, callback );
+							callFollow( pos, access_info, who, bFollow, bConfirmMoved, true, callback );
 						}
 					}
 				);
@@ -3405,7 +3438,7 @@ public class ActMain extends AppCompatActivity
 						
 						@Override public void onOK(){
 							//noinspection ConstantConditions
-							callFollow( access_info, who, bFollow, true, callback );
+							callFollow( pos, access_info, who, bFollow, bConfirmMoved,true, callback );
 						}
 					}
 				);
@@ -3515,7 +3548,17 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	// acct で指定したユーザをリモートフォローする
-	void callRemoteFollow(
+	private void callRemoteFollow(
+		@NonNull final SavedAccount access_info
+		, @NonNull final String acct
+		, final boolean locked
+		, @Nullable final RelationChangedCallback callback
+	){
+		callRemoteFollow( access_info, acct,locked,false,callback);
+	}
+
+	// acct で指定したユーザをリモートフォローする
+	private void callRemoteFollow(
 		@NonNull final SavedAccount access_info
 		, @NonNull final String acct
 		, final boolean locked
@@ -4391,18 +4434,42 @@ public class ActMain extends AppCompatActivity
 	//		if( status == null ) return;
 	//		openFollowFromAnotherAccount( access_info, status.account );
 	//	}
+	void openFollowFromAnotherAccount( int pos,@NonNull SavedAccount access_info, @Nullable final TootAccount account ){
+		openFollowFromAnotherAccount( pos,access_info,  account ,false);
+	}
 	
-	void openFollowFromAnotherAccount( @NonNull SavedAccount access_info, @Nullable final TootAccount account ){
+	void openFollowFromAnotherAccount( final int pos,@NonNull final SavedAccount access_info, @Nullable final TootAccount account ,final boolean bConfirmMoved ){
 		if( account == null ) return;
-		String who_host = access_info.getAccountHost( account );
 		
+		if( ! bConfirmMoved && account.moved != null ){
+			new AlertDialog.Builder( this )
+				.setMessage( getString( R.string.jump_moved_user
+					, access_info.getFullAcct( account )
+					, access_info.getFullAcct( account.moved )
+				) )
+				.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
+					@Override public void onClick( DialogInterface dialog, int which ){
+						openProfileFromAnotherAccount( pos,access_info,account.moved );
+					}
+				} )
+				.setNeutralButton( R.string.ignore_suggestion, new DialogInterface.OnClickListener() {
+					@Override public void onClick( DialogInterface dialog, int which ){
+						openFollowFromAnotherAccount( pos,access_info,  account ,true);
+					}
+				} )
+				.setNegativeButton( android.R.string.cancel,null)
+				.show();
+			return;
+		}
+		
+		final String who_host = access_info.getAccountHost( account );
 		final String who_acct = access_info.getFullAcct( account );
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_follow )
 			, makeAccountList( log, false, who_host )
 			, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
-					callRemoteFollow( ai, who_acct, account.locked, false, follow_complete_callback );
+					callRemoteFollow( ai, who_acct, account.locked, follow_complete_callback );
 				}
 			} );
 	}

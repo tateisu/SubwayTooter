@@ -96,6 +96,8 @@ public class TootAccount {
 	
 	@Nullable public NicoProfileEmoji.Map profile_emojis;
 	
+	@Nullable public TootAccount moved;
+	
 	public TootAccount(){
 		
 	}
@@ -105,6 +107,11 @@ public class TootAccount {
 		this.acct = username;
 		this.username = username;
 	}
+	
+	public static TootAccount parse( Context context, LinkClickContext account, JSONObject src ){
+		return parse( context, account, src, new TootAccount() );
+	}
+	
 	
 	@Nullable
 	public static TootAccount parse( Context context, LinkClickContext account, JSONObject src, TootAccount dst ){
@@ -146,6 +153,10 @@ public class TootAccount {
 			
 			dst.source = parseSource( src.optJSONObject( "source" ) );
 			
+			JSONObject o = src.optJSONObject( "moved" );
+			if( o != null ){
+				dst.moved = TootAccount.parse( context, account, o);
+			}
 			
 			return dst;
 			
@@ -167,9 +178,7 @@ public class TootAccount {
 		return dst;
 	}
 	
-	public static TootAccount parse( Context context, LinkClickContext account, JSONObject src ){
-		return parse( context, account, src, new TootAccount() );
-	}
+
 	
 	@NonNull
 	public static List parseList( Context context, LinkClickContext account, JSONArray array ){

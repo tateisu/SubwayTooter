@@ -414,14 +414,13 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			if( who == null ){
 				// サーバのバグで誰のことか分からないので何もできない
 			}else if( access_info.isPseudo() ){
-				activity.openFollowFromAnotherAccount( access_info, who );
+				activity.openFollowFromAnotherAccount( pos, access_info, who );
 			}else{
 				boolean bSet = ! ( relation.getFollowing( who ) || relation.getRequested( who ) );
 				activity.callFollow(
-					access_info
+					pos,access_info
 					, who
 					, bSet
-					, false
 					, bSet ? activity.follow_complete_callback : activity.unfollow_complete_callback
 				);
 			}
@@ -507,7 +506,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnFollowFromAnotherAccount:
-			activity.openFollowFromAnotherAccount( access_info, who );
+			activity.openFollowFromAnotherAccount( pos,access_info, who );
 			break;
 		
 		case R.id.btnSendMessageFromAnotherAccount:
@@ -674,7 +673,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			}catch( Throwable ignored ){
 				// IllegalArgumentException がたまに出る
 			}
-			activity.openFollowFromAnotherAccount( access_info, who );
+			activity.openFollowFromAnotherAccount( activity.nextPosition( column),access_info, who );
 			return true;
 			
 		}

@@ -882,7 +882,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			return true;
 		
 		case R.id.btnFollow:
-			activity.openFollowFromAnotherAccount( access_info, account_follow );
+			activity.openFollowFromAnotherAccount( activity.nextPosition( column),access_info, account_follow );
 			return true;
 		
 		case R.id.llBoosted:

@@ -9,6 +9,94 @@
     >
 
     <TextView
+        android:id="@+id/tvMoved"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="3dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="6dp"
+        android:drawablePadding="4dp"
+        android:gravity="center"
+        tools:text="aaa\@bbb さんは引っ越しました"
+        />
+
+    <LinearLayout
+        android:id="@+id/llMoved"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp"
+        android:layout_marginStart="12dp"
+        android:background="@drawable/btn_bg_transparent"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        >
+
+        <jp.juggler.subwaytooter.view.MyNetworkImageView
+            android:id="@+id/ivMoved"
+            android:layout_width="48dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="4dp"
+            android:contentDescription="@string/thumbnail"
+            android:scaleType="fitEnd"
+
+            />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            >
+
+            <TextView
+                android:id="@+id/tvMovedName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:text="Follower Name"
+                />
+
+            <TextView
+                android:id="@+id/tvMovedAcct"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingEnd="4dp"
+                android:paddingStart="4dp"
+                android:textColor="?attr/colorTimeSmall"
+                android:textSize="12sp"
+                tools:text="aaaaaaaaaaaaaaaa"
+                />
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="4dp"
+            >
+
+            <ImageButton
+                android:id="@+id/btnMoved"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/btn_bg_transparent"
+                android:contentDescription="@string/follow"
+                android:scaleType="center"
+                tools:src="?attr/ic_follow_plus"
+                />
+
+            <ImageView
+                android:id="@+id/ivMovedBy"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="center"
+                android:src="?attr/ic_followed_by"
+                tools:ignore="ContentDescription"
+                />
+        </FrameLayout>
+    </LinearLayout>
+
+    <TextView
         android:id="@+id/tvCreated"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -31,12 +119,12 @@
             />
 
         <LinearLayout
+            android:id="@+id/llProfile"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="vertical"
             android:padding="12dp"
-            android:id="@+id/llProfile"
             >
 
             <jp.juggler.subwaytooter.view.MyNetworkImageView
@@ -67,7 +155,6 @@
                 android:textColor="?attr/colorLink"
                 tools:text="\@fugahogehogera\@jugemujyugemugokounosurikire.jp"
                 />
-
 
             <jp.juggler.subwaytooter.view.MyTextView
                 android:id="@+id/tvNote"
@@ -105,7 +192,6 @@
                 tools:ignore="ContentDescription"
                 />
         </FrameLayout>
-
 
     </FrameLayout>
 
@@ -153,13 +239,14 @@
             />
 
     </LinearLayout>
+
     <TextView
+        android:id="@+id/tvRemoteProfileWarning"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/btn_bg_transparent"
+        android:gravity="center"
         android:padding="12dp"
         android:text="@string/remote_profile_warning"
-        android:id="@+id/tvRemoteProfileWarning"
-        android:gravity="center"
-        android:background="@drawable/btn_bg_transparent"
         />
 </LinearLayout>

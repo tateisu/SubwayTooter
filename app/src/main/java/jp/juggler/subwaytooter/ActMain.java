@@ -1817,7 +1817,6 @@ public class ActMain extends AppCompatActivity
 		Utils.showToast( ActMain.this, false, R.string.app_was_muted );
 	}
 	
-	
 	//////////////////////////////////////////////////////////////
 	
 	interface FindAccountCallback {
@@ -3645,6 +3644,7 @@ public class ActMain extends AppCompatActivity
 		@NonNull final SavedAccount access_info
 		, @NonNull final TootAccount who
 		, final boolean bMute
+		, final boolean bMuteNotification
 		, @Nullable final RelationChangedCallback callback
 	){
 		
@@ -3668,16 +3668,15 @@ public class ActMain extends AppCompatActivity
 				client.setAccount( access_info );
 				
 				Request.Builder request_builder = new Request.Builder().post(
-					RequestBody.create(
-						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
-						, "" // 空データ
-					) );
+					! bMute ? RequestBody.create( TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" )
+						: bMuteNotification ? RequestBody.create( TootApiClient.MEDIA_TYPE_JSON, "{\"notifications\": true}" )
+						: RequestBody.create( TootApiClient.MEDIA_TYPE_JSON, "{\"notifications\": false}" )
+				);
+				
 				TootApiResult result = client.request( "/api/v1/accounts/" + who.id + ( bMute ? "/mute" : "/unmute" )
 					, request_builder );
-				if( result != null ){
-					if( result.object != null ){
-						relation = saveUserRelation( access_info, TootRelationShip.parse( result.object ) );
-					}
+				if( result != null && result.object != null ){
+					relation = saveUserRelation( access_info, TootRelationShip.parse( result.object ) );
 				}
 				return result;
 			}
@@ -4057,11 +4056,11 @@ public class ActMain extends AppCompatActivity
 				
 				client.setAccount( access_info );
 				
-				JSONObject content = new JSONObject(  );
+				JSONObject content = new JSONObject();
 				try{
-					content.put( "reblogs", bShow);
-				}catch(Throwable ex){
-					return new TootApiResult( Utils.formatError( ex,"json encoding error" ) );
+					content.put( "reblogs", bShow );
+				}catch( Throwable ex ){
+					return new TootApiResult( Utils.formatError( ex, "json encoding error" ) );
 				}
 				
 				Request.Builder request_builder = new Request.Builder().post(
@@ -4070,14 +4069,14 @@ public class ActMain extends AppCompatActivity
 						, content.toString()
 					) );
 				
-				TootApiResult result =client.request( "/api/v1/accounts/"+who.id+"/follow", request_builder );
-				if( result !=null && result.object != null ){
+				TootApiResult result = client.request( "/api/v1/accounts/" + who.id + "/follow", request_builder );
+				if( result != null && result.object != null ){
 					relation = TootRelationShip.parse( result.object );
 				}
 				return result;
 			}
 			
-			TootRelationShip relation ;
+			TootRelationShip relation;
 			
 			@Override protected void onCancelled( TootApiResult result ){
 				super.onPostExecute( result );
@@ -4088,7 +4087,7 @@ public class ActMain extends AppCompatActivity
 				if( result == null ){
 					// cancelled.
 				}else if( relation != null ){
-					saveUserRelation( access_info,relation );
+					saveUserRelation( access_info, relation );
 					Utils.showToast( ActMain.this, true, R.string.operation_succeeded );
 				}else{
 					Utils.showToast( ActMain.this, true, result.error );
@@ -4888,17 +4887,18 @@ public class ActMain extends AppCompatActivity
 					@Override public boolean isApiCancelled(){
 						return isCancelled();
 					}
+					
 					@Override public void publishApiProgress( String s ){
 					}
 				} );
-
+				
 				client.setAccount( access_info );
 				
-				JSONObject content = new JSONObject(  );
+				JSONObject content = new JSONObject();
 				try{
-					content.put("title",title);
-				}catch(Throwable ex){
-					return new TootApiResult( Utils.formatError( ex,"can't encoding json parameter." ) );
+					content.put( "title", title );
+				}catch( Throwable ex ){
+					return new TootApiResult( Utils.formatError( ex, "can't encoding json parameter." ) );
 				}
 				
 				Request.Builder request_builder = new Request.Builder().post(
@@ -4907,8 +4907,7 @@ public class ActMain extends AppCompatActivity
 						, content.toString()
 					) );
 				
-				
-				TootApiResult result = client.request( "/api/v1/lists" , request_builder );
+				TootApiResult result = client.request( "/api/v1/lists", request_builder );
 				
 				if( result != null ){
 					if( result.object != null ){
@@ -4938,7 +4937,7 @@ public class ActMain extends AppCompatActivity
 						column.onListListUpdated( access_info );
 					}
 					
-					Utils.showToast(ActMain.this, false, R.string.list_created);
+					Utils.showToast( ActMain.this, false, R.string.list_created );
 					
 				}else{
 					Utils.showToast( ActMain.this, false, result.error );
@@ -4955,6 +4954,7 @@ public class ActMain extends AppCompatActivity
 					@Override public boolean isApiCancelled(){
 						return isCancelled();
 					}
+					
 					@Override public void publishApiProgress( String s ){
 					}
 				} );
@@ -4963,11 +4963,10 @@ public class ActMain extends AppCompatActivity
 				
 				Request.Builder request_builder = new Request.Builder().delete();
 				
-				TootApiResult result = client.request( "/api/v1/lists/"+ list_id  , request_builder );
+				TootApiResult result = client.request( "/api/v1/lists/" + list_id, request_builder );
 				
 				return result;
 			}
-			
 			
 			@Override
 			protected void onCancelled( TootApiResult result ){
@@ -4985,7 +4984,7 @@ public class ActMain extends AppCompatActivity
 						column.onListListUpdated( access_info );
 					}
 					
-					Utils.showToast(ActMain.this, false, R.string.delete_succeeded );
+					Utils.showToast( ActMain.this, false, R.string.delete_succeeded );
 					
 				}else{
 					Utils.showToast( ActMain.this, false, result.error );
@@ -4994,7 +4993,7 @@ public class ActMain extends AppCompatActivity
 		}.executeOnExecutor( App1.task_executor );
 	}
 	
-	public void callDeleteListMember( @NonNull final SavedAccount access_info, @NonNull final TootAccount who ,final long list_id ){
+	public void callDeleteListMember( @NonNull final SavedAccount access_info, @NonNull final TootAccount who, final long list_id ){
 		new AsyncTask< Void, Void, TootApiResult >() {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
@@ -5002,6 +5001,7 @@ public class ActMain extends AppCompatActivity
 					@Override public boolean isApiCancelled(){
 						return isCancelled();
 					}
+					
 					@Override public void publishApiProgress( String s ){
 					}
 				} );
@@ -5010,11 +5010,10 @@ public class ActMain extends AppCompatActivity
 				
 				Request.Builder request_builder = new Request.Builder().delete();
 				
-				TootApiResult result = client.request( "/api/v1/lists/"+list_id+"/accounts?account_ids[]="+ who.id , request_builder );
+				TootApiResult result = client.request( "/api/v1/lists/" + list_id + "/accounts?account_ids[]=" + who.id, request_builder );
 				
 				return result;
 			}
-			
 			
 			@Override
 			protected void onCancelled( TootApiResult result ){
@@ -5029,10 +5028,10 @@ public class ActMain extends AppCompatActivity
 				}else if( result.object != null ){
 					
 					for( Column column : app_state.column_list ){
-						column.onListMemberUpdated( access_info ,list_id,who,false);
+						column.onListMemberUpdated( access_info, list_id, who, false );
 					}
 					
-					Utils.showToast(ActMain.this, false, R.string.delete_succeeded );
+					Utils.showToast( ActMain.this, false, R.string.delete_succeeded );
 					
 				}else{
 					Utils.showToast( ActMain.this, false, result.error );

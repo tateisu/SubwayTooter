@@ -548,4 +548,5 @@
     <string name="cant_add_list_follow_requesting">Can\'t add user to list:\nPlease wait until the follow request is approved.</string>
     <string name="cant_add_list_follow_failed">Can\'t add user to list:\nfollow operation failed.</string>
     <string name="list_member_added">User has been added to the list.</string>
+    <string name="confirm_mute_notification_for_user">Mute notification from this user</string>
 </resources>

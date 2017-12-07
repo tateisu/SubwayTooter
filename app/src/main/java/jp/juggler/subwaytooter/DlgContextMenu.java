@@ -12,7 +12,9 @@ import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import java.util.ArrayList;
 
@@ -435,14 +437,21 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			if( who == null ){
 				// サーバのバグで誰のことか分からないので何もできない
 			}else if( relation.muting ){
-				activity.callMute( access_info, who, false, null );
+				activity.callMute( access_info, who, false,false, null );
 			}else{
+				View view = activity.getLayoutInflater().inflate( R.layout.dlg_confirm,null,false );
+				TextView tvMessage = view.findViewById( R.id.tvMessage );
+				tvMessage.setText( activity.getString( R.string.confirm_mute_user, who.username ) );
+				final CheckBox cbMuteNotification = view.findViewById( R.id.cbSkipNext );
+				cbMuteNotification.setText( R.string.confirm_mute_notification_for_user );
+				cbMuteNotification.setChecked( true );
+				
 				new AlertDialog.Builder( activity )
-					.setMessage( activity.getString( R.string.confirm_mute_user, who.username ) )
+					.setView( view )
 					.setNegativeButton( R.string.cancel, null )
 					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 						@Override public void onClick( DialogInterface dialog, int which ){
-							activity.callMute( access_info, who, true, null );
+							activity.callMute( access_info, who, true,cbMuteNotification.isChecked(), null );
 						}
 					} )
 					.show();

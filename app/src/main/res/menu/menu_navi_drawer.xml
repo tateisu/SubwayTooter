@@ -36,10 +36,17 @@
                     android:id="@+id/nav_add_tl_local"
                     android:icon="?attr/btn_local_tl"
                     android:title="@string/local_timeline"/>
+
                 <item
                     android:id="@+id/nav_add_tl_federate"
                     android:icon="?attr/btn_federate_tl"
                     android:title="@string/federate_timeline"/>
+
+
+                <item
+                    android:id="@+id/nav_add_list"
+                    android:icon="?attr/ic_list2"
+                    android:title="@string/lists"/>
 
                 <item
                     android:id="@+id/nav_add_tl_search"

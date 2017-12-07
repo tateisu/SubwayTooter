@@ -529,6 +529,35 @@
 	<string name="hide_boost_in_home">Hide boosts from this user to your home</string>
 	<string name="show_boost_in_home">Show boosts from this user to your home</string>
 	<string name="operation_succeeded">Operation succeeded.</string>
+
+	<string name="list_member_add">Add user to List…</string>
+	<string name="list_member_remove">Remove user to List…</string>
+	<string name="lists">Lists</string>
+	<string name="list_show_member">show list users</string>
+	<string name="list_show_timeline">show list TL</string>
+	<string name="list_member_of">\"%1$s\" list users</string>
+	<string name="list_tl_of">\"%1$s\" List TL</string>
+	<string name="list_create_hint">name of new list</string>
+	<string name="list_name_empty">please input name of new list.</string>
+	<string name="list_created">new list created.</string>
+	<string name="list_delete_confirm">\"%1$s\" list will be deleted. Are you sure?</string>
+	<string name="list_member">List users</string>
+	<string name="list_timeline">List timeline</string>
+	<string name="list_member_delete_confirm">\"%1$s\" will be deleted from \"%2$s\". Are you sure?</string>
+	<string name="member_will_be_added_to_list">The user will be added to list</string>
+	<string name="list_owner">List owner</string>
+	<string name="list_create">(Create new list…)</string>
+	<string name="list">List</string>
+	<string name="list_not_supported">this instance does not support list.</string>
+	<string name="cant_access_list">Can\'t access to lists.</string>
+	<string name="list_not_selected">please select list.</string>
+	<string name="account_sync_failed">account sync failed.</string>
+	<string name="list_retry_with_follow">You have not followed %1$s yet. Would you like to follow and then add to list?</string>
+	<string name="cant_add_list_while_follow_progress">Can\'t add user to list:\nfollow operation is progress on server side.</string>
+	<string name="cant_add_list_follow_requesting">Can\'t add user to list:\nPlease wait until the follow request is approved.</string>
+	<string name="cant_add_list_follow_failed">Can\'t add user to list:\nfollow operation failed.</string>
+	<string name="list_member_added">User has been added to the list.</string>
+
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->

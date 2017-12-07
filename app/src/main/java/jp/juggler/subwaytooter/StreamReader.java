@@ -34,7 +34,8 @@ import okhttp3.WebSocketListener;
 	static final String EP_USER = "/api/v1/streaming/?stream=user";
 	static final String EP_PUBLIC = "/api/v1/streaming/?stream=public";
 	static final String EP_PUBLIC_LOCAL = "/api/v1/streaming/?stream=public:local";
-	static final String EP_HASHTAG = "/api/v1/streaming/?stream=hashtag"; // + &tag=hashtag (先頭の＃を含まない)
+	static final String EP_HASHTAG = "/api/v1/streaming/?stream=hashtag&tag="; // + hashtag (先頭の＃を含まない)
+	static final String EP_LIST_TL = "/api/v1/streaming/?stream=list&list="; // + list_id
 	
 	static final Pattern reNumber = Pattern.compile( "([-]?\\d+)" );
 	

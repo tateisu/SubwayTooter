@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="6dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="6dp"
+        android:orientation="vertical"
+        >
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/member_will_be_added_to_list"
+            />
+
+        <LinearLayout
+            style="@style/setting_row_form"
+            android:gravity="center_vertical"
+            >
+
+            <jp.juggler.subwaytooter.view.MyNetworkImageView
+                android:id="@+id/ivUser"
+                android:layout_width="48dp"
+                android:layout_height="40dp"
+                android:layout_marginEnd="4dp"
+                android:contentDescription="@string/thumbnail"
+                android:scaleType="fitEnd"
+
+                />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                >
+
+                <TextView
+                    android:id="@+id/tvUserName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    tools:text="Follower Name"
+                    />
+
+                <TextView
+                    android:id="@+id/tvUserAcct"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingEnd="4dp"
+                    android:paddingStart="4dp"
+                    android:textColor="?attr/colorTimeSmall"
+                    android:textSize="12sp"
+                    tools:text="aaaaaaaaaaaaaaaa"
+                    />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/list_owner"
+            />
+
+        <LinearLayout
+            style="@style/setting_row_form"
+            android:gravity="center_vertical"
+            >
+
+            <Button
+                android:id="@+id/btnListOwner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAllCaps="false"
+                />
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/list"
+            />
+
+        <LinearLayout
+            style="@style/setting_row_form"
+            android:gravity="center_vertical"
+            >
+
+            <Button
+                android:id="@+id/btnList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAllCaps="false"
+                />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        style="?android:attr/buttonBarStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+
+        <Button
+            android:id="@+id/btnCancel"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/cancel"
+            />
+
+        <Button
+            android:id="@+id/btnOk"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/ok"
+            />
+    </LinearLayout>
+</LinearLayout>

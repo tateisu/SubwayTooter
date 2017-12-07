@@ -91,6 +91,8 @@
         <item name="ic_eye_off">@drawable/ic_eye_off</item>
         <item name="ic_pin">@drawable/ic_pin</item>
         <item name="ic_follow_wait">@drawable/ic_follow_wait</item>
+        <item name="ic_list2">@drawable/ic_list2</item>
+        <item name="ic_add">@drawable/ic_add</item>
 
     </style>
 
@@ -186,6 +188,8 @@
         <item name="ic_eye_off">@drawable/ic_eye_off_dark</item>
         <item name="ic_pin">@drawable/ic_pin_dark</item>
         <item name="ic_follow_wait">@drawable/ic_follow_wait_dark</item>
+        <item name="ic_list2">@drawable/ic_list2_dark</item>
+        <item name="ic_add">@drawable/ic_add_dark</item>
 
     </style>
 

@@ -391,4 +391,34 @@
             android:textAllCaps="false"
             />
     </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/llList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="3dp"
+        >
+
+        <Button
+            android:id="@+id/btnListTL"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/btn_bg_transparent"
+            android:textAllCaps="false"
+            />
+        <ImageButton
+            android:id="@+id/btnListMore"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="4dp"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/btn_bg_transparent"
+            android:src="?attr/btn_more"
+            android:contentDescription="@string/more"
+            />
+    </LinearLayout>
+
 </LinearLayout>

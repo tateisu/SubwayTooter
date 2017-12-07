@@ -67,6 +67,7 @@ import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootApplication;
+import jp.juggler.subwaytooter.api.entity.TootList;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootResults;
@@ -110,7 +111,7 @@ public class ActMain extends AppCompatActivity
 	
 	SharedPreferences pref;
 	public Handler handler;
-	AppState app_state;
+	public AppState app_state;
 	
 	// onActivityResultで設定されてonResumeで消化される
 	// 状態保存の必要なし
@@ -731,6 +732,9 @@ public class ActMain extends AppCompatActivity
 		}else if( id == R.id.nav_add_domain_blocks ){
 			performAddTimeline( getDefaultInsertPosition(), false, Column.TYPE_DOMAIN_BLOCKS );
 			
+		}else if( id == R.id.nav_add_list ){
+			performAddTimeline( getDefaultInsertPosition(), false, Column.TYPE_LIST_LIST );
+			
 		}else if( id == R.id.nav_follow_requests ){
 			performAddTimeline( getDefaultInsertPosition(), false, Column.TYPE_FOLLOW_REQUESTS );
 			
@@ -784,8 +788,8 @@ public class ActMain extends AppCompatActivity
 	
 	static final int COLUMN_WIDTH_MIN_DP = 300;
 	
-	Typeface timeline_font;
-	Typeface timeline_font_bold;
+	public Typeface timeline_font;
+	public Typeface timeline_font_bold;
 	
 	boolean dont_crop_media_thumbnail;
 	boolean mShortAcctLocalUser;
@@ -1812,6 +1816,7 @@ public class ActMain extends AppCompatActivity
 		}
 		Utils.showToast( ActMain.this, false, R.string.app_was_muted );
 	}
+	
 	
 	//////////////////////////////////////////////////////////////
 	
@@ -3698,7 +3703,7 @@ public class ActMain extends AppCompatActivity
 					
 					if( relation.muting ){
 						for( Column column : app_state.column_list ){
-							column.removeStatusByAccount( access_info, who.id );
+							column.removeAccountInTimeline( access_info, who.id );
 						}
 					}else{
 						for( Column column : app_state.column_list ){
@@ -3778,7 +3783,7 @@ public class ActMain extends AppCompatActivity
 					
 					for( Column column : app_state.column_list ){
 						if( relation.blocking ){
-							column.removeStatusByAccount( access_info, who.id );
+							column.removeAccountInTimeline( access_info, who.id );
 						}else{
 							column.removeFromBlockList( access_info, who.id );
 						}
@@ -4278,7 +4283,7 @@ public class ActMain extends AppCompatActivity
 		llColumnStrip.setColor( c );
 	}
 	
-	private ArrayList< SavedAccount > makeAccountList( @NonNull LogCategory log, boolean bAllowPseudo, @Nullable String pickup_host ){
+	public ArrayList< SavedAccount > makeAccountList( @NonNull LogCategory log, boolean bAllowPseudo, @Nullable String pickup_host ){
 		
 		ArrayList< SavedAccount > list_same_host = new ArrayList<>();
 		ArrayList< SavedAccount > list_other_host = new ArrayList<>();
@@ -4871,4 +4876,169 @@ public class ActMain extends AppCompatActivity
 			}
 		}
 	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////
+	
+	public void createNewList( @NonNull final SavedAccount access_info, @NonNull final String title ){
+		
+		new AsyncTask< Void, Void, TootApiResult >() {
+			
+			@Override protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					@Override public void publishApiProgress( String s ){
+					}
+				} );
+
+				client.setAccount( access_info );
+				
+				JSONObject content = new JSONObject(  );
+				try{
+					content.put("title",title);
+				}catch(Throwable ex){
+					return new TootApiResult( Utils.formatError( ex,"can't encoding json parameter." ) );
+				}
+				
+				Request.Builder request_builder = new Request.Builder().post(
+					RequestBody.create(
+						TootApiClient.MEDIA_TYPE_JSON
+						, content.toString()
+					) );
+				
+				
+				TootApiResult result = client.request( "/api/v1/lists" , request_builder );
+				
+				if( result != null ){
+					if( result.object != null ){
+						list = TootList.parse( result.object );
+						
+					}
+				}
+				
+				return result;
+			}
+			
+			TootList list;
+			
+			@Override
+			protected void onCancelled( TootApiResult result ){
+				onPostExecute( null );
+			}
+			
+			@Override
+			protected void onPostExecute( TootApiResult result ){
+				//noinspection StatementWithEmptyBody
+				if( result == null ){
+					// cancelled.
+				}else if( list != null ){
+					
+					for( Column column : app_state.column_list ){
+						column.onListListUpdated( access_info );
+					}
+					
+					Utils.showToast(ActMain.this, false, R.string.list_created);
+					
+				}else{
+					Utils.showToast( ActMain.this, false, result.error );
+				}
+			}
+		}.executeOnExecutor( App1.task_executor );
+	}
+	
+	public void callDeleteList( @NonNull final SavedAccount access_info, final long list_id ){
+		new AsyncTask< Void, Void, TootApiResult >() {
+			
+			@Override protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					@Override public void publishApiProgress( String s ){
+					}
+				} );
+				
+				client.setAccount( access_info );
+				
+				Request.Builder request_builder = new Request.Builder().delete();
+				
+				TootApiResult result = client.request( "/api/v1/lists/"+ list_id  , request_builder );
+				
+				return result;
+			}
+			
+			
+			@Override
+			protected void onCancelled( TootApiResult result ){
+				onPostExecute( null );
+			}
+			
+			@Override
+			protected void onPostExecute( TootApiResult result ){
+				//noinspection StatementWithEmptyBody
+				if( result == null ){
+					// cancelled.
+				}else if( result.object != null ){
+					
+					for( Column column : app_state.column_list ){
+						column.onListListUpdated( access_info );
+					}
+					
+					Utils.showToast(ActMain.this, false, R.string.delete_succeeded );
+					
+				}else{
+					Utils.showToast( ActMain.this, false, result.error );
+				}
+			}
+		}.executeOnExecutor( App1.task_executor );
+	}
+	
+	public void callDeleteListMember( @NonNull final SavedAccount access_info, @NonNull final TootAccount who ,final long list_id ){
+		new AsyncTask< Void, Void, TootApiResult >() {
+			
+			@Override protected TootApiResult doInBackground( Void... params ){
+				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
+					@Override public boolean isApiCancelled(){
+						return isCancelled();
+					}
+					@Override public void publishApiProgress( String s ){
+					}
+				} );
+				
+				client.setAccount( access_info );
+				
+				Request.Builder request_builder = new Request.Builder().delete();
+				
+				TootApiResult result = client.request( "/api/v1/lists/"+list_id+"/accounts?account_ids[]="+ who.id , request_builder );
+				
+				return result;
+			}
+			
+			
+			@Override
+			protected void onCancelled( TootApiResult result ){
+				onPostExecute( null );
+			}
+			
+			@Override
+			protected void onPostExecute( TootApiResult result ){
+				//noinspection StatementWithEmptyBody
+				if( result == null ){
+					// cancelled.
+				}else if( result.object != null ){
+					
+					for( Column column : app_state.column_list ){
+						column.onListMemberUpdated( access_info ,list_id,who,false);
+					}
+					
+					Utils.showToast(ActMain.this, false, R.string.delete_succeeded );
+					
+				}else{
+					Utils.showToast( ActMain.this, false, result.error );
+				}
+			}
+		}.executeOnExecutor( App1.task_executor );
+	}
+	
 }

@@ -303,6 +303,42 @@
 
         </RelativeLayout>
 
+        <RelativeLayout
+            android:id="@+id/llListList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="?attr/colorSearchFormBackground"
+            android:paddingBottom="3dp"
+            android:paddingEnd="12dp"
+            android:paddingStart="12dp"
+            android:paddingTop="3dp"
+            >
+
+            <ImageButton
+                android:id="@+id/btnListAdd"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:background="@drawable/btn_bg_transparent"
+                android:contentDescription="@string/search"
+                android:src="?attr/ic_add"
+                />
+
+            <EditText
+                android:id="@+id/etListName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/btnListAdd"
+                android:imeOptions="actionSend"
+                android:inputType="text"
+                android:hint="@string/list_create_hint"
+                tools:ignore="LabelFor"
+                />
+
+        </RelativeLayout>
+
+
         <FrameLayout
             android:id="@+id/flColumnBackground"
             android:layout_width="match_parent"

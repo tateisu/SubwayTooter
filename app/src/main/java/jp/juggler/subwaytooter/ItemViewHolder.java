@@ -1,9 +1,8 @@
 package jp.juggler.subwaytooter;
 
-import android.content.Context;
+import android.app.Activity;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
-import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
@@ -28,10 +27,13 @@ import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootCard;
 import jp.juggler.subwaytooter.api.entity.TootDomainBlock;
 import jp.juggler.subwaytooter.api.entity.TootGap;
+import jp.juggler.subwaytooter.api.entity.TootList;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
+import jp.juggler.subwaytooter.dialog.ActionsDialog;
+import jp.juggler.subwaytooter.dialog.DlgConfirm;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.ContentWarning;
 import jp.juggler.subwaytooter.table.MediaShown;
@@ -42,8 +44,6 @@ import jp.juggler.subwaytooter.util.EmojiImageSpan;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator;
-import jp.juggler.subwaytooter.util.NetworkEmojiSpan;
-import jp.juggler.subwaytooter.view.MyEditText;
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod;
 import jp.juggler.subwaytooter.view.MyListView;
 import jp.juggler.subwaytooter.view.MyNetworkImageView;
@@ -98,6 +98,10 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private final View llSearchTag;
 	private final Button btnSearchTag;
 	
+	private final View llList;
+	private final Button btnListTL;
+	private final View btnListMore;
+	
 	private final LinearLayout llExtra;
 	
 	@Nullable private final TextView tvApplication;
@@ -110,6 +114,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	@Nullable private TootGap gap;
 	@Nullable private TootDomainBlock domain_block;
 	@Nullable private TootNotification notification;
+	@Nullable private TootList list;
 	
 	private final boolean bSimpleList;
 	
@@ -204,6 +209,14 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.btnSearchTag = view.findViewById( R.id.btnSearchTag );
 		this.tvApplication = view.findViewById( R.id.tvApplication );
 		
+		this. llList= view.findViewById( R.id.llList );
+		this. btnListTL= view.findViewById( R.id.btnListTL );
+		this. btnListMore= view.findViewById( R.id.btnListMore );
+		
+		 btnListTL.setOnClickListener( this );
+		 btnListMore.setOnClickListener( this );
+		
+		
 		btnSearchTag.setOnClickListener( this );
 		btnContentWarning.setOnClickListener( this );
 		btnShowMedia.setOnClickListener( this );
@@ -251,7 +264,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			if( tvApplication != null ){
 				tvApplication.setTextSize( activity.timeline_font_size_sp );
 			}
-			
+			btnListTL.setTextSize( activity.timeline_font_size_sp );
 		}
 		
 		if( ! Float.isNaN( activity.acct_font_size_sp ) ){
@@ -284,11 +297,13 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.gap = null;
 		this.domain_block = null;
 		this.notification = null;
+		this.list = null;
 		
 		llBoosted.setVisibility( View.GONE );
 		llFollow.setVisibility( View.GONE );
 		llStatus.setVisibility( View.GONE );
 		llSearchTag.setVisibility( View.GONE );
+		llList.setVisibility( View.GONE );
 		llExtra.removeAllViews();
 		
 		if( item == null ) return;
@@ -379,7 +394,15 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			showGap( (TootGap) item );
 		}else if( item instanceof TootDomainBlock ){
 			showDomainBlock( (TootDomainBlock) item );
+		}else if( item instanceof TootList ){
+			showList( (TootList) item );
 		}
+	}
+	
+	private void showList( TootList list ){
+		this.list = list;
+		llList.setVisibility( View.VISIBLE );
+		btnListTL.setText( list.title );
 	}
 	
 	private void showDomainBlock( @NonNull TootDomainBlock domain_block ){
@@ -728,7 +751,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	
 	@Override public void onClick( View v ){
 		
-		int pos = activity.nextPosition( column );
+		final int pos = activity.nextPosition( column );
 		
 		switch( v.getId() ){
 		case R.id.btnHideMedia:
@@ -816,7 +839,38 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 					.show();
 			}
 			break;
-			
+
+		case R.id.btnListTL:
+			if( list != null ){
+				activity.addColumn( pos,access_info,Column.TYPE_LIST_TL,list.id);
+			}
+			break;
+
+		case R.id.btnListMore:
+			if( list != null ){
+				ActionsDialog ad = new ActionsDialog();
+				ad.addAction( activity.getString( R.string.list_timeline ), new Runnable() {
+					@Override public void run(){
+						activity.addColumn( pos,access_info,Column.TYPE_LIST_TL,list.id);
+					}
+				} );
+				ad.addAction( activity.getString( R.string.list_member ), new Runnable() {
+					@Override public void run(){
+						activity.addColumn( pos,access_info,Column.TYPE_LIST_MEMBER,list.id);
+					}
+				} );
+				ad.addAction( activity.getString( R.string.delete ), new Runnable() {
+					@Override public void run(){
+						DlgConfirm.openSimple( activity, activity.getString( R.string.list_delete_confirm, list.title ), new Runnable() {
+							@Override public void run(){
+								activity.callDeleteList( access_info, list.id );
+							}
+						} );
+					}
+				} );
+				ad.show( activity ,list.title );
+			}
+			break;
 		}
 	}
 	

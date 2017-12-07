@@ -384,7 +384,7 @@ public class App1 extends Application {
 	}
 	
 	@SuppressLint("StaticFieldLeak")
-	private static AppState app_state;
+	public static AppState app_state;
 	
 	static AppState getAppState( @NonNull Context context ){
 		

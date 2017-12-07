@@ -32,6 +32,7 @@ import jp.juggler.subwaytooter.api.entity.TootContext;
 import jp.juggler.subwaytooter.api.entity.TootDomainBlock;
 import jp.juggler.subwaytooter.api.entity.TootGap;
 import jp.juggler.subwaytooter.api.entity.TootInstance;
+import jp.juggler.subwaytooter.api.entity.TootList;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootReport;
@@ -56,8 +57,9 @@ import jp.juggler.subwaytooter.view.MyListView;
 import jp.juggler.subwaytooter.util.ScrollPosition;
 import jp.juggler.subwaytooter.util.Utils;
 
-@SuppressWarnings("WeakerAccess") class Column implements StreamReader.Callback {
+@SuppressWarnings("WeakerAccess") public class Column implements StreamReader.Callback {
 	private static final LogCategory log = new LogCategory( "Column" );
+	
 	
 	interface Callback {
 		boolean isActivityStart();
@@ -85,7 +87,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		return params[ idx ];
 	}
 	
-	private static final int READ_LIMIT = 80; // API側の上限が80です。ただし指定しても40しか返ってこないことが多い
+	public static final int READ_LIMIT = 80; // API側の上限が80です。ただし指定しても40しか返ってこないことが多い
 	private static final long LOOP_TIMEOUT = 10000L;
 	private static final int LOOP_READ_ENOUGH = 30; // フィルタ後のデータ数がコレ以上ならループを諦めます
 	private static final int RELATIONSHIP_LOAD_STEP = 40;
@@ -98,6 +100,7 @@ import jp.juggler.subwaytooter.util.Utils;
 	private static final String PATH_FAVOURITES = "/api/v1/favourites?limit=" + READ_LIMIT;
 	private static final String PATH_ACCOUNT_STATUSES = "/api/v1/accounts/%d/statuses?limit=" + READ_LIMIT; // 1:account_id
 	private static final String PATH_HASHTAG = "/api/v1/timelines/tag/%s?limit=" + READ_LIMIT; // 1: hashtag(url encoded)
+	private static final String PATH_LIST_TL = "/api/v1/timelines/list/%s?limit=" + READ_LIMIT;
 	
 	// アカウントのリストを返すAPI
 	private static final String PATH_ACCOUNT_FOLLOWING = "/api/v1/accounts/%d/following?limit=" + READ_LIMIT; // 1:account_id
@@ -107,11 +110,13 @@ import jp.juggler.subwaytooter.util.Utils;
 	private static final String PATH_FOLLOW_REQUESTS = "/api/v1/follow_requests?limit=" + READ_LIMIT; // 1:account_id
 	private static final String PATH_BOOSTED_BY = "/api/v1/statuses/%s/reblogged_by?limit=" + READ_LIMIT; // 1:status_id
 	private static final String PATH_FAVOURITED_BY = "/api/v1/statuses/%s/favourited_by?limit=" + READ_LIMIT; // 1:status_id
+	private static final String PATH_LIST_MEMBER = "/api/v1/lists/%s/accounts?limit=" + READ_LIMIT;
 	
 	// 他のリストを返すAPI
 	private static final String PATH_REPORTS = "/api/v1/reports?limit=" + READ_LIMIT;
 	private static final String PATH_NOTIFICATIONS = "/api/v1/notifications?limit=" + READ_LIMIT;
 	private static final String PATH_DOMAIN_BLOCK = "/api/v1/domain_blocks?limit=" + READ_LIMIT;
+	private static final String PATH_LIST_LIST = "/api/v1/lists?limit=" + READ_LIMIT;
 	
 	// リストではなくオブジェクトを返すAPI
 	private static final String PATH_ACCOUNT = "/api/v1/accounts/%d"; // 1:account_id
@@ -119,6 +124,7 @@ import jp.juggler.subwaytooter.util.Utils;
 	private static final String PATH_STATUSES_CONTEXT = "/api/v1/statuses/%d/context"; // 1:status_id
 	static final String PATH_SEARCH = "/api/v1/search?q=%s"; // 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
 	private static final String PATH_INSTANCE = "/api/v1/instance";
+	private static final String PATH_LIST_INFO = "/api/v1/lists/%s";
 	
 	static final String KEY_ACCOUNT_ROW_ID = "account_id";
 	static final String KEY_TYPE = "type";
@@ -175,6 +181,9 @@ import jp.juggler.subwaytooter.util.Utils;
 	static final int TYPE_DOMAIN_BLOCKS = 16;
 	static final int TYPE_SEARCH_PORTAL = 17;
 	static final int TYPE_INSTANCE_INFORMATION = 18;
+	static final int TYPE_LIST_LIST = 19;
+	static final int TYPE_LIST_TL = 20;
+	static final int TYPE_LIST_MEMBER = 21;
 	
 	@NonNull final Context context;
 	@NonNull private final AppState app_state;
@@ -211,6 +220,8 @@ import jp.juggler.subwaytooter.util.Utils;
 	static final int TAB_FOLLOWING = 1;
 	static final int TAB_FOLLOWERS = 2;
 	
+	volatile TootList list_info;
+	
 	private long status_id;
 	
 	private String hashtag;
@@ -241,6 +252,8 @@ import jp.juggler.subwaytooter.util.Utils;
 			break;
 		
 		case TYPE_PROFILE:
+		case TYPE_LIST_TL:
+		case TYPE_LIST_MEMBER:
 			this.profile_id = (Long) getParamAt( params, 0 );
 			break;
 		
@@ -299,6 +312,12 @@ import jp.juggler.subwaytooter.util.Utils;
 			item.put( KEY_PROFILE_ID, profile_id );
 			item.put( KEY_PROFILE_TAB, profile_tab );
 			break;
+		
+		case TYPE_LIST_MEMBER:
+		case TYPE_LIST_TL:
+			item.put( KEY_PROFILE_ID, profile_id );
+			break;
+		
 		case TYPE_HASHTAG:
 			item.put( KEY_HASHTAG, hashtag );
 			break;
@@ -329,7 +348,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		this.app_state = app_state;
 		this.context = app_state.context;
 		
-		long account_db_id = Utils.optLongX( src,  KEY_ACCOUNT_ROW_ID );
+		long account_db_id = Utils.optLongX( src, KEY_ACCOUNT_ROW_ID );
 		if( account_db_id >= 0 ){
 			SavedAccount ac = SavedAccount.loadAccount( context, log, account_db_id );
 			if( ac == null ) throw new RuntimeException( "missing account" );
@@ -365,12 +384,17 @@ import jp.juggler.subwaytooter.util.Utils;
 		case TYPE_CONVERSATION:
 		case TYPE_BOOSTED_BY:
 		case TYPE_FAVOURITED_BY:
-			this.status_id =  Utils.optLongX( src , KEY_STATUS_ID );
+			this.status_id = Utils.optLongX( src, KEY_STATUS_ID );
 			break;
 		
 		case TYPE_PROFILE:
-			this.profile_id =  Utils.optLongX( src , KEY_PROFILE_ID );
+			this.profile_id = Utils.optLongX( src, KEY_PROFILE_ID );
 			this.profile_tab = src.optInt( KEY_PROFILE_TAB );
+			break;
+		
+		case TYPE_LIST_MEMBER:
+		case TYPE_LIST_TL:
+			this.profile_id = Utils.optLongX( src, KEY_PROFILE_ID );
 			break;
 		
 		case TYPE_HASHTAG:
@@ -399,6 +423,8 @@ import jp.juggler.subwaytooter.util.Utils;
 			return true;
 		
 		case TYPE_PROFILE:
+		case TYPE_LIST_TL:
+		case TYPE_LIST_MEMBER:
 			try{
 				long who_id = (Long) getParamAt( params, 0 );
 				return who_id == this.profile_id;
@@ -473,6 +499,16 @@ import jp.juggler.subwaytooter.util.Utils;
 			
 			return context.getString( R.string.profile_of
 				, who_account != null ? AcctColor.getNickname( access_info.getFullAcct( who_account ) ) : Long.toString( profile_id )
+			);
+		
+		case TYPE_LIST_MEMBER:
+			return context.getString( R.string.list_member_of
+				, list_info != null ? list_info.title : Long.toString( profile_id )
+			);
+		
+		case TYPE_LIST_TL:
+			return context.getString( R.string.list_tl_of
+				, list_info != null ? list_info.title : Long.toString( profile_id )
 			);
 		
 		case TYPE_CONVERSATION:
@@ -563,6 +599,15 @@ import jp.juggler.subwaytooter.util.Utils;
 		
 		case TYPE_FOLLOW_REQUESTS:
 			return context.getString( R.string.follow_requests );
+		
+		case TYPE_LIST_LIST:
+			return context.getString( R.string.lists );
+		
+		case TYPE_LIST_MEMBER:
+			return context.getString( R.string.list_member );
+		
+		case TYPE_LIST_TL:
+			return context.getString( R.string.list_timeline );
 		}
 	}
 	
@@ -627,6 +672,15 @@ import jp.juggler.subwaytooter.util.Utils;
 		
 		case TYPE_FOLLOW_REQUESTS:
 			return R.attr.ic_account_add;
+		
+		case TYPE_LIST_LIST:
+			return R.attr.ic_list2;
+		
+		case TYPE_LIST_MEMBER:
+			return R.attr.ic_list2;
+		
+		case TYPE_LIST_TL:
+			return R.attr.ic_list2;
 		}
 	}
 	
@@ -673,7 +727,8 @@ import jp.juggler.subwaytooter.util.Utils;
 	}
 	
 	// ミュート、ブロックが成功した時に呼ばれる
-	void removeStatusByAccount( SavedAccount target_account, long who_id ){
+	// リストメンバーカラムでメンバーをリストから除去した時に呼ばれる
+	void removeAccountInTimeline( SavedAccount target_account, long who_id ){
 		if( ! target_account.acct.equals( access_info.acct ) ) return;
 		
 		ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
@@ -685,8 +740,7 @@ import jp.juggler.subwaytooter.util.Utils;
 					){
 					continue;
 				}
-			}
-			if( o instanceof TootNotification ){
+			}else if( o instanceof TootNotification ){
 				TootNotification item = (TootNotification) o;
 				if( item.account.id == who_id ) continue;
 				if( item.status != null ){
@@ -695,6 +749,9 @@ import jp.juggler.subwaytooter.util.Utils;
 					if( item.status.reblog != null && item.status.reblog.account != null && item.status.reblog.account.id == who_id )
 						continue;
 				}
+			}else if( o instanceof  TootAccount ){
+				TootAccount item = (TootAccount) o;
+				if( item.id == who_id ) continue;
 			}
 			
 			tmp_list.add( o );
@@ -918,6 +975,27 @@ import jp.juggler.subwaytooter.util.Utils;
 				fireShowContent();
 			}
 			
+		}
+		
+	}
+	
+	public void onListListUpdated( @NonNull SavedAccount account ){
+		if( column_type == TYPE_LIST_LIST && access_info.acct.equals( account.acct ) ){
+			startLoading();
+			ColumnViewHolder vh = getViewHolder();
+			if( vh != null ) vh.onListListUpdated();
+		}
+	}
+	
+	public void onListMemberUpdated( SavedAccount account, long list_id, TootAccount who, boolean bAdd ){
+		if( column_type == TYPE_LIST_TL && access_info.acct.equals( account.acct ) && list_id == profile_id ){
+			if( ! bAdd ){
+				removeAccountInTimeline( account, who.id );
+			}
+		}else if( column_type == TYPE_LIST_MEMBER && access_info.acct.equals( account.acct ) && list_id == profile_id ){
+			if( ! bAdd ){
+				removeAccountInTimeline( account, who.id );
+			}
 		}
 		
 	}
@@ -1151,13 +1229,13 @@ import jp.juggler.subwaytooter.util.Utils;
 		}
 	}
 	
-//	@Nullable String parseMaxId( TootApiResult result ){
-//		if( result != null && result.link_older != null ){
-//			Matcher m = reMaxId.matcher( result.link_older );
-//			if( m.find() ) return m.group( 1 );
-//		}
-//		return null;
-//	}
+	//	@Nullable String parseMaxId( TootApiResult result ){
+	//		if( result != null && result.link_older != null ){
+	//			Matcher m = reMaxId.matcher( result.link_older );
+	//			if( m.find() ) return m.group( 1 );
+	//		}
+	//		return null;
+	//	}
 	
 	@NonNull static final VersionString version_1_6 = new VersionString( "1.6" );
 	
@@ -1186,6 +1264,13 @@ import jp.juggler.subwaytooter.util.Utils;
 				TootApiResult result = client.request( path_base );
 				if( result != null && result.object != null ){
 					Column.this.who_account = TootAccount.parse( context, access_info, result.object );
+				}
+			}
+			
+			void parseListInfo( TootApiClient client, String path_base ){
+				TootApiResult result = client.request( path_base );
+				if( result != null && result.object != null ){
+					Column.this.list_info = TootList.parse( result.object );
 				}
 			}
 			
@@ -1355,6 +1440,16 @@ import jp.juggler.subwaytooter.util.Utils;
 				return result;
 			}
 			
+			TootApiResult parseListList( TootApiClient client, String path_base ){
+				TootApiResult result = client.request( path_base );
+				if( result != null ){
+					saveRange( result, true, true );
+					list_tmp = new ArrayList<>();
+					list_tmp.addAll( TootList.parseList( result.array ) );
+				}
+				return result;
+			}
+			
 			TootApiResult parseNotifications( TootApiClient client, String path_base ){
 				
 				long time_start = SystemClock.elapsedRealtime();
@@ -1503,6 +1598,19 @@ import jp.juggler.subwaytooter.util.Utils;
 					
 					case TYPE_DOMAIN_BLOCKS:
 						return parseDomainList( client, PATH_DOMAIN_BLOCK );
+					
+					case TYPE_LIST_LIST:
+						return parseListList( client, PATH_LIST_LIST );
+					
+					case TYPE_LIST_TL:
+						parseListInfo( client, String.format( Locale.JAPAN, PATH_LIST_INFO, profile_id ) );
+						client.callback.publishApiProgress( "" ); // カラムヘッダの表示を更新
+						return getStatuses( client, String.format( Locale.JAPAN, PATH_LIST_TL, profile_id ) );
+					
+					case TYPE_LIST_MEMBER:
+						parseListInfo( client, String.format( Locale.JAPAN, PATH_LIST_INFO, profile_id ) );
+						client.callback.publishApiProgress( "" ); // カラムヘッダの表示を更新
+						return parseAccountList( client, String.format( Locale.JAPAN, PATH_LIST_MEMBER, profile_id ) );
 					
 					case TYPE_FOLLOW_REQUESTS:
 						return parseAccountList( client, PATH_FOLLOW_REQUESTS );
@@ -1693,7 +1801,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		task.executeOnExecutor( App1.task_executor );
 	}
 	
-	private static final Pattern reMaxId = Pattern.compile( "[&?]max_id=(\\d+)" ); // より古いデータの取得に使う
+	public static final Pattern reMaxId = Pattern.compile( "[&?]max_id=(\\d+)" ); // より古いデータの取得に使う
 	private static final Pattern reSinceId = Pattern.compile( "[&?]since_id=(\\d+)" ); // より新しいデータの取得に使う
 	
 	private String max_id;
@@ -1702,9 +1810,13 @@ import jp.juggler.subwaytooter.util.Utils;
 	
 	private void saveRange( TootApiResult result, boolean bBottom, boolean bTop ){
 		if( result != null ){
-			if( bBottom && result.link_older != null ){
-				Matcher m = reMaxId.matcher( result.link_older );
-				if( m.find() ) max_id = m.group( 1 );
+			if( bBottom ){
+				if( result.link_older == null ){
+					max_id = null;
+				}else{
+					Matcher m = reMaxId.matcher( result.link_older );
+					if( m.find() ) max_id = m.group( 1 );
+				}
 			}
 			if( bTop && result.link_newer != null ){
 				Matcher m = reSinceId.matcher( result.link_newer );
@@ -1715,7 +1827,9 @@ import jp.juggler.subwaytooter.util.Utils;
 	
 	private boolean saveRangeEnd( TootApiResult result ){
 		if( result != null ){
-			if( result.link_older != null ){
+			if( result.link_older == null ){
+				max_id = null;
+			}else{
 				Matcher m = reMaxId.matcher( result.link_older );
 				if( m.find() ){
 					max_id = m.group( 1 );
@@ -1964,6 +2078,14 @@ import jp.juggler.subwaytooter.util.Utils;
 				}
 			}
 			
+			void parseListInfo( TootApiClient client, String path_base ){
+				TootApiResult result = client.request( path_base );
+				if( result != null && result.object != null ){
+					Column.this.list_info = TootList.parse( result.object );
+				}
+			}
+			
+			
 			TootApiResult getAccountList( TootApiClient client, String path_base ){
 				long time_start = SystemClock.elapsedRealtime();
 				char delimiter = ( - 1 != path_base.indexOf( '?' ) ? '&' : '?' );
@@ -2060,6 +2182,61 @@ import jp.juggler.subwaytooter.util.Utils;
 							}
 							
 							src = TootDomainBlock.parseList( result2.array );
+							list_tmp.addAll( src );
+						}
+					}
+				}
+				return result;
+			}
+			
+			TootApiResult getListList( TootApiClient client, String path_base ){
+				long time_start = SystemClock.elapsedRealtime();
+				char delimiter = ( - 1 != path_base.indexOf( '?' ) ? '&' : '?' );
+				String last_since_id = since_id;
+				TootApiResult result = client.request( addRange( bBottom, path_base ) );
+				if( result != null && result.array != null ){
+					saveRange( result, bBottom, ! bBottom );
+					list_tmp = new ArrayList<>();
+					TootList.List src = TootList.parseList( result.array );
+					list_tmp.addAll( src );
+					if( ! bBottom ){
+						for( ; ; ){
+							if( isCancelled() ){
+								log.d( "refresh-list-top: cancelled." );
+								break;
+							}
+							
+							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
+							// 直前のデータが0個なら終了とみなすしかなさそう
+							if( src.isEmpty() ){
+								log.d( "refresh-list-top: previous size == 0." );
+								break;
+							}
+							
+							// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
+							String max_id = Long.toString( src.get( src.size() - 1 ).id );
+							
+							if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
+								log.d( "refresh-list-top: timeout. make gap." );
+								// タイムアウト
+								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
+								TootGap gap = new TootGap( max_id, last_since_id );
+								list_tmp.add( gap );
+								break;
+							}
+							
+							String path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id;
+							TootApiResult result2 = client.request( path );
+							if( result2 == null || result2.array == null ){
+								log.d( "refresh-list-top: timeout. error or retry. make gap." );
+								// エラー
+								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
+								TootGap gap = new TootGap( max_id, last_since_id );
+								list_tmp.add( gap );
+								break;
+							}
+							
+							src = TootList.parseList( result2.array );
 							list_tmp.addAll( src );
 						}
 					}
@@ -2432,6 +2609,24 @@ import jp.juggler.subwaytooter.util.Utils;
 								String.format( Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id ) );
 							
 						}
+					
+					case TYPE_LIST_LIST:
+						return getListList( client, PATH_LIST_LIST );
+					
+					case TYPE_LIST_TL:
+						if( list_info == null ){
+							parseListInfo( client, String.format( Locale.JAPAN, PATH_LIST_INFO, profile_id ) );
+							client.callback.publishApiProgress( "" );
+						}
+						return getStatusList( client, String.format( Locale.JAPAN, PATH_LIST_TL, profile_id ) );
+					
+					case TYPE_LIST_MEMBER:
+						if( list_info == null ){
+							parseListInfo( client, String.format( Locale.JAPAN, PATH_LIST_INFO, profile_id ) );
+							client.callback.publishApiProgress( "" );
+						}
+						return getAccountList( client, String.format( Locale.JAPAN, PATH_LIST_MEMBER, profile_id ) );
+					
 					case TYPE_MUTES:
 						return getAccountList( client, PATH_MUTES );
 					
@@ -2848,6 +3043,9 @@ import jp.juggler.subwaytooter.util.Utils;
 					case TYPE_FEDERATE:
 						return getStatusList( client, PATH_FEDERATE );
 					
+					case TYPE_LIST_TL:
+						return getStatusList( client, String.format( Locale.JAPAN, PATH_LIST_TL, profile_id ) );
+					
 					case TYPE_FAVOURITES:
 						return getStatusList( client, PATH_FAVOURITES );
 					
@@ -3004,7 +3202,7 @@ import jp.juggler.subwaytooter.util.Utils;
 	private void setItemTop( @NonNull ColumnViewHolder holder, int idx, int y ){
 		
 		MyListView listView = holder.getListView();
-		boolean hasHeader = holder.hasHeaderView();
+		boolean hasHeader = holder.getHeaderView() != null;
 		if( hasHeader ){
 			// Adapter中から見たpositionとListViewから見たpositionにズレができる
 			idx = idx + 1;
@@ -3021,7 +3219,7 @@ import jp.juggler.subwaytooter.util.Utils;
 	private int getItemTop( @NonNull ColumnViewHolder holder, int idx ){
 		
 		MyListView listView = holder.getListView();
-		boolean hasHeader = holder.hasHeaderView();
+		boolean hasHeader = holder.getHeaderView() != null;
 		
 		if( hasHeader ){
 			// Adapter中から見たpositionとListViewから見たpositionにズレができる
@@ -3220,10 +3418,19 @@ import jp.juggler.subwaytooter.util.Utils;
 		case TYPE_HASHTAG:
 			app_state.stream_reader.unregister(
 				access_info
-				, StreamReader.EP_HASHTAG + "?tag=" + Uri.encode( hashtag )
+				, StreamReader.EP_HASHTAG + Uri.encode( hashtag )
 				, this
 			);
 			break;
+		
+		case TYPE_LIST_TL:
+			app_state.stream_reader.unregister(
+				access_info
+				, StreamReader.EP_LIST_TL + Long.toString( profile_id )
+				, this
+			);
+			break;
+			
 		}
 	}
 	
@@ -3314,17 +3521,15 @@ import jp.juggler.subwaytooter.util.Utils;
 		case TYPE_CONVERSATION:
 			return true;
 		}
-//			static final int TYPE_FAVOURITES = 5;
-//			static final int TYPE_REPORTS = 6;
-//			static final int TYPE_MUTES = 11;
-//			static final int TYPE_BLOCKS = 12;
-//			static final int TYPE_FOLLOW_REQUESTS = 13;
-//			static final int TYPE_BOOSTED_BY = 14;
-//			static final int TYPE_FAVOURITED_BY = 15;
-//			static final int TYPE_DOMAIN_BLOCKS = 16;
+		//			static final int TYPE_FAVOURITES = 5;
+		//			static final int TYPE_REPORTS = 6;
+		//			static final int TYPE_MUTES = 11;
+		//			static final int TYPE_BLOCKS = 12;
+		//			static final int TYPE_FOLLOW_REQUESTS = 13;
+		//			static final int TYPE_BOOSTED_BY = 14;
+		//			static final int TYPE_FAVOURITED_BY = 15;
+		//			static final int TYPE_DOMAIN_BLOCKS = 16;
 	}
-	
-	
 	
 	boolean canStreaming(){
 		switch( column_type ){
@@ -3336,6 +3541,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		case TYPE_LOCAL:
 		case TYPE_FEDERATE:
 		case TYPE_HASHTAG:
+		case TYPE_LIST_TL:
 			return ! access_info.isPseudo();
 		}
 	}
@@ -3426,10 +3632,41 @@ import jp.juggler.subwaytooter.util.Utils;
 		case TYPE_HASHTAG:
 			app_state.stream_reader.register(
 				access_info
-				, StreamReader.EP_HASHTAG + "&tag=" + Uri.encode( hashtag )
+				, StreamReader.EP_HASHTAG + Uri.encode( hashtag )
 				, this
 			);
 			break;
+		
+		case TYPE_LIST_TL:
+			app_state.stream_reader.register(
+				access_info
+				, StreamReader.EP_LIST_TL + Long.toString( profile_id )
+				, this
+			);
+			break;
+			
+		}
+	}
+	
+	public @NonNull String getListTitle(){
+		switch(column_type){
+		default:
+			return "?";
+			
+		case TYPE_LIST_MEMBER:
+		case TYPE_LIST_TL:
+			String sv = list_info == null ? null : list_info.title;
+			return !TextUtils.isEmpty( sv ) ? sv : Long.toString( profile_id );
+		}
+	}
+	public long getListId(){
+		switch(column_type){
+		default:
+			return -1L;
+		
+		case TYPE_LIST_MEMBER:
+		case TYPE_LIST_TL:
+			return profile_id;
 		}
 	}
 	

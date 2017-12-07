@@ -862,7 +862,7 @@ public class Utils {
 		}catch( Throwable ex ){
 			log.trace( ex );
 		}
-		return sb.toString();
+		return sb.toString().replaceAll( "\n+","\n" );
 	}
 	
 	public interface ScanViewCallback {

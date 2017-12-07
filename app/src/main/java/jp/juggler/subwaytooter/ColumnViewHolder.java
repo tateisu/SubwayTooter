@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter;
 
+import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -83,6 +84,11 @@ class ColumnViewHolder
 	private final View llRegexFilter;
 	private final Button btnDeleteNotification;
 	
+	private final View llListList;
+	private final EditText etListName;
+	private final View btnListAdd;
+	
+	
 	ColumnViewHolder( ActMain arg_activity, View root ){
 		this.activity = arg_activity;
 		
@@ -124,6 +130,22 @@ class ColumnViewHolder
 		cbResolve = root.findViewById( R.id.cbResolve );
 		
 		llSearch = root.findViewById( R.id.llSearch );
+		llListList = root.findViewById( R.id.llListList );
+		
+		btnListAdd= root.findViewById( R.id.btnListAdd );
+			etListName= root.findViewById( R.id.etListName );
+		btnListAdd.setOnClickListener( this );
+		
+		etListName.setOnEditorActionListener( new TextView.OnEditorActionListener() {
+			@Override public boolean onEditorAction( TextView v, int actionId, KeyEvent event ){
+				boolean handled = false;
+				if( actionId == EditorInfo.IME_ACTION_SEND ){
+					btnListAdd.performClick();
+					handled = true;
+				}
+				return handled;
+			}
+		} );
 		
 		llColumnSetting = root.findViewById( R.id.llColumnSetting );
 		
@@ -261,6 +283,7 @@ class ColumnViewHolder
 			
 			case Column.TYPE_INSTANCE_INFORMATION:
 				status_adapter.header = new HeaderViewHolderInstance(activity, column, listView );
+				break;
 			}
 			
 			// 添付メディアや正規表現のフィルタ
@@ -343,6 +366,7 @@ class ColumnViewHolder
 			
 			vg( btnDeleteNotification, column.column_type == Column.TYPE_NOTIFICATIONS );
 			vg( llSearch, ( column.column_type == Column.TYPE_SEARCH || column.column_type == Column.TYPE_SEARCH_PORTAL ) );
+			vg( llListList, ( column.column_type == Column.TYPE_LIST_LIST ) );
 			vg( cbResolve, ( column.column_type == Column.TYPE_SEARCH ) );
 			
 			// tvRegexFilterErrorの表示を更新
@@ -468,7 +492,7 @@ class ColumnViewHolder
 		}
 	}
 	
-	private void loadBackgroundImage( final ImageView iv, final String url ){
+	@SuppressLint("StaticFieldLeak") private void loadBackgroundImage( final ImageView iv, final String url ){
 		try{
 			if( TextUtils.isEmpty( url ) ){
 				// 指定がないなら閉じる
@@ -569,6 +593,10 @@ class ColumnViewHolder
 	
 	void closeColumnSetting(){
 		llColumnSetting.setVisibility( View.GONE );
+	}
+	
+	void onListListUpdated(){
+		etListName.setText( "" );
 	}
 	
 	@Override public void onRefresh( SwipyRefreshLayoutDirection direction ){
@@ -714,6 +742,15 @@ class ColumnViewHolder
 			int idx = activity.app_state.column_list.indexOf( column );
 			ActColumnCustomize.open( activity, idx, ActMain.REQUEST_CODE_COLUMN_COLOR );
 			break;
+		
+		case R.id.btnListAdd:
+			String tv = etListName.getText().toString().trim();
+			if( TextUtils.isEmpty( tv ) ){
+				Utils.showToast( activity, true, R.string.list_name_empty );
+				return;
+			}
+			activity.createNewList( column.access_info, tv );
+			
 		}
 		
 	}
@@ -737,8 +774,8 @@ class ColumnViewHolder
 	/////////////////////////////////////////////////////////////////
 	// Column から呼ばれる
 	
-	boolean hasHeaderView(){
-		return status_adapter != null && status_adapter.header != null;
+	@Nullable HeaderViewHolderBase getHeaderView(){
+		return status_adapter == null ? null : status_adapter.header;
 	}
 	
 	SwipyRefreshLayout getRefreshLayout(){

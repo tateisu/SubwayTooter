@@ -7,7 +7,6 @@ import android.text.Spannable;
 import android.text.TextUtils;
 
 import jp.juggler.subwaytooter.util.DecodeOptions;
-import jp.juggler.subwaytooter.util.EmojiDecoder;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -189,6 +188,16 @@ public class TootAccount {
 	}
 	
 	private static final Pattern reWhitespace = Pattern.compile( "[\\s\\t\\x0d\\x0a]+" );
+
+	
+	public Spannable decodeDisplayName( Context context ){
+
+		// remove white spaces
+		String sv = reWhitespace.matcher( display_name ).replaceAll( " " );
+		
+		// decode emoji code
+		return new DecodeOptions().setProfileEmojis( profile_emojis ).decodeEmoji( context, sv );
+	}
 	
 	public void setDisplayName( Context context, String username, String sv ){
 		if( TextUtils.isEmpty( sv ) ){
@@ -196,12 +205,7 @@ public class TootAccount {
 		}else{
 			this.display_name = Utils.sanitizeBDI( sv );
 		}
-		
-		// remove white spaces
-		sv = reWhitespace.matcher( this.display_name ).replaceAll( " " );
-		
-		// decode emoji code
-		this.decoded_display_name = new DecodeOptions().setProfileEmojis( this.profile_emojis ).decodeEmoji( context, sv );
+		this.decoded_display_name = decodeDisplayName(context);
 		
 	}
 	

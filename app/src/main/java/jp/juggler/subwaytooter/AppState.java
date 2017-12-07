@@ -41,7 +41,7 @@ import jp.juggler.subwaytooter.util.MyClickableSpan;
 import jp.juggler.subwaytooter.util.PostAttachment;
 import jp.juggler.subwaytooter.util.Utils;
 
-class AppState {
+public class AppState {
 	static final LogCategory log = new LogCategory( "AppState" );
 	final Context context;
 	final float density;
@@ -98,7 +98,7 @@ class AppState {
 	}
 	
 	private static final String FILE_COLUMN_LIST = "column_list";
-	final ArrayList< Column > column_list = new ArrayList<>();
+	public final ArrayList< Column > column_list = new ArrayList<>();
 	
 	JSONArray encodeColumnList(){
 		JSONArray array = new JSONArray();

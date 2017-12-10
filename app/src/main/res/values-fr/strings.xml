@@ -553,8 +553,7 @@
 	<string name="list_not_selected">please select list.</string>
 	<string name="account_sync_failed">account sync failed.</string>
 	<string name="list_retry_with_follow">You have not followed %1$s yet. Would you like to follow and then add to list?</string>
-	<string name="cant_add_list_while_follow_progress">Can\'t add user to list:\nfollow operation is progress on server side.</string>
-	<string name="cant_add_list_follow_requesting">Can\'t add user to list:\nPlease wait until the follow request is approved.</string>
+	<string name="cant_add_list_follow_requesting">Can\'t add user to list:\nif the user is "locked", please wait until follow request is approved. else please retry 2…3 times.</string>
 	<string name="cant_add_list_follow_failed">Can\'t add user to list:\nfollow operation failed.</string>
 	<string name="list_member_added">User has been added to the list.</string>
 	<string name="confirm_mute_notification_for_user">Mute notification from this user</string>

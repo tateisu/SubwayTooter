@@ -33,6 +33,7 @@ import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootList;
 import jp.juggler.subwaytooter.api.entity.TootRelationShip;
+import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -48,7 +49,7 @@ public class DlgListMemberAdd implements View.OnClickListener {
 	
 	@NonNull private final ActMain activity;
 	
-//	@NonNull private final TootAccount target_user;
+	//	@NonNull private final TootAccount target_user;
 	@NonNull private final String target_user_full_acct;
 	
 	private SavedAccount list_owner;
@@ -63,7 +64,7 @@ public class DlgListMemberAdd implements View.OnClickListener {
 	
 	public DlgListMemberAdd( @NonNull ActMain _activity, @NonNull TootAccount who, @NonNull SavedAccount _list_owner, long list_id ){
 		this.activity = _activity;
-	//	this.target_user = who;
+		//	this.target_user = who;
 		this.target_user_full_acct = _list_owner.getFullAcct( who );
 		this.account_list = activity.makeAccountList( log, false, null );
 		
@@ -103,7 +104,6 @@ public class DlgListMemberAdd implements View.OnClickListener {
 		this.dialog = new Dialog( activity );
 		dialog.setContentView( view );
 		
-		
 	}
 	
 	public void show(){
@@ -133,7 +133,7 @@ public class DlgListMemberAdd implements View.OnClickListener {
 			}
 			break;
 		case R.id.btnOk:
-			addListMember(false);
+			addListMember( false );
 			break;
 		}
 	}
@@ -257,7 +257,7 @@ public class DlgListMemberAdd implements View.OnClickListener {
 				//noinspection StatementWithEmptyBody
 				if( result != null
 					&& ! TextUtils.isEmpty( result.error )
-					&& !(result.response !=null && result.response.code() ==404 )
+					&& ! ( result.response != null && result.response.code() == 404 )
 					){
 					Utils.showToast( activity, true, result.error );
 				}
@@ -429,9 +429,9 @@ public class DlgListMemberAdd implements View.OnClickListener {
 		} );
 	}
 	
-	static final Pattern reFollowError = Pattern.compile( "follow",Pattern.CASE_INSENSITIVE );
+	static final Pattern reFollowError = Pattern.compile( "follow", Pattern.CASE_INSENSITIVE );
 	
-	private void addListMember(final boolean bFollow){
+	private void addListMember( final boolean bFollow ){
 		if( list_owner == null || list_id == - 1L ){
 			Utils.showToast( activity, false, R.string.list_not_selected );
 			return;
@@ -458,7 +458,7 @@ public class DlgListMemberAdd implements View.OnClickListener {
 					}
 					
 					@Override public void publishApiProgress( String s ){
-						showProgress(s);
+						showProgress( s );
 					}
 				} );
 				
@@ -467,24 +467,25 @@ public class DlgListMemberAdd implements View.OnClickListener {
 				client.setAccount( list_owner );
 				
 				// リストに追加したいアカウントの自タンスでのアカウントIDを取得する
-				String path = "/api/v1/accounts/search?q=" + target_user_full_acct;
+				String path = "/api/v1/search?resolve=true&q=" + Uri.encode( target_user_full_acct );
 				result = client.request( path );
-				if( result ==null || result.array ==null ){
+				if( result == null || result.object == null ){
 					return result;
-				}
-
-				for( int i = 0, ie = result.array.length() ; i < ie ; ++ i ){
-					TootAccount item = TootAccount.parse( activity, list_owner, result.array.optJSONObject( i ) );
-					if( list_owner.getFullAcct( item ).equals( target_user_full_acct ) ){
-						local_who = item;
-						break;
+				}else{
+					TootResults search_result = TootResults.parse( activity, list_owner, result.object );
+					if( search_result != null ){
+						for( TootAccount a : search_result.accounts ){
+							if( target_user_full_acct.equalsIgnoreCase( list_owner.getFullAcct( a ) ) ){
+								local_who = a;
+								break;
+							}
+						}
+					}
+					if( local_who == null ){
+						return new TootApiResult( activity.getString( R.string.account_sync_failed ) );
 					}
 				}
-
-				if( local_who == null ){
-					return new TootApiResult( activity.getString( R.string.account_sync_failed ) );
-				}
-
+				
 				if( bFollow ){
 					TootRelationShip relation;
 					if( list_owner.isLocalUser( local_who ) ){
@@ -494,7 +495,7 @@ public class DlgListMemberAdd implements View.OnClickListener {
 								, "" // 空データ
 							) );
 						
-						result = client.request( "/api/v1/accounts/"+local_who.id+"/follow", request_builder );
+						result = client.request( "/api/v1/accounts/" + local_who.id + "/follow", request_builder );
 					}else{
 						// リモートフォローする
 						Request.Builder request_builder = new Request.Builder().post(
@@ -515,10 +516,10 @@ public class DlgListMemberAdd implements View.OnClickListener {
 					}
 					if( result == null || result.array == null ) return result;
 					TootRelationShip.List relation_list = TootRelationShip.parseList( result.array );
-					relation = relation_list.isEmpty() ? null : relation_list.get(0);
+					relation = relation_list.isEmpty() ? null : relation_list.get( 0 );
 					
 					if( relation == null ){
-						return new TootApiResult( "parse error.");
+						return new TootApiResult( "parse error." );
 					}else if( ! relation.following ){
 						if( relation.requested ){
 							return new TootApiResult( activity.getString( R.string.cant_add_list_follow_requesting ) );
@@ -584,7 +585,7 @@ public class DlgListMemberAdd implements View.OnClickListener {
 						&& result.error != null && reFollowError.matcher( result.error ).find()
 						){
 						
-						if( !bFollow ){
+						if( ! bFollow ){
 							DlgConfirm.openSimple(
 								activity
 								, activity.getString( R.string.list_retry_with_follow, target_user_full_acct )
@@ -597,14 +598,15 @@ public class DlgListMemberAdd implements View.OnClickListener {
 						}else{
 							new AlertDialog.Builder( activity )
 								.setCancelable( true )
-								.setMessage( R.string.cant_add_list_while_follow_progress )
-								.setNeutralButton( R.string.close,null )
+								.setMessage( R.string.cant_add_list_follow_requesting )
+								.setNeutralButton( R.string.close, null )
 								.show();
 						}
 						return;
 					}
 					
 					Utils.showToast( activity, true, result.error );
+					
 				}
 			}
 			

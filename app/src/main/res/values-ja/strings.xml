@@ -819,7 +819,7 @@
 
     <string name="list_member_add">リストに追加…</string>
     <string name="list_member_remove">リストから削除…</string>
-    <string name="lists">リストの一覧</string>
+    <string name="lists">リスト</string>
     <string name="list_show_member">リストのユーザ</string>
     <string name="list_show_timeline">リストのタイムライン</string>
     <string name="list_member_of">\"%1$s\"リストのユーザ</string>
@@ -840,8 +840,7 @@
     <string name="list_not_selected">リストを選択してください</string>
     <string name="account_sync_failed">アカウントを同期できません</string>
     <string name="list_retry_with_follow">あなたは %1$s をまだフォローしていません。フォローしてからリストに追加しますか?</string>
-    <string name="cant_add_list_while_follow_progress">リストに追加できません:\nフォロー処理がサーバで進行中です</string>
-    <string name="cant_add_list_follow_requesting">リストに追加できません:\nフォローリクエストが承認されるのを待ってください</string>
+    <string name="cant_add_list_follow_requesting">リストに追加できません:\n「鍵付き」ユーザーの場合はフォローリクエストが承認されるまでお待ちください。そうでなければ2…3回再試行してください。</string>
     <string name="cant_add_list_follow_failed">リストに追加できません:\nフォロー操作に失敗しました</string>
     <string name="list_member_added">追加できました</string>
     <string name="confirm_mute_notification_for_user">Mute notification from this user</string>

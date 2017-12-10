@@ -94,6 +94,10 @@
         <item name="ic_list2">@drawable/ic_list2</item>
         <item name="ic_add">@drawable/ic_add</item>
 
+        <item name="ic_list_list">@drawable/ic_list_list</item>
+        <item name="ic_list_tl">@drawable/ic_list_tl</item>
+        <item name="ic_list_member">@drawable/ic_list_member</item>
+
     </style>
 
     <style name="AppTheme.Light.NoActionBar" parent="AppTheme.Light">
@@ -190,6 +194,9 @@
         <item name="ic_follow_wait">@drawable/ic_follow_wait_dark</item>
         <item name="ic_list2">@drawable/ic_list2_dark</item>
         <item name="ic_add">@drawable/ic_add_dark</item>
+        <item name="ic_list_list">@drawable/ic_list_list_dark</item>
+        <item name="ic_list_tl">@drawable/ic_list_tl_dark</item>
+        <item name="ic_list_member">@drawable/ic_list_member_dark</item>
 
     </style>
 

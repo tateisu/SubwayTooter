@@ -31,12 +31,6 @@ import okhttp3.WebSocketListener;
 @SuppressWarnings("WeakerAccess") class StreamReader {
 	static final LogCategory log = new LogCategory( "StreamReader" );
 	
-	static final String EP_USER = "/api/v1/streaming/?stream=user";
-	static final String EP_PUBLIC = "/api/v1/streaming/?stream=public";
-	static final String EP_PUBLIC_LOCAL = "/api/v1/streaming/?stream=public:local";
-	static final String EP_HASHTAG = "/api/v1/streaming/?stream=hashtag&tag="; // + hashtag (先頭の＃を含まない)
-	static final String EP_LIST_TL = "/api/v1/streaming/?stream=list&list="; // + list_id
-	
 	static final Pattern reNumber = Pattern.compile( "([-]?\\d+)" );
 	
 	interface Callback {
@@ -132,17 +126,17 @@ import okhttp3.WebSocketListener;
 				Object payload = parent.opt( PAYLOAD );
 				
 				if( payload instanceof JSONObject ){
-					JSONObject src = (JSONObject)payload;
+					JSONObject src = (JSONObject) payload;
 					switch( event ){
-
+					
 					case "update":
 						// ここを通るケースはまだ確認できていない
 						return TootStatus.parse( context, access_info, src );
-
+					
 					case "notification":
 						// ここを通るケースはまだ確認できていない
 						return TootNotification.parse( context, access_info, src );
-
+					
 					default:
 						// ここを通るケースはまだ確認できていない
 						log.e( "unknown payload(1). message=%s", parent_text );
@@ -164,11 +158,11 @@ import okhttp3.WebSocketListener;
 						case "update":
 							// 2017/8/24 18:37 mastodon.juggler.jpでここを通った
 							return TootStatus.parse( context, access_info, src );
-
+						
 						case "notification":
 							// 2017/8/24 18:37 mastodon.juggler.jpでここを通った
 							return TootNotification.parse( context, access_info, src );
-
+						
 						default:
 							// ここを通るケースはまだ確認できていない
 							log.e( "unknown payload(2). message=%s", parent_text );

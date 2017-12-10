@@ -286,52 +286,10 @@ class ColumnViewHolder
 				break;
 			}
 			
-			// 添付メディアや正規表現のフィルタ
-			boolean bAllowFilter;
-			switch( column.column_type ){
-			default:
-				bAllowFilter = true;
-				break;
-			case Column.TYPE_SEARCH:
-			case Column.TYPE_CONVERSATION:
-			case Column.TYPE_REPORTS:
-			case Column.TYPE_BLOCKS:
-			case Column.TYPE_DOMAIN_BLOCKS:
-			case Column.TYPE_MUTES:
-			case Column.TYPE_FOLLOW_REQUESTS:
-			case Column.TYPE_NOTIFICATIONS:
-			case Column.TYPE_INSTANCE_INFORMATION:
-				bAllowFilter = false;
-				break;
-			}
-			
-			// ブーストを表示しないフィルタ
-			boolean bAllowFilterBoost;
-			switch( column.column_type ){
-			default:
-				bAllowFilterBoost = false;
-				break;
-			case Column.TYPE_HOME:
-			case Column.TYPE_PROFILE:
-			case Column.TYPE_NOTIFICATIONS:
-				bAllowFilterBoost = true;
-				break;
-			}
-			
-			// 返信を表示しないフィルタ
-			boolean bAllowFilterReply;
-			switch( column.column_type ){
-			default:
-				bAllowFilterReply = false;
-				break;
-			case Column.TYPE_HOME:
-			case Column.TYPE_PROFILE:
-				bAllowFilterReply = true;
-				break;
-			}
-			
 			boolean isNotificationColumn = (column.column_type == Column.TYPE_NOTIFICATIONS);
-			
+
+			// 添付メディアや正規表現のフィルタ
+			boolean bAllowFilter = column.canStatusFilter();
 			
 			llColumnSetting.setVisibility( View.GONE );
 			
@@ -354,14 +312,14 @@ class ColumnViewHolder
 			vg( etRegexFilter, bAllowFilter );
 			vg( llRegexFilter, bAllowFilter );
 
-			vg( cbDontShowBoost, bAllowFilterBoost );
-			vg( cbDontShowReply, bAllowFilterReply );
+			vg( cbDontShowBoost, column.canFilterBoost() );
+			vg( cbDontShowReply, column.canFilterReply() );
 			vg( cbDontShowFavourite, isNotificationColumn );
 			vg( cbDontShowFollow, isNotificationColumn );
 			
 			vg( cbDontStreaming, column.canStreaming() );
 			vg( cbDontAutoRefresh, column.canAutoRefresh() );
-			vg( cbHideMediaDefault, column.canShowMedia() );
+			vg( cbHideMediaDefault, column.canNSFWDefault() );
 			vg( cbEnableSpeech, column.canSpeech() );
 			
 			vg( btnDeleteNotification, column.column_type == Column.TYPE_NOTIFICATIONS );

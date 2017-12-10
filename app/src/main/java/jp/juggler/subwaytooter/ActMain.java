@@ -1852,6 +1852,7 @@ public class ActMain extends AppCompatActivity
 					}
 				} );
 				client.setAccount( access_info );
+				
 				String path = "/api/v1/accounts/search" + "?q=" + Uri.encode( user );
 				
 				TootApiResult result = client.request( path );

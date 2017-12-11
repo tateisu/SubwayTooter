@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -615,7 +616,7 @@ public class Utils {
 		int end = s.length();
 		int pos = s.indexOf( "%1$s" );
 		if( pos == - 1 ) return new SpannableString( s );
-
+		
 		SpannableStringBuilder sb = new SpannableStringBuilder();
 		if( pos > 0 ) sb.append( s.substring( 0, pos ) );
 		sb.append( display_name );
@@ -831,13 +832,13 @@ public class Utils {
 						}
 						if( sb.length() == empty_length ){
 							// JSONではなかった
-
+							
 							// HTMLならタグの除去を試みる
-							String ct = response.header("content-type");
+							String ct = response.header( "content-type" );
 							if( ct != null && ct.contains( "/html" ) ){
-								sv = new DecodeOptions().decodeHTML( null,null,sv ).toString();
+								sv = new DecodeOptions().decodeHTML( null, null, sv ).toString();
 							}
-
+							
 							sb.append( sv );
 						}
 					}
@@ -862,7 +863,7 @@ public class Utils {
 		}catch( Throwable ex ){
 			log.trace( ex );
 		}
-		return sb.toString().replaceAll( "\n+","\n" );
+		return sb.toString().replaceAll( "\n+", "\n" );
 	}
 	
 	public interface ScanViewCallback {
@@ -970,20 +971,20 @@ public class Utils {
 		}
 	}
 	
-	public static String getAttribute( NamedNodeMap attr_map, String name, String defval ){
+	public static String getAttribute( @NonNull NamedNodeMap attr_map, @NonNull String name, @Nullable String defval ){
 		Node node = attr_map.getNamedItem( name );
 		if( node != null ) return node.getNodeValue();
 		return defval;
 	}
 	
 	@SuppressWarnings("unused")
-	public static String formatError( Throwable ex, String fmt, Object... args ){
+	public static String formatError( @NonNull Throwable ex, @NonNull String fmt, Object... args ){
 		if( args.length > 0 ) fmt = String.format( fmt, args );
 		return fmt + String.format( " :%s %s", ex.getClass().getSimpleName(), ex.getMessage() );
 	}
 	
 	@SuppressWarnings("unused")
-	public static String formatError( Throwable ex, Resources resources, int string_id, Object... args ){
+	public static String formatError( @NonNull Throwable ex, @NonNull Resources resources, int string_id, Object... args ){
 		return resources.getString( string_id, args ) + String.format( " :%s %s", ex.getClass().getSimpleName(), ex.getMessage() );
 	}
 	
@@ -999,57 +1000,40 @@ public class Utils {
 		}
 	}
 	
-	public static void showToast( final Context context, final boolean bLong, final String fmt, final Object... args ){
+	private static WeakReference< Toast > refToast;
+	
+	private static void showToastImpl( final Context context, final boolean bLong, final String message ){
 		runOnMainThread( new Runnable() {
-			@Override
-			public void run(){
-				Toast.makeText(
+			@Override public void run(){
+				// 前回のトーストの表示を終了する
+				Toast t = refToast == null ? null : refToast.get();
+				if( t != null ) t.cancel();
+				// 新しいトーストを作る
+				t = Toast.makeText(
 					context
-					, ( args.length == 0 ? fmt : String.format( fmt, args ) )
+					, message
 					, bLong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT
-				).show();
+				);
+				t.show();
+				refToast = new WeakReference<>( t );
 			}
 		} );
 	}
 	
-	public static void showToast( final Context context, final Throwable ex, final String fmt, final Object... args ){
-		runOnMainThread( new Runnable() {
-			@Override
-			public void run(){
-				Toast.makeText(
-					context
-					, formatError( ex, fmt, args )
-					, Toast.LENGTH_LONG
-				).show();
-			}
-		} );
+	public static void showToast( @NonNull Context context, boolean bLong, @NonNull String fmt, Object... args ){
+		showToastImpl( context, bLong, args.length == 0 ? fmt : String.format( fmt, args ) );
 	}
 	
-	public static void showToast( final Context context, final boolean bLong, final int string_id, final Object... args ){
-		runOnMainThread( new Runnable() {
-			@Override
-			public void run(){
-				
-				Toast.makeText(
-					context
-					, context.getString( string_id, args )
-					, bLong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT
-				).show();
-			}
-		} );
+	public static void showToast( @NonNull Context context, @NonNull Throwable ex, String fmt, Object... args ){
+		showToastImpl( context, true, formatError( ex, fmt, args ) );
 	}
 	
-	public static void showToast( final Context context, final Throwable ex, final int string_id, final Object... args ){
-		runOnMainThread( new Runnable() {
-			@Override
-			public void run(){
-				Toast.makeText(
-					context
-					, formatError( ex, context.getResources(), string_id, args )
-					, Toast.LENGTH_LONG
-				).show();
-			}
-		} );
+	public static void showToast( @NonNull Context context, boolean bLong, int string_id, Object... args ){
+		showToastImpl( context, bLong, context.getString( string_id, args ) );
+	}
+	
+	public static void showToast( @NonNull Context context, @NonNull Throwable ex, int string_id, Object... args ){
+		showToastImpl( context, true, formatError( ex, context.getResources(), string_id, args ) );
 	}
 	
 	public static boolean isExternalStorageDocument( Uri uri ){

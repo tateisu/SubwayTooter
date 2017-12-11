@@ -436,7 +436,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			if( who == null ){
 				// サーバのバグで誰のことか分からないので何もできない
 			}else if( relation.muting ){
-				activity.callMute( access_info, who, false,false, null );
+				activity.callMute( access_info, who, false,false );
 			}else{
 				View view = activity.getLayoutInflater().inflate( R.layout.dlg_confirm,null,false );
 				TextView tvMessage = view.findViewById( R.id.tvMessage );
@@ -450,7 +450,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 					.setNegativeButton( R.string.cancel, null )
 					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 						@Override public void onClick( DialogInterface dialog, int which ){
-							activity.callMute( access_info, who, true,cbMuteNotification.isChecked(), null );
+							activity.callMute( access_info, who, true,cbMuteNotification.isChecked() );
 						}
 					} )
 					.show();
@@ -461,14 +461,14 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			if( who == null ){
 				// サーバのバグで誰のことか分からないので何もできない
 			}else if( relation.blocking ){
-				activity.callBlock( access_info, who, false, null );
+				activity.callBlock( access_info, who, false );
 			}else{
 				new AlertDialog.Builder( activity )
 					.setMessage( activity.getString( R.string.confirm_block_user, who.username ) )
 					.setNegativeButton( R.string.cancel, null )
 					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 						@Override public void onClick( DialogInterface dialog, int which ){
-							activity.callBlock( access_info, who, true, null );
+							activity.callBlock( access_info, who, true );
 						}
 					} )
 					.show();
@@ -550,7 +550,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 						.setNegativeButton( R.string.cancel, null )
 						.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 							@Override public void onClick( DialogInterface dialog, int which ){
-								activity.callDomainBlock( access_info, domain, true, null );
+								activity.callDomainBlock( access_info, domain, true );
 							}
 						} )
 						.show();

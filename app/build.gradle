@@ -5,13 +5,13 @@ apply plugin: 'kotlin-android'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion '26.0.2'
+    buildToolsVersion '27.0.2'
     defaultConfig {
         applicationId "jp.juggler.subwaytooter"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 179
-        versionName "1.7.9"
+        versionCode 181
+        versionName "1.8.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -61,26 +61,20 @@ dependencies {
     compile 'com.android.support:design:26.1.0'
     compile 'com.android.support:customtabs:26.1.0'
 
-    compile 'com.google.firebase:firebase-core:11.4.2'
-    compile 'com.google.firebase:firebase-messaging:11.4.2'
-
-//    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    compile 'com.google.firebase:firebase-core:11.6.2'
+    compile 'com.google.firebase:firebase-messaging:11.6.2'
 
     testCompile 'junit:junit:4.12'
-//    compile 'com.android.volley:volley:1.0.0'
     compile 'com.squareup.okhttp3:okhttp:3.8.1'
-    //   compile 'com.squareup.okhttp3:okhttp-urlconnection:3.8.0' // Vollery に使う
     compile 'commons-io:commons-io:2.4'
     compile 'uk.co.chrisjenx:calligraphy:2.2.0'
     compile 'com.github.woxthebox:draglistview:1.4.3'
     compile 'com.github.omadahealth:swipy:1.2.3@aar'
     compile 'com.jrummyapps:colorpicker:2.1.7'
-    //    compile 'com.astuetz:pagerslidingtabstrip:1.0.1'
     compile 'com.github.kenglxn.QRGen:android:2.2.0'
     compile project(':exif')
 
     compile 'com.github.bumptech.glide:glide:3.8.0'
-//    annotationProcessor 'com.github.bumptech.glide:compiler:3.8.0'
     compile 'com.github.bumptech.glide:okhttp3-integration:1.5.0'
 
     compile 'org.hjson:hjson:2.1.1'

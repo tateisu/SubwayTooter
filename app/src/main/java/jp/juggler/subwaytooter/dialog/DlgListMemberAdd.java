@@ -66,7 +66,7 @@ public class DlgListMemberAdd implements View.OnClickListener {
 		this.activity = _activity;
 		//	this.target_user = who;
 		this.target_user_full_acct = _list_owner.getFullAcct( who );
-		this.account_list = activity.makeAccountList( log, false, null );
+		this.account_list = activity.makeAccountListNonPseudo( log, null );
 		
 		if( _list_owner.isPseudo() ){
 			this.list_owner = null;

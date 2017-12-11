@@ -65,6 +65,7 @@ import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
+import jp.juggler.subwaytooter.api.TootApiTask;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootApplication;
 import jp.juggler.subwaytooter.api.entity.TootList;
@@ -676,9 +677,7 @@ public class ActMain extends AppCompatActivity
 		return super.onOptionsItemSelected( item );
 	}
 	
-	@SuppressWarnings("StatementWithEmptyBody")
-	@Override
-	public boolean onNavigationItemSelected( @NonNull MenuItem item ){
+	@Override public boolean onNavigationItemSelected( @NonNull MenuItem item ){
 		// Handle navigation view item clicks here.
 		int id = item.getItemId();
 		
@@ -746,22 +745,6 @@ public class ActMain extends AppCompatActivity
 			
 		}else if( id == R.id.mastodon_search_portal ){
 			addColumn( getDefaultInsertPosition(), SavedAccount.getNA(), Column.TYPE_SEARCH_PORTAL, "" );
-			
-			//		}else if( id == R.id.nav_translation ){
-			//			Intent intent = new Intent(this, TransCommuActivity.class);
-			//			intent.putExtra(TransCommuActivity.APPLICATION_CODE_EXTRA, "FJlDoBKitg");
-			//			this.startActivity(intent);
-			//
-			// Handle the camera action
-			//		}else if( id == R.id.nav_gallery ){
-			//
-			//		}else if( id == R.id.nav_slideshow ){
-			//
-			//		}else if( id == R.id.nav_manage ){
-			//
-			//		}else if( id == R.id.nav_share ){
-			//
-			//		}else if( id == R.id.nav_send ){
 			
 		}
 		
@@ -1127,56 +1110,21 @@ public class ActMain extends AppCompatActivity
 				, final boolean bInputAccessToken
 			){
 				
-				//noinspection deprecation
-				final ProgressDialog progress = new ProgressDialog( ActMain.this );
-				
-				final AsyncTask< Void, String, TootApiResult > task = new AsyncTask< Void, String, TootApiResult >() {
+				new TootApiTask( ActMain.this, instance, true ) {
 					
-					@Override protected TootApiResult doInBackground( Void... params ){
-						TootApiClient api_client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-							@Override public boolean isApiCancelled(){
-								return isCancelled();
-							}
-							
-							@Override public void publishApiProgress( final String s ){
-								Utils.runOnMainThread( new Runnable() {
-									@Override
-									public void run(){
-										progress.setMessage( s );
-									}
-								} );
-							}
-						} );
-						
-						api_client.setInstance( instance );
-						
+					@Override protected TootApiResult doInBackground( Void... voids ){
 						if( bPseudoAccount ){
-							return api_client.checkInstance();
+							return client.checkInstance();
 						}else{
 							String client_name = Pref.pref( ActMain.this ).getString( Pref.KEY_CLIENT_NAME, "" );
-							return api_client.authorize1( client_name );
+							return client.authorize1( client_name );
 						}
 					}
 					
-					@Override
-					protected void onPostExecute( TootApiResult result ){
-						try{
-							progress.dismiss();
-						}catch( Throwable ignored ){
-							// java.lang.IllegalArgumentException:
-							// at android.view.WindowManagerGlobal.findViewLocked(WindowManagerGlobal.java:396)
-							// at android.view.WindowManagerGlobal.removeView(WindowManagerGlobal.java:322)
-							// at android.view.WindowManagerImpl.removeViewImmediate(WindowManagerImpl.java:116)
-							// at android.app.Dialog.dismissDialog(Dialog.java:341)
-							// at android.app.Dialog.dismiss(Dialog.java:324)
-							// at jp.juggler.subwaytooter.ActMain$10$1.onPostExecute(ActMain.java:867)
-							// at jp.juggler.subwaytooter.ActMain$10$1.onPostExecute(ActMain.java:837)
-						}
+					@Override protected void handleResult( TootApiResult result ){
+						if( result == null ) return; // cancelled.
 						
-						//noinspection StatementWithEmptyBody
-						if( result == null ){
-							// cancelled.
-						}else if( result.error != null ){
+						if( result.error != null ){
 							String sv = result.error;
 							
 							// エラーはブラウザ用URLかもしれない
@@ -1238,17 +1186,7 @@ public class ActMain extends AppCompatActivity
 							}
 						}
 					}
-				};
-				progress.setIndeterminate( true );
-				progress.setCancelable( true );
-				progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
-					@Override
-					public void onCancel( DialogInterface dialog ){
-						task.cancel( true );
-					}
-				} );
-				progress.show();
-				task.executeOnExecutor( App1.task_executor );
+				}.executeOnExecutor( App1.task_executor );
 			}
 		} );
 		
@@ -1392,10 +1330,7 @@ public class ActMain extends AppCompatActivity
 		
 		// OAuth2 認証コールバック
 		
-		//noinspection deprecation
-		final ProgressDialog progress = new ProgressDialog( ActMain.this );
-		
-		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( ActMain.this, true ) {
 			
 			TootAccount ta;
 			SavedAccount sa;
@@ -1403,20 +1338,6 @@ public class ActMain extends AppCompatActivity
 			
 			@Override
 			protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-						Utils.runOnMainThread( new Runnable() {
-							@Override
-							public void run(){
-								progress.setMessage( s );
-							}
-						} );
-					}
-				} );
 				
 				// エラー時
 				// subwaytooter://oauth
@@ -1479,33 +1400,11 @@ public class ActMain extends AppCompatActivity
 				return result;
 			}
 			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				try{
-					progress.dismiss();
-				}catch( Throwable ex ){
-					log.trace( ex );
-					// java.lang.IllegalArgumentException:
-					// at android.view.WindowManagerGlobal.findViewLocked(WindowManagerGlobal.java:451)
-					// at android.view.WindowManagerGlobal.removeView(WindowManagerGlobal.java:377)
-					// at android.view.WindowManagerImpl.removeViewImmediate(WindowManagerImpl.java:122)
-					// at android.app.Dialog.dismissDialog(Dialog.java:546)
-					// at android.app.Dialog.dismiss(Dialog.java:529)
-				}
-				
+			@Override protected void handleResult( TootApiResult result ){
 				afterAccountVerify( result, ta, sa, host );
 			}
-		};
-		progress.setIndeterminate( true );
-		progress.setCancelable( true );
-		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
-			@Override
-			public void onCancel( DialogInterface dialog ){
-				task.cancel( true );
-			}
-		} );
-		progress.show();
-		task.executeOnExecutor( App1.task_executor );
+			
+		}.executeOnExecutor( App1.task_executor );
 	}
 	
 	boolean afterAccountVerify( @Nullable TootApiResult result, @Nullable TootAccount ta, @Nullable SavedAccount sa, @Nullable String host ){
@@ -1598,31 +1497,12 @@ public class ActMain extends AppCompatActivity
 		, @Nullable final SavedAccount sa
 	){
 		
-		//noinspection deprecation
-		final ProgressDialog progress = new ProgressDialog( ActMain.this );
-		
-		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( ActMain.this, host, true ) {
 			
 			TootAccount ta;
 			
 			@Override
 			protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-						Utils.runOnMainThread( new Runnable() {
-							@Override
-							public void run(){
-								progress.setMessage( s );
-							}
-						} );
-					}
-				} );
-				
-				client.setInstance( host );
 				
 				TootApiResult result = client.checkAccessToken( access_token );
 				if( result != null && result.object != null ){
@@ -1637,19 +1517,7 @@ public class ActMain extends AppCompatActivity
 				return result;
 			}
 			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				try{
-					progress.dismiss();
-				}catch( Throwable ex ){
-					log.trace( ex );
-					// java.lang.IllegalArgumentException:
-					// at android.view.WindowManagerGlobal.findViewLocked(WindowManagerGlobal.java:451)
-					// at android.view.WindowManagerGlobal.removeView(WindowManagerGlobal.java:377)
-					// at android.view.WindowManagerImpl.removeViewImmediate(WindowManagerImpl.java:122)
-					// at android.app.Dialog.dismissDialog(Dialog.java:546)
-					// at android.app.Dialog.dismiss(Dialog.java:529)
-				}
+			@Override protected void handleResult( TootApiResult result ){
 				
 				if( afterAccountVerify( result, ta, sa, host ) ){
 					try{
@@ -1665,17 +1533,7 @@ public class ActMain extends AppCompatActivity
 				}
 				
 			}
-		};
-		progress.setIndeterminate( true );
-		progress.setCancelable( true );
-		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
-			@Override
-			public void onCancel( DialogInterface dialog ){
-				task.cancel( true );
-			}
-		} );
-		progress.show();
-		task.executeOnExecutor( App1.task_executor );
+		}.executeOnExecutor( App1.task_executor );
 	}
 	
 	// アクセストークンの手動入力(更新)
@@ -1828,76 +1686,36 @@ public class ActMain extends AppCompatActivity
 	// ユーザ名からアカウントIDを取得するために検索APIを使う
 	void startFindAccount( final SavedAccount access_info, final String host, final String user, final FindAccountCallback callback ){
 		
-		//noinspection deprecation
-		final ProgressDialog progress = new ProgressDialog( this );
-		
-		final AsyncTask< Void, Void, TootAccount > task = new AsyncTask< Void, Void, TootAccount >() {
-			@Override
-			protected TootAccount doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					
-					@Override
-					public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override
-					public void publishApiProgress( final String s ){
-						Utils.runOnMainThread( new Runnable() {
-							@Override
-							public void run(){
-								progress.setMessage( s );
-							}
-						} );
-					}
-				} );
-				client.setAccount( access_info );
-				
+		new TootApiTask( this, access_info, true ) {
+			
+			@Override protected TootApiResult doInBackground( Void... voids ){
 				String path = "/api/v1/accounts/search" + "?q=" + Uri.encode( user );
 				
 				TootApiResult result = client.request( path );
 				if( result != null && result.array != null ){
 					for( int i = 0, ie = result.array.length() ; i < ie ; ++ i ){
 						
-						TootAccount item = TootAccount.parse( ActMain.this, access_info, result.array.optJSONObject( i ) );
+						TootAccount a = TootAccount.parse( ActMain.this, access_info, result.array.optJSONObject( i ) );
 						
-						if( ! item.username.equals( user ) ) continue;
+						if( ! a.username.equals( user ) ) continue;
 						
-						if( ! item.acct.contains( "@" )
-							|| item.acct.equalsIgnoreCase( user + "@" + host ) )
-							return item;
+						if( access_info.getFullAcct( a ).equalsIgnoreCase( user + "@" + host ) ){
+							who = a;
+							break;
+						}
 					}
 				}
-				
-				return null;
-				
+				return result;
 			}
 			
-			@Override
-			protected void onCancelled( TootAccount result ){
-				super.onPostExecute( result );
+			TootAccount who;
+			
+			@Override protected void handleResult( TootApiResult result ){
+				callback.onFindAccount( who );
 			}
 			
-			@Override
-			protected void onPostExecute( TootAccount result ){
-				try{
-					progress.dismiss();
-				}catch( Throwable ignored ){
-				}
-				callback.onFindAccount( result );
-			}
-			
-		};
-		progress.setIndeterminate( true );
-		progress.setCancelable( true );
-		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
-			@Override
-			public void onCancel( DialogInterface dialog ){
-				task.cancel( true );
-			}
-		} );
-		progress.show();
-		task.executeOnExecutor( App1.task_executor );
+		}.executeOnExecutor( App1.task_executor );
+		
 	}
 	
 	static final Pattern reUrlHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#]+)(?:\\z|\\?)" );
@@ -2242,7 +2060,7 @@ public class ActMain extends AppCompatActivity
 		final String initial_text = "@" + access_info.getFullAcct( who ) + " ";
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_toot )
-			, makeAccountList( log, false, who_host )
+			, makeAccountListNonPseudo( log, who_host )
 			, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 					ActPost.open( ActMain.this, REQUEST_CODE_POST, ai.db_id, initial_text );
@@ -2264,20 +2082,9 @@ public class ActMain extends AppCompatActivity
 	// open profile
 	
 	private void openProfileRemote( final int pos, final SavedAccount access_info, final String who_url ){
-		new AsyncTask< Void, Void, TootApiResult >() {
-			TootAccount who_local;
+		new TootApiTask( this, access_info, true ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-					}
-				} );
-				
-				client.setAccount( access_info );
 				
 				// 検索APIに他タンスのユーザのURLを投げると、自タンスのURLを得られる
 				String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( who_url ) );
@@ -2303,11 +2110,10 @@ public class ActMain extends AppCompatActivity
 				
 			}
 			
-			@Override protected void onCancelled( TootApiResult result ){
-				super.onPostExecute( result );
-			}
+			TootAccount who_local;
 			
-			@Override protected void onPostExecute( TootApiResult result ){
+			@Override protected void handleResult( TootApiResult result ){
+				
 				if( result == null ){
 					// cancelled.
 				}else if( who_local != null ){
@@ -2329,7 +2135,7 @@ public class ActMain extends AppCompatActivity
 		
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_open_user_who, AcctColor.getNickname( who.acct ) )
-			, makeAccountList( log, false, who_host )
+			, makeAccountListNonPseudo( log, who_host )
 			, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 					if( ai.host.equalsIgnoreCase( access_info.host ) ){
@@ -2393,7 +2199,7 @@ public class ActMain extends AppCompatActivity
 			// アカウントを選択して開く
 			AccountPicker.pick( this, false, false
 				, getString( R.string.account_picker_open_user_who, AcctColor.getNickname( user + "@" + host ) )
-				, makeAccountList( log, false, host )
+				, makeAccountListNonPseudo( log, host )
 				, new AccountPicker.AccountPickerCallback() {
 					@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 						openProfileRemote( pos, ai, url );
@@ -2421,19 +2227,9 @@ public class ActMain extends AppCompatActivity
 		app_state.setBusyFav( access_info, arg_status );
 		
 		//
-		new AsyncTask< Void, Void, TootApiResult >() {
-			TootStatus new_status;
+		new TootApiTask( this, access_info, false ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-					}
-				} );
-				client.setAccount( access_info );
 				TootApiResult result;
 				
 				TootStatusLike target_status;
@@ -2484,13 +2280,10 @@ public class ActMain extends AppCompatActivity
 				
 			}
 			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				super.onPostExecute( result );
-			}
+			TootStatus new_status;
 			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
+			@Override protected void handleResult( TootApiResult result ){
+				
 				app_state.resetBusyFav( access_info, arg_status );
 				
 				//noinspection StatementWithEmptyBody
@@ -2533,6 +2326,7 @@ public class ActMain extends AppCompatActivity
 			}
 			
 		}.executeOnExecutor( App1.task_executor );
+		
 		// ファボ表示を更新中にする
 		showColumnMatchAccount( access_info );
 	}
@@ -2568,41 +2362,33 @@ public class ActMain extends AppCompatActivity
 		
 		// 必要なら確認を出す
 		if( bSet && ! bConfirmed ){
-			DlgConfirm.open( this, getString( R.string.confirm_boost_from, AcctColor.getNickname( access_info.acct ) ), new DlgConfirm.Callback() {
-				@Override public boolean isConfirmEnabled(){
-					return access_info.confirm_boost;
+			DlgConfirm.open(
+				this
+				, getString( R.string.confirm_boost_from, AcctColor.getNickname( access_info.acct ) )
+				, new DlgConfirm.Callback() {
+					@Override public boolean isConfirmEnabled(){
+						return access_info.confirm_boost;
+					}
+					
+					@Override public void setConfirmEnabled( boolean bv ){
+						access_info.confirm_boost = bv;
+						access_info.saveSetting();
+						reloadAccountSetting( access_info );
+					}
+					
+					@Override public void onOK(){
+						performBoost( access_info, arg_status, nCrossAccountMode, true, true, callback );
+					}
 				}
-				
-				@Override public void setConfirmEnabled( boolean bv ){
-					access_info.confirm_boost = bv;
-					access_info.saveSetting();
-					reloadAccountSetting( access_info );
-				}
-				
-				@Override public void onOK(){
-					performBoost( access_info, arg_status, nCrossAccountMode, bSet, true, callback );
-				}
-			} );
+			);
 			return;
 		}
 		
 		app_state.setBusyBoost( access_info, arg_status );
 		
-		//
-		new AsyncTask< Void, Void, TootApiResult >() {
-			
-			TootStatus new_status;
+		new TootApiTask( this, access_info, false ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-					}
-				} );
-				client.setAccount( access_info );
 				
 				TootApiResult result;
 				
@@ -2662,11 +2448,10 @@ public class ActMain extends AppCompatActivity
 				
 			}
 			
-			@Override protected void onCancelled( TootApiResult result ){
-				super.onPostExecute( result );
-			}
+			TootStatus new_status;
 			
-			@Override protected void onPostExecute( TootApiResult result ){
+			@Override protected void handleResult( TootApiResult result ){
+				
 				app_state.resetBusyBoost( access_info, arg_status );
 				
 				//noinspection StatementWithEmptyBody
@@ -2728,22 +2513,11 @@ public class ActMain extends AppCompatActivity
 		final SavedAccount access_info
 		, final String remote_status_url
 	){
-		//noinspection deprecation
-		final ProgressDialog progress = new ProgressDialog( this );
-		
-		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, access_info, true ) {
+			
 			TootStatus target_status;
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-					}
-				} );
-				client.setAccount( access_info );
 				
 				// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
 				String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( remote_status_url ) );
@@ -2763,17 +2537,8 @@ public class ActMain extends AppCompatActivity
 				return result;
 			}
 			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				super.onPostExecute( result );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				try{
-					progress.dismiss();
-				}catch( Throwable ignored ){
-				}
+			@Override protected void handleResult( TootApiResult result ){
+				
 				if( result == null ){
 					// cancelled.
 				}else if( target_status != null ){
@@ -2782,18 +2547,9 @@ public class ActMain extends AppCompatActivity
 					Utils.showToast( ActMain.this, true, result.error );
 				}
 			}
-		};
-		
-		progress.setIndeterminate( true );
-		progress.setCancelable( true );
-		progress.setMessage( getString( R.string.progress_synchronize_toot ) );
-		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
-			@Override public void onCancel( DialogInterface dialog ){
-				task.cancel( true );
-			}
-		} );
-		progress.show();
-		task.executeOnExecutor( App1.task_executor );
+		}
+			.setProgressPrefix( getString( R.string.progress_synchronize_toot ) )
+			.executeOnExecutor( App1.task_executor );
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -2974,23 +2730,11 @@ public class ActMain extends AppCompatActivity
 		, final SavedAccount access_info
 		, final String remote_status_url
 	){
-		//noinspection deprecation
-		final ProgressDialog progress = new ProgressDialog( this );
-		
-		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, access_info, true ) {
 			
 			long local_status_id = - 1L;
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-					}
-				} );
-				client.setAccount( access_info );
 				
 				TootApiResult result;
 				if( access_info.isPseudo() ){
@@ -3029,16 +2773,8 @@ public class ActMain extends AppCompatActivity
 			}
 			
 			@Override
-			protected void onCancelled( TootApiResult result ){
-				super.onPostExecute( result );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				try{
-					progress.dismiss();
-				}catch( Throwable ignored ){
-				}
+			protected void handleResult( TootApiResult result ){
+				
 				if( result == null ){
 					// cancelled.
 				}else if( local_status_id != - 1L ){
@@ -3047,18 +2783,10 @@ public class ActMain extends AppCompatActivity
 					Utils.showToast( ActMain.this, true, result.error );
 				}
 			}
-		};
+		}
+			.setProgressPrefix( getString( R.string.progress_synchronize_toot ) )
+			.executeOnExecutor( App1.task_executor );
 		
-		progress.setIndeterminate( true );
-		progress.setCancelable( true );
-		progress.setMessage( getString( R.string.progress_synchronize_toot ) );
-		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
-			@Override public void onCancel( DialogInterface dialog ){
-				task.cancel( true );
-			}
-		} );
-		progress.show();
-		task.executeOnExecutor( App1.task_executor );
 	}
 	
 	////////////////////////////////////////
@@ -3066,23 +2794,10 @@ public class ActMain extends AppCompatActivity
 	
 	public void setProfilePin( @NonNull final SavedAccount access_info, @NonNull final TootStatusLike status, final boolean bSet ){
 		
-		//noinspection deprecation
-		final ProgressDialog progress = new ProgressDialog( this );
-		
-		//
-		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, access_info, true ) {
 			TootStatus new_status;
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-					}
-				} );
-				client.setAccount( access_info );
 				TootApiResult result;
 				
 				Request.Builder request_builder = new Request.Builder()
@@ -3105,19 +2820,7 @@ public class ActMain extends AppCompatActivity
 				
 			}
 			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				super.onPostExecute( result );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				
-				try{
-					progress.dismiss();
-				}catch( Throwable ignored ){
-					
-				}
+			@Override protected void handleResult( TootApiResult result ){
 				
 				//noinspection StatementWithEmptyBody
 				if( result == null ){
@@ -3141,37 +2844,18 @@ public class ActMain extends AppCompatActivity
 				showColumnMatchAccount( access_info );
 			}
 			
-		};
-		
-		progress.setIndeterminate( true );
-		progress.setCancelable( true );
-		progress.setMessage( getString( R.string.profile_pin_progress ) );
-		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
-			@Override public void onCancel( DialogInterface dialog ){
-				task.cancel( true );
-			}
-		} );
-		progress.show();
-		
-		task.executeOnExecutor( App1.task_executor );
+		}
+			.setProgressPrefix( getString( R.string.profile_pin_progress ) )
+			.executeOnExecutor( App1.task_executor );
 	}
 	
 	////////////////////////////////////////
 	// delete notification
 	
 	public void deleteNotificationOne( @NonNull final SavedAccount access_info, @NonNull final TootNotification notification ){
-		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, access_info, true ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-					}
-				} );
-				client.setAccount( access_info );
 				
 				Request.Builder request_builder = new Request.Builder()
 					.post( RequestBody.create( TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
@@ -3184,13 +2868,8 @@ public class ActMain extends AppCompatActivity
 					, request_builder );
 			}
 			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				super.onPostExecute( result );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
+			@Override protected void handleResult( TootApiResult result ){
+				
 				if( result == null ){
 					// cancelled.
 				}else if( result.object != null ){
@@ -3203,9 +2882,7 @@ public class ActMain extends AppCompatActivity
 					Utils.showToast( ActMain.this, true, result.error );
 				}
 			}
-		};
-		
-		task.executeOnExecutor( App1.task_executor );
+		}.executeOnExecutor( App1.task_executor );
 	}
 	
 	////////////////////////////////////////
@@ -3213,18 +2890,9 @@ public class ActMain extends AppCompatActivity
 	public void toggleConversationMute( @NonNull final SavedAccount access_info, @NonNull final TootStatusLike status ){
 		final boolean bMute = ! status.muted;
 		
-		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, access_info, true ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-					}
-				} );
-				client.setAccount( access_info );
 				
 				Request.Builder request_builder = new Request.Builder()
 					.post( RequestBody.create( TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" ) );
@@ -3241,13 +2909,10 @@ public class ActMain extends AppCompatActivity
 				return result;
 			}
 			
-			@Override protected void onCancelled( TootApiResult result ){
-				super.onPostExecute( result );
-			}
-			
 			TootStatus new_status;
 			
-			@Override protected void onPostExecute( TootApiResult result ){
+			@Override protected void handleResult( TootApiResult result ){
+				
 				if( result == null ){
 					// cancelled.
 				}else if( new_status != null ){
@@ -3267,9 +2932,7 @@ public class ActMain extends AppCompatActivity
 					Utils.showToast( ActMain.this, true, result.error );
 				}
 			}
-		};
-		
-		task.executeOnExecutor( App1.task_executor );
+		}.executeOnExecutor( App1.task_executor );
 	}
 	
 	////////////////////////////////////////
@@ -3337,16 +3000,16 @@ public class ActMain extends AppCompatActivity
 		, final boolean bFollow
 		, @Nullable final RelationChangedCallback callback
 	){
-			callFollow( pos ,access_info,who,bFollow,false,false,callback );
+		callFollow( pos, access_info, who, bFollow, false, false, callback );
 	}
-
+	
 	private void callFollow(
 		final int pos
 		, @NonNull final SavedAccount access_info
 		, @NonNull final TootAccount who
 		, final boolean bFollow
-		,  final boolean bConfirmMoved
-		, final  boolean bConfirmed
+		, final boolean bConfirmMoved
+		, final boolean bConfirmed
 		, @Nullable final RelationChangedCallback callback
 	){
 		if( access_info.isMe( who ) ){
@@ -3362,7 +3025,7 @@ public class ActMain extends AppCompatActivity
 				) )
 				.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 					@Override public void onClick( DialogInterface dialog, int which ){
-						openProfileFromAnotherAccount( pos,access_info,who.moved );
+						openProfileFromAnotherAccount( pos, access_info, who.moved );
 					}
 				} )
 				.setNeutralButton( R.string.ignore_suggestion, new DialogInterface.OnClickListener() {
@@ -3370,7 +3033,7 @@ public class ActMain extends AppCompatActivity
 						callFollow( pos, access_info, who, true, true, false, callback );
 					}
 				} )
-				.setNegativeButton( android.R.string.cancel,null)
+				.setNegativeButton( android.R.string.cancel, null )
 				.show();
 			return;
 		}
@@ -3392,7 +3055,7 @@ public class ActMain extends AppCompatActivity
 						
 						@Override public void onOK(){
 							//noinspection ConstantConditions
-							callFollow( pos,access_info, who, bFollow, bConfirmMoved, true, callback );
+							callFollow( pos, access_info, who, bFollow, bConfirmMoved, true, callback );
 						}
 					}
 				);
@@ -3439,7 +3102,7 @@ public class ActMain extends AppCompatActivity
 						
 						@Override public void onOK(){
 							//noinspection ConstantConditions
-							callFollow( pos, access_info, who, bFollow, bConfirmMoved,true, callback );
+							callFollow( pos, access_info, who, bFollow, bConfirmMoved, true, callback );
 						}
 					}
 				);
@@ -3447,19 +3110,9 @@ public class ActMain extends AppCompatActivity
 			}
 		}
 		
-		new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, access_info, false ) {
+			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( String s ){
-					}
-				} );
-				
-				client.setAccount( access_info );
 				
 				TootApiResult result;
 				
@@ -3506,26 +3159,11 @@ public class ActMain extends AppCompatActivity
 			
 			UserRelation relation;
 			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				onPostExecute( null );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				//				if( relation != null ){
-				//			     	App1.relationship_map.put( access_info, relation );
-				//					if( callback != null ) callback.onRelationChanged( relation );
-				//				}else if( remote_who != null ){
-				//					App1.relationship_map.addFollowing( access_info, remote_who.id );
-				//					if( callback != null )
-				//						callback.onRelationChanged( App1.relationship_map.get( access_info, remote_who.id ) );
-				//				}
+			@Override protected void handleResult( TootApiResult result ){
 				
-				//noinspection StatementWithEmptyBody
-				if( result == null ){
-					// cancelled.
-				}else if( relation != null ){
+				if( result == null ) return; // cancelled.
+				
+				if( relation != null ){
 					
 					showColumnMatchAccount( access_info );
 					
@@ -3555,9 +3193,9 @@ public class ActMain extends AppCompatActivity
 		, final boolean locked
 		, @Nullable final RelationChangedCallback callback
 	){
-		callRemoteFollow( access_info, acct,locked,false,callback);
+		callRemoteFollow( access_info, acct, locked, false, callback );
 	}
-
+	
 	// acct で指定したユーザをリモートフォローする
 	private void callRemoteFollow(
 		@NonNull final SavedAccount access_info
@@ -3617,20 +3255,9 @@ public class ActMain extends AppCompatActivity
 			}
 		}
 		
-		new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, access_info, false ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( String s ){
-					}
-				} );
-				
-				client.setAccount( access_info );
 				
 				Request.Builder request_builder = new Request.Builder().post(
 					RequestBody.create(
@@ -3657,17 +3284,11 @@ public class ActMain extends AppCompatActivity
 			TootAccount remote_who;
 			UserRelation relation;
 			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				onPostExecute( null );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				//noinspection StatementWithEmptyBody
-				if( result == null ){
-					// cancelled.
-				}else if( relation != null ){
+			@Override protected void handleResult( TootApiResult result ){
+				
+				if( result == null ) return; // cancelled.
+				
+				if( relation != null ){
 					
 					showColumnMatchAccount( access_info );
 					
@@ -3689,7 +3310,6 @@ public class ActMain extends AppCompatActivity
 		, @NonNull final TootAccount who
 		, final boolean bMute
 		, final boolean bMuteNotification
-		, @Nullable final RelationChangedCallback callback
 	){
 		
 		if( access_info.isMe( who ) ){
@@ -3697,19 +3317,9 @@ public class ActMain extends AppCompatActivity
 			return;
 		}
 		
-		new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, access_info, true ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( String s ){
-					}
-				} );
-				
-				client.setAccount( access_info );
 				
 				Request.Builder request_builder = new Request.Builder().post(
 					! bMute ? RequestBody.create( TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" )
@@ -3727,17 +3337,11 @@ public class ActMain extends AppCompatActivity
 			
 			UserRelation relation;
 			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				onPostExecute( null );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				//noinspection StatementWithEmptyBody
-				if( result == null ){
-					// cancelled.
-				}else if( relation != null ){
+			@Override protected void handleResult( TootApiResult result ){
+				
+				if( result == null ) return; // cancelled.
+				
+				if( relation != null ){
 					// 未確認だが、自分をミュートしようとするとリクエストは成功するがレスポンス中のmutingはfalseになるはず
 					if( bMute && ! relation.muting ){
 						Utils.showToast( ActMain.this, false, R.string.not_muted );
@@ -3756,8 +3360,6 @@ public class ActMain extends AppCompatActivity
 					
 					Utils.showToast( ActMain.this, false, relation.muting ? R.string.mute_succeeded : R.string.unmute_succeeded );
 					
-					if( callback != null ) callback.onRelationChanged();
-					
 				}else{
 					Utils.showToast( ActMain.this, false, result.error );
 				}
@@ -3766,33 +3368,30 @@ public class ActMain extends AppCompatActivity
 		}.executeOnExecutor( App1.task_executor );
 	}
 	
-	void callBlock( @NonNull final SavedAccount access_info, @NonNull final TootAccount who, final boolean bBlock, @Nullable final RelationChangedCallback callback ){
-		
+	void callBlock(
+		@NonNull final SavedAccount access_info
+		, @NonNull final TootAccount who
+		, final boolean bBlock
+	){
 		if( access_info.isMe( who ) ){
 			Utils.showToast( this, false, R.string.it_is_you );
 			return;
 		}
 		
-		new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, access_info, true ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( String s ){
-					}
-				} );
-				client.setAccount( access_info );
 				
 				Request.Builder request_builder = new Request.Builder().post(
 					RequestBody.create(
 						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
 						, "" // 空データ
 					) );
-				TootApiResult result = client.request( "/api/v1/accounts/" + who.id + ( bBlock ? "/block" : "/unblock" )
-					, request_builder );
+				
+				TootApiResult result = client.request(
+					"/api/v1/accounts/" + who.id + ( bBlock ? "/block" : "/unblock" )
+					, request_builder
+				);
 				
 				if( result != null ){
 					if( result.object != null ){
@@ -3806,17 +3405,11 @@ public class ActMain extends AppCompatActivity
 			
 			UserRelation relation;
 			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				onPostExecute( null );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				//noinspection StatementWithEmptyBody
-				if( result == null ){
-					// cancelled.
-				}else if( relation != null ){
+			@Override protected void handleResult( TootApiResult result ){
+				
+				if( result == null ) return; // cancelled.
+				
+				if( relation != null ){
 					
 					// 自分をブロックしようとすると、blocking==falseで帰ってくる
 					if( bBlock && ! relation.blocking ){
@@ -3834,7 +3427,6 @@ public class ActMain extends AppCompatActivity
 					
 					Utils.showToast( ActMain.this, false, relation.blocking ? R.string.block_succeeded : R.string.unblock_succeeded );
 					
-					if( callback != null ) callback.onRelationChanged();
 				}else{
 					Utils.showToast( ActMain.this, false, result.error );
 				}
@@ -3842,66 +3434,37 @@ public class ActMain extends AppCompatActivity
 		}.executeOnExecutor( App1.task_executor );
 	}
 	
-	void callDomainBlock( @NonNull final SavedAccount access_info, @NonNull final String domain, final boolean bBlock, @Nullable final RelationChangedCallback callback ){
+	void callDomainBlock(
+		@NonNull final SavedAccount access_info
+		, @NonNull final String domain
+		, final boolean bBlock
+	){
 		
 		if( access_info.host.equalsIgnoreCase( domain ) ){
 			Utils.showToast( this, false, R.string.it_is_you );
 			return;
 		}
 		
-		new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, access_info, true ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( String s ){
-					}
-				} );
-				client.setAccount( access_info );
+				
+				RequestBody body = RequestBody.create(
+					TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+					, "domain=" + Uri.encode( domain )
+				);
 				
 				Request.Builder request_builder = new Request.Builder();
+				request_builder = bBlock ? request_builder.post( body ) : request_builder.delete( body );
 				
-				if( bBlock ){
-					request_builder.post(
-						RequestBody.create(
-							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
-							, "domain=" + Uri.encode( domain )
-						) );
-					
-				}else{
-					request_builder.delete(
-						RequestBody.create(
-							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
-							, "domain=" + Uri.encode( domain )
-						) );
-				}
-				TootApiResult result = client.request( "/api/v1/domain_blocks", request_builder );
-				
-				if( result != null ){
-					if( result.object != null ){
-						empty_object = result.object;
-					}
-				}
-				
-				return result;
+				return client.request( "/api/v1/domain_blocks", request_builder );
 			}
 			
-			JSONObject empty_object;
-			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				onPostExecute( null );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				//noinspection StatementWithEmptyBody
-				if( result == null ){
-					// cancelled.
-				}else if( empty_object != null ){
+			@Override protected void handleResult( TootApiResult result ){
+				
+				if( result == null ) return; // cancelled.
+				
+				if( result.object != null ){
 					
 					for( Column column : app_state.column_list ){
 						column.onDomainBlockChanged( access_info, domain, bBlock );
@@ -3909,7 +3472,6 @@ public class ActMain extends AppCompatActivity
 					
 					Utils.showToast( ActMain.this, false, bBlock ? R.string.block_succeeded : R.string.unblock_succeeded );
 					
-					if( callback != null ) callback.onRelationChanged();
 				}else{
 					Utils.showToast( ActMain.this, false, result.error );
 				}
@@ -3927,18 +3489,9 @@ public class ActMain extends AppCompatActivity
 			return;
 		}
 		
-		new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, access_info, true ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( String s ){
-					}
-				} );
-				client.setAccount( access_info );
 				
 				Request.Builder request_builder = new Request.Builder().post(
 					RequestBody.create(
@@ -3951,18 +3504,11 @@ public class ActMain extends AppCompatActivity
 					, request_builder );
 			}
 			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				onPostExecute( null );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				//noinspection StatementWithEmptyBody
-				if( result == null ){
-					// cancelled.
-				}else if( result.object != null ){
-					
+			@Override protected void handleResult( TootApiResult result ){
+				
+				if( result == null ) return; // cancelled.
+				
+				if( result.object != null ){
 					for( Column column : app_state.column_list ){
 						column.removeFollowRequest( access_info, who.id );
 					}
@@ -3976,39 +3522,21 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	void deleteStatus( final SavedAccount access_info, final long status_id ){
-		new AsyncTask< Void, Void, TootApiResult >() {
+		
+		new TootApiTask( this, access_info, true ) {
 			
-			@Override
-			protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override
-					public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override
-					public void publishApiProgress( String s ){
-						
-					}
-				} );
-				client.setAccount( access_info );
+			@Override protected TootApiResult doInBackground( Void... params ){
 				
 				Request.Builder request_builder = new Request.Builder().delete(); // method is delete
 				
 				return client.request( "/api/v1/statuses/" + status_id, request_builder );
 			}
 			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				onPostExecute( null );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				//noinspection StatementWithEmptyBody
-				if( result == null ){
-					//cancelled.
-				}else if( result.object != null ){
+			@Override protected void handleResult( TootApiResult result ){
+				
+				if( result == null ) return; // cancelled.
+				
+				if( result.object != null ){
 					Utils.showToast( ActMain.this, false, R.string.delete_succeeded );
 					for( Column column : app_state.column_list ){
 						column.removeStatus( access_info, status_id );
@@ -4036,19 +3564,9 @@ public class ActMain extends AppCompatActivity
 			return;
 		}
 		
-		new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, access_info, true ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( String s ){
-					}
-				} );
-				
-				client.setAccount( access_info );
 				String sb = "account_id=" + Long.toString( who.id )
 					+ "&comment=" + Uri.encode( comment )
 					+ "&status_ids[]=" + Long.toString( status.id );
@@ -4062,15 +3580,11 @@ public class ActMain extends AppCompatActivity
 				return client.request( "/api/v1/reports", request_builder );
 			}
 			
-			@Override protected void onCancelled( TootApiResult result ){
-				super.onPostExecute( result );
-			}
-			
-			@Override protected void onPostExecute( TootApiResult result ){
-				//noinspection StatementWithEmptyBody
-				if( result == null ){
-					// cancelled.
-				}else if( result.object != null ){
+			@Override protected void handleResult( TootApiResult result ){
+				
+				if( result == null ) return; // cancelled.
+				
+				if( result.object != null ){
 					if( callback != null ) callback.onReportComplete( result );
 				}else{
 					Utils.showToast( ActMain.this, true, result.error );
@@ -4086,19 +3600,9 @@ public class ActMain extends AppCompatActivity
 			return;
 		}
 		
-		new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, access_info, true ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( String s ){
-					}
-				} );
-				
-				client.setAccount( access_info );
 				
 				JSONObject content = new JSONObject();
 				try{
@@ -4122,15 +3626,11 @@ public class ActMain extends AppCompatActivity
 			
 			TootRelationShip relation;
 			
-			@Override protected void onCancelled( TootApiResult result ){
-				super.onPostExecute( result );
-			}
-			
-			@Override protected void onPostExecute( TootApiResult result ){
-				//noinspection StatementWithEmptyBody
-				if( result == null ){
-					// cancelled.
-				}else if( relation != null ){
+			@Override protected void handleResult( TootApiResult result ){
+				
+				if( result == null ) return; // cancelled.
+				
+				if( relation != null ){
 					saveUserRelation( access_info, relation );
 					Utils.showToast( ActMain.this, true, R.string.operation_succeeded );
 				}else{
@@ -4220,22 +3720,9 @@ public class ActMain extends AppCompatActivity
 				.show();
 			return;
 		}
-		new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, target_account, true ) {
 			
-			@Override
-			protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override
-					public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override
-					public void publishApiProgress( String s ){
-						
-					}
-				} );
-				client.setAccount( target_account );
+			@Override protected TootApiResult doInBackground( Void... params ){
 				
 				Request.Builder request_builder = new Request.Builder().post(
 					RequestBody.create(
@@ -4245,18 +3732,11 @@ public class ActMain extends AppCompatActivity
 				return client.request( "/api/v1/notifications/clear", request_builder );
 			}
 			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				onPostExecute( null );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				//noinspection StatementWithEmptyBody
-				if( result == null ){
-					//cancelled.
-				}else if( result.object != null ){
-					// ok. empty object will be returned.
+			@Override protected void handleResult( TootApiResult result ){
+				if( result == null ) return; // cancelled.
+				
+				if( result.object != null ){
+					// ok. api have return empty object.
 					for( Column column : app_state.column_list ){
 						if( column.column_type == Column.TYPE_NOTIFICATIONS
 							&& column.access_info.acct.equals( target_account.acct )
@@ -4326,12 +3806,12 @@ public class ActMain extends AppCompatActivity
 		llColumnStrip.setColor( c );
 	}
 	
-	public ArrayList< SavedAccount > makeAccountList( @NonNull LogCategory log, boolean bAllowPseudo, @Nullable String pickup_host ){
+	public ArrayList< SavedAccount > makeAccountListNonPseudo( @NonNull LogCategory log, @Nullable String pickup_host ){
 		
 		ArrayList< SavedAccount > list_same_host = new ArrayList<>();
 		ArrayList< SavedAccount > list_other_host = new ArrayList<>();
 		for( SavedAccount a : SavedAccount.loadAccountList( ActMain.this, log ) ){
-			if( a.isPseudo() && ( a.isNA() || ! bAllowPseudo ) ) continue;
+			if( a.isPseudo() ) continue;
 			( pickup_host == null || pickup_host.equalsIgnoreCase( a.host ) ? list_same_host : list_other_host ).add( a );
 		}
 		SavedAccount.sort( list_same_host );
@@ -4361,7 +3841,7 @@ public class ActMain extends AppCompatActivity
 		
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_boost )
-			, makeAccountList( log, false, who_host )
+			, makeAccountListNonPseudo( log, who_host )
 			, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount action_account ){
 					performBoost(
@@ -4382,7 +3862,7 @@ public class ActMain extends AppCompatActivity
 		
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_favourite )
-			, makeAccountList( log, false, who_host )
+			, makeAccountListNonPseudo( log, who_host )
 			, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount action_account ){
 					performFavourite(
@@ -4401,7 +3881,7 @@ public class ActMain extends AppCompatActivity
 		String who_host = status.account == null ? null : timeline_account.getAccountHost( status.account );
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_reply )
-			, makeAccountList( log, false, who_host )
+			, makeAccountListNonPseudo( log, who_host )
 			, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 					if( status instanceof MSPToot ){
@@ -4435,11 +3915,11 @@ public class ActMain extends AppCompatActivity
 	//		if( status == null ) return;
 	//		openFollowFromAnotherAccount( access_info, status.account );
 	//	}
-	void openFollowFromAnotherAccount( int pos,@NonNull SavedAccount access_info, @Nullable final TootAccount account ){
-		openFollowFromAnotherAccount( pos,access_info,  account ,false);
+	void openFollowFromAnotherAccount( int pos, @NonNull SavedAccount access_info, @Nullable final TootAccount account ){
+		openFollowFromAnotherAccount( pos, access_info, account, false );
 	}
 	
-	void openFollowFromAnotherAccount( final int pos,@NonNull final SavedAccount access_info, @Nullable final TootAccount account ,final boolean bConfirmMoved ){
+	void openFollowFromAnotherAccount( final int pos, @NonNull final SavedAccount access_info, @Nullable final TootAccount account, final boolean bConfirmMoved ){
 		if( account == null ) return;
 		
 		if( ! bConfirmMoved && account.moved != null ){
@@ -4450,15 +3930,15 @@ public class ActMain extends AppCompatActivity
 				) )
 				.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 					@Override public void onClick( DialogInterface dialog, int which ){
-						openProfileFromAnotherAccount( pos,access_info,account.moved );
+						openProfileFromAnotherAccount( pos, access_info, account.moved );
 					}
 				} )
 				.setNeutralButton( R.string.ignore_suggestion, new DialogInterface.OnClickListener() {
 					@Override public void onClick( DialogInterface dialog, int which ){
-						openFollowFromAnotherAccount( pos,access_info,  account ,true);
+						openFollowFromAnotherAccount( pos, access_info, account, true );
 					}
 				} )
-				.setNegativeButton( android.R.string.cancel,null)
+				.setNegativeButton( android.R.string.cancel, null )
 				.show();
 			return;
 		}
@@ -4467,7 +3947,7 @@ public class ActMain extends AppCompatActivity
 		final String who_acct = access_info.getFullAcct( account );
 		AccountPicker.pick( this, false, false
 			, getString( R.string.account_picker_follow )
-			, makeAccountList( log, false, who_host )
+			, makeAccountListNonPseudo( log, who_host )
 			, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
 					callRemoteFollow( ai, who_acct, account.locked, follow_complete_callback );
@@ -4743,10 +4223,11 @@ public class ActMain extends AppCompatActivity
 			}
 			
 			@Override protected void onCancelled( ArrayList< Column > result ){
-				super.onCancelled( result );
+				onPostExecute( result );
 			}
 			
 			@Override protected void onPostExecute( ArrayList< Column > result ){
+				
 				try{
 					progress.dismiss();
 				}catch( Throwable ignored ){
@@ -4947,20 +4428,9 @@ public class ActMain extends AppCompatActivity
 	////////////////////////////////////////////////////////////////////////////////////////////
 	
 	public void createNewList( @NonNull final SavedAccount access_info, @NonNull final String title ){
-		
-		new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, access_info, true ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( String s ){
-					}
-				} );
-				
-				client.setAccount( access_info );
 				
 				JSONObject content = new JSONObject();
 				try{
@@ -4989,17 +4459,10 @@ public class ActMain extends AppCompatActivity
 			
 			TootList list;
 			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				onPostExecute( null );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				//noinspection StatementWithEmptyBody
-				if( result == null ){
-					// cancelled.
-				}else if( list != null ){
+			@Override protected void handleResult( TootApiResult result ){
+				if( result == null ) return; // cancelled.
+				
+				if( list != null ){
 					
 					for( Column column : app_state.column_list ){
 						column.onListListUpdated( access_info );
@@ -5015,38 +4478,16 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	public void callDeleteList( @NonNull final SavedAccount access_info, final long list_id ){
-		new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, access_info, true ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( String s ){
-					}
-				} );
-				
-				client.setAccount( access_info );
-				
-				Request.Builder request_builder = new Request.Builder().delete();
-				
-				TootApiResult result = client.request( "/api/v1/lists/" + list_id, request_builder );
-				
-				return result;
+				return client.request( "/api/v1/lists/" + list_id, new Request.Builder().delete() );
 			}
 			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				onPostExecute( null );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				//noinspection StatementWithEmptyBody
-				if( result == null ){
-					// cancelled.
-				}else if( result.object != null ){
+			@Override protected void handleResult( TootApiResult result ){
+				if( result == null ) return; // cancelled.
+				
+				if( result.object != null ){
 					
 					for( Column column : app_state.column_list ){
 						column.onListListUpdated( access_info );
@@ -5062,38 +4503,19 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	public void callDeleteListMember( @NonNull final SavedAccount access_info, @NonNull final TootAccount who, final long list_id ){
-		new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, access_info, true ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActMain.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( String s ){
-					}
-				} );
-				
-				client.setAccount( access_info );
-				
-				Request.Builder request_builder = new Request.Builder().delete();
-				
-				TootApiResult result = client.request( "/api/v1/lists/" + list_id + "/accounts?account_ids[]=" + who.id, request_builder );
-				
-				return result;
+				return client.request(
+					"/api/v1/lists/" + list_id + "/accounts?account_ids[]=" + who.id
+					, new Request.Builder().delete()
+				);
 			}
 			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				onPostExecute( null );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				//noinspection StatementWithEmptyBody
-				if( result == null ){
-					// cancelled.
-				}else if( result.object != null ){
+			@Override protected void handleResult( TootApiResult result ){
+				if( result == null ) return; // cancelled.
+				
+				if( result.object != null ){
 					
 					for( Column column : app_state.column_list ){
 						column.onListMemberUpdated( access_info, list_id, who, false );

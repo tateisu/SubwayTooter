@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter;
 
-import android.app.Activity;
 import android.content.DialogInterface;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
@@ -833,7 +832,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 					.setNegativeButton( R.string.cancel, null )
 					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 						@Override public void onClick( DialogInterface dialog, int which ){
-							activity.callDomainBlock( access_info, domain, false, null );
+							activity.callDomainBlock( access_info, domain, false );
 						}
 					} )
 					.show();

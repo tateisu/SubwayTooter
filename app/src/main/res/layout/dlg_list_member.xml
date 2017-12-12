@@ -3,23 +3,24 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="vertical"
     >
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="6dp"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="12dp"
         android:layout_marginEnd="12dp"
         android:layout_marginStart="12dp"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="12dp"
         android:orientation="vertical"
         >
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/member_will_be_added_to_list"
+            android:text="@string/target_user"
             />
 
         <LinearLayout
@@ -86,8 +87,6 @@
                 />
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
-
         <TextView
             style="@style/setting_row_label"
             android:text="@string/list"
@@ -95,13 +94,37 @@
 
         <LinearLayout
             style="@style/setting_row_form"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            >
+
+            <jp.juggler.subwaytooter.view.MyListView
+                android:id="@+id/listView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+
+                android:clipToPadding="false"
+                android:divider="?attr/colorSettingDivider"
+                android:dividerHeight="1dp"
+                android:fadeScrollbars="false"
+                android:fastScrollEnabled="false"
+                android:paddingEnd="12dp"
+                android:paddingStart="12dp"
+                android:scrollbarStyle="outsideOverlay"
+                />
+        </LinearLayout>
+
+        <LinearLayout
+            style="@style/setting_row_form"
             android:gravity="center_vertical"
             >
 
             <Button
-                android:id="@+id/btnList"
+                android:id="@+id/btnCreateList"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:text="@string/list_create"
                 android:textAllCaps="false"
                 />
         </LinearLayout>
@@ -115,21 +138,12 @@
         >
 
         <Button
-            android:id="@+id/btnCancel"
+            android:id="@+id/btnClose"
             style="?android:attr/buttonBarButtonStyle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/cancel"
-            />
-
-        <Button
-            android:id="@+id/btnOk"
-            style="?android:attr/buttonBarButtonStyle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/ok"
+            android:text="@string/close"
             />
     </LinearLayout>
 </LinearLayout>

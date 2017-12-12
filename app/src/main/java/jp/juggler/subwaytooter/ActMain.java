@@ -48,6 +48,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -4502,32 +4503,203 @@ public class ActMain extends AppCompatActivity
 		}.executeOnExecutor( App1.task_executor );
 	}
 	
-	public void callDeleteListMember( @NonNull final SavedAccount access_info, @NonNull final TootAccount who, final long list_id ){
+	public interface ListMemberCallback {
+		void onListMemberUpdated( boolean willRegistered, boolean bSuccess );
+	}
+	
+	static final Pattern reFollowError = Pattern.compile( "follow", Pattern.CASE_INSENSITIVE );
+	//			case R.id.btnOk:
+	//	addListMember( false );
+	//			break;
+	
+	public void callListMemberAdd(
+		@NonNull final SavedAccount access_info
+		, final long list_id
+		, @NonNull final TootAccount local_who
+		, final boolean bFollow
+		, @Nullable final ListMemberCallback callback
+	){
 		new TootApiTask( this, access_info, true ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
+
+				if( access_info.isMe( local_who )){
+					return new TootApiResult( getString(R.string.it_is_you ));
+				}
+
+				TootApiResult result;
+				
+				if( bFollow ){
+					TootRelationShip relation;
+					if( access_info.isLocalUser( local_who ) ){
+						Request.Builder request_builder = new Request.Builder().post(
+							RequestBody.create(
+								TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+								, "" // 空データ
+							) );
+						
+						result = client.request( "/api/v1/accounts/" + local_who.id + "/follow", request_builder );
+					}else{
+						// リモートフォローする
+						Request.Builder request_builder = new Request.Builder().post(
+							RequestBody.create(
+								TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+								, "uri=" + Uri.encode( local_who.acct )
+							) );
+						
+						result = client.request( "/api/v1/follows", request_builder );
+						if( result == null || result.object == null ) return result;
+						
+						TootAccount a = TootAccount.parse( ActMain.this, access_info, result.object );
+						if( a == null ){
+							return new TootApiResult( "parse error." );
+						}
+						
+						// リモートフォローの後にリレーションシップを取得しなおす
+						result = client.request( "/api/v1/accounts/relationships?id[]=" + a.id );
+					}
+					
+					if( result == null || result.array == null ){
+						return result;
+					}
+					
+					TootRelationShip.List relation_list = TootRelationShip.parseList( result.array );
+					relation = relation_list.isEmpty() ? null : relation_list.get( 0 );
+					
+					if( relation == null ){
+						return new TootApiResult( "parse error." );
+					}
+					saveUserRelation( access_info, relation );
+					
+					if( ! relation.following ){
+						if( relation.requested ){
+							return new TootApiResult( getString( R.string.cant_add_list_follow_requesting ) );
+						}else{
+							// リモートフォローの場合、正常ケースでもここを通る場合がある
+							// 何もしてはいけない…
+						}
+					}
+				}
+				
+				// リストメンバー追加
+				
+				JSONObject content = new JSONObject();
+				try{
+					JSONArray account_ids = new JSONArray();
+					account_ids.put( Long.toString( local_who.id ) );
+					content.put( "account_ids", account_ids );
+				}catch( Throwable ex ){
+					return new TootApiResult( Utils.formatError( ex, "can't encoding json parameter." ) );
+				}
+				
+				Request.Builder request_builder = new Request.Builder().post(
+					RequestBody.create(
+						TootApiClient.MEDIA_TYPE_JSON
+						, content.toString()
+					) );
+				
+				return client.request( "/api/v1/lists/" + list_id + "/accounts", request_builder );
+				
+			}
+			
+			@Override protected void handleResult( TootApiResult result ){
+				boolean bSuccess = false;
+				
+				try{
+					//noinspection StatementWithEmptyBody
+					if( result == null ) return; // cancelled.
+					
+					if( result.object != null ){
+						for( Column column : app_state.column_list ){
+							// リストメンバー追加イベントをカラムに伝達
+							column.onListMemberUpdated( access_info, list_id, local_who, true );
+						}
+						// フォロー状態の更新を表示に反映させる
+						if( bFollow ) showColumnMatchAccount( access_info );
+						
+						Utils.showToast( ActMain.this, false, R.string.list_member_added );
+						
+						bSuccess = true;
+						
+					}else{
+						
+						if( result.response != null
+							&& result.response.code() == 422
+							&& result.error != null && reFollowError.matcher( result.error ).find()
+							){
+							
+							if( ! bFollow ){
+								DlgConfirm.openSimple(
+									ActMain.this
+									, getString( R.string.list_retry_with_follow, access_info.getFullAcct( local_who ) )
+									, new Runnable() {
+										@Override public void run(){
+											callListMemberAdd( access_info, list_id, local_who, true, callback );
+										}
+									}
+								);
+							}else{
+								new android.app.AlertDialog.Builder( ActMain.this )
+									.setCancelable( true )
+									.setMessage( R.string.cant_add_list_follow_requesting )
+									.setNeutralButton( R.string.close, null )
+									.show();
+							}
+							return;
+						}
+						
+						Utils.showToast( ActMain.this, true, result.error );
+						
+					}
+				}finally{
+					if( callback != null ) callback.onListMemberUpdated( true, bSuccess );
+				}
+			}
+			
+		}.executeOnExecutor( App1.task_executor );
+	}
+	
+	public void callListMemberDelete(
+		@NonNull final SavedAccount access_info
+		, final long list_id
+		, @NonNull final TootAccount local_who
+		, @Nullable final ListMemberCallback callback
+	){
+		new TootApiTask( this, access_info, true ) {
+			
+			@Override protected TootApiResult doInBackground( Void... params ){
+
 				return client.request(
-					"/api/v1/lists/" + list_id + "/accounts?account_ids[]=" + who.id
+					"/api/v1/lists/" + list_id + "/accounts?account_ids[]=" + local_who.id
 					, new Request.Builder().delete()
 				);
 			}
 			
 			@Override protected void handleResult( TootApiResult result ){
-				if( result == null ) return; // cancelled.
 				
-				if( result.object != null ){
+				boolean bSuccess = false;
+				
+				try{
 					
-					for( Column column : app_state.column_list ){
-						column.onListMemberUpdated( access_info, list_id, who, false );
+					if( result == null ) return; // cancelled.
+					
+					if( result.object != null ){
+						
+						for( Column column : app_state.column_list ){
+							column.onListMemberUpdated( access_info, list_id, local_who, false );
+						}
+						
+						Utils.showToast( ActMain.this, false, R.string.delete_succeeded );
+						
+						bSuccess = true;
+						
+					}else{
+						Utils.showToast( ActMain.this, false, result.error );
 					}
-					
-					Utils.showToast( ActMain.this, false, R.string.delete_succeeded );
-					
-				}else{
-					Utils.showToast( ActMain.this, false, result.error );
+				}finally{
+					if( callback != null ) callback.onListMemberUpdated( false ,bSuccess );
 				}
 			}
 		}.executeOnExecutor( App1.task_executor );
 	}
-	
 }

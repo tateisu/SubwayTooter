@@ -19,9 +19,12 @@ public class TootList implements Comparable< TootList > {
 	public long id;
 	
 	@Nullable public String title;
-
+	
 	// タイトルの数字列部分は数字の大小でソートされるようにしたい
 	@Nullable private ArrayList< Object > title_for_sort;
+	
+	// 内部で使用する
+	public boolean isRegistered;
 	
 	@Nullable
 	public static TootList parse( JSONObject src ){

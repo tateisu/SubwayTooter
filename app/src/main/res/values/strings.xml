@@ -521,8 +521,7 @@
     <string name="show_boost_in_home">Show boosts from this user to your home</string>
     <string name="operation_succeeded">Operation succeeded.</string>
 
-    <string name="list_member_add">Add user to List…</string>
-    <string name="list_member_remove">Remove user to List…</string>
+    <string name="list_member_add_remove">Add/Remove from lists…</string>
     <string name="lists">Lists</string>
     <string name="list_show_member">show list users</string>
     <string name="list_show_timeline">show list TL</string>
@@ -535,9 +534,9 @@
     <string name="list_member">List users</string>
     <string name="list_timeline">List timeline</string>
     <string name="list_member_delete_confirm">\"%1$s\" will be deleted from \"%2$s\". Are you sure?</string>
-    <string name="member_will_be_added_to_list">The user will be added to list</string>
+    <string name="target_user">Target user</string>
     <string name="list_owner">List owner</string>
-    <string name="list_create">(Create new list…)</string>
+    <string name="list_create">Create new list…</string>
     <string name="list">List</string>
     <string name="list_not_supported">this instance does not support list.</string>
     <string name="cant_access_list">Can\'t access to lists</string>
@@ -551,5 +550,7 @@
     <string name="account_moved_to">%1$s has moved to:</string>
     <string name="jump_moved_user">%1$s has been moved. Would you like to check %2$s ?</string>
     <string name="ignore_suggestion">ignore suggestion</string>
-
+    <string name="include_who_in">Include %1$s in:</string>
+    <string name="list_not_created">(list is not created)</string>
+    <string name="your_lists">Your lists</string>
 </resources>

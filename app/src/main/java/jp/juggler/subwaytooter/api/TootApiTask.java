@@ -99,6 +99,7 @@ public abstract class TootApiTask extends AsyncTask< Void, Void, TootApiResult >
 				TootApiTask.this.cancel( true );
 			}
 		} );
+		progress.show();
 	}
 	
 	private void dismissProgress(){

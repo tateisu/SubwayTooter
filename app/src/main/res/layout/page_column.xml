@@ -8,10 +8,10 @@
     >
 
     <LinearLayout
+        android:id="@+id/llColumn"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:id="@+id/llColumn"
         >
 
         <LinearLayout
@@ -172,6 +172,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/dont_show_follow"
                     />
+
                 <CheckBox
                     android:id="@+id/cbDontShowReply"
                     android:layout_width="match_parent"
@@ -260,7 +261,6 @@
             </LinearLayout>
         </jp.juggler.subwaytooter.view.MaxHeightScrollView>
 
-
         <RelativeLayout
             android:id="@+id/llSearch"
             android:layout_width="match_parent"
@@ -330,14 +330,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_toStartOf="@id/btnListAdd"
+                android:hint="@string/list_create_hint"
                 android:imeOptions="actionSend"
                 android:inputType="text"
-                android:hint="@string/list_create_hint"
                 tools:ignore="LabelFor"
                 />
 
         </RelativeLayout>
-
 
         <FrameLayout
             android:id="@+id/flColumnBackground"

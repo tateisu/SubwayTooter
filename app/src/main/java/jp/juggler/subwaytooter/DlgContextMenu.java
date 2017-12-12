@@ -23,7 +23,7 @@ import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.dialog.DlgConfirm;
-import jp.juggler.subwaytooter.dialog.DlgListMemberAdd;
+import jp.juggler.subwaytooter.dialog.DlgListMember;
 import jp.juggler.subwaytooter.dialog.DlgQRCode;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
@@ -104,8 +104,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		View btnHideBoost = viewRoot.findViewById( R.id.btnHideBoost );
 		View btnShowBoost = viewRoot.findViewById( R.id.btnShowBoost );
 		
-		View btnListMemberAdd= viewRoot.findViewById( R.id.btnListMemberAdd );
-		View btnListMemberRemove= viewRoot.findViewById( R.id.btnListMemberRemove );
+		View btnListMemberAddRemove= viewRoot.findViewById( R.id.btnListMemberAddRemove );
 		
 		btnStatusWebPage.setOnClickListener( this );
 		btnText.setOnClickListener( this );
@@ -134,8 +133,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		btnConversationMute.setOnClickListener( this );
 		btnHideBoost.setOnClickListener( this );
 		btnShowBoost.setOnClickListener( this );
-		btnListMemberAdd.setOnClickListener( this );
-			btnListMemberRemove.setOnClickListener( this );
+		btnListMemberAddRemove.setOnClickListener( this );
 		
 		viewRoot.findViewById( R.id.btnQuoteUrlStatus ).setOnClickListener( this );
 		viewRoot.findViewById( R.id.btnQuoteUrlAccount ).setOnClickListener( this );
@@ -308,16 +306,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			btnOpenTimeline.setText( activity.getString( R.string.open_local_timeline_for, host ) );
 		}
 		
-		if( access_info.isPseudo() ){
-			btnListMemberAdd.setVisibility( View.VISIBLE );
-			btnListMemberRemove.setVisibility( View.GONE );
-		}else{
-			btnListMemberAdd.setVisibility( View.VISIBLE );
-			btnListMemberRemove.setVisibility(
-				column.column_type == Column.TYPE_LIST_MEMBER || column.column_type == Column.TYPE_LIST_TL
-				? View.VISIBLE : View.GONE
-			);
-		}
+		btnListMemberAddRemove.setVisibility( View.VISIBLE );
 	}
 	
 	void show(){
@@ -644,23 +633,12 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			}
 			break;
 		
-		case R.id.btnListMemberAdd:
+		case R.id.btnListMemberAddRemove:
 			if( who != null ){
-				new DlgListMemberAdd( activity,who, access_info,column.getListId() ).show();
+				new DlgListMember( activity,who, access_info ).show();
 			}
 			break;
 
-		case R.id.btnListMemberRemove:
-			if( who != null ){
-				final long list_id = column.getListId();
-				String list_title = column.getListTitle();
-				DlgConfirm.openSimple( activity, activity.getString( R.string.list_member_delete_confirm, access_info.getFullAcct( who ), list_title ), new Runnable() {
-					@Override public void run(){
-						activity.callDeleteListMember( access_info, who ,list_id );
-					}
-				} );
-			}
-			break;
 		}
 	}
 	

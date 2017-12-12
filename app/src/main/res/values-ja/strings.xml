@@ -817,8 +817,7 @@
     <string name="show_boost_in_home">このユーザのブーストをホームに表示する</string>
     <string name="operation_succeeded">変更できました</string>
 
-    <string name="list_member_add">リストに追加…</string>
-    <string name="list_member_remove">リストから削除…</string>
+    <string name="list_member_add_remove">リストに追加/削除…</string>
     <string name="lists">リスト</string>
     <string name="list_show_member">リストのユーザ</string>
     <string name="list_show_timeline">リストのタイムライン</string>
@@ -831,7 +830,7 @@
     <string name="list_member">リストのユーザ</string>
     <string name="list_timeline">リストのタイムライン</string>
     <string name="list_member_delete_confirm">\"%1$s\"は\"%2$s\"から削除されます。よろしいですか?</string>
-    <string name="member_will_be_added_to_list">リストに追加されるユーザ</string>
+    <string name="target_user">対象ユーザ</string>
     <string name="list_owner">リスト所有者</string>
     <string name="list_create">(リストを作る…)</string>
     <string name="list">リスト</string>
@@ -848,4 +847,7 @@
 
     <string name="jump_moved_user">%1$s は引っ越しました。%2$s を確認しますか?</string>
     <string name="ignore_suggestion">提案を無視</string>
+    <string name="include_who_in">Include %1$s in:</string>
+    <string name="list_not_created">(リストが作成されていません)</string>
+    <string name="your_lists">マイリスト</string>
 </resources>

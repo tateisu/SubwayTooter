@@ -978,9 +978,9 @@ public class Utils {
 	}
 	
 	@SuppressWarnings("unused")
-	public static String formatError( @NonNull Throwable ex, @NonNull String fmt, Object... args ){
-		if( args.length > 0 ) fmt = String.format( fmt, args );
-		return fmt + String.format( " :%s %s", ex.getClass().getSimpleName(), ex.getMessage() );
+	public static String formatError( @NonNull Throwable ex, @Nullable String fmt, Object... args ){
+		String s = fmt==null ? "(null)" : args.length == 0 ? fmt : String.format( fmt, args );
+		return s + String.format( " :%s %s", ex.getClass().getSimpleName(), ex.getMessage() );
 	}
 	
 	@SuppressWarnings("unused")
@@ -1020,11 +1020,11 @@ public class Utils {
 		} );
 	}
 	
-	public static void showToast( @NonNull Context context, boolean bLong, @NonNull String fmt, Object... args ){
-		showToastImpl( context, bLong, args.length == 0 ? fmt : String.format( fmt, args ) );
+	public static void showToast( @NonNull Context context, boolean bLong, @Nullable String fmt, Object... args ){
+		showToastImpl( context, bLong, fmt==null? "(null)": args.length == 0 ? fmt : String.format( fmt, args ) );
 	}
 	
-	public static void showToast( @NonNull Context context, @NonNull Throwable ex, String fmt, Object... args ){
+	public static void showToast( @NonNull Context context, @NonNull Throwable ex, @Nullable String fmt, Object... args ){
 		showToastImpl( context, true, formatError( ex, fmt, args ) );
 	}
 	

@@ -501,7 +501,7 @@
                     />
 
                 <Button
-                    android:id="@+id/btnListMemberAdd"
+                    android:id="@+id/btnListMemberAddRemove"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/btn_bg_transparent"
@@ -512,23 +512,7 @@
                     android:paddingEnd="8dp"
                     android:paddingStart="8dp"
                     android:paddingTop="4dp"
-                    android:text="@string/list_member_add"
-                    android:textAllCaps="false"
-                    />
-
-                <Button
-                    android:id="@+id/btnListMemberRemove"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="@drawable/btn_bg_transparent"
-                    android:drawablePadding="4dp"
-                    android:gravity="start|center_vertical"
-                    android:minHeight="32dp"
-                    android:paddingBottom="4dp"
-                    android:paddingEnd="8dp"
-                    android:paddingStart="8dp"
-                    android:paddingTop="4dp"
-                    android:text="@string/list_member_remove"
+                    android:text="@string/list_member_add_remove"
                     android:textAllCaps="false"
                     />
 

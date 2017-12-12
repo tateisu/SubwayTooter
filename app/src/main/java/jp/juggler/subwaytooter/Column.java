@@ -150,6 +150,19 @@ import jp.juggler.subwaytooter.util.Utils;
 		}
 	}
 	
+	public boolean isPublicStream(){
+		switch( column_type ){
+		
+		default:
+			return false;
+		
+		case TYPE_LOCAL:
+		case TYPE_FEDERATE:
+		case TYPE_HASHTAG:
+			return true;
+		}
+	}
+	
 	static final String KEY_ACCOUNT_ROW_ID = "account_id";
 	static final String KEY_TYPE = "type";
 	static final String KEY_DONT_CLOSE = "dont_close";
@@ -244,10 +257,10 @@ import jp.juggler.subwaytooter.util.Utils;
 	static final int TAB_STATUS = 0;
 	static final int TAB_FOLLOWING = 1;
 	static final int TAB_FOLLOWERS = 2;
-
+	
 	// プロフカラムでのアカウント情報
 	volatile TootAccount who_account;
-
+	
 	// リストカラムでのリスト情報
 	volatile TootList list_info;
 	
@@ -3377,8 +3390,6 @@ import jp.juggler.subwaytooter.util.Utils;
 		}
 	}
 	
-
-	
 	void onStart( Callback callback ){
 		this.callback_ref = new WeakReference<>( callback );
 		
@@ -3428,7 +3439,7 @@ import jp.juggler.subwaytooter.util.Utils;
 	
 	// カラム設定に正規表現フィルタを含めるなら真
 	public boolean canStatusFilter(){
-
+		
 		switch( column_type ){
 		case TYPE_REPORTS:
 		case TYPE_MUTES:
@@ -3445,7 +3456,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		default:
 			return true;
 		}
-
+		
 	}
 	
 	// カラム設定に「すべての画像を隠す」ボタンを含めるなら真
@@ -3461,7 +3472,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		case TYPE_NOTIFICATIONS:
 		case TYPE_LIST_TL:
 			return true;
-			
+		
 		default:
 			return false;
 		}
@@ -3474,13 +3485,11 @@ import jp.juggler.subwaytooter.util.Utils;
 		case TYPE_PROFILE:
 		case TYPE_LIST_TL:
 			return true;
-
+		
 		default:
 			return false;
 		}
 	}
-	
-	
 	
 	boolean canAutoRefresh(){
 		return getStreamPath() != null;
@@ -3502,11 +3511,13 @@ import jp.juggler.subwaytooter.util.Utils;
 		return canStreaming() && column_type != TYPE_NOTIFICATIONS;
 	}
 	
-	private boolean bPutGap;
-	
 	boolean canStreaming(){
-		return getStreamPath() != null && ! access_info.isPseudo();
+		return ! access_info.isNA() && (
+			access_info.isPseudo() ? isPublicStream() : getStreamPath() != null
+		);
 	}
+	
+	private boolean bPutGap;
 	
 	private void resumeStreaming( boolean bPutGap ){
 		
@@ -3517,7 +3528,8 @@ import jp.juggler.subwaytooter.util.Utils;
 		}
 		
 		// 疑似アカウントではストリーミングAPIを利用できない
-		if( access_info.isPseudo() ){
+		// 2.1 では公開ストリームのみ利用できるらしい
+		if( access_info.isNA() || ( access_info.isPseudo() && ! isPublicStream() ) ){
 			return;
 		}
 		

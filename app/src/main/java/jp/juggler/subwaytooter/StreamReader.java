@@ -9,6 +9,7 @@ import android.text.TextUtils;
 
 import org.json.JSONObject;
 
+import java.net.ProtocolException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -32,6 +33,7 @@ import okhttp3.WebSocketListener;
 	static final LogCategory log = new LogCategory( "StreamReader" );
 	
 	static final Pattern reNumber = Pattern.compile( "([-]?\\d+)" );
+	static final Pattern reAuthorizeError = Pattern.compile( "authorize",Pattern.CASE_INSENSITIVE );
 	
 	interface Callback {
 		void onStreamingMessage( String event_type, Object o );
@@ -217,8 +219,18 @@ import okhttp3.WebSocketListener;
 		@Override
 		public void onFailure( WebSocket webSocket, Throwable ex, Response response ){
 			log.e( ex, "WebSocket onFailure. url=%s .", webSocket.request().url() );
+			
+			
 			bListening.set( false );
 			handler.removeCallbacks( proc_reconnect );
+
+			if( ex instanceof ProtocolException ){
+				String msg = ex.getMessage();
+				if(msg != null && reAuthorizeError.matcher( msg).find() ){
+					log.e("seems old instance that does not support streaming public timeline without access token. don't retry...");
+					return;
+				}
+			}
 			handler.postDelayed( proc_reconnect, 10000L );
 		}
 		

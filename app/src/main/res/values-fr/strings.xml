@@ -137,7 +137,7 @@
 	<string name="favourited_by">Mis en favori par …</string>
 	<string name="favourites">Favoris</string>
 	<string name="federate_timeline">Chronologie fédérée</string>
-	<string name="file_size_too_big">Taille du fichier est trop grande. La limite maximale est de 8 Mo.</string>
+	<string name="file_size_too_big">Taille du fichier est trop grande. La limite maximale est de %1$d Mo.</string>
 	<string name="follow">Suivre</string>
 	<string name="follow_from_another_account">Suivre (sélection du compte)</string>
 	<string name="follow_locked_user">Suivre un utilisateur verrouillé</string>
@@ -535,7 +535,7 @@
 	<string name="list_show_member">show list users</string>
 	<string name="list_show_timeline">show list TL</string>
 	<string name="list_member_of">\"%1$s\" list users</string>
-	<string name="list_tl_of">\"%1$s\" List TL</string>
+	<string name="list_tl_of">\"%1$s\" list</string>
 	<string name="list_create_hint">name of new list</string>
 	<string name="list_name_empty">please input name of new list.</string>
 	<string name="list_created">new list created.</string>
@@ -549,7 +549,6 @@
 	<string name="list">List</string>
 	<string name="list_not_supported">this instance does not support list.</string>
 	<string name="cant_access_list">Can\'t access to lists.</string>
-	<string name="list_not_selected">please select list.</string>
 	<string name="account_sync_failed">account sync failed.</string>
 	<string name="list_retry_with_follow">You have not followed %1$s yet. Would you like to follow and then add to list?</string>
 	<string name="cant_add_list_follow_requesting">Can\'t add user to list:\nif the user is "locked", please wait until follow request is approved. else please retry 2…3 times.</string>
@@ -559,9 +558,9 @@
     <string name="account_moved_to">%1$s has moved to:</string>
 	<string name="jump_moved_user">%1$s has been moved. Would you like to check %2$s ?</string>
 	<string name="ignore_suggestion">ignore suggestion</string>
-	<string name="include_who_in">Include %1$s in:</string>
 	<string name="list_not_created">(list is not created)</string>
 	<string name="your_lists">Your lists</string>
+	<string name="media_attachment_max_byte_size">Max byte size of media attachment(unit:Mega byte. default is 8)</string>
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->

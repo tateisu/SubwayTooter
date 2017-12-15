@@ -13,7 +13,6 @@ import android.graphics.drawable.StateListDrawable;
 import android.graphics.drawable.shapes.RectShape;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;

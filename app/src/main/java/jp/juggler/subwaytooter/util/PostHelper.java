@@ -56,8 +56,8 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 	private final SharedPreferences pref;
 	private final Handler handler;
 	private final String picker_caption_emoji;
-	private final String picker_caption_tag;
-	private final String picker_caption_mention;
+//	private final String picker_caption_tag;
+//	private final String picker_caption_mention;
 	
 	public PostHelper( AppCompatActivity activity, SharedPreferences pref, Handler handler ){
 		this.activity = activity;
@@ -65,8 +65,8 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 		this.handler = handler;
 		
 		this.picker_caption_emoji = activity.getString( R.string.open_picker_emoji );
-		this.picker_caption_tag = activity.getString( R.string.open_picker_tag );
-		this.picker_caption_mention = activity.getString( R.string.open_picker_mention );
+//		this.picker_caption_tag = activity.getString( R.string.open_picker_tag );
+//		this.picker_caption_mention = activity.getString( R.string.open_picker_mention );
 		
 	}
 	

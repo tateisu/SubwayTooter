@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.view;
 
-import android.support.v4.view.MotionEventCompat;
 import android.text.Layout;
 import android.text.Spannable;
 import android.text.method.LinkMovementMethod;
@@ -22,7 +21,7 @@ public class MyLinkMovementMethod extends LinkMovementMethod {
 	@Override
 	public boolean onTouchEvent( TextView widget, Spannable buffer, MotionEvent event ){
 		
-		int action = MotionEventCompat.getActionMasked( event );
+		int action = event.getAction();
 		
 		if( action != MotionEvent.ACTION_UP && action != MotionEvent.ACTION_DOWN ){
 			return Touch.onTouchEvent( widget, buffer, event );

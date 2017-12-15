@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -89,7 +88,7 @@ public class ActColumnList extends AppCompatActivity {
 		listAdapter = new MyListAdapter();
 		
 		// ハンドル部分をドラッグで並べ替えできるRecyclerView
-		listView = (DragListView) findViewById( R.id.drag_list_view );
+		listView = findViewById( R.id.drag_list_view );
 		listView.setLayoutManager( new LinearLayoutManager( this ) );
 		listView.setAdapter( listAdapter, true );
 		listView.setCanDragHorizontally( false );
@@ -204,15 +203,15 @@ public class ActColumnList extends AppCompatActivity {
 	
 	// リスト要素のデータ
 	static class MyItem {
-		long id;
-		JSONObject json;
-		String name;
-		String acct;
-		int acct_color_fg;
-		int acct_color_bg;
+		final long id;
+		final JSONObject json;
+		final String name;
+		final String acct;
+		final int acct_color_fg;
+		final int acct_color_bg;
+		final int old_index;
+		final int type;
 		boolean bOldSelection;
-		int old_index;
-		int type;
 		
 		MyItem( JSONObject src, long id, Context context ){
 			this.json = src;
@@ -227,7 +226,7 @@ public class ActColumnList extends AppCompatActivity {
 			this.type = src.optInt( Column.KEY_TYPE );
 		}
 		
-		void setOldSelection( boolean b ){
+		void setOldSelection( @SuppressWarnings("SameParameterValue") boolean b ){
 			bOldSelection = b;
 		}
 	}
@@ -247,9 +246,9 @@ public class ActColumnList extends AppCompatActivity {
 			);
 			
 			ivBookmark = viewRoot.findViewById( R.id.ivBookmark );
-			tvAccess = (TextView) viewRoot.findViewById( R.id.tvAccess );
-			tvName = (TextView) viewRoot.findViewById( R.id.tvName );
-			ivColumnIcon = (ImageView) viewRoot.findViewById( R.id.ivColumnIcon );
+			tvAccess = viewRoot.findViewById( R.id.tvAccess );
+			tvName = viewRoot.findViewById( R.id.tvName );
+			ivColumnIcon = viewRoot.findViewById( R.id.ivColumnIcon );
 			acct_pad_lr = (int) ( 0.5f + 4f * viewRoot.getResources().getDisplayMetrics().density );
 			
 			// リスト要素のビューが ListSwipeItem だった場合、Swipe操作を制御できる
@@ -296,15 +295,15 @@ public class ActColumnList extends AppCompatActivity {
 		public void onBindDragView( View clickedView, View dragView ){
 			MyItem item = (MyItem) clickedView.getTag();
 			
-			TextView tv = (TextView) dragView.findViewById( R.id.tvAccess );
+			TextView tv = dragView.findViewById( R.id.tvAccess );
 			tv.setText( item.acct );
 			tv.setTextColor( item.acct_color_fg );
 			tv.setBackgroundColor( item.acct_color_bg );
 			
-			tv = (TextView) dragView.findViewById( R.id.tvName );
+			tv = dragView.findViewById( R.id.tvName );
 			tv.setText( item.name );
 			
-			ImageView ivColumnIcon = (ImageView) dragView.findViewById( R.id.ivColumnIcon );
+			ImageView ivColumnIcon = dragView.findViewById( R.id.ivColumnIcon );
 			ivColumnIcon.setImageResource( Styler.getAttributeResourceId(
 				ActColumnList.this, Column.getIconAttrId( item.acct, item.type ) ) );
 			

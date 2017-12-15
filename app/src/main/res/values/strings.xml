@@ -59,7 +59,7 @@
     <string name="attachment_too_many">a max of 4 files is allowed.</string>
     <string name="account_select_please">Select the account</string>
     <string name="login_failed">Login failed</string>
-    <string name="file_size_too_big">The file is too big. Maximum limit is 8MB.</string>
+    <string name="file_size_too_big">The file is too big. Maximum limit is %1$dMB.</string>
     <string name="visibility_public">Public</string>
     <string name="visibility_unlisted">Unlisted</string>
     <string name="visibility_private">Private</string>
@@ -526,7 +526,7 @@
     <string name="list_show_member">show list users</string>
     <string name="list_show_timeline">show list TL</string>
     <string name="list_member_of">\"%1$s\" list users</string>
-    <string name="list_tl_of">\"%1$s\" List TL</string>
+    <string name="list_tl_of">\"%1$s\" list</string>
     <string name="list_create_hint">name of new list</string>
     <string name="list_name_empty">please input name of new list.</string>
     <string name="list_created">new list created.</string>
@@ -540,17 +540,16 @@
     <string name="list">List</string>
     <string name="list_not_supported">this instance does not support list.</string>
     <string name="cant_access_list">Can\'t access to lists</string>
-    <string name="list_not_selected">please select list.</string>
     <string name="account_sync_failed">account sync failed.</string>
-    <string name="list_retry_with_follow">You have not followed %1$s yet. Would you like to follow and then add to list?</string>
-    <string name="cant_add_list_follow_requesting">Can\'t add user to list:\nif the user is "locked", please wait until follow request is approved. else please retry 2…3 times.</string>
+    <string name="list_retry_with_follow">You are not following %1$s yet. Would you like to follow and then add to list?</string>
+    <string name="cant_add_list_follow_requesting">Can\'t add user to list:\nPlease retry 2…3 times. Or if user is "locked", please wait until follow request is approved.</string>
     <string name="cant_add_list_follow_failed">Can\'t add user to list:\nfollow operation failed.</string>
     <string name="list_member_added">User has been added to the list.</string>
     <string name="confirm_mute_notification_for_user">Mute notification from this user</string>
     <string name="account_moved_to">%1$s has moved to:</string>
     <string name="jump_moved_user">%1$s has been moved. Would you like to check %2$s ?</string>
     <string name="ignore_suggestion">ignore suggestion</string>
-    <string name="include_who_in">Include %1$s in:</string>
     <string name="list_not_created">(list is not created)</string>
     <string name="your_lists">Your lists</string>
+    <string name="media_attachment_max_byte_size">Media attachment maximum bytes size (unit:Mega bytes. default is 8)</string>
 </resources>

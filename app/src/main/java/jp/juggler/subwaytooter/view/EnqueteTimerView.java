@@ -28,7 +28,7 @@ public class EnqueteTimerView extends View {
 	
 	long time_start;
 	long duration;
-	Paint paint = new Paint();
+	final Paint paint = new Paint();
 	
 	public void setParams( long time_start, long duration ){
 		this.time_start = time_start;

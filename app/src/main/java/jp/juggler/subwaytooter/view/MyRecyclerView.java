@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.view;
 
 import android.content.Context;
 import android.support.annotation.Nullable;
-import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -41,8 +40,8 @@ public class MyRecyclerView extends RecyclerView {
 
 	@Override
 	public boolean onInterceptTouchEvent( MotionEvent e ){
-		final int action = MotionEventCompat.getActionMasked( e );
-		// final int actionIndex = MotionEventCompat.getActionIndex( e );
+		final int action = e.getAction();
+		// final int actionIndex = e.getActionIndex( );
 		
 		switch( action ){
 		

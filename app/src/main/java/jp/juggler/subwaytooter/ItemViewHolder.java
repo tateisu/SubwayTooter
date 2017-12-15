@@ -99,7 +99,6 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	
 	private final View llList;
 	private final Button btnListTL;
-	private final View btnListMore;
 	
 	private final LinearLayout llExtra;
 	
@@ -210,7 +209,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		this. llList= view.findViewById( R.id.llList );
 		this. btnListTL= view.findViewById( R.id.btnListTL );
-		this. btnListMore= view.findViewById( R.id.btnListMore );
+		View btnListMore = view.findViewById( R.id.btnListMore );
 		
 		 btnListTL.setOnClickListener( this );
 		 btnListMore.setOnClickListener( this );

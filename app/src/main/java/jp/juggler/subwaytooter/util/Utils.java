@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 
 import android.content.ContextWrapper;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -98,7 +99,7 @@ public class Utils {
 		return sb.toString();
 	}
 	
-	static DecimalFormat bytes_format = new DecimalFormat( "#,###" );
+	static final DecimalFormat bytes_format = new DecimalFormat( "#,###" );
 	
 	public static String formatBytes( long t ){
 		return bytes_format.format( t );
@@ -352,10 +353,10 @@ public class Utils {
 	
 	/////////////////////////////////////////////
 	
-	static HashMap< Character, String > taisaku_map = new HashMap<>();
-	static SparseBooleanArray taisaku_map2 = new SparseBooleanArray();
+	private static final HashMap< Character, String > taisaku_map ;
+	private static final SparseBooleanArray taisaku_map2 ;
 	
-	static void _taisaku_add_string( String z, String h ){
+	private static void _taisaku_add_string( String z, String h ){
 		for( int i = 0, e = z.length() ; i < e ; ++ i ){
 			char zc = z.charAt( i );
 			taisaku_map.put( zc, "" + Character.toString( h.charAt( i ) ) );
@@ -380,7 +381,7 @@ public class Utils {
 		
 	}
 	
-	static boolean isBadChar2( char c ){
+	private static boolean isBadChar2( char c ){
 		return c == 0xa || taisaku_map2.get( (int) c );
 	}
 	
@@ -460,15 +461,22 @@ public class Utils {
 	
 	public static void hideKeyboard( Context context, View v ){
 		InputMethodManager imm = (InputMethodManager) context.getSystemService( Context.INPUT_METHOD_SERVICE );
-		imm.hideSoftInputFromWindow( v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS );
+		if( imm == null ){
+			log.e( "can't get InputMethodManager" );
+		}else{
+			imm.hideSoftInputFromWindow( v.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS );
+		}
 	}
 	
 	public static void showKeyboard( Context context, View v ){
-		try{
-			InputMethodManager imm = (InputMethodManager) context.getSystemService( Context.INPUT_METHOD_SERVICE );
-			imm.showSoftInput( v, InputMethodManager.HIDE_NOT_ALWAYS );
-		}catch( Throwable ignored ){
-			
+		InputMethodManager imm = (InputMethodManager) context.getSystemService( Context.INPUT_METHOD_SERVICE );
+		if( imm == null ){
+			log.e( "can't get InputMethodManager" );
+		}else{
+			try{
+				imm.showSoftInput( v, InputMethodManager.HIDE_NOT_ALWAYS );
+			}catch( Throwable ignored ){
+			}
 		}
 	}
 	
@@ -866,6 +874,8 @@ public class Utils {
 		return sb.toString().replaceAll( "\n+", "\n" );
 	}
 	
+
+	
 	public interface ScanViewCallback {
 		void onScanView( View v );
 	}
@@ -907,33 +917,37 @@ public class Utils {
 	Map< String, String > getSecondaryStorageVolumesMap( Context context ){
 		Map< String, String > result = new HashMap<>();
 		try{
-			
 			StorageManager sm = (StorageManager) context.getApplicationContext().getSystemService( Context.STORAGE_SERVICE );
-			
-			// SDカードスロットのある7.0端末が手元にないから検証できない
-			//			if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ){
-			//				for(StorageVolume volume : sm.getStorageVolumes() ){
-			//					// String path = volume.getPath();
-			//					String state = volume.getState();
-			//
-			//				}
-			//			}
-			
-			Method getVolumeList = sm.getClass().getMethod( "getVolumeList" );
-			Object[] volumes = (Object[]) getVolumeList.invoke( sm );
-			//
-			for( Object volume : volumes ){
-				Class< ? > volume_clazz = volume.getClass();
+			if( sm == null ){
+				log.e("can't get StorageManager");
+			}else{
 				
-				String path = (String) volume_clazz.getMethod( "getPath" ).invoke( volume );
-				String state = (String) volume_clazz.getMethod( "getState" ).invoke( volume );
-				if( ! TextUtils.isEmpty( path ) && "mounted".equals( state ) ){
-					//
-					boolean isPrimary = (Boolean) volume_clazz.getMethod( "isPrimary" ).invoke( volume );
-					if( isPrimary ) result.put( "primary", path );
-					//
-					String uuid = (String) volume_clazz.getMethod( "getUuid" ).invoke( volume );
-					if( ! TextUtils.isEmpty( uuid ) ) result.put( uuid, path );
+				// SDカードスロットのある7.0端末が手元にないから検証できない
+				//			if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ){
+				//				for(StorageVolume volume : sm.getStorageVolumes() ){
+				//					// String path = volume.getPath();
+				//					String state = volume.getState();
+				//
+				//				}
+				//			}
+				
+				Method getVolumeList = sm.getClass().getMethod( "getVolumeList" );
+				Object[] volumes = (Object[]) getVolumeList.invoke( sm );
+				//
+				for( Object volume : volumes ){
+					
+					Class< ? > volume_clazz = volume.getClass();
+					
+					String path = (String) volume_clazz.getMethod( "getPath" ).invoke( volume );
+					String state = (String) volume_clazz.getMethod( "getState" ).invoke( volume );
+					if( ! TextUtils.isEmpty( path ) && "mounted".equals( state ) ){
+						//
+						boolean isPrimary = (Boolean) volume_clazz.getMethod( "isPrimary" ).invoke( volume );
+						if( isPrimary ) result.put( "primary", path );
+						//
+						String uuid = (String) volume_clazz.getMethod( "getUuid" ).invoke( volume );
+						if( ! TextUtils.isEmpty( uuid ) ) result.put( uuid, path );
+					}
 				}
 			}
 		}catch( Throwable ex ){
@@ -1197,13 +1211,18 @@ public class Utils {
 		return null;
 	}
 	
-	// defined or
-	public static < T > T dor( T... args ){
+	// 引数の中で最初に登場した非null値を返す
+	@SafeVarargs public static < T > T dor( T... args ){
 		if( args != null ){
 			for( T a : args ){
 				if( a != null ) return a;
 			}
 		}
 		return null;
+	}
+	
+	public static @Nullable Object getExtraObject( Intent data, String key ){
+		Bundle b = data.getExtras();
+		return b == null ? null : b.get( key );
 	}
 }

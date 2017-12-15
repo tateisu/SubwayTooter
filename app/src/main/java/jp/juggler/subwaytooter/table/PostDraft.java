@@ -123,10 +123,10 @@ public class PostDraft {
 	}
 	
 	public static class ColIdx {
-		int idx_id = - 1;
-		int idx_time_save;
-		int idx_json;
-		int idx_hash;
+		final int idx_id;
+		final int idx_time_save;
+		final int idx_json;
+		final int idx_hash;
 		
 		public ColIdx( Cursor cursor ){
 			idx_id = cursor.getColumnIndex( COL_ID );

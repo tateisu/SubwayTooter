@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter;
 
+import android.annotation.SuppressLint;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -146,14 +147,14 @@ public class AppState {
 		return map_busy_fav.contains( key );
 	}
 	
-	boolean setBusyFav( SavedAccount account, @NonNull TootStatusLike status ){
+	void setBusyFav( SavedAccount account, @NonNull TootStatusLike status ){
 		final String key = account.acct + ":" + status.getBusyKey();
-		return map_busy_fav.add( key );
+		map_busy_fav.add( key );
 	}
 	
-	boolean resetBusyFav( SavedAccount account, @NonNull TootStatusLike status ){
+	void resetBusyFav( SavedAccount account, @NonNull TootStatusLike status ){
 		final String key = account.acct + ":" + status.getBusyKey();
-		return map_busy_fav.remove( key );
+		map_busy_fav.remove( key );
 	}
 	
 	//////////////////////////////////////////////////////
@@ -165,15 +166,16 @@ public class AppState {
 		return map_busy_boost.contains( key );
 	}
 	
-	boolean setBusyBoost( SavedAccount account, @NonNull TootStatusLike status ){
+	void setBusyBoost( SavedAccount account, @NonNull TootStatusLike status ){
 		final String key = account.acct + ":" + status.getBusyKey();
-		return map_busy_boost.add( key );
+		map_busy_boost.add( key );
 	}
 	
-	boolean resetBusyBoost( SavedAccount account, @NonNull TootStatusLike status ){
+	void resetBusyBoost( SavedAccount account, @NonNull TootStatusLike status ){
 		final String key = account.acct + ":" + status.getBusyKey();
-		return map_busy_boost.remove( key );
+		map_busy_boost.remove( key );
 	}
+	
 	//////////////////////////////////////////////////////
 	
 	ArrayList< PostAttachment > attachment_list = null;
@@ -217,8 +219,9 @@ public class AppState {
 	};
 	
 	private final ArrayList< Voice > voice_list = new ArrayList<>();
-	private Random random = new Random();
+	private static final Random random = new Random();
 	
+	@SuppressLint("StaticFieldLeak")
 	private void enableSpeech(){
 		this.willSpeechEnabled = isTextToSpeechRequired();
 		
@@ -226,6 +229,7 @@ public class AppState {
 			tts_status = TTS_STATUS_INITIALIZING;
 			Utils.showToast( context, false, R.string.text_to_speech_initializing );
 			log.d( "initializing TextToSpeech…" );
+
 			new AsyncTask< Void, Void, TextToSpeech >() {
 				TextToSpeech tmp_tts;
 				

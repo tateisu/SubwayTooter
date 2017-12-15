@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.view;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.v7.widget.AppCompatEditText;
 import android.util.AttributeSet;
@@ -46,12 +47,14 @@ public class MyEditText extends AppCompatEditText {
 	////////////////////////////////////////////////////
 	// Android 6.0 でのクラッシュ対応
 	
+	@SuppressLint("ClickableViewAccessibility")
 	@Override public boolean onTouchEvent( MotionEvent event ){
 		try{
 			return super.onTouchEvent( event );
 		}catch( Throwable ex ){
 			log.trace( ex );
 			return false;
+			// 謎の例外を補足する
 			//		java.lang.NullPointerException:
 			//		at android.widget.Editor$SelectionModifierCursorController.onTouchEvent (Editor.java:4889)
 			//		at android.widget.Editor.onTouchEvent (Editor.java:1223)

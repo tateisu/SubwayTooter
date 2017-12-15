@@ -1412,12 +1412,21 @@ public class ActMain extends AppCompatActivity
 		//noinspection StatementWithEmptyBody
 		if( result == null ){
 			// cancelled.
+
 		}else if( result.error != null ){
 			Utils.showToast( ActMain.this, true, result.error );
+			
+		}else if( result.token_info == null ){
+			Utils.showToast( ActMain.this, true, "can't get access token." );
+			
+		}else if( result.object == null ){
+			Utils.showToast( ActMain.this, true, "can't parse json response." );
+
 		}else if( ta == null ){
 			// 自分のユーザネームを取れなかった
 			// …普通はエラーメッセージが設定されてるはずだが
-			Utils.showToast( ActMain.this, true, "missing TootAccount" );
+			Utils.showToast( ActMain.this, true, "can't verify user credential." );
+
 		}else if( sa != null ){
 			// アクセストークン更新時
 			

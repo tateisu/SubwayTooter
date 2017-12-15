@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.view;
 
 import android.annotation.SuppressLint;
-import android.graphics.PointF;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.view.ViewCompat;
@@ -185,7 +184,7 @@ public class GravitySnapHelper extends LinearSnapHelper {
 		return horizontalHelper;
 	}
 	
-	int column_w;
+	private int column_w;
 	
 	public void setColumnWidth( int column_w ){
 		this.column_w = column_w;

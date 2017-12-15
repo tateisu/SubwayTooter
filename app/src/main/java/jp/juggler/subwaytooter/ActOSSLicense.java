@@ -27,7 +27,7 @@ public class ActOSSLicense extends AppCompatActivity {
 				ByteArrayOutputStream bao = new ByteArrayOutputStream();
 				IOUtils.copy( is, bao );
 				String text = Utils.decodeUTF8( bao.toByteArray() );
-				TextView tv = (TextView) findViewById( R.id.tvText );
+				TextView tv = findViewById( R.id.tvText );
 				tv.setText( text );
 			}finally{
 				IOUtils.closeQuietly( is );

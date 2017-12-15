@@ -1,23 +1,18 @@
 package com.bumptech.glide.load.resource.gif;
 
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapShader;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
-import android.graphics.PorterDuff;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.os.Build;
 import android.support.annotation.NonNull;
-import android.util.DisplayMetrics;
 import android.view.Gravity;
-import android.view.View;
 
 import com.bumptech.glide.gifdecoder.GifDecoder;
 import com.bumptech.glide.load.Transformation;

@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter;
 
+import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -94,7 +95,7 @@ public class PollingWorker {
 	
 	static class InjectData {
 		long account_db_id;
-		TootNotification.List list = new TootNotification.List();
+		final TootNotification.List list = new TootNotification.List();
 	}
 	
 	static final ConcurrentLinkedQueue< InjectData > inject_queue = new ConcurrentLinkedQueue<>();
@@ -147,10 +148,14 @@ public class PollingWorker {
 		
 		//
 		this.power_manager = (PowerManager) context.getSystemService( Context.POWER_SERVICE );
+		if( power_manager ==null ) throw new RuntimeException( "can't get PowerManager" );
+		
 		power_lock = power_manager.newWakeLock( PowerManager.PARTIAL_WAKE_LOCK, PollingWorker.class.getName() );
 		power_lock.setReferenceCounted( false );
 		
 		this.wifi_manager = (WifiManager) context.getApplicationContext().getSystemService( Context.WIFI_SERVICE );
+		if( wifi_manager ==null ) throw new RuntimeException( "can't get WifiManager" );
+
 		wifi_lock = wifi_manager.createWifiLock( PollingWorker.class.getName() );
 		wifi_lock.setReferenceCounted( false );
 		
@@ -170,13 +175,14 @@ public class PollingWorker {
 	
 	class Worker extends WorkerBase {
 		
-		AtomicBoolean bThreadCancelled = new AtomicBoolean( false );
+		final AtomicBoolean bThreadCancelled = new AtomicBoolean( false );
 		
 		public void cancel(){
 			bThreadCancelled.set( true );
 			notifyEx();
 		}
 		
+		@SuppressLint("WakelockTimeout")
 		void acquirePowerLock(){
 			log.d( "acquire power lock..." );
 			try{
@@ -355,9 +361,9 @@ public class PollingWorker {
 	}
 	
 	class JobItem {
-		int jobId;
-		WeakReference< JobService > refJobService;
-		JobParameters jobParams;
+		final int jobId;
+		final WeakReference< JobService > refJobService;
+		final JobParameters jobParams;
 		final AtomicBoolean mJobCancelled_ = new AtomicBoolean();
 		final AtomicBoolean mReschedule = new AtomicBoolean();
 		final AtomicBoolean mWorkerAttached = new AtomicBoolean();
@@ -1078,7 +1084,7 @@ public class PollingWorker {
 							log.d( "error. %s", result.error );
 							
 							String sv = result.error;
-							if( sv.contains( "Timeout" ) && ! account.dont_show_timeout ){
+							if( sv != null && sv.contains( "Timeout" ) && ! account.dont_show_timeout ){
 								synchronized( error_instance ){
 									boolean bFound = false;
 									for( String x : error_instance ){
@@ -1473,6 +1479,8 @@ public class PollingWorker {
 	public static void scheduleJob( Context context, int job_id ){
 		
 		JobScheduler scheduler = (JobScheduler) context.getSystemService( Context.JOB_SCHEDULER_SERVICE );
+		if( scheduler == null ) throw new RuntimeException( "can't get JobScheduler" );
+		
 		ComponentName component = new ComponentName( context, PollingService.class );
 		
 		JobInfo.Builder builder = new JobInfo.Builder( job_id, component )

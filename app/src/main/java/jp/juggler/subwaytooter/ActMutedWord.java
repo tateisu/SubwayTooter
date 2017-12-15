@@ -50,7 +50,7 @@ public class ActMutedWord extends AppCompatActivity {
 		listAdapter = new MyListAdapter();
 		
 		// ハンドル部分をドラッグで並べ替えできるRecyclerView
-		listView = (DragListView) findViewById( R.id.drag_list_view );
+		listView = findViewById( R.id.drag_list_view );
 		listView.setLayoutManager( new LinearLayoutManager( this ) );
 		listView.setAdapter( listAdapter, false );
 		
@@ -130,7 +130,7 @@ public class ActMutedWord extends AppCompatActivity {
 	
 	// リスト要素のデータ
 	static class MyItem {
-		String name;
+		final String name;
 		
 		MyItem( String name ){
 			this.name = name;
@@ -148,7 +148,7 @@ public class ActMutedWord extends AppCompatActivity {
 				, false // 長押しでドラッグ開始するなら真
 			);
 			
-			tvName = (TextView) viewRoot.findViewById( R.id.tvName );
+			tvName = viewRoot.findViewById( R.id.tvName );
 			
 			// リスト要素のビューが ListSwipeItem だった場合、Swipe操作を制御できる
 			if( viewRoot instanceof ListSwipeItem ){

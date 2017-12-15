@@ -1,29 +1,18 @@
 package jp.juggler.subwaytooter.dialog;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
-import android.text.InputType;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import android.widget.TextView;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
 
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.util.Utils;
-
-/**
- * Created by tateisu on 2017/04/23.
- */
 
 public class ReportForm {
 	
@@ -32,11 +21,12 @@ public class ReportForm {
 	}
 	
 	public static void showReportForm( final Activity activity, TootAccount who, TootStatus status , final ReportFormCallback callback){
+		@SuppressLint("InflateParams")
 		final View view = activity.getLayoutInflater().inflate( R.layout.dlg_report_user, null, false );
 		
-		final TextView tvUser = (TextView) view.findViewById( R.id.tvUser );
-		final TextView	tvStatus= (TextView) view.findViewById( R.id.tvStatus );
-		final EditText etComment= (EditText) view.findViewById( R.id.etComment );
+		final TextView tvUser = view.findViewById( R.id.tvUser );
+		final TextView	tvStatus= view.findViewById( R.id.tvStatus );
+		final EditText etComment= view.findViewById( R.id.etComment );
 			
 		tvUser.setText( who.acct );
 		tvStatus.setText( status == null ? "" : status.decoded_content);

@@ -49,7 +49,7 @@ public class CustomEmojiCache {
 	
 	static class CacheItem {
 		
-		@NonNull String url;
+		@NonNull final String url;
 		
 		@NonNull APNGFrames frames;
 		
@@ -131,8 +131,8 @@ public class CustomEmojiCache {
 	
 	////////////////////////////////
 	
-	Context context;
-	Handler handler;
+	final Context context;
+	final Handler handler;
 	
 	public CustomEmojiCache( Context context ){
 		this.context = context;
@@ -141,7 +141,7 @@ public class CustomEmojiCache {
 		worker.start();
 	}
 	
-	Worker worker;
+	final Worker worker;
 	
 	class Worker extends WorkerBase {
 		final AtomicBoolean bCancelled = new AtomicBoolean( false );
@@ -295,7 +295,7 @@ public class CustomEmojiCache {
 		
 		private final BitmapFactory.Options options = new BitmapFactory.Options();
 		
-		private Bitmap decodeBitmap( byte[] data, int pixel_max ){
+		private Bitmap decodeBitmap( byte[] data, @SuppressWarnings("SameParameterValue") int pixel_max ){
 			options.inJustDecodeBounds = true;
 			options.inScaled = false;
 			options.outWidth = 0;

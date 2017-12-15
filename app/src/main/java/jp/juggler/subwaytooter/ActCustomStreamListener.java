@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -75,12 +76,12 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 		
 		Styler.fixHorizontalPadding( findViewById( R.id.llContent ) );
 		
-		etStreamListenerConfigurationUrl = (EditText) findViewById( R.id.etStreamListenerConfigurationUrl );
-		etStreamListenerSecret = (EditText) findViewById( R.id.etStreamListenerSecret );
+		etStreamListenerConfigurationUrl = findViewById( R.id.etStreamListenerConfigurationUrl );
+		etStreamListenerSecret = findViewById( R.id.etStreamListenerSecret );
 		etStreamListenerConfigurationUrl.addTextChangedListener( this );
 		etStreamListenerSecret.addTextChangedListener( this );
 		
-		tvLog = (TextView) findViewById( R.id.tvLog );
+		tvLog = findViewById( R.id.tvLog );
 		
 		btnDiscard = findViewById( R.id.btnDiscard );
 		btnTest = findViewById( R.id.btnTest );
@@ -183,7 +184,7 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 		} );
 	}
 	
-	void startTest(){
+	@SuppressLint("StaticFieldLeak") void startTest(){
 		final String strSecret = etStreamListenerSecret.getText().toString().trim();
 		final String strUrl = etStreamListenerConfigurationUrl.getText().toString().trim();
 		stream_config_json = null;
@@ -192,6 +193,7 @@ public class ActCustomStreamListener extends AppCompatActivity implements View.O
 		last_task = new AsyncTask< Void, Void, String >() {
 			@Override protected String doInBackground( Void... params ){
 				try{
+					//noinspection LoopStatementThatDoesntLoop
 					for( ; ; ){
 						if( TextUtils.isEmpty( strSecret ) ){
 							addLog( "Secret is empty. Custom Listener is not used." );

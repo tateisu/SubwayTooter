@@ -5,7 +5,6 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import jp.juggler.subwaytooter.util.DecodeOptions;
-import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod;

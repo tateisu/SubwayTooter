@@ -42,7 +42,7 @@ public class CustomEmojiLister {
 	
 	static class CacheItem {
 		
-		@NonNull String instance;
+		@NonNull final String instance;
 		
 		@NonNull CustomEmoji.List list;
 		
@@ -69,8 +69,8 @@ public class CustomEmojiLister {
 	}
 	
 	static class Request {
-		@NonNull String instance;
-		@NonNull Callback callback;
+		@NonNull final String instance;
+		@NonNull final Callback callback;
 		
 		public Request( @NonNull String instance, @NonNull Callback callback ){
 			this.instance = instance;
@@ -120,8 +120,8 @@ public class CustomEmojiLister {
 	
 	////////////////////////////////
 	
-	Context context;
-	Handler handler;
+	final Context context;
+	final Handler handler;
 	
 	public CustomEmojiLister( Context context ){
 		this.context = context;
@@ -130,7 +130,7 @@ public class CustomEmojiLister {
 		worker.start();
 	}
 	
-	Worker worker;
+	final Worker worker;
 	
 	class Worker extends WorkerBase {
 		final AtomicBoolean bCancelled = new AtomicBoolean( false );

@@ -1,70 +1,70 @@
 package jp.juggler.subwaytooter;
-	
-	import android.Manifest;
-	import android.app.Activity;
-	import android.app.NotificationChannel;
-	import android.app.ProgressDialog;
-	import android.content.ClipData;
-	import android.content.ContentValues;
-	import android.content.DialogInterface;
-	import android.content.Intent;
-	import android.content.SharedPreferences;
-	import android.content.pm.PackageManager;
-	import android.graphics.Bitmap;
-	import android.media.RingtoneManager;
-	import android.net.Uri;
-	import android.os.AsyncTask;
-	import android.os.Build;
-	import android.os.Bundle;
-	import android.os.Handler;
-	import android.provider.MediaStore;
-	import android.provider.Settings;
-	import android.support.annotation.NonNull;
-	import android.support.annotation.Nullable;
-	import android.support.v4.app.ActivityCompat;
-	import android.support.v4.content.ContextCompat;
-	import android.support.v7.app.AlertDialog;
-	import android.support.v7.app.AppCompatActivity;
-	import android.text.Spannable;
-	import android.text.SpannableString;
-	import android.text.TextUtils;
-	import android.util.Base64;
-	import android.util.Base64OutputStream;
-	import android.view.View;
-	import android.widget.Button;
-	import android.widget.CheckBox;
-	import android.widget.CompoundButton;
-	import android.widget.EditText;
-	import android.widget.Switch;
-	import android.widget.TextView;
-	
-	import org.apache.commons.io.IOUtils;
-	
-	import java.io.ByteArrayOutputStream;
-	import java.io.File;
-	import java.io.FileInputStream;
-	import java.io.FileOutputStream;
-	import java.io.IOException;
-	import java.io.InputStream;
-	
-	import jp.juggler.subwaytooter.api.TootApiClient;
-	import jp.juggler.subwaytooter.api.TootApiResult;
-	import jp.juggler.subwaytooter.api.entity.TootAccount;
-	import jp.juggler.subwaytooter.api.entity.TootStatus;
-	import jp.juggler.subwaytooter.dialog.ActionsDialog;
-	import jp.juggler.subwaytooter.table.AcctColor;
-	import jp.juggler.subwaytooter.table.SavedAccount;
-	import jp.juggler.subwaytooter.util.DecodeOptions;
-	import jp.juggler.subwaytooter.util.EmojiDecoder;
-	import jp.juggler.subwaytooter.util.LogCategory;
-	import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator;
-	import jp.juggler.subwaytooter.util.NotificationHelper;
-	import jp.juggler.subwaytooter.util.Utils;
-	import jp.juggler.subwaytooter.view.MyNetworkImageView;
-	import okhttp3.Call;
-	import okhttp3.Request;
-	import okhttp3.RequestBody;
-	import okhttp3.Response;
+
+import android.Manifest;
+import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.ProgressDialog;
+import android.content.ClipData;
+import android.content.ContentValues;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.provider.MediaStore;
+import android.provider.Settings;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.TextUtils;
+import android.util.Base64;
+import android.util.Base64OutputStream;
+import android.view.View;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
+import android.widget.EditText;
+import android.widget.Switch;
+import android.widget.TextView;
+
+import org.apache.commons.io.IOUtils;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
+import jp.juggler.subwaytooter.api.TootApiClient;
+import jp.juggler.subwaytooter.api.TootApiResult;
+import jp.juggler.subwaytooter.api.entity.TootAccount;
+import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.dialog.ActionsDialog;
+import jp.juggler.subwaytooter.table.AcctColor;
+import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.util.DecodeOptions;
+import jp.juggler.subwaytooter.util.EmojiDecoder;
+import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator;
+import jp.juggler.subwaytooter.util.NotificationHelper;
+import jp.juggler.subwaytooter.util.Utils;
+import jp.juggler.subwaytooter.view.MyNetworkImageView;
+import okhttp3.Call;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class ActAccountSetting extends AppCompatActivity
 	implements View.OnClickListener
@@ -127,7 +127,7 @@ public class ActAccountSetting extends AppCompatActivity
 		case REQUEST_CODE_NOTIFICATION_SOUND:{
 			if( resultCode == RESULT_OK ){
 				// RINGTONE_PICKERからの選択されたデータを取得する
-				Uri uri = (Uri) data.getExtras().get( RingtoneManager.EXTRA_RINGTONE_PICKED_URI );
+				Uri uri = (Uri) Utils.getExtraObject( data, RingtoneManager.EXTRA_RINGTONE_PICKED_URI );
 				if( uri != null ){
 					notification_sound_uri = uri.toString();
 					saveUIToData();
@@ -236,7 +236,7 @@ public class ActAccountSetting extends AppCompatActivity
 	Handler handler;
 	
 	private void initUI(){
-		this.handler = new Handler(  );
+		this.handler = new Handler();
 		setContentView( R.layout.act_account_setting );
 		
 		Styler.fixHorizontalPadding( findViewById( R.id.svContent ) );
@@ -304,8 +304,8 @@ public class ActAccountSetting extends AppCompatActivity
 		btnNotificationSoundReset.setOnClickListener( this );
 		btnNotificationStyleEdit.setOnClickListener( this );
 		
-		name_invalidator = new NetworkEmojiInvalidator(handler,etDisplayName) ;
-		note_invalidator = new NetworkEmojiInvalidator(handler,etNote);
+		name_invalidator = new NetworkEmojiInvalidator( handler, etDisplayName );
+		note_invalidator = new NetworkEmojiInvalidator( handler, etNote );
 		
 	}
 	
@@ -367,9 +367,9 @@ public class ActAccountSetting extends AppCompatActivity
 	
 	private void showAcctColor(){
 		AcctColor ac = AcctColor.load( full_acct );
-		tvUserCustom.setText( ac != null && ! TextUtils.isEmpty( ac.nickname ) ? ac.nickname : full_acct );
-		tvUserCustom.setTextColor( ac != null && ac.color_fg != 0 ? ac.color_fg : Styler.getAttributeColor( this, R.attr.colorTimeSmall ) );
-		tvUserCustom.setBackgroundColor( ac != null && ac.color_bg != 0 ? ac.color_bg : 0 );
+		tvUserCustom.setText( ! TextUtils.isEmpty( ac.nickname ) ? ac.nickname : full_acct );
+		tvUserCustom.setTextColor( ac.color_fg != 0 ? ac.color_fg : Styler.getAttributeColor( this, R.attr.colorTimeSmall ) );
+		tvUserCustom.setBackgroundColor( ac.color_bg );
 	}
 	
 	private void saveUIToData(){
@@ -439,16 +439,16 @@ public class ActAccountSetting extends AppCompatActivity
 			break;
 		
 		case R.id.btnDisplayName:
-			sendDisplayName(false);
+			sendDisplayName( false );
 			break;
 		
 		case R.id.btnNote:
-			sendNote(false);
+			sendNote( false );
 			break;
-			
+		
 		case R.id.btnNotificationStyleEdit:
 			if( Build.VERSION.SDK_INT >= 26 ){
-				NotificationChannel channel = NotificationHelper.createNotificationChannel( this,account );
+				NotificationChannel channel = NotificationHelper.createNotificationChannel( this, account );
 				Intent intent = new Intent( Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS );
 				intent.putExtra( Settings.EXTRA_CHANNEL_ID, channel.getId() );
 				intent.putExtra( Settings.EXTRA_APP_PACKAGE, getPackageName() );
@@ -480,8 +480,8 @@ public class ActAccountSetting extends AppCompatActivity
 			Styler.getVisibilityCaption( this, TootStatus.VISIBILITY_WEB_SETTING ),
 			Styler.getVisibilityCaption( this, TootStatus.VISIBILITY_PUBLIC ),
 			Styler.getVisibilityCaption( this, TootStatus.VISIBILITY_UNLISTED ),
-			Styler.getVisibilityCaption( this, TootStatus.VISIBILITY_PRIVATE),
-			Styler.getVisibilityCaption( this, TootStatus.VISIBILITY_DIRECT),
+			Styler.getVisibilityCaption( this, TootStatus.VISIBILITY_PRIVATE ),
+			Styler.getVisibilityCaption( this, TootStatus.VISIBILITY_DIRECT ),
 		};
 		
 		new AlertDialog.Builder( this )
@@ -769,16 +769,16 @@ public class ActAccountSetting extends AppCompatActivity
 		ivProfileHeader.setImageUrl( App1.pref, 0f, src.header_static, src.header );
 		
 		Spannable name = new DecodeOptions().setProfileEmojis( src.profile_emojis ).decodeEmoji( this, src.display_name == null ? "" : src.display_name );
-		etDisplayName.setText( name);
+		etDisplayName.setText( name );
 		name_invalidator.register( name );
 		
 		Spannable note;
 		if( src.source != null && src.source.note != null ){
-			note=(  new DecodeOptions().setProfileEmojis( src.profile_emojis ).decodeEmoji( this, src.source.note ) );
+			note = ( new DecodeOptions().setProfileEmojis( src.profile_emojis ).decodeEmoji( this, src.source.note ) );
 		}else if( src.note != null ){
-			note=( new DecodeOptions().setProfileEmojis( src.profile_emojis ).decodeHTML(ActAccountSetting.this, account, src.note) );
+			note = ( new DecodeOptions().setProfileEmojis( src.profile_emojis ).decodeHTML( ActAccountSetting.this, account, src.note ) );
 		}else{
-			note=new SpannableString( "" );
+			note = new SpannableString( "" );
 		}
 		etNote.setText( note );
 		note_invalidator.register( note );
@@ -861,20 +861,20 @@ public class ActAccountSetting extends AppCompatActivity
 	static final int max_length_display_name = 30;
 	static final int max_length_note = 160;
 	
-	private void sendDisplayName(boolean bConfirmed){
+	private void sendDisplayName( boolean bConfirmed ){
 		String sv = etDisplayName.getText().toString();
-		if( !bConfirmed ){
-			int length = sv.codePointCount( 0,sv.length() );
+		if( ! bConfirmed ){
+			int length = sv.codePointCount( 0, sv.length() );
 			if( length > max_length_display_name ){
 				new AlertDialog.Builder( this )
-					.setMessage( getString(R.string.length_warning
-						,getString(R.string.display_name)
-						,length,max_length_display_name
-					))
-					.setNegativeButton( R.string.cancel ,null)
+					.setMessage( getString( R.string.length_warning
+						, getString( R.string.display_name )
+						, length, max_length_display_name
+					) )
+					.setNegativeButton( R.string.cancel, null )
 					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 						@Override public void onClick( DialogInterface dialogInterface, int i ){
-							sendDisplayName(true);
+							sendDisplayName( true );
 						}
 					} )
 					.setCancelable( true )
@@ -882,23 +882,23 @@ public class ActAccountSetting extends AppCompatActivity
 				return;
 			}
 		}
-		updateCredential( "display_name=" + Uri.encode(EmojiDecoder.decodeShortCode(sv) ) );
+		updateCredential( "display_name=" + Uri.encode( EmojiDecoder.decodeShortCode( sv ) ) );
 	}
 	
-	private void sendNote(boolean bConfirmed){
+	private void sendNote( boolean bConfirmed ){
 		String sv = etNote.getText().toString();
-		if( !bConfirmed ){
-			int length = sv.codePointCount( 0,sv.length() );
+		if( ! bConfirmed ){
+			int length = sv.codePointCount( 0, sv.length() );
 			if( length > max_length_note ){
 				new AlertDialog.Builder( this )
-					.setMessage( getString(R.string.length_warning
-						,getString(R.string.note)
-						,length,max_length_note
-					))
-					.setNegativeButton( R.string.cancel ,null)
+					.setMessage( getString( R.string.length_warning
+						, getString( R.string.note )
+						, length, max_length_note
+					) )
+					.setNegativeButton( R.string.cancel, null )
 					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 						@Override public void onClick( DialogInterface dialogInterface, int i ){
-							sendNote(true);
+							sendNote( true );
 						}
 					} )
 					.setCancelable( true )
@@ -906,7 +906,7 @@ public class ActAccountSetting extends AppCompatActivity
 				return;
 			}
 		}
-		updateCredential( "note=" + Uri.encode(EmojiDecoder.decodeShortCode(sv) ) );
+		updateCredential( "note=" + Uri.encode( EmojiDecoder.decodeShortCode( sv ) ) );
 	}
 	
 	private static final int PERMISSION_REQUEST_AVATAR = 1;

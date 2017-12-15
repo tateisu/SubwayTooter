@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.util;
 
 import android.content.Context;
-import android.icu.util.Output;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 

@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.support.annotation.NonNull;
 
 import java.util.ArrayList;
-import java.util.Collection;
 
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -53,17 +52,17 @@ public class AcctSet {
 		}
 	}
 	
-//	public static void save1( long now, String acct ){
-//		try{
-//
-//			ContentValues cv = new ContentValues();
-//			cv.put( COL_TIME_SAVE, now );
-//			cv.put( COL_ACCT, acct );
-//			App1.getDB().replace( table, null, cv );
-//		}catch( Throwable ex ){
-//			log.e( ex, "save failed." );
-//		}
-//	}
+	//	public static void save1( long now, String acct ){
+	//		try{
+	//
+	//			ContentValues cv = new ContentValues();
+	//			cv.put( COL_TIME_SAVE, now );
+	//			cv.put( COL_ACCT, acct );
+	//			App1.getDB().replace( table, null, cv );
+	//		}catch( Throwable ex ){
+	//			log.e( ex, "save failed." );
+	//		}
+	//	}
 	
 	public static void saveList( long now, String[] src_list, int offset, int length ){
 		
@@ -97,7 +96,7 @@ public class AcctSet {
 	}
 	
 	private static final String prefix_search_where = COL_ACCT + " like ? escape '$'";
-
+	
 	private static final ThreadLocal< String[] > prefix_search_where_arg = new ThreadLocal< String[] >() {
 		@Override protected String[] initialValue(){
 			return new String[ 1 ];
@@ -118,11 +117,12 @@ public class AcctSet {
 		return sb.toString();
 	}
 	
-	@NonNull public static ArrayList< CharSequence > searchPrefix( @NonNull String prefix ,int limit){
+	@NonNull
+	public static ArrayList< CharSequence > searchPrefix( @NonNull String prefix, int limit ){
 		try{
 			String[] where_arg = prefix_search_where_arg.get();
 			where_arg[ 0 ] = makePattern( prefix );
-			Cursor cursor = App1.getDB().query( table, null, prefix_search_where, where_arg, null, null, COL_ACCT + " asc limit "+limit );
+			Cursor cursor = App1.getDB().query( table, null, prefix_search_where, where_arg, null, null, COL_ACCT + " asc limit " + limit );
 			if( cursor != null ){
 				try{
 					ArrayList< CharSequence > dst = new ArrayList<>( cursor.getCount() );

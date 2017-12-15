@@ -42,7 +42,7 @@
     <!---->
     <string name="federate_timeline">連合タイムライン</string>
     <!---->
-    <string name="login_required">アカウントの設定からアクセストークンの更新を行ってください</string>
+    <string name="login_required">アカウント設定からアクセストークンの更新を行ってください</string>
     <!---->
     <string name="cancelled">キャンセルされました</string>
     <!---->
@@ -114,7 +114,7 @@
     <!---->
     <string name="login_failed">ログインに失敗</string>
     <!---->
-    <string name="file_size_too_big">最大8MBまでです</string>
+    <string name="file_size_too_big">最大%1$dMBまでです</string>
     <!---->
     <string name="visibility_public">公開</string>
     <!---->
@@ -153,11 +153,11 @@
     <!---->
     <string name="account">アカウント</string>
     <!---->
-    <string name="account_setting">アカウントの設定</string>
+    <string name="account_setting">アカウント設定</string>
     <!---->
     <string name="setting">設定</string>
     <!---->
-    <string name="app_setting">アプリの設定</string>
+    <string name="app_setting">アプリ設定</string>
     <!---->
     <string name="column_list">カラム一覧</string>
     <!---->
@@ -822,7 +822,7 @@
     <string name="list_show_member">リストのユーザ</string>
     <string name="list_show_timeline">リストのタイムライン</string>
     <string name="list_member_of">\"%1$s\"リストのユーザ</string>
-    <string name="list_tl_of">\"%1$s\"リストのタイムライン</string>
+    <string name="list_tl_of">\"%1$s\"リスト</string>
     <string name="list_create_hint">新しいリストの名前</string>
     <string name="list_name_empty">新しいリストの名前を入力してください</string>
     <string name="list_created">リストを作成しました</string>
@@ -836,7 +836,6 @@
     <string name="list">リスト</string>
     <string name="list_not_supported">このタンスはリスト機能をサポートしていません</string>
     <string name="cant_access_list">リストにアクセスできません</string>
-    <string name="list_not_selected">リストを選択してください</string>
     <string name="account_sync_failed">アカウントを同期できません</string>
     <string name="list_retry_with_follow">あなたは %1$s をまだフォローしていません。フォローしてからリストに追加しますか?</string>
     <string name="cant_add_list_follow_requesting">リストに追加できません:\n「鍵付き」ユーザーの場合はフォローリクエストが承認されるまでお待ちください。そうでなければ2…3回再試行してください。</string>
@@ -847,7 +846,7 @@
 
     <string name="jump_moved_user">%1$s は引っ越しました。%2$s を確認しますか?</string>
     <string name="ignore_suggestion">提案を無視</string>
-    <string name="include_who_in">Include %1$s in:</string>
     <string name="list_not_created">(リストが作成されていません)</string>
     <string name="your_lists">マイリスト</string>
+    <string name="media_attachment_max_byte_size">添付メディアの最大バイト数(単位:MB。デフォルトは8)</string>
 </resources>

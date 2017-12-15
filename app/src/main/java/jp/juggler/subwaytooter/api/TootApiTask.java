@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
-import jp.juggler.subwaytooter.ActMain;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -23,19 +22,19 @@ public abstract class TootApiTask extends AsyncTask< Void, Void, TootApiResult >
 	
 	@NonNull protected final TootApiClient client;
 	
-	public TootApiTask( ActMain _activity, SavedAccount access_info, boolean bShowProgress ){
+	protected TootApiTask( Activity _activity, SavedAccount access_info, boolean bShowProgress ){
 		this.client = new TootApiClient( _activity, this );
 		client.setAccount( access_info );
 		if( bShowProgress ) showProgress( _activity );
 	}
 	
-	public TootApiTask( ActMain _activity, String instance, boolean bShowProgress ){
+	protected TootApiTask( Activity _activity, String instance, boolean bShowProgress ){
 		this.client = new TootApiClient( _activity, this );
 		client.setInstance( instance );
 		if( bShowProgress ) showProgress( _activity );
 	}
 	
-	public TootApiTask( ActMain _activity, boolean bShowProgress ){
+	protected TootApiTask( Activity _activity, boolean bShowProgress ){
 		this.client = new TootApiClient( _activity, this );
 		if( bShowProgress ) showProgress( _activity );
 	}

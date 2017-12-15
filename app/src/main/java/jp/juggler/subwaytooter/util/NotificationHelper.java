@@ -15,7 +15,7 @@ public class NotificationHelper {
 	private static final LogCategory log = new LogCategory( "NotificationHelper" );
 	
 	@TargetApi(26)
-	public static NotificationChannel createNotificationChannel( @NonNull Context context, @NonNull SavedAccount account ){
+	public static @NonNull NotificationChannel createNotificationChannel( @NonNull Context context, @NonNull SavedAccount account ){
 		return createNotificationChannel(context
 			,account.acct
 			,account.acct
@@ -25,7 +25,7 @@ public class NotificationHelper {
 	}
 	
 	@TargetApi(26)
-	public static NotificationChannel createNotificationChannel(
+	public static @NonNull NotificationChannel createNotificationChannel(
 		@NonNull Context context
 		, @NonNull String channel_id // id
 		, @NonNull String name // The user-visible name of the channel.
@@ -33,7 +33,9 @@ public class NotificationHelper {
 	    , int importance
 	){
 		NotificationManager notification_manager = (NotificationManager) context.getSystemService( Context.NOTIFICATION_SERVICE );
-		
+		if( notification_manager == null ){
+			throw new RuntimeException( "can't get NotificationManager" );
+		}
 		//
 		NotificationChannel channel = null;
 		try{
@@ -49,5 +51,6 @@ public class NotificationHelper {
 		if( description != null ) channel.setDescription( description );
 		notification_manager.createNotificationChannel( channel );
 		return channel;
+		
 	}
 }

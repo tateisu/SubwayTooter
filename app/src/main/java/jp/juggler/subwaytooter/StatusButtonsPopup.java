@@ -5,7 +5,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.view.MotionEventCompat;
 import android.view.Gravity;
 import android.view.MotionEvent;
 import android.view.View;
@@ -54,8 +53,11 @@ class StatusButtonsPopup {
 		window.setTouchable( true );
 		window.setOutsideTouchable( true );
 		window.setTouchInterceptor( new View.OnTouchListener() {
+			@SuppressLint("ClickableViewAccessibility")
 			@Override public boolean onTouch( View v, MotionEvent event ){
-				if( MotionEventCompat.getActionMasked( event ) == MotionEvent.ACTION_OUTSIDE ){
+				if( event.getAction() == MotionEvent.ACTION_OUTSIDE ){
+					// ポップアップの外側をタッチしたらポップアップを閉じる
+					// また、そのタッチイベントがlistViewに影響しないようにする
 					window.dismiss();
 					listView.last_popup_close = SystemClock.elapsedRealtime();
 					return true;

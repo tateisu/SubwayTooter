@@ -58,7 +58,7 @@ import java.util.Locale;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
-import jp.juggler.subwaytooter.api.entity.TootAccount;
+import jp.juggler.subwaytooter.api.TootApiTask;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootMention;
 import jp.juggler.subwaytooter.api.entity.TootResults;
@@ -849,6 +849,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}
 	}
 	
+	@SuppressLint("StaticFieldLeak")
 	private void startReplyConversion( @NonNull final SavedAccount access_info ){
 		if( in_reply_to_url == null ){
 			// 下書きが古い形式の場合、URLがないので別タンスへの移動ができない
@@ -859,20 +860,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			return;
 		}
 		
-		final ProgressDialog progress = new ProgressDialog( this );
-		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+		new TootApiTask( this, access_info, true ) {
 			TootStatus target_status;
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActPost.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-					}
-				} );
-				client.setAccount( access_info );
 				
 				// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
 				String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( in_reply_to_url ) );
@@ -891,16 +882,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				return result;
 			}
 			
-			@Override protected void onCancelled( TootApiResult result ){
-				super.onPostExecute( result );
-			}
-			
-			@Override protected void onPostExecute( TootApiResult result ){
-				try{
-					progress.dismiss();
-				}catch( Throwable ex ){
-					log.trace( ex );
-				}
+			@Override protected void handleResult( TootApiResult result ){
 				if( isCancelled() ) return;
 				
 				if( result == null ){
@@ -914,13 +896,6 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			}
 		}.executeOnExecutor( App1.task_executor );
 		
-		progress.setIndeterminate( true );
-		progress.setOnDismissListener( new DialogInterface.OnDismissListener() {
-			@Override public void onDismiss( DialogInterface dialog ){
-				task.cancel( true );
-			}
-		} );
-		progress.show();
 	}
 	
 	//////////////////////////////////////////////////////////
@@ -1012,30 +987,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		} );
 	}
 	
+	@SuppressLint("StaticFieldLeak")
 	private void setAttachmentDescription( final PostAttachment pa, final Dialog dialog, final String text ){
-		//noinspection deprecation
-		final ProgressDialog progress = new ProgressDialog( ActPost.this );
 		
-		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
-			
-			final SavedAccount target_account = account;
-			
+		final SavedAccount target_account = account;
+		new TootApiTask( this, target_account, true ) {
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActPost.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-						Utils.runOnMainThread( new Runnable() {
-							@Override public void run(){
-								progress.setMessage( s );
-							}
-						} );
-						
-					}
-				} );
-				client.setAccount( target_account );
 				
 				JSONObject json = new JSONObject();
 				try{
@@ -1061,17 +1018,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			
 			TootAttachment attachment;
 			
-			@Override protected void onCancelled( TootApiResult result ){
-				super.onCancelled( result );
-			}
-			
-			@Override protected void onPostExecute( TootApiResult result ){
-				
-				try{
-					progress.dismiss();
-				}catch( Throwable ignored ){
-					
-				}
+			@Override protected void handleResult( TootApiResult result ){
 				
 				if( result == null ){
 					// cancelled.
@@ -1089,18 +1036,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					Utils.showToast( ActPost.this, true, result.error );
 				}
 			}
-		};
-		
-		progress.setIndeterminate( true );
-		progress.setCancelable( true );
-		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
-			@Override public void onCancel( DialogInterface dialog ){
-				task.cancel( true );
-			}
-		} );
-		progress.show();
-		
-		task.executeOnExecutor( App1.task_executor );
+		}.executeOnExecutor( App1.task_executor );
 	}
 	
 	void openAttachment(){
@@ -1266,7 +1202,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	
 	static HashSet< String > acceptable_mime_types;
 	
-	void addAttachment( final Uri uri, final String mime_type ){
+	@SuppressLint("StaticFieldLeak") void addAttachment( final Uri uri, final String mime_type ){
 		if( attachment_list != null && attachment_list.size() >= 4 ){
 			Utils.showToast( this, false, R.string.attachment_too_many );
 			return;
@@ -1306,19 +1242,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		showMediaAttachment();
 		Utils.showToast( this, false, R.string.attachment_uploading );
 		
-		new AsyncTask< Void, Void, TootApiResult >() {
-			final SavedAccount target_account = account;
+		final SavedAccount target_account = account;
+		new TootApiTask( this, target_account, false ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActPost.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( String s ){
-					}
-				} );
-				client.setAccount( target_account );
 				
 				if( TextUtils.isEmpty( mime_type ) ){
 					return new TootApiResult( "mime_type is null." );
@@ -1327,9 +1254,13 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				try{
 					final InputStreamOpener opener = createOpener( uri, mime_type );
 					
+					String sv = pref.getString( Pref.KEY_MEDIA_SIZE_MAX, "8" );
+					int media_size_max = 1000000 * Utils.parse_int( sv, 8 );
+					if( media_size_max < 1000000 ) media_size_max = 1000000;
+					
 					final long content_length = getStreamSize( true, opener.open() );
-					if( content_length > 8000000 ){
-						return new TootApiResult( getString( R.string.file_size_too_big ) );
+					if( content_length > media_size_max ){
+						return new TootApiResult( getString( R.string.file_size_too_big, (media_size_max/1000000) ) );
 					}
 					RequestBody multipart_body = new MultipartBody.Builder()
 						.setType( MultipartBody.FORM )
@@ -1389,13 +1320,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				
 			}
 			
-			@Override
-			protected void onCancelled(){
-				onPostExecute( null );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
+			@Override protected void handleResult( TootApiResult result ){
 				if( pa.attachment == null ){
 					pa.status = PostAttachment.ATTACHMENT_UPLOAD_FAILED;
 					if( result != null ){
@@ -1430,7 +1355,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				int len = e.length();
 				char last_char = ( len <= 0 ? ' ' : e.charAt( len - 1 ) );
 				if( ! EmojiDecoder.isWhitespaceBeforeEmoji( last_char ) ){
-					e.append( " " + pa.attachment.text_url );
+					e.append( " " ).append( pa.attachment.text_url );
 				}else{
 					e.append( pa.attachment.text_url );
 				}
@@ -1463,16 +1388,16 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}
 	}
 	
-	private void performCameraVideo(){
-		
-		try{
-			Intent takeVideoIntent = new Intent( MediaStore.ACTION_VIDEO_CAPTURE );
-			startActivityForResult( takeVideoIntent, REQUEST_CODE_VIDEO );
-		}catch( Throwable ex ){
-			log.trace( ex );
-			Utils.showToast( this, ex, "opening video app failed." );
-		}
-	}
+//	private void performCameraVideo(){
+//
+//		try{
+//			Intent takeVideoIntent = new Intent( MediaStore.ACTION_VIDEO_CAPTURE );
+//			startActivityForResult( takeVideoIntent, REQUEST_CODE_VIDEO );
+//		}catch( Throwable ex ){
+//			log.trace( ex );
+//			Utils.showToast( this, ex, "opening video app failed." );
+//		}
+//	}
 	
 	private static final int PERMISSION_REQUEST_CODE = 1;
 	
@@ -1529,6 +1454,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		return "no_name";
 	}
 	
+	@SuppressWarnings("SameParameterValue")
 	long getStreamSize( boolean bClose, InputStream is ) throws IOException{
 		try{
 			long size = 0L;
@@ -1812,9 +1738,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		
 		final ProgressDialog progress = new ProgressDialog( this );
 		
-		final AsyncTask< Void, String, String > task = new AsyncTask< Void, String, String >() {
+		@SuppressLint("StaticFieldLeak") final AsyncTask< Void, String, String > task = new AsyncTask< Void, String, String >() {
 			
-			ArrayList< String > list_warning = new ArrayList<>();
+			final ArrayList< String > list_warning = new ArrayList<>();
 			SavedAccount account;
 			
 			@Override protected String doInBackground( Void... params ){

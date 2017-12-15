@@ -123,8 +123,8 @@ public class HTMLDecoder {
 	private static class Node {
 		final ArrayList< Node > child_nodes = new ArrayList<>();
 		
-		String tag;
-		String text;
+		final String tag;
+		final String text;
 		
 		Node(){
 			tag = "<>root";
@@ -464,10 +464,10 @@ public class HTMLDecoder {
 		return sb.toString();
 	}
 	
-	static final Pattern reEntityEscape = Pattern.compile( "[<>\"'&]" );
+	// static final Pattern reEntityEscape = Pattern.compile( "[<>\"'&]" );
 	
 	public static String encodeEntity( @NonNull String src ){
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for( int i = 0, ie = src.length() ; i < ie ; ++ i ){
 			char c = src.charAt( i );
 			switch( c ){

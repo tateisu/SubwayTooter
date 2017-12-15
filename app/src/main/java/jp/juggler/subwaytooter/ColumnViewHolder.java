@@ -752,12 +752,12 @@ class ColumnViewHolder
 		AcctColor ac = AcctColor.load( acct );
 		int c;
 		
-		tvColumnContext.setText( ac != null && ! TextUtils.isEmpty( ac.nickname ) ? ac.nickname : acct );
+		tvColumnContext.setText( ! TextUtils.isEmpty( ac.nickname ) ? ac.nickname : acct );
 		
-		c = ( ac != null ? ac.color_fg : 0 );
+		c = ac.color_fg;
 		tvColumnContext.setTextColor( c != 0 ? c : Styler.getAttributeColor( activity, R.attr.colorTimeSmall ) );
 		
-		c = ( ac != null ? ac.color_bg : 0 );
+		c = ac.color_bg;
 		if( c == 0 ){
 			ViewCompat.setBackground( tvColumnContext, null );
 		}else{

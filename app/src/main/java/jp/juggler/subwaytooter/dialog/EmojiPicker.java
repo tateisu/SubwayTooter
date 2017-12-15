@@ -13,6 +13,7 @@ import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
@@ -78,7 +79,7 @@ public class EmojiPicker implements View.OnClickListener, CustomEmojiLister.Call
 		}
 	}
 	
-	static SkinTone[] tone_list = new SkinTone[]{
+	static final SkinTone[] tone_list = new SkinTone[]{
 		new SkinTone( R.drawable.emj_1f3fb, "_light_skin_tone", "_tone1" ),
 		new SkinTone( R.drawable.emj_1f3fc, "_medium_light_skin_tone", "_tone2" ),
 		new SkinTone( R.drawable.emj_1f3fd, "_medium_skin_tone", "_tone3" ),
@@ -154,8 +155,8 @@ public class EmojiPicker implements View.OnClickListener, CustomEmojiLister.Call
 	final ArrayList< EmojiItem > recent_list = new ArrayList<>();
 	final ArrayList< EmojiItem > custom_list = new ArrayList<>();
 	final HashMap< String, String > emoji_url_map = new HashMap<>();
-	int recent_page_idx;
-	int custom_page_idx;
+	final int recent_page_idx;
+	final int custom_page_idx;
 	
 	@SuppressLint("InflateParams")
 	public EmojiPicker( @NonNull Activity activity, String instance, @NonNull Callback callback ){
@@ -221,7 +222,8 @@ public class EmojiPicker implements View.OnClickListener, CustomEmojiLister.Call
 		dialog.setContentView( viewRoot );
 		dialog.setCancelable( true );
 		dialog.setCanceledOnTouchOutside( true );
-		dialog.getWindow().setSoftInputMode( WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE );
+		Window w = dialog.getWindow();
+		if(w!=null) w.setSoftInputMode( WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE );
 	}
 	
 	@Override public void onListLoadComplete( CustomEmoji.List list ){
@@ -279,9 +281,10 @@ public class EmojiPicker implements View.OnClickListener, CustomEmojiLister.Call
 	}
 	
 	public class EmojiPickerPageViewHolder extends BaseAdapter implements AdapterView.OnItemClickListener {
-		GridView gridView;
+		final GridView gridView;
+		final int wh;
+
 		EmojiPickerPage page;
-		int wh;
 		
 		public EmojiPickerPageViewHolder( Activity activity, View root ){
 			this.gridView = root.findViewById( R.id.gridView );

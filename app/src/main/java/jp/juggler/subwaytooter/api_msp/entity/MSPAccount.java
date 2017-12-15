@@ -13,7 +13,6 @@ import java.util.regex.Pattern;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.DecodeOptions;
-import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -42,7 +41,7 @@ public class MSPAccount extends TootAccount {
 			.setShort( true )
 			.setDecodeEmoji( true )
 			.setProfileEmojis( dst.profile_emojis )
-			.decodeHTML( context, access_info, dst.note != null ? dst.note : null );
+			.decodeHTML( context, access_info, dst.note );
 		
 		if( TextUtils.isEmpty( dst.url ) ){
 			log.e( "parseAccount: missing url" );

@@ -46,7 +46,7 @@ public class ActAbout extends AppCompatActivity {
 		}
 		Button b;
 		
-		b = (Button) findViewById( R.id.btnDeveloper );
+		b = findViewById( R.id.btnDeveloper );
 		b.setText( getString( R.string.search_for, developer_acct ) );
 		b.setOnClickListener( new View.OnClickListener() {
 			@Override public void onClick( View v ){
@@ -57,7 +57,7 @@ public class ActAbout extends AppCompatActivity {
 			}
 		} );
 		
-		b = (Button) findViewById( R.id.btnRate );
+		b = findViewById( R.id.btnRate );
 		b.setText( url_store );
 		b.setOnClickListener( new View.OnClickListener() {
 			@Override public void onClick( View v ){
@@ -65,7 +65,7 @@ public class ActAbout extends AppCompatActivity {
 			}
 		} );
 		
-		b = (Button) findViewById( R.id.btnIconDesign );
+		b = findViewById( R.id.btnIconDesign );
 		b.setText( url_futaba );
 		b.setOnClickListener( new View.OnClickListener() {
 			@Override public void onClick( View v ){
@@ -82,7 +82,7 @@ public class ActAbout extends AppCompatActivity {
 //			}
 //		} );
 		
-		LinearLayout ll = (LinearLayout) findViewById( R.id.llContributors );
+		LinearLayout ll = findViewById( R.id.llContributors );
 		float density = getResources().getDisplayMetrics().density;
 		int margin_top = (int) ( 0.5f + density * 8 );
 		int padding = (int) ( 0.5f + density * 8 );

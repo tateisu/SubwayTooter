@@ -3,6 +3,8 @@ package jp.juggler.subwaytooter;
 import android.support.annotation.NonNull;
 import android.support.v4.view.ViewCompat;
 import android.text.Spannable;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -14,8 +16,7 @@ import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.UserRelation;
-import jp.juggler.subwaytooter.util.DecodeOptions;
-import jp.juggler.subwaytooter.util.EmojiDecoder;
+import jp.juggler.subwaytooter.util.EmojiImageSpan;
 import jp.juggler.subwaytooter.util.EmojiMap201709;
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator;
 import jp.juggler.subwaytooter.util.Utils;
@@ -159,7 +160,6 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 
 			ivAvatar.setImageUrl( activity.pref, 16f, access_info.supplyBaseUrl( who.avatar_static ), access_info.supplyBaseUrl( who.avatar ) );
 			
-			tvAcct.setText( access_info.getFullAcct( who ) );
 			
 			Spannable name =who.decoded_display_name ;
 			tvDisplayName.setText( name );
@@ -167,10 +167,17 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 			
 			tvRemoteProfileWarning.setVisibility( column.access_info.isRemoteUser( who ) ? View.VISIBLE : View.GONE );
 			
-			String s = "@" + access_info.getFullAcct( who );
+			SpannableStringBuilder sb = new SpannableStringBuilder(  );
+			sb.append( "@" ).append( access_info.getFullAcct( who ) );
 			if( who.locked ){
-				s += " " + EmojiMap201709.sShortNameToImageId.get("lock" ).unified;
+				sb.append(" ");
+				int start = sb.length();
+				sb.append( "locked" );
+				int end = sb.length();
+				EmojiMap201709.EmojiInfo info = EmojiMap201709.sShortNameToImageId.get( "lock" );
+				sb.setSpan( new EmojiImageSpan( activity, info.image_id ), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}
+			tvAcct.setText( sb );
 
 			Spannable note = who.decoded_note;
 			tvNote.setText(note );

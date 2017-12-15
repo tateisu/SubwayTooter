@@ -13,24 +13,24 @@ import jp.juggler.subwaytooter.table.AcctColor;
 public class MyClickableSpan extends ClickableSpan {
 	
 	public interface LinkClickCallback {
-		void onClickLink( View widget,@NonNull MyClickableSpan span);
+		void onClickLink( View widget, @NonNull MyClickableSpan span );
 	}
 	
-	public static WeakReference<LinkClickCallback> link_callback = null;
+	public static WeakReference< LinkClickCallback > link_callback = null;
 	
-	public @NonNull LinkClickContext lcc;
-	public @NonNull String text;
-	public @NonNull String url;
-	public @Nullable Object tag;
-	public int color_fg;
-	public int color_bg;
+	@NonNull public final LinkClickContext lcc;
+	@NonNull public final String text;
+	@NonNull public final String url;
+	@Nullable public final Object tag;
+	public final int color_fg;
+	public final int color_bg;
 	
 	MyClickableSpan(
 		@NonNull LinkClickContext lcc
-	    ,@NonNull  String text
-		,@NonNull  String url
+		, @NonNull String text
+		, @NonNull String url
 		, AcctColor ac
-		,@Nullable Object tag
+		, @Nullable Object tag
 	){
 		this.lcc = lcc;
 		this.text = text;
@@ -40,11 +40,14 @@ public class MyClickableSpan extends ClickableSpan {
 		if( ac != null ){
 			this.color_fg = ac.color_fg;
 			this.color_bg = ac.color_bg;
+		}else{
+			this.color_fg = 0;
+			this.color_bg = 0;
 		}
 	}
 	
 	@Override public void onClick( View widget ){
-		LinkClickCallback cb = (link_callback == null ? null : link_callback.get() );
+		LinkClickCallback cb = ( link_callback == null ? null : link_callback.get() );
 		if( cb != null ){
 			cb.onClickLink( widget, this );
 		}

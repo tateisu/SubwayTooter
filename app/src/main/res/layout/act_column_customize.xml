@@ -150,7 +150,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:ellipsize="end"
-                        android:gravity="left"
+                        android:gravity="start"
                         android:maxLines="1"
                         android:textColor="?attr/colorTimeSmall"
                         android:textSize="12sp"
@@ -163,7 +163,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
                         android:lineSpacingMultiplier="1.1"
-                        android:gravity="left"
+                        android:gravity="start"
                         android:text="@string/content_sample"
                         android:id="@+id/tvSampleContent"
                         />

@@ -1904,9 +1904,9 @@ import jp.juggler.subwaytooter.util.Utils;
 	}
 	
 	private class UpdateRelationEnv {
-		HashSet< Long > who_set = new HashSet<>();
-		HashSet< String > acct_set = new HashSet<>();
-		HashSet< String > tag_set = new HashSet<>();
+		final HashSet< Long > who_set = new HashSet<>();
+		final HashSet< String > acct_set = new HashSet<>();
+		final HashSet< String > tag_set = new HashSet<>();
 		
 		void add( @Nullable TootAccount a ){
 			if( a == null ) return;
@@ -2816,9 +2816,10 @@ import jp.juggler.subwaytooter.util.Utils;
 		bRefreshLoading = true;
 		mRefreshLoadingError = null;
 		
-		@SuppressLint("StaticFieldLeak") AsyncTask< Void, Void, TootApiResult > task = this.last_task = new AsyncTask< Void, Void, TootApiResult >() {
+		@SuppressLint("StaticFieldLeak")
+		AsyncTask< Void, Void, TootApiResult > task = this.last_task = new AsyncTask< Void, Void, TootApiResult >() {
 			String max_id = gap.max_id;
-			String since_id = gap.since_id;
+			final String since_id = gap.since_id;
 			ArrayList< Object > list_tmp;
 			
 			TootApiResult getAccountList( TootApiClient client, String path_base ){

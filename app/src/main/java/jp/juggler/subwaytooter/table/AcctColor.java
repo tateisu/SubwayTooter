@@ -6,8 +6,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import jp.juggler.subwaytooter.App1;
-import jp.juggler.subwaytooter.AppDataExporter;
-import jp.juggler.subwaytooter.Styler;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -19,9 +17,7 @@ import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
-import android.util.JsonWriter;
 
-import java.io.IOException;
 import java.util.Locale;
 
 public class AcctColor {
@@ -120,7 +116,7 @@ public class AcctColor {
 	
 	private static final LruCache< String, AcctColor > mMemoryCache = new LruCache<>( 2048 );
 	
-	@Nullable public static AcctColor load( @NonNull String acct ){
+	@NonNull public static AcctColor load( @NonNull String acct ){
 		
 		acct = acct.toLowerCase( Locale.ENGLISH );
 		
@@ -169,12 +165,12 @@ public class AcctColor {
 	
 	@NonNull public static String getNickname( @NonNull String acct ){
 		AcctColor ac = load( acct );
-		return ac != null && ! TextUtils.isEmpty( ac.nickname ) ? Utils.sanitizeBDI( ac.nickname ) : acct;
+		return ! TextUtils.isEmpty( ac.nickname ) ? Utils.sanitizeBDI( ac.nickname ) : acct;
 	}
 	
 	@Nullable public static String getNotificationSound( @NonNull String acct ){
 		AcctColor ac = load( acct );
-		return ac != null && ! TextUtils.isEmpty( ac.notification_sound ) ? ac.notification_sound : null;
+		return ! TextUtils.isEmpty( ac.notification_sound ) ? ac.notification_sound : null;
 	}
 	
 	public static boolean hasNickname( @Nullable AcctColor ac ){
@@ -197,7 +193,6 @@ public class AcctColor {
 	
 	@NonNull public static CharSequence getStringWithNickname( @NonNull Context context, int string_id , @NonNull String acct ){
 		AcctColor ac = load( acct );
-		if( ac == null ) return context.getString( string_id,acct );
 		String name = ! TextUtils.isEmpty( ac.nickname ) ? Utils.sanitizeBDI( ac.nickname ) : acct ;
 		SpannableStringBuilder sb = new SpannableStringBuilder( context.getString( string_id,new String(new char[]{CHAR_REPLACE})) );
 		for(int i=sb.length()-1;i>=0;--i){

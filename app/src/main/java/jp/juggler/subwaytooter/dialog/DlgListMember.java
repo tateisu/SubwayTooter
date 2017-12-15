@@ -49,24 +49,20 @@ public class DlgListMember implements View.OnClickListener {
 	private static final LogCategory log = new LogCategory( "DlgListMember" );
 	
 	@NonNull private final ActMain activity;
-	
-	//	@NonNull private final TootAccount target_user;
+	@NonNull private final Dialog dialog;
+
+	@NonNull private final Button btnListOwner;
+	@NonNull private final Button btnCreateList;
+
+	@NonNull private final ArrayList< SavedAccount > account_list;
 	@NonNull private final String target_user_full_acct;
-	
 	private SavedAccount list_owner;
 	private TootAccount local_who;
 	
-	@NonNull private final Dialog dialog;
-	private final Button btnListOwner;
-	private final Button btnCreateList;
-	
-	@NonNull private final ArrayList< SavedAccount > account_list;
-	
 	public DlgListMember( @NonNull ActMain _activity, @NonNull TootAccount who, @NonNull SavedAccount _list_owner ){
 		this.activity = _activity;
-		//	this.target_user = who;
+		this.account_list = _activity.makeAccountListNonPseudo( log, null );
 		this.target_user_full_acct = _list_owner.getFullAcct( who );
-		this.account_list = activity.makeAccountListNonPseudo( log, null );
 		
 		if( _list_owner.isPseudo() ){
 			this.list_owner = null;
@@ -74,7 +70,8 @@ public class DlgListMember implements View.OnClickListener {
 			this.list_owner = _list_owner;
 		}
 		
-		@SuppressLint("InflateParams") final View view = activity.getLayoutInflater().inflate( R.layout.dlg_list_member, null, false );
+		@SuppressLint("InflateParams")
+		final View view = activity.getLayoutInflater().inflate( R.layout.dlg_list_member, null, false );
 		
 		MyNetworkImageView ivUser = view.findViewById( R.id.ivUser );
 		TextView tvUserName = view.findViewById( R.id.tvUserName );
@@ -86,9 +83,9 @@ public class DlgListMember implements View.OnClickListener {
 		this.adapter = new MyListAdapter();
 		listView.setAdapter( adapter );
 		
-		view.findViewById( R.id.btnClose ).setOnClickListener( this );
-		view.findViewById( R.id.btnCreateList ).setOnClickListener( this );
+		btnCreateList.setOnClickListener( this );
 		btnListOwner.setOnClickListener( this );
+		view.findViewById( R.id.btnClose ).setOnClickListener( this );
 		
 		ivUser.setImageUrl( App1.pref, 16f, who.avatar_static, who.avatar );
 		NetworkEmojiInvalidator user_name_invalidator = new NetworkEmojiInvalidator( activity.handler, tvUserName );
@@ -110,14 +107,13 @@ public class DlgListMember implements View.OnClickListener {
 			);
 		}
 		
-		dialog.setContentView( view );
 		dialog.setTitle( R.string.your_lists );
+		dialog.setContentView( view );
 	}
 	
 	public void show(){
 		Window w = dialog.getWindow();
 		if( w != null ){
-			w.setFlags( 0, Window.FEATURE_NO_TITLE );
 			w.setLayout(
 				WindowManager.LayoutParams.MATCH_PARENT
 				, WindowManager.LayoutParams.MATCH_PARENT
@@ -236,7 +232,7 @@ public class DlgListMember implements View.OnClickListener {
 				
 				// isRegistered を設定する
 				for( TootList a : list_list ){
-					if( set_registered.contains( (Long) a.id )) a.isRegistered = true;
+					if( set_registered.contains( a.id )) a.isRegistered = true;
 				}
 				
 				return result;
@@ -344,14 +340,14 @@ public class DlgListMember implements View.OnClickListener {
 
 	
 	static class ErrorItem {
-		String message;
+		final String message;
 		
 		ErrorItem( String message ){
 			this.message = message;
 		}
 	}
 	
-	private MyListAdapter adapter;
+	private final MyListAdapter adapter;
 	
 	private class MyListAdapter extends BaseAdapter {
 		final ArrayList< Object > item_list = new ArrayList<>();
@@ -407,7 +403,7 @@ public class DlgListMember implements View.OnClickListener {
 	}
 	
 	class VH_List implements CompoundButton.OnCheckedChangeListener, ActMain.ListMemberCallback {
-		CheckBox cbItem;
+		final CheckBox cbItem;
 		boolean bBusy;
 		TootList item;
 		
@@ -447,7 +443,7 @@ public class DlgListMember implements View.OnClickListener {
 	}
 	
 	class VH_Error {
-		TextView tvError;
+		final TextView tvError;
 		
 		VH_Error( View view ){
 			this.tvError = view.findViewById( R.id.tvError );

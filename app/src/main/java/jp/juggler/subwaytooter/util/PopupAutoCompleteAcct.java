@@ -20,7 +20,8 @@ import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.Styler;
 import jp.juggler.subwaytooter.view.MyEditText;
 
-@SuppressWarnings("WeakerAccess") class PopupAutoCompleteAcct {
+@SuppressWarnings("WeakerAccess")
+class PopupAutoCompleteAcct {
 	final Activity activity;
 	final EditText etContent;
 	final PopupWindow acct_popup;
@@ -29,9 +30,9 @@ import jp.juggler.subwaytooter.view.MyEditText;
 	final float density;
 	final int popup_width;
 	final Handler handler;
+	final boolean bMainScreen;
+
 	int popup_rows;
-	
-	private boolean bMainScreen;
 	
 	void dismiss(){
 		acct_popup.dismiss();

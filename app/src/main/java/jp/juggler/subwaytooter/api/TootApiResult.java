@@ -26,7 +26,7 @@ public class TootApiResult {
 	public TootApiResult(){
 	}
 
-	public TootApiResult( @NonNull String error ){
+	public TootApiResult( @Nullable String error ){
 		this.error = error;
 	}
 	public TootApiResult( @NonNull Response response, @NonNull String error ){
@@ -34,9 +34,9 @@ public class TootApiResult {
 		this.error = error;
 	}
 	
-	TootApiResult(
+	public TootApiResult(
 		@NonNull Response response
-		, @NonNull JSONObject token_info
+		, @Nullable JSONObject token_info
 		, @NonNull String json
 		, @NonNull JSONObject object
 	){
@@ -49,7 +49,7 @@ public class TootApiResult {
 	TootApiResult(
 		@NonNull LogCategory log
 		, @NonNull Response response
-		, @NonNull JSONObject token_info
+		, @Nullable JSONObject token_info
 		, @NonNull String json
 		, @NonNull JSONArray array
 	){

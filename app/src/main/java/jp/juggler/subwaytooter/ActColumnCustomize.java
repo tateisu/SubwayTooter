@@ -252,17 +252,17 @@ public class ActColumnCustomize extends AppCompatActivity
 		findViewById( R.id.btnContentColorReset ).setOnClickListener( this );
 		
 		llColumnHeader = findViewById( R.id.llColumnHeader );
-		ivColumnHeader = (ImageView) findViewById( R.id.ivColumnHeader );
-		tvColumnName = (TextView) findViewById( R.id.tvColumnName );
+		ivColumnHeader = findViewById( R.id.ivColumnHeader );
+		tvColumnName = findViewById( R.id.tvColumnName );
 		
 		flColumnBackground = findViewById( R.id.flColumnBackground );
-		ivColumnBackground = (ImageView) findViewById( R.id.ivColumnBackground );
-		tvSampleAcct = (TextView) findViewById( R.id.tvSampleAcct );
-		tvSampleContent = (TextView) findViewById( R.id.tvSampleContent );
+		ivColumnBackground = findViewById( R.id.ivColumnBackground );
+		tvSampleAcct = findViewById( R.id.tvSampleAcct );
+		tvSampleContent = findViewById( R.id.tvSampleContent );
 		
 		content_color_default = tvSampleContent.getTextColors().getDefaultColor();
 		
-		sbColumnBackgroundAlpha = (SeekBar) findViewById( R.id.sbColumnBackgroundAlpha );
+		sbColumnBackgroundAlpha = findViewById( R.id.sbColumnBackgroundAlpha );
 		sbColumnBackgroundAlpha.setMax( PROGRESS_MAX );
 		
 		sbColumnBackgroundAlpha.setOnSeekBarChangeListener( new SeekBar.OnSeekBarChangeListener() {
@@ -284,7 +284,7 @@ public class ActColumnCustomize extends AppCompatActivity
 			
 		} );
 		
-		etAlpha = (EditText) findViewById( R.id.etAlpha );
+		etAlpha = findViewById( R.id.etAlpha );
 		etAlpha.addTextChangedListener( new TextWatcher() {
 			@Override
 			public void beforeTextChanged( CharSequence s, int start, int count, int after ){

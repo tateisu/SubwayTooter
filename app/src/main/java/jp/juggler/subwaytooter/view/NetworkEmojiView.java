@@ -88,6 +88,6 @@ public class NetworkEmojiView  extends View implements CustomEmojiCache.Callback
 	}
 	
 	@Override public void onAPNGLoadComplete(){
-		postInvalidateOnAnimation();;
+		postInvalidateOnAnimation();
 	}
 }

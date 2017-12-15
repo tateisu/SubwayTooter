@@ -132,12 +132,10 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 		tvAcct.setText( acct );
 		
 		AcctColor ac = AcctColor.load( acct );
-		if( ac != null ){
-			color_bg = ac.color_bg;
-			color_fg = ac.color_fg;
-			etNickname.setText( ac.nickname == null ? "" : ac.nickname );
-			notification_sound_uri = ac.notification_sound;
-		}
+		color_bg = ac.color_bg;
+		color_fg = ac.color_fg;
+		etNickname.setText( ac.nickname == null ? "" : ac.nickname );
+		notification_sound_uri = ac.notification_sound;
 		
 		bLoading = false;
 		show();
@@ -259,7 +257,7 @@ public class ActNickname extends AppCompatActivity implements View.OnClickListen
 	@Override protected void onActivityResult( int requestCode, int resultCode, Intent data ){
 		if( resultCode == RESULT_OK && requestCode == REQUEST_CODE_NOTIFICATION_SOUND ){
 			// RINGTONE_PICKERからの選択されたデータを取得する
-			Uri uri = (Uri) data.getExtras().get( RingtoneManager.EXTRA_RINGTONE_PICKED_URI );
+			Uri uri = (Uri) Utils.getExtraObject( data, RingtoneManager.EXTRA_RINGTONE_PICKED_URI );
 			if( uri != null ){
 				notification_sound_uri = uri.toString();
 				//			Ringtone ringtone = RingtoneManager.getRingtone(getApplicationContext(), uri);

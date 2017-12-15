@@ -24,7 +24,6 @@ import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
 import jp.juggler.subwaytooter.table.MutedWord;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.DecodeOptions;
-import jp.juggler.subwaytooter.util.HTMLDecoder;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -122,7 +121,7 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 		
 		addAfterLine( sb, "\n" );
 		
-		sb.append( new DecodeOptions().decodeHTML( context, access_info, who.note != null ? who.note : null ) );
+		sb.append( new DecodeOptions().decodeHTML( context, access_info, who.note ) );
 		
 		addAfterLine( sb, "\n" );
 		
@@ -186,7 +185,7 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 		Styler.fixHorizontalMargin( findViewById( R.id.svFooterBar ) );
 		Styler.fixHorizontalMargin( findViewById( R.id.svContent ) );
 		
-		etText = (EditText) findViewById( R.id.etText );
+		etText = findViewById( R.id.etText );
 		
 		findViewById( R.id.btnCopy ).setOnClickListener( this );
 		findViewById( R.id.btnSearch ).setOnClickListener( this );
@@ -230,11 +229,13 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 	private void copy(){
 		try{
 			// Gets a handle to the clipboard service.
-			ClipboardManager clipboard = (ClipboardManager)
-				getSystemService( Context.CLIPBOARD_SERVICE );
+			ClipboardManager clipboard = (ClipboardManager) getSystemService( Context.CLIPBOARD_SERVICE );
+			
 			// Creates a new text clip to put on the clipboard
 			ClipData clip = ClipData.newPlainText( "text", getSelection() );
+			
 			// Set the clipboard's primary clip.
+			//noinspection ConstantConditions
 			clipboard.setPrimaryClip( clip );
 			
 			Utils.showToast( this, false, R.string.copy_complete );

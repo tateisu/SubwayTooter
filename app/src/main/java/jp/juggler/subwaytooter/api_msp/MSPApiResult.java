@@ -13,7 +13,7 @@ public class MSPApiResult extends TootApiResult {
 	}
 
 	MSPApiResult( Response response, String json, JSONArray array ){
-		super(null);
+		super( null );
 		this.json = json;
 		this.array = array;
 		this.response = response;

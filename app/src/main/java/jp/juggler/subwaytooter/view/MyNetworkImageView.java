@@ -268,7 +268,7 @@ public class MyNetworkImageView extends AppCompatImageView {
 	
 	{
 		private static final float SQUARE_RATIO_MARGIN = 0.05f;
-		private int maxLoopCount = GlideDrawable.LOOP_FOREVER;
+		private static final int maxLoopCount = GlideDrawable.LOOP_FOREVER;
 		private GlideDrawable glide_drawable;
 		
 		@NonNull final String url;

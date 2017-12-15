@@ -141,7 +141,7 @@ public class TootAccount {
 				.setShort( true )
 				.setDecodeEmoji( true )
 				.setProfileEmojis( dst.profile_emojis )
-				.decodeHTML( context, account, ( dst.note != null ? dst.note : null ) );
+				.decodeHTML( context, account, dst.note );
 			
 			dst.url = Utils.optStringX( src, "url" );
 			dst.avatar = Utils.optStringX( src, "avatar" ); // "https:\/\/mastodon.juggler.jp\/system\/accounts\/avatars\/000\/000\/148\/original\/0a468974fac5a448.PNG?1492081886",

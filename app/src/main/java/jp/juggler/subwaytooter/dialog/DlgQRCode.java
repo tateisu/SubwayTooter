@@ -7,7 +7,6 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
-import android.support.v4.os.AsyncTaskCompat;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -27,8 +26,9 @@ public class DlgQRCode {
 		void onQrCode(Bitmap bitmap);
 	}
 	
-	static void makeQrCode( final ActMain activity,final int size,final String url ,final QrCodeCallback callback){
+	private static void makeQrCode( final ActMain activity, final int size, final String url, final QrCodeCallback callback ){
 		final ProgressDialog progress = new ProgressDialog( activity );
+		@SuppressLint("StaticFieldLeak")
 		final AsyncTask<Void,Void,Bitmap> task = new AsyncTask< Void, Void, Bitmap >() {
 			@Override protected Bitmap doInBackground( Void... params ){
 				try{
@@ -77,13 +77,13 @@ public class DlgQRCode {
 				dialog.setCancelable( true );
 				dialog.setCanceledOnTouchOutside( true );
 				
-				TextView tv = (TextView) viewRoot.findViewById( R.id.tvMessage );
+				TextView tv = viewRoot.findViewById( R.id.tvMessage );
 				tv.setText( message );
 				
-				tv = (TextView) viewRoot.findViewById( R.id.tvUrl );
+				tv = viewRoot.findViewById( R.id.tvUrl );
 				tv.setText( "[ "+url+" ]" ); // なぜか素のURLだと@以降が表示されない
 				
-				final ImageView iv = (ImageView) viewRoot.findViewById( R.id.ivQrCode );
+				final ImageView iv = viewRoot.findViewById( R.id.ivQrCode );
 				iv.setImageBitmap( bitmap );
 				
 				dialog.setOnDismissListener( new DialogInterface.OnDismissListener() {

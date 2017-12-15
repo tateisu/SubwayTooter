@@ -3,13 +3,10 @@ package jp.juggler.subwaytooter.table;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.util.JsonWriter;
 
-import java.io.IOException;
 import java.util.HashSet;
 
 import jp.juggler.subwaytooter.App1;
-import jp.juggler.subwaytooter.AppDataExporter;
 import jp.juggler.subwaytooter.util.LogCategory;
 
 public class MutedApp {

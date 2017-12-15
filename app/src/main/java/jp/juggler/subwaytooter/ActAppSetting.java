@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -44,8 +45,6 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.Locale;
 
 import jp.juggler.subwaytooter.table.AcctColor;
@@ -141,6 +140,8 @@ public class ActAppSetting extends AppCompatActivity
 	EditText etClientName;
 	EditText etQuoteNameFormat;
 	EditText etAutoCWLines;
+	EditText etMediaSizeMax;
+	
 	
 	TextView tvTimelineFontUrl;
 	String timeline_font;
@@ -349,6 +350,9 @@ public class ActAppSetting extends AppCompatActivity
 		etAutoCWLines = findViewById( R.id.etAutoCWLines );
 		etAutoCWLines.addTextChangedListener( this );
 		
+		etMediaSizeMax= findViewById( R.id.etMediaSizeMax );
+		etMediaSizeMax.addTextChangedListener( this );
+		
 		tvTimelineFontSize = findViewById( R.id.tvTimelineFontSize );
 		tvAcctFontSize = findViewById( R.id.tvAcctFontSize );
 		
@@ -422,6 +426,8 @@ public class ActAppSetting extends AppCompatActivity
 		etAutoCWLines.setText( pref.getString( Pref.KEY_AUTO_CW_LINES, "0" ) );
 		etAvatarIconSize.setText( pref.getString( Pref.KEY_AVATAR_ICON_SIZE, "48" ) );
 		
+		etMediaSizeMax.setText( pref.getString( Pref.KEY_MEDIA_SIZE_MAX, "8" ) );
+		
 		etTimelineFontSize.setText( formatFontSize( pref.getFloat( Pref.KEY_TIMELINE_FONT_SIZE, Float.NaN ) ) );
 		etAcctFontSize.setText( formatFontSize( pref.getFloat( Pref.KEY_ACCT_FONT_SIZE, Float.NaN ) ) );
 		
@@ -492,6 +498,7 @@ public class ActAppSetting extends AppCompatActivity
 			.putString( Pref.KEY_QUOTE_NAME_FORMAT, etQuoteNameFormat.getText().toString() ) // not trimmed
 			.putString( Pref.KEY_AUTO_CW_LINES, etAutoCWLines.getText().toString() ) // not trimmed
 			.putString( Pref.KEY_AVATAR_ICON_SIZE, etAvatarIconSize.getText().toString().trim() )
+			.putString( Pref.KEY_MEDIA_SIZE_MAX, etMediaSizeMax.getText().toString() ) // not trimmed
 			
 			.putFloat( Pref.KEY_TIMELINE_FONT_SIZE, parseFontSize( etTimelineFontSize.getText().toString().trim() ) )
 			.putFloat( Pref.KEY_ACCT_FONT_SIZE, parseFontSize( etAcctFontSize.getText().toString().trim() ) )
@@ -772,9 +779,9 @@ public class ActAppSetting extends AppCompatActivity
 	}
 	
 	private class SizeCheckTextWatcher implements TextWatcher {
-		TextView sample;
-		EditText et;
-		float default_size_sp;
+		final TextView sample;
+		final EditText et;
+		final float default_size_sp;
 		
 		SizeCheckTextWatcher( TextView sample, EditText et, float default_size_sp ){
 			this.sample = sample;
@@ -909,6 +916,7 @@ public class ActAppSetting extends AppCompatActivity
 		//noinspection deprecation
 		final ProgressDialog progress = new ProgressDialog( this );
 		
+		@SuppressLint("StaticFieldLeak")
 		final AsyncTask< Void, String, File > task = new AsyncTask< Void, String, File >() {
 			
 			@Override protected File doInBackground( Void... params ){
@@ -935,7 +943,7 @@ public class ActAppSetting extends AppCompatActivity
 			}
 			
 			@Override protected void onCancelled( File result ){
-				super.onCancelled( result );
+				super.onPostExecute( result );
 			}
 			
 			@Override protected void onPostExecute( File result ){

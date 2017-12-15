@@ -2,8 +2,8 @@ package jp.juggler.subwaytooter.api.entity;
 
 public class TootGap {
 	
-	public String max_id;
-	public String since_id;
+	public final String max_id;
+	public final String since_id;
 	
 	public TootGap( String max_id, String since_id ){
 		this.max_id = max_id;

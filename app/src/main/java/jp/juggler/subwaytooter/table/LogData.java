@@ -4,17 +4,15 @@ import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import jp.juggler.subwaytooter.App1;
-
 public class LogData {
-	static final String TAG = "SubwayTooter";
+	private static final String TAG = "SubwayTooter";
 	
 	static final String table = "log";
 	
-	public static final String COL_TIME = "t";
-	public static final String COL_LEVEL = "l";
-	public static final String COL_CATEGORY = "c";
-	public static final String COL_MESSAGE = "m";
+//	public static final String COL_TIME = "t";
+//	public static final String COL_LEVEL = "l";
+//	public static final String COL_CATEGORY = "c";
+//	public static final String COL_MESSAGE = "m";
 	
 	public static final int LEVEL_ERROR = 100;
 	public static final int LEVEL_WARNING = 200;
@@ -62,22 +60,22 @@ public class LogData {
 		return -1L;
 	}
 	
-	public static String getLogLevelString( int level ){
-		if( level >= LogData.LEVEL_FLOOD ){
-			return "Flood";
-		}else if( level >= LogData.LEVEL_HEARTBEAT ){
-			return "HeartBeat";
-		}else if( level >= LogData.LEVEL_DEBUG ){
-			return "Debug";
-		}else if( level >= LogData.LEVEL_VERBOSE ){
-			return "Verbose";
-		}else if( level >= LogData.LEVEL_INFO ){
-			return "Info";
-		}else if( level >= LogData.LEVEL_WARNING ){
-			return "Warning";
-		}else{
-			return "Error";
-		}
-	}
+//	public static String getLogLevelString( int level ){
+//		if( level >= LogData.LEVEL_FLOOD ){
+//			return "Flood";
+//		}else if( level >= LogData.LEVEL_HEARTBEAT ){
+//			return "HeartBeat";
+//		}else if( level >= LogData.LEVEL_DEBUG ){
+//			return "Debug";
+//		}else if( level >= LogData.LEVEL_VERBOSE ){
+//			return "Verbose";
+//		}else if( level >= LogData.LEVEL_INFO ){
+//			return "Info";
+//		}else if( level >= LogData.LEVEL_WARNING ){
+//			return "Warning";
+//		}else{
+//			return "Error";
+//		}
+//	}
 	
 }

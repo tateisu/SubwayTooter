@@ -37,7 +37,7 @@ public class BucketList < E >
 	
 	private final ArrayList< Bucket< E > > groups = new ArrayList<>();
 	private int mSize;
-	private int mStep;
+	private final int mStep;
 	
 	private void updateIndex(){
 		int n = 0;

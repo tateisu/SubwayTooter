@@ -4,7 +4,7 @@ import jp.juggler.subwaytooter.view.MyListView;
 
 public class ScrollPosition {
 	public int pos;
-	public int top;
+	public final int top;
 	
 	public ScrollPosition( int pos,int top ){
 		this.pos = pos;

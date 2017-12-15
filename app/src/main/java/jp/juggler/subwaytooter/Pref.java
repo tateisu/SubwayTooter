@@ -6,6 +6,7 @@ import android.preference.PreferenceManager;
 
 public class Pref {
 	
+	
 	public static SharedPreferences pref( Context context ){
 		return PreferenceManager.getDefaultSharedPreferences( context );
 	}
@@ -93,5 +94,7 @@ public class Pref {
 	
 	public static final String KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE = "allow_non_space_before_emoji_shortcode";
 	
+	public static final String KEY_MEDIA_SIZE_MAX = "max_media_size";
+
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

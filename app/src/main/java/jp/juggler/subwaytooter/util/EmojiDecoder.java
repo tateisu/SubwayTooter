@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter.util;
 import android.content.Context;
 import android.support.annotation.DrawableRes;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
@@ -146,7 +145,12 @@ public class EmojiDecoder {
 		void onShortCode( @NonNull String part, @NonNull String name );
 	}
 	
-	static void splitShortCode( @NonNull String s, int start, int end, @NonNull ShortCodeSplitterCallback callback ){
+	static void splitShortCode(
+		@NonNull String s
+		, @SuppressWarnings("SameParameterValue") int start
+		, int end
+		, @NonNull ShortCodeSplitterCallback callback
+	){
 		int i = start;
 		while( i < end ){
 			// 絵文字パターンの開始位置を探索する
@@ -234,7 +238,7 @@ public class EmojiDecoder {
 				if( name.length() >= 2 && name.charAt( 0 ) == '@' ){
 					if( profile_emojis != null ){
 						NicoProfileEmoji emoji = profile_emojis.get( name );
-						if( emoji == null) emoji = profile_emojis.get( name.substring( 1 ) );
+						if( emoji == null ) emoji = profile_emojis.get( name.substring( 1 ) );
 						if( emoji != null ){
 							decode_env.addNetworkEmojiSpan( part, emoji.url );
 						}

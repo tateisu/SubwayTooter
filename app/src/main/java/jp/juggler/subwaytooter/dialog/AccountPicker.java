@@ -12,8 +12,6 @@ import android.view.View;
 import android.widget.Button;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import jp.juggler.subwaytooter.ActMain;
@@ -119,7 +117,7 @@ public class AccountPicker {
 
 		dialog.setContentView( viewRoot );
 		if( ! TextUtils.isEmpty( message ) ){
-			TextView tv = (TextView) viewRoot.findViewById( R.id.tvMessage );
+			TextView tv = viewRoot.findViewById( R.id.tvMessage );
 			tv.setVisibility( View.VISIBLE );
 			tv.setText( message );
 		}
@@ -141,7 +139,7 @@ public class AccountPicker {
 		float density = activity.getResources().getDisplayMetrics().density;
 		
 		
-		LinearLayout llAccounts = (LinearLayout) viewRoot.findViewById( R.id.llAccounts );
+		LinearLayout llAccounts = viewRoot.findViewById( R.id.llAccounts );
 		int pad_se = (int) ( 0.5f + 12f * density );
 		int pad_tb = (int) ( 0.5f + 6f * density );
 		

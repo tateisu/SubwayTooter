@@ -42,10 +42,10 @@ public class LoginForm {
 	
 	public static void showLoginForm( final Activity activity, final String instance, final LoginFormCallback callback ){
 		@SuppressLint("InflateParams") final View view = activity.getLayoutInflater().inflate( R.layout.dlg_account_add, null, false );
-		final AutoCompleteTextView etInstance = (AutoCompleteTextView) view.findViewById( R.id.etInstance );
+		final AutoCompleteTextView etInstance = view.findViewById( R.id.etInstance );
 		final View btnOk = view.findViewById( R.id.btnOk );
-		final CheckBox cbPseudoAccount = (CheckBox) view.findViewById( R.id.cbPseudoAccount );
-		final CheckBox cbInputAccessToken = (CheckBox) view.findViewById( R.id.cbInputAccessToken );
+		final CheckBox cbPseudoAccount = view.findViewById( R.id.cbPseudoAccount );
+		final CheckBox cbInputAccessToken = view.findViewById( R.id.cbInputAccessToken );
 		
 		cbPseudoAccount.setOnCheckedChangeListener( new CompoundButton.OnCheckedChangeListener() {
 			@Override public void onCheckedChanged( CompoundButton buttonView, boolean isChecked ){
@@ -128,7 +128,7 @@ public class LoginForm {
 				return nameFilter;
 			}
 			
-			Filter nameFilter = new Filter() {
+			final Filter nameFilter = new Filter() {
 				@Override public CharSequence convertResultToString( Object value ){
 					return (String) value;
 				}

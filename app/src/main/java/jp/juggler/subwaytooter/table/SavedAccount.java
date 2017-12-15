@@ -337,9 +337,12 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		}
 	}
 	
-	public void updateTokenInfo( @NonNull JSONObject token_info ){
+	public void updateTokenInfo( @Nullable JSONObject token_info ){
 		if( db_id == INVALID_ID )
 			throw new RuntimeException( "SavedAccount.updateTokenInfo missing db_id" );
+
+		if( token_info == null ) token_info = new JSONObject(  );
+
 		this.token_info = token_info;
 		ContentValues cv = new ContentValues();
 		cv.put( COL_TOKEN, token_info.toString() );

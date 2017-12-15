@@ -88,7 +88,7 @@ public class DlgDraftPicker
 		
 		@SuppressLint("InflateParams")
 		View viewRoot = activity.getLayoutInflater().inflate( R.layout.dlg_draft_picker, null, false );
-		this.lvDraft = (ListView) viewRoot.findViewById( R.id.lvDraft );
+		this.lvDraft = viewRoot.findViewById( R.id.lvDraft );
 		
 		lvDraft.setOnItemClickListener( this );
 		lvDraft.setOnItemLongClickListener( this );
@@ -149,12 +149,12 @@ public class DlgDraftPicker
 	}
 	
 	private class MyViewHolder {
-		TextView tvTime;
-		TextView tvText;
+		final TextView tvTime;
+		final TextView tvText;
 		
 		MyViewHolder( View view ){
-			tvTime = (TextView) view.findViewById( R.id.tvTime );
-			tvText = (TextView) view.findViewById( R.id.tvText );
+			tvTime = view.findViewById( R.id.tvTime );
+			tvText = view.findViewById( R.id.tvText );
 		}
 		
 		public void bind( int position ){

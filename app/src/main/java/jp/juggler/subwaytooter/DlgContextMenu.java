@@ -22,7 +22,6 @@ import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
-import jp.juggler.subwaytooter.dialog.DlgConfirm;
 import jp.juggler.subwaytooter.dialog.DlgListMember;
 import jp.juggler.subwaytooter.dialog.DlgQRCode;
 import jp.juggler.subwaytooter.table.SavedAccount;

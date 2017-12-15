@@ -3,23 +3,21 @@ package jp.juggler.subwaytooter.util;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
-import android.text.TextPaint;
-import android.text.style.DynamicDrawableSpan;
+//import android.text.style.DynamicDrawableSpan;
 import android.text.style.ReplacementSpan;
 
 import java.lang.ref.WeakReference;
 
 public class EmojiImageSpan extends ReplacementSpan {
 	
-	static DynamicDrawableSpan x = null;
-	
-	private static final LogCategory log = new LogCategory( "EmojiImageSpan" );
+	// private static final LogCategory log = new LogCategory( "EmojiImageSpan" );
+
+	// static DynamicDrawableSpan x = null;
 	
 	private static final float scale_ratio = 1.14f;
 	private static final float descent_ratio = 0.211f;

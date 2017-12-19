@@ -426,6 +426,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			}else if( relation.muting ){
 				activity.callMute( access_info, who, false,false );
 			}else{
+				@SuppressLint("InflateParams")
 				View view = activity.getLayoutInflater().inflate( R.layout.dlg_confirm,null,false );
 				TextView tvMessage = view.findViewById( R.id.tvMessage );
 				tvMessage.setText( activity.getString( R.string.confirm_mute_user, who.username ) );

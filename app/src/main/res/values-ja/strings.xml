@@ -32,7 +32,7 @@
     <!---->
     <string name="request_access_token">アクセストークンの取得中…</string>
     <!---->
-    <string name="request_api">取得中… %1$s</string>
+    <string name="request_api">Acquiring: %1$s %2$s</string>
     <!---->
     <string name="column_empty">左下のメニューボタンを押してアカウントまたはカラムを追加してください</string>
     <!---->

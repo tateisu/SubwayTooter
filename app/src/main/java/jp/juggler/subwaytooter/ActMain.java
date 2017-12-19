@@ -4517,9 +4517,6 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	static final Pattern reFollowError = Pattern.compile( "follow", Pattern.CASE_INSENSITIVE );
-	//			case R.id.btnOk:
-	//	addListMember( false );
-	//			break;
 	
 	public void callListMemberAdd(
 		@NonNull final SavedAccount access_info

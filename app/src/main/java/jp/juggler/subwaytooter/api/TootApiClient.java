@@ -109,8 +109,6 @@ public class TootApiClient {
 		
 		if( MIMUMEDON.equalsIgnoreCase( instance ) ) return new TootApiResult( MIMUMEDON_ERROR );
 		
-		callback.publishApiProgress( context.getString( R.string.request_api, path ) );
-		
 		if( account == null ){
 			return new TootApiResult( "account is null" );
 		}
@@ -127,7 +125,10 @@ public class TootApiClient {
 				request_builder.header( "Authorization", "Bearer " + access_token );
 			}
 			
-			Call call = ok_http_client.newCall( request_builder.build() );
+			Request request = request_builder.build();
+			callback.publishApiProgress( context.getString( R.string.request_api, request.method(), path ) );
+			
+			Call call = ok_http_client.newCall( request );
 			if( call_callback != null ) call_callback.onCallCreated( call );
 			response = call.execute();
 		}catch( Throwable ex ){
@@ -174,9 +175,6 @@ public class TootApiClient {
 		
 		if( callback.isApiCancelled() ) return null;
 		
-		// アクセストークンを使ってAPIを呼び出す
-		callback.publishApiProgress( context.getString( R.string.request_api, path ) );
-		
 		try{
 			if( account == null ){
 				return new TootApiResult( "account is null" );
@@ -192,8 +190,10 @@ public class TootApiClient {
 			}
 			
 			request_builder.url( url );
+			Request request = request_builder.build();
 			
-			WebSocket ws = ok_http_client.newWebSocket( request_builder.build(), ws_listener );
+			callback.publishApiProgress( context.getString( R.string.request_api, request.method(), path ) );
+			WebSocket ws = ok_http_client.newWebSocket( request, ws_listener );
 			if( callback.isApiCancelled() ){
 				ws.cancel();
 				return null;
@@ -212,7 +212,6 @@ public class TootApiClient {
 		
 		// サーバ情報APIを使う
 		String path = "/api/v1/instance";
-		callback.publishApiProgress( context.getString( R.string.request_api, path ) );
 		
 		Response response;
 		try{
@@ -220,6 +219,7 @@ public class TootApiClient {
 				.url( "https://" + instance + path )
 				.build();
 			
+			callback.publishApiProgress( context.getString( R.string.request_api, request.method(), path ) );
 			Call call = ok_http_client.newCall( request );
 			if( call_callback != null ) call_callback.onCallCreated( call );
 			
@@ -534,7 +534,6 @@ public class TootApiClient {
 		// 認証されたアカウントのユーザ名を取得する
 		
 		String path = "/api/v1/accounts/verify_credentials";
-		callback.publishApiProgress( context.getString( R.string.request_api, path ) );
 		
 		try{
 			
@@ -543,6 +542,7 @@ public class TootApiClient {
 				.header( "Authorization", "Bearer " + Utils.optStringX( token_info, "access_token" ) )
 				.build();
 			
+			callback.publishApiProgress( context.getString( R.string.request_api, request.method(), path ) );
 			Call call = ok_http_client.newCall( request );
 			if( call_callback != null ) call_callback.onCallCreated( call );
 			
@@ -596,13 +596,13 @@ public class TootApiClient {
 			
 			// 認証されたアカウントのユーザ名を取得する
 			String path = "/api/v1/accounts/verify_credentials";
-			callback.publishApiProgress( context.getString( R.string.request_api, path ) );
 			
 			Request request = new Request.Builder()
 				.url( "https://" + instance + path )
 				.header( "Authorization", "Bearer " + Utils.optStringX( token_info, "access_token" ) )
 				.build();
 			
+			callback.publishApiProgress( context.getString( R.string.request_api, request.method(), path ) );
 			Call call = ok_http_client.newCall( request );
 			if( call_callback != null ) call_callback.onCallCreated( call );
 			
@@ -645,10 +645,12 @@ public class TootApiClient {
 	public TootApiResult getHttp( String url ){
 		Response response;
 		try{
-			Request.Builder request_builder = new Request.Builder();
-			request_builder.url( url );
+			Request request = new Request.Builder()
+				.url( url )
+				.build();
 			
-			Call call = ok_http_client.newCall( request_builder.build() );
+			callback.publishApiProgress( context.getString( R.string.request_api, request.method(), url ) );
+			Call call = ok_http_client.newCall( request );
 			if( call_callback != null ) call_callback.onCallCreated( call );
 			
 			response = call.execute();

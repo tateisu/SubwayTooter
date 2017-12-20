@@ -21,6 +21,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.api_msp.entity.MSPAccount;
 import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
+import jp.juggler.subwaytooter.api_tootsearch.entity.TSToot;
 import jp.juggler.subwaytooter.table.MutedWord;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.DecodeOptions;
@@ -56,7 +57,7 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 		
 		addHeader( context, sb, R.string.send_header_url, status.url );
 		
-		addHeader( context, sb, R.string.send_header_date, TootStatus.formatTime( context,status.time_created_at ,false) );
+		addHeader( context, sb, R.string.send_header_date, TootStatus.formatTime( context, status.time_created_at, false ) );
 		
 		if( status.account != null ){
 			addHeader( context, sb, R.string.send_header_from_acct, access_info.getFullAcct( status.account ) );
@@ -65,28 +66,19 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 		}
 		
 		if( ! TextUtils.isEmpty( status.spoiler_text ) ){
-			addHeader( context, sb, R.string.send_header_content_warning , status.spoiler_text );
+			addHeader( context, sb, R.string.send_header_content_warning, status.spoiler_text );
 		}
 		
 		addAfterLine( sb, "\n" );
 		
 		intent.putExtra( EXTRA_CONTENT_START, sb.length() );
-		sb.append( new DecodeOptions().decodeHTML( context,access_info, status.content));
+		sb.append( new DecodeOptions().decodeHTML( context, access_info, status.content ) );
 		intent.putExtra( EXTRA_CONTENT_END, sb.length() );
 		
 		if( status instanceof TootStatus ){
-			TootStatus ts = (TootStatus) status;
-			if( ts.media_attachments != null ){
-				int i = 0;
-				for( TootAttachment ma : ts.media_attachments ){
-					++ i;
-					addAfterLine( sb, "\n" );
-					addAfterLine( sb, String.format( Locale.JAPAN, "Media-%d-Url: %s", i, ma.url ) );
-					addAfterLine( sb, String.format( Locale.JAPAN, "Media-%d-Remote-Url: %s", i, ma.remote_url ) );
-					addAfterLine( sb, String.format( Locale.JAPAN, "Media-%d-Preview-Url: %s", i, ma.preview_url ) );
-					addAfterLine( sb, String.format( Locale.JAPAN, "Media-%d-Text-Url: %s", i, ma.text_url ) );
-				}
-			}
+			dumpAttachment( sb, ( (TootStatus) status ).media_attachments );
+		}else if( status instanceof TSToot ){
+			dumpAttachment( sb, ( (TSToot) status ).media_attachments );
 		}else if( status instanceof MSPToot ){
 			MSPToot ts = (MSPToot) status;
 			if( ts.media_attachments != null ){
@@ -103,6 +95,19 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 		
 		addAfterLine( sb, "" );
 		intent.putExtra( EXTRA_TEXT, sb.toString() );
+	}
+	
+	static void dumpAttachment( @NonNull StringBuilder sb, @Nullable TootAttachment.List src ){
+		if( src == null ) return;
+		int i = 0;
+		for( TootAttachment ma : src ){
+			++ i;
+			addAfterLine( sb, "\n" );
+			addAfterLine( sb, String.format( Locale.JAPAN, "Media-%d-Url: %s", i, ma.url ) );
+			addAfterLine( sb, String.format( Locale.JAPAN, "Media-%d-Remote-Url: %s", i, ma.remote_url ) );
+			addAfterLine( sb, String.format( Locale.JAPAN, "Media-%d-Preview-Url: %s", i, ma.preview_url ) );
+			addAfterLine( sb, String.format( Locale.JAPAN, "Media-%d-Text-Url: %s", i, ma.text_url ) );
+		}
 	}
 	
 	static void encodeAccount( Intent intent, Context context, SavedAccount access_info, @NonNull TootAccount who ){
@@ -191,27 +196,36 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 		findViewById( R.id.btnSearch ).setOnClickListener( this );
 		findViewById( R.id.btnSend ).setOnClickListener( this );
 		findViewById( R.id.btnMuteWord ).setOnClickListener( this );
-		findViewById( R.id.btnTootSearch ).setOnClickListener( this );
+		findViewById( R.id.btnSearchMSP ).setOnClickListener( this );
+		findViewById( R.id.btnSearchTS ).setOnClickListener( this );
 	}
 	
 	@Override public void onClick( View v ){
 		switch( v.getId() ){
+		
 		case R.id.btnCopy:
 			copy();
 			break;
+		
 		case R.id.btnSearch:
 			search();
 			break;
+		
 		case R.id.btnSend:
 			send();
-			
 			break;
+		
 		case R.id.btnMuteWord:
 			muteWord();
 			break;
 		
-		case R.id.btnTootSearch:
-			tootSearch();
+		case R.id.btnSearchMSP:
+			searchToot( RESULT_SEARCH_MSP );
+			break;
+		
+		case R.id.btnSearchTS:
+			searchToot( RESULT_SEARCH_TS );
+			break;
 		}
 	}
 	
@@ -279,9 +293,10 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 		
 	}
 	
-	static final int RESULT_TOOT_SEARCH = RESULT_FIRST_USER+1;
+	static final int RESULT_SEARCH_MSP = RESULT_FIRST_USER + 1;
+	static final int RESULT_SEARCH_TS = RESULT_FIRST_USER + 2;
 	
-	private void tootSearch(){
+	private void searchToot( int resultCode ){
 		String sv = getSelection();
 		if( TextUtils.isEmpty( sv ) ){
 			Utils.showToast( this, false, "please select search keyword" );
@@ -289,8 +304,8 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 		}
 		try{
 			Intent data = new Intent();
-			data.putExtra( Intent.EXTRA_TEXT,sv );
-			setResult( RESULT_TOOT_SEARCH,data);
+			data.putExtra( Intent.EXTRA_TEXT, sv );
+			setResult( resultCode, data );
 			finish();
 		}catch( Throwable ex ){
 			log.trace( ex );

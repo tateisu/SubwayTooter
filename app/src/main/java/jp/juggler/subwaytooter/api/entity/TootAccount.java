@@ -167,7 +167,7 @@ public class TootAccount {
 		}
 	}
 	
-	private static Source parseSource( JSONObject src ){
+	public static Source parseSource( JSONObject src ){
 		if( src == null ) return null;
 		Source dst = new Source();
 		dst.privacy = Utils.optStringX( src, "privacy" );

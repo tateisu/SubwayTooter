@@ -72,7 +72,7 @@ public class TootStatus extends TootStatusLike {
 	public static final String VISIBILITY_WEB_SETTING = "web_setting";
 	
 	//	An array of Attachments
-	public TootAttachment.List media_attachments;
+	@Nullable public TootAttachment.List media_attachments;
 	
 	//	An array of Mentions
 	public TootMention.List mentions;
@@ -197,7 +197,7 @@ public class TootStatus extends TootStatusLike {
 	
 	private static final TimeZone tz_utc = TimeZone.getTimeZone( "UTC" );
 	
-	static long parseTime( String strTime ){
+	public static long parseTime( String strTime ){
 		if( ! TextUtils.isEmpty( strTime ) ){
 			try{
 				Matcher m = reTime.matcher( strTime );

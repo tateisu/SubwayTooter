@@ -71,12 +71,21 @@
             />
 
         <Button
-            android:id="@+id/btnTootSearch"
+            android:id="@+id/btnSearchTS"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/toot_search"
+            android:text="@string/toot_search_ts"
             android:textAllCaps="false"
             />
+
+        <Button
+            android:id="@+id/btnSearchMSP"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/toot_search_msp"
+            android:textAllCaps="false"
+            />
+
 
         <Button
             android:id="@+id/btnMuteWord"

@@ -76,6 +76,7 @@ import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
+import jp.juggler.subwaytooter.api_tootsearch.entity.TSToot;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
 import jp.juggler.subwaytooter.dialog.DlgTextInput;
 import jp.juggler.subwaytooter.dialog.DlgConfirm;
@@ -552,9 +553,12 @@ public class ActMain extends AppCompatActivity
 			}
 			
 		}else if( requestCode == REQUEST_CODE_TEXT ){
-			if( resultCode == ActText.RESULT_TOOT_SEARCH ){
+			if( resultCode == ActText.RESULT_SEARCH_MSP ){
 				String text = data.getStringExtra( Intent.EXTRA_TEXT );
-				addColumn( getDefaultInsertPosition(), SavedAccount.getNA(), Column.TYPE_SEARCH_PORTAL, text );
+				addColumn( getDefaultInsertPosition(), SavedAccount.getNA(), Column.TYPE_SEARCH_MSP, text );
+			}else if( resultCode == ActText.RESULT_SEARCH_TS ){
+				String text = data.getStringExtra( Intent.EXTRA_TEXT );
+				addColumn( getDefaultInsertPosition(), SavedAccount.getNA(), Column.TYPE_SEARCH_TS, text );
 			}
 		}
 		
@@ -745,7 +749,9 @@ public class ActMain extends AppCompatActivity
 			startActivity( new Intent( this, ActMutedWord.class ) );
 			
 		}else if( id == R.id.mastodon_search_portal ){
-			addColumn( getDefaultInsertPosition(), SavedAccount.getNA(), Column.TYPE_SEARCH_PORTAL, "" );
+			addColumn( getDefaultInsertPosition(), SavedAccount.getNA(), Column.TYPE_SEARCH_MSP, "" );
+		}else if( id == R.id.tootsearch ){
+			addColumn( getDefaultInsertPosition(), SavedAccount.getNA(), Column.TYPE_SEARCH_TS, "" );
 			
 		}
 		
@@ -2591,9 +2597,15 @@ public class ActMain extends AppCompatActivity
 		if( status == null || status.account == null ) return;
 		
 		if( status instanceof MSPToot ){
-			// トゥート検索の場合
 			openStatusOtherInstance( pos, access_info, status.url
 				, status.id
+				, null, - 1L
+			);
+		}else if( status instanceof TSToot ){
+			// Tootsearch ではステータスのアクセス元ホストは分からない
+			// ステータスの投稿元ホストでのIDも分からない
+			openStatusOtherInstance( pos, access_info, status.url
+				, -1L
 				, null, - 1L
 			);
 		}else if( status instanceof TootStatus ){
@@ -3894,16 +3906,15 @@ public class ActMain extends AppCompatActivity
 			, makeAccountListNonPseudo( log, who_host )
 			, new AccountPicker.AccountPickerCallback() {
 				@Override public void onAccountPicked( @NonNull SavedAccount ai ){
-					if( status instanceof MSPToot ){
-						// MSPの場合、status.url は https://instance/@user/:status_id の形式になる
-						performReplyRemote( ai, status.url );
-					}else if( status instanceof TootStatus ){
+					if( status instanceof TootStatus ){
 						if( ai.host.equalsIgnoreCase( status.host_access ) ){
+							// アクセス元ホストが同じならステータスIDを使って返信できる
 							performReply( ai, (TootStatus) status );
-						}else{
-							performReplyRemote( ai, status.url );
+							return;
 						}
 					}
+					// それ以外の場合、ステータスのURLを検索APIに投げることで返信できる
+					performReplyRemote( ai, status.url );
 				}
 			} );
 	}

@@ -8,6 +8,7 @@ import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootReport;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.api_tootsearch.entity.TSToot;
 
 public class DuplicateMap {
 	
@@ -15,16 +16,25 @@ public class DuplicateMap {
 	private final HashSet< Long > set_notification_id = new HashSet<>();
 	private final HashSet< Long > set_report_id = new HashSet<>();
 	private final HashSet< Long > set_account_id = new HashSet<>();
+	private final HashSet< String > set_status_uri = new HashSet<>();
 	
 	public void clear(){
 		set_status_id.clear();
 		set_notification_id.clear();
 		set_report_id.clear();
 		set_account_id.clear();
+		set_status_uri.clear();
 	}
 	
 	private boolean isDuplicate( Object o ){
 
+		if( o instanceof TSToot ){
+			TSToot s = (TSToot)o;
+			if( set_status_uri.contains( s.uri ) ) return true;
+			set_status_uri.add( s.uri  );
+			return false;
+		}
+		
 		if( o instanceof TootStatus ){
 			if( set_status_id.contains( ( (TootStatus) o ).id ) ) return true;
 			set_status_id.add( ( (TootStatus) o ).id );

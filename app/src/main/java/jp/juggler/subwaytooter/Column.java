@@ -42,6 +42,8 @@ import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootTag;
 import jp.juggler.subwaytooter.api_msp.MSPClient;
 import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
+import jp.juggler.subwaytooter.api_tootsearch.TootsearchClient;
+import jp.juggler.subwaytooter.api_tootsearch.entity.TSToot;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.MutedApp;
@@ -216,11 +218,12 @@ import jp.juggler.subwaytooter.util.Utils;
 	static final int TYPE_BOOSTED_BY = 14;
 	static final int TYPE_FAVOURITED_BY = 15;
 	static final int TYPE_DOMAIN_BLOCKS = 16;
-	static final int TYPE_SEARCH_PORTAL = 17;
+	static final int TYPE_SEARCH_MSP = 17;
 	static final int TYPE_INSTANCE_INFORMATION = 18;
 	static final int TYPE_LIST_LIST = 19;
 	static final int TYPE_LIST_TL = 20;
 	static final int TYPE_LIST_MEMBER = 21;
+	static final int TYPE_SEARCH_TS = 22;
 	
 	@NonNull final Context context;
 	@NonNull private final AppState app_state;
@@ -308,7 +311,8 @@ import jp.juggler.subwaytooter.util.Utils;
 			this.search_resolve = (Boolean) getParamAt( params, 1 );
 			break;
 		
-		case TYPE_SEARCH_PORTAL:
+		case TYPE_SEARCH_MSP:
+		case TYPE_SEARCH_TS:
 			this.search_query = (String) getParamAt( params, 0 );
 			break;
 		
@@ -363,11 +367,14 @@ import jp.juggler.subwaytooter.util.Utils;
 		case TYPE_HASHTAG:
 			item.put( KEY_HASHTAG, hashtag );
 			break;
+		
 		case TYPE_SEARCH:
 			item.put( KEY_SEARCH_QUERY, search_query );
 			item.put( KEY_SEARCH_RESOLVE, search_resolve );
 			break;
-		case TYPE_SEARCH_PORTAL:
+		
+		case TYPE_SEARCH_MSP:
+		case TYPE_SEARCH_TS:
 			item.put( KEY_SEARCH_QUERY, search_query );
 			break;
 		
@@ -447,9 +454,12 @@ import jp.juggler.subwaytooter.util.Utils;
 			this.search_query = src.optString( KEY_SEARCH_QUERY );
 			this.search_resolve = src.optBoolean( KEY_SEARCH_RESOLVE, false );
 			break;
-		case TYPE_SEARCH_PORTAL:
+		
+		case TYPE_SEARCH_MSP:
+		case TYPE_SEARCH_TS:
 			this.search_query = src.optString( KEY_SEARCH_QUERY );
 			break;
+		
 		case TYPE_INSTANCE_INFORMATION:
 			this.instance_uri = src.optString( KEY_INSTANCE_URI );
 			break;
@@ -501,13 +511,16 @@ import jp.juggler.subwaytooter.util.Utils;
 			}catch( Throwable ex ){
 				return false;
 			}
-		case TYPE_SEARCH_PORTAL:
+		
+		case TYPE_SEARCH_MSP:
+		case TYPE_SEARCH_TS:
 			try{
 				String q = (String) getParamAt( params, 0 );
 				return Utils.equalsNullable( q, this.search_query );
 			}catch( Throwable ex ){
 				return false;
 			}
+		
 		case TYPE_INSTANCE_INFORMATION:
 			try{
 				String q = (String) getParamAt( params, 0 );
@@ -566,12 +579,20 @@ import jp.juggler.subwaytooter.util.Utils;
 				return getColumnTypeName( context, column_type );
 			}
 		
-		case TYPE_SEARCH_PORTAL:
+		case TYPE_SEARCH_MSP:
 			if( bLong ){
-				return context.getString( R.string.toot_search_of, search_query );
+				return context.getString( R.string.toot_search_msp_of, search_query );
 			}else{
 				return getColumnTypeName( context, column_type );
 			}
+		
+		case TYPE_SEARCH_TS:
+			if( bLong ){
+				return context.getString( R.string.toot_search_ts_of, search_query );
+			}else{
+				return getColumnTypeName( context, column_type );
+			}
+		
 		case TYPE_INSTANCE_INFORMATION:
 			if( bLong ){
 				return context.getString( R.string.instance_information_of, instance_uri );
@@ -633,8 +654,11 @@ import jp.juggler.subwaytooter.util.Utils;
 		case TYPE_SEARCH:
 			return context.getString( R.string.search );
 		
-		case TYPE_SEARCH_PORTAL:
-			return context.getString( R.string.toot_search );
+		case TYPE_SEARCH_MSP:
+			return context.getString( R.string.toot_search_msp );
+		
+		case TYPE_SEARCH_TS:
+			return context.getString( R.string.toot_search_ts );
 		
 		case TYPE_INSTANCE_INFORMATION:
 			return context.getString( R.string.instance_information );
@@ -704,9 +728,8 @@ import jp.juggler.subwaytooter.util.Utils;
 			return R.attr.ic_domain_block;
 		
 		case TYPE_SEARCH:
-			return R.attr.ic_search;
-		
-		case TYPE_SEARCH_PORTAL:
+		case TYPE_SEARCH_MSP:
+		case TYPE_SEARCH_TS:
 			return R.attr.ic_search;
 		
 		case TYPE_INSTANCE_INFORMATION:
@@ -1216,6 +1239,25 @@ import jp.juggler.subwaytooter.util.Utils;
 		return false;
 	}
 	
+	private boolean isFiltered( TSToot status ){
+		if( with_attachment ){
+			boolean hasMedia = status.hasMedia();
+			if( ! hasMedia ) return true;
+		}
+		
+		if( column_regex_filter != null ){
+			if( column_regex_filter.matcher( status.decoded_content.toString() ).find() )
+				return true;
+		}
+		
+		//noinspection RedundantIfStatement
+		if( status.checkMuted( muted_app, muted_word ) ){
+			return true;
+		}
+		
+		return false;
+	}
+	
 	@SuppressWarnings("ConstantConditions")
 	private void addWithFilter( ArrayList< Object > dst, TootStatus.List src ){
 		for( TootStatus status : src ){
@@ -1228,6 +1270,15 @@ import jp.juggler.subwaytooter.util.Utils;
 	@SuppressWarnings("ConstantConditions")
 	private void addWithFilter( ArrayList< Object > dst, MSPToot.List src ){
 		for( MSPToot status : src ){
+			if( ! isFiltered( status ) ){
+				dst.add( status );
+			}
+		}
+	}
+	
+	@SuppressWarnings("ConstantConditions")
+	private void addWithFilter( ArrayList< Object > dst, TSToot.List src ){
+		for( TSToot status : src ){
 			if( ! isFiltered( status ) ){
 				dst.add( status );
 			}
@@ -1592,6 +1643,7 @@ import jp.juggler.subwaytooter.util.Utils;
 				
 				try{
 					TootApiResult result;
+					String q;
 					
 					switch( column_type ){
 					
@@ -1753,10 +1805,10 @@ import jp.juggler.subwaytooter.util.Utils;
 						}
 						return result;
 					
-					case TYPE_SEARCH_PORTAL:
+					case TYPE_SEARCH_MSP:
 						
 						max_id = "";
-						String q = search_query.trim();
+						q = search_query.trim();
 						if( q.length() <= 0 ){
 							list_tmp = new ArrayList<>();
 							result = new TootApiResult();
@@ -1792,6 +1844,46 @@ import jp.juggler.subwaytooter.util.Utils;
 						}
 						return result;
 					
+					case TYPE_SEARCH_TS:
+						max_id = "0";
+						q = search_query.trim();
+						if( TextUtils.isEmpty( q ) ){
+							list_tmp = new ArrayList<>();
+							result = new TootApiResult();
+						}else{
+							result = TootsearchClient.search( context, search_query, max_id, new TootsearchClient.Callback() {
+								@Override public boolean isApiCancelled(){
+									return isCancelled() || is_dispose.get();
+								}
+								
+								@Override public void publishApiProgress( final String s ){
+									Utils.runOnMainThread( new Runnable() {
+										@Override public void run(){
+											if( isCancelled() ) return;
+											task_progress = s;
+											fireShowContent();
+										}
+									} );
+								}
+							} );
+							if( result != null ){
+								if( result.object != null ){
+									// max_id の更新
+									max_id = TootsearchClient.getMaxId( result.object, max_id );
+									// リストデータの用意
+									TSToot.List search_result = TSToot.parseList( context, access_info, result.object );
+									list_tmp = new ArrayList<>();
+									addWithFilter( list_tmp, search_result );
+									if( search_result.isEmpty() ){
+										log.d("search result is empty. %s",result.json);
+									}
+								}else{
+									log.d("search error.");
+								}
+							}
+						}
+						return result;
+					
 					case TYPE_INSTANCE_INFORMATION:{
 						result = getInstanceInformation( client, instance_uri );
 						if( instance_tmp != null ){
@@ -1800,7 +1892,9 @@ import jp.juggler.subwaytooter.util.Utils;
 						return result;
 					}
 					}
-				}finally{
+				}finally
+				
+				{
 					try{
 						updateRelation( client, list_tmp, who_account );
 					}catch( Throwable ex ){
@@ -2014,6 +2108,7 @@ import jp.juggler.subwaytooter.util.Utils;
 				log.d( "updateRelation: update %d tag.", n );
 			}
 		}
+		
 	}
 	
 	//
@@ -2651,48 +2746,89 @@ import jp.juggler.subwaytooter.util.Utils;
 						return getStatusList( client,
 							String.format( Locale.JAPAN, PATH_HASHTAG, Uri.encode( hashtag ) ) );
 					
-					case TYPE_SEARCH_PORTAL:
+					case TYPE_SEARCH_MSP:
 						
 						if( ! bBottom ){
 							return new TootApiResult( "head of list." );
-						}
-						
-						TootApiResult result;
-						String q = search_query.trim();
-						if( q.length() <= 0 ){
-							list_tmp = new ArrayList<>();
-							result = new TootApiResult( context.getString( R.string.end_of_list ) );
 						}else{
-							result = MSPClient.search( context, search_query, max_id, new MSPClient.Callback() {
-								@Override
-								public boolean isApiCancelled(){
-									return isCancelled() || is_dispose.get();
-								}
-								
-								@Override
-								public void publishApiProgress( final String s ){
-									Utils.runOnMainThread( new Runnable() {
-										@Override
-										public void run(){
-											if( isCancelled() ) return;
-											task_progress = s;
-											fireShowContent();
-										}
-									} );
-								}
-							} );
-							if( result != null && result.array != null ){
-								// max_id の更新
-								max_id = MSPClient.getMaxId( result.array, max_id );
-								// リストデータの用意
-								MSPToot.List search_result = MSPToot.parseList( context, access_info, result.array );
-								if( search_result != null ){
-									list_tmp = new ArrayList<>();
-									addWithFilter( list_tmp, search_result );
+							
+							TootApiResult result;
+							String q = search_query.trim();
+							if( q.length() <= 0 ){
+								list_tmp = new ArrayList<>();
+								result = new TootApiResult( context.getString( R.string.end_of_list ) );
+							}else{
+								result = MSPClient.search( context, search_query, max_id, new MSPClient.Callback() {
+									@Override
+									public boolean isApiCancelled(){
+										return isCancelled() || is_dispose.get();
+									}
+									
+									@Override
+									public void publishApiProgress( final String s ){
+										Utils.runOnMainThread( new Runnable() {
+											@Override
+											public void run(){
+												if( isCancelled() ) return;
+												task_progress = s;
+												fireShowContent();
+											}
+										} );
+									}
+								} );
+								if( result != null && result.array != null ){
+									// max_id の更新
+									max_id = MSPClient.getMaxId( result.array, max_id );
+									// リストデータの用意
+									MSPToot.List search_result = MSPToot.parseList( context, access_info, result.array );
+									if( search_result != null ){
+										list_tmp = new ArrayList<>();
+										addWithFilter( list_tmp, search_result );
+									}
 								}
 							}
+							return result;
 						}
-						return result;
+					
+					case TYPE_SEARCH_TS:
+						if( ! bBottom ){
+							return new TootApiResult( "head of list." );
+						}else{
+							
+							TootApiResult result;
+							String q = search_query.trim();
+							if( q.length() <= 0 || TextUtils.isEmpty( max_id ) ){
+								list_tmp = new ArrayList<>();
+								result = new TootApiResult( context.getString( R.string.end_of_list ) );
+							}else{
+								result = TootsearchClient.search( context, search_query, max_id, new TootsearchClient.Callback() {
+									@Override public boolean isApiCancelled(){
+										return isCancelled() || is_dispose.get();
+									}
+									
+									@Override public void publishApiProgress( final String s ){
+										Utils.runOnMainThread( new Runnable() {
+											@Override public void run(){
+												if( isCancelled() ) return;
+												task_progress = s;
+												fireShowContent();
+											}
+										} );
+									}
+								} );
+								if( result != null && result.object != null ){
+									// max_id の更新
+									max_id = TootsearchClient.getMaxId( result.object, max_id );
+									// リストデータの用意
+									TSToot.List search_result = TSToot.parseList( context, access_info, result.object );
+									if( search_result != null ){
+										list_tmp = new ArrayList<>();
+										addWithFilter( list_tmp, search_result );
+									}
+								}
+							}
+							return result;
+						}
 					}
 				}finally{
 					try{
@@ -3428,7 +3564,7 @@ import jp.juggler.subwaytooter.util.Utils;
 			// リフレッシュしてからストリーミング開始
 			log.d( "onStart: start auto refresh." );
 			startRefresh( true, false, - 1L, - 1 );
-		}else if( column_type == TYPE_SEARCH || column_type == TYPE_SEARCH_PORTAL ){
+		}else if( isSearchColumn() ){
 			// 検索カラムはリフレッシュもストリーミングもないが、表示開始のタイミングでリストの再描画を行いたい
 			fireShowContent();
 		}else{
@@ -3500,8 +3636,9 @@ import jp.juggler.subwaytooter.util.Utils;
 		switch( column_type ){
 		default:
 			return false;
-		case TYPE_SEARCH_PORTAL:
 		case TYPE_SEARCH:
+		case TYPE_SEARCH_MSP:
+		case TYPE_SEARCH_TS:
 		case TYPE_CONVERSATION:
 		case TYPE_LIST_LIST:
 			return true;
@@ -3611,6 +3748,18 @@ import jp.juggler.subwaytooter.util.Utils;
 		case TYPE_LIST_MEMBER:
 		case TYPE_LIST_TL:
 			return profile_id;
+		}
+	}
+	
+	public boolean isSearchColumn(){
+		switch( column_type ){
+		default:
+			return false;
+		
+		case TYPE_SEARCH:
+		case TYPE_SEARCH_MSP:
+		case TYPE_SEARCH_TS:
+			return true;
 		}
 	}
 	

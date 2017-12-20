@@ -31,6 +31,7 @@ import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
+import jp.juggler.subwaytooter.api_tootsearch.entity.TSToot;
 import jp.juggler.subwaytooter.dialog.ActionsDialog;
 import jp.juggler.subwaytooter.dialog.DlgConfirm;
 import jp.juggler.subwaytooter.table.AcctColor;
@@ -207,13 +208,12 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		this.btnSearchTag = view.findViewById( R.id.btnSearchTag );
 		this.tvApplication = view.findViewById( R.id.tvApplication );
 		
-		this. llList= view.findViewById( R.id.llList );
-		this. btnListTL= view.findViewById( R.id.btnListTL );
+		this.llList = view.findViewById( R.id.llList );
+		this.btnListTL = view.findViewById( R.id.btnListTL );
 		View btnListMore = view.findViewById( R.id.btnListMore );
 		
-		 btnListTL.setOnClickListener( this );
-		 btnListMore.setOnClickListener( this );
-		
+		btnListTL.setOnClickListener( this );
+		btnListMore.setOnClickListener( this );
 		
 		btnSearchTag.setOnClickListener( this );
 		btnContentWarning.setOnClickListener( this );
@@ -331,6 +331,8 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		if( item instanceof MSPToot ){
 			showStatus( activity, (MSPToot) item );
+		}else if( item instanceof TSToot ){
+			showStatus( activity, (TSToot) item );
 		}else if( item instanceof String ){
 			showSearchTag( (String) item );
 		}else if( item instanceof TootAccount ){
@@ -552,18 +554,23 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			flMedia.setVisibility( View.VISIBLE );
 			
 			if( status instanceof TootStatus ){
-				TootStatus ts = (TootStatus) status;
-				setMedia( ivMedia1, ts, 0 );
-				setMedia( ivMedia2, ts, 1 );
-				setMedia( ivMedia3, ts, 2 );
-				setMedia( ivMedia4, ts, 3 );
+				TootAttachment.List media_attachments = ( (TootStatus) status ).media_attachments;
+				setMedia( ivMedia1, status, media_attachments, 0 );
+				setMedia( ivMedia2, status, media_attachments, 1 );
+				setMedia( ivMedia3, status, media_attachments, 2 );
+				setMedia( ivMedia4, status, media_attachments, 3 );
 			}else if( status instanceof MSPToot ){
 				MSPToot ts = (MSPToot) status;
-				flMedia.setVisibility( View.VISIBLE );
 				setMedia( ivMedia1, ts, 0 );
 				setMedia( ivMedia2, ts, 1 );
 				setMedia( ivMedia3, ts, 2 );
 				setMedia( ivMedia4, ts, 3 );
+			}else if( status instanceof TSToot ){
+				TootAttachment.List media_attachments = ( (TSToot) status ).media_attachments;
+				setMedia( ivMedia1, status, media_attachments, 0 );
+				setMedia( ivMedia2, status, media_attachments, 1 );
+				setMedia( ivMedia3, status, media_attachments, 2 );
+				setMedia( ivMedia4, status, media_attachments, 3 );
 			}
 			
 			// hide sensitive media
@@ -668,14 +675,14 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		}
 	}
 	
-	private void setMedia( MyNetworkImageView iv, TootStatus status, int idx ){
-		if( idx >= status.media_attachments.size() ){
+	private void setMedia( MyNetworkImageView iv, TootStatusLike status, TootAttachment.List src, int idx ){
+		if( idx >= src.size() ){
 			iv.setVisibility( View.GONE );
 		}else{
 			iv.setVisibility( View.VISIBLE );
 			iv.setScaleType( activity.dont_crop_media_thumbnail ? ImageView.ScaleType.FIT_CENTER : ImageView.ScaleType.CENTER_CROP );
 			
-			TootAttachment ta = status.media_attachments.get( idx );
+			TootAttachment ta = src.get( idx );
 			
 			if( TextUtils.isEmpty( ta.type ) ){
 				iv.setMediaType( 0 );
@@ -708,7 +715,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			// 正方形じゃないせいか、うまく動かない // activity.density * 4f );
 			iv.setImageUrl( activity.pref, 0f, access_info.supplyBaseUrl( url ), access_info.supplyBaseUrl( url ) );
 			
-			if(!TextUtils.isEmpty( ta.description )){
+			if( ! TextUtils.isEmpty( ta.description ) ){
 				LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams( LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT );
 				lp.topMargin = (int) ( 0.5f + llExtra.getResources().getDisplayMetrics().density * 3f );
 				MyTextView tv = new MyTextView( activity );
@@ -722,9 +729,9 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 				tv.setTextColor( c );
 				
 				//
-				String desc = activity.getString( R.string.media_description,idx+1,ta.description );
+				String desc = activity.getString( R.string.media_description, idx + 1, ta.description );
 				tv.setText( new DecodeOptions()
-					.setCustomEmojiMap(status.custom_emojis )
+					.setCustomEmojiMap( status.custom_emojis )
 					.setProfileEmojis( status.profile_emojis )
 					.decodeEmoji( activity, desc )
 				);
@@ -778,8 +785,8 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.ivCardThumbnail:
-			if( status!=null && status.card != null){
-				activity.openChromeTab( pos,access_info,status.card.url,false );
+			if( status != null && status.card != null ){
+				activity.openChromeTab( pos, access_info, status.card.url, false );
 			}
 			break;
 		
@@ -837,24 +844,24 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 					.show();
 			}
 			break;
-
+		
 		case R.id.btnListTL:
 			if( list != null ){
-				activity.addColumn( pos,access_info,Column.TYPE_LIST_TL,list.id);
+				activity.addColumn( pos, access_info, Column.TYPE_LIST_TL, list.id );
 			}
 			break;
-
+		
 		case R.id.btnListMore:
 			if( list != null ){
 				ActionsDialog ad = new ActionsDialog();
 				ad.addAction( activity.getString( R.string.list_timeline ), new Runnable() {
 					@Override public void run(){
-						activity.addColumn( pos,access_info,Column.TYPE_LIST_TL,list.id);
+						activity.addColumn( pos, access_info, Column.TYPE_LIST_TL, list.id );
 					}
 				} );
 				ad.addAction( activity.getString( R.string.list_member ), new Runnable() {
 					@Override public void run(){
-						activity.addColumn( pos,access_info,Column.TYPE_LIST_MEMBER,list.id);
+						activity.addColumn( pos, access_info, Column.TYPE_LIST_MEMBER, list.id );
 					}
 				} );
 				ad.addAction( activity.getString( R.string.delete ), new Runnable() {
@@ -866,7 +873,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 						} );
 					}
 				} );
-				ad.show( activity ,list.title );
+				ad.show( activity, list.title );
 			}
 			break;
 		}
@@ -880,7 +887,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			return true;
 		
 		case R.id.btnFollow:
-			activity.openFollowFromAnotherAccount( activity.nextPosition( column),access_info, account_follow );
+			activity.openFollowFromAnotherAccount( activity.nextPosition( column ), access_info, account_follow );
 			return true;
 		
 		case R.id.llBoosted:
@@ -904,26 +911,32 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		try{
 			if( status instanceof MSPToot ){
 				activity.openStatusOtherInstance( activity.nextPosition( column ), access_info, status );
-			}else if( status instanceof TootStatus ){
-				TootStatus ts = (TootStatus) status;
-				
-				TootAttachment a = ts.media_attachments.get( i );
-				
-				String sv;
-				if( Pref.pref( activity ).getBoolean( Pref.KEY_PRIOR_LOCAL_URL, false ) ){
-					sv = a.url;
-					if( TextUtils.isEmpty( sv ) ){
-						sv = a.remote_url;
-					}
-				}else{
-					sv = a.remote_url;
-					if( TextUtils.isEmpty( sv ) ){
-						sv = a.url;
-					}
-				}
-				int pos = activity.nextPosition( column );
-				activity.openChromeTab( pos, access_info, sv, false );
+				return;
 			}
+			
+			TootAttachment.List media_attachments =
+				status instanceof TSToot ? ( (TSToot) status ).media_attachments
+					: status instanceof TootStatus ? ( (TootStatus) status ).media_attachments
+					: null;
+			
+			if( media_attachments == null ) return;
+			
+			TootAttachment a = media_attachments.get( i );
+			
+			String sv;
+			if( Pref.pref( activity ).getBoolean( Pref.KEY_PRIOR_LOCAL_URL, false ) ){
+				sv = a.url;
+				if( TextUtils.isEmpty( sv ) ){
+					sv = a.remote_url;
+				}
+			}else{
+				sv = a.remote_url;
+				if( TextUtils.isEmpty( sv ) ){
+					sv = a.url;
+				}
+			}
+			int pos = activity.nextPosition( column );
+			activity.openChromeTab( pos, access_info, sv, false );
 		}catch( Throwable ex ){
 			log.trace( ex );
 		}
@@ -985,7 +998,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		if( sb.length() > 0 ) sb.append( "<br>" );
 		
 		sb.append( HTMLDecoder.encodeEntity( header ) )
-			.append(": ");
+			.append( ": " );
 		
 		if( ! TextUtils.isEmpty( url ) ){
 			sb.append( "<a href=\"" ).append( HTMLDecoder.encodeEntity( url ) ).append( "\">" );

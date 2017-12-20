@@ -367,9 +367,14 @@
     <string name="show_post_button_bar_top">Show buttons bar at the top of posting screen</string>
     <string name="client_name">Client name (access token update required)</string>
     <string name="toot_search">Toot search</string>
+    <string name="toot_search_msp">Toot search(MSP)</string>
+    <string name="toot_search_ts">Toot search(TS)</string>
+
     <string name="mastodon_search_portal">Mastodon Search Portal(JP)</string>
     <string name="search_desc_mastodon_api">Account/Hashtag search using Mastodon API.</string>
     <string name="toot_search_of">Toot search \"%1$s\"</string>
+    <string name="toot_search_msp_of">Toot search(MSP) \"%1$s\"</string>
+    <string name="toot_search_ts_of">Toot search(TS) \"%1$s\"</string>
     <string name="progress_synchronize_toot">Syncing Toot…</string>
     <string name="send_header_account_name">Account-Name</string>
     <string name="send_header_account_acct">Account-Acct</string>
@@ -552,4 +557,5 @@
     <string name="list_not_created">(list is not created)</string>
     <string name="your_lists">Your lists</string>
     <string name="media_attachment_max_byte_size">Media attachment maximum bytes size (unit:Mega bytes. default is 8)</string>
+    <string name="tootsearch">tootsearch(JP)</string>
 </resources>

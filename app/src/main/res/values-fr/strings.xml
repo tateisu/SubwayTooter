@@ -561,6 +561,11 @@
 	<string name="list_not_created">(list is not created)</string>
 	<string name="your_lists">Your lists</string>
 	<string name="media_attachment_max_byte_size">Max byte size of media attachment(unit:Mega byte. default is 8)</string>
+    <string name="toot_search_msp">Toot search(MSP)</string>
+	<string name="toot_search_msp_of">Toot search(MSP) \"%1$s\"</string>
+	<string name="toot_search_ts">Toot search(TS)</string>
+	<string name="toot_search_ts_of">Toot search(TS) \"%1$s\"</string>
+	<string name="tootsearch">tootsearch(JP)</string>
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->

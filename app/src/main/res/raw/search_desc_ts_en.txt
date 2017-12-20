@@ -1,0 +1,1 @@
+Powered by <a href="https://tootsearch.chotto.moe/">tootsearch</a>, it indexes toots of instances in Japan.

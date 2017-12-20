@@ -102,6 +102,10 @@
         <item android:title="@string/toot_search">
             <menu>
                 <item
+                    android:id="@+id/tootsearch"
+                    android:icon="?attr/ic_search"
+                    android:title="@string/tootsearch"/>
+                <item
                     android:id="@+id/mastodon_search_portal"
                     android:icon="?attr/ic_search"
                     android:title="@string/mastodon_search_portal"/>

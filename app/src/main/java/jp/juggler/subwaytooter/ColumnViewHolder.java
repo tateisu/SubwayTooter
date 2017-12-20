@@ -277,8 +277,15 @@ class ColumnViewHolder
 				status_adapter.header = new HeaderViewHolderSearchDesc( activity, column, listView, activity.getString( R.string.search_desc_mastodon_api ) );
 				break;
 			
-			case Column.TYPE_SEARCH_PORTAL:
-				status_adapter.header = new HeaderViewHolderSearchDesc( activity, column, listView, getSearchDescPortal() );
+			case Column.TYPE_SEARCH_MSP:
+				status_adapter.header = new HeaderViewHolderSearchDesc( activity, column, listView
+					, getSearchDesc(R.raw.search_desc_msp_en, R.raw.search_desc_msp_ja)
+				);
+				break;
+
+			case Column.TYPE_SEARCH_TS:
+				status_adapter.header = new HeaderViewHolderSearchDesc( activity, column, listView
+					, getSearchDesc( R.raw.search_desc_ts_en,R.raw.search_desc_ts_ja ) );
 				break;
 			
 			case Column.TYPE_INSTANCE_INFORMATION:
@@ -323,7 +330,7 @@ class ColumnViewHolder
 			vg( cbEnableSpeech, column.canSpeech() );
 			
 			vg( btnDeleteNotification, column.column_type == Column.TYPE_NOTIFICATIONS );
-			vg( llSearch, ( column.column_type == Column.TYPE_SEARCH || column.column_type == Column.TYPE_SEARCH_PORTAL ) );
+			vg( llSearch, column.isSearchColumn() );
 			vg( llListList, ( column.column_type == Column.TYPE_LIST_LIST ) );
 			vg( cbResolve, ( column.column_type == Column.TYPE_SEARCH ) );
 			
@@ -365,17 +372,18 @@ class ColumnViewHolder
 		}
 	}
 	
-	private String getSearchDescPortal(){
+	private String getSearchDesc(int raw_en,int raw_ja){
 		String language_code = activity.getString( R.string.language_code );
 		int res_id;
 		if( "ja".equals( language_code ) ){
-			res_id = R.raw.search_desc_portal_ja;
+			res_id = raw_ja;
 		}else{
-			res_id = R.raw.search_desc_portal_en;
+			res_id = raw_en;
 		}
 		byte[] data = Utils.loadRawResource( activity, res_id );
 		return data == null ? null : Utils.decodeUTF8( data );
 	}
+
 	
 	void showColumnColor(){
 		if( column == null ) return;
@@ -667,7 +675,7 @@ class ColumnViewHolder
 		case R.id.btnColumnReload:
 			App1.custom_emoji_cache.clearErrorCache();
 			
-			if( column.column_type == Column.TYPE_SEARCH || column.column_type == Column.TYPE_SEARCH_PORTAL ){
+			if( column.isSearchColumn() ){
 				Utils.hideKeyboard( activity, etSearch );
 				etSearch.setText( column.search_query );
 				cbResolve.setChecked( column.search_resolve );

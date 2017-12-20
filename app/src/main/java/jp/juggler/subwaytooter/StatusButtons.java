@@ -81,10 +81,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		
 		int fav_icon_attr = access_info.isNicoru( status.account ) ? R.attr.ic_nicoru : R.attr.btn_favourite;
 		
-		if( status instanceof MSPToot ){
-			setButton( btnBoost, true, color_normal, R.attr.btn_boost, "" );
-			setButton( btnFavourite, true, color_normal, fav_icon_attr, "" );
-		}else if( status instanceof TootStatus ){
+		if( status instanceof TootStatus ){
 			TootStatus ts = (TootStatus) status;
 			
 			if( TootStatus.VISIBILITY_DIRECT.equals( ts.visibility ) ){
@@ -109,6 +106,9 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 				int color = ( ts.favourited ? color_accent : color_normal );
 				setButton( btnFavourite, true, color, fav_icon_attr, Long.toString( ts.favourites_count ) );
 			}
+		}else{
+			setButton( btnBoost, true, color_normal, R.attr.btn_boost, "" );
+			setButton( btnFavourite, true, color_normal, fav_icon_attr, "" );
 		}
 		
 		if( status.account == null
@@ -120,7 +120,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		}else{
 			llFollow2.setVisibility( View.VISIBLE );
 			this.relation = UserRelation.load( access_info.db_id, status.account.id );
-			Styler.setFollowIcon( activity, btnFollow2, ivFollowedBy2, relation ,status.account );
+			Styler.setFollowIcon( activity, btnFollow2, ivFollowedBy2, relation, status.account );
 		}
 		
 	}
@@ -162,7 +162,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 					, ActMain.NOT_CROSS_ACCOUNT
 					, ! status.reblogged
 					, false
-					, !bSimpleList ? null :  status.reblogged ? activity.unboost_complete_callback : activity.boost_complete_callback
+					, ! bSimpleList ? null : status.reblogged ? activity.unboost_complete_callback : activity.boost_complete_callback
 				);
 			}
 			break;
@@ -176,7 +176,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 					, status
 					, ActMain.NOT_CROSS_ACCOUNT
 					, ! status.favourited
-					, !bSimpleList ? null : status.favourited ? activity.unfavourite_complete_callback : activity.favourite_complete_callback
+					, ! bSimpleList ? null : status.favourited ? activity.unfavourite_complete_callback : activity.favourite_complete_callback
 				);
 			}
 			break;
@@ -193,9 +193,9 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			}else if( relation.blocking || relation.muting ){
 				// 何もしない
 			}else if( relation.getFollowing( status.account ) || relation.getRequested( status.account ) ){
-				activity.callFollow( activity.nextPosition( column ), access_info, status.account, false,  activity.unfollow_complete_callback );
+				activity.callFollow( activity.nextPosition( column ), access_info, status.account, false, activity.unfollow_complete_callback );
 			}else{
-				activity.callFollow( activity.nextPosition( column ), access_info, status.account, true,  activity.follow_complete_callback );
+				activity.callFollow( activity.nextPosition( column ), access_info, status.account, true, activity.follow_complete_callback );
 			}
 			break;
 		}

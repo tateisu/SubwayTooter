@@ -854,4 +854,5 @@
     <string name="toot_search_ts">トゥート検索(TS)</string>
     <string name="toot_search_ts_of">トゥート検索(TS) \"%1$s\"</string>
     <string name="tootsearch">tootsearch(JP)</string>
+    <string name="cant_handle_uri_of">Subway Tooter は URI \"%1$s\"を扱えません。別のアプリを選んでください。</string>
 </resources>

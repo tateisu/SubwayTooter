@@ -97,7 +97,7 @@ public class TootApiClient {
 	
 	private static final String KEY_AUTH_VERSION = "SubwayTooterAuthVersion";
 	private static final int AUTH_VERSION = 1;
-	private static final String REDIRECT_URL = "subwaytooter://oauth";
+	private static final String REDIRECT_URL = "subwaytooter://oauth/";
 	
 	private static final String MIMUMEDON = "mimumedon.com";
 	private static final String MIMUMEDON_ERROR = "mimumedon.comには対応しません";

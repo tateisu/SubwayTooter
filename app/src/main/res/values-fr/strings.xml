@@ -566,7 +566,8 @@
 	<string name="toot_search_ts">Toot search(TS)</string>
 	<string name="toot_search_ts_of">Toot search(TS) \"%1$s\"</string>
 	<string name="tootsearch">tootsearch(JP)</string>
-	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+	<string name="cant_handle_uri_of">Subway Tooter can\'t handle URI \"%1$s\". Please select other app.</string>
+    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

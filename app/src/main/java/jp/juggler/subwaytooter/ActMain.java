@@ -7,12 +7,16 @@ import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
@@ -60,6 +64,7 @@ import java.io.Reader;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -1247,73 +1252,107 @@ public class ActMain extends AppCompatActivity
 	// ActOAuthCallbackで受け取ったUriを処理する
 	private void handleIntentUri( @NonNull final Uri uri ){
 		
-		// プロフURL
-		if( "https".equals( uri.getScheme() ) ){
-			if( uri.getPath().startsWith( "/@" ) ){
-				
-				Matcher m = reStatusPage.matcher( uri.toString() );
-				if( m.find() ){
-					// ステータスをアプリ内で開く
-					try{
-						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
-						final String host = m.group( 1 );
-						final long status_id = Long.parseLong( m.group( 3 ), 10 );
-						openStatusOtherInstance( getDefaultInsertPosition(), null, uri.toString(), status_id, host, status_id );
-						
-						//
-						//						ArrayList< SavedAccount > account_list_same_host = new ArrayList<>();
-						//
-						//						for( SavedAccount a : SavedAccount.loadAccountList( log ) ){
-						//							if( host.equalsIgnoreCase( a.host ) ){
-						//								account_list_same_host.add( a );
-						//							}
-						//						}
-						//
-						//						// ソートする
-						//						Collections.sort( account_list_same_host, new Comparator< SavedAccount >() {
-						//							@Override public int compare( SavedAccount a, SavedAccount b ){
-						//								return String.CASE_INSENSITIVE_ORDER.compare( AcctColor.getNickname( a.acct ), AcctColor.getNickname( b.acct ) );
-						//							}
-						//						} );
-						//
-						//						if( account_list_same_host.isEmpty() ){
-						//							account_list_same_host.add( addPseudoAccount( host ) );
-						//						}
-						//
-						//						AccountPicker.pick( this, true, true
-						//							, getString( R.string.open_status_from )
-						//							, account_list_same_host
-						//							, new AccountPicker.AccountPickerCallback() {
-						//								@Override
-						//								public void onAccountPicked( @NonNull final SavedAccount ai ){
-						//									openStatus( getDefaultInsertPosition(), ai, status_id );
-						//								}
-						//							} );
-						
-					}catch( Throwable ex ){
-						Utils.showToast( this, ex, "can't parse status id." );
-					}
-					return;
-				}
-				
-				m = reUserPage.matcher( uri.toString() );
-				if( m.find() ){
-					// ユーザページをアプリ内で開く
-					
-					// https://mastodon.juggler.jp/@SubwayTooter
-					final String host = m.group( 1 );
-					final String user = Uri.decode( m.group( 2 ) );
-					
-					openProfileByHostUser( getDefaultInsertPosition(), null, uri.toString(), host, user );
-				}
-				return;
+		if( "subwaytooter".equals( uri.getScheme() ) ){
+			try{
+				handleOAuth2CallbackUri( uri );
+			}catch( Throwable ex ){
+				log.trace( ex );
 			}
-			// https なら oAuth用の導線は通さない
 			return;
 		}
 		
+		final String url = uri.toString();
+		
+		Matcher m = reStatusPage.matcher( url );
+		if( m.find() ){
+			try{
+				// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
+				final String host = m.group( 1 );
+				final long status_id = Long.parseLong( m.group( 3 ), 10 );
+				// ステータスをアプリ内で開く
+				openStatusOtherInstance( getDefaultInsertPosition(), null, uri.toString(), status_id, host, status_id );
+			}catch( Throwable ex ){
+				Utils.showToast( this, ex, "can't parse status id." );
+			}
+			return;
+		}
+		
+		m = reUserPage.matcher( url );
+		if( m.find() ){
+			// https://mastodon.juggler.jp/@SubwayTooter
+			final String host = m.group( 1 );
+			final String user = Uri.decode( m.group( 2 ) );
+			// ユーザページをアプリ内で開く
+			openProfileByHostUser( getDefaultInsertPosition(), null, uri.toString(), host, user );
+			return;
+		}
+		
+		// このアプリでは処理できないURLだった
+		// 外部ブラウザを開きなおそうとすると無限ループの恐れがある
+		// アプリケーションチューザーを表示する
+		
+		String error_message = getString( R.string.cant_handle_uri_of, url );
+		
+		try{
+			int query_flag;
+			if( Build.VERSION.SDK_INT >= 23 ){
+				// Android 6.0以降
+				// MATCH_DEFAULT_ONLY だと標準の設定に指定されたアプリがあるとソレしか出てこない
+				// MATCH_ALL を指定すると 以前と同じ挙動になる
+				query_flag = PackageManager.MATCH_ALL;
+			}else{
+				// Android 5.xまでは MATCH_DEFAULT_ONLY でマッチするすべてのアプリを取得できる
+				query_flag = PackageManager.MATCH_DEFAULT_ONLY;
+			}
+
+			// queryIntentActivities に渡すURLは実在しないホストのものにする
+			Intent intent = new Intent( Intent.ACTION_VIEW ,Uri.parse( "https://dummy.subwaytooter.club/" ));
+			intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+			List< ResolveInfo > resolveInfoList = getPackageManager().queryIntentActivities( intent, query_flag );
+			if( resolveInfoList.isEmpty() ){
+				throw new RuntimeException( "resolveInfoList is empty." );
+			}
+
+			// このアプリ以外の選択肢を集める
+			String my_name = getPackageName();
+			ArrayList< Intent > choice_list = new ArrayList<>();
+			for( ResolveInfo ri : resolveInfoList ){
+
+				// 選択肢からこのアプリを除外
+				if( my_name.equals( ri.activityInfo.packageName ) ) continue;
+
+				// 選択肢のIntentは目的のUriで作成する
+				Intent choice = new Intent( Intent.ACTION_VIEW ,uri);
+				intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
+				choice.setPackage( ri.activityInfo.packageName );
+				choice.setClassName( ri.activityInfo.packageName, ri.activityInfo.name );
+				choice_list.add( choice );
+			}
+			
+			if( choice_list.isEmpty() ){
+				throw new RuntimeException( "choice_list is empty." );
+			}
+			// 指定した選択肢でチューザーを作成して開く
+			Intent chooser = Intent.createChooser( choice_list.remove( 0 ), error_message );
+			chooser.putExtra( Intent.EXTRA_INITIAL_INTENTS, choice_list.toArray( new Intent[ choice_list.size() ] ) );
+			startActivity( chooser );
+			return;
+		}catch( Throwable ex ){
+			log.trace( ex );
+		}
+		
+		new AlertDialog.Builder( this )
+			.setCancelable( true )
+			.setMessage( error_message )
+			.setPositiveButton( R.string.close, null )
+			.show();
+		
+	}
+	
+	private void handleOAuth2CallbackUri( @NonNull final Uri uri ){
+		
 		// 通知タップ
-		// subwaytooter://notification_click?db_id=(db_id)
+		// subwaytooter://notification_click/?db_id=(db_id)
 		String sv = uri.getQueryParameter( "db_id" );
 		if( ! TextUtils.isEmpty( sv ) ){
 			try{
@@ -1336,7 +1375,7 @@ public class ActMain extends AppCompatActivity
 		}
 		
 		// OAuth2 認証コールバック
-		
+		// subwaytooter://oauth/?...
 		new TootApiTask( ActMain.this, true ) {
 			
 			TootAccount ta;
@@ -1418,7 +1457,7 @@ public class ActMain extends AppCompatActivity
 		//noinspection StatementWithEmptyBody
 		if( result == null ){
 			// cancelled.
-
+			
 		}else if( result.error != null ){
 			Utils.showToast( ActMain.this, true, result.error );
 			
@@ -1427,12 +1466,12 @@ public class ActMain extends AppCompatActivity
 			
 		}else if( result.object == null ){
 			Utils.showToast( ActMain.this, true, "can't parse json response." );
-
+			
 		}else if( ta == null ){
 			// 自分のユーザネームを取れなかった
 			// …普通はエラーメッセージが設定されてるはずだが
 			Utils.showToast( ActMain.this, true, "can't verify user credential." );
-
+			
 		}else if( sa != null ){
 			// アクセストークン更新時
 			
@@ -1734,69 +1773,28 @@ public class ActMain extends AppCompatActivity
 		
 	}
 	
-	static final Pattern reUrlHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#]+)(?:\\z|\\?)" );
-	static final Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)(?:\\z|\\?)" );
-	static final Pattern reStatusPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)/(\\d+)(?:\\z|\\?)" );
+	static final Pattern reUrlHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#]+)(?:\\z|[?#])" );
+	static final Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/@]+)(?:\\z|[?#])" );
+	static final Pattern reStatusPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/@]+)/(\\d+)(?:\\z|[?#])" );
 	
 	public void openChromeTab( final int pos, @Nullable final SavedAccount access_info, final String url, boolean noIntercept ){
 		try{
 			log.d( "openChromeTab url=%s", url );
 			
-			if( ! noIntercept && access_info != null && access_info.isNA() ){
-				// トゥート検索カラムではaccess_infoは何にも紐ついていない
-				
-				// ハッシュタグをアプリ内で開く
-				Matcher m = reUrlHashTag.matcher( url );
-				if( m.find() ){
-					// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
-					String host = m.group( 1 );
-					String tag = Uri.decode( m.group( 2 ) );
-					openHashTagOtherInstance( pos, access_info, url, host, tag );
-					return;
-				}
-				
-				// ステータスページをアプリから開く
-				m = reStatusPage.matcher( url );
-				if( m.find() ){
-					try{
-						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
-						final String host = m.group( 1 );
-						final long status_id = Long.parseLong( m.group( 3 ), 10 );
-						openStatusOtherInstance( pos, access_info, url, status_id, host, status_id );
-						return;
-					}catch( Throwable ex ){
-						Utils.showToast( this, ex, "can't parse status id." );
-					}
-					return;
-				}
-				
-				// ユーザページをアプリ内で開く
-				m = reUserPage.matcher( url );
-				if( m.find() ){
-					// https://mastodon.juggler.jp/@SubwayTooter
-					final String host = m.group( 1 );
-					final String user = Uri.decode( m.group( 2 ) );
-					
-					openProfileByHostUser( pos, access_info, url, host, user );
-					return;
-				}
-				
-			}
-			
 			if( ! noIntercept && access_info != null ){
+				
 				// ハッシュタグをアプリ内で開く
 				Matcher m = reUrlHashTag.matcher( url );
 				if( m.find() ){
 					// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
 					String host = m.group( 1 );
-					String tag = Uri.decode( m.group( 2 ) );
-					if( host.equalsIgnoreCase( access_info.host ) ){
-						openHashTag( pos, access_info, tag );
-						return;
+					String tag_without_sharp = Uri.decode( m.group( 2 ) );
+					if( access_info.isNA() || ! host.equalsIgnoreCase( access_info.host ) ){
+						openHashTagOtherInstance( pos, access_info, url, host, tag_without_sharp );
 					}else{
-						openHashTagOtherInstance( pos, access_info, url, host, tag );
-						return;
+						openHashTag( pos, access_info, tag_without_sharp );
 					}
+					return;
 				}
 				
 				// ステータスページをアプリから開く
@@ -1806,12 +1804,10 @@ public class ActMain extends AppCompatActivity
 						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
 						final String host = m.group( 1 );
 						final long status_id = Long.parseLong( m.group( 3 ), 10 );
-						if( host.equalsIgnoreCase( access_info.host ) ){
-							openStatusLocal( pos, access_info, status_id );
-							return;
-						}else{
+						if( access_info.isNA() || ! host.equalsIgnoreCase( access_info.host ) ){
 							openStatusOtherInstance( pos, access_info, url, status_id, host, status_id );
-							return;
+						}else{
+							openStatusLocal( pos, access_info, status_id );
 						}
 					}catch( Throwable ex ){
 						Utils.showToast( this, ex, "can't parse status id." );
@@ -1825,10 +1821,9 @@ public class ActMain extends AppCompatActivity
 					// https://mastodon.juggler.jp/@SubwayTooter
 					final String host = m.group( 1 );
 					final String user = Uri.decode( m.group( 2 ) );
+					
 					openProfileByHostUser( pos, access_info, url, host, user );
-					
 					return;
-					
 				}
 			}
 			
@@ -1863,19 +1858,29 @@ public class ActMain extends AppCompatActivity
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	public void openHashTag( int pos, SavedAccount access_info, String tag ){
-		while( tag.startsWith( "#" ) ) tag = tag.substring( 1 );
-		addColumn( pos, access_info, Column.TYPE_HASHTAG, tag );
+	public void openHashTag( int pos, @NonNull SavedAccount access_info, @NonNull String tag_without_sharp ){
+		addColumn( pos, access_info, Column.TYPE_HASHTAG, tag_without_sharp );
 	}
 	
 	// 他インスタンスのハッシュタグの表示
-	private void openHashTagOtherInstance( final int pos, final SavedAccount access_info, final String url, final String host, String tag ){
-		while( tag.startsWith( "#" ) ) tag = tag.substring( 1 );
-		openHashTagOtherInstance_sub( pos, access_info, url, host, tag );
+	private void openHashTagOtherInstance(
+		int pos
+		, @NonNull SavedAccount access_info
+		, @NonNull String url
+		, @NonNull String host
+		, @NonNull String tag_without_sharp
+	){
+		openHashTagOtherInstance_sub( pos, access_info, url, host, tag_without_sharp );
 	}
 	
 	// 他インスタンスのハッシュタグの表示
-	private void openHashTagOtherInstance_sub( final int pos, final SavedAccount access_info, final String url, final String host, final String tag ){
+	private void openHashTagOtherInstance_sub(
+		final int pos
+		, @NonNull final SavedAccount access_info
+		, @NonNull final String url
+		, @NonNull final String host
+		, @NonNull final String tag_without_sharp
+	){
 		
 		ActionsDialog dialog = new ActionsDialog();
 		
@@ -1912,7 +1917,7 @@ public class ActMain extends AppCompatActivity
 				@Override public void run(){
 					SavedAccount sa = addPseudoAccount( host );
 					if( sa != null ){
-						openHashTag( pos, sa, tag );
+						openHashTag( pos, sa, tag_without_sharp );
 					}
 				}
 			} );
@@ -1924,7 +1929,7 @@ public class ActMain extends AppCompatActivity
 			
 			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this, R.string.open_in_account, a.acct ), new Runnable() {
 				@Override public void run(){
-					openHashTag( pos, _a, tag );
+					openHashTag( pos, _a, tag_without_sharp );
 				}
 			} );
 		}
@@ -1933,7 +1938,7 @@ public class ActMain extends AppCompatActivity
 			final SavedAccount _a = a;
 			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this, R.string.open_in_account, a.acct ), new Runnable() {
 				@Override public void run(){
-					openHashTag( pos, _a, tag );
+					openHashTag( pos, _a, tag_without_sharp );
 				}
 			} );
 		}
@@ -1942,12 +1947,12 @@ public class ActMain extends AppCompatActivity
 			final SavedAccount _a = a;
 			dialog.addAction( AcctColor.getStringWithNickname( ActMain.this, R.string.open_in_account, a.acct ), new Runnable() {
 				@Override public void run(){
-					openHashTag( pos, _a, tag );
+					openHashTag( pos, _a, tag_without_sharp );
 				}
 			} );
 		}
 		
-		dialog.show( this, "#" + tag );
+		dialog.show( this, "#" + tag_without_sharp );
 	}
 	
 	final MyClickableSpan.LinkClickCallback link_click_listener = new MyClickableSpan.LinkClickCallback() {
@@ -1983,17 +1988,18 @@ public class ActMain extends AppCompatActivity
 			if( m.find() ){
 				// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
 				final String host = m.group( 1 );
-				final String tag = span.text.startsWith( "#" ) ? span.text : "#" + Uri.decode( m.group( 2 ) );
+				final String tag_with_sharp = span.text.startsWith( "#" ) ? span.text : "#" + Uri.decode( m.group( 2 ) );
+				final String tag_without_sharp = tag_with_sharp.substring( 1 );
 				
 				ActionsDialog d = new ActionsDialog()
 					.addAction( getString( R.string.open_hashtag_column ), new Runnable() {
 						@Override public void run(){
-							openHashTagOtherInstance( pos, (SavedAccount) span.lcc, span.url, host, tag );
+							openHashTagOtherInstance( pos, (SavedAccount) span.lcc, span.url, host, tag_without_sharp );
 						}
 					} )
-					.addAction( getString( R.string.quote_hashtag_of, tag ), new Runnable() {
+					.addAction( getString( R.string.quote_hashtag_of, tag_with_sharp ), new Runnable() {
 						@Override public void run(){
-							openPost( tag + " " );
+							openPost( tag_with_sharp + " " );
 						}
 					} );
 				
@@ -2028,7 +2034,7 @@ public class ActMain extends AppCompatActivity
 					} );
 				}
 				
-				d.show( ActMain.this, tag );
+				d.show( ActMain.this, tag_with_sharp );
 				return;
 			}
 			
@@ -2605,7 +2611,7 @@ public class ActMain extends AppCompatActivity
 			// Tootsearch ではステータスのアクセス元ホストは分からない
 			// ステータスの投稿元ホストでのIDも分からない
 			openStatusOtherInstance( pos, access_info, status.url
-				, -1L
+				, - 1L
 				, null, - 1L
 			);
 		}else if( status instanceof TootStatus ){
@@ -4539,11 +4545,11 @@ public class ActMain extends AppCompatActivity
 		new TootApiTask( this, access_info, true ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-
-				if( access_info.isMe( local_who )){
-					return new TootApiResult( getString(R.string.it_is_you ));
+				
+				if( access_info.isMe( local_who ) ){
+					return new TootApiResult( getString( R.string.it_is_you ) );
 				}
-
+				
 				TootApiResult result;
 				
 				if( bFollow ){
@@ -4685,7 +4691,7 @@ public class ActMain extends AppCompatActivity
 		new TootApiTask( this, access_info, true ) {
 			
 			@Override protected TootApiResult doInBackground( Void... params ){
-
+				
 				return client.request(
 					"/api/v1/lists/" + list_id + "/accounts?account_ids[]=" + local_who.id
 					, new Request.Builder().delete()
@@ -4714,7 +4720,7 @@ public class ActMain extends AppCompatActivity
 						Utils.showToast( ActMain.this, false, result.error );
 					}
 				}finally{
-					if( callback != null ) callback.onListMemberUpdated( false ,bSuccess );
+					if( callback != null ) callback.onListMemberUpdated( false, bSuccess );
 				}
 			}
 		}.executeOnExecutor( App1.task_executor );

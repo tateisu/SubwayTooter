@@ -1251,7 +1251,7 @@ public class PollingWorker {
 				// 通知タップ時のPendingIntent
 				Intent intent_click = new Intent( context, ActCallback.class );
 				intent_click.setAction( ActCallback.ACTION_NOTIFICATION_CLICK );
-				intent_click.setData( Uri.parse( "subwaytooter://notification_click?db_id=" + account.db_id ) );
+				intent_click.setData( Uri.parse( "subwaytooter://notification_click/?db_id=" + account.db_id ) );
 				intent_click.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
 				PendingIntent pi_click = PendingIntent.getActivity( context, ( 256 + (int) account.db_id ), intent_click, PendingIntent.FLAG_UPDATE_CURRENT );
 				

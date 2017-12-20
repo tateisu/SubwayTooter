@@ -71,8 +71,9 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
 
                 <data
-                    android:host="oauth"
                     android:scheme="subwaytooter"
+                    android:host="*"
+                    android:pathPattern=".*"
                     />
             </intent-filter>
 
@@ -83,9 +84,9 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
 
                 <data
+                    android:scheme="https"
                     android:host="*"
                     android:pathPrefix="/@"
-                    android:scheme="https"
                     />
             </intent-filter>
 

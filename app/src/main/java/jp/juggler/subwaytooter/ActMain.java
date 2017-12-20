@@ -7,7 +7,6 @@ import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Typeface;
@@ -16,7 +15,6 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.customtabs.CustomTabsIntent;
@@ -1304,25 +1302,25 @@ public class ActMain extends AppCompatActivity
 				// Android 5.xまでは MATCH_DEFAULT_ONLY でマッチするすべてのアプリを取得できる
 				query_flag = PackageManager.MATCH_DEFAULT_ONLY;
 			}
-
+			
 			// queryIntentActivities に渡すURLは実在しないホストのものにする
-			Intent intent = new Intent( Intent.ACTION_VIEW ,Uri.parse( "https://dummy.subwaytooter.club/" ));
+			Intent intent = new Intent( Intent.ACTION_VIEW, Uri.parse( "https://dummy.subwaytooter.club/" ) );
 			intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
 			List< ResolveInfo > resolveInfoList = getPackageManager().queryIntentActivities( intent, query_flag );
 			if( resolveInfoList.isEmpty() ){
 				throw new RuntimeException( "resolveInfoList is empty." );
 			}
-
+			
 			// このアプリ以外の選択肢を集める
 			String my_name = getPackageName();
 			ArrayList< Intent > choice_list = new ArrayList<>();
 			for( ResolveInfo ri : resolveInfoList ){
-
+				
 				// 選択肢からこのアプリを除外
 				if( my_name.equals( ri.activityInfo.packageName ) ) continue;
-
+				
 				// 選択肢のIntentは目的のUriで作成する
-				Intent choice = new Intent( Intent.ACTION_VIEW ,uri);
+				Intent choice = new Intent( Intent.ACTION_VIEW, uri );
 				intent.setFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
 				choice.setPackage( ri.activityInfo.packageName );
 				choice.setClassName( ri.activityInfo.packageName, ri.activityInfo.name );
@@ -1774,8 +1772,8 @@ public class ActMain extends AppCompatActivity
 	}
 	
 	static final Pattern reUrlHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#]+)(?:\\z|[?#])" );
-	static final Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/@]+)(?:\\z|[?#])" );
-	static final Pattern reStatusPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/@]+)/(\\d+)(?:\\z|[?#])" );
+	static final Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([A-Za-z0-9_]+)(?:\\z|[?#])" );
+	static final Pattern reStatusPage = Pattern.compile( "\\Ahttps://([^/]+)/@([A-Za-z0-9_]+)/(\\d+)(?:\\z|[?#])" );
 	
 	public void openChromeTab( final int pos, @Nullable final SavedAccount access_info, final String url, boolean noIntercept ){
 		try{
@@ -2589,15 +2587,6 @@ public class ActMain extends AppCompatActivity
 		}
 	}
 	
-	// OStatus
-	static final Pattern reTootUriOS = Pattern.compile( "tag:([^,]*),[^:]*:objectId=(\\d+):objectType=Status", Pattern.CASE_INSENSITIVE );
-	// ActivityPub 1
-	static final Pattern reTootUriAP1 = Pattern.compile( "https?://([^/]+)/users/[^/]+/statuses/(\\d+)" );
-	// ActivityPub 2
-	static final Pattern reTootUriAP2 = Pattern.compile( "https?://([^/]+)/@[^/]+/(\\d+)" );
-	
-	// static final Pattern reUriActivityPubToot = Pattern.compile( "tag:([^,]*),[^:]*:objectId=(\\d+):objectType=Status", Pattern.CASE_INSENSITIVE );
-	
 	public void openStatusOtherInstance( int pos, @NonNull SavedAccount access_info, @Nullable TootStatusLike status ){
 		// アカウント情報がないと出来ないことがある
 		if( status == null || status.account == null ) return;
@@ -2609,13 +2598,16 @@ public class ActMain extends AppCompatActivity
 			);
 		}else if( status instanceof TSToot ){
 			// Tootsearch ではステータスのアクセス元ホストは分からない
-			// ステータスの投稿元ホストでのIDも分からない
+			
+			// uri から投稿元タンスでのステータスIDを調べる
+			long status_id_original = TootStatusLike.parseStatusId( status );
+			
 			openStatusOtherInstance( pos, access_info, status.url
-				, - 1L
+				, status_id_original
 				, null, - 1L
 			);
+			
 		}else if( status instanceof TootStatus ){
-			TootStatus ts = (TootStatus) status;
 			if( status.host_original.equals( status.host_access ) ){
 				// TLアカウントのホストとトゥートのアカウントのホストが同じ場合
 				openStatusOtherInstance( pos, access_info, status.url
@@ -2624,28 +2616,8 @@ public class ActMain extends AppCompatActivity
 				);
 			}else{
 				// TLアカウントのホストとトゥートのアカウントのホストが異なる場合
-				
-				long status_id_original = - 1L;
-				
-				try{
-					// UriにステータスIDが含まれている場合がある
-					Matcher m = reTootUriOS.matcher( ts.uri );
-					if( m.find() ){
-						status_id_original = Long.parseLong( m.group( 2 ), 10 );
-					}else{
-						m = reTootUriAP1.matcher( ts.uri );
-						if( m.find() ){
-							status_id_original = Long.parseLong( m.group( 2 ), 10 );
-						}else{
-							m = reTootUriAP2.matcher( ts.uri );
-							if( m.find() ){
-								status_id_original = Long.parseLong( m.group( 2 ), 10 );
-							}
-						}
-					}
-				}catch( Throwable ex ){
-					log.e( ex, "openStatusOtherInstance: cant parse tag: %s", ts.uri );
-				}
+				// uri から投稿元タンスでのステータスIDを調べる
+				long status_id_original = TootStatusLike.parseStatusId( status );
 				
 				openStatusOtherInstance( pos, access_info, status.url
 					, status_id_original
@@ -2673,12 +2645,20 @@ public class ActMain extends AppCompatActivity
 			}
 		} );
 		
+		// トゥートの投稿元タンスにあるアカウント
 		ArrayList< SavedAccount > local_account_list = new ArrayList<>();
+		
+		// TLを読んだタンスにあるアカウント
 		ArrayList< SavedAccount > access_account_list = new ArrayList<>();
+		
+		// その他のタンスにあるアカウント
 		ArrayList< SavedAccount > other_account_list = new ArrayList<>();
+		
 		for( SavedAccount a : SavedAccount.loadAccountList( ActMain.this, log ) ){
+			
 			// 疑似アカウントは後でまとめて処理する
 			if( a.isPseudo() ) continue;
+			
 			if( status_id_original >= 0L && host_original.equalsIgnoreCase( a.host ) ){
 				// アクセス情報＋ステータスID でアクセスできるなら
 				// 同タンスのアカウントならステータスIDの変換なしに表示できる
@@ -2800,8 +2780,7 @@ public class ActMain extends AppCompatActivity
 				return result;
 			}
 			
-			@Override
-			protected void handleResult( TootApiResult result ){
+			@Override protected void handleResult( TootApiResult result ){
 				
 				if( result == null ){
 					// cancelled.

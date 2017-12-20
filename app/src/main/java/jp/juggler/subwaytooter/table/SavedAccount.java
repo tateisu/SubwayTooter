@@ -72,10 +72,10 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public JSONObject token_info;
 	public String visibility;
 	public boolean confirm_boost;
-
+	
 	public boolean dont_hide_nsfw;
 	public boolean dont_show_timeout;
-
+	
 	public boolean notification_mention;
 	public boolean notification_boost;
 	public boolean notification_favourite;
@@ -87,15 +87,13 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public boolean confirm_unfollow;
 	public boolean confirm_post;
 	
-	
 	public String notification_tag;
 	public String register_key;
 	public long register_time;
 	
-	
-	private final AtomicReference<TootInstance> refInstance = new AtomicReference<>( null );
+	private final AtomicReference< TootInstance > refInstance = new AtomicReference<>( null );
 	private static final long INSTANCE_INFORMATION_EXPIRE = 60000L * 5;
-
+	
 	// DBには保存しない
 	public @Nullable TootInstance getInstance(){
 		TootInstance instance = refInstance.get();
@@ -104,10 +102,10 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		}
 		return instance;
 	}
-	public void setInstance(@NonNull TootInstance instance){
-		refInstance.set(instance);
-	}
 	
+	public void setInstance( @NonNull TootInstance instance ){
+		refInstance.set( instance );
+	}
 	
 	// アプリデータのインポート時に呼ばれる
 	public static void onDBDelete( SQLiteDatabase db ){
@@ -154,7 +152,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 				
 				// 以下はDBスキーマ18で更新
 				+ "," + COL_DONT_SHOW_TIMEOUT + " integer default 0"
-			
+				
 				+ ")"
 		);
 		db.execSQL( "create index if not exists " + table + "_user on " + table + "(u)" );
@@ -268,7 +266,8 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return acct.equals( "?@?" );
 	}
 	
-	private static @Nullable SavedAccount parse( Context context, Cursor cursor ) throws JSONException{
+	private static @Nullable
+	SavedAccount parse( Context context, Cursor cursor ) throws JSONException{
 		JSONObject src = new JSONObject( cursor.getString( cursor.getColumnIndex( COL_ACCOUNT ) ) );
 		SavedAccount dst = new SavedAccount();
 		dst = (SavedAccount) parse( context, dst, src, dst );
@@ -283,7 +282,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 			dst.confirm_boost = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_CONFIRM_BOOST ) ) );
 			dst.dont_hide_nsfw = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_DONT_HIDE_NSFW ) ) );
 			dst.dont_show_timeout = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_DONT_SHOW_TIMEOUT ) ) );
-
+			
 			dst.notification_mention = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_NOTIFICATION_MENTION ) ) );
 			dst.notification_boost = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_NOTIFICATION_BOOST ) ) );
 			dst.notification_favourite = ( 0 != cursor.getInt( cursor.getColumnIndex( COL_NOTIFICATION_FAVOURITE ) ) );
@@ -340,9 +339,9 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public void updateTokenInfo( @Nullable JSONObject token_info ){
 		if( db_id == INVALID_ID )
 			throw new RuntimeException( "SavedAccount.updateTokenInfo missing db_id" );
-
-		if( token_info == null ) token_info = new JSONObject(  );
-
+		
+		if( token_info == null ) token_info = new JSONObject();
+		
 		this.token_info = token_info;
 		ContentValues cv = new ContentValues();
 		cv.put( COL_TOKEN, token_info.toString() );
@@ -504,7 +503,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	
 	public static boolean hasRealAccount( @NonNull LogCategory log ){
 		try{
-			Cursor cursor = App1.getDB().query( table, null, COL_USER + " NOT LIKE '?@%'", null , null, null, null, "1");
+			Cursor cursor = App1.getDB().query( table, null, COL_USER + " NOT LIKE '?@%'", null, null, null, null, "1" );
 			try{
 				if( cursor.moveToNext() ){
 					return true;
@@ -518,7 +517,6 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		}
 		return false;
 	}
-	
 	
 	@SuppressWarnings("WeakerAccess")
 	public @NonNull String getAccountHost( @Nullable String acct ){
@@ -607,14 +605,6 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return "?".equals( username );
 	}
 	
-	private static final Pattern reAcctUrl = Pattern.compile( "\\Ahttps://([A-Za-z0-9.-]+)/@([A-Za-z0-9_]+)\\z" );
-	
-	@Override public AcctColor findAcctColor( String url ){
-		Matcher m = reAcctUrl.matcher( url );
-		if( m.find() ) return AcctColor.load( m.group( 2 ) + "@" + m.group( 1 ) );
-		return null;
-	}
-	
 	public static long getCount(){
 		try{
 			Cursor cursor = App1.getDB().query( table, new String[]{ "count(*)" }, null, null, null, null, null );
@@ -683,17 +673,17 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return true;
 	}
 	
-	private static final  Comparator< SavedAccount > account_comparator = new Comparator< SavedAccount >() {
+	private static final Comparator< SavedAccount > account_comparator = new Comparator< SavedAccount >() {
 		@Override public int compare( SavedAccount a, SavedAccount b ){
 			int i;
-
+			
 			// NA > !NA
-			i = (a.isNA()? 1:0 ) - (b.isNA()? 1:0);
-			if(i!=0) return i;
-
+			i = ( a.isNA() ? 1 : 0 ) - ( b.isNA() ? 1 : 0 );
+			if( i != 0 ) return i;
+			
 			// pseudo > real
-			i = (a.isPseudo()? 1:0 ) - (b.isPseudo()? 1:0);
-			if(i!=0) return i;
+			i = ( a.isPseudo() ? 1 : 0 ) - ( b.isPseudo() ? 1 : 0 );
+			if( i != 0 ) return i;
 			
 			String sa = AcctColor.getNickname( a.acct );
 			String sb = AcctColor.getNickname( b.acct );
@@ -709,4 +699,14 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		String host = who.getAcctHost();
 		return host != null ? host : this.host;
 	}
+	
+	// implements LinkClickContext
+	@Override @Nullable public AcctColor findAcctColor( @Nullable String url ){
+		if( url != null ){
+			Matcher m = TootAccount.reAccountUrl.matcher( url );
+			if( m.find() ) return AcctColor.load( m.group( 2 ) + "@" + m.group( 1 ) );
+		}
+		return null;
+	}
+	
 }

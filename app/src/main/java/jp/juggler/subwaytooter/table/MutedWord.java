@@ -13,6 +13,7 @@ public class MutedWord {
 	private static final LogCategory log = new LogCategory( "MutedWord" );
 	
 	public static final String table = "word_mute";
+	public static final String COL_ID = "_id";
 	public static final String COL_NAME = "name";
 	private static final String COL_TIME_SAVE = "time_save";
 	

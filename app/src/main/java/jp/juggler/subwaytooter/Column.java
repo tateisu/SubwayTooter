@@ -42,7 +42,7 @@ import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootTag;
 import jp.juggler.subwaytooter.api_msp.MSPClient;
 import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
-import jp.juggler.subwaytooter.api_tootsearch.TootsearchClient;
+import jp.juggler.subwaytooter.api_tootsearch.TSClient;
 import jp.juggler.subwaytooter.api_tootsearch.entity.TSToot;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
@@ -1851,7 +1851,7 @@ import jp.juggler.subwaytooter.util.Utils;
 							list_tmp = new ArrayList<>();
 							result = new TootApiResult();
 						}else{
-							result = TootsearchClient.search( context, search_query, max_id, new TootsearchClient.Callback() {
+							result = TSClient.search( context, search_query, max_id, new TSClient.Callback() {
 								@Override public boolean isApiCancelled(){
 									return isCancelled() || is_dispose.get();
 								}
@@ -1869,7 +1869,7 @@ import jp.juggler.subwaytooter.util.Utils;
 							if( result != null ){
 								if( result.object != null ){
 									// max_id の更新
-									max_id = TootsearchClient.getMaxId( result.object, max_id );
+									max_id = TSClient.getMaxId( result.object, max_id );
 									// リストデータの用意
 									TSToot.List search_result = TSToot.parseList( context, access_info, result.object );
 									list_tmp = new ArrayList<>();
@@ -2801,7 +2801,7 @@ import jp.juggler.subwaytooter.util.Utils;
 								list_tmp = new ArrayList<>();
 								result = new TootApiResult( context.getString( R.string.end_of_list ) );
 							}else{
-								result = TootsearchClient.search( context, search_query, max_id, new TootsearchClient.Callback() {
+								result = TSClient.search( context, search_query, max_id, new TSClient.Callback() {
 									@Override public boolean isApiCancelled(){
 										return isCancelled() || is_dispose.get();
 									}
@@ -2818,13 +2818,11 @@ import jp.juggler.subwaytooter.util.Utils;
 								} );
 								if( result != null && result.object != null ){
 									// max_id の更新
-									max_id = TootsearchClient.getMaxId( result.object, max_id );
+									max_id = TSClient.getMaxId( result.object, max_id );
 									// リストデータの用意
 									TSToot.List search_result = TSToot.parseList( context, access_info, result.object );
-									if( search_result != null ){
-										list_tmp = new ArrayList<>();
-										addWithFilter( list_tmp, search_result );
-									}
+									list_tmp = new ArrayList<>();
+									addWithFilter( list_tmp, search_result );
 								}
 							}
 							return result;

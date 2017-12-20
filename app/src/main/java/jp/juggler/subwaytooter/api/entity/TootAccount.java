@@ -21,6 +21,8 @@ import jp.juggler.subwaytooter.util.Utils;
 public class TootAccount {
 	private static final LogCategory log = new LogCategory( "TootAccount" );
 	
+	public static final Pattern reAccountUrl = Pattern.compile( "\\Ahttps://([A-Za-z0-9.-]+)/@([A-Za-z0-9_]+)(?:\\z|[?#])" );
+	
 	public static class List extends ArrayList< TootAccount > {
 		
 	}
@@ -28,7 +30,7 @@ public class TootAccount {
 	//	The ID of the account
 	public long id;
 	
-	// 	The username of the account
+	// 	The username of the account  /[A-Za-z0-9_]{1,30}/
 	public String username;
 	
 	//	Equals username for local users, includes @domain for remote ones
@@ -108,13 +110,12 @@ public class TootAccount {
 		this.username = username;
 	}
 	
-	public static TootAccount parse( Context context, LinkClickContext account, JSONObject src ){
+	public static TootAccount parse( @NonNull Context context, @NonNull LinkClickContext account, @Nullable JSONObject src ){
 		return parse( context, account, src, new TootAccount() );
 	}
 	
-	
 	@Nullable
-	public static TootAccount parse( Context context, LinkClickContext account, JSONObject src, TootAccount dst ){
+	public static TootAccount parse( @NonNull Context context, @NonNull LinkClickContext account, @Nullable JSONObject src, @NonNull TootAccount dst ){
 		if( src == null ) return null;
 		try{
 			dst.id = Utils.optLongX( src, "id", - 1L );
@@ -155,7 +156,7 @@ public class TootAccount {
 			
 			JSONObject o = src.optJSONObject( "moved" );
 			if( o != null ){
-				dst.moved = TootAccount.parse( context, account, o);
+				dst.moved = TootAccount.parse( context, account, o );
 			}
 			
 			return dst;
@@ -178,8 +179,6 @@ public class TootAccount {
 		return dst;
 	}
 	
-
-	
 	@NonNull
 	public static List parseList( Context context, LinkClickContext account, JSONArray array ){
 		List result = new List();
@@ -197,10 +196,9 @@ public class TootAccount {
 	}
 	
 	private static final Pattern reWhitespace = Pattern.compile( "[\\s\\t\\x0d\\x0a]+" );
-
 	
 	public Spannable decodeDisplayName( Context context ){
-
+		
 		// remove white spaces
 		String sv = reWhitespace.matcher( display_name ).replaceAll( " " );
 		
@@ -214,7 +212,7 @@ public class TootAccount {
 		}else{
 			this.display_name = Utils.sanitizeBDI( sv );
 		}
-		this.decoded_display_name = decodeDisplayName(context);
+		this.decoded_display_name = decodeDisplayName( context );
 		
 	}
 	

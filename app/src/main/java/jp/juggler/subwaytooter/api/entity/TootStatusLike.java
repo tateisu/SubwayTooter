@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.entity;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.TextUtils;
@@ -8,13 +9,18 @@ import android.text.TextUtils;
 import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jp.juggler.subwaytooter.api_tootsearch.entity.TSToot;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.DecodeOptions;
+import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 public abstract class TootStatusLike extends TootId {
+	
+	static final LogCategory log = new LogCategory("TootStatusLike");
 	
 	//URL to the status page (can be remote)
 	public String url;
@@ -115,4 +121,54 @@ public abstract class TootStatusLike extends TootId {
 		public int originalLineCount;
 	}
 	public AutoCW auto_cw;
+	
+	
+	// OStatus
+	static final Pattern reTootUriOS = Pattern.compile( "tag:([^,]*),[^:]*:objectId=(\\d+):objectType=Status", Pattern.CASE_INSENSITIVE );
+	// ActivityPub 1
+	static final Pattern reTootUriAP1 = Pattern.compile( "https?://([^/]+)/users/[A-Za-z0-9_]+/statuses/(\\d+)" );
+	// ActivityPub 2
+	static final Pattern reTootUriAP2 = Pattern.compile( "https?://([^/]+)/@[A-Za-z0-9_]+/(\\d+)" );
+	
+	public static long parseStatusId( @NonNull TootStatusLike status ){
+		
+		String uri;
+		if( status instanceof TootStatus ){
+			uri = ( (TootStatus) status ).uri;
+		}else if( status instanceof TSToot ){
+			uri = ( (TSToot) status ).uri;
+		}else{
+			log.d( "parseStatusId: unsupported status type: %s", status.getClass().getSimpleName() );
+			return - 1L;
+		}
+		
+		try{
+			Matcher m;
+			
+			// https://friends.nico/users/(who)/statuses/(status_id)
+			m = reTootUriAP1.matcher( uri );
+			if( m.find() ){
+				return Long.parseLong( m.group( 2 ), 10 );
+			}
+			
+			// tag:mstdn.osaka,2017-12-19:objectId=5672321:objectType=Status
+			m = reTootUriOS.matcher( uri );
+			if( m.find() ){
+				return Long.parseLong( m.group( 2 ), 10 );
+			}
+			
+			//
+			m = reTootUriAP2.matcher( uri );
+			if( m.find() ){
+				return Long.parseLong( m.group( 2 ), 10 );
+			}
+			
+			log.d( "parseStatusId: unsupported status uri: %s", uri );
+			
+		}catch( Throwable ex ){
+			log.e( ex, "parseStatusId: cant parse tag: %s", uri );
+		}
+		
+		return - 1L;
+	}
 }

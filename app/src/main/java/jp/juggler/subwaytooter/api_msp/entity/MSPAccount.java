@@ -8,7 +8,6 @@ import android.text.TextUtils;
 import org.json.JSONObject;
 
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.table.SavedAccount;
@@ -19,10 +18,8 @@ import jp.juggler.subwaytooter.util.Utils;
 public class MSPAccount extends TootAccount {
 	private static final LogCategory log = new LogCategory( "MSPAccount" );
 	
-	private static final Pattern reAccountUrl = Pattern.compile( "\\Ahttps://([^/#?]+)/@([^/#?]+)\\z" );
-	
 	@Nullable
-	static TootAccount parseAccount( @NonNull Context context, SavedAccount access_info, JSONObject src ){
+	static TootAccount parseAccount( @NonNull Context context, @NonNull SavedAccount access_info, @Nullable JSONObject src ){
 		
 		if( src == null ) return null;
 		

@@ -1,8 +1,10 @@
 package jp.juggler.subwaytooter.util;
 
+import android.support.annotation.Nullable;
+
 import jp.juggler.subwaytooter.table.AcctColor;
 
 public interface LinkClickContext {
-
-	AcctColor findAcctColor( String url );
+	
+	@Nullable AcctColor findAcctColor( @Nullable String url );
 }

@@ -18,6 +18,7 @@ import java.util.regex.Pattern;
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.Pref;
 import jp.juggler.subwaytooter.R;
+import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootMention;
 import jp.juggler.subwaytooter.table.SavedAccount;
@@ -99,12 +100,11 @@ public class HTMLDecoder {
 	
 	private static final boolean DEBUG_HTML_PARSER = false;
 	
-	static final Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([^?#/]+)(?:\\z|\\?)" );
 	
 	static HashSet< String > block_tag;
 	
 	private static void prepareTagInformation(){
-		synchronized( reUserPage ){
+		synchronized( log ){
 			if( block_tag == null ){
 				block_tag = new HashSet<>();
 				block_tag.add( "div" );
@@ -273,7 +273,7 @@ public class HTMLDecoder {
 			if( ! display_url.startsWith( "http" ) ){
 				if( display_url.startsWith( "@" ) && href != null && App1.pref.getBoolean( Pref.KEY_MENTION_FULL_ACCT, false ) ){
 					// メンションをfull acct にする
-					Matcher m = reUserPage.matcher( href );
+					Matcher m = TootAccount.reAccountUrl.matcher( href );
 					if( m.find() ){
 						return "@" + m.group( 2 ) + "@" + m.group( 1 );
 					}

@@ -58,7 +58,7 @@ public class AcctColor {
 			onDBCreate( db );
 			return;
 		}
-
+		
 		if( oldVersion < 17 && newVersion >= 17 ){
 			try{
 				db.execSQL( "alter table " + table + " add column " + COL_NOTIFICATION_SOUND + " text default ''" );
@@ -72,9 +72,9 @@ public class AcctColor {
 	public int color_fg;
 	public int color_bg;
 	public String nickname;
-	public String notification_sound ;
+	public String notification_sound;
 	
-	public AcctColor( @NonNull String acct, String nickname, int color_fg, int color_bg ,String notification_sound){
+	public AcctColor( @NonNull String acct, String nickname, int color_fg, int color_bg, String notification_sound ){
 		this.acct = acct;
 		this.nickname = nickname;
 		this.color_fg = color_fg;
@@ -186,23 +186,24 @@ public class AcctColor {
 	}
 	
 	public static void clearMemoryCache(){
-		mMemoryCache.evictAll ();
+		mMemoryCache.evictAll();
 	}
 	
 	private static final char CHAR_REPLACE = 0x328A;
 	
-	@NonNull public static CharSequence getStringWithNickname( @NonNull Context context, int string_id , @NonNull String acct ){
+	@NonNull
+	public static CharSequence getStringWithNickname( @NonNull Context context, int string_id, @NonNull String acct ){
 		AcctColor ac = load( acct );
-		String name = ! TextUtils.isEmpty( ac.nickname ) ? Utils.sanitizeBDI( ac.nickname ) : acct ;
-		SpannableStringBuilder sb = new SpannableStringBuilder( context.getString( string_id,new String(new char[]{CHAR_REPLACE})) );
-		for(int i=sb.length()-1;i>=0;--i){
+		String name = ! TextUtils.isEmpty( ac.nickname ) ? Utils.sanitizeBDI( ac.nickname ) : acct;
+		SpannableStringBuilder sb = new SpannableStringBuilder( context.getString( string_id, new String( new char[]{ CHAR_REPLACE } ) ) );
+		for( int i = sb.length() - 1 ; i >= 0 ; -- i ){
 			char c = sb.charAt( i );
-			if( c != CHAR_REPLACE) continue;
-			sb.replace( i,i+1,name );
-			if( ac.color_fg != 0){
+			if( c != CHAR_REPLACE ) continue;
+			sb.replace( i, i + 1, name );
+			if( ac.color_fg != 0 ){
 				sb.setSpan( new ForegroundColorSpan( ac.color_fg ), i, i + name.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}
-			if( ac.color_bg != 0){
+			if( ac.color_bg != 0 ){
 				sb.setSpan( new BackgroundColorSpan( ac.color_bg ), i, i + name.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
 			}
 		}

@@ -14,6 +14,7 @@ public class MutedApp {
 	private static final LogCategory log = new LogCategory( "MutedApp" );
 	
 	public static final String table = "app_mute";
+	public static final String COL_ID = "_id";
 	public static final String COL_NAME = "name";
 	private static final String COL_TIME_SAVE = "time_save";
 	

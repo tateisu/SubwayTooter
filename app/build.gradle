@@ -57,8 +57,6 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 
-    // SDKのソースの27が提供されたタイミングで依存関係をまとめて上げる。
-    // 現在特に問題を抱えていないし、それまでは依存関係のバージョンを上げない
 
     compile 'com.android.support:support-v4:26.1.0'
     compile 'com.android.support:appcompat-v7:26.1.0'
@@ -69,7 +67,7 @@ dependencies {
     compile 'com.google.firebase:firebase-messaging:11.6.2'
 
     testCompile 'junit:junit:4.12'
-    compile 'commons-io:commons-io:2.6'
+    compile 'commons-io:commons-io:2.4' // 2.6にすると closeQuietly のかわりに try-with-resourceを使えと煩い
     compile 'uk.co.chrisjenx:calligraphy:2.3.0'
     compile 'com.github.woxthebox:draglistview:1.5.1'
     compile 'com.github.omadahealth:swipy:1.2.3@aar'
@@ -78,6 +76,9 @@ dependencies {
     compile project(':exif')
 
     compile 'com.squareup.okhttp3:okhttp:3.9.1'
+
+    // com.github.bumptech.glide 4.x はサポートライブラリ27に依存してる
+    // SDKのソースの27が提供されたら上げる
     compile 'com.github.bumptech.glide:glide:3.8.0'
     compile 'com.github.bumptech.glide:okhttp3-integration:1.5.0'
 

@@ -319,6 +319,7 @@ public class ActColumnList extends AppCompatActivity {
 	
 	private class MyListAdapter extends DragItemAdapter< MyItem, MyViewHolder > {
 		
+		
 		MyListAdapter(){
 			super();
 			setHasStableIds( true );
@@ -337,10 +338,10 @@ public class ActColumnList extends AppCompatActivity {
 			holder.bind( getItemList().get( position ) );
 		}
 		
-		@Override
-		public long getItemId( int position ){
+		@Override public long getUniqueItemId( int position ){
 			MyItem item = mItemList.get( position ); // mItemList は親クラスのメンバ変数
 			return item.id;
 		}
+
 	}
 }

@@ -828,7 +828,8 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnSearchTag:
 			if( search_tag != null ){
-				activity.openHashTag( activity.nextPosition( column ), access_info, search_tag.substring( 1 ) );
+				// search_tag は#を含まない
+				activity.openHashTag( activity.nextPosition( column ), access_info, search_tag );
 			}else if( gap != null ){
 				column.startGap( gap );
 			}else if( domain_block != null ){

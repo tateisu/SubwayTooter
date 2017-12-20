@@ -111,10 +111,12 @@ public class ActMutedApp extends AppCompatActivity {
 			Cursor cursor = MutedApp.createCursor();
 			if( cursor != null ){
 				try{
+					int idx_id = cursor.getColumnIndex( MutedApp.COL_ID );
 					int idx_name = cursor.getColumnIndex( MutedApp.COL_NAME );
 					while( cursor.moveToNext() ){
+						long id = cursor.getLong( idx_id );
 						String name = cursor.getString( idx_name );
-						MyItem item = new MyItem( name );
+						MyItem item = new MyItem( id, name );
 						tmp_list.add( item );
 					}
 					
@@ -130,9 +132,11 @@ public class ActMutedApp extends AppCompatActivity {
 	
 	// リスト要素のデータ
 	static class MyItem {
+		final long id;
 		final String name;
 		
-		MyItem( String name ){
+		MyItem( long id,String name ){
+			this.id = id;
 			this.name = name;
 		}
 	}
@@ -212,10 +216,9 @@ public class ActMutedApp extends AppCompatActivity {
 			holder.bind( getItemList().get( position ) );
 		}
 		
-		@Override
-		public long getItemId( int position ){
+		@Override public long getUniqueItemId( int position ){
 			MyItem item = mItemList.get( position ); // mItemList は親クラスのメンバ変数
-			return item.name.hashCode();
+			return item.id;
 		}
 	}
 }

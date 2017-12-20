@@ -29,7 +29,7 @@ public class MyClickableSpan extends ClickableSpan {
 		@NonNull LinkClickContext lcc
 		, @NonNull String text
 		, @NonNull String url
-		, AcctColor ac
+		, @Nullable AcctColor ac
 		, @Nullable Object tag
 	){
 		this.lcc = lcc;

@@ -10,13 +10,15 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.regex.Matcher;
 
 import jp.juggler.subwaytooter.api.entity.CustomEmoji;
 import jp.juggler.subwaytooter.api.entity.NicoProfileEmoji;
+import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
-import jp.juggler.subwaytooter.api_tootsearch.TootsearchClient;
+import jp.juggler.subwaytooter.api_tootsearch.TSClient;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -39,7 +41,7 @@ public class TSToot extends TootStatusLike {
 		if( src == null ) return null;
 		TSToot dst = new TSToot();
 		
-		dst.account = TSAccount.parseAccount( context, access_info, src.optJSONObject( "account" ) );
+		dst.account = parseAccount( context, access_info, src.optJSONObject( "account" ) );
 		if( dst.account == null ){
 			log.e( "missing status account" );
 			return null;
@@ -47,16 +49,15 @@ public class TSToot extends TootStatusLike {
 		
 		dst.json = src;
 		
-		
 		// 絵文字マップは割と最初の方で読み込んでおきたい
-		dst.custom_emojis = CustomEmoji.parseMap( src.optJSONArray( "emojis" ),access_info.host);
+		dst.custom_emojis = CustomEmoji.parseMap( src.optJSONArray( "emojis" ), access_info.host );
 		dst.profile_emojis = NicoProfileEmoji.parseMap( src.optJSONArray( "profile_emojis" ) );
 		
 		dst.url = Utils.optStringX( src, "url" );
 		dst.uri = Utils.optStringX( src, "uri" );
 		dst.host_original = dst.account.getAcctHost();
 		dst.host_access = "?";
-		dst.id = -1L; // Utils.optLongX( src, "id", - 1L );
+		dst.id = - 1L; // Utils.optLongX( src, "id", - 1L );
 		
 		if( TextUtils.isEmpty( dst.url ) || TextUtils.isEmpty( dst.host_original ) ){
 			log.e( "missing status url or host or id" );
@@ -68,7 +69,7 @@ public class TSToot extends TootStatusLike {
 		
 		dst.media_attachments = TootAttachment.parseList( src.optJSONArray( "media_attachments" ) );
 		
-		dst.sensitive = src.optBoolean( "sensitive" ,false );
+		dst.sensitive = src.optBoolean( "sensitive", false );
 		
 		dst.setSpoilerText( context, Utils.optStringX( src, "spoiler_text" ) );
 		
@@ -87,9 +88,10 @@ public class TSToot extends TootStatusLike {
 	public static class List extends ArrayList< TSToot > {
 	}
 	
-	@NonNull public static TSToot.List parseList( @NonNull Context context, SavedAccount access_info, @NonNull JSONObject root ){
+	@NonNull
+	public static TSToot.List parseList( @NonNull Context context, SavedAccount access_info, @NonNull JSONObject root ){
 		TSToot.List list = new TSToot.List();
-		JSONArray array = TootsearchClient.getHits( root );
+		JSONArray array = TSClient.getHits( root );
 		if( array != null ){
 			for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
@@ -127,5 +129,35 @@ public class TSToot extends TootStatusLike {
 	
 	@Override public boolean canPin( SavedAccount access_info ){
 		return false;
+	}
+	
+	@Nullable
+	private static TootAccount parseAccount( @NonNull Context context, @NonNull SavedAccount access_info, @Nullable JSONObject src ){
+		
+		TootAccount dst = TootAccount.parse( context, access_info, src );
+		if( dst != null ){
+			
+			// tootsearch のアカウントのIDはどのタンス上のものか分からない
+			dst.id = - 1L;
+			
+			// この後の処理でURLを使うので、URLがないならパースエラーとする
+			if( TextUtils.isEmpty( dst.url ) ){
+				log.e( "parseAccount: missing url" );
+				return null;
+			}
+			
+			if( - 1 == dst.acct.indexOf( '@' ) ){
+				Matcher m = TootAccount.reAccountUrl.matcher( dst.url );
+				if( ! m.find() ){
+					log.e( "parseAccount: not account url: %s", dst.url );
+					return null;
+				}else{
+					dst.acct = dst.username + "@" + m.group( 1 );
+				}
+			}
+			
+		}
+		
+		return dst;
 	}
 }

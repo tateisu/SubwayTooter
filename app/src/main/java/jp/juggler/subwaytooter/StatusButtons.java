@@ -13,7 +13,6 @@ import android.widget.PopupWindow;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
-import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.LogCategory;

@@ -851,8 +851,8 @@
     <string name="media_attachment_max_byte_size">添付メディアの最大バイト数(単位:MB。デフォルトは8)</string>
     <string name="toot_search_msp">トゥート検索(MSP)</string>
     <string name="toot_search_msp_of">トゥート検索(MSP) \"%1$s\"</string>
-    <string name="toot_search_ts">トゥート検索(TS)</string>
-    <string name="toot_search_ts_of">トゥート検索(TS) \"%1$s\"</string>
-    <string name="tootsearch">tootsearch(JP)</string>
+    <string name="toot_search_ts">トゥート検索(ts)</string>
+    <string name="toot_search_ts_of">トゥート検索(ts) \"%1$s\"</string>
+    <string name="tootsearch">tootsearch</string>
     <string name="cant_handle_uri_of">Subway Tooter は URI \"%1$s\"を扱えません。別のアプリを選んでください。</string>
 </resources>

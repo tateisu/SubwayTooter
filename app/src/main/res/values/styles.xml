@@ -98,6 +98,14 @@
         <item name="ic_list_tl">@drawable/ic_list_tl</item>
         <item name="ic_list_member">@drawable/ic_list_member</item>
 
+        <item name="ic_download">@drawable/ic_download</item>
+        <item name="ic_browser">@drawable/ic_browser</item>
+        <item name="ic_share">@drawable/ic_share</item>
+        <item name="ic_copy">@drawable/ic_copy</item>
+        <item name="ic_left">@drawable/ic_left</item>
+        <item name="ic_right">@drawable/ic_right</item>
+
+
     </style>
 
     <style name="AppTheme.Light.NoActionBar" parent="AppTheme.Light">
@@ -197,6 +205,13 @@
         <item name="ic_list_list">@drawable/ic_list_list_dark</item>
         <item name="ic_list_tl">@drawable/ic_list_tl_dark</item>
         <item name="ic_list_member">@drawable/ic_list_member_dark</item>
+
+        <item name="ic_download">@drawable/ic_download_dark</item>
+        <item name="ic_browser">@drawable/ic_browser_dark</item>
+        <item name="ic_share">@drawable/ic_share_dark</item>
+        <item name="ic_copy">@drawable/ic_copy_dark</item>
+        <item name="ic_left">@drawable/ic_left_dark</item>
+        <item name="ic_right">@drawable/ic_right_dark</item>
 
     </style>
 

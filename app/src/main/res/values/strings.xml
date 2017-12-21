@@ -559,4 +559,18 @@
     <string name="media_attachment_max_byte_size">Media attachment maximum bytes size (unit:Mega bytes. default is 8)</string>
     <string name="tootsearch">tootsearch(JP)</string>
     <string name="cant_handle_uri_of">Subway Tooter can\'t handle URI \"%1$s\". Please select other app.</string>
+    <string name="use_internal_media_viewer">Use built-in media viewer</string>
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
+    <string name="download">Download</string>
+    <string name="downloading">Downloading…</string>
+    <string name="url_is_copied">URL copied to clipboard</string>
+    <string name="download_complete">Download completed. %1$s</string>
+    <string name="download_failed">Download failed. %1$s</string>
+    <string name="open_browser_of">Open \"%1$s\" in browser</string>
+    <string name="open_in_browser">Open in browser</string>
+    <string name="share_url">Share URL</string>
+    <string name="copy_url">Copy URL to clipboard</string>
+    <string name="media_attachment_empty">Missing media attachments.</string>
+    <string name="media_attachment_type_error">The type of media attachment is \"%1$s\". ST can\'t handle it, but you can try open in browser.</string>
 </resources>

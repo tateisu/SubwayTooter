@@ -855,4 +855,20 @@
     <string name="toot_search_ts_of">トゥート検索(ts) \"%1$s\"</string>
     <string name="tootsearch">tootsearch</string>
     <string name="cant_handle_uri_of">Subway Tooter は URI \"%1$s\"を扱えません。別のアプリを選んでください。</string>
+    <string name="use_internal_media_viewer">内蔵メディアビューアを使う</string>
+
+    <string name="previous">前</string>
+    <string name="next">次</string>
+    <string name="download">ダウンロード</string>
+    <string name="downloading">ダウンロード中…</string>
+    <string name="url_is_copied">URLをクリップボードにコピーしました</string>
+    <string name="download_complete">ダウンロード完了 %1$s</string>
+    <string name="download_failed">ダウンロード失敗 %1$s</string>
+    <string name="open_browser_of">\"%1$s\"をブラウザで開く</string>
+    <string name="open_in_browser">ブラウザで開く</string>
+    <string name="share_url">URLを共有</string>
+    <string name="copy_url">URLをクリップボードにコピー</string>
+    <string name="media_attachment_empty">Missing media attachments.</string>
+    <string name="media_attachment_type_error">The type of media attachment is \"%1$s\". ST can\'t handle it, but you can try open in browser.</string>
+
 </resources>

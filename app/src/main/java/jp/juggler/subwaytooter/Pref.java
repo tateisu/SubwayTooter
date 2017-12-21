@@ -20,7 +20,7 @@ public class Pref {
 	static final String KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN = "DontConfirmBeforeCloseColumn";
 	
 	static final String KEY_BACK_BUTTON_ACTION = "back_button_action";
-	static final String KEY_PRIOR_LOCAL_URL = "prior_local_url";
+	public static final String KEY_PRIOR_LOCAL_URL = "prior_local_url";
 	static final String KEY_DISABLE_FAST_SCROLLER = "disable_fast_scroller";
 	static final String KEY_UI_THEME = "ui_theme";
 	static final String KEY_SIMPLE_LIST = "simple_list";
@@ -56,7 +56,7 @@ public class Pref {
 	static final String KEY_STREAM_LISTENER_CONFIG_DATA = "stream_listener_config_data";
 	static final String KEY_TABLET_TOOT_DEFAULT_ACCOUNT = "tablet_toot_default_account";
 	
-	static final String KEY_PRIOR_CHROME = "prior_chrome";
+	public static final String KEY_PRIOR_CHROME = "prior_chrome";
 	
 	static final String KEY_POST_BUTTON_BAR_AT_TOP = "post_button_bar_at_top";
 	
@@ -95,6 +95,8 @@ public class Pref {
 	public static final String KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE = "allow_non_space_before_emoji_shortcode";
 	
 	public static final String KEY_MEDIA_SIZE_MAX = "max_media_size";
+	
+	public static final String KEY_USE_INTERNAL_MEDIA_VIEWER = "use_internal_media_viewer";
 
 	// 項目を追加したらAppDataExporter#importPref のswitch文も更新すること
 }

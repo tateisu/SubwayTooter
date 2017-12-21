@@ -127,4 +127,11 @@
     <attr name="ic_list_tl" format="reference" />
     <attr name="ic_list_member" format="reference" />
 
+    <attr name="ic_download" format="reference" />
+    <attr name="ic_browser" format="reference" />
+    <attr name="ic_share" format="reference" />
+    <attr name="ic_copy" format="reference" />
+    <attr name="ic_left" format="reference" />
+    <attr name="ic_right" format="reference" />
+
 </resources>

@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.util;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
 
 import java.io.ByteArrayInputStream;
@@ -35,6 +36,7 @@ import android.os.Looper;
 import android.os.storage.StorageManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabsIntent;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
@@ -64,6 +66,11 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import it.sephiroth.android.library.exif2.ExifInterface;
+import jp.juggler.subwaytooter.ActMain;
+import jp.juggler.subwaytooter.App1;
+import jp.juggler.subwaytooter.Pref;
+import jp.juggler.subwaytooter.R;
+import jp.juggler.subwaytooter.Styler;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
@@ -874,7 +881,6 @@ public class Utils {
 		return sb.toString().replaceAll( "\n+", "\n" );
 	}
 	
-
 	
 	public interface ScanViewCallback {
 		void onScanView( View v );
@@ -1225,4 +1231,7 @@ public class Utils {
 		Bundle b = data.getExtras();
 		return b == null ? null : b.get( key );
 	}
+	
+
+
 }

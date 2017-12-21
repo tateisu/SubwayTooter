@@ -1825,28 +1825,8 @@ public class ActMain extends AppCompatActivity
 				}
 			}
 			
-			do{
-				if( pref.getBoolean( Pref.KEY_PRIOR_CHROME, true ) ){
-					try{
-						// 初回はChrome指定で試す
-						CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-						builder.setToolbarColor( Styler.getAttributeColor( this, R.attr.colorPrimary ) ).setShowTitle( true );
-						CustomTabsIntent customTabsIntent = builder.build();
-						customTabsIntent.intent.setComponent( new ComponentName( "com.android.chrome", "com.google.android.apps.chrome.Main" ) );
-						customTabsIntent.launchUrl( this, Uri.parse( url ) );
-						break;
-					}catch( Throwable ex2 ){
-						log.e( ex2, "openChromeTab: missing chrome. retry to other application." );
-					}
-				}
-				
-				// chromeがないなら ResolverActivity でアプリを選択させる
-				CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
-				builder.setToolbarColor( Styler.getAttributeColor( this, R.attr.colorPrimary ) ).setShowTitle( true );
-				CustomTabsIntent customTabsIntent = builder.build();
-				customTabsIntent.launchUrl( this, Uri.parse( url ) );
-				
-			}while( false );
+			App1.openCustomTab( this,url);
+			
 			
 		}catch( Throwable ex ){
 			// log.trace( ex );

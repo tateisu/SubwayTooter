@@ -106,6 +106,7 @@ public class ActAppSetting extends AppCompatActivity
 	Switch swShortAcctLocalUser;
 	Switch swDisableEmojiAnimation;
 	Switch swAllowNonSpaceBeforeEmojiShortcode;
+	Switch swUseInternalMediaViewer;
 	
 	Spinner spBackButtonAction;
 	Spinner spUITheme;
@@ -231,6 +232,8 @@ public class ActAppSetting extends AppCompatActivity
 		swAllowNonSpaceBeforeEmojiShortcode= findViewById( R.id.swAllowNonSpaceBeforeEmojiShortcode );
 		swAllowNonSpaceBeforeEmojiShortcode.setOnCheckedChangeListener( this );
 		
+		swUseInternalMediaViewer= findViewById( R.id.swUseInternalMediaViewer );
+		swUseInternalMediaViewer.setOnCheckedChangeListener( this );
 		
 		cbNotificationSound = findViewById( R.id.cbNotificationSound );
 		cbNotificationVibration = findViewById( R.id.cbNotificationVibration );
@@ -395,7 +398,7 @@ public class ActAppSetting extends AppCompatActivity
 		swShortAcctLocalUser.setChecked( pref.getBoolean( Pref.KEY_SHORT_ACCT_LOCAL_USER, false ) );
 		swDisableEmojiAnimation.setChecked( pref.getBoolean( Pref.KEY_DISABLE_EMOJI_ANIMATION, false ) );
 		swAllowNonSpaceBeforeEmojiShortcode.setChecked( pref.getBoolean( Pref.KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE, false ) );
-
+		swUseInternalMediaViewer.setChecked( pref.getBoolean( Pref.KEY_USE_INTERNAL_MEDIA_VIEWER, false ) );
 		// Switch with default true
 		swDisableFastScroller.setChecked( pref.getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
 		swPriorChrome.setChecked( pref.getBoolean( Pref.KEY_PRIOR_CHROME, true ) );
@@ -470,6 +473,7 @@ public class ActAppSetting extends AppCompatActivity
 			.putBoolean( Pref.KEY_SHORT_ACCT_LOCAL_USER, swShortAcctLocalUser.isChecked() )
 			.putBoolean( Pref.KEY_DISABLE_EMOJI_ANIMATION, swDisableEmojiAnimation.isChecked() )
 			.putBoolean( Pref.KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE, swAllowNonSpaceBeforeEmojiShortcode.isChecked() )
+			.putBoolean( Pref.KEY_USE_INTERNAL_MEDIA_VIEWER, swUseInternalMediaViewer.isChecked() )
 		
 			
 			.putBoolean( Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked() )

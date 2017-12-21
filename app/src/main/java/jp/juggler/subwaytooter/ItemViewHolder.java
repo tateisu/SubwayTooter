@@ -922,22 +922,14 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			
 			if( media_attachments == null ) return;
 			
-			TootAttachment a = media_attachments.get( i );
-			
-			String sv;
-			if( Pref.pref( activity ).getBoolean( Pref.KEY_PRIOR_LOCAL_URL, false ) ){
-				sv = a.url;
-				if( TextUtils.isEmpty( sv ) ){
-					sv = a.remote_url;
-				}
-			}else{
-				sv = a.remote_url;
-				if( TextUtils.isEmpty( sv ) ){
-					sv = a.url;
-				}
+			if( App1.pref.getBoolean( Pref. KEY_USE_INTERNAL_MEDIA_VIEWER,false) ){
+				ActMediaViewer.open( activity, media_attachments, i );
+				return;
 			}
-			int pos = activity.nextPosition( column );
-			activity.openChromeTab( pos, access_info, sv, false );
+			
+			TootAttachment a = media_attachments.get( i );
+			App1.openCustomTab( activity, a);
+		
 		}catch( Throwable ex ){
 			log.trace( ex );
 		}

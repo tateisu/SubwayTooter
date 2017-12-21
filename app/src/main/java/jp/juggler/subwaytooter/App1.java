@@ -3,12 +3,16 @@ package jp.juggler.subwaytooter;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.customtabs.CustomTabsIntent;
+import android.text.TextUtils;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.GlideBuilder;
@@ -26,6 +30,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
 import jp.juggler.subwaytooter.table.MutedApp;
@@ -220,7 +225,7 @@ public class App1 extends Application {
 	
 	public static OkHttpClient ok_http_client;
 	
-	private static OkHttpClient ok_http_client2;
+	public static OkHttpClient ok_http_client2;
 	
 	//	public static final boolean USE_OLD_EMOJIONE = false;
 	//	public static Typeface typeface_emoji;
@@ -490,4 +495,38 @@ public class App1 extends Application {
 		allow_non_space_before_emoji_shortcode = pref.getBoolean(  Pref.KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE,false );
 	}
 	
+	
+	// Chrome Custom Tab を開く
+	public static void openCustomTab( @NonNull Activity activity, @NonNull String url ){
+		try{
+			if( pref.getBoolean( Pref.KEY_PRIOR_CHROME, true ) ){
+				try{
+					// 初回はChrome指定で試す
+					CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+					builder.setToolbarColor( Styler.getAttributeColor( activity, R.attr.colorPrimary ) ).setShowTitle( true );
+					CustomTabsIntent customTabsIntent = builder.build();
+					customTabsIntent.intent.setComponent( new ComponentName( "com.android.chrome", "com.google.android.apps.chrome.Main" ) );
+					customTabsIntent.launchUrl( activity, Uri.parse( url ) );
+					return;
+				}catch( Throwable ex2 ){
+					log.e( ex2, "openChromeTab: missing chrome. retry to other application." );
+				}
+			}
+			
+			// chromeがないなら ResolverActivity でアプリを選択させる
+			CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+			builder.setToolbarColor( Styler.getAttributeColor( activity, R.attr.colorPrimary ) ).setShowTitle( true );
+			CustomTabsIntent customTabsIntent = builder.build();
+			customTabsIntent.launchUrl( activity, Uri.parse( url ) );
+		}catch(Throwable ex){
+			log.e( ex, "openCustomTab: failed." );
+		}
+	}
+	
+	public static void openCustomTab( @NonNull Activity activity, @NonNull TootAttachment ta){
+		String url = ta.getLargeUrl(pref);
+		if( url != null ){
+			openCustomTab( activity, url );
+		}
+	}
 }

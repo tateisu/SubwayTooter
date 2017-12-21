@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:id="@+id/flContent"
+        >
+        <jp.juggler.subwaytooter.view.PinchBitmapView
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:id="@+id/pbvImage"
+            />
+        <com.google.android.exoplayer2.ui.SimpleExoPlayerView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/exoView"
+            />
+        <TextView
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:id="@+id/tvError"
+            />
+
+    </FrameLayout>
+    <com.google.android.flexbox.FlexboxLayout
+
+        android:id="@+id/flFooter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:flexWrap="wrap"
+        app:alignContent="center"
+        >
+        <ImageButton
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:minWidth="48dp"
+            android:src="?attr/ic_left"
+            android:id="@+id/btnPrevious"
+            android:contentDescription="@string/previous"
+            />
+        <ImageButton
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:minWidth="48dp"
+            android:src="?attr/ic_right"
+            android:id="@+id/btnNext"
+            android:contentDescription="@string/next"
+            />
+
+        <ImageButton
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:minWidth="48dp"
+            android:src="?attr/ic_download"
+            android:id="@+id/btnDownload"
+            android:contentDescription="@string/download"
+            />
+
+        <ImageButton
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:minWidth="48dp"
+            android:src="?attr/btn_more"
+            android:id="@+id/btnMore"
+            android:contentDescription="@string/more"
+            />
+
+
+        <!--<ImageButton-->
+            <!--android:layout_width="48dp"-->
+            <!--android:layout_height="48dp"-->
+            <!--android:minWidth="48dp"-->
+            <!--android:src="?attr/ic_browser"-->
+            <!--android:id="@+id/btnBrowser"-->
+            <!--android:contentDescription="@string/browser"-->
+            <!--/>-->
+        <!--<ImageButton-->
+            <!--android:layout_width="48dp"-->
+            <!--android:layout_height="48dp"-->
+            <!--android:minWidth="48dp"-->
+            <!--android:src="?attr/ic_share"-->
+            <!--android:id="@+id/btnShare"-->
+            <!--android:contentDescription="@string/share"-->
+            <!--/>-->
+        <!--<ImageButton-->
+            <!--android:layout_width="48dp"-->
+            <!--android:layout_height="48dp"-->
+            <!--android:minWidth="48dp"-->
+            <!--android:src="?attr/ic_copy"-->
+            <!--android:id="@+id/btnCopy"-->
+            <!--android:contentDescription="@string/copy"-->
+            <!--/>-->
+
+    </com.google.android.flexbox.FlexboxLayout>
+</LinearLayout>

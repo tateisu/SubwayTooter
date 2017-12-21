@@ -204,6 +204,10 @@
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
             />
 
+        <activity
+            android:name=".ActMediaViewer"
+            />
+
         <meta-data
             android:name="android.max_aspect"
             android:value="100.0"
@@ -220,6 +224,14 @@
                 android:resource="@xml/file_provider_path"
                 />
         </provider>
+
+        <receiver android:name=".DownloadReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED" />
+                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
+            </intent-filter>
+        </receiver>
+
 
         <!-- okhttp3クライアントを指定する必要があるため、マニフェスト経由での組み込みは行わない -->
         <!--<meta-data-->

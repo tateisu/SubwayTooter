@@ -1,20 +1,24 @@
 package jp.juggler.subwaytooter.api.entity;
 
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import jp.juggler.subwaytooter.Pref;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
 public class TootAttachment {
 	
 	private static final LogCategory log = new LogCategory( "TootAttachment" );
-	
+
 	public static class List extends ArrayList< TootAttachment > {
 		
 	}
@@ -52,7 +56,7 @@ public class TootAttachment {
 		try{
 			TootAttachment dst = new TootAttachment();
 			dst.json = src;
-			dst.id = Utils.optLongX(src, "id" );
+			dst.id = Utils.optLongX( src, "id" );
 			dst.type = Utils.optStringX( src, "type" );
 			dst.url = Utils.optStringX( src, "url" );
 			dst.remote_url = Utils.optStringX( src, "remote_url" );
@@ -65,6 +69,18 @@ public class TootAttachment {
 			log.e( ex, "TootAttachment.parse failed." );
 			return null;
 		}
+	}
+	
+	@NonNull public JSONObject encodeJSON() throws JSONException{
+		JSONObject dst = new JSONObject();
+		dst.put( "id", Long.toString( id ) );
+		if( type != null ) dst.put( "type", type );
+		if( url != null ) dst.put( "url", url );
+		if( remote_url != null ) dst.put( "remote_url", remote_url );
+		if( preview_url != null ) dst.put( "preview_url", preview_url );
+		if( text_url != null ) dst.put( "text_url", text_url );
+		if( description != null ) dst.put( "description", description );
+		return dst;
 	}
 	
 	@NonNull public static List parseList( JSONArray array ){
@@ -80,6 +96,24 @@ public class TootAttachment {
 			}
 		}
 		return result;
+	}
+	
+	
+	
+	@Nullable public String getLargeUrl( SharedPreferences pref ){
+		String sv;
+		if( pref.getBoolean( Pref.KEY_PRIOR_LOCAL_URL, false ) ){
+			sv = this.url;
+			if( TextUtils.isEmpty( sv ) ){
+				sv = this.remote_url;
+			}
+		}else{
+			sv = this.remote_url;
+			if( TextUtils.isEmpty( sv ) ){
+				sv = this.url;
+			}
+		}
+		return sv;
 	}
 	
 }

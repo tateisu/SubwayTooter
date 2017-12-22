@@ -41,6 +41,7 @@ public class PinchBitmapView extends View {
 		// 定数をdpからpxに変換
 		float density = context.getResources().getDisplayMetrics().density;
 		swipe_velocity = 1000f * density;
+		swipe_velocity2 = 250f * density;
 		drag_width = 4f * density; // 誤反応しがちなのでやや厳しめ
 	}
 	
@@ -137,6 +138,7 @@ public class PinchBitmapView extends View {
 	
 	// ページめくりに必要なスワイプ強度
 	float swipe_velocity;
+	float swipe_velocity2;
 	
 	// 指を動かしたと判断する距離
 	float drag_width;
@@ -199,11 +201,13 @@ public class PinchBitmapView extends View {
 				float image_move_x = Math.abs( current_trans_x - start_image_trans_x );
 				float image_move_y = Math.abs( current_trans_y - start_image_trans_y );
 				
+				float draw_w = bitmap_w * current_scale;
+				
 				if( Math.abs( xv ) < Math.abs( yv ) / 8 ){
 					// 指を動かした方向の角度が左右ではなかった
 					log.d( "flick is vertical." );
 					
-				}else if( Math.abs( xv ) < swipe_velocity ){
+				}else if( Math.abs( xv ) < ( draw_w <= view_w ? swipe_velocity2 : swipe_velocity ) ){
 					// 左右方向の強さが足りなかった
 					log.d( "velocity %f not enough to paging", xv );
 					

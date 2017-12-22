@@ -10,8 +10,8 @@ android {
         applicationId "jp.juggler.subwaytooter"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 186
-        versionName "1.8.6"
+        versionCode 187
+        versionName "1.8.7"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
@@ -67,7 +67,6 @@ dependencies {
     compile 'com.google.firebase:firebase-messaging:11.6.2'
 
     testCompile 'junit:junit:4.12'
-    compile 'commons-io:commons-io:2.4' // 2.6にすると closeQuietly のかわりに try-with-resourceを使えと煩い
     compile 'uk.co.chrisjenx:calligraphy:2.3.0'
     compile 'com.github.woxthebox:draglistview:1.5.1'
     compile 'com.github.omadahealth:swipy:1.2.3@aar'
@@ -76,6 +75,9 @@ dependencies {
     compile project(':exif')
 
     compile 'com.squareup.okhttp3:okhttp:3.9.1'
+
+    // commons-io は 2.6にすると closeQuietly のかわりに try-with-resourceを使えと煩い
+    compile 'commons-io:commons-io:2.4'
 
     // com.github.bumptech.glide 4.x はサポートライブラリ27に依存してる
     // SDKのソースの27が提供されたら上げる

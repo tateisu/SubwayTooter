@@ -104,9 +104,11 @@ my $res_dir = "app/src/main/res";
 #resize_scales( "_ArtWork/ic_follow_wait.png"	,$res_dir,"drawable","ic_follow_wait",0,32);
 #resize_scales( "_ArtWork/ic_follow_wait_dark.png"	,$res_dir,"drawable","ic_follow_wait_dark",0,32);
 
-resize_scales( "_ArtWork/ic_list_list.png"	,$res_dir,"drawable","ic_list_list",0,32);
-resize_scales( "_ArtWork/ic_list_tl.png"	,$res_dir,"drawable","ic_list_tl",0,32);
-resize_scales( "_ArtWork/ic_list_member.png"	,$res_dir,"drawable","ic_list_member",0,32);
-resize_scales( "_ArtWork/ic_list_list_dark.png"	,$res_dir,"drawable","ic_list_list_dark",0,32);
-resize_scales( "_ArtWork/ic_list_tl_dark.png"	,$res_dir,"drawable","ic_list_tl_dark",0,32);
-resize_scales( "_ArtWork/ic_list_member_dark.png"	,$res_dir,"drawable","ic_list_member_dark",0,32);
+#resize_scales( "_ArtWork/ic_list_list.png"	,$res_dir,"drawable","ic_list_list",0,32);
+#resize_scales( "_ArtWork/ic_list_tl.png"	,$res_dir,"drawable","ic_list_tl",0,32);
+#resize_scales( "_ArtWork/ic_list_member.png"	,$res_dir,"drawable","ic_list_member",0,32);
+#resize_scales( "_ArtWork/ic_list_list_dark.png"	,$res_dir,"drawable","ic_list_list_dark",0,32);
+#resize_scales( "_ArtWork/ic_list_tl_dark.png"	,$res_dir,"drawable","ic_list_tl_dark",0,32);
+#resize_scales( "_ArtWork/ic_list_member_dark.png"	,$res_dir,"drawable","ic_list_member_dark",0,32);
+
+resize_scales( "_ArtWork/media_bg_dark.png"	,$res_dir,"drawable","media_bg_dark",0,24);

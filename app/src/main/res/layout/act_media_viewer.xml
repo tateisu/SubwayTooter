@@ -35,6 +35,7 @@
             android:id="@+id/pbvImage"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@drawable/media_background"
             />
 
         <com.google.android.exoplayer2.ui.SimpleExoPlayerView

@@ -78,7 +78,6 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		return new TootAttachment.List();
 	}
 	
-	
 	public static void open( @NonNull ActMain activity, @NonNull TootAttachment.List list, int idx ){
 		Intent intent = new Intent( activity, ActMediaViewer.class );
 		intent.putExtra( EXTRA_IDX, idx );
@@ -122,7 +121,7 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		exoPlayer.release();
 		exoPlayer = null;
 	}
-
+	
 	PinchBitmapView pbvImage;
 	View btnPrevious;
 	View btnNext;
@@ -165,48 +164,9 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		} );
 		
 		exoPlayer = ExoPlayerFactory.newSimpleInstance( this, new DefaultTrackSelector() );
-		
+		exoPlayer.addListener( player_listener );
+
 		exoView.setPlayer( exoPlayer );
-		
-		exoPlayer.addListener( new Player.EventListener() {
-			@Override public void onTimelineChanged( Timeline timeline, Object manifest ){
-				log.d( "exoPlayer onTimelineChanged" );
-			}
-			
-			@Override
-			public void onTracksChanged( TrackGroupArray trackGroups, TrackSelectionArray trackSelections ){
-				log.d( "exoPlayer onTracksChanged" );
-				
-			}
-			
-			@Override public void onLoadingChanged( boolean isLoading ){
-				log.d( "exoPlayer onLoadingChanged" );
-			}
-			
-			@Override public void onPlayerStateChanged( boolean playWhenReady, int playbackState ){
-				log.d( "exoPlayer onPlayerStateChanged %s %s", playWhenReady, playbackState );
-				
-			}
-			
-			@Override public void onRepeatModeChanged( int repeatMode ){
-				log.d( "exoPlayer onRepeatModeChanged %d", repeatMode );
-			}
-			
-			@Override public void onPlayerError( ExoPlaybackException error ){
-				log.d( "exoPlayer onPlayerError" );
-				Utils.showToast( ActMediaViewer.this, error, "player error." );
-			}
-			
-			@Override public void onPositionDiscontinuity(){
-				log.d( "exoPlayer onPositionDiscontinuity" );
-			}
-			
-			@Override
-			public void onPlaybackParametersChanged( PlaybackParameters playbackParameters ){
-				log.d( "exoPlayer onPlaybackParametersChanged" );
-				
-			}
-		} );
 	}
 	
 	void loadDelta( int delta ){
@@ -228,14 +188,14 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 			|| media_list.isEmpty()
 			|| idx < 0
 			|| idx >= media_list.size()
-		){
-			showError( getString(R.string.media_attachment_empty) );
+			){
+			showError( getString( R.string.media_attachment_empty ) );
 			return;
 		}
 		
 		TootAttachment ta = media_list.get( idx );
 		
-		if(!TextUtils.isEmpty( ta.description )){
+		if( ! TextUtils.isEmpty( ta.description ) ){
 			svDescription.setVisibility( View.VISIBLE );
 			tvDescription.setText( ta.description );
 		}
@@ -546,5 +506,49 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 			}
 		} );
 	}
+	
+	private final Player.EventListener player_listener = new Player.EventListener() {
+		@Override public void onTimelineChanged( Timeline timeline, Object manifest ){
+			log.d( "exoPlayer onTimelineChanged" );
+		}
+		
+		@Override
+		public void onTracksChanged( TrackGroupArray trackGroups, TrackSelectionArray trackSelections ){
+			log.d( "exoPlayer onTracksChanged" );
+			
+		}
+		
+		@Override public void onLoadingChanged( boolean isLoading ){
+			// かなり頻繁に呼ばれる
+			// log.d( "exoPlayer onLoadingChanged %s" ,isLoading );
+		}
+		
+		@Override public void onPlayerStateChanged( boolean playWhenReady, int playbackState ){
+			// かなり頻繁に呼ばれる
+			// log.d( "exoPlayer onPlayerStateChanged %s %s", playWhenReady, playbackState );
+			if( playWhenReady && playbackState == Player.STATE_BUFFERING ){
+				Utils.showToast( ActMediaViewer.this, false, R.string.video_buffering );
+			}
+		}
+		
+		@Override public void onRepeatModeChanged( int repeatMode ){
+			log.d( "exoPlayer onRepeatModeChanged %d", repeatMode );
+		}
+		
+		@Override public void onPlayerError( ExoPlaybackException error ){
+			log.d( "exoPlayer onPlayerError" );
+			Utils.showToast( ActMediaViewer.this, error, "player error." );
+		}
+		
+		@Override public void onPositionDiscontinuity(){
+			log.d( "exoPlayer onPositionDiscontinuity" );
+		}
+		
+		@Override
+		public void onPlaybackParametersChanged( PlaybackParameters playbackParameters ){
+			log.d( "exoPlayer onPlaybackParametersChanged" );
+			
+		}
+	};
 	
 }

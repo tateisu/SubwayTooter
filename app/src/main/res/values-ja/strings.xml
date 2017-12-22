@@ -870,5 +870,6 @@
     <string name="copy_url">URLをクリップボードにコピー</string>
     <string name="media_attachment_empty">添付メディアがありません</string>
     <string name="media_attachment_type_error">添付メディアの種類\"%1$s\"はこのアプリでは開けません。下の「…」にある「ブラウザで開く」を試すことができます</string>
+    <string name="video_buffering">バッファ中…</string>
 
 </resources>

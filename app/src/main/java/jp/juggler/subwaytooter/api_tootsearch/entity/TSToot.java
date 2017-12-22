@@ -57,12 +57,17 @@ public class TSToot extends TootStatusLike {
 		dst.uri = Utils.optStringX( src, "uri" );
 		dst.host_original = dst.account.getAcctHost();
 		dst.host_access = "?";
-		dst.id = - 1L; // Utils.optLongX( src, "id", - 1L );
 		
-		if( TextUtils.isEmpty( dst.url ) || TextUtils.isEmpty( dst.host_original ) ){
-			log.e( "missing status url or host or id" );
+		if( TextUtils.isEmpty( dst.uri )
+			|| TextUtils.isEmpty( dst.url )
+			|| TextUtils.isEmpty( dst.host_original )
+			){
+			log.e( "missing status uri or url or host or id" );
 			return null;
 		}
+
+		// uri から投稿元タンスでのIDを調べる
+		dst.id = TootStatusLike.parseStatusId( dst );
 		
 		dst.created_at = Utils.optStringX( src, "created_at" );
 		dst.time_created_at = TootStatus.parseTime( dst.created_at );
@@ -81,6 +86,8 @@ public class TSToot extends TootStatusLike {
 			.setProfileEmojis( dst.profile_emojis )
 			.setLinkTag( dst )
 			.decodeHTML( context, access_info, dst.content );
+		
+		
 		
 		return dst;
 	}

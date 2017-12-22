@@ -57,6 +57,8 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
 
+    compile project(':exif')
+    compile project(':colorpicker')
 
     compile 'com.android.support:support-v4:26.1.0'
     compile 'com.android.support:appcompat-v7:26.1.0'
@@ -70,9 +72,8 @@ dependencies {
     compile 'uk.co.chrisjenx:calligraphy:2.3.0'
     compile 'com.github.woxthebox:draglistview:1.5.1'
     compile 'com.github.omadahealth:swipy:1.2.3@aar'
-    compile 'com.jrummyapps:colorpicker:2.1.7'
+    // compile 'com.jrummyapps:colorpicker:2.1.7'
     compile 'com.github.kenglxn.QRGen:android:2.3.0'
-    compile project(':exif')
 
     compile 'com.squareup.okhttp3:okhttp:3.9.1'
 
@@ -95,7 +96,8 @@ dependencies {
     implementation 'com.google.android.exoplayer:exoplayer:r2.5.4'
 }
 
-apply plugin: 'com.google.gms.google-services'
 repositories {
     mavenCentral()
 }
+
+apply plugin: 'com.google.gms.google-services'

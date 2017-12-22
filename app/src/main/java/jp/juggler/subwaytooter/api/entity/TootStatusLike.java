@@ -86,7 +86,7 @@ public abstract class TootStatusLike extends TootId {
 	}
 	
 	public long getIdAccessOrOriginal(){
-		return id;
+		return id; // id != -1L ? id : parseStatusId();
 	}
 	
 	public String getBusyKey(){
@@ -130,6 +130,12 @@ public abstract class TootStatusLike extends TootId {
 	// ActivityPub 2
 	static final Pattern reTootUriAP2 = Pattern.compile( "https?://([^/]+)/@[A-Za-z0-9_]+/(\\d+)" );
 	
+	// 投稿元タンスでのステータスIDを調べる
+	public long parseStatusId(){
+		return TootStatusLike.parseStatusId(this);
+	}
+	
+	// 投稿元タンスでのステータスIDを調べる
 	public static long parseStatusId( @NonNull TootStatusLike status ){
 		
 		String uri;

@@ -1,1 +1,1 @@
-include ':app', ':exif'
+include ':app', ':exif', ':colorpicker'

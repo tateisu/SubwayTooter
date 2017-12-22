@@ -5,6 +5,7 @@
 
         <item name="android:windowBackground">@drawable/window_background_light</item>
 
+        <item name="android:navigationBarColor">@color/Light_colorColumnStripBackground</item>
 
         <item name="colorPrimary">@color/Light_colorPrimary</item>
         <item name="colorPrimaryDark">@color/Light_colorPrimaryDark</item>
@@ -104,8 +105,6 @@
         <item name="ic_copy">@drawable/ic_copy</item>
         <item name="ic_left">@drawable/ic_left</item>
         <item name="ic_right">@drawable/ic_right</item>
-
-
     </style>
 
     <style name="AppTheme.Light.NoActionBar" parent="AppTheme.Light">
@@ -116,6 +115,8 @@
     <!-- dark theme -->
     <style name="AppTheme.Dark" parent="Theme.AppCompat">
         <item name="android:windowBackground">@drawable/window_background_dark</item>
+
+        <item name="android:navigationBarColor">@color/Dark_colorColumnStripBackground</item>
 
         <item name="colorPrimary">@color/Dark_colorPrimary</item>
         <item name="colorPrimaryDark">@color/Dark_colorPrimaryDark</item>

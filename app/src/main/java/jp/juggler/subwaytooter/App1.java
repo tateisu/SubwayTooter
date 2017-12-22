@@ -400,10 +400,16 @@ public class App1 extends Application {
 	}
 	
 	public static void setActivityTheme( @NonNull Activity activity, boolean bNoActionBar ){
+		setActivityTheme( activity, bNoActionBar ,false);
+	}
+	public static void setActivityTheme( @NonNull Activity activity, boolean bNoActionBar ,boolean forceDark){
 		
 		prepare( activity.getApplicationContext() );
 		
 		int theme_idx = pref.getInt( Pref.KEY_UI_THEME, 0 );
+		
+		if( forceDark ) theme_idx =1;
+		
 		switch( theme_idx ){
 		
 		default:

@@ -58,53 +58,30 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 	
 	static final LogCategory log = new LogCategory( "ActMediaViewer" );
 	
+	static final String EXTRA_IDX = "idx";
+	static final String EXTRA_DATA = "data";
+	
 	static String encodeMediaList( @Nullable TootAttachment.List list ){
-		JSONArray a = new JSONArray();
-		if( list != null ){
-			for( TootAttachment ta : list ){
-				try{
-					JSONObject item = ta.encodeJSON();
-					a.put( item );
-				}catch( JSONException ex ){
-					log.e( ex, "encode failed." );
-				}
-			}
-		}
-		return a.toString();
+		if( list == null ) return "[]";
+		return list.encode().toString();
 	}
 	
 	static TootAttachment.List decodeMediaList( @Nullable String src ){
-		TootAttachment.List dst_list = new TootAttachment.List();
-		if( src != null ){
-			try{
-				JSONArray a = new JSONArray( src );
-				for( int i = 0, ie = a.length() ; i < ie ; ++ i ){
-					JSONObject obj = a.optJSONObject( i );
-					TootAttachment ta = TootAttachment.parse( obj );
-					if( ta != null ) dst_list.add( ta );
-				}
-			}catch( Throwable ex ){
-				log.e( ex, "decodeMediaList failed." );
+		try{
+			if( src != null ){
+				return TootAttachment.parseList( new JSONArray( src ) );
 			}
+		}catch( Throwable ex ){
+			log.trace( ex );
+			log.e( ex, "decodeMediaList failed." );
 		}
-		return dst_list;
+		return new TootAttachment.List();
 	}
 	
-	static final String EXTRA_IDX = "idx";
-	static final String EXTRA_DATA = "data";
 	
 	public static void open( @NonNull ActMain activity, @NonNull TootAttachment.List list, int idx ){
 		Intent intent = new Intent( activity, ActMediaViewer.class );
 		intent.putExtra( EXTRA_IDX, idx );
-		JSONArray a = new JSONArray();
-		for( TootAttachment ta : list ){
-			try{
-				JSONObject item = ta.encodeJSON();
-				a.put( item );
-			}catch( JSONException ex ){
-				log.e( ex, "encode failed." );
-			}
-		}
 		intent.putExtra( EXTRA_DATA, encodeMediaList( list ) );
 		activity.startActivity( intent );
 	}
@@ -120,7 +97,7 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 	
 	@Override protected void onCreate( @Nullable Bundle savedInstanceState ){
 		super.onCreate( savedInstanceState );
-		App1.setActivityTheme( this, true );
+		App1.setActivityTheme( this, true, true );
 		requestWindowFeature( Window.FEATURE_NO_TITLE );
 		
 		if( savedInstanceState == null ){
@@ -145,13 +122,15 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		exoPlayer.release();
 		exoPlayer = null;
 	}
-	
+
 	PinchBitmapView pbvImage;
 	View btnPrevious;
 	View btnNext;
 	TextView tvError;
 	SimpleExoPlayer exoPlayer;
 	SimpleExoPlayerView exoView;
+	View svDescription;
+	TextView tvDescription;
 	
 	void initUI(){
 		setContentView( R.layout.act_media_viewer );
@@ -159,8 +138,9 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		btnPrevious = findViewById( R.id.btnPrevious );
 		btnNext = findViewById( R.id.btnNext );
 		exoView = findViewById( R.id.exoView );
-		
 		tvError = findViewById( R.id.tvError );
+		svDescription = findViewById( R.id.svDescription );
+		tvDescription = findViewById( R.id.tvDescription );
 		
 		boolean enablePaging = media_list.size() > 1;
 		btnPrevious.setEnabled( enablePaging );
@@ -184,51 +164,50 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 			}
 		} );
 		
-		exoPlayer = ExoPlayerFactory.newSimpleInstance( this, new DefaultTrackSelector());
-
+		exoPlayer = ExoPlayerFactory.newSimpleInstance( this, new DefaultTrackSelector() );
+		
 		exoView.setPlayer( exoPlayer );
-
+		
 		exoPlayer.addListener( new Player.EventListener() {
 			@Override public void onTimelineChanged( Timeline timeline, Object manifest ){
-				log.d("exoPlayer onTimelineChanged");
+				log.d( "exoPlayer onTimelineChanged" );
 			}
 			
 			@Override
 			public void onTracksChanged( TrackGroupArray trackGroups, TrackSelectionArray trackSelections ){
-				log.d("exoPlayer onTracksChanged");
+				log.d( "exoPlayer onTracksChanged" );
 				
 			}
 			
 			@Override public void onLoadingChanged( boolean isLoading ){
-				log.d("exoPlayer onLoadingChanged");
+				log.d( "exoPlayer onLoadingChanged" );
 			}
 			
 			@Override public void onPlayerStateChanged( boolean playWhenReady, int playbackState ){
-				log.d("exoPlayer onPlayerStateChanged %s %s",playWhenReady,playbackState);
+				log.d( "exoPlayer onPlayerStateChanged %s %s", playWhenReady, playbackState );
 				
 			}
 			
 			@Override public void onRepeatModeChanged( int repeatMode ){
-				log.d("exoPlayer onRepeatModeChanged %d",repeatMode);
+				log.d( "exoPlayer onRepeatModeChanged %d", repeatMode );
 			}
 			
 			@Override public void onPlayerError( ExoPlaybackException error ){
-				log.d("exoPlayer onPlayerError");
-				Utils.showToast( ActMediaViewer.this,error,"player error." );
+				log.d( "exoPlayer onPlayerError" );
+				Utils.showToast( ActMediaViewer.this, error, "player error." );
 			}
 			
 			@Override public void onPositionDiscontinuity(){
-				log.d("exoPlayer onPositionDiscontinuity");
+				log.d( "exoPlayer onPositionDiscontinuity" );
 			}
 			
 			@Override
 			public void onPlaybackParametersChanged( PlaybackParameters playbackParameters ){
-				log.d("exoPlayer onPlaybackParametersChanged");
+				log.d( "exoPlayer onPlaybackParametersChanged" );
 				
 			}
 		} );
 	}
-	
 	
 	void loadDelta( int delta ){
 		if( media_list.size() < 2 ) return;
@@ -237,61 +216,65 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		load();
 	}
 	
-	
 	void load(){
 		
 		exoPlayer.stop();
-
-		if( media_list.isEmpty() ){
-			pbvImage.setVisibility( View.GONE );
-			exoView.setVisibility( View.GONE );
-			tvError.setVisibility( View.VISIBLE );
-			tvError.setText( R.string.media_attachment_empty );
+		pbvImage.setVisibility( View.GONE );
+		exoView.setVisibility( View.GONE );
+		tvError.setVisibility( View.GONE );
+		svDescription.setVisibility( View.GONE );
+		
+		if( media_list == null
+			|| media_list.isEmpty()
+			|| idx < 0
+			|| idx >= media_list.size()
+		){
+			showError( getString(R.string.media_attachment_empty) );
 			return;
 		}
-
+		
 		TootAttachment ta = media_list.get( idx );
 		
-		// TODO ta.description をどこかに表示する
-
-		if( TootAttachment.TYPE_IMAGE.equals( ta.type )){
-			loadBitmap(ta);
+		if(!TextUtils.isEmpty( ta.description )){
+			svDescription.setVisibility( View.VISIBLE );
+			tvDescription.setText( ta.description );
+		}
+		
+		if( TootAttachment.TYPE_IMAGE.equals( ta.type ) ){
+			loadBitmap( ta );
 		}else if( TootAttachment.TYPE_VIDEO.equals( ta.type ) || TootAttachment.TYPE_GIFV.equals( ta.type ) ){
-			pbvImage.setVisibility( View.GONE );
-			loadVideo(ta);
+			loadVideo( ta );
 		}else{
 			// maybe TYPE_UNKNOWN
-			showError(  getString( R.string.media_attachment_type_error, ta.type )  );
+			showError( getString( R.string.media_attachment_type_error, ta.type ) );
 		}
 	}
 	
-	void showError(@NonNull String message){
+	void showError( @NonNull String message ){
 		exoView.setVisibility( View.GONE );
 		pbvImage.setVisibility( View.GONE );
 		tvError.setVisibility( View.VISIBLE );
 		tvError.setText( message );
-
+		
 	}
 	
 	@SuppressLint("StaticFieldLeak")
-	void loadVideo(TootAttachment ta){
+	void loadVideo( TootAttachment ta ){
 		
 		final String url = ta.getLargeUrl( App1.pref );
 		if( url == null ){
-			showError( "missing media attachment url.");
+			showError( "missing media attachment url." );
 			return;
 		}
 		
-		tvError.setVisibility( View.GONE );
-		pbvImage.setVisibility( View.GONE );
 		exoView.setVisibility( View.VISIBLE );
 		
-		DefaultBandwidthMeter defaultBandwidthMeter =new DefaultBandwidthMeter();
+		DefaultBandwidthMeter defaultBandwidthMeter = new DefaultBandwidthMeter();
 		ExtractorsFactory extractorsFactory = new DefaultExtractorsFactory();
 		
 		DataSource.Factory dataSourceFactory = new DefaultDataSourceFactory(
 			this
-			, Util.getUserAgent(this, getString(R.string.app_name))
+			, Util.getUserAgent( this, getString( R.string.app_name ) )
 			, defaultBandwidthMeter
 		);
 		
@@ -300,13 +283,13 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 			, extractorsFactory
 			, App1.getAppState( this ).handler
 			, new ExtractorMediaSource.EventListener() {
-				@Override public void onLoadError( IOException error ){
-					showError( Utils.formatError( error,"load error." ));
-				}
+			@Override public void onLoadError( IOException error ){
+				showError( Utils.formatError( error, "load error." ) );
 			}
+		}
 		);
-		exoPlayer.prepare(mediaSource);
-		exoPlayer.setPlayWhenReady( true);
+		exoPlayer.prepare( mediaSource );
+		exoPlayer.setPlayWhenReady( true );
 		if( TootAttachment.TYPE_GIFV.equals( ta.type ) ){
 			exoPlayer.setRepeatMode( Player.REPEAT_MODE_ALL );
 		}else{
@@ -314,17 +297,15 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 			
 		}
 	}
-
+	
 	@SuppressLint("StaticFieldLeak")
-	void loadBitmap(TootAttachment ta){
+	void loadBitmap( TootAttachment ta ){
 		final String url = ta.getLargeUrl( App1.pref );
 		if( url == null ){
-			showError( "missing media attachment url.");
+			showError( "missing media attachment url." );
 			return;
 		}
 		
-		tvError.setVisibility( View.GONE );
-		exoView.setVisibility( View.GONE );
 		pbvImage.setVisibility( View.VISIBLE );
 		pbvImage.setBitmap( null );
 		
@@ -333,7 +314,6 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 			private final BitmapFactory.Options options = new BitmapFactory.Options();
 			
 			private Bitmap decodeBitmap( byte[] data, @SuppressWarnings("SameParameterValue") int pixel_max ){
-				publishApiProgress( "image decoding.." );
 				options.inJustDecodeBounds = true;
 				options.inScaled = false;
 				options.outWidth = 0;
@@ -391,6 +371,7 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 			@Override protected TootApiResult doInBackground( Void... voids ){
 				TootApiResult result = getHttpCached( url );
 				if( data == null ) return result;
+				publishApiProgress( "image decoding.." );
 				this.bitmap = decodeBitmap( data, 2048 );
 				if( bitmap == null ) return new TootApiResult( "image decode failed." );
 				return result;
@@ -406,7 +387,6 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		}.executeOnExecutor( App1.task_executor );
 		
 	}
-	
 	
 	@Override public void onClick( View v ){
 		try{

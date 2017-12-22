@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.VelocityTracker;
@@ -16,10 +18,6 @@ import jp.juggler.subwaytooter.util.Utils;
 public class PinchBitmapView extends View {
 	
 	static final LogCategory log = new LogCategory( "PinchImageView" );
-	
-	public interface Callback {
-		void onSwipe( int delta );
-	}
 	
 	public PinchBitmapView( Context context ){
 		this( context, null );
@@ -36,68 +34,49 @@ public class PinchBitmapView extends View {
 		init( context );
 	}
 	
-	@Override public boolean onTouchEvent( MotionEvent ev ){
-		return handleTouchEvent( ev );
+	void init( Context context ){
+		
+		paint.setFilterBitmap( true );
+		
+		// 定数をdpからpxに変換
+		float density = context.getResources().getDisplayMetrics().density;
+		swipe_velocity = 1000f * density;
+		drag_width = 4f * density; // 誤反応しがちなのでやや厳しめ
 	}
 	
-	private Bitmap bitmap;
+	// ページめくり操作のコールバック
+	public interface Callback {
+		void onSwipe( int delta );
+	}
 	
-	private final Matrix matrix = new Matrix();
-	private final Paint paint = new Paint();
+	@Nullable Callback callback;
 	
-	float swipe_velocity;
-	
-	Callback callback;
-	
-	public void setCallback( Callback callback ){
+	public void setCallback( @Nullable Callback callback ){
 		this.callback = callback;
 	}
 	
-	private void init( Context context ){
-		paint.setFilterBitmap( true );
-		swipe_velocity = 100f * context.getResources().getDisplayMetrics().density;
-	}
+	@Nullable Bitmap bitmap;
+	float bitmap_w;
+	float bitmap_h;
+	float bitmap_aspect;
 	
-	@Override protected void onSizeChanged( int w, int h, int oldw, int oldh ){
-		super.onSizeChanged( w, h, oldw, oldh );
-		initializeScale();
-	}
-	
-	public void setBitmap( Bitmap b ){
+	public void setBitmap( @Nullable Bitmap b ){
 		if( bitmap != null ){
 			bitmap.recycle();
 		}
+		
 		this.bitmap = b;
 		initializeScale();
 	}
 	
-	void initializeScale(){
-		if( bitmap != null && ! bitmap.isRecycled() ){
-			this.bitmap_w = bitmap.getWidth();
-			this.bitmap_h = bitmap.getHeight();
-			if( bitmap_w < 1f ) bitmap_w = 1f;
-			if( bitmap_h < 1f ) bitmap_h = 1f;
-			view_w = this.getWidth();
-			view_h = this.getHeight();
-			if( view_w < 1f ) view_w = 1f;
-			if( view_h < 1f ) view_h = 1f;
-			
-			this.bitmap_aspect = bitmap_w / bitmap_h;
-			this.view_aspect = view_w / view_h;
-			if( view_aspect > bitmap_aspect ){
-				current_scale = view_h / bitmap_h;
-			}else{
-				current_scale = view_w / bitmap_w;
-			}
-			
-			float draw_w = bitmap_w * current_scale;
-			float draw_h = bitmap_h * current_scale;
-			
-			current_trans_x = ( view_w - draw_w ) / 2f;
-			current_trans_y = ( view_h - draw_h ) / 2f;
-		}
-		invalidate();
-	}
+	// 画像を表示する位置と拡大率
+	float current_trans_x;
+	float current_trans_y;
+	float current_scale;
+	
+	// 画像表示に使う構造体
+	final Matrix matrix = new Matrix();
+	final Paint paint = new Paint();
 	
 	@Override protected void onDraw( Canvas canvas ){
 		super.onDraw( canvas );
@@ -110,34 +89,91 @@ public class PinchBitmapView extends View {
 		}
 	}
 	
-	boolean handleTouchEvent( MotionEvent ev ){
-		if( bitmap == null || bitmap.isRecycled() ) return false;
-		
-		if( velocityTracker != null ){
-			velocityTracker.addMovement( ev );
+	@Override protected void onSizeChanged( int w, int h, int oldw, int oldh ){
+		super.onSizeChanged( w, h, oldw, oldh );
+		initializeScale();
+	}
+	
+	@Override public boolean performClick(){
+		super.performClick();
+		initializeScale();
+		return true;
+	}
+	
+	// ビットマップを変更した時とビューのサイズが変わった時と画像をクリックした時に呼ばれる
+	// 表示位置を再計算して再描画
+	void initializeScale(){
+		if( bitmap != null && ! bitmap.isRecycled() ){
+			
+			bitmap_w = Math.max( 1f, bitmap.getWidth() );
+			bitmap_h = Math.max( 1f, bitmap.getHeight() );
+			bitmap_aspect = bitmap_w / bitmap_h;
+			
+			view_w = Math.max( 1f, this.getWidth() );
+			view_h = Math.max( 1f, this.getHeight() );
+			view_aspect = view_w / view_h;
+			
+			if( view_aspect > bitmap_aspect ){
+				current_scale = view_h / bitmap_h;
+			}else{
+				current_scale = view_w / bitmap_w;
+			}
+			
+			float draw_w = bitmap_w * current_scale;
+			float draw_h = bitmap_h * current_scale;
+			
+			current_trans_x = ( view_w - draw_w ) / 2f;
+			current_trans_y = ( view_h - draw_h ) / 2f;
 		}
+		
+		invalidate();
+	}
+	
+	// タッチ操作中に指を動かした
+	boolean bDrag;
+	
+	// タッチ操作中に指の数を変えた
+	boolean bPointerCountChanged;
+	
+	// ページめくりに必要なスワイプ強度
+	float swipe_velocity;
+	
+	// 指を動かしたと判断する距離
+	float drag_width;
+	
+	// フリック操作の検出に使う
+	@Nullable VelocityTracker velocityTracker;
+	
+	@Override public boolean onTouchEvent( MotionEvent ev ){
+		
+		if( bitmap == null || bitmap.isRecycled() ) return false;
 		
 		int action = ev.getAction();
 		
-		switch( action ){
-		
-		case MotionEvent.ACTION_DOWN:
-			
+		if( action == MotionEvent.ACTION_DOWN ){
 			if( velocityTracker != null ){
 				velocityTracker.recycle();
 				velocityTracker = null;
 			}
 			
 			velocityTracker = VelocityTracker.obtain();
+			velocityTracker.addMovement( ev );
 			
-			bDrag = false;
-			bImageMoved = false;
+			bDrag = bPointerCountChanged = false;
 			startTracking( ev );
-			break;
+			return true;
+		}
 		
+		if( velocityTracker != null ){
+			velocityTracker.addMovement( ev );
+		}
+		
+		switch( action ){
 		case MotionEvent.ACTION_POINTER_DOWN:
 		case MotionEvent.ACTION_POINTER_UP:
+			// タッチ操作中に指の数を変えた
 			bDrag = true;
+			bPointerCountChanged = true;
 			startTracking( ev );
 			break;
 		
@@ -147,181 +183,186 @@ public class PinchBitmapView extends View {
 		
 		case MotionEvent.ACTION_UP:
 			nextTracking( ev );
+			
 			if( ! bDrag ){
+				// 指を動かしていないならクリック操作だったのだろう
 				
 				performClick();
-			}else if( ! bImageMoved ){
+				
+			}else if( ! bPointerCountChanged ){
+				// 指の数を変えていないならページめくり操作かもしれない
 				
 				velocityTracker.computeCurrentVelocity( 1000 );
-				float xv = velocityTracker.getXVelocity();
-				log.d( "velocity %f", xv );
-				if( xv >= swipe_velocity ){
+				final float xv = velocityTracker.getXVelocity();
+				float yv = velocityTracker.getYVelocity();
+				
+				float image_move_x = Math.abs( current_trans_x - start_image_trans_x );
+				float image_move_y = Math.abs( current_trans_y - start_image_trans_y );
+				
+				if( Math.abs( xv ) < Math.abs( yv ) / 8 ){
+					// 指を動かした方向の角度が左右ではなかった
+					log.d( "flick is vertical." );
+					
+				}else if( Math.abs( xv ) < swipe_velocity ){
+					// 左右方向の強さが足りなかった
+					log.d( "velocity %f not enough to paging", xv );
+					
+				}else if( image_move_x >= drag_width
+					|| image_move_y >= drag_width * 5f
+					){
+					// 「画像を動かした」かどうかの最終チェック
+					log.d( "image was moved. not paging action. %f %f "
+						, image_move_x / drag_width
+						, image_move_y / drag_width
+					);
+				}else{
+					log.d( "paging! %f %f %f"
+						, image_move_x / drag_width
+						, image_move_y / drag_width
+						,xv
+					);
+					
 					Utils.runOnMainThread( new Runnable() {
 						@Override public void run(){
-							if( callback != null ) callback.onSwipe( - 1 );
-						}
-					} );
-				}else if( xv <= - swipe_velocity ){
-					Utils.runOnMainThread( new Runnable() {
-						@Override public void run(){
-							if( callback != null ) callback.onSwipe( 1 );
+							if( callback != null ) callback.onSwipe( xv >= 0f ? - 1 : 1 );
 						}
 					} );
 				}
-				
 			}
 			
 			if( velocityTracker != null ){
 				velocityTracker.recycle();
 				velocityTracker = null;
 			}
+			
 			break;
 		}
 		return true;
 	}
 	
-	float touch_start_x;
-	float touch_start_y;
-	float touch_start_radius;
-	float touch_start_trans_x;
-	float touch_start_trans_y;
-	float touch_start_scale;
-	float view_aspect;
-	float bitmap_aspect;
-	float scale_min;
-	float scale_max;
-	float view_w;
-	float view_h;
-	float bitmap_w;
-	float bitmap_h;
-	
-	float current_scale;
-	float current_trans_x;
-	float current_trans_y;
-	boolean bDrag;
-	boolean bImageMoved = false;
-	
-	float drag_width;
-	
-	int last_pointer_count;
-	
-	final PointerAvg pos = new PointerAvg();
-	
-	VelocityTracker velocityTracker;
-	
+	// マルチタッチの中心位置の計算
 	static class PointerAvg {
-		float avg_x;
-		float avg_y;
-		float max_radius;
+		
+		// タッチ位置の数
 		int count;
 		
+		// タッチ位置の平均
+		final float[] avg = new float[ 2 ];
+		
+		// 中心と、中心から最も離れたタッチ位置の間の距離
+		float max_radius;
+		
 		void update( MotionEvent ev ){
+			
 			count = ev.getPointerCount();
 			if( count <= 1 ){
-				avg_x = ev.getX();
-				avg_y = ev.getY();
+				avg[ 0 ] = ev.getX();
+				avg[ 1 ] = ev.getY();
 				max_radius = 0f;
+				
 			}else{
-				avg_x = 0f;
-				avg_y = 0f;
+				avg[ 0 ] = 0f;
+				avg[ 1 ] = 0f;
 				for( int i = 0 ; i < count ; ++ i ){
-					avg_x += ev.getX( i );
-					avg_y += ev.getY( i );
+					avg[ 0 ] += ev.getX( i );
+					avg[ 1 ] += ev.getY( i );
 				}
-				avg_x /= count;
-				avg_y /= count;
+				avg[ 0 ] /= count;
+				avg[ 1 ] /= count;
 				max_radius = 0f;
 				for( int i = 0 ; i < count ; ++ i ){
-					float dx = ev.getX( i ) - avg_x;
-					float dy = ev.getY( i ) - avg_y;
-					float delta = dx * dx + dy * dy;
-					if( delta > max_radius ) max_radius = delta;
+					float dx = ev.getX( i ) - avg[ 0 ];
+					float dy = ev.getY( i ) - avg[ 1 ];
+					float radius = dx * dx + dy * dy;
+					if( radius > max_radius ) max_radius = radius;
 				}
 				max_radius = (float) Math.sqrt( max_radius );
-				if( max_radius < 0.5f ) max_radius = 0.5f;
+				if( max_radius < 1f ) max_radius = 1f;
 			}
 		}
 	}
 	
+	// 移動後の指の位置
+	final PointerAvg pos = new PointerAvg();
+	
+	// 移動開始時の指の位置
+	final PointerAvg start_pos = new PointerAvg();
+	
+	// 移動開始時の画像の位置
+	float start_image_trans_x;
+	float start_image_trans_y;
+	float start_image_scale;
+	
+	float scale_min;
+	float scale_max;
+	
+	float view_w;
+	float view_h;
+	float view_aspect;
+	
 	void startTracking( MotionEvent ev ){
+		start_pos.update( ev );
 		pos.update( ev );
-		last_pointer_count = pos.count;
-		touch_start_x = pos.avg_x;
-		touch_start_y = pos.avg_y;
-		touch_start_radius = pos.max_radius;
-		touch_start_trans_x = current_trans_x;
-		touch_start_trans_y = current_trans_y;
-		touch_start_scale = current_scale;
+		start_image_trans_x = current_trans_x;
+		start_image_trans_y = current_trans_y;
+		start_image_scale = current_scale;
 		
-		view_w = this.getWidth();
-		view_h = this.getHeight();
-		if( view_w < 1f ) view_w = 1f;
-		if( view_h < 1f ) view_h = 1f;
+		view_w = Math.max( 1f, this.getWidth() );
+		view_h = Math.max( 1f, this.getHeight() );
 		view_aspect = view_w / view_h;
 		
 		if( view_aspect > bitmap_aspect ){
-			// ビューの方が横長、画像の方が縦長
-			// 縦方向のサイズを使って最小スケールを決める
-			scale_min = view_h / bitmap_h / 2;
-			// ビューの方が横長、画像の方が縦長
-			// 横方向のサイズを使って最大スケールを決める
-			scale_max = view_w / bitmap_w * 8;
+			scale_min = view_h / bitmap_h / 2f;
+			scale_max = view_w / bitmap_w * 8f;
 		}else{
-			scale_min = view_w / bitmap_w / 2;
-			scale_max = view_h / bitmap_h * 8;
+			scale_min = view_w / bitmap_w / 2f;
+			scale_max = view_h / bitmap_h * 8f;
 		}
-		if( scale_max < scale_min ) scale_max = scale_min * 4;
-		
-		drag_width = getResources().getDisplayMetrics().density * 8f;
+		if( scale_max < scale_min ) scale_max = scale_min * 16f;
 	}
 	
 	final Matrix tracking_matrix = new Matrix();
 	final Matrix tracking_matrix_inv = new Matrix();
-	final float[] points_dst = new float[ 2 ];
-	final float[] points_src = new float[ 2 ];
+	final float[] avg_on_image1 = new float[ 2 ];
+	final float[] avg_on_image2 = new float[ 2 ];
+	
+	// 画面上の指の位置から画像中の指の位置を調べる
+	void getCoordinateOnImage( @NonNull float[] dst, @NonNull float[] src ){
+		tracking_matrix.reset();
+		tracking_matrix.postScale( current_scale, current_scale );
+		tracking_matrix.postTranslate( current_trans_x, current_trans_y );
+		tracking_matrix.invert( tracking_matrix_inv );
+		tracking_matrix_inv.mapPoints( dst, src );
+	}
 	
 	void nextTracking( MotionEvent ev ){
 		pos.update( ev );
 		
-		if( pos.count != last_pointer_count ){
+		if( pos.count != start_pos.count ){
+			// タッチ操作中に指の数が変わった
 			log.d( "nextTracking: pointer count changed" );
+			bDrag = bPointerCountChanged = true;
 			startTracking( ev );
 			return;
 		}
 		
+		// ズーム操作
 		if( pos.count > 1 ){
-			// pos.avg_x,y が画像の座標空間でどこに位置するか調べる
-			tracking_matrix.reset();
-			tracking_matrix.postScale( current_scale, current_scale );
-			tracking_matrix.postTranslate( current_trans_x, current_trans_y );
-			tracking_matrix.invert( tracking_matrix_inv );
-			points_src[ 0 ] = pos.avg_x;
-			points_src[ 1 ] = pos.avg_y;
-			tracking_matrix_inv.mapPoints( points_dst, points_src );
-			float avg_on_image_x = points_dst[ 0 ];
-			float avg_on_image_y = points_dst[ 1 ];
 			
-			// update scale
-			float new_scale = touch_start_scale * pos.max_radius / touch_start_radius;
+			// タッチ位置にある絵柄の座標を調べる
+			getCoordinateOnImage( avg_on_image1, pos.avg );
+			
+			// ズーム率を変更する
+			float new_scale = start_image_scale * pos.max_radius / start_pos.max_radius;
 			new_scale = new_scale < scale_min ? scale_min : new_scale > scale_max ? scale_max : new_scale;
 			current_scale = new_scale;
 			
-			// pos.avg_x,y が画像の座標空間でどこに位置するか再び調べる
-			tracking_matrix.reset();
-			tracking_matrix.postScale( current_scale, current_scale );
-			tracking_matrix.postTranslate( current_trans_x, current_trans_y );
-			tracking_matrix.invert( tracking_matrix_inv );
-			points_src[ 0 ] = pos.avg_x;
-			points_src[ 1 ] = pos.avg_y;
-			tracking_matrix_inv.mapPoints( points_dst, points_src );
-			float avg_on_image_x2 = points_dst[ 0 ];
-			float avg_on_image_y2 = points_dst[ 1 ];
+			// 再び調べる
+			getCoordinateOnImage( avg_on_image2, pos.avg );
 			
-			// ズレた分 * scaleだけ移動させるとスケール変更時にタッチ中心がスクロールしないのではないか
-			float delta_x = avg_on_image_x2 - avg_on_image_x;
-			float delta_y = avg_on_image_y2 - avg_on_image_y;
-			touch_start_trans_x += current_scale * delta_x;
-			touch_start_trans_y += current_scale * delta_y;
+			// ズーム変更の前後で位置がズレた分だけ移動させると、タッチ位置にある絵柄がズレない
+			start_image_trans_x += current_scale * ( avg_on_image2[ 0 ] - avg_on_image1[ 0 ] );
+			start_image_trans_y += current_scale * ( avg_on_image2[ 1 ] - avg_on_image1[ 1 ] );
 			
 			invalidate();
 		}
@@ -329,16 +370,19 @@ public class PinchBitmapView extends View {
 		// 平行移動
 		{
 			// start時から指を動かした量
-			float move_x = pos.avg_x - touch_start_x;
-			float move_y = pos.avg_y - touch_start_y;
+			float move_x = pos.avg[ 0 ] - start_pos.avg[ 0 ];
+			float move_y = pos.avg[ 1 ] - start_pos.avg[ 1 ];
 			
-			if( Math.abs( move_x ) >= drag_width || Math.abs( move_y ) >= drag_width ){
+			// 「指を動かした」と判断したらフラグを立てる
+			if( Math.abs( move_x ) >= drag_width
+				|| Math.abs( move_y ) >= drag_width
+				){
 				bDrag = true;
 			}
 			
 			// 画像の移動量
-			float trans_x = touch_start_trans_x + move_x;
-			float trans_y = touch_start_trans_y + move_y;
+			float trans_x = start_image_trans_x + move_x;
+			float trans_y = start_image_trans_y + move_y;
 			
 			// 画像サイズとビューサイズを使って移動可能範囲をクリッピング
 			float draw_w = bitmap_w * current_scale;
@@ -358,20 +402,11 @@ public class PinchBitmapView extends View {
 				trans_y = trans_y >= 0f ? 0f : trans_y < - remain ? - remain : trans_y;
 			}
 			
-			if( current_trans_x != trans_x || current_trans_y != trans_y ){
-				bImageMoved = true;
-			}
-			
-			// TODO trans_x,trans_y を画像の移動量に反映させる
+			// 画像の表示位置を変更して再描画
 			current_trans_x = trans_x;
 			current_trans_y = trans_y;
 			invalidate();
 		}
-	}
-	
-	@Override public boolean performClick(){
-		initializeScale();
-		return true;
 	}
 	
 }

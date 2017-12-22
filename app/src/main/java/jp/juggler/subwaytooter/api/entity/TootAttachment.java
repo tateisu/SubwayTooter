@@ -19,10 +19,6 @@ public class TootAttachment {
 	
 	private static final LogCategory log = new LogCategory( "TootAttachment" );
 
-	public static class List extends ArrayList< TootAttachment > {
-		
-	}
-	
 	//	ID of the attachment
 	public long id;
 	
@@ -81,6 +77,22 @@ public class TootAttachment {
 		if( text_url != null ) dst.put( "text_url", text_url );
 		if( description != null ) dst.put( "description", description );
 		return dst;
+	}
+	
+	public static class List extends ArrayList< TootAttachment > {
+		
+		@NonNull public JSONArray encode(){
+			JSONArray a = new JSONArray();
+			for( TootAttachment ta : this ){
+				try{
+					JSONObject item = ta.encodeJSON();
+					a.put( item );
+				}catch( JSONException ex ){
+					log.e( ex, "encode failed." );
+				}
+			}
+			return a;
+		}
 	}
 	
 	@NonNull public static List parseList( JSONArray array ){

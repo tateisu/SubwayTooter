@@ -114,3 +114,4 @@ my $res_dir = "app/src/main/res";
 #resize_scales( "_ArtWork/media_bg_dark.png"	,$res_dir,"drawable","media_bg_dark",0,24);
 
 resize_scales( "_ArtWork/v0.5.1/ic_launcher_foreground.png"		,$res_dir,"mipmap","ic_launcher_foreground",0,108);
+resize_scales( "_ArtWork/v0.5.1/ic_launcher_background.png"		,$res_dir,"mipmap","ic_launcher_background",0,108);

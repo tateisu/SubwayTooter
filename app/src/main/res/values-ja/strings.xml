@@ -871,5 +871,6 @@
     <string name="media_attachment_empty">添付メディアがありません</string>
     <string name="media_attachment_type_error">添付メディアの種類\"%1$s\"はこのアプリでは開けません。下の「…」にある「ブラウザで開く」を試すことができます</string>
     <string name="video_buffering">バッファ中…</string>
+    <string name="dont_repeat_download_to_same_url">同じURLを数秒以内に繰り返しダウンロードすることはできません</string>
 
 </resources>

@@ -1,18 +1,24 @@
 package jp.juggler.subwaytooter;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.content.ClipData;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.View;
@@ -39,10 +45,11 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
 import com.google.android.exoplayer2.util.Util;
 
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.TootApiTask;
@@ -381,25 +388,84 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		}
 	}
 	
+	static class DownloadHistory{
+		final long time;
+		@NonNull final String url;
+		DownloadHistory(long time,@NonNull String url){
+			this.time = time;
+			this.url = url;
+		}
+	}
+	static final LinkedList<DownloadHistory> download_history_list = new LinkedList<>(  );
+	static final long DOWNLOAD_REPEAT_EXPIRE = 3000L;
+	
 	void download( @NonNull TootAttachment ta ){
 		
-		String url = ta.getLargeUrl( App1.pref );
-		if( url == null ) return;
+		int permissionCheck = ContextCompat.checkSelfPermission( this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE );
+		if( permissionCheck != PackageManager.PERMISSION_GRANTED ){
+			preparePermission();
+			return;
+		}
 		
 		DownloadManager downLoadManager = (DownloadManager) getSystemService( DOWNLOAD_SERVICE );
 		if( downLoadManager == null ){
 			Utils.showToast( this, false, "download manager is not on your device." );
 			return;
 		}
+
+		String url = ta.getLargeUrl( App1.pref );
+		if( url == null ) return;
 		
-		String fname = url.replaceFirst( "https?://", "" ).replaceAll( "[^.\\w\\d_-]+", "-" );
-		if( fname.length() >= 20 ) fname = fname.substring( fname.length() - 20 );
+		// ボタン連打対策
+		{
+			long now = SystemClock.elapsedRealtime();
+			
+			// 期限切れの履歴を削除
+			Iterator< DownloadHistory > it = download_history_list.iterator();
+			while( it.hasNext() ){
+				DownloadHistory dh = it.next();
+				if( now - dh.time >= DOWNLOAD_REPEAT_EXPIRE ){
+					// この履歴は十分に古いので捨てる
+					it.remove();
+				}else if( url.equals( dh.url ) ){
+					// 履歴に同じURLがあればエラーとする
+					Utils.showToast( this, false, R.string.dont_repeat_download_to_same_url );
+					return;
+				}
+			}
+			// 履歴の末尾に追加(履歴は古い順に並ぶ)
+			download_history_list.addLast( new DownloadHistory( now, url ) );
+		}
+		
+		String fileName =null;
+
+		try{
+			List<String> pathSegments = Uri.parse( url ).getPathSegments();
+			if( pathSegments != null ){
+				int size = pathSegments.size();
+				for( int i= size-1;i>=0;--i){
+					String s = pathSegments.get(i);
+					if( !TextUtils.isEmpty( s )){
+						fileName = s;
+						break;
+					}
+				}
+			}
+		}catch(Throwable ex){
+			log.trace( ex );
+		}
+
+		if( fileName == null ){
+			fileName = url
+				.replaceFirst( "https?://", "" )
+				.replaceAll( "[^.\\w\\d]+", "-" );
+		}
+		if( fileName.length() >= 20 ) fileName = fileName.substring( fileName.length() - 20 );
 		
 		DownloadManager.Request request = new DownloadManager.Request( Uri.parse( url ) );
-		request.setDestinationInExternalPublicDir( Environment.DIRECTORY_DOWNLOADS, fname );
-		request.setTitle( fname );
+		request.setDestinationInExternalPublicDir( Environment.DIRECTORY_DOWNLOADS, fileName );
+		request.setTitle( fileName );
 		request.setAllowedNetworkTypes( DownloadManager.Request.NETWORK_MOBILE | DownloadManager.Request.NETWORK_WIFI );
-		
 		//メディアスキャンを許可する
 		request.allowScanningByMediaScanner();
 		
@@ -551,4 +617,40 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		}
 	};
 	
+	private static final int PERMISSION_REQUEST_CODE = 1;
+	
+	private void preparePermission(){
+		if( Build.VERSION.SDK_INT >= 23 ){
+			ActivityCompat.requestPermissions( this
+				, new String[]{
+					Manifest.permission.WRITE_EXTERNAL_STORAGE,
+				}
+				, PERMISSION_REQUEST_CODE
+			);
+		}else{
+			Utils.showToast( this, true, R.string.missing_permission_to_access_media );
+		}
+	}
+	
+	@Override public void onRequestPermissionsResult(
+		int requestCode
+		, @NonNull String permissions[]
+		, @NonNull int[] grantResults
+	){
+		switch( requestCode ){
+		case PERMISSION_REQUEST_CODE:
+			boolean bNotGranted = false;
+			for( int i = 0, ie = permissions.length ; i < ie ; ++ i ){
+				if( grantResults[ i ] != PackageManager.PERMISSION_GRANTED ){
+					bNotGranted = true;
+				}
+			}
+			if( bNotGranted ){
+				Utils.showToast( this, true, R.string.missing_permission_to_access_media );
+			}else{
+				download( media_list.get( idx ) );
+			}
+			break;
+		}
+	}
 }

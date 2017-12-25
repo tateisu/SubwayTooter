@@ -63,7 +63,7 @@ public class CustomEmojiCache {
 		}
 	}
 	
-	final ConcurrentHashMap< String, CacheItem > cache = new ConcurrentHashMap<>();
+	@NonNull final ConcurrentHashMap< String, CacheItem > cache = new ConcurrentHashMap<>();
 	
 	////////////////////////////////
 	// リクエスト
@@ -110,16 +110,22 @@ public class CustomEmojiCache {
 			long now = getNow();
 			
 			// 成功キャッシュ
-			CacheItem item = cache.get( url );
-			if( item != null ){
-				item.time_used = now;
-				return item.frames;
-			}
-			
-			// エラーキャッシュ
-			Long time_error = cache_error.get( url );
-			if( time_error != null && now < time_error + ERROR_EXPIRE ){
-				return null;
+			try{
+				CacheItem item = cache.get( url );
+				if( item != null ){
+					item.time_used = now;
+					return item.frames;
+				}
+				
+				// エラーキャッシュ
+				Long time_error = cache_error.get( url );
+				if( time_error != null && now < time_error + ERROR_EXPIRE ){
+					return null;
+				}
+			}catch(Throwable ex){
+				// NullPointerException at java.util.concurrent.ConcurrentHashMap.get (ConcurrentHashMap.java:915)
+				
+				log.trace(ex);
 			}
 		}
 		synchronized( queue ){

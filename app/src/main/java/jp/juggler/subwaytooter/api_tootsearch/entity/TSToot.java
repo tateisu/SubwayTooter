@@ -101,12 +101,16 @@ public class TSToot extends TootStatusLike {
 		JSONArray array = TSClient.getHits( root );
 		if( array != null ){
 			for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
-				JSONObject src = array.optJSONObject( i );
-				if( src == null ) continue;
-				JSONObject src2 = src.optJSONObject( "_source" );
-				TSToot item = parse( context, access_info, src2 );
-				if( item == null ) continue;
-				list.add( item );
+				try{
+					JSONObject src = array.optJSONObject( i );
+					if( src == null ) continue;
+					JSONObject src2 = src.optJSONObject( "_source" );
+					TSToot item = parse( context, access_info, src2 );
+					if( item == null ) continue;
+					list.add( item );
+				}catch(Throwable ex){
+					log.trace(ex);
+				}
 			}
 		}
 		return list;

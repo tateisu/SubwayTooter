@@ -190,7 +190,7 @@ public class CustomEmojiCache {
 					// java.lang.NullPointerException:
 					// at java.util.concurrent.ConcurrentHashMap.get (ConcurrentHashMap.java:772)
 					// at jp.juggler.subwaytooter.util.CustomEmojiCache$Worker.run (CustomEmojiCache.java:183)
-					waitEx( 1000L );
+					waitEx( 3000L );
 					continue;
 				}
 				

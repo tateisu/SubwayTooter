@@ -20,6 +20,7 @@ import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory;
 import com.bumptech.glide.load.model.GlideUrl;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
@@ -46,12 +47,14 @@ import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.CustomEmojiCache;
 import jp.juggler.subwaytooter.util.CustomEmojiLister;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.ProgressResponseBody;
 import jp.juggler.subwaytooter.util.Utils;
 import okhttp3.Cache;
 import okhttp3.CacheControl;
 import okhttp3.Call;
 import okhttp3.CipherSuite;
 import okhttp3.ConnectionSpec;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
@@ -107,8 +110,7 @@ public class App1 extends Application {
 			super( context, DB_NAME, null, DB_VERSION );
 		}
 		
-		@Override
-		public void onCreate( SQLiteDatabase db ){
+		@Override public void onCreate( SQLiteDatabase db ){
 			LogData.onDBCreate( db );
 			//
 			SavedAccount.onDBCreate( db );
@@ -125,8 +127,7 @@ public class App1 extends Application {
 			TagSet.onDBCreate( db );
 		}
 		
-		@Override
-		public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ){
+		@Override public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ){
 			LogData.onDBUpgrade( db, oldVersion, newVersion );
 			//
 			SavedAccount.onDBUpgrade( db, oldVersion, newVersion );
@@ -217,7 +218,8 @@ public class App1 extends Application {
 			.readTimeout( 60, TimeUnit.SECONDS )
 			.writeTimeout( 60, TimeUnit.SECONDS )
 			.pingInterval( 10, TimeUnit.SECONDS )
-			.connectionSpecs( spec_list );
+			.connectionSpecs( spec_list )
+			.addInterceptor( ProgressResponseBody.makeInterceptor() );
 		
 		return builder;
 	}
@@ -237,7 +239,7 @@ public class App1 extends Application {
 	
 	@SuppressLint("StaticFieldLeak")
 	public static CustomEmojiCache custom_emoji_cache;
-
+	
 	@SuppressLint("StaticFieldLeak")
 	public static CustomEmojiLister custom_emoji_lister;
 	
@@ -400,15 +402,16 @@ public class App1 extends Application {
 	}
 	
 	public static void setActivityTheme( @NonNull Activity activity, boolean bNoActionBar ){
-		setActivityTheme( activity, bNoActionBar ,false);
+		setActivityTheme( activity, bNoActionBar, false );
 	}
-	public static void setActivityTheme( @NonNull Activity activity, boolean bNoActionBar ,boolean forceDark){
+	
+	public static void setActivityTheme( @NonNull Activity activity, boolean bNoActionBar, boolean forceDark ){
 		
 		prepare( activity.getApplicationContext() );
 		
 		int theme_idx = pref.getInt( Pref.KEY_UI_THEME, 0 );
 		
-		if( forceDark ) theme_idx =1;
+		if( forceDark ) theme_idx = 1;
 		
 		switch( theme_idx ){
 		
@@ -490,16 +493,14 @@ public class App1 extends Application {
 		}
 	}
 	
-	
-	
 	// Activity開始時に設定を読み直す
 	public static boolean disable_emoji_animation;
 	public static boolean allow_non_space_before_emoji_shortcode;
-	private static void reloadConfig(){
-		disable_emoji_animation = pref.getBoolean( Pref.KEY_DISABLE_EMOJI_ANIMATION,false );
-		allow_non_space_before_emoji_shortcode = pref.getBoolean(  Pref.KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE,false );
-	}
 	
+	private static void reloadConfig(){
+		disable_emoji_animation = pref.getBoolean( Pref.KEY_DISABLE_EMOJI_ANIMATION, false );
+		allow_non_space_before_emoji_shortcode = pref.getBoolean( Pref.KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE, false );
+	}
 	
 	// Chrome Custom Tab を開く
 	public static void openCustomTab( @NonNull Activity activity, @NonNull String url ){
@@ -523,13 +524,13 @@ public class App1 extends Application {
 			builder.setToolbarColor( Styler.getAttributeColor( activity, R.attr.colorPrimary ) ).setShowTitle( true );
 			CustomTabsIntent customTabsIntent = builder.build();
 			customTabsIntent.launchUrl( activity, Uri.parse( url ) );
-		}catch(Throwable ex){
+		}catch( Throwable ex ){
 			log.e( ex, "openCustomTab: failed." );
 		}
 	}
 	
-	public static void openCustomTab( @NonNull Activity activity, @NonNull TootAttachment ta){
-		String url = ta.getLargeUrl(pref);
+	public static void openCustomTab( @NonNull Activity activity, @NonNull TootAttachment ta ){
+		String url = ta.getLargeUrl( pref );
 		if( url != null ){
 			openCustomTab( activity, url );
 		}

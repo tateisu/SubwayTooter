@@ -22,21 +22,43 @@ public abstract class TootApiTask extends AsyncTask< Void, Void, TootApiResult >
 	
 	@NonNull protected final TootApiClient client;
 	
-	protected TootApiTask( Activity _activity, SavedAccount access_info, boolean bShowProgress ){
+	@SuppressWarnings("WeakerAccess") public static final int PROGRESS_NONE = - 1;
+	@SuppressWarnings("WeakerAccess") public static final int PROGRESS_SPINNER = ProgressDialog.STYLE_SPINNER;
+	@SuppressWarnings("WeakerAccess") public static final int PROGRESS_HORIZONTAL = ProgressDialog.STYLE_HORIZONTAL;
+	
+	@SuppressWarnings("WeakerAccess")
+	public TootApiTask( Activity _activity, SavedAccount access_info, boolean bShowProgress ){
+		this( _activity, access_info, bShowProgress ? PROGRESS_SPINNER : PROGRESS_NONE );
+	}
+	
+	@SuppressWarnings("WeakerAccess")
+	public TootApiTask( Activity _activity, SavedAccount access_info, int progress_style ){
 		this.client = new TootApiClient( _activity, this );
 		client.setAccount( access_info );
-		if( bShowProgress ) showProgress( _activity );
+		showProgress( _activity, progress_style );
 	}
 	
-	protected TootApiTask( Activity _activity, String instance, boolean bShowProgress ){
+	@SuppressWarnings("WeakerAccess")
+	public TootApiTask( Activity _activity, String instance, boolean bShowProgress ){
+		this( _activity, instance, bShowProgress ? PROGRESS_SPINNER : PROGRESS_NONE );
+	}
+	
+	@SuppressWarnings("WeakerAccess")
+	public TootApiTask( Activity _activity, String instance, int progress_style ){
 		this.client = new TootApiClient( _activity, this );
 		client.setInstance( instance );
-		if( bShowProgress ) showProgress( _activity );
+		showProgress( _activity, progress_style );
 	}
 	
-	protected TootApiTask( Activity _activity, boolean bShowProgress ){
+	@SuppressWarnings("WeakerAccess")
+	public TootApiTask( Activity _activity, boolean bShowProgress ){
+		this( _activity, bShowProgress ? PROGRESS_SPINNER : PROGRESS_NONE );
+	}
+	
+	@SuppressWarnings("WeakerAccess")
+	public TootApiTask( Activity _activity, int progress_style ){
 		this.client = new TootApiClient( _activity, this );
-		if( bShowProgress ) showProgress( _activity );
+		showProgress( _activity, progress_style );
 	}
 	
 	public TootApiTask setProgressPrefix( String s ){
@@ -54,11 +76,24 @@ public abstract class TootApiTask extends AsyncTask< Void, Void, TootApiResult >
 		if( progress != null ){
 			Utils.runOnMainThread( new Runnable() {
 				@Override public void run(){
+					progress.setIndeterminate( true );
 					if( ! TextUtils.isEmpty( progress_prefix ) ){
 						progress.setMessage( progress_prefix + "\n" + s );
 					}else{
 						progress.setMessage( s );
 					}
+				}
+			} );
+		}
+	}
+	
+	public void publishApiProgressRatio( final int value, final int max ){
+		if( progress != null ){
+			Utils.runOnMainThread( new Runnable() {
+				@Override public void run(){
+					progress.setIndeterminate( false );
+					progress.setProgress( value );
+					progress.setMax( max );
 				}
 			} );
 		}
@@ -84,13 +119,21 @@ public abstract class TootApiTask extends AsyncTask< Void, Void, TootApiResult >
 	private ProgressDialog progress;
 	private String progress_prefix;
 	
-	private void showProgress( Activity activity ){
+	private void showProgress( Activity activity, int progressStyle ){
+		
+		if( progressStyle == PROGRESS_NONE ) return;
+		
 		//noinspection deprecation
 		this.progress = new ProgressDialog( activity );
-		progress.setIndeterminate( true );
 		progress.setCancelable( true );
+		progress.setProgressStyle( progressStyle );
+		progress.setIndeterminate( true );
+		progress.setMax( 1 );
 		if( ! TextUtils.isEmpty( progress_prefix ) ){
 			progress.setMessage( progress_prefix );
+		}else{
+			// HORIZONTALスタイルの場合、初期メッセージがないと後からメッセージを指定しても表示されない
+			progress.setMessage( " " );
 		}
 		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
 			@Override

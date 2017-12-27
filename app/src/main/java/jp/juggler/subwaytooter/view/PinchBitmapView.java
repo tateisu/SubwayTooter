@@ -92,6 +92,11 @@ public class PinchBitmapView extends View {
 	
 	@Override protected void onSizeChanged( int w, int h, int oldw, int oldh ){
 		super.onSizeChanged( w, h, oldw, oldh );
+		
+		view_w = Math.max( 1f, w );
+		view_h = Math.max( 1f, h );
+		view_aspect = view_w / view_h;
+		
 		initializeScale();
 	}
 	
@@ -101,18 +106,14 @@ public class PinchBitmapView extends View {
 		return true;
 	}
 	
-	// ビットマップを変更した時とビューのサイズが変わった時と画像をクリックした時に呼ばれる
-	// 表示位置を再計算して再描画
+	// 表示位置の初期化
+	// 呼ばれるのは、ビットマップを変更した時、ビューのサイズが変わった時、画像をクリックした時
 	void initializeScale(){
-		if( bitmap != null && ! bitmap.isRecycled() ){
+		if( bitmap != null && ! bitmap.isRecycled() && view_w >= 1f ){
 			
 			bitmap_w = Math.max( 1f, bitmap.getWidth() );
 			bitmap_h = Math.max( 1f, bitmap.getHeight() );
 			bitmap_aspect = bitmap_w / bitmap_h;
-			
-			view_w = Math.max( 1f, this.getWidth() );
-			view_h = Math.max( 1f, this.getHeight() );
-			view_aspect = view_w / view_h;
 			
 			if( view_aspect > bitmap_aspect ){
 				current_scale = view_h / bitmap_h;
@@ -127,6 +128,7 @@ public class PinchBitmapView extends View {
 			current_trans_y = ( view_h - draw_h ) / 2f;
 		}
 		
+		// 画像がnullに変化した時も再描画が必要
 		invalidate();
 	}
 	
@@ -148,17 +150,20 @@ public class PinchBitmapView extends View {
 	
 	@Override public boolean onTouchEvent( MotionEvent ev ){
 		
-		if( bitmap == null || bitmap.isRecycled() ) return false;
+		if( bitmap == null
+			|| bitmap.isRecycled()
+			|| view_w < 1f
+			) return false;
 		
 		int action = ev.getAction();
 		
 		if( action == MotionEvent.ACTION_DOWN ){
 			if( velocityTracker != null ){
-				velocityTracker.recycle();
-				velocityTracker = null;
+				velocityTracker.clear();
+			}else{
+				velocityTracker = VelocityTracker.obtain();
 			}
 			
-			velocityTracker = VelocityTracker.obtain();
 			velocityTracker.addMovement( ev );
 			
 			bDrag = bPointerCountChanged = false;
@@ -174,8 +179,7 @@ public class PinchBitmapView extends View {
 		case MotionEvent.ACTION_POINTER_DOWN:
 		case MotionEvent.ACTION_POINTER_UP:
 			// タッチ操作中に指の数を変えた
-			bDrag = true;
-			bPointerCountChanged = true;
+			bDrag = bPointerCountChanged = true;
 			startTracking( ev );
 			break;
 		
@@ -186,53 +190,7 @@ public class PinchBitmapView extends View {
 		case MotionEvent.ACTION_UP:
 			nextTracking( ev );
 			
-			if( ! bDrag ){
-				// 指を動かしていないならクリック操作だったのだろう
-				
-				performClick();
-				
-			}else if( ! bPointerCountChanged ){
-				// 指の数を変えていないならページめくり操作かもしれない
-				
-				velocityTracker.computeCurrentVelocity( 1000 );
-				final float xv = velocityTracker.getXVelocity();
-				float yv = velocityTracker.getYVelocity();
-				
-				float image_move_x = Math.abs( current_trans_x - start_image_trans_x );
-				float image_move_y = Math.abs( current_trans_y - start_image_trans_y );
-				
-				float draw_w = bitmap_w * current_scale;
-				
-				if( Math.abs( xv ) < Math.abs( yv ) / 8 ){
-					// 指を動かした方向の角度が左右ではなかった
-					log.d( "flick is vertical." );
-					
-				}else if( Math.abs( xv ) < ( draw_w <= view_w ? swipe_velocity2 : swipe_velocity ) ){
-					// 左右方向の強さが足りなかった
-					log.d( "velocity %f not enough to paging", xv );
-					
-				}else if( image_move_x >= drag_width
-					|| image_move_y >= drag_width * 5f
-					){
-					// 「画像を動かした」かどうかの最終チェック
-					log.d( "image was moved. not paging action. %f %f "
-						, image_move_x / drag_width
-						, image_move_y / drag_width
-					);
-				}else{
-					log.d( "paging! %f %f %f"
-						, image_move_x / drag_width
-						, image_move_y / drag_width
-						,xv
-					);
-					
-					Utils.runOnMainThread( new Runnable() {
-						@Override public void run(){
-							if( callback != null ) callback.onSwipe( xv >= 0f ? - 1 : 1 );
-						}
-					} );
-				}
-			}
+			checkClickOrPaging();
 			
 			if( velocityTracker != null ){
 				velocityTracker.recycle();
@@ -242,6 +200,57 @@ public class PinchBitmapView extends View {
 			break;
 		}
 		return true;
+	}
+	
+	void checkClickOrPaging(){
+		if( ! bDrag ){
+			
+			// 指を動かしていないならクリック操作だったのだろう
+			performClick();
+			
+		}else if( ! bPointerCountChanged && velocityTracker != null ){
+			
+			// 指の数を変えていないならページめくり操作かもしれない
+			
+			velocityTracker.computeCurrentVelocity( 1000 );
+			final float xv = velocityTracker.getXVelocity();
+			final float yv = velocityTracker.getYVelocity();
+			
+			float image_move_x = Math.abs( current_trans_x - start_image_trans_x );
+			float image_move_y = Math.abs( current_trans_y - start_image_trans_y );
+			
+			float draw_w = bitmap_w * current_scale;
+			
+			if( Math.abs( xv ) < Math.abs( yv ) / 8 ){
+				// 指を動かした方向の角度が左右ではなかった
+				log.d( "flick is vertical." );
+				
+			}else if( Math.abs( xv ) < ( draw_w <= view_w ? swipe_velocity2 : swipe_velocity ) ){
+				// 左右方向の強さが足りなかった
+				log.d( "velocity %f not enough to paging", xv );
+				
+			}else if( image_move_x >= drag_width
+				|| image_move_y >= drag_width * 5f
+				){
+				// 「画像を動かした」かどうかの最終チェック
+				log.d( "image was moved. not paging action. %f %f "
+					, image_move_x / drag_width
+					, image_move_y / drag_width
+				);
+			}else{
+				log.d( "paging! %f %f %f"
+					, image_move_x / drag_width
+					, image_move_y / drag_width
+					, xv
+				);
+				
+				Utils.runOnMainThread( new Runnable() {
+					@Override public void run(){
+						if( callback != null ) callback.onSwipe( xv >= 0f ? - 1 : 1 );
+					}
+				} );
+			}
+		}
 	}
 	
 	// マルチタッチの中心位置の計算
@@ -305,15 +314,14 @@ public class PinchBitmapView extends View {
 	float view_aspect;
 	
 	void startTracking( MotionEvent ev ){
+		
+		// 追跡開始時の指の位置
 		start_pos.update( ev );
-		pos.update( ev );
+		
+		// 追跡開始時の画像の位置
 		start_image_trans_x = current_trans_x;
 		start_image_trans_y = current_trans_y;
 		start_image_scale = current_scale;
-		
-		view_w = Math.max( 1f, this.getWidth() );
-		view_h = Math.max( 1f, this.getHeight() );
-		view_aspect = view_w / view_h;
 		
 		if( view_aspect > bitmap_aspect ){
 			scale_min = view_h / bitmap_h / 2f;
@@ -325,13 +333,13 @@ public class PinchBitmapView extends View {
 		if( scale_max < scale_min ) scale_max = scale_min * 16f;
 	}
 	
-	final Matrix tracking_matrix = new Matrix();
-	final Matrix tracking_matrix_inv = new Matrix();
-	final float[] avg_on_image1 = new float[ 2 ];
-	final float[] avg_on_image2 = new float[ 2 ];
+	private final Matrix tracking_matrix = new Matrix();
+	private final Matrix tracking_matrix_inv = new Matrix();
+	private final float[] avg_on_image1 = new float[ 2 ];
+	private final float[] avg_on_image2 = new float[ 2 ];
 	
 	// 画面上の指の位置から画像中の指の位置を調べる
-	void getCoordinateOnImage( @NonNull float[] dst, @NonNull float[] src ){
+	private void getCoordinateOnImage( @NonNull float[] dst, @NonNull float[] src ){
 		tracking_matrix.reset();
 		tracking_matrix.postScale( current_scale, current_scale );
 		tracking_matrix.postTranslate( current_trans_x, current_trans_y );
@@ -357,9 +365,7 @@ public class PinchBitmapView extends View {
 			getCoordinateOnImage( avg_on_image1, pos.avg );
 			
 			// ズーム率を変更する
-			float new_scale = start_image_scale * pos.max_radius / start_pos.max_radius;
-			new_scale = new_scale < scale_min ? scale_min : new_scale > scale_max ? scale_max : new_scale;
-			current_scale = new_scale;
+			current_scale = clip( scale_min, scale_max, start_image_scale * pos.max_radius / start_pos.max_radius );
 			
 			// 再び調べる
 			getCoordinateOnImage( avg_on_image2, pos.avg );
@@ -368,7 +374,6 @@ public class PinchBitmapView extends View {
 			start_image_trans_x += current_scale * ( avg_on_image2[ 0 ] - avg_on_image1[ 0 ] );
 			start_image_trans_y += current_scale * ( avg_on_image2[ 1 ] - avg_on_image1[ 1 ] );
 			
-			invalidate();
 		}
 		
 		// 平行移動
@@ -384,33 +389,32 @@ public class PinchBitmapView extends View {
 				bDrag = true;
 			}
 			
-			// 画像の移動量
-			float trans_x = start_image_trans_x + move_x;
-			float trans_y = start_image_trans_y + move_y;
-			
-			// 画像サイズとビューサイズを使って移動可能範囲をクリッピング
-			float draw_w = bitmap_w * current_scale;
-			float draw_h = bitmap_h * current_scale;
-			if( draw_w <= view_w ){
-				float remain = view_w - draw_w;
-				trans_x = remain / 2f;
-			}else{
-				float remain = draw_w - view_w;
-				trans_x = trans_x >= 0f ? 0f : trans_x < - remain ? - remain : trans_x;
-			}
-			if( draw_h <= view_h ){
-				float remain = view_h - draw_h;
-				trans_y = remain / 2f;
-			}else{
-				float remain = draw_h - view_h;
-				trans_y = trans_y >= 0f ? 0f : trans_y < - remain ? - remain : trans_y;
-			}
-			
-			// 画像の表示位置を変更して再描画
-			current_trans_x = trans_x;
-			current_trans_y = trans_y;
-			invalidate();
+			// 画像の表示位置を更新
+			current_trans_x = clipTranslate( view_w, bitmap_w, current_scale, start_image_trans_x + move_x );
+			current_trans_y = clipTranslate( view_h, bitmap_h, current_scale, start_image_trans_y + move_y );
 		}
+		
+		invalidate();
+	}
+	
+	// 数値を範囲内にクリップする
+	private static float clip( float min, float max, float v ){
+		return v < min ? min : v > max ? max : v;
+	}
+	
+	// ビューの幅と画像の描画サイズを元に描画位置をクリップする
+	private static float clipTranslate(
+		float view_w // ビューの幅
+		, float bitmap_w // 画像の幅
+		, float current_scale // 画像の拡大率
+		, float trans_x // タッチ操作による表示位置
+	){
+		
+		// 余白(拡大率が小さい場合はプラス、拡大率が大きい場合はマイナス)
+		float padding = view_w - bitmap_w * current_scale;
+		
+		// 余白が>=0なら画像を中心に表示する。 <0なら操作された位置をクリップする。
+		return padding >= 0f ? padding / 2f : clip( padding, 0f, trans_x );
 	}
 	
 }

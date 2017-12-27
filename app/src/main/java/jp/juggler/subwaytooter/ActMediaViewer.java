@@ -56,10 +56,12 @@ import jp.juggler.subwaytooter.api.TootApiTask;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.dialog.ActionsDialog;
 import jp.juggler.subwaytooter.util.LogCategory;
+import jp.juggler.subwaytooter.util.ProgressResponseBody;
 import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.view.PinchBitmapView;
 import okhttp3.Call;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class ActMediaViewer extends AppCompatActivity implements View.OnClickListener {
 	
@@ -172,7 +174,7 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		
 		exoPlayer = ExoPlayerFactory.newSimpleInstance( this, new DefaultTrackSelector() );
 		exoPlayer.addListener( player_listener );
-
+		
 		exoView.setPlayer( exoPlayer );
 	}
 	
@@ -276,7 +278,7 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		pbvImage.setVisibility( View.VISIBLE );
 		pbvImage.setBitmap( null );
 		
-		new TootApiTask( this, true ) {
+		new TootApiTask( this, TootApiTask.PROGRESS_HORIZONTAL ) {
 			
 			private final BitmapFactory.Options options = new BitmapFactory.Options();
 			
@@ -325,7 +327,17 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 				
 				try{
 					//noinspection ConstantConditions
-					data = response.body().bytes();
+					data = ProgressResponseBody.bytes( response,new ProgressResponseBody.Callback() {
+						@Override public void progressBytes( long bytesRead, long bytesTotal ){
+							// 50MB以上のデータはキャンセルする
+							if( Math.max(bytesRead,bytesTotal)  >= 50000000 ){
+								throw new RuntimeException( "media attachment is larger than 50000000" );
+							}
+							publishApiProgressRatio( (int) bytesRead, (int) bytesTotal );
+						}
+					} );
+				
+					
 					return new TootApiResult( "" );
 				}catch( Throwable ex ){
 					return new TootApiResult( Utils.formatError( ex, "content error." ) );
@@ -388,15 +400,17 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		}
 	}
 	
-	static class DownloadHistory{
+	static class DownloadHistory {
 		final long time;
 		@NonNull final String url;
-		DownloadHistory(long time,@NonNull String url){
+		
+		DownloadHistory( long time, @NonNull String url ){
 			this.time = time;
 			this.url = url;
 		}
 	}
-	static final LinkedList<DownloadHistory> download_history_list = new LinkedList<>(  );
+	
+	static final LinkedList< DownloadHistory > download_history_list = new LinkedList<>();
 	static final long DOWNLOAD_REPEAT_EXPIRE = 3000L;
 	
 	void download( @NonNull TootAttachment ta ){
@@ -412,7 +426,7 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 			Utils.showToast( this, false, "download manager is not on your device." );
 			return;
 		}
-
+		
 		String url = ta.getLargeUrl( App1.pref );
 		if( url == null ) return;
 		
@@ -437,24 +451,24 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 			download_history_list.addLast( new DownloadHistory( now, url ) );
 		}
 		
-		String fileName =null;
-
+		String fileName = null;
+		
 		try{
-			List<String> pathSegments = Uri.parse( url ).getPathSegments();
+			List< String > pathSegments = Uri.parse( url ).getPathSegments();
 			if( pathSegments != null ){
 				int size = pathSegments.size();
-				for( int i= size-1;i>=0;--i){
-					String s = pathSegments.get(i);
-					if( !TextUtils.isEmpty( s )){
+				for( int i = size - 1 ; i >= 0 ; -- i ){
+					String s = pathSegments.get( i );
+					if( ! TextUtils.isEmpty( s ) ){
 						fileName = s;
 						break;
 					}
 				}
 			}
-		}catch(Throwable ex){
+		}catch( Throwable ex ){
 			log.trace( ex );
 		}
-
+		
 		if( fileName == null ){
 			fileName = url
 				.replaceFirst( "https?://", "" )

@@ -63,7 +63,7 @@ public class CustomEmojiCache {
 		}
 	}
 	
-	@NonNull final ConcurrentHashMap< String, CacheItem > cache = new ConcurrentHashMap<>();
+	@NonNull final ConcurrentHashMap< String, CacheItem > cache;
 	
 	////////////////////////////////
 	// リクエスト
@@ -106,6 +106,14 @@ public class CustomEmojiCache {
 		
 		cancelRequest( target_tag );
 		
+		//noinspection ConstantConditions
+		if( cache == null ){
+			// java.lang.NullPointerException:
+			// at java.util.concurrent.ConcurrentHashMap.get (ConcurrentHashMap.java:915)
+			// at jp.juggler.subwaytooter.util.CustomEmojiCache.get (CustomEmojiCache.java:113)
+			return null;
+		}
+		
 		synchronized( cache ){
 			long now = getNow();
 			
@@ -122,10 +130,10 @@ public class CustomEmojiCache {
 				if( time_error != null && now < time_error + ERROR_EXPIRE ){
 					return null;
 				}
-			}catch(Throwable ex){
+			}catch( Throwable ex ){
 				// NullPointerException at java.util.concurrent.ConcurrentHashMap.get (ConcurrentHashMap.java:915)
 				
-				log.trace(ex);
+				log.trace( ex );
 			}
 		}
 		synchronized( queue ){
@@ -143,6 +151,7 @@ public class CustomEmojiCache {
 	public CustomEmojiCache( Context context ){
 		this.context = context;
 		this.handler = new Handler( context.getMainLooper() );
+		this.cache = new ConcurrentHashMap<>();
 		this.worker = new Worker();
 		worker.start();
 	}
@@ -166,7 +175,7 @@ public class CustomEmojiCache {
 				}
 				
 				if( request == null ){
-					if(DEBUG) log.d( "wait. req_size=%d", req_size );
+					if( DEBUG ) log.d( "wait. req_size=%d", req_size );
 					waitEx( 86400000L );
 					continue;
 				}
@@ -175,8 +184,19 @@ public class CustomEmojiCache {
 					continue;
 				}
 				
+				//noinspection ConstantConditions
+				if( cache == null ){
+					// Fujitsu F-01H（F01H）, 2048MB RAM, Android 6.0
+					// java.lang.NullPointerException:
+					// at java.util.concurrent.ConcurrentHashMap.get (ConcurrentHashMap.java:772)
+					// at jp.juggler.subwaytooter.util.CustomEmojiCache$Worker.run (CustomEmojiCache.java:183)
+					waitEx( 1000L );
+					continue;
+				}
+				
 				long now = getNow();
 				int cache_size;
+				
 				synchronized( cache ){
 					
 					// 成功キャッシュ
@@ -197,13 +217,14 @@ public class CustomEmojiCache {
 					//noinspection UnusedAssignment
 					cache_size = cache.size();
 				}
-				if(DEBUG) log.d( "start get image. req_size=%d, cache_size=%d url=%s", req_size, cache_size, request.url );
+				if( DEBUG )
+					log.d( "start get image. req_size=%d, cache_size=%d url=%s", req_size, cache_size, request.url );
 				
 				APNGFrames frames = null;
 				try{
 					byte[] data = App1.getHttpCached( request.url );
 					if( data == null ){
-						log.e("get failed. url=%s",request.url );
+						log.e( "get failed. url=%s", request.url );
 					}else{
 						frames = decodeAPNG( data, request.url );
 					}
@@ -269,10 +290,10 @@ public class CustomEmojiCache {
 			try{
 				APNGFrames frames = APNGFrames.parseAPNG( new ByteArrayInputStream( data ), 64 );
 				if( frames == null ){
-					if(DEBUG) log.d("parseAPNG returns null.");
+					if( DEBUG ) log.d( "parseAPNG returns null." );
 					// fall thru
 				}else if( frames.isSingleFrame() ){
-					if(DEBUG) log.d( "parseAPNG returns single frame." );
+					if( DEBUG ) log.d( "parseAPNG returns single frame." );
 					// mastodonのstatic_urlが返すPNG画像はAPNGだと透明になってる場合がある。BitmapFactoryでデコードしなおすべき
 					frames.dispose();
 					// fall thru
@@ -288,7 +309,7 @@ public class CustomEmojiCache {
 			try{
 				Bitmap b = decodeBitmap( data, 128 );
 				if( b != null ){
-					if(DEBUG) log.d("bitmap decoded.");
+					if( DEBUG ) log.d( "bitmap decoded." );
 					return new APNGFrames( b );
 				}else{
 					log.e( "Bitmap decode returns null. %s", url );

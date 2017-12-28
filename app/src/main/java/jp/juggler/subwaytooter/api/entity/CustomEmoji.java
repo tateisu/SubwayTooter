@@ -33,7 +33,7 @@ public class CustomEmoji {
 		this.static_url = static_url;
 	}
 	
-	public static CustomEmoji parse( JSONObject src ){
+	public static CustomEmoji parse( @Nullable JSONObject src ){
 		if( src == null ) return null;
 		String shortcode = Utils.optStringX( src, "shortcode" );
 		String url = Utils.optStringX( src, "url" );
@@ -47,19 +47,27 @@ public class CustomEmoji {
 	public static class List extends ArrayList< CustomEmoji > {
 	}
 	
-	public static List parseList( JSONArray src, @NonNull String instance ){
+	public static @Nullable List parseList( @Nullable JSONArray src, @NonNull String instance ){
+
 		if( src == null ) return null;
+
+		int src_length = src.length();
+		if( src_length == 0 ) return null;
+		
 		List dst = new List();
 		for( int i = 0, ie = src.length() ; i < ie ; ++ i ){
 			CustomEmoji item = parse( src.optJSONObject( i ) );
 			if( item != null ) dst.add( item );
 		}
+
+		if( dst.isEmpty() ) return null;
+
 		Collections.sort( dst, new Comparator< CustomEmoji >() {
 			@Override public int compare( CustomEmoji a, CustomEmoji b ){
 				return a.shortcode.compareToIgnoreCase( b.shortcode );
 			}
 		} );
-		log.d( "parseList: parse %d emojis for %s.", dst.size(), instance );
+
 		return dst;
 	}
 	

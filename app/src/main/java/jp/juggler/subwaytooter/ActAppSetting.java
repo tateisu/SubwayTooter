@@ -379,7 +379,7 @@ public class ActAppSetting extends AppCompatActivity
 		
 		swDontConfirmBeforeCloseColumn.setChecked( pref.getBoolean( Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN, false ) );
 		swPriorLocalURL.setChecked( pref.getBoolean( Pref.KEY_PRIOR_LOCAL_URL, false ) );
-		swSimpleList.setChecked( pref.getBoolean( Pref.KEY_SIMPLE_LIST, false ) );
+		swSimpleList.setChecked( pref.getBoolean( Pref.KEY_SIMPLE_LIST, true ) );
 		swExitAppWhenCloseProtectedColumn.setChecked( pref.getBoolean( Pref.KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN, false ) );
 		swShowFollowButtonInButtonBar.setChecked( pref.getBoolean( Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR, false ) );
 		swDontRound.setChecked( pref.getBoolean( Pref.KEY_DONT_ROUND, false ) );
@@ -398,7 +398,7 @@ public class ActAppSetting extends AppCompatActivity
 		swShortAcctLocalUser.setChecked( pref.getBoolean( Pref.KEY_SHORT_ACCT_LOCAL_USER, false ) );
 		swDisableEmojiAnimation.setChecked( pref.getBoolean( Pref.KEY_DISABLE_EMOJI_ANIMATION, false ) );
 		swAllowNonSpaceBeforeEmojiShortcode.setChecked( pref.getBoolean( Pref.KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE, false ) );
-		swUseInternalMediaViewer.setChecked( pref.getBoolean( Pref.KEY_USE_INTERNAL_MEDIA_VIEWER, false ) );
+		swUseInternalMediaViewer.setChecked( pref.getBoolean( Pref.KEY_USE_INTERNAL_MEDIA_VIEWER, true ) );
 		// Switch with default true
 		swDisableFastScroller.setChecked( pref.getBoolean( Pref.KEY_DISABLE_FAST_SCROLLER, true ) );
 		swPriorChrome.setChecked( pref.getBoolean( Pref.KEY_PRIOR_CHROME, true ) );

@@ -922,7 +922,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			
 			if( media_attachments == null ) return;
 			
-			if( App1.pref.getBoolean( Pref. KEY_USE_INTERNAL_MEDIA_VIEWER,false) ){
+			if( App1.pref.getBoolean( Pref. KEY_USE_INTERNAL_MEDIA_VIEWER,true) ){
 				ActMediaViewer.open( activity, media_attachments, i );
 				return;
 			}

@@ -256,7 +256,7 @@ class ColumnViewHolder
 			
 			log.d( "onPageCreate [%d] %s", page_idx, column.getColumnName( true ) );
 			
-			boolean bSimpleList = ( column.column_type != Column.TYPE_CONVERSATION && activity.pref.getBoolean( Pref.KEY_SIMPLE_LIST, false ) );
+			boolean bSimpleList = ( column.column_type != Column.TYPE_CONVERSATION && activity.pref.getBoolean( Pref.KEY_SIMPLE_LIST, true ) );
 			
 			tvColumnIndex.setText( activity.getString( R.string.column_index, page_idx + 1, page_count ) );
 			

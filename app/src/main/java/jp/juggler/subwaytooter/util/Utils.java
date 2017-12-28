@@ -846,6 +846,7 @@ public class Utils {
 							if( ct != null && ct.contains( "/html" ) ){
 								sv = new DecodeOptions().decodeHTML( null, null, sv ).toString();
 							}
+							// TODO: Amazon S3 が403を返した場合にcontent-typeが?/xmlでserverがAmazonならXMLをパースして
 							
 							sb.append( sv );
 						}

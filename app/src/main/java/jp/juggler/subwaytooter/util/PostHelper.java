@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.util;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -172,6 +173,7 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 		//noinspection deprecation
 		final ProgressDialog progress = new ProgressDialog( activity );
 		
+		@SuppressLint("StaticFieldLeak")
 		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
 			final SavedAccount target_account = account;
 			
@@ -607,7 +609,7 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 			
 			String part = src.substring( last_sharp + 1, end );
 			if( reCharsNotTag.matcher( part ).find() ){
-				log.d( "checkTag: character not tag in string %s", part );
+				// log.d( "checkTag: character not tag in string %s", part );
 				checkEmoji();
 				return;
 			}

@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.view;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -36,8 +37,6 @@ public class PinchBitmapView extends View {
 	
 	void init( Context context ){
 		
-		paint.setFilterBitmap( true );
-		
 		// 定数をdpからpxに変換
 		float density = context.getResources().getDisplayMetrics().density;
 		swipe_velocity = 1000f * density;
@@ -48,6 +47,7 @@ public class PinchBitmapView extends View {
 	// ページめくり操作のコールバック
 	public interface Callback {
 		void onSwipe( int delta );
+		void onMove(float tx,float ty,float scale);
 	}
 	
 	@Nullable Callback callback;
@@ -83,9 +83,12 @@ public class PinchBitmapView extends View {
 		super.onDraw( canvas );
 		
 		if( bitmap != null && ! bitmap.isRecycled() ){
+			
 			matrix.reset();
 			matrix.postScale( current_scale, current_scale );
 			matrix.postTranslate( current_trans_x, current_trans_y );
+			
+			paint.setFilterBitmap( current_scale < 4f );
 			canvas.drawBitmap( bitmap, matrix, paint );
 		}
 	}
@@ -126,7 +129,14 @@ public class PinchBitmapView extends View {
 			
 			current_trans_x = ( view_w - draw_w ) / 2f;
 			current_trans_y = ( view_h - draw_h ) / 2f;
+			
+			
+		}else{
+			current_trans_x = current_trans_y = 0f;
+			current_scale = 1f;
 		}
+		
+		if( callback != null ) callback.onMove( current_trans_x,current_trans_y,current_scale );
 		
 		// 画像がnullに変化した時も再描画が必要
 		invalidate();
@@ -148,6 +158,7 @@ public class PinchBitmapView extends View {
 	// フリック操作の検出に使う
 	@Nullable VelocityTracker velocityTracker;
 	
+	@SuppressLint("ClickableViewAccessibility")
 	@Override public boolean onTouchEvent( MotionEvent ev ){
 		
 		if( bitmap == null
@@ -167,7 +178,7 @@ public class PinchBitmapView extends View {
 			velocityTracker.addMovement( ev );
 			
 			bDrag = bPointerCountChanged = false;
-			startTracking( ev );
+			trackStart( ev );
 			return true;
 		}
 		
@@ -180,15 +191,15 @@ public class PinchBitmapView extends View {
 		case MotionEvent.ACTION_POINTER_UP:
 			// タッチ操作中に指の数を変えた
 			bDrag = bPointerCountChanged = true;
-			startTracking( ev );
+			trackStart( ev );
 			break;
 		
 		case MotionEvent.ACTION_MOVE:
-			nextTracking( ev );
+			trackNext( ev );
 			break;
 		
 		case MotionEvent.ACTION_UP:
-			nextTracking( ev );
+			trackNext( ev );
 			
 			checkClickOrPaging();
 			
@@ -313,7 +324,7 @@ public class PinchBitmapView extends View {
 	float view_h;
 	float view_aspect;
 	
-	void startTracking( MotionEvent ev ){
+	void trackStart( MotionEvent ev ){
 		
 		// 追跡開始時の指の位置
 		start_pos.update( ev );
@@ -347,14 +358,14 @@ public class PinchBitmapView extends View {
 		tracking_matrix_inv.mapPoints( dst, src );
 	}
 	
-	void nextTracking( MotionEvent ev ){
+	void trackNext( MotionEvent ev ){
 		pos.update( ev );
 		
 		if( pos.count != start_pos.count ){
 			// タッチ操作中に指の数が変わった
 			log.d( "nextTracking: pointer count changed" );
 			bDrag = bPointerCountChanged = true;
-			startTracking( ev );
+			trackStart( ev );
 			return;
 		}
 		
@@ -393,6 +404,8 @@ public class PinchBitmapView extends View {
 			current_trans_x = clipTranslate( view_w, bitmap_w, current_scale, start_image_trans_x + move_x );
 			current_trans_y = clipTranslate( view_h, bitmap_h, current_scale, start_image_trans_y + move_y );
 		}
+		
+		if( callback != null ) callback.onMove( current_trans_x,current_trans_y,current_scale );
 		
 		invalidate();
 	}

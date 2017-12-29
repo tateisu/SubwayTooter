@@ -575,4 +575,5 @@
     <string name="media_attachment_type_error">The type of media attachment is \"%1$s\". ST can\'t handle it, but you can try open in browser.</string>
     <string name="video_buffering">Buffering…</string>
     <string name="dont_repeat_download_to_same_url">Can\'t repeat downloading same URL in a few second.</string>
+    <string name="zooming_of">×%1$,.1f</string>
 </resources>

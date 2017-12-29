@@ -53,51 +53,70 @@
             />
     </FrameLayout>
 
-    <com.google.android.flexbox.FlexboxLayout
-
-        android:id="@+id/flFooter"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:flexWrap="wrap"
-        app:alignItems="center"
-        app:justifyContent="center"
         >
 
-        <ImageButton
-            android:id="@+id/btnPrevious"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/previous"
-            android:minWidth="48dp"
-            android:src="?attr/ic_left"
-            />
+        <com.google.android.flexbox.FlexboxLayout
 
-        <ImageButton
-            android:id="@+id/btnNext"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/next"
-            android:minWidth="48dp"
-            android:src="?attr/ic_right"
-            />
+            android:id="@+id/flFooter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:alignItems="center"
+            app:flexWrap="wrap"
+            app:justifyContent="center"
+            >
 
-        <ImageButton
-            android:id="@+id/btnDownload"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/download"
-            android:minWidth="48dp"
-            android:src="?attr/ic_download"
-            />
+            <ImageButton
+                android:id="@+id/btnPrevious"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/previous"
+                android:minWidth="48dp"
+                android:src="?attr/ic_left"
+                />
 
-        <ImageButton
-            android:id="@+id/btnMore"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:contentDescription="@string/more"
-            android:minWidth="48dp"
-            android:src="?attr/btn_more"
-            />
+            <ImageButton
+                android:id="@+id/btnNext"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/next"
+                android:minWidth="48dp"
+                android:src="?attr/ic_right"
+                />
 
-    </com.google.android.flexbox.FlexboxLayout>
+            <ImageButton
+                android:id="@+id/btnDownload"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/download"
+                android:minWidth="48dp"
+                android:src="?attr/ic_download"
+                />
+
+            <ImageButton
+                android:id="@+id/btnMore"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/more"
+                android:minWidth="48dp"
+                android:src="?attr/btn_more"
+                />
+
+        </com.google.android.flexbox.FlexboxLayout>
+
+        <TextView
+            android:id="@+id/tvStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|bottom"
+            android:layout_marginBottom="6dp"
+            android:layout_marginEnd="12dp"
+            android:layout_marginStart="12dp"
+            android:gravity="start|bottom"
+            android:textSize="12sp"
+            android:alpha="0.5"
+            />
+    </FrameLayout>
 </LinearLayout>

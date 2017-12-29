@@ -61,7 +61,6 @@ import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.view.PinchBitmapView;
 import okhttp3.Call;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 
 public class ActMediaViewer extends AppCompatActivity implements View.OnClickListener {
 	
@@ -139,6 +138,7 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 	SimpleExoPlayerView exoView;
 	View svDescription;
 	TextView tvDescription;
+	TextView tvStatus;
 	
 	void initUI(){
 		setContentView( R.layout.act_media_viewer );
@@ -149,6 +149,7 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		tvError = findViewById( R.id.tvError );
 		svDescription = findViewById( R.id.svDescription );
 		tvDescription = findViewById( R.id.tvDescription );
+		tvStatus = findViewById( R.id.tvStatus );
 		
 		boolean enablePaging = media_list.size() > 1;
 		btnPrevious.setEnabled( enablePaging );
@@ -170,6 +171,17 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 				if( isDestroyed() ) return;
 				loadDelta( delta );
 			}
+			
+			@Override public void onMove( final float tx, final float ty, final float scale ){
+				App1.app_state.handler.post( new Runnable() {
+					@Override public void run(){
+						if( isDestroyed() ) return;
+						if( tvStatus.getVisibility() == View.VISIBLE ){
+							tvStatus.setText( getString(R.string.zooming_of,scale ));
+						}
+					}
+				} );
+			}
 		} );
 		
 		exoPlayer = ExoPlayerFactory.newSimpleInstance( this, new DefaultTrackSelector() );
@@ -177,7 +189,7 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		
 		exoView.setPlayer( exoPlayer );
 	}
-	
+
 	void loadDelta( int delta ){
 		if( media_list.size() < 2 ) return;
 		int size = media_list.size();
@@ -192,6 +204,7 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		exoView.setVisibility( View.GONE );
 		tvError.setVisibility( View.GONE );
 		svDescription.setVisibility( View.GONE );
+		tvStatus.setVisibility( View.GONE );
 		
 		if( media_list == null
 			|| media_list.isEmpty()
@@ -274,6 +287,9 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 			showError( "missing media attachment url." );
 			return;
 		}
+		
+		tvStatus.setVisibility( View.VISIBLE );
+		tvStatus.setText(null);
 		
 		pbvImage.setVisibility( View.VISIBLE );
 		pbvImage.setBitmap( null );
@@ -587,6 +603,9 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		} );
 	}
 	
+	long buffering_last_shown;
+	static final long short_limit = 5000L;
+	
 	private final Player.EventListener player_listener = new Player.EventListener() {
 		@Override public void onTimelineChanged( Timeline timeline, Object manifest ){
 			log.d( "exoPlayer onTimelineChanged" );
@@ -607,7 +626,14 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 			// かなり頻繁に呼ばれる
 			// log.d( "exoPlayer onPlayerStateChanged %s %s", playWhenReady, playbackState );
 			if( playWhenReady && playbackState == Player.STATE_BUFFERING ){
-				Utils.showToast( ActMediaViewer.this, false, R.string.video_buffering );
+				long now = SystemClock.elapsedRealtime();
+				if( now - buffering_last_shown >= short_limit && exoPlayer.getDuration() >= short_limit ){
+					buffering_last_shown = now;
+					Utils.showToast( ActMediaViewer.this, false, R.string.video_buffering );
+				}
+				/*
+					exoPlayer.getDuration() may returns negative value (TIME_UNSET ,same as Long.MIN_VALUE + 1).
+				*/
 			}
 		}
 		

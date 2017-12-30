@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
@@ -47,7 +48,8 @@ public class PinchBitmapView extends View {
 	// ページめくり操作のコールバック
 	public interface Callback {
 		void onSwipe( int delta );
-		void onMove(float bitmap_w,float bitmap_h,float tx,float ty,float scale);
+		
+		void onMove( float bitmap_w, float bitmap_h, float tx, float ty, float scale );
 	}
 	
 	@Nullable Callback callback;
@@ -130,13 +132,14 @@ public class PinchBitmapView extends View {
 			current_trans_x = ( view_w - draw_w ) / 2f;
 			current_trans_y = ( view_h - draw_h ) / 2f;
 			
-			
-			if( callback != null ) callback.onMove( bitmap_w,bitmap_h, current_trans_x,current_trans_y,current_scale );
+			if( callback != null )
+				callback.onMove( bitmap_w, bitmap_h, current_trans_x, current_trans_y, current_scale );
 		}else{
 			current_trans_x = current_trans_y = 0f;
 			current_scale = 1f;
-
-			if( callback != null ) callback.onMove( 0f,0f, current_trans_x,current_trans_y,current_scale );
+			
+			if( callback != null )
+				callback.onMove( 0f, 0f, current_trans_x, current_trans_y, current_scale );
 		}
 		
 		// 画像がnullに変化した時も再描画が必要
@@ -156,6 +159,8 @@ public class PinchBitmapView extends View {
 	// 指を動かしたと判断する距離
 	float drag_width;
 	
+	long time_touch_start;
+	
 	// フリック操作の検出に使う
 	@Nullable VelocityTracker velocityTracker;
 	
@@ -170,6 +175,8 @@ public class PinchBitmapView extends View {
 		int action = ev.getAction();
 		
 		if( action == MotionEvent.ACTION_DOWN ){
+			time_touch_start = SystemClock.elapsedRealtime();
+			
 			if( velocityTracker != null ){
 				velocityTracker.clear();
 			}else{
@@ -214,13 +221,48 @@ public class PinchBitmapView extends View {
 		return true;
 	}
 	
+	long click_time;
+	int click_count;
+	
 	void checkClickOrPaging(){
+		
 		if( ! bDrag ){
+			// 指を動かしていないなら
 			
-			// 指を動かしていないならクリック操作だったのだろう
-			performClick();
+			long now = SystemClock.elapsedRealtime();
 			
-		}else if( ! bPointerCountChanged && velocityTracker != null ){
+			if( now - time_touch_start >= 1000L ){
+				// ロングタップはタップカウントをリセットする
+				log.d("click count reset by long tap");
+				click_count = 0;
+				return;
+			}
+
+			long delta = now-click_time;
+			click_time = now;
+
+			if( delta > 334L ){
+				// 前回のタップからの時刻が長いとタップカウントをリセットする
+				log.d("click count reset by long interval");
+				click_count = 0;
+			}
+
+			++click_count;
+
+			log.d("click %d %d",click_count,delta);
+
+			if( click_count >= 2 ){
+				// ダブルタップでクリック操作
+				click_count = 0;
+				performClick();
+			}
+
+			return;
+		}
+		
+		click_count = 0;
+		
+		if( ! bPointerCountChanged && velocityTracker != null ){
 			
 			// 指の数を変えていないならページめくり操作かもしれない
 			
@@ -406,7 +448,8 @@ public class PinchBitmapView extends View {
 			current_trans_y = clipTranslate( view_h, bitmap_h, current_scale, start_image_trans_y + move_y );
 		}
 		
-		if( callback != null ) callback.onMove( bitmap_w,bitmap_h,current_trans_x,current_trans_y,current_scale );
+		if( callback != null )
+			callback.onMove( bitmap_w, bitmap_h, current_trans_x, current_trans_y, current_scale );
 		
 		invalidate();
 	}

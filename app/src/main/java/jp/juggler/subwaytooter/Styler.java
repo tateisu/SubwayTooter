@@ -114,13 +114,6 @@ public class Styler {
 			// 被フォローリクエスト状態の時に followed_by が 真と偽の両方がありえるようなので
 			// Relationshipだけを見ても被フォローリクエスト状態は分からないっぽい
 			// 仕方ないので馬鹿正直に「 followed_byが真ならバッジをつける」しかできない
-			//			if( column_type == Column.TYPE_FOLLOW_REQUESTS ){
-			//				// フォローリクエストされてる状態でも followed_by はtrueになる
-			//				int color = Styler.getAttributeColor( context,R.attr.colorRegexFilterError );
-			//				Drawable d = Styler.getAttributeDrawable( context,R.attr.ic_followed_by ).mutate();
-			//				d.setColorFilter( color, PorterDuff.Mode.SRC_ATOP );
-			//				iv.setImageDrawable( d );
-			//			}
 		}
 		
 		// follow button

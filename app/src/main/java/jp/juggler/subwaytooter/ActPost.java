@@ -263,7 +263,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	}
 	
 	SharedPreferences pref;
-	ArrayList< PostAttachment > attachment_list;
+	@NonNull ArrayList< PostAttachment > attachment_list = new ArrayList<>(  );
 	AppState app_state;
 	boolean isPostComplete;
 	PostHelper post_helper;
@@ -318,7 +318,9 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			}else if( ! TextUtils.isEmpty( sv ) ){
 				
 				// state から復元する
-				this.attachment_list = app_state.attachment_list = new ArrayList<>();
+				app_state.attachment_list = this.attachment_list;
+				this.attachment_list.clear();
+
 				try{
 					JSONArray array = new JSONArray( sv );
 					for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
@@ -341,7 +343,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			this.in_reply_to_image = savedInstanceState.getString( KEY_IN_REPLY_TO_IMAGE );
 			this.in_reply_to_url = savedInstanceState.getString( KEY_IN_REPLY_TO_URL );
 		}else{
-			this.attachment_list = app_state.attachment_list = null;
+			app_state.attachment_list = this.attachment_list;
+			this.attachment_list.clear();
 			
 			Intent intent = getIntent();
 			long account_db_id = intent.getLongExtra( KEY_ACCOUNT_DB_ID, SavedAccount.INVALID_ID );
@@ -536,10 +539,10 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			outState.putString( KEY_VISIBILITY, visibility );
 		}
 		
-		if( attachment_list != null && ! attachment_list.isEmpty() ){
+		if( ! attachment_list.isEmpty() ){
 			JSONArray array = new JSONArray();
 			for( PostAttachment pa : attachment_list ){
-				if( pa.status == PostAttachment.ATTACHMENT_UPLOADED ){
+				if( pa.status == PostAttachment.STATUS_UPLOADED ){
 					// アップロード完了したものだけ保持する
 					array.put( pa.attachment.json );
 				}
@@ -775,7 +778,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	
 	private void performAccountChooser(){
 		
-		if( attachment_list != null && ! attachment_list.isEmpty() ){
+		if( ! attachment_list.isEmpty() ){
 			// 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
 			Utils.showToast( this, false, R.string.cant_change_account_when_attachment_specified );
 			return;
@@ -905,7 +908,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		
 		if( isFinishing() ) return;
 		
-		if( attachment_list == null || attachment_list.isEmpty() ){
+		if( attachment_list.isEmpty() ){
 			llAttachment.setVisibility( View.GONE );
 		}else{
 			llAttachment.setVisibility( View.VISIBLE );
@@ -921,7 +924,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}else{
 			iv.setVisibility( View.VISIBLE );
 			PostAttachment a = attachment_list.get( idx );
-			if( a.attachment != null && a.status == PostAttachment.ATTACHMENT_UPLOADED ){
+			if( a.attachment != null && a.status == PostAttachment.STATUS_UPLOADED ){
 				iv.setImageUrl( pref, 16f, a.attachment.preview_url );
 			}else{
 				iv.setImageUrl( pref, 16f, null );
@@ -1075,7 +1078,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	
 	private void performAttachment(){
 		
-		if( attachment_list != null && attachment_list.size() >= 4 ){
+		if( attachment_list.size() >= 4 ){
 			Utils.showToast( this, false, R.string.attachment_too_many );
 			return;
 		}
@@ -1203,7 +1206,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	static HashSet< String > acceptable_mime_types;
 	
 	@SuppressLint("StaticFieldLeak") void addAttachment( final Uri uri, final String mime_type ){
-		if( attachment_list != null && attachment_list.size() >= 4 ){
+		if( attachment_list.size() >= 4 ){
 			Utils.showToast( this, false, R.string.attachment_too_many );
 			return;
 		}
@@ -1233,9 +1236,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			return;
 		}
 		
-		if( attachment_list == null ){
-			this.attachment_list = app_state.attachment_list = new ArrayList<>();
-		}
+		app_state.attachment_list = this.attachment_list;
 		
 		final PostAttachment pa = new PostAttachment( this );
 		attachment_list.add( pa );
@@ -1322,12 +1323,12 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			
 			@Override protected void handleResult( TootApiResult result ){
 				if( pa.attachment == null ){
-					pa.status = PostAttachment.ATTACHMENT_UPLOAD_FAILED;
+					pa.status = PostAttachment.STATUS_UPLOAD_FAILED;
 					if( result != null ){
 						Utils.showToast( ActPost.this, true, result.error );
 					}
 				}else{
-					pa.status = PostAttachment.ATTACHMENT_UPLOADED;
+					pa.status = PostAttachment.STATUS_UPLOADED;
 				}
 				// 投稿中に画面回転があった場合、新しい画面のコールバックを呼び出す必要がある
 				pa.callback.onPostAttachmentComplete( pa );
@@ -1338,31 +1339,35 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	
 	// 添付メディア投稿が完了したら呼ばれる
 	@Override public void onPostAttachmentComplete( PostAttachment pa ){
-		if( pa.status != PostAttachment.ATTACHMENT_UPLOADED ){
-			if( attachment_list != null ){
-				attachment_list.remove( pa );
-				showMediaAttachment();
+		if( ! attachment_list.contains( pa ) ){
+			// この添付メディアはリストにない
+			return;
+		}
+		
+		if( pa.status ==  PostAttachment.STATUS_UPLOAD_FAILED ){
+			// アップロード失敗
+			attachment_list.remove( pa );
+			showMediaAttachment();
+		}else if( pa.status == PostAttachment.STATUS_UPLOADED ){
+			// アップロード完了
+			Utils.showToast( ActPost.this, false, R.string.attachment_uploaded );
+			
+			// 投稿欄の末尾に追記する
+			int selStart = etContent.getSelectionStart();
+			int selEnd = etContent.getSelectionEnd();
+			Editable e = etContent.getEditableText();
+			int len = e.length();
+			char last_char = ( len <= 0 ? ' ' : e.charAt( len - 1 ) );
+			if( ! EmojiDecoder.isWhitespaceBeforeEmoji( last_char ) ){
+				e.append( " " ).append( pa.attachment.text_url );
+			}else{
+				e.append( pa.attachment.text_url );
 			}
+			etContent.setSelection( selStart, selEnd );
+			
+			showMediaAttachment();
 		}else{
-			if( attachment_list != null && attachment_list.contains( pa ) ){
-				
-				Utils.showToast( ActPost.this, false, R.string.attachment_uploaded );
-				
-				// 投稿欄の末尾に追記する
-				int selStart = etContent.getSelectionStart();
-				int selEnd = etContent.getSelectionEnd();
-				Editable e = etContent.getEditableText();
-				int len = e.length();
-				char last_char = ( len <= 0 ? ' ' : e.charAt( len - 1 ) );
-				if( ! EmojiDecoder.isWhitespaceBeforeEmoji( last_char ) ){
-					e.append( " " ).append( pa.attachment.text_url );
-				}else{
-					e.append( pa.attachment.text_url );
-				}
-				etContent.setSelection( selStart, selEnd );
-				
-				showMediaAttachment();
-			}
+			// アップロード中…？
 		}
 	}
 	
@@ -1548,10 +1553,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				@Override public void run(){
 					etContent.setText( "" );
 					etContentWarning.setText( "" );
-					if( attachment_list != null ){
-						attachment_list.clear();
-						showMediaAttachment();
-					}
+					attachment_list.clear();
+					showMediaAttachment();
 				}
 			}
 		);
@@ -1571,6 +1574,15 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	// post
 	
 	private void performPost(){
+
+		// アップロード中は投稿できない
+		for( PostAttachment pa : attachment_list ){
+			if( pa.status == PostAttachment.STATUS_UPLOADING ){
+				Utils.showToast( this,false,R.string.media_attachment_still_uploading );
+				return;
+			}
+		}
+		
 		post_helper.content = etContent.getText().toString().trim();
 		
 		if( ! cbEnquete.isChecked() ){
@@ -1676,10 +1688,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		
 		try{
 			JSONArray tmp_attachment_list = new JSONArray();
-			if( attachment_list != null ){
-				for( PostAttachment pa : attachment_list ){
-					if( pa.attachment != null ) tmp_attachment_list.put( pa.attachment.json );
-				}
+			for( PostAttachment pa : attachment_list ){
+				if( pa.attachment != null ) tmp_attachment_list.put( pa.attachment.json );
 			}
 			
 			JSONObject json = new JSONObject();
@@ -1871,11 +1881,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				if( account != null ) setAccount( account );
 				
 				if( tmp_attachment_list.length() > 0 ){
-					if( attachment_list != null ){
-						attachment_list.clear();
-					}else{
-						attachment_list = new ArrayList<>();
-					}
+					attachment_list.clear();
 					for( int i = 0, ie = tmp_attachment_list.length() ; i < ie ; ++ i ){
 						TootAttachment ta = TootAttachment.parse( tmp_attachment_list.optJSONObject( i ) );
 						if( ta != null ){

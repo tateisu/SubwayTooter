@@ -162,22 +162,19 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		findViewById( R.id.btnDownload ).setOnClickListener( this );
 		findViewById( R.id.btnMore ).setOnClickListener( this );
 		
-		//		findViewById( R.id.btnBrowser ).setOnClickListener( this );
-		//		findViewById( R.id.btnShare ).setOnClickListener( this );
-		//		findViewById( R.id.btnCopy ).setOnClickListener( this );
-		
 		pbvImage.setCallback( new PinchBitmapView.Callback() {
 			@Override public void onSwipe( int delta ){
 				if( isDestroyed() ) return;
 				loadDelta( delta );
 			}
 			
-			@Override public void onMove( final float tx, final float ty, final float scale ){
+			@Override
+			public void onMove( final float bitmap_w, final float bitmap_h, final float tx, final float ty, final float scale ){
 				App1.app_state.handler.post( new Runnable() {
 					@Override public void run(){
 						if( isDestroyed() ) return;
 						if( tvStatus.getVisibility() == View.VISIBLE ){
-							tvStatus.setText( getString(R.string.zooming_of,scale ));
+							tvStatus.setText( getString( R.string.zooming_of,(int) bitmap_w, (int)bitmap_h, scale ) );
 						}
 					}
 				} );
@@ -189,7 +186,7 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		
 		exoView.setPlayer( exoPlayer );
 	}
-
+	
 	void loadDelta( int delta ){
 		if( media_list.size() < 2 ) return;
 		int size = media_list.size();
@@ -289,7 +286,7 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		}
 		
 		tvStatus.setVisibility( View.VISIBLE );
-		tvStatus.setText(null);
+		tvStatus.setText( null );
 		
 		pbvImage.setVisibility( View.VISIBLE );
 		pbvImage.setBitmap( null );
@@ -343,16 +340,15 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 				
 				try{
 					//noinspection ConstantConditions
-					data = ProgressResponseBody.bytes( response,new ProgressResponseBody.Callback() {
+					data = ProgressResponseBody.bytes( response, new ProgressResponseBody.Callback() {
 						@Override public void progressBytes( long bytesRead, long bytesTotal ){
 							// 50MB以上のデータはキャンセルする
-							if( Math.max(bytesRead,bytesTotal)  >= 50000000 ){
+							if( Math.max( bytesRead, bytesTotal ) >= 50000000 ){
 								throw new RuntimeException( "media attachment is larger than 50000000" );
 							}
 							publishApiProgressRatio( (int) bytesRead, (int) bytesTotal );
 						}
 					} );
-				
 					
 					return new TootApiResult( "" );
 				}catch( Throwable ex ){

@@ -47,7 +47,7 @@ public class PinchBitmapView extends View {
 	// ページめくり操作のコールバック
 	public interface Callback {
 		void onSwipe( int delta );
-		void onMove(float tx,float ty,float scale);
+		void onMove(float bitmap_w,float bitmap_h,float tx,float ty,float scale);
 	}
 	
 	@Nullable Callback callback;
@@ -131,12 +131,13 @@ public class PinchBitmapView extends View {
 			current_trans_y = ( view_h - draw_h ) / 2f;
 			
 			
+			if( callback != null ) callback.onMove( bitmap_w,bitmap_h, current_trans_x,current_trans_y,current_scale );
 		}else{
 			current_trans_x = current_trans_y = 0f;
 			current_scale = 1f;
+
+			if( callback != null ) callback.onMove( 0f,0f, current_trans_x,current_trans_y,current_scale );
 		}
-		
-		if( callback != null ) callback.onMove( current_trans_x,current_trans_y,current_scale );
 		
 		// 画像がnullに変化した時も再描画が必要
 		invalidate();
@@ -405,7 +406,7 @@ public class PinchBitmapView extends View {
 			current_trans_y = clipTranslate( view_h, bitmap_h, current_scale, start_image_trans_y + move_y );
 		}
 		
-		if( callback != null ) callback.onMove( current_trans_x,current_trans_y,current_scale );
+		if( callback != null ) callback.onMove( bitmap_w,bitmap_h,current_trans_x,current_trans_y,current_scale );
 		
 		invalidate();
 	}

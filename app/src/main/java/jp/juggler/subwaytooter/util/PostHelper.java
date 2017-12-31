@@ -82,7 +82,7 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 		, Pattern.CASE_INSENSITIVE
 	);
 	
-	private static final Pattern reCharsNotTag = Pattern.compile( "[\\s\\-+.,:;/]" );
+	private static final Pattern reCharsNotTag = Pattern.compile( "[・\\s\\-+.,:;/]" );
 	private static final Pattern reCharsNotEmoji = Pattern.compile( "[^0-9A-Za-z_-]" );
 	
 	public String content;

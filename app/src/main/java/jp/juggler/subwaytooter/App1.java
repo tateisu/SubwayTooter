@@ -525,7 +525,8 @@ public class App1 extends Application {
 			CustomTabsIntent customTabsIntent = builder.build();
 			customTabsIntent.launchUrl( activity, Uri.parse( url ) );
 		}catch( Throwable ex ){
-			log.e( ex, "openCustomTab: failed." );
+			log.trace( ex );
+			Utils.showToast(activity,false,"can't open browser app");
 		}
 	}
 	

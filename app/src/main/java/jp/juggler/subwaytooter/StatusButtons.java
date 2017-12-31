@@ -205,7 +205,7 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		switch( v.getId() ){
 		
 		case R.id.btnConversation:
-			activity.openStatusOtherInstance( activity.nextPosition( column ), access_info, status );
+			activity.openStatusOtherInstance( activity.nextPosition( column ), status );
 			break;
 		
 		case R.id.btnBoost:

@@ -148,7 +148,7 @@ class HeaderViewHolderInstance extends HeaderViewHolderBase implements View.OnCl
 
 		case R.id.btnInstance:
 			if( instance != null && instance.uri != null ){
-				activity.openChromeTab( activity.nextPosition( column ), column.access_info, "https://" + instance.uri + "/about", true );
+				App1.openCustomTab( activity, "https://" + instance.uri + "/about");
 			}
 			break;
 

@@ -332,7 +332,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnStatusWebPage:
 			if( status != null ){
-				activity.openChromeTab( pos, access_info, status.url, true );
+				App1.openCustomTab( activity, status.url );
 			}
 			break;
 		
@@ -356,7 +356,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnConversationAnotherAccount:
 			if( status != null ){
-				activity.openStatusOtherInstance( pos, access_info, status );
+				activity.openStatusOtherInstance( pos, status );
 			}
 			break;
 		
@@ -478,7 +478,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnAccountWebPage:
 			if( who != null ){
-				activity.openChromeTab( pos, access_info, who.url, true );
+				App1.openCustomTab( activity,who.url );
 			}
 			break;
 		
@@ -559,7 +559,8 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		case R.id.btnAvatarImage:
 			if( who != null ){
 				String url = ! TextUtils.isEmpty( who.avatar ) ? who.avatar : who.avatar_static;
-				if( url != null ) activity.openChromeTab( pos, access_info, url, true );
+				if( url != null ) App1.openCustomTab( activity,url );
+				// FIXME: 設定によっては内蔵メディアビューアで開けないか？
 			}
 			break;
 		

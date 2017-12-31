@@ -244,7 +244,7 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 		case R.id.tvRemoteProfileWarning:
 			if( who != null ){
 				// 強制的にブラウザで開く
-				activity.openChromeTab( activity.nextPosition( column ), access_info, who.url, true );
+				App1.openCustomTab( activity, who.url );
 			}
 			break;
 		

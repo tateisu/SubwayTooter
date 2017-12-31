@@ -785,8 +785,11 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.ivCardThumbnail:
-			if( status != null && status.card != null ){
-				activity.openChromeTab( pos, access_info, status.card.url, false );
+			if( status != null
+				&& status.card != null
+				&& !TextUtils.isEmpty( status.card.url )
+				){
+				App1.openCustomTab( activity, status.card.url);
 			}
 			break;
 		
@@ -911,7 +914,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private void clickMedia( int i ){
 		try{
 			if( status instanceof MSPToot ){
-				activity.openStatusOtherInstance( activity.nextPosition( column ), access_info, status );
+				activity.openStatusOtherInstance( activity.nextPosition( column ), status );
 				return;
 			}
 			

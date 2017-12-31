@@ -88,6 +88,7 @@ import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.dialog.ActionsDialog;
+import jp.juggler.subwaytooter.util.ChromeTabOpener;
 import jp.juggler.subwaytooter.util.LinkClickContext;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.MyClickableSpan;
@@ -1266,7 +1267,7 @@ public class ActMain extends AppCompatActivity
 				final String host = m.group( 1 );
 				final long status_id = Long.parseLong( m.group( 3 ), 10 );
 				// ステータスをアプリ内で開く
-				openStatusOtherInstance( getDefaultInsertPosition(), null, uri.toString(), status_id, host, status_id );
+				openStatusOtherInstance( getDefaultInsertPosition(), uri.toString(), status_id, host, status_id );
 			}catch( Throwable ex ){
 				Utils.showToast( this, ex, "can't parse status id." );
 			}
@@ -1769,41 +1770,72 @@ public class ActMain extends AppCompatActivity
 		
 	}
 	
-	static final Pattern reUrlHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#]+)(?:\\z|[?#])" );
+	static final Pattern reUrlHashTag = Pattern.compile( "\\Ahttps://([^/]+)/tags/([^?#・\\s\\-+.,:;/]+)(?:\\z|[?#])" );
 	static final Pattern reUserPage = Pattern.compile( "\\Ahttps://([^/]+)/@([A-Za-z0-9_]+)(?:\\z|[?#])" );
 	static final Pattern reStatusPage = Pattern.compile( "\\Ahttps://([^/]+)/@([A-Za-z0-9_]+)/(\\d+)(?:\\z|[?#])" );
 	
-	public void openChromeTab( final int pos, @Nullable final SavedAccount access_info, final String url, boolean noIntercept ){
+	public void openChromeTab( @NonNull final ChromeTabOpener opener ){
+		
 		try{
-			log.d( "openChromeTab url=%s", url );
+			log.d( "openChromeTab url=%s", opener.url );
 			
-			if( ! noIntercept && access_info != null ){
+			if( opener.bAllowIntercept && opener.access_info != null ){
 				
-				// ハッシュタグをアプリ内で開く
-				Matcher m = reUrlHashTag.matcher( url );
+				// ハッシュタグはいきなり開くのではなくメニューがある
+				Matcher m = reUrlHashTag.matcher( opener.url );
 				if( m.find() ){
+					
 					// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
-					String host = m.group( 1 );
-					String tag_without_sharp = Uri.decode( m.group( 2 ) );
-					if( access_info.isNA() || ! host.equalsIgnoreCase( access_info.host ) ){
-						openHashTagOtherInstance( pos, access_info, url, host, tag_without_sharp );
-					}else{
-						openHashTag( pos, access_info, tag_without_sharp );
+					final String host = m.group( 1 );
+					final String tag_without_sharp = Uri.decode( m.group( 2 ) );
+					final String tag_with_sharp = "#" + tag_without_sharp;
+					
+					ActionsDialog d = new ActionsDialog()
+						.addAction( getString( R.string.open_hashtag_column ), new Runnable() {
+							@Override public void run(){
+								openHashTagOtherInstance( opener.pos, opener.url, host, tag_without_sharp );
+							}
+						} )
+						.addAction( getString( R.string.open_in_browser ), new Runnable() {
+							@Override public void run(){
+								App1.openCustomTab( ActMain.this, opener.url );
+							}
+						} )
+						.addAction( getString( R.string.quote_hashtag_of, tag_with_sharp ), new Runnable() {
+							@Override public void run(){
+								openPost( tag_with_sharp + " " );
+							}
+						} );
+					
+					if( opener.tag_list != null && opener.tag_list.size() > 1 ){
+						StringBuilder sb = new StringBuilder();
+						for( String s : opener.tag_list ){
+							if( sb.length() > 0 ) sb.append( ' ' );
+							sb.append( s );
+						}
+						final String tag_all = sb.toString();
+						d.addAction( getString( R.string.quote_all_hashtag_of, tag_all ), new Runnable() {
+							@Override public void run(){
+								openPost( tag_all + " " );
+							}
+						} );
 					}
+					
+					d.show( ActMain.this, tag_with_sharp );
 					return;
 				}
 				
 				// ステータスページをアプリから開く
-				m = reStatusPage.matcher( url );
+				m = reStatusPage.matcher( opener.url );
 				if( m.find() ){
 					try{
 						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
 						final String host = m.group( 1 );
 						final long status_id = Long.parseLong( m.group( 3 ), 10 );
-						if( access_info.isNA() || ! host.equalsIgnoreCase( access_info.host ) ){
-							openStatusOtherInstance( pos, access_info, url, status_id, host, status_id );
+						if( opener.access_info.isNA() || ! host.equalsIgnoreCase( opener.access_info.host ) ){
+							openStatusOtherInstance( opener.pos, opener.url, status_id, host, status_id );
 						}else{
-							openStatusLocal( pos, access_info, status_id );
+							openStatusLocal( opener.pos, opener.access_info, status_id );
 						}
 					}catch( Throwable ex ){
 						Utils.showToast( this, ex, "can't parse status id." );
@@ -1812,23 +1844,22 @@ public class ActMain extends AppCompatActivity
 				}
 				
 				// ユーザページをアプリ内で開く
-				m = reUserPage.matcher( url );
+				m = reUserPage.matcher( opener.url );
 				if( m.find() ){
 					// https://mastodon.juggler.jp/@SubwayTooter
 					final String host = m.group( 1 );
 					final String user = Uri.decode( m.group( 2 ) );
 					
-					openProfileByHostUser( pos, access_info, url, host, user );
+					openProfileByHostUser( opener.pos, opener.access_info, opener.url, host, user );
 					return;
 				}
 			}
 			
-			App1.openCustomTab( this,url);
-			
+			App1.openCustomTab( this, opener.url );
 			
 		}catch( Throwable ex ){
 			// log.trace( ex );
-			log.e( ex, "openChromeTab failed. url=%s", url );
+			log.e( ex, "openChromeTab failed. url=%s", opener.url );
 		}
 	}
 	
@@ -1841,18 +1872,16 @@ public class ActMain extends AppCompatActivity
 	// 他インスタンスのハッシュタグの表示
 	private void openHashTagOtherInstance(
 		int pos
-		, @NonNull SavedAccount access_info
 		, @NonNull String url
 		, @NonNull String host
 		, @NonNull String tag_without_sharp
 	){
-		openHashTagOtherInstance_sub( pos, access_info, url, host, tag_without_sharp );
+		openHashTagOtherInstance_sub( pos, url, host, tag_without_sharp );
 	}
 	
 	// 他インスタンスのハッシュタグの表示
 	private void openHashTagOtherInstance_sub(
 		final int pos
-		, @NonNull final SavedAccount access_info
 		, @NonNull final String url
 		, @NonNull final String host
 		, @NonNull final String tag_without_sharp
@@ -1883,7 +1912,7 @@ public class ActMain extends AppCompatActivity
 		// ブラウザで表示する
 		dialog.addAction( getString( R.string.open_web_on_host, host ), new Runnable() {
 			@Override public void run(){
-				openChromeTab( pos, access_info, url, true );
+				App1.openCustomTab( ActMain.this, url );
 			}
 		} );
 		
@@ -1958,63 +1987,32 @@ public class ActMain extends AppCompatActivity
 				}
 			}
 			final int pos = nextPosition( column );
+			@Nullable SavedAccount access_info = column == null ? null : column.access_info;
 			
-			// ハッシュタグはいきなり開くのではなくメニューがある
-			Matcher m = reUrlHashTag.matcher( span.url );
-			if( m.find() ){
-				// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
-				final String host = m.group( 1 );
-				final String tag_with_sharp = span.text.startsWith( "#" ) ? span.text : "#" + Uri.decode( m.group( 2 ) );
-				final String tag_without_sharp = tag_with_sharp.substring( 1 );
-				
-				ActionsDialog d = new ActionsDialog()
-					.addAction( getString( R.string.open_hashtag_column ), new Runnable() {
-						@Override public void run(){
-							openHashTagOtherInstance( pos, (SavedAccount) span.lcc, span.url, host, tag_without_sharp );
-						}
-					} )
-					.addAction( getString( R.string.quote_hashtag_of, tag_with_sharp ), new Runnable() {
-						@Override public void run(){
-							openPost( tag_with_sharp + " " );
-						}
-					} );
-				
-				final ArrayList< String > tag_list = new ArrayList<>();
-				try{
-					//noinspection ConstantConditions
-					CharSequence cs = ( (TextView) view_orig ).getText();
-					if( cs instanceof Spannable ){
-						Spannable content = (Spannable) cs;
-						for( MyClickableSpan s : content.getSpans( 0, content.length(), MyClickableSpan.class ) ){
-							m = reUrlHashTag.matcher( s.url );
-							if( m.find() ){
-								String s_tag = s.text.startsWith( "#" ) ? s.text : "#" + Uri.decode( m.group( 2 ) );
-								tag_list.add( s_tag );
-							}
+			final ArrayList< String > tag_list = new ArrayList<>();
+			
+			try{
+				//noinspection ConstantConditions
+				CharSequence cs = ( (TextView) view_orig ).getText();
+				if( cs instanceof Spannable ){
+					Spannable content = (Spannable) cs;
+					for( MyClickableSpan s : content.getSpans( 0, content.length(), MyClickableSpan.class ) ){
+						Matcher m = reUrlHashTag.matcher( s.url );
+						if( m.find() ){
+							String s_tag = s.text.startsWith( "#" ) ? s.text : "#" + Uri.decode( m.group( 2 ) );
+							tag_list.add( s_tag );
 						}
 					}
-				}catch( Throwable ex ){
-					log.trace( ex );
 				}
-				if( tag_list.size() > 1 ){
-					StringBuilder sb = new StringBuilder();
-					for( String s : tag_list ){
-						if( sb.length() > 0 ) sb.append( ' ' );
-						sb.append( s );
-					}
-					final String tag_all = sb.toString();
-					d.addAction( getString( R.string.quote_all_hashtag_of, tag_all ), new Runnable() {
-						@Override public void run(){
-							openPost( tag_all + " " );
-						}
-					} );
-				}
-				
-				d.show( ActMain.this, tag_with_sharp );
-				return;
+			}catch( Throwable ex ){
+				log.trace( ex );
 			}
 			
-			openChromeTab( pos, (SavedAccount) span.lcc, span.url, false );
+			new ChromeTabOpener( ActMain.this, pos, span.url )
+				.accessInfo( access_info )
+				.tagList( tag_list )
+				.open();
+			
 		}
 	};
 	
@@ -2120,7 +2118,7 @@ public class ActMain extends AppCompatActivity
 					Utils.showToast( ActMain.this, true, result.error );
 					
 					// 仕方ないのでchrome tab で開く
-					openChromeTab( pos, access_info, who_url, true );
+					App1.openCustomTab( ActMain.this, who_url );
 				}
 			}
 			
@@ -2175,7 +2173,7 @@ public class ActMain extends AppCompatActivity
 							return;
 						}
 						// ダメならchromeで開く
-						openChromeTab( pos, access_info, url, true );
+						App1.openCustomTab( ActMain.this, url );
 					}
 				} );
 			}else{
@@ -2192,7 +2190,7 @@ public class ActMain extends AppCompatActivity
 		if( ! SavedAccount.hasRealAccount( log ) ){
 			// 疑似アカウントではユーザ情報APIを呼べないし検索APIも使えない
 			// chrome tab で開くしかない
-			openChromeTab( pos, access_info, url, true );
+			App1.openCustomTab( ActMain.this, url );
 		}else{
 			// アカウントを選択して開く
 			AccountPicker.pick( this, false, false
@@ -2559,18 +2557,18 @@ public class ActMain extends AppCompatActivity
 	
 	public void openStatus( int pos, @NonNull SavedAccount access_info, @NonNull TootStatusLike status ){
 		if( access_info.isNA() || ! access_info.host.equalsIgnoreCase( status.host_access ) ){
-			openStatusOtherInstance( pos, access_info, status );
+			openStatusOtherInstance( pos, status );
 		}else{
 			openStatusLocal( pos, access_info, status.id );
 		}
 	}
 	
-	public void openStatusOtherInstance( int pos, @NonNull SavedAccount access_info, @Nullable TootStatusLike status ){
+	public void openStatusOtherInstance( int pos, @Nullable TootStatusLike status ){
 		// アカウント情報がないと出来ないことがある
 		if( status == null || status.account == null ) return;
 		
 		if( status instanceof MSPToot ){
-			openStatusOtherInstance( pos, access_info, status.url
+			openStatusOtherInstance( pos, status.url
 				, status.id
 				, null, - 1L
 			);
@@ -2580,7 +2578,7 @@ public class ActMain extends AppCompatActivity
 			// uri から投稿元タンスでのステータスIDを調べる
 			long status_id_original = TootStatusLike.parseStatusId( status );
 			
-			openStatusOtherInstance( pos, access_info, status.url
+			openStatusOtherInstance( pos, status.url
 				, status_id_original
 				, null, - 1L
 			);
@@ -2588,7 +2586,7 @@ public class ActMain extends AppCompatActivity
 		}else if( status instanceof TootStatus ){
 			if( status.host_original.equals( status.host_access ) ){
 				// TLアカウントのホストとトゥートのアカウントのホストが同じ場合
-				openStatusOtherInstance( pos, access_info, status.url
+				openStatusOtherInstance( pos, status.url
 					, status.id
 					, null, - 1L
 				);
@@ -2597,7 +2595,7 @@ public class ActMain extends AppCompatActivity
 				// uri から投稿元タンスでのステータスIDを調べる
 				long status_id_original = TootStatusLike.parseStatusId( status );
 				
-				openStatusOtherInstance( pos, access_info, status.url
+				openStatusOtherInstance( pos, status.url
 					, status_id_original
 					, status.host_access, status.id
 				);
@@ -2607,7 +2605,6 @@ public class ActMain extends AppCompatActivity
 	
 	void openStatusOtherInstance(
 		final int pos
-		, @Nullable final SavedAccount access_info
 		, @NonNull final String url
 		, final long status_id_original
 		, final String host_access, final long status_id_access
@@ -2619,7 +2616,7 @@ public class ActMain extends AppCompatActivity
 		// 選択肢：ブラウザで表示する
 		dialog.addAction( getString( R.string.open_web_on_host, host_original ), new Runnable() {
 			@Override public void run(){
-				openChromeTab( pos, access_info, url, true );
+				App1.openCustomTab( ActMain.this, url );
 			}
 		} );
 		

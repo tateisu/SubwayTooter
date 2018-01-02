@@ -27,6 +27,8 @@ import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirec
 
 import java.util.regex.Pattern;
 
+import jp.juggler.subwaytooter.action.Action_List;
+import jp.juggler.subwaytooter.action.Action_Notification;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.view.MyListView;
@@ -88,7 +90,6 @@ class ColumnViewHolder
 	private final EditText etListName;
 	private final View btnListAdd;
 	
-	
 	ColumnViewHolder( ActMain arg_activity, View root ){
 		this.activity = arg_activity;
 		
@@ -132,8 +133,8 @@ class ColumnViewHolder
 		llSearch = root.findViewById( R.id.llSearch );
 		llListList = root.findViewById( R.id.llListList );
 		
-		btnListAdd= root.findViewById( R.id.btnListAdd );
-			etListName= root.findViewById( R.id.etListName );
+		btnListAdd = root.findViewById( R.id.btnListAdd );
+		etListName = root.findViewById( R.id.etListName );
 		btnListAdd.setOnClickListener( this );
 		
 		etListName.setOnEditorActionListener( new TextView.OnEditorActionListener() {
@@ -279,22 +280,22 @@ class ColumnViewHolder
 			
 			case Column.TYPE_SEARCH_MSP:
 				status_adapter.header = new HeaderViewHolderSearchDesc( activity, column, listView
-					, getSearchDesc(R.raw.search_desc_msp_en, R.raw.search_desc_msp_ja)
+					, getSearchDesc( R.raw.search_desc_msp_en, R.raw.search_desc_msp_ja )
 				);
 				break;
-
+			
 			case Column.TYPE_SEARCH_TS:
 				status_adapter.header = new HeaderViewHolderSearchDesc( activity, column, listView
-					, getSearchDesc( R.raw.search_desc_ts_en,R.raw.search_desc_ts_ja ) );
+					, getSearchDesc( R.raw.search_desc_ts_en, R.raw.search_desc_ts_ja ) );
 				break;
 			
 			case Column.TYPE_INSTANCE_INFORMATION:
-				status_adapter.header = new HeaderViewHolderInstance(activity, column, listView );
+				status_adapter.header = new HeaderViewHolderInstance( activity, column, listView );
 				break;
 			}
 			
-			boolean isNotificationColumn = (column.column_type == Column.TYPE_NOTIFICATIONS);
-
+			boolean isNotificationColumn = ( column.column_type == Column.TYPE_NOTIFICATIONS );
+			
 			// 添付メディアや正規表現のフィルタ
 			boolean bAllowFilter = column.canStatusFilter();
 			
@@ -318,7 +319,7 @@ class ColumnViewHolder
 			vg( cbWithAttachment, bAllowFilter );
 			vg( etRegexFilter, bAllowFilter );
 			vg( llRegexFilter, bAllowFilter );
-
+			
 			vg( cbDontShowBoost, column.canFilterBoost() );
 			vg( cbDontShowReply, column.canFilterReply() );
 			vg( cbDontShowFavourite, isNotificationColumn );
@@ -372,7 +373,7 @@ class ColumnViewHolder
 		}
 	}
 	
-	private String getSearchDesc(int raw_en,int raw_ja){
+	private String getSearchDesc( int raw_en, int raw_ja ){
 		String language_code = activity.getString( R.string.language_code );
 		int res_id;
 		if( "ja".equals( language_code ) ){
@@ -383,7 +384,6 @@ class ColumnViewHolder
 		byte[] data = Utils.loadRawResource( activity, res_id );
 		return data == null ? null : Utils.decodeUTF8( data );
 	}
-
 	
 	void showColumnColor(){
 		if( column == null ) return;
@@ -458,7 +458,8 @@ class ColumnViewHolder
 		}
 	}
 	
-	@SuppressLint("StaticFieldLeak") private void loadBackgroundImage( final ImageView iv, final String url ){
+	@SuppressLint("StaticFieldLeak")
+	private void loadBackgroundImage( final ImageView iv, final String url ){
 		try{
 			if( TextUtils.isEmpty( url ) ){
 				// 指定がないなら閉じる
@@ -701,7 +702,7 @@ class ColumnViewHolder
 			break;
 		
 		case R.id.btnDeleteNotification:
-			activity.deleteNotification( false, column.access_info );
+			Action_Notification.deleteAll( activity, column.access_info, false );
 			break;
 		
 		case R.id.btnColor:
@@ -715,7 +716,7 @@ class ColumnViewHolder
 				Utils.showToast( activity, true, R.string.list_name_empty );
 				return;
 			}
-			activity.createNewList( column.access_info, tv );
+			Action_List.create( activity, column.access_info, tv ,null);
 			
 		}
 		
@@ -939,5 +940,4 @@ class ColumnViewHolder
 		}, 20L );
 	}
 	
-
 }

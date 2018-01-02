@@ -12,6 +12,8 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import jp.juggler.subwaytooter.action.Action_Follow;
+import jp.juggler.subwaytooter.action.Action_User;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.AcctColor;
@@ -288,7 +290,7 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 			if( access_info.isPseudo() ){
 				new DlgContextMenu( activity, column, who_moved, null, null ).show();
 			}else{
-				activity.openProfile( activity.nextPosition( column ), access_info, who_moved );
+				Action_User.profile( activity, activity.nextPosition( column ), access_info, who_moved );
 			}
 			break;
 		}
@@ -298,11 +300,11 @@ class HeaderViewHolderProfile extends HeaderViewHolderBase implements View.OnCli
 		switch( v.getId() ){
 
 		case R.id.btnFollow:
-			activity.openFollowFromAnotherAccount( activity.nextPosition( column),access_info, who );
+			Action_Follow.followFromAnotherAccount( activity, activity.nextPosition( column),access_info, who );
 			return true;
 
 		case R.id.btnMoved:
-			activity.openFollowFromAnotherAccount( activity.nextPosition( column),access_info, who_moved );
+			Action_Follow.followFromAnotherAccount( activity, activity.nextPosition( column),access_info, who_moved );
 			return true;
 		}
 		

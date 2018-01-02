@@ -54,13 +54,13 @@ public class Pref {
 	static final String KEY_STREAM_LISTENER_SECRET = "stream_listener_secret";
 	static final String KEY_STREAM_LISTENER_CONFIG_URL = "stream_listener_config_url";
 	static final String KEY_STREAM_LISTENER_CONFIG_DATA = "stream_listener_config_data";
-	static final String KEY_TABLET_TOOT_DEFAULT_ACCOUNT = "tablet_toot_default_account";
+	public static final String KEY_TABLET_TOOT_DEFAULT_ACCOUNT = "tablet_toot_default_account";
 	
 	public static final String KEY_PRIOR_CHROME = "prior_chrome";
 	
 	static final String KEY_POST_BUTTON_BAR_AT_TOP = "post_button_bar_at_top";
 	
-	static final String KEY_CLIENT_NAME = "client_name";
+	public static final String KEY_CLIENT_NAME = "client_name";
 	
 	public static final String KEY_MASTODON_SEARCH_PORTAL_USER_TOKEN = "mastodon_search_portal_user_token";
 	

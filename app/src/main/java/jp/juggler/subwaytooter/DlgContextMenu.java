@@ -18,6 +18,13 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import jp.juggler.subwaytooter.action.Action_Account;
+import jp.juggler.subwaytooter.action.Action_App;
+import jp.juggler.subwaytooter.action.Action_Follow;
+import jp.juggler.subwaytooter.action.Action_Instance;
+import jp.juggler.subwaytooter.action.Action_Notification;
+import jp.juggler.subwaytooter.action.Action_Toot;
+import jp.juggler.subwaytooter.action.Action_User;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
@@ -103,7 +110,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		View btnHideBoost = viewRoot.findViewById( R.id.btnHideBoost );
 		View btnShowBoost = viewRoot.findViewById( R.id.btnShowBoost );
 		
-		View btnListMemberAddRemove= viewRoot.findViewById( R.id.btnListMemberAddRemove );
+		View btnListMemberAddRemove = viewRoot.findViewById( R.id.btnListMemberAddRemove );
 		
 		btnStatusWebPage.setOnClickListener( this );
 		btnText.setOnClickListener( this );
@@ -138,7 +145,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		viewRoot.findViewById( R.id.btnQuoteUrlAccount ).setOnClickListener( this );
 		viewRoot.findViewById( R.id.btnQuoteName ).setOnClickListener( this );
 		
-		final ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( activity, log );
+		final ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( activity );
 		//	final ArrayList< SavedAccount > account_list_non_pseudo_same_instance = new ArrayList<>();
 		
 		ArrayList< SavedAccount > account_list_non_pseudo = new ArrayList<>();
@@ -343,20 +350,20 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			break;
 		
 		case R.id.btnFavouriteAnotherAccount:
-			activity.openFavouriteFromAnotherAccount( access_info, status );
+			Action_Toot.favouriteFromAnotherAccount( activity, access_info, status );
 			break;
 		
 		case R.id.btnBoostAnotherAccount:
-			activity.openBoostFromAnotherAccount( access_info, status );
+			Action_Toot.boostFromAnotherAccount( activity, access_info, status );
 			break;
 		
 		case R.id.btnReplyAnotherAccount:
-			activity.openReplyFromAnotherAccount( access_info, status );
+			Action_Toot.replyFromAnotherAccount( activity, access_info, status );
 			break;
 		
 		case R.id.btnConversationAnotherAccount:
 			if( status != null ){
-				activity.openStatusOtherInstance( pos, status );
+				Action_Toot.conversationOtherInstance( activity, pos, status );
 			}
 			break;
 		
@@ -367,7 +374,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 					.setNegativeButton( R.string.cancel, null )
 					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 						@Override public void onClick( DialogInterface dialog, int which ){
-							activity.deleteStatus( access_info, status.id );
+							Action_Toot.delete( activity, access_info, status.id );
 						}
 					} )
 					.show();
@@ -376,13 +383,13 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnReport:
 			if( who != null && status instanceof TootStatus ){
-				activity.openReportForm( access_info, who, (TootStatus) status );
+				Action_User.reportForm( activity, access_info, who, (TootStatus) status );
 			}
 			break;
 		
 		case R.id.btnMuteApp:
 			if( status != null && status.application != null ){
-				activity.performMuteApp( status.application );
+				Action_App.muteApp(activity, status.application );
 			}
 			break;
 		
@@ -402,11 +409,13 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			if( who == null ){
 				// サーバのバグで誰のことか分からないので何もできない
 			}else if( access_info.isPseudo() ){
-				activity.openFollowFromAnotherAccount( pos, access_info, who );
+				Action_Follow.followFromAnotherAccount( activity, pos, access_info, who );
 			}else{
 				boolean bSet = ! ( relation.getFollowing( who ) || relation.getRequested( who ) );
-				activity.callFollow(
-					pos,access_info
+				Action_Follow.follow(
+					activity
+					, pos
+					, access_info
 					, who
 					, bSet
 					, bSet ? activity.follow_complete_callback : activity.unfollow_complete_callback
@@ -424,10 +433,10 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			if( who == null ){
 				// サーバのバグで誰のことか分からないので何もできない
 			}else if( relation.muting ){
-				activity.callMute( access_info, who, false,false );
+				Action_User.mute( activity, access_info, who, false, false );
 			}else{
 				@SuppressLint("InflateParams")
-				View view = activity.getLayoutInflater().inflate( R.layout.dlg_confirm,null,false );
+				View view = activity.getLayoutInflater().inflate( R.layout.dlg_confirm, null, false );
 				TextView tvMessage = view.findViewById( R.id.tvMessage );
 				tvMessage.setText( activity.getString( R.string.confirm_mute_user, who.username ) );
 				final CheckBox cbMuteNotification = view.findViewById( R.id.cbSkipNext );
@@ -439,7 +448,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 					.setNegativeButton( R.string.cancel, null )
 					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 						@Override public void onClick( DialogInterface dialog, int which ){
-							activity.callMute( access_info, who, true,cbMuteNotification.isChecked() );
+							Action_User.mute( activity, access_info, who, true, cbMuteNotification.isChecked() );
 						}
 					} )
 					.show();
@@ -450,14 +459,15 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			if( who == null ){
 				// サーバのバグで誰のことか分からないので何もできない
 			}else if( relation.blocking ){
-				activity.callBlock( access_info, who, false );
+				
+				Action_User.block( activity, access_info, who, false );
 			}else{
 				new AlertDialog.Builder( activity )
 					.setMessage( activity.getString( R.string.confirm_block_user, who.username ) )
 					.setNegativeButton( R.string.cancel, null )
 					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 						@Override public void onClick( DialogInterface dialog, int which ){
-							activity.callBlock( access_info, who, true );
+							Action_User.block( activity, access_info, who, true );
 						}
 					} )
 					.show();
@@ -466,44 +476,44 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnProfile:
 			if( who != null ){
-				activity.openProfile( pos, access_info, who );
+				Action_User.profile( activity, pos, access_info, who );
 			}
 			break;
 		
 		case R.id.btnSendMessage:
 			if( who != null ){
-				activity.performMention( access_info, who );
+				Action_User.mention( activity, access_info, who );
 			}
 			break;
 		
 		case R.id.btnAccountWebPage:
 			if( who != null ){
-				App1.openCustomTab( activity,who.url );
+				App1.openCustomTab( activity, who.url );
 			}
 			break;
 		
 		case R.id.btnFollowRequestOK:
 			if( who != null ){
-				activity.callFollowRequestAuthorize( access_info, who, true );
+				Action_Follow.authorizeFollowRequest( activity, access_info, who, true );
 			}
 			break;
 		
 		case R.id.btnFollowRequestNG:
 			if( who != null ){
-				activity.callFollowRequestAuthorize( access_info, who, false );
+				Action_Follow.authorizeFollowRequest( activity, access_info, who, false );
 			}
 			break;
 		
 		case R.id.btnFollowFromAnotherAccount:
-			activity.openFollowFromAnotherAccount( pos,access_info, who );
+			Action_Follow.followFromAnotherAccount( activity, pos, access_info, who );
 			break;
 		
 		case R.id.btnSendMessageFromAnotherAccount:
-			activity.performMentionFromAnotherAccount( access_info, who );
+			Action_User.mentionFromAnotherAccount( activity, access_info, who );
 			break;
 		
 		case R.id.btnOpenProfileFromAnotherAccount:
-			activity.openProfileFromAnotherAccount( pos, access_info, who );
+			Action_User.profileFromAnotherAccount( activity, pos, access_info, who );
 			break;
 		
 		case R.id.btnNickname:
@@ -539,7 +549,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 						.setNegativeButton( R.string.cancel, null )
 						.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 							@Override public void onClick( DialogInterface dialog, int which ){
-								activity.callDomainBlock( access_info, domain, true );
+								Action_Instance.blockDomain( activity, access_info, domain, true );
 							}
 						} )
 						.show();
@@ -552,14 +562,14 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			if( TextUtils.isEmpty( host ) || host.equals( "?" ) ){
 				// 何もしない
 			}else{
-				activity.openTimelineFor( host );
+				Action_Instance.timelineLocal( activity, host );
 			}
 			break;
 		
 		case R.id.btnAvatarImage:
 			if( who != null ){
 				String url = ! TextUtils.isEmpty( who.avatar ) ? who.avatar : who.avatar_static;
-				if( url != null ) App1.openCustomTab( activity,url );
+				if( url != null ) App1.openCustomTab( activity, url );
 				// FIXME: 設定によっては内蔵メディアビューアで開けないか？
 			}
 			break;
@@ -567,26 +577,26 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 		case R.id.btnQuoteUrlStatus:
 			if( status != null ){
 				String url = TextUtils.isEmpty( status.url ) ? "" : status.url + " ";
-				activity.openPost( url );
+				Action_Account.openPost( activity, url );
 			}
 			break;
 		
 		case R.id.btnQuoteUrlAccount:
 			if( who != null ){
 				String url = TextUtils.isEmpty( who.url ) ? "" : who.url + " ";
-				activity.openPost( url );
+				Action_Account.openPost( activity, url );
 			}
 			break;
 		
 		case R.id.btnNotificationDelete:
 			if( notification != null ){
-				activity.deleteNotificationOne( access_info, notification );
+				Action_Notification.deleteOne( activity, access_info, notification );
 			}
 			break;
 		
 		case R.id.btnConversationMute:
 			if( status != null ){
-				activity.toggleConversationMute( access_info, status );
+				Action_Toot.muteConversation( activity, access_info, status );
 			}
 			break;
 		
@@ -601,45 +611,45 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 				}catch( Throwable ex ){
 					log.trace( ex );
 				}
-				activity.openPost( sv );
+				Action_Account.openPost( activity, sv );
 			}
 			break;
 		case R.id.btnInstanceInformation:
 			if( who != null ){
-				activity.openInstanceInformation( pos, access_info.getAccountHost( who ).toLowerCase() );
+				Action_Instance.information( activity, pos, access_info.getAccountHost( who ).toLowerCase() );
 			}
 			break;
 		
 		case R.id.btnProfilePin:
 			if( status != null ){
-				activity.setProfilePin( access_info, status, true );
+				Action_Toot.pin( activity, access_info, status, true );
 			}
 			break;
 		
 		case R.id.btnProfileUnpin:
 			if( status != null ){
-				activity.setProfilePin( access_info, status, false );
+				Action_Toot.pin( activity, access_info, status, false );
 			}
 			break;
 		
 		case R.id.btnHideBoost:
 			if( who != null ){
-				activity.callFollowingReblogs( access_info, who, false );
+				Action_User.showBoosts( activity, access_info, who, false );
 			}
 			break;
 		
 		case R.id.btnShowBoost:
 			if( who != null ){
-				activity.callFollowingReblogs( access_info, who, true );
+				Action_User.showBoosts( activity, access_info, who, true );
 			}
 			break;
 		
 		case R.id.btnListMemberAddRemove:
 			if( who != null ){
-				new DlgListMember( activity,who, access_info ).show();
+				new DlgListMember( activity, who, access_info ).show();
 			}
 			break;
-
+			
 		}
 	}
 	
@@ -652,7 +662,7 @@ class DlgContextMenu implements View.OnClickListener, View.OnLongClickListener {
 			}catch( Throwable ignored ){
 				// IllegalArgumentException がたまに出る
 			}
-			activity.openFollowFromAnotherAccount( activity.nextPosition( column),access_info, who );
+			Action_Follow.followFromAnotherAccount( activity, activity.nextPosition( column ), access_info, who );
 			return true;
 			
 		}

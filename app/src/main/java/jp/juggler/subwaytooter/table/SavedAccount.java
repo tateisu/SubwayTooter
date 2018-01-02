@@ -409,7 +409,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	public void reloadSetting( Context context ){
 		if( db_id == INVALID_ID )
 			throw new RuntimeException( "SavedAccount.reloadSetting missing db_id" );
-		SavedAccount b = loadAccount( context, log, db_id );
+		SavedAccount b = loadAccount( context, db_id );
 		if( b == null ) return; // DBから削除されてる？
 		this.visibility = b.visibility;
 		this.confirm_boost = b.confirm_boost;
@@ -426,7 +426,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	}
 	
 	public static @Nullable
-	SavedAccount loadAccount( @NonNull Context context, @NonNull LogCategory log, long db_id ){
+	SavedAccount loadAccount( @NonNull Context context, long db_id ){
 		try{
 			Cursor cursor = App1.getDB().query( table, null, COL_ID + "=?", new String[]{ Long.toString( db_id ) }, null, null, null );
 			try{
@@ -444,7 +444,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	}
 	
 	public static @NonNull
-	ArrayList< SavedAccount > loadAccountList( Context context, @NonNull LogCategory log ){
+	ArrayList< SavedAccount > loadAccountList( Context context ){
 		ArrayList< SavedAccount > result = new ArrayList<>();
 		try{
 			Cursor cursor = App1.getDB().query( table, null, null, null, null, null, null );
@@ -464,7 +464,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	}
 	
 	public static @NonNull
-	ArrayList< SavedAccount > loadByTag( Context context, @NonNull LogCategory log, String tag ){
+	ArrayList< SavedAccount > loadByTag( Context context, String tag ){
 		ArrayList< SavedAccount > result = new ArrayList<>();
 		try{
 			Cursor cursor = App1.getDB().query( table, null, COL_NOTIFICATION_TAG + "=?", new String[]{ tag }, null, null, null );
@@ -484,7 +484,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 	}
 	
 	@Nullable
-	public static SavedAccount loadAccountByAcct( Context context, @NonNull LogCategory log, String full_acct ){
+	public static SavedAccount loadAccountByAcct( Context context, String full_acct ){
 		try{
 			Cursor cursor = App1.getDB().query( table, null, COL_USER + "=?", new String[]{ full_acct }, null, null, null );
 			try{
@@ -501,7 +501,7 @@ public class SavedAccount extends TootAccount implements LinkClickContext {
 		return null;
 	}
 	
-	public static boolean hasRealAccount( @NonNull LogCategory log ){
+	public static boolean hasRealAccount(){
 		try{
 			Cursor cursor = App1.getDB().query( table, null, COL_USER + " NOT LIKE '?@%'", null, null, null, null, "1" );
 			try{

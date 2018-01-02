@@ -20,6 +20,12 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
+import jp.juggler.subwaytooter.action.Action_Follow;
+import jp.juggler.subwaytooter.action.Action_HashTag;
+import jp.juggler.subwaytooter.action.Action_Instance;
+import jp.juggler.subwaytooter.action.Action_List;
+import jp.juggler.subwaytooter.action.Action_Toot;
+import jp.juggler.subwaytooter.action.Action_User;
 import jp.juggler.subwaytooter.api.entity.NicoEnquete;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
@@ -787,9 +793,9 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		case R.id.ivCardThumbnail:
 			if( status != null
 				&& status.card != null
-				&& !TextUtils.isEmpty( status.card.url )
+				&& ! TextUtils.isEmpty( status.card.url )
 				){
-				App1.openCustomTab( activity, status.card.url);
+				App1.openCustomTab( activity, status.card.url );
 			}
 			break;
 		
@@ -805,7 +811,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			if( access_info.isPseudo() ){
 				new DlgContextMenu( activity, column, account_thumbnail, null, notification ).show();
 			}else{
-				activity.openProfile( pos, access_info, account_thumbnail );
+				Action_User.profile( activity, pos, access_info, account_thumbnail );
 			}
 			break;
 		
@@ -814,7 +820,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 				if( access_info.isPseudo() ){
 					new DlgContextMenu( activity, column, account_boost, null, notification ).show();
 				}else{
-					activity.openProfile( pos, access_info, account_boost );
+					Action_User.profile( activity, pos, access_info, account_boost );
 				}
 			}
 			break;
@@ -822,7 +828,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			if( access_info.isPseudo() ){
 				new DlgContextMenu( activity, column, account_follow, null, notification ).show();
 			}else{
-				activity.openProfile( pos, access_info, account_follow );
+				Action_User.profile( activity, pos, access_info, account_follow );
 			}
 			break;
 		case R.id.btnFollow:
@@ -832,7 +838,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 		case R.id.btnSearchTag:
 			if( search_tag != null ){
 				// search_tag は#を含まない
-				activity.openHashTag( activity.nextPosition( column ), access_info, search_tag );
+				Action_HashTag.timeline( activity, activity.nextPosition( column ), access_info, search_tag );
 			}else if( gap != null ){
 				column.startGap( gap );
 			}else if( domain_block != null ){
@@ -842,7 +848,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 					.setNegativeButton( R.string.cancel, null )
 					.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
 						@Override public void onClick( DialogInterface dialog, int which ){
-							activity.callDomainBlock( access_info, domain, false );
+							Action_Instance.blockDomain( activity, access_info, domain, false );
 						}
 					} )
 					.show();
@@ -872,7 +878,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 					@Override public void run(){
 						DlgConfirm.openSimple( activity, activity.getString( R.string.list_delete_confirm, list.title ), new Runnable() {
 							@Override public void run(){
-								activity.callDeleteList( access_info, list.id );
+								Action_List.delete( activity, access_info, list.id );
 							}
 						} );
 					}
@@ -891,7 +897,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			return true;
 		
 		case R.id.btnFollow:
-			activity.openFollowFromAnotherAccount( activity.nextPosition( column ), access_info, account_follow );
+			Action_Follow.followFromAnotherAccount( activity, activity.nextPosition( column ), access_info, account_follow );
 			return true;
 		
 		case R.id.llBoosted:
@@ -914,7 +920,7 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 	private void clickMedia( int i ){
 		try{
 			if( status instanceof MSPToot ){
-				activity.openStatusOtherInstance( activity.nextPosition( column ), status );
+				Action_Toot.conversationOtherInstance( activity, activity.nextPosition( column ), status );
 				return;
 			}
 			
@@ -925,14 +931,14 @@ class ItemViewHolder implements View.OnClickListener, View.OnLongClickListener {
 			
 			if( media_attachments == null ) return;
 			
-			if( App1.pref.getBoolean( Pref. KEY_USE_INTERNAL_MEDIA_VIEWER,true) ){
+			if( App1.pref.getBoolean( Pref.KEY_USE_INTERNAL_MEDIA_VIEWER, true ) ){
 				ActMediaViewer.open( activity, media_attachments, i );
 				return;
 			}
 			
 			TootAttachment a = media_attachments.get( i );
-			App1.openCustomTab( activity, a);
-		
+			App1.openCustomTab( activity, a );
+			
 		}catch( Throwable ex ){
 			log.trace( ex );
 		}

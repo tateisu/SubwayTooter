@@ -38,7 +38,7 @@ public class AccountPicker {
 		, @NonNull final AccountPickerCallback callback
 	){
 		
-		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( activity,ActMain.log );
+		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( activity );
 		SavedAccount.sort( account_list );
 		pick( activity, bAllowPseudo, bAuto, message, account_list, true,callback ,null );
 	}
@@ -51,7 +51,7 @@ public class AccountPicker {
 		, @NonNull final AccountPickerCallback callback
 		, @Nullable final DialogInterface.OnDismissListener dismiss_callback
 	){
-		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( activity,ActMain.log );
+		ArrayList< SavedAccount > account_list = SavedAccount.loadAccountList( activity );
 		pick( activity, bAllowPseudo, bAuto, message, account_list, true, callback ,dismiss_callback );
 	}
 	

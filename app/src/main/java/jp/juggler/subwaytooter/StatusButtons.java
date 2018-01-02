@@ -10,6 +10,9 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
 
+import jp.juggler.subwaytooter.action.ActionUtils;
+import jp.juggler.subwaytooter.action.Action_Follow;
+import jp.juggler.subwaytooter.action.Action_Toot;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
@@ -140,25 +143,26 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		switch( v.getId() ){
 		
 		case R.id.btnConversation:
-			activity.openStatus( activity.nextPosition( column ), access_info, status );
+			Action_Toot.conversation( activity, activity.nextPosition( column ), access_info, status );
 			break;
 		
 		case R.id.btnReply:
 			if( status instanceof TootStatus && ! access_info.isPseudo() ){
-				activity.performReply( access_info, (TootStatus) status );
+				Action_Toot.reply( activity,access_info, (TootStatus) status );
 			}else{
-				activity.openReplyFromAnotherAccount( access_info, status );
+				Action_Toot.replyFromAnotherAccount(activity, access_info, status );
 			}
 			break;
 		
 		case R.id.btnBoost:
 			if( access_info.isPseudo() ){
-				activity.openBoostFromAnotherAccount( access_info, status );
+				Action_Toot.boostFromAnotherAccount( activity, access_info, status );
 			}else{
-				activity.performBoost(
-					access_info
+				Action_Toot.boost(
+					activity
+					, access_info
 					, status
-					, ActMain.NOT_CROSS_ACCOUNT
+					, ActionUtils.NOT_CROSS_ACCOUNT
 					, ! status.reblogged
 					, false
 					, ! bSimpleList ? null : status.reblogged ? activity.unboost_complete_callback : activity.boost_complete_callback
@@ -168,12 +172,13 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		
 		case R.id.btnFavourite:
 			if( access_info.isPseudo() ){
-				activity.openFavouriteFromAnotherAccount( access_info, status );
+				Action_Toot.favouriteFromAnotherAccount( activity, access_info, status );
 			}else{
-				activity.performFavourite(
-					access_info
+				Action_Toot.favourite(
+					activity
+					, access_info
 					, status
-					, ActMain.NOT_CROSS_ACCOUNT
+					, ActionUtils.NOT_CROSS_ACCOUNT
 					, ! status.favourited
 					, ! bSimpleList ? null : status.favourited ? activity.unfavourite_complete_callback : activity.favourite_complete_callback
 				);
@@ -188,13 +193,13 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 			if( status == null || status.account == null ){
 				// 何もしない
 			}else if( access_info.isPseudo() ){
-				activity.openFollowFromAnotherAccount( activity.nextPosition( column ), access_info, status.account );
+				Action_Follow.followFromAnotherAccount( activity, activity.nextPosition( column ), access_info, status.account );
 			}else if( relation.blocking || relation.muting ){
 				// 何もしない
 			}else if( relation.getFollowing( status.account ) || relation.getRequested( status.account ) ){
-				activity.callFollow( activity.nextPosition( column ), access_info, status.account, false, activity.unfollow_complete_callback );
+				Action_Follow.follow( activity, activity.nextPosition( column ), access_info, status.account, false, activity.unfollow_complete_callback );
 			}else{
-				activity.callFollow( activity.nextPosition( column ), access_info, status.account, true, activity.follow_complete_callback );
+				Action_Follow.follow( activity, activity.nextPosition( column ), access_info, status.account, true, activity.follow_complete_callback );
 			}
 			break;
 		}
@@ -205,25 +210,25 @@ class StatusButtons implements View.OnClickListener, View.OnLongClickListener {
 		switch( v.getId() ){
 		
 		case R.id.btnConversation:
-			activity.openStatusOtherInstance( activity.nextPosition( column ), status );
+			Action_Toot.conversationOtherInstance( activity, activity.nextPosition( column ), status );
 			break;
 		
 		case R.id.btnBoost:
-			activity.openBoostFromAnotherAccount( access_info, status );
+			Action_Toot.boostFromAnotherAccount( activity, access_info, status );
 			break;
 		
 		case R.id.btnFavourite:
-			activity.openFavouriteFromAnotherAccount( access_info, status );
+			Action_Toot.favouriteFromAnotherAccount( activity, access_info, status );
 			break;
 		
 		case R.id.btnFollow2:
 			if( status != null ){
-				activity.openFollowFromAnotherAccount( activity.nextPosition( column ), access_info, status.account );
+				Action_Follow.followFromAnotherAccount( activity, activity.nextPosition( column ), access_info, status.account );
 			}
 			break;
 		
 		case R.id.btnReply:
-			activity.openReplyFromAnotherAccount( access_info, status );
+			Action_Toot.replyFromAnotherAccount( activity,access_info, status );
 			break;
 			
 		}

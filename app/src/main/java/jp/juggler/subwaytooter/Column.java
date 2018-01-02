@@ -124,7 +124,7 @@ import jp.juggler.subwaytooter.util.Utils;
 	private static final String PATH_ACCOUNT = "/api/v1/accounts/%d"; // 1:account_id
 	private static final String PATH_STATUSES = "/api/v1/statuses/%d"; // 1:status_id
 	private static final String PATH_STATUSES_CONTEXT = "/api/v1/statuses/%d/context"; // 1:status_id
-	static final String PATH_SEARCH = "/api/v1/search?q=%s"; // 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
+	public static final String PATH_SEARCH = "/api/v1/search?q=%s"; // 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
 	private static final String PATH_INSTANCE = "/api/v1/instance";
 	private static final String PATH_LIST_INFO = "/api/v1/lists/%s";
 	
@@ -203,14 +203,14 @@ import jp.juggler.subwaytooter.util.Utils;
 	static final String KEY_OLD_INDEX = "old_index";
 	
 	static final int TYPE_HOME = 1;
-	static final int TYPE_LOCAL = 2;
+	public static final int TYPE_LOCAL = 2;
 	static final int TYPE_FEDERATE = 3;
-	static final int TYPE_PROFILE = 4;
+	public static final int TYPE_PROFILE = 4;
 	static final int TYPE_FAVOURITES = 5;
 	static final int TYPE_REPORTS = 6;
-	static final int TYPE_NOTIFICATIONS = 7;
-	static final int TYPE_CONVERSATION = 8;
-	static final int TYPE_HASHTAG = 9;
+	public static final int TYPE_NOTIFICATIONS = 7;
+	public static final int TYPE_CONVERSATION = 8;
+	public static final int TYPE_HASHTAG = 9;
 	static final int TYPE_SEARCH = 10;
 	static final int TYPE_MUTES = 11;
 	static final int TYPE_BLOCKS = 12;
@@ -219,7 +219,7 @@ import jp.juggler.subwaytooter.util.Utils;
 	static final int TYPE_FAVOURITED_BY = 15;
 	static final int TYPE_DOMAIN_BLOCKS = 16;
 	static final int TYPE_SEARCH_MSP = 17;
-	static final int TYPE_INSTANCE_INFORMATION = 18;
+	public static final int TYPE_INSTANCE_INFORMATION = 18;
 	static final int TYPE_LIST_LIST = 19;
 	static final int TYPE_LIST_TL = 20;
 	static final int TYPE_LIST_MEMBER = 21;
@@ -227,9 +227,9 @@ import jp.juggler.subwaytooter.util.Utils;
 	
 	@NonNull final Context context;
 	@NonNull private final AppState app_state;
-	@NonNull final SavedAccount access_info;
+	@NonNull public final SavedAccount access_info;
 	
-	final int column_type;
+	public final int column_type;
 	
 	boolean dont_close;
 	
@@ -399,7 +399,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		
 		long account_db_id = Utils.optLongX( src, KEY_ACCOUNT_ROW_ID );
 		if( account_db_id >= 0 ){
-			SavedAccount ac = SavedAccount.loadAccount( context, log, account_db_id );
+			SavedAccount ac = SavedAccount.loadAccount( context, account_db_id );
 			if( ac == null ) throw new RuntimeException( "missing account" );
 			this.access_info = ac;
 		}else{
@@ -603,7 +603,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		}
 	}
 	
-	static String getColumnTypeName( Context context, int type ){
+	public static String getColumnTypeName( Context context, int type ){
 		switch( type ){
 		default:
 			return "?";
@@ -754,12 +754,12 @@ import jp.juggler.subwaytooter.util.Utils;
 	private void init(){
 	}
 	
-	interface StatusEntryCallback {
+	public interface StatusEntryCallback {
 		boolean onIterate( SavedAccount account, TootStatus status );
 	}
 	
 	// ブーストやお気に入りの更新に使う。ステータスを列挙する。
-	void findStatus( @NonNull String target_instance, long target_status_id, StatusEntryCallback callback ){
+	public void findStatus( @NonNull String target_instance, long target_status_id, StatusEntryCallback callback ){
 		if( access_info.host.equalsIgnoreCase( target_instance ) ){
 			boolean bChanged = false;
 			for( Object data : list_data ){
@@ -793,7 +793,7 @@ import jp.juggler.subwaytooter.util.Utils;
 	
 	// ミュート、ブロックが成功した時に呼ばれる
 	// リストメンバーカラムでメンバーをリストから除去した時に呼ばれる
-	void removeAccountInTimeline( SavedAccount target_account, long who_id ){
+	public void removeAccountInTimeline( SavedAccount target_account, long who_id ){
 		if( ! target_account.acct.equals( access_info.acct ) ) return;
 		
 		ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
@@ -830,7 +830,7 @@ import jp.juggler.subwaytooter.util.Utils;
 	}
 	
 	// ミュート解除が成功した時に呼ばれる
-	void removeFromMuteList( SavedAccount target_account, long who_id ){
+	public void removeFromMuteList( SavedAccount target_account, long who_id ){
 		if( ! target_account.acct.equals( access_info.acct ) ) return;
 		if( column_type != TYPE_MUTES ) return;
 		
@@ -851,7 +851,7 @@ import jp.juggler.subwaytooter.util.Utils;
 	}
 	
 	// ブロック解除が成功したので、ブロックリストから削除する
-	void removeFromBlockList( SavedAccount target_account, long who_id ){
+	public void removeFromBlockList( SavedAccount target_account, long who_id ){
 		if( ! target_account.acct.equals( access_info.acct ) ) return;
 		if( column_type != TYPE_BLOCKS ) return;
 		
@@ -870,7 +870,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		}
 	}
 	
-	void removeFollowRequest( SavedAccount target_account, long who_id ){
+	public void removeFollowRequest( SavedAccount target_account, long who_id ){
 		if( ! target_account.acct.equals( access_info.acct ) ) return;
 		
 		if( column_type == TYPE_FOLLOW_REQUESTS ){
@@ -894,7 +894,7 @@ import jp.juggler.subwaytooter.util.Utils;
 	}
 	
 	// 自分のステータスを削除した時に呼ばれる
-	void removeStatus( SavedAccount target_account, long status_id ){
+	public void removeStatus( SavedAccount target_account, long status_id ){
 		
 		if( ! target_account.host.equals( access_info.host ) ) return;
 		
@@ -926,7 +926,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		}
 	}
 	
-	void removeNotifications(){
+	public void removeNotifications(){
 		cancelLastTask();
 		
 		list_data.clear();
@@ -942,7 +942,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		PollingWorker.queueNotificationCleared( context, access_info.db_id );
 	}
 	
-	void removeNotificationOne( SavedAccount target_account, TootNotification notification ){
+	public void removeNotificationOne( SavedAccount target_account, TootNotification notification ){
 		if( column_type != TYPE_NOTIFICATIONS ) return;
 		if( ! access_info.acct.equals( target_account.acct ) ) return;
 		
@@ -963,7 +963,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		}
 	}
 	
-	void removeMuteApp(){
+	public void onMuteAppUpdated(){
 		ArrayList< Object > tmp_list = new ArrayList<>( list_data.size() );
 		
 		HashSet< String > muted_app = MutedApp.getNameSet();
@@ -996,7 +996,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		}
 	}
 	
-	void onDomainBlockChanged( SavedAccount target_account, String domain, boolean bBlocked ){
+	public void onDomainBlockChanged( SavedAccount target_account, String domain, boolean bBlocked ){
 		if( ! target_account.host.equals( access_info.host ) ) return;
 		if( access_info.isPseudo() ) return;
 		
@@ -1875,10 +1875,10 @@ import jp.juggler.subwaytooter.util.Utils;
 									list_tmp = new ArrayList<>();
 									addWithFilter( list_tmp, search_result );
 									if( search_result.isEmpty() ){
-										log.d("search result is empty. %s",result.json);
+										log.d( "search result is empty. %s", result.json );
 									}
 								}else{
-									log.d("search error.");
+									log.d( "search error." );
 								}
 							}
 						}

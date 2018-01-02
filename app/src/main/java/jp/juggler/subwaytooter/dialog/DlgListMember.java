@@ -17,18 +17,17 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 
-import org.json.JSONObject;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 
 import jp.juggler.subwaytooter.ActMain;
 import jp.juggler.subwaytooter.App1;
-import jp.juggler.subwaytooter.Column;
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.Styler;
-import jp.juggler.subwaytooter.api.TootApiClient;
+import jp.juggler.subwaytooter.action.ActionUtils;
+import jp.juggler.subwaytooter.action.Action_List;
+import jp.juggler.subwaytooter.action.Action_ListMember;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.TootApiTask;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
@@ -36,32 +35,29 @@ import jp.juggler.subwaytooter.api.entity.TootList;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.SavedAccount;
-import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator;
 import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.view.MyListView;
 import jp.juggler.subwaytooter.view.MyNetworkImageView;
-import okhttp3.Request;
-import okhttp3.RequestBody;
 
+@SuppressLint({ "StaticFieldLeak", "InflateParams" })
 public class DlgListMember implements View.OnClickListener {
-	
-	private static final LogCategory log = new LogCategory( "DlgListMember" );
 	
 	@NonNull private final ActMain activity;
 	@NonNull private final Dialog dialog;
-
+	
 	@NonNull private final Button btnListOwner;
 	@NonNull private final Button btnCreateList;
-
+	
 	@NonNull private final ArrayList< SavedAccount > account_list;
 	@NonNull private final String target_user_full_acct;
-	private SavedAccount list_owner;
-	private TootAccount local_who;
+	
+	@Nullable private SavedAccount list_owner;
+	@Nullable private TootAccount local_who;
 	
 	public DlgListMember( @NonNull ActMain _activity, @NonNull TootAccount who, @NonNull SavedAccount _list_owner ){
 		this.activity = _activity;
-		this.account_list = _activity.makeAccountListNonPseudo( log, null );
+		this.account_list = ActionUtils.makeAccountListNonPseudo( _activity, null );
 		this.target_user_full_acct = _list_owner.getFullAcct( who );
 		
 		if( _list_owner.isPseudo() ){
@@ -70,7 +66,6 @@ public class DlgListMember implements View.OnClickListener {
 			this.list_owner = _list_owner;
 		}
 		
-		@SuppressLint("InflateParams")
 		final View view = activity.getLayoutInflater().inflate( R.layout.dlg_list_member, null, false );
 		
 		MyNetworkImageView ivUser = view.findViewById( R.id.ivUser );
@@ -178,7 +173,7 @@ public class DlgListMember implements View.OnClickListener {
 		loadLists();
 	}
 	
-	@SuppressLint("StaticFieldLeak")
+	// リストの一覧とターゲットユーザの登録状況を取得する
 	private void loadLists(){
 		if( list_owner == null ){
 			showList( null );
@@ -190,7 +185,7 @@ public class DlgListMember implements View.OnClickListener {
 			@Override protected TootApiResult doInBackground( Void... params ){
 				
 				// リストに追加したいアカウントの自タンスでのアカウントIDを取得する
-				DlgListMember.this.local_who = null;
+				local_who = null;
 				TootApiResult result = client.request( "/api/v1/search?resolve=true&q=" + Uri.encode( target_user_full_acct ) );
 				if( result == null || result.object == null ){
 					return result;
@@ -200,13 +195,13 @@ public class DlgListMember implements View.OnClickListener {
 				if( search_result != null ){
 					for( TootAccount a : search_result.accounts ){
 						if( target_user_full_acct.equalsIgnoreCase( list_owner.getFullAcct( a ) ) ){
-							DlgListMember.this.local_who = a;
+							local_who = a;
 							break;
 						}
 					}
 				}
 				
-				if( DlgListMember.this.local_who == null ){
+				if( local_who == null ){
 					return new TootApiResult( activity.getString( R.string.account_sync_failed ) );
 				}
 				
@@ -216,10 +211,10 @@ public class DlgListMember implements View.OnClickListener {
 					return result;
 				}
 				
-				// TODO 結果を解釈する
-				HashSet<Long> set_registered = new HashSet<>(  );
+				// 結果を解釈する
+				HashSet< Long > set_registered = new HashSet<>();
 				for( TootList a : TootList.parseList( result.array ) ){
-					set_registered.add( a.id);
+					set_registered.add( a.id );
 				}
 				
 				// リスト一覧を取得
@@ -232,7 +227,7 @@ public class DlgListMember implements View.OnClickListener {
 				
 				// isRegistered を設定する
 				for( TootList a : list_list ){
-					if( set_registered.contains( a.id )) a.isRegistered = true;
+					if( set_registered.contains( a.id ) ) a.isRegistered = true;
 				}
 				
 				return result;
@@ -271,73 +266,31 @@ public class DlgListMember implements View.OnClickListener {
 	
 	private void openListCreator(){
 		DlgTextInput.show( activity, activity.getString( R.string.list_create ), null, new DlgTextInput.Callback() {
+			
 			@Override public void onEmptyError(){
 				Utils.showToast( activity, false, R.string.list_name_empty );
 			}
 			
-			@SuppressLint("StaticFieldLeak")
 			@Override public void onOK( final Dialog dialog, final String title ){
+				if( list_owner == null ){
+					Utils.showToast( activity, false, "list owner is not selected." );
+					return;
+				}
 				
-				new TootApiTask( activity, list_owner, true ) {
-					
-					@Override protected TootApiResult doInBackground( Void... params ){
-						
-						JSONObject content = new JSONObject();
+				Action_List.create( activity, list_owner, title, new Action_List.CreateCallback() {
+					@Override public void onCreated( @NonNull TootList list ){
 						try{
-							content.put( "title", title );
-						}catch( Throwable ex ){
-							return new TootApiResult( Utils.formatError( ex, "can't encoding json parameter." ) );
+							dialog.dismiss();
+						}catch( Throwable ignored ){
 						}
+						loadLists();
 						
-						Request.Builder request_builder = new Request.Builder().post(
-							RequestBody.create(
-								TootApiClient.MEDIA_TYPE_JSON
-								, content.toString()
-							) );
-						
-						TootApiResult result = client.request( "/api/v1/lists", request_builder );
-						
-						publishApiProgress( activity.getString( R.string.parsing_response ) );
-						
-						if( result != null && result.object != null ){
-							list = TootList.parse( result.object );
-						}
-						
-						return result;
 					}
-					
-					TootList list;
-					
-					@Override protected void handleResult( TootApiResult result ){
-						if( result == null ) return; // cancelled.
-						
-						if( list != null ){
-							
-							for( Column column : activity.app_state.column_list ){
-								column.onListListUpdated( list_owner );
-							}
-							
-							Utils.showToast( activity, false, R.string.list_created );
-							
-							loadLists();
-							
-							try{
-								dialog.dismiss();
-							}catch( Throwable ignored ){
-							}
-							
-						}else if( result.error != null ){
-							Utils.showToast( activity, true, result.error );
-						}
-					}
-					
-				}.executeOnExecutor( App1.task_executor );
-				
+				} );
 			}
 			
 		} );
 	}
-
 	
 	static class ErrorItem {
 		final String message;
@@ -384,7 +337,7 @@ public class DlgListMember implements View.OnClickListener {
 				}else{
 					view = activity.getLayoutInflater().inflate( R.layout.lv_list_member_list, parent, false );
 					holder = new VH_List( view );
-					view.setTag(holder);
+					view.setTag( holder );
 				}
 				holder.bind( (TootList) o );
 			}else if( o instanceof ErrorItem ){
@@ -394,7 +347,7 @@ public class DlgListMember implements View.OnClickListener {
 				}else{
 					view = activity.getLayoutInflater().inflate( R.layout.lv_list_member_error, parent, false );
 					holder = new VH_Error( view );
-					view.setTag(holder);
+					view.setTag( holder );
 				}
 				holder.bind( (ErrorItem) o );
 			}
@@ -402,7 +355,7 @@ public class DlgListMember implements View.OnClickListener {
 		}
 	}
 	
-	class VH_List implements CompoundButton.OnCheckedChangeListener, ActMain.ListMemberCallback {
+	class VH_List implements CompoundButton.OnCheckedChangeListener, Action_ListMember.Callback {
 		final CheckBox cbItem;
 		boolean bBusy;
 		TootList item;
@@ -421,22 +374,32 @@ public class DlgListMember implements View.OnClickListener {
 		}
 		
 		@Override public void onCheckedChanged( CompoundButton view, boolean isChecked ){
+			if( bBusy ){
+				// ユーザ操作以外で変更されたなら何もしない
+				return;
+			}
 			
-			if( ! bBusy ){
-				// ユーザ操作で変更された場合
-				
-				// 状態をサーバに伝える
-				if( isChecked ){
-					activity.callListMemberAdd( list_owner, item.id, local_who, false, this );
-				}else{
-					activity.callListMemberDelete( list_owner, item.id, local_who, this );
-				}
+			if( list_owner == null ){
+				Utils.showToast( activity, false, "list owner is not selected" );
+				return;
+			}
+			
+			if( local_who == null ){
+				Utils.showToast( activity, false, "target user is not synchronized" );
+				return;
+			}
+			
+			// 状態をサーバに伝える
+			if( isChecked ){
+				Action_ListMember.add( activity, list_owner, item.id, local_who, false, this );
+			}else{
+				Action_ListMember.delete( activity, list_owner, item.id, local_who, this );
 			}
 		}
 		
-		@Override public void onListMemberUpdated(boolean willRegistered,boolean bSuccess){
-			if(!bSuccess){
-				item.isRegistered = !willRegistered;
+		@Override public void onListMemberUpdated( boolean willRegistered, boolean bSuccess ){
+			if( ! bSuccess ){
+				item.isRegistered = ! willRegistered;
 				adapter.notifyDataSetChanged();
 			}
 		}

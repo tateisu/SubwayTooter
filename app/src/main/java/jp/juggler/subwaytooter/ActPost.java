@@ -263,7 +263,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	}
 	
 	SharedPreferences pref;
-	@NonNull ArrayList< PostAttachment > attachment_list = new ArrayList<>(  );
+	@NonNull ArrayList< PostAttachment > attachment_list = new ArrayList<>();
 	AppState app_state;
 	boolean isPostComplete;
 	PostHelper post_helper;
@@ -320,7 +320,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				// state から復元する
 				app_state.attachment_list = this.attachment_list;
 				this.attachment_list.clear();
-
+				
 				try{
 					JSONArray array = new JSONArray( sv );
 					for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
@@ -640,7 +640,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		btnRemoveReply = findViewById( R.id.btnRemoveReply );
 		ivReply = findViewById( R.id.ivReply );
 		
-		account_list = SavedAccount.loadAccountList( ActPost.this, log );
+		account_list = SavedAccount.loadAccountList( ActPost.this );
 		SavedAccount.sort( account_list );
 		
 		btnAccount.setOnClickListener( this );
@@ -1261,7 +1261,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					
 					final long content_length = getStreamSize( true, opener.open() );
 					if( content_length > media_size_max ){
-						return new TootApiResult( getString( R.string.file_size_too_big, (media_size_max/1000000) ) );
+						return new TootApiResult( getString( R.string.file_size_too_big, ( media_size_max / 1000000 ) ) );
 					}
 					RequestBody multipart_body = new MultipartBody.Builder()
 						.setType( MultipartBody.FORM )
@@ -1344,7 +1344,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			return;
 		}
 		
-		if( pa.status ==  PostAttachment.STATUS_UPLOAD_FAILED ){
+		if( pa.status == PostAttachment.STATUS_UPLOAD_FAILED ){
 			// アップロード失敗
 			attachment_list.remove( pa );
 			showMediaAttachment();
@@ -1393,16 +1393,16 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 		}
 	}
 	
-//	private void performCameraVideo(){
-//
-//		try{
-//			Intent takeVideoIntent = new Intent( MediaStore.ACTION_VIDEO_CAPTURE );
-//			startActivityForResult( takeVideoIntent, REQUEST_CODE_VIDEO );
-//		}catch( Throwable ex ){
-//			log.trace( ex );
-//			Utils.showToast( this, ex, "opening video app failed." );
-//		}
-//	}
+	//	private void performCameraVideo(){
+	//
+	//		try{
+	//			Intent takeVideoIntent = new Intent( MediaStore.ACTION_VIDEO_CAPTURE );
+	//			startActivityForResult( takeVideoIntent, REQUEST_CODE_VIDEO );
+	//		}catch( Throwable ex ){
+	//			log.trace( ex );
+	//			Utils.showToast( this, ex, "opening video app failed." );
+	//		}
+	//	}
 	
 	private static final int PERMISSION_REQUEST_CODE = 1;
 	
@@ -1574,11 +1574,11 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 	// post
 	
 	private void performPost(){
-
+		
 		// アップロード中は投稿できない
 		for( PostAttachment pa : attachment_list ){
 			if( pa.status == PostAttachment.STATUS_UPLOADING ){
-				Utils.showToast( this,false,R.string.media_attachment_still_uploading );
+				Utils.showToast( this, false, R.string.media_attachment_still_uploading );
 				return;
 			}
 		}
@@ -1759,7 +1759,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 				long account_db_id = Utils.optLongX( draft, DRAFT_ACCOUNT_DB_ID, - 1L );
 				JSONArray tmp_attachment_list = draft.optJSONArray( DRAFT_ATTACHMENT_LIST );
 				
-				account = SavedAccount.loadAccount( ActPost.this, log, account_db_id );
+				account = SavedAccount.loadAccount( ActPost.this, account_db_id );
 				if( account == null ){
 					list_warning.add( getString( R.string.account_in_draft_is_lost ) );
 					try{

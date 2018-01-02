@@ -22,7 +22,7 @@ import jp.juggler.subwaytooter.table.SavedAccount;
 	 - has TootApiClient.
 	 - pass progress message from TootApiClient to ProgressDialog.
 */
-@SuppressWarnings("FieldCanBeLocal")
+@SuppressWarnings({"FieldCanBeLocal", "WeakerAccess"})
 public abstract class TootApiTask extends AsyncTask< Void, Void, TootApiResult > implements TootApiClient.Callback {
 	
 	@SuppressWarnings("WeakerAccess") public static final int PROGRESS_NONE = - 1;
@@ -57,7 +57,6 @@ public abstract class TootApiTask extends AsyncTask< Void, Void, TootApiResult >
 		percent_format.setMaximumFractionDigits( 0 );
 	}
 	
-	@SuppressWarnings("WeakerAccess")
 	public TootApiTask( @NonNull Activity _activity, int progress_style ){
 		this.refActivity = new WeakReference<>( _activity );
 		this.handler = new Handler();
@@ -70,13 +69,11 @@ public abstract class TootApiTask extends AsyncTask< Void, Void, TootApiResult >
 		}
 	}
 	
-	@SuppressWarnings("WeakerAccess")
 	public TootApiTask( @NonNull Activity _activity, SavedAccount access_info, int progress_style ){
 		this( _activity, progress_style );
 		client.setAccount( access_info );
 	}
 	
-	@SuppressWarnings("WeakerAccess")
 	public TootApiTask( @NonNull Activity _activity, String instance, int progress_style ){
 		this( _activity, progress_style );
 		client.setInstance( instance );
@@ -86,17 +83,14 @@ public abstract class TootApiTask extends AsyncTask< Void, Void, TootApiResult >
 		return bShowProgress ? PROGRESS_SPINNER : PROGRESS_NONE;
 	}
 	
-	@SuppressWarnings("WeakerAccess")
 	public TootApiTask( @NonNull Activity _activity, boolean bShowProgress ){
 		this( _activity, getDefaultProgressStyle( bShowProgress ) );
 	}
 	
-	@SuppressWarnings("WeakerAccess")
 	public TootApiTask( @NonNull Activity _activity, SavedAccount access_info, boolean bShowProgress ){
 		this( _activity, access_info, getDefaultProgressStyle( bShowProgress ) );
 	}
 	
-	@SuppressWarnings("WeakerAccess")
 	public TootApiTask( @NonNull Activity _activity, String instance, boolean bShowProgress ){
 		this( _activity, instance, getDefaultProgressStyle( bShowProgress ) );
 	}

@@ -316,7 +316,7 @@ public class ActText extends AppCompatActivity implements View.OnClickListener {
 		try{
 			MutedWord.save( getSelection() );
 			for( Column column : App1.getAppState( this ).column_list ){
-				column.removeMuteApp();
+				column.onMuteAppUpdated();
 			}
 			Utils.showToast( this, false, R.string.word_was_muted );
 		}catch( Throwable ex ){

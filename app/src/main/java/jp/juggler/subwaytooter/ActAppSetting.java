@@ -1026,7 +1026,7 @@ public class ActAppSetting extends AppCompatActivity
 		final ArrayList< SavedAccount > list = new ArrayList<>();
 		
 		AccountAdapter(){
-			for( SavedAccount a : SavedAccount.loadAccountList( ActAppSetting.this, log ) ){
+			for( SavedAccount a : SavedAccount.loadAccountList( ActAppSetting.this ) ){
 				if( a.isPseudo() ) continue;
 				list.add( a );
 			}

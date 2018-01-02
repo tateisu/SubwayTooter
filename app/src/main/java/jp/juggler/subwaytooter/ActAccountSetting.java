@@ -92,7 +92,7 @@ public class ActAccountSetting extends AppCompatActivity
 		this.pref = App1.pref;
 		
 		initUI();
-		account = SavedAccount.loadAccount( this, log, getIntent().getLongExtra( KEY_ACCOUNT_DB_ID, - 1L ) );
+		account = SavedAccount.loadAccount( this,  getIntent().getLongExtra( KEY_ACCOUNT_DB_ID, - 1L ) );
 		if( account == null ) finish();
 		loadUIFromData( account );
 		

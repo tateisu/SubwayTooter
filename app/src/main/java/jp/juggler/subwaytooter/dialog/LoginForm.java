@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -30,7 +31,9 @@ public class LoginForm {
 	private static final LogCategory log = new LogCategory( "LoginForm" );
 	
 	public interface LoginFormCallback {
-		void startLogin( Dialog dialog, String instance
+		void startLogin(
+			@NonNull Dialog dialog
+			, @NonNull String instance
 			, boolean bPseudoAccount
 			, boolean bInputAccessToken
 		);
@@ -40,8 +43,12 @@ public class LoginForm {
 		
 	}
 	
-	public static void showLoginForm( final Activity activity, final String instance, final LoginFormCallback callback ){
-		@SuppressLint("InflateParams") final View view = activity.getLayoutInflater().inflate( R.layout.dlg_account_add, null, false );
+	public static void showLoginForm(
+		@NonNull final Activity activity
+		, @SuppressWarnings("SameParameterValue") @Nullable final String instance
+		, @NonNull final LoginFormCallback callback
+	){
+		@SuppressLint("InflateParams")		final View view = activity.getLayoutInflater().inflate( R.layout.dlg_account_add, null, false );
 		final AutoCompleteTextView etInstance = view.findViewById( R.id.etInstance );
 		final View btnOk = view.findViewById( R.id.btnOk );
 		final CheckBox cbPseudoAccount = view.findViewById( R.id.cbPseudoAccount );
@@ -167,7 +174,9 @@ public class LoginForm {
 		etInstance.setAdapter( adapter );
 		
 		//noinspection ConstantConditions
-		dialog.getWindow().setLayout( WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT );
+		dialog.getWindow().setLayout(
+			WindowManager.LayoutParams.MATCH_PARENT,
+			WindowManager.LayoutParams.WRAP_CONTENT );
 		dialog.show();
 	}
 	

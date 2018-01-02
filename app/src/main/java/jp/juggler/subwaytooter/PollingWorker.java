@@ -148,14 +148,14 @@ public class PollingWorker {
 		
 		//
 		this.power_manager = (PowerManager) context.getSystemService( Context.POWER_SERVICE );
-		if( power_manager ==null ) throw new RuntimeException( "can't get PowerManager" );
+		if( power_manager == null ) throw new RuntimeException( "can't get PowerManager" );
 		
 		power_lock = power_manager.newWakeLock( PowerManager.PARTIAL_WAKE_LOCK, PollingWorker.class.getName() );
 		power_lock.setReferenceCounted( false );
 		
 		this.wifi_manager = (WifiManager) context.getApplicationContext().getSystemService( Context.WIFI_SERVICE );
-		if( wifi_manager ==null ) throw new RuntimeException( "can't get WifiManager" );
-
+		if( wifi_manager == null ) throw new RuntimeException( "can't get WifiManager" );
+		
 		wifi_lock = wifi_manager.createWifiLock( PollingWorker.class.getName() );
 		wifi_lock.setReferenceCounted( false );
 		
@@ -556,7 +556,7 @@ public class PollingWorker {
 				
 				if( taskId == TASK_APP_DATA_IMPORT_BEFORE ){
 					scheduler.cancelAll();
-					for( SavedAccount a : SavedAccount.loadAccountList( context, log ) ){
+					for( SavedAccount a : SavedAccount.loadAccountList( context ) ){
 						try{
 							String notification_tag = Long.toString( a.db_id );
 							notification_manager.cancel( notification_tag, NOTIFICATION_ID );
@@ -584,7 +584,7 @@ public class PollingWorker {
 					boolean bDone = false;
 					String tag = taskData.optString( EXTRA_TAG );
 					if( tag != null ){
-						for( SavedAccount sa : SavedAccount.loadByTag( context, log, tag ) ){
+						for( SavedAccount sa : SavedAccount.loadByTag( context, tag ) ){
 							NotificationTracking.resetLastLoad( sa.db_id );
 							process_db_id = sa.db_id;
 							bDone = true;
@@ -637,7 +637,7 @@ public class PollingWorker {
 				job_status.set( "create account thread" );
 				
 				LinkedList< AccountThread > thread_list = new LinkedList<>();
-				for( SavedAccount _a : SavedAccount.loadAccountList( context, log ) ){
+				for( SavedAccount _a : SavedAccount.loadAccountList( context ) ){
 					if( _a.isPseudo() ) continue;
 					if( process_db_id != - 1L && _a.db_id != process_db_id ) continue;
 					AccountThread t = new AccountThread( _a );
@@ -795,7 +795,7 @@ public class PollingWorker {
 				Response response = call.execute();
 				
 				if( ! response.isSuccessful() ){
-					log.e( Utils.formatResponse( response, "getInstallId: get /counter failed.") );
+					log.e( Utils.formatResponse( response, "getInstallId: get /counter failed." ) );
 					return null;
 				}
 				
@@ -1382,7 +1382,7 @@ public class PollingWorker {
 				
 				InjectData data = inject_queue.poll();
 				
-				SavedAccount account = SavedAccount.loadAccount( context, log, data.account_db_id );
+				SavedAccount account = SavedAccount.loadAccount( context, data.account_db_id );
 				if( account == null ) continue;
 				
 				NotificationTracking nr = NotificationTracking.load( data.account_db_id );
@@ -1462,7 +1462,7 @@ public class PollingWorker {
 		
 		private void deleteCacheData( long db_id ){
 			
-			SavedAccount account = SavedAccount.loadAccount( context, log, db_id );
+			SavedAccount account = SavedAccount.loadAccount( context, db_id );
 			if( account == null ) return;
 			
 			NotificationTracking nr = NotificationTracking.load( db_id );

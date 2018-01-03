@@ -19,7 +19,7 @@
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/highlight_word"
+            android:text="@string/keyword"
             />
 
         <LinearLayout style="@style/setting_row_form">

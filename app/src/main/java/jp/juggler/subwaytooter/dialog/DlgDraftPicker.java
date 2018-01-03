@@ -107,7 +107,7 @@ public class DlgDraftPicker
 		reload();
 	}
 	
-	private void reload(){
+	@SuppressLint("StaticFieldLeak") private void reload(){
 		
 		if( task != null ){
 			task.cancel( true );

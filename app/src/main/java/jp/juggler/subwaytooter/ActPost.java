@@ -64,6 +64,7 @@ import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootMention;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.api.TootParser;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
 import jp.juggler.subwaytooter.dialog.DlgDraftPicker;
 import jp.juggler.subwaytooter.dialog.DlgTextInput;
@@ -71,6 +72,7 @@ import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.PostDraft;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.dialog.ActionsDialog;
+import jp.juggler.subwaytooter.util.CharacterGroup;
 import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.EmojiDecoder;
 import jp.juggler.subwaytooter.util.LinkClickContext;
@@ -409,7 +411,8 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			sv = intent.getStringExtra( KEY_REPLY_STATUS );
 			if( sv != null ){
 				try{
-					TootStatus reply_status = TootStatus.parse( ActPost.this, account, new JSONObject( sv ) );
+					TootStatus reply_status = new TootParser(  ActPost.this, account).status(new JSONObject( sv ));
+					
 					
 					if( reply_status != null ){
 						// CW をリプライ元に合わせる
@@ -874,7 +877,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 					
 					TootApiResult result = client.request( path );
 					if( result != null && result.object != null ){
-						TootResults tmp = TootResults.parse( ActPost.this, access_info, result.object );
+						TootResults tmp = new TootParser( ActPost.this, access_info).results( result.object );
 						if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 							target_status = tmp.statuses.get( 0 );
 						}
@@ -1351,7 +1354,7 @@ public class ActPost extends AppCompatActivity implements View.OnClickListener, 
 			Editable e = etContent.getEditableText();
 			int len = e.length();
 			char last_char = ( len <= 0 ? ' ' : e.charAt( len - 1 ) );
-			if( ! EmojiDecoder.isWhitespaceBeforeEmoji( last_char ) ){
+			if( ! CharacterGroup.isWhitespace( last_char ) ){
 				e.append( " " ).append( pa.attachment.text_url );
 			}else{
 				e.append( pa.attachment.text_url );

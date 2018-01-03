@@ -15,6 +15,7 @@ import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.api.entity.CustomEmoji;
 import jp.juggler.subwaytooter.api.entity.NicoProfileEmoji;
+import jp.juggler.subwaytooter.table.HighlightWord;
 
 @SuppressWarnings("WeakerAccess")
 public class EmojiDecoder {
@@ -22,9 +23,38 @@ public class EmojiDecoder {
 	private static class DecodeEnv {
 		@NonNull final Context context;
 		@NonNull final SpannableStringBuilder sb = new SpannableStringBuilder();
+		@NonNull final DecodeOptions options;
+		int normal_char_start = -1;
 		
-		DecodeEnv( @NonNull Context context ){
+		DecodeEnv( @NonNull Context context ,@NonNull final DecodeOptions options){
 			this.context = context;
+			this.options = options;
+		}
+		
+
+		void closeNormalText(){
+			if( normal_char_start != -1 ){
+				int end = sb.length();
+				applyHighlight(normal_char_start,end);
+				normal_char_start = -1;
+			}
+		}
+		
+		private void applyHighlight( int start , int end ){
+			if( options.highlight_trie != null ){
+				ArrayList<WordTrieTree.Match > list = options.highlight_trie.matchList( sb,start,end );
+				if( list != null ){
+					for( WordTrieTree.Match range : list ){
+						HighlightWord word = HighlightWord.load( range.word );
+						if( word !=null ){
+							sb.setSpan( new HighlightSpan( word.color_fg,word.color_bg ),  range.start, range.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+							if( word.sound_type != HighlightWord.SOUND_TYPE_NONE ){
+								options.highlight_sound = word;
+							}
+						}
+					}
+				}
+			}
 		}
 		
 		void addUnicodeString( String s ){
@@ -34,6 +64,7 @@ public class EmojiDecoder {
 				int remain = end - i;
 				String emoji = null;
 				Integer image_id = null;
+				
 				for( int j = EmojiMap201709.utf16_max_length ; j > 0 ; -- j ){
 					if( j > remain ) continue;
 					String check = s.substring( i, i + j );
@@ -55,6 +86,9 @@ public class EmojiDecoder {
 					if( image_id == 0 ){
 						// 絵文字バリエーション・シーケンス（EVS）のU+FE0E（VS-15）が直後にある場合
 						// その文字を絵文字化しない
+						if( normal_char_start == - 1 ){
+							normal_char_start = sb.length();
+						}
 						sb.append( emoji );
 					}else{
 						addImageSpan( emoji, image_id );
@@ -63,6 +97,9 @@ public class EmojiDecoder {
 					continue;
 				}
 				
+				if( normal_char_start == - 1 ){
+					normal_char_start = sb.length();
+				}
 				int length = Character.charCount( s.codePointAt( i ) );
 				if( length == 1 ){
 					sb.append( s.charAt( i ) );
@@ -75,6 +112,7 @@ public class EmojiDecoder {
 		}
 		
 		void addImageSpan( String text, @DrawableRes int res_id ){
+			closeNormalText();
 			int start = sb.length();
 			sb.append( text );
 			int end = sb.length();
@@ -82,6 +120,7 @@ public class EmojiDecoder {
 		}
 		
 		void addNetworkEmojiSpan( String text, @NonNull String url ){
+			closeNormalText();
 			int start = sb.length();
 			sb.append( text );
 			int end = sb.length();
@@ -89,44 +128,7 @@ public class EmojiDecoder {
 		}
 	}
 	
-	public static boolean isWhitespaceBeforeEmoji( int cp ){
-		switch( cp ){
-		case 0x0009: // HORIZONTAL TABULATION
-		case 0x000A: // LINE FEED
-		case 0x000B: // VERTICAL TABULATION
-		case 0x000C: // FORM FEED
-		case 0x000D: // CARRIAGE RETURN
-		case 0x001C: // FILE SEPARATOR
-		case 0x001D: // GROUP SEPARATOR
-		case 0x001E: // RECORD SEPARATOR
-		case 0x001F: // UNIT SEPARATOR
-		case 0x0020:
-		case 0x00A0: //非区切りスペース
-		case 0x1680:
-		case 0x180E:
-		case 0x2000:
-		case 0x2001:
-		case 0x2002:
-		case 0x2003:
-		case 0x2004:
-		case 0x2005:
-		case 0x2006:
-		case 0x2007: //非区切りスペース
-		case 0x2008:
-		case 0x2009:
-		case 0x200A:
-		case 0x200B:
-		case 0x202F: //非区切りスペース
-		case 0x205F:
-		case 0x2060:
-		case 0x3000:
-		case 0x3164:
-		case 0xFEFF:
-			return true;
-		default:
-			return Character.isWhitespace( cp );
-		}
-	}
+
 	
 	public static boolean isShortCodeCharacter( int cp ){
 		return ( 'A' <= cp && cp <= 'Z' )
@@ -165,7 +167,7 @@ public class EmojiDecoder {
 					}else if( i + width < end && s.codePointAt( i + width ) == '@' ){
 						// フレニコのプロフ絵文字 :@who: は手前の空白を要求しない
 						break;
-					}else if( i == 0 || isWhitespaceBeforeEmoji( s.codePointBefore( i ) ) ){
+					}else if( i == 0 || CharacterGroup.isWhitespace( s.codePointBefore( i ) ) ){
 						// ショートコードの手前は始端か改行か空白文字でないとならない
 						// 空白文字の判定はサーバサイドのそれにあわせる
 						break;
@@ -218,7 +220,7 @@ public class EmojiDecoder {
 		, @NonNull final String s
 		, @NonNull DecodeOptions options
 	){
-		final DecodeEnv decode_env = new DecodeEnv( context );
+		final DecodeEnv decode_env = new DecodeEnv( context ,options);
 		final CustomEmoji.Map custom_map = options.customEmojiMap;
 		final NicoProfileEmoji.Map profile_emojis = options.profile_emojis;
 		
@@ -264,6 +266,8 @@ public class EmojiDecoder {
 				}
 			}
 		} );
+		
+		decode_env.closeNormalText();
 		
 		return decode_env.sb;
 	}

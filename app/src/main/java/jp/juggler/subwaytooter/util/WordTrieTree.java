@@ -1,76 +1,143 @@
 package jp.juggler.subwaytooter.util;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.util.SparseArrayCompat;
+
+import java.util.ArrayList;
 
 public class WordTrieTree {
 	
+	static class Match {
+		String word;
+		int start;
+		int end;
+	}
+	
+	//	private static class Matcher {
+	//
+	//		// ミュートの場合などは短いマッチでも構わない
+	//		final boolean allowShortMatch;
+	//
+	//		// マッチ範囲の始端を覚えておく
+	//		int start;
+	//
+	//		Matcher( boolean allowShortMatch ){
+	//			this.allowShortMatch = allowShortMatch;
+	//		}
+	//
+	//		void setTokenizer( CharacterGroup grouper, CharSequence src, int start, int end ){
+	//			this.match = null;
+	//			this.start = start;
+	//			if( t == null ){
+	//
+	//			}else{
+	//				t.reset( src, start, end );
+	//			}
+	//		}
+	//	}
+	
+	private static final CharacterGroup grouper = new CharacterGroup();
+	
 	private static class Node {
 		
-		final SparseArrayCompat< Node > child_nodes = new SparseArrayCompat<>();
+		// 続くノード
+		@NonNull final SparseArrayCompat< Node > child_nodes = new SparseArrayCompat<>();
 		
-		boolean is_end;
+		// このノードが終端なら、マッチした単語の元の表記がある
+		@Nullable String match_word;
 		
-		boolean match( String s, int offset, int remain ){
-			
-			if( is_end ){
-				// ワードの始端から終端までマッチした
-				return true;
-			}
-			
-			if( remain <= 0 ){
-				// テスト文字列の終端に達した
-				return false;
-			}
-			
-			int c = s.charAt( offset );
-			++ offset;
-			-- remain;
-			
-			Node n = child_nodes.get( c );
-			return n != null && n.match( s, offset, remain );
-		}
-		
-		public void add( String s, int offset, int remain ){
-			
-			if( is_end ){
-				// NGワード用なので、既に終端を含むなら後続ノードの情報は不要
-				return;
-			}
-			
-			if( remain <= 0 ){
-				
-				// 終端マークを設定
-				is_end = true;
-				
-				// 後続ノードは不要になる
-				child_nodes.clear();
-				
-				return;
-			}
-			
-			int c = s.charAt( offset );
-			++ offset;
-			-- remain;
-			
-			// 文字別に後続ノードを作成
-			Node n = child_nodes.get( c );
-			if( n == null ) child_nodes.put( c, n = new Node() );
-			
-			n.add( s, offset, remain );
-		}
+		// Trieツリー的には終端単語と続くノードの両方が存在する場合がありうる。
+		// たとえば ABC と ABCDEF を登録してからABCDEF を探索したら、単語 ABC と単語 DEF にマッチする。
 	}
 	
 	private final Node node_root = new Node();
 	
-	public void add(  @NonNull String s ){
-		node_root.add( s, 0, s.length() );
+	// 単語の追加
+	public void add( @NonNull String s ){
+		CharacterGroup.Tokenizer t = grouper.tokenizer( s, 0, s.length() );
+		Node node = node_root;
+		for( ; ; ){
+			t.next();
+			int id = t.c;
+			if( id == CharacterGroup.END ){
+				// より長いマッチ単語を覚えておく
+				if( node.match_word == null || node.match_word.length() < t.text.length() ){
+					node.match_word = t.text.toString();
+				}
+				return;
+			}
+			Node child = node.child_nodes.get( t.c );
+			if( child == null ){
+				node.child_nodes.put( id, child = new Node() );
+			}
+			node = child;
+		}
 	}
 	
-	public boolean containsWord( @NonNull String src ){
-		for( int i = 0, ie = src.length() ; i < ie ; ++ i ){
-			if( node_root.match( src, i, ie - i ) ) return true;
+	// 前方一致でマッチング
+	@Nullable
+	private Match match( boolean allowShortMatch, @NonNull CharacterGroup.Tokenizer t ){
+		
+		int start = t.offset;
+		Match dst = null;
+		
+		Node node = node_root;
+		for( ; ; ){
+			
+			// このノードは単語の終端でもある
+			if( node.match_word != null ){
+				dst = new Match();
+				dst.word = node.match_word;
+				dst.start = start;
+				dst.end = t.offset;
+				
+				// 最短マッチのみを調べるのなら、以降の処理は必要ない
+				if( allowShortMatch ) break;
+			}
+			
+			t.next();
+			int id = t.c;
+			if( id == CharacterGroup.END ) break;
+			Node child = node.child_nodes.get( id );
+			if( child == null ) break;
+			node = child;
 		}
-		return false;
+		return dst;
 	}
+	
+	public boolean matchShort( @Nullable CharSequence src ){
+		return null != src && null != matchShort( src, 0, src.length() );
+	}
+	
+	private Match matchShort( @NonNull CharSequence src, int start, int end ){
+		CharacterGroup.Tokenizer t = grouper.tokenizer( src, start, end );
+		for( int i = start ; i < end ; ++ i ){
+			int c = src.charAt( i );
+			if( CharacterGroup.isWhitespace( c ) ) continue;
+			t.reset( src, i, end );
+			Match item = match( true, t );
+			if( item != null ) return item;
+		}
+		return null;
+	}
+	
+	@Nullable ArrayList< Match > matchList( @NonNull CharSequence src, int start, int end ){
+		ArrayList< Match > dst = null;
+		
+		CharacterGroup.Tokenizer t = grouper.tokenizer( src, start, end );
+		for( int i = start ; i < end ; ++ i ){
+			int c = src.charAt( i );
+			if( CharacterGroup.isWhitespace( c ) ) continue;
+			t.reset( src, i, end );
+			Match item = match( false, t );
+			if( item != null ){
+				if( dst == null ) dst = new ArrayList<>();
+				dst.add( item );
+				i = item.end - 1;
+			}
+		}
+		return dst;
+	}
+	
 }

@@ -21,11 +21,11 @@ import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.TootTask;
 import jp.juggler.subwaytooter.api.TootTaskRunner;
-import jp.juggler.subwaytooter.api.entity.TootNotification;
-import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.api.TootParser;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
+import jp.juggler.subwaytooter.util.WordTrieTree;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.WebSocket;
@@ -35,7 +35,7 @@ import okhttp3.WebSocketListener;
 	static final LogCategory log = new LogCategory( "StreamReader" );
 	
 	static final Pattern reNumber = Pattern.compile( "([-]?\\d+)" );
-	static final Pattern reAuthorizeError = Pattern.compile( "authorize",Pattern.CASE_INSENSITIVE );
+	static final Pattern reAuthorizeError = Pattern.compile( "authorize", Pattern.CASE_INSENSITIVE );
 	
 	interface Callback {
 		void onStreamingMessage( String event_type, Object o );
@@ -45,10 +45,16 @@ import okhttp3.WebSocketListener;
 		final SavedAccount access_info;
 		final String end_point;
 		final LinkedList< Callback > callback_list = new LinkedList<>();
+		final TootParser parser;
 		
-		Reader( SavedAccount access_info, String end_point ){
+		Reader( SavedAccount access_info, String end_point , WordTrieTree highlight_trie){
 			this.access_info = access_info;
 			this.end_point = end_point;
+			this.parser = new TootParser( context, access_info ).setHighlightTrie( highlight_trie );
+		}
+		
+		synchronized void updateHighlight( WordTrieTree highlight_trie ){
+			this.parser.setHighlightTrie( highlight_trie );
 		}
 		
 		synchronized void addCallback( @NonNull Callback stream_callback ){
@@ -121,7 +127,7 @@ import okhttp3.WebSocketListener;
 		static final String PAYLOAD = "payload";
 		
 		// ストリーミングAPIのペイロード部分をTootStatus,TootNotification,整数IDのどれかに解釈する
-		private Object parsePayload( @NonNull String event, @NonNull JSONObject parent, @NonNull String parent_text ){
+		synchronized private Object parsePayload( @NonNull String event, @NonNull JSONObject parent, @NonNull String parent_text ){
 			try{
 				if( parent.isNull( PAYLOAD ) ){
 					return null;
@@ -135,11 +141,11 @@ import okhttp3.WebSocketListener;
 					
 					case "update":
 						// ここを通るケースはまだ確認できていない
-						return TootStatus.parse( context, access_info, src );
+						return parser.status(  src );
 					
 					case "notification":
 						// ここを通るケースはまだ確認できていない
-						return TootNotification.parse( context, access_info, src );
+						return parser.notification(  src );
 					
 					default:
 						// ここを通るケースはまだ確認できていない
@@ -161,11 +167,11 @@ import okhttp3.WebSocketListener;
 						switch( event ){
 						case "update":
 							// 2017/8/24 18:37 mastodon.juggler.jpでここを通った
-							return TootStatus.parse( context, access_info, src );
+							return parser.status(  src );
 						
 						case "notification":
 							// 2017/8/24 18:37 mastodon.juggler.jpでここを通った
-							return TootNotification.parse( context, access_info, src );
+							return parser.notification( src );
 						
 						default:
 							// ここを通るケースはまだ確認できていない
@@ -222,14 +228,13 @@ import okhttp3.WebSocketListener;
 		public void onFailure( WebSocket webSocket, Throwable ex, Response response ){
 			log.e( ex, "WebSocket onFailure. url=%s .", webSocket.request().url() );
 			
-			
 			bListening.set( false );
 			handler.removeCallbacks( proc_reconnect );
-
+			
 			if( ex instanceof ProtocolException ){
 				String msg = ex.getMessage();
-				if(msg != null && reAuthorizeError.matcher( msg).find() ){
-					log.e("seems old instance that does not support streaming public timeline without access token. don't retry...");
+				if( msg != null && reAuthorizeError.matcher( msg ).find() ){
+					log.e( "seems old instance that does not support streaming public timeline without access token. don't retry..." );
 					return;
 				}
 			}
@@ -285,16 +290,17 @@ import okhttp3.WebSocketListener;
 		this.handler = handler;
 	}
 	
-	private Reader prepareReader( @NonNull SavedAccount access_info, @NonNull String end_point ){
+	private Reader prepareReader( @NonNull SavedAccount access_info, @NonNull String end_point ,WordTrieTree highlight_trie ){
 		synchronized( reader_list ){
 			for( Reader reader : reader_list ){
 				if( reader.access_info.db_id == access_info.db_id
 					&& reader.end_point.equals( end_point )
 					){
+					if( highlight_trie != null ) reader.updateHighlight( highlight_trie );
 					return reader;
 				}
 			}
-			Reader reader = new Reader( access_info, end_point );
+			Reader reader = new Reader( access_info, end_point ,highlight_trie);
 			reader_list.add( reader );
 			return reader;
 		}
@@ -332,9 +338,9 @@ import okhttp3.WebSocketListener;
 	}
 	
 	// onResume や ロード完了ののタイミングで登録される
-	void register( @NonNull SavedAccount access_info, @NonNull String end_point, @NonNull Callback stream_callback ){
+	void register( @NonNull SavedAccount access_info, @NonNull String end_point, @Nullable WordTrieTree highlight_trie , @NonNull Callback stream_callback ){
 		
-		final Reader reader = prepareReader( access_info, end_point );
+		final Reader reader = prepareReader( access_info, end_point ,highlight_trie);
 		reader.addCallback( stream_callback );
 		
 		if( ! reader.bListening.get() ){

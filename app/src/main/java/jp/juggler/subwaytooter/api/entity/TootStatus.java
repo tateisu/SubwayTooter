@@ -23,6 +23,7 @@ import java.util.regex.Pattern;
 import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.Pref;
 import jp.juggler.subwaytooter.R;
+import jp.juggler.subwaytooter.api.TootParser;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.HTMLDecoder;
@@ -88,28 +89,19 @@ public class TootStatus extends TootStatusLike {
 	public NicoEnquete enquete;
 	
 	@Nullable
-	public static TootStatus parse( @NonNull Context context, @NonNull SavedAccount access_info, JSONObject src ){
-		return parse( context,access_info,src,false);
-	}
-
-	@Nullable
-	public static TootStatus parse( @NonNull Context context, @NonNull SavedAccount access_info, JSONObject src ,boolean bPinned){
-		/*
-			bPinned 引数がtrueになるのはプロフィールカラムからpinned TL を読んだ時だけである
-		*/
+	public static TootStatus parse( @NonNull TootParser parser, @Nullable JSONObject src ){
 		
 		if( src == null ) return null;
-		//	log.d( "parse: %s", src.toString() );
 		
 		try{
 			TootStatus status = new TootStatus();
 			status.json = src;
 			
 			// 絵文字マップは割と最初の方で読み込んでおきたい
-			status.custom_emojis = CustomEmoji.parseMap( src.optJSONArray( "emojis" ),access_info.host);
+			status.custom_emojis = CustomEmoji.parseMap( src.optJSONArray( "emojis" ), parser.access_info.host );
 			status.profile_emojis = NicoProfileEmoji.parseMap( src.optJSONArray( "profile_emojis" ) );
-
-			status.account = TootAccount.parse( context, access_info, src.optJSONObject( "account" ) );
+			
+			status.account = TootAccount.parse( parser.context, parser.access_info, src.optJSONObject( "account" ) );
 			
 			if( status.account == null ) return null;
 			
@@ -117,20 +109,21 @@ public class TootStatus extends TootStatusLike {
 			status.uri = Utils.optStringX( src, "uri" );
 			status.url = Utils.optStringX( src, "url" );
 			
-			status.host_access = access_info.host;
+			status.host_access = parser.access_info.host;
 			status.host_original = status.account.getAcctHost();
 			if( status.host_original == null ){
-				status.host_original = access_info.host;
+				status.host_original = parser.access_info.host;
 			}
 			
 			status.in_reply_to_id = Utils.optStringX( src, "in_reply_to_id" ); // null
 			status.in_reply_to_account_id = Utils.optStringX( src, "in_reply_to_account_id" ); // null
-			status.reblog = TootStatus.parse( context, access_info, src.optJSONObject( "reblog" ) ,false  );
-			/* Pinned TL を取得した時にreblogが登場することはないので、reblogをパースするときのbPinnedはfalseでよい */
-			status.content = Utils.optStringX( src, "content" );
+			
+			// Pinned TL を取得した時にreblogが登場することはないので、reblogについてpinned 状態を気にする必要はない
+			status.reblog = TootStatus.parse( parser, src.optJSONObject( "reblog" ) );
+			
 			status.created_at = Utils.optStringX( src, "created_at" ); // "2017-04-16T09:37:14.000Z"
-			status.reblogs_count = Utils.optLongX(src,  "reblogs_count" );
-			status.favourites_count = Utils.optLongX(src, "favourites_count" );
+			status.reblogs_count = Utils.optLongX( src, "reblogs_count" );
+			status.favourites_count = Utils.optLongX( src, "favourites_count" );
 			status.reblogged = src.optBoolean( "reblogged" );
 			status.favourited = src.optBoolean( "favourited" );
 			status.sensitive = src.optBoolean( "sensitive" ); // false
@@ -140,29 +133,21 @@ public class TootStatus extends TootStatusLike {
 			status.tags = TootTag.parseList( src.optJSONArray( "tags" ) );
 			status.application = TootApplication.parse( src.optJSONObject( "application" ) ); // null
 			
-			status.pinned = bPinned || src.optBoolean( "pinned" );
+			status.pinned = parser.isPinned || src.optBoolean( "pinned" );
 			
-			status.setSpoilerText( context, Utils.optStringX( src, "spoiler_text" ) );
+			status.setSpoilerText( parser, Utils.optStringX( src, "spoiler_text" ) );
 			
 			status.muted = src.optBoolean( "muted" );
 			status.language = Utils.optStringX( src, "language" );
 			
-			
 			status.time_created_at = parseTime( status.created_at );
-			status.decoded_content = new DecodeOptions()
-				.setShort( true )
-				.setDecodeEmoji( true)
-				.setAttachment( status.media_attachments )
-				.setCustomEmojiMap( status.custom_emojis )
-				.setProfileEmojis( status.profile_emojis )
-				.setLinkTag( status )
-				.decodeHTML( context, access_info, status.content );
-
+			
+			status.setContent( parser, status.media_attachments, Utils.optStringX( src, "content" ) );
+			
 			// status.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
-			status.decoded_mentions = HTMLDecoder.decodeMentions( access_info, status.mentions ,status);
+			status.decoded_mentions = HTMLDecoder.decodeMentions( parser.access_info, status.mentions, status );
 			
-			status.enquete = NicoEnquete.parse( context,access_info , status.media_attachments , Utils.optStringX( src, "enquete"),status.id,status.time_created_at,status );
-			
+			status.enquete = NicoEnquete.parse( parser.context, parser.access_info, status.media_attachments, Utils.optStringX( src, "enquete" ), status.id, status.time_created_at, status );
 			
 			return status;
 		}catch( Throwable ex ){
@@ -173,12 +158,7 @@ public class TootStatus extends TootStatusLike {
 	}
 	
 	@NonNull
-	public static List parseList( @NonNull Context context, @NonNull SavedAccount access_info, JSONArray array ){
-		return parseList( context,access_info,array,false );
-	}
-
-	@NonNull
-	public static List parseList( @NonNull Context context, @NonNull SavedAccount access_info, JSONArray array ,boolean bPinned){
+	public static List parseList( @NonNull TootParser parser, JSONArray array ){
 		List result = new List();
 		if( array != null ){
 			int array_size = array.length();
@@ -186,7 +166,7 @@ public class TootStatus extends TootStatusLike {
 			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootStatus item = parse( context, access_info, src ,bPinned );
+				TootStatus item = parse( parser, src );
 				if( item != null ) result.add( item );
 			}
 		}
@@ -296,11 +276,11 @@ public class TootStatus extends TootStatusLike {
 		}
 		
 		// word mute
-		if( decoded_content != null && muted_word.containsWord( decoded_content.toString() ) ){
+		if(  muted_word.matchShort( decoded_content ) ){
 			return true;
 		}
 		
-		if( decoded_spoiler_text != null && muted_word.containsWord( decoded_spoiler_text.toString() ) ){
+		if( muted_word.matchShort( decoded_spoiler_text ) ){
 			return true;
 		}
 		

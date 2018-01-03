@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.api.entity;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
@@ -9,7 +8,7 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.api.TootParser;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
@@ -41,16 +40,16 @@ public class TootNotification extends TootId {
 	public JSONObject json;
 	
 	@Nullable
-	public static TootNotification parse( @NonNull Context context, @NonNull SavedAccount access_info, JSONObject src ){
+	public static TootNotification parse( @NonNull TootParser parser, JSONObject src ){
 		if( src == null ) return null;
 		try{
 			TootNotification dst = new TootNotification();
 			dst.json = src;
-			dst.id = Utils.optLongX(src, "id" );
+			dst.id = Utils.optLongX( src, "id" );
 			dst.type = Utils.optStringX( src, "type" );
 			dst.created_at = Utils.optStringX( src, "created_at" );
-			dst.account = TootAccount.parse( context, access_info, src.optJSONObject( "account" ) );
-			dst.status = TootStatus.parse( context, access_info, src.optJSONObject( "status" ) );
+			dst.account = TootAccount.parse( parser.context, parser.access_info, src.optJSONObject( "account" ) );
+			dst.status = TootStatus.parse( parser, src.optJSONObject( "status" ) );
 			
 			dst.time_created_at = TootStatus.parseTime( dst.created_at );
 			
@@ -73,7 +72,7 @@ public class TootNotification extends TootId {
 	}
 	
 	@NonNull
-	public static List parseList( @NonNull Context context, @NonNull SavedAccount access_info, JSONArray array ){
+	public static List parseList( @NonNull TootParser parser, JSONArray array ){
 		List result = new List();
 		if( array != null ){
 			int array_size = array.length();
@@ -81,7 +80,7 @@ public class TootNotification extends TootId {
 			for( int i = 0 ; i < array_size ; ++ i ){
 				JSONObject src = array.optJSONObject( i );
 				if( src == null ) continue;
-				TootNotification item = parse( context, access_info, src );
+				TootNotification item = parse( parser, src );
 				if( item != null ) result.add( item );
 			}
 		}

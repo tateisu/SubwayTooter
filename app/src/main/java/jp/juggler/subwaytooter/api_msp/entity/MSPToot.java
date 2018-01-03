@@ -16,6 +16,7 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jp.juggler.subwaytooter.api.TootParser;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.DecodeOptions;
@@ -37,11 +38,11 @@ public class MSPToot extends TootStatusLike {
 	// private long msp_id;
 	
 	@Nullable
-	private static MSPToot parse( @NonNull Context context, SavedAccount access_info, JSONObject src ){
+	private static MSPToot parse( @NonNull TootParser parser, JSONObject src ){
 		if( src == null ) return null;
 		MSPToot dst = new MSPToot();
 		
-		dst.account = MSPAccount.parseAccount( context, access_info, src.optJSONObject( "account" ) );
+		dst.account = MSPAccount.parseAccount( parser, src.optJSONObject( "account" ) );
 		if( dst.account == null ){
 			log.e( "missing status account" );
 			return null;
@@ -76,26 +77,18 @@ public class MSPToot extends TootStatusLike {
 		// dst.msp_id =  Utils.optLongX(src, "msp_id" );
 		dst.sensitive = ( src.optInt( "sensitive", 0 ) != 0 );
 		
-		dst.setSpoilerText( context, Utils.optStringX( src, "spoiler_text" ) );
-		
-		dst.content = Utils.optStringX( src, "content" );
-		dst.decoded_content = new DecodeOptions()
-			.setShort( true )
-			.setDecodeEmoji( true )
-			.setCustomEmojiMap( dst.custom_emojis )
-			.setProfileEmojis( dst.profile_emojis )
-			.setLinkTag( dst )
-			.decodeHTML( context, access_info, dst.content );
+		dst.setSpoilerText( parser, Utils.optStringX( src, "spoiler_text" ) );
+		dst.setContent( parser, null, Utils.optStringX( src, "content" ) );
 		
 		return dst;
 	}
 	
-	public static List parseList( @NonNull Context context, SavedAccount access_info, JSONArray array ){
+	public static List parseList( @NonNull TootParser parser, JSONArray array ){
 		List list = new List();
 		for( int i = 0, ie = array.length() ; i < ie ; ++ i ){
 			JSONObject src = array.optJSONObject( i );
 			if( src == null ) continue;
-			MSPToot item = parse( context, access_info, src );
+			MSPToot item = parse( parser, src );
 			if( item == null ) continue;
 			list.add( item );
 		}
@@ -146,11 +139,11 @@ public class MSPToot extends TootStatusLike {
 		//		}
 		//
 		// word mute
-		if( decoded_content != null && muted_word.containsWord( decoded_content.toString() ) ){
+		if(  muted_word.matchShort( decoded_content ) ){
 			return true;
 		}
 		
-		if( decoded_spoiler_text != null && muted_word.containsWord( decoded_spoiler_text.toString() ) ){
+		if(  muted_word.matchShort( decoded_spoiler_text ) ){
 			return true;
 		}
 		

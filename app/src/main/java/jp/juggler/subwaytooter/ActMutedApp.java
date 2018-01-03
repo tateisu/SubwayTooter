@@ -42,7 +42,7 @@ public class ActMutedApp extends AppCompatActivity {
 	}
 	
 	private void initUI(){
-		setContentView( R.layout.act_mute_app );
+		setContentView( R.layout.act_word_list );
 		
 		Styler.fixHorizontalPadding2( findViewById( R.id.llContent ) );
 		

@@ -20,7 +20,6 @@ import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory;
 import com.bumptech.glide.load.model.GlideUrl;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.concurrent.BlockingQueue;
@@ -33,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
+import jp.juggler.subwaytooter.table.HighlightWord;
 import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.ClientInfo;
 import jp.juggler.subwaytooter.table.ContentWarning;
@@ -54,7 +54,6 @@ import okhttp3.CacheControl;
 import okhttp3.Call;
 import okhttp3.CipherSuite;
 import okhttp3.ConnectionSpec;
-import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Response;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
@@ -77,7 +76,7 @@ public class App1 extends Application {
 	public static final String FILE_PROVIDER_AUTHORITY = "jp.juggler.subwaytooter.FileProvider";
 	
 	static final String DB_NAME = "app_db";
-	static final int DB_VERSION = 20;
+	static final int DB_VERSION = 21;
 	
 	// 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
 	// 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加
@@ -97,6 +96,7 @@ public class App1 extends Application {
 	// 2017/9/23 v161 17=>18 SavedAccountに項目追加
 	// 2017/9/23 v161 18=>19 ClientInfoテーブルを置き換える
 	// 2017/12/01 v175 19=>20 UserRelation に項目追加
+	// 2018/1/03 v197 20=>21 HighlightWord テーブルを追加
 	
 	private static DBOpenHelper db_open_helper;
 	
@@ -125,6 +125,7 @@ public class App1 extends Application {
 			MutedWord.onDBCreate( db );
 			PostDraft.onDBCreate( db );
 			TagSet.onDBCreate( db );
+			HighlightWord.onDBCreate( db );
 		}
 		
 		@Override public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ){
@@ -142,6 +143,7 @@ public class App1 extends Application {
 			MutedWord.onDBUpgrade( db, oldVersion, newVersion );
 			PostDraft.onDBUpgrade( db, oldVersion, newVersion );
 			TagSet.onDBUpgrade( db, oldVersion, newVersion );
+			HighlightWord.onDBUpgrade( db, oldVersion, newVersion );
 		}
 	}
 	
@@ -536,4 +538,11 @@ public class App1 extends Application {
 			openCustomTab( activity, url );
 		}
 	}
+	
+	public static void sound( @NonNull HighlightWord item ){
+		if( app_state != null ){
+			app_state.sound( item );
+		}
+	}
+
 }

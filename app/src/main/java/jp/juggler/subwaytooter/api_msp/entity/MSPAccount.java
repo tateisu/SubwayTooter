@@ -9,6 +9,7 @@ import org.json.JSONObject;
 
 import java.util.regex.Matcher;
 
+import jp.juggler.subwaytooter.api.TootParser;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.DecodeOptions;
@@ -19,7 +20,7 @@ public class MSPAccount extends TootAccount {
 	private static final LogCategory log = new LogCategory( "MSPAccount" );
 	
 	@Nullable
-	static TootAccount parseAccount( @NonNull Context context, @NonNull SavedAccount access_info, @Nullable JSONObject src ){
+	static TootAccount parseAccount( @NonNull TootParser parser , @Nullable JSONObject src ){
 		
 		if( src == null ) return null;
 		
@@ -29,7 +30,7 @@ public class MSPAccount extends TootAccount {
 		dst.avatar = dst.avatar_static = Utils.optStringX( src, "avatar" );
 		
 		String sv = Utils.optStringX( src, "display_name" );
-		dst.setDisplayName( context, dst.username, sv );
+		dst.setDisplayName( parser.context, dst.username, sv );
 		
 		dst.id = Utils.optLongX( src, "id" );
 		
@@ -38,7 +39,7 @@ public class MSPAccount extends TootAccount {
 			.setShort( true )
 			.setDecodeEmoji( true )
 			.setProfileEmojis( dst.profile_emojis )
-			.decodeHTML( context, access_info, dst.note );
+			.decodeHTML( parser.context, parser.access_info, dst.note );
 		
 		if( TextUtils.isEmpty( dst.url ) ){
 			log.e( "parseAccount: missing url" );

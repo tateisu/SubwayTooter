@@ -39,6 +39,8 @@ import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootReport;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.api.TootParser;
+import jp.juggler.subwaytooter.api.entity.TootStatusLike;
 import jp.juggler.subwaytooter.api.entity.TootTag;
 import jp.juggler.subwaytooter.api_msp.MSPClient;
 import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
@@ -46,6 +48,7 @@ import jp.juggler.subwaytooter.api_tootsearch.TSClient;
 import jp.juggler.subwaytooter.api_tootsearch.entity.TSToot;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.AcctSet;
+import jp.juggler.subwaytooter.table.HighlightWord;
 import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.MutedWord;
 import jp.juggler.subwaytooter.table.SavedAccount;
@@ -1171,6 +1174,7 @@ import jp.juggler.subwaytooter.util.Utils;
 	private Pattern column_regex_filter;
 	private HashSet< String > muted_app;
 	private WordTrieTree muted_word;
+	private WordTrieTree highlight_trie;
 	
 	private void initFilter(){
 		column_regex_filter = null;
@@ -1184,6 +1188,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		
 		muted_app = MutedApp.getNameSet();
 		muted_word = MutedWord.getNameSet();
+		highlight_trie = HighlightWord.getNameSet();
 	}
 	
 	private boolean isFiltered( @NonNull TootStatus status ){
@@ -1378,6 +1383,8 @@ import jp.juggler.subwaytooter.util.Utils;
 		fireShowContent();
 		
 		@SuppressLint("StaticFieldLeak") AsyncTask< Void, Void, TootApiResult > task = this.last_task = new AsyncTask< Void, Void, TootApiResult >() {
+			TootParser parser = new TootParser( context, access_info).setHighlightTrie( highlight_trie );
+			
 			
 			TootInstance instance_tmp;
 			
@@ -1398,7 +1405,10 @@ import jp.juggler.subwaytooter.util.Utils;
 				TootApiResult result = client.request( path_base );
 				if( result != null && result.array != null ){
 					//
-					TootStatus.List src = TootStatus.parseList( context, access_info, result.array, true );
+					TootStatus.List src = new TootParser( context, access_info)
+						.setPinned( true )
+						.setHighlightTrie( highlight_trie )
+						.statusList( result.array );
 					
 					for( TootStatus status : src ){
 						log.d( "pinned: %s %s", status.id, status.decoded_content );
@@ -1407,52 +1417,7 @@ import jp.juggler.subwaytooter.util.Utils;
 					list_pinned = new ArrayList<>( src.size() );
 					addWithFilter( list_pinned, src );
 					
-					// 1.6rc では以下の理由により、40overの固定トゥートを取得することは困難である
-					//					- max_idを指定せずにAPIで取得すると適当な件数のリストが返ってくる。ソート順はpinした日時。max_idはリスト中の最後の要素のIDを返す
-					//					- max_idを指定してAPIで取得すると「ステータスIDがmax_idより小さい&pinされている」トゥートをpin日時順にソートしたものが返ってくる
-					//					- max_idはpin日時を考慮していないのだからページング用のパラメータとしては全く不適切である
-					//					- 取得できるステータスにはpinされた日時は含まれない
-					//					//
-					//					// pinステータスは独自にページ管理する
-					//					long time_start = SystemClock.elapsedRealtime();
-					//					String max_id = parseMaxId( result );
-					//					char delimiter = ( - 1 != path_base.indexOf( '?' ) ? '&' : '?' );
-					//					for( ; ; ){
-					//
-					//						if( client.isCancelled() ){
-					//							log.d( "loading-statuses-pinned: cancelled." );
-					//							break;
-					//						}
-					//						if( max_id == null ){
-					//							log.d( "loading-statuses-pinned: max_id is null." );
-					//							break;
-					//						}
-					//						if( src.isEmpty() ){
-					//							log.d( "loading-statuses-pinned: previous response is empty." );
-					//							break;
-					//						}
-					//						if( SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT ){
-					//							log.d( "loading-statuses-pinned: timeout." );
-					//							break;
-					//						}
-					//
-					//						String path = path_base + delimiter + "max_id=" + max_id;
-					//						TootApiResult result2 = client.request( path );
-					//						if( result2 == null || result2.array == null ){
-					//							log.d( "loading-statuses-pinned: error or cancelled." );
-					//							break;
-					//						}
-					//
-					//						src = TootStatus.parseList( context, access_info, result2.array  ,true);
-					//						for(TootStatus status : src ){
-					//							log.d("pinned: %s %s",status.id, status.decoded_content);
-					//						}
-					//
-					//						addWithFilter( list_pinned, src );
-					//
-					//						// pinnedステータスは独自にページ管理する
-					//						max_id = parseMaxId( result2 );
-					//					}
+					// pinned tootにはページングの概念はない
 				}
 				log.d( "getStatusesPinned: list size=%s", list_pinned == null ? - 1 : list_pinned.size() );
 			}
@@ -1460,12 +1425,14 @@ import jp.juggler.subwaytooter.util.Utils;
 			ArrayList< Object > list_tmp;
 			
 			TootApiResult getStatuses( TootApiClient client, String path_base ){
+				
+
 				long time_start = SystemClock.elapsedRealtime();
 				TootApiResult result = client.request( path_base );
 				if( result != null && result.array != null ){
 					saveRange( result, true, true );
 					//
-					TootStatus.List src = TootStatus.parseList( context, access_info, result.array );
+					TootStatus.List src = parser.statusList( result.array );
 					list_tmp = new ArrayList<>( src.size() );
 					addWithFilter( list_tmp, src );
 					//
@@ -1502,7 +1469,7 @@ import jp.juggler.subwaytooter.util.Utils;
 							break;
 						}
 						
-						src = TootStatus.parseList( context, access_info, result2.array );
+						src = parser.statusList( result2.array );
 						
 						addWithFilter( list_tmp, src );
 						
@@ -1564,7 +1531,7 @@ import jp.juggler.subwaytooter.util.Utils;
 				if( result != null && result.array != null ){
 					saveRange( result, true, true );
 					//
-					TootNotification.List src = TootNotification.parseList( context, access_info, result.array );
+					TootNotification.List src = parser.notificationList( result.array );
 					list_tmp = new ArrayList<>( src.size() );
 					addWithFilter( list_tmp, src );
 					//
@@ -1605,7 +1572,7 @@ import jp.juggler.subwaytooter.util.Utils;
 							break;
 						}
 						
-						src = TootNotification.parseList( context, access_info, result2.array );
+						src = parser.notificationList( result2.array );
 						
 						addWithFilter( list_tmp, src );
 						
@@ -1741,7 +1708,7 @@ import jp.juggler.subwaytooter.util.Utils;
 						result = client.request(
 							String.format( Locale.JAPAN, PATH_STATUSES, status_id ) );
 						if( result == null || result.object == null ) return result;
-						TootStatus target_status = TootStatus.parse( context, access_info, result.object );
+						TootStatus target_status = parser.status( result.object );
 						if( target_status == null ){
 							return new TootApiResult( "TootStatus parse failed." );
 						}
@@ -1753,7 +1720,7 @@ import jp.juggler.subwaytooter.util.Utils;
 						if( result == null || result.object == null ) return result;
 						
 						// 一つのリストにまとめる
-						TootContext conversation_context = TootContext.parse( context, access_info, result.object );
+						TootContext conversation_context = parser.context( result.object );
 						if( conversation_context != null ){
 							list_tmp = new ArrayList<>( 1 + conversation_context.ancestors.size() + conversation_context.descendants.size() );
 							if( conversation_context.ancestors != null )
@@ -1792,7 +1759,7 @@ import jp.juggler.subwaytooter.util.Utils;
 						result = client.request( path );
 						if( result == null || result.object == null ) return result;
 						
-						TootResults tmp = TootResults.parse( context, access_info, result.object );
+						TootResults tmp = parser.results( result.object );
 						if( tmp != null ){
 							list_tmp = new ArrayList<>();
 							list_tmp.addAll( tmp.hashtags );
@@ -1831,7 +1798,7 @@ import jp.juggler.subwaytooter.util.Utils;
 								// max_id の更新
 								max_id = MSPClient.getMaxId( result.array, max_id );
 								// リストデータの用意
-								MSPToot.List search_result = MSPToot.parseList( context, access_info, result.array );
+								MSPToot.List search_result = MSPToot.parseList(parser, result.array );
 								if( search_result != null ){
 									list_tmp = new ArrayList<>();
 									addWithFilter( list_tmp, search_result );
@@ -1867,7 +1834,7 @@ import jp.juggler.subwaytooter.util.Utils;
 									// max_id の更新
 									max_id = TSClient.getMaxId( result.object, max_id );
 									// リストデータの用意
-									TSToot.List search_result = TSToot.parseList( context, access_info, result.object );
+									TSToot.List search_result = TSToot.parseList( parser, result.object );
 									list_tmp = new ArrayList<>();
 									addWithFilter( list_tmp, search_result );
 									if( search_result.isEmpty() ){
@@ -2194,6 +2161,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		mRefreshLoadingError = null;
 		
 		@SuppressLint("StaticFieldLeak") AsyncTask< Void, Void, TootApiResult > task = this.last_task = new AsyncTask< Void, Void, TootApiResult >() {
+			TootParser parser = new TootParser( context, access_info).setHighlightTrie( highlight_trie );
 			
 			TootApiResult getAccountList( TootApiClient client, String path_base ){
 				long time_start = SystemClock.elapsedRealtime();
@@ -2417,7 +2385,7 @@ import jp.juggler.subwaytooter.util.Utils;
 				if( result != null && result.array != null ){
 					saveRange( result, bBottom, ! bBottom );
 					list_tmp = new ArrayList<>();
-					TootNotification.List src = TootNotification.parseList( context, access_info, result.array );
+					TootNotification.List src = parser.notificationList( result.array );
 					addWithFilter( list_tmp, src );
 					
 					if( ! bBottom ){
@@ -2462,7 +2430,7 @@ import jp.juggler.subwaytooter.util.Utils;
 								break;
 							}
 							
-							src = TootNotification.parseList( context, access_info, result2.array );
+							src = parser.notificationList( result2.array );
 							if( ! src.isEmpty() ){
 								addWithFilter( list_tmp, src );
 								PollingWorker.injectData( context, access_info.db_id, src );
@@ -2507,7 +2475,7 @@ import jp.juggler.subwaytooter.util.Utils;
 								break;
 							}
 							
-							src = TootNotification.parseList( context, access_info, result2.array );
+							src = parser.notificationList( result2.array );
 							
 							addWithFilter( list_tmp, src );
 							
@@ -2524,6 +2492,7 @@ import jp.juggler.subwaytooter.util.Utils;
 			ArrayList< Object > list_tmp;
 			
 			TootApiResult getStatusList( TootApiClient client, String path_base ){
+				
 				long time_start = SystemClock.elapsedRealtime();
 				
 				char delimiter = ( - 1 != path_base.indexOf( '?' ) ? '&' : '?' );
@@ -2532,7 +2501,7 @@ import jp.juggler.subwaytooter.util.Utils;
 				TootApiResult result = client.request( addRange( bBottom, path_base ) );
 				if( result != null && result.array != null ){
 					saveRange( result, bBottom, ! bBottom );
-					TootStatus.List src = TootStatus.parseList( context, access_info, result.array );
+					TootStatus.List src = parser.statusList( result.array );
 					list_tmp = new ArrayList<>();
 					
 					addWithFilter( list_tmp, src );
@@ -2576,7 +2545,7 @@ import jp.juggler.subwaytooter.util.Utils;
 								break;
 							}
 							
-							src = TootStatus.parseList( context, access_info, result2.array );
+							src = parser.statusList( result2.array );
 							
 							addWithFilter( list_tmp, src );
 							
@@ -2632,7 +2601,7 @@ import jp.juggler.subwaytooter.util.Utils;
 								break;
 							}
 							
-							src = TootStatus.parseList( context, access_info, result2.array );
+							src = parser.statusList( result2.array );
 							addWithFilter( list_tmp, src );
 						}
 					}
@@ -2773,7 +2742,7 @@ import jp.juggler.subwaytooter.util.Utils;
 									// max_id の更新
 									max_id = MSPClient.getMaxId( result.array, max_id );
 									// リストデータの用意
-									MSPToot.List search_result = MSPToot.parseList( context, access_info, result.array );
+									MSPToot.List search_result = MSPToot.parseList( parser, result.array );
 									if( search_result != null ){
 										list_tmp = new ArrayList<>();
 										addWithFilter( list_tmp, search_result );
@@ -2813,7 +2782,7 @@ import jp.juggler.subwaytooter.util.Utils;
 									// max_id の更新
 									max_id = TSClient.getMaxId( result.object, max_id );
 									// リストデータの用意
-									TSToot.List search_result = TSToot.parseList( context, access_info, result.object );
+									TSToot.List search_result = TSToot.parseList( parser, result.object );
 									list_tmp = new ArrayList<>();
 									addWithFilter( list_tmp, search_result );
 								}
@@ -2863,6 +2832,8 @@ import jp.juggler.subwaytooter.util.Utils;
 						return;
 					}
 					
+
+					
 					// 事前にスクロール位置を覚えておく
 					ScrollPosition sp = null;
 					ColumnViewHolder holder = getViewHolder();
@@ -2878,6 +2849,16 @@ import jp.juggler.subwaytooter.util.Utils;
 							holder.setScrollPosition( sp, 20f );
 						}
 					}else{
+						
+						for( Object o : list_new ){
+							if( o instanceof TootStatusLike){
+								TootStatusLike s = (TootStatusLike) o;
+								if( s.highlight_sound != null ){
+									App1.sound( s.highlight_sound );
+									break;
+								}
+							}
+						}
 						
 						int status_index = - 1;
 						for( int i = 0, ie = list_new.size() ; i < ie ; ++ i ){
@@ -2948,6 +2929,9 @@ import jp.juggler.subwaytooter.util.Utils;
 			String max_id = gap.max_id;
 			final String since_id = gap.since_id;
 			ArrayList< Object > list_tmp;
+			
+			TootParser parser = new TootParser( context, access_info).setHighlightTrie( highlight_trie );
+			
 			
 			TootApiResult getAccountList( TootApiClient client, String path_base ){
 				long time_start = SystemClock.elapsedRealtime();
@@ -3076,7 +3060,7 @@ import jp.juggler.subwaytooter.util.Utils;
 					}
 					
 					result = r2;
-					TootNotification.List src = TootNotification.parseList( context, access_info, r2.array );
+					TootNotification.List src = parser.notificationList( r2.array );
 					
 					if( src.isEmpty() ){
 						log.d( "gap-notification: empty." );
@@ -3132,7 +3116,7 @@ import jp.juggler.subwaytooter.util.Utils;
 					// 成功した場合はそれを返したい
 					result = r2;
 					
-					TootStatus.List src = TootStatus.parseList( context, access_info, r2.array );
+					TootStatus.List src = parser.statusList( r2.array );
 					if( src.size() == 0 ){
 						// 直前の取得でカラのデータが帰ってきたら終了
 						log.d( "gap-statuses: empty." );
@@ -3324,6 +3308,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		task.executeOnExecutor( App1.task_executor );
 	}
 	
+	
 	private static final int heightSpec = View.MeasureSpec.makeMeasureSpec( 0, View.MeasureSpec.UNSPECIFIED );
 	
 	private static int getListItemHeight( ListView listView, int idx ){
@@ -3462,6 +3447,16 @@ import jp.juggler.subwaytooter.util.Utils;
 					}
 				}catch( Throwable ex ){
 					log.e( ex, "can't put gap." );
+				}
+			}
+			
+			for( Object o : list_new ){
+				if( o instanceof TootStatusLike){
+					TootStatusLike s = (TootStatusLike) o;
+					if( s.highlight_sound != null ){
+						App1.sound( s.highlight_sound );
+						break;
+					}
 				}
 			}
 			
@@ -3702,6 +3697,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		app_state.stream_reader.register(
 			access_info
 			, stream_path
+			, highlight_trie
 			, this
 		);
 	}

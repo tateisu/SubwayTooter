@@ -35,6 +35,7 @@ import jp.juggler.subwaytooter.api.entity.CustomEmoji;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootInstance;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.api.TootParser;
 import jp.juggler.subwaytooter.dialog.DlgConfirm;
 import jp.juggler.subwaytooter.dialog.EmojiPicker;
 import jp.juggler.subwaytooter.table.AcctColor;
@@ -315,7 +316,7 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 				
 				TootApiResult result = client.request( "/api/v1/statuses", request_builder );
 				if( result != null && result.object != null ){
-					status = TootStatus.parse( activity, account, result.object );
+					status = new TootParser( activity, account).status(  result.object );
 					if( status != null ){
 						Spannable s = status.decoded_content;
 						MyClickableSpan[] span_list = s.getSpans( 0, s.length(), MyClickableSpan.class );
@@ -599,7 +600,7 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 			}
 			
 			// : の手前は始端か改行か空白でなければならない
-			if( last_colon > 0 && ! EmojiDecoder.isWhitespaceBeforeEmoji( src.codePointBefore( last_colon ) ) ){
+			if( last_colon > 0 && ! CharacterGroup.isWhitespace( src.codePointBefore( last_colon ) ) ){
 				log.d( "checkEmoji: invalid character before shortcode." );
 				closeAcctPopup();
 				return;

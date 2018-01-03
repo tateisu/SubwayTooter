@@ -748,7 +748,10 @@ public class ActMain extends AppCompatActivity
 			
 		}else if( id == R.id.nav_muted_word ){
 			startActivity( new Intent( this, ActMutedWord.class ) );
-
+			
+		}else if( id == R.id.nav_highlight_word ){
+			startActivity( new Intent( this, ActHighlightWordList.class ) );
+			
 		}else if( id == R.id.nav_app_about ){
 			startActivityForResult( new Intent( this, ActAbout.class ), ActMain.REQUEST_APP_ABOUT );
 			

@@ -48,6 +48,7 @@ import java.io.InputStream;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
+import jp.juggler.subwaytooter.api.TootParser;
 import jp.juggler.subwaytooter.api.TootTask;
 import jp.juggler.subwaytooter.api.TootTaskRunner;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
@@ -680,7 +681,7 @@ public class ActAccountSetting extends AppCompatActivity
 			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				TootApiResult result = client.request( "/api/v1/accounts/verify_credentials" );
 				if( result != null && result.object != null ){
-					data = TootAccount.parse( ActAccountSetting.this, account, result.object );
+					data = new TootParser( ActAccountSetting.this, account ).account( result.object );
 					if( data == null ) return new TootApiResult( "TootAccount parse failed." );
 				}
 				return result;
@@ -741,7 +742,7 @@ public class ActAccountSetting extends AppCompatActivity
 				
 				TootApiResult result = client.request( "/api/v1/accounts/update_credentials", request_builder );
 				if( result != null && result.object != null ){
-					data = TootAccount.parse( ActAccountSetting.this, account, result.object );
+					data =  new TootParser( ActAccountSetting.this, account ).account( result.object );
 					if( data == null ) return new TootApiResult( "TootAccount parse failed." );
 				}
 				return result;

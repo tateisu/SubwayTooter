@@ -22,6 +22,7 @@ import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.api.TootParser;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
 import jp.juggler.subwaytooter.dialog.ReportForm;
 import jp.juggler.subwaytooter.table.AcctColor;
@@ -224,7 +225,7 @@ public class Action_User {
 				
 				if( result != null && result.object != null ){
 					
-					TootResults tmp = TootResults.parse( activity, access_info, result.object );
+					TootResults tmp = new TootParser( activity, access_info ).results( result.object );
 					if( tmp != null ){
 						if( tmp.accounts != null && ! tmp.accounts.isEmpty() ){
 							who_local = tmp.accounts.get( 0 );

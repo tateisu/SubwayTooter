@@ -51,6 +51,7 @@ import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
+import jp.juggler.subwaytooter.api.TootParser;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.MutedApp;
 import jp.juggler.subwaytooter.table.MutedWord;
@@ -1031,6 +1032,8 @@ public class PollingWorker {
 			){
 				nr = NotificationTracking.load( account.db_id );
 				
+				TootParser parser = new TootParser( context,account );
+				
 				// まずキャッシュされたデータを処理する
 				if( nr.last_data != null ){
 					try{
@@ -1038,7 +1041,7 @@ public class PollingWorker {
 						for( int i = array.length() - 1 ; i >= 0 ; -- i ){
 							if( job.isJobCancelled() ) return;
 							JSONObject src = array.optJSONObject( i );
-							update_sub( src, data_list, muted_app, muted_word );
+							update_sub( src, data_list, muted_app, muted_word ,parser);
 						}
 					}catch( JSONException ex ){
 						log.trace( ex );
@@ -1053,6 +1056,7 @@ public class PollingWorker {
 					nr.last_load = now;
 					
 					client.setAccount( account );
+					
 					
 					for( int nTry = 0 ; nTry < 4 ; ++ nTry ){
 						if( job.isJobCancelled() ) return;
@@ -1071,7 +1075,7 @@ public class PollingWorker {
 								JSONArray array = result.array;
 								for( int i = array.length() - 1 ; i >= 0 ; -- i ){
 									JSONObject src = array.optJSONObject( i );
-									update_sub( src, data_list, muted_app, muted_word );
+									update_sub( src, data_list, muted_app, muted_word ,parser);
 								}
 							}catch( JSONException ex ){
 								log.trace( ex );
@@ -1130,6 +1134,7 @@ public class PollingWorker {
 				, @NonNull ArrayList< Data > data_list
 				, @NonNull HashSet< String > muted_app
 				, @NonNull WordTrieTree muted_word
+			    , @NonNull TootParser parser
 			) throws JSONException{
 				
 				if( nr.nid_read == 0 || nr.nid_show == 0 ){
@@ -1168,7 +1173,7 @@ public class PollingWorker {
 					return;
 				}
 				
-				TootNotification notification = TootNotification.parse( context, account, src );
+				TootNotification notification = parser.notification(  src );
 				if( notification == null ){
 					return;
 				}

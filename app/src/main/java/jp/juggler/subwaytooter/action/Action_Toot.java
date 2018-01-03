@@ -21,6 +21,7 @@ import jp.juggler.subwaytooter.api.TootTaskRunner;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
+import jp.juggler.subwaytooter.api.TootParser;
 import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
 import jp.juggler.subwaytooter.api_tootsearch.entity.TSToot;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
@@ -95,7 +96,7 @@ public class Action_Toot {
 						return result;
 					}
 					target_status = null;
-					TootResults tmp = TootResults.parse( activity, access_info, result.object );
+					TootResults tmp = new TootParser( activity, access_info).results( result.object );
 					if( tmp != null ){
 						if( tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 							target_status = tmp.statuses.get( 0 );
@@ -125,7 +126,7 @@ public class Action_Toot {
 					)
 					, request_builder );
 				if( result != null && result.object != null ){
-					new_status = TootStatus.parse( activity, access_info, result.object );
+					new_status = new TootParser( activity, access_info).status( result.object );
 				}
 				
 				return result;
@@ -265,6 +266,8 @@ public class Action_Toot {
 		new TootTaskRunner( activity, false ).run( access_info, new TootTask() {
 			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				
+				TootParser parser = new TootParser( activity, access_info);
+				
 				TootApiResult result;
 				
 				TootStatusLike target_status;
@@ -278,7 +281,7 @@ public class Action_Toot {
 						return result;
 					}
 					target_status = null;
-					TootResults tmp = TootResults.parse( activity, access_info, result.object );
+					TootResults tmp = parser.results( result.object );
 					if( tmp != null ){
 						if( tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 							target_status = tmp.statuses.get( 0 );
@@ -306,7 +309,7 @@ public class Action_Toot {
 				
 				if( result != null && result.object != null ){
 					
-					new_status = TootStatus.parse( activity, access_info, result.object );
+					new_status = parser .status( result.object );
 					
 					// reblogはreblogを表すStatusを返す
 					// unreblogはreblogしたStatusを返す
@@ -612,7 +615,7 @@ public class Action_Toot {
 						path = path + "&resolve=1";
 						result = client.request( path );
 						if( result != null && result.object != null ){
-							TootResults tmp = TootResults.parse( activity, access_info, result.object );
+							TootResults tmp = new TootParser( activity, access_info).results( result.object );
 							if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 								TootStatus status = tmp.statuses.get( 0 );
 								local_status_id = status.id;
@@ -672,7 +675,7 @@ public class Action_Toot {
 						)
 						, request_builder );
 					if( result != null && result.object != null ){
-						new_status = TootStatus.parse( activity, access_info, result.object );
+						new_status = new TootParser( activity, access_info).status(  result.object );
 					}
 					
 					return result;
@@ -759,7 +762,7 @@ public class Action_Toot {
 					
 					TootApiResult result = client.request( path );
 					if( result != null && result.object != null ){
-						TootResults tmp = TootResults.parse( activity, access_info, result.object );
+						TootResults tmp = new TootParser( activity, access_info).results(   result.object );
 						if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
 							local_status = tmp.statuses.get( 0 );
 							log.d( "status id conversion %s => %s", remote_status_url, local_status.id );
@@ -808,7 +811,7 @@ public class Action_Toot {
 				);
 				
 				if( result != null && result.object != null ){
-					local_status = TootStatus.parse( activity, access_info, result.object );
+					local_status = new TootParser( activity, access_info).status( result.object );
 				}
 				
 				return result;

@@ -106,6 +106,8 @@
         <item name="ic_copy">@drawable/ic_copy</item>
         <item name="ic_left">@drawable/ic_left</item>
         <item name="ic_right">@drawable/ic_right</item>
+        <item name="ic_volume_up">@drawable/ic_volume_up</item>
+
     </style>
 
     <style name="AppTheme.Light.NoActionBar" parent="AppTheme.Light">
@@ -214,6 +216,7 @@
         <item name="ic_copy">@drawable/ic_copy_dark</item>
         <item name="ic_left">@drawable/ic_left_dark</item>
         <item name="ic_right">@drawable/ic_right_dark</item>
+        <item name="ic_volume_up">@drawable/ic_volume_up_dark</item>
 
     </style>
 

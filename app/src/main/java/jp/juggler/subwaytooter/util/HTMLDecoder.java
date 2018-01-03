@@ -21,6 +21,7 @@ import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.api.entity.TootMention;
+import jp.juggler.subwaytooter.table.HighlightWord;
 import jp.juggler.subwaytooter.table.SavedAccount;
 
 @SuppressWarnings("WeakerAccess")
@@ -202,6 +203,9 @@ public class HTMLDecoder {
 					sb.append( sb_tmp.toString() );
 				}
 				end = sb.length();
+
+				
+
 			}else if( sb_tmp != sb ){
 				// style もscript も読み捨てる
 			}
@@ -213,6 +217,22 @@ public class HTMLDecoder {
 						String link_text = sb.subSequence( start, end ).toString();
 						MyClickableSpan span = new MyClickableSpan( account, link_text, href, account.findAcctColor( href ), options.link_tag );
 						sb.setSpan( span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
+						
+						// リンクスパンを設定した後に色をつける
+						if( options.highlight_trie != null ){
+							ArrayList<WordTrieTree.Match > list = options.highlight_trie.matchList( sb,start,end );
+							if( list != null ){
+								for( WordTrieTree.Match range : list ){
+									HighlightWord word = HighlightWord.load( range.word );
+									if( word !=null ){
+										sb.setSpan( new HighlightSpan( word.color_fg,word.color_bg ),  range.start, range.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+										if( word.sound_type != HighlightWord.SOUND_TYPE_NONE ){
+											options.highlight_sound = word;
+										}
+									}
+								}
+							}
+						}
 					}
 				}
 			}

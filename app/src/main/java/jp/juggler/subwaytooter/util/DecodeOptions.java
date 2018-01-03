@@ -6,9 +6,13 @@ import android.support.annotation.Nullable;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 
+import java.util.ArrayList;
+
+import jp.juggler.subwaytooter.api.TootParser;
 import jp.juggler.subwaytooter.api.entity.CustomEmoji;
 import jp.juggler.subwaytooter.api.entity.NicoProfileEmoji;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
+import jp.juggler.subwaytooter.table.HighlightWord;
 
 @SuppressWarnings("WeakerAccess")
 public class DecodeOptions {
@@ -61,5 +65,14 @@ public class DecodeOptions {
 	
 	public Spannable decodeEmoji( @NonNull final Context context, @NonNull final String s ){
 		return EmojiDecoder.decodeEmoji( context, s, this );
+	}
+	
+	// highlight first found
+	@Nullable public HighlightWord highlight_sound;
+	
+	@Nullable public WordTrieTree highlight_trie;
+	public DecodeOptions setHighlightTrie( WordTrieTree highlight_trie ){
+		this.highlight_trie = highlight_trie;
+		return this;
 	}
 }

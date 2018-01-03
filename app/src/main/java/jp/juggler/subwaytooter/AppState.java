@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.SystemClock;
@@ -24,6 +27,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -36,6 +40,7 @@ import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
+import jp.juggler.subwaytooter.table.HighlightWord;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.MyClickableSpan;
@@ -484,4 +489,58 @@ public class AppState {
 		}
 	};
 	
+	
+	private WeakReference< Ringtone > last_ringtone;
+	
+	private void stopLastRingtone(){
+		Ringtone r = last_ringtone == null ? null : last_ringtone.get();
+		if( r != null ){
+			try{
+				r.stop();
+			}catch( Throwable ex ){
+				log.trace( ex );
+			}finally{
+				last_ringtone = null;
+			}
+		}
+	}
+	
+	private long last_sound;
+	
+	void sound( @NonNull HighlightWord item ){
+		// 短時間に何度もならないようにする
+		long now = SystemClock.elapsedRealtime();
+		if( now - last_sound < 500L ) return;
+		last_sound = now;
+		
+		stopLastRingtone();
+		
+		if( item.sound_type == HighlightWord.SOUND_TYPE_NONE ) return;
+		
+		if( item.sound_type == HighlightWord.SOUND_TYPE_CUSTOM
+			&& ! TextUtils.isEmpty( item.sound_uri )
+			){
+			try{
+				Ringtone ringtone = RingtoneManager.getRingtone( context, Uri.parse( item.sound_uri ) );
+				if( ringtone != null ){
+					last_ringtone = new WeakReference<>( ringtone );
+					ringtone.play();
+					return;
+				}
+			}catch( Throwable ex ){
+				log.trace( ex );
+			}
+		}
+		
+		Uri uri = RingtoneManager.getDefaultUri( RingtoneManager.TYPE_NOTIFICATION );
+		try{
+			Ringtone ringtone = RingtoneManager.getRingtone( context, uri );
+			if( ringtone != null ){
+				last_ringtone = new WeakReference<>( ringtone );
+				ringtone.play();
+			}
+		}catch( Throwable ex ){
+			log.trace( ex );
+		}
+	}
 }

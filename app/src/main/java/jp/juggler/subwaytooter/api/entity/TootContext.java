@@ -1,12 +1,11 @@
 package jp.juggler.subwaytooter.api.entity;
 
-import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import org.json.JSONObject;
 
-import jp.juggler.subwaytooter.table.SavedAccount;
+import jp.juggler.subwaytooter.api.TootParser;
 import jp.juggler.subwaytooter.util.LogCategory;
 
 public class TootContext {
@@ -19,12 +18,12 @@ public class TootContext {
 	public TootStatus.List descendants;
 	
 	@Nullable
-	public static TootContext parse( @NonNull Context context, @NonNull SavedAccount access_info, JSONObject src ){
+	public static TootContext parse( @NonNull TootParser parser , JSONObject src ){
 		if( src == null ) return null;
 		try{
 			TootContext dst = new TootContext();
-			dst.ancestors = TootStatus.parseList( context, access_info, src.optJSONArray( "ancestors" ) );
-			dst.descendants = TootStatus.parseList( context, access_info, src.optJSONArray( "descendants" ) );
+			dst.ancestors = TootStatus.parseList( parser, src.optJSONArray( "ancestors" ) );
+			dst.descendants = TootStatus.parseList( parser, src.optJSONArray( "descendants" ) );
 			return dst;
 		}catch( Throwable ex ){
 			log.trace( ex );

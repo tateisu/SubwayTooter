@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.regex.Matcher;
 
+import jp.juggler.subwaytooter.api.TootParser;
 import jp.juggler.subwaytooter.api.entity.CustomEmoji;
 import jp.juggler.subwaytooter.api.entity.NicoProfileEmoji;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
@@ -37,11 +38,11 @@ public class TSToot extends TootStatusLike {
 	public String uri;
 	
 	@Nullable
-	private static TSToot parse( @NonNull Context context, SavedAccount access_info, JSONObject src ){
+	private static TSToot parse( @NonNull TootParser parser, JSONObject src ){
 		if( src == null ) return null;
 		TSToot dst = new TSToot();
 		
-		dst.account = parseAccount( context, access_info, src.optJSONObject( "account" ) );
+		dst.account = parseAccount( parser, src.optJSONObject( "account" ) );
 		if( dst.account == null ){
 			log.e( "missing status account" );
 			return null;
@@ -50,7 +51,7 @@ public class TSToot extends TootStatusLike {
 		dst.json = src;
 		
 		// 絵文字マップは割と最初の方で読み込んでおきたい
-		dst.custom_emojis = CustomEmoji.parseMap( src.optJSONArray( "emojis" ), access_info.host );
+		dst.custom_emojis = CustomEmoji.parseMap( src.optJSONArray( "emojis" ), parser.access_info.host );
 		dst.profile_emojis = NicoProfileEmoji.parseMap( src.optJSONArray( "profile_emojis" ) );
 		
 		dst.url = Utils.optStringX( src, "url" );
@@ -65,7 +66,7 @@ public class TSToot extends TootStatusLike {
 			log.e( "missing status uri or url or host or id" );
 			return null;
 		}
-
+		
 		// uri から投稿元タンスでのIDを調べる
 		dst.id = TootStatusLike.parseStatusId( dst );
 		
@@ -76,18 +77,8 @@ public class TSToot extends TootStatusLike {
 		
 		dst.sensitive = src.optBoolean( "sensitive", false );
 		
-		dst.setSpoilerText( context, Utils.optStringX( src, "spoiler_text" ) );
-		
-		dst.content = Utils.optStringX( src, "content" );
-		dst.decoded_content = new DecodeOptions()
-			.setShort( true )
-			.setDecodeEmoji( true )
-			.setCustomEmojiMap( dst.custom_emojis )
-			.setProfileEmojis( dst.profile_emojis )
-			.setLinkTag( dst )
-			.decodeHTML( context, access_info, dst.content );
-		
-		
+		dst.setSpoilerText( parser, Utils.optStringX( src, "spoiler_text" ) );
+		dst.setContent( parser, dst.media_attachments, Utils.optStringX( src, "content" ) );
 		
 		return dst;
 	}
@@ -96,7 +87,7 @@ public class TSToot extends TootStatusLike {
 	}
 	
 	@NonNull
-	public static TSToot.List parseList( @NonNull Context context, SavedAccount access_info, @NonNull JSONObject root ){
+	public static TSToot.List parseList( @NonNull TootParser parser, @NonNull JSONObject root ){
 		TSToot.List list = new TSToot.List();
 		JSONArray array = TSClient.getHits( root );
 		if( array != null ){
@@ -105,11 +96,11 @@ public class TSToot extends TootStatusLike {
 					JSONObject src = array.optJSONObject( i );
 					if( src == null ) continue;
 					JSONObject src2 = src.optJSONObject( "_source" );
-					TSToot item = parse( context, access_info, src2 );
+					TSToot item = parse( parser, src2 );
 					if( item == null ) continue;
 					list.add( item );
-				}catch(Throwable ex){
-					log.trace(ex);
+				}catch( Throwable ex ){
+					log.trace( ex );
 				}
 			}
 		}
@@ -119,11 +110,11 @@ public class TSToot extends TootStatusLike {
 	public boolean checkMuted( @SuppressWarnings("UnusedParameters") @NonNull HashSet< String > muted_app, @NonNull WordTrieTree muted_word ){
 		
 		// word mute
-		if( decoded_content != null && muted_word.containsWord( decoded_content.toString() ) ){
+		if( decoded_content != null && muted_word.matchShort( decoded_content.toString() ) ){
 			return true;
 		}
 		
-		if( decoded_spoiler_text != null && muted_word.containsWord( decoded_spoiler_text.toString() ) ){
+		if( decoded_spoiler_text != null && muted_word.matchShort( decoded_spoiler_text.toString() ) ){
 			return true;
 		}
 		
@@ -143,9 +134,10 @@ public class TSToot extends TootStatusLike {
 	}
 	
 	@Nullable
-	private static TootAccount parseAccount( @NonNull Context context, @NonNull SavedAccount access_info, @Nullable JSONObject src ){
+	private static TootAccount parseAccount( @NonNull TootParser parser, @Nullable JSONObject src ){
 		
-		TootAccount dst = TootAccount.parse( context, access_info, src );
+		TootAccount dst = parser.account( src );
+		
 		if( dst != null ){
 			
 			// tootsearch のアカウントのIDはどのタンス上のものか分からない

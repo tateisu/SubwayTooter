@@ -874,5 +874,11 @@
     <string name="dont_repeat_download_to_same_url">同じURLを数秒以内に繰り返しダウンロードすることはできません</string>
     <string name="zooming_of">×%3$.1f\n%1$d×%2$d</string>
     <string name="media_attachment_still_uploading">添付メディアのアップロードが終わってません</string>
+    <string name="highlight_word">Highlight word</string>
+    <string name="new_item">New item…</string>
+    <string name="word_empty">Please input keyword.</string>
+    <string name="already_exist">既に存在します</string>
+    <string name="highlight_desc">Swipe to delete. You may need reload column to check update.</string>
+    <string name="check_sound">Check sound</string>
 
 </resources>

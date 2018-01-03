@@ -9,10 +9,14 @@ import android.text.TextUtils;
 import org.json.JSONObject;
 
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import jp.juggler.subwaytooter.api.TootParser;
+import jp.juggler.subwaytooter.api_msp.entity.MSPToot;
 import jp.juggler.subwaytooter.api_tootsearch.entity.TSToot;
+import jp.juggler.subwaytooter.table.HighlightWord;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -20,7 +24,7 @@ import jp.juggler.subwaytooter.util.Utils;
 
 public abstract class TootStatusLike extends TootId {
 	
-	static final LogCategory log = new LogCategory("TootStatusLike");
+	static final LogCategory log = new LogCategory( "TootStatusLike" );
 	
 	//URL to the status page (can be remote)
 	public String url;
@@ -95,8 +99,9 @@ public abstract class TootStatusLike extends TootId {
 	
 	private static final Pattern reWhitespace = Pattern.compile( "[\\s\\t\\x0d\\x0a]+" );
 	
+	@Nullable public HighlightWord highlight_sound;
 	
-	public void setSpoilerText( Context context, String sv ){
+	public void setSpoilerText( @NonNull TootParser parser, String sv ){
 		if( TextUtils.isEmpty( sv ) ){
 			this.spoiler_text = null;
 			this.decoded_spoiler_text = null;
@@ -105,10 +110,38 @@ public abstract class TootStatusLike extends TootId {
 			// remove white spaces
 			sv = reWhitespace.matcher( this.spoiler_text ).replaceAll( " " );
 			// decode emoji code
-			this.decoded_spoiler_text = new DecodeOptions()
+			
+			DecodeOptions options = new DecodeOptions()
 				.setCustomEmojiMap( custom_emojis )
 				.setProfileEmojis( this.profile_emojis )
-				.decodeEmoji( context, sv );
+				.setHighlightTrie(parser.highlight_trie)
+				;
+			
+			this.decoded_spoiler_text = options.decodeEmoji( parser.context, sv );
+			
+			if( options.highlight_sound != null && this.highlight_sound == null  ){
+				this.highlight_sound = options.highlight_sound;
+			}
+		}
+	}
+	
+	public void setContent( @NonNull TootParser parser, TootAttachment.List list_attachment, @Nullable String content ){
+		this.content = content;
+		
+		DecodeOptions options =new DecodeOptions()
+			.setShort( true )
+			.setDecodeEmoji( true )
+			.setCustomEmojiMap( this.custom_emojis )
+			.setProfileEmojis( this.profile_emojis )
+			.setLinkTag( this )
+			.setAttachment( list_attachment )
+			.setHighlightTrie(parser.highlight_trie)
+			;
+			
+		this.decoded_content = options.decodeHTML( parser.context, parser.access_info, content );
+		
+		if( options.highlight_sound != null && this.highlight_sound == null  ){
+			this.highlight_sound = options.highlight_sound;
 		}
 	}
 	
@@ -120,8 +153,8 @@ public abstract class TootStatusLike extends TootId {
 		public Spannable decoded_spoiler_text;
 		public int originalLineCount;
 	}
-	public AutoCW auto_cw;
 	
+	public AutoCW auto_cw;
 	
 	// OStatus
 	static final Pattern reTootUriOS = Pattern.compile( "tag:([^,]*),[^:]*:objectId=(\\d+):objectType=Status", Pattern.CASE_INSENSITIVE );
@@ -132,7 +165,7 @@ public abstract class TootStatusLike extends TootId {
 	
 	// 投稿元タンスでのステータスIDを調べる
 	public long parseStatusId(){
-		return TootStatusLike.parseStatusId(this);
+		return TootStatusLike.parseStatusId( this );
 	}
 	
 	// 投稿元タンスでのステータスIDを調べる

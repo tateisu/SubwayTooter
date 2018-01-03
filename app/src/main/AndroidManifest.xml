@@ -181,6 +181,16 @@
             android:name=".ActMutedWord"
             android:label="@string/muted_word"
             />
+
+        <activity
+            android:name=".ActHighlightWordList"
+            android:label="@string/highlight_word"
+            />
+        <activity
+            android:name=".ActHighlightWordEdit"
+            android:label="@string/highlight_word"
+            />
+
         <activity
             android:name=".ActColumnCustomize"
             android:label="@string/color_and_background"

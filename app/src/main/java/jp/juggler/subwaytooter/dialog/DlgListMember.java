@@ -35,6 +35,7 @@ import jp.juggler.subwaytooter.api.TootTaskRunner;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootList;
 import jp.juggler.subwaytooter.api.entity.TootResults;
+import jp.juggler.subwaytooter.api.TootParser;
 import jp.juggler.subwaytooter.table.AcctColor;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator;
@@ -190,7 +191,7 @@ public class DlgListMember implements View.OnClickListener {
 					return result;
 				}
 				
-				TootResults search_result = TootResults.parse( activity, list_owner, result.object );
+				TootResults search_result = new TootParser(activity, list_owner).results(  result.object );
 				if( search_result != null ){
 					for( TootAccount a : search_result.accounts ){
 						if( target_user_full_acct.equalsIgnoreCase( list_owner.getFullAcct( a ) ) ){

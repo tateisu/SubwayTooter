@@ -173,11 +173,11 @@ public class Utils {
 		}
 	}
 	
-	public static String optStringX( JSONObject src, String key ){
+	@Nullable public static String optStringX( JSONObject src, String key ){
 		return src.isNull( key ) ? null : src.optString( key );
 	}
 	
-	public static String optStringX( JSONArray src, int key ){
+	@Nullable public static String optStringX( JSONArray src, int key ){
 		return src.isNull( key ) ? null : src.optString( key );
 	}
 	

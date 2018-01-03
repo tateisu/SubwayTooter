@@ -30,19 +30,35 @@ public class TootApiClient {
 	
 	private static final OkHttpClient ok_http_client = App1.ok_http_client;
 	
-	public interface Callback {
-		boolean isApiCancelled();
+	public static abstract class Callback {
 		
-		void publishApiProgress( String s );
+		public abstract boolean isApiCancelled();
 		
+		public void publishApiProgress( @NonNull String s ){
+		}
+		
+		public void publishApiProgressRatio( int value, int max ){
+		}
 	}
 	
-	private final Context context;
-	public final Callback callback;
+	@NonNull private final Context context;
+	@NonNull private final Callback callback;
 	
 	public TootApiClient( @NonNull Context context, @NonNull Callback callback ){
 		this.context = context;
 		this.callback = callback;
+	}
+	
+	@SuppressWarnings("unused") public boolean isApiCancelled(){
+		return callback.isApiCancelled();
+	}
+	
+	public void publishApiProgress( @NonNull final String s ){
+		callback.publishApiProgress( s );
+	}
+	
+	public void publishApiProgressRatio( final int value, final int max ){
+		callback.publishApiProgressRatio( value, max );
 	}
 	
 	public interface CurrentCallCallback {

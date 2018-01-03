@@ -68,8 +68,10 @@ import jp.juggler.subwaytooter.action.Action_HashTag;
 import jp.juggler.subwaytooter.action.Action_Toot;
 import jp.juggler.subwaytooter.action.Action_User;
 import jp.juggler.subwaytooter.action.RelationChangedCallback;
+import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
-import jp.juggler.subwaytooter.api.TootApiTask;
+import jp.juggler.subwaytooter.api.TootTask;
+import jp.juggler.subwaytooter.api.TootTaskRunner;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
@@ -88,7 +90,6 @@ import jp.juggler.subwaytooter.view.ColumnStripLinearLayout;
 import jp.juggler.subwaytooter.view.GravitySnapHelper;
 import jp.juggler.subwaytooter.view.MyEditText;
 
-@SuppressLint("StaticFieldLeak")
 public class ActMain extends AppCompatActivity
 	implements NavigationView.OnNavigationItemSelectedListener, View.OnClickListener, ViewPager.OnPageChangeListener, Column.Callback, DrawerLayout.DrawerListener
 {
@@ -1254,14 +1255,13 @@ public class ActMain extends AppCompatActivity
 		
 		// OAuth2 認証コールバック
 		// subwaytooter://oauth/?...
-		new TootApiTask( ActMain.this, true ) {
+		new TootTaskRunner( ActMain.this, true ).run( new TootTask() {
 			
 			TootAccount ta;
 			SavedAccount sa;
 			String host;
 			
-			@Override
-			protected TootApiResult doInBackground( Void... params ){
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				
 				// エラー時
 				// subwaytooter://oauth
@@ -1324,11 +1324,11 @@ public class ActMain extends AppCompatActivity
 				return result;
 			}
 			
-			@Override protected void handleResult( TootApiResult result ){
+			@Override public void handleResult( TootApiResult result ){
 				afterAccountVerify( result, ta, sa, host );
 			}
 			
-		}.executeOnExecutor( App1.task_executor );
+		});
 	}
 	
 	boolean afterAccountVerify( @Nullable TootApiResult result, @Nullable TootAccount ta, @Nullable SavedAccount sa, @Nullable String host ){
@@ -1430,13 +1430,8 @@ public class ActMain extends AppCompatActivity
 		, @Nullable final SavedAccount sa
 	){
 		
-		new TootApiTask( ActMain.this, host, true ) {
-			
-			TootAccount ta;
-			
-			@Override
-			protected TootApiResult doInBackground( Void... params ){
-				
+		new TootTaskRunner( ActMain.this, true ) .run(  host,new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				TootApiResult result = client.checkAccessToken( access_token );
 				if( result != null && result.object != null ){
 					// taは使い捨てなので、生成に使うLinkClickContextはダミーで問題ない
@@ -1450,7 +1445,9 @@ public class ActMain extends AppCompatActivity
 				return result;
 			}
 			
-			@Override protected void handleResult( TootApiResult result ){
+			TootAccount ta;
+
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				
 				if( afterAccountVerify( result, ta, sa, host ) ){
 					try{
@@ -1464,9 +1461,8 @@ public class ActMain extends AppCompatActivity
 						// IllegalArgumentException がたまに出る
 					}
 				}
-				
 			}
-		}.executeOnExecutor( App1.task_executor );
+		} );
 	}
 	
 	// アクセストークンの手動入力(更新)
@@ -2020,6 +2016,7 @@ public class ActMain extends AppCompatActivity
 		//noinspection deprecation
 		final ProgressDialog progress = new ProgressDialog( this );
 		
+		@SuppressLint("StaticFieldLeak")
 		final AsyncTask< Void, String, ArrayList< Column > > task = new AsyncTask< Void, String, ArrayList< Column > >() {
 			
 			void setProgressMessage( final String sv ){

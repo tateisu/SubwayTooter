@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter;
 import android.Manifest;
 import android.app.Activity;
 import android.app.NotificationChannel;
-import android.app.ProgressDialog;
 import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -49,6 +48,8 @@ import java.io.InputStream;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
+import jp.juggler.subwaytooter.api.TootTask;
+import jp.juggler.subwaytooter.api.TootTaskRunner;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.dialog.ActionsDialog;
@@ -92,7 +93,7 @@ public class ActAccountSetting extends AppCompatActivity
 		this.pref = App1.pref;
 		
 		initUI();
-		account = SavedAccount.loadAccount( this,  getIntent().getLongExtra( KEY_ACCOUNT_DB_ID, - 1L ) );
+		account = SavedAccount.loadAccount( this, getIntent().getLongExtra( KEY_ACCOUNT_DB_ID, - 1L ) );
 		if( account == null ) finish();
 		loadUIFromData( account );
 		
@@ -522,6 +523,7 @@ public class ActAccountSetting extends AppCompatActivity
 			.setMessage( R.string.confirm_account_remove )
 			.setNegativeButton( R.string.cancel, null )
 			.setPositiveButton( R.string.ok, new DialogInterface.OnClickListener() {
+				
 				@Override public void onClick( DialogInterface dialog, int which ){
 					account.delete();
 					
@@ -590,40 +592,15 @@ public class ActAccountSetting extends AppCompatActivity
 	///////////////////////////////////////////////////
 	private void performAccessToken(){
 		
-		//noinspection deprecation
-		final ProgressDialog progress = new ProgressDialog( ActAccountSetting.this );
-		
-		final AsyncTask< Void, String, TootApiResult > task = new AsyncTask< Void, String, TootApiResult >() {
-			
-			@Override
-			protected TootApiResult doInBackground( Void... params ){
-				TootApiClient api_client = new TootApiClient( ActAccountSetting.this, new TootApiClient.Callback() {
-					@Override
-					public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override
-					public void publishApiProgress( final String s ){
-						Utils.runOnMainThread( new Runnable() {
-							@Override
-							public void run(){
-								progress.setMessage( s );
-							}
-						} );
-					}
-				} );
-				
-				api_client.setAccount( account );
-				return api_client.authorize1( Pref.pref( ActAccountSetting.this ).getString( Pref.KEY_CLIENT_NAME, "" ) );
+		new TootTaskRunner( ActAccountSetting.this, true ).run( account, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
+				return client.authorize1( Pref.pref( ActAccountSetting.this ).getString( Pref.KEY_CLIENT_NAME, "" ) );
 			}
 			
-			@Override protected void onPostExecute( TootApiResult result ){
-				progress.dismiss();
+			@Override public void handleResult( @Nullable TootApiResult result ){
+				if( result == null ) return; // cancelled.
 				
-				if( result == null ){
-					// cancelled.
-				}else if( result.error != null ){
+				if( result.error != null ){
 					// エラー？
 					String sv = result.error;
 					if( sv.startsWith( "https" ) ){
@@ -642,16 +619,8 @@ public class ActAccountSetting extends AppCompatActivity
 					Utils.showToast( ActAccountSetting.this, false, R.string.access_token_updated_for );
 				}
 			}
-		};
-		progress.setIndeterminate( true );
-		progress.setCancelable( true );
-		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
-			@Override public void onCancel( DialogInterface dialog ){
-				task.cancel( true );
-			}
 		} );
-		progress.show();
-		task.executeOnExecutor( App1.task_executor );
+		
 	}
 	
 	static final int RESULT_INPUT_ACCESS_TOKEN = RESULT_FIRST_USER + 10;
@@ -707,24 +676,8 @@ public class ActAccountSetting extends AppCompatActivity
 	void loadProfile(){
 		// サーバから情報をロードする
 		
-		//noinspection deprecation
-		final ProgressDialog progress = new ProgressDialog( this );
-		
-		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
-			
-			TootAccount data;
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActAccountSetting.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-					}
-				} );
-				client.setAccount( account );
-				
+		new TootTaskRunner( this, true ).run( account, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				TootApiResult result = client.request( "/api/v1/accounts/verify_credentials" );
 				if( result != null && result.object != null ){
 					data = TootAccount.parse( ActAccountSetting.this, account, result.object );
@@ -733,35 +686,19 @@ public class ActAccountSetting extends AppCompatActivity
 				return result;
 			}
 			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				super.onPostExecute( result );
-			}
+			TootAccount data;
 			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				try{
-					progress.dismiss();
-				}catch( Throwable ignored ){
-				}
-				if( result == null ){
-					// cancelled.
-				}else if( data != null ){
+			@Override public void handleResult( @Nullable TootApiResult result ){
+				if( result == null ) return; // cancelled.
+				
+				if( data != null ){
 					showProfile( data );
 				}else{
 					Utils.showToast( ActAccountSetting.this, true, result.error );
 				}
-			}
-			
-		};
-		task.executeOnExecutor( App1.task_executor );
-		progress.setIndeterminate( true );
-		progress.setOnDismissListener( new DialogInterface.OnDismissListener() {
-			@Override public void onDismiss( DialogInterface dialog ){
-				task.cancel( true );
+				
 			}
 		} );
-		progress.show();
 	}
 	
 	void showProfile( TootAccount src ){
@@ -794,24 +731,8 @@ public class ActAccountSetting extends AppCompatActivity
 	
 	void updateCredential( final String form_data ){
 		
-		//noinspection deprecation
-		final ProgressDialog progress = new ProgressDialog( this );
-		
-		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
-			
-			TootAccount data;
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( ActAccountSetting.this, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-					}
-				} );
-				client.setAccount( account );
-				
+		new TootTaskRunner( this, true ).run( account, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				Request.Builder request_builder = new Request.Builder()
 					.patch( RequestBody.create(
 						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
@@ -826,36 +747,20 @@ public class ActAccountSetting extends AppCompatActivity
 				return result;
 			}
 			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				super.onPostExecute( result );
-			}
+			TootAccount data;
 			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				try{
-					progress.dismiss();
-				}catch( Throwable ignored ){
-				}
+			@Override public void handleResult( @Nullable TootApiResult result ){
+				if( result == null ) return; // cancelled.
 				
-				if( result == null ){
-					// cancelled.
-				}else if( data != null ){
+				if( data != null ){
 					showProfile( data );
 				}else{
 					Utils.showToast( ActAccountSetting.this, true, result.error );
 				}
-			}
-			
-		};
-		task.executeOnExecutor( App1.task_executor );
-		progress.setIndeterminate( true );
-		progress.setOnDismissListener( new DialogInterface.OnDismissListener() {
-			@Override public void onDismiss( DialogInterface dialog ){
-				task.cancel( true );
+				
 			}
 		} );
-		progress.show();
+		
 	}
 	
 	static final int max_length_display_name = 30;

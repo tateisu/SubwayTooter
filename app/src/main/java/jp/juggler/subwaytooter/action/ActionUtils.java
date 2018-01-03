@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.action;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -11,10 +10,10 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import jp.juggler.subwaytooter.ActMain;
-import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
-import jp.juggler.subwaytooter.api.TootApiTask;
+import jp.juggler.subwaytooter.api.TootTask;
+import jp.juggler.subwaytooter.api.TootTaskRunner;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.table.SavedAccount;
@@ -22,27 +21,25 @@ import jp.juggler.subwaytooter.table.UserRelation;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
-@SuppressWarnings("WeakerAccess") @SuppressLint("StaticFieldLeak")
 public class ActionUtils {
 	private static final LogCategory log = new LogCategory( "ActionUtils" );
 	
-	public interface FindAccountCallback {
+	interface FindAccountCallback {
 		// return account information
 		// if failed, account is null.
 		void onFindAccount( @Nullable TootAccount account );
 	}
 	
 	// ユーザ名からアカウントIDを取得する
-	public static void findAccountByName(
+	static void findAccountByName(
 		@NonNull final ActMain activity
 		, @NonNull final SavedAccount access_info
 		, @NonNull final String host
 		, @NonNull final String user
 		, @NonNull final FindAccountCallback callback
 	){
-		new TootApiTask( activity, access_info, true ) {
-			
-			@Override protected TootApiResult doInBackground( Void... voids ){
+		new TootTaskRunner( activity,  true ).run( access_info, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				String path = "/api/v1/accounts/search" + "?q=" + Uri.encode( user );
 				
 				TootApiResult result = client.request( path );
@@ -63,19 +60,17 @@ public class ActionUtils {
 			}
 			
 			TootAccount who;
-			
-			@Override protected void handleResult( TootApiResult result ){
+
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				callback.onFindAccount( who );
 			}
-			
-		}.executeOnExecutor( App1.task_executor );
+		} );
 		
 	}
 	
 	// 疑似アカウントを作成する
 	// 既に存在する場合は再利用する
-	@Nullable
-	public static SavedAccount addPseudoAccount(
+	@Nullable static SavedAccount addPseudoAccount(
 		@NonNull Context context
 		, @NonNull String host
 	){
@@ -157,10 +152,10 @@ public class ActionUtils {
 	
 	// 別アカ操作と別タンスの関係
 	public static final int NOT_CROSS_ACCOUNT = 1;
-	public static final int CROSS_ACCOUNT_SAME_INSTANCE = 2;
-	public static final int CROSS_ACCOUNT_REMOTE_INSTANCE = 3;
+	private static final int CROSS_ACCOUNT_SAME_INSTANCE = 2;
+	static final int CROSS_ACCOUNT_REMOTE_INSTANCE = 3;
 	
-	public static int calcCrossAccountMode( @NonNull final SavedAccount timeline_account, @NonNull final SavedAccount action_account ){
+	static int calcCrossAccountMode( @NonNull final SavedAccount timeline_account, @NonNull final SavedAccount action_account ){
 		if( ! timeline_account.host.equalsIgnoreCase( action_account.host ) ){
 			return CROSS_ACCOUNT_REMOTE_INSTANCE;
 		}else if( ! timeline_account.acct.equalsIgnoreCase( action_account.acct ) ){

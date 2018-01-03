@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.action;
 
-import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -13,7 +12,8 @@ import jp.juggler.subwaytooter.Column;
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
-import jp.juggler.subwaytooter.api.TootApiTask;
+import jp.juggler.subwaytooter.api.TootTask;
+import jp.juggler.subwaytooter.api.TootTaskRunner;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
@@ -25,7 +25,6 @@ import jp.juggler.subwaytooter.util.Utils;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
-@SuppressWarnings("WeakerAccess") @SuppressLint("StaticFieldLeak")
 public class Action_Follow {
 	
 	public static void follow(
@@ -147,10 +146,8 @@ public class Action_Follow {
 			}
 		}
 		
-		new TootApiTask( activity, access_info, false ) {
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
-				
+		new TootTaskRunner( activity, false ).run( access_info, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				TootApiResult result;
 				
 				if( bFollow & who.acct.contains( "@" ) ){
@@ -196,7 +193,7 @@ public class Action_Follow {
 			
 			UserRelation relation;
 			
-			@Override protected void handleResult( TootApiResult result ){
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				
 				if( result == null ) return; // cancelled.
 				
@@ -219,8 +216,9 @@ public class Action_Follow {
 				}else{
 					Utils.showToast( activity, false, result.error );
 				}
+				
 			}
-		}.executeOnExecutor( App1.task_executor );
+		} );
 	}
 	
 	// acct で指定したユーザをリモートフォローする
@@ -294,9 +292,8 @@ public class Action_Follow {
 			}
 		}
 		
-		new TootApiTask( activity, access_info, false ) {
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
+		new TootTaskRunner( activity, false ).run( access_info, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				
 				Request.Builder request_builder = new Request.Builder().post(
 					RequestBody.create(
@@ -323,7 +320,7 @@ public class Action_Follow {
 			TootAccount remote_who;
 			UserRelation relation;
 			
-			@Override protected void handleResult( TootApiResult result ){
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				
 				if( result == null ) return; // cancelled.
 				
@@ -338,8 +335,9 @@ public class Action_Follow {
 				}else{
 					Utils.showToast( activity, false, result.error );
 				}
+				
 			}
-		}.executeOnExecutor( App1.task_executor );
+		} );
 	}
 	
 	public static void followFromAnotherAccount(
@@ -351,7 +349,7 @@ public class Action_Follow {
 		followFromAnotherAccount( activity, pos, access_info, account, false );
 	}
 	
-	public static void followFromAnotherAccount(
+	private static void followFromAnotherAccount(
 		@NonNull final ActMain activity
 		, final int pos
 		, @NonNull final SavedAccount access_info
@@ -404,10 +402,8 @@ public class Action_Follow {
 			return;
 		}
 		
-		new TootApiTask( activity, access_info, true ) {
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
-				
+		new TootTaskRunner( activity, true ).run( access_info, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				Request.Builder request_builder = new Request.Builder().post(
 					RequestBody.create(
 						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
@@ -419,8 +415,7 @@ public class Action_Follow {
 					, request_builder );
 			}
 			
-			@Override protected void handleResult( TootApiResult result ){
-				
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				if( result == null ) return; // cancelled.
 				
 				if( result.object != null ){
@@ -433,6 +428,6 @@ public class Action_Follow {
 					Utils.showToast( activity, false, result.error );
 				}
 			}
-		}.executeOnExecutor( App1.task_executor );
+		} );
 	}
 }

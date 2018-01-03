@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.action;
 
-import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -16,7 +15,8 @@ import jp.juggler.subwaytooter.Column;
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
-import jp.juggler.subwaytooter.api.TootApiTask;
+import jp.juggler.subwaytooter.api.TootTask;
+import jp.juggler.subwaytooter.api.TootTaskRunner;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.dialog.DlgConfirm;
@@ -25,7 +25,6 @@ import jp.juggler.subwaytooter.util.Utils;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
-@SuppressWarnings("WeakerAccess") @SuppressLint("StaticFieldLeak")
 public class Action_ListMember {
 	
 	public interface Callback {
@@ -42,9 +41,8 @@ public class Action_ListMember {
 		, final boolean bFollow
 		, @Nullable final Callback callback
 	){
-		new TootApiTask( activity, access_info, true ) {
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
+		new TootTaskRunner( activity,  true ).run( access_info, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				
 				if( access_info.isMe( local_who ) ){
 					return new TootApiResult( activity.getString( R.string.it_is_you ) );
@@ -125,7 +123,7 @@ public class Action_ListMember {
 				
 			}
 			
-			@Override protected void handleResult( TootApiResult result ){
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				boolean bSuccess = false;
 				
 				try{
@@ -177,9 +175,9 @@ public class Action_ListMember {
 				}finally{
 					if( callback != null ) callback.onListMemberUpdated( true, bSuccess );
 				}
+				
 			}
-			
-		}.executeOnExecutor( App1.task_executor );
+		} );
 	}
 	
 	public static void delete(
@@ -189,18 +187,15 @@ public class Action_ListMember {
 		, @NonNull final TootAccount local_who
 		, @Nullable final Callback callback
 	){
-		new TootApiTask( activity, access_info, true ) {
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
-				
+		new TootTaskRunner( activity,  true ) .run( access_info, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				return client.request(
 					"/api/v1/lists/" + list_id + "/accounts?account_ids[]=" + local_who.id
 					, new Request.Builder().delete()
 				);
 			}
 			
-			@Override protected void handleResult( TootApiResult result ){
-				
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				boolean bSuccess = false;
 				
 				try{
@@ -223,7 +218,8 @@ public class Action_ListMember {
 				}finally{
 					if( callback != null ) callback.onListMemberUpdated( false, bSuccess );
 				}
+				
 			}
-		}.executeOnExecutor( App1.task_executor );
+		} );
 	}
 }

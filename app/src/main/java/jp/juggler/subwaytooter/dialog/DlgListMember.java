@@ -28,8 +28,10 @@ import jp.juggler.subwaytooter.Styler;
 import jp.juggler.subwaytooter.action.ActionUtils;
 import jp.juggler.subwaytooter.action.Action_List;
 import jp.juggler.subwaytooter.action.Action_ListMember;
+import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
-import jp.juggler.subwaytooter.api.TootApiTask;
+import jp.juggler.subwaytooter.api.TootTask;
+import jp.juggler.subwaytooter.api.TootTaskRunner;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootList;
 import jp.juggler.subwaytooter.api.entity.TootResults;
@@ -40,7 +42,6 @@ import jp.juggler.subwaytooter.util.Utils;
 import jp.juggler.subwaytooter.view.MyListView;
 import jp.juggler.subwaytooter.view.MyNetworkImageView;
 
-@SuppressLint({ "StaticFieldLeak", "InflateParams" })
 public class DlgListMember implements View.OnClickListener {
 	
 	@NonNull private final ActMain activity;
@@ -66,7 +67,7 @@ public class DlgListMember implements View.OnClickListener {
 			this.list_owner = _list_owner;
 		}
 		
-		final View view = activity.getLayoutInflater().inflate( R.layout.dlg_list_member, null, false );
+		@SuppressLint("InflateParams") final View view = activity.getLayoutInflater().inflate( R.layout.dlg_list_member, null, false );
 		
 		MyNetworkImageView ivUser = view.findViewById( R.id.ivUser );
 		TextView tvUserName = view.findViewById( R.id.tvUserName );
@@ -180,10 +181,8 @@ public class DlgListMember implements View.OnClickListener {
 			return;
 		}
 		
-		new TootApiTask( activity, list_owner, true ) {
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
-				
+		new TootTaskRunner( activity, true ).run( list_owner, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				// リストに追加したいアカウントの自タンスでのアカウントIDを取得する
 				local_who = null;
 				TootApiResult result = client.request( "/api/v1/search?resolve=true&q=" + Uri.encode( target_user_full_acct ) );
@@ -222,22 +221,21 @@ public class DlgListMember implements View.OnClickListener {
 				if( result == null || result.array == null ){
 					return result;
 				}
-				list_list = TootList.parseList( result.array );
-				Collections.sort( list_list );
+				new_list = TootList.parseList( result.array );
+				Collections.sort( new_list );
 				
 				// isRegistered を設定する
-				for( TootList a : list_list ){
+				for( TootList a : new_list ){
 					if( set_registered.contains( a.id ) ) a.isRegistered = true;
 				}
 				
 				return result;
 			}
 			
-			TootList.List list_list;
+			TootList.List new_list;
 			
-			@Override protected void handleResult( TootApiResult result ){
-				
-				showList( list_list );
+			@Override public void handleResult( @Nullable TootApiResult result ){
+				showList( new_list );
 				
 				//noinspection StatementWithEmptyBody
 				if( result != null
@@ -246,8 +244,9 @@ public class DlgListMember implements View.OnClickListener {
 					){
 					Utils.showToast( activity, true, result.error );
 				}
+				
 			}
-		}.executeOnExecutor( App1.task_executor );
+		} );
 		
 	}
 	

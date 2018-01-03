@@ -2,9 +2,9 @@ package jp.juggler.subwaytooter;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
 import org.json.JSONObject;
@@ -19,6 +19,8 @@ import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
+import jp.juggler.subwaytooter.api.TootTask;
+import jp.juggler.subwaytooter.api.TootTaskRunner;
 import jp.juggler.subwaytooter.api.entity.TootNotification;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.table.SavedAccount;
@@ -251,19 +253,8 @@ import okhttp3.WebSocketListener;
 			}
 			
 			bListening.set( true );
-			new AsyncTask< Void, Void, TootApiResult >() {
-				@Override protected TootApiResult doInBackground( Void... params ){
-					TootApiClient client = new TootApiClient( context, new TootApiClient.Callback() {
-						@Override public boolean isApiCancelled(){
-							return isCancelled();
-						}
-						
-						@Override public void publishApiProgress( String s ){
-						}
-					} );
-					
-					client.setAccount( access_info );
-					
+			new TootTaskRunner( context ).run( access_info, new TootTask() {
+				@Override public TootApiResult background( @NonNull TootApiClient client ){
 					TootApiResult result = client.webSocket( end_point, new Request.Builder(), Reader.this );
 					if( result == null ){
 						log.d( "startRead: cancelled." );
@@ -273,7 +264,11 @@ import okhttp3.WebSocketListener;
 					}
 					return result;
 				}
-			}.executeOnExecutor( App1.task_executor );
+				
+				@Override public void handleResult( @Nullable TootApiResult result ){
+				
+				}
+			} );
 		}
 		
 	}

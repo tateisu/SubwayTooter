@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.action;
 
-import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.content.Intent;
 import android.net.Uri;
@@ -16,8 +15,10 @@ import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.Column;
 import jp.juggler.subwaytooter.Pref;
 import jp.juggler.subwaytooter.R;
+import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
-import jp.juggler.subwaytooter.api.TootApiTask;
+import jp.juggler.subwaytooter.api.TootTask;
+import jp.juggler.subwaytooter.api.TootTaskRunner;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
 import jp.juggler.subwaytooter.dialog.DlgTextInput;
 import jp.juggler.subwaytooter.dialog.LoginForm;
@@ -25,9 +26,8 @@ import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.LogCategory;
 import jp.juggler.subwaytooter.util.Utils;
 
-@SuppressWarnings("WeakerAccess") @SuppressLint("StaticFieldLeak")
 public class Action_Account {
-	static final LogCategory log = new LogCategory( "Action_Account" );
+	private static final LogCategory log = new LogCategory( "Action_Account" );
 	
 	// アカウントの追加
 	public static void add( @NonNull final ActMain activity ){
@@ -43,9 +43,8 @@ public class Action_Account {
 					, final boolean bPseudoAccount
 					, final boolean bInputAccessToken
 				){
-					new TootApiTask( activity, instance, true ) {
-						
-						@Override protected TootApiResult doInBackground( Void... voids ){
+					new TootTaskRunner( activity, true ).run( instance, new TootTask() {
+						@Override public TootApiResult background( @NonNull TootApiClient client ){
 							if( bPseudoAccount ){
 								return client.checkInstance();
 							}else{
@@ -54,7 +53,7 @@ public class Action_Account {
 							}
 						}
 						
-						@Override protected void handleResult( TootApiResult result ){
+						@Override public void handleResult( @Nullable TootApiResult result ){
 							if( result == null ) return; // cancelled.
 							
 							if( result.error != null ){
@@ -120,8 +119,9 @@ public class Action_Account {
 									}
 								}
 							}
+							
 						}
-					}.executeOnExecutor( App1.task_executor );
+					} );
 				}
 			}
 		);

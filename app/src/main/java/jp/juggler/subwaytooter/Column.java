@@ -1337,7 +1337,7 @@ import jp.juggler.subwaytooter.util.Utils;
 				TootAccount data = TootAccount.parse( context, access_info, result.object );
 				if( data != null ){
 					this.who_account = data;
-					client.callback.publishApiProgress( "" ); // カラムヘッダの再表示
+					client.publishApiProgress( "" ); // カラムヘッダの再表示
 				}
 			}
 		}
@@ -1350,7 +1350,7 @@ import jp.juggler.subwaytooter.util.Utils;
 				TootList data = TootList.parse( result.object );
 				if( data != null ){
 					this.list_info = data;
-					client.callback.publishApiProgress( "" ); // カラムヘッダの再表示
+					client.publishApiProgress( "" ); // カラムヘッダの再表示
 				}
 			}
 		}
@@ -1618,19 +1618,15 @@ import jp.juggler.subwaytooter.util.Utils;
 				return result;
 			}
 			
-			@Override
-			protected TootApiResult doInBackground( Void... params ){
+			@Override protected TootApiResult doInBackground( Void... params ){
 				TootApiClient client = new TootApiClient( context, new TootApiClient.Callback() {
-					@Override
-					public boolean isApiCancelled(){
+					@Override public boolean isApiCancelled(){
 						return isCancelled() || is_dispose.get();
 					}
 					
-					@Override
-					public void publishApiProgress( final String s ){
+					@Override public void publishApiProgress( @NonNull final String s ){
 						Utils.runOnMainThread( new Runnable() {
-							@Override
-							public void run(){
+							@Override public void run(){
 								if( isCancelled() ) return;
 								task_progress = s;
 								fireShowContent();
@@ -2647,16 +2643,13 @@ import jp.juggler.subwaytooter.util.Utils;
 			@Override
 			protected TootApiResult doInBackground( Void... params ){
 				TootApiClient client = new TootApiClient( context, new TootApiClient.Callback() {
-					@Override
-					public boolean isApiCancelled(){
+					@Override public boolean isApiCancelled(){
 						return isCancelled() || is_dispose.get();
 					}
 					
-					@Override
-					public void publishApiProgress( final String s ){
+					@Override public void publishApiProgress( @NonNull final String s  ){
 						Utils.runOnMainThread( new Runnable() {
-							@Override
-							public void run(){
+							@Override public void run(){
 								if( isCancelled() ) return;
 								task_progress = s;
 								fireShowContent();
@@ -3159,7 +3152,7 @@ import jp.juggler.subwaytooter.util.Utils;
 						return isCancelled() || is_dispose.get();
 					}
 					
-					@Override public void publishApiProgress( final String s ){
+					@Override public void publishApiProgress( @NonNull final String s ){
 						Utils.runOnMainThread( new Runnable() {
 							@Override
 							public void run(){

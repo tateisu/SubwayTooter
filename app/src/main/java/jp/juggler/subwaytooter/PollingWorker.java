@@ -838,9 +838,6 @@ public class PollingWorker {
 				@Override public boolean isApiCancelled(){
 					return job.isJobCancelled();
 				}
-				
-				@Override public void publishApiProgress( String s ){
-				}
 			} );
 			
 			@Override public void run(){

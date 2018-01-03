@@ -1,8 +1,8 @@
 package jp.juggler.subwaytooter.action;
 
-import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
 import java.util.ArrayList;
 
@@ -12,14 +12,14 @@ import jp.juggler.subwaytooter.Column;
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
-import jp.juggler.subwaytooter.api.TootApiTask;
+import jp.juggler.subwaytooter.api.TootTask;
+import jp.juggler.subwaytooter.api.TootTaskRunner;
 import jp.juggler.subwaytooter.dialog.AccountPicker;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.Utils;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
-@SuppressWarnings("WeakerAccess") @SuppressLint("StaticFieldLeak")
 public class Action_Instance {
 	
 	// インスタンス情報カラムを開く
@@ -74,9 +74,8 @@ public class Action_Instance {
 			return;
 		}
 		
-		new TootApiTask( activity, access_info, true ) {
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
+		new TootTaskRunner( activity,  true ) .run( access_info, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				
 				RequestBody body = RequestBody.create(
 					TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
@@ -89,8 +88,7 @@ public class Action_Instance {
 				return client.request( "/api/v1/domain_blocks", request_builder );
 			}
 			
-			@Override protected void handleResult( TootApiResult result ){
-				
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				if( result == null ) return; // cancelled.
 				
 				if( result.object != null ){
@@ -105,7 +103,7 @@ public class Action_Instance {
 					Utils.showToast( activity, false, result.error );
 				}
 			}
-		}.executeOnExecutor( App1.task_executor );
+		} );
 	}
 	
 }

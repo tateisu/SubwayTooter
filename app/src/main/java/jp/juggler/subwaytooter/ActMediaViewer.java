@@ -51,8 +51,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 
+import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
-import jp.juggler.subwaytooter.api.TootApiTask;
+import jp.juggler.subwaytooter.api.TootTask;
+import jp.juggler.subwaytooter.api.TootTaskRunner;
 import jp.juggler.subwaytooter.api.entity.TootAttachment;
 import jp.juggler.subwaytooter.dialog.ActionsDialog;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -174,7 +176,7 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 					@Override public void run(){
 						if( isDestroyed() ) return;
 						if( tvStatus.getVisibility() == View.VISIBLE ){
-							tvStatus.setText( getString( R.string.zooming_of,(int) bitmap_w, (int)bitmap_h, scale ) );
+							tvStatus.setText( getString( R.string.zooming_of, (int) bitmap_w, (int) bitmap_h, scale ) );
 						}
 					}
 				} );
@@ -291,7 +293,7 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 		pbvImage.setVisibility( View.VISIBLE );
 		pbvImage.setBitmap( null );
 		
-		new TootApiTask( this, TootApiTask.PROGRESS_HORIZONTAL ) {
+		new TootTaskRunner( this, TootTaskRunner.PROGRESS_HORIZONTAL ).run( new TootTask() {
 			
 			private final BitmapFactory.Options options = new BitmapFactory.Options();
 			
@@ -318,7 +320,8 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 				return BitmapFactory.decodeByteArray( data, 0, data.length, options );
 			}
 			
-			@NonNull TootApiResult getHttpCached( @NonNull String url ){
+			@NonNull
+			TootApiResult getHttpCached( @NonNull final TootApiClient client, @NonNull String url ){
 				Response response;
 				
 				try{
@@ -327,7 +330,7 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 						.cacheControl( App1.CACHE_5MIN )
 						.build();
 					
-					publishApiProgress( getString( R.string.request_api, request.method(), url ) );
+					client.publishApiProgress( getString( R.string.request_api, request.method(), url ) );
 					Call call = App1.ok_http_client2.newCall( request );
 					response = call.execute();
 				}catch( Throwable ex ){
@@ -346,7 +349,7 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 							if( Math.max( bytesRead, bytesTotal ) >= 50000000 ){
 								throw new RuntimeException( "media attachment is larger than 50000000" );
 							}
-							publishApiProgressRatio( (int) bytesRead, (int) bytesTotal );
+							client.publishApiProgressRatio( (int) bytesRead, (int) bytesTotal );
 						}
 					} );
 					
@@ -359,23 +362,23 @@ public class ActMediaViewer extends AppCompatActivity implements View.OnClickLis
 			byte[] data;
 			Bitmap bitmap;
 			
-			@Override protected TootApiResult doInBackground( Void... voids ){
-				TootApiResult result = getHttpCached( url );
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
+				TootApiResult result = getHttpCached( client, url );
 				if( data == null ) return result;
-				publishApiProgress( "image decoding.." );
+				client.publishApiProgress( "decoding image…" );
 				this.bitmap = decodeBitmap( data, 2048 );
 				if( bitmap == null ) return new TootApiResult( "image decode failed." );
 				return result;
 			}
 			
-			@Override protected void handleResult( @Nullable TootApiResult result ){
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				if( bitmap != null ){
 					pbvImage.setBitmap( bitmap );
 					return;
 				}
 				if( result != null ) Utils.showToast( ActMediaViewer.this, true, result.error );
 			}
-		}.executeOnExecutor( App1.task_executor );
+		} );
 		
 	}
 	

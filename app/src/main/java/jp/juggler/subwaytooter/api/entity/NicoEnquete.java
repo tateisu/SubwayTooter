@@ -1,9 +1,6 @@
 package jp.juggler.subwaytooter.api.entity;
 
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.text.Spannable;
@@ -19,10 +16,11 @@ import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import jp.juggler.subwaytooter.ActMain;
-import jp.juggler.subwaytooter.App1;
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
+import jp.juggler.subwaytooter.api.TootTask;
+import jp.juggler.subwaytooter.api.TootTaskRunner;
 import jp.juggler.subwaytooter.table.SavedAccount;
 import jp.juggler.subwaytooter.util.DecodeOptions;
 import jp.juggler.subwaytooter.util.LogCategory;
@@ -32,7 +30,6 @@ import jp.juggler.subwaytooter.view.EnqueteTimerView;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
-@SuppressWarnings("WeakerAccess")
 public class NicoEnquete {
 	static final LogCategory log = new LogCategory( "NicoEnquete" );
 	
@@ -43,7 +40,7 @@ public class NicoEnquete {
 	public ArrayList< Spannable > items;
 	
 	// 結果の数値 // null or array of number
-	public ArrayList< Float > ratios;
+	@SuppressWarnings("unused") private ArrayList< Float > ratios;
 	
 	// 結果の数値のテキスト // null or array of string
 	// public ArrayList< CharSequence > ratios_text;
@@ -55,8 +52,8 @@ public class NicoEnquete {
 	
 	private static final Pattern reWhitespace = Pattern.compile( "[\\s\\t\\x0d\\x0a]+" );
 	
-	long time_start;
-	long status_id;
+	private long time_start;
+	private long status_id;
 	
 	public static NicoEnquete parse(
 		@NonNull Context context,
@@ -116,7 +113,7 @@ public class NicoEnquete {
 		return null;
 	}
 	
-	private static ArrayList< String > parseStringArray( JSONObject src, String name ){
+	private static ArrayList< String > parseStringArray( JSONObject src, @SuppressWarnings("SameParameterValue") String name ){
 		JSONArray array = src.optJSONArray( name );
 		if( array != null ){
 			ArrayList< String > dst = new ArrayList<>();
@@ -129,7 +126,7 @@ public class NicoEnquete {
 		return null;
 	}
 	
-	private static ArrayList< Float > parseFloatArray( JSONObject src, String name ){
+	private static ArrayList< Float > parseFloatArray( JSONObject src, @SuppressWarnings("SameParameterValue") String name ){
 		JSONArray array = src.optJSONArray( name );
 		if( array != null ){
 			ArrayList< Float > dst = new ArrayList<>();
@@ -142,7 +139,7 @@ public class NicoEnquete {
 		return null;
 	}
 	
-	static final long ENQUETE_EXPIRE = 30000L;
+	private static final long ENQUETE_EXPIRE = 30000L;
 	
 	public void makeChoiceView(
 		final ActMain activity
@@ -190,7 +187,7 @@ public class NicoEnquete {
 		llExtra.addView( view );
 	}
 	
-	void enquete_click( @NonNull final Context context, @NonNull final SavedAccount access_info, final int idx ){
+	private void enquete_click( @NonNull final Context context, @NonNull final SavedAccount access_info, final int idx ){
 		
 		long now = System.currentTimeMillis();
 		long remain = time_start + ENQUETE_EXPIRE - now;
@@ -199,21 +196,8 @@ public class NicoEnquete {
 			return;
 		}
 		
-		final ProgressDialog progress = new ProgressDialog( context );
-		
-		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( context, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-					}
-				} );
-				client.setAccount( access_info );
-				
+		new TootTaskRunner( context ).run( access_info, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				JSONObject form = new JSONObject();
 				try{
 					form.put( "item_index", Integer.toString( idx ) );
@@ -231,21 +215,10 @@ public class NicoEnquete {
 				return result;
 			}
 			
-			@Override
-			protected void onCancelled( TootApiResult result ){
-				super.onPostExecute( result );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				try{
-					progress.dismiss();
-				}catch( Throwable ignored ){
-				}
+			@Override public void handleResult( @Nullable TootApiResult result ){
+				if( result == null ) return; // cancelled.
 				
-				if( result == null ){
-					// cancelled.
-				}else if( result.object != null ){
+				if( result.object != null ){
 					String message = Utils.optStringX( result.object, "message" );
 					boolean valid = result.object.optBoolean( "valid" );
 					if( valid ){
@@ -256,18 +229,8 @@ public class NicoEnquete {
 				}else{
 					Utils.showToast( context, true, result.error );
 				}
-			}
-		};
-		
-		progress.setIndeterminate( true );
-		progress.setCancelable( true );
-		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
-			@Override public void onCancel( DialogInterface dialog ){
-				task.cancel( true );
+				
 			}
 		} );
-		progress.show();
-		task.executeOnExecutor( App1.task_executor );
-		
 	}
 }

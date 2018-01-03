@@ -1,13 +1,11 @@
 package jp.juggler.subwaytooter.util;
 
-import android.annotation.SuppressLint;
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
@@ -31,6 +29,8 @@ import jp.juggler.subwaytooter.Pref;
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
+import jp.juggler.subwaytooter.api.TootTask;
+import jp.juggler.subwaytooter.api.TootTaskRunner;
 import jp.juggler.subwaytooter.api.entity.CustomEmoji;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootInstance;
@@ -45,7 +45,6 @@ import jp.juggler.subwaytooter.view.MyEditText;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
-@SuppressWarnings("WeakerAccess")
 public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callback {
 	private static final LogCategory log = new LogCategory( "PostHelper" );
 	
@@ -93,7 +92,7 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 	public ArrayList< PostAttachment > attachment_list;
 	public ArrayList< String > enquete_items;
 	
-	static final VersionString version_1_6 = new VersionString( "1.6" );
+	private static final VersionString version_1_6 = new VersionString( "1.6" );
 	
 	public void post( final SavedAccount account, final boolean bConfirmTag, final boolean bConfirmAccount, final Callback callback ){
 		if( TextUtils.isEmpty( content ) ){
@@ -170,11 +169,8 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 			}
 		}
 		
-		//noinspection deprecation
-		final ProgressDialog progress = new ProgressDialog( activity );
-		
-		@SuppressLint("StaticFieldLeak")
-		final AsyncTask< Void, Void, TootApiResult > task = new AsyncTask< Void, Void, TootApiResult >() {
+		new TootTaskRunner( activity, true ).run( account, new TootTask() {
+			
 			final SavedAccount target_account = account;
 			
 			TootStatus status;
@@ -203,23 +199,7 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 				return result;
 			}
 			
-			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiClient client = new TootApiClient( activity, new TootApiClient.Callback() {
-					@Override public boolean isApiCancelled(){
-						return isCancelled();
-					}
-					
-					@Override public void publishApiProgress( final String s ){
-						Utils.runOnMainThread( new Runnable() {
-							@Override public void run(){
-								progress.setMessage( s );
-							}
-						} );
-					}
-				} );
-				
-				client.setAccount( target_account );
-				
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				if( TextUtils.isEmpty( visibility ) ){
 					visibility = TootStatus.VISIBILITY_PUBLIC;
 				}
@@ -367,48 +347,18 @@ public class PostHelper implements CustomEmojiLister.Callback, EmojiPicker.Callb
 				
 			}
 			
-			@Override
-			protected void onCancelled(){
-				onPostExecute( null );
-			}
-			
-			@Override
-			protected void onPostExecute( TootApiResult result ){
-				try{
-					progress.dismiss();
-				}catch( Throwable ignored ){
-					//							java.lang.IllegalArgumentException:
-					//							at android.view.WindowManagerGlobal.findViewLocked(WindowManagerGlobal.java:396)
-					//							at android.view.WindowManagerGlobal.removeView(WindowManagerGlobal.java:322)
-					//							at android.view.WindowManagerImpl.removeViewImmediate(WindowManagerImpl.java:116)
-					//							at android.app.Dialog.dismissDialog(Dialog.java:341)
-					//							at android.app.Dialog.dismiss(Dialog.java:324)
-					//							at jp.juggler.subwaytooter.ActMain$10$1.onPostExecute(ActMain.java:867)
-					//							at jp.juggler.subwaytooter.ActMain$10$1.onPostExecute(ActMain.java:837)
-				}
+			@Override public void handleResult( @Nullable TootApiResult result ){
+				if( result == null ) return; // cancelled.
 				
-				//noinspection StatementWithEmptyBody
-				if( result == null ){
-					// cancelled.
-				}else if( status != null ){
+				if( status != null ){
 					// 連投してIdempotency が同じだった場合もエラーにはならず、ここを通る
 					callback.onPostComplete( target_account, status );
 				}else{
 					Utils.showToast( activity, true, result.error );
 				}
-			}
-		};
-		
-		progress.setIndeterminate( true );
-		progress.setCancelable( true );
-		progress.setOnCancelListener( new DialogInterface.OnCancelListener() {
-			@Override
-			public void onCancel( DialogInterface dialog ){
-				task.cancel( true );
+				
 			}
 		} );
-		progress.show();
-		task.executeOnExecutor( App1.task_executor );
 	}
 	
 	public interface Callback2 {

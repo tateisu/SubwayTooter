@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.action;
 
-import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -17,7 +16,8 @@ import jp.juggler.subwaytooter.Column;
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
-import jp.juggler.subwaytooter.api.TootApiTask;
+import jp.juggler.subwaytooter.api.TootTask;
+import jp.juggler.subwaytooter.api.TootTaskRunner;
 import jp.juggler.subwaytooter.api.entity.TootAccount;
 import jp.juggler.subwaytooter.api.entity.TootRelationShip;
 import jp.juggler.subwaytooter.api.entity.TootResults;
@@ -31,7 +31,6 @@ import jp.juggler.subwaytooter.util.Utils;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
-@SuppressWarnings("WeakerAccess") @SuppressLint("StaticFieldLeak")
 public class Action_User {
 	
 	// ユーザをミュート/ミュート解除する
@@ -48,9 +47,8 @@ public class Action_User {
 			return;
 		}
 		
-		new TootApiTask( activity, access_info, true ) {
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
+		new TootTaskRunner( activity, true ).run( access_info, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				
 				Request.Builder request_builder = new Request.Builder().post(
 					! bMute ? RequestBody.create( TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" )
@@ -68,8 +66,7 @@ public class Action_User {
 			
 			UserRelation relation;
 			
-			@Override protected void handleResult( TootApiResult result ){
-				
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				if( result == null ) return; // cancelled.
 				
 				if( relation != null ){
@@ -95,8 +92,8 @@ public class Action_User {
 					Utils.showToast( activity, false, result.error );
 				}
 			}
-			
-		}.executeOnExecutor( App1.task_executor );
+		} );
+		
 	}
 	
 	// ユーザをブロック/ブロック解除する
@@ -111,9 +108,8 @@ public class Action_User {
 			return;
 		}
 		
-		new TootApiTask( activity, access_info, true ) {
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
+		new TootTaskRunner( activity, true ).run( access_info, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				
 				Request.Builder request_builder = new Request.Builder().post(
 					RequestBody.create(
@@ -138,7 +134,7 @@ public class Action_User {
 			
 			UserRelation relation;
 			
-			@Override protected void handleResult( TootApiResult result ){
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				
 				if( result == null ) return; // cancelled.
 				
@@ -164,7 +160,8 @@ public class Action_User {
 					Utils.showToast( activity, false, result.error );
 				}
 			}
-		}.executeOnExecutor( App1.task_executor );
+		} );
+		
 	}
 	
 	// アカウントを選んでユーザプロフを開く
@@ -217,10 +214,8 @@ public class Action_User {
 		, final SavedAccount access_info
 		, final String who_url
 	){
-		new TootApiTask( activity, access_info, true ) {
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
-				
+		new TootTaskRunner( activity, true ).run( access_info, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				// 検索APIに他タンスのユーザのURLを投げると、自タンスのURLを得られる
 				String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( who_url ) );
 				path = path + "&resolve=1";
@@ -242,12 +237,11 @@ public class Action_User {
 				}
 				
 				return result;
-				
 			}
 			
 			TootAccount who_local;
 			
-			@Override protected void handleResult( TootApiResult result ){
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				
 				if( result == null ){
 					// cancelled.
@@ -260,8 +254,8 @@ public class Action_User {
 					App1.openCustomTab( activity, who_url );
 				}
 			}
-			
-		}.executeOnExecutor( App1.task_executor );
+		} );
+		
 	}
 	
 	// Intent-FilterからUser URL で指定されたユーザのプロフを開く
@@ -347,7 +341,7 @@ public class Action_User {
 	}
 	
 	// 通報する
-	static void report(
+	private static void report(
 		@NonNull final ActMain activity
 		, @NonNull final SavedAccount access_info
 		, @NonNull final TootAccount who
@@ -360,9 +354,8 @@ public class Action_User {
 			return;
 		}
 		
-		new TootApiTask( activity, access_info, true ) {
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
+		new TootTaskRunner( activity, true ).run( access_info, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				String sb = "account_id=" + Long.toString( who.id )
 					+ "&comment=" + Uri.encode( comment )
 					+ "&status_ids[]=" + Long.toString( status.id );
@@ -376,7 +369,7 @@ public class Action_User {
 				return client.request( "/api/v1/reports", request_builder );
 			}
 			
-			@Override protected void handleResult( TootApiResult result ){
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				
 				if( result == null ) return; // cancelled.
 				
@@ -388,8 +381,7 @@ public class Action_User {
 					Utils.showToast( activity, true, result.error );
 				}
 			}
-			
-		}.executeOnExecutor( App1.task_executor );
+		} );
 	}
 	
 	// show/hide boosts from (following) user
@@ -404,9 +396,8 @@ public class Action_User {
 			return;
 		}
 		
-		new TootApiTask( activity, access_info, true ) {
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
+		new TootTaskRunner( activity, true ).run( access_info, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				
 				JSONObject content = new JSONObject();
 				try{
@@ -430,7 +421,7 @@ public class Action_User {
 			
 			TootRelationShip relation;
 			
-			@Override protected void handleResult( TootApiResult result ){
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				
 				if( result == null ) return; // cancelled.
 				
@@ -441,12 +432,11 @@ public class Action_User {
 					Utils.showToast( activity, true, result.error );
 				}
 			}
-			
-		}.executeOnExecutor( App1.task_executor );
+		} );
 	}
 	
 	// メンションを含むトゥートを作る
-	public static void mention(
+	private static void mention(
 		@NonNull final ActMain activity
 		, @NonNull final SavedAccount account
 		, @NonNull final String initial_text
@@ -478,7 +468,10 @@ public class Action_User {
 		String who_host = access_info.getAccountHost( who );
 		
 		final String initial_text = "@" + access_info.getFullAcct( who ) + " ";
-		AccountPicker.pick( activity, false, false
+		AccountPicker.pick(
+			activity
+			, false
+			, false
 			, activity.getString( R.string.account_picker_toot )
 			, ActionUtils.makeAccountListNonPseudo( activity, who_host )
 			, new AccountPicker.AccountPickerCallback() {

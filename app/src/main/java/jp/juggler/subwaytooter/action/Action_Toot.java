@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.action;
 
-import android.annotation.SuppressLint;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -17,7 +16,8 @@ import jp.juggler.subwaytooter.Column;
 import jp.juggler.subwaytooter.R;
 import jp.juggler.subwaytooter.api.TootApiClient;
 import jp.juggler.subwaytooter.api.TootApiResult;
-import jp.juggler.subwaytooter.api.TootApiTask;
+import jp.juggler.subwaytooter.api.TootTask;
+import jp.juggler.subwaytooter.api.TootTaskRunner;
 import jp.juggler.subwaytooter.api.entity.TootResults;
 import jp.juggler.subwaytooter.api.entity.TootStatus;
 import jp.juggler.subwaytooter.api.entity.TootStatusLike;
@@ -33,10 +33,9 @@ import jp.juggler.subwaytooter.util.Utils;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 
-@SuppressWarnings("WeakerAccess") @SuppressLint("StaticFieldLeak")
 public class Action_Toot {
 	
-	static final LogCategory log = new LogCategory( "Action_Favourite" );
+	private static final LogCategory log = new LogCategory( "Action_Favourite" );
 	
 	// アカウントを選んでお気に入り
 	public static void favouriteFromAnotherAccount(
@@ -81,9 +80,8 @@ public class Action_Toot {
 		App1.app_state.setBusyFav( access_info, arg_status );
 		
 		//
-		new TootApiTask( activity, access_info, false ) {
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
+		new TootTaskRunner( activity, false ).run( access_info, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				TootApiResult result;
 				
 				TootStatusLike target_status;
@@ -136,7 +134,7 @@ public class Action_Toot {
 			
 			TootStatus new_status;
 			
-			@Override protected void handleResult( TootApiResult result ){
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				
 				App1.app_state.resetBusyFav( access_info, arg_status );
 				
@@ -177,9 +175,9 @@ public class Action_Toot {
 				}
 				// 結果に関わらず、更新中状態から復帰させる
 				activity.showColumnMatchAccount( access_info );
+				
 			}
-			
-		}.executeOnExecutor( App1.task_executor );
+		} );
 		
 		// ファボ表示を更新中にする
 		activity.showColumnMatchAccount( access_info );
@@ -264,9 +262,8 @@ public class Action_Toot {
 		
 		App1.app_state.setBusyBoost( access_info, arg_status );
 		
-		new TootApiTask( activity, access_info, false ) {
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
+		new TootTaskRunner( activity, false ).run( access_info, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				
 				TootApiResult result;
 				
@@ -323,13 +320,11 @@ public class Action_Toot {
 				}
 				
 				return result;
-				
 			}
 			
 			TootStatus new_status;
 			
-			@Override protected void handleResult( TootApiResult result ){
-				
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				App1.app_state.resetBusyBoost( access_info, arg_status );
 				
 				//noinspection StatementWithEmptyBody
@@ -370,10 +365,11 @@ public class Action_Toot {
 				
 				// 結果に関わらず、更新中状態から復帰させる
 				activity.showColumnMatchAccount( access_info );
+				
 			}
-			
-		}.executeOnExecutor( App1.task_executor );
+		} );
 		
+		// ブースト表示を更新中にする
 		activity.showColumnMatchAccount( access_info );
 	}
 	
@@ -383,17 +379,14 @@ public class Action_Toot {
 		, final long status_id
 	){
 		
-		new TootApiTask( activity, access_info, true ) {
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
-				
-				Request.Builder request_builder = new Request.Builder().delete(); // method is delete
+		new TootTaskRunner( activity, true ).run( access_info, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
+				Request.Builder request_builder = new Request.Builder().delete();
 				
 				return client.request( "/api/v1/statuses/" + status_id, request_builder );
 			}
 			
-			@Override protected void handleResult( TootApiResult result ){
-				
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				if( result == null ) return; // cancelled.
 				
 				if( result.object != null ){
@@ -404,8 +397,9 @@ public class Action_Toot {
 				}else{
 					Utils.showToast( activity, false, result.error );
 				}
+				
 			}
-		}.executeOnExecutor( App1.task_executor );
+		} );
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////////////
@@ -424,7 +418,7 @@ public class Action_Toot {
 			conversationLocal( activity, pos, access_info, status.id );
 		}
 	}
-
+	
 	// ローカルから見える会話の流れを表示する
 	public static void conversationLocal(
 		@NonNull final ActMain activity
@@ -434,7 +428,7 @@ public class Action_Toot {
 	){
 		activity.addColumn( pos, access_info, Column.TYPE_CONVERSATION, status_id );
 	}
-
+	
 	// リモートかもしれない会話の流れを表示する
 	public static void conversationOtherInstance(
 		@NonNull final ActMain activity
@@ -584,69 +578,67 @@ public class Action_Toot {
 		dialog.show( activity, activity.getString( R.string.open_status_from ) );
 	}
 	
-	static final Pattern reDetailedStatusTime = Pattern.compile( "<a\\b[^>]*?\\bdetailed-status__datetime\\b[^>]*href=\"https://[^/]+/@[^/]+/(\\d+)\"" );
+	private static final Pattern reDetailedStatusTime = Pattern.compile( "<a\\b[^>]*?\\bdetailed-status__datetime\\b[^>]*href=\"https://[^/]+/@[^/]+/(\\d+)\"" );
 	
-	public static void conversationRemote(
+	private static void conversationRemote(
 		@NonNull final ActMain activity
 		, final int pos
 		, final SavedAccount access_info
 		, final String remote_status_url
 	){
-		new TootApiTask( activity, access_info, true ) {
-			
-			long local_status_id = - 1L;
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
-				
-				TootApiResult result;
-				if( access_info.isPseudo() ){
-					result = client.getHttp( remote_status_url );
-					if( result != null && result.json != null ){
-						try{
-							Matcher m = reDetailedStatusTime.matcher( result.json );
-							if( m.find() ){
-								local_status_id = Long.parseLong( m.group( 1 ), 10 );
+		new TootTaskRunner( activity, true )
+			.progressPrefix( activity.getString( R.string.progress_synchronize_toot ) )
+			.run( access_info, new TootTask() {
+				@Override public TootApiResult background( @NonNull TootApiClient client ){
+					TootApiResult result;
+					if( access_info.isPseudo() ){
+						result = client.getHttp( remote_status_url );
+						if( result != null && result.json != null ){
+							try{
+								Matcher m = reDetailedStatusTime.matcher( result.json );
+								if( m.find() ){
+									local_status_id = Long.parseLong( m.group( 1 ), 10 );
+								}
+							}catch( Throwable ex ){
+								log.e( ex, "openStatusRemote: can't parse status id from HTML data." );
 							}
-						}catch( Throwable ex ){
-							log.e( ex, "openStatusRemote: can't parse status id from HTML data." );
+							if( local_status_id == - 1L ){
+								result = new TootApiResult( activity.getString( R.string.status_id_conversion_failed ) );
+							}
 						}
-						if( local_status_id == - 1L ){
-							result = new TootApiResult( activity.getString( R.string.status_id_conversion_failed ) );
-						}
-					}
-				}else{
-					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
-					String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( remote_status_url ) );
-					path = path + "&resolve=1";
-					result = client.request( path );
-					if( result != null && result.object != null ){
-						TootResults tmp = TootResults.parse( activity, access_info, result.object );
-						if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
-							TootStatus status = tmp.statuses.get( 0 );
-							local_status_id = status.id;
-							log.d( "status id conversion %s => %s", remote_status_url, status.id );
-						}
-						if( local_status_id == - 1L ){
-							result = new TootApiResult( activity.getString( R.string.status_id_conversion_failed ) );
+					}else{
+						// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
+						String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( remote_status_url ) );
+						path = path + "&resolve=1";
+						result = client.request( path );
+						if( result != null && result.object != null ){
+							TootResults tmp = TootResults.parse( activity, access_info, result.object );
+							if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
+								TootStatus status = tmp.statuses.get( 0 );
+								local_status_id = status.id;
+								log.d( "status id conversion %s => %s", remote_status_url, status.id );
+							}
+							if( local_status_id == - 1L ){
+								result = new TootApiResult( activity.getString( R.string.status_id_conversion_failed ) );
+							}
 						}
 					}
+					return result;
 				}
-				return result;
-			}
-			
-			@Override protected void handleResult( TootApiResult result ){
 				
-				if( result == null ){
-					// cancelled.
-				}else if( local_status_id != - 1L ){
-					conversationLocal( activity, pos, access_info, local_status_id );
-				}else{
-					Utils.showToast( activity, true, result.error );
+				long local_status_id = - 1L;
+				
+				@Override public void handleResult( @Nullable TootApiResult result ){
+					if( result == null ){
+						// cancelled.
+					}else if( local_status_id != - 1L ){
+						conversationLocal( activity, pos, access_info, local_status_id );
+					}else{
+						Utils.showToast( activity, true, result.error );
+					}
+					
 				}
-			}
-		}
-			.setProgressPrefix( activity.getString( R.string.progress_synchronize_toot ) )
-			.executeOnExecutor( App1.task_executor );
+			} );
 		
 	}
 	
@@ -660,59 +652,59 @@ public class Action_Toot {
 		, final boolean bSet
 	){
 		
-		new TootApiTask( activity, access_info, true ) {
-			TootStatus new_status;
+		new TootTaskRunner( activity, true )
+			.progressPrefix( activity.getString( R.string.profile_pin_progress ) )
 			
-			@Override protected TootApiResult doInBackground( Void... params ){
-				TootApiResult result;
-				
-				Request.Builder request_builder = new Request.Builder()
-					.post( RequestBody.create(
-						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
-						, ""
-					) );
-				
-				result = client.request(
-					( bSet
-						? "/api/v1/statuses/" + status.id + "/pin"
-						: "/api/v1/statuses/" + status.id + "/unpin"
-					)
-					, request_builder );
-				if( result != null && result.object != null ){
-					new_status = TootStatus.parse( activity, access_info, result.object );
-				}
-				
-				return result;
-				
-			}
-			
-			@Override protected void handleResult( TootApiResult result ){
-				
-				//noinspection StatementWithEmptyBody
-				if( result == null ){
-					// cancelled.
-				}else if( new_status != null ){
+			.run( access_info, new TootTask() {
+				@Override public TootApiResult background( @NonNull TootApiClient client ){
+					TootApiResult result;
 					
-					for( Column column : App1.app_state.column_list ){
-						column.findStatus( access_info.host, new_status.id, new Column.StatusEntryCallback() {
-							@Override
-							public boolean onIterate( SavedAccount account, TootStatus status ){
-								status.pinned = bSet;
-								return true;
-							}
-						} );
+					Request.Builder request_builder = new Request.Builder()
+						.post( RequestBody.create(
+							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+							, ""
+						) );
+					
+					result = client.request(
+						( bSet
+							? "/api/v1/statuses/" + status.id + "/pin"
+							: "/api/v1/statuses/" + status.id + "/unpin"
+						)
+						, request_builder );
+					if( result != null && result.object != null ){
+						new_status = TootStatus.parse( activity, access_info, result.object );
 					}
-				}else{
-					Utils.showToast( activity, true, result.error );
+					
+					return result;
 				}
 				
-				// 結果に関わらず、更新中状態から復帰させる
-				activity.showColumnMatchAccount( access_info );
-			}
-			
-		}
-			.setProgressPrefix( activity.getString( R.string.profile_pin_progress ) )
-			.executeOnExecutor( App1.task_executor );
+				TootStatus new_status;
+				
+				@Override public void handleResult( @Nullable TootApiResult result ){
+					//noinspection StatementWithEmptyBody
+					if( result == null ){
+						// cancelled.
+					}else if( new_status != null ){
+						
+						for( Column column : App1.app_state.column_list ){
+							column.findStatus( access_info.host, new_status.id, new Column.StatusEntryCallback() {
+								@Override
+								public boolean onIterate( SavedAccount account, TootStatus status ){
+									status.pinned = bSet;
+									return true;
+								}
+							} );
+						}
+					}else{
+						Utils.showToast( activity, true, result.error );
+					}
+					
+					// 結果に関わらず、更新中状態から復帰させる
+					activity.showColumnMatchAccount( access_info );
+					
+				}
+			} );
+		
 	}
 	
 	/////////////////////////////////////////////////////////////////////////////////
@@ -751,48 +743,48 @@ public class Action_Toot {
 			} );
 	}
 	
-	public static void replyRemote(
+	private static void replyRemote(
 		@NonNull final ActMain activity
 		, @NonNull final SavedAccount access_info
 		, @NonNull final String remote_status_url
 	){
-		new TootApiTask( activity, access_info, true ) {
+		new TootTaskRunner( activity, true )
+			.progressPrefix( activity.getString( R.string.progress_synchronize_toot ) )
 			
-			TootStatus local_status;
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
-				
-				// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
-				String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( remote_status_url ) );
-				path = path + "&resolve=1";
-				
-				TootApiResult result = client.request( path );
-				if( result != null && result.object != null ){
-					TootResults tmp = TootResults.parse( activity, access_info, result.object );
-					if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
-						local_status = tmp.statuses.get( 0 );
-						log.d( "status id conversion %s => %s", remote_status_url, local_status.id );
+			.run( access_info, new TootTask() {
+				@Override public TootApiResult background( @NonNull TootApiClient client ){
+					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
+					String path = String.format( Locale.JAPAN, Column.PATH_SEARCH, Uri.encode( remote_status_url ) );
+					path = path + "&resolve=1";
+					
+					TootApiResult result = client.request( path );
+					if( result != null && result.object != null ){
+						TootResults tmp = TootResults.parse( activity, access_info, result.object );
+						if( tmp != null && tmp.statuses != null && ! tmp.statuses.isEmpty() ){
+							local_status = tmp.statuses.get( 0 );
+							log.d( "status id conversion %s => %s", remote_status_url, local_status.id );
+						}
+						if( local_status == null ){
+							return new TootApiResult( activity.getString( R.string.status_id_conversion_failed ) );
+						}
 					}
-					if( local_status == null ){
-						return new TootApiResult( activity.getString( R.string.status_id_conversion_failed ) );
-					}
+					return result;
 				}
-				return result;
-			}
-			
-			@Override protected void handleResult( TootApiResult result ){
 				
-				if( result == null ){
-					// cancelled.
-				}else if( local_status != null ){
-					reply( activity, access_info, local_status );
-				}else{
-					Utils.showToast( activity, true, result.error );
+				TootStatus local_status;
+				
+				@Override public void handleResult( @Nullable TootApiResult result ){
+					
+					if( result == null ){
+						// cancelled.
+					}else if( local_status != null ){
+						reply( activity, access_info, local_status );
+					}else{
+						Utils.showToast( activity, true, result.error );
+					}
+					
 				}
-			}
-		}
-			.setProgressPrefix( activity.getString( R.string.progress_synchronize_toot ) )
-			.executeOnExecutor( App1.task_executor );
+			} );
 	}
 	
 	////////////////////////////////////////
@@ -802,12 +794,11 @@ public class Action_Toot {
 		, @NonNull final SavedAccount access_info
 		, @NonNull final TootStatusLike status
 	){
+		// toggle change
 		final boolean bMute = ! status.muted;
 		
-		new TootApiTask( activity, access_info, true ) {
-			
-			@Override protected TootApiResult doInBackground( Void... params ){
-				
+		new TootTaskRunner( activity, true ).run( access_info, new TootTask() {
+			@Override public TootApiResult background( @NonNull TootApiClient client ){
 				Request.Builder request_builder = new Request.Builder()
 					.post( RequestBody.create( TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" ) );
 				
@@ -817,21 +808,20 @@ public class Action_Toot {
 				);
 				
 				if( result != null && result.object != null ){
-					new_status = TootStatus.parse( activity, access_info, result.object );
+					local_status = TootStatus.parse( activity, access_info, result.object );
 				}
 				
 				return result;
 			}
 			
-			TootStatus new_status;
+			TootStatus local_status;
 			
-			@Override protected void handleResult( TootApiResult result ){
-				
+			@Override public void handleResult( @Nullable TootApiResult result ){
 				if( result == null ){
 					// cancelled.
-				}else if( new_status != null ){
+				}else if( local_status != null ){
 					for( Column column : App1.app_state.column_list ){
-						column.findStatus( access_info.host, new_status.id, new Column.StatusEntryCallback() {
+						column.findStatus( access_info.host, local_status.id, new Column.StatusEntryCallback() {
 							@Override
 							public boolean onIterate( SavedAccount account, TootStatus status ){
 								if( access_info.acct.equalsIgnoreCase( account.acct ) ){
@@ -846,7 +836,7 @@ public class Action_Toot {
 					Utils.showToast( activity, true, result.error );
 				}
 			}
-		}.executeOnExecutor( App1.task_executor );
+		} );
 	}
 	
 }

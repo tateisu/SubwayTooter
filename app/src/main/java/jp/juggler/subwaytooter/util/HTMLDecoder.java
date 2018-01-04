@@ -218,18 +218,20 @@ public class HTMLDecoder {
 						MyClickableSpan span = new MyClickableSpan( account, link_text, href, account.findAcctColor( href ), options.link_tag );
 						sb.setSpan( span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE );
 						
-						// リンクスパンを設定した後に色をつける
-						if( options.highlight_trie != null ){
-							ArrayList<WordTrieTree.Match > list = options.highlight_trie.matchList( sb,start,end );
-							if( list != null ){
-								for( WordTrieTree.Match range : list ){
-									HighlightWord word = HighlightWord.load( range.word );
-									if( word !=null ){
-										sb.setSpan( new HighlightSpan( word.color_fg,word.color_bg ),  range.start, range.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
-										if( word.sound_type != HighlightWord.SOUND_TYPE_NONE ){
-											options.highlight_sound = word;
-										}
-									}
+						
+					}
+				}
+				
+				// リンクスパンを設定した後に色をつける
+				if( options.highlight_trie != null ){
+					ArrayList<WordTrieTree.Match > list = options.highlight_trie.matchList( sb,start,end );
+					if( list != null ){
+						for( WordTrieTree.Match range : list ){
+							HighlightWord word = HighlightWord.load( range.word );
+							if( word !=null ){
+								sb.setSpan( new HighlightSpan( word.color_fg,word.color_bg ),  range.start, range.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
+								if( word.sound_type != HighlightWord.SOUND_TYPE_NONE ){
+									options.highlight_sound = word;
 								}
 							}
 						}

@@ -14,29 +14,6 @@ public class WordTrieTree {
 		int end;
 	}
 	
-	//	private static class Matcher {
-	//
-	//		// ミュートの場合などは短いマッチでも構わない
-	//		final boolean allowShortMatch;
-	//
-	//		// マッチ範囲の始端を覚えておく
-	//		int start;
-	//
-	//		Matcher( boolean allowShortMatch ){
-	//			this.allowShortMatch = allowShortMatch;
-	//		}
-	//
-	//		void setTokenizer( CharacterGroup grouper, CharSequence src, int start, int end ){
-	//			this.match = null;
-	//			this.start = start;
-	//			if( t == null ){
-	//
-	//			}else{
-	//				t.reset( src, start, end );
-	//			}
-	//		}
-	//	}
-	
 	private static final CharacterGroup grouper = new CharacterGroup();
 	
 	private static class Node {

@@ -1,63 +1,43 @@
 package jp.juggler.subwaytooter.util;
 
 import android.support.annotation.NonNull;
-import android.support.v4.util.SparseArrayCompat;
+import android.util.SparseIntArray;
 
 import java.util.Locale;
 
 public class CharacterGroup {
 	
-	// Tokenizerが終端に達したことを示す
-	static final int END = - 1;
-	
-	// 同じと見なす文字列の集合
-	static class Group {
-		
-		// 文字列の配列
-		@NonNull final String[] list;
-		
-		// 代表する文字のコード
-		final int id;
-		
-		Group( @NonNull String[] list ){
-			this.list = list;
-			this.id = findGroupId();
-		}
-		
-		private int findGroupId(){
-			// グループのIDは、グループ中の文字(長さ1)のunicodeのどれか
-			for( String s : list ){
-				if( s.length() == 1 ){
-					return s.charAt( 0 );
-				}
-			}
-			throw new RuntimeException( "group has not id!!" );
-		}
-	}
+	// 文字列からグループIDを調べるマップ
 
+	// 文字数1: unicode => group_id
+	private final SparseIntArray map1 = new SparseIntArray();
 	
-	// テキスト中に出現した文字列からグループを探すためのマップ
+	// 文字数2: unicode 二つを合成した数値 => group_id。半角カナ＋濁音など
+	private final SparseIntArray map2 = new SparseIntArray();
 	
-	// キー文字数1
-	private final SparseArrayCompat< Group > map1 = new SparseArrayCompat<>();
-	
-	// キー文字数2
-	private final SparseArrayCompat< Group > map2 = new SparseArrayCompat<>();
+	// グループのIDは、グループ中の文字(長さ1)のどれかのunicode
+	private static int findGroupId( @NonNull String[] list ){
+		for( String s : list ){
+			if( s.length() == 1 ){
+				return s.charAt( 0 );
+			}
+		}
+		throw new RuntimeException( "group has not id!!" );
+	}
 	
 	// グループをmapに登録する
 	private void addGroup( @NonNull String[] list ){
 		
-		// グループを生成
-		Group g = new Group( list );
+		int group_id = findGroupId( list );
 		
-		// 含まれる各文字列をマップに登録する
+		// 文字列からグループIDを調べるマップを更新
 		for( String s : list ){
-			int len = s.length();
-			int v1 = s.charAt( 0 );
 			
-			SparseArrayCompat< Group > map;
+			SparseIntArray map;
 			int key;
-			if( len == 1 ){
+			
+			int v1 = s.charAt( 0 );
+			if( s.length() == 1 ){
 				map = map1;
 				key = v1;
 			}else{
@@ -66,35 +46,37 @@ public class CharacterGroup {
 				key = v1 | ( v2 << 16 );
 			}
 			
-			Group old = map.get( key );
-			if( old != null && old != g ){
+			int old = map.get( key );
+			if( old != 0 && old != group_id ){
 				throw new RuntimeException( String.format( Locale.JAPAN, "group conflict: %s", s ) );
 			}
-			map.put( key, g );
+			map.put( key, group_id );
 		}
 	}
 	
-	// CharSequence の範囲 から 文字,グループ,終端 のどれかを列挙する
+	// Tokenizerが終端に達したことを示す
+	static final int END = - 1;
+	
+	// 入力された文字列から 文字,グループ,終端 のどれかを順に列挙する
 	class Tokenizer {
-		public CharSequence text;
-		public int end;
+		CharSequence text;
+		int end;
 		
 		// next() を読むと以下の変数が更新される
-		public int offset;
-		public int c; // may END or group.id or UTF-16 character
-		public Group group;
+		int offset;
+		int c; // may END or group_id or UTF-16 character
 		
 		Tokenizer( @NonNull CharSequence text, int start, int end ){
 			reset( text, start, end );
 		}
 		
-		public void reset( CharSequence text, int start, int end ){
+		void reset( CharSequence text, int start, int end ){
 			this.text = text;
 			this.offset = start;
 			this.end = end;
 		}
 		
-		public void next(){
+		void next(){
 			
 			int pos = offset;
 			
@@ -106,28 +88,27 @@ public class CharacterGroup {
 			if( remain <= 0 ){
 				// 空白を読み飛ばしたら終端になった
 				// 終端の場合、末尾の空白はoffsetに含めない
-				this.group = null;
 				this.c = END;
 				return;
 			}
 			
 			int v1 = text.charAt( pos );
-			int v2 = remain > 1 ? text.charAt( pos + 1 ) : 0;
 			
 			// グループに登録された文字を長い順にチェック
 			int check_len = remain > 2 ? 2 : remain;
 			while( check_len > 0 ){
-				Group g = check_len == 1 ? map1.get( v1 ) : map2.get( v1 | ( v2 << 16 ) );
-				if( g != null ){
-					this.group = g;
-					this.c = g.id;
+				int group_id = ( check_len == 1
+					? map1.get( v1 )
+					: map2.get( v1 | ( ( (int) text.charAt( pos + 1 ) ) << 16 ) )
+				);
+				if( group_id != 0 ){
+					this.c = group_id;
 					this.offset = pos + check_len;
 					return;
 				}
 				-- check_len;
 			}
 			
-			this.group = null;
 			this.c = v1;
 			this.offset = pos + 1;
 		}
@@ -259,7 +240,7 @@ public class CharacterGroup {
 		addGroup( new String[]{ "」", "｣", "」" } );
 		
 		// チルダ
-		addGroup( new String[]{  "~", c2s(tmp,0x301C),c2s(tmp,0xFF5E) } );
+		addGroup( new String[]{ "~", c2s( tmp, 0x301C ), c2s( tmp, 0xFF5E ) } );
 		
 		// 半角カナの濁音,半濁音は2文字になる
 		addGroup( new String[]{ "ガ", "が", "ｶﾞ" } );
@@ -288,7 +269,7 @@ public class CharacterGroup {
 		addGroup( new String[]{ "ペ", "ぺ", "ﾍﾟ" } );
 		addGroup( new String[]{ "ポ", "ぽ", "ﾎﾟ" } );
 		addGroup( new String[]{ "ヴ", "う゛", "ｳﾞ" } );
-
+		
 		addGroup( new String[]{ "あ", "ｱ", "ア", "ぁ", "ｧ", "ァ" } );
 		addGroup( new String[]{ "い", "ｲ", "イ", "ぃ", "ｨ", "ィ" } );
 		addGroup( new String[]{ "う", "ｳ", "ウ", "ぅ", "ｩ", "ゥ" } );

@@ -2,8 +2,6 @@ package jp.juggler.subwaytooter;
 
 import org.junit.Test;
 
-import jp.juggler.subwaytooter.util.WordTrieTree;
-
 import static org.junit.Assert.*;
 
 /**
@@ -17,31 +15,10 @@ public class ExampleUnitTest {
 		assertEquals( 4, 2 + 2 );
 	}
 	
-	@Test
-	public void checkWordTrieTree() throws Exception{
-		WordTrieTree wtt = new WordTrieTree();
+	/*
+		test は開発環境側で行われて、実機が必要なAPIは"not mocked"と怒られて失敗する。
+		SparseIntArray等を利用できない。
 		
-		assertEquals( false, wtt.containsWord( "" ) );
-		assertEquals( false, wtt.containsWord( "1" ) );
-		
-		wtt.add( "abc" );
-		wtt.add( "abd" );
-		wtt.add( "def" );
-		assertEquals( false, wtt.containsWord( "" ) );
-		assertEquals( false, wtt.containsWord( "1" ) );
-		
-		assertEquals( false, wtt.containsWord( "a" ) );
-		assertEquals( false, wtt.containsWord( "ab" ) );
-		assertEquals( true, wtt.containsWord( "abc" ) );
-		assertEquals( true, wtt.containsWord( "   abc   " ) );
-		assertEquals( true, wtt.containsWord( "abd" ) );
-		assertEquals( true, wtt.containsWord( "   abd   " ) );
-		assertEquals( false, wtt.containsWord( "abe" ) );
-		assertEquals( false, wtt.containsWord( "   abe   " ) );
-		
-		assertEquals( false, wtt.containsWord( "d" ) );
-		assertEquals( false, wtt.containsWord( "de" ) );
-		assertEquals( true, wtt.containsWord( "def" ) );
-		
-	}
+		androidTest の方は実機かエミュレータで動作する
+	 */
 }

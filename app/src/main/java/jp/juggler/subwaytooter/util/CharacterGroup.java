@@ -8,21 +8,26 @@ import java.util.Locale;
 public final class CharacterGroup {
 	
 	// 文字列からグループIDを調べるマップ
-
+	
 	// 文字数1: unicode => group_id
 	private final SparseIntArray map1 = new SparseIntArray();
 	
 	// 文字数2: unicode 二つを合成した数値 => group_id。半角カナ＋濁音など
 	private final SparseIntArray map2 = new SparseIntArray();
 	
-	// グループのIDは、グループ中の文字(長さ1)のどれかのunicode
+	// グループのIDは、グループ中の文字(長さ1)のunicode値の最小
 	private static int findGroupId( @NonNull String[] list ){
+		int id = Integer.MAX_VALUE;
 		for( String s : list ){
 			if( s.length() == 1 ){
-				return s.charAt( 0 );
+				int c = s.charAt( 0 );
+				if( c < id ) id = c;
 			}
 		}
-		throw new RuntimeException( "group has not id!!" );
+		if( id == Integer.MAX_VALUE ){
+			throw new RuntimeException( "group has not id!!" );
+		}
+		return id;
 	}
 	
 	// グループをmapに登録する
@@ -55,26 +60,27 @@ public final class CharacterGroup {
 	}
 	
 	// Tokenizerが終端に達したことを示す
-	static final int END = - 1;
+	public static final int END = - 1;
 	
 	// 入力された文字列から 文字,グループ,終端 のどれかを順に列挙する
-	final class Tokenizer {
+	public final class Tokenizer {
 		CharSequence text;
-		int offset;
+		public int offset;
 		int end;
 		
 		Tokenizer( @NonNull CharSequence text, int start, int end ){
 			reset( text, start, end );
 		}
 		
-		void reset( CharSequence text, int start, int end ){
+		@NonNull Tokenizer reset( CharSequence text, int start, int end ){
 			this.text = text;
 			this.offset = start;
 			this.end = end;
+			return this;
 		}
 		
 		// returns END or group_id or UTF-16 character
-		int next(){
+		public int next(){
 			
 			int pos = offset;
 			
@@ -110,7 +116,7 @@ public final class CharacterGroup {
 		}
 	}
 	
-	Tokenizer tokenizer( CharSequence text, int start, int end ){
+	public Tokenizer tokenizer( CharSequence text, int start, int end ){
 		return new Tokenizer( text, start, end );
 	}
 	
@@ -160,12 +166,12 @@ public final class CharacterGroup {
 	}
 	
 	// 文字コードから文字列を作る
-	private static String c2s( char[] tmp, int c ){
+	public static String c2s( char[] tmp, int c ){
 		tmp[ 0 ] = (char) c;
 		return new String( tmp, 0, 1 );
 	}
 	
-	CharacterGroup(){
+	public CharacterGroup(){
 		char[] tmp = new char[ 1 ];
 		
 		// 数字

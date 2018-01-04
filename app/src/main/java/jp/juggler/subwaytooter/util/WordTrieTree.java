@@ -8,12 +8,12 @@ import java.util.ArrayList;
 
 public class WordTrieTree {
 	
-	static class Match {
-		final int start;
-		final int end;
-		@NonNull final String word;
+	public static class Match {
+		public final int start;
+		public final int end;
+		@NonNull public final String word;
 		
-		Match( int start, int end, String word ){
+		Match( int start, int end, @NonNull String word ){
 			this.start = start;
 			this.end = end;
 			this.word = word;
@@ -31,7 +31,7 @@ public class WordTrieTree {
 		@Nullable String match_word;
 		
 		// Trieツリー的には終端単語と続くノードの両方が存在する場合がありうる。
-		// たとえば ABC と ABCDEF を登録してからABCDEF を探索したら、単語 ABC と単語 DEF にマッチする。
+		// たとえば ABC と ABCDEF を登録してから ABCDEFG を探索したら、単語 ABC と単語 ABCDEF にマッチする。
 	}
 	
 	private final Node node_root = new Node();
@@ -39,17 +39,26 @@ public class WordTrieTree {
 	// 単語の追加
 	public void add( @NonNull String s ){
 		CharacterGroup.Tokenizer t = grouper.tokenizer( s, 0, s.length() );
+		
+		int token_count = 0;
 		Node node = node_root;
 		for( ; ; ){
 			
 			int id = t.next();
 			if( id == CharacterGroup.END ){
+				
+				// 単語を正規化したら長さ0だった場合、その単語は無視する
+				if( token_count == 0 ) return;
+				
 				// より長いマッチ単語を覚えておく
 				if( node.match_word == null || node.match_word.length() < t.text.length() ){
 					node.match_word = t.text.toString();
 				}
+				
 				return;
 			}
+
+			++ token_count;
 			Node child = node.child_nodes.get( id );
 			if( child == null ){
 				node.child_nodes.put( id, child = new Node() );
@@ -90,34 +99,46 @@ public class WordTrieTree {
 		return null != src && null != matchShort( src, 0, src.length() );
 	}
 	
+	@SuppressWarnings("SameParameterValue")
 	private Match matchShort( @NonNull CharSequence src, int start, int end ){
+		
 		CharacterGroup.Tokenizer t = grouper.tokenizer( src, start, end );
+		
 		for( int i = start ; i < end ; ++ i ){
-			int c = src.charAt( i );
-			if( CharacterGroup.isWhitespace( c ) ) continue;
-			t.reset( src, i, end );
-			Match item = match( true, t );
-			if( item != null ) return item;
+			if( ! CharacterGroup.isWhitespace( src.charAt( i ) ) ){
+				Match item = match( true, t.reset( src, i, end ) );
+				if( item != null ) return item;
+			}
 		}
 		return null;
+	}
+	
+	// ハイライト用。複数マッチする。マッチした位置を覚える
+	@Nullable public ArrayList< Match > matchList( @Nullable  CharSequence src ){
+		return src==null ? null : matchList(src,0,src.length());
 	}
 
 	// ハイライト用。複数マッチする。マッチした位置を覚える
 	@Nullable ArrayList< Match > matchList( @NonNull CharSequence src, int start, int end ){
+		
 		ArrayList< Match > dst = null;
 		
 		CharacterGroup.Tokenizer t = grouper.tokenizer( src, start, end );
-		for( int i = start ; i < end ; ++ i ){
-			int c = src.charAt( i );
-			if( CharacterGroup.isWhitespace( c ) ) continue;
-			t.reset( src, i, end );
-			Match item = match( false, t );
-			if( item != null ){
-				if( dst == null ) dst = new ArrayList<>();
-				dst.add( item );
-				i = item.end - 1;
+		
+		int i = start;
+		while( i < end ){
+			if( ! CharacterGroup.isWhitespace( src.charAt( i ) ) ){
+				Match item = match( false, t.reset( src, i, end ) );
+				if( item != null ){
+					if( dst == null ) dst = new ArrayList<>();
+					dst.add( item );
+					i = item.end;
+					continue;
+				}
 			}
+			++ i;
 		}
+		
 		return dst;
 	}
 	

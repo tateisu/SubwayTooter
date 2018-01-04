@@ -1,0 +1,54 @@
+package jp.juggler.subwaytooter.view
+
+import android.annotation.SuppressLint
+import android.content.Context
+import android.os.SystemClock
+import android.util.AttributeSet
+import android.view.MotionEvent
+import android.widget.ListView
+
+import jp.juggler.subwaytooter.util.LogCategory
+
+class MyListView : ListView {
+	
+	companion object {
+		private val log = LogCategory("MyListView")
+	}
+
+	var last_popup_close = 0L
+	
+	constructor(context : Context) : super(context)
+	constructor(context : Context, attrs : AttributeSet) : super(context, attrs)
+	constructor(context : Context, attrs : AttributeSet, defStyleAttr : Int) : super(context, attrs, defStyleAttr)
+	constructor(context : Context, attrs : AttributeSet, defStyleAttr : Int, defStyleRes : Int) : super(context, attrs, defStyleAttr, defStyleRes)
+	
+	@SuppressLint("ClickableViewAccessibility")
+	override fun onTouchEvent(ev : MotionEvent) : Boolean {
+		
+		// ポップアップを閉じた時にクリックでリストを触ったことになってしまう不具合の回避
+		val now = SystemClock.elapsedRealtime()
+		if(now - last_popup_close < 30L) {
+			val action = ev.action
+			if(action == MotionEvent.ACTION_DOWN) {
+				// ポップアップを閉じた直後はタッチダウンを無視する
+				return false
+			}
+			
+			val rv = super.onTouchEvent(ev)
+			log.d("onTouchEvent action=%s, rv=%s", action, rv)
+			return rv
+		}
+		
+		return super.onTouchEvent(ev)
+	}
+	
+	override fun layoutChildren() {
+		try {
+			super.layoutChildren()
+		} catch(ex : Throwable) {
+			log.trace(ex)
+		}
+		
+	}
+	
+}

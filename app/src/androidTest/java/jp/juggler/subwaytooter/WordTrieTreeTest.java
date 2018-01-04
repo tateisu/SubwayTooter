@@ -73,8 +73,8 @@ public class WordTrieTreeTest {
 			String strTest = whitespace;
 			CharacterGroup.Tokenizer tokenizer = cg.tokenizer( strTest, 0, strTest.length() );
 			id = tokenizer.next();
-			assertEquals( CharacterGroup.END, id );
-			assertEquals( 0, tokenizer.offset );
+			assertEquals( CharacterGroup.Companion.getEND(), id );
+			assertEquals( 0, tokenizer.getOffset() );
 		}
 		
 		{
@@ -84,19 +84,19 @@ public class WordTrieTreeTest {
 			//
 			id = tokenizer.next();
 			assertEquals( 'A', id );
-			assertEquals( whitespace_len + 1, tokenizer.offset ); // offset は Aの次の位置になる
+			assertEquals( whitespace_len + 1, tokenizer.getOffset() ); // offset は Aの次の位置になる
 			//
 			id = tokenizer.next();
 			assertEquals( 'B', id );
-			assertEquals( whitespace_len + 2, tokenizer.offset );
+			assertEquals( whitespace_len + 2, tokenizer.getOffset() );
 			//
 			id = tokenizer.next();
 			assertEquals( 'C', id );
-			assertEquals( whitespace_len + 3, tokenizer.offset );
+			assertEquals( whitespace_len + 3, tokenizer.getOffset() );
 			//
 			id = tokenizer.next();
-			assertEquals( whitespace_len + 3, tokenizer.offset ); // offsetはCの次の位置のまま
-			assertEquals( CharacterGroup.END, id );
+			assertEquals( whitespace_len + 3, tokenizer.getOffset() ); // offsetはCの次の位置のまま
+			assertEquals( CharacterGroup.Companion.getEND(), id );
 		}
 		
 		{
@@ -105,20 +105,20 @@ public class WordTrieTreeTest {
 			CharacterGroup.Tokenizer tokenizer = cg.tokenizer( strTest, 0, strTest.length() );
 			//
 			id = tokenizer.next();
-			assertEquals( whitespace_len + 1, tokenizer.offset );
+			assertEquals( whitespace_len + 1, tokenizer.getOffset() );
 			assertEquals( 'A', id );
 			//
 			id = tokenizer.next();
-			assertEquals( whitespace_len + 2, tokenizer.offset );
+			assertEquals( whitespace_len + 2, tokenizer.getOffset() );
 			assertEquals( 'B', id );
 			//
 			id = tokenizer.next();
-			assertEquals( whitespace_len + 3, tokenizer.offset );
+			assertEquals( whitespace_len + 3, tokenizer.getOffset() );
 			assertEquals( 'C', id );
 			//
 			id = tokenizer.next();
-			assertEquals( whitespace_len + 3, tokenizer.offset );
-			assertEquals( CharacterGroup.END, id );
+			assertEquals( whitespace_len + 3, tokenizer.getOffset() );
+			assertEquals( CharacterGroup.Companion.getEND(), id );
 		}
 		
 		{
@@ -127,20 +127,20 @@ public class WordTrieTreeTest {
 			CharacterGroup.Tokenizer tokenizer = cg.tokenizer( strTest, 0, strTest.length() );
 			//
 			id = tokenizer.next();
-			assertEquals( whitespace_len + 1, tokenizer.offset );
+			assertEquals( whitespace_len + 1, tokenizer.getOffset() );
 			assertEquals( 'A', id );
 			//
 			id = tokenizer.next();
-			assertEquals( whitespace_len + 2, tokenizer.offset );
+			assertEquals( whitespace_len + 2, tokenizer.getOffset() );
 			assertEquals( 'B', id );
 			//
 			id = tokenizer.next();
-			assertEquals( whitespace_len + 3, tokenizer.offset );
+			assertEquals( whitespace_len + 3, tokenizer.getOffset() );
 			assertEquals( 'C', id );
 			//
 			id = tokenizer.next();
-			assertEquals( whitespace_len + 3, tokenizer.offset );
-			assertEquals( CharacterGroup.END, id );
+			assertEquals( whitespace_len + 3, tokenizer.getOffset() );
+			assertEquals( CharacterGroup.Companion.getEND(), id );
 		}
 		
 		{
@@ -149,20 +149,20 @@ public class WordTrieTreeTest {
 			CharacterGroup.Tokenizer tokenizer = cg.tokenizer( strTest, 0, strTest.length() );
 			//
 			id = tokenizer.next();
-			assertEquals( whitespace_len + 1, tokenizer.offset );
+			assertEquals( whitespace_len + 1, tokenizer.getOffset() );
 			assertEquals( 'A', id );
 			//
 			id = tokenizer.next();
-			assertEquals( whitespace_len + 2, tokenizer.offset );
+			assertEquals( whitespace_len + 2, tokenizer.getOffset() );
 			assertEquals( 'B', id );
 			//
 			id = tokenizer.next();
-			assertEquals( whitespace_len + 3, tokenizer.offset );
+			assertEquals( whitespace_len + 3, tokenizer.getOffset() );
 			assertEquals( 'C', id );
 			//
 			id = tokenizer.next();
-			assertEquals( whitespace_len + 3, tokenizer.offset );
-			assertEquals( CharacterGroup.END, id );
+			assertEquals( whitespace_len + 3, tokenizer.getOffset() );
+			assertEquals( CharacterGroup.Companion.getEND(), id );
 		}
 	}
 	
@@ -194,14 +194,14 @@ public class WordTrieTreeTest {
 			ArrayList< WordTrieTree.Match > list = trie.matchList( strTest);
 			assertNotNull( list );
 			assertEquals( 4, list.size() );
-			assertEquals( "abcdef", list.get( 0 ).word ); // abcよりもabcdefを優先してマッチする
-			assertEquals( 3, list.get( 0 ).start ); // 元テキスト中でマッチした位置を取得できる
-			assertEquals( 9, list.get( 0 ).end );
-			assertEquals( "ABC", list.get( 1 ).word ); // 文字種が違っても同一とみなす単語の場合、先に登録した方にマッチする
-			assertEquals( "bbb", list.get( 2 ).word );
-			assertEquals( "C C C", list.get( 3 ).word ); // 文字種が違っても同一とみなす単語の場合、先に登録した方にマッチする
-			assertEquals( 27, list.get( 3 ).start ); // 元テキスト中でマッチした位置を取得できる
-			assertEquals( 31, list.get( 3 ).end );
+			assertEquals( "abcdef", list.get( 0 ).getWord() ); // abcよりもabcdefを優先してマッチする
+			assertEquals( 3, list.get( 0 ).getStart() ); // 元テキスト中でマッチした位置を取得できる
+			assertEquals( 9, list.get( 0 ).getEnd() );
+			assertEquals( "ABC", list.get( 1 ).getWord() ); // 文字種が違っても同一とみなす単語の場合、先に登録した方にマッチする
+			assertEquals( "bbb", list.get( 2 ).getWord() );
+			assertEquals( "C C C", list.get( 3 ).getWord() ); // 文字種が違っても同一とみなす単語の場合、先に登録した方にマッチする
+			assertEquals( 27, list.get( 3 ).getStart() ); // 元テキスト中でマッチした位置を取得できる
+			assertEquals( 31, list.get( 3 ).getEnd() );
 			assertEquals( 33, strTest.length() ); // 末尾の空白はマッチ範囲には含まれない
 		}
 	}

@@ -1,0 +1,405 @@
+package jp.juggler.subwaytooter.action
+
+import android.net.Uri
+
+import org.json.JSONObject
+
+import java.util.Locale
+
+import jp.juggler.subwaytooter.ActMain
+import jp.juggler.subwaytooter.ActPost
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.Column
+import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.TootTask
+import jp.juggler.subwaytooter.api.TootTaskRunner
+import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootRelationShip
+import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.dialog.AccountPicker
+import jp.juggler.subwaytooter.dialog.ReportForm
+import jp.juggler.subwaytooter.table.AcctColor
+import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.util.Utils
+import okhttp3.Request
+import okhttp3.RequestBody
+
+typealias ReportCompleteCallback = (result : TootApiResult) -> Unit
+
+object Action_User {
+	
+	// ユーザをミュート/ミュート解除する
+	fun mute(
+		activity : ActMain,
+		access_info : SavedAccount,
+		who : TootAccount,
+		bMute : Boolean,
+		bMuteNotification : Boolean
+	) {
+		
+		if(access_info.isMe(who)) {
+			Utils.showToast(activity, false, R.string.it_is_you)
+			return
+		}
+		
+		TootTaskRunner(activity, true).run(access_info, object : TootTask {
+			
+			internal var relation : UserRelation? = null
+			override fun background(client : TootApiClient) : TootApiResult? {
+				
+				val request_builder = Request.Builder().post(
+					if(! bMute)
+						RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "")
+					else if(bMuteNotification)
+						RequestBody.create(TootApiClient.MEDIA_TYPE_JSON, "{\"notifications\": true}")
+					else
+						RequestBody.create(TootApiClient.MEDIA_TYPE_JSON, "{\"notifications\": false}")
+				)
+				
+				val result = client.request("/api/v1/accounts/" + who.id + if(bMute) "/mute" else "/unmute", request_builder)
+				val jsonObject = result?.jsonObject
+				if(jsonObject != null) {
+					relation = ActionUtils.saveUserRelation(access_info, TootRelationShip.parse(jsonObject))
+				}
+				return result
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				if(result == null) return  // cancelled.
+				
+				if(relation != null) {
+					// 未確認だが、自分をミュートしようとするとリクエストは成功するがレスポンス中のmutingはfalseになるはず
+					if(bMute && ! relation !!.muting) {
+						Utils.showToast(activity, false, R.string.not_muted)
+						return
+					}
+					
+					if(relation !!.muting) {
+						for(column in App1.getAppState(activity).column_list) {
+							column.removeAccountInTimeline(access_info, who.id)
+						}
+					} else {
+						for(column in App1.getAppState(activity).column_list) {
+							column.removeFromMuteList(access_info, who.id)
+						}
+					}
+					
+					Utils.showToast(activity, false, if(relation !!.muting) R.string.mute_succeeded else R.string.unmute_succeeded)
+					
+				} else {
+					Utils.showToast(activity, false, result.error)
+				}
+			}
+		})
+		
+	}
+	
+	// ユーザをブロック/ブロック解除する
+	fun block(
+		activity : ActMain, access_info : SavedAccount, who : TootAccount, bBlock : Boolean
+	) {
+		if(access_info.isMe(who)) {
+			Utils.showToast(activity, false, R.string.it_is_you)
+			return
+		}
+		
+		TootTaskRunner(activity, true).run(access_info, object : TootTask {
+			
+			internal var relation : UserRelation? = null
+			override fun background(client : TootApiClient) : TootApiResult? {
+				
+				val request_builder = Request.Builder().post(
+					RequestBody.create(
+						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" // 空データ
+					))
+				
+				val result = client.request(
+					"/api/v1/accounts/" + who.id + if(bBlock) "/block" else "/unblock", request_builder
+				)
+				val jsonObject = result?.jsonObject
+				if(jsonObject != null) {
+					relation = ActionUtils.saveUserRelation(access_info, TootRelationShip.parse(jsonObject))
+				}
+				
+				return result
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				
+				if(result == null) return  // cancelled.
+				
+				if(relation != null) {
+					
+					// 自分をブロックしようとすると、blocking==falseで帰ってくる
+					if(bBlock && ! relation !!.blocking) {
+						Utils.showToast(activity, false, R.string.not_blocked)
+						return
+					}
+					
+					for(column in App1.getAppState(activity).column_list) {
+						if(relation !!.blocking) {
+							column.removeAccountInTimeline(access_info, who.id)
+						} else {
+							column.removeFromBlockList(access_info, who.id)
+						}
+					}
+					
+					Utils.showToast(activity, false, if(relation !!.blocking) R.string.block_succeeded else R.string.unblock_succeeded)
+					
+				} else {
+					Utils.showToast(activity, false, result.error)
+				}
+			}
+		})
+		
+	}
+	
+	// アカウントを選んでユーザプロフを開く
+	fun profileFromAnotherAccount(
+		activity : ActMain, pos : Int, access_info : SavedAccount, who : TootAccount?
+	) {
+		if(who == null) return
+		val who_host = access_info.getAccountHost(who)
+		
+		AccountPicker.pick(
+			activity,
+			false,
+			false,
+			activity.getString(R.string.account_picker_open_user_who, AcctColor.getNickname(who.acct)),
+			ActionUtils.makeAccountListNonPseudo(activity, who_host)
+		) { ai ->
+			if(ai.host.equals(access_info.host, ignoreCase = true)) {
+				activity.addColumn(pos, ai, Column.TYPE_PROFILE, who.id)
+			} else {
+				profile(activity, pos, ai, who.url)
+			}
+		}
+	}
+	
+	// 今のアカウントでユーザプロフを開く
+	fun profile(
+		activity : ActMain, pos : Int, access_info : SavedAccount, who : TootAccount?
+	) {
+		when {
+			who == null -> Utils.showToast(activity, false, "user is null")
+			access_info.isPseudo -> profileFromAnotherAccount(activity, pos, access_info, who)
+			else -> activity.addColumn(pos, access_info, Column.TYPE_PROFILE, who.id)
+		}
+	}
+	
+	// URLからユーザを検索してプロフを開く
+	fun profile(
+		activity : ActMain, pos : Int, access_info : SavedAccount, who_url : String
+	) {
+		TootTaskRunner(activity, true).run(access_info, object : TootTask {
+			
+			internal var who_local : TootAccount? = null
+			override fun background(client : TootApiClient) : TootApiResult? {
+				val path = String.format(Locale.JAPAN, Column.PATH_SEARCH, Uri.encode(who_url)) + "&resolve=1"
+				val result = client.request(path)
+				val jsonObject = result?.jsonObject
+				
+				if(jsonObject != null) {
+					val tmp = TootParser(activity, access_info).results(jsonObject)
+					if(tmp != null && tmp.accounts.isNotEmpty()) {
+						who_local = tmp.accounts[0]
+					} else {
+						return TootApiResult(activity.getString(R.string.user_id_conversion_failed))
+					}
+				}
+				
+				return result
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				result ?: return // cancelled.
+				
+				val wl = who_local
+				if(wl != null) {
+					activity.addColumn(pos, access_info, Column.TYPE_PROFILE, wl.id)
+				} else {
+					Utils.showToast(activity, true, result.error)
+					
+					// 仕方ないのでchrome tab で開く
+					App1.openCustomTab(activity, who_url)
+				}
+			}
+		})
+		
+	}
+	
+	// Intent-FilterからUser URL で指定されたユーザのプロフを開く
+	// openChromeTabからUser URL で指定されたユーザのプロフを開く
+	fun profile(
+		activity : ActMain, pos : Int, access_info : SavedAccount?, url : String, host : String, user : String
+	) {
+		// リンクタップした文脈のアカウントが疑似でないなら
+		if(access_info != null && ! access_info.isPseudo) {
+			if(access_info.host.equals(host, ignoreCase = true)) {
+				// 文脈のアカウントと同じインスタンスなら、アカウントIDを探して開いてしまう
+				ActionUtils.findAccountByName(activity, access_info, host, user, object : ActionUtils.FindAccountCallback {
+					override fun onFindAccount(who : TootAccount?) {
+						if(who != null) {
+							profile(activity, pos, access_info, who)
+						} else {
+							// ダメならchromeで開く
+							App1.openCustomTab(activity, url)
+						}
+					}
+				})
+			} else {
+				// 文脈のアカウント異なるインスタンスなら、別アカウントで開く
+				profile(activity, pos, access_info, url)
+			}
+			return
+		}
+		
+		// 文脈がない、もしくは疑似アカウントだった
+		
+		// 疑似ではないアカウントの一覧
+		
+		if(! SavedAccount.hasRealAccount()) {
+			// 疑似アカウントではユーザ情報APIを呼べないし検索APIも使えない
+			// chrome tab で開くしかない
+			App1.openCustomTab(activity, url)
+		} else {
+			// アカウントを選択して開く
+			AccountPicker.pick(activity, false, false, activity.getString(R.string.account_picker_open_user_who, AcctColor.getNickname(user + "@" + host)), ActionUtils.makeAccountListNonPseudo(activity, host)
+			) { ai -> profile(activity, pos, ai, url) }
+		}
+		
+	}
+	
+	// 通報フォームを開く
+	fun reportForm(
+		activity : ActMain, account : SavedAccount, who : TootAccount, status : TootStatus
+	) {
+		ReportForm.showReportForm(activity, who, status) { dialog, comment ->
+			report(activity, account, who, status, comment) { _ ->
+				// 成功したらダイアログを閉じる
+				try {
+					dialog.dismiss()
+				} catch(ignored : Throwable) {
+					// IllegalArgumentException がたまに出る
+				}
+			}
+		}
+	}
+	
+	// 通報する
+	private fun report(
+		activity : ActMain, access_info : SavedAccount, who : TootAccount, status : TootStatus, comment : String, callback : ReportCompleteCallback?
+	) {
+		if(access_info.isMe(who)) {
+			Utils.showToast(activity, false, R.string.it_is_you)
+			return
+		}
+		
+		TootTaskRunner(activity, true).run(access_info, object : TootTask {
+			override fun background(client : TootApiClient) : TootApiResult? {
+				val sb = ("account_id=" + who.id.toString()
+					+ "&comment=" + Uri.encode(comment)
+					+ "&status_ids[]=" + status.id.toString())
+				
+				val request_builder = Request.Builder().post(
+					RequestBody.create(
+						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, sb
+					))
+				
+				return client.request("/api/v1/reports", request_builder)
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				result ?: return // cancelled.
+				
+				if(result.jsonObject != null) {
+					if(callback != null) callback(result)
+					
+					Utils.showToast(activity, false, R.string.report_completed)
+				} else {
+					Utils.showToast(activity, true, result.error)
+				}
+			}
+		})
+	}
+	
+	// show/hide boosts from (following) user
+	fun showBoosts(
+		activity : ActMain, access_info : SavedAccount, who : TootAccount, bShow : Boolean
+	) {
+		if(access_info.isMe(who)) {
+			Utils.showToast(activity, false, R.string.it_is_you)
+			return
+		}
+		
+		TootTaskRunner(activity, true).run(access_info, object : TootTask {
+			
+			internal var relation : TootRelationShip? = null
+			override fun background(client : TootApiClient) : TootApiResult? {
+				
+				val content = JSONObject()
+				try {
+					content.put("reblogs", bShow)
+				} catch(ex : Throwable) {
+					return TootApiResult(Utils.formatError(ex, "json encoding error"))
+				}
+				
+				val request_builder = Request.Builder().post(
+					RequestBody.create(
+						TootApiClient.MEDIA_TYPE_JSON, content.toString()
+					))
+				
+				val result = client.request("/api/v1/accounts/" + who.id + "/follow", request_builder)
+				val jsonObject = result?.jsonObject
+				if(jsonObject != null) {
+					relation = TootRelationShip.parse(jsonObject)
+				}
+				return result
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				
+				if(result == null) return  // cancelled.
+				
+				if(relation != null) {
+					ActionUtils.saveUserRelation(access_info, relation)
+					Utils.showToast(activity, true, R.string.operation_succeeded)
+				} else {
+					Utils.showToast(activity, true, result.error)
+				}
+			}
+		})
+	}
+	
+	// メンションを含むトゥートを作る
+	private fun mention(
+		activity : ActMain, account : SavedAccount, initial_text : String
+	) {
+		ActPost.open(
+			activity, ActMain.REQUEST_CODE_POST, account.db_id, initial_text
+		)
+	}
+	
+	// メンションを含むトゥートを作る
+	fun mention(
+		activity : ActMain, account : SavedAccount, who : TootAccount
+	) {
+		mention(activity, account, "@" + account.getFullAcct(who) + " ")
+	}
+	
+	// メンションを含むトゥートを作る
+	fun mentionFromAnotherAccount(
+		activity : ActMain, access_info : SavedAccount, who : TootAccount?
+	) {
+		if(who == null) return
+		val who_host = access_info.getAccountHost(who)
+		
+		val initial_text = "@" + access_info.getFullAcct(who) + " "
+		AccountPicker.pick(
+			activity, false, false, activity.getString(R.string.account_picker_toot), ActionUtils.makeAccountListNonPseudo(activity, who_host)) { ai -> mention(activity, ai, initial_text) }
+	}
+}

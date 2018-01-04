@@ -1,0 +1,745 @@
+package jp.juggler.subwaytooter.table
+
+import android.content.ContentValues
+import android.content.Context
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
+import android.provider.BaseColumns
+
+import org.json.JSONObject
+
+import java.util.ArrayList
+import java.util.Collections
+import java.util.Comparator
+import java.util.concurrent.atomic.AtomicReference
+import java.util.regex.Pattern
+
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.util.LinkClickContext
+import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.Utils
+
+class SavedAccount(
+	val db_id:Long,
+	val acct:String,
+    hostArg : String? = null
+) : LinkClickContext {
+
+	val username: String
+	val host : String
+	
+	var token_info : JSONObject? = null
+	var loginAccount : TootAccount? = null
+
+	var visibility : String? = null
+	var confirm_boost : Boolean = false
+	
+	var dont_hide_nsfw : Boolean = false
+	var dont_show_timeout : Boolean = false
+	
+	var notification_mention : Boolean = false
+	var notification_boost : Boolean = false
+	var notification_favourite : Boolean = false
+	var notification_follow : Boolean = false
+	var sound_uri = ""
+	
+	var confirm_follow : Boolean = false
+	var confirm_follow_locked : Boolean = false
+	var confirm_unfollow : Boolean = false
+	var confirm_post : Boolean = false
+	
+	var notification_tag : String? = null
+	var register_key : String? = null
+	var register_time : Long = 0
+	
+	private val refInstance = AtomicReference<TootInstance>(null)
+	
+	// DBには保存しない
+	var instance : TootInstance?
+		get() {
+			val instance = refInstance.get()
+			return when {
+				instance == null -> null
+				System.currentTimeMillis() - instance.time_parse > INSTANCE_INFORMATION_EXPIRE -> null
+				else -> instance
+			}
+		}
+		set(instance) = refInstance.set(instance)
+	
+	init{
+		val pos = acct.indexOf('@')
+		if( pos == -1 ){
+			this.username = acct
+		}else {
+			this.username = acct.substring(0, pos)
+		}
+		if( username.isEmpty() )  throw RuntimeException("missing username in acct")
+		
+		this.host = if( hostArg != null && hostArg.isNotEmpty() ){
+			hostArg
+		}else {
+			val hostInAcct = if(pos == - 1) "" else acct.substring(pos + 1)
+			if(hostInAcct.isEmpty()) throw RuntimeException("missing host in acct")
+			hostInAcct
+		}.toLowerCase()
+	}
+	
+	constructor(context : Context ,cursor:Cursor):this(
+		cursor.getLong(cursor.getColumnIndex(COL_ID)), // db_id
+		cursor.getString(cursor.getColumnIndex(COL_USER)), // acct
+		cursor.getString(cursor.getColumnIndex(COL_HOST)) // host
+	){
+		val jsonAccount = JSONObject(cursor.getString(cursor.getColumnIndex(COL_ACCOUNT)))
+		this.loginAccount = TootAccount.parse(context,object:LinkClickContext{}, jsonAccount)
+				
+				val colIdx_visibility = cursor.getColumnIndex(COL_VISIBILITY)
+				this.visibility = if(cursor.isNull(colIdx_visibility)) null else cursor.getString(colIdx_visibility)
+		
+		this.confirm_boost = 0 != cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_BOOST))
+		this.dont_hide_nsfw = 0 != cursor.getInt(cursor.getColumnIndex(COL_DONT_HIDE_NSFW))
+		this.dont_show_timeout = 0 != cursor.getInt(cursor.getColumnIndex(COL_DONT_SHOW_TIMEOUT))
+		
+		this.notification_mention = 0 != cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_MENTION))
+		this.notification_boost = 0 != cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_BOOST))
+		this.notification_favourite = 0 != cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_FAVOURITE))
+		this.notification_follow = 0 != cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_FOLLOW))
+		
+		this.confirm_follow = 0 != cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_FOLLOW))
+		this.confirm_follow_locked = 0 != cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_FOLLOW_LOCKED))
+		this.confirm_unfollow = 0 != cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_UNFOLLOW))
+		this.confirm_post = 0 != cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_POST))
+				
+				val idx_notification_tag = cursor.getColumnIndex(COL_NOTIFICATION_TAG)
+		this.notification_tag = if(cursor.isNull(idx_notification_tag)) null else cursor.getString(idx_notification_tag)
+				
+				val idx_register_key = cursor.getColumnIndex(COL_REGISTER_KEY)
+		this.register_key = if(cursor.isNull(idx_register_key)) null else cursor.getString(idx_register_key)
+		
+		this.register_time = cursor.getLong(cursor.getColumnIndex(COL_REGISTER_TIME))
+		
+		this.token_info = JSONObject(cursor.getString(cursor.getColumnIndex(COL_TOKEN)))
+		
+		this.sound_uri = cursor.getString(cursor.getColumnIndex(COL_SOUND_URI))
+	}
+	
+	
+	val isNA : Boolean
+		get() = "?@?" == acct
+	
+	val isPseudo : Boolean
+		get() = username == "?"
+	
+	fun delete() {
+		try {
+			App1.database.delete(table, COL_ID + "=?", arrayOf(db_id.toString()))
+		} catch(ex : Throwable) {
+			log.trace(ex)
+			throw RuntimeException("SavedAccount.delete failed.", ex)
+		}
+		
+	}
+	
+	fun updateTokenInfo(tokenInfoArg : JSONObject?) {
+
+		if(db_id == INVALID_DB_ID) throw RuntimeException("updateTokenInfo: missing db_id")
+
+		val token_info = tokenInfoArg ?: JSONObject()
+		this.token_info = token_info
+
+		val cv = ContentValues()
+		cv.put(COL_TOKEN, token_info.toString())
+		App1.database.update(table, cv, COL_ID + "=?", arrayOf(db_id.toString()))
+	}
+	
+
+	
+	fun saveSetting() {
+
+		if(db_id == INVALID_DB_ID) throw RuntimeException("saveSetting: missing db_id")
+
+		val cv = ContentValues()
+		cv.put(COL_VISIBILITY, visibility)
+		cv.put(COL_CONFIRM_BOOST, b2i(confirm_boost) )
+		cv.put(COL_DONT_HIDE_NSFW, b2i(dont_hide_nsfw) )
+		cv.put(COL_DONT_SHOW_TIMEOUT, b2i(dont_show_timeout) )
+		cv.put(COL_NOTIFICATION_MENTION, b2i(notification_mention) )
+		cv.put(COL_NOTIFICATION_BOOST, b2i(notification_boost) )
+		cv.put(COL_NOTIFICATION_FAVOURITE, b2i(notification_favourite) )
+		cv.put(COL_NOTIFICATION_FOLLOW, b2i(notification_follow) )
+		
+		cv.put(COL_CONFIRM_FOLLOW, b2i(confirm_follow) )
+		cv.put(COL_CONFIRM_FOLLOW_LOCKED, b2i(confirm_follow_locked) )
+		cv.put(COL_CONFIRM_UNFOLLOW, b2i(confirm_unfollow) )
+		cv.put(COL_CONFIRM_POST, b2i(confirm_post) )
+		
+		cv.put(COL_SOUND_URI, sound_uri)
+		
+		// UIからは更新しない
+		// notification_tag
+		// register_key
+		
+		App1.database.update(table, cv, COL_ID + "=?", arrayOf(db_id.toString()))
+	}
+	
+	fun saveNotificationTag() {
+		if(db_id == INVALID_DB_ID)
+			throw RuntimeException("SavedAccount.saveNotificationTag missing db_id")
+		
+		val cv = ContentValues()
+		cv.put(COL_NOTIFICATION_TAG, notification_tag)
+		
+		App1.database.update(table, cv, COL_ID + "=?", arrayOf(db_id.toString()))
+	}
+	
+	fun saveRegisterKey() {
+		if(db_id == INVALID_DB_ID)
+			throw RuntimeException("SavedAccount.saveRegisterKey missing db_id")
+		
+		val cv = ContentValues()
+		cv.put(COL_REGISTER_KEY, register_key)
+		cv.put(COL_REGISTER_TIME, register_time)
+		
+		App1.database.update(table, cv, COL_ID + "=?", arrayOf(db_id.toString()))
+	}
+	
+	// onResumeの時に設定を読み直す
+	fun reloadSetting(context : Context) {
+		if(db_id == INVALID_DB_ID)
+			throw RuntimeException("SavedAccount.reloadSetting missing db_id")
+		val b = loadAccount(context, db_id) ?: return
+		// DBから削除されてる？
+		this.visibility = b.visibility
+		this.confirm_boost = b.confirm_boost
+		this.dont_hide_nsfw = b.dont_hide_nsfw
+		this.dont_show_timeout = b.dont_show_timeout
+		this.token_info = b.token_info
+		this.notification_mention = b.notification_follow
+		this.notification_boost = b.notification_boost
+		this.notification_favourite = b.notification_favourite
+		this.notification_follow = b.notification_follow
+		this.notification_tag = b.notification_tag
+		
+		this.sound_uri = b.sound_uri
+	}
+	
+	private fun getAccountHost(acct : String?) : String {
+		if(acct != null) {
+			val pos = acct.indexOf('@')
+			if(pos != - 1) return acct.substring(pos + 1)
+		}
+		return this.host
+	}
+	
+	fun getAccountHost(who : TootAccount?) : String {
+		return getAccountHost(who?.acct)
+	}
+	
+	fun getFullAcct(acct : String?) : String {
+		return when {
+			acct == null -> "?@?"
+			acct.indexOf('@') == - 1 -> acct + "@" + this.host
+			else -> acct
+		}
+	}
+	
+	fun getFullAcct(who : TootAccount?) : String {
+		return getFullAcct( who?.acct)
+	}
+	
+	private fun isLocalUser(acct : String?) : Boolean {
+		acct ?: return false
+		val pos = acct.indexOf('@')
+		return pos == - 1 || host.equals(acct.substring(pos + 1), ignoreCase = true)
+	}
+
+	fun isLocalUser(who : TootAccount?) : Boolean {
+		return isLocalUser(who?.acct)
+	}
+	
+	fun isRemoteUser(who : TootAccount) : Boolean {
+		return ! isLocalUser(who)
+	}
+	
+//	fun isRemoteUser(acct : String) : Boolean {
+//		return ! isLocalUser(acct)
+//	}
+	
+	fun getUserUrl(who_acct : String) : String {
+		val p = who_acct.indexOf('@')
+		return if(- 1 != p) {
+			"https://" + who_acct.substring(p + 1) + "/@" + who_acct.substring(0, p)
+		} else {
+			"https://$host/@$who_acct"
+		}
+	}
+	
+	fun isMe(who : TootAccount?) : Boolean {
+		if( who == null || who.username != this.username ) return false
+		//
+		val who_acct = who.acct
+		val pos = who_acct.indexOf('@')
+		if( pos == -1 ) return true // local user have no acct
+		return who_acct.substring(pos + 1).equals( this.host, ignoreCase = true)
+	}
+	
+	fun isMe(who_acct : String) : Boolean {
+		// 自分のユーザ名部分
+		var pos = this.acct.indexOf('@')
+		val me_user = this.acct.substring(0, pos)
+	
+		//
+		pos = who_acct.indexOf('@')
+		// ローカルユーザは@以降を持たない
+		if(pos == - 1) return who_acct == me_user
+		// リモートユーザならホスト名部分の比較も必要
+		val who_user = who_acct.substring(0, pos)
+		val who_host = who_acct.substring(pos + 1)
+		return who_user == me_user && who_host.equals(this.host ,ignoreCase = true)
+	}
+	
+	fun supplyBaseUrl(url : String?) : String? {
+		return when {
+			url == null || url.isEmpty() -> return null
+			url[0] == '/' -> "https://" + host + url
+			else -> url
+		}
+	}
+	
+	fun isNicoru(account : TootAccount?) : Boolean {
+		var host = this.host
+		var host_start = 0
+		val acct = account?.acct
+		if( acct != null) {
+			val pos = acct.indexOf('@')
+			if(pos != - 1) {
+				host = account.acct
+				host_start = pos + 1
+			}
+		}
+		return host_match(strNicoruHost, 0, host, host_start)
+	}
+	
+	// implements LinkClickContext
+	override fun findAcctColor(url : String?) : AcctColor? {
+		if(url != null) {
+			val m = TootAccount.reAccountUrl.matcher(url)
+			if(m.find()) return AcctColor.load(m.group(2) + "@" + m.group(1))
+		}
+		return null
+	}
+	
+	companion object {
+		private val log = LogCategory("SavedAccount")
+		
+		const val table = "access_info"
+		private const val strNicoruHost = "friends.nico"
+		private val reAtNicoruHost = Pattern.compile("@friends\\.nico\\z", Pattern.CASE_INSENSITIVE)
+		
+		private const val COL_ID = BaseColumns._ID
+		private const val COL_HOST = "h"
+		private const val COL_USER = "u"
+		private const val COL_ACCOUNT = "a"
+		private const val COL_TOKEN = "t"
+		
+		private const val COL_VISIBILITY = "visibility"
+		private const val COL_CONFIRM_BOOST = "confirm_boost"
+		private const val COL_DONT_HIDE_NSFW = "dont_hide_nsfw"
+		// スキーマ2から
+		private const val COL_NOTIFICATION_MENTION = "notification_mention"
+		private const val COL_NOTIFICATION_BOOST = "notification_boost"
+		private const val COL_NOTIFICATION_FAVOURITE = "notification_favourite"
+		private const val COL_NOTIFICATION_FOLLOW = "notification_follow"
+		// スキーマ10から
+		private const val COL_CONFIRM_FOLLOW = "confirm_follow"
+		private const val COL_CONFIRM_FOLLOW_LOCKED = "confirm_follow_locked"
+		private const val COL_CONFIRM_UNFOLLOW = "confirm_unfollow"
+		private const val COL_CONFIRM_POST = "confirm_post"
+		
+		// スキーマ13から
+		const val COL_NOTIFICATION_TAG = "notification_server"
+		
+		// スキーマ14から
+		const val COL_REGISTER_KEY = "register_key"
+		const val COL_REGISTER_TIME = "register_time"
+		
+		// スキーマ16から
+		private const val COL_SOUND_URI = "sound_uri"
+		
+		// スキーマ18から
+		private const val COL_DONT_SHOW_TIMEOUT = "dont_show_timeout"
+		
+		/////////////////////////////////
+		// login information
+		const val INVALID_DB_ID = - 1L
+		private const val INSTANCE_INFORMATION_EXPIRE = 60000L * 5
+		
+
+		// アプリデータのインポート時に呼ばれる
+		fun onDBDelete(db : SQLiteDatabase) {
+			try {
+				db.execSQL("drop table if exists " + table)
+			} catch(ex : Throwable) {
+				log.trace(ex)
+			}
+		}
+		
+		fun onDBCreate(db : SQLiteDatabase) {
+			db.execSQL(
+				"create table if not exists " + table
+					+ "(_id INTEGER PRIMARY KEY"
+					+ ",u text not null"
+					+ ",h text not null"
+					+ ",a text not null"
+					+ ",t text not null"
+					+ ",visibility text"
+					+ ",confirm_boost integer default 1"
+					+ ",dont_hide_nsfw integer default 0"
+					
+					// 以下はDBスキーマ2で追加
+					+ ",notification_mention integer default 1"
+					+ ",notification_boost integer default 1"
+					+ ",notification_favourite integer default 1"
+					+ ",notification_follow integer default 1"
+					
+					// 以下はDBスキーマ10で更新
+					+ "," + COL_CONFIRM_FOLLOW + " integer default 1"
+					+ "," + COL_CONFIRM_FOLLOW_LOCKED + " integer default 1"
+					+ "," + COL_CONFIRM_UNFOLLOW + " integer default 1"
+					+ "," + COL_CONFIRM_POST + " integer default 1"
+					
+					// 以下はDBスキーマ13で更新
+					+ "," + COL_NOTIFICATION_TAG + " text default ''"
+					
+					// 以下はDBスキーマ14で更新
+					+ "," + COL_REGISTER_KEY + " text default ''"
+					+ "," + COL_REGISTER_TIME + " integer default 0"
+					
+					// 以下はDBスキーマ16で更新
+					+ "," + COL_SOUND_URI + " text default ''"
+					
+					// 以下はDBスキーマ18で更新
+					+ "," + COL_DONT_SHOW_TIMEOUT + " integer default 0"
+					
+					+ ")"
+			)
+			db.execSQL("create index if not exists " + table + "_user on " + table + "(u)")
+			db.execSQL("create index if not exists " + table + "_host on " + table + "(h,u)")
+		}
+		
+		fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
+			if(oldVersion < 2 && newVersion >= 2) {
+				try {
+					db.execSQL("alter table $table add column notification_mention integer default 1")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+				try {
+					db.execSQL("alter table $table add column notification_boost integer default 1")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+				try {
+					db.execSQL("alter table $table add column notification_favourite integer default 1")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+				try {
+					db.execSQL("alter table $table add column notification_follow integer default 1")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+			}
+			if(oldVersion < 10 && newVersion >= 10) {
+				try {
+					db.execSQL("alter table $table add column $COL_CONFIRM_FOLLOW integer default 1")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+				try {
+					db.execSQL("alter table $table add column $COL_CONFIRM_FOLLOW_LOCKED integer default 1")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+				try {
+					db.execSQL("alter table $table add column $COL_CONFIRM_UNFOLLOW integer default 1")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+				try {
+					db.execSQL("alter table $table add column $COL_CONFIRM_POST integer default 1")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+			}
+			if(oldVersion < 13 && newVersion >= 13) {
+				try {
+					db.execSQL("alter table $table add column $COL_NOTIFICATION_TAG text default ''")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+			}
+			if(oldVersion < 14 && newVersion >= 14) {
+				try {
+					db.execSQL("alter table $table add column $COL_REGISTER_KEY text default ''")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+				try {
+					db.execSQL("alter table $table add column $COL_REGISTER_TIME integer default 0")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+			}
+			if(oldVersion < 16 && newVersion >= 16) {
+				try {
+					db.execSQL("alter table $table add column $COL_SOUND_URI text default ''")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+			}
+			if(oldVersion < 18 && newVersion >= 18) {
+				try {
+					db.execSQL("alter table $table add column $COL_DONT_SHOW_TIMEOUT integer default 0")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+			}
+		}
+		
+		// 横断検索用の、何とも紐ついていないアカウント
+		// 保存しない。
+		val na : SavedAccount by lazy {
+			val dst = SavedAccount(-1L,"?@?")
+			dst.notification_follow = false
+			dst.notification_favourite = false
+			dst.notification_boost = false
+			dst.notification_mention = false
+			
+			dst
+		}
+		
+		private fun parse(context : Context, cursor : Cursor) : SavedAccount? {
+			return try {
+				SavedAccount(context, cursor)
+			}catch(ex:Throwable){
+				log.trace(ex)
+				log.e(ex,"parse failed.")
+				null
+			}
+		}
+		
+		fun insert(
+			host : String,
+			acct : String,
+			account : JSONObject,
+			token : JSONObject
+		) : Long {
+			try {
+				val cv = ContentValues()
+				cv.put(COL_HOST, host)
+				cv.put(COL_USER, acct)
+				cv.put(COL_ACCOUNT, account.toString())
+				cv.put(COL_TOKEN, token.toString())
+				return App1.database.insert(table, null, cv)
+			} catch(ex : Throwable) {
+				log.trace(ex)
+				throw RuntimeException("SavedAccount.insert failed.", ex)
+			}
+			
+		}
+		
+		val REGISTER_KEY_UNREGISTERED = "unregistered"
+		
+		fun clearRegistrationCache() {
+			val cv = ContentValues()
+			cv.put(COL_REGISTER_KEY, REGISTER_KEY_UNREGISTERED)
+			cv.put(COL_REGISTER_TIME, 0L)
+			App1.database.update(table, cv, null, null)
+		}
+		
+		fun loadAccount(context : Context, db_id : Long) : SavedAccount? {
+			try {
+				App1.database.query(table, null, COL_ID + "=?", arrayOf(db_id.toString()), null, null, null)
+					.use{ cursor->
+						if(cursor.moveToFirst()) {
+							return parse(context, cursor)
+						}
+						
+					}
+			} catch(ex : Throwable) {
+				log.trace(ex)
+				log.e(ex, "loadAccount failed.")
+			}
+			
+			return null
+		}
+		
+		fun loadAccountList(context : Context) : ArrayList<SavedAccount> {
+			val result = ArrayList<SavedAccount>()
+			try {
+				App1.database.query(table, null, null, null, null, null, null)
+					.use { cursor ->
+						while(cursor.moveToNext()) {
+							val a = parse(context, cursor)
+							if( a != null) result.add(a)
+						}
+					}
+			} catch(ex : Throwable) {
+				log.trace(ex)
+				log.e(ex, "loadAccountList failed.")
+				throw RuntimeException("SavedAccount.loadAccountList failed.", ex)
+			}
+			
+			return result
+		}
+		
+		fun loadByTag(context : Context, tag : String) : ArrayList<SavedAccount> {
+			val result = ArrayList<SavedAccount>()
+			try {
+				App1.database.query(table, null, COL_NOTIFICATION_TAG + "=?", arrayOf(tag), null, null, null)
+					.use{ cursor->
+						while(cursor.moveToNext()) {
+							val a = parse(context, cursor)
+							if( a != null ) result.add(a)
+						}
+						
+					}
+			} catch(ex : Throwable) {
+				log.trace(ex)
+				log.e(ex, "loadByTag failed.")
+				throw RuntimeException("SavedAccount.loadByTag failed.", ex)
+			}
+			
+			return result
+		}
+		
+		fun loadAccountByAcct(context : Context, full_acct : String) : SavedAccount? {
+			try {
+				App1.database.query(table, null, COL_USER + "=?", arrayOf(full_acct), null, null, null)
+					.use{ cursor ->
+						if(cursor.moveToNext()) {
+							return parse(context, cursor)
+						}
+					}
+			} catch(ex : Throwable) {
+				log.trace(ex)
+				log.e(ex, "loadAccountByAcct failed.")
+			}
+			
+			return null
+		}
+		
+		fun hasRealAccount() : Boolean {
+			try {
+				App1.database.query(table, null, COL_USER + " NOT LIKE '?@%'", null, null, null, null, "1")
+					.use{ cursor->
+						if(cursor.moveToNext()) {
+							return true
+						}
+					}
+			} catch(ex : Throwable) {
+				log.trace(ex)
+				log.e(ex, "hasNonPseudoAccount failed.")
+			}
+			
+			return false
+		}
+		
+		val count : Long
+			get() {
+				try {
+					App1.database.query(table, arrayOf("count(*)"), null, null, null, null, null)
+						.use{ cursor->
+							if(cursor.moveToNext()) {
+								return cursor.getLong(0)
+							}
+						}
+				} catch(ex : Throwable) {
+					log.trace(ex)
+					log.e(ex, "getCount failed.")
+					throw RuntimeException("SavedAccount.getCount failed.", ex)
+				}
+				
+				return 0L
+			}
+		
+		
+		fun isNicoru(acct : String?) : Boolean {
+			return acct != null && reAtNicoruHost.matcher(acct).find()
+		}
+		
+		private fun charAtLower(src : CharSequence, pos : Int) : Char {
+			val c = src[pos]
+			return if(c >= 'a' && c <= 'z') c - ('a' - 'A') else c
+		}
+		
+		private fun host_match(a : CharSequence, a_startArg : Int, b : CharSequence, b_startArg : Int) : Boolean {
+			var a_start = a_startArg
+			var b_start = b_startArg
+			
+			val a_end = a.length
+			val b_end = b.length
+			
+			var a_remain = a_end - a_start
+			val b_remain = b_end - b_start
+			
+			// 文字数が違う
+			if(a_remain != b_remain) return false
+			
+			// 文字数がゼロ
+			if(a_remain <= 0) return true
+			
+			// 末尾の文字が違う
+			if(charAtLower(a, a_end - 1) != charAtLower(b, b_end - 1)) return false
+			
+			// 先頭からチェック
+			while(a_remain -- > 0) {
+				if(charAtLower(a, a_start ++) != charAtLower(b, b_start ++)) return false
+			}
+			
+			return true
+		}
+		
+		private val account_comparator = Comparator<SavedAccount> { a, b ->
+			var i : Int
+			
+			// NA > !NA
+			i = b2i(a.isNA) - b2i(b.isNA)
+			if(i != 0) return@Comparator i
+			
+			// pseudo > real
+			i = b2i(a.isPseudo) - b2i(b.isPseudo)
+			if(i != 0) return@Comparator i
+			
+			val sa = AcctColor.getNickname(a.acct)
+			val sb = AcctColor.getNickname(b.acct)
+			sa.compareTo(sb, ignoreCase = true)
+		}
+		
+		fun sort(account_list : ArrayList<SavedAccount>) {
+			Collections.sort(account_list, account_comparator)
+		}
+	
+
+	}
+	
+	fun getAccessToken() : String? {
+		return token_info?.let{ Utils.optStringX(it, "access_token") }
+	}
+	
+}

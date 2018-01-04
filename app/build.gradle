@@ -2,22 +2,27 @@ import java.text.SimpleDateFormat
 
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion '26.0.2'
+    compileSdkVersion 27
+    buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId "jp.juggler.subwaytooter"
         minSdkVersion 21
-        targetSdkVersion 26
-        versionCode 198
-        versionName "1.9.8"
+        targetSdkVersion 27
+        versionCode 199
+        versionName "1.9.9"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        // https://stackoverflow.com/questions/47791227/java-lang-illegalstateexception-dex-archives-setting-dex-extension-only-for
+        multiDexEnabled true
     }
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -59,16 +64,19 @@ dependencies {
 
     compile project(':exif')
     compile project(':colorpicker')
+    compile project(':emoji')
 
-    compile 'com.android.support:support-v4:26.1.0'
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile 'com.android.support:design:26.1.0'
-    compile 'com.android.support:customtabs:26.1.0'
+    compile 'com.android.support:support-v4:27.0.2'
+    compile 'com.android.support:appcompat-v7:27.0.2'
+    compile 'com.android.support:design:27.0.2'
+    compile 'com.android.support:customtabs:27.0.2'
 
-    compile 'com.google.firebase:firebase-core:11.6.2'
-    compile 'com.google.firebase:firebase-messaging:11.6.2'
+    compile 'com.google.firebase:firebase-core:11.8.0'
+    compile 'com.google.firebase:firebase-messaging:11.8.0'
 
-    testCompile 'junit:junit:4.12'
+    // testCompile 'junit:junit:4.12'
+    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+
     compile 'uk.co.chrisjenx:calligraphy:2.3.0'
     compile 'com.github.woxthebox:draglistview:1.5.1'
     compile 'com.github.omadahealth:swipy:1.2.3@aar'
@@ -77,13 +85,12 @@ dependencies {
 
     compile 'com.squareup.okhttp3:okhttp:3.9.1'
 
-    // commons-io は 2.6にすると closeQuietly のかわりに try-with-resourceを使えと煩い
-    compile 'commons-io:commons-io:2.4'
+    compile 'commons-io:commons-io:2.6'
 
-    // com.github.bumptech.glide 4.x はサポートライブラリ27に依存してる
-    // SDKのソースの27が提供されたら上げる
-    compile 'com.github.bumptech.glide:glide:3.8.0'
-    compile 'com.github.bumptech.glide:okhttp3-integration:1.5.0'
+    compile 'com.github.bumptech.glide:glide:4.5.0'
+    compile 'com.github.bumptech.glide:okhttp3-integration:4.5.0'
+    compile 'com.github.bumptech.glide:annotations:4.5.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.5.0'
 
     compile 'org.hjson:hjson:3.0.0'
 

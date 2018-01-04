@@ -1,0 +1,56 @@
+package jp.juggler.subwaytooter.view
+
+import android.annotation.SuppressLint
+import android.content.Context
+import android.support.v7.widget.AppCompatEditText
+import android.util.AttributeSet
+import android.view.MotionEvent
+
+import jp.juggler.subwaytooter.util.LogCategory
+
+class MyEditText : AppCompatEditText {
+	
+	companion object {
+		private val log = LogCategory("MyEditText")
+	}
+	
+	private var mOnSelectionChangeListener : OnSelectionChangeListener? = null
+	
+	constructor(context : Context) : super(context)
+	constructor(context : Context, attrs : AttributeSet) : super(context, attrs)
+	constructor(context : Context, attrs : AttributeSet, defStyleAttr : Int) : super(context, attrs, defStyleAttr)
+	
+	////////////////////////////////////////////////////
+	// 選択範囲変更イベントをコールバックに渡す
+	
+	interface OnSelectionChangeListener {
+		fun onSelectionChanged(selStart : Int, selEnd : Int)
+	}
+	
+	fun setOnSelectionChangeListener(listener : OnSelectionChangeListener) {
+		mOnSelectionChangeListener = listener
+	}
+	
+	override fun onSelectionChanged(selStart : Int, selEnd : Int) {
+		super.onSelectionChanged(selStart, selEnd)
+		mOnSelectionChangeListener?.onSelectionChanged(selStart, selEnd)
+	}
+	
+	////////////////////////////////////////////////////
+	// Android 6.0 でのクラッシュ対応
+	
+	@SuppressLint("ClickableViewAccessibility")
+	override fun onTouchEvent(event : MotionEvent) : Boolean {
+		return try {
+			super.onTouchEvent(event)
+		} catch(ex : Throwable) {
+			log.trace(ex)
+			false
+			//		java.lang.NullPointerException:
+			//		at android.widget.Editor$SelectionModifierCursorController.onTouchEvent (Editor.java:4889)
+			//		at android.widget.Editor.onTouchEvent (Editor.java:1223)
+			//		at android.widget.TextView.onTouchEvent (TextView.java:8304)
+			//		at android.view.View.dispatchTouchEvent (View.java:9303)
+		}
+	}
+}

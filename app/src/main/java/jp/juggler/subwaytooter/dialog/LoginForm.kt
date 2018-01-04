@@ -1,0 +1,146 @@
+package jp.juggler.subwaytooter.dialog
+
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.app.Dialog
+import android.text.InputType
+import android.view.View
+import android.view.WindowManager
+import android.view.inputmethod.EditorInfo
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
+import android.widget.CheckBox
+import android.widget.Filter
+import android.widget.TextView
+
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.util.ArrayList
+
+import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.Utils
+
+typealias LoginFormCallback = (dialog : Dialog, instance : String, bPseudoAccount : Boolean, bInputAccessToken : Boolean) -> Unit
+
+object LoginForm {
+	private val log = LogCategory("LoginForm")
+	
+	private class StringArray : ArrayList<String>()
+	
+	@SuppressLint("InflateParams")
+	fun showLoginForm(
+		activity : Activity, instanceArg : String?, callback : LoginFormCallback
+	) {
+		val view = activity.layoutInflater.inflate(R.layout.dlg_account_add, null, false)
+		val etInstance = view.findViewById<AutoCompleteTextView>(R.id.etInstance)
+		val btnOk = view.findViewById<View>(R.id.btnOk)
+		val cbPseudoAccount = view.findViewById<CheckBox>(R.id.cbPseudoAccount)
+		val cbInputAccessToken = view.findViewById<CheckBox>(R.id.cbInputAccessToken)
+		
+		cbPseudoAccount.setOnCheckedChangeListener { _, _ -> cbInputAccessToken.isEnabled = ! cbPseudoAccount.isChecked }
+		
+		if(instanceArg != null && instanceArg.isNotEmpty()) {
+			etInstance.setText(instanceArg)
+			etInstance.inputType = InputType.TYPE_NULL
+			etInstance.isEnabled = false
+			etInstance.isFocusable = false
+		} else {
+			etInstance.setOnEditorActionListener(TextView.OnEditorActionListener { _, actionId, _ ->
+				if(actionId == EditorInfo.IME_ACTION_DONE) {
+					btnOk.performClick()
+					return@OnEditorActionListener true
+				}
+				false
+			})
+		}
+		val dialog = Dialog(activity)
+		dialog.setContentView(view)
+		btnOk.setOnClickListener(View.OnClickListener {
+			val instance = etInstance.text.toString().trim { it <= ' ' }
+			
+			if( instance.isEmpty() ) {
+				Utils.showToast(activity, true, R.string.instance_not_specified)
+				return@OnClickListener
+			} else if(instance.contains("/") || instance.contains("@")) {
+				Utils.showToast(activity, true, R.string.instance_not_need_slash)
+				return@OnClickListener
+			}
+			callback(dialog, instance, cbPseudoAccount.isChecked, cbInputAccessToken.isChecked)
+		})
+		view.findViewById<View>(R.id.btnCancel).setOnClickListener { dialog.cancel() }
+		
+		val instance_list = ArrayList<String>()
+		try {
+			val `is` = activity.resources.openRawResource(R.raw.server_list)
+			try {
+				val br = BufferedReader(InputStreamReader(`is`, "UTF-8"))
+				while(true) {
+					val s : String = br.readLine()?.trim { it <= ' ' }?.toLowerCase() ?: break
+					if(s.isNotEmpty()) instance_list.add(s)
+				}
+			} finally {
+				try {
+					`is`.close()
+				} catch(ignored : Throwable) {
+				
+				}
+				
+			}
+		} catch(ex : Throwable) {
+			log.trace(ex)
+		}
+		
+		val adapter = object : ArrayAdapter<String>(
+			activity, R.layout.lv_spinner_dropdown, ArrayList()
+		) {
+			
+			internal val nameFilter : Filter = object : Filter() {
+				override fun convertResultToString(value : Any) : CharSequence {
+					return value as String
+				}
+				
+				override fun performFiltering(constraint : CharSequence) : Filter.FilterResults {
+					val result = Filter.FilterResults()
+					if( constraint.isNotEmpty() ) {
+						val key = constraint.toString().toLowerCase()
+						// suggestions リストは毎回生成する必要がある。publishResultsと同時にアクセスされる場合がある
+						val suggestions = StringArray()
+						for(s in instance_list) {
+							if(s.contains(key)) {
+								suggestions.add(s)
+								if(suggestions.size >= 20) break
+							}
+						}
+						result.values = suggestions
+						result.count = suggestions.size
+					}
+					return result
+				}
+				
+				override fun publishResults(constraint : CharSequence, results : Filter.FilterResults) {
+					clear()
+					if(results.values is StringArray) {
+						for(s in results.values as StringArray) {
+							add(s)
+						}
+					}
+					notifyDataSetChanged()
+				}
+			}
+			
+			override fun getFilter() : Filter {
+				return nameFilter
+			}
+		}
+		adapter.setDropDownViewResource(R.layout.lv_spinner_dropdown)
+		etInstance.setAdapter<ArrayAdapter<String>>(adapter)
+		
+		
+		dialog.window?.setLayout(
+			WindowManager.LayoutParams.MATCH_PARENT,
+			WindowManager.LayoutParams.WRAP_CONTENT)
+		dialog.show()
+	}
+	
+}

@@ -9,9 +9,15 @@ import java.util.ArrayList;
 public class WordTrieTree {
 	
 	static class Match {
-		String word;
-		int start;
-		int end;
+		final int start;
+		final int end;
+		@NonNull final String word;
+		
+		Match( int start, int end, String word ){
+			this.start = start;
+			this.end = end;
+			this.word = word;
+		}
 	}
 	
 	private static final CharacterGroup grouper = new CharacterGroup();
@@ -35,8 +41,8 @@ public class WordTrieTree {
 		CharacterGroup.Tokenizer t = grouper.tokenizer( s, 0, s.length() );
 		Node node = node_root;
 		for( ; ; ){
-			t.next();
-			int id = t.c;
+			
+			int id = t.next();
 			if( id == CharacterGroup.END ){
 				// より長いマッチ単語を覚えておく
 				if( node.match_word == null || node.match_word.length() < t.text.length() ){
@@ -44,7 +50,7 @@ public class WordTrieTree {
 				}
 				return;
 			}
-			Node child = node.child_nodes.get( t.c );
+			Node child = node.child_nodes.get( id );
 			if( child == null ){
 				node.child_nodes.put( id, child = new Node() );
 			}
@@ -52,7 +58,7 @@ public class WordTrieTree {
 		}
 	}
 	
-	// 前方一致でマッチング
+	// Tokenizer が列挙する文字を使って Trie Tree を探索する
 	@Nullable
 	private Match match( boolean allowShortMatch, @NonNull CharacterGroup.Tokenizer t ){
 		
@@ -64,17 +70,13 @@ public class WordTrieTree {
 			
 			// このノードは単語の終端でもある
 			if( node.match_word != null ){
-				dst = new Match();
-				dst.word = node.match_word;
-				dst.start = start;
-				dst.end = t.offset;
+				dst = new Match( start, t.offset, node.match_word );
 				
-				// 最短マッチのみを調べるのなら、以降の処理は必要ない
+				// ミュート用途の場合、ひとつでも単語にマッチすればより長い探索は必要ない
 				if( allowShortMatch ) break;
 			}
 			
-			t.next();
-			int id = t.c;
+			int id = t.next();
 			if( id == CharacterGroup.END ) break;
 			Node child = node.child_nodes.get( id );
 			if( child == null ) break;
@@ -83,6 +85,7 @@ public class WordTrieTree {
 		return dst;
 	}
 	
+	// ミュート用。マッチするかどうかだけを調べる
 	public boolean matchShort( @Nullable CharSequence src ){
 		return null != src && null != matchShort( src, 0, src.length() );
 	}
@@ -98,7 +101,8 @@ public class WordTrieTree {
 		}
 		return null;
 	}
-	
+
+	// ハイライト用。複数マッチする。マッチした位置を覚える
 	@Nullable ArrayList< Match > matchList( @NonNull CharSequence src, int start, int end ){
 		ArrayList< Match > dst = null;
 		

@@ -5,7 +5,7 @@ import android.util.SparseIntArray;
 
 import java.util.Locale;
 
-public class CharacterGroup {
+public final class CharacterGroup {
 	
 	// 文字列からグループIDを調べるマップ
 
@@ -58,13 +58,10 @@ public class CharacterGroup {
 	static final int END = - 1;
 	
 	// 入力された文字列から 文字,グループ,終端 のどれかを順に列挙する
-	class Tokenizer {
+	final class Tokenizer {
 		CharSequence text;
-		int end;
-		
-		// next() を読むと以下の変数が更新される
 		int offset;
-		int c; // may END or group_id or UTF-16 character
+		int end;
 		
 		Tokenizer( @NonNull CharSequence text, int start, int end ){
 			reset( text, start, end );
@@ -76,7 +73,8 @@ public class CharacterGroup {
 			this.end = end;
 		}
 		
-		void next(){
+		// returns END or group_id or UTF-16 character
+		int next(){
 			
 			int pos = offset;
 			
@@ -88,8 +86,7 @@ public class CharacterGroup {
 			if( remain <= 0 ){
 				// 空白を読み飛ばしたら終端になった
 				// 終端の場合、末尾の空白はoffsetに含めない
-				this.c = END;
-				return;
+				return END;
 			}
 			
 			int v1 = text.charAt( pos );
@@ -102,15 +99,14 @@ public class CharacterGroup {
 					: map2.get( v1 | ( ( (int) text.charAt( pos + 1 ) ) << 16 ) )
 				);
 				if( group_id != 0 ){
-					this.c = group_id;
 					this.offset = pos + check_len;
-					return;
+					return group_id;
 				}
 				-- check_len;
 			}
 			
-			this.c = v1;
 			this.offset = pos + 1;
+			return v1;
 		}
 	}
 	
@@ -159,7 +155,7 @@ public class CharacterGroup {
 		case 0xFEFF:
 			return true;
 		default:
-			return Character.isWhitespace( cp );
+			return false; // Character.isWhitespace( cp ); は不要っぽい
 		}
 	}
 	

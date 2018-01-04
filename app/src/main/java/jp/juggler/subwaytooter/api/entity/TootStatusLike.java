@@ -100,6 +100,8 @@ public abstract class TootStatusLike extends TootId {
 	private static final Pattern reWhitespace = Pattern.compile( "[\\s\\t\\x0d\\x0a]+" );
 	
 	@Nullable public HighlightWord highlight_sound;
+
+	public boolean hasHighlight;
 	
 	public void setSpoilerText( @NonNull TootParser parser, String sv ){
 		if( TextUtils.isEmpty( sv ) ){
@@ -118,7 +120,9 @@ public abstract class TootStatusLike extends TootId {
 				;
 			
 			this.decoded_spoiler_text = options.decodeEmoji( parser.context, sv );
-			
+
+			this.hasHighlight = this.hasHighlight || options.hasHighlight;
+
 			if( options.highlight_sound != null && this.highlight_sound == null  ){
 				this.highlight_sound = options.highlight_sound;
 			}
@@ -139,6 +143,8 @@ public abstract class TootStatusLike extends TootId {
 			;
 			
 		this.decoded_content = options.decodeHTML( parser.context, parser.access_info, content );
+		
+		this.hasHighlight = this.hasHighlight || options.hasHighlight;
 		
 		if( options.highlight_sound != null && this.highlight_sound == null  ){
 			this.highlight_sound = options.highlight_sound;

@@ -69,6 +69,7 @@ public class DecodeOptions {
 	
 	// highlight first found
 	@Nullable public HighlightWord highlight_sound;
+	public boolean hasHighlight;
 	
 	@Nullable public WordTrieTree highlight_trie;
 	public DecodeOptions setHighlightTrie( WordTrieTree highlight_trie ){

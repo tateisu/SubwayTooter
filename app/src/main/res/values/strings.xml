@@ -158,6 +158,7 @@
     <string name="delete_succeeded">Successfully deleted</string>
     <string name="developer">Developer</string>
     <string name="with_attachment">with attachment</string>
+    <string name="with_highlight">with highlight</string>
     <string name="column_is_busy">Column is busy</string>
     <string name="read_gap">Load missing messages</string>
     <string name="muted_users">Muted users</string>

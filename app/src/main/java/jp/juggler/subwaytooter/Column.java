@@ -172,6 +172,7 @@ import jp.juggler.subwaytooter.util.Utils;
 	static final String KEY_TYPE = "type";
 	static final String KEY_DONT_CLOSE = "dont_close";
 	private static final String KEY_WITH_ATTACHMENT = "with_attachment";
+	private static final String KEY_WITH_HIGHLIGHT = "with_highlight";
 	private static final String KEY_DONT_SHOW_BOOST = "dont_show_boost";
 	private static final String KEY_DONT_SHOW_FAVOURITE = "dont_show_favourite";
 	private static final String KEY_DONT_SHOW_FOLLOW = "dont_show_follow";
@@ -237,6 +238,7 @@ import jp.juggler.subwaytooter.util.Utils;
 	boolean dont_close;
 	
 	boolean with_attachment;
+	boolean with_highlight;
 	boolean dont_show_boost;
 	boolean dont_show_reply;
 	boolean dont_show_favourite; // 通知カラムのみ
@@ -332,6 +334,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		item.put( KEY_TYPE, column_type );
 		item.put( KEY_DONT_CLOSE, dont_close );
 		item.put( KEY_WITH_ATTACHMENT, with_attachment );
+		item.put( KEY_WITH_HIGHLIGHT, with_highlight );
 		item.put( KEY_DONT_SHOW_BOOST, dont_show_boost );
 		item.put( KEY_DONT_SHOW_FOLLOW, dont_show_follow );
 		item.put( KEY_DONT_SHOW_FAVOURITE, dont_show_favourite );
@@ -412,6 +415,7 @@ import jp.juggler.subwaytooter.util.Utils;
 		this.column_type = src.optInt( KEY_TYPE );
 		this.dont_close = src.optBoolean( KEY_DONT_CLOSE );
 		this.with_attachment = src.optBoolean( KEY_WITH_ATTACHMENT );
+		this.with_highlight = src.optBoolean( KEY_WITH_HIGHLIGHT );
 		this.dont_show_boost = src.optBoolean( KEY_DONT_SHOW_BOOST );
 		this.dont_show_follow = src.optBoolean( KEY_DONT_SHOW_FOLLOW );
 		this.dont_show_favourite = src.optBoolean( KEY_DONT_SHOW_FAVOURITE );
@@ -1163,6 +1167,7 @@ import jp.juggler.subwaytooter.util.Utils;
 	
 	private boolean isFilterEnabled(){
 		return ( with_attachment
+			|| with_highlight
 			|| dont_show_boost
 			|| dont_show_favourite
 			|| dont_show_follow
@@ -1191,11 +1196,19 @@ import jp.juggler.subwaytooter.util.Utils;
 		highlight_trie = HighlightWord.getNameSet();
 	}
 	
+	private boolean isFilteredByAttachment(@NonNull TootStatusLike status,@Nullable TootStatusLike reblog){
+		// オプションがどれも設定されていないならフィルタしない(false)
+		if( ! ( with_attachment || with_highlight) ) return false;
+		
+		boolean matchMedia = with_attachment && ( reblog != null ? reblog.hasMedia() : status.hasMedia() );
+		boolean matchHighlight = with_highlight && ( reblog != null ? reblog.hasHighlight : status.hasHighlight );
+		
+		// どれかの条件を満たすならフィルタしない(false)、どれも満たさないならフィルタする(true)
+		return ! ( matchMedia || matchHighlight );
+	}
+	
 	private boolean isFiltered( @NonNull TootStatus status ){
-		if( with_attachment ){
-			boolean hasMedia = status.reblog != null ? status.reblog.hasMedia() : status.hasMedia();
-			if( ! hasMedia ) return true;
-		}
+		if( isFilteredByAttachment( status ,status.reblog )) return true;
 		
 		if( dont_show_boost ){
 			if( status.reblog != null ) return true;
@@ -1226,10 +1239,7 @@ import jp.juggler.subwaytooter.util.Utils;
 	}
 	
 	private boolean isFiltered( MSPToot status ){
-		if( with_attachment ){
-			boolean hasMedia = status.hasMedia();
-			if( ! hasMedia ) return true;
-		}
+		if( isFilteredByAttachment( status ,null )) return true;
 		
 		if( column_regex_filter != null ){
 			if( column_regex_filter.matcher( status.decoded_content.toString() ).find() )
@@ -1245,10 +1255,7 @@ import jp.juggler.subwaytooter.util.Utils;
 	}
 	
 	private boolean isFiltered( TSToot status ){
-		if( with_attachment ){
-			boolean hasMedia = status.hasMedia();
-			if( ! hasMedia ) return true;
-		}
+		if( isFilteredByAttachment( status ,null  )) return true;
 		
 		if( column_regex_filter != null ){
 			if( column_regex_filter.matcher( status.decoded_content.toString() ).find() )
@@ -1640,7 +1647,7 @@ import jp.juggler.subwaytooter.util.Utils;
 						
 						{
 							String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
-							if( with_attachment ) s = s + "&only_media=1";
+							if( with_attachment && !with_highlight ) s = s + "&only_media=1";
 							
 							if( instance != null && instance.isEnoughVersion( version_1_6 ) ){
 								getStatusesPinned( client, s + "&pinned=1" );
@@ -2668,7 +2675,7 @@ import jp.juggler.subwaytooter.util.Utils;
 								return client.request( PATH_INSTANCE );
 							}else{
 								String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
-								if( with_attachment ) s = s + "&only_media=1";
+								if( with_attachment && !with_highlight ) s = s + "&only_media=1";
 								return getStatusList( client, s );
 							}
 						case TAB_FOLLOWING:
@@ -3207,7 +3214,7 @@ import jp.juggler.subwaytooter.util.Utils;
 								return client.request( PATH_INSTANCE );
 							}else{
 								String s = String.format( Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id );
-								if( with_attachment ) s = s + "&only_media=1";
+								if( with_attachment && !with_highlight ) s = s + "&only_media=1";
 								return getStatusList( client, s );
 								
 							}

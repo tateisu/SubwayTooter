@@ -168,13 +168,17 @@ public class WordTrieTreeTest {
 	
 	@Test public void testWordTrieTree() throws Exception{
 		
+		String strTest;
+		
 		{
 			WordTrieTree trie = new WordTrieTree();
 			trie.add( "" );
-			trie.add( " " );
+			trie.add( " " );  // 単語の側に空白があっても無視される
+			trie.add( "ABC" );
 			trie.add( "abc" );
 			trie.add( "abcdef" );
 			trie.add( "bbb" );
+			trie.add( "C C C" ); // 単語の側に空白があっても無視される
 			trie.add( "ccc" );
 			
 			// 空文字列や空白を登録してもマッチしない
@@ -185,17 +189,20 @@ public class WordTrieTreeTest {
 			assertEquals( true, trie.matchShort( "abc" ) );
 			assertEquals( true, trie.matchShort( "abcdef" ) );
 			
-			// 空白を無視してマッチする。
-			ArrayList< WordTrieTree.Match > list = trie.matchList( "ZZZabcdefZZZa b cZZZbb bZZZc cc  " );
+			// 単語の間に空白があってもマッチする
+			strTest = "///abcdef///a b c///bb b///c cc  ";
+			ArrayList< WordTrieTree.Match > list = trie.matchList( strTest);
 			assertNotNull( list );
 			assertEquals( 4, list.size() );
 			assertEquals( "abcdef", list.get( 0 ).word ); // abcよりもabcdefを優先してマッチする
-			assertEquals( 3, list.get( 0 ).start );
+			assertEquals( 3, list.get( 0 ).start ); // 元テキスト中でマッチした位置を取得できる
 			assertEquals( 9, list.get( 0 ).end );
-			assertEquals( "abc", list.get( 1 ).word );
+			assertEquals( "ABC", list.get( 1 ).word ); // 文字種が違っても同一とみなす単語の場合、先に登録した方にマッチする
 			assertEquals( "bbb", list.get( 2 ).word );
-			assertEquals( "ccc", list.get( 3 ).word );
+			assertEquals( "C C C", list.get( 3 ).word ); // 文字種が違っても同一とみなす単語の場合、先に登録した方にマッチする
+			assertEquals( 27, list.get( 3 ).start ); // 元テキスト中でマッチした位置を取得できる
+			assertEquals( 31, list.get( 3 ).end );
+			assertEquals( 33, strTest.length() ); // 末尾の空白はマッチ範囲には含まれない
 		}
-		
 	}
 }

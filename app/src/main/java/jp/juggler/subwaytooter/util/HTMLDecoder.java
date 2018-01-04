@@ -229,6 +229,7 @@ public class HTMLDecoder {
 						for( WordTrieTree.Match range : list ){
 							HighlightWord word = HighlightWord.load( range.word );
 							if( word !=null ){
+								options.hasHighlight = true;
 								sb.setSpan( new HighlightSpan( word.color_fg,word.color_bg ),  range.start, range.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE );
 								if( word.sound_type != HighlightWord.SOUND_TYPE_NONE ){
 									options.highlight_sound = word;

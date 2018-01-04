@@ -151,7 +151,12 @@
                     android:layout_height="wrap_content"
                     android:text="@string/with_attachment"
                     />
-
+                <CheckBox
+                    android:id="@+id/cbWithHighlight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/with_highlight"
+                    />
                 <CheckBox
                     android:id="@+id/cbDontShowBoost"
                     android:layout_width="match_parent"

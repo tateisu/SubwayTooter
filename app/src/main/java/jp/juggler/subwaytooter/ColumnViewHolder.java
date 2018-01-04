@@ -75,6 +75,7 @@ class ColumnViewHolder
 	private final View llSearch;
 	private final CheckBox cbDontCloseColumn;
 	private final CheckBox cbWithAttachment;
+	private final CheckBox cbWithHighlight;
 	private final CheckBox cbDontShowBoost;
 	private final CheckBox cbDontShowFollow;
 	private final CheckBox cbDontShowFavourite;
@@ -152,6 +153,7 @@ class ColumnViewHolder
 		
 		cbDontCloseColumn = root.findViewById( R.id.cbDontCloseColumn );
 		cbWithAttachment = root.findViewById( R.id.cbWithAttachment );
+		cbWithHighlight = root.findViewById( R.id.cbWithHighlight );
 		cbDontShowBoost = root.findViewById( R.id.cbDontShowBoost );
 		cbDontShowFollow = root.findViewById( R.id.cbDontShowFollow );
 		cbDontShowFavourite = root.findViewById( R.id.cbDontShowFavourite );
@@ -180,6 +182,7 @@ class ColumnViewHolder
 		
 		cbDontCloseColumn.setOnCheckedChangeListener( this );
 		cbWithAttachment.setOnCheckedChangeListener( this );
+		cbWithHighlight.setOnCheckedChangeListener( this );
 		cbDontShowBoost.setOnCheckedChangeListener( this );
 		cbDontShowFollow.setOnCheckedChangeListener( this );
 		cbDontShowFavourite.setOnCheckedChangeListener( this );
@@ -303,6 +306,7 @@ class ColumnViewHolder
 			
 			cbDontCloseColumn.setChecked( column.dont_close );
 			cbWithAttachment.setChecked( column.with_attachment );
+			cbWithHighlight.setChecked( column.with_highlight );
 			cbDontShowBoost.setChecked( column.dont_show_boost );
 			cbDontShowFollow.setChecked( column.dont_show_follow );
 			cbDontShowFavourite.setChecked( column.dont_show_favourite );
@@ -317,6 +321,7 @@ class ColumnViewHolder
 			cbResolve.setChecked( column.search_resolve );
 			
 			vg( cbWithAttachment, bAllowFilter );
+			vg( cbWithHighlight, bAllowFilter );
 			vg( etRegexFilter, bAllowFilter );
 			vg( llRegexFilter, bAllowFilter );
 			
@@ -607,6 +612,14 @@ class ColumnViewHolder
 			column.startLoading();
 			break;
 		
+		case R.id.cbWithHighlight:
+			column.with_highlight = isChecked;
+			activity.app_state.saveColumnList();
+			column.startLoading();
+			break;
+		
+		
+			
 		case R.id.cbDontShowBoost:
 			column.dont_show_boost = isChecked;
 			activity.app_state.saveColumnList();

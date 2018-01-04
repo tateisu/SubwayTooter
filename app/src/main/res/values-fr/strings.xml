@@ -318,6 +318,7 @@
 
 	<string name="wait_previous_operation">Veuillez attendre la fin de la dernière opération.</string>
 	<string name="with_attachment">Avec pièce(s) jointe(s)</string>
+	<string name="with_highlight">with highlight</string>
 	<string name="word_was_muted">Ce mot a été interdit!</string>
 	<string name="your_statuses">Vos statuts</string>
 	<string name="launcher_icon_by">Icone de l\'application créée par フタバ</string>

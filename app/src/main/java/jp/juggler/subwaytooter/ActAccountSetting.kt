@@ -20,7 +20,6 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.text.TextUtils
 import android.util.Base64
 import android.util.Base64OutputStream
 import android.view.View
@@ -124,8 +123,11 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 		initUI()
 		
 		val a = SavedAccount.loadAccount(this, intent.getLongExtra(KEY_ACCOUNT_DB_ID, - 1L))
-		if(a == null) finish()
-		this.account = a !!
+		if(a == null){
+			finish()
+			return
+		}
+		this.account = a
 		
 		loadUIFromData(account)
 		
@@ -146,8 +148,9 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 					showAcctColor()
 				}
 			}
+			
 			REQUEST_CODE_NOTIFICATION_SOUND -> {
-				if(resultCode == Activity.RESULT_OK ) {
+				if(resultCode == Activity.RESULT_OK) {
 					// RINGTONE_PICKERからの選択されたデータを取得する
 					val uri = Utils.getExtraObject(data, RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
 					if(uri is Uri) {
@@ -163,6 +166,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 					}
 				}
 			}
+			
 			REQUEST_CODE_AVATAR_ATTACHMENT, REQUEST_CODE_HEADER_ATTACHMENT -> {
 				
 				if(resultCode == Activity.RESULT_OK && data != null) {
@@ -170,7 +174,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 					if(uri1 != null) {
 						// 単一選択
 						val type = data.type
-						addAttachment(requestCode, uri1, if(! TextUtils.isEmpty(type)) type else contentResolver.getType(uri1))
+						addAttachment(requestCode, uri1, if(type?.isNotEmpty() == true) type else contentResolver.getType(uri1))
 					} else {
 						// 複数選択
 						data.clipData?.let { clipData ->
@@ -184,25 +188,26 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 					}
 				}
 			}
+			
 			REQUEST_CODE_AVATAR_CAMERA, REQUEST_CODE_HEADER_CAMERA -> {
 				
 				if(resultCode != Activity.RESULT_OK) {
 					// 失敗したら DBからデータを削除
+					val uriCameraImage = this@ActAccountSetting.uriCameraImage
 					if(uriCameraImage != null) {
-						contentResolver.delete(uriCameraImage !!, null, null)
-						uriCameraImage = null
+						contentResolver.delete(uriCameraImage , null, null)
+						this@ActAccountSetting.uriCameraImage = null
 					}
 				} else {
 					// 画像のURL
-					var uri : Uri? = data?.data
-					if(uri == null) uri = uriCameraImage
-					
+					val uri = data?.data ?: uriCameraImage
 					if(uri != null) {
 						val type = contentResolver.getType(uri)
 						addAttachment(requestCode, uri, type)
 					}
 				}
 			}
+			
 			else -> super.onActivityResult(requestCode, resultCode, data)
 		}
 	}
@@ -338,33 +343,34 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 	
 	private fun showAcctColor() {
 		val ac = AcctColor.load(full_acct)
-		tvUserCustom.text = if(! TextUtils.isEmpty(ac.nickname)) ac.nickname else full_acct
+		val nickname = ac.nickname
+		tvUserCustom.text = if(nickname?.isNotEmpty() == true) nickname else full_acct
 		tvUserCustom.setTextColor(if(ac.color_fg != 0) ac.color_fg else Styler.getAttributeColor(this, R.attr.colorTimeSmall))
 		tvUserCustom.setBackgroundColor(ac.color_bg)
 	}
 	
 	private fun saveUIToData() {
-		if( ! ::account.isInitialized ) return
-
+		if(! ::account.isInitialized) return
+		
 		if(loading) return
-
-		account .visibility = visibility
-		account .dont_hide_nsfw = swNSFWOpen.isChecked
-		account .dont_show_timeout = swDontShowTimeout.isChecked
-		account .notification_mention = cbNotificationMention.isChecked
-		account .notification_boost = cbNotificationBoost.isChecked
-		account .notification_favourite = cbNotificationFavourite.isChecked
-		account .notification_follow = cbNotificationFollow.isChecked
 		
-		account .sound_uri = notification_sound_uri ?: ""
+		account.visibility = visibility
+		account.dont_hide_nsfw = swNSFWOpen.isChecked
+		account.dont_show_timeout = swDontShowTimeout.isChecked
+		account.notification_mention = cbNotificationMention.isChecked
+		account.notification_boost = cbNotificationBoost.isChecked
+		account.notification_favourite = cbNotificationFavourite.isChecked
+		account.notification_follow = cbNotificationFollow.isChecked
 		
-		account .confirm_follow = cbConfirmFollow.isChecked
-		account .confirm_follow_locked = cbConfirmFollowLockedUser.isChecked
-		account .confirm_unfollow = cbConfirmUnfollow.isChecked
-		account .confirm_boost = cbConfirmBoost.isChecked
-		account .confirm_post = cbConfirmToot.isChecked
+		account.sound_uri = notification_sound_uri ?: ""
 		
-		account .saveSetting()
+		account.confirm_follow = cbConfirmFollow.isChecked
+		account.confirm_follow_locked = cbConfirmFollowLockedUser.isChecked
+		account.confirm_unfollow = cbConfirmUnfollow.isChecked
+		account.confirm_boost = cbConfirmBoost.isChecked
+		account.confirm_post = cbConfirmToot.isChecked
+		
+		account.saveSetting()
 		
 	}
 	
@@ -379,7 +385,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 			
 			R.id.btnAccountRemove -> performAccountRemove()
 			R.id.btnVisibility -> performVisibility()
-			R.id.btnOpenBrowser -> open_browser("https://" + account .host + "/")
+			R.id.btnOpenBrowser -> open_browser("https://" + account.host + "/")
 			
 			R.id.btnUserCustom -> ActNickname.open(this, full_acct, false, REQUEST_CODE_ACCT_CUSTOMIZE)
 			
@@ -399,7 +405,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 			R.id.btnNote -> sendNote(false)
 			
 			R.id.btnNotificationStyleEdit -> if(Build.VERSION.SDK_INT >= 26) {
-				val channel = NotificationHelper.createNotificationChannel(this, account )
+				val channel = NotificationHelper.createNotificationChannel(this, account)
 				val intent = Intent("android.settings.CHANNEL_NOTIFICATION_SETTINGS")
 				intent.putExtra(Settings.EXTRA_CHANNEL_ID, channel.id)
 				intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
@@ -450,35 +456,34 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 			.setMessage(R.string.confirm_account_remove)
 			.setNegativeButton(R.string.cancel, null)
 			.setPositiveButton(R.string.ok) { _, _ ->
-				account .delete()
+				account.delete()
 				
 				val pref = Pref.pref(this@ActAccountSetting)
-				if(account .db_id == pref.getLong(Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, - 1L)) {
+				if(account.db_id == pref.getLong(Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, - 1L)) {
 					pref.edit().putLong(Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, - 1L).apply()
 				}
 				
 				finish()
 				
-				
 				val task = @SuppressLint("StaticFieldLeak")
-				object : AsyncTask<Void, Void, String>() {
+				object : AsyncTask<Void, Void, String?>() {
 					
 					internal fun unregister() {
 						try {
 							
 							val install_id = PrefDevice.prefDevice(this@ActAccountSetting).getString(PrefDevice.KEY_INSTALL_ID, null)
-							if(TextUtils.isEmpty(install_id)) {
+							if(install_id?.isEmpty() != false) {
 								log.d("performAccountRemove: missing install_id")
 								return
 							}
 							
-							val tag = account .notification_tag
-							if(TextUtils.isEmpty(tag)) {
+							val tag = account.notification_tag
+							if(tag?.isEmpty() != false) {
 								log.d("performAccountRemove: missing notification_tag")
 								return
 							}
 							
-							val post_data = ("instance_url=" + Uri.encode("https://" + account .host)
+							val post_data = ("instance_url=" + Uri.encode("https://" + account.host)
 								+ "&app_id=" + Uri.encode(packageName)
 								+ "&tag=" + tag)
 							
@@ -504,11 +509,13 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 						return null
 					}
 					
-					override fun onCancelled(s : String) {
+					override fun onCancelled(s : String?) {
 						onPostExecute(s)
 					}
 					
-					override fun onPostExecute(s : String) {}
+					override fun onPostExecute(s : String?) {
+					
+					}
 				}
 				task.executeOnExecutor(App1.task_executor)
 			}
@@ -519,7 +526,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 	///////////////////////////////////////////////////
 	private fun performAccessToken() {
 		
-		TootTaskRunner(this@ActAccountSetting, true).run(account , object : TootTask {
+		TootTaskRunner(this@ActAccountSetting).run(account, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				return client.authorize1(Pref.pref(this@ActAccountSetting).getString(Pref.KEY_CLIENT_NAME, ""))
 			}
@@ -530,14 +537,14 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 				val url = result.string
 				val error = result.error
 				when {
-					// URLをブラウザで開く
+				// URLをブラウザで開く
 					url != null -> {
 						val data = Intent()
 						data.data = Uri.parse(url)
 						setResult(Activity.RESULT_OK, data)
 						finish()
 					}
-					// エラーを表示
+				// エラーを表示
 					error != null -> {
 						Utils.showToast(this@ActAccountSetting, true, error)
 						log.e("can't get oauth browser URL. $error")
@@ -551,7 +558,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 	private fun inputAccessToken() {
 		
 		val data = Intent()
-		data.putExtra(EXTRA_DB_ID, account .db_id)
+		data.putExtra(EXTRA_DB_ID, account.db_id)
 		setResult(RESULT_INPUT_ACCESS_TOKEN, data)
 		finish()
 	}
@@ -563,9 +570,9 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
 		try {
-			val uri = if(TextUtils.isEmpty(notification_sound_uri)) null else Uri.parse(notification_sound_uri)
-			if(uri != null) {
-				intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri)
+			val notification_sound_uri = this.notification_sound_uri
+			if(notification_sound_uri?.isNotEmpty() == true){
+				intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,  Uri.parse(notification_sound_uri))
 			}
 		} catch(ignored : Throwable) {
 		}
@@ -590,7 +597,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 		etNote.isEnabled = false
 		btnNote.isEnabled = false
 		// 疑似アカウントなら編集不可のまま
-		if(account .isPseudo) return
+		if(account.isPseudo) return
 		
 		loadProfile()
 	}
@@ -598,14 +605,14 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 	private fun loadProfile() {
 		// サーバから情報をロードする
 		
-		TootTaskRunner(this, true).run(account , object : TootTask {
+		TootTaskRunner(this).run(account, object : TootTask {
 			
 			internal var data : TootAccount? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val result = client.request("/api/v1/accounts/verify_credentials")
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
-					data = TootParser(this@ActAccountSetting, account ).account(jsonObject)
+					data = TootParser(this@ActAccountSetting, account).account(jsonObject)
 					if(data == null) return TootApiResult("TootAccount parse failed.")
 				}
 				return result
@@ -636,7 +643,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 		
 		val noteString = src.source?.note ?: src.note
 		val noteSpannable = DecodeOptions().setProfileEmojis(src.profile_emojis).decodeEmoji(this, noteString)
-
+		
 		etNote.setText(noteSpannable)
 		note_invalidator.register(noteSpannable)
 		
@@ -649,21 +656,21 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 		btnNote.isEnabled = true
 	}
 	
-	internal fun updateCredential(form_data : String?) {
+	internal fun updateCredential(form_data : String) {
 		
-		TootTaskRunner(this, true).run(account , object : TootTask {
+		TootTaskRunner(this).run(account, object : TootTask {
 			
 			internal var data : TootAccount? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val request_builder = Request.Builder()
 					.patch(RequestBody.create(
-						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, form_data !!
+						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, form_data
 					))
 				
 				val result = client.request("/api/v1/accounts/update_credentials", request_builder)
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
-					data = TootParser(this@ActAccountSetting, account ).account(jsonObject)
+					data = TootParser(this@ActAccountSetting, account).account(jsonObject)
 					if(data == null) return TootApiResult("TootAccount parse failed.")
 				}
 				return result
@@ -919,7 +926,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 		}
 		
 		val task = @SuppressLint("StaticFieldLeak")
-		object : AsyncTask<Void, Void, String>() {
+		object : AsyncTask<Void, Void, String?>() {
 			
 			override fun doInBackground(vararg params : Void) : String? {
 				try {

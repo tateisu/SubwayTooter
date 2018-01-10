@@ -6,16 +6,15 @@ import android.support.v7.app.AlertDialog
 import java.util.ArrayList
 
 import jp.juggler.subwaytooter.R
-
-
+import jp.juggler.subwaytooter.util.EmptyCallback
 
 class ActionsDialog {
 	
 	private val action_list = ArrayList<Action>()
 	
-	private class Action internal constructor(internal val caption : CharSequence, internal val r : ActionsDialogAction)
+	private class Action internal constructor(internal val caption : CharSequence, internal val r : EmptyCallback)
 	
-	fun addAction(caption : CharSequence, r : ActionsDialogAction) : ActionsDialog {
+	fun addAction(caption : CharSequence, r : EmptyCallback) : ActionsDialog {
 		
 		action_list.add(Action(caption, r))
 		

@@ -25,6 +25,7 @@ class ActMutedWord : AppCompatActivity() {
 		
 		private val log = LogCategory("ActMutedWord")
 	}
+	
 	private lateinit var listView : DragListView
 	private lateinit var listAdapter : MyListAdapter
 	
@@ -90,7 +91,7 @@ class ActMutedWord : AppCompatActivity() {
 				
 				// 左にスワイプした(右端に青が見えた) なら要素を削除する
 				if(swipedDirection == ListSwipeItem.SwipeDirection.LEFT) {
-					val o = item !!.tag
+					val o = item ?.tag
 					if(o is MyItem) {
 						MutedWord.delete(o.name)
 						listAdapter.removeItem(listAdapter.getPositionForItem(o))
@@ -104,7 +105,7 @@ class ActMutedWord : AppCompatActivity() {
 		
 		val tmp_list = ArrayList<MyItem>()
 		try {
-			MutedWord.createCursor().use{ cursor ->
+			MutedWord.createCursor().use { cursor ->
 				val idx_id = cursor.getColumnIndex(MutedWord.COL_ID)
 				val idx_name = cursor.getColumnIndex(MutedWord.COL_NAME)
 				while(cursor.moveToNext()) {
@@ -139,7 +140,7 @@ class ActMutedWord : AppCompatActivity() {
 				viewRoot.supportedSwipeDirection = ListSwipeItem.SwipeDirection.LEFT
 			}
 			
-		}// View ID。 ここを押すとドラッグ操作をすぐに開始する
+		} // View ID。 ここを押すとドラッグ操作をすぐに開始する
 		// 長押しでドラッグ開始するなら真
 		
 		fun bind(item : MyItem) {
@@ -161,7 +162,7 @@ class ActMutedWord : AppCompatActivity() {
 	private inner class MyDragItem internal constructor(context : Context, layoutId : Int) : DragItem(context, layoutId) {
 		
 		override fun onBindDragView(clickedView : View, dragView : View) {
-			(dragView.findViewById<View>(R.id.tvName) as TextView).text = (clickedView.findViewById<View>(R.id.tvName) as TextView).text
+			dragView.findViewById<TextView>(R.id.tvName).text = clickedView.findViewById<TextView>(R.id.tvName).text
 			
 			dragView.findViewById<View>(R.id.item_layout).setBackgroundColor(
 				Styler.getAttributeColor(this@ActMutedWord, R.attr.list_item_bg_pressed_dragged)
@@ -192,5 +193,4 @@ class ActMutedWord : AppCompatActivity() {
 		}
 	}
 	
-
 }

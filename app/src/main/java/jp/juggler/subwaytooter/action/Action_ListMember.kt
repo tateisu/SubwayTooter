@@ -16,6 +16,7 @@ import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
+import jp.juggler.subwaytooter.api.entity.parseList
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.Utils
@@ -33,7 +34,7 @@ object Action_ListMember {
 	fun add(
 		activity : ActMain, access_info : SavedAccount, list_id : Long, local_who : TootAccount, bFollow : Boolean, callback : Callback?
 	) {
-		TootTaskRunner(activity, true).run(access_info, object : TootTask {
+		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				if(access_info.isMe(local_who)) {
@@ -68,13 +69,13 @@ object Action_ListMember {
 					}
 					val jsonArray = result?.jsonArray ?: return result
 					
-					val relation_list = TootRelationShip.parseList(jsonArray)
+					val relation_list = parseList(::TootRelationShip,jsonArray)
 					relation = if(relation_list.isEmpty()) null else relation_list[0]
 					
 					if(relation == null) {
 						return TootApiResult("parse error.")
 					}
-					ActionUtils.saveUserRelation(access_info, relation)
+					saveUserRelation(access_info, relation)
 					
 					if(! relation.following) {
 						if(relation.requested) {
@@ -126,10 +127,11 @@ object Action_ListMember {
 						bSuccess = true
 						
 					} else {
-						
-						if(result.response != null
-							&& result.response !!.code() == 422
-							&& result.error != null && reFollowError.matcher(result.error !!).find()) {
+						val response = result.response
+						val error = result.error
+						if(response != null
+							&& response .code() == 422
+							&& error != null && reFollowError.matcher(error ).find()) {
 							
 							if(! bFollow) {
 								DlgConfirm.openSimple(
@@ -145,7 +147,7 @@ object Action_ListMember {
 							return
 						}
 						
-						Utils.showToast(activity, true, result.error)
+						Utils.showToast(activity, true, error)
 						
 					}
 				} finally {
@@ -159,7 +161,7 @@ object Action_ListMember {
 	fun delete(
 		activity : ActMain, access_info : SavedAccount, list_id : Long, local_who : TootAccount, callback : Callback?
 	) {
-		TootTaskRunner(activity, true).run(access_info, object : TootTask {
+		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				return client.request(
 					"/api/v1/lists/" + list_id + "/accounts?account_ids[]=" + local_who.id, Request.Builder().delete()

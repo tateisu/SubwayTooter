@@ -9,7 +9,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
-import android.text.TextUtils
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -83,20 +82,23 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 		// リストを左右スワイプした
 		listView.setSwipeListener(object : ListSwipeHelper.OnSwipeListenerAdapter() {
 			
-			override fun onItemSwipeStarted(item : ListSwipeItem?) {
+			override fun onItemSwipeStarted(
+				item : ListSwipeItem
+			) {
 				// 操作中はリフレッシュ禁止
 				// mRefreshLayout.setEnabled( false );
 			}
 			
 			override fun onItemSwipeEnded(
-				item : ListSwipeItem?, swipedDirection : ListSwipeItem.SwipeDirection?
+				item : ListSwipeItem,
+				swipedDirection : ListSwipeItem.SwipeDirection?
 			) {
 				// 操作完了でリフレッシュ許可
 				// mRefreshLayout.setEnabled( USE_SWIPE_REFRESH );
 				
 				// 左にスワイプした(右端にBGが見えた) なら要素を削除する
 				if(swipedDirection == ListSwipeItem.SwipeDirection.LEFT) {
-					val o = item !!.tag
+					val o = item.tag
 					if(o is HighlightWord) {
 						o.delete()
 						listAdapter.removeItem(listAdapter.getPositionForItem(o))
@@ -180,8 +182,8 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 		//			return false;
 		//		}
 		
-		override fun onItemClicked(view : View?) {
-			val o = view !!.tag
+		override fun onItemClicked(view : View) {
+			val o = view .tag
 			if(o is HighlightWord) {
 				edit(o)
 			}
@@ -200,7 +202,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	private inner class MyDragItem internal constructor(context : Context, layoutId : Int) : DragItem(context, layoutId) {
 		
 		override fun onBindDragView(clickedView : View, dragView : View) {
-			(dragView.findViewById<View>(R.id.tvName) as TextView).text = (clickedView.findViewById<View>(R.id.tvName) as TextView).text
+			dragView.findViewById<TextView>(R.id.tvName).text = clickedView.findViewById<TextView>(R.id.tvName) .text
 			dragView.findViewById<View>(R.id.btnSound).visibility = clickedView.findViewById<View>(R.id.btnSound).visibility
 			dragView.findViewById<View>(R.id.item_layout).setBackgroundColor(
 				Styler.getAttributeColor(this@ActHighlightWordList, R.attr.list_item_bg_pressed_dragged)
@@ -275,7 +277,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	}
 	
 	private fun stopLastRingtone() {
-		val r = if(last_ringtone == null) null else last_ringtone !!.get()
+		val r = last_ringtone?.get()
 		if(r != null) {
 			try {
 				r.stop()
@@ -289,28 +291,33 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	
 	private fun sound(item : HighlightWord) {
 		
-		stopLastRingtone()
+		val sound_type = item.sound_type
+		if(sound_type == HighlightWord.SOUND_TYPE_NONE) return
 		
-		if(item.sound_type == HighlightWord.SOUND_TYPE_NONE) return
 		
-		if(item.sound_type == HighlightWord.SOUND_TYPE_CUSTOM && ! TextUtils.isEmpty(item.sound_uri)) {
-			try {
-				val ringtone = RingtoneManager.getRingtone(this, Uri.parse(item.sound_uri))
-				if(ringtone != null) {
-					last_ringtone = WeakReference(ringtone)
-					ringtone.play()
-					return
+		if(sound_type == HighlightWord.SOUND_TYPE_CUSTOM ){
+			val sound_uri = item.sound_uri
+			if( sound_uri?.isNotEmpty() == true ) {
+				try {
+					val ringtone = RingtoneManager.getRingtone(this, Uri.parse(sound_uri))
+					if(ringtone != null) {
+						stopLastRingtone()
+						last_ringtone = WeakReference(ringtone)
+						ringtone.play()
+						return
+					}
+				} catch(ex : Throwable) {
+					log.trace(ex)
 				}
-			} catch(ex : Throwable) {
-				log.trace(ex)
+				// fall thru 失敗したら通常の音を鳴らす
 			}
-			
 		}
 		
 		val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
 		try {
 			val ringtone = RingtoneManager.getRingtone(this, uri)
 			if(ringtone != null) {
+				stopLastRingtone()
 				last_ringtone = WeakReference(ringtone)
 				ringtone.play()
 			}

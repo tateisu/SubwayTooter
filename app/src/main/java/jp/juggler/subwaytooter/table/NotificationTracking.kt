@@ -32,12 +32,20 @@ class NotificationTracking {
 			cv.put(COL_POST_TIME, post_time)
 			if(id == - 1L) {
 				id = App1.database.insert(table, null, cv)
-				log.d("save.insert account_db_id=%s,post=%s,%s last_data=%s", account_db_id, post_id, post_time, if(last_data == null) "null" else "" + last_data !!.length
+				log.d("save.insert account_db_id=%s,post=%s,%s last_data=%s"
+					, account_db_id
+					, post_id
+					, post_time
+					, last_data?.length
 				)
 				
 			} else {
 				App1.database.update(table, cv, WHERE_AID, arrayOf(account_db_id.toString()))
-				log.d("save.update account_db_id=%s,post=%s,%s last_data=%s", account_db_id, post_id, post_time, if(last_data == null) "null" else "" + last_data !!.length
+				log.d("save.update account_db_id=%s,post=%s,%s last_data=%s"
+					, account_db_id
+					, post_id
+					, post_time
+					, last_data?.length
 				)
 			}
 		} catch(ex : Throwable) {
@@ -54,8 +62,14 @@ class NotificationTracking {
 			cv.put(COL_POST_ID, post_id)
 			cv.put(COL_POST_TIME, post_time)
 			val rows = App1.database.update(table, cv, WHERE_AID, arrayOf(account_db_id.toString()))
-			log.d("updatePost account_db_id=%s,post=%s,%s last_data=%s,update_rows=%s", account_db_id, post_id, post_time, if(last_data == null) "null" else "" + last_data !!.length, rows
+			log.d("updatePost account_db_id=%s,post=%s,%s last_data=%s,update_rows=%s"
+				, account_db_id
+				, post_id
+				, post_time
+				, last_data?.length
+				, rows
 			)
+			
 		} catch(ex : Throwable) {
 			log.e(ex, "updatePost failed.")
 		}
@@ -122,8 +136,8 @@ class NotificationTracking {
 			val dst = NotificationTracking()
 			dst.account_db_id = account_db_id
 			try {
-				App1.database.query(table, null, WHERE_AID, arrayOf(account_db_id.toString() ), null, null, null)
-					.use{ cursor->
+				App1.database.query(table, null, WHERE_AID, arrayOf(account_db_id.toString()), null, null, null)
+					.use { cursor ->
 						if(cursor.moveToFirst()) {
 							dst.id = cursor.getLong(cursor.getColumnIndex(COL_ID))
 							dst.last_load = cursor.getLong(cursor.getColumnIndex(COL_LAST_LOAD))
@@ -136,7 +150,11 @@ class NotificationTracking {
 							val idx_last_data = cursor.getColumnIndex(COL_LAST_DATA)
 							dst.last_data = if(cursor.isNull(idx_last_data)) null else cursor.getString(idx_last_data)
 							
-							log.d("load account_db_id=%s,post=%s,%s last_data=%s", account_db_id, dst.post_id, dst.post_time, if(dst.last_data == null) "null" else "" + dst.last_data !!.length
+							log.d("load account_db_id=%s,post=%s,%s last_data=%s"
+								, account_db_id
+								, dst.post_id
+								, dst.post_time
+								, dst.last_data?.length
 							)
 						}
 						
@@ -150,9 +168,9 @@ class NotificationTracking {
 		
 		fun updateRead(account_db_id : Long) {
 			try {
-				val where_args = arrayOf( account_db_id.toString() )
+				val where_args = arrayOf(account_db_id.toString())
 				App1.database.query(table, arrayOf(COL_NID_SHOW, COL_NID_READ), WHERE_AID, where_args, null, null, null)
-					.use{ cursor ->
+					.use { cursor ->
 						if(cursor.moveToFirst()) {
 							val nid_show = cursor.getLong(cursor.getColumnIndex(COL_NID_SHOW))
 							val nid_read = cursor.getLong(cursor.getColumnIndex(COL_NID_READ))

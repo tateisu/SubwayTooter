@@ -66,8 +66,6 @@ class DuplicateMap {
 			if(isDuplicate(o)) continue
 			list_new.add(o)
 		}
-		
 		return list_new
 	}
-	
 }

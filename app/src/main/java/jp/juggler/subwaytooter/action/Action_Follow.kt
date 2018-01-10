@@ -12,11 +12,13 @@ import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
+import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.util.EmptyCallback
 import jp.juggler.subwaytooter.util.Utils
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -28,21 +30,10 @@ object Action_Follow {
 		pos : Int,
 		access_info : SavedAccount,
 		who : TootAccount,
-		bFollow : Boolean,
-		callback : RelationChangedCallback?
-	) {
-		follow(activity, pos, access_info, who, bFollow, false, false, callback)
-	}
-	
-	private fun follow(
-		activity : ActMain,
-		pos : Int,
-		access_info : SavedAccount,
-		who : TootAccount,
-		bFollow : Boolean,
-		bConfirmMoved : Boolean,
-		bConfirmed : Boolean,
-		callback : RelationChangedCallback?
+		bFollow : Boolean =true,
+		bConfirmMoved : Boolean =false,
+		bConfirmed : Boolean =false,
+		callback : EmptyCallback? = null
 	) {
 		if(access_info.isMe(who)) {
 			Utils.showToast(activity, false, R.string.it_is_you)
@@ -54,7 +45,18 @@ object Action_Follow {
 				.setMessage(activity.getString(R.string.jump_moved_user, access_info.getFullAcct(who), access_info.getFullAcct(who.moved)
 				))
 				.setPositiveButton(R.string.ok) { _, _ -> Action_User.profileFromAnotherAccount(activity, pos, access_info, who.moved) }
-				.setNeutralButton(R.string.ignore_suggestion) { _, _ -> follow(activity, pos, access_info, who, true, true, false, callback) }
+				.setNeutralButton(R.string.ignore_suggestion) { _, _ ->
+					follow(
+						activity,
+						pos,
+						access_info,
+						who,
+						bFollow = bFollow,
+						bConfirmMoved = true, // CHANGED
+						bConfirmed = bConfirmed,
+						callback = callback
+					)
+				}
 				.setNegativeButton(android.R.string.cancel, null)
 				.show()
 			return
@@ -68,7 +70,16 @@ object Action_Follow {
 					, object : DlgConfirm.Callback {
 					
 					override fun onOK() {
-						follow(activity, pos, access_info, who, bFollow, bConfirmMoved, true, callback)
+						follow(
+							activity,
+							pos,
+							access_info,
+							who,
+							bFollow = bFollow,
+							bConfirmMoved =bConfirmMoved,
+							bConfirmed=true, // CHANGED
+							callback=callback
+						)
 					}
 					
 					override var isConfirmEnabled : Boolean
@@ -89,7 +100,15 @@ object Action_Follow {
 					object : DlgConfirm.Callback {
 						
 						override fun onOK() {
-							follow(activity, pos, access_info, who, bFollow, bConfirmMoved, true, callback)
+							follow(
+								activity,
+								pos,
+								access_info,
+								who,
+								bFollow=bFollow,
+								bConfirmMoved=bConfirmMoved,
+								bConfirmed =true, //CHANGED
+								callback=callback)
 						}
 						
 						override var isConfirmEnabled : Boolean
@@ -108,7 +127,15 @@ object Action_Follow {
 					object : DlgConfirm.Callback {
 						
 						override fun onOK() {
-							follow(activity, pos, access_info, who, bFollow, bConfirmMoved, true, callback)
+							follow(
+								activity,
+								pos,
+								access_info,
+								who,
+								bFollow=bFollow,
+								bConfirmMoved=bConfirmMoved,
+								bConfirmed =true, // CHANGED
+								callback=callback)
 						}
 						
 						override var isConfirmEnabled : Boolean
@@ -123,7 +150,7 @@ object Action_Follow {
 			}
 		}
 		
-		TootTaskRunner(activity, false).run(access_info, object : TootTask {
+		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
 			
 			internal var relation : UserRelation? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
@@ -142,7 +169,7 @@ object Action_Follow {
 					if(jsonObject != null) {
 						val remote_who = TootAccount.parse(activity, access_info, jsonObject)
 						if(remote_who != null) {
-							val rr = ActionUtils.loadRelation1(client, access_info, remote_who.id)
+							val rr = loadRelation1(client, access_info, remote_who.id)
 							result = rr.result
 							relation = rr.relation
 						}
@@ -160,7 +187,7 @@ object Action_Follow {
 						+ if(bFollow) "/follow" else "/unfollow", request_builder)
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
-						relation = ActionUtils.saveUserRelation(access_info, TootRelationShip.parse(jsonObject))
+						relation = saveUserRelation(access_info, parseItem(::TootRelationShip,jsonObject))
 					}
 				}
 				
@@ -171,21 +198,22 @@ object Action_Follow {
 				
 				if(result == null) return  // cancelled.
 				
+				val relation = this.relation
 				if(relation != null) {
 					
 					activity.showColumnMatchAccount(access_info)
 					
-					if(bFollow && relation !!.getRequested(who)) {
+					if(bFollow && relation .getRequested(who)) {
 						// 鍵付きアカウントにフォローリクエストを申請した状態
 						Utils.showToast(activity, false, R.string.follow_requested)
-					} else if(! bFollow && relation !!.getRequested(who)) {
+					} else if(! bFollow && relation .getRequested(who)) {
 						Utils.showToast(activity, false, R.string.follow_request_cant_remove_by_sender)
 					} else {
 						// ローカル操作成功、もしくはリモートフォロー成功
 						if(callback != null) callback()
 					}
 					
-				} else if(bFollow && who.locked && result.response != null && result.response !!.code() == 422) {
+				} else if(bFollow && who.locked && ( result.response?.code() ?: -1)  == 422) {
 					Utils.showToast(activity, false, R.string.cant_follow_locked_user)
 				} else {
 					Utils.showToast(activity, false, result.error)
@@ -196,15 +224,13 @@ object Action_Follow {
 	}
 	
 	// acct で指定したユーザをリモートフォローする
-	private fun followRemote(
-		activity : ActMain, access_info : SavedAccount, acct : String, locked : Boolean, callback : RelationChangedCallback?
-	) {
-		followRemote(activity, access_info, acct, locked, false, callback)
-	}
-	
-	// acct で指定したユーザをリモートフォローする
-	private fun followRemote(
-		activity : ActMain, access_info : SavedAccount, acct : String, locked : Boolean, bConfirmed : Boolean, callback : RelationChangedCallback?
+	fun followRemote(
+		activity : ActMain,
+		access_info : SavedAccount,
+		acct : String,
+		locked : Boolean,
+		bConfirmed : Boolean =false,
+		callback : EmptyCallback? =null
 	) {
 		if(access_info.isMe(acct)) {
 			Utils.showToast(activity, false, R.string.it_is_you)
@@ -215,7 +241,14 @@ object Action_Follow {
 			if(locked) {
 				DlgConfirm.open(activity, activity.getString(R.string.confirm_follow_request_who_from, AcctColor.getNickname(acct), AcctColor.getNickname(access_info.acct)), object : DlgConfirm.Callback {
 					override fun onOK() {
-						followRemote(activity, access_info, acct, locked, true, callback)
+						followRemote(
+							activity,
+							access_info,
+							acct,
+							locked,
+							bConfirmed= true, //CHANGE
+							callback=callback
+						)
 					}
 
 					override var isConfirmEnabled : Boolean
@@ -231,7 +264,14 @@ object Action_Follow {
 				DlgConfirm.open(activity, activity.getString(R.string.confirm_follow_who_from, AcctColor.getNickname(acct), AcctColor.getNickname(access_info.acct)), object : DlgConfirm.Callback {
 					
 					override fun onOK() {
-						followRemote(activity, access_info, acct, locked, true, callback)
+						followRemote(
+							activity,
+							access_info,
+							acct,
+							locked,
+							bConfirmed= true, //CHANGE
+							callback=callback
+						)
 					}
 					
 					override var isConfirmEnabled : Boolean
@@ -246,7 +286,7 @@ object Action_Follow {
 			}
 		}
 		
-		TootTaskRunner(activity, false).run(access_info, object : TootTask {
+		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
 			
 			internal var remote_who : TootAccount? = null
 			internal var relation : UserRelation? = null
@@ -263,7 +303,7 @@ object Action_Follow {
 					val remote_who = TootAccount.parse(activity, access_info,jsonObject)
 					if(remote_who != null) {
 						this.remote_who = remote_who
-						val rr = ActionUtils.loadRelation1(client, access_info, remote_who .id)
+						val rr = loadRelation1(client, access_info, remote_who .id)
 						result = rr.result
 						relation = rr.relation
 					}
@@ -282,7 +322,7 @@ object Action_Follow {
 					
 					if(callback != null) callback()
 					
-				} else if(locked && result.response != null && result.response !!.code() == 422) {
+				} else if(locked && (result.response?.code() ?: -1 )== 422) {
 					Utils.showToast(activity, false, R.string.cant_follow_locked_user)
 				} else {
 					Utils.showToast(activity, false, result.error)
@@ -293,13 +333,11 @@ object Action_Follow {
 	}
 	
 	fun followFromAnotherAccount(
-		activity : ActMain, pos : Int, access_info : SavedAccount, account : TootAccount?
-	) {
-		followFromAnotherAccount(activity, pos, access_info, account, false)
-	}
-	
-	private fun followFromAnotherAccount(
-		activity : ActMain, pos : Int, access_info : SavedAccount, account : TootAccount?, bConfirmMoved : Boolean
+		activity : ActMain,
+		pos : Int,
+		access_info : SavedAccount,
+		account : TootAccount?,
+		bConfirmMoved : Boolean =false
 	) {
 		if(account == null) return
 		
@@ -307,16 +345,39 @@ object Action_Follow {
 			AlertDialog.Builder(activity)
 				.setMessage(activity.getString(R.string.jump_moved_user, access_info.getFullAcct(account), access_info.getFullAcct(account.moved)
 				))
-				.setPositiveButton(R.string.ok) { _, _ -> Action_User.profileFromAnotherAccount(activity, pos, access_info, account.moved) }
-				.setNeutralButton(R.string.ignore_suggestion) { _, _ -> followFromAnotherAccount(activity, pos, access_info, account, true) }
+				.setPositiveButton(R.string.ok) { _, _ ->
+					Action_User.profileFromAnotherAccount(activity, pos, access_info, account.moved)
+				}
+				.setNeutralButton(R.string.ignore_suggestion) { _, _ ->
+					followFromAnotherAccount(
+						activity,
+						pos,
+						access_info,
+						account,
+						bConfirmMoved = true //CHANGED
+					)
+				}
 				.setNegativeButton(android.R.string.cancel, null)
 				.show()
 			return
 		}
 		
-		val who_host = access_info.getAccountHost(account)
 		val who_acct = access_info.getFullAcct(account)
-		AccountPicker.pick(activity, false, false, activity.getString(R.string.account_picker_follow), ActionUtils.makeAccountListNonPseudo(activity, who_host)) { ai -> followRemote(activity, ai, who_acct, account.locked, activity.follow_complete_callback) }
+		AccountPicker.pick(
+			activity,
+			false,
+			false,
+			activity.getString(R.string.account_picker_follow),
+			makeAccountListNonPseudo(activity, account.host)
+		) { ai ->
+			followRemote(
+				activity,
+				ai,
+				who_acct,
+				account.locked,
+				callback = activity.follow_complete_callback
+			)
+		}
 	}
 	
 	fun authorizeFollowRequest(
@@ -327,7 +388,7 @@ object Action_Follow {
 			return
 		}
 		
-		TootTaskRunner(activity, true).run(access_info, object : TootTask {
+		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val request_builder = Request.Builder().post(
 					RequestBody.create(

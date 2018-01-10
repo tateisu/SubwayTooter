@@ -22,7 +22,6 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
-import android.text.TextUtils
 import android.text.TextWatcher
 import android.text.method.LinkMovementMethod
 import android.view.View
@@ -53,6 +52,7 @@ import java.util.Locale
 
 import jp.juggler.subwaytooter.api.entity.TootAttachment
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.DlgDraftPicker
 import jp.juggler.subwaytooter.dialog.DlgTextInput
@@ -103,7 +103,22 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		internal val list_resize_max = intArrayOf(0, 640, 800, 1024, 1280, 1600, 2048)
 		
-		internal var acceptable_mime_types : HashSet<String>? = null
+		internal val acceptable_mime_types : HashSet<String> by lazy {
+			val v = HashSet<String>()
+			
+			//
+			v.add("image/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
+			v.add("video/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
+			//
+			v.add("image/jpeg")
+			v.add("image/png")
+			v.add("image/gif")
+			v.add("video/webm")
+			v.add("video/mp4")
+			
+			
+			v
+		}
 		
 		//	private void performCameraVideo(){
 		//
@@ -164,8 +179,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		}
 		
 		internal fun check_exist(url : String?) : Boolean {
+			if( url?.isEmpty() != false ) return false
 			try {
-				val request = Request.Builder().url(url !!).build()
+				val request = Request.Builder().url(url ).build()
 				val call = App1.ok_http_client.newCall(request)
 				val response = call.execute()
 				if(response.isSuccessful) {
@@ -204,7 +220,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	private lateinit var tvReplyTo : TextView
 	private lateinit var btnRemoveReply : View
 	private lateinit var ivReply : MyNetworkImageView
-	internal lateinit var scrollView : ScrollView
+	private lateinit var scrollView : ScrollView
 	
 	internal lateinit var pref : SharedPreferences
 	internal lateinit var app_state : AppState
@@ -289,18 +305,19 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				if(uri != null) {
 					// 単一選択
 					var type = data.type
-					if(TextUtils.isEmpty(type)) {
+					if(type?.isEmpty() != false ) {
 						type = contentResolver.getType(uri)
 					}
 					addAttachment(uri, type)
 				}
 				val cd = data.clipData
 				if(cd != null) {
+					// 複数選択
 					val count = cd.itemCount
 					for(i in 0 until count) {
 						val item = cd.getItemAt(i)
-						uri = item.uri
-						val type = contentResolver.getType(uri !!)
+						uri = item.uri ?: continue
+						val type = contentResolver.getType(uri)
 						addAttachment(uri, type)
 					}
 				}
@@ -309,15 +326,14 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			
 			if(resultCode != Activity.RESULT_OK) {
 				// 失敗したら DBからデータを削除
-				if(uriCameraImage != null) {
-					contentResolver.delete(uriCameraImage !!, null, null)
-					uriCameraImage = null
+				val uriCameraImage = this.uriCameraImage
+				if(uriCameraImage != null){
+					contentResolver.delete(uriCameraImage , null, null)
+					this@ActPost.uriCameraImage = null
 				}
 			} else {
 				// 画像のURL
-				var uri : Uri? = data?.data
-				if(uri == null) uri = uriCameraImage
-				
+				val uri : Uri? = data?.data ?: uriCameraImage
 				if(uri != null) {
 					val type = contentResolver.getType(uri)
 					addAttachment(uri, type)
@@ -331,8 +347,10 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			}
 			
 		} else if(requestCode == REQUEST_CODE_MUSHROOM && resultCode == Activity.RESULT_OK) {
-			val text = data !!.getStringExtra("replace_key")
-			applyMushroomResult(text)
+			val text = data?.getStringExtra("replace_key")
+			if( text != null ){
+				applyMushroomResult(text)
+			}
 		}
 		super.onActivityResult(requestCode, resultCode, data)
 	}
@@ -411,7 +429,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					pa.callback = this
 				}
 				
-			} else if(! TextUtils.isEmpty(sv)) {
+			} else if(sv != null && sv.isNotEmpty()) {
 				
 				// state から復元する
 				app_state.attachment_list = this.attachment_list
@@ -423,7 +441,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					val ie = array.length()
 					while(i < ie) {
 						try {
-							val a = TootAttachment.parse(array.optJSONObject(i))
+							val a = parseItem(::TootAttachment, array.optJSONObject(i))
 							if(a != null) {
 								attachment_list.add(PostAttachment(a))
 							}
@@ -510,15 +528,15 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			}
 			
 			val account = this.account
-
+			
 			sv = intent.getStringExtra(KEY_REPLY_STATUS)
-			if(sv != null && account != null ) {
+			if(sv != null && account != null) {
 				try {
-					val reply_status = TootParser(this@ActPost, account ).status(JSONObject(sv))
+					val reply_status = TootParser(this@ActPost, account).status(JSONObject(sv))
 					
 					if(reply_status != null) {
 						// CW をリプライ元に合わせる
-						if(! TextUtils.isEmpty(reply_status.spoiler_text)) {
+						if(reply_status.spoiler_text?.isNotEmpty() == true) {
 							cbContentWarning.isChecked = true
 							etContentWarning.setText(reply_status.spoiler_text)
 						}
@@ -529,24 +547,25 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						val old_mentions = reply_status.mentions
 						if(old_mentions != null) {
 							for(mention in old_mentions) {
-								if(account.isMe(mention.acct)) continue
-								sv = "@" + account.getFullAcct(mention.acct)
-								if(! mention_list.contains(sv)) {
-									mention_list.add(sv)
+								val who_acct = mention.acct
+								if(who_acct.isNotEmpty()) {
+									if(account.isMe(who_acct)) continue
+									sv = "@" + account.getFullAcct(who_acct)
+									if(! mention_list.contains(sv)) {
+										mention_list.add(sv)
+									}
+									
 								}
 							}
 						}
 						
 						// 今回メンションを追加する？
-						run {
-							sv = account.getFullAcct(reply_status.account)
-							
-							if(mention_list.contains("@" + sv !!)) {
-								// 既に含まれている
-							} else if(! account.isMe(reply_status.account) || mention_list.isEmpty()) {
-								// 自分ではない、もしくは、メンションが空
-								mention_list.add("@" + sv)
-							}
+						val who_acct = account.getFullAcct(reply_status.account)
+						if(mention_list.contains("@" + who_acct )) {
+							// 既に含まれている
+						} else if(! account.isMe(reply_status.account) || mention_list.isEmpty()) {
+							// 自分ではない、もしくは、メンションが空
+							mention_list.add("@" + who_acct)
 						}
 						
 						val sb = StringBuilder()
@@ -569,11 +588,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						// 公開範囲
 						try {
 							// 比較する前にデフォルトの公開範囲を計算する
-							if(TextUtils.isEmpty(visibility)) {
-								visibility = account.visibility
-								if(TextUtils.isEmpty(visibility)) {
-									visibility = TootStatus.VISIBILITY_WEB_SETTING
-								}
+							visibility = when {
+								visibility?.isNotEmpty() == true -> visibility
+								account.visibility?.isNotEmpty() == true -> account.visibility
+								else -> TootStatus.VISIBILITY_PUBLIC
+							// VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになる
 							}
 							
 							if(TootStatus.VISIBILITY_WEB_SETTING == visibility) {
@@ -599,13 +618,13 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			}
 		}
 		
-		if(TextUtils.isEmpty(visibility)) {
-			visibility = account !!.visibility
-			if(TextUtils.isEmpty(visibility)) {
-				visibility = TootStatus.VISIBILITY_PUBLIC
-				// 2017/9/13 VISIBILITY_WEB_SETTING から VISIBILITY_PUBLICに変更した
-				// VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになるので…
-			}
+		visibility = when {
+			visibility?.isNotEmpty() == true -> visibility
+			account?.visibility?.isNotEmpty() == true -> account?.visibility
+			else -> TootStatus.VISIBILITY_PUBLIC
+		
+		// 2017/9/13 VISIBILITY_WEB_SETTING から VISIBILITY_PUBLICに変更した
+		// VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになるので…
 		}
 		
 		if(this.account == null) {
@@ -630,13 +649,16 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	
 	override fun onSaveInstanceState(outState : Bundle?) {
 		super.onSaveInstanceState(outState)
+
+		outState ?: return
 		
-		outState !!.putInt(STATE_MUSHROOM_INPUT, mushroom_input)
+		outState.putInt(STATE_MUSHROOM_INPUT, mushroom_input)
 		outState.putInt(STATE_MUSHROOM_START, mushroom_start)
 		outState.putInt(STATE_MUSHROOM_END, mushroom_end)
 		
+		val account = this.account
 		if(account != null) {
-			outState.putLong(KEY_ACCOUNT_DB_ID, account !!.db_id)
+			outState.putLong(KEY_ACCOUNT_DB_ID, account.db_id)
 		}
 		
 		if(visibility != null) {
@@ -811,7 +833,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent)
 		} else {
 			post_helper.setInstance(a.host)
-			val acct = a.getFullAcct(a.loginAccount)
+			val acct = a.acct
 			val ac = AcctColor.load(acct)
 			val nickname = if(AcctColor.hasNickname(ac)) ac.nickname else acct
 			btnAccount.text = nickname
@@ -838,16 +860,12 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		}
 		
 		AccountPicker.pick(this, false, false, getString(R.string.choose_account)) { ai ->
-			if(ai.host != account !!.host) {
-				// 別タンスへの移動
-				if(in_reply_to_id != - 1L) {
-					// 別タンスのアカウントならin_reply_toの変換が必要
-					startReplyConversion(ai)
-					
-				}
+			
+			// 別タンスのアカウントに変更したならならin_reply_toの変換が必要
+			if(in_reply_to_id != - 1L && ! ai.host.equals(account?.host, ignoreCase = true)) {
+				startReplyConversion(ai)
 			}
 			
-			// リプライがないか、同タンスへの移動
 			setAccountWithVisibilityConversion(ai)
 		}
 		
@@ -915,7 +933,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			return
 		}
 		
-		TootTaskRunner(this, true)
+		TootTaskRunner(this)
 			.progressPrefix(getString(R.string.progress_synchronize_toot))
 			.run(access_info, object : TootTask {
 				
@@ -941,8 +959,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				override fun handleResult(result : TootApiResult?) {
 					if(result == null) return  // cancelled.
 					
+					val target_status = this.target_status
 					if(target_status != null) {
-						in_reply_to_id = target_status !!.id
+						in_reply_to_id = target_status.id
 						setAccountWithVisibilityConversion(access_info)
 					} else {
 						Utils.showToast(this@ActPost, true, getString(R.string.in_reply_to_id_conversion_failed) + "\n" + result.error)
@@ -1045,7 +1064,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		val attachment_id = pa.attachment?.id ?: return
 		
-		TootTaskRunner(this, true).run(account !!, object : TootTask {
+		TootTaskRunner(this).run(this@ActPost.account ?: return, object : TootTask {
 			
 			internal var new_attachment : TootAttachment? = null
 			
@@ -1063,10 +1082,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					TootApiClient.MEDIA_TYPE_JSON, body_string
 				)
 				val request_builder = Request.Builder().put(request_body)
-				
 				val result = client.request("/api/v1/media/" + attachment_id, request_builder)
-				val jsonObject = result?.jsonObject
-				new_attachment = TootAttachment.parse(jsonObject)
+				new_attachment = parseItem(::TootAttachment, result?.jsonObject)
 				return result
 			}
 			
@@ -1081,7 +1098,6 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					try {
 						dialog.dismiss()
 					} catch(ignored : Throwable) {
-					
 					}
 					
 				} else {
@@ -1233,32 +1249,23 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	}
 	
 	@SuppressLint("StaticFieldLeak") private fun addAttachment(uri : Uri, mime_type : String) {
+
 		if(attachment_list.size >= 4) {
 			Utils.showToast(this, false, R.string.attachment_too_many)
 			return
 		}
+
+		val account = this@ActPost.account
 		if(account == null) {
 			Utils.showToast(this, false, R.string.account_select_please)
 			return
 		}
 		
-		if(acceptable_mime_types == null) {
-			acceptable_mime_types = HashSet()
-			//
-			acceptable_mime_types !!.add("image/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
-			acceptable_mime_types !!.add("video/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
-			//
-			acceptable_mime_types !!.add("image/jpeg")
-			acceptable_mime_types !!.add("image/png")
-			acceptable_mime_types !!.add("image/gif")
-			acceptable_mime_types !!.add("video/webm")
-			acceptable_mime_types !!.add("video/mp4")
-		}
 		
-		if(TextUtils.isEmpty(mime_type)) {
+		if(mime_type.isEmpty()) {
 			Utils.showToast(this, false, R.string.mime_type_missing)
 			return
-		} else if(! acceptable_mime_types !!.contains(mime_type)) {
+		} else if(! acceptable_mime_types.contains(mime_type)) {
 			Utils.showToast(this, true, R.string.mime_type_not_acceptable, mime_type)
 			return
 		}
@@ -1270,11 +1277,10 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		showMediaAttachment()
 		Utils.showToast(this, false, R.string.attachment_uploading)
 		
-		val target_account = account
-		TootTaskRunner(this).run(target_account !!, object : TootTask {
+		TootTaskRunner(this).run(account  , object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				if(TextUtils.isEmpty(mime_type)) {
-					return TootApiResult("mime_type is null.")
+				if(mime_type.isEmpty()) {
+					return TootApiResult("mime_type is empty.")
 				}
 				
 				try {
@@ -1322,13 +1328,13 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					val result = client.request("/api/v1/media", request_builder)
 					
 					opener.deleteTempFile()
-
+					
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
-						val a = TootAttachment.parse(jsonObject)
+						val a = parseItem(::TootAttachment, jsonObject)
 						if(a == null) {
 							result.error = "TootAttachment.parse failed"
-						}else{
+						} else {
 							pa.attachment = a
 						}
 					}
@@ -1490,7 +1496,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	}
 	
 	private fun showVisibility() {
-		btnVisibility.setImageResource(Styler.getVisibilityIcon(this, visibility !!))
+		btnVisibility.setImageResource(Styler.getVisibilityIcon(this, visibility ))
 	}
 	
 	private fun performVisibility() {
@@ -1578,7 +1584,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		}
 		
 		if(! cbContentWarning.isChecked) {
-			post_helper.spoiler_text = null
+			post_helper.spoiler_text = null // nullはCWチェックなしを示す
 		} else {
 			post_helper.spoiler_text = etContentWarning.text.toString().trim { it <= ' ' }
 		}
@@ -1635,10 +1641,10 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		)
 		
 		var hasContent = false
-		if(! TextUtils.isEmpty(content.trim { it <= ' ' })) hasContent = true
-		if(! TextUtils.isEmpty(content_warning.trim { it <= ' ' })) hasContent = true
+		if(content.isNotBlank()) hasContent = true
+		if(content_warning.isNotBlank()) hasContent = true
 		for(s in str_choice) {
-			if(! TextUtils.isEmpty(s.trim { it <= ' ' })) hasContent = true
+			if(s.isNotBlank()) hasContent = true
 		}
 		if(! hasContent) {
 			log.d("saveDraft: dont save empty content")
@@ -1658,7 +1664,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			json.put(DRAFT_CONTENT_WARNING_CHECK, cbContentWarning.isChecked)
 			json.put(DRAFT_NSFW_CHECK, cbNSFW.isChecked)
 			json.put(DRAFT_VISIBILITY, visibility)
-			json.put(DRAFT_ACCOUNT_DB_ID, if(account == null) - 1L else account !!.db_id)
+			json.put(DRAFT_ACCOUNT_DB_ID, account?.db_id ?: -1L )
 			json.put(DRAFT_ATTACHMENT_LIST, tmp_attachment_list)
 			json.put(DRAFT_REPLY_ID, in_reply_to_id)
 			json.put(DRAFT_REPLY_TEXT, in_reply_to_text)
@@ -1692,7 +1698,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		val progress = ProgressDialog(this)
 		
 		val task = @SuppressLint("StaticFieldLeak")
-		object : AsyncTask<Void, String, String>() {
+		object : AsyncTask<Void, String, String?>() {
 			
 			internal val list_warning = ArrayList<String>()
 			internal var account : SavedAccount? = null
@@ -1710,9 +1716,10 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						var i = 0
 						val ie = tmp_attachment_list.length()
 						while(i < ie) {
-							val ta = TootAttachment.parse(tmp_attachment_list.optJSONObject(i))
-							if(ta != null && ! TextUtils.isEmpty(ta.text_url)) {
-								content = content.replace(ta.text_url !!, "")
+							val ta = parseItem(::TootAttachment, tmp_attachment_list.optJSONObject(i))
+							val text_url = ta?.text_url
+							if(text_url?.isNotEmpty() == true) {
+								content = content.replace(text_url, "")
 							}
 							++ i
 						}
@@ -1731,11 +1738,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				this.account = account
 				
 				// アカウントがあるなら基本的にはすべての情報を復元できるはずだが、いくつか確認が必要だ
-				val api_client = TootApiClient(this@ActPost, object : TootApiCallback{
-
+				val api_client = TootApiClient(this@ActPost, object : TootApiCallback {
+					
 					override val isApiCancelled : Boolean
-						get()= isCancelled
-
+						get() = isCancelled
+					
 					override fun publishApiProgress(s : String) {
 						Utils.runOnMainThread { progress.setMessage(s) }
 					}
@@ -1758,15 +1765,16 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					var isSomeAttachmentRemoved = false
 					for(i in tmp_attachment_list.length() - 1 downTo 0) {
 						if(isCancelled) return null
-						val ta = TootAttachment.parse(tmp_attachment_list.optJSONObject(i))
+						val ta = parseItem(::TootAttachment, tmp_attachment_list.optJSONObject(i))
 						if(ta == null) {
 							isSomeAttachmentRemoved = true
 							tmp_attachment_list.remove(i)
 						} else if(! check_exist(ta.url)) {
 							isSomeAttachmentRemoved = true
 							tmp_attachment_list.remove(i)
-							if(! TextUtils.isEmpty(ta.text_url)) {
-								content = content.replace(ta.text_url !!, "")
+							val text_url = ta.text_url
+							if(text_url?.isNotEmpty() == true) {
+								content = content.replace(text_url, "")
 							}
 						}
 					}
@@ -1782,7 +1790,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				return "OK"
 			}
 			
-			override fun onCancelled(result : String) {
+			override fun onCancelled(result : String?) {
 				onPostExecute(result)
 			}
 			
@@ -1837,7 +1845,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					var i = 0
 					val ie = tmp_attachment_list.length()
 					while(i < ie) {
-						val ta = TootAttachment.parse(tmp_attachment_list.optJSONObject(i))
+						val ta = parseItem(::TootAttachment, tmp_attachment_list.optJSONObject(i))
 						if(ta != null) {
 							val pa = PostAttachment(ta)
 							attachment_list.add(pa)
@@ -1983,11 +1991,10 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			tvText.movementMethod = LinkMovementMethod.getInstance()
 			
 			val tvTitle = viewRoot.findViewById<TextView>(R.id.tvTitle)
-			if(TextUtils.isEmpty(title)) {
+			if(title?.isEmpty() != false) {
 				tvTitle.visibility = View.GONE
 			} else {
 				tvTitle.text = title
-				
 			}
 			
 			AlertDialog.Builder(this)

@@ -1,18 +1,16 @@
 package jp.juggler.subwaytooter.api.entity
 
 import android.content.SharedPreferences
-import android.text.TextUtils
 
-import org.json.JSONArray
-import org.json.JSONException
 import org.json.JSONObject
 
 import jp.juggler.subwaytooter.Pref
-import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.Utils
 
 class TootAttachment(src : JSONObject) : TootAttachmentLike {
 	
+	val json : JSONObject
+
 	//	ID of the attachment
 	val id : Long
 	
@@ -34,8 +32,6 @@ class TootAttachment(src : JSONObject) : TootAttachmentLike {
 	// ALT text (Mastodon 2.0.0 or later)
 	override val description : String?
 	
-	val json : JSONObject
-	
 	override fun hasUrl(url : String) : Boolean = when(url) {
 		this.preview_url, this.remote_url, this.url, this.text_url -> true
 		else -> false
@@ -52,11 +48,6 @@ class TootAttachment(src : JSONObject) : TootAttachmentLike {
 		description = Utils.optStringX(src, "description")
 	}
 	
-	@Throws(JSONException::class)
-	fun encodeJSON() : JSONObject {
-		return json
-	}
-	
 	override val urlForThumbnail : String?
 		get() = when {
 			preview_url?.isNotEmpty() == true -> preview_url
@@ -65,54 +56,12 @@ class TootAttachment(src : JSONObject) : TootAttachmentLike {
 			else -> null
 		}
 	
-	companion object {
-		
-		private val log = LogCategory("TootAttachment")
-		
-		fun parse(src : JSONObject?) : TootAttachment? {
-			if(src == null) return null
-			try {
-				return TootAttachment(src)
-			} catch(ex : Throwable) {
-				log.trace(ex)
-				log.e(ex, "TootAttachment.parse failed.")
-				return null
-			}
-		}
-		
-		fun parseList(array : JSONArray) : TootAttachmentLike.List {
-			val result = TootAttachmentLike.List()
-			val array_size = array.length()
-			result.ensureCapacity(array_size)
-			for(i in 0 until array_size) {
-				val src = array.optJSONObject(i) ?: continue
-				val item = parse(src)
-				if(item != null) result.add(item)
-			}
-			return result
-		}
-		
-		fun parseListOrNull(array : JSONArray?) : TootAttachmentLike.List? {
-			array ?: return null
-			val result = parseList(array)
-			return if(result.isEmpty()) null else result
-		}
-	}
-	
 	fun getLargeUrl(pref : SharedPreferences) : String? {
-		var sv : String?
-		if(pref.getBoolean(Pref.KEY_PRIOR_LOCAL_URL, false)) {
-			sv = this.url
-			if(TextUtils.isEmpty(sv)) {
-				sv = this.remote_url
-			}
+		return if( pref.getBoolean(Pref.KEY_PRIOR_LOCAL_URL, false) ){
+			if( url?.isNotEmpty() ==true) url else remote_url
 		} else {
-			sv = this.remote_url
-			if(TextUtils.isEmpty(sv)) {
-				sv = this.url
-			}
+			if( remote_url?.isNotEmpty() == true ) remote_url else url
 		}
-		return sv
 	}
 	
 }

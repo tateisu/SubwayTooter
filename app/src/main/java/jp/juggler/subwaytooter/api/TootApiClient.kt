@@ -96,14 +96,14 @@ class TootApiClient(
 	
 	private fun request_sub(path : String, request_builder : Request.Builder) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(instance)
-		if( result.error != null ) return result
-		val instance = result.caption // same as instance
+		if(result.error != null) return result
+		val instance = result.caption // same to instance
 		val account = this.account ?: return result.setError("account is null")
 		val access_token = account.getAccessToken()
 		
 		val response = try {
 			request_builder.url("https://" + instance + path)
-
+			
 			if(access_token != null && access_token.isNotEmpty()) {
 				request_builder.header("Authorization", "Bearer " + access_token)
 			}
@@ -113,13 +113,13 @@ class TootApiClient(
 			log.trace(ex)
 			return result.setError(instance + ": " + Utils.formatError(ex, context.resources, R.string.network_error))
 		}
-		return readJson(result,response)
+		return readJson(result, response)
 	}
 	
 	fun webSocket(path : String, request_builder : Request.Builder, ws_listener : WebSocketListener) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(instance)
-		if( result.error != null ) return result
-		val instance = result.caption // same as instance
+		if(result.error != null) return result
+		val instance = result.caption // same to instance
 		
 		try {
 			val account = this.account ?: return TootApiResult("account is null")
@@ -152,17 +152,17 @@ class TootApiClient(
 	// 疑似アカウントの追加時に、インスタンスの検証を行う
 	fun checkInstance() : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(instance)
-		if( result.error != null ) return result
-		val instance = result.caption // same as instance
+		if(result.error != null) return result
+		val instance = result.caption // same to instance
 		
 		val response = try {
 			val request = Request.Builder().url("https://$instance/api/v1/instance").build()
 			sendRequest(request)
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			return result.setError( instance + ": " + Utils.formatError(ex, context.resources, R.string.network_error))
+			return result.setError(instance + ": " + Utils.formatError(ex, context.resources, R.string.network_error))
 		}
-		return readJson(result,response)
+		return readJson(result, response)
 	}
 	
 	// クライアントアプリの登録を確認するためのトークンを生成する
@@ -171,10 +171,10 @@ class TootApiClient(
 	// このトークンはAPIを呼び出すたびに新しく生成される…
 	private fun getClientCredential(client_info : JSONObject) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(this.instance)
-		if( result.error != null ) return result
+		if(result.error != null) return result
 		val instance = result.caption
 		
-		val response =try {
+		val response = try {
 			
 			val request = Request.Builder()
 				.url("https://$instance/oauth/token")
@@ -185,12 +185,12 @@ class TootApiClient(
 				.build()
 			
 			sendRequest(request)
-		}catch(ex : Throwable) {
+		} catch(ex : Throwable) {
 			log.trace(ex)
 			return result.setError("getClientCredential: " + instance + ": " + Utils.formatError(ex, context.resources, R.string.network_error))
 		}
-
-		val r2 = readJson(result,response)
+		
+		val r2 = readJson(result, response)
 		val jsonObject = r2?.jsonObject ?: return r2
 		val sv = Utils.optStringX(jsonObject, "access_token")
 		if(sv?.isNotEmpty() == true) {
@@ -206,7 +206,7 @@ class TootApiClient(
 	private fun verifyClientCredential(client_credential : String) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(this.instance)
 		if(result.error != null) return result
-		val instance = result.caption // same as instance
+		val instance = result.caption // same to instance
 		
 		val response = try {
 			val request = Request.Builder()
@@ -220,7 +220,7 @@ class TootApiClient(
 			return result.setError("$instance: " + Utils.formatError(ex, context.resources, R.string.network_error))
 		}
 		
-		return readJson(result,response)
+		return readJson(result, response)
 	}
 	
 	private fun prepareBrowserUrl(client_info : JSONObject) : String {
@@ -246,7 +246,7 @@ class TootApiClient(
 	fun authorize1(clientNameArg : String) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(this.instance)
 		if(result.error != null) return result
-		val instance = result.caption // same as instance
+		val instance = result.caption // same to instance
 		
 		// クライアントIDがアプリ上に保存されているか？
 		val client_name = if(clientNameArg.isNotEmpty()) clientNameArg else DEFAULT_CLIENT_NAME
@@ -271,7 +271,7 @@ class TootApiClient(
 			// client_credential があるならcredentialがまだ使えるか確認する
 			if(client_credential?.isNotEmpty() == true) {
 				val resultSub = verifyClientCredential(client_credential)
-				if( resultSub?.jsonObject != null ){
+				if(resultSub?.jsonObject != null) {
 					result.data = prepareBrowserUrl(client_info)
 					return result
 				}
@@ -294,13 +294,13 @@ class TootApiClient(
 			return result.setError(instance + ": " + Utils.formatError(ex, context.resources, R.string.network_error))
 		}
 		
-		val r2 = readJson(result,response)
+		val r2 = readJson(result, response)
 		val jsonObject = r2?.jsonObject ?: return r2
-
+		
 		// {"id":999,"redirect_uri":"urn:ietf:wg:oauth:2.0:oob","client_id":"******","client_secret":"******"}
 		jsonObject.put(KEY_AUTH_VERSION, AUTH_VERSION)
 		ClientInfo.save(instance, client_name, jsonObject.toString())
-		result.data =  prepareBrowserUrl(jsonObject)
+		result.data = prepareBrowserUrl(jsonObject)
 		return result
 	}
 	
@@ -309,7 +309,7 @@ class TootApiClient(
 		val result = TootApiResult.makeWithCaption(instance)
 		if(result.error != null) return result
 		
-		val instance = result.caption // same as instance
+		val instance = result.caption // same to instance
 		val client_name = if(clientNameArg.isNotEmpty()) clientNameArg else DEFAULT_CLIENT_NAME
 		val client_info = ClientInfo.load(instance, client_name) ?: return result.setError("missing client id")
 		
@@ -327,7 +327,7 @@ class TootApiClient(
 				.url("https://$instance/oauth/token")
 				.post(RequestBody.create(MEDIA_TYPE_FORM_URL_ENCODED, post_content))
 				.build()
-
+			
 			sendRequest(request)
 		} catch(ex : Throwable) {
 			log.trace(ex)
@@ -336,7 +336,7 @@ class TootApiClient(
 		
 		val token_info : JSONObject
 		
-		val r2 = readJson(result,response)
+		val r2 = readJson(result, response)
 		val jsonObject = r2?.jsonObject ?: return r2
 		
 		// {"access_token":"******","token_type":"bearer","scope":"read","created_at":1492334641}
@@ -362,8 +362,8 @@ class TootApiClient(
 			log.trace(ex)
 			return result.setError(instance + ": " + Utils.formatError(ex, context.resources, R.string.network_error))
 		}
-
-		return readJson(result,response)
+		
+		return readJson(result, response)
 	}
 	
 	// アクセストークン手動入力でアカウントを更新する場合
@@ -374,25 +374,25 @@ class TootApiClient(
 		
 		val token_info = JSONObject()
 		val response = try {
-
+			
 			// 指定されたアクセストークンを使って token_info を捏造する
 			token_info.put("access_token", access_token)
-
+			
 			// 認証されたアカウントのユーザ名を取得する
 			val request = Request.Builder()
 				.url("https://$instance/api/v1/accounts/verify_credentials")
 				.header("Authorization", "Bearer $access_token")
 				.build()
 			
-			sendRequest( request)
+			sendRequest(request)
 		} catch(ex : Throwable) {
 			log.trace(ex)
 			return result.setError(instance + ": " + Utils.formatError(ex, context.resources, R.string.network_error))
 		}
 		
-		val r2 = readJson(result,response)
+		val r2 = readJson(result, response)
 		r2?.jsonObject ?: return r2
-
+		
 		// credentialを読めたならtoken_infoを保存したい
 		result.token_info = token_info
 		return result
@@ -403,7 +403,7 @@ class TootApiClient(
 		if(result.error != null) return result
 		
 		val response = try {
-			sendRequest( Request.Builder().url(url).build(),url)
+			sendRequest(Request.Builder().url(url).build(), url)
 		} catch(ex : Throwable) {
 			log.trace(ex)
 			return result.setError(url + ": " + Utils.formatError(ex, context.resources, R.string.network_error))
@@ -415,32 +415,32 @@ class TootApiClient(
 			if(result.isErrorOrEmptyBody()) return result
 			
 			result.data = result.bodyString
-
-		}catch(ex:Throwable){
+			
+		} catch(ex : Throwable) {
 			log.trace(ex)
 			result.error = Utils.formatResponse(response, result.caption, result.bodyString ?: "no information")
 		}
 		return result
 	}
 	
-	private fun sendRequest(request:Request, showPath :String? = null ):Response{
-		callback.publishApiProgress(context.getString(R.string.request_api, request.method(), showPath ?: request.url().encodedPath() ))
+	private fun sendRequest(request : Request, showPath : String? = null) : Response {
+		callback.publishApiProgress(context.getString(R.string.request_api, request.method(), showPath ?: request.url().encodedPath()))
 		val call = ok_http_client.newCall(request)
 		call_callback?.onCallCreated(call)
 		return call.execute()
 	}
 	
-	private fun readJson(result:TootApiResult ,response:Response ) : TootApiResult?{
-		try{
-			if( callback.isApiCancelled ) return null
+	private fun readJson(result : TootApiResult, response : Response) : TootApiResult? {
+		try {
+			if(callback.isApiCancelled) return null
 			result.readBodyString(response)
-			if( callback.isApiCancelled ) return null
-			if( result.isErrorOrEmptyBody() ) return result
+			if(callback.isApiCancelled) return null
+			if(result.isErrorOrEmptyBody()) return result
 			
 			val bodyString = result.bodyString
-			if( bodyString?.startsWith("[") == true) {
+			if(bodyString?.startsWith("[") == true) {
 				result.data = JSONArray(bodyString)
-			}else if( bodyString?.startsWith("{") == true) {
+			} else if(bodyString?.startsWith("{") == true) {
 				val json = JSONObject(bodyString)
 				val error = Utils.optStringX(json, "error")
 				if(error != null) {
@@ -448,7 +448,7 @@ class TootApiClient(
 				} else {
 					result.data = json
 				}
-			}else {
+			} else {
 				result.error = context.getString(R.string.response_not_json) + "\n" + bodyString
 			}
 			
@@ -460,40 +460,40 @@ class TootApiClient(
 		
 	}
 	
-//	private fun parseResponse(tokenInfo : JSONObject?, response : Response) : TootApiResult? {
-//		try {
-//			if(callback.isApiCancelled) return null
-//
-//			if(! response.isSuccessful) {
-//				return TootApiResult(response, Utils.formatResponse(response, instance ?: "(no instance)"))
-//			}
-//
-//			val bodyString = response.body()?.string() ?: throw RuntimeException("missing response body.")
-//			if(callback.isApiCancelled) return null
-//
-//			callback.publishApiProgress(context.getString(R.string.parsing_response))
-//			return if(bodyString.startsWith("{")) {
-//
-//				val obj = JSONObject(bodyString)
-//
-//				val error = Utils.optStringX(obj, "error")
-//
-//				if(error != null)
-//					TootApiResult(context.getString(R.string.api_error, error))
-//				else
-//					TootApiResult(response, tokenInfo, bodyString, obj)
-//
-//			} else if(bodyString.startsWith("[")) {
-//				val array = JSONArray(bodyString)
-//				TootApiResult(response, tokenInfo, bodyString, array)
-//			} else {
-//				TootApiResult(response, Utils.formatResponse(response, instance ?: "(no instance)", bodyString))
-//			}
-//		} catch(ex : Throwable) {
-//			TootApiClient.log.trace(ex)
-//			return TootApiResult(Utils.formatError(ex, "API data error"))
-//		}
-//
-//	}
-
+	//	private fun parseResponse(tokenInfo : JSONObject?, response : Response) : TootApiResult? {
+	//		try {
+	//			if(callback.isApiCancelled) return null
+	//
+	//			if(! response.isSuccessful) {
+	//				return TootApiResult(response, Utils.formatResponse(response, instance ?: "(no instance)"))
+	//			}
+	//
+	//			val bodyString = response.body()?.string() ?: throw RuntimeException("missing response body.")
+	//			if(callback.isApiCancelled) return null
+	//
+	//			callback.publishApiProgress(context.getString(R.string.parsing_response))
+	//			return if(bodyString.startsWith("{")) {
+	//
+	//				val obj = JSONObject(bodyString)
+	//
+	//				val error = Utils.optStringX(obj, "error")
+	//
+	//				if(error != null)
+	//					TootApiResult(context.getString(R.string.api_error, error))
+	//				else
+	//					TootApiResult(response, tokenInfo, bodyString, obj)
+	//
+	//			} else if(bodyString.startsWith("[")) {
+	//				val array = JSONArray(bodyString)
+	//				TootApiResult(response, tokenInfo, bodyString, array)
+	//			} else {
+	//				TootApiResult(response, Utils.formatResponse(response, instance ?: "(no instance)", bodyString))
+	//			}
+	//		} catch(ex : Throwable) {
+	//			TootApiClient.log.trace(ex)
+	//			return TootApiResult(Utils.formatError(ex, "API data error"))
+	//		}
+	//
+	//	}
+	
 }

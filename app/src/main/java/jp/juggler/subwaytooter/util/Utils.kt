@@ -86,7 +86,7 @@ object Utils {
 	//	public static String getConnectionResultErrorMessage( ConnectionResult connectionResult ){
 	//		int code = connectionResult.getErrorCode();
 	//		String msg = connectionResult.getErrorMessage();
-	//		if( TextUtils.isEmpty( msg ) ){
+	//		if( msg == null || msg.isEmpty(  ) ){
 	//			switch( code ){
 	//			case ConnectionResult.SUCCESS:
 	//				msg = "SUCCESS";
@@ -193,13 +193,12 @@ object Utils {
 	
 	private val CHARS_MUST_PDI = LRI.toString() + RLI + FSI
 	
-	
 	private fun showToastImpl(context : Context, bLong : Boolean, message : String) {
 		runOnMainThread {
-
+			
 			// 前回のトーストの表示を終了する
 			refToast?.get()?.cancel()
-
+			
 			// 新しいトーストを作る
 			val t = Toast.makeText(
 				context, message, if(bLong) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
@@ -333,11 +332,13 @@ object Utils {
 		
 	}
 	
-	fun optStringX(src : JSONObject, key : String) : String? {
+	fun optStringX(src : JSONObject?, key : String) : String? {
+		src ?: return null
 		return if(src.isNull(key)) null else src.optString(key)
 	}
 	
-	fun optStringX(src : JSONArray, key : Int) : String? {
+	fun optStringX(src : JSONArray?, key : Int) : String? {
+		src ?: return null
 		return if(src.isNull(key)) null else src.optString(key)
 	}
 	
@@ -369,10 +370,6 @@ object Utils {
 			}
 		}
 		return dst_list
-	}
-	
-	fun <T> equalsNullable(a : T?, b : T?) : Boolean {
-		return if(a == null) b == null else a == b
 	}
 	
 	fun dumpCodePoints(str : String) : CharSequence {
@@ -649,7 +646,7 @@ object Utils {
 	
 	fun getMimeType(log : LogCategory?, src : String) : String {
 		var ext = MimeTypeMap.getFileExtensionFromUrl(src)
-		if( ext != null && ext.isNotEmpty() ) {
+		if(ext != null && ext.isNotEmpty()) {
 			ext = ext.toLowerCase(Locale.US)
 			
 			//
@@ -686,20 +683,20 @@ object Utils {
 	fun createResizedBitmap(log : LogCategory, context : Context, uri : Uri, skipIfNoNeedToResizeAndRotate : Boolean, resizeToArg : Int) : Bitmap? {
 		var resize_to = resizeToArg
 		try {
-
+			
 			// EXIF回転情報の取得
 			val orientation : Int? = context.contentResolver.openInputStream(uri)?.use { inStream ->
 				val exif = ExifInterface()
 				exif.readExif(inStream, ExifInterface.Options.OPTION_IFD_0 or ExifInterface.Options.OPTION_IFD_1 or ExifInterface.Options.OPTION_IFD_EXIF)
 				exif.getTagIntValue(ExifInterface.TAG_ORIENTATION)
 			}
-
+			
 			// 画像のサイズを調べる
 			val options = BitmapFactory.Options()
 			options.inJustDecodeBounds = true
 			options.inScaled = false
 			options.outWidth = 0
-			options.outHeight =0
+			options.outHeight = 0
 			context.contentResolver.openInputStream(uri)?.use { inStream ->
 				BitmapFactory.decodeStream(inStream, null, options)
 			}
@@ -844,334 +841,333 @@ object Utils {
 			} finally {
 				sourceBitmap.recycle()
 			}
-		} catch(ex : SecurityException){
+		} catch(ex : SecurityException) {
 			log.e(ex, "maybe we need pick up image again.")
-		} catch(ex : Throwable){
+		} catch(ex : Throwable) {
 			log.trace(ex)
 		}
 		return null
 	}
-
-fun simplifyErrorHtml(response : Response, sv : String) : String {
-	try {
-		val data = JSONObject(sv)
-		val error = data.getString("error")
-		if(error != null && error.isNotBlank()) return error
-	} catch(ex : Throwable) {
-		log.e(ex, "response body is not JSON or missing 'error' attribute.")
-	}
 	
-	// JSONではなかった
-	
-	// HTMLならタグの除去を試みる
-	val ct = response.header("content-type")
-	if(ct != null && ct.contains("/html")) {
-		return DecodeOptions().decodeHTML(null, null, sv).toString()
-	}
-	
-	// TODO: Amazon S3 が403を返した場合にcontent-typeが?/xmlでserverがAmazonならXMLをパースして
-	
-	return sv
-}
-
-fun formatResponse(response : Response, caption : String, bodyString : String? = null) : String {
-	val sb = StringBuilder()
-	try {
-		val empty_length = sb.length
+	fun simplifyErrorHtml(response : Response, sv : String) : String {
+		try {
+			val data = JSONObject(sv)
+			val error = data.getString("error")
+			if(error != null && error.isNotBlank()) return error
+		} catch(ex : Throwable) {
+			log.e(ex, "response body is not JSON or missing 'error' attribute.")
+		}
 		
-		if(bodyString != null) {
-			sb.append(simplifyErrorHtml(response, bodyString))
-		} else {
-			val body = response.body()
-			if(body != null) {
-				try {
-					val sv = body.string()
-					if(sv != null && sv.isNotBlank()) {
-						sb.append(simplifyErrorHtml(response, sv))
+		// JSONではなかった
+		
+		// HTMLならタグの除去を試みる
+		val ct = response.header("content-type")
+		if(ct != null && ct.contains("/html")) {
+			return DecodeOptions().decodeHTML(null, null, sv).toString()
+		}
+		
+		// XXX: Amazon S3 が403を返した場合にcontent-typeが?/xmlでserverがAmazonならXMLをパースしてエラーを整形することもできるが、多分必要ない
+		
+		return sv
+	}
+	
+	fun formatResponse(response : Response, caption : String, bodyString : String? = null) : String {
+		val sb = StringBuilder()
+		try {
+			val empty_length = sb.length
+			
+			if(bodyString != null) {
+				sb.append(simplifyErrorHtml(response, bodyString))
+			} else {
+				val body = response.body()
+				if(body != null) {
+					try {
+						val sv = body.string()
+						if(sv != null && sv.isNotBlank()) {
+							sb.append(simplifyErrorHtml(response, sv))
+						}
+					} catch(ex : Throwable) {
+						log.e(ex, "response body is not String.")
 					}
-				} catch(ex : Throwable) {
-					log.e(ex, "response body is not String.")
+				}
+			}
+			
+			if(sb.length == empty_length) sb.append(' ')
+			sb.append("(HTTP ").append(Integer.toString(response.code()))
+			
+			val message = response.message()
+			if(message != null && message.isNotEmpty()) {
+				sb.append(' ').append(message)
+			}
+			sb.append(")")
+			
+			if(caption.isNotEmpty()) {
+				sb.append(' ').append(caption)
+			}
+			
+		} catch(ex : Throwable) {
+			log.trace(ex)
+		}
+		
+		return sb.toString().replace("\n+".toRegex(), "\n")
+	}
+	
+	fun scanView(view : View?, callback : (view : View) -> Unit) {
+		view ?: return
+		callback(view)
+		if(view is ViewGroup) {
+			for(i in 0 until view.childCount) {
+				scanView(view.getChildAt(i), callback)
+			}
+		}
+	}
+	
+	internal class FileInfo(any_uri : String?) {
+		
+		var uri : Uri? = null
+		private var mime_type : String? = null
+		
+		init {
+			if(any_uri != null) {
+				uri = if(any_uri.startsWith("/")) {
+					Uri.fromFile(File(any_uri))
+				} else {
+					Uri.parse(any_uri)
+				}
+				val ext = MimeTypeMap.getFileExtensionFromUrl(any_uri)
+				if(ext != null) {
+					mime_type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext.toLowerCase())
 				}
 			}
 		}
-		
-		if(sb.length == empty_length) sb.append(' ')
-		sb.append("(HTTP ").append(Integer.toString(response.code()))
-		
-		val message = response.message()
-		if( message != null && message.isNotEmpty() ) {
-			sb.append(' ').append(message)
-		}
-		sb.append(")")
-		
-		if(caption.isNotEmpty()) {
-			sb.append(' ').append(caption)
-		}
-		
-	} catch(ex : Throwable) {
-		log.trace(ex)
 	}
 	
-	return sb.toString().replace("\n+".toRegex(), "\n")
-}
-
-fun scanView(view : View?, callback : (view : View) -> Unit) {
-	view ?: return
-	callback(view)
-	if(view is ViewGroup) {
-		for(i in 0 until view.childCount) {
-			scanView(view.getChildAt(i), callback)
-		}
-	}
-}
-
-internal class FileInfo(any_uri : String?) {
-	
-	var uri : Uri? = null
-	private var mime_type : String? = null
-	
-	init {
-		if(any_uri != null) {
-			uri = if(any_uri.startsWith("/")) {
-				Uri.fromFile(File(any_uri))
+	private fun getSecondaryStorageVolumesMap(context : Context) : Map<String, String> {
+		val result = HashMap<String, String>()
+		try {
+			val sm = context.applicationContext.getSystemService(Context.STORAGE_SERVICE) as? StorageManager
+			if(sm == null) {
+				log.e("can't get StorageManager")
 			} else {
-				Uri.parse(any_uri)
-			}
-			val ext = MimeTypeMap.getFileExtensionFromUrl(any_uri)
-			if(ext != null) {
-				mime_type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext.toLowerCase())
-			}
-		}
-	}
-}
-
-private fun getSecondaryStorageVolumesMap(context : Context) : Map<String, String> {
-	val result = HashMap<String, String>()
-	try {
-		val sm = context.applicationContext.getSystemService(Context.STORAGE_SERVICE) as StorageManager?
-		if(sm == null) {
-			log.e("can't get StorageManager")
-		} else {
-			
-			// SDカードスロットのある7.0端末が手元にないから検証できない
-			//			if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ){
-			//				for(StorageVolume volume : sm.getStorageVolumes() ){
-			//					// String path = volume.getPath();
-			//					String state = volume.getState();
-			//
-			//				}
-			//			}
-			
-			val getVolumeList = sm.javaClass.getMethod("getVolumeList")
-			val volumes = getVolumeList.invoke(sm)
-			log.d("volumes type=%s", volumes.javaClass)
-			//				if( volumes is ArrayList<Any> ) {
-			//					//
-			//					for(volume in volumes) {
-			//
-			//						val volume_clazz = volume.javaClass
-			//
-			//						val path = volume_clazz.getMethod("getPath").invoke(volume) as String
-			//						val state = volume_clazz.getMethod("getState").invoke(volume) as String
-			//						if(! TextUtils.isEmpty(path) && "mounted" == state) {
-			//							//
-			//							val isPrimary = volume_clazz.getMethod("isPrimary").invoke(volume) as Boolean
-			//							if(isPrimary) result.put("primary", path)
-			//							//
-			//							val uuid = volume_clazz.getMethod("getUuid").invoke(volume) as String
-			//							if(! TextUtils.isEmpty(uuid)) result.put(uuid, path)
-			//						}
-			//					}
-			//				}
-		}
-	} catch(ex : Throwable) {
-		log.trace(ex)
-	}
-	
-	return result
-}
-
-fun toCamelCase(src : String) : String {
-	val sb = StringBuilder()
-	for(s in src.split("_".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
-		if( s.isEmpty() ) continue
-		sb.append(Character.toUpperCase(s[0]))
-		sb.append(s.substring(1, s.length).toLowerCase())
-	}
-	return sb.toString()
-}
-
-private val xml_builder : DocumentBuilder by lazy {
-	DocumentBuilderFactory.newInstance().newDocumentBuilder()
-}
-
-fun parseXml(src : ByteArray) : Element? {
-	return try {
-		xml_builder.parse(ByteArrayInputStream(src)).documentElement
-	} catch(ex : Throwable) {
-		log.trace(ex)
-		null
-	}
-}
-
-fun getAttribute(attr_map : NamedNodeMap, name : String, defval : String?) : String? {
-	val node = attr_map.getNamedItem(name)
-	return if(node != null) node.nodeValue else defval
-}
-
-fun formatError(ex : Throwable, fmt : String?, vararg args : Any) : String {
-	return when {
-		fmt == null -> "(null)"
-		args.isEmpty() -> fmt
-		else -> String.format(fmt, *args)
-	} + " : ${ex.javaClass.simpleName} ${ex.message}"
-}
-
-fun formatError(ex : Throwable, resources : Resources, string_id : Int, vararg args : Any) : String {
-	return resources.getString(string_id, *args) + String.format(" :%s %s", ex.javaClass.simpleName, ex.message)
-}
-
-fun runOnMainThread(proc : () -> Unit) {
-	if(Looper.getMainLooper().thread === Thread.currentThread()) {
-		proc()
-	} else {
-		Handler(Looper.getMainLooper()).post { proc() }
-	}
-}
-
-
-private fun isExternalStorageDocument(uri : Uri) : Boolean {
-	return "com.android.externalstorage.documents" == uri.authority
-}
-
-private fun getDocumentId(documentUri : Uri) : String {
-	val paths = documentUri.pathSegments
-	if(paths.size >= 2 && PATH_DOCUMENT == paths[0]) {
-		// document
-		return paths[1]
-	}
-	if(paths.size >= 4 && PATH_TREE == paths[0]
-		&& PATH_DOCUMENT == paths[2]) {
-		// document in tree
-		return paths[3]
-	}
-	if(paths.size >= 2 && PATH_TREE == paths[0]) {
-		// tree
-		return paths[1]
-	}
-	throw IllegalArgumentException("Invalid URI: " + documentUri)
-}
-
-fun getFile(context : Context, path : String) : File? {
-	try {
-		if(path.startsWith("/")) return File(path)
-		val uri = Uri.parse(path)
-		if("file" == uri.scheme) return File(uri.path)
-		
-		// if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT )
-		run {
-			if(isExternalStorageDocument(uri)) {
-				try {
-					val docId = getDocumentId(uri)
-					val split = docId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-					if(split.size >= 2) {
-						val uuid = split[0]
-						if("primary".equals(uuid, ignoreCase = true)) {
-							return File(Environment.getExternalStorageDirectory().toString() + "/" + split[1])
-						} else {
-							val volume_map = Utils.getSecondaryStorageVolumesMap(context)
-							val volume_path = volume_map[uuid]
-							if(volume_path != null) {
-								return File(volume_path + "/" + split[1])
-							}
+				
+				// SDカードスロットのある7.0端末が手元にないから検証できない
+				//			if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ){
+				//				for(StorageVolume volume : sm.getStorageVolumes() ){
+				//					// String path = volume.getPath();
+				//					String state = volume.getState();
+				//
+				//				}
+				//			}
+				
+				val getVolumeList = sm.javaClass.getMethod("getVolumeList")
+				val volumes = getVolumeList.invoke(sm)
+				log.d("volumes type=%s", volumes.javaClass)
+				
+				if(volumes is ArrayList<*>) {
+					//
+					for(volume in volumes) {
+						val volume_clazz = volume.javaClass
+						
+						val path = volume_clazz.getMethod("getPath").invoke(volume) as? String
+						val state = volume_clazz.getMethod("getState").invoke(volume) as? String
+						if(path != null && state == "mounted") {
+							//
+							val isPrimary = volume_clazz.getMethod("isPrimary").invoke(volume) as? Boolean
+							if(isPrimary == true) result.put("primary", path)
+							//
+							val uuid = volume_clazz.getMethod("getUuid").invoke(volume) as? String
+							if(uuid != null) result.put(uuid, path)
 						}
 					}
-				} catch(ex : Throwable) {
-					log.trace(ex)
-				}
-				
-			}
-		}
-		// MediaStore Uri
-		context.contentResolver.query(uri, null, null, null, null).use { cursor ->
-			if(cursor.moveToFirst()) {
-				val col_count = cursor.columnCount
-				for(i in 0 until col_count) {
-					val type = cursor.getType(i)
-					if(type != Cursor.FIELD_TYPE_STRING) continue
-					val name = cursor.getColumnName(i)
-					val value = if(cursor.isNull(i)) null else cursor.getString(i)
-					if( value != null && value.isNotEmpty() && "filePath" == name) return File(value )
 				}
 			}
+		} catch(ex : Throwable) {
+			log.trace(ex)
 		}
-	} catch(ex : Throwable) {
-		log.trace(ex)
-	}
-	
-	return null
-}
-
-fun getActivityFromView(view : View?) : Activity? {
-	if(view != null) {
-		var context = view.context
-		while(context is ContextWrapper) {
-			if(context is Activity) return context
-			context = context.baseContext
-		}
-	}
-	return null
-}
-
-fun sanitizeBDI(src : String) : String {
-	
-	var stack : LinkedList<Char>? = null
-	
-	var i = 0
-	val ie = src.length
-	while(i < ie) {
-		val c = src[i]
 		
-		if(- 1 != CHARS_MUST_PDF.indexOf(c)) {
-			if(stack == null) stack = LinkedList()
-			stack.add(PDF)
+		return result
+	}
+	
+	fun toCamelCase(src : String) : String {
+		val sb = StringBuilder()
+		for(s in src.split("_".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
+			if(s.isEmpty()) continue
+			sb.append(Character.toUpperCase(s[0]))
+			sb.append(s.substring(1, s.length).toLowerCase())
+		}
+		return sb.toString()
+	}
+	
+	private val xml_builder : DocumentBuilder by lazy {
+		DocumentBuilderFactory.newInstance().newDocumentBuilder()
+	}
+	
+	fun parseXml(src : ByteArray) : Element? {
+		return try {
+			xml_builder.parse(ByteArrayInputStream(src)).documentElement
+		} catch(ex : Throwable) {
+			log.trace(ex)
+			null
+		}
+	}
+	
+	fun getAttribute(attr_map : NamedNodeMap, name : String, defval : String?) : String? {
+		val node = attr_map.getNamedItem(name)
+		return if(node != null) node.nodeValue else defval
+	}
+	
+	fun formatError(ex : Throwable, fmt : String?, vararg args : Any) : String {
+		return when {
+			fmt == null -> "(null)"
+			args.isEmpty() -> fmt
+			else -> String.format(fmt, *args)
+		} + " : ${ex.javaClass.simpleName} ${ex.message}"
+	}
+	
+	fun formatError(ex : Throwable, resources : Resources, string_id : Int, vararg args : Any) : String {
+		return resources.getString(string_id, *args) + String.format(" :%s %s", ex.javaClass.simpleName, ex.message)
+	}
+	
+	fun runOnMainThread(proc : () -> Unit) {
+		if(Looper.getMainLooper().thread === Thread.currentThread()) {
+			proc()
+		} else {
+			Handler(Looper.getMainLooper()).post { proc() }
+		}
+	}
+	
+	private fun isExternalStorageDocument(uri : Uri) : Boolean {
+		return "com.android.externalstorage.documents" == uri.authority
+	}
+	
+	private fun getDocumentId(documentUri : Uri) : String {
+		val paths = documentUri.pathSegments
+		if(paths.size >= 2 && PATH_DOCUMENT == paths[0]) {
+			// document
+			return paths[1]
+		}
+		if(paths.size >= 4 && PATH_TREE == paths[0]
+			&& PATH_DOCUMENT == paths[2]) {
+			// document in tree
+			return paths[3]
+		}
+		if(paths.size >= 2 && PATH_TREE == paths[0]) {
+			// tree
+			return paths[1]
+		}
+		throw IllegalArgumentException("Invalid URI: " + documentUri)
+	}
+	
+	fun getFile(context : Context, path : String) : File? {
+		try {
+			if(path.startsWith("/")) return File(path)
+			val uri = Uri.parse(path)
+			if("file" == uri.scheme) return File(uri.path)
 			
-		} else if(- 1 != CHARS_MUST_PDI.indexOf(c)) {
-			if(stack == null) stack = LinkedList()
-			stack.add(PDI)
-		} else if(stack != null && ! stack.isEmpty() && stack.last == c) {
-			stack.removeLast()
-		}
-		++ i
-	}
-	
-	if(stack == null || stack.isEmpty()) return src
-	
-	val sb = StringBuilder()
-	sb.append(src)
-	while(! stack.isEmpty()) {
-		sb.append(stack.removeLast() as Char)
-	}
-	return sb.toString()
-}
-
-fun loadRawResource(context : Context, res_id : Int) : ByteArray? {
-	try {
-		context.resources.openRawResource(res_id).use { inStream ->
-			val bao = ByteArrayOutputStream()
-			IOUtils.copy(inStream, bao)
-			return bao.toByteArray()
+			// if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT )
+			run {
+				if(isExternalStorageDocument(uri)) {
+					try {
+						val docId = getDocumentId(uri)
+						val split = docId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+						if(split.size >= 2) {
+							val uuid = split[0]
+							if("primary".equals(uuid, ignoreCase = true)) {
+								return File(Environment.getExternalStorageDirectory().toString() + "/" + split[1])
+							} else {
+								val volume_map = Utils.getSecondaryStorageVolumesMap(context)
+								val volume_path = volume_map[uuid]
+								if(volume_path != null) {
+									return File(volume_path + "/" + split[1])
+								}
+							}
+						}
+					} catch(ex : Throwable) {
+						log.trace(ex)
+					}
+					
+				}
+			}
+			// MediaStore Uri
+			context.contentResolver.query(uri, null, null, null, null).use { cursor ->
+				if(cursor.moveToFirst()) {
+					val col_count = cursor.columnCount
+					for(i in 0 until col_count) {
+						val type = cursor.getType(i)
+						if(type != Cursor.FIELD_TYPE_STRING) continue
+						val name = cursor.getColumnName(i)
+						val value = if(cursor.isNull(i)) null else cursor.getString(i)
+						if(value != null && value.isNotEmpty() && "filePath" == name) return File(value)
+					}
+				}
+			}
+		} catch(ex : Throwable) {
+			log.trace(ex)
 		}
 		
-	} catch(ex : Throwable) {
-		log.trace(ex)
+		return null
 	}
 	
-	return null
-}
-
-fun getExtraObject(data : Intent?, key : String) : Any? {
-	return data?.extras?.get(key)
-}
+	fun getActivityFromView(view : View?) : Activity? {
+		if(view != null) {
+			var context = view.context
+			while(context is ContextWrapper) {
+				if(context is Activity) return context
+				context = context.baseContext
+			}
+		}
+		return null
+	}
+	
+	fun sanitizeBDI(src : String) : String {
+		
+		var stack : LinkedList<Char>? = null
+		
+		var i = 0
+		val ie = src.length
+		while(i < ie) {
+			val c = src[i]
+			
+			if(- 1 != CHARS_MUST_PDF.indexOf(c)) {
+				if(stack == null) stack = LinkedList()
+				stack.add(PDF)
+				
+			} else if(- 1 != CHARS_MUST_PDI.indexOf(c)) {
+				if(stack == null) stack = LinkedList()
+				stack.add(PDI)
+			} else if(stack != null && ! stack.isEmpty() && stack.last == c) {
+				stack.removeLast()
+			}
+			++ i
+		}
+		
+		if(stack == null || stack.isEmpty()) return src
+		
+		val sb = StringBuilder()
+		sb.append(src)
+		while(! stack.isEmpty()) {
+			sb.append(stack.removeLast() as Char)
+		}
+		return sb.toString()
+	}
+	
+	fun loadRawResource(context : Context, res_id : Int) : ByteArray? {
+		try {
+			context.resources.openRawResource(res_id).use { inStream ->
+				val bao = ByteArrayOutputStream()
+				IOUtils.copy(inStream, bao)
+				return bao.toByteArray()
+			}
+			
+		} catch(ex : Throwable) {
+			log.trace(ex)
+		}
+		
+		return null
+	}
+	
+	fun getExtraObject(data : Intent?, key : String) : Any? {
+		return data?.extras?.get(key)
+	}
 	
 }

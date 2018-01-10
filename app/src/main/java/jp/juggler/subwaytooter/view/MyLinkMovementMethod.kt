@@ -7,17 +7,7 @@ import android.text.style.ClickableSpan
 import android.view.MotionEvent
 import android.widget.TextView
 
-class MyLinkMovementMethod : LinkMovementMethod() {
-	
-	companion object {
-		private lateinit var instanceX : MyLinkMovementMethod
-		
-		val instance : MyLinkMovementMethod
-			get() {
-				if(! ::instanceX.isInitialized) instanceX = MyLinkMovementMethod()
-				return instanceX
-			}
-	}
+object MyLinkMovementMethod : LinkMovementMethod() {
 	
 	override fun onTouchEvent(widget : TextView, buffer : Spannable, event : MotionEvent) : Boolean {
 		

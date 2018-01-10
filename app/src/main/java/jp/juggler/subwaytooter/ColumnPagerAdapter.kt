@@ -31,12 +31,12 @@ internal class ColumnPagerAdapter(private val activity : ActMain) : PagerAdapter
 	}
 	
 	
-	override fun getPageTitle(page_idx : Int) : CharSequence {
-		return getColumn(page_idx) !!.getColumnName(false)
+	override fun getPageTitle(page_idx : Int) : CharSequence? {
+		return getColumn(page_idx) ?.getColumnName(false)
 	}
 	
-	override fun isViewFromObject(view : View, `object` : Any) : Boolean {
-		return view === `object`
+	override fun isViewFromObject(view : View, obj : Any) : Boolean {
+		return view === obj
 	}
 	
 	override fun instantiateItem(container : ViewGroup, page_idx : Int) : Any {
@@ -53,10 +53,10 @@ internal class ColumnPagerAdapter(private val activity : ActMain) : PagerAdapter
 		return root
 	}
 	
-	override fun destroyItem(container : ViewGroup, page_idx : Int, `object` : Any) {
-		val view = `object` as View
-		//
-		container.removeView(view)
+	override fun destroyItem(container : ViewGroup, page_idx : Int, obj : Any) {
+		if( obj is View ){
+			container.removeView(obj)
+		}
 		//
 		val holder = holder_list.get(page_idx)
 		holder_list.remove(page_idx)

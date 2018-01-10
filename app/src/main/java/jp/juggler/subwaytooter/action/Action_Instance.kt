@@ -38,7 +38,7 @@ object Action_Instance {
 		}
 		if(account_list.isEmpty()) {
 			// 持ってないなら疑似アカウントを追加する
-			val ai = ActionUtils.addPseudoAccount(activity, host)
+			val ai = addPseudoAccount(activity, host)
 			if(ai != null) {
 				activity.addColumn(activity.defaultInsertPosition, ai, Column.TYPE_LOCAL)
 			}
@@ -59,7 +59,7 @@ object Action_Instance {
 			return
 		}
 		
-		TootTaskRunner(activity, true).run(access_info, object : TootTask {
+		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				val body = RequestBody.create(

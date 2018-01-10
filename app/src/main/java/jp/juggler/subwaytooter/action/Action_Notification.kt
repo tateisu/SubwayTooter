@@ -29,7 +29,7 @@ object Action_Notification {
 				.show()
 			return
 		}
-		TootTaskRunner(activity, true).run(target_account, object : TootTask {
+		TootTaskRunner(activity).run(target_account, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				val request_builder = Request.Builder().post(
@@ -61,7 +61,7 @@ object Action_Notification {
 	fun deleteOne(
 		activity : ActMain, access_info : SavedAccount, notification : TootNotification
 	) {
-		TootTaskRunner(activity, true).run(access_info, object : TootTask {
+		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val request_builder = Request.Builder()
 					.post(RequestBody.create(

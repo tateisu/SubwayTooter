@@ -9,7 +9,6 @@ import android.text.style.ReplacementSpan
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.util.APNGFrames
-import jp.juggler.subwaytooter.util.CustomEmojiLoadCompleteCallback
 import jp.juggler.subwaytooter.util.LogCategory
 import java.lang.ref.WeakReference
 
@@ -22,6 +21,7 @@ class NetworkEmojiSpan internal constructor(private val url : String) : Replacem
 		private const val scale_ratio = 1.14f
 		private const val descent_ratio = 0.211f
 	}
+	
 	private val mPaint = Paint()
 	private val rect_src = Rect()
 	private val rect_dst = RectF()
@@ -46,11 +46,6 @@ class NetworkEmojiSpan internal constructor(private val url : String) : Replacem
 		this.invalidate_callback = invalidate_callback
 	}
 	
-	// implements CustomEmojiCache.Callback
-	private val emojiLoadCallback : CustomEmojiLoadCompleteCallback = {
-		invalidate_callback ?.delayInvalidate(0)
-	}
-	
 	override fun getSize(
 		paint : Paint, text : CharSequence, @IntRange(from = 0) start : Int, @IntRange(from = 0) end : Int, fm : Paint.FontMetricsInt?
 	) : Int {
@@ -70,15 +65,21 @@ class NetworkEmojiSpan internal constructor(private val url : String) : Replacem
 	override fun draw(
 		canvas : Canvas, text : CharSequence, start : Int, end : Int, x : Float, top : Int, baseline : Int, bottom : Int, textPaint : Paint
 	) {
+		val invalidate_callback = this.invalidate_callback
 		if(invalidate_callback == null) {
 			log.e("draw: invalidate_callback is null.")
 			return
 		}
 		
 		// APNGデータの取得
-		val frames = App1.custom_emoji_cache[refDrawTarget, url, emojiLoadCallback] ?: return
+		val frames = App1.custom_emoji_cache.getFrames( refDrawTarget, url){
+			invalidate_callback.delayInvalidate(0)
+		} ?: return
 		
-		val t = if(App1.disable_emoji_animation) 0L else invalidate_callback !!.timeFromStart
+		val t = if(App1.disable_emoji_animation)
+			0L
+		else
+			invalidate_callback.timeFromStart
 		
 		// アニメーション開始時刻からの経過時間に応じたフレームを探索
 		frames.findFrame(mFrameFindResult, t)
@@ -103,9 +104,8 @@ class NetworkEmojiSpan internal constructor(private val url : String) : Replacem
 		// 少し後に描画しなおす
 		val delay = mFrameFindResult.delay
 		if(delay != Long.MAX_VALUE && ! App1.disable_emoji_animation) {
-			invalidate_callback?.delayInvalidate(delay)
+			invalidate_callback.delayInvalidate(delay)
 		}
 	}
 	
-
 }

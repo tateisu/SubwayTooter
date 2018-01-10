@@ -20,9 +20,9 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.Styler
-import jp.juggler.subwaytooter.action.ActionUtils
 import jp.juggler.subwaytooter.action.Action_List
 import jp.juggler.subwaytooter.action.Action_ListMember
+import jp.juggler.subwaytooter.action.makeAccountListNonPseudo
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
@@ -30,6 +30,7 @@ import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootList
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.parseList
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
@@ -38,7 +39,12 @@ import jp.juggler.subwaytooter.view.MyListView
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 
 @SuppressLint("InflateParams")
-class DlgListMember(private val activity : ActMain, who : TootAccount, _list_owner : SavedAccount) : View.OnClickListener {
+class DlgListMember(
+	private val activity : ActMain,
+	who : TootAccount,
+	_list_owner : SavedAccount
+) : View.OnClickListener {
+	
 	private val dialog : Dialog
 	
 	private val btnListOwner : Button
@@ -53,7 +59,7 @@ class DlgListMember(private val activity : ActMain, who : TootAccount, _list_own
 	private val adapter : MyListAdapter
 	
 	init {
-		this.account_list = ActionUtils.makeAccountListNonPseudo(activity, null)
+		this.account_list = makeAccountListNonPseudo(activity, null)
 		this.target_user_full_acct = _list_owner.getFullAcct(who)
 		
 		if(_list_owner.isPseudo) {
@@ -139,7 +145,7 @@ class DlgListMember(private val activity : ActMain, who : TootAccount, _list_own
 			//
 			
 		} else {
-			val acct = a.getFullAcct(a.loginAccount)
+			val acct = a.acct
 			val ac = AcctColor.load(acct)
 			val nickname = if(AcctColor.hasNickname(ac)) ac.nickname else acct
 			btnListOwner.text = nickname
@@ -168,9 +174,9 @@ class DlgListMember(private val activity : ActMain, who : TootAccount, _list_own
 			return
 		}
 		
-		TootTaskRunner(activity, true).run(list_owner , object : TootTask {
+		TootTaskRunner(activity).run(list_owner , object : TootTask {
 			
-			internal var new_list : TootList.List? = null
+			internal var new_list : ArrayList<TootList>? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				// リストに追加したいアカウントの自タンスでのアカウントIDを取得する
@@ -189,26 +195,24 @@ class DlgListMember(private val activity : ActMain, who : TootAccount, _list_own
 					}
 				}
 				
-				if(local_who == null) {
-					return TootApiResult(activity.getString(R.string.account_sync_failed))
-				}
+				val local_who = this@DlgListMember.local_who
+					?: return TootApiResult(activity.getString(R.string.account_sync_failed))
 				
 				// リスト登録状況を取得
-				result = client.request("/api/v1/accounts/" + local_who !!.id + "/lists")
+				result = client.request("/api/v1/accounts/" + local_who .id + "/lists")
 				var jsonArray = result?.jsonArray ?:return result
-				
 				
 				// 結果を解釈する
 				val set_registered = HashSet<Long>()
-				for(a in TootList.parseList(jsonArray)) {
+				for(a in parseList(::TootList,jsonArray)) {
 					set_registered.add(a.id)
 				}
 				
 				// リスト一覧を取得
 				result = client.request("/api/v1/lists")
-				jsonArray = result?.jsonArray ?:return result
+				jsonArray = result?.jsonArray ?: return result
 
-				val new_list = TootList.parseList(jsonArray)
+				val new_list = parseList(::TootList,jsonArray)
 				this.new_list = new_list
 				
 				// isRegistered を設定する
@@ -234,7 +238,7 @@ class DlgListMember(private val activity : ActMain, who : TootAccount, _list_own
 		
 	}
 	
-	private fun showList(_list : TootList.List?) {
+	private fun showList(_list : ArrayList<TootList>?) {
 		btnCreateList.isEnabled = _list != null
 		adapter.item_list.clear()
 		when {

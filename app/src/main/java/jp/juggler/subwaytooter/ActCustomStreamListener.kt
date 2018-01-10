@@ -8,7 +8,6 @@ import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
-import android.text.TextUtils
 import android.text.TextWatcher
 import android.view.View
 import android.widget.EditText
@@ -37,9 +36,9 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 	private var bLoading = false
 	
 	private val isTestRunning : Boolean
-		get() = last_task != null && ! last_task !!.isCancelled
+		get() = last_task?.isCancelled ?: false
 	
-	internal var last_task : AsyncTask<Void, Void, String>? = null
+	internal var last_task : AsyncTask<Void, Void, String?>? = null
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -58,7 +57,9 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 	
 	override fun onSaveInstanceState(outState : Bundle?) {
 		super.onSaveInstanceState(outState)
-		outState !!.putString(STATE_STREAM_CONFIG_JSON, stream_config_json)
+		outState ?: return
+		
+		outState.putString(STATE_STREAM_CONFIG_JSON, stream_config_json)
 		
 	}
 	
@@ -157,21 +158,22 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 		}
 	}
 	
-	@SuppressLint("StaticFieldLeak") private fun startTest() {
+	@SuppressLint("StaticFieldLeak")
+	private fun startTest() {
 		val strSecret = etStreamListenerSecret.text.toString().trim { it <= ' ' }
 		val strUrl = etStreamListenerConfigurationUrl.text.toString().trim { it <= ' ' }
 		stream_config_json = null
 		showButtonState()
 		
-		last_task = object : AsyncTask<Void, Void, String>() {
+		val task = object : AsyncTask<Void, Void, String?>() {
 			override fun doInBackground(vararg params : Void) : String? {
 				try {
 					
 					while(true) {
-						if(TextUtils.isEmpty(strSecret)) {
+						if( strSecret.isEmpty() ) {
 							addLog("Secret is empty. Custom Listener is not used.")
 							break
-						} else if(TextUtils.isEmpty(strUrl)) {
+						} else if(strUrl.isEmpty() ) {
 							addLog("Configuration URL is empty. Custom Listener is not used.")
 							break
 						}
@@ -188,24 +190,23 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 							break
 						}
 						
-						val json : String?
+						val bodyString : String?
 						try {
-							
-							json = response.body() !!.string()
+							bodyString = response.body()?.string()
 						} catch(ex : Throwable) {
 							log.trace(ex)
 							addLog("Can't get content body")
 							break
 						}
 						
-						if(json == null) {
+						if(bodyString == null) {
 							addLog("content body is null")
 							break
 						}
 						
 						val jv : JsonValue
 						try {
-							jv = JsonValue.readHjson(json)
+							jv = JsonValue.readHjson(bodyString)
 						} catch(ex : Throwable) {
 							log.trace(ex)
 							addLog(Utils.formatError(ex, "Can't parse configuration data."))
@@ -254,7 +255,7 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 									continue
 								}
 								val sv = v.asString()
-								if(TextUtils.isEmpty(sv)) {
+								if(sv.isEmpty()) {
 									addLog("$strInstance.$key : empty parameter.")
 									has_error = true
 								} else if(sv.contains(" ")) {
@@ -302,7 +303,7 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 							break
 						}
 						
-						return json
+						return bodyString
 					}
 					
 				} catch(ex : Throwable) {
@@ -313,8 +314,8 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 				return null
 			}
 			
-			override fun onCancelled(s : String) {
-				super.onPostExecute(s)
+			override fun onCancelled(s : String?) {
+				onPostExecute(s)
 			}
 			
 			override fun onPostExecute(s : String?) {
@@ -329,7 +330,8 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 			}
 			
 		}
-		last_task !!.executeOnExecutor(App1.task_executor)
+		last_task = task
+		task.executeOnExecutor(App1.task_executor)
 	}
 	
 	companion object {

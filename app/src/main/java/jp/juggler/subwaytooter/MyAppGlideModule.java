@@ -31,9 +31,6 @@ static final LogCategory log = new LogCategory( "MyAppGlideModule" );
 	}
 	
 	@Override public void registerComponents( @NonNull Context context, @NonNull Glide glide, @NonNull Registry registry) {
-		
-		log.d("registerComponents");
-
 		// デフォルト実装は何もしないらしい
 		super.registerComponents( context,glide,registry );
 		
@@ -44,9 +41,6 @@ static final LogCategory log = new LogCategory( "MyAppGlideModule" );
 	
 	@Override
 	public void applyOptions(Context context, GlideBuilder builder) {
-		
-		log.d("applyOptions");
-		
 		// デフォルト実装は何もしないらしい
 		super.applyOptions( context,builder );
 		

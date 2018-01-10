@@ -8,7 +8,6 @@ import android.support.annotation.ColorInt
 import android.support.v4.view.ViewCompat
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
-import android.text.TextUtils
 import android.text.TextWatcher
 import android.view.View
 import android.widget.EditText
@@ -366,10 +365,9 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 		try {
 			ivColumnBackground.setImageDrawable(null)
 			last_image_uri = null
-			if(last_image_bitmap != null) {
-				last_image_bitmap !!.recycle()
-				last_image_bitmap = null
-			}
+			
+			last_image_bitmap?.recycle()
+			last_image_bitmap = null
 		} catch(ex : Throwable) {
 			log.trace(ex)
 		}

@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.api
 
-import jp.juggler.subwaytooter.R
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -12,13 +11,20 @@ import okhttp3.Response
 import okhttp3.WebSocket
 
 open class TootApiResult(
-	val dummy : Int,
+	@Suppress("unused") val dummy :Int =0,
 	var error : String? = null,
 	var response : Response? = null,
-	var data : Any? = null,
-	var bodyString : String? = null,
-	var token_info : JSONObject? = null
+	var bodyString : String? = null
 ) {
+	var token_info : JSONObject? = null
+
+	var data : Any? = null
+		set(value){
+			if(value is JSONArray) {
+				parseLinkHeader(response, value)
+			}
+			field = value
+		}
 	
 	companion object {
 		private val log = LogCategory("TootApiResult")
@@ -28,7 +34,7 @@ open class TootApiResult(
 		private const val MIMUMEDON = "mimumedon.com"
 		private const val MIMUMEDON_ERROR = "mimumedon.comには対応しません"
 		
-		const val NO_INSTANCE = "missing instance name"
+		private const val NO_INSTANCE = "missing instance name"
 		const val NO_INFORMATION = "(no information)"
 		
 		fun makeWithCaption(caption : String?) : TootApiResult {
@@ -49,38 +55,22 @@ open class TootApiResult(
 	var link_newer : String? = null // より新しいデータへの
 	var caption : String = "?"
 	
+	constructor():this(0)
 	
-	constructor() : this(0)
+	constructor( error : String) : this(0,error=error)
 	
-	constructor(
-		error : String?
-	) : this(0, error = error)
+	constructor( response : Response, error : String )
+		: this(0,error,response)
 	
-	constructor(
-		response : Response,
-		error : String
-	) : this(0,
-		response = response,
-		error = error
-	)
-	
-	constructor(
-		response : Response,
-		bodyString : String,
-		data : Any?
-	) : this(0,
-		response = response,
-		bodyString = bodyString,
-		data = data
-	) {
-		if(data is JSONArray) {
-			parseLinkHeader(response, data)
-		}
+	constructor( response : Response, bodyString : String, data : Any? )
+		: this(0,response = response,bodyString = bodyString)
+	{
+		this.data = data
 	}
 	
-	//		this.token_info = token_info
-	
-	constructor(socket : WebSocket) : this(0, data = socket)
+	constructor( socket : WebSocket) : this(0){
+		this.data = socket
+	}
 	
 	
 	// return result.setError(...) と書きたい
@@ -109,24 +99,26 @@ open class TootApiResult(
 	
 	
 	private fun parseLinkHeader(
-		response : Response,
+		response : Response?,
 		array : JSONArray
 	) {
-		log.d("array size=%s", array.length() )
-		
-		val sv = response.header("Link")
-		if(sv == null) {
-			log.d("missing Link header")
-		} else {
-			// Link:  <https://mastodon.juggler.jp/api/v1/timelines/home?limit=XX&max_id=405228>; rel="next",
-			//        <https://mastodon.juggler.jp/api/v1/timelines/home?limit=XX&since_id=436946>; rel="prev"
-			val m = reLinkURL.matcher(sv)
-			while(m.find()) {
-				val url = m.group(1)
-				val rel = m.group(2)
-				//	log.d("Link %s,%s",rel,url);
-				if("next" == rel) link_older = url
-				if("prev" == rel) link_newer = url
+		if( response != null){
+			log.d("array size=%s", array.length() )
+			
+			val sv = response.header("Link")
+			if(sv == null) {
+				log.d("missing Link header")
+			} else {
+				// Link:  <https://mastodon.juggler.jp/api/v1/timelines/home?limit=XX&max_id=405228>; rel="next",
+				//        <https://mastodon.juggler.jp/api/v1/timelines/home?limit=XX&since_id=436946>; rel="prev"
+				val m = reLinkURL.matcher(sv)
+				while(m.find()) {
+					val url = m.group(1)
+					val rel = m.group(2)
+					//	log.d("Link %s,%s",rel,url);
+					if("next" == rel) link_older = url
+					if("prev" == rel) link_newer = url
+				}
 			}
 		}
 	}

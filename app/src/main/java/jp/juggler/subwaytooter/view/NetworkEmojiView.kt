@@ -11,25 +11,20 @@ import android.view.View
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.util.APNGFrames
-import jp.juggler.subwaytooter.util.CustomEmojiLoadCompleteCallback
 import java.lang.ref.WeakReference
 
-class NetworkEmojiView : View{
+class NetworkEmojiView : View {
 	
 	constructor(context : Context) : super(context)
 	
 	constructor(context : Context, attrs : AttributeSet?) : super(context, attrs)
 	
 	constructor(context : Context, attrs : AttributeSet?, defStyleAttr : Int) : super(context, attrs, defStyleAttr)
-
+	
 	private var url : String? = null
 	
-	private val onEmojiLoad : CustomEmojiLoadCompleteCallback = {
-		postInvalidateOnAnimation()
-	}
+	private val tagDrawTarget : WeakReference<Any>
 	
-	private val tagDrawTarget :WeakReference<Any>
-
 	// フレーム探索結果を格納する構造体を確保しておく
 	private val mFrameFindResult = APNGFrames.FindFrameResult()
 	
@@ -43,10 +38,10 @@ class NetworkEmojiView : View{
 	private val rect_src = Rect()
 	private val rect_dst = RectF()
 	
-	init{
-		tagDrawTarget= WeakReference(this)
+	init {
+		tagDrawTarget = WeakReference(this)
 	}
-
+	
 	fun setEmoji(url : String?) {
 		this.url = url
 		mPaint.isFilterBitmap = true
@@ -54,12 +49,14 @@ class NetworkEmojiView : View{
 	
 	override fun onDraw(canvas : Canvas) {
 		super.onDraw(canvas)
-
+		
 		val url = this.url
-		if( url == null || url.isBlank() ) return
-
+		if(url == null || url.isBlank()) return
+		
 		// APNGデータの取得
-		val frames = App1.custom_emoji_cache[tagDrawTarget, url, onEmojiLoad] ?: return
+		val frames = App1.custom_emoji_cache.getFrames(tagDrawTarget,url){
+			postInvalidateOnAnimation()
+		}?: return
 		
 		val now = SystemClock.elapsedRealtime()
 		

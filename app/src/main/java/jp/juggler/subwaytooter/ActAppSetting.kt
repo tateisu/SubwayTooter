@@ -15,7 +15,6 @@ import android.support.v4.view.ViewCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
-import android.text.TextUtils
 import android.text.TextWatcher
 import android.util.JsonWriter
 import android.view.View
@@ -765,7 +764,7 @@ class ActAppSetting : AppCompatActivity()
 	
 	private fun parseFontSize(src : String) : Float {
 		try {
-			if(! TextUtils.isEmpty(src)) {
+			if( src.isNotEmpty() ) {
 				val f = NumberFormat.getInstance(Locale.getDefault()).parse(src).toFloat()
 				return when {
 					f.isNaN() -> Float.NaN
@@ -795,7 +794,7 @@ class ActAppSetting : AppCompatActivity()
 		tvFontUrl : TextView, font_url : String?
 	) {
 		try {
-			if(! TextUtils.isEmpty(font_url)) {
+			if(font_url?.isNotEmpty() == true ) {
 				
 				tvFontUrl.typeface = Typeface.DEFAULT
 				val face = Typeface.createFromFile(font_url)
@@ -866,7 +865,7 @@ class ActAppSetting : AppCompatActivity()
 		val progress = ProgressDialog(this)
 		
 		val task = @SuppressLint("StaticFieldLeak")
-		object : AsyncTask<Void, String, File>() {
+		object : AsyncTask<Void, String, File?>() {
 			
 			override fun doInBackground(vararg params : Void) : File? {
 				try {
@@ -889,8 +888,8 @@ class ActAppSetting : AppCompatActivity()
 				return null
 			}
 			
-			override fun onCancelled(result : File) {
-				super.onPostExecute(result)
+			override fun onCancelled(result : File?) {
+				onPostExecute(result)
 			}
 			
 			override fun onPostExecute(result : File?) {
@@ -984,7 +983,7 @@ class ActAppSetting : AppCompatActivity()
 		
 		override fun getView(position : Int, viewOld : View?, parent : ViewGroup) : View {
 			val view = viewOld ?: layoutInflater.inflate(android.R.layout.simple_spinner_item, parent, false)
-			(view.findViewById<View>(android.R.id.text1) as TextView).text =
+			view.findViewById<TextView>(android.R.id.text1) .text =
 				if(position == 0)
 					getString(R.string.ask_always)
 				else
@@ -994,7 +993,7 @@ class ActAppSetting : AppCompatActivity()
 		
 		override fun getDropDownView(position : Int, viewOld : View?, parent : ViewGroup) : View {
 			val view = viewOld ?: layoutInflater.inflate(R.layout.lv_spinner_dropdown, parent, false)
-			(view.findViewById<View>(android.R.id.text1) as TextView).text =
+			view.findViewById<TextView>(android.R.id.text1).text =
 				if(position == 0)
 					getString(R.string.ask_always)
 				else

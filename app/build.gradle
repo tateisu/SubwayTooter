@@ -74,7 +74,8 @@ dependencies {
     compile 'com.google.firebase:firebase-core:11.8.0'
     compile 'com.google.firebase:firebase-messaging:11.8.0'
 
-    // testCompile 'junit:junit:4.12'
+    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
+    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
 
     compile 'uk.co.chrisjenx:calligraphy:2.3.0'
@@ -97,7 +98,6 @@ dependencies {
     compile 'com.google.android:flexbox:0.3.1'
 
     compile 'com.astuetz:pagerslidingtabstrip:1.0.1'
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
 
 
     implementation 'com.google.android.exoplayer:exoplayer:r2.5.4'

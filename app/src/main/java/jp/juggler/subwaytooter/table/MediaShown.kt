@@ -74,7 +74,7 @@ object MediaShown {
 			val cv = ContentValues()
 			cv.put(COL_HOST, status.hostAccessOrOriginal)
 			cv.put(COL_STATUS_ID, status.idAccessOrOriginal)
-			cv.put(COL_SHOWN, b2i(is_shown))
+			cv.put(COL_SHOWN, is_shown.b2i())
 			cv.put(COL_TIME_SAVE, now)
 			App1.database.replace(table, null, cv)
 			

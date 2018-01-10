@@ -17,15 +17,15 @@ class NicoEnquete(
 	context : Context,
 	access_info : SavedAccount,
 	status : TootStatus,
-	list_attachment : TootAttachmentLike.List?,
+	list_attachment : ArrayList<TootAttachmentLike>?,
 	src : JSONObject
 ) {
 	
 	// one of enquete,enquete_result
-	val type : String
+	val type : String?
 	
 	// HTML text
-	val question : Spannable
+	val question : Spannable // 表示用にデコードしてしまうのでNonNullになる
 	
 	// array of text with emoji
 	val items : ArrayList<Spannable>?
@@ -41,11 +41,7 @@ class NicoEnquete(
 	val status_id : Long
 	
 	init {
-		this.ratios = parseFloatArray(src, "ratios")
-		this.ratios_text = parseStringArray(src, "ratios_text")
-		this.type = Utils.optStringX(src, "type") ?: ""
-		this.time_start = status.time_created_at
-		this.status_id = status.id
+		this.type = Utils.optStringX(src, "type")
 		
 		this.question = DecodeOptions()
 			.setShort(true)
@@ -57,6 +53,13 @@ class NicoEnquete(
 			.decodeHTML(context, access_info, Utils.optStringX(src, "question") ?: "?")
 		
 		this.items = parseChoiceList(context, status, parseStringArray(src, "items"))
+		
+		this.ratios = parseFloatArray(src, "ratios")
+		this.ratios_text = parseStringArray(src, "ratios_text")
+		
+		this.time_start = status.time_created_at
+		this.status_id = status.id
+		
 	}
 	
 	companion object {
@@ -76,37 +79,34 @@ class NicoEnquete(
 			context : Context,
 			access_info : SavedAccount,
 			status : TootStatus,
-			list_attachment : TootAttachmentLike.List?,
+			list_attachment :ArrayList< TootAttachmentLike>?,
 			jsonString : String?
 		) : NicoEnquete? {
-			try {
-				if(jsonString != null) {
-					return NicoEnquete(
-						context,
-						access_info,
-						status,
-						list_attachment,
-						JSONObject(jsonString)
-					)
-				}
+			jsonString ?: return null
+			return try {
+				NicoEnquete(
+					context,
+					access_info,
+					status,
+					list_attachment,
+					JSONObject(jsonString)
+				)
 			} catch(ex : Throwable) {
 				log.trace(ex)
+				null
 			}
-			return null
 		}
 		
 		private fun parseStringArray(src : JSONObject, name : String) : ArrayList<String>? {
 			val array = src.optJSONArray(name)
 			if(array != null) {
-				val dst = ArrayList<String>()
-				var i = 0
-				val ie = array.length()
-				while(i < ie) {
+				val size = array.length()
+				val dst = ArrayList<String>(size)
+				for(i in 0 until size) {
 					val sv = Utils.optStringX(array, i)
 					if(sv != null) dst.add(sv)
-					++ i
 				}
-				return dst
+				if(dst.isNotEmpty()) return dst
 			}
 			return null
 		}
@@ -114,40 +114,38 @@ class NicoEnquete(
 		private fun parseFloatArray(src : JSONObject, name : String) : ArrayList<Float>? {
 			val array = src.optJSONArray(name)
 			if(array != null) {
-				val dst = ArrayList<Float>()
-				var i = 0
-				val ie = array.length()
-				while(i < ie) {
+				val size = array.length()
+				val dst = ArrayList<Float>(size)
+				for(i in 0 until size) {
 					val dv = array.optDouble(i)
 					dst.add(dv.toFloat())
-					++ i
 				}
-				return dst
+				if(dst.isNotEmpty()) return dst
 			}
 			return null
 		}
 		
-		private fun parseChoiceList(context : Context, status : TootStatus, tmp_items : ArrayList<String>?) : ArrayList<Spannable>? {
-			if(tmp_items != null) {
-				val size = tmp_items.size
-				if(size > 0) {
-					val items = ArrayList<Spannable>(size)
-					for(i in 0 until size) {
-						items.add(
-							DecodeOptions()
-								.setCustomEmojiMap(status.custom_emojis)
-								.setProfileEmojis(status.profile_emojis)
-								.decodeEmoji(context,
-									reWhitespace
-										.matcher(Utils.sanitizeBDI(tmp_items[i]))
-										.replaceAll(" ")
-								)
-						)
-					}
-					return items
-					
+		private fun parseChoiceList(
+			context : Context,
+			status : TootStatus,
+			stringArray : ArrayList<String>?
+		) : ArrayList<Spannable>? {
+			if(stringArray != null) {
+				val size = stringArray.size
+				val items = ArrayList<Spannable>(size)
+				for(i in 0 until size) {
+					items.add(
+						DecodeOptions()
+							.setCustomEmojiMap(status.custom_emojis)
+							.setProfileEmojis(status.profile_emojis)
+							.decodeEmoji(context,
+								reWhitespace
+									.matcher(Utils.sanitizeBDI(stringArray[i]))
+									.replaceAll(" ")
+							)
+					)
 				}
-				
+				if(items.isNotEmpty()) return items
 			}
 			return null
 		}

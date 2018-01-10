@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.support.annotation.ColorInt
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
-import android.text.TextUtils
 import android.text.TextWatcher
 import android.view.View
 import android.widget.Button
@@ -153,7 +152,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 	
 	private fun show() {
 		val s = etNickname.text.toString().trim { it <= ' ' }
-		tvPreview.text = if(! TextUtils.isEmpty(s)) s else acct
+		tvPreview.text = if( s.isNotEmpty() ) s else acct
 		var c : Int
 		
 		c = color_fg
@@ -228,7 +227,8 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
 		try {
-			val uri = if(TextUtils.isEmpty(notification_sound_uri)) null else Uri.parse(notification_sound_uri)
+			val notification_sound_uri = this.notification_sound_uri
+			val uri = if(notification_sound_uri?.isEmpty() != false ) null else Uri.parse(notification_sound_uri)
 			if(uri != null) {
 				intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri)
 			}

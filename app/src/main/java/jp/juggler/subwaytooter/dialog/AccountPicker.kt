@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.dialog
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.DialogInterface
 import android.support.v7.app.AppCompatActivity
 import android.view.Gravity
 import android.view.View
@@ -18,14 +17,13 @@ import jp.juggler.subwaytooter.util.Utils
 
 import android.widget.LinearLayout
 import android.widget.TextView
-
-typealias AccountPickerCallback = (ai : SavedAccount) -> Unit
-typealias DismissCallback = (dialog: DialogInterface) -> Unit
+import jp.juggler.subwaytooter.util.DialogInterfaceCallback
+import jp.juggler.subwaytooter.util.SavedAccountCallback
 
 object AccountPicker {
 	
 	fun pick(
-		activity : AppCompatActivity, bAllowPseudo : Boolean, bAuto : Boolean, message : String?, callback : AccountPickerCallback
+		activity : AppCompatActivity, bAllowPseudo : Boolean, bAuto : Boolean, message : String?, callback : SavedAccountCallback
 	) {
 		
 		val account_list = SavedAccount.loadAccountList(activity)
@@ -34,21 +32,23 @@ object AccountPicker {
 	}
 	
 	fun pick(
-		activity : AppCompatActivity, bAllowPseudo : Boolean, bAuto : Boolean, message : String?, callback : AccountPickerCallback, dismiss_callback : DismissCallback?
+		activity : AppCompatActivity, bAllowPseudo : Boolean, bAuto : Boolean, message : String?,
+		callback : SavedAccountCallback,
+		dismiss_callback : DialogInterfaceCallback?
 	) {
 		val account_list = SavedAccount.loadAccountList(activity)
 		pick(activity, bAllowPseudo, bAuto, message, account_list, true, callback, dismiss_callback)
 	}
 	
 	fun pick(
-		activity : AppCompatActivity, bAllowPseudo : Boolean, bAuto : Boolean, message : String?, account_list : ArrayList<SavedAccount>, callback : AccountPickerCallback
+		activity : AppCompatActivity, bAllowPseudo : Boolean, bAuto : Boolean, message : String?, account_list : ArrayList<SavedAccount>, callback : SavedAccountCallback
 	) {
 		pick(activity, bAllowPseudo, bAuto, message, account_list, false, callback, null)
 	}
 	
 	@SuppressLint("InflateParams")
 	private fun pick(
-		activity : AppCompatActivity, bAllowPseudo : Boolean, bAuto : Boolean, message : String?, account_list : ArrayList<SavedAccount>, bSort : Boolean, callback : AccountPickerCallback, dismiss_callback : DismissCallback?
+		activity : AppCompatActivity, bAllowPseudo : Boolean, bAuto : Boolean, message : String?, account_list : ArrayList<SavedAccount>, bSort : Boolean, callback : SavedAccountCallback, dismiss_callback : DialogInterfaceCallback?
 	) {
 		if(account_list.isEmpty()) {
 			Utils.showToast(activity, false, R.string.account_empty)

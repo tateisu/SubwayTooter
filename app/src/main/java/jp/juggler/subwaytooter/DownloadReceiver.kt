@@ -17,6 +17,7 @@ class DownloadReceiver : BroadcastReceiver() {
 			
 			val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager?
 				?: throw NotImplementedError("missing DownloadManager system service")
+			
 			val query = DownloadManager.Query()
 			query.setFilterById(id)
 			downloadManager.query(query)?.use { cursor ->

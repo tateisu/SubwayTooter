@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.api.entity
 
 import org.json.JSONObject
 
-import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.Utils
 import jp.juggler.subwaytooter.util.VersionString
 
@@ -26,7 +25,7 @@ class TootInstance(src : JSONObject) {
 	val version : String?
 	
 	// バージョンの内部表現
-	val decoded_version : VersionString
+	private val decoded_version : VersionString
 	
 	// インスタンスのサムネイル。推奨サイズ1200x630px。マストドン1.6.1以降。
 	val thumbnail : String?
@@ -35,6 +34,18 @@ class TootInstance(src : JSONObject) {
 	val stats : Stats?
 	
 	// FIXME: urls をパースしてない。使ってないから…
+	
+
+	init {
+		this.uri = Utils.optStringX(src, "uri")
+		this.title = Utils.optStringX(src, "title")
+		this.description = Utils.optStringX(src, "description")
+		this.email = Utils.optStringX(src, "email")
+		this.version = Utils.optStringX(src, "version")
+		this.decoded_version = VersionString(version)
+		this.stats = parseItem(::Stats,src.optJSONObject("stats"))
+		this.thumbnail = Utils.optStringX(src, "thumbnail")
+	}
 	
 	class Stats(src : JSONObject) {
 		val user_count : Long
@@ -48,18 +59,6 @@ class TootInstance(src : JSONObject) {
 		}
 	}
 	
-	init {
-		this.uri = Utils.optStringX(src, "uri")
-		this.title = Utils.optStringX(src, "title")
-		this.description = Utils.optStringX(src, "description")
-		this.email = Utils.optStringX(src, "email")
-		this.version = Utils.optStringX(src, "version")
-		this.decoded_version = VersionString(version)
-		this.stats = parseStats(src.optJSONObject("stats"))
-		this.thumbnail = Utils.optStringX(src, "thumbnail")
-		
-	}
-	
 	fun isEnoughVersion(check : VersionString) : Boolean {
 		
 		if(decoded_version.isEmpty || check.isEmpty) return false
@@ -67,29 +66,4 @@ class TootInstance(src : JSONObject) {
 		return i >= 0
 	}
 	
-	companion object {
-		private val log = LogCategory("TootInstance")
-		
-		fun parse(src : JSONObject?) : TootInstance? {
-			if(src == null) return null
-			return try {
-				TootInstance(src)
-			} catch(ex : Throwable) {
-				log.trace(ex)
-				log.e(ex, "parse failed.")
-				null
-			}
-		}
-		
-		private fun parseStats(src : JSONObject?) : Stats? {
-			if(src == null) return null
-			return try {
-				Stats(src)
-			} catch(ex : Throwable) {
-				log.trace(ex)
-				log.e(ex, "parseStats failed.")
-				null
-			}
-		}
-	}
 }

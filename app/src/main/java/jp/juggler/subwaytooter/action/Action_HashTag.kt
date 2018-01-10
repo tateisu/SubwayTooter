@@ -36,22 +36,21 @@ object Action_HashTag {
 		d.show(activity, tag_with_sharp)
 	}
 	
+	// 検索カラムからハッシュタグを選んだ場合、カラムのアカウントでハッシュタグを開く
 	fun timeline(
 		activity : ActMain, pos : Int, access_info : SavedAccount, tag_without_sharp : String
 	) {
 		activity.addColumn(pos, access_info, Column.TYPE_HASHTAG, tag_without_sharp)
 	}
 	
-	// 他インスタンスのハッシュタグの表示
-	private fun timelineOtherInstance(
-		activity : ActMain, pos : Int, url : String, host : String, tag_without_sharp : String
-	) {
-		timelineOtherInstance_sub(activity, pos, url, host, tag_without_sharp)
-	}
-	
-	// 他インスタンスのハッシュタグの表示
-	private fun timelineOtherInstance_sub(
-		activity : ActMain, pos : Int, url : String, host : String, tag_without_sharp : String
+
+	// アカウントを選んでハッシュタグカラムを開く
+	fun timelineOtherInstance(
+		activity : ActMain,
+		pos : Int,
+		url : String,
+		host : String,
+		tag_without_sharp : String
 	) {
 		
 		val dialog = ActionsDialog()
@@ -62,6 +61,7 @@ object Action_HashTag {
 		// ソートする
 		SavedAccount.sort(account_list)
 		
+		// 分類する
 		val list_original = ArrayList<SavedAccount>()
 		val list_original_pseudo = ArrayList<SavedAccount>()
 		val list_other = ArrayList<SavedAccount>()
@@ -77,29 +77,29 @@ object Action_HashTag {
 		
 		// ブラウザで表示する
 		dialog.addAction(activity.getString(R.string.open_web_on_host, host)) { App1.openCustomTab(activity, url) }
-		
+
+		// 同タンスのアカウントがない場合は疑似アカウントを作成して開く
 		if(list_original.isEmpty() && list_original_pseudo.isEmpty()) {
-			// 疑似アカウントを作成して開く
 			dialog.addAction(activity.getString(R.string.open_in_pseudo_account, "?@" + host)) {
-				val sa = ActionUtils.addPseudoAccount(activity, host)
+				val sa = addPseudoAccount(activity, host)
 				if(sa != null) {
 					timeline(activity, pos, sa, tag_without_sharp)
 				}
 			}
 		}
 		
-		//
+		// 分類した順に選択肢を追加する
 		for(a in list_original) {
-			
-			dialog.addAction(AcctColor.getStringWithNickname(activity, R.string.open_in_account, a.acct)) { timeline(activity, pos, a, tag_without_sharp) }
+			dialog.addAction(AcctColor.getStringWithNickname(activity, R.string.open_in_account, a.acct))
+			{ timeline(activity, pos, a, tag_without_sharp) }
 		}
-		//
 		for(a in list_original_pseudo) {
-			dialog.addAction(AcctColor.getStringWithNickname(activity, R.string.open_in_account, a.acct)) { timeline(activity, pos, a, tag_without_sharp) }
+			dialog.addAction(AcctColor.getStringWithNickname(activity, R.string.open_in_account, a.acct))
+			{ timeline(activity, pos, a, tag_without_sharp) }
 		}
-		//
 		for(a in list_other) {
-			dialog.addAction(AcctColor.getStringWithNickname(activity, R.string.open_in_account, a.acct)) { timeline(activity, pos, a, tag_without_sharp) }
+			dialog.addAction(AcctColor.getStringWithNickname(activity, R.string.open_in_account, a.acct))
+			{ timeline(activity, pos, a, tag_without_sharp) }
 		}
 		
 		dialog.show(activity, "#" + tag_without_sharp)

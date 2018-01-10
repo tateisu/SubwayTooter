@@ -585,5 +585,7 @@
     <string name="highlight_desc">Swipe to delete. You may need reload column to check update.</string>
     <string name="check_sound">Check sound</string>
     <string name="keyword">Keyword</string>
+    <string name="domain_block_from_pseudo">Can\'t use domain block from pseudo account.</string>
+    <string name="domain_block_from_local">Can\'t use domain block for local instance.</string>
 
 </resources>

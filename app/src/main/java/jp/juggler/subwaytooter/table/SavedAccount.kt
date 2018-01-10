@@ -22,17 +22,18 @@ import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.Utils
 
 class SavedAccount(
-	val db_id:Long,
-	val acct:String,
-    hostArg : String? = null
+	val db_id : Long,
+	val acct : String,
+	hostArg : String? = null
 ) : LinkClickContext {
+	
+	val username : String
 
-	val username: String
-	val host : String
+	override val host : String
 	
 	var token_info : JSONObject? = null
-	var loginAccount : TootAccount? = null
-
+	var loginAccount : TootAccount? = null // 疑似アカウントなどではnullになることもある
+	
 	var visibility : String? = null
 	var confirm_boost : Boolean = false
 	
@@ -68,53 +69,67 @@ class SavedAccount(
 		}
 		set(instance) = refInstance.set(instance)
 	
-	init{
+	init {
 		val pos = acct.indexOf('@')
-		if( pos == -1 ){
+		if(pos == - 1) {
 			this.username = acct
-		}else {
+		} else {
 			this.username = acct.substring(0, pos)
 		}
-		if( username.isEmpty() )  throw RuntimeException("missing username in acct")
+		if(username.isEmpty()) throw RuntimeException("missing username in acct")
 		
-		this.host = if( hostArg != null && hostArg.isNotEmpty() ){
+		this.host = if(hostArg != null && hostArg.isNotEmpty()) {
 			hostArg
-		}else {
+		} else {
 			val hostInAcct = if(pos == - 1) "" else acct.substring(pos + 1)
 			if(hostInAcct.isEmpty()) throw RuntimeException("missing host in acct")
 			hostInAcct
 		}.toLowerCase()
 	}
 	
-	constructor(context : Context ,cursor:Cursor):this(
+	constructor(context : Context, cursor : Cursor) : this(
 		cursor.getLong(cursor.getColumnIndex(COL_ID)), // db_id
 		cursor.getString(cursor.getColumnIndex(COL_USER)), // acct
 		cursor.getString(cursor.getColumnIndex(COL_HOST)) // host
-	){
+	) {
+
 		val jsonAccount = JSONObject(cursor.getString(cursor.getColumnIndex(COL_ACCOUNT)))
-		this.loginAccount = TootAccount.parse(context,object:LinkClickContext{}, jsonAccount)
-				
-				val colIdx_visibility = cursor.getColumnIndex(COL_VISIBILITY)
-				this.visibility = if(cursor.isNull(colIdx_visibility)) null else cursor.getString(colIdx_visibility)
+
+		val loginAccount = TootAccount.parse(
+			context,
+			object : LinkClickContext {
+				override val host : String?
+					get() = this@SavedAccount.host
+			},
+			jsonAccount
+		)
+
+		if( loginAccount == null ){
+			log.e("missing loginAccount for %s",cursor.getString(cursor.getColumnIndex(COL_ACCOUNT)))
+		}
+		this.loginAccount = loginAccount
 		
-		this.confirm_boost = 0 != cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_BOOST))
-		this.dont_hide_nsfw = 0 != cursor.getInt(cursor.getColumnIndex(COL_DONT_HIDE_NSFW))
-		this.dont_show_timeout = 0 != cursor.getInt(cursor.getColumnIndex(COL_DONT_SHOW_TIMEOUT))
+		val colIdx_visibility = cursor.getColumnIndex(COL_VISIBILITY)
+		this.visibility = if(cursor.isNull(colIdx_visibility)) null else cursor.getString(colIdx_visibility)
 		
-		this.notification_mention = 0 != cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_MENTION))
-		this.notification_boost = 0 != cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_BOOST))
-		this.notification_favourite = 0 != cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_FAVOURITE))
-		this.notification_follow = 0 != cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_FOLLOW))
+		this.confirm_boost = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_BOOST)).i2b()
+		this.dont_hide_nsfw = cursor.getInt(cursor.getColumnIndex(COL_DONT_HIDE_NSFW)).i2b()
+		this.dont_show_timeout = cursor.getInt(cursor.getColumnIndex(COL_DONT_SHOW_TIMEOUT)).i2b()
 		
-		this.confirm_follow = 0 != cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_FOLLOW))
-		this.confirm_follow_locked = 0 != cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_FOLLOW_LOCKED))
-		this.confirm_unfollow = 0 != cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_UNFOLLOW))
-		this.confirm_post = 0 != cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_POST))
-				
-				val idx_notification_tag = cursor.getColumnIndex(COL_NOTIFICATION_TAG)
+		this.notification_mention = cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_MENTION)).i2b()
+		this.notification_boost = cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_BOOST)).i2b()
+		this.notification_favourite = cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_FAVOURITE)).i2b()
+		this.notification_follow = cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_FOLLOW)).i2b()
+		
+		this.confirm_follow = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_FOLLOW)).i2b()
+		this.confirm_follow_locked = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_FOLLOW_LOCKED)).i2b()
+		this.confirm_unfollow = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_UNFOLLOW)).i2b()
+		this.confirm_post = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_POST)).i2b()
+		
+		val idx_notification_tag = cursor.getColumnIndex(COL_NOTIFICATION_TAG)
 		this.notification_tag = if(cursor.isNull(idx_notification_tag)) null else cursor.getString(idx_notification_tag)
-				
-				val idx_register_key = cursor.getColumnIndex(COL_REGISTER_KEY)
+		
+		val idx_register_key = cursor.getColumnIndex(COL_REGISTER_KEY)
 		this.register_key = if(cursor.isNull(idx_register_key)) null else cursor.getString(idx_register_key)
 		
 		this.register_time = cursor.getLong(cursor.getColumnIndex(COL_REGISTER_TIME))
@@ -123,7 +138,6 @@ class SavedAccount(
 		
 		this.sound_uri = cursor.getString(cursor.getColumnIndex(COL_SOUND_URI))
 	}
-	
 	
 	val isNA : Boolean
 		get() = "?@?" == acct
@@ -142,37 +156,35 @@ class SavedAccount(
 	}
 	
 	fun updateTokenInfo(tokenInfoArg : JSONObject?) {
-
+		
 		if(db_id == INVALID_DB_ID) throw RuntimeException("updateTokenInfo: missing db_id")
-
+		
 		val token_info = tokenInfoArg ?: JSONObject()
 		this.token_info = token_info
-
+		
 		val cv = ContentValues()
 		cv.put(COL_TOKEN, token_info.toString())
 		App1.database.update(table, cv, COL_ID + "=?", arrayOf(db_id.toString()))
 	}
 	
-
-	
 	fun saveSetting() {
-
+		
 		if(db_id == INVALID_DB_ID) throw RuntimeException("saveSetting: missing db_id")
-
+		
 		val cv = ContentValues()
 		cv.put(COL_VISIBILITY, visibility)
-		cv.put(COL_CONFIRM_BOOST, b2i(confirm_boost) )
-		cv.put(COL_DONT_HIDE_NSFW, b2i(dont_hide_nsfw) )
-		cv.put(COL_DONT_SHOW_TIMEOUT, b2i(dont_show_timeout) )
-		cv.put(COL_NOTIFICATION_MENTION, b2i(notification_mention) )
-		cv.put(COL_NOTIFICATION_BOOST, b2i(notification_boost) )
-		cv.put(COL_NOTIFICATION_FAVOURITE, b2i(notification_favourite) )
-		cv.put(COL_NOTIFICATION_FOLLOW, b2i(notification_follow) )
+		cv.put(COL_CONFIRM_BOOST, confirm_boost.b2i())
+		cv.put(COL_DONT_HIDE_NSFW, dont_hide_nsfw.b2i())
+		cv.put(COL_DONT_SHOW_TIMEOUT, dont_show_timeout.b2i())
+		cv.put(COL_NOTIFICATION_MENTION, notification_mention.b2i())
+		cv.put(COL_NOTIFICATION_BOOST, notification_boost.b2i())
+		cv.put(COL_NOTIFICATION_FAVOURITE, notification_favourite.b2i())
+		cv.put(COL_NOTIFICATION_FOLLOW, notification_follow.b2i())
 		
-		cv.put(COL_CONFIRM_FOLLOW, b2i(confirm_follow) )
-		cv.put(COL_CONFIRM_FOLLOW_LOCKED, b2i(confirm_follow_locked) )
-		cv.put(COL_CONFIRM_UNFOLLOW, b2i(confirm_unfollow) )
-		cv.put(COL_CONFIRM_POST, b2i(confirm_post) )
+		cv.put(COL_CONFIRM_FOLLOW, confirm_follow.b2i())
+		cv.put(COL_CONFIRM_FOLLOW_LOCKED, confirm_follow_locked.b2i())
+		cv.put(COL_CONFIRM_UNFOLLOW, confirm_unfollow.b2i())
+		cv.put(COL_CONFIRM_POST, confirm_post.b2i())
 		
 		cv.put(COL_SOUND_URI, sound_uri)
 		
@@ -224,18 +236,6 @@ class SavedAccount(
 		this.sound_uri = b.sound_uri
 	}
 	
-	private fun getAccountHost(acct : String?) : String {
-		if(acct != null) {
-			val pos = acct.indexOf('@')
-			if(pos != - 1) return acct.substring(pos + 1)
-		}
-		return this.host
-	}
-	
-	fun getAccountHost(who : TootAccount?) : String {
-		return getAccountHost(who?.acct)
-	}
-	
 	fun getFullAcct(acct : String?) : String {
 		return when {
 			acct == null -> "?@?"
@@ -245,7 +245,7 @@ class SavedAccount(
 	}
 	
 	fun getFullAcct(who : TootAccount?) : String {
-		return getFullAcct( who?.acct)
+		return getFullAcct(who?.acct)
 	}
 	
 	private fun isLocalUser(acct : String?) : Boolean {
@@ -253,7 +253,7 @@ class SavedAccount(
 		val pos = acct.indexOf('@')
 		return pos == - 1 || host.equals(acct.substring(pos + 1), ignoreCase = true)
 	}
-
+	
 	fun isLocalUser(who : TootAccount?) : Boolean {
 		return isLocalUser(who?.acct)
 	}
@@ -262,9 +262,9 @@ class SavedAccount(
 		return ! isLocalUser(who)
 	}
 	
-//	fun isRemoteUser(acct : String) : Boolean {
-//		return ! isLocalUser(acct)
-//	}
+	//	fun isRemoteUser(acct : String) : Boolean {
+	//		return ! isLocalUser(acct)
+	//	}
 	
 	fun getUserUrl(who_acct : String) : String {
 		val p = who_acct.indexOf('@')
@@ -276,19 +276,19 @@ class SavedAccount(
 	}
 	
 	fun isMe(who : TootAccount?) : Boolean {
-		if( who == null || who.username != this.username ) return false
+		if(who == null || who.username != this.username) return false
 		//
 		val who_acct = who.acct
 		val pos = who_acct.indexOf('@')
-		if( pos == -1 ) return true // local user have no acct
-		return who_acct.substring(pos + 1).equals( this.host, ignoreCase = true)
+		if(pos == - 1) return true // local user have no acct
+		return who_acct.substring(pos + 1).equals(this.host, ignoreCase = true)
 	}
 	
 	fun isMe(who_acct : String) : Boolean {
 		// 自分のユーザ名部分
 		var pos = this.acct.indexOf('@')
 		val me_user = this.acct.substring(0, pos)
-	
+		
 		//
 		pos = who_acct.indexOf('@')
 		// ローカルユーザは@以降を持たない
@@ -296,7 +296,7 @@ class SavedAccount(
 		// リモートユーザならホスト名部分の比較も必要
 		val who_user = who_acct.substring(0, pos)
 		val who_host = who_acct.substring(pos + 1)
-		return who_user == me_user && who_host.equals(this.host ,ignoreCase = true)
+		return who_user == me_user && who_host.equals(this.host, ignoreCase = true)
 	}
 	
 	fun supplyBaseUrl(url : String?) : String? {
@@ -311,7 +311,7 @@ class SavedAccount(
 		var host = this.host
 		var host_start = 0
 		val acct = account?.acct
-		if( acct != null) {
+		if(acct != null) {
 			val pos = acct.indexOf('@')
 			if(pos != - 1) {
 				host = account.acct
@@ -375,7 +375,6 @@ class SavedAccount(
 		const val INVALID_DB_ID = - 1L
 		private const val INSTANCE_INFORMATION_EXPIRE = 60000L * 5
 		
-
 		// アプリデータのインポート時に呼ばれる
 		fun onDBDelete(db : SQLiteDatabase) {
 			try {
@@ -524,7 +523,7 @@ class SavedAccount(
 		// 横断検索用の、何とも紐ついていないアカウント
 		// 保存しない。
 		val na : SavedAccount by lazy {
-			val dst = SavedAccount(-1L,"?@?")
+			val dst = SavedAccount(- 1L, "?@?")
 			dst.notification_follow = false
 			dst.notification_favourite = false
 			dst.notification_boost = false
@@ -536,9 +535,9 @@ class SavedAccount(
 		private fun parse(context : Context, cursor : Cursor) : SavedAccount? {
 			return try {
 				SavedAccount(context, cursor)
-			}catch(ex:Throwable){
+			} catch(ex : Throwable) {
 				log.trace(ex)
-				log.e(ex,"parse failed.")
+				log.e(ex, "parse failed.")
 				null
 			}
 		}
@@ -575,11 +574,11 @@ class SavedAccount(
 		fun loadAccount(context : Context, db_id : Long) : SavedAccount? {
 			try {
 				App1.database.query(table, null, COL_ID + "=?", arrayOf(db_id.toString()), null, null, null)
-					.use{ cursor->
+					.use { cursor ->
 						if(cursor.moveToFirst()) {
 							return parse(context, cursor)
 						}
-						
+						log.e("moveToFirst failed. db_id=$db_id")
 					}
 			} catch(ex : Throwable) {
 				log.trace(ex)
@@ -596,7 +595,7 @@ class SavedAccount(
 					.use { cursor ->
 						while(cursor.moveToNext()) {
 							val a = parse(context, cursor)
-							if( a != null) result.add(a)
+							if(a != null) result.add(a)
 						}
 					}
 			} catch(ex : Throwable) {
@@ -612,10 +611,10 @@ class SavedAccount(
 			val result = ArrayList<SavedAccount>()
 			try {
 				App1.database.query(table, null, COL_NOTIFICATION_TAG + "=?", arrayOf(tag), null, null, null)
-					.use{ cursor->
+					.use { cursor ->
 						while(cursor.moveToNext()) {
 							val a = parse(context, cursor)
-							if( a != null ) result.add(a)
+							if(a != null) result.add(a)
 						}
 						
 					}
@@ -631,7 +630,7 @@ class SavedAccount(
 		fun loadAccountByAcct(context : Context, full_acct : String) : SavedAccount? {
 			try {
 				App1.database.query(table, null, COL_USER + "=?", arrayOf(full_acct), null, null, null)
-					.use{ cursor ->
+					.use { cursor ->
 						if(cursor.moveToNext()) {
 							return parse(context, cursor)
 						}
@@ -647,7 +646,7 @@ class SavedAccount(
 		fun hasRealAccount() : Boolean {
 			try {
 				App1.database.query(table, null, COL_USER + " NOT LIKE '?@%'", null, null, null, null, "1")
-					.use{ cursor->
+					.use { cursor ->
 						if(cursor.moveToNext()) {
 							return true
 						}
@@ -664,7 +663,7 @@ class SavedAccount(
 			get() {
 				try {
 					App1.database.query(table, arrayOf("count(*)"), null, null, null, null, null)
-						.use{ cursor->
+						.use { cursor ->
 							if(cursor.moveToNext()) {
 								return cursor.getLong(0)
 							}
@@ -677,7 +676,6 @@ class SavedAccount(
 				
 				return 0L
 			}
-		
 		
 		fun isNicoru(acct : String?) : Boolean {
 			return acct != null && reAtNicoruHost.matcher(acct).find()
@@ -719,11 +717,11 @@ class SavedAccount(
 			var i : Int
 			
 			// NA > !NA
-			i = b2i(a.isNA) - b2i(b.isNA)
+			i = a.isNA.b2i() - b.isNA.b2i()
 			if(i != 0) return@Comparator i
 			
 			// pseudo > real
-			i = b2i(a.isPseudo) - b2i(b.isPseudo)
+			i = a.isPseudo.b2i() - b.isPseudo.b2i()
 			if(i != 0) return@Comparator i
 			
 			val sa = AcctColor.getNickname(a.acct)
@@ -734,12 +732,11 @@ class SavedAccount(
 		fun sort(account_list : ArrayList<SavedAccount>) {
 			Collections.sort(account_list, account_comparator)
 		}
-	
-
+		
 	}
 	
 	fun getAccessToken() : String? {
-		return token_info?.let{ Utils.optStringX(it, "access_token") }
+		return token_info?.let { Utils.optStringX(it, "access_token") }
 	}
 	
 }

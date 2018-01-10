@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 
-typealias CustomEmojiLoadCompleteCallback = () -> Unit
 
 class CustomEmojiCache(internal val context : Context) {
 	
@@ -38,7 +37,7 @@ class CustomEmojiCache(internal val context : Context) {
 	private class Request(
 		val refTarget : WeakReference<Any>,
 		val url : String,
-		val callback : CustomEmojiLoadCompleteCallback
+		val onLoadComplete : ()->Unit
 	)
 	
 	////////////////////////////////
@@ -101,7 +100,7 @@ class CustomEmojiCache(internal val context : Context) {
 		return null
 	}
 	
-	operator fun get(refDrawTarget: WeakReference<Any>?, url : String, callback : CustomEmojiLoadCompleteCallback) : APNGFrames? {
+	fun getFrames(refDrawTarget: WeakReference<Any>?, url : String, onLoadComplete :  ()->Unit) : APNGFrames? {
 		try {
 			if( refDrawTarget?.get() == null ){
 				NetworkEmojiSpan.log.e("draw: DrawTarget is null ")
@@ -117,7 +116,7 @@ class CustomEmojiCache(internal val context : Context) {
 
 			// キャンセル操作の都合上、排他が必要
 			synchronized(queue) {
-				queue.addLast(Request(refDrawTarget, url, callback))
+				queue.addLast(Request(refDrawTarget, url, onLoadComplete))
 			}
 			worker.notifyEx()
 		} catch(ex : Throwable) {
@@ -212,7 +211,7 @@ class CustomEmojiCache(internal val context : Context) {
 		}
 		
 		private fun fireCallback(request : Request) {
-			handler.post { request.callback() }
+			handler.post { request.onLoadComplete() }
 		}
 		
 		private fun sweep_cache(now : Long) {

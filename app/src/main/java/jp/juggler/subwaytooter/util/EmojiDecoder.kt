@@ -64,17 +64,15 @@ object EmojiDecoder {
 		}
 		
 		private fun applyHighlight(start : Int, end : Int) {
-			if(options.highlight_trie != null) {
-				val list = options.highlight_trie !!.matchList(sb, start, end)
-				if(list != null) {
-					for(range in list) {
-						val word = HighlightWord.load(range.word)
-						if(word != null) {
-							options.hasHighlight = true
-							sb.setSpan(HighlightSpan(word.color_fg, word.color_bg), range.start, range.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-							if(word.sound_type != HighlightWord.SOUND_TYPE_NONE) {
-								options.highlight_sound = word
-							}
+			val list = options.highlight_trie?.matchList(sb, start, end)
+			if(list != null) {
+				for(range in list) {
+					val word = HighlightWord.load(range.word)
+					if(word != null) {
+						options.hasHighlight = true
+						sb.setSpan(HighlightSpan(word.color_fg, word.color_bg), range.start, range.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+						if(word.sound_type != HighlightWord.SOUND_TYPE_NONE) {
+							options.highlight_sound = word
 						}
 					}
 				}
@@ -94,19 +92,19 @@ object EmojiDecoder {
 					val check = s.substring(i, i + j)
 					image_id = EmojiMap201709.sUTF16ToImageId[check]
 					if(image_id != null) {
-						if(j < remain && s[i + j].toInt() == 0xFE0E) {
+						emoji = if(j < remain && s[i + j].toInt() == 0xFE0E) {
 							// 絵文字バリエーション・シーケンス（EVS）のU+FE0E（VS-15）が直後にある場合
 							// その文字を絵文字化しない
-							emoji = s.substring(i, i + j + 1)
 							image_id = 0
+							s.substring(i, i + j + 1)
 						} else {
-							emoji = check
+							check
 						}
 						break
 					}
 				}
 				
-				if(image_id != null) {
+				if(image_id != null && emoji != null) {
 					if(image_id == 0) {
 						// 絵文字バリエーション・シーケンス（EVS）のU+FE0E（VS-15）が直後にある場合
 						// その文字を絵文字化しない
@@ -117,7 +115,7 @@ object EmojiDecoder {
 					} else {
 						addImageSpan(emoji, image_id)
 					}
-					i += emoji !!.length
+					i += emoji.length
 					continue
 				}
 				

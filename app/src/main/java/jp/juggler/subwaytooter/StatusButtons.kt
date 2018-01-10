@@ -7,9 +7,9 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.PopupWindow
 
-import jp.juggler.subwaytooter.action.ActionUtils
 import jp.juggler.subwaytooter.action.Action_Follow
 import jp.juggler.subwaytooter.action.Action_Toot
+import jp.juggler.subwaytooter.action.NOT_CROSS_ACCOUNT
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -159,7 +159,7 @@ internal class StatusButtons(
 					activity,
 					access_info,
 					status,
-					ActionUtils.NOT_CROSS_ACCOUNT,
+					NOT_CROSS_ACCOUNT,
 					willRoost,
 					false,
 					callback
@@ -184,7 +184,7 @@ internal class StatusButtons(
 					activity,
 					access_info,
 					status,
-					ActionUtils.NOT_CROSS_ACCOUNT,
+					NOT_CROSS_ACCOUNT,
 					willFavourite,
 					callback
 				)
@@ -216,8 +216,8 @@ internal class StatusButtons(
 							activity.nextPosition(column),
 							access_info,
 							account,
-							false,
-							activity.unfollow_complete_callback
+							bFollow = false,
+							callback = activity.unfollow_complete_callback
 						)
 					}
 					
@@ -228,8 +228,8 @@ internal class StatusButtons(
 							activity.nextPosition(column),
 							access_info,
 							account,
-							true,
-							activity.follow_complete_callback
+							bFollow =true,
+							callback =activity.follow_complete_callback
 						)
 					}
 				}

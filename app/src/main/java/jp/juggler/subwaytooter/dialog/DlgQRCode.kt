@@ -28,7 +28,7 @@ object DlgQRCode {
 	private fun makeQrCode(activity : ActMain, size : Int, url : String, callback : QrCodeCallback) {
 		@Suppress("DEPRECATION")
 		val progress = ProgressDialog(activity)
-		val task = object : AsyncTask<Void, Void, Bitmap>() {
+		val task = object : AsyncTask<Void, Void, Bitmap?>() {
 
 			override fun doInBackground(vararg params : Void) : Bitmap? {
 				return try {
@@ -40,7 +40,7 @@ object DlgQRCode {
 				}
 			}
 			
-			override fun onCancelled(result : Bitmap) {
+			override fun onCancelled(result : Bitmap?) {
 				onPostExecute(result)
 			}
 			
@@ -86,7 +86,7 @@ object DlgQRCode {
 				
 				dialog.setOnDismissListener {
 					iv.setImageDrawable(null)
-					bitmap !!.recycle()
+					bitmap ?.recycle()
 				}
 				
 				viewRoot.findViewById<View>(R.id.btnCancel).setOnClickListener { dialog.cancel() }

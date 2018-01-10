@@ -30,21 +30,23 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 	val uri : String?
 	
 	//URL to the status page (can be remote)
-	val url : String?
+	val url : String? // 普通にnullになることがあるみたいだ
 	
 	val id : Long
 	
-	val host_original : String?
+	val host_original : String
+		get() = account.host
+	
 	val host_access : String?
 	
 	// The TootAccount which posted the status
 	val account : TootAccount
 	
 	//The number of reblogs for the status
-	var reblogs_count : Long? = 0 // アプリから変更します
+	var reblogs_count : Long? = null  // アプリから変更する。検索サービスでは提供されない(null)
 	
 	//The number of favourites for the status
-	var favourites_count : Long? = 0 // アプリから変更します
+	var favourites_count : Long? = null // アプリから変更する。検索サービスでは提供されない(null)
 	
 	//	Whether the authenticated user has reblogged the status
 	var reblogged : Boolean = false // アプリから変更する
@@ -79,7 +81,6 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 	
 	val profile_emojis : NicoProfileEmoji.Map?
 	
-	
 	//	The time the status was created
 	val created_at : String?
 	
@@ -96,13 +97,13 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 	val visibility : String?
 	
 	//	An array of Attachments
-	val media_attachments : TootAttachmentLike.List?
+	val media_attachments : ArrayList<TootAttachmentLike>?
 	
 	//	An array of Mentions
-	var mentions : TootMention.List? = null
+	var mentions : ArrayList<TootMention>? = null
 	
 	//An array of Tags
-	var tags : TootTag.List? = null
+	var tags : ArrayList<TootTag>? = null
 	
 	// public Spannable decoded_tags;
 	var decoded_mentions : Spannable = EMPTY_SPANNABLE
@@ -137,33 +138,29 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 	
 	////////////////////////////////////////////////////////
 	
-	
 	init {
 		this.json = src
 		
-		// 絵文字マップは割と最初の方で読み込んでおきたい
-		this.custom_emojis = CustomEmoji.parseMap(src.optJSONArray("emojis"), parser.accessInfo.host)
+		this.uri = Utils.optStringX(src, "uri") // MSPだとuriは提供されない
+		this.url = Utils.optStringX(src, "url") // 頻繁にnullになる
+		this.created_at = Utils.optStringX(src, "created_at")
+		
+		// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
+		this.custom_emojis = CustomEmoji.parseMap(parser.accessInfo.host, src.optJSONArray("emojis"),log)
 		this.profile_emojis = NicoProfileEmoji.parseMap(src.optJSONArray("profile_emojis"))
 		
-		
-		val account = TootAccount.parse(
+		this.account = TootAccount.parse(
 			parser.context,
 			parser.accessInfo,
 			src.optJSONObject("account"),
 			serviceType
 		) ?: throw RuntimeException("missing account")
-		this.account = account
-		
-		this.uri =Utils.optStringX(src, "uri") // MSPだとuriは提供されない
-		this.url = Utils.optStringX(src, "url")
-		this.created_at = Utils.optStringX(src, "created_at")
-		
+	
 		when(serviceType) {
 			ServiceType.MASTODON -> {
-				this.id = Utils.optLongX(src, "id")
-				
 				this.host_access = parser.accessInfo.host
-				this.host_original = account.acctHost ?: parser.accessInfo.host
+
+				this.id = Utils.optLongX(src, "id", INVALID_STATUS_ID)
 				
 				this.reblogs_count = Utils.optLongX(src, "reblogs_count")
 				this.favourites_count = Utils.optLongX(src, "favourites_count")
@@ -171,66 +168,54 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 				this.favourited = src.optBoolean("favourited")
 				
 				this.time_created_at = parseTime(this.created_at)
-				this.media_attachments = TootAttachment.parseListOrNull(src.optJSONArray("media_attachments"))
+				this.media_attachments = parseListOrNull(::TootAttachment,src.optJSONArray("media_attachments"),log)
 				this.visibility = Utils.optStringX(src, "visibility")
 				this.sensitive = src.optBoolean("sensitive")
 				
 			}
-			ServiceType.TOOTSEARCH ->{
-				
+			
+			ServiceType.TOOTSEARCH -> {
 				this.host_access = null
-				this.host_original = account.acctHost ?: account.findHost()
-				this.id = parseStatusId( uri,url)
-
-				if( uri == null || uri.isEmpty()
-					|| url == null || url.isEmpty()
-					|| host_original == null || host_original.isEmpty()
-					){
-					throw RuntimeException("missing status uri or url or host")
-				}
 				
-
+				this.id = parseStatusId(uri, url)
+				// IDは… tootsearchにpleromaのuriやURLがあると不明になる
+				// uri https://pleroma.miniwa.moe/objects/d6e83d3c-cf9e-46ac-8245-f91716088e17
+				// url https://pleroma.miniwa.moe/objects/d6e83d3c-cf9e-46ac-8245-f91716088e17
+				
+				this.reblogs_count = Utils.optLongX(src, "reblogs_count")
+				this.favourites_count = Utils.optLongX(src, "favourites_count")
+				
 				this.time_created_at = TootStatus.parseTime(this.created_at)
-				this.media_attachments = TootAttachment.parseList(src.optJSONArray("media_attachments"))
+				this.media_attachments = parseListOrNull(::TootAttachment,src.optJSONArray("media_attachments"),log)
 				this.visibility = VISIBILITY_PUBLIC
 				this.sensitive = src.optBoolean("sensitive")
 				
 			}
-			ServiceType.MSP ->{
-				this.id = Utils.optLongX(src, "id", INVALID_STATUS_ID)
+			
+			ServiceType.MSP -> {
 				this.host_access = null
-				this.host_original = account.acctHost ?: account.findHost()
+				
+				this.id = Utils.optLongX(src, "id", INVALID_STATUS_ID)
 				
 				// uriは提供されない。かならずnullになる
-				if( url == null ||
-					url.isEmpty() ||
-					host_original == null ||
-					host_original.isEmpty() ||
-					id == INVALID_STATUS_ID
-					){
-					throw RuntimeException("missing url or host or id")
-				}
 				
 				this.time_created_at = parseTimeMSP(created_at)
 				this.media_attachments = TootAttachmentMSP.parseList(src.optJSONArray("media_attachments"))
-				
-				// dst.msp_id =  Utils.optLongX(src, "msp_id" );
-				this.sensitive = src.optInt("sensitive", 0) != 0
 				this.visibility = VISIBILITY_PUBLIC
+				this.sensitive = src.optInt("sensitive", 0) != 0
 			}
 		}
-		
+
 		this.in_reply_to_id = Utils.optStringX(src, "in_reply_to_id")
 		this.in_reply_to_account_id = Utils.optStringX(src, "in_reply_to_account_id")
-		this.mentions = TootMention.parseListOrNull(src.optJSONArray("mentions"))
-		this.tags = TootTag.parseListOrNull(src.optJSONArray("tags"))
-		this.application = TootApplication.parse(src.optJSONObject("application"))
+		this.mentions = parseListOrNull(::TootMention,src.optJSONArray("mentions"),log)
+		this.tags = parseListOrNull(::TootTag,src.optJSONArray("tags"))
+		this.application = parseItem(::TootApplication,src.optJSONObject("application"),log)
 		this.pinned = parser.pinned || src.optBoolean("pinned")
 		this.muted = src.optBoolean("muted")
 		this.language = Utils.optStringX(src, "language")
 		this.decoded_mentions = HTMLDecoder.decodeMentions(parser.accessInfo, this.mentions, this) ?: EMPTY_SPANNABLE
 		// this.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
-
 		
 		// content
 		this.content = Utils.optStringX(src, "content")
@@ -264,7 +249,6 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 		this.decoded_spoiler_text = options.decodeEmoji(parser.context, spoiler_text)
 		
 		this.hasHighlight = this.hasHighlight || options.hasHighlight
-		
 		if(options.highlight_sound != null && this.highlight_sound == null) {
 			this.highlight_sound = options.highlight_sound
 		}
@@ -294,11 +278,10 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 	val busyKey : String
 		get() = hostAccessOrOriginal + ":" + idAccessOrOriginal
 	
-	
 	fun checkMuted(muted_app : HashSet<String>?, muted_word : WordTrieTree?) : Boolean {
 		
 		// app mute
-		 if( muted_app != null) {
+		if(muted_app != null) {
 			val name = application?.name
 			if(name != null && muted_app.contains(name)) return true
 		}
@@ -315,7 +298,7 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 	}
 	
 	fun hasMedia() : Boolean {
-		return ( media_attachments?.size ?: 0 ) > 0
+		return (media_attachments?.size ?: 0) > 0
 	}
 	
 	fun canPin(access_info : SavedAccount) : Boolean {
@@ -323,16 +306,6 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 			&& access_info.isMe(account)
 			&& (VISIBILITY_PUBLIC == visibility || VISIBILITY_UNLISTED == visibility))
 	}
-	
-	
-	//	public void updateNickname( SavedAccount access_info ){
-	//		decoded_content = HTMLDecoder.decodeHTML( access_info, content );
-	//		decoded_mentions = HTMLDecoder.decodeMentions( access_info, mentions );
-	//
-	//		if( ! TextUtils.isEmpty( spoiler_text ) ){
-	//			decoded_spoiler_text = HTMLDecoder.decodeHTML( access_info, spoiler_text );
-	//		}
-	//	}
 	
 	companion object {
 		
@@ -362,7 +335,6 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 		
 		const val INVALID_STATUS_ID = - 1L
 		
-		
 		fun parse(
 			parser : TootParser,
 			src : JSONObject?,
@@ -370,7 +342,7 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 		) : TootStatus? {
 			if(src == null) return null
 			return try {
-				TootStatus(parser, src,serviceType)
+				TootStatus(parser, src, serviceType)
 			} catch(ex : Throwable) {
 				log.trace(ex)
 				log.e(ex, "parse failed.")
@@ -396,14 +368,13 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 			return result
 		}
 		
-		
 		fun parseListOrNull(
 			parser : TootParser,
 			array : JSONArray?,
-			serviceType : ServiceType =ServiceType.MASTODON
+			serviceType : ServiceType = ServiceType.MASTODON
 		) : TootStatus.List? {
 			array ?: return null
-			val result = parseList(parser, array ,serviceType)
+			val result = parseList(parser, array, serviceType)
 			return if(result.isEmpty()) null else result
 		}
 		
@@ -421,7 +392,7 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 					try {
 						val src = array.optJSONObject(i) ?: continue
 						val src2 = src.optJSONObject("_source")
-						val item = parse(parser, src2,serviceType) ?: continue
+						val item = parse(parser, src2, serviceType) ?: continue
 						result.add(item)
 					} catch(ex : Throwable) {
 						log.trace(ex)
@@ -431,20 +402,18 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 			return result
 		}
 		
-		
 		private val tz_utc = TimeZone.getTimeZone("UTC")
 		
 		private val reTime = Pattern.compile("\\A(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)")
 		
 		private val reMSPTime = Pattern.compile("\\A(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)")
 		
-		
 		fun parseTime(strTime : String?) : Long {
-			if( strTime != null && strTime.isNotEmpty() ) {
+			if(strTime != null && strTime.isNotEmpty()) {
 				try {
-					val m = reTime.matcher(strTime )
+					val m = reTime.matcher(strTime)
 					if(! m.find()) {
-						log.d("!!invalid time format: %s", strTime)
+						log.d("invalid time format: %s", strTime)
 					} else {
 						val g = GregorianCalendar(tz_utc)
 						g.set(
@@ -467,15 +436,12 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 			return 0L
 		}
 		
-		
-		
-		
 		private fun parseTimeMSP(strTime : String?) : Long {
-			if( strTime != null && strTime.isNotEmpty() ) {
+			if(strTime != null && strTime.isNotEmpty()) {
 				try {
-					val m = reMSPTime.matcher(strTime )
+					val m = reMSPTime.matcher(strTime)
 					if(! m.find()) {
-						log.d("!!invalid time format: %s", strTime)
+						log.d("invalid time format: %s", strTime)
 					} else {
 						val g = GregorianCalendar(tz_utc)
 						g.set(
@@ -570,16 +536,16 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 				false
 			}
 		}
-
-		private fun validHost(host:String?): String? {
-			return if( host != null && host.isNotEmpty() && host != "?") host else null
+		
+		private fun validHost(host : String?) : String? {
+			return if(host != null && host.isNotEmpty() && host != "?") host else null
 		}
 		
 		// 投稿元タンスでのステータスIDを調べる
-		fun parseStatusId( uri:String? ,url:String?) : Long {
+		fun parseStatusId(uri : String?, url : String?) : Long {
 			
 			try {
-				if(uri != null && uri.isNotEmpty()) {
+				if( uri?.isNotEmpty() == true ) {
 					// https://friends.nico/users/(who)/statuses/(status_id)
 					var m = reTootUriAP1.matcher(uri)
 					if(m.find()) return m.group(2).toLong(10)
@@ -592,10 +558,13 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 					m = reTootUriAP2.matcher(uri)
 					if(m.find()) return m.group(2).toLong(10)
 					
-					log.d("parseStatusId: unsupported status uri: $uri")
+					log.e("can't parse status uri: $uri")
 				}
-				if( url != null && url.isNotEmpty()) {
-					// TODO
+				if(url?.isNotEmpty() != false ) {
+					// XXX status URL からstatus IDを調べる
+					// updates/XXX だと status id ではないからダメ
+					// そうじゃなくても投稿元タンスのだからTLを読んだタンスと異なるなら意味がない…
+					log.e("can't parse status URL: $url")
 				}
 				
 			} catch(ex : Throwable) {

@@ -56,7 +56,7 @@ class CharacterGroup {
 				}
 			}
 			if(id == Integer.MAX_VALUE) {
-				throw RuntimeException("group has not id!!")
+				throw RuntimeException("missing group id")
 			}
 			return id
 		}

@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.content.Context
 import android.graphics.Typeface
+import android.net.Uri
 import android.support.v4.view.ViewCompat
 import android.support.v7.app.AlertDialog
 import android.text.Spannable
@@ -109,7 +110,7 @@ internal class ItemViewHolder(
 	
 	private var item : Any? = null
 	
-	private var status_showing : TootStatus? = null
+	private var status__showing : TootStatus? = null
 	private var status_account : TootAccount? = null
 	private var boost_account : TootAccount? = null
 	private var follow_account : TootAccount? = null
@@ -203,6 +204,7 @@ internal class ItemViewHolder(
 		btnListMore.setOnClickListener(this)
 		
 		btnSearchTag.setOnClickListener(this)
+		btnSearchTag.setOnLongClickListener(this)
 		btnContentWarning.setOnClickListener(this)
 		btnShowMedia.setOnClickListener(this)
 		ivMedia1.setOnClickListener(this)
@@ -224,9 +226,9 @@ internal class ItemViewHolder(
 		ivThumbnail.setOnLongClickListener(this)
 		
 		//
-		tvContent.movementMethod = MyLinkMovementMethod.instance
-		tvMentions.movementMethod = MyLinkMovementMethod.instance
-		tvContentWarning.movementMethod = MyLinkMovementMethod.instance
+		tvContent.movementMethod = MyLinkMovementMethod
+		tvMentions.movementMethod = MyLinkMovementMethod
+		tvContentWarning.movementMethod = MyLinkMovementMethod
 		
 		val v : View
 		//
@@ -274,7 +276,7 @@ internal class ItemViewHolder(
 	
 	fun bind(item : Any?) {
 		this.item = null
-		this.status_showing = null
+		this.status__showing = null
 		this.status_account = null
 		this.boost_account = null
 		this.follow_account = null
@@ -288,27 +290,25 @@ internal class ItemViewHolder(
 		
 		if(item == null) return
 		
-		run {
-			val c = if(column.content_color != 0) column.content_color else content_color_default
-			tvBoosted.setTextColor(c)
-			tvFollowerName.setTextColor(c)
-			tvName.setTextColor(c)
-			tvMentions.setTextColor(c)
-			tvContentWarning.setTextColor(c)
-			tvContent.setTextColor(c)
-			//NSFWは文字色固定 btnShowMedia.setTextColor( c );
-			tvApplication?.setTextColor(c)
-		}
+		var c: Int
 		
-		run {
-			this.acct_color = if(column.acct_color != 0) column.acct_color else Styler.getAttributeColor(activity, R.attr.colorTimeSmall)
-			val c = this.acct_color
+		c = if(column.content_color != 0) column.content_color else content_color_default
+		tvBoosted.setTextColor(c)
+		tvFollowerName.setTextColor(c)
+		tvName.setTextColor(c)
+		tvMentions.setTextColor(c)
+		tvContentWarning.setTextColor(c)
+		tvContent.setTextColor(c)
+		//NSFWは文字色固定 btnShowMedia.setTextColor( c );
+		tvApplication?.setTextColor(c)
+		
+			c =if(column.acct_color != 0) column.acct_color else Styler.getAttributeColor(activity, R.attr.colorTimeSmall)
+			this.acct_color = c
 			tvBoostedTime.setTextColor(c)
 			tvTime.setTextColor(c)
 			//			tvBoostedAcct.setTextColor( c );
 			//			tvFollowerAcct.setTextColor( c );
 			//			tvAcct.setTextColor( c );
-		}
 		
 		this.item = item
 		when(item) {
@@ -438,7 +438,7 @@ internal class ItemViewHolder(
 	}
 	
 	private fun showStatus(activity : ActMain, status : TootStatus) {
-		this.status_showing = status
+		this.status__showing = status
 		llStatus.visibility = View.VISIBLE
 		
 		showStatusTime(activity, status)
@@ -636,7 +636,7 @@ internal class ItemViewHolder(
 	private fun showContent(shown : Boolean) {
 		llContents.visibility = if(shown) View.VISIBLE else View.GONE
 		btnContentWarning.setText(if(shown) R.string.hide else R.string.show)
-		status_showing?.let { status ->
+		status__showing?.let { status ->
 			val r = status.auto_cw
 			tvContent.minLines = r?.originalLineCount ?: - 1
 			if(r?.decoded_spoiler_text != null) {
@@ -646,7 +646,7 @@ internal class ItemViewHolder(
 		}
 	}
 	
-	private fun setMedia(iv : MyNetworkImageView, status : TootStatus, media_attachments : TootAttachmentLike.List, idx : Int) {
+	private fun setMedia(iv : MyNetworkImageView, status : TootStatus, media_attachments : ArrayList<TootAttachmentLike>, idx : Int) {
 		val ta = if(idx < media_attachments.size) media_attachments[idx] else null
 		if(ta != null) {
 			val url = ta.urlForThumbnail
@@ -671,7 +671,7 @@ internal class ItemViewHolder(
 					val tv = MyTextView(activity)
 					tv.layoutParams = lp
 					//
-					tv.movementMethod = MyLinkMovementMethod.instance
+					tv.movementMethod = MyLinkMovementMethod
 					if(! activity.timeline_font_size_sp.isNaN()) {
 						tv.textSize = activity.timeline_font_size_sp
 					}
@@ -701,12 +701,12 @@ internal class ItemViewHolder(
 		val notification = (item as? TootNotification)
 		when(v.id) {
 			
-			R.id.btnHideMedia -> status_showing?.let { status ->
+			R.id.btnHideMedia -> status__showing?.let { status ->
 				MediaShown.save(status, false)
 				btnShowMedia.visibility = View.VISIBLE
 			}
 			
-			R.id.btnShowMedia -> status_showing?.let { status ->
+			R.id.btnShowMedia -> status__showing?.let { status ->
 				MediaShown.save(status, true)
 				btnShowMedia.visibility = View.GONE
 			}
@@ -716,11 +716,11 @@ internal class ItemViewHolder(
 			R.id.ivMedia3 -> clickMedia(2)
 			R.id.ivMedia4 -> clickMedia(3)
 			
-			R.id.ivCardThumbnail -> status_showing?.card?.url?.let { url ->
+			R.id.ivCardThumbnail -> status__showing?.card?.url?.let { url ->
 				if(url.isNotEmpty()) App1.openCustomTab(activity, url)
 			}
 			
-			R.id.btnContentWarning -> status_showing?.let { status ->
+			R.id.btnContentWarning -> status__showing?.let { status ->
 				val new_shown = llContents.visibility == View.GONE
 				ContentWarning.save(status, new_shown)
 				list_adapter.notifyDataSetChanged()
@@ -730,7 +730,7 @@ internal class ItemViewHolder(
 				if(access_info.isPseudo) {
 					DlgContextMenu(activity, column, who, null, notification).show()
 				} else {
-					Action_User.profile(activity, pos, access_info, who)
+					Action_User.profileLocal(activity, pos, access_info, who)
 				}
 			}
 			
@@ -738,7 +738,7 @@ internal class ItemViewHolder(
 				if(access_info.isPseudo) {
 					DlgContextMenu(activity, column, who, null, notification).show()
 				} else {
-					Action_User.profile(activity, pos, access_info, who)
+					Action_User.profileLocal(activity, pos, access_info, who)
 				}
 			}
 			
@@ -746,7 +746,7 @@ internal class ItemViewHolder(
 				if(access_info.isPseudo) {
 					DlgContextMenu(activity, column, who, null, notification).show()
 				} else {
-					Action_User.profile(activity, pos, access_info, who)
+					Action_User.profileLocal(activity, pos, access_info, who)
 				}
 			}
 			R.id.btnFollow -> follow_account?.let { who ->
@@ -821,13 +821,45 @@ internal class ItemViewHolder(
 				follow_account?.let { who -> Action_Follow.followFromAnotherAccount(activity, activity.nextPosition(column), access_info, who) }
 				return true
 			}
+			
+			R.id.btnSearchTag -> {
+				val item = this.item
+				when(item) {
+//					is TootGap -> column.startGap(item)
+//
+//					is TootDomainBlock -> {
+//						val domain = item.domain
+//						AlertDialog.Builder(activity)
+//							.setMessage(activity.getString(R.string.confirm_unblock_domain, domain))
+//							.setNegativeButton(R.string.cancel, null)
+//							.setPositiveButton(R.string.ok) { _, _ -> Action_Instance.blockDomain(activity, access_info, domain, false) }
+//							.show()
+//					}
+					
+					is String -> {
+						// search_tag は#を含まない
+						val tagEncoded = Uri.encode(item)
+						val host = access_info.host
+						val url = "https://$host/tags/$tagEncoded"
+						Action_HashTag.timelineOtherInstance(
+							activity  =activity,
+							pos =activity.nextPosition(column),
+							url =url,
+							host =host,
+							tag_without_sharp = item
+						)
+					}
+					
+				}
+				return true
+			}
 		}
 		
 		return false
 	}
 	
 	private fun clickMedia(i : Int) {
-		val status = status_showing ?: return
+		val status = status__showing ?: return
 		try {
 			val media_attachments = status.media_attachments ?: return
 			val item = if(i < media_attachments.size) media_attachments[i] else return
@@ -835,7 +867,7 @@ internal class ItemViewHolder(
 				is TootAttachmentMSP -> {
 					// マストドン検索ポータルのデータではmedia_attachmentsが簡略化されている
 					// 会話の流れを表示する
-					Action_Toot.conversationOtherInstance(activity, activity.nextPosition(column), status_showing)
+					Action_Toot.conversationOtherInstance(activity, activity.nextPosition(column), status__showing)
 				}
 				
 				is TootAttachment -> {
@@ -859,7 +891,7 @@ internal class ItemViewHolder(
 	// StatusButtonsPopupを表示する
 	fun onItemClick(listView : MyListView, anchor : View) {
 		activity.closeListItemPopup()
-		status_showing?.let { status ->
+		status__showing?.let { status ->
 			val popup = StatusButtonsPopup(activity, column, bSimpleList)
 			activity.listItemPopup = popup
 			popup.show(listView, anchor, status, item as? TootNotification)
@@ -872,7 +904,7 @@ internal class ItemViewHolder(
 		val tv = MyTextView(activity)
 		tv.layoutParams = lp
 		//
-		tv.movementMethod = MyLinkMovementMethod.instance
+		tv.movementMethod = MyLinkMovementMethod
 		if(! activity.timeline_font_size_sp.isNaN()) {
 			tv.textSize = activity.timeline_font_size_sp
 		}

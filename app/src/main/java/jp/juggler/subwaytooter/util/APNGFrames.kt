@@ -50,17 +50,14 @@ class APNGFrames {
 		 * Whether or not this fixes the OOM problems is TBD...
 		 */
 		//static Bitmap sOnePxTransparent;
-		internal var sSrcModePaint : Paint? = null
+		internal val sSrcModePaint : Paint by lazy{
+			val paint = Paint()
+			paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC)
+			paint.isFilterBitmap = true
+			paint
+		}
 		
 		internal fun createBlankBitmap(w : Int, h : Int) : Bitmap {
-			if(sSrcModePaint == null) {
-				sSrcModePaint = Paint()
-				sSrcModePaint !!.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC)
-				sSrcModePaint !!.isFilterBitmap = true
-			}
-			//		if( sOnePxTransparent == null ){
-			//			sOnePxTransparent = BitmapFactory.decodeResource( resources, R.drawable.onepxtransparent );
-			//		}
 			return Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
 		}
 		
@@ -148,9 +145,9 @@ class APNGFrames {
 	///////////////////////////////////////////////////////////////
 	
 	// 再生速度の調整
-	var durationScale = 1f
+	private var durationScale = 1f
 	
-	val numFrames : Int
+	private val numFrames : Int
 		get() = animationControl?.numFrames ?: 1
 	
 	val isSingleFrame : Boolean
@@ -423,22 +420,19 @@ class APNGFrames {
 		
 		// 結果を取得する
 		override fun getResult() : APNGFrames? {
-			if(mFrames != null) {
-				if(! mFrames !!.isSingleFrame) {
-					return mFrames
-				}
-				mFrames !!.dispose()
-				mFrames = null
+			val frames = mFrames
+			return if(frames?.isSingleFrame != false ){
+				frames
+			}else {
+				dispose()
+				return null
 			}
-			return null
 		}
 		
 		// 処理中に例外が起きた場合、Bitmapリソースを解放する
 		fun dispose() {
-			if(mFrames != null) {
-				mFrames !!.dispose()
-				mFrames = null
-			}
+			mFrames?.dispose()
+			mFrames = null
 		}
 	}
 	

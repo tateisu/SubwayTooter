@@ -62,7 +62,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		internal fun saveColumnList(context : Context, fileName : String, array : JSONArray) {
 			
 			try {
-				context.openFileOutput(fileName, Context.MODE_PRIVATE).use{ os ->
+				context.openFileOutput(fileName, Context.MODE_PRIVATE).use { os ->
 					os.write(Utils.encodeUTF8(array.toString()))
 				}
 			} catch(ex : Throwable) {
@@ -75,7 +75,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		// データ保存用 および カラム一覧への伝達用
 		internal fun loadColumnList(context : Context, fileName : String) : JSONArray? {
 			try {
-				context.openFileInput(fileName).use{ inData ->
+				context.openFileInput(fileName).use { inData ->
 					val bao = ByteArrayOutputStream(inData.available())
 					IOUtils.copy(inData, bao)
 					return JSONArray(Utils.decodeUTF8(bao.toByteArray()))
@@ -89,17 +89,14 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 			return null
 		}
 		
-		
-		
 		private fun getStatusText(status : TootStatus?) : Spannable? {
-			return when{
+			return when {
 				status == null -> null
-				status.decoded_spoiler_text.isNotEmpty() ->status.decoded_spoiler_text
+				status.decoded_spoiler_text.isNotEmpty() -> status.decoded_spoiler_text
 				status.decoded_content.isNotEmpty() -> status.decoded_content
-				else-> null
+				else -> null
 			}
 		}
-		
 		
 	}
 	
@@ -107,6 +104,31 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 	internal val handler : Handler
 	internal val stream_reader : StreamReader
 	
+	internal var media_thumb_height : Int = 0
+	val column_list = ArrayList<Column>()
+	
+	private val map_busy_fav = HashSet<String>()
+	private val map_busy_boost = HashSet<String>()
+	internal var attachment_list : ArrayList<PostAttachment>? = null
+	
+	private var willSpeechEnabled : Boolean = false
+	private var tts : TextToSpeech? = null
+	private var tts_status = TTS_STATUS_NONE
+	private var tts_speak_start = 0L
+	private var tts_speak_end = 0L
+	
+	private val voice_list = ArrayList<Voice>()
+	
+	private val tts_queue = LinkedList<String>()
+	private val duplication_check = LinkedList<String>()
+	
+	private var last_ringtone : WeakReference<Ringtone>? = null
+	
+	private var last_sound : Long = 0
+	
+	// initからプロパティにアクセスする場合、そのプロパティはinitより上で定義されていないとダメっぽい
+	// そしてその他のメソッドからval プロパティにアクセスする場合、そのプロパティはメソッドより上で初期化されていないとダメっぽい
+
 	init {
 		this.handler = Handler()
 		this.density = context.resources.displayMetrics.density
@@ -115,27 +137,8 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		loadColumnList()
 	}
 	
-	internal var media_thumb_height : Int = 0
-	val column_list = ArrayList<Column>()
-	
-	//////////////////////////////////////////////////////
-	
-	private val map_busy_fav = HashSet<String>()
-	
-	//////////////////////////////////////////////////////
-	
-	private val map_busy_boost = HashSet<String>()
-	
-	//////////////////////////////////////////////////////
-	
-	internal var attachment_list : ArrayList<PostAttachment>? = null
-	
 	//////////////////////////////////////////////////////
 	// TextToSpeech
-	
-	private var willSpeechEnabled : Boolean = false
-	private var tts : TextToSpeech? = null
-	private var tts_status = TTS_STATUS_NONE
 	
 	private val isTextToSpeechRequired : Boolean
 		get() {
@@ -148,8 +151,6 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 			}
 			return b
 		}
-	private var tts_speak_start = 0L
-	private var tts_speak_end = 0L
 	
 	private val tts_receiver = object : BroadcastReceiver() {
 		override fun onReceive(context : Context, intent : Intent?) {
@@ -163,11 +164,6 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		}
 	}
 	
-	private val voice_list = ArrayList<Voice>()
-	
-	private val tts_queue = LinkedList<String>()
-	private val duplication_check = LinkedList<String>()
-	
 	private val proc_flushSpeechQueue = object : Runnable {
 		override fun run() {
 			try {
@@ -178,6 +174,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 					return
 				}
 				
+				val tts = this@AppState.tts
 				if(tts == null) {
 					log.d("proc_flushSpeechQueue: tts is null")
 					return
@@ -208,13 +205,16 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 				val voice_count = voice_list.size
 				if(voice_count > 0) {
 					val n = random.nextInt(voice_count)
-					tts !!.voice = voice_list[n]
+					tts.voice = voice_list[n]
 				}
 				
 				tts_speak_start = now
-				tts !!.speak(
-					sv, TextToSpeech.QUEUE_ADD, null, Integer.toString(++ utteranceIdSeed) // String utteranceId
-				)// Bundle params
+				tts.speak(
+					sv,
+					TextToSpeech.QUEUE_ADD,
+					null, // Bundle params
+					Integer.toString(++ utteranceIdSeed) // String utteranceId
+				)
 			} catch(ex : Throwable) {
 				log.trace(ex)
 				log.e(ex, "proc_flushSpeechQueue catch exception.")
@@ -225,18 +225,12 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		
 		internal fun restartTTS() {
 			log.d("restart TextToSpeech")
-			tts !!.shutdown()
+			tts?.shutdown()
 			tts = null
 			tts_status = TTS_STATUS_NONE
 			enableSpeech()
 		}
 	}
-	
-	
-	private var last_ringtone : WeakReference<Ringtone>? = null
-	
-	private var last_sound : Long = 0
-
 	
 	internal fun encodeColumnList() : JSONArray {
 		val array = JSONArray()
@@ -322,16 +316,19 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 			Utils.showToast(context, false, R.string.text_to_speech_initializing)
 			log.d("initializing TextToSpeech…")
 			
-			object : AsyncTask<Void, Void, TextToSpeech>() {
-				internal lateinit var tmp_tts : TextToSpeech
+			object : AsyncTask<Void, Void, TextToSpeech?>() {
+				internal var tmp_tts : TextToSpeech? = null
 				
 				override fun doInBackground(vararg params : Void) : TextToSpeech {
-					tmp_tts = TextToSpeech(context, tts_init_listener)
-					return tmp_tts
+					val tts = TextToSpeech(context, tts_init_listener)
+					this.tmp_tts = tts
+					return tts
 				}
 				
 				internal val tts_init_listener : TextToSpeech.OnInitListener = TextToSpeech.OnInitListener { status ->
-					if(TextToSpeech.SUCCESS != status) {
+					
+					val tts = this.tmp_tts
+					if(tts == null || TextToSpeech.SUCCESS != status) {
 						Utils.showToast(context, false, R.string.text_to_speech_initialize_failed, status)
 						log.d("speech initialize failed. status=%s", status)
 						return@OnInitListener
@@ -341,17 +338,21 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 						if(! willSpeechEnabled) {
 							Utils.showToast(context, false, R.string.text_to_speech_shutdown)
 							log.d("shutdown TextToSpeech…")
-							tmp_tts.shutdown()
+							tts.shutdown()
 						} else {
-							
-							tts = tmp_tts
+							this@AppState.tts = tts
 							tts_status = TTS_STATUS_INITIALIZED
 							tts_speak_start = 0L
 							tts_speak_end = 0L
 							
 							voice_list.clear()
 							try {
-								val voice_set = tts !!.voices
+								val voice_set = try{
+									tts.voices
+									// may raise NullPointerException is tts has no collection
+								}catch(ignored:Throwable){
+									null
+								}
 								if(voice_set == null || voice_set.isEmpty()) {
 									log.d("TextToSpeech.getVoices returns null or empty set.")
 								} else {
@@ -392,13 +393,13 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 						}
 					}
 				}
-
+				
 			}.executeOnExecutor(App1.task_executor)
 		}
 		if(! willSpeechEnabled && tts != null) {
 			Utils.showToast(context, false, R.string.text_to_speech_shutdown)
 			log.d("shutdown TextToSpeech…")
-			tts !!.shutdown()
+			tts?.shutdown()
 			tts = null
 			tts_status = TTS_STATUS_NONE
 		}
@@ -435,7 +436,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 			last_end = end
 			//
 			val span_text = str_text.substring(start, end)
-			if( span_text.isNotEmpty() ) {
+			if(span_text.isNotEmpty()) {
 				val c = span_text[0]
 				if(c == '#' || c == '@') {
 					// #hashtag や @user はそのまま読み上げる
@@ -460,7 +461,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 	private fun addSpeech(text : String) {
 		
 		if(tts == null) return
-
+		
 		val sv = reSpaces.matcher(text).replaceAll(" ").trim { it <= ' ' }
 		if(sv.isEmpty()) return
 		
@@ -479,7 +480,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 	}
 	
 	private fun stopLastRingtone() {
-		val r = if(last_ringtone == null) null else last_ringtone !!.get()
+		val r = last_ringtone?.get()
 		if(r != null) {
 			try {
 				r.stop()
@@ -501,7 +502,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		
 		if(item.sound_type == HighlightWord.SOUND_TYPE_NONE) return
 		
-		if(item.sound_type == HighlightWord.SOUND_TYPE_CUSTOM && item.sound_uri?.isNotEmpty() == true ) {
+		if(item.sound_type == HighlightWord.SOUND_TYPE_CUSTOM && item.sound_uri?.isNotEmpty() == true) {
 			try {
 				val ringtone = RingtoneManager.getRingtone(context, Uri.parse(item.sound_uri))
 				if(ringtone != null) {
@@ -528,5 +529,4 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		
 	}
 	
-
 }

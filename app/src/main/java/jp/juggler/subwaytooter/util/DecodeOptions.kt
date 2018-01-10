@@ -11,18 +11,18 @@ import jp.juggler.subwaytooter.table.HighlightWord
 
 @Suppress("MemberVisibilityCanPrivate")
 class DecodeOptions(
-	var short :Boolean = false,
+	var short : Boolean = false,
 	var decodeEmoji : Boolean = false,
-	var attachmentList : TootAttachmentLike.List? = null,
+	var attachmentList : ArrayList<TootAttachmentLike>? = null,
 	var linkTag : Any? = null,
 	var emojiMapCustom : CustomEmoji.Map? = null,
 	var emojiMapProfile : NicoProfileEmoji.Map? = null
-	
+
 ) {
 	
 	// true if highlight found
 	var hasHighlight : Boolean = false
-
+	
 	// highlight found with sound
 	var highlight_sound : HighlightWord? = null
 	
@@ -38,7 +38,7 @@ class DecodeOptions(
 		return this
 	}
 	
-	fun setAttachment(list_attachment : TootAttachmentLike.List?) : DecodeOptions {
+	fun setAttachment(list_attachment : ArrayList<TootAttachmentLike>?) : DecodeOptions {
 		this.attachmentList = list_attachment
 		return this
 	}
@@ -71,8 +71,7 @@ class DecodeOptions(
 	}
 	
 	fun decodeEmoji(context : Context, s : String?) : Spannable {
-		return EmojiDecoder.decodeEmoji(context, s ?: "" , this)
+		return EmojiDecoder.decodeEmoji(context, s ?: "", this)
 	}
 	
-
 }

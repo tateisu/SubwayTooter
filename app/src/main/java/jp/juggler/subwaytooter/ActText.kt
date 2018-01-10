@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.text.TextUtils
 import android.view.View
 import android.widget.EditText
 import jp.juggler.subwaytooter.api.entity.*
@@ -78,7 +77,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			intent.putExtra(EXTRA_TEXT, sb.toString())
 		}
 		
-		private fun dumpAttachment(sb : StringBuilder, src : TootAttachmentLike.List?) {
+		private fun dumpAttachment(sb : StringBuilder, src : ArrayList<TootAttachmentLike> ?) {
 			if(src == null) return
 			var i = 0
 			for(ma in src) {
@@ -216,7 +215,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 	private fun copy() {
 		try {
 			// Gets a handle to the clipboard service.
-			val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager?
+			val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
 				?: throw NotImplementedError("missing ClipboardManager system service")
 			
 			// Creates a new text clip to put on the clipboard
@@ -252,7 +251,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 	
 	private fun search() {
 		val sv = selection
-		if(TextUtils.isEmpty(sv)) {
+		if( sv.isEmpty() ) {
 			Utils.showToast(this, false, "please select search keyword")
 			return
 		}
@@ -271,7 +270,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 	
 	private fun searchToot(resultCode : Int) {
 		val sv = selection
-		if(TextUtils.isEmpty(sv)) {
+		if(sv.isEmpty() ) {
 			Utils.showToast(this, false, "please select search keyword")
 			return
 		}

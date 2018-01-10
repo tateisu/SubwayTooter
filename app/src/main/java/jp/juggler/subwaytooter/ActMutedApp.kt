@@ -92,7 +92,7 @@ class ActMutedApp : AppCompatActivity() {
 				
 				// 左にスワイプした(右端に青が見えた) なら要素を削除する
 				if(swipedDirection == ListSwipeItem.SwipeDirection.LEFT) {
-					val o = item !!.tag
+					val o = item ?.tag
 					if(o is MyItem) {
 						MutedApp.delete(o.name)
 						listAdapter.removeItem(listAdapter.getPositionForItem(o))
@@ -164,7 +164,7 @@ class ActMutedApp : AppCompatActivity() {
 	private inner class MyDragItem internal constructor(context : Context, layoutId : Int) : DragItem(context, layoutId) {
 		
 		override fun onBindDragView(clickedView : View, dragView : View) {
-			(dragView.findViewById<View>(R.id.tvName) as TextView).text = (clickedView.findViewById<View>(R.id.tvName) as TextView).text
+			dragView.findViewById<TextView>(R.id.tvName).text = clickedView.findViewById<TextView>(R.id.tvName).text
 			
 			dragView.findViewById<View>(R.id.item_layout).setBackgroundColor(
 				Styler.getAttributeColor(this@ActMutedApp, R.attr.list_item_bg_pressed_dragged)

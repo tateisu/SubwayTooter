@@ -46,7 +46,10 @@ class ActColumnList : AppCompatActivity() {
 	
 	override fun onSaveInstanceState(outState : Bundle?) {
 		super.onSaveInstanceState(outState)
-		outState !!.putInt(EXTRA_SELECTION, old_selection)
+
+		outState?: return
+
+		outState.putInt(EXTRA_SELECTION, old_selection)
 		
 		//
 		val array = JSONArray()
@@ -100,18 +103,18 @@ class ActColumnList : AppCompatActivity() {
 		// リストを左右スワイプした
 		listView.setSwipeListener(object : ListSwipeHelper.OnSwipeListenerAdapter() {
 			
-			override fun onItemSwipeStarted(item : ListSwipeItem?) {
+			override fun onItemSwipeStarted(item : ListSwipeItem) {
 				// 操作中はリフレッシュ禁止
 				// mRefreshLayout.setEnabled( false );
 			}
 			
-			override fun onItemSwipeEnded(item : ListSwipeItem?, swipedDirection : ListSwipeItem.SwipeDirection?) {
+			override fun onItemSwipeEnded(item : ListSwipeItem, swipedDirection : ListSwipeItem.SwipeDirection?) {
 				// 操作完了でリフレッシュ許可
 				// mRefreshLayout.setEnabled( USE_SWIPE_REFRESH );
 				
 				// 左にスワイプした(右端に青が見えた) なら要素を削除する
 				if(swipedDirection == ListSwipeItem.SwipeDirection.LEFT) {
-					val adapterItem = item !!.tag as MyItem
+					val adapterItem = item.tag as MyItem
 					if(adapterItem.json.optBoolean(Column.KEY_DONT_CLOSE, false)) {
 						Utils.showToast(this@ActColumnList, false, R.string.column_has_dont_close_option)
 						listView.resetSwipedViews(null)
@@ -220,10 +223,10 @@ class ActColumnList : AppCompatActivity() {
 		, true // 長押しでドラッグ開始するなら真
 	) {
 		
-		private val ivBookmark = viewRoot.findViewById(R.id.ivBookmark) as View
-		private val tvAccess = viewRoot.findViewById(R.id.tvAccess) as TextView
-		private val tvName = viewRoot.findViewById(R.id.tvName) as TextView
-		private val ivColumnIcon = viewRoot.findViewById(R.id.ivColumnIcon) as ImageView
+		private val ivBookmark:View = viewRoot.findViewById(R.id.ivBookmark)
+		private val tvAccess:TextView = viewRoot.findViewById(R.id.tvAccess)
+		private val tvName :TextView= viewRoot.findViewById(R.id.tvName)
+		private val ivColumnIcon:ImageView = viewRoot.findViewById(R.id.ivColumnIcon)
 		private val acct_pad_lr = (0.5f + 4f * viewRoot.resources.displayMetrics.density).toInt()
 		
 		init {

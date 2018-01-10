@@ -18,7 +18,6 @@ import android.os.SystemClock
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
-import android.text.TextUtils
 import android.view.View
 import android.view.Window
 import android.widget.TextView
@@ -47,9 +46,7 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
-import jp.juggler.subwaytooter.api.entity.TootAttachment
-import jp.juggler.subwaytooter.api.entity.TootAttachmentLike
-import jp.juggler.subwaytooter.api.entity.TootAttachmentMSP
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.ProgressResponseBody
@@ -72,24 +69,24 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		internal const val EXTRA_IDX = "idx"
 		internal const val EXTRA_DATA = "data"
 		
-		internal fun encodeMediaList(list : TootAttachmentLike.List?) : String {
-			return list?.encode()?.toString() ?: "[]"
+		internal fun encodeMediaList(list : ArrayList<TootAttachmentLike>?) : String {
+			return list?.encodeJson()?.toString() ?: "[]"
 		}
 		
-		internal fun decodeMediaList(src : String?) : TootAttachmentLike.List {
+		internal fun decodeMediaList(src : String?) : ArrayList<TootAttachmentLike> {
 			try {
 				if(src != null) {
-					return TootAttachment.parseList(JSONArray(src))
+					return parseList(::TootAttachment,JSONArray(src))
 				}
 			} catch(ex : Throwable) {
 				log.trace(ex)
 				log.e(ex, "decodeMediaList failed.")
 			}
 			
-			return TootAttachmentLike.List()
+			return ArrayList()
 		}
 		
-		fun open(activity : ActMain, list : TootAttachmentLike.List, idx : Int) {
+		fun open(activity : ActMain, list : ArrayList<TootAttachmentLike>, idx : Int) {
 			val intent = Intent(activity, ActMediaViewer::class.java)
 			intent.putExtra(EXTRA_IDX, idx)
 			intent.putExtra(EXTRA_DATA, encodeMediaList(list))
@@ -99,7 +96,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	}
 	
 	internal var idx : Int = 0
-	private lateinit var media_list : TootAttachmentLike.List
+	private lateinit var media_list : ArrayList<TootAttachmentLike>
 	
 	private lateinit var pbvImage : PinchBitmapView
 	private lateinit var btnPrevious : View
@@ -164,7 +161,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	
 	override fun onSaveInstanceState(outState : Bundle?) {
 		super.onSaveInstanceState(outState)
-		outState !!.putInt(EXTRA_IDX, idx)
+
+		outState ?: return
+
+		outState.putInt(EXTRA_IDX, idx)
 		outState.putString(EXTRA_DATA, encodeMediaList(media_list))
 	}
 	
@@ -259,21 +259,22 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			showError(getString(R.string.media_attachment_empty))
 			return
 		}
-		
-		val ta = media_list[idx] as TootAttachment
-		
-		if(! TextUtils.isEmpty(ta.description)) {
-			svDescription.visibility = View.VISIBLE
-			tvDescription.text = ta.description
-		}
-		
-		if(TootAttachmentLike.TYPE_IMAGE == ta.type) {
-			loadBitmap(ta)
-		} else if(TootAttachmentLike.TYPE_VIDEO == ta.type || TootAttachmentLike.TYPE_GIFV == ta.type) {
-			loadVideo(ta)
-		} else {
-			// maybe TYPE_UNKNOWN
-			showError(getString(R.string.media_attachment_type_error, ta.type))
+		val ta = media_list[idx]
+		if( ta is TootAttachment){
+			val description = ta.description
+			if( description?.isNotEmpty() == true ){
+				svDescription.visibility = View.VISIBLE
+				tvDescription.text = description
+			}
+			
+			if(TootAttachmentLike.TYPE_IMAGE == ta.type) {
+				loadBitmap(ta)
+			} else if(TootAttachmentLike.TYPE_VIDEO == ta.type || TootAttachmentLike.TYPE_GIFV == ta.type) {
+				loadVideo(ta)
+			} else {
+				// maybe TYPE_UNKNOWN
+				showError(getString(R.string.media_attachment_type_error, ta.type))
+			}
 		}
 	}
 	
@@ -334,12 +335,13 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			internal var data : ByteArray? = null
 			internal var bitmap : Bitmap? = null
 			
-			private fun decodeBitmap(data : ByteArray?, pixel_max : Int) : Bitmap? {
+			private fun decodeBitmap(data : ByteArray, pixel_max : Int) : Bitmap? {
+				
 				options.inJustDecodeBounds = true
 				options.inScaled = false
 				options.outWidth = 0
 				options.outHeight = 0
-				BitmapFactory.decodeByteArray(data, 0, data !!.size, options)
+				BitmapFactory.decodeByteArray(data, 0, data.size, options)
 				var w = options.outWidth
 				var h = options.outHeight
 				if(w <= 0 || h <= 0) {
@@ -396,18 +398,20 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			
 			override fun background(client : TootApiClient) : TootApiResult {
 				val result = getHttpCached(client, url)
-				if(data == null) return result
+				val data = this.data ?: return result
 				client.publishApiProgress("decoding image…")
-				this.bitmap = decodeBitmap(data, 2048)
-				return if(bitmap == null) TootApiResult("image decode failed.") else result
+				val bitmap = decodeBitmap(data, 2048)
+				this.bitmap = bitmap
+				return if(bitmap != null) result else TootApiResult("image decode failed.")
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
-				if(bitmap != null) {
+				val bitmap = this.bitmap
+				if(bitmap != null){
 					pbvImage.setBitmap(bitmap)
-					return
+				}else if(result != null){
+					Utils.showToast(this@ActMediaViewer, true, result.error)
 				}
-				if(result != null) Utils.showToast(this@ActMediaViewer, true, result.error)
 			}
 		})
 		
@@ -449,7 +453,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			return
 		}
 		
-		val downLoadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager?
+		val downLoadManager = getSystemService(DOWNLOAD_SERVICE) as? DownloadManager
 			?: throw NotImplementedError("missing DownloadManager system service")
 		
 		val url = if(ta is TootAttachment) {
@@ -487,7 +491,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				val size = pathSegments.size
 				for(i in size - 1 downTo 0) {
 					val s = pathSegments[i]
-					if(! TextUtils.isEmpty(s)) {
+					if( s?.isNotEmpty() == true) {
 						fileName = s
 						break
 					}
@@ -539,7 +543,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	
 	internal fun copy(url : String) {
 		
-		val cm = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager?
+		val cm = getSystemService(CLIPBOARD_SERVICE) as? ClipboardManager
 			?: throw NotImplementedError("missing ClipboardManager system service")
 		
 		try {
@@ -589,7 +593,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	}
 	
 	private fun addMoreMenu(ad : ActionsDialog, caption_prefix : String, url : String?, action : String) {
-		if(TextUtils.isEmpty(url)) return
+		if( url ?.isEmpty() != false ) return
 		
 		val caption = getString(R.string.open_browser_of, caption_prefix)
 		

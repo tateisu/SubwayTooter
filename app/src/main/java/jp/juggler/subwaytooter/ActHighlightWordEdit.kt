@@ -6,7 +6,6 @@ import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.text.TextUtils
 import android.view.View
 import android.widget.CompoundButton
 import android.widget.Switch
@@ -175,7 +174,8 @@ class ActHighlightWordEdit : AppCompatActivity(), View.OnClickListener, ColorPic
 		if(! isChecked) {
 			item.sound_type = HighlightWord.SOUND_TYPE_NONE
 		} else {
-			item.sound_type = if(TextUtils.isEmpty(item.sound_uri)) HighlightWord.SOUND_TYPE_DEFAULT else HighlightWord.SOUND_TYPE_CUSTOM
+			
+			item.sound_type = if(item.sound_uri?.isEmpty() != false ) HighlightWord.SOUND_TYPE_DEFAULT else HighlightWord.SOUND_TYPE_CUSTOM
 		}
 	}
 	
@@ -211,7 +211,8 @@ class ActHighlightWordEdit : AppCompatActivity(), View.OnClickListener, ColorPic
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
 		try {
-			val uri = if(TextUtils.isEmpty(item.sound_uri)) null else Uri.parse(item.sound_uri)
+			val sound_uri = item.sound_uri
+			val uri = if(sound_uri?.isEmpty()!= false ) null else Uri.parse(sound_uri)
 			if(uri != null) {
 				intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri)
 			}

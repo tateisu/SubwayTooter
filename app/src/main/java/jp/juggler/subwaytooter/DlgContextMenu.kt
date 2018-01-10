@@ -28,6 +28,7 @@ import jp.juggler.subwaytooter.dialog.DlgQRCode
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.Utils
 
 @SuppressLint("InflateParams")
 internal class DlgContextMenu(
@@ -51,6 +52,8 @@ internal class DlgContextMenu(
 	init {
 		this.access_info = column.access_info
 		val column_type = column.column_type
+
+		val who = this.who
 		val status = this.status
 		
 		this.relation = UserRelation.load(access_info.db_id, who?.id ?: - 1)
@@ -127,6 +130,8 @@ internal class DlgContextMenu(
 		btnHideBoost.setOnClickListener(this)
 		btnShowBoost.setOnClickListener(this)
 		btnListMemberAddRemove.setOnClickListener(this)
+		btnInstanceInformation.setOnClickListener(this)
+		btnDomainBlock.setOnClickListener(this)
 		
 		viewRoot.findViewById<View>(R.id.btnQuoteUrlStatus).setOnClickListener(this)
 		viewRoot.findViewById<View>(R.id.btnQuoteUrlAccount).setOnClickListener(this)
@@ -246,19 +251,16 @@ internal class DlgContextMenu(
 			btnInstanceInformation.visibility = View.GONE
 			btnDomainBlock.visibility = View.GONE
 		} else {
+			val who_host = who.host
 			btnInstanceInformation.visibility = View.VISIBLE
-			btnInstanceInformation.setOnClickListener(this)
-			btnInstanceInformation.text = activity.getString(R.string.instance_information_of, access_info.getAccountHost(who))
-			
-			val acct_delm = who.acct.indexOf("@")
-			if(- 1 == acct_delm || access_info.isPseudo) {
+			btnInstanceInformation.text = activity.getString(R.string.instance_information_of, who_host)
+			if( access_info.isPseudo || access_info.host.equals( who_host,ignoreCase = true) ) {
 				// 疑似アカウントではドメインブロックできない
 				// 自ドメインはブロックできない
 				btnDomainBlock.visibility = View.GONE
 			} else {
-				btnInstanceInformation.visibility = View.VISIBLE
-				btnInstanceInformation.setOnClickListener(this)
-				btnDomainBlock.text = activity.getString(R.string.block_domain_that, who.acct.substring(acct_delm + 1))
+				btnDomainBlock.visibility = View.VISIBLE
+				btnDomainBlock.text = activity.getString(R.string.block_domain_that, who_host)
 			}
 		}
 		
@@ -297,11 +299,11 @@ internal class DlgContextMenu(
 			btnShowBoost.visibility = View.VISIBLE
 		}
 		
-		val host = access_info.getAccountHost(who)
-		if( host == "?" || host.isEmpty() ) {
+		val who_host = who?.host
+		if( who_host==null || who_host.isEmpty() || who_host == "?") {
 			btnOpenTimeline.visibility = View.GONE
 		} else {
-			btnOpenTimeline.text = activity.getString(R.string.open_local_timeline_for, host)
+			btnOpenTimeline.text = activity.getString(R.string.open_local_timeline_for, who_host)
 		}
 		
 		btnListMemberAddRemove.visibility = View.VISIBLE
@@ -380,7 +382,9 @@ internal class DlgContextMenu(
 				} else {
 					val bSet = ! (relation.getFollowing(who) || relation.getRequested(who))
 					Action_Follow.follow(
-						activity, pos, access_info, who, bSet, if(bSet) activity.follow_complete_callback else activity.unfollow_complete_callback
+						activity, pos, access_info, who,
+						bFollow= bSet,
+						callback = if(bSet) activity.follow_complete_callback else activity.unfollow_complete_callback
 					)
 				}
 			}
@@ -423,7 +427,7 @@ internal class DlgContextMenu(
 			}
 			
 			R.id.btnProfile -> who?.let { who ->
-				Action_User.profile(activity, pos, access_info, who)
+				Action_User.profileLocal(activity, pos, access_info, who)
 			}
 			
 			R.id.btnSendMessage -> who?.let { who ->
@@ -465,37 +469,40 @@ internal class DlgContextMenu(
 			}
 			
 			R.id.btnDomainBlock -> who?.let { who ->
+				// 疑似アカウントではドメインブロックできない
 				if(access_info.isPseudo) {
-					// 疑似アカウントではドメインブロックできない
-				} else {
-					val acct_delm = who.acct.indexOf("@")
-					if(- 1 == acct_delm) {
-						// 疑似アカウントではドメインブロックできない
-						// 自ドメインはブロックできない
-					} else {
-						val domain = who.acct.substring(acct_delm + 1)
-						AlertDialog.Builder(activity)
-							.setMessage(activity.getString(R.string.confirm_block_domain, domain))
-							.setNegativeButton(R.string.cancel, null)
-							.setPositiveButton(R.string.ok) { _, _ -> Action_Instance.blockDomain(activity, access_info, domain, true) }
-							.show()
-					}
+					Utils.showToast(activity, false, R.string.domain_block_from_pseudo)
+					return@let
 				}
+				val who_host = who.host
+
+				// 自分のドメインではブロックできない
+				if( access_info.host.equals(who_host,ignoreCase = true)) {
+					Utils.showToast(activity, false, R.string.domain_block_from_local)
+					return@let
+				}
+				AlertDialog.Builder(activity)
+					.setMessage(activity.getString(R.string.confirm_block_domain, who_host))
+					.setNegativeButton(R.string.cancel, null)
+					.setPositiveButton(R.string.ok) { _, _ ->
+						Action_Instance.blockDomain(activity, access_info, who_host, true)
+					}
+					.show()
 			}
 			
 			R.id.btnOpenTimeline -> {
-				val host = access_info.getAccountHost(who)
-				if( host == "?" || host.isEmpty() ) {
+				val who_host = who?.host
+				if( who_host?.isEmpty() != false || who_host == "?" ) {
 					// 何もしない
 				} else {
-					Action_Instance.timelineLocal(activity, host)
+					Action_Instance.timelineLocal(activity, who_host)
 				}
 			}
 			
 			R.id.btnAvatarImage -> who?.let { who ->
 				val url = if(!who.avatar.isNullOrEmpty() ) who.avatar else who.avatar_static
 				if( url != null && url.isNotEmpty() ) App1.openCustomTab(activity, url)
-				// FIXME: 設定によっては内蔵メディアビューアで開けないか？
+				// XXX: 設定によっては内蔵メディアビューアで開けないか？
 			}
 			
 			R.id.btnQuoteUrlStatus -> status?.url?.let { url ->
@@ -529,7 +536,7 @@ internal class DlgContextMenu(
 			}
 			
 			R.id.btnInstanceInformation -> who?.let { who ->
-				Action_Instance.information(activity, pos, access_info.getAccountHost(who).toLowerCase())
+				Action_Instance.information(activity, pos, who.host)
 			}
 			
 			R.id.btnProfilePin -> status?.let { status ->

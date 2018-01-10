@@ -103,7 +103,7 @@ internal class HeaderViewHolderProfile(
 		btnMoved.setOnLongClickListener(this)
 		btnFollow.setOnLongClickListener(this)
 		
-		tvNote.movementMethod = MyLinkMovementMethod.instance
+		tvNote.movementMethod = MyLinkMovementMethod
 		
 		name_invalidator = NetworkEmojiInvalidator(activity.handler, tvDisplayName)
 		note_invalidator = NetworkEmojiInvalidator(activity.handler, tvNote)
@@ -280,7 +280,7 @@ internal class HeaderViewHolderProfile(
 			R.id.llMoved -> if(access_info.isPseudo) {
 				DlgContextMenu(activity, column, who_moved, null, null).show()
 			} else {
-				Action_User.profile(activity, activity.nextPosition(column), access_info, who_moved)
+				Action_User.profileLocal(activity, activity.nextPosition(column), access_info, who_moved)
 			}
 		}
 	}

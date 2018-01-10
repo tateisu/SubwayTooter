@@ -47,7 +47,7 @@ object TagSet {
 		}
 	}
 	
-	// TODO タグ履歴って掃除する必要あるかな？
+	// XXX: タグ履歴って掃除する必要あるかな？
 	fun deleteOld(now : Long) {
 		try {
 			// 古いデータを掃除する
@@ -57,7 +57,6 @@ object TagSet {
 		} catch(ex : Throwable) {
 			log.e(ex, "deleteOld failed.")
 		}
-		
 	}
 	
 	//	public static void save1( long now, String acct ){

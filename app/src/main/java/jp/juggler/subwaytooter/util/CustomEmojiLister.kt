@@ -12,8 +12,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
-
-typealias CustomEmojiListerCallback = (list : CustomEmoji.List) -> Unit
+import jp.juggler.subwaytooter.api.entity.parseList
 
 class CustomEmojiLister(internal val context : Context) {
 	
@@ -29,7 +28,7 @@ class CustomEmojiLister(internal val context : Context) {
 			get() = SystemClock.elapsedRealtime()
 	}
 	
-	internal class CacheItem(val instance : String, var list : CustomEmoji.List?) {
+	internal class CacheItem(val instance : String, var list : ArrayList<CustomEmoji>?) {
 		
 		// 参照された時刻
 		var time_used : Long = 0
@@ -44,7 +43,7 @@ class CustomEmojiLister(internal val context : Context) {
 	}
 	
 	
-	internal class Request(val instance : String, val callback : CustomEmojiListerCallback)
+	internal class Request(val instance : String, val onListLoaded : (list :ArrayList<CustomEmoji>) -> Unit? )
 	
 	// 成功キャッシュ
 	internal val cache = ConcurrentHashMap<String, CacheItem>()
@@ -85,7 +84,7 @@ class CustomEmojiLister(internal val context : Context) {
 		return null
 	}
 	
-	operator fun get(_instance : String, callback : CustomEmojiListerCallback) : CustomEmoji.List? {
+	fun getList(_instance : String, onListLoaded : (list :ArrayList<CustomEmoji>) -> Unit ) : ArrayList<CustomEmoji>? {
 		try {
 			if(_instance.isEmpty() ) return null
 			val instance = _instance.toLowerCase()
@@ -95,7 +94,7 @@ class CustomEmojiLister(internal val context : Context) {
 				if(item != null) return item.list
 			}
 			
-			queue.add(Request(instance, callback))
+			queue.add(Request(instance, onListLoaded))
 			worker.notifyEx()
 		}catch(ex:Throwable){
 			log.trace(ex)
@@ -125,7 +124,7 @@ class CustomEmojiLister(internal val context : Context) {
 						return@synchronized if(item != null) {
 							val list = item.list
 							if(list != null) {
-								fireCallback(request.callback, list)
+								fireCallback(request, list)
 							}
 							true
 						} else {
@@ -136,7 +135,7 @@ class CustomEmojiLister(internal val context : Context) {
 					}
 					if(cached) continue
 					
-					var list : CustomEmoji.List? = null
+					var list : ArrayList<CustomEmoji>? = null
 					try {
 						val data = App1.getHttpCachedString("https://" + request.instance + "/api/v1/custom_emojis")
 						if(data != null) {
@@ -159,7 +158,7 @@ class CustomEmojiLister(internal val context : Context) {
 								item.list = list
 								item.time_update = now
 							}
-							fireCallback(request.callback, list)
+							fireCallback(request, list)
 						}
 					}
 				}catch(ex:Throwable){
@@ -169,8 +168,8 @@ class CustomEmojiLister(internal val context : Context) {
 			}
 		}
 		
-		private fun fireCallback(callback : CustomEmojiListerCallback, list : CustomEmoji.List) {
-			handler.post { callback(list) }
+		private fun fireCallback(request  : Request , list : ArrayList<CustomEmoji>) {
+			handler.post { request.onListLoaded(list) }
 		}
 		
 		// キャッシュの掃除
@@ -197,10 +196,11 @@ class CustomEmojiLister(internal val context : Context) {
 			}
 		}
 		
-		private fun decodeEmojiList(data : String, instance : String) : CustomEmoji.List? {
+		private fun decodeEmojiList(data : String, instance : String) : ArrayList<CustomEmoji>? {
 			return try {
-				val array = JSONArray(data)
-				CustomEmoji.parseList(array)
+				val list = parseList(::CustomEmoji,JSONArray(data))
+				list.sortWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it.shortcode }))
+				list
 			} catch(ex : Throwable) {
 				log.e(ex, "decodeEmojiList failed. instance=%s", instance)
 				null

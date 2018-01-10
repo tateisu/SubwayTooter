@@ -21,7 +21,6 @@ import android.support.v7.widget.RecyclerView
 import android.text.InputType
 import android.text.Spannable
 import android.text.SpannableStringBuilder
-import android.text.TextUtils
 import android.util.JsonReader
 import android.view.Gravity
 import android.view.View
@@ -67,19 +66,16 @@ import jp.juggler.subwaytooter.view.ColumnStripLinearLayout
 import jp.juggler.subwaytooter.view.GravitySnapHelper
 import jp.juggler.subwaytooter.view.MyEditText
 
-import jp.juggler.subwaytooter.action.RelationChangedCallback
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanClickCallback
 import jp.juggler.subwaytooter.util.*
-
 
 class ActMain : AppCompatActivity()
 	, NavigationView.OnNavigationItemSelectedListener
 	, View.OnClickListener
 	, ViewPager.OnPageChangeListener
 	, Column.Callback
-	, DrawerLayout.DrawerListener
-{
+	, DrawerLayout.DrawerListener {
 	
 	companion object {
 		
@@ -142,14 +138,13 @@ class ActMain : AppCompatActivity()
 	var listItemPopup : StatusButtonsPopup? = null
 	
 	private lateinit var llEmpty : View
-	internal var drawer : DrawerLayout? = null
+	internal lateinit var drawer : DrawerLayout
 	private lateinit var llColumnStrip : ColumnStripLinearLayout
 	private lateinit var svColumnStrip : HorizontalScrollView
 	private lateinit var btnMenu : ImageButton
 	private lateinit var btnToot : ImageButton
 	private lateinit var vFooterDivider1 : View
 	private lateinit var vFooterDivider2 : View
-	
 	
 	var timeline_font : Typeface? = null
 	var timeline_font_bold : Typeface? = null
@@ -166,30 +161,39 @@ class ActMain : AppCompatActivity()
 	class PhoneEnv {
 		internal lateinit var pager : ViewPager
 		internal lateinit var pager_adapter : ColumnPagerAdapter
-		
 	}
-	
 	class TabletEnv {
 		internal lateinit var tablet_pager : RecyclerView
 		internal lateinit var tablet_pager_adapter : TabletColumnPagerAdapter
 		internal lateinit var tablet_layout_manager : LinearLayoutManager
 		internal lateinit var tablet_snap_helper : GravitySnapHelper
 	}
-	
 	private var phoneEnv : PhoneEnv? = null
 	private var tabletEnv : TabletEnv? = null
 	
+	// スマホモードとタブレットモードでコードを切り替える
 	private inline fun <R> phoneTab(lambdaPhone : (PhoneEnv) -> R, lambdaTablet : (TabletEnv) -> R) : R {
+
 		val pe = phoneEnv
 		if(pe != null) return lambdaPhone(pe)
+
 		val te = tabletEnv
 		if(te != null) return lambdaTablet(te)
-		throw RuntimeException("missing phoneEnv or tabletEnv ")
+
+		throw RuntimeException("missing phoneEnv or tabletEnv")
 	}
 
-	private inline fun phoneOnly(lambdaPhone : (PhoneEnv)-> Unit ) {
+	// スマホモードならラムダを実行する。タブレットモードならnullを返す
+	private inline fun <R> phoneOnly(lambdaPhone : (PhoneEnv) -> R) : R? {
 		val pe = phoneEnv
-		if(pe != null) lambdaPhone(pe)
+		return if(pe != null) lambdaPhone(pe) else null
+	}
+	
+	// タブレットモードならラムダを実行する。スマホモードならnullを返す
+	@Suppress("unused")
+	private inline fun <R> tabOnly(lambdaTablet : (TabletEnv) -> R) : R? {
+		val te = tabletEnv
+		return if(te != null) lambdaTablet(te) else null
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -222,7 +226,6 @@ class ActMain : AppCompatActivity()
 		val pos = nextPosition(column)
 		val access_info = column?.access_info
 		
-		
 		var tag_list : ArrayList<String>? = null
 		
 		try {
@@ -242,7 +245,7 @@ class ActMain : AppCompatActivity()
 			log.trace(ex)
 		}
 		
-		ChromeTabOpener(this@ActMain, pos, span.url, accessInfo = access_info,tagList = tag_list).open()
+		ChromeTabOpener(this@ActMain, pos, span.url, accessInfo = access_info, tagList = tag_list).open()
 	}
 	
 	////////////////////////////////////////
@@ -252,34 +255,31 @@ class ActMain : AppCompatActivity()
 	
 	////////////////////////////////////////////////////////////////////////////
 	
-	
-	val follow_complete_callback :RelationChangedCallback = {
-		 Utils.showToast(this@ActMain, false, R.string.follow_succeeded)
+	val follow_complete_callback : EmptyCallback = {
+		Utils.showToast(this@ActMain, false, R.string.follow_succeeded)
 	}
 	
-	val unfollow_complete_callback :RelationChangedCallback = {
+	val unfollow_complete_callback : EmptyCallback = {
 		Utils.showToast(this@ActMain, false, R.string.unfollow_succeeded)
 	}
 	
-	val favourite_complete_callback  :RelationChangedCallback = {
+	val favourite_complete_callback : EmptyCallback = {
 		Utils.showToast(this@ActMain, false, R.string.favourite_succeeded)
 	}
 	
-	val unfavourite_complete_callback  :RelationChangedCallback = {
+	val unfavourite_complete_callback : EmptyCallback = {
 		Utils.showToast(this@ActMain, false, R.string.unfavourite_succeeded)
 	}
 	
-	val boost_complete_callback :RelationChangedCallback = {
+	val boost_complete_callback : EmptyCallback = {
 		Utils.showToast(this@ActMain, false, R.string.boost_succeeded)
 	}
 	
-	val unboost_complete_callback :RelationChangedCallback = {
+	val unboost_complete_callback : EmptyCallback = {
 		Utils.showToast(this@ActMain, false, R.string.unboost_succeeded)
 	}
 	
-	val defaultInsertPosition : Int
-		get() = phoneTab({ pe -> pe.pager.currentItem + 1 }, { _ -> Integer.MAX_VALUE })
-	
+
 	private var nScreenColumn : Int = 0
 	private var nColumnWidth : Int = 0
 	
@@ -306,22 +306,35 @@ class ActMain : AppCompatActivity()
 	
 	// デフォルトの投稿先アカウントのdb_idを返す
 	val currentPostTargetId : Long
-		get() = phoneTab({ pe ->
-			val c = pe.pager_adapter.getColumn(pe.pager.currentItem)
-			if(c != null && ! c.access_info.isPseudo) {
-				return c.access_info.db_id
+		get() = phoneTab(
+			{ pe ->
+				val c = pe.pager_adapter.getColumn(pe.pager.currentItem)
+				if(c != null && ! c.access_info.isPseudo) {
+					return c.access_info.db_id
+				}
+				return - 1L
+			},
+			{ _ ->
+				val db_id = App1.pref.getLong(Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, - 1L)
+				val a = SavedAccount.loadAccount(this@ActMain, db_id)
+				return a?.db_id ?: - 1L
 			}
-			return - 1L
-		}, { _ ->
-			val db_id = App1.pref.getLong(Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, - 1L)
-			val a = SavedAccount.loadAccount(this@ActMain, db_id)
-			return a?.db_id ?: - 1L
-		})
+		)
 	
 	// スマホモードなら現在のカラムを、タブレットモードなら-1Lを返す
 	// (カラム一覧画面のデフォルト選択位置に使われる)
 	val currentColumn : Int
-		get() = phoneTab({ pe -> pe.pager.currentItem }, { _ -> - 1 })
+		get() = phoneTab(
+			{ pe -> pe.pager.currentItem },
+			{ _ -> - 1 }
+		)
+	
+	// 新しいカラムをどこに挿入するか
+	val defaultInsertPosition : Int
+		get() = phoneTab(
+			{ pe -> pe.pager.currentItem + 1 },
+			{ _ -> Integer.MAX_VALUE }
+		)
 	
 	private fun validateFloat(fv : Float) : Float {
 		return if(fv.isNaN()) fv else if(fv < 1f) 1f else fv
@@ -383,17 +396,16 @@ class ActMain : AppCompatActivity()
 	override fun onSaveInstanceState(outState : Bundle?) {
 		log.d("onSaveInstanceState")
 		super.onSaveInstanceState(outState)
-		if(outState != null) {
-			phoneTab({ env ->
-				outState.putInt(STATE_CURRENT_PAGE, env.pager.currentItem)
-				
-			}, { env ->
+		outState ?: return
+		
+		phoneTab(
+			{ env -> outState.putInt(STATE_CURRENT_PAGE, env.pager.currentItem)},
+			{ env ->
 				val ve = env.tablet_layout_manager.findLastVisibleItemPosition()
 				if(ve != RecyclerView.NO_POSITION) {
 					outState.putInt(STATE_CURRENT_PAGE, ve)
 				}
 			})
-		}
 	}
 	
 	override fun onRestoreInstanceState(savedInstanceState : Bundle) {
@@ -401,14 +413,14 @@ class ActMain : AppCompatActivity()
 		super.onRestoreInstanceState(savedInstanceState)
 		val pos = savedInstanceState.getInt(STATE_CURRENT_PAGE)
 		if(pos > 0 && pos < app_state.column_list.size) {
-			phoneTab({ env ->
-				env.pager.currentItem = pos
-			}, { env ->
-				env.tablet_layout_manager.smoothScrollToPosition(env.tablet_pager, null, pos)
-			})
+			phoneTab(
+				{ env -> env.pager.currentItem = pos },
+				{ env -> env.tablet_layout_manager
+					.smoothScrollToPosition(env.tablet_pager, null, pos) }
+			)
 		}
 	}
-
+	
 	override val isActivityStart : Boolean
 		get() = bStart
 	
@@ -510,11 +522,9 @@ class ActMain : AppCompatActivity()
 		log.d("onPause")
 		
 		// 最後に表示していたカラムの位置
-		val last_pos = phoneTab({ env ->
-			env.pager.currentItem
-		}, { env ->
-			env.tablet_layout_manager.findFirstVisibleItemPosition()
-		})
+		val last_pos = phoneTab(
+			{ env -> env.pager.currentItem },
+			{ env -> env.tablet_layout_manager.findFirstVisibleItemPosition() })
 		
 		pref.edit().putInt(Pref.KEY_LAST_COLUMN_POS, last_pos).apply()
 		
@@ -522,13 +532,14 @@ class ActMain : AppCompatActivity()
 	}
 	
 	private fun refreshAfterPost() {
-		if(! TextUtils.isEmpty(posted_acct)) {
+		if(posted_acct?.isNotEmpty() == true) {
 			val refresh_after_toot = pref.getInt(Pref.KEY_REFRESH_AFTER_TOOT, 0)
 			if(refresh_after_toot != Pref.RAT_DONT_REFRESH) {
 				for(column in app_state.column_list) {
 					val a = column.access_info
-					if(! Utils.equalsNullable(a.acct, posted_acct)) continue
-					column.startRefreshForPost(posted_status_id, refresh_after_toot)
+					if(a.acct == posted_acct) {
+						column.startRefreshForPost(posted_status_id, refresh_after_toot)
+					}
 				}
 			}
 			posted_acct = null
@@ -539,27 +550,25 @@ class ActMain : AppCompatActivity()
 		sent_intent2 = intent
 		AccountPicker.pick(this, false, true, getString(R.string.account_picker_toot)
 			, { ai ->
-				sent_intent2 = null
-				ActPost.open(this@ActMain, REQUEST_CODE_POST, ai.db_id, intent)
-			}
-			,{ sent_intent2 = null }
+			sent_intent2 = null
+			ActPost.open(this@ActMain, REQUEST_CODE_POST, ai.db_id, intent)
+		}
+			, { sent_intent2 = null }
 		)
 	}
 	
 	fun closeListItemPopup() {
-		if(listItemPopup != null) {
-			try {
-				listItemPopup !!.dismiss()
-			} catch(ignored : Throwable) {
-			}
-			listItemPopup = null
+		try {
+			listItemPopup?.dismiss()
+		} catch(ignored : Throwable) {
 		}
+		listItemPopup = null
 	}
 	
 	override fun onClick(v : View) {
 		when(v.id) {
-			R.id.btnMenu -> if(! drawer !!.isDrawerOpen(Gravity.START)) {
-				drawer !!.openDrawer(Gravity.START)
+			R.id.btnMenu -> if(! drawer .isDrawerOpen(Gravity.START)) {
+				drawer .openDrawer(Gravity.START)
 			}
 			
 			R.id.btnToot -> Action_Account.openPost(this@ActMain)
@@ -661,7 +670,7 @@ class ActMain : AppCompatActivity()
 			} else if(requestCode == REQUEST_APP_ABOUT) {
 				if(data != null) {
 					val search = data.getStringExtra(ActAbout.EXTRA_SEARCH)
-					if(! TextUtils.isEmpty(search)) {
+					if(search?.isNotEmpty() == true) {
 						Action_Account.timeline(this@ActMain, defaultInsertPosition, true, Column.TYPE_SEARCH, search, true)
 					}
 					return
@@ -718,11 +727,11 @@ class ActMain : AppCompatActivity()
 			
 		} else if(requestCode == REQUEST_CODE_TEXT) {
 			if(resultCode == ActText.RESULT_SEARCH_MSP) {
-				val text = data !!.getStringExtra(Intent.EXTRA_TEXT)
-				addColumn(defaultInsertPosition, SavedAccount.na, Column.TYPE_SEARCH_MSP, text)
+				val text = data ?.getStringExtra(Intent.EXTRA_TEXT)
+				addColumn(defaultInsertPosition, SavedAccount.na, Column.TYPE_SEARCH_MSP, text ?:"")
 			} else if(resultCode == ActText.RESULT_SEARCH_TS) {
-				val text = data !!.getStringExtra(Intent.EXTRA_TEXT)
-				addColumn(defaultInsertPosition, SavedAccount.na, Column.TYPE_SEARCH_TS, text)
+				val text = data ?.getStringExtra(Intent.EXTRA_TEXT)
+				addColumn(defaultInsertPosition, SavedAccount.na, Column.TYPE_SEARCH_TS, text?:"")
 			}
 		}
 		
@@ -805,6 +814,7 @@ class ActMain : AppCompatActivity()
 			ActAppSetting.BACK_EXIT_APP -> this@ActMain.finish()
 			
 			ActAppSetting.BACK_OPEN_COLUMN_LIST -> Action_App.columnList(this@ActMain)
+			
 			else -> {
 				val dialog = ActionsDialog()
 				val add_close_column = { current_column : Column ->
@@ -897,7 +907,7 @@ class ActMain : AppCompatActivity()
 		dont_crop_media_thumbnail = pref.getBoolean(Pref.KEY_DONT_CROP_MEDIA_THUMBNAIL, false)
 		
 		var sv = pref.getString(Pref.KEY_TIMELINE_FONT, null)
-		if(! TextUtils.isEmpty(sv)) {
+		if(sv?.isNotEmpty() == true) {
 			try {
 				timeline_font = Typeface.createFromFile(sv)
 			} catch(ex : Throwable) {
@@ -907,7 +917,7 @@ class ActMain : AppCompatActivity()
 		}
 		
 		sv = pref.getString(Pref.KEY_TIMELINE_FONT_BOLD, null)
-		if(! TextUtils.isEmpty(sv)) {
+		if(sv?.isNotEmpty() == true) {
 			try {
 				timeline_font_bold = Typeface.createFromFile(sv)
 			} catch(ex : Throwable) {
@@ -929,8 +939,8 @@ class ActMain : AppCompatActivity()
 			var icon_size_dp = 48f
 			try {
 				sv = pref.getString(Pref.KEY_AVATAR_ICON_SIZE, null)
-				val fv = if(sv == null || sv.isEmpty() ) Float.NaN else sv.toFloat()
-				if( fv.isNaN() || fv.isInfinite()  || fv < 1f) {
+				val fv = if(sv == null || sv.isEmpty()) Float.NaN else sv.toFloat()
+				if(fv.isNaN() || fv.isInfinite() || fv < 1f) {
 					// error or bad range
 				} else {
 					icon_size_dp = fv
@@ -952,7 +962,7 @@ class ActMain : AppCompatActivity()
 		drawer = findViewById(R.id.drawer_layout)
 		//		ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
 		//			this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close );
-		drawer !!.addDrawerListener(this)
+		drawer .addDrawerListener(this)
 		//		toggle.syncState();
 		
 		val navigationView = findViewById<NavigationView>(R.id.nav_view)
@@ -1007,7 +1017,7 @@ class ActMain : AppCompatActivity()
 		
 		var media_thumb_height = 64
 		sv = pref.getString(Pref.KEY_MEDIA_THUMB_HEIGHT, "")
-		if(! TextUtils.isEmpty(sv)) {
+		if(sv?.isNotEmpty() == true) {
 			try {
 				val iv = Integer.parseInt(sv)
 				if(iv >= 32) {
@@ -1022,7 +1032,7 @@ class ActMain : AppCompatActivity()
 		
 		var column_w_min_dp = COLUMN_WIDTH_MIN_DP
 		sv = pref.getString(Pref.KEY_COLUMN_WIDTH, "")
-		if(! TextUtils.isEmpty(sv)) {
+		if(sv?.isNotEmpty() == true) {
 			try {
 				val iv = Integer.parseInt(sv)
 				if(iv >= 100) {
@@ -1093,7 +1103,7 @@ class ActMain : AppCompatActivity()
 			override fun onTextUpdate() {}
 			
 			override fun canOpenPopup() : Boolean {
-				return drawer != null && ! drawer !!.isDrawerOpen(Gravity.START)
+				return ! drawer.isDrawerOpen(Gravity.START)
 			}
 		})
 	}
@@ -1102,9 +1112,7 @@ class ActMain : AppCompatActivity()
 		llEmpty.visibility = if(app_state.column_list.isEmpty()) View.VISIBLE else View.GONE
 		
 		llColumnStrip.removeAllViews()
-		var i = 0
-		val ie = app_state.column_list.size
-		while(i < ie) {
+		for( i in 0 until app_state.column_list.size){
 			
 			val column = app_state.column_list[i]
 			
@@ -1145,9 +1153,6 @@ class ActMain : AppCompatActivity()
 			}
 			//
 			llColumnStrip.addView(viewRoot)
-			++ i
-			//
-			
 		}
 		svColumnStrip.requestLayout()
 		updateColumnStripSelection(- 1, - 1f)
@@ -1212,7 +1217,7 @@ class ActMain : AppCompatActivity()
 	
 	fun startAccessTokenUpdate(data : Intent) {
 		val uri = data.data ?: return
-// ブラウザで開く
+		// ブラウザで開く
 		try {
 			val intent = Intent(Intent.ACTION_VIEW, uri)
 			startActivity(intent)
@@ -1328,9 +1333,9 @@ class ActMain : AppCompatActivity()
 		// 通知タップ
 		// subwaytooter://notification_click/?db_id=(db_id)
 		val dataIdString = uri.getQueryParameter("db_id")
-		if( dataIdString != null ) {
+		if(dataIdString != null) {
 			try {
-				val dataId = dataIdString.toLong( 10)
+				val dataId = dataIdString.toLong(10)
 				val account = SavedAccount.loadAccount(this@ActMain, dataId)
 				if(account != null) {
 					val column = addColumn(defaultInsertPosition, account, Column.TYPE_NOTIFICATIONS)
@@ -1351,7 +1356,7 @@ class ActMain : AppCompatActivity()
 		
 		// OAuth2 認証コールバック
 		// subwaytooter://oauth/?...
-		TootTaskRunner(this@ActMain, true).run(object : TootTask {
+		TootTaskRunner(this@ActMain).run(object : TootTask {
 			
 			internal var ta : TootAccount? = null
 			internal var sa : SavedAccount? = null
@@ -1365,7 +1370,7 @@ class ActMain : AppCompatActivity()
 				// &error_description=%E3%83%AA%E3%82%BD%E3%83%BC%E3%82%B9%E3%81%AE%E6%89%80%E6%9C%89%E8%80%85%E3%81%BE%E3%81%9F%E3%81%AF%E8%AA%8D%E8%A8%BC%E3%82%B5%E3%83%BC%E3%83%90%E3%83%BC%E3%81%8C%E8%A6%81%E6%B1%82%E3%82%92%E6%8B%92%E5%90%A6%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F%E3%80%82
 				// &state=db%3A3
 				val error = uri.getQueryParameter("error_description")
-				if(! TextUtils.isEmpty(error)) {
+				if(error?.isNotEmpty() == true) {
 					return TootApiResult(error)
 				}
 				
@@ -1374,12 +1379,12 @@ class ActMain : AppCompatActivity()
 				//    &state=host%3Amastodon.juggler.jp
 				
 				val code = uri.getQueryParameter("code")
-				if(TextUtils.isEmpty(code)) {
+				if(code?.isEmpty() != false) {
 					return TootApiResult("missing code in callback url.")
 				}
 				
 				val sv = uri.getQueryParameter("state")
-				if(TextUtils.isEmpty(sv)) {
+				if(sv?.isEmpty() != false) {
 					return TootApiResult("missing state in callback url.")
 				}
 				
@@ -1411,7 +1416,7 @@ class ActMain : AppCompatActivity()
 				val obj = result?.jsonObject
 				if(obj != null) {
 					// ダミーのLinkClickContext
-					val lcc = object:LinkClickContext{}
+					val lcc = object : LinkClickContext {}
 					this.ta = TootAccount.parse(this@ActMain, lcc, obj)
 				}
 				return result
@@ -1480,7 +1485,7 @@ class ActMain : AppCompatActivity()
 			val account = SavedAccount.loadAccount(this@ActMain, row_id)
 			if(account != null) {
 				var bModified = false
-				if(account.loginAccount?.locked == true ) {
+				if(account.loginAccount?.locked == true) {
 					bModified = true
 					account.visibility = TootStatus.VISIBILITY_PRIVATE
 				}
@@ -1491,11 +1496,11 @@ class ActMain : AppCompatActivity()
 						TootStatus.parseVisibility(privacy) // 失敗すると例外
 						bModified = true
 						account.visibility = privacy
-					}catch(ignored: Throwable){
+					} catch(ignored : Throwable) {
 						// privacyの値がおかしい
 					}
-
-					// FIXME  ta.source.sensitive パラメータを読んで「添付画像をデフォルトでNSFWにする」を実現する
+					
+					// XXX ta.source.sensitive パラメータを読んで「添付画像をデフォルトでNSFWにする」を実現する
 					// 現在、アカウント設定にはこの項目はない( 「NSFWな添付メディアを隠さない」はあるが全く別の効果)
 				}
 				
@@ -1529,7 +1534,7 @@ class ActMain : AppCompatActivity()
 		dialog_host : Dialog?, dialog_token : Dialog?, host : String, access_token : String, sa : SavedAccount?
 	) {
 		
-		TootTaskRunner(this@ActMain, true).run(host, object : TootTask {
+		TootTaskRunner(this@ActMain).run(host, object : TootTask {
 			
 			internal var ta : TootAccount? = null
 			
@@ -1538,7 +1543,7 @@ class ActMain : AppCompatActivity()
 				val obj = result?.jsonObject
 				if(obj != null) {
 					// taは使い捨てなので、生成に使うLinkClickContextはダミーで問題ない
-					val lcc = object:LinkClickContext{}
+					val lcc = object : LinkClickContext {}
 					this.ta = TootAccount.parse(this@ActMain, lcc, obj)
 				}
 				return result
@@ -1595,7 +1600,7 @@ class ActMain : AppCompatActivity()
 		val done_list = ArrayList<SavedAccount>()
 		for(column in app_state.column_list) {
 			val a = column.access_info
-			if(! Utils.equalsNullable(a.acct, account.acct)) continue
+			if(a.acct != account.acct) continue
 			if(done_list.contains(a)) continue
 			done_list.add(a)
 			if(! a.isNA) a.reloadSetting(this@ActMain)
@@ -1603,8 +1608,9 @@ class ActMain : AppCompatActivity()
 		}
 	}
 	
-	fun closeColumn(bConfirm : Boolean, column : Column?) {
-		if(column !!.dont_close) {
+	fun closeColumn(bConfirm : Boolean, column : Column) {
+		
+		if(column.dont_close) {
 			Utils.showToast(this, false, R.string.column_has_dont_close_option)
 			return
 		}
@@ -1699,7 +1705,7 @@ class ActMain : AppCompatActivity()
 					try {
 						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
 						val host = m.group(1)
-						val status_id = m.group(3).toLong( 10)
+						val status_id = m.group(3).toLong(10)
 						if(accessInto.isNA || ! host.equals(accessInto.host, ignoreCase = true)) {
 							Action_Toot.conversationOtherInstance(this@ActMain, opener.pos, opener.url, status_id, host, status_id)
 						} else {
@@ -1807,10 +1813,10 @@ class ActMain : AppCompatActivity()
 				return@closeColumnSetting true
 			}
 		}, { env ->
-			for( i in 0 until env.tablet_layout_manager.childCount ){
+			for(i in 0 until env.tablet_layout_manager.childCount) {
 				val v = env.tablet_layout_manager.getChildAt(i)
 				val columnViewHolder = (env.tablet_pager.getChildViewHolder(v) as? TabletColumnViewHolder)?.columnViewHolder
-				if( columnViewHolder?.isColumnSettingShown == true ){
+				if(columnViewHolder?.isColumnSettingShown == true) {
 					columnViewHolder.closeColumnSetting()
 					return@closeColumnSetting true
 				}
@@ -1832,14 +1838,14 @@ class ActMain : AppCompatActivity()
 		val size = app_state.column_list.size
 		if(index > size) index = size
 		
-		phoneTab({ env ->
-			env.pager.adapter = null
-			app_state.column_list.add(index, column)
-			env.pager.adapter = env.pager_adapter
-		}, { env ->
-			app_state.column_list.add(index, column)
-			resizeColumnWidth(env)
-		})
+		phoneOnly { env-> env.pager.adapter = null}
+
+		app_state.column_list.add(index, column)
+
+		phoneTab(
+			{ env -> env.pager.adapter = env.pager_adapter },
+			{ env -> resizeColumnWidth(env) }
+		)
 		
 		app_state.saveColumnList()
 		updateColumnStrip()
@@ -1851,23 +1857,22 @@ class ActMain : AppCompatActivity()
 		val idx_column = app_state.column_list.indexOf(column)
 		if(idx_column == - 1) return
 		
-		phoneTab({ env ->
-			env.pager.adapter = null
-			app_state.column_list.removeAt(idx_column).dispose()
-			env.pager.adapter = env.pager_adapter
-		}, { env ->
-			app_state.column_list.removeAt(idx_column).dispose()
-			resizeColumnWidth(env)
-		})
+		phoneOnly{env->env.pager.adapter = null}
+		
+		app_state.column_list.removeAt(idx_column).dispose()
+		
+		phoneTab(
+			{ env -> env.pager.adapter = env.pager_adapter},
+			{ env -> resizeColumnWidth(env) }
+		)
 		
 		app_state.saveColumnList()
 		updateColumnStrip()
 	}
 	
 	private fun setOrder(new_order : ArrayList<Int>) {
-		phoneOnly{
-			env -> env.pager.adapter = null
-		}
+
+		phoneOnly { env -> env.pager.adapter = null }
 		
 		val tmp_list = ArrayList<Column>()
 		val used_set = HashSet<Int>()
@@ -1901,10 +1906,9 @@ class ActMain : AppCompatActivity()
 	
 	private fun resizeColumnWidth(env : TabletEnv) {
 		
-		
 		var column_w_min_dp = COLUMN_WIDTH_MIN_DP
 		val sv = pref.getString(Pref.KEY_COLUMN_WIDTH, "")
-		if(! TextUtils.isEmpty(sv)) {
+		if(sv?.isNotEmpty() == true) {
 			try {
 				val iv = Integer.parseInt(sv)
 				if(iv >= 100) {
@@ -1926,9 +1930,8 @@ class ActMain : AppCompatActivity()
 		
 		if(sw < column_w_min * 2) {
 			
-			
 			// 最小幅で2つ表示できないのなら1カラム表示
-			env.tablet_pager_adapter.columnWidth =sw
+			env.tablet_pager_adapter.columnWidth = sw
 			resizeAutoCW(sw)
 		} else {
 			
@@ -1965,17 +1968,18 @@ class ActMain : AppCompatActivity()
 	private fun scrollToColumn(index : Int, bAlign : Boolean) {
 		scrollColumnStrip(index)
 		
-		phoneTab({ env ->
-			env.pager.setCurrentItem(index, true)
-		}, { env ->
-			if(! bAlign) {
-				// 指定したカラムが画面内に表示されるように動いてくれるようだ
-				env.tablet_pager.smoothScrollToPosition(index)
-			} else {
-				// 指定位置が表示範囲の左端にくるようにスクロール
-				env.tablet_pager.scrollToPosition(index)
+		phoneTab(
+			{ env -> env.pager.setCurrentItem(index, true) },
+			{ env ->
+				if(! bAlign) {
+					// 指定したカラムが画面内に表示されるように動いてくれるようだ
+					env.tablet_pager.smoothScrollToPosition(index)
+				} else {
+					// 指定位置が表示範囲の左端にくるようにスクロール
+					env.tablet_pager.scrollToPosition(index)
+				}
 			}
-		})
+		)
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////
@@ -2000,11 +2004,10 @@ class ActMain : AppCompatActivity()
 			updateColumnStrip()
 		}
 		
-		
 		@Suppress("DEPRECATION")
 		val progress = ProgressDialog(this)
 		
-		val task = @SuppressLint("StaticFieldLeak") object : AsyncTask<Void, String, ArrayList<Column>>() {
+		val task = @SuppressLint("StaticFieldLeak") object : AsyncTask<Void, String, ArrayList<Column>?>() {
 			
 			internal fun setProgressMessage(sv : String) {
 				Utils.runOnMainThread { progress.setMessage(sv) }
@@ -2024,9 +2027,9 @@ class ActMain : AppCompatActivity()
 					if(source == null) {
 						Utils.showToast(this@ActMain, true, "openInputStream failed.")
 						return null
-					}else{
-						source.use{ inStream ->
-							FileOutputStream(file).use{ outStream ->
+					} else {
+						source.use { inStream ->
+							FileOutputStream(file).use { outStream ->
 								IOUtils.copy(inStream, outStream)
 							}
 						}
@@ -2041,7 +2044,7 @@ class ActMain : AppCompatActivity()
 					
 					// JSONを読みだす
 					setProgressMessage("reading app data...")
-					InputStreamReader(FileInputStream(file), "UTF-8").use{ inStream->
+					InputStreamReader(FileInputStream(file), "UTF-8").use { inStream ->
 						return AppDataExporter.decodeAppData(this@ActMain, JsonReader(inStream))
 					}
 				} catch(ex : Throwable) {
@@ -2052,7 +2055,7 @@ class ActMain : AppCompatActivity()
 				return null
 			}
 			
-			override fun onCancelled(result : ArrayList<Column>) {
+			override fun onCancelled(result : ArrayList<Column>?) {
 				onPostExecute(result)
 			}
 			
@@ -2075,9 +2078,7 @@ class ActMain : AppCompatActivity()
 				
 				run {
 					
-					phoneOnly{ env ->
-						env.pager.adapter = null
-					}
+					phoneOnly { env -> env.pager.adapter = null }
 					
 					app_state.column_list.clear()
 					app_state.column_list.addAll(result)
@@ -2149,7 +2150,7 @@ class ActMain : AppCompatActivity()
 			return
 		}
 		
-		if( auto_cw == null) {
+		if(auto_cw == null) {
 			auto_cw = TootStatus.AutoCW()
 			status.auto_cw = auto_cw
 		}
@@ -2164,7 +2165,7 @@ class ActMain : AppCompatActivity()
 		val lp = LinearLayout.LayoutParams(nAutoCwCellWidth, LinearLayout.LayoutParams.WRAP_CONTENT)
 		val tv = TextView(this)
 		tv.layoutParams = lp
-		if( timeline_font_size_sp.isNaN() ) {
+		if(timeline_font_size_sp.isNaN()) {
 			tv.textSize = timeline_font_size_sp
 		}
 		if(timeline_font != null) {
@@ -2181,7 +2182,8 @@ class ActMain : AppCompatActivity()
 			
 			if(nAutoCwLines > 0
 				&& line_count > nAutoCwLines
-				&& TextUtils.isEmpty(status.spoiler_text)) {
+				&& status.spoiler_text?.isEmpty() != false
+				) {
 				val sb = SpannableStringBuilder()
 				sb.append(getString(R.string.auto_cw_prefix))
 				sb.append(text, 0, l.getLineEnd(nAutoCwLines - 1))
@@ -2203,5 +2205,4 @@ class ActMain : AppCompatActivity()
 		}
 	}
 	
-
 }

@@ -21,7 +21,6 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.Utils
 
-typealias LoginFormCallback = (dialog : Dialog, instance : String, bPseudoAccount : Boolean, bInputAccessToken : Boolean) -> Unit
 
 object LoginForm {
 	private val log = LogCategory("LoginForm")
@@ -33,10 +32,10 @@ object LoginForm {
 		activity : Activity, instanceArg : String?, callback : LoginFormCallback
 	) {
 		val view = activity.layoutInflater.inflate(R.layout.dlg_account_add, null, false)
-		val etInstance = view.findViewById<AutoCompleteTextView>(R.id.etInstance)
-		val btnOk = view.findViewById<View>(R.id.btnOk)
-		val cbPseudoAccount = view.findViewById<CheckBox>(R.id.cbPseudoAccount)
-		val cbInputAccessToken = view.findViewById<CheckBox>(R.id.cbInputAccessToken)
+		val etInstance :AutoCompleteTextView = view.findViewById(R.id.etInstance)
+		val btnOk :View = view.findViewById(R.id.btnOk)
+		val cbPseudoAccount :CheckBox = view.findViewById(R.id.cbPseudoAccount)
+		val cbInputAccessToken :CheckBox = view.findViewById(R.id.cbInputAccessToken)
 		
 		cbPseudoAccount.setOnCheckedChangeListener { _, _ -> cbInputAccessToken.isEnabled = ! cbPseudoAccount.isChecked }
 		
@@ -100,9 +99,9 @@ object LoginForm {
 					return value as String
 				}
 				
-				override fun performFiltering(constraint : CharSequence) : Filter.FilterResults {
+				override fun performFiltering(constraint : CharSequence?) : Filter.FilterResults {
 					val result = Filter.FilterResults()
-					if( constraint.isNotEmpty() ) {
+					if( constraint?.isNotEmpty() ==true ) {
 						val key = constraint.toString().toLowerCase()
 						// suggestions リストは毎回生成する必要がある。publishResultsと同時にアクセスされる場合がある
 						val suggestions = StringArray()
@@ -118,10 +117,11 @@ object LoginForm {
 					return result
 				}
 				
-				override fun publishResults(constraint : CharSequence, results : Filter.FilterResults) {
+				override fun publishResults(constraint : CharSequence?, results : Filter.FilterResults?) {
 					clear()
-					if(results.values is StringArray) {
-						for(s in results.values as StringArray) {
+					val values = results?.values
+					if(values is StringArray) {
+						for(s in values) {
 							add(s)
 						}
 					}

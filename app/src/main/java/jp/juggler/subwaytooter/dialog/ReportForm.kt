@@ -13,7 +13,6 @@ import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.util.Utils
 
-typealias ReportFormCallback = (dialog : Dialog, comment : String) -> Unit
 
 object ReportForm {
 	

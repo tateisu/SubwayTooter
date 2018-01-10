@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.drawable.Animatable
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.support.v4.content.ContextCompat
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory
@@ -15,8 +16,10 @@ import android.view.ViewGroup
 import android.support.v7.widget.AppCompatImageView
 
 import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestManager
 //import com.bumptech.glide.load.resource.bitmap.MyGlideBitmapDrawable
 import com.bumptech.glide.load.resource.gif.GifDrawable
+import com.bumptech.glide.load.resource.gif.MyGifDrawable
 // import com.bumptech.glide.request.RequestOptions
 //import com.bumptech.glide.load.resource.gif.MyGifDrawable
 import com.bumptech.glide.request.target.BaseTarget
@@ -40,8 +43,8 @@ class MyNetworkImageView @JvmOverloads constructor(
 		
 		@SuppressLint("StaticFieldLeak") internal var app_context : Context? = null
 		
-		private const val SQUARE_RATIO_MARGIN = 0.05f
-		private const val maxLoopCount = GifDrawable.LOOP_FOREVER
+//		private const val SQUARE_RATIO_MARGIN = 0.05f
+//		private const val maxLoopCount = GifDrawable.LOOP_FOREVER
 	}
 	
 	// ロード中などに表示するDrawableのリソースID
@@ -91,7 +94,7 @@ class MyNetworkImageView @JvmOverloads constructor(
 		
 		val gif_url = if(! pref.getBoolean(Pref.KEY_ENABLE_GIF_ANIMATION, false)) null else gifUrlArg
 		
-		if(gif_url != null && gif_url.isNotEmpty() ) {
+		if(gif_url != null && gif_url.isNotEmpty()) {
 			mUrl = gif_url
 			mMayGif = true
 		} else {
@@ -99,6 +102,21 @@ class MyNetworkImageView @JvmOverloads constructor(
 			mMayGif = false
 		}
 		loadImageIfNecessary()
+	}
+	
+	private fun getGLide() :RequestManager? {
+		try{
+			return Glide.with(context)
+		}catch(ex:IllegalArgumentException){
+			if( ex.message?.contains("destroyed activity") == true ){
+				// ignore it
+			}else{
+				log.e(ex,"Glide.with() failed.")
+			}
+		}catch(ex:Throwable){
+			log.e(ex,"Glide.with() failed.")
+		}
+		return null
 	}
 	
 	private fun cancelLoading() {
@@ -112,7 +130,11 @@ class MyNetworkImageView @JvmOverloads constructor(
 				}
 			}
 			setImageDrawable(null)
-			Glide.with(context).clear(target)
+			try {
+				getGLide()?.clear(target)
+			}catch(ex:Throwable){
+				log.e(ex,"Glide.clear() failed.")
+			}
 			
 			mTarget = null
 		}
@@ -141,7 +163,7 @@ class MyNetworkImageView @JvmOverloads constructor(
 	private fun loadImageIfNecessary() {
 		try {
 			val url = mUrl
-			if(url == null || url.isEmpty()) {
+			if(url?.isEmpty() != false ) {
 				// if the URL to be loaded in this view is empty,
 				// cancel any old requests and clear the currently loaded image.
 				cancelLoading()
@@ -149,11 +171,8 @@ class MyNetworkImageView @JvmOverloads constructor(
 				return
 			}
 			
-			val oldTarget = mTarget
-			if(url == (oldTarget as? UrlTarget)?.urlLoading) {
-				// すでにリクエストが発行済みで、リクエストされたURLが同じなら何もしない
-				return
-			}
+			// すでにリクエストが発行済みで、リクエストされたURLが同じなら何もしない
+			if((mTarget as? UrlTarget)?.urlLoading == url) return
 			
 			// if there is a pre-existing request, cancel it if it's fetching a different URL.
 			cancelLoading()
@@ -180,14 +199,9 @@ class MyNetworkImageView @JvmOverloads constructor(
 			}
 			
 			mTarget = if(mMayGif) {
-				Glide.with(context)
-					.load(url)
-					.into(MyTargetGif(url))
+				getGLide()?.load(url)?.into(MyTargetGif(url))
 			} else {
-				Glide.with(context)
-					.asBitmap()
-					.load(url)
-					.into(MyTarget(url, desiredWidth, desiredHeight))
+				getGLide()?.asBitmap()?.load(url)?.into(MyTarget(url, desiredWidth, desiredHeight))
 			}
 		} catch(ex : Throwable) {
 			log.trace(ex)
@@ -216,7 +230,7 @@ class MyNetworkImageView @JvmOverloads constructor(
 				if(mErrorImageId != 0) {
 					setImageResource(mErrorImageId)
 				} else {
-					setImageDrawable(null) // TODO これ必要か？
+					setImageDrawable(null)
 				}
 				
 			} catch(ex : Throwable) {
@@ -261,7 +275,7 @@ class MyNetworkImageView @JvmOverloads constructor(
 				if(mErrorImageId != 0) {
 					setImageResource(mErrorImageId)
 				} else {
-					setImageDrawable(null) // TODO これ必要か？
+					setImageDrawable(null)
 				}
 				
 			} catch(ex : Throwable) {
@@ -282,38 +296,24 @@ class MyNetworkImageView @JvmOverloads constructor(
 						// 角丸でないならそのまま使う
 						resource
 					}
+
+					// GidDrawableを置き換える
+					resource is GifDrawable -> replaceGifDrawable(resource)
 					
-					resource is GifDrawable -> {
-						// TODO 角丸版Drawableを用意する
-						//						// ディスクキャッシュから読んだ画像は角丸が正しく扱われない
-						//						// MyGifDrawable に差し替えて描画させる
-						//						if(app_context != null) {
-						//							try {
-						//								resource = MyGifDrawable(resource, mCornerRadius)
-						//							} catch(ex : Throwable) {
-						//								log.trace(ex)
-						//							}
-						//
-						//						}
-						resource
+					// Glide 4.xから、静止画はBitmapDrawableになった
+					resource is BitmapDrawable ->{
+						val bitmap = resource.bitmap
+						if( bitmap ==null ){
+							resource
+						}else{
+							val d = RoundedBitmapDrawableFactory.create(resources, bitmap)
+							d.cornerRadius = mCornerRadius
+							d
+						}
 					}
 					
 					else -> {
-						// TODO 角丸版Drawableを用意する
-						//						if(resource is GlideBitmapDrawable) {
-						//							if(app_context != null) {
-						//								try {
-						//									resource = MyGlideBitmapDrawable(resources, resource, mCornerRadius)
-						//								} catch(ex : Throwable) {
-						//									log.trace(ex)
-						//								}
-						//
-						//							}
-						//						} else {
-						//							throw RuntimeException(String.format("unsupported draw type : %s", resource.javaClass))
-						//						}
-						
-						log.d("onResourceReady: drawable class=%s", resource::class.java)
+						log.d("onResourceReady: drawable class=%s", resource.javaClass)
 						resource
 					}
 				}, transition)
@@ -322,12 +322,25 @@ class MyNetworkImageView @JvmOverloads constructor(
 			}
 			
 		}
+	
+	private fun replaceGifDrawable( resource:GifDrawable) : Drawable {
+		// ディスクキャッシュから読んだ画像は角丸が正しく扱われない
+		// MyGifDrawable に差し替えて描画させる
+		if(app_context != null) {
+			try {
+				return MyGifDrawable(resource, mCornerRadius)
+			} catch(ex : Throwable) {
+				log.trace(ex)
+			}
+		}
+		return resource
+	}
 		
 		private fun afterResourceReady(resource : Drawable, transition : Transition<in Drawable>?) {
 			super.onResourceReady(resource, transition)
 			
 			//				if( ! resource.isAnimated() ){
-			//					//TODO: Try to generalize this to other sizes/shapes.
+			//					//XXX: Try to generalize this to other sizes/shapes.
 			//					// This is a dirty hack that tries to make loading square thumbnails and then square full images less costly
 			//					// by forcing both the smaller thumb and the larger version to have exactly the same intrinsic dimensions.
 			//					// If a drawable is replaced in an ImageView by another drawable with different intrinsic dimensions,

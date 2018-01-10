@@ -22,18 +22,21 @@ import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.dialog.LoginForm
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.Utils
+import org.json.JSONObject
 
 object Action_Account {
+
+	@Suppress("unused")
 	private val log = LogCategory("Action_Account")
 	
 	// アカウントの追加
 	fun add(activity : ActMain) {
 		
 		LoginForm.showLoginForm(activity, null) { dialog, instance, bPseudoAccount, bInputAccessToken ->
-			TootTaskRunner(activity, true).run(instance, object : TootTask {
+			TootTaskRunner(activity).run(instance, object : TootTask {
 				
 				override fun background(client : TootApiClient) : TootApiResult? {
-					return if(bPseudoAccount) {
+					return if(bPseudoAccount || bInputAccessToken) {
 						client.checkInstance()
 					} else {
 						val client_name = Pref.pref(activity).getString(Pref.KEY_CLIENT_NAME, "")
@@ -44,32 +47,53 @@ object Action_Account {
 				override fun handleResult(result : TootApiResult?) {
 					if(result == null) return  // cancelled.
 					
-					val error = result.error
-					if(error != null) {
-						// エラーはブラウザ用URLかもしれない
-						if(error.startsWith("https")) {
+					val data = result.data
+					if(data is String) {
+						// ブラウザ用URLが生成された
+						val intent = Intent()
+						intent.data = Uri.parse(data)
+						activity.startAccessTokenUpdate(intent)
+						try {
+							dialog.dismiss()
+						} catch(ignored : Throwable) {
+							// IllegalArgumentException がたまに出る
+						}
+					} else if(data is JSONObject) {
+						
+						// インスタンスを確認できた
+						if(bInputAccessToken) {
 							
-							if(bInputAccessToken) {
-								// アクセストークンの手動入力
-								DlgTextInput.show(activity, activity.getString(R.string.access_token), null, object : DlgTextInput.Callback {
+							// アクセストークンの手動入力
+							DlgTextInput.show(
+								activity,
+								activity.getString(R.string.access_token),
+								null,
+								object : DlgTextInput.Callback {
 
-									// インスタンス名を入力するダイアログとアクセストークンを入力するダイアログで既定の変数名が衝突する
 									@Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
 									override fun onOK(
 										dialog_token : Dialog,
 										text : String) {
+
+										// dialog引数が二つあるのに注意
 										activity.checkAccessToken(dialog, dialog_token, instance, text, null)
+
 									}
 									
 									override fun onEmptyError() {
 										Utils.showToast(activity, true, R.string.token_not_specified)
 									}
-								})
-							} else {
-								// OAuth認証が必要
-								val data = Intent()
-								data.data = Uri.parse(error)
-								activity.startAccessTokenUpdate(data)
+								}
+							)
+							
+						} else {
+							// 疑似アカウントを追加
+							val a = addPseudoAccount(activity, instance)
+							if(a != null) {
+								Utils.showToast(activity, false, R.string.server_confirmed)
+								val pos = App1.getAppState(activity).column_list.size
+								activity.addColumn(pos, a, Column.TYPE_LOCAL)
+								
 								try {
 									dialog.dismiss()
 								} catch(ignored : Throwable) {
@@ -77,11 +101,9 @@ object Action_Account {
 								}
 								
 							}
-							return
 						}
-						
-						log.e(error)
-						
+					} else {
+						val error = result.error ?: "(no ingormation)"
 						if(error.contains("SSLHandshakeException")
 							&& (Build.VERSION.RELEASE.startsWith("7.0")
 							|| Build.VERSION.RELEASE.startsWith("7.1") && ! Build.VERSION.RELEASE.startsWith("7.1.")
@@ -91,29 +113,10 @@ object Action_Account {
 								.setMessage(error + "\n\n" + activity.getString(R.string.ssl_bug_7_0))
 								.setNeutralButton(R.string.close, null)
 								.show()
-							return
-						}
-						
-						// 他のエラー
-						Utils.showToast(activity, true, error)
-					} else {
-						
-						val a = ActionUtils.addPseudoAccount(activity, instance)
-						if(a != null) {
-							// 疑似アカウントが追加された
-							Utils.showToast(activity, false, R.string.server_confirmed)
-							val pos = App1.getAppState(activity).column_list.size
-							activity.addColumn(pos, a, Column.TYPE_LOCAL)
-							
-							try {
-								dialog.dismiss()
-							} catch(ignored : Throwable) {
-								// IllegalArgumentException がたまに出る
-							}
-							
+						} else {
+							Utils.showToast(activity, true, error)
 						}
 					}
-					
 				}
 			})
 		}
@@ -134,8 +137,9 @@ object Action_Account {
 			when(type) {
 				Column.TYPE_PROFILE -> {
 					val id = ai.loginAccount?.id
-					if( id != null ) activity.addColumn(pos, ai, type, id)
+					if(id != null) activity.addColumn(pos, ai, type, id)
 				}
+				
 				else -> activity.addColumn(pos, ai, type, *args)
 			}
 		}
@@ -157,4 +161,4 @@ object Action_Account {
 			) { ai -> ActPost.open(activity, ActMain.REQUEST_CODE_POST, ai.db_id, initial_text) }
 		}
 	}
-}// 投稿画面を開く。簡易入力があれば初期値はそれになる
+} // 投稿画面を開く。簡易入力があれば初期値はそれになる

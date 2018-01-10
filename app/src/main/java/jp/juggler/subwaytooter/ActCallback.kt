@@ -5,7 +5,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.support.v4.content.FileProvider
 import android.support.v7.app.AppCompatActivity
-import android.text.TextUtils
 
 import org.apache.commons.io.IOUtils
 
@@ -120,9 +119,9 @@ class ActCallback : AppCompatActivity() {
 				// EXTRA_TEXT の存在を確認してからtypeがnullもしくは text/plain なら受け取る
 				
 				var sv = src.getStringExtra(Intent.EXTRA_TEXT)
-				if(! TextUtils.isEmpty(sv) && (type == null || type.startsWith("text/"))) {
+				if( sv?.isNotEmpty() == true && (type == null || type.startsWith("text/"))) {
 					val subject = src.getStringExtra(Intent.EXTRA_SUBJECT)
-					if(! TextUtils.isEmpty(subject)) {
+					if( subject?.isNotEmpty() == true ) {
 						sv = subject + " " + sv
 					}
 					val dst = Intent(action)

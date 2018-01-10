@@ -8,6 +8,7 @@ import android.widget.CheckBox
 import android.widget.TextView
 
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.util.EmptyCallback
 
 object DlgConfirm {
 	
@@ -44,7 +45,7 @@ object DlgConfirm {
 	}
 	
 	@SuppressLint("InflateParams")
-	fun openSimple(activity : Activity, message : String, callback : ActionsDialogAction) {
+	fun openSimple(activity : Activity, message : String, callback : EmptyCallback) {
 		val view = activity.layoutInflater.inflate(R.layout.dlg_confirm, null, false)
 		val tvMessage = view.findViewById<TextView>(R.id.tvMessage)
 		val cbSkipNext = view.findViewById<CheckBox>(R.id.cbSkipNext)

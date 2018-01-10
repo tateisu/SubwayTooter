@@ -77,7 +77,7 @@ internal class HeaderViewHolderInstance(
 		btnEmail.setOnClickListener(this)
 		ivThumbnail.setOnClickListener(this)
 		
-		tvDescription.movementMethod = MyLinkMovementMethod.instance
+		tvDescription.movementMethod = MyLinkMovementMethod
 	}
 	
 	override fun showColor() {

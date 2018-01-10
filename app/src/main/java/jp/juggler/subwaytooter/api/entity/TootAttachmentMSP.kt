@@ -20,11 +20,11 @@ class TootAttachmentMSP(
 	override fun hasUrl(url:String):Boolean = (url == this.preview_url)
 	
 	companion object {
-		fun parseList(array : JSONArray?) : TootAttachmentLike.List? {
+		fun parseList(array : JSONArray?) : ArrayList<TootAttachmentLike>? {
 			if(array != null) {
 				val array_size = array.length()
 				if(array_size > 0) {
-					val result = TootAttachmentLike.List()
+					val result =  ArrayList<TootAttachmentLike>()
 					result.ensureCapacity(array_size)
 					for(i in 0 until array_size) {
 						val sv = Utils.optStringX(array, i)

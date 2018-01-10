@@ -17,7 +17,6 @@ import okio.Source
 import okio.Timeout
 
 
-typealias ProgressResponseBodyCallback = (bytesRead : Long, bytesTotal : Long)->Unit
 
 class ProgressResponseBody private constructor(private val originalBody : ResponseBody) : ResponseBody() {
 	

@@ -1,8 +1,9 @@
 package jp.juggler.subwaytooter.table
 
-// class TableUtils{ }
+// SQLite にBooleanをそのまま保存することはできないのでInt型との変換が必要になる
 
 // boolean to integer
-fun b2i(v : Boolean ) : Int {
-	return if(v) 1 else 0
-}
+fun Boolean.b2i() = if(this) 1 else 0
+
+// integer to boolean
+fun Int.i2b() = this!=0

@@ -275,6 +275,26 @@ class TestKotlinFeature {
 		}
 		
 	}
+	@Test fun testAnonymousFunction(){
+		// 定義例(文脈あり)
+		thread( start=true,block=fun(){ println("testAnonymousFunction")})
+		println( 10.let(fun(x:Int)=x*x))
+		10.let{ println(it)}
+		// 定義例(文脈不明)
+		val a = fun(x:Int)=x*x
+		
+		// 参照型の定義
+		val ref: (x:Int)->Int = a
+		
+		// 参照型の呼び出し
+		println( ref(10))
+		
+		// 参照型の定義(Nullable)
+		val refNullable : TestLambdaCallback? = fun(i:Int)=i*i
+		if( refNullable != null ){
+			refNullable(10)
+		}
+	}
 	
 	@Test
 	fun testObjectExpression() {
@@ -404,5 +424,34 @@ class TestKotlinFeature {
 			result = rv
 			println(rv)
 		}
+	}
+	@Test fun testRawArray(){
+		// サイズを指定して生成
+		val a = IntArray(4)
+		for(i in 0 until a.size){
+			a[i]=i*2
+		}
+		println( a.joinToString(","))
+		
+		// サイズと初期化ラムダを指定して生成
+		val b = IntArray(4){ index -> index *3 }
+		println( b.joinToString(","))
+
+		// 可変長引数で初期化するライブラリ関数
+		var b2 = intArrayOf( 0,1,2,3)
+		
+		// 参照型の配列だと初期化ラムダが必須
+		val c = Array<CharSequence>(4){ (it*4).toString() }
+		println( c.joinToString(","))
+		val d = Array<CharSequence?>(4){ if( it%2 == 0 ) null else (it*5).toString() }
+		println( d.joinToString(","))
+		
+		// ラムダ式の戻り値の型から配列の型パラメータが推測される
+		val e = Array(4){ if( it%2 == 0 ) null else (it*6).toString() }
+		println( e.joinToString(","))
+
+		// 可変長引数で初期化するライブラリ関数
+		var e2 = arrayOf( null,1,null,2)
+		
 	}
 }

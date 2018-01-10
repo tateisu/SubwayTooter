@@ -9,7 +9,6 @@ import android.content.SharedPreferences
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.net.Uri
-import android.support.annotation.NonNull
 import android.support.customtabs.CustomTabsIntent
 import android.util.Log
 
@@ -17,16 +16,11 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.GlideBuilder
 import com.bumptech.glide.Registry
 import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader
-import com.bumptech.glide.load.DecodeFormat
-import com.bumptech.glide.load.engine.bitmap_recycle.LruBitmapPool
 import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory
-import com.bumptech.glide.load.engine.cache.LruResourceCache
-import com.bumptech.glide.load.engine.cache.MemorySizeCalculator
 import com.bumptech.glide.load.engine.executor.GlideExecutor
 import com.bumptech.glide.load.engine.executor.GlideExecutor.newDiskCacheExecutor
 import com.bumptech.glide.load.engine.executor.GlideExecutor.newSourceExecutor
 import com.bumptech.glide.load.model.GlideUrl
-import com.bumptech.glide.request.RequestOptions
 
 import java.io.File
 import java.io.InputStream
@@ -243,8 +237,9 @@ class App1 : Application() {
 		
 		private var bPrepared = false
 		
-		fun prepare(app_context : Context) {
-			if(bPrepared) return
+		fun prepare(app_context : Context) :AppState {
+			if(bPrepared) return appStateX
+
 			bPrepared = true
 			
 			CalligraphyConfig.initDefault(CalligraphyConfig.Builder()
@@ -332,6 +327,9 @@ class App1 : Application() {
 			custom_emoji_cache = CustomEmojiCache(app_context)
 
 			custom_emoji_lister = CustomEmojiLister(app_context)
+			
+			appStateX = AppState(app_context, pref)
+			return appStateX
 		}
 		
 		@Suppress("UNUSED_PARAMETER")
@@ -347,7 +345,7 @@ class App1 : Application() {
 		fun applyGlideOptions( context: Context , builder : GlideBuilder){
 			
 			// ログレベル
-			builder.setLogLevel(Log.DEBUG)
+			builder.setLogLevel(Log.ERROR)
 			
 			// エラー処理
 			val catcher = GlideExecutor.UncaughtThrowableStrategy {
@@ -408,12 +406,7 @@ class App1 : Application() {
 		private lateinit var appStateX : AppState
 		
 		fun getAppState(context : Context) : AppState {
-			 if( ! ::appStateX.isInitialized) {
-				val appContext = context.applicationContext
-				prepare(appContext)
-				 appStateX = AppState(appContext, pref)
-			}
-			return appStateX
+			return prepare(context.applicationContext)
 		}
 		
 		@JvmOverloads
@@ -463,7 +456,7 @@ class App1 : Application() {
 			}
 			
 			return try {
-				response.body() !!.bytes()
+				response.body()?.bytes()
 			} catch(ex : Throwable) {
 				log.e(ex, "getHttp content error.")
 				null

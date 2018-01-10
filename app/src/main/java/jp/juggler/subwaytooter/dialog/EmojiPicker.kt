@@ -138,9 +138,6 @@ class EmojiPicker(
 	
 	/////////////////////////////////////////////////////////////////////////////
 	
-	private val lister_callback : CustomEmojiListerCallback = {
-		setCustomEmojiList(it) // ロード完了時に呼ばれる
-	}
 
 	internal class EmojiItem(val name : String, val instance : String?)
 	
@@ -199,7 +196,11 @@ class EmojiPicker(
 		
 		// カスタム絵文字をロードする
 		if( instance!= null && instance.isNotEmpty() ) {
-			setCustomEmojiList(App1.custom_emoji_lister[instance,  lister_callback ])
+			setCustomEmojiList(
+				App1.custom_emoji_lister.getList(instance){
+					setCustomEmojiList(it) // ロード完了時に呼ばれる
+				}
+			)
 		}
 		
 		this.dialog = Dialog(activity)
@@ -212,7 +213,7 @@ class EmojiPicker(
 	
 
 	
-	private fun setCustomEmojiList(list : CustomEmoji.List?) {
+	private fun setCustomEmojiList(list : ArrayList<CustomEmoji>?) {
 		if(list == null) return
 		custom_list.clear()
 		for(emoji in list) {

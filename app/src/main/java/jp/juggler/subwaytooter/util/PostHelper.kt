@@ -25,10 +25,8 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.dialog.EmojiPicker
 import jp.juggler.subwaytooter.span.MyClickableSpan
@@ -40,8 +38,6 @@ import jp.juggler.subwaytooter.table.TagSet
 import jp.juggler.subwaytooter.view.MyEditText
 import okhttp3.Request
 import okhttp3.RequestBody
-
-typealias PostCompleteCallback = (target_account : SavedAccount, status : TootStatus) -> Unit
 
 class PostHelper(
 	private val activity : AppCompatActivity,
@@ -80,25 +76,27 @@ class PostHelper(
 	var enquete_items : ArrayList<String>? = null
 	
 	fun post(account : SavedAccount, bConfirmTag : Boolean, bConfirmAccount : Boolean, callback : PostCompleteCallback) {
-		val content = this.content
+		val content = this.content ?:""
 		val spoiler_text = this.spoiler_text
 		val bNSFW = this.bNSFW
 		val in_reply_to_id = this.in_reply_to_id
 		val attachment_list = this.attachment_list
 		val enquete_items = this.enquete_items
-		var visibility = this.visibility
+		var visibility = this.visibility ?:""
 		
-		if(content.isNullOrEmpty()) {
+		if(content.isEmpty() ) {
 			Utils.showToast(activity, true, R.string.post_error_contents_empty)
 			return
 		}
 		
-		if(spoiler_text.isNullOrEmpty()) {
+		// nullはCWチェックなしを示す
+		// nullじゃなくてカラならエラー
+		if(spoiler_text != null && spoiler_text.isEmpty() ) {
 			Utils.showToast(activity, true, R.string.post_error_contents_warning_empty)
 			return
 		}
 		
-		if(visibility.isNullOrEmpty()) {
+		if(visibility.isEmpty() ) {
 			visibility = TootStatus.VISIBILITY_PUBLIC
 		}
 		
@@ -160,7 +158,7 @@ class PostHelper(
 			}
 		}
 		
-		TootTaskRunner(activity, true).run(account, object : TootTask {
+		TootTaskRunner(activity).run(account, object : TootTask {
 			
 			internal var status : TootStatus? = null
 			
@@ -170,7 +168,7 @@ class PostHelper(
 			
 			internal fun getInstanceInformation(client : TootApiClient) : TootApiResult? {
 				val result = client.request("/api/v1/instance")
-				instance_tmp = TootInstance.parse(result?.jsonObject)
+				instance_tmp = parseItem(::TootInstance,result?.jsonObject)
 				return result
 			}
 			
@@ -209,12 +207,12 @@ class PostHelper(
 					
 					val json = JSONObject()
 					try {
-						json.put("status", EmojiDecoder.decodeShortCode(content !!))
+						json.put("status", EmojiDecoder.decodeShortCode(content ))
 						if(visibility_checked != null) {
 							json.put("visibility", visibility_checked)
 						}
 						json.put("sensitive", bNSFW)
-						json.put("spoiler_text", if(spoiler_text == null || spoiler_text.isEmpty()) "" else EmojiDecoder.decodeShortCode(spoiler_text))
+						json.put("spoiler_text", EmojiDecoder.decodeShortCode(spoiler_text?:""))
 						json.put("in_reply_to_id", if(in_reply_to_id == - 1L) null else in_reply_to_id)
 						var array = JSONArray()
 						if(attachment_list != null) {
@@ -243,7 +241,7 @@ class PostHelper(
 					val sb = StringBuilder()
 					
 					sb.append("status=")
-					sb.append(Uri.encode(EmojiDecoder.decodeShortCode(content !!)))
+					sb.append(Uri.encode(EmojiDecoder.decodeShortCode(content )))
 					
 					if(visibility_checked != null) {
 						sb.append("&visibility=")
@@ -254,7 +252,7 @@ class PostHelper(
 						sb.append("&sensitive=1")
 					}
 					
-					if(spoiler_text != null && spoiler_text.isNotEmpty()) {
+					if(spoiler_text?.isNotEmpty()==true) {
 						sb.append("&spoiler_text=")
 						sb.append(Uri.encode(EmojiDecoder.decodeShortCode(spoiler_text)))
 					}
@@ -348,20 +346,27 @@ class PostHelper(
 	
 	private var instance : String? = null
 	
+	private val onEmojiListLoad : (list : ArrayList<CustomEmoji> ) -> Unit
+		= { _ : ArrayList<CustomEmoji> ->
+			val popup = this@PostHelper.popup
+			if(popup?.isShowing == true) proc_text_changed.run()
+		}
+	
 	private val proc_text_changed = object : Runnable {
 		override fun run() {
-			if(! callback2 !!.canOpenPopup()) {
+			val et = this@PostHelper.et
+			if( et==null || callback2?.canOpenPopup() != true) {
 				closeAcctPopup()
 				return
 			}
 			
-			var start = et !!.selectionStart
-			val end = et !!.selectionEnd
+			var start = et .selectionStart
+			val end = et .selectionEnd
 			if(start != end) {
 				closeAcctPopup()
 				return
 			}
-			val src = et !!.text.toString()
+			val src = et .text.toString()
 			var count_atMark = 0
 			val pos_atMark = IntArray(2)
 			while(true) {
@@ -408,7 +413,7 @@ class PostHelper(
 			if(acct_list.isEmpty()) {
 				closeAcctPopup()
 			} else {
-				openPopup()?.setList(et !!, start, end, acct_list, null, null)
+				openPopup()?.setList(et , start, end, acct_list, null, null)
 			}
 		}
 		
@@ -483,7 +488,7 @@ class PostHelper(
 				// カスタム絵文字を検索
 				val instance = this@PostHelper.instance
 				if(instance != null && instance.isNotEmpty()) {
-					val custom_list = App1.custom_emoji_lister[instance, emojiListCallback]
+					val custom_list = App1.custom_emoji_lister.getList(instance, onEmojiListLoad)
 					if(custom_list != null) {
 						val needle = src.substring(last_colon + 1, end)
 						for(item in custom_list) {
@@ -519,7 +524,7 @@ class PostHelper(
 	}
 	
 	private val open_picker_emoji = Runnable {
-		EmojiPicker.open(activity, instance , this@PostHelper)
+		EmojiPicker.open(activity, instance, this@PostHelper)
 	}
 	
 	interface Callback2 {
@@ -533,7 +538,7 @@ class PostHelper(
 		this.instance = instance
 		
 		if(instance != null) {
-			App1.custom_emoji_lister[instance, emojiListCallback]
+			App1.custom_emoji_lister.getList(instance, onEmojiListLoad)
 		}
 		
 		val popup = this.popup
@@ -548,8 +553,8 @@ class PostHelper(
 	}
 	
 	fun onScrollChanged() {
-		if(popup != null && popup !!.isShowing) {
-			popup !!.updatePosition()
+		if(popup?.isShowing == true) {
+			popup?.updatePosition()
 		}
 	}
 	
@@ -558,28 +563,28 @@ class PostHelper(
 		closeAcctPopup()
 	}
 	
-	fun attachEditText(_formRoot : View, _et : MyEditText, bMainScreen : Boolean, _callback2 : Callback2) {
+	fun attachEditText(_formRoot : View, et : MyEditText, bMainScreen : Boolean, _callback2 : Callback2) {
 		this.formRoot = _formRoot
-		this.et = _et
+		this.et = et
 		this.callback2 = _callback2
 		this.bMainScreen = bMainScreen
 		
-		et !!.addTextChangedListener(object : TextWatcher {
+		et .addTextChangedListener(object : TextWatcher {
 			override fun beforeTextChanged(s : CharSequence, start : Int, count : Int, after : Int) {
 			
 			}
 			
 			override fun onTextChanged(s : CharSequence, start : Int, before : Int, count : Int) {
 				handler.removeCallbacks(proc_text_changed)
-				handler.postDelayed(proc_text_changed, if(popup != null && popup !!.isShowing) 100L else 500L)
+				handler.postDelayed(proc_text_changed, if(popup?.isShowing ==true ) 100L else 500L)
 			}
 			
 			override fun afterTextChanged(s : Editable) {
-				callback2 !!.onTextUpdate()
+				callback2?.onTextUpdate()
 			}
 		})
 		
-		et !!.setOnSelectionChangeListener(object : MyEditText.OnSelectionChangeListener {
+		et .setOnSelectionChangeListener(object : MyEditText.OnSelectionChangeListener {
 			override fun onSelectionChanged(selStart : Int, selEnd : Int) {
 				if(selStart != selEnd) {
 					// 範囲選択されてるならポップアップは閉じる
@@ -592,13 +597,6 @@ class PostHelper(
 		// 全然動いてなさそう…
 		// et.setCustomSelectionActionModeCallback( action_mode_callback );
 		
-	}
-	
-	private val emojiListCallback : CustomEmojiListerCallback = { _ ->
-		val popup = this@PostHelper.popup
-		if(popup != null && popup.isShowing) {
-			proc_text_changed.run()
-		}
 	}
 	
 	override fun onPickedEmoji(name : String) {

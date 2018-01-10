@@ -312,17 +312,15 @@ object HTMLDecoder {
 				}
 				
 				// リンクスパンを設定した後に色をつける
-				if(options.highlight_trie != null) {
-					val list = options.highlight_trie !!.matchList(sb, start, end)
-					if(list != null) {
-						for(range in list) {
-							val word = HighlightWord.load(range.word)
-							if(word != null) {
-								options.hasHighlight = true
-								sb.setSpan(HighlightSpan(word.color_fg, word.color_bg), range.start, range.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-								if(word.sound_type != HighlightWord.SOUND_TYPE_NONE) {
-									options.highlight_sound = word
-								}
+				val list = options.highlight_trie?.matchList(sb, start, end)
+				if(list != null) {
+					for(range in list) {
+						val word = HighlightWord.load(range.word)
+						if(word != null) {
+							options.hasHighlight = true
+							sb.setSpan(HighlightSpan(word.color_fg, word.color_bg), range.start, range.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+							if(word.sound_type != HighlightWord.SOUND_TYPE_NONE) {
+								options.highlight_sound = word
 							}
 						}
 					}
@@ -353,7 +351,7 @@ object HTMLDecoder {
 			}
 		}
 		
-		internal fun is_media_attachment(list_attachment : TootAttachmentLike.List?, url : String?) : Boolean {
+		internal fun is_media_attachment(list_attachment :ArrayList<TootAttachmentLike>?, url : String?) : Boolean {
 			if(url == null || list_attachment == null) return false
 			for(a in list_attachment) {
 				if(a.hasUrl(url)) return true
@@ -362,7 +360,7 @@ object HTMLDecoder {
 		}
 		
 		private fun encodeUrl(
-			bShort : Boolean, context : Context, display_url : String, href : String?, list_attachment : TootAttachmentLike.List?
+			bShort : Boolean, context : Context, display_url : String, href : String?, list_attachment :ArrayList<TootAttachmentLike>?
 		) : CharSequence {
 			if(! display_url.startsWith("http")) {
 				if(display_url.startsWith("@") && href != null && App1.pref.getBoolean(Pref.KEY_MENTION_FULL_ACCT, false)) {
@@ -447,7 +445,7 @@ object HTMLDecoder {
 		return sb
 	}
 	
-	fun decodeMentions(access_info : SavedAccount, src_list : TootMention.List?, link_tag : Any?) : Spannable? {
+	fun decodeMentions(access_info : SavedAccount, src_list : ArrayList<TootMention>?, link_tag : Any?) : Spannable? {
 		if(src_list == null || src_list.isEmpty()) return null
 		val sb = SpannableStringBuilder()
 		for(item in src_list) {
@@ -460,10 +458,10 @@ object HTMLDecoder {
 				sb.append(item.acct)
 			}
 			val end = sb.length
-			if(end > start) {
+			val url = item.url
+			if(end > start){
 				val link_text = sb.subSequence(start, end).toString()
-				val span = MyClickableSpan(access_info, link_text, item.url, access_info.findAcctColor(item.url), link_tag)
-				
+				val span = MyClickableSpan(access_info, link_text, url, access_info.findAcctColor(item.url), link_tag)
 				sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 			}
 		}

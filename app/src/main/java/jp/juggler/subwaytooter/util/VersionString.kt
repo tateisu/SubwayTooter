@@ -77,7 +77,7 @@ class VersionString(src : String?) {
 				return if(ao is BigInteger) {
 					if(bo is BigInteger) {
 						// 数字同士の場合
-						val i = ao.compareTo(bo as BigInteger?)
+						val i = ao.compareTo(bo)
 						if(i == 0) {
 							++ idx
 							continue
@@ -94,7 +94,7 @@ class VersionString(src : String?) {
 					// 1.5 xxx < 1.5.n
 					- 1
 				} else if( ao is String && bo is String ){
-					// 数字じゃない文字列どうしは辞書順で比較
+					// 文字列どうしは辞書順で比較
 					val i =ao.compareTo(bo )
 					if(i == 0) {
 						++ idx

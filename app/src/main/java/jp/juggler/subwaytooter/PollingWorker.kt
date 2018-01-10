@@ -110,13 +110,15 @@ class PollingWorker private constructor(c : Context) {
 		private const val TASK_UPDATE_LISTENER = 13
 		
 		@SuppressLint("StaticFieldLeak")
-		private lateinit var sInstance : PollingWorker
+		private var sInstance : PollingWorker? = null
 		
 		fun getInstance(applicationContext : Context) : PollingWorker {
-			if(! ::sInstance.isInitialized) {
-				sInstance = PollingWorker(applicationContext)
+			var s = sInstance
+			if( s == null ){
+				s = PollingWorker(applicationContext)
+				sInstance = s
 			}
-			return sInstance
+			return s
 		}
 		
 		//////////////////////////////////////////////////////////////////////
@@ -126,7 +128,7 @@ class PollingWorker private constructor(c : Context) {
 		
 		fun scheduleJob(context : Context, job_id : Int) {
 			
-			val scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler?
+			val scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as? JobScheduler
 				?: throw NotImplementedError("missing JobScheduler system service")
 			
 			val component = ComponentName(context, PollingService::class.java)
@@ -171,7 +173,7 @@ class PollingWorker private constructor(c : Context) {
 			addTask(context, true, TASK_UPDATE_NOTIFICATION, null)
 		}
 		
-		fun injectData(context : Context, account_db_id : Long, src : TootNotification.List) {
+		fun injectData(context : Context, account_db_id : Long, src : ArrayList<TootNotification>) {
 			
 			if(src.isEmpty()) return
 			
@@ -306,7 +308,7 @@ class PollingWorker private constructor(c : Context) {
 	
 	internal class InjectData {
 		var account_db_id : Long = 0
-		val list = TootNotification.List()
+		val list = ArrayList<TootNotification>()
 	}
 	
 	init {
@@ -315,20 +317,20 @@ class PollingWorker private constructor(c : Context) {
 		val context = c.applicationContext
 		this.context = context
 		
-		this.connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager?
+		this.connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
 			?: throw NotImplementedError("missing ConnectivityManager system service")
 		
-		this.notification_manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager?
+		this.notification_manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
 			?: throw NotImplementedError("missing NotificationManager system service")
 		
-		this.scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler?
+		this.scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as? JobScheduler
 			?: throw NotImplementedError("missing JobScheduler system service")
 		
-		this.power_manager = context.getSystemService(Context.POWER_SERVICE) as PowerManager?
+		this.power_manager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
 			?: throw NotImplementedError("missing PowerManager system service")
 		
 		// WifiManagerの取得時はgetApplicationContext を使わないとlintに怒られる
-		this.wifi_manager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager?
+		this.wifi_manager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
 			?: throw NotImplementedError("missing WifiManager system service")
 		
 		power_lock = power_manager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, PollingWorker::class.java.name)
@@ -750,13 +752,13 @@ class PollingWorker private constructor(c : Context) {
 					job.current_call = call
 					
 					val response = call.execute()
+					val body = response.body()?.string()
 					
-					if(! response.isSuccessful) {
+					if(! response.isSuccessful || body?.isEmpty() != false ) {
 						log.e(Utils.formatResponse(response, "getInstallId: get /counter failed."))
 						return null
 					}
 					
-					val body = response.body()!!.string() as String // 問題があれば例外を起こす
 					sv = Utils.digestSHA256(device_token + UUID.randomUUID() + body)
 					prefDevice.edit().putString(PrefDevice.KEY_INSTALL_ID, sv).apply()
 					
@@ -808,7 +810,7 @@ class PollingWorker private constructor(c : Context) {
 					
 				} else if(taskId == TASK_FCM_MESSAGE) {
 					var bDone = false
-					val tag = taskData !!.optString(EXTRA_TAG)
+					val tag = Utils.optStringX(taskData,EXTRA_TAG)
 					if(tag != null) {
 						for(sa in SavedAccount.loadByTag(context, tag)) {
 							NotificationTracking.resetLastLoad(sa.db_id)

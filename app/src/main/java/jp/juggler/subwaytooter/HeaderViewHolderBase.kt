@@ -13,6 +13,7 @@ internal abstract class HeaderViewHolderBase(val activity : ActMain, val column 
 	companion object {
 		
 		private val log = LogCategory("HeaderViewHolderBase")
+
 	}
 	
 	val access_info : SavedAccount
@@ -23,8 +24,10 @@ internal abstract class HeaderViewHolderBase(val activity : ActMain, val column 
 	
 	init {
 		this.access_info = column.access_info
-		
-		//FIXME これ必要？ viewRoot.tag = this
+
+		// 初期化の間にthisを使うと警告が出るが、必要な処理なので…
+		@Suppress("LeakingThis")
+		viewRoot.tag = this
 		
 		if(activity.timeline_font != null) {
 			Utils.scanView(viewRoot) { v ->
@@ -42,5 +45,4 @@ internal abstract class HeaderViewHolderBase(val activity : ActMain, val column 
 		
 	}
 	
-
 }

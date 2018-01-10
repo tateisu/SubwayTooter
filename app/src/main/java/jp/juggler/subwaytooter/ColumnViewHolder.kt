@@ -96,7 +96,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 	
 	private var last_image_uri : String? = null
 	private var last_image_bitmap : Bitmap? = null
-	private var last_image_task : AsyncTask<Void, Void, Bitmap>? = null
+	private var last_image_task : AsyncTask<Void, Void, Bitmap?>? = null
 	
 	
 	private val isRegexValid : Boolean
@@ -106,9 +106,12 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 				tvRegexFilterError.text = ""
 				return true
 			}
-			val m : Matcher
 			try{
-				m = Pattern.compile(s).matcher("")
+				val m = Pattern.compile(s).matcher("")
+				if( m.find() ) {
+					// XXX: 空文字列にマッチする正規表現はエラー扱いにする? しなくてもよい？
+					// tvRegexFilterError.text = activity.getString(R.string.)
+				}
 			}catch(ex : Throwable) {
 				val message = ex.message
 				tvRegexFilterError.text = if(message != null && message.isNotEmpty()) {
@@ -118,9 +121,6 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 				}
 				return false
 			}
-			if( m.find() ) {
-				// FIXME: 空文字列にマッチする正規表現はエラー扱いにした方がいいんじゃないだろうか
-			}
 			return true
 		}
 	
@@ -129,7 +129,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 	
 	
 	val headerView : HeaderViewHolderBase?
-		get() = if(status_adapter == null) null else status_adapter !!.header
+		get() = status_adapter?.header
 	
 	val scrollPosition : ScrollPosition
 		get() = ScrollPosition(listView)
@@ -283,18 +283,19 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 				return
 			}
 			
+			val column = this@ColumnViewHolder.column
 			if(column == null) {
 				log.d("restoreScrollPosition [%d], column==null", page_idx)
 				return
 			}
 			
-			if(column !!.is_dispose.get()) {
+			if(column.is_dispose.get()) {
 				log.d("restoreScrollPosition [%d], column is disposed", page_idx)
 				return
 			}
 			
-			if(column !!.hasMultipleViewHolder()) {
-				log.d("restoreScrollPosition [%d] %s , column has multiple view holder. retry later.", page_idx, column !!.getColumnName(true))
+			if(column.hasMultipleViewHolder()) {
+				log.d("restoreScrollPosition [%d] %s , column has multiple view holder. retry later.", page_idx, column .getColumnName(true))
 				
 				// タブレットモードでカラムを追加/削除した際に発生する。
 				// このタイミングでスクロール位置を復元してもうまくいかないので延期する
@@ -302,17 +303,17 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 				return
 			}
 			
-			val sp = column !!.scroll_save ?: //復元後にもここを通るがこれは正常である
+			val sp = column .scroll_save ?: //復元後にもここを通るがこれは正常である
 				// log.d( "restoreScrollPosition [%d] %s , column has no saved scroll position.", page_idx, column.getColumnName( true ) );
 				return
 			
-			column !!.scroll_save = null
+			column .scroll_save = null
 			
 			if(listView.visibility != View.VISIBLE) {
-				log.d("restoreScrollPosition [%d] %s , listView is not visible. saved position %s,%s is dropped.", page_idx, column !!.getColumnName(true), sp.pos, sp.top
+				log.d("restoreScrollPosition [%d] %s , listView is not visible. saved position %s,%s is dropped.", page_idx, column .getColumnName(true), sp.pos, sp.top
 				)
 			} else {
-				log.d("restoreScrollPosition [%d] %s , listView is visible. resume %s,%s", page_idx, column !!.getColumnName(true), sp.pos, sp.top
+				log.d("restoreScrollPosition [%d] %s , listView is visible. resume %s,%s", page_idx, column .getColumnName(true), sp.pos, sp.top
 				)
 				sp.restore(listView)
 			}
@@ -322,13 +323,13 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 	
 	fun onPageDestroy(page_idx : Int) {
 		// タブレットモードの場合、onPageCreateより前に呼ばれる
-		
+		val column = this@ColumnViewHolder.column
 		if(column != null) {
 			log.d("onPageDestroy [%d] %s", page_idx, tvColumnName.text)
 			saveScrollPosition()
 			listView.adapter = null
-			column !!.removeColumnViewHolder(this)
-			column = null
+			column.removeColumnViewHolder(this)
+			this@ColumnViewHolder.column = null
 		}
 		
 		closeBitmaps()
@@ -500,15 +501,11 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 			ivColumnBackgroundImage.visibility = View.GONE
 			ivColumnBackgroundImage.setImageDrawable(null)
 			
-			if(last_image_bitmap != null) {
-				last_image_bitmap !!.recycle()
-				last_image_bitmap = null
-			}
+			last_image_bitmap?.recycle()
+			last_image_bitmap = null
 			
-			if(last_image_task != null) {
-				last_image_task !!.cancel(true)
-				last_image_task = null
-			}
+			last_image_task ?.cancel(true)
+			last_image_task = null
 			
 			last_image_uri = null
 			
@@ -541,7 +538,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 			val screen_h = iv.resources.displayMetrics.heightPixels
 			
 			// 非同期処理を開始
-			last_image_task = object : AsyncTask<Void, Void, Bitmap>() {
+			val task = object : AsyncTask<Void, Void, Bitmap?>() {
 				override fun doInBackground(vararg params : Void) : Bitmap? {
 					try {
 						val resize_max = if(screen_w > screen_h) screen_w else screen_h
@@ -555,7 +552,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 					return null
 				}
 				
-				override fun onCancelled(bitmap : Bitmap) {
+				override fun onCancelled(bitmap : Bitmap?) {
 					onPostExecute(bitmap)
 				}
 				
@@ -571,7 +568,8 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 					}
 				}
 			}
-			last_image_task !!.executeOnExecutor(App1.task_executor)
+			last_image_task = task
+			task.executeOnExecutor(App1.task_executor)
 			
 		} catch(ex : Throwable) {
 			log.trace(ex)
@@ -588,96 +586,100 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 	}
 	
 	override fun onRefresh(direction : SwipyRefreshLayoutDirection) {
-		if(column == null) return
+		val column = this.column ?: return
 		
 		// カラムを追加/削除したときに ColumnからColumnViewHolderへの参照が外れることがある
 		// リロードやリフレッシュ操作で直るようにする
-		column !!.addColumnViewHolder(this)
+		column .addColumnViewHolder(this)
 		
-		if(direction == SwipyRefreshLayoutDirection.TOP && column !!.canReloadWhenRefreshTop()) {
+		if(direction == SwipyRefreshLayoutDirection.TOP && column .canReloadWhenRefreshTop()) {
 			refreshLayout.isRefreshing = false
-			activity.handler.post { if(column != null) column !!.startLoading() }
+			activity.handler.post {
+				this@ColumnViewHolder.column?.startLoading()
+			}
 			return
 		}
 		
-		column !!.startRefresh(false, direction == SwipyRefreshLayoutDirection.BOTTOM, - 1L, - 1)
+		column .startRefresh(false, direction == SwipyRefreshLayoutDirection.BOTTOM, - 1L, - 1)
 	}
 	
 	override fun onCheckedChanged(view : CompoundButton, isChecked : Boolean) {
+		val column = this@ColumnViewHolder.column
+		
 		if(loading_busy || column == null || status_adapter == null) return
 		
 		// カラムを追加/削除したときに ColumnからColumnViewHolderへの参照が外れることがある
 		// リロードやリフレッシュ操作で直るようにする
-		column !!.addColumnViewHolder(this)
+		column .addColumnViewHolder(this)
 		
 		when(view.id) {
 			
 			R.id.cbDontCloseColumn -> {
-				column !!.dont_close = isChecked
+				column .dont_close = isChecked
 				showColumnCloseButton()
 				activity.app_state.saveColumnList()
 			}
 			
 			R.id.cbWithAttachment -> {
-				column !!.with_attachment = isChecked
+				column .with_attachment = isChecked
 				activity.app_state.saveColumnList()
-				column !!.startLoading()
+				column .startLoading()
 			}
 			
 			R.id.cbWithHighlight -> {
-				column !!.with_highlight = isChecked
+				column .with_highlight = isChecked
 				activity.app_state.saveColumnList()
-				column !!.startLoading()
+				column .startLoading()
 			}
 			
 			
 			R.id.cbDontShowBoost -> {
-				column !!.dont_show_boost = isChecked
+				column .dont_show_boost = isChecked
 				activity.app_state.saveColumnList()
-				column !!.startLoading()
+				column .startLoading()
 			}
 			
 			R.id.cbDontShowReply -> {
-				column !!.dont_show_reply = isChecked
+				column .dont_show_reply = isChecked
 				activity.app_state.saveColumnList()
-				column !!.startLoading()
+				column .startLoading()
 			}
 			
 			R.id.cbDontShowFavourite -> {
-				column !!.dont_show_favourite = isChecked
+				column .dont_show_favourite = isChecked
 				activity.app_state.saveColumnList()
-				column !!.startLoading()
+				column .startLoading()
 			}
 			
 			R.id.cbDontShowFollow -> {
-				column !!.dont_show_follow = isChecked
+				column .dont_show_follow = isChecked
 				activity.app_state.saveColumnList()
-				column !!.startLoading()
+				column .startLoading()
 			}
 			
 			R.id.cbDontStreaming -> {
-				column !!.dont_streaming = isChecked
+				column .dont_streaming = isChecked
 				activity.app_state.saveColumnList()
 				if(isChecked) {
-					column !!.stopStreaming()
+					column .stopStreaming()
 				} else {
-					column !!.onStart(activity)
+					column .onStart(activity)
 				}
 			}
 			
 			R.id.cbDontAutoRefresh -> {
-				column !!.dont_auto_refresh = isChecked
+				column .dont_auto_refresh = isChecked
 				activity.app_state.saveColumnList()
 			}
 			
 			R.id.cbHideMediaDefault -> {
-				column !!.hide_media_default = isChecked
+				column .hide_media_default = isChecked
 				activity.app_state.saveColumnList()
-				column !!.fireShowContent()
+				column .fireShowContent()
 			}
 			
 			R.id.cbEnableSpeech -> {
-				column !!.enable_speech = isChecked
+				column .enable_speech = isChecked
 				activity.app_state.saveColumnList()
 			}
 		}
@@ -685,6 +687,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 	
 	override fun onClick(v : View) {
 		val column = this.column
+		val status_adapter = this.status_adapter
 		if(loading_busy || column == null || status_adapter == null) return
 		
 		// カラムを追加/削除したときに ColumnからColumnViewHolderへの参照が外れることがある
@@ -714,7 +717,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 				column.startLoading()
 			}
 			
-			R.id.llColumnHeader -> if(status_adapter !!.count > 0) listView.setSelectionFromTop(0, 0)
+			R.id.llColumnHeader -> if(status_adapter .count > 0) listView.setSelectionFromTop(0, 0)
 			
 			R.id.btnColumnSetting -> llColumnSetting.visibility = if(llColumnSetting.visibility == View.VISIBLE) View.GONE else View.VISIBLE
 			
@@ -747,16 +750,16 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 	}
 	
 	private fun showColumnCloseButton() {
-		if(column == null) return
+		val column = this@ColumnViewHolder.column ?: return
+
 		// カラム保護の状態
-		btnColumnClose.isEnabled = ! column !!.dont_close
-		btnColumnClose.alpha = if(column !!.dont_close) 0.3f else 1f
+		btnColumnClose.isEnabled = ! column .dont_close
+		btnColumnClose.alpha = if(column .dont_close) 0.3f else 1f
 	}
 	
 	// カラムヘッダなど、負荷が低い部分の表示更新
 	fun showColumnHeader() {
-		val column = this.column
-		if(column == null) return
+		val column = this.column ?: return
 		
 		val acct = column.access_info.acct
 		val ac = AcctColor.load(acct)
@@ -788,7 +791,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 		// クラッシュレポートにadapterとリストデータの状態不整合が多かったので、
 		// とりあえずリストデータ変更の通知だけは最優先で行っておく
 		try {
-			if(status_adapter != null) status_adapter !!.notifyDataSetChanged()
+			status_adapter ?.notifyDataSetChanged()
 		} catch(ex : Throwable) {
 			log.trace(ex)
 		}

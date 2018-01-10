@@ -73,7 +73,7 @@ internal class ItemListAdapter(private val activity : ActMain, private val colum
 	
 	override fun onItemClick(parent : AdapterView<*>, view : View, position : Int, id : Long) {
 		if(bSimpleList) {
-			(view.tag as?  ItemViewHolder)?.onItemClick(parent as MyListView, view)
+			(view.tag as? ItemViewHolder)?.onItemClick(parent as MyListView, view)
 		}
 	}
 }

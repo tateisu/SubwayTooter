@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootList
+import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.Utils
 import okhttp3.Request
@@ -24,7 +25,7 @@ object Action_List {
 	fun create(
 		activity : ActMain, access_info : SavedAccount, title : String, callback : CreateCallback?
 	) {
-		TootTaskRunner(activity, true).run(access_info, object : TootTask {
+		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
 			internal var list : TootList? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
@@ -44,11 +45,7 @@ object Action_List {
 				val result = client.request("/api/v1/lists", request_builder)
 				
 				client.publishApiProgress(activity.getString(R.string.parsing_response))
-				val jsonObject = result?.jsonObject
-				if(jsonObject != null) {
-					list = TootList.parse(jsonObject)
-					
-				}
+				list = parseItem(::TootList, result?.jsonObject)
 				
 				return result
 			}
@@ -65,7 +62,7 @@ object Action_List {
 					
 					Utils.showToast(activity, false, R.string.list_created)
 					
-					callback?.onCreated(list )
+					callback?.onCreated(list)
 				} else {
 					Utils.showToast(activity, false, result.error)
 				}
@@ -77,7 +74,7 @@ object Action_List {
 	fun delete(
 		activity : ActMain, access_info : SavedAccount, list_id : Long
 	) {
-		TootTaskRunner(activity, true).run(access_info, object : TootTask {
+		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				return client.request("/api/v1/lists/" + list_id, Request.Builder().delete())
 			}

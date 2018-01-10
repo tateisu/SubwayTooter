@@ -130,7 +130,7 @@ class UserRelation private constructor() {
 			return load(db_id, src.id)
 		}
 		
-		fun saveList(now : Long, db_id : Long, src_list : TootRelationShip.List) {
+		fun saveList(now : Long, db_id : Long, src_list : ArrayList<TootRelationShip>) {
 			
 			val cv = ContentValues()
 			cv.put(COL_TIME_SAVE, now)
@@ -142,11 +142,11 @@ class UserRelation private constructor() {
 			try {
 				for(src in src_list) {
 					cv.put(COL_WHO_ID, src.id)
-					cv.put(COL_FOLLOWING, b2i(src.following) )
-					cv.put(COL_FOLLOWED_BY, b2i(src.followed_by) )
-					cv.put(COL_BLOCKING, b2i(src.blocking) )
-					cv.put(COL_MUTING, b2i(src.muting) )
-					cv.put(COL_REQUESTED, b2i(src.requested) )
+					cv.put(COL_FOLLOWING, src.following.b2i() )
+					cv.put(COL_FOLLOWED_BY, src.followed_by.b2i() )
+					cv.put(COL_BLOCKING, src.blocking.b2i() )
+					cv.put(COL_MUTING, src.muting.b2i() )
+					cv.put(COL_REQUESTED, src.requested.b2i() )
 					cv.put(COL_FOLLOWING_REBLOGS, src.showing_reblogs)
 					db.replace(table, null, cv)
 					

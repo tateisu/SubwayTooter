@@ -45,19 +45,19 @@ class TootParser(
 	}
 	
 	fun notification(src : JSONObject?) : TootNotification? {
-		return TootNotification.parse(this, src)
+		return parseItem(::TootNotification,this, src)
 	}
 	
-	fun notificationList(src : JSONArray?) : TootNotification.List {
-		return TootNotification.parseList(this, src)
+	fun notificationList(src : JSONArray?) : ArrayList<TootNotification> {
+		return parseList(::TootNotification,this, src)
 	}
 	
 	fun results(src : JSONObject?) : TootResults? {
-		return TootResults.parse(this, src)
+		return parseItem(::TootResults,this, src)
 	}
 	
 	fun context(src : JSONObject?) : TootContext? {
-		return TootContext.parse(this, src)
+		return parseItem(::TootContext,this, src)
 	}
 	
 }

@@ -880,5 +880,7 @@
     <string name="highlight_desc">フリックで削除。登録内容を反映するにはカラムのリロードが必要です</string>
     <string name="check_sound">音を確認</string>
     <string name="keyword">キーワード</string>
+    <string name="domain_block_from_pseudo">Can\'t use domain block from pseudo account.</string>
+    <string name="domain_block_from_local">Can\'t use domain block for local instance.</string>
 
 </resources>

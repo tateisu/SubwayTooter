@@ -44,7 +44,7 @@ internal class HeaderViewHolderSearchDesc(
 		
 		val tvSearchDesc = viewRoot.findViewById<TextView>(R.id.tvSearchDesc)
 		tvSearchDesc.visibility = View.VISIBLE
-		tvSearchDesc.movementMethod = MyLinkMovementMethod.instance
+		tvSearchDesc.movementMethod = MyLinkMovementMethod
 		tvSearchDesc.text = sv
 	}
 	

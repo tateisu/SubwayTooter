@@ -39,7 +39,7 @@ class ActAbout : AppCompatActivity() {
 		
 		try {
 			val pInfo = packageManager.getPackageInfo(packageName, 0)
-			(findViewById<View>(R.id.tvVersion) as TextView).text = getString(R.string.version_is, pInfo.versionName)
+			findViewById<TextView>(R.id.tvVersion) .text = getString(R.string.version_is, pInfo.versionName)
 		} catch(ex : PackageManager.NameNotFoundException) {
 			log.trace(ex)
 		}

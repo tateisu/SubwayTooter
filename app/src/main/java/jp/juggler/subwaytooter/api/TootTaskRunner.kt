@@ -6,7 +6,6 @@ import android.content.Context
 import android.os.AsyncTask
 import android.os.Handler
 import android.os.SystemClock
-import android.text.TextUtils
 
 import java.lang.ref.WeakReference
 import java.text.NumberFormat
@@ -22,62 +21,53 @@ import jp.juggler.subwaytooter.table.SavedAccount
 	- TootApiClientからの進捗イベントをProgressDialogに伝達します。
 */
 
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION","MemberVisibilityCanPrivate")
 class TootTaskRunner @JvmOverloads constructor(
 	context : Context,
-	private val progress_style : Int = PROGRESS_NONE
+	private val progress_style : Int = PROGRESS_SPINNER
 ) : TootApiCallback {
 	
 	companion object {
 		
-		@Suppress("MemberVisibilityCanPrivate")
 		const val PROGRESS_NONE = - 1
-		@Suppress("MemberVisibilityCanPrivate")
 		const val PROGRESS_SPINNER = ProgressDialog.STYLE_SPINNER
-		@Suppress("MemberVisibilityCanPrivate")
 		const val PROGRESS_HORIZONTAL = ProgressDialog.STYLE_HORIZONTAL
 		
-		private fun getDefaultProgressStyle(bShowProgress : Boolean) : Int {
-			return if(bShowProgress) PROGRESS_SPINNER else PROGRESS_NONE
-		}
-		
-		private val percent_format : NumberFormat
-		
-		init {
-			percent_format = NumberFormat.getPercentInstance()
-			percent_format.maximumFractionDigits = 0
+		private val percent_format : NumberFormat by lazy {
+			val v = NumberFormat.getPercentInstance()
+			v.maximumFractionDigits = 0
+			v
 		}
 	}
 	
 	private class ProgressInfo {
-		
+
 		// HORIZONTALスタイルの場合、初期メッセージがないと後からメッセージを指定しても表示されない
 		internal var message = " "
-		
 		internal var isIndeterminate = true
 		internal var value = 0
 		internal var max = 1
 	}
 	
-	//////////////////////////////////////////////////////
 	// has AsyncTask
-	
-	private class MyTask internal constructor(private val runner : TootTaskRunner) : AsyncTask<Void, Void, TootApiResult>() {
+	private class MyTask(
+		private val runner : TootTaskRunner
+	) : AsyncTask<Void, Void, TootApiResult?>() {
 		
-		override fun doInBackground(vararg voids : Void) : TootApiResult {
-			return runner.callback?.background(runner.client) ?: TootApiResult("callback is null")
+		override fun doInBackground(vararg voids : Void) : TootApiResult? {
+			val callback = runner.callback
+			return if( callback == null)  TootApiResult("callback is null") else callback.background(runner.client)
 		}
 		
-		override fun onCancelled(result : TootApiResult) {
+		override fun onCancelled(result : TootApiResult?) {
 			onPostExecute(result)
 		}
 		
-		override fun onPostExecute(result : TootApiResult) {
+		override fun onPostExecute(result : TootApiResult?) {
 			runner.dismissProgress()
 			runner.callback?.handleResult(result)
 		}
 	}
-	
 	
 	private val handler : Handler
 	private val client : TootApiClient
@@ -94,16 +84,14 @@ class TootTaskRunner @JvmOverloads constructor(
 	private val proc_progress_message = object : Runnable {
 		override fun run() {
 			synchronized(this) {
-				if(progress != null && progress !!.isShowing) {
+				if( progress?.isShowing == true ){
 					showProgressMessage()
 				}
 			}
 		}
 	}
 	
-	constructor(context : Context, bShowProgress : Boolean)
-		: this(context, getDefaultProgressStyle(bShowProgress))
-	
+
 	init {
 		this.refContext = WeakReference(context)
 		this.handler = Handler()
@@ -167,13 +155,13 @@ class TootTaskRunner @JvmOverloads constructor(
 		if(progress_style != PROGRESS_NONE) {
 			val context = refContext.get()
 			if(context != null && context is Activity) {
-				
-				progress = ProgressDialog(context)
-				progress !!.setCancelable(true)
-				progress !!.setOnCancelListener { task.cancel(true) }
-				progress !!.setProgressStyle(progress_style)
+				val progress = ProgressDialog(context)
+				this.progress = progress
+				progress.setCancelable(true)
+				progress.setOnCancelListener { task.cancel(true) }
+				progress.setProgressStyle(progress_style)
 				showProgressMessage()
-				progress !!.show()
+				progress.show()
 			}
 		}
 	}
@@ -199,22 +187,27 @@ class TootTaskRunner @JvmOverloads constructor(
 	private fun showProgressMessage() {
 		val progress = this.progress ?: return
 		
+		val message = info.message.trim { it <= ' ' }
 		val progress_prefix = this.progress_prefix
-		if(! TextUtils.isEmpty(progress_prefix)) {
-			progress .setMessage(progress_prefix  + if(TextUtils.isEmpty(info.message.trim { it <= ' ' })) "" else "\n" + info.message)
-		} else {
-			progress .setMessage(info.message)
-		}
+		progress .setMessage(
+			if( progress_prefix == null || progress_prefix.isEmpty() ) {
+				message
+			}else if( message.isEmpty()) {
+				progress_prefix
+			}else {
+				"$progress_prefix\n$message"
+			}
+		)
 		
-		progress .isIndeterminate = info.isIndeterminate
+		progress.isIndeterminate = info.isIndeterminate
 		if(info.isIndeterminate) {
-			progress .setProgressNumberFormat(null)
-			progress .setProgressPercentFormat(null)
+			progress.setProgressNumberFormat(null)
+			progress.setProgressPercentFormat(null)
 		} else {
-			progress .progress = info.value
-			progress .max = info.max
-			progress .setProgressNumberFormat("%1$,d / %2$,d")
-			progress .setProgressPercentFormat(percent_format)
+			progress.progress = info.value
+			progress.max = info.max
+			progress.setProgressNumberFormat("%1$,d / %2$,d")
+			progress.setProgressPercentFormat(percent_format)
 		}
 		
 		last_message_shown = SystemClock.elapsedRealtime()

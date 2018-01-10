@@ -22,6 +22,7 @@ import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.util.EmptyCallback
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.Utils
 import okhttp3.Request
@@ -40,20 +41,30 @@ object Action_Toot {
 		status : TootStatus?
 	) {
 		if(status == null) return
-		val who_host = timeline_account.getAccountHost(status.account)
+		val who_host = timeline_account.host
 		
-		AccountPicker.pick(activity, false, false, activity.getString(R.string.account_picker_favourite), ActionUtils.makeAccountListNonPseudo(activity, who_host)) { action_account ->
+		AccountPicker.pick(activity, false, false, activity.getString(R.string.account_picker_favourite), makeAccountListNonPseudo(activity, who_host)) { action_account ->
 			favourite(
-				activity, action_account, status, ActionUtils.calcCrossAccountMode(timeline_account, action_account), true, activity.favourite_complete_callback
+				activity,
+				action_account,
+				status,
+				calcCrossAccountMode(timeline_account, action_account),
+				true,
+				activity.favourite_complete_callback
 			)
 		}
 	}
 	
 	// お気に入りの非同期処理
 	fun favourite(
-		activity : ActMain, access_info : SavedAccount, arg_status : TootStatus?, nCrossAccountMode : Int, bSet : Boolean, callback : RelationChangedCallback?
+		activity : ActMain,
+		access_info : SavedAccount,
+		arg_status : TootStatus,
+		nCrossAccountMode : Int,
+		bSet : Boolean,
+		callback : EmptyCallback?
 	) {
-		if(App1.getAppState(activity).isBusyFav(access_info, arg_status !!)) {
+		if(App1.getAppState(activity).isBusyFav(access_info, arg_status)) {
 			Utils.showToast(activity, false, R.string.wait_previous_operation)
 			return
 		}
@@ -61,20 +72,20 @@ object Action_Toot {
 		App1.getAppState(activity).setBusyFav(access_info, arg_status)
 		
 		//
-		TootTaskRunner(activity, false).run(access_info, object : TootTask {
+		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
 			
 			internal var new_status : TootStatus? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				var result : TootApiResult?
 				
 				var target_status : TootStatus?
-				if(nCrossAccountMode == ActionUtils.CROSS_ACCOUNT_REMOTE_INSTANCE) {
+				if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
 					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
 					val path = String.format(Locale.JAPAN, Column.PATH_SEARCH, Uri.encode(arg_status.url)) + "&resolve=1"
 					
 					result = client.request(path)
 					val jsonObject = result?.jsonObject ?: return result
-
+					
 					target_status = null
 					val tmp = TootParser(activity, access_info).results(jsonObject)
 					if(tmp != null) {
@@ -167,27 +178,27 @@ object Action_Toot {
 		status : TootStatus?
 	) {
 		if(status == null) return
-		val who_host = timeline_account.getAccountHost(status.account)
+		val who_host = timeline_account.host
 		
-		AccountPicker.pick(activity, false, false, activity.getString(R.string.account_picker_boost), ActionUtils.makeAccountListNonPseudo(activity, who_host)) { action_account ->
+		AccountPicker.pick(activity, false, false, activity.getString(R.string.account_picker_boost), makeAccountListNonPseudo(activity, who_host)) { action_account ->
 			boost(
-				activity, action_account, status, ActionUtils.calcCrossAccountMode(timeline_account, action_account), true, false, activity.boost_complete_callback
+				activity, action_account, status, calcCrossAccountMode(timeline_account, action_account), true, false, activity.boost_complete_callback
 			)
 		}
 	}
 	
 	fun boost(
-		activity : ActMain, access_info : SavedAccount, arg_status : TootStatus?, nCrossAccountMode : Int, bSet : Boolean, bConfirmed : Boolean, callback : RelationChangedCallback?
+		activity : ActMain, access_info : SavedAccount, arg_status : TootStatus, nCrossAccountMode : Int, bSet : Boolean, bConfirmed : Boolean, callback : EmptyCallback?
 	) {
 		
 		// アカウントからステータスにブースト操作を行っているなら、何もしない
-		if(App1.getAppState(activity).isBusyBoost(access_info, arg_status !!)) {
+		if(App1.getAppState(activity).isBusyBoost(access_info, arg_status)) {
 			Utils.showToast(activity, false, R.string.wait_previous_operation)
 			return
 		}
 		
 		// クロスアカウント操作ではないならステータス内容を使ったチェックを行える
-		if(nCrossAccountMode == ActionUtils.NOT_CROSS_ACCOUNT) {
+		if(nCrossAccountMode == NOT_CROSS_ACCOUNT) {
 			if(arg_status.reblogged) {
 				if(App1.getAppState(activity).isBusyFav(access_info, arg_status) || arg_status.favourited) {
 					// FAVがついているか、FAV操作中はBoostを外せない
@@ -221,7 +232,7 @@ object Action_Toot {
 		
 		App1.getAppState(activity).setBusyBoost(access_info, arg_status)
 		
-		TootTaskRunner(activity, false).run(access_info, object : TootTask {
+		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
 			
 			internal var new_status : TootStatus? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
@@ -231,13 +242,13 @@ object Action_Toot {
 				var result : TootApiResult?
 				
 				var target_status : TootStatus?
-				if(nCrossAccountMode == ActionUtils.CROSS_ACCOUNT_REMOTE_INSTANCE) {
+				if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
 					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
 					val path = String.format(Locale.JAPAN, Column.PATH_SEARCH, Uri.encode(arg_status.url)) + "&resolve=1"
 					
 					result = client.request(path)
-					val jsonObject = result?.jsonObject ?:return result
-
+					val jsonObject = result?.jsonObject ?: return result
+					
 					target_status = null
 					val tmp = parser.results(jsonObject)
 					if(tmp?.statuses?.isNotEmpty() == true) {
@@ -267,7 +278,7 @@ object Action_Toot {
 					
 					// reblogはreblogを表すStatusを返す
 					// unreblogはreblogしたStatusを返す
-					this.new_status = if( new_status?.reblog != null) new_status .reblog else new_status
+					this.new_status = if(new_status?.reblog != null) new_status.reblog else new_status
 				}
 				
 				return result
@@ -329,7 +340,7 @@ object Action_Toot {
 		activity : ActMain, access_info : SavedAccount, status_id : Long
 	) {
 		
-		TootTaskRunner(activity, true).run(access_info, object : TootTask {
+		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val request_builder = Request.Builder().delete()
 				
@@ -383,11 +394,11 @@ object Action_Toot {
 		
 		when {
 		
-		// 検索サービスではステータスTLをどのタンスから読んだのか分からない
+			// 検索サービスではステータスTLをどのタンスから読んだのか分からない
 			status.host_access == null ->
 				conversationOtherInstance(activity, pos, url, status.id, null, - 1L)
 		
-		// TLアカウントのホストとトゥートのアカウントのホストが同じ
+			// TLアカウントのホストとトゥートのアカウントのホストが同じ
 			status.host_original == status.host_access ->
 				conversationOtherInstance(activity, pos, status.url, status.id, null, - 1L)
 			
@@ -400,8 +411,14 @@ object Action_Toot {
 		}
 	}
 	
+	// アプリ外部からURLを渡された場合に呼ばれる
 	fun conversationOtherInstance(
-		activity : ActMain, pos : Int, url : String, status_id_original : Long, host_access : String?, status_id_access : Long
+		activity : ActMain,
+		pos : Int,
+		url : String,
+		status_id_original : Long,
+		host_access : String?,
+		status_id_access : Long
 	) {
 		
 		val dialog = ActionsDialog()
@@ -425,11 +442,11 @@ object Action_Toot {
 			// 疑似アカウントは後でまとめて処理する
 			if(a.isPseudo) continue
 			
-			if(status_id_original >= 0L && host_original.equals(a.host, ignoreCase = true)) {
+			if(status_id_original >= 0L && a.host.equals(host_original, ignoreCase = true)) {
 				// アクセス情報＋ステータスID でアクセスできるなら
 				// 同タンスのアカウントならステータスIDの変換なしに表示できる
 				local_account_list.add(a)
-			} else if(status_id_access >= 0L && host_access !!.equals(a.host, ignoreCase = true)) {
+			} else if(status_id_access >= 0L && a.host.equals(host_access, ignoreCase = true)) {
 				// 既に変換済みのステータスIDがあるなら、そのアカウントでもステータスIDの変換は必要ない
 				access_account_list.add(a)
 			} else {
@@ -442,14 +459,14 @@ object Action_Toot {
 		if(local_account_list.isEmpty()) {
 			if(status_id_original >= 0L) {
 				dialog.addAction(activity.getString(R.string.open_in_pseudo_account, "?@" + host_original)) {
-					val sa = ActionUtils.addPseudoAccount(activity, host_original)
+					val sa = addPseudoAccount(activity, host_original)
 					if(sa != null) {
 						conversationLocal(activity, pos, sa, status_id_original)
 					}
 				}
 			} else {
 				dialog.addAction(activity.getString(R.string.open_in_pseudo_account, "?@" + host_original)) {
-					val sa = ActionUtils.addPseudoAccount(activity, host_original)
+					val sa = addPseudoAccount(activity, host_original)
 					if(sa != null) {
 						conversationRemote(activity, pos, sa, url)
 					}
@@ -479,11 +496,11 @@ object Action_Toot {
 	}
 	
 	private fun conversationRemote(
-		activity : ActMain, pos : Int, access_info : SavedAccount?, remote_status_url : String
+		activity : ActMain, pos : Int, access_info : SavedAccount, remote_status_url : String
 	) {
-		TootTaskRunner(activity, true)
+		TootTaskRunner(activity)
 			.progressPrefix(activity.getString(R.string.progress_synchronize_toot))
-			.run(access_info !!, object : TootTask {
+			.run(access_info, object : TootTask {
 				
 				internal var local_status_id = - 1L
 				override fun background(client : TootApiClient) : TootApiResult? {
@@ -546,7 +563,7 @@ object Action_Toot {
 		activity : ActMain, access_info : SavedAccount, status : TootStatus, bSet : Boolean
 	) {
 		
-		TootTaskRunner(activity, true)
+		TootTaskRunner(activity)
 			.progressPrefix(activity.getString(R.string.profile_pin_progress))
 			
 			.run(access_info, object : TootTask {
@@ -565,7 +582,7 @@ object Action_Toot {
 							"/api/v1/statuses/" + status.id + "/pin"
 						else
 							"/api/v1/statuses/" + status.id + "/unpin", request_builder)
-
+					
 					new_status = TootParser(activity, access_info).status(result?.jsonObject)
 					
 					return result
@@ -573,13 +590,15 @@ object Action_Toot {
 				
 				override fun handleResult(result : TootApiResult?) {
 					
+					val new_status = this.new_status
+					
 					when {
 						result == null -> {
 							// cancelled.
 						}
 						
 						new_status != null -> for(column in App1.getAppState(activity).column_list) {
-							column.findStatus(access_info.host, new_status !!.id, object : Column.StatusEntryCallback {
+							column.findStatus(access_info.host, new_status.id, object : Column.StatusEntryCallback {
 								override fun onIterate(account : SavedAccount, status : TootStatus) : Boolean {
 									status.pinned = bSet
 									return true
@@ -610,13 +629,13 @@ object Action_Toot {
 		activity : ActMain, timeline_account : SavedAccount, status : TootStatus?
 	) {
 		if(status == null) return
-		val who_host = timeline_account.getAccountHost(status.account)
+		val who_host = timeline_account.host
 		AccountPicker.pick(
 			activity,
 			false,
 			false,
 			activity.getString(R.string.account_picker_reply),
-			ActionUtils.makeAccountListNonPseudo(activity, who_host)
+			makeAccountListNonPseudo(activity, who_host)
 		) { ai ->
 			if(ai.host.equals(status.host_access, ignoreCase = true)) {
 				// アクセス元ホストが同じならステータスIDを使って返信できる
@@ -633,7 +652,7 @@ object Action_Toot {
 	) {
 		if(remote_status_url == null || remote_status_url.isEmpty()) return
 		
-		TootTaskRunner(activity, true)
+		TootTaskRunner(activity)
 			.progressPrefix(activity.getString(R.string.progress_synchronize_toot))
 			
 			.run(access_info, object : TootTask {
@@ -679,7 +698,7 @@ object Action_Toot {
 		// toggle change
 		val bMute = ! status.muted
 		
-		TootTaskRunner(activity, true).run(access_info, object : TootTask {
+		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
 			internal var local_status : TootStatus? = null
 			

@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.api
 
 import android.content.Context
 import android.net.Uri
-import android.text.TextUtils
 
 import org.json.JSONArray
 import org.json.JSONObject
@@ -149,7 +148,7 @@ object MSPClient {
 			try{
 				if( bodyString != null ) {
 					val array = JSONArray(bodyString)
-					return TootApiResult(0,response = response, bodyString = bodyString, data = array)
+					return TootApiResult(response = response, bodyString = bodyString, data = array)
 				}
 			} catch(ex : Throwable) {
 				log.trace(ex)
@@ -166,9 +165,7 @@ object MSPClient {
 			val item = array.optJSONObject(size - 1)
 			if(item != null) {
 				val sv = item.optString("msp_id")
-				if(! TextUtils.isEmpty(sv)) {
-					return sv
-				}
+				if( sv!= null && sv.isNotEmpty() ) return sv
 			}
 		}
 		return max_id

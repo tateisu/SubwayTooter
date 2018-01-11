@@ -390,23 +390,29 @@ object Action_Toot {
 	) {
 		if(status == null) return
 		val url = status.url
-		if(url == null || url.isEmpty()) return
+		
+		if(url == null || url.isEmpty()) {
+			// URLが不明なトゥートというのはreblogの外側のアレ
+			return
+		}
 		
 		when {
 		
-			// 検索サービスではステータスTLをどのタンスから読んだのか分からない
+		// 検索サービスではステータスTLをどのタンスから読んだのか分からない
 			status.host_access == null ->
 				conversationOtherInstance(activity, pos, url, status.id, null, - 1L)
 		
-			// TLアカウントのホストとトゥートのアカウントのホストが同じ
+		// TLアカウントのホストとトゥートのアカウントのホストが同じ
 			status.host_original == status.host_access ->
-				conversationOtherInstance(activity, pos, status.url, status.id, null, - 1L)
+				conversationOtherInstance(activity, pos, url, status.id, null, - 1L)
 			
 			else -> {
-				// TLアカウントのホストとトゥートのアカウントのホストが異なる場合
-				// uri から投稿元タンスでのステータスIDを調べる
-				val status_id_original = TootStatus.parseStatusId(status.uri, status.url)
-				conversationOtherInstance(activity, pos, status.url, status_id_original, status.host_access, status.id)
+				// トゥートを取得したタンスと投稿元タンスが異なる場合
+				// status.id はトゥートを取得したタンスでのIDである
+				// 投稿元タンスでのIDはuriやURLから調べる
+				// pleromaではIDがuuidなので失敗する(その時はURLを検索してIDを見つける)
+				val status_id_original = TootStatus.findStatusIdFromUri(status.uri, status.url)
+				conversationOtherInstance(activity, pos, url, status_id_original, status.host_access, status.id)
 			}
 		}
 	}
@@ -506,6 +512,7 @@ object Action_Toot {
 				override fun background(client : TootApiClient) : TootApiResult? {
 					var result : TootApiResult?
 					if(access_info.isPseudo) {
+						// 疑似アカウントではURLからIDを取得するのにHTMLと正規表現を使う
 						result = client.getHttp(remote_status_url)
 						val string = result?.string
 						if(string != null) {
@@ -550,7 +557,6 @@ object Action_Toot {
 					} else {
 						Utils.showToast(activity, true, result.error)
 					}
-					
 				}
 			})
 		

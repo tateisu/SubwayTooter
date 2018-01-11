@@ -312,7 +312,7 @@ object HTMLDecoder {
 				}
 				
 				// リンクスパンを設定した後に色をつける
-				val list = options.highlight_trie?.matchList(sb, start, end)
+				val list = options.highlightTrie?.matchList(sb, start, end)
 				if(list != null) {
 					for(range in list) {
 						val word = HighlightWord.load(range.word)

@@ -637,12 +637,16 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 		ivProfileHeader.setImageUrl(App1.pref, 0f, src.header_static, src.header)
 		
 		val display_name = src.display_name
-		val name = DecodeOptions().setProfileEmojis(src.profile_emojis).decodeEmoji(this, display_name)
+		val name = DecodeOptions(
+			emojiMapProfile = src.profile_emojis
+		).decodeEmoji(this, display_name)
 		etDisplayName.setText(name)
 		name_invalidator.register(name)
 		
 		val noteString = src.source?.note ?: src.note
-		val noteSpannable = DecodeOptions().setProfileEmojis(src.profile_emojis).decodeEmoji(this, noteString)
+		val noteSpannable = DecodeOptions(
+			emojiMapProfile = src.profile_emojis
+		).decodeEmoji(this, noteString)
 		
 		etNote.setText(noteSpannable)
 		note_invalidator.register(noteSpannable)

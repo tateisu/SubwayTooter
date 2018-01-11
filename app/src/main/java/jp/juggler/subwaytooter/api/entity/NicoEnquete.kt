@@ -43,14 +43,14 @@ class NicoEnquete(
 	init {
 		this.type = Utils.optStringX(src, "type")
 		
-		this.question = DecodeOptions()
-			.setShort(true)
-			.setDecodeEmoji(true)
-			.setAttachment(list_attachment)
-			.setLinkTag(status)
-			.setCustomEmojiMap(status.custom_emojis)
-			.setProfileEmojis(status.profile_emojis)
-			.decodeHTML(context, access_info, Utils.optStringX(src, "question") ?: "?")
+		this.question = DecodeOptions(
+			short = true,
+			decodeEmoji = true,
+			attachmentList = list_attachment,
+			linkTag = status,
+			emojiMapCustom = status.custom_emojis,
+			emojiMapProfile = status.profile_emojis
+		).decodeHTML(context, access_info, Utils.optStringX(src, "question") ?: "?")
 		
 		this.items = parseChoiceList(context, status, parseStringArray(src, "items"))
 		
@@ -79,7 +79,7 @@ class NicoEnquete(
 			context : Context,
 			access_info : SavedAccount,
 			status : TootStatus,
-			list_attachment :ArrayList< TootAttachmentLike>?,
+			list_attachment : ArrayList<TootAttachmentLike>?,
 			jsonString : String?
 		) : NicoEnquete? {
 			jsonString ?: return null
@@ -135,14 +135,14 @@ class NicoEnquete(
 				val items = ArrayList<Spannable>(size)
 				for(i in 0 until size) {
 					items.add(
-						DecodeOptions()
-							.setCustomEmojiMap(status.custom_emojis)
-							.setProfileEmojis(status.profile_emojis)
-							.decodeEmoji(context,
-								reWhitespace
-									.matcher(Utils.sanitizeBDI(stringArray[i]))
-									.replaceAll(" ")
-							)
+						DecodeOptions(
+							emojiMapCustom = status.custom_emojis,
+							emojiMapProfile = status.profile_emojis
+						).decodeEmoji(context,
+							reWhitespace
+								.matcher(Utils.sanitizeBDI(stringArray[i]))
+								.replaceAll(" ")
+						)
 					)
 				}
 				if(items.isNotEmpty()) return items

@@ -348,8 +348,8 @@ class App1 : Application() {
 			builder.setLogLevel(Log.ERROR)
 			
 			// エラー処理
-			val catcher = GlideExecutor.UncaughtThrowableStrategy {
-				t -> t.printStackTrace()
+			val catcher = GlideExecutor.UncaughtThrowableStrategy {ex ->
+				log.trace(ex)
 			}
 			builder.setDiskCacheExecutor(newDiskCacheExecutor(catcher))
 			builder.setSourceExecutor(newSourceExecutor(catcher))

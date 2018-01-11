@@ -265,22 +265,24 @@ internal class HeaderViewHolderProfile(
 				column.startLoading()
 			}
 			
-			R.id.btnMore -> if(who != null) {
+			R.id.btnMore -> who ?.let{ who->
 				DlgContextMenu(activity, column, who, null, null).show()
 			}
 			
-			R.id.btnFollow -> if(who != null) {
+			R.id.btnFollow -> who ?.let{ who->
 				DlgContextMenu(activity, column, who, null, null).show()
 			}
 			
-			R.id.btnMoved -> if(who_moved != null) {
+			R.id.btnMoved -> who_moved ?.let{ who_moved->
 				DlgContextMenu(activity, column, who_moved, null, null).show()
 			}
 			
-			R.id.llMoved -> if(access_info.isPseudo) {
-				DlgContextMenu(activity, column, who_moved, null, null).show()
-			} else {
-				Action_User.profileLocal(activity, activity.nextPosition(column), access_info, who_moved)
+			R.id.llMoved -> who_moved ?.let { who_moved ->
+				if(access_info.isPseudo) {
+					DlgContextMenu(activity, column, who_moved, null, null).show()
+				} else {
+					Action_User.profileLocal(activity, activity.nextPosition(column), access_info, who_moved)
+				}
 			}
 		}
 	}

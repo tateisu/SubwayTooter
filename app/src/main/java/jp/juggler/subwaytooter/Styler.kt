@@ -65,8 +65,8 @@ object Styler {
 		imageView.setImageDrawable(d)
 	}
 	
-	fun getVisibilityIcon(context : Context, visibility : String?) : Int {
-		return getAttributeResourceId(context, when(visibility) {
+	fun getVisibilityIconAttr( visibility : String?) : Int {
+		return when(visibility) {
 			null->R.attr.ic_public
 			TootStatus.VISIBILITY_PUBLIC -> R.attr.ic_public
 			TootStatus.VISIBILITY_UNLISTED -> R.attr.ic_lock_open
@@ -74,7 +74,11 @@ object Styler {
 			TootStatus.VISIBILITY_DIRECT -> R.attr.ic_mail
 			TootStatus.VISIBILITY_WEB_SETTING -> R.attr.ic_question
 			else -> R.attr.ic_question
-		})
+		}
+	}
+	
+	fun getVisibilityIcon(context : Context, visibility : String?) : Int {
+		return getAttributeResourceId(context, getVisibilityIconAttr(visibility))
 	}
 	
 	fun getVisibilityString(context : Context, visibility : String) : String {

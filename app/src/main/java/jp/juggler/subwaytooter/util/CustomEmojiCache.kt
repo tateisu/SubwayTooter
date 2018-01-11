@@ -22,7 +22,7 @@ class CustomEmojiCache(internal val context : Context) {
 		
 		private val log = LogCategory("CustomEmojiCache")
 		
-		internal const val DEBUG = false
+		internal const val DEBUG = true
 		internal const val CACHE_MAX = 512 // 使用中のビットマップは掃除しないので、頻度によってはこれより多くなることもある
 		internal const val ERROR_EXPIRE = 60000L * 10
 		
@@ -244,18 +244,14 @@ class CustomEmojiCache(internal val context : Context) {
 		private fun decodeAPNG(data : ByteArray, url : String) : APNGFrames? {
 			try {
 				val frames = APNGFrames.parseAPNG(ByteArrayInputStream(data), 64)
-				if(frames == null) {
-					if(DEBUG) log.d("parseAPNG returns null.")
-					// fall thru
-				} else if(frames.isSingleFrame) {
-					if(DEBUG) log.d("parseAPNG returns single frame.")
-					// mastodonのstatic_urlが返すPNG画像はAPNGだと透明になってる場合がある。BitmapFactoryでデコードしなおすべき
-					frames.dispose()
-					// fall thru
-				} else {
-					return frames
-				}
+				if(frames?.hasMultipleFrame == true) return frames
+				if(DEBUG) log.d("parseAPNG returns null or single frame.")
+				// mastodonのstatic_urlが返すPNG画像はAPNGだと透明になってる場合がある。BitmapFactoryでデコードしなおすべき
+				frames?.dispose()
+				
+				// fall thru
 			} catch(ex : Throwable) {
+				if(DEBUG) log.trace(ex)
 				log.e(ex, "PNG decode failed. %s ", url)
 				// PngFeatureException Interlaced images are not yet supported
 			}

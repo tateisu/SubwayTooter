@@ -255,6 +255,8 @@
 	<string name="reports">Signalements</string>
 	<string name="request_access_token">Demander l\'autorisation d\'accès à l\'instance…</string>
 	<string name="request_api">Acquiring: %1$s %2$s</string>
+	<string name="reading_api">Reading: %1$s %2$s</string>
+
 	<string name="reset">Reset</string>
 	<string name="resize_image">Changer la taille des images jointes (JPEG,PNG)</string>
 	<string name="resolve_non_local_account">Résoudre le compte non local</string>

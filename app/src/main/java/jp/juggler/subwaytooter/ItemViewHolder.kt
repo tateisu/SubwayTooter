@@ -591,13 +591,14 @@ internal class ItemViewHolder(
 			sb.setSpan(EmojiImageSpan(activity, icon_id), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 		}
 		
-		val visibility_icon_id = Styler.getVisibilityIcon(activity, status.visibility)
-		if(R.attr.ic_public != visibility_icon_id) {
+		val visIconAttrId = Styler.getVisibilityIconAttr(status.visibility)
+		if(R.attr.ic_public != visIconAttrId) {
 			if(sb.isNotEmpty()) sb.append(' ')
 			val start = sb.length
 			sb.append(status.visibility)
 			val end = sb.length
-			sb.setSpan(EmojiImageSpan(activity, visibility_icon_id), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+			val iconResId = Styler.getAttributeResourceId(activity,visIconAttrId )
+			sb.setSpan(EmojiImageSpan(activity, iconResId), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 		}
 		
 		if(status.pinned) {
@@ -680,10 +681,10 @@ internal class ItemViewHolder(
 					
 					//
 					val desc = activity.getString(R.string.media_description, idx + 1, ta.description)
-					tv.text = DecodeOptions()
-						.setCustomEmojiMap(status.custom_emojis)
-						.setProfileEmojis(status.profile_emojis)
-						.decodeEmoji(activity, desc)
+					tv.text = DecodeOptions(
+						emojiMapCustom = status.custom_emojis,
+						emojiMapProfile = status.profile_emojis
+					).decodeEmoji(activity, desc)
 					llExtra.addView(tv)
 				}
 				
@@ -1026,6 +1027,7 @@ internal class ItemViewHolder(
 				try {
 					form.put("item_index", Integer.toString(idx))
 				} catch(ex : Throwable) {
+					log.e(ex,"json encode failed.")
 					ex.printStackTrace()
 				}
 				

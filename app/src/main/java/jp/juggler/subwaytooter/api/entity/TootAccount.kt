@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter.api.entity
 import android.content.Context
 import android.net.Uri
 import android.text.Spannable
-import jp.juggler.subwaytooter.table.SavedAccount
 
 import jp.juggler.subwaytooter.util.DecodeOptions
 
@@ -83,7 +82,7 @@ open class TootAccount(
 	
 	val source : Source?
 	
-	val profile_emojis : NicoProfileEmoji.Map?
+	val profile_emojis : HashMap<String,NicoProfileEmoji>?
 	
 	val moved : TootAccount?
 	
@@ -91,7 +90,7 @@ open class TootAccount(
 		var sv : String?
 
 		// 絵文字データは先に読んでおく
-		this.profile_emojis = NicoProfileEmoji.parseMap(src.optJSONArray("profile_emojis"))
+		this.profile_emojis = parseMapOrNull(::NicoProfileEmoji,src.optJSONArray("profile_emojis"))
 		
 		// 疑似アカウントにacctとusernameだけ
 		this.url = Utils.optStringX(src,"url")
@@ -104,11 +103,11 @@ open class TootAccount(
 		
 		//
 		this.note = Utils.optStringX(src, "note")
-		this.decoded_note = DecodeOptions()
-			.setShort(true)
-			.setDecodeEmoji(true)
-			.setProfileEmojis(this.profile_emojis)
-			.decodeHTML(context, accessInfo, this.note)
+		this.decoded_note = DecodeOptions(
+			short = true,
+			decodeEmoji = true,
+			emojiMapProfile = this.profile_emojis
+		).decodeHTML(context, accessInfo, this.note)
 		
 		this.source = parseSource(src.optJSONObject("source"))
 		this.moved = src.optJSONObject("moved")?.let { TootAccount(context, accessInfo, it, serviceType) }
@@ -186,9 +185,6 @@ open class TootAccount(
 		}
 	}
 	
-
-	class List : ArrayList<TootAccount>()
-	
 	class Source(src : JSONObject) {
 		// デフォルト公開範囲
 		val privacy : String?
@@ -207,13 +203,17 @@ open class TootAccount(
 		}
 	}
 	
+	// リストメンバーダイアログや引っ越し先ユーザなど、TL以外の部分に名前を表示する場合は
+	// Invalidator の都合でSpannableを別途生成する必要がある
 	fun decodeDisplayName(context : Context) : Spannable {
 		
 		// remove white spaces
 		val sv = reWhitespace.matcher(display_name).replaceAll(" ")
 		
 		// decode emoji code
-		return DecodeOptions().setProfileEmojis(profile_emojis).decodeEmoji(context, sv)
+		return DecodeOptions(
+			emojiMapProfile = profile_emojis
+		).decodeEmoji(context, sv)
 	}
 	
 	companion object {
@@ -254,8 +254,8 @@ open class TootAccount(
 			}
 		}
 		
-		fun parseList(context : Context, account : LinkClickContext, array : JSONArray?) : List {
-			val result = List()
+		fun parseList(context : Context, account : LinkClickContext, array : JSONArray?) : ArrayList<TootAccount> {
+			val result = ArrayList<TootAccount>()
 			if(array != null) {
 				val array_size = array.length()
 				result.ensureCapacity(array_size)
@@ -269,7 +269,7 @@ open class TootAccount(
 		}
 		
 		// Tootsearch用。URLやUriを使ってアカウントのインスタンス名を調べる
-		private fun findHostFromUrl(acct:String? ,accessHost:String?, url : String?) : String? {
+		fun findHostFromUrl(acct:String? ,accessHost:String?, url : String?) : String? {
 
 			// acctから調べる
 			if( acct != null ) {

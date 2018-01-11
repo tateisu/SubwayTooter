@@ -1343,7 +1343,9 @@ class Column(
 				val result = client.request(path_base)
 				if(result != null) {
 					saveRange(result, true, true)
-					this.list_tmp = addAll(null, parseList(::TootList, result.jsonArray))
+					val src = parseList(::TootList, result.jsonArray)
+					src.sort()
+					this.list_tmp = addAll(null, src)
 				}
 				return result
 			}
@@ -1921,6 +1923,7 @@ class Column(
 				if(jsonArray != null) {
 					saveRange(result, bBottom, ! bBottom)
 					var src = parseList(::TootList, jsonArray)
+					src.sort()
 					list_tmp = addAll(null, src)
 					if(! bBottom) {
 						while(true) {
@@ -1960,6 +1963,7 @@ class Column(
 							}
 							
 							src = parseList(::TootList, jsonArray)
+							src.sort()
 							addAll(list_tmp, src)
 						}
 					}

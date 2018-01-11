@@ -241,7 +241,7 @@ class UserRelation private constructor() {
 	//				}
 	//			}
 	//		}catch( Throwable ex ){
-	//			ex.printStackTrace();
+	//			log.e(ex,"getNameSet() failed.")
 	//		}
 	//		return dst;
 	//	}

@@ -6,7 +6,7 @@ import jp.juggler.subwaytooter.util.Utils
 
 class TootApplication (
 	val name : String?,
-	private val website : String?
+	@Suppress("unused") private val website : String?
 ){
 	constructor(src:JSONObject):this(
 		name = Utils.optStringX(src, "name"),

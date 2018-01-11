@@ -410,8 +410,14 @@ class TootApiClient(
 		}
 		try {
 			if(callback.isApiCancelled) return null
+			val request = response.request()
+			if( request != null ){
+				callback.publishApiProgress(context.getString(R.string.reading_api, request.method(), url))
+			}
 			result.readBodyString(response)
+			
 			if(callback.isApiCancelled) return null
+			callback.publishApiProgress(context.getString(R.string.parsing_response))
 			if(result.isErrorOrEmptyBody()) return result
 			
 			result.data = result.bodyString
@@ -433,8 +439,14 @@ class TootApiClient(
 	private fun readJson(result : TootApiResult, response : Response) : TootApiResult? {
 		try {
 			if(callback.isApiCancelled) return null
+			val request = response.request()
+			if( request != null ){
+				callback.publishApiProgress(context.getString(R.string.reading_api, request.method(), request.url().encodedPath()))
+			}
 			result.readBodyString(response)
+	
 			if(callback.isApiCancelled) return null
+			callback.publishApiProgress(context.getString(R.string.parsing_response))
 			if(result.isErrorOrEmptyBody()) return result
 			
 			val bodyString = result.bodyString

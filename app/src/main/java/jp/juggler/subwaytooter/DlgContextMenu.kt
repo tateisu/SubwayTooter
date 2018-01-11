@@ -395,7 +395,13 @@ internal class DlgContextMenu(
 			
 			R.id.btnMute -> who?.let { who ->
 				if(relation.muting) {
-					Action_User.mute(activity, access_info, who, false, false)
+					//解除
+					Action_User.mute(
+						activity,
+						access_info,
+						who,
+						bMute=false
+					)
 				} else {
 					@SuppressLint("InflateParams")
 					val view = activity.layoutInflater.inflate(R.layout.dlg_confirm, null, false)
@@ -404,11 +410,18 @@ internal class DlgContextMenu(
 					val cbMuteNotification = view.findViewById<CheckBox>(R.id.cbSkipNext)
 					cbMuteNotification.setText(R.string.confirm_mute_notification_for_user)
 					cbMuteNotification.isChecked = true
-					
+					// オプション指定つきでミュート
 					AlertDialog.Builder(activity)
 						.setView(view)
 						.setNegativeButton(R.string.cancel, null)
-						.setPositiveButton(R.string.ok) { _, _ -> Action_User.mute(activity, access_info, who, true, cbMuteNotification.isChecked) }
+						.setPositiveButton(R.string.ok) { _, _ ->
+							Action_User.mute(
+								activity,
+								access_info,
+								who,
+								bMuteNotification=cbMuteNotification.isChecked
+							)
+						}
 						.show()
 				}
 			}

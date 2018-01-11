@@ -64,7 +64,7 @@ object EmojiDecoder {
 		}
 		
 		private fun applyHighlight(start : Int, end : Int) {
-			val list = options.highlight_trie?.matchList(sb, start, end)
+			val list = options.highlightTrie?.matchList(sb, start, end)
 			if(list != null) {
 				for(range in list) {
 					val word = HighlightWord.load(range.word)

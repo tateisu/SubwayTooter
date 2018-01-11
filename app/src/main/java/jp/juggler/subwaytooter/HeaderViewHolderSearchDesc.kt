@@ -40,7 +40,7 @@ internal class HeaderViewHolderSearchDesc(
 			}
 		}
 		
-		val sv = DecodeOptions().setDecodeEmoji(true).decodeHTML(activity, access_info, html)
+		val sv = DecodeOptions(decodeEmoji = true).decodeHTML(activity, access_info, html)
 		
 		val tvSearchDesc = viewRoot.findViewById<TextView>(R.id.tvSearchDesc)
 		tvSearchDesc.visibility = View.VISIBLE

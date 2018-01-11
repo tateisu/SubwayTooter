@@ -8,7 +8,7 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.Utils
 
 class TootResults(
-	val accounts : TootAccount.List, //	An array of matched Accounts
+	val accounts : ArrayList<TootAccount>, //	An array of matched Accounts
 	val statuses : TootStatus.List, //	An array of matched Statuses
 	val hashtags : ArrayList<String> //	An array of matched hashtags, as strings
 ) {

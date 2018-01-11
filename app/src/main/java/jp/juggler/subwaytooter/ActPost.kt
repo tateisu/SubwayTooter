@@ -1612,10 +1612,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			llReply.visibility = View.GONE
 		} else {
 			llReply.visibility = View.VISIBLE
-			tvReplyTo.text = DecodeOptions()
-				.setShort(true)
-				.setDecodeEmoji(true)
-				.decodeHTML(this@ActPost, account, in_reply_to_text)
+			tvReplyTo.text = DecodeOptions(
+				short = true,
+				decodeEmoji = true
+				
+			).decodeHTML(this@ActPost, account, in_reply_to_text)
 			ivReply.setImageUrl(pref, 16f, in_reply_to_image)
 		}
 	}

@@ -32,7 +32,8 @@
 
     <string name="request_access_token">アクセストークンの取得中…</string>
 
-    <string name="request_api">Acquiring: %1$s %2$s</string>
+    <string name="request_api">取得中: %1$s %2$s</string>
+    <string name="reading_api">読込中: %1$s %2$s</string>
 
     <string name="column_empty">左下のメニューボタンを押してアカウントまたはカラムを追加してください</string>
 
@@ -840,7 +841,7 @@
     <string name="cant_add_list_follow_requesting">リストに追加できません:\n「鍵付き」ユーザーの場合はフォローリクエストが承認されるまでお待ちください。そうでなければ2…3回再試行してください。</string>
     <string name="cant_add_list_follow_failed">リストに追加できません:\nフォロー操作に失敗しました</string>
     <string name="list_member_added">追加できました</string>
-    <string name="confirm_mute_notification_for_user">Mute notification from this user</string>
+    <string name="confirm_mute_notification_for_user">ユーザからの通知もミュート</string>
     <string name="account_moved_to">%1$s は引っ越しました:</string>
 
     <string name="jump_moved_user">%1$s は引っ越しました。%2$s を確認しますか?</string>

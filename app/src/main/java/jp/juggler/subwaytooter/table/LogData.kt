@@ -47,16 +47,21 @@ object LogData {
 	}
 	
 	fun insert(cv : ContentValues, time : Long, level : Int, category : String, message : String) : Long {
-		Log.d(TAG, category + ": " + message)
-		//		try{
-		//			cv.clear();
-		//			cv.put( COL_TIME, time );
-		//			cv.put( COL_LEVEL, level );
-		//			cv.put( COL_MESSAGE, message );
-		//			cv.put( COL_CATEGORY, category );
-		//			return App1.getDB().insert( table, null, cv );
-		//		}catch( Throwable ignored ){
-		//		}
+		try {
+			Log.d(TAG, category + ": " + message)
+			//		try{
+			//			cv.clear();
+			//			cv.put( COL_TIME, time );
+			//			cv.put( COL_LEVEL, level );
+			//			cv.put( COL_MESSAGE, message );
+			//			cv.put( COL_CATEGORY, category );
+			//			return App1.getDB().insert( table, null, cv );
+			//		}catch( Throwable ignored ){
+			//		}
+		}catch(ex:Throwable){
+			// PC上で行う単体テストにはLog クラスがない
+			println(category + ": " + message)
+		}
 		return - 1L
 	}
 	

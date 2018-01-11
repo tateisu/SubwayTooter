@@ -1,11 +1,11 @@
 package jp.juggler.subwaytooter
 
 import android.view.View
-//import org.junit.Test
+import org.junit.Test
 
 import org.junit.Assert.*
 import kotlin.concurrent.thread
-import kotlin.test.*
+//import kotlin.test.*
 
 typealias TestLambdaCallback = (x:Int)->Int
 

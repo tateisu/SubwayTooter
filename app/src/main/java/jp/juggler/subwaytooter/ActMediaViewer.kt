@@ -111,11 +111,11 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	internal var buffering_last_shown : Long = 0
 	
 	private val player_listener = object : Player.EventListener {
-		override fun onTimelineChanged(timeline : Timeline, manifest : Any) {
+		override fun onTimelineChanged(timeline : Timeline?, manifest : Any?) {
 			log.d("exoPlayer onTimelineChanged")
 		}
 		
-		override fun onTracksChanged(trackGroups : TrackGroupArray, trackSelections : TrackSelectionArray) {
+		override fun onTracksChanged(trackGroups : TrackGroupArray?, trackSelections : TrackSelectionArray?) {
 			log.d("exoPlayer onTracksChanged")
 			
 		}
@@ -153,7 +153,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			log.d("exoPlayer onPositionDiscontinuity")
 		}
 		
-		override fun onPlaybackParametersChanged(playbackParameters : PlaybackParameters) {
+		override fun onPlaybackParametersChanged(playbackParameters : PlaybackParameters?) {
 			log.d("exoPlayer onPlaybackParametersChanged")
 			
 		}

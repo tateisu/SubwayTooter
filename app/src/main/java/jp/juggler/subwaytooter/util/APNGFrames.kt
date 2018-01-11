@@ -108,12 +108,12 @@ class APNGFrames {
 		
 		// entry point is here
 		@Throws(PngException::class)
-		internal fun parseAPNG(`is` : InputStream, size_max : Int) : APNGFrames? {
+		internal fun parseAPNG( inStream : InputStream, size_max : Int) : APNGFrames? {
 			val handler = APNGParseEventHandler(size_max)
 			try {
 				val processor = Argb8888Processor(handler)
 				val reader = DefaultPngChunkReader(processor)
-				val result = PngReadHelper.read(`is`, reader)
+				val result = PngReadHelper.read(inStream, reader)
 				result?.onParseComplete()
 				return result
 			} catch(ex : Throwable) {
@@ -150,8 +150,8 @@ class APNGFrames {
 	private val numFrames : Int
 		get() = animationControl?.numFrames ?: 1
 	
-	val isSingleFrame : Boolean
-		get() = numFrames == 1
+	val hasMultipleFrame : Boolean
+		get() = numFrames > 1
 	
 	private class Frame(
 		internal val bitmap : Bitmap,
@@ -362,15 +362,16 @@ class APNGFrames {
 	/////////////////////////////////////////////////////////////////////
 	
 	// APNGのパース中に随時呼び出される
-	internal class APNGParseEventHandler // 作成
-	(private val size_max : Int) : BasicArgb8888Director<APNGFrames>() {
+	internal class APNGParseEventHandler(
+		private val size_max : Int
+	) : BasicArgb8888Director<APNGFrames>() {
 		
-		private var header : PngHeader? = null
+		private lateinit var header : PngHeader
 		
-		private var mFrames : APNGFrames? = null
+		private var frames : APNGFrames? = null
 		
 		private val isAnimated : Boolean
-			get() = mFrames != null
+			get() = frames != null
 		
 		// ヘッダが分かった
 		@Throws(PngException::class)
@@ -395,7 +396,7 @@ class APNGFrames {
 		
 		// アニメーション制御情報が分かった
 		override fun receiveAnimationControl(animationControl : PngAnimationControl) {
-			this.mFrames = APNGFrames(header !!, scanlineProcessor, animationControl, size_max)
+			this.frames = APNGFrames(header , scanlineProcessor, animationControl, size_max)
 		}
 		
 		override fun wantDefaultImage() : Boolean {
@@ -408,20 +409,20 @@ class APNGFrames {
 		
 		// フレーム制御情報が分かった
 		override fun receiveFrameControl(frameControl : PngFrameControl) : Argb8888ScanlineProcessor {
-			if(! isAnimated) throw RuntimeException("not animation image")
-			return mFrames !!.beginFrame(frameControl)
+			val frames = this.frames ?: throw RuntimeException("not animation image")
+			return frames.beginFrame(frameControl)
 		}
 		
 		// フレーム画像が分かった
 		override fun receiveFrameImage(frameImage : Argb8888Bitmap) {
-			if(! isAnimated) throw RuntimeException("not animation image")
-			mFrames !!.completeFrame(frameImage)
+			val frames = this.frames ?: throw RuntimeException("not animation image")
+			frames.completeFrame(frameImage)
 		}
 		
 		// 結果を取得する
 		override fun getResult() : APNGFrames? {
-			val frames = mFrames
-			return if(frames?.isSingleFrame != false ){
+			val frames = this.frames
+			return if( frames?.hasMultipleFrame == true ){
 				frames
 			}else {
 				dispose()
@@ -431,8 +432,8 @@ class APNGFrames {
 		
 		// 処理中に例外が起きた場合、Bitmapリソースを解放する
 		fun dispose() {
-			mFrames?.dispose()
-			mFrames = null
+			frames?.dispose()
+			frames = null
 		}
 	}
 	

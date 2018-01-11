@@ -108,8 +108,7 @@ internal class HeaderViewHolderInstance(
 			btnEmail.text = email
 			btnEmail.isEnabled = email.isNotEmpty()
 			
-			val sb = DecodeOptions()
-				.setDecodeEmoji(true)
+			val sb = DecodeOptions(decodeEmoji = true)
 				.decodeHTML(activity, access_info, "<p>" + (instance .description ?: "") + "</p>")
 			
 			var previous_br_count = 0
@@ -167,7 +166,7 @@ internal class HeaderViewHolderInstance(
 					activity.startActivity(intent)
 					
 				} catch(ex : Throwable) {
-					ex.printStackTrace()
+					log.e(ex,"startActivity failed. mail=$email")
 					Utils.showToast(activity, true, R.string.missing_mail_app)
 				}
 				
@@ -182,7 +181,7 @@ internal class HeaderViewHolderInstance(
 					}
 					
 				} catch(ex : Throwable) {
-					ex.printStackTrace()
+					log.e(ex,"startActivity failed. thumbnail=$thumbnail")
 					Utils.showToast(activity, true, "missing web browser")
 				}
 				

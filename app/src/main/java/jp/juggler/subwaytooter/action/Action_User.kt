@@ -37,8 +37,8 @@ object Action_User {
 		activity : ActMain,
 		access_info : SavedAccount,
 		who : TootAccount,
-		bMute : Boolean,
-		bMuteNotification : Boolean
+		bMute : Boolean = true,
+		bMuteNotification : Boolean = false
 	) {
 		
 		if(access_info.isMe(who)) {
@@ -63,7 +63,7 @@ object Action_User {
 				val result = client.request("/api/v1/accounts/" + who.id + if(bMute) "/mute" else "/unmute", request_builder)
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
-					relation = saveUserRelation(access_info, parseItem(::TootRelationShip,jsonObject))
+					relation = saveUserRelation(access_info, parseItem(::TootRelationShip, jsonObject))
 				}
 				return result
 			}
@@ -74,22 +74,26 @@ object Action_User {
 				val relation = this.relation
 				if(relation != null) {
 					// 未確認だが、自分をミュートしようとするとリクエストは成功するがレスポンス中のmutingはfalseになるはず
-					if(bMute && ! relation .muting) {
+					if(bMute && ! relation.muting) {
 						Utils.showToast(activity, false, R.string.not_muted)
 						return
 					}
 					
-					if(relation .muting) {
-						for(column in App1.getAppState(activity).column_list) {
-							column.removeAccountInTimeline(access_info, who.id)
-						}
-					} else {
-						for(column in App1.getAppState(activity).column_list) {
+					for(column in App1.getAppState(activity).column_list) {
+						if(relation.muting) {
+							if(column.column_type == Column.TYPE_PROFILE) {
+								// プロフページのトゥートはミュートしてても見れる
+								continue
+							} else {
+								column.removeAccountInTimeline(access_info, who.id)
+							}
+						} else {
+							// 「ミュートしたユーザ」カラムからユーザを除去
 							column.removeFromMuteList(access_info, who.id)
 						}
 					}
 					
-					Utils.showToast(activity, false, if(relation .muting) R.string.mute_succeeded else R.string.unmute_succeeded)
+					Utils.showToast(activity, false, if(relation.muting) R.string.mute_succeeded else R.string.unmute_succeeded)
 					
 				} else {
 					Utils.showToast(activity, false, result.error)
@@ -123,7 +127,7 @@ object Action_User {
 				)
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
-					relation = saveUserRelation(access_info, parseItem(::TootRelationShip,jsonObject))
+					relation = saveUserRelation(access_info, parseItem(::TootRelationShip, jsonObject))
 				}
 				
 				return result
@@ -137,20 +141,26 @@ object Action_User {
 				if(relation != null) {
 					
 					// 自分をブロックしようとすると、blocking==falseで帰ってくる
-					if(bBlock && ! relation .blocking) {
+					if(bBlock && ! relation.blocking) {
 						Utils.showToast(activity, false, R.string.not_blocked)
 						return
 					}
 					
 					for(column in App1.getAppState(activity).column_list) {
-						if(relation .blocking) {
-							column.removeAccountInTimeline(access_info, who.id)
+						if(relation.blocking) {
+							if(column.column_type == Column.TYPE_PROFILE) {
+								// プロフページのトゥートはブロックしてても見れる
+								continue
+							} else {
+								column.removeAccountInTimeline(access_info, who.id)
+							}
 						} else {
+							//「ブロックしたユーザ」カラムのリストから消える
 							column.removeFromBlockList(access_info, who.id)
 						}
 					}
 					
-					Utils.showToast(activity, false, if(relation .blocking) R.string.block_succeeded else R.string.unblock_succeeded)
+					Utils.showToast(activity, false, if(relation.blocking) R.string.block_succeeded else R.string.unblock_succeeded)
 					
 				} else {
 					Utils.showToast(activity, false, result.error)
@@ -160,22 +170,27 @@ object Action_User {
 		
 	}
 	
-
-	
 	// 今のアカウントでユーザプロフを開く
 	fun profileLocal(
-		activity : ActMain, pos : Int, access_info : SavedAccount, who : TootAccount?
+		activity : ActMain,
+		pos : Int,
+		access_info : SavedAccount,
+		who : TootAccount
 	) {
-		when {
-			who == null -> Utils.showToast(activity, false, "user is null")
-			access_info.isPseudo -> profileFromAnotherAccount(activity, pos, access_info, who)
-			else -> activity.addColumn(pos, access_info, Column.TYPE_PROFILE, who.id)
+		if( access_info.isPseudo){
+			// ココを通る動線はないっぽいが、念のため
+			profileFromAnotherAccount(activity, pos, access_info, who)
+		}else{
+			activity.addColumn(pos, access_info, Column.TYPE_PROFILE, who.id)
 		}
 	}
 	
 	// URLからユーザを検索してプロフを開く
 	private fun profileFromUrl(
-		activity : ActMain, pos : Int, access_info : SavedAccount, who_url : String
+		activity : ActMain,
+		pos : Int,
+		access_info : SavedAccount,
+		who_url : String
 	) {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
@@ -253,7 +268,7 @@ object Action_User {
 		if(access_info != null && ! access_info.isPseudo) {
 			if(access_info.host.equals(host, ignoreCase = true)) {
 				// 文脈のアカウントと同じインスタンスなら、アカウントIDを探して開いてしまう
-				findAccountByName(activity, access_info, host, user){ who : TootAccount?->
+				findAccountByName(activity, access_info, host, user) { who : TootAccount? ->
 					if(who != null) {
 						profileLocal(activity, pos, access_info, who)
 					} else {
@@ -382,7 +397,7 @@ object Action_User {
 				val result = client.request("/api/v1/accounts/" + who.id + "/follow", request_builder)
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
-					relation = parseItem(::TootRelationShip,jsonObject)
+					relation = parseItem(::TootRelationShip, jsonObject)
 				}
 				return result
 			}

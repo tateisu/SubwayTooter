@@ -213,6 +213,8 @@ class DlgListMember(
 				jsonArray = result?.jsonArray ?: return result
 
 				val new_list = parseList(::TootList,jsonArray)
+				new_list.sort()
+				
 				this.new_list = new_list
 				
 				// isRegistered を設定する

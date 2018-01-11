@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.table.b2i
+import jp.juggler.subwaytooter.util.LogCategory
 import org.json.JSONObject
 
 import java.util.ArrayList
@@ -29,7 +30,8 @@ class TootList(
 	)
 	
 	companion object {
-		
+		private var log = LogCategory("TootList")
+
 		private val reNumber = Pattern.compile("(\\d+)")
 		
 		private fun makeTitleForSort(title : String?) : ArrayList<Any> {
@@ -60,6 +62,14 @@ class TootList(
 			}
 			return list
 		}
+
+		private fun compareLong(a:Long ,b:Long):Int{
+			return a.compareTo(b)
+		}
+		
+		private fun compareString(a:String ,b:String):Int{
+			return a.compareTo(b)
+		}
 	}
 	
 	override fun compareTo(other : TootList) : Int {
@@ -77,21 +87,26 @@ class TootList(
 		
 		var i = 0
 		while(true) {
-			
 			val oa = if(i >= sa) null else la[i]
 			val ob = if(i >= sb) null else lb[i]
-
-			if(oa == null) {
-				return if(ob == null) 0 else - 1
-			} else if(ob == null) {
-				return 1
-			}
 			
-			val delta = when {
-				oa is Long && ob is Long -> oa.compareTo(ob)
-				oa is String && ob is String -> oa.compareTo(ob)
-				else -> (oa is Long).b2i() - (ob is Long).b2i()
+			val delta = if(oa == null) {
+				if(ob == null) 0 else - 1
+			} else if(ob == null) {
+				1
+			}else {
+				
+				when {
+					oa is Long && ob is Long -> compareLong(oa, ob)
+					oa is String && ob is String -> compareString(oa, ob)
+					else -> (ob is Long).b2i() - (oa is Long).b2i()
+				}
 			}
+			log.d("%s %s %s"
+				,oa
+				,if(delta<0) "<" else if(delta>0)">" else "="
+				,ob
+			)
 			if(delta != 0) return delta
 			++ i
 		}

@@ -1394,7 +1394,7 @@ class ActMain : AppCompatActivity()
 						val sa = SavedAccount.loadAccount(this@ActMain, dataId)
 							?: return TootApiResult("missing account db_id=" + dataId)
 						this.sa = sa
-						client.setAccount(sa)
+						client.account = sa
 					} catch(ex : Throwable) {
 						log.trace(ex)
 						return TootApiResult(Utils.formatError(ex, "invalid state"))
@@ -1402,7 +1402,7 @@ class ActMain : AppCompatActivity()
 					
 				} else if(sv.startsWith("host:")) {
 					val host = sv.substring(5)
-					client.setInstance(host)
+					client.instance =host
 				}
 				
 				if(client.instance == null) {

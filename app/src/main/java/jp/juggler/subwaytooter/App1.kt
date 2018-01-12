@@ -21,6 +21,7 @@ import com.bumptech.glide.load.engine.executor.GlideExecutor
 import com.bumptech.glide.load.engine.executor.GlideExecutor.newDiskCacheExecutor
 import com.bumptech.glide.load.engine.executor.GlideExecutor.newSourceExecutor
 import com.bumptech.glide.load.model.GlideUrl
+import jp.juggler.subwaytooter.api.TootApiClient
 
 import java.io.File
 import java.io.InputStream
@@ -451,7 +452,7 @@ class App1 : Application() {
 			}
 			
 			if(! response.isSuccessful) {
-				log.e(Utils.formatResponse(response, "getHttp response error."))
+				log.e(TootApiClient.formatResponse(response, "getHttp response error."))
 				return null
 			}
 			
@@ -480,7 +481,7 @@ class App1 : Application() {
 			}
 			
 			if(! response.isSuccessful) {
-				log.e(Utils.formatResponse(response, "getHttp response error."))
+				log.e(TootApiClient.formatResponse(response, "getHttp response error."))
 				return null
 			}
 			

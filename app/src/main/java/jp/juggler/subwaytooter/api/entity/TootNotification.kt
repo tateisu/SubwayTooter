@@ -9,7 +9,7 @@ class TootNotification(
 	val json : JSONObject,
 	val id : Long,
 	val type : String,    //	One of: "mention", "reblog", "favourite", "follow"
-	private val created_at : String,    //	The time the notification was created
+	private val created_at : String?,    //	The time the notification was created
 	val account : TootAccount?,    //	The Account sending the notification to the user
 	val status : TootStatus?    //	The Status associated with the notification, if applicable
 ) {
@@ -24,7 +24,7 @@ class TootNotification(
 		json = src,
 		id = Utils.optLongX(src, "id"),
 		type = src.notEmptyOrThrow("type"),
-		created_at = src.notEmptyOrThrow("created_at"),
+		created_at = Utils.optStringX(src,"created_at"),
 		account = TootAccount.parse(parser.context, parser.accessInfo, src.optJSONObject("account"), ServiceType.MASTODON),
 		status = TootStatus.parse(parser, src.optJSONObject("status"), ServiceType.MASTODON)
 	)

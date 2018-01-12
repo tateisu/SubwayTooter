@@ -6,6 +6,7 @@ import android.text.SpannableString
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.TootApiClient
 
 import org.json.JSONObject
 
@@ -13,7 +14,6 @@ import java.lang.ref.WeakReference
 import java.util.regex.Pattern
 
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.TootsearchClient
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
@@ -391,7 +391,7 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 			serviceType : ServiceType = ServiceType.TOOTSEARCH
 		) : TootStatus.List {
 			val result = TootStatus.List()
-			val array = TootsearchClient.getHits(root)
+			val array = TootApiClient.getTootsearchHits(root)
 			if(array != null) {
 				val array_size = array.length()
 				result.ensureCapacity(array_size)

@@ -12,6 +12,7 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
+import jp.juggler.subwaytooter.api.TootApiClient
 
 import org.hjson.JsonValue
 
@@ -185,28 +186,21 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 						var call = App1.ok_http_client.newCall(builder.build())
 						
 						val response = call.execute()
-						if(! response.isSuccessful) {
-							addLog(Utils.formatResponse(response, "Can't get configuration from URL."))
-							break
-						}
 						
-						val bodyString : String?
-						try {
-							bodyString = response.body()?.string()
+						val bodyString : String? = try {
+							response.body()?.string()
 						} catch(ex : Throwable) {
 							log.trace(ex)
-							addLog("Can't get content body")
+							null
+						}
+
+						if(! response.isSuccessful || bodyString?.isEmpty() != false ){
+							addLog(TootApiClient.formatResponse(response, "Can't get configuration from URL.",bodyString))
 							break
 						}
 						
-						if(bodyString == null) {
-							addLog("content body is null")
-							break
-						}
-						
-						val jv : JsonValue
-						try {
-							jv = JsonValue.readHjson(bodyString)
+						val jv : JsonValue = try {
+							JsonValue.readHjson(bodyString)
 						} catch(ex : Throwable) {
 							log.trace(ex)
 							addLog(Utils.formatError(ex, "Can't parse configuration data."))

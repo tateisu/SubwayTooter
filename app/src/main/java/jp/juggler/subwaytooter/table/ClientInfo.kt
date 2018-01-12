@@ -64,4 +64,13 @@ object ClientInfo {
 		}
 		
 	}
+	
+	// 単体テスト用。インスタンス名を指定して削除する
+	internal fun delete(instance : String) {
+		try {
+			App1.database.delete(table, "$COL_HOST=?", arrayOf(instance))
+		} catch(ex : Throwable) {
+			log.e(ex, "delete failed.")
+		}
+	}
 }

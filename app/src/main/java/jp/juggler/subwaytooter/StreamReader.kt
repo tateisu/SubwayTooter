@@ -42,10 +42,6 @@ internal class StreamReader(
 	
 	private val reader_list = LinkedList<Reader>()
 	
-	internal interface Callback {
-		fun onStreamingMessage(event_type : String, item : Any?)
-	}
-	
 	private inner class Reader(
 		internal val access_info : SavedAccount,
 		internal val end_point : String,
@@ -55,7 +51,7 @@ internal class StreamReader(
 		internal val bDisposed = AtomicBoolean()
 		internal val bListening = AtomicBoolean()
 		internal val socket = AtomicReference<WebSocket>(null)
-		internal val callback_list = LinkedList<Callback>()
+		internal val callback_list = LinkedList< (event_type : String, item : Any?)->Unit >()
 		internal val parser : TootParser
 		
 		init {
@@ -76,14 +72,14 @@ internal class StreamReader(
 			this.parser.setHighlightTrie(highlight_trie)
 		}
 		
-		@Synchronized internal fun addCallback(stream_callback : Callback) {
+		@Synchronized internal fun addCallback(stream_callback : (event_type : String, item : Any?)->Unit ) {
 			for(c in callback_list) {
 				if(c === stream_callback) return
 			}
 			callback_list.add(stream_callback)
 		}
 		
-		@Synchronized internal fun removeCallback(stream_callback : Callback) {
+		@Synchronized internal fun removeCallback(stream_callback : (event_type : String, item : Any?)->Unit) {
 			val it = callback_list.iterator()
 			while(it.hasNext()) {
 				val c = it.next()
@@ -120,15 +116,14 @@ internal class StreamReader(
 				}
 				
 				Utils.runOnMainThread {
-					if(bDisposed.get()) return@runOnMainThread
 					synchronized(this) {
+						if(bDisposed.get()) return@runOnMainThread
 						for(callback in callback_list) {
 							try {
-								callback.onStreamingMessage(event, payload)
+								callback(event, payload)
 							} catch(ex : Throwable) {
 								log.trace(ex)
 							}
-							
 						}
 					}
 				}
@@ -239,7 +234,7 @@ internal class StreamReader(
 		accessInfo : SavedAccount,
 		endPoint : String,
 		highlightTrie : WordTrieTree?,
-		streamCallback : Callback
+		streamCallback : (event_type : String, item : Any?)->Unit
 	) {
 		
 		val reader = prepareReader(accessInfo, endPoint, highlightTrie)
@@ -255,7 +250,7 @@ internal class StreamReader(
 	fun unregister(
 		accessInfo : SavedAccount,
 		endPoint : String,
-		streamCallback : Callback
+		streamCallback : (event_type : String, item : Any?)->Unit
 	) {
 		synchronized(reader_list) {
 			val it = reader_list.iterator()

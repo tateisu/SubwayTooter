@@ -24,18 +24,27 @@ class DuplicateMap {
 		set_status_uri.clear()
 	}
 	
-	private fun isDuplicate(o : Any) : Boolean {
+	fun isDuplicate(o : Any) : Boolean {
 		
 		when(o) {
 
 			is TootStatus ->{
 				val uri = o.uri
-				if( uri != null && uri.isNotEmpty() ){
-					if(set_status_uri.contains(o.uri)) return true
-					set_status_uri.add(o.uri)
-				}else{
-					if(set_status_id.contains(o.id)) return true
-					set_status_id.add(o.id)
+				val url = o.url
+				when {
+					uri?.isNotEmpty() == true -> {
+						if(set_status_uri.contains(uri)) return true
+						set_status_uri.add(uri)
+					}
+					url?.isNotEmpty() == true -> {
+						// URIとURLで同じマップを使いまわすが、害はないと思う…
+						if(set_status_uri.contains(url)) return true
+						set_status_uri.add(url)
+					}
+					else -> {
+						if(set_status_id.contains(o.id)) return true
+						set_status_id.add(o.id)
+					}
 				}
 			}
 

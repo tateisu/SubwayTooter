@@ -4,15 +4,9 @@ import org.json.JSONObject
 import jp.juggler.subwaytooter.util.Utils
 
 class CustomEmoji(
-	// shortcode (コロンを含まない)
-	val shortcode : String,
-	
-	// 画像URL
-	val url : String,
-	
-	// アニメーションなしの画像URL
-	val static_url : String?
-
+	val shortcode : String, // shortcode (コロンを含まない)
+	val url : String, // 画像URL
+	val static_url : String? // アニメーションなしの画像URL
 ) : Mappable<String> {
 	
 	constructor(src : JSONObject) : this(

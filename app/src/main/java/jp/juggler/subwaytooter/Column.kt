@@ -41,7 +41,7 @@ class Column(
 	val context : Context,
 	val access_info : SavedAccount,
 	val column_type : Int
-) : StreamReader.Callback {
+) {
 	
 	companion object {
 		private val log = LogCategory("Column")
@@ -1227,7 +1227,12 @@ class Column(
 			internal var list_tmp : ArrayList<Any>? = null
 			
 			internal fun getInstanceInformation(client : TootApiClient, instance_name : String?) : TootApiResult? {
-				if(instance_name != null) client.setInstance(instance_name)
+				if( instance_name != null ){
+					// 「インスタンス情報」カラムをNAアカウントで開く場合
+					client.instance = instance_name
+				}else{
+					// カラムに紐付けられたアカウントのタンスのインスタンス情報
+				}
 				val result = client.request("/api/v1/instance")
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
@@ -1267,7 +1272,7 @@ class Column(
 					//
 					val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 					while(true) {
-						if(client.isCancelled) {
+						if(client.isApiCancelled) {
 							log.d("loading-statuses: cancelled.")
 							break
 						}
@@ -1367,7 +1372,7 @@ class Column(
 					//
 					val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 					while(true) {
-						if(client.isCancelled) {
+						if(client.isApiCancelled) {
 							log.d("loading-notifications: cancelled.")
 							break
 						}
@@ -1413,7 +1418,7 @@ class Column(
 			}
 			
 			override fun doInBackground(vararg params : Void) : TootApiResult? {
-				val client = TootApiClient(context, object : TootApiCallback {
+				val client = TootApiClient(context, callback=object : TootApiCallback {
 					override val isApiCancelled : Boolean
 						get() = isCancelled || is_dispose.get()
 					
@@ -1426,7 +1431,7 @@ class Column(
 					}
 				})
 				
-				client.setAccount(access_info)
+				client.account =access_info
 				
 				try {
 					var result : TootApiResult?
@@ -1454,7 +1459,9 @@ class Column(
 								TAB_STATUS -> {
 									
 									var instance = access_info.instance
-									if(access_info.isPseudo || instance == null) {
+									// まだ取得してない
+									// 疑似アカウントの場合は過去のデータが別タンスかもしれない?
+									if( instance == null || access_info.isPseudo ) {
 										val r2 = getInstanceInformation(client, null)
 										if(instance_tmp != null) {
 											instance = instance_tmp
@@ -1587,23 +1594,11 @@ class Column(
 								list_tmp = ArrayList()
 								result = TootApiResult()
 							} else {
-								result = MSPClient.search(context, search_query, max_id, object : TootApiCallback {
-									
-									override val isApiCancelled : Boolean
-										get() = isCancelled || is_dispose.get()
-									
-									override fun publishApiProgress(s : String) {
-										Utils.runOnMainThread {
-											if(isCancelled) return@runOnMainThread
-											task_progress = s
-											fireShowContent()
-										}
-									}
-								})
+								result = client.searchMsp( search_query, max_id )
 								val jsonArray = result?.jsonArray
 								if(jsonArray != null) {
 									// max_id の更新
-									max_id = MSPClient.getMaxId(jsonArray, max_id)
+									max_id = TootApiClient.getMspMaxId(jsonArray, max_id)
 									// リストデータの用意
 									val search_result = TootStatus.parseList(parser, jsonArray, serviceType = ServiceType.MSP)
 									list_tmp = addWithFilterStatus(null, search_result)
@@ -1619,22 +1614,11 @@ class Column(
 								list_tmp = ArrayList()
 								result = TootApiResult()
 							} else {
-								result = TootsearchClient.search(context, search_query, max_id, object : TootApiCallback {
-									override val isApiCancelled : Boolean
-										get() = isCancelled || is_dispose.get()
-									
-									override fun publishApiProgress(s : String) {
-										Utils.runOnMainThread {
-											if(isCancelled) return@runOnMainThread
-											task_progress = s
-											fireShowContent()
-										}
-									}
-								})
+								result = client.searchTootsearch( search_query, max_id)
 								val jsonObject = result?.jsonObject
 								if(jsonObject != null) {
 									// max_id の更新
-									max_id = TootsearchClient.getMaxId(jsonObject, max_id)
+									max_id = TootApiClient.getTootsearchMaxId(jsonObject, max_id)
 									// リストデータの用意
 									val search_result = TootStatus.parseListTootsearch(parser, jsonObject)
 									this.list_tmp = addWithFilterStatus(null, search_result)
@@ -2256,7 +2240,7 @@ class Column(
 			}
 			
 			override fun doInBackground(vararg params : Void) : TootApiResult? {
-				val client = TootApiClient(context, object : TootApiCallback {
+				val client = TootApiClient(context, callback=object : TootApiCallback {
 					override val isApiCancelled : Boolean
 						get() = isCancelled || is_dispose.get()
 					
@@ -2269,7 +2253,7 @@ class Column(
 					}
 				})
 				
-				client.setAccount(access_info)
+				client.account =access_info
 				try {
 					
 					return when(column_type) {
@@ -2342,22 +2326,11 @@ class Column(
 									list_tmp = ArrayList()
 									result = TootApiResult(context.getString(R.string.end_of_list))
 								} else {
-									result = MSPClient.search(context, search_query, max_id, object : TootApiCallback {
-										override val isApiCancelled : Boolean
-											get() = isCancelled || is_dispose.get()
-										
-										override fun publishApiProgress(s : String) {
-											Utils.runOnMainThread {
-												if(isCancelled) return@runOnMainThread
-												task_progress = s
-												fireShowContent()
-											}
-										}
-									})
+									result = client.searchMsp( search_query, max_id)
 									val jsonArray = result?.jsonArray
 									if(jsonArray != null) {
 										// max_id の更新
-										max_id = MSPClient.getMaxId(jsonArray, max_id)
+										max_id = TootApiClient.getMspMaxId(jsonArray, max_id)
 										// リストデータの用意
 										val search_result = TootStatus.parseList(parser, jsonArray, serviceType = ServiceType.MSP)
 										list_tmp = addWithFilterStatus(list_tmp, search_result)
@@ -2375,22 +2348,11 @@ class Column(
 								list_tmp = ArrayList()
 								result = TootApiResult(context.getString(R.string.end_of_list))
 							} else {
-								result = TootsearchClient.search(context, search_query, max_id, object : TootApiCallback {
-									override val isApiCancelled : Boolean
-										get() = isCancelled || is_dispose.get()
-									
-									override fun publishApiProgress(s : String) {
-										Utils.runOnMainThread {
-											if(isCancelled) return@runOnMainThread
-											task_progress = s
-											fireShowContent()
-										}
-									}
-								})
+								result = client.searchTootsearch( search_query, max_id)
 								val jsonObject = result?.jsonObject
 								if(jsonObject != null) {
 									// max_id の更新
-									max_id = TootsearchClient.getMaxId(jsonObject, max_id)
+									max_id = TootApiClient.getTootsearchMaxId(jsonObject, max_id)
 									// リストデータの用意
 									val search_result = TootStatus.parseListTootsearch(parser, jsonObject)
 									list_tmp = addWithFilterStatus(list_tmp, search_result)
@@ -2746,7 +2708,7 @@ class Column(
 			}
 			
 			override fun doInBackground(vararg params : Void) : TootApiResult? {
-				val client = TootApiClient(context, object : TootApiCallback {
+				val client = TootApiClient(context, callback=object : TootApiCallback {
 					override val isApiCancelled : Boolean
 						get() = isCancelled || is_dispose.get()
 					
@@ -2759,7 +2721,7 @@ class Column(
 					}
 				})
 				
-				client.setAccount(access_info)
+				client.account = access_info
 				
 				try {
 					return when(column_type) {
@@ -2948,31 +2910,6 @@ class Column(
 		}
 	}
 	
-	override fun onStreamingMessage(event_type : String, item : Any?) {
-		if(is_dispose.get()) return
-		
-		if("delete" == event_type) {
-			if(item is Long) {
-				removeStatus(access_info, item)
-			}
-		} else {
-			if(item is TootNotification) {
-				if(column_type != TYPE_NOTIFICATIONS) return
-				if(isFiltered(item)) return
-			} else if(item is TootStatus) {
-				if(column_type == TYPE_NOTIFICATIONS) return
-				if(column_type == TYPE_LOCAL && item.account.acct.indexOf('@') != - 1) return
-				if(isFiltered(item)) return
-				
-				if(this.enable_speech) {
-					App1.getAppState(context).addSpeech(item.reblog ?: item)
-				}
-			}
-			stream_data_queue.addFirst(item)
-			proc_stream_data.run()
-		}
-	}
-	
 	internal fun onStart(callback : Callback) {
 		this.callback_ref = WeakReference(callback)
 		
@@ -3118,7 +3055,7 @@ class Column(
 		stream_data_queue.clear()
 		
 		app_state.stream_reader.register(
-			access_info, stream_path, highlight_trie, this
+			access_info, stream_path, highlight_trie, onStreamingMessage
 		)
 	}
 	
@@ -3128,18 +3065,47 @@ class Column(
 		val stream_path = streamPath
 		if(stream_path != null) {
 			app_state.stream_reader.unregister(
-				access_info, stream_path, this
+				access_info, stream_path, onStreamingMessage
 			)
 		}
 	}
 	
-	private val proc_stream_data = object : Runnable {
+	private val onStreamingMessage = fun(event_type : String, item : Any?) {
+		if(is_dispose.get()) return
+		if("delete" == event_type) {
+			if(item is Long) {
+				removeStatus(access_info, item)
+			}
+			return
+		}
+		
+		if(item is TootNotification) {
+			if(column_type != TYPE_NOTIFICATIONS) return
+			if(isFiltered(item)) return
+		} else if(item is TootStatus) {
+			if(column_type == TYPE_NOTIFICATIONS) return
+			if(column_type == TYPE_LOCAL && item.account.acct.indexOf('@') != - 1) return
+			if(isFiltered(item)) return
+			
+			if(this.enable_speech) {
+				App1.getAppState(context).addSpeech(item.reblog ?: item)
+			}
+		}
+		
+		stream_data_queue.addFirst(item)
+		mergeStreamingMessage.run()
+	}
+	
+	private val mergeStreamingMessage = object : Runnable {
 		override fun run() {
 			App1.getAppState(context).handler.removeCallbacks(this)
+			
 			val now = SystemClock.elapsedRealtime()
+			
+			// 前回マージしてから暫くは待機する
 			val remain = last_show_stream_data + 333L - now
 			if(remain > 0) {
-				App1.getAppState(context).handler.postDelayed(this, 333L)
+				App1.getAppState(context).handler.postDelayed(this, remain)
 				return
 			}
 			last_show_stream_data = now
@@ -3147,29 +3113,42 @@ class Column(
 			val list_new = duplicate_map.filterDuplicate(stream_data_queue)
 			stream_data_queue.clear()
 			
-			if(list_new.isEmpty()) {
-				return
-			} else {
-				if(column_type == TYPE_NOTIFICATIONS) {
-					val list = ArrayList<TootNotification>()
-					for(o in list_new) {
-						if(o is TootNotification) {
-							list.add(o)
-						}
-					}
-					if(! list.isEmpty()) {
-						PollingWorker.injectData(context, access_info.db_id, list)
+			if(list_new.isEmpty()) return
+			
+			// 通知カラムならストリーミング経由で届いたデータを通知ワーカーに伝達する
+			if(column_type == TYPE_NOTIFICATIONS) {
+				val list = ArrayList<TootNotification>()
+				for(o in list_new) {
+					if(o is TootNotification) {
+						list.add(o)
 					}
 				}
-				
-				try {
-					since_id = getId(list_new[0]).toString()
-				} catch(ex : Throwable) {
-					// ストリームに来るのは通知かステータスだから、多分ここは通らない
-					log.e(ex, "getId() failed. o=", list_new[0])
+				if(! list.isEmpty()) {
+					PollingWorker.injectData(context, access_info.db_id, list)
 				}
-				
 			}
+			
+			// 最新のIDをsince_idとして覚える(ソートはしない)
+			var new_id_max = Long.MIN_VALUE
+			var new_id_min = Long.MAX_VALUE
+			for(o in list_new) {
+				try {
+					val id = getId(o)
+					if(id < 0) continue
+					if(id > new_id_max) new_id_max = id
+					if(id < new_id_min) new_id_min = id
+				} catch(ex : Throwable) {
+					// IDを取得できないタイプのオブジェクトだった
+					// ストリームに来るのは通知かステータスだから、多分ここは通らない
+					log.trace(ex)
+				}
+			}
+			if(new_id_max != Long.MAX_VALUE) {
+				since_id = new_id_max.toString()
+				// XXX: コレはリフレッシュ時に取得漏れを引き起こすのでは…？
+				// しかしコレなしだとリフレッシュ時に大量に読むことになる…
+			}
+			
 			val holder = viewHolder
 			
 			// 事前にスクロール位置を覚えておく
@@ -3191,14 +3170,14 @@ class Column(
 				}
 			}
 			
+			// 画面復帰時の自動リフレッシュではギャップが残る可能性がある
 			if(bPutGap) {
 				bPutGap = false
 				try {
-					if(list_new.size > 0 && list_data.size > 0) {
-						val max = getId(list_new[list_new.size - 1])
+					if(list_data.size > 0 && new_id_min != Long.MAX_VALUE) {
 						val since = getId(list_data[0])
-						if(max > since) {
-							val gap = TootGap(max, since)
+						if(new_id_min > since) {
+							val gap = TootGap(new_id_min, since)
 							list_new.add(gap)
 						}
 					}

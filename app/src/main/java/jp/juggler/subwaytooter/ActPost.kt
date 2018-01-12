@@ -187,7 +187,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				if(response.isSuccessful) {
 					return true
 				}
-				log.e(Utils.formatResponse(response, "check_exist failed."))
+				log.e(TootApiClient.formatResponse(response, "check_exist failed."))
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}
@@ -1739,7 +1739,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				this.account = account
 				
 				// アカウントがあるなら基本的にはすべての情報を復元できるはずだが、いくつか確認が必要だ
-				val api_client = TootApiClient(this@ActPost, object : TootApiCallback {
+				val api_client = TootApiClient(this@ActPost, callback=object : TootApiCallback {
 					
 					override val isApiCancelled : Boolean
 						get() = isCancelled
@@ -1749,7 +1749,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					}
 				})
 				
-				api_client.setAccount(account)
+				api_client.account = account
 				
 				if(in_reply_to_id != - 1L) {
 					val result = api_client.request("/api/v1/statuses/" + in_reply_to_id)

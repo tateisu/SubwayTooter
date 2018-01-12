@@ -51,12 +51,7 @@ import jp.juggler.subwaytooter.table.MutedApp
 import jp.juggler.subwaytooter.table.MutedWord
 import jp.juggler.subwaytooter.table.NotificationTracking
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.NotificationHelper
-import jp.juggler.subwaytooter.util.TaskList
-import jp.juggler.subwaytooter.util.Utils
-import jp.juggler.subwaytooter.util.WordTrieTree
-import jp.juggler.subwaytooter.util.WorkerBase
+import jp.juggler.subwaytooter.util.*
 import okhttp3.Call
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -755,7 +750,7 @@ class PollingWorker private constructor(c : Context) {
 					val body = response.body()?.string()
 					
 					if(! response.isSuccessful || body?.isEmpty() != false ) {
-						log.e(Utils.formatResponse(response, "getInstallId: get /counter failed."))
+						log.e(TootApiClient.formatResponse(response, "getInstallId: get /counter failed."))
 						return null
 					}
 					
@@ -980,11 +975,11 @@ class PollingWorker private constructor(c : Context) {
 			}
 		}
 		
-		internal inner class AccountThread(val account : SavedAccount) : Thread(), TootApiClient.CurrentCallCallback {
+		internal inner class AccountThread(val account : SavedAccount) : Thread(), CurrentCallCallback {
 			
 			private var current_call : Call? = null
 			
-			val client = TootApiClient(context, object : TootApiCallback {
+			val client = TootApiClient(context, callback=object : TootApiCallback {
 				override val isApiCancelled : Boolean
 					get() = job.isJobCancelled
 			})
@@ -996,7 +991,7 @@ class PollingWorker private constructor(c : Context) {
 			private var nid_last_show = - 1L
 			
 			init {
-				client.setCurrentCallCallback(this)
+				client.currentCallCallback = this
 			}
 			
 			override fun onCallCreated(call : Call) {
@@ -1228,8 +1223,7 @@ class PollingWorker private constructor(c : Context) {
 				if(now - nr.last_load >= 60000L * 2) {
 					nr.last_load = now
 					
-					client.setAccount(account)
-					
+					client.account = account
 					
 					for(nTry in 0 .. 3) {
 						if(job.isJobCancelled) return

@@ -376,7 +376,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				}
 				
 				if(! response.isSuccessful) {
-					return TootApiResult(Utils.formatResponse(response, "response error"))
+					return TootApiResult(TootApiClient.formatResponse(response, "response error"))
 				}
 				
 				return try {

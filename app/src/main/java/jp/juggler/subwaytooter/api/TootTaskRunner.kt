@@ -95,7 +95,7 @@ class TootTaskRunner @JvmOverloads constructor(
 	init {
 		this.refContext = WeakReference(context)
 		this.handler = Handler()
-		this.client = TootApiClient(context, this)
+		this.client = TootApiClient(context, callback=this)
 		this.task = MyTask(this)
 	}
 	
@@ -108,12 +108,12 @@ class TootTaskRunner @JvmOverloads constructor(
 	}
 	
 	fun run(access_info : SavedAccount, callback : TootTask) {
-		client.setAccount(access_info)
+		client.account =access_info
 		run(callback)
 	}
 	
 	fun run(instance : String, callback : TootTask) {
-		client.setInstance(instance)
+		client.instance = instance
 		run(callback)
 	}
 	
@@ -121,8 +121,6 @@ class TootTaskRunner @JvmOverloads constructor(
 		this.progress_prefix = s
 		return this
 	}
-	
-
 	
 	//////////////////////////////////////////////////////
 	// implements TootApiClient.Callback

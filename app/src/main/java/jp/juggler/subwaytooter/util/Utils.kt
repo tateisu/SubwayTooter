@@ -38,6 +38,7 @@ import android.util.SparseBooleanArray
 
 import android.database.Cursor
 import android.net.Uri
+import android.view.GestureDetector
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -849,68 +850,6 @@ object Utils {
 		return null
 	}
 	
-	fun simplifyErrorHtml(response : Response, sv : String) : String {
-		try {
-			val data = JSONObject(sv)
-			val error = data.getString("error")
-			if(error != null && error.isNotBlank()) return error
-		} catch(ex : Throwable) {
-			log.e(ex, "response body is not JSON or missing 'error' attribute.")
-		}
-		
-		// JSONではなかった
-		
-		// HTMLならタグの除去を試みる
-		val ct = response.header("content-type")
-		if(ct != null && ct.contains("/html")) {
-			return DecodeOptions().decodeHTML(null, null, sv).toString()
-		}
-		
-		// XXX: Amazon S3 が403を返した場合にcontent-typeが?/xmlでserverがAmazonならXMLをパースしてエラーを整形することもできるが、多分必要ない
-		
-		return sv
-	}
-	
-	fun formatResponse(response : Response, caption : String, bodyString : String? = null) : String {
-		val sb = StringBuilder()
-		try {
-			val empty_length = sb.length
-			
-			if(bodyString != null) {
-				sb.append(simplifyErrorHtml(response, bodyString))
-			} else {
-				val body = response.body()
-				if(body != null) {
-					try {
-						val sv = body.string()
-						if(sv != null && sv.isNotBlank()) {
-							sb.append(simplifyErrorHtml(response, sv))
-						}
-					} catch(ex : Throwable) {
-						log.e(ex, "response body is not String.")
-					}
-				}
-			}
-			
-			if(sb.length == empty_length) sb.append(' ')
-			sb.append("(HTTP ").append(Integer.toString(response.code()))
-			
-			val message = response.message()
-			if(message != null && message.isNotEmpty()) {
-				sb.append(' ').append(message)
-			}
-			sb.append(")")
-			
-			if(caption.isNotEmpty()) {
-				sb.append(' ').append(caption)
-			}
-			
-		} catch(ex : Throwable) {
-			log.trace(ex)
-		}
-		
-		return sb.toString().replace("\n+".toRegex(), "\n")
-	}
 	
 	fun scanView(view : View?, callback : (view : View) -> Unit) {
 		view ?: return

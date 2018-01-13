@@ -4,7 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
-import android.app.ProgressDialog
 import android.content.ContentValues
 import android.content.Intent
 import android.content.SharedPreferences
@@ -53,13 +52,10 @@ import java.util.Locale
 import jp.juggler.subwaytooter.api.entity.TootAttachment
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.entity.parseItem
-import jp.juggler.subwaytooter.dialog.AccountPicker
-import jp.juggler.subwaytooter.dialog.DlgDraftPicker
-import jp.juggler.subwaytooter.dialog.DlgTextInput
+import jp.juggler.subwaytooter.dialog.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.PostDraft
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanClickCallback
 import jp.juggler.subwaytooter.util.*
@@ -1701,7 +1697,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	private fun restoreDraft(draft : JSONObject) {
 		
 		@Suppress("DEPRECATION")
-		val progress = ProgressDialog(this)
+		val progress = ProgressDialogEx(this)
 		
 		val task = @SuppressLint("StaticFieldLeak")
 		object : AsyncTask<Void, String, String?>() {

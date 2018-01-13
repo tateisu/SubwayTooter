@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
-import android.app.ProgressDialog
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -62,6 +61,7 @@ import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.dialog.ActionsDialog
+import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import jp.juggler.subwaytooter.view.ColumnStripLinearLayout
 import jp.juggler.subwaytooter.view.GravitySnapHelper
 import jp.juggler.subwaytooter.view.MyEditText
@@ -2018,7 +2018,7 @@ class ActMain : AppCompatActivity()
 		}
 		
 		@Suppress("DEPRECATION")
-		val progress = ProgressDialog(this)
+		val progress = ProgressDialogEx(this)
 		
 		val task = @SuppressLint("StaticFieldLeak") object : AsyncTask<Void, String, ArrayList<Column>?>() {
 			

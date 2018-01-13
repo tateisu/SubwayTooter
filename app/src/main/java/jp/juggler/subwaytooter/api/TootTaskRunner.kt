@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.api
 
 import android.app.Activity
-import android.app.ProgressDialog
 import android.content.Context
 import android.os.AsyncTask
 import android.os.Handler
@@ -11,6 +10,7 @@ import java.lang.ref.WeakReference
 import java.text.NumberFormat
 
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import jp.juggler.subwaytooter.table.SavedAccount
 
 /*
@@ -30,8 +30,8 @@ class TootTaskRunner @JvmOverloads constructor(
 	companion object {
 		
 		const val PROGRESS_NONE = - 1
-		const val PROGRESS_SPINNER = ProgressDialog.STYLE_SPINNER
-		const val PROGRESS_HORIZONTAL = ProgressDialog.STYLE_HORIZONTAL
+		const val PROGRESS_SPINNER = ProgressDialogEx.STYLE_SPINNER
+		const val PROGRESS_HORIZONTAL = ProgressDialogEx.STYLE_HORIZONTAL
 		
 		private val percent_format : NumberFormat by lazy {
 			val v = NumberFormat.getPercentInstance()
@@ -73,7 +73,7 @@ class TootTaskRunner @JvmOverloads constructor(
 	private val client : TootApiClient
 	private val task : MyTask
 	private val info = ProgressInfo()
-	private var progress : ProgressDialog? = null
+	private var progress : ProgressDialogEx? = null
 	private var progress_prefix : String? = null
 	
 	private val refContext : WeakReference<Context>
@@ -153,7 +153,7 @@ class TootTaskRunner @JvmOverloads constructor(
 		if(progress_style != PROGRESS_NONE) {
 			val context = refContext.get()
 			if(context != null && context is Activity) {
-				val progress = ProgressDialog(context)
+				val progress = ProgressDialogEx(context)
 				this.progress = progress
 				progress.setCancelable(true)
 				progress.setOnCancelListener { task.cancel(true) }

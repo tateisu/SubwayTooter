@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.dialog
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.app.ProgressDialog
 import android.graphics.Bitmap
 import android.os.AsyncTask
 import android.view.View
@@ -27,7 +26,7 @@ object DlgQRCode {
 	
 	private fun makeQrCode(activity : ActMain, size : Int, url : String, callback : QrCodeCallback) {
 		@Suppress("DEPRECATION")
-		val progress = ProgressDialog(activity)
+		val progress = ProgressDialogEx(activity)
 		val task = object : AsyncTask<Void, Void, Bitmap?>() {
 
 			override fun doInBackground(vararg params : Void) : Bitmap? {

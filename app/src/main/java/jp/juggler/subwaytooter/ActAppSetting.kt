@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
-import android.app.ProgressDialog
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.Typeface
@@ -32,6 +31,7 @@ import android.widget.TextView
 
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
+import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 
 import org.apache.commons.io.IOUtils
 import org.apache.commons.io.output.FileWriterWithEncoding
@@ -862,7 +862,7 @@ class ActAppSetting : AppCompatActivity()
 	private fun exportAppData() {
 		
 		@Suppress("DEPRECATION")
-		val progress = ProgressDialog(this)
+		val progress = ProgressDialogEx(this)
 		
 		val task = @SuppressLint("StaticFieldLeak")
 		object : AsyncTask<Void, String, File?>() {

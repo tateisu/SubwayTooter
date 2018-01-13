@@ -18,9 +18,13 @@ package com.jrummyapps.android.colorpicker;
 
 import android.support.annotation.IntDef;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 /**
  * The shape of the color preview
  */
+@Retention(RetentionPolicy.SOURCE)
 @IntDef({ColorShape.SQUARE, ColorShape.CIRCLE})
 public @interface ColorShape {
 

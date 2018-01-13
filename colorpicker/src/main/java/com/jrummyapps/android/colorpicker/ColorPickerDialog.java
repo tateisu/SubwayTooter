@@ -16,6 +16,7 @@
 
 package com.jrummyapps.android.colorpicker;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -50,6 +51,9 @@ import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import com.jrummyapps.android.colorpicker.ColorPickerView.OnColorChangedListener;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -251,11 +255,11 @@ public class ColorPickerDialog extends DialogFragment implements OnTouchListener
 
   View createPickerView() {
     View contentView = View.inflate(getActivity(), R.layout.cpv_dialog_color_picker, null);
-    colorPicker = (ColorPickerView) contentView.findViewById(R.id.cpv_color_picker_view);
-    ColorPanelView oldColorPanel = (ColorPanelView) contentView.findViewById(R.id.cpv_color_panel_old);
-    newColorPanel = (ColorPanelView) contentView.findViewById(R.id.cpv_color_panel_new);
-    ImageView arrowRight = (ImageView) contentView.findViewById(R.id.cpv_arrow_right);
-    hexEditText = (EditText) contentView.findViewById(R.id.cpv_hex);
+    colorPicker = contentView.findViewById(R.id.cpv_color_picker_view);
+    ColorPanelView oldColorPanel = contentView.findViewById(R.id.cpv_color_panel_old);
+    newColorPanel = contentView.findViewById(R.id.cpv_color_panel_new);
+    ImageView arrowRight = contentView.findViewById(R.id.cpv_arrow_right);
+    hexEditText = contentView.findViewById(R.id.cpv_hex);
 
     try {
       final TypedValue value = new TypedValue();
@@ -295,7 +299,7 @@ public class ColorPickerDialog extends DialogFragment implements OnTouchListener
       public void onFocusChange(View v, boolean hasFocus) {
         if (hasFocus) {
           InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-          imm.showSoftInput(hexEditText, InputMethodManager.SHOW_IMPLICIT);
+          if(imm!=null )  imm.showSoftInput(hexEditText, InputMethodManager.SHOW_IMPLICIT);
         }
       }
     });
@@ -303,11 +307,12 @@ public class ColorPickerDialog extends DialogFragment implements OnTouchListener
     return contentView;
   }
 
-  @Override public boolean onTouch(View v, MotionEvent event) {
+  @SuppressLint("ClickableViewAccessibility")
+  @Override public boolean onTouch( View v, MotionEvent event) {
     if (v != hexEditText && hexEditText.hasFocus()) {
       hexEditText.clearFocus();
       InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-      imm.hideSoftInputFromWindow(hexEditText.getWindowToken(), 0);
+      if(imm!=null ) imm.hideSoftInputFromWindow(hexEditText.getWindowToken(), 0);
       hexEditText.clearFocus();
       return true;
     }
@@ -321,7 +326,7 @@ public class ColorPickerDialog extends DialogFragment implements OnTouchListener
       setHex(newColor);
       if (hexEditText.hasFocus()) {
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.hideSoftInputFromWindow(hexEditText.getWindowToken(), 0);
+        if(imm!=null )  imm.hideSoftInputFromWindow(hexEditText.getWindowToken(), 0);
         hexEditText.clearFocus();
       }
     }
@@ -414,10 +419,10 @@ public class ColorPickerDialog extends DialogFragment implements OnTouchListener
 
   View createPresetsView() {
     View contentView = View.inflate(getActivity(), R.layout.cpv_dialog_presets, null);
-    shadesLayout = (LinearLayout) contentView.findViewById(R.id.shades_layout);
-    transparencySeekBar = (SeekBar) contentView.findViewById(R.id.transparency_seekbar);
-    transparencyPercText = (TextView) contentView.findViewById(R.id.transparency_text);
-    GridView gridView = (GridView) contentView.findViewById(R.id.gridView);
+    shadesLayout = contentView.findViewById(R.id.shades_layout);
+    transparencySeekBar = contentView.findViewById(R.id.transparency_seekbar);
+    transparencyPercText = contentView.findViewById(R.id.transparency_text);
+    GridView gridView = contentView.findViewById(R.id.gridView);
 
     loadPresets();
 
@@ -483,8 +488,8 @@ public class ColorPickerDialog extends DialogFragment implements OnTouchListener
     if (shadesLayout.getChildCount() != 0) {
       for (int i = 0; i < shadesLayout.getChildCount(); i++) {
         FrameLayout layout = (FrameLayout) shadesLayout.getChildAt(i);
-        final ColorPanelView cpv = (ColorPanelView) layout.findViewById(R.id.cpv_color_panel_view);
-        ImageView iv = (ImageView) layout.findViewById(R.id.cpv_color_image_view);
+        final ColorPanelView cpv = layout.findViewById(R.id.cpv_color_panel_view);
+        ImageView iv = layout.findViewById(R.id.cpv_color_image_view);
         cpv.setColor(colorShades[i]);
         cpv.setTag(false);
         iv.setImageDrawable(null);
@@ -503,7 +508,7 @@ public class ColorPickerDialog extends DialogFragment implements OnTouchListener
       }
 
       final View view = View.inflate(getActivity(), layoutResId, null);
-      final ColorPanelView colorPanelView = (ColorPanelView) view.findViewById(R.id.cpv_color_panel_view);
+      final ColorPanelView colorPanelView = view.findViewById(R.id.cpv_color_panel_view);
 
       ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) colorPanelView.getLayoutParams();
       params.leftMargin = params.rightMargin = horizontalPadding;
@@ -529,8 +534,8 @@ public class ColorPickerDialog extends DialogFragment implements OnTouchListener
           adapter.selectNone();
           for (int i = 0; i < shadesLayout.getChildCount(); i++) {
             FrameLayout layout = (FrameLayout) shadesLayout.getChildAt(i);
-            ColorPanelView cpv = (ColorPanelView) layout.findViewById(R.id.cpv_color_panel_view);
-            ImageView iv = (ImageView) layout.findViewById(R.id.cpv_color_image_view);
+            ColorPanelView cpv = layout.findViewById(R.id.cpv_color_panel_view);
+            ImageView iv = layout.findViewById(R.id.cpv_color_image_view);
             iv.setImageResource(cpv == v ? R.drawable.cpv_preset_checked : 0);
             if (cpv == v && ColorUtils.calculateLuminance(cpv.getColor()) >= 0.65 ||
                 Color.alpha(cpv.getColor()) <= ALPHA_THRESHOLD) {
@@ -606,8 +611,8 @@ public class ColorPickerDialog extends DialogFragment implements OnTouchListener
         // update shades:
         for (int i = 0; i < shadesLayout.getChildCount(); i++) {
           FrameLayout layout = (FrameLayout) shadesLayout.getChildAt(i);
-          ColorPanelView cpv = (ColorPanelView) layout.findViewById(R.id.cpv_color_panel_view);
-          ImageView iv = (ImageView) layout.findViewById(R.id.cpv_color_image_view);
+          ColorPanelView cpv = layout.findViewById(R.id.cpv_color_panel_view);
+          ImageView iv = layout.findViewById(R.id.cpv_color_image_view);
           if (layout.getTag() == null) {
             // save the original border color
             layout.setTag(cpv.getBorderColor());
@@ -697,7 +702,7 @@ public class ColorPickerDialog extends DialogFragment implements OnTouchListener
 
   // region Builder
 
-  public static final class Builder {
+  @SuppressWarnings("WeakerAccess") public static final class Builder {
 
     @StringRes int dialogTitle = R.string.cpv_default_title;
     @DialogType int dialogType = TYPE_PRESETS;
@@ -868,7 +873,8 @@ public class ColorPickerDialog extends DialogFragment implements OnTouchListener
     }
 
   }
-
+  
+  @Retention(RetentionPolicy.SOURCE)
   @IntDef({TYPE_CUSTOM, TYPE_PRESETS})
   public @interface DialogType {
 

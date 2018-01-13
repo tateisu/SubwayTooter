@@ -1177,14 +1177,14 @@ class ActMain : AppCompatActivity()
 			if(isFinishing) return@Runnable
 			
 			if(app_state.column_list.isEmpty()) {
-				llColumnStrip.setColumnRange(- 1, - 1, 0f)
+				llColumnStrip.setVisibleRange(- 1, - 1, 0f)
 			} else {
 				phoneTab({ env ->
 					if(position >= 0) {
-						llColumnStrip.setColumnRange(position, position, positionOffset)
+						llColumnStrip.setVisibleRange(position, position, positionOffset)
 					} else {
 						val c = env.pager.currentItem
-						llColumnStrip.setColumnRange(c, c, 0f)
+						llColumnStrip.setVisibleRange(c, c, 0f)
 					}
 					
 				}, { env ->
@@ -1200,7 +1200,7 @@ class ActMain : AppCompatActivity()
 						slide_ratio = Math.abs(child.left / nColumnWidth.toFloat())
 					}
 					
-					llColumnStrip.setColumnRange(first, last, slide_ratio)
+					llColumnStrip.setVisibleRange(first, last, slide_ratio)
 				})
 			}
 		})
@@ -1811,8 +1811,7 @@ class ActMain : AppCompatActivity()
 			vFooterDivider2.setBackgroundColor(c)
 		}
 		
-		c = footer_tab_indicator_color
-		llColumnStrip.setColor(c)
+		llColumnStrip.indicatorColor = footer_tab_indicator_color
 	}
 	
 	/////////////////////////////////////////////////////////////////////////

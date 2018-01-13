@@ -109,7 +109,7 @@ class PollingWorker private constructor(c : Context) {
 		
 		fun getInstance(applicationContext : Context) : PollingWorker {
 			var s = sInstance
-			if( s == null ){
+			if(s == null) {
 				s = PollingWorker(applicationContext)
 				sInstance = s
 			}
@@ -710,62 +710,6 @@ class PollingWorker private constructor(c : Context) {
 		
 		val error_instance = ArrayList<String>()
 		
-		// インストールIDを生成する前に、各データの通知登録キャッシュをクリアする
-		// トークンがまだ生成されていない場合、このメソッドは null を返します。
-		private val installId : String?
-			get() {
-				val prefDevice = PrefDevice.prefDevice(context)
-				
-				var sv = prefDevice.getString(PrefDevice.KEY_INSTALL_ID, null)
-				if( sv != null && sv.isNotEmpty() ) return sv
-				SavedAccount.clearRegistrationCache()
-				
-				try {
-					var device_token = prefDevice.getString(PrefDevice.KEY_DEVICE_TOKEN, null)
-					if( device_token == null || device_token.isEmpty() ) {
-						try {
-							device_token = FirebaseInstanceId.getInstance().token
-							if( device_token == null || device_token.isEmpty()) {
-								log.e("getInstallId: missing device token.")
-								return null
-							} else {
-								prefDevice.edit().putString(PrefDevice.KEY_DEVICE_TOKEN, device_token).apply()
-							}
-						} catch(ex : Throwable) {
-							log.e("getInstallId: could not get device token.")
-							log.trace(ex)
-							return null
-						}
-						
-					}
-					
-					val request = Request.Builder()
-						.url(APP_SERVER + "/counter")
-						.build()
-					
-					val call = App1.ok_http_client.newCall(request)
-					job.current_call = call
-					
-					val response = call.execute()
-					val body = response.body()?.string()
-					
-					if(! response.isSuccessful || body?.isEmpty() != false ) {
-						log.e(TootApiClient.formatResponse(response, "getInstallId: get /counter failed."))
-						return null
-					}
-					
-					sv = Utils.digestSHA256(device_token + UUID.randomUUID() + body)
-					prefDevice.edit().putString(PrefDevice.KEY_INSTALL_ID, sv).apply()
-					
-					return sv
-					
-				} catch(ex : Throwable) {
-					log.trace(ex)
-					return null
-				}
-				
-			}
-		
 		fun runTask(job : JobItem, taskId : Int, taskData : JSONObject) {
 			try {
 				log.e("(runTask: taskId=%s", taskId)
@@ -774,77 +718,89 @@ class PollingWorker private constructor(c : Context) {
 				this.job = job
 				this.taskId = taskId
 				
-				var process_db_id = - 1L
-				
-				if(taskId == TASK_APP_DATA_IMPORT_BEFORE) {
-					scheduler.cancelAll()
-					for(a in SavedAccount.loadAccountList(context)) {
-						try {
-							val notification_tag = a.db_id.toString()
-							notification_manager.cancel(notification_tag, NOTIFICATION_ID)
-						} catch(ex : Throwable) {
-							log.trace(ex)
+				var process_db_id = - 1L //
+
+				when(taskId) {
+					TASK_APP_DATA_IMPORT_BEFORE -> {
+						scheduler.cancelAll()
+						for(a in SavedAccount.loadAccountList(context)) {
+							try {
+								val notification_tag = a.db_id.toString()
+								notification_manager.cancel(notification_tag, NOTIFICATION_ID)
+							} catch(ex : Throwable) {
+								log.trace(ex)
+							}
+							
 						}
-						
+						mBusyAppDataImportBefore.set(false)
+						return
 					}
-					mBusyAppDataImportBefore.set(false)
-					return
-				} else if(taskId == TASK_APP_DATA_IMPORT_AFTER) {
-					mBusyAppDataImportAfter.set(false)
-					mBusyAppDataImportBefore.set(false)
-					NotificationTracking.resetPostAll()
-					// fall
+					TASK_APP_DATA_IMPORT_AFTER -> {
+						mBusyAppDataImportAfter.set(false)
+						mBusyAppDataImportBefore.set(false)
+						NotificationTracking.resetPostAll()
+						// fall
+					}
+				
 				}
 				
 				// アプリデータのインポート処理がビジーな間、他のジョブは実行されない
-				if(mBusyAppDataImportBefore.get()) return
-				if(mBusyAppDataImportAfter.get()) return
+				if(mBusyAppDataImportBefore.get() || mBusyAppDataImportAfter.get()) return
 				
-				if(taskId == TASK_FCM_DEVICE_TOKEN) {
-					// デバイストークンが更新された
-					// アプリサーバへの登録をやり直す
+				// タスクによってはポーリング前にすることがある
+				when(taskId) {
+					TASK_DATA_INJECTED -> processInjectedData()
 					
-				} else if(taskId == TASK_FCM_MESSAGE) {
-					var bDone = false
-					val tag = Utils.optStringX(taskData,EXTRA_TAG)
-					if(tag != null) {
-						for(sa in SavedAccount.loadByTag(context, tag)) {
-							NotificationTracking.resetLastLoad(sa.db_id)
-							process_db_id = sa.db_id
-							bDone = true
+					TASK_BOOT_COMPLETED -> NotificationTracking.resetPostAll()
+					
+					TASK_PACKAGE_REPLACED -> NotificationTracking.resetPostAll()
+				
+
+				// デバイストークンが更新された
+					TASK_FCM_DEVICE_TOKEN -> {
+					}
+				
+				// プッシュ通知が届いた
+					TASK_FCM_MESSAGE -> {
+						var bDone = false
+						val tag = Utils.optStringX(taskData, EXTRA_TAG)
+						if(tag != null) {
+							for(sa in SavedAccount.loadByTag(context, tag)) {
+								NotificationTracking.resetLastLoad(sa.db_id)
+								process_db_id = sa.db_id
+								bDone = true
+							}
+						}
+						if(! bDone) {
+							// タグにマッチする情報がなかった場合、全部読み直す
+							NotificationTracking.resetLastLoad()
 						}
 					}
-					if(! bDone) {
-						// タグにマッチする情報がなかった場合、全部読み直す
-						NotificationTracking.resetLastLoad()
+
+					TASK_NOTIFICATION_CLEAR -> {
+						val db_id = Utils.optLongX(taskData, EXTRA_DB_ID, - 1L)
+						deleteCacheData(db_id)
 					}
-					
-				} else if(taskId == TASK_NOTIFICATION_CLEAR) {
-					val db_id = Utils.optLongX(taskData, EXTRA_DB_ID, - 1L)
-					deleteCacheData(db_id)
-					
-				} else if(taskId == TASK_DATA_INJECTED) {
-					processInjectedData()
-					
-				} else if(taskId == TASK_BOOT_COMPLETED) {
-					NotificationTracking.resetPostAll()
-				} else if(taskId == TASK_PACKAGE_REPLACED) {
-					NotificationTracking.resetPostAll()
-					
-				} else if(taskId == TASK_NOTIFICATION_DELETE) {
-					val db_id = Utils.optLongX(taskData, EXTRA_DB_ID, - 1L)
-					log.d("Notification deleted! db_id=%s", db_id)
-					NotificationTracking.updateRead(db_id)
-					return
-				} else if(taskId == TASK_NOTIFICATION_CLICK) {
-					val db_id = Utils.optLongX(taskData, EXTRA_DB_ID, - 1L)
-					log.d("Notification clicked! db_id=%s", db_id)
-					
-					// 通知をキャンセル
-					notification_manager.cancel(db_id.toString(), NOTIFICATION_ID)
-					// DB更新処理
-					NotificationTracking.updateRead(db_id)
-					return
+
+
+					TASK_NOTIFICATION_DELETE -> {
+						val db_id = Utils.optLongX(taskData, EXTRA_DB_ID, - 1L)
+						log.d("Notification deleted! db_id=%s", db_id)
+						NotificationTracking.updateRead(db_id)
+						return
+					}
+
+					TASK_NOTIFICATION_CLICK -> {
+						val db_id = Utils.optLongX(taskData, EXTRA_DB_ID, - 1L)
+						log.d("Notification clicked! db_id=%s", db_id)
+						
+						// 通知をキャンセル
+						notification_manager.cancel(db_id.toString(), NOTIFICATION_ID)
+						// DB更新処理
+						NotificationTracking.updateRead(db_id)
+						return
+					}
+				
 				}
 				
 				loadCustomStreamListenerSetting()
@@ -855,11 +811,11 @@ class PollingWorker private constructor(c : Context) {
 				// インストールID生成時にSavedAccountテーブルを操作することがあるので
 				// アカウントリストの取得より先に行う
 				if(job.install_id == null) {
-					job.install_id = installId
+					job.install_id = prepareInstallId()
 				}
 				
+				// アカウント別に処理スレッドを作る
 				job_status.set("create account thread")
-				
 				val thread_list = LinkedList<AccountThread>()
 				for(_a in SavedAccount.loadAccountList(context)) {
 					if(_a.isPseudo) continue
@@ -868,9 +824,8 @@ class PollingWorker private constructor(c : Context) {
 					thread_list.add(t)
 					t.start()
 				}
-				
 				while(true) {
-					val set = TreeSet<String>()
+					val liveSet = TreeSet<String>()
 					val it = thread_list.iterator()
 					while(it.hasNext()) {
 						val t = it.next()
@@ -878,7 +833,7 @@ class PollingWorker private constructor(c : Context) {
 							it.remove()
 							continue
 						}
-						set.add(t.account.host)
+						liveSet.add(t.account.host)
 						if(job.isJobCancelled) {
 							t.cancel()
 						}
@@ -887,7 +842,7 @@ class PollingWorker private constructor(c : Context) {
 					if(remain <= 0) break
 					//
 					val sb = StringBuilder()
-					for(s in set) {
+					for(s in liveSet) {
 						if(sb.isNotEmpty()) sb.append(", ")
 						sb.append(s)
 					}
@@ -909,6 +864,60 @@ class PollingWorker private constructor(c : Context) {
 				log.e(")runTask: taskId=%s", taskId)
 				job_status.set("end task " + taskId)
 			}
+		}
+		
+		// インストールIDを生成する前に、各データの通知登録キャッシュをクリアする
+		// トークンがまだ生成されていない場合、このメソッドは null を返します。
+		private fun prepareInstallId():String? {
+			val prefDevice = PrefDevice.prefDevice(context)
+			
+			var sv = prefDevice.getString(PrefDevice.KEY_INSTALL_ID, null)
+			if(sv?.isNotEmpty() == true ) return sv
+			SavedAccount.clearRegistrationCache()
+			
+			try {
+				var device_token = prefDevice.getString(PrefDevice.KEY_DEVICE_TOKEN, null)
+				if(device_token == null || device_token.isEmpty()) {
+					try {
+						device_token = FirebaseInstanceId.getInstance().token
+						if(device_token == null || device_token.isEmpty()) {
+							log.e("getInstallId: missing device token.")
+							return null
+						} else {
+							prefDevice.edit().putString(PrefDevice.KEY_DEVICE_TOKEN, device_token).apply()
+						}
+					} catch(ex : Throwable) {
+						log.e("getInstallId: could not get device token.")
+						log.trace(ex)
+						return null
+					}
+					
+				}
+				
+				val request = Request.Builder()
+					.url(APP_SERVER + "/counter")
+					.build()
+				
+				val call = App1.ok_http_client.newCall(request)
+				job.current_call = call
+				
+				val response = call.execute()
+				val body = response.body()?.string()
+				
+				if(! response.isSuccessful || body?.isEmpty() != false) {
+					log.e(TootApiClient.formatResponse(response, "getInstallId: get /counter failed."))
+					return null
+				}
+				
+				sv = Utils.digestSHA256(device_token + UUID.randomUUID() + body)
+				prefDevice.edit().putString(PrefDevice.KEY_INSTALL_ID, sv).apply()
+				
+				return sv
+				
+			} catch(ex : Throwable) {
+				log.trace(ex)
+			}
+			return null
 		}
 		
 		private fun createErrorNotification(error_instance : ArrayList<String>) {
@@ -965,7 +974,7 @@ class PollingWorker private constructor(c : Context) {
 			mCustomStreamListenerSecret = null
 			val jsonString = pref.getString(Pref.KEY_STREAM_LISTENER_CONFIG_DATA, null)
 			mCustomStreamListenerSettingString = jsonString
-			if( jsonString != null && jsonString.isNotEmpty() ) {
+			if(jsonString != null && jsonString.isNotEmpty()) {
 				try {
 					mCustomStreamListenerSetting = JsonValue.readHjson(jsonString).asObject()
 					mCustomStreamListenerSecret = pref.getString(Pref.KEY_STREAM_LISTENER_SECRET, null)
@@ -980,14 +989,18 @@ class PollingWorker private constructor(c : Context) {
 			
 			private var current_call : Call? = null
 			
-			val client = TootApiClient(context, callback=object : TootApiCallback {
+			private val client = TootApiClient(context, callback = object : TootApiCallback {
 				override val isApiCancelled : Boolean
 					get() = job.isJobCancelled
 			})
 			
-			private lateinit var nr : NotificationTracking
 			private val duplicate_check = HashSet<Long>()
-			private val dst_array = ArrayList<JSONObject>()
+			private val dstListJson = ArrayList<JSONObject>()
+			private val dstListData = ArrayList<Data>()
+			private val muted_app : HashSet<String> get() = job.muted_app
+			private val muted_word : WordTrieTree get() = job.muted_word
+			private lateinit var nr : NotificationTracking
+			private lateinit var parser : TootParser
 			
 			private var nid_last_show = - 1L
 			
@@ -1001,7 +1014,7 @@ class PollingWorker private constructor(c : Context) {
 			
 			fun cancel() {
 				try {
-					current_call ?.cancel()
+					current_call?.cancel()
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
@@ -1010,30 +1023,34 @@ class PollingWorker private constructor(c : Context) {
 			
 			override fun run() {
 				try {
+					// 疑似アカウントはチェック対象外
 					if(account.isPseudo) return
 					
+					// アカウントの通知設定が全てオフ
 					if(! account.notification_mention
 						&& ! account.notification_boost
 						&& ! account.notification_favourite
-						&& ! account.notification_follow) {
+						&& ! account.notification_follow
+						) {
 						unregisterDeviceToken()
 						return
 					}
 					
-					if(registerDeviceToken()) {
-						return
-					}
+					if(job.isJobCancelled) return
+					
+					registerDeviceToken()
+					
+					if(job.isJobCancelled) return
 					
 					job.bPollingRequired.set(true)
 					
 					if(job.isJobCancelled) return
 					
-					val data_list = ArrayList<Data>()
-					checkAccount(data_list, job.muted_app, job.muted_word)
+					checkAccount()
 					
 					if(job.isJobCancelled) return
 					
-					showNotification(data_list)
+					showNotification(dstListData)
 					
 				} catch(ex : Throwable) {
 					log.trace(ex)
@@ -1051,13 +1068,13 @@ class PollingWorker private constructor(c : Context) {
 					
 					// ネットワーク的な事情でインストールIDを取得できなかったのなら、何もしない
 					val install_id = job.install_id
-					if( install_id == null || install_id.isEmpty() ) {
+					if(install_id?.isEmpty() != false) {
 						log.d("unregisterDeviceToken: missing install_id")
 						return
 					}
 					
 					val tag = account.notification_tag
-					if( tag == null || tag.isEmpty() ) {
+					if(tag?.isEmpty() != false) {
 						log.d("unregisterDeviceToken: missing notification_tag")
 						return
 					}
@@ -1091,27 +1108,27 @@ class PollingWorker private constructor(c : Context) {
 			}
 			
 			// 定期的な通知更新が不要なら真を返す
-			private fun registerDeviceToken() : Boolean {
+			private fun registerDeviceToken() {
 				try {
 					// ネットワーク的な事情でインストールIDを取得できなかったのなら、何もしない
 					val install_id = job.install_id
-					if(install_id == null || install_id.isEmpty() ) {
+					if(install_id?.isEmpty() != false) {
 						log.d("registerDeviceToken: missing install id")
-						return false
+						return
 					}
 					
 					val prefDevice = PrefDevice.prefDevice(context)
 					
 					val device_token = prefDevice.getString(PrefDevice.KEY_DEVICE_TOKEN, null)
-					if(device_token == null || device_token.isEmpty() ) {
+					if(device_token?.isEmpty() != false) {
 						log.d("registerDeviceToken: missing device_token")
-						return false
+						return
 					}
 					
 					val access_token = account.getAccessToken()
-					if( access_token == null || access_token.isEmpty()) {
+					if(access_token?.isEmpty() != false) {
 						log.d("registerDeviceToken: missing access_token")
-						return false
+						return
 					}
 					
 					var tag : String? = account.notification_tag
@@ -1120,7 +1137,7 @@ class PollingWorker private constructor(c : Context) {
 						tag = null
 					}
 					
-					if( tag == null || tag.isEmpty() ) {
+					if(tag?.isEmpty() != false) {
 						account.notification_tag = Utils.digestSHA256(job.install_id + account.db_id + account.acct)
 						tag = account.notification_tag
 						account.saveNotificationTag()
@@ -1133,30 +1150,25 @@ class PollingWorker private constructor(c : Context) {
 							+ (if(mCustomStreamListenerSecret == null) "" else mCustomStreamListenerSecret)
 							+ if(mCustomStreamListenerSettingString == null) "" else mCustomStreamListenerSettingString
 					)
+					
 					val now = System.currentTimeMillis()
 					if(reg_key == account.register_key && now - account.register_time < 3600000 * 3) {
 						// タグやトークンが同一なら、前回登録に成功してから一定時間は再登録しない
 						log.d("registerDeviceToken: already registered.")
-						return false
+						return
 					}
 					
-					// サーバ情報APIを使う
 					val post_data = StringBuilder()
-					
-					post_data.append("instance_url=").append(Uri.encode("https://" + account.host))
-					
-					post_data.append("&app_id=").append(Uri.encode(context.packageName))
-					
-					post_data.append("&tag=").append(tag)
-					
-					post_data.append("&access_token=").append(access_token)
-					
-					post_data.append("&device_token=").append(device_token)
+						.append("instance_url=").append(Uri.encode("https://" + account.host))
+						.append("&app_id=").append(Uri.encode(context.packageName))
+						.append("&tag=").append(tag)
+						.append("&access_token=").append(access_token)
+						.append("&device_token=").append(device_token)
 					
 					val jsonString = mCustomStreamListenerSettingString
 					val appSecret = mCustomStreamListenerSecret
 					
-					if( jsonString !=null && appSecret != null ) {
+					if(jsonString != null && appSecret != null) {
 						post_data.append("&user_config=").append(Uri.encode(jsonString))
 						post_data.append("&app_secret=").append(Uri.encode(appSecret))
 					}
@@ -1177,7 +1189,7 @@ class PollingWorker private constructor(c : Context) {
 					} catch(ignored : Throwable) {
 					}
 					
-					log.e("registerDeviceToken: %s (%s)", response, body ?: "" )
+					log.e("registerDeviceToken: %s (%s)", response, body ?: "")
 					
 					val code = response.code()
 					
@@ -1191,16 +1203,11 @@ class PollingWorker private constructor(c : Context) {
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
-				
-				return false
 			}
 			
-			private fun checkAccount(
-				data_list : ArrayList<Data>, muted_app : HashSet<String>, muted_word : WordTrieTree
-			) {
-				nr = NotificationTracking.load(account.db_id)
-				
-				val parser = TootParser(context, account)
+			private fun checkAccount() {
+				this.nr = NotificationTracking.load(account.db_id)
+				this.parser = TootParser(context, account)
 				
 				// まずキャッシュされたデータを処理する
 				if(nr.last_data != null) {
@@ -1209,7 +1216,7 @@ class PollingWorker private constructor(c : Context) {
 						for(i in array.length() - 1 downTo 0) {
 							if(job.isJobCancelled) return
 							val src = array.optJSONObject(i)
-							update_sub(src, data_list, muted_app, muted_word, parser)
+							update_sub(src)
 						}
 					} catch(ex : JSONException) {
 						log.trace(ex)
@@ -1244,7 +1251,7 @@ class PollingWorker private constructor(c : Context) {
 							try {
 								for(i in array.length() - 1 downTo 0) {
 									val src = array.optJSONObject(i)
-									update_sub(src, data_list, muted_app, muted_word, parser)
+									update_sub(src)
 								}
 							} catch(ex : JSONException) {
 								log.trace(ex)
@@ -1255,7 +1262,7 @@ class PollingWorker private constructor(c : Context) {
 							log.d("error. %s", result.error)
 							
 							val sv = result.error
-							if(sv != null && sv.contains("Timeout") && ! account.dont_show_timeout) {
+							if(sv?.contains("Timeout") == true && ! account.dont_show_timeout) {
 								synchronized(error_instance) {
 									var bFound = false
 									for(x in error_instance) {
@@ -1275,33 +1282,26 @@ class PollingWorker private constructor(c : Context) {
 				
 				if(job.isJobCancelled) return
 				
-				Collections.sort(dst_array, Comparator { a, b ->
+				dstListJson.sortWith(Comparator { a, b ->
 					val la = Utils.optLongX(a, KEY_TIME, 0)
 					val lb = Utils.optLongX(b, KEY_TIME, 0)
 					// 新しい順
-					if(la < lb) return@Comparator + 1
-					if(la > lb) - 1 else 0
+					return@Comparator if(la < lb) 1 else if(la > lb) - 1 else 0
 				})
 				
 				if(job.isJobCancelled) return
 				
 				val d = JSONArray()
 				for(i in 0 .. 9) {
-					if(i >= dst_array.size) break
-					d.put(dst_array[i])
+					if(i >= dstListJson.size) break
+					d.put(dstListJson[i])
 				}
 				nr.last_data = d.toString()
 				nr.save()
 			}
 			
 			@Throws(JSONException::class)
-			private fun update_sub(
-				src : JSONObject,
-				data_list : ArrayList<Data>,
-				muted_app : HashSet<String>,
-				muted_word : WordTrieTree,
-				parser : TootParser
-			) {
+			private fun update_sub(src : JSONObject) {
 				
 				if(nr.nid_read == 0L || nr.nid_show == 0L) {
 					log.d("update_sub account_db_id=%s, nid_read=%s, nid_show=%s", account.db_id, nr.nid_read, nr.nid_show)
@@ -1351,10 +1351,10 @@ class PollingWorker private constructor(c : Context) {
 				
 				//
 				val data = Data(account, notification)
-				data_list.add(data)
+				dstListData.add(data)
 				//
 				src.put(KEY_TIME, data.notification.time_created_at)
-				dst_array.add(src)
+				dstListJson.add(src)
 			}
 			
 			private fun getNotificationLine(type : String, display_name : CharSequence) : String {

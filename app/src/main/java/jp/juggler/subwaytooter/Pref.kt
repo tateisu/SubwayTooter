@@ -9,10 +9,10 @@ object Pref {
 		return PreferenceManager.getDefaultSharedPreferences(context)
 	}
 	
-	@Suppress("unused") const val KEY_BACK_TO_COLUMN_LIST = "BackToColumnList" // 使わなくなった
+	const val KEY_BACK_TO_COLUMN_LIST = "BackToColumnList" // 使わなくなった
 	
 	const val RAT_REFRESH_SCROLL = 0
-	@Suppress("unused") const val RAT_REFRESH__DONT_SCROLL = 1
+	const val RAT_REFRESH_DONT_SCROLL = 1
 	const val RAT_DONT_REFRESH = 2
 	
 	const val KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN = "DontConfirmBeforeCloseColumn"

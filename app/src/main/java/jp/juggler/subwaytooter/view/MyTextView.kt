@@ -29,7 +29,7 @@ class MyTextView : AppCompatTextView {
 	}
 	
 	@Suppress("unused")
-	fun setSizeChangedCallback(cb : SizeChangedCallback) {
+	fun setSizeChangedCallback(cb : SizeChangedCallback?) {
 		size_callback = cb
 	}
 	

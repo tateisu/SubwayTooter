@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.view
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
@@ -9,8 +10,8 @@ import android.view.View
 class EnqueteTimerView : View {
 	
 	companion object {
-		internal val bg_color = 0x40808080
-		internal val fg_color = - 0x1
+		private const val bg_color = 0x40808080
+		private const val fg_color = Color.WHITE
 	}
 	
 	private var time_start : Long = 0

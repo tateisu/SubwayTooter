@@ -179,7 +179,7 @@ class App1 : Application() {
 			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, // m.sighash.info 用 デフォルトにはない
 			CipherSuite.TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, // m.sighash.info 用 デフォルトにはない
 			CipherSuite.TLS_DHE_RSA_WITH_AES_256_CBC_SHA256, // m.sighash.info 用 デフォルトにはない
-			CipherSuite.TLS_DHE_RSA_WITH_AES_256_CBC_SHA)// m.sighash.info 用 デフォルトにはない
+			CipherSuite.TLS_DHE_RSA_WITH_AES_256_CBC_SHA) // m.sighash.info 用 デフォルトにはない
 		
 		//	private int getBitmapPoolSize( Context context ){
 		//		ActivityManager am = ((ActivityManager)context.getSystemService(Activity.ACTIVITY_SERVICE));
@@ -236,12 +236,9 @@ class App1 : Application() {
 		@SuppressLint("StaticFieldLeak")
 		lateinit var custom_emoji_lister : CustomEmojiLister
 		
-		private var bPrepared = false
-		
-		fun prepare(app_context : Context) :AppState {
-			if(bPrepared) return appStateX
-
-			bPrepared = true
+		fun prepare(app_context : Context) : AppState {
+			var state = appStateX
+			if(state != null ) return state
 			
 			CalligraphyConfig.initDefault(CalligraphyConfig.Builder()
 				.setFontAttrId(R.attr.fontPath)
@@ -250,7 +247,7 @@ class App1 : Application() {
 			
 			pref = Pref.pref(app_context)
 			
-			run{
+			run {
 				
 				// We want at least 2 threads and at most 4 threads in the core pool,
 				// preferring to have 1 less than the CPU count to avoid saturating
@@ -283,7 +280,7 @@ class App1 : Application() {
 				task_executor.allowCoreThreadTimeOut(true)
 			}
 			
-
+			
 			log.d("prepareDB")
 			db_open_helper = DBOpenHelper(app_context)
 			
@@ -307,13 +304,13 @@ class App1 : Application() {
 			//				, new BitmapCache( getApplicationContext() )
 			//			);
 			//		}
-
-			run{
+			
+			run {
 				val builder = prepareOkHttp()
 				ok_http_client = builder.build()
 			}
 			
-			run{
+			run {
 				val builder = prepareOkHttp()
 				
 				val cacheDir = File(app_context.cacheDir, "http2")
@@ -323,33 +320,52 @@ class App1 : Application() {
 				ok_http_client2 = builder.build()
 			}
 			
-
+			
 			
 			custom_emoji_cache = CustomEmojiCache(app_context)
-
+			
 			custom_emoji_lister = CustomEmojiLister(app_context)
 			
-			appStateX = AppState(app_context, pref)
-			return appStateX
+			state = AppState(app_context, pref)
+			appStateX = state
+			return state
+		}
+		
+		@SuppressLint("StaticFieldLeak")
+		private var appStateX : AppState? = null
+		
+		fun getAppState(context : Context) : AppState {
+			return prepare(context.applicationContext)
+		}
+		
+		fun sound(item : HighlightWord) {
+			try {
+				appStateX?.sound(item)
+			} catch(ex : Throwable) {
+				log.trace(ex)
+				// java.lang.NoSuchFieldError:
+				// at jp.juggler.subwaytooter.App1$Companion.sound (App1.kt:544)
+				// at jp.juggler.subwaytooter.Column$startRefresh$task$1.onPostExecute (Column.kt:2432)
+			}
 		}
 		
 		@Suppress("UNUSED_PARAMETER")
-		fun registerGlideComponents(context : Context, glide: Glide, registry : Registry){
-
+		fun registerGlideComponents(context : Context, glide : Glide, registry : Registry) {
+			
 			glide_okhttp3_factory = OkHttpUrlLoader.Factory(ok_http_client)
-			registry.append( GlideUrl::class.java, InputStream::class.java, glide_okhttp3_factory)
-
+			registry.append(GlideUrl::class.java, InputStream::class.java, glide_okhttp3_factory)
+			
 			// registry.append(Photo.class, InputStream.class, new FlickrModelLoader.Factory());
 			// 3.xの書き方 Glide.get(app_context).register(GlideUrl::class.java, InputStream::class.java, glide_okhttp3_factory)
 		}
 		
-		fun applyGlideOptions( context: Context , builder : GlideBuilder){
+		fun applyGlideOptions(context : Context, builder : GlideBuilder) {
 			
 			// ログレベル
 			builder.setLogLevel(Log.ERROR)
 			
 			// エラー処理
-			val catcher = GlideExecutor.UncaughtThrowableStrategy {ex ->
+			val catcher = GlideExecutor.UncaughtThrowableStrategy { ex ->
 				log.trace(ex)
 			}
 			builder.setDiskCacheExecutor(newDiskCacheExecutor(catcher))
@@ -365,15 +381,15 @@ class App1 : Application() {
 			//				}
 			//			}).start();
 			
-//
-//			////////////
-//			// サンプル1：キャッシュサイズを自動で計算する
-//			val calculator = MemorySizeCalculator.Builder(context)
-//				.setMemoryCacheScreens(2f)
-//				.setBitmapPoolScreens(3f)
-//				.build()
-//
-//			builder.setMemoryCache(LruResourceCache(calculator.memoryCacheSize.toLong()))
+			//
+			//			////////////
+			//			// サンプル1：キャッシュサイズを自動で計算する
+			//			val calculator = MemorySizeCalculator.Builder(context)
+			//				.setMemoryCacheScreens(2f)
+			//				.setBitmapPoolScreens(3f)
+			//				.build()
+			//
+			//			builder.setMemoryCache(LruResourceCache(calculator.memoryCacheSize.toLong()))
 			
 			//////
 			// サンプル2：キャッシュサイズをアプリが決める
@@ -384,30 +400,23 @@ class App1 : Application() {
 			// サンプル3 ： 自前のメモリキャッシュ
 			// builder.setMemoryCache(new YourAppMemoryCacheImpl());
 			
-//			builder.setBitmapPool(LruBitmapPool(calculator.bitmapPoolSize.toLong()))
+			//			builder.setBitmapPool(LruBitmapPool(calculator.bitmapPoolSize.toLong()))
 			
 			// ディスクキャッシュを保存する場所を変えたい場合
 			// builder.setDiskCache(new ExternalDiskCacheFactory(context));
 			
 			// ディスクキャッシュのサイズを変えたい場合
-//			val diskCacheSizeBytes = 1024 * 1024 * 100 // 100 MB
-//			builder.setDiskCache(InternalDiskCacheFactory(context, diskCacheSizeBytes))
+			//			val diskCacheSizeBytes = 1024 * 1024 * 100 // 100 MB
+			//			builder.setDiskCache(InternalDiskCacheFactory(context, diskCacheSizeBytes))
 			
 			// Although RequestOptions are typically specified per request,
 			// you can also apply a default set of RequestOptions that will be applied to every load
 			// you start in your application by using an AppGlideModule:
-//			val ro = RequestOptions()
-//				.format(DecodeFormat.PREFER_ARGB_8888)
-//				.disallowHardwareConfig()
-//			builder.setDefaultRequestOptions(ro)
+			//			val ro = RequestOptions()
+			//				.format(DecodeFormat.PREFER_ARGB_8888)
+			//				.disallowHardwareConfig()
+			//			builder.setDefaultRequestOptions(ro)
 			
-		}
-		
-		@SuppressLint("StaticFieldLeak")
-		private lateinit var appStateX : AppState
-		
-		fun getAppState(context : Context) : AppState {
-			return prepare(context.applicationContext)
 		}
 		
 		@JvmOverloads
@@ -473,7 +482,7 @@ class App1 : Application() {
 				request_builder.url(url)
 				request_builder.cacheControl(CACHE_5MIN)
 				
-				val call = App1.ok_http_client2 .newCall(request_builder.build())
+				val call = App1.ok_http_client2.newCall(request_builder.build())
 				response = call.execute()
 			} catch(ex : Throwable) {
 				log.e(ex, "getHttp network error.")
@@ -499,14 +508,14 @@ class App1 : Application() {
 		var allow_non_space_before_emoji_shortcode : Boolean = false
 		
 		private fun reloadConfig() {
-			disable_emoji_animation = pref .getBoolean(Pref.KEY_DISABLE_EMOJI_ANIMATION, false)
-			allow_non_space_before_emoji_shortcode = pref .getBoolean(Pref.KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE, false)
+			disable_emoji_animation = pref.getBoolean(Pref.KEY_DISABLE_EMOJI_ANIMATION, false)
+			allow_non_space_before_emoji_shortcode = pref.getBoolean(Pref.KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE, false)
 		}
 		
 		// Chrome Custom Tab を開く
 		fun openCustomTab(activity : Activity, url : String) {
 			try {
-				if(pref .getBoolean(Pref.KEY_PRIOR_CHROME, true)) {
+				if(pref.getBoolean(Pref.KEY_PRIOR_CHROME, true)) {
 					try {
 						// 初回はChrome指定で試す
 						val builder = CustomTabsIntent.Builder()
@@ -540,11 +549,6 @@ class App1 : Application() {
 			}
 		}
 		
-		fun sound(item : HighlightWord) {
-			if( ::appStateX.isInitialized ) {
-				appStateX.sound(item)
-			}
-		}
 	}
 	
 }

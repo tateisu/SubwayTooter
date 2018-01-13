@@ -9,6 +9,7 @@ import android.widget.TextView
 
 object MyLinkMovementMethod : LinkMovementMethod() {
 	
+	// 改行より右をタッチしても反応しないようにする
 	override fun onTouchEvent(widget : TextView, buffer : Spannable, event : MotionEvent) : Boolean {
 		
 		val action = event.action

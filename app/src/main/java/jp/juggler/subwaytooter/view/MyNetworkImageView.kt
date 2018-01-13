@@ -37,6 +37,8 @@ class MyNetworkImageView @JvmOverloads constructor(
 	defStyle : Int = 0
 ) : AppCompatImageView(context, attrs, defStyle) {
 	
+	
+	
 	companion object {
 		
 		internal val log = LogCategory("MyNetworkImageView")

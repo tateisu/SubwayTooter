@@ -55,7 +55,7 @@ internal class StreamReader(
 		internal val parser : TootParser
 		
 		init {
-			this.parser = TootParser(context, access_info).setHighlightTrie(highlight_trie)
+			this.parser = TootParser(context, access_info,highlightTrie = highlight_trie)
 		}
 		
 		internal fun dispose() {
@@ -69,7 +69,7 @@ internal class StreamReader(
 		}
 		
 		@Synchronized internal fun setHighlightTrie(highlight_trie : WordTrieTree) {
-			this.parser.setHighlightTrie(highlight_trie)
+			this.parser.highlightTrie = highlight_trie
 		}
 		
 		@Synchronized internal fun addCallback(stream_callback : (event_type : String, item : Any?)->Unit ) {
@@ -187,7 +187,7 @@ internal class StreamReader(
 			bListening.set(true)
 			TootTaskRunner(context).run(access_info, object : TootTask {
 				override fun background(client : TootApiClient) : TootApiResult? {
-					val result = client.webSocket(end_point, Request.Builder(), this@Reader)
+					val result = client.webSocket(end_point,  this@Reader)
 					if(result == null) {
 						log.d("startRead: cancelled.")
 						bListening.set(false)

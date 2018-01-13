@@ -37,10 +37,10 @@ object Action_Account {
 				
 				override fun background(client : TootApiClient) : TootApiResult? {
 					return if(bPseudoAccount || bInputAccessToken) {
-						client.checkInstance()
+						client.getInstanceInformation()
 					} else {
 						val client_name = Pref.pref(activity).getString(Pref.KEY_CLIENT_NAME, "")
-						client.authorize1(client_name)
+						client.authentication1(client_name)
 					}
 				}
 				
@@ -126,14 +126,23 @@ object Action_Account {
 	// アカウント設定
 	fun setting(activity : ActMain) {
 		AccountPicker.pick(
-			activity, true, true, activity.getString(R.string.account_picker_open_setting)) { ai -> ActAccountSetting.open(activity, ai, ActMain.REQUEST_CODE_ACCOUNT_SETTING) }
+			activity,
+			bAllowPseudo = true,
+			bAuto =  true,
+			message =  activity.getString(R.string.account_picker_open_setting)
+		) { ai -> ActAccountSetting.open(activity, ai, ActMain.REQUEST_CODE_ACCOUNT_SETTING) }
 	}
 	
 	// アカウントを選んでタイムラインカラムを追加
 	fun timeline(
 		activity : ActMain, pos : Int, bAllowPseudo : Boolean, type : Int, vararg args : Any
 	) {
-		AccountPicker.pick(activity, bAllowPseudo, true, activity.getString(R.string.account_picker_add_timeline_of, Column.getColumnTypeName(activity, type))) { ai ->
+		AccountPicker.pick(
+			activity,
+			bAllowPseudo=bAllowPseudo,
+			bAuto = true,
+			message = activity.getString(R.string.account_picker_add_timeline_of, Column.getColumnTypeName(activity, type))
+		) { ai ->
 			when(type) {
 				Column.TYPE_PROFILE -> {
 					val id = ai.loginAccount?.id
@@ -157,7 +166,10 @@ object Action_Account {
 			ActPost.open(activity, ActMain.REQUEST_CODE_POST, db_id, initial_text)
 		} else {
 			AccountPicker.pick(
-				activity, false, true, activity.getString(R.string.account_picker_toot)
+				activity,
+				bAllowPseudo = false,
+				bAuto = true,
+				message = activity.getString(R.string.account_picker_toot)
 			) { ai -> ActPost.open(activity, ActMain.REQUEST_CODE_POST, ai.db_id, initial_text) }
 		}
 	}

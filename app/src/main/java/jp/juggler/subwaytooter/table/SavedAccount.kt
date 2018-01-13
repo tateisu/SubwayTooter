@@ -24,15 +24,14 @@ import jp.juggler.subwaytooter.util.Utils
 class SavedAccount(
 	val db_id : Long,
 	val acct : String,
-	hostArg : String? = null
+	hostArg : String? = null,
+	var token_info : JSONObject? = null,
+	var loginAccount : TootAccount? = null // 疑似アカウントではnull
 ) : LinkClickContext {
 	
 	val username : String
 
 	override val host : String
-	
-	var token_info : JSONObject? = null
-	var loginAccount : TootAccount? = null // 疑似アカウントなどではnullになることもある
 	
 	var visibility : String? = null
 	var confirm_boost : Boolean = false

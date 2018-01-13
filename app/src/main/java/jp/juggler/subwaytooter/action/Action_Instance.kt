@@ -45,7 +45,13 @@ object Action_Instance {
 		} else {
 			// 持ってるならアカウントを選んで開く
 			SavedAccount.sort(account_list)
-			AccountPicker.pick(activity, true, false, activity.getString(R.string.account_picker_add_timeline_of, host), account_list) { ai -> activity.addColumn(activity.defaultInsertPosition, ai, Column.TYPE_LOCAL) }
+			AccountPicker.pick(
+				activity,
+				bAllowPseudo = true,
+				bAuto =  false,
+				message = activity.getString(R.string.account_picker_add_timeline_of, host),
+				accountListArg = account_list
+			) { ai -> activity.addColumn(activity.defaultInsertPosition, ai, Column.TYPE_LOCAL) }
 		}
 	}
 	

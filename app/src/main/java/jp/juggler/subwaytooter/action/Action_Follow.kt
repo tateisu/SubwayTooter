@@ -365,10 +365,9 @@ object Action_Follow {
 		val who_acct = access_info.getFullAcct(account)
 		AccountPicker.pick(
 			activity,
-			false,
-			false,
-			activity.getString(R.string.account_picker_follow),
-			makeAccountListNonPseudo(activity, account.host)
+			bAuto = false,
+			message = activity.getString(R.string.account_picker_follow),
+			accountListArg = makeAccountListNonPseudo(activity, account.host)
 		) { ai ->
 			followRemote(
 				activity,

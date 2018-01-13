@@ -1218,7 +1218,7 @@ class Column(
 		
 		val task = @SuppressLint("StaticFieldLeak")
 		object : AsyncTask<Void, Void, TootApiResult?>() {
-			internal var parser = TootParser(context, access_info).setHighlightTrie(highlight_trie)
+			internal var parser = TootParser(context, access_info,highlightTrie = highlight_trie)
 			
 			internal var instance_tmp : TootInstance? = null
 			
@@ -1246,10 +1246,12 @@ class Column(
 				val jsonArray = result?.jsonArray
 				if(jsonArray != null) {
 					//
-					val src = TootParser(context, access_info)
-						.setPinned(true)
-						.setHighlightTrie(highlight_trie)
-						.statusList(jsonArray)
+					val src = TootParser(
+						context,
+						access_info,
+						pinned = true,
+						highlightTrie = highlight_trie
+					).statusList(jsonArray)
 					
 					this.list_pinned = addWithFilterStatus(null, src)
 					
@@ -1529,7 +1531,7 @@ class Column(
 							result = client.request(
 								String.format(Locale.JAPAN, PATH_STATUSES_CONTEXT, status_id))
 							jsonObject = result?.jsonObject ?: return result
-							val conversation_context = parser.context(jsonObject)
+							val conversation_context =  parseItem(::TootContext,parser, jsonObject)
 							
 							// 一つのリストにまとめる
 							target_status.conversation_main = true
@@ -1791,7 +1793,7 @@ class Column(
 		
 		val task = @SuppressLint("StaticFieldLeak")
 		object : AsyncTask<Void, Void, TootApiResult?>() {
-			internal var parser = TootParser(context, access_info).setHighlightTrie(highlight_trie)
+			internal var parser = TootParser(context, access_info,highlightTrie = highlight_trie)
 			
 			internal var list_tmp : ArrayList<Any>? = null
 			
@@ -2504,7 +2506,7 @@ class Column(
 			internal val since_id = gap.since_id
 			internal var list_tmp : ArrayList<Any>? = null
 			
-			internal var parser = TootParser(context, access_info).setHighlightTrie(highlight_trie)
+			internal var parser = TootParser(context, access_info,highlightTrie = highlight_trie)
 			
 			internal fun getAccountList(client : TootApiClient, path_base : String) : TootApiResult? {
 				val time_start = SystemClock.elapsedRealtime()

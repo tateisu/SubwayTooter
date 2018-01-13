@@ -16,7 +16,7 @@ open class TootApiResult(
 	var bodyString : String? = null
 ) {
 	
-	var token_info : JSONObject? = null
+	var tokenInfo : JSONObject? = null
 	
 	var data : Any? = null
 		set(value) {

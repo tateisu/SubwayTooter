@@ -43,7 +43,13 @@ object Action_Toot {
 		if(status == null) return
 		val who_host = timeline_account.host
 		
-		AccountPicker.pick(activity, false, false, activity.getString(R.string.account_picker_favourite), makeAccountListNonPseudo(activity, who_host)) { action_account ->
+		AccountPicker.pick(
+			activity,
+			bAllowPseudo = false,
+			bAuto = false,
+			message = activity.getString(R.string.account_picker_favourite),
+			accountListArg = makeAccountListNonPseudo(activity, who_host)
+		) { action_account ->
 			favourite(
 				activity,
 				action_account,
@@ -180,7 +186,13 @@ object Action_Toot {
 		if(status == null) return
 		val who_host = timeline_account.host
 		
-		AccountPicker.pick(activity, false, false, activity.getString(R.string.account_picker_boost), makeAccountListNonPseudo(activity, who_host)) { action_account ->
+		AccountPicker.pick(
+			activity,
+			bAllowPseudo = false,
+			bAuto = false,
+			message = activity.getString(R.string.account_picker_boost),
+			accountListArg = makeAccountListNonPseudo(activity, who_host)
+		) { action_account ->
 			boost(
 				activity, action_account, status, calcCrossAccountMode(timeline_account, action_account), true, false, activity.boost_complete_callback
 			)
@@ -188,7 +200,13 @@ object Action_Toot {
 	}
 	
 	fun boost(
-		activity : ActMain, access_info : SavedAccount, arg_status : TootStatus, nCrossAccountMode : Int, bSet : Boolean, bConfirmed : Boolean, callback : EmptyCallback?
+		activity : ActMain,
+		access_info : SavedAccount,
+		arg_status : TootStatus,
+		nCrossAccountMode : Int,
+		bSet : Boolean,
+		bConfirmed : Boolean,
+		callback : EmptyCallback?
 	) {
 		
 		// アカウントからステータスにブースト操作を行っているなら、何もしない
@@ -197,16 +215,16 @@ object Action_Toot {
 			return
 		}
 		
-		// クロスアカウント操作ではないならステータス内容を使ったチェックを行える
-		if(nCrossAccountMode == NOT_CROSS_ACCOUNT) {
-			if(arg_status.reblogged) {
-				if(App1.getAppState(activity).isBusyFav(access_info, arg_status) || arg_status.favourited) {
-					// FAVがついているか、FAV操作中はBoostを外せない
-					Utils.showToast(activity, false, R.string.cant_remove_boost_while_favourited)
-					return
-				}
-			}
-		}
+//		// クロスアカウント操作ではないならステータス内容を使ったチェックを行える
+//		if(nCrossAccountMode == NOT_CROSS_ACCOUNT) {
+//			if(arg_status.reblogged) {
+//				if(App1.getAppState(activity).isBusyFav(access_info, arg_status) || arg_status.favourited) {
+//					// FAVがついているか、FAV操作中はBoostを外せない
+//					Utils.showToast(activity, false, R.string.cant_remove_boost_while_favourited)
+//					return
+//				}
+//			}
+//		}
 		
 		// 必要なら確認を出す
 		if(bSet && ! bConfirmed) {
@@ -638,10 +656,10 @@ object Action_Toot {
 		val who_host = timeline_account.host
 		AccountPicker.pick(
 			activity,
-			false,
-			false,
-			activity.getString(R.string.account_picker_reply),
-			makeAccountListNonPseudo(activity, who_host)
+			bAllowPseudo = false,
+			bAuto = false,
+			message = activity.getString(R.string.account_picker_reply),
+			accountListArg = makeAccountListNonPseudo(activity, who_host)
 		) { ai ->
 			if(ai.host.equals(status.host_access, ignoreCase = true)) {
 				// アクセス元ホストが同じならステータスIDを使って返信できる

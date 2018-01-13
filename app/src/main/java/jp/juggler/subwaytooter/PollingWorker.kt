@@ -620,7 +620,7 @@ class PollingWorker private constructor(c : Context) {
 				
 				if(! isJobCancelled && ! bPollingComplete && jobId == JOB_POLLING) {
 					// タスクがなかった場合でも定期実行ジョブからの実行ならポーリングを行う
-					TaskRunner().runTask(this@JobItem, TASK_POLLING, null)
+					TaskRunner().runTask(this@JobItem, TASK_POLLING, JSONObject())
 				}
 				job_status.set("make next schedule.")
 				
@@ -766,7 +766,7 @@ class PollingWorker private constructor(c : Context) {
 				
 			}
 		
-		fun runTask(job : JobItem, taskId : Int, taskData : JSONObject?) {
+		fun runTask(job : JobItem, taskId : Int, taskData : JSONObject) {
 			try {
 				log.e("(runTask: taskId=%s", taskId)
 				job_status.set("start task " + taskId)
@@ -790,8 +790,9 @@ class PollingWorker private constructor(c : Context) {
 					mBusyAppDataImportBefore.set(false)
 					return
 				} else if(taskId == TASK_APP_DATA_IMPORT_AFTER) {
-					NotificationTracking.resetPostAll()
 					mBusyAppDataImportAfter.set(false)
+					mBusyAppDataImportBefore.set(false)
+					NotificationTracking.resetPostAll()
 					// fall
 				}
 				

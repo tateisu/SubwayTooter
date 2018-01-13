@@ -859,7 +859,12 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			return
 		}
 		
-		AccountPicker.pick(this, false, false, getString(R.string.choose_account)) { ai ->
+		AccountPicker.pick(
+			this,
+			bAllowPseudo = false,
+			bAuto = false,
+			message = getString(R.string.choose_account)
+		) { ai ->
 			
 			// 別タンスのアカウントに変更したならならin_reply_toの変換が必要
 			if(in_reply_to_id != - 1L && ! ai.host.equals(account?.host, ignoreCase = true)) {

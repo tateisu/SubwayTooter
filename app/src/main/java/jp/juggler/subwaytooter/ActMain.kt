@@ -548,13 +548,16 @@ class ActMain : AppCompatActivity()
 	
 	private fun handleSentIntent(intent : Intent) {
 		sent_intent2 = intent
-		AccountPicker.pick(this, false, true, getString(R.string.account_picker_toot)
-			, { ai ->
+		AccountPicker.pick(
+			this,
+			bAllowPseudo = false,
+			bAuto = true,
+			message = getString(R.string.account_picker_toot)
+			,dismiss_callback ={ sent_intent2 = null }
+		){ ai ->
 			sent_intent2 = null
 			ActPost.open(this@ActMain, REQUEST_CODE_POST, ai.db_id, intent)
 		}
-			, { sent_intent2 = null }
-		)
 	}
 	
 	fun closeListItemPopup() {
@@ -587,11 +590,21 @@ class ActMain : AppCompatActivity()
 					performQuickPost(c.access_info)
 				} else {
 					// アカウント選択してやり直し
-					AccountPicker.pick(this, false, true, getString(R.string.account_picker_toot)) { ai -> performQuickPost(ai) }
+					AccountPicker.pick(
+						this,
+						bAllowPseudo = false,
+						bAuto = true,
+						message = getString(R.string.account_picker_toot)
+					) { ai -> performQuickPost(ai) }
 				}
 			}, { _ ->
 				// アカウント選択してやり直し
-				AccountPicker.pick(this, false, true, getString(R.string.account_picker_toot)) { ai -> performQuickPost(ai) }
+				AccountPicker.pick(
+					this,
+					bAllowPseudo = false,
+					bAuto =true,
+					message =getString(R.string.account_picker_toot)
+				) { ai -> performQuickPost(ai) }
 			})
 			return
 		}
@@ -1412,7 +1425,7 @@ class ActMain : AppCompatActivity()
 				this.host = client.instance
 				val client_name = Pref.pref(this@ActMain).getString(Pref.KEY_CLIENT_NAME, "")
 				
-				val result = client.authorize2(client_name, code)
+				val result = client.authentication2(client_name, code)
 				val obj = result?.jsonObject
 				if(obj != null) {
 					// ダミーのLinkClickContext
@@ -1432,7 +1445,7 @@ class ActMain : AppCompatActivity()
 	internal fun afterAccountVerify(result : TootApiResult?, ta : TootAccount?, sa : SavedAccount?, host : String?) : Boolean {
 		
 		val jsonObject = result?.jsonObject
-		val token_info = result?.token_info
+		val token_info = result?.tokenInfo
 		val error = result?.error
 		
 		if(result == null) {
@@ -1539,7 +1552,7 @@ class ActMain : AppCompatActivity()
 			internal var ta : TootAccount? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val result = client.checkAccessToken(access_token)
+				val result = client.getUserCredential(access_token)
 				val obj = result?.jsonObject
 				if(obj != null) {
 					// taは使い捨てなので、生成に使うLinkClickContextはダミーで問題ない
@@ -2036,10 +2049,11 @@ class ActMain : AppCompatActivity()
 					}
 					
 					// 通知サービスを止める
-					setProgressMessage("reset Notification...")
+					setProgressMessage("syncing notification poller…")
 					PollingWorker.queueAppDataImportBefore(this@ActMain)
 					while(PollingWorker.mBusyAppDataImportBefore.get()) {
-						Thread.sleep(100L)
+						Thread.sleep(1000L)
+						log.d("syncing polling task...")
 					}
 					
 					// JSONを読みだす
@@ -2071,29 +2085,30 @@ class ActMain : AppCompatActivity()
 				} catch(ignored : Throwable) {
 				}
 				
-				if(isCancelled || result == null) {
-					// cancelled.
-					return
+				try {
+					if(isCancelled || result == null) {
+						// cancelled.
+						return
+					}
+					
+					run {
+						
+						phoneOnly { env -> env.pager.adapter = null }
+						
+						app_state.column_list.clear()
+						app_state.column_list.addAll(result)
+						app_state.saveColumnList()
+						
+						phoneTab(
+							{ env -> env.pager.adapter = env.pager_adapter },
+							{ env -> resizeColumnWidth(env) }
+						)
+						updateColumnStrip()
+					}
+				}finally{
+					// 通知サービスをリスタート
+					PollingWorker.queueAppDataImportAfter(this@ActMain)
 				}
-				
-				run {
-					
-					phoneOnly { env -> env.pager.adapter = null }
-					
-					app_state.column_list.clear()
-					app_state.column_list.addAll(result)
-					app_state.saveColumnList()
-					
-					phoneTab(
-						{ env -> env.pager.adapter = env.pager_adapter },
-						{ env -> resizeColumnWidth(env) }
-					)
-					updateColumnStrip()
-				}
-				
-				// 通知サービスをリスタート
-				PollingWorker.queueAppDataImportAfter(this@ActMain)
-				
 			}
 		}
 		

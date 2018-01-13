@@ -241,10 +241,10 @@ object Action_User {
 		
 		AccountPicker.pick(
 			activity,
-			false,
-			false,
-			activity.getString(R.string.account_picker_open_user_who, AcctColor.getNickname(who.acct)),
-			makeAccountListNonPseudo(activity, who_host)
+			bAllowPseudo = false,
+			bAuto = false,
+			message = activity.getString(R.string.account_picker_open_user_who, AcctColor.getNickname(who.acct)),
+			accountListArg = makeAccountListNonPseudo(activity, who_host)
 		) { ai ->
 			if(ai.host.equals(access_info.host, ignoreCase = true)) {
 				activity.addColumn(pos, ai, Column.TYPE_PROFILE, who.id)
@@ -295,10 +295,10 @@ object Action_User {
 			// アカウントを選択して開く
 			AccountPicker.pick(
 				activity,
-				false,
-				false,
-				activity.getString(R.string.account_picker_open_user_who, AcctColor.getNickname(user + "@" + host)),
-				makeAccountListNonPseudo(activity, host)
+				bAllowPseudo = false,
+				bAuto = false,
+				message = activity.getString(R.string.account_picker_open_user_who, AcctColor.getNickname(user + "@" + host)),
+				accountListArg = makeAccountListNonPseudo(activity, host)
 			) { ai ->
 				profileFromUrl(
 					activity,
@@ -442,10 +442,10 @@ object Action_User {
 		val initial_text = "@" + access_info.getFullAcct(who) + " "
 		AccountPicker.pick(
 			activity,
-			false,
-			false,
-			activity.getString(R.string.account_picker_toot),
-			makeAccountListNonPseudo(activity, who_host)
+			bAllowPseudo = false,
+			bAuto = false,
+			message = activity.getString(R.string.account_picker_toot),
+			accountListArg = makeAccountListNonPseudo(activity, who_host)
 		) { ai ->
 			mention(activity, ai, initial_text)
 		}

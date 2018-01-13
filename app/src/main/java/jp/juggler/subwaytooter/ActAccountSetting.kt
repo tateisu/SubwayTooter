@@ -528,7 +528,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 		
 		TootTaskRunner(this@ActAccountSetting).run(account, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				return client.authorize1(Pref.pref(this@ActAccountSetting).getString(Pref.KEY_CLIENT_NAME, ""))
+				return client.authentication1(Pref.pref(this@ActAccountSetting).getString(Pref.KEY_CLIENT_NAME, ""))
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

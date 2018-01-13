@@ -22,40 +22,26 @@ import jp.juggler.subwaytooter.util.SavedAccountCallback
 
 object AccountPicker {
 	
-	fun pick(
-		activity : AppCompatActivity, bAllowPseudo : Boolean, bAuto : Boolean, message : String?, callback : SavedAccountCallback
-	) {
-		
-		val account_list = SavedAccount.loadAccountList(activity)
-		SavedAccount.sort(account_list)
-		pick(activity, bAllowPseudo, bAuto, message, account_list, true, callback, null)
-	}
-	
-	fun pick(
-		activity : AppCompatActivity, bAllowPseudo : Boolean, bAuto : Boolean, message : String?,
-		callback : SavedAccountCallback,
-		dismiss_callback : DialogInterfaceCallback?
-	) {
-		val account_list = SavedAccount.loadAccountList(activity)
-		pick(activity, bAllowPseudo, bAuto, message, account_list, true, callback, dismiss_callback)
-	}
-	
-	fun pick(
-		activity : AppCompatActivity, bAllowPseudo : Boolean, bAuto : Boolean, message : String?, account_list : ArrayList<SavedAccount>, callback : SavedAccountCallback
-	) {
-		pick(activity, bAllowPseudo, bAuto, message, account_list, false, callback, null)
-	}
-	
 	@SuppressLint("InflateParams")
-	private fun pick(
-		activity : AppCompatActivity, bAllowPseudo : Boolean, bAuto : Boolean, message : String?, account_list : ArrayList<SavedAccount>, bSort : Boolean, callback : SavedAccountCallback, dismiss_callback : DialogInterfaceCallback?
+	fun pick(
+		activity : AppCompatActivity,
+		bAllowPseudo : Boolean = false,
+		bAuto : Boolean = false,
+		message : String? = null,
+		accountListArg : ArrayList<SavedAccount>? = null,
+		dismiss_callback : DialogInterfaceCallback? = null,
+		callback : SavedAccountCallback
 	) {
+		val account_list : ArrayList<SavedAccount> = accountListArg ?: {
+			val l = SavedAccount.loadAccountList(activity)
+			SavedAccount.sort(l)
+			l
+		}()
+		
 		if(account_list.isEmpty()) {
 			Utils.showToast(activity, false, R.string.account_empty)
 			return
-		}
-		
-		if(! bAllowPseudo) {
+		} else if(! bAllowPseudo) {
 			val tmp_list = ArrayList<SavedAccount>()
 			for(a in account_list) {
 				if(a.isPseudo) continue
@@ -69,27 +55,22 @@ object AccountPicker {
 			}
 		}
 		
-		if(bSort) {
-			SavedAccount.sort(account_list)
-		}
-		
 		if(bAuto && account_list.size == 1) {
 			callback(account_list[0])
 			return
 		}
-		
 		
 		val viewRoot = activity.layoutInflater.inflate(R.layout.dlg_account_picker, null, false)
 		
 		val dialog = Dialog(activity)
 		val isDialogClosed = AtomicBoolean(false)
 		
-		dialog.setOnDismissListener{
-			if( dismiss_callback != null ) dismiss_callback(it)
+		dialog.setOnDismissListener {
+			if(dismiss_callback != null) dismiss_callback(it)
 		}
 		
 		dialog.setContentView(viewRoot)
-		if( message != null && message.isNotEmpty() ) {
+		if(message != null && message.isNotEmpty()) {
 			val tv = viewRoot.findViewById<TextView>(R.id.tvMessage)
 			tv.visibility = View.VISIBLE
 			tv.text = message
@@ -102,9 +83,7 @@ object AccountPicker {
 		dialog.setCanceledOnTouchOutside(true)
 		dialog.setOnCancelListener { isDialogClosed.set(true) }
 		
-		
 		val density = activity.resources.displayMetrics.density
-		
 		
 		val llAccounts = viewRoot.findViewById<LinearLayout>(R.id.llAccounts)
 		val pad_se = (0.5f + 12f * density).toInt()
@@ -143,5 +122,4 @@ object AccountPicker {
 		
 		dialog.show()
 	}
-	
 }

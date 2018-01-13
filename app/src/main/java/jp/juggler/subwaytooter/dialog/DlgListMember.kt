@@ -124,7 +124,12 @@ class DlgListMember(
 			}
 			
 			R.id.btnListOwner -> {
-				AccountPicker.pick( activity, false, false, null, account_list) { ai ->
+				AccountPicker.pick(
+					activity,
+					bAllowPseudo = false,
+					bAuto = false,
+					accountListArg = account_list
+				) { ai ->
 					setListOwner(ai)
 				}
 				

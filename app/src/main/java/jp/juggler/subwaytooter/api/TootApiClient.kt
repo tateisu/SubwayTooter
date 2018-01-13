@@ -349,12 +349,9 @@ class TootApiClient(
 	}
 	
 	// 疑似アカウントの追加時に、インスタンスの検証を行う
-	fun checkInstance() : TootApiResult? {
-		
+	fun getInstanceInformation() : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(instance)
 		if(result.error != null) return result
-		val instance = result.caption // same to instance
-		
 		if(! sendRequest(result) {
 			Request.Builder().url("https://$instance/api/v1/instance").build()
 		}) return result
@@ -380,7 +377,7 @@ class TootApiClient(
 		
 		return parseJson(result)
 	}
-
+	
 	// クライアントアプリの登録を確認するためのトークンを生成する
 	// oAuth2 Client Credentials の取得
 	// https://github.com/doorkeeper-gem/doorkeeper/wiki/Client-Credentials-flow
@@ -445,10 +442,8 @@ class TootApiClient(
 			)
 	}
 	
-
-	
 	// クライアントを登録してブラウザで開くURLを生成する
-	fun authorize1(clientNameArg : String) : TootApiResult? {
+	fun authentication1(clientNameArg : String) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(this.instance)
 		if(result.error != null) return result
 		val instance = result.caption // same to instance
@@ -495,7 +490,7 @@ class TootApiClient(
 	}
 	
 	// oAuth2認証の続きを行う
-	fun authorize2(clientNameArg : String, code : String) : TootApiResult? {
+	fun authentication2(clientNameArg : String, code : String) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(instance)
 		if(result.error != null) return result
 		
@@ -524,49 +519,40 @@ class TootApiClient(
 		val token_info = r2?.jsonObject ?: return r2
 		
 		// {"access_token":"******","token_type":"bearer","scope":"read","created_at":1492334641}
-		token_info.put(KEY_AUTH_VERSION, AUTH_VERSION)
-		result.token_info = token_info
-		
 		val access_token = Utils.optStringX(token_info, "access_token")
-		if(access_token == null || access_token.isEmpty()) {
+		if(access_token?.isEmpty() != false) {
 			return result.setError("missing access_token in the response.")
 		}
+		return getUserCredential(access_token, token_info)
 		
-		// 認証されたアカウントのユーザ名を取得する
-		if(! sendRequest(result) {
-			Request.Builder()
-				.url("https://$instance/api/v1/accounts/verify_credentials")
-				.header("Authorization", "Bearer $access_token")
-				.build()
-		}) return result
-		
-		return parseJson(result)
 	}
 	
 	// アクセストークン手動入力でアカウントを更新する場合
 	// verify_credentialsを呼び出す
-	fun checkAccessToken(access_token : String) : TootApiResult? {
+	fun getUserCredential(
+		access_token : String,
+		tokenInfo : JSONObject = JSONObject()
+	) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(instance)
 		if(result.error != null) return result
 		
-		// 認証されたアカウントのユーザ名を取得する
+		// 認証されたアカウントのユーザ情報を取得する
 		if(! sendRequest(result) {
 			Request.Builder()
 				.url("https://$instance/api/v1/accounts/verify_credentials")
 				.header("Authorization", "Bearer $access_token")
 				.build()
-			
 		}) return result
 		
 		val r2 = parseJson(result)
-		r2?.jsonObject ?: return r2
+		if(r2?.jsonObject != null) {
+			// ユーザ情報を読めたならtokenInfoを保存する
+			tokenInfo.put(KEY_AUTH_VERSION, AUTH_VERSION)
+			tokenInfo.put("access_token", access_token)
+			result.tokenInfo = tokenInfo
+		}
+		return r2
 		
-		// credentialを読めたならtoken_infoを保存したい
-		val token_info = JSONObject()
-		token_info.put("access_token", access_token)
-		result.token_info = token_info
-		
-		return result
 	}
 	
 	fun searchMsp(query : String, max_id : String) : TootApiResult? {
@@ -586,11 +572,9 @@ class TootApiClient(
 				if(result.error != null) return result
 				
 				if(! sendRequest(result) {
-					
 					Request.Builder()
 						.url(mspTokenUrl + "?apikey=" + Uri.encode(mspApiKey))
 						.build()
-					
 				}) return result
 				
 				val r2 = parseJson(result) { json ->
@@ -599,7 +583,7 @@ class TootApiClient(
 						null
 					} else {
 						val type = Utils.optStringX(json, "type")
-						"API returns error: $type $error"
+						"error: $type $error"
 					}
 				}
 				val jsonObject = r2?.jsonObject ?: return r2
@@ -616,7 +600,6 @@ class TootApiClient(
 			if(result.error != null) return result
 			
 			if(! sendRequest(result) {
-				
 				val url = (mspSearchUrl
 					+ "?apikey=" + Uri.encode(mspApiKey)
 					+ "&utoken=" + Uri.encode(user_token)
@@ -624,7 +607,6 @@ class TootApiClient(
 					+ "&max=" + Uri.encode(max_id))
 				
 				Request.Builder().url(url).build()
-				
 			}) return result
 			
 			var isUserTokenError = false
@@ -686,22 +668,22 @@ class TootApiClient(
 		
 	}
 	
-	fun webSocket(path : String, request_builder : Request.Builder, ws_listener : WebSocketListener) : TootApiResult? {
+	fun webSocket(path : String,  ws_listener : WebSocketListener) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(instance)
 		if(result.error != null) return result
 		val account = this.account ?: return TootApiResult("account is null")
-		
 		try {
 			var url = "wss://$instance$path"
 			
+			val request_builder = Request.Builder()
+
 			val access_token = account.getAccessToken()
 			if(access_token?.isNotEmpty() == true) {
 				val delm = if(- 1 != url.indexOf('?')) '&' else '?'
 				url = url + delm + "access_token=" + Uri.encode(access_token)
 			}
 			
-			request_builder.url(url)
-			val request = request_builder.build()
+			val request = request_builder.url(url).build()
 			publishApiProgress(context.getString(R.string.request_api, request.method(), path))
 			val ws = httpClient.getWebSocket(request, ws_listener)
 			if(isApiCancelled) {

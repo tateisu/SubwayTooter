@@ -1531,11 +1531,12 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	private fun performMore() {
 		val dialog = ActionsDialog()
 		
-		if(PostDraft.hasDraft()) {
-			dialog.addAction(
-				getString(R.string.restore_draft)
-			) { openDraftPicker() }
+		dialog.addAction(
+			getString(R.string.open_picker_emoji)
+		) {
+			post_helper.openEmojiPickerFromMore()
 		}
+
 		
 		dialog.addAction(
 			getString(R.string.clear_text)
@@ -1543,6 +1544,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			etContent.setText("")
 			etContentWarning.setText("")
 		}
+		
 		dialog.addAction(
 			getString(R.string.clear_text_and_media)
 		) {
@@ -1552,9 +1554,18 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			showMediaAttachment()
 		}
 		
+		if(PostDraft.hasDraft()) {
+			dialog.addAction(
+				getString(R.string.restore_draft)
+			) { openDraftPicker() }
+		}
+		
 		dialog.addAction(
 			getString(R.string.recommended_plugin)
 		) { showRecommendedPlugin(null) }
+		
+		
+		
 		dialog.show(this, null)
 	}
 	

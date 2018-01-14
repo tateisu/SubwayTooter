@@ -43,7 +43,7 @@ class PostHelper(
 	private val activity : AppCompatActivity,
 	private val pref : SharedPreferences,
 	private val handler : Handler
-) : EmojiPicker.Callback {
+){
 	
 	companion object {
 		private val log = LogCategory("PostHelper")
@@ -522,10 +522,7 @@ class PostHelper(
 		this@PostHelper.popup = popup
 		return popup
 	}
-	
-	private val open_picker_emoji = Runnable {
-		EmojiPicker.open(activity, instance, this@PostHelper)
-	}
+
 	
 	interface Callback2 {
 		fun onTextUpdate()
@@ -599,26 +596,53 @@ class PostHelper(
 		
 	}
 	
-	override fun onPickedEmoji(name : String) {
-		val et = this.et ?: return
-		
-		val end = et.selectionEnd
-		var src = et.text.toString()
-		val last_colon = src.lastIndexOf(':', end - 1)
-		
-		if(last_colon == - 1 || end - last_colon < 1) {
-			return
-		}
-		
-		val svInsert = ":$name:"
-		src = src.substring(0, last_colon) + svInsert + " " + if(end >= src.length) "" else src.substring(end)
-		et.setText(src)
-		et.setSelection(last_colon + svInsert.length + 1)
-		
-		proc_text_changed.run()
-		
-		// キーボードを再度表示する
-		Handler(activity.mainLooper).post { Utils.showKeyboard(activity, et) }
+	private val open_picker_emoji :Runnable = Runnable {
+		EmojiPicker(activity, instance){ name ->
+			val et = this.et ?: return@EmojiPicker
+
+			val src = et.text.toString()
+			val end = et.selectionEnd
+
+			val last_colon = src.lastIndexOf(':', end - 1)
+			if(last_colon == - 1 || end - last_colon < 1) return@EmojiPicker
+
+			val svInsert = ":$name: "
+			val newText = StringBuilder()
+				.append(src.substring(0, last_colon))
+				.append(svInsert)
+				.append( if(end >= src.length) "" else src.substring(end) )
+				.toString()
+			
+			et.setText(newText)
+			et.setSelection(last_colon + svInsert.length )
+			
+			proc_text_changed.run()
+			
+			// キーボードを再度表示する
+			Handler(activity.mainLooper).post { Utils.showKeyboard(activity, et) }
+			
+		}.show()
+	}
+	
+	fun openEmojiPickerFromMore(){
+		EmojiPicker(activity, instance){ name->
+			val et = this.et?:return@EmojiPicker
+			val src = et.text.toString()
+			val end = et.selectionEnd
+			val insert_start = if( end >= src.length ) src.length else end
+			
+			val svInsert = ":$name: "
+			val newText = StringBuilder()
+				.append(src.substring(0,insert_start))
+				.append(svInsert)
+				.append( src.substring(insert_start) )
+				.toString()
+			
+			et.setText(newText)
+			et.setSelection(insert_start + svInsert.length )
+			
+			proc_text_changed.run()
+		}.show()
 	}
 	
 	//	final ActionMode.Callback action_mode_callback = new ActionMode.Callback() {

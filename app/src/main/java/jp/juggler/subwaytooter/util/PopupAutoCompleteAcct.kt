@@ -66,7 +66,12 @@ internal class PopupAutoCompleteAcct(
 	}
 	
 	fun setList(
-		et : MyEditText, sel_start : Int, sel_end : Int, acct_list : ArrayList<CharSequence>?, picker_caption : String?, picker_callback : Runnable?
+		et : MyEditText,
+		sel_start : Int,
+		sel_end : Int,
+		acct_list : ArrayList<CharSequence>?,
+		picker_caption : String?,
+		picker_callback : Runnable?
 	) {
 		
 		llItems.removeAllViews()

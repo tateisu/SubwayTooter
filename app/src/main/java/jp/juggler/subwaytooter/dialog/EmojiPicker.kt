@@ -30,9 +30,9 @@ import jp.juggler.subwaytooter.view.NetworkEmojiView
 
 @SuppressLint("InflateParams")
 class EmojiPicker(
-	internal val activity : Activity,
-	internal val instance : String?,
-	internal val callback : Callback
+	private val activity : Activity,
+	private val instance : String?,
+	private val onEmojiPicked: (name : String)->Unit
 ) : View.OnClickListener {
 	
 	companion object {
@@ -41,104 +41,50 @@ class EmojiPicker(
 		
 		const val CATEGORY_RECENT = - 2
 		const val CATEGORY_CUSTOM = - 1
-		
-		fun open(
-			activity : Activity,
-			instance : String?,
-			callback : EmojiPicker.Callback
-		) {
-				EmojiPicker(activity, instance, callback).show()
-		}
-		
+
 		internal val tone_list = arrayOf(
-			SkinTone("_light_skin_tone", "_tone1"),
-			SkinTone("_medium_light_skin_tone", "_tone2"),
-			SkinTone("_medium_skin_tone", "_tone3"),
-			SkinTone("_medium_dark_skin_tone", "_tone4"),
-			SkinTone("_dark_skin_tone", "_tone5")
+			SkinTone.create("_light_skin_tone", "_tone1"),
+			SkinTone.create("_medium_light_skin_tone", "_tone2"),
+			SkinTone.create("_medium_skin_tone", "_tone3"),
+			SkinTone.create("_medium_dark_skin_tone", "_tone4"),
+			SkinTone.create("_dark_skin_tone", "_tone5")
 		)
 	}
 	
-	internal val viewRoot : View
+	private val viewRoot : View
+
 	private val pager_adapter : EmojiPickerPagerAdapter
-	internal val page_list = ArrayList<EmojiPickerPage>()
+	
+	private val page_list = ArrayList<EmojiPickerPage>()
+
 	private val pager : ViewPager
-	internal val dialog : Dialog
+	
+	private val dialog : Dialog
+
 	private val pager_strip : PagerSlidingTabStrip
 	
 	private val ibSkinTone : Array<ImageButton>
 	
-	internal var selected_tone : Int = 0
+	private var selected_tone : Int = 0
 	
-	internal val recent_list = ArrayList<EmojiItem>()
-	internal val custom_list = ArrayList<EmojiItem>()
-	internal val emoji_url_map = HashMap<String, String>()
+	private val recent_list = ArrayList<EmojiItem>()
+	
+	private val custom_list = ArrayList<EmojiItem>()
+	
+	private val emoji_url_map = HashMap<String, String>()
+
 	private val recent_page_idx : Int
+
 	private val custom_page_idx : Int
 	
-	interface Callback {
-		fun onPickedEmoji(name : String)
-	}
-	
-	/////////////////////////////////////////////////////////////////////////////
-	
-	internal class SkinTone(vararg suffix_list : String) {
-		val suffix_list : Array<out String>
-		
-		init {
-			this.suffix_list = suffix_list
-		}
-	}
-	
-	private fun initSkinTone(idx : Int, ib : ImageButton) : ImageButton {
-		ib.tag = tone_list[idx]
-		ib.setOnClickListener(this)
-		return ib
-	}
-	
-	private fun showSkinTone() {
-		for(button in ibSkinTone) {
-			if(selected_tone == button.id) {
-				button.setImageResource(R.drawable.emj_2714)
-			} else {
-				button.setImageDrawable(null)
+	class SkinTone(val suffix_list : Array<out String>){
+		companion object {
+			fun create( vararg suffix_list : String):SkinTone{
+				return SkinTone( suffix_list )
 			}
 		}
 	}
 	
-	override fun onClick(view : View) {
-		val id = view.id
-		selected_tone = if(selected_tone == id) 0 else id
-		showSkinTone()
-	}
-	
-	private fun applySkinTone(nameArg : String) : String {
-		var name = nameArg
-		
-		// Recentなどでは既にsuffixがついた名前が用意されている
-		// suffixを除去する
-		for(tone in tone_list) {
-			for(suffix in tone.suffix_list) {
-				if(name.endsWith(suffix)) {
-					name = name.substring(0, name.length - suffix.length)
-					break
-				}
-			}
-		}
-		
-		// 指定したトーンのサフィックスを追加して、絵文字が存在すればその名前にする
-		val tone = viewRoot.findViewById<View>(selected_tone).tag as SkinTone
-		for(suffix in tone.suffix_list) {
-			val new_name = name + suffix
-			val info = EmojiMap201709.sShortNameToImageId[new_name]
-			if(info != null) return new_name
-		}
-		return name
-	}
-	
-	/////////////////////////////////////////////////////////////////////////////
-	
-
 	internal class EmojiItem(val name : String, val instance : String?)
 	
 	init {
@@ -227,6 +173,53 @@ class EmojiPicker(
 	internal fun show() {
 		dialog.show()
 	}
+	
+	private fun applySkinTone(nameArg : String) : String {
+		var name = nameArg
+		
+		// Recentなどでは既にsuffixがついた名前が用意されている
+		// suffixを除去する
+		for(tone in tone_list) {
+			for(suffix in tone.suffix_list) {
+				if(name.endsWith(suffix)) {
+					name = name.substring(0, name.length - suffix.length)
+					break
+				}
+			}
+		}
+		
+		// 指定したトーンのサフィックスを追加して、絵文字が存在すればその名前にする
+		val tone = viewRoot.findViewById<View>(selected_tone).tag as SkinTone
+		for(suffix in tone.suffix_list) {
+			val new_name = name + suffix
+			val info = EmojiMap201709.sShortNameToImageId[new_name]
+			if(info != null) return new_name
+		}
+		return name
+	}
+	
+	private fun initSkinTone(idx : Int, ib : ImageButton) : ImageButton {
+		ib.tag = tone_list[idx]
+		ib.setOnClickListener(this)
+		return ib
+	}
+	
+	private fun showSkinTone() {
+		for(button in ibSkinTone) {
+			if(selected_tone == button.id) {
+				button.setImageResource(R.drawable.emj_2714)
+			} else {
+				button.setImageDrawable(null)
+			}
+		}
+	}
+	
+	override fun onClick(view : View) {
+		val id = view.id
+		selected_tone = if(selected_tone == id) 0 else id
+		showSkinTone()
+	}
+	
 	
 	internal inner class EmojiPickerPage(category_id : Int, title_id : Int) {
 		val title : String
@@ -409,7 +402,7 @@ class EmojiPicker(
 		
 		}
 		
-		callback.onPickedEmoji(name)
+		onEmojiPicked(name)
 	}
 	
 	internal inner class EmojiPickerPagerAdapter : PagerAdapter() {

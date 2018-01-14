@@ -55,19 +55,19 @@ class BucketList<E> constructor(private val bucketCapacity : Int = 1024) : Abstr
 	// allocalted を指定しない場合は BucketPosを生成します
 	private fun findPos(total_index : Int, allocated : BucketPos? = pos_internal.get()) : BucketPos {
 		if(total_index < 0 || total_index >= size) {
-			throw ArrayIndexOutOfBoundsException("findPos: bad index=$total_index, size=$size")
+			throw IndexOutOfBoundsException("findPos: bad index=$total_index, size=$size")
 		}
 		
 		// binary search
+		val groups_size = groups.size
 		var gs = 0
-		var ge = groups.size
+		var ge = groups_size
 		while(true) {
-			val gi = gs + (ge shr 1)
+			val gi = (gs + ge) shr 1
 			val group = groups[gi]
 			when {
 				total_index < group.total_start -> ge = gi
 				total_index >= group.total_end -> gs = gi + 1
-				
 				else -> {
 					return (allocated ?: BucketPos())
 						.update(gi, total_index - group.total_start)

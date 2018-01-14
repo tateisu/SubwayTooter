@@ -38,7 +38,19 @@ class StatusButtonsPopup(
 	init {
 		@SuppressLint("InflateParams")
 		this.viewRoot = activity.layoutInflater.inflate(R.layout.list_item_popup, null, false)
-		this.buttons_for_status = StatusButtons(activity, column, viewRoot, bSimpleList)
+		this.buttons_for_status = StatusButtons(
+			activity,
+			column,
+			bSimpleList,
+			btnConversation =viewRoot.findViewById(R.id.btnConversation),
+			btnReply = viewRoot.findViewById(R.id.btnReply),
+			btnBoost = viewRoot.findViewById(R.id.btnBoost),
+			btnFavourite = viewRoot.findViewById(R.id.btnFavourite),
+			llFollow2 = viewRoot.findViewById(R.id.llFollow2),
+			btnFollow2 = viewRoot.findViewById(R.id.btnFollow2),
+			ivFollowedBy2 = viewRoot.findViewById(R.id.ivFollowedBy2),
+			btnMore = viewRoot.findViewById(R.id.btnMore)
+		)
 	}
 	
 	fun dismiss() {

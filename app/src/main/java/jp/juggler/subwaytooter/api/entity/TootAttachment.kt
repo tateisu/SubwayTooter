@@ -63,7 +63,17 @@ class TootAttachment(src : JSONObject) : TootAttachmentLike {
 			if( remote_url?.isNotEmpty() == true ) remote_url else url
 		}
 	}
-	
+	fun getLargeUrlList(pref : SharedPreferences) : ArrayList<String> {
+		val result = ArrayList<String>()
+		if( pref.getBoolean(Pref.KEY_PRIOR_LOCAL_URL, false) ){
+			if( url?.isNotEmpty() ==true) result.add(url)
+			if( remote_url?.isNotEmpty()==true) result.add( remote_url)
+		} else {
+			if( remote_url?.isNotEmpty()==true) result.add( remote_url)
+			if( url?.isNotEmpty() ==true) result.add(url)
+		}
+		return result
+	}
 }
 
 // v1.3 から 添付ファイルの画像のピクセルサイズが取得できるようになった

@@ -291,6 +291,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			R.id.btnRemoveReply -> removeReply()
 			R.id.btnMore -> performMore()
 			R.id.btnPlugin -> openMushroom()
+			R.id.btnEmojiPicker -> post_helper.openEmojiPickerFromMore()
 		}
 	}
 	
@@ -752,7 +753,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		btnRemoveReply.setOnClickListener(this)
 		
 		findViewById<View>(R.id.btnPlugin).setOnClickListener(this)
-		
+		findViewById<View>(R.id.btnEmojiPicker).setOnClickListener(this)
+
 		for(iv in ivMedia) {
 			iv.setOnClickListener(this)
 			iv.setDefaultImageResId(Styler.getAttributeResourceId(this, R.attr.ic_loading))
@@ -1569,6 +1571,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		dialog.show(this, null)
 	}
 	
+
 	///////////////////////////////////////////////////////////////////////////////////////
 	// post
 	

@@ -19,19 +19,22 @@ import jp.juggler.subwaytooter.util.LogCategory
 internal class StatusButtons(
 	private val activity : ActMain,
 	private val column : Column,
-	viewRoot : View,
-	private val bSimpleList : Boolean
+	private val bSimpleList : Boolean,
+	
+	private val btnConversation : ImageButton,
+	private val btnReply : ImageButton,
+	private val btnBoost : Button,
+	private val btnFavourite : Button,
+	private val llFollow2 : View,
+	private val btnFollow2 : ImageButton,
+	private val ivFollowedBy2 : ImageView,
+	private val btnMore : ImageButton
+
 ) : View.OnClickListener, View.OnLongClickListener {
 	
 	companion object {
 		val log = LogCategory("StatusButtons")
 	}
-	
-	private val btnBoost : Button
-	private val btnFavourite : Button
-	private val btnFollow2 : ImageButton
-	private val ivFollowedBy2 : ImageView
-	private val llFollow2 : View
 	
 	private val access_info : SavedAccount
 	private var relation : UserRelation? = null
@@ -43,12 +46,6 @@ internal class StatusButtons(
 	init {
 		this.access_info = column.access_info
 		
-		btnBoost = viewRoot.findViewById(R.id.btnBoost)
-		btnFavourite = viewRoot.findViewById(R.id.btnFavourite)
-		btnFollow2 = viewRoot.findViewById(R.id.btnFollow2)
-		ivFollowedBy2 = viewRoot.findViewById(R.id.ivFollowedBy2)
-		llFollow2 = viewRoot.findViewById(R.id.llFollow2)
-		
 		val listener = this
 		
 		btnBoost.setOnClickListener(listener)
@@ -57,20 +54,12 @@ internal class StatusButtons(
 		btnFavourite.setOnLongClickListener(listener)
 		btnFollow2.setOnClickListener(listener)
 		btnFollow2.setOnLongClickListener(listener)
+		btnMore.setOnClickListener(listener)
+		btnConversation.setOnClickListener(listener)
+		btnConversation.setOnLongClickListener(listener)
+		btnReply.setOnClickListener(listener)
+		btnReply.setOnLongClickListener(listener)
 		
-		with(viewRoot.findViewById<View>(R.id.btnMore)) {
-			setOnClickListener(listener)
-		}
-		
-		with(viewRoot.findViewById<View>(R.id.btnConversation)) {
-			setOnClickListener(listener)
-			setOnLongClickListener(listener)
-		}
-		
-		with(viewRoot.findViewById<View>(R.id.btnReply)) {
-			setOnClickListener(listener)
-			setOnLongClickListener(listener)
-		}
 	}
 	
 	fun bind(status : TootStatus, notification : TootNotification?) {
@@ -81,6 +70,7 @@ internal class StatusButtons(
 		val color_accent = Styler.getAttributeColor(activity, R.attr.colorImageButtonAccent)
 		val fav_icon_attr = if(access_info.isNicoru(status.account)) R.attr.ic_nicoru else R.attr.btn_favourite
 		
+		// ブーストボタン
 		when {
 			TootStatus.VISIBILITY_DIRECT == status.visibility -> setButton(btnBoost, false, color_accent, R.attr.ic_mail, "")
 			TootStatus.VISIBILITY_PRIVATE == status.visibility -> setButton(btnBoost, false, color_accent, R.attr.ic_lock, "")
@@ -131,66 +121,70 @@ internal class StatusButtons(
 		
 		val status = this.status ?: return
 		
-		when(v.id) {
+		when(v) {
 			
-			R.id.btnConversation -> Action_Toot.conversation(activity, activity.nextPosition(column), access_info, status)
+			btnConversation -> Action_Toot.conversation(activity, activity.nextPosition(column), access_info, status)
 			
-			R.id.btnReply -> if( ! access_info.isPseudo) {
+			btnReply -> if( ! access_info.isPseudo) {
 				Action_Toot.reply(activity, access_info, status)
 			} else {
 				Action_Toot.replyFromAnotherAccount(activity, access_info, status)
 			}
 			
-			R.id.btnBoost -> if(access_info.isPseudo) {
-				Action_Toot.boostFromAnotherAccount(activity, access_info, status)
-			} else {
-				
-				// トグル動作
-				val willRoost = ! status.reblogged
-				
-				// 簡略表示なら結果をトースト表示
-				val callback = when {
-					! bSimpleList -> null
-					willRoost -> activity.boost_complete_callback
-					else -> activity.unboost_complete_callback
+			btnBoost -> {
+				if(access_info.isPseudo) {
+					Action_Toot.boostFromAnotherAccount(activity, access_info, status)
+				} else {
+					
+					// トグル動作
+					val willRoost = ! status.reblogged
+					
+					// 簡略表示なら結果をトースト表示
+					val callback = when {
+						! bSimpleList -> null
+						willRoost -> activity.boost_complete_callback
+						else -> activity.unboost_complete_callback
+					}
+					
+					Action_Toot.boost(
+						activity,
+						access_info,
+						status,
+						NOT_CROSS_ACCOUNT,
+						willRoost,
+						false,
+						callback
+					)
 				}
-				
-				Action_Toot.boost(
-					activity,
-					access_info,
-					status,
-					NOT_CROSS_ACCOUNT,
-					willRoost,
-					false,
-					callback
-				)
 			}
 			
-			R.id.btnFavourite -> if(access_info.isPseudo) {
-				Action_Toot.favouriteFromAnotherAccount(activity, access_info, status)
-			} else {
-				
-				// トグル動作
-				val willFavourite = ! status.favourited
-				
-				// 簡略表示なら結果をトースト表示
-				val callback = when {
-					! bSimpleList -> null
-					status.favourited -> activity.unfavourite_complete_callback
-					else -> activity.favourite_complete_callback
+			btnFavourite -> {
+				if(access_info.isPseudo) {
+					Action_Toot.favouriteFromAnotherAccount(activity, access_info, status)
+				} else {
+					
+					// トグル動作
+					val willFavourite = ! status.favourited
+					
+					// 簡略表示なら結果をトースト表示
+					val callback = when {
+						! bSimpleList -> null
+						status.favourited -> activity.unfavourite_complete_callback
+						else -> activity.favourite_complete_callback
+					}
+					
+					Action_Toot.favourite(
+						activity,
+						access_info,
+						status,
+						NOT_CROSS_ACCOUNT,
+						willFavourite,
+						callback
+					)
 				}
-				
-				Action_Toot.favourite(
-					activity,
-					access_info,
-					status,
-					NOT_CROSS_ACCOUNT,
-					willFavourite,
-					callback
-				)
 			}
 			
-			R.id.btnFollow2 -> {
+			btnFollow2 -> {
 				val account = status.account
 				val relation = this.relation ?: return
 				
@@ -235,7 +229,7 @@ internal class StatusButtons(
 				}
 			}
 			
-			R.id.btnMore -> DlgContextMenu(activity, column, status.account, status, notification).show()
+			btnMore -> DlgContextMenu(activity, column, status.account, status, notification).show()
 		}
 	}
 	
@@ -246,15 +240,22 @@ internal class StatusButtons(
 		
 		val status = this.status ?: return true
 		
-		when(v.id) {
-			R.id.btnConversation -> Action_Toot.conversationOtherInstance(activity, activity.nextPosition(column), status)
-			R.id.btnBoost -> Action_Toot.boostFromAnotherAccount(activity, access_info, status)
-			R.id.btnFavourite -> Action_Toot.favouriteFromAnotherAccount(activity, access_info, status)
-			R.id.btnReply -> Action_Toot.replyFromAnotherAccount(activity, access_info, status)
+		when(v) {
+			btnConversation -> Action_Toot.conversationOtherInstance(
+				activity, activity.nextPosition(column), status)
+
+			btnBoost -> Action_Toot.boostFromAnotherAccount(
+				activity, access_info, status)
+
+			btnFavourite -> Action_Toot.favouriteFromAnotherAccount(
+				activity, access_info, status)
+
+			btnReply -> Action_Toot.replyFromAnotherAccount(
+				activity, access_info, status)
+
+			btnFollow2 -> Action_Follow.followFromAnotherAccount(
+				activity, activity.nextPosition(column), access_info, status.account)
 			
-			R.id.btnFollow2 -> {
-				Action_Follow.followFromAnotherAccount(activity, activity.nextPosition(column), access_info, status.account)
-			}
 		}
 		return true
 	}

@@ -189,12 +189,29 @@
                     />
             </FrameLayout>
 
-            <TextView
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:text="@string/status"
-                />
+                android:baselineAligned="false"
+                android:orientation="horizontal"
+                >
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/status"
+                    android:layout_gravity="bottom"
+                    />
+                <ImageButton
+                    android:id="@+id/btnEmojiPicker"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/open_picker_emoji"
+                    android:src="?attr/ic_face"
+                    />
+            </LinearLayout>
 
             <FrameLayout
                 android:layout_width="match_parent"

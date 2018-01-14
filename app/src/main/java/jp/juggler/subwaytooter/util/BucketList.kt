@@ -5,10 +5,11 @@ import java.util.ArrayList
 import java.util.NoSuchElementException
 import java.util.RandomAccess
 
-class BucketList<E> constructor(private val bucketCapacity : Int = 1024) : AbstractList<E>(), MutableIterable<E>, RandomAccess {
+class BucketList<E> constructor(
+	val bucketCapacity : Int = 1024
+) : AbstractList<E>(), MutableIterable<E>, RandomAccess {
 	
 	companion object {
-		
 		private val pos_internal = object : ThreadLocal<BucketPos>() {
 			override fun initialValue() : BucketPos {
 				return BucketPos()
@@ -22,10 +23,11 @@ class BucketList<E> constructor(private val bucketCapacity : Int = 1024) : Abstr
 		return 0 == size
 	}
 	
-	private class Bucket<E> internal constructor(capacity : Int) : ArrayList<E>(capacity) {
-		internal var total_start : Int = 0
-		internal var total_end : Int = 0
-	}
+	private class Bucket<E>(
+		capacity : Int,
+		var total_start : Int = 0,
+		var total_end : Int = 0
+	) : ArrayList<E>(capacity)
 	
 	private val groups = ArrayList<Bucket<E>>()
 	
@@ -44,8 +46,11 @@ class BucketList<E> constructor(private val bucketCapacity : Int = 1024) : Abstr
 		size = n
 	}
 	
-	private class BucketPos(var group_index : Int = 0, var bucket_index : Int = 0) {
-		internal fun update(group_index : Int, bucket_index : Int) : BucketPos {
+	internal class BucketPos(
+		var group_index : Int = 0,
+		var bucket_index : Int = 0
+	) {
+		internal fun set(group_index : Int, bucket_index : Int) : BucketPos {
 			this.group_index = group_index
 			this.bucket_index = bucket_index
 			return this
@@ -53,15 +58,18 @@ class BucketList<E> constructor(private val bucketCapacity : Int = 1024) : Abstr
 	}
 	
 	// allocalted を指定しない場合は BucketPosを生成します
-	private fun findPos(total_index : Int, allocated : BucketPos? = pos_internal.get()) : BucketPos {
+	private fun findPos(
+		total_index : Int,
+		result : BucketPos = pos_internal.get()
+	) : BucketPos {
+
 		if(total_index < 0 || total_index >= size) {
 			throw IndexOutOfBoundsException("findPos: bad index=$total_index, size=$size")
 		}
 		
 		// binary search
-		val groups_size = groups.size
 		var gs = 0
-		var ge = groups_size
+		var ge = groups.size
 		while(true) {
 			val gi = (gs + ge) shr 1
 			val group = groups[gi]
@@ -69,8 +77,7 @@ class BucketList<E> constructor(private val bucketCapacity : Int = 1024) : Abstr
 				total_index < group.total_start -> ge = gi
 				total_index >= group.total_end -> gs = gi + 1
 				else -> {
-					return (allocated ?: BucketPos())
-						.update(gi, total_index - group.total_start)
+					return result.set(gi, total_index - group.total_start)
 				}
 			}
 		}
@@ -87,9 +94,9 @@ class BucketList<E> constructor(private val bucketCapacity : Int = 1024) : Abstr
 		if(c_size == 0) return false
 		
 		// 最後のバケツに収まるなら、最後のバケツの中に追加する
-		if(groups.size > 0) {
-			val bucket = groups[groups.size - 1]
-			if(bucket.size + c_size <= bucketCapacity) {
+		if( groups.isNotEmpty() ) {
+			val bucket = groups[groups.size -1]
+			if( bucket.size + c_size <= bucketCapacity) {
 				bucket.addAll(elements)
 				bucket.total_end += c_size
 				size += c_size
@@ -111,7 +118,7 @@ class BucketList<E> constructor(private val bucketCapacity : Int = 1024) : Abstr
 		
 		// indexが終端なら、終端に追加する
 		// バケツがカラの場合もここ
-		if(index == size) {
+		if(index >= size) {
 			return addAll(elements)
 		}
 		
@@ -193,5 +200,4 @@ class BucketList<E> constructor(private val bucketCapacity : Int = 1024) : Abstr
 	override fun iterator() : MutableIterator<E> {
 		return MyIterator()
 	}
-	
 }

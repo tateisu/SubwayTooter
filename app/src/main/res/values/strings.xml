@@ -24,7 +24,7 @@
     <string name="home">Home</string>
     <string name="local_timeline">Local timeline</string>
     <string name="federate_timeline">Federated timeline</string>
-    <string name="login_required">Please update your access token from the account setting.</string>
+    <string name="login_required">Please set your access token from the account setting.</string>
     <string name="cancelled">Cancelled</string>
     <string name="account_pick">Select an account</string>
     <string name="account_confirmed">Account confirmed.</string>
@@ -367,7 +367,7 @@
     <string name="text_to_speech_initialize_failed">TextToSpeech initializing failed. status=%1$s</string>
     <string name="text_to_speech_shutdown">TextToSpeech shutdown…</string>
     <string name="show_post_button_bar_top">Show buttons bar at the top of posting screen</string>
-    <string name="client_name">Client name (access token update required)</string>
+    <string name="client_name">Client name (access token set required)</string>
     <string name="toot_search">Toot search</string>
     <string name="toot_search_msp">Toot search(MSP)</string>
     <string name="toot_search_ts">Toot search(ts)</string>
@@ -514,7 +514,7 @@
     <string name="card_header_card">Card</string>
     <string name="card_header_author">Author</string>
     <string name="card_header_provider">Provider</string>
-    <string name="allow_non_space_before_emoji_code">Allow non-space character before emoji shortcode (Affect to display and post. to update display, please restart app and reload column. The emojis converted at posting can\'t be restored to shortcode.)</string>
+    <string name="allow_non_space_before_emoji_code">Allow non-space character before emoji shortcode (Affect to display and post. to set display, please restart app and reload column. The emojis converted at posting can\'t be restored to shortcode.)</string>
     <string name="emoji">Emoji</string>
     <string name="not_blocked">Not blocked.</string>
     <string name="not_muted">Not muted.</string>
@@ -583,7 +583,7 @@
     <string name="new_item">New item…</string>
     <string name="word_empty">Please input keyword.</string>
     <string name="already_exist">already exist.</string>
-    <string name="highlight_desc">Swipe to delete. You may need reload column to check update.</string>
+    <string name="highlight_desc">Swipe to delete. You may need reload column to check set.</string>
     <string name="check_sound">Check sound</string>
     <string name="keyword">Keyword</string>
     <string name="domain_block_from_pseudo">Can\'t use domain block from pseudo account.</string>

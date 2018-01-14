@@ -52,7 +52,6 @@ import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.ProgressResponseBody
 import jp.juggler.subwaytooter.util.Utils
 import jp.juggler.subwaytooter.view.PinchBitmapView
-import okhttp3.Response
 
 class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	
@@ -316,8 +315,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	}
 	
 	@SuppressLint("StaticFieldLeak") private fun loadBitmap(ta : TootAttachment) {
-		val url = ta.getLargeUrl(App1.pref)
-		if(url == null) {
+		val urlList = ta.getLargeUrlList(App1.pref)
+		if(urlList.isEmpty() ) {
 			showError("missing media attachment url.")
 			return
 		}
@@ -332,7 +331,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			
 			private val options = BitmapFactory.Options()
 			
-			internal var data : ByteArray? = null
 			internal var bitmap : Bitmap? = null
 			
 			private fun decodeBitmap(data : ByteArray, pixel_max : Int) : Bitmap? {
@@ -359,50 +357,53 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				return BitmapFactory.decodeByteArray(data, 0, data.size, options)
 			}
 			
-			internal fun getHttpCached(client : TootApiClient, url : String) : TootApiResult {
-				val response : Response
+			internal fun getHttpCached(client : TootApiClient, url : String) : TootApiResult? {
+				val result = TootApiResult.makeWithCaption(url)
 				
-				try {
-					val request = okhttp3.Request.Builder()
+				if(!client.sendRequest(result){
+					okhttp3.Request.Builder()
 						.url(url)
 						.cacheControl(App1.CACHE_5MIN)
 						.build()
-					
-					client.publishApiProgress(getString(R.string.request_api, request.method(), url))
-					val call = App1.ok_http_client2.newCall(request)
-					response = call.execute()
-				} catch(ex : Throwable) {
-					return TootApiResult(Utils.formatError(ex, "network error."))
-				}
+				}) return result
 				
+				if( client.isApiCancelled ) return null
+				val response = requireNotNull(result.response)
 				if(! response.isSuccessful) {
-					return TootApiResult(TootApiClient.formatResponse(response, "response error"))
+					return result.setError( TootApiClient.formatResponse(response,result.caption))
 				}
 				
-				return try {
-					
-					data = ProgressResponseBody.bytes(response) { bytesRead, bytesTotal ->
+				try {
+					result.data = ProgressResponseBody.bytes(response) { bytesRead, bytesTotal ->
 						// 50MB以上のデータはキャンセルする
 						if(Math.max(bytesRead, bytesTotal) >= 50000000) {
 							throw RuntimeException("media attachment is larger than 50000000")
 						}
 						client.publishApiProgressRatio(bytesRead.toInt(), bytesTotal.toInt())
 					}
-					
-					TootApiResult("")
+					if( client.isApiCancelled ) return null
 				} catch(ex : Throwable) {
-					TootApiResult(Utils.formatError(ex, "content error."))
+					result.setError( TootApiClient.formatResponse(response,result.caption,"?"))
 				}
-				
+				return result
 			}
 			
-			override fun background(client : TootApiClient) : TootApiResult {
-				val result = getHttpCached(client, url)
-				val data = this.data ?: return result
-				client.publishApiProgress("decoding image…")
-				val bitmap = decodeBitmap(data, 2048)
-				this.bitmap = bitmap
-				return if(bitmap != null) result else TootApiResult("image decode failed.")
+			override fun background(client : TootApiClient) : TootApiResult? {
+				if( urlList.isEmpty()) return TootApiResult("missing url")
+				var result : TootApiResult? = null
+				for(url in urlList) {
+					result = getHttpCached(client, url)
+					val data = result?.data as? ByteArray
+					if(data != null) {
+						client.publishApiProgress("decoding image…")
+						val bitmap = decodeBitmap(data, 2048)
+						if( bitmap != null ) {
+							this.bitmap = bitmap
+							break
+						}
+					}
+				}
+				return result
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

@@ -3,17 +3,17 @@ package jp.juggler.subwaytooter
 import android.content.Context
 import android.graphics.Typeface
 import android.net.Uri
+import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewCompat
 import android.support.v7.app.AlertDialog
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.TextUtils
+import android.view.Gravity
 import android.view.View
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.view.ViewGroup
+import android.widget.*
 
 import java.util.ArrayList
 
@@ -35,78 +35,87 @@ import jp.juggler.subwaytooter.table.ContentWarning
 import jp.juggler.subwaytooter.table.MediaShown
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.span.EmojiImageSpan
-import jp.juggler.subwaytooter.util.HTMLDecoder
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.*
 import okhttp3.Request
 import okhttp3.RequestBody
+import org.jetbrains.anko.*
 import org.json.JSONObject
 
 internal class ItemViewHolder(
 	val activity : ActMain,
 	val column : Column,
 	private val list_adapter : ItemListAdapter,
-	view : View,
 	private val bSimpleList : Boolean
 ) : View.OnClickListener, View.OnLongClickListener {
-	
 	
 	companion object {
 		private val log = LogCategory("ItemViewHolder")
 	}
+
+	var viewRoot : View
+	
+	private lateinit var llBoosted : View
+	private lateinit var ivBoosted : ImageView
+	private lateinit var tvBoosted : TextView
+	private lateinit var tvBoostedAcct : TextView
+	private lateinit var tvBoostedTime : TextView
+	
+	private lateinit var llFollow : View
+	private lateinit var ivFollow : MyNetworkImageView
+	private lateinit var tvFollowerName : TextView
+	private lateinit var tvFollowerAcct : TextView
+	private lateinit var btnFollow : ImageButton
+	private lateinit var ivFollowedBy : ImageView
+	
+	private lateinit var llStatus : View
+	private lateinit var ivThumbnail : MyNetworkImageView
+	private lateinit var tvName : TextView
+	private lateinit var tvTime : TextView
+	private lateinit var tvAcct : TextView
+	
+	private lateinit var llContentWarning : View
+	private lateinit var tvContentWarning : MyTextView
+	private lateinit var btnContentWarning : Button
+	
+	private lateinit var llContents : View
+	private lateinit var tvMentions : MyTextView
+	private lateinit var tvContent : MyTextView
+	
+	private lateinit var flMedia : View
+	private lateinit var btnShowMedia : TextView
+	private lateinit var ivMedia1 : MyNetworkImageView
+	private lateinit var ivMedia2 : MyNetworkImageView
+	private lateinit var ivMedia3 : MyNetworkImageView
+	private lateinit var ivMedia4 : MyNetworkImageView
+	private lateinit var btnHideMedia : View
+	
+	private lateinit var llButtonBar : View
+	private lateinit var btnConversation : ImageButton
+	private lateinit var btnReply : ImageButton
+	private lateinit var btnBoost : Button
+	private lateinit var btnFavourite : Button
+	private lateinit var llFollow2 : View
+	private lateinit var btnFollow2 : ImageButton
+	private lateinit var ivFollowedBy2 : ImageView
+	private lateinit var btnMore : ImageButton
+	
+	private lateinit var llSearchTag : View
+	private lateinit var btnSearchTag : Button
+	
+	private lateinit var llList : View
+	private lateinit var btnListTL : Button
+	private lateinit var btnListMore : ImageButton
+	
+	private lateinit var llExtra : LinearLayout
+	
+	private lateinit var tvApplication : TextView
+	
 	
 	private val access_info : SavedAccount
 	
-	private val llBoosted : View
-	private val ivBoosted : ImageView
-	private val tvBoosted : TextView
-	private val tvBoostedAcct : TextView
-	private val tvBoostedTime : TextView
-	
-	private val llFollow : View
-	private val ivFollow : MyNetworkImageView
-	private val tvFollowerName : TextView
-	private val tvFollowerAcct : TextView
-	private val btnFollow : ImageButton
-	private val ivFollowedBy : ImageView
-	
-	private val llStatus : View
-	private val ivThumbnail : MyNetworkImageView
-	private val tvName : TextView
-	private val tvTime : TextView
-	private val tvAcct : TextView
-	
-	private val llContentWarning : View
-	private val tvContentWarning : MyTextView
-	private val btnContentWarning : Button
-	
-	private val llContents : View
-	private val tvMentions : MyTextView
-	private val tvContent : MyTextView
-	
-	private val flMedia : View
-	private val btnShowMedia : TextView
-	
-	private val ivMedia1 : MyNetworkImageView
-	private val ivMedia2 : MyNetworkImageView
-	private val ivMedia3 : MyNetworkImageView
-	private val ivMedia4 : MyNetworkImageView
-	
 	private val buttons_for_status : StatusButtons?
-	
-	private val llSearchTag : View
-	private val btnSearchTag : Button
-	
-	private val llList : View
-	private val btnListTL : Button
-	
-	private val llExtra : LinearLayout
-	
-	private val tvApplication : TextView?
 	
 	private var item : Any? = null
 	
@@ -126,22 +135,17 @@ internal class ItemViewHolder(
 	private val extra_invalidator_list = ArrayList<NetworkEmojiInvalidator>()
 	
 	init {
+		this.viewRoot = inflate(activity.UI {})
 		this.access_info = column.access_info
 		
-		this.tvName = view.findViewById(R.id.tvName)
-		this.tvFollowerName = view.findViewById(R.id.tvFollowerName)
-		this.tvBoosted = view.findViewById(R.id.tvBoosted)
-		
 		if(activity.timeline_font != null || activity.timeline_font_bold != null) {
-			Utils.scanView(view) { v ->
+			Utils.scanView(this.viewRoot) { v ->
 				try {
 					if(v is Button) {
 						// ボタンは太字なので触らない
 					} else if(v is TextView) {
-						val typeface = when(v.getId()) {
-							R.id.tvName,
-							R.id.tvFollowerName,
-							R.id.tvBoosted -> activity.timeline_font_bold ?: activity.timeline_font
+						val typeface = when {
+							v === tvName || v === tvFollowerName || v === tvBoosted -> activity.timeline_font_bold ?: activity.timeline_font
 							else -> activity.timeline_font ?: activity.timeline_font_bold
 						}
 						if(typeface != null) v.typeface = typeface
@@ -156,49 +160,27 @@ internal class ItemViewHolder(
 			tvBoosted.typeface = Typeface.DEFAULT_BOLD
 		}
 		
-		this.llBoosted = view.findViewById(R.id.llBoosted)
-		this.ivBoosted = view.findViewById(R.id.ivBoosted)
-		this.tvBoostedTime = view.findViewById(R.id.tvBoostedTime)
-		this.tvBoostedAcct = view.findViewById(R.id.tvBoostedAcct)
-		
-		this.llFollow = view.findViewById(R.id.llFollow)
-		this.ivFollow = view.findViewById(R.id.ivFollow)
-		this.tvFollowerAcct = view.findViewById(R.id.tvFollowerAcct)
-		this.btnFollow = view.findViewById(R.id.btnFollow)
-		this.ivFollowedBy = view.findViewById(R.id.ivFollowedBy)
-		
-		this.llStatus = view.findViewById(R.id.llStatus)
-		
-		this.ivThumbnail = view.findViewById(R.id.ivThumbnail)
-		this.tvTime = view.findViewById(R.id.tvTime)
-		this.tvAcct = view.findViewById(R.id.tvAcct)
-		
-		this.llContentWarning = view.findViewById(R.id.llContentWarning)
-		this.tvContentWarning = view.findViewById(R.id.tvContentWarning)
-		this.btnContentWarning = view.findViewById(R.id.btnContentWarning)
-		
-		this.llContents = view.findViewById(R.id.llContents)
-		this.tvContent = view.findViewById(R.id.tvContent)
-		this.tvMentions = view.findViewById(R.id.tvMentions)
-		
-		this.llExtra = view.findViewById(R.id.llExtra)
-		
-		this.buttons_for_status = if(bSimpleList) null else StatusButtons(activity, column, view, false)
-		
-		this.flMedia = view.findViewById(R.id.flMedia)
-		this.btnShowMedia = view.findViewById(R.id.btnShowMedia)
-		this.ivMedia1 = view.findViewById(R.id.ivMedia1)
-		this.ivMedia2 = view.findViewById(R.id.ivMedia2)
-		this.ivMedia3 = view.findViewById(R.id.ivMedia3)
-		this.ivMedia4 = view.findViewById(R.id.ivMedia4)
-		
-		this.llSearchTag = view.findViewById(R.id.llSearchTag)
-		this.btnSearchTag = view.findViewById(R.id.btnSearchTag)
-		this.tvApplication = view.findViewById(R.id.tvApplication)
-		
-		this.llList = view.findViewById(R.id.llList)
-		this.btnListTL = view.findViewById(R.id.btnListTL)
-		val btnListMore = view.findViewById<View>(R.id.btnListMore)
+		if(bSimpleList) {
+			llButtonBar.visibility = View.GONE
+			this.buttons_for_status = null
+		} else {
+			llButtonBar.visibility = View.VISIBLE
+			this.buttons_for_status = StatusButtons(
+				activity,
+				column,
+				false,
+				
+				btnConversation = btnConversation,
+				btnReply = btnReply,
+				btnBoost = btnBoost,
+				btnFavourite = btnFavourite,
+				llFollow2 = llFollow2,
+				btnFollow2 = btnFollow2,
+				ivFollowedBy2 = ivFollowedBy2,
+				btnMore = btnMore
+			
+			)
+		}
 		
 		btnListTL.setOnClickListener(this)
 		btnListMore.setOnClickListener(this)
@@ -230,10 +212,7 @@ internal class ItemViewHolder(
 		tvMentions.movementMethod = MyLinkMovementMethod
 		tvContentWarning.movementMethod = MyLinkMovementMethod
 		
-		val v : View
-		//
-		v = view.findViewById(R.id.btnHideMedia)
-		v.setOnClickListener(this)
+		btnHideMedia.setOnClickListener(this)
 		
 		val lp = flMedia.layoutParams
 		lp.height = activity.app_state.media_thumb_height
@@ -248,9 +227,7 @@ internal class ItemViewHolder(
 			tvContentWarning.textSize = activity.timeline_font_size_sp
 			tvContent.textSize = activity.timeline_font_size_sp
 			btnShowMedia.textSize = activity.timeline_font_size_sp
-			if(tvApplication != null) {
-				tvApplication.textSize = activity.timeline_font_size_sp
-			}
+			tvApplication.textSize = activity.timeline_font_size_sp
 			btnListTL.textSize = activity.timeline_font_size_sp
 		}
 		
@@ -288,9 +265,11 @@ internal class ItemViewHolder(
 		llList.visibility = View.GONE
 		llExtra.removeAllViews()
 		
+		
+		
 		if(item == null) return
 		
-		var c: Int
+		var c : Int
 		
 		c = if(column.content_color != 0) column.content_color else content_color_default
 		tvBoosted.setTextColor(c)
@@ -300,15 +279,15 @@ internal class ItemViewHolder(
 		tvContentWarning.setTextColor(c)
 		tvContent.setTextColor(c)
 		//NSFWは文字色固定 btnShowMedia.setTextColor( c );
-		tvApplication?.setTextColor(c)
+		tvApplication.setTextColor(c)
 		
-			c =if(column.acct_color != 0) column.acct_color else Styler.getAttributeColor(activity, R.attr.colorTimeSmall)
-			this.acct_color = c
-			tvBoostedTime.setTextColor(c)
-			tvTime.setTextColor(c)
-			//			tvBoostedAcct.setTextColor( c );
-			//			tvFollowerAcct.setTextColor( c );
-			//			tvAcct.setTextColor( c );
+		c = if(column.acct_color != 0) column.acct_color else Styler.getAttributeColor(activity, R.attr.colorTimeSmall)
+		this.acct_color = c
+		tvBoostedTime.setTextColor(c)
+		tvTime.setTextColor(c)
+		//			tvBoostedAcct.setTextColor( c );
+		//			tvFollowerAcct.setTextColor( c );
+		//			tvAcct.setTextColor( c );
 		
 		this.item = item
 		when(item) {
@@ -563,18 +542,16 @@ internal class ItemViewHolder(
 		
 		buttons_for_status?.bind(status, (item as? TootNotification))
 		
-		if(tvApplication != null) {
-			val application = status.application
-			when(column.column_type) {
-				
-				Column.TYPE_CONVERSATION -> if(application == null) {
-					tvApplication.visibility = View.GONE
-				} else {
-					tvApplication.visibility = View.VISIBLE
-					tvApplication.text = activity.getString(R.string.application_is, application.name ?: "")
-				}
-				else -> tvApplication.visibility = View.GONE
+		val application = status.application
+		when(column.column_type) {
+			
+			Column.TYPE_CONVERSATION -> if(application == null) {
+				tvApplication.visibility = View.GONE
+			} else {
+				tvApplication.visibility = View.VISIBLE
+				tvApplication.text = activity.getString(R.string.application_is, application.name ?: "")
 			}
+			else -> tvApplication.visibility = View.GONE
 		}
 	}
 	
@@ -597,7 +574,7 @@ internal class ItemViewHolder(
 			val start = sb.length
 			sb.append(status.visibility)
 			val end = sb.length
-			val iconResId = Styler.getAttributeResourceId(activity,visIconAttrId )
+			val iconResId = Styler.getAttributeResourceId(activity, visIconAttrId)
 			sb.setSpan(EmojiImageSpan(activity, iconResId), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 		}
 		
@@ -700,34 +677,30 @@ internal class ItemViewHolder(
 		val pos = activity.nextPosition(column)
 		val item = this.item
 		val notification = (item as? TootNotification)
-		when(v.id) {
+		when(v) {
 			
-			R.id.btnHideMedia -> status__showing?.let { status ->
+			btnHideMedia -> status__showing?.let { status ->
 				MediaShown.save(status, false)
 				btnShowMedia.visibility = View.VISIBLE
 			}
 			
-			R.id.btnShowMedia -> status__showing?.let { status ->
+			btnShowMedia -> status__showing?.let { status ->
 				MediaShown.save(status, true)
 				btnShowMedia.visibility = View.GONE
 			}
 			
-			R.id.ivMedia1 -> clickMedia(0)
-			R.id.ivMedia2 -> clickMedia(1)
-			R.id.ivMedia3 -> clickMedia(2)
-			R.id.ivMedia4 -> clickMedia(3)
+			ivMedia1 -> clickMedia(0)
+			ivMedia2 -> clickMedia(1)
+			ivMedia3 -> clickMedia(2)
+			ivMedia4 -> clickMedia(3)
 			
-			R.id.ivCardThumbnail -> status__showing?.card?.url?.let { url ->
-				if(url.isNotEmpty()) App1.openCustomTab(activity, url)
-			}
-			
-			R.id.btnContentWarning -> status__showing?.let { status ->
+			btnContentWarning -> status__showing?.let { status ->
 				val new_shown = llContents.visibility == View.GONE
 				ContentWarning.save(status, new_shown)
 				list_adapter.notifyDataSetChanged()
 			}
 			
-			R.id.ivThumbnail -> status_account?.let { who ->
+			ivThumbnail -> status_account?.let { who ->
 				if(access_info.isPseudo) {
 					DlgContextMenu(activity, column, who, null, notification).show()
 				} else {
@@ -735,7 +708,7 @@ internal class ItemViewHolder(
 				}
 			}
 			
-			R.id.llBoosted -> boost_account?.let { who ->
+			llBoosted -> boost_account?.let { who ->
 				if(access_info.isPseudo) {
 					DlgContextMenu(activity, column, who, null, notification).show()
 				} else {
@@ -743,18 +716,18 @@ internal class ItemViewHolder(
 				}
 			}
 			
-			R.id.llFollow -> follow_account?.let { who ->
+			llFollow -> follow_account?.let { who ->
 				if(access_info.isPseudo) {
 					DlgContextMenu(activity, column, who, null, notification).show()
 				} else {
 					Action_User.profileLocal(activity, pos, access_info, who)
 				}
 			}
-			R.id.btnFollow -> follow_account?.let { who ->
+			btnFollow -> follow_account?.let { who ->
 				DlgContextMenu(activity, column, who, null, notification).show()
 			}
 			
-			R.id.btnSearchTag -> when(item) {
+			btnSearchTag -> when(item) {
 				is TootGap -> column.startGap(item)
 				
 				is TootDomainBlock -> {
@@ -772,11 +745,11 @@ internal class ItemViewHolder(
 				}
 			}
 			
-			R.id.btnListTL -> if(item is TootList) {
+			btnListTL -> if(item is TootList) {
 				activity.addColumn(pos, access_info, Column.TYPE_LIST_TL, item.id)
 			}
 			
-			R.id.btnListMore -> if(item is TootList) {
+			btnListMore -> if(item is TootList) {
 				ActionsDialog()
 					.addAction(activity.getString(R.string.list_timeline)) {
 						activity.addColumn(pos, access_info, Column.TYPE_LIST_TL, item.id)
@@ -794,6 +767,13 @@ internal class ItemViewHolder(
 					}
 					.show(activity, item.title)
 			}
+			
+			else -> when(v.id) {
+				R.id.ivCardThumbnail -> status__showing?.card?.url?.let { url ->
+					if(url.isNotEmpty()) App1.openCustomTab(activity, url)
+				}
+			}
+			
 		}
 	}
 	
@@ -801,41 +781,41 @@ internal class ItemViewHolder(
 		
 		val notification = (item as? TootNotification)
 		
-		when(v.id) {
+		when(v) {
 			
-			R.id.ivThumbnail -> {
+			ivThumbnail -> {
 				status_account?.let { who -> DlgContextMenu(activity, column, who, null, notification).show() }
 				return true
 			}
 			
-			R.id.llBoosted -> {
+			llBoosted -> {
 				boost_account?.let { who -> DlgContextMenu(activity, column, who, null, notification).show() }
 				return true
 			}
 			
-			R.id.llFollow -> {
+			llFollow -> {
 				follow_account?.let { who -> DlgContextMenu(activity, column, who, null, notification).show() }
 				return true
 			}
 			
-			R.id.btnFollow -> {
+			btnFollow -> {
 				follow_account?.let { who -> Action_Follow.followFromAnotherAccount(activity, activity.nextPosition(column), access_info, who) }
 				return true
 			}
 			
-			R.id.btnSearchTag -> {
+			btnSearchTag -> {
 				val item = this.item
 				when(item) {
-//					is TootGap -> column.startGap(item)
-//
-//					is TootDomainBlock -> {
-//						val domain = item.domain
-//						AlertDialog.Builder(activity)
-//							.setMessage(activity.getString(R.string.confirm_unblock_domain, domain))
-//							.setNegativeButton(R.string.cancel, null)
-//							.setPositiveButton(R.string.ok) { _, _ -> Action_Instance.blockDomain(activity, access_info, domain, false) }
-//							.show()
-//					}
+				//					is TootGap -> column.startGap(item)
+				//
+				//					is TootDomainBlock -> {
+				//						val domain = item.domain
+				//						AlertDialog.Builder(activity)
+				//							.setMessage(activity.getString(R.string.confirm_unblock_domain, domain))
+				//							.setNegativeButton(R.string.cancel, null)
+				//							.setPositiveButton(R.string.ok) { _, _ -> Action_Instance.blockDomain(activity, access_info, domain, false) }
+				//							.show()
+				//					}
 					
 					is String -> {
 						// search_tag は#を含まない
@@ -843,10 +823,10 @@ internal class ItemViewHolder(
 						val host = access_info.host
 						val url = "https://$host/tags/$tagEncoded"
 						Action_HashTag.timelineOtherInstance(
-							activity  =activity,
-							pos =activity.nextPosition(column),
-							url =url,
-							host =host,
+							activity = activity,
+							pos = activity.nextPosition(column),
+							url = url,
+							host = host,
 							tag_without_sharp = item
 						)
 					}
@@ -918,7 +898,7 @@ internal class ItemViewHolder(
 		addLinkAndCaption(sb, activity.getString(R.string.card_header_provider), card.provider_url, card.provider_name)
 		
 		val description = card.description
-		if( description != null && description.isNotEmpty() ) {
+		if(description != null && description.isNotEmpty()) {
 			if(sb.isNotEmpty()) sb.append("<br>")
 			sb.append(HTMLDecoder.encodeEntity(description))
 		}
@@ -928,7 +908,7 @@ internal class ItemViewHolder(
 		llExtra.addView(tv)
 		
 		val image = card.image
-		if( image != null && image.isNotEmpty()) {
+		if(image != null && image.isNotEmpty()) {
 			lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, activity.app_state.media_thumb_height)
 			lp.topMargin = (0.5f + llExtra.resources.displayMetrics.density * 3f).toInt()
 			val iv = MyNetworkImageView(activity)
@@ -1027,7 +1007,7 @@ internal class ItemViewHolder(
 				try {
 					form.put("item_index", Integer.toString(idx))
 				} catch(ex : Throwable) {
-					log.e(ex,"json encode failed.")
+					log.e(ex, "json encode failed.")
 					ex.printStackTrace()
 				}
 				
@@ -1056,6 +1036,414 @@ internal class ItemViewHolder(
 			}
 		})
 	}
+	
+	private fun inflate(ui : AnkoContext<Context>) = with(ui) {
+		verticalLayout {
+			// トップレベルのViewGroupのlparamsはイニシャライザ内部に置くしかないみたい
+			lparams(matchParent, wrapContent)
+			
+			topPadding = dip(3)
+			bottomPadding = dip(3)
+			descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+			
+			llBoosted = linearLayout {
+				lparams(matchParent, wrapContent) {
+					bottomMargin = dip(6)
+				}
+				
+				background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+				gravity = Gravity.CENTER_VERTICAL
+				
+				ivBoosted = imageView {
+					scaleType = ImageView.ScaleType.FIT_END
+					importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+				}.lparams(dip(48), dip(32)) {
+					endMargin = dip(4)
+				}
+				
+				verticalLayout {
+					lparams(dip(0), wrapContent) {
+						weight = 1f
+					}
+					
+					linearLayout {
+						lparams(matchParent, wrapContent)
+						
+						tvBoostedAcct = textView {
+							ellipsize = TextUtils.TruncateAt.END
+							gravity = Gravity.END
+							maxLines = 1
+							textColor = Styler.getAttributeColor(context, R.attr.colorTimeSmall)
+							textSize = 12f // textSize の単位はSP
+							// tools:text ="who@hoge"
+						}.lparams(dip(0), wrapContent) {
+							weight = 1f
+						}
+						
+						tvBoostedTime = textView {
+							
+							startPadding = dip(2)
+							
+							gravity = Gravity.END
+							textColor = Styler.getAttributeColor(context, R.attr.colorTimeSmall)
+							textSize = 12f // textSize の単位はSP
+							// tools:ignore="RtlSymmetry"
+							// tools:text="2017-04-16 09:37:14"
+						}.lparams(wrapContent, wrapContent)
+						
+					}
+					
+					tvBoosted = textView {
+						// tools:text = "～にブーストされました"
+					}.lparams(matchParent, wrapContent)
+				}
+			}
+			
+			llFollow = linearLayout {
+				lparams(matchParent, wrapContent)
+				
+				background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+				gravity = Gravity.CENTER_VERTICAL
+				
+				ivFollow = myNetworkImageView {
+					contentDescription = context.getString(R.string.thumbnail)
+					scaleType = ImageView.ScaleType.FIT_END
+				}.lparams(dip(48), dip(40)) {
+					endMargin = dip(4)
+				}
+				
+				verticalLayout {
+					
+					lparams(dip(0), wrapContent) {
+						weight = 1f
+					}
+					
+					tvFollowerName = textView {
+						// tools:text="Follower Name"
+					}.lparams(matchParent, wrapContent)
+					
+					tvFollowerAcct = textView {
+						setPaddingStartEnd(dip(4), dip(4))
+						textColor = Styler.getAttributeColor(context, R.attr.colorTimeSmall)
+						textSize = 12f // SP
+						// tools:text="aaaaaaaaaaaaaaaa"
+					}.lparams(matchParent, wrapContent)
+				}
+				
+				frameLayout {
+					lparams(dip(40), dip(40)) {
+						startMargin = dip(4)
+					}
+					
+					btnFollow = imageButton {
+						background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+						contentDescription = context.getString(R.string.follow)
+						scaleType = ImageView.ScaleType.CENTER
+						// tools:src="?attr/ic_follow_plus"
+					}.lparams(matchParent, matchParent)
+					
+					ivFollowedBy = imageView {
+						scaleType = ImageView.ScaleType.CENTER
+						// tools:src="?attr/ic_followed_by"
+						importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+					}.lparams(matchParent, matchParent)
+					
+				}
+			}
+			
+			llStatus = verticalLayout {
+				lparams(matchParent, wrapContent)
+				
+				linearLayout {
+					lparams(matchParent, wrapContent)
+					
+					tvAcct = textView {
+						ellipsize = TextUtils.TruncateAt.END
+						gravity = Gravity.END
+						maxLines = 1
+						textColor = Styler.getAttributeColor(context, R.attr.colorTimeSmall)
+						textSize = 12f // SP
+						// tools:text="who@hoge"
+					}.lparams(dip(0), wrapContent) {
+						weight = 1f
+					}
+					
+					tvTime = textView {
+						gravity = Gravity.END
+						startPadding = dip(2)
+						textColor = Styler.getAttributeColor(context, R.attr.colorTimeSmall)
+						textSize = 12f // SP
+						// tools:ignore="RtlSymmetry"
+						// tools:text="2017-04-16 09:37:14"
+					}.lparams(wrapContent, wrapContent)
+					
+				}
+				
+				linearLayout {
+					lparams(matchParent, wrapContent)
+					
+					ivThumbnail = myNetworkImageView {
+						background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+						contentDescription = context.getString(R.string.thumbnail)
+						scaleType = ImageView.ScaleType.CENTER_CROP
+					}.lparams(dip(48), dip(48)) {
+						topMargin = dip(4)
+						endMargin = dip(4)
+					}
+					
+					verticalLayout {
+						lparams(dip(0), wrapContent) {
+							weight = 1f
+						}
+						
+						tvName = textView {
+							
+							// tools:text="Displayname"
+						}.lparams(matchParent, wrapContent)
+						
+						llContentWarning = linearLayout {
+							lparams(matchParent, wrapContent) {
+								topMargin = dip(3)
+								isBaselineAligned = false
+							}
+							gravity = Gravity.CENTER_VERTICAL
+							
+							btnContentWarning = button {
+								
+								background = ContextCompat.getDrawable(context, R.drawable.btn_bg_ddd)
+								minWidthCompat = dip(40)
+								padding = dip(4)
+								//tools:text="見る"
+							}.lparams(wrapContent, dip(40)) {
+								endMargin = dip(8)
+							}
+							
+							verticalLayout {
+								lparams(dip(0), wrapContent) {
+									weight = 1f
+								}
+								
+								tvMentions = myTextView {
+								}.lparams(matchParent, wrapContent)
+								
+								tvContentWarning = myTextView {
+								}.lparams(matchParent, wrapContent) {
+									topMargin = dip(3)
+								}
+								
+							}
+							
+						}
+						
+						llContents = verticalLayout {
+							lparams(matchParent, wrapContent)
+							
+							tvContent = myTextView {
+								setLineSpacing(lineSpacingExtra, 1.1f)
+								// tools:text="Contents\nContents"
+							}.lparams(matchParent, wrapContent) {
+								topMargin = dip(3)
+							}
+							
+							flMedia = frameLayout {
+								lparams(matchParent, dip(64)) {
+									topMargin = dip(3)
+								}
+								
+								linearLayout {
+									lparams(matchParent, matchParent)
+									
+									ivMedia1 = myNetworkImageView {
+										
+										background = ContextCompat.getDrawable(context, R.drawable.btn_bg_ddd)
+										contentDescription = context.getString(R.string.thumbnail)
+										scaleType = ImageView.ScaleType.CENTER_CROP
+										
+									}.lparams(0, matchParent) {
+										weight = 1f
+									}
+									
+									ivMedia2 = myNetworkImageView {
+										
+										background = ContextCompat.getDrawable(context, R.drawable.btn_bg_ddd)
+										contentDescription = context.getString(R.string.thumbnail)
+										scaleType = ImageView.ScaleType.CENTER_CROP
+										
+									}.lparams(0, matchParent) {
+										startMargin = dip(8)
+										weight = 1f
+									}
+									
+									ivMedia3 = myNetworkImageView {
+										
+										background = ContextCompat.getDrawable(context, R.drawable.btn_bg_ddd)
+										contentDescription = context.getString(R.string.thumbnail)
+										scaleType = ImageView.ScaleType.CENTER_CROP
+										
+									}.lparams(0, matchParent) {
+										startMargin = dip(8)
+										weight = 1f
+									}
+									
+									ivMedia4 = myNetworkImageView {
+										
+										background = ContextCompat.getDrawable(context, R.drawable.btn_bg_ddd)
+										contentDescription = context.getString(R.string.thumbnail)
+										scaleType = ImageView.ScaleType.CENTER_CROP
+										
+									}.lparams(0, matchParent) {
+										startMargin = dip(8)
+										weight = 1f
+									}
+									
+									btnHideMedia = imageButton {
+										
+										background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+										contentDescription = "@string/hide"
+										imageResource = Styler.getAttributeResourceId(context, R.attr.btn_close)
+									}.lparams(dip(32), matchParent) {
+										startMargin = dip(8)
+									}
+								}
+								
+								btnShowMedia = textView {
+									
+									backgroundColor = Styler.getAttributeColor(context, R.attr.colorShowMediaBackground)
+									gravity = Gravity.CENTER
+									text = context.getString(R.string.tap_to_show)
+									textColor = Styler.getAttributeColor(context, R.attr.colorShowMediaText)
+									
+								}.lparams(matchParent, matchParent)
+							}
+							
+							
+							llExtra = verticalLayout {
+								lparams(matchParent, wrapContent) {
+									topMargin = dip(0)
+								}
+							}
+						}
+						
+						// button bar
+						llButtonBar = linearLayout {
+							lparams(wrapContent, dip(40)) {
+								topMargin = dip(3)
+							}
+							
+							btnConversation = imageButton {
+								
+								background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+								contentDescription = context.getString(R.string.conversation_view)
+								minimumWidth = dip(40)
+								imageResource = Styler.getAttributeResourceId(context, R.attr.ic_conversation)
+							}.lparams(wrapContent, matchParent)
+							
+							btnReply = imageButton {
+								
+								background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+								contentDescription = context.getString(R.string.reply)
+								minimumWidth = dip(40)
+								imageResource = Styler.getAttributeResourceId(context, R.attr.btn_reply)
+								
+							}.lparams(wrapContent, matchParent) {
+								startMargin = dip(2)
+							}
+							
+							btnBoost = button {
+								
+								background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+								compoundDrawablePadding = dip(4)
+								
+								minWidthCompat = dip(48)
+								setPaddingStartEnd(dip(4), dip(4))
+							}.lparams(wrapContent, matchParent) {
+								startMargin = dip(2)
+							}
+							
+							btnFavourite = button {
+								background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+								compoundDrawablePadding = dip(4)
+								minWidthCompat = dip(48)
+								setPaddingStartEnd(dip(4), dip(4))
+								
+							}.lparams(wrapContent, matchParent) {
+								startMargin = dip(2)
+							}
+							
+							llFollow2 = frameLayout {
+								lparams(dip(40), dip(40)) {
+									startMargin = dip(2)
+								}
+								
+								btnFollow2 = imageButton {
+									
+									background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+									contentDescription = context.getString(R.string.follow)
+									scaleType = ImageView.ScaleType.CENTER
+									// tools:src="?attr/ic_follow_plus"
+									minimumWidth = dip(40)
+									
+								}.lparams(matchParent, matchParent)
+								
+								ivFollowedBy2 = imageView {
+									
+									scaleType = ImageView.ScaleType.CENTER
+									imageResource = Styler.getAttributeResourceId(context, R.attr.ic_followed_by)
+									importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+								}.lparams(matchParent, matchParent)
+							}
+							
+							btnMore = imageButton {
+								background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+								contentDescription = context.getString(R.string.more)
+								imageResource = Styler.getAttributeResourceId(context, R.attr.btn_more)
+								minimumWidth = dip(40)
+							}.lparams(wrapContent, matchParent) {
+								startMargin = dip(2)
+							}
+							
+						}
+						
+						tvApplication = textView {
+							gravity = Gravity.END
+						}.lparams(matchParent, wrapContent)
+						
+					}
+				}
+				
+			}
+			
+			llSearchTag = linearLayout {
+				lparams(matchParent, wrapContent)
+				
+				btnSearchTag = button {
+					background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+					allCaps = false
+				}.lparams(matchParent, wrapContent)
+			}
+			
+			llList = linearLayout {
+				lparams(matchParent, wrapContent)
+				
+				btnListTL = button {
+					background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+					allCaps = false
+				}.lparams(0, wrapContent) {
+					weight = 1f
+				}
+				
+				btnListMore = imageButton {
+					
+					background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+					imageResource = Styler.getAttributeResourceId(context, R.attr.btn_more)
+					contentDescription = context.getString(R.string.more)
+				}.lparams(dip(40), dip(40)) {
+					startMargin = dip(4)
+				}
+			}
+		}
+	}
+	
 }
 
 

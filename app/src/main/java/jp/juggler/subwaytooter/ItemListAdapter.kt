@@ -60,8 +60,8 @@ internal class ItemListAdapter(private val activity : ActMain, private val colum
 		val holder : ItemViewHolder
 		val view : View
 		if(viewOld == null) {
-			view = activity.layoutInflater.inflate(if(bSimpleList) R.layout.lv_status_simple else R.layout.lv_status, parent, false)
-			holder = ItemViewHolder(activity, column, this, view, bSimpleList)
+			holder = ItemViewHolder(activity, column, this, bSimpleList)
+			view = holder.viewRoot
 			view.tag = holder
 		} else {
 			view = viewOld

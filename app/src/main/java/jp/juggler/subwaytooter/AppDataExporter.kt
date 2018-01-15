@@ -10,6 +10,7 @@ import android.provider.BaseColumns
 import android.util.JsonReader
 import android.util.JsonToken
 import android.util.JsonWriter
+import jp.juggler.subwaytooter.table.*
 
 import org.json.JSONException
 import org.json.JSONObject
@@ -19,11 +20,6 @@ import java.util.ArrayList
 import java.util.HashMap
 import java.util.Locale
 
-import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.table.ClientInfo
-import jp.juggler.subwaytooter.table.MutedApp
-import jp.juggler.subwaytooter.table.MutedWord
-import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.Utils
 
@@ -40,6 +36,7 @@ object AppDataExporter {
 	private const val KEY_MUTED_APP = "muted_app"
 	private const val KEY_MUTED_WORD = "muted_word"
 	private const val KEY_CLIENT_INFO = "client_info2"
+	private const val KEY_HIGHLIGHT_WORD = "highlight_word"
 	
 	@Throws(IOException::class, JSONException::class)
 	private fun writeJSONObject(writer : JsonWriter, src : JSONObject) {
@@ -434,6 +431,7 @@ object AppDataExporter {
 		writeFromTable(writer, KEY_MUTED_APP, MutedApp.table)
 		writeFromTable(writer, KEY_MUTED_WORD, MutedWord.table)
 		writeFromTable(writer, KEY_CLIENT_INFO, ClientInfo.table)
+		writeFromTable(writer, KEY_HIGHLIGHT_WORD, HighlightWord.table)
 		
 		//////////////////////////////////////
 		run {
@@ -459,19 +457,20 @@ object AppDataExporter {
 		while(reader.hasNext()) {
 			val name = reader.nextName()
 			
-			when {
-				KEY_PREF == name -> importPref(reader, app_state.pref)
-				KEY_ACCOUNT == name -> importTable(reader, SavedAccount.table, account_id_map)
+			when (name){
+				KEY_PREF  -> importPref(reader, app_state.pref)
+				KEY_ACCOUNT  -> importTable(reader, SavedAccount.table, account_id_map)
 				
-				KEY_ACCT_COLOR == name -> {
+				KEY_ACCT_COLOR  -> {
 					importTable(reader, AcctColor.table, null)
 					AcctColor.clearMemoryCache()
 				}
 				
-				KEY_MUTED_APP == name -> importTable(reader, MutedApp.table, null)
-				KEY_MUTED_WORD == name -> importTable(reader, MutedWord.table, null)
-				KEY_CLIENT_INFO == name -> importTable(reader, ClientInfo.table, null)
-				KEY_COLUMN == name -> result = readColumn(app_state, reader, account_id_map)
+				KEY_MUTED_APP  -> importTable(reader, MutedApp.table, null)
+				KEY_MUTED_WORD  -> importTable(reader, MutedWord.table, null)
+				KEY_HIGHLIGHT_WORD -> importTable(reader, HighlightWord.table, null)
+				KEY_CLIENT_INFO  -> importTable(reader, ClientInfo.table, null)
+				KEY_COLUMN  -> result = readColumn(app_state, reader, account_id_map)
 			}
 		}
 		

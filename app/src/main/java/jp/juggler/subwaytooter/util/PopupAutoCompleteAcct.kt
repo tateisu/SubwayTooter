@@ -5,6 +5,7 @@ import android.app.Activity
 import android.os.Handler
 import android.support.v4.content.ContextCompat
 import android.text.Spannable
+import android.text.SpannableStringBuilder
 import android.view.Gravity
 import android.view.View
 import android.widget.CheckedTextView
@@ -45,7 +46,7 @@ internal class PopupAutoCompleteAcct(
 	fun dismiss() {
 		try {
 			acct_popup.dismiss()
-		}catch(ex: Throwable){
+		} catch(ex : Throwable) {
 			log.trace(ex)
 		}
 	}
@@ -56,7 +57,7 @@ internal class PopupAutoCompleteAcct(
 		
 		popup_width = (0.5f + 240f * density).toInt()
 		
-		 val viewRoot = activity.layoutInflater.inflate(R.layout.acct_complete_popup, null, false)
+		val viewRoot = activity.layoutInflater.inflate(R.layout.acct_complete_popup, null, false)
 		llItems = viewRoot.findViewById(R.id.llItems)
 		//
 		acct_popup = PopupWindow(activity)
@@ -83,7 +84,7 @@ internal class PopupAutoCompleteAcct(
 				.inflate(R.layout.lv_spinner_dropdown, llItems, false) as CheckedTextView
 			v.setTextColor(Styler.getAttributeColor(activity, android.R.attr.textColorPrimary))
 			v.setText(R.string.close)
-			v.setOnClickListener { acct_popup .dismiss() }
+			v.setOnClickListener { acct_popup.dismiss() }
 			llItems.addView(v)
 			++ popup_rows
 		}
@@ -94,7 +95,7 @@ internal class PopupAutoCompleteAcct(
 			v.setTextColor(Styler.getAttributeColor(activity, android.R.attr.textColorPrimary))
 			v.text = picker_caption
 			v.setOnClickListener {
-				acct_popup .dismiss()
+				acct_popup.dismiss()
 				picker_callback.run()
 			}
 			llItems.addView(v)
@@ -115,12 +116,17 @@ internal class PopupAutoCompleteAcct(
 					NetworkEmojiInvalidator(handler, v).register(acct)
 				}
 				v.setOnClickListener {
-					var s = et.text.toString()
-					val svInsert = if(acct[0] == ' ') acct.subSequence(2, acct.length) else acct
-					s = s.substring(0, sel_start) + svInsert + " " + if(sel_end >= s.length) "" else s.substring(sel_end)
-					et.setText(s)
-					et.setSelection(sel_start + svInsert.length + 1)
-					acct_popup .dismiss()
+					val svInsert : Spannable = SpannableStringBuilder()
+						.append(if(acct[0] == ' ') acct.subSequence(2, acct.length) else acct)
+						.append(" ")
+					val s = et.text
+					val sb = SpannableStringBuilder()
+						.append(s.subSequence(0, Math.min(s.length, sel_start)))
+						.append(svInsert)
+						.append(s.subSequence(Math.min(s.length, sel_end), s.length))
+					et.text = sb
+					et.setSelection(sel_start + svInsert.length)
+					acct_popup.dismiss()
 				}
 				
 				llItems.addView(v)

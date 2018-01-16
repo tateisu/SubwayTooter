@@ -38,7 +38,6 @@ import android.util.SparseBooleanArray
 
 import android.database.Cursor
 import android.net.Uri
-import android.view.GestureDetector
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
@@ -57,7 +56,6 @@ import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
 
 import it.sephiroth.android.library.exif2.ExifInterface
-import okhttp3.Response
 
 @Suppress("unused")
 object Utils {
@@ -198,14 +196,30 @@ object Utils {
 		runOnMainThread {
 			
 			// 前回のトーストの表示を終了する
-			refToast?.get()?.cancel()
+			try {
+				refToast?.get()?.cancel()
+			} catch(ex : Throwable) {
+				log.trace(ex)
+			} finally {
+				refToast = null
+			}
 			
 			// 新しいトーストを作る
-			val t = Toast.makeText(
-				context, message, if(bLong) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
-			)
-			refToast = WeakReference(t)
-			t.show()
+			try {
+				val t = Toast.makeText(
+					context, message, if(bLong) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
+				)
+				t.show()
+				refToast = WeakReference(t)
+			} catch(ex : Throwable) {
+				log.trace(ex)
+				// android.view.WindowManager$BadTokenException:
+				// at android.view.ViewRootImpl.setView (ViewRootImpl.java:679)
+				// at android.view.WindowManagerGlobal.addView (WindowManagerGlobal.java:342)
+				// at android.view.WindowManagerImpl.addView (WindowManagerImpl.java:94)
+				// at android.widget.Toast$TN.handleShow (Toast.java:435)
+				// at android.widget.Toast$TN$2.handleMessage (Toast.java:345)
+			}
 		}
 	}
 	
@@ -849,7 +863,6 @@ object Utils {
 		}
 		return null
 	}
-	
 	
 	fun scanView(view : View?, callback : (view : View) -> Unit) {
 		view ?: return

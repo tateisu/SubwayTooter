@@ -5,11 +5,9 @@ import android.net.Uri
 import android.os.Handler
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.text.Editable
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.TextWatcher
+import android.text.*
 import android.view.View
+import jp.juggler.emoji.EmojiMap201709
 
 import org.json.JSONArray
 import org.json.JSONException
@@ -43,7 +41,7 @@ class PostHelper(
 	private val activity : AppCompatActivity,
 	private val pref : SharedPreferences,
 	private val handler : Handler
-){
+) {
 	
 	companion object {
 		private val log = LogCategory("PostHelper")
@@ -76,27 +74,27 @@ class PostHelper(
 	var enquete_items : ArrayList<String>? = null
 	
 	fun post(account : SavedAccount, bConfirmTag : Boolean, bConfirmAccount : Boolean, callback : PostCompleteCallback) {
-		val content = this.content ?:""
+		val content = this.content ?: ""
 		val spoiler_text = this.spoiler_text
 		val bNSFW = this.bNSFW
 		val in_reply_to_id = this.in_reply_to_id
 		val attachment_list = this.attachment_list
 		val enquete_items = this.enquete_items
-		var visibility = this.visibility ?:""
+		var visibility = this.visibility ?: ""
 		
-		if(content.isEmpty() ) {
+		if(content.isEmpty()) {
 			Utils.showToast(activity, true, R.string.post_error_contents_empty)
 			return
 		}
 		
 		// nullはCWチェックなしを示す
 		// nullじゃなくてカラならエラー
-		if(spoiler_text != null && spoiler_text.isEmpty() ) {
+		if(spoiler_text != null && spoiler_text.isEmpty()) {
 			Utils.showToast(activity, true, R.string.post_error_contents_warning_empty)
 			return
 		}
 		
-		if(visibility.isEmpty() ) {
+		if(visibility.isEmpty()) {
 			visibility = TootStatus.VISIBILITY_PUBLIC
 		}
 		
@@ -168,7 +166,7 @@ class PostHelper(
 			
 			internal fun getInstanceInformation(client : TootApiClient) : TootApiResult? {
 				val result = client.request("/api/v1/instance")
-				instance_tmp = parseItem(::TootInstance,result?.jsonObject)
+				instance_tmp = parseItem(::TootInstance, result?.jsonObject)
 				return result
 			}
 			
@@ -207,12 +205,12 @@ class PostHelper(
 					
 					val json = JSONObject()
 					try {
-						json.put("status", EmojiDecoder.decodeShortCode(content ))
+						json.put("status", EmojiDecoder.decodeShortCode(content))
 						if(visibility_checked != null) {
 							json.put("visibility", visibility_checked)
 						}
 						json.put("sensitive", bNSFW)
-						json.put("spoiler_text", EmojiDecoder.decodeShortCode(spoiler_text?:""))
+						json.put("spoiler_text", EmojiDecoder.decodeShortCode(spoiler_text ?: ""))
 						json.put("in_reply_to_id", if(in_reply_to_id == - 1L) null else in_reply_to_id)
 						var array = JSONArray()
 						if(attachment_list != null) {
@@ -241,7 +239,7 @@ class PostHelper(
 					val sb = StringBuilder()
 					
 					sb.append("status=")
-					sb.append(Uri.encode(EmojiDecoder.decodeShortCode(content )))
+					sb.append(Uri.encode(EmojiDecoder.decodeShortCode(content)))
 					
 					if(visibility_checked != null) {
 						sb.append("&visibility=")
@@ -252,7 +250,7 @@ class PostHelper(
 						sb.append("&sensitive=1")
 					}
 					
-					if(spoiler_text?.isNotEmpty()==true) {
+					if(spoiler_text?.isNotEmpty() == true) {
 						sb.append("&spoiler_text=")
 						sb.append(Uri.encode(EmojiDecoder.decodeShortCode(spoiler_text)))
 					}
@@ -346,27 +344,27 @@ class PostHelper(
 	
 	private var instance : String? = null
 	
-	private val onEmojiListLoad : (list : ArrayList<CustomEmoji> ) -> Unit
+	private val onEmojiListLoad : (list : ArrayList<CustomEmoji>) -> Unit
 		= { _ : ArrayList<CustomEmoji> ->
-			val popup = this@PostHelper.popup
-			if(popup?.isShowing == true) proc_text_changed.run()
-		}
+		val popup = this@PostHelper.popup
+		if(popup?.isShowing == true) proc_text_changed.run()
+	}
 	
 	private val proc_text_changed = object : Runnable {
 		override fun run() {
 			val et = this@PostHelper.et
-			if( et==null || callback2?.canOpenPopup() != true) {
+			if(et == null || callback2?.canOpenPopup() != true) {
 				closeAcctPopup()
 				return
 			}
 			
-			var start = et .selectionStart
-			val end = et .selectionEnd
+			var start = et.selectionStart
+			val end = et.selectionEnd
 			if(start != end) {
 				closeAcctPopup()
 				return
 			}
-			val src = et .text.toString()
+			val src = et.text.toString()
 			var count_atMark = 0
 			val pos_atMark = IntArray(2)
 			while(true) {
@@ -413,7 +411,7 @@ class PostHelper(
 			if(acct_list.isEmpty()) {
 				closeAcctPopup()
 			} else {
-				openPopup()?.setList(et , start, end, acct_list, null, null)
+				openPopup()?.setList(et, start, end, acct_list, null, null)
 			}
 		}
 		
@@ -522,7 +520,6 @@ class PostHelper(
 		this@PostHelper.popup = popup
 		return popup
 	}
-
 	
 	interface Callback2 {
 		fun onTextUpdate()
@@ -566,14 +563,14 @@ class PostHelper(
 		this.callback2 = _callback2
 		this.bMainScreen = bMainScreen
 		
-		et .addTextChangedListener(object : TextWatcher {
+		et.addTextChangedListener(object : TextWatcher {
 			override fun beforeTextChanged(s : CharSequence, start : Int, count : Int, after : Int) {
 			
 			}
 			
 			override fun onTextChanged(s : CharSequence, start : Int, before : Int, count : Int) {
 				handler.removeCallbacks(proc_text_changed)
-				handler.postDelayed(proc_text_changed, if(popup?.isShowing ==true ) 100L else 500L)
+				handler.postDelayed(proc_text_changed, if(popup?.isShowing == true) 100L else 500L)
 			}
 			
 			override fun afterTextChanged(s : Editable) {
@@ -581,7 +578,7 @@ class PostHelper(
 			}
 		})
 		
-		et .setOnSelectionChangeListener(object : MyEditText.OnSelectionChangeListener {
+		et.setOnSelectionChangeListener(object : MyEditText.OnSelectionChangeListener {
 			override fun onSelectionChanged(selStart : Int, selEnd : Int) {
 				if(selStart != selEnd) {
 					// 範囲選択されてるならポップアップは閉じる
@@ -596,25 +593,33 @@ class PostHelper(
 		
 	}
 	
-	private val open_picker_emoji :Runnable = Runnable {
-		EmojiPicker(activity, instance){ name ->
+	private val open_picker_emoji : Runnable = Runnable {
+		EmojiPicker(activity, instance) { name, instance, bInstanceHasCustomEmoji ->
 			val et = this.et ?: return@EmojiPicker
-
-			val src = et.text.toString()
-			val end = et.selectionEnd
-
-			val last_colon = src.lastIndexOf(':', end - 1)
-			if(last_colon == - 1 || end - last_colon < 1) return@EmojiPicker
-
-			val svInsert = ":$name: "
-			val newText = StringBuilder()
-				.append(src.substring(0, last_colon))
-				.append(svInsert)
-				.append( if(end >= src.length) "" else src.substring(end) )
-				.toString()
 			
-			et.setText(newText)
-			et.setSelection(last_colon + svInsert.length )
+			val src = et.text
+			val src_length = src.length
+			val end = et.selectionEnd
+			val start = src.lastIndexOf(':', end - 1)
+			if(start == - 1 || end - start < 1) return@EmojiPicker
+			
+			val item = EmojiMap201709.sShortNameToImageId[name]
+			val svInsert : Spannable = if(item == null || instance != null ) {
+				SpannableString(":$name: ")
+			}else if(!bInstanceHasCustomEmoji){
+				// 古いタンスだとshortcodeを使う。見た目は絵文字に変える。
+				DecodeOptions().decodeEmoji(activity, ":$name: ")
+			} else {
+				// 十分に新しいタンスなら絵文字のunicodeを使う。見た目は絵文字に変える。
+				DecodeOptions().decodeEmoji(activity, item.unified)
+			}
+			val newText = SpannableStringBuilder()
+				.append(src.subSequence(0, start))
+				.append(svInsert)
+				if( end <src_length) newText.append(src.subSequence(end, src_length))
+			
+			et.text = newText
+			et.setSelection(start + svInsert.length)
 			
 			proc_text_changed.run()
 			
@@ -624,22 +629,28 @@ class PostHelper(
 		}.show()
 	}
 	
-	fun openEmojiPickerFromMore(){
-		EmojiPicker(activity, instance){ name->
-			val et = this.et?:return@EmojiPicker
-			val src = et.text.toString()
-			val end = et.selectionEnd
-			val insert_start = if( end >= src.length ) src.length else end
+	fun openEmojiPickerFromMore() {
+		EmojiPicker(activity, instance) { name, instance, bInstanceHasCustomEmoji ->
+			val et = this.et ?: return@EmojiPicker
 			
-			val svInsert = ":$name: "
-			val newText = StringBuilder()
-				.append(src.substring(0,insert_start))
+			val src = et.text
+			val src_length = src.length
+			val start = Math.min(src_length, et.selectionStart)
+			val end = Math.min(src_length, et.selectionEnd)
+			
+			val item = EmojiMap201709.sShortNameToImageId[name]
+			val svInsert : Spannable = if(item == null || instance != null || ! bInstanceHasCustomEmoji) {
+				SpannableString(":$name: ")
+			} else {
+				DecodeOptions(decodeEmoji = true).decodeEmoji(activity, item.unified)
+			}
+			val newText = SpannableStringBuilder()
+				.append(src.subSequence(0, start))
 				.append(svInsert)
-				.append( src.substring(insert_start) )
-				.toString()
+			if( end <src_length) newText.append(src.subSequence(end, src_length))
 			
-			et.setText(newText)
-			et.setSelection(insert_start + svInsert.length )
+			et.text = newText
+			et.setSelection(start + svInsert.length)
 			
 			proc_text_changed.run()
 		}.show()

@@ -510,8 +510,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					if(Intent.ACTION_SEND == action) {
 						val sv = sent_intent.getStringExtra(Intent.EXTRA_TEXT)
 						if(sv != null) {
-							etContent.setText(sv)
-							etContent.setSelection(sv.length)
+							val svEmoji = DecodeOptions(decodeEmoji = true).decodeEmoji(this,sv)
+							etContent.setText(svEmoji)
+							etContent.setSelection(svEmoji.length)
 						}
 					}
 					
@@ -520,8 +521,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			
 			var sv : String? = intent.getStringExtra(KEY_INITIAL_TEXT)
 			if(sv != null) {
-				etContent.setText(sv)
-				etContent.setSelection(sv.length)
+				val svEmoji = DecodeOptions(decodeEmoji = true).decodeEmoji(this,sv)
+				etContent.setText(svEmoji)
+				etContent.setSelection(svEmoji.length)
 			}
 			
 			val account = this.account
@@ -572,8 +574,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						}
 						if(sb.isNotEmpty()) {
 							sb.append(' ')
-							etContent.setText(sb.toString())
-							etContent.setSelection(sb.length)
+							val svEmoji = DecodeOptions(decodeEmoji = true).decodeEmoji(this,sb.toString())
+							etContent.setText(svEmoji)
+							etContent.setSelection(svEmoji.length)
 						}
 						
 						// リプライ表示をつける
@@ -1280,7 +1283,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		showMediaAttachment()
 		Utils.showToast(this, false, R.string.attachment_uploading)
 		
-		TootTaskRunner(this).run(account  , object : TootTask {
+		TootTaskRunner(this,TootTaskRunner.PROGRESS_NONE).run(account  , object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				if(mime_type.isEmpty()) {
 					return TootApiResult("mime_type is empty.")
@@ -1832,8 +1835,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				val reply_image = draft.optString(DRAFT_REPLY_IMAGE, null)
 				val reply_url = draft.optString(DRAFT_REPLY_URL, null)
 				
-				etContent.setText(content)
-				etContent.setSelection(content.length)
+				val evEmoji = DecodeOptions(decodeEmoji = true).decodeEmoji(this@ActPost,content)
+				etContent.setText(evEmoji)
+				etContent.setSelection(evEmoji.length)
 				etContentWarning.setText(content_warning)
 				etContentWarning.setSelection(content_warning.length)
 				cbContentWarning.isChecked = content_warning_checked

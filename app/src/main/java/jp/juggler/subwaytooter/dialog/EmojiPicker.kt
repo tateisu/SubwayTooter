@@ -32,7 +32,8 @@ import jp.juggler.subwaytooter.view.NetworkEmojiView
 class EmojiPicker(
 	private val activity : Activity,
 	private val instance : String?,
-	private val onEmojiPicked: (name : String)->Unit
+	private val onEmojiPicked: (name : String,instance:String?,bInstanceHasCustomEmoji:Boolean)->Unit
+	// onEmojiPickedのinstance引数は通常の絵文字ならnull、カスタム絵文字なら非null、
 ) : View.OnClickListener {
 	
 	companion object {
@@ -158,9 +159,11 @@ class EmojiPicker(
 	}
 	
 
+	var bInstanceHasCustomEmoji = false
 	
 	private fun setCustomEmojiList(list : ArrayList<CustomEmoji>?) {
 		if(list == null) return
+		bInstanceHasCustomEmoji = true
 		custom_list.clear()
 		for(emoji in list) {
 			custom_list.add(EmojiItem(emoji.shortcode, instance))
@@ -336,8 +339,8 @@ class EmojiPicker(
 				// カスタム絵文字
 				selected(name, item.instance)
 			}else{
+				EmojiMap201709.sShortNameToImageId[name] ?: return
 				// 普通の絵文字
-				if(EmojiMap201709.sShortNameToImageId[name] == null) return
 				selected( if(selected_tone != 0) applySkinTone(name) else name, null)
 			}
 		}
@@ -367,12 +370,18 @@ class EmojiPicker(
 		}
 		
 		// 選択された絵文字と同じ項目を除去
-		for(i in list.indices.reversed()) {
-			val item = list[i]
-			if(name == Utils.optStringX(item, "name")) {
-				if(if(instance == null) item.isNull("instance") else instance == Utils.optStringX(item, "instance")) {
-					list.removeAt(i)
-					
+		// 項目が増えすぎたら減らす
+		run{
+			val it = list.iterator()
+			var nCount = 0
+			while( it.hasNext()) {
+				val item = it.next()
+				if(name == Utils.optStringX(item, "name")
+					&& instance == Utils.optStringX(item, "instance")
+					) {
+					it.remove()
+				}else if( ++nCount >= 256){
+					it.remove()
 				}
 			}
 		}
@@ -386,11 +395,6 @@ class EmojiPicker(
 		} catch(ignored : Throwable) {
 		}
 		
-		// 項目が増えすぎたら減らす
-		while(list.size >= 256) {
-			list.removeAt(list.size - 1)
-		}
-		
 		// 保存する
 		try {
 			val array = JSONArray()
@@ -402,7 +406,7 @@ class EmojiPicker(
 		
 		}
 		
-		onEmojiPicked(name)
+		onEmojiPicked(name,instance,bInstanceHasCustomEmoji)
 	}
 	
 	internal inner class EmojiPickerPagerAdapter : PagerAdapter() {

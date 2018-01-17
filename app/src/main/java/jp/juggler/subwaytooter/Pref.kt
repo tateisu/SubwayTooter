@@ -92,7 +92,6 @@ object Pref {
 		override fun put(editor : SharedPreferences.Editor, v : String) {
 			editor.putString(key, v)
 		}
-		
 	}
 	
 	// boolean
@@ -112,7 +111,10 @@ object Pref {
 	val bpEnableGifAnimation = BooleanPref("enable_gif_animation", false, R.id.swEnableGifAnimation)
 	val bpExitAppWhenCloseProtectedColumn = BooleanPref("ExitAppWhenCloseProtectedColumn", false, R.id.swExitAppWhenCloseProtectedColumn)
 	val bpMentionFullAcct = BooleanPref("mention_full_acct", false, R.id.swMentionFullAcct)
-	val bpPostButtonBarTop = BooleanPref("post_button_bar_at_top", false, R.id.swPostButtonBarTop)
+	val bpNotificationLED = BooleanPref("notification_led", true, R.id.cbNotificationLED)
+	val bpNotificationSound = BooleanPref("notification_sound", true, R.id.cbNotificationSound)
+	val bpNotificationVibration = BooleanPref("notification_vibration", true, R.id.cbNotificationVibration)
+	val bpPostButtonBarTop = BooleanPref("post_button_bar_at_top", true, R.id.swPostButtonBarTop)
 	val bpPriorChrome = BooleanPref("prior_chrome", true, R.id.swPriorChrome)
 	val bpPriorLocalURL = BooleanPref("prior_local_url", false, R.id.swPriorLocalURL)
 	val bpQuickTootBar = BooleanPref("quick_toot_bar", false, R.id.swQuickTootBar)
@@ -122,9 +124,6 @@ object Pref {
 	val bpSimpleList = BooleanPref("simple_list", true, R.id.swSimpleList)
 	val bpUseInternalMediaViewer = BooleanPref("use_internal_media_viewer", true, R.id.swUseInternalMediaViewer)
 	val bpShowAppName = BooleanPref("show_app_name", false, R.id.swShowAppName)
-	val bpNotificationSound = BooleanPref("notification_sound", true, R.id.cbNotificationSound)
-	val bpNotificationVibration = BooleanPref("notification_vibration", true, R.id.cbNotificationVibration)
-	val bpNotificationLED = BooleanPref("notification_led", true, R.id.cbNotificationLED)
 	
 	// int
 	

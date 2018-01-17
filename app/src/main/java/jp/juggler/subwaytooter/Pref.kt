@@ -39,7 +39,8 @@ object Pref {
 		
 	}
 	
-	class BooleanPref(key : String, private val defVal : Boolean, val id : Int) : BasePref<Boolean>(key) {
+	class BooleanPref(key : String, private val defVal : Boolean, val id : Int) :
+		BasePref<Boolean>(key) {
 		
 		override operator fun invoke(pref : SharedPreferences) : Boolean {
 			return pref.getBoolean(key, defVal)
@@ -83,7 +84,8 @@ object Pref {
 		}
 	}
 	
-	class StringPref(key : String, private val defVal : String, val skipImport : Boolean = false) : BasePref<String>(key) {
+	class StringPref(key : String, private val defVal : String, val skipImport : Boolean = false) :
+		BasePref<String>(key) {
 		
 		override operator fun invoke(pref : SharedPreferences) : String {
 			return pref.getString(key, defVal)
@@ -96,34 +98,175 @@ object Pref {
 	
 	// boolean
 	
-	val bpAllowNonSpaceBeforeEmojiShortcode = BooleanPref("allow_non_space_before_emoji_shortcode", false, R.id.swAllowNonSpaceBeforeEmojiShortcode)
-	val bpDisableEmojiAnimation = BooleanPref("disable_emoji_animation", false, R.id.swDisableEmojiAnimation)
-	val bpDisableFastScroller = BooleanPref("disable_fast_scroller", true, R.id.swDisableFastScroller)
-	val bpDisableTabletMode = BooleanPref("disable_tablet_mode", false, R.id.swDisableTabletMode)
-	val bpDontConfirmBeforeCloseColumn = BooleanPref("DontConfirmBeforeCloseColumn", false, R.id.swDontConfirmBeforeCloseColumn)
-	val bpDontCropMediaThumb = BooleanPref("DontCropMediaThumb", false, R.id.swDontCropMediaThumb)
-	val bpDontDuplicationCheck = BooleanPref("dont_duplication_check", false, R.id.swDontDuplicationCheck)
-	val bpDontRefreshOnResume = BooleanPref("dont_refresh_on_resume", false, R.id.swDontRefreshOnResume)
-	val bpDontRound = BooleanPref("dont_round", false, R.id.swDontRound)
-	val bpDontScreenOff = BooleanPref("dont_screen_off", false, R.id.swDontScreenOff)
-	val bpDontUseActionButtonWithQuickTootBar = BooleanPref("dont_use_action_button", false, R.id.swDontUseActionButtonWithQuickTootBar)
-	val bpDontUseStreaming = BooleanPref("dont_use_streaming", false, R.id.swDontUseStreaming)
-	val bpEnableGifAnimation = BooleanPref("enable_gif_animation", false, R.id.swEnableGifAnimation)
-	val bpExitAppWhenCloseProtectedColumn = BooleanPref("ExitAppWhenCloseProtectedColumn", false, R.id.swExitAppWhenCloseProtectedColumn)
-	val bpMentionFullAcct = BooleanPref("mention_full_acct", false, R.id.swMentionFullAcct)
-	val bpNotificationLED = BooleanPref("notification_led", true, R.id.cbNotificationLED)
-	val bpNotificationSound = BooleanPref("notification_sound", true, R.id.cbNotificationSound)
-	val bpNotificationVibration = BooleanPref("notification_vibration", true, R.id.cbNotificationVibration)
-	val bpPostButtonBarTop = BooleanPref("post_button_bar_at_top", true, R.id.swPostButtonBarTop)
-	val bpPriorChrome = BooleanPref("prior_chrome", true, R.id.swPriorChrome)
-	val bpPriorLocalURL = BooleanPref("prior_local_url", false, R.id.swPriorLocalURL)
-	val bpQuickTootBar = BooleanPref("quick_toot_bar", false, R.id.swQuickTootBar)
-	val bpRelativeTimestamp = BooleanPref("relative_timestamp", true, R.id.swRelativeTimestamp)
-	val bpShortAcctLocalUser = BooleanPref("short_acct_local_user", true, R.id.swShortAcctLocalUser)
-	val bpShowFollowButtonInButtonBar = BooleanPref("ShowFollowButtonInButtonBar", false, R.id.swShowFollowButtonInButtonBar)
-	val bpSimpleList = BooleanPref("simple_list", true, R.id.swSimpleList)
-	val bpUseInternalMediaViewer = BooleanPref("use_internal_media_viewer", true, R.id.swUseInternalMediaViewer)
-	val bpShowAppName = BooleanPref("show_app_name", false, R.id.swShowAppName)
+	val bpAllowNonSpaceBeforeEmojiShortcode = BooleanPref(
+		"allow_non_space_before_emoji_shortcode",
+		false,
+		R.id.swAllowNonSpaceBeforeEmojiShortcode
+	)
+	
+	val bpDisableEmojiAnimation = BooleanPref(
+		"disable_emoji_animation",
+		false,
+		R.id.swDisableEmojiAnimation
+	)
+	
+	// val bpDisableFastScroller = BooleanPref("disable_fast_scroller", true, 0) // R.id.swDisableFastScroller)
+	
+	val bpDisableTabletMode = BooleanPref(
+		"disable_tablet_mode",
+		false,
+		R.id.swDisableTabletMode
+	)
+	
+	val bpDontConfirmBeforeCloseColumn = BooleanPref(
+		"DontConfirmBeforeCloseColumn",
+		false,
+		R.id.swDontConfirmBeforeCloseColumn
+	)
+	
+	val bpDontCropMediaThumb = BooleanPref(
+		"DontCropMediaThumb",
+		false,
+		R.id.swDontCropMediaThumb
+	)
+	
+	val bpDontDuplicationCheck = BooleanPref(
+		"dont_duplication_check",
+		false,
+		R.id.swDontDuplicationCheck
+	)
+	
+	val bpDontRefreshOnResume = BooleanPref(
+		"dont_refresh_on_resume",
+		false,
+		R.id.swDontRefreshOnResume
+	)
+	
+	val bpDontRound = BooleanPref(
+		"dont_round",
+		false,
+		R.id.swDontRound
+	)
+	
+	val bpDontScreenOff = BooleanPref(
+		"dont_screen_off",
+		false,
+		R.id.swDontScreenOff
+	)
+	
+	val bpDontUseActionButtonWithQuickTootBar = BooleanPref(
+		"dont_use_action_button",
+		false,
+		R.id.swDontUseActionButtonWithQuickTootBar
+	)
+	
+	val bpDontUseStreaming = BooleanPref(
+		"dont_use_streaming",
+		false,
+		R.id.swDontUseStreaming
+	)
+	
+	val bpEnableGifAnimation = BooleanPref(
+		"enable_gif_animation",
+		false,
+		R.id.swEnableGifAnimation
+	)
+	
+	val bpExitAppWhenCloseProtectedColumn = BooleanPref(
+		"ExitAppWhenCloseProtectedColumn",
+		false,
+		R.id.swExitAppWhenCloseProtectedColumn
+	)
+	
+	val bpMentionFullAcct = BooleanPref(
+		"mention_full_acct",
+		false,
+		R.id.swMentionFullAcct
+	)
+	
+	val bpNotificationLED = BooleanPref(
+		"notification_led",
+		true,
+		R.id.cbNotificationLED
+	)
+	
+	val bpNotificationSound = BooleanPref(
+		"notification_sound",
+		true,
+		R.id.cbNotificationSound
+	)
+	
+	val bpNotificationVibration = BooleanPref(
+		"notification_vibration",
+		true,
+		R.id.cbNotificationVibration
+	)
+	
+	val bpPostButtonBarTop = BooleanPref(
+		"post_button_bar_at_top",
+		true,
+		R.id.swPostButtonBarTop
+	)
+	
+	val bpPriorChrome = BooleanPref(
+		"prior_chrome",
+		true,
+		R.id.swPriorChrome
+	)
+	
+	val bpPriorLocalURL = BooleanPref(
+		"prior_local_url",
+		false,
+		R.id.swPriorLocalURL
+	)
+	
+	val bpQuickTootBar = BooleanPref(
+		"quick_toot_bar",
+		false,
+		R.id.swQuickTootBar
+	)
+	
+	val bpRelativeTimestamp = BooleanPref(
+		"relative_timestamp",
+		true,
+		R.id.swRelativeTimestamp
+	)
+	
+	val bpShortAcctLocalUser = BooleanPref(
+		"short_acct_local_user",
+		true,
+		R.id.swShortAcctLocalUser
+	)
+	
+	val bpShowFollowButtonInButtonBar = BooleanPref(
+		"ShowFollowButtonInButtonBar",
+		false,
+		R.id.swShowFollowButtonInButtonBar
+	)
+	
+	val bpSimpleList = BooleanPref(
+		"simple_list",
+		true,
+		R.id.swSimpleList
+	)
+	
+	val bpUseInternalMediaViewer = BooleanPref(
+		"use_internal_media_viewer",
+		true,
+		R.id.swUseInternalMediaViewer
+	)
+	
+	val bpShowAppName = BooleanPref(
+		"show_app_name",
+		false,
+		R.id.swShowAppName
+	)
+	
+	val bpForceGap = BooleanPref(
+		"force_gap",
+		false,
+		R.id.swForceGap
+	)
 	
 	// int
 	

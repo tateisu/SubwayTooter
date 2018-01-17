@@ -22,7 +22,6 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.Utils
 import jp.juggler.subwaytooter.util.WordTrieTree
-import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
@@ -51,11 +50,11 @@ internal class StreamReader(
 		internal val bDisposed = AtomicBoolean()
 		internal val bListening = AtomicBoolean()
 		internal val socket = AtomicReference<WebSocket>(null)
-		internal val callback_list = LinkedList< (event_type : String, item : Any?)->Unit >()
+		internal val callback_list = LinkedList<(event_type : String, item : Any?) -> Unit>()
 		internal val parser : TootParser
 		
 		init {
-			this.parser = TootParser(context, access_info,highlightTrie = highlight_trie)
+			this.parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 		}
 		
 		internal fun dispose() {
@@ -68,18 +67,21 @@ internal class StreamReader(
 			startRead()
 		}
 		
-		@Synchronized internal fun setHighlightTrie(highlight_trie : WordTrieTree) {
+		@Synchronized
+		internal fun setHighlightTrie(highlight_trie : WordTrieTree) {
 			this.parser.highlightTrie = highlight_trie
 		}
 		
-		@Synchronized internal fun addCallback(stream_callback : (event_type : String, item : Any?)->Unit ) {
+		@Synchronized
+		internal fun addCallback(stream_callback : (event_type : String, item : Any?) -> Unit) {
 			for(c in callback_list) {
 				if(c === stream_callback) return
 			}
 			callback_list.add(stream_callback)
 		}
 		
-		@Synchronized internal fun removeCallback(stream_callback : (event_type : String, item : Any?)->Unit) {
+		@Synchronized
+		internal fun removeCallback(stream_callback : (event_type : String, item : Any?) -> Unit) {
 			val it = callback_list.iterator()
 			while(it.hasNext()) {
 				val c = it.next()
@@ -136,7 +138,12 @@ internal class StreamReader(
 		 * Invoked when the peer has indicated that no more incoming messages will be transmitted.
 		 */
 		override fun onClosing(webSocket : WebSocket, code : Int, reason : String?) {
-			log.d("WebSocket onClosing. code=%s,reason=%s,url=%s .", code, reason, webSocket .request().url())
+			log.d(
+				"WebSocket onClosing. code=%s,reason=%s,url=%s .",
+				code,
+				reason,
+				webSocket.request().url()
+			)
 			webSocket.cancel()
 			bListening.set(false)
 			handler.removeCallbacks(proc_reconnect)
@@ -148,7 +155,12 @@ internal class StreamReader(
 		 * connection has been successfully released. No further calls to this listener will be made.
 		 */
 		override fun onClosed(webSocket : WebSocket, code : Int, reason : String?) {
-			log.d("WebSocket onClosed.  code=%s,reason=%s,url=%s .", code, reason, webSocket .request().url())
+			log.d(
+				"WebSocket onClosed.  code=%s,reason=%s,url=%s .",
+				code,
+				reason,
+				webSocket.request().url()
+			)
 			bListening.set(false)
 			handler.removeCallbacks(proc_reconnect)
 			handler.postDelayed(proc_reconnect, 10000L)
@@ -160,7 +172,7 @@ internal class StreamReader(
 		 * listener will be made.
 		 */
 		override fun onFailure(webSocket : WebSocket, ex : Throwable, response : Response?) {
-			log.e(ex , "WebSocket onFailure. url=%s .", webSocket .request().url())
+			log.e(ex, "WebSocket onFailure. url=%s .", webSocket.request().url())
 			
 			bListening.set(false)
 			handler.removeCallbacks(proc_reconnect)
@@ -187,11 +199,11 @@ internal class StreamReader(
 			bListening.set(true)
 			TootTaskRunner(context).run(access_info, object : TootTask {
 				override fun background(client : TootApiClient) : TootApiResult? {
-					val result = client.webSocket(end_point,  this@Reader)
+					val result = client.webSocket(end_point, this@Reader)
 					if(result == null) {
 						log.d("startRead: cancelled.")
 						bListening.set(false)
-					}else {
+					} else {
 						val ws = result.data as? WebSocket
 						if(ws != null) {
 							socket.set(ws)
@@ -202,6 +214,7 @@ internal class StreamReader(
 					}
 					return result
 				}
+				
 				override fun handleResult(result : TootApiResult?) {
 				}
 			})
@@ -234,7 +247,7 @@ internal class StreamReader(
 		accessInfo : SavedAccount,
 		endPoint : String,
 		highlightTrie : WordTrieTree?,
-		streamCallback : (event_type : String, item : Any?)->Unit
+		streamCallback : (event_type : String, item : Any?) -> Unit
 	) {
 		
 		val reader = prepareReader(accessInfo, endPoint, highlightTrie)
@@ -245,12 +258,11 @@ internal class StreamReader(
 		}
 	}
 	
-	
 	// カラム破棄やリロードのタイミングで呼ばれる
 	fun unregister(
 		accessInfo : SavedAccount,
 		endPoint : String,
-		streamCallback : (event_type : String, item : Any?)->Unit
+		streamCallback : (event_type : String, item : Any?) -> Unit
 	) {
 		synchronized(reader_list) {
 			val it = reader_list.iterator()

@@ -126,7 +126,7 @@ class MyNetworkImageView @JvmOverloads constructor(
 			val d = drawable
 			if(d is Animatable) {
 				if(d.isRunning) {
-					log.d("cancelLoading: Animatable.stop()")
+					//log.d("cancelLoading: Animatable.stop()")
 					d.stop()
 				}
 			}
@@ -446,4 +446,32 @@ class MyNetworkImageView @JvmOverloads constructor(
 		}
 	}
 	
+	/////////////////////////////////////////////////////////////////////
+	// プロフ表示の背景画像のレイアウト崩れの対策
+	var measureProfileBg = false
+	
+	override fun onMeasure(widthMeasureSpec : Int, heightMeasureSpec : Int) {
+		if(measureProfileBg) {
+			val w_mode = MeasureSpec.getMode(widthMeasureSpec)
+			val w_size = MeasureSpec.getSize(widthMeasureSpec)
+			val h_mode = MeasureSpec.getMode(heightMeasureSpec)
+			val h_size = MeasureSpec.getSize(heightMeasureSpec)
+			
+			val w = when(w_mode) {
+				MeasureSpec.EXACTLY -> w_size
+				MeasureSpec.AT_MOST -> w_size
+				MeasureSpec.UNSPECIFIED ->0
+				else -> 0
+			}
+			val h = when(h_mode) {
+				MeasureSpec.EXACTLY -> h_size
+				MeasureSpec.AT_MOST -> h_size
+				MeasureSpec.UNSPECIFIED ->0
+				else -> 0
+			}
+			setMeasuredDimension(w, h)
+		}else{
+			super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+		}
+	}
 }

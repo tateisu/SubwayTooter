@@ -146,6 +146,9 @@ class ActMain : AppCompatActivity()
 	private lateinit var vFooterDivider1 : View
 	private lateinit var vFooterDivider2 : View
 	
+	val viewPool = RecyclerView.RecycledViewPool()
+	
+	
 	var timeline_font : Typeface? = null
 	var timeline_font_bold : Typeface? = null
 	
@@ -210,7 +213,7 @@ class ActMain : AppCompatActivity()
 			if(tag is ItemViewHolder) {
 				column = tag.column
 				break
-			} else if(tag is HeaderViewHolderProfile) {
+			} else if(tag is ViewHolderHeaderProfile) {
 				column = tag.column
 				break
 			} else if(tag is TabletColumnViewHolder) {
@@ -1033,7 +1036,7 @@ class ActMain : AppCompatActivity()
 		
 		var media_thumb_height = 64
 		sv = Pref.spMediaThumbHeight(pref)
-		if(sv?.isNotEmpty() == true) {
+		if(sv.isNotEmpty()) {
 			try {
 				val iv = Integer.parseInt(sv)
 				if(iv >= 32) {

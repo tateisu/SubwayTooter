@@ -64,10 +64,12 @@ class TootApiClient(
 		
 		private val reStartJsonArray = Pattern.compile("\\A\\s*\\[")
 		private val reStartJsonObject = Pattern.compile("\\A\\s*\\{")
+		private val reWhiteSpace = Pattern.compile("\\s+")
 		
 		private val mspTokenUrl = "http://mastodonsearch.jp/api/v1.0.1/utoken"
 		private val mspSearchUrl = "http://mastodonsearch.jp/api/v1.0.1/cross"
 		private val mspApiKey = "e53de7f66130208f62d1808672bf6320523dcd0873dc69bc"
+		
 		
 		fun getMspMaxId(array : JSONArray, max_id : String) : String {
 			// max_id の更新
@@ -123,12 +125,14 @@ class TootApiClient(
 			// HTMLならタグの除去を試みる
 			val ct = response.body()?.contentType()
 			if(ct?.subtype() == "html") {
-				return DecodeOptions().decodeHTML(null, null, sv).toString()
+				val decoded = DecodeOptions().decodeHTML(null, null, sv).toString()
+				
+				return reWhiteSpace.matcher(decoded).replaceAll(" ").trim()
 			}
 			
 			// XXX: Amazon S3 が403を返した場合にcontent-typeが?/xmlでserverがAmazonならXMLをパースしてエラーを整形することもできるが、多分必要ない
 			
-			return sv
+			return reWhiteSpace.matcher(sv).replaceAll(" ").trim()
 		}
 		
 		fun formatResponse(

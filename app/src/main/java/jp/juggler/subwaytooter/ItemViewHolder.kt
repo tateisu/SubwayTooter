@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter
 import android.content.Context
 import android.graphics.Typeface
 import android.net.Uri
+import android.os.SystemClock
 import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewCompat
 import android.support.v7.app.AlertDialog
@@ -44,18 +45,20 @@ import org.jetbrains.anko.*
 import org.json.JSONObject
 
 internal class ItemViewHolder(
-	val activity : ActMain,
-	val column : Column,
-	private val list_adapter : ItemListAdapter,
-	private val bSimpleList : Boolean
+	val activity : ActMain
 ) : View.OnClickListener, View.OnLongClickListener {
 	
 	companion object {
 		private val log = LogCategory("ItemViewHolder")
 	}
-
-	var viewRoot : View
 	
+	val viewRoot : View
+	
+	private var bSimpleList : Boolean = false
+
+	lateinit var column : Column
+
+	private lateinit var list_adapter : ItemListAdapter
 	private lateinit var llBoosted : View
 	private lateinit var ivBoosted : ImageView
 	private lateinit var tvBoosted : TextView
@@ -112,10 +115,9 @@ internal class ItemViewHolder(
 	
 	private lateinit var tvApplication : TextView
 	
+	private lateinit var access_info : SavedAccount
 	
-	private val access_info : SavedAccount
-	
-	private val buttons_for_status : StatusButtons?
+	private var buttons_for_status : StatusButtons? = null
 	
 	private var item : Any? = null
 	
@@ -136,51 +138,6 @@ internal class ItemViewHolder(
 	
 	init {
 		this.viewRoot = inflate(activity.UI {})
-		this.access_info = column.access_info
-		
-		if(activity.timeline_font != null || activity.timeline_font_bold != null) {
-			Utils.scanView(this.viewRoot) { v ->
-				try {
-					if(v is Button) {
-						// ボタンは太字なので触らない
-					} else if(v is TextView) {
-						val typeface = when {
-							v === tvName || v === tvFollowerName || v === tvBoosted -> activity.timeline_font_bold ?: activity.timeline_font
-							else -> activity.timeline_font ?: activity.timeline_font_bold
-						}
-						if(typeface != null) v.typeface = typeface
-					}
-				} catch(ex : Throwable) {
-					log.trace(ex)
-				}
-			}
-		} else {
-			tvName.typeface = Typeface.DEFAULT_BOLD
-			tvFollowerName.typeface = Typeface.DEFAULT_BOLD
-			tvBoosted.typeface = Typeface.DEFAULT_BOLD
-		}
-		
-		if(bSimpleList) {
-			llButtonBar.visibility = View.GONE
-			this.buttons_for_status = null
-		} else {
-			llButtonBar.visibility = View.VISIBLE
-			this.buttons_for_status = StatusButtons(
-				activity,
-				column,
-				false,
-				
-				btnConversation = btnConversation,
-				btnReply = btnReply,
-				btnBoost = btnBoost,
-				btnFavourite = btnFavourite,
-				llFollow2 = llFollow2,
-				btnFollow2 = btnFollow2,
-				ivFollowedBy2 = ivFollowedBy2,
-				btnMore = btnMore
-			
-			)
-		}
 		
 		btnListTL.setOnClickListener(this)
 		btnListMore.setOnClickListener(this)
@@ -251,7 +208,91 @@ internal class ItemViewHolder(
 		this.name_invalidator = NetworkEmojiInvalidator(activity.handler, tvName)
 	}
 	
-	fun bind(item : Any?) {
+	fun onViewRecycled() {
+	
+	}
+	
+	fun bind(list_adapter : ItemListAdapter, column : Column, bSimpleList : Boolean, item : Any?) {
+		this.list_adapter = list_adapter
+		this.column = column
+		this.bSimpleList = bSimpleList
+		
+		this.access_info = column.access_info
+		
+		if(activity.timeline_font != null || activity.timeline_font_bold != null) {
+			Utils.scanView(this.viewRoot) { v ->
+				try {
+					if(v is Button) {
+						// ボタンは太字なので触らない
+					} else if(v is TextView) {
+						val typeface = when {
+							v === tvName || v === tvFollowerName || v === tvBoosted -> activity.timeline_font_bold
+								?: activity.timeline_font
+							else -> activity.timeline_font ?: activity.timeline_font_bold
+						}
+						if(typeface != null) v.typeface = typeface
+					}
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+			}
+		} else {
+			tvName.typeface = Typeface.DEFAULT_BOLD
+			tvFollowerName.typeface = Typeface.DEFAULT_BOLD
+			tvBoosted.typeface = Typeface.DEFAULT_BOLD
+		}
+		
+		if(bSimpleList) {
+			
+			viewRoot.setOnTouchListener { _, ev ->
+				// ポップアップを閉じた時にクリックでリストを触ったことになってしまう不具合の回避
+				val now = SystemClock.elapsedRealtime()
+				// ポップアップを閉じた直後はタッチダウンを無視する
+				if(now - StatusButtonsPopup.last_popup_close >= 30L) {
+					false
+				} else {
+					val action = ev.action
+					log.d("onTouchEvent action=$action")
+					true
+				}
+			}
+			
+			viewRoot.setOnClickListener { viewClicked ->
+				activity.closeListItemPopup()
+				status__showing?.let { status ->
+					val popup = StatusButtonsPopup(activity, column, bSimpleList)
+					activity.listItemPopup = popup
+					popup.show(
+						list_adapter.columnVh.listView,
+						viewClicked,
+						status,
+						item as? TootNotification
+					)
+				}
+			}
+			llButtonBar.visibility = View.GONE
+			this.buttons_for_status = null
+		} else {
+			viewRoot.isClickable = false
+			llButtonBar.visibility = View.VISIBLE
+			this.buttons_for_status = StatusButtons(
+				activity,
+				column,
+				false,
+				
+				btnConversation = btnConversation,
+				btnReply = btnReply,
+				btnBoost = btnBoost,
+				btnFavourite = btnFavourite,
+				llFollow2 = llFollow2,
+				btnFollow2 = btnFollow2,
+				ivFollowedBy2 = ivFollowedBy2,
+				btnMore = btnMore
+			
+			)
+		}
+		
+		
 		this.item = null
 		this.status__showing = null
 		this.status_account = null
@@ -264,8 +305,6 @@ internal class ItemViewHolder(
 		llSearchTag.visibility = View.GONE
 		llList.visibility = View.GONE
 		llExtra.removeAllViews()
-		
-		
 		
 		if(item == null) return
 		
@@ -281,7 +320,10 @@ internal class ItemViewHolder(
 		//NSFWは文字色固定 btnShowMedia.setTextColor( c );
 		tvApplication.setTextColor(c)
 		
-		c = if(column.acct_color != 0) column.acct_color else Styler.getAttributeColor(activity, R.attr.colorTimeSmall)
+		c = if(column.acct_color != 0) column.acct_color else Styler.getAttributeColor(
+			activity,
+			R.attr.colorTimeSmall
+		)
 		this.acct_color = c
 		tvBoostedTime.setTextColor(c)
 		tvTime.setTextColor(c)
@@ -303,9 +345,16 @@ internal class ItemViewHolder(
 				if(reblog != null) {
 					showBoost(
 						item.account
-						, item.time_created_at
-						, R.attr.btn_boost
-						, Utils.formatSpannable1(activity, R.string.display_name_boosted_by, item.account.decoded_display_name)
+						,
+						item.time_created_at
+						,
+						R.attr.btn_boost
+						,
+						Utils.formatSpannable1(
+							activity,
+							R.string.display_name_boosted_by,
+							item.account.decoded_display_name
+						)
 					)
 					showStatus(activity, reblog)
 				} else {
@@ -325,9 +374,16 @@ internal class ItemViewHolder(
 			TootNotification.TYPE_FAVOURITE -> {
 				if(n_account != null) showBoost(
 					n_account
-					, n.time_created_at
-					, if(access_info.isNicoru(n_account)) R.attr.ic_nicoru else R.attr.btn_favourite
-					, Utils.formatSpannable1(activity, R.string.display_name_favourited_by, n_account.decoded_display_name)
+					,
+					n.time_created_at
+					,
+					if(access_info.isNicoru(n_account)) R.attr.ic_nicoru else R.attr.btn_favourite
+					,
+					Utils.formatSpannable1(
+						activity,
+						R.string.display_name_favourited_by,
+						n_account.decoded_display_name
+					)
 				)
 				if(n_status != null) showStatus(activity, n_status)
 			}
@@ -335,9 +391,16 @@ internal class ItemViewHolder(
 			TootNotification.TYPE_REBLOG -> {
 				if(n_account != null) showBoost(
 					n_account
-					, n.time_created_at
-					, R.attr.btn_boost
-					, Utils.formatSpannable1(activity, R.string.display_name_boosted_by, n_account.decoded_display_name)
+					,
+					n.time_created_at
+					,
+					R.attr.btn_boost
+					,
+					Utils.formatSpannable1(
+						activity,
+						R.string.display_name_boosted_by,
+						n_account.decoded_display_name
+					)
 				)
 				if(n_status != null) showStatus(activity, n_status)
 				
@@ -347,9 +410,16 @@ internal class ItemViewHolder(
 				if(n_account != null) {
 					showBoost(
 						n_account
-						, n.time_created_at
-						, R.attr.ic_follow_plus
-						, Utils.formatSpannable1(activity, R.string.display_name_followed_by, n_account.decoded_display_name)
+						,
+						n.time_created_at
+						,
+						R.attr.ic_follow_plus
+						,
+						Utils.formatSpannable1(
+							activity,
+							R.string.display_name_followed_by,
+							n_account.decoded_display_name
+						)
 					)
 					showAccount(n_account)
 				}
@@ -359,9 +429,16 @@ internal class ItemViewHolder(
 				if(! bSimpleList) {
 					if(n_account != null) showBoost(
 						n_account
-						, n.time_created_at
-						, R.attr.btn_reply
-						, Utils.formatSpannable1(activity, R.string.display_name_replied_by, n_account.decoded_display_name)
+						,
+						n.time_created_at
+						,
+						R.attr.btn_reply
+						,
+						Utils.formatSpannable1(
+							activity,
+							R.string.display_name_replied_by,
+							n_account.decoded_display_name
+						)
 					)
 				}
 				if(n_status != null) showStatus(activity, n_status)
@@ -435,7 +512,10 @@ internal class ItemViewHolder(
 		tvName.text = who.decoded_display_name
 		name_invalidator.register(who.decoded_display_name)
 		ivThumbnail.setImageUrl(
-			activity.pref, 16f, access_info.supplyBaseUrl(who.avatar_static), access_info.supplyBaseUrl(who.avatar)
+			activity.pref,
+			16f,
+			access_info.supplyBaseUrl(who.avatar_static),
+			access_info.supplyBaseUrl(who.avatar)
 		)
 		//		}
 		
@@ -544,11 +624,12 @@ internal class ItemViewHolder(
 		
 		val application = status.application
 		if(application != null
-			&&( column.column_type == Column.TYPE_CONVERSATION || Pref.bpShowAppName(activity.pref) )
+			&& (column.column_type == Column.TYPE_CONVERSATION || Pref.bpShowAppName(activity.pref))
 		) {
 			tvApplication.visibility = View.VISIBLE
-			tvApplication.text = activity.getString(R.string.application_is, application?.name ?: "")
-		}else{
+			tvApplication.text =
+				activity.getString(R.string.application_is, application.name ?: "")
+		} else {
 			tvApplication.visibility = View.GONE
 		}
 	}
@@ -563,7 +644,12 @@ internal class ItemViewHolder(
 			sb.append("NSFW")
 			val end = sb.length
 			val icon_id = Styler.getAttributeResourceId(activity, R.attr.ic_eye_off)
-			sb.setSpan(EmojiImageSpan(activity, icon_id), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+			sb.setSpan(
+				EmojiImageSpan(activity, icon_id),
+				start,
+				end,
+				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+			)
 		}
 		
 		val visIconAttrId = Styler.getVisibilityIconAttr(status.visibility)
@@ -573,7 +659,12 @@ internal class ItemViewHolder(
 			sb.append(status.visibility)
 			val end = sb.length
 			val iconResId = Styler.getAttributeResourceId(activity, visIconAttrId)
-			sb.setSpan(EmojiImageSpan(activity, iconResId), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+			sb.setSpan(
+				EmojiImageSpan(activity, iconResId),
+				start,
+				end,
+				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+			)
 		}
 		
 		if(status.pinned) {
@@ -582,11 +673,22 @@ internal class ItemViewHolder(
 			sb.append("pinned")
 			val end = sb.length
 			val icon_id = Styler.getAttributeResourceId(activity, R.attr.ic_pin)
-			sb.setSpan(EmojiImageSpan(activity, icon_id), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+			sb.setSpan(
+				EmojiImageSpan(activity, icon_id),
+				start,
+				end,
+				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+			)
 		}
 		
 		if(sb.isNotEmpty()) sb.append(' ')
-		sb.append(TootStatus.formatTime(activity, status.time_created_at, column.column_type != Column.TYPE_CONVERSATION))
+		sb.append(
+			TootStatus.formatTime(
+				activity,
+				status.time_created_at,
+				column.column_type != Column.TYPE_CONVERSATION
+			)
+		)
 		tvTime.text = sb
 	}
 	
@@ -617,18 +719,25 @@ internal class ItemViewHolder(
 			tvContent.minLines = r?.originalLineCount ?: - 1
 			if(r?.decoded_spoiler_text != null) {
 				// 自動CWの場合はContentWarningのテキストを切り替える
-				tvContentWarning.text = if(shown) activity.getString(R.string.auto_cw_prefix) else r.decoded_spoiler_text
+				tvContentWarning.text =
+					if(shown) activity.getString(R.string.auto_cw_prefix) else r.decoded_spoiler_text
 			}
 		}
 	}
 	
-	private fun setMedia(iv : MyNetworkImageView, status : TootStatus, media_attachments : ArrayList<TootAttachmentLike>, idx : Int) {
+	private fun setMedia(
+		iv : MyNetworkImageView,
+		status : TootStatus,
+		media_attachments : ArrayList<TootAttachmentLike>,
+		idx : Int
+	) {
 		val ta = if(idx < media_attachments.size) media_attachments[idx] else null
 		if(ta != null) {
 			val url = ta.urlForThumbnail
 			if(url != null && url.isNotEmpty()) {
 				iv.visibility = View.VISIBLE
-				iv.scaleType = if(activity.dont_crop_media_thumbnail) ImageView.ScaleType.FIT_CENTER else ImageView.ScaleType.CENTER_CROP
+				iv.scaleType =
+					if(activity.dont_crop_media_thumbnail) ImageView.ScaleType.FIT_CENTER else ImageView.ScaleType.CENTER_CROP
 				
 				val mediaType = ta.type
 				when(mediaType) {
@@ -638,11 +747,19 @@ internal class ItemViewHolder(
 					else -> iv.setMediaType(0)
 				}
 				
-				iv.setImageUrl(activity.pref, 0f, access_info.supplyBaseUrl(url), access_info.supplyBaseUrl(url))
+				iv.setImageUrl(
+					activity.pref,
+					0f,
+					access_info.supplyBaseUrl(url),
+					access_info.supplyBaseUrl(url)
+				)
 				
 				val description = ta.description
 				if(description != null && description.isNotEmpty()) {
-					val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+					val lp = LinearLayout.LayoutParams(
+						LinearLayout.LayoutParams.MATCH_PARENT,
+						LinearLayout.LayoutParams.WRAP_CONTENT
+					)
 					lp.topMargin = (0.5f + llExtra.resources.displayMetrics.density * 3f).toInt()
 					val tv = MyTextView(activity)
 					tv.layoutParams = lp
@@ -651,11 +768,13 @@ internal class ItemViewHolder(
 					if(! activity.timeline_font_size_sp.isNaN()) {
 						tv.textSize = activity.timeline_font_size_sp
 					}
-					val c = if(column.content_color != 0) column.content_color else content_color_default
+					val c =
+						if(column.content_color != 0) column.content_color else content_color_default
 					tv.setTextColor(c)
 					
 					//
-					val desc = activity.getString(R.string.media_description, idx + 1, ta.description)
+					val desc =
+						activity.getString(R.string.media_description, idx + 1, ta.description)
 					tv.text = DecodeOptions(
 						emojiMapCustom = status.custom_emojis,
 						emojiMapProfile = status.profile_emojis
@@ -733,13 +852,25 @@ internal class ItemViewHolder(
 					AlertDialog.Builder(activity)
 						.setMessage(activity.getString(R.string.confirm_unblock_domain, domain))
 						.setNegativeButton(R.string.cancel, null)
-						.setPositiveButton(R.string.ok) { _, _ -> Action_Instance.blockDomain(activity, access_info, domain, false) }
+						.setPositiveButton(R.string.ok) { _, _ ->
+							Action_Instance.blockDomain(
+								activity,
+								access_info,
+								domain,
+								false
+							)
+						}
 						.show()
 				}
 				
 				is String -> {
 					// search_tag は#を含まない
-					Action_HashTag.timeline(activity, activity.nextPosition(column), access_info, item)
+					Action_HashTag.timeline(
+						activity,
+						activity.nextPosition(column),
+						access_info,
+						item
+					)
 				}
 			}
 			
@@ -782,22 +913,53 @@ internal class ItemViewHolder(
 		when(v) {
 			
 			ivThumbnail -> {
-				status_account?.let { who -> DlgContextMenu(activity, column, who, null, notification).show() }
+				status_account?.let { who ->
+					DlgContextMenu(
+						activity,
+						column,
+						who,
+						null,
+						notification
+					).show()
+				}
 				return true
 			}
 			
 			llBoosted -> {
-				boost_account?.let { who -> DlgContextMenu(activity, column, who, null, notification).show() }
+				boost_account?.let { who ->
+					DlgContextMenu(
+						activity,
+						column,
+						who,
+						null,
+						notification
+					).show()
+				}
 				return true
 			}
 			
 			llFollow -> {
-				follow_account?.let { who -> DlgContextMenu(activity, column, who, null, notification).show() }
+				follow_account?.let { who ->
+					DlgContextMenu(
+						activity,
+						column,
+						who,
+						null,
+						notification
+					).show()
+				}
 				return true
 			}
 			
 			btnFollow -> {
-				follow_account?.let { who -> Action_Follow.followFromAnotherAccount(activity, activity.nextPosition(column), access_info, who) }
+				follow_account?.let { who ->
+					Action_Follow.followFromAnotherAccount(
+						activity,
+						activity.nextPosition(column),
+						access_info,
+						who
+					)
+				}
 				return true
 			}
 			
@@ -846,7 +1008,11 @@ internal class ItemViewHolder(
 				is TootAttachmentMSP -> {
 					// マストドン検索ポータルのデータではmedia_attachmentsが簡略化されている
 					// 会話の流れを表示する
-					Action_Toot.conversationOtherInstance(activity, activity.nextPosition(column), status__showing)
+					Action_Toot.conversationOtherInstance(
+						activity,
+						activity.nextPosition(column),
+						status__showing
+					)
 				}
 				
 				is TootAttachment -> {
@@ -866,19 +1032,11 @@ internal class ItemViewHolder(
 		}
 	}
 	
-	// 簡略ビューの時だけ呼ばれる
-	// StatusButtonsPopupを表示する
-	fun onItemClick(listView : MyListView, anchor : View) {
-		activity.closeListItemPopup()
-		status__showing?.let { status ->
-			val popup = StatusButtonsPopup(activity, column, bSimpleList)
-			activity.listItemPopup = popup
-			popup.show(listView, anchor, status, item as? TootNotification)
-		}
-	}
-	
 	private fun makeCardView(activity : ActMain, llExtra : LinearLayout, card : TootCard) {
-		var lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+		var lp = LinearLayout.LayoutParams(
+			LinearLayout.LayoutParams.MATCH_PARENT,
+			LinearLayout.LayoutParams.WRAP_CONTENT
+		)
 		lp.topMargin = (0.5f + llExtra.resources.displayMetrics.density * 3f).toInt()
 		val tv = MyTextView(activity)
 		tv.layoutParams = lp
@@ -892,8 +1050,18 @@ internal class ItemViewHolder(
 		
 		val sb = StringBuilder()
 		addLinkAndCaption(sb, activity.getString(R.string.card_header_card), card.url, card.title)
-		addLinkAndCaption(sb, activity.getString(R.string.card_header_author), card.author_url, card.author_name)
-		addLinkAndCaption(sb, activity.getString(R.string.card_header_provider), card.provider_url, card.provider_name)
+		addLinkAndCaption(
+			sb,
+			activity.getString(R.string.card_header_author),
+			card.author_url,
+			card.author_name
+		)
+		addLinkAndCaption(
+			sb,
+			activity.getString(R.string.card_header_provider),
+			card.provider_url,
+			card.provider_name
+		)
 		
 		val description = card.description
 		if(description != null && description.isNotEmpty()) {
@@ -907,21 +1075,35 @@ internal class ItemViewHolder(
 		
 		val image = card.image
 		if(image != null && image.isNotEmpty()) {
-			lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, activity.app_state.media_thumb_height)
+			lp = LinearLayout.LayoutParams(
+				LinearLayout.LayoutParams.MATCH_PARENT,
+				activity.app_state.media_thumb_height
+			)
 			lp.topMargin = (0.5f + llExtra.resources.displayMetrics.density * 3f).toInt()
 			val iv = MyNetworkImageView(activity)
 			iv.layoutParams = lp
 			//
 			iv.id = R.id.ivCardThumbnail
 			iv.setOnClickListener(this)
-			iv.scaleType = if(activity.dont_crop_media_thumbnail) ImageView.ScaleType.FIT_CENTER else ImageView.ScaleType.CENTER_CROP
-			iv.setImageUrl(activity.pref, 0f, access_info.supplyBaseUrl(image), access_info.supplyBaseUrl(image))
+			iv.scaleType =
+				if(activity.dont_crop_media_thumbnail) ImageView.ScaleType.FIT_CENTER else ImageView.ScaleType.CENTER_CROP
+			iv.setImageUrl(
+				activity.pref,
+				0f,
+				access_info.supplyBaseUrl(image),
+				access_info.supplyBaseUrl(image)
+			)
 			
 			llExtra.addView(iv)
 		}
 	}
 	
-	private fun addLinkAndCaption(sb : StringBuilder, header : String, url : String?, caption : String?) {
+	private fun addLinkAndCaption(
+		sb : StringBuilder,
+		header : String,
+		url : String?,
+		caption : String?
+	) {
 		
 		if(url.isNullOrEmpty() && caption.isNullOrEmpty()) return
 		
@@ -932,13 +1114,15 @@ internal class ItemViewHolder(
 		if(url != null && url.isNotEmpty()) {
 			sb.append("<a href=\"").append(HTMLDecoder.encodeEntity(url)).append("\">")
 		}
-		sb.append(HTMLDecoder.encodeEntity(
-			when {
-				caption != null && caption.isNotEmpty() -> caption
-				url != null && url.isNotEmpty() -> url
-				else -> "???"
-			}
-		))
+		sb.append(
+			HTMLDecoder.encodeEntity(
+				when {
+					caption != null && caption.isNotEmpty() -> caption
+					url != null && url.isNotEmpty() -> url
+					else -> "???"
+				}
+			)
+		)
 		
 		if(url != null && url.isNotEmpty()) {
 			sb.append("</a>")
@@ -955,7 +1139,10 @@ internal class ItemViewHolder(
 		
 		val remain = enquete.time_start + NicoEnquete.ENQUETE_EXPIRE - now
 		
-		val lp = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+		val lp = LinearLayout.LayoutParams(
+			LinearLayout.LayoutParams.MATCH_PARENT,
+			LinearLayout.LayoutParams.WRAP_CONTENT
+		)
 		if(i == 0)
 			lp.topMargin = (0.5f + llExtra.resources.displayMetrics.density * 3f).toInt()
 		val b = Button(activity)
@@ -981,7 +1168,8 @@ internal class ItemViewHolder(
 		val density = llExtra.resources.displayMetrics.density
 		val height = (0.5f + 6 * density).toInt()
 		val view = EnqueteTimerView(activity)
-		view.layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height)
+		view.layoutParams =
+			LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height)
 		view.setParams(enquete.time_start, NicoEnquete.ENQUETE_EXPIRE)
 		llExtra.addView(view)
 	}
@@ -1134,7 +1322,8 @@ internal class ItemViewHolder(
 					}
 					
 					btnFollow = imageButton {
-						background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+						background =
+							ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 						contentDescription = context.getString(R.string.follow)
 						scaleType = ImageView.ScaleType.CENTER
 						// tools:src="?attr/ic_follow_plus"
@@ -1181,7 +1370,8 @@ internal class ItemViewHolder(
 					lparams(matchParent, wrapContent)
 					
 					ivThumbnail = myNetworkImageView {
-						background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+						background =
+							ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 						contentDescription = context.getString(R.string.thumbnail)
 						scaleType = ImageView.ScaleType.CENTER_CROP
 					}.lparams(dip(48), dip(48)) {
@@ -1208,7 +1398,8 @@ internal class ItemViewHolder(
 							
 							btnContentWarning = button {
 								
-								background = ContextCompat.getDrawable(context, R.drawable.btn_bg_ddd)
+								background =
+									ContextCompat.getDrawable(context, R.drawable.btn_bg_ddd)
 								minWidthCompat = dip(40)
 								padding = dip(4)
 								//tools:text="見る"
@@ -1253,7 +1444,10 @@ internal class ItemViewHolder(
 									
 									ivMedia1 = myNetworkImageView {
 										
-										background = ContextCompat.getDrawable(context, R.drawable.btn_bg_ddd)
+										background = ContextCompat.getDrawable(
+											context,
+											R.drawable.btn_bg_ddd
+										)
 										contentDescription = context.getString(R.string.thumbnail)
 										scaleType = ImageView.ScaleType.CENTER_CROP
 										
@@ -1263,7 +1457,10 @@ internal class ItemViewHolder(
 									
 									ivMedia2 = myNetworkImageView {
 										
-										background = ContextCompat.getDrawable(context, R.drawable.btn_bg_ddd)
+										background = ContextCompat.getDrawable(
+											context,
+											R.drawable.btn_bg_ddd
+										)
 										contentDescription = context.getString(R.string.thumbnail)
 										scaleType = ImageView.ScaleType.CENTER_CROP
 										
@@ -1274,7 +1471,10 @@ internal class ItemViewHolder(
 									
 									ivMedia3 = myNetworkImageView {
 										
-										background = ContextCompat.getDrawable(context, R.drawable.btn_bg_ddd)
+										background = ContextCompat.getDrawable(
+											context,
+											R.drawable.btn_bg_ddd
+										)
 										contentDescription = context.getString(R.string.thumbnail)
 										scaleType = ImageView.ScaleType.CENTER_CROP
 										
@@ -1285,7 +1485,10 @@ internal class ItemViewHolder(
 									
 									ivMedia4 = myNetworkImageView {
 										
-										background = ContextCompat.getDrawable(context, R.drawable.btn_bg_ddd)
+										background = ContextCompat.getDrawable(
+											context,
+											R.drawable.btn_bg_ddd
+										)
 										contentDescription = context.getString(R.string.thumbnail)
 										scaleType = ImageView.ScaleType.CENTER_CROP
 										
@@ -1296,9 +1499,13 @@ internal class ItemViewHolder(
 									
 									btnHideMedia = imageButton {
 										
-										background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+										background = ContextCompat.getDrawable(
+											context,
+											R.drawable.btn_bg_transparent
+										)
 										contentDescription = "@string/hide"
-										imageResource = Styler.getAttributeResourceId(context, R.attr.btn_close)
+										imageResource =
+											Styler.getAttributeResourceId(context, R.attr.btn_close)
 									}.lparams(dip(32), matchParent) {
 										startMargin = dip(8)
 									}
@@ -1306,10 +1513,14 @@ internal class ItemViewHolder(
 								
 								btnShowMedia = textView {
 									
-									backgroundColor = Styler.getAttributeColor(context, R.attr.colorShowMediaBackground)
+									backgroundColor = Styler.getAttributeColor(
+										context,
+										R.attr.colorShowMediaBackground
+									)
 									gravity = Gravity.CENTER
 									text = context.getString(R.string.tap_to_show)
-									textColor = Styler.getAttributeColor(context, R.attr.colorShowMediaText)
+									textColor =
+										Styler.getAttributeColor(context, R.attr.colorShowMediaText)
 									
 								}.lparams(matchParent, matchParent)
 							}
@@ -1330,18 +1541,26 @@ internal class ItemViewHolder(
 							
 							btnConversation = imageButton {
 								
-								background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+								background = ContextCompat.getDrawable(
+									context,
+									R.drawable.btn_bg_transparent
+								)
 								contentDescription = context.getString(R.string.conversation_view)
 								minimumWidth = dip(40)
-								imageResource = Styler.getAttributeResourceId(context, R.attr.ic_conversation)
+								imageResource =
+									Styler.getAttributeResourceId(context, R.attr.ic_conversation)
 							}.lparams(wrapContent, matchParent)
 							
 							btnReply = imageButton {
 								
-								background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+								background = ContextCompat.getDrawable(
+									context,
+									R.drawable.btn_bg_transparent
+								)
 								contentDescription = context.getString(R.string.reply)
 								minimumWidth = dip(40)
-								imageResource = Styler.getAttributeResourceId(context, R.attr.btn_reply)
+								imageResource =
+									Styler.getAttributeResourceId(context, R.attr.btn_reply)
 								
 							}.lparams(wrapContent, matchParent) {
 								startMargin = dip(2)
@@ -1349,7 +1568,10 @@ internal class ItemViewHolder(
 							
 							btnBoost = button {
 								
-								background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+								background = ContextCompat.getDrawable(
+									context,
+									R.drawable.btn_bg_transparent
+								)
 								compoundDrawablePadding = dip(4)
 								
 								minWidthCompat = dip(48)
@@ -1359,7 +1581,10 @@ internal class ItemViewHolder(
 							}
 							
 							btnFavourite = button {
-								background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+								background = ContextCompat.getDrawable(
+									context,
+									R.drawable.btn_bg_transparent
+								)
 								compoundDrawablePadding = dip(4)
 								minWidthCompat = dip(48)
 								setPaddingStartEnd(dip(4), dip(4))
@@ -1375,7 +1600,10 @@ internal class ItemViewHolder(
 								
 								btnFollow2 = imageButton {
 									
-									background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+									background = ContextCompat.getDrawable(
+										context,
+										R.drawable.btn_bg_transparent
+									)
 									contentDescription = context.getString(R.string.follow)
 									scaleType = ImageView.ScaleType.CENTER
 									// tools:src="?attr/ic_follow_plus"
@@ -1386,15 +1614,22 @@ internal class ItemViewHolder(
 								ivFollowedBy2 = imageView {
 									
 									scaleType = ImageView.ScaleType.CENTER
-									imageResource = Styler.getAttributeResourceId(context, R.attr.ic_followed_by)
+									imageResource = Styler.getAttributeResourceId(
+										context,
+										R.attr.ic_followed_by
+									)
 									importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
 								}.lparams(matchParent, matchParent)
 							}
 							
 							btnMore = imageButton {
-								background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+								background = ContextCompat.getDrawable(
+									context,
+									R.drawable.btn_bg_transparent
+								)
 								contentDescription = context.getString(R.string.more)
-								imageResource = Styler.getAttributeResourceId(context, R.attr.btn_more)
+								imageResource =
+									Styler.getAttributeResourceId(context, R.attr.btn_more)
 								minimumWidth = dip(40)
 							}.lparams(wrapContent, matchParent) {
 								startMargin = dip(2)

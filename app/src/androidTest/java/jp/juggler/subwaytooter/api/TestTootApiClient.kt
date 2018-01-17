@@ -227,7 +227,7 @@ class TestTootApiClient {
 						return true
 					}
 					
-					override fun close(code : Int, reason : String?) : Boolean { // TODO
+					override fun close(code : Int, reason : String?) : Boolean {
 						return true
 					}
 					

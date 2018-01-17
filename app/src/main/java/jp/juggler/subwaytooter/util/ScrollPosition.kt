@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.util
 
-import jp.juggler.subwaytooter.view.MyListView
+import android.support.v7.widget.RecyclerView
+import jp.juggler.subwaytooter.ColumnViewHolder
 
 class ScrollPosition{
 
@@ -12,19 +13,37 @@ class ScrollPosition{
 		this.top = top
 	}
 	
-	constructor(listView : MyListView) {
-		if(listView.childCount == 0) {
+//	constructor(listView : MyListView) {
+//		if(listView.childCount == 0) {
+//			top = 0
+//			pos = top
+//		} else {
+//			pos = listView.firstVisiblePosition
+//			top = listView.getChildAt(0).top
+//		}
+//	}
+//
+//	fun restore(listView : MyListView) {
+//		if(0 <= pos && pos < listView.adapter.count) {
+//			listView.setSelectionFromTop(pos, top)
+//		}
+//	}
+	
+	constructor(holder:ColumnViewHolder) {
+		val findPosition = holder.listLayoutManager.findFirstVisibleItemPosition()
+		if( findPosition == RecyclerView.NO_POSITION){
 			top = 0
 			pos = top
-		} else {
-			pos = listView.firstVisiblePosition
-			top = listView.getChildAt(0).top
+		}else{
+			pos = findPosition
+			val firstItemView = holder.listLayoutManager.findViewByPosition(findPosition)
+			top = firstItemView?.top ?: 0
 		}
 	}
 	
-	fun restore(listView : MyListView) {
-		if(0 <= pos && pos < listView.adapter.count) {
-			listView.setSelectionFromTop(pos, top)
+	fun restore(holder:ColumnViewHolder) {
+		if(0 <= pos && pos < holder.listView.adapter.itemCount) {
+			holder.listLayoutManager.scrollToPositionWithOffset(pos,top)
 		}
 	}
 }

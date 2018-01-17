@@ -48,7 +48,7 @@
                 android:layout_height="match_parent"
                 />
 
-            <jp.juggler.subwaytooter.view.MyRecyclerView
+            <jp.juggler.subwaytooter.view.TabletModeRecyclerView
                 android:id="@+id/rvPager"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

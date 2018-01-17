@@ -209,6 +209,22 @@
 
         <TextView
             style="@style/setting_row_label"
+            android:text="@string/force_gap_when_refresh"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swForceGap"
+                style="@style/setting_horizontal_stretch"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
             android:labelFor="@+id/etClientName"
             android:text="@string/client_name"
             />
@@ -574,21 +590,21 @@
             android:text="@string/appearance"
             />
 
-        <View style="@style/setting_divider"/>
+        <!--<View style="@style/setting_divider"/>-->
 
-        <TextView
-            style="@style/setting_row_label"
-            android:text="@string/disable_fast_scroller"
-            />
+        <!--<TextView-->
+            <!--style="@style/setting_row_label"-->
+            <!--android:text="@string/disable_fast_scroller"-->
+            <!--/>-->
 
-        <LinearLayout style="@style/setting_row_form">
+        <!--<LinearLayout style="@style/setting_row_form">-->
 
-            <Switch
-                android:id="@+id/swDisableFastScroller"
-                style="@style/setting_horizontal_stretch"
-                />
+            <!--<Switch-->
+                <!--android:id="@+id/swDisableFastScroller"-->
+                <!--style="@style/setting_horizontal_stretch"-->
+                <!--/>-->
 
-        </LinearLayout>
+        <!--</LinearLayout>-->
 
         <View style="@style/setting_divider"/>
 

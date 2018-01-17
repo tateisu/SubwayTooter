@@ -33,7 +33,7 @@ class TootInstance(src : JSONObject) {
 	// ユーザ数等の数字。マストドン1.6以降。
 	val stats : Stats?
 	
-	// FIXME: urls をパースしてない。使ってないから…
+	// XXX: urls をパースしてない。使ってないから…
 	
 
 	init {

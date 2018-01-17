@@ -7,7 +7,6 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.ListView
 import android.widget.TextView
 import jp.juggler.emoji.EmojiMap201709
 
@@ -23,15 +22,10 @@ import jp.juggler.subwaytooter.util.Utils
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 
-internal class HeaderViewHolderProfile(
-	arg_activity : ActMain,
-	column : Column,
-	parent : ListView
-) : HeaderViewHolderBase(
-	arg_activity,
-	column,
-	arg_activity.layoutInflater.inflate(R.layout.lv_header_account, parent, false)
-), View.OnClickListener, View.OnLongClickListener {
+internal class ViewHolderHeaderProfile(
+	activity : ActMain,
+	viewRoot : View
+) : ViewHolderHeaderBase(activity, viewRoot), View.OnClickListener, View.OnLongClickListener {
 	
 	private val ivBackground : MyNetworkImageView
 	private val tvCreated : TextView
@@ -64,7 +58,6 @@ internal class HeaderViewHolderProfile(
 	private val moved_name_invalidator : NetworkEmojiInvalidator
 	
 	init {
-		
 		ivBackground = viewRoot.findViewById(R.id.ivBackground)
 		llProfile = viewRoot.findViewById(R.id.llProfile)
 		tvCreated = viewRoot.findViewById(R.id.tvCreated)
@@ -110,15 +103,7 @@ internal class HeaderViewHolderProfile(
 		moved_caption_invalidator = NetworkEmojiInvalidator(activity.handler, tvMoved)
 		moved_name_invalidator = NetworkEmojiInvalidator(activity.handler, tvMovedName)
 		
-		if(! activity.timeline_font_size_sp.isNaN()) {
-			tvMovedName.textSize = activity.timeline_font_size_sp
-			tvMoved.textSize = activity.timeline_font_size_sp
-		}
-		
-		if(! activity.acct_font_size_sp.isNaN()) {
-			tvMovedAcct.textSize = activity.acct_font_size_sp
-			tvCreated.textSize = activity.acct_font_size_sp
-		}
+		ivBackground.measureProfileBg = true
 	}
 	
 	override fun showColor() {
@@ -132,6 +117,18 @@ internal class HeaderViewHolderProfile(
 	}
 	
 	override fun bindData(column : Column) {
+		super.bindData(column)
+		
+		if(! activity.timeline_font_size_sp.isNaN()) {
+			tvMovedName.textSize = activity.timeline_font_size_sp
+			tvMoved.textSize = activity.timeline_font_size_sp
+		}
+		
+		if(! activity.acct_font_size_sp.isNaN()) {
+			tvMovedAcct.textSize = activity.acct_font_size_sp
+			tvCreated.textSize = activity.acct_font_size_sp
+		}
+		
 		val who = column.who_account
 		this.who = who
 		
@@ -161,15 +158,25 @@ internal class HeaderViewHolderProfile(
 			tvRemoteProfileWarning.visibility = View.GONE
 		} else {
 			tvCreated.text = TootStatus.formatTime(tvCreated.context, who.time_created_at, true)
-			ivBackground.setImageUrl(activity.pref, 0f, access_info.supplyBaseUrl(who.header_static))
+			ivBackground.setImageUrl(
+				activity.pref,
+				0f,
+				access_info.supplyBaseUrl(who.header_static)
+			)
 			
-			ivAvatar.setImageUrl(activity.pref, 16f, access_info.supplyBaseUrl(who.avatar_static), access_info.supplyBaseUrl(who.avatar))
+			ivAvatar.setImageUrl(
+				activity.pref,
+				16f,
+				access_info.supplyBaseUrl(who.avatar_static),
+				access_info.supplyBaseUrl(who.avatar)
+			)
 			
 			val name = who.decoded_display_name
 			tvDisplayName.text = name
 			name_invalidator.register(name)
 			
-			tvRemoteProfileWarning.visibility = if(column.access_info.isRemoteUser(who)) View.VISIBLE else View.GONE
+			tvRemoteProfileWarning.visibility =
+				if(column.access_info.isRemoteUser(who)) View.VISIBLE else View.GONE
 			
 			val sb = SpannableStringBuilder()
 			sb.append("@").append(access_info.getFullAcct(who))
@@ -180,7 +187,12 @@ internal class HeaderViewHolderProfile(
 				val end = sb.length
 				val info = EmojiMap201709.sShortNameToImageId["lock"]
 				if(info != null) {
-					sb.setSpan(EmojiImageSpan(activity, info.image_id), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+					sb.setSpan(
+						EmojiImageSpan(activity, info.image_id),
+						start,
+						end,
+						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+					)
 				}
 			}
 			tvAcct.text = sb
@@ -207,7 +219,11 @@ internal class HeaderViewHolderProfile(
 		llMoved.visibility = View.VISIBLE
 		tvMoved.visibility = View.VISIBLE
 		
-		val caption = Utils.formatSpannable1(activity, R.string.account_moved_to, who.decodeDisplayName(activity))
+		val caption = Utils.formatSpannable1(
+			activity,
+			R.string.account_moved_to,
+			who.decodeDisplayName(activity)
+		)
 		tvMoved.text = caption
 		moved_caption_invalidator.register(caption)
 		
@@ -225,9 +241,16 @@ internal class HeaderViewHolderProfile(
 	
 	private fun setAcct(tv : TextView, acctLong : String, acctShort : String) {
 		val ac = AcctColor.load(acctLong)
-		tv.text = if(AcctColor.hasNickname(ac)) ac.nickname else if(activity.shortAcctLocalUser) "@" + acctShort else acctLong
+		tv.text = when {
+			AcctColor.hasNickname(ac) -> ac.nickname
+			activity.shortAcctLocalUser -> "@" + acctShort
+			else -> acctLong
+		}
 		
-		val acct_color = if(column.acct_color != 0) column.acct_color else Styler.getAttributeColor(activity, R.attr.colorTimeSmall)
+		val acct_color = when {
+			column.acct_color != 0 -> column.acct_color
+			else -> Styler.getAttributeColor(activity, R.attr.colorTimeSmall)
+		}
 		tv.setTextColor(if(AcctColor.hasColorForeground(ac)) ac.color_fg else acct_color)
 		
 		if(AcctColor.hasColorBackground(ac)) {
@@ -265,23 +288,28 @@ internal class HeaderViewHolderProfile(
 				column.startLoading()
 			}
 			
-			R.id.btnMore -> who ?.let{ who->
+			R.id.btnMore -> who?.let { who ->
 				DlgContextMenu(activity, column, who, null, null).show()
 			}
 			
-			R.id.btnFollow -> who ?.let{ who->
+			R.id.btnFollow -> who?.let { who ->
 				DlgContextMenu(activity, column, who, null, null).show()
 			}
 			
-			R.id.btnMoved -> who_moved ?.let{ who_moved->
+			R.id.btnMoved -> who_moved?.let { who_moved ->
 				DlgContextMenu(activity, column, who_moved, null, null).show()
 			}
 			
-			R.id.llMoved -> who_moved ?.let { who_moved ->
+			R.id.llMoved -> who_moved?.let { who_moved ->
 				if(access_info.isPseudo) {
 					DlgContextMenu(activity, column, who_moved, null, null).show()
 				} else {
-					Action_User.profileLocal(activity, activity.nextPosition(column), access_info, who_moved)
+					Action_User.profileLocal(
+						activity,
+						activity.nextPosition(column),
+						access_info,
+						who_moved
+					)
 				}
 			}
 		}
@@ -291,17 +319,30 @@ internal class HeaderViewHolderProfile(
 		when(v.id) {
 			
 			R.id.btnFollow -> {
-				Action_Follow.followFromAnotherAccount(activity, activity.nextPosition(column), access_info, who)
+				Action_Follow.followFromAnotherAccount(
+					activity,
+					activity.nextPosition(column),
+					access_info,
+					who
+				)
 				return true
 			}
 			
 			R.id.btnMoved -> {
-				Action_Follow.followFromAnotherAccount(activity, activity.nextPosition(column), access_info, who_moved)
+				Action_Follow.followFromAnotherAccount(
+					activity,
+					activity.nextPosition(column),
+					access_info,
+					who_moved
+				)
 				return true
 			}
 		}
 		
 		return false
+	}
+	
+	override fun onViewRecycled() {
 	}
 	
 }

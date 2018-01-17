@@ -12,7 +12,7 @@ import android.widget.PopupWindow
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.view.MyListView
+import android.support.v7.widget.ListRecyclerView
 
 class StatusButtonsPopup(
 	private val activity : ActMain,
@@ -29,6 +29,9 @@ class StatusButtonsPopup(
 			v.measure(spec, spec)
 			return v.measuredWidth
 		}
+		
+		var last_popup_close = 0L
+		
 	}
 	
 	private val viewRoot : View
@@ -42,7 +45,7 @@ class StatusButtonsPopup(
 			activity,
 			column,
 			bSimpleList,
-			btnConversation =viewRoot.findViewById(R.id.btnConversation),
+			btnConversation = viewRoot.findViewById(R.id.btnConversation),
 			btnReply = viewRoot.findViewById(R.id.btnReply),
 			btnBoost = viewRoot.findViewById(R.id.btnBoost),
 			btnFavourite = viewRoot.findViewById(R.id.btnFavourite),
@@ -62,7 +65,7 @@ class StatusButtonsPopup(
 	
 	@SuppressLint("RtlHardcoded")
 	fun show(
-		listView : MyListView
+		listView : ListRecyclerView
 		, anchor : View
 		, status : TootStatus
 		, notification : TootNotification?
@@ -82,7 +85,7 @@ class StatusButtonsPopup(
 				// ポップアップの外側をタッチしたらポップアップを閉じる
 				// また、そのタッチイベントがlistViewに影響しないようにする
 				window.dismiss()
-				listView.last_popup_close = SystemClock.elapsedRealtime()
+				last_popup_close = SystemClock.elapsedRealtime()
 				return@OnTouchListener true
 			}
 			false

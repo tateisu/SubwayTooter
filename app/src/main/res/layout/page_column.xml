@@ -373,19 +373,20 @@
                 app:srl_direction="both"
                 >
 
-                <jp.juggler.subwaytooter.view.MyListView
+                <android.support.v7.widget.ListRecyclerView
                     android:id="@+id/listView"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
 
-                    android:clipToPadding="false"
-                    android:divider="?attr/colorSettingDivider"
-                    android:dividerHeight="1dp"
-                    android:fadeScrollbars="false"
-                    android:fastScrollEnabled="true"
                     android:paddingEnd="12dp"
                     android:paddingStart="12dp"
+                    android:clipToPadding="false"
+
+                    android:scrollbars="vertical"
+                    android:fadeScrollbars="false"
                     android:scrollbarStyle="outsideOverlay"
+
+
                     />
 
             </com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout>

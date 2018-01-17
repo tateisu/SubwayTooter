@@ -42,14 +42,26 @@ object Styler {
 		val resourceId = a.getResourceId(0, 0)
 		a.recycle()
 		if(resourceId == 0)
-			throw RuntimeException(String.format(Locale.JAPAN, "attr not defined.attr_id=0x%x", attrId))
+			throw RuntimeException(
+				String.format(
+					Locale.JAPAN,
+					"attr not defined.attr_id=0x%x",
+					attrId
+				)
+			)
 		return resourceId
 	}
 	
 	fun getAttributeDrawable(context : Context, attrId : Int) : Drawable {
 		val drawableId = getAttributeResourceId(context, attrId)
 		return ContextCompat.getDrawable(context, drawableId)
-			?: throw RuntimeException(String.format(Locale.JAPAN, "getDrawable failed. drawableId=0x%x", drawableId))
+			?: throw RuntimeException(
+				String.format(
+					Locale.JAPAN,
+					"getDrawable failed. drawableId=0x%x",
+					drawableId
+				)
+			)
 	}
 	
 	// ImageViewにアイコンを設定する
@@ -58,16 +70,21 @@ object Styler {
 	}
 	
 	// ImageViewにアイコンを設定する。色を変えてしまう
-	fun setIconCustomColor(context : Context, imageView : ImageView, color : Int, iconAttrId : Int) {
+	fun setIconCustomColor(
+		context : Context,
+		imageView : ImageView,
+		color : Int,
+		iconAttrId : Int
+	) {
 		val d = getAttributeDrawable(context, iconAttrId)
 		d.mutate() // 色指定が他のアイコンに影響しないようにする
 		d.setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
 		imageView.setImageDrawable(d)
 	}
 	
-	fun getVisibilityIconAttr( visibility : String?) : Int {
+	fun getVisibilityIconAttr(visibility : String?) : Int {
 		return when(visibility) {
-			null->R.attr.ic_public
+			null -> R.attr.ic_public
 			TootStatus.VISIBILITY_PUBLIC -> R.attr.ic_public
 			TootStatus.VISIBILITY_UNLISTED -> R.attr.ic_lock_open
 			TootStatus.VISIBILITY_PRIVATE -> R.attr.ic_lock

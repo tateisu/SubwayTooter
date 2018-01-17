@@ -5,8 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.SystemClock
-import android.view.View
-import android.widget.ListView
+import android.support.v7.widget.RecyclerView
 import jp.juggler.subwaytooter.api.*
 
 import org.json.JSONException
@@ -35,6 +34,7 @@ import jp.juggler.subwaytooter.util.VersionString
 import jp.juggler.subwaytooter.util.WordTrieTree
 import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.view.ListDivider
 
 class Column(
 	val app_state : AppState,
@@ -225,16 +225,6 @@ class Column(
 		
 		@Suppress("HasPlatformType")
 		private val reSinceId = Pattern.compile("[&?]since_id=(\\d+)") // より新しいデータの取得に使う
-		
-		private val heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
-		
-		private fun getListItemHeight(listView : ListView, idx : Int) : Int {
-			val item_width = listView.width - listView.paddingLeft - listView.paddingRight
-			val widthSpec = View.MeasureSpec.makeMeasureSpec(item_width, View.MeasureSpec.EXACTLY)
-			val childView = listView.adapter.getView(idx, null, listView)
-			childView.measure(widthSpec, heightSpec)
-			return childView.measuredHeight
-		}
 		
 		val COLUMN_REGEX_FILTER_DEFAULT = { _ : CharSequence? -> false }
 		
@@ -1687,8 +1677,7 @@ class Column(
 				
 				// 初期ロードの直後は先頭に移動する
 				try {
-					val holder = viewHolder
-					holder?.listView?.setSelection(0)
+					viewHolder?.listLayoutManager?.scrollToPositionWithOffset(0,0)
 				} catch(ignored : Throwable) {
 				}
 				
@@ -1809,6 +1798,7 @@ class Column(
 					var src = TootAccount.parseList(context, access_info, jsonArray)
 					list_tmp = addAll(null, src)
 					if(! bBottom) {
+						var bGapAdded = false
 						while(true) {
 							if(isCancelled) {
 								log.d("refresh-account-top: cancelled.")
@@ -1830,6 +1820,7 @@ class Column(
 								// タイムアウト
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
+								bGapAdded = true
 								break
 							}
 							
@@ -1841,11 +1832,15 @@ class Column(
 								// エラー
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
+								bGapAdded = true
 								break
 							}
 							
 							src = TootAccount.parseList(context, access_info, jsonArray)
 							addAll(list_tmp, src)
+						}
+						if(Pref.bpForceGap(context) && !isCancelled && !bGapAdded && list_tmp?.isNotEmpty() ==true ){
+							addOne(list_tmp, TootGap(max_id, last_since_id))
 						}
 					}
 				}
@@ -1912,6 +1907,7 @@ class Column(
 					src.sort()
 					list_tmp = addAll(null, src)
 					if(! bBottom) {
+						var bGapAdded = false
 						while(true) {
 							if(isCancelled) {
 								log.d("refresh-list-top: cancelled.")
@@ -1933,7 +1929,7 @@ class Column(
 								// タイムアウト
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
-								
+								bGapAdded =true
 								break
 							}
 							
@@ -1945,12 +1941,16 @@ class Column(
 								// エラー
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
+								bGapAdded =true
 								break
 							}
 							
 							src = parseList(::TootList, jsonArray)
 							src.sort()
 							addAll(list_tmp, src)
+						}
+						if(Pref.bpForceGap(context) && !isCancelled && !bGapAdded && list_tmp?.isNotEmpty() ==true ){
+							addOne(list_tmp, TootGap(max_id, last_since_id))
 						}
 					}
 				}
@@ -1968,6 +1968,7 @@ class Column(
 					var src = parseList(::TootReport, jsonArray)
 					list_tmp = addAll(null, src)
 					if(! bBottom) {
+						var bGapAdded = false
 						while(true) {
 							if(isCancelled) {
 								log.d("refresh-report-top: cancelled.")
@@ -1989,7 +1990,7 @@ class Column(
 								// タイムアウト
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
-								
+								bGapAdded = true
 								break
 							}
 							
@@ -2001,11 +2002,15 @@ class Column(
 								// エラー
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
+								bGapAdded = true
 								break
 							}
 							
 							src = parseList(::TootReport, jsonArray)
 							addAll(list_tmp, src)
+						}
+						if(Pref.bpForceGap(context) && !isCancelled && !bGapAdded && list_tmp?.isNotEmpty() ==true ){
+							addOne(list_tmp, TootGap(max_id, last_since_id))
 						}
 					}
 				}
@@ -2029,7 +2034,7 @@ class Column(
 						if(! src.isEmpty()) {
 							PollingWorker.injectData(context, access_info.db_id, src)
 						}
-						
+						var bGapAdded = false
 						while(true) {
 							if(isCancelled) {
 								log.d("refresh-notification-top: cancelled.")
@@ -2051,6 +2056,7 @@ class Column(
 								// タイムアウト
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
+								bGapAdded = true
 								break
 							}
 							
@@ -2062,6 +2068,7 @@ class Column(
 								// エラー
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
+								bGapAdded = true
 								break
 							}
 							
@@ -2070,6 +2077,9 @@ class Column(
 								addWithFilterNotification(list_tmp, src)
 								PollingWorker.injectData(context, access_info.db_id, src)
 							}
+						}
+						if(Pref.bpForceGap(context) && !isCancelled && !bGapAdded && list_tmp?.isNotEmpty() ==true ){
+							addOne(list_tmp, TootGap(max_id, last_since_id))
 						}
 					} else {
 						while(true) {
@@ -2189,6 +2199,7 @@ class Column(
 							}
 						}
 					} else {
+						var bGapAdded = false
 						while(true) {
 							if(isCancelled) {
 								log.d("refresh-status-top: cancelled.")
@@ -2211,6 +2222,7 @@ class Column(
 								log.d("refresh-status-top: read enough. make gap.")
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
+								bGapAdded = true
 								break
 							}
 							
@@ -2219,6 +2231,7 @@ class Column(
 								// タイムアウト
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
+								bGapAdded = true
 								break
 							}
 							
@@ -2230,11 +2243,15 @@ class Column(
 								// エラー
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
+								bGapAdded = true
 								break
 							}
 							
 							src = parser.statusList(jsonArray)
 							addWithFilterStatus(list_tmp, src)
+						}
+						if(Pref.bpForceGap(context) && !isCancelled && !bGapAdded && list_tmp?.isNotEmpty() ==true ){
+							addOne(list_tmp, TootGap(max_id, last_since_id))
 						}
 					}
 				}
@@ -2862,42 +2879,74 @@ class Column(
 	
 	// 特定の要素が特定の位置に来るようにスクロール位置を調整する
 	private fun setItemTop(holder : ColumnViewHolder, idxArg : Int, yArg : Int) {
-		var idx = idxArg
-		var y = yArg
 		
 		val listView = holder.listView
-		val hasHeader = holder.headerView != null
-		if(hasHeader) {
-			// Adapter中から見たpositionとListViewから見たpositionにズレができる
-			++ idx
-		}
+		val headerViewHolder = listView.findViewHolderForAdapterPosition(0)
+		var idx = if(headerViewHolder!= null) idxArg+1 else idxArg
 		
+		var y = yArg
 		while(y > 0 && idx > 0) {
 			-- idx
-			y -= getListItemHeight(listView, idx)
-			y -= listView.dividerHeight
+			y -= holder.getListItemHeight( idx)
+			y -= ListDivider.height
 		}
-		listView.setSelectionFromTop(idx, y)
+		holder.listLayoutManager.scrollToPositionWithOffset(idx, y)
 	}
 	
 	private fun getItemTop(holder : ColumnViewHolder, idxArg : Int) : Int {
-		var idx = idxArg
 		
 		val listView = holder.listView
-		val hasHeader = holder.headerView != null
+		val headerViewHolder = listView.findViewHolderForAdapterPosition(0)
+		val layoutManager = holder.listLayoutManager
+		val idx = if(headerViewHolder!= null) idxArg+1 else idxArg
 		
-		if(hasHeader) {
-			// Adapter中から見たpositionとListViewから見たpositionにズレができる
-			++ idx
-		}
-		
-		val vs = listView.firstVisiblePosition
-		val ve = listView.lastVisiblePosition
-		if(idx < vs || ve < idx) {
+		val vs = layoutManager.findFirstVisibleItemPosition()
+		val ve = layoutManager.findLastVisibleItemPosition()
+		if( vs == RecyclerView.NO_POSITION || ve == RecyclerView.NO_POSITION ){
+			throw IndexOutOfBoundsException("listView has no visible position")
+		}else if(idx < vs || ve < idx) {
 			throw IndexOutOfBoundsException("not in visible range")
 		}
 		val child_idx = idx - vs
 		return listView.getChildAt(child_idx).top
+	}
+	
+	enum class HeaderType(val viewType:Int){
+		Profile(1),
+		Search(2),
+		Instance(3),
+	}
+	
+	fun getHeaderType():HeaderType?{
+		return when(column_type) {
+			Column.TYPE_PROFILE -> HeaderType.Profile
+			Column.TYPE_SEARCH -> HeaderType.Search
+			Column.TYPE_SEARCH_MSP -> HeaderType.Search
+			Column.TYPE_SEARCH_TS -> HeaderType.Search
+			Column.TYPE_INSTANCE_INFORMATION -> HeaderType.Instance
+			else -> null
+		}
+	}
+	
+	private fun loadSearchDesc(raw_en : Int, raw_ja : Int) : String {
+		val res_id = if("ja" == context.getString(R.string.language_code)) raw_ja else raw_en
+		val data = Utils.loadRawResource(context, res_id)
+		return if(data == null) "?" else Utils.decodeUTF8(data)
+	}
+
+	private var cacheHeaderDesc: String? = null
+	
+	fun getHeaderDesc() : String? {
+		var cache = cacheHeaderDesc
+		if( cache != null ) return cache
+		cache = when(column_type) {
+			Column.TYPE_SEARCH -> context.getString(R.string.search_desc_mastodon_api)
+			Column.TYPE_SEARCH_MSP -> loadSearchDesc(R.raw.search_desc_msp_en, R.raw.search_desc_msp_ja)
+			Column.TYPE_SEARCH_TS -> loadSearchDesc(R.raw.search_desc_ts_en, R.raw.search_desc_ts_ja)
+			else -> ""
+		}
+		cacheHeaderDesc = cache
+		return cache
 	}
 	
 	////////////////////////////////////////////////////////////////////////
@@ -3163,7 +3212,7 @@ class Column(
 			if(holder != null) {
 				if(list_data.size > 0) {
 					try {
-						restore_idx = holder.listView.firstVisiblePosition
+						restore_idx = holder.listLayoutManager.findFirstVisibleItemPosition()
 						restore_y = getItemTop(holder, restore_idx)
 					} catch(ex : IndexOutOfBoundsException) {
 						restore_idx = - 1

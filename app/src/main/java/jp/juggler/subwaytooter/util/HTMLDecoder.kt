@@ -148,7 +148,12 @@ object HTMLDecoder {
 	
 	//////////////////////////////////////////////////////////////////////////////////////
 	
-	private class TokenParser internal constructor(internal val src : String) {
+	private val reComment = Pattern.compile("<!--.*?-->", Pattern.DOTALL)
+	private val reDoctype = Pattern.compile("\\A\\s*<!doctype[^>]*>",Pattern.CASE_INSENSITIVE)
+	
+	private class TokenParser(srcArg : String) {
+		
+		internal val src : String
 		internal var next : Int = 0
 		
 		internal var tag : String = ""
@@ -156,17 +161,21 @@ object HTMLDecoder {
 		internal var text : String = ""
 		
 		init {
-			this.next = 0
+			var sv = reComment.matcher(srcArg).replaceAll(" ")
+			sv = reDoctype.matcher(sv).replaceFirst("")
+			this.src = sv
 			eat()
 		}
 		
 		internal fun eat() {
+			
 			// end?
 			if(next >= src.length) {
 				tag = TAG_END
 				open_type = OPEN_TYPE_OPEN_CLOSE
 				return
 			}
+			
 			// text ?
 			var end = src.indexOf('<', next)
 			if(end == - 1) end = src.length
@@ -177,6 +186,7 @@ object HTMLDecoder {
 				next = end
 				return
 			}
+			
 			// tag ?
 			end = src.indexOf('>', next)
 			if(end == - 1) {
@@ -187,6 +197,10 @@ object HTMLDecoder {
 			text = src.substring(next, end)
 			
 			next = end
+			
+			
+			
+			
 			val m = reTag.matcher(text)
 			if(m.find()) {
 				val is_close = m.group(1).isNotEmpty()
@@ -203,6 +217,8 @@ object HTMLDecoder {
 				this.open_type = OPEN_TYPE_OPEN_CLOSE
 			}
 		}
+		
+		
 	}
 	
 	private class Node {

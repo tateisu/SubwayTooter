@@ -884,5 +884,6 @@
     <string name="domain_block_from_pseudo">疑似アカウントではドメインブロックできません</string>
     <string name="domain_block_from_local">自分のタンスにはドメインブロックできません</string>
     <string name="always_show_application">アプリ名(via)を可能なら表示する</string>
+    <string name="force_gap_when_refresh">リフレッシュ時に常にギャップを挟む</string>
 
 </resources>

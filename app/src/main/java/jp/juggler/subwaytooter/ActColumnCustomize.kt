@@ -232,6 +232,15 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 		
 		Styler.fixHorizontalPadding(findViewById(R.id.svContent))
 		
+		llColumnHeader = findViewById(R.id.llColumnHeader)
+		ivColumnHeader = findViewById(R.id.ivColumnHeader)
+		tvColumnName = findViewById(R.id.tvColumnName)
+		flColumnBackground = findViewById(R.id.flColumnBackground)
+		ivColumnBackground = findViewById(R.id.ivColumnBackground)
+		tvSampleAcct = findViewById(R.id.tvSampleAcct)
+		tvSampleContent = findViewById(R.id.tvSampleContent)
+		
+		
 		findViewById<View>(R.id.btnHeaderBackgroundEdit).setOnClickListener(this)
 		findViewById<View>(R.id.btnHeaderBackgroundReset).setOnClickListener(this)
 		findViewById<View>(R.id.btnHeaderTextEdit).setOnClickListener(this)
@@ -245,14 +254,6 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 		findViewById<View>(R.id.btnContentColor).setOnClickListener(this)
 		findViewById<View>(R.id.btnContentColorReset).setOnClickListener(this)
 		
-		llColumnHeader = findViewById(R.id.llColumnHeader)
-		ivColumnHeader = findViewById(R.id.ivColumnHeader)
-		tvColumnName = findViewById(R.id.tvColumnName)
-		
-		flColumnBackground = findViewById(R.id.flColumnBackground)
-		ivColumnBackground = findViewById(R.id.ivColumnBackground)
-		tvSampleAcct = findViewById(R.id.tvSampleAcct)
-		tvSampleContent = findViewById(R.id.tvSampleContent)
 		
 		content_color_default = tvSampleContent.textColors.defaultColor
 		

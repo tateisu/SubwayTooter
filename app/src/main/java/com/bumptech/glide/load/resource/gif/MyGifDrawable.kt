@@ -140,7 +140,7 @@ class MyGifDrawable internal constructor(state : GifDrawable.GifState) : Drawabl
 	) : this(
 		GifDrawable.GifState(
 			GifFrameLoader(
-				// TODO(b/27524013): Factor out this call to Glide.get()
+				// XXX(b/27524013): Factor out this call to Glide.get()
 				Glide.get(context),
 				gifDecoder,
 				targetFrameWidth,

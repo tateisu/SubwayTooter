@@ -155,7 +155,7 @@ class ActAppSetting : AppCompatActivity()
 
 		// initialize Switch and CheckBox
 		for(info in Pref.map.values) {
-			if( info is Pref.BooleanPref) {
+			if( info is Pref.BooleanPref && info.id != 0 ) {
 				val view = findViewById<CompoundButton>(info.id)
 				view.setOnCheckedChangeListener(this)
 				booleanViewList.add(BooleanViewInfo(info, view))

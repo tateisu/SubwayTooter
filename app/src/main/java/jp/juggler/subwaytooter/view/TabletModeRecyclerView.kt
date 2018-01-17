@@ -6,7 +6,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 
-class MyRecyclerView : RecyclerView {
+class TabletModeRecyclerView : RecyclerView {
 	
 	
 	private var mForbidStartDragging : Boolean = false

@@ -68,32 +68,69 @@ internal class StatusButtons(
 		
 		val color_normal = Styler.getAttributeColor(activity, R.attr.colorImageButton)
 		val color_accent = Styler.getAttributeColor(activity, R.attr.colorImageButtonAccent)
-		val fav_icon_attr = if(access_info.isNicoru(status.account)) R.attr.ic_nicoru else R.attr.btn_favourite
+		val fav_icon_attr =
+			if(access_info.isNicoru(status.account)) R.attr.ic_nicoru else R.attr.btn_favourite
 		
 		// ブーストボタン
 		when {
-			TootStatus.VISIBILITY_DIRECT == status.visibility -> setButton(btnBoost, false, color_accent, R.attr.ic_mail, "")
-			TootStatus.VISIBILITY_PRIVATE == status.visibility -> setButton(btnBoost, false, color_accent, R.attr.ic_lock, "")
-			activity.app_state.isBusyBoost(access_info, status) -> setButton(btnBoost, false, color_normal, R.attr.btn_refresh, "?")
+			TootStatus.VISIBILITY_DIRECT == status.visibility -> setButton(
+				btnBoost,
+				false,
+				color_accent,
+				R.attr.ic_mail,
+				""
+			)
+			TootStatus.VISIBILITY_PRIVATE == status.visibility -> setButton(
+				btnBoost,
+				false,
+				color_accent,
+				R.attr.ic_lock,
+				""
+			)
+			activity.app_state.isBusyBoost(access_info, status) -> setButton(
+				btnBoost,
+				false,
+				color_normal,
+				R.attr.btn_refresh,
+				"?"
+			)
 			
 			else -> {
 				val color = if(status.reblogged) color_accent else color_normal
-				setButton(btnBoost, true, color, R.attr.btn_boost, status.reblogs_count?.toString() ?: "")
+				setButton(
+					btnBoost,
+					true,
+					color,
+					R.attr.btn_boost,
+					status.reblogs_count?.toString() ?: ""
+				)
 			}
 		}
 		
 		when {
-			activity.app_state.isBusyFav(access_info, status) -> setButton(btnFavourite, false, color_normal, R.attr.btn_refresh, "?")
+			activity.app_state.isBusyFav(access_info, status) -> setButton(
+				btnFavourite,
+				false,
+				color_normal,
+				R.attr.btn_refresh,
+				"?"
+			)
 			
 			else -> {
 				val color = if(status.favourited) color_accent else color_normal
-				setButton(btnFavourite, true, color, fav_icon_attr, status.favourites_count?.toString() ?: "")
+				setButton(
+					btnFavourite,
+					true,
+					color,
+					fav_icon_attr,
+					status.favourites_count?.toString() ?: ""
+				)
 			}
 		}
 		
 		val account = status.account
 		
-		this.relation = if( ! Pref.bpShowFollowButtonInButtonBar(activity.pref)) {
+		this.relation = if(! Pref.bpShowFollowButtonInButtonBar(activity.pref)) {
 			llFollow2.visibility = View.GONE
 			null
 		} else {
@@ -105,7 +142,13 @@ internal class StatusButtons(
 		
 	}
 	
-	private fun setButton(b : Button, enabled : Boolean, color : Int, icon_attr : Int, text : String) {
+	private fun setButton(
+		b : Button,
+		enabled : Boolean,
+		color : Int,
+		icon_attr : Int,
+		text : String
+	) {
 		val d = Styler.getAttributeDrawable(activity, icon_attr).mutate()
 		d.setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
 		b.setCompoundDrawablesRelativeWithIntrinsicBounds(d, null, null, null)
@@ -123,9 +166,14 @@ internal class StatusButtons(
 		
 		when(v) {
 			
-			btnConversation -> Action_Toot.conversation(activity, activity.nextPosition(column), access_info, status)
+			btnConversation -> Action_Toot.conversation(
+				activity,
+				activity.nextPosition(column),
+				access_info,
+				status
+			)
 			
-			btnReply -> if( ! access_info.isPseudo) {
+			btnReply -> if(! access_info.isPseudo) {
 				Action_Toot.reply(activity, access_info, status)
 			} else {
 				Action_Toot.replyFromAnotherAccount(activity, access_info, status)
@@ -222,8 +270,8 @@ internal class StatusButtons(
 							activity.nextPosition(column),
 							access_info,
 							account,
-							bFollow =true,
-							callback =activity.follow_complete_callback
+							bFollow = true,
+							callback = activity.follow_complete_callback
 						)
 					}
 				}
@@ -242,19 +290,24 @@ internal class StatusButtons(
 		
 		when(v) {
 			btnConversation -> Action_Toot.conversationOtherInstance(
-				activity, activity.nextPosition(column), status)
-
+				activity, activity.nextPosition(column), status
+			)
+			
 			btnBoost -> Action_Toot.boostFromAnotherAccount(
-				activity, access_info, status)
-
+				activity, access_info, status
+			)
+			
 			btnFavourite -> Action_Toot.favouriteFromAnotherAccount(
-				activity, access_info, status)
-
+				activity, access_info, status
+			)
+			
 			btnReply -> Action_Toot.replyFromAnotherAccount(
-				activity, access_info, status)
-
+				activity, access_info, status
+			)
+			
 			btnFollow2 -> Action_Follow.followFromAnotherAccount(
-				activity, activity.nextPosition(column), access_info, status.account)
+				activity, activity.nextPosition(column), access_info, status.account
+			)
 			
 		}
 		return true

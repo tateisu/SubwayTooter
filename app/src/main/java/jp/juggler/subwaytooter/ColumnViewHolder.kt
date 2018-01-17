@@ -26,12 +26,20 @@ import jp.juggler.subwaytooter.action.Action_List
 import jp.juggler.subwaytooter.action.Action_Notification
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.view.MyListView
 import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.subwaytooter.util.Utils
+import android.support.v7.widget.ListRecyclerView
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.RecyclerView
+import jp.juggler.subwaytooter.view.ListDivider
+import java.lang.reflect.Field
 
-internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnClickListener, SwipyRefreshLayout.OnRefreshListener, CompoundButton.OnCheckedChangeListener {
-	
+class ColumnViewHolder(
+	val activity : ActMain,
+	root : View
+) : View.OnClickListener,
+	SwipyRefreshLayout.OnRefreshListener,
+	CompoundButton.OnCheckedChangeListener {
 	
 	companion object {
 		private val log = LogCategory("ColumnViewHolder")
@@ -39,6 +47,21 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 		private fun vg(v : View, visible : Boolean) {
 			v.visibility = if(visible) View.VISIBLE else View.GONE
 		}
+		
+		val fieldRecycler : Field by lazy{
+			val field = RecyclerView::class.java.getDeclaredField("mRecycler")
+			field.isAccessible = true
+			field
+		}
+		
+		val fieldState :Field by lazy{
+			val field = RecyclerView::class.java.getDeclaredField("mState")
+			field.isAccessible = true
+			field
+		}
+		
+		val heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+		
 	}
 	
 	var column : Column? = null
@@ -46,9 +69,10 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 	private var page_idx : Int = 0
 	
 	private val tvLoading : TextView
-	val listView : MyListView
+	val listView : ListRecyclerView
 	val refreshLayout : SwipyRefreshLayout
-	
+	lateinit var listLayoutManager : LinearLayoutManager
+
 	private val llColumnHeader : View
 	private val tvColumnIndex : TextView
 	private val tvColumnContext : TextView
@@ -97,7 +121,6 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 	private var last_image_bitmap : Bitmap? = null
 	private var last_image_task : AsyncTask<Void, Void, Bitmap?>? = null
 	
-	
 	private val isRegexValid : Boolean
 		get() {
 			val s = etRegexFilter.text.toString()
@@ -105,13 +128,13 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 				tvRegexFilterError.text = ""
 				return true
 			}
-			try{
+			try {
 				val m = Pattern.compile(s).matcher("")
-				if( m.find() ) {
+				if(m.find()) {
 					// XXX: 空文字列にマッチする正規表現はエラー扱いにする? しなくてもよい？
 					// tvRegexFilterError.text = activity.getString(R.string.)
 				}
-			}catch(ex : Throwable) {
+			} catch(ex : Throwable) {
 				val message = ex.message
 				tvRegexFilterError.text = if(message != null && message.isNotEmpty()) {
 					message
@@ -126,17 +149,14 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 	val isColumnSettingShown : Boolean
 		get() = llColumnSetting.visibility == View.VISIBLE
 	
-	
-	val headerView : HeaderViewHolderBase?
-		get() = status_adapter?.header
+	//	val headerView : HeaderViewHolderBase?
+	//		get() = status_adapter?.header
 	
 	val scrollPosition : ScrollPosition
-		get() = ScrollPosition(listView)
-	
+		get() = ScrollPosition(this)
 	
 	/////////////////////////////////////////////////////////////////
 	// Column から呼ばれる
-	
 	
 	init {
 		
@@ -170,6 +190,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 		
 		tvLoading = root.findViewById(R.id.tvLoading)
 		listView = root.findViewById(R.id.listView)
+		listView.recycledViewPool = activity.viewPool
 		
 		btnSearch = root.findViewById(R.id.btnSearch)
 		etSearch = root.findViewById(R.id.etSearch)
@@ -272,7 +293,6 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 		}
 	}
 	
-	
 	private val proc_restoreScrollPosition = object : Runnable {
 		override fun run() {
 			activity.handler.removeCallbacks(this)
@@ -294,7 +314,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 			}
 			
 			if(column.hasMultipleViewHolder()) {
-				log.d("restoreScrollPosition [%d] %s , column has multiple view holder. retry later.", page_idx, column .getColumnName(true))
+				log.d("restoreScrollPosition [%d] %s , column has multiple view holder. retry later.", page_idx, column.getColumnName(true))
 				
 				// タブレットモードでカラムを追加/削除した際に発生する。
 				// このタイミングでスクロール位置を復元してもうまくいかないので延期する
@@ -302,19 +322,19 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 				return
 			}
 			
-			val sp = column .scroll_save ?: //復元後にもここを通るがこれは正常である
+			val sp = column.scroll_save ?: //復元後にもここを通るがこれは正常である
 				// log.d( "restoreScrollPosition [%d] %s , column has no saved scroll position.", page_idx, column.getColumnName( true ) );
 				return
 			
-			column .scroll_save = null
+			column.scroll_save = null
 			
 			if(listView.visibility != View.VISIBLE) {
-				log.d("restoreScrollPosition [%d] %s , listView is not visible. saved position %s,%s is dropped.", page_idx, column .getColumnName(true), sp.pos, sp.top
+				log.d("restoreScrollPosition [%d] %s , listView is not visible. saved position %s,%s is dropped.", page_idx, column.getColumnName(true), sp.pos, sp.top
 				)
 			} else {
-				log.d("restoreScrollPosition [%d] %s , listView is visible. resume %s,%s", page_idx, column .getColumnName(true), sp.pos, sp.top
+				log.d("restoreScrollPosition [%d] %s , listView is visible. resume %s,%s", page_idx, column.getColumnName(true), sp.pos, sp.top
 				)
-				sp.restore(listView)
+				sp.restore(this@ColumnViewHolder)
 			}
 			
 		}
@@ -349,18 +369,19 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 			tvColumnIndex.text = activity.getString(R.string.column_index, page_idx + 1, page_count)
 			
 			listView.adapter = null
-			
-			val status_adapter = ItemListAdapter(activity, column, bSimpleList)
+			listView.addItemDecoration(ListDivider(activity))
+			val status_adapter = ItemListAdapter(activity, column, this, bSimpleList)
 			this.status_adapter = status_adapter
 			
-			status_adapter.header = when(column.column_type) {
-				Column.TYPE_PROFILE -> HeaderViewHolderProfile(activity, column, listView)
-				Column.TYPE_SEARCH -> HeaderViewHolderSearchDesc(activity, column, listView, activity.getString(R.string.search_desc_mastodon_api))
-				Column.TYPE_SEARCH_MSP -> HeaderViewHolderSearchDesc(activity, column, listView, getSearchDesc(R.raw.search_desc_msp_en, R.raw.search_desc_msp_ja))
-				Column.TYPE_SEARCH_TS -> HeaderViewHolderSearchDesc(activity, column, listView, getSearchDesc(R.raw.search_desc_ts_en, R.raw.search_desc_ts_ja))
-				Column.TYPE_INSTANCE_INFORMATION -> HeaderViewHolderInstance(activity, column, listView)
-				else -> null
-			}
+			
+			//			status_adapter.header = when(column.column_type) {
+			//				Column.TYPE_PROFILE -> ViewHolderHeaderProfile(activity, column, listView)
+			//				Column.TYPE_SEARCH -> ViewHolderHeaderSearch(activity, column, listView, activity.getString(R.string.search_desc_mastodon_api))
+			//				Column.TYPE_SEARCH_MSP -> ViewHolderHeaderSearch(activity, column, listView, getSearchDesc(R.raw.search_desc_msp_en, R.raw.search_desc_msp_ja))
+			//				Column.TYPE_SEARCH_TS -> ViewHolderHeaderSearch(activity, column, listView, getSearchDesc(R.raw.search_desc_ts_en, R.raw.search_desc_ts_ja))
+			//				Column.TYPE_INSTANCE_INFORMATION -> ViewHolderHeaderInstance(activity, column, listView)
+			//				else -> null
+			//			}
 			
 			val isNotificationColumn = column.column_type == Column.TYPE_NOTIFICATIONS
 			
@@ -381,7 +402,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 			cbHideMediaDefault.isChecked = column.hide_media_default
 			cbEnableSpeech.isChecked = column.enable_speech
 			
-			etRegexFilter.setText(column.regex_text )
+			etRegexFilter.setText(column.regex_text)
 			etSearch.setText(column.search_query)
 			cbResolve.isChecked = column.search_resolve
 			
@@ -418,6 +439,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 					refreshLayout.isEnabled = true
 					refreshLayout.direction = SwipyRefreshLayoutDirection.TOP
 				}
+				
 				else -> {
 					refreshLayout.isEnabled = true
 					refreshLayout.direction = SwipyRefreshLayoutDirection.BOTH
@@ -425,9 +447,12 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 			}
 			
 			//
+			listLayoutManager = LinearLayoutManager(activity)
+			listView.layoutManager = listLayoutManager
 			listView.adapter = status_adapter
-			listView.isFastScrollEnabled = ! Pref.bpDisableFastScroller(Pref.pref(activity))
-			listView.onItemClickListener = status_adapter
+			
+			//XXX FastScrollerのサポートを諦める。ライブラリはいくつかあるんだけど、設定でON/OFFできなかったり頭文字バブルを無効にできなかったり
+			// listView.isFastScrollEnabled = ! Pref.bpDisableFastScroller(Pref.pref(activity))
 			
 			column.addColumnViewHolder(this)
 			
@@ -437,12 +462,6 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 		} finally {
 			loading_busy = false
 		}
-	}
-	
-	private fun getSearchDesc(raw_en : Int, raw_ja : Int) : String {
-		val res_id = if("ja" == activity.getString(R.string.language_code)) raw_ja else raw_en
-		val data = Utils.loadRawResource(activity, res_id)
-		return if(data == null) "?" else Utils.decodeUTF8(data)
 	}
 	
 	fun showColumnColor() {
@@ -491,7 +510,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 			
 			loadBackgroundImage(ivColumnBackgroundImage, column.column_bg_image)
 			
-			status_adapter?.header?.showColor()
+			status_adapter?.getHeaderViewHolder(listView)?.showColor()
 		}
 	}
 	
@@ -503,7 +522,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 			last_image_bitmap?.recycle()
 			last_image_bitmap = null
 			
-			last_image_task ?.cancel(true)
+			last_image_task?.cancel(true)
 			last_image_task = null
 			
 			last_image_uri = null
@@ -517,7 +536,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 	@SuppressLint("StaticFieldLeak")
 	private fun loadBackgroundImage(iv : ImageView, url : String?) {
 		try {
-			if(url == null || url.isEmpty() ) {
+			if(url == null || url.isEmpty()) {
 				// 指定がないなら閉じる
 				closeBitmaps()
 				return
@@ -589,9 +608,9 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 		
 		// カラムを追加/削除したときに ColumnからColumnViewHolderへの参照が外れることがある
 		// リロードやリフレッシュ操作で直るようにする
-		column .addColumnViewHolder(this)
+		column.addColumnViewHolder(this)
 		
-		if(direction == SwipyRefreshLayoutDirection.TOP && column .canReloadWhenRefreshTop()) {
+		if(direction == SwipyRefreshLayoutDirection.TOP && column.canReloadWhenRefreshTop()) {
 			refreshLayout.isRefreshing = false
 			activity.handler.post {
 				this@ColumnViewHolder.column?.startLoading()
@@ -599,7 +618,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 			return
 		}
 		
-		column .startRefresh(false, direction == SwipyRefreshLayoutDirection.BOTTOM, - 1L, - 1)
+		column.startRefresh(false, direction == SwipyRefreshLayoutDirection.BOTTOM, - 1L, - 1)
 	}
 	
 	override fun onCheckedChanged(view : CompoundButton, isChecked : Boolean) {
@@ -609,76 +628,75 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 		
 		// カラムを追加/削除したときに ColumnからColumnViewHolderへの参照が外れることがある
 		// リロードやリフレッシュ操作で直るようにする
-		column .addColumnViewHolder(this)
+		column.addColumnViewHolder(this)
 		
 		when(view.id) {
 			
 			R.id.cbDontCloseColumn -> {
-				column .dont_close = isChecked
+				column.dont_close = isChecked
 				showColumnCloseButton()
 				activity.app_state.saveColumnList()
 			}
 			
 			R.id.cbWithAttachment -> {
-				column .with_attachment = isChecked
+				column.with_attachment = isChecked
 				activity.app_state.saveColumnList()
-				column .startLoading()
+				column.startLoading()
 			}
 			
 			R.id.cbWithHighlight -> {
-				column .with_highlight = isChecked
+				column.with_highlight = isChecked
 				activity.app_state.saveColumnList()
-				column .startLoading()
+				column.startLoading()
 			}
 			
-			
 			R.id.cbDontShowBoost -> {
-				column .dont_show_boost = isChecked
+				column.dont_show_boost = isChecked
 				activity.app_state.saveColumnList()
-				column .startLoading()
+				column.startLoading()
 			}
 			
 			R.id.cbDontShowReply -> {
-				column .dont_show_reply = isChecked
+				column.dont_show_reply = isChecked
 				activity.app_state.saveColumnList()
-				column .startLoading()
+				column.startLoading()
 			}
 			
 			R.id.cbDontShowFavourite -> {
-				column .dont_show_favourite = isChecked
+				column.dont_show_favourite = isChecked
 				activity.app_state.saveColumnList()
-				column .startLoading()
+				column.startLoading()
 			}
 			
 			R.id.cbDontShowFollow -> {
-				column .dont_show_follow = isChecked
+				column.dont_show_follow = isChecked
 				activity.app_state.saveColumnList()
-				column .startLoading()
+				column.startLoading()
 			}
 			
 			R.id.cbDontStreaming -> {
-				column .dont_streaming = isChecked
+				column.dont_streaming = isChecked
 				activity.app_state.saveColumnList()
 				if(isChecked) {
-					column .stopStreaming()
+					column.stopStreaming()
 				} else {
-					column .onStart(activity)
+					column.onStart(activity)
 				}
 			}
 			
 			R.id.cbDontAutoRefresh -> {
-				column .dont_auto_refresh = isChecked
+				column.dont_auto_refresh = isChecked
 				activity.app_state.saveColumnList()
 			}
 			
 			R.id.cbHideMediaDefault -> {
-				column .hide_media_default = isChecked
+				column.hide_media_default = isChecked
 				activity.app_state.saveColumnList()
-				column .fireShowContent()
+				column.fireShowContent()
 			}
 			
 			R.id.cbEnableSpeech -> {
-				column .enable_speech = isChecked
+				column.enable_speech = isChecked
 				activity.app_state.saveColumnList()
 			}
 		}
@@ -716,7 +734,11 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 				column.startLoading()
 			}
 			
-			R.id.llColumnHeader -> if(status_adapter .count > 0) listView.setSelectionFromTop(0, 0)
+			R.id.llColumnHeader ->{
+				if(status_adapter.itemCount > 0){
+					listLayoutManager.scrollToPositionWithOffset(0,0)
+				}
+			}
 			
 			R.id.btnColumnSetting -> llColumnSetting.visibility = if(llColumnSetting.visibility == View.VISIBLE) View.GONE else View.VISIBLE
 			
@@ -750,10 +772,10 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 	
 	private fun showColumnCloseButton() {
 		val column = this@ColumnViewHolder.column ?: return
-
+		
 		// カラム保護の状態
-		btnColumnClose.isEnabled = ! column .dont_close
-		btnColumnClose.alpha = if(column .dont_close) 0.3f else 1f
+		btnColumnClose.isEnabled = ! column.dont_close
+		btnColumnClose.alpha = if(column.dont_close) 0.3f else 1f
 	}
 	
 	// カラムヘッダなど、負荷が低い部分の表示更新
@@ -764,10 +786,10 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 		val ac = AcctColor.load(acct)
 		
 		val nickname = ac.nickname
-		tvColumnContext.text = if( nickname != null && nickname.isNotEmpty() ) nickname else acct
+		tvColumnContext.text = if(nickname != null && nickname.isNotEmpty()) nickname else acct
 		
 		var c : Int
-
+		
 		c = ac.color_fg
 		tvColumnContext.setTextColor(if(c != 0) c else Styler.getAttributeColor(activity, R.attr.colorTimeSmall))
 		
@@ -790,7 +812,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 		// クラッシュレポートにadapterとリストデータの状態不整合が多かったので、
 		// とりあえずリストデータ変更の通知だけは最優先で行っておく
 		try {
-			status_adapter ?.notifyDataSetChanged()
+			status_adapter?.notifyDataSetChanged()
 		} catch(ex : Throwable) {
 			log.trace(ex)
 		}
@@ -816,14 +838,14 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 		}
 		
 		val initialLoadingError = column.mInitialLoadingError
-		if( initialLoadingError.isNotEmpty() ) {
+		if(initialLoadingError.isNotEmpty()) {
 			showError(initialLoadingError)
 			return
 		}
 		
 		val status_adapter = this.status_adapter
 		
-		if(status_adapter == null || status_adapter.count == 0) {
+		if(status_adapter == null || status_adapter.itemCount == 0) {
 			showError(activity.getString(R.string.list_empty))
 			return
 		}
@@ -832,12 +854,12 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 		
 		refreshLayout.visibility = View.VISIBLE
 		
-		status_adapter.header?.bindData(column)
+		status_adapter.getHeaderViewHolder(listView)?.bindData(column)
 		
 		if(! column.bRefreshLoading) {
 			refreshLayout.isRefreshing = false
 			val refreshError = column.mRefreshLoadingError
-			if(refreshError.isNotEmpty() ) {
+			if(refreshError.isNotEmpty()) {
 				Utils.showToast(activity, true, refreshError)
 				column.mRefreshLoadingError = ""
 			}
@@ -867,7 +889,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 			}
 			
 			else -> {
-				val scroll_save = ScrollPosition(listView)
+				val scroll_save = ScrollPosition(this)
 				column.scroll_save = scroll_save
 				log.d("saveScrollPosition [%d] %s , listView is visible, save %s,%s"
 					, page_idx
@@ -879,17 +901,49 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 		}
 	}
 	
-	fun setScrollPosition(sp : ScrollPosition, delta : Float) {
+	fun setScrollPosition(sp : ScrollPosition, deltaDp : Float) {
 		val last_adapter = listView.adapter
 		if(column == null || last_adapter == null) return
 		
-		sp.restore(listView)
+		sp.restore(this)
 		
-		listView.postDelayed(Runnable {
+		val dy = (deltaDp * activity.density +0.5f).toInt()
+		if(dy != 0) listView.postDelayed(Runnable {
 			if(column == null || listView.adapter !== last_adapter) return@Runnable
-			listView.scrollListBy((delta * activity.density).toInt())
+			
+			try {
+				val recycler = fieldRecycler.get(listView) as RecyclerView.Recycler
+				val state = fieldState.get(listView) as RecyclerView.State
+				listLayoutManager.scrollVerticallyBy(dy, recycler,state)
+			}catch(ex:Throwable){
+				log.trace(ex)
+				log.e("can't access field in class %s",RecyclerView::class.java.simpleName)
+			}
 		}, 20L)
 	}
 	
 	
+
+	fun getListItemHeight( idx : Int) : Int {
+		val item_width = listView.width - listView.paddingLeft - listView.paddingRight
+		val widthSpec = View.MeasureSpec.makeMeasureSpec(item_width, View.MeasureSpec.EXACTLY)
+
+		var childViewHolder = listView.findViewHolderForAdapterPosition(idx)
+		if( childViewHolder != null ) {
+			childViewHolder.itemView.measure(widthSpec, heightSpec)
+			return childViewHolder.itemView.measuredHeight
+		}
+
+		val adapter = status_adapter
+		if( adapter != null) {
+			log.d("getListItemHeight idx=$idx createView")
+			val viewType = adapter.getItemViewType(idx)
+			childViewHolder = adapter.createViewHolder(listView, viewType)
+			adapter.bindViewHolder(childViewHolder, idx)
+			childViewHolder.itemView.measure(widthSpec, heightSpec)
+			return childViewHolder.itemView.measuredHeight
+		}
+		log.e("getListItemHeight: missing status adapter")
+		return 0
+	}
 }

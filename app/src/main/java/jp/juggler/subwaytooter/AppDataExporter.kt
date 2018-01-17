@@ -263,111 +263,34 @@ object AppDataExporter {
 		reader.beginObject()
 		while(reader.hasNext()) {
 			val k = reader.nextName() ?: throw RuntimeException("importPref: name is null")
+			
 			val token = reader.peek()
 			if(token == JsonToken.NULL) {
 				reader.nextNull()
 				e.remove(k)
 				continue
 			}
-			when(k) {
-			// boolean
-				Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN,
-				Pref.KEY_PRIOR_LOCAL_URL,
-				Pref.KEY_DISABLE_FAST_SCROLLER,
-				Pref.KEY_SIMPLE_LIST,
-				Pref.KEY_NOTIFICATION_SOUND,
-				Pref.KEY_NOTIFICATION_VIBRATION,
-				Pref.KEY_NOTIFICATION_LED,
-				Pref.KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN,
-				Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR,
-				Pref.KEY_DONT_ROUND,
-				Pref.KEY_DONT_USE_STREAMING,
-				Pref.KEY_DONT_REFRESH_ON_RESUME,
-				Pref.KEY_DONT_SCREEN_OFF,
-				Pref.KEY_DISABLE_TABLET_MODE,
-				Pref.KEY_DONT_CROP_MEDIA_THUMBNAIL,
-				Pref.KEY_PRIOR_CHROME,
-				Pref.KEY_POST_BUTTON_BAR_AT_TOP,
-				Pref.KEY_DONT_DUPLICATION_CHECK,
-				Pref.KEY_QUICK_TOOT_BAR,
-				Pref.KEY_ENABLE_GIF_ANIMATION,
-				Pref.KEY_MENTION_FULL_ACCT,
-				Pref.KEY_RELATIVE_TIMESTAMP,
-				Pref.KEY_DONT_USE_ACTION_BUTTON,
-				Pref.KEY_SHORT_ACCT_LOCAL_USER,
-				Pref.KEY_DISABLE_EMOJI_ANIMATION,
-				Pref.KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE,
-				Pref.KEY_USE_INTERNAL_MEDIA_VIEWER -> {
-					val bv = reader.nextBoolean()
-					e.putBoolean(k, bv)
-				}
 			
-			// int
-				Pref.KEY_BACK_BUTTON_ACTION,
-				Pref.KEY_UI_THEME,
-				Pref.KEY_RESIZE_IMAGE,
-				Pref.KEY_REFRESH_AFTER_TOOT,
-				Pref.KEY_FOOTER_BUTTON_BG_COLOR,
-				Pref.KEY_FOOTER_BUTTON_FG_COLOR,
-				Pref.KEY_FOOTER_TAB_BG_COLOR,
-				Pref.KEY_FOOTER_TAB_DIVIDER_COLOR,
-				Pref.KEY_FOOTER_TAB_INDICATOR_COLOR,
-				Pref.KEY_LAST_COLUMN_POS -> {
-					val iv = reader.nextInt()
-					e.putInt(k, iv)
-				}
-			
-			// long
-				Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT -> {
-					val lv = reader.nextLong()
-					e.putLong(k, lv)
-				}
-			
-			// string
-				Pref.KEY_COLUMN_WIDTH,
-				Pref.KEY_MEDIA_THUMB_HEIGHT,
-				Pref.KEY_STREAM_LISTENER_CONFIG_URL,
-				Pref.KEY_STREAM_LISTENER_SECRET,
-				Pref.KEY_STREAM_LISTENER_CONFIG_DATA,
-				Pref.KEY_CLIENT_NAME,
-				Pref.KEY_MASTODON_SEARCH_PORTAL_USER_TOKEN,
-				Pref.KEY_QUOTE_NAME_FORMAT,
-				Pref.KEY_AUTO_CW_LINES,
-				Pref.KEY_AVATAR_ICON_SIZE,
-				Pref.KEY_EMOJI_PICKER_RECENT,
-				Pref.KEY_MEDIA_SIZE_MAX -> {
-					
-					val sv = reader.nextString()
-					e.putString(k, sv)
-				}
-			
-			// double
-				Pref.KEY_TIMELINE_FONT_SIZE,
-				Pref.KEY_ACCT_FONT_SIZE -> {
-					val dv = reader.nextDouble()
-					if(dv <= MAGIC_NAN) {
-						e.putFloat(k, Float.NaN)
-					} else {
-						e.putFloat(k, dv.toFloat())
-					}
+			val prefItem = Pref.map.get(k)
+			when(prefItem) {
+				is Pref.BooleanPref -> e.putBoolean(k, reader.nextBoolean())
+				is Pref.IntPref -> e.putInt(k, reader.nextInt())
+				is Pref.LongPref -> e.putLong(k, reader.nextLong())
+				
+				is Pref.StringPref -> if(prefItem.skipImport) {
+					reader.skipValue()
+					e.remove(k)
+				} else {
+					e.putString(k, reader.nextString())
 				}
 				
-				Pref.KEY_TIMELINE_FONT,
-				Pref.KEY_TIMELINE_FONT_BOLD -> {
-					reader.skipValue()
-					e.remove(k)
+				is Pref.FloatPref -> {
+					val dv = reader.nextDouble()
+					e.putFloat(k, if(dv <= MAGIC_NAN) Float.NaN else dv.toFloat())
 				}
-			
-			// just ignore
-				"device_token",
-				"install_id",
-				"disable_gif_animation" -> {
-					reader.skipValue()
-					e.remove(k)
-				}
-			
-			// force reset
+				
 				else -> {
+					// ignore or force reset
 					reader.skipValue()
 					e.remove(k)
 				}
@@ -457,28 +380,28 @@ object AppDataExporter {
 		while(reader.hasNext()) {
 			val name = reader.nextName()
 			
-			when (name){
-				KEY_PREF  -> importPref(reader, app_state.pref)
-				KEY_ACCOUNT  -> importTable(reader, SavedAccount.table, account_id_map)
+			when(name) {
+				KEY_PREF -> importPref(reader, app_state.pref)
+				KEY_ACCOUNT -> importTable(reader, SavedAccount.table, account_id_map)
 				
-				KEY_ACCT_COLOR  -> {
+				KEY_ACCT_COLOR -> {
 					importTable(reader, AcctColor.table, null)
 					AcctColor.clearMemoryCache()
 				}
 				
-				KEY_MUTED_APP  -> importTable(reader, MutedApp.table, null)
-				KEY_MUTED_WORD  -> importTable(reader, MutedWord.table, null)
+				KEY_MUTED_APP -> importTable(reader, MutedApp.table, null)
+				KEY_MUTED_WORD -> importTable(reader, MutedWord.table, null)
 				KEY_HIGHLIGHT_WORD -> importTable(reader, HighlightWord.table, null)
-				KEY_CLIENT_INFO  -> importTable(reader, ClientInfo.table, null)
-				KEY_COLUMN  -> result = readColumn(app_state, reader, account_id_map)
+				KEY_CLIENT_INFO -> importTable(reader, ClientInfo.table, null)
+				KEY_COLUMN -> result = readColumn(app_state, reader, account_id_map)
 			}
 		}
 		
 		run {
-			val old_id = app_state.pref.getLong(Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, - 1L)
+			val old_id = Pref.lpTabletTootDefaultAccount(app_state.pref)
 			if(old_id != - 1L) {
 				val new_id = account_id_map[old_id]
-				app_state.pref.edit().putLong(Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, new_id ?: - 1L).apply()
+				app_state.pref.edit().put(Pref.lpTabletTootDefaultAccount, new_id ?: - 1L).apply()
 			}
 		}
 		

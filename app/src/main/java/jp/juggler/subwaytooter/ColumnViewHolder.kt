@@ -29,7 +29,6 @@ import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.view.MyListView
 import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.subwaytooter.util.Utils
-import java.util.regex.Matcher
 
 internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnClickListener, SwipyRefreshLayout.OnRefreshListener, CompoundButton.OnCheckedChangeListener {
 	
@@ -345,7 +344,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 			
 			log.d("onPageCreate [%d] %s", page_idx, column.getColumnName(true))
 			
-			val bSimpleList = column.column_type != Column.TYPE_CONVERSATION && activity.pref.getBoolean(Pref.KEY_SIMPLE_LIST, true)
+			val bSimpleList = column.column_type != Column.TYPE_CONVERSATION && Pref.bpSimpleList(activity.pref)
 			
 			tvColumnIndex.text = activity.getString(R.string.column_index, page_idx + 1, page_count)
 			
@@ -427,7 +426,7 @@ internal class ColumnViewHolder(val activity : ActMain, root : View) : View.OnCl
 			
 			//
 			listView.adapter = status_adapter
-			listView.isFastScrollEnabled = ! Pref.pref(activity).getBoolean(Pref.KEY_DISABLE_FAST_SCROLLER, true)
+			listView.isFastScrollEnabled = ! Pref.bpDisableFastScroller(Pref.pref(activity))
 			listView.onItemClickListener = status_adapter
 			
 			column.addColumnViewHolder(this)

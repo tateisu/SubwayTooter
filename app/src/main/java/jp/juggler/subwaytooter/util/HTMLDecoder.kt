@@ -363,7 +363,7 @@ object HTMLDecoder {
 			bShort : Boolean, context : Context, display_url : String, href : String?, list_attachment :ArrayList<TootAttachmentLike>?
 		) : CharSequence {
 			if(! display_url.startsWith("http")) {
-				if(display_url.startsWith("@") && href != null && App1.pref.getBoolean(Pref.KEY_MENTION_FULL_ACCT, false)) {
+				if(display_url.startsWith("@") && href != null && Pref.bpMentionFullAcct(App1.pref)) {
 					// メンションをfull acct にする
 					val m = TootAccount.reAccountUrl.matcher(href)
 					if(m.find()) {
@@ -452,7 +452,7 @@ object HTMLDecoder {
 			if(sb.isNotEmpty()) sb.append(" ")
 			val start = sb.length
 			sb.append('@')
-			if(App1.pref.getBoolean(Pref.KEY_MENTION_FULL_ACCT, false)) {
+			if( Pref.bpMentionFullAcct(App1.pref)) {
 				sb.append(access_info.getFullAcct(item.acct))
 			} else {
 				sb.append(item.acct)

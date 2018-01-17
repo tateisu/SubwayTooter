@@ -1218,7 +1218,7 @@ class Column(
 		
 		val task = @SuppressLint("StaticFieldLeak")
 		object : AsyncTask<Void, Void, TootApiResult?>() {
-			internal var parser = TootParser(context, access_info,highlightTrie = highlight_trie)
+			internal var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 			
 			internal var instance_tmp : TootInstance? = null
 			
@@ -1227,10 +1227,10 @@ class Column(
 			internal var list_tmp : ArrayList<Any>? = null
 			
 			internal fun getInstanceInformation(client : TootApiClient, instance_name : String?) : TootApiResult? {
-				if( instance_name != null ){
+				if(instance_name != null) {
 					// 「インスタンス情報」カラムをNAアカウントで開く場合
 					client.instance = instance_name
-				}else{
+				} else {
 					// カラムに紐付けられたアカウントのタンスのインスタンス情報
 				}
 				val result = client.request("/api/v1/instance")
@@ -1420,7 +1420,7 @@ class Column(
 			}
 			
 			override fun doInBackground(vararg params : Void) : TootApiResult? {
-				val client = TootApiClient(context, callback=object : TootApiCallback {
+				val client = TootApiClient(context, callback = object : TootApiCallback {
 					override val isApiCancelled : Boolean
 						get() = isCancelled || is_dispose.get()
 					
@@ -1433,7 +1433,7 @@ class Column(
 					}
 				})
 				
-				client.account =access_info
+				client.account = access_info
 				
 				try {
 					var result : TootApiResult?
@@ -1463,7 +1463,7 @@ class Column(
 									var instance = access_info.instance
 									// まだ取得してない
 									// 疑似アカウントの場合は過去のデータが別タンスかもしれない?
-									if( instance == null || access_info.isPseudo ) {
+									if(instance == null || access_info.isPseudo) {
 										val r2 = getInstanceInformation(client, null)
 										if(instance_tmp != null) {
 											instance = instance_tmp
@@ -1531,7 +1531,7 @@ class Column(
 							result = client.request(
 								String.format(Locale.JAPAN, PATH_STATUSES_CONTEXT, status_id))
 							jsonObject = result?.jsonObject ?: return result
-							val conversation_context =  parseItem(::TootContext,parser, jsonObject)
+							val conversation_context = parseItem(::TootContext, parser, jsonObject)
 							
 							// 一つのリストにまとめる
 							target_status.conversation_main = true
@@ -1596,7 +1596,7 @@ class Column(
 								list_tmp = ArrayList()
 								result = TootApiResult()
 							} else {
-								result = client.searchMsp( search_query, max_id )
+								result = client.searchMsp(search_query, max_id)
 								val jsonArray = result?.jsonArray
 								if(jsonArray != null) {
 									// max_id の更新
@@ -1616,7 +1616,7 @@ class Column(
 								list_tmp = ArrayList()
 								result = TootApiResult()
 							} else {
-								result = client.searchTootsearch( search_query, max_id)
+								result = client.searchTootsearch(search_query, max_id)
 								val jsonObject = result?.jsonObject
 								if(jsonObject != null) {
 									// max_id の更新
@@ -1793,7 +1793,7 @@ class Column(
 		
 		val task = @SuppressLint("StaticFieldLeak")
 		object : AsyncTask<Void, Void, TootApiResult?>() {
-			internal var parser = TootParser(context, access_info,highlightTrie = highlight_trie)
+			internal var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 			
 			internal var list_tmp : ArrayList<Any>? = null
 			
@@ -2242,7 +2242,7 @@ class Column(
 			}
 			
 			override fun doInBackground(vararg params : Void) : TootApiResult? {
-				val client = TootApiClient(context, callback=object : TootApiCallback {
+				val client = TootApiClient(context, callback = object : TootApiCallback {
 					override val isApiCancelled : Boolean
 						get() = isCancelled || is_dispose.get()
 					
@@ -2255,7 +2255,7 @@ class Column(
 					}
 				})
 				
-				client.account =access_info
+				client.account = access_info
 				try {
 					
 					return when(column_type) {
@@ -2328,7 +2328,7 @@ class Column(
 									list_tmp = ArrayList()
 									result = TootApiResult(context.getString(R.string.end_of_list))
 								} else {
-									result = client.searchMsp( search_query, max_id)
+									result = client.searchMsp(search_query, max_id)
 									val jsonArray = result?.jsonArray
 									if(jsonArray != null) {
 										// max_id の更新
@@ -2350,7 +2350,7 @@ class Column(
 								list_tmp = ArrayList()
 								result = TootApiResult(context.getString(R.string.end_of_list))
 							} else {
-								result = client.searchTootsearch( search_query, max_id)
+								result = client.searchTootsearch(search_query, max_id)
 								val jsonObject = result?.jsonObject
 								if(jsonObject != null) {
 									// max_id の更新
@@ -2506,7 +2506,7 @@ class Column(
 			internal val since_id = gap.since_id
 			internal var list_tmp : ArrayList<Any>? = null
 			
-			internal var parser = TootParser(context, access_info,highlightTrie = highlight_trie)
+			internal var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 			
 			internal fun getAccountList(client : TootApiClient, path_base : String) : TootApiResult? {
 				val time_start = SystemClock.elapsedRealtime()
@@ -2710,7 +2710,7 @@ class Column(
 			}
 			
 			override fun doInBackground(vararg params : Void) : TootApiResult? {
-				val client = TootApiClient(context, callback=object : TootApiCallback {
+				val client = TootApiClient(context, callback = object : TootApiCallback {
 					override val isApiCancelled : Boolean
 						get() = isCancelled || is_dispose.get()
 					
@@ -2942,8 +2942,9 @@ class Column(
 		
 		if(! bRefreshLoading
 			&& canAutoRefresh()
-			&& ! App1.getAppState(context).pref.getBoolean(Pref.KEY_DONT_REFRESH_ON_RESUME, false)
-			&& ! dont_auto_refresh) {
+			&& ! Pref.bpDontRefreshOnResume(App1.getAppState(context).pref)
+			&& ! dont_auto_refresh
+			) {
 			
 			// リフレッシュしてからストリーミング開始
 			log.d("onStart: start auto refresh.")
@@ -3042,7 +3043,7 @@ class Column(
 			return
 		}
 		
-		if(App1.getAppState(context).pref.getBoolean(Pref.KEY_DONT_USE_STREAMING, false)) {
+		if( Pref.bpDontUseStreaming(context) ) {
 			log.d("resumeStreaming: disabled in app setting.")
 			return
 		}

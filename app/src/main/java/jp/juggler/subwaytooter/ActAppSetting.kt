@@ -21,12 +21,10 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.BaseAdapter
-import android.widget.CheckBox
 import android.widget.CompoundButton
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Spinner
-import android.widget.Switch
 import android.widget.TextView
 
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
@@ -86,40 +84,20 @@ class ActAppSetting : AppCompatActivity()
 	
 	internal lateinit var pref : SharedPreferences
 	
-	private lateinit var swDontConfirmBeforeCloseColumn : Switch
-	private lateinit var swPriorLocalURL : Switch
-	private lateinit var swDisableFastScroller : Switch
-	private lateinit var swSimpleList : Switch
-	private lateinit var swExitAppWhenCloseProtectedColumn : Switch
-	private lateinit var swShowFollowButtonInButtonBar : Switch
-	private lateinit var swDontRound : Switch
-	private lateinit var swDontUseStreaming : Switch
-	private lateinit var swDontRefreshOnResume : Switch
-	private lateinit var swDontScreenOff : Switch
-	private lateinit var swDisableTabletMode : Switch
-	private lateinit var swDontCropMediaThumb : Switch
-	private lateinit var swPriorChrome : Switch
-	private lateinit var swPostButtonBarTop : Switch
-	private lateinit var swDontDuplicationCheck : Switch
-	private lateinit var swQuickTootBar : Switch
-	private lateinit var swEnableGifAnimation : Switch
-	private lateinit var swMentionFullAcct : Switch
-	private lateinit var swRelativeTimestamp : Switch
-	private lateinit var swDontUseActionButtonWithQuickTootBar : Switch
-	private lateinit var swShortAcctLocalUser : Switch
-	private lateinit var swDisableEmojiAnimation : Switch
-	private lateinit var swAllowNonSpaceBeforeEmojiShortcode : Switch
-	private lateinit var swUseInternalMediaViewer : Switch
+	class BooleanViewInfo(
+		val info : Pref.BooleanPref,
+		val view : CompoundButton
+	)
+	
+	private val booleanViewList = ArrayList<BooleanViewInfo>()
+	
+
 	
 	private lateinit var spBackButtonAction : Spinner
 	private lateinit var spUITheme : Spinner
 	private lateinit var spResizeImage : Spinner
 	private lateinit var spRefreshAfterToot : Spinner
 	private lateinit var spDefaultAccount : Spinner
-	
-	private lateinit var cbNotificationSound : CheckBox
-	private lateinit var cbNotificationVibration : CheckBox
-	private lateinit var cbNotificationLED : CheckBox
 	
 	private var footer_button_bg_color : Int = 0
 	private var footer_button_fg_color : Int = 0
@@ -174,90 +152,24 @@ class ActAppSetting : AppCompatActivity()
 		setContentView(R.layout.act_app_setting)
 		
 		Styler.fixHorizontalPadding(findViewById(R.id.svContent))
-		
-		swDontConfirmBeforeCloseColumn = findViewById(R.id.swDontConfirmBeforeCloseColumn)
-		swDontConfirmBeforeCloseColumn.setOnCheckedChangeListener(this)
-		
-		swPriorLocalURL = findViewById(R.id.swPriorLocalURL)
-		swPriorLocalURL.setOnCheckedChangeListener(this)
-		
-		swDisableFastScroller = findViewById(R.id.swDisableFastScroller)
-		swDisableFastScroller.setOnCheckedChangeListener(this)
-		
-		swSimpleList = findViewById(R.id.swSimpleList)
-		swSimpleList.setOnCheckedChangeListener(this)
-		
-		swExitAppWhenCloseProtectedColumn = findViewById(R.id.swExitAppWhenCloseProtectedColumn)
-		swExitAppWhenCloseProtectedColumn.setOnCheckedChangeListener(this)
-		
-		swShowFollowButtonInButtonBar = findViewById(R.id.swShowFollowButtonInButtonBar)
-		swShowFollowButtonInButtonBar.setOnCheckedChangeListener(this)
-		
-		swDontRound = findViewById(R.id.swDontRound)
-		swDontRound.setOnCheckedChangeListener(this)
-		
-		swDontUseStreaming = findViewById(R.id.swDontUseStreaming)
-		swDontUseStreaming.setOnCheckedChangeListener(this)
-		
-		swDontRefreshOnResume = findViewById(R.id.swDontRefreshOnResume)
-		swDontRefreshOnResume.setOnCheckedChangeListener(this)
-		
-		swDontScreenOff = findViewById(R.id.swDontScreenOff)
-		swDontScreenOff.setOnCheckedChangeListener(this)
-		
-		swDisableTabletMode = findViewById(R.id.swDisableTabletMode)
-		swDisableTabletMode.setOnCheckedChangeListener(this)
-		
-		swDontCropMediaThumb = findViewById(R.id.swDontCropMediaThumb)
-		swDontCropMediaThumb.setOnCheckedChangeListener(this)
-		
-		swPriorChrome = findViewById(R.id.swPriorChrome)
-		swPriorChrome.setOnCheckedChangeListener(this)
-		
-		swPostButtonBarTop = findViewById(R.id.swPostButtonBarTop)
-		swPostButtonBarTop.setOnCheckedChangeListener(this)
-		
-		swDontDuplicationCheck = findViewById(R.id.swDontDuplicationCheck)
-		swDontDuplicationCheck.setOnCheckedChangeListener(this)
-		
-		swQuickTootBar = findViewById(R.id.swQuickTootBar)
-		swQuickTootBar.setOnCheckedChangeListener(this)
-		
-		swEnableGifAnimation = findViewById(R.id.swEnableGifAnimation)
-		swEnableGifAnimation.setOnCheckedChangeListener(this)
-		
-		swMentionFullAcct = findViewById(R.id.swMentionFullAcct)
-		swMentionFullAcct.setOnCheckedChangeListener(this)
-		
-		swRelativeTimestamp = findViewById(R.id.swRelativeTimestamp)
-		swRelativeTimestamp.setOnCheckedChangeListener(this)
-		
-		swDontUseActionButtonWithQuickTootBar = findViewById(R.id.swDontUseActionButtonWithQuickTootBar)
-		swDontUseActionButtonWithQuickTootBar.setOnCheckedChangeListener(this)
-		
-		swShortAcctLocalUser = findViewById(R.id.swShortAcctLocalUser)
-		swShortAcctLocalUser.setOnCheckedChangeListener(this)
-		
-		swDisableEmojiAnimation = findViewById(R.id.swDisableEmojiAnimation)
-		swDisableEmojiAnimation.setOnCheckedChangeListener(this)
-		
-		swAllowNonSpaceBeforeEmojiShortcode = findViewById(R.id.swAllowNonSpaceBeforeEmojiShortcode)
-		swAllowNonSpaceBeforeEmojiShortcode.setOnCheckedChangeListener(this)
-		
-		swUseInternalMediaViewer = findViewById(R.id.swUseInternalMediaViewer)
-		swUseInternalMediaViewer.setOnCheckedChangeListener(this)
-		
-		cbNotificationSound = findViewById(R.id.cbNotificationSound)
-		cbNotificationVibration = findViewById(R.id.cbNotificationVibration)
-		cbNotificationLED = findViewById(R.id.cbNotificationLED)
-		cbNotificationSound.setOnCheckedChangeListener(this)
-		cbNotificationVibration.setOnCheckedChangeListener(this)
-		cbNotificationLED.setOnCheckedChangeListener(this)
+
+		// initialize Switch and CheckBox
+		for(info in Pref.map.values) {
+			if( info is Pref.BooleanPref) {
+				val view = findViewById<CompoundButton>(info.id)
+				view.setOnCheckedChangeListener(this)
+				booleanViewList.add(BooleanViewInfo(info, view))
+			}
+		}
 		
 		val bBefore8 = Build.VERSION.SDK_INT < 26
-		cbNotificationSound.isEnabled = bBefore8
-		cbNotificationVibration.isEnabled = bBefore8
-		cbNotificationLED.isEnabled = bBefore8
+		for(si in booleanViewList) {
+			when(si.info) {
+				Pref.bpNotificationLED,
+				Pref.bpNotificationVibration,
+				Pref.bpNotificationSound -> si.view.isEnabled = bBefore8
+			}
+		}
 		
 		run {
 			val caption_list = arrayOf(getString(R.string.ask_always), getString(R.string.close_column), getString(R.string.open_column_list), getString(R.string.app_exit))
@@ -368,65 +280,40 @@ class ActAppSetting : AppCompatActivity()
 	private fun loadUIFromData() {
 		load_busy = true
 		
-		swDontConfirmBeforeCloseColumn.isChecked = pref.getBoolean(Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN, false)
-		swPriorLocalURL.isChecked = pref.getBoolean(Pref.KEY_PRIOR_LOCAL_URL, false)
-		swSimpleList.isChecked = pref.getBoolean(Pref.KEY_SIMPLE_LIST, true)
-		swExitAppWhenCloseProtectedColumn.isChecked = pref.getBoolean(Pref.KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN, false)
-		swShowFollowButtonInButtonBar.isChecked = pref.getBoolean(Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR, false)
-		swDontRound.isChecked = pref.getBoolean(Pref.KEY_DONT_ROUND, false)
-		swDontUseStreaming.isChecked = pref.getBoolean(Pref.KEY_DONT_USE_STREAMING, false)
-		swDontRefreshOnResume.isChecked = pref.getBoolean(Pref.KEY_DONT_REFRESH_ON_RESUME, false)
-		swDontScreenOff.isChecked = pref.getBoolean(Pref.KEY_DONT_SCREEN_OFF, false)
-		swDisableTabletMode.isChecked = pref.getBoolean(Pref.KEY_DISABLE_TABLET_MODE, false)
-		swDontCropMediaThumb.isChecked = pref.getBoolean(Pref.KEY_DONT_CROP_MEDIA_THUMBNAIL, false)
-		swPostButtonBarTop.isChecked = pref.getBoolean(Pref.KEY_POST_BUTTON_BAR_AT_TOP, false)
-		swDontDuplicationCheck.isChecked = pref.getBoolean(Pref.KEY_DONT_DUPLICATION_CHECK, false)
-		swQuickTootBar.isChecked = pref.getBoolean(Pref.KEY_QUICK_TOOT_BAR, false)
-		swEnableGifAnimation.isChecked = pref.getBoolean(Pref.KEY_ENABLE_GIF_ANIMATION, false)
-		swMentionFullAcct.isChecked = pref.getBoolean(Pref.KEY_MENTION_FULL_ACCT, false)
-		swRelativeTimestamp.isChecked = pref.getBoolean(Pref.KEY_RELATIVE_TIMESTAMP, false)
-		swDontUseActionButtonWithQuickTootBar.isChecked = pref.getBoolean(Pref.KEY_DONT_USE_ACTION_BUTTON, false)
-		swShortAcctLocalUser.isChecked = pref.getBoolean(Pref.KEY_SHORT_ACCT_LOCAL_USER, false)
-		swDisableEmojiAnimation.isChecked = pref.getBoolean(Pref.KEY_DISABLE_EMOJI_ANIMATION, false)
-		swAllowNonSpaceBeforeEmojiShortcode.isChecked = pref.getBoolean(Pref.KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE, false)
-		swUseInternalMediaViewer.isChecked = pref.getBoolean(Pref.KEY_USE_INTERNAL_MEDIA_VIEWER, true)
-		// Switch with default true
-		swDisableFastScroller.isChecked = pref.getBoolean(Pref.KEY_DISABLE_FAST_SCROLLER, true)
-		swPriorChrome.isChecked = pref.getBoolean(Pref.KEY_PRIOR_CHROME, true)
+		for(si in booleanViewList) {
+			si.view.isChecked = si.info(pref)
+		}
 		
-		cbNotificationSound.isChecked = pref.getBoolean(Pref.KEY_NOTIFICATION_SOUND, true)
-		cbNotificationVibration.isChecked = pref.getBoolean(Pref.KEY_NOTIFICATION_VIBRATION, true)
-		cbNotificationLED.isChecked = pref.getBoolean(Pref.KEY_NOTIFICATION_LED, true)
-		
-		spBackButtonAction.setSelection(pref.getInt(Pref.KEY_BACK_BUTTON_ACTION, 0))
-		spUITheme.setSelection(pref.getInt(Pref.KEY_UI_THEME, 0))
-		spResizeImage.setSelection(pref.getInt(Pref.KEY_RESIZE_IMAGE, 4))
-		spRefreshAfterToot.setSelection(pref.getInt(Pref.KEY_REFRESH_AFTER_TOOT, 0))
+		spBackButtonAction.setSelection(Pref.ipBackButtonAction(pref))
+		spUITheme.setSelection(Pref.ipUiTheme(pref))
+		spResizeImage.setSelection(Pref.ipResizeImage(pref))
+		spRefreshAfterToot.setSelection(Pref.ipRefreshAfterToot(pref))
 		
 		spDefaultAccount.setSelection(
-			(spDefaultAccount.adapter as AccountAdapter).getIndexFromId(pref.getLong(Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, - 1L))
+			(spDefaultAccount.adapter as AccountAdapter).getIndexFromId( Pref.lpTabletTootDefaultAccount(pref))
 		)
 		
-		footer_button_bg_color = pref.getInt(Pref.KEY_FOOTER_BUTTON_BG_COLOR, 0)
-		footer_button_fg_color = pref.getInt(Pref.KEY_FOOTER_BUTTON_FG_COLOR, 0)
-		footer_tab_bg_color = pref.getInt(Pref.KEY_FOOTER_TAB_BG_COLOR, 0)
-		footer_tab_divider_color = pref.getInt(Pref.KEY_FOOTER_TAB_DIVIDER_COLOR, 0)
-		footer_tab_indicator_color = pref.getInt(Pref.KEY_FOOTER_TAB_INDICATOR_COLOR, 0)
+		footer_button_bg_color = Pref.ipFooterButtonBgColor(pref)
+		footer_button_fg_color = Pref.ipFooterButtonFgColor(pref)
+		footer_tab_bg_color = Pref.ipFooterTabBgColor(pref)
+		footer_tab_divider_color = Pref.ipFooterTabDividerColor(pref)
+		footer_tab_indicator_color = Pref.ipFooterTabIndicatorColor(pref)
 		
-		etColumnWidth.setText(pref.getString(Pref.KEY_COLUMN_WIDTH, ""))
-		etMediaThumbHeight.setText(pref.getString(Pref.KEY_MEDIA_THUMB_HEIGHT, ""))
-		etClientName.setText(pref.getString(Pref.KEY_CLIENT_NAME, ""))
-		etQuoteNameFormat.setText(pref.getString(Pref.KEY_QUOTE_NAME_FORMAT, ""))
-		etAutoCWLines.setText(pref.getString(Pref.KEY_AUTO_CW_LINES, "0"))
-		etAvatarIconSize.setText(pref.getString(Pref.KEY_AVATAR_ICON_SIZE, "48"))
+		etColumnWidth.setText(Pref.spColumnWidth(pref))
+		etMediaThumbHeight.setText(Pref.spMediaThumbHeight(pref))
+		etClientName.setText(Pref.spClientName(pref))
+		etQuoteNameFormat.setText(Pref.spQuoteNameFormat(pref))
+		etAutoCWLines.setText(Pref.spAutoCWLines(pref))
+		etAvatarIconSize.setText(Pref.spAvatarIconSize(pref))
 		
-		etMediaSizeMax.setText(pref.getString(Pref.KEY_MEDIA_SIZE_MAX, "8"))
+		etMediaSizeMax.setText(Pref.spMediaSizeMax(pref))
 		
-		etTimelineFontSize.setText(formatFontSize(pref.getFloat(Pref.KEY_TIMELINE_FONT_SIZE, Float.NaN)))
-		etAcctFontSize.setText(formatFontSize(pref.getFloat(Pref.KEY_ACCT_FONT_SIZE, Float.NaN)))
+		timeline_font = Pref.spTimelineFont(pref)
+		timeline_font_bold = Pref.spTimelineFontBold(pref)
 		
-		timeline_font = pref.getString(Pref.KEY_TIMELINE_FONT, "")
-		timeline_font_bold = pref.getString(Pref.KEY_TIMELINE_FONT_BOLD, "")
+		etTimelineFontSize.setText(formatFontSize(Pref.fpTimelineFontSize(pref)))
+		etAcctFontSize.setText(formatFontSize(Pref.fpAcctFontSize(pref)))
+		
 		
 		load_busy = false
 		
@@ -440,65 +327,43 @@ class ActAppSetting : AppCompatActivity()
 	
 	private fun saveUIToData() {
 		if(load_busy) return
-		pref.edit()
-			.putBoolean(Pref.KEY_DONT_CONFIRM_BEFORE_CLOSE_COLUMN, swDontConfirmBeforeCloseColumn.isChecked)
-			.putBoolean(Pref.KEY_PRIOR_LOCAL_URL, swPriorLocalURL.isChecked)
-			.putBoolean(Pref.KEY_DISABLE_FAST_SCROLLER, swDisableFastScroller.isChecked)
-			.putBoolean(Pref.KEY_SIMPLE_LIST, swSimpleList.isChecked)
-			.putBoolean(Pref.KEY_EXIT_APP_WHEN_CLOSE_PROTECTED_COLUMN, swExitAppWhenCloseProtectedColumn.isChecked)
-			.putBoolean(Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR, swShowFollowButtonInButtonBar.isChecked)
-			.putBoolean(Pref.KEY_DONT_ROUND, swDontRound.isChecked)
-			.putBoolean(Pref.KEY_DONT_USE_STREAMING, swDontUseStreaming.isChecked)
-			.putBoolean(Pref.KEY_DONT_REFRESH_ON_RESUME, swDontRefreshOnResume.isChecked)
-			.putBoolean(Pref.KEY_DONT_SCREEN_OFF, swDontScreenOff.isChecked)
-			.putBoolean(Pref.KEY_DISABLE_TABLET_MODE, swDisableTabletMode.isChecked)
-			.putBoolean(Pref.KEY_DONT_CROP_MEDIA_THUMBNAIL, swDontCropMediaThumb.isChecked)
-			.putBoolean(Pref.KEY_PRIOR_CHROME, swPriorChrome.isChecked)
-			.putBoolean(Pref.KEY_POST_BUTTON_BAR_AT_TOP, swPostButtonBarTop.isChecked)
-			.putBoolean(Pref.KEY_DONT_DUPLICATION_CHECK, swDontDuplicationCheck.isChecked)
-			.putBoolean(Pref.KEY_QUICK_TOOT_BAR, swQuickTootBar.isChecked)
-			.putBoolean(Pref.KEY_ENABLE_GIF_ANIMATION, swEnableGifAnimation.isChecked)
-			.putBoolean(Pref.KEY_MENTION_FULL_ACCT, swMentionFullAcct.isChecked)
-			.putBoolean(Pref.KEY_RELATIVE_TIMESTAMP, swRelativeTimestamp.isChecked)
-			.putBoolean(Pref.KEY_DONT_USE_ACTION_BUTTON, swDontUseActionButtonWithQuickTootBar.isChecked)
-			.putBoolean(Pref.KEY_SHORT_ACCT_LOCAL_USER, swShortAcctLocalUser.isChecked)
-			.putBoolean(Pref.KEY_DISABLE_EMOJI_ANIMATION, swDisableEmojiAnimation.isChecked)
-			.putBoolean(Pref.KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE, swAllowNonSpaceBeforeEmojiShortcode.isChecked)
-			.putBoolean(Pref.KEY_USE_INTERNAL_MEDIA_VIEWER, swUseInternalMediaViewer.isChecked)
+		
+		val e = pref.edit()
+		
+		for(si in booleanViewList) {
+			e.putBoolean(si.info.key, si.view.isChecked)
+		}
+		
+		e
+			.put(Pref.lpTabletTootDefaultAccount,
+				(spDefaultAccount.adapter as AccountAdapter)
+					.getIdFromIndex(spDefaultAccount.selectedItemPosition)
+			)
 			
-			.putBoolean(Pref.KEY_NOTIFICATION_SOUND, cbNotificationSound.isChecked)
-			.putBoolean(Pref.KEY_NOTIFICATION_VIBRATION, cbNotificationVibration.isChecked)
-			.putBoolean(Pref.KEY_NOTIFICATION_LED, cbNotificationLED.isChecked)
+			.put(Pref.fpTimelineFontSize, parseFontSize(etTimelineFontSize.text.toString().trim { it <= ' ' }))
+			.put(Pref.fpAcctFontSize, parseFontSize(etAcctFontSize.text.toString().trim { it <= ' ' }))
 			
-			.putInt(Pref.KEY_BACK_BUTTON_ACTION, spBackButtonAction.selectedItemPosition)
-			.putInt(Pref.KEY_UI_THEME, spUITheme.selectedItemPosition)
-			.putInt(Pref.KEY_RESIZE_IMAGE, spResizeImage.selectedItemPosition)
-			.putInt(Pref.KEY_REFRESH_AFTER_TOOT, spRefreshAfterToot.selectedItemPosition)
+			.put(Pref.spColumnWidth, etColumnWidth.text.toString().trim { it <= ' ' })
+			.put(Pref.spMediaThumbHeight, etMediaThumbHeight.text.toString().trim { it <= ' ' })
+			.put(Pref.spClientName, etClientName.text.toString().trim { it <= ' ' })
+			.put(Pref.spQuoteNameFormat, etQuoteNameFormat.text.toString()) // not trimmed
+			.put(Pref.spAutoCWLines, etAutoCWLines.text.toString().trim { it <= ' ' })
+			.put(Pref.spAvatarIconSize, etAvatarIconSize.text.toString().trim { it <= ' ' })
+			.put(Pref.spMediaSizeMax, etMediaSizeMax.text.toString().trim { it <= ' ' })
+			.put(Pref.spTimelineFont, timeline_font ?:"")
+			.put(Pref.spTimelineFontBold, timeline_font_bold?:"")
 			
-			.putInt(Pref.KEY_FOOTER_BUTTON_BG_COLOR, footer_button_bg_color)
-			.putInt(Pref.KEY_FOOTER_BUTTON_FG_COLOR, footer_button_fg_color)
-			.putInt(Pref.KEY_FOOTER_TAB_BG_COLOR, footer_tab_bg_color)
-			.putInt(Pref.KEY_FOOTER_TAB_DIVIDER_COLOR, footer_tab_divider_color)
-			.putInt(Pref.KEY_FOOTER_TAB_INDICATOR_COLOR, footer_tab_indicator_color)
-			
-			.putLong(Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, (spDefaultAccount.adapter as AccountAdapter)
-				.getIdFromIndex(spDefaultAccount.selectedItemPosition))
-			
-			.putString(Pref.KEY_TIMELINE_FONT, timeline_font)
-			.putString(Pref.KEY_TIMELINE_FONT_BOLD, timeline_font_bold)
-			.putString(Pref.KEY_COLUMN_WIDTH, etColumnWidth.text.toString().trim { it <= ' ' })
-			.putString(Pref.KEY_MEDIA_THUMB_HEIGHT, etMediaThumbHeight.text.toString().trim { it <= ' ' })
-			.putString(Pref.KEY_CLIENT_NAME, etClientName.text.toString().trim { it <= ' ' })
-			.putString(Pref.KEY_QUOTE_NAME_FORMAT, etQuoteNameFormat.text.toString()) // not trimmed
-			.putString(Pref.KEY_AUTO_CW_LINES, etAutoCWLines.text.toString()) // not trimmed
-			.putString(Pref.KEY_AVATAR_ICON_SIZE, etAvatarIconSize.text.toString().trim { it <= ' ' })
-			.putString(Pref.KEY_MEDIA_SIZE_MAX, etMediaSizeMax.text.toString()) // not trimmed
-			
-			.putFloat(Pref.KEY_TIMELINE_FONT_SIZE, parseFontSize(etTimelineFontSize.text.toString().trim { it <= ' ' }))
-			.putFloat(Pref.KEY_ACCT_FONT_SIZE, parseFontSize(etAcctFontSize.text.toString().trim { it <= ' ' }))
+			.put(Pref.ipBackButtonAction, spBackButtonAction.selectedItemPosition)
+			.put(Pref.ipUiTheme, spUITheme.selectedItemPosition)
+			.put(Pref.ipResizeImage, spResizeImage.selectedItemPosition)
+			.put(Pref.ipRefreshAfterToot, spRefreshAfterToot.selectedItemPosition)
+			.put(Pref.ipFooterButtonBgColor, footer_button_bg_color)
+			.put(Pref.ipFooterButtonFgColor, footer_button_fg_color)
+			.put(Pref.ipFooterTabBgColor, footer_tab_bg_color)
+			.put(Pref.ipFooterTabDividerColor, footer_tab_divider_color)
+			.put(Pref.ipFooterTabIndicatorColor, footer_tab_indicator_color)
 			
 			.apply()
-		
 	}
 	
 	override fun onCheckedChanged(buttonView : CompoundButton, isChecked : Boolean) {
@@ -591,11 +456,10 @@ class ActAppSetting : AppCompatActivity()
 			R.id.btnCustomStreamListenerEdit -> ActCustomStreamListener.open(this)
 			
 			R.id.btnCustomStreamListenerReset -> {
-				pref
-					.edit()
-					.remove(Pref.KEY_STREAM_LISTENER_CONFIG_URL)
-					.remove(Pref.KEY_STREAM_LISTENER_SECRET)
-					.remove(Pref.KEY_STREAM_LISTENER_CONFIG_DATA)
+				pref.edit()
+					.remove(Pref.spStreamListenerConfigUrl)
+					.remove(Pref.spStreamListenerSecret)
+					.remove(Pref.spStreamListenerConfigData)
 					.apply()
 				SavedAccount.clearRegistrationCache()
 				PollingWorker.queueUpdateListener(this)
@@ -764,7 +628,7 @@ class ActAppSetting : AppCompatActivity()
 	
 	private fun parseFontSize(src : String) : Float {
 		try {
-			if( src.isNotEmpty() ) {
+			if(src.isNotEmpty()) {
 				val f = NumberFormat.getInstance(Locale.getDefault()).parse(src).toFloat()
 				return when {
 					f.isNaN() -> Float.NaN
@@ -782,7 +646,7 @@ class ActAppSetting : AppCompatActivity()
 	
 	private fun showFontSize(sample : TextView, et : EditText, default_sp : Float) {
 		var fv = parseFontSize(et.text.toString().trim { it <= ' ' })
-		if(fv.isNaN() ) {
+		if(fv.isNaN()) {
 			sample.textSize = default_sp
 		} else {
 			if(fv < 1f) fv = 1f
@@ -794,7 +658,7 @@ class ActAppSetting : AppCompatActivity()
 		tvFontUrl : TextView, font_url : String?
 	) {
 		try {
-			if(font_url?.isNotEmpty() == true ) {
+			if(font_url?.isNotEmpty() == true) {
 				
 				tvFontUrl.typeface = Typeface.DEFAULT
 				val face = Typeface.createFromFile(font_url)
@@ -983,7 +847,7 @@ class ActAppSetting : AppCompatActivity()
 		
 		override fun getView(position : Int, viewOld : View?, parent : ViewGroup) : View {
 			val view = viewOld ?: layoutInflater.inflate(android.R.layout.simple_spinner_item, parent, false)
-			view.findViewById<TextView>(android.R.id.text1) .text =
+			view.findViewById<TextView>(android.R.id.text1).text =
 				if(position == 0)
 					getString(R.string.ask_always)
 				else

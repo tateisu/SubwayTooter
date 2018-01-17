@@ -698,7 +698,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		setContentView(R.layout.act_post)
 		
-		if(Pref.pref(this).getBoolean(Pref.KEY_POST_BUTTON_BAR_AT_TOP, false)) {
+		if(Pref.bpPostButtonBarTop(this)) {
 			val bar = findViewById<View>(R.id.llFooterBar)
 			val parent = bar.parent as ViewGroup
 			parent.removeView(bar)
@@ -1189,7 +1189,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				}
 				
 				// 設定からリサイズ指定を読む
-				val resize_to = list_resize_max[pref.getInt(Pref.KEY_RESIZE_IMAGE, 4)]
+				val resize_to = list_resize_max[Pref.ipResizeImage(pref)]
 				
 				val bitmap = Utils.createResizedBitmap(log, this, uri, true, resize_to)
 				if(bitmap != null) {
@@ -1292,7 +1292,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				try {
 					val opener = createOpener(uri, mime_type)
 					
-					val sv = pref.getString(Pref.KEY_MEDIA_SIZE_MAX, "8")
+					val sv = Pref.spMediaSizeMax(pref)
 					var media_size_max = 1000000 * Utils.parse_int(sv, 8)
 					if(media_size_max < 1000000) media_size_max = 1000000
 					

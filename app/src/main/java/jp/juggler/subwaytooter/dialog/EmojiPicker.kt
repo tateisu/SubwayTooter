@@ -25,6 +25,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
+import jp.juggler.subwaytooter.put
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.NetworkEmojiView
 
@@ -92,8 +93,8 @@ class EmojiPicker(
 		
 		// recentをロードする
 		val pref = App1.pref
-		val sv = pref.getString(Pref.KEY_EMOJI_PICKER_RECENT, null)
-		if( sv != null && sv.isNotEmpty() ) {
+		val sv = Pref.spEmojiPickerRecent(pref)
+		if( sv.isNotEmpty() ) {
 			try {
 				val array = JSONArray(sv)
 				for( i in 0 until array.length() ){
@@ -353,8 +354,8 @@ class EmojiPicker(
 		// Recentをロード(他インスタンスの絵文字を含む)
 		val pref = App1.pref
 		val list = ArrayList<JSONObject>()
-		val sv = pref.getString(Pref.KEY_EMOJI_PICKER_RECENT, null)
-		if( sv != null && sv.isNotEmpty() ) {
+		val sv = Pref.spEmojiPickerRecent(pref)
+		if( sv.isNotEmpty() ) {
 			try {
 				val array = JSONArray(sv)
 				var i = 0
@@ -401,7 +402,7 @@ class EmojiPicker(
 			for(item in list) {
 				array.put(item)
 			}
-			App1.pref.edit().putString(Pref.KEY_EMOJI_PICKER_RECENT, array.toString()).apply()
+			App1.pref.edit().put(Pref.spEmojiPickerRecent, array.toString()).apply()
 		} catch(ignored : Throwable) {
 		
 		}

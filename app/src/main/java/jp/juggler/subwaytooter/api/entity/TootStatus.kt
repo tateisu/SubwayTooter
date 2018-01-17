@@ -474,7 +474,7 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 		private val date_format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
 		
 		fun formatTime(context : Context, t : Long, bAllowRelative : Boolean) : String {
-			if(bAllowRelative && App1.pref.getBoolean(Pref.KEY_RELATIVE_TIMESTAMP, false)) {
+			if(bAllowRelative && Pref.bpRelativeTimestamp(App1.pref)) {
 				val now = System.currentTimeMillis()
 				var delta = now - t
 				val sign = context.getString(if(delta > 0) R.string.ago else R.string.later)

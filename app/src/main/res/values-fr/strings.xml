@@ -599,6 +599,7 @@
 	<string name="keyword">Keyword</string>
     <string name="domain_block_from_pseudo">Can\'t use domain block from pseudo account.</string>
     <string name="domain_block_from_local">Can\'t use domain block for local instance.</string>
+    <string name="always_show_application">Show (via) application name if possible</string>
 
     <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

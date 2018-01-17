@@ -93,7 +93,7 @@ internal class StatusButtons(
 		
 		val account = status.account
 		
-		this.relation = if( ! activity.pref.getBoolean(Pref.KEY_SHOW_FOLLOW_BUTTON_IN_BUTTON_BAR, false)) {
+		this.relation = if( ! Pref.bpShowFollowButtonInButtonBar(activity.pref)) {
 			llFollow2.visibility = View.GONE
 			null
 		} else {

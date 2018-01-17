@@ -883,5 +883,6 @@
     <string name="keyword">キーワード</string>
     <string name="domain_block_from_pseudo">疑似アカウントではドメインブロックできません</string>
     <string name="domain_block_from_local">自分のタンスにはドメインブロックできません</string>
+    <string name="always_show_application">アプリ名(via)を可能なら表示する</string>
 
 </resources>

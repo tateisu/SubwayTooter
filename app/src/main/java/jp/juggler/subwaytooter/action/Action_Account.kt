@@ -39,7 +39,7 @@ object Action_Account {
 					return if(bPseudoAccount || bInputAccessToken) {
 						client.getInstanceInformation()
 					} else {
-						val client_name = Pref.pref(activity).getString(Pref.KEY_CLIENT_NAME, "")
+						val client_name = Pref.spClientName(activity)
 						client.authentication1(client_name)
 					}
 				}

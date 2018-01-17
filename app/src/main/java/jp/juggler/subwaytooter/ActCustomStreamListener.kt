@@ -90,8 +90,8 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 		
 		val pref = Pref.pref(this)
 		
-		etStreamListenerConfigurationUrl.setText(pref.getString(Pref.KEY_STREAM_LISTENER_CONFIG_URL, ""))
-		etStreamListenerSecret.setText(pref.getString(Pref.KEY_STREAM_LISTENER_SECRET, ""))
+		etStreamListenerConfigurationUrl.setText(Pref.spStreamListenerConfigUrl(pref))
+		etStreamListenerSecret.setText(Pref.spStreamListenerSecret(pref))
 		stream_config_json = null
 		tvLog.text = getString(R.string.input_url_and_secret_then_test)
 		
@@ -123,10 +123,12 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 				Utils.hideKeyboard(this, etStreamListenerConfigurationUrl)
 				finish()
 			}
+			
 			R.id.btnTest -> {
 				Utils.hideKeyboard(this, etStreamListenerConfigurationUrl)
 				startTest()
 			}
+			
 			R.id.btnSave -> {
 				Utils.hideKeyboard(this, etStreamListenerConfigurationUrl)
 				if(save()) {
@@ -145,15 +147,15 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 		}
 		
 		Pref.pref(this).edit()
-			.putString(Pref.KEY_STREAM_LISTENER_CONFIG_URL, etStreamListenerConfigurationUrl.text.toString().trim { it <= ' ' })
-			.putString(Pref.KEY_STREAM_LISTENER_SECRET, etStreamListenerSecret.text.toString().trim { it <= ' ' })
-			.putString(Pref.KEY_STREAM_LISTENER_CONFIG_DATA, stream_config_json)
+			.put(Pref.spStreamListenerConfigUrl, etStreamListenerConfigurationUrl.text.toString().trim { it <= ' ' })
+			.put(Pref.spStreamListenerSecret, etStreamListenerSecret.text.toString().trim { it <= ' ' })
+			.put(Pref.spStreamListenerConfigData, stream_config_json ?: "")
 			.apply()
 		return true
 	}
 	
 	internal fun addLog(line : String) {
-		Utils.runOnMainThread{
+		Utils.runOnMainThread {
 			val old = tvLog.text.toString()
 			tvLog.text = if(old.isEmpty()) line else old + "\n" + line
 		}
@@ -171,10 +173,10 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 				try {
 					
 					while(true) {
-						if( strSecret.isEmpty() ) {
+						if(strSecret.isEmpty()) {
 							addLog("Secret is empty. Custom Listener is not used.")
 							break
-						} else if(strUrl.isEmpty() ) {
+						} else if(strUrl.isEmpty()) {
 							addLog("Configuration URL is empty. Custom Listener is not used.")
 							break
 						}
@@ -193,9 +195,9 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 							log.trace(ex)
 							null
 						}
-
-						if(! response.isSuccessful || bodyString?.isEmpty() != false ){
-							addLog(TootApiClient.formatResponse(response, "Can't get configuration from URL.",bodyString))
+						
+						if(! response.isSuccessful || bodyString?.isEmpty() != false) {
+							addLog(TootApiClient.formatResponse(response, "Can't get configuration from URL.", bodyString))
 							break
 						}
 						

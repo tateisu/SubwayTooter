@@ -459,8 +459,8 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 				account.delete()
 				
 				val pref = Pref.pref(this@ActAccountSetting)
-				if(account.db_id == pref.getLong(Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, - 1L)) {
-					pref.edit().putLong(Pref.KEY_TABLET_TOOT_DEFAULT_ACCOUNT, - 1L).apply()
+				if(account.db_id == Pref.lpTabletTootDefaultAccount(pref) ) {
+					pref.edit().put(Pref.lpTabletTootDefaultAccount, - 1L).apply()
 				}
 				
 				finish()
@@ -528,7 +528,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 		
 		TootTaskRunner(this@ActAccountSetting).run(account, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				return client.authentication1(Pref.pref(this@ActAccountSetting).getString(Pref.KEY_CLIENT_NAME, ""))
+				return client.authentication1(Pref.spClientName(this@ActAccountSetting))
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

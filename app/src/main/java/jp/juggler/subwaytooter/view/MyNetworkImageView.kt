@@ -38,15 +38,14 @@ class MyNetworkImageView @JvmOverloads constructor(
 ) : AppCompatImageView(context, attrs, defStyle) {
 	
 	
-	
 	companion object {
 		
 		internal val log = LogCategory("MyNetworkImageView")
 		
 		@SuppressLint("StaticFieldLeak") internal var app_context : Context? = null
 		
-//		private const val SQUARE_RATIO_MARGIN = 0.05f
-//		private const val maxLoopCount = GifDrawable.LOOP_FOREVER
+		//		private const val SQUARE_RATIO_MARGIN = 0.05f
+		//		private const val maxLoopCount = GifDrawable.LOOP_FOREVER
 	}
 	
 	// ロード中などに表示するDrawableのリソースID
@@ -92,9 +91,9 @@ class MyNetworkImageView @JvmOverloads constructor(
 		}
 		
 		
-		mCornerRadius = if(pref.getBoolean(Pref.KEY_DONT_ROUND, false)) 0f else r
+		mCornerRadius = if(Pref.bpDontRound(pref)) 0f else r
 		
-		val gif_url = if(! pref.getBoolean(Pref.KEY_ENABLE_GIF_ANIMATION, false)) null else gifUrlArg
+		val gif_url = if(Pref.bpEnableGifAnimation(pref)) gifUrlArg else null
 		
 		if(gif_url != null && gif_url.isNotEmpty()) {
 			mUrl = gif_url
@@ -106,17 +105,17 @@ class MyNetworkImageView @JvmOverloads constructor(
 		loadImageIfNecessary()
 	}
 	
-	private fun getGLide() :RequestManager? {
-		try{
+	private fun getGLide() : RequestManager? {
+		try {
 			return Glide.with(context)
-		}catch(ex:IllegalArgumentException){
-			if( ex.message?.contains("destroyed activity") == true ){
+		} catch(ex : IllegalArgumentException) {
+			if(ex.message?.contains("destroyed activity") == true) {
 				// ignore it
-			}else{
-				log.e(ex,"Glide.with() failed.")
+			} else {
+				log.e(ex, "Glide.with() failed.")
 			}
-		}catch(ex:Throwable){
-			log.e(ex,"Glide.with() failed.")
+		} catch(ex : Throwable) {
+			log.e(ex, "Glide.with() failed.")
 		}
 		return null
 	}
@@ -134,8 +133,8 @@ class MyNetworkImageView @JvmOverloads constructor(
 			setImageDrawable(null)
 			try {
 				getGLide()?.clear(target)
-			}catch(ex:Throwable){
-				log.e(ex,"Glide.clear() failed.")
+			} catch(ex : Throwable) {
+				log.e(ex, "Glide.clear() failed.")
 			}
 			
 			mTarget = null
@@ -165,7 +164,7 @@ class MyNetworkImageView @JvmOverloads constructor(
 	private fun loadImageIfNecessary() {
 		try {
 			val url = mUrl
-			if(url?.isEmpty() != false ) {
+			if(url?.isEmpty() != false) {
 				// if the URL to be loaded in this view is empty,
 				// cancel any old requests and clear the currently loaded image.
 				cancelLoading()
@@ -298,16 +297,16 @@ class MyNetworkImageView @JvmOverloads constructor(
 						// 角丸でないならそのまま使う
 						resource
 					}
-
-					// GidDrawableを置き換える
+				
+				// GidDrawableを置き換える
 					resource is GifDrawable -> replaceGifDrawable(resource)
-					
-					// Glide 4.xから、静止画はBitmapDrawableになった
-					resource is BitmapDrawable ->{
+				
+				// Glide 4.xから、静止画はBitmapDrawableになった
+					resource is BitmapDrawable -> {
 						val bitmap = resource.bitmap
-						if( bitmap ==null ){
+						if(bitmap == null) {
 							resource
-						}else{
+						} else {
 							val d = RoundedBitmapDrawableFactory.create(resources, bitmap)
 							d.cornerRadius = mCornerRadius
 							d
@@ -324,19 +323,19 @@ class MyNetworkImageView @JvmOverloads constructor(
 			}
 			
 		}
-	
-	private fun replaceGifDrawable( resource:GifDrawable) : Drawable {
-		// ディスクキャッシュから読んだ画像は角丸が正しく扱われない
-		// MyGifDrawable に差し替えて描画させる
-		if(app_context != null) {
-			try {
-				return MyGifDrawable(resource, mCornerRadius)
-			} catch(ex : Throwable) {
-				log.trace(ex)
+		
+		private fun replaceGifDrawable(resource : GifDrawable) : Drawable {
+			// ディスクキャッシュから読んだ画像は角丸が正しく扱われない
+			// MyGifDrawable に差し替えて描画させる
+			if(app_context != null) {
+				try {
+					return MyGifDrawable(resource, mCornerRadius)
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
 			}
+			return resource
 		}
-		return resource
-	}
 		
 		private fun afterResourceReady(resource : Drawable, transition : Transition<in Drawable>?) {
 			super.onResourceReady(resource, transition)

@@ -277,7 +277,7 @@ class PostHelper(
 					.post(request_body)
 				val digest = Utils.digestSHA256(body_string + account.acct)
 				
-				if(digest != null && ! pref.getBoolean(Pref.KEY_DONT_DUPLICATION_CHECK, false)) {
+				if(digest != null && ! Pref.bpDontDuplicationCheck(pref) ) {
 					request_builder.header("Idempotency-Key", digest)
 				}
 				

@@ -543,15 +543,13 @@ internal class ItemViewHolder(
 		buttons_for_status?.bind(status, (item as? TootNotification))
 		
 		val application = status.application
-		when(column.column_type) {
-			
-			Column.TYPE_CONVERSATION -> if(application == null) {
-				tvApplication.visibility = View.GONE
-			} else {
-				tvApplication.visibility = View.VISIBLE
-				tvApplication.text = activity.getString(R.string.application_is, application.name ?: "")
-			}
-			else -> tvApplication.visibility = View.GONE
+		if(application != null
+			&&( column.column_type == Column.TYPE_CONVERSATION || Pref.bpShowAppName(activity.pref) )
+		) {
+			tvApplication.visibility = View.VISIBLE
+			tvApplication.text = activity.getString(R.string.application_is, application?.name ?: "")
+		}else{
+			tvApplication.visibility = View.GONE
 		}
 	}
 	
@@ -852,7 +850,7 @@ internal class ItemViewHolder(
 				}
 				
 				is TootAttachment -> {
-					if(App1.pref.getBoolean(Pref.KEY_USE_INTERNAL_MEDIA_VIEWER, true)) {
+					if(Pref.bpUseInternalMediaViewer(App1.pref)) {
 						// 内蔵メディアビューア
 						ActMediaViewer.open(activity, media_attachments, i)
 						

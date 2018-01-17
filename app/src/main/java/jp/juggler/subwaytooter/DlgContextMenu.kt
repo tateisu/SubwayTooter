@@ -537,8 +537,8 @@ internal class DlgContextMenu(
 			R.id.btnQuoteName -> who?.let { who ->
 				var sv = who.display_name
 				try {
-					val fmt = activity.pref.getString(Pref.KEY_QUOTE_NAME_FORMAT, null)
-					if(fmt != null && fmt.contains("%1\$s")) {
+					val fmt = Pref.spQuoteNameFormat( activity.pref)
+					if( fmt.contains("%1\$s")) {
 						sv = String.format(fmt, sv)
 					}
 				} catch(ex : Throwable) {

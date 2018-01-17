@@ -12,6 +12,7 @@ import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.table.ClientInfo
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.put
 import jp.juggler.subwaytooter.util.*
 import okhttp3.*
 import org.json.JSONArray
@@ -558,13 +559,13 @@ class TootApiClient(
 	fun searchMsp(query : String, max_id : String) : TootApiResult? {
 		
 		// ユーザトークンを読む
-		var user_token = pref.getString(Pref.KEY_MASTODON_SEARCH_PORTAL_USER_TOKEN, null)
+		var user_token :String? = Pref.spMspUserToken(pref)
 		
 		for(nTry in 0 until 3) {
 			if(callback.isApiCancelled) return null
 			
 			// ユーザトークンがなければ取得する
-			if(user_token == null || user_token.isEmpty()) {
+			if( user_token == null || user_token.isEmpty() ){
 				
 				callback.publishApiProgress("get MSP user token...")
 				
@@ -590,9 +591,10 @@ class TootApiClient(
 				user_token = jsonObject.optJSONObject("result")?.optString("token")
 				if(user_token?.isEmpty() != false) {
 					return result.setError("Can't get MSP user token. response=${result.bodyString}")
+				}else{
+					pref.edit().put( Pref.spMspUserToken,user_token).apply()
 				}
 				
-				pref.edit().putString(Pref.KEY_MASTODON_SEARCH_PORTAL_USER_TOKEN, user_token).apply()
 			}
 			
 			// ユーザトークンを使って検索APIを呼び出す

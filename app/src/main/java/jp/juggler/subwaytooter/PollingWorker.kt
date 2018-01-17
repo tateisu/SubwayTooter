@@ -972,12 +972,12 @@ class PollingWorker private constructor(c : Context) {
 		private fun loadCustomStreamListenerSetting() {
 			mCustomStreamListenerSetting = null
 			mCustomStreamListenerSecret = null
-			val jsonString = pref.getString(Pref.KEY_STREAM_LISTENER_CONFIG_DATA, null)
+			val jsonString = Pref.spStreamListenerConfigData(pref)
 			mCustomStreamListenerSettingString = jsonString
-			if(jsonString != null && jsonString.isNotEmpty()) {
+			if(jsonString.isNotEmpty() ){
 				try {
 					mCustomStreamListenerSetting = JsonValue.readHjson(jsonString).asObject()
-					mCustomStreamListenerSecret = pref.getString(Pref.KEY_STREAM_LISTENER_SECRET, null)
+					mCustomStreamListenerSecret = Pref.spStreamListenerSecret(pref)
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
@@ -1448,7 +1448,7 @@ class PollingWorker private constructor(c : Context) {
 					
 					var iv = 0
 					
-					if(pref.getBoolean(Pref.KEY_NOTIFICATION_SOUND, true)) {
+					if( Pref.bpNotificationSound(pref) ) {
 						
 						var sound_uri : Uri? = null
 						
@@ -1487,13 +1487,13 @@ class PollingWorker private constructor(c : Context) {
 					
 					log.d("showNotification[%s] creating notification(4)", account.acct)
 					
-					if(pref.getBoolean(Pref.KEY_NOTIFICATION_VIBRATION, true)) {
+					if(Pref.bpNotificationVibration(pref)) {
 						iv = iv or NotificationCompat.DEFAULT_VIBRATE
 					}
 					
 					log.d("showNotification[%s] creating notification(5)", account.acct)
 					
-					if(pref.getBoolean(Pref.KEY_NOTIFICATION_LED, true)) {
+					if(Pref.bpNotificationLED(pref)) {
 						iv = iv or NotificationCompat.DEFAULT_LIGHTS
 					}
 					

@@ -238,7 +238,7 @@ class App1 : Application() {
 		
 		fun prepare(app_context : Context) : AppState {
 			var state = appStateX
-			if(state != null ) return state
+			if(state != null) return state
 			
 			CalligraphyConfig.initDefault(CalligraphyConfig.Builder()
 				.setFontAttrId(R.attr.fontPath)
@@ -424,7 +424,7 @@ class App1 : Application() {
 			
 			prepare(activity.applicationContext)
 			
-			var theme_idx = pref.getInt(Pref.KEY_UI_THEME, 0)
+			var theme_idx = Pref.ipUiTheme(pref)
 			
 			if(forceDark) theme_idx = 1
 			
@@ -508,14 +508,14 @@ class App1 : Application() {
 		var allow_non_space_before_emoji_shortcode : Boolean = false
 		
 		private fun reloadConfig() {
-			disable_emoji_animation = pref.getBoolean(Pref.KEY_DISABLE_EMOJI_ANIMATION, false)
-			allow_non_space_before_emoji_shortcode = pref.getBoolean(Pref.KEY_ALLOW_NON_SPACE_BEFORE_EMOJI_SHORTCODE, false)
+			disable_emoji_animation = Pref.bpDisableEmojiAnimation(pref)
+			allow_non_space_before_emoji_shortcode = Pref.bpAllowNonSpaceBeforeEmojiShortcode(pref)
 		}
 		
 		// Chrome Custom Tab を開く
 		fun openCustomTab(activity : Activity, url : String) {
 			try {
-				if(pref.getBoolean(Pref.KEY_PRIOR_CHROME, true)) {
+				if( Pref.bpPriorChrome(pref)) {
 					try {
 						// 初回はChrome指定で試す
 						val builder = CustomTabsIntent.Builder()

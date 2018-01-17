@@ -57,7 +57,7 @@ class TootAttachment(src : JSONObject) : TootAttachmentLike {
 		}
 	
 	fun getLargeUrl(pref : SharedPreferences) : String? {
-		return if( pref.getBoolean(Pref.KEY_PRIOR_LOCAL_URL, false) ){
+		return if( Pref.bpPriorLocalURL(pref) ){
 			if( url?.isNotEmpty() ==true) url else remote_url
 		} else {
 			if( remote_url?.isNotEmpty() == true ) remote_url else url
@@ -65,7 +65,7 @@ class TootAttachment(src : JSONObject) : TootAttachmentLike {
 	}
 	fun getLargeUrlList(pref : SharedPreferences) : ArrayList<String> {
 		val result = ArrayList<String>()
-		if( pref.getBoolean(Pref.KEY_PRIOR_LOCAL_URL, false) ){
+		if( Pref.bpPriorLocalURL(pref) ){
 			if( url?.isNotEmpty() ==true) result.add(url)
 			if( remote_url?.isNotEmpty()==true) result.add( remote_url)
 		} else {

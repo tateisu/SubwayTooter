@@ -96,7 +96,7 @@ class MyNetworkImageView : AppCompatImageView {
 		loadImageIfNecessary()
 	}
 	
-	private fun getGLide() : RequestManager? {
+	private fun getGlide() : RequestManager? {
 		try {
 			return Glide.with(context)
 		} catch(ex : IllegalArgumentException) {
@@ -123,7 +123,7 @@ class MyNetworkImageView : AppCompatImageView {
 			}
 			setImageDrawable(null)
 			try {
-				getGLide()?.clear(target)
+				getGlide()?.clear(target)
 			} catch(ex : Throwable) {
 				log.e(ex, "Glide.clear() failed.")
 			}
@@ -194,9 +194,9 @@ class MyNetworkImageView : AppCompatImageView {
 			}
 			
 			mTarget = if(mMayGif) {
-				getGLide()?.load(url)?.into(MyTargetGif(url))
+				getGlide()?.load(url)?.into(MyTargetGif(url))
 			} else {
-				getGLide()?.asBitmap()?.load(url)?.into(MyTarget(url, desiredWidth, desiredHeight))
+				getGlide()?.asBitmap()?.load(url)?.into(MyTarget(url, desiredWidth, desiredHeight))
 			}
 		} catch(ex : Throwable) {
 			log.trace(ex)

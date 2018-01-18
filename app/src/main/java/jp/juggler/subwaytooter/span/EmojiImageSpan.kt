@@ -40,10 +40,16 @@ class EmojiImageSpan(context : Context, private val res_id : Int) : ReplacementS
 		this.context = context.applicationContext
 	}
 	
+	private fun getImageSize(paint:Paint) = (0.5f + scale_ratio * paint.textSize).toInt()
+	
 	override fun getSize(
-		paint : Paint, text : CharSequence, @IntRange(from = 0) start : Int, @IntRange(from = 0) end : Int, fm : Paint.FontMetricsInt?
+		paint : Paint,
+		text : CharSequence,
+		@IntRange(from = 0) start : Int,
+		@IntRange(from = 0) end : Int,
+		fm : Paint.FontMetricsInt?
 	) : Int {
-		val size = (0.5f + scale_ratio * paint.textSize).toInt()
+		val size = getImageSize(paint)
 		
 		if(fm != null) {
 			val c_descent = (0.5f + size * descent_ratio).toInt()
@@ -57,13 +63,21 @@ class EmojiImageSpan(context : Context, private val res_id : Int) : ReplacementS
 	}
 	
 	override fun draw(
-		canvas : Canvas, text : CharSequence, start : Int, end : Int, x : Float, top : Int, baseline : Int, bottom : Int, paint : Paint
+		canvas : Canvas,
+		text : CharSequence,
+		start : Int,
+		end : Int,
+		x : Float,
+		top : Int,
+		baseline : Int,
+		bottom : Int,
+		paint : Paint
 	) {
-		val size = (0.5f + scale_ratio * paint.textSize).toInt()
+		val d = cachedDrawable ?: return
+
+		val size = getImageSize(paint)
 		val c_descent = (0.5f + size * descent_ratio).toInt()
 		val transY = baseline - size + c_descent
-		
-		val d = cachedDrawable ?: return
 		
 		canvas.save()
 		canvas.translate(x, transY.toFloat())

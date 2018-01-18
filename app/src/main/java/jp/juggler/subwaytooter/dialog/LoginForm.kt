@@ -21,7 +21,6 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.Utils
 
-
 object LoginForm {
 	private val log = LogCategory("LoginForm")
 	
@@ -29,7 +28,14 @@ object LoginForm {
 	
 	@SuppressLint("InflateParams")
 	fun showLoginForm(
-		activity : Activity, instanceArg : String?, callback : LoginFormCallback
+		activity : Activity,
+		instanceArg : String?,
+		onClickOk : (
+			dialog : Dialog,
+			instance : String,
+			bPseudoAccount : Boolean,
+			bInputAccessToken : Boolean
+		) -> Unit
 	) {
 		val view = activity.layoutInflater.inflate(R.layout.dlg_account_add, null, false)
 		val etInstance :AutoCompleteTextView = view.findViewById(R.id.etInstance)
@@ -65,7 +71,7 @@ object LoginForm {
 				Utils.showToast(activity, true, R.string.instance_not_need_slash)
 				return@OnClickListener
 			}
-			callback(dialog, instance, cbPseudoAccount.isChecked, cbInputAccessToken.isChecked)
+			onClickOk(dialog, instance, cbPseudoAccount.isChecked, cbInputAccessToken.isChecked)
 		})
 		view.findViewById<View>(R.id.btnCancel).setOnClickListener { dialog.cancel() }
 		

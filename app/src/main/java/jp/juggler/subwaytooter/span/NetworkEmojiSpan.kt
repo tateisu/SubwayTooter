@@ -42,13 +42,20 @@ class NetworkEmojiSpan internal constructor(private val url : String) : Replacem
 		fun delayInvalidate(delay : Long)
 	}
 	
-	fun setInvalidateCallback(draw_target_tag : Any, invalidate_callback : InvalidateCallback) {
+	fun setInvalidateCallback(
+		draw_target_tag : Any,
+		invalidate_callback : InvalidateCallback
+	) {
 		this.refDrawTarget = WeakReference(draw_target_tag)
 		this.invalidate_callback = invalidate_callback
 	}
 	
 	override fun getSize(
-		paint : Paint, text : CharSequence, @IntRange(from = 0) start : Int, @IntRange(from = 0) end : Int, fm : Paint.FontMetricsInt?
+		paint : Paint,
+		text : CharSequence,
+		@IntRange(from = 0) start : Int,
+		@IntRange(from = 0) end : Int,
+		fm : Paint.FontMetricsInt?
 	) : Int {
 		val size = (0.5f + scale_ratio * paint.textSize).toInt()
 		
@@ -64,7 +71,15 @@ class NetworkEmojiSpan internal constructor(private val url : String) : Replacem
 	}
 	
 	override fun draw(
-		canvas : Canvas, text : CharSequence, start : Int, end : Int, x : Float, top : Int, baseline : Int, bottom : Int, textPaint : Paint
+		canvas : Canvas,
+		text : CharSequence,
+		start : Int,
+		end : Int,
+		x : Float,
+		top : Int,
+		baseline : Int,
+		bottom : Int,
+		textPaint : Paint
 	) {
 		val invalidate_callback = this.invalidate_callback
 		if(invalidate_callback == null) {
@@ -73,7 +88,7 @@ class NetworkEmojiSpan internal constructor(private val url : String) : Replacem
 		}
 		
 		// APNGデータの取得
-		val frames = App1.custom_emoji_cache.getFrames( refDrawTarget, url){
+		val frames = App1.custom_emoji_cache.getFrames(refDrawTarget, url) {
 			invalidate_callback.delayInvalidate(0)
 		} ?: return
 		
@@ -104,7 +119,7 @@ class NetworkEmojiSpan internal constructor(private val url : String) : Replacem
 		
 		// 少し後に描画しなおす
 		val delay = mFrameFindResult.delay
-		if(delay != Long.MAX_VALUE && !Pref.bpDisableEmojiAnimation(App1.pref)) {
+		if(delay != Long.MAX_VALUE && ! Pref.bpDisableEmojiAnimation(App1.pref)) {
 			invalidate_callback.delayInvalidate(delay)
 		}
 	}

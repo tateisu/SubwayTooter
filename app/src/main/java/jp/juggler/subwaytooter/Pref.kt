@@ -30,7 +30,7 @@ object Pref {
 		}
 		
 		abstract fun put(editor : SharedPreferences.Editor, v : T)
-		abstract fun invoke(pref: SharedPreferences) : T
+		abstract fun invoke(pref : SharedPreferences) : T
 		
 		operator fun invoke(context : Context) : T {
 			return invoke(pref(context))
@@ -38,8 +38,11 @@ object Pref {
 		
 	}
 	
-	class BooleanPref(key : String, private val defVal : Boolean, val id : Int) :
-		BasePref<Boolean>(key) {
+	class BooleanPref(
+		key : String,
+		private val defVal : Boolean,
+		val id : Int
+	) : BasePref<Boolean>(key) {
 		
 		override operator fun invoke(pref : SharedPreferences) : Boolean {
 			return pref.getBoolean(key, defVal)
@@ -83,8 +86,11 @@ object Pref {
 		}
 	}
 	
-	class StringPref(key : String, private val defVal : String, val skipImport : Boolean = false) :
-		BasePref<String>(key) {
+	class StringPref(
+		key : String,
+		private val defVal : String,
+		val skipImport : Boolean = false
+	) : BasePref<String>(key) {
 		
 		override operator fun invoke(pref : SharedPreferences) : String {
 			return pref.getString(key, defVal)
@@ -94,8 +100,6 @@ object Pref {
 			editor.putString(key, v)
 		}
 	}
-	
-	
 	
 	// boolean
 	

@@ -17,7 +17,12 @@ import jp.juggler.subwaytooter.util.Utils
 object ReportForm {
 	
 	@SuppressLint("InflateParams")
-	fun showReportForm(activity : Activity, who : TootAccount, status : TootStatus?, callback : ReportFormCallback) {
+	fun showReportForm(
+		activity : Activity,
+		who : TootAccount,
+		status : TootStatus?,
+		onClickOk : (dialog : Dialog, comment : String) -> Unit
+	) {
 		val view = activity.layoutInflater.inflate(R.layout.dlg_report_user, null, false)
 		
 		val tvUser = view.findViewById<TextView>(R.id.tvUser)
@@ -36,7 +41,7 @@ object ReportForm {
 				return@OnClickListener
 			}
 			
-			callback(dialog, comment)
+			onClickOk(dialog, comment)
 		})
 		view.findViewById<View>(R.id.btnCancel).setOnClickListener { dialog.cancel() }
 		

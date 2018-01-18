@@ -59,7 +59,6 @@ class DlgListMember(
 	private val adapter : MyListAdapter
 	
 	init {
-		val density = activity.resources.displayMetrics.density
 		this.account_list = makeAccountListNonPseudo(activity, null)
 		this.target_user_full_acct = _list_owner.getFullAcct(who)
 		

@@ -15,6 +15,23 @@ open class TootApiResult(
 	var response : Response? = null,
 	var bodyString : String? = null
 ) {
+	companion object {
+		private val log = LogCategory("TootApiResult")
+		
+		private val reLinkURL = Pattern.compile("<([^>]+)>;\\s*rel=\"([^\"]+)\"")
+		
+		private const val NO_INSTANCE = "missing instance name"
+		
+		fun makeWithCaption(caption : String?) : TootApiResult {
+			val result = TootApiResult()
+			if(caption?.isEmpty() != false) {
+				result.error = NO_INSTANCE
+			} else {
+				result.caption = caption
+			}
+			return result
+		}
+	}
 	
 	var tokenInfo : JSONObject? = null
 	
@@ -43,6 +60,10 @@ open class TootApiResult(
 	
 	constructor(error : String) : this(0, error = error)
 	
+	constructor(socket : WebSocket) : this(0) {
+		this.data = socket
+	}
+	
 	constructor(response : Response, error : String)
 		: this(0, error, response)
 	
@@ -51,48 +72,15 @@ open class TootApiResult(
 		this.data = data
 	}
 	
-	constructor(socket : WebSocket) : this(0) {
-		this.data = socket
-	}
-	
-	companion object {
-		private val log = LogCategory("TootApiResult")
-		
-		private val reLinkURL = Pattern.compile("<([^>]+)>;\\s*rel=\"([^\"]+)\"")
-		
-		private const val MIMUMEDON = "mimumedon.com"
-		private const val MIMUMEDON_ERROR = "mimumedon.comには対応しません"
-		
-		private const val NO_INSTANCE = "missing instance name"
-		
-		fun makeWithCaption(caption : String?) : TootApiResult {
-			val result = TootApiResult()
-			if(caption == null || caption.isEmpty()) {
-				result.error = NO_INSTANCE
-			} else {
-				result.caption = caption
-				if(MIMUMEDON.equals(caption, ignoreCase = true)) {
-					result.error = MIMUMEDON_ERROR
-				}
-			}
-			return result
-		}
-		
-	}
-	
 	// return result.setError(...) と書きたい
 	fun setError(error : String) : TootApiResult {
 		this.error = error
 		return this
 	}
 	
-
-	
-
-	
-	private fun parseLinkHeader( response : Response?, array : JSONArray ) {
+	private fun parseLinkHeader(response : Response?, array : JSONArray) {
 		response ?: return
-
+		
 		log.d("array size=%s", array.length())
 		
 		val sv = response.header("Link")
@@ -111,5 +99,4 @@ open class TootApiResult(
 			}
 		}
 	}
-	
 }

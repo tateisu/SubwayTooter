@@ -87,6 +87,7 @@ internal class ItemViewHolder(
 	private lateinit var tvContent : MyTextView
 	
 	private lateinit var flMedia : View
+	private lateinit var llMedia:View
 	private lateinit var btnShowMedia : TextView
 	private lateinit var ivMedia1 : MyNetworkImageView
 	private lateinit var ivMedia2 : MyNetworkImageView
@@ -121,7 +122,7 @@ internal class ItemViewHolder(
 	
 	private var item : Any? = null
 	
-	private var status__showing : TootStatus? = null
+	private var status_showing : TootStatus? = null
 	private var status_account : TootAccount? = null
 	private var boost_account : TootAccount? = null
 	private var follow_account : TootAccount? = null
@@ -259,7 +260,7 @@ internal class ItemViewHolder(
 			
 			viewRoot.setOnClickListener { viewClicked ->
 				activity.closeListItemPopup()
-				status__showing?.let { status ->
+				status_showing?.let { status ->
 					val popup = StatusButtonsPopup(activity, column, bSimpleList)
 					activity.listItemPopup = popup
 					popup.show(
@@ -294,7 +295,7 @@ internal class ItemViewHolder(
 		
 		
 		this.item = null
-		this.status__showing = null
+		this.status_showing = null
 		this.status_account = null
 		this.boost_account = null
 		this.follow_account = null
@@ -494,7 +495,7 @@ internal class ItemViewHolder(
 	}
 	
 	private fun showStatus(activity : ActMain, status : TootStatus) {
-		this.status__showing = status
+		this.status_showing = status
 		llStatus.visibility = View.VISIBLE
 		
 		showStatusTime(activity, status)
@@ -601,13 +602,10 @@ internal class ItemViewHolder(
 		val media_attachments = status.media_attachments
 		if(media_attachments == null || media_attachments.isEmpty()) {
 			flMedia.visibility = View.GONE
+			llMedia.visibility = View.GONE
+			btnShowMedia.visibility = View.GONE
 		} else {
 			flMedia.visibility = View.VISIBLE
-			
-			setMedia(ivMedia1, status, media_attachments, 0)
-			setMedia(ivMedia2, status, media_attachments, 1)
-			setMedia(ivMedia3, status, media_attachments, 2)
-			setMedia(ivMedia4, status, media_attachments, 3)
 			
 			// hide sensitive media
 			val default_shown = when {
@@ -615,9 +613,14 @@ internal class ItemViewHolder(
 				access_info.dont_hide_nsfw -> true
 				else -> ! status.sensitive
 			}
-			
 			val is_shown = MediaShown.isShown(status, default_shown)
+
 			btnShowMedia.visibility = if(! is_shown) View.VISIBLE else View.GONE
+			llMedia.visibility = if(! is_shown) View.GONE else View.VISIBLE
+			setMedia(ivMedia1, status, media_attachments, 0)
+			setMedia(ivMedia2, status, media_attachments, 1)
+			setMedia(ivMedia3, status, media_attachments, 2)
+			setMedia(ivMedia4, status, media_attachments, 3)
 		}
 		
 		buttons_for_status?.bind(status, (item as? TootNotification))
@@ -714,7 +717,7 @@ internal class ItemViewHolder(
 	private fun showContent(shown : Boolean) {
 		llContents.visibility = if(shown) View.VISIBLE else View.GONE
 		btnContentWarning.setText(if(shown) R.string.hide else R.string.show)
-		status__showing?.let { status ->
+		status_showing?.let { status ->
 			val r = status.auto_cw
 			tvContent.minLines = r?.originalLineCount ?: - 1
 			if(r?.decoded_spoiler_text != null) {
@@ -796,14 +799,16 @@ internal class ItemViewHolder(
 		val notification = (item as? TootNotification)
 		when(v) {
 			
-			btnHideMedia -> status__showing?.let { status ->
+			btnHideMedia -> status_showing?.let { status ->
 				MediaShown.save(status, false)
 				btnShowMedia.visibility = View.VISIBLE
+				llMedia.visibility = View.GONE
 			}
 			
-			btnShowMedia -> status__showing?.let { status ->
+			btnShowMedia -> status_showing?.let { status ->
 				MediaShown.save(status, true)
 				btnShowMedia.visibility = View.GONE
+				llMedia.visibility = View.VISIBLE
 			}
 			
 			ivMedia1 -> clickMedia(0)
@@ -811,7 +816,7 @@ internal class ItemViewHolder(
 			ivMedia3 -> clickMedia(2)
 			ivMedia4 -> clickMedia(3)
 			
-			btnContentWarning -> status__showing?.let { status ->
+			btnContentWarning -> status_showing?.let { status ->
 				val new_shown = llContents.visibility == View.GONE
 				ContentWarning.save(status, new_shown)
 				list_adapter.notifyDataSetChanged()
@@ -898,7 +903,7 @@ internal class ItemViewHolder(
 			}
 			
 			else -> when(v.id) {
-				R.id.ivCardThumbnail -> status__showing?.card?.url?.let { url ->
+				R.id.ivCardThumbnail -> status_showing?.card?.url?.let { url ->
 					if(url.isNotEmpty()) App1.openCustomTab(activity, url)
 				}
 			}
@@ -1000,7 +1005,7 @@ internal class ItemViewHolder(
 	}
 	
 	private fun clickMedia(i : Int) {
-		val status = status__showing ?: return
+		val status = status_showing ?: return
 		try {
 			val media_attachments = status.media_attachments ?: return
 			val item = if(i < media_attachments.size) media_attachments[i] else return
@@ -1011,7 +1016,7 @@ internal class ItemViewHolder(
 					Action_Toot.conversationOtherInstance(
 						activity,
 						activity.nextPosition(column),
-						status__showing
+						status_showing
 					)
 				}
 				
@@ -1439,7 +1444,7 @@ internal class ItemViewHolder(
 									topMargin = dip(3)
 								}
 								
-								linearLayout {
+								llMedia = linearLayout {
 									lparams(matchParent, matchParent)
 									
 									ivMedia1 = myNetworkImageView {

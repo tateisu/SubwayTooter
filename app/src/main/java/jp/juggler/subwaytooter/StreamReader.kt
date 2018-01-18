@@ -249,8 +249,8 @@ internal class StreamReader(
 		highlightTrie : WordTrieTree?,
 		streamCallback : (event_type : String, item : Any?) -> Unit
 	) {
-		
 		val reader = prepareReader(accessInfo, endPoint, highlightTrie)
+
 		reader.addCallback(streamCallback)
 		
 		if(! reader.bListening.get()) {

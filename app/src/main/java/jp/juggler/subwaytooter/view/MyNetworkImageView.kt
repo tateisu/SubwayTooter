@@ -13,6 +13,7 @@ import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory
 import android.util.AttributeSet
 import android.view.ViewGroup
 import android.support.v7.widget.AppCompatImageView
+import android.view.View
 
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
@@ -165,6 +166,9 @@ class MyNetworkImageView : AppCompatImageView {
 			// すでにリクエストが発行済みで、リクエストされたURLが同じなら何もしない
 			if((mTarget as? UrlTarget)?.urlLoading == url) return
 			
+			// 非表示状態ならロードを延期する
+			if(!isShown) return
+			
 			// if there is a pre-existing request, cancel it if it's fetching a different URL.
 			cancelLoading()
 			setDefaultImageOrNull()
@@ -226,6 +230,22 @@ class MyNetworkImageView : AppCompatImageView {
 		return d
 	}
 	
+	private fun onLoadFailed(urlLoading : String) {
+		try {
+			// 別の画像を表示するよう指定が変化していたなら何もしない
+			if(urlLoading != mUrl) return
+			
+			if(mErrorImageId != 0) {
+				// エラー表示用の画像リソースが指定されていたら使う
+				setImageResource(mErrorImageId)
+			} else {
+				// このタイミングでImageViewのDrawableを変更するとチラつきの元になるので何もしない
+			}
+		} catch(ex : Throwable) {
+			log.trace(ex)
+		}
+	}
+	
 	private interface UrlTarget {
 		val urlLoading : String
 	}
@@ -238,18 +258,7 @@ class MyNetworkImageView : AppCompatImageView {
 	) : SimpleTarget<Bitmap>(desiredWidth, desiredHeight), UrlTarget {
 		
 		// errorDrawable The error drawable to optionally show, or null.
-		override fun onLoadFailed(errorDrawable : Drawable?) {
-			try {
-				// 別の画像を表示するよう指定が変化していたなら何もしない
-				if(urlLoading != mUrl) return
-				
-				// エラー表示用の画像リソースが指定されていたら使う
-				if(mErrorImageId != 0) setImageResource(mErrorImageId)
-				
-			} catch(ex : Throwable) {
-				log.trace(ex)
-			}
-		}
+		override fun onLoadFailed(errorDrawable : Drawable?) = onLoadFailed(urlLoading)
 		
 		override fun onResourceReady(
 			bitmap : Bitmap,
@@ -276,18 +285,7 @@ class MyNetworkImageView : AppCompatImageView {
 		
 		private var glide_drawable : Drawable? = null
 		
-		override fun onLoadFailed(errorDrawable : Drawable?) {
-			try {
-				// 別の画像を表示するよう指定が変化していたなら何もしない
-				if(urlLoading != mUrl) return
-				
-				// エラー表示用の画像リソースが指定されていたら使う
-				if(mErrorImageId != 0) setImageResource(mErrorImageId)
-				
-			} catch(ex : Throwable) {
-				log.trace(ex)
-			}
-		}
+		override fun onLoadFailed(errorDrawable : Drawable?) = onLoadFailed(urlLoading)
 		
 		override fun onResourceReady(
 			resource : Drawable,
@@ -345,12 +343,12 @@ class MyNetworkImageView : AppCompatImageView {
 			if(resource is GifDrawable) {
 				resource.setLoopCount(GifDrawable.LOOP_FOREVER)
 				resource.start()
-			}else if( resource is MyGifDrawable ){
+			} else if(resource is MyGifDrawable) {
 				resource.setLoopCount(GifDrawable.LOOP_FOREVER)
 				resource.start()
 			}
 		}
-
+		
 		// super.onResourceReady から呼ばれる
 		override fun setResource(resource : Drawable?) {
 			setImageDrawable(resource)
@@ -404,6 +402,11 @@ class MyNetworkImageView : AppCompatImageView {
 		invalidate()
 	}
 	
+	override fun onVisibilityChanged(changedView : View?, visibility : Int) {
+		super.onVisibilityChanged(changedView, visibility)
+		loadImageIfNecessary()
+	}
+	
 	fun setMediaType(drawable_id : Int) {
 		if(drawable_id == 0) {
 			media_type_drawable = null
@@ -418,11 +421,11 @@ class MyNetworkImageView : AppCompatImageView {
 	
 	override fun onDraw(canvas : Canvas) {
 		
+		// bitmapがrecycledされた場合でもそのまま描画する
 		try {
 			super.onDraw(canvas)
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			// bitmap recycled?
 		}
 		
 		val media_type_drawable = this.media_type_drawable
@@ -442,30 +445,31 @@ class MyNetworkImageView : AppCompatImageView {
 	}
 	
 	/////////////////////////////////////////////////////////////////////
+	
 	// プロフ表示の背景画像のレイアウト崩れの対策
 	var measureProfileBg = false
 	
 	override fun onMeasure(widthMeasureSpec : Int, heightMeasureSpec : Int) {
 		if(measureProfileBg) {
-			val w_mode = MeasureSpec.getMode(widthMeasureSpec)
+			// このモードではコンテンツを一切見ずにサイズを決める
 			val w_size = MeasureSpec.getSize(widthMeasureSpec)
-			val h_mode = MeasureSpec.getMode(heightMeasureSpec)
-			val h_size = MeasureSpec.getSize(heightMeasureSpec)
-			
-			val w = when(w_mode) {
+			val w_measured = when(MeasureSpec.getMode(widthMeasureSpec)) {
 				MeasureSpec.EXACTLY -> w_size
 				MeasureSpec.AT_MOST -> w_size
 				MeasureSpec.UNSPECIFIED -> 0
 				else -> 0
 			}
-			val h = when(h_mode) {
+			val h_size = MeasureSpec.getSize(heightMeasureSpec)
+			val h_measured = when(MeasureSpec.getMode(heightMeasureSpec)) {
 				MeasureSpec.EXACTLY -> h_size
 				MeasureSpec.AT_MOST -> h_size
 				MeasureSpec.UNSPECIFIED -> 0
 				else -> 0
 			}
-			setMeasuredDimension(w, h)
+			setMeasuredDimension(w_measured, h_measured)
 		} else {
+			// 通常のImageViewは内容を見てサイズを決める
+			// たとえLayputParamがw,hともmatchParentでも内容を見てしまう
 			super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 		}
 	}

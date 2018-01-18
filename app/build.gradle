@@ -114,8 +114,8 @@ dependencies {
     compile "org.jetbrains.anko:anko-appcompat-v7:$anko_version"
 
     // Coroutine listeners for Anko Layouts
-    compile "org.jetbrains.anko:anko-sdk25-coroutines:$anko_version"
-    compile "org.jetbrains.anko:anko-appcompat-v7-coroutines:$anko_version"
+    //compile "org.jetbrains.anko:anko-sdk25-coroutines:$anko_version"
+    //compile "org.jetbrains.anko:anko-appcompat-v7-coroutines:$anko_version"
 
 
     // compile 'com.simplecityapps:recyclerview-fastscroll:1.0.16'

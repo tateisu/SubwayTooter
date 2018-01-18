@@ -437,7 +437,6 @@ class App1 : Application() {
 				else -> activity.setTheme(if(bNoActionBar) R.style.AppTheme_Light_NoActionBar else R.style.AppTheme_Light)
 			}
 			
-			reloadConfig()
 		}
 		
 		internal val CACHE_5MIN = CacheControl.Builder()
@@ -502,15 +501,6 @@ class App1 : Application() {
 				null
 			}
 			
-		}
-		
-		// Activity開始時に設定を読み直す
-		var disable_emoji_animation : Boolean = false
-		var allow_non_space_before_emoji_shortcode : Boolean = false
-		
-		private fun reloadConfig() {
-			disable_emoji_animation = Pref.bpDisableEmojiAnimation(pref)
-			allow_non_space_before_emoji_shortcode = Pref.bpAllowNonSpaceBeforeEmojiShortcode(pref)
 		}
 		
 		// Chrome Custom Tab を開く

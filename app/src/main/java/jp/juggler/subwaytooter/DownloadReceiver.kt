@@ -9,7 +9,8 @@ import jp.juggler.subwaytooter.util.Utils
 
 class DownloadReceiver : BroadcastReceiver() {
 	override fun onReceive(context : Context, intent : Intent?) {
-		if(intent == null) return
+		intent ?: return
+
 		val action = intent.action ?: return
 		
 		if(DownloadManager.ACTION_DOWNLOAD_COMPLETE == action) {
@@ -18,8 +19,7 @@ class DownloadReceiver : BroadcastReceiver() {
 			val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager?
 				?: throw NotImplementedError("missing DownloadManager system service")
 			
-			val query = DownloadManager.Query()
-			query.setFilterById(id)
+			val query = DownloadManager.Query().setFilterById(id)
 			downloadManager.query(query)?.use { cursor ->
 				if(cursor.moveToFirst()) {
 					val idx_status = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)

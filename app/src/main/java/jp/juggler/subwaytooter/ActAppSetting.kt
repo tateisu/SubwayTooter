@@ -378,7 +378,8 @@ class ActAppSetting : AppCompatActivity()
 		saveUIToData()
 	}
 	
-	override fun onItemSelected(parent : AdapterView<*>, view : View, position : Int, id : Long) {
+	override fun onItemSelected(parent : AdapterView<*>, view : View?, position : Int, id : Long) {
+		// view may null.
 		saveUIToData()
 	}
 	

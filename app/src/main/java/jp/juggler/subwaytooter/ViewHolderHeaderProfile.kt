@@ -247,7 +247,7 @@ internal class ViewHolderHeaderProfile(
 		val ac = AcctColor.load(acctLong)
 		tv.text = when {
 			AcctColor.hasNickname(ac) -> ac.nickname
-			activity.shortAcctLocalUser -> "@" + acctShort
+			Pref.bpShortAcctLocalUser(App1.pref) -> "@" + acctShort
 			else -> acctLong
 		}
 		

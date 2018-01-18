@@ -697,7 +697,7 @@ internal class ItemViewHolder(
 		val ac = AcctColor.load(acctLong)
 		tv.text = when {
 			AcctColor.hasNickname(ac) -> ac.nickname
-			activity.shortAcctLocalUser -> "@" + (acctShort ?: "?")
+			Pref.bpShortAcctLocalUser(App1.pref) -> "@" + (acctShort ?: "?")
 			else -> acctLong
 		}
 		tv.setTextColor(if(AcctColor.hasColorForeground(ac)) ac.color_fg else this.acct_color)
@@ -737,7 +737,7 @@ internal class ItemViewHolder(
 			if(url != null && url.isNotEmpty()) {
 				iv.visibility = View.VISIBLE
 				iv.scaleType =
-					if(activity.dont_crop_media_thumbnail) ImageView.ScaleType.FIT_CENTER else ImageView.ScaleType.CENTER_CROP
+					if(Pref.bpDontCropMediaThumb(App1.pref)) ImageView.ScaleType.FIT_CENTER else ImageView.ScaleType.CENTER_CROP
 				
 				val mediaType = ta.type
 				when(mediaType) {
@@ -1086,7 +1086,7 @@ internal class ItemViewHolder(
 			iv.id = R.id.ivCardThumbnail
 			iv.setOnClickListener(this)
 			iv.scaleType =
-				if(activity.dont_crop_media_thumbnail) ImageView.ScaleType.FIT_CENTER else ImageView.ScaleType.CENTER_CROP
+				if(Pref.bpDontCropMediaThumb(App1.pref)) ImageView.ScaleType.FIT_CENTER else ImageView.ScaleType.CENTER_CROP
 			iv.setImageUrl(
 				activity.pref,
 				0f,

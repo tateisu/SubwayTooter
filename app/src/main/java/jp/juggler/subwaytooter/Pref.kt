@@ -18,7 +18,7 @@ object Pref {
 		
 		init {
 			@Suppress("LeakingThis")
-			map.put(this.key, this)
+			map[this.key] = this
 		}
 		
 		override fun equals(other : Any?) : Boolean {
@@ -30,8 +30,7 @@ object Pref {
 		}
 		
 		abstract fun put(editor : SharedPreferences.Editor, v : T)
-		
-		abstract operator fun invoke(pref : SharedPreferences) : T
+		abstract fun invoke(pref: SharedPreferences) : T
 		
 		operator fun invoke(context : Context) : T {
 			return invoke(pref(context))
@@ -95,6 +94,8 @@ object Pref {
 			editor.putString(key, v)
 		}
 	}
+	
+	
 	
 	// boolean
 	

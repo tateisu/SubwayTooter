@@ -56,6 +56,7 @@ import javax.xml.parsers.DocumentBuilder
 import javax.xml.parsers.DocumentBuilderFactory
 
 import it.sephiroth.android.library.exif2.ExifInterface
+import java.util.regex.Pattern
 
 @Suppress("unused")
 object Utils {
@@ -1126,3 +1127,13 @@ object Utils {
 
 fun <T :Comparable<T>> clipRange( min:T ,max:T ,src:T)
 	= if( src<min) min else if(src>max) max else src
+
+fun CharSequence.replaceFirst(pattern: Pattern, replacement:String) :String{
+	return pattern.matcher(this).replaceFirst(replacement)
+	// replaceFirstの戻り値がplatform type なので expression body 形式にすると警告がでる
+}
+
+fun CharSequence.replaceAll(pattern: Pattern, replacement:String) :String{
+	return pattern.matcher(this).replaceAll(replacement)
+	// replaceAllの戻り値がplatform type なので expression body 形式にすると警告がでる
+}

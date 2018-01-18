@@ -68,22 +68,11 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		internal const val EXTRA_IDX = "idx"
 		internal const val EXTRA_DATA = "data"
 		
-		internal fun encodeMediaList(list : ArrayList<TootAttachmentLike>?) : String {
-			return list?.encodeJson()?.toString() ?: "[]"
-		}
+		internal fun <T: TootAttachmentLike> encodeMediaList(list : ArrayList<T>?)
+			= list?.encodeJson()?.toString() ?: "[]"
 		
-		internal fun decodeMediaList(src : String?) : ArrayList<TootAttachmentLike> {
-			try {
-				if(src != null) {
-					return parseList(::TootAttachment,JSONArray(src))
-				}
-			} catch(ex : Throwable) {
-				log.trace(ex)
-				log.e(ex, "decodeMediaList failed.")
-			}
-			
-			return ArrayList()
-		}
+		internal fun decodeMediaList(src : String?)
+			= parseList(::TootAttachment,JSONArray(src))
 		
 		fun open(activity : ActMain, list : ArrayList<TootAttachmentLike>, idx : Int) {
 			val intent = Intent(activity, ActMediaViewer::class.java)
@@ -91,11 +80,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			intent.putExtra(EXTRA_DATA, encodeMediaList(list))
 			activity.startActivity(intent)
 		}
-		
 	}
 	
 	internal var idx : Int = 0
-	private lateinit var media_list : ArrayList<TootAttachmentLike>
+	private lateinit var media_list : ArrayList<TootAttachment>
 	
 	private lateinit var pbvImage : PinchBitmapView
 	private lateinit var btnPrevious : View
@@ -259,21 +247,19 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			return
 		}
 		val ta = media_list[idx]
-		if( ta is TootAttachment){
-			val description = ta.description
-			if( description?.isNotEmpty() == true ){
-				svDescription.visibility = View.VISIBLE
-				tvDescription.text = description
-			}
-			
-			if(TootAttachmentLike.TYPE_IMAGE == ta.type) {
-				loadBitmap(ta)
-			} else if(TootAttachmentLike.TYPE_VIDEO == ta.type || TootAttachmentLike.TYPE_GIFV == ta.type) {
-				loadVideo(ta)
-			} else {
-				// maybe TYPE_UNKNOWN
-				showError(getString(R.string.media_attachment_type_error, ta.type))
-			}
+		val description = ta.description
+		if( description?.isNotEmpty() == true ){
+			svDescription.visibility = View.VISIBLE
+			tvDescription.text = description
+		}
+		
+		if(TootAttachmentLike.TYPE_IMAGE == ta.type) {
+			loadBitmap(ta)
+		} else if(TootAttachmentLike.TYPE_VIDEO == ta.type || TootAttachmentLike.TYPE_GIFV == ta.type) {
+			loadVideo(ta)
+		} else {
+			// maybe TYPE_UNKNOWN
+			showError(getString(R.string.media_attachment_type_error, ta.type))
 		}
 	}
 	

@@ -46,19 +46,17 @@ internal class StatusButtons(
 	init {
 		this.access_info = column.access_info
 		
-		val listener = this
-		
-		btnBoost.setOnClickListener(listener)
-		btnBoost.setOnLongClickListener(listener)
-		btnFavourite.setOnClickListener(listener)
-		btnFavourite.setOnLongClickListener(listener)
-		btnFollow2.setOnClickListener(listener)
-		btnFollow2.setOnLongClickListener(listener)
-		btnMore.setOnClickListener(listener)
-		btnConversation.setOnClickListener(listener)
-		btnConversation.setOnLongClickListener(listener)
-		btnReply.setOnClickListener(listener)
-		btnReply.setOnLongClickListener(listener)
+		btnBoost.setOnClickListener(this)
+		btnBoost.setOnLongClickListener(this)
+		btnFavourite.setOnClickListener(this)
+		btnFavourite.setOnLongClickListener(this)
+		btnFollow2.setOnClickListener(this)
+		btnFollow2.setOnLongClickListener(this)
+		btnMore.setOnClickListener(this)
+		btnConversation.setOnClickListener(this)
+		btnConversation.setOnLongClickListener(this)
+		btnReply.setOnClickListener(this)
+		btnReply.setOnLongClickListener(this)
 		
 	}
 	
@@ -96,11 +94,10 @@ internal class StatusButtons(
 			)
 			
 			else -> {
-				val color = if(status.reblogged) color_accent else color_normal
 				setButton(
 					btnBoost,
 					true,
-					color,
+					if(status.reblogged) color_accent else color_normal,
 					R.attr.btn_boost,
 					status.reblogs_count?.toString() ?: ""
 				)
@@ -117,11 +114,10 @@ internal class StatusButtons(
 			)
 			
 			else -> {
-				val color = if(status.favourited) color_accent else color_normal
 				setButton(
 					btnFavourite,
 					true,
-					color,
+					if(status.favourited) color_accent else color_normal,
 					fav_icon_attr,
 					status.favourites_count?.toString() ?: ""
 				)

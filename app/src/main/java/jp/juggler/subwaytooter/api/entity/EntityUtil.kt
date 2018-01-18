@@ -140,10 +140,10 @@ inline fun <reified T> parseListOrNull(factory : (parser : TootParser, src : JSO
 
 ////////////////////////////////////////
 
-fun ArrayList<TootAttachmentLike>.encodeJson() : JSONArray {
+fun <T: TootAttachmentLike> ArrayList<T>.encodeJson() : JSONArray {
 	val a = JSONArray()
 	for(ta in this) {
-		if(ta is TootAttachment) {
+		if( ta is TootAttachment) {
 			try {
 				a.put(ta.json)
 			} catch(ex : JSONException) {
@@ -156,10 +156,8 @@ fun ArrayList<TootAttachmentLike>.encodeJson() : JSONArray {
 
 ////////////////////////////////////////
 
-fun notEmptyOrThrow(name : String, value : String?) : String {
-	return if(value?.isNotEmpty() == true) value else throw RuntimeException("$name is empty")
-}
+fun notEmptyOrThrow(name : String, value : String?)
+	= if(value?.isNotEmpty() == true) value else throw RuntimeException("$name is empty")
 
-fun JSONObject.notEmptyOrThrow(name : String) : String {
-	return notEmptyOrThrow(name, Utils.optStringX(this, name))
-}
+fun JSONObject.notEmptyOrThrow(name : String)
+	= notEmptyOrThrow(name, Utils.optStringX(this, name))

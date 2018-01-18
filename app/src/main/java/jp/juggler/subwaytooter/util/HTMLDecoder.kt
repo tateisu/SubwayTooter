@@ -95,19 +95,23 @@ object HTMLDecoder {
 						continue
 					}
 				} else {
-					val c : Int
 					try {
-						c = if(part[0] == 'x') {
-							Integer.parseInt(part.substring(1), 16)
-						} else {
-							Integer.parseInt(part, 10)
+						val cp = when {
+							part[0] == 'x' -> part.substring(1).toInt(16)
+							else -> part.toInt(10)
 						}
-						sb.append(c.toChar())
+						when {
+							Character.isBmpCodePoint(cp) -> sb.append(cp.toChar())
+							Character.isValidCodePoint(cp) -> {
+								sb.append(Character.highSurrogate(cp))
+								sb.append(Character.lowSurrogate(cp))
+							}
+							else -> sb.append('?')
+						}
 						continue
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
-					
 				}
 				sb.append(src.substring(start, end))
 			} finally {
@@ -116,7 +120,7 @@ object HTMLDecoder {
 		}
 		
 		// 全くマッチしなかった
-		if(sb == null) return src
+		sb ?: return src
 		
 		val end = src.length
 		if(end > last_end) {
@@ -125,13 +129,11 @@ object HTMLDecoder {
 		return sb.toString()
 	}
 	
-	// static final Pattern reEntityEscape = Pattern.compile( "[<>\"'&]" );
-	
 	fun encodeEntity(src : String) : String {
+		val size = src.length
 		val sb = StringBuilder()
-		var i = 0
-		val ie = src.length
-		while(i < ie) {
+		sb.ensureCapacity(size)
+		for(i in 0 until size) {
 			val c = src[i]
 			when(c) {
 				'<' -> sb.append("&lt;")
@@ -141,15 +143,14 @@ object HTMLDecoder {
 				'&' -> sb.append("&amp;")
 				else -> sb.append(c)
 			}
-			++ i
 		}
 		return sb.toString()
 	}
 	
 	//////////////////////////////////////////////////////////////////////////////////////
 	
+	private val reDoctype = Pattern.compile("\\A\\s*<!doctype[^>]*>", Pattern.CASE_INSENSITIVE)
 	private val reComment = Pattern.compile("<!--.*?-->", Pattern.DOTALL)
-	private val reDoctype = Pattern.compile("\\A\\s*<!doctype[^>]*>",Pattern.CASE_INSENSITIVE)
 	
 	private class TokenParser(srcArg : String) {
 		
@@ -161,9 +162,10 @@ object HTMLDecoder {
 		internal var text : String = ""
 		
 		init {
-			var sv = reComment.matcher(srcArg).replaceAll(" ")
-			sv = reDoctype.matcher(sv).replaceFirst("")
-			this.src = sv
+			this.src = srcArg
+				.replaceFirst(reDoctype, "")
+				.replaceAll(reComment, " ")
+			
 			eat()
 		}
 		
@@ -198,9 +200,6 @@ object HTMLDecoder {
 			
 			next = end
 			
-			
-			
-			
 			val m = reTag.matcher(text)
 			if(m.find()) {
 				val is_close = m.group(1).isNotEmpty()
@@ -210,14 +209,14 @@ object HTMLDecoder {
 				if(m2.find()) {
 					is_openclose = m2.group(1).isNotEmpty()
 				}
-				open_type = if(is_close) OPEN_TYPE_CLOSE else if(is_openclose) OPEN_TYPE_OPEN_CLOSE else OPEN_TYPE_OPEN
+				open_type =
+					if(is_close) OPEN_TYPE_CLOSE else if(is_openclose) OPEN_TYPE_OPEN_CLOSE else OPEN_TYPE_OPEN
 				if(tag == "br") open_type = OPEN_TYPE_OPEN_CLOSE
 			} else {
 				tag = TAG_TEXT
 				this.open_type = OPEN_TYPE_OPEN_CLOSE
 			}
 		}
-		
 		
 	}
 	
@@ -232,7 +231,7 @@ object HTMLDecoder {
 				val m = reHref.matcher(text)
 				if(m.find()) {
 					val href = decodeEntity(m.group(1))
-					if( href.isNotEmpty() ) {
+					if(href.isNotEmpty()) {
 						return href
 					}
 				}
@@ -273,7 +272,10 @@ object HTMLDecoder {
 		}
 		
 		internal fun encodeSpan(
-			context : Context?, account : LinkClickContext?, sb : SpannableStringBuilder, options : DecodeOptions
+			context : Context?,
+			account : LinkClickContext?,
+			sb : SpannableStringBuilder,
+			options : DecodeOptions
 		) {
 			if(TAG_TEXT == tag) {
 				if(context != null && options.decodeEmoji) {
@@ -285,11 +287,12 @@ object HTMLDecoder {
 			}
 			if(DEBUG_HTML_PARSER) sb.append("(start ").append(tag).append(")")
 			
-			val sb_tmp : SpannableStringBuilder = if("a" == tag || "style" == tag || "script" == tag) {
-				SpannableStringBuilder()
-			} else {
-				sb
-			}
+			val sb_tmp : SpannableStringBuilder =
+				if("a" == tag || "style" == tag || "script" == tag) {
+					SpannableStringBuilder()
+				} else {
+					sb
+				}
 			
 			var start = sb_tmp.length
 			
@@ -306,7 +309,15 @@ object HTMLDecoder {
 			if("a" == tag) {
 				start = sb.length
 				if(context != null) {
-					sb.append(encodeUrl(options.short, context, sb_tmp.toString(), href, options.attachmentList))
+					sb.append(
+						encodeUrl(
+							options.short,
+							context,
+							sb_tmp.toString(),
+							href,
+							options.attachmentList
+						)
+					)
 				} else {
 					sb.append(sb_tmp.toString())
 				}
@@ -321,7 +332,13 @@ object HTMLDecoder {
 					val href = href
 					if(href != null) {
 						val link_text = sb.subSequence(start, end).toString()
-						val span = MyClickableSpan(account, link_text, href, account.findAcctColor(href), options.linkTag)
+						val span = MyClickableSpan(
+							account,
+							link_text,
+							href,
+							account.findAcctColor(href),
+							options.linkTag
+						)
 						sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 						
 					}
@@ -334,7 +351,12 @@ object HTMLDecoder {
 						val word = HighlightWord.load(range.word)
 						if(word != null) {
 							options.hasHighlight = true
-							sb.setSpan(HighlightSpan(word.color_fg, word.color_bg), range.start, range.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+							sb.setSpan(
+								HighlightSpan(word.color_fg, word.color_bg),
+								range.start,
+								range.end,
+								Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+							)
 							if(word.sound_type != HighlightWord.SOUND_TYPE_NONE) {
 								options.highlight_sound = word
 							}
@@ -367,7 +389,10 @@ object HTMLDecoder {
 			}
 		}
 		
-		internal fun is_media_attachment(list_attachment :ArrayList<TootAttachmentLike>?, url : String?) : Boolean {
+		internal fun is_media_attachment(
+			list_attachment : ArrayList<TootAttachmentLike>?,
+			url : String?
+		) : Boolean {
 			if(url == null || list_attachment == null) return false
 			for(a in list_attachment) {
 				if(a.hasUrl(url)) return true
@@ -376,7 +401,11 @@ object HTMLDecoder {
 		}
 		
 		private fun encodeUrl(
-			bShort : Boolean, context : Context, display_url : String, href : String?, list_attachment :ArrayList<TootAttachmentLike>?
+			bShort : Boolean,
+			context : Context,
+			display_url : String,
+			href : String?,
+			list_attachment : ArrayList<TootAttachmentLike>?
 		) : CharSequence {
 			if(! display_url.startsWith("http")) {
 				if(display_url.startsWith("@") && href != null && Pref.bpMentionFullAcct(App1.pref)) {
@@ -399,7 +428,12 @@ object HTMLDecoder {
 				sb.append(href)
 				val start = 0
 				val end = sb.length
-				sb.setSpan(EmojiImageSpan(context, R.drawable.emj_1f5bc), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+				sb.setSpan(
+					EmojiImageSpan(context, R.drawable.emj_1f5bc),
+					start,
+					end,
+					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+				)
 				return sb
 			}
 			
@@ -432,8 +466,7 @@ object HTMLDecoder {
 		src : String?,
 		options : DecodeOptions
 	)
-		: SpannableStringBuilder
-	{
+		: SpannableStringBuilder {
 		prepareTagInformation()
 		val sb = SpannableStringBuilder()
 		try {
@@ -461,23 +494,33 @@ object HTMLDecoder {
 		return sb
 	}
 	
-	fun decodeMentions(access_info : SavedAccount, src_list : ArrayList<TootMention>?, link_tag : Any?) : Spannable? {
+	fun decodeMentions(
+		access_info : SavedAccount,
+		src_list : ArrayList<TootMention>?,
+		link_tag : Any?
+	) : Spannable? {
 		if(src_list == null || src_list.isEmpty()) return null
 		val sb = SpannableStringBuilder()
 		for(item in src_list) {
 			if(sb.isNotEmpty()) sb.append(" ")
 			val start = sb.length
 			sb.append('@')
-			if( Pref.bpMentionFullAcct(App1.pref)) {
+			if(Pref.bpMentionFullAcct(App1.pref)) {
 				sb.append(access_info.getFullAcct(item.acct))
 			} else {
 				sb.append(item.acct)
 			}
 			val end = sb.length
 			val url = item.url
-			if(end > start){
+			if(end > start) {
 				val link_text = sb.subSequence(start, end).toString()
-				val span = MyClickableSpan(access_info, link_text, url, access_info.findAcctColor(item.url), link_tag)
+				val span = MyClickableSpan(
+					access_info,
+					link_text,
+					url,
+					access_info.findAcctColor(item.url),
+					link_tag
+				)
 				sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 			}
 		}

@@ -155,9 +155,9 @@ object Action_Account {
 	}
 	
 	// 投稿画面を開く。初期テキストを指定する
-	@JvmOverloads
 	fun openPost(
-		activity : ActMain, initial_text : String? = activity.quickTootText
+		activity : ActMain,
+		initial_text : String? = activity.quickTootText
 	) {
 		activity.post_helper.closeAcctPopup()
 		

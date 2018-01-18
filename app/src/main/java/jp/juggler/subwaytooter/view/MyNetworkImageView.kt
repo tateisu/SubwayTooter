@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.view
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
@@ -17,11 +16,8 @@ import android.support.v7.widget.AppCompatImageView
 
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
-//import com.bumptech.glide.load.resource.bitmap.MyGlideBitmapDrawable
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.load.resource.gif.MyGifDrawable
-// import com.bumptech.glide.request.RequestOptions
-//import com.bumptech.glide.load.resource.gif.MyGifDrawable
 import com.bumptech.glide.request.target.BaseTarget
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.target.SimpleTarget
@@ -31,22 +27,10 @@ import com.bumptech.glide.request.transition.Transition
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.util.LogCategory
 
-class MyNetworkImageView @JvmOverloads constructor(
-	context : Context,
-	attrs : AttributeSet? = null,
-	defStyle : Int = 0
-) : AppCompatImageView(context, attrs, defStyle) {
-	
+class MyNetworkImageView : AppCompatImageView {
 	
 	companion object {
-		
 		internal val log = LogCategory("MyNetworkImageView")
-		
-		@SuppressLint("StaticFieldLeak")
-		internal var app_context : Context? = null
-		
-		//		private const val SQUARE_RATIO_MARGIN = 0.05f
-		//		private const val maxLoopCount = GifDrawable.LOOP_FOREVER
 	}
 	
 	// ロード中などに表示するDrawableのリソースID
@@ -71,6 +55,15 @@ class MyNetworkImageView @JvmOverloads constructor(
 	private var media_type_bottom : Int = 0
 	private var media_type_left : Int = 0
 	
+	constructor(context : Context)
+		: super(context)
+	
+	constructor(context : Context, attrs : AttributeSet)
+		: super(context, attrs)
+	
+	constructor(context : Context, attrs : AttributeSet, defStyleAttr : Int)
+		: super(context, attrs, defStyleAttr)
+	
 	fun setDefaultImageResId(defaultImage : Int) {
 		mDefaultImageId = defaultImage
 		loadImageIfNecessary()
@@ -81,20 +74,12 @@ class MyNetworkImageView @JvmOverloads constructor(
 		loadImageIfNecessary()
 	}
 	
-	@JvmOverloads
 	fun setImageUrl(
 		pref : SharedPreferences,
 		r : Float,
 		url : String?,
 		gifUrlArg : String? = null
 	) {
-		
-		if(app_context == null) {
-			val context = context
-			if(context != null) {
-				app_context = context.applicationContext
-			}
-		}
 		
 		mCornerRadius = r
 		
@@ -212,7 +197,33 @@ class MyNetworkImageView @JvmOverloads constructor(
 		} catch(ex : Throwable) {
 			log.trace(ex)
 		}
-		
+	}
+	
+	private fun replaceGifDrawable(resource : GifDrawable) : Drawable {
+		// ディスクキャッシュから読んだ画像は角丸が正しく扱われない
+		// MyGifDrawable に差し替えて描画させる
+		try {
+			return MyGifDrawable(resource, mCornerRadius)
+		} catch(ex : Throwable) {
+			log.trace(ex)
+		}
+		return resource
+	}
+	
+	private fun replaceBitmapDrawable(resource : BitmapDrawable) : Drawable {
+		try {
+			val bitmap = resource.bitmap
+			if(bitmap != null) return replaceBitmapDrawable(bitmap)
+		} catch(ex : Throwable) {
+			log.trace(ex)
+		}
+		return resource
+	}
+	
+	private fun replaceBitmapDrawable(bitmap : Bitmap) : Drawable {
+		val d = RoundedBitmapDrawableFactory.create(resources, bitmap)
+		d.cornerRadius = mCornerRadius
+		return d
 	}
 	
 	private interface UrlTarget {
@@ -229,15 +240,11 @@ class MyNetworkImageView @JvmOverloads constructor(
 		// errorDrawable The error drawable to optionally show, or null.
 		override fun onLoadFailed(errorDrawable : Drawable?) {
 			try {
-				// このViewは別の画像を表示するように指定が変わっていた
+				// 別の画像を表示するよう指定が変化していたなら何もしない
 				if(urlLoading != mUrl) return
 				
-				// とりあえず今のBitmapはもう使えないらしい
-				if(mErrorImageId != 0) {
-					setImageResource(mErrorImageId)
-				} else {
-					setImageDrawable(null)
-				}
+				// エラー表示用の画像リソースが指定されていたら使う
+				if(mErrorImageId != 0) setImageResource(mErrorImageId)
 				
 			} catch(ex : Throwable) {
 				log.trace(ex)
@@ -249,20 +256,17 @@ class MyNetworkImageView @JvmOverloads constructor(
 			transition : Transition<in Bitmap>?
 		) {
 			try {
-				// このViewは別の画像を表示するように指定が変わっていた
+				// 別の画像を表示するよう指定が変化していたなら何もしない
 				if(urlLoading != mUrl) return
 				
 				if(mCornerRadius <= 0f) {
 					setImageBitmap(bitmap)
 				} else {
-					val d = RoundedBitmapDrawableFactory.create(resources, bitmap)
-					d.cornerRadius = mCornerRadius
-					setImageDrawable(d)
+					setImageDrawable(replaceBitmapDrawable(bitmap))
 				}
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}
-			
 		}
 	}
 	
@@ -274,15 +278,11 @@ class MyNetworkImageView @JvmOverloads constructor(
 		
 		override fun onLoadFailed(errorDrawable : Drawable?) {
 			try {
-				// このViewは別の画像を表示するように指定が変わっていた
+				// 別の画像を表示するよう指定が変化していたなら何もしない
 				if(urlLoading != mUrl) return
 				
-				// 今の画像はもう表示できない
-				if(mErrorImageId != 0) {
-					setImageResource(mErrorImageId)
-				} else {
-					setImageDrawable(null)
-				}
+				// エラー表示用の画像リソースが指定されていたら使う
+				if(mErrorImageId != 0) setImageResource(mErrorImageId)
 				
 			} catch(ex : Throwable) {
 				log.trace(ex)
@@ -294,10 +294,11 @@ class MyNetworkImageView @JvmOverloads constructor(
 			transition : Transition<in Drawable>?
 		) {
 			try {
-				// このViewは別の画像を表示するように指定が変わっていた
+				// 別の画像を表示するよう指定が変化していたなら何もしない
 				if(urlLoading != mUrl) return
 				
 				afterResourceReady(
+					transition,
 					when {
 						mCornerRadius <= 0f -> {
 							// 角丸でないならそのまま使う
@@ -308,22 +309,13 @@ class MyNetworkImageView @JvmOverloads constructor(
 						resource is GifDrawable -> replaceGifDrawable(resource)
 					
 					// Glide 4.xから、静止画はBitmapDrawableになった
-						resource is BitmapDrawable -> {
-							val bitmap = resource.bitmap
-							if(bitmap == null) {
-								resource
-							} else {
-								val d = RoundedBitmapDrawableFactory.create(resources, bitmap)
-								d.cornerRadius = mCornerRadius
-								d
-							}
-						}
+						resource is BitmapDrawable -> replaceBitmapDrawable(resource)
 						
 						else -> {
 							log.d("onResourceReady: drawable class=%s", resource.javaClass)
 							resource
 						}
-					}, transition
+					}
 				)
 			} catch(ex : Throwable) {
 				log.trace(ex)
@@ -331,20 +323,7 @@ class MyNetworkImageView @JvmOverloads constructor(
 			
 		}
 		
-		private fun replaceGifDrawable(resource : GifDrawable) : Drawable {
-			// ディスクキャッシュから読んだ画像は角丸が正しく扱われない
-			// MyGifDrawable に差し替えて描画させる
-			if(app_context != null) {
-				try {
-					return MyGifDrawable(resource, mCornerRadius)
-				} catch(ex : Throwable) {
-					log.trace(ex)
-				}
-			}
-			return resource
-		}
-		
-		private fun afterResourceReady(resource : Drawable, transition : Transition<in Drawable>?) {
+		private fun afterResourceReady(transition : Transition<in Drawable>?, resource : Drawable) {
 			super.onResourceReady(resource, transition)
 			
 			//				if( ! resource.isAnimated() ){
@@ -366,12 +345,15 @@ class MyNetworkImageView @JvmOverloads constructor(
 			if(resource is GifDrawable) {
 				resource.setLoopCount(GifDrawable.LOOP_FOREVER)
 				resource.start()
+			}else if( resource is MyGifDrawable ){
+				resource.setLoopCount(GifDrawable.LOOP_FOREVER)
+				resource.start()
 			}
 		}
-		
+
+		// super.onResourceReady から呼ばれる
 		override fun setResource(resource : Drawable?) {
-			// GifDrawable かもしれない
-			this@MyNetworkImageView.setImageDrawable(resource)
+			setImageDrawable(resource)
 		}
 		
 		override fun onStart() {
@@ -395,7 +377,6 @@ class MyNetworkImageView @JvmOverloads constructor(
 			log.d("MyTargetGif onDestroy glide_drawable=%s", drawable)
 			super.onDestroy()
 		}
-		
 	}
 	
 	override fun onSizeChanged(w : Int, h : Int, oldw : Int, oldh : Int) {
@@ -436,7 +417,14 @@ class MyNetworkImageView @JvmOverloads constructor(
 	}
 	
 	override fun onDraw(canvas : Canvas) {
-		super.onDraw(canvas)
+		
+		try {
+			super.onDraw(canvas)
+		} catch(ex : Throwable) {
+			log.trace(ex)
+			// bitmap recycled?
+		}
+		
 		val media_type_drawable = this.media_type_drawable
 		if(media_type_drawable != null) {
 			val drawable_w = media_type_drawable.intrinsicWidth

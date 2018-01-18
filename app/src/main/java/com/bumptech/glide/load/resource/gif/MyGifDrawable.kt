@@ -21,7 +21,9 @@ import java.nio.ByteBuffer
  * An animated [android.graphics.drawable.Drawable] that plays the frames of an animated GIF.
  */
 @Suppress("unused", "UNUSED_PARAMETER", "MemberVisibilityCanPrivate")
-class MyGifDrawable internal constructor(state : GifDrawable.GifState) : Drawable(), GifFrameLoader.FrameCallback, Animatable {
+class MyGifDrawable internal constructor(
+	state : GifDrawable.GifState
+) : Drawable(), GifFrameLoader.FrameCallback, Animatable {
 	
 	private val state : GifDrawable.GifState
 	/**
@@ -396,19 +398,10 @@ class MyGifDrawable internal constructor(state : GifDrawable.GifState) : Drawabl
 	//	}
 	
 	companion object {
-		/**
-		 * A constant indicating that an animated drawable should loop continuously.
-		 */
-		// Public API.
-		val LOOP_FOREVER = - 1
-		/**
-		 * A constant indicating that an animated drawable should loop for its default number of times.
-		 * For animated GIFs, this constant indicates the GIF should use the netscape loop count if
-		 * present.
-		 */
-		// Public API.
-		val LOOP_INTRINSIC = 0
-		private val GRAVITY = Gravity.FILL
+		const val LOOP_FOREVER = GifDrawable.LOOP_FOREVER
+		const val LOOP_INTRINSIC = GifDrawable.LOOP_INTRINSIC
+
+		private const val GRAVITY = Gravity.FILL
 		
 		//////////////////////////////////////////////////////////////////
 		

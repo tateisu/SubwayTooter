@@ -420,8 +420,11 @@ class App1 : Application() {
 			
 		}
 		
-		@JvmOverloads
-		fun setActivityTheme(activity : Activity, bNoActionBar : Boolean, forceDark : Boolean = false) {
+		fun setActivityTheme(
+			activity : Activity,
+			bNoActionBar : Boolean,
+			forceDark : Boolean = false
+		) {
 			
 			prepare(activity.applicationContext)
 			

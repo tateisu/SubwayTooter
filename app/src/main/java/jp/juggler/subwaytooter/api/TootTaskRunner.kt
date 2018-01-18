@@ -22,7 +22,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 */
 
 @Suppress("DEPRECATION","MemberVisibilityCanPrivate")
-class TootTaskRunner @JvmOverloads constructor(
+class TootTaskRunner(
 	context : Context,
 	private val progress_style : Int = PROGRESS_SPINNER
 ) : TootApiCallback {

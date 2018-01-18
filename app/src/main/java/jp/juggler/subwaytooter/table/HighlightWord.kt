@@ -8,94 +8,12 @@ import org.json.JSONException
 import org.json.JSONObject
 
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.api.entity.notEmptyOrThrow
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.Utils
 import jp.juggler.subwaytooter.util.WordTrieTree
 
 class HighlightWord {
-	
-	var id = - 1L
-	var name : String
-	var color_bg : Int = 0
-	var color_fg : Int = 0
-	var sound_type : Int = 0
-	var sound_uri : String? = null
-	
-	@Throws(JSONException::class)
-	fun encodeJson() : JSONObject {
-		val dst = JSONObject()
-		dst.put(COL_ID, id)
-		dst.put(COL_NAME, name)
-		dst.put(COL_COLOR_BG, color_bg)
-		dst.put(COL_COLOR_FG, color_fg)
-		dst.put(COL_SOUND_TYPE, sound_type)
-		if(sound_uri != null) dst.put(COL_SOUND_URI, sound_uri)
-		return dst
-	}
-	
-	constructor(src : JSONObject) {
-		this.id = Utils.optLongX(src, COL_ID)
-		val sv = Utils.optStringX(src, COL_NAME)
-		if(sv == null || sv.isEmpty() ) throw RuntimeException("HighlightWord: name is empty")
-		this.name = sv
-		this.color_bg = src.optInt(COL_COLOR_BG)
-		this.color_fg = src.optInt(COL_COLOR_FG)
-		this.sound_type = src.optInt(COL_SOUND_TYPE)
-		this.sound_uri = Utils.optStringX(src, COL_SOUND_URI)
-	}
-	
-	constructor(name : String) {
-		this.name = name
-		this.sound_type = SOUND_TYPE_DEFAULT
-		this.color_fg = - 0x10000
-	}
-	
-	constructor(cursor : Cursor) {
-		this.id = cursor.getLong(cursor.getColumnIndex(COL_ID))
-		this.name = cursor.getString(cursor.getColumnIndex(COL_NAME))
-		this.color_bg = cursor.getInt(cursor.getColumnIndex(COL_COLOR_BG))
-		this.color_fg = cursor.getInt(cursor.getColumnIndex(COL_COLOR_FG))
-		this.sound_type = cursor.getInt(cursor.getColumnIndex(COL_SOUND_TYPE))
-		val colIdx_sound_uri = cursor.getColumnIndex(COL_SOUND_URI)
-		this.sound_uri = if(cursor.isNull(colIdx_sound_uri)) null else cursor.getString(colIdx_sound_uri)
-	}
-	
-	fun save() {
-		
-		if(name.isEmpty()) throw RuntimeException("HighlightWord: name is empty")
-		
-		try {
-			val cv = ContentValues()
-			cv.put(COL_NAME, name)
-			cv.put(COL_TIME_SAVE, System.currentTimeMillis())
-			cv.put(COL_COLOR_BG, color_bg)
-			cv.put(COL_COLOR_FG, color_fg)
-			cv.put(COL_SOUND_TYPE, sound_type)
-			val sound_uri = this.sound_uri
-			if( sound_uri == null || sound_uri.isEmpty()) {
-				cv.putNull(COL_SOUND_URI)
-			} else {
-				cv.put(COL_SOUND_URI, sound_uri)
-			}
-			if(id == - 1L) {
-				App1.database.replace(table, null, cv)
-			} else {
-				App1.database.update(table, cv, selection_id, arrayOf(id.toString()))
-			}
-		} catch(ex : Throwable) {
-			log.e(ex, "save failed.")
-		}
-		
-	}
-	
-	fun delete() {
-		try {
-			App1.database.delete(table, selection_id, arrayOf(id.toString()))
-		} catch(ex : Throwable) {
-			log.e(ex, "delete failed.")
-		}
-		
-	}
 	
 	companion object {
 		
@@ -116,6 +34,8 @@ class HighlightWord {
 		
 		private const val selection_name = COL_NAME + "=?"
 		private const val selection_id = COL_ID + "=?"
+		
+		private val columns_name = arrayOf(COL_NAME)
 		
 		fun onDBCreate(db : SQLiteDatabase) {
 			log.d("onDBCreate!")
@@ -141,11 +61,10 @@ class HighlightWord {
 			}
 		}
 		
-		
 		fun load(name : String) : HighlightWord? {
 			try {
 				App1.database.query(table, null, selection_name, arrayOf(name), null, null, null)
-					.use{ cursor->
+					.use { cursor ->
 						if(cursor.moveToNext()) {
 							return HighlightWord(cursor)
 						}
@@ -161,14 +80,12 @@ class HighlightWord {
 			return App1.database.query(table, null, null, null, null, null, COL_NAME + " asc")
 		}
 		
-		private val columns_name = arrayOf(COL_NAME)
-		
 		val nameSet : WordTrieTree?
 			get() {
 				val dst = WordTrieTree()
 				try {
 					App1.database.query(table, columns_name, null, null, null, null, null)
-						.use{cursor->
+						.use { cursor ->
 							val idx_name = cursor.getColumnIndex(COL_NAME)
 							while(cursor.moveToNext()) {
 								val s = cursor.getString(idx_name)
@@ -182,6 +99,85 @@ class HighlightWord {
 				
 				return if(dst.isEmpty) null else dst
 			}
+	}
+	
+	var id = - 1L
+	var name : String
+	var color_bg : Int = 0
+	var color_fg : Int = 0
+	var sound_type : Int = 0
+	var sound_uri : String? = null
+	
+	fun encodeJson() : JSONObject {
+		val dst = JSONObject()
+		dst.put(COL_ID, id)
+		dst.put(COL_NAME, name)
+		dst.put(COL_COLOR_BG, color_bg)
+		dst.put(COL_COLOR_FG, color_fg)
+		dst.put(COL_SOUND_TYPE, sound_type)
+		if(sound_uri != null) dst.put(COL_SOUND_URI, sound_uri)
+		return dst
+	}
+	
+	constructor(src : JSONObject) {
+		this.id = Utils.optLongX(src, COL_ID)
+		this.name = src.notEmptyOrThrow(COL_NAME)
+		this.color_bg = src.optInt(COL_COLOR_BG)
+		this.color_fg = src.optInt(COL_COLOR_FG)
+		this.sound_type = src.optInt(COL_SOUND_TYPE)
+		this.sound_uri = Utils.optStringX(src, COL_SOUND_URI)
+	}
+	
+	constructor(name : String) {
+		this.name = name
+		this.sound_type = SOUND_TYPE_DEFAULT
+		this.color_fg = - 0x10000
+	}
+	
+	constructor(cursor : Cursor) {
+		this.id = cursor.getLong(cursor.getColumnIndex(COL_ID))
+		this.name = cursor.getString(cursor.getColumnIndex(COL_NAME))
+		this.color_bg = cursor.getInt(cursor.getColumnIndex(COL_COLOR_BG))
+		this.color_fg = cursor.getInt(cursor.getColumnIndex(COL_COLOR_FG))
+		this.sound_type = cursor.getInt(cursor.getColumnIndex(COL_SOUND_TYPE))
+		val colIdx_sound_uri = cursor.getColumnIndex(COL_SOUND_URI)
+		this.sound_uri =
+			if(cursor.isNull(colIdx_sound_uri)) null else cursor.getString(colIdx_sound_uri)
+	}
+	
+	fun save() {
+		if(name.isEmpty()) throw RuntimeException("HighlightWord.save(): name is empty")
+		
+		try {
+			val cv = ContentValues()
+			cv.put(COL_NAME, name)
+			cv.put(COL_TIME_SAVE, System.currentTimeMillis())
+			cv.put(COL_COLOR_BG, color_bg)
+			cv.put(COL_COLOR_FG, color_fg)
+			cv.put(COL_SOUND_TYPE, sound_type)
+			val sound_uri = this.sound_uri
+			if(sound_uri?.isEmpty() != false) {
+				cv.putNull(COL_SOUND_URI)
+			} else {
+				cv.put(COL_SOUND_URI, sound_uri)
+			}
+			if(id == - 1L) {
+				App1.database.replace(table, null, cv)
+			} else {
+				App1.database.update(table, cv, selection_id, arrayOf(id.toString()))
+			}
+		} catch(ex : Throwable) {
+			log.e(ex, "save failed.")
+		}
+		
+	}
+	
+	fun delete() {
+		try {
+			App1.database.delete(table, selection_id, arrayOf(id.toString()))
+		} catch(ex : Throwable) {
+			log.e(ex, "delete failed.")
+		}
 	}
 	
 }

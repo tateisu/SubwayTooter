@@ -1005,9 +1005,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			val pa = attachment_list[idx]
 			val a = pa.attachment
 			if(pa.status == PostAttachment.STATUS_UPLOADED && a != null) {
-				iv.setImageUrl(pref, 16f, a.preview_url)
+				iv.setImageUrl(pref, Styler.calcIconRound(iv.layoutParams.width), a.preview_url)
 			} else {
-				iv.setImageUrl(pref, 16f, null)
+				iv.setImageUrl(pref, Styler.calcIconRound(iv.layoutParams.width), null)
 			}
 		}
 	}
@@ -1635,7 +1635,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				decodeEmoji = true
 				
 			).decodeHTML(this@ActPost, account, in_reply_to_text)
-			ivReply.setImageUrl(pref, 16f, in_reply_to_image)
+			ivReply.setImageUrl(pref, Styler.calcIconRound(ivReply.layoutParams), in_reply_to_image)
 		}
 	}
 	

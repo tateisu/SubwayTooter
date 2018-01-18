@@ -197,9 +197,9 @@ internal class ItemViewHolder(
 		}
 		
 		ivThumbnail.layoutParams.height = activity.avatarIconSize
-		ivThumbnail.layoutParams.width = ivThumbnail.layoutParams.height
-		ivFollow.layoutParams.width = ivThumbnail.layoutParams.width
-		ivBoosted.layoutParams.width = ivFollow.layoutParams.width
+		ivThumbnail.layoutParams.width = activity.avatarIconSize
+		ivFollow.layoutParams.width = activity.avatarIconSize
+		ivBoosted.layoutParams.width = activity.avatarIconSize
 		
 		this.content_invalidator = NetworkEmojiInvalidator(activity.handler, tvContent)
 		this.spoiler_invalidator = NetworkEmojiInvalidator(activity.handler, tvContentWarning)
@@ -483,7 +483,7 @@ internal class ItemViewHolder(
 	private fun showAccount(who : TootAccount) {
 		follow_account = who
 		llFollow.visibility = View.VISIBLE
-		ivFollow.setImageUrl(activity.pref, 16f, access_info.supplyBaseUrl(who.avatar_static))
+		ivFollow.setImageUrl(activity.pref, Styler.calcIconRound(ivFollow.layoutParams), access_info.supplyBaseUrl(who.avatar_static))
 		tvFollowerName.text = who.decoded_display_name
 		follow_invalidator.register(who.decoded_display_name)
 		
@@ -513,7 +513,7 @@ internal class ItemViewHolder(
 		name_invalidator.register(who.decoded_display_name)
 		ivThumbnail.setImageUrl(
 			activity.pref,
-			16f,
+			Styler.calcIconRound(ivThumbnail.layoutParams),
 			access_info.supplyBaseUrl(who.avatar_static),
 			access_info.supplyBaseUrl(who.avatar)
 		)

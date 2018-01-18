@@ -268,6 +268,12 @@ object Pref {
 		R.id.swForceGap
 	)
 	
+	val bpShareViewPool = BooleanPref(
+		"ShareViewPool",
+		true,
+		R.id.swShareViewPool
+	)
+	
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)
@@ -304,6 +310,7 @@ object Pref {
 	val spStreamListenerConfigData = StringPref("stream_listener_config_data", "")
 	val spMspUserToken = StringPref("mastodon_search_portal_user_token", "")
 	val spEmojiPickerRecent = StringPref("emoji_picker_recent", "")
+	val spRoundRatio = StringPref("round_ratio", "33")
 	
 	// long
 	

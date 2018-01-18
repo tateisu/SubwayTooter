@@ -166,7 +166,7 @@ internal class ViewHolderHeaderProfile(
 			
 			ivAvatar.setImageUrl(
 				activity.pref,
-				16f,
+				Styler.calcIconRound(ivAvatar.layoutParams),
 				access_info.supplyBaseUrl(who.avatar_static),
 				access_info.supplyBaseUrl(who.avatar)
 			)
@@ -228,7 +228,11 @@ internal class ViewHolderHeaderProfile(
 		moved_caption_invalidator.register(caption)
 		
 		ivMoved.layoutParams.width = activity.avatarIconSize
-		ivMoved.setImageUrl(activity.pref, 16f, access_info.supplyBaseUrl(who_moved.avatar_static))
+		ivMoved.setImageUrl(
+			activity.pref,
+			Styler.calcIconRound(ivMoved.layoutParams),
+			access_info.supplyBaseUrl(who_moved.avatar_static)
+		)
 		
 		tvMovedName.text = who_moved.decoded_display_name
 		moved_name_invalidator.register(who_moved.decoded_display_name)

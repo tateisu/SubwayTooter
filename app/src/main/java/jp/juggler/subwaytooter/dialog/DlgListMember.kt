@@ -59,6 +59,7 @@ class DlgListMember(
 	private val adapter : MyListAdapter
 	
 	init {
+		val density = activity.resources.displayMetrics.density
 		this.account_list = makeAccountListNonPseudo(activity, null)
 		this.target_user_full_acct = _list_owner.getFullAcct(who)
 		
@@ -84,7 +85,7 @@ class DlgListMember(
 		btnListOwner.setOnClickListener(this)
 		view.findViewById<View>(R.id.btnClose).setOnClickListener(this)
 		
-		ivUser.setImageUrl(App1.pref, 16f, who.avatar_static, who.avatar)
+		ivUser.setImageUrl(App1.pref, 	Styler.calcIconRound(ivUser.layoutParams), who.avatar_static, who.avatar)
 		val user_name_invalidator = NetworkEmojiInvalidator(activity.handler, tvUserName)
 		val name = who.decodeDisplayName(activity)
 		tvUserName.text = name

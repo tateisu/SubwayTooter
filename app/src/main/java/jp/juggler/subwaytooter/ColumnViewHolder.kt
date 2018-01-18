@@ -190,7 +190,10 @@ class ColumnViewHolder(
 		
 		tvLoading = root.findViewById(R.id.tvLoading)
 		listView = root.findViewById(R.id.listView)
-		listView.recycledViewPool = activity.viewPool
+
+		if(Pref.bpShareViewPool(activity.pref)){
+			listView.recycledViewPool = activity.viewPool
+		}
 		
 		btnSearch = root.findViewById(R.id.btnSearch)
 		etSearch = root.findViewById(R.id.etSearch)

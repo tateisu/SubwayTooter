@@ -1121,5 +1121,8 @@ object Utils {
 	fun getExtraObject(data : Intent?, key : String) : Any? {
 		return data?.extras?.get(key)
 	}
-	
+
 }
+
+fun <T :Comparable<T>> clipRange( min:T ,max:T ,src:T)
+	= if( src<min) min else if(src>max) max else src

@@ -221,6 +221,8 @@
 
         </LinearLayout>
 
+
+
         <View style="@style/setting_divider"/>
 
         <TextView
@@ -266,7 +268,6 @@
                 />
 
         </LinearLayout>
-
 
         <View style="@style/setting_divider"/>
 
@@ -316,8 +317,8 @@
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/media_attachment_max_byte_size"
             android:labelFor="@+id/etMediaSizeMax"
+            android:text="@string/media_attachment_max_byte_size"
             />
 
         <LinearLayout style="@style/setting_row_form">
@@ -380,10 +381,6 @@
                 />
 
         </LinearLayout>
-
-
-
-
 
         <View style="@style/setting_divider"/>
 
@@ -526,8 +523,6 @@
 
         </LinearLayout>
 
-
-
         <View style="@style/setting_divider"/>
 
         <TextView
@@ -593,16 +588,16 @@
         <!--<View style="@style/setting_divider"/>-->
 
         <!--<TextView-->
-            <!--style="@style/setting_row_label"-->
-            <!--android:text="@string/disable_fast_scroller"-->
-            <!--/>-->
+        <!--style="@style/setting_row_label"-->
+        <!--android:text="@string/disable_fast_scroller"-->
+        <!--/>-->
 
         <!--<LinearLayout style="@style/setting_row_form">-->
 
-            <!--<Switch-->
-                <!--android:id="@+id/swDisableFastScroller"-->
-                <!--style="@style/setting_horizontal_stretch"-->
-                <!--/>-->
+        <!--<Switch-->
+        <!--android:id="@+id/swDisableFastScroller"-->
+        <!--style="@style/setting_horizontal_stretch"-->
+        <!--/>-->
 
         <!--</LinearLayout>-->
 
@@ -644,23 +639,6 @@
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/dont_round_avatar"
-            />
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <Switch
-                android:id="@+id/swDontRound"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
-
-        <TextView
-            style="@style/setting_row_label"
             android:text="@string/enable_gif_animation"
             />
 
@@ -673,7 +651,6 @@
                 />
 
         </LinearLayout>
-
 
         <View style="@style/setting_divider"/>
 
@@ -746,10 +723,11 @@
         <View style="@style/setting_divider"/>
 
 
+
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/auto_cw"
             android:labelFor="@+id/etAutoCWLines"
+            android:text="@string/auto_cw"
             />
 
         <LinearLayout style="@style/setting_row_form">
@@ -764,21 +742,21 @@
 
         <!--<LinearLayout style="@style/setting_row_form">-->
 
-            <!--<TextView-->
-                <!--style="@style/setting_row_label"-->
-                <!--android:text="@string/char_per_lines"-->
-                <!--/>-->
+        <!--<TextView-->
+        <!--style="@style/setting_row_label"-->
+        <!--android:text="@string/char_per_lines"-->
+        <!--/>-->
 
         <!--</LinearLayout>-->
 
         <!--<LinearLayout style="@style/setting_row_form">-->
 
-            <!--<EditText-->
-                <!--android:id="@+id/etTimelineFontSize"-->
-                <!--style="@style/setting_horizontal_stretch"-->
-                <!--android:gravity="center"-->
-                <!--android:inputType="numberDecimal"-->
-                <!--/>-->
+        <!--<EditText-->
+        <!--android:id="@+id/etTimelineFontSize"-->
+        <!--style="@style/setting_horizontal_stretch"-->
+        <!--android:gravity="center"-->
+        <!--android:inputType="numberDecimal"-->
+        <!--/>-->
 
         <!--</LinearLayout>-->
 
@@ -1172,6 +1150,41 @@
 
         <View style="@style/setting_divider"/>
 
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etRoundRatio"
+            android:text="@string/avatar_icon_round_ratio"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etRoundRatio"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="numberDecimal"
+                />
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/avatar_icon_dont_round"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swDontRound"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
         <!-- =============================================== -->
         <TextView
             style="@style/setting_group_header"
@@ -1179,6 +1192,22 @@
             android:layout_height="wrap_content"
             android:text="@string/performance"
             />
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/share_view_pool"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swShareViewPool"
+                style="@style/setting_horizontal_stretch"
+                />
+
+        </LinearLayout>
 
         <View style="@style/setting_divider"/>
 

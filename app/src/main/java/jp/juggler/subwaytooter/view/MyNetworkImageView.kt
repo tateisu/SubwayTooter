@@ -42,7 +42,8 @@ class MyNetworkImageView @JvmOverloads constructor(
 		
 		internal val log = LogCategory("MyNetworkImageView")
 		
-		@SuppressLint("StaticFieldLeak") internal var app_context : Context? = null
+		@SuppressLint("StaticFieldLeak")
+		internal var app_context : Context? = null
 		
 		//		private const val SQUARE_RATIO_MARGIN = 0.05f
 		//		private const val maxLoopCount = GifDrawable.LOOP_FOREVER
@@ -81,7 +82,12 @@ class MyNetworkImageView @JvmOverloads constructor(
 	}
 	
 	@JvmOverloads
-	fun setImageUrl(pref : SharedPreferences, r : Float, url : String?, gifUrlArg : String? = null) {
+	fun setImageUrl(
+		pref : SharedPreferences,
+		r : Float,
+		url : String?,
+		gifUrlArg : String? = null
+	) {
 		
 		if(app_context == null) {
 			val context = context
@@ -90,8 +96,7 @@ class MyNetworkImageView @JvmOverloads constructor(
 			}
 		}
 		
-		
-		mCornerRadius = if(Pref.bpDontRound(pref)) 0f else r
+		mCornerRadius = r
 		
 		val gif_url = if(Pref.bpEnableGifAnimation(pref)) gifUrlArg else null
 		
@@ -193,7 +198,7 @@ class MyNetworkImageView @JvmOverloads constructor(
 			
 			if(desiredWidth != Target.SIZE_ORIGINAL && desiredWidth <= 0
 				|| desiredHeight != Target.SIZE_ORIGINAL && desiredHeight <= 0
-				) {
+			) {
 				// desiredWidth,desiredHeight の指定がおかしいと非同期処理中にSimpleTargetが落ちる
 				// おそらくレイアウト後に再度呼び出される
 				return
@@ -292,32 +297,34 @@ class MyNetworkImageView @JvmOverloads constructor(
 				// このViewは別の画像を表示するように指定が変わっていた
 				if(urlLoading != mUrl) return
 				
-				afterResourceReady(when {
-					mCornerRadius <= 0f -> {
-						// 角丸でないならそのまま使う
-						resource
-					}
-				
-				// GidDrawableを置き換える
-					resource is GifDrawable -> replaceGifDrawable(resource)
-				
-				// Glide 4.xから、静止画はBitmapDrawableになった
-					resource is BitmapDrawable -> {
-						val bitmap = resource.bitmap
-						if(bitmap == null) {
+				afterResourceReady(
+					when {
+						mCornerRadius <= 0f -> {
+							// 角丸でないならそのまま使う
 							resource
-						} else {
-							val d = RoundedBitmapDrawableFactory.create(resources, bitmap)
-							d.cornerRadius = mCornerRadius
-							d
 						}
-					}
 					
-					else -> {
-						log.d("onResourceReady: drawable class=%s", resource.javaClass)
-						resource
-					}
-				}, transition)
+					// GidDrawableを置き換える
+						resource is GifDrawable -> replaceGifDrawable(resource)
+					
+					// Glide 4.xから、静止画はBitmapDrawableになった
+						resource is BitmapDrawable -> {
+							val bitmap = resource.bitmap
+							if(bitmap == null) {
+								resource
+							} else {
+								val d = RoundedBitmapDrawableFactory.create(resources, bitmap)
+								d.cornerRadius = mCornerRadius
+								d
+							}
+						}
+						
+						else -> {
+							log.d("onResourceReady: drawable class=%s", resource.javaClass)
+							resource
+						}
+					}, transition
+				)
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}
@@ -460,17 +467,17 @@ class MyNetworkImageView @JvmOverloads constructor(
 			val w = when(w_mode) {
 				MeasureSpec.EXACTLY -> w_size
 				MeasureSpec.AT_MOST -> w_size
-				MeasureSpec.UNSPECIFIED ->0
+				MeasureSpec.UNSPECIFIED -> 0
 				else -> 0
 			}
 			val h = when(h_mode) {
 				MeasureSpec.EXACTLY -> h_size
 				MeasureSpec.AT_MOST -> h_size
-				MeasureSpec.UNSPECIFIED ->0
+				MeasureSpec.UNSPECIFIED -> 0
 				else -> 0
 			}
 			setMeasuredDimension(w, h)
-		}else{
+		} else {
 			super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 		}
 	}

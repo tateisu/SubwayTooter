@@ -118,6 +118,8 @@ class ActAppSetting : AppCompatActivity()
 	private lateinit var etQuoteNameFormat : EditText
 	private lateinit var etAutoCWLines : EditText
 	private lateinit var etMediaSizeMax : EditText
+	private lateinit var etRoundRatio : EditText
+	
 	
 	private lateinit var tvTimelineFontUrl : TextView
 	private var timeline_font : String? = null
@@ -261,6 +263,9 @@ class ActAppSetting : AppCompatActivity()
 		etMediaSizeMax = findViewById(R.id.etMediaSizeMax)
 		etMediaSizeMax.addTextChangedListener(this)
 		
+		etRoundRatio = findViewById(R.id.etRoundRatio)
+		etRoundRatio.addTextChangedListener(this)
+		
 		tvTimelineFontSize = findViewById(R.id.tvTimelineFontSize)
 		tvAcctFontSize = findViewById(R.id.tvAcctFontSize)
 		
@@ -307,6 +312,7 @@ class ActAppSetting : AppCompatActivity()
 		etAvatarIconSize.setText(Pref.spAvatarIconSize(pref))
 		
 		etMediaSizeMax.setText(Pref.spMediaSizeMax(pref))
+		etRoundRatio.setText(Pref.spRoundRatio(pref))
 		
 		timeline_font = Pref.spTimelineFont(pref)
 		timeline_font_bold = Pref.spTimelineFontBold(pref)
@@ -350,6 +356,8 @@ class ActAppSetting : AppCompatActivity()
 			.put(Pref.spAutoCWLines, etAutoCWLines.text.toString().trim { it <= ' ' })
 			.put(Pref.spAvatarIconSize, etAvatarIconSize.text.toString().trim { it <= ' ' })
 			.put(Pref.spMediaSizeMax, etMediaSizeMax.text.toString().trim { it <= ' ' })
+			.put(Pref.spRoundRatio, etRoundRatio.text.toString().trim { it <= ' ' })
+			
 			.put(Pref.spTimelineFont, timeline_font ?:"")
 			.put(Pref.spTimelineFontBold, timeline_font_bold?:"")
 			

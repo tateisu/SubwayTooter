@@ -249,4 +249,14 @@ object Styler {
 			lp.rightMargin = pad_lr
 		}
 	}
+	
+
+	// ActMainの初期化時に更新される
+	var round_ratio :Float = 0.33f * 0.5f
+	
+	fun calcIconRound(wh:Int) =wh.toFloat() * round_ratio
+
+	fun calcIconRound(lp:ViewGroup.LayoutParams)
+		=Math.min(lp.width,lp.height).toFloat() * round_ratio
+	
 }

@@ -212,7 +212,10 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 		}
 	}
 	
+	var density: Float = 1f
+	
 	private fun initUI() {
+		this.density = resources.displayMetrics.density
 		this.handler = Handler()
 		setContentView(R.layout.act_account_setting)
 		
@@ -633,7 +636,13 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 	}
 	
 	internal fun showProfile(src : TootAccount) {
-		ivProfileAvatar.setImageUrl(App1.pref, 16f, src.avatar_static, src.avatar)
+		
+		ivProfileAvatar.setImageUrl(
+			App1.pref,
+			Styler.calcIconRound(ivProfileAvatar.layoutParams),
+			src.avatar_static,
+			src.avatar
+		)
 		ivProfileHeader.setImageUrl(App1.pref, 0f, src.header_static, src.header)
 		
 		val display_name = src.display_name

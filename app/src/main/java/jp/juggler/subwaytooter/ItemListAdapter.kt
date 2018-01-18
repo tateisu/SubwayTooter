@@ -2,6 +2,9 @@ package jp.juggler.subwaytooter
 
 import android.support.v7.widget.RecyclerView
 import android.view.ViewGroup
+import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootNotification
+import jp.juggler.subwaytooter.api.entity.TootStatus
 
 internal class ItemListAdapter(
 	private val activity : ActMain,
@@ -14,6 +17,7 @@ internal class ItemListAdapter(
 
 	init {
 		this.list = column.list_data
+		setHasStableIds(false)
 	}
 	
 	override fun getItemCount() : Int {
@@ -23,6 +27,25 @@ internal class ItemListAdapter(
 		}
 	}
 
+	private fun getItemIdForListIndex(position : Int):Long{
+		val o = list[position]
+		return when(o){
+			is TootAccount -> o.id
+			is TootStatus -> o.id
+			is TootNotification -> o.id
+			else-> 0L
+		}
+	}
+	
+	override fun getItemId(position : Int) : Long {
+		val headerType = column.getHeaderType()
+		if( headerType != null){
+			if(position==0) return 0
+			return getItemIdForListIndex(position-1)
+		}
+		return getItemIdForListIndex(position)
+	}
+	
 	override fun getItemViewType(position : Int) : Int {
 		val headerType = column.getHeaderType()
 		if( headerType == null || position>0 ) return 0
@@ -97,10 +120,7 @@ internal class ItemListAdapter(
 //		}
 //		return if(position >= 0 && position < column.list_data.size) list[position] else null
 //	}
-	
-	override fun getItemId(position : Int) : Long {
-		return 0
-	}
+
 //	override fun hasStableIds():Boolean = false
 	
 	

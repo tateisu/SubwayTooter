@@ -545,7 +545,6 @@
 
     <string name="visibility">公開範囲</string>
 
-    <string name="dont_round_avatar">ユーザ画像を角丸にしない(アプリ再起動が必要)</string>
 
     <string name="color_and_background">色と背景</string>
 
@@ -759,7 +758,7 @@
     <string name="profile_unpin">プロフィールの固定表示を解除</string>
     <string name="profile_pin_progress">固定表示の変更中…</string>
     <string name="length_warning">\"%1$s\"が長すぎます(%2$d/%3$d文字).\n標準的なタンスではエラーとなりますが、一部のタンスでは通るかも。\nよろしいですか?</string>
-    <string name="avatar_icon_size">アバターアイコンサイズ(単位:dp. デフォルト:48. アプリ再起動が必要)</string>
+
     <string name="short_acct_local_user">ローカルユーザのAcct表記を短くする(アプリ再起動が必要)</string>
     <string name="loading_notification_title">通知の取得中…</string>
     <string name="error_notification_title">サーバータイムアウト</string>
@@ -885,5 +884,10 @@
     <string name="domain_block_from_local">自分のタンスにはドメインブロックできません</string>
     <string name="always_show_application">アプリ名(via)を可能なら表示する</string>
     <string name="force_gap_when_refresh">リフレッシュ時に常にギャップを挟む</string>
+
+    <string name="avatar_icon_size">ユーザ画像のサイズ(単位:dp。デフォルト:48。アプリ再起動が必要)</string>
+    <string name="avatar_icon_round_ratio">ユーザ画像の角丸率(単位:%。デフォルト:33。アプリ再起動が必要)</string>
+    <string name="avatar_icon_dont_round">ユーザ画像を角丸にしない(アプリ再起動が必要)</string>
+    <string name="share_view_pool">カラム間でViewPoolを共有する</string>
 
 </resources>

@@ -236,6 +236,7 @@ class App1 : Application() {
 		@SuppressLint("StaticFieldLeak")
 		lateinit var custom_emoji_lister : CustomEmojiLister
 		
+
 		fun prepare(app_context : Context) : AppState {
 			var state = appStateX
 			if(state != null) return state

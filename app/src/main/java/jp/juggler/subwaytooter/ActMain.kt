@@ -959,9 +959,7 @@ class ActMain : AppCompatActivity()
 			try {
 				sv = Pref.spAvatarIconSize(pref)
 				val fv = if( sv.isEmpty()) Float.NaN else sv.toFloat()
-				if(fv.isNaN() || fv.isInfinite() || fv < 1f) {
-					// error or bad range
-				} else {
+				if(fv.isFinite() && fv>= 1f ) {
 					icon_size_dp = fv
 				}
 			} catch(ex : Throwable) {
@@ -970,6 +968,27 @@ class ActMain : AppCompatActivity()
 			
 			avatarIconSize = (0.5f + icon_size_dp * density).toInt()
 		}
+		
+		run {
+			var round_ratio = 33f
+			try {
+				if( Pref.bpDontRound(pref) ){
+					round_ratio = 0f
+				}else {
+					sv = Pref.spRoundRatio(pref)
+					if(sv.isNotEmpty()) {
+						val fv = sv.toFloat()
+						if(fv.isFinite()) {
+							round_ratio = fv
+						}
+					}
+				}
+			} catch(ex : Throwable) {
+				log.trace(ex)
+			}
+			Styler.round_ratio = clipRange(0f,1f,round_ratio/100f) *0.5f
+		}
+		
 		
 		llEmpty = findViewById(R.id.llEmpty)
 		

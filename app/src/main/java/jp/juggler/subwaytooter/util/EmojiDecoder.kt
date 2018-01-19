@@ -40,9 +40,6 @@ object EmojiDecoder {
 	private const val codepointColon = ':'.toInt()
 	private const val codepointAtmark = '@'.toInt()
 	
-	private val reNicoru = Pattern.compile("\\Anicoru\\d*\\z", Pattern.CASE_INSENSITIVE)
-	private val reHohoemi = Pattern.compile("\\Ahohoemi\\d*\\z", Pattern.CASE_INSENSITIVE)
-	
 	private class EmojiStringBuilder(
 		internal val context : Context,
 		internal val options : DecodeOptions
@@ -260,17 +257,7 @@ object EmojiDecoder {
 					}
 				}
 				
-				when {
-					reHohoemi.matcher(name).find() -> builder.addImageSpan(
-						part,
-						R.drawable.emoji_hohoemi
-					)
-					reNicoru.matcher(name).find() -> builder.addImageSpan(
-						part,
-						R.drawable.emoji_nicoru
-					)
-					else -> builder.addUnicodeString(part)
-				}
+				builder.addUnicodeString(part)
 			}
 		})
 		

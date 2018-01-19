@@ -10,7 +10,6 @@ import jp.juggler.subwaytooter.api.entity.TootAttachmentLike
 import jp.juggler.subwaytooter.table.HighlightWord
 import java.util.HashMap
 
-@Suppress("MemberVisibilityCanPrivate")
 class DecodeOptions(
 	var short : Boolean = false,
 	var decodeEmoji : Boolean = false,
@@ -21,10 +20,10 @@ class DecodeOptions(
 	var highlightTrie : WordTrieTree? = null
 ) {
 	
-	// OUTPUT: true if highlight found
+	// OUTPUT: true if found highlight
 	var hasHighlight : Boolean = false
 	
-	// OUTPUT: highlight found with sound
+	// OUTPUT: found highlight with sound
 	var highlight_sound : HighlightWord? = null
 	
 	////////////////////////

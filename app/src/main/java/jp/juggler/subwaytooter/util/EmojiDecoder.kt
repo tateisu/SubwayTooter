@@ -9,11 +9,9 @@ import android.util.SparseBooleanArray
 import jp.juggler.emoji.EmojiMap201709
 
 import java.util.ArrayList
-import java.util.regex.Pattern
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
-import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
@@ -21,25 +19,7 @@ import jp.juggler.subwaytooter.table.HighlightWord
 
 object EmojiDecoder {
 	
-	internal interface ShortCodeSplitterCallback {
-		fun onString(part : String)
-		fun onShortCode(part : String, name : String)
-	}
-	
-	private val shortCodeCharacterSet: SparseBooleanArray by lazy{
-		val set = SparseBooleanArray()
-		for(c in 'A' ..'Z') set.put( c.toInt(),true)
-		for(c in 'a' ..'z') set.put( c.toInt(),true)
-		for(c in '0' ..'9') set.put( c.toInt(),true)
-		for(c in "+-_@:") set.put( c.toInt(),true)
-		set
-	}
-	private fun isShortCodeCharacter(cp : Int)
-		= shortCodeCharacterSet.get(cp,false)
-	
-	private const val codepointColon = ':'.toInt()
-	private const val codepointAtmark = '@'.toInt()
-	
+
 	private class EmojiStringBuilder(
 		internal val context : Context,
 		internal val options : DecodeOptions
@@ -47,6 +27,12 @@ object EmojiDecoder {
 		
 		internal val sb = SpannableStringBuilder()
 		internal var normal_char_start = - 1
+		
+		private fun openNormalText(){
+			if(normal_char_start == - 1) {
+				normal_char_start = sb.length
+			}
+		}
 		
 		internal fun closeNormalText() {
 			if(normal_char_start != - 1) {
@@ -57,7 +43,7 @@ object EmojiDecoder {
 		}
 		
 		private fun applyHighlight(start : Int, end : Int) {
-			val list = options.highlightTrie?.matchList(sb, start, end) ?:return
+			val list = options.highlightTrie?.matchList(sb, start, end) ?: return
 			for(range in list) {
 				val word = HighlightWord.load(range.word)
 				if(word != null) {
@@ -75,58 +61,17 @@ object EmojiDecoder {
 			}
 		}
 		
-		internal fun addUnicodeString(s : String) {
-			var i = 0
-			val end = s.length
-			while(i < end) {
-				val remain = end - i
-				var emoji : String? = null
-				var image_id : Int? = null
-				
-				for(j in EmojiMap201709.utf16_max_length downTo 1) {
-					if(j > remain) continue
-					val check = s.substring(i, i + j)
-					image_id = EmojiMap201709.sUTF16ToImageId[check]
-					if(image_id != null) {
-						emoji = if(j < remain && s[i + j].toInt() == 0xFE0E) {
-							// 絵文字バリエーション・シーケンス（EVS）のU+FE0E（VS-15）が直後にある場合
-							// その文字を絵文字化しない
-							image_id = 0
-							s.substring(i, i + j + 1)
-						} else {
-							check
-						}
-						break
-					}
-				}
-				
-				if(image_id != null && emoji != null) {
-					if(image_id == 0) {
-						// 絵文字バリエーション・シーケンス（EVS）のU+FE0E（VS-15）が直後にある場合
-						// その文字を絵文字化しない
-						if(normal_char_start == - 1) {
-							normal_char_start = sb.length
-						}
-						sb.append(emoji)
-					} else {
-						addImageSpan(emoji, image_id)
-					}
-					i += emoji.length
-					continue
-				}
-				
-				if(normal_char_start == - 1) {
-					normal_char_start = sb.length
-				}
-				val length = Character.charCount(s.codePointAt(i))
-				if(length == 1) {
-					sb.append(s[i])
-					++ i
-				} else {
-					sb.append(s.substring(i, i + length))
-					i += length
-				}
-			}
+		internal fun addNetworkEmojiSpan(text : String, url : String) {
+			closeNormalText()
+			val start = sb.length
+			sb.append(text)
+			val end = sb.length
+			sb.setSpan(
+				NetworkEmojiSpan(url),
+				start,
+				end,
+				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+			)
 		}
 		
 		internal fun addImageSpan(text : String?, @DrawableRes res_id : Int) {
@@ -142,21 +87,86 @@ object EmojiDecoder {
 			)
 		}
 		
-		internal fun addNetworkEmojiSpan(text : String, url : String) {
-			closeNormalText()
-			val start = sb.length
-			sb.append(text)
-			val end = sb.length
-			sb.setSpan(NetworkEmojiSpan(url), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+		internal fun addUnicodeString(s : String) {
+			var i = 0
+			val end = s.length
+			while(i < end) {
+				val remain = end - i
+				var emoji : String? = null
+				var image_id : Int? = null
+				
+				for(j in EmojiMap201709.utf16_max_length downTo 1) {
+
+					if(j > remain) continue
+
+					val check = s.substring(i, i + j)
+
+					image_id = EmojiMap201709.sUTF16ToImageId[check] ?: continue
+
+					emoji = if(j < remain && s[i + j].toInt() == 0xFE0E) {
+						// 絵文字バリエーション・シーケンス（EVS）のU+FE0E（VS-15）が直後にある場合
+						// その文字を絵文字化しない
+						image_id = 0
+						s.substring(i, i + j + 1)
+					} else {
+						check
+					}
+
+					break
+				}
+				
+				if(image_id != null && emoji != null) {
+					if(image_id == 0) {
+						// 絵文字バリエーション・シーケンス（EVS）のU+FE0E（VS-15）が直後にある場合
+						// その文字を絵文字化しない
+						openNormalText()
+						sb.append(emoji)
+					} else {
+						addImageSpan(emoji, image_id)
+					}
+					i += emoji.length
+				} else {
+					openNormalText()
+					val length = Character.charCount(s.codePointAt(i))
+					if(length == 1) {
+						sb.append(s[i])
+						++ i
+					} else {
+						sb.append(s.substring(i, i + length))
+						i += length
+					}
+				}
+			}
 		}
 	}
 	
+	private const val codepointColon = ':'.toInt()
+	private const val codepointAtmark = '@'.toInt()
+	
+	private val shortCodeCharacterSet : SparseBooleanArray by lazy {
+		val set = SparseBooleanArray()
+		for(c in 'A' .. 'Z') set.put(c.toInt(), true)
+		for(c in 'a' .. 'z') set.put(c.toInt(), true)
+		for(c in '0' .. '9') set.put(c.toInt(), true)
+		for(c in "+-_@:") set.put(c.toInt(), true)
+		set
+	}
+	
+	private interface ShortCodeSplitterCallback {
+		fun onString(part : String) // shortcode以外の文字列
+		fun onShortCode(part : String, name : String) // part : ":shortcode:", name : "shortcode"
+	}
+	
 	private fun splitShortCode(
-		s : String, startArg : Int, end : Int, callback : ShortCodeSplitterCallback
+		s : String,
+		startArg : Int,
+		end : Int,
+		callback : ShortCodeSplitterCallback
 	) {
 		var start = startArg
 		var i = start
 		while(i < end) {
+			
 			// 絵文字パターンの開始位置を探索する
 			start = i
 			while(i < end) {
@@ -178,39 +188,43 @@ object EmojiDecoder {
 				}
 				i += width
 			}
+			
 			if(i > start) {
 				callback.onString(s.substring(start, i))
 			}
+			
 			if(i >= end) break
 			
 			start = i ++ // start=コロンの位置 i=その次の位置
 			
-			var emoji_end = - 1
+			// 閉じるコロンを探す
+			var posEndColon = - 1
 			while(i < end) {
-				val c = s.codePointAt(i)
-				if(c == codepointColon) {
-					emoji_end = i
+				val cp = s.codePointAt(i)
+				if(cp == codepointColon) {
+					posEndColon = i
 					break
 				}
-				if(! isShortCodeCharacter(c)) {
+				if(! shortCodeCharacterSet.get(cp, false) ) {
 					break
 				}
-				i += Character.charCount(c)
+				i += Character.charCount(cp)
 			}
 			
-			// 絵文字がみつからなかったら、startの位置のコロンだけを処理して残りは次のループで処理する
-			if(emoji_end == - 1 || emoji_end - start < 3) {
+			// 閉じるコロンが見つからないか、shortcodeが短すぎるなら
+			// startの位置のコロンだけを処理して残りは次のループで処理する
+			if(posEndColon == - 1 || posEndColon - start < 3) {
 				callback.onString(":")
 				i = start + 1
 				continue
 			}
 			
 			callback.onShortCode(
-				s.substring(start, emoji_end + 1) // ":shortcode:"
-				, s.substring(start + 1, emoji_end) // "shortcode"
+				s.substring(start, posEndColon + 1) // ":shortcode:"
+				, s.substring(start + 1, posEndColon) // "shortcode"
 			)
 			
-			i = emoji_end + 1 // コロンの次の位置
+			i = posEndColon + 1 // コロンの次の位置
 		}
 	}
 	
@@ -300,8 +314,8 @@ object EmojiDecoder {
 			val info = EmojiMap201709.sShortNameToImageId[shortCode] ?: continue
 			
 			val sb = SpannableStringBuilder()
-			sb.append(' ')
 			val start = 0
+			sb.append(' ')
 			val end = sb.length
 			
 			sb.setSpan(
@@ -310,13 +324,14 @@ object EmojiDecoder {
 				end,
 				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 			)
+			
 			sb.append(' ')
-			sb.append(':')
-			sb.append(shortCode)
-			sb.append(':')
+				.append(':')
+				.append(shortCode)
+				.append(':')
+			
 			dst.add(sb)
 		}
 		return dst
 	}
-	
 }

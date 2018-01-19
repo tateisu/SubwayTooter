@@ -21,10 +21,7 @@ internal class ItemListAdapter(
 	}
 	
 	override fun getItemCount() : Int {
-		return when(column.getHeaderType()){
-			null-> column.list_data.size
-			else-> column.list_data.size +1
-		}
+		return column.toAdapterIndex(column.list_data.size)
 	}
 
 	private fun getItemIdForListIndex(position : Int):Long{
@@ -38,7 +35,7 @@ internal class ItemListAdapter(
 	}
 	
 	override fun getItemId(position : Int) : Long {
-		val headerType = column.getHeaderType()
+		val headerType = column.headerType
 		if( headerType != null){
 			if(position==0) return 0
 			return getItemIdForListIndex(position-1)
@@ -47,7 +44,7 @@ internal class ItemListAdapter(
 	}
 	
 	override fun getItemViewType(position : Int) : Int {
-		val headerType = column.getHeaderType()
+		val headerType = column.headerType
 		if( headerType == null || position>0 ) return 0
 		return headerType.viewType
 	}
@@ -81,15 +78,15 @@ internal class ItemListAdapter(
 		}
 	}
 	
-	fun getHeaderViewHolder(listView:RecyclerView): ViewHolderHeaderBase?{
-		return when(column.getHeaderType()){
+	fun findHeaderViewHolder(listView:RecyclerView): ViewHolderHeaderBase?{
+		return when(column.headerType){
 			null-> null
 			else-> listView.findViewHolderForAdapterPosition(0) as? ViewHolderHeaderBase
 		}
 	}
 	
 	override fun onBindViewHolder(holder : RecyclerView.ViewHolder, positionArg : Int) {
-		val headerType = column.getHeaderType()
+		val headerType = column.headerType
 		if(holder is ViewHolderItem) {
 			val position = if(headerType != null) positionArg - 1 else positionArg
 			val o = if(position >= 0 && position < list.size) list[position] else null

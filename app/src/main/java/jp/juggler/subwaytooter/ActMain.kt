@@ -213,7 +213,10 @@ class ActMain : AppCompatActivity()
 			if(tag is ItemViewHolder) {
 				column = tag.column
 				break
-			} else if(tag is ViewHolderHeaderProfile) {
+			}else if(tag is ViewHolderItem ) {
+				column = tag.ivh.column
+				break
+			} else if(tag is ViewHolderHeaderBase) {
 				column = tag.column
 				break
 			} else if(tag is TabletColumnViewHolder) {
@@ -336,7 +339,16 @@ class ActMain : AppCompatActivity()
 		)
 	
 	// 新しいカラムをどこに挿入するか
-	val defaultInsertPosition : Int
+	fun nextPosition(column : Column?) : Int {
+		if(column != null) {
+			val pos = app_state.column_list.indexOf(column)
+			if(pos != - 1) return pos + 1
+		}
+		return defaultInsertPosition
+	}
+	
+	// 新しいカラムをどこに挿入するか
+	private val defaultInsertPosition : Int
 		get() = phoneTab(
 			{ pe -> pe.pager.currentItem + 1 },
 			{ _ -> Integer.MAX_VALUE }
@@ -371,7 +383,7 @@ class ActMain : AppCompatActivity()
 			// 前回最後に表示していたカラムの位置にスクロールする
 			val column_pos = Pref.ipLastColumnPos(pref)
 			if(column_pos >= 0 && column_pos < app_state.column_list.size) {
-				scrollToColumn(column_pos, true)
+				scrollToColumn(column_pos, false)
 			}
 			
 			// 表示位置に合わせたイベントを発行
@@ -687,7 +699,7 @@ class ActMain : AppCompatActivity()
 					if(! app_state.column_list.isEmpty()) {
 						val select = data.getIntExtra(ActColumnList.EXTRA_SELECTION, - 1)
 						if(0 <= select && select < app_state.column_list.size) {
-							scrollToColumn(select, false)
+							scrollToColumn(select)
 						}
 					}
 				}
@@ -1267,7 +1279,7 @@ class ActMain : AppCompatActivity()
 			val ivIcon = viewRoot.findViewById<ImageView>(R.id.ivIcon)
 			
 			viewRoot.tag = i
-			viewRoot.setOnClickListener { v -> scrollToColumn(v.tag as Int, false) }
+			viewRoot.setOnClickListener { v -> scrollToColumn(v.tag as Int) }
 			viewRoot.contentDescription = column.getColumnName(true)
 			//
 			
@@ -1808,7 +1820,7 @@ class ActMain : AppCompatActivity()
 			
 			if(! app_state.column_list.isEmpty() && page_delete > 0 && page_showing == page_delete) {
 				val idx = page_delete - 1
-				scrollToColumn(idx, false)
+				scrollToColumn(idx)
 				val c = app_state.column_list[idx]
 				if(! c.bFirstInitialized) {
 					c.startLoading()
@@ -1820,7 +1832,7 @@ class ActMain : AppCompatActivity()
 			
 			if(! app_state.column_list.isEmpty() && page_delete > 0) {
 				val idx = page_delete - 1
-				scrollToColumn(idx, false)
+				scrollToColumn(idx)
 				val c = app_state.column_list[idx]
 				if(! c.bFirstInitialized) {
 					c.startLoading()
@@ -1838,7 +1850,7 @@ class ActMain : AppCompatActivity()
 		for(column in app_state.column_list) {
 			if(column.isSameSpec(ai, type, params)) {
 				index = app_state.column_list.indexOf(column)
-				scrollToColumn(index, false)
+				scrollToColumn(index)
 				return column
 			}
 		}
@@ -1846,7 +1858,7 @@ class ActMain : AppCompatActivity()
 		//
 		val col = Column(app_state, ai, this, type, *params)
 		index = addColumn(col, index)
-		scrollToColumn(index, false)
+		scrollToColumn(index)
 		if(! col.bFirstInitialized) {
 			col.startLoading()
 		}
@@ -2047,13 +2059,7 @@ class ActMain : AppCompatActivity()
 		return false
 	}
 	
-	fun nextPosition(column : Column?) : Int {
-		if(column != null) {
-			val pos = app_state.column_list.indexOf(column)
-			if(pos != - 1) return pos + 1
-		}
-		return defaultInsertPosition
-	}
+
 	
 	private fun addColumn(column : Column, indexArg : Int) : Int {
 		var index = indexArg
@@ -2187,20 +2193,15 @@ class ActMain : AppCompatActivity()
 		env.tablet_pager_adapter.notifyDataSetChanged()
 	}
 	
-	private fun scrollToColumn(index : Int, bAlign : Boolean) {
+	private fun scrollToColumn(index : Int, smoothScroll:Boolean = true ) {
 		scrollColumnStrip(index)
-		
 		phoneTab(
-			{ env -> env.pager.setCurrentItem(index, true) },
-			{ env ->
-				if(! bAlign) {
-					// 指定したカラムが画面内に表示されるように動いてくれるようだ
-					env.tablet_pager.smoothScrollToPosition(index)
-				} else {
-					// 指定位置が表示範囲の左端にくるようにスクロール
-					env.tablet_pager.scrollToPosition(index)
-				}
-			}
+
+			// スマホはスムーススクロール基本ありだがたまにしない
+			{ env -> env.pager.setCurrentItem(index, smoothScroll) },
+
+			// タブレットでスムーススクロールさせると頻繁にオーバーランするので絶対しない
+			{ env -> env.tablet_pager.scrollToPosition(index) }
 		)
 	}
 	

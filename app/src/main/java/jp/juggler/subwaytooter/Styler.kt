@@ -54,14 +54,14 @@ object Styler {
 	
 	fun getAttributeDrawable(context : Context, attrId : Int) : Drawable {
 		val drawableId = getAttributeResourceId(context, attrId)
-		return ContextCompat.getDrawable(context, drawableId)
-			?: throw RuntimeException(
-				String.format(
-					Locale.JAPAN,
-					"getDrawable failed. drawableId=0x%x",
-					drawableId
-				)
+		val d = ContextCompat.getDrawable(context, drawableId)
+		return d ?: throw RuntimeException(
+			String.format(
+				Locale.JAPAN,
+				"getDrawable failed. drawableId=0x%x",
+				drawableId
 			)
+		)
 	}
 	
 	// ImageViewにアイコンを設定する
@@ -250,13 +250,12 @@ object Styler {
 		}
 	}
 	
-
 	// ActMainの初期化時に更新される
-	var round_ratio :Float = 0.33f * 0.5f
+	var round_ratio : Float = 0.33f * 0.5f
 	
-	fun calcIconRound(wh:Int) =wh.toFloat() * round_ratio
-
-	fun calcIconRound(lp:ViewGroup.LayoutParams)
-		=Math.min(lp.width,lp.height).toFloat() * round_ratio
+	fun calcIconRound(wh : Int) = wh.toFloat() * round_ratio
+	
+	fun calcIconRound(lp : ViewGroup.LayoutParams) =
+		Math.min(lp.width, lp.height).toFloat() * round_ratio
 	
 }

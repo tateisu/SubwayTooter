@@ -508,7 +508,7 @@ internal class DlgContextMenu(
 				if( who_host?.isEmpty() != false || who_host == "?" ) {
 					// 何もしない
 				} else {
-					Action_Instance.timelineLocal(activity, who_host)
+					Action_Instance.timelineLocal(activity, pos,who_host)
 				}
 			}
 			

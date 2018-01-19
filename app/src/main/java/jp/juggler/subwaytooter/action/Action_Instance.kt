@@ -29,7 +29,7 @@ object Action_Instance {
 	
 	// 指定タンスのローカルタイムラインを開く
 	fun timelineLocal(
-		activity : ActMain, host : String
+		activity : ActMain, pos:Int,host : String
 	) {
 		// 指定タンスのアカウントを持ってるか？
 		val account_list = ArrayList<SavedAccount>()
@@ -40,7 +40,7 @@ object Action_Instance {
 			// 持ってないなら疑似アカウントを追加する
 			val ai = addPseudoAccount(activity, host)
 			if(ai != null) {
-				activity.addColumn(activity.defaultInsertPosition, ai, Column.TYPE_LOCAL)
+				activity.addColumn(pos, ai, Column.TYPE_LOCAL)
 			}
 		} else {
 			// 持ってるならアカウントを選んで開く
@@ -51,7 +51,7 @@ object Action_Instance {
 				bAuto =  false,
 				message = activity.getString(R.string.account_picker_add_timeline_of, host),
 				accountListArg = account_list
-			) { ai -> activity.addColumn(activity.defaultInsertPosition, ai, Column.TYPE_LOCAL) }
+			) { ai -> activity.addColumn(pos, ai, Column.TYPE_LOCAL) }
 		}
 	}
 	

@@ -5,7 +5,6 @@ import android.content.Context
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.SystemClock
-import android.support.v7.widget.RecyclerView
 import jp.juggler.subwaytooter.api.*
 
 import org.json.JSONException
@@ -34,7 +33,6 @@ import jp.juggler.subwaytooter.util.VersionString
 import jp.juggler.subwaytooter.util.WordTrieTree
 import jp.juggler.subwaytooter.util.ScrollPosition
 import jp.juggler.subwaytooter.util.Utils
-import jp.juggler.subwaytooter.view.ListDivider
 
 class Column(
 	val app_state : AppState,
@@ -57,18 +55,25 @@ class Column(
 		private const val PATH_LOCAL = "/api/v1/timelines/public?limit=$READ_LIMIT&local=1"
 		private const val PATH_FEDERATE = "/api/v1/timelines/public?limit=" + READ_LIMIT
 		private const val PATH_FAVOURITES = "/api/v1/favourites?limit=" + READ_LIMIT
-		private const val PATH_ACCOUNT_STATUSES = "/api/v1/accounts/%d/statuses?limit=" + READ_LIMIT // 1:account_id
-		private const val PATH_HASHTAG = "/api/v1/timelines/tag/%s?limit=" + READ_LIMIT // 1: hashtag(url encoded)
+		private const val PATH_ACCOUNT_STATUSES =
+			"/api/v1/accounts/%d/statuses?limit=" + READ_LIMIT // 1:account_id
+		private const val PATH_HASHTAG =
+			"/api/v1/timelines/tag/%s?limit=" + READ_LIMIT // 1: hashtag(url encoded)
 		private const val PATH_LIST_TL = "/api/v1/timelines/list/%s?limit=" + READ_LIMIT
 		
 		// アカウントのリストを返すAPI
-		private const val PATH_ACCOUNT_FOLLOWING = "/api/v1/accounts/%d/following?limit=" + READ_LIMIT // 1:account_id
-		private const val PATH_ACCOUNT_FOLLOWERS = "/api/v1/accounts/%d/followers?limit=" + READ_LIMIT // 1:account_id
+		private const val PATH_ACCOUNT_FOLLOWING =
+			"/api/v1/accounts/%d/following?limit=" + READ_LIMIT // 1:account_id
+		private const val PATH_ACCOUNT_FOLLOWERS =
+			"/api/v1/accounts/%d/followers?limit=" + READ_LIMIT // 1:account_id
 		private const val PATH_MUTES = "/api/v1/mutes?limit=" + READ_LIMIT // 1:account_id
 		private const val PATH_BLOCKS = "/api/v1/blocks?limit=" + READ_LIMIT // 1:account_id
-		private const val PATH_FOLLOW_REQUESTS = "/api/v1/follow_requests?limit=" + READ_LIMIT // 1:account_id
-		private const val PATH_BOOSTED_BY = "/api/v1/statuses/%s/reblogged_by?limit=" + READ_LIMIT // 1:status_id
-		private const val PATH_FAVOURITED_BY = "/api/v1/statuses/%s/favourited_by?limit=" + READ_LIMIT // 1:status_id
+		private const val PATH_FOLLOW_REQUESTS =
+			"/api/v1/follow_requests?limit=" + READ_LIMIT // 1:account_id
+		private const val PATH_BOOSTED_BY =
+			"/api/v1/statuses/%s/reblogged_by?limit=" + READ_LIMIT // 1:status_id
+		private const val PATH_FAVOURITED_BY =
+			"/api/v1/statuses/%s/favourited_by?limit=" + READ_LIMIT // 1:status_id
 		private const val PATH_LIST_MEMBER = "/api/v1/lists/%s/accounts?limit=" + READ_LIMIT
 		
 		// 他のリストを返すAPI
@@ -81,7 +86,8 @@ class Column(
 		private const val PATH_ACCOUNT = "/api/v1/accounts/%d" // 1:account_id
 		private const val PATH_STATUSES = "/api/v1/statuses/%d" // 1:status_id
 		private const val PATH_STATUSES_CONTEXT = "/api/v1/statuses/%d/context" // 1:status_id
-		const val PATH_SEARCH = "/api/v1/search?q=%s" // 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
+		const val PATH_SEARCH =
+			"/api/v1/search?q=%s" // 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
 		private const val PATH_INSTANCE = "/api/v1/instance"
 		private const val PATH_LIST_INFO = "/api/v1/lists/%s"
 		
@@ -157,7 +163,8 @@ class Column(
 		fun loadAccount(context : Context, src : JSONObject) : SavedAccount {
 			val account_db_id = Utils.optLongX(src, KEY_ACCOUNT_ROW_ID)
 			return if(account_db_id >= 0) {
-				SavedAccount.loadAccount(context, account_db_id) ?: throw RuntimeException("missing account")
+				SavedAccount.loadAccount(context, account_db_id)
+					?: throw RuntimeException("missing account")
 			} else {
 				SavedAccount.na
 			}
@@ -293,10 +300,12 @@ class Column(
 	internal var instance_uri : String = ""
 	
 	// プロフカラムでのアカウント情報
-	@Volatile internal var who_account : TootAccount? = null
+	@Volatile
+	internal var who_account : TootAccount? = null
 	
 	// リストカラムでのリスト情報
-	@Volatile private var list_info : TootList? = null
+	@Volatile
+	private var list_info : TootList? = null
 	
 	// 「インスタンス情報」カラムに表示するインスタンス情報
 	// (SavedAccount中のインスタンス情報とは異なるので注意)
@@ -398,11 +407,18 @@ class Column(
 		val isActivityStart : Boolean
 	}
 	
-	internal constructor(app_state : AppState, access_info : SavedAccount, callback : Callback, type : Int, vararg params : Any)
+	internal constructor(
+		app_state : AppState,
+		access_info : SavedAccount,
+		callback : Callback,
+		type : Int,
+		vararg params : Any
+	)
 		: this(app_state, app_state.context, access_info, type) {
 		this.callback_ref = WeakReference(callback)
 		when(type) {
-			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY -> status_id = getParamAt(params, 0)
+			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY -> status_id =
+				getParamAt(params, 0)
 			TYPE_PROFILE, TYPE_LIST_TL, TYPE_LIST_MEMBER -> profile_id = getParamAt(params, 0)
 			TYPE_HASHTAG -> hashtag = getParamAt(params, 0)
 			
@@ -417,7 +433,12 @@ class Column(
 	}
 	
 	internal constructor(app_state : AppState, src : JSONObject)
-		: this(app_state, app_state.context, loadAccount(app_state.context, src), src.optInt(KEY_TYPE)) {
+		: this(
+		app_state,
+		app_state.context,
+		loadAccount(app_state.context, src),
+		src.optInt(KEY_TYPE)
+	) {
 		dont_close = src.optBoolean(KEY_DONT_CLOSE)
 		with_attachment = src.optBoolean(KEY_WITH_ATTACHMENT)
 		with_highlight = src.optBoolean(KEY_WITH_HIGHLIGHT)
@@ -442,7 +463,8 @@ class Column(
 		
 		when(column_type) {
 			
-			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY -> status_id = Utils.optLongX(src, KEY_STATUS_ID)
+			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY -> status_id =
+				Utils.optLongX(src, KEY_STATUS_ID)
 			
 			TYPE_PROFILE -> {
 				profile_id = Utils.optLongX(src, KEY_PROFILE_ID)
@@ -491,11 +513,17 @@ class Column(
 		dst.put(KEY_COLUMN_BACKGROUND_IMAGE_ALPHA, column_bg_image_alpha.toDouble())
 		
 		when(column_type) {
-			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY -> dst.put(KEY_STATUS_ID, status_id)
+			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY -> dst.put(
+				KEY_STATUS_ID,
+				status_id
+			)
 			TYPE_PROFILE -> dst.put(KEY_PROFILE_ID, profile_id).put(KEY_PROFILE_TAB, profile_tab)
 			TYPE_LIST_MEMBER, TYPE_LIST_TL -> dst.put(KEY_PROFILE_ID, profile_id)
 			TYPE_HASHTAG -> dst.put(KEY_HASHTAG, hashtag)
-			TYPE_SEARCH -> dst.put(KEY_SEARCH_QUERY, search_query).put(KEY_SEARCH_RESOLVE, search_resolve)
+			TYPE_SEARCH -> dst.put(KEY_SEARCH_QUERY, search_query).put(
+				KEY_SEARCH_RESOLVE,
+				search_resolve
+			)
 			TYPE_SEARCH_MSP, TYPE_SEARCH_TS -> dst.put(KEY_SEARCH_QUERY, search_query)
 			TYPE_INSTANCE_INFORMATION -> dst.put(KEY_INSTANCE_URI, instance_uri)
 		}
@@ -515,13 +543,22 @@ class Column(
 		return try {
 			when(type) {
 				
-				TYPE_PROFILE, TYPE_LIST_TL, TYPE_LIST_MEMBER -> getParamAt<Long>(params, 0) == profile_id
+				TYPE_PROFILE, TYPE_LIST_TL, TYPE_LIST_MEMBER -> getParamAt<Long>(
+					params,
+					0
+				) == profile_id
 				
-				TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY -> getParamAt<Long>(params, 0) == status_id
+				TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY -> getParamAt<Long>(
+					params,
+					0
+				) == status_id
 				
 				TYPE_HASHTAG -> getParamAt<String>(params, 0) == hashtag
 				
-				TYPE_SEARCH -> getParamAt<String>(params, 0) == search_query && getParamAt<Boolean>(params, 1) == search_resolve
+				TYPE_SEARCH -> getParamAt<String>(params, 0) == search_query && getParamAt<Boolean>(
+					params,
+					1
+				) == search_resolve
 				
 				TYPE_SEARCH_MSP, TYPE_SEARCH_TS -> getParamAt<String>(params, 0) == search_query
 				
@@ -538,16 +575,23 @@ class Column(
 	internal fun getColumnName(bLong : Boolean) : String {
 		return when(column_type) {
 			
-			TYPE_PROFILE -> context.getString(R.string.profile_of,
+			TYPE_PROFILE -> context.getString(
+				R.string.profile_of,
 				if(who_account != null)
 					AcctColor.getNickname(access_info.getFullAcct(who_account))
 				else
 					profile_id.toString()
 			)
 			
-			TYPE_LIST_MEMBER -> context.getString(R.string.list_member_of, list_info?.title ?: profile_id.toString())
+			TYPE_LIST_MEMBER -> context.getString(
+				R.string.list_member_of,
+				list_info?.title ?: profile_id.toString()
+			)
 			
-			TYPE_LIST_TL -> context.getString(R.string.list_tl_of, list_info?.title ?: profile_id.toString())
+			TYPE_LIST_TL -> context.getString(
+				R.string.list_tl_of,
+				list_info?.title ?: profile_id.toString()
+			)
 			
 			TYPE_CONVERSATION -> context.getString(R.string.conversation_around, status_id)
 			
@@ -594,7 +638,11 @@ class Column(
 	}
 	
 	// ブーストやお気に入りの更新に使う。ステータスを列挙する。
-	fun findStatus(target_instance : String, target_status_id : Long, callback : StatusEntryCallback) {
+	fun findStatus(
+		target_instance : String,
+		target_status_id : Long,
+		callback : StatusEntryCallback
+	) {
 		if(access_info.host.equals(target_instance, ignoreCase = true)) {
 			
 			var bChanged = false
@@ -812,7 +860,8 @@ class Column(
 		if(bBlocked) {
 			// ブロックしたのとドメイン部分が一致するアカウントからのステータスと通知をすべて除去する
 			val reDomain = Pattern.compile("[^@]+@\\Q$domain\\E\\z", Pattern.CASE_INSENSITIVE)
-			val checker = { acct : String? -> if(acct == null) false else reDomain.matcher(acct).find() }
+			val checker =
+				{ acct : String? -> if(acct == null) false else reDomain.matcher(acct).find() }
 			
 			val tmp_list = ArrayList<Any>(list_data.size)
 			
@@ -845,7 +894,12 @@ class Column(
 		}
 	}
 	
-	fun onListMemberUpdated(account : SavedAccount, list_id : Long, who : TootAccount, bAdd : Boolean) {
+	fun onListMemberUpdated(
+		account : SavedAccount,
+		list_id : Long,
+		who : TootAccount,
+		bAdd : Boolean
+	) {
 		if(column_type == TYPE_LIST_TL && access_info.acct == account.acct && list_id == profile_id) {
 			if(! bAdd) {
 				removeAccountInTimeline(account, who.id)
@@ -931,7 +985,8 @@ class Column(
 		if(regex_text.isNotEmpty()) {
 			try {
 				val re = Pattern.compile(regex_text)
-				column_regex_filter = { text : CharSequence? -> if(text == null) false else re.matcher(text).find() }
+				column_regex_filter =
+					{ text : CharSequence? -> if(text == null) false else re.matcher(text).find() }
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}
@@ -973,7 +1028,10 @@ class Column(
 		
 	}
 	
-	private inline fun <reified T> addAll(dstArg : ArrayList<Any>?, src : ArrayList<T>) : ArrayList<Any> {
+	private inline fun <reified T> addAll(
+		dstArg : ArrayList<Any>?,
+		src : ArrayList<T>
+	) : ArrayList<Any> {
 		val dst = dstArg ?: ArrayList()
 		for(item in src) {
 			dst.add(item as Any)
@@ -987,7 +1045,10 @@ class Column(
 		return dst
 	}
 	
-	private fun addWithFilterStatus(dstArg : ArrayList<Any>?, src : ArrayList<TootStatus>) : ArrayList<Any> {
+	private fun addWithFilterStatus(
+		dstArg : ArrayList<Any>?,
+		src : ArrayList<TootStatus>
+	) : ArrayList<Any> {
 		val dst = dstArg ?: ArrayList()
 		for(status in src) {
 			if(! isFiltered(status)) {
@@ -997,7 +1058,10 @@ class Column(
 		return dst
 	}
 	
-	private fun addWithFilterNotification(dstArg : ArrayList<Any>?, src : ArrayList<TootNotification>) : ArrayList<Any> {
+	private fun addWithFilterNotification(
+		dstArg : ArrayList<Any>?,
+		src : ArrayList<TootNotification>
+	) : ArrayList<Any> {
 		val dst = dstArg ?: ArrayList()
 		for(item in src) {
 			if(! isFiltered(item)) dst.add(item)
@@ -1216,7 +1280,10 @@ class Column(
 			
 			internal var list_tmp : ArrayList<Any>? = null
 			
-			internal fun getInstanceInformation(client : TootApiClient, instance_name : String?) : TootApiResult? {
+			internal fun getInstanceInformation(
+				client : TootApiClient,
+				instance_name : String?
+			) : TootApiResult? {
 				if(instance_name != null) {
 					// 「インスタンス情報」カラムをNAアカウントで開く場合
 					client.instance = instance_name
@@ -1309,16 +1376,23 @@ class Column(
 				return result
 			}
 			
-			internal fun parseAccountList(client : TootApiClient, path_base : String) : TootApiResult? {
+			internal fun parseAccountList(
+				client : TootApiClient,
+				path_base : String
+			) : TootApiResult? {
 				val result = client.request(path_base)
 				if(result != null) {
 					saveRange(result, true, true)
-					this.list_tmp = addAll(null, TootAccount.parseList(context, access_info, result.jsonArray))
+					this.list_tmp =
+						addAll(null, TootAccount.parseList(context, access_info, result.jsonArray))
 				}
 				return result
 			}
 			
-			internal fun parseDomainList(client : TootApiClient, path_base : String) : TootApiResult? {
+			internal fun parseDomainList(
+				client : TootApiClient,
+				path_base : String
+			) : TootApiResult? {
 				val result = client.request(path_base)
 				if(result != null) {
 					saveRange(result, true, true)
@@ -1336,7 +1410,10 @@ class Column(
 				return result
 			}
 			
-			internal fun parseListList(client : TootApiClient, path_base : String) : TootApiResult? {
+			internal fun parseListList(
+				client : TootApiClient,
+				path_base : String
+			) : TootApiResult? {
 				val result = client.request(path_base)
 				if(result != null) {
 					saveRange(result, true, true)
@@ -1347,7 +1424,10 @@ class Column(
 				return result
 			}
 			
-			internal fun parseNotifications(client : TootApiClient, path_base : String) : TootApiResult? {
+			internal fun parseNotifications(
+				client : TootApiClient,
+				path_base : String
+			) : TootApiResult? {
 				
 				val time_start = SystemClock.elapsedRealtime()
 				val result = client.request(path_base)
@@ -1442,11 +1522,15 @@ class Column(
 							
 							when(profile_tab) {
 								
-								TAB_FOLLOWING -> return parseAccountList(client,
-									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id))
+								TAB_FOLLOWING -> return parseAccountList(
+									client,
+									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id)
+								)
 								
-								TAB_FOLLOWERS -> return parseAccountList(client,
-									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id))
+								TAB_FOLLOWERS -> return parseAccountList(
+									client,
+									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id)
+								)
 								
 								TAB_STATUS -> {
 									
@@ -1462,7 +1546,11 @@ class Column(
 										if(access_info.isPseudo) return r2
 									}
 									
-									var s = String.format(Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id)
+									var s = String.format(
+										Locale.JAPAN,
+										PATH_ACCOUNT_STATUSES,
+										profile_id
+									)
 									if(with_attachment && ! with_highlight) s += "&only_media=1"
 									
 									if(instance?.isEnoughVersion(version_1_6) == true) {
@@ -1486,40 +1574,60 @@ class Column(
 						
 						TYPE_LIST_TL -> {
 							loadListInfo(client, true)
-							return getStatuses(client, String.format(Locale.JAPAN, PATH_LIST_TL, profile_id))
+							return getStatuses(
+								client,
+								String.format(Locale.JAPAN, PATH_LIST_TL, profile_id)
+							)
 						}
 						
 						TYPE_LIST_MEMBER -> {
 							loadListInfo(client, true)
-							return parseAccountList(client, String.format(Locale.JAPAN, PATH_LIST_MEMBER, profile_id))
+							return parseAccountList(
+								client,
+								String.format(Locale.JAPAN, PATH_LIST_MEMBER, profile_id)
+							)
 						}
 						
-						TYPE_FOLLOW_REQUESTS -> return parseAccountList(client, PATH_FOLLOW_REQUESTS)
+						TYPE_FOLLOW_REQUESTS -> return parseAccountList(
+							client,
+							PATH_FOLLOW_REQUESTS
+						)
 						
 						TYPE_FAVOURITES -> return getStatuses(client, PATH_FAVOURITES)
 						
-						TYPE_HASHTAG -> return getStatuses(client,
-							String.format(Locale.JAPAN, PATH_HASHTAG, Uri.encode(hashtag)))
+						TYPE_HASHTAG -> return getStatuses(
+							client,
+							String.format(Locale.JAPAN, PATH_HASHTAG, Uri.encode(hashtag))
+						)
 						
 						TYPE_REPORTS -> return parseReports(client, PATH_REPORTS)
 						
 						TYPE_NOTIFICATIONS -> return parseNotifications(client, PATH_NOTIFICATIONS)
 						
-						TYPE_BOOSTED_BY -> return parseAccountList(client, String.format(Locale.JAPAN, PATH_BOOSTED_BY, status_id))
+						TYPE_BOOSTED_BY -> return parseAccountList(
+							client,
+							String.format(Locale.JAPAN, PATH_BOOSTED_BY, status_id)
+						)
 						
-						TYPE_FAVOURITED_BY -> return parseAccountList(client, String.format(Locale.JAPAN, PATH_FAVOURITED_BY, status_id))
+						TYPE_FAVOURITED_BY -> return parseAccountList(
+							client,
+							String.format(Locale.JAPAN, PATH_FAVOURITED_BY, status_id)
+						)
 						
 						TYPE_CONVERSATION -> {
 							
 							// 指定された発言そのもの
 							result = client.request(
-								String.format(Locale.JAPAN, PATH_STATUSES, status_id))
+								String.format(Locale.JAPAN, PATH_STATUSES, status_id)
+							)
 							var jsonObject = result?.jsonObject ?: return result
-							val target_status = parser.status(jsonObject) ?: return TootApiResult("TootStatus parse failed.")
+							val target_status = parser.status(jsonObject)
+								?: return TootApiResult("TootStatus parse failed.")
 							
 							// 前後の会話
 							result = client.request(
-								String.format(Locale.JAPAN, PATH_STATUSES_CONTEXT, status_id))
+								String.format(Locale.JAPAN, PATH_STATUSES_CONTEXT, status_id)
+							)
 							jsonObject = result?.jsonObject ?: return result
 							val conversation_context = parseItem(::TootContext, parser, jsonObject)
 							
@@ -1534,12 +1642,18 @@ class Column(
 								)
 								//
 								if(conversation_context.ancestors != null)
-									addWithFilterStatus(this.list_tmp, conversation_context.ancestors)
+									addWithFilterStatus(
+										this.list_tmp,
+										conversation_context.ancestors
+									)
 								//
 								addOne(list_tmp, target_status)
 								//
 								if(conversation_context.descendants != null)
-									addWithFilterStatus(this.list_tmp, conversation_context.descendants)
+									addWithFilterStatus(
+										this.list_tmp,
+										conversation_context.descendants
+									)
 								//
 							} else {
 								Utils.showToast(context, true, "TootContext parse failed.")
@@ -1549,7 +1663,10 @@ class Column(
 							// カードを取得する
 							this.list_tmp?.forEach { o ->
 								if(o is TootStatus)
-									o.card = parseItem(::TootCard, client.request("/api/v1/statuses/" + o.id + "/card")?.jsonObject)
+									o.card = parseItem(
+										::TootCard,
+										client.request("/api/v1/statuses/" + o.id + "/card")?.jsonObject
+									)
 							}
 							
 							//
@@ -1561,7 +1678,8 @@ class Column(
 								// 1.5.0rc からマストドンの検索APIは認証を要求するようになった
 								return TootApiResult(context.getString(R.string.search_is_not_available_on_pseudo_account))
 							}
-							var path = String.format(Locale.JAPAN, PATH_SEARCH, Uri.encode(search_query))
+							var path =
+								String.format(Locale.JAPAN, PATH_SEARCH, Uri.encode(search_query))
 							if(search_resolve) path += "&resolve=1"
 							
 							result = client.request(path)
@@ -1592,7 +1710,11 @@ class Column(
 									// max_id の更新
 									max_id = TootApiClient.getMspMaxId(jsonArray, max_id)
 									// リストデータの用意
-									val search_result = TootStatus.parseList(parser, jsonArray, serviceType = ServiceType.MSP)
+									val search_result = TootStatus.parseList(
+										parser,
+										jsonArray,
+										serviceType = ServiceType.MSP
+									)
 									list_tmp = addWithFilterStatus(null, search_result)
 								}
 							}
@@ -1612,7 +1734,8 @@ class Column(
 									// max_id の更新
 									max_id = TootApiClient.getTootsearchMaxId(jsonObject, max_id)
 									// リストデータの用意
-									val search_result = TootStatus.parseListTootsearch(parser, jsonObject)
+									val search_result =
+										TootStatus.parseListTootsearch(parser, jsonObject)
 									this.list_tmp = addWithFilterStatus(null, search_result)
 									if(search_result.isEmpty()) {
 										log.d("search result is empty. %s", result?.bodyString)
@@ -1677,7 +1800,7 @@ class Column(
 				
 				// 初期ロードの直後は先頭に移動する
 				try {
-					viewHolder?.listLayoutManager?.scrollToPositionWithOffset(0,0)
+					viewHolder?.listLayoutManager?.scrollToPositionWithOffset(0, 0)
 				} catch(ignored : Throwable) {
 				}
 				
@@ -1730,19 +1853,27 @@ class Column(
 		return path
 	}
 	
-	internal fun startRefreshForPost(status_id : Long, refresh_after_toot : Int) {
+	internal fun startRefreshForPost(posted_status_id : Long, refresh_after_post : Int) {
 		when(column_type) {
-			TYPE_HOME, TYPE_LOCAL, TYPE_FEDERATE -> startRefresh(true, false, status_id, refresh_after_toot)
+			TYPE_HOME, TYPE_LOCAL, TYPE_FEDERATE -> startRefresh(
+				true, false, posted_status_id,
+				refresh_after_post
+			)
 			
 			TYPE_PROFILE -> if(profile_tab == TAB_STATUS && profile_id == access_info.loginAccount?.id) {
-				startRefresh(true, false, status_id, refresh_after_toot)
+				startRefresh(true, false, posted_status_id, refresh_after_post)
 			}
 			
 			TYPE_CONVERSATION -> startLoading()
 		}
 	}
 	
-	internal fun startRefresh(bSilent : Boolean, bBottom : Boolean, status_id : Long, refresh_after_toot : Int) {
+	internal fun startRefresh(
+		bSilent : Boolean,
+		bBottom : Boolean,
+		posted_status_id : Long,
+		refresh_after_toot : Int
+	) {
 		
 		if(last_task != null) {
 			if(! bSilent) {
@@ -1786,7 +1917,10 @@ class Column(
 			
 			internal var list_tmp : ArrayList<Any>? = null
 			
-			internal fun getAccountList(client : TootApiClient, path_base : String) : TootApiResult? {
+			internal fun getAccountList(
+				client : TootApiClient,
+				path_base : String
+			) : TootApiResult? {
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				val last_since_id = since_id
@@ -1801,14 +1935,14 @@ class Column(
 						var bGapAdded = false
 						while(true) {
 							if(isCancelled) {
-								log.d("refresh-account-top: cancelled.")
+								log.d("refresh-account-offset: cancelled.")
 								break
 							}
 							
 							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
 							// 直前のデータが0個なら終了とみなすしかなさそう
 							if(src.isEmpty()) {
-								log.d("refresh-account-top: previous size == 0.")
+								log.d("refresh-account-offset: previous size == 0.")
 								break
 							}
 							
@@ -1816,7 +1950,7 @@ class Column(
 							val max_id = src[src.size - 1].id.toString()
 							
 							if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
-								log.d("refresh-account-top: timeout. make gap.")
+								log.d("refresh-account-offset: timeout. make gap.")
 								// タイムアウト
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
@@ -1824,11 +1958,12 @@ class Column(
 								break
 							}
 							
-							val path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
+							val path =
+								path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
 							val result2 = client.request(path)
 							jsonArray = result2?.jsonArray
 							if(jsonArray == null) {
-								log.d("refresh-account-top: error or cancelled. make gap.")
+								log.d("refresh-account-offset: error or cancelled. make gap.")
 								// エラー
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
@@ -1839,7 +1974,7 @@ class Column(
 							src = TootAccount.parseList(context, access_info, jsonArray)
 							addAll(list_tmp, src)
 						}
-						if(Pref.bpForceGap(context) && !isCancelled && !bGapAdded && list_tmp?.isNotEmpty() ==true ){
+						if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
 							addOne(list_tmp, TootGap(max_id, last_since_id))
 						}
 					}
@@ -1847,7 +1982,10 @@ class Column(
 				return result
 			}
 			
-			internal fun getDomainList(client : TootApiClient, path_base : String) : TootApiResult? {
+			internal fun getDomainList(
+				client : TootApiClient,
+				path_base : String
+			) : TootApiResult? {
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				val last_since_id = since_id
@@ -1861,28 +1999,29 @@ class Column(
 					if(! bBottom) {
 						while(true) {
 							if(isCancelled) {
-								log.d("refresh-domain-top: cancelled.")
+								log.d("refresh-domain-offset: cancelled.")
 								break
 							}
 							
 							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
 							// 直前のデータが0個なら終了とみなすしかなさそう
 							if(src.isEmpty()) {
-								log.d("refresh-domain-top: previous size == 0.")
+								log.d("refresh-domain-offset: previous size == 0.")
 								break
 							}
 							
 							if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
-								log.d("refresh-domain-top: timeout.")
+								log.d("refresh-domain-offset: timeout.")
 								// タイムアウト
 								break
 							}
 							
-							val path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
+							val path =
+								path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
 							val result2 = client.request(path)
 							jsonArray = result2?.jsonArray
 							if(jsonArray == null) {
-								log.d("refresh-domain-top: error or cancelled.")
+								log.d("refresh-domain-offset: error or cancelled.")
 								// エラー
 								break
 							}
@@ -1910,14 +2049,14 @@ class Column(
 						var bGapAdded = false
 						while(true) {
 							if(isCancelled) {
-								log.d("refresh-list-top: cancelled.")
+								log.d("refresh-list-offset: cancelled.")
 								break
 							}
 							
 							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
 							// 直前のデータが0個なら終了とみなすしかなさそう
 							if(src.isEmpty()) {
-								log.d("refresh-list-top: previous size == 0.")
+								log.d("refresh-list-offset: previous size == 0.")
 								break
 							}
 							
@@ -1925,23 +2064,24 @@ class Column(
 							val max_id = src[src.size - 1].id.toString()
 							
 							if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
-								log.d("refresh-list-top: timeout. make gap.")
+								log.d("refresh-list-offset: timeout. make gap.")
 								// タイムアウト
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
-								bGapAdded =true
+								bGapAdded = true
 								break
 							}
 							
-							val path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
+							val path =
+								path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
 							val result2 = client.request(path)
 							jsonArray = result2?.jsonArray
 							if(jsonArray == null) {
-								log.d("refresh-list-top: timeout. error or retry. make gap.")
+								log.d("refresh-list-offset: timeout. error or retry. make gap.")
 								// エラー
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
-								bGapAdded =true
+								bGapAdded = true
 								break
 							}
 							
@@ -1949,7 +2089,7 @@ class Column(
 							src.sort()
 							addAll(list_tmp, src)
 						}
-						if(Pref.bpForceGap(context) && !isCancelled && !bGapAdded && list_tmp?.isNotEmpty() ==true ){
+						if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
 							addOne(list_tmp, TootGap(max_id, last_since_id))
 						}
 					}
@@ -1957,7 +2097,10 @@ class Column(
 				return result
 			}
 			
-			internal fun getReportList(client : TootApiClient, path_base : String) : TootApiResult? {
+			internal fun getReportList(
+				client : TootApiClient,
+				path_base : String
+			) : TootApiResult? {
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				val last_since_id = since_id
@@ -1971,14 +2114,14 @@ class Column(
 						var bGapAdded = false
 						while(true) {
 							if(isCancelled) {
-								log.d("refresh-report-top: cancelled.")
+								log.d("refresh-report-offset: cancelled.")
 								break
 							}
 							
 							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
 							// 直前のデータが0個なら終了とみなすしかなさそう
 							if(src.isEmpty()) {
-								log.d("refresh-report-top: previous size == 0.")
+								log.d("refresh-report-offset: previous size == 0.")
 								break
 							}
 							
@@ -1986,7 +2129,7 @@ class Column(
 							val max_id = src[src.size - 1].id.toString()
 							
 							if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
-								log.d("refresh-report-top: timeout. make gap.")
+								log.d("refresh-report-offset: timeout. make gap.")
 								// タイムアウト
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
@@ -1994,11 +2137,12 @@ class Column(
 								break
 							}
 							
-							val path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
+							val path =
+								path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
 							val result2 = client.request(path)
 							jsonArray = result2?.jsonArray
 							if(jsonArray == null) {
-								log.d("refresh-report-top: timeout. error or retry. make gap.")
+								log.d("refresh-report-offset: timeout. error or retry. make gap.")
 								// エラー
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
@@ -2009,7 +2153,7 @@ class Column(
 							src = parseList(::TootReport, jsonArray)
 							addAll(list_tmp, src)
 						}
-						if(Pref.bpForceGap(context) && !isCancelled && !bGapAdded && list_tmp?.isNotEmpty() ==true ){
+						if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
 							addOne(list_tmp, TootGap(max_id, last_since_id))
 						}
 					}
@@ -2017,7 +2161,10 @@ class Column(
 				return result
 			}
 			
-			internal fun getNotificationList(client : TootApiClient, path_base : String) : TootApiResult? {
+			internal fun getNotificationList(
+				client : TootApiClient,
+				path_base : String
+			) : TootApiResult? {
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				val last_since_id = since_id
@@ -2037,14 +2184,14 @@ class Column(
 						var bGapAdded = false
 						while(true) {
 							if(isCancelled) {
-								log.d("refresh-notification-top: cancelled.")
+								log.d("refresh-notification-offset: cancelled.")
 								break
 							}
 							
 							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
 							// 直前のデータが0個なら終了とみなすしかなさそう
 							if(src.isEmpty()) {
-								log.d("refresh-notification-top: previous size == 0.")
+								log.d("refresh-notification-offset: previous size == 0.")
 								break
 							}
 							
@@ -2052,7 +2199,7 @@ class Column(
 							val max_id = src[src.size - 1].id.toString()
 							
 							if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
-								log.d("refresh-notification-top: timeout. make gap.")
+								log.d("refresh-notification-offset: timeout. make gap.")
 								// タイムアウト
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
@@ -2060,11 +2207,12 @@ class Column(
 								break
 							}
 							
-							val path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
+							val path =
+								path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
 							val result2 = client.request(path)
 							jsonArray = result2?.jsonArray
 							if(jsonArray == null) {
-								log.d("refresh-notification-top: error or cancelled. make gap.")
+								log.d("refresh-notification-offset: error or cancelled. make gap.")
 								// エラー
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
@@ -2078,7 +2226,7 @@ class Column(
 								PollingWorker.injectData(context, access_info.db_id, src)
 							}
 						}
-						if(Pref.bpForceGap(context) && !isCancelled && !bGapAdded && list_tmp?.isNotEmpty() ==true ){
+						if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
 							addOne(list_tmp, TootGap(max_id, last_since_id))
 						}
 					} else {
@@ -2135,7 +2283,10 @@ class Column(
 				return result
 			}
 			
-			internal fun getStatusList(client : TootApiClient, path_base : String) : TootApiResult? {
+			internal fun getStatusList(
+				client : TootApiClient,
+				path_base : String
+			) : TootApiResult? {
 				
 				val time_start = SystemClock.elapsedRealtime()
 				
@@ -2202,7 +2353,7 @@ class Column(
 						var bGapAdded = false
 						while(true) {
 							if(isCancelled) {
-								log.d("refresh-status-top: cancelled.")
+								log.d("refresh-status-offset: cancelled.")
 								break
 							}
 							
@@ -2211,7 +2362,7 @@ class Column(
 							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
 							// 直前のデータが0個なら終了とみなすしかなさそう
 							if(src.isEmpty()) {
-								log.d("refresh-status-top: previous size == 0.")
+								log.d("refresh-status-offset: previous size == 0.")
 								break
 							}
 							
@@ -2219,7 +2370,7 @@ class Column(
 							val max_id = src[src.size - 1].id.toString()
 							
 							if((list_tmp?.size ?: 0) >= LOOP_READ_ENOUGH) {
-								log.d("refresh-status-top: read enough. make gap.")
+								log.d("refresh-status-offset: read enough. make gap.")
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
 								bGapAdded = true
@@ -2227,7 +2378,7 @@ class Column(
 							}
 							
 							if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
-								log.d("refresh-status-top: timeout. make gap.")
+								log.d("refresh-status-offset: timeout. make gap.")
 								// タイムアウト
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
@@ -2235,11 +2386,12 @@ class Column(
 								break
 							}
 							
-							val path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
+							val path =
+								path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
 							val result2 = client.request(path)
 							jsonArray = result2?.jsonArray
 							if(jsonArray == null) {
-								log.d("refresh-status-top: error or cancelled. make gap.")
+								log.d("refresh-status-offset: error or cancelled. make gap.")
 								// エラー
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
 								addOne(list_tmp, TootGap(max_id, last_since_id))
@@ -2250,7 +2402,7 @@ class Column(
 							src = parser.statusList(jsonArray)
 							addWithFilterStatus(list_tmp, src)
 						}
-						if(Pref.bpForceGap(context) && !isCancelled && !bGapAdded && list_tmp?.isNotEmpty() ==true ){
+						if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
 							addOne(list_tmp, TootGap(max_id, last_since_id))
 						}
 					}
@@ -2288,24 +2440,42 @@ class Column(
 						
 						TYPE_NOTIFICATIONS -> getNotificationList(client, PATH_NOTIFICATIONS)
 						
-						TYPE_BOOSTED_BY -> getAccountList(client, String.format(Locale.JAPAN, PATH_BOOSTED_BY, status_id))
+						TYPE_BOOSTED_BY -> getAccountList(
+							client, String.format(
+								Locale.JAPAN, PATH_BOOSTED_BY,
+								posted_status_id
+							)
+						)
 						
-						TYPE_FAVOURITED_BY -> getAccountList(client, String.format(Locale.JAPAN, PATH_FAVOURITED_BY, status_id))
+						TYPE_FAVOURITED_BY -> getAccountList(
+							client, String.format(
+								Locale.JAPAN, PATH_FAVOURITED_BY,
+								posted_status_id
+							)
+						)
 						
 						TYPE_PROFILE -> {
 							loadProfileAccount(client, false)
 							when(profile_tab) {
-								TAB_FOLLOWING -> getAccountList(client,
-									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id))
+								TAB_FOLLOWING -> getAccountList(
+									client,
+									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id)
+								)
 								
-								TAB_FOLLOWERS -> return getAccountList(client,
-									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id))
+								TAB_FOLLOWERS -> return getAccountList(
+									client,
+									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id)
+								)
 								
 								else -> {
 									if(access_info.isPseudo) {
 										client.request(PATH_INSTANCE)
 									} else {
-										var s = String.format(Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id)
+										var s = String.format(
+											Locale.JAPAN,
+											PATH_ACCOUNT_STATUSES,
+											profile_id
+										)
 										if(with_attachment && ! with_highlight) s += "&only_media=1"
 										getStatusList(client, s)
 									}
@@ -2317,12 +2487,18 @@ class Column(
 						
 						TYPE_LIST_TL -> {
 							loadListInfo(client, false)
-							getStatusList(client, String.format(Locale.JAPAN, PATH_LIST_TL, profile_id))
+							getStatusList(
+								client,
+								String.format(Locale.JAPAN, PATH_LIST_TL, profile_id)
+							)
 						}
 						
 						TYPE_LIST_MEMBER -> {
 							loadListInfo(client, false)
-							getAccountList(client, String.format(Locale.JAPAN, PATH_LIST_MEMBER, profile_id))
+							getAccountList(
+								client,
+								String.format(Locale.JAPAN, PATH_LIST_MEMBER, profile_id)
+							)
 						}
 						
 						TYPE_MUTES -> getAccountList(client, PATH_MUTES)
@@ -2333,7 +2509,10 @@ class Column(
 						
 						TYPE_FOLLOW_REQUESTS -> getAccountList(client, PATH_FOLLOW_REQUESTS)
 						
-						TYPE_HASHTAG -> getStatusList(client, String.format(Locale.JAPAN, PATH_HASHTAG, Uri.encode(hashtag)))
+						TYPE_HASHTAG -> getStatusList(
+							client,
+							String.format(Locale.JAPAN, PATH_HASHTAG, Uri.encode(hashtag))
+						)
 						
 						TYPE_SEARCH_MSP ->
 							if(! bBottom) {
@@ -2351,7 +2530,11 @@ class Column(
 										// max_id の更新
 										max_id = TootApiClient.getMspMaxId(jsonArray, max_id)
 										// リストデータの用意
-										val search_result = TootStatus.parseList(parser, jsonArray, serviceType = ServiceType.MSP)
+										val search_result = TootStatus.parseList(
+											parser,
+											jsonArray,
+											serviceType = ServiceType.MSP
+										)
 										list_tmp = addWithFilterStatus(list_tmp, search_result)
 									}
 								}
@@ -2373,7 +2556,8 @@ class Column(
 									// max_id の更新
 									max_id = TootApiClient.getTootsearchMaxId(jsonObject, max_id)
 									// リストデータの用意
-									val search_result = TootStatus.parseListTootsearch(parser, jsonObject)
+									val search_result =
+										TootStatus.parseListTootsearch(parser, jsonObject)
 									list_tmp = addWithFilterStatus(list_tmp, search_result)
 								}
 							}
@@ -2437,6 +2621,7 @@ class Column(
 						list_data.addAll(list_new)
 						fireShowContent()
 						
+						// 新着が少しだけ見えるようにスクロール位置を移動する
 						if(sp != null) {
 							holder?.setScrollPosition(sp, 20f)
 						}
@@ -2458,7 +2643,7 @@ class Column(
 						while(i < ie) {
 							val o = list_new[i]
 							if(o is TootStatus) {
-								if(o.id == status_id) {
+								if(o.id == posted_status_id) {
 									status_index = i
 									break
 								}
@@ -2471,22 +2656,30 @@ class Column(
 						fireShowContent()
 						
 						if(status_index >= 0 && refresh_after_toot == Pref.RAT_REFRESH_SCROLL) {
+							// 投稿後にその投稿にスクロールする
 							if(holder != null) {
-								holder.setScrollPosition(ScrollPosition(status_index, 0), 0f)
+								holder.setScrollPosition(
+									ScrollPosition(toAdapterIndex(status_index), 0),
+									0f
+								)
 							} else {
-								scroll_save = ScrollPosition(status_index, 0)
+								scroll_save = ScrollPosition(toAdapterIndex(status_index), 0)
 							}
 						} else {
-							val delta = if(bSilent) 0f else - 20f
+							//
 							val scroll_save = this@Column.scroll_save
 							when {
+							// ViewHolderがある場合は増加件数分+deltaの位置にスクロールする
 								sp != null -> {
-									sp.pos += added
+									sp.adapterIndex += added
+									val delta = if(bSilent) 0f else - 20f
 									holder?.setScrollPosition(sp, delta)
 								}
-								
-								scroll_save != null -> scroll_save.pos += added
-								else -> this@Column.scroll_save = ScrollPosition(added, 0)
+							// ViewHolderがなくて保存中の位置がある場合、増加件数分ずらす。deltaは難しいので反映しない
+								scroll_save != null -> scroll_save.adapterIndex += added
+							// 保存中の位置がない場合、保存中の位置を新しく作る
+								else -> this@Column.scroll_save =
+									ScrollPosition(toAdapterIndex(added), 0)
 							}
 						}
 					}
@@ -2525,7 +2718,10 @@ class Column(
 			
 			internal var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 			
-			internal fun getAccountList(client : TootApiClient, path_base : String) : TootApiResult? {
+			internal fun getAccountList(
+				client : TootApiClient,
+				path_base : String
+			) : TootApiResult? {
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				list_tmp = ArrayList()
@@ -2574,7 +2770,10 @@ class Column(
 				return result
 			}
 			
-			internal fun getReportList(client : TootApiClient, path_base : String) : TootApiResult? {
+			internal fun getReportList(
+				client : TootApiClient,
+				path_base : String
+			) : TootApiResult? {
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				list_tmp = ArrayList()
@@ -2621,7 +2820,10 @@ class Column(
 				return result
 			}
 			
-			internal fun getNotificationList(client : TootApiClient, path_base : String) : TootApiResult? {
+			internal fun getNotificationList(
+				client : TootApiClient,
+				path_base : String
+			) : TootApiResult? {
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				list_tmp = ArrayList()
@@ -2673,7 +2875,10 @@ class Column(
 				return result
 			}
 			
-			internal fun getStatusList(client : TootApiClient, path_base : String) : TootApiResult? {
+			internal fun getStatusList(
+				client : TootApiClient,
+				path_base : String
+			) : TootApiResult? {
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				list_tmp = ArrayList()
@@ -2748,7 +2953,10 @@ class Column(
 						
 						TYPE_FEDERATE -> getStatusList(client, PATH_FEDERATE)
 						
-						TYPE_LIST_TL -> getStatusList(client, String.format(Locale.JAPAN, PATH_LIST_TL, profile_id))
+						TYPE_LIST_TL -> getStatusList(
+							client,
+							String.format(Locale.JAPAN, PATH_LIST_TL, profile_id)
+						)
 						
 						TYPE_FAVOURITES -> getStatusList(client, PATH_FAVOURITES)
 						
@@ -2756,12 +2964,20 @@ class Column(
 						
 						TYPE_NOTIFICATIONS -> getNotificationList(client, PATH_NOTIFICATIONS)
 						
-						TYPE_HASHTAG -> getStatusList(client,
-							String.format(Locale.JAPAN, PATH_HASHTAG, Uri.encode(hashtag)))
+						TYPE_HASHTAG -> getStatusList(
+							client,
+							String.format(Locale.JAPAN, PATH_HASHTAG, Uri.encode(hashtag))
+						)
 						
-						TYPE_BOOSTED_BY -> getAccountList(client, String.format(Locale.JAPAN, PATH_BOOSTED_BY, status_id))
+						TYPE_BOOSTED_BY -> getAccountList(
+							client,
+							String.format(Locale.JAPAN, PATH_BOOSTED_BY, status_id)
+						)
 						
-						TYPE_FAVOURITED_BY -> getAccountList(client, String.format(Locale.JAPAN, PATH_FAVOURITED_BY, status_id))
+						TYPE_FAVOURITED_BY -> getAccountList(
+							client,
+							String.format(Locale.JAPAN, PATH_FAVOURITED_BY, status_id)
+						)
 						
 						TYPE_MUTES -> getAccountList(client, PATH_MUTES)
 						
@@ -2770,16 +2986,21 @@ class Column(
 						TYPE_FOLLOW_REQUESTS -> getAccountList(client, PATH_FOLLOW_REQUESTS)
 						
 						TYPE_PROFILE -> when(profile_tab) {
-							TAB_FOLLOWING -> getAccountList(client,
-								String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id))
+							TAB_FOLLOWING -> getAccountList(
+								client,
+								String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id)
+							)
 							
-							TAB_FOLLOWERS -> getAccountList(client,
-								String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id))
+							TAB_FOLLOWERS -> getAccountList(
+								client,
+								String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id)
+							)
 							
 							else -> if(access_info.isPseudo) {
 								client.request(PATH_INSTANCE)
 							} else {
-								var s = String.format(Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id)
+								var s =
+									String.format(Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id)
 								if(with_attachment && ! with_highlight) s += "&only_media=1"
 								getStatusList(client, s)
 							}
@@ -2839,17 +3060,15 @@ class Column(
 				val holder = viewHolder
 				if(holder != null) {
 					try {
-						restore_y = getItemTop(holder, restore_idx)
+						restore_y = holder.getListItemTop(restore_idx)
 					} catch(ex : IndexOutOfBoundsException) {
 						restore_idx = position
 						try {
-							restore_y = getItemTop(holder, restore_idx)
+							restore_y = holder.getListItemTop(restore_idx)
 						} catch(ex2 : IndexOutOfBoundsException) {
 							restore_idx = - 1
 						}
-						
 					}
-					
 				}
 				
 				val added = list_new.size // may 0
@@ -2858,16 +3077,16 @@ class Column(
 				fireShowContent()
 				
 				if(holder != null) {
-					
 					if(restore_idx >= 0) {
-						setItemTop(holder, restore_idx + added - 1, restore_y)
+						// ギャップが画面内にあるなら
+						holder.setListItemTop(restore_idx + added - 1, restore_y)
 					} else {
 						// ギャップが画面内にない場合、何もしない
 					}
 				} else {
 					val scroll_save = this@Column.scroll_save
 					if(scroll_save != null) {
-						scroll_save.pos += added - 1
+						scroll_save.adapterIndex += added - 1
 					}
 				}
 			}
@@ -2877,48 +3096,14 @@ class Column(
 		task.executeOnExecutor(App1.task_executor)
 	}
 	
-	// 特定の要素が特定の位置に来るようにスクロール位置を調整する
-	private fun setItemTop(holder : ColumnViewHolder, idxArg : Int, yArg : Int) {
-		
-		val listView = holder.listView
-		val headerViewHolder = listView.findViewHolderForAdapterPosition(0)
-		var idx = if(headerViewHolder!= null) idxArg+1 else idxArg
-		
-		var y = yArg
-		while(y > 0 && idx > 0) {
-			-- idx
-			y -= holder.getListItemHeight( idx)
-			y -= ListDivider.height
-		}
-		holder.listLayoutManager.scrollToPositionWithOffset(idx, y)
-	}
-	
-	private fun getItemTop(holder : ColumnViewHolder, idxArg : Int) : Int {
-		
-		val listView = holder.listView
-		val headerViewHolder = listView.findViewHolderForAdapterPosition(0)
-		val layoutManager = holder.listLayoutManager
-		val idx = if(headerViewHolder!= null) idxArg+1 else idxArg
-		
-		val vs = layoutManager.findFirstVisibleItemPosition()
-		val ve = layoutManager.findLastVisibleItemPosition()
-		if( vs == RecyclerView.NO_POSITION || ve == RecyclerView.NO_POSITION ){
-			throw IndexOutOfBoundsException("listView has no visible position")
-		}else if(idx < vs || ve < idx) {
-			throw IndexOutOfBoundsException("not in visible range")
-		}
-		val child_idx = idx - vs
-		return listView.getChildAt(child_idx).top
-	}
-	
-	enum class HeaderType(val viewType:Int){
+	enum class HeaderType(val viewType : Int) {
 		Profile(1),
 		Search(2),
 		Instance(3),
 	}
 	
-	fun getHeaderType():HeaderType?{
-		return when(column_type) {
+	val headerType : HeaderType?
+		get() = when(column_type) {
 			Column.TYPE_PROFILE -> HeaderType.Profile
 			Column.TYPE_SEARCH -> HeaderType.Search
 			Column.TYPE_SEARCH_MSP -> HeaderType.Search
@@ -2926,6 +3111,13 @@ class Column(
 			Column.TYPE_INSTANCE_INFORMATION -> HeaderType.Instance
 			else -> null
 		}
+	
+	fun toAdapterIndex(listIndex : Int) : Int {
+		return if(headerType != null) listIndex + 1 else listIndex
+	}
+	
+	fun toListIndex(adapterIndex : Int) : Int {
+		return if(headerType != null) adapterIndex - 1 else adapterIndex
 	}
 	
 	private fun loadSearchDesc(raw_en : Int, raw_ja : Int) : String {
@@ -2933,16 +3125,22 @@ class Column(
 		val data = Utils.loadRawResource(context, res_id)
 		return if(data == null) "?" else Utils.decodeUTF8(data)
 	}
-
-	private var cacheHeaderDesc: String? = null
+	
+	private var cacheHeaderDesc : String? = null
 	
 	fun getHeaderDesc() : String? {
 		var cache = cacheHeaderDesc
-		if( cache != null ) return cache
+		if(cache != null) return cache
 		cache = when(column_type) {
 			Column.TYPE_SEARCH -> context.getString(R.string.search_desc_mastodon_api)
-			Column.TYPE_SEARCH_MSP -> loadSearchDesc(R.raw.search_desc_msp_en, R.raw.search_desc_msp_ja)
-			Column.TYPE_SEARCH_TS -> loadSearchDesc(R.raw.search_desc_ts_en, R.raw.search_desc_ts_ja)
+			Column.TYPE_SEARCH_MSP -> loadSearchDesc(
+				R.raw.search_desc_msp_en,
+				R.raw.search_desc_msp_ja
+			)
+			Column.TYPE_SEARCH_TS -> loadSearchDesc(
+				R.raw.search_desc_ts_en,
+				R.raw.search_desc_ts_ja
+			)
 			else -> ""
 		}
 		cacheHeaderDesc = cache
@@ -2993,7 +3191,7 @@ class Column(
 			&& canAutoRefresh()
 			&& ! Pref.bpDontRefreshOnResume(App1.getAppState(context).pref)
 			&& ! dont_auto_refresh
-			) {
+		) {
 			
 			// リフレッシュしてからストリーミング開始
 			log.d("onStart: start auto refresh.")
@@ -3092,7 +3290,7 @@ class Column(
 			return
 		}
 		
-		if( Pref.bpDontUseStreaming(context) ) {
+		if(Pref.bpDontUseStreaming(context)) {
 			log.d("resumeStreaming: disabled in app setting.")
 			return
 		}
@@ -3206,19 +3404,18 @@ class Column(
 			// 事前にスクロール位置を覚えておく
 			val holder_sp : ScrollPosition? = holder?.scrollPosition
 			
-			// idx番目の要素がListViewのtopから何ピクセル下にあるか
-			var restore_idx = - 1
+			// idx番目の要素がListViewの上端から何ピクセル下にあるか
+			var restore_idx = - 2
 			var restore_y = 0
 			if(holder != null) {
 				if(list_data.size > 0) {
 					try {
-						restore_idx = holder.listLayoutManager.findFirstVisibleItemPosition()
-						restore_y = getItemTop(holder, restore_idx)
+						restore_idx = holder.findFirstVisibleListItem()
+						restore_y = holder.getListItemTop(restore_idx)
 					} catch(ex : IndexOutOfBoundsException) {
-						restore_idx = - 1
+						restore_idx = - 2
 						restore_y = 0
 					}
-					
 				}
 			}
 			
@@ -3254,21 +3451,31 @@ class Column(
 			val added = list_new.size
 			
 			if(holder != null) {
-				if(holder_sp == null || (holder_sp.pos == 0 && holder_sp.top == 0)) {
+				if(holder_sp == null) {
 					// スクロール位置が先頭なら先頭のまま
-				} else if(restore_idx >= 0) {
-					// ギャップ分だけスクロール位置が変わる
-					setItemTop(holder, restore_idx + added, restore_y)
+					log.d("mergeStreamingMessage: has VH. missing scroll position.")
+				} else if(holder_sp.adapterIndex == 0 && holder_sp.offset == 0) {
+					// スクロール位置が先頭なら先頭のまま
+					log.d(
+						"mergeStreamingMessage: has VH. keep head. pos=%s,offset=%s"
+						, holder_sp.adapterIndex
+						, holder_sp.offset
+					)
+				} else if(restore_idx < - 1) {
+					// 可視範囲の検出に失敗
+					log.d("mergeStreamingMessage: has VH. can't find visible range.")
 				} else {
-					// ギャップが画面内にない場合、何もしない
+					// 現在の要素が表示され続けるようにしたい
+					log.d("mergeStreamingMessage: has VH. added=$added")
+					holder.setListItemTop(restore_idx + added, restore_y)
 				}
 			} else {
 				val scroll_save = this@Column.scroll_save
-				if(scroll_save == null || (scroll_save.pos == 0 && scroll_save.top == 0)) {
+				if(scroll_save == null || (scroll_save.adapterIndex == 0 && scroll_save.offset == 0)) {
 					// スクロール位置が先頭なら先頭のまま
 				} else {
 					// 現在の要素が表示され続けるようにしたい
-					scroll_save.pos += added
+					scroll_save.adapterIndex += added
 				}
 			}
 		}

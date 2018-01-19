@@ -32,6 +32,7 @@ import android.support.v7.widget.ListRecyclerView
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import jp.juggler.subwaytooter.view.ListDivider
+import java.io.Closeable
 import java.lang.reflect.Field
 
 class ColumnViewHolder(
@@ -48,13 +49,13 @@ class ColumnViewHolder(
 			v.visibility = if(visible) View.VISIBLE else View.GONE
 		}
 		
-		val fieldRecycler : Field by lazy{
+		val fieldRecycler : Field by lazy {
 			val field = RecyclerView::class.java.getDeclaredField("mRecycler")
 			field.isAccessible = true
 			field
 		}
 		
-		val fieldState :Field by lazy{
+		val fieldState : Field by lazy {
 			val field = RecyclerView::class.java.getDeclaredField("mState")
 			field.isAccessible = true
 			field
@@ -72,7 +73,7 @@ class ColumnViewHolder(
 	val listView : ListRecyclerView
 	val refreshLayout : SwipyRefreshLayout
 	lateinit var listLayoutManager : LinearLayoutManager
-
+	
 	private val llColumnHeader : View
 	private val tvColumnIndex : TextView
 	private val tvColumnContext : TextView
@@ -190,8 +191,8 @@ class ColumnViewHolder(
 		
 		tvLoading = root.findViewById(R.id.tvLoading)
 		listView = root.findViewById(R.id.listView)
-
-		if(Pref.bpShareViewPool(activity.pref)){
+		
+		if(Pref.bpShareViewPool(activity.pref)) {
 			listView.recycledViewPool = activity.viewPool
 		}
 		
@@ -260,7 +261,13 @@ class ColumnViewHolder(
 		
 		// 入力の追跡
 		etRegexFilter.addTextChangedListener(object : TextWatcher {
-			override fun beforeTextChanged(s : CharSequence, start : Int, count : Int, after : Int) {}
+			override fun beforeTextChanged(
+				s : CharSequence,
+				start : Int,
+				count : Int,
+				after : Int
+			) {
+			}
 			
 			override fun onTextChanged(s : CharSequence, start : Int, before : Int, count : Int) {}
 			
@@ -317,7 +324,11 @@ class ColumnViewHolder(
 			}
 			
 			if(column.hasMultipleViewHolder()) {
-				log.d("restoreScrollPosition [%d] %s , column has multiple view holder. retry later.", page_idx, column.getColumnName(true))
+				log.d(
+					"restoreScrollPosition [%d] %s , column has multiple view holder. retry later.",
+					page_idx,
+					column.getColumnName(true)
+				)
 				
 				// タブレットモードでカラムを追加/削除した際に発生する。
 				// このタイミングでスクロール位置を復元してもうまくいかないので延期する
@@ -326,16 +337,26 @@ class ColumnViewHolder(
 			}
 			
 			val sp = column.scroll_save ?: //復元後にもここを通るがこれは正常である
-				// log.d( "restoreScrollPosition [%d] %s , column has no saved scroll position.", page_idx, column.getColumnName( true ) );
-				return
+			// log.d( "restoreScrollPosition [%d] %s , column has no saved scroll position.", page_idx, column.getColumnName( true ) );
+			return
 			
 			column.scroll_save = null
 			
 			if(listView.visibility != View.VISIBLE) {
-				log.d("restoreScrollPosition [%d] %s , listView is not visible. saved position %s,%s is dropped.", page_idx, column.getColumnName(true), sp.pos, sp.top
+				log.d(
+					"restoreScrollPosition [%d] %s , listView is not visible. saved position %s,%s is dropped.",
+					page_idx,
+					column.getColumnName(true),
+					sp.adapterIndex,
+					sp.offset
 				)
 			} else {
-				log.d("restoreScrollPosition [%d] %s , listView is visible. resume %s,%s", page_idx, column.getColumnName(true), sp.pos, sp.top
+				log.d(
+					"restoreScrollPosition [%d] %s , listView is visible. resume %s,%s",
+					page_idx,
+					column.getColumnName(true),
+					sp.adapterIndex,
+					sp.offset
 				)
 				sp.restore(this@ColumnViewHolder)
 			}
@@ -367,7 +388,8 @@ class ColumnViewHolder(
 			
 			log.d("onPageCreate [%d] %s", page_idx, column.getColumnName(true))
 			
-			val bSimpleList = column.column_type != Column.TYPE_CONVERSATION && Pref.bpSimpleList(activity.pref)
+			val bSimpleList =
+				column.column_type != Column.TYPE_CONVERSATION && Pref.bpSimpleList(activity.pref)
 			
 			tvColumnIndex.text = activity.getString(R.string.column_index, page_idx + 1, page_count)
 			
@@ -375,7 +397,6 @@ class ColumnViewHolder(
 			listView.addItemDecoration(ListDivider(activity))
 			val status_adapter = ItemListAdapter(activity, column, this, bSimpleList)
 			this.status_adapter = status_adapter
-			
 			
 			//			status_adapter.header = when(column.column_type) {
 			//				Column.TYPE_PROFILE -> ViewHolderHeaderProfile(activity, column, listView)
@@ -436,7 +457,8 @@ class ColumnViewHolder(
 			
 			when(column.column_type) {
 				
-				Column.TYPE_CONVERSATION, Column.TYPE_INSTANCE_INFORMATION -> refreshLayout.isEnabled = false
+				Column.TYPE_CONVERSATION, Column.TYPE_INSTANCE_INFORMATION -> refreshLayout.isEnabled =
+					false
 				
 				Column.TYPE_SEARCH -> {
 					refreshLayout.isEnabled = true
@@ -476,27 +498,48 @@ class ColumnViewHolder(
 			if(c == 0) {
 				llColumnHeader.setBackgroundResource(R.drawable.btn_bg_ddd)
 			} else {
-				ViewCompat.setBackground(llColumnHeader, Styler.getAdaptiveRippleDrawable(
-					c,
-					if(column.header_fg_color != 0)
-						column.header_fg_color
-					else
-						Styler.getAttributeColor(activity, R.attr.colorRippleEffect)
-				))
+				ViewCompat.setBackground(
+					llColumnHeader, Styler.getAdaptiveRippleDrawable(
+						c,
+						if(column.header_fg_color != 0)
+							column.header_fg_color
+						else
+							Styler.getAttributeColor(activity, R.attr.colorRippleEffect)
+					)
+				)
 			}
 			
 			c = column.header_fg_color
 			if(c == 0) {
-				tvColumnIndex.setTextColor(Styler.getAttributeColor(activity, R.attr.colorColumnHeaderPageNumber))
-				tvColumnName.setTextColor(Styler.getAttributeColor(activity, android.R.attr.textColorPrimary))
-				Styler.setIconDefaultColor(activity, ivColumnIcon, column.getIconAttrId(column.column_type))
+				tvColumnIndex.setTextColor(
+					Styler.getAttributeColor(
+						activity,
+						R.attr.colorColumnHeaderPageNumber
+					)
+				)
+				tvColumnName.setTextColor(
+					Styler.getAttributeColor(
+						activity,
+						android.R.attr.textColorPrimary
+					)
+				)
+				Styler.setIconDefaultColor(
+					activity,
+					ivColumnIcon,
+					column.getIconAttrId(column.column_type)
+				)
 				Styler.setIconDefaultColor(activity, btnColumnSetting, R.attr.ic_tune)
 				Styler.setIconDefaultColor(activity, btnColumnReload, R.attr.btn_refresh)
 				Styler.setIconDefaultColor(activity, btnColumnClose, R.attr.btn_close)
 			} else {
 				tvColumnIndex.setTextColor(c)
 				tvColumnName.setTextColor(c)
-				Styler.setIconCustomColor(activity, ivColumnIcon, c, column.getIconAttrId(column.column_type))
+				Styler.setIconCustomColor(
+					activity,
+					ivColumnIcon,
+					c,
+					column.getIconAttrId(column.column_type)
+				)
 				Styler.setIconCustomColor(activity, btnColumnSetting, c, R.attr.ic_tune)
 				Styler.setIconCustomColor(activity, btnColumnReload, c, R.attr.btn_refresh)
 				Styler.setIconCustomColor(activity, btnColumnClose, c, R.attr.btn_close)
@@ -513,7 +556,7 @@ class ColumnViewHolder(
 			
 			loadBackgroundImage(ivColumnBackgroundImage, column.column_bg_image)
 			
-			status_adapter?.getHeaderViewHolder(listView)?.showColor()
+			status_adapter?.findHeaderViewHolder(listView)?.showColor()
 		}
 	}
 	
@@ -737,15 +780,20 @@ class ColumnViewHolder(
 				column.startLoading()
 			}
 			
-			R.id.llColumnHeader ->{
-				if(status_adapter.itemCount > 0){
-					listLayoutManager.scrollToPositionWithOffset(0,0)
+			R.id.llColumnHeader -> {
+				if(status_adapter.itemCount > 0) {
+					listLayoutManager.scrollToPositionWithOffset(0, 0)
 				}
 			}
 			
-			R.id.btnColumnSetting -> llColumnSetting.visibility = if(llColumnSetting.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+			R.id.btnColumnSetting -> llColumnSetting.visibility =
+				if(llColumnSetting.visibility == View.VISIBLE) View.GONE else View.VISIBLE
 			
-			R.id.btnDeleteNotification -> Action_Notification.deleteAll(activity, column.access_info, false)
+			R.id.btnDeleteNotification -> Action_Notification.deleteAll(
+				activity,
+				column.access_info,
+				false
+			)
 			
 			R.id.btnColor -> {
 				val idx = activity.app_state.column_list.indexOf(column)
@@ -774,11 +822,9 @@ class ColumnViewHolder(
 	}
 	
 	private fun showColumnCloseButton() {
-		val column = this@ColumnViewHolder.column ?: return
-		
-		// カラム保護の状態
-		btnColumnClose.isEnabled = ! column.dont_close
-		btnColumnClose.alpha = if(column.dont_close) 0.3f else 1f
+		val dont_close = column ?.dont_close ?: return
+		btnColumnClose.isEnabled = ! dont_close
+		btnColumnClose.alpha = if(dont_close) 0.3f else 1f
 	}
 	
 	// カラムヘッダなど、負荷が低い部分の表示更新
@@ -794,7 +840,12 @@ class ColumnViewHolder(
 		var c : Int
 		
 		c = ac.color_fg
-		tvColumnContext.setTextColor(if(c != 0) c else Styler.getAttributeColor(activity, R.attr.colorTimeSmall))
+		tvColumnContext.setTextColor(
+			if(c != 0) c else Styler.getAttributeColor(
+				activity,
+				R.attr.colorTimeSmall
+			)
+		)
 		
 		c = ac.color_bg
 		if(c == 0) {
@@ -857,7 +908,7 @@ class ColumnViewHolder(
 		
 		refreshLayout.visibility = View.VISIBLE
 		
-		status_adapter.getHeaderViewHolder(listView)?.bindData(column)
+		status_adapter.findHeaderViewHolder(listView)?.bindData(column)
 		
 		if(! column.bRefreshLoading) {
 			refreshLayout.isRefreshing = false
@@ -878,27 +929,33 @@ class ColumnViewHolder(
 		val column = this.column
 		when {
 			column == null -> log.d("saveScrollPosition [%d] , column==null", page_idx)
-			column.is_dispose.get() -> log.d("saveScrollPosition [%d] , column is disposed", page_idx)
+
+			column.is_dispose.get() -> log.d(
+				"saveScrollPosition [%d] , column is disposed",
+				page_idx
+			)
 			
 			listView.visibility != View.VISIBLE -> {
 				val scroll_save = ScrollPosition(0, 0)
 				column.scroll_save = scroll_save
-				log.d("saveScrollPosition [%d] %s , listView is not visible, save %s,%s"
+				log.d(
+					"saveScrollPosition [%d] %s , listView is not visible, save %s,%s"
 					, page_idx
 					, column.getColumnName(true)
-					, scroll_save.pos
-					, scroll_save.top
+					, scroll_save.adapterIndex
+					, scroll_save.offset
 				)
 			}
 			
 			else -> {
 				val scroll_save = ScrollPosition(this)
 				column.scroll_save = scroll_save
-				log.d("saveScrollPosition [%d] %s , listView is visible, save %s,%s"
+				log.d(
+					"saveScrollPosition [%d] %s , listView is visible, save %s,%s"
 					, page_idx
 					, column.getColumnName(true)
-					, scroll_save.pos
-					, scroll_save.top
+					, scroll_save.adapterIndex
+					, scroll_save.offset
 				)
 			}
 		}
@@ -910,43 +967,111 @@ class ColumnViewHolder(
 		
 		sp.restore(this)
 		
-		val dy = (deltaDp * activity.density +0.5f).toInt()
+		val dy = (deltaDp * activity.density + 0.5f).toInt()
 		if(dy != 0) listView.postDelayed(Runnable {
 			if(column == null || listView.adapter !== last_adapter) return@Runnable
 			
 			try {
 				val recycler = fieldRecycler.get(listView) as RecyclerView.Recycler
 				val state = fieldState.get(listView) as RecyclerView.State
-				listLayoutManager.scrollVerticallyBy(dy, recycler,state)
-			}catch(ex:Throwable){
+				listLayoutManager.scrollVerticallyBy(dy, recycler, state)
+			} catch(ex : Throwable) {
 				log.trace(ex)
-				log.e("can't access field in class %s",RecyclerView::class.java.simpleName)
+				log.e("can't access field in class %s", RecyclerView::class.java.simpleName)
 			}
 		}, 20L)
 	}
 	
+	inner class AdapterItemHeightWorkarea internal constructor(val adapter:ItemListAdapter) : Closeable {
+		
+		private val item_width : Int
+		private val widthSpec : Int
+		private var lastViewType : Int = - 1
+		private var lastViewHolder : RecyclerView.ViewHolder? = null
+		init {
+			this.item_width = listView.width - listView.paddingLeft - listView.paddingRight
+			this.widthSpec = View.MeasureSpec.makeMeasureSpec(item_width, View.MeasureSpec.EXACTLY)
+		}
+		
+		override fun close() {
+			val childViewHolder = lastViewHolder
+			if(childViewHolder != null) {
+				adapter.onViewRecycled(childViewHolder)
+				lastViewHolder = null
+			}
+		}
+		
+		fun getAdapterItemHeight(adapterIndex : Int) : Int {
+			
+			var childViewHolder = listView.findViewHolderForAdapterPosition(adapterIndex)
+			if(childViewHolder != null) {
+				childViewHolder.itemView.measure(widthSpec, heightSpec)
+				return childViewHolder.itemView.measuredHeight
+			}
+			
+
+			log.d("getAdapterItemHeight idx=$adapterIndex createView")
+			
+			val viewType = adapter.getItemViewType(adapterIndex)
+			
+			childViewHolder = lastViewHolder
+			if(childViewHolder == null || lastViewType != viewType) {
+				if(childViewHolder != null) {
+					adapter.onViewRecycled(childViewHolder)
+				}
+				childViewHolder = adapter.onCreateViewHolder(listView, viewType)
+				lastViewHolder = childViewHolder
+				lastViewType = viewType
+			}
+			adapter.onBindViewHolder(childViewHolder, adapterIndex)
+			childViewHolder.itemView.measure(widthSpec, heightSpec)
+			return childViewHolder.itemView.measuredHeight
+		}
+	}
 	
-
-	fun getListItemHeight( idx : Int) : Int {
-		val item_width = listView.width - listView.paddingLeft - listView.paddingRight
-		val widthSpec = View.MeasureSpec.makeMeasureSpec(item_width, View.MeasureSpec.EXACTLY)
-
-		var childViewHolder = listView.findViewHolderForAdapterPosition(idx)
-		if( childViewHolder != null ) {
-			childViewHolder.itemView.measure(widthSpec, heightSpec)
-			return childViewHolder.itemView.measuredHeight
-		}
-
+	// 特定の要素が特定の位置に来るようにスクロール位置を調整する
+	fun setListItemTop(listIndex : Int, yArg : Int) {
+		var adapterIndex = column?.toAdapterIndex(listIndex) ?: return
+		
 		val adapter = status_adapter
-		if( adapter != null) {
-			log.d("getListItemHeight idx=$idx createView")
-			val viewType = adapter.getItemViewType(idx)
-			childViewHolder = adapter.createViewHolder(listView, viewType)
-			adapter.bindViewHolder(childViewHolder, idx)
-			childViewHolder.itemView.measure(widthSpec, heightSpec)
-			return childViewHolder.itemView.measuredHeight
+		if( adapter == null) {
+			log.e("setListItemTop: missing status adapter")
+			return
 		}
-		log.e("getListItemHeight: missing status adapter")
-		return 0
+		
+		var y = yArg
+		AdapterItemHeightWorkarea(adapter).use { workarea ->
+			while(y > 0 && adapterIndex > 0) {
+				-- adapterIndex
+				y -= workarea.getAdapterItemHeight(adapterIndex)
+				y -= ListDivider.height
+			}
+		}
+		
+		if(adapterIndex == 0 && y > 0) y = 0
+		listLayoutManager.scrollToPositionWithOffset(adapterIndex, y)
+	}
+	
+	fun getListItemTop(listIndex : Int) : Int {
+
+		val adapterIndex = column?.toAdapterIndex(listIndex)
+			?: return 0
+		
+		val childView = listLayoutManager.findViewByPosition(adapterIndex)
+			?: throw IndexOutOfBoundsException("findViewByPosition($adapterIndex) returns null.")
+		
+		return childView.top
+	}
+	
+	fun findFirstVisibleListItem() : Int {
+
+		val adapterIndex = listLayoutManager.findFirstVisibleItemPosition()
+
+		if(adapterIndex == RecyclerView.NO_POSITION)
+			throw IndexOutOfBoundsException()
+
+		return column?.toListIndex(adapterIndex)
+			?: throw IndexOutOfBoundsException()
+		
 	}
 }

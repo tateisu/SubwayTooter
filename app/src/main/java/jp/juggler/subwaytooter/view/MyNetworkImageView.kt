@@ -111,17 +111,20 @@ class MyNetworkImageView : AppCompatImageView {
 		return null
 	}
 	
-	private fun cancelLoading() {
+	private fun cancelLoading(defaultDrawable: Drawable?) {
+		
+		val d = drawable
+		if(d is Animatable) {
+			if(d.isRunning) {
+				//log.d("cancelLoading: Animatable.stop()")
+				d.stop()
+			}
+		}
+		
+		setImageDrawable(defaultDrawable)
+		
 		val target = mTarget
 		if(target != null) {
-			val d = drawable
-			if(d is Animatable) {
-				if(d.isRunning) {
-					//log.d("cancelLoading: Animatable.stop()")
-					d.stop()
-				}
-			}
-			setImageDrawable(null)
 			try {
 				getGlide()?.clear(target)
 			} catch(ex : Throwable) {
@@ -133,21 +136,12 @@ class MyNetworkImageView : AppCompatImageView {
 		
 	}
 	
-	// デフォルト画像かnullを表示する
-	private fun setDefaultImageOrNull() {
-		
-		val d = drawable
-		if(d is Animatable) {
-			if(d.isRunning) {
-				log.d("setDefaultImageOrNull: Animatable.stop()")
-				d.stop()
-			}
-		}
-		
-		if(mDefaultImageId != 0) {
-			setImageResource(mDefaultImageId)
-		} else {
-			setImageDrawable(null)
+	// デフォルト画像かnull
+	private fun getDefaultDrawable(context:Context?):Drawable? {
+		return if(context!= null && mDefaultImageId != 0) {
+			ContextCompat.getDrawable(context, mDefaultImageId)
+		}else {
+			null
 		}
 	}
 	
@@ -158,20 +152,18 @@ class MyNetworkImageView : AppCompatImageView {
 			if(url?.isEmpty() != false) {
 				// if the URL to be loaded in this view is empty,
 				// cancel any old requests and clear the currently loaded image.
-				cancelLoading()
-				setDefaultImageOrNull()
+				cancelLoading(getDefaultDrawable(context))
 				return
 			}
 			
 			// すでにリクエストが発行済みで、リクエストされたURLが同じなら何もしない
 			if((mTarget as? UrlTarget)?.urlLoading == url) return
 			
+			// if there is a pre-existing request, cancel it if it's fetching a different URL.
+			cancelLoading(getDefaultDrawable(context))
+			
 			// 非表示状態ならロードを延期する
 			if(!isShown) return
-			
-			// if there is a pre-existing request, cancel it if it's fetching a different URL.
-			cancelLoading()
-			setDefaultImageOrNull()
 			
 			var wrapWidth = false
 			var wrapHeight = false
@@ -288,7 +280,7 @@ class MyNetworkImageView : AppCompatImageView {
 		override fun onLoadFailed(errorDrawable : Drawable?) = onLoadFailed(urlLoading)
 		
 		override fun onResourceReady(
-			resource : Drawable,
+			drawable : Drawable,
 			transition : Transition<in Drawable>?
 		) {
 			try {
@@ -300,18 +292,18 @@ class MyNetworkImageView : AppCompatImageView {
 					when {
 						mCornerRadius <= 0f -> {
 							// 角丸でないならそのまま使う
-							resource
+							drawable
 						}
 					
 					// GidDrawableを置き換える
-						resource is GifDrawable -> replaceGifDrawable(resource)
+						drawable is GifDrawable -> replaceGifDrawable(drawable)
 					
 					// Glide 4.xから、静止画はBitmapDrawableになった
-						resource is BitmapDrawable -> replaceBitmapDrawable(resource)
+						drawable is BitmapDrawable -> replaceBitmapDrawable(drawable)
 						
 						else -> {
-							log.d("onResourceReady: drawable class=%s", resource.javaClass)
-							resource
+							log.d("onResourceReady: drawable class=%s", drawable.javaClass)
+							drawable
 						}
 					}
 				)
@@ -321,10 +313,10 @@ class MyNetworkImageView : AppCompatImageView {
 			
 		}
 		
-		private fun afterResourceReady(transition : Transition<in Drawable>?, resource : Drawable) {
-			super.onResourceReady(resource, transition)
+		private fun afterResourceReady(transition : Transition<in Drawable>?, drawable : Drawable) {
+			super.onResourceReady(drawable, transition)
 			
-			//				if( ! resource.isAnimated() ){
+			//				if( ! drawable.isAnimated() ){
 			//					//XXX: Try to generalize this to other sizes/shapes.
 			//					// This is a dirty hack that tries to make loading square thumbnails and then square full images less costly
 			//					// by forcing both the smaller thumb and the larger version to have exactly the same intrinsic dimensions.
@@ -332,26 +324,26 @@ class MyNetworkImageView : AppCompatImageView {
 			//					// the ImageView requests a layout. Scrolling rapidly while replacing thumbs with larger images triggers
 			//					// lots of these calls and causes significant amounts of jank.
 			//					float viewRatio = view.getWidth() / (float) view.getHeight();
-			//					float drawableRatio = resource.getIntrinsicWidth() / (float) resource.getIntrinsicHeight();
+			//					float drawableRatio = drawable.getIntrinsicWidth() / (float) drawable.getIntrinsicHeight();
 			//					if( Math.abs( viewRatio - 1f ) <= SQUARE_RATIO_MARGIN
 			//						&& Math.abs( drawableRatio - 1f ) <= SQUARE_RATIO_MARGIN ){
-			//						resource = new SquaringDrawable( resource, view.getWidth() );
+			//						drawable = new SquaringDrawable( drawable, view.getWidth() );
 			//					}
 			//				}
 			
-			this.glide_drawable = resource
-			if(resource is GifDrawable) {
-				resource.setLoopCount(GifDrawable.LOOP_FOREVER)
-				resource.start()
-			} else if(resource is MyGifDrawable) {
-				resource.setLoopCount(GifDrawable.LOOP_FOREVER)
-				resource.start()
+			this.glide_drawable = drawable
+			if(drawable is GifDrawable) {
+				drawable.setLoopCount(GifDrawable.LOOP_FOREVER)
+				drawable.start()
+			} else if(drawable is MyGifDrawable) {
+				drawable.setLoopCount(GifDrawable.LOOP_FOREVER)
+				drawable.start()
 			}
 		}
 		
 		// super.onResourceReady から呼ばれる
-		override fun setResource(resource : Drawable?) {
-			setImageDrawable(resource)
+		override fun setResource(drawable : Drawable?) {
+			setImageDrawable(drawable)
 		}
 		
 		override fun onStart() {
@@ -388,7 +380,7 @@ class MyNetworkImageView : AppCompatImageView {
 	}
 	
 	override fun onDetachedFromWindow() {
-		cancelLoading()
+		cancelLoading(null)
 		super.onDetachedFromWindow()
 	}
 	
@@ -421,13 +413,14 @@ class MyNetworkImageView : AppCompatImageView {
 	
 	override fun onDraw(canvas : Canvas) {
 		
-		// bitmapがrecycledされた場合でもそのまま描画する
+		// bitmapがrecycledされた場合に例外をキャッチする
 		try {
 			super.onDraw(canvas)
 		} catch(ex : Throwable) {
 			log.trace(ex)
 		}
-		
+
+		// media type の描画
 		val media_type_drawable = this.media_type_drawable
 		if(media_type_drawable != null) {
 			val drawable_w = media_type_drawable.intrinsicWidth

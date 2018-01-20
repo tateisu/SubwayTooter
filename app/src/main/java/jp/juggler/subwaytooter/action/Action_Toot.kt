@@ -152,15 +152,18 @@ object Action_Toot {
 						
 						
 						for(column in App1.getAppState(activity).column_list) {
-							column.findStatus(access_info.host, new_status.id, object : Column.StatusEntryCallback {
-								override fun onIterate(account : SavedAccount, status : TootStatus) : Boolean {
-									status.favourites_count = new_status.favourites_count
-									if(access_info.acct.equals(account.acct, ignoreCase = true)) {
-										status.favourited = new_status.favourited
-									}
-									return true
+							column.findStatus(access_info.host, new_status.id){ account,status ->
+								
+								// 同タンス別アカウントでもカウントは変化する
+								status.favourites_count = new_status.favourites_count
+								
+								if(access_info.acct == account.acct ) {
+									// 同アカウントならfav状態を変化させる
+									status.favourited = new_status.favourited
 								}
-							})
+
+								true
+							}
 						}
 						if(callback != null) callback()
 						
@@ -328,15 +331,17 @@ object Action_Toot {
 						}
 						
 						for(column in App1.getAppState(activity).column_list) {
-							column.findStatus(access_info.host, new_status.id, object : Column.StatusEntryCallback {
-								override fun onIterate(account : SavedAccount, status : TootStatus) : Boolean {
-									status.reblogs_count = new_status.reblogs_count
-									if(access_info.acct.equals(account.acct, ignoreCase = true)) {
-										status.reblogged = new_status.reblogged
-									}
-									return true
+							column.findStatus(access_info.host, new_status.id){ account, status ->
+
+								// 同タンス別アカウントでもカウントは変化する
+								status.reblogs_count = new_status.reblogs_count
+
+								if(access_info.acct == account.acct ) {
+									// 同アカウントならreblog状態を変化させる
+									status.reblogged = new_status.reblogged
 								}
-							})
+								true
+							}
 						}
 						if(callback != null) callback()
 					}
@@ -621,13 +626,15 @@ object Action_Toot {
 							// cancelled.
 						}
 						
-						new_status != null -> for(column in App1.getAppState(activity).column_list) {
-							column.findStatus(access_info.host, new_status.id, object : Column.StatusEntryCallback {
-								override fun onIterate(account : SavedAccount, status : TootStatus) : Boolean {
-									status.pinned = bSet
-									return true
+						new_status != null ->{
+							for(column in App1.getAppState(activity).column_list) {
+								if( access_info.acct == column.access_info.acct){
+									column.findStatus(access_info.host, new_status.id){_,status->
+										status.pinned = bSet
+										true
+									}
 								}
-							})
+							}
 						}
 						else -> Utils.showToast(activity, true, result.error)
 					}
@@ -745,14 +752,12 @@ object Action_Toot {
 				val ls = local_status
 				if(ls != null) {
 					for(column in App1.getAppState(activity).column_list) {
-						column.findStatus(access_info.host, ls.id, object : Column.StatusEntryCallback {
-							override fun onIterate(account : SavedAccount, status : TootStatus) : Boolean {
-								if(access_info.acct.equals(account.acct, ignoreCase = true)) {
-									status.muted = bMute
-								}
-								return true
+						if(access_info.acct == column.access_info.acct ) {
+							column.findStatus(access_info.host, ls.id) { _, status ->
+								status.muted = bMute
+								true
 							}
-						})
+						}
 					}
 					Utils.showToast(activity, true, if(bMute) R.string.mute_succeeded else R.string.unmute_succeeded)
 				} else {

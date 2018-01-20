@@ -156,7 +156,7 @@ internal class ItemListAdapter(
 		new_list.addAll(column.list_data)
 		
 		when {
-			// 変更リストが指定された場合はヘッダ部分とリスト要素を通知する
+			// 変更リストが指定された場合はヘッダ部分と変更部分を通知する
 			changeList != null -> {
 				
 				log.d("notifyChange: changeList=${changeList.size},reason=$reason")

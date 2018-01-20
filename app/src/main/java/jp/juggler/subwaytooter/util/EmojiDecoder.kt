@@ -12,10 +12,12 @@ import java.util.ArrayList
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.HighlightWord
+import java.util.regex.Pattern
 
 object EmojiDecoder {
 	
@@ -228,6 +230,9 @@ object EmojiDecoder {
 		}
 	}
 	
+	private val reNicoru = Pattern.compile("\\Anicoru\\d*\\z", Pattern.CASE_INSENSITIVE)
+	private val reHohoemi = Pattern.compile("\\Ahohoemi\\d*\\z", Pattern.CASE_INSENSITIVE)
+	
 	fun decodeEmoji(
 		context : Context, s : String, options : DecodeOptions
 	) : Spannable {
@@ -271,7 +276,12 @@ object EmojiDecoder {
 					}
 				}
 				
-				builder.addUnicodeString(part)
+				when {
+					reHohoemi.matcher(name).find() -> builder.addImageSpan(part, R.drawable.emoji_hohoemi)
+					reNicoru.matcher(name).find() -> builder.addImageSpan(part, R.drawable.emoji_nicoru)
+					else -> builder.addUnicodeString(part)
+				}
+				
 			}
 		})
 		

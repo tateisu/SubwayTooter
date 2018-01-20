@@ -332,7 +332,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				// 画像のURL
 				val uri : Uri? = data?.data ?: uriCameraImage
 				if(uri != null) {
-					val type = contentResolver.getType(uri)
+					val type :String? = contentResolver.getType(uri)
 					addAttachment(uri, type)
 				}
 			}
@@ -1254,7 +1254,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		}
 	}
 	
-	@SuppressLint("StaticFieldLeak") private fun addAttachment(uri : Uri, mime_type : String) {
+	@SuppressLint("StaticFieldLeak") private fun addAttachment(uri : Uri, mime_type : String?) {
 
 		if(attachment_list.size >= 4) {
 			Utils.showToast(this, false, R.string.attachment_too_many)
@@ -1268,7 +1268,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		}
 		
 		
-		if(mime_type.isEmpty()) {
+		if(mime_type?.isEmpty() != false) {
 			Utils.showToast(this, false, R.string.mime_type_missing)
 			return
 		} else if(! acceptable_mime_types.contains(mime_type)) {

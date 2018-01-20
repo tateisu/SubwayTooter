@@ -6,7 +6,7 @@ import java.util.ArrayList
 
 class TootDomainBlock(
 	val domain : String
-) {
+):TimelineItem() {
 	
 	companion object {
 		

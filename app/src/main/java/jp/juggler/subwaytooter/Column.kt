@@ -343,7 +343,7 @@ class Column(
 	
 	internal var task_progress : String? = null
 	
-	internal val list_data = BucketList<Any>()
+	internal val list_data = BucketList<TimelineItem>()
 	private val duplicate_map = DuplicateMap()
 	
 	private val isFilterEnabled : Boolean
@@ -369,7 +369,7 @@ class Column(
 	// ListViewの表示更新が追いつかないとスクロール位置が崩れるので
 	// 一定時間より短期間にはデータ更新しないようにする
 	private var last_show_stream_data : Long = 0
-	private val stream_data_queue = LinkedList<Any>()
+	private val stream_data_queue = LinkedList<TimelineItem>()
 	
 	private var bPutGap : Boolean = false
 	
@@ -668,7 +668,7 @@ class Column(
 				}
 			}
 			if(bChanged) {
-				fireShowContent()
+				fireShowContent(reason="findStatus",reset=true)
 			}
 		}
 	}
@@ -680,7 +680,7 @@ class Column(
 		
 		val INVALID_ACCOUNT = - 1L
 		
-		val tmp_list = ArrayList<Any>(list_data.size)
+		val tmp_list = ArrayList<TimelineItem>(list_data.size)
 		for(o in list_data) {
 			if(o is TootStatus) {
 				if(who_id == (o.account.id)) continue
@@ -698,7 +698,7 @@ class Column(
 		if(tmp_list.size != list_data.size) {
 			list_data.clear()
 			list_data.addAll(tmp_list)
-			fireShowContent()
+			fireShowContent(reason="removeAccountInTimeline")
 			
 		}
 	}
@@ -706,7 +706,7 @@ class Column(
 	// ミュート解除が成功した時に呼ばれる
 	fun removeFromMuteList(target_account : SavedAccount, who_id : Long) {
 		if(column_type == TYPE_MUTES && target_account.acct == access_info.acct) {
-			val tmp_list = ArrayList<Any>(list_data.size)
+			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
 				if(o is TootAccount) {
 					if(o.id == who_id) continue
@@ -716,7 +716,7 @@ class Column(
 			if(tmp_list.size != list_data.size) {
 				list_data.clear()
 				list_data.addAll(tmp_list)
-				fireShowContent()
+				fireShowContent(reason="removeFromMuteList")
 			}
 		}
 	}
@@ -724,7 +724,7 @@ class Column(
 	// ブロック解除が成功したので、ブロックリストから削除する
 	fun removeFromBlockList(target_account : SavedAccount, who_id : Long) {
 		if(column_type == TYPE_BLOCKS && target_account.acct == access_info.acct) {
-			val tmp_list = ArrayList<Any>(list_data.size)
+			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
 				if(o is TootAccount) {
 					if(o.id == who_id) continue
@@ -734,7 +734,7 @@ class Column(
 			if(tmp_list.size != list_data.size) {
 				list_data.clear()
 				list_data.addAll(tmp_list)
-				fireShowContent()
+				fireShowContent(reason="removeFromBlockList")
 			}
 			
 		}
@@ -744,7 +744,7 @@ class Column(
 		if(target_account.acct != access_info.acct) return
 		
 		if(column_type == TYPE_FOLLOW_REQUESTS) {
-			val tmp_list = ArrayList<Any>(list_data.size)
+			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
 				if(o is TootAccount) {
 					if(o.id == who_id) continue
@@ -754,11 +754,11 @@ class Column(
 			if(tmp_list.size != list_data.size) {
 				list_data.clear()
 				list_data.addAll(tmp_list)
-				fireShowContent()
+				fireShowContent(reason="removeFollowRequest 1")
 			}
 		} else {
 			// 他のカラムでもフォロー状態の表示更新が必要
-			fireShowContent()
+			fireShowContent(reason="removeFollowRequest 2",reset=true)
 		}
 	}
 	
@@ -767,7 +767,7 @@ class Column(
 		
 		if(target_account.host != access_info.host) return
 		
-		val tmp_list = ArrayList<Any>(list_data.size)
+		val tmp_list = ArrayList<TimelineItem>(list_data.size)
 		for(o in list_data) {
 			if(o is TootStatus) {
 				if(status_id == o.id) continue
@@ -783,22 +783,23 @@ class Column(
 		if(tmp_list.size != list_data.size) {
 			list_data.clear()
 			list_data.addAll(tmp_list)
-			fireShowContent()
+			fireShowContent(reason="removeStatus")
 		}
 	}
 	
 	fun removeNotifications() {
 		cancelLastTask()
 		
-		list_data.clear()
 		mRefreshLoadingError = ""
 		bRefreshLoading = false
 		mInitialLoadingError = ""
 		bInitialLoading = false
 		max_id = ""
 		since_id = ""
-		
-		fireShowContent()
+
+		list_data.clear()
+		duplicate_map.clear()
+		fireShowContent(reason="removeNotifications",reset=true)
 		
 		PollingWorker.queueNotificationCleared(context, access_info.db_id)
 	}
@@ -807,7 +808,7 @@ class Column(
 		if(column_type != TYPE_NOTIFICATIONS) return
 		if(access_info.acct != target_account.acct) return
 		
-		val tmp_list = ArrayList<Any>(list_data.size)
+		val tmp_list = ArrayList<TimelineItem>(list_data.size)
 		for(o in list_data) {
 			if(o is TootNotification) {
 				if(o.id == notification.id) continue
@@ -819,12 +820,12 @@ class Column(
 		if(tmp_list.size != list_data.size) {
 			list_data.clear()
 			list_data.addAll(tmp_list)
-			fireShowContent()
+			fireShowContent(reason="removeNotificationOne")
 		}
 	}
 	
 	fun onMuteAppUpdated() {
-		val tmp_list = ArrayList<Any>(list_data.size)
+		val tmp_list = ArrayList<TimelineItem>(list_data.size)
 		
 		val muted_app = MutedApp.nameSet
 		val muted_word = MutedWord.nameSet
@@ -843,7 +844,7 @@ class Column(
 		if(tmp_list.size != list_data.size) {
 			list_data.clear()
 			list_data.addAll(tmp_list)
-			fireShowContent()
+			fireShowContent(reason="onMuteAppUpdated")
 		}
 	}
 	
@@ -863,7 +864,7 @@ class Column(
 			val checker =
 				{ acct : String? -> if(acct == null) false else reDomain.matcher(acct).find() }
 			
-			val tmp_list = ArrayList<Any>(list_data.size)
+			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			
 			for(o in list_data) {
 				if(o is TootStatus) {
@@ -879,7 +880,7 @@ class Column(
 			if(tmp_list.size != list_data.size) {
 				list_data.clear()
 				list_data.addAll(tmp_list)
-				fireShowContent()
+				fireShowContent(reason="onDomainBlockChanged")
 			}
 			
 		}
@@ -943,29 +944,45 @@ class Column(
 		return _holder_list.size > 1
 	}
 	
-	internal fun fireShowContent() {
+	internal fun fireShowContent(
+		reason:String,
+		changeList : List<AdapterChange>? = null,
+		reset : Boolean = false
+	) {
 		if(! Utils.isMainThread) {
-			throw RuntimeException("fireShowColumnHeader: not on main thread.")
+			throw RuntimeException("fireShowContent: not on main thread.")
 		}
-		val holder = viewHolder
-		holder?.showContent()
+		viewHolder?.showContent(reason,changeList,reset)
 	}
 	
 	internal fun fireShowColumnHeader() {
 		if(! Utils.isMainThread) {
 			throw RuntimeException("fireShowColumnHeader: not on main thread.")
 		}
-		val holder = viewHolder
-		holder?.showColumnHeader()
+		viewHolder?.showColumnHeader()
 	}
 	
 	internal fun fireColumnColor() {
 		if(! Utils.isMainThread) {
-			throw RuntimeException("fireShowColumnHeader: not on main thread.")
+			throw RuntimeException("fireColumnColor: not on main thread.")
 		}
-		val holder = viewHolder
-		holder?.showColumnColor()
+		viewHolder?.showColumnColor()
 	}
+	
+	fun fireRelativeTime() {
+		if(! Utils.isMainThread) {
+			throw RuntimeException("fireRelativeTime: not on main thread.")
+		}
+		viewHolder?.updateRelativeTime()
+	}
+	
+	fun fireRebindAdapterItems() {
+		if(! Utils.isMainThread) {
+			throw RuntimeException("fireRelativeTime: not on main thread.")
+		}
+		viewHolder?.rebindAdapterItems()
+	}
+	
 	
 	private fun cancelLastTask() {
 		if(last_task != null) {
@@ -1028,27 +1045,30 @@ class Column(
 		
 	}
 	
-	private inline fun <reified T> addAll(
-		dstArg : ArrayList<Any>?,
+	private inline fun <reified T : TimelineItem> addAll(
+		dstArg : ArrayList<TimelineItem>?,
 		src : ArrayList<T>
-	) : ArrayList<Any> {
+	) : ArrayList<TimelineItem> {
 		val dst = dstArg ?: ArrayList()
 		for(item in src) {
-			dst.add(item as Any)
+			dst.add(item as TimelineItem)
 		}
 		return dst
 	}
 	
-	private fun addOne(dstArg : ArrayList<Any>?, item : Any) : ArrayList<Any> {
+	private fun addOne(
+		dstArg : ArrayList<TimelineItem>?,
+		item : TimelineItem
+	) : ArrayList<TimelineItem> {
 		val dst = dstArg ?: ArrayList()
 		dst.add(item)
 		return dst
 	}
 	
 	private fun addWithFilterStatus(
-		dstArg : ArrayList<Any>?,
+		dstArg : ArrayList<TimelineItem>?,
 		src : ArrayList<TootStatus>
-	) : ArrayList<Any> {
+	) : ArrayList<TimelineItem> {
 		val dst = dstArg ?: ArrayList()
 		for(status in src) {
 			if(! isFiltered(status)) {
@@ -1059,9 +1079,9 @@ class Column(
 	}
 	
 	private fun addWithFilterNotification(
-		dstArg : ArrayList<Any>?,
+		dstArg : ArrayList<TimelineItem>?,
 		src : ArrayList<TootNotification>
-	) : ArrayList<Any> {
+	) : ArrayList<TimelineItem> {
 		val dst = dstArg ?: ArrayList()
 		for(item in src) {
 			if(! isFiltered(item)) dst.add(item)
@@ -1232,7 +1252,7 @@ class Column(
 	//
 	private fun updateRelation(
 		client : TootApiClient,
-		list : ArrayList<Any>?,
+		list : ArrayList<TimelineItem>?,
 		who : TootAccount?
 	) {
 		if(access_info.isPseudo) return
@@ -1268,7 +1288,7 @@ class Column(
 		
 		duplicate_map.clear()
 		list_data.clear()
-		fireShowContent()
+		fireShowContent(reason="loading start",reset=true)
 		
 		val task = @SuppressLint("StaticFieldLeak")
 		object : AsyncTask<Void, Void, TootApiResult?>() {
@@ -1276,9 +1296,9 @@ class Column(
 			
 			internal var instance_tmp : TootInstance? = null
 			
-			internal var list_pinned : ArrayList<Any>? = null
+			internal var list_pinned : ArrayList<TimelineItem>? = null
 			
-			internal var list_tmp : ArrayList<Any>? = null
+			internal var list_tmp : ArrayList<TimelineItem>? = null
 			
 			internal fun getInstanceInformation(
 				client : TootApiClient,
@@ -1498,7 +1518,7 @@ class Column(
 						Utils.runOnMainThread {
 							if(isCancelled) return@runOnMainThread
 							task_progress = s
-							fireShowContent()
+							fireShowContent(reason="loading progress",changeList = ArrayList())
 						}
 					}
 				})
@@ -1782,6 +1802,7 @@ class Column(
 				if(result.error != null) {
 					this@Column.mInitialLoadingError = result.error ?: ""
 				} else {
+					duplicate_map.clear()
 					list_data.clear()
 					val list_tmp = this.list_tmp
 					if(list_tmp != null) {
@@ -1796,14 +1817,10 @@ class Column(
 					
 					resumeStreaming(false)
 				}
-				fireShowContent()
+				fireShowContent(reason="loading updated",reset=true)
 				
 				// 初期ロードの直後は先頭に移動する
-				try {
-					viewHolder?.listLayoutManager?.scrollToPositionWithOffset(0, 0)
-				} catch(ignored : Throwable) {
-				}
-				
+				viewHolder?.scrollToTop()
 			}
 		}
 		this.last_task = task
@@ -1915,7 +1932,7 @@ class Column(
 		object : AsyncTask<Void, Void, TootApiResult?>() {
 			internal var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 			
-			internal var list_tmp : ArrayList<Any>? = null
+			internal var list_tmp : ArrayList<TimelineItem>? = null
 			
 			internal fun getAccountList(
 				client : TootApiClient,
@@ -2419,7 +2436,7 @@ class Column(
 						Utils.runOnMainThread {
 							if(isCancelled) return@runOnMainThread
 							task_progress = s
-							fireShowContent()
+							fireShowContent(reason="refresh progress",changeList = ArrayList())
 						}
 					}
 				})
@@ -2593,20 +2610,13 @@ class Column(
 					val error = result.error
 					if(error != null) {
 						mRefreshLoadingError = error
-						fireShowContent()
-						return
-					}
-					
-					val list_tmp = this.list_tmp
-					if(list_tmp == null || list_tmp.isEmpty()) {
-						fireShowContent()
+						fireShowContent(reason="refresh error",changeList = ArrayList())
 						return
 					}
 					
 					val list_new = duplicate_map.filterDuplicate(list_tmp)
-					
-					if(list_new.isEmpty()) {
-						fireShowContent()
+					if(list_new.isEmpty() ) {
+						fireShowContent(reason="refresh list_new is empty",changeList = ArrayList())
 						return
 					}
 					
@@ -2617,9 +2627,12 @@ class Column(
 						sp = holder.scrollPosition
 					}
 					
+					val added = list_new.size
+					
 					if(bBottom) {
+						val changeList = listOf(AdapterChange(AdapterChangeType.RangeInsert,list_data.size,added))
 						list_data.addAll(list_new)
-						fireShowContent()
+						fireShowContent(reason="refresh updated bottom",changeList = changeList)
 						
 						// 新着が少しだけ見えるようにスクロール位置を移動する
 						if(sp != null) {
@@ -2637,23 +2650,19 @@ class Column(
 							}
 						}
 						
+						// 投稿後のリフレッシュなら当該投稿の位置を探す
 						var status_index = - 1
-						var i = 0
-						val ie = list_new.size
-						while(i < ie) {
+						for( i in 0 until added){
 							val o = list_new[i]
-							if(o is TootStatus) {
-								if(o.id == posted_status_id) {
-									status_index = i
-									break
-								}
+							if(o is TootStatus && o.id == posted_status_id) {
+								status_index = i
+								break
 							}
-							++ i
 						}
 						
-						val added = list_new.size
+						val changeList = listOf(AdapterChange(AdapterChangeType.RangeInsert,0,added))
 						list_data.addAll(0, list_new)
-						fireShowContent()
+						fireShowContent(reason="refresh updated head",changeList=changeList)
 						
 						if(status_index >= 0 && refresh_after_toot == Pref.RAT_REFRESH_SCROLL) {
 							// 投稿後にその投稿にスクロールする
@@ -2714,7 +2723,7 @@ class Column(
 		object : AsyncTask<Void, Void, TootApiResult?>() {
 			internal var max_id = gap.max_id
 			internal val since_id = gap.since_id
-			internal var list_tmp : ArrayList<Any>? = null
+			internal var list_tmp : ArrayList<TimelineItem>? = null
 			
 			internal var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 			
@@ -2940,7 +2949,7 @@ class Column(
 						Utils.runOnMainThread {
 							if(isCancelled) return@runOnMainThread
 							task_progress = s
-							fireShowContent()
+							fireShowContent(reason="gap progress",changeList = ArrayList())
 						}
 					}
 				})
@@ -3035,23 +3044,26 @@ class Column(
 				val error = result.error
 				if(error != null) {
 					mRefreshLoadingError = error
-					fireShowContent()
+					fireShowContent(reason="gap error",changeList = ArrayList())
+					return
+				}
+				
+				val position = list_data.indexOf(gap)
+				if(position == - 1) {
+					log.d("gap not found..")
+					fireShowContent(reason="gap not found",changeList = ArrayList())
 					return
 				}
 				
 				val list_tmp = this.list_tmp
 				if(list_tmp == null) {
-					fireShowContent()
+					fireShowContent(reason="gap list_tmp is null",changeList = ArrayList())
 					return
 				}
+				
 				// 0個でもギャップを消すために以下の処理を続ける
 				
-				val position = list_data.indexOf(gap)
-				if(position == - 1) {
-					log.d("gap is not found..")
-					return
-				}
-				
+
 				val list_new = duplicate_map.filterDuplicate(list_tmp)
 				
 				// idx番目の要素がListViewのtopから何ピクセル下にあるか
@@ -3074,7 +3086,13 @@ class Column(
 				val added = list_new.size // may 0
 				list_data.removeAt(position)
 				list_data.addAll(position, list_new)
-				fireShowContent()
+				
+				val changeList = ArrayList<AdapterChange>()
+				changeList.add(AdapterChange( AdapterChangeType.RangeRemove,position))
+				if( added > 0 ){
+					changeList.add(AdapterChange(AdapterChangeType.RangeInsert,position,added))
+				}
+				fireShowContent(reason="gap updated",changeList = changeList)
 				
 				if(holder != null) {
 					if(restore_idx >= 0) {
@@ -3192,13 +3210,12 @@ class Column(
 			&& ! Pref.bpDontRefreshOnResume(App1.getAppState(context).pref)
 			&& ! dont_auto_refresh
 		) {
-			
 			// リフレッシュしてからストリーミング開始
 			log.d("onStart: start auto refresh.")
 			startRefresh(true, false, - 1L, - 1)
 		} else if(isSearchColumn) {
 			// 検索カラムはリフレッシュもストリーミングもないが、表示開始のタイミングでリストの再描画を行いたい
-			fireShowContent()
+			fireShowContent(reason="Column onStart isSearchColumn",reset=true)
 		} else {
 			// ギャップつきでストリーミング開始
 			log.d("onStart: start streaming with gap.")
@@ -3322,28 +3339,29 @@ class Column(
 	
 	private val onStreamingMessage = fun(event_type : String, item : Any?) {
 		if(is_dispose.get()) return
-		if("delete" == event_type) {
-			if(item is Long) {
-				removeStatus(access_info, item)
+		
+		if(item is Long) {
+			if("delete" == event_type) {
+				removeStatus(access_info, item )
 			}
 			return
-		}
-		
-		if(item is TootNotification) {
-			if(column_type != TYPE_NOTIFICATIONS) return
-			if(isFiltered(item)) return
-		} else if(item is TootStatus) {
-			if(column_type == TYPE_NOTIFICATIONS) return
-			if(column_type == TYPE_LOCAL && item.account.acct.indexOf('@') != - 1) return
-			if(isFiltered(item)) return
-			
-			if(this.enable_speech) {
-				App1.getAppState(context).addSpeech(item.reblog ?: item)
+		} else if(item is TimelineItem) {
+			if(item is TootNotification) {
+				if(column_type != TYPE_NOTIFICATIONS) return
+				if(isFiltered(item)) return
+			} else if(item is TootStatus) {
+				if(column_type == TYPE_NOTIFICATIONS) return
+				if(column_type == TYPE_LOCAL && item.account.acct.indexOf('@') != - 1) return
+				if(isFiltered(item)) return
+				
+				if(this.enable_speech) {
+					App1.getAppState(context).addSpeech(item.reblog ?: item)
+				}
 			}
+			stream_data_queue.addFirst(item)
+			mergeStreamingMessage.run()
 		}
 		
-		stream_data_queue.addFirst(item)
-		mergeStreamingMessage.run()
 	}
 	
 	private val mergeStreamingMessage = object : Runnable {
@@ -3446,21 +3464,26 @@ class Column(
 				}
 			}
 			
-			list_data.addAll(0, list_new)
-			fireShowContent()
 			val added = list_new.size
+			val changeList = listOf(AdapterChange(AdapterChangeType.RangeInsert,0,added))
+			list_data.addAll(0, list_new)
+			fireShowContent(reason="mergeStreamingMessage",changeList = changeList)
 			
 			if(holder != null) {
 				if(holder_sp == null) {
-					// スクロール位置が先頭なら先頭のまま
+					// スクロール位置が先頭なら先頭にする
 					log.d("mergeStreamingMessage: has VH. missing scroll position.")
+					viewHolder?.scrollToTop()
+					
+					
 				} else if(holder_sp.adapterIndex == 0 && holder_sp.offset == 0) {
-					// スクロール位置が先頭なら先頭のまま
+					// スクロール位置が先頭なら先頭にする
 					log.d(
 						"mergeStreamingMessage: has VH. keep head. pos=%s,offset=%s"
 						, holder_sp.adapterIndex
 						, holder_sp.offset
 					)
+					holder.setScrollPosition(ScrollPosition(0,0))
 				} else if(restore_idx < - 1) {
 					// 可視範囲の検出に失敗
 					log.d("mergeStreamingMessage: has VH. can't find visible range.")
@@ -3480,5 +3503,6 @@ class Column(
 			}
 		}
 	}
+	
 	
 }

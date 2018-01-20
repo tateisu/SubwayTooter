@@ -349,4 +349,11 @@ internal class ViewHolderHeaderProfile(
 	override fun onViewRecycled() {
 	}
 	
+	fun updateRelativeTime(){
+		val who = this.who
+		if( who != null ) {
+			tvCreated.text = TootStatus.formatTime(tvCreated.context, who.time_created_at, true)
+		}
+	}
+	
 }

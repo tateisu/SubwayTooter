@@ -12,7 +12,7 @@ import jp.juggler.subwaytooter.util.Utils
 class TootList(
 	val id : Long,
 	val title : String?
-) : Comparable<TootList> {
+) : TimelineItem(), Comparable<TootList> {
 	
 	// タイトルの数字列部分は数字の大小でソートされるようにしたい
 	private val title_for_sort : ArrayList<Any>?

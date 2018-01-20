@@ -1,12 +1,8 @@
 package jp.juggler.subwaytooter.api
 
+import jp.juggler.subwaytooter.api.entity.*
 import java.util.ArrayList
 import java.util.HashSet
-
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootNotification
-import jp.juggler.subwaytooter.api.entity.TootReport
-import jp.juggler.subwaytooter.api.entity.TootStatus
 
 class DuplicateMap {
 	
@@ -24,7 +20,7 @@ class DuplicateMap {
 		set_status_uri.clear()
 	}
 	
-	fun isDuplicate(o : Any) : Boolean {
+	fun isDuplicate(o : TimelineItem) : Boolean {
 		
 		when(o) {
 
@@ -69,11 +65,13 @@ class DuplicateMap {
 		return false
 	}
 	
-	fun filterDuplicate(src : Collection<Any>) : ArrayList<Any> {
-		val list_new = ArrayList<Any>()
-		for(o in src) {
-			if(isDuplicate(o)) continue
-			list_new.add(o)
+	fun filterDuplicate(src : Collection<TimelineItem>?) : ArrayList<TimelineItem> {
+		val list_new = ArrayList<TimelineItem>()
+		if( src != null ) {
+			for(o in src) {
+				if(isDuplicate(o)) continue
+				list_new.add(o)
+			}
 		}
 		return list_new
 	}

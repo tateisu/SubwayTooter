@@ -27,6 +27,7 @@ import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.DefaultItemAnimator
 import android.view.Menu
 import android.view.MenuItem
 import android.view.Window
@@ -297,10 +298,10 @@ class ActMain : AppCompatActivity()
 		override fun run() {
 			handler.removeCallbacks(this)
 			if(! bStart) return
-			for(c in app_state.column_list) {
-				c.fireShowContent()
-			}
 			if(Pref.bpRelativeTimestamp(pref)) {
+				for(c in app_state.column_list) {
+					c.fireRelativeTime()
+				}
 				handler.postDelayed(this, 10000L)
 			}
 		}
@@ -453,21 +454,14 @@ class ActMain : AppCompatActivity()
 		// アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
 		run {
 			val new_order = ArrayList<Int>()
-			var i = 0
-			val ie = app_state.column_list.size
-			while(i < ie) {
+			for( i in 0 until app_state.column_list.size){
 				val column = app_state.column_list[i]
 				
 				if(! column.access_info.isNA) {
 					val sa = SavedAccount.loadAccount(this@ActMain, column.access_info.db_id)
-					if(sa == null) {
-						++ i
-						continue
-					}
+					if(sa == null) continue
 				}
-				
 				new_order.add(i)
-				++ i
 			}
 			
 			if(new_order.size != app_state.column_list.size) {
@@ -488,6 +482,10 @@ class ActMain : AppCompatActivity()
 		
 		// カラムの表示範囲インジケータを更新
 		updateColumnStripSelection(- 1, - 1f)
+		
+		for(c in app_state.column_list) {
+			c.fireShowContent(reason="ActMain onStart",reset=true)
+		}
 		
 		// 相対時刻表示
 		proc_updateRelativeTime.run()
@@ -740,7 +738,7 @@ class ActMain : AppCompatActivity()
 					val idx = data.getIntExtra(ActColumnCustomize.EXTRA_COLUMN_INDEX, 0)
 					if(idx >= 0 && idx < app_state.column_list.size) {
 						app_state.column_list[idx].fireColumnColor()
-						app_state.column_list[idx].fireShowContent()
+						app_state.column_list[idx].fireShowContent(reason="ActMain column color changed",reset=true)
 					}
 					updateColumnStrip()
 				}
@@ -1246,6 +1244,12 @@ class ActMain : AppCompatActivity()
 					updateColumnStripSelection(- 1, - 1f)
 				}
 			})
+			
+			env.tablet_pager.itemAnimator = null
+//			val animator = env.tablet_pager.itemAnimator
+//			if( animator is DefaultItemAnimator){
+//				animator.supportsChangeAnimations = false
+//			}
 			
 			env.tablet_snap_helper = GravitySnapHelper(Gravity.START)
 			env.tablet_snap_helper.attachToRecyclerView(env.tablet_pager)
@@ -1952,7 +1956,7 @@ class ActMain : AppCompatActivity()
 	fun showColumnMatchAccount(account : SavedAccount) {
 		for(column in app_state.column_list) {
 			if(account.acct == column.access_info.acct) {
-				column.fireShowContent()
+				column.fireRebindAdapterItems()
 			}
 		}
 	}

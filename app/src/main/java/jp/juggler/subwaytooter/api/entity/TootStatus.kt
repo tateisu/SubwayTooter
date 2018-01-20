@@ -22,7 +22,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @Suppress("MemberVisibilityCanPrivate")
-class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceType) {
+class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceType) :TimelineItem(){
 	
 	val json : JSONObject
 	

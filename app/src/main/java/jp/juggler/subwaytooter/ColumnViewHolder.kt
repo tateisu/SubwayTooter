@@ -195,6 +195,12 @@ class ColumnViewHolder(
 		if(Pref.bpShareViewPool(activity.pref)) {
 			listView.recycledViewPool = activity.viewPool
 		}
+		listView.itemAnimator = null
+//
+//		val animator = listView.itemAnimator
+//		if( animator is DefaultItemAnimator){
+//			animator.supportsChangeAnimations = false
+//		}
 		
 		btnSearch = root.findViewById(R.id.btnSearch)
 		etSearch = root.findViewById(R.id.etSearch)
@@ -483,7 +489,7 @@ class ColumnViewHolder(
 			
 			showColumnColor()
 			
-			showContent()
+			showContent(reason="onPageCreate",reset=true)
 		} finally {
 			loading_busy = false
 		}
@@ -738,7 +744,7 @@ class ColumnViewHolder(
 			R.id.cbHideMediaDefault -> {
 				column.hide_media_default = isChecked
 				activity.app_state.saveColumnList()
-				column.fireShowContent()
+				column.fireShowContent(reason="HideMediaDefault in ColumnSetting",reset=true)
 			}
 			
 			R.id.cbEnableSpeech -> {
@@ -782,7 +788,7 @@ class ColumnViewHolder(
 			
 			R.id.llColumnHeader -> {
 				if(status_adapter.itemCount > 0) {
-					listLayoutManager.scrollToPositionWithOffset(0, 0)
+					scrollToTop()
 				}
 			}
 			
@@ -827,6 +833,17 @@ class ColumnViewHolder(
 		btnColumnClose.alpha = if(dont_close) 0.3f else 1f
 	}
 	
+	// 相対時刻を更新する
+	fun updateRelativeTime() = rebindAdapterItems()
+	
+	fun rebindAdapterItems() {
+		for( childIndex in 0 until listView.childCount){
+			val adapterIndex = listView.getChildAdapterPosition(listView.getChildAt(childIndex))
+			if( adapterIndex == RecyclerView.NO_POSITION) continue
+			status_adapter?.notifyItemChanged( adapterIndex )
+		}
+	}
+	
 	// カラムヘッダなど、負荷が低い部分の表示更新
 	fun showColumnHeader() {
 		val column = this.column ?: return
@@ -861,12 +878,15 @@ class ColumnViewHolder(
 		
 	}
 	
-	fun showContent() {
-		
+	internal fun showContent(
+		reason:String,
+		changeList : List<AdapterChange>? = null ,
+		reset : Boolean = false
+		) {
 		// クラッシュレポートにadapterとリストデータの状態不整合が多かったので、
 		// とりあえずリストデータ変更の通知だけは最優先で行っておく
 		try {
-			status_adapter?.notifyDataSetChanged()
+			status_adapter?.notifyChange(reason,changeList,reset)
 		} catch(ex : Throwable) {
 			log.trace(ex)
 		}
@@ -920,7 +940,7 @@ class ColumnViewHolder(
 		}
 		
 		// 表示状態が変わった後にもう一度呼び出す必要があるらしい。。。
-		status_adapter.notifyDataSetChanged()
+		// 試しにやめてみる status_adapter.notifyChange()
 		
 		proc_restoreScrollPosition.run()
 	}
@@ -961,7 +981,7 @@ class ColumnViewHolder(
 		}
 	}
 	
-	fun setScrollPosition(sp : ScrollPosition, deltaDp : Float) {
+	fun setScrollPosition(sp : ScrollPosition, deltaDp : Float =0f) {
 		val last_adapter = listView.adapter
 		if(column == null || last_adapter == null) return
 		
@@ -1074,4 +1094,12 @@ class ColumnViewHolder(
 			?: throw IndexOutOfBoundsException()
 		
 	}
+	
+	fun scrollToTop() {
+		try {
+			listLayoutManager.scrollToPositionWithOffset(0, 0)
+		} catch(ignored : Throwable) {
+		}
+	}
+	
 }

@@ -1,10 +1,13 @@
 package jp.juggler.subwaytooter
 
+import android.os.Handler
+import android.os.SystemClock
+import android.support.v7.util.DiffUtil
+import android.support.v7.util.ListUpdateCallback
 import android.support.v7.widget.RecyclerView
 import android.view.ViewGroup
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootNotification
-import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.entity.TimelineItem
+import jp.juggler.subwaytooter.util.LogCategory
 
 internal class ItemListAdapter(
 	private val activity : ActMain,
@@ -12,40 +15,69 @@ internal class ItemListAdapter(
 	internal val columnVh : ColumnViewHolder,
 	private val bSimpleList : Boolean
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-
-	private val list : List<Any>
-
+	
+	companion object {
+		private val log = LogCategory("ItemListAdapter")
+	}
+	
+	private inner class DiffCallback(
+		val oldList : List<TimelineItem>,
+		val newList : List<TimelineItem>,
+		val biasListIndex : Int
+	) : DiffUtil.Callback() {
+		
+		override fun getOldListSize() : Int {
+			return oldList.size - biasListIndex
+		}
+		
+		override fun getNewListSize() : Int {
+			return newList.size - biasListIndex
+		}
+		
+		override fun areItemsTheSame(oldAdapterIndex : Int, newAdapterIndex : Int) : Boolean {
+			val oldListIndex = oldAdapterIndex + biasListIndex
+			val newListIndex = newAdapterIndex + biasListIndex
+			
+			// header?
+			if(oldListIndex < 0 || newListIndex < 0) return oldListIndex == newListIndex
+			
+			// compare object address
+			return oldList[oldListIndex] === newList[newListIndex]
+		}
+		
+		override fun areContentsTheSame(oldAdapterIndex : Int, newAdapterIndex : Int) : Boolean {
+			val oldListIndex = oldAdapterIndex + biasListIndex
+			val newListIndex = newAdapterIndex + biasListIndex
+			
+			// headerは毎回更新する
+			return ! (oldListIndex < 0 || newListIndex < 0)
+		}
+	}
+	
+	private var list : ArrayList<TimelineItem>
+	private val handler : Handler
+	
 	init {
-		this.list = column.list_data
-		setHasStableIds(false)
+		this.list = ArrayList()
+		this.handler = activity.handler
+		setHasStableIds(true)
 	}
 	
 	override fun getItemCount() : Int {
 		return column.toAdapterIndex(column.list_data.size)
 	}
-
-	private fun getItemIdForListIndex(position : Int):Long{
-		val o = list[position]
-		return when(o){
-			is TootAccount -> o.id
-			is TootStatus -> o.id
-			is TootNotification -> o.id
-			else-> 0L
-		}
-	}
 	
 	override fun getItemId(position : Int) : Long {
-		val headerType = column.headerType
-		if( headerType != null){
-			if(position==0) return 0
-			return getItemIdForListIndex(position-1)
+		return try {
+			list[column.toListIndex(position)].listViewItemId
+		} catch(ignored : Throwable) {
+			0L
 		}
-		return getItemIdForListIndex(position)
 	}
 	
 	override fun getItemViewType(position : Int) : Int {
 		val headerType = column.headerType
-		if( headerType == null || position>0 ) return 0
+		if(headerType == null || position > 0) return 0
 		return headerType.viewType
 	}
 	
@@ -56,41 +88,46 @@ internal class ItemListAdapter(
 				holder.viewRoot.tag = holder
 				return ViewHolderItem(holder)
 			}
+			
 			Column.HeaderType.Profile.viewType -> {
-				val viewRoot = activity.layoutInflater.inflate(R.layout.lv_header_profile, parent, false)
-				val holder = ViewHolderHeaderProfile(activity,viewRoot)
+				val viewRoot =
+					activity.layoutInflater.inflate(R.layout.lv_header_profile, parent, false)
+				val holder = ViewHolderHeaderProfile(activity, viewRoot)
 				viewRoot.tag = holder
 				return holder
 			}
+			
 			Column.HeaderType.Search.viewType -> {
-				val viewRoot = activity.layoutInflater.inflate(R.layout.lv_header_search_desc, parent, false)
-				val holder = ViewHolderHeaderSearch(activity,viewRoot)
+				val viewRoot =
+					activity.layoutInflater.inflate(R.layout.lv_header_search_desc, parent, false)
+				val holder = ViewHolderHeaderSearch(activity, viewRoot)
 				viewRoot.tag = holder
 				return holder
 			}
+			
 			Column.HeaderType.Instance.viewType -> {
-				val viewRoot = activity.layoutInflater.inflate(R.layout.lv_header_instance, parent, false)
-				val holder = ViewHolderHeaderInstance(activity,viewRoot)
+				val viewRoot =
+					activity.layoutInflater.inflate(R.layout.lv_header_instance, parent, false)
+				val holder = ViewHolderHeaderInstance(activity, viewRoot)
 				viewRoot.tag = holder
 				return holder
 			}
+			
 			else -> throw RuntimeException("unknown viewType: $viewType")
 		}
 	}
 	
-	fun findHeaderViewHolder(listView:RecyclerView): ViewHolderHeaderBase?{
-		return when(column.headerType){
-			null-> null
-			else-> listView.findViewHolderForAdapterPosition(0) as? ViewHolderHeaderBase
+	fun findHeaderViewHolder(listView : RecyclerView) : ViewHolderHeaderBase? {
+		return when(column.headerType) {
+			null -> null
+			else -> listView.findViewHolderForAdapterPosition(0) as? ViewHolderHeaderBase
 		}
 	}
 	
-	override fun onBindViewHolder(holder : RecyclerView.ViewHolder, positionArg : Int) {
-		val headerType = column.headerType
+	override fun onBindViewHolder(holder : RecyclerView.ViewHolder, adapterIndex : Int) {
 		if(holder is ViewHolderItem) {
-			val position = if(headerType != null) positionArg - 1 else positionArg
-			val o = if(position >= 0 && position < list.size) list[position] else null
-			holder.ivh.bind(this, column, bSimpleList, o)
+			val listIndex = column.toListIndex(adapterIndex)
+			holder.ivh.bind(this, column, bSimpleList, list[listIndex])
 		} else if(holder is ViewHolderHeaderBase) {
 			holder.bindData(column)
 		}
@@ -104,45 +141,93 @@ internal class ItemListAdapter(
 		}
 	}
 	
-//	override fun getViewTypeCount() : Int {
-//		return if(header != null) 2 else 1
-//	}
 	
+	fun notifyChange(
+		reason : String,
+		changeList : List<AdapterChange>? = null,
+		reset : Boolean = false
+	) {
+		
+		val time_start = SystemClock.elapsedRealtime()
+		
+		// カラムから最新データをコピーする
+		val new_list = ArrayList<TimelineItem>()
+		new_list.ensureCapacity(column.list_data.size)
+		new_list.addAll(column.list_data)
+		
+		when {
+			// 変更リストが指定された場合はヘッダ部分とリスト要素を通知する
+			changeList != null -> {
+				
+				log.d("notifyChange: changeList=${changeList.size},reason=$reason")
 
-//	override fun getItem(positionArg : Int) : Any? {
-//		var position = positionArg
-//		if(header != null) {
-//			if(position == 0) return header
-//			-- position
-//		}
-//		return if(position >= 0 && position < column.list_data.size) list[position] else null
-//	}
+				this.list = new_list
 
-//	override fun hasStableIds():Boolean = false
-	
-	
-//	override fun getView(positionArg : Int, viewOld : View?, parent : ViewGroup) : View {
-//		var position = positionArg
-//		val header = this.header
-//		if(header != null) {
-//			if(position == 0) return header.viewRoot
-//			-- position
-//		}
-//
-//		val o = if(position >= 0 && position < list.size) list[position] else null
-//
-//		val holder : ItemViewHolder
-//		val view : View
-//		if(viewOld == null) {
-//
-//		} else {
-//			view = viewOld
-//			holder = view.tag as ItemViewHolder
-//		}
-//		holder.bind(o)
-//		return view
-//	}
+				// ヘッダは毎回更新する
+				// (ヘッダだけ更新するためにカラのchangeListが渡される)
+				if(column.headerType != null){
+					notifyItemRangeChanged(0, 1)
+				}
 
+				// 変更リストを順番に通知する
+				for(c in changeList) {
+					val adapterIndex = column.toAdapterIndex(c.listIndex)
+					log.d("notifyChange: ChangeType=${c.type} pos=$adapterIndex,count=${c.count}")
+					when(c.type) {
+						AdapterChangeType.RangeInsert -> notifyItemRangeInserted(adapterIndex, c.count)
+						AdapterChangeType.RangeRemove -> notifyItemRangeRemoved(adapterIndex, c.count)
+						AdapterChangeType.RangeChange -> notifyItemRangeChanged(adapterIndex, c.count)
+					}
+				}
+			}
 
+			reset -> {
+				log.d("notifyChange: DataSetChanged! reason=$reason")
+				this.list = new_list
+				notifyDataSetChanged()
+			}
+
+			else -> {
+
+				val diffResult = DiffUtil.calculateDiff(
+					DiffCallback(
+						oldList = this.list, // 比較対象の古いデータ
+						newList = new_list,
+						biasListIndex = column.toListIndex(0)
+					),
+					false // ログを見た感じ、移動なんてなかった
+				)
+				val time = SystemClock.elapsedRealtime() - time_start
+				log.d("notifyChange: size=${new_list.size},time=${time}ms,reason=$reason")
+				
+				this.list = new_list
+				diffResult.dispatchUpdatesTo(object : ListUpdateCallback {
+					
+					override fun onInserted(position : Int, count : Int) {
+						log.d("notifyChange: notifyItemRangeInserted pos=$position,count=$count")
+						notifyItemRangeInserted(position, count)
+					}
+					
+					override fun onRemoved(position : Int, count : Int) {
+						log.d("notifyChange: notifyItemRangeRemoved pos=$position,count=$count")
+						notifyItemRangeRemoved(position, count)
+					}
+					
+					override fun onChanged(position : Int, count : Int, payload : Any?) {
+						log.d("notifyChange: notifyItemRangeChanged pos=$position,count=$count")
+						notifyItemRangeChanged(position, count, payload)
+					}
+					
+					override fun onMoved(fromPosition : Int, toPosition : Int) {
+						log.d("notifyChange: notifyItemMoved from=$fromPosition,to=$toPosition")
+						notifyItemMoved(fromPosition, toPosition)
+					}
+					
+				})
+			}
+		
+		}
+		
+		// diffを取る部分をワーカースレッドで実行したいが、直後にスクロール位置の処理があるので差支えがある…
+	}
 }
-	

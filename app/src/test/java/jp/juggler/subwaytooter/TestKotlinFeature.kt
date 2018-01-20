@@ -454,4 +454,23 @@ class TestKotlinFeature {
 		var e2 = arrayOf( null,1,null,2)
 		
 	}
+	
+	@Test fun testOutProjectedType(){
+		fun foo( args: Array<out Number>){
+			val sb = StringBuilder()
+			for(s in args){
+				if(sb.isNotEmpty()) sb.append(',')
+				sb
+					.append(s.toString())
+					.append('#')
+					.append( s.javaClass.simpleName)
+				
+			}
+			println(sb)
+			println(args.contains(6)) // 禁止されていない。inポジションって何だ…？
+			// arggs[0]=6 //禁止されている
+		}
+		foo( arrayOf(1,2,3))
+		foo( arrayOf(1f,2f,3f))
+	}
 }

@@ -120,12 +120,14 @@ internal class ItemViewHolder(
 	
 	private var buttons_for_status : StatusButtons? = null
 	
-	private var item : Any? = null
+	private var item : TimelineItem? = null
 	
 	private var status_showing : TootStatus? = null
 	private var status_account : TootAccount? = null
 	private var boost_account : TootAccount? = null
 	private var follow_account : TootAccount? = null
+	
+	private var boost_time :Long = 0L
 	
 	private val content_color_default : Int
 	private var acct_color : Int = 0
@@ -213,7 +215,7 @@ internal class ItemViewHolder(
 	
 	}
 	
-	fun bind(list_adapter : ItemListAdapter, column : Column, bSimpleList : Boolean, item : Any?) {
+	fun bind(list_adapter : ItemListAdapter, column : Column, bSimpleList : Boolean, item : TimelineItem) {
 		this.list_adapter = list_adapter
 		this.column = column
 		this.bSimpleList = bSimpleList
@@ -293,12 +295,11 @@ internal class ItemViewHolder(
 			)
 		}
 		
-		
-		this.item = null
 		this.status_showing = null
 		this.status_account = null
 		this.boost_account = null
 		this.follow_account = null
+		this.boost_time = 0L
 		
 		llBoosted.visibility = View.GONE
 		llFollow.visibility = View.GONE
@@ -306,11 +307,9 @@ internal class ItemViewHolder(
 		llSearchTag.visibility = View.GONE
 		llList.visibility = View.GONE
 		llExtra.removeAllViews()
-		
-		if(item == null) return
-		
+
+
 		var c : Int
-		
 		c = if(column.content_color != 0) column.content_color else content_color_default
 		tvBoosted.setTextColor(c)
 		tvFollowerName.setTextColor(c)
@@ -331,10 +330,11 @@ internal class ItemViewHolder(
 		//			tvBoostedAcct.setTextColor( c );
 		//			tvFollowerAcct.setTextColor( c );
 		//			tvAcct.setTextColor( c );
+
 		
 		this.item = item
 		when(item) {
-			is String -> showSearchTag(item)
+			is TootTag -> showSearchTag(item)
 			is TootAccount -> showAccount(item)
 			is TootNotification -> showNotification(item)
 			is TootGap -> showGap()
@@ -461,9 +461,9 @@ internal class ItemViewHolder(
 		btnSearchTag.text = domain_block.domain
 	}
 	
-	private fun showSearchTag(tag : String) {
+	private fun showSearchTag(tag : TootTag) {
 		llSearchTag.visibility = View.VISIBLE
-		btnSearchTag.text = "#" + tag
+		btnSearchTag.text = "#" + tag.name
 	}
 	
 	private fun showGap() {
@@ -473,6 +473,7 @@ internal class ItemViewHolder(
 	
 	private fun showBoost(who : TootAccount, time : Long, icon_attr_id : Int, text : Spannable) {
 		boost_account = who
+		boost_time = time
 		llBoosted.visibility = View.VISIBLE
 		ivBoosted.setImageResource(Styler.getAttributeResourceId(activity, icon_attr_id))
 		tvBoostedTime.text = TootStatus.formatTime(tvBoostedTime.context, time, true)
@@ -695,6 +696,18 @@ internal class ItemViewHolder(
 		tvTime.text = sb
 	}
 	
+	fun updateRelativeTime() {
+		val boost_time = this.boost_time
+		if( boost_time != 0L ){
+			tvBoostedTime.text = TootStatus.formatTime(tvBoostedTime.context, boost_time, true)
+		}
+		val status_showing = this.status_showing
+		if( status_showing != null ){
+			showStatusTime(activity, status_showing)
+		}
+	}
+	
+	
 	private fun setAcct(tv : TextView, acctLong : String, acctShort : String?) {
 		
 		val ac = AcctColor.load(acctLong)
@@ -819,7 +832,10 @@ internal class ItemViewHolder(
 			btnContentWarning -> status_showing?.let { status ->
 				val new_shown = llContents.visibility == View.GONE
 				ContentWarning.save(status, new_shown)
-				list_adapter.notifyDataSetChanged()
+				
+				// 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
+				list_adapter.notifyChange(reason="ContentWarning onClick", reset=true)
+				
 			}
 			
 			ivThumbnail -> status_account?.let { who ->
@@ -868,13 +884,12 @@ internal class ItemViewHolder(
 						.show()
 				}
 				
-				is String -> {
-					// search_tag は#を含まない
+				is TootTag -> {
 					Action_HashTag.timeline(
 						activity,
 						activity.nextPosition(column),
 						access_info,
-						item
+						item.name // #を含まない
 					)
 				}
 			}
@@ -982,9 +997,9 @@ internal class ItemViewHolder(
 				//							.show()
 				//					}
 					
-					is String -> {
+					is TootTag -> {
 						// search_tag は#を含まない
-						val tagEncoded = Uri.encode(item)
+						val tagEncoded = Uri.encode(item.name)
 						val host = access_info.host
 						val url = "https://$host/tags/$tagEncoded"
 						Action_HashTag.timelineOtherInstance(
@@ -992,7 +1007,7 @@ internal class ItemViewHolder(
 							pos = activity.nextPosition(column),
 							url = url,
 							host = host,
-							tag_without_sharp = item
+							tag_without_sharp = item.name
 						)
 					}
 					
@@ -1681,6 +1696,7 @@ internal class ItemViewHolder(
 			}
 		}
 	}
+	
 	
 }
 

@@ -12,7 +12,7 @@ class TootNotification(
 	private val created_at : String?,    //	The time the notification was created
 	val account : TootAccount?,    //	The Account sending the notification to the user
 	val status : TootStatus?    //	The Status associated with the notification, if applicable
-) {
+) :TimelineItem(){
 	
 	val time_created_at : Long
 	

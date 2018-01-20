@@ -21,7 +21,7 @@ open class TootAccount(
 	accessInfo : LinkClickContext,
 	src : JSONObject,
 	serviceType : ServiceType
-) {
+) :TimelineItem(){
 	
 	//URL of the user's profile page (can be remote)
 	// https://mastodon.juggler.jp/@tateisu

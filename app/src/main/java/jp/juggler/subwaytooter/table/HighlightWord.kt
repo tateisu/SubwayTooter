@@ -4,14 +4,11 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 
-import org.json.JSONException
 import org.json.JSONObject
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.notEmptyOrThrow
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
-import jp.juggler.subwaytooter.util.WordTrieTree
+import jp.juggler.subwaytooter.util.*
 
 class HighlightWord {
 	
@@ -120,12 +117,12 @@ class HighlightWord {
 	}
 	
 	constructor(src : JSONObject) {
-		this.id = Utils.optLongX(src, COL_ID)
+		this.id = src.parseLong( COL_ID) ?: -1L
 		this.name = src.notEmptyOrThrow(COL_NAME)
 		this.color_bg = src.optInt(COL_COLOR_BG)
 		this.color_fg = src.optInt(COL_COLOR_FG)
 		this.sound_type = src.optInt(COL_SOUND_TYPE)
-		this.sound_uri = Utils.optStringX(src, COL_SOUND_URI)
+		this.sound_uri = src.parseString( COL_SOUND_URI)
 	}
 	
 	constructor(name : String) {

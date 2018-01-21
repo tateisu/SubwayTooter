@@ -1,7 +1,5 @@
 package jp.juggler.subwaytooter.action
 
-import android.net.Uri
-
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -19,7 +17,9 @@ import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.api.entity.parseList
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.encodePercent
+import jp.juggler.subwaytooter.util.showToast
+import jp.juggler.subwaytooter.util.withCaption
 import okhttp3.Request
 import okhttp3.RequestBody
 
@@ -32,7 +32,12 @@ object Action_ListMember {
 	}
 	
 	fun add(
-		activity : ActMain, access_info : SavedAccount, list_id : Long, local_who : TootAccount, bFollow : Boolean, callback : Callback?
+		activity : ActMain,
+		access_info : SavedAccount,
+		list_id : Long,
+		local_who : TootAccount,
+		bFollow : Boolean,
+		callback : Callback?
 	) {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
@@ -49,27 +54,34 @@ object Action_ListMember {
 						val request_builder = Request.Builder().post(
 							RequestBody.create(
 								TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" // 空データ
-							))
+							)
+						)
 						
-						result = client.request("/api/v1/accounts/" + local_who.id + "/follow", request_builder)
+						result = client.request(
+							"/api/v1/accounts/" + local_who.id + "/follow",
+							request_builder
+						)
 					} else {
 						// リモートフォローする
 						val request_builder = Request.Builder().post(
 							RequestBody.create(
-								TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "uri=" + Uri.encode(local_who.acct)
-							))
+								TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED,
+								"uri=" + local_who.acct.encodePercent()
+							)
+						)
 						
 						result = client.request("/api/v1/follows", request_builder)
-						val jsonObject = result?.jsonObject ?:return result
+						val jsonObject = result?.jsonObject ?: return result
 						
-						val a = TootAccount.parse(activity, access_info,jsonObject) ?: return TootApiResult("parse error.")
+						val a = TootAccount.parse(activity, access_info, jsonObject)
+							?: return TootApiResult("parse error.")
 						
 						// リモートフォローの後にリレーションシップを取得しなおす
 						result = client.request("/api/v1/accounts/relationships?id[]=" + a.id)
 					}
 					val jsonArray = result?.jsonArray ?: return result
 					
-					val relation_list = parseList(::TootRelationShip,jsonArray)
+					val relation_list = parseList(::TootRelationShip, jsonArray)
 					relation = if(relation_list.isEmpty()) null else relation_list[0]
 					
 					if(relation == null) {
@@ -95,13 +107,14 @@ object Action_ListMember {
 					account_ids.put(local_who.id.toString())
 					content.put("account_ids", account_ids)
 				} catch(ex : Throwable) {
-					return TootApiResult(Utils.formatError(ex, "can't encoding json parameter."))
+					return TootApiResult(ex.withCaption("can't encoding json parameter."))
 				}
 				
 				val request_builder = Request.Builder().post(
 					RequestBody.create(
 						TootApiClient.MEDIA_TYPE_JSON, content.toString()
-					))
+					)
+				)
 				
 				return client.request("/api/v1/lists/$list_id/accounts", request_builder)
 				
@@ -122,7 +135,7 @@ object Action_ListMember {
 						// フォロー状態の更新を表示に反映させる
 						if(bFollow) activity.showColumnMatchAccount(access_info)
 						
-						Utils.showToast(activity, false, R.string.list_member_added)
+						showToast(activity, false, R.string.list_member_added)
 						
 						bSuccess = true
 						
@@ -130,13 +143,26 @@ object Action_ListMember {
 						val response = result.response
 						val error = result.error
 						if(response != null
-							&& response .code() == 422
-							&& error != null && reFollowError.matcher(error ).find()) {
+							&& response.code() == 422
+							&& error != null && reFollowError.matcher(error).find()) {
 							
 							if(! bFollow) {
 								DlgConfirm.openSimple(
-									activity, activity.getString(R.string.list_retry_with_follow, access_info.getFullAcct(local_who))
-								) { Action_ListMember.add(activity, access_info, list_id, local_who, true, callback) }
+									activity,
+									activity.getString(
+										R.string.list_retry_with_follow,
+										access_info.getFullAcct(local_who)
+									)
+								) {
+									Action_ListMember.add(
+										activity,
+										access_info,
+										list_id,
+										local_who,
+										true,
+										callback
+									)
+								}
 							} else {
 								android.app.AlertDialog.Builder(activity)
 									.setCancelable(true)
@@ -147,7 +173,7 @@ object Action_ListMember {
 							return
 						}
 						
-						Utils.showToast(activity, true, error)
+						showToast(activity, true, error)
 						
 					}
 				} finally {
@@ -159,12 +185,17 @@ object Action_ListMember {
 	}
 	
 	fun delete(
-		activity : ActMain, access_info : SavedAccount, list_id : Long, local_who : TootAccount, callback : Callback?
+		activity : ActMain,
+		access_info : SavedAccount,
+		list_id : Long,
+		local_who : TootAccount,
+		callback : Callback?
 	) {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				return client.request(
-					"/api/v1/lists/" + list_id + "/accounts?account_ids[]=" + local_who.id, Request.Builder().delete()
+					"/api/v1/lists/" + list_id + "/accounts?account_ids[]=" + local_who.id,
+					Request.Builder().delete()
 				)
 			}
 			
@@ -181,12 +212,12 @@ object Action_ListMember {
 							column.onListMemberUpdated(access_info, list_id, local_who, false)
 						}
 						
-						Utils.showToast(activity, false, R.string.delete_succeeded)
+						showToast(activity, false, R.string.delete_succeeded)
 						
 						bSuccess = true
 						
 					} else {
-						Utils.showToast(activity, false, result.error)
+						showToast(activity, false, result.error)
 					}
 				} finally {
 					callback?.onListMemberUpdated(false, bSuccess)

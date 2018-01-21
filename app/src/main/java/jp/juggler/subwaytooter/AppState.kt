@@ -35,10 +35,8 @@ import java.util.regex.Pattern
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.span.MyClickableSpan
-import jp.juggler.subwaytooter.util.PostAttachment
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.*
 
 class AppState(internal val context : Context, internal val pref : SharedPreferences) {
 	
@@ -63,11 +61,11 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 			
 			try {
 				context.openFileOutput(fileName, Context.MODE_PRIVATE).use { os ->
-					os.write(Utils.encodeUTF8(array.toString()))
+					os.write(array.toString().encodeUTF8())
 				}
 			} catch(ex : Throwable) {
 				log.trace(ex)
-				Utils.showToast(context, ex, "saveColumnList failed.")
+				showToast(context, ex, "saveColumnList failed.")
 			}
 			
 		}
@@ -78,12 +76,12 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 				context.openFileInput(fileName).use { inData ->
 					val bao = ByteArrayOutputStream(inData.available())
 					IOUtils.copy(inData, bao)
-					return JSONArray(Utils.decodeUTF8(bao.toByteArray()))
+					return bao.toByteArray().decodeUTF8().toJsonArray()
 				}
 			} catch(ignored : FileNotFoundException) {
 			} catch(ex : Throwable) {
 				log.trace(ex)
-				Utils.showToast(context, ex, "loadColumnList failed.")
+				showToast(context, ex, "loadColumnList failed.")
 			}
 			
 			return null
@@ -128,7 +126,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 	
 	// initからプロパティにアクセスする場合、そのプロパティはinitより上で定義されていないとダメっぽい
 	// そしてその他のメソッドからval プロパティにアクセスする場合、そのプロパティはメソッドより上で初期化されていないとダメっぽい
-
+	
 	init {
 		this.handler = Handler()
 		this.density = context.resources.displayMetrics.density
@@ -190,7 +188,10 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 							log.d("proc_flushSpeechQueue: tts_speak wait expired.")
 							restartTTS()
 						} else {
-							log.d("proc_flushSpeechQueue: tts is speaking. queue_count=%d, expire_remain=%.3f", queue_count, expire_remain / 1000f
+							log.d(
+								"proc_flushSpeechQueue: tts is speaking. queue_count=%d, expire_remain=%.3f",
+								queue_count,
+								expire_remain / 1000f
 							)
 							handler.postDelayed(this, expire_remain)
 							return
@@ -313,7 +314,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		
 		if(willSpeechEnabled && tts == null && tts_status == TTS_STATUS_NONE) {
 			tts_status = TTS_STATUS_INITIALIZING
-			Utils.showToast(context, false, R.string.text_to_speech_initializing)
+			showToast(context, false, R.string.text_to_speech_initializing)
 			log.d("initializing TextToSpeech…")
 			
 			object : AsyncTask<Void, Void, TextToSpeech?>() {
@@ -325,79 +326,92 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 					return tts
 				}
 				
-				internal val tts_init_listener : TextToSpeech.OnInitListener = TextToSpeech.OnInitListener { status ->
-					
-					val tts = this.tmp_tts
-					if(tts == null || TextToSpeech.SUCCESS != status) {
-						Utils.showToast(context, false, R.string.text_to_speech_initialize_failed, status)
-						log.d("speech initialize failed. status=%s", status)
-						return@OnInitListener
-					}
-					
-					Utils.runOnMainThread {
-						if(! willSpeechEnabled) {
-							Utils.showToast(context, false, R.string.text_to_speech_shutdown)
-							log.d("shutdown TextToSpeech…")
-							tts.shutdown()
-						} else {
-							this@AppState.tts = tts
-							tts_status = TTS_STATUS_INITIALIZED
-							tts_speak_start = 0L
-							tts_speak_end = 0L
-							
-							voice_list.clear()
-							try {
-								val voice_set = try{
-									tts.voices
-									// may raise NullPointerException is tts has no collection
-								}catch(ignored:Throwable){
-									null
-								}
-								if(voice_set == null || voice_set.isEmpty()) {
-									log.d("TextToSpeech.getVoices returns null or empty set.")
-								} else {
-									val lang = Locale.getDefault().toLanguageTag()
-									for(v in voice_set) {
-										log.d("Voice %s %s %s", v.name, v.locale.toLanguageTag(), lang
-										)
-										if(lang != v.locale.toLanguageTag()) {
-											continue
-										}
-										voice_list.add(v)
+				internal val tts_init_listener : TextToSpeech.OnInitListener =
+					TextToSpeech.OnInitListener { status ->
+						
+						val tts = this.tmp_tts
+						if(tts == null || TextToSpeech.SUCCESS != status) {
+							showToast(
+								context,
+								false,
+								R.string.text_to_speech_initialize_failed,
+								status
+							)
+							log.d("speech initialize failed. status=%s", status)
+							return@OnInitListener
+						}
+						
+						runOnMainLooper {
+							if(! willSpeechEnabled) {
+								showToast(context, false, R.string.text_to_speech_shutdown)
+								log.d("shutdown TextToSpeech…")
+								tts.shutdown()
+							} else {
+								this@AppState.tts = tts
+								tts_status = TTS_STATUS_INITIALIZED
+								tts_speak_start = 0L
+								tts_speak_end = 0L
+								
+								voice_list.clear()
+								try {
+									val voice_set = try {
+										tts.voices
+										// may raise NullPointerException is tts has no collection
+									} catch(ignored : Throwable) {
+										null
 									}
+									if(voice_set == null || voice_set.isEmpty()) {
+										log.d("TextToSpeech.getVoices returns null or empty set.")
+									} else {
+										val lang = Locale.getDefault().toLanguageTag()
+										for(v in voice_set) {
+											log.d(
+												"Voice %s %s %s",
+												v.name,
+												v.locale.toLanguageTag(),
+												lang
+											)
+											if(lang != v.locale.toLanguageTag()) {
+												continue
+											}
+											voice_list.add(v)
+										}
+									}
+								} catch(ex : Throwable) {
+									log.trace(ex)
+									log.e(ex, "TextToSpeech.getVoices raises exception.")
 								}
-							} catch(ex : Throwable) {
-								log.trace(ex)
-								log.e(ex, "TextToSpeech.getVoices raises exception.")
+								
+								handler.post(proc_flushSpeechQueue)
+								
+								context.registerReceiver(
+									tts_receiver,
+									IntentFilter(TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED)
+								)
+								
+								//									tts.setOnUtteranceProgressListener( new UtteranceProgressListener() {
+								//										@Override public void onStart( String utteranceId ){
+								//											log.d( "UtteranceProgressListener.onStart id=%s", utteranceId );
+								//										}
+								//
+								//										@Override public void onDone( String utteranceId ){
+								//											log.d( "UtteranceProgressListener.onDone id=%s", utteranceId );
+								//											handler.post( proc_flushSpeechQueue );
+								//										}
+								//
+								//										@Override public void onError( String utteranceId ){
+								//											log.d( "UtteranceProgressListener.onError id=%s", utteranceId );
+								//											handler.post( proc_flushSpeechQueue );
+								//										}
+								//									} );
 							}
-							
-							handler.post(proc_flushSpeechQueue)
-							
-							context.registerReceiver(tts_receiver, IntentFilter(TextToSpeech.ACTION_TTS_QUEUE_PROCESSING_COMPLETED))
-							
-							//									tts.setOnUtteranceProgressListener( new UtteranceProgressListener() {
-							//										@Override public void onStart( String utteranceId ){
-							//											log.d( "UtteranceProgressListener.onStart id=%s", utteranceId );
-							//										}
-							//
-							//										@Override public void onDone( String utteranceId ){
-							//											log.d( "UtteranceProgressListener.onDone id=%s", utteranceId );
-							//											handler.post( proc_flushSpeechQueue );
-							//										}
-							//
-							//										@Override public void onError( String utteranceId ){
-							//											log.d( "UtteranceProgressListener.onError id=%s", utteranceId );
-							//											handler.post( proc_flushSpeechQueue );
-							//										}
-							//									} );
 						}
 					}
-				}
 				
 			}.executeOnExecutor(App1.task_executor)
 		}
 		if(! willSpeechEnabled && tts != null) {
-			Utils.showToast(context, false, R.string.text_to_speech_shutdown)
+			showToast(context, false, R.string.text_to_speech_shutdown)
 			log.d("shutdown TextToSpeech…")
 			tts?.shutdown()
 			tts = null

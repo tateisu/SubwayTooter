@@ -17,14 +17,13 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.PostDraft
-import jp.juggler.subwaytooter.util.JSONObjectCallback
-import jp.juggler.subwaytooter.util.Utils
-
+import jp.juggler.subwaytooter.util.showToast
+import org.json.JSONObject
 
 class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongClickListener, DialogInterface.OnDismissListener {
 	
 	private lateinit var activity : ActPost
-	private lateinit var callback : JSONObjectCallback
+	private lateinit var callback : (draft : JSONObject) -> Unit
 	private lateinit var lvDraft : ListView
 	private lateinit var adapter : MyAdapter
 	private lateinit var dialog : AlertDialog
@@ -46,7 +45,7 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 		
 		val draft = getPostDraft(position)
 		if(draft != null) {
-			Utils.showToast(activity, false, R.string.draft_deleted)
+			showToast(activity, false, R.string.draft_deleted)
 			draft.delete()
 			reload()
 			return true
@@ -65,7 +64,7 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 	}
 	
 	@SuppressLint("InflateParams")
-	fun open(_activity : ActPost, _callback : JSONObjectCallback) {
+	fun open(_activity : ActPost, _callback : (draft : JSONObject) -> Unit) {
 		this.activity = _activity
 		this.callback = _callback
 		
@@ -114,7 +113,7 @@ class DlgDraftPicker : AdapterView.OnItemClickListener, AdapterView.OnItemLongCl
 				
 				if(cursor == null) {
 					// load failed.
-					Utils.showToast(activity, true, "failed to loading drafts.")
+					showToast(activity, true, "failed to loading drafts.")
 				} else {
 					this@DlgDraftPicker.cursor = cursor
 					colIdx = PostDraft.ColIdx(cursor)

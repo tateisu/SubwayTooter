@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.parseString
 import org.json.JSONArray
 
 class TootAttachmentMSP(
@@ -27,7 +27,7 @@ class TootAttachmentMSP(
 					val result =  ArrayList<TootAttachmentLike>()
 					result.ensureCapacity(array_size)
 					for(i in 0 until array_size) {
-						val sv = Utils.optStringX(array, i)
+						val sv = array.parseString( i)
 						if(sv != null && sv.isNotBlank()) {
 							result.add(TootAttachmentMSP(sv))
 						}

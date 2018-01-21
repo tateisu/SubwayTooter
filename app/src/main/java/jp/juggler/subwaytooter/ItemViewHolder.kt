@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter
 
 import android.content.Context
 import android.graphics.Typeface
-import android.net.Uri
 import android.os.SystemClock
 import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewCompat
@@ -55,9 +54,9 @@ internal class ItemViewHolder(
 	val viewRoot : View
 	
 	private var bSimpleList : Boolean = false
-
+	
 	lateinit var column : Column
-
+	
 	private lateinit var list_adapter : ItemListAdapter
 	private lateinit var llBoosted : View
 	private lateinit var ivBoosted : ImageView
@@ -87,7 +86,7 @@ internal class ItemViewHolder(
 	private lateinit var tvContent : MyTextView
 	
 	private lateinit var flMedia : View
-	private lateinit var llMedia:View
+	private lateinit var llMedia : View
 	private lateinit var btnShowMedia : TextView
 	private lateinit var ivMedia1 : MyNetworkImageView
 	private lateinit var ivMedia2 : MyNetworkImageView
@@ -127,7 +126,7 @@ internal class ItemViewHolder(
 	private var boost_account : TootAccount? = null
 	private var follow_account : TootAccount? = null
 	
-	private var boost_time :Long = 0L
+	private var boost_time : Long = 0L
 	
 	private val content_color_default : Int
 	private var acct_color : Int = 0
@@ -215,7 +214,12 @@ internal class ItemViewHolder(
 	
 	}
 	
-	fun bind(list_adapter : ItemListAdapter, column : Column, bSimpleList : Boolean, item : TimelineItem) {
+	fun bind(
+		list_adapter : ItemListAdapter,
+		column : Column,
+		bSimpleList : Boolean,
+		item : TimelineItem
+	) {
 		this.list_adapter = list_adapter
 		this.column = column
 		this.bSimpleList = bSimpleList
@@ -223,7 +227,7 @@ internal class ItemViewHolder(
 		this.access_info = column.access_info
 		
 		if(activity.timeline_font != null || activity.timeline_font_bold != null) {
-			Utils.scanView(this.viewRoot) { v ->
+			viewRoot.scan { v ->
 				try {
 					if(v is Button) {
 						// ボタンは太字なので触らない
@@ -307,8 +311,7 @@ internal class ItemViewHolder(
 		llSearchTag.visibility = View.GONE
 		llList.visibility = View.GONE
 		llExtra.removeAllViews()
-
-
+		
 		var c : Int
 		c = if(column.content_color != 0) column.content_color else content_color_default
 		tvBoosted.setTextColor(c)
@@ -330,7 +333,6 @@ internal class ItemViewHolder(
 		//			tvBoostedAcct.setTextColor( c );
 		//			tvFollowerAcct.setTextColor( c );
 		//			tvAcct.setTextColor( c );
-
 		
 		this.item = item
 		when(item) {
@@ -345,16 +347,12 @@ internal class ItemViewHolder(
 				val reblog = item.reblog
 				if(reblog != null) {
 					showBoost(
-						item.account
-						,
-						item.time_created_at
-						,
-						R.attr.btn_boost
-						,
-						Utils.formatSpannable1(
+						item.account,
+						item.time_created_at,
+						R.attr.btn_boost,
+						item.account.decoded_display_name.intoStringResource(
 							activity,
-							R.string.display_name_boosted_by,
-							item.account.decoded_display_name
+							R.string.display_name_boosted_by
 						)
 					)
 					showStatus(activity, reblog)
@@ -374,16 +372,12 @@ internal class ItemViewHolder(
 		when(n.type) {
 			TootNotification.TYPE_FAVOURITE -> {
 				if(n_account != null) showBoost(
-					n_account
-					,
-					n.time_created_at
-					,
-					if(access_info.isNicoru(n_account)) R.attr.ic_nicoru else R.attr.btn_favourite
-					,
-					Utils.formatSpannable1(
+					n_account,
+					n.time_created_at,
+					if(access_info.isNicoru(n_account)) R.attr.ic_nicoru else R.attr.btn_favourite,
+					n_account.decoded_display_name.intoStringResource(
 						activity,
-						R.string.display_name_favourited_by,
-						n_account.decoded_display_name
+						R.string.display_name_favourited_by
 					)
 				)
 				if(n_status != null) showStatus(activity, n_status)
@@ -391,16 +385,12 @@ internal class ItemViewHolder(
 			
 			TootNotification.TYPE_REBLOG -> {
 				if(n_account != null) showBoost(
-					n_account
-					,
-					n.time_created_at
-					,
-					R.attr.btn_boost
-					,
-					Utils.formatSpannable1(
+					n_account,
+					n.time_created_at,
+					R.attr.btn_boost,
+					n_account.decoded_display_name.intoStringResource(
 						activity,
-						R.string.display_name_boosted_by,
-						n_account.decoded_display_name
+						R.string.display_name_boosted_by
 					)
 				)
 				if(n_status != null) showStatus(activity, n_status)
@@ -410,16 +400,12 @@ internal class ItemViewHolder(
 			TootNotification.TYPE_FOLLOW -> {
 				if(n_account != null) {
 					showBoost(
-						n_account
-						,
-						n.time_created_at
-						,
-						R.attr.ic_follow_plus
-						,
-						Utils.formatSpannable1(
+						n_account,
+						n.time_created_at,
+						R.attr.ic_follow_plus,
+						n_account.decoded_display_name.intoStringResource(
 							activity,
-							R.string.display_name_followed_by,
-							n_account.decoded_display_name
+							R.string.display_name_followed_by
 						)
 					)
 					showAccount(n_account)
@@ -429,16 +415,12 @@ internal class ItemViewHolder(
 			TootNotification.TYPE_MENTION -> {
 				if(! bSimpleList) {
 					if(n_account != null) showBoost(
-						n_account
-						,
-						n.time_created_at
-						,
-						R.attr.btn_reply
-						,
-						Utils.formatSpannable1(
+						n_account,
+						n.time_created_at,
+						R.attr.btn_reply,
+						n_account.decoded_display_name.intoStringResource(
 							activity,
-							R.string.display_name_replied_by,
-							n_account.decoded_display_name
+							R.string.display_name_replied_by
 						)
 					)
 				}
@@ -485,7 +467,11 @@ internal class ItemViewHolder(
 	private fun showAccount(who : TootAccount) {
 		follow_account = who
 		llFollow.visibility = View.VISIBLE
-		ivFollow.setImageUrl(activity.pref, Styler.calcIconRound(ivFollow.layoutParams), access_info.supplyBaseUrl(who.avatar_static))
+		ivFollow.setImageUrl(
+			activity.pref,
+			Styler.calcIconRound(ivFollow.layoutParams),
+			access_info.supplyBaseUrl(who.avatar_static)
+		)
 		tvFollowerName.text = who.decoded_display_name
 		follow_invalidator.register(who.decoded_display_name)
 		
@@ -615,7 +601,7 @@ internal class ItemViewHolder(
 				else -> ! status.sensitive
 			}
 			val is_shown = MediaShown.isShown(status, default_shown)
-
+			
 			btnShowMedia.visibility = if(! is_shown) View.VISIBLE else View.GONE
 			llMedia.visibility = if(! is_shown) View.GONE else View.VISIBLE
 			setMedia(ivMedia1, status, media_attachments, 0)
@@ -696,17 +682,16 @@ internal class ItemViewHolder(
 		tvTime.text = sb
 	}
 	
-	fun updateRelativeTime() {
-		val boost_time = this.boost_time
-		if( boost_time != 0L ){
-			tvBoostedTime.text = TootStatus.formatTime(tvBoostedTime.context, boost_time, true)
-		}
-		val status_showing = this.status_showing
-		if( status_showing != null ){
-			showStatusTime(activity, status_showing)
-		}
-	}
-	
+//	fun updateRelativeTime() {
+//		val boost_time = this.boost_time
+//		if(boost_time != 0L) {
+//			tvBoostedTime.text = TootStatus.formatTime(tvBoostedTime.context, boost_time, true)
+//		}
+//		val status_showing = this.status_showing
+//		if(status_showing != null) {
+//			showStatusTime(activity, status_showing)
+//		}
+//	}
 	
 	private fun setAcct(tv : TextView, acctLong : String, acctShort : String?) {
 		
@@ -834,7 +819,7 @@ internal class ItemViewHolder(
 				ContentWarning.save(status, new_shown)
 				
 				// 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
-				list_adapter.notifyChange(reason="ContentWarning onClick", reset=true)
+				list_adapter.notifyChange(reason = "ContentWarning onClick", reset = true)
 				
 			}
 			
@@ -999,7 +984,7 @@ internal class ItemViewHolder(
 					
 					is TootTag -> {
 						// search_tag は#を含まない
-						val tagEncoded = Uri.encode(item.name)
+						val tagEncoded = item.name.encodePercent()
 						val host = access_info.host
 						val url = "https://$host/tags/$tagEncoded"
 						Action_HashTag.timelineOtherInstance(
@@ -1203,7 +1188,7 @@ internal class ItemViewHolder(
 		val now = System.currentTimeMillis()
 		val remain = enquete.time_start + NicoEnquete.ENQUETE_EXPIRE - now
 		if(remain <= 0) {
-			Utils.showToast(context, false, R.string.enquete_was_end)
+			showToast(context, false, R.string.enquete_was_end)
 			return
 		}
 		
@@ -1228,15 +1213,15 @@ internal class ItemViewHolder(
 				
 				val data = result.jsonObject
 				if(data != null) {
-					val message = Utils.optStringX(data, "message") ?: "?"
+					val message = data.parseString("message") ?: "?"
 					val valid = data.optBoolean("valid")
 					if(valid) {
-						Utils.showToast(context, false, R.string.enquete_voted)
+						showToast(context, false, R.string.enquete_voted)
 					} else {
-						Utils.showToast(context, true, R.string.enquete_vote_failed, message)
+						showToast(context, true, R.string.enquete_vote_failed, message)
 					}
 				} else {
-					Utils.showToast(context, true, result.error)
+					showToast(context, true, result.error)
 				}
 				
 			}
@@ -1696,7 +1681,6 @@ internal class ItemViewHolder(
 			}
 		}
 	}
-	
 	
 }
 

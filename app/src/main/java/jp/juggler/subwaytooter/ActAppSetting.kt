@@ -43,7 +43,7 @@ import java.util.Locale
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.showToast
 
 class ActAppSetting : AppCompatActivity()
 	, CompoundButton.OnCheckedChangeListener
@@ -440,7 +440,7 @@ class ActAppSetting : AppCompatActivity()
 				intent.type = "*/*"
 				startActivityForResult(intent, REQUEST_CODE_TIMELINE_FONT)
 			} catch(ex : Throwable) {
-				Utils.showToast(this, ex, "could not open picker for font")
+				showToast(this, ex, "could not open picker for font")
 			}
 			
 			R.id.btnTimelineFontBoldReset -> {
@@ -455,7 +455,7 @@ class ActAppSetting : AppCompatActivity()
 				intent.type = "*/*"
 				startActivityForResult(intent, REQUEST_CODE_TIMELINE_FONT_BOLD)
 			} catch(ex : Throwable) {
-				Utils.showToast(this, ex, "could not open picker for font")
+				showToast(this, ex, "could not open picker for font")
 			}
 			
 			R.id.btnSettingExport -> exportAppData()
@@ -472,7 +472,7 @@ class ActAppSetting : AppCompatActivity()
 					.apply()
 				SavedAccount.clearRegistrationCache()
 				PollingWorker.queueUpdateListener(this)
-				Utils.showToast(this, false, getString(R.string.custom_stream_listener_was_reset))
+				showToast(this, false, getString(R.string.custom_stream_listener_was_reset))
 			}
 		}
 	}
@@ -687,7 +687,7 @@ class ActAppSetting : AppCompatActivity()
 	private fun saveTimelineFont(uri : Uri?, file_name : String) : File? {
 		try {
 			if(uri == null) {
-				Utils.showToast(this, false, "missing uri.")
+				showToast(this, false, "missing uri.")
 				return null
 			}
 			
@@ -701,7 +701,7 @@ class ActAppSetting : AppCompatActivity()
 			
 			val source = contentResolver.openInputStream(uri) // nullable
 			if(source == null) {
-				Utils.showToast(this, false, "openInputStream returns null. uri=%s", uri)
+				showToast(this, false, "openInputStream returns null. uri=%s", uri)
 				return null
 			} else {
 				source.use { inStream ->
@@ -713,20 +713,20 @@ class ActAppSetting : AppCompatActivity()
 			
 			val face = Typeface.createFromFile(tmp_file)
 			if(face == null) {
-				Utils.showToast(this, false, "Typeface.createFromFile() failed.")
+				showToast(this, false, "Typeface.createFromFile() failed.")
 				return null
 			}
 			
 			val file = File(dir, file_name)
 			if(! tmp_file.renameTo(file)) {
-				Utils.showToast(this, false, "File operation failed.")
+				showToast(this, false, "File operation failed.")
 				return null
 			}
 			
 			return file
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			Utils.showToast(this, ex, "saveTimelineFont failed.")
+			showToast(this, ex, "saveTimelineFont failed.")
 			return null
 		}
 		
@@ -755,7 +755,7 @@ class ActAppSetting : AppCompatActivity()
 					return file
 				} catch(ex : Throwable) {
 					log.trace(ex)
-					Utils.showToast(this@ActAppSetting, ex, "exportAppData failed.")
+					showToast(this@ActAppSetting, ex, "exportAppData failed.")
 				}
 				
 				return null
@@ -784,7 +784,7 @@ class ActAppSetting : AppCompatActivity()
 					startActivityForResult(intent, REQUEST_CODE_APP_DATA_EXPORT)
 				} catch(ex : Throwable) {
 					log.trace(ex)
-					Utils.showToast(this@ActAppSetting, ex, "exportAppData failed.")
+					showToast(this@ActAppSetting, ex, "exportAppData failed.")
 				}
 				
 			}
@@ -804,7 +804,7 @@ class ActAppSetting : AppCompatActivity()
 			intent.type = "*/*"
 			startActivityForResult(intent, REQUEST_CODE_APP_DATA_IMPORT)
 		} catch(ex : Throwable) {
-			Utils.showToast(this, ex, "importAppData(1) failed.")
+			showToast(this, ex, "importAppData(1) failed.")
 		}
 		
 	}

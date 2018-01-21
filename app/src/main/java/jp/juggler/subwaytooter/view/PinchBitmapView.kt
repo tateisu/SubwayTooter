@@ -13,9 +13,10 @@ import android.view.VelocityTracker
 import android.view.View
 
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.runOnMainLooper
 
-class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) : View(context, attrs, defStyle) {
+class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) :
+	View(context, attrs, defStyle) {
 	
 	companion object {
 		
@@ -125,6 +126,7 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 	
 	// ページめくり操作のコールバック
 	interface Callback {
+		
 		fun onSwipe(delta : Int)
 		
 		fun onMove(bitmap_w : Float, bitmap_h : Float, tx : Float, ty : Float, scale : Float)
@@ -319,15 +321,17 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 				
 			} else if(image_move_x >= drag_width || image_move_y >= drag_width * 5f) {
 				// 「画像を動かした」かどうかの最終チェック
-				log.d("image was moved. not paging action. %f %f ", image_move_x / drag_width, image_move_y / drag_width
+				log.d(
+					"image was moved. not paging action. %f %f ",
+					image_move_x / drag_width,
+					image_move_y / drag_width
 				)
 			} else {
-				log.d("paging! %f %f %f", image_move_x / drag_width, image_move_y / drag_width, xv
+				log.d(
+					"paging! %f %f %f", image_move_x / drag_width, image_move_y / drag_width, xv
 				)
 				
-				Utils.runOnMainThread {
-					callback?.onSwipe(if(xv >= 0f) - 1 else 1)
-				}
+				runOnMainLooper { callback?.onSwipe(if(xv >= 0f) - 1 else 1) }
 			}
 		}
 	}
@@ -422,7 +426,11 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 			getCoordinateOnImage(avg_on_image1, pos.avg)
 			
 			// ズーム率を変更する
-			current_scale = clip(scale_min, scale_max, start_image_scale * pos.max_radius / start_pos.max_radius)
+			current_scale = clip(
+				scale_min,
+				scale_max,
+				start_image_scale * pos.max_radius / start_pos.max_radius
+			)
 			
 			// 再び調べる
 			getCoordinateOnImage(avg_on_image2, pos.avg)
@@ -445,13 +453,14 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 			}
 			
 			// 画像の表示位置を更新
-			current_trans_x = clipTranslate(view_w, bitmap_w, current_scale, start_image_trans_x + move_x)
-			current_trans_y = clipTranslate(view_h, bitmap_h, current_scale, start_image_trans_y + move_y)
+			current_trans_x =
+				clipTranslate(view_w, bitmap_w, current_scale, start_image_trans_x + move_x)
+			current_trans_y =
+				clipTranslate(view_h, bitmap_h, current_scale, start_image_trans_y + move_y)
 		}
 		
 		callback?.onMove(bitmap_w, bitmap_h, current_trans_x, current_trans_y, current_scale)
 		invalidate()
 	}
-	
 	
 }

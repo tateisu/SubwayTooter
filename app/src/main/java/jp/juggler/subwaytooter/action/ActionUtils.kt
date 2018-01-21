@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.action
 
 import android.content.Context
-import android.net.Uri
 
 import org.json.JSONObject
 
@@ -17,9 +16,7 @@ import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.api.entity.parseList
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.TootAccountOrNullCallback
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.*
 
 // ユーザ名からアカウントIDを取得する
 internal fun findAccountByName(
@@ -34,7 +31,8 @@ internal fun findAccountByName(
 		internal var who : TootAccount? = null
 		
 		override fun background(client : TootApiClient) : TootApiResult? {
-			val path = "/api/v1/accounts/search" + "?q=" + Uri.encode(user)
+			
+			val path = "/api/v1/accounts/search" + "?q=" + user.encodePercent()
 			
 			val result = client.request(path)
 			val array = result?.jsonArray
@@ -42,7 +40,10 @@ internal fun findAccountByName(
 				for(i in 0 until array.length()) {
 					val a = TootAccount.parse(activity, access_info, array.optJSONObject(i))
 					if(a != null) {
-						if(a.username == user && access_info.getFullAcct(a).equals(user + "@" + host, ignoreCase = true)) {
+						if(a.username == user && access_info.getFullAcct(a).equals(
+								user + "@" + host,
+								ignoreCase = true
+							)) {
 							who = a
 							break
 						}
@@ -93,7 +94,7 @@ internal fun addPseudoAccount(
 		val log = LogCategory("addPseudoAccount")
 		log.trace(ex)
 		log.e(ex, "failed.")
-		Utils.showToast(context, ex, "addPseudoAccount failed.")
+		showToast(context, ex, "addPseudoAccount failed.")
 	}
 	
 	return null
@@ -108,7 +109,10 @@ fun makeAccountListNonPseudo(
 	val list_other_host = ArrayList<SavedAccount>()
 	for(a in SavedAccount.loadAccountList(context)) {
 		if(a.isPseudo) continue
-		(if(pickup_host == null || pickup_host.equals(a.host, ignoreCase = true)) list_same_host else list_other_host).add(a)
+		(if(pickup_host == null || pickup_host.equals(
+				a.host,
+				ignoreCase = true
+			)) list_same_host else list_other_host).add(a)
 	}
 	SavedAccount.sort(list_same_host)
 	SavedAccount.sort(list_other_host)
@@ -134,7 +138,7 @@ internal fun loadRelation1(
 	val r2 = rr.result
 	val jsonArray = r2?.jsonArray
 	if(jsonArray != null) {
-		val list = parseList(::TootRelationShip,jsonArray)
+		val list = parseList(::TootRelationShip, jsonArray)
 		if(list.isNotEmpty()) {
 			rr.relation = saveUserRelation(access_info, list[0])
 		}
@@ -147,7 +151,10 @@ const val NOT_CROSS_ACCOUNT = 1
 const val CROSS_ACCOUNT_SAME_INSTANCE = 2
 const val CROSS_ACCOUNT_REMOTE_INSTANCE = 3
 
-internal fun calcCrossAccountMode(timeline_account : SavedAccount, action_account : SavedAccount) : Int {
+internal fun calcCrossAccountMode(
+	timeline_account : SavedAccount,
+	action_account : SavedAccount
+) : Int {
 	return if(! timeline_account.host.equals(action_account.host, ignoreCase = true)) {
 		CROSS_ACCOUNT_REMOTE_INSTANCE
 	} else if(! timeline_account.acct.equals(action_account.acct, ignoreCase = true)) {

@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.net.Uri
 import android.os.AsyncTask
 import android.os.SystemClock
 import jp.juggler.subwaytooter.api.*
@@ -26,13 +25,8 @@ import jp.juggler.subwaytooter.table.MutedWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.TagSet
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.util.BucketList
 import jp.juggler.subwaytooter.api.entity.*
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.VersionString
-import jp.juggler.subwaytooter.util.WordTrieTree
-import jp.juggler.subwaytooter.util.ScrollPosition
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.*
 
 class Column(
 	val app_state : AppState,
@@ -86,8 +80,8 @@ class Column(
 		private const val PATH_ACCOUNT = "/api/v1/accounts/%d" // 1:account_id
 		private const val PATH_STATUSES = "/api/v1/statuses/%d" // 1:status_id
 		private const val PATH_STATUSES_CONTEXT = "/api/v1/statuses/%d/context" // 1:status_id
-		const val PATH_SEARCH =
-			"/api/v1/search?q=%s" // 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
+		const val PATH_SEARCH = "/api/v1/search?q=%s"
+		// search args 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
 		private const val PATH_INSTANCE = "/api/v1/instance"
 		private const val PATH_LIST_INFO = "/api/v1/lists/%s"
 		
@@ -161,7 +155,7 @@ class Column(
 		}
 		
 		fun loadAccount(context : Context, src : JSONObject) : SavedAccount {
-			val account_db_id = Utils.optLongX(src, KEY_ACCOUNT_ROW_ID)
+			val account_db_id = src.parseLong(KEY_ACCOUNT_ROW_ID) ?: - 1L
 			return if(account_db_id >= 0) {
 				SavedAccount.loadAccount(context, account_db_id)
 					?: throw RuntimeException("missing account")
@@ -250,7 +244,7 @@ class Column(
 				TYPE_HOME, TYPE_NOTIFICATIONS -> "/api/v1/streaming/?stream=user"
 				TYPE_LOCAL -> "/api/v1/streaming/?stream=public:local"
 				TYPE_FEDERATE -> "/api/v1/streaming/?stream=public"
-				TYPE_HASHTAG -> "/api/v1/streaming/?stream=hashtag&tag=" + Uri.encode(hashtag) // タグ先頭の#を含まない
+				TYPE_HASHTAG -> "/api/v1/streaming/?stream=hashtag&tag=" + hashtag.encodePercent() // タグ先頭の#を含まない
 				TYPE_LIST_TL -> "/api/v1/streaming/?stream=list&list=" + profile_id.toString()
 				else -> null
 			}
@@ -451,27 +445,27 @@ class Column(
 		hide_media_default = src.optBoolean(KEY_HIDE_MEDIA_DEFAULT)
 		enable_speech = src.optBoolean(KEY_ENABLE_SPEECH)
 		
-		regex_text = Utils.optStringX(src, KEY_REGEX_TEXT) ?: ""
+		regex_text = src.parseString(KEY_REGEX_TEXT) ?: ""
 		
 		header_bg_color = src.optInt(KEY_HEADER_BACKGROUND_COLOR)
 		header_fg_color = src.optInt(KEY_HEADER_TEXT_COLOR)
 		column_bg_color = src.optInt(KEY_COLUMN_BACKGROUND_COLOR)
 		acct_color = src.optInt(KEY_COLUMN_ACCT_TEXT_COLOR)
 		content_color = src.optInt(KEY_COLUMN_CONTENT_TEXT_COLOR)
-		column_bg_image = Utils.optStringX(src, KEY_COLUMN_BACKGROUND_IMAGE) ?: ""
+		column_bg_image = src.parseString(KEY_COLUMN_BACKGROUND_IMAGE) ?: ""
 		column_bg_image_alpha = src.optDouble(KEY_COLUMN_BACKGROUND_IMAGE_ALPHA, 1.0).toFloat()
 		
 		when(column_type) {
 			
 			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY -> status_id =
-				Utils.optLongX(src, KEY_STATUS_ID)
+				src.parseLong(KEY_STATUS_ID) ?: - 1L
 			
 			TYPE_PROFILE -> {
-				profile_id = Utils.optLongX(src, KEY_PROFILE_ID)
+				profile_id = src.parseLong(KEY_PROFILE_ID) ?: - 1L
 				profile_tab = src.optInt(KEY_PROFILE_TAB)
 			}
 			
-			TYPE_LIST_MEMBER, TYPE_LIST_TL -> profile_id = Utils.optLongX(src, KEY_PROFILE_ID)
+			TYPE_LIST_MEMBER, TYPE_LIST_TL -> profile_id = src.parseLong(KEY_PROFILE_ID) ?: - 1L
 			
 			TYPE_HASHTAG -> hashtag = src.optString(KEY_HASHTAG)
 			
@@ -939,35 +933,35 @@ class Column(
 		changeList : List<AdapterChange>? = null,
 		reset : Boolean = false
 	) {
-		if(! Utils.isMainThread) {
+		if(! isMainThread) {
 			throw RuntimeException("fireShowContent: not on main thread.")
 		}
 		viewHolder?.showContent(reason, changeList, reset)
 	}
 	
 	internal fun fireShowColumnHeader() {
-		if(! Utils.isMainThread) {
+		if(! isMainThread) {
 			throw RuntimeException("fireShowColumnHeader: not on main thread.")
 		}
 		viewHolder?.showColumnHeader()
 	}
 	
 	internal fun fireColumnColor() {
-		if(! Utils.isMainThread) {
+		if(! isMainThread) {
 			throw RuntimeException("fireColumnColor: not on main thread.")
 		}
 		viewHolder?.showColumnColor()
 	}
 	
 	fun fireRelativeTime() {
-		if(! Utils.isMainThread) {
+		if(! isMainThread) {
 			throw RuntimeException("fireRelativeTime: not on main thread.")
 		}
 		viewHolder?.updateRelativeTime()
 	}
 	
 	fun fireRebindAdapterItems() {
-		if(! Utils.isMainThread) {
+		if(! isMainThread) {
 			throw RuntimeException("fireRelativeTime: not on main thread.")
 		}
 		viewHolder?.rebindAdapterItems()
@@ -1504,8 +1498,8 @@ class Column(
 						get() = isCancelled || is_dispose.get()
 					
 					override fun publishApiProgress(s : String) {
-						Utils.runOnMainThread {
-							if(isCancelled) return@runOnMainThread
+						runOnMainLooper {
+							if(isCancelled) return@runOnMainLooper
 							task_progress = s
 							fireShowContent(reason = "loading progress", changeList = ArrayList())
 						}
@@ -1606,7 +1600,7 @@ class Column(
 						
 						TYPE_HASHTAG -> return getStatuses(
 							client,
-							String.format(Locale.JAPAN, PATH_HASHTAG, Uri.encode(hashtag))
+							String.format(Locale.JAPAN, PATH_HASHTAG, hashtag.encodePercent())
 						)
 						
 						TYPE_REPORTS -> return parseReports(client, PATH_REPORTS)
@@ -1665,7 +1659,7 @@ class Column(
 									)
 								//
 							} else {
-								Utils.showToast(context, true, "TootContext parse failed.")
+								showToast(context, true, "TootContext parse failed.")
 								this.list_tmp = addOne(this.list_tmp, target_status)
 							}
 							
@@ -1688,7 +1682,11 @@ class Column(
 								return TootApiResult(context.getString(R.string.search_is_not_available_on_pseudo_account))
 							}
 							var path =
-								String.format(Locale.JAPAN, PATH_SEARCH, Uri.encode(search_query))
+								String.format(
+									Locale.JAPAN,
+									PATH_SEARCH,
+									search_query.encodePercent()
+								)
 							if(search_resolve) path += "&resolve=1"
 							
 							result = client.request(path)
@@ -1883,14 +1881,14 @@ class Column(
 		
 		if(last_task != null) {
 			if(! bSilent) {
-				Utils.showToast(context, true, R.string.column_is_busy)
+				showToast(context, true, R.string.column_is_busy)
 				val holder = viewHolder
 				if(holder != null) holder.refreshLayout.isRefreshing = false
 			}
 			return
 		} else if(bBottom && max_id.isEmpty()) {
 			if(! bSilent) {
-				Utils.showToast(context, true, R.string.end_of_list)
+				showToast(context, true, R.string.end_of_list)
 				val holder = viewHolder
 				if(holder != null) holder.refreshLayout.isRefreshing = false
 			}
@@ -2422,8 +2420,8 @@ class Column(
 						get() = isCancelled || is_dispose.get()
 					
 					override fun publishApiProgress(s : String) {
-						Utils.runOnMainThread {
-							if(isCancelled) return@runOnMainThread
+						runOnMainLooper {
+							if(isCancelled) return@runOnMainLooper
 							task_progress = s
 							fireShowContent(reason = "refresh progress", changeList = ArrayList())
 						}
@@ -2517,7 +2515,7 @@ class Column(
 						
 						TYPE_HASHTAG -> getStatusList(
 							client,
-							String.format(Locale.JAPAN, PATH_HASHTAG, Uri.encode(hashtag))
+							String.format(Locale.JAPAN, PATH_HASHTAG, hashtag.encodePercent())
 						)
 						
 						TYPE_SEARCH_MSP ->
@@ -2705,11 +2703,11 @@ class Column(
 	
 	internal fun startGap(gap : TootGap?) {
 		if(gap == null) {
-			Utils.showToast(context, true, "gap is null")
+			showToast(context, true, "gap is null")
 			return
 		}
 		if(last_task != null) {
-			Utils.showToast(context, true, R.string.column_is_busy)
+			showToast(context, true, R.string.column_is_busy)
 			return
 		}
 		
@@ -2945,8 +2943,8 @@ class Column(
 						get() = isCancelled || is_dispose.get()
 					
 					override fun publishApiProgress(s : String) {
-						Utils.runOnMainThread {
-							if(isCancelled) return@runOnMainThread
+						runOnMainLooper {
+							if(isCancelled) return@runOnMainLooper
 							task_progress = s
 							fireShowContent(reason = "gap progress", changeList = ArrayList())
 						}
@@ -2974,7 +2972,7 @@ class Column(
 						
 						TYPE_HASHTAG -> getStatusList(
 							client,
-							String.format(Locale.JAPAN, PATH_HASHTAG, Uri.encode(hashtag))
+							String.format(Locale.JAPAN, PATH_HASHTAG, hashtag.encodePercent())
 						)
 						
 						TYPE_BOOSTED_BY -> getAccountList(
@@ -3138,8 +3136,7 @@ class Column(
 	
 	private fun loadSearchDesc(raw_en : Int, raw_ja : Int) : String {
 		val res_id = if("ja" == context.getString(R.string.language_code)) raw_ja else raw_en
-		val data = Utils.loadRawResource(context, res_id)
-		return if(data == null) "?" else Utils.decodeUTF8(data)
+		return context.loadRawResource(res_id)?.decodeUTF8() ?: "?"
 	}
 	
 	private var cacheHeaderDesc : String? = null

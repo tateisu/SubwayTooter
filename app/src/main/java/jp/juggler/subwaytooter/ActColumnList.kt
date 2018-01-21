@@ -23,9 +23,26 @@ import org.json.JSONObject
 import java.util.ArrayList
 
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.activity
+import jp.juggler.subwaytooter.util.showToast
 
 class ActColumnList : AppCompatActivity() {
+	
+	companion object {
+		private val log = LogCategory("ActColumnList")
+		internal const val TMP_FILE_COLUMN_LIST = "tmp_column_list"
+		
+		const val EXTRA_ORDER = "order"
+		const val EXTRA_SELECTION = "selection"
+		
+		fun open(activity : ActMain, currentItem : Int, requestCode : Int) {
+			val array = activity.app_state.encodeColumnList()
+			AppState.saveColumnList(activity, ActColumnList.TMP_FILE_COLUMN_LIST, array)
+			val intent = Intent(activity, ActColumnList::class.java)
+			intent.putExtra(ActColumnList.EXTRA_SELECTION, currentItem)
+			activity.startActivityForResult(intent, requestCode)
+		}
+	}
 	
 	private lateinit var listView : DragListView
 	private lateinit var listAdapter : MyListAdapter
@@ -46,9 +63,9 @@ class ActColumnList : AppCompatActivity() {
 	
 	override fun onSaveInstanceState(outState : Bundle?) {
 		super.onSaveInstanceState(outState)
-
-		outState?: return
-
+		
+		outState ?: return
+		
 		outState.putInt(EXTRA_SELECTION, old_selection)
 		
 		//
@@ -108,7 +125,10 @@ class ActColumnList : AppCompatActivity() {
 				// mRefreshLayout.setEnabled( false );
 			}
 			
-			override fun onItemSwipeEnded(item : ListSwipeItem, swipedDirection : ListSwipeItem.SwipeDirection?) {
+			override fun onItemSwipeEnded(
+				item : ListSwipeItem,
+				swipedDirection : ListSwipeItem.SwipeDirection?
+			) {
 				// 操作完了でリフレッシュ許可
 				// mRefreshLayout.setEnabled( USE_SWIPE_REFRESH );
 				
@@ -116,7 +136,11 @@ class ActColumnList : AppCompatActivity() {
 				if(swipedDirection == ListSwipeItem.SwipeDirection.LEFT) {
 					val adapterItem = item.tag as MyItem
 					if(adapterItem.json.optBoolean(Column.KEY_DONT_CLOSE, false)) {
-						Utils.showToast(this@ActColumnList, false, R.string.column_has_dont_close_option)
+						showToast(
+							this@ActColumnList,
+							false,
+							R.string.column_has_dont_close_option
+						)
 						listView.resetSwipedViews(null)
 						return
 					}
@@ -196,6 +220,7 @@ class ActColumnList : AppCompatActivity() {
 	
 	// リスト要素のデータ
 	internal class MyItem(val json : JSONObject, val id : Long, context : Context) {
+		
 		val name : String = json.optString(Column.KEY_COLUMN_NAME)
 		val acct : String = json.optString(Column.KEY_COLUMN_ACCESS)
 		val old_index = json.optInt(Column.KEY_OLD_INDEX)
@@ -206,7 +231,8 @@ class ActColumnList : AppCompatActivity() {
 		
 		init {
 			var c = json.optInt(Column.KEY_COLUMN_ACCESS_COLOR, 0)
-			this.acct_color_fg = if(c != 0) c else Styler.getAttributeColor(context, R.attr.colorColumnListItemText)
+			this.acct_color_fg =
+				if(c != 0) c else Styler.getAttributeColor(context, R.attr.colorColumnListItemText)
 			
 			c = json.optInt(Column.KEY_COLUMN_ACCESS_COLOR_BG, 0)
 			this.acct_color_bg = c
@@ -223,10 +249,10 @@ class ActColumnList : AppCompatActivity() {
 		, true // 長押しでドラッグ開始するなら真
 	) {
 		
-		private val ivBookmark:View = viewRoot.findViewById(R.id.ivBookmark)
-		private val tvAccess:TextView = viewRoot.findViewById(R.id.tvAccess)
-		private val tvName :TextView= viewRoot.findViewById(R.id.tvName)
-		private val ivColumnIcon:ImageView = viewRoot.findViewById(R.id.ivColumnIcon)
+		private val ivBookmark : View = viewRoot.findViewById(R.id.ivBookmark)
+		private val tvAccess : TextView = viewRoot.findViewById(R.id.tvAccess)
+		private val tvName : TextView = viewRoot.findViewById(R.id.tvName)
+		private val ivColumnIcon : ImageView = viewRoot.findViewById(R.id.ivColumnIcon)
 		private val acct_pad_lr = (0.5f + 4f * viewRoot.resources.displayMetrics.density).toInt()
 		
 		init {
@@ -245,9 +271,11 @@ class ActColumnList : AppCompatActivity() {
 			tvAccess.setBackgroundColor(item.acct_color_bg)
 			tvAccess.setPaddingRelative(acct_pad_lr, 0, acct_pad_lr, 0)
 			tvName.text = item.name
-			ivColumnIcon.setImageResource(Styler.getAttributeResourceId(
-				this@ActColumnList, Column.getIconAttrId(item.acct, item.type)
-			))
+			ivColumnIcon.setImageResource(
+				Styler.getAttributeResourceId(
+					this@ActColumnList, Column.getIconAttrId(item.acct, item.type)
+				)
+			)
 		}
 		
 		//		@Override
@@ -257,13 +285,13 @@ class ActColumnList : AppCompatActivity() {
 		
 		override fun onItemClicked(view : View?) {
 			val item = itemView.tag as MyItem // itemView は親クラスのメンバ変数
-			val activity = Utils.getActivityFromView(view)
-			(activity as? ActColumnList)?.performItemSelected(item)
+			(view.activity as? ActColumnList)?.performItemSelected(item)
 		}
 	}
 	
 	// ドラッグ操作中のデータ
-	private inner class MyDragItem internal constructor(context : Context, layoutId : Int) : DragItem(context, layoutId) {
+	private inner class MyDragItem internal constructor(context : Context, layoutId : Int) :
+		DragItem(context, layoutId) {
 		
 		override fun onBindDragView(clickedView : View, dragView : View) {
 			val item = clickedView.tag as MyItem
@@ -277,10 +305,14 @@ class ActColumnList : AppCompatActivity() {
 			tv.text = item.name
 			
 			val ivColumnIcon = dragView.findViewById<ImageView>(R.id.ivColumnIcon)
-			ivColumnIcon.setImageResource(Styler.getAttributeResourceId(
-				this@ActColumnList, Column.getIconAttrId(item.acct, item.type)))
+			ivColumnIcon.setImageResource(
+				Styler.getAttributeResourceId(
+					this@ActColumnList, Column.getIconAttrId(item.acct, item.type)
+				)
+			)
 			
-			dragView.findViewById<View>(R.id.ivBookmark).visibility = clickedView.findViewById<View>(R.id.ivBookmark).visibility
+			dragView.findViewById<View>(R.id.ivBookmark).visibility =
+				clickedView.findViewById<View>(R.id.ivBookmark).visibility
 			
 			dragView.findViewById<View>(R.id.item_layout).setBackgroundColor(
 				Styler.getAttributeColor(this@ActColumnList, R.attr.list_item_bg_pressed_dragged)
@@ -288,7 +320,8 @@ class ActColumnList : AppCompatActivity() {
 		}
 	}
 	
-	private inner class MyListAdapter internal constructor() : DragItemAdapter<MyItem, MyViewHolder>() {
+	private inner class MyListAdapter internal constructor() :
+		DragItemAdapter<MyItem, MyViewHolder>() {
 		
 		
 		init {
@@ -313,19 +346,4 @@ class ActColumnList : AppCompatActivity() {
 		
 	}
 	
-	companion object {
-		private val log = LogCategory("ActColumnList")
-		internal val TMP_FILE_COLUMN_LIST = "tmp_column_list"
-		
-		val EXTRA_ORDER = "order"
-		val EXTRA_SELECTION = "selection"
-		
-		fun open(activity : ActMain, currentItem : Int, requestCode : Int) {
-			val array = activity.app_state.encodeColumnList()
-			AppState.saveColumnList(activity, ActColumnList.TMP_FILE_COLUMN_LIST, array)
-			val intent = Intent(activity, ActColumnList::class.java)
-			intent.putExtra(ActColumnList.EXTRA_SELECTION, currentItem)
-			activity.startActivityForResult(intent, requestCode)
-		}
-	}
 }

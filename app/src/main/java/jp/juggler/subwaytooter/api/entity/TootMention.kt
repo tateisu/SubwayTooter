@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter.api.entity
 
 import org.json.JSONObject
 
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.parseLong
 
 class TootMention(
 	val id : Long, // Account ID
@@ -12,7 +12,7 @@ class TootMention(
 ) {
 	
 	constructor(src : JSONObject) : this(
-		id = Utils.optLongX(src, "id"),
+		id = src.parseLong("id") ?: -1L,
 		url = src.notEmptyOrThrow("url"),
 		acct = src.notEmptyOrThrow("acct"),
 		username = src.notEmptyOrThrow("username")

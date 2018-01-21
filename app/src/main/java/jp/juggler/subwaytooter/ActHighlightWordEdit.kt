@@ -15,13 +15,16 @@ import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 
 import org.json.JSONException
-import org.json.JSONObject
 
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.toJsonObject
 
-class ActHighlightWordEdit : AppCompatActivity(), View.OnClickListener, ColorPickerDialogListener, CompoundButton.OnCheckedChangeListener {
+class ActHighlightWordEdit
+	: AppCompatActivity(),
+	View.OnClickListener,
+	ColorPickerDialogListener,
+	CompoundButton.OnCheckedChangeListener {
 	
 	companion object {
 		internal val log = LogCategory("ActHighlightWordEdit")
@@ -44,10 +47,10 @@ class ActHighlightWordEdit : AppCompatActivity(), View.OnClickListener, ColorPic
 		}
 	}
 	
-	lateinit internal var item : HighlightWord
+	internal lateinit var item : HighlightWord
 	
-	lateinit private var tvName : TextView
-	lateinit private var swSound : Switch
+	private lateinit var tvName : TextView
+	private lateinit var swSound : Switch
 	
 	private var bBusy = false
 	
@@ -72,22 +75,23 @@ class ActHighlightWordEdit : AppCompatActivity(), View.OnClickListener, ColorPic
 		App1.setActivityTheme(this, false)
 		initUI()
 		
-		item = HighlightWord(JSONObject(
-			if(savedInstanceState != null) savedInstanceState.getString(EXTRA_ITEM)
-			else intent.getStringExtra(EXTRA_ITEM)
-		))
+		item = HighlightWord(
+			(savedInstanceState?.getString(EXTRA_ITEM)
+				?: intent.getStringExtra(EXTRA_ITEM)
+				).toJsonObject()
+		)
 		
 		showSampleText()
 		
 	}
 	
-	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent) {
+	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
 		when(requestCode) {
 			
 			REQUEST_CODE_NOTIFICATION_SOUND -> {
 				if(resultCode == Activity.RESULT_OK) {
 					// RINGTONE_PICKERからの選択されたデータを取得する
-					val uri = Utils.getExtraObject(data, RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+					val uri = data?.extras?.get(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
 					if(uri is Uri) {
 						item.sound_uri = uri.toString()
 						item.sound_type = HighlightWord.SOUND_TYPE_CUSTOM
@@ -95,6 +99,7 @@ class ActHighlightWordEdit : AppCompatActivity(), View.OnClickListener, ColorPic
 					}
 				}
 			}
+			
 			else -> super.onActivityResult(requestCode, resultCode, data)
 		}
 	}
@@ -151,7 +156,10 @@ class ActHighlightWordEdit : AppCompatActivity(), View.OnClickListener, ColorPic
 				showSampleText()
 			}
 			
-			R.id.btnBackgroundColorEdit -> openColorPicker(COLOR_DIALOG_ID_BACKGROUND, item.color_bg)
+			R.id.btnBackgroundColorEdit -> openColorPicker(
+				COLOR_DIALOG_ID_BACKGROUND,
+				item.color_bg
+			)
 			
 			R.id.btnBackgroundColorReset -> {
 				item.color_bg = 0
@@ -162,7 +170,8 @@ class ActHighlightWordEdit : AppCompatActivity(), View.OnClickListener, ColorPic
 			
 			R.id.btnNotificationSoundReset -> {
 				item.sound_uri = null
-				item.sound_type = if(swSound.isChecked) HighlightWord.SOUND_TYPE_DEFAULT else HighlightWord.SOUND_TYPE_NONE
+				item.sound_type =
+					if(swSound.isChecked) HighlightWord.SOUND_TYPE_DEFAULT else HighlightWord.SOUND_TYPE_NONE
 			}
 		}
 		
@@ -175,7 +184,8 @@ class ActHighlightWordEdit : AppCompatActivity(), View.OnClickListener, ColorPic
 			item.sound_type = HighlightWord.SOUND_TYPE_NONE
 		} else {
 			
-			item.sound_type = if(item.sound_uri?.isEmpty() != false ) HighlightWord.SOUND_TYPE_DEFAULT else HighlightWord.SOUND_TYPE_CUSTOM
+			item.sound_type =
+				if(item.sound_uri?.isEmpty() != false) HighlightWord.SOUND_TYPE_DEFAULT else HighlightWord.SOUND_TYPE_CUSTOM
 		}
 	}
 	
@@ -212,7 +222,7 @@ class ActHighlightWordEdit : AppCompatActivity(), View.OnClickListener, ColorPic
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
 		try {
 			val sound_uri = item.sound_uri
-			val uri = if(sound_uri?.isEmpty()!= false ) null else Uri.parse(sound_uri)
+			val uri = if(sound_uri?.isEmpty() != false) null else Uri.parse(sound_uri)
 			if(uri != null) {
 				intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri)
 			}
@@ -223,5 +233,4 @@ class ActHighlightWordEdit : AppCompatActivity(), View.OnClickListener, ColorPic
 		startActivityForResult(chooser, REQUEST_CODE_NOTIFICATION_SOUND)
 	}
 	
-
 }

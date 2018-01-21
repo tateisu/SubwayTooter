@@ -47,11 +47,7 @@ import jp.juggler.subwaytooter.table.PostDraft
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.TagSet
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.util.CustomEmojiCache
-import jp.juggler.subwaytooter.util.CustomEmojiLister
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.ProgressResponseBody
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.*
 import okhttp3.Cache
 import okhttp3.CacheControl
 import okhttp3.CipherSuite
@@ -222,7 +218,7 @@ class App1 : Application() {
 		
 		lateinit var ok_http_client : OkHttpClient
 		
-		lateinit var ok_http_client2 : OkHttpClient
+		private lateinit var ok_http_client2 : OkHttpClient
 		
 		lateinit var pref : SharedPreferences
 		
@@ -531,7 +527,7 @@ class App1 : Application() {
 				customTabsIntent.launchUrl(activity, Uri.parse(url))
 			} catch(ex : Throwable) {
 				log.trace(ex)
-				Utils.showToast(activity, false, "can't open browser app")
+				showToast(activity, false, "can't open browser app")
 			}
 			
 		}

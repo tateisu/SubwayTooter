@@ -17,7 +17,7 @@ import jp.juggler.subwaytooter.table.MutedWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.showToast
 
 class ActText : AppCompatActivity(), View.OnClickListener {
 	
@@ -225,10 +225,10 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			
 			clipboard.primaryClip = clip
 			
-			Utils.showToast(this, false, R.string.copy_complete)
+			showToast(this, false, R.string.copy_complete)
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			Utils.showToast(this, ex, "copy failed.")
+			showToast(this, ex, "copy failed.")
 		}
 		
 	}
@@ -244,7 +244,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			Utils.showToast(this, ex, "send failed.")
+			showToast(this, ex, "send failed.")
 		}
 		
 	}
@@ -252,7 +252,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 	private fun search() {
 		val sv = selection
 		if( sv.isEmpty() ) {
-			Utils.showToast(this, false, "please select search keyword")
+			showToast(this, false, "please select search keyword")
 			return
 		}
 		try {
@@ -263,7 +263,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			}
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			Utils.showToast(this, ex, "search failed.")
+			showToast(this, ex, "search failed.")
 		}
 		
 	}
@@ -271,7 +271,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 	private fun searchToot(resultCode : Int) {
 		val sv = selection
 		if(sv.isEmpty() ) {
-			Utils.showToast(this, false, "please select search keyword")
+			showToast(this, false, "please select search keyword")
 			return
 		}
 		try {
@@ -291,10 +291,10 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			for(column in App1.getAppState(this).column_list) {
 				column.onMuteAppUpdated()
 			}
-			Utils.showToast(this, false, R.string.word_was_muted)
+			showToast(this, false, R.string.word_was_muted)
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			Utils.showToast(this, ex, "muteWord failed.")
+			showToast(this, ex, "muteWord failed.")
 		}
 		
 	}

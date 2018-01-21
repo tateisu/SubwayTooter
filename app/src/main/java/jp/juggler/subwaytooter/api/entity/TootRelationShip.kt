@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter.api.entity
 import org.json.JSONObject
 
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.parseLong
 
 class TootRelationShip(src : JSONObject) {
 	
@@ -32,7 +32,7 @@ class TootRelationShip(src : JSONObject) {
 	val showing_reblogs : Int
 	
 	init {
-		this.id = Utils.optLongX(src, "id")
+		this.id = src.parseLong("id") ?: - 1L
 		
 		var ov = src.opt("following")
 		if(ov is JSONObject) {

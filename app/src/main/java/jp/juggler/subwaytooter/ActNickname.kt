@@ -19,7 +19,7 @@ import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 
 import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.hideKeyboard
 
 class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialogListener {
 	
@@ -29,7 +29,12 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 		internal const val EXTRA_SHOW_NOTIFICATION_SOUND = "show_notification_sound"
 		internal const val REQUEST_CODE_NOTIFICATION_SOUND = 2
 		
-		fun open(activity : Activity, full_acct : String, bShowNotificationSound : Boolean, requestCode : Int) {
+		fun open(
+			activity : Activity,
+			full_acct : String,
+			bShowNotificationSound : Boolean,
+			requestCode : Int
+		) {
 			val intent = Intent(activity, ActNickname::class.java)
 			intent.putExtra(EXTRA_ACCT, full_acct)
 			intent.putExtra(EXTRA_SHOW_NOTIFICATION_SOUND, bShowNotificationSound)
@@ -78,7 +83,12 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 	
 	private fun initUI() {
 		
-		title = getString(if(show_notification_sound) R.string.nickname_and_color_and_notification_sound else R.string.nickname_and_color)
+		title = getString(
+			if(show_notification_sound)
+				R.string.nickname_and_color_and_notification_sound
+			else
+				R.string.nickname_and_color
+		)
 		setContentView(R.layout.act_nickname)
 		
 		Styler.fixHorizontalPadding(findViewById(R.id.llContent))
@@ -112,7 +122,12 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 		btnNotificationSoundReset.isEnabled = bBefore8
 		
 		etNickname.addTextChangedListener(object : TextWatcher {
-			override fun beforeTextChanged(s : CharSequence, start : Int, count : Int, after : Int) {
+			override fun beforeTextChanged(
+				s : CharSequence,
+				start : Int,
+				count : Int,
+				after : Int
+			) {
 			
 			}
 			
@@ -129,7 +144,8 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 	private fun load() {
 		bLoading = true
 		
-		findViewById<View>(R.id.llNotificationSound).visibility = if(show_notification_sound) View.VISIBLE else View.GONE
+		findViewById<View>(R.id.llNotificationSound).visibility =
+			if(show_notification_sound) View.VISIBLE else View.GONE
 		
 		tvAcct.text = acct
 		
@@ -146,13 +162,17 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 	private fun save() {
 		if(bLoading) return
 		AcctColor(
-			acct, etNickname.text.toString().trim { it <= ' ' }, color_fg, color_bg, notification_sound_uri
+			acct,
+			etNickname.text.toString().trim { it <= ' ' },
+			color_fg,
+			color_bg,
+			notification_sound_uri
 		).save(System.currentTimeMillis())
 	}
 	
 	private fun show() {
 		val s = etNickname.text.toString().trim { it <= ' ' }
-		tvPreview.text = if( s.isNotEmpty() ) s else acct
+		tvPreview.text = if(s.isNotEmpty()) s else acct
 		var c : Int
 		
 		c = color_fg
@@ -167,7 +187,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 		val builder : ColorPickerDialog.Builder
 		when(v.id) {
 			R.id.btnTextColorEdit -> {
-				Utils.hideKeyboard(this, etNickname)
+				etNickname.hideKeyboard()
 				builder = ColorPickerDialog.newBuilder()
 					.setDialogType(ColorPickerDialog.TYPE_CUSTOM)
 					.setAllowPresets(true)
@@ -176,12 +196,14 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 				if(color_fg != 0) builder.setColor(color_fg)
 				builder.show(this)
 			}
+			
 			R.id.btnTextColorReset -> {
 				color_fg = 0
 				show()
 			}
+			
 			R.id.btnBackgroundColorEdit -> {
-				Utils.hideKeyboard(this, etNickname)
+				etNickname.hideKeyboard()
 				builder = ColorPickerDialog.newBuilder()
 					.setDialogType(ColorPickerDialog.TYPE_CUSTOM)
 					.setAllowPresets(true)
@@ -190,15 +212,18 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 				if(color_bg != 0) builder.setColor(color_bg)
 				builder.show(this)
 			}
+			
 			R.id.btnBackgroundColorReset -> {
 				color_bg = 0
 				show()
 			}
+			
 			R.id.btnSave -> {
 				save()
 				setResult(Activity.RESULT_OK)
 				finish()
 			}
+			
 			R.id.btnDiscard -> {
 				setResult(Activity.RESULT_CANCELED)
 				finish()
@@ -228,7 +253,9 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
 		try {
 			val notification_sound_uri = this.notification_sound_uri
-			val uri = if(notification_sound_uri?.isEmpty() != false ) null else Uri.parse(notification_sound_uri)
+			val uri = if(notification_sound_uri?.isEmpty() != false) null else Uri.parse(
+				notification_sound_uri
+			)
 			if(uri != null) {
 				intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri)
 			}
@@ -239,16 +266,15 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 		startActivityForResult(chooser, REQUEST_CODE_NOTIFICATION_SOUND)
 	}
 	
-	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent) {
+	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
 		if(resultCode == Activity.RESULT_OK && requestCode == REQUEST_CODE_NOTIFICATION_SOUND) {
 			// RINGTONE_PICKERからの選択されたデータを取得する
-			val uri = Utils.getExtraObject(data, RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
-			if(uri is Uri ) {
+			val uri = data?.extras?.get(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+			if(uri is Uri) {
 				notification_sound_uri = uri.toString()
 			}
 		}
 		super.onActivityResult(requestCode, resultCode, data)
 	}
-	
 	
 }

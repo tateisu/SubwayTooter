@@ -6,7 +6,7 @@ import android.widget.Button
 import android.widget.TextView
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.scan
 
 internal abstract class ViewHolderHeaderBase(val activity : ActMain, val viewRoot : View) :
 	RecyclerView.ViewHolder(viewRoot) {
@@ -19,7 +19,7 @@ internal abstract class ViewHolderHeaderBase(val activity : ActMain, val viewRoo
 	internal lateinit var access_info : SavedAccount
 	
 	init {
-		Utils.scanView(viewRoot) { v ->
+		viewRoot.scan { v ->
 			try {
 				if(v is Button) {
 					// ボタンは太字なので触らない

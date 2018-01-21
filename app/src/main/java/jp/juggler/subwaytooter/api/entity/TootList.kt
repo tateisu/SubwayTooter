@@ -7,7 +7,8 @@ import org.json.JSONObject
 import java.util.ArrayList
 import java.util.regex.Pattern
 
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.parseLong
+import jp.juggler.subwaytooter.util.parseString
 
 class TootList(
 	val id : Long,
@@ -25,13 +26,13 @@ class TootList(
 	}
 	
 	constructor(src : JSONObject) : this(
-		id = Utils.optLongX(src, "id"),
-		title = Utils.optStringX(src, "title")
+		id = src.parseLong("id") ?: - 1L,
+		title = src.parseString("title")
 	)
 	
 	companion object {
 		private var log = LogCategory("TootList")
-
+		
 		private val reNumber = Pattern.compile("(\\d+)")
 		
 		private fun makeTitleForSort(title : String?) : ArrayList<Any> {
@@ -62,12 +63,12 @@ class TootList(
 			}
 			return list
 		}
-
-		private fun compareLong(a:Long ,b:Long):Int{
+		
+		private fun compareLong(a : Long, b : Long) : Int {
 			return a.compareTo(b)
 		}
 		
-		private fun compareString(a:String ,b:String):Int{
+		private fun compareString(a : String, b : String) : Int {
 			return a.compareTo(b)
 		}
 	}
@@ -94,7 +95,7 @@ class TootList(
 				if(ob == null) 0 else - 1
 			} else if(ob == null) {
 				1
-			}else {
+			} else {
 				
 				when {
 					oa is Long && ob is Long -> compareLong(oa, ob)
@@ -102,10 +103,11 @@ class TootList(
 					else -> (ob is Long).b2i() - (oa is Long).b2i()
 				}
 			}
-			log.d("%s %s %s"
-				,oa
-				,if(delta<0) "<" else if(delta>0)">" else "="
-				,ob
+			log.d(
+				"%s %s %s"
+				, oa
+				, if(delta < 0) "<" else if(delta > 0) ">" else "="
+				, ob
 			)
 			if(delta != 0) return delta
 			++ i

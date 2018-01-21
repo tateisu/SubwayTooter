@@ -19,15 +19,14 @@ import com.woxthebox.draglistview.DragListView
 import com.woxthebox.draglistview.swipe.ListSwipeHelper
 import com.woxthebox.draglistview.swipe.ListSwipeItem
 
-import org.json.JSONObject
-
 import java.lang.ref.WeakReference
 import java.util.ArrayList
 
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.showToast
+import jp.juggler.subwaytooter.util.toJsonObject
 
 class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	
@@ -236,7 +235,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	private fun create() {
 		DlgTextInput.show(this, getString(R.string.new_item), "", object : DlgTextInput.Callback {
 			override fun onEmptyError() {
-				Utils.showToast(this@ActHighlightWordList, true, R.string.word_empty)
+				showToast(this@ActHighlightWordList, true, R.string.word_empty)
 			}
 			
 			override fun onOK(dialog : Dialog, text : String) {
@@ -264,7 +263,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
 		if(requestCode == REQUEST_CODE_EDIT && resultCode == RESULT_OK && data != null) {
 			try {
-				val item = HighlightWord(JSONObject(data.getStringExtra(ActHighlightWordEdit.EXTRA_ITEM)))
+				val item = HighlightWord(data.getStringExtra(ActHighlightWordEdit.EXTRA_ITEM).toJsonObject())
 				item.save()
 				loadData()
 				return

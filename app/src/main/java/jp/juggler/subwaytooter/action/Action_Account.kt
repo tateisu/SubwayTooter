@@ -21,7 +21,7 @@ import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.dialog.LoginForm
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.showToast
 import org.json.JSONObject
 
 object Action_Account {
@@ -81,7 +81,7 @@ object Action_Account {
 									}
 									
 									override fun onEmptyError() {
-										Utils.showToast(activity, true, R.string.token_not_specified)
+										showToast(activity, true, R.string.token_not_specified)
 									}
 								}
 							)
@@ -90,7 +90,7 @@ object Action_Account {
 							// 疑似アカウントを追加
 							val a = addPseudoAccount(activity, instance)
 							if(a != null) {
-								Utils.showToast(activity, false, R.string.server_confirmed)
+								showToast(activity, false, R.string.server_confirmed)
 								val pos = App1.getAppState(activity).column_list.size
 								activity.addColumn(pos, a, Column.TYPE_LOCAL)
 								
@@ -114,7 +114,7 @@ object Action_Account {
 								.setNeutralButton(R.string.close, null)
 								.show()
 						} else {
-							Utils.showToast(activity, true, error)
+							showToast(activity, true, error)
 						}
 					}
 				}

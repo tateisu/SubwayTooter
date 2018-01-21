@@ -19,7 +19,8 @@ class TaskList {
 	
 	private lateinit var _list : LinkedList<JSONObject>
 	
-	@Synchronized private fun prepareList(context : Context) : LinkedList<JSONObject> {
+	@Synchronized
+	private fun prepareList(context : Context) : LinkedList<JSONObject> {
 		if(! ::_list.isInitialized) {
 			_list = LinkedList()
 			
@@ -27,7 +28,7 @@ class TaskList {
 				context.openFileInput(FILE_TASK_LIST).use { inputStream ->
 					val bao = ByteArrayOutputStream()
 					IOUtils.copy(inputStream, bao)
-					val array = JSONArray(Utils.decodeUTF8(bao.toByteArray()))
+					val array = bao.toByteArray().decodeUTF8().toJsonArray()
 					var i = 0
 					val ie = array.length()
 					while(i < ie) {
@@ -47,7 +48,8 @@ class TaskList {
 		return _list
 	}
 	
-	@Synchronized private fun saveArray(context : Context) {
+	@Synchronized
+	private fun saveArray(context : Context) {
 		val list = prepareList(context)
 		try {
 			log.d("saveArray size=%s", list.size)
@@ -55,10 +57,9 @@ class TaskList {
 			for(item in list) {
 				array.put(item)
 			}
-			val data = Utils.encodeUTF8(array.toString())
-			context.openFileOutput(FILE_TASK_LIST, Context.MODE_PRIVATE).use { outStream ->
-				IOUtils.write(data, outStream)
-			}
+			val data = array.toString().encodeUTF8()
+			context.openFileOutput(FILE_TASK_LIST, Context.MODE_PRIVATE)
+				.use { IOUtils.write(data, it) }
 		} catch(ex : Throwable) {
 			log.trace(ex)
 			log.e(ex, "TaskList: saveArray failed.size=%s", list.size)

@@ -19,7 +19,8 @@ import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.util.LinkClickContext
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.parseString
+import jp.juggler.subwaytooter.util.toJsonObject
 
 class SavedAccount(
 	val db_id : Long,
@@ -92,7 +93,7 @@ class SavedAccount(
 		cursor.getString(cursor.getColumnIndex(COL_HOST)) // host
 	) {
 
-		val jsonAccount = JSONObject(cursor.getString(cursor.getColumnIndex(COL_ACCOUNT)))
+		val jsonAccount = cursor.getString(cursor.getColumnIndex(COL_ACCOUNT)).toJsonObject()
 
 		val loginAccount = TootAccount.parse(
 			context,
@@ -133,7 +134,7 @@ class SavedAccount(
 		
 		this.register_time = cursor.getLong(cursor.getColumnIndex(COL_REGISTER_TIME))
 		
-		this.token_info = JSONObject(cursor.getString(cursor.getColumnIndex(COL_TOKEN)))
+		this.token_info = cursor.getString(cursor.getColumnIndex(COL_TOKEN)).toJsonObject()
 		
 		this.sound_uri = cursor.getString(cursor.getColumnIndex(COL_SOUND_URI))
 	}
@@ -561,7 +562,7 @@ class SavedAccount(
 			
 		}
 		
-		val REGISTER_KEY_UNREGISTERED = "unregistered"
+		const val REGISTER_KEY_UNREGISTERED = "unregistered"
 		
 		fun clearRegistrationCache() {
 			val cv = ContentValues()
@@ -735,7 +736,7 @@ class SavedAccount(
 	}
 	
 	fun getAccessToken() : String? {
-		return token_info?.let { Utils.optStringX(it, "access_token") }
+		return token_info?.parseString("access_token")
 	}
 	
 }

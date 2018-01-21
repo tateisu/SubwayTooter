@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter
 import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
+import jp.juggler.subwaytooter.util.optInt
 
 object Pref {
 	
@@ -99,6 +100,8 @@ object Pref {
 		override fun put(editor : SharedPreferences.Editor, v : String) {
 			editor.putString(key, v)
 		}
+		
+		fun optInt(pref : SharedPreferences) = invoke(pref).optInt() ?: defVal.optInt()
 	}
 	
 	// boolean

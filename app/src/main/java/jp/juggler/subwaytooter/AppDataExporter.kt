@@ -21,7 +21,7 @@ import java.util.HashMap
 import java.util.Locale
 
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.parseLong
 
 object AppDataExporter {
 	
@@ -69,7 +69,13 @@ object AppDataExporter {
 						
 					}
 					
-					else -> throw RuntimeException(String.format(Locale.JAPAN, "bad data type: JSONObject key =%s", k))
+					else -> throw RuntimeException(
+						String.format(
+							Locale.JAPAN,
+							"bad data type: JSONObject key =%s",
+							k
+						)
+					)
 				}
 			}
 		}
@@ -94,7 +100,14 @@ object AppDataExporter {
 				
 				JsonToken.NUMBER -> dst.put(name, reader.nextDouble())
 				
-				else -> throw RuntimeException(String.format(Locale.JAPAN, "bad data type: %s key =%s", token, name))
+				else -> throw RuntimeException(
+					String.format(
+						Locale.JAPAN,
+						"bad data type: %s key =%s",
+						token,
+						name
+					)
+				)
 			}
 		}
 		reader.endObject()
@@ -216,7 +229,8 @@ object AppDataExporter {
 					} // 無視する
 				}
 				reader.endObject()
-				val new_id = db.insertWithOnConflict(table, null, cv, SQLiteDatabase.CONFLICT_REPLACE)
+				val new_id =
+					db.insertWithOnConflict(table, null, cv, SQLiteDatabase.CONFLICT_REPLACE)
 				if(new_id == - 1L) {
 					throw RuntimeException("importTable: invalid row_id")
 				}
@@ -251,7 +265,13 @@ object AppDataExporter {
 					(v is Float && v.isNaN()) -> writer.value(MAGIC_NAN)
 					else -> writer.value(v)
 				}
-				else -> throw RuntimeException(String.format(Locale.JAPAN, "writePref. bad data type: Preference key =%s", k))
+				else -> throw RuntimeException(
+					String.format(
+						Locale.JAPAN,
+						"writePref. bad data type: Preference key =%s",
+						k
+					)
+				)
 			}
 		}
 		writer.endObject()
@@ -271,7 +291,7 @@ object AppDataExporter {
 				continue
 			}
 			
-			val prefItem = Pref.map.get(k)
+			val prefItem = Pref.map[k]
 			when(prefItem) {
 				is Pref.BooleanPref -> e.putBoolean(k, reader.nextBoolean())
 				is Pref.IntPref -> e.putInt(k, reader.nextInt())
@@ -312,16 +332,21 @@ object AppDataExporter {
 	}
 	
 	@Throws(IOException::class, JSONException::class)
-	private fun readColumn(app_state : AppState, reader : JsonReader, id_map : HashMap<Long, Long>) : ArrayList<Column> {
+	private fun readColumn(
+		app_state : AppState,
+		reader : JsonReader,
+		id_map : HashMap<Long, Long>
+	) : ArrayList<Column> {
 		val result = ArrayList<Column>()
 		reader.beginArray()
 		while(reader.hasNext()) {
 			val item = readJsonObject(reader)
-			val old_id = Utils.optLongX(item, Column.KEY_ACCOUNT_ROW_ID, - 1L)
+			val old_id = item.parseLong(Column.KEY_ACCOUNT_ROW_ID) ?: - 1L
 			if(old_id == - 1L) {
 				// 検索カラムは NAアカウントと紐ついている。変換の必要はない
 			} else {
-				val new_id = id_map[old_id] ?: throw RuntimeException("readColumn: can't convert account id")
+				val new_id =
+					id_map[old_id] ?: throw RuntimeException("readColumn: can't convert account id")
 				item.put(Column.KEY_ACCOUNT_ROW_ID, new_id)
 			}
 			try {

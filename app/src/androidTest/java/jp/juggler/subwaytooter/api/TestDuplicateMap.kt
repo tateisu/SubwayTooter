@@ -24,7 +24,7 @@ class TestDuplicateMap {
 		)
 	)
 	
-	private val generatedItems = ArrayList<Any>()
+	private val generatedItems = ArrayList<TimelineItem>()
 	
 	private fun genStatus(
 		parser : TootParser,

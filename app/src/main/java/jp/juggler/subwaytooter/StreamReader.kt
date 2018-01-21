@@ -4,8 +4,6 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Handler
 
-import org.json.JSONObject
-
 import java.net.ProtocolException
 import java.util.LinkedList
 import java.util.concurrent.atomic.AtomicBoolean
@@ -20,8 +18,9 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.TootPayload
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
 import jp.juggler.subwaytooter.util.WordTrieTree
+import jp.juggler.subwaytooter.util.runOnMainLooper
+import jp.juggler.subwaytooter.util.toJsonObject
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
@@ -103,7 +102,7 @@ internal class StreamReader(
 		override fun onMessage(webSocket : WebSocket, text : String) {
 			// log.d( "WebSocket onMessage. url=%s, message=%s", webSocket.request().url(), text );
 			try {
-				val obj = JSONObject(text)
+				val obj = text.toJsonObject()
 				
 				val event = obj.optString("event")
 				if(event == null || event.isEmpty()) {
@@ -117,9 +116,9 @@ internal class StreamReader(
 					return
 				}
 				
-				Utils.runOnMainThread {
+				runOnMainLooper {
 					synchronized(this) {
-						if(bDisposed.get()) return@runOnMainThread
+						if(bDisposed.get()) return@runOnMainLooper
 						for(callback in callback_list) {
 							try {
 								callback(event, payload)
@@ -250,7 +249,7 @@ internal class StreamReader(
 		streamCallback : (event_type : String, item : Any?) -> Unit
 	) {
 		val reader = prepareReader(accessInfo, endPoint, highlightTrie)
-
+		
 		reader.addCallback(streamCallback)
 		
 		if(! reader.bListening.get()) {

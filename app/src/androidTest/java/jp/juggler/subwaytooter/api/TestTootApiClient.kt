@@ -1,3 +1,5 @@
+@file:Suppress("MemberVisibilityCanBePrivate")
+
 package jp.juggler.subwaytooter.api
 
 import android.support.test.InstrumentationRegistry

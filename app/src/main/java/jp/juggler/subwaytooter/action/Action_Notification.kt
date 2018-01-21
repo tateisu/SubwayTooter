@@ -12,7 +12,7 @@ import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.showToast
 import okhttp3.Request
 import okhttp3.RequestBody
 
@@ -49,9 +49,9 @@ object Action_Notification {
 							column.removeNotifications()
 						}
 					}
-					Utils.showToast(activity, false, R.string.delete_succeeded)
+					showToast(activity, false, R.string.delete_succeeded)
 				} else {
-					Utils.showToast(activity, false, result.error)
+					showToast(activity, false, result.error)
 				}
 				
 			}
@@ -81,9 +81,9 @@ object Action_Notification {
 					for(column in App1.getAppState(activity).column_list) {
 						column.removeNotificationOne(access_info, notification)
 					}
-					Utils.showToast(activity, true, R.string.delete_succeeded)
+					showToast(activity, true, R.string.delete_succeeded)
 				} else {
-					Utils.showToast(activity, true, result.error)
+					showToast(activity, true, result.error)
 				}
 				
 			}

@@ -28,7 +28,7 @@ import jp.juggler.subwaytooter.dialog.DlgQRCode
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.showToast
 
 @SuppressLint("InflateParams")
 internal class DlgContextMenu(
@@ -484,14 +484,14 @@ internal class DlgContextMenu(
 			R.id.btnDomainBlock -> who?.let { who ->
 				// 疑似アカウントではドメインブロックできない
 				if(access_info.isPseudo) {
-					Utils.showToast(activity, false, R.string.domain_block_from_pseudo)
+					showToast(activity, false, R.string.domain_block_from_pseudo)
 					return@let
 				}
 				val who_host = who.host
 
 				// 自分のドメインではブロックできない
 				if( access_info.host.equals(who_host,ignoreCase = true)) {
-					Utils.showToast(activity, false, R.string.domain_block_from_local)
+					showToast(activity, false, R.string.domain_block_from_local)
 					return@let
 				}
 				AlertDialog.Builder(activity)

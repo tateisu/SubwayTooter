@@ -4,8 +4,6 @@ import android.content.Context
 import android.os.Handler
 import android.os.SystemClock
 
-import org.json.JSONArray
-
 import java.util.ArrayList
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -159,7 +157,7 @@ class CustomEmojiLister(internal val context : Context) {
 							var item : CacheItem? = cache[request.instance]
 							if(item == null) {
 								item = CacheItem(request.instance, list)
-								cache.put(request.instance, item)
+								cache[request.instance] = item
 							} else {
 								item.list = list
 								item.time_update = now
@@ -204,7 +202,7 @@ class CustomEmojiLister(internal val context : Context) {
 		
 		private fun decodeEmojiList(data : String, instance : String) : ArrayList<CustomEmoji>? {
 			return try {
-				val list = parseList(::CustomEmoji, JSONArray(data))
+				val list = parseList(::CustomEmoji, data.toJsonArray() )
 				list.sortWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it.shortcode }))
 				list
 			} catch(ex : Throwable) {

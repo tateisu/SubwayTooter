@@ -11,7 +11,8 @@ import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootList
 import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.showToast
+import jp.juggler.subwaytooter.util.withCaption
 import okhttp3.Request
 import okhttp3.RequestBody
 
@@ -34,7 +35,7 @@ object Action_List {
 				try {
 					content.put("title", title)
 				} catch(ex : Throwable) {
-					return TootApiResult(Utils.formatError(ex, "can't encoding json parameter."))
+					return TootApiResult(ex.withCaption("can't encoding json parameter."))
 				}
 				
 				val request_builder = Request.Builder().post(
@@ -60,11 +61,11 @@ object Action_List {
 						column.onListListUpdated(access_info)
 					}
 					
-					Utils.showToast(activity, false, R.string.list_created)
+					showToast(activity, false, R.string.list_created)
 					
 					callback?.onCreated(list)
 				} else {
-					Utils.showToast(activity, false, result.error)
+					showToast(activity, false, result.error)
 				}
 			}
 		})
@@ -88,10 +89,10 @@ object Action_List {
 						column.onListListUpdated(access_info)
 					}
 					
-					Utils.showToast(activity, false, R.string.delete_succeeded)
+					showToast(activity, false, R.string.delete_succeeded)
 					
 				} else {
-					Utils.showToast(activity, false, result.error)
+					showToast(activity, false, result.error)
 				}
 			}
 		})

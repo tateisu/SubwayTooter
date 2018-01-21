@@ -2,8 +2,9 @@ package jp.juggler.subwaytooter.api.entity
 
 import org.json.JSONObject
 
-import jp.juggler.subwaytooter.util.Utils
 import jp.juggler.subwaytooter.util.VersionString
+import jp.juggler.subwaytooter.util.parseLong
+import jp.juggler.subwaytooter.util.parseString
 
 class TootInstance(src : JSONObject) {
 	
@@ -35,16 +36,15 @@ class TootInstance(src : JSONObject) {
 	
 	// XXX: urls をパースしてない。使ってないから…
 	
-
 	init {
-		this.uri = Utils.optStringX(src, "uri")
-		this.title = Utils.optStringX(src, "title")
-		this.description = Utils.optStringX(src, "description")
-		this.email = Utils.optStringX(src, "email")
-		this.version = Utils.optStringX(src, "version")
+		this.uri = src.parseString("uri")
+		this.title = src.parseString("title")
+		this.description = src.parseString("description")
+		this.email = src.parseString("email")
+		this.version = src.parseString("version")
 		this.decoded_version = VersionString(version)
-		this.stats = parseItem(::Stats,src.optJSONObject("stats"))
-		this.thumbnail = Utils.optStringX(src, "thumbnail")
+		this.stats = parseItem(::Stats, src.optJSONObject("stats"))
+		this.thumbnail = src.parseString("thumbnail")
 	}
 	
 	class Stats(src : JSONObject) {
@@ -53,9 +53,9 @@ class TootInstance(src : JSONObject) {
 		val domain_count : Long
 		
 		init {
-			this.user_count = Utils.optLongX(src, "user_count", - 1L)
-			this.status_count = Utils.optLongX(src, "status_count", - 1L)
-			this.domain_count = Utils.optLongX(src, "domain_count", - 1L)
+			this.user_count = src.parseLong("user_count") ?: - 1L
+			this.status_count = src.parseLong("status_count") ?: - 1L
+			this.domain_count = src.parseLong("domain_count") ?: - 1L
 		}
 	}
 	

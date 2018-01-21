@@ -27,7 +27,6 @@ import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.AppCompatActivity
-import android.support.v7.widget.DefaultItemAnimator
 import android.view.Menu
 import android.view.MenuItem
 import android.view.Window
@@ -214,7 +213,7 @@ class ActMain : AppCompatActivity()
 			if(tag is ItemViewHolder) {
 				column = tag.column
 				break
-			}else if(tag is ViewHolderItem ) {
+			} else if(tag is ViewHolderItem) {
 				column = tag.ivh.column
 				break
 			} else if(tag is ViewHolderHeaderBase) {
@@ -267,27 +266,27 @@ class ActMain : AppCompatActivity()
 	////////////////////////////////////////////////////////////////////////////
 	
 	val follow_complete_callback : EmptyCallback = {
-		Utils.showToast(this@ActMain, false, R.string.follow_succeeded)
+		showToast(this@ActMain, false, R.string.follow_succeeded)
 	}
 	
 	val unfollow_complete_callback : EmptyCallback = {
-		Utils.showToast(this@ActMain, false, R.string.unfollow_succeeded)
+		showToast(this@ActMain, false, R.string.unfollow_succeeded)
 	}
 	
 	val favourite_complete_callback : EmptyCallback = {
-		Utils.showToast(this@ActMain, false, R.string.favourite_succeeded)
+		showToast(this@ActMain, false, R.string.favourite_succeeded)
 	}
 	
 	val unfavourite_complete_callback : EmptyCallback = {
-		Utils.showToast(this@ActMain, false, R.string.unfavourite_succeeded)
+		showToast(this@ActMain, false, R.string.unfavourite_succeeded)
 	}
 	
 	val boost_complete_callback : EmptyCallback = {
-		Utils.showToast(this@ActMain, false, R.string.boost_succeeded)
+		showToast(this@ActMain, false, R.string.boost_succeeded)
 	}
 	
 	val unboost_complete_callback : EmptyCallback = {
-		Utils.showToast(this@ActMain, false, R.string.unboost_succeeded)
+		showToast(this@ActMain, false, R.string.unboost_succeeded)
 	}
 	
 	private var nScreenColumn : Int = 0
@@ -454,12 +453,13 @@ class ActMain : AppCompatActivity()
 		// アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
 		run {
 			val new_order = ArrayList<Int>()
-			for( i in 0 until app_state.column_list.size){
+			for(i in 0 until app_state.column_list.size) {
 				val column = app_state.column_list[i]
 				
 				if(! column.access_info.isNA) {
-					val sa = SavedAccount.loadAccount(this@ActMain, column.access_info.db_id)
-					if(sa == null) continue
+					// 存在確認
+					SavedAccount.loadAccount(this@ActMain, column.access_info.db_id)
+						?: continue
 				}
 				new_order.add(i)
 			}
@@ -484,7 +484,7 @@ class ActMain : AppCompatActivity()
 		updateColumnStripSelection(- 1, - 1f)
 		
 		for(c in app_state.column_list) {
-			c.fireShowContent(reason="ActMain onStart",reset=true)
+			c.fireShowContent(reason = "ActMain onStart", reset = true)
 		}
 		
 		// 相対時刻表示
@@ -634,7 +634,8 @@ class ActMain : AppCompatActivity()
 		post_helper.in_reply_to_id = - 1L
 		post_helper.attachment_list = null
 		
-		Utils.hideKeyboard(this, etQuickToot)
+		etQuickToot.hideKeyboard()
+
 		post_helper.post(
 			account
 			, false
@@ -738,7 +739,10 @@ class ActMain : AppCompatActivity()
 					val idx = data.getIntExtra(ActColumnCustomize.EXTRA_COLUMN_INDEX, 0)
 					if(idx >= 0 && idx < app_state.column_list.size) {
 						app_state.column_list[idx].fireColumnColor()
-						app_state.column_list[idx].fireShowContent(reason="ActMain column color changed",reset=true)
+						app_state.column_list[idx].fireShowContent(
+							reason = "ActMain column color changed",
+							reset = true
+						)
 					}
 					updateColumnStrip()
 				}
@@ -858,7 +862,7 @@ class ActMain : AppCompatActivity()
 					if(vs == ve && vs != RecyclerView.NO_POSITION) {
 						app_state.column_list[vs].let(closer)
 					} else {
-						Utils.showToast(
+						showToast(
 							this,
 							false,
 							getString(R.string.cant_close_column_by_back_button_when_multiple_column_shown)
@@ -1246,10 +1250,10 @@ class ActMain : AppCompatActivity()
 			})
 			
 			env.tablet_pager.itemAnimator = null
-//			val animator = env.tablet_pager.itemAnimator
-//			if( animator is DefaultItemAnimator){
-//				animator.supportsChangeAnimations = false
-//			}
+			//			val animator = env.tablet_pager.itemAnimator
+			//			if( animator is DefaultItemAnimator){
+			//				animator.supportsChangeAnimations = false
+			//			}
 			
 			env.tablet_snap_helper = GravitySnapHelper(Gravity.START)
 			env.tablet_snap_helper.attachToRecyclerView(env.tablet_pager)
@@ -1423,7 +1427,7 @@ class ActMain : AppCompatActivity()
 					status_id
 				)
 			} catch(ex : Throwable) {
-				Utils.showToast(this, ex, "can't parse status id.")
+				showToast(this, ex, "can't parse status id.")
 			}
 			
 			return
@@ -1575,7 +1579,7 @@ class ActMain : AppCompatActivity()
 						client.account = sa
 					} catch(ex : Throwable) {
 						log.trace(ex)
-						return TootApiResult(Utils.formatError(ex, "invalid state"))
+						return TootApiResult(ex.withCaption("invalid state"))
 					}
 					
 				} else if(sv.startsWith("host:")) {
@@ -1622,27 +1626,27 @@ class ActMain : AppCompatActivity()
 			// cancelled.
 			
 		} else if(error != null) {
-			Utils.showToast(this@ActMain, true, result.error)
+			showToast(this@ActMain, true, result.error)
 			
 		} else if(token_info == null) {
-			Utils.showToast(this@ActMain, true, "can't get access token.")
+			showToast(this@ActMain, true, "can't get access token.")
 			
 		} else if(jsonObject == null) {
-			Utils.showToast(this@ActMain, true, "can't parse json response.")
+			showToast(this@ActMain, true, "can't parse json response.")
 			
 		} else if(ta == null) {
 			// 自分のユーザネームを取れなかった
 			// …普通はエラーメッセージが設定されてるはずだが
-			Utils.showToast(this@ActMain, true, "can't verify user credential.")
+			showToast(this@ActMain, true, "can't verify user credential.")
 			
 		} else if(sa != null) {
 			// アクセストークン更新時
 			
 			// インスタンスは同じだと思うが、ユーザ名が異なる可能性がある
 			if(sa.username != ta.username) {
-				Utils.showToast(this@ActMain, true, R.string.user_name_not_match)
+				showToast(this@ActMain, true, R.string.user_name_not_match)
 			} else {
-				Utils.showToast(this@ActMain, false, R.string.access_token_updated_for, sa.acct)
+				showToast(this@ActMain, false, R.string.access_token_updated_for, sa.acct)
 				
 				// DBの情報を更新する
 				sa.updateTokenInfo(token_info)
@@ -1690,7 +1694,7 @@ class ActMain : AppCompatActivity()
 				if(bModified) {
 					account.saveSetting()
 				}
-				Utils.showToast(this@ActMain, false, R.string.account_confirmed)
+				showToast(this@ActMain, false, R.string.account_confirmed)
 				
 				// 通知の更新が必要かもしれない
 				PollingWorker.queueUpdateNotification(this@ActMain)
@@ -1771,7 +1775,7 @@ class ActMain : AppCompatActivity()
 				}
 				
 				override fun onEmptyError() {
-					Utils.showToast(this@ActMain, true, R.string.token_not_specified)
+					showToast(this@ActMain, true, R.string.token_not_specified)
 				}
 			})
 	}
@@ -1802,7 +1806,7 @@ class ActMain : AppCompatActivity()
 	fun closeColumn(bConfirm : Boolean, column : Column) {
 		
 		if(column.dont_close) {
-			Utils.showToast(this, false, R.string.column_has_dont_close_option)
+			showToast(this, false, R.string.column_has_dont_close_option)
 			return
 		}
 		
@@ -1920,7 +1924,7 @@ class ActMain : AppCompatActivity()
 							)
 						}
 					} catch(ex : Throwable) {
-						Utils.showToast(this, ex, "can't parse status id.")
+						showToast(this, ex, "can't parse status id.")
 					}
 					
 					return
@@ -2063,8 +2067,6 @@ class ActMain : AppCompatActivity()
 		return false
 	}
 	
-
-	
 	private fun addColumn(column : Column, indexArg : Int) : Int {
 		var index = indexArg
 		val size = app_state.column_list.size
@@ -2197,13 +2199,13 @@ class ActMain : AppCompatActivity()
 		env.tablet_pager_adapter.notifyDataSetChanged()
 	}
 	
-	private fun scrollToColumn(index : Int, smoothScroll:Boolean = true ) {
+	private fun scrollToColumn(index : Int, smoothScroll : Boolean = true) {
 		scrollColumnStrip(index)
 		phoneTab(
-
+			
 			// スマホはスムーススクロール基本ありだがたまにしない
 			{ env -> env.pager.setCurrentItem(index, smoothScroll) },
-
+			
 			// タブレットでスムーススクロールさせると頻繁にオーバーランするので絶対しない
 			{ env -> env.tablet_pager.scrollToPosition(index) }
 		)
@@ -2238,7 +2240,7 @@ class ActMain : AppCompatActivity()
 			AsyncTask<Void, String, ArrayList<Column>?>() {
 			
 			internal fun setProgressMessage(sv : String) {
-				Utils.runOnMainThread { progress.setMessage(sv) }
+				runOnMainLooper { progress.setMessage(sv) }
 			}
 			
 			override fun doInBackground(vararg params : Void) : ArrayList<Column>? {
@@ -2256,7 +2258,7 @@ class ActMain : AppCompatActivity()
 					// ローカルファイルにコピーする
 					val source = contentResolver.openInputStream(uri)
 					if(source == null) {
-						Utils.showToast(this@ActMain, true, "openInputStream failed.")
+						showToast(this@ActMain, true, "openInputStream failed.")
 						return null
 					} else {
 						source.use { inStream ->
@@ -2281,7 +2283,7 @@ class ActMain : AppCompatActivity()
 					}
 				} catch(ex : Throwable) {
 					log.trace(ex)
-					Utils.showToast(this@ActMain, ex, "importAppData failed.")
+					showToast(this@ActMain, ex, "importAppData failed.")
 				}
 				
 				return null
@@ -2360,7 +2362,7 @@ class ActMain : AppCompatActivity()
 	
 	private fun resizeAutoCW(column_w : Int) {
 		val sv = Pref.spAutoCWLines(pref)
-		nAutoCwLines = Utils.parse_int(sv, - 1)
+		nAutoCwLines = sv.optInt() ?: - 1
 		if(nAutoCwLines > 0) {
 			val lv_pad = (0.5f + 12 * density).toInt()
 			val icon_width = avatarIconSize

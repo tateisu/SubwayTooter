@@ -38,8 +38,6 @@ import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 
-import org.json.JSONArray
-
 import java.util.LinkedList
 
 import jp.juggler.subwaytooter.api.TootApiClient
@@ -48,9 +46,7 @@ import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.ProgressResponseBody
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.PinchBitmapView
 
 class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
@@ -68,11 +64,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		internal const val EXTRA_IDX = "idx"
 		internal const val EXTRA_DATA = "data"
 		
-		internal fun <T: TootAttachmentLike> encodeMediaList(list : ArrayList<T>?)
-			= list?.encodeJson()?.toString() ?: "[]"
+		internal fun <T : TootAttachmentLike> encodeMediaList(list : ArrayList<T>?) =
+			list?.encodeJson()?.toString() ?: "[]"
 		
-		internal fun decodeMediaList(src : String?)
-			= parseList(::TootAttachment,JSONArray(src))
+		internal fun decodeMediaList(src : String?) = parseList(::TootAttachment, src?.toJsonArray() )
 		
 		fun open(activity : ActMain, list : ArrayList<TootAttachmentLike>, idx : Int) {
 			val intent = Intent(activity, ActMediaViewer::class.java)
@@ -102,7 +97,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			log.d("exoPlayer onTimelineChanged")
 		}
 		
-		override fun onTracksChanged(trackGroups : TrackGroupArray?, trackSelections : TrackSelectionArray?) {
+		override fun onTracksChanged(
+			trackGroups : TrackGroupArray?,
+			trackSelections : TrackSelectionArray?
+		) {
 			log.d("exoPlayer onTracksChanged")
 			
 		}
@@ -119,7 +117,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				val now = SystemClock.elapsedRealtime()
 				if(now - buffering_last_shown >= short_limit && exoPlayer.duration >= short_limit) {
 					buffering_last_shown = now
-					Utils.showToast(this@ActMediaViewer, false, R.string.video_buffering)
+					showToast(this@ActMediaViewer, false, R.string.video_buffering)
 				}
 				/*
 					exoPlayer.getDuration() may returns negative value (TIME_UNSET ,same as Long.MIN_VALUE + 1).
@@ -133,7 +131,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 		override fun onPlayerError(error : ExoPlaybackException) {
 			log.d("exoPlayer onPlayerError")
-			Utils.showToast(this@ActMediaViewer, error, "player error.")
+			showToast(this@ActMediaViewer, error, "player error.")
 		}
 		
 		override fun onPositionDiscontinuity() {
@@ -148,9 +146,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	
 	override fun onSaveInstanceState(outState : Bundle?) {
 		super.onSaveInstanceState(outState)
-
+		
 		outState ?: return
-
+		
 		outState.putInt(EXTRA_IDX, idx)
 		outState.putString(EXTRA_DATA, encodeMediaList(media_list))
 	}
@@ -210,11 +208,22 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				loadDelta(delta)
 			}
 			
-			override fun onMove(bitmap_w : Float, bitmap_h : Float, tx : Float, ty : Float, scale : Float) {
+			override fun onMove(
+				bitmap_w : Float,
+				bitmap_h : Float,
+				tx : Float,
+				ty : Float,
+				scale : Float
+			) {
 				App1.getAppState(this@ActMediaViewer).handler.post(Runnable {
 					if(isDestroyed) return@Runnable
 					if(tvStatus.visibility == View.VISIBLE) {
-						tvStatus.text = getString(R.string.zooming_of, bitmap_w.toInt(), bitmap_h.toInt(), scale)
+						tvStatus.text = getString(
+							R.string.zooming_of,
+							bitmap_w.toInt(),
+							bitmap_h.toInt(),
+							scale
+						)
 					}
 				})
 			}
@@ -248,7 +257,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		}
 		val ta = media_list[idx]
 		val description = ta.description
-		if( description?.isNotEmpty() == true ){
+		if(description?.isNotEmpty() == true) {
 			svDescription.visibility = View.VISIBLE
 			tvDescription.text = description
 		}
@@ -271,7 +280,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 	}
 	
-	@SuppressLint("StaticFieldLeak") private fun loadVideo(ta : TootAttachment) {
+	@SuppressLint("StaticFieldLeak")
+	private fun loadVideo(ta : TootAttachment) {
 		
 		val url = ta.getLargeUrl(App1.pref)
 		if(url == null) {
@@ -288,7 +298,12 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			this, Util.getUserAgent(this, getString(R.string.app_name)), defaultBandwidthMeter
 		)
 		
-		val mediaSource = ExtractorMediaSource(Uri.parse(url), dataSourceFactory, extractorsFactory, App1.getAppState(this).handler, ExtractorMediaSource.EventListener { error -> showError(Utils.formatError(error, "load error.")) }
+		val mediaSource = ExtractorMediaSource(
+			Uri.parse(url),
+			dataSourceFactory,
+			extractorsFactory,
+			App1.getAppState(this).handler,
+			ExtractorMediaSource.EventListener { showError(it.withCaption("load error.") ) }
 		)
 		exoPlayer.prepare(mediaSource)
 		exoPlayer.playWhenReady = true
@@ -300,9 +315,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		}
 	}
 	
-	@SuppressLint("StaticFieldLeak") private fun loadBitmap(ta : TootAttachment) {
+	@SuppressLint("StaticFieldLeak")
+	private fun loadBitmap(ta : TootAttachment) {
 		val urlList = ta.getLargeUrlList(App1.pref)
-		if(urlList.isEmpty() ) {
+		if(urlList.isEmpty()) {
 			showError("missing media attachment url.")
 			return
 		}
@@ -346,17 +362,17 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			internal fun getHttpCached(client : TootApiClient, url : String) : TootApiResult? {
 				val result = TootApiResult.makeWithCaption(url)
 				
-				if(!client.sendRequest(result){
-					okhttp3.Request.Builder()
-						.url(url)
-						.cacheControl(App1.CACHE_5MIN)
-						.build()
-				}) return result
+				if(! client.sendRequest(result) {
+						okhttp3.Request.Builder()
+							.url(url)
+							.cacheControl(App1.CACHE_5MIN)
+							.build()
+					}) return result
 				
-				if( client.isApiCancelled ) return null
+				if(client.isApiCancelled) return null
 				val response = requireNotNull(result.response)
 				if(! response.isSuccessful) {
-					return result.setError( TootApiClient.formatResponse(response,result.caption))
+					return result.setError(TootApiClient.formatResponse(response, result.caption))
 				}
 				
 				try {
@@ -367,15 +383,15 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 						}
 						client.publishApiProgressRatio(bytesRead.toInt(), bytesTotal.toInt())
 					}
-					if( client.isApiCancelled ) return null
+					if(client.isApiCancelled) return null
 				} catch(ex : Throwable) {
-					result.setError( TootApiClient.formatResponse(response,result.caption,"?"))
+					result.setError(TootApiClient.formatResponse(response, result.caption, "?"))
 				}
 				return result
 			}
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
-				if( urlList.isEmpty()) return TootApiResult("missing url")
+				if(urlList.isEmpty()) return TootApiResult("missing url")
 				var result : TootApiResult? = null
 				for(url in urlList) {
 					result = getHttpCached(client, url)
@@ -383,7 +399,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 					if(data != null) {
 						client.publishApiProgress("decoding image…")
 						val bitmap = decodeBitmap(data, 2048)
-						if( bitmap != null ) {
+						if(bitmap != null) {
 							this.bitmap = bitmap
 							break
 						}
@@ -394,10 +410,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			
 			override fun handleResult(result : TootApiResult?) {
 				val bitmap = this.bitmap
-				if(bitmap != null){
+				if(bitmap != null) {
 					pbvImage.setBitmap(bitmap)
-				}else if(result != null){
-					Utils.showToast(this@ActMediaViewer, true, result.error)
+				} else if(result != null) {
+					showToast(this@ActMediaViewer, true, result.error)
 				}
 			}
 		})
@@ -425,7 +441,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				R.id.btnMore -> more(media_list[idx])
 			}
 		} catch(ex : Throwable) {
-			Utils.showToast(this, ex, "action failed.")
+			showToast(this, ex, "action failed.")
 		}
 		
 	}
@@ -434,7 +450,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	
 	private fun download(ta : TootAttachmentLike) {
 		
-		val permissionCheck = ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+		val permissionCheck = ContextCompat.checkSelfPermission(
+			this,
+			android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+		)
 		if(permissionCheck != PackageManager.PERMISSION_GRANTED) {
 			preparePermission()
 			return
@@ -462,7 +481,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 					it.remove()
 				} else if(url == dh.url) {
 					// 履歴に同じURLがあればエラーとする
-					Utils.showToast(this, false, R.string.dont_repeat_download_to_same_url)
+					showToast(this, false, R.string.dont_repeat_download_to_same_url)
 					return
 				}
 			}
@@ -478,7 +497,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				val size = pathSegments.size
 				for(i in size - 1 downTo 0) {
 					val s = pathSegments[i]
-					if( s?.isNotEmpty() == true) {
+					if(s?.isNotEmpty() == true) {
 						fileName = s
 						break
 					}
@@ -506,7 +525,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
 		
 		downLoadManager.enqueue(request)
-		Utils.showToast(this, false, R.string.downloading)
+		showToast(this, false, R.string.downloading)
 	}
 	
 	private fun share(action : String, url : String) {
@@ -523,7 +542,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			
 			startActivity(intent)
 		} catch(ex : Throwable) {
-			Utils.showToast(this, ex, "can't open app.")
+			showToast(this, ex, "can't open app.")
 		}
 		
 	}
@@ -546,10 +565,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			//クリップボードにデータを格納
 			cm.primaryClip = cd
 			
-			Utils.showToast(this, false, R.string.url_is_copied)
+			showToast(this, false, R.string.url_is_copied)
 			
 		} catch(ex : Throwable) {
-			Utils.showToast(this, ex, "clipboard access failed.")
+			showToast(this, ex, "clipboard access failed.")
 		}
 		
 	}
@@ -579,8 +598,13 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		ad.show(this, null)
 	}
 	
-	private fun addMoreMenu(ad : ActionsDialog, caption_prefix : String, url : String?, action : String) {
-		if( url ?.isEmpty() != false ) return
+	private fun addMoreMenu(
+		ad : ActionsDialog,
+		caption_prefix : String,
+		url : String?,
+		action : String
+	) {
+		if(url?.isEmpty() != false) return
 		
 		val caption = getString(R.string.open_browser_of, caption_prefix)
 		
@@ -590,17 +614,18 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 				startActivity(intent)
 			} catch(ex : Throwable) {
-				Utils.showToast(this@ActMediaViewer, ex, "can't open app.")
+				showToast(this@ActMediaViewer, ex, "can't open app.")
 			}
 		}
 	}
 	
 	private fun preparePermission() {
 		if(Build.VERSION.SDK_INT >= 23) {
-			ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), PERMISSION_REQUEST_CODE
+			ActivityCompat.requestPermissions(
+				this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), PERMISSION_REQUEST_CODE
 			)
 		} else {
-			Utils.showToast(this, true, R.string.missing_permission_to_access_media)
+			showToast(this, true, R.string.missing_permission_to_access_media)
 		}
 	}
 	
@@ -619,7 +644,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 					++ i
 				}
 				if(bNotGranted) {
-					Utils.showToast(this, true, R.string.missing_permission_to_access_media)
+					showToast(this, true, R.string.missing_permission_to_access_media)
 				} else {
 					download(media_list[idx])
 				}

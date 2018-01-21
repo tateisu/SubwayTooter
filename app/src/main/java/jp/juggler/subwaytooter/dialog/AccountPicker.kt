@@ -6,6 +6,8 @@ import android.support.v7.app.AppCompatActivity
 import android.view.Gravity
 import android.view.View
 import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.TextView
 
 import java.util.ArrayList
 import java.util.concurrent.atomic.AtomicBoolean
@@ -13,12 +15,10 @@ import java.util.concurrent.atomic.AtomicBoolean
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.Utils
-
-import android.widget.LinearLayout
-import android.widget.TextView
 import jp.juggler.subwaytooter.util.DialogInterfaceCallback
 import jp.juggler.subwaytooter.util.SavedAccountCallback
+import jp.juggler.subwaytooter.util.showToast
+
 
 object AccountPicker {
 	
@@ -39,7 +39,7 @@ object AccountPicker {
 		}()
 		
 		if(account_list.isEmpty()) {
-			Utils.showToast(activity, false, R.string.account_empty)
+			showToast(activity, false, R.string.account_empty)
 			return
 		} else if(! bAllowPseudo) {
 			val tmp_list = ArrayList<SavedAccount>()
@@ -50,7 +50,7 @@ object AccountPicker {
 			account_list.clear()
 			account_list.addAll(tmp_list)
 			if(account_list.isEmpty()) {
-				Utils.showToast(activity, false, R.string.not_available_for_pseudo_account)
+				showToast(activity, false, R.string.not_available_for_pseudo_account)
 				return
 			}
 		}

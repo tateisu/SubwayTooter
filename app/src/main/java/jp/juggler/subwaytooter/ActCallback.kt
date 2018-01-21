@@ -14,10 +14,19 @@ import java.util.ArrayList
 import java.util.concurrent.atomic.AtomicReference
 
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.digestSHA256
 
 class ActCallback : AppCompatActivity() {
 	
+	companion object {
+		private val log = LogCategory("ActCallback")
+		
+		const val ACTION_NOTIFICATION_CLICK = "notification_click"
+		
+		internal val last_uri = AtomicReference<Uri>(null)
+		internal val sent_intent = AtomicReference<Intent>(null)
+	}
+
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
 		var intent : Intent? = intent
@@ -145,7 +154,7 @@ class ActCallback : AppCompatActivity() {
 		
 		cache_dir.mkdirs()
 		
-		val name = "img." + System.currentTimeMillis().toString() + "." + Utils.digestSHA256(uri.toString())
+		val name = "img." + System.currentTimeMillis().toString() + "." + uri.toString().digestSHA256()
 		
 		val dst = File(cache_dir, name)
 		
@@ -187,12 +196,4 @@ class ActCallback : AppCompatActivity() {
 		
 	}
 	
-	companion object {
-		private val log = LogCategory("ActCallback")
-		
-		val ACTION_NOTIFICATION_CLICK = "notification_click"
-		
-		internal val last_uri = AtomicReference<Uri>(null)
-		internal val sent_intent = AtomicReference<Intent>(null)
-	}
 }

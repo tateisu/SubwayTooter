@@ -11,8 +11,7 @@ import android.widget.TextView
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.util.Utils
-
+import jp.juggler.subwaytooter.util.showToast
 
 object ReportForm {
 	
@@ -37,7 +36,7 @@ object ReportForm {
 		view.findViewById<View>(R.id.btnOk).setOnClickListener(View.OnClickListener {
 			val comment = etComment.text.toString().trim { it <= ' ' }
 			if(comment.isEmpty()) {
-				Utils.showToast(activity, true, R.string.comment_empty)
+				showToast(activity, true, R.string.comment_empty)
 				return@OnClickListener
 			}
 			

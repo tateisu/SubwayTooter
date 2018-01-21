@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.util
 
 import android.content.SharedPreferences
-import android.net.Uri
 import android.os.Handler
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
@@ -83,14 +82,14 @@ class PostHelper(
 		var visibility = this.visibility ?: ""
 		
 		if(content.isEmpty()) {
-			Utils.showToast(activity, true, R.string.post_error_contents_empty)
+			showToast(activity, true, R.string.post_error_contents_empty)
 			return
 		}
 		
 		// nullはCWチェックなしを示す
 		// nullじゃなくてカラならエラー
 		if(spoiler_text != null && spoiler_text.isEmpty()) {
-			Utils.showToast(activity, true, R.string.post_error_contents_warning_empty)
+			showToast(activity, true, R.string.post_error_contents_warning_empty)
 			return
 		}
 		
@@ -105,19 +104,19 @@ class PostHelper(
 				val item = enquete_items[n]
 				if(item.isEmpty()) {
 					if(n < 2) {
-						Utils.showToast(activity, true, R.string.enquete_item_is_empty, n + 1)
+						showToast(activity, true, R.string.enquete_item_is_empty, n + 1)
 						return
 					}
 				} else {
 					val code_count = item.codePointCount(0, item.length)
 					if(code_count > 15) {
 						val over = code_count - 15
-						Utils.showToast(activity, true, R.string.enquete_item_too_long, n + 1, over)
+						showToast(activity, true, R.string.enquete_item_too_long, n + 1, over)
 						return
 					} else if(n > 0) {
 						for(i in 0 until n) {
 							if(item == enquete_items[i]) {
-								Utils.showToast(activity, true, R.string.enquete_item_duplicate, n + 1)
+								showToast(activity, true, R.string.enquete_item_duplicate, n + 1)
 								return
 							}
 						}
@@ -239,11 +238,11 @@ class PostHelper(
 					val sb = StringBuilder()
 					
 					sb.append("status=")
-					sb.append(Uri.encode(EmojiDecoder.decodeShortCode(content)))
+					sb.append(EmojiDecoder.decodeShortCode(content).encodePercent())
 					
 					if(visibility_checked != null) {
 						sb.append("&visibility=")
-						sb.append(Uri.encode(visibility_checked))
+						sb.append(visibility_checked.encodePercent())
 					}
 					
 					if(bNSFW) {
@@ -252,7 +251,7 @@ class PostHelper(
 					
 					if(spoiler_text?.isNotEmpty() == true) {
 						sb.append("&spoiler_text=")
-						sb.append(Uri.encode(EmojiDecoder.decodeShortCode(spoiler_text)))
+						sb.append(EmojiDecoder.decodeShortCode(spoiler_text).encodePercent())
 					}
 					
 					if(in_reply_to_id != - 1L) {
@@ -273,11 +272,10 @@ class PostHelper(
 					)
 				}
 				
-				val request_builder = Request.Builder()
-					.post(request_body)
-				val digest = Utils.digestSHA256(body_string + account.acct)
+				val request_builder = Request.Builder().post(request_body)
 				
-				if(digest != null && ! Pref.bpDontDuplicationCheck(pref) ) {
+				if( ! Pref.bpDontDuplicationCheck(pref) ) {
+					val digest = (body_string + account.acct).digestSHA256()
 					request_builder.header("Idempotency-Key", digest)
 				}
 				
@@ -316,7 +314,7 @@ class PostHelper(
 					// 連投してIdempotency が同じだった場合もエラーにはならず、ここを通る
 					callback(account, status)
 				} else {
-					Utils.showToast(activity, true, result.error)
+					showToast(activity, true, result.error)
 				}
 				
 			}
@@ -624,7 +622,7 @@ class PostHelper(
 			proc_text_changed.run()
 			
 			// キーボードを再度表示する
-			Handler(activity.mainLooper).post { Utils.showKeyboard(activity, et) }
+			Handler(activity.mainLooper).post { et.showKeyboard() }
 			
 		}.show()
 	}

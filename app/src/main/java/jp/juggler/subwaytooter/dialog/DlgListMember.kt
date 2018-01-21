@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.dialog
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.net.Uri
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
@@ -34,7 +33,8 @@ import jp.juggler.subwaytooter.api.entity.parseList
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.encodePercent
+import jp.juggler.subwaytooter.util.showToast
 import jp.juggler.subwaytooter.view.MyListView
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 
@@ -186,7 +186,7 @@ class DlgListMember(
 			override fun background(client : TootApiClient) : TootApiResult? {
 				// リストに追加したいアカウントの自タンスでのアカウントIDを取得する
 				local_who = null
-				var result = client.request("/api/v1/search?resolve=true&q=" + Uri.encode(target_user_full_acct))
+				var result = client.request("/api/v1/search?resolve=true&q=" + target_user_full_acct.encodePercent())
 				val jsonObject = result?.jsonObject ?: return result
 				
 				
@@ -237,7 +237,7 @@ class DlgListMember(
 				
 				val error = result.error
 				if( error?.isNotEmpty() == true && result.response?.code() == 404 ) {
-					Utils.showToast(activity, true, result.error)
+					showToast(activity, true, result.error)
 				}
 				
 			}
@@ -260,14 +260,14 @@ class DlgListMember(
 		DlgTextInput.show(activity, activity.getString(R.string.list_create), null, object : DlgTextInput.Callback {
 			
 			override fun onEmptyError() {
-				Utils.showToast(activity, false, R.string.list_name_empty)
+				showToast(activity, false, R.string.list_name_empty)
 			}
 			
 			override fun onOK(dialog : Dialog, text : String) {
 				val list_owner = this@DlgListMember.list_owner
 
 				if(list_owner == null) {
-					Utils.showToast(activity, false, "list owner is not selected.")
+					showToast(activity, false, "list owner is not selected.")
 					return
 				}
 				
@@ -375,13 +375,13 @@ class DlgListMember(
 
 			val list_owner = this@DlgListMember.list_owner
 			if(list_owner == null) {
-				Utils.showToast(activity, false, "list owner is not selected")
+				showToast(activity, false, "list owner is not selected")
 				return
 			}
 			
 			val local_who = this@DlgListMember.local_who
 			if(local_who == null) {
-				Utils.showToast(activity, false, "target user is not synchronized")
+				showToast(activity, false, "target user is not synchronized")
 				return
 			}
 

@@ -1,7 +1,5 @@
 package jp.juggler.subwaytooter.action
 
-import android.net.Uri
-
 import java.util.ArrayList
 
 import jp.juggler.subwaytooter.ActMain
@@ -14,7 +12,8 @@ import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.encodePercent
+import jp.juggler.subwaytooter.util.showToast
 import okhttp3.Request
 import okhttp3.RequestBody
 
@@ -61,7 +60,7 @@ object Action_Instance {
 	) {
 		
 		if(access_info.host.equals(domain, ignoreCase = true)) {
-			Utils.showToast(activity, false, R.string.it_is_you)
+			showToast(activity, false, R.string.it_is_you)
 			return
 		}
 		
@@ -69,7 +68,7 @@ object Action_Instance {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				val body = RequestBody.create(
-					TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "domain=" + Uri.encode(domain)
+					TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "domain=" + domain.encodePercent()
 				)
 				
 				var request_builder = Request.Builder()
@@ -87,10 +86,10 @@ object Action_Instance {
 						column.onDomainBlockChanged(access_info, domain, bBlock)
 					}
 					
-					Utils.showToast(activity, false, if(bBlock) R.string.block_succeeded else R.string.unblock_succeeded)
+					showToast(activity, false, if(bBlock) R.string.block_succeeded else R.string.unblock_succeeded)
 					
 				} else {
-					Utils.showToast(activity, false, result.error)
+					showToast(activity, false, result.error)
 				}
 			}
 		})

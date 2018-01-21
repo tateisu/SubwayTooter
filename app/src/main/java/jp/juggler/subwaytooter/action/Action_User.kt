@@ -1,7 +1,5 @@
 package jp.juggler.subwaytooter.action
 
-import android.net.Uri
-
 import org.json.JSONObject
 
 import java.util.Locale
@@ -25,8 +23,7 @@ import jp.juggler.subwaytooter.dialog.ReportForm
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.util.TootApiResultCallback
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.*
 import okhttp3.Request
 import okhttp3.RequestBody
 
@@ -42,7 +39,7 @@ object Action_User {
 	) {
 		
 		if(access_info.isMe(who)) {
-			Utils.showToast(activity, false, R.string.it_is_you)
+			showToast(activity, false, R.string.it_is_you)
 			return
 		}
 		
@@ -75,7 +72,7 @@ object Action_User {
 				if(relation != null) {
 					// 未確認だが、自分をミュートしようとするとリクエストは成功するがレスポンス中のmutingはfalseになるはず
 					if(bMute && ! relation.muting) {
-						Utils.showToast(activity, false, R.string.not_muted)
+						showToast(activity, false, R.string.not_muted)
 						return
 					}
 					
@@ -93,10 +90,10 @@ object Action_User {
 						}
 					}
 					
-					Utils.showToast(activity, false, if(relation.muting) R.string.mute_succeeded else R.string.unmute_succeeded)
+					showToast(activity, false, if(relation.muting) R.string.mute_succeeded else R.string.unmute_succeeded)
 					
 				} else {
-					Utils.showToast(activity, false, result.error)
+					showToast(activity, false, result.error)
 				}
 			}
 		})
@@ -108,7 +105,7 @@ object Action_User {
 		activity : ActMain, access_info : SavedAccount, who : TootAccount, bBlock : Boolean
 	) {
 		if(access_info.isMe(who)) {
-			Utils.showToast(activity, false, R.string.it_is_you)
+			showToast(activity, false, R.string.it_is_you)
 			return
 		}
 		
@@ -142,7 +139,7 @@ object Action_User {
 					
 					// 自分をブロックしようとすると、blocking==falseで帰ってくる
 					if(bBlock && ! relation.blocking) {
-						Utils.showToast(activity, false, R.string.not_blocked)
+						showToast(activity, false, R.string.not_blocked)
 						return
 					}
 					
@@ -160,10 +157,10 @@ object Action_User {
 						}
 					}
 					
-					Utils.showToast(activity, false, if(relation.blocking) R.string.block_succeeded else R.string.unblock_succeeded)
+					showToast(activity, false, if(relation.blocking) R.string.block_succeeded else R.string.unblock_succeeded)
 					
 				} else {
-					Utils.showToast(activity, false, result.error)
+					showToast(activity, false, result.error)
 				}
 			}
 		})
@@ -196,7 +193,8 @@ object Action_User {
 			
 			internal var who_local : TootAccount? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val path = String.format(Locale.JAPAN, Column.PATH_SEARCH, Uri.encode(who_url)) + "&resolve=1"
+				
+				val path = String.format(Locale.JAPAN, Column.PATH_SEARCH, who_url.encodePercent()) + "&resolve=1"
 				val result = client.request(path)
 				val jsonObject = result?.jsonObject
 				
@@ -219,7 +217,7 @@ object Action_User {
 				if(wl != null) {
 					activity.addColumn(pos, access_info, Column.TYPE_PROFILE, wl.id)
 				} else {
-					Utils.showToast(activity, true, result.error)
+					showToast(activity, true, result.error)
 					
 					// 仕方ないのでchrome tab で開く
 					App1.openCustomTab(activity, who_url)
@@ -336,14 +334,14 @@ object Action_User {
 		onReportComplete : TootApiResultCallback
 	) {
 		if(access_info.isMe(who)) {
-			Utils.showToast(activity, false, R.string.it_is_you)
+			showToast(activity, false, R.string.it_is_you)
 			return
 		}
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val sb = ("account_id=" + who.id.toString()
-					+ "&comment=" + Uri.encode(comment)
+					+ "&comment=" + comment.encodePercent()
 					+ "&status_ids[]=" + status.id.toString())
 				
 				val request_builder = Request.Builder().post(
@@ -360,9 +358,9 @@ object Action_User {
 				if(result.jsonObject != null) {
 					onReportComplete(result)
 					
-					Utils.showToast(activity, false, R.string.report_completed)
+					showToast(activity, false, R.string.report_completed)
 				} else {
-					Utils.showToast(activity, true, result.error)
+					showToast(activity, true, result.error)
 				}
 			}
 		})
@@ -373,7 +371,7 @@ object Action_User {
 		activity : ActMain, access_info : SavedAccount, who : TootAccount, bShow : Boolean
 	) {
 		if(access_info.isMe(who)) {
-			Utils.showToast(activity, false, R.string.it_is_you)
+			showToast(activity, false, R.string.it_is_you)
 			return
 		}
 		
@@ -386,7 +384,7 @@ object Action_User {
 				try {
 					content.put("reblogs", bShow)
 				} catch(ex : Throwable) {
-					return TootApiResult(Utils.formatError(ex, "json encoding error"))
+					return TootApiResult(ex.withCaption("json encoding error"))
 				}
 				
 				val request_builder = Request.Builder().post(
@@ -408,9 +406,9 @@ object Action_User {
 				
 				if(relation != null) {
 					saveUserRelation(access_info, relation)
-					Utils.showToast(activity, true, R.string.operation_succeeded)
+					showToast(activity, true, R.string.operation_succeeded)
 				} else {
-					Utils.showToast(activity, true, result.error)
+					showToast(activity, true, result.error)
 				}
 			}
 		})

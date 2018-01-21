@@ -2,7 +2,7 @@ package jp.juggler.subwaytooter.api.entity
 
 import org.json.JSONObject
 
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.parseString
 
 class TootCard(
 	
@@ -26,16 +26,16 @@ class TootCard(
 ) {
 	
 	constructor(src : JSONObject) : this(
-		url = Utils.optStringX(src, "url"),
-		title = Utils.optStringX(src, "title"),
-		description = Utils.optStringX(src, "description"),
-		image = Utils.optStringX(src, "image"),
+		url = src.parseString("url"),
+		title = src.parseString("title"),
+		description = src.parseString("description"),
+		image = src.parseString("image"),
 		
-		type = Utils.optStringX(src, "type"),
-		author_name = Utils.optStringX(src, "author_name"),
-		author_url = Utils.optStringX(src, "author_url"),
-		provider_name = Utils.optStringX(src, "provider_name"),
-		provider_url = Utils.optStringX(src, "provider_url")
+		type = src.parseString("type"),
+		author_name = src.parseString("author_name"),
+		author_url = src.parseString("author_url"),
+		provider_name = src.parseString("provider_name"),
+		provider_url = src.parseString("provider_url")
 	
 	)
 }

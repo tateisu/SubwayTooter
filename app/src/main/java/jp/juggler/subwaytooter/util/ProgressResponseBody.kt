@@ -47,7 +47,7 @@ class ProgressResponseBody private constructor(private val originalBody : Respon
 		
 		@Suppress("MemberVisibilityCanPrivate")
 		@Throws(IOException::class)
-		fun bytes(body : ResponseBody, callback : ProgressResponseBodyCallback) : ByteArray {
+		private fun bytes(body : ResponseBody, callback : ProgressResponseBodyCallback) : ByteArray {
 			if(body is ProgressResponseBody) {
 				body.callback = callback
 			}

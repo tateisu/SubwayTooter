@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.toJsonObject
 import org.json.JSONObject
 import java.util.regex.Pattern
 
@@ -50,7 +51,7 @@ object TootPayload {
 			if(payload is String) {
 				
 				if(payload[0] == '{') {
-					val src = JSONObject(payload)
+					val src = payload.toJsonObject()
 					return when(event) {
 						"update" ->
 							// 2017/8/24 18:37 mastodon.juggler.jpでここを通った

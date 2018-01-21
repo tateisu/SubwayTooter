@@ -25,19 +25,17 @@ import java.util.regex.Pattern
 import jp.juggler.subwaytooter.action.Action_List
 import jp.juggler.subwaytooter.action.Action_Notification
 import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.ScrollPosition
-import jp.juggler.subwaytooter.util.Utils
 import android.support.v7.widget.ListRecyclerView
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.ListDivider
 import java.io.Closeable
 import java.lang.reflect.Field
 
 class ColumnViewHolder(
 	val activity : ActMain,
-	root : View
+	viewRoot : View
 ) : View.OnClickListener,
 	SwipyRefreshLayout.OnRefreshListener,
 	CompoundButton.OnCheckedChangeListener {
@@ -140,7 +138,7 @@ class ColumnViewHolder(
 				tvRegexFilterError.text = if(message != null && message.isNotEmpty()) {
 					message
 				} else {
-					Utils.formatError(ex, activity.resources, R.string.regex_error)
+					ex.withCaption(activity.resources, R.string.regex_error)
 				}
 				return false
 			}
@@ -162,7 +160,7 @@ class ColumnViewHolder(
 	init {
 		
 		if(activity.timeline_font != null) {
-			Utils.scanView(root) { v ->
+			viewRoot.scan { v ->
 				try {
 					if(v is Button) {
 						// ボタンは触らない
@@ -175,42 +173,42 @@ class ColumnViewHolder(
 			}
 		}
 		
-		flColumnBackground = root.findViewById(R.id.flColumnBackground)
-		ivColumnBackgroundImage = root.findViewById(R.id.ivColumnBackgroundImage)
-		llColumnHeader = root.findViewById(R.id.llColumnHeader)
+		flColumnBackground = viewRoot.findViewById(R.id.flColumnBackground)
+		ivColumnBackgroundImage = viewRoot.findViewById(R.id.ivColumnBackgroundImage)
+		llColumnHeader = viewRoot.findViewById(R.id.llColumnHeader)
 		
-		tvColumnIndex = root.findViewById(R.id.tvColumnIndex)
+		tvColumnIndex = viewRoot.findViewById(R.id.tvColumnIndex)
 		
-		tvColumnName = root.findViewById(R.id.tvColumnName)
-		tvColumnContext = root.findViewById(R.id.tvColumnContext)
-		ivColumnIcon = root.findViewById(R.id.ivColumnIcon)
+		tvColumnName = viewRoot.findViewById(R.id.tvColumnName)
+		tvColumnContext = viewRoot.findViewById(R.id.tvColumnContext)
+		ivColumnIcon = viewRoot.findViewById(R.id.ivColumnIcon)
 		
-		btnColumnSetting = root.findViewById(R.id.btnColumnSetting)
-		btnColumnReload = root.findViewById(R.id.btnColumnReload)
-		btnColumnClose = root.findViewById(R.id.btnColumnClose)
+		btnColumnSetting = viewRoot.findViewById(R.id.btnColumnSetting)
+		btnColumnReload = viewRoot.findViewById(R.id.btnColumnReload)
+		btnColumnClose = viewRoot.findViewById(R.id.btnColumnClose)
 		
-		tvLoading = root.findViewById(R.id.tvLoading)
-		listView = root.findViewById(R.id.listView)
+		tvLoading = viewRoot.findViewById(R.id.tvLoading)
+		listView = viewRoot.findViewById(R.id.listView)
 		
 		if(Pref.bpShareViewPool(activity.pref)) {
 			listView.recycledViewPool = activity.viewPool
 		}
 		listView.itemAnimator = null
-//
-//		val animator = listView.itemAnimator
-//		if( animator is DefaultItemAnimator){
-//			animator.supportsChangeAnimations = false
-//		}
+		//
+		//		val animator = listView.itemAnimator
+		//		if( animator is DefaultItemAnimator){
+		//			animator.supportsChangeAnimations = false
+		//		}
 		
-		btnSearch = root.findViewById(R.id.btnSearch)
-		etSearch = root.findViewById(R.id.etSearch)
-		cbResolve = root.findViewById(R.id.cbResolve)
+		btnSearch = viewRoot.findViewById(R.id.btnSearch)
+		etSearch = viewRoot.findViewById(R.id.etSearch)
+		cbResolve = viewRoot.findViewById(R.id.cbResolve)
 		
-		llSearch = root.findViewById(R.id.llSearch)
-		llListList = root.findViewById(R.id.llListList)
+		llSearch = viewRoot.findViewById(R.id.llSearch)
+		llListList = viewRoot.findViewById(R.id.llListList)
 		
-		btnListAdd = root.findViewById(R.id.btnListAdd)
-		etListName = root.findViewById(R.id.etListName)
+		btnListAdd = viewRoot.findViewById(R.id.btnListAdd)
+		etListName = viewRoot.findViewById(R.id.etListName)
 		btnListAdd.setOnClickListener(this)
 		
 		etListName.setOnEditorActionListener { _, actionId, _ ->
@@ -222,24 +220,24 @@ class ColumnViewHolder(
 			handled
 		}
 		
-		llColumnSetting = root.findViewById(R.id.llColumnSetting)
+		llColumnSetting = viewRoot.findViewById(R.id.llColumnSetting)
 		
-		cbDontCloseColumn = root.findViewById(R.id.cbDontCloseColumn)
-		cbWithAttachment = root.findViewById(R.id.cbWithAttachment)
-		cbWithHighlight = root.findViewById(R.id.cbWithHighlight)
-		cbDontShowBoost = root.findViewById(R.id.cbDontShowBoost)
-		cbDontShowFollow = root.findViewById(R.id.cbDontShowFollow)
-		cbDontShowFavourite = root.findViewById(R.id.cbDontShowFavourite)
-		cbDontShowReply = root.findViewById(R.id.cbDontShowReply)
-		cbDontStreaming = root.findViewById(R.id.cbDontStreaming)
-		cbDontAutoRefresh = root.findViewById(R.id.cbDontAutoRefresh)
-		cbHideMediaDefault = root.findViewById(R.id.cbHideMediaDefault)
-		cbEnableSpeech = root.findViewById(R.id.cbEnableSpeech)
-		etRegexFilter = root.findViewById(R.id.etRegexFilter)
-		llRegexFilter = root.findViewById(R.id.llRegexFilter)
-		tvRegexFilterError = root.findViewById(R.id.tvRegexFilterError)
+		cbDontCloseColumn = viewRoot.findViewById(R.id.cbDontCloseColumn)
+		cbWithAttachment = viewRoot.findViewById(R.id.cbWithAttachment)
+		cbWithHighlight = viewRoot.findViewById(R.id.cbWithHighlight)
+		cbDontShowBoost = viewRoot.findViewById(R.id.cbDontShowBoost)
+		cbDontShowFollow = viewRoot.findViewById(R.id.cbDontShowFollow)
+		cbDontShowFavourite = viewRoot.findViewById(R.id.cbDontShowFavourite)
+		cbDontShowReply = viewRoot.findViewById(R.id.cbDontShowReply)
+		cbDontStreaming = viewRoot.findViewById(R.id.cbDontStreaming)
+		cbDontAutoRefresh = viewRoot.findViewById(R.id.cbDontAutoRefresh)
+		cbHideMediaDefault = viewRoot.findViewById(R.id.cbHideMediaDefault)
+		cbEnableSpeech = viewRoot.findViewById(R.id.cbEnableSpeech)
+		etRegexFilter = viewRoot.findViewById(R.id.etRegexFilter)
+		llRegexFilter = viewRoot.findViewById(R.id.llRegexFilter)
+		tvRegexFilterError = viewRoot.findViewById(R.id.tvRegexFilterError)
 		
-		btnDeleteNotification = root.findViewById(R.id.btnDeleteNotification)
+		btnDeleteNotification = viewRoot.findViewById(R.id.btnDeleteNotification)
 		
 		llColumnHeader.setOnClickListener(this)
 		btnColumnSetting.setOnClickListener(this)
@@ -247,9 +245,9 @@ class ColumnViewHolder(
 		btnColumnClose.setOnClickListener(this)
 		btnDeleteNotification.setOnClickListener(this)
 		
-		root.findViewById<View>(R.id.btnColor).setOnClickListener(this)
+		viewRoot.findViewById<View>(R.id.btnColor).setOnClickListener(this)
 		
-		this.refreshLayout = root.findViewById(R.id.swipyRefreshLayout)
+		this.refreshLayout = viewRoot.findViewById(R.id.swipyRefreshLayout)
 		refreshLayout.setOnRefreshListener(this)
 		refreshLayout.setDistanceToTriggerSync((0.5f + 20f * activity.density).toInt())
 		
@@ -489,7 +487,7 @@ class ColumnViewHolder(
 			
 			showColumnColor()
 			
-			showContent(reason="onPageCreate",reset=true)
+			showContent(reason = "onPageCreate", reset = true)
 		} finally {
 			loading_busy = false
 		}
@@ -610,16 +608,16 @@ class ColumnViewHolder(
 			// 非同期処理を開始
 			val task = object : AsyncTask<Void, Void, Bitmap?>() {
 				override fun doInBackground(vararg params : Void) : Bitmap? {
-					try {
-						val resize_max = if(screen_w > screen_h) screen_w else screen_h
-						val uri = Uri.parse(url)
-						return Utils.createResizedBitmap(log, activity, uri, false, resize_max)
-						
+					return try {
+						createResizedBitmap(
+							activity,
+							Uri.parse(url),
+							if(screen_w > screen_h) screen_w else screen_h
+						)
 					} catch(ex : Throwable) {
 						log.trace(ex)
+						null
 					}
-					
-					return null
 				}
 				
 				override fun onCancelled(bitmap : Bitmap?) {
@@ -744,7 +742,7 @@ class ColumnViewHolder(
 			R.id.cbHideMediaDefault -> {
 				column.hide_media_default = isChecked
 				activity.app_state.saveColumnList()
-				column.fireShowContent(reason="HideMediaDefault in ColumnSetting",reset=true)
+				column.fireShowContent(reason = "HideMediaDefault in ColumnSetting", reset = true)
 			}
 			
 			R.id.cbEnableSpeech -> {
@@ -770,7 +768,7 @@ class ColumnViewHolder(
 				App1.custom_emoji_cache.clearErrorCache()
 				
 				if(column.isSearchColumn) {
-					Utils.hideKeyboard(activity, etSearch)
+					etSearch.hideKeyboard()
 					etSearch.setText(column.search_query)
 					cbResolve.isChecked = column.search_resolve
 				}
@@ -779,7 +777,7 @@ class ColumnViewHolder(
 			}
 			
 			R.id.btnSearch -> {
-				Utils.hideKeyboard(activity, etSearch)
+				etSearch.hideKeyboard()
 				column.search_query = etSearch.text.toString().trim { it <= ' ' }
 				column.search_resolve = cbResolve.isChecked
 				activity.app_state.saveColumnList()
@@ -809,7 +807,7 @@ class ColumnViewHolder(
 			R.id.btnListAdd -> {
 				val tv = etListName.text.toString().trim { it <= ' ' }
 				if(tv.isEmpty()) {
-					Utils.showToast(activity, true, R.string.list_name_empty)
+					showToast(activity, true, R.string.list_name_empty)
 					return
 				}
 				Action_List.create(activity, column.access_info, tv, null)
@@ -828,7 +826,7 @@ class ColumnViewHolder(
 	}
 	
 	private fun showColumnCloseButton() {
-		val dont_close = column ?.dont_close ?: return
+		val dont_close = column?.dont_close ?: return
 		btnColumnClose.isEnabled = ! dont_close
 		btnColumnClose.alpha = if(dont_close) 0.3f else 1f
 	}
@@ -837,10 +835,10 @@ class ColumnViewHolder(
 	fun updateRelativeTime() = rebindAdapterItems()
 	
 	fun rebindAdapterItems() {
-		for( childIndex in 0 until listView.childCount){
+		for(childIndex in 0 until listView.childCount) {
 			val adapterIndex = listView.getChildAdapterPosition(listView.getChildAt(childIndex))
-			if( adapterIndex == RecyclerView.NO_POSITION) continue
-			status_adapter?.notifyItemChanged( adapterIndex )
+			if(adapterIndex == RecyclerView.NO_POSITION) continue
+			status_adapter?.notifyItemChanged(adapterIndex)
 		}
 	}
 	
@@ -879,14 +877,14 @@ class ColumnViewHolder(
 	}
 	
 	internal fun showContent(
-		reason:String,
-		changeList : List<AdapterChange>? = null ,
+		reason : String,
+		changeList : List<AdapterChange>? = null,
 		reset : Boolean = false
-		) {
+	) {
 		// クラッシュレポートにadapterとリストデータの状態不整合が多かったので、
 		// とりあえずリストデータ変更の通知だけは最優先で行っておく
 		try {
-			status_adapter?.notifyChange(reason,changeList,reset)
+			status_adapter?.notifyChange(reason, changeList, reset)
 		} catch(ex : Throwable) {
 			log.trace(ex)
 		}
@@ -934,7 +932,7 @@ class ColumnViewHolder(
 			refreshLayout.isRefreshing = false
 			val refreshError = column.mRefreshLoadingError
 			if(refreshError.isNotEmpty()) {
-				Utils.showToast(activity, true, refreshError)
+				showToast(activity, true, refreshError)
 				column.mRefreshLoadingError = ""
 			}
 		}
@@ -949,7 +947,7 @@ class ColumnViewHolder(
 		val column = this.column
 		when {
 			column == null -> log.d("saveScrollPosition [%d] , column==null", page_idx)
-
+			
 			column.is_dispose.get() -> log.d(
 				"saveScrollPosition [%d] , column is disposed",
 				page_idx
@@ -981,7 +979,7 @@ class ColumnViewHolder(
 		}
 	}
 	
-	fun setScrollPosition(sp : ScrollPosition, deltaDp : Float =0f) {
+	fun setScrollPosition(sp : ScrollPosition, deltaDp : Float = 0f) {
 		val last_adapter = listView.adapter
 		if(column == null || last_adapter == null) return
 		
@@ -1002,12 +1000,14 @@ class ColumnViewHolder(
 		}, 20L)
 	}
 	
-	inner class AdapterItemHeightWorkarea internal constructor(val adapter:ItemListAdapter) : Closeable {
+	inner class AdapterItemHeightWorkarea internal constructor(val adapter : ItemListAdapter) :
+		Closeable {
 		
 		private val item_width : Int
 		private val widthSpec : Int
 		private var lastViewType : Int = - 1
 		private var lastViewHolder : RecyclerView.ViewHolder? = null
+		
 		init {
 			this.item_width = listView.width - listView.paddingLeft - listView.paddingRight
 			this.widthSpec = View.MeasureSpec.makeMeasureSpec(item_width, View.MeasureSpec.EXACTLY)
@@ -1029,7 +1029,7 @@ class ColumnViewHolder(
 				return childViewHolder.itemView.measuredHeight
 			}
 			
-
+			
 			log.d("getAdapterItemHeight idx=$adapterIndex createView")
 			
 			val viewType = adapter.getItemViewType(adapterIndex)
@@ -1054,7 +1054,7 @@ class ColumnViewHolder(
 		var adapterIndex = column?.toAdapterIndex(listIndex) ?: return
 		
 		val adapter = status_adapter
-		if( adapter == null) {
+		if(adapter == null) {
 			log.e("setListItemTop: missing status adapter")
 			return
 		}
@@ -1073,7 +1073,7 @@ class ColumnViewHolder(
 	}
 	
 	fun getListItemTop(listIndex : Int) : Int {
-
+		
 		val adapterIndex = column?.toAdapterIndex(listIndex)
 			?: return 0
 		
@@ -1084,12 +1084,12 @@ class ColumnViewHolder(
 	}
 	
 	fun findFirstVisibleListItem() : Int {
-
+		
 		val adapterIndex = listLayoutManager.findFirstVisibleItemPosition()
-
+		
 		if(adapterIndex == RecyclerView.NO_POSITION)
 			throw IndexOutOfBoundsException()
-
+		
 		return column?.toListIndex(adapterIndex)
 			?: throw IndexOutOfBoundsException()
 		

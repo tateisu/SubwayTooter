@@ -49,20 +49,50 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.subwaytooter.util.EmojiDecoder
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
-import jp.juggler.subwaytooter.util.NotificationHelper
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import okhttp3.Request
 import okhttp3.RequestBody
 
-class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
+class ActAccountSetting
+	: AppCompatActivity(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
 	
-	lateinit internal var account : SavedAccount
-	lateinit internal var pref : SharedPreferences
+	
+	companion object {
+		
+		internal val log = LogCategory("ActAccountSetting")
+		
+		internal const val KEY_ACCOUNT_DB_ID = "account_db_id"
+		
+		internal const val REQUEST_CODE_ACCT_CUSTOMIZE = 1
+		internal const val REQUEST_CODE_NOTIFICATION_SOUND = 2
+		private const val REQUEST_CODE_AVATAR_ATTACHMENT = 3
+		private const val REQUEST_CODE_HEADER_ATTACHMENT = 4
+		private const val REQUEST_CODE_AVATAR_CAMERA = 5
+		private const val REQUEST_CODE_HEADER_CAMERA = 6
+		
+		internal const val RESULT_INPUT_ACCESS_TOKEN = Activity.RESULT_FIRST_USER + 10
+		internal const val EXTRA_DB_ID = "db_id"
+		
+		internal const val max_length_display_name = 30
+		internal const val max_length_note = 160
+		
+		private const val PERMISSION_REQUEST_AVATAR = 1
+		private const val PERMISSION_REQUEST_HEADER = 2
+		
+		internal const val MIME_TYPE_JPEG = "image/jpeg"
+		internal const val MIME_TYPE_PNG = "image/png"
+		
+		fun open(activity : Activity, ai : SavedAccount, requestCode : Int) {
+			val intent = Intent(activity, ActAccountSetting::class.java)
+			intent.putExtra(KEY_ACCOUNT_DB_ID, ai.db_id)
+			activity.startActivityForResult(intent, requestCode)
+		}
+		
+	}
+	
+	internal lateinit var account : SavedAccount
+	internal lateinit var pref : SharedPreferences
 	
 	private lateinit var tvInstance : TextView
 	private lateinit var tvUser : TextView
@@ -104,7 +134,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 	private lateinit var btnNote : View
 	private lateinit var name_invalidator : NetworkEmojiInvalidator
 	private lateinit var note_invalidator : NetworkEmojiInvalidator
-	lateinit internal var handler : Handler
+	internal lateinit var handler : Handler
 	
 	internal var loading = false
 	
@@ -123,7 +153,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 		initUI()
 		
 		val a = SavedAccount.loadAccount(this, intent.getLongExtra(KEY_ACCOUNT_DB_ID, - 1L))
-		if(a == null){
+		if(a == null) {
 			finish()
 			return
 		}
@@ -152,7 +182,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 			REQUEST_CODE_NOTIFICATION_SOUND -> {
 				if(resultCode == Activity.RESULT_OK) {
 					// RINGTONE_PICKERからの選択されたデータを取得する
-					val uri = Utils.getExtraObject(data, RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
+					val uri = data?.extras?.get(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)
 					if(uri is Uri) {
 						notification_sound_uri = uri.toString()
 						saveUIToData()
@@ -174,7 +204,11 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 					if(uri1 != null) {
 						// 単一選択
 						val type = data.type
-						addAttachment(requestCode, uri1, if(type?.isNotEmpty() == true) type else contentResolver.getType(uri1))
+						addAttachment(
+							requestCode,
+							uri1,
+							if(type?.isNotEmpty() == true) type else contentResolver.getType(uri1)
+						)
 					} else {
 						// 複数選択
 						data.clipData?.let { clipData ->
@@ -195,7 +229,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 					// 失敗したら DBからデータを削除
 					val uriCameraImage = this@ActAccountSetting.uriCameraImage
 					if(uriCameraImage != null) {
-						contentResolver.delete(uriCameraImage , null, null)
+						contentResolver.delete(uriCameraImage, null, null)
 						this@ActAccountSetting.uriCameraImage = null
 					}
 				} else {
@@ -212,7 +246,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 		}
 	}
 	
-	var density: Float = 1f
+	var density : Float = 1f
 	
 	private fun initUI() {
 		this.density = resources.displayMetrics.density
@@ -348,7 +382,12 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 		val ac = AcctColor.load(full_acct)
 		val nickname = ac.nickname
 		tvUserCustom.text = if(nickname?.isNotEmpty() == true) nickname else full_acct
-		tvUserCustom.setTextColor(if(ac.color_fg != 0) ac.color_fg else Styler.getAttributeColor(this, R.attr.colorTimeSmall))
+		tvUserCustom.setTextColor(
+			if(ac.color_fg != 0) ac.color_fg else Styler.getAttributeColor(
+				this,
+				R.attr.colorTimeSmall
+			)
+		)
 		tvUserCustom.setBackgroundColor(ac.color_bg)
 	}
 	
@@ -390,7 +429,12 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 			R.id.btnVisibility -> performVisibility()
 			R.id.btnOpenBrowser -> open_browser("https://" + account.host + "/")
 			
-			R.id.btnUserCustom -> ActNickname.open(this, full_acct, false, REQUEST_CODE_ACCT_CUSTOMIZE)
+			R.id.btnUserCustom -> ActNickname.open(
+				this,
+				full_acct,
+				false,
+				REQUEST_CODE_ACCT_CUSTOMIZE
+			)
 			
 			R.id.btnNotificationSoundEdit -> openNotificationSoundPicker()
 			
@@ -432,7 +476,13 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 	}
 	
 	private fun performVisibility() {
-		val caption_list = arrayOf(Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_WEB_SETTING), Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_PUBLIC), Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_UNLISTED), Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_PRIVATE), Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_DIRECT))
+		val caption_list = arrayOf(
+			Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_WEB_SETTING),
+			Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_PUBLIC),
+			Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_UNLISTED),
+			Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_PRIVATE),
+			Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_DIRECT)
+		)
 		
 		AlertDialog.Builder(this)
 			.setTitle(R.string.choose_visibility)
@@ -462,7 +512,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 				account.delete()
 				
 				val pref = Pref.pref(this@ActAccountSetting)
-				if(account.db_id == Pref.lpTabletTootDefaultAccount(pref) ) {
+				if(account.db_id == Pref.lpTabletTootDefaultAccount(pref)) {
 					pref.edit().put(Pref.lpTabletTootDefaultAccount, - 1L).apply()
 				}
 				
@@ -474,7 +524,8 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 					internal fun unregister() {
 						try {
 							
-							val install_id = PrefDevice.prefDevice(this@ActAccountSetting).getString(PrefDevice.KEY_INSTALL_ID, null)
+							val install_id = PrefDevice.prefDevice(this@ActAccountSetting)
+								.getString(PrefDevice.KEY_INSTALL_ID, null)
 							if(install_id?.isEmpty() != false) {
 								log.d("performAccountRemove: missing install_id")
 								return
@@ -486,13 +537,18 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 								return
 							}
 							
-							val post_data = ("instance_url=" + Uri.encode("https://" + account.host)
-								+ "&app_id=" + Uri.encode(packageName)
+							val post_data = ("instance_url=" + ("https://" + account.host).encodePercent()
+								+ "&app_id=" + packageName.encodePercent()
 								+ "&tag=" + tag)
 							
 							val request = Request.Builder()
 								.url(PollingWorker.APP_SERVER + "/unregister")
-								.post(RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, post_data))
+								.post(
+									RequestBody.create(
+										TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED,
+										post_data
+									)
+								)
 								.build()
 							
 							val call = App1.ok_http_client.newCall(request)
@@ -549,7 +605,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 					}
 				// エラーを表示
 					error != null -> {
-						Utils.showToast(this@ActAccountSetting, true, error)
+						showToast(this@ActAccountSetting, true, error)
 						log.e("can't get oauth browser URL. $error")
 					}
 				}
@@ -574,8 +630,11 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
 		try {
 			val notification_sound_uri = this.notification_sound_uri
-			if(notification_sound_uri?.isNotEmpty() == true){
-				intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,  Uri.parse(notification_sound_uri))
+			if(notification_sound_uri?.isNotEmpty() == true) {
+				intent.putExtra(
+					RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,
+					Uri.parse(notification_sound_uri)
+				)
 			}
 		} catch(ignored : Throwable) {
 		}
@@ -589,7 +648,12 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 	private fun initializeProfile() {
 		// 初期状態
 		ivProfileAvatar.setErrorImageResId(Styler.getAttributeResourceId(this, R.attr.ic_question))
-		ivProfileAvatar.setDefaultImageResId(Styler.getAttributeResourceId(this, R.attr.ic_question))
+		ivProfileAvatar.setDefaultImageResId(
+			Styler.getAttributeResourceId(
+				this,
+				R.attr.ic_question
+			)
+		)
 		etDisplayName.setText("(loading...)")
 		etNote.setText("(loading...)")
 		// 初期状態では編集不可能
@@ -628,7 +692,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 				if(data != null) {
 					showProfile(data)
 				} else {
-					Utils.showToast(this@ActAccountSetting, true, result.error)
+					showToast(this@ActAccountSetting, true, result.error)
 				}
 				
 			}
@@ -676,9 +740,11 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 			internal var data : TootAccount? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val request_builder = Request.Builder()
-					.patch(RequestBody.create(
-						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, form_data
-					))
+					.patch(
+						RequestBody.create(
+							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, form_data
+						)
+					)
 				
 				val result = client.request("/api/v1/accounts/update_credentials", request_builder)
 				val jsonObject = result?.jsonObject
@@ -696,7 +762,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 				if(data != null) {
 					showProfile(data)
 				} else {
-					Utils.showToast(this@ActAccountSetting, true, result.error)
+					showToast(this@ActAccountSetting, true, result.error)
 				}
 				
 			}
@@ -710,8 +776,14 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 			val length = sv.codePointCount(0, sv.length)
 			if(length > max_length_display_name) {
 				AlertDialog.Builder(this)
-					.setMessage(getString(R.string.length_warning, getString(R.string.display_name), length, max_length_display_name
-					))
+					.setMessage(
+						getString(
+							R.string.length_warning,
+							getString(R.string.display_name),
+							length,
+							max_length_display_name
+						)
+					)
 					.setNegativeButton(R.string.cancel, null)
 					.setPositiveButton(R.string.ok) { _, _ -> sendDisplayName(true) }
 					.setCancelable(true)
@@ -719,7 +791,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 				return
 			}
 		}
-		updateCredential("display_name=" + Uri.encode(EmojiDecoder.decodeShortCode(sv)))
+		updateCredential("display_name=" + EmojiDecoder.decodeShortCode(sv).encodePercent() )
 	}
 	
 	private fun sendNote(bConfirmed : Boolean) {
@@ -728,8 +800,14 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 			val length = sv.codePointCount(0, sv.length)
 			if(length > max_length_note) {
 				AlertDialog.Builder(this)
-					.setMessage(getString(R.string.length_warning, getString(R.string.note), length, max_length_note
-					))
+					.setMessage(
+						getString(
+							R.string.length_warning,
+							getString(R.string.note),
+							length,
+							max_length_note
+						)
+					)
 					.setNegativeButton(R.string.cancel, null)
 					.setPositiveButton(R.string.ok) { _, _ -> sendNote(true) }
 					.setCancelable(true)
@@ -737,7 +815,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 				return
 			}
 		}
-		updateCredential("note=" + Uri.encode(EmojiDecoder.decodeShortCode(sv)))
+		updateCredential("note=" + EmojiDecoder.decodeShortCode(sv).encodePercent())
 	}
 	
 	private fun pickAvatarImage() {
@@ -749,7 +827,10 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 	}
 	
 	private fun openPicker(permission_request_code : Int) {
-		val permissionCheck = ContextCompat.checkSelfPermission(this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+		val permissionCheck = ContextCompat.checkSelfPermission(
+			this,
+			android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+		)
 		if(permissionCheck != PackageManager.PERMISSION_GRANTED) {
 			preparePermission(permission_request_code)
 			return
@@ -779,11 +860,12 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 		if(Build.VERSION.SDK_INT >= 23) {
 			// No explanation needed, we can request the permission.
 			
-			ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), request_code
+			ActivityCompat.requestPermissions(
+				this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), request_code
 			)
 			return
 		}
-		Utils.showToast(this, true, R.string.missing_permission_to_access_media)
+		showToast(this, true, R.string.missing_permission_to_access_media)
 	}
 	
 	override fun onRequestPermissionsResult(
@@ -795,7 +877,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 				if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 					openPicker(requestCode)
 				} else {
-					Utils.showToast(this, true, R.string.missing_permission_to_access_media)
+					showToast(this, true, R.string.missing_permission_to_access_media)
 				}
 		}
 	}
@@ -811,7 +893,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 			startActivityForResult(intent, request_code)
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			Utils.showToast(this, ex, "ACTION_OPEN_DOCUMENT failed.")
+			showToast(this, ex, "ACTION_OPEN_DOCUMENT failed.")
 		}
 		
 	}
@@ -824,7 +906,8 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 			val values = ContentValues()
 			values.put(MediaStore.Images.Media.TITLE, filename)
 			values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
-			uriCameraImage = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+			uriCameraImage =
+				contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
 			
 			val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
 			intent.putExtra(MediaStore.EXTRA_OUTPUT, uriCameraImage)
@@ -832,7 +915,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 			startActivityForResult(intent, request_code)
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			Utils.showToast(this, ex, "opening camera app failed.")
+			showToast(this, ex, "opening camera app failed.")
 		}
 		
 	}
@@ -862,12 +945,12 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 				// 設定からリサイズ指定を読む
 				val resize_to = 1280
 				
-				val bitmap = Utils.createResizedBitmap(log, this, uri, false, resize_to)
+				val bitmap = createResizedBitmap( this, uri, resize_to )
 				if(bitmap != null) {
 					try {
 						val cache_dir = externalCacheDir
 						if(cache_dir == null) {
-							Utils.showToast(this, false, "getExternalCacheDir returns null.")
+							showToast(this, false, "getExternalCacheDir returns null.")
 							break
 						}
 						
@@ -905,7 +988,7 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 				
 			} catch(ex : Throwable) {
 				log.trace(ex)
-				Utils.showToast(this, ex, "Resizing image failed.")
+				showToast(this, ex, "Resizing image failed.")
 			}
 			
 			break
@@ -929,12 +1012,12 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 	private fun addAttachment(request_code : Int, uri : Uri, mime_type : String?) {
 		
 		if(mime_type == null) {
-			Utils.showToast(this, false, "mime type is not provided.")
+			showToast(this, false, "mime type is not provided.")
 			return
 		}
 		
 		if(! mime_type.startsWith("image/")) {
-			Utils.showToast(this, false, "mime type is not image.")
+			showToast(this, false, "mime type is not image.")
 			return
 		}
 		
@@ -948,22 +1031,27 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 						opener.open().use { inData ->
 							val bao = ByteArrayOutputStream()
 							//
-							bao.write(Utils.encodeUTF8("data:" + opener.mimeType + ";base64,"))
+							bao.write("data:${opener.mimeType};base64,".encodeUTF8())
 							//
-							Base64OutputStream(bao, Base64.NO_WRAP).use { base64 -> IOUtils.copy(inData, base64) }
-							val value = Utils.decodeUTF8(bao.toByteArray())
+							Base64OutputStream(bao, Base64.NO_WRAP).use { base64 ->
+								IOUtils.copy(
+									inData,
+									base64
+								)
+							}
+							val value = bao.toByteArray().decodeUTF8()
 							
 							return when(request_code) {
 								REQUEST_CODE_HEADER_ATTACHMENT, REQUEST_CODE_HEADER_CAMERA -> "header="
 								else -> "avatar="
-							} + Uri.encode(value)
+							} + value.encodePercent()
 						}
 					} finally {
 						opener.deleteTempFile()
 					}
 					
 				} catch(ex : Throwable) {
-					Utils.showToast(this@ActAccountSetting, ex, "image converting failed.")
+					showToast(this@ActAccountSetting, ex, "image converting failed.")
 				}
 				
 				return null
@@ -977,38 +1065,6 @@ class ActAccountSetting : AppCompatActivity(), View.OnClickListener, CompoundBut
 			
 		}
 		task.executeOnExecutor(App1.task_executor)
-	}
-	
-	companion object {
-		
-		internal val log = LogCategory("ActAccountSetting")
-		
-		internal val KEY_ACCOUNT_DB_ID = "account_db_id"
-		
-		fun open(activity : Activity, ai : SavedAccount, requestCode : Int) {
-			val intent = Intent(activity, ActAccountSetting::class.java)
-			intent.putExtra(KEY_ACCOUNT_DB_ID, ai.db_id)
-			activity.startActivityForResult(intent, requestCode)
-		}
-		
-		internal val REQUEST_CODE_ACCT_CUSTOMIZE = 1
-		internal val REQUEST_CODE_NOTIFICATION_SOUND = 2
-		private val REQUEST_CODE_AVATAR_ATTACHMENT = 3
-		private val REQUEST_CODE_HEADER_ATTACHMENT = 4
-		private val REQUEST_CODE_AVATAR_CAMERA = 5
-		private val REQUEST_CODE_HEADER_CAMERA = 6
-		
-		internal val RESULT_INPUT_ACCESS_TOKEN = Activity.RESULT_FIRST_USER + 10
-		internal val EXTRA_DB_ID = "db_id"
-		
-		internal val max_length_display_name = 30
-		internal val max_length_note = 160
-		
-		private val PERMISSION_REQUEST_AVATAR = 1
-		private val PERMISSION_REQUEST_HEADER = 2
-		
-		internal val MIME_TYPE_JPEG = "image/jpeg"
-		internal val MIME_TYPE_PNG = "image/png"
 	}
 	
 }

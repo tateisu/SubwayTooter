@@ -189,7 +189,7 @@ class CustomEmojiCache(internal val context : Context) {
 							var item : CacheItem? = cache[request.url]
 							if(item == null) {
 								item = CacheItem(request.url, frames)
-								cache.put(request.url, item)
+								cache[request.url] = item
 							} else {
 								item.frames?.dispose()
 								item.frames = frames

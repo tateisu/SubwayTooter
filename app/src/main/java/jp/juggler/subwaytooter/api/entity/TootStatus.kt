@@ -22,7 +22,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 @Suppress("MemberVisibilityCanPrivate")
-class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceType) :TimelineItem(){
+class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceType) :
+	TimelineItem() {
 	
 	val json : JSONObject
 	
@@ -71,7 +72,7 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 	val sensitive : Boolean
 	
 	// The detected language for the status, if detected
-	val language : String?
+	private val language : String?
 	
 	//If not empty, warning text that should be displayed before the actual content
 	val spoiler_text : String?
@@ -89,13 +90,13 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 	val profile_emojis : HashMap<String, NicoProfileEmoji>?
 	
 	//	The time the status was created
-	val created_at : String?
+	private val created_at : String?
 	
 	//	null or the ID of the status it replies to
 	val in_reply_to_id : String?
 	
 	//	null or the ID of the account it replies to
-	val in_reply_to_account_id : String?
+	private val in_reply_to_account_id : String?
 	
 	//	null or the reblogged Status
 	val reblog : TootStatus?
@@ -148,13 +149,14 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 	init {
 		this.json = src
 		
-		this.uri = Utils.optStringX(src, "uri") // MSPだとuriは提供されない
-		this.url = Utils.optStringX(src, "url") // 頻繁にnullになる
-		this.created_at = Utils.optStringX(src, "created_at")
+		this.uri = src.parseString("uri") // MSPだとuriは提供されない
+		this.url = src.parseString("url") // 頻繁にnullになる
+		this.created_at = src.parseString("created_at")
 		
 		// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
 		this.custom_emojis = parseMapOrNull(::CustomEmoji, src.optJSONArray("emojis"), log)
-		this.profile_emojis = parseMapOrNull(::NicoProfileEmoji, src.optJSONArray("profile_emojis"), log)
+		this.profile_emojis =
+			parseMapOrNull(::NicoProfileEmoji, src.optJSONArray("profile_emojis"), log)
 		
 		this.account = TootAccount.parse(
 			parser.context,
@@ -167,16 +169,17 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 			ServiceType.MASTODON -> {
 				this.host_access = parser.accessInfo.host
 				
-				this.id = Utils.optLongX(src, "id", INVALID_ID)
+				this.id = src.parseLong("id") ?: INVALID_ID
 				
-				this.reblogs_count = Utils.optLongX(src, "reblogs_count")
-				this.favourites_count = Utils.optLongX(src, "favourites_count")
+				this.reblogs_count = src.parseLong("reblogs_count")
+				this.favourites_count = src.parseLong("favourites_count")
 				this.reblogged = src.optBoolean("reblogged")
 				this.favourited = src.optBoolean("favourited")
 				
 				this.time_created_at = parseTime(this.created_at)
-				this.media_attachments = parseListOrNull(::TootAttachment, src.optJSONArray("media_attachments"), log)
-				this.visibility = Utils.optStringX(src, "visibility")
+				this.media_attachments =
+					parseListOrNull(::TootAttachment, src.optJSONArray("media_attachments"), log)
+				this.visibility = src.parseString("visibility")
 				this.sensitive = src.optBoolean("sensitive")
 				
 			}
@@ -188,11 +191,12 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 				this.id = findStatusIdFromUri(uri, url)
 				
 				
-				this.reblogs_count = Utils.optLongX(src, "reblogs_count")
-				this.favourites_count = Utils.optLongX(src, "favourites_count")
+				this.reblogs_count = src.parseLong("reblogs_count")
+				this.favourites_count = src.parseLong("favourites_count")
 				
 				this.time_created_at = TootStatus.parseTime(this.created_at)
-				this.media_attachments = parseListOrNull(::TootAttachment, src.optJSONArray("media_attachments"), log)
+				this.media_attachments =
+					parseListOrNull(::TootAttachment, src.optJSONArray("media_attachments"), log)
 				this.visibility = VISIBILITY_PUBLIC
 				this.sensitive = src.optBoolean("sensitive")
 				
@@ -202,28 +206,33 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 				this.host_access = null
 				
 				// MSPのデータはLTLから呼んだものなので、常に投稿元タンスでのidが得られる
-				this.id = Utils.optLongX(src, "id", INVALID_ID)
+				this.id = src.parseLong("id") ?: INVALID_ID
 				
 				this.time_created_at = parseTimeMSP(created_at)
-				this.media_attachments = TootAttachmentMSP.parseList(src.optJSONArray("media_attachments"))
+				this.media_attachments =
+					TootAttachmentMSP.parseList(src.optJSONArray("media_attachments"))
 				this.visibility = VISIBILITY_PUBLIC
 				this.sensitive = src.optInt("sensitive", 0) != 0
 			}
 		}
 		
-		this.in_reply_to_id = Utils.optStringX(src, "in_reply_to_id")
-		this.in_reply_to_account_id = Utils.optStringX(src, "in_reply_to_account_id")
+		this.in_reply_to_id = src.parseString("in_reply_to_id")
+		this.in_reply_to_account_id = src.parseString("in_reply_to_account_id")
 		this.mentions = parseListOrNull(::TootMention, src.optJSONArray("mentions"), log)
 		this.tags = parseListOrNull(::TootTag, src.optJSONArray("tags"))
 		this.application = parseItem(::TootApplication, src.optJSONObject("application"), log)
 		this.pinned = parser.pinned || src.optBoolean("pinned")
 		this.muted = src.optBoolean("muted")
-		this.language = Utils.optStringX(src, "language")
-		this.decoded_mentions = HTMLDecoder.decodeMentions(parser.accessInfo, this.mentions, this) ?: EMPTY_SPANNABLE
+		this.language = src.parseString("language")
+		this.decoded_mentions = HTMLDecoder.decodeMentions(
+			parser.accessInfo,
+			this.mentions,
+			this
+		) ?: EMPTY_SPANNABLE
 		// this.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
 		
 		// content
-		this.content = Utils.optStringX(src, "content")
+		this.content = src.parseString("content")
 		var options = DecodeOptions(
 			short = true,
 			decodeEmoji = true,
@@ -241,11 +250,10 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 		}
 		
 		// spoiler_text
-		this.spoiler_text = Utils.sanitizeBDI(
-			reWhitespace
-				.matcher(Utils.optStringX(src, "spoiler_text") ?: "")
-				.replaceAll(" ")
-		)
+		this.spoiler_text = reWhitespace
+			.matcher(src.parseString("spoiler_text") ?: "")
+			.replaceAll(" ")
+			.sanitizeBDI()
 		
 		options = DecodeOptions(
 			emojiMapCustom = custom_emojis,
@@ -265,7 +273,7 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 			parser.accessInfo,
 			this,
 			media_attachments,
-			Utils.optStringX(src, "enquete")
+			src.parseString("enquete")
 		)
 		
 		// Pinned TL を取得した時にreblogが登場することはないので、reblogについてpinned 状態を気にする必要はない
@@ -330,15 +338,19 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 		
 		// OStatus
 		@Suppress("HasPlatformType")
-		val reTootUriOS = Pattern.compile("tag:([^,]*),[^:]*:objectId=(\\d+):objectType=Status", Pattern.CASE_INSENSITIVE)
+		private val reTootUriOS = Pattern.compile(
+			"tag:([^,]*),[^:]*:objectId=(\\d+):objectType=Status",
+			Pattern.CASE_INSENSITIVE
+		)
 		
 		// ActivityPub 1
 		@Suppress("HasPlatformType")
-		val reTootUriAP1 = Pattern.compile("https?://([^/]+)/users/[A-Za-z0-9_]+/statuses/(\\d+)")
+		private val reTootUriAP1 =
+			Pattern.compile("https?://([^/]+)/users/[A-Za-z0-9_]+/statuses/(\\d+)")
 		
 		// ActivityPub 2
 		@Suppress("HasPlatformType")
-		val reTootUriAP2 = Pattern.compile("https?://([^/]+)/@[A-Za-z0-9_]+/(\\d+)")
+		private val reTootUriAP2 = Pattern.compile("https?://([^/]+)/@[A-Za-z0-9_]+/(\\d+)")
 		
 		const val INVALID_ID = - 1L
 		
@@ -411,9 +423,11 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 		
 		private val tz_utc = TimeZone.getTimeZone("UTC")
 		
-		private val reTime = Pattern.compile("\\A(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)")
+		private val reTime =
+			Pattern.compile("\\A(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)")
 		
-		private val reMSPTime = Pattern.compile("\\A(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)")
+		private val reMSPTime =
+			Pattern.compile("\\A(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)\\D+(\\d+)")
 		
 		fun parseTime(strTime : String?) : Long {
 			if(strTime != null && strTime.isNotEmpty()) {
@@ -424,14 +438,14 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 					} else {
 						val g = GregorianCalendar(tz_utc)
 						g.set(
-							Utils.parse_int(m.group(1), 1),
-							Utils.parse_int(m.group(2), 1) - 1,
-							Utils.parse_int(m.group(3), 1),
-							Utils.parse_int(m.group(4), 0),
-							Utils.parse_int(m.group(5), 0),
-							Utils.parse_int(m.group(6), 0)
+							m.group(1).optInt() ?: 1,
+							(m.group(2).optInt() ?: 1) - 1,
+							m.group(3).optInt() ?: 1,
+							m.group(4).optInt() ?: 0,
+							m.group(5).optInt() ?: 0,
+							m.group(6).optInt() ?: 0
 						)
-						g.set(Calendar.MILLISECOND, Utils.parse_int(m.group(7), 0))
+						g.set(Calendar.MILLISECOND, m.group(7).optInt() ?: 0)
 						return g.timeInMillis
 					}
 				} catch(ex : Throwable) { // ParseException,  ArrayIndexOutOfBoundsException
@@ -452,12 +466,12 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 					} else {
 						val g = GregorianCalendar(tz_utc)
 						g.set(
-							Utils.parse_int(m.group(1), 1),
-							Utils.parse_int(m.group(2), 1) - 1,
-							Utils.parse_int(m.group(3), 1),
-							Utils.parse_int(m.group(4), 0),
-							Utils.parse_int(m.group(5), 0),
-							Utils.parse_int(m.group(6), 0)
+							m.group(1).optInt() ?: 1,
+							(m.group(2).optInt() ?: 1) - 1,
+							m.group(3).optInt() ?: 1,
+							m.group(4).optInt() ?: 0,
+							m.group(5).optInt() ?: 0,
+							m.group(6).optInt() ?: 0
 						)
 						g.set(Calendar.MILLISECOND, 500)
 						return g.timeInMillis
@@ -484,22 +498,38 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 					
 					delta < 60000L -> {
 						val v = (delta / 1000L).toInt()
-						return context.getString(if(v > 1) R.string.relative_time_second_2 else R.string.relative_time_second_1, v, sign)
+						return context.getString(
+							if(v > 1) R.string.relative_time_second_2 else R.string.relative_time_second_1,
+							v,
+							sign
+						)
 					}
 					
 					delta < 3600000L -> {
 						val v = (delta / 60000L).toInt()
-						return context.getString(if(v > 1) R.string.relative_time_minute_2 else R.string.relative_time_minute_1, v, sign)
+						return context.getString(
+							if(v > 1) R.string.relative_time_minute_2 else R.string.relative_time_minute_1,
+							v,
+							sign
+						)
 					}
 					
 					delta < 86400000L -> {
 						val v = (delta / 3600000L).toInt()
-						return context.getString(if(v > 1) R.string.relative_time_hour_2 else R.string.relative_time_hour_1, v, sign)
+						return context.getString(
+							if(v > 1) R.string.relative_time_hour_2 else R.string.relative_time_hour_1,
+							v,
+							sign
+						)
 					}
 					
 					delta < 40 * 86400000L -> {
 						val v = (delta / 86400000L).toInt()
-						return context.getString(if(v > 1) R.string.relative_time_day_2 else R.string.relative_time_day_1, v, sign)
+						return context.getString(
+							if(v > 1) R.string.relative_time_day_2 else R.string.relative_time_day_1,
+							v,
+							sign
+						)
 					}
 					
 					else -> {
@@ -533,7 +563,10 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 			throw IndexOutOfBoundsException("visibility not in range")
 		}
 		
-		fun isVisibilitySpoilRequired(current_visibility : String?, max_visibility : String?) : Boolean {
+		fun isVisibilitySpoilRequired(
+			current_visibility : String?,
+			max_visibility : String?
+		) : Boolean {
 			return try {
 				val cvi = parseVisibility(current_visibility)
 				val mvi = parseVisibility(max_visibility)

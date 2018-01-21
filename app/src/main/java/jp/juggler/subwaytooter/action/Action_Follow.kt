@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.action
 
-import android.net.Uri
 import android.support.v7.app.AlertDialog
 
 import jp.juggler.subwaytooter.ActMain
@@ -19,7 +18,8 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.EmptyCallback
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.encodePercent
+import jp.juggler.subwaytooter.util.showToast
 import okhttp3.Request
 import okhttp3.RequestBody
 
@@ -36,7 +36,7 @@ object Action_Follow {
 		callback : EmptyCallback? = null
 	) {
 		if(access_info.isMe(who)) {
-			Utils.showToast(activity, false, R.string.it_is_you)
+			showToast(activity, false, R.string.it_is_you)
 			return
 		}
 		
@@ -161,7 +161,7 @@ object Action_Follow {
 					// リモートフォローする
 					val request_builder = Request.Builder().post(
 						RequestBody.create(
-							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "uri=" + Uri.encode(who.acct)
+							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "uri=" + who.acct.encodePercent()
 						))
 					
 					result = client.request("/api/v1/follows", request_builder)
@@ -205,18 +205,18 @@ object Action_Follow {
 					
 					if(bFollow && relation .getRequested(who)) {
 						// 鍵付きアカウントにフォローリクエストを申請した状態
-						Utils.showToast(activity, false, R.string.follow_requested)
+						showToast(activity, false, R.string.follow_requested)
 					} else if(! bFollow && relation .getRequested(who)) {
-						Utils.showToast(activity, false, R.string.follow_request_cant_remove_by_sender)
+						showToast(activity, false, R.string.follow_request_cant_remove_by_sender)
 					} else {
 						// ローカル操作成功、もしくはリモートフォロー成功
 						if(callback != null) callback()
 					}
 					
 				} else if(bFollow && who.locked && ( result.response?.code() ?: -1)  == 422) {
-					Utils.showToast(activity, false, R.string.cant_follow_locked_user)
+					showToast(activity, false, R.string.cant_follow_locked_user)
 				} else {
-					Utils.showToast(activity, false, result.error)
+					showToast(activity, false, result.error)
 				}
 				
 			}
@@ -233,7 +233,7 @@ object Action_Follow {
 		callback : EmptyCallback? =null
 	) {
 		if(access_info.isMe(acct)) {
-			Utils.showToast(activity, false, R.string.it_is_you)
+			showToast(activity, false, R.string.it_is_you)
 			return
 		}
 		
@@ -294,7 +294,7 @@ object Action_Follow {
 				
 				val request_builder = Request.Builder().post(
 					RequestBody.create(
-						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "uri=" + Uri.encode(acct)
+						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "uri=" + acct.encodePercent()
 					))
 				
 				var result = client.request("/api/v1/follows", request_builder)
@@ -323,9 +323,9 @@ object Action_Follow {
 					if(callback != null) callback()
 					
 				} else if(locked && (result.response?.code() ?: -1 )== 422) {
-					Utils.showToast(activity, false, R.string.cant_follow_locked_user)
+					showToast(activity, false, R.string.cant_follow_locked_user)
 				} else {
-					Utils.showToast(activity, false, result.error)
+					showToast(activity, false, result.error)
 				}
 				
 			}
@@ -383,7 +383,7 @@ object Action_Follow {
 		activity : ActMain, access_info : SavedAccount, who : TootAccount, bAllow : Boolean
 	) {
 		if(access_info.isMe(who)) {
-			Utils.showToast(activity, false, R.string.it_is_you)
+			showToast(activity, false, R.string.it_is_you)
 			return
 		}
 		
@@ -407,9 +407,9 @@ object Action_Follow {
 						column.removeFollowRequest(access_info, who.id)
 					}
 					
-					Utils.showToast(activity, false, if(bAllow) R.string.follow_request_authorized else R.string.follow_request_rejected, who.decoded_display_name)
+					showToast(activity, false, if(bAllow) R.string.follow_request_authorized else R.string.follow_request_rejected, who.decoded_display_name)
 				} else {
-					Utils.showToast(activity, false, result.error)
+					showToast(activity, false, result.error)
 				}
 			}
 		})

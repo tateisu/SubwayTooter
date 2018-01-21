@@ -6,12 +6,12 @@ import android.database.sqlite.SQLiteDatabase
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
 import android.support.v4.util.LruCache
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
+import jp.juggler.subwaytooter.util.sanitizeBDI
 
 import java.util.Locale
 
@@ -23,7 +23,13 @@ class AcctColor {
 	var nickname : String? = null
 	var notification_sound : String? = null
 	
-	constructor(acct : String, nickname : String, color_fg : Int, color_bg : Int, notification_sound : String? ) {
+	constructor(
+		acct : String,
+		nickname : String,
+		color_fg : Int,
+		color_bg : Int,
+		notification_sound : String?
+	) {
 		this.acct = acct
 		this.nickname = nickname
 		this.color_fg = color_fg
@@ -46,7 +52,10 @@ class AcctColor {
 			cv.put(COL_COLOR_FG, color_fg)
 			cv.put(COL_COLOR_BG, color_bg)
 			cv.put(COL_NICKNAME, if(nickname == null) "" else nickname)
-			cv.put(COL_NOTIFICATION_SOUND, if(notification_sound == null) "" else notification_sound)
+			cv.put(
+				COL_NOTIFICATION_SOUND,
+				if(notification_sound == null) "" else notification_sound
+			)
 			App1.database.replace(table, null, cv)
 			mMemoryCache.remove(acct)
 		} catch(ex : Throwable) {
@@ -79,7 +88,6 @@ class AcctColor {
 		}
 		
 		private val mMemoryCache = LruCache<String, AcctColor>(2048)
-		
 		
 		fun onDBCreate(db : SQLiteDatabase) {
 			log.d("onDBCreate!")
@@ -118,8 +126,6 @@ class AcctColor {
 			}
 		}
 		
-		
-
 		fun load(acctArg : String) : AcctColor {
 			val acct = acctArg.toLowerCase(Locale.ENGLISH)
 			val cached : AcctColor? = mMemoryCache.get(acct)
@@ -129,10 +135,10 @@ class AcctColor {
 				val where_arg = load_where_arg.get()
 				where_arg[0] = acct
 				App1.database.query(table, null, load_where, where_arg, null, null, null)
-					.use{cursor->
+					.use { cursor ->
 						if(cursor.moveToNext()) {
 							var idx : Int
-
+							
 							val ac = AcctColor(acct)
 							
 							idx = cursor.getColumnIndex(COL_COLOR_FG)
@@ -145,7 +151,8 @@ class AcctColor {
 							ac.nickname = if(cursor.isNull(idx)) null else cursor.getString(idx)
 							
 							idx = cursor.getColumnIndex(COL_NOTIFICATION_SOUND)
-							ac.notification_sound = if(cursor.isNull(idx)) null else cursor.getString(idx)
+							ac.notification_sound =
+								if(cursor.isNull(idx)) null else cursor.getString(idx)
 							
 							mMemoryCache.put(acct, ac)
 							return ac
@@ -157,7 +164,12 @@ class AcctColor {
 				log.e(ex, "load failed.")
 			}
 			
-			log.d("lruCache size=%s,hit=%s,miss=%s", mMemoryCache.size(), mMemoryCache.hitCount(), mMemoryCache.missCount())
+			log.d(
+				"lruCache size=%s,hit=%s,miss=%s",
+				mMemoryCache.size(),
+				mMemoryCache.hitCount(),
+				mMemoryCache.missCount()
+			)
 			val ac = AcctColor(acct)
 			mMemoryCache.put(acct, ac)
 			return ac
@@ -166,13 +178,13 @@ class AcctColor {
 		fun getNickname(acct : String) : String {
 			val ac = load(acct)
 			val nickname = ac.nickname
-			return if( nickname != null && nickname.isNotEmpty() ) Utils.sanitizeBDI( nickname) else acct
+			return if(nickname != null && nickname.isNotEmpty()) nickname.sanitizeBDI() else acct
 		}
 		
 		fun getNotificationSound(acct : String) : String? {
 			val ac = load(acct)
 			val notification_sound = ac.notification_sound
-			return if( notification_sound != null && notification_sound.isNotEmpty() ) notification_sound else null
+			return if(notification_sound != null && notification_sound.isNotEmpty()) notification_sound else null
 		}
 		
 		fun hasNickname(ac : AcctColor?) : Boolean {
@@ -192,20 +204,39 @@ class AcctColor {
 			mMemoryCache.evictAll()
 		}
 		
-		fun getStringWithNickname(context : Context, string_id : Int, acct : String) : CharSequence {
+		fun getStringWithNickname(
+			context : Context,
+			string_id : Int,
+			acct : String
+		) : CharSequence {
 			val ac = load(acct)
 			val nickname = ac.nickname
-			val name = if(nickname ==null || nickname.isEmpty()) acct else Utils.sanitizeBDI(nickname)
-			val sb = SpannableStringBuilder(context.getString(string_id, String(charArrayOf(CHAR_REPLACE))))
+			val name = if(nickname == null || nickname.isEmpty()) acct else nickname.sanitizeBDI()
+			val sb = SpannableStringBuilder(
+				context.getString(
+					string_id,
+					String(charArrayOf(CHAR_REPLACE))
+				)
+			)
 			for(i in sb.length - 1 downTo 0) {
 				val c = sb[i]
 				if(c != CHAR_REPLACE) continue
 				sb.replace(i, i + 1, name)
 				if(ac.color_fg != 0) {
-					sb.setSpan(ForegroundColorSpan(ac.color_fg), i, i + name.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+					sb.setSpan(
+						ForegroundColorSpan(ac.color_fg),
+						i,
+						i + name.length,
+						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+					)
 				}
 				if(ac.color_bg != 0) {
-					sb.setSpan(BackgroundColorSpan(ac.color_bg), i, i + name.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+					sb.setSpan(
+						BackgroundColorSpan(ac.color_bg),
+						i,
+						i + name.length,
+						Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+					)
 				}
 			}
 			return sb

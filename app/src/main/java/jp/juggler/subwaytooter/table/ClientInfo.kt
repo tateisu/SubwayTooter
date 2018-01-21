@@ -7,6 +7,7 @@ import org.json.JSONObject
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.toJsonObject
 
 object ClientInfo {
 	private val log = LogCategory("ClientInfo")
@@ -41,9 +42,8 @@ object ClientInfo {
 			App1.database.query(table, null, "h=? and cn=?", arrayOf(instance, client_name), null, null, null)
 				.use { cursor ->
 					if(cursor.moveToFirst()) {
-						return JSONObject(cursor.getString(cursor.getColumnIndex(COL_RESULT)))
+						return cursor.getString(cursor.getColumnIndex(COL_RESULT)).toJsonObject()
 					}
-					
 				}
 		} catch(ex : Throwable) {
 			log.e(ex, "load failed.")

@@ -5,7 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.showToast
 
 class DownloadReceiver : BroadcastReceiver() {
 	override fun onReceive(context : Context, intent : Intent?) {
@@ -42,9 +42,9 @@ class DownloadReceiver : BroadcastReceiver() {
 							重複を回避する方法はなさそうだ…
 						*/
 						
-						Utils.showToast(context, false, context.getString(R.string.download_complete, title))
+						showToast(context, false, context.getString(R.string.download_complete, title))
 					} else {
-						Utils.showToast(context, false, context.getString(R.string.download_failed, title))
+						showToast(context, false, context.getString(R.string.download_failed, title))
 					}
 				}
 			}

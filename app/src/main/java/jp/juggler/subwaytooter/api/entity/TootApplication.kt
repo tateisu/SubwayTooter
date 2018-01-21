@@ -2,14 +2,15 @@ package jp.juggler.subwaytooter.api.entity
 
 import org.json.JSONObject
 
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.parseString
 
-class TootApplication (
+class TootApplication(
 	val name : String?,
 	@Suppress("unused") private val website : String?
-){
-	constructor(src:JSONObject):this(
-		name = Utils.optStringX(src, "name"),
-		website = Utils.optStringX(src, "website")
+) {
+	
+	constructor(src : JSONObject) : this(
+		name = src.parseString("name"),
+		website = src.parseString("website")
 	)
 }

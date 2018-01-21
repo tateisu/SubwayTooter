@@ -5,12 +5,13 @@ import android.content.SharedPreferences
 import org.json.JSONObject
 
 import jp.juggler.subwaytooter.Pref
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.parseLong
+import jp.juggler.subwaytooter.util.parseString
 
 class TootAttachment(src : JSONObject) : TootAttachmentLike {
 	
 	val json : JSONObject
-
+	
 	//	ID of the attachment
 	val id : Long
 	
@@ -39,13 +40,13 @@ class TootAttachment(src : JSONObject) : TootAttachmentLike {
 	
 	init {
 		json = src
-		id = Utils.optLongX(src, "id")
-		type = Utils.optStringX(src, "type")
-		url = Utils.optStringX(src, "url")
-		remote_url = Utils.optStringX(src, "remote_url")
-		preview_url = Utils.optStringX(src, "preview_url")
-		text_url = Utils.optStringX(src, "text_url")
-		description = Utils.optStringX(src, "description")
+		id = src.parseLong("id") ?: - 1L
+		type = src.parseString("type")
+		url = src.parseString("url")
+		remote_url = src.parseString("remote_url")
+		preview_url = src.parseString("preview_url")
+		text_url = src.parseString("text_url")
+		description = src.parseString("description")
 	}
 	
 	override val urlForThumbnail : String?
@@ -57,20 +58,21 @@ class TootAttachment(src : JSONObject) : TootAttachmentLike {
 		}
 	
 	fun getLargeUrl(pref : SharedPreferences) : String? {
-		return if( Pref.bpPriorLocalURL(pref) ){
-			if( url?.isNotEmpty() ==true) url else remote_url
+		return if(Pref.bpPriorLocalURL(pref)) {
+			if(url?.isNotEmpty() == true) url else remote_url
 		} else {
-			if( remote_url?.isNotEmpty() == true ) remote_url else url
+			if(remote_url?.isNotEmpty() == true) remote_url else url
 		}
 	}
+	
 	fun getLargeUrlList(pref : SharedPreferences) : ArrayList<String> {
 		val result = ArrayList<String>()
-		if( Pref.bpPriorLocalURL(pref) ){
-			if( url?.isNotEmpty() ==true) result.add(url)
-			if( remote_url?.isNotEmpty()==true) result.add( remote_url)
+		if(Pref.bpPriorLocalURL(pref)) {
+			if(url?.isNotEmpty() == true) result.add(url)
+			if(remote_url?.isNotEmpty() == true) result.add(remote_url)
 		} else {
-			if( remote_url?.isNotEmpty()==true) result.add( remote_url)
-			if( url?.isNotEmpty() ==true) result.add(url)
+			if(remote_url?.isNotEmpty() == true) result.add(remote_url)
+			if(url?.isNotEmpty() == true) result.add(url)
 		}
 		return result
 	}

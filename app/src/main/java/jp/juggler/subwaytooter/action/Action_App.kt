@@ -6,7 +6,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootApplication
 import jp.juggler.subwaytooter.table.MutedApp
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.showToast
 
 object Action_App {
 	
@@ -23,7 +23,7 @@ object Action_App {
 		for(column in App1.getAppState(activity).column_list) {
 			column.onMuteAppUpdated()
 		}
-		Utils.showToast(activity, false, R.string.app_was_muted)
+		showToast(activity, false, R.string.app_was_muted)
 	}
 	
 }

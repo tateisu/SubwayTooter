@@ -67,7 +67,7 @@ object HTMLDecoder {
 	private val reEntity = Pattern.compile("&(#?)(\\w+);")
 	private val entity_map = HashMap<String, Char>()
 	private fun _addEntity(s : String, c : Char) {
-		entity_map.put(s, c)
+		entity_map[s] = c
 	}
 	
 	private fun chr(num : Int) : Char {

@@ -8,7 +8,7 @@ import android.widget.TextView
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.showToast
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 
@@ -149,7 +149,7 @@ internal class ViewHolderHeaderInstance(
 					
 				} catch(ex : Throwable) {
 					log.e(ex, "startActivity failed. mail=$email")
-					Utils.showToast(activity, true, R.string.missing_mail_app)
+					showToast(activity, true, R.string.missing_mail_app)
 				}
 				
 			}
@@ -164,7 +164,7 @@ internal class ViewHolderHeaderInstance(
 					
 				} catch(ex : Throwable) {
 					log.e(ex, "startActivity failed. thumbnail=$thumbnail")
-					Utils.showToast(activity, true, "missing web browser")
+					showToast(activity, true, "missing web browser")
 				}
 				
 			}

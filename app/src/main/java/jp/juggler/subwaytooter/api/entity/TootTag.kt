@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.parseString
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -14,7 +14,7 @@ class TootTag(
 	
 	constructor(src : JSONObject):this(
 		name = src.notEmptyOrThrow("name"),
-		url = Utils.optStringX(src,"url")
+		url = src.parseString("url")
 	)
 	
 	companion object {
@@ -23,7 +23,7 @@ class TootTag(
 			val result = ArrayList<TootTag>()
 			if(array != null) {
 				for( i in 0 until array.length() ){
-					val sv = Utils.optStringX(array, i)
+					val sv = array.parseString( i)
 					if( sv?.isNotEmpty() == true ) {
 						result.add(TootTag(name = sv))
 					}

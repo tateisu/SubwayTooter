@@ -12,7 +12,7 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.showToast
 
 import net.glxn.qrgen.android.QRCode
 
@@ -34,7 +34,7 @@ object DlgQRCode {
 					QRCode.from(url).withSize(size, size).bitmap()
 				} catch(ex : Throwable) {
 					log.trace(ex)
-					Utils.showToast(activity, ex, "makeQrCode failed.")
+					showToast(activity, ex, "makeQrCode failed.")
 					null
 				}
 			}

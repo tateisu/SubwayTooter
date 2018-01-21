@@ -19,11 +19,27 @@ import org.hjson.JsonValue
 import java.util.regex.Pattern
 
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.*
 import okhttp3.Request
 
 class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextWatcher {
+	
+	companion object {
+		
+		internal val log = LogCategory("ActCustomStreamListener")
+		
+		// internal val EXTRA_ACCT = "acct"
+		
+		fun open(activity : Activity) {
+			val intent = Intent(activity, ActCustomStreamListener::class.java)
+			activity.startActivity(intent)
+		}
+		
+		internal const val STATE_STREAM_CONFIG_JSON = "stream_config_json"
+		internal val reInstanceURL = Pattern.compile("\\Ahttps://[a-z0-9.-_:]+\\z")
+		internal val reUpperCase = Pattern.compile("[A-Z]")
+		internal val reUrl = Pattern.compile("\\Ahttps?://[\\w\\-?&#%~!$'()*+,/:;=@._\\[\\]]+\\z")
+	}
 	
 	private lateinit var etStreamListenerConfigurationUrl : EditText
 	private lateinit var etStreamListenerSecret : EditText
@@ -120,17 +136,17 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 	override fun onClick(v : View) {
 		when(v.id) {
 			R.id.btnDiscard -> {
-				Utils.hideKeyboard(this, etStreamListenerConfigurationUrl)
+				etStreamListenerConfigurationUrl.hideKeyboard()
 				finish()
 			}
 			
 			R.id.btnTest -> {
-				Utils.hideKeyboard(this, etStreamListenerConfigurationUrl)
+				etStreamListenerConfigurationUrl.hideKeyboard()
 				startTest()
 			}
 			
 			R.id.btnSave -> {
-				Utils.hideKeyboard(this, etStreamListenerConfigurationUrl)
+				etStreamListenerConfigurationUrl.hideKeyboard()
 				if(save()) {
 					SavedAccount.clearRegistrationCache()
 					PollingWorker.queueUpdateListener(this)
@@ -142,20 +158,24 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 	
 	private fun save() : Boolean {
 		if(stream_config_json == null) {
-			Utils.showToast(this, false, "please test before save.")
+			showToast(this, false, "please test before save.")
 			return false
 		}
 		
 		Pref.pref(this).edit()
-			.put(Pref.spStreamListenerConfigUrl, etStreamListenerConfigurationUrl.text.toString().trim { it <= ' ' })
-			.put(Pref.spStreamListenerSecret, etStreamListenerSecret.text.toString().trim { it <= ' ' })
+			.put(
+				Pref.spStreamListenerConfigUrl,
+				etStreamListenerConfigurationUrl.text.toString().trim { it <= ' ' })
+			.put(
+				Pref.spStreamListenerSecret,
+				etStreamListenerSecret.text.toString().trim { it <= ' ' })
 			.put(Pref.spStreamListenerConfigData, stream_config_json ?: "")
 			.apply()
 		return true
 	}
 	
 	internal fun addLog(line : String) {
-		Utils.runOnMainThread {
+		runOnMainLooper {
 			val old = tvLog.text.toString()
 			tvLog.text = if(old.isEmpty()) line else old + "\n" + line
 		}
@@ -197,7 +217,13 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 						}
 						
 						if(! response.isSuccessful || bodyString?.isEmpty() != false) {
-							addLog(TootApiClient.formatResponse(response, "Can't get configuration from URL.", bodyString))
+							addLog(
+								TootApiClient.formatResponse(
+									response,
+									"Can't get configuration from URL.",
+									bodyString
+								)
+							)
 							break
 						}
 						
@@ -205,7 +231,7 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 							JsonValue.readHjson(bodyString)
 						} catch(ex : Throwable) {
 							log.trace(ex)
-							addLog(Utils.formatError(ex, "Can't parse configuration data."))
+							addLog(ex.withCaption("Can't parse configuration data."))
 							break
 						}
 						
@@ -242,7 +268,11 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 							}
 							val entry = entry_value.asObject()
 							
-							val keys = arrayOf("urlStreamingListenerRegister", "urlStreamingListenerUnregister", "appId")
+							val keys = arrayOf(
+								"urlStreamingListenerRegister",
+								"urlStreamingListenerUnregister",
+								"appId"
+							)
 							for(key in keys) {
 								val v = entry.get(key)
 								if(! v.isString) {
@@ -271,7 +301,7 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 											call.execute()
 										} catch(ex : Throwable) {
 											log.trace(ex)
-											addLog(strInstance + "." + key + " : " + Utils.formatError(ex, "connect failed."))
+											addLog(ex.withCaption("$strInstance.$key : connect failed."))
 											has_error = true
 										}
 										
@@ -304,7 +334,7 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 					
 				} catch(ex : Throwable) {
 					log.trace(ex)
-					addLog(Utils.formatError(ex, "Can't read configuration from URL."))
+					addLog(ex.withCaption("Can't read configuration from URL."))
 				}
 				
 				return null
@@ -330,20 +360,4 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 		task.executeOnExecutor(App1.task_executor)
 	}
 	
-	companion object {
-		
-		internal val log = LogCategory("ActCustomStreamListener")
-		
-		// internal val EXTRA_ACCT = "acct"
-		
-		fun open(activity : Activity) {
-			val intent = Intent(activity, ActCustomStreamListener::class.java)
-			activity.startActivity(intent)
-		}
-		
-		internal val STATE_STREAM_CONFIG_JSON = "stream_config_json"
-		internal val reInstanceURL = Pattern.compile("\\Ahttps://[a-z0-9.-_:]+\\z")
-		internal val reUpperCase = Pattern.compile("[A-Z]")
-		internal val reUrl = Pattern.compile("\\Ahttps?://[\\w\\-?&#%~!$'()*+,/:;=@._\\[\\]]+\\z")
-	}
 }

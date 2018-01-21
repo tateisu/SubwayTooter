@@ -24,7 +24,8 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.EmptyCallback
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.showToast
+import jp.juggler.subwaytooter.util.encodePercent
 import okhttp3.Request
 import okhttp3.RequestBody
 
@@ -71,7 +72,7 @@ object Action_Toot {
 		callback : EmptyCallback?
 	) {
 		if(App1.getAppState(activity).isBusyFav(access_info, arg_status)) {
-			Utils.showToast(activity, false, R.string.wait_previous_operation)
+			showToast(activity, false, R.string.wait_previous_operation)
 			return
 		}
 		//
@@ -87,7 +88,9 @@ object Action_Toot {
 				var target_status : TootStatus?
 				if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
 					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
-					val path = String.format(Locale.JAPAN, Column.PATH_SEARCH, Uri.encode(arg_status.url)) + "&resolve=1"
+					val status_url = arg_status.url
+					if( status_url?.isEmpty()!=false) return TootApiResult("missing status URL")
+					val path = String.format(Locale.JAPAN, Column.PATH_SEARCH, status_url.encodePercent()) + "&resolve=1"
 					
 					result = client.request(path)
 					val jsonObject = result?.jsonObject ?: return result
@@ -169,7 +172,7 @@ object Action_Toot {
 						
 					}
 					
-					else -> Utils.showToast(activity, true, result.error)
+					else -> showToast(activity, true, result.error)
 				}
 				// 結果に関わらず、更新中状態から復帰させる
 				activity.showColumnMatchAccount(access_info)
@@ -214,7 +217,7 @@ object Action_Toot {
 		
 		// アカウントからステータスにブースト操作を行っているなら、何もしない
 		if(App1.getAppState(activity).isBusyBoost(access_info, arg_status)) {
-			Utils.showToast(activity, false, R.string.wait_previous_operation)
+			showToast(activity, false, R.string.wait_previous_operation)
 			return
 		}
 		
@@ -223,7 +226,7 @@ object Action_Toot {
 //			if(arg_status.reblogged) {
 //				if(App1.getAppState(activity).isBusyFav(access_info, arg_status) || arg_status.favourited) {
 //					// FAVがついているか、FAV操作中はBoostを外せない
-//					Utils.showToast(activity, false, R.string.cant_remove_boost_while_favourited)
+//					showToast(activity, false, R.string.cant_remove_boost_while_favourited)
 //					return
 //				}
 //			}
@@ -264,8 +267,10 @@ object Action_Toot {
 				
 				var target_status : TootStatus?
 				if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
+					val status_url = arg_status.url
+					if( status_url?.isEmpty()!=false) return TootApiResult("missing status URL")
 					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
-					val path = String.format(Locale.JAPAN, Column.PATH_SEARCH, Uri.encode(arg_status.url)) + "&resolve=1"
+					val path = String.format(Locale.JAPAN, Column.PATH_SEARCH, status_url.encodePercent() ) + "&resolve=1"
 					
 					result = client.request(path)
 					val jsonObject = result?.jsonObject ?: return result
@@ -346,7 +351,7 @@ object Action_Toot {
 						if(callback != null) callback()
 					}
 					
-					else -> Utils.showToast(activity, true, result.error)
+					else -> showToast(activity, true, result.error)
 				}
 				
 				// 結果に関わらず、更新中状態から復帰させる
@@ -374,12 +379,12 @@ object Action_Toot {
 				if(result == null) return  // cancelled.
 				
 				if(result.jsonObject != null) {
-					Utils.showToast(activity, false, R.string.delete_succeeded)
+					showToast(activity, false, R.string.delete_succeeded)
 					for(column in App1.getAppState(activity).column_list) {
 						column.removeStatus(access_info, status_id)
 					}
 				} else {
-					Utils.showToast(activity, false, result.error)
+					showToast(activity, false, result.error)
 				}
 				
 			}
@@ -554,7 +559,7 @@ object Action_Toot {
 						}
 					} else {
 						// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
-						val path = String.format(Locale.JAPAN, Column.PATH_SEARCH, Uri.encode(remote_status_url)) + "&resolve=1"
+						val path = String.format(Locale.JAPAN, Column.PATH_SEARCH, remote_status_url.encodePercent()) + "&resolve=1"
 						result = client.request(path)
 						val jsonObject = result?.jsonObject
 						if(jsonObject != null) {
@@ -578,7 +583,7 @@ object Action_Toot {
 					if(local_status_id != - 1L) {
 						conversationLocal(activity, pos, access_info, local_status_id)
 					} else {
-						Utils.showToast(activity, true, result.error)
+						showToast(activity, true, result.error)
 					}
 				}
 			})
@@ -636,7 +641,7 @@ object Action_Toot {
 								}
 							}
 						}
-						else -> Utils.showToast(activity, true, result.error)
+						else -> showToast(activity, true, result.error)
 					}
 					
 					// 結果に関わらず、更新中状態から復帰させる
@@ -691,7 +696,7 @@ object Action_Toot {
 				internal var local_status : TootStatus? = null
 				override fun background(client : TootApiClient) : TootApiResult? {
 					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
-					val path = String.format(Locale.JAPAN, Column.PATH_SEARCH, Uri.encode(remote_status_url)) + "&resolve=1"
+					val path = String.format(Locale.JAPAN, Column.PATH_SEARCH,remote_status_url.encodePercent()) + "&resolve=1"
 					
 					val result = client.request(path)
 					val jsonObject = result?.jsonObject
@@ -715,7 +720,7 @@ object Action_Toot {
 					if(ls != null) {
 						reply(activity, access_info, ls)
 					} else {
-						Utils.showToast(activity, true, result.error)
+						showToast(activity, true, result.error)
 					}
 				}
 			})
@@ -759,9 +764,9 @@ object Action_Toot {
 							}
 						}
 					}
-					Utils.showToast(activity, true, if(bMute) R.string.mute_succeeded else R.string.unmute_succeeded)
+					showToast(activity, true, if(bMute) R.string.mute_succeeded else R.string.unmute_succeeded)
 				} else {
-					Utils.showToast(activity, true, result.error)
+					showToast(activity, true, result.error)
 				}
 			}
 		})

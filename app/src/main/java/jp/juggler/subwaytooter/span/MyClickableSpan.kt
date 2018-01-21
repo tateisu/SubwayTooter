@@ -12,7 +12,7 @@ import jp.juggler.subwaytooter.util.LinkClickContext
 typealias MyClickableSpanClickCallback = (widget : View, span : MyClickableSpan)->Unit
 
 class MyClickableSpan(
-	val lcc : LinkClickContext,
+//	val lcc : LinkClickContext,
 	val text : String,
 	val url : String,
 	ac : AcctColor?,

@@ -9,13 +9,13 @@ interface CurrentCallCallback {
 	fun onCallCreated(call : Call)
 }
 
-interface SimpleHttpClient{
+interface SimpleHttpClient {
 	var currentCallCallback : CurrentCallCallback?
-	fun getResponse(request: Request) : Response
-	fun getWebSocket(request: Request, webSocketListener : WebSocketListener): WebSocket
+	fun getResponse(request : Request) : Response
+	fun getWebSocket(request : Request, webSocketListener : WebSocketListener) : WebSocket
 }
 
-class SimpleHttpClientImpl(val okHttpClient:OkHttpClient): SimpleHttpClient{
+class SimpleHttpClientImpl(private val okHttpClient : OkHttpClient) : SimpleHttpClient {
 	override var currentCallCallback : CurrentCallCallback? = null
 	
 	override fun getResponse(request : Request) : Response {
@@ -24,8 +24,11 @@ class SimpleHttpClientImpl(val okHttpClient:OkHttpClient): SimpleHttpClient{
 		return call.execute()
 	}
 	
-	override fun getWebSocket(request : Request, webSocketListener : WebSocketListener) : WebSocket {
-		return okHttpClient.newWebSocket(request,webSocketListener)
+	override fun getWebSocket(
+		request : Request,
+		webSocketListener : WebSocketListener
+	) : WebSocket {
+		return okHttpClient.newWebSocket(request, webSocketListener)
 	}
 }
 

@@ -5,7 +5,6 @@ import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.SavedAccount
-import org.json.JSONObject
 
 /////////////////////////////////////////////////////////////////
 // callback (that returns Unit)
@@ -20,13 +19,6 @@ typealias SavedAccountCallback = (ai : SavedAccount) -> Unit
 
 typealias DialogInterfaceCallback = (dialog: DialogInterface) -> Unit
 
-typealias JSONObjectCallback = (draft : JSONObject) -> Unit
-
 typealias PostCompleteCallback = (target_account : SavedAccount, status : TootStatus) -> Unit
 
 typealias ProgressResponseBodyCallback = (bytesRead : Long, bytesTotal : Long)->Unit
-
-/////////////////////////////////////////////////////////////////
-// checker (that returns not Unit)
-
-typealias BooleanChecker = ()->Boolean

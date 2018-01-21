@@ -6,7 +6,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -18,13 +17,13 @@ class ActAbout : AppCompatActivity() {
 	companion object {
 		val log = LogCategory("ActAbout")
 		
-		val EXTRA_SEARCH = "search"
+		const val EXTRA_SEARCH = "search"
 		
-		val url_store = "https://play.google.com/store/apps/details?id=jp.juggler.subwaytooter"
+		const val url_store = "https://play.google.com/store/apps/details?id=jp.juggler.subwaytooter"
 
-		val developer_acct = "tateisu@mastodon.juggler.jp"
+		const val developer_acct = "tateisu@mastodon.juggler.jp"
 		
-		val url_futaba = "https://www.instagram.com/hinomoto_hutaba/"
+		const val url_futaba = "https://www.instagram.com/hinomoto_hutaba/"
 		
 		val contributors = arrayOf("@Balor@freeradical.zone", "update english language", "@Luattic@oc.todon.fr", "update french language")
 	}
@@ -39,7 +38,8 @@ class ActAbout : AppCompatActivity() {
 		
 		try {
 			val pInfo = packageManager.getPackageInfo(packageName, 0)
-			findViewById<TextView>(R.id.tvVersion) .text = getString(R.string.version_is, pInfo.versionName)
+			val tv = findViewById<TextView>(R.id.tvVersion)
+				tv.text = getString(R.string.version_is, pInfo.versionName)
 		} catch(ex : PackageManager.NameNotFoundException) {
 			log.trace(ex)
 		}

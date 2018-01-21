@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.api
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.net.Uri
 
 import org.json.JSONException
 import org.json.JSONObject
@@ -66,10 +65,9 @@ class TootApiClient(
 		private val reStartJsonObject = Pattern.compile("\\A\\s*\\{")
 		private val reWhiteSpace = Pattern.compile("\\s+")
 		
-		private val mspTokenUrl = "http://mastodonsearch.jp/api/v1.0.1/utoken"
-		private val mspSearchUrl = "http://mastodonsearch.jp/api/v1.0.1/cross"
-		private val mspApiKey = "e53de7f66130208f62d1808672bf6320523dcd0873dc69bc"
-		
+		private const val mspTokenUrl = "http://mastodonsearch.jp/api/v1.0.1/utoken"
+		private const val mspSearchUrl = "http://mastodonsearch.jp/api/v1.0.1/cross"
+		private const val mspApiKey = "e53de7f66130208f62d1808672bf6320523dcd0873dc69bc"
 		
 		fun getMspMaxId(array : JSONArray, max_id : String) : String {
 			// max_id の更新
@@ -92,7 +90,7 @@ class TootApiClient(
 		// returns the number for "from" parameter of next page.
 		// returns "" if no more next page.
 		fun getTootsearchMaxId(root : JSONObject, old : String) : String {
-			val old_from = Utils.parse_int(old, 0)
+			val old_from = old.optInt() ?: 0
 			val hits2 = getTootsearchHits(root)
 			if(hits2 != null) {
 				val size = hits2.length()
@@ -101,9 +99,7 @@ class TootApiClient(
 			return ""
 		}
 		
-		val DEFAULT_JSON_ERROR_PARSER = { json : JSONObject ->
-			Utils.optStringX(json, "error")
-		}
+		val DEFAULT_JSON_ERROR_PARSER = { json : JSONObject -> json.parseString("error") }
 		
 		internal fun simplifyErrorHtml(
 			response : Response,
@@ -113,8 +109,7 @@ class TootApiClient(
 			
 			// JSONObjectとして解釈できるならエラーメッセージを検出する
 			try {
-				val data = JSONObject(sv)
-				val error_message = jsonErrorParser(data)
+				val error_message = jsonErrorParser(sv.toJsonObject())
 				if(error_message?.isNotEmpty() == true) {
 					return error_message
 				}
@@ -221,7 +216,12 @@ class TootApiClient(
 			null == result.error
 			
 		} catch(ex : Throwable) {
-			result.setError(result.caption + ": " + Utils.formatError(ex, context.resources, R.string.network_error))
+			result.setError(
+				"${result.caption}: ${ex.withCaption(
+					context.resources,
+					R.string.network_error
+				)}"
+			)
 			false
 		}
 	}
@@ -240,7 +240,13 @@ class TootApiClient(
 		
 		val request = response.request()
 		if(request != null) {
-			publishApiProgress(context.getString(R.string.reading_api, request.method(), progressPath ?: result.caption))
+			publishApiProgress(
+				context.getString(
+					R.string.reading_api,
+					request.method(),
+					progressPath ?: result.caption
+				)
+			)
 		}
 		
 		val bodyString = response.body()?.string()
@@ -281,7 +287,8 @@ class TootApiClient(
 			
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			result.error = formatResponse(response, result.caption, result.bodyString ?: NO_INFORMATION)
+			result.error =
+				formatResponse(response, result.caption, result.bodyString ?: NO_INFORMATION)
 		}
 		return result
 	}
@@ -300,10 +307,10 @@ class TootApiClient(
 				?: return if(isApiCancelled) null else result
 			
 			if(reStartJsonArray.matcher(bodyString).find()) {
-				result.data = JSONArray(bodyString)
+				result.data = bodyString.toJsonArray()
 				
 			} else if(reStartJsonObject.matcher(bodyString).find()) {
-				val json = JSONObject(bodyString)
+				val json = bodyString.toJsonObject()
 				val error_message = jsonErrorParser(json)
 				if(error_message != null) {
 					result.error = error_message
@@ -316,7 +323,8 @@ class TootApiClient(
 			
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			result.error = formatResponse(response, result.caption, result.bodyString ?: NO_INFORMATION)
+			result.error =
+				formatResponse(response, result.caption, result.bodyString ?: NO_INFORMATION)
 		}
 		return result
 		
@@ -324,7 +332,10 @@ class TootApiClient(
 	
 	//////////////////////////////////////////////////////////////////////
 	
-	fun request(path : String, request_builder : Request.Builder = Request.Builder()) : TootApiResult? {
+	fun request(
+		path : String,
+		request_builder : Request.Builder = Request.Builder()
+	) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(instance)
 		if(result.error != null) return result
 		
@@ -332,19 +343,19 @@ class TootApiClient(
 		
 		try {
 			if(! sendRequest(result) {
-				
-				log.d("request: $path")
-				
-				request_builder.url("https://" + instance + path)
-				
-				val access_token = account.getAccessToken()
-				if(access_token?.isNotEmpty() == true) {
-					request_builder.header("Authorization", "Bearer " + access_token)
-				}
-				
-				request_builder.build()
-				
-			}) return result
+					
+					log.d("request: $path")
+					
+					request_builder.url("https://" + instance + path)
+					
+					val access_token = account.getAccessToken()
+					if(access_token?.isNotEmpty() == true) {
+						request_builder.header("Authorization", "Bearer " + access_token)
+					}
+					
+					request_builder.build()
+					
+				}) return result
 			
 			return parseJson(result)
 		} finally {
@@ -358,8 +369,8 @@ class TootApiClient(
 		val result = TootApiResult.makeWithCaption(instance)
 		if(result.error != null) return result
 		if(! sendRequest(result) {
-			Request.Builder().url("https://$instance/api/v1/instance").build()
-		}) return result
+				Request.Builder().url("https://$instance/api/v1/instance").build()
+			}) return result
 		return parseJson(result)
 	}
 	
@@ -371,14 +382,18 @@ class TootApiClient(
 		
 		// OAuth2 クライアント登録
 		if(! sendRequest(result) {
-			Request.Builder()
-				.url("https://$instance/api/v1/apps")
-				.post(RequestBody.create(MEDIA_TYPE_FORM_URL_ENCODED, "client_name=" + Uri.encode(clientName)
-					+ "&redirect_uris=" + Uri.encode(REDIRECT_URL)
-					+ "&scopes=read write follow"
-				))
-				.build()
-		}) return result
+				Request.Builder()
+					.url("https://$instance/api/v1/apps")
+					.post(
+						RequestBody.create(
+							MEDIA_TYPE_FORM_URL_ENCODED,
+							"client_name=" + clientName.encodePercent()
+								+ "&redirect_uris=" + REDIRECT_URL.encodePercent()
+								+ "&scopes=read write follow"
+						)
+					)
+					.build()
+			}) return result
 		
 		return parseJson(result)
 	}
@@ -392,19 +407,30 @@ class TootApiClient(
 		if(result.error != null) return result
 		
 		if(! sendRequest(result) {
-			Request.Builder()
-				.url("https://$instance/oauth/token")
-				.post(RequestBody.create(MEDIA_TYPE_FORM_URL_ENCODED, "grant_type=client_credentials"
-					+ "&client_id=" + Uri.encode(client_info.optString("client_id"))
-					+ "&client_secret=" + Uri.encode(client_info.optString("client_secret"))
-				))
-				.build()
-		}) return result
+				
+				val client_id = client_info.parseString("client_id")
+					?: return result.setError("missing client_id")
+				
+				val client_secret = client_info.parseString("client_secret")
+					?: return result.setError("missing client_secret")
+				
+				Request.Builder()
+					.url("https://$instance/oauth/token")
+					.post(
+						RequestBody.create(
+							MEDIA_TYPE_FORM_URL_ENCODED,
+							"grant_type=client_credentials"
+								+ "&client_id=" + client_id.encodePercent()
+								+ "&client_secret=" + client_secret.encodePercent()
+						)
+					)
+					.build()
+			}) return result
 		
 		val r2 = parseJson(result)
 		val jsonObject = r2?.jsonObject ?: return r2
 		
-		val sv = Utils.optStringX(jsonObject, "access_token")
+		val sv = jsonObject.parseString("access_token")
 		if(sv?.isNotEmpty() == true) {
 			result.data = sv
 		} else {
@@ -420,24 +446,24 @@ class TootApiClient(
 		if(result.error != null) return result
 		
 		if(! sendRequest(result) {
-			Request.Builder()
-				.url("https://$instance/api/v1/apps/verify_credentials")
-				.header("Authorization", "Bearer $client_credential")
-				.build()
-		}) return result
+				Request.Builder()
+					.url("https://$instance/api/v1/apps/verify_credentials")
+					.header("Authorization", "Bearer $client_credential")
+					.build()
+			}) return result
 		
 		return parseJson(result)
 	}
 	
-	internal fun prepareBrowserUrl(client_info : JSONObject) : String {
+	// 認証ページURLを作る
+	internal fun prepareBrowserUrl(client_info : JSONObject) : String? {
 		val account = this.account
-		
-		// 認証ページURLを作る
+		val client_id = client_info.parseString("client_id") ?: return null
 		
 		return ("https://" + instance + "/oauth/authorize"
-			+ "?client_id=" + Uri.encode(Utils.optStringX(client_info, "client_id"))
+			+ "?client_id=" + client_id.encodePercent()
 			+ "&response_type=code"
-			+ "&redirect_uri=" + Uri.encode(REDIRECT_URL)
+			+ "&redirect_uri=" + REDIRECT_URL.encodePercent()
 			+ "&scope=read+write+follow"
 			+ "&scopes=read+write+follow"
 			+ "&state=" + (if(account != null) "db:" + account.db_id else "host:" + instance)
@@ -458,7 +484,7 @@ class TootApiClient(
 		val client_info = ClientInfo.load(instance, client_name)
 		if(client_info != null) {
 			
-			var client_credential = Utils.optStringX(client_info, KEY_CLIENT_CREDENTIAL)
+			var client_credential = client_info.parseString(KEY_CLIENT_CREDENTIAL)
 			
 			// client_credential をまだ取得していないなら取得する
 			if(client_credential?.isEmpty() != false) {
@@ -501,30 +527,36 @@ class TootApiClient(
 		
 		val instance = result.caption // same to instance
 		val client_name = if(clientNameArg.isNotEmpty()) clientNameArg else DEFAULT_CLIENT_NAME
-		val client_info = ClientInfo.load(instance, client_name) ?: return result.setError("missing client id")
+		val client_info =
+			ClientInfo.load(instance, client_name) ?: return result.setError("missing client id")
 		
 		if(! sendRequest(result) {
-			
-			val post_content = ("grant_type=authorization_code"
-				+ "&code=" + Uri.encode(code)
-				+ "&client_id=" + Uri.encode(Utils.optStringX(client_info, "client_id"))
-				+ "&redirect_uri=" + Uri.encode(REDIRECT_URL)
-				+ "&client_secret=" + Uri.encode(Utils.optStringX(client_info, "client_secret"))
-				+ "&scope=read+write+follow"
-				+ "&scopes=read+write+follow")
-			
-			Request.Builder()
-				.url("https://$instance/oauth/token")
-				.post(RequestBody.create(MEDIA_TYPE_FORM_URL_ENCODED, post_content))
-				.build()
-			
-		}) return result
+				
+				val client_id = client_info.parseString("client_id")
+				val client_secret = client_info.parseString("client_secret")
+				if(client_id == null) return result.setError("missing client_id ")
+				if(client_secret == null) return result.setError("missing client_secret")
+				
+				val post_content = ("grant_type=authorization_code"
+					+ "&code=" + code.encodePercent()
+					+ "&client_id=" + client_id.encodePercent()
+					+ "&redirect_uri=" + REDIRECT_URL.encodePercent()
+					+ "&client_secret=" + client_secret.encodePercent()
+					+ "&scope=read+write+follow"
+					+ "&scopes=read+write+follow")
+				
+				Request.Builder()
+					.url("https://$instance/oauth/token")
+					.post(RequestBody.create(MEDIA_TYPE_FORM_URL_ENCODED, post_content))
+					.build()
+				
+			}) return result
 		
 		val r2 = parseJson(result)
 		val token_info = r2?.jsonObject ?: return r2
 		
 		// {"access_token":"******","token_type":"bearer","scope":"read","created_at":1492334641}
-		val access_token = Utils.optStringX(token_info, "access_token")
+		val access_token = token_info.parseString("access_token")
 		if(access_token?.isEmpty() != false) {
 			return result.setError("missing access_token in the response.")
 		}
@@ -543,11 +575,11 @@ class TootApiClient(
 		
 		// 認証されたアカウントのユーザ情報を取得する
 		if(! sendRequest(result) {
-			Request.Builder()
-				.url("https://$instance/api/v1/accounts/verify_credentials")
-				.header("Authorization", "Bearer $access_token")
-				.build()
-		}) return result
+				Request.Builder()
+					.url("https://$instance/api/v1/accounts/verify_credentials")
+					.header("Authorization", "Bearer $access_token")
+					.build()
+			}) return result
 		
 		val r2 = parseJson(result)
 		if(r2?.jsonObject != null) {
@@ -563,13 +595,13 @@ class TootApiClient(
 	fun searchMsp(query : String, max_id : String) : TootApiResult? {
 		
 		// ユーザトークンを読む
-		var user_token :String? = Pref.spMspUserToken(pref)
+		var user_token : String? = Pref.spMspUserToken(pref)
 		
 		for(nTry in 0 until 3) {
 			if(callback.isApiCancelled) return null
 			
 			// ユーザトークンがなければ取得する
-			if( user_token == null || user_token.isEmpty() ){
+			if(user_token == null || user_token.isEmpty()) {
 				
 				callback.publishApiProgress("get MSP user token...")
 				
@@ -577,17 +609,17 @@ class TootApiClient(
 				if(result.error != null) return result
 				
 				if(! sendRequest(result) {
-					Request.Builder()
-						.url(mspTokenUrl + "?apikey=" + Uri.encode(mspApiKey))
-						.build()
-				}) return result
+						Request.Builder()
+							.url(mspTokenUrl + "?apikey=" + mspApiKey.encodePercent())
+							.build()
+					}) return result
 				
 				val r2 = parseJson(result) { json ->
-					val error = Utils.optStringX(json, "error")
+					val error = json.parseString("error")
 					if(error == null) {
 						null
 					} else {
-						val type = Utils.optStringX(json, "type")
+						val type = json.parseString("type")
 						"error: $type $error"
 					}
 				}
@@ -595,8 +627,8 @@ class TootApiClient(
 				user_token = jsonObject.optJSONObject("result")?.optString("token")
 				if(user_token?.isEmpty() != false) {
 					return result.setError("Can't get MSP user token. response=${result.bodyString}")
-				}else{
-					pref.edit().put( Pref.spMspUserToken,user_token).apply()
+				} else {
+					pref.edit().put(Pref.spMspUserToken, user_token).apply()
 				}
 				
 			}
@@ -606,18 +638,18 @@ class TootApiClient(
 			if(result.error != null) return result
 			
 			if(! sendRequest(result) {
-				val url = (mspSearchUrl
-					+ "?apikey=" + Uri.encode(mspApiKey)
-					+ "&utoken=" + Uri.encode(user_token)
-					+ "&q=" + Uri.encode(query)
-					+ "&max=" + Uri.encode(max_id))
-				
-				Request.Builder().url(url).build()
-			}) return result
+					val url = (mspSearchUrl
+						+ "?apikey=" + mspApiKey.encodePercent()
+						+ "&utoken=" + user_token.encodePercent()
+						+ "&q=" + query.encodePercent()
+						+ "&max=" + max_id.encodePercent())
+					
+					Request.Builder().url(url).build()
+				}) return result
 			
 			var isUserTokenError = false
 			val r2 = parseJson(result) { json ->
-				val error = Utils.optStringX(json, "error")
+				val error = json.parseString("error")
 				if(error == null) {
 					null
 				} else {
@@ -627,7 +659,7 @@ class TootApiClient(
 						isUserTokenError = true
 					}
 					
-					val type = Utils.optStringX(json, "type")
+					val type = json.parseString("type")
 					"API returns error: $type $error"
 				}
 			}
@@ -645,16 +677,16 @@ class TootApiClient(
 		if(result.error != null) return result
 		
 		if(! sendRequest(result) {
-			val url = ("https://tootsearch.chotto.moe/api/v1/search"
-				+ "?sort=" + Uri.encode("created_at:desc")
-				+ "&from=" + max_id
-				+ "&q=" + Uri.encode(query))
-			
-			Request.Builder()
-				.url(url)
-				.build()
-			
-		}) return result
+				val url = ("https://tootsearch.chotto.moe/api/v1/search"
+					+ "?sort=" + "created_at:desc".encodePercent()
+					+ "&from=" + max_id.encodePercent()
+					+ "&q=" + query.encodePercent())
+				
+				Request.Builder()
+					.url(url)
+					.build()
+				
+			}) return result
 		
 		return parseJson(result)
 	}
@@ -668,13 +700,13 @@ class TootApiClient(
 		if(result.error != null) return result
 		
 		if(! sendRequest(result, progressPath = url) {
-			Request.Builder().url(url).build()
-		}) return result
+				Request.Builder().url(url).build()
+			}) return result
 		return parseString(result)
 		
 	}
 	
-	fun webSocket(path : String,  ws_listener : WebSocketListener) : TootApiResult? {
+	fun webSocket(path : String, ws_listener : WebSocketListener) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(instance)
 		if(result.error != null) return result
 		val account = this.account ?: return TootApiResult("account is null")
@@ -682,11 +714,11 @@ class TootApiClient(
 			var url = "wss://$instance$path"
 			
 			val request_builder = Request.Builder()
-
+			
 			val access_token = account.getAccessToken()
 			if(access_token?.isNotEmpty() == true) {
 				val delm = if(- 1 != url.indexOf('?')) '&' else '?'
-				url = url + delm + "access_token=" + Uri.encode(access_token)
+				url = url + delm + "access_token=" + access_token.encodePercent()
 			}
 			
 			val request = request_builder.url(url).build()
@@ -699,7 +731,8 @@ class TootApiClient(
 			result.data = ws
 		} catch(ex : Throwable) {
 			log.trace(ex)
-			result.error = result.caption + ": " + Utils.formatError(ex, context.resources, R.string.network_error)
+			result.error =
+				"${result.caption}: ${ex.withCaption(context.resources, R.string.network_error)}"
 		}
 		return result
 		

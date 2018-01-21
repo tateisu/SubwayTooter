@@ -8,9 +8,7 @@ import java.util.ArrayList
 import java.util.regex.Pattern
 
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.*
 
 @Suppress("MemberVisibilityCanPrivate")
 class NicoEnquete(
@@ -31,17 +29,17 @@ class NicoEnquete(
 	val items : ArrayList<Spannable>?
 	
 	// 結果の数値 // null or array of number
-	val ratios : ArrayList<Float>?
+	private val ratios : ArrayList<Float>?
 	
 	// 結果の数値のテキスト // null or array of string
-	val ratios_text : ArrayList<String>?
+	private val ratios_text : ArrayList<String>?
 	
 	// 以下はJSONには存在しないが内部で使う
 	val time_start : Long
 	val status_id : Long
 	
 	init {
-		this.type = Utils.optStringX(src, "type")
+		this.type = src.parseString( "type")
 		
 		this.question = DecodeOptions(
 			short = true,
@@ -50,7 +48,7 @@ class NicoEnquete(
 			linkTag = status,
 			emojiMapCustom = status.custom_emojis,
 			emojiMapProfile = status.profile_emojis
-		).decodeHTML(context, access_info, Utils.optStringX(src, "question") ?: "?")
+		).decodeHTML(context, access_info, src.parseString( "question") ?: "?")
 		
 		this.items = parseChoiceList(context, status, parseStringArray(src, "items"))
 		
@@ -73,7 +71,7 @@ class NicoEnquete(
 		const val TYPE_ENQUETE_RESULT = "enquete_result"
 		
 		@Suppress("HasPlatformType")
-		val reWhitespace = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
+		private val reWhitespace = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
 		
 		fun parse(
 			context : Context,
@@ -89,7 +87,7 @@ class NicoEnquete(
 					access_info,
 					status,
 					list_attachment,
-					JSONObject(jsonString)
+					jsonString.toJsonObject()
 				)
 			} catch(ex : Throwable) {
 				log.trace(ex)
@@ -97,15 +95,10 @@ class NicoEnquete(
 			}
 		}
 		
-		private fun parseStringArray(src : JSONObject, name : String) : ArrayList<String>? {
+		private fun parseStringArray(src : JSONObject, name : String) :ArrayList<String>?{
 			val array = src.optJSONArray(name)
 			if(array != null) {
-				val size = array.length()
-				val dst = ArrayList<String>(size)
-				for(i in 0 until size) {
-					val sv = Utils.optStringX(array, i)
-					if(sv != null) dst.add(sv)
-				}
+				val dst = array.toStringArrayList()
 				if(dst.isNotEmpty()) return dst
 			}
 			return null
@@ -140,7 +133,7 @@ class NicoEnquete(
 							emojiMapProfile = status.profile_emojis
 						).decodeEmoji(context,
 							reWhitespace
-								.matcher(Utils.sanitizeBDI(stringArray[i]))
+								.matcher(stringArray[i].sanitizeBDI())
 								.replaceAll(" ")
 						)
 					)

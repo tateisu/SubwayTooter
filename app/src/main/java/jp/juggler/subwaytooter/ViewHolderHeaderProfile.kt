@@ -18,7 +18,7 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.intoStringResource
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 
@@ -219,11 +219,11 @@ internal class ViewHolderHeaderProfile(
 		llMoved.visibility = View.VISIBLE
 		tvMoved.visibility = View.VISIBLE
 		
-		val caption = Utils.formatSpannable1(
+		val caption = who.decodeDisplayName(activity).intoStringResource(
 			activity,
-			R.string.account_moved_to,
-			who.decodeDisplayName(activity)
+			R.string.account_moved_to
 		)
+
 		tvMoved.text = caption
 		moved_caption_invalidator.register(caption)
 		

@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import org.json.JSONObject
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.parseString
 
 class CustomEmoji(
 	val shortcode : String, // shortcode (コロンを含まない)
@@ -12,7 +12,7 @@ class CustomEmoji(
 	constructor(src : JSONObject) : this(
 		shortcode = src.notEmptyOrThrow("shortcode"),
 		url = src.notEmptyOrThrow("url"),
-		static_url = Utils.optStringX(src, "static_url")
+		static_url = src.parseString("static_url")
 	)
 	
 	override val mapKey : String

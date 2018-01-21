@@ -12,8 +12,8 @@ android {
         minSdkVersion 21
         targetSdkVersion 27
 
-        versionCode 210
-        versionName "2.1.0"
+        versionCode 211
+        versionName "2.1.1"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -119,6 +119,8 @@ dependencies {
 
 
     // compile 'com.simplecityapps:recyclerview-fastscroll:1.0.16'
+
+    implementation 'me.drakeet.support:toastcompat:1.0.2'
 }
 
 repositories {

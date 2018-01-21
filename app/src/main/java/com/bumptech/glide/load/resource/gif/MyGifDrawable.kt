@@ -37,9 +37,10 @@ class MyGifDrawable internal constructor(
 	/**
 	 * True if the drawable's resources have been recycled.
 	 */
+
 	// For testing.
-	internal var isRecycled : Boolean = false
-		private set
+	private var isRecycled : Boolean = false
+
 	/**
 	 * True if the drawable is currently visible. Default to true because on certain platforms (at
 	 * least 4.1.1), setVisible is not called on [Drawables][android.graphics.drawable.Drawable]
@@ -74,7 +75,7 @@ class MyGifDrawable internal constructor(
 	val buffer : ByteBuffer
 		get() = state.frameLoader.buffer
 	
-	val frameCount : Int
+	private val frameCount : Int
 		get() = state.frameLoader.frameCount
 	
 	/**
@@ -82,7 +83,7 @@ class MyGifDrawable internal constructor(
 	 * is displayed.
 	 */
 	// Public API.
-	val frameIndex : Int
+	private val frameIndex : Int
 		get() = state.frameLoader.currentIndex
 	
 	/**

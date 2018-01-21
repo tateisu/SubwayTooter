@@ -19,7 +19,7 @@ import java.util.ArrayList
 
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.showToast
 
 object LoginForm {
 	private val log = LogCategory("LoginForm")
@@ -65,10 +65,10 @@ object LoginForm {
 			val instance = etInstance.text.toString().trim { it <= ' ' }
 			
 			if( instance.isEmpty() ) {
-				Utils.showToast(activity, true, R.string.instance_not_specified)
+				showToast(activity, true, R.string.instance_not_specified)
 				return@OnClickListener
 			} else if(instance.contains("/") || instance.contains("@")) {
-				Utils.showToast(activity, true, R.string.instance_not_need_slash)
+				showToast(activity, true, R.string.instance_not_need_slash)
 				return@OnClickListener
 			}
 			onClickOk(dialog, instance, cbPseudoAccount.isChecked, cbInputAccessToken.isChecked)

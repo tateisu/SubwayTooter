@@ -22,7 +22,7 @@ import java.text.NumberFormat
 import java.util.Locale
 
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.createResizedBitmap
 
 class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPickerDialogListener {
 	
@@ -56,12 +56,12 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 	internal var density : Float = 0f
 	
 	private lateinit var flColumnBackground : View
-	lateinit internal var ivColumnBackground : ImageView
-	lateinit internal var sbColumnBackgroundAlpha : SeekBar
+	internal lateinit var ivColumnBackground : ImageView
+	internal lateinit var sbColumnBackgroundAlpha : SeekBar
 	private lateinit var llColumnHeader : View
 	private lateinit var ivColumnHeader : ImageView
 	private lateinit var tvColumnName : TextView
-	lateinit internal var etAlpha : EditText
+	internal lateinit var etAlpha : EditText
 	private lateinit var tvSampleAcct : TextView
 	private lateinit var tvSampleContent : TextView
 	
@@ -195,18 +195,23 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 	}
 	
 	// 0xFF000000 と書きたいがkotlinではこれはlong型定数になってしまう
-	private val colorFF000000 :Int = (0xff shl 24 )
+	private val colorFF000000 : Int = (0xff shl 24)
 	
 	override fun onColorSelected(dialogId : Int, @ColorInt colorSelected : Int) {
 		when(dialogId) {
-			COLOR_DIALOG_ID_HEADER_BACKGROUND -> column.header_bg_color = colorFF000000 or colorSelected
-			COLOR_DIALOG_ID_HEADER_FOREGROUND -> column.header_fg_color = colorFF000000 or colorSelected
-			COLOR_DIALOG_ID_COLUMN_BACKGROUND -> column.column_bg_color = colorFF000000 or colorSelected
+			COLOR_DIALOG_ID_HEADER_BACKGROUND -> column.header_bg_color = colorFF000000 or
+				colorSelected
+			COLOR_DIALOG_ID_HEADER_FOREGROUND -> column.header_fg_color = colorFF000000 or
+				colorSelected
+			COLOR_DIALOG_ID_COLUMN_BACKGROUND -> column.column_bg_color = colorFF000000 or
+				colorSelected
+			
 			COLOR_DIALOG_ID_ACCT_TEXT -> {
 				column.acct_color = if(colorSelected == 0) 1 else colorSelected
 			}
+			
 			COLOR_DIALOG_ID_CONTENT_TEXT -> {
-				column.content_color =  if(colorSelected == 0) 1 else colorSelected
+				column.content_color = if(colorSelected == 0) 1 else colorSelected
 			}
 		}
 		show()
@@ -219,7 +224,10 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			if(data != null) {
 				val uri = data.data
 				if(uri != null) {
-					contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+					contentResolver.takePersistableUriPermission(
+						uri,
+						Intent.FLAG_GRANT_READ_URI_PERMISSION
+					)
 					column.column_bg_image = uri.toString()
 					show()
 				}
@@ -260,7 +268,8 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 		sbColumnBackgroundAlpha = findViewById(R.id.sbColumnBackgroundAlpha)
 		sbColumnBackgroundAlpha.max = PROGRESS_MAX
 		
-		sbColumnBackgroundAlpha.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+		sbColumnBackgroundAlpha.setOnSeekBarChangeListener(object :
+			SeekBar.OnSeekBarChangeListener {
 			override fun onStartTrackingTouch(seekBar : SeekBar) {}
 			
 			override fun onStopTrackingTouch(seekBar : SeekBar) {
@@ -272,14 +281,25 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 				if(! fromUser) return
 				column.column_bg_image_alpha = progress / PROGRESS_MAX.toFloat()
 				ivColumnBackground.alpha = column.column_bg_image_alpha
-				etAlpha.setText(String.format(Locale.getDefault(), "%.4f", column.column_bg_image_alpha))
+				etAlpha.setText(
+					String.format(
+						Locale.getDefault(),
+						"%.4f",
+						column.column_bg_image_alpha
+					)
+				)
 			}
 			
 		})
 		
 		etAlpha = findViewById(R.id.etAlpha)
 		etAlpha.addTextChangedListener(object : TextWatcher {
-			override fun beforeTextChanged(s : CharSequence, start : Int, count : Int, after : Int) {
+			override fun beforeTextChanged(
+				s : CharSequence,
+				start : Int,
+				count : Int,
+				after : Int
+			) {
 			
 			}
 			
@@ -290,7 +310,9 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			override fun afterTextChanged(s : Editable) {
 				if(loading_busy) return
 				try {
-					var f = NumberFormat.getInstance(Locale.getDefault()).parse(etAlpha.text.toString()).toFloat()
+					var f =
+						NumberFormat.getInstance(Locale.getDefault()).parse(etAlpha.text.toString())
+							.toFloat()
 					if(! f.isNaN()) {
 						if(f < 0f) f = 0f
 						if(f > 1f) f = 1f
@@ -313,22 +335,38 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			if(c == 0) {
 				llColumnHeader.setBackgroundResource(R.drawable.btn_bg_ddd)
 			} else {
-				ViewCompat.setBackground(llColumnHeader, Styler.getAdaptiveRippleDrawable(
-					c,
-					if(column.header_fg_color != 0)
-						column.header_fg_color
-					else
-						Styler.getAttributeColor(this, R.attr.colorRippleEffect)
-				))
+				ViewCompat.setBackground(
+					llColumnHeader, Styler.getAdaptiveRippleDrawable(
+						c,
+						if(column.header_fg_color != 0)
+							column.header_fg_color
+						else
+							Styler.getAttributeColor(this, R.attr.colorRippleEffect)
+					)
+				)
 			}
 			
 			c = column.header_fg_color
 			if(c == 0) {
-				tvColumnName.setTextColor(Styler.getAttributeColor(this, android.R.attr.textColorPrimary))
-				Styler.setIconDefaultColor(this, ivColumnHeader, column.getIconAttrId(column.column_type))
+				tvColumnName.setTextColor(
+					Styler.getAttributeColor(
+						this,
+						android.R.attr.textColorPrimary
+					)
+				)
+				Styler.setIconDefaultColor(
+					this,
+					ivColumnHeader,
+					column.getIconAttrId(column.column_type)
+				)
 			} else {
 				tvColumnName.setTextColor(c)
-				Styler.setIconCustomColor(this, ivColumnHeader, c, column.getIconAttrId(column.column_type))
+				Styler.setIconCustomColor(
+					this,
+					ivColumnHeader,
+					c,
+					column.getIconAttrId(column.column_type)
+				)
 			}
 			
 			tvColumnName.text = column.getColumnName(false)
@@ -340,18 +378,27 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			}
 			
 			var alpha = column.column_bg_image_alpha
-			if( alpha.isNaN() ) {
+			if(alpha.isNaN()) {
 				alpha = 1f
 				column.column_bg_image_alpha = alpha
 			}
 			ivColumnBackground.alpha = alpha
 			sbColumnBackgroundAlpha.progress = (0.5f + alpha * PROGRESS_MAX).toInt()
 			
-			etAlpha.setText(String.format(Locale.getDefault(), "%.4f", column.column_bg_image_alpha))
+			etAlpha.setText(
+				String.format(
+					Locale.getDefault(),
+					"%.4f",
+					column.column_bg_image_alpha
+				)
+			)
 			
 			loadImage(ivColumnBackground, column.column_bg_image)
 			
-			c = if(column.acct_color != 0) column.acct_color else Styler.getAttributeColor(this, R.attr.colorTimeSmall)
+			c = if(column.acct_color != 0) column.acct_color else Styler.getAttributeColor(
+				this,
+				R.attr.colorTimeSmall
+			)
 			tvSampleAcct.setTextColor(c)
 			
 			c = if(column.content_color != 0) column.content_color else content_color_default
@@ -375,9 +422,9 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 		
 	}
 	
-	private fun loadImage(ivColumnBackground : ImageView, url : String ) {
+	private fun loadImage(ivColumnBackground : ImageView, url : String) {
 		try {
-			if( url.isEmpty() ) {
+			if(url.isEmpty()) {
 				closeBitmaps()
 				return
 				
@@ -392,7 +439,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			// 画像をロードして、成功したら表示してURLを覚える
 			val resize_max = (0.5f + 64f * density).toInt()
 			val uri = Uri.parse(url)
-			last_image_bitmap = Utils.createResizedBitmap(log, this, uri, false, resize_max)
+			last_image_bitmap = createResizedBitmap( this, uri, resize_max )
 			if(last_image_bitmap != null) {
 				ivColumnBackground.setImageBitmap(last_image_bitmap)
 				last_image_uri = url
@@ -404,5 +451,4 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 		
 	}
 	
-
 }

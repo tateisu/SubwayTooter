@@ -16,8 +16,7 @@ object MutedApp {
 	const val table = "app_mute"
 	const val COL_ID = "_id"
 	const val COL_NAME = "name"
-	private val COL_TIME_SAVE = "time_save"
-	
+	private const val COL_TIME_SAVE = "time_save"
 
 	fun onDBCreate(db : SQLiteDatabase) {
 		log.d("onDBCreate!")

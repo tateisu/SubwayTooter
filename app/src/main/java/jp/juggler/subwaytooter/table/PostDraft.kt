@@ -12,7 +12,8 @@ import java.util.Collections
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.Utils
+import jp.juggler.subwaytooter.util.digestSHA256
+import jp.juggler.subwaytooter.util.toJsonObject
 
 class PostDraft {
 	
@@ -49,11 +50,11 @@ class PostDraft {
 		
 		private val log = LogCategory("PostDraft")
 		
-		private val table = "post_draft"
-		private val COL_ID = BaseColumns._ID
-		private val COL_TIME_SAVE = "time_save"
-		private val COL_JSON = "json"
-		private val COL_HASH = "hash"
+		private const val table = "post_draft"
+		private const val COL_ID = BaseColumns._ID
+		private const val COL_TIME_SAVE = "time_save"
+		private const val COL_JSON = "json"
+		private const val COL_HASH = "hash"
 		
 		fun onDBCreate(db : SQLiteDatabase) {
 			log.d("onDBCreate!")
@@ -110,7 +111,7 @@ class PostDraft {
 					sb.append("=")
 					sb.append(v)
 				}
-				val hash = Utils.digestSHA256(sb.toString())
+				val hash = sb.toString().digestSHA256()
 				
 				// save to db
 				val cv = ContentValues()
@@ -126,17 +127,13 @@ class PostDraft {
 		
 		fun hasDraft() : Boolean {
 			try {
-				val cursor = App1.database.query(table, arrayOf("count(*)"), null, null, null, null, null)
-				if(cursor != null) {
-					try {
+				App1.database.query(table, arrayOf("count(*)"), null, null, null, null, null)
+					.use { cursor ->
 						if(cursor.moveToNext()) {
 							val count = cursor.getInt(0)
 							return count > 0
 						}
-					} finally {
-						cursor.close()
 					}
-				}
 			} catch(ex : Throwable) {
 				log.trace(ex)
 				log.e(ex, "hasDraft failed.")
@@ -147,7 +144,15 @@ class PostDraft {
 		
 		fun createCursor() : Cursor? {
 			try {
-				return App1.database.query(table, null, null, null, null, null, COL_TIME_SAVE + " desc")
+				return App1.database.query(
+					table,
+					null,
+					null,
+					null,
+					null,
+					null,
+					COL_TIME_SAVE + " desc"
+				)
 			} catch(ex : Throwable) {
 				log.trace(ex)
 				log.e(ex, "createCursor failed.")
@@ -168,7 +173,7 @@ class PostDraft {
 			dst.id = cursor.getLong(colIdx.idx_id)
 			dst.time_save = cursor.getLong(colIdx.idx_time_save)
 			try {
-				dst.json = JSONObject(cursor.getString(colIdx.idx_json))
+				dst.json = cursor.getString(colIdx.idx_json).toJsonObject()
 			} catch(ex : Throwable) {
 				log.trace(ex)
 				dst.json = JSONObject()

@@ -2,9 +2,13 @@ package jp.juggler.subwaytooter.view
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.support.v13.view.inputmethod.EditorInfoCompat
+import android.support.v13.view.inputmethod.InputConnectionCompat
 import android.support.v7.widget.AppCompatEditText
 import android.util.AttributeSet
 import android.view.MotionEvent
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputConnection
 
 import jp.juggler.subwaytooter.util.LogCategory
 
@@ -18,7 +22,11 @@ class MyEditText : AppCompatEditText {
 	
 	constructor(context : Context) : super(context)
 	constructor(context : Context, attrs : AttributeSet) : super(context, attrs)
-	constructor(context : Context, attrs : AttributeSet, defStyleAttr : Int) : super(context, attrs, defStyleAttr)
+	constructor(context : Context, attrs : AttributeSet, defStyleAttr : Int) : super(
+		context,
+		attrs,
+		defStyleAttr
+	)
 	
 	////////////////////////////////////////////////////
 	// 選択範囲変更イベントをコールバックに渡す
@@ -53,4 +61,28 @@ class MyEditText : AppCompatEditText {
 			//		at android.view.View.dispatchTouchEvent (View.java:9303)
 		}
 	}
+	
+	///////////////////////////////////////////////////////
+	// IMEから画像を送られてくることがあるらしい
+	
+	var commitContentListener :InputConnectionCompat.OnCommitContentListener? = null
+	var contentMineTypeArray :Array<String>? = null
+	
+	override fun onCreateInputConnection(outAttrs : EditorInfo?) : InputConnection {
+		
+		log.d("onCreateInputConnection: listener=${commitContentListener}")
+		
+		val super_ic = super.onCreateInputConnection(outAttrs)
+		
+		val listener = commitContentListener
+		val mimeArray = contentMineTypeArray
+		return if( listener == null || mimeArray ==null || outAttrs == null ){
+			super_ic
+		}else{
+			EditorInfoCompat.setContentMimeTypes(outAttrs, mimeArray)
+			InputConnectionCompat.createWrapper(super_ic,outAttrs,listener)
+		}
+	}
+	
+	
 }

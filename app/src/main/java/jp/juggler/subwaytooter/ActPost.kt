@@ -16,6 +16,8 @@ import android.os.Bundle
 import android.os.Handler
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import android.support.v13.view.inputmethod.InputConnectionCompat
+import android.support.v13.view.inputmethod.InputContentInfoCompat
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
@@ -314,24 +316,13 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
 		if(requestCode == REQUEST_CODE_ATTACHMENT && resultCode == Activity.RESULT_OK) {
 			if(data != null) {
-				var uri = data.data
-				if(uri != null) {
-					// 単一選択
-					var type = data.type
-					if(type?.isEmpty() != false) {
-						type = contentResolver.getType(uri)
-					}
-					addAttachment(uri, type)
-				}
+				// 単一選択
+				data.data?.let { addAttachment(it, data.type) }
+				// 複数選択
 				val cd = data.clipData
 				if(cd != null) {
-					// 複数選択
-					val count = cd.itemCount
-					for(i in 0 until count) {
-						val item = cd.getItemAt(i)
-						uri = item.uri ?: continue
-						val type = contentResolver.getType(uri)
-						addAttachment(uri, type)
+					for(i in 0 until cd.itemCount) {
+						cd.getItemAt(i)?.uri?.let { addAttachment(it) }
 					}
 				}
 			}
@@ -346,24 +337,13 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				}
 			} else {
 				// 画像のURL
-				val uri : Uri? = data?.data ?: uriCameraImage
-				if(uri != null) {
-					val type : String? = contentResolver.getType(uri)
-					addAttachment(uri, type)
-				}
+				(data?.data ?: uriCameraImage)?.let { addAttachment(it) }
 			}
 		} else if(requestCode == REQUEST_CODE_VIDEO && resultCode == Activity.RESULT_OK) {
-			val uri = data?.data
-			if(uri != null) {
-				val type = contentResolver.getType(uri)
-				addAttachment(uri, type)
-			}
+			data?.data?.let { addAttachment(it) }
 			
 		} else if(requestCode == REQUEST_CODE_MUSHROOM && resultCode == Activity.RESULT_OK) {
-			val text = data?.getStringExtra("replace_key")
-			if(text != null) {
-				applyMushroomResult(text)
-			}
+			data?.getStringExtra("replace_key")?.let { applyMushroomResult(it) }
 		}
 		super.onActivityResult(requestCode, resultCode, data)
 	}
@@ -499,22 +479,16 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					
 					if(Intent.ACTION_VIEW == action) {
 						val uri = sent_intent.data
-						if(uri != null) {
-							addAttachment(uri, type)
-						}
+						if(uri != null) addAttachment(uri, type)
 					} else if(Intent.ACTION_SEND == action) {
 						val uri = sent_intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
-						if(uri != null) {
-							addAttachment(uri, type)
-						}
+						if(uri != null) addAttachment(uri, type)
 					} else if(Intent.ACTION_SEND_MULTIPLE == action) {
 						val list_uri =
 							sent_intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
 						if(list_uri != null) {
 							for(uri in list_uri) {
-								if(uri != null) {
-									addAttachment(uri, type)
-								}
+								if(uri != null) addAttachment(uri)
 							}
 						}
 					}
@@ -810,6 +784,10 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		val v = findViewById<View>(R.id.btnMore)
 		v.setOnClickListener(this)
+		
+		etContent.contentMineTypeArray =
+			acceptable_mime_types.toArray(arrayOfNulls<String>(ActPost.acceptable_mime_types.size))
+		etContent.commitContentListener = commitContentListener
 	}
 	
 	private fun updateTextCount() {
@@ -1301,8 +1279,28 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		}
 	}
 	
+	private fun getMimeType(uri:Uri,mimeTypeArg:String?):String?{
+		
+		// 既に引数で与えられてる
+		if(mimeTypeArg?.isNotEmpty() == true ) return mimeTypeArg
+		
+		// ContentResolverに尋ねる
+		var sv = contentResolver.getType(uri)
+		if(sv?.isNotEmpty() == true ) return sv
+		
+		// gboardのステッカーではUriのクエリパラメータにmimeType引数がある
+		sv =  uri.getQueryParameter("mimeType")
+		if(sv?.isNotEmpty() == true ) return sv
+		
+		return null
+	}
+	
 	@SuppressLint("StaticFieldLeak")
-	private fun addAttachment(uri : Uri, mime_type : String?) {
+	private fun addAttachment(
+		uri : Uri,
+		mimeTypeArg : String? = null,
+		onUploadEnd : () -> Unit = {}
+	) {
 		
 		if(attachment_list.size >= 4) {
 			showToast(this, false, R.string.attachment_too_many)
@@ -1315,11 +1313,13 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			return
 		}
 		
-		
+		val mime_type = getMimeType(uri,mimeTypeArg)
 		if(mime_type?.isEmpty() != false) {
 			showToast(this, false, R.string.mime_type_missing)
 			return
-		} else if(! acceptable_mime_types.contains(mime_type)) {
+		}
+		
+		if(! acceptable_mime_types.contains(mime_type)) {
 			showToast(this, true, R.string.mime_type_not_acceptable, mime_type)
 			return
 		}
@@ -1386,6 +1386,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					val result = client.request("/api/v1/media", request_builder)
 					
 					opener.deleteTempFile()
+					onUploadEnd()
 					
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
@@ -2087,4 +2088,36 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		llEnquete.visibility = if(cbEnquete.isChecked) View.VISIBLE else View.GONE
 	}
 	
+	private val commitContentListener =
+		InputConnectionCompat.OnCommitContentListener { inputContentInfo : InputContentInfoCompat,
+		                                                flags : Int,
+		                                                _ : Bundle? ->
+			
+			// Intercepts InputConnection#commitContent API calls.
+			// - inputContentInfo : content to be committed
+			// - flags : {@code 0} or {@link #INPUT_CONTENT_GRANT_READ_URI_PERMISSION}
+			// - opts : optional bundle data. This can be {@code null}
+			// return
+			// - true if this request is accepted by the application,
+			//   no matter if the request is already handled or still being handled in background.
+			// - false to use the default implementation
+			
+			// read and display inputContentInfo asynchronously
+			
+			if(Build.VERSION.SDK_INT >= 25
+				&& flags and InputConnectionCompat.INPUT_CONTENT_GRANT_READ_URI_PERMISSION != 0
+			) {
+				try {
+					inputContentInfo.requestPermission()
+				} catch(e : Exception) {
+					return@OnCommitContentListener false // return false if failed
+				}
+			}
+			
+			addAttachment(inputContentInfo.contentUri) {
+				inputContentInfo.releasePermission()
+			}
+			
+			true
+		}
 }

@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.util
 
-import android.content.Context
 import android.net.Uri
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -15,13 +14,11 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootAttachmentLike
 import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.subwaytooter.table.SavedAccount
 
 object HTMLDecoder {
 	private val log = LogCategory("HTMLDecoder")
@@ -39,25 +36,21 @@ object HTMLDecoder {
 	private val reTagEnd = Pattern.compile("(/?)>$")
 	private val reHref = Pattern.compile("\\bhref=\"([^\"]*)\"")
 	
-	private val block_tag = HashSet<String>()
-	
-	private fun prepareTagInformation() {
-		synchronized(block_tag) {
-			if(block_tag.isEmpty()) {
-				block_tag.add("div")
-				block_tag.add("p")
-				block_tag.add("li")
-				block_tag.add("h1")
-				block_tag.add("h2")
-				block_tag.add("h3")
-				block_tag.add("h4")
-				block_tag.add("h5")
-				block_tag.add("body")
-			}
-		}
+	private val block_tag : HashSet<String> by lazy {
+		val set = HashSet<String>()
+		set.add("div")
+		set.add("p")
+		set.add("li")
+		set.add("h1")
+		set.add("h2")
+		set.add("h3")
+		set.add("h4")
+		set.add("h5")
+		set.add("body")
+		set
 	}
 	
-	private fun isWhitespace(codepoint : Int) : Boolean {
+	private fun isWhitespaceOrLineFeed(codepoint : Int) : Boolean {
 		return CharacterGroup.isWhitespace(codepoint) || when(codepoint) {
 			0x0a, 0x0d -> true
 			else -> false
@@ -102,10 +95,12 @@ object HTMLDecoder {
 						}
 						when {
 							Character.isBmpCodePoint(cp) -> sb.append(cp.toChar())
+							
 							Character.isValidCodePoint(cp) -> {
 								sb.append(Character.highSurrogate(cp))
 								sb.append(Character.lowSurrogate(cp))
 							}
+							
 							else -> sb.append('?')
 						}
 						continue
@@ -272,14 +267,12 @@ object HTMLDecoder {
 		}
 		
 		internal fun encodeSpan(
-			context : Context?,
-			account : LinkHelper?,
-			sb : SpannableStringBuilder,
-			options : DecodeOptions
+			options : DecodeOptions,
+			sb : SpannableStringBuilder
 		) {
 			if(TAG_TEXT == tag) {
-				if(context != null && options.decodeEmoji) {
-					sb.append(options.decodeEmoji(context, decodeEntity(text)))
+				if(options.context != null && options.decodeEmoji) {
+					sb.append(options.decodeEmoji(decodeEntity(text)))
 				} else {
 					sb.append(decodeEntity(text))
 				}
@@ -287,82 +280,68 @@ object HTMLDecoder {
 			}
 			if(DEBUG_HTML_PARSER) sb.append("(start ").append(tag).append(")")
 			
-			val sb_tmp : SpannableStringBuilder =
-				if("a" == tag || "style" == tag || "script" == tag) {
-					SpannableStringBuilder()
-				} else {
-					sb
-				}
-			
-			var start = sb_tmp.length
+			val sb_tmp = when(tag) {
+				"a", "style", "script" -> SpannableStringBuilder()
+				else -> sb
+			}
 			
 			if("img" == tag) {
 				sb_tmp.append("<img/>")
 			} else {
 				for(child in child_nodes) {
-					child.encodeSpan(context, account, sb_tmp, options)
+					child.encodeSpan(options, sb_tmp)
 				}
+				// sb_tmpを作成したa 以外のタグ(style,script)は読み捨てる
 			}
-			
-			var end = sb_tmp.length
 			
 			if("a" == tag) {
-				start = sb.length
-				if(context != null) {
-					sb.append(
-						encodeUrl(
-							options.short,
-							context,
-							sb_tmp.toString(),
-							href,
-							options.attachmentList
-						)
-					)
-				} else {
-					sb.append(sb_tmp.toString())
-				}
-				end = sb.length
 				
-			} else if(sb_tmp !== sb) {
-				// style もscript も読み捨てる
-			}
-			
-			if(end > start && "a" == tag) {
-				if(account != null) {
-					val href = href
-					if(href != null) {
-						val link_text = sb.subSequence(start, end).toString()
-						val span = MyClickableSpan(
-							//account,
-							link_text,
-							href,
-							account.findAcctColor(href),
-							options.linkTag
-						)
-						sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-						
-					}
-				}
+				val start = sb.length
 				
-				// リンクスパンを設定した後に色をつける
-				val list = options.highlightTrie?.matchList(sb, start, end)
-				if(list != null) {
-					for(range in list) {
-						val word = HighlightWord.load(range.word)
-						if(word != null) {
-							options.hasHighlight = true
-							sb.setSpan(
-								HighlightSpan(word.color_fg, word.color_bg),
-								range.start,
-								range.end,
-								Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+				sb.append(
+					encodeUrl(options,sb_tmp.toString(),href)
+				)
+
+				val end = sb.length
+				
+				if(end > start) {
+					val linkHelper = options.linkHelper
+					if(linkHelper != null) {
+						val href = href
+						if(href != null) {
+							val link_text = sb.subSequence(start, end).toString()
+							val span = MyClickableSpan(
+								link_text,
+								href,
+								linkHelper.findAcctColor(href),
+								options.linkTag
 							)
-							if(word.sound_type != HighlightWord.SOUND_TYPE_NONE) {
-								options.highlight_sound = word
+							sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+							
+						}
+					}
+					
+					// リンクスパンを設定した後に色をつける
+					val list = options.highlightTrie?.matchList(sb, start, end)
+					if(list != null) {
+						for(range in list) {
+							val word = HighlightWord.load(range.word)
+							if(word != null) {
+								options.hasHighlight = true
+								sb.setSpan(
+									HighlightSpan(word.color_fg, word.color_bg),
+									range.start,
+									range.end,
+									Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+								)
+								if(word.sound_type != HighlightWord.SOUND_TYPE_NONE) {
+									options.highlight_sound = word
+								}
 							}
 						}
 					}
 				}
+				
 			}
 			
 			if(DEBUG_HTML_PARSER) sb.append("(end ").append(tag).append(")")
@@ -389,24 +368,18 @@ object HTMLDecoder {
 			}
 		}
 		
-		internal fun is_media_attachment(
-			list_attachment : ArrayList<TootAttachmentLike>?,
-			url : String?
-		) : Boolean {
-			if(url == null || list_attachment == null) return false
-			for(a in list_attachment) {
-				if(a.hasUrl(url)) return true
-			}
-			return false
-		}
-		
+
 		private fun encodeUrl(
-			bShort : Boolean,
-			context : Context,
+			options : DecodeOptions,
 			display_url : String,
-			href : String?,
-			list_attachment : ArrayList<TootAttachmentLike>?
+			href : String?
 		) : CharSequence {
+			
+			val context = options.context
+			if(context == null || ! options.short) {
+				return display_url
+			}
+
 			if(! display_url.startsWith("http")) {
 				if(display_url.startsWith("@") && href != null && Pref.bpMentionFullAcct(App1.pref)) {
 					// メンションをfull acct にする
@@ -419,11 +392,9 @@ object HTMLDecoder {
 				return display_url
 			}
 			
-			if(! bShort) {
-				return display_url
-			}
+
 			
-			if(is_media_attachment(list_attachment, href)) {
+			if( options.isMediaAttachment(href)) {
 				val sb = SpannableStringBuilder()
 				sb.append(href)
 				val start = 0
@@ -460,15 +431,10 @@ object HTMLDecoder {
 		}
 	}
 	
-	fun decodeHTML(
-		context : Context?,
-		account : LinkHelper?,
-		src : String?,
-		options : DecodeOptions
-	)
-		: SpannableStringBuilder {
-		prepareTagInformation()
+	fun decodeHTML( options : DecodeOptions, src : String? ) : SpannableStringBuilder {
+		
 		val sb = SpannableStringBuilder()
+		
 		try {
 			if(src != null) {
 				val tracker = TokenParser(src)
@@ -477,15 +443,12 @@ object HTMLDecoder {
 					rootNode.addChild(tracker, "")
 				}
 				
-				rootNode.encodeSpan(context, account, sb, options)
-				var end = sb.length
-				while(end > 0 && isWhitespace(sb[end - 1].toInt())) -- end
-				if(end < sb.length) {
-					sb.delete(end, sb.length)
-				}
+				rootNode.encodeSpan(options, sb)
 				
-				//				sb.append( "\n" );
-				//				sb.append(src);
+				// 末尾の空白を取り除く
+				var end = sb.length
+				while(end > 0 && isWhitespaceOrLineFeed(sb[end - 1].toInt())) -- end
+				if(end < sb.length) sb.delete(end, sb.length)
 			}
 		} catch(ex : Throwable) {
 			log.trace(ex)
@@ -495,7 +458,7 @@ object HTMLDecoder {
 	}
 	
 	fun decodeMentions(
-		access_info : SavedAccount,
+		linkHelper : LinkHelper,
 		src_list : ArrayList<TootMention>?,
 		link_tag : Any?
 	) : Spannable? {
@@ -506,7 +469,7 @@ object HTMLDecoder {
 			val start = sb.length
 			sb.append('@')
 			if(Pref.bpMentionFullAcct(App1.pref)) {
-				sb.append(access_info.getFullAcct(item.acct))
+				sb.append(linkHelper.getFullAcct(item.acct))
 			} else {
 				sb.append(item.acct)
 			}
@@ -515,10 +478,9 @@ object HTMLDecoder {
 			if(end > start) {
 				val link_text = sb.subSequence(start, end).toString()
 				val span = MyClickableSpan(
-					//access_info,
 					link_text,
 					url,
-					access_info.findAcctColor(item.url),
+					linkHelper.findAcctColor(item.url),
 					link_tag
 				)
 				sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)

@@ -8,10 +8,7 @@ import java.util.regex.Pattern
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.api.entity.parseList
@@ -71,10 +68,11 @@ object Action_ListMember {
 						)
 						
 						result = client.request("/api/v1/follows", request_builder)
+
 						val jsonObject = result?.jsonObject ?: return result
-						
-						val a = TootAccount.parse(activity, access_info, jsonObject)
-							?: return TootApiResult("parse error.")
+
+						val a = TootParser(activity, access_info).account(jsonObject)
+							?: return result.setError("parse error.")
 						
 						// リモートフォローの後にリレーションシップを取得しなおす
 						result = client.request("/api/v1/accounts/relationships?id[]=" + a.id)

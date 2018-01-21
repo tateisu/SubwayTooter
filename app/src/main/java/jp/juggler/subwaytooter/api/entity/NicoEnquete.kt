@@ -2,18 +2,17 @@ package jp.juggler.subwaytooter.api.entity
 
 import android.content.Context
 import android.text.Spannable
+import jp.juggler.subwaytooter.api.TootParser
 import org.json.JSONObject
 
 import java.util.ArrayList
 import java.util.regex.Pattern
 
-import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 
 @Suppress("MemberVisibilityCanPrivate")
 class NicoEnquete(
-	context : Context,
-	access_info : SavedAccount,
+	parser : TootParser,
 	status : TootStatus,
 	list_attachment : ArrayList<TootAttachmentLike>?,
 	src : JSONObject
@@ -39,18 +38,20 @@ class NicoEnquete(
 	val status_id : Long
 	
 	init {
-		this.type = src.parseString( "type")
+		this.type = src.parseString("type")
 		
 		this.question = DecodeOptions(
+			parser.context,
+			parser.linkHelper,
 			short = true,
 			decodeEmoji = true,
 			attachmentList = list_attachment,
 			linkTag = status,
 			emojiMapCustom = status.custom_emojis,
 			emojiMapProfile = status.profile_emojis
-		).decodeHTML(context, access_info, src.parseString( "question") ?: "?")
+		).decodeHTML(src.parseString("question") ?: "?")
 		
-		this.items = parseChoiceList(context, status, parseStringArray(src, "items"))
+		this.items = parseChoiceList(parser.context, status, parseStringArray(src, "items"))
 		
 		this.ratios = parseFloatArray(src, "ratios")
 		this.ratios_text = parseStringArray(src, "ratios_text")
@@ -74,8 +75,7 @@ class NicoEnquete(
 		private val reWhitespace = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
 		
 		fun parse(
-			context : Context,
-			access_info : SavedAccount,
+			parser : TootParser,
 			status : TootStatus,
 			list_attachment : ArrayList<TootAttachmentLike>?,
 			jsonString : String?
@@ -83,8 +83,7 @@ class NicoEnquete(
 			jsonString ?: return null
 			return try {
 				NicoEnquete(
-					context,
-					access_info,
+					parser,
 					status,
 					list_attachment,
 					jsonString.toJsonObject()
@@ -95,7 +94,7 @@ class NicoEnquete(
 			}
 		}
 		
-		private fun parseStringArray(src : JSONObject, name : String) :ArrayList<String>?{
+		private fun parseStringArray(src : JSONObject, name : String) : ArrayList<String>? {
 			val array = src.optJSONArray(name)
 			if(array != null) {
 				val dst = array.toStringArrayList()
@@ -129,9 +128,10 @@ class NicoEnquete(
 				for(i in 0 until size) {
 					items.add(
 						DecodeOptions(
+							context,
 							emojiMapCustom = status.custom_emojis,
 							emojiMapProfile = status.profile_emojis
-						).decodeEmoji(context,
+						).decodeEmoji(
 							reWhitespace
 								.matcher(stringArray[i].sanitizeBDI())
 								.replaceAll(" ")

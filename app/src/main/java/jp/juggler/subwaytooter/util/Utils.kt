@@ -195,7 +195,6 @@ object Utils {
 		}
 	}
 	
-
 	//	fun url2name(url : String?) : String? {
 	//		return if(url == null) null else encodeBase64Safe(encodeSHA256(encodeUTF8(url)))
 	//	}
@@ -572,6 +571,11 @@ fun JSONArray.parseString(key : Int) : String? {
 	val o = this.opt(key)
 	return if(o == null || o == JSONObject.NULL) null else o.toString()
 }
+
+fun notEmptyOrThrow(name : String, value : String?) =
+	if(value?.isNotEmpty() == true) value else throw RuntimeException("$name is empty")
+
+fun JSONObject.notEmptyOrThrow(name : String) = notEmptyOrThrow(name, this.parseString(name))
 
 fun JSONArray.toStringArrayList() : ArrayList<String> {
 	val size = this.length()

@@ -5,10 +5,7 @@ import android.support.v7.app.AlertDialog
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.api.entity.parseItem
@@ -165,14 +162,11 @@ object Action_Follow {
 						))
 					
 					result = client.request("/api/v1/follows", request_builder)
-					val jsonObject = result?.jsonObject
-					if(jsonObject != null) {
-						val remote_who = TootAccount.parse(activity, access_info, jsonObject)
-						if(remote_who != null) {
-							val rr = loadRelation1(client, access_info, remote_who.id)
-							result = rr.result
-							relation = rr.relation
-						}
+					val remote_who = TootParser(activity, access_info).account( result?.jsonObject)
+					if(remote_who != null) {
+						val rr = loadRelation1(client, access_info, remote_who.id)
+						result = rr.result
+						relation = rr.relation
 					}
 					
 				} else {
@@ -298,15 +292,12 @@ object Action_Follow {
 					))
 				
 				var result = client.request("/api/v1/follows", request_builder)
-				val jsonObject = result?.jsonObject
-				if(jsonObject != null) {
-					val remote_who = TootAccount.parse(activity, access_info,jsonObject)
-					if(remote_who != null) {
-						this.remote_who = remote_who
-						val rr = loadRelation1(client, access_info, remote_who .id)
-						result = rr.result
-						relation = rr.relation
-					}
+				val remote_who = TootParser(activity, access_info).account(result?.jsonObject)
+				if(remote_who != null) {
+					this.remote_who = remote_who
+					val rr = loadRelation1(client, access_info, remote_who .id)
+					result = rr.result
+					relation = rr.relation
 				}
 				
 				return result

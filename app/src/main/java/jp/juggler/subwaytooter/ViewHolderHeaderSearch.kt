@@ -26,7 +26,7 @@ internal class ViewHolderHeaderSearch(
 		super.bindData(column)
 		
 		val html = column.getHeaderDesc() ?: ""
-		val sv = DecodeOptions(decodeEmoji = true).decodeHTML(activity, access_info, html)
+		val sv = DecodeOptions(activity, access_info,decodeEmoji = true).decodeHTML( html)
 		
 		tvSearchDesc.text = sv
 	}

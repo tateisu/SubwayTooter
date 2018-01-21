@@ -21,16 +21,13 @@ import java.util.regex.Pattern
 
 object EmojiDecoder {
 	
-
-	private class EmojiStringBuilder(
-		internal val context : Context,
-		internal val options : DecodeOptions
-	) {
+	
+	private class EmojiStringBuilder( internal val options : DecodeOptions ) {
 		
 		internal val sb = SpannableStringBuilder()
 		internal var normal_char_start = - 1
 		
-		private fun openNormalText(){
+		private fun openNormalText() {
 			if(normal_char_start == - 1) {
 				normal_char_start = sb.length
 			}
@@ -82,7 +79,10 @@ object EmojiDecoder {
 			sb.append(text)
 			val end = sb.length
 			sb.setSpan(
-				EmojiImageSpan(context, res_id),
+				EmojiImageSpan(
+					requireNotNull(options.context){"decodeEmoji: missing context"},
+					res_id
+				),
 				start,
 				end,
 				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -98,13 +98,13 @@ object EmojiDecoder {
 				var image_id : Int? = null
 				
 				for(j in EmojiMap201709.utf16_max_length downTo 1) {
-
+					
 					if(j > remain) continue
-
+					
 					val check = s.substring(i, i + j)
-
+					
 					image_id = EmojiMap201709.sUTF16ToImageId[check] ?: continue
-
+					
 					emoji = if(j < remain && s[i + j].toInt() == 0xFE0E) {
 						// 絵文字バリエーション・シーケンス（EVS）のU+FE0E（VS-15）が直後にある場合
 						// その文字を絵文字化しない
@@ -113,7 +113,7 @@ object EmojiDecoder {
 					} else {
 						check
 					}
-
+					
 					break
 				}
 				
@@ -207,7 +207,7 @@ object EmojiDecoder {
 					posEndColon = i
 					break
 				}
-				if(! shortCodeCharacterSet.get(cp, false) ) {
+				if(! shortCodeCharacterSet.get(cp, false)) {
 					break
 				}
 				i += Character.charCount(cp)
@@ -233,10 +233,10 @@ object EmojiDecoder {
 	private val reNicoru = Pattern.compile("\\Anicoru\\d*\\z", Pattern.CASE_INSENSITIVE)
 	private val reHohoemi = Pattern.compile("\\Ahohoemi\\d*\\z", Pattern.CASE_INSENSITIVE)
 	
-	fun decodeEmoji(
-		context : Context, s : String, options : DecodeOptions
-	) : Spannable {
-		val builder = EmojiStringBuilder(context, options)
+	fun decodeEmoji( options : DecodeOptions, s : String ) : Spannable {
+		
+		val builder = EmojiStringBuilder(options)
+
 		val emojiMapCustom = options.emojiMapCustom
 		val emojiMapProfile = options.emojiMapProfile
 		
@@ -277,8 +277,14 @@ object EmojiDecoder {
 				}
 				
 				when {
-					reHohoemi.matcher(name).find() -> builder.addImageSpan(part, R.drawable.emoji_hohoemi)
-					reNicoru.matcher(name).find() -> builder.addImageSpan(part, R.drawable.emoji_nicoru)
+					reHohoemi.matcher(name).find() -> builder.addImageSpan(
+						part,
+						R.drawable.emoji_hohoemi
+					)
+					reNicoru.matcher(name).find() -> builder.addImageSpan(
+						part,
+						R.drawable.emoji_nicoru
+					)
 					else -> builder.addUnicodeString(part)
 				}
 				

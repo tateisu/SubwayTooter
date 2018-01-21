@@ -66,7 +66,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			addAfterLine(sb, "\n")
 			
 			intent.putExtra(EXTRA_CONTENT_START, sb.length)
-			sb.append(DecodeOptions().decodeHTML(context, access_info, status.content))
+			sb.append(DecodeOptions(context, access_info).decodeHTML( status.content))
 			intent.putExtra(EXTRA_CONTENT_END, sb.length)
 			
 			dumpAttachment(sb, status.media_attachments)
@@ -111,7 +111,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			
 			addAfterLine(sb, "\n")
 			
-			sb.append(DecodeOptions().decodeHTML(context, access_info, who.note))
+			sb.append(DecodeOptions(context, access_info).decodeHTML( who.note))
 			
 			addAfterLine(sb, "\n")
 			

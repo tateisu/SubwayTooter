@@ -42,11 +42,7 @@ class TestDuplicateMap {
 			if(url != null) put("url", url)
 		}
 		
-		return TootStatus(
-			parser,
-			itemJson,
-			serviceType = ServiceType.MASTODON
-		)
+		return TootStatus(parser,itemJson)
 	}
 	
 	private fun checkStatus(
@@ -71,15 +67,10 @@ class TestDuplicateMap {
 			put("username", "user1")
 			put("acct", "user1")
 			put("id", 1L)
-			put("url", "http://${parser.accessInfo.host}/@user1")
+			put("url", "http://${parser.linkHelper.host}/@user1")
 		}
 		
-		val account1 = TootAccount(
-			parser.context,
-			parser.accessInfo,
-			src = account1Json,
-			serviceType = ServiceType.MASTODON
-		)
+		val account1 = TootAccount(parser,account1Json)
 		assertNotNull(account1)
 		
 		val map = DuplicateMap()
@@ -90,8 +81,8 @@ class TestDuplicateMap {
 			parser,
 			account1Json,
 			1L,
-			"http://${parser.accessInfo.host}/@${account1.username}/1",
-			"http://${parser.accessInfo.host}/@${account1.username}/1"
+			"http://${parser.linkHelper.host}/@${account1.username}/1",
+			"http://${parser.linkHelper.host}/@${account1.username}/1"
 		)
 		// 別のステータス
 		checkStatus(
@@ -99,8 +90,8 @@ class TestDuplicateMap {
 			parser,
 			account1Json,
 			2L,
-			"http://${parser.accessInfo.host}/@${account1.username}/2",
-			"http://${parser.accessInfo.host}/@${account1.username}/2"
+			"http://${parser.linkHelper.host}/@${account1.username}/2",
+			"http://${parser.linkHelper.host}/@${account1.username}/2"
 		)
 		// 今度はuriがない
 		checkStatus(
@@ -108,8 +99,8 @@ class TestDuplicateMap {
 			parser,
 			account1Json,
 			3L,
-			null, // "http://${parser.accessInfo.host}/@${account1.username}/3",
-			"http://${parser.accessInfo.host}/@${account1.username}/3"
+			null, // "http://${parser.linkHelper.host}/@${account1.username}/3",
+			"http://${parser.linkHelper.host}/@${account1.username}/3"
 		)
 		// 今度はuriとURLがない
 		checkStatus(
@@ -117,8 +108,8 @@ class TestDuplicateMap {
 			parser,
 			account1Json,
 			4L,
-			null, // "http://${parser.accessInfo.host}/@${account1.username}/4",
-			null //"http://${parser.accessInfo.host}/@${account1.username}/4"
+			null, // "http://${parser.linkHelper.host}/@${account1.username}/4",
+			null //"http://${parser.linkHelper.host}/@${account1.username}/4"
 		)
 		// 今度はIDがおかしい
 		checkStatus(
@@ -126,8 +117,8 @@ class TestDuplicateMap {
 			parser,
 			account1Json,
 			TootStatus.INVALID_ID,
-			null, // "http://${parser.accessInfo.host}/@${account1.username}/4",
-			null //"http://${parser.accessInfo.host}/@${account1.username}/4"
+			null, // "http://${parser.linkHelper.host}/@${account1.username}/4",
+			null //"http://${parser.linkHelper.host}/@${account1.username}/4"
 		)
 		
 	}
@@ -192,15 +183,10 @@ class TestDuplicateMap {
 			put("username", "user$id")
 			put("acct", "user$id")
 			put("id", id)
-			put("url", "http://${parser.accessInfo.host}/@user$id")
+			put("url", "http://${parser.linkHelper.host}/@user$id")
 		}
 		
-		val item = TootAccount(
-			parser.context,
-			parser.accessInfo,
-			src = itemJson,
-			serviceType = ServiceType.MASTODON
-		)
+		val item = TootAccount(parser,itemJson)
 		assertNotNull(item)
 		generatedItems.add(item)
 		assertEquals(false, map.isDuplicate(item))

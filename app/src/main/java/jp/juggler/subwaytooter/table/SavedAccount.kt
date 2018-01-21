@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.regex.Pattern
 
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.util.LinkHelper
@@ -31,7 +32,7 @@ class SavedAccount(
 ) : LinkHelper {
 	
 	val username : String
-
+	
 	override val host : String
 	
 	var visibility : String? = null
@@ -92,45 +93,53 @@ class SavedAccount(
 		cursor.getString(cursor.getColumnIndex(COL_USER)), // acct
 		cursor.getString(cursor.getColumnIndex(COL_HOST)) // host
 	) {
-
+		
 		val jsonAccount = cursor.getString(cursor.getColumnIndex(COL_ACCOUNT)).toJsonObject()
-
-		val loginAccount = TootAccount.parse(
+		
+		val loginAccount = TootParser(
 			context,
 			object : LinkHelper {
-				override val host : String?
-					get() = this@SavedAccount.host
-			},
-			jsonAccount
-		)
-
-		if( loginAccount == null ){
-			log.e("missing loginAccount for %s",cursor.getString(cursor.getColumnIndex(COL_ACCOUNT)))
+				override val host : String? get() = this@SavedAccount.host
+			}
+		).account(jsonAccount)
+		
+		if(loginAccount == null) {
+			log.e(
+				"missing loginAccount for %s",
+				cursor.getString(cursor.getColumnIndex(COL_ACCOUNT))
+			)
 		}
 		this.loginAccount = loginAccount
 		
 		val colIdx_visibility = cursor.getColumnIndex(COL_VISIBILITY)
-		this.visibility = if(cursor.isNull(colIdx_visibility)) null else cursor.getString(colIdx_visibility)
+		this.visibility =
+			if(cursor.isNull(colIdx_visibility)) null else cursor.getString(colIdx_visibility)
 		
 		this.confirm_boost = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_BOOST)).i2b()
 		this.dont_hide_nsfw = cursor.getInt(cursor.getColumnIndex(COL_DONT_HIDE_NSFW)).i2b()
 		this.dont_show_timeout = cursor.getInt(cursor.getColumnIndex(COL_DONT_SHOW_TIMEOUT)).i2b()
 		
-		this.notification_mention = cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_MENTION)).i2b()
+		this.notification_mention =
+			cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_MENTION)).i2b()
 		this.notification_boost = cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_BOOST)).i2b()
-		this.notification_favourite = cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_FAVOURITE)).i2b()
-		this.notification_follow = cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_FOLLOW)).i2b()
+		this.notification_favourite =
+			cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_FAVOURITE)).i2b()
+		this.notification_follow =
+			cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_FOLLOW)).i2b()
 		
 		this.confirm_follow = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_FOLLOW)).i2b()
-		this.confirm_follow_locked = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_FOLLOW_LOCKED)).i2b()
+		this.confirm_follow_locked =
+			cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_FOLLOW_LOCKED)).i2b()
 		this.confirm_unfollow = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_UNFOLLOW)).i2b()
 		this.confirm_post = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_POST)).i2b()
 		
 		val idx_notification_tag = cursor.getColumnIndex(COL_NOTIFICATION_TAG)
-		this.notification_tag = if(cursor.isNull(idx_notification_tag)) null else cursor.getString(idx_notification_tag)
+		this.notification_tag =
+			if(cursor.isNull(idx_notification_tag)) null else cursor.getString(idx_notification_tag)
 		
 		val idx_register_key = cursor.getColumnIndex(COL_REGISTER_KEY)
-		this.register_key = if(cursor.isNull(idx_register_key)) null else cursor.getString(idx_register_key)
+		this.register_key =
+			if(cursor.isNull(idx_register_key)) null else cursor.getString(idx_register_key)
 		
 		this.register_time = cursor.getLong(cursor.getColumnIndex(COL_REGISTER_TIME))
 		
@@ -234,14 +243,6 @@ class SavedAccount(
 		this.notification_tag = b.notification_tag
 		
 		this.sound_uri = b.sound_uri
-	}
-	
-	fun getFullAcct(acct : String?) : String {
-		return when {
-			acct == null -> "?@?"
-			acct.indexOf('@') == - 1 -> acct + "@" + this.host
-			else -> acct
-		}
 	}
 	
 	fun getFullAcct(who : TootAccount?) : String {
@@ -573,7 +574,15 @@ class SavedAccount(
 		
 		fun loadAccount(context : Context, db_id : Long) : SavedAccount? {
 			try {
-				App1.database.query(table, null, COL_ID + "=?", arrayOf(db_id.toString()), null, null, null)
+				App1.database.query(
+					table,
+					null,
+					COL_ID + "=?",
+					arrayOf(db_id.toString()),
+					null,
+					null,
+					null
+				)
 					.use { cursor ->
 						if(cursor.moveToFirst()) {
 							return parse(context, cursor)
@@ -610,7 +619,15 @@ class SavedAccount(
 		fun loadByTag(context : Context, tag : String) : ArrayList<SavedAccount> {
 			val result = ArrayList<SavedAccount>()
 			try {
-				App1.database.query(table, null, COL_NOTIFICATION_TAG + "=?", arrayOf(tag), null, null, null)
+				App1.database.query(
+					table,
+					null,
+					COL_NOTIFICATION_TAG + "=?",
+					arrayOf(tag),
+					null,
+					null,
+					null
+				)
 					.use { cursor ->
 						while(cursor.moveToNext()) {
 							val a = parse(context, cursor)
@@ -629,7 +646,15 @@ class SavedAccount(
 		
 		fun loadAccountByAcct(context : Context, full_acct : String) : SavedAccount? {
 			try {
-				App1.database.query(table, null, COL_USER + "=?", arrayOf(full_acct), null, null, null)
+				App1.database.query(
+					table,
+					null,
+					COL_USER + "=?",
+					arrayOf(full_acct),
+					null,
+					null,
+					null
+				)
 					.use { cursor ->
 						if(cursor.moveToNext()) {
 							return parse(context, cursor)
@@ -645,7 +670,16 @@ class SavedAccount(
 		
 		fun hasRealAccount() : Boolean {
 			try {
-				App1.database.query(table, null, COL_USER + " NOT LIKE '?@%'", null, null, null, null, "1")
+				App1.database.query(
+					table,
+					null,
+					COL_USER + " NOT LIKE '?@%'",
+					null,
+					null,
+					null,
+					null,
+					"1"
+				)
 					.use { cursor ->
 						if(cursor.moveToNext()) {
 							return true
@@ -686,7 +720,12 @@ class SavedAccount(
 			return if(c >= 'a' && c <= 'z') c - ('a' - 'A') else c
 		}
 		
-		private fun host_match(a : CharSequence, a_startArg : Int, b : CharSequence, b_startArg : Int) : Boolean {
+		private fun host_match(
+			a : CharSequence,
+			a_startArg : Int,
+			b : CharSequence,
+			b_startArg : Int
+		) : Boolean {
 			var a_start = a_startArg
 			var b_start = b_startArg
 			

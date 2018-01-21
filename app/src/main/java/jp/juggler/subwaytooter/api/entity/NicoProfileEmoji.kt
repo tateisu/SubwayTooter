@@ -1,9 +1,10 @@
 package jp.juggler.subwaytooter.api.entity
 
-import org.json.JSONObject
-
+import jp.juggler.subwaytooter.util.notEmptyOrThrow
 import jp.juggler.subwaytooter.util.parseLong
 import jp.juggler.subwaytooter.util.parseString
+
+import org.json.JSONObject
 
 class NicoProfileEmoji(
 	val url : String,

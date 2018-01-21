@@ -17,12 +17,11 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
-import org.json.JSONArray
 import java.text.SimpleDateFormat
 import java.util.*
 
 @Suppress("MemberVisibilityCanPrivate")
-class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceType) :
+class TootStatus(parser : TootParser, src : JSONObject) :
 	TimelineItem() {
 	
 	val json : JSONObject
@@ -140,8 +139,6 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 	
 	var hasHighlight : Boolean = false
 	
-	class List : ArrayList<TootStatus>()
-	
 	val time_created_at : Long
 	
 	////////////////////////////////////////////////////////
@@ -158,16 +155,12 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 		this.profile_emojis =
 			parseMapOrNull(::NicoProfileEmoji, src.optJSONArray("profile_emojis"), log)
 		
-		this.account = TootAccount.parse(
-			parser.context,
-			parser.accessInfo,
-			src.optJSONObject("account"),
-			serviceType
-		) ?: throw RuntimeException("missing account")
+		this.account = parser.account(src.optJSONObject("account"))
+			?: throw RuntimeException("missing account")
 		
-		when(serviceType) {
+		when(parser.serviceType) {
 			ServiceType.MASTODON -> {
-				this.host_access = parser.accessInfo.host
+				this.host_access = parser.linkHelper.host
 				
 				this.id = src.parseLong("id") ?: INVALID_ID
 				
@@ -225,7 +218,7 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 		this.muted = src.optBoolean("muted")
 		this.language = src.parseString("language")
 		this.decoded_mentions = HTMLDecoder.decodeMentions(
-			parser.accessInfo,
+			parser.linkHelper,
 			this.mentions,
 			this
 		) ?: EMPTY_SPANNABLE
@@ -233,17 +226,19 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 		
 		// content
 		this.content = src.parseString("content")
+		
 		var options = DecodeOptions(
+			parser.context,
+			parser.linkHelper,
 			short = true,
 			decodeEmoji = true,
 			emojiMapCustom = custom_emojis,
 			emojiMapProfile = profile_emojis,
 			attachmentList = media_attachments,
 			highlightTrie = parser.highlightTrie
-		
 		)
 		
-		this.decoded_content = options.decodeHTML(parser.context, parser.accessInfo, content)
+		this.decoded_content = options.decodeHTML(content)
 		this.hasHighlight = this.hasHighlight || options.hasHighlight
 		if(options.highlight_sound != null && this.highlight_sound == null) {
 			this.highlight_sound = options.highlight_sound
@@ -256,12 +251,13 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 			.sanitizeBDI()
 		
 		options = DecodeOptions(
+			parser.context,
 			emojiMapCustom = custom_emojis,
 			emojiMapProfile = profile_emojis,
 			highlightTrie = parser.highlightTrie
 		)
 		
-		this.decoded_spoiler_text = options.decodeEmoji(parser.context, spoiler_text)
+		this.decoded_spoiler_text = options.decodeEmoji(spoiler_text)
 		
 		this.hasHighlight = this.hasHighlight || options.hasHighlight
 		if(options.highlight_sound != null && this.highlight_sound == null) {
@@ -269,15 +265,14 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 		}
 		
 		this.enquete = NicoEnquete.parse(
-			parser.context,
-			parser.accessInfo,
+			parser,
 			this,
 			media_attachments,
 			src.parseString("enquete")
 		)
 		
 		// Pinned TL を取得した時にreblogが登場することはないので、reblogについてpinned 状態を気にする必要はない
-		this.reblog = parse(parser, src.optJSONObject("reblog"), serviceType)
+		this.reblog = parser.status(src.optJSONObject("reblog"))
 	}
 	
 	///////////////////////////////////////////////////
@@ -354,65 +349,22 @@ class TootStatus(parser : TootParser, src : JSONObject, serviceType : ServiceTyp
 		
 		const val INVALID_ID = - 1L
 		
-		fun parse(
-			parser : TootParser,
-			src : JSONObject?,
-			serviceType : ServiceType = ServiceType.MASTODON
-		) : TootStatus? {
-			if(src == null) return null
-			return try {
-				TootStatus(parser, src, serviceType)
-			} catch(ex : Throwable) {
-				log.trace(ex)
-				log.e(ex, "parse failed.")
-				null
-			}
-		}
-		
-		fun parseList(
-			parser : TootParser,
-			array : JSONArray?,
-			serviceType : ServiceType = ServiceType.MASTODON
-		) : TootStatus.List {
-			val result = TootStatus.List()
-			if(array != null) {
-				val array_size = array.length()
-				result.ensureCapacity(array_size)
-				for(i in 0 until array_size) {
-					val src = array.optJSONObject(i) ?: continue
-					val item = parse(parser, src, serviceType) ?: continue
-					result.add(item)
-				}
-			}
-			return result
-		}
-		
-		fun parseListOrNull(
-			parser : TootParser,
-			array : JSONArray?,
-			serviceType : ServiceType = ServiceType.MASTODON
-		) : TootStatus.List? {
-			array ?: return null
-			val result = parseList(parser, array, serviceType)
-			return if(result.isEmpty()) null else result
-		}
-		
 		fun parseListTootsearch(
 			parser : TootParser,
-			root : JSONObject,
-			serviceType : ServiceType = ServiceType.TOOTSEARCH
-		) : TootStatus.List {
-			val result = TootStatus.List()
+			root : JSONObject
+		) : ArrayList<TootStatus> {
+			
+			parser.serviceType = ServiceType.TOOTSEARCH
+			
+			val result = ArrayList<TootStatus>()
 			val array = TootApiClient.getTootsearchHits(root)
 			if(array != null) {
 				val array_size = array.length()
 				result.ensureCapacity(array_size)
 				for(i in 0 until array.length()) {
 					try {
-						val src = array.optJSONObject(i) ?: continue
-						val src2 = src.optJSONObject("_source")
-						val item = parse(parser, src2, serviceType) ?: continue
-						result.add(item)
+						val src = array.optJSONObject(i)?.optJSONObject("_source") ?: continue
+						result.add(TootStatus(parser, src))
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}

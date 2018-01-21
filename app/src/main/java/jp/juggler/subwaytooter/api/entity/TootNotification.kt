@@ -1,10 +1,11 @@
 package jp.juggler.subwaytooter.api.entity
 
-import org.json.JSONObject
-
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.util.notEmptyOrThrow
 import jp.juggler.subwaytooter.util.parseLong
 import jp.juggler.subwaytooter.util.parseString
+
+import org.json.JSONObject
 
 class TootNotification(
 	val json : JSONObject,
@@ -26,13 +27,8 @@ class TootNotification(
 		id = src.parseLong("id") ?: - 1L,
 		type = src.notEmptyOrThrow("type"),
 		created_at = src.parseString("created_at"),
-		account = TootAccount.parse(
-			parser.context,
-			parser.accessInfo,
-			src.optJSONObject("account"),
-			ServiceType.MASTODON
-		),
-		status = TootStatus.parse(parser, src.optJSONObject("status"), ServiceType.MASTODON)
+		account = parser.account(src.optJSONObject("account")),
+		status = parser.status(src.optJSONObject("status"))
 	)
 	
 	companion object {

@@ -38,6 +38,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import jp.juggler.subwaytooter.action.*
+import jp.juggler.subwaytooter.api.*
 
 import org.apache.commons.io.IOUtils
 
@@ -50,10 +51,6 @@ import java.util.ArrayList
 import java.util.HashSet
 import java.util.regex.Pattern
 
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.AccountPicker
@@ -635,7 +632,7 @@ class ActMain : AppCompatActivity()
 		post_helper.attachment_list = null
 		
 		etQuickToot.hideKeyboard()
-
+		
 		post_helper.post(
 			account
 			, false
@@ -1587,20 +1584,14 @@ class ActMain : AppCompatActivity()
 					client.instance = host
 				}
 				
-				if(client.instance == null) {
-					return TootApiResult("missing instance  in callback url.")
-				}
+				val instance = client.instance
+					?: return TootApiResult("missing instance  in callback url.")
 				
-				this.host = client.instance
+				this.host = instance
 				val client_name = Pref.spClientName(this@ActMain)
-				
 				val result = client.authentication2(client_name, code)
-				val obj = result?.jsonObject
-				if(obj != null) {
-					// ダミーのLinkClickContext
-					val lcc = object : LinkHelper {}
-					this.ta = TootAccount.parse(this@ActMain, lcc, obj)
-				}
+				this.ta = TootParser(this@ActMain, object : LinkHelper {})
+					.account(result?.jsonObject)
 				return result
 			}
 			
@@ -1731,12 +1722,8 @@ class ActMain : AppCompatActivity()
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val result = client.getUserCredential(access_token)
-				val obj = result?.jsonObject
-				if(obj != null) {
-					// taは使い捨てなので、生成に使うLinkClickContextはダミーで問題ない
-					val lcc = object : LinkHelper {}
-					this.ta = TootAccount.parse(this@ActMain, lcc, obj)
-				}
+				this.ta =
+					TootParser(this@ActMain, object : LinkHelper {}).account(result?.jsonObject)
 				return result
 			}
 			
@@ -2295,10 +2282,7 @@ class ActMain : AppCompatActivity()
 			
 			override fun onPostExecute(result : ArrayList<Column>?) {
 				
-				try {
-					progress.dismiss()
-				} catch(ignored : Throwable) {
-				}
+				progress.dismiss()
 				
 				try {
 					window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)

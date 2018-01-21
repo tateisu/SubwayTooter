@@ -1110,13 +1110,10 @@ class Column(
 	internal fun loadProfileAccount(client : TootApiClient, bForceReload : Boolean) {
 		if(bForceReload || this.who_account == null) {
 			val result = client.request(String.format(Locale.JAPAN, PATH_ACCOUNT, profile_id))
-			val jsonObject = result?.jsonObject
-			if(jsonObject != null) {
-				val data = TootAccount.parse(context, access_info, jsonObject)
-				if(data != null) {
-					this.who_account = data
-					client.publishApiProgress("") // カラムヘッダの再表示
-				}
+			val a = TootParser(context,access_info).account(result?.jsonObject)
+			if(a != null) {
+				this.who_account = a
+				client.publishApiProgress("") // カラムヘッダの再表示
 			}
 		}
 	}
@@ -1386,8 +1383,7 @@ class Column(
 				val result = client.request(path_base)
 				if(result != null) {
 					saveRange(result, true, true)
-					this.list_tmp =
-						addAll(null, TootAccount.parseList(context, access_info, result.jsonArray))
+					this.list_tmp = addAll(null, parser.accountList(result.jsonArray))
 				}
 				return result
 			}
@@ -1717,12 +1713,8 @@ class Column(
 									// max_id の更新
 									max_id = TootApiClient.getMspMaxId(jsonArray, max_id)
 									// リストデータの用意
-									val search_result = TootStatus.parseList(
-										parser,
-										jsonArray,
-										serviceType = ServiceType.MSP
-									)
-									list_tmp = addWithFilterStatus(null, search_result)
+									parser.serviceType = ServiceType.MSP
+									list_tmp = addWithFilterStatus(null, parser.statusList(jsonArray))
 								}
 							}
 							return result
@@ -1933,7 +1925,7 @@ class Column(
 				var jsonArray = result?.jsonArray
 				if(jsonArray != null) {
 					saveRange(result, bBottom, ! bBottom)
-					var src = TootAccount.parseList(context, access_info, jsonArray)
+					var src = parser.accountList( jsonArray)
 					list_tmp = addAll(null, src)
 					if(! bBottom) {
 						var bGapAdded = false
@@ -1975,7 +1967,7 @@ class Column(
 								break
 							}
 							
-							src = TootAccount.parseList(context, access_info, jsonArray)
+							src = parser.accountList( jsonArray)
 							addAll(list_tmp, src)
 						}
 						if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
@@ -2534,12 +2526,8 @@ class Column(
 										// max_id の更新
 										max_id = TootApiClient.getMspMaxId(jsonArray, max_id)
 										// リストデータの用意
-										val search_result = TootStatus.parseList(
-											parser,
-											jsonArray,
-											serviceType = ServiceType.MSP
-										)
-										list_tmp = addWithFilterStatus(list_tmp, search_result)
+										parser.serviceType = ServiceType.MSP
+										list_tmp = addWithFilterStatus(list_tmp, parser.statusList(jsonArray))
 									}
 								}
 								result
@@ -2760,7 +2748,7 @@ class Column(
 						break
 					}
 					result = r2
-					val src = TootAccount.parseList(context, access_info, jsonArray)
+					val src = parser.accountList( jsonArray)
 					
 					if(src.isEmpty()) {
 						log.d("gap-account: empty.")

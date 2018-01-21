@@ -120,7 +120,7 @@ class TootApiClient(
 			// HTMLならタグの除去を試みる
 			val ct = response.body()?.contentType()
 			if(ct?.subtype() == "html") {
-				val decoded = DecodeOptions().decodeHTML(null, null, sv).toString()
+				val decoded = DecodeOptions().decodeHTML(sv).toString()
 				
 				return reWhiteSpace.matcher(decoded).replaceAll(" ").trim()
 			}

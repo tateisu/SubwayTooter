@@ -7,10 +7,7 @@ import org.json.JSONObject
 import java.util.ArrayList
 
 import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.api.entity.parseList
@@ -37,8 +34,9 @@ internal fun findAccountByName(
 			val result = client.request(path)
 			val array = result?.jsonArray
 			if(array != null) {
+				val parser = TootParser(activity, access_info)
 				for(i in 0 until array.length()) {
-					val a = TootAccount.parse(activity, access_info, array.optJSONObject(i))
+					val a = parser.account(array.optJSONObject(i))
 					if(a != null) {
 						if(a.username == user && access_info.getFullAcct(a).equals(
 								user + "@" + host,

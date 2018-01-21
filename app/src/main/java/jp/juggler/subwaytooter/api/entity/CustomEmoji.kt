@@ -1,7 +1,9 @@
 package jp.juggler.subwaytooter.api.entity
 
-import org.json.JSONObject
+import jp.juggler.subwaytooter.util.notEmptyOrThrow
 import jp.juggler.subwaytooter.util.parseString
+
+import org.json.JSONObject
 
 class CustomEmoji(
 	val shortcode : String, // shortcode (コロンを含まない)

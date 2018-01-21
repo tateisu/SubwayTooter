@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase
 import org.json.JSONObject
 
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.api.entity.notEmptyOrThrow
 import jp.juggler.subwaytooter.util.*
 
 class HighlightWord {
@@ -159,7 +158,7 @@ class HighlightWord {
 				cv.put(COL_SOUND_URI, sound_uri)
 			}
 			if(id == - 1L) {
-				App1.database.replace(table, null, cv)
+				id = App1.database.replace(table, null, cv)
 			} else {
 				App1.database.update(table, cv, selection_id, arrayOf(id.toString()))
 			}

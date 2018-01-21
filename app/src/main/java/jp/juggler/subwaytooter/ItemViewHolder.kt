@@ -682,16 +682,16 @@ internal class ItemViewHolder(
 		tvTime.text = sb
 	}
 	
-//	fun updateRelativeTime() {
-//		val boost_time = this.boost_time
-//		if(boost_time != 0L) {
-//			tvBoostedTime.text = TootStatus.formatTime(tvBoostedTime.context, boost_time, true)
-//		}
-//		val status_showing = this.status_showing
-//		if(status_showing != null) {
-//			showStatusTime(activity, status_showing)
-//		}
-//	}
+	//	fun updateRelativeTime() {
+	//		val boost_time = this.boost_time
+	//		if(boost_time != 0L) {
+	//			tvBoostedTime.text = TootStatus.formatTime(tvBoostedTime.context, boost_time, true)
+	//		}
+	//		val status_showing = this.status_showing
+	//		if(status_showing != null) {
+	//			showStatusTime(activity, status_showing)
+	//		}
+	//	}
 	
 	private fun setAcct(tv : TextView, acctLong : String, acctShort : String?) {
 		
@@ -777,9 +777,10 @@ internal class ItemViewHolder(
 					val desc =
 						activity.getString(R.string.media_description, idx + 1, ta.description)
 					tv.text = DecodeOptions(
+						activity,
 						emojiMapCustom = status.custom_emojis,
 						emojiMapProfile = status.profile_emojis
-					).decodeEmoji(activity, desc)
+					).decodeEmoji(desc)
 					llExtra.addView(tv)
 				}
 				
@@ -1075,7 +1076,7 @@ internal class ItemViewHolder(
 		}
 		val html = sb.toString()
 		//
-		tv.text = DecodeOptions().decodeHTML(activity, access_info, html)
+		tv.text = DecodeOptions(activity, access_info).decodeHTML(html)
 		llExtra.addView(tv)
 		
 		val image = card.image

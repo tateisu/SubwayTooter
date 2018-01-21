@@ -537,9 +537,10 @@ class ActAccountSetting
 								return
 							}
 							
-							val post_data = ("instance_url=" + ("https://" + account.host).encodePercent()
-								+ "&app_id=" + packageName.encodePercent()
-								+ "&tag=" + tag)
+							val post_data =
+								("instance_url=" + ("https://" + account.host).encodePercent()
+									+ "&app_id=" + packageName.encodePercent()
+									+ "&tag=" + tag)
 							
 							val request = Request.Builder()
 								.url(PollingWorker.APP_SERVER + "/unregister")
@@ -711,15 +712,17 @@ class ActAccountSetting
 		
 		val display_name = src.display_name
 		val name = DecodeOptions(
+			context = this,
 			emojiMapProfile = src.profile_emojis
-		).decodeEmoji(this, display_name)
+		).decodeEmoji(display_name)
 		etDisplayName.setText(name)
 		name_invalidator.register(name)
 		
 		val noteString = src.source?.note ?: src.note
 		val noteSpannable = DecodeOptions(
+			context = this,
 			emojiMapProfile = src.profile_emojis
-		).decodeEmoji(this, noteString)
+		).decodeEmoji(noteString)
 		
 		etNote.setText(noteSpannable)
 		note_invalidator.register(noteSpannable)
@@ -791,7 +794,7 @@ class ActAccountSetting
 				return
 			}
 		}
-		updateCredential("display_name=" + EmojiDecoder.decodeShortCode(sv).encodePercent() )
+		updateCredential("display_name=" + EmojiDecoder.decodeShortCode(sv).encodePercent())
 	}
 	
 	private fun sendNote(bConfirmed : Boolean) {
@@ -945,7 +948,7 @@ class ActAccountSetting
 				// 設定からリサイズ指定を読む
 				val resize_to = 1280
 				
-				val bitmap = createResizedBitmap( this, uri, resize_to )
+				val bitmap = createResizedBitmap(this, uri, resize_to)
 				if(bitmap != null) {
 					try {
 						val cache_dir = externalCacheDir

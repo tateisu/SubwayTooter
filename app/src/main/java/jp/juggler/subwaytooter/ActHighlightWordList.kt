@@ -134,7 +134,8 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	}
 	
 	// リスト要素のViewHolder
-	internal inner class MyViewHolder(viewRoot : View) : DragItemAdapter.ViewHolder(viewRoot, R.id.ivDragHandle, false), View.OnClickListener {
+	internal inner class MyViewHolder(viewRoot : View) :
+		DragItemAdapter.ViewHolder(viewRoot, R.id.ivDragHandle, false), View.OnClickListener {
 		
 		val tvName : TextView
 		private val btnSound : View
@@ -150,7 +151,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 				viewRoot.supportedSwipeDirection = ListSwipeItem.SwipeDirection.LEFT
 			}
 			
-		}// View ID。 ここを押すとドラッグ操作をすぐに開始する
+		} // View ID。 ここを押すとドラッグ操作をすぐに開始する
 		// 長押しでドラッグ開始するなら真
 		
 		fun bind(item : HighlightWord) {
@@ -166,12 +167,18 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 			
 			c = item.color_fg
 			if(c == 0) {
-				tvName.setTextColor(Styler.getAttributeColor(this@ActHighlightWordList, android.R.attr.textColorPrimary))
+				tvName.setTextColor(
+					Styler.getAttributeColor(
+						this@ActHighlightWordList,
+						android.R.attr.textColorPrimary
+					)
+				)
 			} else {
 				tvName.setTextColor(c)
 			}
 			
-			btnSound.visibility = if(item.sound_type == HighlightWord.SOUND_TYPE_NONE) View.GONE else View.VISIBLE
+			btnSound.visibility =
+				if(item.sound_type == HighlightWord.SOUND_TYPE_NONE) View.GONE else View.VISIBLE
 			btnSound.setOnClickListener(this)
 			btnSound.tag = item
 		}
@@ -182,7 +189,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 		//		}
 		
 		override fun onItemClicked(view : View) {
-			val o = view .tag
+			val o = view.tag
 			if(o is HighlightWord) {
 				edit(o)
 			}
@@ -198,18 +205,25 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	}
 	
 	// ドラッグ操作中のデータ
-	private inner class MyDragItem internal constructor(context : Context, layoutId : Int) : DragItem(context, layoutId) {
+	private inner class MyDragItem internal constructor(context : Context, layoutId : Int) :
+		DragItem(context, layoutId) {
 		
 		override fun onBindDragView(clickedView : View, dragView : View) {
-			dragView.findViewById<TextView>(R.id.tvName).text = clickedView.findViewById<TextView>(R.id.tvName) .text
-			dragView.findViewById<View>(R.id.btnSound).visibility = clickedView.findViewById<View>(R.id.btnSound).visibility
+			dragView.findViewById<TextView>(R.id.tvName).text =
+				clickedView.findViewById<TextView>(R.id.tvName).text
+			dragView.findViewById<View>(R.id.btnSound).visibility =
+				clickedView.findViewById<View>(R.id.btnSound).visibility
 			dragView.findViewById<View>(R.id.item_layout).setBackgroundColor(
-				Styler.getAttributeColor(this@ActHighlightWordList, R.attr.list_item_bg_pressed_dragged)
+				Styler.getAttributeColor(
+					this@ActHighlightWordList,
+					R.attr.list_item_bg_pressed_dragged
+				)
 			)
 		}
 	}
 	
-	private inner class MyListAdapter internal constructor() : DragItemAdapter<HighlightWord, MyViewHolder>() {
+	private inner class MyListAdapter internal constructor() :
+		DragItemAdapter<HighlightWord, MyViewHolder>() {
 		
 		init {
 			setHasStableIds(true)
@@ -246,6 +260,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 					loadData()
 				}
 				edit(item)
+				
 				try {
 					dialog.dismiss()
 				} catch(ignored : Throwable) {
@@ -263,7 +278,8 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
 		if(requestCode == REQUEST_CODE_EDIT && resultCode == RESULT_OK && data != null) {
 			try {
-				val item = HighlightWord(data.getStringExtra(ActHighlightWordEdit.EXTRA_ITEM).toJsonObject())
+				val item =
+					HighlightWord(data.getStringExtra(ActHighlightWordEdit.EXTRA_ITEM).toJsonObject())
 				item.save()
 				loadData()
 				return
@@ -294,9 +310,9 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 		if(sound_type == HighlightWord.SOUND_TYPE_NONE) return
 		
 		
-		if(sound_type == HighlightWord.SOUND_TYPE_CUSTOM ){
+		if(sound_type == HighlightWord.SOUND_TYPE_CUSTOM) {
 			val sound_uri = item.sound_uri
-			if( sound_uri?.isNotEmpty() == true ) {
+			if(sound_uri?.isNotEmpty() == true) {
 				try {
 					val ringtone = RingtoneManager.getRingtone(this, Uri.parse(sound_uri))
 					if(ringtone != null) {

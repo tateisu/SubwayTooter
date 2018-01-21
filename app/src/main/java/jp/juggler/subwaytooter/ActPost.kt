@@ -451,7 +451,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				
 				try {
 					val array = sv.toJsonArray()
-					for( i in 0 until array.length()){
+					for(i in 0 until array.length()) {
 						try {
 							val a = parseItem(::TootAttachment, array.optJSONObject(i))
 							if(a != null) attachment_list.add(PostAttachment(a))
@@ -522,7 +522,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					if(Intent.ACTION_SEND == action) {
 						val sv = sent_intent.getStringExtra(Intent.EXTRA_TEXT)
 						if(sv != null) {
-							val svEmoji = DecodeOptions(decodeEmoji = true).decodeEmoji(this, sv)
+							val svEmoji =
+								DecodeOptions(context = this, decodeEmoji = true).decodeEmoji(sv)
 							etContent.setText(svEmoji)
 							etContent.setSelection(svEmoji.length)
 						}
@@ -533,7 +534,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			
 			var sv : String? = intent.getStringExtra(KEY_INITIAL_TEXT)
 			if(sv != null) {
-				val svEmoji = DecodeOptions(decodeEmoji = true).decodeEmoji(this, sv)
+				val svEmoji = DecodeOptions(this, decodeEmoji = true).decodeEmoji(sv)
 				etContent.setText(svEmoji)
 				etContent.setSelection(svEmoji.length)
 			}
@@ -587,7 +588,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						if(sb.isNotEmpty()) {
 							sb.append(' ')
 							val svEmoji =
-								DecodeOptions(decodeEmoji = true).decodeEmoji(this, sb.toString())
+								DecodeOptions(this, decodeEmoji = true).decodeEmoji(sb.toString())
 							etContent.setText(svEmoji)
 							etContent.setSelection(svEmoji.length)
 						}
@@ -982,7 +983,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
 						val tmp = TootParser(this@ActPost, access_info).results(jsonObject)
-						if(tmp?.statuses != null && ! tmp.statuses.isEmpty()) {
+						if(tmp?.statuses?.isNotEmpty() == true) {
 							target_status = tmp.statuses[0]
 						}
 						if(target_status == null) {
@@ -1685,10 +1686,12 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		} else {
 			llReply.visibility = View.VISIBLE
 			tvReplyTo.text = DecodeOptions(
+				this@ActPost,
+				linkHelper = account,
 				short = true,
 				decodeEmoji = true
 			
-			).decodeHTML(this@ActPost, account, in_reply_to_text)
+			).decodeHTML(in_reply_to_text)
 			ivReply.setImageUrl(pref, Styler.calcIconRound(ivReply.layoutParams), in_reply_to_image)
 		}
 	}
@@ -1870,11 +1873,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			}
 			
 			override fun onPostExecute(result : String?) {
-				try {
-					progress.dismiss()
-				} catch(ignored : Throwable) {
-				
-				}
+				progress.dismiss()
 				
 				if(isCancelled || result == null) {
 					// cancelled.
@@ -1892,7 +1891,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				val reply_url = draft.optString(DRAFT_REPLY_URL, null)
 				val draft_visibility = draft.parseString(DRAFT_VISIBILITY)
 				
-				val evEmoji = DecodeOptions(decodeEmoji = true).decodeEmoji(this@ActPost, content)
+				val evEmoji = DecodeOptions(this@ActPost, decodeEmoji = true).decodeEmoji(content)
 				etContent.setText(evEmoji)
 				etContent.setSelection(evEmoji.length)
 				etContentWarning.setText(content_warning)
@@ -2063,7 +2062,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			
 			val tvText = viewRoot.findViewById<TextView>(R.id.tvText)
 			val lcc = object : LinkHelper {}
-			val sv = DecodeOptions().decodeHTML(this@ActPost, lcc, text)
+			val sv = DecodeOptions(this@ActPost, lcc).decodeHTML(text)
 			tvText.text = sv
 			tvText.movementMethod = LinkMovementMethod.getInstance()
 			

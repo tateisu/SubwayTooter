@@ -72,7 +72,12 @@ class PostHelper(
 	var attachment_list : ArrayList<PostAttachment>? = null
 	var enquete_items : ArrayList<String>? = null
 	
-	fun post(account : SavedAccount, bConfirmTag : Boolean, bConfirmAccount : Boolean, callback : PostCompleteCallback) {
+	fun post(
+		account : SavedAccount,
+		bConfirmTag : Boolean,
+		bConfirmAccount : Boolean,
+		callback : PostCompleteCallback
+	) {
 		val content = this.content ?: ""
 		val spoiler_text = this.spoiler_text
 		val bNSFW = this.bNSFW
@@ -127,18 +132,21 @@ class PostHelper(
 		}
 		
 		if(! bConfirmAccount) {
-			DlgConfirm.open(activity, activity.getString(R.string.confirm_post_from, AcctColor.getNickname(account.acct)), object : DlgConfirm.Callback {
-				override var isConfirmEnabled : Boolean
-					get() = account.confirm_post
-					set(bv) {
-						account.confirm_post = bv
-						account.saveSetting()
+			DlgConfirm.open(
+				activity,
+				activity.getString(R.string.confirm_post_from, AcctColor.getNickname(account.acct)),
+				object : DlgConfirm.Callback {
+					override var isConfirmEnabled : Boolean
+						get() = account.confirm_post
+						set(bv) {
+							account.confirm_post = bv
+							account.saveSetting()
+						}
+					
+					override fun onOK() {
+						post(account, bConfirmTag, true, callback)
 					}
-				
-				override fun onOK() {
-					post(account, bConfirmTag, true, callback)
-				}
-			})
+				})
 			return
 		}
 		
@@ -149,7 +157,14 @@ class PostHelper(
 					.setCancelable(true)
 					.setMessage(R.string.hashtag_and_visibility_not_match)
 					.setNegativeButton(R.string.cancel, null)
-					.setPositiveButton(R.string.ok) { _, _ -> post(account, true, bConfirmAccount, callback) }
+					.setPositiveButton(R.string.ok) { _, _ ->
+						post(
+							account,
+							true,
+							bConfirmAccount,
+							callback
+						)
+					}
 					.show()
 				return
 			}
@@ -171,7 +186,7 @@ class PostHelper(
 			
 			internal fun getCredential(client : TootApiClient) : TootApiResult? {
 				val result = client.request("/api/v1/accounts/verify_credentials")
-				credential_tmp = TootAccount.parse(activity, account, result?.jsonObject)
+				credential_tmp = TootParser(activity, account).account(result?.jsonObject)
 				return result
 			}
 			
@@ -210,7 +225,10 @@ class PostHelper(
 						}
 						json.put("sensitive", bNSFW)
 						json.put("spoiler_text", EmojiDecoder.decodeShortCode(spoiler_text ?: ""))
-						json.put("in_reply_to_id", if(in_reply_to_id == - 1L) null else in_reply_to_id)
+						json.put(
+							"in_reply_to_id",
+							if(in_reply_to_id == - 1L) null else in_reply_to_id
+						)
 						var array = JSONArray()
 						if(attachment_list != null) {
 							for(pa in attachment_list) {
@@ -274,7 +292,7 @@ class PostHelper(
 				
 				val request_builder = Request.Builder().post(request_body)
 				
-				if( ! Pref.bpDontDuplicationCheck(pref) ) {
+				if(! Pref.bpDontDuplicationCheck(pref)) {
 					val digest = (body_string + account.acct).digestSHA256()
 					request_builder.header("Idempotency-Key", digest)
 				}
@@ -342,11 +360,11 @@ class PostHelper(
 	
 	private var instance : String? = null
 	
-	private val onEmojiListLoad : (list : ArrayList<CustomEmoji>) -> Unit
-		= { _ : ArrayList<CustomEmoji> ->
-		val popup = this@PostHelper.popup
-		if(popup?.isShowing == true) proc_text_changed.run()
-	}
+	private val onEmojiListLoad : (list : ArrayList<CustomEmoji>) -> Unit =
+		{ _ : ArrayList<CustomEmoji> ->
+			val popup = this@PostHelper.popup
+			if(popup?.isShowing == true) proc_text_changed.run()
+		}
 	
 	private val proc_text_changed = object : Runnable {
 		override fun run() {
@@ -493,7 +511,12 @@ class PostHelper(
 							
 							val sb = SpannableStringBuilder()
 							sb.append(' ')
-							sb.setSpan(NetworkEmojiSpan(item.url), 0, sb.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+							sb.setSpan(
+								NetworkEmojiSpan(item.url),
+								0,
+								sb.length,
+								Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+							)
 							sb.append(' ')
 							sb.append(':')
 							sb.append(item.shortcode)
@@ -503,7 +526,14 @@ class PostHelper(
 					}
 				}
 				
-				openPopup()?.setList(et, last_colon, end, code_list, picker_caption_emoji, open_picker_emoji)
+				openPopup()?.setList(
+					et,
+					last_colon,
+					end,
+					code_list,
+					picker_caption_emoji,
+					open_picker_emoji
+				)
 			}
 			
 		}
@@ -555,14 +585,24 @@ class PostHelper(
 		closeAcctPopup()
 	}
 	
-	fun attachEditText(_formRoot : View, et : MyEditText, bMainScreen : Boolean, _callback2 : Callback2) {
+	fun attachEditText(
+		_formRoot : View,
+		et : MyEditText,
+		bMainScreen : Boolean,
+		_callback2 : Callback2
+	) {
 		this.formRoot = _formRoot
 		this.et = et
 		this.callback2 = _callback2
 		this.bMainScreen = bMainScreen
 		
 		et.addTextChangedListener(object : TextWatcher {
-			override fun beforeTextChanged(s : CharSequence, start : Int, count : Int, after : Int) {
+			override fun beforeTextChanged(
+				s : CharSequence,
+				start : Int,
+				count : Int,
+				after : Int
+			) {
 			
 			}
 			
@@ -602,19 +642,19 @@ class PostHelper(
 			if(start == - 1 || end - start < 1) return@EmojiPicker
 			
 			val item = EmojiMap201709.sShortNameToImageId[name]
-			val svInsert : Spannable = if(item == null || instance != null ) {
+			val svInsert : Spannable = if(item == null || instance != null) {
 				SpannableString(":$name: ")
-			}else if(!bInstanceHasCustomEmoji){
+			} else if(! bInstanceHasCustomEmoji) {
 				// 古いタンスだとshortcodeを使う。見た目は絵文字に変える。
-				DecodeOptions().decodeEmoji(activity, ":$name: ")
+				DecodeOptions(activity).decodeEmoji(":$name: ")
 			} else {
 				// 十分に新しいタンスなら絵文字のunicodeを使う。見た目は絵文字に変える。
-				DecodeOptions().decodeEmoji(activity, item.unified)
+				DecodeOptions(activity).decodeEmoji(item.unified)
 			}
 			val newText = SpannableStringBuilder()
 				.append(src.subSequence(0, start))
 				.append(svInsert)
-				if( end <src_length) newText.append(src.subSequence(end, src_length))
+			if(end < src_length) newText.append(src.subSequence(end, src_length))
 			
 			et.text = newText
 			et.setSelection(start + svInsert.length)
@@ -637,15 +677,16 @@ class PostHelper(
 			val end = Math.min(src_length, et.selectionEnd)
 			
 			val item = EmojiMap201709.sShortNameToImageId[name]
-			val svInsert : Spannable = if(item == null || instance != null || ! bInstanceHasCustomEmoji) {
-				SpannableString(":$name: ")
-			} else {
-				DecodeOptions(decodeEmoji = true).decodeEmoji(activity, item.unified)
-			}
+			val svInsert : Spannable =
+				if(item == null || instance != null || ! bInstanceHasCustomEmoji) {
+					SpannableString(":$name: ")
+				} else {
+					DecodeOptions(activity, decodeEmoji = true).decodeEmoji(item.unified)
+				}
 			val newText = SpannableStringBuilder()
 				.append(src.subSequence(0, start))
 				.append(svInsert)
-			if( end <src_length) newText.append(src.subSequence(end, src_length))
+			if(end < src_length) newText.append(src.subSequence(end, src_length))
 			
 			et.text = newText
 			et.setSelection(start + svInsert.length)

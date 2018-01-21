@@ -6,33 +6,26 @@ import jp.juggler.subwaytooter.api.entity.*
 import org.json.JSONArray
 import org.json.JSONObject
 
-import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.WordTrieTree
+import jp.juggler.subwaytooter.util.LinkHelper
 
 class TootParser(
 	val context : Context,
-	val accessInfo : SavedAccount,
+	val linkHelper : LinkHelper,
 	var pinned : Boolean = false, // プロフィールカラムからpinned TL を読んだ時だけ真
-	var highlightTrie : WordTrieTree? = null
+	var highlightTrie : WordTrieTree? = null,
+	var serviceType : ServiceType = ServiceType.MASTODON
 ) {
 	
+	fun account(src : JSONObject?) = parseItem(::TootAccount, this, src)
+	fun accountList(array : JSONArray?) = parseList(::TootAccount, this, array)
 	
-	fun account(src : JSONObject?)
-		=TootAccount.parse(context, accessInfo, src)
+	fun status(src : JSONObject?) = parseItem(::TootStatus, this, src)
+	fun statusList(array : JSONArray?) = parseList(::TootStatus, this, array)
 	
-	fun status(src : JSONObject?,serviceType :ServiceType = ServiceType.MASTODON )
-		=TootStatus.parse(this, src,serviceType)
+	fun notification(src : JSONObject?) = parseItem(::TootNotification, this, src)
+	fun notificationList(src : JSONArray?) = parseList(::TootNotification, this, src)
 	
-	fun statusList(array : JSONArray?,serviceType :ServiceType = ServiceType.MASTODON)
-		=TootStatus.parseList(this, array,serviceType)
-	
-	fun notification(src : JSONObject?)
-		=parseItem(::TootNotification,this, src)
-	
-	fun notificationList(src : JSONArray?)
-		=parseList(::TootNotification,this, src)
-	
-	fun results(src : JSONObject?)
-		=parseItem(::TootResults,this, src)
+	fun results(src : JSONObject?) = parseItem(::TootResults, this, src)
 	
 }

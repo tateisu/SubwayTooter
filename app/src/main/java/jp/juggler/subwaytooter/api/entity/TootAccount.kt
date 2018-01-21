@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.api.entity
 import android.content.Context
 import android.net.Uri
 import android.text.Spannable
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.*
 
 import org.json.JSONArray
@@ -12,10 +13,8 @@ import java.util.ArrayList
 import java.util.regex.Pattern
 
 open class TootAccount(
-	context : Context,
-	accessInfo : LinkHelper,
-	src : JSONObject,
-	serviceType : ServiceType
+	parser : TootParser,
+	src : JSONObject
 ) : TimelineItem() {
 	
 	//URL of the user's profile page (can be remote)
@@ -94,25 +93,27 @@ open class TootAccount(
 		//
 		sv = src.parseString("display_name")
 		this.display_name = if(sv?.isNotEmpty() == true) sv.sanitizeBDI() else username
-		this.decoded_display_name = decodeDisplayName(context)
+		this.decoded_display_name = decodeDisplayName(parser.context)
 		
 		//
 		this.note = src.parseString("note")
 		this.decoded_note = DecodeOptions(
+			parser.context,
+			parser.linkHelper,
 			short = true,
 			decodeEmoji = true,
 			emojiMapProfile = this.profile_emojis
-		).decodeHTML(context, accessInfo, this.note)
+		).decodeHTML(this.note)
 		
 		this.source = parseSource(src.optJSONObject("source"))
 		this.moved =
-			src.optJSONObject("moved")?.let { TootAccount(context, accessInfo, it, serviceType) }
+			src.optJSONObject("moved")?.let { TootAccount(parser, it) }
 		this.locked = src.optBoolean("locked")
 		
-		when(serviceType) {
+		when(parser.serviceType) {
 			ServiceType.MASTODON -> {
 				
-				val hostAccess = accessInfo.host
+				val hostAccess = parser.linkHelper.host
 				
 				this.id = src.parseLong("id") ?: INVALID_ID
 				
@@ -207,9 +208,7 @@ open class TootAccount(
 		val sv = reWhitespace.matcher(display_name).replaceAll(" ")
 		
 		// decode emoji code
-		return DecodeOptions(
-			emojiMapProfile = profile_emojis
-		).decodeEmoji(context, sv)
+		return DecodeOptions(context, emojiMapProfile = profile_emojis).decodeEmoji(sv)
 	}
 	
 	companion object {
@@ -224,22 +223,6 @@ open class TootAccount(
 		val reAccountUrl =
 			Pattern.compile("\\Ahttps://([A-Za-z0-9.-]+)/@([A-Za-z0-9_]+)(?:\\z|[?#])")
 		
-		fun parse(
-			context : Context,
-			account : LinkHelper,
-			src : JSONObject?,
-			serviceType : ServiceType = ServiceType.MASTODON
-		) : TootAccount? {
-			src ?: return null
-			return try {
-				TootAccount(context, account, src, serviceType)
-			} catch(ex : Throwable) {
-				log.trace(ex)
-				log.e(ex, "parse failed.")
-				null
-			}
-		}
-		
 		private fun parseSource(src : JSONObject?) : Source? {
 			src ?: return null
 			return try {
@@ -249,24 +232,6 @@ open class TootAccount(
 				log.e("parseSource failed.")
 				null
 			}
-		}
-		
-		fun parseList(
-			context : Context,
-			account : LinkHelper,
-			array : JSONArray?
-		) : ArrayList<TootAccount> {
-			val result = ArrayList<TootAccount>()
-			if(array != null) {
-				val array_size = array.length()
-				result.ensureCapacity(array_size)
-				for(i in 0 until array_size) {
-					val src = array.optJSONObject(i) ?: continue
-					val item = parse(context, account, src)
-					if(item != null) result.add(item)
-				}
-			}
-			return result
 		}
 		
 		// Tootsearch用。URLやUriを使ってアカウントのインスタンス名を調べる

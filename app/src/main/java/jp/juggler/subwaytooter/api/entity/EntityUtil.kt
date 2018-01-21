@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.parseString
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -181,9 +180,4 @@ fun <T : TootAttachmentLike> ArrayList<T>.encodeJson() : JSONArray {
 	return a
 }
 
-////////////////////////////////////////
 
-fun notEmptyOrThrow(name : String, value : String?) =
-	if(value?.isNotEmpty() == true) value else throw RuntimeException("$name is empty")
-
-fun JSONObject.notEmptyOrThrow(name : String) = notEmptyOrThrow(name, this.parseString(name))

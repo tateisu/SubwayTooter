@@ -18,17 +18,23 @@ import net.glxn.qrgen.android.QRCode
 
 @SuppressLint("StaticFieldLeak")
 object DlgQRCode {
+	
 	private val log = LogCategory("DlgQRCode")
 	
 	internal interface QrCodeCallback {
 		fun onQrCode(bitmap : Bitmap?)
 	}
 	
-	private fun makeQrCode(activity : ActMain, size : Int, url : String, callback : QrCodeCallback) {
+	private fun makeQrCode(
+		activity : ActMain,
+		size : Int,
+		url : String,
+		callback : QrCodeCallback
+	) {
 		@Suppress("DEPRECATION")
 		val progress = ProgressDialogEx(activity)
 		val task = object : AsyncTask<Void, Void, Bitmap?>() {
-
+			
 			override fun doInBackground(vararg params : Void) : Bitmap? {
 				return try {
 					QRCode.from(url).withSize(size, size).bitmap()
@@ -64,7 +70,7 @@ object DlgQRCode {
 		
 		val size = (0.5f + 240f * activity.density).toInt()
 		makeQrCode(activity, size, url, object : QrCodeCallback {
-
+			
 			@SuppressLint("InflateParams")
 			override fun onQrCode(bitmap : Bitmap?) {
 				
@@ -85,7 +91,7 @@ object DlgQRCode {
 				
 				dialog.setOnDismissListener {
 					iv.setImageDrawable(null)
-					bitmap ?.recycle()
+					bitmap?.recycle()
 				}
 				
 				viewRoot.findViewById<View>(R.id.btnCancel).setOnClickListener { dialog.cancel() }

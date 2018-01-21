@@ -90,8 +90,8 @@ internal class ViewHolderHeaderInstance(
 			btnEmail.text = email
 			btnEmail.isEnabled = email.isNotEmpty()
 			
-			val sb = DecodeOptions(decodeEmoji = true)
-				.decodeHTML(activity, access_info, "<p>" + (instance.description ?: "") + "</p>")
+			val sb = DecodeOptions(activity, access_info,decodeEmoji = true)
+				.decodeHTML( "<p>" + (instance.description ?: "") + "</p>")
 			
 			var previous_br_count = 0
 			var i = 0

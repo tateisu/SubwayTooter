@@ -166,18 +166,8 @@ class TootTaskRunner(
 	
 	// ダイアログを閉じる
 	private fun dismissProgress() {
-		try {
-			progress?.dismiss()
-		} catch(ignored : Throwable) {
-			// java.lang.IllegalArgumentException:
-			// at android.view.WindowManagerGlobal.findViewLocked(WindowManagerGlobal.java:396)
-			// at android.view.WindowManagerGlobal.removeView(WindowManagerGlobal.java:322)
-			// at android.view.WindowManagerImpl.removeViewImmediate(WindowManagerImpl.java:116)
-			// at android.app.Dialog.dismissDialog(Dialog.java:341)
-			// at android.app.Dialog.dismiss(Dialog.java:324)
-		} finally {
-			progress = null
-		}
+		progress?.dismiss()
+		progress = null
 	}
 	
 	// ダイアログのメッセージを更新する

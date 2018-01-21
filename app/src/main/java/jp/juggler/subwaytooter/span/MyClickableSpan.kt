@@ -7,12 +7,11 @@ import android.view.View
 import java.lang.ref.WeakReference
 
 import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.util.LinkClickContext
 
 typealias MyClickableSpanClickCallback = (widget : View, span : MyClickableSpan)->Unit
 
 class MyClickableSpan(
-//	val lcc : LinkClickContext,
+//	val lcc : LinkHelper,
 	val text : String,
 	val url : String,
 	ac : AcctColor?,

@@ -2062,7 +2062,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			val viewRoot = layoutInflater.inflate(R.layout.dlg_plugin_missing, null, false)
 			
 			val tvText = viewRoot.findViewById<TextView>(R.id.tvText)
-			val lcc = object : LinkClickContext {}
+			val lcc = object : LinkHelper {}
 			val sv = DecodeOptions().decodeHTML(this@ActPost, lcc, text)
 			tvText.text = sv
 			tvText.movementMethod = LinkMovementMethod.getInstance()

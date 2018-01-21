@@ -13,7 +13,7 @@ import java.util.regex.Pattern
 
 open class TootAccount(
 	context : Context,
-	accessInfo : LinkClickContext,
+	accessInfo : LinkHelper,
 	src : JSONObject,
 	serviceType : ServiceType
 ) : TimelineItem() {
@@ -226,7 +226,7 @@ open class TootAccount(
 		
 		fun parse(
 			context : Context,
-			account : LinkClickContext,
+			account : LinkHelper,
 			src : JSONObject?,
 			serviceType : ServiceType = ServiceType.MASTODON
 		) : TootAccount? {
@@ -253,7 +253,7 @@ open class TootAccount(
 		
 		fun parseList(
 			context : Context,
-			account : LinkClickContext,
+			account : LinkHelper,
 			array : JSONArray?
 		) : ArrayList<TootAccount> {
 			val result = ArrayList<TootAccount>()

@@ -29,7 +29,7 @@ class DecodeOptions(
 	////////////////////////
 	// decoder
 	
-	fun decodeHTML(context : Context?, lcc : LinkClickContext?, html : String?) : SpannableStringBuilder {
+	fun decodeHTML(context : Context?, lcc : LinkHelper?, html : String?) : SpannableStringBuilder {
 		return HTMLDecoder.decodeHTML(context, lcc, html, this)
 	}
 	

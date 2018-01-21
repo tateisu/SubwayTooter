@@ -273,7 +273,7 @@ object HTMLDecoder {
 		
 		internal fun encodeSpan(
 			context : Context?,
-			account : LinkClickContext?,
+			account : LinkHelper?,
 			sb : SpannableStringBuilder,
 			options : DecodeOptions
 		) {
@@ -333,7 +333,7 @@ object HTMLDecoder {
 					if(href != null) {
 						val link_text = sb.subSequence(start, end).toString()
 						val span = MyClickableSpan(
-							account,
+							//account,
 							link_text,
 							href,
 							account.findAcctColor(href),
@@ -462,7 +462,7 @@ object HTMLDecoder {
 	
 	fun decodeHTML(
 		context : Context?,
-		account : LinkClickContext?,
+		account : LinkHelper?,
 		src : String?,
 		options : DecodeOptions
 	)
@@ -515,7 +515,7 @@ object HTMLDecoder {
 			if(end > start) {
 				val link_text = sb.subSequence(start, end).toString()
 				val span = MyClickableSpan(
-					access_info,
+					//access_info,
 					link_text,
 					url,
 					access_info.findAcctColor(item.url),

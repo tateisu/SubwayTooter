@@ -17,7 +17,7 @@ import java.util.regex.Pattern
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.util.LinkClickContext
+import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.parseString
 import jp.juggler.subwaytooter.util.toJsonObject
@@ -28,7 +28,7 @@ class SavedAccount(
 	hostArg : String? = null,
 	var token_info : JSONObject? = null,
 	var loginAccount : TootAccount? = null // 疑似アカウントではnull
-) : LinkClickContext {
+) : LinkHelper {
 	
 	val username : String
 
@@ -97,7 +97,7 @@ class SavedAccount(
 
 		val loginAccount = TootAccount.parse(
 			context,
-			object : LinkClickContext {
+			object : LinkHelper {
 				override val host : String?
 					get() = this@SavedAccount.host
 			},
@@ -321,7 +321,7 @@ class SavedAccount(
 		return host_match(strNicoruHost, 0, host, host_start)
 	}
 	
-	// implements LinkClickContext
+	// implements LinkHelper
 	override fun findAcctColor(url : String?) : AcctColor? {
 		if(url != null) {
 			val m = TootAccount.reAccountUrl.matcher(url)

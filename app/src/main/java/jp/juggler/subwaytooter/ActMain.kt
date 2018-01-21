@@ -1598,7 +1598,7 @@ class ActMain : AppCompatActivity()
 				val obj = result?.jsonObject
 				if(obj != null) {
 					// ダミーのLinkClickContext
-					val lcc = object : LinkClickContext {}
+					val lcc = object : LinkHelper {}
 					this.ta = TootAccount.parse(this@ActMain, lcc, obj)
 				}
 				return result
@@ -1734,7 +1734,7 @@ class ActMain : AppCompatActivity()
 				val obj = result?.jsonObject
 				if(obj != null) {
 					// taは使い捨てなので、生成に使うLinkClickContextはダミーで問題ない
-					val lcc = object : LinkClickContext {}
+					val lcc = object : LinkHelper {}
 					this.ta = TootAccount.parse(this@ActMain, lcc, obj)
 				}
 				return result

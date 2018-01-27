@@ -67,6 +67,7 @@ dependencies {
     compile project(':exif')
     compile project(':colorpicker')
     compile project(':emoji')
+    compile project(':apng')
 
     compile 'com.android.support:support-v4:27.0.2'
     compile 'com.android.support:appcompat-v7:27.0.2'
@@ -82,6 +83,7 @@ dependencies {
     testCompile "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
     testCompile 'junit:junit:4.12' // しばらくはjunitと併用
 
+    // compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.21.2'
 
     compile 'uk.co.chrisjenx:calligraphy:2.3.0'
     compile 'com.github.woxthebox:draglistview:1.5.1'

@@ -30,7 +30,7 @@ class CustomEmojiCache(internal val context : Context) {
 			get() = SystemClock.elapsedRealtime()
 	}
 	
-	private class CacheItem(val url : String, var frames : APNGFrames?) {
+	private class CacheItem(val url : String, var frames : ApngFrames?) {
 		var time_used : Long = elapsedTime
 	}
 	
@@ -100,7 +100,7 @@ class CustomEmojiCache(internal val context : Context) {
 		return null
 	}
 	
-	fun getFrames(refDrawTarget: WeakReference<Any>?, url : String, onLoadComplete :  ()->Unit) : APNGFrames? {
+	fun getFrames(refDrawTarget: WeakReference<Any>?, url : String, onLoadComplete :  ()->Unit) : ApngFrames? {
 		try {
 			if( refDrawTarget?.get() == null ){
 				NetworkEmojiSpan.log.e("draw: DrawTarget is null ")
@@ -169,7 +169,7 @@ class CustomEmojiCache(internal val context : Context) {
 					if(DEBUG)
 						log.d("start get image. queue_size=%d, cache_size=%d url=%s", queue_size, cache_size, request.url)
 					
-					var frames : APNGFrames? = null
+					var frames : ApngFrames? = null
 					try {
 						val data = App1.getHttpCached(request.url)
 						if(data == null) {
@@ -241,7 +241,7 @@ class CustomEmojiCache(internal val context : Context) {
 			}
 		}
 		
-		private fun decodeAPNG(data : ByteArray, url : String) : APNGFrames? {
+		private fun decodeAPNG(data : ByteArray, url : String) : ApngFrames? {
 			try {
 				// PNGヘッダを確認
 				if( data.size >= 8
@@ -249,19 +249,13 @@ class CustomEmojiCache(internal val context : Context) {
 					&& (data[1].toInt() and 0xff) ==  0x50
 				){
 					// APNGをデコード
-					val frames = APNGFrames.parseAPNG(ByteArrayInputStream(data), 64)
-					if(frames?.hasMultipleFrame == true) return frames
-					frames?.dispose()
-					
-					// mastodonのstatic_urlが返すPNG画像はAPNGだと透明になってる場合がある。BitmapFactoryでデコードしなおすべき
-					if(DEBUG) log.d("parseAPNG returns null or single frame.")
+					return ApngFrames.parseApng(ByteArrayInputStream(data), 64)
 				}
 
 				// fall thru
 			} catch(ex : Throwable) {
 				if(DEBUG) log.trace(ex)
 				log.e(ex, "PNG decode failed. %s ", url)
-				// PngFeatureException Interlaced images are not yet supported
 			}
 			
 			// 通常のビットマップでのロードを試みる
@@ -269,7 +263,7 @@ class CustomEmojiCache(internal val context : Context) {
 				val b = decodeBitmap(data, 128)
 				if(b != null) {
 					if(DEBUG) log.d("bitmap decoded.")
-					return APNGFrames(b)
+					return ApngFrames(b)
 				} else {
 					log.e("Bitmap decode returns null. %s", url)
 				}

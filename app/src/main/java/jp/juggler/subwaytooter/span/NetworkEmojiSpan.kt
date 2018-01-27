@@ -9,7 +9,7 @@ import android.text.style.ReplacementSpan
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
-import jp.juggler.subwaytooter.util.APNGFrames
+import jp.juggler.subwaytooter.util.ApngFrames
 import jp.juggler.subwaytooter.util.LogCategory
 import java.lang.ref.WeakReference
 
@@ -31,7 +31,7 @@ class NetworkEmojiSpan internal constructor(private val url : String) : Replacem
 	private var refDrawTarget : WeakReference<Any>? = null
 	
 	// フレーム探索結果を格納する構造体を確保しておく
-	private val mFrameFindResult = APNGFrames.FindFrameResult()
+	private val mFrameFindResult = ApngFrames.FindFrameResult()
 	
 	init {
 		mPaint.isFilterBitmap = true

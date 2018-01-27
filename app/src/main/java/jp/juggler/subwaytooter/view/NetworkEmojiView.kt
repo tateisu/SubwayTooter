@@ -10,7 +10,7 @@ import android.util.AttributeSet
 import android.view.View
 
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.util.APNGFrames
+import jp.juggler.subwaytooter.util.ApngFrames
 import java.lang.ref.WeakReference
 
 class NetworkEmojiView : View {
@@ -26,7 +26,7 @@ class NetworkEmojiView : View {
 	private val tagDrawTarget : WeakReference<Any>
 	
 	// フレーム探索結果を格納する構造体を確保しておく
-	private val mFrameFindResult = APNGFrames.FindFrameResult()
+	private val mFrameFindResult = ApngFrames.FindFrameResult()
 	
 	// 最後に描画した時刻
 	private var t_last_draw : Long = 0

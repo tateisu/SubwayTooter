@@ -54,7 +54,7 @@ object Utils {
 	//			if( iv != 0 ) return iv;
 	//		}catch(Throwable ex){
 	//		}
-	//		log.e("missing resid for %s",name);
+	//		warning.e("missing resid for %s",name);
 	//		return R.string.Dialog_Cancel;
 	//	}
 	
@@ -547,7 +547,7 @@ fun String.digestSHA256() : String {
 //			sb.append( String.format( Locale.JAPAN, "%dk", n ) );
 //			t -= n * 1000L;
 //		}
-//		// remain
+//		// length
 //		if( sb.length() > 0 ){
 //			sb.append( String.format( Locale.JAPAN, "%03d", t ) );
 //		}else if( n > 0 ){

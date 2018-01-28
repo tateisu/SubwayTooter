@@ -93,7 +93,7 @@ open class TootApiResult(
 			while(m.find()) {
 				val url = m.group(1)
 				val rel = m.group(2)
-				//	log.d("Link %s,%s",rel,url);
+				//	warning.d("Link %s,%s",rel,url);
 				if("next" == rel) link_older = url
 				if("prev" == rel) link_newer = url
 			}

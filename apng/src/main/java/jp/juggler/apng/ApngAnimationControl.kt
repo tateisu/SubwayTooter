@@ -2,10 +2,10 @@
 
 package jp.juggler.apng
 
-import jp.juggler.apng.util.ByteArrayTokenizer
+import jp.juggler.apng.util.ByteSequence
 
 
-class ApngAnimationControl internal constructor(bat: ByteArrayTokenizer) {
+class ApngAnimationControl internal constructor(src: ByteSequence) {
 
     companion object {
         const val PLAY_INDEFINITELY =0
@@ -21,8 +21,8 @@ class ApngAnimationControl internal constructor(bat: ByteArrayTokenizer) {
     val numPlays: Int
 
     init {
-        numFrames = bat.readInt32()
-        numPlays = bat.readInt32()
+        numFrames = src.readInt32()
+        numPlays = src.readInt32()
     }
 
     override fun toString() ="ApngAnimationControl(numFrames=$numFrames,numPlays=$numPlays)"

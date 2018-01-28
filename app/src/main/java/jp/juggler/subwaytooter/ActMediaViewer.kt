@@ -107,12 +107,12 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 		override fun onLoadingChanged(isLoading : Boolean) {
 			// かなり頻繁に呼ばれる
-			// log.d( "exoPlayer onLoadingChanged %s" ,isLoading );
+			// warning.d( "exoPlayer onLoadingChanged %s" ,isLoading );
 		}
 		
 		override fun onPlayerStateChanged(playWhenReady : Boolean, playbackState : Int) {
 			// かなり頻繁に呼ばれる
-			// log.d( "exoPlayer onPlayerStateChanged %s %s", playWhenReady, playbackState );
+			// warning.d( "exoPlayer onPlayerStateChanged %s %s", playWhenReady, playbackState );
 			if(playWhenReady && playbackState == Player.STATE_BUFFERING) {
 				val now = SystemClock.elapsedRealtime()
 				if(now - buffering_last_shown >= short_limit && exoPlayer.duration >= short_limit) {

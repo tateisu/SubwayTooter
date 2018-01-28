@@ -100,7 +100,7 @@ internal class StreamReader(
 		 * Invoked when a text (type `0x1`) message has been received.
 		 */
 		override fun onMessage(webSocket : WebSocket, text : String) {
-			// log.d( "WebSocket onMessage. url=%s, message=%s", webSocket.request().url(), text );
+			// warning.d( "WebSocket onMessage. url=%s, message=%s", webSocket.request().url(), text );
 			try {
 				val obj = text.toJsonObject()
 				

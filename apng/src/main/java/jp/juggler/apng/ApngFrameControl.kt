@@ -2,10 +2,10 @@
 
 package jp.juggler.apng
 
-import jp.juggler.apng.util.ByteArrayTokenizer
+import jp.juggler.apng.util.ByteSequence
 
 
-class ApngFrameControl internal constructor(bat: ByteArrayTokenizer) {
+class ApngFrameControl internal constructor(src: ByteSequence) {
 
     val width: Int
     val height: Int
@@ -17,19 +17,19 @@ class ApngFrameControl internal constructor(bat: ByteArrayTokenizer) {
     val blendOp: BlendOp
 
     init {
-        width = bat.readInt32()
-        height = bat.readInt32()
-        xOffset = bat.readInt32()
-        yOffset = bat.readInt32()
-        delayNum = bat.readUInt16()
-        delayDen = bat.readUInt16().let{ if(it==0) 100 else it}
+        width = src.readInt32()
+        height = src.readInt32()
+        xOffset = src.readInt32()
+        yOffset = src.readInt32()
+        delayNum = src.readUInt16()
+        delayDen = src.readUInt16().let{ if(it==0) 100 else it}
 
         var num:Int
 
-        num = bat.readUInt8()
+        num = src.readUInt8()
         disposeOp = DisposeOp.values().first{it.num==num}
 
-        num = bat.readUInt8()
+        num = src.readUInt8()
         blendOp = BlendOp.values().first{it.num==num}
     }
 

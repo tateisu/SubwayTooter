@@ -6,10 +6,10 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.support.annotation.IntRange
 import android.text.style.ReplacementSpan
+import jp.juggler.apng.ApngFrames
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
-import jp.juggler.subwaytooter.util.ApngFrames
 import jp.juggler.subwaytooter.util.LogCategory
 import java.lang.ref.WeakReference
 

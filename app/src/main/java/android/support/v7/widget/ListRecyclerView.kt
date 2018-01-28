@@ -6,7 +6,7 @@ import android.util.AttributeSet
 class ListRecyclerView : RecyclerView {
 	
 	companion object {
-		// private val log = LogCategory("ListRecyclerView")
+		// private val warning = LogCategory("ListRecyclerView")
 	}
 	
 	constructor(context : Context) : super(context)

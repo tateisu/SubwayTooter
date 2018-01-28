@@ -51,7 +51,7 @@ class VersionString(src : String?) {
 	
 	companion object {
 
-		// private val log = new LogCategory( "VersionString" )
+		// private val warning = new LogCategory( "VersionString" )
 		
 		private fun isDelimiter(c : Char) : Boolean {
 			return c == '.' || c == ' '

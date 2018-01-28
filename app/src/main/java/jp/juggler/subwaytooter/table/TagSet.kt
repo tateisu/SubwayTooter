@@ -55,7 +55,7 @@ object TagSet {
 	//			App1.database.delete(table, COL_TIME_SAVE + "<?", arrayOf(expire.toString()))
 	//
 	//		} catch(ex : Throwable) {
-	//			log.e(ex, "deleteOld failed.")
+	//			warning.e(ex, "deleteOld failed.")
 	//		}
 	//	}
 	
@@ -67,7 +67,7 @@ object TagSet {
 	//			cv.put( COL_ACCT, acct );
 	//			App1.getDB().replace( table, null, cv );
 	//		}catch( Throwable ex ){
-	//			log.e( ex, "save failed." );
+	//			warning.e( ex, "save failed." );
 	//		}
 	//	}
 	

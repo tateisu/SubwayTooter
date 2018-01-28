@@ -3461,7 +3461,7 @@ class Column(
 				} else if(holder_sp.adapterIndex == 0 && holder_sp.offset == 0) {
 					// スクロール位置が先頭なら先頭にする
 					log.d(
-						"mergeStreamingMessage: has VH. keep head. pos=%s,offset=%s"
+						"mergeStreamingMessage: has VH. keep head. offset=%s,offset=%s"
 						, holder_sp.adapterIndex
 						, holder_sp.offset
 					)

@@ -1373,7 +1373,7 @@ class PollingWorker private constructor(c : Context) {
 				val type = src.parseString("type")
 				
 				if(id <= nr.nid_read) {
-					// log.d("update_sub: ignore data that id=%s, <= read id %s ",id,nr.nid_read);
+					// warning.d("update_sub: ignore data that id=%s, <= read id %s ",id,nr.nid_read);
 					return
 				} else {
 					log.d("update_sub: found data that id=%s, > read id %s ", id, nr.nid_read)

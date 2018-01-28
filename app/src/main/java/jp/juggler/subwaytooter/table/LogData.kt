@@ -8,7 +8,7 @@ import android.util.Log
 object LogData {
 	private const val TAG = "SubwayTooter"
 	
-	internal const val table = "log"
+	internal const val table = "warning"
 	
 	private const val  COL_TIME = "t"
 	private const val  COL_LEVEL = "l"

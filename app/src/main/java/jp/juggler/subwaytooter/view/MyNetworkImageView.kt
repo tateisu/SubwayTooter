@@ -116,7 +116,7 @@ class MyNetworkImageView : AppCompatImageView {
 		val d = drawable
 		if(d is Animatable) {
 			if(d.isRunning) {
-				//log.d("cancelLoading: Animatable.stop()")
+				//warning.d("cancelLoading: Animatable.stop()")
 				d.stop()
 			}
 		}

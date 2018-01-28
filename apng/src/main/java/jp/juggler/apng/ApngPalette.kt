@@ -2,28 +2,40 @@
 
 package jp.juggler.apng
 
+import jp.juggler.apng.util.getUInt8
 
-class ApngPalette(rgb: ByteArray) {
-    val list: ByteArray
-    var hasAlpha: Boolean = false
-
-    init {
-        val entryCount = rgb.size / 3
-        list = ByteArray(4 * entryCount)
-        for (i in 0 until entryCount) {
-            list[i * 4] = 255.toByte()
-            list[i * 4 + 1] = rgb[i * 3 + 0]
-            list[i * 4 + 2] = rgb[i * 3 + 1]
-            list[i * 4 + 3] = rgb[i * 3 + 2]
-        }
-    }
-
-    override fun toString() = "palette(${list.size} entries,hasAlpha=$hasAlpha)"
-
-    fun parseTRNS(ba: ByteArray) {
-        hasAlpha = true
-        for (i in 0 until Math.min(list.size, ba.size)) {
-            list[i * 4] = ba[i]
-        }
-    }
+class ApngPalette(
+	src : ByteArray // repeat of R,G,B
+) {
+	companion object {
+		// full opaque black
+		const val OPAQUE = 255 shl 24
+	}
+	
+	val list : IntArray // repeat of 0xAARRGGBB
+	
+	var hasAlpha : Boolean = false
+	
+	init {
+		val entryCount = src.size / 3
+		list = IntArray( entryCount)
+		var pos = 0
+		for(i in 0 until entryCount) {
+			list[i] = OPAQUE or
+				(src.getUInt8(pos) shl 16) or
+				(src.getUInt8(pos+1) shl 8) or
+				src.getUInt8(pos+2)
+			pos+=3
+		}
+	}
+	
+	override fun toString() = "palette(${list.size} entries,hasAlpha=$hasAlpha)"
+	
+	// update alpha value from tRNS chunk data
+	fun parseTRNS(ba : ByteArray) {
+		hasAlpha = true
+		for(i in 0 until Math.min(list.size, ba.size)) {
+			list[i] = (list[i] and 0xffffff) or (ba.getUInt8(i) shl 24)
+		}
+	}
 }

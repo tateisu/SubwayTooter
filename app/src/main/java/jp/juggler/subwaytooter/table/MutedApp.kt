@@ -88,7 +88,7 @@ object MutedApp {
 	//				cursor.close();
 	//			}
 	//		}catch( Throwable ex ){
-	//			log.e( ex, "load failed." );
+	//			warning.e( ex, "load failed." );
 	//		}
 	//		return false;
 	//	}

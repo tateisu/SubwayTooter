@@ -15,7 +15,7 @@ class EmojiImageSpan(context : Context, private val res_id : Int) : ReplacementS
 	
 	companion object {
 		
-		// private static final LogCategory log = new LogCategory( "EmojiImageSpan" );
+		// private static final LogCategory warning = new LogCategory( "EmojiImageSpan" );
 		
 		// static DynamicDrawableSpan x = null;
 		

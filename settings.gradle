@@ -1,1 +1,1 @@
-include ':app', ':exif', ':colorpicker', ':emoji', ':apng'
+include ':app', ':exif', ':colorpicker', ':emoji', ':apng', ':apng_android'

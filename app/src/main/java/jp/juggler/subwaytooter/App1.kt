@@ -182,7 +182,7 @@ class App1 : Application() {
 		//		int memory = am.getMemoryClass();
 		//		int largeMemory = am.getLargeMemoryClass();
 		//		// どちらも単位はMB
-		//		log.d("MemoryClass=%d, LargeMemoryClass = %d",memory,largeMemory);
+		//		warning.d("MemoryClass=%d, LargeMemoryClass = %d",memory,largeMemory);
 		//
 		//		int maxSize;
 		//		if( am.isLowRamDevice() ){

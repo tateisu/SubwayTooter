@@ -341,7 +341,7 @@ class ColumnViewHolder(
 			}
 			
 			val sp = column.scroll_save ?: //復元後にもここを通るがこれは正常である
-			// log.d( "restoreScrollPosition [%d] %s , column has no saved scroll position.", page_idx, column.getColumnName( true ) );
+			// warning.d( "restoreScrollPosition [%d] %s , column has no saved scroll position.", page_idx, column.getColumnName( true ) );
 			return
 			
 			column.scroll_save = null

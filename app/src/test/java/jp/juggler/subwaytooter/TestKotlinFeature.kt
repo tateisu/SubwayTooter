@@ -179,7 +179,7 @@ class TestKotlinFeature {
 		/*
 			蛇足だが、クラスファイルを読むのは
 			app/build/tmp/kotlin-classes/*UnitTest\**/TestKotlinFeature.class を
-			javap.exe  -c TestKotlinFeature.class > javap.log とすると逆アセンブルできる
+			javap.exe  -c TestKotlinFeature.class > javap.warning とすると逆アセンブルできる
 		 */
 		
 	}

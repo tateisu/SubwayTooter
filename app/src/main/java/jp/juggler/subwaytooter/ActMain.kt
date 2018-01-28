@@ -1936,7 +1936,7 @@ class ActMain : AppCompatActivity()
 			App1.openCustomTab(this, opener.url)
 			
 		} catch(ex : Throwable) {
-			// log.trace( ex );
+			// warning.trace( ex );
 			log.e(ex, "openChromeTab failed. url=%s", opener.url)
 		}
 		

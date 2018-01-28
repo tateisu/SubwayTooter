@@ -446,7 +446,7 @@ class PostHelper(
 			
 			val part = src.substring(last_sharp + 1, end)
 			if(reCharsNotTag.matcher(part).find()) {
-				// log.d( "checkTag: character not tag in string %s", part );
+				// warning.d( "checkTag: character not tag in string %s", part );
 				checkEmoji()
 				return
 			}

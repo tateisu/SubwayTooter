@@ -221,7 +221,7 @@ class UserRelation private constructor() {
 	//		try{
 	//			App1.getDB().delete( table, COL_NAME + "=?", new String[]{ name } );
 	//		}catch( Throwable ex ){
-	//			log.e( ex, "delete failed." );
+	//			warning.e( ex, "delete failed." );
 	//		}
 	//	}
 	//
@@ -241,7 +241,7 @@ class UserRelation private constructor() {
 	//				}
 	//			}
 	//		}catch( Throwable ex ){
-	//			log.e(ex,"getNameSet() failed.")
+	//			warning.e(ex,"getNameSet() failed.")
 	//		}
 	//		return dst;
 	//	}
@@ -267,7 +267,7 @@ class UserRelation private constructor() {
 	//				cursor.close();
 	//			}
 	//		}catch( Throwable ex ){
-	//			log.e( ex, "load failed." );
+	//			warning.e( ex, "load failed." );
 	//		}
 	//		return false;
 	//	}

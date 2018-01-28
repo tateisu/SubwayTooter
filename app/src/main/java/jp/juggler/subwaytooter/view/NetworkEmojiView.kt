@@ -9,9 +9,10 @@ import android.os.SystemClock
 import android.util.AttributeSet
 import android.view.View
 
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.util.ApngFrames
 import java.lang.ref.WeakReference
+
+import jp.juggler.apng.ApngFrames
+import jp.juggler.subwaytooter.App1
 
 class NetworkEmojiView : View {
 	

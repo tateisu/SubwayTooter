@@ -124,7 +124,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		//			Intent takeVideoIntent = new Intent( MediaStore.ACTION_VIDEO_CAPTURE );
 		//			startActivityForResult( takeVideoIntent, REQUEST_CODE_VIDEO );
 		//		}catch( Throwable ex ){
-		//			log.trace( ex );
+		//			warning.trace( ex );
 		//			Utils.showToast( this, ex, "opening video app failed." );
 		//		}
 		//	}

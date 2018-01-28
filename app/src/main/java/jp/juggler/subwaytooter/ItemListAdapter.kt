@@ -172,7 +172,7 @@ internal class ItemListAdapter(
 				// 変更リストを順番に通知する
 				for(c in changeList) {
 					val adapterIndex = column.toAdapterIndex(c.listIndex)
-					log.d("notifyChange: ChangeType=${c.type} pos=$adapterIndex,count=${c.count}")
+					log.d("notifyChange: ChangeType=${c.type} offset=$adapterIndex,count=${c.count}")
 					when(c.type) {
 						AdapterChangeType.RangeInsert -> notifyItemRangeInserted(adapterIndex, c.count)
 						AdapterChangeType.RangeRemove -> notifyItemRangeRemoved(adapterIndex, c.count)
@@ -204,17 +204,17 @@ internal class ItemListAdapter(
 				diffResult.dispatchUpdatesTo(object : ListUpdateCallback {
 					
 					override fun onInserted(position : Int, count : Int) {
-						log.d("notifyChange: notifyItemRangeInserted pos=$position,count=$count")
+						log.d("notifyChange: notifyItemRangeInserted offset=$position,count=$count")
 						notifyItemRangeInserted(position, count)
 					}
 					
 					override fun onRemoved(position : Int, count : Int) {
-						log.d("notifyChange: notifyItemRangeRemoved pos=$position,count=$count")
+						log.d("notifyChange: notifyItemRangeRemoved offset=$position,count=$count")
 						notifyItemRangeRemoved(position, count)
 					}
 					
 					override fun onChanged(position : Int, count : Int, payload : Any?) {
-						log.d("notifyChange: notifyItemRangeChanged pos=$position,count=$count")
+						log.d("notifyChange: notifyItemRangeChanged offset=$position,count=$count")
 						notifyItemRangeChanged(position, count, payload)
 					}
 					

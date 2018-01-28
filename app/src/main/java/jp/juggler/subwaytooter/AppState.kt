@@ -391,16 +391,16 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 								
 								//									tts.setOnUtteranceProgressListener( new UtteranceProgressListener() {
 								//										@Override public void onStart( String utteranceId ){
-								//											log.d( "UtteranceProgressListener.onStart id=%s", utteranceId );
+								//											warning.d( "UtteranceProgressListener.onStart id=%s", utteranceId );
 								//										}
 								//
 								//										@Override public void onDone( String utteranceId ){
-								//											log.d( "UtteranceProgressListener.onDone id=%s", utteranceId );
+								//											warning.d( "UtteranceProgressListener.onDone id=%s", utteranceId );
 								//											handler.post( proc_flushSpeechQueue );
 								//										}
 								//
 								//										@Override public void onError( String utteranceId ){
-								//											log.d( "UtteranceProgressListener.onError id=%s", utteranceId );
+								//											warning.d( "UtteranceProgressListener.onError id=%s", utteranceId );
 								//											handler.post( proc_flushSpeechQueue );
 								//										}
 								//									} );

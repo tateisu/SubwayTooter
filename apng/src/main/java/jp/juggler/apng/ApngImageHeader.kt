@@ -2,10 +2,10 @@
 
 package jp.juggler.apng
 
-import jp.juggler.apng.util.ByteArrayTokenizer
+import jp.juggler.apng.util.ByteSequence
 
-
-class ApngImageHeader internal constructor(bat: ByteArrayTokenizer) {
+// information from IHDR chunk.
+class ApngImageHeader internal constructor(src: ByteSequence) {
     val width: Int
     val height: Int
     val bitDepth: Int
@@ -16,22 +16,24 @@ class ApngImageHeader internal constructor(bat: ByteArrayTokenizer) {
 
     init {
 
-        width = bat.readInt32()
-        height = bat.readInt32()
-        bitDepth = bat.readUInt8()
+        width = src.readInt32()
+        height = src.readInt32()
+        if(width <=0 || height <=0 ) throw ParseError("w=$width,h=$height is too small")
+
+        bitDepth = src.readUInt8()
 
         var num:Int
         //
-        num =bat.readUInt8()
+        num =src.readUInt8()
         colorType = ColorType.values().first { it.num==num }
         //
-        num =bat.readUInt8()
+        num =src.readUInt8()
         compressionMethod = CompressionMethod.values().first { it.num==num }
         //
-        num =bat.readUInt8()
+        num =src.readUInt8()
         filterMethod = FilterMethod.values().first { it.num==num }
         //
-        num =bat.readUInt8()
+        num =src.readUInt8()
         interlaceMethod = InterlaceMethod.values().first { it.num==num }
     }
 

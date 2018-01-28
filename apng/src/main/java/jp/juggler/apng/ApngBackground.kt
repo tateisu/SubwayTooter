@@ -2,9 +2,9 @@
 
 package jp.juggler.apng
 
-import jp.juggler.apng.util.ByteArrayTokenizer
+import jp.juggler.apng.util.ByteSequence
 
-class ApngBackground internal constructor(colorType: ColorType, bat: ByteArrayTokenizer) {
+class ApngBackground internal constructor(colorType: ColorType, src: ByteSequence) {
 
     val red: Int
     val green: Int
@@ -14,23 +14,23 @@ class ApngBackground internal constructor(colorType: ColorType, bat: ByteArrayTo
     init {
         when (colorType) {
             ColorType.GREY, ColorType.GREY_ALPHA -> {
-                val v = bat.readUInt16()
+                val v = src.readUInt16()
                 red = v
                 green = v
                 blue = v
                 index = -1
             }
             ColorType.RGB, ColorType.RGBA -> {
-                red = bat.readUInt16()
-                green = bat.readUInt16()
-                blue = bat.readUInt16()
+                red = src.readUInt16()
+                green = src.readUInt16()
+                blue = src.readUInt16()
                 index = -1
             }
             ColorType.INDEX -> {
                 red = -1
                 green = -1
                 blue = -1
-                index = bat.readUInt8()
+                index = src.readUInt8()
             }
         }
     }

@@ -58,7 +58,7 @@ class ApngFrames private constructor(
 					(size_max.toFloat() * wSrc.toFloat() / hSrc.toFloat() + 0.5f).toInt()
 				)
 			}
-			Log.v(TAG,"scaleBitmap: $wSrc,$hSrc => $wDst,$hDst")
+			//Log.v(TAG,"scaleBitmap: $wSrc,$hSrc => $wDst,$hDst")
 			
 			val b2 = createBlankBitmap(wDst, hDst)
 			val canvas = Canvas(b2)

@@ -13,7 +13,7 @@
         android:theme="@style/AppTheme"
         >
 
-        <activity android:name=".ActMain">
+        <activity android:name=".ActList">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 
@@ -21,7 +21,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ActApngView"/>
+        <activity android:name=".ActViewer"/>
 
     </application>
 

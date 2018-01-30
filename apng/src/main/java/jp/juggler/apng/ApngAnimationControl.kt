@@ -27,6 +27,6 @@ class ApngAnimationControl internal constructor(src: ByteSequence) {
 
     override fun toString() ="ApngAnimationControl(numFrames=$numFrames,numPlays=$numPlays)"
     
-    val isPlayIndefinitely :Boolean
-        get() = numPlays == PLAY_INDEFINITELY
+    val isFinite :Boolean
+        get() = numPlays > PLAY_INDEFINITELY
 }

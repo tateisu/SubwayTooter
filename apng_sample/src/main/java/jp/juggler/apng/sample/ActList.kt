@@ -2,6 +2,7 @@ package jp.juggler.apng.sample
 
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
+import android.os.SystemClock
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -17,16 +18,11 @@ class ActList : AppCompatActivity() {
 		const val TAG = "ActList"
 	}
 	
-	class WeakRef<T : Any>(t : T) : WeakReference<T>(t) {
-		operator fun invoke() : T? = get()
-	}
-	
-	fun <T : Any> ref(t : T) = WeakRef(t)
-	
 	class ListItem(val id : Int, val caption : String)
 	
 	private lateinit var listView : ListView
 	private lateinit var listAdapter : MyAdapter
+	private var timeAnimationStart : Long = 0L
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
@@ -35,8 +31,12 @@ class ActList : AppCompatActivity() {
 		listAdapter = MyAdapter()
 		listView.adapter = listAdapter
 		listView.onItemClickListener = listAdapter
+		timeAnimationStart = SystemClock.elapsedRealtime()
 		
 		launch(UI) {
+			
+			if(isDestroyed) return@launch
+			
 			val list = async(CommonPool) {
 				// RawリソースのIDと名前の一覧
 				R.raw::class.java.fields
@@ -91,7 +91,7 @@ class ActList : AppCompatActivity() {
 			val holder : MyViewHolder
 			if(viewArg == null) {
 				view = layoutInflater.inflate(R.layout.lv_item, parent, false)
-				holder = MyViewHolder(view, ref(this@ActList))
+				holder = MyViewHolder(view, this@ActList)
 				view.tag = holder
 			} else {
 				view = viewArg
@@ -115,11 +115,16 @@ class ActList : AppCompatActivity() {
 	
 	class MyViewHolder(
 		viewRoot : View,
-		private val activity : WeakRef<ActList>
+		_activity : ActList
 	) {
 		
+		private val activity = ref(_activity)
 		private val tvCaption : TextView = viewRoot.findViewById(R.id.tvCaption)
 		private val apngView : ApngView = viewRoot.findViewById(R.id.apngView)
+		
+		init {
+			apngView.timeAnimationStart = _activity.timeAnimationStart
+		}
 		
 		private var lastId : Int = 0
 		private var lastJob : Job? = null
@@ -132,7 +137,6 @@ class ActList : AppCompatActivity() {
 				lastId = resId
 				apngView.apngFrames?.dispose()
 				apngView.apngFrames = null
-				Log.d(TAG, "loading start: id=$resId")
 				launch(UI) {
 					try {
 						if(activity()?.isDestroyed != false) return@launch
@@ -146,12 +150,11 @@ class ActList : AppCompatActivity() {
 						}
 						lastJob = job
 						val apngFrames = job.await()
-
+						
 						if(activity()?.isDestroyed == false
 							&& lastId == resId
 							&& apngFrames != null
 						) {
-							Log.d(TAG, "loading complete: resId=$resId")
 							apngView.apngFrames = apngFrames
 						} else {
 							apngFrames?.dispose()
@@ -164,4 +167,12 @@ class ActList : AppCompatActivity() {
 			}
 		}
 	}
+	
+	
 }
+
+class WeakRef<T : Any>(t : T) : WeakReference<T>(t) {
+	operator fun invoke() : T? = get()
+}
+
+fun <T : Any> ref(t : T) = WeakRef(t)

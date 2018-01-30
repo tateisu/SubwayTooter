@@ -11,6 +11,24 @@ import jp.juggler.apng.ApngFrames
 
 class ApngView : View{
 	
+	var timeAnimationStart :Long =0L
+	
+	var apngFrames : ApngFrames? = null
+		set(value) {
+			field = value
+			initializeScale()
+		}
+	
+	constructor(context : Context) : super(context, null) {
+		init(context)
+	}
+	constructor(context : Context, attrs : AttributeSet?) : super(context, attrs, 0) {
+		init(context)
+	}
+	constructor(context : Context, attrs : AttributeSet?, defStyle : Int) : super(context, attrs, defStyle) {
+		init(context)
+	}
+	
 	private var wView : Float = 1f
 	
 	private var hView : Float = 1f
@@ -23,19 +41,13 @@ class ApngView : View{
 	
 	private var aspectImage : Float = 1f
 	
-	var apngFrames : ApngFrames? = null
-		set(value) {
-			timeShowStart = SystemClock.elapsedRealtime()
-			field = value
-			initializeScale()
-		}
+
 	
 	private var currentScale : Float = 1f
 	
 	private var currentTransX :Float = 0f
 	private var currentTransY :Float = 0f
 	
-	private var timeShowStart = SystemClock.elapsedRealtime()
 	
 	private val drawMatrix = Matrix()
 	
@@ -43,15 +55,7 @@ class ApngView : View{
 	
 	private val findFrameResult = ApngFrames.FindFrameResult()
 	
-	constructor(context : Context) : super(context, null) {
-		init(context)
-	}
-	constructor(context : Context, attrs : AttributeSet?) : super(context, attrs, 0) {
-		init(context)
-	}
-	constructor(context : Context, attrs : AttributeSet?, defStyle : Int) : super(context, attrs, defStyle) {
-		init(context)
-	}
+
 
 	private fun init(@Suppress("UNUSED_PARAMETER") context:Context){
 		//
@@ -101,7 +105,7 @@ class ApngView : View{
 		val apngFrames = this.apngFrames
 		if(apngFrames != null ){
 			
-			val t = SystemClock.elapsedRealtime() - timeShowStart
+			val t = SystemClock.elapsedRealtime() - timeAnimationStart
 
 			apngFrames.findFrame(findFrameResult,t)
 			val delay = findFrameResult.delay

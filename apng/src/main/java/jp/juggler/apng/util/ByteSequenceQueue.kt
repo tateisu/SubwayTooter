@@ -21,20 +21,22 @@ internal class ByteSequenceQueue(private val bufferRecycler :(ByteSequence)->Uni
     }
 
     fun readBytes(dst: ByteArray, offset: Int, length: Int): Int {
-        var nRead = 0
-        while (nRead < length && list.isNotEmpty()) {
+        var dstOffset = offset
+        var dstRemain = length
+        while (dstRemain > 0 && list.isNotEmpty()) {
             val item = list.first()
             if (item.length <= 0) {
                 bufferRecycler(item)
                 list.removeFirst()
-                continue
+            }else {
+                val delta = Math.min(item.length, dstRemain)
+                System.arraycopy(item.array, item.offset, dst, dstOffset, delta)
+                dstOffset += delta
+                dstRemain -= delta
+                item.offset += delta
+                item.length -= delta
             }
-            val delta = Math.min(item.length, length - nRead)
-            System.arraycopy(item.array, item.offset, dst, offset + nRead, delta)
-            item.offset += delta
-            item.length -= delta
-            nRead += delta
         }
-        return nRead
+        return length - dstRemain
     }
 }

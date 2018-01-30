@@ -599,26 +599,27 @@ internal class IdatDecoder(
 			// 読んだらCRC計算する
 			crc32.update(inBuffer, 0, nRead)
 			
+			// チャンク末尾に余計なデータがあった場合はinflateせずに終端まで読む
+			if(isCompleted) continue
+			
 			// zlibのdeflateをデコードする
 			inflater.setInput(inBuffer, 0, nRead)
 			while(! inflater.needsInput()) {
-				val inflateBuffer = inflateBufferPool.obtain()
-				val delta = inflater.inflate(inflateBuffer)
-				if(delta > 0) {
-					inflateBufferQueue.add(ByteSequence(inflateBuffer, 0, delta))
-				} else {
-					inflateBufferPool.recycle(inflateBuffer)
+				val buffer = inflateBufferPool.obtain()
+				val nInflated = inflater.inflate(buffer)
+				if( nInflated <= 0 ){
+					inflateBufferPool.recycle(buffer)
+				}else{
+					inflateBufferQueue.add(ByteSequence(buffer, 0, nInflated))
+					// キューに追加したデータをScanLine単位で消費する
+					while(! isCompleted && readScanLine()) {
+					}
+					if(isCompleted){
+						inflateBufferQueue.clear()
+						break
+					}
 				}
 			}
-			
-			// inflateBufferQueue からScanLine単位で読んでレンダリング
-			while(! isCompleted && readScanLine()) {
-			}
-			
-			// チャンクに余計なデータがあった場合でも終端まで読む
-			if(isCompleted) inflateBufferQueue.clear()
 		}
-		
-		if(isCompleted) inflateBufferQueue.clear()
 	}
 }

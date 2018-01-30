@@ -26,6 +26,6 @@ interface ApngDecoderCallback {
 	// called when APNG Frame Control is detected and its bitmap was rendered.
 	// its bitmap may same to default image for first frame.
 	// ( in this case, both of onDefaultImage and onAnimationFrame are called for same bitmap)
-	fun onAnimationFrame(apng : Apng, frameControl : ApngFrameControl, bitmap : ApngBitmap)
+	fun onAnimationFrame(apng : Apng, frameControl : ApngFrameControl, frameBitmap : ApngBitmap)
 	
 }

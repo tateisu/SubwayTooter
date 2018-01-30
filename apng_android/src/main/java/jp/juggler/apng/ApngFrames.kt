@@ -36,8 +36,7 @@ class ApngFrames private constructor(
 		}
 		
 		// WARNING: ownership of "src" will be moved or recycled.
-		private fun scaleBitmap(src : Bitmap?, size_max : Int) : Bitmap? {
-			if(src == null) return null
+		private fun scaleBitmap(src : Bitmap, size_max : Int) : Bitmap {
 			
 			val wSrc = src.width
 			val hSrc = src.height
@@ -71,7 +70,7 @@ class ApngFrames private constructor(
 			return b2
 		}
 		
-		private fun toBitmap(src : ApngBitmap) : Bitmap {
+		private fun toAndroidBitmap(src : ApngBitmap) : Bitmap {
 			return Bitmap.createBitmap(
 				src.colors, // int[] 配列
 				0, // offset
@@ -82,12 +81,8 @@ class ApngFrames private constructor(
 			)
 		}
 		
-		private fun toBitmap(src : ApngBitmap, size_max : Int) : Bitmap? {
-			return scaleBitmap(
-				toBitmap(
-					src
-				), size_max
-			)
+		private fun toAndroidBitmap(src : ApngBitmap, size_max : Int) : Bitmap {
+			return scaleBitmap( toAndroidBitmap( src ), size_max )
 		}
 		
 		@Suppress("unused")
@@ -112,11 +107,11 @@ class ApngFrames private constructor(
 	private var header : ApngImageHeader? = null
 	private var animationControl : ApngAnimationControl? = null
 	
-	val width : Int
-		get() = Math.min( pixelSizeMax, header?.width ?: 1)
+	var width : Int =1
+		private set
 	
-	val height : Int
-		get() = Math.min( pixelSizeMax, header?.height ?: 1)
+	var height : Int = 1
+		private set
 	
 	@Suppress("MemberVisibilityCanBePrivate")
 	val numFrames : Int
@@ -264,6 +259,9 @@ class ApngFrames private constructor(
 	
 	override fun onHeader(apng : Apng, header : ApngImageHeader) {
 		this.header = header
+		
+		
+		
 	}
 	
 	override fun onAnimationInfo(
@@ -281,23 +279,24 @@ class ApngFrames private constructor(
 	}
 	
 	override fun onDefaultImage(apng : Apng, bitmap : ApngBitmap) {
+		val androidBitmap = toAndroidBitmap(bitmap, pixelSizeMax)
+		this.width = androidBitmap.width
+		this.height = androidBitmap.height
+
 		defaultImage?.recycle()
-		defaultImage = toBitmap(bitmap, pixelSizeMax)
+		defaultImage = androidBitmap
 	}
 	
 	override fun onAnimationFrame(
 		apng : Apng,
 		frameControl : ApngFrameControl,
-		bitmap : ApngBitmap
+		frameBitmap : ApngBitmap
 	) {
 		val frames = this.frames ?: return
 		val canvasBitmap = this.canvasBitmap ?: return
 		
-		// APNGのフレーム画像をAndroidの形式に変換する。この段階ではリサイズしない
-		val bitmapNative = toBitmap(bitmap)
-		
 		val previous : Bitmap? = if(frameControl.disposeOp == DisposeOp.Previous) {
-			// Capture the current bitmap region IF it needs to be reverted after rendering
+			// Capture the current frameBitmap region IF it needs to be reverted after rendering
 			Bitmap.createBitmap(
 				canvasBitmap,
 				frameControl.xOffset,
@@ -315,30 +314,32 @@ class ApngFrames private constructor(
 			null // (for blend, leave paint null)
 		}
 		
+		
+		// APNGのフレーム画像をAndroidの形式に変換する。この段階ではリサイズしない
+		val frameBitmapAndroid = toAndroidBitmap(frameBitmap)
+		
 		// Draw the new frame into place
 		canvas.drawBitmap(
-			bitmapNative,
+			frameBitmapAndroid,
 			frameControl.xOffset.toFloat(),
 			frameControl.yOffset.toFloat(),
 			paint
 		)
 		
-		// Extract a drawable from the canvas. Have to copy the current bitmap.
+		frameBitmapAndroid.recycle()
+		
+		// Extract a drawable from the canvas. Have to copy the current frameBitmap.
 		// Store the drawable in the sequence of frames
 		val timeStart = timeTotal
 		val timeWidth = Math.max(1L, frameControl.delayMilliseconds)
 		timeTotal += timeWidth
 		
-		val scaledBitmap =
-			scaleBitmap(
-				canvasBitmap.copy(
-					Bitmap.Config.ARGB_8888,
-					false
-				), pixelSizeMax
-			)
-		if(scaledBitmap != null) {
-			frames.add(Frame(scaledBitmap, timeStart, timeWidth))
-		}
+		val scaledBitmap = scaleBitmap(
+			canvasBitmap.copy( Bitmap.Config.ARGB_8888, false ),
+			pixelSizeMax
+		)
+
+		frames.add(Frame(scaledBitmap, timeStart, timeWidth))
 		
 		// Now "dispose" of the frame in preparation for the next.
 		// https://wiki.mozilla.org/APNG_Specification#.60fcTL.60:_The_Frame_Control_Chunk

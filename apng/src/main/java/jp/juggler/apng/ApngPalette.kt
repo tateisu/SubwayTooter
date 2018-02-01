@@ -7,6 +7,7 @@ import jp.juggler.apng.util.getUInt8
 class ApngPalette(
 	src : ByteArray // repeat of R,G,B
 ) {
+	
 	companion object {
 		// full opaque black
 		const val OPAQUE = 255 shl 24
@@ -18,14 +19,14 @@ class ApngPalette(
 	
 	init {
 		val entryCount = src.size / 3
-		list = IntArray( entryCount)
+		list = IntArray(entryCount)
 		var pos = 0
 		for(i in 0 until entryCount) {
 			list[i] = OPAQUE or
 				(src.getUInt8(pos) shl 16) or
-				(src.getUInt8(pos+1) shl 8) or
-				src.getUInt8(pos+2)
-			pos+=3
+				(src.getUInt8(pos + 1) shl 8) or
+				src.getUInt8(pos + 2)
+			pos += 3
 		}
 	}
 	

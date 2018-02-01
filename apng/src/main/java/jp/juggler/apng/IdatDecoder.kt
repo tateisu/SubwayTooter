@@ -4,7 +4,6 @@ package jp.juggler.apng
 
 import jp.juggler.apng.util.*
 import java.io.InputStream
-import java.util.*
 import java.util.zip.CRC32
 import java.util.zip.Inflater
 
@@ -33,7 +32,6 @@ internal class IdatDecoder(
 		
 		private val dummyPaletteData = IntArray(0)
 		
-
 		private fun abs(v : Int) = if(v >= 0) v else - v
 		
 		// a = left, b = above, c = upper left
@@ -51,8 +49,9 @@ internal class IdatDecoder(
 		
 		private inline fun scanLine1(baLine : ByteArray, pass_w : Int, block : (v : Int) -> Unit) {
 			var pos = 1
-			var x = 0
-			while(pass_w - x >= 8) {
+			var remain = pass_w
+			while(remain >= 8) {
+				remain -= 8
 				val v = baLine[pos ++].toInt()
 				block((v shr 7) and 1)
 				block((v shr 6) and 1)
@@ -62,9 +61,7 @@ internal class IdatDecoder(
 				block((v shr 2) and 1)
 				block((v shr 1) and 1)
 				block(v and 1)
-				x += 8
 			}
-			val remain = pass_w - x
 			if(remain > 0) {
 				val v = baLine[pos].toInt()
 				block((v shr 7) and 1)
@@ -79,16 +76,15 @@ internal class IdatDecoder(
 		
 		private inline fun scanLine2(baLine : ByteArray, pass_w : Int, block : (v : Int) -> Unit) {
 			var pos = 1
-			var x = 0
-			while(pass_w - x >= 4) {
+			var remain = pass_w
+			while(remain >= 4) {
+				remain -= 4
 				val v = baLine[pos ++].toInt()
 				block((v shr 6) and 3)
 				block((v shr 4) and 3)
 				block((v shr 2) and 3)
 				block(v and 3)
-				x += 4
 			}
-			val remain = pass_w - x
 			if(remain > 0) {
 				val v = baLine[pos].toInt()
 				block((v shr 6) and 3)
@@ -99,14 +95,13 @@ internal class IdatDecoder(
 		
 		private inline fun scanLine4(baLine : ByteArray, pass_w : Int, block : (v : Int) -> Unit) {
 			var pos = 1
-			var x = 0
-			while(pass_w - x >= 2) {
+			var remain = pass_w
+			while(remain >= 2) {
+				remain -= 2
 				val v = baLine[pos ++].toInt()
 				block((v shr 4) and 15)
 				block(v and 15)
-				x += 2
 			}
-			val remain = pass_w - x
 			if(remain > 0) {
 				val v = baLine[pos].toInt()
 				block((v shr 4) and 15)
@@ -115,14 +110,16 @@ internal class IdatDecoder(
 		
 		private inline fun scanLine8(baLine : ByteArray, pass_w : Int, block : (v : Int) -> Unit) {
 			var pos = 1
-			for(x in 0 until pass_w) {
+			var remain = pass_w
+			while(remain -- > 0) {
 				block(baLine.getUInt8(pos ++))
 			}
 		}
 		
 		private inline fun scanLine16(baLine : ByteArray, pass_w : Int, block : (v : Int) -> Unit) {
 			var pos = 1
-			for(x in 0 until pass_w) {
+			var remain = pass_w
+			while(remain -- > 0) {
 				block(baLine.getUInt16(pos))
 				pos += 2
 			}
@@ -134,7 +131,8 @@ internal class IdatDecoder(
 			block : (r : Int, g : Int, b : Int) -> Unit
 		) {
 			var pos = 1
-			for(x in 0 until pass_w) {
+			var remain = pass_w
+			while(remain -- > 0) {
 				block(
 					baLine.getUInt8(pos),
 					baLine.getUInt8(pos + 1),
@@ -150,7 +148,8 @@ internal class IdatDecoder(
 			block : (r : Int, g : Int, b : Int) -> Unit
 		) {
 			var pos = 1
-			for(x in 0 until pass_w) {
+			var remain = pass_w
+			while(remain -- > 0) {
 				block(
 					baLine.getUInt16(pos),
 					baLine.getUInt16(pos + 2),
@@ -166,7 +165,8 @@ internal class IdatDecoder(
 			block : (r : Int, g : Int, b : Int, a : Int) -> Unit
 		) {
 			var pos = 1
-			for(x in 0 until pass_w) {
+			var remain = pass_w
+			while(remain -- > 0) {
 				block(
 					baLine.getUInt8(pos),
 					baLine.getUInt8(pos + 1),
@@ -183,7 +183,8 @@ internal class IdatDecoder(
 			block : (r : Int, g : Int, b : Int, a : Int) -> Unit
 		) {
 			var pos = 1
-			for(x in 0 until pass_w) {
+			var remain = pass_w
+			while(remain -- > 0) {
 				block(
 					baLine.getUInt16(pos),
 					baLine.getUInt16(pos + 2),
@@ -200,7 +201,8 @@ internal class IdatDecoder(
 			block : (g : Int, a : Int) -> Unit
 		) {
 			var pos = 1
-			for(x in 0 until pass_w) {
+			var remain = pass_w
+			while(remain -- > 0) {
 				block(
 					baLine.getUInt8(pos),
 					baLine.getUInt8(pos + 1)
@@ -215,7 +217,8 @@ internal class IdatDecoder(
 			block : (g : Int, a : Int) -> Unit
 		) {
 			var pos = 1
-			for(x in 0 until pass_w) {
+			var remain = pass_w
+			while(remain -- > 0) {
 				block(
 					baLine.getUInt16(pos),
 					baLine.getUInt16(pos + 2)
@@ -233,7 +236,7 @@ internal class IdatDecoder(
 	private val sampleBits : Int
 	private val sampleBytes : Int
 	private val scanLineBytesMax : Int
-	private val linePool = LinkedList<ByteArray>()
+	private val scanLinePool : BufferPool
 	private val transparentCheckerGrey : (v : Int) -> Int
 	private val transparentCheckerRGB : (r : Int, g : Int, b : Int) -> Int
 	private val renderScanLineFunc : (baLine : ByteArray) -> Unit
@@ -250,15 +253,8 @@ internal class IdatDecoder(
 	
 	init {
 		val header = requireNotNull(apng.header)
-		this.colorType = header.colorType
-		this.bitDepth = header.bitDepth
-		
-		this.paletteData = if(colorType == ColorType.INDEX) {
-			apng.palette?.list
-				?: throw ParseError("missing ApngPalette for index color")
-		} else {
-			dummyPaletteData
-		}
+		colorType = header.colorType
+		bitDepth = header.bitDepth
 		
 		sampleBits = when(colorType) {
 			ColorType.GREY, ColorType.INDEX -> bitDepth
@@ -269,9 +265,14 @@ internal class IdatDecoder(
 		
 		sampleBytes = (sampleBits + 7) / 8
 		scanLineBytesMax = 1 + (bitmap.width * sampleBits + 7) / 8
+		scanLinePool = BufferPool(scanLineBytesMax)
 		
-		linePool.add(ByteArray(scanLineBytesMax))
-		linePool.add(ByteArray(scanLineBytesMax))
+		paletteData = if(colorType == ColorType.INDEX) {
+			apng.palette?.list
+				?: throw ApngParseError("missing ApngPalette for index color")
+		} else {
+			dummyPaletteData
+		}
 		
 		val transparentColor = apng.transparentColor
 		
@@ -358,7 +359,7 @@ internal class IdatDecoder(
 	
 	private fun renderIndex2(baLine : ByteArray) {
 		scanLine2(baLine, passWidth) { v ->
-			bitmapPointer.setPixel( paletteData[v] ).next()
+			bitmapPointer.setPixel(paletteData[v]).next()
 		}
 	}
 	
@@ -400,7 +401,7 @@ internal class IdatDecoder(
 	}
 	
 	private fun colorBitsNotSupported() : Nothing {
-		throw ParseError("bitDepth $bitDepth is not supported for $colorType")
+		throw ApngParseError("bitDepth $bitDepth is not supported for $colorType")
 	}
 	
 	private fun selectRenderFunc() = when(colorType) {
@@ -443,11 +444,11 @@ internal class IdatDecoder(
 		passY = 0
 		scanLineBytes = 1 + (passWidth * sampleBits + 7) / 8
 		
-		baPreviousLine?.let { linePool.add(it) }
+		scanLinePool.recycle(baPreviousLine)
 		baPreviousLine = null
 		
 		if(passWidth <= 0 || passHeight <= 0) {
-			if( callback.canApngDebug() ) callback.onApngDebug("pass $pass is empty. size=${passWidth}x${passHeight} ")
+			if(callback.canApngDebug()) callback.onApngDebug("pass $pass is empty. size=${passWidth}x${passHeight} ")
 			incrementPassOrComplete()
 		}
 	}
@@ -464,20 +465,20 @@ internal class IdatDecoder(
 	
 	// スキャンラインを読む。行を処理したらtrueを返す
 	private fun readScanLine() : Boolean {
-
-		if(inflateBufferQueue.remain < scanLineBytes){
+		
+		if(inflateBufferQueue.remain < scanLineBytes) {
 			// not yet enough data to process scanline
 			return false
 		}
 		
-		val baLine = linePool.removeFirst()
+		val baLine = scanLinePool.obtain()
 		inflateBufferQueue.readBytes(baLine, 0, scanLineBytes)
 		
 		val filterNum = baLine.getUInt8(0)
 		val filterType = FilterType.values().first { it.num == filterNum }
 		
-//		if( callback.canApngDebug() ) callback.onApngDebug("y=$passY/${passHeight},filterType=$filterType")
-
+		// if( callback.canApngDebug() ) callback.onApngDebug("y=$passY/${passHeight},filterType=$filterType")
+		
 		when(filterType) {
 			FilterType.None -> {
 			}
@@ -485,23 +486,22 @@ internal class IdatDecoder(
 			FilterType.Sub -> {
 				for(pos in 1 until scanLineBytes) {
 					val vCur = baLine.getUInt8(pos)
-					val leftPos = pos -sampleBytes
-					val vLeft = if(leftPos <=0 ) 0 else baLine.getUInt8(leftPos)
-					
+					val leftPos = pos - sampleBytes
+					val vLeft = if(leftPos <= 0) 0 else baLine.getUInt8(leftPos)
 					
 					baLine[pos] = (vCur + vLeft).toByte()
 					
-//					if( callback.canApngDebug() ){
-//						val x = passInfo.xStart + passInfo.xStep * ((pos-1)/sampleBytes)
-//						val y = passInfo.yStart + passInfo.yStep * passY
-//						callback.onApngDebug("sub pos=$pos,x=$x,y=$y,left=$vLeft,cur=$vCur,after=${baLine[pos].toInt() and 255}")
-//					}
-
+					// if( callback.canApngDebug() ){
+					//  val x = passInfo.xStart + passInfo.xStep * ((pos-1)/sampleBytes)
+					//  val y = passInfo.yStart + passInfo.yStep * passY
+					//  callback.onApngDebug("sub pos=$pos,x=$x,y=$y,left=$vLeft,cur=$vCur,after=${baLine[pos].toInt() and 255}")
+					// }
+					
 				}
 			}
 			
 			FilterType.Up -> {
-				val baPreviousLine=this.baPreviousLine
+				val baPreviousLine = this.baPreviousLine
 				for(pos in 1 until scanLineBytes) {
 					val vCur = baLine.getUInt8(pos)
 					val vUp = baPreviousLine?.getUInt8(pos) ?: 0
@@ -510,47 +510,47 @@ internal class IdatDecoder(
 			}
 			
 			FilterType.Average -> {
-				val baPreviousLine=this.baPreviousLine
+				val baPreviousLine = this.baPreviousLine
 				for(pos in 1 until scanLineBytes) {
 					val vCur = baLine.getUInt8(pos)
-					val leftPos = pos -sampleBytes
-					val vLeft = if(leftPos <=0 ) 0 else baLine.getUInt8(leftPos)
+					val leftPos = pos - sampleBytes
+					val vLeft = if(leftPos <= 0) 0 else baLine.getUInt8(leftPos)
 					val vUp = baPreviousLine?.getUInt8(pos) ?: 0
 					baLine[pos] = (vCur + ((vLeft + vUp) shr 1)).toByte()
 				}
 			}
 			
 			FilterType.Paeth -> {
-				val baPreviousLine=this.baPreviousLine
+				val baPreviousLine = this.baPreviousLine
 				for(pos in 1 until scanLineBytes) {
 					val vCur = baLine.getUInt8(pos)
-					val leftPos = pos -sampleBytes
-					val vLeft = if(leftPos <=0 ) 0 else baLine.getUInt8(leftPos)
+					val leftPos = pos - sampleBytes
+					val vLeft = if(leftPos <= 0) 0 else baLine.getUInt8(leftPos)
 					val vUp = baPreviousLine?.getUInt8(pos) ?: 0
-					val vUpperLeft = if(leftPos <=0 ) 0  else baPreviousLine?.getUInt8(leftPos) ?: 0
+					val vUpperLeft = if(leftPos <= 0) 0 else baPreviousLine?.getUInt8(leftPos) ?: 0
 					
 					baLine[pos] = (vCur + paeth(vLeft, vUp, vUpperLeft)).toByte()
 					
-//					if( callback.canApngDebug() ){
-//						val x = passInfo.xStart + passInfo.xStep * ((pos-1)/sampleBytes)
-//						val y = passInfo.yStart + passInfo.yStep * passY
-//						callback.onApngDebug("paeth pos=$pos,x=$x,y=$y,left=$vLeft,up=$vUp,ul=$vUpperLeft,cur=$vCur,paeth=${paeth(vLeft, vUp, vUpperLeft)}")
-//					}
-
+					//					if( callback.canApngDebug() ){
+					//						val x = passInfo.xStart + passInfo.xStep * ((pos-1)/sampleBytes)
+					//						val y = passInfo.yStart + passInfo.yStep * passY
+					//						callback.onApngDebug("paeth pos=$pos,x=$x,y=$y,left=$vLeft,up=$vUp,ul=$vUpperLeft,cur=$vCur,paeth=${paeth(vLeft, vUp, vUpperLeft)}")
+					//					}
+					
 				}
 			}
 		}
 		
 		// render scanline
 		bitmapPointer.setXY(
-			x=passInfo.xStart,
-			y=passInfo.yStart + passInfo.yStep * passY,
-			step=passInfo.xStep
+			x = passInfo.xStart,
+			y = passInfo.yStart + passInfo.yStep * passY,
+			step = passInfo.xStep
 		)
 		renderScanLineFunc(baLine)
 		
 		// save previous line
-		baPreviousLine?.let { linePool.add(it) }
+		scanLinePool.recycle(baPreviousLine)
 		baPreviousLine = baLine
 		
 		if(++ passY >= passHeight) {
@@ -607,14 +607,14 @@ internal class IdatDecoder(
 			while(! inflater.needsInput()) {
 				val buffer = inflateBufferPool.obtain()
 				val nInflated = inflater.inflate(buffer)
-				if( nInflated <= 0 ){
+				if(nInflated <= 0) {
 					inflateBufferPool.recycle(buffer)
-				}else{
+				} else {
 					inflateBufferQueue.add(ByteSequence(buffer, 0, nInflated))
 					// キューに追加したデータをScanLine単位で消費する
 					while(! isCompleted && readScanLine()) {
 					}
-					if(isCompleted){
+					if(isCompleted) {
 						inflateBufferQueue.clear()
 						break
 					}

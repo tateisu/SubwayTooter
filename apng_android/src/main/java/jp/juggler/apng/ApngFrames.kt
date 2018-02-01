@@ -24,11 +24,9 @@ class ApngFrames private constructor(
 		private const val DELAY_AFTER_END = 3000L
 		
 		// アニメーションフレームの描画に使う
-		private val sPaintDontBlend : Paint by lazy {
-			val paint = Paint()
-			paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC)
-			paint.isFilterBitmap = true
-			paint
+		private val sPaintDontBlend = Paint().apply {
+			xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC)
+			isFilterBitmap = true
 		}
 		
 		private fun createBlankBitmap(w : Int, h : Int) =
@@ -45,7 +43,7 @@ class ApngFrames private constructor(
 			
 			val wSrc = src.width
 			val hSrc = src.height
-			if(size_max <= 0 || wSrc <= size_max && hSrc <= size_max) {
+			if(size_max <= 0 || (wSrc <= size_max && hSrc <= size_max)) {
 				return if(recycleSrc) {
 					src
 				} else {
@@ -75,8 +73,8 @@ class ApngFrames private constructor(
 			return b2
 		}
 		
-		private fun toAndroidBitmap(src : ApngBitmap) : Bitmap {
-			return Bitmap.createBitmap(
+		private fun toAndroidBitmap(src : ApngBitmap) =
+			Bitmap.createBitmap(
 				src.colors, // int[] 配列
 				0, // offset
 				src.width, //stride
@@ -84,7 +82,6 @@ class ApngFrames private constructor(
 				src.height, //height
 				Bitmap.Config.ARGB_8888
 			)
-		}
 		
 		private fun toAndroidBitmap(src : ApngBitmap, size_max : Int) =
 			scaleBitmap(size_max, toAndroidBitmap(src))
@@ -99,11 +96,8 @@ class ApngFrames private constructor(
 			try {
 				ApngDecoder.parseStream(inStream, result)
 				result.onParseComplete()
-				return if(result.defaultImage != null || result.frames?.isNotEmpty() == true) {
-					result
-				} else {
-					throw RuntimeException("APNG has no image")
-				}
+				return result.takeIf { result.defaultImage != null || result.frames?.isNotEmpty() == true }
+					?: throw RuntimeException("APNG has no image")
 			} catch(ex : Throwable) {
 				result.dispose()
 				throw ex

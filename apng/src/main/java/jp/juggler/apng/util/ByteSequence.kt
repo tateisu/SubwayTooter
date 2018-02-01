@@ -1,6 +1,6 @@
 package jp.juggler.apng.util
 
-import jp.juggler.apng.ParseError
+import jp.juggler.apng.ApngParseError
 
 internal fun ByteArray.getUInt8(pos : Int) = get(pos).toInt() and 255
 
@@ -16,10 +16,11 @@ internal class ByteSequence(
 	var offset : Int,
 	var length : Int
 ) {
+	
 	constructor(ba : ByteArray) : this(ba, 0, ba.size)
 	
 	private inline fun <T> readX(dataSize : Int, block : () -> T) : T {
-		if(length < dataSize) throw ParseError("readX: unexpected end")
+		if(length < dataSize) throw ApngParseError("readX: unexpected end")
 		val v = block()
 		offset += dataSize
 		length -= dataSize

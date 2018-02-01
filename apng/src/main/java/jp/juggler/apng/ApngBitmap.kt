@@ -11,7 +11,7 @@ class ApngBitmap(var width : Int, var height : Int) {
 	fun reset(width : Int, height : Int) {
 		val newSize = width * height
 		if(newSize > colors.size)
-			throw ParseError("can't resize to $width x $height , it's greater than initial size")
+			throw ApngParseError("can't resize to $width x $height , it's greater than initial size")
 		this.width = width
 		this.height = height
 		// 透明な黒で初期化する
@@ -24,11 +24,7 @@ class ApngBitmap(var width : Int, var height : Int) {
 		private var pos : Int = 0
 		var step : Int = 1
 		
-		fun setPixel(argb : Int) : Pointer {
-			//	if( pos == width) println("setPixel 0x%x".format(argb))
-			colors[pos] = argb
-			return this
-		}
+		fun setPixel(argb : Int) = apply { colors[pos] = argb }
 		
 		fun setPixel(a : Int, r : Int, g : Int, b : Int) = setPixel(
 			((a and 255) shl 24) or
@@ -37,18 +33,14 @@ class ApngBitmap(var width : Int, var height : Int) {
 				(b and 255)
 		)
 		
-		fun setOffset(pos : Int = 0, step : Int = 1) : Pointer {
+		fun setOffset(pos : Int = 0, step : Int = 1) = apply {
 			this.pos = pos
 			this.step = step
-			return this
 		}
 		
 		fun setXY(x : Int, y : Int, step : Int = 1) = setOffset(x + y * width, step)
 		
-		fun plus(x : Int) : Pointer {
-			pos += x
-			return this
-		}
+		fun plus(x : Int) = apply { pos += x }
 		
 		fun next() = plus(step)
 		

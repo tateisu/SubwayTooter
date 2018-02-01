@@ -8,7 +8,7 @@ interface ApngDecoderCallback {
 	// called for debug message
 	fun onApngDebug(message : String) {}
 	
-	fun canApngDebug():Boolean = false
+	fun canApngDebug() : Boolean = false
 	
 	// called when PNG image header is detected.
 	fun onHeader(apng : Apng, header : ApngImageHeader)

@@ -11,22 +11,22 @@ object ApngDecoder {
 	private val PNG_SIGNATURE = byteArrayOf(0x89.toByte(), 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0a)
 	
 	fun parseStream(
-		_inStream : InputStream,
+		inStream : InputStream,
 		callback : ApngDecoderCallback
 	) {
 		val apng = Apng()
-		val tokenizer = StreamTokenizer(_inStream)
+		val tokenizer = StreamTokenizer(inStream)
 		
 		val pngHeader = tokenizer.readBytes(8)
 		if(! pngHeader.contentEquals(PNG_SIGNATURE)) {
-			throw ParseError("header not match")
+			throw ApngParseError("header not match")
 		}
 		
 		var lastSequenceNumber : Int? = null
 		fun checkSequenceNumber(n : Int) {
 			val last = lastSequenceNumber
 			if(last != null && n <= last) {
-				throw ParseError("incorrect sequenceNumber. last=$lastSequenceNumber,current=$n")
+				throw ApngParseError("incorrect sequenceNumber. last=$lastSequenceNumber,current=$n")
 			}
 			lastSequenceNumber = n
 		}
@@ -56,7 +56,7 @@ object ApngDecoder {
 				"PLTE" -> apng.palette = ApngPalette(chunk.readBody(crc32, tokenizer))
 				
 				"bKGD" -> {
-					val header = apng.header ?: throw ParseError("missing IHDR")
+					val header = apng.header ?: throw ApngParseError("missing IHDR")
 					apng.background = ApngBackground(
 						header.colorType,
 						ByteSequence(chunk.readBody(crc32, tokenizer))
@@ -64,7 +64,7 @@ object ApngDecoder {
 				}
 				
 				"tRNS" -> {
-					val header = apng.header ?: throw ParseError("missing IHDR")
+					val header = apng.header ?: throw ApngParseError("missing IHDR")
 					val body = chunk.readBody(crc32, tokenizer)
 					when(header.colorType) {
 						ColorType.GREY -> apng.transparentColor =
@@ -72,15 +72,15 @@ object ApngDecoder {
 						ColorType.RGB -> apng.transparentColor =
 							ApngTransparentColor(false, ByteSequence(body))
 						ColorType.INDEX -> apng.palette?.parseTRNS(body)
-							?: throw ParseError("missing palette")
+							?: throw ApngParseError("missing palette")
 						else -> callback.onApngWarning("tRNS ignored. colorType =${header.colorType}")
 					}
 				}
 				
 				"IDAT" -> {
-					val header = apng.header ?: throw ParseError("missing IHDR")
+					val header = apng.header ?: throw ApngParseError("missing IHDR")
 					if(idatDecoder == null) {
-						bitmap ?: throw ParseError("missing bitmap")
+						bitmap ?: throw ApngParseError("missing bitmap")
 						bitmap.reset(header.width, header.height)
 						idatDecoder = IdatDecoder(
 							apng,
@@ -106,11 +106,11 @@ object ApngDecoder {
 				}
 				
 				"acTL" -> {
-					val header = apng.header ?: throw ParseError("missing IHDR")
+					val header = apng.header ?: throw ApngParseError("missing IHDR")
 					val animationControl =
 						ApngAnimationControl(ByteSequence(chunk.readBody(crc32, tokenizer)))
 					apng.animationControl = animationControl
-					callback.onAnimationInfo(apng, header,animationControl)
+					callback.onAnimationInfo(apng, header, animationControl)
 				}
 				
 				"fcTL" -> {
@@ -121,9 +121,9 @@ object ApngDecoder {
 				}
 				
 				"fdAT" -> {
-					val fctl = lastFctl ?: throw ParseError("missing fCTL before fdAT")
+					val fctl = lastFctl ?: throw ApngParseError("missing fCTL before fdAT")
 					if(fdatDecoder == null) {
-						bitmap ?: throw ParseError("missing bitmap")
+						bitmap ?: throw ApngParseError("missing bitmap")
 						bitmap.reset(fctl.width, fctl.height)
 						fdatDecoder = IdatDecoder(
 							apng,

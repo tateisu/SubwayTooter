@@ -892,6 +892,9 @@ internal class ItemViewHolder(
 					.addAction(activity.getString(R.string.list_member)) {
 						activity.addColumn(pos, access_info, Column.TYPE_LIST_MEMBER, item.id)
 					}
+					.addAction(activity.getString(R.string.rename)){
+						Action_List.rename(activity, access_info, item)
+					}
 					.addAction(activity.getString(R.string.delete)) {
 						DlgConfirm.openSimple(
 							activity

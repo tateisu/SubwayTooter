@@ -91,17 +91,14 @@ class TootList(
 			val oa = if(i >= sa) null else la[i]
 			val ob = if(i >= sb) null else lb[i]
 			
-			val delta = if(oa == null) {
-				if(ob == null) 0 else - 1
-			} else if(ob == null) {
-				1
-			} else {
-				
-				when {
-					oa is Long && ob is Long -> compareLong(oa, ob)
-					oa is String && ob is String -> compareString(oa, ob)
-					else -> (ob is Long).b2i() - (oa is Long).b2i()
-				}
+			if(oa == null && ob == null) return 0
+			
+			val delta = when {
+				oa == null -> - 1
+				ob == null -> 1
+				oa is Long && ob is Long -> compareLong(oa, ob)
+				oa is String && ob is String -> compareString(oa, ob)
+				else -> (ob is Long).b2i() - (oa is Long).b2i()
 			}
 			log.d(
 				"%s %s %s"

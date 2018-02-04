@@ -21,7 +21,10 @@ object DlgTextInput {
 	
 	@SuppressLint("InflateParams")
 	fun show(
-		activity : Activity, caption : CharSequence, initial_text : CharSequence?, callback : Callback
+		activity : Activity,
+		caption : CharSequence,
+		initial_text : CharSequence?,
+		callback : Callback
 	) {
 		val view = activity.layoutInflater.inflate(R.layout.dlg_text_input, null, false)
 		val etInput = view.findViewById<EditText>(R.id.etInput)

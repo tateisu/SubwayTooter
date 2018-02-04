@@ -595,4 +595,5 @@
     <string name="avatar_icon_round_ratio">Avatar icon round ratio (unit:%. default:33. app restart required)</string>
     <string name="avatar_icon_dont_round">Don\'t round corner of avatar icon (app restart required)</string>
     <string name="share_view_pool">Share view pool between columns</string>
+    <string name="rename">Rename…</string>
 </resources>

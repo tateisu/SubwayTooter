@@ -2036,7 +2036,7 @@ class ActMain : AppCompatActivity()
 	private fun closeColumnSetting() : Boolean {
 		phoneTab({ env ->
 			val vh = env.pager_adapter.getColumnViewHolder(env.pager.currentItem)
-			if(vh.isColumnSettingShown) {
+			if(vh?.isColumnSettingShown == true ) {
 				vh.closeColumnSetting()
 				return@closeColumnSetting true
 			}

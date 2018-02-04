@@ -879,6 +879,20 @@ class Column(
 		}
 	}
 	
+	fun onListNameUpdated(account : SavedAccount, item : TootList) {
+		if(access_info.acct != account.acct) return
+		when(column_type) {
+			TYPE_LIST_LIST -> {
+				startLoading()
+			}
+			
+			TYPE_LIST_TL, TYPE_LIST_MEMBER -> {
+				this.list_info = item
+				fireShowColumnHeader()
+			}
+		}
+	}
+	
 	fun onListMemberUpdated(
 		account : SavedAccount,
 		list_id : Long,
@@ -1110,7 +1124,7 @@ class Column(
 	internal fun loadProfileAccount(client : TootApiClient, bForceReload : Boolean) {
 		if(bForceReload || this.who_account == null) {
 			val result = client.request(String.format(Locale.JAPAN, PATH_ACCOUNT, profile_id))
-			val a = TootParser(context,access_info).account(result?.jsonObject)
+			val a = TootParser(context, access_info).account(result?.jsonObject)
 			if(a != null) {
 				this.who_account = a
 				client.publishApiProgress("") // カラムヘッダの再表示
@@ -1714,7 +1728,8 @@ class Column(
 									max_id = TootApiClient.getMspMaxId(jsonArray, max_id)
 									// リストデータの用意
 									parser.serviceType = ServiceType.MSP
-									list_tmp = addWithFilterStatus(null, parser.statusList(jsonArray))
+									list_tmp =
+										addWithFilterStatus(null, parser.statusList(jsonArray))
 								}
 							}
 							return result
@@ -1925,7 +1940,7 @@ class Column(
 				var jsonArray = result?.jsonArray
 				if(jsonArray != null) {
 					saveRange(result, bBottom, ! bBottom)
-					var src = parser.accountList( jsonArray)
+					var src = parser.accountList(jsonArray)
 					list_tmp = addAll(null, src)
 					if(! bBottom) {
 						var bGapAdded = false
@@ -1967,7 +1982,7 @@ class Column(
 								break
 							}
 							
-							src = parser.accountList( jsonArray)
+							src = parser.accountList(jsonArray)
 							addAll(list_tmp, src)
 						}
 						if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
@@ -2527,7 +2542,10 @@ class Column(
 										max_id = TootApiClient.getMspMaxId(jsonArray, max_id)
 										// リストデータの用意
 										parser.serviceType = ServiceType.MSP
-										list_tmp = addWithFilterStatus(list_tmp, parser.statusList(jsonArray))
+										list_tmp = addWithFilterStatus(
+											list_tmp,
+											parser.statusList(jsonArray)
+										)
 									}
 								}
 								result
@@ -2748,7 +2766,7 @@ class Column(
 						break
 					}
 					result = r2
-					val src = parser.accountList( jsonArray)
+					val src = parser.accountList(jsonArray)
 					
 					if(src.isEmpty()) {
 						log.d("gap-account: empty.")

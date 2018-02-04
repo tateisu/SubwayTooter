@@ -26,7 +26,7 @@ internal class ColumnPagerAdapter(private val activity : ActMain) : PagerAdapter
 		return if(idx >= 0 && idx < column_list.size) column_list[idx] else null
 	}
 	
-	fun getColumnViewHolder(idx : Int) : ColumnViewHolder {
+	fun getColumnViewHolder(idx : Int) : ColumnViewHolder? {
 		return holder_list.get(idx)
 	}
 	

@@ -889,5 +889,6 @@
     <string name="avatar_icon_round_ratio">ユーザ画像の角丸率(単位:%。デフォルト:33。アプリ再起動が必要)</string>
     <string name="avatar_icon_dont_round">ユーザ画像を角丸にしない(アプリ再起動が必要)</string>
     <string name="share_view_pool">カラム間でViewPoolを共有する</string>
+    <string name="rename">名前の変更…</string>
 
 </resources>

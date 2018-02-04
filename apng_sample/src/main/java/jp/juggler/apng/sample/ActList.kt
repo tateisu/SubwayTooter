@@ -40,22 +40,16 @@ class ActList : AppCompatActivity() {
 			val list = async(CommonPool) {
 				// RawリソースのIDと名前の一覧
 				R.raw::class.java.fields
-					.mapNotNull {
-						val id = it.get(null) as? Int
-						if(id == null) {
-							null
-						} else {
-							ListItem(
-								id,
-								resources.getResourceName(id).replaceFirst(""".+/""".toRegex(), "")
-							)
-						}
+					.mapNotNull { it.get(null) as? Int }
+					.map { id ->
+						ListItem(
+							id,
+							resources.getResourceName(id)
+								.replaceFirst(""".+/""".toRegex(), "")
+						)
 					}
 					.toMutableList()
-					.let { list ->
-						list.sortBy { item -> item.caption }
-						list
-					}
+					.apply { sortBy { it.caption } }
 				
 			}.await()
 			
@@ -167,7 +161,6 @@ class ActList : AppCompatActivity() {
 			}
 		}
 	}
-	
 	
 }
 

@@ -32,14 +32,12 @@ internal class IdatDecoder(
 		
 		private val dummyPaletteData = IntArray(0)
 		
-		private fun abs(v : Int) = if(v >= 0) v else - v
-		
 		// a = left, b = above, c = upper left
 		private fun paeth(a : Int, b : Int, c : Int) : Int {
 			val p = a + b - c
-			val pa = abs(p - a)
-			val pb = abs(p - b)
-			val pc = abs(p - c)
+			val pa = Math.abs(p - a)
+			val pb = Math.abs(p - b)
+			val pc = Math.abs(p - c)
 			return when {
 				(pa <= pb && pa <= pc) -> a
 				(pb <= pc) -> b
@@ -116,116 +114,6 @@ internal class IdatDecoder(
 			}
 		}
 		
-		private inline fun scanLine16(baLine : ByteArray, pass_w : Int, block : (v : Int) -> Unit) {
-			var pos = 1
-			var remain = pass_w
-			while(remain -- > 0) {
-				block(baLine.getUInt16(pos))
-				pos += 2
-			}
-		}
-		
-		private inline fun scanLineRGB8(
-			baLine : ByteArray,
-			pass_w : Int,
-			block : (r : Int, g : Int, b : Int) -> Unit
-		) {
-			var pos = 1
-			var remain = pass_w
-			while(remain -- > 0) {
-				block(
-					baLine.getUInt8(pos),
-					baLine.getUInt8(pos + 1),
-					baLine.getUInt8(pos + 2)
-				)
-				pos += 3
-			}
-		}
-		
-		private inline fun scanLineRGB16(
-			baLine : ByteArray,
-			pass_w : Int,
-			block : (r : Int, g : Int, b : Int) -> Unit
-		) {
-			var pos = 1
-			var remain = pass_w
-			while(remain -- > 0) {
-				block(
-					baLine.getUInt16(pos),
-					baLine.getUInt16(pos + 2),
-					baLine.getUInt16(pos + 4)
-				)
-				pos += 6
-			}
-		}
-		
-		private inline fun scanLineRGBA8(
-			baLine : ByteArray,
-			pass_w : Int,
-			block : (r : Int, g : Int, b : Int, a : Int) -> Unit
-		) {
-			var pos = 1
-			var remain = pass_w
-			while(remain -- > 0) {
-				block(
-					baLine.getUInt8(pos),
-					baLine.getUInt8(pos + 1),
-					baLine.getUInt8(pos + 2),
-					baLine.getUInt8(pos + 3)
-				)
-				pos += 4
-			}
-		}
-		
-		private inline fun scanLineRGBA16(
-			baLine : ByteArray,
-			pass_w : Int,
-			block : (r : Int, g : Int, b : Int, a : Int) -> Unit
-		) {
-			var pos = 1
-			var remain = pass_w
-			while(remain -- > 0) {
-				block(
-					baLine.getUInt16(pos),
-					baLine.getUInt16(pos + 2),
-					baLine.getUInt16(pos + 4),
-					baLine.getUInt16(pos + 6)
-				)
-				pos += 8
-			}
-		}
-		
-		private inline fun scanLineGA8(
-			baLine : ByteArray,
-			pass_w : Int,
-			block : (g : Int, a : Int) -> Unit
-		) {
-			var pos = 1
-			var remain = pass_w
-			while(remain -- > 0) {
-				block(
-					baLine.getUInt8(pos),
-					baLine.getUInt8(pos + 1)
-				)
-				pos += 2
-			}
-		}
-		
-		private inline fun scanLineGA16(
-			baLine : ByteArray,
-			pass_w : Int,
-			block : (g : Int, a : Int) -> Unit
-		) {
-			var pos = 1
-			var remain = pass_w
-			while(remain -- > 0) {
-				block(
-					baLine.getUInt16(pos),
-					baLine.getUInt16(pos + 2)
-				)
-				pos += 4
-			}
-		}
 	}
 	
 	private val inflater = Inflater()
@@ -298,6 +186,30 @@ internal class IdatDecoder(
 		initializePass()
 	}
 	
+	private fun renderIndex1(baLine : ByteArray) {
+		scanLine1(baLine, passWidth) { v ->
+			bitmapPointer.setPixel(paletteData[v]).next()
+		}
+	}
+	
+	private fun renderIndex2(baLine : ByteArray) {
+		scanLine2(baLine, passWidth) { v ->
+			bitmapPointer.setPixel(paletteData[v]).next()
+		}
+	}
+	
+	private fun renderIndex4(baLine : ByteArray) {
+		scanLine4(baLine, passWidth) { v ->
+			bitmapPointer.setPixel(paletteData[v]).next()
+		}
+	}
+	
+	private fun renderIndex8(baLine : ByteArray) {
+		scanLine8(baLine, passWidth) { v ->
+			bitmapPointer.setPixel(paletteData[v]).next()
+		}
+	}
+	
 	private fun renderGrey1(baLine : ByteArray) {
 		scanLine1(baLine, passWidth) { v ->
 			val g8 = if(v == 0) 0 else 255
@@ -330,72 +242,87 @@ internal class IdatDecoder(
 	}
 	
 	private fun renderGrey16(baLine : ByteArray) {
-		scanLine16(baLine, passWidth) { v ->
+		var pos = 1
+		var remain = passWidth
+		while(remain -- > 0) {
+			val v = baLine.getUInt16(pos)
+			pos += 2
 			val g8 = v shr 8
 			val a8 = transparentCheckerGrey(v)
 			bitmapPointer.setPixel(a8, g8, g8, g8).next()
 		}
 	}
 	
+	private fun renderGA8(baLine : ByteArray) {
+		var pos = 1
+		var remain = passWidth
+		while(remain -- > 0) {
+			val g = baLine.getUInt8(pos)
+			val a = baLine.getUInt8(pos + 1)
+			pos += 2
+			bitmapPointer.setPixel(a, g, g, g).next()
+		}
+	}
+	
+	private fun renderGA16(baLine : ByteArray) {
+		var pos = 1
+		var remain = passWidth
+		while(remain -- > 0) {
+			val g8 = baLine.getUInt16(pos) shr 8
+			val a8 = baLine.getUInt16(pos + 2) shr 8
+			pos += 4
+			bitmapPointer.setPixel(a8, g8, g8, g8).next()
+		}
+	}
+	
 	private fun renderRGB8(baLine : ByteArray) {
-		scanLineRGB8(baLine, passWidth) { r, g, b ->
+		var pos = 1
+		var remain = passWidth
+		while(remain -- > 0) {
+			val r = baLine.getUInt8(pos)
+			val g = baLine.getUInt8(pos + 1)
+			val b = baLine.getUInt8(pos + 2)
+			pos += 3
 			val a8 = transparentCheckerRGB(r, g, b)
 			bitmapPointer.setPixel(a8, r, g, b).next()
 		}
 	}
 	
 	private fun renderRGB16(baLine : ByteArray) {
-		scanLineRGB16(baLine, passWidth) { r, g, b ->
+		var pos = 1
+		var remain = passWidth
+		while(remain -- > 0) {
+			val r = baLine.getUInt16(pos)
+			val g = baLine.getUInt16(pos + 2)
+			val b = baLine.getUInt16(pos + 4)
+			pos += 6
 			val a8 = transparentCheckerRGB(r, g, b)
 			bitmapPointer.setPixel(a8, r shr 8, g shr 8, b shr 8).next()
 		}
 	}
 	
-	private fun renderIndex1(baLine : ByteArray) {
-		scanLine1(baLine, passWidth) { v ->
-			bitmapPointer.setPixel(paletteData[v]).next()
-		}
-	}
-	
-	private fun renderIndex2(baLine : ByteArray) {
-		scanLine2(baLine, passWidth) { v ->
-			bitmapPointer.setPixel(paletteData[v]).next()
-		}
-	}
-	
-	private fun renderIndex4(baLine : ByteArray) {
-		scanLine4(baLine, passWidth) { v ->
-			bitmapPointer.setPixel(paletteData[v]).next()
-		}
-	}
-	
-	private fun renderIndex8(baLine : ByteArray) {
-		scanLine8(baLine, passWidth) { v ->
-			bitmapPointer.setPixel(paletteData[v]).next()
-		}
-	}
-	
-	private fun renderGA8(baLine : ByteArray) {
-		scanLineGA8(baLine, passWidth) { g, a ->
-			bitmapPointer.setPixel(a, g, g, g).next()
-		}
-	}
-	
-	private fun renderGA16(baLine : ByteArray) {
-		scanLineGA16(baLine, passWidth) { g, a ->
-			val g8 = g shr 8
-			bitmapPointer.setPixel(a shr 8, g8, g8, g8).next()
-		}
-	}
-	
 	private fun renderRGBA8(baLine : ByteArray) {
-		scanLineRGBA8(baLine, passWidth) { r, g, b, a ->
+		var pos = 1
+		var remain = passWidth
+		while(remain -- > 0) {
+			val r = baLine.getUInt8(pos)
+			val g = baLine.getUInt8(pos + 1)
+			val b = baLine.getUInt8(pos + 2)
+			val a = baLine.getUInt8(pos + 3)
+			pos += 4
 			bitmapPointer.setPixel(a, r, g, b).next()
 		}
 	}
 	
 	private fun renderRGBA16(baLine : ByteArray) {
-		scanLineRGBA16(baLine, passWidth) { r, g, b, a ->
+		var pos = 1
+		var remain = passWidth
+		while(remain -- > 0) {
+			val r = baLine.getUInt16(pos)
+			val g = baLine.getUInt16(pos + 2)
+			val b = baLine.getUInt16(pos + 4)
+			val a = baLine.getUInt16(pos + 6)
+			pos += 8
 			bitmapPointer.setPixel(a shr 8, r shr 8, g shr 8, b shr 8).next()
 		}
 	}
@@ -448,7 +375,7 @@ internal class IdatDecoder(
 		baPreviousLine = null
 		
 		if(passWidth <= 0 || passHeight <= 0) {
-			if(callback.canApngDebug()) callback.onApngDebug("pass $pass is empty. size=${passWidth}x${passHeight} ")
+			if(callback.canApngDebug()) callback.onApngDebug("pass $pass is empty. size=${passWidth}x$passHeight ")
 			incrementPassOrComplete()
 		}
 	}

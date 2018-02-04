@@ -11,7 +11,7 @@ internal class ByteSequenceQueue(private val bufferRecycler : (ByteSequence) -> 
 	
 	fun add(range : ByteSequence) =list.add(range)
 	
-	fun clear() = list.also{ it.forEach(bufferRecycler) }.clear()
+	fun clear() = list.onEach(bufferRecycler).clear()
 	
 	fun readBytes(dst : ByteArray, offset : Int, length : Int) : Int {
 		var dstOffset = offset

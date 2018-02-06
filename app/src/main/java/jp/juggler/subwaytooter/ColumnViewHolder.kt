@@ -103,6 +103,7 @@ class ColumnViewHolder(
 	private val cbDontStreaming : CheckBox
 	private val cbDontAutoRefresh : CheckBox
 	private val cbHideMediaDefault : CheckBox
+	private val cbSystemNotificationNotRelated : CheckBox
 	private val cbEnableSpeech : CheckBox
 	private val llRegexFilter : View
 	private val btnDeleteNotification : Button
@@ -232,6 +233,7 @@ class ColumnViewHolder(
 		cbDontStreaming = viewRoot.findViewById(R.id.cbDontStreaming)
 		cbDontAutoRefresh = viewRoot.findViewById(R.id.cbDontAutoRefresh)
 		cbHideMediaDefault = viewRoot.findViewById(R.id.cbHideMediaDefault)
+		cbSystemNotificationNotRelated = viewRoot.findViewById(R.id.cbSystemNotificationNotRelated)
 		cbEnableSpeech = viewRoot.findViewById(R.id.cbEnableSpeech)
 		etRegexFilter = viewRoot.findViewById(R.id.etRegexFilter)
 		llRegexFilter = viewRoot.findViewById(R.id.llRegexFilter)
@@ -261,6 +263,7 @@ class ColumnViewHolder(
 		cbDontStreaming.setOnCheckedChangeListener(this)
 		cbDontAutoRefresh.setOnCheckedChangeListener(this)
 		cbHideMediaDefault.setOnCheckedChangeListener(this)
+		cbSystemNotificationNotRelated.setOnCheckedChangeListener(this)
 		cbEnableSpeech.setOnCheckedChangeListener(this)
 		
 		// 入力の追跡
@@ -428,6 +431,7 @@ class ColumnViewHolder(
 			cbDontStreaming.isChecked = column.dont_streaming
 			cbDontAutoRefresh.isChecked = column.dont_auto_refresh
 			cbHideMediaDefault.isChecked = column.hide_media_default
+			cbSystemNotificationNotRelated.isChecked = column.system_notification_not_related
 			cbEnableSpeech.isChecked = column.enable_speech
 			
 			etRegexFilter.setText(column.regex_text)
@@ -447,6 +451,7 @@ class ColumnViewHolder(
 			vg(cbDontStreaming, column.canStreaming())
 			vg(cbDontAutoRefresh, column.canAutoRefresh())
 			vg(cbHideMediaDefault, column.canNSFWDefault())
+			vg(cbSystemNotificationNotRelated,column.column_type == Column.TYPE_NOTIFICATIONS)
 			vg(cbEnableSpeech, column.canSpeech())
 			
 			vg(btnDeleteNotification, column.column_type == Column.TYPE_NOTIFICATIONS)
@@ -744,7 +749,11 @@ class ColumnViewHolder(
 				activity.app_state.saveColumnList()
 				column.fireShowContent(reason = "HideMediaDefault in ColumnSetting", reset = true)
 			}
-			
+			R.id.cbSystemNotificationNotRelated -> {
+				column.system_notification_not_related = isChecked
+				activity.app_state.saveColumnList()
+			}
+
 			R.id.cbEnableSpeech -> {
 				column.enable_speech = isChecked
 				activity.app_state.saveColumnList()

@@ -596,4 +596,10 @@
     <string name="avatar_icon_dont_round">Don\'t round corner of avatar icon (app restart required)</string>
     <string name="share_view_pool">Share view pool between columns</string>
     <string name="rename">Rename…</string>
+    <string name="allow_column_duplication">Allow column duplication</string>
+    <string name="system_notification_not_related">Not chosen when tapping system notification</string>
+    <string name="notification_type_mention">mention</string>
+    <string name="notification_type_follow">follow</string>
+    <string name="notification_type_boost">boost</string>
+    <string name="notification_type_favourite">fav.</string>
 </resources>

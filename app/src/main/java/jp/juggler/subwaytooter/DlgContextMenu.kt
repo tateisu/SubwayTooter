@@ -369,11 +369,11 @@ internal class DlgContextMenu(
 			}
 			
 			R.id.btnBoostedBy -> status?.let {
-				activity.addColumn(pos, access_info, Column.TYPE_BOOSTED_BY, it.id)
+				activity.addColumn(false,pos, access_info, Column.TYPE_BOOSTED_BY, it.id)
 			}
 			
 			R.id.btnFavouritedBy -> status?.let {
-				activity.addColumn(pos, access_info, Column.TYPE_FAVOURITED_BY, it.id)
+				activity.addColumn(false,pos, access_info, Column.TYPE_FAVOURITED_BY, it.id)
 			}
 			
 			R.id.btnFollow -> who?.let { who ->

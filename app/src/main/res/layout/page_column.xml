@@ -205,7 +205,12 @@
                     android:layout_height="wrap_content"
                     android:text="@string/hide_media_default"
                     />
-
+                <CheckBox
+                    android:id="@+id/cbSystemNotificationNotRelated"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/system_notification_not_related"
+                    />
                 <CheckBox
                     android:id="@+id/cbEnableSpeech"
                     android:layout_width="match_parent"

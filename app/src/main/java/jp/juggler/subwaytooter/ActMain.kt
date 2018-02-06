@@ -772,6 +772,7 @@ class ActMain : AppCompatActivity()
 			if(resultCode == ActText.RESULT_SEARCH_MSP) {
 				val text = data?.getStringExtra(Intent.EXTRA_TEXT)
 				addColumn(
+					false,
 					defaultInsertPosition,
 					SavedAccount.na,
 					Column.TYPE_SEARCH_MSP,
@@ -779,7 +780,13 @@ class ActMain : AppCompatActivity()
 				)
 			} else if(resultCode == ActText.RESULT_SEARCH_TS) {
 				val text = data?.getStringExtra(Intent.EXTRA_TEXT)
-				addColumn(defaultInsertPosition, SavedAccount.na, Column.TYPE_SEARCH_TS, text ?: "")
+				addColumn(
+					false,
+					defaultInsertPosition,
+					SavedAccount.na,
+					Column.TYPE_SEARCH_TS,
+					text ?: ""
+				)
 			}
 		}
 		
@@ -1516,8 +1523,23 @@ class ActMain : AppCompatActivity()
 				val dataId = dataIdString.toLong(10)
 				val account = SavedAccount.loadAccount(this@ActMain, dataId)
 				if(account != null) {
-					val column =
-						addColumn(defaultInsertPosition, account, Column.TYPE_NOTIFICATIONS)
+					var column = app_state.column_list.firstOrNull {
+						it.column_type == Column.TYPE_NOTIFICATIONS
+						&& account.acct == it.access_info.acct
+							&& ! it.system_notification_not_related
+					}
+					if( column != null){
+						val index = app_state.column_list.indexOf(column)
+						scrollToColumn(index)
+					}else {
+						column = addColumn(
+							true,
+							defaultInsertPosition,
+							account,
+							Column.TYPE_NOTIFICATIONS
+						)
+					}
+					
 					// 通知を読み直す
 					if(! column.bInitialLoading) {
 						column.startLoading()
@@ -1693,12 +1715,12 @@ class ActMain : AppCompatActivity()
 				// 適当にカラムを追加する
 				val count = SavedAccount.count
 				if(count > 1) {
-					addColumn(defaultInsertPosition, account, Column.TYPE_HOME)
+					addColumn(false,defaultInsertPosition, account, Column.TYPE_HOME)
 				} else {
-					addColumn(defaultInsertPosition, account, Column.TYPE_HOME)
-					addColumn(defaultInsertPosition, account, Column.TYPE_NOTIFICATIONS)
-					addColumn(defaultInsertPosition, account, Column.TYPE_LOCAL)
-					addColumn(defaultInsertPosition, account, Column.TYPE_FEDERATE)
+					addColumn(false,defaultInsertPosition, account, Column.TYPE_HOME)
+					addColumn(false,defaultInsertPosition, account, Column.TYPE_NOTIFICATIONS)
+					addColumn(false,defaultInsertPosition, account, Column.TYPE_LOCAL)
+					addColumn(false,defaultInsertPosition, account, Column.TYPE_FEDERATE)
 				}
 				
 				return true
@@ -1839,20 +1861,41 @@ class ActMain : AppCompatActivity()
 	//////////////////////////////////////////////////////////////
 	// カラム追加系
 	
-	fun addColumn(indexArg : Int, ai : SavedAccount, type : Int, vararg params : Any) : Column {
-		var index = indexArg
-		// 既に同じカラムがあればそこに移動する
-		for(column in app_state.column_list) {
-			if(column.isSameSpec(ai, type, params)) {
-				index = app_state.column_list.indexOf(column)
-				scrollToColumn(index)
-				return column
+	fun addColumn(
+		indexArg : Int,
+		ai : SavedAccount,
+		type : Int,
+		vararg params : Any
+	) : Column {
+		return addColumn(
+			Pref.bpAllowColumnDuplication(pref),
+			indexArg,
+			ai,
+			type,
+			*params
+		)
+	}
+
+	fun addColumn(
+		allowColumnDuplication:Boolean,
+		indexArg : Int,
+		ai : SavedAccount,
+		type : Int,
+		vararg params : Any
+	) : Column {
+		if( ! allowColumnDuplication) {
+			// 既に同じカラムがあればそこに移動する
+			for(column in app_state.column_list) {
+				if(column.isSameSpec(ai, type, params)) {
+					val indexColumn = app_state.column_list.indexOf(column)
+					scrollToColumn(indexColumn)
+					return column
+				}
 			}
 		}
-		
 		//
 		val col = Column(app_state, ai, this, type, *params)
-		index = addColumn(col, index)
+		val index = addColumn(col, indexArg)
 		scrollToColumn(index)
 		if(! col.bFirstInitialized) {
 			col.startLoading()

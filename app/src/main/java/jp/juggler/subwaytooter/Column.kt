@@ -97,6 +97,8 @@ class Column(
 		private const val KEY_DONT_STREAMING = "dont_streaming"
 		private const val KEY_DONT_AUTO_REFRESH = "dont_auto_refresh"
 		private const val KEY_HIDE_MEDIA_DEFAULT = "hide_media_default"
+		private const val KEY_SYSTEM_NOTIFICATION_NOT_RELATED = "system_notification_not_related"
+		
 		private const val KEY_ENABLE_SPEECH = "enable_speech"
 		
 		private const val KEY_REGEX_TEXT = "regex_text"
@@ -269,6 +271,7 @@ class Column(
 	internal var dont_streaming : Boolean = false
 	internal var dont_auto_refresh : Boolean = false
 	internal var hide_media_default : Boolean = false
+	internal var system_notification_not_related : Boolean = false
 	var enable_speech : Boolean = false
 	
 	internal var regex_text : String = ""
@@ -443,6 +446,8 @@ class Column(
 		dont_streaming = src.optBoolean(KEY_DONT_STREAMING)
 		dont_auto_refresh = src.optBoolean(KEY_DONT_AUTO_REFRESH)
 		hide_media_default = src.optBoolean(KEY_HIDE_MEDIA_DEFAULT)
+		system_notification_not_related = src.optBoolean(KEY_SYSTEM_NOTIFICATION_NOT_RELATED)
+		
 		enable_speech = src.optBoolean(KEY_ENABLE_SPEECH)
 		
 		regex_text = src.parseString(KEY_REGEX_TEXT) ?: ""
@@ -494,6 +499,8 @@ class Column(
 		dst.put(KEY_DONT_STREAMING, dont_streaming)
 		dst.put(KEY_DONT_AUTO_REFRESH, dont_auto_refresh)
 		dst.put(KEY_HIDE_MEDIA_DEFAULT, hide_media_default)
+		dst.put(KEY_SYSTEM_NOTIFICATION_NOT_RELATED, system_notification_not_related)
+		
 		dst.put(KEY_ENABLE_SPEECH, enable_speech)
 		
 		dst.put(KEY_REGEX_TEXT, regex_text)
@@ -607,7 +614,40 @@ class Column(
 				if(bLong) context.getString(R.string.instance_information_of, instance_uri)
 				else getColumnTypeName(context, column_type)
 			
+			TYPE_NOTIFICATIONS ->
+				context.getString(R.string.notifications) + getNotificationTypeString()
+				
+			
 			else -> getColumnTypeName(context, column_type)
+		}
+	}
+	
+	private fun getNotificationTypeString() : String {
+		return if(! dont_show_reply && ! dont_show_follow && ! dont_show_boost && ! dont_show_favourite) {
+			""
+		} else if(dont_show_reply && dont_show_follow && dont_show_boost && dont_show_favourite) {
+			""
+		} else {
+			val sb = StringBuilder()
+			if(! dont_show_reply) {
+				if(sb.isNotEmpty()) sb.append(", ")
+				sb.append(context.getString(R.string.notification_type_mention))
+			}
+			if(! dont_show_follow) {
+				if(sb.isNotEmpty()) sb.append(", ")
+				sb.append(context.getString(R.string.notification_type_follow))
+			}
+			if(! dont_show_boost) {
+				if(sb.isNotEmpty()) sb.append(", ")
+				sb.append(context.getString(R.string.notification_type_boost))
+			}
+			if(! dont_show_favourite) {
+				if(sb.isNotEmpty()) sb.append(", ")
+				sb.append(context.getString(R.string.notification_type_favourite))
+			}
+			sb.insert(0, "(")
+			sb.append(")")
+			sb.toString()
 		}
 	}
 	
@@ -1100,6 +1140,11 @@ class Column(
 		
 		if(dont_show_follow && TootNotification.TYPE_FOLLOW == item.type) {
 			log.d("isFiltered: follow notification filtered.")
+			return true
+		}
+		
+		if(dont_show_reply && TootNotification.TYPE_MENTION == item.type) {
+			log.d("isFiltered: mention notification filtered.")
 			return true
 		}
 		
@@ -3247,10 +3292,10 @@ class Column(
 		}
 	}
 	
-	// カラム設定に「変身を表示しない」ボタンを含めるなら真
+	// カラム設定に「返信を表示しない」ボタンを含めるなら真
 	fun canFilterReply() : Boolean {
 		return when(column_type) {
-			TYPE_HOME, TYPE_PROFILE, TYPE_LIST_TL -> true
+			TYPE_HOME, TYPE_PROFILE, TYPE_LIST_TL, TYPE_NOTIFICATIONS -> true
 			else -> false
 		}
 	}

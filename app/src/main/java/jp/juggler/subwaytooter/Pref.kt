@@ -282,6 +282,12 @@ object Pref {
 		R.id.swShareViewPool
 	)
 	
+	val bpAllowColumnDuplication = BooleanPref(
+		"AllowColumnDuplication",
+		true,
+		R.id.swShareViewPool
+	)
+	
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

@@ -23,7 +23,7 @@ object Action_Instance {
 	fun information(
 		activity : ActMain, pos : Int, host : String
 	) {
-		activity.addColumn(pos, SavedAccount.na, Column.TYPE_INSTANCE_INFORMATION, host)
+		activity.addColumn(false,pos, SavedAccount.na, Column.TYPE_INSTANCE_INFORMATION, host)
 	}
 	
 	// 指定タンスのローカルタイムラインを開く

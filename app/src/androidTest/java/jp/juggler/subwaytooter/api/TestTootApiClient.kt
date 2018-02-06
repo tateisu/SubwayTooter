@@ -2,6 +2,7 @@
 
 package jp.juggler.subwaytooter.api
 
+import android.content.Context
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -30,11 +31,11 @@ class TestTootApiClient {
 		
 		override var currentCallCallback : CurrentCallCallback? = null
 		
-		override fun getResponse(request : Request) : Response {
+		override fun getResponse(context: Context, request : Request) : Response {
 			return responseGenerator(request)
 		}
 		
-		override fun getWebSocket(request : Request, webSocketListener : WebSocketListener) : WebSocket {
+		override fun getWebSocket(context: Context,request : Request, webSocketListener : WebSocketListener) : WebSocket {
 			return webSocketGenerator(request, webSocketListener)
 		}
 	}

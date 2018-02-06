@@ -209,6 +209,22 @@
 
         <TextView
             style="@style/setting_row_label"
+            android:text="@string/allow_column_duplication"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swAllowColumnDuplication"
+                style="@style/setting_horizontal_stretch"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
             android:text="@string/force_gap_when_refresh"
             />
 

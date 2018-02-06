@@ -890,5 +890,11 @@
     <string name="avatar_icon_dont_round">ユーザ画像を角丸にしない(アプリ再起動が必要)</string>
     <string name="share_view_pool">カラム間でViewPoolを共有する</string>
     <string name="rename">名前の変更…</string>
+    <string name="allow_column_duplication">カラムの重複を許容する</string>
+    <string name="system_notification_not_related">システム通知をタップした時に選ばれない</string>
+    <string name="notification_type_mention">返信</string>
+    <string name="notification_type_follow">フォロー</string>
+    <string name="notification_type_boost">ブースト</string>
+    <string name="notification_type_favourite">お気に入り</string>
 
 </resources>

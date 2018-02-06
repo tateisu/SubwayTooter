@@ -19,7 +19,7 @@ import java.util.regex.Pattern
 
 class TootApiClient(
 	internal val context : Context,
-	internal val httpClient : SimpleHttpClient = SimpleHttpClientImpl(App1.ok_http_client),
+	internal val httpClient : SimpleHttpClient = SimpleHttpClientImpl(context, App1.ok_http_client),
 	internal val callback : TootApiCallback
 ) {
 	

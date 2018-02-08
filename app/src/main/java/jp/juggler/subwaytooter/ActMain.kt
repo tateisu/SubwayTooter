@@ -124,6 +124,7 @@ class ActMain : AppCompatActivity()
 	// 状態保存の必要なし
 	private var posted_acct : String? = null
 	private var posted_status_id : Long = 0
+	private var posted_reply_id : String? = null
 	
 	var timeline_font_size_sp = Float.NaN
 	var acct_font_size_sp = Float.NaN
@@ -547,18 +548,21 @@ class ActMain : AppCompatActivity()
 	}
 	
 	private fun refreshAfterPost() {
+		val posted_acct = this.posted_acct
 		if(posted_acct?.isNotEmpty() == true) {
 			val refresh_after_toot = Pref.ipRefreshAfterToot(pref)
 			if(refresh_after_toot != Pref.RAT_DONT_REFRESH) {
 				for(column in app_state.column_list) {
-					val a = column.access_info
-					if(a.acct == posted_acct) {
-						column.startRefreshForPost(posted_status_id, refresh_after_toot)
-					}
+					if(column.access_info.acct != posted_acct) continue
+					column.startRefreshForPost(
+						refresh_after_toot,
+						posted_status_id,
+						posted_reply_id
+					)
 				}
 			}
-			posted_acct = null
 		}
+		this.posted_acct = null
 	}
 	
 	private fun handleSentIntent(intent : Intent) {
@@ -641,6 +645,7 @@ class ActMain : AppCompatActivity()
 			etQuickToot.setText("")
 			posted_acct = target_account.acct
 			posted_status_id = status.id
+			posted_reply_id = status.in_reply_to_id
 			refreshAfterPost()
 		}
 	}
@@ -728,6 +733,7 @@ class ActMain : AppCompatActivity()
 					etQuickToot.setText("")
 					posted_acct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)
 					posted_status_id = data.getLongExtra(ActPost.EXTRA_POSTED_STATUS_ID, 0L)
+					posted_reply_id = data.getStringExtra(ActPost.EXTRA_POSTED_REPLY_ID)
 				}
 				
 			} else if(requestCode == REQUEST_CODE_COLUMN_COLOR) {
@@ -1525,13 +1531,13 @@ class ActMain : AppCompatActivity()
 				if(account != null) {
 					var column = app_state.column_list.firstOrNull {
 						it.column_type == Column.TYPE_NOTIFICATIONS
-						&& account.acct == it.access_info.acct
+							&& account.acct == it.access_info.acct
 							&& ! it.system_notification_not_related
 					}
-					if( column != null){
+					if(column != null) {
 						val index = app_state.column_list.indexOf(column)
 						scrollToColumn(index)
-					}else {
+					} else {
 						column = addColumn(
 							true,
 							defaultInsertPosition,
@@ -1715,12 +1721,12 @@ class ActMain : AppCompatActivity()
 				// 適当にカラムを追加する
 				val count = SavedAccount.count
 				if(count > 1) {
-					addColumn(false,defaultInsertPosition, account, Column.TYPE_HOME)
+					addColumn(false, defaultInsertPosition, account, Column.TYPE_HOME)
 				} else {
-					addColumn(false,defaultInsertPosition, account, Column.TYPE_HOME)
-					addColumn(false,defaultInsertPosition, account, Column.TYPE_NOTIFICATIONS)
-					addColumn(false,defaultInsertPosition, account, Column.TYPE_LOCAL)
-					addColumn(false,defaultInsertPosition, account, Column.TYPE_FEDERATE)
+					addColumn(false, defaultInsertPosition, account, Column.TYPE_HOME)
+					addColumn(false, defaultInsertPosition, account, Column.TYPE_NOTIFICATIONS)
+					addColumn(false, defaultInsertPosition, account, Column.TYPE_LOCAL)
+					addColumn(false, defaultInsertPosition, account, Column.TYPE_FEDERATE)
 				}
 				
 				return true
@@ -1875,15 +1881,15 @@ class ActMain : AppCompatActivity()
 			*params
 		)
 	}
-
+	
 	fun addColumn(
-		allowColumnDuplication:Boolean,
+		allowColumnDuplication : Boolean,
 		indexArg : Int,
 		ai : SavedAccount,
 		type : Int,
 		vararg params : Any
 	) : Column {
-		if( ! allowColumnDuplication) {
+		if(! allowColumnDuplication) {
 			// 既に同じカラムがあればそこに移動する
 			for(column in app_state.column_list) {
 				if(column.isSameSpec(ai, type, params)) {
@@ -2079,7 +2085,7 @@ class ActMain : AppCompatActivity()
 	private fun closeColumnSetting() : Boolean {
 		phoneTab({ env ->
 			val vh = env.pager_adapter.getColumnViewHolder(env.pager.currentItem)
-			if(vh?.isColumnSettingShown == true ) {
+			if(vh?.isColumnSettingShown == true) {
 				vh.closeColumnSetting()
 				return@closeColumnSetting true
 			}

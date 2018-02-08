@@ -76,6 +76,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		internal const val EXTRA_POSTED_ACCT = "posted_acct"
 		internal const val EXTRA_POSTED_STATUS_ID = "posted_status_id"
+		internal const val EXTRA_POSTED_REPLY_ID = "posted_reply_id"
 		
 		internal const val KEY_ACCOUNT_DB_ID = "account_db_id"
 		internal const val KEY_REPLY_STATUS = "reply_status"
@@ -1674,7 +1675,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			val data = Intent()
 			data.putExtra(EXTRA_POSTED_ACCT, target_account.acct)
 			data.putExtra(EXTRA_POSTED_STATUS_ID, status.id)
-			
+			val reply_id = status.in_reply_to_id
+			if( reply_id != null) data.putExtra(EXTRA_POSTED_REPLY_ID, reply_id)
 			setResult(RESULT_OK, data)
 			isPostComplete = true
 			this@ActPost.finish()

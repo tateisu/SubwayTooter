@@ -616,7 +616,6 @@ class Column(
 			
 			TYPE_NOTIFICATIONS ->
 				context.getString(R.string.notifications) + getNotificationTypeString()
-				
 			
 			else -> getColumnTypeName(context, column_type)
 		}
@@ -1909,7 +1908,11 @@ class Column(
 		return path
 	}
 	
-	internal fun startRefreshForPost(posted_status_id : Long, refresh_after_post : Int) {
+	internal fun startRefreshForPost(
+		refresh_after_post : Int,
+		posted_status_id : Long,
+		posted_reply_id : String?
+	) {
 		when(column_type) {
 			TYPE_HOME, TYPE_LOCAL, TYPE_FEDERATE -> startRefresh(
 				true, false, posted_status_id,
@@ -1920,7 +1923,21 @@ class Column(
 				startRefresh(true, false, posted_status_id, refresh_after_post)
 			}
 			
-			TYPE_CONVERSATION -> startLoading()
+			TYPE_CONVERSATION -> {
+				// 会話への返信が行われたなら会話を更新する
+				try {
+					val reply_id = posted_reply_id?.toLong()
+					if(reply_id != null) {
+						for(item in list_data) {
+							if(item is TootStatus && item.id == reply_id) {
+								startLoading()
+								break
+							}
+						}
+					}
+				} catch(ignored : Throwable) {
+				}
+			}
 		}
 	}
 	

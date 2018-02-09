@@ -6,11 +6,14 @@ import android.view.View
 import android.widget.TextView
 
 import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.util.CharacterGroup
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.showToast
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
+import java.util.*
+import java.util.regex.Pattern
 
 internal class ViewHolderHeaderInstance(
 	arg_activity : ActMain,
@@ -90,22 +93,32 @@ internal class ViewHolderHeaderInstance(
 			btnEmail.text = email
 			btnEmail.isEnabled = email.isNotEmpty()
 			
-			val sb = DecodeOptions(activity, access_info,decodeEmoji = true)
+			var sb = DecodeOptions(activity, access_info,decodeEmoji = true)
 				.decodeHTML( "<p>" + (instance.description ?: "") + "</p>")
 			
+			// 行末の空白を除去
+			val reWhitespaceBeforeLineFeed = Pattern.compile("[ \t\r]+\n")
+			val m = reWhitespaceBeforeLineFeed.matcher(sb)
+			val matchList = LinkedList<Pair<Int,Int>>()
+			while(m.find()){
+				// 逆順に並べる
+				matchList.addFirst( Pair(m.start(),m.end()))
+			}
+			for( pair in matchList ){
+				sb.replace( pair.first,pair.second,"\n")
+			}
+			// 連続する改行をまとめる
 			var previous_br_count = 0
 			var i = 0
 			while(i < sb.length) {
 				val c = sb[i]
-				if(c != '\n') {
-					previous_br_count = 0
-				} else {
-					++ previous_br_count
-					if(previous_br_count >= 3) {
+				if(c == '\n') {
+					if(++ previous_br_count >= 3) {
 						sb.delete(i, i + 1)
-						-- previous_br_count
-						-- i
+						continue
 					}
+				} else {
+					previous_br_count = 0
 				}
 				++ i
 			}

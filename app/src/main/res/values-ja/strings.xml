@@ -896,5 +896,6 @@
     <string name="notification_type_follow">フォロー</string>
     <string name="notification_type_boost">ブースト</string>
     <string name="notification_type_favourite">お気に入り</string>
+    <string name="dont_show_normal_toot">通常トゥートを表示しない</string>
 
 </resources>

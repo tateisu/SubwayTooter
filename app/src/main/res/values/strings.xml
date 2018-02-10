@@ -602,4 +602,5 @@
     <string name="notification_type_follow">follow</string>
     <string name="notification_type_boost">boost</string>
     <string name="notification_type_favourite">fav.</string>
+    <string name="dont_show_normal_toot">Don\'t show normal toot</string>
 </resources>

@@ -613,8 +613,9 @@
 	<string name="notification_type_follow">follow</string>
 	<string name="notification_type_boost">boost</string>
 	<string name="notification_type_favourite">fav.</string>
+    <string name="dont_show_normal_toot">Don\'t show normal toot</string>
 
-	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

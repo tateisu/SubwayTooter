@@ -100,6 +100,7 @@ class ColumnViewHolder(
 	private val cbDontShowFollow : CheckBox
 	private val cbDontShowFavourite : CheckBox
 	private val cbDontShowReply : CheckBox
+	private val cbDontShowNormalToot : CheckBox
 	private val cbDontStreaming : CheckBox
 	private val cbDontAutoRefresh : CheckBox
 	private val cbHideMediaDefault : CheckBox
@@ -230,6 +231,7 @@ class ColumnViewHolder(
 		cbDontShowFollow = viewRoot.findViewById(R.id.cbDontShowFollow)
 		cbDontShowFavourite = viewRoot.findViewById(R.id.cbDontShowFavourite)
 		cbDontShowReply = viewRoot.findViewById(R.id.cbDontShowReply)
+		cbDontShowNormalToot = viewRoot.findViewById(R.id.cbDontShowNormalToot)
 		cbDontStreaming = viewRoot.findViewById(R.id.cbDontStreaming)
 		cbDontAutoRefresh = viewRoot.findViewById(R.id.cbDontAutoRefresh)
 		cbHideMediaDefault = viewRoot.findViewById(R.id.cbHideMediaDefault)
@@ -260,6 +262,7 @@ class ColumnViewHolder(
 		cbDontShowFollow.setOnCheckedChangeListener(this)
 		cbDontShowFavourite.setOnCheckedChangeListener(this)
 		cbDontShowReply.setOnCheckedChangeListener(this)
+		cbDontShowNormalToot.setOnCheckedChangeListener(this)
 		cbDontStreaming.setOnCheckedChangeListener(this)
 		cbDontAutoRefresh.setOnCheckedChangeListener(this)
 		cbHideMediaDefault.setOnCheckedChangeListener(this)
@@ -428,6 +431,7 @@ class ColumnViewHolder(
 			cbDontShowFollow.isChecked = column.dont_show_follow
 			cbDontShowFavourite.isChecked = column.dont_show_favourite
 			cbDontShowReply.isChecked = column.dont_show_reply
+			cbDontShowNormalToot.isChecked = column.dont_show_normal_toot
 			cbDontStreaming.isChecked = column.dont_streaming
 			cbDontAutoRefresh.isChecked = column.dont_auto_refresh
 			cbHideMediaDefault.isChecked = column.hide_media_default
@@ -445,6 +449,7 @@ class ColumnViewHolder(
 			
 			vg(cbDontShowBoost, column.canFilterBoost())
 			vg(cbDontShowReply, column.canFilterReply())
+			vg(cbDontShowNormalToot, column.canFilterNormalToot())
 			vg(cbDontShowFavourite, isNotificationColumn)
 			vg(cbDontShowFollow, isNotificationColumn)
 			
@@ -713,6 +718,12 @@ class ColumnViewHolder(
 			
 			R.id.cbDontShowReply -> {
 				column.dont_show_reply = isChecked
+				activity.app_state.saveColumnList()
+				column.startLoading()
+			}
+			
+			R.id.cbDontShowNormalToot -> {
+				column.dont_show_normal_toot = isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}

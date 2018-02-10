@@ -6,7 +6,6 @@ import android.view.View
 import android.widget.TextView
 
 import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.util.CharacterGroup
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.showToast
@@ -23,6 +22,8 @@ internal class ViewHolderHeaderInstance(
 	
 	companion object {
 		private val log = LogCategory("ViewHolderHeaderInstance")
+
+		val reWhitespaceBeforeLineFeed = Pattern.compile("[ \t\r]+\n")
 	}
 	
 	private val btnInstance : TextView
@@ -97,7 +98,6 @@ internal class ViewHolderHeaderInstance(
 				.decodeHTML( "<p>" + (instance.description ?: "") + "</p>")
 			
 			// 行末の空白を除去
-			val reWhitespaceBeforeLineFeed = Pattern.compile("[ \t\r]+\n")
 			val m = reWhitespaceBeforeLineFeed.matcher(sb)
 			val matchList = LinkedList<Pair<Int,Int>>()
 			while(m.find()){
@@ -105,8 +105,9 @@ internal class ViewHolderHeaderInstance(
 				matchList.addFirst( Pair(m.start(),m.end()))
 			}
 			for( pair in matchList ){
-				sb.replace( pair.first,pair.second,"\n")
+				sb.delete( pair.first,pair.second-1)
 			}
+
 			// 連続する改行をまとめる
 			var previous_br_count = 0
 			var i = 0
@@ -122,6 +123,7 @@ internal class ViewHolderHeaderInstance(
 				}
 				++ i
 			}
+
 			tvDescription.text = sb
 			
 			val stats = instance.stats

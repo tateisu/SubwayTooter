@@ -1624,6 +1624,16 @@ class ActMain : AppCompatActivity()
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
+				val host = this.host
+				val ta = this.ta
+				var sa = this.sa
+
+				if( ta != null && host != null && sa == null ){
+					val user = ta.username + "@" + host
+					// アカウント追加時に、アプリ内に既にあるアカウントと同じものを登録していたかもしれない
+					sa = SavedAccount.loadAccountByAcct( this@ActMain,user )
+				}
+				
 				afterAccountVerify(result, ta, sa, host)
 			}
 			
@@ -1687,6 +1697,7 @@ class ActMain : AppCompatActivity()
 		} else if(host != null) {
 			// アカウント追加時
 			val user = ta.username + "@" + host
+			
 			val row_id = SavedAccount.insert(host, user, jsonObject, token_info)
 			val account = SavedAccount.loadAccount(this@ActMain, row_id)
 			if(account != null) {

@@ -94,6 +94,7 @@ class Column(
 		private const val KEY_DONT_SHOW_FAVOURITE = "dont_show_favourite"
 		private const val KEY_DONT_SHOW_FOLLOW = "dont_show_follow"
 		private const val KEY_DONT_SHOW_REPLY = "dont_show_reply"
+		private const val KEY_DONT_SHOW_NORMAL_TOOT = "dont_show_normal_toot"
 		private const val KEY_DONT_STREAMING = "dont_streaming"
 		private const val KEY_DONT_AUTO_REFRESH = "dont_auto_refresh"
 		private const val KEY_HIDE_MEDIA_DEFAULT = "hide_media_default"
@@ -266,6 +267,7 @@ class Column(
 	internal var with_highlight : Boolean = false
 	internal var dont_show_boost : Boolean = false
 	internal var dont_show_reply : Boolean = false
+	internal var dont_show_normal_toot : Boolean = false
 	internal var dont_show_favourite : Boolean = false // 通知カラムのみ
 	internal var dont_show_follow : Boolean = false // 通知カラムのみ
 	internal var dont_streaming : Boolean = false
@@ -350,6 +352,7 @@ class Column(
 			|| dont_show_favourite
 			|| dont_show_follow
 			|| dont_show_reply
+			|| dont_show_normal_toot
 			|| regex_text.isNotEmpty()
 			)
 	
@@ -443,6 +446,7 @@ class Column(
 		dont_show_follow = src.optBoolean(KEY_DONT_SHOW_FOLLOW)
 		dont_show_favourite = src.optBoolean(KEY_DONT_SHOW_FAVOURITE)
 		dont_show_reply = src.optBoolean(KEY_DONT_SHOW_REPLY)
+		dont_show_normal_toot = src.optBoolean(KEY_DONT_SHOW_NORMAL_TOOT)
 		dont_streaming = src.optBoolean(KEY_DONT_STREAMING)
 		dont_auto_refresh = src.optBoolean(KEY_DONT_AUTO_REFRESH)
 		hide_media_default = src.optBoolean(KEY_HIDE_MEDIA_DEFAULT)
@@ -496,6 +500,7 @@ class Column(
 		dst.put(KEY_DONT_SHOW_FOLLOW, dont_show_follow)
 		dst.put(KEY_DONT_SHOW_FAVOURITE, dont_show_favourite)
 		dst.put(KEY_DONT_SHOW_REPLY, dont_show_reply)
+		dst.put(KEY_DONT_SHOW_NORMAL_TOOT, dont_show_normal_toot)
 		dst.put(KEY_DONT_STREAMING, dont_streaming)
 		dst.put(KEY_DONT_AUTO_REFRESH, dont_auto_refresh)
 		dst.put(KEY_HIDE_MEDIA_DEFAULT, hide_media_default)
@@ -1072,6 +1077,12 @@ class Column(
 		if(dont_show_reply) {
 			if(status.in_reply_to_id?.isNotEmpty() == true) return true
 			if(status.reblog?.in_reply_to_id?.isNotEmpty() == true) return true
+		}
+		
+		if(dont_show_normal_toot) {
+			if( status.in_reply_to_id?.isEmpty() != false
+				&&  status.reblog == null
+			) return true
 		}
 		
 		if(column_regex_filter(status.decoded_content)) return true
@@ -3317,6 +3328,13 @@ class Column(
 		}
 	}
 	
+	fun canFilterNormalToot() : Boolean {
+		return when(column_type) {
+			TYPE_HOME -> true
+			else -> false
+		}
+	}
+	
 	internal fun canAutoRefresh() : Boolean {
 		return streamPath != null
 	}
@@ -3565,5 +3583,6 @@ class Column(
 			}
 		}
 	}
+	
 	
 }

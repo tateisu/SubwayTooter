@@ -181,9 +181,8 @@ object EmojiDecoder {
 					} else if(i + width < end && s.codePointAt(i + width) == codepointAtmark) {
 						// フレニコのプロフ絵文字 :@who: は手前の空白を要求しない
 						break
-					} else if(i == 0 || CharacterGroup.isWhitespace(s.codePointBefore(i))) {
-						// ショートコードの手前は始端か改行か空白文字でないとならない
-						// 空白文字の判定はサーバサイドのそれにあわせる
+					} else if( CharacterGroup.isHeadOrAfterWhitespace(s,i) ) {
+						// 始端または空白の直後
 						break
 					}
 					// shortcodeの開始とみなせないケースだった

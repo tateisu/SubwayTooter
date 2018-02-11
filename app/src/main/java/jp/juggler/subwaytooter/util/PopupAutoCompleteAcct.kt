@@ -61,7 +61,12 @@ internal class PopupAutoCompleteAcct(
 		llItems = viewRoot.findViewById(R.id.llItems)
 		//
 		acct_popup = PopupWindow(activity)
-		acct_popup.setBackgroundDrawable(ContextCompat.getDrawable(activity, R.drawable.acct_popup_bg))
+		acct_popup.setBackgroundDrawable(
+			ContextCompat.getDrawable(
+				activity,
+				R.drawable.acct_popup_bg
+			)
+		)
 		acct_popup.contentView = viewRoot
 		acct_popup.isTouchable = true
 	}
@@ -116,16 +121,38 @@ internal class PopupAutoCompleteAcct(
 					NetworkEmojiInvalidator(handler, v).register(acct)
 				}
 				v.setOnClickListener {
-					val svInsert : Spannable = SpannableStringBuilder()
-						.append(if(acct[0] == ' ') acct.subSequence(2, acct.length) else acct)
-						.append(" ")
-					val s = et.text
+					
+					val src = et.text
+					val src_length = src.length
+					val start = Math.min(src_length, sel_start)
+					val end = Math.min(src_length, sel_end)
+					
+					val svInsert = if( acct[0] == ' ' ){
+						// 絵文字ショートコード
+						SpannableStringBuilder()
+							.append(acct.subSequence(2, acct.length))
+					}else{
+						// @user@host, #hashtag
+						// 直後に空白を付与する
+						SpannableStringBuilder()
+							.append(acct)
+							.append(" ")
+					}
+					
 					val sb = SpannableStringBuilder()
-						.append(s.subSequence(0, Math.min(s.length, sel_start)))
-						.append(svInsert)
-						.append(s.subSequence(Math.min(s.length, sel_end), s.length))
+						.append(src.subSequence(0, start))
+					
+					if( svInsert[0]==':' && ! CharacterGroup.isHeadOrAfterWhitespace(src, start)) {
+						sb.append(' ')
+					}
+
+					sb.append(svInsert)
+
+					val newSelection = sb.length
+					if(end < src_length) sb.append(src.subSequence(end, src_length))
+					
 					et.text = sb
-					et.setSelection(sel_start + svInsert.length)
+					et.setSelection(newSelection)
 					acct_popup.dismiss()
 				}
 				

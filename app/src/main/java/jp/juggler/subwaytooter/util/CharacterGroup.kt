@@ -2,6 +2,8 @@ package jp.juggler.subwaytooter.util
 
 import android.util.SparseIntArray
 
+
+
 class CharacterGroup {
 	
 	companion object {
@@ -43,6 +45,24 @@ class CharacterGroup {
 					, 0x205F, 0x2060, 0x3000, 0x3164, 0xFEFF -> return true
 				else -> return false // Character.isWhitespace( cp ); は不要っぽい
 			}
+		}
+		
+		fun CharSequence.codePointBefore( index:Int) :Int{
+			if( index >0 ) {
+				val c2 = this[index - 1]
+				if(Character.isLowSurrogate(c2) && index > 1) {
+					val c1 = this[index - 2]
+					if(Character.isHighSurrogate(c1)) return Character.toCodePoint(c1, c2)
+				}
+				return c2.toInt()
+			}else {
+				return - 1
+			}
+		}
+
+		fun isHeadOrAfterWhitespace( s:CharSequence,index:Int):Boolean {
+			val cp = s.codePointBefore(index)
+			return cp == -1 || isWhitespace(cp)
 		}
 		
 		// 文字列のリストからグループIDを決定する

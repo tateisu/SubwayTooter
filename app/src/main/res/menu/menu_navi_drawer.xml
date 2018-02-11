@@ -45,7 +45,7 @@
 
                 <item
                     android:id="@+id/nav_add_list"
-                    android:icon="?attr/ic_list2"
+                    android:icon="?attr/ic_list_list"
                     android:title="@string/lists"/>
 
                 <item
@@ -120,18 +120,20 @@
                     android:id="@+id/nav_app_setting"
                     android:icon="?attr/ic_setting"
                     android:title="@string/app_setting"/>
-                <item
-                    android:id="@+id/nav_muted_app"
-                    android:icon="?attr/ic_setting"
-                    android:title="@string/muted_app"/>
-                <item
-                    android:id="@+id/nav_muted_word"
-                    android:icon="?attr/ic_setting"
-                    android:title="@string/muted_word"/>
+
                 <item
                     android:id="@+id/nav_highlight_word"
                     android:icon="?attr/ic_setting"
                     android:title="@string/highlight_word"/>
+
+                <item
+                    android:id="@+id/nav_muted_app"
+                    android:icon="?attr/ic_mute"
+                    android:title="@string/muted_app"/>
+                <item
+                    android:id="@+id/nav_muted_word"
+                    android:icon="?attr/ic_mute"
+                    android:title="@string/muted_word"/>
 
                 <item
                     android:id="@+id/nav_app_about"

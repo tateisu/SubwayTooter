@@ -47,7 +47,7 @@ class CharacterGroup {
 			}
 		}
 		
-		fun CharSequence.codePointBefore( index:Int) :Int{
+		private fun CharSequence.codePointBefore(index:Int) :Int{
 			if( index >0 ) {
 				val c2 = this[index - 1]
 				if(Character.isLowSurrogate(c2) && index > 1) {

@@ -127,26 +127,20 @@ internal class PopupAutoCompleteAcct(
 					val start = Math.min(src_length, sel_start)
 					val end = Math.min(src_length, sel_end)
 					
-					val svInsert = if( acct[0] == ' ' ){
-						// 絵文字ショートコード
-						SpannableStringBuilder()
-							.append(acct.subSequence(2, acct.length))
-					}else{
-						// @user@host, #hashtag
-						// 直後に空白を付与する
-						SpannableStringBuilder()
-							.append(acct)
-							.append(" ")
-					}
 					
 					val sb = SpannableStringBuilder()
 						.append(src.subSequence(0, start))
 					
-					if( svInsert[0]==':' && ! CharacterGroup.isHeadOrAfterWhitespace(src, start)) {
-						sb.append(' ')
+					if( acct[0] == ' ' ) {
+						// 絵文字ショートコード
+						
+						if(! CharacterGroup.isHeadOrAfterWhitespace(src, start)) sb.append(' ')
+						sb.append(acct.subSequence(2, acct.length))
+					}else {
+						// @user@host, #hashtag
+						// 直後に空白を付与する
+						sb.append(acct).append(" ")
 					}
-
-					sb.append(svInsert)
 
 					val newSelection = sb.length
 					if(end < src_length) sb.append(src.subSequence(end, src_length))

@@ -482,7 +482,7 @@ class PostHelper(
 			}
 			
 			// : の手前は始端か改行か空白でなければならない
-			if(last_colon > 0 && ! CharacterGroup.isWhitespace(src.codePointBefore(last_colon))) {
+			if( ! CharacterGroup.isHeadOrAfterWhitespace(src,last_colon) ) {
 				log.d("checkEmoji: invalid character before shortcode.")
 				closeAcctPopup()
 				return
@@ -631,40 +631,47 @@ class PostHelper(
 		
 	}
 	
+	private fun SpannableStringBuilder.appendEmoji(
+		name : String,
+		instance : String?,
+		bInstanceHasCustomEmoji : Boolean
+	) : SpannableStringBuilder {
+		
+		val item = EmojiMap201709.sShortNameToImageId[name]
+		if(item == null || instance != null) {
+			// カスタム絵文字は常にshortcode表現
+			if(! CharacterGroup.isHeadOrAfterWhitespace(this, this.length)) this.append(' ')
+			this.append(SpannableString(":$name:"))
+		} else if(! bInstanceHasCustomEmoji) {
+			// 古いタンスだとshortcodeを使う。見た目は絵文字に変える。
+			if(! CharacterGroup.isHeadOrAfterWhitespace(this, this.length)) this.append(' ')
+			this.append(DecodeOptions(activity).decodeEmoji(":$name:"))
+		} else {
+			// 十分に新しいタンスなら絵文字のunicodeを使う。見た目は絵文字に変える。
+			this.append(DecodeOptions(activity).decodeEmoji(item.unified))
+		}
+		return this
+		
+	}
+	
 	private val open_picker_emoji : Runnable = Runnable {
 		EmojiPicker(activity, instance) { name, instance, bInstanceHasCustomEmoji ->
 			val et = this.et ?: return@EmojiPicker
 			
 			val src = et.text
 			val src_length = src.length
-			val end = et.selectionEnd
+			val end = Math.min( src_length,et.selectionEnd)
 			val start = src.lastIndexOf(':', end - 1)
-			if(start == - 1 || end - start < 1) return@EmojiPicker
+			if( start == - 1 || end - start < 1) return@EmojiPicker
 			
-			val item = EmojiMap201709.sShortNameToImageId[name]
-			val svInsert : Spannable = if(item == null || instance != null) {
-				SpannableString(":$name:")
-			} else if(! bInstanceHasCustomEmoji) {
-				// 古いタンスだとshortcodeを使う。見た目は絵文字に変える。
-				DecodeOptions(activity).decodeEmoji(":$name:")
-			} else {
-				// 十分に新しいタンスなら絵文字のunicodeを使う。見た目は絵文字に変える。
-				DecodeOptions(activity).decodeEmoji(item.unified)
-			}
-			
-			val newText = SpannableStringBuilder()
+			val sb = SpannableStringBuilder()
 				.append(src.subSequence(0, start))
+				.appendEmoji(name, instance, bInstanceHasCustomEmoji)
 			
-			if(svInsert[0]==':' && !CharacterGroup.isHeadOrAfterWhitespace(src, start)) {
-				newText.append(' ')
-			}
-
-			newText.append(svInsert)
-
-			val newSelection = newText.length
-			if(end < src_length) newText.append(src.subSequence(end, src_length))
+			val newSelection = sb.length
+			if(end < src_length) sb.append(src.subSequence(end, src_length))
 			
-			et.text = newText
+			et.text = sb
 			et.setSelection(newSelection)
 			
 			proc_text_changed.run()
@@ -684,27 +691,14 @@ class PostHelper(
 			val start = Math.min(src_length, et.selectionStart)
 			val end = Math.min(src_length, et.selectionEnd)
 			
-			val item = EmojiMap201709.sShortNameToImageId[name]
-			val svInsert : Spannable =
-				if(item == null || instance != null || ! bInstanceHasCustomEmoji) {
-					SpannableString(":$name:")
-				} else {
-					DecodeOptions(activity, decodeEmoji = true).decodeEmoji(item.unified)
-				}
-			
-			val newText = SpannableStringBuilder()
+			val sb = SpannableStringBuilder()
 				.append(src.subSequence(0, start))
+				.appendEmoji(name, instance, bInstanceHasCustomEmoji)
 			
-			if(svInsert[0]==':' && !CharacterGroup.isHeadOrAfterWhitespace(src, start)) {
-				newText.append(' ')
-			}
+			val newSelection = sb.length
+			if(end < src_length) sb.append(src.subSequence(end, src_length))
 			
-			newText.append(svInsert)
-			
-			val newSelection = newText.length
-			if(end < src_length) newText.append(src.subSequence(end, src_length))
-			
-			et.text = newText
+			et.text = sb
 			et.setSelection(newSelection)
 			
 			proc_text_changed.run()

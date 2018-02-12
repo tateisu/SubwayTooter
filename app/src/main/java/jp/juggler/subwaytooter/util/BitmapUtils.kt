@@ -15,7 +15,7 @@ fun createResizedBitmap(
 	resizeToArg : Int,
 	skipIfNoNeedToResizeAndRotate : Boolean = false
 ) : Bitmap? {
-
+	
 	try {
 		
 		// EXIF回転情報の取得
@@ -45,7 +45,7 @@ fun createResizedBitmap(
 		}
 		
 		// 長辺
-		val size = if(src_width > src_height) src_width else src_height
+		val size = Math.max(src_width, src_height)
 		
 		// リサイズも回転も必要がない場合
 		if(skipIfNoNeedToResizeAndRotate

@@ -132,6 +132,7 @@ open class TootAccount(
 				this.avatar_static = src.parseString("avatar_static")
 				this.header = src.parseString("header")
 				this.header_static = src.parseString("header_static")
+				
 			}
 			
 			ServiceType.TOOTSEARCH -> {

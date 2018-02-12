@@ -20,8 +20,6 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
-import android.util.Base64
-import android.util.Base64OutputStream
 import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
@@ -30,9 +28,6 @@ import android.widget.EditText
 import android.widget.Switch
 import android.widget.TextView
 
-import org.apache.commons.io.IOUtils
-
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -47,12 +42,16 @@ import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.ActionsDialog
+import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyNetworkImageView
+import okhttp3.MediaType
+import okhttp3.MultipartBody
 import okhttp3.Request
 import okhttp3.RequestBody
+import okio.BufferedSink
 
 class ActAccountSetting
 	: AppCompatActivity(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
@@ -708,7 +707,13 @@ class ActAccountSetting
 			src.avatar_static,
 			src.avatar
 		)
-		ivProfileHeader.setImageUrl(App1.pref, 0f, src.header_static, src.header)
+
+		ivProfileHeader.setImageUrl(
+			App1.pref,
+			0f,
+			src.header_static,
+			src.header
+		)
 		
 		val display_name = src.display_name
 		val name = DecodeOptions(
@@ -736,26 +741,63 @@ class ActAccountSetting
 		btnNote.isEnabled = true
 	}
 	
-	internal fun updateCredential(form_data : String) {
+	internal fun updateCredential(key : String, value : Any) {
 		
 		TootTaskRunner(this).run(account, object : TootTask {
 			
 			internal var data : TootAccount? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val request_builder = Request.Builder()
-					.patch(
-						RequestBody.create(
-							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, form_data
-						)
-					)
 				
-				val result = client.request("/api/v1/accounts/update_credentials", request_builder)
-				val jsonObject = result?.jsonObject
-				if(jsonObject != null) {
-					data = TootParser(this@ActAccountSetting, account).account(jsonObject)
-					if(data == null) return TootApiResult("TootAccount parse failed.")
+				try {
+					val multipart_body_builder = MultipartBody.Builder()
+						.setType(MultipartBody.FORM)
+					
+					if(value is String) {
+						multipart_body_builder.addFormDataPart(key, value)
+						
+					} else if(value is InputStreamOpener) {
+						
+						val fileName = "%x".format(System.currentTimeMillis())
+						
+						multipart_body_builder.addFormDataPart(
+							key,
+							fileName,
+							object : RequestBody() {
+								override fun contentType() : MediaType? {
+									return MediaType.parse(value.mimeType)
+								}
+								
+								override fun writeTo(sink : BufferedSink) {
+									value.open().use { inData ->
+										val tmp = ByteArray(4096)
+										while(true) {
+											val r = inData.read(tmp, 0, tmp.size)
+											if(r <= 0) break
+											sink.write(tmp, 0, r)
+										}
+									}
+								}
+							})
+					}
+					
+					val request_builder = Request.Builder()
+						.patch(multipart_body_builder.build())
+					
+					val result =
+						client.request("/api/v1/accounts/update_credentials", request_builder)
+					val jsonObject = result?.jsonObject
+					if(jsonObject != null) {
+						val a = TootParser(this@ActAccountSetting, account).account(jsonObject)
+						if(a == null) return TootApiResult("TootAccount parse failed.")
+						data = a
+					}
+					
+					return result
+					
+				} finally {
+					(value as? InputStreamOpener)?.deleteTempFile()
+					
 				}
-				return result
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
@@ -794,7 +836,7 @@ class ActAccountSetting
 				return
 			}
 		}
-		updateCredential("display_name=" + EmojiDecoder.decodeShortCode(sv).encodePercent())
+		updateCredential("display_name", EmojiDecoder.decodeShortCode(sv))
 	}
 	
 	private fun sendNote(bConfirmed : Boolean) {
@@ -818,7 +860,7 @@ class ActAccountSetting
 				return
 			}
 		}
-		updateCredential("note=" + EmojiDecoder.decodeShortCode(sv).encodePercent())
+		updateCredential("note", EmojiDecoder.decodeShortCode(sv))
 	}
 	
 	private fun pickAvatarImage() {
@@ -926,6 +968,7 @@ class ActAccountSetting
 	internal interface InputStreamOpener {
 		
 		val mimeType : String
+		
 		@Throws(IOException::class)
 		fun open() : InputStream
 		
@@ -957,10 +1000,12 @@ class ActAccountSetting
 							break
 						}
 						
-						
 						cache_dir.mkdir()
 						
-						val temp_file = File(cache_dir, "tmp." + Thread.currentThread().id)
+						val temp_file = File(
+							cache_dir,
+							"tmp." + System.currentTimeMillis() + "." + Thread.currentThread().id
+						)
 						FileOutputStream(temp_file).use { os ->
 							if(is_jpeg) {
 								bitmap.compress(Bitmap.CompressFormat.JPEG, 95, os)
@@ -975,12 +1020,9 @@ class ActAccountSetting
 								get() = mime_type
 							
 							@Throws(IOException::class)
-							override fun open() : InputStream {
-								return FileInputStream(temp_file)
-							}
+							override fun open() =FileInputStream(temp_file)
 							
 							override fun deleteTempFile() {
-								
 								temp_file.delete()
 							}
 						}
@@ -1024,49 +1066,42 @@ class ActAccountSetting
 			return
 		}
 		
+		val progress = ProgressDialogEx(this)
+		
 		val task = @SuppressLint("StaticFieldLeak")
-		object : AsyncTask<Void, Void, String?>() {
+		object : AsyncTask<Void, Void, InputStreamOpener?>() {
 			
-			override fun doInBackground(vararg params : Void) : String? {
-				try {
-					val opener = createOpener(uri, mime_type)
-					try {
-						opener.open().use { inData ->
-							val bao = ByteArrayOutputStream()
-							//
-							bao.write("data:${opener.mimeType};base64,".encodeUTF8())
-							//
-							Base64OutputStream(bao, Base64.NO_WRAP).use { base64 ->
-								IOUtils.copy(
-									inData,
-									base64
-								)
-							}
-							val value = bao.toByteArray().decodeUTF8()
-							
-							return when(request_code) {
-								REQUEST_CODE_HEADER_ATTACHMENT, REQUEST_CODE_HEADER_CAMERA -> "header="
-								else -> "avatar="
-							} + value.encodePercent()
-						}
-					} finally {
-						opener.deleteTempFile()
-					}
-					
+			override fun doInBackground(vararg params : Void) : InputStreamOpener? {
+				return try {
+					createOpener(uri, mime_type)
 				} catch(ex : Throwable) {
 					showToast(this@ActAccountSetting, ex, "image converting failed.")
+					null
 				}
-				
-				return null
 			}
 			
-			override fun onPostExecute(form_data : String?) {
-				if(form_data != null) {
-					updateCredential(form_data)
+			override fun onPostExecute(opener : InputStreamOpener?) {
+				progress.dismiss()
+				if(opener != null) {
+					updateCredential(
+						when(request_code) {
+							REQUEST_CODE_HEADER_ATTACHMENT, REQUEST_CODE_HEADER_CAMERA -> "header"
+							else -> "avatar"
+						},
+						opener
+					)
 				}
 			}
 			
 		}
+		
+		progress.isIndeterminate = true
+		progress.setMessage("preparing image…")
+		progress.setOnCancelListener {
+			task.cancel(true)
+		}
+		progress.show()
+		
 		task.executeOnExecutor(App1.task_executor)
 	}
 	

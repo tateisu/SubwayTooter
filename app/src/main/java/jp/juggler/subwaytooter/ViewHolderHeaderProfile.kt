@@ -135,7 +135,7 @@ internal class ViewHolderHeaderProfile(
 		showColor()
 		
 		llMoved.visibility = View.GONE
-		tvMovedAcct.visibility = View.GONE
+		tvMoved.visibility = View.GONE
 		
 		if(who == null) {
 			tvCreated.text = ""
@@ -223,7 +223,7 @@ internal class ViewHolderHeaderProfile(
 			activity,
 			R.string.account_moved_to
 		)
-
+		
 		tvMoved.text = caption
 		moved_caption_invalidator.register(caption)
 		
@@ -349,9 +349,9 @@ internal class ViewHolderHeaderProfile(
 	override fun onViewRecycled() {
 	}
 	
-	fun updateRelativeTime(){
+	fun updateRelativeTime() {
 		val who = this.who
-		if( who != null ) {
+		if(who != null) {
 			tvCreated.text = TootStatus.formatTime(tvCreated.context, who.time_created_at, true)
 		}
 	}

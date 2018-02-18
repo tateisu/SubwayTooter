@@ -142,23 +142,24 @@ object Utils {
 	
 	private const val MIME_TYPE_APPLICATION_OCTET_STREAM = "application/octet-stream"
 	
-	//	private const val ALM = 0x061c.toChar() // Arabic letter mark (ALM)
-	//	private const val LRM = 0x200E.toChar() //	Left-to-right mark (LRM)
-	//	private const val RLM = 0x200F.toChar() //	Right-to-left mark (RLM)
-	private const val LRE = 0x202A.toChar() // Left-to-right embedding (LRE)
-	private const val RLE = 0x202B.toChar() // Right-to-left embedding (RLE)
-	const val PDF = 0x202C.toChar() // Pop directional formatting (PDF)
-	private const val LRO = 0x202D.toChar() // Left-to-right override (LRO)
-	private const val RLO = 0x202E.toChar() // Right-to-left override (RLO)
-	
-	const val CHARS_MUST_PDF = LRE.toString() + RLE + LRO + RLO
-	
-	private const val LRI = 0x2066.toChar() // Left-to-right isolate (LRI)
-	private const val RLI = 0x2067.toChar() // Right-to-left isolate (RLI)
-	private const val FSI = 0x2068.toChar() // First strong isolate (FSI)
-	const val PDI = 0x2069.toChar() // Pop directional isolate (PDI)
-	
-	const val CHARS_MUST_PDI = LRI.toString() + RLI + FSI
+	// BDI制御文字からその制御文字を閉じる文字を得るためのマップ
+	val sanitizeBdiMap = HashMap<Char, Char>().apply {
+		
+		val PDF = 0x202C.toChar() // Pop directional formatting (PDF)
+		this[0x202A.toChar()] = PDF // Left-to-right embedding (LRE)
+		this[0x202B.toChar()] = PDF // Right-to-left embedding (RLE)
+		this[0x202D.toChar()] = PDF // Left-to-right override (LRO)
+		this[0x202E.toChar()] = PDF // Right-to-left override (RLO)
+		
+		val PDI = 0x2069.toChar() // Pop directional isolate (PDI)
+		this[0x2066.toChar()] = PDI // Left-to-right isolate (LRI)
+		this[0x2067.toChar()] = PDI // Right-to-left isolate (RLI)
+		this[0x2068.toChar()] = PDI // First strong isolate (FSI)
+		
+		//	private const val ALM = 0x061c.toChar() // Arabic letter mark (ALM)
+		//	private const val LRM = 0x200E.toChar() //	Left-to-right mark (LRM)
+		//	private const val RLM = 0x200F.toChar() //	Right-to-left mark (RLM)
+	}
 	
 	private var refToast : WeakReference<Toast>? = null
 	
@@ -430,29 +431,25 @@ fun String.sanitizeBDI() : String {
 	
 	// 文字列をスキャンしてBDI制御文字をスタックに入れていく
 	var stack : LinkedList<Char>? = null
-	for(i in 0 until this.length) {
-		val c = this[i]
-		
-		if(- 1 != Utils.CHARS_MUST_PDF.indexOf(c)) {
+	for(c in this) {
+		val closer = Utils.sanitizeBdiMap[c]
+		if(closer != null) {
 			if(stack == null) stack = LinkedList()
-			stack.add(Utils.PDF)
-			
-		} else if(- 1 != Utils.CHARS_MUST_PDI.indexOf(c)) {
-			if(stack == null) stack = LinkedList()
-			stack.add(Utils.PDI)
-			
+			stack.add(closer)
 		} else if(stack?.isNotEmpty() == true && stack.last == c) {
 			stack.removeLast()
 		}
 	}
+	
 	if(stack?.isNotEmpty() == true) {
-		val sb = StringBuilder()
+		val sb = StringBuilder(this.length + stack.size)
 		sb.append(this)
 		while(! stack.isEmpty()) {
 			sb.append(stack.removeLast())
 		}
 		return sb.toString()
 	}
+	
 	return this
 }
 

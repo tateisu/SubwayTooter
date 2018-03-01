@@ -1492,10 +1492,8 @@ class Column(
 				return result
 			}
 			
-			internal fun parseNotifications(
-				client : TootApiClient,
-				path_base : String
-			) : TootApiResult? {
+			internal fun parseNotifications( client : TootApiClient ) : TootApiResult? {
+				val path_base  = makeNotificationUrl()
 				
 				val time_start = SystemClock.elapsedRealtime()
 				val result = client.request(path_base)
@@ -1670,7 +1668,7 @@ class Column(
 						
 						TYPE_REPORTS -> return parseReports(client, PATH_REPORTS)
 						
-						TYPE_NOTIFICATIONS -> return parseNotifications(client, PATH_NOTIFICATIONS)
+						TYPE_NOTIFICATIONS -> return parseNotifications(client)
 						
 						TYPE_BOOSTED_BY -> return parseAccountList(
 							client,
@@ -2245,10 +2243,8 @@ class Column(
 				return result
 			}
 			
-			internal fun getNotificationList(
-				client : TootApiClient,
-				path_base : String
-			) : TootApiResult? {
+			internal fun getNotificationList( client : TootApiClient ) : TootApiResult? {
+				val path_base  = makeNotificationUrl()
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				val last_since_id = since_id
@@ -2522,7 +2518,7 @@ class Column(
 						
 						TYPE_REPORTS -> getReportList(client, PATH_REPORTS)
 						
-						TYPE_NOTIFICATIONS -> getNotificationList(client, PATH_NOTIFICATIONS)
+						TYPE_NOTIFICATIONS -> getNotificationList(client)
 						
 						TYPE_BOOSTED_BY -> getAccountList(
 							client, String.format(
@@ -2905,12 +2901,14 @@ class Column(
 				return result
 			}
 			
-			internal fun getNotificationList(
-				client : TootApiClient,
-				path_base : String
-			) : TootApiResult? {
+			internal fun getNotificationList( client : TootApiClient ) : TootApiResult? {
+				val path_base  = makeNotificationUrl()
+				
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
+				
+				
+				
 				list_tmp = ArrayList()
 				
 				var result : TootApiResult? = null
@@ -3047,7 +3045,7 @@ class Column(
 						
 						TYPE_REPORTS -> getReportList(client, PATH_REPORTS)
 						
-						TYPE_NOTIFICATIONS -> getNotificationList(client, PATH_NOTIFICATIONS)
+						TYPE_NOTIFICATIONS -> getNotificationList(client)
 						
 						TYPE_HASHTAG -> getStatusList(
 							client,
@@ -3584,5 +3582,16 @@ class Column(
 		}
 	}
 	
-	
+	private fun makeNotificationUrl():String{
+		return if(!dont_show_favourite && !dont_show_boost && !dont_show_follow && !dont_show_reply){
+			PATH_NOTIFICATIONS
+		}else {
+			val sb = StringBuilder(PATH_NOTIFICATIONS) // always contain "?limit=XX"
+			if(dont_show_favourite) sb.append("&exclude_types[]=favourite")
+			if(dont_show_boost) sb.append("&exclude_types[]=reblog")
+			if(dont_show_follow) sb.append("&exclude_types[]=follow")
+			if(dont_show_reply) sb.append("&exclude_types[]=mention")
+			sb.toString()
+		}
+	}
 }

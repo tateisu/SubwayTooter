@@ -70,6 +70,9 @@
     <!-- カラムストリップの背景色 -->
     <attr name="colorColumnStripBackground" format="color"/>
 
+    <!-- サムネイルの背景色 -->
+    <attr name="colorThumbnailBackground" format="color"/>
+
     <attr name="btn_attachment" format="reference" />
     <attr name="btn_boost" format="reference" />
     <attr name="btn_close" format="reference" />

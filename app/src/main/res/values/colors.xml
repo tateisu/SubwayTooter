@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="Light_colorThumbnailBackground">#20000000</color>
     <color name="Light_colorColumnListItemText">#80000000</color>
     <color name="Light_colorTimeSmall">#80000000</color>
     <color name="Light_colorColumnHeaderAcct">#80000000</color>
@@ -30,7 +31,6 @@
 
     <color name="Light_colorBackground">#fff</color>
     <color name="Light_colorColumnStripBackground">#fff</color>
-
     <color name="Light_colorPrimaryDark">#303030</color> <!-- ステータスバー背景 -->
 
     <!-- 以下は白テーマでも黒テーマでもだいたい同じ -->
@@ -46,6 +46,7 @@
 
     <!-- Dark theme -->
 
+    <color name="Dark_colorThumbnailBackground">#20ffffff</color>
     <color name="Dark_colorColumnListItemText">#66FFFFFF</color>
     <color name="Dark_colorTimeSmall">#66FFFFFF</color>
     <color name="Dark_colorColumnHeaderAcct">#66FFFFFF</color>

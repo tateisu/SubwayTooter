@@ -69,11 +69,11 @@ dependencies {
     implementation project(':emoji')
     implementation project(':apng_android')
 
-    compile 'com.android.support:support-v4:27.0.2'
-    compile 'com.android.support:appcompat-v7:27.0.2'
-    compile 'com.android.support:design:27.0.2'
-    compile 'com.android.support:customtabs:27.0.2'
-    compile 'com.android.support:support-v13:27.0.2'
+    compile 'com.android.support:support-v4:27.1.0'
+    compile 'com.android.support:appcompat-v7:27.1.0'
+    compile 'com.android.support:design:27.1.0'
+    compile 'com.android.support:customtabs:27.1.0'
+    compile 'com.android.support:support-v13:27.1.0'
 
     compile 'com.google.firebase:firebase-core:11.8.0'
     compile 'com.google.firebase:firebase-messaging:11.8.0'

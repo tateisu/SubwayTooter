@@ -81,7 +81,7 @@ internal class ItemListAdapter(
 		return headerType.viewType
 	}
 	
-	override fun onCreateViewHolder(parent : ViewGroup?, viewType : Int) : RecyclerView.ViewHolder {
+	override fun onCreateViewHolder(parent : ViewGroup, viewType : Int) : RecyclerView.ViewHolder {
 		when(viewType) {
 			0 -> {
 				val holder = ItemViewHolder(activity)

@@ -1453,9 +1453,10 @@ internal class ItemViewHolder(
 									
 									ivMedia1 = myNetworkImageView {
 										
+										
 										background = ContextCompat.getDrawable(
 											context,
-											R.drawable.btn_bg_ddd
+											R.drawable.bg_thumbnail
 										)
 										contentDescription = context.getString(R.string.thumbnail)
 										scaleType = ImageView.ScaleType.CENTER_CROP
@@ -1468,7 +1469,7 @@ internal class ItemViewHolder(
 										
 										background = ContextCompat.getDrawable(
 											context,
-											R.drawable.btn_bg_ddd
+											R.drawable.bg_thumbnail
 										)
 										contentDescription = context.getString(R.string.thumbnail)
 										scaleType = ImageView.ScaleType.CENTER_CROP
@@ -1482,7 +1483,7 @@ internal class ItemViewHolder(
 										
 										background = ContextCompat.getDrawable(
 											context,
-											R.drawable.btn_bg_ddd
+											R.drawable.bg_thumbnail
 										)
 										contentDescription = context.getString(R.string.thumbnail)
 										scaleType = ImageView.ScaleType.CENTER_CROP
@@ -1496,7 +1497,7 @@ internal class ItemViewHolder(
 										
 										background = ContextCompat.getDrawable(
 											context,
-											R.drawable.btn_bg_ddd
+											R.drawable.bg_thumbnail
 										)
 										contentDescription = context.getString(R.string.thumbnail)
 										scaleType = ImageView.ScaleType.CENTER_CROP

@@ -26,6 +26,7 @@
         <item name="colorColumnListDragHandleBackground">
             @color/Light_colorColumnListDragHandleBackground
         </item>
+        <item name="colorThumbnailBackground">@color/Light_colorThumbnailBackground</item>
         <item name="colorColumnListItemText">@color/Light_colorColumnListItemText</item>
         <item name="colorTimeSmall">@color/Light_colorTimeSmall</item>
         <item name="colorProfileBackgroundMask">@color/Light_colorProfileBackgroundMask</item>
@@ -140,6 +141,8 @@
         <item name="colorColumnListDragHandleBackground">
             @color/Dark_colorColumnListDragHandleBackground
         </item>
+        <item name="colorThumbnailBackground">@color/Dark_colorThumbnailBackground</item>
+
         <item name="colorColumnListItemText">@color/Dark_colorColumnListItemText</item>
         <item name="colorTimeSmall">@color/Dark_colorTimeSmall</item>
         <item name="colorProfileBackgroundMask">@color/Dark_colorProfileBackgroundMask</item>
@@ -219,6 +222,7 @@
         <item name="ic_right">@drawable/ic_right_dark</item>
         <item name="ic_volume_up">@drawable/ic_volume_up_dark</item>
         <item name="ic_face">@drawable/ic_face_dark</item>
+
     </style>
 
     <style name="AppTheme.Dark.NoActionBar" parent="AppTheme.Dark">

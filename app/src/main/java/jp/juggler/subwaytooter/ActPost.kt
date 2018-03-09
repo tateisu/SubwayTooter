@@ -1442,17 +1442,17 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					showToast(this@ActPost, false, R.string.attachment_uploaded)
 					
 					// 投稿欄の末尾に追記する
-					val selStart = etContent.selectionStart
-					val selEnd = etContent.selectionEnd
-					val e = etContent.editableText
-					val len = e.length
-					val last_char = if(len <= 0) ' ' else e[len - 1]
-					if(! CharacterGroup.isWhitespace(last_char.toInt())) {
-						e.append(" ").append(a.text_url)
-					} else {
-						e.append(a.text_url)
-					}
-					etContent.setSelection(selStart, selEnd)
+//					val selStart = etContent.selectionStart
+//					val selEnd = etContent.selectionEnd
+//					val e = etContent.editableText
+//					val len = e.length
+//					val last_char = if(len <= 0) ' ' else e[len - 1]
+//					if(! CharacterGroup.isWhitespace(last_char.toInt())) {
+//						e.append(" ").append(a.text_url)
+//					} else {
+//						e.append(a.text_url)
+//					}
+//					etContent.setSelection(selStart, selEnd)
 					
 				}
 				

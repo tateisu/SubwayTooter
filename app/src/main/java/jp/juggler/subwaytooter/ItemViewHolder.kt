@@ -737,8 +737,14 @@ internal class ItemViewHolder(
 			val url = ta.urlForThumbnail
 			if(url != null && url.isNotEmpty()) {
 				iv.visibility = View.VISIBLE
-				iv.scaleType =
-					if(Pref.bpDontCropMediaThumb(App1.pref)) ImageView.ScaleType.FIT_CENTER else ImageView.ScaleType.CENTER_CROP
+				
+				iv.setFocusPoint( ta.focusX, ta.focusY )
+				
+				if( Pref.bpDontCropMediaThumb(App1.pref) ){
+					iv.scaleType = ImageView.ScaleType.FIT_CENTER
+				}else{
+					iv.setScaleTypeForMedia()
+				}
 				
 				val mediaType = ta.type
 				when(mediaType) {

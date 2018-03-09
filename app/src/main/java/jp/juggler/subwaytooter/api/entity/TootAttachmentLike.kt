@@ -6,6 +6,9 @@ interface TootAttachmentLike{
 	val description : String?
 	val urlForThumbnail : String?
 	
+	val focusX : Float
+	val focusY : Float
+	
 	fun hasUrl(url:String):Boolean
 	
 	companion object {

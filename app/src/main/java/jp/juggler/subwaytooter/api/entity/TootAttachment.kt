@@ -5,10 +5,22 @@ import android.content.SharedPreferences
 import org.json.JSONObject
 
 import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.util.clipRange
 import jp.juggler.subwaytooter.util.parseLong
 import jp.juggler.subwaytooter.util.parseString
 
 class TootAttachment(src : JSONObject) : TootAttachmentLike {
+	
+	companion object {
+		private fun parseFocusValue(parent : JSONObject?, key : String) : Float {
+			if(parent != null) {
+				val dv = parent.optDouble(key)
+				if(dv.isFinite()) return clipRange(- 1f, 1f, dv.toFloat())
+			}
+			return 0f
+			
+		}
+	}
 	
 	val json : JSONObject
 	
@@ -33,6 +45,11 @@ class TootAttachment(src : JSONObject) : TootAttachmentLike {
 	// ALT text (Mastodon 2.0.0 or later)
 	override val description : String?
 	
+	override val focusX : Float
+	override val focusY : Float
+	
+	///////////////////////////////
+	
 	override fun hasUrl(url : String) : Boolean = when(url) {
 		this.preview_url, this.remote_url, this.url, this.text_url -> true
 		else -> false
@@ -47,6 +64,10 @@ class TootAttachment(src : JSONObject) : TootAttachmentLike {
 		preview_url = src.parseString("preview_url")
 		text_url = src.parseString("text_url")
 		description = src.parseString("description")
+		
+		val focus = src.optJSONObject("meta")?.optJSONObject("focus")
+		focusX = parseFocusValue(focus, "x")
+		focusY = parseFocusValue(focus, "y")
 	}
 	
 	override val urlForThumbnail : String?

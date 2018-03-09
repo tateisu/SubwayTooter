@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.drawable.Animatable
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
@@ -14,6 +15,7 @@ import android.util.AttributeSet
 import android.view.ViewGroup
 import android.support.v7.widget.AppCompatImageView
 import android.view.View
+import android.widget.ImageView
 
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
@@ -27,6 +29,7 @@ import com.bumptech.glide.request.transition.Transition
 
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.clipRange
 
 class MyNetworkImageView : AppCompatImageView {
 	
@@ -51,6 +54,7 @@ class MyNetworkImageView : AppCompatImageView {
 	private var mTarget : BaseTarget<*>? = null
 	
 	private val proc_load_image : Runnable = Runnable { loadImageIfNecessary() }
+	private val proc_focus_point : Runnable = Runnable { updateFocusPoint() }
 	
 	private var media_type_drawable : Drawable? = null
 	private var media_type_bottom : Int = 0
@@ -111,7 +115,7 @@ class MyNetworkImageView : AppCompatImageView {
 		return null
 	}
 	
-	private fun cancelLoading(defaultDrawable: Drawable?) {
+	private fun cancelLoading(defaultDrawable : Drawable?) {
 		
 		val d = drawable
 		if(d is Animatable) {
@@ -137,10 +141,10 @@ class MyNetworkImageView : AppCompatImageView {
 	}
 	
 	// デフォルト画像かnull
-	private fun getDefaultDrawable(context:Context?):Drawable? {
-		return if(context!= null && mDefaultImageId != 0) {
+	private fun getDefaultDrawable(context : Context?) : Drawable? {
+		return if(context != null && mDefaultImageId != 0) {
 			ContextCompat.getDrawable(context, mDefaultImageId)
-		}else {
+		} else {
 			null
 		}
 	}
@@ -163,7 +167,7 @@ class MyNetworkImageView : AppCompatImageView {
 			cancelLoading(getDefaultDrawable(context))
 			
 			// 非表示状態ならロードを延期する
-			if(!isShown) return
+			if(! isShown) return
 			
 			var wrapWidth = false
 			var wrapHeight = false
@@ -372,6 +376,7 @@ class MyNetworkImageView : AppCompatImageView {
 	override fun onSizeChanged(w : Int, h : Int, oldw : Int, oldh : Int) {
 		super.onSizeChanged(w, h, oldw, oldh)
 		post(proc_load_image)
+		post(proc_focus_point)
 	}
 	
 	override fun onLayout(changed : Boolean, left : Int, top : Int, right : Int, bottom : Int) {
@@ -419,7 +424,7 @@ class MyNetworkImageView : AppCompatImageView {
 		} catch(ex : Throwable) {
 			log.trace(ex)
 		}
-
+		
 		// media type の描画
 		val media_type_drawable = this.media_type_drawable
 		if(media_type_drawable != null) {
@@ -464,6 +469,100 @@ class MyNetworkImageView : AppCompatImageView {
 			// 通常のImageViewは内容を見てサイズを決める
 			// たとえLayputParamがw,hともmatchParentでも内容を見てしまう
 			super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+		}
+	}
+	
+	/////////////////////////////////////////////////////////////////////
+	
+	private var focusX : Float = 0f
+	private var focusY : Float = 0f
+	
+	fun setFocusPoint(focusX : Float, focusY : Float) {
+		// フォーカスポイントは上がプラスで下がマイナス
+		// https://github.com/jonom/jquery-focuspoint#1-calculate-your-images-focus-point
+		// このタイミングで正規化してしまう
+		
+		this.focusX = clipRange(- 1f, 1f, focusX)
+		this.focusY = - clipRange(- 1f, 1f, focusY)
+	}
+	
+	override fun setImageBitmap(bm : Bitmap?) {
+		super.setImageBitmap(bm)
+		updateFocusPoint()
+	}
+	
+	override fun setImageDrawable(drawable : Drawable?) {
+		super.setImageDrawable(drawable)
+		updateFocusPoint()
+	}
+	
+	private fun updateFocusPoint() {
+		
+		// ビューのサイズが0より大きい
+		val view_w = width.toFloat()
+		val view_h = height.toFloat()
+		if(view_w <= 0 || view_h <= 0) return
+		
+		// 画像のサイズが0より大きい
+		val drawable = this.drawable ?: return
+		val drawable_w = drawable.intrinsicWidth.toFloat()
+		val drawable_h = drawable.intrinsicHeight.toFloat()
+		if(drawable_w <= 0 || drawable_h <= 0) return
+		
+		when(scaleType) {
+			ImageView.ScaleType.CENTER_CROP, ImageView.ScaleType.MATRIX -> {
+				val view_aspect = view_w / view_h
+				val drawable_aspect = drawable_w / drawable_h
+				
+				if(drawable_aspect >= view_aspect) {
+					// ビューより画像の方が横長
+					val focus_x = this.focusX
+					if(focus_x == 0f) {
+						scaleType = ImageView.ScaleType.CENTER_CROP
+					} else {
+						val matrix = Matrix()
+						val scale = view_h / drawable_h
+						val delta = focus_x * ((drawable_w * scale) - view_w)
+						log.d("updateFocusPoint x delta=$delta")
+						matrix.postTranslate(drawable_w / - 2f, drawable_h / - 2f)
+						matrix.postScale(scale, scale)
+						matrix.postTranslate((view_w - delta) / 2f, view_h / 2f)
+						scaleType = ImageView.ScaleType.MATRIX
+						imageMatrix = matrix
+					}
+				} else {
+					// ビューより画像の方が縦長
+					val focus_y = this.focusY
+					if(focus_y == 0f) {
+						scaleType = ImageView.ScaleType.CENTER_CROP
+					} else {
+						val matrix = Matrix()
+						val scale = view_w / drawable_w
+						val delta = focus_y * ((drawable_h * scale) - view_h)
+						matrix.postTranslate(drawable_w / - 2f, drawable_h / - 2f)
+						matrix.postScale(scale, scale)
+						matrix.postTranslate(view_w / 2f, (view_h - delta) / 2f)
+						scaleType = ImageView.ScaleType.MATRIX
+						imageMatrix = matrix
+					}
+				}
+			}
+			
+			else -> {
+				log.d("updateFocusPoint: scaleType not match.")
+			}
+		}
+	}
+	
+	fun setScaleTypeForMedia() {
+		when(scaleType) {
+			ImageView.ScaleType.CENTER_CROP, ImageView.ScaleType.MATRIX -> {
+				// nothing to do
+			}
+			
+			else -> {
+				scaleType = ImageView.ScaleType.CENTER_CROP
+			}
 		}
 	}
 }

@@ -17,6 +17,12 @@ class TootAttachmentMSP(
 	override val urlForThumbnail : String?
 		get() = preview_url
 	
+	override val focusX : Float
+		get() = 0f
+
+	override val focusY : Float
+		get() = 0f
+	
 	override fun hasUrl(url:String):Boolean = (url == this.preview_url)
 	
 	companion object {

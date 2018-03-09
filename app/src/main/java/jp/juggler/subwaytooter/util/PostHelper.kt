@@ -86,7 +86,9 @@ class PostHelper(
 		val enquete_items = this.enquete_items
 		var visibility = this.visibility ?: ""
 		
-		if(content.isEmpty()) {
+		val hasAttachment = attachment_list?.isNotEmpty() ?: false
+		
+		if(!hasAttachment && content.isEmpty()) {
 			showToast(activity, true, R.string.post_error_contents_empty)
 			return
 		}

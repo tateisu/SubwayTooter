@@ -807,7 +807,7 @@
     <string name="not_blocked">ブロックできません</string>
     <string name="not_muted">ミュートできません</string>
     <string name="media_description">(添付 %1$d) %2$s</string>
-    <string name="set_description">説明文を設定(マストドン2.0.0以降)</string>
+    <string name="set_description">説明文を設定(マストドン2.0以降)</string>
     <string name="attachment_description_cant_edit_while_uploading">添付メディアのアップロード中は説明文を設定できません</string>
     <string name="attachment_description">添付メディアの説明文</string>
     <string name="description_empty">説明文が指定されてません</string>
@@ -897,5 +897,8 @@
     <string name="notification_type_boost">ブースト</string>
     <string name="notification_type_favourite">お気に入り</string>
     <string name="dont_show_normal_toot">通常トゥートを表示しない</string>
+    <string name="set_focus_point">焦点を設定 (マストドン2.3以降)</string>
+    <string name="report_forward_desc">対象ユーザは別のインスタンスに所属しています。通報内容を投稿元タンスに匿名で転送しますか?</string>
+    <string name="report_forward_to">%1$s に転送する</string>
 
 </resources>

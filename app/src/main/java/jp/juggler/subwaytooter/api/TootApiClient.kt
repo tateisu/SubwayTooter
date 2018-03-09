@@ -271,6 +271,71 @@ class TootApiClient(
 		}
 	}
 	
+	// レスポンスがエラーかボディがカラならエラー状態を設定する
+	// 例外を出すかも
+	internal fun readBodyBytes(
+		result : TootApiResult,
+		progressPath : String? = null,
+		jsonErrorParser : (json : JSONObject) -> String? = DEFAULT_JSON_ERROR_PARSER
+	) : ByteArray? {
+		
+		if(isApiCancelled) return null
+		
+		val response = result.response !!
+		
+		val request = response.request()
+		if(request != null) {
+			publishApiProgress(
+				context.getString(
+					R.string.reading_api,
+					request.method(),
+					progressPath ?: result.caption
+				)
+			)
+		}
+		
+		val bodyBytes = response.body()?.bytes()
+		if(isApiCancelled) return null
+		
+		if(! response.isSuccessful || bodyBytes?.isEmpty() != false) {
+			
+			result.error = TootApiClient.formatResponse(
+				response,
+				result.caption,
+				if(bodyBytes?.isNotEmpty() == true) bodyBytes.decodeUTF8() else NO_INFORMATION,
+				jsonErrorParser
+			)
+		}
+		
+		return if(result.error != null) {
+			null
+		} else {
+			result.bodyString = "(binary data)"
+			result.data = bodyBytes
+			bodyBytes
+		}
+	}
+	
+	internal fun parseBytes(
+		result : TootApiResult,
+		progressPath : String? = null,
+		jsonErrorParser : (json : JSONObject) -> String? = DEFAULT_JSON_ERROR_PARSER
+	) : TootApiResult? {
+		
+		val response = result.response !! // nullにならないはず
+		
+		try {
+			readBodyBytes(result, progressPath, jsonErrorParser)
+				?: return if(isApiCancelled) null else result
+			
+		} catch(ex : Throwable) {
+			log.trace(ex)
+			result.error =
+				formatResponse(response, result.caption, result.bodyString ?: NO_INFORMATION)
+		}
+		return result
+	}
+	
 	internal fun parseString(
 		result : TootApiResult,
 		progressPath : String? = null,
@@ -703,6 +768,17 @@ class TootApiClient(
 				Request.Builder().url(url).build()
 			}) return result
 		return parseString(result)
+		
+	}
+	
+	fun getHttpBytes(url : String) : TootApiResult? {
+		val result = TootApiResult.makeWithCaption(url)
+		if(result.error != null) return result
+		
+		if(! sendRequest(result, progressPath = url) {
+				Request.Builder().url(url).build()
+			}) return result
+		return parseBytes(result)
 		
 	}
 	

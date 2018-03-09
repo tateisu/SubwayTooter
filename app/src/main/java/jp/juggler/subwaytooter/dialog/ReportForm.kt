@@ -5,12 +5,14 @@ import android.app.Activity
 import android.app.Dialog
 import android.view.View
 import android.view.WindowManager
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.TextView
 
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.showToast
 
 object ReportForm {
@@ -18,15 +20,32 @@ object ReportForm {
 	@SuppressLint("InflateParams")
 	fun showReportForm(
 		activity : Activity,
+		access_info : SavedAccount,
 		who : TootAccount,
 		status : TootStatus?,
-		onClickOk : (dialog : Dialog, comment : String) -> Unit
+		onClickOk : (dialog : Dialog, comment : String,forward:Boolean) -> Unit
 	) {
 		val view = activity.layoutInflater.inflate(R.layout.dlg_report_user, null, false)
 		
-		val tvUser = view.findViewById<TextView>(R.id.tvUser)
-		val tvStatus = view.findViewById<TextView>(R.id.tvStatus)
-		val etComment = view.findViewById<EditText>(R.id.etComment)
+		val tvUser :TextView = view.findViewById(R.id.tvUser)
+		val tvStatus :TextView = view.findViewById(R.id.tvStatus)
+		val etComment :EditText = view.findViewById(R.id.etComment)
+		
+		val cbForward : CheckBox = view.findViewById(R.id.cbForward)
+		val tvForwardDesc:TextView = view.findViewById(R.id.tvForwardDesc)
+		val canForward = access_info.host != who.host
+		
+		
+		cbForward.isChecked = false
+		if(!canForward){
+			cbForward.visibility = View.GONE
+			tvForwardDesc.visibility = View.GONE
+		}else{
+			cbForward.visibility = View.VISIBLE
+			tvForwardDesc.visibility = View.VISIBLE
+			cbForward.text = activity.getString(R.string.report_forward_to,who.host)
+		}
+		
 		
 		tvUser.text = who.acct
 		tvStatus.text = status?.decoded_content ?: ""
@@ -40,12 +59,15 @@ object ReportForm {
 				return@OnClickListener
 			}
 			
-			onClickOk(dialog, comment)
+			onClickOk(dialog, comment,cbForward.isChecked)
 		})
 		view.findViewById<View>(R.id.btnCancel).setOnClickListener { dialog.cancel() }
 		
 		
-		dialog.window?.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.WRAP_CONTENT)
+		dialog.window?.setLayout(
+			WindowManager.LayoutParams.MATCH_PARENT,
+			WindowManager.LayoutParams.MATCH_PARENT
+		)
 		dialog.show()
 	}
 }

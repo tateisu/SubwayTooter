@@ -61,6 +61,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanClickCallback
 import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.view.FocusPointView
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import okhttp3.MediaType
@@ -1035,17 +1036,63 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			.setItems(
 				arrayOf<CharSequence>(
 					getString(R.string.set_description),
+					getString(R.string.set_focus_point),
 					getString(R.string.delete)
 				)
 			) { _, i ->
 				when(i) {
 					0 -> editAttachmentDescription(pa)
-					1 -> deleteAttachment(pa)
+					1 -> openFocusPoint(pa)
+					2->deleteAttachment(pa)
 				}
 			}
 			.setNegativeButton(R.string.cancel, null)
 			.show()
 	}
+	
+	private fun openFocusPoint(pa : PostAttachment) {
+		val attachment = pa.attachment
+		if( attachment != null) {
+			DlgFocusPoint(this, attachment)
+				.setCallback(object: FocusPointView.Callback{
+					override fun onFocusPointUpdate(x : Float, y : Float) {
+						val account = this@ActPost.account ?:return
+
+						TootTaskRunner(this@ActPost,TootTaskRunner.PROGRESS_NONE).run(account,object:TootTask{
+							override fun background(client : TootApiClient) : TootApiResult? {
+								try{
+									val json = JSONObject()
+									json.put("focus","%.2f,%.2f".format(x,y))
+									val result = client.request(
+										"/api/v1/media/"+ attachment.id,
+										Request.Builder().put(RequestBody.create(
+											TootApiClient.MEDIA_TYPE_JSON,json.toString()
+									)))
+									new_attachment = parseItem(::TootAttachment, result?.jsonObject)
+									return result
+								}catch(ex:Throwable){
+									return TootApiResult(ex.withCaption("set focus point failed."))
+								}
+							}
+							
+							var new_attachment : TootAttachment? = null
+							
+							override fun handleResult(result : TootApiResult?) {
+								result ?: return
+								if( new_attachment != null ){
+									pa.attachment = attachment
+								}else{
+									showToast(this@ActPost,true,result.error)
+								}
+							}
+						})
+					}
+				})
+				.show()
+		}
+	}
+	
+	
 	
 	private fun deleteAttachment(pa : PostAttachment) {
 		AlertDialog.Builder(this)

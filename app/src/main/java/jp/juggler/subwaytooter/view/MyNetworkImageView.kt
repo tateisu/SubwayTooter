@@ -501,13 +501,13 @@ class MyNetworkImageView : AppCompatImageView {
 		// ビューのサイズが0より大きい
 		val view_w = width.toFloat()
 		val view_h = height.toFloat()
-		if(view_w <= 0 || view_h <= 0) return
+		if(view_w <= 0f || view_h <= 0f) return
 		
 		// 画像のサイズが0より大きい
 		val drawable = this.drawable ?: return
 		val drawable_w = drawable.intrinsicWidth.toFloat()
 		val drawable_h = drawable.intrinsicHeight.toFloat()
-		if(drawable_w <= 0 || drawable_h <= 0) return
+		if(drawable_w <= 0f || drawable_h <= 0f) return
 		
 		when(scaleType) {
 			ImageView.ScaleType.CENTER_CROP, ImageView.ScaleType.MATRIX -> {

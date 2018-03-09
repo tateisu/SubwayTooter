@@ -52,15 +52,25 @@ object Action_User {
 					if(! bMute)
 						RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "")
 					else if(bMuteNotification)
-						RequestBody.create(TootApiClient.MEDIA_TYPE_JSON, "{\"notifications\": true}")
+						RequestBody.create(
+							TootApiClient.MEDIA_TYPE_JSON,
+							"{\"notifications\": true}"
+						)
 					else
-						RequestBody.create(TootApiClient.MEDIA_TYPE_JSON, "{\"notifications\": false}")
+						RequestBody.create(
+							TootApiClient.MEDIA_TYPE_JSON,
+							"{\"notifications\": false}"
+						)
 				)
 				
-				val result = client.request("/api/v1/accounts/" + who.id + if(bMute) "/mute" else "/unmute", request_builder)
+				val result = client.request(
+					"/api/v1/accounts/" + who.id + if(bMute) "/mute" else "/unmute",
+					request_builder
+				)
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
-					relation = saveUserRelation(access_info, parseItem(::TootRelationShip, jsonObject))
+					relation =
+						saveUserRelation(access_info, parseItem(::TootRelationShip, jsonObject))
 				}
 				return result
 			}
@@ -90,7 +100,11 @@ object Action_User {
 						}
 					}
 					
-					showToast(activity, false, if(relation.muting) R.string.mute_succeeded else R.string.unmute_succeeded)
+					showToast(
+						activity,
+						false,
+						if(relation.muting) R.string.mute_succeeded else R.string.unmute_succeeded
+					)
 					
 				} else {
 					showToast(activity, false, result.error)
@@ -117,14 +131,17 @@ object Action_User {
 				val request_builder = Request.Builder().post(
 					RequestBody.create(
 						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" // 空データ
-					))
+					)
+				)
 				
 				val result = client.request(
-					"/api/v1/accounts/" + who.id + if(bBlock) "/block" else "/unblock", request_builder
+					"/api/v1/accounts/" + who.id + if(bBlock) "/block" else "/unblock",
+					request_builder
 				)
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
-					relation = saveUserRelation(access_info, parseItem(::TootRelationShip, jsonObject))
+					relation =
+						saveUserRelation(access_info, parseItem(::TootRelationShip, jsonObject))
 				}
 				
 				return result
@@ -157,7 +174,11 @@ object Action_User {
 						}
 					}
 					
-					showToast(activity, false, if(relation.blocking) R.string.block_succeeded else R.string.unblock_succeeded)
+					showToast(
+						activity,
+						false,
+						if(relation.blocking) R.string.block_succeeded else R.string.unblock_succeeded
+					)
 					
 				} else {
 					showToast(activity, false, result.error)
@@ -174,10 +195,10 @@ object Action_User {
 		access_info : SavedAccount,
 		who : TootAccount
 	) {
-		if( access_info.isPseudo){
+		if(access_info.isPseudo) {
 			// ココを通る動線はないっぽいが、念のため
 			profileFromAnotherAccount(activity, pos, access_info, who)
-		}else{
+		} else {
 			activity.addColumn(pos, access_info, Column.TYPE_PROFILE, who.id)
 		}
 	}
@@ -194,7 +215,11 @@ object Action_User {
 			internal var who_local : TootAccount? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
-				val path = String.format(Locale.JAPAN, Column.PATH_SEARCH, who_url.encodePercent()) + "&resolve=1"
+				val path = String.format(
+					Locale.JAPAN,
+					Column.PATH_SEARCH,
+					who_url.encodePercent()
+				) + "&resolve=1"
 				val result = client.request(path)
 				val jsonObject = result?.jsonObject
 				
@@ -241,7 +266,10 @@ object Action_User {
 			activity,
 			bAllowPseudo = false,
 			bAuto = false,
-			message = activity.getString(R.string.account_picker_open_user_who, AcctColor.getNickname(who.acct)),
+			message = activity.getString(
+				R.string.account_picker_open_user_who,
+				AcctColor.getNickname(who.acct)
+			),
 			accountListArg = makeAccountListNonPseudo(activity, who_host)
 		) { ai ->
 			if(ai.host.equals(access_info.host, ignoreCase = true)) {
@@ -295,7 +323,10 @@ object Action_User {
 				activity,
 				bAllowPseudo = false,
 				bAuto = false,
-				message = activity.getString(R.string.account_picker_open_user_who, AcctColor.getNickname(user + "@" + host)),
+				message = activity.getString(
+					R.string.account_picker_open_user_who,
+					AcctColor.getNickname(user + "@" + host)
+				),
 				accountListArg = makeAccountListNonPseudo(activity, host)
 			) { ai ->
 				profileFromUrl(
@@ -310,10 +341,10 @@ object Action_User {
 	
 	// 通報フォームを開く
 	fun reportForm(
-		activity : ActMain, account : SavedAccount, who : TootAccount, status : TootStatus
+		activity : ActMain, access_info : SavedAccount, who : TootAccount, status : TootStatus
 	) {
-		ReportForm.showReportForm(activity, who, status) { dialog, comment ->
-			report(activity, account, who, status, comment) { _ ->
+		ReportForm.showReportForm(activity, access_info, who, status) { dialog, comment, forward ->
+			report(activity, access_info, who, status, comment, forward) { _ ->
 				// 成功したらダイアログを閉じる
 				try {
 					dialog.dismiss()
@@ -331,6 +362,7 @@ object Action_User {
 		who : TootAccount,
 		status : TootStatus,
 		comment : String,
+		forward : Boolean,
 		onReportComplete : TootApiResultCallback
 	) {
 		if(access_info.isMe(who)) {
@@ -340,14 +372,18 @@ object Action_User {
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val sb = ("account_id=" + who.id.toString()
-					+ "&comment=" + comment.encodePercent()
-					+ "&status_ids[]=" + status.id.toString())
+				val sb = (
+					"account_id=" + who.id.toString()
+						+ "&comment=" + comment.encodePercent()
+						+ "&status_ids[]=" + status.id.toString()
+						+ "&forward=" + if(forward) "true" else "false"
+					)
 				
 				val request_builder = Request.Builder().post(
 					RequestBody.create(
 						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, sb
-					))
+					)
+				)
 				
 				return client.request("/api/v1/reports", request_builder)
 			}
@@ -390,9 +426,11 @@ object Action_User {
 				val request_builder = Request.Builder().post(
 					RequestBody.create(
 						TootApiClient.MEDIA_TYPE_JSON, content.toString()
-					))
+					)
+				)
 				
-				val result = client.request("/api/v1/accounts/" + who.id + "/follow", request_builder)
+				val result =
+					client.request("/api/v1/accounts/" + who.id + "/follow", request_builder)
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
 					relation = parseItem(::TootRelationShip, jsonObject)

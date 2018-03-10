@@ -634,6 +634,8 @@ class ActMain : AppCompatActivity()
 		post_helper.bNSFW = false
 		post_helper.in_reply_to_id = - 1L
 		post_helper.attachment_list = null
+		post_helper.emojiMapCustom = App1.custom_emoji_lister.getMap(account.host)
+		
 		
 		etQuickToot.hideKeyboard()
 		
@@ -1599,7 +1601,7 @@ class ActMain : AppCompatActivity()
 					try {
 						val dataId = sv.substring(3).toLong(10)
 						val sa = SavedAccount.loadAccount(this@ActMain, dataId)
-							?: return TootApiResult("missing account db_id=" + dataId)
+							?: return TootApiResult("missing account db_id=$dataId")
 						this.sa = sa
 						client.account = sa
 					} catch(ex : Throwable) {
@@ -1627,11 +1629,11 @@ class ActMain : AppCompatActivity()
 				val host = this.host
 				val ta = this.ta
 				var sa = this.sa
-
-				if( ta != null && host != null && sa == null ){
+				
+				if(ta != null && host != null && sa == null) {
 					val user = ta.username + "@" + host
 					// アカウント追加時に、アプリ内に既にあるアカウントと同じものを登録していたかもしれない
-					sa = SavedAccount.loadAccountByAcct( this@ActMain,user )
+					sa = SavedAccount.loadAccountByAcct(this@ActMain, user)
 				}
 				
 				afterAccountVerify(result, ta, sa, host)

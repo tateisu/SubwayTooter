@@ -35,6 +35,7 @@ import jp.juggler.subwaytooter.table.TagSet
 import jp.juggler.subwaytooter.view.MyEditText
 import okhttp3.Request
 import okhttp3.RequestBody
+import java.util.HashMap
 
 class PostHelper(
 	private val activity : AppCompatActivity,
@@ -71,6 +72,7 @@ class PostHelper(
 	var in_reply_to_id : Long = 0
 	var attachment_list : ArrayList<PostAttachment>? = null
 	var enquete_items : ArrayList<String>? = null
+	var emojiMapCustom : HashMap<String, CustomEmoji>? =null
 	
 	fun post(
 		account : SavedAccount,
@@ -221,12 +223,12 @@ class PostHelper(
 					
 					val json = JSONObject()
 					try {
-						json.put("status", EmojiDecoder.decodeShortCode(content))
+						json.put("status", EmojiDecoder.decodeShortCode(content,emojiMapCustom=emojiMapCustom))
 						if(visibility_checked != null) {
 							json.put("visibility", visibility_checked)
 						}
 						json.put("sensitive", bNSFW)
-						json.put("spoiler_text", EmojiDecoder.decodeShortCode(spoiler_text ?: ""))
+						json.put("spoiler_text", EmojiDecoder.decodeShortCode(spoiler_text ?: "",emojiMapCustom=emojiMapCustom))
 						json.put(
 							"in_reply_to_id",
 							if(in_reply_to_id == - 1L) null else in_reply_to_id
@@ -242,7 +244,7 @@ class PostHelper(
 						json.put("isEnquete", true)
 						array = JSONArray()
 						for(item in enquete_items) {
-							array.put(EmojiDecoder.decodeShortCode(item))
+							array.put(EmojiDecoder.decodeShortCode(item,emojiMapCustom=emojiMapCustom))
 						}
 						json.put("enquete_items", array)
 					} catch(ex : JSONException) {
@@ -258,7 +260,7 @@ class PostHelper(
 					val sb = StringBuilder()
 					
 					sb.append("status=")
-					sb.append(EmojiDecoder.decodeShortCode(content).encodePercent())
+					sb.append(EmojiDecoder.decodeShortCode(content,emojiMapCustom=emojiMapCustom).encodePercent())
 					
 					if(visibility_checked != null) {
 						sb.append("&visibility=")
@@ -271,7 +273,7 @@ class PostHelper(
 					
 					if(spoiler_text?.isNotEmpty() == true) {
 						sb.append("&spoiler_text=")
-						sb.append(EmojiDecoder.decodeShortCode(spoiler_text).encodePercent())
+						sb.append(EmojiDecoder.decodeShortCode(spoiler_text,emojiMapCustom=emojiMapCustom).encodePercent())
 					}
 					
 					if(in_reply_to_id != - 1L) {

@@ -13,10 +13,12 @@ import java.util.ArrayList
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.HighlightWord
+import java.util.HashMap
 import java.util.regex.Pattern
 
 object EmojiDecoder {
@@ -245,23 +247,6 @@ object EmojiDecoder {
 			}
 			
 			override fun onShortCode(part : String, name : String) {
-				// 通常の絵文字
-				val info = EmojiMap201709.sShortNameToImageId[name.toLowerCase().replace('-', '_')]
-				if(info != null) {
-					builder.addImageSpan(part, info.image_id)
-					return
-				}
-				
-				// カスタム絵文字
-				val emojiCustom = emojiMapCustom?.get(name)
-				if(emojiCustom != null) {
-					val url = when {
-						Pref.bpDisableEmojiAnimation(App1.pref) && emojiCustom.static_url?.isNotEmpty() == true -> emojiCustom.static_url
-						else -> emojiCustom.url
-					}
-					builder.addNetworkEmojiSpan(part, url)
-					return
-				}
 				
 				// フレニコのプロフ絵文字
 				if(emojiMapProfile != null && name.length >= 2 && name[0] == '@') {
@@ -273,6 +258,24 @@ object EmojiDecoder {
 							return
 						}
 					}
+				}
+
+				// カスタム絵文字
+				val emojiCustom = emojiMapCustom?.get(name)
+				if(emojiCustom != null) {
+					val url = when {
+						Pref.bpDisableEmojiAnimation(App1.pref) && emojiCustom.static_url?.isNotEmpty() == true -> emojiCustom.static_url
+						else -> emojiCustom.url
+					}
+					builder.addNetworkEmojiSpan(part, url)
+					return
+				}
+				
+				// 通常の絵文字
+				val info = EmojiMap201709.sShortNameToImageId[name.toLowerCase().replace('-', '_')]
+				if(info != null) {
+					builder.addImageSpan(part, info.image_id)
+					return
 				}
 				
 				when {
@@ -297,7 +300,7 @@ object EmojiDecoder {
 	
 	// 投稿などの際、表示は不要だがショートコード=>Unicodeの解決を行いたい場合がある
 	// カスタム絵文字の変換も行わない
-	fun decodeShortCode(s : String) : String {
+	fun decodeShortCode(s : String ,emojiMapCustom : HashMap<String, CustomEmoji>? =null ) : String {
 		
 		val sb = StringBuilder()
 		
@@ -307,6 +310,15 @@ object EmojiDecoder {
 			}
 			
 			override fun onShortCode(part : String, name : String) {
+				
+				// カスタム絵文字にマッチするなら変換しない
+				val emojiCustom = emojiMapCustom?.get(name)
+				if(emojiCustom != null) {
+					sb.append(part)
+					return
+				}
+				
+				// カスタム絵文字ではなく通常の絵文字のショートコードなら絵文字に変換する
 				val info = EmojiMap201709.sShortNameToImageId[name.toLowerCase().replace('-', '_')]
 				sb.append(info?.unified ?: part)
 			}

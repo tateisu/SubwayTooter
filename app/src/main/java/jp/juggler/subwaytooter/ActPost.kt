@@ -549,11 +549,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						
 						// 今回メンションを追加する？
 						val who_acct = account.getFullAcct(reply_status.account)
-						if(mention_list.contains("@" + who_acct)) {
+						if(mention_list.contains("@$who_acct")) {
 							// 既に含まれている
 						} else if(! account.isMe(reply_status.account) || mention_list.isEmpty()) {
 							// 自分ではない、もしくは、メンションが空
-							mention_list.add("@" + who_acct)
+							mention_list.add("@$who_acct")
 						}
 						
 						val sb = StringBuilder()
@@ -729,7 +729,6 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			findViewById(R.id.etChoice2),
 			findViewById(R.id.etChoice3),
 			findViewById(R.id.etChoice4)
-		
 		)
 		
 		tvCharCount = findViewById(R.id.tvCharCount)
@@ -835,6 +834,12 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent)
 		} else {
 			post_helper.setInstance(a.host)
+			
+			// 先読みしてキャッシュに保持しておく
+			App1.custom_emoji_lister.getList(a.host) {
+				// 何もしない
+			}
+			
 			val acct = a.acct
 			val ac = AcctColor.load(acct)
 			val nickname = if(AcctColor.hasNickname(ac)) ac.nickname else acct
@@ -1158,7 +1163,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					TootApiClient.MEDIA_TYPE_JSON, body_string
 				)
 				val request_builder = Request.Builder().put(request_body)
-				val result = client.request("/api/v1/media/" + attachment_id, request_builder)
+				val result = client.request("/api/v1/media/$attachment_id", request_builder)
 				new_attachment = parseItem(::TootAttachment, result?.jsonObject)
 				return result
 			}
@@ -1240,6 +1245,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	internal interface InputStreamOpener {
 		
 		val mimeType : String
+		
 		@Throws(IOException::class)
 		fun open() : InputStream
 		
@@ -1276,7 +1282,6 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 							break
 						}
 						
-						
 						cache_dir.mkdir()
 						
 						val temp_file = File(cache_dir, "tmp." + Thread.currentThread().id)
@@ -1288,7 +1293,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 							}
 						}
 						
-						return object : ActPost.InputStreamOpener {
+						return object : InputStreamOpener {
 							
 							override val mimeType : String
 								get() = mime_type
@@ -1314,6 +1319,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			
 			break
 		}
+		
 		return object : InputStreamOpener {
 			
 			override val mimeType : String
@@ -1646,40 +1652,29 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	private fun performMore() {
 		val dialog = ActionsDialog()
 		
-		dialog.addAction(
-			getString(R.string.open_picker_emoji)
-		) {
+		dialog.addAction(getString(R.string.open_picker_emoji)) {
 			post_helper.openEmojiPickerFromMore()
 		}
 		
-		
-		dialog.addAction(
-			getString(R.string.clear_text)
-		) {
+		dialog.addAction(getString(R.string.clear_text)) {
 			etContent.setText("")
 			etContentWarning.setText("")
 		}
 		
-		dialog.addAction(
-			getString(R.string.clear_text_and_media)
-		) {
+		dialog.addAction(getString(R.string.clear_text_and_media)) {
 			etContent.setText("")
 			etContentWarning.setText("")
 			attachment_list.clear()
 			showMediaAttachment()
 		}
 		
-		if(PostDraft.hasDraft()) {
-			dialog.addAction(
-				getString(R.string.restore_draft)
-			) { openDraftPicker() }
+		if(PostDraft.hasDraft()) dialog.addAction(getString(R.string.restore_draft)) {
+			openDraftPicker()
 		}
 		
-		dialog.addAction(
-			getString(R.string.recommended_plugin)
-		) { showRecommendedPlugin(null) }
-		
-		
+		dialog.addAction(getString(R.string.recommended_plugin)) {
+			showRecommendedPlugin(null)
+		}
 		
 		dialog.show(this, null)
 	}
@@ -1722,6 +1717,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		post_helper.in_reply_to_id = this.in_reply_to_id
 		
 		post_helper.attachment_list = this.attachment_list
+		
+		post_helper.emojiMapCustom = App1.custom_emoji_lister.getMap(account.host)
 		
 		post_helper.post(account, false, false) { target_account, status ->
 			val data = Intent()
@@ -1884,7 +1881,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				api_client.account = account
 				
 				if(in_reply_to_id != - 1L) {
-					val result = api_client.request("/api/v1/statuses/" + in_reply_to_id)
+					val result = api_client.request("/api/v1/statuses/$in_reply_to_id")
 					if(isCancelled) return null
 					val jsonObject = result?.jsonObject
 					if(jsonObject == null) {

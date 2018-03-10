@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.api.entity.parseList
+import java.util.HashMap
 
 class CustomEmojiLister(internal val context : Context) {
 	
@@ -103,6 +104,18 @@ class CustomEmojiLister(internal val context : Context) {
 			log.trace(ex)
 		}
 		return null
+	}
+	
+	fun getMap(host : String) : HashMap<String, CustomEmoji>? {
+		val list = getList(host,{
+			// 遅延ロード非対応
+		}) ?: return null
+		//
+		val dst = HashMap<String, CustomEmoji>()
+		for( e in list){
+			dst[e.shortcode] = e
+		}
+		return dst
 	}
 	
 	private inner class Worker : WorkerBase() {

@@ -159,7 +159,6 @@
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
-
             <TextView
                 style="@style/setting_row_label"
                 android:labelFor="@+id/etNote"
@@ -185,6 +184,15 @@
                 android:src="?attr/btn_post"
                 />
         </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+            <CheckBox
+                android:id="@+id/cbLocked"
+                style="@style/setting_horizontal_stretch"
+                android:text="@string/locked_account"
+                />
+        </LinearLayout>
+
 
         <View style="@style/setting_divider"/>
 

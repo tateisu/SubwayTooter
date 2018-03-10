@@ -1,12 +1,10 @@
 package jp.juggler.subwaytooter.api.entity
 
+import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.util.*
 import org.json.JSONObject
 
-import jp.juggler.subwaytooter.util.VersionString
-import jp.juggler.subwaytooter.util.parseLong
-import jp.juggler.subwaytooter.util.parseString
-
-class TootInstance(src : JSONObject) {
+class TootInstance(parser:TootParser,src : JSONObject) {
 	
 	// いつ取得したか(内部利用)
 	var time_parse : Long = System.currentTimeMillis()
@@ -34,6 +32,11 @@ class TootInstance(src : JSONObject) {
 	// ユーザ数等の数字。マストドン1.6以降。
 	val stats : Stats?
 	
+	// 言語のリスト。マストドン2.3.0以降
+	val languages : ArrayList<String>?
+	
+	val contact_account : TootAccount?
+	
 	// XXX: urls をパースしてない。使ってないから…
 	
 	init {
@@ -45,6 +48,17 @@ class TootInstance(src : JSONObject) {
 		this.decoded_version = VersionString(version)
 		this.stats = parseItem(::Stats, src.optJSONObject("stats"))
 		this.thumbnail = src.parseString("thumbnail")
+		
+		languages = src.optJSONArray("languages")?.toStringArrayList()
+		
+		val parser2 = TootParser(
+			parser.context,
+			object:LinkHelper {
+				override val host :String
+					get()= uri ?: "?"
+			}
+		)
+		contact_account = parseItem(::TootAccount,parser2,src.optJSONObject("contact_account"))
 	}
 	
 	class Stats(src : JSONObject) {

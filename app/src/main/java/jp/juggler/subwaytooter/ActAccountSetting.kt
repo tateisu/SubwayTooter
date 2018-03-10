@@ -130,6 +130,7 @@ class ActAccountSetting
 	private lateinit var etDisplayName : EditText
 	private lateinit var btnDisplayName : View
 	private lateinit var etNote : EditText
+	private lateinit var cbLocked : CheckBox
 	private lateinit var btnNote : View
 	private lateinit var name_invalidator : NetworkEmojiInvalidator
 	private lateinit var note_invalidator : NetworkEmojiInvalidator
@@ -285,6 +286,7 @@ class ActAccountSetting
 		btnDisplayName = findViewById(R.id.btnDisplayName)
 		etNote = findViewById(R.id.etNote)
 		btnNote = findViewById(R.id.btnNote)
+		cbLocked = findViewById(R.id.cbLocked)
 		
 		btnOpenBrowser.setOnClickListener(this)
 		btnAccessToken.setOnClickListener(this)
@@ -303,6 +305,7 @@ class ActAccountSetting
 		cbNotificationBoost.setOnCheckedChangeListener(this)
 		cbNotificationFavourite.setOnCheckedChangeListener(this)
 		cbNotificationFollow.setOnCheckedChangeListener(this)
+		cbLocked.setOnCheckedChangeListener(this)
 		
 		cbConfirmFollow.setOnCheckedChangeListener(this)
 		cbConfirmFollowLockedUser.setOnCheckedChangeListener(this)
@@ -373,6 +376,8 @@ class ActAccountSetting
 		cbConfirmBoost.isEnabled = enabled
 		cbConfirmToot.isEnabled = enabled
 		
+		
+		
 		updateVisibility()
 		showAcctColor()
 	}
@@ -416,8 +421,13 @@ class ActAccountSetting
 	}
 	
 	override fun onCheckedChanged(buttonView : CompoundButton, isChecked : Boolean) {
-		saveUIToData()
+		if(buttonView == cbLocked){
+			if(!profile_busy) sendLocked(isChecked)
+		}else {
+			saveUIToData()
+		}
 	}
+	
 	
 	override fun onClick(v : View) {
 		when(v.id) {
@@ -663,6 +673,7 @@ class ActAccountSetting
 		btnDisplayName.isEnabled = false
 		etNote.isEnabled = false
 		btnNote.isEnabled = false
+		cbLocked.isEnabled = false
 		// 疑似アカウントなら編集不可のまま
 		if(account.isPseudo) return
 		
@@ -699,46 +710,56 @@ class ActAccountSetting
 		})
 	}
 	
+	var profile_busy :Boolean = false
+	
 	internal fun showProfile(src : TootAccount) {
+		profile_busy = true
+		try {
+			ivProfileAvatar.setImageUrl(
+				App1.pref,
+				Styler.calcIconRound(ivProfileAvatar.layoutParams),
+				src.avatar_static,
+				src.avatar
+			)
+			
+			ivProfileHeader.setImageUrl(
+				App1.pref,
+				0f,
+				src.header_static,
+				src.header
+			)
+			
+			val display_name = src.display_name
+			val name = DecodeOptions(
+				context = this,
+				emojiMapProfile = src.profile_emojis
+			).decodeEmoji(display_name)
+			etDisplayName.setText(name)
+			name_invalidator.register(name)
+			
+			val noteString = src.source?.note ?: src.note
+			val noteSpannable = DecodeOptions(
+				context = this,
+				emojiMapProfile = src.profile_emojis
+			).decodeEmoji(noteString)
+			
+			etNote.setText(noteSpannable)
+			note_invalidator.register(noteSpannable)
+			
+			cbLocked.isChecked = src.locked
+			
+			// 編集可能にする
+			btnProfileAvatar.isEnabled = true
+			btnProfileHeader.isEnabled = true
+			etDisplayName.isEnabled = true
+			btnDisplayName.isEnabled = true
+			etNote.isEnabled = true
+			btnNote.isEnabled = true
+			cbLocked.isEnabled = true
+		}finally{
+			profile_busy = false
+		}
 		
-		ivProfileAvatar.setImageUrl(
-			App1.pref,
-			Styler.calcIconRound(ivProfileAvatar.layoutParams),
-			src.avatar_static,
-			src.avatar
-		)
-
-		ivProfileHeader.setImageUrl(
-			App1.pref,
-			0f,
-			src.header_static,
-			src.header
-		)
-		
-		val display_name = src.display_name
-		val name = DecodeOptions(
-			context = this,
-			emojiMapProfile = src.profile_emojis
-		).decodeEmoji(display_name)
-		etDisplayName.setText(name)
-		name_invalidator.register(name)
-		
-		val noteString = src.source?.note ?: src.note
-		val noteSpannable = DecodeOptions(
-			context = this,
-			emojiMapProfile = src.profile_emojis
-		).decodeEmoji(noteString)
-		
-		etNote.setText(noteSpannable)
-		note_invalidator.register(noteSpannable)
-		
-		// 編集可能にする
-		btnProfileAvatar.isEnabled = true
-		btnProfileHeader.isEnabled = true
-		etDisplayName.isEnabled = true
-		btnDisplayName.isEnabled = true
-		etNote.isEnabled = true
-		btnNote.isEnabled = true
 	}
 	
 	internal fun updateCredential(key : String, value : Any) {
@@ -754,6 +775,8 @@ class ActAccountSetting
 					
 					if(value is String) {
 						multipart_body_builder.addFormDataPart(key, value)
+					}else if(value is Boolean) {
+							multipart_body_builder.addFormDataPart(key, if(value) "true" else "false")
 						
 					} else if(value is InputStreamOpener) {
 						
@@ -808,6 +831,11 @@ class ActAccountSetting
 					showProfile(data)
 				} else {
 					showToast(this@ActAccountSetting, true, result.error)
+					if( key == "locked" && value is Boolean){
+						profile_busy = true
+						cbLocked.isChecked = ! value
+						profile_busy = false
+					}
 				}
 				
 			}
@@ -862,6 +890,12 @@ class ActAccountSetting
 		}
 		updateCredential("note", EmojiDecoder.decodeShortCode(sv))
 	}
+	
+	private fun sendLocked( willLocked : Boolean) {
+		updateCredential("locked", willLocked)
+	}
+	
+	
 	
 	private fun pickAvatarImage() {
 		openPicker(PERMISSION_REQUEST_AVATAR)

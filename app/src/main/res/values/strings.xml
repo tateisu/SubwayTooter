@@ -606,4 +606,7 @@
     <string name="set_focus_point">set focus point (Mastodon 2.3 or later)</string>
     <string name="report_forward_desc">The account is from another instance. Send an anonymized copy of the report there as well?</string>
     <string name="report_forward_to">Forward to %1$s</string>
+    <string name="locked_account">Locked account</string>
+    <string name="contact">contact account</string>
+    <string name="languages">languages</string>
 </resources>

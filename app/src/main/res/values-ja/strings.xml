@@ -900,5 +900,8 @@
     <string name="set_focus_point">焦点を設定 (マストドン2.3以降)</string>
     <string name="report_forward_desc">対象ユーザは別のインスタンスに所属しています。通報内容を投稿元タンスに匿名で転送しますか?</string>
     <string name="report_forward_to">%1$s に転送する</string>
+    <string name="locked_account">非公開アカウント</string>
+    <string name="contact">連絡先アカウント</string>
+    <string name="languages">言語</string>
 
 </resources>

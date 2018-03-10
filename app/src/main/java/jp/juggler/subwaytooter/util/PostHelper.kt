@@ -182,7 +182,7 @@ class PostHelper(
 			
 			internal fun getInstanceInformation(client : TootApiClient) : TootApiResult? {
 				val result = client.request("/api/v1/instance")
-				instance_tmp = parseItem(::TootInstance, result?.jsonObject)
+				instance_tmp = parseItem(::TootInstance, TootParser(activity, account),result?.jsonObject)
 				return result
 			}
 			

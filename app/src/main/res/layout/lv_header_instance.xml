@@ -83,6 +83,43 @@
 
     <TextView
         style="@style/setting_row_label"
+        android:text="@string/contact"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <Button
+            android:id="@+id/btnContact"
+            style="@style/setting_horizontal_stretch"
+            android:textAllCaps="false"
+            android:background="@drawable/btn_bg_transparent"
+            android:gravity="start|center_vertical"
+            />
+    </LinearLayout>
+
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
+        android:text="@string/languages"
+        />
+
+    <LinearLayout style="@style/setting_row_form">
+
+        <TextView
+            android:id="@+id/tvLanguages"
+            style="@style/setting_horizontal_stretch"
+            android:textAllCaps="false"
+            android:background="@drawable/btn_bg_transparent"
+            android:gravity="start|center_vertical"
+            />
+    </LinearLayout>
+
+
+    <View style="@style/setting_divider"/>
+
+    <TextView
+        style="@style/setting_row_label"
         android:text="@string/user_count"
         />
 

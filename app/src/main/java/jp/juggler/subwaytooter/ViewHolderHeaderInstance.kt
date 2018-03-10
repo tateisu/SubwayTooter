@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.view.View
 import android.widget.TextView
+import jp.juggler.subwaytooter.action.Action_Account
 
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.util.DecodeOptions
@@ -22,7 +23,7 @@ internal class ViewHolderHeaderInstance(
 	
 	companion object {
 		private val log = LogCategory("ViewHolderHeaderInstance")
-
+		
 		val reWhitespaceBeforeLineFeed = Pattern.compile("[ \t\r]+\n")
 	}
 	
@@ -35,7 +36,8 @@ internal class ViewHolderHeaderInstance(
 	private val tvTootCount : TextView
 	private val tvDomainCount : TextView
 	private val ivThumbnail : MyNetworkImageView
-	
+	private val btnContact : TextView
+	private val tvLanguages : TextView
 	private var instance : TootInstance? = null
 	
 	init {
@@ -57,9 +59,13 @@ internal class ViewHolderHeaderInstance(
 		tvTootCount = viewRoot.findViewById(R.id.tvTootCount)
 		tvDomainCount = viewRoot.findViewById(R.id.tvDomainCount)
 		ivThumbnail = viewRoot.findViewById(R.id.ivThumbnail)
+		btnContact = viewRoot.findViewById(R.id.btnContact)
+		tvLanguages = viewRoot.findViewById(R.id.tvLanguages)
+		
 		
 		btnInstance.setOnClickListener(this)
 		btnEmail.setOnClickListener(this)
+		btnContact.setOnClickListener(this)
 		ivThumbnail.setOnClickListener(this)
 		
 		tvDescription.movementMethod = MyLinkMovementMethod
@@ -82,6 +88,9 @@ internal class ViewHolderHeaderInstance(
 			btnEmail.isEnabled = false
 			tvDescription.text = "?"
 			ivThumbnail.setImageUrl(App1.pref, 0f, null)
+			tvLanguages.text = "?"
+			btnContact.text = "?"
+			btnContact.isEnabled = false
 		} else {
 			val uri = instance.uri ?: ""
 			btnInstance.text = uri
@@ -94,20 +103,26 @@ internal class ViewHolderHeaderInstance(
 			btnEmail.text = email
 			btnEmail.isEnabled = email.isNotEmpty()
 			
-			var sb = DecodeOptions(activity, access_info,decodeEmoji = true)
-				.decodeHTML( "<p>" + (instance.description ?: "") + "</p>")
+			val contact_acct = instance.contact_account?.let{ who -> "@"+who.username +"@"+ who.host} ?: ""
+			btnContact.text = contact_acct
+			btnContact.isEnabled = contact_acct.isNotEmpty()
+			
+			tvLanguages.text = instance.languages?.joinToString(", ") ?: ""
+			
+			var sb = DecodeOptions(activity, access_info, decodeEmoji = true)
+				.decodeHTML("<p>" + (instance.description ?: "") + "</p>")
 			
 			// 行末の空白を除去
 			val m = reWhitespaceBeforeLineFeed.matcher(sb)
-			val matchList = LinkedList<Pair<Int,Int>>()
-			while(m.find()){
+			val matchList = LinkedList<Pair<Int, Int>>()
+			while(m.find()) {
 				// 逆順に並べる
-				matchList.addFirst( Pair(m.start(),m.end()))
+				matchList.addFirst(Pair(m.start(), m.end()))
 			}
-			for( pair in matchList ){
-				sb.delete( pair.first,pair.second-1)
+			for(pair in matchList) {
+				sb.delete(pair.first, pair.second - 1)
 			}
-
+			
 			// 連続する改行をまとめる
 			var previous_br_count = 0
 			var i = 0
@@ -123,7 +138,7 @@ internal class ViewHolderHeaderInstance(
 				}
 				++ i
 			}
-
+			
 			tvDescription.text = sb
 			
 			val stats = instance.stats
@@ -167,6 +182,16 @@ internal class ViewHolderHeaderInstance(
 					showToast(activity, true, R.string.missing_mail_app)
 				}
 				
+			}
+			R.id.btnContact -> instance?.contact_account?.let { who ->
+				Action_Account.timeline(
+					activity,
+					activity.nextPosition(column),
+					false,
+					Column.TYPE_SEARCH,
+					"@"+who.username +"@"+ who.host,
+					true
+				)
 			}
 			
 			R.id.ivThumbnail -> instance?.thumbnail?.let { thumbnail ->

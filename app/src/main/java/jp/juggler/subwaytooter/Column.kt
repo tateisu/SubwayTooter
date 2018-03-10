@@ -46,7 +46,7 @@ class Column(
 		
 		// ステータスのリストを返すAPI
 		private const val PATH_HOME = "/api/v1/timelines/home?limit=" + READ_LIMIT
-		private const val PATH_LOCAL = "/api/v1/timelines/public?limit=$READ_LIMIT&local=1"
+		private const val PATH_LOCAL = "/api/v1/timelines/public?limit=$READ_LIMIT&local=true"
 		private const val PATH_FEDERATE = "/api/v1/timelines/public?limit=" + READ_LIMIT
 		private const val PATH_FAVOURITES = "/api/v1/favourites?limit=" + READ_LIMIT
 		private const val PATH_ACCOUNT_STATUSES =
@@ -1362,7 +1362,7 @@ class Column(
 				val result = client.request("/api/v1/instance")
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
-					instance_tmp = parseItem(::TootInstance, jsonObject)
+					instance_tmp = parseItem(::TootInstance, parser,jsonObject)
 				}
 				return result
 			}
@@ -1578,9 +1578,9 @@ class Column(
 					when(column_type) {
 						TYPE_HOME -> return getStatuses(client, PATH_HOME)
 						
-						TYPE_LOCAL -> return getStatuses(client, PATH_LOCAL)
+						TYPE_LOCAL -> return getStatuses(client, makePublicLocalUrl())
 						
-						TYPE_FEDERATE -> return getStatuses(client, PATH_FEDERATE)
+						TYPE_FEDERATE -> return getStatuses(client, makePublicFederateUrl())
 						
 						TYPE_PROFILE -> {
 							
@@ -1661,10 +1661,7 @@ class Column(
 						
 						TYPE_FAVOURITES -> return getStatuses(client, PATH_FAVOURITES)
 						
-						TYPE_HASHTAG -> return getStatuses(
-							client,
-							String.format(Locale.JAPAN, PATH_HASHTAG, hashtag.encodePercent())
-						)
+						TYPE_HASHTAG -> return getStatuses( client,makeHashtagUrl(hashtag) )
 						
 						TYPE_REPORTS -> return parseReports(client, PATH_REPORTS)
 						
@@ -2510,9 +2507,9 @@ class Column(
 					return when(column_type) {
 						TYPE_HOME -> getStatusList(client, PATH_HOME)
 						
-						TYPE_LOCAL -> getStatusList(client, PATH_LOCAL)
+						TYPE_LOCAL -> getStatusList(client, makePublicLocalUrl())
 						
-						TYPE_FEDERATE -> getStatusList(client, PATH_FEDERATE)
+						TYPE_FEDERATE -> getStatusList(client, makePublicFederateUrl())
 						
 						TYPE_FAVOURITES -> getStatusList(client, PATH_FAVOURITES)
 						
@@ -2589,10 +2586,7 @@ class Column(
 						
 						TYPE_FOLLOW_REQUESTS -> getAccountList(client, PATH_FOLLOW_REQUESTS)
 						
-						TYPE_HASHTAG -> getStatusList(
-							client,
-							String.format(Locale.JAPAN, PATH_HASHTAG, hashtag.encodePercent())
-						)
+						TYPE_HASHTAG -> getStatusList( client,makeHashtagUrl(hashtag) )
 						
 						TYPE_SEARCH_MSP ->
 							if(! bBottom) {
@@ -3032,9 +3026,9 @@ class Column(
 				
 				try {
 					return when(column_type) {
-						TYPE_LOCAL -> getStatusList(client, PATH_LOCAL)
+						TYPE_LOCAL -> getStatusList(client, makePublicLocalUrl())
 						
-						TYPE_FEDERATE -> getStatusList(client, PATH_FEDERATE)
+						TYPE_FEDERATE -> getStatusList(client, makePublicFederateUrl())
 						
 						TYPE_LIST_TL -> getStatusList(
 							client,
@@ -3047,10 +3041,7 @@ class Column(
 						
 						TYPE_NOTIFICATIONS -> getNotificationList(client)
 						
-						TYPE_HASHTAG -> getStatusList(
-							client,
-							String.format(Locale.JAPAN, PATH_HASHTAG, hashtag.encodePercent())
-						)
+						TYPE_HASHTAG -> getStatusList( client,makeHashtagUrl(hashtag) )
 						
 						TYPE_BOOSTED_BY -> getAccountList(
 							client,
@@ -3592,6 +3583,31 @@ class Column(
 			if(dont_show_follow) sb.append("&exclude_types[]=follow")
 			if(dont_show_reply) sb.append("&exclude_types[]=mention")
 			sb.toString()
+		}
+	}
+	private fun makePublicLocalUrl():String{
+		return if( with_attachment){
+			"$PATH_LOCAL&only_media=true" // mastodon 2.3 or later
+		}else{
+			PATH_LOCAL
+		}
+	}
+	private fun makePublicFederateUrl():String{
+		return if( with_attachment){
+			"$PATH_FEDERATE&only_media=true"
+		}else{
+			PATH_FEDERATE
+		}
+	}
+	
+	private fun makeHashtagUrl(
+		hashtag:String // 先頭の#を含まない
+	):String{
+		val path =String.format(Locale.JAPAN, PATH_HASHTAG, hashtag.encodePercent())
+		return if( with_attachment){
+			"$path&only_media=true"
+		}else{
+			path
 		}
 	}
 }

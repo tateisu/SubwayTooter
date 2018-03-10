@@ -1043,7 +1043,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				when(i) {
 					0 -> editAttachmentDescription(pa)
 					1 -> openFocusPoint(pa)
-					2->deleteAttachment(pa)
+					2 -> deleteAttachment(pa)
 				}
 			}
 			.setNegativeButton(R.string.cancel, null)
@@ -1052,47 +1052,50 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	
 	private fun openFocusPoint(pa : PostAttachment) {
 		val attachment = pa.attachment
-		if( attachment != null) {
+		if(attachment != null) {
 			DlgFocusPoint(this, attachment)
-				.setCallback(object: FocusPointView.Callback{
+				.setCallback(object : FocusPointView.Callback {
 					override fun onFocusPointUpdate(x : Float, y : Float) {
-						val account = this@ActPost.account ?:return
-
-						TootTaskRunner(this@ActPost,TootTaskRunner.PROGRESS_NONE).run(account,object:TootTask{
-							override fun background(client : TootApiClient) : TootApiResult? {
-								try{
-									val json = JSONObject()
-									json.put("focus","%.2f,%.2f".format(x,y))
-									val result = client.request(
-										"/api/v1/media/"+ attachment.id,
-										Request.Builder().put(RequestBody.create(
-											TootApiClient.MEDIA_TYPE_JSON,json.toString()
-									)))
-									new_attachment = parseItem(::TootAttachment, result?.jsonObject)
-									return result
-								}catch(ex:Throwable){
-									return TootApiResult(ex.withCaption("set focus point failed."))
+						val account = this@ActPost.account ?: return
+						
+						TootTaskRunner(this@ActPost, TootTaskRunner.PROGRESS_NONE).run(account,
+							object : TootTask {
+								override fun background(client : TootApiClient) : TootApiResult? {
+									try {
+										val json = JSONObject()
+										json.put("focus", "%.2f,%.2f".format(x, y))
+										val result = client.request(
+											"/api/v1/media/" + attachment.id,
+											Request.Builder().put(
+												RequestBody.create(
+													TootApiClient.MEDIA_TYPE_JSON, json.toString()
+												)
+											)
+										)
+										new_attachment =
+											parseItem(::TootAttachment, result?.jsonObject)
+										return result
+									} catch(ex : Throwable) {
+										return TootApiResult(ex.withCaption("set focus point failed."))
+									}
 								}
-							}
-							
-							var new_attachment : TootAttachment? = null
-							
-							override fun handleResult(result : TootApiResult?) {
-								result ?: return
-								if( new_attachment != null ){
-									pa.attachment = attachment
-								}else{
-									showToast(this@ActPost,true,result.error)
+								
+								var new_attachment : TootAttachment? = null
+								
+								override fun handleResult(result : TootApiResult?) {
+									result ?: return
+									if(new_attachment != null) {
+										pa.attachment = attachment
+									} else {
+										showToast(this@ActPost, true, result.error)
+									}
 								}
-							}
-						})
+							})
 					}
 				})
 				.show()
 		}
 	}
-	
-	
 	
 	private fun deleteAttachment(pa : PostAttachment) {
 		AlertDialog.Builder(this)
@@ -1327,18 +1330,18 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		}
 	}
 	
-	private fun getMimeType(uri:Uri,mimeTypeArg:String?):String?{
+	private fun getMimeType(uri : Uri, mimeTypeArg : String?) : String? {
 		
 		// 既に引数で与えられてる
-		if(mimeTypeArg?.isNotEmpty() == true ) return mimeTypeArg
+		if(mimeTypeArg?.isNotEmpty() == true) return mimeTypeArg
 		
 		// ContentResolverに尋ねる
 		var sv = contentResolver.getType(uri)
-		if(sv?.isNotEmpty() == true ) return sv
+		if(sv?.isNotEmpty() == true) return sv
 		
 		// gboardのステッカーではUriのクエリパラメータにmimeType引数がある
-		sv =  uri.getQueryParameter("mimeType")
-		if(sv?.isNotEmpty() == true ) return sv
+		sv = uri.getQueryParameter("mimeType")
+		if(sv?.isNotEmpty() == true) return sv
 		
 		return null
 	}
@@ -1361,7 +1364,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			return
 		}
 		
-		val mime_type = getMimeType(uri,mimeTypeArg)
+		val mime_type = getMimeType(uri, mimeTypeArg)
 		if(mime_type?.isEmpty() != false) {
 			showToast(this, false, R.string.mime_type_missing)
 			return
@@ -1488,18 +1491,20 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					// アップロード完了
 					showToast(this@ActPost, false, R.string.attachment_uploaded)
 					
-					// 投稿欄の末尾に追記する
-//					val selStart = etContent.selectionStart
-//					val selEnd = etContent.selectionEnd
-//					val e = etContent.editableText
-//					val len = e.length
-//					val last_char = if(len <= 0) ' ' else e[len - 1]
-//					if(! CharacterGroup.isWhitespace(last_char.toInt())) {
-//						e.append(" ").append(a.text_url)
-//					} else {
-//						e.append(a.text_url)
-//					}
-//					etContent.setSelection(selStart, selEnd)
+					if(Pref.bpAppendAttachmentUrlToContent(pref)) {
+						// 投稿欄の末尾に追記する
+						val selStart = etContent.selectionStart
+						val selEnd = etContent.selectionEnd
+						val e = etContent.editableText
+						val len = e.length
+						val last_char = if(len <= 0) ' ' else e[len - 1]
+						if(! CharacterGroup.isWhitespace(last_char.toInt())) {
+							e.append(" ").append(a.text_url)
+						} else {
+							e.append(a.text_url)
+						}
+						etContent.setSelection(selStart, selEnd)
+					}
 					
 				}
 				
@@ -1723,7 +1728,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			data.putExtra(EXTRA_POSTED_ACCT, target_account.acct)
 			data.putExtra(EXTRA_POSTED_STATUS_ID, status.id)
 			val reply_id = status.in_reply_to_id
-			if( reply_id != null) data.putExtra(EXTRA_POSTED_REPLY_ID, reply_id)
+			if(reply_id != null) data.putExtra(EXTRA_POSTED_REPLY_ID, reply_id)
 			setResult(RESULT_OK, data)
 			isPostComplete = true
 			this@ActPost.finish()

@@ -903,5 +903,6 @@
     <string name="locked_account">非公開アカウント</string>
     <string name="contact">連絡先アカウント</string>
     <string name="languages">言語</string>
+    <string name="append_attachment_url_to_content">添付メディアのURLを本文に記載する</string>
 
 </resources>

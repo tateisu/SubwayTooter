@@ -620,8 +620,9 @@
     <string name="locked_account">Locked account</string>
     <string name="contact">contact account</string>
 	<string name="languages">languages</string>
+    <string name="append_attachment_url_to_content">Append attachment URL to context text</string>
 
-	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

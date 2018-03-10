@@ -288,6 +288,13 @@ object Pref {
 		R.id.swShareViewPool
 	)
 	
+	val bpAppendAttachmentUrlToContent = BooleanPref(
+		"AppendAttachmentUrlToContent",
+		false,
+		R.id.swAppendAttachmentUrlToContent
+	)
+	
+	
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

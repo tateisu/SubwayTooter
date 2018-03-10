@@ -609,4 +609,5 @@
     <string name="locked_account">Locked account</string>
     <string name="contact">contact account</string>
     <string name="languages">languages</string>
+    <string name="append_attachment_url_to_content">Append attachment URL to context text</string>
 </resources>

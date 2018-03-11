@@ -45,36 +45,36 @@ class Column(
 		private const val ACCT_DB_STEP = 100
 		
 		// ステータスのリストを返すAPI
-		private const val PATH_HOME = "/api/v1/timelines/home?limit=" + READ_LIMIT
+		private const val PATH_HOME = "/api/v1/timelines/home?limit=$READ_LIMIT"
 		private const val PATH_LOCAL = "/api/v1/timelines/public?limit=$READ_LIMIT&local=true"
-		private const val PATH_FEDERATE = "/api/v1/timelines/public?limit=" + READ_LIMIT
-		private const val PATH_FAVOURITES = "/api/v1/favourites?limit=" + READ_LIMIT
+		private const val PATH_FEDERATE = "/api/v1/timelines/public?limit=$READ_LIMIT"
+		private const val PATH_FAVOURITES = "/api/v1/favourites?limit=$READ_LIMIT"
 		private const val PATH_ACCOUNT_STATUSES =
-			"/api/v1/accounts/%d/statuses?limit=" + READ_LIMIT // 1:account_id
+			"/api/v1/accounts/%d/statuses?limit=$READ_LIMIT" // 1:account_id
 		private const val PATH_HASHTAG =
-			"/api/v1/timelines/tag/%s?limit=" + READ_LIMIT // 1: hashtag(url encoded)
-		private const val PATH_LIST_TL = "/api/v1/timelines/list/%s?limit=" + READ_LIMIT
+			"/api/v1/timelines/tag/%s?limit=$READ_LIMIT" // 1: hashtag(url encoded)
+		private const val PATH_LIST_TL = "/api/v1/timelines/list/%s?limit=$READ_LIMIT"
 		
 		// アカウントのリストを返すAPI
 		private const val PATH_ACCOUNT_FOLLOWING =
-			"/api/v1/accounts/%d/following?limit=" + READ_LIMIT // 1:account_id
+			"/api/v1/accounts/%d/following?limit=$READ_LIMIT" // 1:account_id
 		private const val PATH_ACCOUNT_FOLLOWERS =
-			"/api/v1/accounts/%d/followers?limit=" + READ_LIMIT // 1:account_id
-		private const val PATH_MUTES = "/api/v1/mutes?limit=" + READ_LIMIT // 1:account_id
-		private const val PATH_BLOCKS = "/api/v1/blocks?limit=" + READ_LIMIT // 1:account_id
+			"/api/v1/accounts/%d/followers?limit=$READ_LIMIT" // 1:account_id
+		private const val PATH_MUTES = "/api/v1/mutes?limit=$READ_LIMIT" // 1:account_id
+		private const val PATH_BLOCKS = "/api/v1/blocks?limit=$READ_LIMIT" // 1:account_id
 		private const val PATH_FOLLOW_REQUESTS =
-			"/api/v1/follow_requests?limit=" + READ_LIMIT // 1:account_id
+			"/api/v1/follow_requests?limit=$READ_LIMIT" // 1:account_id
 		private const val PATH_BOOSTED_BY =
-			"/api/v1/statuses/%s/reblogged_by?limit=" + READ_LIMIT // 1:status_id
+			"/api/v1/statuses/%s/reblogged_by?limit=$READ_LIMIT" // 1:status_id
 		private const val PATH_FAVOURITED_BY =
-			"/api/v1/statuses/%s/favourited_by?limit=" + READ_LIMIT // 1:status_id
-		private const val PATH_LIST_MEMBER = "/api/v1/lists/%s/accounts?limit=" + READ_LIMIT
+			"/api/v1/statuses/%s/favourited_by?limit=$READ_LIMIT" // 1:status_id
+		private const val PATH_LIST_MEMBER = "/api/v1/lists/%s/accounts?limit=$READ_LIMIT"
 		
 		// 他のリストを返すAPI
-		private const val PATH_REPORTS = "/api/v1/reports?limit=" + READ_LIMIT
-		private const val PATH_NOTIFICATIONS = "/api/v1/notifications?limit=" + READ_LIMIT
-		private const val PATH_DOMAIN_BLOCK = "/api/v1/domain_blocks?limit=" + READ_LIMIT
-		private const val PATH_LIST_LIST = "/api/v1/lists?limit=" + READ_LIMIT
+		private const val PATH_REPORTS = "/api/v1/reports?limit=$READ_LIMIT"
+		private const val PATH_NOTIFICATIONS = "/api/v1/notifications?limit=$READ_LIMIT"
+		private const val PATH_DOMAIN_BLOCK = "/api/v1/domain_blocks?limit=$READ_LIMIT"
+		private const val PATH_LIST_LIST = "/api/v1/lists?limit=$READ_LIMIT"
 		
 		// リストではなくオブジェクトを返すAPI
 		private const val PATH_ACCOUNT = "/api/v1/accounts/%d" // 1:account_id
@@ -931,8 +931,10 @@ class Column(
 			}
 			
 			TYPE_LIST_TL, TYPE_LIST_MEMBER -> {
-				this.list_info = item
-				fireShowColumnHeader()
+				if( item.id == profile_id) {
+					this.list_info = item
+					fireShowColumnHeader()
+				}
 			}
 		}
 	}
@@ -1612,18 +1614,18 @@ class Column(
 										if(access_info.isPseudo) return r2
 									}
 									
-									var s = String.format(
+									var path = String.format(
 										Locale.JAPAN,
 										PATH_ACCOUNT_STATUSES,
 										profile_id
 									)
-									if(with_attachment && ! with_highlight) s += "&only_media=1"
+									if(with_attachment && ! with_highlight) path += "&only_media=1"
 									
 									if(instance?.isEnoughVersion(version_1_6) == true) {
-										getStatusesPinned(client, s + "&pinned=1")
+										getStatusesPinned(client, "$path&pinned=1")
 									}
 									
-									return getStatuses(client, s)
+									return getStatuses(client, path)
 								}
 								
 								else -> throw RuntimeException("profile_tab : invalid value.")

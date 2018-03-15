@@ -25,6 +25,7 @@ import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.DlgListMember
 import jp.juggler.subwaytooter.dialog.DlgQRCode
+import jp.juggler.subwaytooter.table.FavMute
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LogCategory
@@ -99,6 +100,8 @@ internal class DlgContextMenu(
 		
 		val btnHideBoost = viewRoot.findViewById<View>(R.id.btnHideBoost)
 		val btnShowBoost = viewRoot.findViewById<View>(R.id.btnShowBoost)
+		val btnHideFavourite = viewRoot.findViewById<View>(R.id.btnHideFavourite)
+		val btnShowFavourite = viewRoot.findViewById<View>(R.id.btnShowFavourite)
 		
 		val btnListMemberAddRemove = viewRoot.findViewById<View>(R.id.btnListMemberAddRemove)
 		
@@ -129,6 +132,8 @@ internal class DlgContextMenu(
 		btnConversationMute.setOnClickListener(this)
 		btnHideBoost.setOnClickListener(this)
 		btnShowBoost.setOnClickListener(this)
+		btnHideFavourite.setOnClickListener(this)
+		btnShowFavourite.setOnClickListener(this)
 		btnListMemberAddRemove.setOnClickListener(this)
 		btnInstanceInformation.setOnClickListener(this)
 		btnDomainBlock.setOnClickListener(this)
@@ -297,6 +302,17 @@ internal class DlgContextMenu(
 		} else {
 			btnHideBoost.visibility = View.GONE
 			btnShowBoost.visibility = View.VISIBLE
+		}
+		
+		if( who == null ){
+			btnHideFavourite.visibility = View.GONE
+			btnShowFavourite.visibility = View.GONE
+		}else if( FavMute.contains( access_info.getFullAcct(who) )){
+			btnHideFavourite.visibility = View.GONE
+			btnShowFavourite.visibility = View.VISIBLE
+		}else{
+			btnHideFavourite.visibility = View.VISIBLE
+			btnShowFavourite.visibility = View.GONE
 		}
 		
 		val who_host = who?.host
@@ -566,6 +582,20 @@ internal class DlgContextMenu(
 			
 			R.id.btnShowBoost -> who?.let { who ->
 				Action_User.showBoosts(activity, access_info, who, true)
+			}
+			
+			R.id.btnHideFavourite -> who?.let { who ->
+				val acct = access_info.getFullAcct(who)
+				FavMute.save( acct)
+				showToast(activity,false,R.string.changed)
+				for( column in activity.app_state.column_list ){
+					column.onHideFavouriteNotification(acct)
+				}
+			}
+			
+			R.id.btnShowFavourite -> who?.let { who ->
+				FavMute.delete( access_info.getFullAcct(who))
+				showToast(activity,false,R.string.changed)
 			}
 			
 			R.id.btnListMemberAddRemove -> who?.let { who ->

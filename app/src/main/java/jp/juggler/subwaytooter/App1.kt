@@ -33,20 +33,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 import jp.juggler.subwaytooter.api.entity.TootAttachment
-import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.table.AcctSet
-import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.subwaytooter.table.MutedApp
-import jp.juggler.subwaytooter.table.ClientInfo
-import jp.juggler.subwaytooter.table.ContentWarning
-import jp.juggler.subwaytooter.table.LogData
-import jp.juggler.subwaytooter.table.MediaShown
-import jp.juggler.subwaytooter.table.MutedWord
-import jp.juggler.subwaytooter.table.NotificationTracking
-import jp.juggler.subwaytooter.table.PostDraft
-import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.table.TagSet
-import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 import okhttp3.Cache
 import okhttp3.CacheControl
@@ -87,6 +74,7 @@ class App1 : Application() {
 			PostDraft.onDBCreate(db)
 			TagSet.onDBCreate(db)
 			HighlightWord.onDBCreate(db)
+			FavMute.onDBCreate(db)
 		}
 		
 		override fun onUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
@@ -105,6 +93,7 @@ class App1 : Application() {
 			PostDraft.onDBUpgrade(db, oldVersion, newVersion)
 			TagSet.onDBUpgrade(db, oldVersion, newVersion)
 			HighlightWord.onDBUpgrade(db, oldVersion, newVersion)
+			FavMute.onDBUpgrade(db, oldVersion, newVersion)
 		}
 	}
 	
@@ -115,7 +104,7 @@ class App1 : Application() {
 		const val FILE_PROVIDER_AUTHORITY = "jp.juggler.subwaytooter.FileProvider"
 		
 		internal const val DB_NAME = "app_db"
-		internal const val DB_VERSION = 21
+		internal const val DB_VERSION = 22
 		
 		// 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
 		// 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加
@@ -136,6 +125,7 @@ class App1 : Application() {
 		// 2017/9/23 v161 18=>19 ClientInfoテーブルを置き換える
 		// 2017/12/01 v175 19=>20 UserRelation に項目追加
 		// 2018/1/03 v197 20=>21 HighlightWord テーブルを追加
+		// 2018/3/16 v226 21=>22 FavMuteテーブルを追加
 		
 		private lateinit var db_open_helper : DBOpenHelper
 		

@@ -904,5 +904,9 @@
     <string name="contact">連絡先アカウント</string>
     <string name="languages">言語</string>
     <string name="append_attachment_url_to_content">添付メディアのURLを本文に記載する</string>
+    <string name="hide_favourite_notification_from_user">このユーザをFav,BT非通知に追加</string>
+    <string name="show_favourite_notification_from_user">このユーザをFav,BT非通知から削除</string>
+    <string name="fav_muted_user">Fav/BT非通知ユーザ</string>
+    <string name="changed">変更しました</string>
 
 </resources>

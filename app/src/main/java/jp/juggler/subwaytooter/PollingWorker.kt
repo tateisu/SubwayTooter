@@ -46,11 +46,7 @@ import java.util.concurrent.atomic.AtomicReference
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.table.MutedApp
-import jp.juggler.subwaytooter.table.MutedWord
-import jp.juggler.subwaytooter.table.NotificationTracking
-import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 import okhttp3.Call
 import okhttp3.Request
@@ -554,6 +550,7 @@ class PollingWorker private constructor(c : Context) {
 		val bPollingRequired = AtomicBoolean(false)
 		lateinit var muted_app : HashSet<String>
 		lateinit var muted_word : WordTrieTree
+		lateinit var favMuteSet : HashSet<String>
 		var bPollingComplete = false
 		var install_id : String? = null
 		
@@ -620,6 +617,7 @@ class PollingWorker private constructor(c : Context) {
 				
 				muted_app = MutedApp.nameSet
 				muted_word = MutedWord.nameSet
+				favMuteSet = FavMute.acctSet
 				
 				// タスクがあれば処理する
 				while(true) {
@@ -1037,6 +1035,7 @@ class PollingWorker private constructor(c : Context) {
 			private val dstListData = ArrayList<Data>()
 			private val muted_app : HashSet<String> get() = job.muted_app
 			private val muted_word : WordTrieTree get() = job.muted_word
+			private val favMuteSet : HashSet<String> get() = job.favMuteSet
 			private lateinit var nr : NotificationTracking
 			private lateinit var parser : TootParser
 			
@@ -1370,14 +1369,12 @@ class PollingWorker private constructor(c : Context) {
 					nid_last_show = id
 				}
 				
-				val type = src.parseString("type")
-				
 				if(id <= nr.nid_read) {
 					// warning.d("update_sub: ignore data that id=%s, <= read id %s ",id,nr.nid_read);
 					return
-				} else {
-					log.d("update_sub: found data that id=%s, > read id %s ", id, nr.nid_read)
 				}
+				
+				log.d("update_sub: found data that id=%s, > read id %s ", id, nr.nid_read)
 				
 				if(id > nr.nid_show) {
 					log.d(
@@ -1388,7 +1385,8 @@ class PollingWorker private constructor(c : Context) {
 					// 種別チェックより先に「表示済み」idの更新を行う
 					nr.nid_show = id
 				}
-				
+
+				val type = src.parseString("type")
 				if(! account.notification_mention && TootNotification.TYPE_MENTION == type
 					|| ! account.notification_boost && TootNotification.TYPE_REBLOG == type
 					|| ! account.notification_favourite && TootNotification.TYPE_FAVOURITE == type
@@ -1398,10 +1396,18 @@ class PollingWorker private constructor(c : Context) {
 				
 				val notification = parser.notification(src) ?: return
 				
-				run {
-					val status = notification.status
-					if(status != null) {
-						if(status.checkMuted(muted_app, muted_word)) {
+				// アプリミュートと単語ミュート
+				val status = notification.status
+				if(status != null && status.checkMuted(muted_app, muted_word)) {
+					return
+				}
+				
+				// ふぁぼ魔ミュート
+				when(type){
+					TootNotification.TYPE_REBLOG,TootNotification.TYPE_FAVOURITE,TootNotification.TYPE_FOLLOW ->{
+						val who = notification.account
+						if( who != null && favMuteSet.contains( account.getFullAcct(who) ) ){
+							log.d("%s is in favMuteSet.",account.getFullAcct(who))
 							return
 						}
 					}

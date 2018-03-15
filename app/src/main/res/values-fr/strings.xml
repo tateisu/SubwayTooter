@@ -621,6 +621,10 @@
     <string name="contact">contact account</string>
 	<string name="languages">languages</string>
     <string name="append_attachment_url_to_content">Append attachment URL to context text</string>
+    <string name="hide_favourite_notification_from_user">Hide favourite notification from this user</string>
+	<string name="show_favourite_notification_from_user">Show favourite notification from this user</string>
+    <string name="fav_muted_user">FavMuted user</string>
+    <string name="changed">changed.</string>
 
     <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

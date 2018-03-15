@@ -17,15 +17,8 @@ import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
 
-import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.table.AcctSet
-import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.subwaytooter.table.MutedApp
-import jp.juggler.subwaytooter.table.MutedWord
-import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.table.TagSet
-import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 
 class Column(
@@ -359,6 +352,7 @@ class Column(
 	private var column_regex_filter = COLUMN_REGEX_FILTER_DEFAULT
 	private var muted_app : HashSet<String>? = null
 	private var muted_word : WordTrieTree? = null
+	private var favMuteSet : HashSet<String>? = null
 	private var highlight_trie : WordTrieTree? = null
 	
 	private var max_id : String = ""
@@ -876,6 +870,28 @@ class Column(
 		}
 	}
 	
+	fun onHideFavouriteNotification(acct : String) {
+		if( column_type != TYPE_NOTIFICATIONS) return
+		
+		val tmp_list = ArrayList<TimelineItem>(list_data.size)
+		
+		for(o in list_data) {
+			if(o is TootNotification && o.type != TootNotification.TYPE_MENTION ) {
+				val a = o.account
+				if( a!=null){
+					val a_acct = access_info.getFullAcct(a)
+					if( a_acct == acct) continue
+				}
+			}
+			tmp_list.add(o)
+		}
+		if(tmp_list.size != list_data.size) {
+			list_data.clear()
+			list_data.addAll(tmp_list)
+			fireShowContent(reason = "onHideFavouriteNotification")
+		}
+	}
+	
 	fun onDomainBlockChanged(target_account : SavedAccount, domain : String, bBlocked : Boolean) {
 		if(target_account.host != access_info.host) return
 		if(access_info.isPseudo) return
@@ -1054,6 +1070,7 @@ class Column(
 		
 		muted_app = MutedApp.nameSet
 		muted_word = MutedWord.nameSet
+		favMuteSet = FavMute.acctSet
 		highlight_trie = HighlightWord.nameSet
 	}
 	
@@ -1167,6 +1184,18 @@ class Column(
 				return true
 			}
 		}
+		
+		// ふぁぼ魔ミュート
+		when(item.type){
+			TootNotification.TYPE_REBLOG,TootNotification.TYPE_FAVOURITE,TootNotification.TYPE_FOLLOW ->{
+				val who = item.account
+				if( who != null && favMuteSet?.contains( access_info.getFullAcct(who) ) == true){
+					PollingWorker.log.d("%s is in favMuteSet.",access_info.getFullAcct(who))
+					return true
+				}
+			}
+		}
+		
 		return false
 	}
 	
@@ -3612,4 +3641,5 @@ class Column(
 			path
 		}
 	}
+	
 }

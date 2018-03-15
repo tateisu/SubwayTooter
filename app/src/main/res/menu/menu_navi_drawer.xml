@@ -134,6 +134,10 @@
                     android:id="@+id/nav_muted_word"
                     android:icon="?attr/ic_mute"
                     android:title="@string/muted_word"/>
+                <item
+                    android:id="@+id/nav_fav_mute"
+                    android:icon="?attr/ic_mute"
+                    android:title="@string/fav_muted_user"/>
 
                 <item
                     android:id="@+id/nav_app_about"

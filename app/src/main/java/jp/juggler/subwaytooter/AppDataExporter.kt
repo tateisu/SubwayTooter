@@ -35,6 +35,7 @@ object AppDataExporter {
 	private const val KEY_ACCT_COLOR = "acct_color"
 	private const val KEY_MUTED_APP = "muted_app"
 	private const val KEY_MUTED_WORD = "muted_word"
+	private const val KEY_FAV_MUTE = "fav_mute"
 	private const val KEY_CLIENT_INFO = "client_info2"
 	private const val KEY_HIGHLIGHT_WORD = "highlight_word"
 	
@@ -378,6 +379,7 @@ object AppDataExporter {
 		writeFromTable(writer, KEY_ACCT_COLOR, AcctColor.table)
 		writeFromTable(writer, KEY_MUTED_APP, MutedApp.table)
 		writeFromTable(writer, KEY_MUTED_WORD, MutedWord.table)
+		writeFromTable(writer, KEY_FAV_MUTE, FavMute.table)
 		writeFromTable(writer, KEY_CLIENT_INFO, ClientInfo.table)
 		writeFromTable(writer, KEY_HIGHLIGHT_WORD, HighlightWord.table)
 		
@@ -416,6 +418,7 @@ object AppDataExporter {
 				
 				KEY_MUTED_APP -> importTable(reader, MutedApp.table, null)
 				KEY_MUTED_WORD -> importTable(reader, MutedWord.table, null)
+				KEY_FAV_MUTE -> importTable(reader, FavMute.table, null)
 				KEY_HIGHLIGHT_WORD -> importTable(reader, HighlightWord.table, null)
 				KEY_CLIENT_INFO -> importTable(reader, ClientInfo.table, null)
 				KEY_COLUMN -> result = readColumn(app_state, reader, account_id_map)

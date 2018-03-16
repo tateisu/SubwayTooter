@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 
 @Suppress("UNUSED_PARAMETER")
-object LogData {
+object LogData :TableCompanion{
 	private const val TAG = "SubwayTooter"
 	
 	internal const val table = "warning"
@@ -24,7 +24,7 @@ object LogData {
 	const val LEVEL_HEARTBEAT = 600
 	const val LEVEL_FLOOD = 700
 	
-	fun onDBCreate(db : SQLiteDatabase) {
+	override fun onDBCreate(db : SQLiteDatabase) {
 		db.execSQL(
 			"create table if not exists " + table
 				+ "(_id INTEGER PRIMARY KEY"
@@ -42,7 +42,7 @@ object LogData {
 		)
 	}
 	
-	fun onDBUpgrade(db : SQLiteDatabase, v_old : Int, v_new : Int) {
+	override fun onDBUpgrade(db : SQLiteDatabase, v_old : Int, v_new : Int) {
 	
 	}
 	

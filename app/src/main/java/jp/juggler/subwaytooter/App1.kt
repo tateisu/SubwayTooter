@@ -57,43 +57,17 @@ class App1 : Application() {
 	}
 	
 	class DBOpenHelper(context : Context) : SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
-		
+
 		override fun onCreate(db : SQLiteDatabase) {
-			LogData.onDBCreate(db)
-			//
-			SavedAccount.onDBCreate(db)
-			ClientInfo.onDBCreate(db)
-			MediaShown.onDBCreate(db)
-			ContentWarning.onDBCreate(db)
-			NotificationTracking.onDBCreate(db)
-			MutedApp.onDBCreate(db)
-			UserRelation.onDBCreate(db)
-			AcctSet.onDBCreate(db)
-			AcctColor.onDBCreate(db)
-			MutedWord.onDBCreate(db)
-			PostDraft.onDBCreate(db)
-			TagSet.onDBCreate(db)
-			HighlightWord.onDBCreate(db)
-			FavMute.onDBCreate(db)
+			for(ti in tableList) {
+				ti.onDBCreate(db)
+			}
 		}
 		
 		override fun onUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
-			LogData.onDBUpgrade(db, oldVersion, newVersion)
-			//
-			SavedAccount.onDBUpgrade(db, oldVersion, newVersion)
-			ClientInfo.onDBUpgrade(db, oldVersion, newVersion)
-			MediaShown.onDBUpgrade(db, oldVersion, newVersion)
-			ContentWarning.onDBUpgrade(db, oldVersion, newVersion)
-			NotificationTracking.onDBUpgrade(db, oldVersion, newVersion)
-			MutedApp.onDBUpgrade(db, oldVersion, newVersion)
-			UserRelation.onDBUpgrade(db, oldVersion, newVersion)
-			AcctSet.onDBUpgrade(db, oldVersion, newVersion)
-			AcctColor.onDBUpgrade(db, oldVersion, newVersion)
-			MutedWord.onDBUpgrade(db, oldVersion, newVersion)
-			PostDraft.onDBUpgrade(db, oldVersion, newVersion)
-			TagSet.onDBUpgrade(db, oldVersion, newVersion)
-			HighlightWord.onDBUpgrade(db, oldVersion, newVersion)
-			FavMute.onDBUpgrade(db, oldVersion, newVersion)
+			for(ti in tableList) {
+				ti.onDBUpgrade(db, oldVersion, newVersion)
+			}
 		}
 	}
 	
@@ -104,7 +78,6 @@ class App1 : Application() {
 		const val FILE_PROVIDER_AUTHORITY = "jp.juggler.subwaytooter.FileProvider"
 		
 		internal const val DB_NAME = "app_db"
-		internal const val DB_VERSION = 22
 		
 		// 2017/4/25 v10 1=>2 SavedAccount に通知設定を追加
 		// 2017/4/25 v10 1=>2 NotificationTracking テーブルを追加
@@ -126,6 +99,26 @@ class App1 : Application() {
 		// 2017/12/01 v175 19=>20 UserRelation に項目追加
 		// 2018/1/03 v197 20=>21 HighlightWord テーブルを追加
 		// 2018/3/16 v226 21=>22 FavMuteテーブルを追加
+		
+		internal const val DB_VERSION = 22
+		
+		private val tableList = arrayOf(
+			LogData,
+			SavedAccount,
+			ClientInfo,
+			MediaShown,
+			ContentWarning,
+			NotificationTracking,
+			MutedApp,
+			UserRelation,
+			AcctSet,
+			AcctColor,
+			MutedWord,
+			PostDraft,
+			TagSet,
+			HighlightWord,
+			FavMute
+		)
 		
 		private lateinit var db_open_helper : DBOpenHelper
 		
@@ -165,7 +158,8 @@ class App1 : Application() {
 			CipherSuite.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, // m.sighash.info 用 デフォルトにはない
 			CipherSuite.TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, // m.sighash.info 用 デフォルトにはない
 			CipherSuite.TLS_DHE_RSA_WITH_AES_256_CBC_SHA256, // m.sighash.info 用 デフォルトにはない
-			CipherSuite.TLS_DHE_RSA_WITH_AES_256_CBC_SHA) // m.sighash.info 用 デフォルトにはない
+			CipherSuite.TLS_DHE_RSA_WITH_AES_256_CBC_SHA
+		) // m.sighash.info 用 デフォルトにはない
 		
 		//	private int getBitmapPoolSize( Context context ){
 		//		ActivityManager am = ((ActivityManager)context.getSystemService(Activity.ACTIVITY_SERVICE));
@@ -222,14 +216,14 @@ class App1 : Application() {
 		@SuppressLint("StaticFieldLeak")
 		lateinit var custom_emoji_lister : CustomEmojiLister
 		
-
 		fun prepare(app_context : Context) : AppState {
 			var state = appStateX
 			if(state != null) return state
 			
-			CalligraphyConfig.initDefault(CalligraphyConfig.Builder()
-				.setFontAttrId(R.attr.fontPath)
-				.build()
+			CalligraphyConfig.initDefault(
+				CalligraphyConfig.Builder()
+					.setFontAttrId(R.attr.fontPath)
+					.build()
 			)
 			
 			pref = Pref.pref(app_context)
@@ -495,13 +489,21 @@ class App1 : Application() {
 		// Chrome Custom Tab を開く
 		fun openCustomTab(activity : Activity, url : String) {
 			try {
-				if( Pref.bpPriorChrome(pref)) {
+				if(Pref.bpPriorChrome(pref)) {
 					try {
 						// 初回はChrome指定で試す
 						val builder = CustomTabsIntent.Builder()
-						builder.setToolbarColor(Styler.getAttributeColor(activity, R.attr.colorPrimary)).setShowTitle(true)
+						builder.setToolbarColor(
+							Styler.getAttributeColor(
+								activity,
+								R.attr.colorPrimary
+							)
+						).setShowTitle(true)
 						val customTabsIntent = builder.build()
-						customTabsIntent.intent.component = ComponentName("com.android.chrome", "com.google.android.apps.chrome.Main")
+						customTabsIntent.intent.component = ComponentName(
+							"com.android.chrome",
+							"com.google.android.apps.chrome.Main"
+						)
 						customTabsIntent.launchUrl(activity, Uri.parse(url))
 						return
 					} catch(ex2 : Throwable) {
@@ -512,7 +514,8 @@ class App1 : Application() {
 				
 				// chromeがないなら ResolverActivity でアプリを選択させる
 				val builder = CustomTabsIntent.Builder()
-				builder.setToolbarColor(Styler.getAttributeColor(activity, R.attr.colorPrimary)).setShowTitle(true)
+				builder.setToolbarColor(Styler.getAttributeColor(activity, R.attr.colorPrimary))
+					.setShowTitle(true)
 				val customTabsIntent = builder.build()
 				customTabsIntent.launchUrl(activity, Uri.parse(url))
 			} catch(ex : Throwable) {

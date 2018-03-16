@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.util.LogCategory
 
-object FavMute {
+object FavMute :TableCompanion{
 	
 	private val log = LogCategory("FavMute")
 	
@@ -15,7 +15,7 @@ object FavMute {
 	const val COL_ID = "_id"
 	const val COL_ACCT = "acct"
 	
-	fun onDBCreate(db : SQLiteDatabase) {
+	override fun onDBCreate(db : SQLiteDatabase) {
 		log.d("onDBCreate!")
 		db.execSQL(
 			"create table if not exists " + table
@@ -28,7 +28,7 @@ object FavMute {
 		)
 	}
 	
-	fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
+	override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
 		if(oldVersion < 22 && newVersion >= 22) {
 			onDBCreate(db)
 		}

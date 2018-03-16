@@ -46,7 +46,7 @@ class PostDraft {
 		
 	}
 	
-	companion object {
+	companion object :TableCompanion{
 		
 		private val log = LogCategory("PostDraft")
 		
@@ -56,7 +56,7 @@ class PostDraft {
 		private const val COL_JSON = "json"
 		private const val COL_HASH = "hash"
 		
-		fun onDBCreate(db : SQLiteDatabase) {
+		override fun onDBCreate(db : SQLiteDatabase) {
 			log.d("onDBCreate!")
 			db.execSQL(
 				"create table if not exists " + table
@@ -74,7 +74,7 @@ class PostDraft {
 			)
 		}
 		
-		fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
+		override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
 			if(oldVersion < 12 && newVersion >= 12) {
 				onDBCreate(db)
 			}

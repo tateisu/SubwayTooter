@@ -29,7 +29,7 @@ class UserRelation private constructor() {
 		return if(requested && ! following && who != null && ! who.locked) false else requested
 	}
 	
-	companion object {
+	companion object :TableCompanion{
 		
 		private val log = LogCategory("UserRelation")
 		
@@ -51,7 +51,7 @@ class UserRelation private constructor() {
 		const val REBLOG_SHOW = 1 // show the boosts from target account will be shown on authorized user's home TL.
 		const val REBLOG_UNKNOWN = 2 // not following, or instance don't support hide reblog.
 		
-		fun onDBCreate(db : SQLiteDatabase) {
+		override fun onDBCreate(db : SQLiteDatabase) {
 			log.d("onDBCreate!")
 			db.execSQL(
 				"create table if not exists " + table
@@ -75,7 +75,7 @@ class UserRelation private constructor() {
 			)
 		}
 		
-		fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
+		override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
 			if(oldVersion < 6 && newVersion >= 6) {
 				onDBCreate(db)
 			}

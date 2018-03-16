@@ -76,7 +76,7 @@ class NotificationTracking {
 		
 	}
 	
-	companion object {
+	companion object :TableCompanion{
 		
 		private val log = LogCategory("NotificationTracking")
 		
@@ -105,7 +105,7 @@ class NotificationTracking {
 		// 最後に表示した通知の作成時刻
 		private const val COL_POST_TIME = "pt"
 		
-		fun onDBCreate(db : SQLiteDatabase) {
+		override fun onDBCreate(db : SQLiteDatabase) {
 			
 			db.execSQL(
 				"create table if not exists " + table
@@ -124,7 +124,7 @@ class NotificationTracking {
 			)
 		}
 		
-		fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
+		override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
 			if(oldVersion < 2 && newVersion >= 2) {
 				onDBCreate(db)
 			}

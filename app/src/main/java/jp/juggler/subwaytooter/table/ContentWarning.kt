@@ -7,7 +7,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.util.LogCategory
 
-object ContentWarning {
+object ContentWarning :TableCompanion{
 	private val log = LogCategory("ContentWarning")
 	
 	private const val table = "content_warning"
@@ -18,7 +18,7 @@ object ContentWarning {
 	
 	private val projection_shown = arrayOf(COL_SHOWN)
 	
-	fun onDBCreate(db : SQLiteDatabase) {
+	override fun onDBCreate(db : SQLiteDatabase) {
 		log.d("onDBCreate!")
 		db.execSQL(
 			"create table if not exists " + table
@@ -34,7 +34,7 @@ object ContentWarning {
 		)
 	}
 	
-	fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
+	override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
 		if(oldVersion < 5 && newVersion >= 5) {
 			db.execSQL("drop table if exists " + table)
 			onDBCreate(db)

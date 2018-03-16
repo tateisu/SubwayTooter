@@ -9,7 +9,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.toJsonObject
 
-object ClientInfo {
+object ClientInfo :TableCompanion {
 	private val log = LogCategory("ClientInfo")
 	
 	const val table = "client_info2"
@@ -17,7 +17,7 @@ object ClientInfo {
 	private const val COL_CLIENT_NAME = "cn"
 	private const val COL_RESULT = "r"
 	
-	fun onDBCreate(db : SQLiteDatabase) {
+	override fun onDBCreate(db : SQLiteDatabase) {
 		db.execSQL(
 			"create table if not exists " + table
 				+ "(_id INTEGER PRIMARY KEY"
@@ -31,7 +31,7 @@ object ClientInfo {
 		)
 	}
 	
-	fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
+	override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
 		if(oldVersion <= 18 && newVersion >= 19) {
 			onDBCreate(db)
 		}

@@ -7,7 +7,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.util.LogCategory
 
-object MediaShown {
+object MediaShown:TableCompanion {
 	private val log = LogCategory("MediaShown")
 	
 	private const val table = "media_shown"
@@ -18,7 +18,7 @@ object MediaShown {
 	
 	private val projection_shown = arrayOf(COL_SHOWN)
 	
-	fun onDBCreate(db : SQLiteDatabase) {
+	override fun onDBCreate(db : SQLiteDatabase) {
 		log.d("onDBCreate!")
 		db.execSQL(
 			"create table if not exists " + table
@@ -34,7 +34,7 @@ object MediaShown {
 		)
 	}
 	
-	fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
+	override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
 		if(oldVersion < 5 && newVersion >= 5) {
 			db.execSQL("drop table if exists " + table)
 			onDBCreate(db)

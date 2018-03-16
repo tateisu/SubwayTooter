@@ -15,6 +15,7 @@ import jp.juggler.subwaytooter.util.sanitizeBDI
 
 import java.util.Locale
 
+
 class AcctColor {
 	
 	var acct : String
@@ -65,7 +66,7 @@ class AcctColor {
 		
 	}
 	
-	companion object {
+	companion object :TableCompanion {
 		
 		private val log = LogCategory("AcctColor")
 		
@@ -89,7 +90,7 @@ class AcctColor {
 		
 		private val mMemoryCache = LruCache<String, AcctColor>(2048)
 		
-		fun onDBCreate(db : SQLiteDatabase) {
+		override fun onDBCreate(db : SQLiteDatabase) {
 			log.d("onDBCreate!")
 			db.execSQL(
 				"create table if not exists " + table
@@ -110,7 +111,7 @@ class AcctColor {
 			)
 		}
 		
-		fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
+		override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
 			if(oldVersion < 9 && newVersion >= 9) {
 				onDBCreate(db)
 				return

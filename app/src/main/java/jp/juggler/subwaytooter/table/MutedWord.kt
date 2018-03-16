@@ -8,7 +8,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.WordTrieTree
 
-object MutedWord {
+object MutedWord :TableCompanion{
 	
 	private val log = LogCategory("MutedWord")
 	
@@ -18,7 +18,7 @@ object MutedWord {
 	private const val COL_TIME_SAVE = "time_save"
 	
 	
-	fun onDBCreate(db : SQLiteDatabase) {
+	override fun onDBCreate(db : SQLiteDatabase) {
 		log.d("onDBCreate!")
 		db.execSQL(
 			"create table if not exists " + table
@@ -32,7 +32,7 @@ object MutedWord {
 		)
 	}
 	
-	fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
+	override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
 		if(oldVersion < 11 && newVersion >= 11) {
 			onDBCreate(db)
 		}

@@ -331,7 +331,7 @@ class SavedAccount(
 		return null
 	}
 	
-	companion object {
+	companion object :TableCompanion{
 		private val log = LogCategory("SavedAccount")
 		
 		const val table = "access_info"
@@ -385,7 +385,7 @@ class SavedAccount(
 			}
 		}
 		
-		fun onDBCreate(db : SQLiteDatabase) {
+		override fun onDBCreate(db : SQLiteDatabase) {
 			db.execSQL(
 				"create table if not exists " + table
 					+ "(_id INTEGER PRIMARY KEY"
@@ -428,7 +428,7 @@ class SavedAccount(
 			db.execSQL("create index if not exists " + table + "_host on " + table + "(h,u)")
 		}
 		
-		fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
+		override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
 			if(oldVersion < 2 && newVersion >= 2) {
 				try {
 					db.execSQL("alter table $table add column notification_mention integer default 1")

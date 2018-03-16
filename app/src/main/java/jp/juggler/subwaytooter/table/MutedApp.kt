@@ -9,7 +9,7 @@ import java.util.HashSet
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.util.LogCategory
 
-object MutedApp {
+object MutedApp :TableCompanion{
 	
 	private val log = LogCategory("MutedApp")
 	
@@ -17,8 +17,8 @@ object MutedApp {
 	const val COL_ID = "_id"
 	const val COL_NAME = "name"
 	private const val COL_TIME_SAVE = "time_save"
-
-	fun onDBCreate(db : SQLiteDatabase) {
+	
+	override fun onDBCreate(db : SQLiteDatabase) {
 		log.d("onDBCreate!")
 		db.execSQL(
 			"create table if not exists " + table
@@ -32,7 +32,7 @@ object MutedApp {
 		)
 	}
 	
-	fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
+	override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
 		if(oldVersion < 6 && newVersion >= 6) {
 			onDBCreate(db)
 		}

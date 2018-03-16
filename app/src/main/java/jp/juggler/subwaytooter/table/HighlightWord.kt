@@ -11,7 +11,7 @@ import jp.juggler.subwaytooter.util.*
 
 class HighlightWord {
 	
-	companion object {
+	companion object :TableCompanion{
 		
 		private val log = LogCategory("HighlightWord")
 		
@@ -33,7 +33,7 @@ class HighlightWord {
 		
 		private val columns_name = arrayOf(COL_NAME)
 		
-		fun onDBCreate(db : SQLiteDatabase) {
+		override fun onDBCreate(db : SQLiteDatabase) {
 			log.d("onDBCreate!")
 			db.execSQL(
 				"create table if not exists " + table
@@ -51,7 +51,7 @@ class HighlightWord {
 			)
 		}
 		
-		fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
+		override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
 			if(oldVersion < 21 && newVersion >= 21) {
 				onDBCreate(db)
 			}

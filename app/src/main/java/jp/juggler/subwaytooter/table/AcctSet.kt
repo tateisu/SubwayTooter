@@ -8,7 +8,7 @@ import java.util.ArrayList
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.util.LogCategory
 
-object AcctSet {
+object AcctSet :TableCompanion{
 	
 	private val log = LogCategory("AcctSet")
 	
@@ -24,7 +24,7 @@ object AcctSet {
 		}
 	}
 	
-	fun onDBCreate(db : SQLiteDatabase) {
+	override fun onDBCreate(db : SQLiteDatabase) {
 		log.d("onDBCreate!")
 		db.execSQL(
 			"create table if not exists " + table
@@ -41,7 +41,7 @@ object AcctSet {
 		)
 	}
 	
-	fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
+	override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
 		if(oldVersion < 7 && newVersion >= 7) {
 			onDBCreate(db)
 		}

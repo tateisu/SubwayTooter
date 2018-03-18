@@ -19,7 +19,11 @@ import java.util.regex.Pattern
 
 class TootApiClient(
 	internal val context : Context,
-	internal val httpClient : SimpleHttpClient = SimpleHttpClientImpl(context, App1.ok_http_client),
+	internal val httpClient : SimpleHttpClient = SimpleHttpClientImpl(
+		context,
+		App1.ok_http_client,
+		App1.ok_http_client2
+	),
 	internal val callback : TootApiCallback
 ) {
 	
@@ -194,6 +198,7 @@ class TootApiClient(
 	internal inline fun sendRequest(
 		result : TootApiResult,
 		progressPath : String? = null,
+		cached : Boolean = false,
 		block : () -> Request
 	) : Boolean {
 		return try {
@@ -211,7 +216,7 @@ class TootApiClient(
 				)
 			)
 			
-			result.response = httpClient.getResponse(request)
+			result.response = httpClient.getResponse(request,cached=cached)
 			
 			null == result.error
 			

@@ -42,7 +42,7 @@ object LogData :TableCompanion{
 		)
 	}
 	
-	override fun onDBUpgrade(db : SQLiteDatabase, v_old : Int, v_new : Int) {
+	override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
 	
 	}
 	

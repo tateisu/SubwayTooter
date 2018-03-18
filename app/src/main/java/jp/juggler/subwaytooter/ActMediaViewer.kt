@@ -362,7 +362,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			internal fun getHttpCached(client : TootApiClient, url : String) : TootApiResult? {
 				val result = TootApiResult.makeWithCaption(url)
 				
-				if(! client.sendRequest(result) {
+				if(! client.sendRequest(result,cached = true) {
 						okhttp3.Request.Builder()
 							.url(url)
 							.cacheControl(App1.CACHE_5MIN)
@@ -374,6 +374,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				if(! response.isSuccessful) {
 					return result.setError(TootApiClient.formatResponse(response, result.caption))
 				}
+//				log.d("cached=${ response.cacheResponse() != null }")
 				
 				try {
 					result.data = ProgressResponseBody.bytes(response) { bytesRead, bytesTotal ->

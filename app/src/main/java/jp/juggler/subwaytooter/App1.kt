@@ -202,7 +202,7 @@ class App1 : Application() {
 		
 		lateinit var ok_http_client : OkHttpClient
 		
-		private lateinit var ok_http_client2 : OkHttpClient
+		lateinit var ok_http_client2 : OkHttpClient
 		
 		lateinit var pref : SharedPreferences
 		

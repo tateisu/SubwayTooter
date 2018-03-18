@@ -14,7 +14,7 @@ interface CurrentCallCallback {
 
 interface SimpleHttpClient {
 	var currentCallCallback : CurrentCallCallback?
-	fun getResponse(request : Request) : Response
+	fun getResponse(request : Request,cached :Boolean = false) : Response
 	fun getWebSocket(
 		request : Request,
 		webSocketListener : WebSocketListener
@@ -23,9 +23,11 @@ interface SimpleHttpClient {
 
 class SimpleHttpClientImpl(
 	context : Context,
-	private val okHttpClient : OkHttpClient
+	private val okHttpClient : OkHttpClient,
+	private val okHttpClientCached : OkHttpClient
 ) : SimpleHttpClient {
 	
+
 	companion object {
 		val log = LogCategory("SimpleHttpClientImpl")
 		var connectivityManager : ConnectivityManager? = null
@@ -40,9 +42,12 @@ class SimpleHttpClientImpl(
 	
 	override var currentCallCallback : CurrentCallCallback? = null
 	
-	override fun getResponse(request : Request) : Response {
+	override fun getResponse(request : Request,cached :Boolean) : Response {
 		checkNetworkState()
-		val call = okHttpClient.newCall(request)
+		val call = when(cached) {
+			false -> okHttpClient
+			true -> okHttpClientCached
+		}.newCall(request)
 		currentCallCallback?.onCallCreated(call)
 		return call.execute()
 	}

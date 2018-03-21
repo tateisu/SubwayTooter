@@ -608,6 +608,23 @@
 
         </LinearLayout>
 
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/thumbnails_arrange_vertically"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swVerticalArrangeThumbnails"
+                style="@style/setting_horizontal_stretch"
+                />
+
+        </LinearLayout>
+
         <View style="@style/setting_divider"/>
 
         <!-- =============================================== -->

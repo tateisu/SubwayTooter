@@ -41,9 +41,17 @@ fun View.setPaddingStartEnd(start : Int, end : Int) {
 
 // XMLのandroid:minWidthと同じことをしたい場合、View#setMinimumWidthとTextView#setMinWidthの両方を呼び出す必要がある
 // http://www.thekingsmuseum.info/entry/2015/12/01/233134
+
 var TextView.minWidthCompat : Int
 	get() = minWidth
 	set(value) {
 		minimumWidth = value
 		minWidth = value
+	}
+
+var TextView.minHeightCompat : Int
+	get() = minHeight
+	set(value) {
+		minimumHeight = value
+		minHeight = value
 	}

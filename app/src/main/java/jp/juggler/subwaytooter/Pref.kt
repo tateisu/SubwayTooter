@@ -294,6 +294,12 @@ object Pref {
 		R.id.swAppendAttachmentUrlToContent
 	)
 	
+	val bpVerticalArrangeThumbnails = BooleanPref(
+		"VerticalArrangeThumbnails",
+		false,
+		R.id.swVerticalArrangeThumbnails
+	)
+	
 	
 	// int
 	

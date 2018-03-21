@@ -910,5 +910,6 @@
     <string name="fav_muted_user_long">Fav/BT非通知ユーザ</string>
 
     <string name="changed">変更しました</string>
+    <string name="thumbnails_arrange_vertically">サムネイルを縦に並べる (アプリ再起動が必要)</string>
 
 </resources>

@@ -173,8 +173,7 @@ internal class ItemViewHolder(
 		
 		btnHideMedia.setOnClickListener(this)
 		
-		val lp = flMedia.layoutParams
-		lp.height = activity.app_state.media_thumb_height
+		
 		
 		this.content_color_default = tvContent.textColors.defaultColor
 		
@@ -738,11 +737,11 @@ internal class ItemViewHolder(
 			if(url != null && url.isNotEmpty()) {
 				iv.visibility = View.VISIBLE
 				
-				iv.setFocusPoint( ta.focusX, ta.focusY )
+				iv.setFocusPoint(ta.focusX, ta.focusY)
 				
-				if( Pref.bpDontCropMediaThumb(App1.pref) ){
+				if(Pref.bpDontCropMediaThumb(App1.pref)) {
 					iv.scaleType = ImageView.ScaleType.FIT_CENTER
-				}else{
+				} else {
 					iv.setScaleTypeForMedia()
 				}
 				
@@ -896,9 +895,15 @@ internal class ItemViewHolder(
 						activity.addColumn(pos, access_info, Column.TYPE_LIST_TL, item.id)
 					}
 					.addAction(activity.getString(R.string.list_member)) {
-						activity.addColumn(false,pos, access_info, Column.TYPE_LIST_MEMBER, item.id)
+						activity.addColumn(
+							false,
+							pos,
+							access_info,
+							Column.TYPE_LIST_MEMBER,
+							item.id
+						)
 					}
-					.addAction(activity.getString(R.string.rename)){
+					.addAction(activity.getString(R.string.rename)) {
 						Action_List.rename(activity, access_info, item)
 					}
 					.addAction(activity.getString(R.string.delete)) {
@@ -1449,97 +1454,205 @@ internal class ItemViewHolder(
 								topMargin = dip(3)
 							}
 							
-							flMedia = frameLayout {
-								lparams(matchParent, dip(64)) {
-									topMargin = dip(3)
+							val actMain = activity as? ActMain
+							val thumbnailHeight = actMain?.app_state?.media_thumb_height ?: dip(64)
+							val verticalArrangeThumbnails = Pref.bpVerticalArrangeThumbnails( actMain?.pref ?: Pref.pref(context))
+							
+							flMedia = if(verticalArrangeThumbnails ) {
+								frameLayout {
+									lparams(matchParent, wrapContent ) {
+										topMargin = dip(3)
+									}
+									llMedia = verticalLayout {
+										lparams(matchParent, matchParent)
+										
+										btnHideMedia = imageButton {
+											
+											background = ContextCompat.getDrawable(
+												context,
+												R.drawable.btn_bg_transparent
+											)
+											contentDescription = "@string/hide"
+											imageResource =
+												Styler.getAttributeResourceId(
+													context,
+													R.attr.btn_close
+												)
+										}.lparams(dip(32),dip(32)) {
+											gravity = Gravity.END
+										}
+										
+										ivMedia1 = myNetworkImageView {
+											
+											background = ContextCompat.getDrawable(
+												context,
+												R.drawable.bg_thumbnail
+											)
+											contentDescription =
+												context.getString(R.string.thumbnail)
+											scaleType = ImageView.ScaleType.CENTER_CROP
+											
+										}.lparams(matchParent, thumbnailHeight) {
+											topMargin = dip(3)
+										}
+										
+										ivMedia2 = myNetworkImageView {
+											
+											background = ContextCompat.getDrawable(
+												context,
+												R.drawable.bg_thumbnail
+											)
+											contentDescription =
+												context.getString(R.string.thumbnail)
+											scaleType = ImageView.ScaleType.CENTER_CROP
+											
+										}.lparams(matchParent, thumbnailHeight) {
+											topMargin = dip(3)
+										}
+										
+										ivMedia3 = myNetworkImageView {
+											
+											background = ContextCompat.getDrawable(
+												context,
+												R.drawable.bg_thumbnail
+											)
+											contentDescription =
+												context.getString(R.string.thumbnail)
+											scaleType = ImageView.ScaleType.CENTER_CROP
+											
+										}.lparams(matchParent, thumbnailHeight) {
+											topMargin = dip(3)
+										}
+										
+										ivMedia4 = myNetworkImageView {
+											
+											background = ContextCompat.getDrawable(
+												context,
+												R.drawable.bg_thumbnail
+											)
+											contentDescription =
+												context.getString(R.string.thumbnail)
+											scaleType = ImageView.ScaleType.CENTER_CROP
+											
+										}.lparams(matchParent, thumbnailHeight) {
+											topMargin = dip(3)
+										}
+									}
+									
+									btnShowMedia = textView {
+										
+										backgroundColor = Styler.getAttributeColor(
+											context,
+											R.attr.colorShowMediaBackground
+										)
+										gravity = Gravity.CENTER_VERTICAL or Gravity.END
+										text = context.getString(R.string.tap_to_show)
+										textColor =
+											Styler.getAttributeColor(context, R.attr.colorShowMediaText)
+										endPadding=dip(4)
+										minHeightCompat = dip(32)
+									}.lparams(matchParent, matchParent)
 								}
-								
-								llMedia = linearLayout {
-									lparams(matchParent, matchParent)
-									
-									ivMedia1 = myNetworkImageView {
+							} else {
+								frameLayout {
+									lparams(matchParent, thumbnailHeight) {
+										topMargin = dip(3)
+									}
+									llMedia = linearLayout {
+										lparams(matchParent, matchParent)
 										
+										ivMedia1 = myNetworkImageView {
+											
+											background = ContextCompat.getDrawable(
+												context,
+												R.drawable.bg_thumbnail
+											)
+											contentDescription =
+												context.getString(R.string.thumbnail)
+											scaleType = ImageView.ScaleType.CENTER_CROP
+											
+										}.lparams(0, matchParent) {
+											weight = 1f
+										}
 										
-										background = ContextCompat.getDrawable(
-											context,
-											R.drawable.bg_thumbnail
-										)
-										contentDescription = context.getString(R.string.thumbnail)
-										scaleType = ImageView.ScaleType.CENTER_CROP
+										ivMedia2 = myNetworkImageView {
+											
+											background = ContextCompat.getDrawable(
+												context,
+												R.drawable.bg_thumbnail
+											)
+											contentDescription =
+												context.getString(R.string.thumbnail)
+											scaleType = ImageView.ScaleType.CENTER_CROP
+											
+										}.lparams(0, matchParent) {
+											startMargin = dip(8)
+											weight = 1f
+										}
 										
-									}.lparams(0, matchParent) {
-										weight = 1f
+										ivMedia3 = myNetworkImageView {
+											
+											background = ContextCompat.getDrawable(
+												context,
+												R.drawable.bg_thumbnail
+											)
+											contentDescription =
+												context.getString(R.string.thumbnail)
+											scaleType = ImageView.ScaleType.CENTER_CROP
+											
+										}.lparams(0, matchParent) {
+											startMargin = dip(8)
+											weight = 1f
+										}
+										
+										ivMedia4 = myNetworkImageView {
+											
+											background = ContextCompat.getDrawable(
+												context,
+												R.drawable.bg_thumbnail
+											)
+											contentDescription =
+												context.getString(R.string.thumbnail)
+											scaleType = ImageView.ScaleType.CENTER_CROP
+											
+										}.lparams(0, matchParent) {
+											startMargin = dip(8)
+											weight = 1f
+										}
+										
+										btnHideMedia = imageButton {
+											
+											background = ContextCompat.getDrawable(
+												context,
+												R.drawable.btn_bg_transparent
+											)
+											contentDescription = "@string/hide"
+											imageResource =
+												Styler.getAttributeResourceId(
+													context,
+													R.attr.btn_close
+												)
+										}.lparams(dip(32), matchParent) {
+											startMargin = dip(8)
+										}
 									}
 									
-									ivMedia2 = myNetworkImageView {
+									btnShowMedia = textView {
 										
-										background = ContextCompat.getDrawable(
+										backgroundColor = Styler.getAttributeColor(
 											context,
-											R.drawable.bg_thumbnail
+											R.attr.colorShowMediaBackground
 										)
-										contentDescription = context.getString(R.string.thumbnail)
-										scaleType = ImageView.ScaleType.CENTER_CROP
+										gravity = Gravity.CENTER
+										text = context.getString(R.string.tap_to_show)
+										textColor =
+											Styler.getAttributeColor(context, R.attr.colorShowMediaText)
 										
-									}.lparams(0, matchParent) {
-										startMargin = dip(8)
-										weight = 1f
-									}
-									
-									ivMedia3 = myNetworkImageView {
-										
-										background = ContextCompat.getDrawable(
-											context,
-											R.drawable.bg_thumbnail
-										)
-										contentDescription = context.getString(R.string.thumbnail)
-										scaleType = ImageView.ScaleType.CENTER_CROP
-										
-									}.lparams(0, matchParent) {
-										startMargin = dip(8)
-										weight = 1f
-									}
-									
-									ivMedia4 = myNetworkImageView {
-										
-										background = ContextCompat.getDrawable(
-											context,
-											R.drawable.bg_thumbnail
-										)
-										contentDescription = context.getString(R.string.thumbnail)
-										scaleType = ImageView.ScaleType.CENTER_CROP
-										
-									}.lparams(0, matchParent) {
-										startMargin = dip(8)
-										weight = 1f
-									}
-									
-									btnHideMedia = imageButton {
-										
-										background = ContextCompat.getDrawable(
-											context,
-											R.drawable.btn_bg_transparent
-										)
-										contentDescription = "@string/hide"
-										imageResource =
-											Styler.getAttributeResourceId(context, R.attr.btn_close)
-									}.lparams(dip(32), matchParent) {
-										startMargin = dip(8)
-									}
+									}.lparams(matchParent, matchParent)
 								}
-								
-								btnShowMedia = textView {
-									
-									backgroundColor = Styler.getAttributeColor(
-										context,
-										R.attr.colorShowMediaBackground
-									)
-									gravity = Gravity.CENTER
-									text = context.getString(R.string.tap_to_show)
-									textColor =
-										Styler.getAttributeColor(context, R.attr.colorShowMediaText)
-									
-								}.lparams(matchParent, matchParent)
 							}
+							
+
 							
 							
 							llExtra = verticalLayout {

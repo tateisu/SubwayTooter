@@ -184,7 +184,7 @@
 
         <activity
             android:name=".ActFavMute"
-            android:label="@string/fav_muted_user"
+            android:label="@string/fav_muted_user_long"
             />
 
         <activity

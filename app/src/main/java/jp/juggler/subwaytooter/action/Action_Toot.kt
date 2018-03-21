@@ -33,7 +33,8 @@ object Action_Toot {
 	
 	private val log = LogCategory("Action_Favourite")
 	
-	private val reDetailedStatusTime = Pattern.compile("<a\\b[^>]*?\\bdetailed-status__datetime\\b[^>]*href=\"https://[^/]+/@[^/]+/(\\d+)\"")
+	private val reDetailedStatusTime =
+		Pattern.compile("<a\\b[^>]*?\\bdetailed-status__datetime\\b[^>]*href=\"https://[^/]+/@[^/]+/(\\d+)\"")
 	
 	// アカウントを選んでお気に入り
 	fun favouriteFromAnotherAccount(
@@ -89,8 +90,12 @@ object Action_Toot {
 				if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
 					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
 					val status_url = arg_status.url
-					if( status_url?.isEmpty()!=false) return TootApiResult("missing status URL")
-					val path = String.format(Locale.JAPAN, Column.PATH_SEARCH, status_url.encodePercent()) + "&resolve=1"
+					if(status_url?.isEmpty() != false) return TootApiResult("missing status URL")
+					val path = String.format(
+						Locale.JAPAN,
+						Column.PATH_SEARCH,
+						status_url.encodePercent()
+					) + "&resolve=1"
 					
 					result = client.request(path)
 					val jsonObject = result?.jsonObject ?: return result
@@ -113,9 +118,11 @@ object Action_Toot {
 				}
 				
 				val request_builder = Request.Builder()
-					.post(RequestBody.create(
-						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, ""
-					))
+					.post(
+						RequestBody.create(
+							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, ""
+						)
+					)
 				
 				result = client.request(
 					"/api/v1/statuses/" + target_status.id + if(bSet) "/favourite" else "/unfavourite",
@@ -155,16 +162,16 @@ object Action_Toot {
 						
 						
 						for(column in App1.getAppState(activity).column_list) {
-							column.findStatus(access_info.host, new_status.id){ account,status ->
+							column.findStatus(access_info.host, new_status.id) { account, status ->
 								
 								// 同タンス別アカウントでもカウントは変化する
 								status.favourites_count = new_status.favourites_count
 								
-								if(access_info.acct == account.acct ) {
+								if(access_info.acct == account.acct) {
 									// 同アカウントならfav状態を変化させる
 									status.favourited = new_status.favourited
 								}
-
+								
 								true
 							}
 						}
@@ -200,7 +207,13 @@ object Action_Toot {
 			accountListArg = makeAccountListNonPseudo(activity, who_host)
 		) { action_account ->
 			boost(
-				activity, action_account, status, calcCrossAccountMode(timeline_account, action_account), true, false, activity.boost_complete_callback
+				activity,
+				action_account,
+				status,
+				calcCrossAccountMode(timeline_account, action_account),
+				true,
+				false,
+				activity.boost_complete_callback
 			)
 		}
 	}
@@ -221,26 +234,37 @@ object Action_Toot {
 			return
 		}
 		
-//		// クロスアカウント操作ではないならステータス内容を使ったチェックを行える
-//		if(nCrossAccountMode == NOT_CROSS_ACCOUNT) {
-//			if(arg_status.reblogged) {
-//				if(App1.getAppState(activity).isBusyFav(access_info, arg_status) || arg_status.favourited) {
-//					// FAVがついているか、FAV操作中はBoostを外せない
-//					showToast(activity, false, R.string.cant_remove_boost_while_favourited)
-//					return
-//				}
-//			}
-//		}
+		//		// クロスアカウント操作ではないならステータス内容を使ったチェックを行える
+		//		if(nCrossAccountMode == NOT_CROSS_ACCOUNT) {
+		//			if(arg_status.reblogged) {
+		//				if(App1.getAppState(activity).isBusyFav(access_info, arg_status) || arg_status.favourited) {
+		//					// FAVがついているか、FAV操作中はBoostを外せない
+		//					showToast(activity, false, R.string.cant_remove_boost_while_favourited)
+		//					return
+		//				}
+		//			}
+		//		}
 		
 		// 必要なら確認を出す
 		if(bSet && ! bConfirmed) {
 			DlgConfirm.open(
 				activity,
-				activity.getString(R.string.confirm_boost_from, AcctColor.getNickname(access_info.acct)),
+				activity.getString(
+					R.string.confirm_boost_from,
+					AcctColor.getNickname(access_info.acct)
+				),
 				object : DlgConfirm.Callback {
 					
 					override fun onOK() {
-						boost(activity, access_info, arg_status, nCrossAccountMode, true, true, callback)
+						boost(
+							activity,
+							access_info,
+							arg_status,
+							nCrossAccountMode,
+							true,
+							true,
+							callback
+						)
 					}
 					
 					override var isConfirmEnabled : Boolean
@@ -268,9 +292,13 @@ object Action_Toot {
 				var target_status : TootStatus?
 				if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
 					val status_url = arg_status.url
-					if( status_url?.isEmpty()!=false) return TootApiResult("missing status URL")
+					if(status_url?.isEmpty() != false) return TootApiResult("missing status URL")
 					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
-					val path = String.format(Locale.JAPAN, Column.PATH_SEARCH, status_url.encodePercent() ) + "&resolve=1"
+					val path = String.format(
+						Locale.JAPAN,
+						Column.PATH_SEARCH,
+						status_url.encodePercent()
+					) + "&resolve=1"
 					
 					result = client.request(path)
 					val jsonObject = result?.jsonObject ?: return result
@@ -291,12 +319,16 @@ object Action_Toot {
 				}
 				
 				val request_builder = Request.Builder()
-					.post(RequestBody.create(
-						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, ""
-					))
+					.post(
+						RequestBody.create(
+							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, ""
+						)
+					)
 				
 				result = client.request(
-					"/api/v1/statuses/" + target_status.id + if(bSet) "/reblog" else "/unreblog", request_builder)
+					"/api/v1/statuses/" + target_status.id + if(bSet) "/reblog" else "/unreblog",
+					request_builder
+				)
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
 					
@@ -304,7 +336,8 @@ object Action_Toot {
 					
 					// reblogはreblogを表すStatusを返す
 					// unreblogはreblogしたStatusを返す
-					this.new_status = if(new_status?.reblog != null) new_status.reblog else new_status
+					this.new_status =
+						if(new_status?.reblog != null) new_status.reblog else new_status
 				}
 				
 				return result
@@ -336,12 +369,12 @@ object Action_Toot {
 						}
 						
 						for(column in App1.getAppState(activity).column_list) {
-							column.findStatus(access_info.host, new_status.id){ account, status ->
-
+							column.findStatus(access_info.host, new_status.id) { account, status ->
+								
 								// 同タンス別アカウントでもカウントは変化する
 								status.reblogs_count = new_status.reblogs_count
-
-								if(access_info.acct == account.acct ) {
+								
+								if(access_info.acct == account.acct) {
 									// 同アカウントならreblog状態を変化させる
 									status.reblogged = new_status.reblogged
 								}
@@ -372,7 +405,7 @@ object Action_Toot {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val request_builder = Request.Builder().delete()
 				
-				return client.request("/api/v1/statuses/" + status_id, request_builder)
+				return client.request("/api/v1/statuses/$status_id", request_builder)
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
@@ -381,7 +414,7 @@ object Action_Toot {
 				if(result.jsonObject != null) {
 					showToast(activity, false, R.string.delete_succeeded)
 					for(column in App1.getAppState(activity).column_list) {
-						column.removeStatus(access_info, status_id)
+						column.onStatusRemoved(access_info.host, status_id)
 					}
 				} else {
 					showToast(activity, false, result.error)
@@ -440,7 +473,14 @@ object Action_Toot {
 				// 投稿元タンスでのIDはuriやURLから調べる
 				// pleromaではIDがuuidなので失敗する(その時はURLを検索してIDを見つける)
 				val status_id_original = TootStatus.findStatusIdFromUri(status.uri, status.url)
-				conversationOtherInstance(activity, pos, url, status_id_original, status.host_access, status.id)
+				conversationOtherInstance(
+					activity,
+					pos,
+					url,
+					status_id_original,
+					status.host_access,
+					status.id
+				)
 			}
 		}
 	}
@@ -460,7 +500,12 @@ object Action_Toot {
 		val host_original = Uri.parse(url).authority
 		
 		// 選択肢：ブラウザで表示する
-		dialog.addAction(activity.getString(R.string.open_web_on_host, host_original)) { App1.openCustomTab(activity, url) }
+		dialog.addAction(
+			activity.getString(
+				R.string.open_web_on_host,
+				host_original
+			)
+		) { App1.openCustomTab(activity, url) }
 		
 		// トゥートの投稿元タンスにあるアカウント
 		val local_account_list = ArrayList<SavedAccount>()
@@ -492,14 +537,18 @@ object Action_Toot {
 		// 同タンスのアカウントがないなら、疑似アカウントで開く選択肢
 		if(local_account_list.isEmpty()) {
 			if(status_id_original >= 0L) {
-				dialog.addAction(activity.getString(R.string.open_in_pseudo_account, "?@" + host_original)) {
+				dialog.addAction(
+					activity.getString(R.string.open_in_pseudo_account, "?@$host_original")
+				) {
 					val sa = addPseudoAccount(activity, host_original)
 					if(sa != null) {
 						conversationLocal(activity, pos, sa, status_id_original)
 					}
 				}
 			} else {
-				dialog.addAction(activity.getString(R.string.open_in_pseudo_account, "?@" + host_original)) {
+				dialog.addAction(
+					activity.getString(R.string.open_in_pseudo_account, "?@$host_original")
+				) {
 					val sa = addPseudoAccount(activity, host_original)
 					if(sa != null) {
 						conversationRemote(activity, pos, sa, url)
@@ -511,19 +560,37 @@ object Action_Toot {
 		// ローカルアカウント
 		SavedAccount.sort(local_account_list)
 		for(a in local_account_list) {
-			dialog.addAction(AcctColor.getStringWithNickname(activity, R.string.open_in_account, a.acct)) { conversationLocal(activity, pos, a, status_id_original) }
+			dialog.addAction(
+				AcctColor.getStringWithNickname(
+					activity,
+					R.string.open_in_account,
+					a.acct
+				)
+			) { conversationLocal(activity, pos, a, status_id_original) }
 		}
 		
 		// アクセスしたアカウント
 		SavedAccount.sort(access_account_list)
 		for(a in access_account_list) {
-			dialog.addAction(AcctColor.getStringWithNickname(activity, R.string.open_in_account, a.acct)) { conversationLocal(activity, pos, a, status_id_access) }
+			dialog.addAction(
+				AcctColor.getStringWithNickname(
+					activity,
+					R.string.open_in_account,
+					a.acct
+				)
+			) { conversationLocal(activity, pos, a, status_id_access) }
 		}
 		
 		// その他の実アカウント
 		SavedAccount.sort(other_account_list)
 		for(a in other_account_list) {
-			dialog.addAction(AcctColor.getStringWithNickname(activity, R.string.open_in_account, a.acct)) { conversationRemote(activity, pos, a, url) }
+			dialog.addAction(
+				AcctColor.getStringWithNickname(
+					activity,
+					R.string.open_in_account,
+					a.acct
+				)
+			) { conversationRemote(activity, pos, a, url) }
 		}
 		
 		dialog.show(activity, activity.getString(R.string.open_status_from))
@@ -554,12 +621,17 @@ object Action_Toot {
 							}
 							
 							if(local_status_id == - 1L) {
-								result = TootApiResult(activity.getString(R.string.status_id_conversion_failed))
+								result =
+									TootApiResult(activity.getString(R.string.status_id_conversion_failed))
 							}
 						}
 					} else {
 						// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
-						val path = String.format(Locale.JAPAN, Column.PATH_SEARCH, remote_status_url.encodePercent()) + "&resolve=1"
+						val path = String.format(
+							Locale.JAPAN,
+							Column.PATH_SEARCH,
+							remote_status_url.encodePercent()
+						) + "&resolve=1"
 						result = client.request(path)
 						val jsonObject = result?.jsonObject
 						if(jsonObject != null) {
@@ -570,7 +642,8 @@ object Action_Toot {
 								log.d("status id conversion %s => %s", remote_status_url, status.id)
 							}
 							if(local_status_id == - 1L) {
-								result = TootApiResult(activity.getString(R.string.status_id_conversion_failed))
+								result =
+									TootApiResult(activity.getString(R.string.status_id_conversion_failed))
 							}
 						}
 					}
@@ -607,15 +680,18 @@ object Action_Toot {
 					val result : TootApiResult?
 					
 					val request_builder = Request.Builder()
-						.post(RequestBody.create(
-							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, ""
-						))
+						.post(
+							RequestBody.create(
+								TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, ""
+							)
+						)
 					
 					result = client.request(
 						if(bSet)
 							"/api/v1/statuses/" + status.id + "/pin"
 						else
-							"/api/v1/statuses/" + status.id + "/unpin", request_builder)
+							"/api/v1/statuses/" + status.id + "/unpin", request_builder
+					)
 					
 					new_status = TootParser(activity, access_info).status(result?.jsonObject)
 					
@@ -631,16 +707,20 @@ object Action_Toot {
 							// cancelled.
 						}
 						
-						new_status != null ->{
+						new_status != null -> {
 							for(column in App1.getAppState(activity).column_list) {
-								if( access_info.acct == column.access_info.acct){
-									column.findStatus(access_info.host, new_status.id){_,status->
+								if(access_info.acct == column.access_info.acct) {
+									column.findStatus(
+										access_info.host,
+										new_status.id
+									) { _, status ->
 										status.pinned = bSet
 										true
 									}
 								}
 							}
 						}
+						
 						else -> showToast(activity, true, result.error)
 					}
 					
@@ -696,7 +776,11 @@ object Action_Toot {
 				internal var local_status : TootStatus? = null
 				override fun background(client : TootApiClient) : TootApiResult? {
 					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
-					val path = String.format(Locale.JAPAN, Column.PATH_SEARCH,remote_status_url.encodePercent()) + "&resolve=1"
+					val path = String.format(
+						Locale.JAPAN,
+						Column.PATH_SEARCH,
+						remote_status_url.encodePercent()
+					) + "&resolve=1"
 					
 					val result = client.request(path)
 					val jsonObject = result?.jsonObject
@@ -707,7 +791,8 @@ object Action_Toot {
 							local_status = ls
 							log.d("status id conversion %s => %s", remote_status_url, ls.id)
 						}
-						local_status ?: return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
+						local_status
+							?: return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
 					}
 					return result
 				}
@@ -743,7 +828,8 @@ object Action_Toot {
 					.post(RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, ""))
 				
 				val result = client.request(
-					"/api/v1/statuses/" + status.id + if(bMute) "/mute" else "/unmute", request_builder
+					"/api/v1/statuses/" + status.id + if(bMute) "/mute" else "/unmute",
+					request_builder
 				)
 				
 				local_status = TootParser(activity, access_info).status(result?.jsonObject)
@@ -757,14 +843,18 @@ object Action_Toot {
 				val ls = local_status
 				if(ls != null) {
 					for(column in App1.getAppState(activity).column_list) {
-						if(access_info.acct == column.access_info.acct ) {
+						if(access_info.acct == column.access_info.acct) {
 							column.findStatus(access_info.host, ls.id) { _, status ->
 								status.muted = bMute
 								true
 							}
 						}
 					}
-					showToast(activity, true, if(bMute) R.string.mute_succeeded else R.string.unmute_succeeded)
+					showToast(
+						activity,
+						true,
+						if(bMute) R.string.mute_succeeded else R.string.unmute_succeeded
+					)
 				} else {
 					showToast(activity, true, result.error)
 				}

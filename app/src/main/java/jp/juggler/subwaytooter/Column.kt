@@ -784,29 +784,35 @@ class Column(
 		}
 	}
 	
-	// 自分のステータスを削除した時に呼ばれる
-	fun removeStatus(target_account : SavedAccount, status_id : Long) {
+	// ステータスが削除された時に呼ばれる
+	fun onStatusRemoved(tl_host : String, status_id : Long) {
 		
-		if(target_account.host != access_info.host) return
-		
-		val tmp_list = ArrayList<TimelineItem>(list_data.size)
-		for(o in list_data) {
-			if(o is TootStatus) {
-				if(status_id == o.id) continue
-				if(status_id == (o.reblog?.id ?: - 1L)) continue
+		if(is_dispose.get() || bInitialLoading || bRefreshLoading ) return
+
+		if(tl_host.equals(access_info.host, ignoreCase = true)) {
+			val tmp_list = ArrayList<TimelineItem>(list_data.size)
+			for(o in list_data) {
+				if(o is TootStatus) {
+					if(status_id == o.id) continue
+					if(status_id == (o.reblog?.id ?: - 1L)) continue
+				}else if(o is TootNotification) {
+					val s = o.status
+					if(s != null) {
+						if(status_id == s.id) continue
+						if(status_id == (s.reblog?.id ?: - 1L)) continue
+					}
+				}
+				
+				tmp_list.add(o)
 			}
-			if(o is TootNotification) {
-				if(status_id == (o.status?.id ?: - 1L)) continue
-				if(status_id == (o.status?.reblog?.id ?: - 1L)) continue
+			if(tmp_list.size != list_data.size) {
+				list_data.clear()
+				list_data.addAll(tmp_list)
+				fireShowContent(reason = "removeStatus")
 			}
 			
-			tmp_list.add(o)
 		}
-		if(tmp_list.size != list_data.size) {
-			list_data.clear()
-			list_data.addAll(tmp_list)
-			fireShowContent(reason = "removeStatus")
-		}
+		
 	}
 	
 	fun removeNotifications() {
@@ -871,16 +877,16 @@ class Column(
 	}
 	
 	fun onHideFavouriteNotification(acct : String) {
-		if( column_type != TYPE_NOTIFICATIONS) return
+		if(column_type != TYPE_NOTIFICATIONS) return
 		
 		val tmp_list = ArrayList<TimelineItem>(list_data.size)
 		
 		for(o in list_data) {
-			if(o is TootNotification && o.type != TootNotification.TYPE_MENTION ) {
+			if(o is TootNotification && o.type != TootNotification.TYPE_MENTION) {
 				val a = o.account
-				if( a!=null){
+				if(a != null) {
 					val a_acct = access_info.getFullAcct(a)
-					if( a_acct == acct) continue
+					if(a_acct == acct) continue
 				}
 			}
 			tmp_list.add(o)
@@ -947,7 +953,7 @@ class Column(
 			}
 			
 			TYPE_LIST_TL, TYPE_LIST_MEMBER -> {
-				if( item.id == profile_id) {
+				if(item.id == profile_id) {
 					this.list_info = item
 					fireShowColumnHeader()
 				}
@@ -1099,8 +1105,8 @@ class Column(
 		}
 		
 		if(dont_show_normal_toot) {
-			if( status.in_reply_to_id?.isEmpty() != false
-				&&  status.reblog == null
+			if(status.in_reply_to_id?.isEmpty() != false
+				&& status.reblog == null
 			) return true
 		}
 		
@@ -1186,11 +1192,11 @@ class Column(
 		}
 		
 		// ふぁぼ魔ミュート
-		when(item.type){
-			TootNotification.TYPE_REBLOG,TootNotification.TYPE_FAVOURITE,TootNotification.TYPE_FOLLOW ->{
+		when(item.type) {
+			TootNotification.TYPE_REBLOG, TootNotification.TYPE_FAVOURITE, TootNotification.TYPE_FOLLOW -> {
 				val who = item.account
-				if( who != null && favMuteSet?.contains( access_info.getFullAcct(who) ) == true){
-					PollingWorker.log.d("%s is in favMuteSet.",access_info.getFullAcct(who))
+				if(who != null && favMuteSet?.contains(access_info.getFullAcct(who)) == true) {
+					PollingWorker.log.d("%s is in favMuteSet.", access_info.getFullAcct(who))
 					return true
 				}
 			}
@@ -1393,7 +1399,7 @@ class Column(
 				val result = client.request("/api/v1/instance")
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
-					instance_tmp = parseItem(::TootInstance, parser,jsonObject)
+					instance_tmp = parseItem(::TootInstance, parser, jsonObject)
 				}
 				return result
 			}
@@ -1523,8 +1529,8 @@ class Column(
 				return result
 			}
 			
-			internal fun parseNotifications( client : TootApiClient ) : TootApiResult? {
-				val path_base  = makeNotificationUrl()
+			internal fun parseNotifications(client : TootApiClient) : TootApiResult? {
+				val path_base = makeNotificationUrl()
 				
 				val time_start = SystemClock.elapsedRealtime()
 				val result = client.request(path_base)
@@ -1692,7 +1698,7 @@ class Column(
 						
 						TYPE_FAVOURITES -> return getStatuses(client, PATH_FAVOURITES)
 						
-						TYPE_HASHTAG -> return getStatuses( client,makeHashtagUrl(hashtag) )
+						TYPE_HASHTAG -> return getStatuses(client, makeHashtagUrl(hashtag))
 						
 						TYPE_REPORTS -> return parseReports(client, PATH_REPORTS)
 						
@@ -2271,8 +2277,8 @@ class Column(
 				return result
 			}
 			
-			internal fun getNotificationList( client : TootApiClient ) : TootApiResult? {
-				val path_base  = makeNotificationUrl()
+			internal fun getNotificationList(client : TootApiClient) : TootApiResult? {
+				val path_base = makeNotificationUrl()
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				val last_since_id = since_id
@@ -2617,7 +2623,7 @@ class Column(
 						
 						TYPE_FOLLOW_REQUESTS -> getAccountList(client, PATH_FOLLOW_REQUESTS)
 						
-						TYPE_HASHTAG -> getStatusList( client,makeHashtagUrl(hashtag) )
+						TYPE_HASHTAG -> getStatusList(client, makeHashtagUrl(hashtag))
 						
 						TYPE_SEARCH_MSP ->
 							if(! bBottom) {
@@ -2926,8 +2932,8 @@ class Column(
 				return result
 			}
 			
-			internal fun getNotificationList( client : TootApiClient ) : TootApiResult? {
-				val path_base  = makeNotificationUrl()
+			internal fun getNotificationList(client : TootApiClient) : TootApiResult? {
+				val path_base = makeNotificationUrl()
 				
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
@@ -3072,7 +3078,7 @@ class Column(
 						
 						TYPE_NOTIFICATIONS -> getNotificationList(client)
 						
-						TYPE_HASHTAG -> getStatusList( client,makeHashtagUrl(hashtag) )
+						TYPE_HASHTAG -> getStatusList(client, makeHashtagUrl(hashtag))
 						
 						TYPE_BOOSTED_BY -> getAccountList(
 							client,
@@ -3438,31 +3444,22 @@ class Column(
 		}
 	}
 	
-	private val onStreamingMessage = fun(event_type : String, item : Any?) {
+	private val onStreamingMessage = fun(item : TimelineItem) {
 		if(is_dispose.get()) return
 		
-		if(item is Long) {
-			if("delete" == event_type) {
-				removeStatus(access_info, item)
+		if(item is TootNotification) {
+			if(column_type != TYPE_NOTIFICATIONS) return
+			if(isFiltered(item)) return
+		} else if(item is TootStatus) {
+			if(column_type == TYPE_NOTIFICATIONS) return
+			if(column_type == TYPE_LOCAL && item.account.acct.indexOf('@') != - 1) return
+			if(isFiltered(item)) return
+			if(this.enable_speech) {
+				App1.getAppState(context).addSpeech(item.reblog ?: item)
 			}
-			return
-		} else if(item is TimelineItem) {
-			if(item is TootNotification) {
-				if(column_type != TYPE_NOTIFICATIONS) return
-				if(isFiltered(item)) return
-			} else if(item is TootStatus) {
-				if(column_type == TYPE_NOTIFICATIONS) return
-				if(column_type == TYPE_LOCAL && item.account.acct.indexOf('@') != - 1) return
-				if(isFiltered(item)) return
-				
-				if(this.enable_speech) {
-					App1.getAppState(context).addSpeech(item.reblog ?: item)
-				}
-			}
-			stream_data_queue.addFirst(item)
-			mergeStreamingMessage.run()
 		}
-		
+		stream_data_queue.addFirst(item)
+		mergeStreamingMessage.run()
 	}
 	
 	private val mergeStreamingMessage = object : Runnable {
@@ -3604,10 +3601,10 @@ class Column(
 		}
 	}
 	
-	private fun makeNotificationUrl():String{
-		return if(!dont_show_favourite && !dont_show_boost && !dont_show_follow && !dont_show_reply){
+	private fun makeNotificationUrl() : String {
+		return if(! dont_show_favourite && ! dont_show_boost && ! dont_show_follow && ! dont_show_reply) {
 			PATH_NOTIFICATIONS
-		}else {
+		} else {
 			val sb = StringBuilder(PATH_NOTIFICATIONS) // always contain "?limit=XX"
 			if(dont_show_favourite) sb.append("&exclude_types[]=favourite")
 			if(dont_show_boost) sb.append("&exclude_types[]=reblog")
@@ -3616,28 +3613,30 @@ class Column(
 			sb.toString()
 		}
 	}
-	private fun makePublicLocalUrl():String{
-		return if( with_attachment){
+	
+	private fun makePublicLocalUrl() : String {
+		return if(with_attachment) {
 			"$PATH_LOCAL&only_media=true" // mastodon 2.3 or later
-		}else{
+		} else {
 			PATH_LOCAL
 		}
 	}
-	private fun makePublicFederateUrl():String{
-		return if( with_attachment){
+	
+	private fun makePublicFederateUrl() : String {
+		return if(with_attachment) {
 			"$PATH_FEDERATE&only_media=true"
-		}else{
+		} else {
 			PATH_FEDERATE
 		}
 	}
 	
 	private fun makeHashtagUrl(
-		hashtag:String // 先頭の#を含まない
-	):String{
-		val path =String.format(Locale.JAPAN, PATH_HASHTAG, hashtag.encodePercent())
-		return if( with_attachment){
+		hashtag : String // 先頭の#を含まない
+	) : String {
+		val path = String.format(Locale.JAPAN, PATH_HASHTAG, hashtag.encodePercent())
+		return if(with_attachment) {
 			"$path&only_media=true"
-		}else{
+		} else {
 			path
 		}
 	}

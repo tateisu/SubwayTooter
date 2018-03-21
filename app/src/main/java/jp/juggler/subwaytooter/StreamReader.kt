@@ -15,6 +15,7 @@ import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootPayload
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LogCategory
@@ -49,7 +50,7 @@ internal class StreamReader(
 		internal val bDisposed = AtomicBoolean()
 		internal val bListening = AtomicBoolean()
 		internal val socket = AtomicReference<WebSocket>(null)
-		internal val callback_list = LinkedList<(event_type : String, item : Any?) -> Unit>()
+		internal val callback_list = LinkedList<(item : TimelineItem) -> Unit>()
 		internal val parser : TootParser
 		
 		init {
@@ -72,7 +73,7 @@ internal class StreamReader(
 		}
 		
 		@Synchronized
-		internal fun addCallback(stream_callback : (event_type : String, item : Any?) -> Unit) {
+		internal fun addCallback(stream_callback : (item : TimelineItem) -> Unit) {
 			for(c in callback_list) {
 				if(c === stream_callback) return
 			}
@@ -80,7 +81,7 @@ internal class StreamReader(
 		}
 		
 		@Synchronized
-		internal fun removeCallback(stream_callback : (event_type : String, item : Any?) -> Unit) {
+		internal fun removeCallback(stream_callback : (item : TimelineItem) -> Unit) {
 			val it = callback_list.iterator()
 			while(it.hasNext()) {
 				val c = it.next()
@@ -111,21 +112,42 @@ internal class StreamReader(
 				}
 				
 				val payload = TootPayload.parsePayload(parser, event, obj, text)
-				if(payload == null) {
-					log.d("onMessage: payload is null")
-					return
-				}
 				
 				runOnMainLooper {
 					synchronized(this) {
 						if(bDisposed.get()) return@runOnMainLooper
-						for(callback in callback_list) {
-							try {
-								callback(event, payload)
-							} catch(ex : Throwable) {
-								log.trace(ex)
+						
+						when(event) {
+							"delete" -> {
+								if(payload is Long) {
+									val tl_host = access_info.host
+									for(column in App1.getAppState(context).column_list) {
+										try {
+											column.onStatusRemoved(tl_host, payload)
+										} catch(ex : Throwable) {
+											log.trace(ex)
+										}
+									}
+								} else {
+									log.d("payload is not long. $payload")
+								}
+							}
+							
+							else -> {
+								if(payload is TimelineItem) {
+									for(callback in callback_list) {
+										try {
+											callback(payload)
+										} catch(ex : Throwable) {
+											log.trace(ex)
+										}
+									}
+								} else {
+									log.d("payload is not TimelineItem. $payload")
+								}
 							}
 						}
+						
 					}
 				}
 			} catch(ex : Throwable) {
@@ -246,7 +268,7 @@ internal class StreamReader(
 		accessInfo : SavedAccount,
 		endPoint : String,
 		highlightTrie : WordTrieTree?,
-		streamCallback : (event_type : String, item : Any?) -> Unit
+		streamCallback : (item : TimelineItem) -> Unit
 	) {
 		val reader = prepareReader(accessInfo, endPoint, highlightTrie)
 		
@@ -261,7 +283,7 @@ internal class StreamReader(
 	fun unregister(
 		accessInfo : SavedAccount,
 		endPoint : String,
-		streamCallback : (event_type : String, item : Any?) -> Unit
+		streamCallback : (item : TimelineItem) -> Unit
 	) {
 		synchronized(reader_list) {
 			val it = reader_list.iterator()

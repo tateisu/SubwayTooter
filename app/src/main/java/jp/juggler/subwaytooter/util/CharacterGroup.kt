@@ -47,24 +47,6 @@ class CharacterGroup {
 			}
 		}
 		
-		private fun CharSequence.codePointBefore(index:Int) :Int{
-			if( index >0 ) {
-				val c2 = this[index - 1]
-				if(Character.isLowSurrogate(c2) && index > 1) {
-					val c1 = this[index - 2]
-					if(Character.isHighSurrogate(c1)) return Character.toCodePoint(c1, c2)
-				}
-				return c2.toInt()
-			}else {
-				return - 1
-			}
-		}
-
-		fun isHeadOrAfterWhitespace( s:CharSequence,index:Int):Boolean {
-			val cp = s.codePointBefore(index)
-			return cp == -1 || isWhitespace(cp)
-		}
-		
 		// 文字列のリストからグループIDを決定する
 		private fun findGroupId( list : Array<String>) : Int {
 			// グループのIDは、グループ中の文字(長さ1)のunicode値の最小

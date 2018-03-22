@@ -480,13 +480,13 @@ class PostHelper(
 			val part = src.substring(last_colon + 1, end)
 			
 			if(reCharsNotEmoji.matcher(part).find()) {
-				log.d("checkEmoji: character not short code in string %s", part)
+				log.d("checkEmoji: character not short code in string.")
 				closeAcctPopup()
 				return
 			}
 			
 			// : の手前は始端か改行か空白でなければならない
-			if( ! CharacterGroup.isHeadOrAfterWhitespace(src,last_colon) ) {
+			if( ! EmojiDecoder.canStartShortCode(src,last_colon) ) {
 				log.d("checkEmoji: invalid character before shortcode.")
 				closeAcctPopup()
 				return
@@ -644,11 +644,11 @@ class PostHelper(
 		val item = EmojiMap201709.sShortNameToImageId[name]
 		if(item == null || instance != null) {
 			// カスタム絵文字は常にshortcode表現
-			if(! CharacterGroup.isHeadOrAfterWhitespace(this, this.length)) this.append(' ')
+			if(! EmojiDecoder.canStartShortCode(this, this.length)) this.append(' ')
 			this.append(SpannableString(":$name:"))
 		} else if(! bInstanceHasCustomEmoji) {
 			// 古いタンスだとshortcodeを使う。見た目は絵文字に変える。
-			if(! CharacterGroup.isHeadOrAfterWhitespace(this, this.length)) this.append(' ')
+			if(! EmojiDecoder.canStartShortCode(this, this.length)) this.append(' ')
 			this.append(DecodeOptions(activity).decodeEmoji(":$name:"))
 		} else {
 			// 十分に新しいタンスなら絵文字のunicodeを使う。見た目は絵文字に変える。

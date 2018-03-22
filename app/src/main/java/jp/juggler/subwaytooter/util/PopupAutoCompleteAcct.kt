@@ -133,7 +133,7 @@ internal class PopupAutoCompleteAcct(
 					
 					if( acct[0] == ' ' ) {
 						// 絵文字ショートコード
-						if(! CharacterGroup.isHeadOrAfterWhitespace(src, start)) sb.append(' ')
+						if(! EmojiDecoder.canStartShortCode(src, start)) sb.append(' ')
 						sb.append(acct.subSequence(2, acct.length))
 					}else {
 						// @user@host, #hashtag

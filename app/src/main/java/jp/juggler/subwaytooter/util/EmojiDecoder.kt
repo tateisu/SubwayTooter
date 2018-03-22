@@ -23,8 +23,46 @@ import java.util.regex.Pattern
 
 object EmojiDecoder {
 	
+	// タンス側が落ち着いたら [^[:almun:]_] から [:space:]に切り替える
+	//	private fun isHeadOrAfterWhitespace( s:CharSequence,index:Int):Boolean {
+	//		val cp = s.codePointBefore(index)
+	//		return cp == -1 || CharacterGroup.isWhitespace(cp)
+	//	}
 	
-	private class EmojiStringBuilder( internal val options : DecodeOptions ) {
+	private const val cpColon = ':'.toInt()
+	
+	fun canStartShortCode(s : CharSequence, index : Int) : Boolean {
+		val cp = s.codePointBefore(index)
+		return when(cp) {
+			- 1 -> true
+			cpColon -> false
+		// rubyの (Letter | Mark | Decimal_Number) はNG
+		// ftp://unicode.org/Public/5.1.0/ucd/UCD.html#General_Category_Values
+			else -> when(java.lang.Character.getType(cp).toByte()) {
+			// Letter
+			// LCはエイリアスなので文字から得られることはないはず
+				Character.UPPERCASE_LETTER,
+				Character.LOWERCASE_LETTER,
+				Character.TITLECASE_LETTER,
+				Character.MODIFIER_LETTER,
+				Character.OTHER_LETTER -> false
+			// Mark
+				Character.NON_SPACING_MARK,
+				Character.COMBINING_SPACING_MARK,
+				Character.ENCLOSING_MARK -> false
+			// Decimal_Number
+				Character.DECIMAL_DIGIT_NUMBER -> false
+				
+				else -> true
+			}
+		}
+		
+		// https://mastodon.juggler.jp/@tateisu/99727683089280157
+		// https://github.com/tootsuite/mastodon/pull/5570 がマージされたらこっちに切り替える
+		// return cp == -1 || CharacterGroup.isWhitespace(cp)
+	}
+	
+	private class EmojiStringBuilder(internal val options : DecodeOptions) {
 		
 		internal val sb = SpannableStringBuilder()
 		internal var normal_char_start = - 1
@@ -82,7 +120,7 @@ object EmojiDecoder {
 			val end = sb.length
 			sb.setSpan(
 				EmojiImageSpan(
-					requireNotNull(options.context){"decodeEmoji: missing context"},
+					requireNotNull(options.context) { "decodeEmoji: missing context" },
 					res_id
 				),
 				start,
@@ -183,11 +221,10 @@ object EmojiDecoder {
 					} else if(i + width < end && s.codePointAt(i + width) == codepointAtmark) {
 						// フレニコのプロフ絵文字 :@who: は手前の空白を要求しない
 						break
-					} else if( CharacterGroup.isHeadOrAfterWhitespace(s,i) ) {
-						// 始端または空白の直後
+					} else if(canStartShortCode(s, i)) {
+						// 絵文字ショートコードの開始とみなす
 						break
 					}
-					// shortcodeの開始とみなせないケースだった
 				}
 				i += width
 			}
@@ -234,10 +271,10 @@ object EmojiDecoder {
 	private val reNicoru = Pattern.compile("\\Anicoru\\d*\\z", Pattern.CASE_INSENSITIVE)
 	private val reHohoemi = Pattern.compile("\\Ahohoemi\\d*\\z", Pattern.CASE_INSENSITIVE)
 	
-	fun decodeEmoji( options : DecodeOptions, s : String ) : Spannable {
+	fun decodeEmoji(options : DecodeOptions, s : String) : Spannable {
 		
 		val builder = EmojiStringBuilder(options)
-
+		
 		val emojiMapCustom = options.emojiMapCustom
 		val emojiMapProfile = options.emojiMapProfile
 		
@@ -259,7 +296,7 @@ object EmojiDecoder {
 						}
 					}
 				}
-
+				
 				// カスタム絵文字
 				val emojiCustom = emojiMapCustom?.get(name)
 				if(emojiCustom != null) {
@@ -300,7 +337,10 @@ object EmojiDecoder {
 	
 	// 投稿などの際、表示は不要だがショートコード=>Unicodeの解決を行いたい場合がある
 	// カスタム絵文字の変換も行わない
-	fun decodeShortCode(s : String ,emojiMapCustom : HashMap<String, CustomEmoji>? =null ) : String {
+	fun decodeShortCode(
+		s : String,
+		emojiMapCustom : HashMap<String, CustomEmoji>? = null
+	) : String {
 		
 		val sb = StringBuilder()
 		

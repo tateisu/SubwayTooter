@@ -391,6 +391,19 @@ fun CharSequence?.intoStringResource(context : Context, string_id : Int) : Spann
 //	return 0
 //}
 
+fun CharSequence.codePointBefore(index:Int) :Int{
+	if( index >0 ) {
+		val c2 = this[index - 1]
+		if(Character.isLowSurrogate(c2) && index > 1) {
+			val c1 = this[index - 2]
+			if(Character.isHighSurrogate(c1)) return Character.toCodePoint(c1, c2)
+		}
+		return c2.toInt()
+	}else {
+		return - 1
+	}
+}
+
 ////////////////////////////////////////////////////////////////////
 // string
 

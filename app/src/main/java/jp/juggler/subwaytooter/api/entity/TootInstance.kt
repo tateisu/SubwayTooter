@@ -3,9 +3,13 @@ package jp.juggler.subwaytooter.api.entity
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.*
 import org.json.JSONObject
+import java.util.regex.Pattern
 
 class TootInstance(parser:TootParser,src : JSONObject) {
 	
+	companion object {
+		val rePleroma = Pattern.compile("\\bpleroma")
+	}
 	// いつ取得したか(内部利用)
 	var time_parse : Long = System.currentTimeMillis()
 	
@@ -37,6 +41,16 @@ class TootInstance(parser:TootParser,src : JSONObject) {
 	
 	val contact_account : TootAccount?
 	
+	// (Pleroma only) トゥートの最大文字数
+	val max_toot_chars : Int?
+	
+	// インスタンスの種別
+	enum class InstanceType{
+		Mastodon,
+		Pleroma
+	}
+	val instanceType : InstanceType
+	
 	// XXX: urls をパースしてない。使ってないから…
 	
 	init {
@@ -48,6 +62,13 @@ class TootInstance(parser:TootParser,src : JSONObject) {
 		this.decoded_version = VersionString(version)
 		this.stats = parseItem(::Stats, src.optJSONObject("stats"))
 		this.thumbnail = src.parseString("thumbnail")
+		
+		this.max_toot_chars = src.parseInt("max_toot_chars")
+
+		this.instanceType = when{
+			rePleroma.matcher(version ?:"").find() -> InstanceType.Pleroma
+			else->InstanceType.Mastodon
+		}
 		
 		languages = src.optJSONArray("languages")?.toStringArrayList()
 		
@@ -74,7 +95,6 @@ class TootInstance(parser:TootParser,src : JSONObject) {
 	}
 	
 	fun isEnoughVersion(check : VersionString) : Boolean {
-		
 		if(decoded_version.isEmpty || check.isEmpty) return false
 		val i = VersionString.compare(decoded_version, check)
 		return i >= 0

@@ -53,6 +53,7 @@ class TootTaskRunner(
 	private class MyTask(
 		private val runner : TootTaskRunner
 	) : AsyncTask<Void, Void, TootApiResult?>() {
+		var isActive :Boolean = true
 		
 		override fun doInBackground(vararg voids : Void) : TootApiResult? {
 			val callback = runner.callback
@@ -64,6 +65,7 @@ class TootTaskRunner(
 		}
 		
 		override fun onPostExecute(result : TootApiResult?) {
+			isActive = false
 			runner.dismissProgress()
 			runner.callback?.handleResult(result)
 		}
@@ -98,6 +100,9 @@ class TootTaskRunner(
 		this.client = TootApiClient(context, callback=this)
 		this.task = MyTask(this)
 	}
+	
+	val isActive : Boolean
+		get()= task.isActive
 	
 	fun run(callback : TootTask) {
 		openProgress()
@@ -213,7 +218,5 @@ class TootTaskRunner(
 			handler.postDelayed(proc_progress_message, wait)
 		}
 	}
-	
-
 	
 }

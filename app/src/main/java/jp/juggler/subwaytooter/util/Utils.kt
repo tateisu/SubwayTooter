@@ -420,9 +420,9 @@ fun StringBuilder.appendHex2(value : Int) : StringBuilder {
 	return this
 }
 
-fun String.optInt() : Int? {
+fun String?.optInt() : Int? {
 	return try {
-		this.toInt(10)
+		this?.toInt(10)
 	} catch(ignored : Throwable) {
 		null
 	}
@@ -622,6 +622,36 @@ fun JSONObject.parseLong(key : String) : Long? {
 		else -> null // may null or JSONObject.NULL or object,array,boolean
 	}
 }
+
+fun JSONObject.parseInt(key : String) : Int? {
+	val o = this.opt(key)
+	return when(o) {
+		is Int -> return o
+
+		is Number -> return try{
+			o.toInt()
+		}catch(ignored:NumberFormatException){
+			null
+		}
+
+		is String -> {
+			if(o.indexOf('.') == - 1 && o.indexOf(',') == - 1) {
+				try {
+					return o.toInt(10)
+				} catch(ignored : NumberFormatException) {
+				}
+			}
+			try {
+				o.toDouble().toInt()
+			} catch(ignored : NumberFormatException) {
+				null
+			}
+		}
+		
+		else -> null // may null or JSONObject.NULL or object,array,boolean
+	}
+}
+
 
 ////////////////////////////////////////////////////////////////////
 // Bundle

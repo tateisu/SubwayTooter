@@ -616,4 +616,5 @@
     <string name="fav_muted_user_long">Fav/Boost notification disabled users</string>
     <string name="changed">changed.</string>
     <string name="thumbnails_arrange_vertically">Vertical arrange  thumbnails (app restart required)</string>
+    <string name="instance_local">Instance local</string>
 </resources>

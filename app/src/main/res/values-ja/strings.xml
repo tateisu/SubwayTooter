@@ -911,5 +911,6 @@
 
     <string name="changed">変更しました</string>
     <string name="thumbnails_arrange_vertically">サムネイルを縦に並べる (アプリ再起動が必要)</string>
+    <string name="instance_local">インスタンス内のみ</string>
 
 </resources>

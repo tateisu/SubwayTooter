@@ -190,6 +190,14 @@
                     android:layout_height="wrap_content"
                     android:text="@string/dont_show_normal_toot"
                     />
+
+                <CheckBox
+                    android:id="@+id/cbInstanceLocal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/instance_local"
+                    />
+
                 <CheckBox
                     android:id="@+id/cbDontStreaming"
                     android:layout_width="match_parent"

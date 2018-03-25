@@ -101,6 +101,7 @@ class ColumnViewHolder(
 	private val cbDontShowFavourite : CheckBox
 	private val cbDontShowReply : CheckBox
 	private val cbDontShowNormalToot : CheckBox
+	private val cbInstanceLocal : CheckBox
 	private val cbDontStreaming : CheckBox
 	private val cbDontAutoRefresh : CheckBox
 	private val cbHideMediaDefault : CheckBox
@@ -232,6 +233,7 @@ class ColumnViewHolder(
 		cbDontShowFavourite = viewRoot.findViewById(R.id.cbDontShowFavourite)
 		cbDontShowReply = viewRoot.findViewById(R.id.cbDontShowReply)
 		cbDontShowNormalToot = viewRoot.findViewById(R.id.cbDontShowNormalToot)
+		cbInstanceLocal =viewRoot.findViewById(R.id.cbInstanceLocal)
 		cbDontStreaming = viewRoot.findViewById(R.id.cbDontStreaming)
 		cbDontAutoRefresh = viewRoot.findViewById(R.id.cbDontAutoRefresh)
 		cbHideMediaDefault = viewRoot.findViewById(R.id.cbHideMediaDefault)
@@ -263,6 +265,7 @@ class ColumnViewHolder(
 		cbDontShowFavourite.setOnCheckedChangeListener(this)
 		cbDontShowReply.setOnCheckedChangeListener(this)
 		cbDontShowNormalToot.setOnCheckedChangeListener(this)
+		cbInstanceLocal.setOnCheckedChangeListener(this)
 		cbDontStreaming.setOnCheckedChangeListener(this)
 		cbDontAutoRefresh.setOnCheckedChangeListener(this)
 		cbHideMediaDefault.setOnCheckedChangeListener(this)
@@ -432,6 +435,7 @@ class ColumnViewHolder(
 			cbDontShowFavourite.isChecked = column.dont_show_favourite
 			cbDontShowReply.isChecked = column.dont_show_reply
 			cbDontShowNormalToot.isChecked = column.dont_show_normal_toot
+			cbInstanceLocal.isChecked = column.instance_local
 			cbDontStreaming.isChecked = column.dont_streaming
 			cbDontAutoRefresh.isChecked = column.dont_auto_refresh
 			cbHideMediaDefault.isChecked = column.hide_media_default
@@ -452,6 +456,9 @@ class ColumnViewHolder(
 			vg(cbDontShowNormalToot, column.canFilterNormalToot())
 			vg(cbDontShowFavourite, isNotificationColumn)
 			vg(cbDontShowFollow, isNotificationColumn)
+			
+			vg(cbInstanceLocal, column.column_type == Column.TYPE_HASHTAG)
+			
 			
 			vg(cbDontStreaming, column.canStreaming())
 			vg(cbDontAutoRefresh, column.canAutoRefresh())
@@ -736,6 +743,12 @@ class ColumnViewHolder(
 			
 			R.id.cbDontShowFollow -> {
 				column.dont_show_follow = isChecked
+				activity.app_state.saveColumnList()
+				column.startLoading()
+			}
+			
+			R.id.cbInstanceLocal -> {
+				column.instance_local = isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}

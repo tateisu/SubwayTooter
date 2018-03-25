@@ -52,6 +52,7 @@ import java.util.HashSet
 import java.util.Locale
 
 import jp.juggler.subwaytooter.api.entity.TootAttachment
+import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.dialog.*
@@ -791,21 +792,64 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		etContent.commitContentListener = commitContentListener
 	}
 	
+	private var lastInstanceTask : TootTaskRunner? = null
+	
+	private fun getMaxCharCount() : Int {
+		val account = account
+		if(account != null && ! account.isPseudo) {
+			val info = account.instance
+			var lastTask = lastInstanceTask
+			
+			// 情報がないか古いなら再取得
+			if(info == null || System.currentTimeMillis() - info.time_parse >= 300000L) {
+				// 同時に実行するタスクは1つまで
+				if(lastTask?.isActive != true) {
+					lastTask = TootTaskRunner(this, TootTaskRunner.PROGRESS_NONE)
+					lastInstanceTask = lastTask
+					lastTask.run(account, object : TootTask {
+						var newInfo : TootInstance? = null
+						
+						override fun background(client : TootApiClient) : TootApiResult? {
+							val result = client.request("/api/v1/instance")
+							newInfo = TootParser(this@ActPost, account).instance(result?.jsonObject)
+							return result
+						}
+						
+						override fun handleResult(result : TootApiResult?) {
+							if(isFinishing || isDestroyed) return
+							if(newInfo != null) {
+								account.instance = newInfo
+								updateTextCount()
+							}
+						}
+					})
+				}
+			}
+			
+			if(info != null) {
+				val max = info.max_toot_chars
+				if(max != null && max > 0) return max
+			}
+		}
+		return 500
+	}
+	
 	private fun updateTextCount() {
 		var length = 0
 		
 		var s = EmojiDecoder.decodeShortCode(etContent.text.toString())
 		length += s.codePointCount(0, s.length)
 		
-		s =
-			if(cbContentWarning.isChecked) EmojiDecoder.decodeShortCode(etContentWarning.text.toString()) else ""
+		s = if(cbContentWarning.isChecked)
+			EmojiDecoder.decodeShortCode(etContentWarning.text.toString())
+		else
+			""
 		length += s.codePointCount(0, s.length)
 		
-		val max : Int
-		if(! cbEnquete.isChecked) {
-			max = 500
-		} else {
-			max = 350
+		var max = getMaxCharCount()
+		
+		if(cbEnquete.isChecked) {
+			max -= 150 // フレニコ固有。500-150で350になる
 			for(et in list_etChoice) {
 				s = EmojiDecoder.decodeShortCode(et.text.toString())
 				length += s.codePointCount(0, s.length)

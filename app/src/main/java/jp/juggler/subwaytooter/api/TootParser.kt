@@ -27,5 +27,6 @@ class TootParser(
 	fun notificationList(src : JSONArray?) = parseList(::TootNotification, this, src)
 	
 	fun results(src : JSONObject?) = parseItem(::TootResults, this, src)
+	fun instance(src : JSONObject?) = parseItem(::TootInstance, this, src)
 	
 }

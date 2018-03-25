@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.net.Uri
 import android.os.AsyncTask
 import android.os.SystemClock
 import jp.juggler.subwaytooter.api.*
@@ -40,12 +41,9 @@ class Column(
 		// ステータスのリストを返すAPI
 		private const val PATH_HOME = "/api/v1/timelines/home?limit=$READ_LIMIT"
 		private const val PATH_LOCAL = "/api/v1/timelines/public?limit=$READ_LIMIT&local=true"
-		private const val PATH_FEDERATE = "/api/v1/timelines/public?limit=$READ_LIMIT"
 		private const val PATH_FAVOURITES = "/api/v1/favourites?limit=$READ_LIMIT"
 		private const val PATH_ACCOUNT_STATUSES =
 			"/api/v1/accounts/%d/statuses?limit=$READ_LIMIT" // 1:account_id
-		private const val PATH_HASHTAG =
-			"/api/v1/timelines/tag/%s?limit=$READ_LIMIT" // 1: hashtag(url encoded)
 		private const val PATH_LIST_TL = "/api/v1/timelines/list/%s?limit=$READ_LIMIT"
 		
 		// アカウントのリストを返すAPI
@@ -92,6 +90,7 @@ class Column(
 		private const val KEY_DONT_AUTO_REFRESH = "dont_auto_refresh"
 		private const val KEY_HIDE_MEDIA_DEFAULT = "hide_media_default"
 		private const val KEY_SYSTEM_NOTIFICATION_NOT_RELATED = "system_notification_not_related"
+		private const val KEY_INSTANCE_LOCAL = "instance_local"
 		
 		private const val KEY_ENABLE_SPEECH = "enable_speech"
 		
@@ -240,8 +239,13 @@ class Column(
 				TYPE_HOME, TYPE_NOTIFICATIONS -> "/api/v1/streaming/?stream=user"
 				TYPE_LOCAL -> "/api/v1/streaming/?stream=public:local"
 				TYPE_FEDERATE -> "/api/v1/streaming/?stream=public"
-				TYPE_HASHTAG -> "/api/v1/streaming/?stream=hashtag&tag=" + hashtag.encodePercent() // タグ先頭の#を含まない
 				TYPE_LIST_TL -> "/api/v1/streaming/?stream=list&list=" + profile_id.toString()
+				
+				TYPE_HASHTAG -> when(instance_local) {
+					true -> "/api/v1/streaming/?stream="+ Uri.encode("hashtag:local")+"&tag=" + hashtag.encodePercent()
+					else -> "/api/v1/streaming/?stream=hashtag&tag=" + hashtag.encodePercent()
+				// タグ先頭の#を含まない
+				}
 				else -> null
 			}
 		}
@@ -267,6 +271,8 @@ class Column(
 	internal var dont_auto_refresh : Boolean = false
 	internal var hide_media_default : Boolean = false
 	internal var system_notification_not_related : Boolean = false
+	internal var instance_local : Boolean = false
+	
 	var enable_speech : Boolean = false
 	
 	internal var regex_text : String = ""
@@ -445,6 +451,7 @@ class Column(
 		dont_auto_refresh = src.optBoolean(KEY_DONT_AUTO_REFRESH)
 		hide_media_default = src.optBoolean(KEY_HIDE_MEDIA_DEFAULT)
 		system_notification_not_related = src.optBoolean(KEY_SYSTEM_NOTIFICATION_NOT_RELATED)
+		instance_local = src.optBoolean(KEY_INSTANCE_LOCAL)
 		
 		enable_speech = src.optBoolean(KEY_ENABLE_SPEECH)
 		
@@ -499,6 +506,7 @@ class Column(
 		dst.put(KEY_DONT_AUTO_REFRESH, dont_auto_refresh)
 		dst.put(KEY_HIDE_MEDIA_DEFAULT, hide_media_default)
 		dst.put(KEY_SYSTEM_NOTIFICATION_NOT_RELATED, system_notification_not_related)
+		dst.put(KEY_INSTANCE_LOCAL, instance_local)
 		
 		dst.put(KEY_ENABLE_SPEECH, enable_speech)
 		
@@ -787,15 +795,15 @@ class Column(
 	// ステータスが削除された時に呼ばれる
 	fun onStatusRemoved(tl_host : String, status_id : Long) {
 		
-		if(is_dispose.get() || bInitialLoading || bRefreshLoading ) return
-
+		if(is_dispose.get() || bInitialLoading || bRefreshLoading) return
+		
 		if(tl_host.equals(access_info.host, ignoreCase = true)) {
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
 				if(o is TootStatus) {
 					if(status_id == o.id) continue
 					if(status_id == (o.reblog?.id ?: - 1L)) continue
-				}else if(o is TootNotification) {
+				} else if(o is TootNotification) {
 					val s = o.status
 					if(s != null) {
 						if(status_id == s.id) continue
@@ -3623,22 +3631,22 @@ class Column(
 	}
 	
 	private fun makePublicFederateUrl() : String {
-		return if(with_attachment) {
-			"$PATH_FEDERATE&only_media=true"
-		} else {
-			PATH_FEDERATE
-		}
+		val sb = StringBuilder("/api/v1/timelines/public?limit=")
+			.append(READ_LIMIT)
+		if(with_attachment) sb.append("&only_media=true")
+		return sb.toString()
 	}
 	
 	private fun makeHashtagUrl(
 		hashtag : String // 先頭の#を含まない
 	) : String {
-		val path = String.format(Locale.JAPAN, PATH_HASHTAG, hashtag.encodePercent())
-		return if(with_attachment) {
-			"$path&only_media=true"
-		} else {
-			path
-		}
+		val sb = StringBuilder("/api/v1/timelines/tag/")
+			.append(hashtag.encodePercent())
+			.append("?limit=")
+			.append(READ_LIMIT)
+		if(with_attachment) sb.append("&only_media=true")
+		if(instance_local) sb.append("&local=true")
+		return sb.toString()
 	}
 	
 }

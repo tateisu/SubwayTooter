@@ -1,10 +1,12 @@
 15m.icolectiva.org
 1oku.net
+3.distsn.org
 3.nu
 39sounds.net
 3dcgdon.net
 4com.jp
 575don.club
+68kami.ga
 7144.party
 765ml.com
 7nw.eu
@@ -57,6 +59,7 @@ banthamilk.blue
 bapp.me
 baraag.net
 bark.zer0xff.com
+bash-street-boys-and-girls.com
 basstdn.jp
 bcn-users.degica.com
 beerbeer.tokyo
@@ -64,6 +67,7 @@ betterletter.io
 bibeogaem.zone
 big.tuxme.net
 bigdoinks.online
+bikeshed.party
 birdsite.link
 bitcoinadon.social
 biwakodon.com
@@ -71,6 +75,7 @@ blackice.online
 bldon.net
 blogs.jp
 bloodandthunderleviathan.herokuapp.com
+blovice.bahnhof.cz
 bms.stoicsounds.jp
 bne.social
 boitam.eu
@@ -123,7 +128,9 @@ cmu.party
 cmx.im
 cn.tootist.net
 coales.co
+cocoronavi.com
 cocoronavi.net
+cofe.social
 comm.cx
 compass-community.f5.si
 computerfairi.es
@@ -134,6 +141,7 @@ cosi.town
 cosp.la
 counter.social
 creativity.cafe
+creatodon.online
 currydon.com
 cuttlefi.sh
 cybr.es
@@ -188,6 +196,7 @@ ecurie.social
 edge.mstdn.jp
 edgefire.sytes.net
 ediot.social
+edolas.world
 eigadon.net
 eizodon.jp
 ekimemo.info
@@ -227,6 +236,7 @@ fo0bar.org
 foodon.jp
 foresdon.jp
 forexdon.org
+forum.ama.ne.jp
 forum.manga.tokyo
 fosstodon.org
 fr.osm.social
@@ -236,6 +246,7 @@ freeradical.zone
 friends.nico
 friends.tennis
 friloux.me
+frogtown.club
 from.komic.eu
 frontend.social
 frootmig.net
@@ -372,6 +383,7 @@ kalebporter.club
 kancolle-yokosuka.xyz
 kanmoku.net
 kashiwadon.net
+kawaiistu.moe
 kawasaki-city.social
 keiba.social
 kemono-friends.masto.host
@@ -414,6 +426,7 @@ lethar.gy
 lfsr.net
 lgbt.io
 libertarian.chat
+libertarianism.club
 lilydon.com
 linuxrocks.online
 livers.jp
@@ -1067,6 +1080,7 @@ nishinomiya.in.net
 nittc.tokyo
 niu.moe
 niwatoriman.me
+nixeneko.info
 nkmr.paoru.jp
 noagendasocial.com
 nobody.social
@@ -1106,17 +1120,20 @@ ostatus.axross.io
 ostatus.blessedgeeks.jp
 ostatus.blessedgeeks.org
 ostatus.ikeji.ma
+ostatus.ikeji.ma
 ostatus.isidai.com
 ostatus.noviiro.me
 ostatus.renken.is
 ostatus.shade3d.jp
 ostatus.taiyolab.com
 ostatus.yajamon.xyz
+otajo.tk
 otajodon.com
 otogamer.me
 otoya.space
 oulipo.social
 p-worldon.com
+p.kokolor.es
 pachi.house
 pachyder.me
 pao.moe
@@ -1135,7 +1152,27 @@ pkkm.me
 planet.moe
 plasticmodels.tokyo
 playvicious.social
+ple.ggtea.org
 pleasehug.me
+plero.ma
+pleroma.7nw.eu
+pleroma.arcseconds.net
+pleroma.dereferenced.org
+pleroma.firechicken.net
+pleroma.gdgd.jp.net
+pleroma.gza.jp
+pleroma.iro-iro.xyz
+pleroma.knzk.me
+pleroma.miniwa.moe
+pleroma.nakanod.net
+pleroma.nakayoshi.tk
+pleroma.net.ru
+pleroma.playground.ws
+pleroma.raramagi.ga
+pleroma.rhinoworks.info
+pleroma.soykaf.com
+pleroma.thog.eu
+plrm.moe.hm
 pnw.social
 pochi46.com
 podcast.style
@@ -1211,6 +1248,7 @@ share.elouworld.org
 shelter.moe
 shigadon.com
 shigezen.com
+shigusegubu.club
 shigyoudon.jp
 shimaidon.net
 shimokita.social
@@ -1226,6 +1264,10 @@ slime.global
 sn.angry.im
 snabeltann.no
 sns.gdgd.jp.net
+soc.canned-death.us
+soc.flyingcube.tech
+soc.freedombone.net
+soc.h4x.group
 soc.ialis.me
 social.0day.agency
 social.48bin.net
@@ -1238,6 +1280,7 @@ social.apreslanu.it
 social.arbleizez.bzh
 social.arnip.org
 social.atypique.net
+social.aura.ovo.run
 social.backtick.town
 social.ballpointcarrot.net
 social.bluecore.net
@@ -1246,6 +1289,7 @@ social.bzh
 social.celabs.com
 social.chilliet.eu
 social.chinwag.im
+social.cofe.space
 social.conglomer.net
 social.coop
 social.csswg.org
@@ -1260,9 +1304,11 @@ social.gemuplay.com
 social.gestaltzerfall.net
 social.glados.ch
 social.guimik.fr
+social.hacktivis.me
 social.homunyan.com
 social.hoyle.me.uk
 social.hyuki.net
+social.i2p.rocks
 social.imchip.be
 social.imirhil.fr
 social.infranix.eu
@@ -1291,6 +1337,7 @@ social.nah.re
 social.nasqueron.org
 social.nassi.me
 social.nervestaple.com
+social.netzkombinat.su
 social.noff.co
 social.nofftopia.com
 social.noisyspot.jp
@@ -1308,6 +1355,7 @@ social.pueseso.club
 social.qunagi.net
 social.rbs.io
 social.reekynet.com
+social.sakamoto.gq
 social.sitedethib.com
 social.snargol.com
 social.spiwit.net
@@ -1333,6 +1381,7 @@ socialtuna.net
 society.oftrolls.com
 solo-outdon.club
 soscet.network
+sozial.derguhl.de
 spacerock.jp
 spanner.works
 spod.ca
@@ -1374,6 +1423,7 @@ tekkadon.manimani.cc
 tenforward.social
 teo.taiha.net
 tescher.me
+testing.pleroma.lol
 tetsugaku.place
 tgp.jp
 the.wired.sehol.se
@@ -1448,6 +1498,7 @@ ukrainian.social
 uldhaar.dk
 umastodon.jp
 un.lobi.to
+unconfigu.red
 under-bank.blue
 unique-inet.tokyo
 unityjp-mastodon.tokyo
@@ -1480,6 +1531,7 @@ webdevnerds.tech
 weebs.moe
 wellness.so
 whiplashprinciples.club
+whispr.hoenn.me
 witches.town
 wizfox.jp
 wogan.im
@@ -1493,6 +1545,7 @@ www.mikuappend.com
 www.mofgao.space
 www.mstddntfdn.online
 www.nekotodon.com
+www.pptdn.jp
 www.seiyu-mstdn.club
 wxw.moe
 x0r.be

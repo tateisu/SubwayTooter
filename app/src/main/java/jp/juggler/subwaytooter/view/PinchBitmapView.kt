@@ -172,9 +172,13 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 	
 	override fun performClick() : Boolean {
 		super.performClick()
+		
 		initializeScale()
+		
 		return true
 	}
+	
+	var defaultScale :Float = 1f
 	
 	// 表示位置の初期化
 	// 呼ばれるのは、ビットマップを変更した時、ビューのサイズが変わった時、画像をクリックした時
@@ -186,23 +190,37 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 			bitmap_h = Math.max(1f, bitmap.height.toFloat())
 			bitmap_aspect = bitmap_w / bitmap_h
 			
-			current_scale = if(view_aspect > bitmap_aspect) {
+			if(view_aspect > bitmap_aspect) {
+				scale_min = view_h / bitmap_h / 2f
+				scale_max = view_w / bitmap_w * 8f
+			} else {
+				scale_min = view_w / bitmap_w / 2f
+				scale_max = view_h / bitmap_h * 8f
+			}
+			if(scale_max < scale_min) scale_max = scale_min * 16f
+			
+			defaultScale = if(view_aspect > bitmap_aspect) {
 				view_h / bitmap_h
 			} else {
 				view_w / bitmap_w
 			}
 			
-			val draw_w = bitmap_w * current_scale
-			val draw_h = bitmap_h * current_scale
+			val draw_w = bitmap_w * defaultScale
+			val draw_h = bitmap_h * defaultScale
 			
+			current_scale = defaultScale
 			current_trans_x = (view_w - draw_w) / 2f
 			current_trans_y = (view_h - draw_h) / 2f
 			
 			callback?.onMove(bitmap_w, bitmap_h, current_trans_x, current_trans_y, current_scale)
 		} else {
+			defaultScale = 1f
+			scale_min = 1f
+			scale_max = 1f
+
+			current_scale = defaultScale
 			current_trans_y = 0f
-			current_trans_x = current_trans_y
-			current_scale = 1f
+			current_trans_x = 0f
 			
 			callback?.onMove(0f, 0f, current_trans_x, current_trans_y, current_scale)
 		}
@@ -388,14 +406,7 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 		start_image_trans_y = current_trans_y
 		start_image_scale = current_scale
 		
-		if(view_aspect > bitmap_aspect) {
-			scale_min = view_h / bitmap_h / 2f
-			scale_max = view_w / bitmap_w * 8f
-		} else {
-			scale_min = view_w / bitmap_w / 2f
-			scale_max = view_h / bitmap_h * 8f
-		}
-		if(scale_max < scale_min) scale_max = scale_min * 16f
+
 	}
 	
 	// 画面上の指の位置から画像中の指の位置を調べる

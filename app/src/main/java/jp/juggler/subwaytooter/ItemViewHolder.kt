@@ -457,7 +457,7 @@ internal class ItemViewHolder(
 		boost_time = time
 		llBoosted.visibility = View.VISIBLE
 		ivBoosted.setImageResource(Styler.getAttributeResourceId(activity, icon_attr_id))
-		tvBoostedTime.text = TootStatus.formatTime(tvBoostedTime.context, time, true)
+		showStatusTime(activity, tvBoostedTime, who, time = time)
 		tvBoosted.text = text
 		boost_invalidator.register(text)
 		setAcct(tvBoostedAcct, access_info.getFullAcct(who), who.acct)
@@ -484,7 +484,7 @@ internal class ItemViewHolder(
 		this.status_showing = status
 		llStatus.visibility = View.VISIBLE
 		
-		showStatusTime(activity, status)
+		showStatusTime(activity, tvTime, who = status.account, status = status)
 		
 		val who = status.account
 		this.status_account = who
@@ -623,62 +623,95 @@ internal class ItemViewHolder(
 		}
 	}
 	
-	private fun showStatusTime(activity : ActMain, status : TootStatus) {
+	private fun showStatusTime(
+		activity : ActMain,
+		tv : TextView,
+		@Suppress("UNUSED_PARAMETER") who : TootAccount,
+		status : TootStatus? = null,
+		time : Long? = null
+	) {
 		val sb = SpannableStringBuilder()
 		
-		if(status.hasMedia() && status.sensitive) {
-			// if( sb.length() > 0 ) sb.append( ' ' );
+		//		if(access_info.getFullAcct(who) == "unarist@mstdn.maud.io") {
+		//			// if(sb.isNotEmpty()) sb.append(' ')
+		//
+		//			val start = sb.length
+		//			sb.append("unarist")
+		//			val end = sb.length
+		//			val icon_id = R.drawable.unarist
+		//			sb.setSpan(
+		//				EmojiImageSpan(activity, icon_id),
+		//				start,
+		//				end,
+		//				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+		//			)
+		//		}
+		
+		if(status != null) {
+			if(status.hasMedia() && status.sensitive) {
+				if(sb.isNotEmpty()) sb.append(' ')
+				
+				val start = sb.length
+				sb.append("NSFW")
+				val end = sb.length
+				val icon_id = Styler.getAttributeResourceId(activity, R.attr.ic_eye_off)
+				sb.setSpan(
+					EmojiImageSpan(activity, icon_id),
+					start,
+					end,
+					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+				)
+			}
 			
-			val start = sb.length
-			sb.append("NSFW")
-			val end = sb.length
-			val icon_id = Styler.getAttributeResourceId(activity, R.attr.ic_eye_off)
-			sb.setSpan(
-				EmojiImageSpan(activity, icon_id),
-				start,
-				end,
-				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-			)
-		}
-		
-		val visIconAttrId = Styler.getVisibilityIconAttr(status.visibility)
-		if(R.attr.ic_public != visIconAttrId) {
-			if(sb.isNotEmpty()) sb.append(' ')
-			val start = sb.length
-			sb.append(status.visibility)
-			val end = sb.length
-			val iconResId = Styler.getAttributeResourceId(activity, visIconAttrId)
-			sb.setSpan(
-				EmojiImageSpan(activity, iconResId),
-				start,
-				end,
-				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-			)
-		}
-		
-		if(status.pinned) {
-			if(sb.isNotEmpty()) sb.append(' ')
-			val start = sb.length
-			sb.append("pinned")
-			val end = sb.length
-			val icon_id = Styler.getAttributeResourceId(activity, R.attr.ic_pin)
-			sb.setSpan(
-				EmojiImageSpan(activity, icon_id),
-				start,
-				end,
-				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-			)
+			val visIconAttrId = Styler.getVisibilityIconAttr(status.visibility)
+			if(R.attr.ic_public != visIconAttrId) {
+				if(sb.isNotEmpty()) sb.append(' ')
+				val start = sb.length
+				sb.append(status.visibility)
+				val end = sb.length
+				val iconResId = Styler.getAttributeResourceId(activity, visIconAttrId)
+				sb.setSpan(
+					EmojiImageSpan(activity, iconResId),
+					start,
+					end,
+					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+				)
+			}
+			
+			if(status.pinned) {
+				if(sb.isNotEmpty()) sb.append(' ')
+				val start = sb.length
+				sb.append("pinned")
+				val end = sb.length
+				val icon_id = Styler.getAttributeResourceId(activity, R.attr.ic_pin)
+				sb.setSpan(
+					EmojiImageSpan(activity, icon_id),
+					start,
+					end,
+					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+				)
+			}
+			
 		}
 		
 		if(sb.isNotEmpty()) sb.append(' ')
 		sb.append(
-			TootStatus.formatTime(
-				activity,
-				status.time_created_at,
-				column.column_type != Column.TYPE_CONVERSATION
-			)
+			when {
+				time != null -> TootStatus.formatTime(
+					activity,
+					time,
+					column.column_type != Column.TYPE_CONVERSATION
+				)
+				status != null -> TootStatus.formatTime(
+					activity,
+					status.time_created_at,
+					column.column_type != Column.TYPE_CONVERSATION
+				)
+				else -> "?"
+			}
 		)
-		tvTime.text = sb
+		
+		tv.text = sb
 	}
 	
 	//	fun updateRelativeTime() {
@@ -1456,11 +1489,13 @@ internal class ItemViewHolder(
 							
 							val actMain = activity as? ActMain
 							val thumbnailHeight = actMain?.app_state?.media_thumb_height ?: dip(64)
-							val verticalArrangeThumbnails = Pref.bpVerticalArrangeThumbnails( actMain?.pref ?: Pref.pref(context))
+							val verticalArrangeThumbnails = Pref.bpVerticalArrangeThumbnails(
+								actMain?.pref ?: Pref.pref(context)
+							)
 							
-							flMedia = if(verticalArrangeThumbnails ) {
+							flMedia = if(verticalArrangeThumbnails) {
 								frameLayout {
-									lparams(matchParent, wrapContent ) {
+									lparams(matchParent, wrapContent) {
 										topMargin = dip(3)
 									}
 									llMedia = verticalLayout {
@@ -1478,7 +1513,7 @@ internal class ItemViewHolder(
 													context,
 													R.attr.btn_close
 												)
-										}.lparams(dip(32),dip(32)) {
+										}.lparams(dip(32), dip(32)) {
 											gravity = Gravity.END
 										}
 										
@@ -1548,8 +1583,11 @@ internal class ItemViewHolder(
 										gravity = Gravity.CENTER_VERTICAL or Gravity.END
 										text = context.getString(R.string.tap_to_show)
 										textColor =
-											Styler.getAttributeColor(context, R.attr.colorShowMediaText)
-										endPadding=dip(4)
+											Styler.getAttributeColor(
+												context,
+												R.attr.colorShowMediaText
+											)
+										endPadding = dip(4)
 										minHeightCompat = dip(32)
 									}.lparams(matchParent, matchParent)
 								}
@@ -1646,13 +1684,16 @@ internal class ItemViewHolder(
 										gravity = Gravity.CENTER
 										text = context.getString(R.string.tap_to_show)
 										textColor =
-											Styler.getAttributeColor(context, R.attr.colorShowMediaText)
+											Styler.getAttributeColor(
+												context,
+												R.attr.colorShowMediaText
+											)
 										
 									}.lparams(matchParent, matchParent)
 								}
 							}
 							
-
+							
 							
 							
 							llExtra = verticalLayout {

@@ -1149,9 +1149,14 @@ class PollingWorker private constructor(c : Context) {
 				
 			}
 			
-			// 定期的な通知更新が不要なら真を返す
 			private fun registerDeviceToken() {
 				try {
+					// 設定によってはデバイストークンやアクセストークンを送信しない
+					if( ! Pref.bpSendAccessTokenToAppServer(Pref.pref(context))){
+						log.d("registerDeviceToken: SendAccessTokenToAppServer is not set.")
+						return
+					}
+					
 					// ネットワーク的な事情でインストールIDを取得できなかったのなら、何もしない
 					val install_id = job.install_id
 					if(install_id?.isEmpty() != false) {

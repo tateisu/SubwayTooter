@@ -912,5 +912,6 @@
     <string name="changed">変更しました</string>
     <string name="thumbnails_arrange_vertically">サムネイルを縦に並べる (アプリ再起動が必要)</string>
     <string name="instance_local">インスタンス内のみ</string>
-
+    <string name="send_access_token_to_app_server">アクセストークンをアプリサーバに送信する</string>
+    <string name="send_access_token_to_app_server_desc">通常は"pull"通知(すこし遅れる)を利用できます。それは端末上で動作するのでアプリサーバは必要ありません。しかしカスタム通知リスナを使う場合やSTがサポートする限られたインスタンスのユーザである場合は"push"通知を利用することができます。ただしアクセストークンをアプリサーバに送信する必要があります(これはマストドンの欠陥です)。</string>
 </resources>

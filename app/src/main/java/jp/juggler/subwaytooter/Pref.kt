@@ -301,6 +301,12 @@ object Pref {
 	)
 	
 	
+	val bpSendAccessTokenToAppServer = BooleanPref(
+		"SendAccessTokenToAppServer",
+		false,
+		R.id.swSendAccessTokenToAppServer
+	)
+	
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

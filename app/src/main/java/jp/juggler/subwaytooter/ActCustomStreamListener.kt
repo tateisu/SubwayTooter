@@ -193,6 +193,12 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 				try {
 					
 					while(true) {
+						
+						if( ! Pref.bpSendAccessTokenToAppServer(Pref.pref(this@ActCustomStreamListener))){
+							addLog("we won't use push notification until 'SendAccessTokenToAppServer' is not set.")
+							break
+						}
+						
 						if(strSecret.isEmpty()) {
 							addLog("Secret is empty. Custom Listener is not used.")
 							break

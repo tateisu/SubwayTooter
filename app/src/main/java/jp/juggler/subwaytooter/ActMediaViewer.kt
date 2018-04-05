@@ -21,19 +21,16 @@ import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.view.Window
 import android.widget.TextView
+import com.google.android.exoplayer2.*
 
-import com.google.android.exoplayer2.ExoPlaybackException
-import com.google.android.exoplayer2.ExoPlayerFactory
-import com.google.android.exoplayer2.PlaybackParameters
-import com.google.android.exoplayer2.Player
-import com.google.android.exoplayer2.SimpleExoPlayer
-import com.google.android.exoplayer2.Timeline
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import com.google.android.exoplayer2.source.ExtractorMediaSource
+import com.google.android.exoplayer2.source.MediaSourceEventListener
 import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
-import com.google.android.exoplayer2.ui.SimpleExoPlayerView
+import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.upstream.DataSpec
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
@@ -48,6 +45,7 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.PinchBitmapView
+import java.io.IOException
 
 class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	
@@ -85,7 +83,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	private lateinit var btnNext : View
 	private lateinit var tvError : TextView
 	private lateinit var exoPlayer : SimpleExoPlayer
-	private lateinit var exoView : SimpleExoPlayerView
+	private lateinit var exoView : PlayerView
 	private lateinit var svDescription : View
 	private lateinit var tvDescription : TextView
 	private lateinit var tvStatus : TextView
@@ -93,8 +91,19 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	internal var buffering_last_shown : Long = 0
 	
 	private val player_listener = object : Player.EventListener {
-		override fun onTimelineChanged(timeline : Timeline?, manifest : Any?) {
-			log.d("exoPlayer onTimelineChanged")
+
+		override fun onTimelineChanged(
+			timeline : Timeline?,
+			manifest : Any?,
+			reason : Int
+		) {
+			log.d("exoPlayer onTimelineChanged manifest=$manifest reason=$reason")
+		}
+		
+		override fun onSeekProcessed(){
+		}
+		
+		override fun onShuffleModeEnabledChanged(shuffleModeEnabled : Boolean) {
 		}
 		
 		override fun onTracksChanged(
@@ -134,8 +143,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			showToast(this@ActMediaViewer, error, "player error.")
 		}
 		
-		override fun onPositionDiscontinuity() {
-			log.d("exoPlayer onPositionDiscontinuity")
+		override fun onPositionDiscontinuity(reason : Int) {
+			log.d("exoPlayer onPositionDiscontinuity reason=$reason")
 		}
 		
 		override fun onPlaybackParametersChanged(playbackParameters : PlaybackParameters?) {
@@ -298,13 +307,14 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			this, Util.getUserAgent(this, getString(R.string.app_name)), defaultBandwidthMeter
 		)
 		
-		val mediaSource = ExtractorMediaSource(
-			Uri.parse(url),
-			dataSourceFactory,
-			extractorsFactory,
-			App1.getAppState(this).handler,
-			ExtractorMediaSource.EventListener { showError(it.withCaption("load error.") ) }
-		)
+		val mediaSource = ExtractorMediaSource.Factory(dataSourceFactory)
+			.setExtractorsFactory(extractorsFactory)
+			.createMediaSource(
+				Uri.parse(url),
+				App1.getAppState(this).handler,
+				mediaSourceEventListener
+			)
+
 		exoPlayer.prepare(mediaSource)
 		exoPlayer.playWhenReady = true
 		if(TootAttachmentLike.TYPE_GIFV == ta.type) {
@@ -313,6 +323,93 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			exoPlayer.repeatMode = Player.REPEAT_MODE_OFF
 			
 		}
+	}
+	
+	val mediaSourceEventListener = object: MediaSourceEventListener{
+		override fun onLoadStarted(
+			dataSpec : DataSpec?,
+			dataType : Int,
+			trackType : Int,
+			trackFormat : Format?,
+			trackSelectionReason : Int,
+			trackSelectionData : Any?,
+			mediaStartTimeMs : Long,
+			mediaEndTimeMs : Long,
+			elapsedRealtimeMs : Long
+		) {
+			log.d("onLoadStarted")
+		}
+		
+		override fun onDownstreamFormatChanged(
+			trackType : Int,
+			trackFormat : Format?,
+			trackSelectionReason : Int,
+			trackSelectionData : Any?,
+			mediaTimeMs : Long
+		) {
+			log.d("onDownstreamFormatChanged")
+		}
+		
+		override fun onUpstreamDiscarded(
+			trackType : Int,
+			mediaStartTimeMs : Long,
+			mediaEndTimeMs : Long
+		) {
+			log.d("onUpstreamDiscarded")
+		}
+		
+		override fun onLoadCompleted(
+			dataSpec : DataSpec?,
+			dataType : Int,
+			trackType : Int,
+			trackFormat : Format?,
+			trackSelectionReason : Int,
+			trackSelectionData : Any?,
+			mediaStartTimeMs : Long,
+			mediaEndTimeMs : Long,
+			elapsedRealtimeMs : Long,
+			loadDurationMs : Long,
+			bytesLoaded : Long
+		) {
+			log.d("onLoadCompleted")
+		}
+		
+		override fun onLoadCanceled(
+			dataSpec : DataSpec?,
+			dataType : Int,
+			trackType : Int,
+			trackFormat : Format?,
+			trackSelectionReason : Int,
+			trackSelectionData : Any?,
+			mediaStartTimeMs : Long,
+			mediaEndTimeMs : Long,
+			elapsedRealtimeMs : Long,
+			loadDurationMs : Long,
+			bytesLoaded : Long
+		) {
+			log.d("onLoadCanceled")
+		}
+		
+		override fun onLoadError(
+			dataSpec : DataSpec?,
+			dataType : Int,
+			trackType : Int,
+			trackFormat : Format?,
+			trackSelectionReason : Int,
+			trackSelectionData : Any?,
+			mediaStartTimeMs : Long,
+			mediaEndTimeMs : Long,
+			elapsedRealtimeMs : Long,
+			loadDurationMs : Long,
+			bytesLoaded : Long,
+			error : IOException?,
+			wasCanceled : Boolean
+		) {
+			if( error != null) {
+				showError(error.withCaption("load error."))
+			}
+		}
+		
 	}
 	
 	@SuppressLint("StaticFieldLeak")

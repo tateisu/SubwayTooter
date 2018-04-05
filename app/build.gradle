@@ -12,8 +12,8 @@ android {
         minSdkVersion 21
         targetSdkVersion 27
 
-        versionCode 233
-        versionName "2.3.3"
+        versionCode 234
+        versionName "2.3.4"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -69,50 +69,22 @@ dependencies {
     implementation project(':emoji')
     implementation project(':apng_android')
 
-    implementation 'com.android.support:support-v4:27.1.0'
-    implementation 'com.android.support:appcompat-v7:27.1.0'
-    implementation 'com.android.support:design:27.1.0'
-    implementation 'com.android.support:customtabs:27.1.0'
-    implementation 'com.android.support:support-v13:27.1.0'
+    implementation "com.android.support:support-v4:$asl_version"
+    implementation "com.android.support:appcompat-v7:$asl_version"
+    implementation "com.android.support:design:$asl_version"
+    implementation "com.android.support:customtabs:$asl_version"
+    implementation "com.android.support:support-v13:$asl_version"
 
-    implementation 'com.google.firebase:firebase-core:12.0.0'
-    implementation 'com.google.firebase:firebase-messaging:12.0.0'
+    implementation "com.google.firebase:firebase-core:$firebase_version"
+    implementation "com.google.firebase:firebase-messaging:$firebase_version"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
     testImplementation "org.jetbrains.kotlin:kotlin-test:$kotlin_version"
-    testImplementation 'junit:junit:4.12' // しばらくはjunitと併用
-
     // compile 'org.jetbrains.kotlinx:kotlinx-coroutines-core:0.21.2'
 
-    implementation 'uk.co.chrisjenx:calligraphy:2.3.0'
-    implementation 'com.github.woxthebox:draglistview:1.5.1'
-    implementation 'com.github.omadahealth:swipy:1.2.3@aar'
-    // compile 'com.jrummyapps:colorpicker:2.1.7'
-    implementation 'com.github.kenglxn.QRGen:android:2.3.0'
-
-    implementation 'com.squareup.okhttp3:okhttp:3.9.1'
-    testImplementation 'com.squareup.okhttp3:mockwebserver:3.9.1'
-    androidTestImplementation 'com.squareup.okhttp3:mockwebserver:3.9.1'
-
-    implementation 'commons-io:commons-io:2.6'
-
-    implementation 'com.github.bumptech.glide:glide:4.5.0'
-    implementation 'com.github.bumptech.glide:okhttp3-integration:4.5.0'
-    implementation 'com.github.bumptech.glide:annotations:4.5.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.5.0'
-
-    implementation 'org.hjson:hjson:3.0.0'
-
-    implementation 'com.google.android:flexbox:0.3.1'
-
-    implementation 'com.astuetz:pagerslidingtabstrip:1.0.1'
-
-
-    implementation 'com.google.android.exoplayer:exoplayer:r2.5.4'
-
-    implementation "org.jetbrains.anko:anko:$anko_version"
     // Anko Layouts
+    implementation "org.jetbrains.anko:anko:$anko_version"
     implementation "org.jetbrains.anko:anko-sdk25:$anko_version" // sdk15, sdk19, sdk21, sdk23 are also available
     implementation "org.jetbrains.anko:anko-appcompat-v7:$anko_version"
 
@@ -120,6 +92,34 @@ dependencies {
     //implementation "org.jetbrains.anko:anko-sdk25-coroutines:$anko_version"
     //implementation "org.jetbrains.anko:anko-appcompat-v7-coroutines:$anko_version"
 
+    testImplementation 'junit:junit:4.12' // しばらくはkotlin-testとjunitを併用
+
+    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:3.10.0'
+    androidTestImplementation 'com.squareup.okhttp3:mockwebserver:3.10.0'
+
+    implementation 'com.github.bumptech.glide:glide:4.6.1'
+    implementation 'com.github.bumptech.glide:okhttp3-integration:4.6.1'
+    implementation 'com.github.bumptech.glide:annotations:4.6.1'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.6.1'
+
+    implementation 'uk.co.chrisjenx:calligraphy:2.3.0'
+
+    implementation 'com.github.woxthebox:draglistview:1.5.4'
+
+    implementation 'com.github.omadahealth:swipy:1.2.3@aar'
+
+    implementation 'com.github.kenglxn.QRGen:android:2.4.0'
+
+    implementation 'commons-io:commons-io:2.6'
+
+    implementation 'org.hjson:hjson:3.0.0'
+
+    implementation 'com.google.android:flexbox:0.3.2'
+
+    implementation 'com.astuetz:pagerslidingtabstrip:1.0.1'
+
+    implementation 'com.google.android.exoplayer:exoplayer:2.7.3'
 
     // implementation 'com.simplecityapps:recyclerview-fastscroll:1.0.16'
 

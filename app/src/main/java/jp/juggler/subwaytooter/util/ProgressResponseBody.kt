@@ -15,10 +15,10 @@ import okio.Options
 import okio.Sink
 import okio.Source
 import okio.Timeout
+import java.nio.ByteBuffer
 
-
-
-class ProgressResponseBody private constructor(private val originalBody : ResponseBody) : ResponseBody() {
+class ProgressResponseBody private constructor(private val originalBody : ResponseBody) :
+	ResponseBody() {
 	
 	
 	companion object {
@@ -29,9 +29,11 @@ class ProgressResponseBody private constructor(private val originalBody : Respon
 		// ex) builder.addInterceptor( ProgressResponseBody.makeInterceptor() );
 		fun makeInterceptor() : Interceptor {
 			return Interceptor { chain ->
-				val originalResponse = chain.proceed(chain.request()) ?: throw RuntimeException("makeInterceptor: chain.proceed() returns null.")
+				val originalResponse = chain.proceed(chain.request())
+					?: throw RuntimeException("makeInterceptor: chain.proceed() returns null.")
 				
-				val originalBody = originalResponse.body() ?: throw RuntimeException("makeInterceptor: originalResponse.body() reruens null.")
+				val originalBody = originalResponse.body()
+					?: throw RuntimeException("makeInterceptor: originalResponse.body() reruens null.")
 				
 				originalResponse.newBuilder()
 					.body(ProgressResponseBody(originalBody))
@@ -47,7 +49,10 @@ class ProgressResponseBody private constructor(private val originalBody : Respon
 		
 		@Suppress("MemberVisibilityCanPrivate")
 		@Throws(IOException::class)
-		private fun bytes(body : ResponseBody, callback : ProgressResponseBodyCallback) : ByteArray {
+		private fun bytes(
+			body : ResponseBody,
+			callback : ProgressResponseBodyCallback
+		) : ByteArray {
 			if(body is ProgressResponseBody) {
 				body.callback = callback
 			}
@@ -55,7 +60,7 @@ class ProgressResponseBody private constructor(private val originalBody : Respon
 		}
 	}
 	
-	private var callback : ProgressResponseBodyCallback = {_,_->}
+	private var callback : ProgressResponseBodyCallback = { _, _ -> }
 	
 	/*
 		RequestBody.bytes() is defined as final, We can't override it.
@@ -73,8 +78,6 @@ class ProgressResponseBody private constructor(private val originalBody : Respon
 			}
 		} );
 	 */
-	
-
 	
 	override fun contentType() : MediaType? {
 		return originalBody.contentType()
@@ -95,6 +98,7 @@ class ProgressResponseBody private constructor(private val originalBody : Respon
 				
 				// If there is the method, create the wrapper.
 				wrappedSource = object : ForwardingBufferedSource(originalSource) {
+					
 					@Throws(IOException::class)
 					override fun readByteArray() : ByteArray {
 						/*
@@ -108,21 +112,22 @@ class ProgressResponseBody private constructor(private val originalBody : Respon
 						try {
 							val contentLength = originalBody.contentLength()
 							val buffer = originalSource.buffer()
-							val source = field_source.get(originalSource) as Source? ?: throw IllegalArgumentException("source == null")
-
-// same thing of Buffer.writeAll(), with counting.
+							val source = field_source.get(originalSource) as Source?
+								?: throw IllegalArgumentException("source == null")
+							
+							// same thing of Buffer.writeAll(), with counting.
 							var nRead : Long = 0
-							callback (0, Math.max(contentLength, 1))
+							callback(0, Math.max(contentLength, 1))
 							while(true) {
 								val delta = source.read(buffer, 8192)
 								if(delta == - 1L) break
 								nRead += delta
-								if(nRead > 0 ) {
-									callback (nRead, Math.max(contentLength, nRead))
+								if(nRead > 0) {
+									callback(nRead, Math.max(contentLength, nRead))
 								}
 							}
 							// EOS時の進捗
-							callback (nRead, Math.max(contentLength, nRead))
+							callback(nRead, Math.max(contentLength, nRead))
 							
 							return buffer.readByteArray()
 							
@@ -145,229 +150,118 @@ class ProgressResponseBody private constructor(private val originalBody : Respon
 	}
 	
 	// To avoid double buffering, We have to make ForwardingBufferedSource.
-	internal open class ForwardingBufferedSource(private val originalSource : BufferedSource) : BufferedSource {
+	internal open class ForwardingBufferedSource(private val originalSource : BufferedSource) :
+		BufferedSource {
 		
-		override fun buffer() : Buffer {
-			return originalSource.buffer()
-		}
+		override fun read(dst : ByteBuffer?) = originalSource.read(dst)
 		
-		@Throws(IOException::class)
-		override fun exhausted() : Boolean {
-			return originalSource.exhausted()
-		}
+		override fun isOpen() = originalSource.isOpen
 		
-		@Throws(IOException::class)
-		override fun require(byteCount : Long) {
-			originalSource.require(byteCount)
-		}
+		override fun buffer() : Buffer? = originalSource.buffer()
 		
-		@Throws(IOException::class)
-		override fun request(byteCount : Long) : Boolean {
-			return originalSource.request(byteCount)
-		}
+		override fun exhausted() = originalSource.exhausted()
 		
-		@Throws(IOException::class)
-		override fun readByte() : Byte {
-			return originalSource.readByte()
-		}
+		override fun require(byteCount : Long) = originalSource.require(byteCount)
 		
-		@Throws(IOException::class)
-		override fun readShort() : Short {
-			return originalSource.readShort()
-		}
+		override fun request(byteCount : Long) = originalSource.request(byteCount)
 		
-		@Throws(IOException::class)
-		override fun readShortLe() : Short {
-			return originalSource.readShortLe()
-		}
+		override fun readByte() = originalSource.readByte()
 		
-		@Throws(IOException::class)
-		override fun readInt() : Int {
-			return originalSource.readInt()
-		}
+		override fun readShort() = originalSource.readShort()
 		
-		@Throws(IOException::class)
-		override fun readIntLe() : Int {
-			return originalSource.readIntLe()
-		}
+		override fun readShortLe() = originalSource.readShortLe()
 		
-		@Throws(IOException::class)
-		override fun readLong() : Long {
-			return originalSource.readLong()
-		}
+		override fun readInt() = originalSource.readInt()
 		
-		@Throws(IOException::class)
-		override fun readLongLe() : Long {
-			return originalSource.readLongLe()
-		}
+		override fun readIntLe() = originalSource.readIntLe()
 		
-		@Throws(IOException::class)
-		override fun readDecimalLong() : Long {
-			return originalSource.readDecimalLong()
-		}
+		override fun readLong() = originalSource.readLong()
 		
-		@Throws(IOException::class)
-		override fun readHexadecimalUnsignedLong() : Long {
-			return originalSource.readHexadecimalUnsignedLong()
-		}
+		override fun readLongLe() = originalSource.readLongLe()
 		
-		@Throws(IOException::class)
-		override fun skip(byteCount : Long) {
-			originalSource.skip(byteCount)
-		}
+		override fun readDecimalLong() = originalSource.readDecimalLong()
 		
-		@Throws(IOException::class)
-		override fun readByteString() : ByteString {
-			return originalSource.readByteString()
-		}
+		override fun readHexadecimalUnsignedLong() = originalSource.readHexadecimalUnsignedLong()
 		
-		@Throws(IOException::class)
-		override fun readByteString(byteCount : Long) : ByteString {
-			return originalSource.readByteString(byteCount)
-		}
+		override fun skip(byteCount : Long) = originalSource.skip(byteCount)
 		
-		@Throws(IOException::class)
-		override fun select(options : Options) : Int {
-			return originalSource.select(options)
-		}
+		override fun readByteString() : ByteString? = originalSource.readByteString()
 		
-		@Throws(IOException::class)
-		override fun readByteArray() : ByteArray {
-			return originalSource.readByteArray()
-		}
+		override fun readByteString(byteCount : Long) : ByteString? =
+			originalSource.readByteString(byteCount)
 		
-		@Throws(IOException::class)
-		override fun readByteArray(byteCount : Long) : ByteArray {
-			return originalSource.readByteArray(byteCount)
-		}
+		override fun select(options : Options) = originalSource.select(options)
 		
-		@Throws(IOException::class)
-		override fun read(sink : ByteArray) : Int {
-			return originalSource.read(sink)
-		}
+		override fun readByteArray() : ByteArray? = originalSource.readByteArray()
 		
-		@Throws(IOException::class)
-		override fun readFully(sink : ByteArray) {
-			originalSource.readFully(sink)
-		}
+		override fun readByteArray(byteCount : Long) : ByteArray? =
+			originalSource.readByteArray(byteCount)
 		
-		@Throws(IOException::class)
-		override fun read(sink : ByteArray, offset : Int, byteCount : Int) : Int {
-			return originalSource.read(sink, offset, byteCount)
-		}
+		override fun read(sink : ByteArray) = originalSource.read(sink)
 		
-		@Throws(IOException::class)
-		override fun readFully(sink : Buffer, byteCount : Long) {
+		override fun readFully(sink : ByteArray) = originalSource.readFully(sink)
+		
+		override fun read(sink : ByteArray, offset : Int, byteCount : Int) =
+			originalSource.read(sink, offset, byteCount)
+		
+		override fun readFully(sink : Buffer, byteCount : Long) =
 			originalSource.readFully(sink, byteCount)
-		}
 		
-		@Throws(IOException::class)
-		override fun readAll(sink : Sink) : Long {
-			return originalSource.readAll(sink)
-		}
+		override fun readAll(sink : Sink) = originalSource.readAll(sink)
 		
-		@Throws(IOException::class)
-		override fun readUtf8() : String {
-			return originalSource.readUtf8()
-		}
+		override fun readUtf8() : String? = originalSource.readUtf8()
 		
-		@Throws(IOException::class)
-		override fun readUtf8(byteCount : Long) : String {
-			return originalSource.readUtf8(byteCount)
-		}
+		override fun readUtf8(byteCount : Long) : String? = originalSource.readUtf8(byteCount)
 		
-		@Throws(IOException::class)
-		override fun readUtf8Line() : String? {
-			return originalSource.readUtf8Line()
-		}
+		override fun readUtf8Line() : String? = originalSource.readUtf8Line()
 		
-		@Throws(IOException::class)
-		override fun readUtf8LineStrict() : String {
-			return originalSource.readUtf8LineStrict()
-		}
+		override fun readUtf8LineStrict() : String? = originalSource.readUtf8LineStrict()
 		
-		@Throws(IOException::class)
-		override fun readUtf8LineStrict(limit : Long) : String {
-			return originalSource.readUtf8LineStrict(limit)
-		}
+		override fun readUtf8LineStrict(limit : Long) : String? =
+			originalSource.readUtf8LineStrict(limit)
 		
-		@Throws(IOException::class)
-		override fun readUtf8CodePoint() : Int {
-			return originalSource.readUtf8CodePoint()
-		}
+		override fun readUtf8CodePoint() = originalSource.readUtf8CodePoint()
 		
-		@Throws(IOException::class)
-		override fun readString(charset : Charset) : String {
-			return originalSource.readString(charset)
-		}
+		override fun readString(charset : Charset) : String? = originalSource.readString(charset)
 		
-		@Throws(IOException::class)
-		override fun readString(byteCount : Long, charset : Charset) : String {
-			return originalSource.readString(byteCount, charset)
-		}
+		override fun readString(byteCount : Long, charset : Charset) : String? =
+			originalSource.readString(byteCount, charset)
 		
-		@Throws(IOException::class)
-		override fun indexOf(b : Byte) : Long {
-			return originalSource.indexOf(b)
-		}
+		override fun indexOf(b : Byte) = originalSource.indexOf(b)
 		
-		@Throws(IOException::class)
-		override fun indexOf(b : Byte, fromIndex : Long) : Long {
-			return originalSource.indexOf(b, fromIndex)
-		}
+		override fun indexOf(b : Byte, fromIndex : Long) = originalSource.indexOf(b, fromIndex)
 		
-		@Throws(IOException::class)
-		override fun indexOf(b : Byte, fromIndex : Long, toIndex : Long) : Long {
-			return originalSource.indexOf(b, fromIndex, toIndex)
-		}
+		override fun indexOf(b : Byte, fromIndex : Long, toIndex : Long) =
+			originalSource.indexOf(b, fromIndex, toIndex)
 		
-		@Throws(IOException::class)
-		override fun indexOf(bytes : ByteString) : Long {
-			return originalSource.indexOf(bytes)
-		}
+		override fun indexOf(bytes : ByteString) = originalSource.indexOf(bytes)
 		
-		@Throws(IOException::class)
-		override fun indexOf(bytes : ByteString, fromIndex : Long) : Long {
-			return originalSource.indexOf(bytes, fromIndex)
-		}
+		override fun indexOf(bytes : ByteString, fromIndex : Long) =
+			originalSource.indexOf(bytes, fromIndex)
 		
-		@Throws(IOException::class)
-		override fun indexOfElement(targetBytes : ByteString) : Long {
-			return originalSource.indexOfElement(targetBytes)
-		}
+		override fun indexOfElement(targetBytes : ByteString) =
+			originalSource.indexOfElement(targetBytes)
 		
-		@Throws(IOException::class)
-		override fun indexOfElement(targetBytes : ByteString, fromIndex : Long) : Long {
-			return originalSource.indexOfElement(targetBytes, fromIndex)
-		}
+		override fun indexOfElement(targetBytes : ByteString, fromIndex : Long) =
+			originalSource.indexOfElement(targetBytes, fromIndex)
 		
-		@Throws(IOException::class)
-		override fun rangeEquals(offset : Long, bytes : ByteString) : Boolean {
-			return originalSource.rangeEquals(offset, bytes)
-		}
+		override fun rangeEquals(offset : Long, bytes : ByteString) =
+			originalSource.rangeEquals(offset, bytes)
 		
-		@Throws(IOException::class)
-		override fun rangeEquals(offset : Long, bytes : ByteString, bytesOffset : Int, byteCount : Int) : Boolean {
-			return originalSource.rangeEquals(offset, bytes, bytesOffset, byteCount)
-		}
+		override fun rangeEquals(
+			offset : Long,
+			bytes : ByteString,
+			bytesOffset : Int,
+			byteCount : Int
+		) = originalSource.rangeEquals(offset, bytes, bytesOffset, byteCount)
 		
-		override fun inputStream() : InputStream {
-			return originalSource.inputStream()
-		}
+		override fun inputStream() : InputStream? = originalSource.inputStream()
 		
-		@Throws(IOException::class)
-		override fun read(sink : Buffer, byteCount : Long) : Long {
-			return originalSource.read(sink, byteCount)
-		}
+		override fun read(sink : Buffer, byteCount : Long) = originalSource.read(sink, byteCount)
 		
-		override fun timeout() : Timeout {
-			return originalSource.timeout()
-		}
+		override fun timeout() : Timeout? = originalSource.timeout()
 		
-		@Throws(IOException::class)
-		override fun close() {
-			originalSource.close()
-		}
+		override fun close() = originalSource.close()
 	}
-
+	
 }

@@ -13,10 +13,6 @@
     <!-- CAMERAパーミッションをつけるとPlayストアにプライバシーポリシーを記載する必要がある -->
     <!--<uses-permission android:name="android.permission.CAMERA"/>-->
 
-
-    <!-- https://mastodon.juggler.jp/@tateisu/99808478581120364 -->
-    <uses-permission android:name="android.permission.READ_PHONE_STATE" tools:node="remove" />
-
     <application
         android:name=".App1"
         android:allowBackup="true"

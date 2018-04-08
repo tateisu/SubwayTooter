@@ -30,7 +30,7 @@ object EmojiDecoder {
 	//	}
 	
 	private const val cpColon = ':'.toInt()
-	
+
 	fun canStartShortCode(s : CharSequence, index : Int) : Boolean {
 		val cp = s.codePointBefore(index)
 		return when(cp) {
@@ -171,8 +171,12 @@ object EmojiDecoder {
 					openNormalText()
 					val length = Character.charCount(s.codePointAt(i))
 					if(length == 1) {
-						sb.append(s[i])
-						++ i
+						val c = s[i++]
+						sb.append(when(c) {
+							// https://github.com/tateisu/SubwayTooter/issues/69
+							'\u00AD' -> '-'
+							else -> c
+						})
 					} else {
 						sb.append(s.substring(i, i + length))
 						i += length

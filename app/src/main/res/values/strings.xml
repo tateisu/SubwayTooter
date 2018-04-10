@@ -621,4 +621,5 @@
     <string name="send_access_token_to_app_server_desc">Normally you can use "pull" notification (with delay) without app server, because it works on your device.
 \nBut if you want to use "custom notification listener", or if you are the member of very limited instances that is supported by ST\'s app server,
 \nyou can use "push" notifications, but you have to allow sending access tokens to the app server. (this is mastodon's defect)</string>
+    <string name="pull_notification_check_interval">Pull notification check interval (unit: minutes, default:15, min:15)</string>
 </resources>

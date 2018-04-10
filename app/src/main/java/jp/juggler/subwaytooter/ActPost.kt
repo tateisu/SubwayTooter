@@ -1442,7 +1442,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					val opener = createOpener(uri, mime_type)
 					
 					val media_size_max =
-						1000000 * Math.max(1, Pref.spMediaSizeMax.optInt(pref) ?: 8)
+						1000000 * Math.max(1, Pref.spMediaSizeMax.toInt(pref) )
 					
 					val content_length = getStreamSize(true, opener.open())
 					if(content_length > media_size_max) {

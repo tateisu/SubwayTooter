@@ -131,6 +131,7 @@ class ActAppSetting : AppCompatActivity()
 	private lateinit var tvTimelineFontSize : TextView
 	private lateinit var tvAcctFontSize : TextView
 	private lateinit var etAvatarIconSize : EditText
+	private lateinit var etPullNotificationCheckInterval: EditText
 	
 	private var load_busy : Boolean = false
 	
@@ -139,6 +140,13 @@ class ActAppSetting : AppCompatActivity()
 		
 		// DefaultAccount の Spinnerの値を復元するため、このタイミングでも保存することになった
 		saveUIToData()
+		
+		// Pull通知チェック間隔を変更したかもしれないのでジョブを再設定する
+		try {
+			PollingWorker.scheduleJob(this,PollingWorker.JOB_POLLING)
+		} catch(ex : Throwable) {
+			log.trace(ex)
+		}
 	}
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
@@ -276,6 +284,7 @@ class ActAppSetting : AppCompatActivity()
 		etAcctFontSize.addTextChangedListener(SizeCheckTextWatcher(tvAcctFontSize, etAcctFontSize, default_acct_font_size))
 		
 		etAvatarIconSize = findViewById(R.id.etAvatarIconSize)
+		etPullNotificationCheckInterval = findViewById(R.id.etPullNotificationCheckInterval)
 		
 		tvTimelineFontUrl = findViewById(R.id.tvTimelineFontUrl)
 		tvTimelineFontBoldUrl = findViewById(R.id.tvTimelineFontBoldUrl)
@@ -310,6 +319,7 @@ class ActAppSetting : AppCompatActivity()
 		etQuoteNameFormat.setText(Pref.spQuoteNameFormat(pref))
 		etAutoCWLines.setText(Pref.spAutoCWLines(pref))
 		etAvatarIconSize.setText(Pref.spAvatarIconSize(pref))
+		etPullNotificationCheckInterval.setText(Pref.spPullNotificationCheckInterval(pref))
 		
 		etMediaSizeMax.setText(Pref.spMediaSizeMax(pref))
 		etRoundRatio.setText(Pref.spRoundRatio(pref))
@@ -355,6 +365,7 @@ class ActAppSetting : AppCompatActivity()
 			.put(Pref.spQuoteNameFormat, etQuoteNameFormat.text.toString()) // not trimmed
 			.put(Pref.spAutoCWLines, etAutoCWLines.text.toString().trim { it <= ' ' })
 			.put(Pref.spAvatarIconSize, etAvatarIconSize.text.toString().trim { it <= ' ' })
+			.put(Pref.spPullNotificationCheckInterval, etPullNotificationCheckInterval.text.toString().trim { it <= ' ' })
 			.put(Pref.spMediaSizeMax, etMediaSizeMax.text.toString().trim { it <= ' ' })
 			.put(Pref.spRoundRatio, etRoundRatio.text.toString().trim { it <= ' ' })
 			

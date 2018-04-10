@@ -136,6 +136,27 @@
                 android:text="@string/send_access_token_to_app_server_desc"
                 />
         </LinearLayout>
+
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etPullNotificationCheckInterval"
+            android:text="@string/pull_notification_check_interval"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etPullNotificationCheckInterval"
+                style="@style/setting_horizontal_stretch"
+                android:inputType="number"
+                />
+
+        </LinearLayout>
+
+
         <View style="@style/setting_divider"/>
 
         <!-- =============================================== -->

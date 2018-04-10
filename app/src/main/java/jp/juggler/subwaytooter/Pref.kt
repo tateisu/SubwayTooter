@@ -101,7 +101,7 @@ object Pref {
 			editor.putString(key, v)
 		}
 		
-		fun optInt(pref : SharedPreferences) = invoke(pref).optInt() ?: defVal.optInt()
+		fun toInt(pref : SharedPreferences) = invoke(pref).optInt() ?: defVal.toInt()
 	}
 	
 	// boolean
@@ -344,6 +344,7 @@ object Pref {
 	val spMspUserToken = StringPref("mastodon_search_portal_user_token", "")
 	val spEmojiPickerRecent = StringPref("emoji_picker_recent", "")
 	val spRoundRatio = StringPref("round_ratio", "33")
+	val spPullNotificationCheckInterval = StringPref("PullNotificationCheckInterval", "15")
 	
 	// long
 	

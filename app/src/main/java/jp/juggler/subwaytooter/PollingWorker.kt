@@ -119,7 +119,8 @@ class PollingWorker private constructor(c : Context) {
 		
 		fun scheduleJob(context : Context, job_id : Int) {
 			
-			val scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as? JobScheduler
+			val scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE)
+				as? JobScheduler
 				?: throw NotImplementedError("missing JobScheduler system service")
 			
 			val component = ComponentName(context, PollingService::class.java)
@@ -128,19 +129,33 @@ class PollingWorker private constructor(c : Context) {
 				.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
 			
 			if(job_id == JOB_POLLING) {
-				if(Build.VERSION.SDK_INT >= 24) {
-					builder.setPeriodic(60000L * 5, 60000L * 10)
+				
+				val intervalMin = if(Build.VERSION.SDK_INT >= 24) {
+					JobInfo.getMinPeriodMillis()
 				} else {
-					builder.setPeriodic(60000L * 5)
+					300000L
 				}
+				
+				val intervalMillis = Math.max(
+					intervalMin,
+					60000L * Pref.spPullNotificationCheckInterval.toInt(Pref.pref(context))
+				)
+				
+				if(Build.VERSION.SDK_INT >= 24) {
+					val flexMin = JobInfo.getMinFlexMillis()
+					builder.setPeriodic(intervalMillis, flexMin)
+				} else {
+					builder.setPeriodic(intervalMillis)
+				}
+				
 				builder.setPersisted(true)
 			} else {
 				builder
 					.setMinimumLatency(0)
 					.setOverrideDeadline(60000L)
 			}
-			
-			scheduler.schedule(builder.build())
+			val jobInfo = builder.build()
+			scheduler.schedule(jobInfo)
 		}
 		
 		// タスクの追加
@@ -239,7 +254,7 @@ class PollingWorker private constructor(c : Context) {
 		internal val job_status = AtomicReference<String>(null)
 		
 		fun handleFCMMessage(context : Context, tag : String?, callback : JobStatusCallback) {
-			log.d("handleFCMMessage: start. tag=%s", tag)
+			log.d("handleFCMMessage: start. tag=$tag")
 			val time_start = SystemClock.elapsedRealtime()
 			
 			callback.onStatus("=>")
@@ -497,14 +512,14 @@ class PollingWorker private constructor(c : Context) {
 				while(it.hasNext()) {
 					val itemOld = it.next()
 					if(itemOld.jobId == jobId) {
-						log.w("addJob: jobId=%s, old job cancelled.", jobId)
+						log.w("addJob: jobId=$jobId, old job cancelled.")
 						// 同じジョブをすぐに始めるのだからrescheduleはfalse
 						itemOld.cancel(false)
 						it.remove()
 					}
 				}
 			}
-			log.d("addJob: jobId=%s, add to list.", jobId)
+			log.d("addJob: jobId=$jobId, add to list.")
 			job_list.add(item)
 		}
 		
@@ -521,7 +536,7 @@ class PollingWorker private constructor(c : Context) {
 			while(it.hasNext()) {
 				val item = it.next()
 				if(item.jobId == jobId) {
-					log.w("onStopJob: jobId=%s, set cancel flag.")
+					log.w("onStopJob: jobId=${jobId}, set cancel flag.")
 					// リソースがなくてStopされるのだからrescheduleはtrue
 					item.cancel(true)
 					it.remove()
@@ -531,7 +546,7 @@ class PollingWorker private constructor(c : Context) {
 		}
 		
 		// 該当するジョブを依頼されていない
-		log.w("onStopJob: jobId=%s, not started..")
+		log.w("onStopJob: jobId=${jobId}, not started..")
 		return false
 		// return True to indicate to the JobManager whether you'd like to reschedule this job based on the retry criteria provided at job creation-time.
 		// return False to drop the job. Regardless of the value returned, your job must stop executing.
@@ -598,7 +613,7 @@ class PollingWorker private constructor(c : Context) {
 			
 			job_status.set("job start.")
 			try {
-				log.d("(JobItem.run jobId=%s", jobId)
+				log.d("(JobItem.run jobId=${jobId}")
 				if(isJobCancelled) throw JobCancelledException()
 				
 				job_status.set("check network status..")
@@ -633,28 +648,22 @@ class PollingWorker private constructor(c : Context) {
 				}
 				job_status.set("make next schedule.")
 				
+				log.d("pollingComplete=${bPollingComplete},isJobCancelled=${isJobCancelled},bPollingRequired=${bPollingRequired.get()}")
+				
 				if(! isJobCancelled && bPollingComplete) {
-					// ポーリングが完了したのならポーリングが必要かどうかに合わせてジョブのスケジュールを変更する
+					// ポーリングが完了した
 					if(! bPollingRequired.get()) {
+						// Pull通知を必要とするアカウントが存在しないなら、スケジュール登録を解除する
 						log.d("polling job is no longer required.")
 						try {
 							scheduler.cancel(JOB_POLLING)
 						} catch(ex : Throwable) {
 							log.trace(ex)
 						}
-						
-					} else {
-						var bRegistered = false
-						for(info in scheduler.allPendingJobs) {
-							if(info.id == JOB_POLLING) {
-								bRegistered = true
-								break
-							}
-						}
-						if(! bRegistered) {
-							scheduleJob(context, JOB_POLLING)
-							log.d("polling job is registered!")
-						}
+					} else if(! scheduler.allPendingJobs.any { it.id == JOB_POLLING }) {
+						// まだスケジュールされてないなら登録する
+						log.d("registering polling job…")
+						scheduleJob(context, JOB_POLLING)
 					}
 				}
 			} catch(ex : JobCancelledException) {
@@ -677,8 +686,9 @@ class PollingWorker private constructor(c : Context) {
 					try {
 						val jobService = refJobService?.get()
 						if(jobService != null) {
-							log.d("sending jobFinished. reschedule=%s", mReschedule.get())
-							jobService.jobFinished(jobParams, mReschedule.get())
+							val willReschedule = mReschedule.get()
+							log.d("sending jobFinished. willReschedule=$willReschedule")
+							jobService.jobFinished(jobParams, willReschedule)
 						}
 					} catch(ex : Throwable) {
 						log.trace(ex)
@@ -686,7 +696,7 @@ class PollingWorker private constructor(c : Context) {
 					}
 				})
 			}
-			log.d(")JobItem.run jobId=%s, cancel=%s", jobId, isJobCancelled)
+			log.d(")JobItem.run jobId=${jobId}, cancel=${isJobCancelled}")
 		}
 		
 		private fun checkNetwork() : Boolean {
@@ -697,7 +707,7 @@ class PollingWorker private constructor(c : Context) {
 			} else {
 				val state = ni.state
 				val detail = ni.detailedState
-				log.d("checkNetwork: state=%s,detail=%s", state, detail)
+				log.d("checkNetwork: state=${state},detail=${detail}")
 				if(state != NetworkInfo.State.CONNECTED) {
 					log.d("checkNetwork: not connected.")
 					false
@@ -721,8 +731,8 @@ class PollingWorker private constructor(c : Context) {
 		
 		fun runTask(job : JobItem, taskId : Int, taskData : JSONObject) {
 			try {
-				log.e("(runTask: taskId=%s", taskId)
-				job_status.set("start task " + taskId)
+				log.e("(runTask: taskId=${taskId}")
+				job_status.set("start task $taskId")
 				
 				this.job = job
 				this.taskId = taskId
@@ -788,7 +798,7 @@ class PollingWorker private constructor(c : Context) {
 					
 					TASK_NOTIFICATION_CLEAR -> {
 						val db_id = taskData.parseLong(EXTRA_DB_ID)
-						log.d("Notification clear! db_id=%s", db_id)
+						log.d("Notification clear! db_id=$db_id")
 						if(db_id != null) {
 							deleteCacheData(db_id)
 						}
@@ -796,7 +806,7 @@ class PollingWorker private constructor(c : Context) {
 					
 					TASK_NOTIFICATION_DELETE -> {
 						val db_id = taskData.parseLong(EXTRA_DB_ID)
-						log.d("Notification deleted! db_id=%s", db_id)
+						log.d("Notification deleted! db_id=$db_id")
 						if(db_id != null) {
 							NotificationTracking.updateRead(db_id)
 						}
@@ -805,7 +815,7 @@ class PollingWorker private constructor(c : Context) {
 					
 					TASK_NOTIFICATION_CLICK -> {
 						val db_id = taskData.parseLong(EXTRA_DB_ID)
-						log.d("Notification clicked! db_id=%s", db_id)
+						log.d("Notification clicked! db_id=$db_id")
 						if(db_id != null) {
 							// 通知をキャンセル
 							notification_manager.cancel(db_id.toString(), NOTIFICATION_ID)
@@ -840,30 +850,17 @@ class PollingWorker private constructor(c : Context) {
 					t.start()
 				}
 				while(true) {
+					// 同じホスト名が重複しないようにSetに集める
 					val liveSet = TreeSet<String>()
-					val it = thread_list.iterator()
-					while(it.hasNext()) {
-						val t = it.next()
-						if(! t.isAlive) {
-							it.remove()
-							continue
-						}
+					for(t in thread_list) {
+						if(! t.isAlive) continue
+						if(job.isJobCancelled) t.cancel()
 						liveSet.add(t.account.host)
-						if(job.isJobCancelled) {
-							t.cancel()
-						}
 					}
-					val remain = thread_list.size
-					if(remain <= 0) break
-					//
-					val sb = StringBuilder()
-					for(s in liveSet) {
-						if(sb.isNotEmpty()) sb.append(", ")
-						sb.append(s)
-					}
-					job_status.set("waiting " + sb.toString())
-					//
-					job.waitWorkerThread(if(job.isJobCancelled) 50L else 1000L)
+					if(liveSet.isEmpty()) break
+					
+					job_status.set("waiting " + liveSet.joinToString(", "))
+					job.waitWorkerThread(if(job.isJobCancelled) 100L else 1000L)
 				}
 				
 				synchronized(error_instance) {
@@ -876,8 +873,8 @@ class PollingWorker private constructor(c : Context) {
 				log.trace(ex)
 				log.e(ex, "task execution failed.")
 			} finally {
-				log.e(")runTask: taskId=%s", taskId)
-				job_status.set("end task " + taskId)
+				log.e(")runTask: taskId=$taskId")
+				job_status.set("end task $taskId")
 			}
 		}
 		
@@ -911,7 +908,7 @@ class PollingWorker private constructor(c : Context) {
 				}
 				
 				val request = Request.Builder()
-					.url(APP_SERVER + "/counter")
+					.url("$APP_SERVER/counter")
 					.build()
 				
 				val call = App1.ok_http_client.newCall(request)
@@ -1121,7 +1118,7 @@ class PollingWorker private constructor(c : Context) {
 						+ "&tag=" + tag)
 					
 					val request = Request.Builder()
-						.url(APP_SERVER + "/unregister")
+						.url("$APP_SERVER/unregister")
 						.post(
 							RequestBody.create(
 								TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED,
@@ -1152,7 +1149,7 @@ class PollingWorker private constructor(c : Context) {
 			private fun registerDeviceToken() {
 				try {
 					// 設定によってはデバイストークンやアクセストークンを送信しない
-					if( ! Pref.bpSendAccessTokenToAppServer(Pref.pref(context))){
+					if(! Pref.bpSendAccessTokenToAppServer(Pref.pref(context))) {
 						log.d("registerDeviceToken: SendAccessTokenToAppServer is not set.")
 						return
 					}
@@ -1221,7 +1218,7 @@ class PollingWorker private constructor(c : Context) {
 					}
 					
 					val request = Request.Builder()
-						.url(APP_SERVER + "/register")
+						.url("$APP_SERVER/register")
 						.post(
 							RequestBody.create(
 								TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED,
@@ -1289,9 +1286,9 @@ class PollingWorker private constructor(c : Context) {
 					for(nTry in 0 .. 3) {
 						if(job.isJobCancelled) return
 						
-						var path = PATH_NOTIFICATIONS
-						if(nid_last_show != - 1L) {
-							path = path + "?since_id=" + nid_last_show
+						val path = when {
+							nid_last_show != - 1L -> "$PATH_NOTIFICATIONS?since_id=$nid_last_show"
+							else -> PATH_NOTIFICATIONS
 						}
 						
 						val result = client.request(path)
@@ -1312,7 +1309,7 @@ class PollingWorker private constructor(c : Context) {
 							
 							break
 						} else {
-							log.d("error. %s", result.error)
+							log.d("error. ${result.error}")
 							
 							val sv = result.error
 							if(sv?.contains("Timeout") == true && ! account.dont_show_timeout) {
@@ -1357,12 +1354,7 @@ class PollingWorker private constructor(c : Context) {
 			private fun update_sub(src : JSONObject) {
 				
 				if(nr.nid_read == 0L || nr.nid_show == 0L) {
-					log.d(
-						"update_sub account_db_id=%s, nid_read=%s, nid_show=%s",
-						account.db_id,
-						nr.nid_read,
-						nr.nid_show
-					)
+					log.d("update_sub account_db_id=${account.db_id}, nid_read=${nr.nid_read}, nid_show=${nr.nid_show}")
 				}
 				
 				val id = src.parseLong("id")
@@ -1375,22 +1367,18 @@ class PollingWorker private constructor(c : Context) {
 				}
 				
 				if(id <= nr.nid_read) {
-					// warning.d("update_sub: ignore data that id=%s, <= read id %s ",id,nr.nid_read);
+					// warning.d("update_sub: ignore data that id=${id}, <= read id ${nr.nid_read} ");
 					return
 				}
 				
-				log.d("update_sub: found data that id=%s, > read id %s ", id, nr.nid_read)
+				log.d("update_sub: found data that id=${id}, > read id ${nr.nid_read}")
 				
 				if(id > nr.nid_show) {
-					log.d(
-						"update_sub: found new data that id=%s, greater than shown id %s ",
-						id,
-						nr.nid_show
-					)
+					log.d("update_sub: found new data that id=${id}, greater than shown id ${nr.nid_show}")
 					// 種別チェックより先に「表示済み」idの更新を行う
 					nr.nid_show = id
 				}
-
+				
 				val type = src.parseString("type")
 				if(! account.notification_mention && TootNotification.TYPE_MENTION == type
 					|| ! account.notification_boost && TootNotification.TYPE_REBLOG == type
@@ -1408,11 +1396,11 @@ class PollingWorker private constructor(c : Context) {
 				}
 				
 				// ふぁぼ魔ミュート
-				when(type){
-					TootNotification.TYPE_REBLOG,TootNotification.TYPE_FAVOURITE,TootNotification.TYPE_FOLLOW ->{
+				when(type) {
+					TootNotification.TYPE_REBLOG, TootNotification.TYPE_FAVOURITE, TootNotification.TYPE_FOLLOW -> {
 						val who = notification.account
-						if( who != null && favMuteSet.contains( account.getFullAcct(who) ) ){
-							log.d("%s is in favMuteSet.",account.getFullAcct(who))
+						if(who != null && favMuteSet.contains(account.getFullAcct(who))) {
+							log.d("${account.getFullAcct(who)} is in favMuteSet.")
 							return
 						}
 					}
@@ -1448,7 +1436,7 @@ class PollingWorker private constructor(c : Context) {
 				
 				val notification_tag = account.db_id.toString()
 				if(data_list.isEmpty()) {
-					log.d("showNotification[%s] cancel notification.", account.acct)
+					log.d("showNotification[${account.acct}] cancel notification.")
 					notification_manager.cancel(notification_tag, NOTIFICATION_ID)
 					return
 				}
@@ -1468,18 +1456,14 @@ class PollingWorker private constructor(c : Context) {
 					// 先頭にあるデータが同じなら、通知を更新しない
 					// このマーカーは端末再起動時にリセットされるので、再起動後は通知が出るはず
 					
-					log.d(
-						"showNotification[%s] id=%s is already shown.",
-						account.acct,
-						item.notification.id
-					)
+					log.d("showNotification[${account.acct}] id=${item.notification.id} is already shown.")
 					
 					return
 				}
 				
 				nt.updatePost(item.notification.id, item.notification.time_created_at)
 				
-				log.d("showNotification[%s] creating notification(1)", account.acct)
+				log.d("showNotification[${account.acct}] creating notification(1)")
 				
 				// 通知タップ時のPendingIntent
 				val intent_click = Intent(context, ActCallback::class.java)
@@ -1505,7 +1489,7 @@ class PollingWorker private constructor(c : Context) {
 					PendingIntent.FLAG_UPDATE_CURRENT
 				)
 				
-				log.d("showNotification[%s] creating notification(2)", account.acct)
+				log.d("showNotification[${account.acct}] creating notification(2)")
 				
 				val builder = if(Build.VERSION.SDK_INT >= 26) {
 					// Android 8 から、通知のスタイルはユーザが管理することになった
@@ -1534,7 +1518,7 @@ class PollingWorker private constructor(c : Context) {
 				// アカウント別にグループキーを設定する
 				builder.setGroup(context.packageName + ":" + account.acct)
 				
-				log.d("showNotification[%s] creating notification(3)", account.acct)
+				log.d("showNotification[${account.acct}] creating notification(3)")
 				
 				if(Build.VERSION.SDK_INT < 26) {
 					
@@ -1577,24 +1561,24 @@ class PollingWorker private constructor(c : Context) {
 						}
 					}
 					
-					log.d("showNotification[%s] creating notification(4)", account.acct)
+					log.d("showNotification[${account.acct}] creating notification(4)")
 					
 					if(Pref.bpNotificationVibration(pref)) {
 						iv = iv or NotificationCompat.DEFAULT_VIBRATE
 					}
 					
-					log.d("showNotification[%s] creating notification(5)", account.acct)
+					log.d("showNotification[${account.acct}] creating notification(5)")
 					
 					if(Pref.bpNotificationLED(pref)) {
 						iv = iv or NotificationCompat.DEFAULT_LIGHTS
 					}
 					
-					log.d("showNotification[%s] creating notification(6)", account.acct)
+					log.d("showNotification[${account.acct}] creating notification(6)")
 					
 					builder.setDefaults(iv)
 				}
 				
-				log.d("showNotification[%s] creating notification(7)", account.acct)
+				log.d("showNotification[${account.acct}] creating notification(7)")
 				
 				var a = getNotificationLine(
 					item.notification.type,
@@ -1624,7 +1608,7 @@ class PollingWorker private constructor(c : Context) {
 					builder.setStyle(style)
 				}
 				
-				log.d("showNotification[%s] set notification...", account.acct)
+				log.d("showNotification[${account.acct}] set notification...")
 				
 				notification_manager.notify(notification_tag, NOTIFICATION_ID, builder.build())
 			}
@@ -1653,7 +1637,7 @@ class PollingWorker private constructor(c : Context) {
 							if(id != null) {
 								dst_array.add(src)
 								duplicate_check.add(id)
-								log.d("add old. id=%s", id)
+								log.d("add old. id=${id}")
 							}
 						}
 					}
@@ -1664,7 +1648,7 @@ class PollingWorker private constructor(c : Context) {
 				for(item in data.list) {
 					try {
 						if(duplicate_check.contains(item.id)) {
-							log.d("skip duplicate. id=%s", item.id)
+							log.d("skip duplicate. id=${item.id}")
 							continue
 						}
 						duplicate_check.add(item.id)
@@ -1675,7 +1659,7 @@ class PollingWorker private constructor(c : Context) {
 							|| ! account.notification_boost && TootNotification.TYPE_REBLOG == type
 							|| ! account.notification_favourite && TootNotification.TYPE_FAVOURITE == type
 							|| ! account.notification_follow && TootNotification.TYPE_FOLLOW == type) {
-							log.d("skip by setting. id=%s", item.id)
+							log.d("skip by setting. id=${item.id}")
 							continue
 						}
 						
@@ -1702,7 +1686,7 @@ class PollingWorker private constructor(c : Context) {
 				val d = JSONArray()
 				for(i in 0 .. 9) {
 					if(i >= dst_array.size) {
-						log.d("inject %s data", i)
+						log.d("inject $i data.")
 						break
 					}
 					d.put(dst_array[i])

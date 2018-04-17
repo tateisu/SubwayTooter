@@ -206,7 +206,7 @@ class Column(
 				TYPE_DOMAIN_BLOCKS -> R.attr.ic_domain_block
 				TYPE_SEARCH, TYPE_SEARCH_MSP, TYPE_SEARCH_TS -> R.attr.ic_search
 				TYPE_INSTANCE_INFORMATION -> R.attr.ic_info
-				TYPE_FOLLOW_REQUESTS -> R.attr.ic_account_add
+				TYPE_FOLLOW_REQUESTS -> R.attr.ic_follow_wait
 				TYPE_LIST_LIST -> R.attr.ic_list_list
 				TYPE_LIST_MEMBER -> R.attr.ic_list_member
 				TYPE_LIST_TL -> R.attr.ic_list_tl

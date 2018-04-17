@@ -138,5 +138,6 @@
     <attr name="ic_right" format="reference" />
     <attr name="ic_volume_up" format="reference" />
     <attr name="ic_face" format="reference" />
+    <attr name="ic_check" format="reference" />
 
 </resources>

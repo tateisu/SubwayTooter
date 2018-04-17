@@ -45,7 +45,7 @@ object DlgConfirm {
 	}
 	
 	@SuppressLint("InflateParams")
-	fun openSimple(activity : Activity, message : String, callback : EmptyCallback) {
+	fun openSimple(activity : Activity, message : String, callback : ()->Unit ) {
 		val view = activity.layoutInflater.inflate(R.layout.dlg_confirm, null, false)
 		val tvMessage = view.findViewById<TextView>(R.id.tvMessage)
 		val cbSkipNext = view.findViewById<CheckBox>(R.id.cbSkipNext)

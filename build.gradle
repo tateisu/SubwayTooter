@@ -4,7 +4,7 @@ buildscript {
     ext.kotlin_coroutines_version = '0.21.2'
     ext.anko_version='0.10.4'
     ext.asl_version='27.1.1'
-    ext.firebase_version='12.0.1'
+    ext.firebase_version='15.0.0'
 
     repositories {
         jcenter()
@@ -12,7 +12,7 @@ buildscript {
         google()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.1.0'
+        classpath 'com.android.tools.build:gradle:3.1.1'
         classpath 'com.google.gms:google-services:3.0.0'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }

@@ -637,8 +637,12 @@
 \nBut if you want to use "custom notification listener", or if you are the member of very limited instances that is supported by ST\'s app server,
 \nyou can use "push" notifications, but you have to allow sending access tokens to the app server. (this is mastodon's defect)</string>
     <string name="pull_notification_check_interval">Pull notification check interval (unit: minutes, default:15, min:15)</string>
+    <string name="follow_accept">accept</string>
+	<string name="follow_deny">deny</string>
+    <string name="follow_accept_confirm">Approve the follow request from %1$s ?</string>
+	<string name="follow_deny_confirm">Reject the follow request from %1$s ?</string>
 
-    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

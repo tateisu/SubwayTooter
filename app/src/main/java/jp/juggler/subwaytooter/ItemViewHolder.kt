@@ -111,6 +111,10 @@ internal class ItemViewHolder(
 	private lateinit var btnListTL : Button
 	private lateinit var btnListMore : ImageButton
 	
+	private lateinit var llFollowRequest : View
+	private lateinit var btnFollowRequestAccept : View
+	private lateinit var btnFollowRequestDeny : View
+	
 	private lateinit var llExtra : LinearLayout
 	
 	private lateinit var tvApplication : TextView
@@ -162,6 +166,9 @@ internal class ItemViewHolder(
 		llFollow.setOnClickListener(this)
 		llFollow.setOnLongClickListener(this)
 		btnFollow.setOnClickListener(this)
+		
+		btnFollowRequestAccept.setOnClickListener(this)
+		btnFollowRequestDeny.setOnClickListener(this)
 		
 		// ロングタップ
 		ivThumbnail.setOnLongClickListener(this)
@@ -309,6 +316,7 @@ internal class ItemViewHolder(
 		llStatus.visibility = View.GONE
 		llSearchTag.visibility = View.GONE
 		llList.visibility = View.GONE
+		llFollowRequest.visibility = View.GONE
 		llExtra.removeAllViews()
 		
 		var c : Int
@@ -478,6 +486,10 @@ internal class ItemViewHolder(
 		
 		val relation = UserRelation.load(access_info.db_id, who.id)
 		Styler.setFollowIcon(activity, btnFollow, ivFollowedBy, relation, who)
+		
+		if(column.column_type == Column.TYPE_FOLLOW_REQUESTS) {
+			llFollowRequest.visibility = View.VISIBLE
+		}
 	}
 	
 	private fun showStatus(activity : ActMain, status : TootStatus) {
@@ -948,6 +960,18 @@ internal class ItemViewHolder(
 						}
 					}
 					.show(activity, item.title)
+			}
+			
+			btnFollowRequestAccept -> follow_account?.let { who ->
+				DlgConfirm.openSimple(activity,activity.getString(R.string.follow_accept_confirm,AcctColor.getNickname(access_info.getFullAcct(who)))){
+					Action_Follow.authorizeFollowRequest(activity, access_info, who, true)
+				}
+			}
+			
+			btnFollowRequestDeny -> follow_account?.let { who ->
+				DlgConfirm.openSimple(activity,activity.getString(R.string.follow_deny_confirm,AcctColor.getNickname(access_info.getFullAcct(who)))){
+					Action_Follow.authorizeFollowRequest(activity, access_info, who, false)
+				}
 			}
 			
 			else -> when(v.id) {
@@ -1841,6 +1865,29 @@ internal class ItemViewHolder(
 					imageResource = Styler.getAttributeResourceId(context, R.attr.btn_more)
 					contentDescription = context.getString(R.string.more)
 				}.lparams(dip(40), dip(40)) {
+					startMargin = dip(4)
+				}
+			}
+			
+			llFollowRequest = linearLayout {
+				lparams(matchParent, wrapContent) {
+					topMargin = dip(6)
+				}
+				gravity = Gravity.END
+				
+				btnFollowRequestAccept = imageButton {
+					background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+					contentDescription = context.getString(R.string.follow_accept)
+					imageResource = Styler.getAttributeResourceId(context, R.attr.ic_check)
+					setPadding(0,0,0,0)
+				}.lparams(dip(48f),dip(32f))
+				
+				btnFollowRequestDeny = imageButton {
+					background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+					contentDescription = context.getString(R.string.follow_deny)
+					imageResource = Styler.getAttributeResourceId(context, R.attr.btn_close)
+					setPadding(0,0,0,0)
+				}.lparams(dip(48f),dip(32f)){
 					startMargin = dip(4)
 				}
 			}

@@ -223,7 +223,7 @@ internal class StatusButtons(
 						status,
 						NOT_CROSS_ACCOUNT,
 						willFavourite,
-						callback
+						callback = callback
 					)
 				}
 			}

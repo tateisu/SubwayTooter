@@ -354,7 +354,15 @@
                 />
 
         </LinearLayout>
+        <LinearLayout style="@style/setting_row_form">
 
+            <CheckBox
+                android:id="@+id/cbConfirmFavourite"
+                style="@style/setting_wrap"
+                android:text="@string/favourite"
+                />
+
+        </LinearLayout>
         <LinearLayout style="@style/setting_row_form">
 
             <CheckBox

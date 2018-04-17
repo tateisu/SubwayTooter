@@ -67,9 +67,9 @@
 
     <string name="reports">通報</string>
 
-    <string name="your_statuses">あなたの発言</string>
+    <string name="your_statuses">あなたのトゥート</string>
 
-    <string name="statuses_of">%1$s の発言</string>
+    <string name="statuses_of">%1$s のトゥート</string>
 
     <string name="follow">フォロー</string>
 
@@ -77,7 +77,7 @@
 
     <string name="followers">フォロワー</string>
 
-    <string name="statuses">発言</string>
+    <string name="statuses">投稿</string><!-- プロフカラム内部のタブ表示に使われる -->
 
     <string name="hide">隠す</string>
 
@@ -103,7 +103,7 @@
 
     <string name="list_empty">リストは空です</string>
 
-    <string name="post_from">発言者</string>
+    <string name="post_from">投稿元</string>
 
     <string name="choose_account">アカウントの選択</string>
 
@@ -131,7 +131,7 @@
 
     <string name="confirm_delete_attachment">この添付データを除去しますか？</string>
 
-    <string name="post_error_contents_empty">発言の本文を入力してください</string>
+    <string name="post_error_contents_empty">投稿の本文を入力してください</string>
 
     <string name="post_error_contents_warning_empty">コンテントワーニングを入力してください</string>
 
@@ -141,7 +141,8 @@
 
     <string name="confirm">確認</string>
 
-    <string name="confirm_boost_from">この発言を %1$s からブーストしますか? 全てのフォロワーとあなたのプロフィールページに公開されます</string>
+    <string name="confirm_boost_from">このトゥートを %1$s からブーストしますか? 全てのフォロワーとあなたのプロフィールページに公開されます</string>
+    <string name="confirm_favourite_from">このトゥートを %1$s からお気に入りしますか? トゥートした人に通知が送られます</string>
 
     <string name="display_name_favourited_by">%1$sがお気に入りに追加しました</string>
 
@@ -167,7 +168,7 @@
 
     <string name="actions">操作</string>
 
-    <string name="default_status_visibility">発言の公開範囲の既定値</string>
+    <string name="default_status_visibility">投稿の公開範囲の既定値</string>
 
     <string name="confirm_before_boost">ブースト前に確認</string>
 
@@ -197,7 +198,7 @@
 
     <string name="column_index">%1$d/%2$d</string>
 
-    <string name="reply_to_this_status">この発言への返信：</string>
+    <string name="reply_to_this_status">このトゥートへの返信：</string>
 
     <string name="cant_change_account_when_attachment_specified">添付ファイルがある状態ではアカウントを変更できません</string>
 
@@ -247,7 +248,7 @@
 
     <string name="report_completed">通報できました</string>
 
-    <string name="mention">この人への発言</string>
+    <string name="mention">この人へのメンション</string>
 
     <string name="hashtag_of">ハッシュタグ #%1$s</string>
 
@@ -438,13 +439,13 @@
 
     <string name="actions_for_user">ユーザへのアクション</string>
 
-    <string name="actions_for_status">発言へのアクション</string>
+    <string name="actions_for_status">トゥートへのアクション</string>
 
     <string name="confirm_block_user">ユーザ \"%1$s\" をブロックします。よろしいですか?</string>
 
     <string name="confirm_mute_user">ユーザ \"%1$s\" をミュートします。よろしいですか?</string>
 
-    <string name="confirm_delete_status">この発言を削除します。よろしいですか?</string>
+    <string name="confirm_delete_status">このトゥートを削除します。よろしいですか?</string>
 
     <string name="acct">Acct</string>
 
@@ -499,17 +500,17 @@
 
     <string name="it_is_you">あなたです</string>
 
-    <string name="boosted_by">発言をブーストした人</string>
+    <string name="boosted_by">トゥートをブーストした人</string>
 
     <string name="dont_refresh">更新しない</string>
 
-    <string name="favourited_by">発言をお気に入りした人</string>
+    <string name="favourited_by">トゥートをお気に入りした人</string>
 
     <string name="refresh_after_toot">投稿後の更新</string>
 
     <string name="refresh_no_scroll">更新するがスクロールしない</string>
 
-    <string name="refresh_scroll_to_toot">更新して発言までスクロール</string>
+    <string name="refresh_scroll_to_toot">更新してトゥートまでスクロール</string>
 
     <string name="account_picker_add_timeline_of">どのアカウントで %1$s を開きますか？</string>
 

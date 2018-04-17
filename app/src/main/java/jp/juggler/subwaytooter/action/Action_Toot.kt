@@ -57,8 +57,7 @@ object Action_Toot {
 				action_account,
 				status,
 				calcCrossAccountMode(timeline_account, action_account),
-				true,
-				activity.favourite_complete_callback
+				callback = activity.favourite_complete_callback
 			)
 		}
 	}
@@ -69,13 +68,47 @@ object Action_Toot {
 		access_info : SavedAccount,
 		arg_status : TootStatus,
 		nCrossAccountMode : Int,
-		bSet : Boolean,
+		bSet : Boolean =true,
+		bConfirmed : Boolean = false,
 		callback : EmptyCallback?
 	) {
 		if(App1.getAppState(activity).isBusyFav(access_info, arg_status)) {
 			showToast(activity, false, R.string.wait_previous_operation)
 			return
 		}
+		
+		// 必要なら確認を出す
+		if(bSet && ! bConfirmed) {
+			DlgConfirm.open(
+				activity,
+				activity.getString(
+					R.string.confirm_favourite_from,
+					AcctColor.getNickname(access_info.acct)
+				),
+				object : DlgConfirm.Callback {
+					
+					override fun onOK() {
+						favourite(
+							activity,
+							access_info,
+							arg_status,
+							nCrossAccountMode,
+							true,
+							callback = callback
+						)
+					}
+					
+					override var isConfirmEnabled : Boolean
+						get() = access_info.confirm_favourite
+						set(value) {
+							access_info.confirm_favourite = value
+							access_info.saveSetting()
+							activity.reloadAccountSetting(access_info)
+						}
+				})
+			return
+		}
+		
 		//
 		App1.getAppState(activity).setBusyFav(access_info, arg_status)
 		

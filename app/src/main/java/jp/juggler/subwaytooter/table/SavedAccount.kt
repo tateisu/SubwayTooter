@@ -37,6 +37,7 @@ class SavedAccount(
 	
 	var visibility : String? = null
 	var confirm_boost : Boolean = false
+	var confirm_favourite : Boolean = false
 	
 	var dont_hide_nsfw : Boolean = false
 	var dont_show_timeout : Boolean = false
@@ -116,6 +117,7 @@ class SavedAccount(
 			if(cursor.isNull(colIdx_visibility)) null else cursor.getString(colIdx_visibility)
 		
 		this.confirm_boost = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_BOOST)).i2b()
+		this.confirm_favourite = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_FAVOURITE)).i2b()
 		this.dont_hide_nsfw = cursor.getInt(cursor.getColumnIndex(COL_DONT_HIDE_NSFW)).i2b()
 		this.dont_show_timeout = cursor.getInt(cursor.getColumnIndex(COL_DONT_SHOW_TIMEOUT)).i2b()
 		
@@ -183,6 +185,7 @@ class SavedAccount(
 		val cv = ContentValues()
 		cv.put(COL_VISIBILITY, visibility)
 		cv.put(COL_CONFIRM_BOOST, confirm_boost.b2i())
+		cv.put(COL_CONFIRM_FAVOURITE, confirm_favourite.b2i())
 		cv.put(COL_DONT_HIDE_NSFW, dont_hide_nsfw.b2i())
 		cv.put(COL_DONT_SHOW_TIMEOUT, dont_show_timeout.b2i())
 		cv.put(COL_NOTIFICATION_MENTION, notification_mention.b2i())
@@ -227,12 +230,16 @@ class SavedAccount(
 	
 	// onResumeの時に設定を読み直す
 	fun reloadSetting(context : Context) {
+		
 		if(db_id == INVALID_DB_ID)
 			throw RuntimeException("SavedAccount.reloadSetting missing db_id")
+		
+		// DBから削除されてるかもしれない
 		val b = loadAccount(context, db_id) ?: return
-		// DBから削除されてる？
+		
 		this.visibility = b.visibility
 		this.confirm_boost = b.confirm_boost
+		this.confirm_favourite = b.confirm_favourite
 		this.dont_hide_nsfw = b.dont_hide_nsfw
 		this.dont_show_timeout = b.dont_show_timeout
 		this.token_info = b.token_info
@@ -331,7 +338,7 @@ class SavedAccount(
 		return null
 	}
 	
-	companion object :TableCompanion{
+	companion object : TableCompanion {
 		private val log = LogCategory("SavedAccount")
 		
 		const val table = "access_info"
@@ -346,6 +353,7 @@ class SavedAccount(
 		
 		private const val COL_VISIBILITY = "visibility"
 		private const val COL_CONFIRM_BOOST = "confirm_boost"
+		private const val COL_CONFIRM_FAVOURITE = "confirm_favourite"
 		private const val COL_DONT_HIDE_NSFW = "dont_hide_nsfw"
 		// スキーマ2から
 		private const val COL_NOTIFICATION_MENTION = "notification_mention"
@@ -379,7 +387,7 @@ class SavedAccount(
 		// アプリデータのインポート時に呼ばれる
 		fun onDBDelete(db : SQLiteDatabase) {
 			try {
-				db.execSQL("drop table if exists " + table)
+				db.execSQL("drop table if exists $table")
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}
@@ -387,45 +395,48 @@ class SavedAccount(
 		
 		override fun onDBCreate(db : SQLiteDatabase) {
 			db.execSQL(
-				"create table if not exists " + table
-					+ "(_id INTEGER PRIMARY KEY"
-					+ ",u text not null"
-					+ ",h text not null"
-					+ ",a text not null"
-					+ ",t text not null"
-					+ ",visibility text"
-					+ ",confirm_boost integer default 1"
-					+ ",dont_hide_nsfw integer default 0"
+				"create table if not exists $table"
+					+ "($COL_ID INTEGER PRIMARY KEY"
+					+ ",$COL_USER text not null"
+					+ ",$COL_HOST text not null"
+					+ ",$COL_ACCOUNT text not null"
+					+ ",$COL_TOKEN text not null"
+					+ ",$COL_VISIBILITY text"
+					+ ",$COL_CONFIRM_BOOST integer default 1"
+					+ ",$COL_DONT_HIDE_NSFW integer default 0"
 					
 					// 以下はDBスキーマ2で追加
-					+ ",notification_mention integer default 1"
-					+ ",notification_boost integer default 1"
-					+ ",notification_favourite integer default 1"
-					+ ",notification_follow integer default 1"
+					+ ",$COL_NOTIFICATION_MENTION integer default 1"
+					+ ",$COL_NOTIFICATION_BOOST integer default 1"
+					+ ",$COL_NOTIFICATION_FAVOURITE integer default 1"
+					+ ",$COL_NOTIFICATION_FOLLOW integer default 1"
 					
 					// 以下はDBスキーマ10で更新
-					+ "," + COL_CONFIRM_FOLLOW + " integer default 1"
-					+ "," + COL_CONFIRM_FOLLOW_LOCKED + " integer default 1"
-					+ "," + COL_CONFIRM_UNFOLLOW + " integer default 1"
-					+ "," + COL_CONFIRM_POST + " integer default 1"
+					+ ",$COL_CONFIRM_FOLLOW integer default 1"
+					+ ",$COL_CONFIRM_FOLLOW_LOCKED integer default 1"
+					+ ",$COL_CONFIRM_UNFOLLOW integer default 1"
+					+ ",$COL_CONFIRM_POST integer default 1"
 					
 					// 以下はDBスキーマ13で更新
-					+ "," + COL_NOTIFICATION_TAG + " text default ''"
+					+ ",$COL_NOTIFICATION_TAG text default ''"
 					
 					// 以下はDBスキーマ14で更新
-					+ "," + COL_REGISTER_KEY + " text default ''"
-					+ "," + COL_REGISTER_TIME + " integer default 0"
+					+ ",$COL_REGISTER_KEY text default ''"
+					+ ",$COL_REGISTER_TIME integer default 0"
 					
 					// 以下はDBスキーマ16で更新
-					+ "," + COL_SOUND_URI + " text default ''"
+					+ ",$COL_SOUND_URI text default ''"
 					
 					// 以下はDBスキーマ18で更新
-					+ "," + COL_DONT_SHOW_TIMEOUT + " integer default 0"
+					+ ",$COL_DONT_SHOW_TIMEOUT integer default 0"
+					
+					// 以下はDBスキーマ23で更新
+					+ ",$COL_CONFIRM_FAVOURITE integer default 1"
 					
 					+ ")"
 			)
-			db.execSQL("create index if not exists " + table + "_user on " + table + "(u)")
-			db.execSQL("create index if not exists " + table + "_host on " + table + "(h,u)")
+			db.execSQL("create index if not exists ${table}_user on ${table}(u)")
+			db.execSQL("create index if not exists ${table}_host on ${table}(h,u)")
 		}
 		
 		override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
@@ -514,6 +525,14 @@ class SavedAccount(
 			if(oldVersion < 18 && newVersion >= 18) {
 				try {
 					db.execSQL("alter table $table add column $COL_DONT_SHOW_TIMEOUT integer default 0")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+			}
+			if(oldVersion < 23 && newVersion >= 23) {
+				try {
+					db.execSQL("alter table $table add column $COL_CONFIRM_FAVOURITE integer default 1")
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}

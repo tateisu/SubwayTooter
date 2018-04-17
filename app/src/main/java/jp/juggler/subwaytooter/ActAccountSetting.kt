@@ -111,6 +111,7 @@ class ActAccountSetting
 	private lateinit var cbConfirmFollowLockedUser : CheckBox
 	private lateinit var cbConfirmUnfollow : CheckBox
 	private lateinit var cbConfirmBoost : CheckBox
+	private lateinit var cbConfirmFavourite : CheckBox
 	private lateinit var cbConfirmToot : CheckBox
 	
 	private lateinit var tvUserCustom : TextView
@@ -273,6 +274,7 @@ class ActAccountSetting
 		cbConfirmFollowLockedUser = findViewById(R.id.cbConfirmFollowLockedUser)
 		cbConfirmUnfollow = findViewById(R.id.cbConfirmUnfollow)
 		cbConfirmBoost = findViewById(R.id.cbConfirmBoost)
+		cbConfirmFavourite = findViewById(R.id.cbConfirmFavourite)
 		cbConfirmToot = findViewById(R.id.cbConfirmToot)
 		
 		tvUserCustom = findViewById(R.id.tvUserCustom)
@@ -311,6 +313,7 @@ class ActAccountSetting
 		cbConfirmFollowLockedUser.setOnCheckedChangeListener(this)
 		cbConfirmUnfollow.setOnCheckedChangeListener(this)
 		cbConfirmBoost.setOnCheckedChangeListener(this)
+		cbConfirmFavourite.setOnCheckedChangeListener(this)
 		cbConfirmToot.setOnCheckedChangeListener(this)
 		
 		btnNotificationSoundEdit = findViewById(R.id.btnNotificationSoundEdit)
@@ -350,6 +353,7 @@ class ActAccountSetting
 		cbConfirmFollowLockedUser.isChecked = a.confirm_follow_locked
 		cbConfirmUnfollow.isChecked = a.confirm_unfollow
 		cbConfirmBoost.isChecked = a.confirm_boost
+		cbConfirmFavourite.isChecked = a.confirm_favourite
 		cbConfirmToot.isChecked = a.confirm_post
 		
 		notification_sound_uri = a.sound_uri
@@ -374,6 +378,7 @@ class ActAccountSetting
 		cbConfirmFollowLockedUser.isEnabled = enabled
 		cbConfirmUnfollow.isEnabled = enabled
 		cbConfirmBoost.isEnabled = enabled
+		cbConfirmFavourite.isEnabled = enabled
 		cbConfirmToot.isEnabled = enabled
 		
 		
@@ -414,6 +419,7 @@ class ActAccountSetting
 		account.confirm_follow_locked = cbConfirmFollowLockedUser.isChecked
 		account.confirm_unfollow = cbConfirmUnfollow.isChecked
 		account.confirm_boost = cbConfirmBoost.isChecked
+		account.confirm_favourite = cbConfirmFavourite.isChecked
 		account.confirm_post = cbConfirmToot.isChecked
 		
 		account.saveSetting()

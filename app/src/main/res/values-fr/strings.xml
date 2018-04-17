@@ -85,7 +85,9 @@
 	<string name="confirm_before_boost">Confirmer avant de partager</string>
 	<string name="confirm_block_user">L\'utilisateur \'%1$s\' sera bloqué. Êtes-vous sur ?</string>
 	<string name="confirm_boost_from">%1$s voulez-vous partager ce toot ?,\nil sera affiché chez vos abonnés et sur votre profil.</string>
-	<string name="confirm_close_column">Fermer cette colonne ?</string>
+    <string name="confirm_favourite_from">Favourite this status from %1$s ? Notification will be sent to the author.</string>
+
+    <string name="confirm_close_column">Fermer cette colonne ?</string>
 	<string name="confirm_delete_attachment">Retirer cette pièce jointe ?</string>
 	<string name="confirm_delete_notification">Toutes vos notifications sur votre instance seront effacées.\nÊtes-vous sur ?</string>
 	<string name="confirm_delete_status">Ce toot va être supprimé. Êtes-vous sur ?</string>

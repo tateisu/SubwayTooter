@@ -93,7 +93,8 @@ object Action_Toot {
 							access_info,
 							arg_status,
 							nCrossAccountMode,
-							true,
+							bSet = true,
+							bConfirmed = true,
 							callback = callback
 						)
 					}

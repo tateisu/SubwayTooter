@@ -313,7 +313,7 @@
 	<string name="vibration">Vibration</string>
 	<string name="visibility">Visibilité</string>
 	<string name="visibility_direct">Direct</string>
-	<string name="visibility_private">Privé</string>
+	<string name="visibility_private">Abonnés</string>
 	<string name="visibility_public">Public</string>
 	<string name="visibility_unlisted">Non listé</string>
 	<string name="visibility_web_setting">Trace web app setting</string>

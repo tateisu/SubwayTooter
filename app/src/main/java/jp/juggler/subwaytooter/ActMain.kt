@@ -963,6 +963,13 @@ class ActMain : AppCompatActivity()
 				false,
 				Column.TYPE_NOTIFICATIONS
 			)
+			
+			R.id.nav_add_direct_message -> Action_Account.timeline(
+				this,
+				defaultInsertPosition,
+				false,
+				Column.TYPE_DIRECT_MESSAGES
+			)
 			R.id.nav_add_tl_search -> Action_Account.timeline(
 				this,
 				defaultInsertPosition,

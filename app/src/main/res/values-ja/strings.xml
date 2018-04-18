@@ -920,4 +920,5 @@
     <string name="follow_deny">却下</string>
     <string name="follow_accept_confirm">%1$sからのフォローリクエストを承認しますか?</string>
     <string name="follow_deny_confirm">%1$sからのフォローリクエストを却下しますか?</string>
+    <string name="direct_messages">ダイレクトメッセージ</string>
 </resources>

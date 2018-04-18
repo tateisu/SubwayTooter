@@ -40,6 +40,8 @@ class Column(
 		
 		// ステータスのリストを返すAPI
 		private const val PATH_HOME = "/api/v1/timelines/home?limit=$READ_LIMIT"
+		private const val PATH_DIRECT_MESSAGES = "/api/v1/timelines/direct?limit=$READ_LIMIT"
+		
 		private const val PATH_LOCAL = "/api/v1/timelines/public?limit=$READ_LIMIT&local=true"
 		private const val PATH_FAVOURITES = "/api/v1/favourites?limit=$READ_LIMIT"
 		private const val PATH_ACCOUNT_STATUSES =
@@ -140,6 +142,8 @@ class Column(
 		internal const val TYPE_LIST_TL = 20
 		internal const val TYPE_LIST_MEMBER = 21
 		internal const val TYPE_SEARCH_TS = 22
+		internal const val TYPE_DIRECT_MESSAGES = 23
+		
 		internal const val TAB_STATUS = 0
 		internal const val TAB_FOLLOWING = 1
 		internal const val TAB_FOLLOWERS = 2
@@ -184,6 +188,7 @@ class Column(
 				TYPE_LIST_LIST -> context.getString(R.string.lists)
 				TYPE_LIST_MEMBER -> context.getString(R.string.list_member)
 				TYPE_LIST_TL -> context.getString(R.string.list_timeline)
+				TYPE_DIRECT_MESSAGES -> context.getString(R.string.direct_messages)
 				else -> "?"
 			}
 		}
@@ -210,6 +215,7 @@ class Column(
 				TYPE_LIST_LIST -> R.attr.ic_list_list
 				TYPE_LIST_MEMBER -> R.attr.ic_list_member
 				TYPE_LIST_TL -> R.attr.ic_list_tl
+				TYPE_DIRECT_MESSAGES -> R.attr.ic_mail
 				else -> R.attr.ic_info
 			}
 		}
@@ -241,8 +247,10 @@ class Column(
 				TYPE_FEDERATE -> "/api/v1/streaming/?stream=public"
 				TYPE_LIST_TL -> "/api/v1/streaming/?stream=list&list=" + profile_id.toString()
 				
+				TYPE_DIRECT_MESSAGES -> "/api/v1/streaming/?stream=direct"
+				
 				TYPE_HASHTAG -> when(instance_local) {
-					true -> "/api/v1/streaming/?stream="+ Uri.encode("hashtag:local")+"&tag=" + hashtag.encodePercent()
+					true -> "/api/v1/streaming/?stream=" + Uri.encode("hashtag:local") + "&tag=" + hashtag.encodePercent()
 					else -> "/api/v1/streaming/?stream=hashtag&tag=" + hashtag.encodePercent()
 				// タグ先頭の#を含まない
 				}
@@ -1621,7 +1629,8 @@ class Column(
 					val q : String
 					
 					when(column_type) {
-						TYPE_HOME -> return getStatuses(client, PATH_HOME)
+						
+						TYPE_DIRECT_MESSAGES -> return getStatuses(client, PATH_DIRECT_MESSAGES)
 						
 						TYPE_LOCAL -> return getStatuses(client, makePublicLocalUrl())
 						
@@ -1965,7 +1974,7 @@ class Column(
 		posted_reply_id : String?
 	) {
 		when(column_type) {
-			TYPE_HOME, TYPE_LOCAL, TYPE_FEDERATE -> startRefresh(
+			TYPE_HOME, TYPE_LOCAL, TYPE_FEDERATE, TYPE_DIRECT_MESSAGES -> startRefresh(
 				true, false, posted_status_id,
 				refresh_after_post
 			)
@@ -2550,8 +2559,9 @@ class Column(
 				try {
 					
 					return when(column_type) {
-						TYPE_HOME -> getStatusList(client, PATH_HOME)
-						
+
+						TYPE_DIRECT_MESSAGES -> getStatusList(client, PATH_DIRECT_MESSAGES)
+
 						TYPE_LOCAL -> getStatusList(client, makePublicLocalUrl())
 						
 						TYPE_FEDERATE -> getStatusList(client, makePublicFederateUrl())
@@ -3125,7 +3135,9 @@ class Column(
 							}
 						}
 						
-						else -> return getStatusList(client, PATH_HOME)
+						TYPE_DIRECT_MESSAGES -> getStatusList(client, PATH_DIRECT_MESSAGES)
+						
+						else -> getStatusList(client, PATH_HOME)
 					}
 				} finally {
 					try {
@@ -3357,14 +3369,14 @@ class Column(
 	// カラム設定に「返信を表示しない」ボタンを含めるなら真
 	fun canFilterReply() : Boolean {
 		return when(column_type) {
-			TYPE_HOME, TYPE_PROFILE, TYPE_LIST_TL, TYPE_NOTIFICATIONS -> true
+			TYPE_HOME, TYPE_PROFILE, TYPE_LIST_TL, TYPE_NOTIFICATIONS, TYPE_DIRECT_MESSAGES -> true
 			else -> false
 		}
 	}
 	
 	fun canFilterNormalToot() : Boolean {
 		return when(column_type) {
-			TYPE_HOME -> true
+			TYPE_HOME , TYPE_LIST_TL -> true
 			else -> false
 		}
 	}

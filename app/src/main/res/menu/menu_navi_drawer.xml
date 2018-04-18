@@ -31,6 +31,10 @@
                     android:id="@+id/nav_add_notifications"
                     android:icon="?attr/btn_notification"
                     android:title="@string/notifications"/>
+                <item
+                    android:id="@+id/nav_add_direct_message"
+                    android:icon="?attr/ic_mail"
+                    android:title="@string/direct_messages"/>
 
                 <item
                     android:id="@+id/nav_add_tl_local"

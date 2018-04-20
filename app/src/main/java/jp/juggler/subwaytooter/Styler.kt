@@ -259,3 +259,19 @@ object Styler {
 		Math.min(lp.width, lp.height).toFloat() * round_ratio
 	
 }
+
+fun SpannableStringBuilder.appendColorShadeIcon(
+	context:Context,
+	drawable_id:Int,
+	text:String
+){
+	val start = this.length
+	this.append(text)
+	val end = this.length
+	this.setSpan(
+		EmojiImageSpan(context, drawable_id,useColorShader=true),
+		start,
+		end,
+		Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+	)
+}

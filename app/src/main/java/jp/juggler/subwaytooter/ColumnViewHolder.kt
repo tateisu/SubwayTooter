@@ -28,6 +28,9 @@ import jp.juggler.subwaytooter.table.AcctColor
 import android.support.v7.widget.ListRecyclerView
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.ListDivider
 import java.io.Closeable
@@ -515,46 +518,40 @@ class ColumnViewHolder(
 	
 	fun showColumnStatus() {
 		val column = this.column
-		val sb = StringBuilder()
+		
+		val sb = SpannableStringBuilder()
+		
+		
+		
 		try {
 			if(column == null) {
 				sb.append('?')
 			} else {
-				when(column.indicatorLoading) {
-					TaskIndicatorState.NO_TASK -> {
-					}
-					
-					TaskIndicatorState.SCHEDULED -> sb.append("L?")
-					TaskIndicatorState.BG_START -> sb.append("L")
-					TaskIndicatorState.BG_END -> sb.append("L!")
-				}
-				val tb = if(column.bRefreshingTop) {
-					'T'
-				} else {
-					'B'
-				}
-				when(column.indicatorRefresh) {
-					TaskIndicatorState.NO_TASK -> {
-					}
-					
-					TaskIndicatorState.SCHEDULED -> sb.append("${tb}?")
-					TaskIndicatorState.BG_START -> sb.append(tb)
-					TaskIndicatorState.BG_END -> sb.append("${tb}!")
-				}
-				when(column.indicatorGap) {
-					TaskIndicatorState.NO_TASK -> {
-					}
-					
-					TaskIndicatorState.SCHEDULED -> sb.append("G?")
-					TaskIndicatorState.BG_START -> sb.append("G")
-					TaskIndicatorState.BG_END -> sb.append("G!")
+				val task = column.lastTask
+				if( task != null){
+					sb.append(when(task.ctType){
+						ColumnTaskType.LOADING -> 'L'
+						ColumnTaskType.REFRESH_TOP ->'T'
+						ColumnTaskType.REFRESH_BOTTOM ->'B'
+						ColumnTaskType.GAP->'G'
+					})
+					sb.append(when{
+						task.isCancelled -> "~"
+						task.ctClosed.get() -> "!"
+						task.ctStarted.get() -> ""
+						else-> "?"
+					})
 				}
 				when(column.getStreamingStatus()) {
 					StreamingIndicatorState.NONE -> {
 					}
-					
-					StreamingIndicatorState.REGISTERED -> sb.append("S?")
-					StreamingIndicatorState.LISTENING -> sb.append("S")
+					StreamingIndicatorState.REGISTERED ->{
+						sb.appendColorShadeIcon(activity,R.drawable.ic_pulse,"Streaming")
+						sb.append("?")
+					}
+					StreamingIndicatorState.LISTENING -> {
+						sb.appendColorShadeIcon(activity,R.drawable.ic_pulse,"Streaming")
+					}
 				}
 			}
 			
@@ -563,6 +560,10 @@ class ColumnViewHolder(
 			tvColumnStatus.text = sb
 		}
 	}
+	
+
+	
+	
 	
 	fun showColumnColor() {
 		val column = this.column

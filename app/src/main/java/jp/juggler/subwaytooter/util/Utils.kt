@@ -693,6 +693,10 @@ fun runOnMainLooper(proc : () -> Unit) {
 		Handler(looper).post { proc() }
 	}
 }
+fun runOnMainLooperDelayed(delayMs:Long, proc : () -> Unit) {
+	val looper = Looper.getMainLooper()
+	Handler(looper).postDelayed({ proc() },delayMs)
+}
 
 ////////////////////////////////////////////////////////////////////
 // View

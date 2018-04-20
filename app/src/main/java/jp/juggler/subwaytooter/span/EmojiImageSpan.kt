@@ -1,8 +1,8 @@
 package jp.juggler.subwaytooter.span
 
 import android.content.Context
-import android.graphics.Canvas
-import android.graphics.Paint
+import android.graphics.*
+import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.support.annotation.IntRange
 import android.support.v4.content.ContextCompat
@@ -10,7 +10,11 @@ import android.text.style.ReplacementSpan
 
 import java.lang.ref.WeakReference
 
-class EmojiImageSpan(context : Context, private val res_id : Int) : ReplacementSpan() {
+class EmojiImageSpan(
+	context : Context,
+	private val res_id : Int,
+	private val useColorShader:Boolean = false
+) : ReplacementSpan() {
 	
 	
 	companion object {
@@ -62,6 +66,9 @@ class EmojiImageSpan(context : Context, private val res_id : Int) : ReplacementS
 		return size
 	}
 	
+	private var lastColor :Int? = null
+	private var lastColorFilter: PorterDuffColorFilter? = null
+	
 	override fun draw(
 		canvas : Canvas,
 		text : CharSequence,
@@ -82,7 +89,19 @@ class EmojiImageSpan(context : Context, private val res_id : Int) : ReplacementS
 		canvas.save()
 		canvas.translate(x, transY.toFloat())
 		d.setBounds(0, 0, size, size)
-		d.draw(canvas)
+		
+		if( useColorShader && d is BitmapDrawable){
+			if( paint.color != lastColor || lastColorFilter == null) {
+				lastColor = paint.color
+				lastColorFilter = PorterDuffColorFilter(paint.color, PorterDuff.Mode.SRC_ATOP)
+			}
+			val saveColorFilter = d.colorFilter
+			d.colorFilter = lastColorFilter
+			d.draw(canvas)
+			d.colorFilter = saveColorFilter
+		}else {
+			d.draw(canvas)
+		}
 		canvas.restore()
 	}
 	

@@ -22,18 +22,25 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 
-enum class TaskIndicatorState {
-	NO_TASK,
-	SCHEDULED,
-	BG_START,
-	BG_END,
-}
-
 enum class StreamingIndicatorState {
 	NONE,
 	REGISTERED, // registered, but not listening
 	LISTENING,
 }
+
+enum class ColumnTaskType{
+	LOADING,
+	REFRESH_TOP,
+	REFRESH_BOTTOM,
+	GAP
+}
+abstract class ColumnTask(
+	val ctType: ColumnTaskType
+) : AsyncTask<Void, Void, TootApiResult?>() {
+	val ctStarted = AtomicBoolean(false)
+	val ctClosed = AtomicBoolean(false)
+}
+
 
 class Column(
 	val app_state : AppState,
@@ -352,7 +359,8 @@ class Column(
 	
 	//////////////////////////////////////////////////////////////////////////////////////
 	
-	private var last_task : AsyncTask<Void, Void, TootApiResult?>? = null
+
+	internal var lastTask : ColumnTask? = null
 	
 	internal var bInitialLoading : Boolean = false
 	internal var bRefreshLoading : Boolean = false
@@ -1086,17 +1094,13 @@ class Column(
 	}
 	
 	private fun cancelLastTask() {
-		if(last_task != null) {
-			last_task?.cancel(true)
-			last_task = null
+		if(lastTask != null) {
+			lastTask?.cancel(true)
+			lastTask = null
 			//
 			bInitialLoading = false
 			bRefreshLoading = false
 			mInitialLoadingError = context.getString(R.string.cancelled)
-			//
-			indicatorLoading = TaskIndicatorState.NO_TASK
-			indicatorRefresh = TaskIndicatorState.NO_TASK
-			indicatorGap = TaskIndicatorState.NO_TASK
 		}
 	}
 	
@@ -1396,10 +1400,6 @@ class Column(
 		env.update(client)
 	}
 	
-	var indicatorLoading = TaskIndicatorState.NO_TASK
-	var indicatorRefresh = TaskIndicatorState.NO_TASK
-	var indicatorGap = TaskIndicatorState.NO_TASK
-	
 	internal fun startLoading() {
 		cancelLastTask()
 		
@@ -1414,14 +1414,13 @@ class Column(
 		bRefreshLoading = false
 		max_id = ""
 		since_id = ""
-		indicatorLoading = TaskIndicatorState.SCHEDULED
 		
 		duplicate_map.clear()
 		list_data.clear()
 		fireShowContent(reason = "loading start", reset = true)
 		
 		val task = @SuppressLint("StaticFieldLeak")
-		object : AsyncTask<Void, Void, TootApiResult?>() {
+		object : ColumnTask(ColumnTaskType.LOADING){
 			internal var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 			
 			internal var instance_tmp : TootInstance? = null
@@ -1637,7 +1636,7 @@ class Column(
 			}
 			
 			override fun doInBackground(vararg params : Void) : TootApiResult? {
-				indicatorLoading = TaskIndicatorState.BG_START
+				ctStarted.set(true)
 				
 				val client = TootApiClient(context, callback = object : TootApiCallback {
 					override val isApiCancelled : Boolean
@@ -1909,8 +1908,10 @@ class Column(
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
-					indicatorLoading = TaskIndicatorState.BG_END
-					client.publishApiProgress("")
+					ctClosed.set(true)
+					runOnMainLooperDelayed(333L){
+						if( !isCancelled ) fireShowColumnStatus()
+					}
 				}
 			}
 			
@@ -1925,39 +1926,34 @@ class Column(
 					return
 				}
 				
-				try {
-					bInitialLoading = false
-					last_task = null
-					
-					if(result.error != null) {
-						this@Column.mInitialLoadingError = result.error ?: ""
-					} else {
-						duplicate_map.clear()
-						list_data.clear()
-						val list_tmp = this.list_tmp
-						if(list_tmp != null) {
-							val list_pinned = this.list_pinned
-							if(list_pinned?.isNotEmpty() == true) {
-								val list_new = duplicate_map.filterDuplicate(list_pinned)
-								list_data.addAll(list_new)
-							}
-							val list_new = duplicate_map.filterDuplicate(list_tmp)
+				bInitialLoading = false
+				lastTask = null
+				
+				if(result.error != null) {
+					this@Column.mInitialLoadingError = result.error ?: ""
+				} else {
+					duplicate_map.clear()
+					list_data.clear()
+					val list_tmp = this.list_tmp
+					if(list_tmp != null) {
+						val list_pinned = this.list_pinned
+						if(list_pinned?.isNotEmpty() == true) {
+							val list_new = duplicate_map.filterDuplicate(list_pinned)
 							list_data.addAll(list_new)
 						}
-						
-						resumeStreaming(false)
+						val list_new = duplicate_map.filterDuplicate(list_tmp)
+						list_data.addAll(list_new)
 					}
-					fireShowContent(reason = "loading updated", reset = true)
 					
-					// 初期ロードの直後は先頭に移動する
-					viewHolder?.scrollToTop()
-				} finally {
-					indicatorLoading = TaskIndicatorState.NO_TASK
-					fireShowColumnStatus()
+					resumeStreaming(false)
 				}
+				fireShowContent(reason = "loading updated", reset = true)
+				
+				// 初期ロードの直後は先頭に移動する
+				viewHolder?.scrollToTop()
 			}
 		}
-		this.last_task = task
+		this.lastTask = task
 		task.executeOnExecutor(App1.task_executor)
 	}
 	// int scroll_hack;
@@ -2044,7 +2040,7 @@ class Column(
 		refresh_after_toot : Int
 	) {
 		
-		if(last_task != null) {
+		if(lastTask != null) {
 			if(! bSilent) {
 				showToast(context, true, R.string.column_is_busy)
 				val holder = viewHolder
@@ -2079,11 +2075,12 @@ class Column(
 		
 		bRefreshLoading = true
 		mRefreshLoadingError = ""
-		indicatorRefresh = TaskIndicatorState.SCHEDULED
-		fireShowColumnStatus()
 		
 		val task = @SuppressLint("StaticFieldLeak")
-		object : AsyncTask<Void, Void, TootApiResult?>() {
+		object : ColumnTask( when{
+			bBottom -> ColumnTaskType.REFRESH_BOTTOM
+			else->ColumnTaskType.REFRESH_TOP
+		}){
 			internal var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 			
 			internal var list_tmp : ArrayList<TimelineItem>? = null
@@ -2580,7 +2577,7 @@ class Column(
 			}
 			
 			override fun doInBackground(vararg params : Void) : TootApiResult? {
-				indicatorRefresh = TaskIndicatorState.BG_START
+				ctStarted.set(true)
 				
 				val client = TootApiClient(context, callback = object : TootApiCallback {
 					override val isApiCancelled : Boolean
@@ -2739,8 +2736,10 @@ class Column(
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
-					indicatorRefresh = TaskIndicatorState.BG_END
-					client.publishApiProgress("")
+					ctClosed.set(true)
+					runOnMainLooperDelayed(333L){
+						if( !isCancelled ) fireShowColumnStatus()
+					}
 				}
 			}
 			
@@ -2755,7 +2754,7 @@ class Column(
 					return
 				}
 				try {
-					last_task = null
+					lastTask = null
 					bRefreshLoading = false
 					
 					val error = result.error
@@ -2854,7 +2853,6 @@ class Column(
 						}
 					}
 				} finally {
-					indicatorRefresh = TaskIndicatorState.NO_TASK
 					fireShowColumnStatus()
 					
 					if(! bBottom) {
@@ -2864,8 +2862,9 @@ class Column(
 				}
 			}
 		}
-		this.last_task = task
+		this.lastTask = task
 		task.executeOnExecutor(App1.task_executor)
+		fireShowColumnStatus()
 	}
 	
 	internal fun startGap(gap : TootGap?) {
@@ -2873,7 +2872,7 @@ class Column(
 			showToast(context, true, "gap is null")
 			return
 		}
-		if(last_task != null) {
+		if(lastTask != null) {
 			showToast(context, true, R.string.column_is_busy)
 			return
 		}
@@ -2882,11 +2881,9 @@ class Column(
 		
 		bRefreshLoading = true
 		mRefreshLoadingError = ""
-		indicatorGap = TaskIndicatorState.SCHEDULED
-		fireShowColumnStatus()
 		
 		val task = @SuppressLint("StaticFieldLeak")
-		object : AsyncTask<Void, Void, TootApiResult?>() {
+		object : ColumnTask(ColumnTaskType.GAP){
 			internal var max_id = gap.max_id
 			internal val since_id = gap.since_id
 			internal var list_tmp : ArrayList<TimelineItem>? = null
@@ -3109,7 +3106,7 @@ class Column(
 			}
 			
 			override fun doInBackground(vararg params : Void) : TootApiResult? {
-				indicatorGap = TaskIndicatorState.BG_START
+				ctStarted.set(true)
 				
 				val client = TootApiClient(context, callback = object : TootApiCallback {
 					override val isApiCancelled : Boolean
@@ -3192,8 +3189,11 @@ class Column(
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
-					indicatorGap = TaskIndicatorState.BG_END
-					client.publishApiProgress("")
+
+					ctClosed.set(true)
+					runOnMainLooperDelayed(333L){
+						if( !isCancelled ) fireShowColumnStatus()
+					}
 				}
 			}
 			
@@ -3210,7 +3210,7 @@ class Column(
 				
 				try {
 					
-					last_task = null
+					lastTask = null
 					bRefreshLoading = false
 					
 					val error = result.error
@@ -3285,14 +3285,13 @@ class Column(
 						}
 					}
 				} finally {
-					indicatorGap = TaskIndicatorState.NO_TASK
 					fireShowColumnStatus()
 				}
 			}
 		}
-		this.last_task = task
-		
+		this.lastTask = task
 		task.executeOnExecutor(App1.task_executor)
+		fireShowColumnStatus()
 	}
 	
 	enum class HeaderType(val viewType : Int) {

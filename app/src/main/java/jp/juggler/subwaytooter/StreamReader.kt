@@ -98,6 +98,16 @@ internal class StreamReader(
 			return callback_list.contains(streamCallback)
 		}
 		
+		@Synchronized
+		fun fireListeningChanged(){
+			for(c in callback_list) {
+				try{
+					c.onListeningStateChanged()
+				}catch(ex:Throwable){
+					log.trace(ex)
+				}
+			}
+		}
 		/**
 		 * Invoked when a web socket has been accepted by the remote peer and may begin transmitting
 		 * messages.
@@ -178,6 +188,7 @@ internal class StreamReader(
 			bListening.set(false)
 			handler.removeCallbacks(proc_reconnect)
 			handler.postDelayed(proc_reconnect, 10000L)
+			fireListeningChanged()
 		}
 		
 		/**
@@ -194,6 +205,7 @@ internal class StreamReader(
 			bListening.set(false)
 			handler.removeCallbacks(proc_reconnect)
 			handler.postDelayed(proc_reconnect, 10000L)
+			fireListeningChanged()
 		}
 		
 		/**
@@ -206,6 +218,7 @@ internal class StreamReader(
 			
 			bListening.set(false)
 			handler.removeCallbacks(proc_reconnect)
+			fireListeningChanged()
 			
 			if(ex is ProtocolException) {
 				val msg = ex.message
@@ -215,6 +228,7 @@ internal class StreamReader(
 				}
 			}
 			handler.postDelayed(proc_reconnect, 10000L)
+			
 		}
 		
 		internal fun startRead() {
@@ -227,12 +241,15 @@ internal class StreamReader(
 			}
 			
 			bListening.set(true)
+			fireListeningChanged()
+			
 			TootTaskRunner(context).run(access_info, object : TootTask {
 				override fun background(client : TootApiClient) : TootApiResult? {
 					val result = client.webSocket(end_point, this@Reader)
 					if(result == null) {
 						log.d("startRead: cancelled.")
 						bListening.set(false)
+						fireListeningChanged()
 					} else {
 						val ws = result.data as? WebSocket
 						if(ws != null) {

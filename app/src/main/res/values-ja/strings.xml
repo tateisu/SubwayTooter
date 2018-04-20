@@ -142,7 +142,9 @@
     <string name="confirm">確認</string>
 
     <string name="confirm_boost_from">このトゥートを %1$s からブーストしますか? 全てのフォロワーとあなたのプロフィールページに公開されます</string>
+    <string name="confirm_unboost_from">このトゥートを %1$s からブースト解除しますか?</string>
     <string name="confirm_favourite_from">このトゥートを %1$s からお気に入りしますか? トゥートした人に通知が送られます</string>
+    <string name="confirm_unfavourite_from">このトゥートを %1$s からお気に入り解除しますか?</string>
 
     <string name="display_name_favourited_by">%1$sがお気に入りに追加しました</string>
 
@@ -921,4 +923,6 @@
     <string name="follow_accept_confirm">%1$sからのフォローリクエストを承認しますか?</string>
     <string name="follow_deny_confirm">%1$sからのフォローリクエストを却下しますか?</string>
     <string name="direct_messages">ダイレクトメッセージ</string>
+    <string name="unfavourite">お気に入り解除</string>
+    <string name="unboost">ブースト解除</string>
 </resources>

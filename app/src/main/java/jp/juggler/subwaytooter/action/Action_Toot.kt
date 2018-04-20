@@ -68,9 +68,9 @@ object Action_Toot {
 		access_info : SavedAccount,
 		arg_status : TootStatus,
 		nCrossAccountMode : Int,
-		bSet : Boolean =true,
-		bConfirmed : Boolean = false,
-		callback : EmptyCallback?
+		callback : EmptyCallback?,
+		bSet : Boolean = true,
+		bConfirmed : Boolean = false
 	) {
 		if(App1.getAppState(activity).isBusyFav(access_info, arg_status)) {
 			showToast(activity, false, R.string.wait_previous_operation)
@@ -78,11 +78,14 @@ object Action_Toot {
 		}
 		
 		// 必要なら確認を出す
-		if(bSet && ! bConfirmed) {
+		if(! bConfirmed) {
 			DlgConfirm.open(
 				activity,
 				activity.getString(
-					R.string.confirm_favourite_from,
+					when(bSet) {
+						true -> R.string.confirm_favourite_from
+						else -> R.string.confirm_unfavourite_from
+					},
 					AcctColor.getNickname(access_info.acct)
 				),
 				object : DlgConfirm.Callback {
@@ -93,19 +96,27 @@ object Action_Toot {
 							access_info,
 							arg_status,
 							nCrossAccountMode,
-							bSet = true,
-							bConfirmed = true,
-							callback = callback
+							callback,
+							bSet = bSet,
+							bConfirmed = true
 						)
 					}
 					
 					override var isConfirmEnabled : Boolean
-						get() = access_info.confirm_favourite
+						get() = when(bSet) {
+							true -> access_info.confirm_favourite
+							else -> access_info.confirm_unfavourite
+							
+						}
 						set(value) {
-							access_info.confirm_favourite = value
+							when(bSet) {
+								true -> access_info.confirm_favourite = value
+								else -> access_info.confirm_unfavourite = value
+							}
 							access_info.saveSetting()
 							activity.reloadAccountSetting(access_info)
 						}
+					
 				})
 			return
 		}
@@ -245,8 +256,6 @@ object Action_Toot {
 				action_account,
 				status,
 				calcCrossAccountMode(timeline_account, action_account),
-				true,
-				false,
 				activity.boost_complete_callback
 			)
 		}
@@ -257,9 +266,9 @@ object Action_Toot {
 		access_info : SavedAccount,
 		arg_status : TootStatus,
 		nCrossAccountMode : Int,
-		bSet : Boolean,
-		bConfirmed : Boolean,
-		callback : EmptyCallback?
+		callback : EmptyCallback?,
+		bSet : Boolean = true,
+		bConfirmed : Boolean = false
 	) {
 		
 		// アカウントからステータスにブースト操作を行っているなら、何もしない
@@ -280,31 +289,39 @@ object Action_Toot {
 		//		}
 		
 		// 必要なら確認を出す
-		if(bSet && ! bConfirmed) {
+		if(! bConfirmed) {
 			DlgConfirm.open(
 				activity,
 				activity.getString(
-					R.string.confirm_boost_from,
+					when(bSet) {
+						true -> R.string.confirm_boost_from
+						else -> R.string.confirm_unboost_from
+					},
 					AcctColor.getNickname(access_info.acct)
 				),
 				object : DlgConfirm.Callback {
-					
 					override fun onOK() {
 						boost(
 							activity,
 							access_info,
 							arg_status,
 							nCrossAccountMode,
-							true,
-							true,
-							callback
+							callback,
+							bSet = bSet,
+							bConfirmed = true
 						)
 					}
 					
 					override var isConfirmEnabled : Boolean
-						get() = access_info.confirm_boost
+						get() = when(bSet) {
+							true -> access_info.confirm_boost
+							else -> access_info.confirm_unboost
+						}
 						set(value) {
-							access_info.confirm_boost = value
+							when(bSet) {
+								true -> access_info.confirm_boost = value
+								else -> access_info.confirm_unboost = value
+							}
 							access_info.saveSetting()
 							activity.reloadAccountSetting(access_info)
 						}

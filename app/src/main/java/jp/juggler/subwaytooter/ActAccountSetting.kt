@@ -112,6 +112,8 @@ class ActAccountSetting
 	private lateinit var cbConfirmUnfollow : CheckBox
 	private lateinit var cbConfirmBoost : CheckBox
 	private lateinit var cbConfirmFavourite : CheckBox
+	private lateinit var cbConfirmUnboost : CheckBox
+	private lateinit var cbConfirmUnfavourite : CheckBox
 	private lateinit var cbConfirmToot : CheckBox
 	
 	private lateinit var tvUserCustom : TextView
@@ -275,6 +277,8 @@ class ActAccountSetting
 		cbConfirmUnfollow = findViewById(R.id.cbConfirmUnfollow)
 		cbConfirmBoost = findViewById(R.id.cbConfirmBoost)
 		cbConfirmFavourite = findViewById(R.id.cbConfirmFavourite)
+		cbConfirmUnboost = findViewById(R.id.cbConfirmUnboost)
+		cbConfirmUnfavourite = findViewById(R.id.cbConfirmUnfavourite)
 		cbConfirmToot = findViewById(R.id.cbConfirmToot)
 		
 		tvUserCustom = findViewById(R.id.tvUserCustom)
@@ -314,6 +318,8 @@ class ActAccountSetting
 		cbConfirmUnfollow.setOnCheckedChangeListener(this)
 		cbConfirmBoost.setOnCheckedChangeListener(this)
 		cbConfirmFavourite.setOnCheckedChangeListener(this)
+		cbConfirmUnboost.setOnCheckedChangeListener(this)
+		cbConfirmUnfavourite.setOnCheckedChangeListener(this)
 		cbConfirmToot.setOnCheckedChangeListener(this)
 		
 		btnNotificationSoundEdit = findViewById(R.id.btnNotificationSoundEdit)
@@ -354,6 +360,10 @@ class ActAccountSetting
 		cbConfirmUnfollow.isChecked = a.confirm_unfollow
 		cbConfirmBoost.isChecked = a.confirm_boost
 		cbConfirmFavourite.isChecked = a.confirm_favourite
+		cbConfirmUnboost.isChecked = a.confirm_unboost
+		cbConfirmUnfavourite.isChecked = a.confirm_unfavourite
+
+
 		cbConfirmToot.isChecked = a.confirm_post
 		
 		notification_sound_uri = a.sound_uri
@@ -379,6 +389,8 @@ class ActAccountSetting
 		cbConfirmUnfollow.isEnabled = enabled
 		cbConfirmBoost.isEnabled = enabled
 		cbConfirmFavourite.isEnabled = enabled
+		cbConfirmUnboost.isEnabled = enabled
+		cbConfirmUnfavourite.isEnabled = enabled
 		cbConfirmToot.isEnabled = enabled
 		
 		
@@ -420,6 +432,8 @@ class ActAccountSetting
 		account.confirm_unfollow = cbConfirmUnfollow.isChecked
 		account.confirm_boost = cbConfirmBoost.isChecked
 		account.confirm_favourite = cbConfirmFavourite.isChecked
+		account.confirm_unboost = cbConfirmUnboost.isChecked
+		account.confirm_unfavourite = cbConfirmUnfavourite.isChecked
 		account.confirm_post = cbConfirmToot.isChecked
 		
 		account.saveSetting()

@@ -38,6 +38,8 @@ class SavedAccount(
 	var visibility : String? = null
 	var confirm_boost : Boolean = false
 	var confirm_favourite : Boolean = false
+	var confirm_unboost : Boolean = false
+	var confirm_unfavourite : Boolean = false
 	
 	var dont_hide_nsfw : Boolean = false
 	var dont_show_timeout : Boolean = false
@@ -118,6 +120,9 @@ class SavedAccount(
 		
 		this.confirm_boost = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_BOOST)).i2b()
 		this.confirm_favourite = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_FAVOURITE)).i2b()
+		this.confirm_unboost = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_UNBOOST)).i2b()
+		this.confirm_unfavourite = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_UNFAVOURITE)).i2b()
+
 		this.dont_hide_nsfw = cursor.getInt(cursor.getColumnIndex(COL_DONT_HIDE_NSFW)).i2b()
 		this.dont_show_timeout = cursor.getInt(cursor.getColumnIndex(COL_DONT_SHOW_TIMEOUT)).i2b()
 		
@@ -186,6 +191,9 @@ class SavedAccount(
 		cv.put(COL_VISIBILITY, visibility)
 		cv.put(COL_CONFIRM_BOOST, confirm_boost.b2i())
 		cv.put(COL_CONFIRM_FAVOURITE, confirm_favourite.b2i())
+		cv.put(COL_CONFIRM_UNBOOST, confirm_unboost.b2i())
+		cv.put(COL_CONFIRM_UNFAVOURITE, confirm_unfavourite.b2i())
+
 		cv.put(COL_DONT_HIDE_NSFW, dont_hide_nsfw.b2i())
 		cv.put(COL_DONT_SHOW_TIMEOUT, dont_show_timeout.b2i())
 		cv.put(COL_NOTIFICATION_MENTION, notification_mention.b2i())
@@ -240,6 +248,9 @@ class SavedAccount(
 		this.visibility = b.visibility
 		this.confirm_boost = b.confirm_boost
 		this.confirm_favourite = b.confirm_favourite
+		this.confirm_unboost = b.confirm_unboost
+		this.confirm_unfavourite = b.confirm_unfavourite
+		
 		this.dont_hide_nsfw = b.dont_hide_nsfw
 		this.dont_show_timeout = b.dont_show_timeout
 		this.token_info = b.token_info
@@ -353,7 +364,6 @@ class SavedAccount(
 		
 		private const val COL_VISIBILITY = "visibility"
 		private const val COL_CONFIRM_BOOST = "confirm_boost"
-		private const val COL_CONFIRM_FAVOURITE = "confirm_favourite"
 		private const val COL_DONT_HIDE_NSFW = "dont_hide_nsfw"
 		// スキーマ2から
 		private const val COL_NOTIFICATION_MENTION = "notification_mention"
@@ -365,6 +375,7 @@ class SavedAccount(
 		private const val COL_CONFIRM_FOLLOW_LOCKED = "confirm_follow_locked"
 		private const val COL_CONFIRM_UNFOLLOW = "confirm_unfollow"
 		private const val COL_CONFIRM_POST = "confirm_post"
+		
 		
 		// スキーマ13から
 		const val COL_NOTIFICATION_TAG = "notification_server"
@@ -378,6 +389,13 @@ class SavedAccount(
 		
 		// スキーマ18から
 		private const val COL_DONT_SHOW_TIMEOUT = "dont_show_timeout"
+		
+		// スキーマ23から
+		private const val COL_CONFIRM_FAVOURITE = "confirm_favourite"
+
+		// スキーマ24から
+		private const val COL_CONFIRM_UNBOOST = "confirm_unboost"
+		private const val COL_CONFIRM_UNFAVOURITE = "confirm_unfavourite"
 		
 		/////////////////////////////////
 		// login information
@@ -432,6 +450,10 @@ class SavedAccount(
 					
 					// 以下はDBスキーマ23で更新
 					+ ",$COL_CONFIRM_FAVOURITE integer default 1"
+					
+					// 以下はDBスキーマ24で更新
+					+ ",$COL_CONFIRM_UNBOOST integer default 1"
+					+ ",$COL_CONFIRM_UNFAVOURITE integer default 1"
 					
 					+ ")"
 			)
@@ -533,6 +555,19 @@ class SavedAccount(
 			if(oldVersion < 23 && newVersion >= 23) {
 				try {
 					db.execSQL("alter table $table add column $COL_CONFIRM_FAVOURITE integer default 1")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+			}
+			if(oldVersion < 24 && newVersion >= 24) {
+				try {
+					db.execSQL("alter table $table add column $COL_CONFIRM_UNFAVOURITE integer default 1")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				try {
+					db.execSQL("alter table $table add column $COL_CONFIRM_UNBOOST integer default 1")
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}

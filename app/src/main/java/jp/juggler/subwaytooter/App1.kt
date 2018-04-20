@@ -100,7 +100,8 @@ class App1 : Application() {
 		// 2018/1/03 v197 20=>21 HighlightWord テーブルを追加
 		// 2018/3/16 v226 21=>22 FavMuteテーブルを追加
 		// 2018/4/17 v236 22=>23 SavedAccountテーブルに項目追加
-		internal const val DB_VERSION = 23
+		// 2018/4/20 v240 23=>24 SavedAccountテーブルに項目追加
+		internal const val DB_VERSION = 24
 		
 		private val tableList = arrayOf(
 			LogData,

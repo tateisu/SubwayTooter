@@ -181,23 +181,20 @@ internal class StatusButtons(
 				} else {
 					
 					// トグル動作
-					val willRoost = ! status.reblogged
-					
-					// 簡略表示なら結果をトースト表示
-					val callback = when {
-						! bSimpleList -> null
-						willRoost -> activity.boost_complete_callback
-						else -> activity.unboost_complete_callback
-					}
+					val bSet = ! status.reblogged
 					
 					Action_Toot.boost(
 						activity,
 						access_info,
 						status,
 						NOT_CROSS_ACCOUNT,
-						willRoost,
-						false,
-						callback
+						when {
+							! bSimpleList -> null
+						// 簡略表示なら結果をトースト表示
+							bSet -> activity.boost_complete_callback
+							else -> activity.unboost_complete_callback
+						},
+						bSet = bSet
 					)
 				}
 			}
@@ -208,22 +205,20 @@ internal class StatusButtons(
 				} else {
 					
 					// トグル動作
-					val willFavourite = ! status.favourited
-					
-					// 簡略表示なら結果をトースト表示
-					val callback = when {
-						! bSimpleList -> null
-						status.favourited -> activity.unfavourite_complete_callback
-						else -> activity.favourite_complete_callback
-					}
+					val bSet = ! status.favourited
 					
 					Action_Toot.favourite(
 						activity,
 						access_info,
 						status,
 						NOT_CROSS_ACCOUNT,
-						willFavourite,
-						callback = callback
+						when {
+							! bSimpleList -> null
+						// 簡略表示なら結果をトースト表示
+							bSet -> activity.favourite_complete_callback
+							else -> activity.unfavourite_complete_callback
+						},
+						bSet = bSet
 					)
 				}
 			}

@@ -66,6 +66,7 @@ internal class StreamReader(
 		internal fun dispose() {
 			bDisposed.set(true)
 			socket.get()?.cancel()
+			socket.set(null)
 		}
 		
 		internal val proc_reconnect : Runnable = Runnable {
@@ -239,13 +240,15 @@ internal class StreamReader(
 				log.d("startRead: already listening.")
 				return
 			}
-			
+
+			socket.set(null)
 			bListening.set(true)
 			fireListeningChanged()
 			
 			TootTaskRunner(context).run(access_info, object : TootTask {
 				override fun background(client : TootApiClient) : TootApiResult? {
 					val result = client.webSocket(end_point, this@Reader)
+
 					if(result == null) {
 						log.d("startRead: cancelled.")
 						bListening.set(false)
@@ -254,9 +257,15 @@ internal class StreamReader(
 						val ws = result.data as? WebSocket
 						if(ws != null) {
 							socket.set(ws)
+							fireListeningChanged()
 						} else {
 							val error = result.error
 							log.d("startRead: error. $error")
+							bListening.set(false)
+							fireListeningChanged()
+							// this may network error.
+							handler.removeCallbacks(proc_reconnect)
+							handler.postDelayed(proc_reconnect, 5000L)
 						}
 					}
 					return result
@@ -350,9 +359,10 @@ internal class StreamReader(
 					&& reader.end_point == endPoint
 					&& reader.containsCallback( streamCallback )
 				) {
-					return when( reader.bListening.get() ){
-						true -> StreamingIndicatorState.LISTENING
-						else -> StreamingIndicatorState.REGISTERED
+					return if(reader.bListening.get() && reader.socket.get() != null ) {
+						StreamingIndicatorState.LISTENING
+					}else {
+						StreamingIndicatorState.REGISTERED
 					}
 				}
 			}

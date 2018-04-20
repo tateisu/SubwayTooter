@@ -26,11 +26,17 @@ import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
+
 internal class StreamReader(
 	val context : Context,
 	private val handler : Handler,
 	val pref : SharedPreferences
 ) {
+	
+	internal interface StreamCallback{
+		fun onTimelineItem(item : TimelineItem)
+		fun onListeningStateChanged()
+	}
 	
 	companion object {
 		val log = LogCategory("StreamReader")
@@ -50,7 +56,7 @@ internal class StreamReader(
 		internal val bDisposed = AtomicBoolean()
 		internal val bListening = AtomicBoolean()
 		internal val socket = AtomicReference<WebSocket>(null)
-		internal val callback_list = LinkedList<(item : TimelineItem) -> Unit>()
+		internal val callback_list = LinkedList<StreamCallback>()
 		internal val parser : TootParser
 		
 		init {
@@ -73,7 +79,7 @@ internal class StreamReader(
 		}
 		
 		@Synchronized
-		internal fun addCallback(stream_callback : (item : TimelineItem) -> Unit) {
+		internal fun addCallback(stream_callback : StreamCallback) {
 			for(c in callback_list) {
 				if(c === stream_callback) return
 			}
@@ -81,12 +87,15 @@ internal class StreamReader(
 		}
 		
 		@Synchronized
-		internal fun removeCallback(stream_callback : (item : TimelineItem) -> Unit) {
+		internal fun removeCallback(stream_callback : StreamCallback) {
 			val it = callback_list.iterator()
 			while(it.hasNext()) {
 				val c = it.next()
 				if(c === stream_callback) it.remove()
 			}
+		}
+		fun containsCallback(streamCallback : StreamCallback) : Boolean {
+			return callback_list.contains(streamCallback)
 		}
 		
 		/**
@@ -137,7 +146,7 @@ internal class StreamReader(
 								if(payload is TimelineItem) {
 									for(callback in callback_list) {
 										try {
-											callback(payload)
+											callback.onTimelineItem(payload)
 										} catch(ex : Throwable) {
 											log.trace(ex)
 										}
@@ -241,8 +250,9 @@ internal class StreamReader(
 			})
 		}
 		
+
 	}
-	
+
 	private fun prepareReader(
 		accessInfo : SavedAccount,
 		endPoint : String,
@@ -268,7 +278,7 @@ internal class StreamReader(
 		accessInfo : SavedAccount,
 		endPoint : String,
 		highlightTrie : WordTrieTree?,
-		streamCallback : (item : TimelineItem) -> Unit
+		streamCallback : StreamCallback
 	) {
 		val reader = prepareReader(accessInfo, endPoint, highlightTrie)
 		
@@ -283,7 +293,7 @@ internal class StreamReader(
 	fun unregister(
 		accessInfo : SavedAccount,
 		endPoint : String,
-		streamCallback : (item : TimelineItem) -> Unit
+		streamCallback : StreamCallback
 	) {
 		synchronized(reader_list) {
 			val it = reader_list.iterator()
@@ -310,5 +320,26 @@ internal class StreamReader(
 			}
 			reader_list.clear()
 		}
+	}
+	
+	fun getStreamingStatus(
+		accessInfo : SavedAccount,
+		endPoint : String,
+		streamCallback : StreamCallback
+	) : StreamingIndicatorState {
+		synchronized(reader_list) {
+			for( reader in reader_list){
+				if(reader.access_info.db_id == accessInfo.db_id
+					&& reader.end_point == endPoint
+					&& reader.containsCallback( streamCallback )
+				) {
+					return when( reader.bListening.get() ){
+						true -> StreamingIndicatorState.LISTENING
+						else -> StreamingIndicatorState.REGISTERED
+					}
+				}
+			}
+		}
+		return StreamingIndicatorState.NONE
 	}
 }

@@ -22,6 +22,19 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 
+enum class TaskIndicatorState {
+	NO_TASK,
+	SCHEDULED,
+	BG_START,
+	BG_END,
+}
+
+enum class StreamingIndicatorState {
+	NONE,
+	REGISTERED, // registered, but not listening
+	LISTENING,
+}
+
 class Column(
 	val app_state : AppState,
 	val context : Context,
@@ -372,7 +385,7 @@ class Column(
 	private var max_id : String = ""
 	private var since_id : String = ""
 	
-	private var bRefreshingTop : Boolean = false
+	var bRefreshingTop : Boolean = false
 	
 	// ListViewの表示更新が追いつかないとスクロール位置が崩れるので
 	// 一定時間より短期間にはデータ更新しないようにする
@@ -1044,6 +1057,13 @@ class Column(
 		viewHolder?.showColumnHeader()
 	}
 	
+	internal fun fireShowColumnStatus() {
+		if(! isMainThread) {
+			throw RuntimeException("fireShowColumnStatus: not on main thread.")
+		}
+		viewHolder?.showColumnStatus()
+	}
+	
 	internal fun fireColumnColor() {
 		if(! isMainThread) {
 			throw RuntimeException("fireColumnColor: not on main thread.")
@@ -1074,6 +1094,9 @@ class Column(
 			bRefreshLoading = false
 			mInitialLoadingError = context.getString(R.string.cancelled)
 			//
+			indicatorLoading = TaskIndicatorState.NO_TASK
+			indicatorRefresh = TaskIndicatorState.NO_TASK
+			indicatorGap = TaskIndicatorState.NO_TASK
 		}
 	}
 	
@@ -1373,6 +1396,10 @@ class Column(
 		env.update(client)
 	}
 	
+	var indicatorLoading = TaskIndicatorState.NO_TASK
+	var indicatorRefresh = TaskIndicatorState.NO_TASK
+	var indicatorGap = TaskIndicatorState.NO_TASK
+	
 	internal fun startLoading() {
 		cancelLastTask()
 		
@@ -1387,6 +1414,7 @@ class Column(
 		bRefreshLoading = false
 		max_id = ""
 		since_id = ""
+		indicatorLoading = TaskIndicatorState.SCHEDULED
 		
 		duplicate_map.clear()
 		list_data.clear()
@@ -1609,6 +1637,8 @@ class Column(
 			}
 			
 			override fun doInBackground(vararg params : Void) : TootApiResult? {
+				indicatorLoading = TaskIndicatorState.BG_START
+				
 				val client = TootApiClient(context, callback = object : TootApiCallback {
 					override val isApiCancelled : Boolean
 						get() = isCancelled || is_dispose.get()
@@ -1879,7 +1909,8 @@ class Column(
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
-					
+					indicatorLoading = TaskIndicatorState.BG_END
+					client.publishApiProgress("")
 				}
 			}
 			
@@ -1894,31 +1925,36 @@ class Column(
 					return
 				}
 				
-				bInitialLoading = false
-				last_task = null
-				
-				if(result.error != null) {
-					this@Column.mInitialLoadingError = result.error ?: ""
-				} else {
-					duplicate_map.clear()
-					list_data.clear()
-					val list_tmp = this.list_tmp
-					if(list_tmp != null) {
-						val list_pinned = this.list_pinned
-						if(list_pinned?.isNotEmpty() == true) {
-							val list_new = duplicate_map.filterDuplicate(list_pinned)
+				try {
+					bInitialLoading = false
+					last_task = null
+					
+					if(result.error != null) {
+						this@Column.mInitialLoadingError = result.error ?: ""
+					} else {
+						duplicate_map.clear()
+						list_data.clear()
+						val list_tmp = this.list_tmp
+						if(list_tmp != null) {
+							val list_pinned = this.list_pinned
+							if(list_pinned?.isNotEmpty() == true) {
+								val list_new = duplicate_map.filterDuplicate(list_pinned)
+								list_data.addAll(list_new)
+							}
+							val list_new = duplicate_map.filterDuplicate(list_tmp)
 							list_data.addAll(list_new)
 						}
-						val list_new = duplicate_map.filterDuplicate(list_tmp)
-						list_data.addAll(list_new)
+						
+						resumeStreaming(false)
 					}
+					fireShowContent(reason = "loading updated", reset = true)
 					
-					resumeStreaming(false)
+					// 初期ロードの直後は先頭に移動する
+					viewHolder?.scrollToTop()
+				} finally {
+					indicatorLoading = TaskIndicatorState.NO_TASK
+					fireShowColumnStatus()
 				}
-				fireShowContent(reason = "loading updated", reset = true)
-				
-				// 初期ロードの直後は先頭に移動する
-				viewHolder?.scrollToTop()
 			}
 		}
 		this.last_task = task
@@ -2043,6 +2079,8 @@ class Column(
 		
 		bRefreshLoading = true
 		mRefreshLoadingError = ""
+		indicatorRefresh = TaskIndicatorState.SCHEDULED
+		fireShowColumnStatus()
 		
 		val task = @SuppressLint("StaticFieldLeak")
 		object : AsyncTask<Void, Void, TootApiResult?>() {
@@ -2542,6 +2580,8 @@ class Column(
 			}
 			
 			override fun doInBackground(vararg params : Void) : TootApiResult? {
+				indicatorRefresh = TaskIndicatorState.BG_START
+				
 				val client = TootApiClient(context, callback = object : TootApiCallback {
 					override val isApiCancelled : Boolean
 						get() = isCancelled || is_dispose.get()
@@ -2554,14 +2594,13 @@ class Column(
 						}
 					}
 				})
-				
 				client.account = access_info
 				try {
 					
 					return when(column_type) {
-
+						
 						TYPE_DIRECT_MESSAGES -> getStatusList(client, PATH_DIRECT_MESSAGES)
-
+						
 						TYPE_LOCAL -> getStatusList(client, makePublicLocalUrl())
 						
 						TYPE_FEDERATE -> getStatusList(client, makePublicFederateUrl())
@@ -2700,7 +2739,8 @@ class Column(
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
-					
+					indicatorRefresh = TaskIndicatorState.BG_END
+					client.publishApiProgress("")
 				}
 			}
 			
@@ -2814,6 +2854,9 @@ class Column(
 						}
 					}
 				} finally {
+					indicatorRefresh = TaskIndicatorState.NO_TASK
+					fireShowColumnStatus()
+					
 					if(! bBottom) {
 						bRefreshingTop = false
 						resumeStreaming(false)
@@ -2839,6 +2882,8 @@ class Column(
 		
 		bRefreshLoading = true
 		mRefreshLoadingError = ""
+		indicatorGap = TaskIndicatorState.SCHEDULED
+		fireShowColumnStatus()
 		
 		val task = @SuppressLint("StaticFieldLeak")
 		object : AsyncTask<Void, Void, TootApiResult?>() {
@@ -3064,6 +3109,8 @@ class Column(
 			}
 			
 			override fun doInBackground(vararg params : Void) : TootApiResult? {
+				indicatorGap = TaskIndicatorState.BG_START
+				
 				val client = TootApiClient(context, callback = object : TootApiCallback {
 					override val isApiCancelled : Boolean
 						get() = isCancelled || is_dispose.get()
@@ -3145,7 +3192,8 @@ class Column(
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
-					
+					indicatorGap = TaskIndicatorState.BG_END
+					client.publishApiProgress("")
 				}
 			}
 			
@@ -3160,73 +3208,85 @@ class Column(
 					return
 				}
 				
-				last_task = null
-				bRefreshLoading = false
-				
-				val error = result.error
-				if(error != null) {
-					mRefreshLoadingError = error
-					fireShowContent(reason = "gap error", changeList = ArrayList())
-					return
-				}
-				
-				val position = list_data.indexOf(gap)
-				if(position == - 1) {
-					log.d("gap not found..")
-					fireShowContent(reason = "gap not found", changeList = ArrayList())
-					return
-				}
-				
-				val list_tmp = this.list_tmp
-				if(list_tmp == null) {
-					fireShowContent(reason = "gap list_tmp is null", changeList = ArrayList())
-					return
-				}
-				
-				// 0個でもギャップを消すために以下の処理を続ける
-				
-				val list_new = duplicate_map.filterDuplicate(list_tmp)
-				
-				// idx番目の要素がListViewのtopから何ピクセル下にあるか
-				var restore_idx = position + 1
-				var restore_y = 0
-				val holder = viewHolder
-				if(holder != null) {
-					try {
-						restore_y = holder.getListItemTop(restore_idx)
-					} catch(ex : IndexOutOfBoundsException) {
-						restore_idx = position
+				try {
+					
+					last_task = null
+					bRefreshLoading = false
+					
+					val error = result.error
+					if(error != null) {
+						mRefreshLoadingError = error
+						fireShowContent(reason = "gap error", changeList = ArrayList())
+						return
+					}
+					
+					val position = list_data.indexOf(gap)
+					if(position == - 1) {
+						log.d("gap not found..")
+						fireShowContent(reason = "gap not found", changeList = ArrayList())
+						return
+					}
+					
+					val list_tmp = this.list_tmp
+					if(list_tmp == null) {
+						fireShowContent(reason = "gap list_tmp is null", changeList = ArrayList())
+						return
+					}
+					
+					// 0個でもギャップを消すために以下の処理を続ける
+					
+					val list_new = duplicate_map.filterDuplicate(list_tmp)
+					
+					// idx番目の要素がListViewのtopから何ピクセル下にあるか
+					var restore_idx = position + 1
+					var restore_y = 0
+					val holder = viewHolder
+					if(holder != null) {
 						try {
 							restore_y = holder.getListItemTop(restore_idx)
-						} catch(ex2 : IndexOutOfBoundsException) {
-							restore_idx = - 1
+						} catch(ex : IndexOutOfBoundsException) {
+							restore_idx = position
+							try {
+								restore_y = holder.getListItemTop(restore_idx)
+							} catch(ex2 : IndexOutOfBoundsException) {
+								restore_idx = - 1
+							}
 						}
 					}
-				}
-				
-				val added = list_new.size // may 0
-				list_data.removeAt(position)
-				list_data.addAll(position, list_new)
-				
-				val changeList = ArrayList<AdapterChange>()
-				changeList.add(AdapterChange(AdapterChangeType.RangeRemove, position))
-				if(added > 0) {
-					changeList.add(AdapterChange(AdapterChangeType.RangeInsert, position, added))
-				}
-				fireShowContent(reason = "gap updated", changeList = changeList)
-				
-				if(holder != null) {
-					if(restore_idx >= 0) {
-						// ギャップが画面内にあるなら
-						holder.setListItemTop(restore_idx + added - 1, restore_y)
+					
+					val added = list_new.size // may 0
+					list_data.removeAt(position)
+					list_data.addAll(position, list_new)
+					
+					val changeList = ArrayList<AdapterChange>()
+					changeList.add(AdapterChange(AdapterChangeType.RangeRemove, position))
+					if(added > 0) {
+						changeList.add(
+							AdapterChange(
+								AdapterChangeType.RangeInsert,
+								position,
+								added
+							)
+						)
+					}
+					fireShowContent(reason = "gap updated", changeList = changeList)
+					
+					if(holder != null) {
+						if(restore_idx >= 0) {
+							// ギャップが画面内にあるなら
+							holder.setListItemTop(restore_idx + added - 1, restore_y)
+						} else {
+							// ギャップが画面内にない場合、何もしない
+						}
 					} else {
-						// ギャップが画面内にない場合、何もしない
+						val scroll_save = this@Column.scroll_save
+						if(scroll_save != null) {
+							scroll_save.adapterIndex += added - 1
+						}
 					}
-				} else {
-					val scroll_save = this@Column.scroll_save
-					if(scroll_save != null) {
-						scroll_save.adapterIndex += added - 1
-					}
+				} finally {
+					indicatorGap = TaskIndicatorState.NO_TASK
+					fireShowColumnStatus()
 				}
 			}
 		}
@@ -3376,7 +3436,7 @@ class Column(
 	
 	fun canFilterNormalToot() : Boolean {
 		return when(column_type) {
-			TYPE_HOME , TYPE_LIST_TL -> true
+			TYPE_HOME, TYPE_LIST_TL -> true
 			else -> false
 		}
 	}
@@ -3398,6 +3458,35 @@ class Column(
 	
 	internal fun canStreaming() : Boolean {
 		return ! access_info.isNA && if(access_info.isPseudo) isPublicStream else streamPath != null
+	}
+	
+	private val streamCallback = object : StreamReader.StreamCallback {
+		
+		override fun onListeningStateChanged() {
+			if(is_dispose.get()) return
+			runOnMainLooper {
+				if(! is_dispose.get()) fireShowColumnStatus()
+			}
+		}
+		
+		override fun onTimelineItem(item : TimelineItem) {
+			if(is_dispose.get()) return
+			
+			if(item is TootNotification) {
+				if(column_type != TYPE_NOTIFICATIONS) return
+				if(isFiltered(item)) return
+			} else if(item is TootStatus) {
+				if(column_type == TYPE_NOTIFICATIONS) return
+				if(column_type == TYPE_LOCAL && item.account.acct.indexOf('@') != - 1) return
+				if(isFiltered(item)) return
+				if(this@Column.enable_speech) {
+					App1.getAppState(context).addSpeech(item.reblog ?: item)
+				}
+			}
+			stream_data_queue.addFirst(item)
+			mergeStreamingMessage.run()
+		}
+		
 	}
 	
 	private fun resumeStreaming(bPutGap : Boolean) {
@@ -3448,9 +3537,8 @@ class Column(
 		
 		stream_data_queue.clear()
 		
-		app_state.stream_reader.register(
-			access_info, stream_path, highlight_trie, onStreamingMessage
-		)
+		app_state.stream_reader.register(access_info, stream_path, highlight_trie, streamCallback)
+		fireShowColumnStatus()
 	}
 	
 	// onPauseの時はまとめて止められるが
@@ -3458,28 +3546,15 @@ class Column(
 	internal fun stopStreaming() {
 		val stream_path = streamPath
 		if(stream_path != null) {
-			app_state.stream_reader.unregister(
-				access_info, stream_path, onStreamingMessage
-			)
+			app_state.stream_reader.unregister(access_info, stream_path, streamCallback)
+			fireShowColumnStatus()
 		}
 	}
 	
-	private val onStreamingMessage = fun(item : TimelineItem) {
-		if(is_dispose.get()) return
-		
-		if(item is TootNotification) {
-			if(column_type != TYPE_NOTIFICATIONS) return
-			if(isFiltered(item)) return
-		} else if(item is TootStatus) {
-			if(column_type == TYPE_NOTIFICATIONS) return
-			if(column_type == TYPE_LOCAL && item.account.acct.indexOf('@') != - 1) return
-			if(isFiltered(item)) return
-			if(this.enable_speech) {
-				App1.getAppState(context).addSpeech(item.reblog ?: item)
-			}
-		}
-		stream_data_queue.addFirst(item)
-		mergeStreamingMessage.run()
+	fun getStreamingStatus() : StreamingIndicatorState {
+		if(is_dispose.get() || ! bFirstInitialized ) return StreamingIndicatorState.NONE
+		val stream_path = streamPath ?: return StreamingIndicatorState.NONE
+		return app_state.stream_reader.getStreamingStatus(access_info, stream_path, streamCallback)
 	}
 	
 	private val mergeStreamingMessage = object : Runnable {

@@ -47,15 +47,27 @@
                     />
 
                 <TextView
-                    android:id="@+id/tvColumnIndex"
+                    android:id="@+id/tvColumnStatus"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="12dp"
                     android:gravity="end"
                     android:textColor="?attr/colorColumnHeaderPageNumber"
                     android:textSize="12sp"
+                    tools:text="RS"
+                    />
+
+                <TextView
+                    android:id="@+id/tvColumnIndex"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:gravity="end"
+                    android:textColor="?attr/colorColumnHeaderPageNumber"
+                    android:textSize="12sp"
                     tools:text="col 6/12"
                     />
+
             </LinearLayout>
 
             <LinearLayout

@@ -28,6 +28,10 @@ class ApngFrames private constructor(
 			xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC)
 			isFilterBitmap = true
 		}
+		private val sPaintClear = Paint().apply {
+			xfermode = PorterDuffXfermode(PorterDuff.Mode.CLEAR)
+			color = 0
+		}
 		
 		private fun createBlankBitmap(w : Int, h : Int) =
 			Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -116,9 +120,18 @@ class ApngFrames private constructor(
 	var height : Int = 1
 		private set
 	
+	
+	class Frame(
+		val bitmap : Bitmap,
+		val timeStart : Long,
+		val timeWidth : Long
+	)
+	
+	var frames : ArrayList<Frame>? = null
+	
 	@Suppress("MemberVisibilityCanBePrivate")
 	val numFrames : Int
-		get() = animationControl?.numFrames ?: 1
+		get() = frames?.size ?: 1
 	
 	@Suppress("unused")
 	val hasMultipleFrame : Boolean
@@ -143,14 +156,7 @@ class ApngFrames private constructor(
 			}
 		}
 	
-	private class Frame(
-		internal val bitmap : Bitmap,
-		internal val timeStart : Long,
-		internal val timeWidth : Long
-	)
-	
-	private var frames : ArrayList<Frame>? = null
-	
+
 	constructor(bitmap : Bitmap) : this() {
 		defaultImage = bitmap
 	}
@@ -272,6 +278,9 @@ class ApngFrames private constructor(
 		header : ApngImageHeader,
 		animationControl : ApngAnimationControl
 	) {
+		if(debug){
+			Log.d(TAG,"onAnimationInfo")
+		}
 		this.animationControl = animationControl
 		this.frames = ArrayList(animationControl.numFrames)
 		
@@ -281,19 +290,35 @@ class ApngFrames private constructor(
 	}
 	
 	override fun onDefaultImage(apng : Apng, bitmap : ApngBitmap) {
+		if(debug){
+			Log.d(TAG,"onDefaultImage")
+		}
 		defaultImage?.recycle()
 		defaultImage = toAndroidBitmap(bitmap, pixelSizeMax)
 	}
+	
+	
 	
 	override fun onAnimationFrame(
 		apng : Apng,
 		frameControl : ApngFrameControl,
 		frameBitmap : ApngBitmap
 	) {
+		if(debug){
+			Log.d(TAG,"onAnimationFrame seq=${frameControl.sequenceNumber }, xywh=${frameControl.xOffset},${frameControl.yOffset},${frameControl.width},${frameControl.height} blendOp=${frameControl.blendOp}, disposeOp=${frameControl.disposeOp},delay=${frameControl.delayMilliseconds}")
+		}
 		val frames = this.frames ?: return
 		val canvasBitmap = this.canvasBitmap ?: return
 		
-		val previous : Bitmap? = when(frameControl.disposeOp) {
+		val disposeOp = when{
+
+			// If the first `fcTL` chunk uses a `dispose_op` of APNG_DISPOSE_OP_PREVIOUS it should be treated as APNG_DISPOSE_OP_BACKGROUND.
+			frameControl.disposeOp == DisposeOp.Previous && frames.isEmpty() -> DisposeOp.Background
+
+			else-> frameControl.disposeOp
+		}
+		
+		val previous : Bitmap? = when(disposeOp) {
 			DisposeOp.Previous -> Bitmap.createBitmap(
 				canvasBitmap,
 				frameControl.xOffset,
@@ -332,18 +357,28 @@ class ApngFrames private constructor(
 				frames.add(frame)
 				timeTotal += frame.timeWidth
 				
-				when(frameControl.disposeOp) {
+				when(disposeOp) {
 				
 				// no disposal is done on this frame before rendering the next;
 				// the contents of the output buffer are left as is.
 					DisposeOp.None -> {
 					}
 				
-				// the frame's region of the output buffer is to be cleared to fully transparent black
+				// the frame's region of the output buffer is
+				// to be cleared to fully transparent black
 				// before rendering the next frame.
-					DisposeOp.Background -> canvas.drawColor(0, PorterDuff.Mode.CLEAR)
+					DisposeOp.Background -> {
+						val rect = Rect()
+						rect.left = frameControl.xOffset
+						rect.top = frameControl.yOffset
+						rect.right = frameControl.xOffset + frameControl.width
+						rect.bottom = frameControl.yOffset + frameControl.height
+						canvas.drawRect(rect,sPaintClear)
+						//	canvas.drawColor(0, PorterDuff.Mode.CLEAR)
+					}
 				
-				// the frame's region of the output buffer is to be reverted to the previous contents
+				// the frame's region of the output buffer is
+				// to be reverted to the previous contents
 				// before rendering the next frame.
 					DisposeOp.Previous -> if(previous != null) {
 						canvas.drawBitmap(

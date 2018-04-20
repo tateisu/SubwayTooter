@@ -2,7 +2,9 @@ package jp.juggler.apng.sample
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Bundle
+import android.os.Environment
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
@@ -12,10 +14,13 @@ import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.android.UI
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.launch
+import java.io.File
+import java.io.FileOutputStream
 
 class ActViewer : AppCompatActivity() {
 	
 	companion object {
+		const val TAG="ActViewer"
 		const val EXTRA_RES_ID = "res_id"
 		const val EXTRA_CAPTION = "caption"
 		
@@ -41,15 +46,32 @@ class ActViewer : AppCompatActivity() {
 		this.apngView = findViewById(R.id.apngView)
 		this.tvError = findViewById(R.id.tvError)
 		
+		apngView.setOnLongClickListener {
+			val apngFrames = apngView.apngFrames
+
+			if( apngFrames != null ){
+				save(apngFrames)
+			}
+			
+			return@setOnLongClickListener true
+		}
+		
 		launch(UI) {
 			try {
 				if(isDestroyed) return@launch
 				
 				val apngFrames = async(CommonPool) {
 					resources.openRawResource(resId).use {
-						ApngFrames.parseApng(it, 1024)
+						ApngFrames.parseApng(
+							it,
+							1024,
+							debug = true
+						)
 					}
 				}.await()
+				
+				
+				
 				
 				if(isDestroyed) {
 					apngFrames.dispose()
@@ -75,5 +97,33 @@ class ActViewer : AppCompatActivity() {
 	override fun onDestroy() {
 		super.onDestroy()
 		apngView.apngFrames?.dispose()
+	}
+	
+	private fun save(apngFrames:ApngFrames){
+		val title = this.title
+		launch(CommonPool){
+			val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+			dir.mkdirs()
+			if(! dir.exists() ) {
+				Log.e(TAG, "Directory not exists: ${dir}")
+				return@launch
+			}
+			val frames = apngFrames.frames
+			if( frames == null ){
+				Log.e(TAG, "missing frames")
+				return@launch
+			}
+			var i=0
+			for( f in frames) {
+				Log.d(TAG, "${title}[${i}] timeWidth=${f.timeWidth}")
+				val bitmap = f.bitmap
+				
+				FileOutputStream( File(dir,"${title}_${i}.png")).use{ fo ->
+					bitmap.compress (Bitmap.CompressFormat.PNG,100,fo)
+				}
+				
+				++i
+			}
+		}
 	}
 }

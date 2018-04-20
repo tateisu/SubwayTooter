@@ -4,7 +4,7 @@ package jp.juggler.apng
 
 import jp.juggler.apng.util.ByteSequence
 
-class ApngFrameControl internal constructor(src : ByteSequence) {
+class ApngFrameControl internal constructor(src : ByteSequence,var sequenceNumber:Int) {
 	
 	val width : Int
 	val height : Int

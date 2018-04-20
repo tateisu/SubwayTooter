@@ -74,6 +74,7 @@ class ColumnViewHolder(
 	
 	private val llColumnHeader : View
 	private val tvColumnIndex : TextView
+	private val tvColumnStatus : TextView
 	private val tvColumnContext : TextView
 	private val ivColumnIcon : ImageView
 	private val tvColumnName : TextView
@@ -181,6 +182,7 @@ class ColumnViewHolder(
 		llColumnHeader = viewRoot.findViewById(R.id.llColumnHeader)
 		
 		tvColumnIndex = viewRoot.findViewById(R.id.tvColumnIndex)
+		tvColumnStatus = viewRoot.findViewById(R.id.tvColumnStatus)
 		
 		tvColumnName = viewRoot.findViewById(R.id.tvColumnName)
 		tvColumnContext = viewRoot.findViewById(R.id.tvColumnContext)
@@ -233,7 +235,7 @@ class ColumnViewHolder(
 		cbDontShowFavourite = viewRoot.findViewById(R.id.cbDontShowFavourite)
 		cbDontShowReply = viewRoot.findViewById(R.id.cbDontShowReply)
 		cbDontShowNormalToot = viewRoot.findViewById(R.id.cbDontShowNormalToot)
-		cbInstanceLocal =viewRoot.findViewById(R.id.cbInstanceLocal)
+		cbInstanceLocal = viewRoot.findViewById(R.id.cbInstanceLocal)
 		cbDontStreaming = viewRoot.findViewById(R.id.cbDontStreaming)
 		cbDontAutoRefresh = viewRoot.findViewById(R.id.cbDontAutoRefresh)
 		cbHideMediaDefault = viewRoot.findViewById(R.id.cbHideMediaDefault)
@@ -405,6 +407,7 @@ class ColumnViewHolder(
 				column.column_type != Column.TYPE_CONVERSATION && Pref.bpSimpleList(activity.pref)
 			
 			tvColumnIndex.text = activity.getString(R.string.column_index, page_idx + 1, page_count)
+			tvColumnStatus.text = "?"
 			
 			listView.adapter = null
 			listView.addItemDecoration(ListDivider(activity))
@@ -463,7 +466,7 @@ class ColumnViewHolder(
 			vg(cbDontStreaming, column.canStreaming())
 			vg(cbDontAutoRefresh, column.canAutoRefresh())
 			vg(cbHideMediaDefault, column.canNSFWDefault())
-			vg(cbSystemNotificationNotRelated,column.column_type == Column.TYPE_NOTIFICATIONS)
+			vg(cbSystemNotificationNotRelated, column.column_type == Column.TYPE_NOTIFICATIONS)
 			vg(cbEnableSpeech, column.canSpeech())
 			
 			vg(btnDeleteNotification, column.column_type == Column.TYPE_NOTIFICATIONS)
@@ -510,6 +513,57 @@ class ColumnViewHolder(
 		}
 	}
 	
+	fun showColumnStatus() {
+		val column = this.column
+		val sb = StringBuilder()
+		try {
+			if(column == null) {
+				sb.append('?')
+			} else {
+				when(column.indicatorLoading) {
+					TaskIndicatorState.NO_TASK -> {
+					}
+					
+					TaskIndicatorState.SCHEDULED -> sb.append("L?")
+					TaskIndicatorState.BG_START -> sb.append("L")
+					TaskIndicatorState.BG_END -> sb.append("L!")
+				}
+				val tb = if(column.bRefreshingTop) {
+					'T'
+				} else {
+					'B'
+				}
+				when(column.indicatorRefresh) {
+					TaskIndicatorState.NO_TASK -> {
+					}
+					
+					TaskIndicatorState.SCHEDULED -> sb.append("${tb}?")
+					TaskIndicatorState.BG_START -> sb.append(tb)
+					TaskIndicatorState.BG_END -> sb.append("${tb}!")
+				}
+				when(column.indicatorGap) {
+					TaskIndicatorState.NO_TASK -> {
+					}
+					
+					TaskIndicatorState.SCHEDULED -> sb.append("G?")
+					TaskIndicatorState.BG_START -> sb.append("G")
+					TaskIndicatorState.BG_END -> sb.append("G!")
+				}
+				when(column.getStreamingStatus()) {
+					StreamingIndicatorState.NONE -> {
+					}
+					
+					StreamingIndicatorState.REGISTERED -> sb.append("S?")
+					StreamingIndicatorState.LISTENING -> sb.append("S")
+				}
+			}
+			
+		} finally {
+			log.d("showColumnStatus ${sb}")
+			tvColumnStatus.text = sb
+		}
+	}
+	
 	fun showColumnColor() {
 		val column = this.column
 		
@@ -538,6 +592,12 @@ class ColumnViewHolder(
 						R.attr.colorColumnHeaderPageNumber
 					)
 				)
+				tvColumnStatus.setTextColor(
+					Styler.getAttributeColor(
+						activity,
+						R.attr.colorColumnHeaderPageNumber
+					)
+				)
 				tvColumnName.setTextColor(
 					Styler.getAttributeColor(
 						activity,
@@ -554,6 +614,7 @@ class ColumnViewHolder(
 				Styler.setIconDefaultColor(activity, btnColumnClose, R.attr.btn_close)
 			} else {
 				tvColumnIndex.setTextColor(c)
+				tvColumnStatus.setTextColor(c)
 				tvColumnName.setTextColor(c)
 				Styler.setIconCustomColor(
 					activity,
@@ -773,11 +834,12 @@ class ColumnViewHolder(
 				activity.app_state.saveColumnList()
 				column.fireShowContent(reason = "HideMediaDefault in ColumnSetting", reset = true)
 			}
+			
 			R.id.cbSystemNotificationNotRelated -> {
 				column.system_notification_not_related = isChecked
 				activity.app_state.saveColumnList()
 			}
-
+			
 			R.id.cbEnableSpeech -> {
 				column.enable_speech = isChecked
 				activity.app_state.saveColumnList()
@@ -923,6 +985,7 @@ class ColumnViewHolder(
 		}
 		
 		showColumnHeader()
+		showColumnStatus()
 		
 		val column = this.column
 		if(column == null || column.is_dispose.get()) {

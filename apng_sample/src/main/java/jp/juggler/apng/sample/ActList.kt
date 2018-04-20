@@ -1,8 +1,12 @@
 package jp.juggler.apng.sample
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.SystemClock
+import android.support.v4.app.ActivityCompat
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -11,11 +15,16 @@ import jp.juggler.apng.ApngFrames
 import kotlinx.coroutines.experimental.*
 import kotlinx.coroutines.experimental.android.UI
 import java.lang.ref.WeakReference
+import android.support.v4.content.ContextCompat
+
+
 
 class ActList : AppCompatActivity() {
 	
 	companion object {
 		const val TAG = "ActList"
+		
+		const val PERMISSION_REQUEST_CODE_STORAGE = 1
 	}
 	
 	class ListItem(val id : Int, val caption : String)
@@ -32,6 +41,22 @@ class ActList : AppCompatActivity() {
 		listView.adapter = listAdapter
 		listView.onItemClickListener = listAdapter
 		timeAnimationStart = SystemClock.elapsedRealtime()
+		
+		if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ) {
+			// Assume thisActivity is the current activity
+			if( PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(
+				this,
+				Manifest.permission.WRITE_EXTERNAL_STORAGE
+			)){
+				ActivityCompat.requestPermissions(
+					this,
+					arrayOf( Manifest.permission.WRITE_EXTERNAL_STORAGE),
+					
+					PERMISSION_REQUEST_CODE_STORAGE
+				)
+			}
+		}
+		
 		
 		launch(UI) {
 			
@@ -57,6 +82,29 @@ class ActList : AppCompatActivity() {
 			
 			listAdapter.list.addAll(list)
 			listAdapter.notifyDataSetChanged()
+		}
+	}
+	
+
+	override fun onRequestPermissionsResult(
+		requestCode : Int,
+		permissions : Array<String>,
+		grantResults : IntArray
+	) {
+		when(requestCode) {
+			PERMISSION_REQUEST_CODE_STORAGE -> {
+				// If request is cancelled, the result arrays are empty.
+				if(grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+					// permission was granted, yay! Do the
+					// contacts-related task you need to do.
+				} else {
+					// permission denied, boo! Disable the
+					// functionality that depends on this permission.
+				}
+				return
+			}
+		// other 'case' lines to check for other
+		// permissions this app might request
 		}
 	}
 	

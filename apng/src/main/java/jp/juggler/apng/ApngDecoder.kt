@@ -115,8 +115,9 @@ object ApngDecoder {
 				
 				"fcTL" -> {
 					val bat = ByteSequence(chunk.readBody(crc32, tokenizer))
-					checkSequenceNumber(bat.readInt32())
-					lastFctl = ApngFrameControl(bat)
+					val sequenceNumber =bat.readInt32()
+					checkSequenceNumber(sequenceNumber)
+					lastFctl = ApngFrameControl(bat,sequenceNumber)
 					fdatDecoder = null
 				}
 				
@@ -134,7 +135,8 @@ object ApngDecoder {
 							callback.onAnimationFrame(apng, fctl, bitmap)
 						}
 					}
-					checkSequenceNumber(tokenizer.readInt32(crc32))
+					val sequenceNumber =tokenizer.readInt32(crc32)
+					checkSequenceNumber(sequenceNumber)
 					fdatDecoder.addData(
 						tokenizer.inStream,
 						chunk.size - 4,

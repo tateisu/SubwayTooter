@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter.span
 
 import android.content.Context
 import android.graphics.*
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.support.annotation.IntRange
 import android.support.v4.content.ContextCompat
@@ -13,9 +12,8 @@ import java.lang.ref.WeakReference
 class EmojiImageSpan(
 	context : Context,
 	private val res_id : Int,
-	private val useColorShader:Boolean = false
+	private val useColorShader : Boolean = false
 ) : ReplacementSpan() {
-	
 	
 	companion object {
 		
@@ -25,6 +23,7 @@ class EmojiImageSpan(
 		
 		private const val scale_ratio = 1.14f
 		private const val descent_ratio = 0.211f
+		
 	}
 	
 	private val context : Context
@@ -44,7 +43,7 @@ class EmojiImageSpan(
 		this.context = context.applicationContext
 	}
 	
-	private fun getImageSize(paint:Paint) = (0.5f + scale_ratio * paint.textSize).toInt()
+	private fun getImageSize(paint : Paint) = (0.5f + scale_ratio * paint.textSize).toInt()
 	
 	override fun getSize(
 		paint : Paint,
@@ -66,8 +65,8 @@ class EmojiImageSpan(
 		return size
 	}
 	
-	private var lastColor :Int? = null
-	private var lastColorFilter: PorterDuffColorFilter? = null
+	private var lastColor : Int? = null
+	private var lastColorFilter : PorterDuffColorFilter? = null
 	
 	override fun draw(
 		canvas : Canvas,
@@ -81,7 +80,7 @@ class EmojiImageSpan(
 		paint : Paint
 	) {
 		val d = cachedDrawable ?: return
-
+		
 		val size = getImageSize(paint)
 		val c_descent = (0.5f + size * descent_ratio).toInt()
 		val transY = baseline - size + c_descent
@@ -90,16 +89,22 @@ class EmojiImageSpan(
 		canvas.translate(x, transY.toFloat())
 		d.setBounds(0, 0, size, size)
 		
-		if( useColorShader && d is BitmapDrawable){
-			if( paint.color != lastColor || lastColorFilter == null) {
-				lastColor = paint.color
-				lastColorFilter = PorterDuffColorFilter(paint.color, PorterDuff.Mode.SRC_ATOP)
+		if(useColorShader) {
+			val pc = paint.color
+			val pa = paint.alpha
+			// Log.d("EmojiImageSpan",String.format("paint c=0x%x a=0x%x",pc,pa))
+			if(pc != lastColor || lastColorFilter == null) {
+				lastColor = pc
+				lastColorFilter = PorterDuffColorFilter( pc or Color.BLACK , PorterDuff.Mode.SRC_ATOP)
 			}
 			val saveColorFilter = d.colorFilter
+			val saveAlpha = d.alpha
 			d.colorFilter = lastColorFilter
+			d.alpha = pa
 			d.draw(canvas)
 			d.colorFilter = saveColorFilter
-		}else {
+			d.alpha = saveAlpha
+		} else {
 			d.draw(canvas)
 		}
 		canvas.restore()

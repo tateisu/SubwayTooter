@@ -462,6 +462,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				val request = okhttp3.Request.Builder()
 					.url(url)
 					.cacheControl(App1.CACHE_5MIN)
+					.addHeader("Accept","image/webp,image/*,*/*;q=0.8")
 					.build()
 				
 				if(! client.sendRequest(result,cached = true) {

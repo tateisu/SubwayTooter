@@ -19,6 +19,8 @@ import android.widget.ImageView
 
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
+import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.load.resource.gif.MyGifDrawable
 import com.bumptech.glide.request.target.BaseTarget
@@ -189,10 +191,19 @@ class MyNetworkImageView : AppCompatImageView {
 				return
 			}
 			
+			val glideHeaders = LazyHeaders.Builder()
+				.addHeader("Accept", "image/webp,image/*,*/*;q=0.8")
+				.build()
+			
+			val glideUrl = GlideUrl(url, glideHeaders)
+			
 			mTarget = if(mMayGif) {
-				getGlide()?.load(url)?.into(MyTargetGif(url))
+				getGlide()
+					?.load(glideUrl)
+					?.into(MyTargetGif(url))
 			} else {
-				getGlide()?.asBitmap()?.load(url)?.into(MyTarget(url, desiredWidth, desiredHeight))
+				getGlide()?.asBitmap()?.load(glideUrl)
+					?.into(MyTarget(url, desiredWidth, desiredHeight))
 			}
 		} catch(ex : Throwable) {
 			log.trace(ex)

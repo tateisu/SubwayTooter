@@ -191,17 +191,18 @@ class MyNetworkImageView : AppCompatImageView {
 				return
 			}
 			
-			val glideHeaders = LazyHeaders.Builder()
-				.addHeader("Accept", "image/webp,image/*,*/*;q=0.8")
-				.build()
-			
-			val glideUrl = GlideUrl(url, glideHeaders)
 			
 			mTarget = if(mMayGif) {
 				getGlide()
-					?.load(glideUrl)
+					?.load(url)
 					?.into(MyTargetGif(url))
 			} else {
+				val glideHeaders = LazyHeaders.Builder()
+					.addHeader("Accept", "image/webp,image/*,*/*;q=0.8")
+					.build()
+				
+				val glideUrl = GlideUrl(url, glideHeaders)
+
 				getGlide()?.asBitmap()?.load(glideUrl)
 					?.into(MyTarget(url, desiredWidth, desiredHeight))
 			}

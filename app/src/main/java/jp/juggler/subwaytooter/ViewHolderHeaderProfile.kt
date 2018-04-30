@@ -1,13 +1,15 @@
 package jp.juggler.subwaytooter
 
+import android.graphics.Paint
+import android.graphics.Typeface
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.ShapeDrawable
+import android.graphics.drawable.shapes.Shape
 import android.support.v4.view.ViewCompat
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.view.View
-import android.widget.Button
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.TextView
+import android.widget.*
 import jp.juggler.emoji.EmojiMap201709
 
 import jp.juggler.subwaytooter.action.Action_Follow
@@ -17,10 +19,13 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.span.EmojiImageSpan
+import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.util.intoStringResource
+import jp.juggler.subwaytooter.util.startMargin
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
+import jp.juggler.subwaytooter.view.MyTextView
 
 internal class ViewHolderHeaderProfile(
 	activity : ActMain,
@@ -42,6 +47,7 @@ internal class ViewHolderHeaderProfile(
 	private val tvRemoteProfileWarning : TextView
 	private val name_invalidator : NetworkEmojiInvalidator
 	private val note_invalidator : NetworkEmojiInvalidator
+	private val llFields : LinearLayout
 	
 	private var who : TootAccount? = null
 	
@@ -56,6 +62,8 @@ internal class ViewHolderHeaderProfile(
 	private val ivMovedBy : ImageView
 	private val moved_caption_invalidator : NetworkEmojiInvalidator
 	private val moved_name_invalidator : NetworkEmojiInvalidator
+	private val default_color : Int
+	private val density : Float
 	
 	init {
 		ivBackground = viewRoot.findViewById(R.id.ivBackground)
@@ -80,7 +88,10 @@ internal class ViewHolderHeaderProfile(
 		tvMovedAcct = viewRoot.findViewById(R.id.tvMovedAcct)
 		btnMoved = viewRoot.findViewById(R.id.btnMoved)
 		ivMovedBy = viewRoot.findViewById(R.id.ivMovedBy)
+		llFields = viewRoot.findViewById(R.id.llFields)
 		
+		default_color = tvDisplayName.textColors.defaultColor
+		density = tvDisplayName.resources.displayMetrics.density
 		
 		ivBackground.setOnClickListener(this)
 		btnFollowing.setOnClickListener(this)
@@ -136,6 +147,8 @@ internal class ViewHolderHeaderProfile(
 		
 		llMoved.visibility = View.GONE
 		tvMoved.visibility = View.GONE
+		llFields.visibility = View.GONE
+		llFields.removeAllViews()
 		
 		if(who == null) {
 			tvCreated.text = ""
@@ -209,6 +222,57 @@ internal class ViewHolderHeaderProfile(
 			Styler.setFollowIcon(activity, btnFollow, ivFollowedBy, relation, who)
 			
 			showMoved(who, who.moved)
+			
+			if(who.fields != null) {
+				
+				llFields.visibility = View.VISIBLE
+				
+				val decodeOptions = DecodeOptions(
+					context = activity,
+					decodeEmoji = true,
+					linkHelper = access_info,
+					short = true
+				)
+				
+				val content_color = column.content_color
+				val c = if(content_color != 0) content_color else default_color
+				
+				val nameTypeface = activity.timeline_font_bold ?: Typeface.DEFAULT_BOLD
+				val valueTypeface = activity.timeline_font ?: Typeface.DEFAULT
+				
+				for(item in who.fields) {
+					
+					//
+					val nameView = MyTextView(activity)
+					val nameLp = LinearLayout.LayoutParams(
+						LinearLayout.LayoutParams.MATCH_PARENT,
+						LinearLayout.LayoutParams.WRAP_CONTENT
+					)
+					nameLp.topMargin = (density * 6f).toInt()
+					nameView.layoutParams = nameLp
+					nameView.text = decodeOptions.decodeEmoji(item.first)
+					nameView.setTextColor(c)
+					nameView.typeface = nameTypeface
+					nameView.movementMethod = MyLinkMovementMethod
+					llFields.addView(nameView)
+					
+					//
+					val valueView = MyTextView(activity)
+					val valueLp = LinearLayout.LayoutParams(
+						LinearLayout.LayoutParams.MATCH_PARENT,
+						LinearLayout.LayoutParams.WRAP_CONTENT
+					)
+					valueLp.startMargin = (density * 32f).toInt()
+					valueView.layoutParams = valueLp
+					valueView.text =
+						decodeOptions.decodeHTML(item.second) // 値の方はHTML文字参照のエンコードが行われている
+					valueView.setTextColor(c)
+					valueView.typeface = valueTypeface
+					valueView.movementMethod = MyLinkMovementMethod
+					llFields.addView(valueView)
+					
+				}
+			}
 		}
 	}
 	

@@ -164,6 +164,13 @@
                 tools:text="説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 "
                 />
 
+            <LinearLayout
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/llFields"
+                android:orientation="vertical"
+                />
         </LinearLayout>
 
         <FrameLayout

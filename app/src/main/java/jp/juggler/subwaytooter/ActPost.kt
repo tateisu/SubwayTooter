@@ -104,21 +104,16 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		internal val list_resize_max = intArrayOf(0, 640, 800, 1024, 1280, 1600, 2048)
 		
-		internal val acceptable_mime_types : HashSet<String> by lazy {
-			val v = HashSet<String>()
-			
+		internal val acceptable_mime_types = HashSet<String>().apply {
 			//
-			v.add("image/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
-			v.add("video/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
+			add("image/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
+			add("video/*") // Android標準のギャラリーが image/* を出してくることがあるらしい
 			//
-			v.add("image/jpeg")
-			v.add("image/png")
-			v.add("image/gif")
-			v.add("video/webm")
-			v.add("video/mp4")
-			
-			
-			v
+			add("image/jpeg")
+			add("image/png")
+			add("image/gif")
+			add("video/webm")
+			add("video/mp4")
 		}
 		
 		//	private void performCameraVideo(){

@@ -216,7 +216,7 @@ class TootApiClient(
 				)
 			)
 			
-			result.response = httpClient.getResponse(request,cached=cached)
+			result.response = httpClient.getResponse(request, cached = cached)
 			
 			null == result.error
 			

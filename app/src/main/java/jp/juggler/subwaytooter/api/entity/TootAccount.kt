@@ -80,6 +80,8 @@ open class TootAccount(
 	
 	val moved : TootAccount?
 	
+	val fields : ArrayList<Pair<String, String>>?
+	
 	init {
 		var sv : String?
 		
@@ -109,6 +111,8 @@ open class TootAccount(
 		this.moved =
 			src.optJSONObject("moved")?.let { TootAccount(parser, it) }
 		this.locked = src.optBoolean("locked")
+		
+		this.fields = parseFields(src.optJSONArray("fields"))
 		
 		when(parser.serviceType) {
 			ServiceType.MASTODON -> {
@@ -264,6 +268,22 @@ open class TootAccount(
 			}
 			
 			return null
+		}
+		
+		fun parseFields(src : JSONArray?) : ArrayList<Pair<String, String>>? {
+			src ?: return null
+			val dst = ArrayList<Pair<String, String>>()
+			for(i in 0 until src.length()) {
+				val item = src.optJSONObject(i) ?: continue
+				val k = item.parseString("name") ?: continue
+				val v = item.parseString("value") ?: continue
+				dst.add(Pair(k, v))
+			}
+			return if( dst.isEmpty() ){
+				null
+			}else{
+				dst
+			}
 		}
 	}
 }

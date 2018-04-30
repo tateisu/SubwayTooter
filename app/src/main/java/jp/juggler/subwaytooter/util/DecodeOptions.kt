@@ -11,7 +11,7 @@ import jp.juggler.subwaytooter.table.HighlightWord
 import java.util.HashMap
 
 class DecodeOptions(
-	val context: Context? = null,
+	val context : Context? = null,
 	var linkHelper : LinkHelper? = null,
 	var short : Boolean = false,
 	var decodeEmoji : Boolean = false,
@@ -22,7 +22,7 @@ class DecodeOptions(
 	var highlightTrie : WordTrieTree? = null
 ) {
 	
-	internal fun isMediaAttachment( url : String? ) : Boolean {
+	internal fun isMediaAttachment(url : String?) : Boolean {
 		val list_attachment = attachmentList
 		if(url == null || list_attachment == null) return false
 		for(a in list_attachment) {
@@ -30,7 +30,6 @@ class DecodeOptions(
 		}
 		return false
 	}
-
 	
 	// OUTPUT: true if found highlight
 	var hasHighlight : Boolean = false
@@ -41,15 +40,12 @@ class DecodeOptions(
 	////////////////////////
 	// decoder
 	
-	fun decodeHTML(  html : String?) : SpannableStringBuilder {
-		return HTMLDecoder.decodeHTML(this,html)
+	fun decodeHTML(html : String?) : SpannableStringBuilder {
+		return HTMLDecoder.decodeHTML(this, html)
 	}
 	
-	fun decodeEmoji( s : String?) : Spannable {
-		return EmojiDecoder.decodeEmoji( this,s ?: "")
+	fun decodeEmoji(s : String?) : Spannable {
+		return EmojiDecoder.decodeEmoji(this, s ?: "")
 	}
-	
-	
-	
 	
 }

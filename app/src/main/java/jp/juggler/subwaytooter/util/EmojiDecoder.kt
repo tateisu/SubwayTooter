@@ -30,7 +30,7 @@ object EmojiDecoder {
 	//	}
 	
 	private const val cpColon = ':'.toInt()
-
+	
 	fun canStartShortCode(s : CharSequence, index : Int) : Boolean {
 		val cp = s.codePointBefore(index)
 		return when(cp) {
@@ -114,19 +114,21 @@ object EmojiDecoder {
 		}
 		
 		internal fun addImageSpan(text : String?, @DrawableRes res_id : Int) {
-			closeNormalText()
-			val start = sb.length
-			sb.append(text)
-			val end = sb.length
-			sb.setSpan(
-				EmojiImageSpan(
-					requireNotNull(options.context) { "decodeEmoji: missing context" },
-					res_id
-				),
-				start,
-				end,
-				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-			)
+			val context = options.context
+			if(context == null) {
+				addUnicodeString("(missing context)")
+			} else {
+				closeNormalText()
+				val start = sb.length
+				sb.append(text)
+				val end = sb.length
+				sb.setSpan(
+					EmojiImageSpan(context, res_id),
+					start,
+					end,
+					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+				)
+			}
 		}
 		
 		internal fun addUnicodeString(s : String) {
@@ -171,12 +173,14 @@ object EmojiDecoder {
 					openNormalText()
 					val length = Character.charCount(s.codePointAt(i))
 					if(length == 1) {
-						val c = s[i++]
-						sb.append(when(c) {
+						val c = s[i ++]
+						sb.append(
+							when(c) {
 							// https://github.com/tateisu/SubwayTooter/issues/69
-							'\u00AD' -> '-'
-							else -> c
-						})
+								'\u00AD' -> '-'
+								else -> c
+							}
+						)
 					} else {
 						sb.append(s.substring(i, i + length))
 						i += length

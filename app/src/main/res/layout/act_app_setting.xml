@@ -129,6 +129,7 @@
                 />
 
         </LinearLayout>
+
         <LinearLayout style="@style/setting_row_form">
 
             <TextView
@@ -136,7 +137,6 @@
                 android:text="@string/send_access_token_to_app_server_desc"
                 />
         </LinearLayout>
-
 
         <View style="@style/setting_divider"/>
 
@@ -155,7 +155,6 @@
                 />
 
         </LinearLayout>
-
 
         <View style="@style/setting_divider"/>
 
@@ -281,7 +280,22 @@
 
         </LinearLayout>
 
+        <View style="@style/setting_divider"/>
 
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/dont_retrieve_preview_card"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swDontRetrievePreviewCard"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
 
         <View style="@style/setting_divider"/>
 
@@ -652,7 +666,6 @@
 
         </LinearLayout>
 
-
         <View style="@style/setting_divider"/>
 
         <TextView
@@ -815,8 +828,6 @@
         </LinearLayout>
 
         <View style="@style/setting_divider"/>
-
-
 
         <TextView
             style="@style/setting_row_label"

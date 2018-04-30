@@ -307,6 +307,13 @@ object Pref {
 		R.id.swSendAccessTokenToAppServer
 	)
 	
+	val bpDontRetrievePreviewCard = BooleanPref(
+		"DontRetrievePreviewCard",
+		false,
+		R.id.swDontRetrievePreviewCard
+	)
+	
+	
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)

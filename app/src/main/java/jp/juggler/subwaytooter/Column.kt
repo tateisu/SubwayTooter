@@ -1807,12 +1807,14 @@ class Column(
 							}
 							
 							// カードを取得する
-							this.list_tmp?.forEach { o ->
-								if(o is TootStatus)
-									o.card = parseItem(
-										::TootCard,
-										client.request("/api/v1/statuses/" + o.id + "/card")?.jsonObject
-									)
+							if( ! Pref.bpDontRetrievePreviewCard(context) ) {
+								this.list_tmp?.forEach { o ->
+									if(o is TootStatus)
+										o.card = parseItem(
+											::TootCard,
+											client.request("/api/v1/statuses/" + o.id + "/card")?.jsonObject
+										)
+								}
 							}
 							
 							//

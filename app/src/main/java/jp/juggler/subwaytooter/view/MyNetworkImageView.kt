@@ -202,7 +202,7 @@ class MyNetworkImageView : AppCompatImageView {
 					.build()
 				
 				val glideUrl = GlideUrl(url, glideHeaders)
-
+				
 				getGlide()?.asBitmap()?.load(glideUrl)
 					?.into(MyTarget(url, desiredWidth, desiredHeight))
 			}

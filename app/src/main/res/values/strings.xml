@@ -632,4 +632,5 @@
     <string name="direct_messages">Direct messages</string>
     <string name="unfavourite">Unfavourite</string>
     <string name="unboost">Unboost</string>
+    <string name="dont_retrieve_preview_card">Don\'t retrieve preview card</string>
 </resources>

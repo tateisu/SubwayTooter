@@ -113,10 +113,11 @@ object EmojiDecoder {
 			)
 		}
 		
-		internal fun addImageSpan(text : String?, @DrawableRes res_id : Int) {
+		internal fun addImageSpan(text : String, @DrawableRes res_id : Int) {
 			val context = options.context
 			if(context == null) {
-				addUnicodeString("(missing context)")
+				openNormalText()
+				sb.append(text)
 			} else {
 				closeNormalText()
 				val start = sb.length

@@ -197,11 +197,16 @@ open class TootAccount(
 		// HTMLエンコードされていない、生のnote
 		val note : String?
 		
+		// 2.4.0 から？
+		val fields : ArrayList<Pair<String, String>>?
+		
 		init {
 			this.privacy = src.parseString("privacy")
 			this.note = src.parseString("note")
 			// nullになることがあるが、falseと同じ扱いでよい
 			this.sensitive = src.optBoolean("sensitive", false)
+			//
+			this.fields = parseFields(src.optJSONArray("fields"))
 		}
 	}
 	

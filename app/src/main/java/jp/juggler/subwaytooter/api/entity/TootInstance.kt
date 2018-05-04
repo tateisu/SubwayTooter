@@ -8,8 +8,9 @@ import java.util.regex.Pattern
 class TootInstance(parser:TootParser,src : JSONObject) {
 	
 	companion object {
-		val rePleroma = Pattern.compile("\\bpleroma")
+		val rePleroma = Pattern.compile("\\bpleroma\\b",Pattern.CASE_INSENSITIVE)
 	}
+	
 	// いつ取得したか(内部利用)
 	var time_parse : Long = System.currentTimeMillis()
 	

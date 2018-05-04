@@ -647,8 +647,17 @@
     <string name="unfavourite">Unfavourite</string>
 	<string name="unboost">Unboost</string>
     <string name="dont_retrieve_preview_card">Don\'t retrieve preview card</string>
-
-    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+	<string name="field_name1">label1</string>
+	<string name="field_name2">label2</string>
+	<string name="field_name3">label3</string>
+	<string name="field_name4">label4</string>
+	<string name="field_value1">value1</string>
+	<string name="field_value2">value2</string>
+	<string name="field_value3">value3</string>
+	<string name="field_value4">value4</string>
+	<string name="profile_metadata">Profile metadata</string>
+	<string name="available_mastodon_2_4_later">(available in Mastodon 2.4 or later)</string>
+	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

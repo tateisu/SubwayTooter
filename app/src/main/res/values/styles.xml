@@ -272,7 +272,13 @@
         <item name="android:paddingEnd" tools:ignore="NewApi">0dp</item>
 
     </style>
+    <style name="setting_row_form_fields" parent="setting_row_form">
+        <item name="android:paddingLeft">8dp</item>
+        <item name="android:paddingRight">0dp</item>
+        <item name="android:paddingStart" tools:ignore="NewApi">8dp</item>
+        <item name="android:paddingEnd" tools:ignore="NewApi">0dp</item>
 
+    </style>
     <style name="setting_row_help">
         <item name="android:background">@drawable/btn_bg_transparent</item>
         <item name="android:textColor">?attr/colorAccent</item>

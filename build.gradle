@@ -1,10 +1,10 @@
 buildscript {
 
-    ext.kotlin_version = '1.2.40'
+    ext.kotlin_version = '1.2.41'
     ext.kotlin_coroutines_version = '0.21.2'
     ext.anko_version='0.10.4'
     ext.asl_version='27.1.1'
-    ext.firebase_version='15.0.0'
+    ext.firebase_version='15.0.2' // https://firebase.google.com/support/release-notes/android
 
     repositories {
         jcenter()

@@ -926,4 +926,14 @@
     <string name="unfavourite">お気に入り解除</string>
     <string name="unboost">ブースト解除</string>
     <string name="dont_retrieve_preview_card">プレビューカードを取得しない</string>
+    <string name="field_name1">ラベル1</string>
+    <string name="field_name2">ラベル2</string>
+    <string name="field_name3">ラベル3</string>
+    <string name="field_name4">ラベル4</string>
+    <string name="field_value1">内容1</string>
+    <string name="field_value2">内容2</string>
+    <string name="field_value3">内容3</string>
+    <string name="field_value4">内容4</string>
+    <string name="profile_metadata">プロフィール補足情報</string>
+    <string name="available_mastodon_2_4_later">(マストドン2.4以降で利用可能)</string>
 </resources>

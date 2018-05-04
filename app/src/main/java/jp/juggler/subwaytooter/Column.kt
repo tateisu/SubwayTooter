@@ -28,19 +28,20 @@ enum class StreamingIndicatorState {
 	LISTENING,
 }
 
-enum class ColumnTaskType{
+enum class ColumnTaskType {
 	LOADING,
 	REFRESH_TOP,
 	REFRESH_BOTTOM,
 	GAP
 }
+
 abstract class ColumnTask(
-	val ctType: ColumnTaskType
+	val ctType : ColumnTaskType
 ) : AsyncTask<Void, Void, TootApiResult?>() {
+	
 	val ctStarted = AtomicBoolean(false)
 	val ctClosed = AtomicBoolean(false)
 }
-
 
 class Column(
 	val app_state : AppState,
@@ -359,7 +360,6 @@ class Column(
 	
 	//////////////////////////////////////////////////////////////////////////////////////
 	
-
 	internal var lastTask : ColumnTask? = null
 	
 	internal var bInitialLoading : Boolean = false
@@ -1420,7 +1420,7 @@ class Column(
 		fireShowContent(reason = "loading start", reset = true)
 		
 		val task = @SuppressLint("StaticFieldLeak")
-		object : ColumnTask(ColumnTaskType.LOADING){
+		object : ColumnTask(ColumnTaskType.LOADING) {
 			internal var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 			
 			internal var instance_tmp : TootInstance? = null
@@ -1702,8 +1702,12 @@ class Column(
 									)
 									if(with_attachment && ! with_highlight) path += "&only_media=1"
 									
-									if(instance?.isEnoughVersion(version_1_6) == true) {
-										getStatusesPinned(client, "$path&pinned=1")
+									if(instance != null
+										&& instance.isEnoughVersion(version_1_6)
+									// 将来的に正しく判定できる見込みがないので、Pleroma条件でのフィルタは行わない
+									// && instance.instanceType != TootInstance.InstanceType.Pleroma
+									) {
+										getStatusesPinned(client, "$path&pinned=true")
 									}
 									
 									return getStatuses(client, path)
@@ -1807,7 +1811,7 @@ class Column(
 							}
 							
 							// カードを取得する
-							if( ! Pref.bpDontRetrievePreviewCard(context) ) {
+							if(! Pref.bpDontRetrievePreviewCard(context)) {
 								this.list_tmp?.forEach { o ->
 									if(o is TootStatus)
 										o.card = parseItem(
@@ -1911,8 +1915,8 @@ class Column(
 						log.trace(ex)
 					}
 					ctClosed.set(true)
-					runOnMainLooperDelayed(333L){
-						if( !isCancelled ) fireShowColumnStatus()
+					runOnMainLooperDelayed(333L) {
+						if(! isCancelled) fireShowColumnStatus()
 					}
 				}
 			}
@@ -2079,10 +2083,12 @@ class Column(
 		mRefreshLoadingError = ""
 		
 		val task = @SuppressLint("StaticFieldLeak")
-		object : ColumnTask( when{
-			bBottom -> ColumnTaskType.REFRESH_BOTTOM
-			else->ColumnTaskType.REFRESH_TOP
-		}){
+		object : ColumnTask(
+			when {
+				bBottom -> ColumnTaskType.REFRESH_BOTTOM
+				else -> ColumnTaskType.REFRESH_TOP
+			}
+		) {
 			internal var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 			
 			internal var list_tmp : ArrayList<TimelineItem>? = null
@@ -2739,8 +2745,8 @@ class Column(
 						log.trace(ex)
 					}
 					ctClosed.set(true)
-					runOnMainLooperDelayed(333L){
-						if( !isCancelled ) fireShowColumnStatus()
+					runOnMainLooperDelayed(333L) {
+						if(! isCancelled) fireShowColumnStatus()
 					}
 				}
 			}
@@ -2885,7 +2891,7 @@ class Column(
 		mRefreshLoadingError = ""
 		
 		val task = @SuppressLint("StaticFieldLeak")
-		object : ColumnTask(ColumnTaskType.GAP){
+		object : ColumnTask(ColumnTaskType.GAP) {
 			internal var max_id = gap.max_id
 			internal val since_id = gap.since_id
 			internal var list_tmp : ArrayList<TimelineItem>? = null
@@ -3191,10 +3197,10 @@ class Column(
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
-
+					
 					ctClosed.set(true)
-					runOnMainLooperDelayed(333L){
-						if( !isCancelled ) fireShowColumnStatus()
+					runOnMainLooperDelayed(333L) {
+						if(! isCancelled) fireShowColumnStatus()
 					}
 				}
 			}
@@ -3553,7 +3559,7 @@ class Column(
 	}
 	
 	fun getStreamingStatus() : StreamingIndicatorState {
-		if(is_dispose.get() || ! bFirstInitialized ) return StreamingIndicatorState.NONE
+		if(is_dispose.get() || ! bFirstInitialized) return StreamingIndicatorState.NONE
 		val stream_path = streamPath ?: return StreamingIndicatorState.NONE
 		return app_state.stream_reader.getStreamingStatus(access_info, stream_path, streamCallback)
 	}

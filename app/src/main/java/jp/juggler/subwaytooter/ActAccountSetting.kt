@@ -75,6 +75,7 @@ class ActAccountSetting
 		
 		internal const val max_length_display_name = 30
 		internal const val max_length_note = 160
+		internal const val max_length_fields = 255
 		
 		private const val PERMISSION_REQUEST_AVATAR = 1
 		private const val PERMISSION_REQUEST_HEADER = 2
@@ -140,6 +141,12 @@ class ActAccountSetting
 	internal lateinit var handler : Handler
 	
 	internal var loading = false
+	
+	private lateinit var listEtFieldName : List<EditText>
+	private lateinit var listEtFieldValue : List<EditText>
+	private lateinit var listFieldNameInvalidator : List<NetworkEmojiInvalidator>
+	private lateinit var listFieldValueInvalidator : List<NetworkEmojiInvalidator>
+	private lateinit var btnFields : View
 	
 	///////////////////////////////////////////////////
 	
@@ -294,6 +301,22 @@ class ActAccountSetting
 		btnNote = findViewById(R.id.btnNote)
 		cbLocked = findViewById(R.id.cbLocked)
 		
+		listEtFieldName = arrayOf(
+			R.id.etFieldName1,
+			R.id.etFieldName2,
+			R.id.etFieldName3,
+			R.id.etFieldName4
+		).map { requireNotNull(findViewById<EditText>(it)) }
+		
+		listEtFieldValue = arrayOf(
+			R.id.etFieldValue1,
+			R.id.etFieldValue2,
+			R.id.etFieldValue3,
+			R.id.etFieldValue4
+		).map { requireNotNull(findViewById<EditText>(it)) }
+		
+		btnFields = findViewById(R.id.btnFields)
+		
 		btnOpenBrowser.setOnClickListener(this)
 		btnAccessToken.setOnClickListener(this)
 		btnInputAccessToken.setOnClickListener(this)
@@ -304,6 +327,7 @@ class ActAccountSetting
 		btnProfileHeader.setOnClickListener(this)
 		btnDisplayName.setOnClickListener(this)
 		btnNote.setOnClickListener(this)
+		btnFields.setOnClickListener(this)
 		
 		swNSFWOpen.setOnCheckedChangeListener(this)
 		swDontShowTimeout.setOnCheckedChangeListener(this)
@@ -331,6 +355,14 @@ class ActAccountSetting
 		
 		name_invalidator = NetworkEmojiInvalidator(handler, etDisplayName)
 		note_invalidator = NetworkEmojiInvalidator(handler, etNote)
+		
+		listFieldNameInvalidator = listEtFieldName.map {
+			NetworkEmojiInvalidator(handler, it)
+		}
+		
+		listFieldValueInvalidator = listEtFieldValue.map {
+			NetworkEmojiInvalidator(handler, it)
+		}
 		
 	}
 	
@@ -362,8 +394,8 @@ class ActAccountSetting
 		cbConfirmFavourite.isChecked = a.confirm_favourite
 		cbConfirmUnboost.isChecked = a.confirm_unboost
 		cbConfirmUnfavourite.isChecked = a.confirm_unfavourite
-
-
+		
+		
 		cbConfirmToot.isChecked = a.confirm_post
 		
 		notification_sound_uri = a.sound_uri
@@ -441,13 +473,12 @@ class ActAccountSetting
 	}
 	
 	override fun onCheckedChanged(buttonView : CompoundButton, isChecked : Boolean) {
-		if(buttonView == cbLocked){
-			if(!profile_busy) sendLocked(isChecked)
-		}else {
+		if(buttonView == cbLocked) {
+			if(! profile_busy) sendLocked(isChecked)
+		} else {
 			saveUIToData()
 		}
 	}
-	
 	
 	override fun onClick(v : View) {
 		when(v.id) {
@@ -476,9 +507,11 @@ class ActAccountSetting
 			
 			R.id.btnProfileHeader -> pickHeaderImage()
 			
-			R.id.btnDisplayName -> sendDisplayName(false)
+			R.id.btnDisplayName -> sendDisplayName()
 			
-			R.id.btnNote -> sendNote(false)
+			R.id.btnNote -> sendNote()
+			
+			R.id.btnFields -> sendFields()
 			
 			R.id.btnNotificationStyleEdit -> if(Build.VERSION.SDK_INT >= 26) {
 				val channel = NotificationHelper.createNotificationChannel(this, account)
@@ -486,6 +519,7 @@ class ActAccountSetting
 				intent.putExtra(Settings.EXTRA_CHANNEL_ID, channel.id)
 				intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName)
 				startActivity(intent)
+				
 			}
 		}
 	}
@@ -684,8 +718,14 @@ class ActAccountSetting
 				R.attr.ic_question
 			)
 		)
-		etDisplayName.setText("(loading...)")
-		etNote.setText("(loading...)")
+		
+		val loadingText = when(account.isPseudo) {
+			true -> "(disabled for pseudo account)"
+			else -> "(loading…)"
+		}
+		etDisplayName.setText(loadingText)
+		etNote.setText(loadingText)
+		
 		// 初期状態では編集不可能
 		btnProfileAvatar.isEnabled = false
 		btnProfileHeader.isEnabled = false
@@ -694,10 +734,18 @@ class ActAccountSetting
 		etNote.isEnabled = false
 		btnNote.isEnabled = false
 		cbLocked.isEnabled = false
-		// 疑似アカウントなら編集不可のまま
-		if(account.isPseudo) return
 		
-		loadProfile()
+		for(et in listEtFieldName) {
+			et.setText(loadingText)
+			et.isEnabled = false
+		}
+		for(et in listEtFieldValue) {
+			et.setText(loadingText)
+			et.isEnabled = false
+		}
+		
+		// 疑似アカウントなら編集不可のまま
+		if(! account.isPseudo) loadProfile()
 	}
 	
 	private fun loadProfile() {
@@ -730,7 +778,7 @@ class ActAccountSetting
 		})
 	}
 	
-	var profile_busy :Boolean = false
+	var profile_busy : Boolean = false
 	
 	internal fun showProfile(src : TootAccount) {
 		profile_busy = true
@@ -749,19 +797,19 @@ class ActAccountSetting
 				src.header
 			)
 			
+			val decodeOptions = DecodeOptions(
+				context = this@ActAccountSetting,
+				emojiMapProfile = src.profile_emojis,
+				linkHelper = account
+			)
+			
 			val display_name = src.display_name
-			val name = DecodeOptions(
-				context = this,
-				emojiMapProfile = src.profile_emojis
-			).decodeEmoji(display_name)
+			val name = decodeOptions.decodeEmoji(display_name)
 			etDisplayName.setText(name)
 			name_invalidator.register(name)
 			
 			val noteString = src.source?.note ?: src.note
-			val noteSpannable = DecodeOptions(
-				context = this,
-				emojiMapProfile = src.profile_emojis
-			).decodeEmoji(noteString)
+			val noteSpannable = decodeOptions.decodeEmoji(noteString)
 			
 			etNote.setText(noteSpannable)
 			note_invalidator.register(noteSpannable)
@@ -776,13 +824,70 @@ class ActAccountSetting
 			etNote.isEnabled = true
 			btnNote.isEnabled = true
 			cbLocked.isEnabled = true
-		}finally{
+			
+			if(src.source?.fields != null) {
+				val fields = src.source.fields
+				listEtFieldName.forEachIndexed { i, et ->
+					et.setText(
+						decodeOptions.decodeEmoji(
+							when {
+								i >= fields.size -> ""
+								else -> fields[i].first
+							}
+						)
+					)
+					et.isEnabled = true
+				}
+				
+				listEtFieldValue.forEachIndexed { i, et ->
+					et.setText(
+						decodeOptions.decodeEmoji(
+							when {
+								i >= fields.size -> ""
+								else -> fields[i].second
+							}
+						)
+					)
+					et.isEnabled = true
+				}
+				
+			} else {
+				val fields = src.fields
+				
+				listEtFieldName.forEachIndexed { i, et ->
+					et.setText(
+						decodeOptions.decodeEmoji(
+							when {
+								fields == null || i >= fields.size -> ""
+								else -> fields[i].first
+							}
+						)
+					)
+					et.isEnabled = true
+				}
+				
+				listEtFieldValue.forEachIndexed { i, et ->
+					et.text = decodeOptions.decodeHTML(
+						when {
+							fields == null || i >= fields.size -> ""
+							else -> fields[i].second
+						}
+					)
+					et.isEnabled = true
+				}
+			}
+			
+		} finally {
 			profile_busy = false
 		}
 		
 	}
 	
 	internal fun updateCredential(key : String, value : Any) {
+		updateCredential(listOf(Pair(key, value)))
+	}
+	
+	internal fun updateCredential(args : List<Pair<String, Any>>) {
 		
 		TootTaskRunner(this).run(account, object : TootTask {
 			
@@ -793,34 +898,42 @@ class ActAccountSetting
 					val multipart_body_builder = MultipartBody.Builder()
 						.setType(MultipartBody.FORM)
 					
-					if(value is String) {
-						multipart_body_builder.addFormDataPart(key, value)
-					}else if(value is Boolean) {
-							multipart_body_builder.addFormDataPart(key, if(value) "true" else "false")
+					for(arg in args) {
+						val key = arg.first
+						val value = arg.second
 						
-					} else if(value is InputStreamOpener) {
-						
-						val fileName = "%x".format(System.currentTimeMillis())
-						
-						multipart_body_builder.addFormDataPart(
-							key,
-							fileName,
-							object : RequestBody() {
-								override fun contentType() : MediaType? {
-									return MediaType.parse(value.mimeType)
-								}
-								
-								override fun writeTo(sink : BufferedSink) {
-									value.open().use { inData ->
-										val tmp = ByteArray(4096)
-										while(true) {
-											val r = inData.read(tmp, 0, tmp.size)
-											if(r <= 0) break
-											sink.write(tmp, 0, r)
+						if(value is String) {
+							multipart_body_builder.addFormDataPart(key, value)
+						} else if(value is Boolean) {
+							multipart_body_builder.addFormDataPart(
+								key,
+								if(value) "true" else "false"
+							)
+							
+						} else if(value is InputStreamOpener) {
+							
+							val fileName = "%x".format(System.currentTimeMillis())
+							
+							multipart_body_builder.addFormDataPart(
+								key,
+								fileName,
+								object : RequestBody() {
+									override fun contentType() : MediaType? {
+										return MediaType.parse(value.mimeType)
+									}
+									
+									override fun writeTo(sink : BufferedSink) {
+										value.open().use { inData ->
+											val tmp = ByteArray(4096)
+											while(true) {
+												val r = inData.read(tmp, 0, tmp.size)
+												if(r <= 0) break
+												sink.write(tmp, 0, r)
+											}
 										}
 									}
-								}
-							})
+								})
+						}
 					}
 					
 					val request_builder = Request.Builder()
@@ -838,8 +951,10 @@ class ActAccountSetting
 					return result
 					
 				} finally {
-					(value as? InputStreamOpener)?.deleteTempFile()
-					
+					for(arg in args) {
+						val value = arg.second
+						(value as? InputStreamOpener)?.deleteTempFile()
+					}
 				}
 			}
 			
@@ -851,19 +966,22 @@ class ActAccountSetting
 					showProfile(data)
 				} else {
 					showToast(this@ActAccountSetting, true, result.error)
-					if( key == "locked" && value is Boolean){
-						profile_busy = true
-						cbLocked.isChecked = ! value
-						profile_busy = false
+					for(arg in args) {
+						val key = arg.first
+						val value = arg.second
+						if(key == "locked" && value is Boolean) {
+							profile_busy = true
+							cbLocked.isChecked = ! value
+							profile_busy = false
+						}
 					}
 				}
-				
 			}
 		})
 		
 	}
 	
-	private fun sendDisplayName(bConfirmed : Boolean) {
+	private fun sendDisplayName(bConfirmed : Boolean = false) {
 		val sv = etDisplayName.text.toString()
 		if(! bConfirmed) {
 			val length = sv.codePointCount(0, sv.length)
@@ -878,7 +996,7 @@ class ActAccountSetting
 						)
 					)
 					.setNegativeButton(R.string.cancel, null)
-					.setPositiveButton(R.string.ok) { _, _ -> sendDisplayName(true) }
+					.setPositiveButton(R.string.ok) { _, _ -> sendDisplayName(bConfirmed = true) }
 					.setCancelable(true)
 					.show()
 				return
@@ -887,7 +1005,7 @@ class ActAccountSetting
 		updateCredential("display_name", EmojiDecoder.decodeShortCode(sv))
 	}
 	
-	private fun sendNote(bConfirmed : Boolean) {
+	private fun sendNote(bConfirmed : Boolean = false) {
 		val sv = etNote.text.toString()
 		if(! bConfirmed) {
 			val length = sv.codePointCount(0, sv.length)
@@ -902,7 +1020,7 @@ class ActAccountSetting
 						)
 					)
 					.setNegativeButton(R.string.cancel, null)
-					.setPositiveButton(R.string.ok) { _, _ -> sendNote(true) }
+					.setPositiveButton(R.string.ok) { _, _ -> sendNote(bConfirmed = true) }
 					.setCancelable(true)
 					.show()
 				return
@@ -911,11 +1029,46 @@ class ActAccountSetting
 		updateCredential("note", EmojiDecoder.decodeShortCode(sv))
 	}
 	
-	private fun sendLocked( willLocked : Boolean) {
+	private fun sendLocked(willLocked : Boolean) {
 		updateCredential("locked", willLocked)
 	}
 	
-	
+	private fun sendFields(bConfirmed : Boolean = false) {
+		val args = ArrayList<Pair<String, String>>()
+		var lengthLongest = - 1
+		for(i in 0 until listEtFieldName.size) {
+			val k = listEtFieldName[i].text.toString().trim()
+			val v = listEtFieldValue[i].text.toString().trim()
+			args.add(Pair("fields_attributes[$i][name]", k))
+			args.add(Pair("fields_attributes[$i][value]", v))
+			
+			lengthLongest = Math.max(
+				lengthLongest,
+				Math.max(
+					k.codePointCount(0, k.length),
+					v.codePointCount(0, v.length)
+				)
+			)
+		}
+		if(! bConfirmed && lengthLongest > max_length_fields) {
+			AlertDialog.Builder(this)
+				.setMessage(
+					getString(
+						R.string.length_warning,
+						getString(R.string.profile_metadata),
+						lengthLongest,
+						max_length_fields
+					)
+				)
+				.setNegativeButton(R.string.cancel, null)
+				.setPositiveButton(R.string.ok) { _, _ -> sendFields(bConfirmed = true) }
+				.setCancelable(true)
+				.show()
+			return
+		}
+		
+		updateCredential(args)
+	}
 	
 	private fun pickAvatarImage() {
 		openPicker(PERMISSION_REQUEST_AVATAR)
@@ -1074,7 +1227,7 @@ class ActAccountSetting
 								get() = mime_type
 							
 							@Throws(IOException::class)
-							override fun open() =FileInputStream(temp_file)
+							override fun open() = FileInputStream(temp_file)
 							
 							override fun deleteTempFile() {
 								temp_file.delete()

@@ -197,6 +197,140 @@
 
         <View style="@style/setting_divider"/>
 
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/profile_metadata"
+            />
+
+
+        <LinearLayout style="@style/setting_row_form_fields">
+            <TextView
+                style="@style/setting_wrap"
+                android:labelFor="@+id/etFieldName1"
+                android:text="@string/field_name1"
+                />
+            <EditText
+                android:id="@+id/etFieldName1"
+                style="@style/setting_horizontal_stretch"
+                android:inputType="text"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form_fields">
+            <TextView
+                style="@style/setting_wrap"
+                android:labelFor="@+id/etFieldValue1"
+                android:text="@string/field_value1"
+                />
+            <EditText
+                android:id="@+id/etFieldValue1"
+                style="@style/setting_horizontal_stretch"
+                android:inputType="textMultiLine"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form_fields">
+            <TextView
+                style="@style/setting_wrap"
+                android:labelFor="@+id/etFieldName2"
+                android:text="@string/field_name2"
+                />
+            <EditText
+                android:id="@+id/etFieldName2"
+                style="@style/setting_horizontal_stretch"
+                android:inputType="text"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form_fields">
+
+            <TextView
+                style="@style/setting_wrap"
+                android:labelFor="@+id/etFieldValue2"
+                android:text="@string/field_value2"
+                />
+            <EditText
+                android:id="@+id/etFieldValue2"
+                style="@style/setting_horizontal_stretch"
+                android:inputType="textMultiLine"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form_fields">
+            <TextView
+                style="@style/setting_wrap"
+                android:labelFor="@+id/etFieldName3"
+                android:text="@string/field_name3"
+                />
+            <EditText
+                android:id="@+id/etFieldName3"
+                style="@style/setting_horizontal_stretch"
+                android:inputType="text"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form_fields">
+            <TextView
+                style="@style/setting_wrap"
+                android:labelFor="@+id/etFieldValue3"
+                android:text="@string/field_value3"
+                />
+            <EditText
+                android:id="@+id/etFieldValue3"
+                style="@style/setting_horizontal_stretch"
+                android:inputType="textMultiLine"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form_fields">
+            <TextView
+                style="@style/setting_wrap"
+                android:labelFor="@+id/etFieldName4"
+                android:text="@string/field_name4"
+                />
+            <EditText
+                android:id="@+id/etFieldName4"
+                style="@style/setting_horizontal_stretch"
+                android:inputType="text"
+                />
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form_fields">
+            <TextView
+                style="@style/setting_wrap"
+                android:labelFor="@+id/etFieldValue4"
+                android:text="@string/field_value4"
+                />
+            <EditText
+                android:id="@+id/etFieldValue4"
+                style="@style/setting_horizontal_stretch"
+                android:inputType="textMultiLine"
+                />
+
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form_fields">
+            <TextView
+                style="@style/setting_horizontal_stretch"
+                android:text="@string/available_mastodon_2_4_later"
+                android:layout_gravity="center_vertical"
+                android:gravity="end"
+                />
+            <ImageButton
+                android:id="@+id/btnFields"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/btn_bg_transparent"
+                android:contentDescription="@string/post"
+                android:src="?attr/btn_post"
+                />
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
         <TextView
             style="@style/setting_row_label"
             android:text="@string/actions"

@@ -231,7 +231,9 @@ internal class ViewHolderHeaderProfile(
 					context = activity,
 					decodeEmoji = true,
 					linkHelper = access_info,
-					short = true
+					short = true,
+					emojiMapCustom = who.custom_emojis,
+					emojiMapProfile = who.profile_emojis
 				)
 				
 				val content_color = column.content_color
@@ -248,24 +250,31 @@ internal class ViewHolderHeaderProfile(
 						LinearLayout.LayoutParams.MATCH_PARENT,
 						LinearLayout.LayoutParams.WRAP_CONTENT
 					)
+					val nameText = decodeOptions.decodeEmoji(item.first)
+					val nameInvalidator = NetworkEmojiInvalidator(activity.handler, nameView)
+					nameInvalidator.register(nameText)
+					
 					nameLp.topMargin = (density * 6f).toInt()
 					nameView.layoutParams = nameLp
-					nameView.text = decodeOptions.decodeEmoji(item.first)
+					nameView.text = nameText
 					nameView.setTextColor(c)
 					nameView.typeface = nameTypeface
 					nameView.movementMethod = MyLinkMovementMethod
 					llFields.addView(nameView)
 					
-					//
+					// 値の方はHTMLエンコードされている
 					val valueView = MyTextView(activity)
 					val valueLp = LinearLayout.LayoutParams(
 						LinearLayout.LayoutParams.MATCH_PARENT,
 						LinearLayout.LayoutParams.WRAP_CONTENT
 					)
+					val valueText = decodeOptions.decodeHTML(item.second)
+					val valueInvalidator = NetworkEmojiInvalidator(activity.handler, valueView)
+					valueInvalidator.register(valueText)
+					
 					valueLp.startMargin = (density * 32f).toInt()
 					valueView.layoutParams = valueLp
-					valueView.text =
-						decodeOptions.decodeHTML(item.second) // 値の方はHTML文字参照のエンコードが行われている
+					valueView.text = valueText
 					valueView.setTextColor(c)
 					valueView.typeface = valueTypeface
 					valueView.movementMethod = MyLinkMovementMethod

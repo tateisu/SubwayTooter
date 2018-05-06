@@ -82,10 +82,13 @@ open class TootAccount(
 	
 	val fields : ArrayList<Pair<String, String>>?
 	
+	val custom_emojis : java.util.HashMap<String, CustomEmoji>?
+	
 	init {
 		var sv : String?
 		
 		// 絵文字データは先に読んでおく
+		this.custom_emojis = parseMapOrNull(::CustomEmoji, src.optJSONArray("emojis") )
 		this.profile_emojis = parseMapOrNull(::NicoProfileEmoji, src.optJSONArray("profile_emojis"))
 		
 		// 疑似アカウントにacctとusernameだけ
@@ -104,7 +107,9 @@ open class TootAccount(
 			parser.linkHelper,
 			short = true,
 			decodeEmoji = true,
-			emojiMapProfile = this.profile_emojis
+			emojiMapProfile = this.profile_emojis,
+			emojiMapCustom = this.custom_emojis,
+			unwrapEmojiImageTag = true
 		).decodeHTML(this.note)
 		
 		this.source = parseSource(src.optJSONObject("source"))
@@ -218,7 +223,11 @@ open class TootAccount(
 		val sv = reWhitespace.matcher(display_name).replaceAll(" ")
 		
 		// decode emoji code
-		return DecodeOptions(context, emojiMapProfile = profile_emojis).decodeEmoji(sv)
+		return DecodeOptions(
+			context,
+			emojiMapProfile = profile_emojis,
+			emojiMapCustom = custom_emojis
+		).decodeEmoji(sv)
 	}
 	
 	companion object {

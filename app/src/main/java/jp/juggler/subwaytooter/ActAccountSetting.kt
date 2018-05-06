@@ -799,8 +799,9 @@ class ActAccountSetting
 			
 			val decodeOptions = DecodeOptions(
 				context = this@ActAccountSetting,
+				linkHelper = account,
 				emojiMapProfile = src.profile_emojis,
-				linkHelper = account
+				emojiMapCustom = src.custom_emojis
 			)
 			
 			val display_name = src.display_name
@@ -828,59 +829,64 @@ class ActAccountSetting
 			if(src.source?.fields != null) {
 				val fields = src.source.fields
 				listEtFieldName.forEachIndexed { i, et ->
-					et.setText(
-						decodeOptions.decodeEmoji(
-							when {
-								i >= fields.size -> ""
-								else -> fields[i].first
-							}
-						)
+					val text = decodeOptions.decodeEmoji(
+						when {
+							i >= fields.size -> ""
+							else -> fields[i].first
+						}
 					)
+					et.setText( text )
 					et.isEnabled = true
+					val invalidator = NetworkEmojiInvalidator(et.handler,et)
+					invalidator.register(text)
 				}
 				
 				listEtFieldValue.forEachIndexed { i, et ->
-					et.setText(
-						decodeOptions.decodeEmoji(
-							when {
-								i >= fields.size -> ""
-								else -> fields[i].second
-							}
-						)
+					val text =decodeOptions.decodeEmoji(
+						when {
+							i >= fields.size -> ""
+							else -> fields[i].second
+						}
 					)
+					et.setText( text )
 					et.isEnabled = true
+					val invalidator = NetworkEmojiInvalidator(et.handler,et)
+					invalidator.register(text)
 				}
 				
 			} else {
 				val fields = src.fields
 				
 				listEtFieldName.forEachIndexed { i, et ->
-					et.setText(
-						decodeOptions.decodeEmoji(
-							when {
-								fields == null || i >= fields.size -> ""
-								else -> fields[i].first
-							}
-						)
+					val text = 	decodeOptions.decodeEmoji(
+						when {
+							fields == null || i >= fields.size -> ""
+							else -> fields[i].first
+						}
 					)
+					et.setText(text)
 					et.isEnabled = true
+					val invalidator = NetworkEmojiInvalidator(et.handler,et)
+					invalidator.register(text)
 				}
 				
 				listEtFieldValue.forEachIndexed { i, et ->
-					et.text = decodeOptions.decodeHTML(
+					val text =  decodeOptions.decodeHTML(
 						when {
 							fields == null || i >= fields.size -> ""
 							else -> fields[i].second
 						}
 					)
+					et.text = text
 					et.isEnabled = true
+					val invalidator = NetworkEmojiInvalidator(et.handler,et)
+					invalidator.register(text)
 				}
 			}
 			
 		} finally {
 			profile_busy = false
 		}
-		
 	}
 	
 	internal fun updateCredential(key : String, value : Any) {

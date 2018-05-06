@@ -35,6 +35,8 @@ object HTMLDecoder {
 	private val reTag = Pattern.compile("<(/?)(\\w+)")
 	private val reTagEnd = Pattern.compile("(/?)>$")
 	private val reHref = Pattern.compile("\\bhref=\"([^\"]*)\"")
+	private val reAttribute = Pattern.compile("\\s+([A-Za-z0-9:_-]+)\\s*=([\"'])([^>]*?)\\2")
+	private val reShortcode = Pattern.compile(":[A-Za-z0-9_-]+:")
 	
 	private val block_tag : HashSet<String> by lazy {
 		val set = HashSet<String>()
@@ -286,7 +288,24 @@ object HTMLDecoder {
 			}
 			
 			if("img" == tag) {
-				sb_tmp.append("<img/>")
+				var replaced = false
+				if(options.unwrapEmojiImageTag) {
+					val attrs = parseAttributes(text)
+					val cssClass = attrs["class"]
+					val title = attrs["title"]
+					if(cssClass != null
+						&& title != null
+						&& cssClass.contains("emojione")
+						&& reShortcode.matcher(title).find()
+					) {
+						replaced = true
+						sb_tmp.append(options.decodeEmoji(title))
+					}
+				}
+				
+				if(! replaced) {
+					sb_tmp.append("<img/>")
+				}
 			} else {
 				for(child in child_nodes) {
 					child.encodeSpan(options, sb_tmp)
@@ -299,9 +318,9 @@ object HTMLDecoder {
 				val start = sb.length
 				
 				sb.append(
-					encodeUrl(options,sb_tmp.toString(),href)
+					encodeUrl(options, sb_tmp.toString(), href)
 				)
-
+				
 				val end = sb.length
 				
 				if(end > start) {
@@ -368,7 +387,6 @@ object HTMLDecoder {
 			}
 		}
 		
-
 		private fun encodeUrl(
 			options : DecodeOptions,
 			display_url : String,
@@ -379,7 +397,7 @@ object HTMLDecoder {
 			if(context == null || ! options.short) {
 				return display_url
 			}
-
+			
 			if(! display_url.startsWith("http")) {
 				if(display_url.startsWith("@") && href != null && Pref.bpMentionFullAcct(App1.pref)) {
 					// メンションをfull acct にする
@@ -392,9 +410,9 @@ object HTMLDecoder {
 				return display_url
 			}
 			
-
 			
-			if( options.isMediaAttachment(href)) {
+			
+			if(options.isMediaAttachment(href)) {
 				val sb = SpannableStringBuilder()
 				sb.append(href)
 				val start = 0
@@ -431,7 +449,19 @@ object HTMLDecoder {
 		}
 	}
 	
-	fun decodeHTML( options : DecodeOptions, src : String? ) : SpannableStringBuilder {
+	// split attributes
+	private fun parseAttributes(text : String) : HashMap<String, String> {
+		val dst = HashMap<String, String>()
+		val m = reAttribute.matcher(text)
+		while(m.find()) {
+			val name = m.group(1).toLowerCase()
+			val value = decodeEntity(m.group(3))
+			dst[name] = value
+		}
+		return dst
+	}
+	
+	fun decodeHTML(options : DecodeOptions, src : String?) : SpannableStringBuilder {
 		
 		val sb = SpannableStringBuilder()
 		

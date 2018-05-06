@@ -19,7 +19,8 @@ class DecodeOptions(
 	var linkTag : Any? = null,
 	var emojiMapCustom : HashMap<String, CustomEmoji>? = null,
 	var emojiMapProfile : HashMap<String, NicoProfileEmoji>? = null,
-	var highlightTrie : WordTrieTree? = null
+	var highlightTrie : WordTrieTree? = null,
+	var unwrapEmojiImageTag :Boolean = false
 ) {
 	
 	internal fun isMediaAttachment(url : String?) : Boolean {

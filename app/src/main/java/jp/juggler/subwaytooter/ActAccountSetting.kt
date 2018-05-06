@@ -803,6 +803,12 @@ class ActAccountSetting
 				emojiMapProfile = src.profile_emojis,
 				emojiMapCustom = src.custom_emojis
 			)
+			// fieldsのnameにはカスタム絵文字が適用されない
+			val decodeOptionsNoCustomEmoji = DecodeOptions(
+				context = this@ActAccountSetting,
+				linkHelper = account,
+				emojiMapProfile = src.profile_emojis
+			)
 			
 			val display_name = src.display_name
 			val name = decodeOptions.decodeEmoji(display_name)
@@ -829,7 +835,7 @@ class ActAccountSetting
 			if(src.source?.fields != null) {
 				val fields = src.source.fields
 				listEtFieldName.forEachIndexed { i, et ->
-					val text = decodeOptions.decodeEmoji(
+					val text = decodeOptionsNoCustomEmoji.decodeEmoji(
 						when {
 							i >= fields.size -> ""
 							else -> fields[i].first
@@ -858,7 +864,7 @@ class ActAccountSetting
 				val fields = src.fields
 				
 				listEtFieldName.forEachIndexed { i, et ->
-					val text = 	decodeOptions.decodeEmoji(
+					val text = 	decodeOptionsNoCustomEmoji.decodeEmoji(
 						when {
 							fields == null || i >= fields.size -> ""
 							else -> fields[i].first

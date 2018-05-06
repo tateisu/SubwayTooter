@@ -236,6 +236,16 @@ internal class ViewHolderHeaderProfile(
 					emojiMapProfile = who.profile_emojis
 				)
 				
+				// fieldsのnameにはカスタム絵文字が適用されない
+				val decodeOptionsNoCustomEmoji = DecodeOptions(
+					context = activity,
+					decodeEmoji = true,
+					linkHelper = access_info,
+					short = true,
+					emojiMapProfile = who.profile_emojis
+				)
+
+
 				val content_color = column.content_color
 				val c = if(content_color != 0) content_color else default_color
 				
@@ -250,7 +260,7 @@ internal class ViewHolderHeaderProfile(
 						LinearLayout.LayoutParams.MATCH_PARENT,
 						LinearLayout.LayoutParams.WRAP_CONTENT
 					)
-					val nameText = decodeOptions.decodeEmoji(item.first)
+					val nameText = decodeOptionsNoCustomEmoji.decodeEmoji(item.first)
 					val nameInvalidator = NetworkEmojiInvalidator(activity.handler, nameView)
 					nameInvalidator.register(nameText)
 					

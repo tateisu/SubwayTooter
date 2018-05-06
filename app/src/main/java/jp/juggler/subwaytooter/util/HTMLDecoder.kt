@@ -406,7 +406,7 @@ object HTMLDecoder {
 						return "@" + m.group(2) + "@" + m.group(1)
 					}
 				}
-				// ハッシュタグやメンションは変更しない
+				// ハッシュタグやメンションはURLの短縮表示の対象外
 				return display_url
 			}
 			

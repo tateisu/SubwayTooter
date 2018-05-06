@@ -13,7 +13,15 @@ buildscript {
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:3.1.2'
-        classpath 'com.google.gms:google-services:3.0.0'
+        classpath 'com.google.gms:google-services:3.2.1'
+        // https://android-developers.googleblog.com/2018/05/announcing-new-sdk-versioning.html では
+        // com.google.gms:google-services:3.3.0 以降を使うように書いてあるんだけど、3.3.0にするとGradle sync に失敗する。
+        // エラーメッセージに特徴的な部分がなく原因はよく分からなかった。
+        // https://developers.google.com/android/guides/google-services-plugin のドキュメントだと3.2.1と書かれてるし、暫く待つかなあ…
+        // 関連
+        // https://stackoverflow.com/questions/50166102/gradle-project-sync-failing-after-google-announced-the-new-sdk-versioning-system
+        // https://issuetracker.google.com/issues/79122163
+
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }

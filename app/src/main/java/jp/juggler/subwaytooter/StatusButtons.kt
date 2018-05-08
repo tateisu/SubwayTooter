@@ -78,13 +78,14 @@ internal class StatusButtons(
 				R.attr.ic_mail,
 				""
 			)
-			TootStatus.VISIBILITY_PRIVATE == status.visibility -> setButton(
-				btnBoost,
-				false,
-				color_accent,
-				R.attr.ic_lock,
-				""
-			)
+// マストドン2.4.0から非公開トゥートもブーストできるようになった
+//			TootStatus.VISIBILITY_PRIVATE == status.visibility -> setButton(
+//				btnBoost,
+//				false,
+//				color_accent,
+//				R.attr.ic_lock,
+//				""
+//			)
 			activity.app_state.isBusyBoost(access_info, status) -> setButton(
 				btnBoost,
 				false,

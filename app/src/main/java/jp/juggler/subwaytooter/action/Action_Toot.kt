@@ -241,23 +241,53 @@ object Action_Toot {
 		timeline_account : SavedAccount,
 		status : TootStatus?
 	) {
-		if(status == null) return
+		status?: return
+
 		val who_host = timeline_account.host
+		val status_owner = timeline_account.getFullAcct(status.account)
 		
-		AccountPicker.pick(
-			activity,
-			bAllowPseudo = false,
-			bAuto = false,
-			message = activity.getString(R.string.account_picker_boost),
-			accountListArg = makeAccountListNonPseudo(activity, who_host)
-		) { action_account ->
-			boost(
+		if(status.visibility == TootStatus.VISIBILITY_PRIVATE){
+			val list = ArrayList<SavedAccount>()
+			for( a in SavedAccount.loadAccountList(activity) ){
+				if( a.acct == status_owner) list.add(a)
+			}
+			if( list.isEmpty() ){
+				showToast(activity, false, R.string.boost_private_toot_not_allowed)
+				return
+			}
+			AccountPicker.pick(
 				activity,
-				action_account,
-				status,
-				calcCrossAccountMode(timeline_account, action_account),
-				activity.boost_complete_callback
-			)
+				bAllowPseudo = false,
+				bAuto = false,
+				message = activity.getString(R.string.account_picker_boost),
+				accountListArg = list
+			) { action_account ->
+				boost(
+					activity,
+					action_account,
+					status,
+					status_owner,
+					calcCrossAccountMode(timeline_account, action_account),
+					activity.boost_complete_callback
+				)
+			}
+		}else{
+			AccountPicker.pick(
+				activity,
+				bAllowPseudo = false,
+				bAuto = false,
+				message = activity.getString(R.string.account_picker_boost),
+				accountListArg = makeAccountListNonPseudo(activity, who_host)
+			) { action_account ->
+				boost(
+					activity,
+					action_account,
+					status,
+					status_owner,
+					calcCrossAccountMode(timeline_account, action_account),
+					activity.boost_complete_callback
+				)
+			}
 		}
 	}
 	
@@ -265,6 +295,7 @@ object Action_Toot {
 		activity : ActMain,
 		access_info : SavedAccount,
 		arg_status : TootStatus,
+		status_owner_acct : String,
 		nCrossAccountMode : Int,
 		callback : EmptyCallback?,
 		bSet : Boolean = true,
@@ -276,6 +307,14 @@ object Action_Toot {
 			showToast(activity, false, R.string.wait_previous_operation)
 			return
 		}
+		
+		// 非公開トゥートをブーストできるのは本人だけ
+		val isPrivateToot = arg_status.visibility == TootStatus.VISIBILITY_PRIVATE
+		if( isPrivateToot && access_info.acct != status_owner_acct ){
+			showToast(activity, false, R.string.boost_private_toot_not_allowed)
+			return
+		}
+		
 		
 		//		// クロスアカウント操作ではないならステータス内容を使ったチェックを行える
 		//		if(nCrossAccountMode == NOT_CROSS_ACCOUNT) {
@@ -293,9 +332,10 @@ object Action_Toot {
 			DlgConfirm.open(
 				activity,
 				activity.getString(
-					when(bSet) {
-						true -> R.string.confirm_boost_from
-						else -> R.string.confirm_unboost_from
+					when{
+						!bSet -> R.string.confirm_unboost_from
+						isPrivateToot -> R.string.confirm_boost_private_from
+						else-> R.string.confirm_boost_from
 					},
 					AcctColor.getNickname(access_info.acct)
 				),
@@ -305,6 +345,7 @@ object Action_Toot {
 							activity,
 							access_info,
 							arg_status,
+							status_owner_acct,
 							nCrossAccountMode,
 							callback,
 							bSet = bSet,

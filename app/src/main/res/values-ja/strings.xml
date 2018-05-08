@@ -936,4 +936,7 @@
     <string name="field_value4">内容4</string>
     <string name="profile_metadata">プロフィール補足情報</string>
     <string name="available_mastodon_2_4_later">(マストドン2.4以降で利用可能)</string>
+    <string name="confirm_boost_private_from">非公開トゥートを %1$s からブーストしますか? 全てのフォロワーに公開されます</string>
+    <string name="boost_private_toot_not_allowed">非公開トゥートをブーストできるのは本人だけです</string>
+
 </resources>

@@ -657,6 +657,9 @@
 	<string name="field_value4">value4</string>
 	<string name="profile_metadata">Profile metadata</string>
 	<string name="available_mastodon_2_4_later">(available in Mastodon 2.4 or later)</string>
+	<string name="confirm_boost_private_from">Boost private status from %1$s ? It\'s shown to all followers.</string>
+	<string name="boost_private_toot_not_allowed">You can\'t boost private toot by another person.</string>
+
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->

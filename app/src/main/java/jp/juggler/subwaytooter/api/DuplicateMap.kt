@@ -56,9 +56,10 @@ class DuplicateMap {
 				
 			}
 
-			is TootAccount -> {
-				if(set_account_id.contains(o.id)) return true
-				set_account_id.add(o.id)
+			is TootAccountRef -> {
+				val id = o.find().id
+				if(set_account_id.contains(id)) return true
+				set_account_id.add(id)
 			}
 		}
 		

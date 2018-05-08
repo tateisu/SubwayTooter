@@ -18,7 +18,7 @@ class TootParser(
 ) {
 	
 	fun account(src : JSONObject?) = parseItem(::TootAccount, this, src)
-	fun accountList(array : JSONArray?) = parseList(::TootAccount, this, array)
+	fun accountList(array : JSONArray?) = TootAccountRef.wrapList(this,parseList(::TootAccount, this, array))
 	
 	fun status(src : JSONObject?) = parseItem(::TootStatus, this, src)
 	fun statusList(array : JSONArray?) = parseList(::TootStatus, this, array)

@@ -126,9 +126,9 @@ internal class ItemViewHolder(
 	private var item : TimelineItem? = null
 	
 	private var status_showing : TootStatus? = null
-	private var status_account : TootAccount? = null
-	private var boost_account : TootAccount? = null
-	private var follow_account : TootAccount? = null
+	private var status_account : TootAccountRef? = null
+	private var boost_account : TootAccountRef? = null
+	private var follow_account : TootAccountRef? = null
 	
 	private var boost_time : Long = 0L
 	
@@ -344,7 +344,7 @@ internal class ItemViewHolder(
 		this.item = item
 		when(item) {
 			is TootTag -> showSearchTag(item)
-			is TootAccount -> showAccount(item)
+			is TootAccountRef -> showAccount(item)
 			is TootNotification -> showNotification(item)
 			is TootGap -> showGap()
 			is TootDomainBlock -> showDomainBlock(item)
@@ -354,10 +354,10 @@ internal class ItemViewHolder(
 				val reblog = item.reblog
 				if(reblog != null) {
 					showBoost(
-						item.account,
+						item.accountRef,
 						item.time_created_at,
 						R.attr.btn_boost,
-						item.account.decoded_display_name.intoStringResource(
+						item.accountRef.decoded_display_name.intoStringResource(
 							activity,
 							R.string.display_name_boosted_by
 						)
@@ -375,14 +375,15 @@ internal class ItemViewHolder(
 	
 	private fun showNotification(n : TootNotification) {
 		val n_status = n.status
-		val n_account = n.account
+		val n_accountRef = n.accountRef
+		val n_account = n_accountRef?.find()
 		when(n.type) {
 			TootNotification.TYPE_FAVOURITE -> {
 				if(n_account != null) showBoost(
-					n_account,
+					n_accountRef,
 					n.time_created_at,
 					if(access_info.isNicoru(n_account)) R.attr.ic_nicoru else R.attr.btn_favourite,
-					n_account.decoded_display_name.intoStringResource(
+					n_accountRef.decoded_display_name.intoStringResource(
 						activity,
 						R.string.display_name_favourited_by
 					)
@@ -392,10 +393,10 @@ internal class ItemViewHolder(
 			
 			TootNotification.TYPE_REBLOG -> {
 				if(n_account != null) showBoost(
-					n_account,
+					n_accountRef,
 					n.time_created_at,
 					R.attr.btn_boost,
-					n_account.decoded_display_name.intoStringResource(
+					n_accountRef.decoded_display_name.intoStringResource(
 						activity,
 						R.string.display_name_boosted_by
 					)
@@ -407,25 +408,25 @@ internal class ItemViewHolder(
 			TootNotification.TYPE_FOLLOW -> {
 				if(n_account != null) {
 					showBoost(
-						n_account,
+						n_accountRef,
 						n.time_created_at,
 						R.attr.ic_follow_plus,
-						n_account.decoded_display_name.intoStringResource(
+						n_accountRef.decoded_display_name.intoStringResource(
 							activity,
 							R.string.display_name_followed_by
 						)
 					)
-					showAccount(n_account)
+					showAccount(n_accountRef)
 				}
 			}
 			
 			TootNotification.TYPE_MENTION -> {
 				if(! bSimpleList) {
 					if(n_account != null) showBoost(
-						n_account,
+						n_accountRef,
 						n.time_created_at,
 						R.attr.btn_reply,
-						n_account.decoded_display_name.intoStringResource(
+						n_accountRef.decoded_display_name.intoStringResource(
 							activity,
 							R.string.display_name_replied_by
 						)
@@ -460,8 +461,9 @@ internal class ItemViewHolder(
 		btnSearchTag.text = activity.getString(R.string.read_gap)
 	}
 	
-	private fun showBoost(who : TootAccount, time : Long, icon_attr_id : Int, text : Spannable) {
-		boost_account = who
+	private fun showBoost(whoRef : TootAccountRef, time : Long, icon_attr_id : Int, text : Spannable) {
+		boost_account = whoRef
+		val who = whoRef.find()
 		boost_time = time
 		llBoosted.visibility = View.VISIBLE
 		ivBoosted.setImageResource(Styler.getAttributeResourceId(activity, icon_attr_id))
@@ -471,16 +473,17 @@ internal class ItemViewHolder(
 		setAcct(tvBoostedAcct, access_info.getFullAcct(who), who.acct)
 	}
 	
-	private fun showAccount(who : TootAccount) {
-		follow_account = who
+	private fun showAccount(whoRef : TootAccountRef) {
+		follow_account = whoRef
+		val who = whoRef.find()
 		llFollow.visibility = View.VISIBLE
 		ivFollow.setImageUrl(
 			activity.pref,
 			Styler.calcIconRound(ivFollow.layoutParams),
 			access_info.supplyBaseUrl(who.avatar_static)
 		)
-		tvFollowerName.text = who.decoded_display_name
-		follow_invalidator.register(who.decoded_display_name)
+		tvFollowerName.text = whoRef.decoded_display_name
+		follow_invalidator.register(whoRef.decoded_display_name)
 		
 		setAcct(tvFollowerAcct, access_info.getFullAcct(who), who.acct)
 		
@@ -498,8 +501,9 @@ internal class ItemViewHolder(
 		
 		showStatusTime(activity, tvTime, who = status.account, status = status)
 		
-		val who = status.account
-		this.status_account = who
+		val whoRef = status.accountRef
+		val who = whoRef.find()
+		this.status_account = whoRef
 		
 		setAcct(tvAcct, access_info.getFullAcct(who), who.acct)
 		
@@ -508,8 +512,8 @@ internal class ItemViewHolder(
 		//			name_invalidator.register(null)
 		//			ivThumbnail.setImageUrl(activity.pref, 16f, null, null)
 		//		} else {
-		tvName.text = who.decoded_display_name
-		name_invalidator.register(who.decoded_display_name)
+		tvName.text = whoRef.decoded_display_name
+		name_invalidator.register(whoRef.decoded_display_name)
 		ivThumbnail.setImageUrl(
 			activity.pref,
 			Styler.calcIconRound(ivThumbnail.layoutParams),
@@ -874,27 +878,27 @@ internal class ItemViewHolder(
 				
 			}
 			
-			ivThumbnail -> status_account?.let { who ->
+			ivThumbnail -> status_account?.let { whoRef ->
 				if(access_info.isPseudo) {
-					DlgContextMenu(activity, column, who, null, notification).show()
+					DlgContextMenu(activity, column, whoRef, null, notification).show()
 				} else {
-					Action_User.profileLocal(activity, pos, access_info, who)
+					Action_User.profileLocal(activity, pos, access_info, whoRef.find())
 				}
 			}
 			
-			llBoosted -> boost_account?.let { who ->
+			llBoosted -> boost_account?.let { whoRef ->
 				if(access_info.isPseudo) {
-					DlgContextMenu(activity, column, who, null, notification).show()
+					DlgContextMenu(activity, column, whoRef, null, notification).show()
 				} else {
-					Action_User.profileLocal(activity, pos, access_info, who)
+					Action_User.profileLocal(activity, pos, access_info, whoRef.find())
 				}
 			}
 			
-			llFollow -> follow_account?.let { who ->
+			llFollow -> follow_account?.let { whoRef ->
 				if(access_info.isPseudo) {
-					DlgContextMenu(activity, column, who, null, notification).show()
+					DlgContextMenu(activity, column, whoRef, null, notification).show()
 				} else {
-					Action_User.profileLocal(activity, pos, access_info, who)
+					Action_User.profileLocal(activity, pos, access_info, whoRef.find())
 				}
 			}
 			btnFollow -> follow_account?.let { who ->
@@ -962,15 +966,17 @@ internal class ItemViewHolder(
 					.show(activity, item.title)
 			}
 			
-			btnFollowRequestAccept -> follow_account?.let { who ->
+			btnFollowRequestAccept -> follow_account?.let { whoRef ->
+				val who = whoRef.find()
 				DlgConfirm.openSimple(activity,activity.getString(R.string.follow_accept_confirm,AcctColor.getNickname(access_info.getFullAcct(who)))){
-					Action_Follow.authorizeFollowRequest(activity, access_info, who, true)
+					Action_Follow.authorizeFollowRequest(activity, access_info, whoRef, true)
 				}
 			}
 			
-			btnFollowRequestDeny -> follow_account?.let { who ->
+			btnFollowRequestDeny -> follow_account?.let { whoRef ->
+				val who = whoRef.find()
 				DlgConfirm.openSimple(activity,activity.getString(R.string.follow_deny_confirm,AcctColor.getNickname(access_info.getFullAcct(who)))){
-					Action_Follow.authorizeFollowRequest(activity, access_info, who, false)
+					Action_Follow.authorizeFollowRequest(activity, access_info, whoRef, false)
 				}
 			}
 			
@@ -1016,11 +1022,11 @@ internal class ItemViewHolder(
 			}
 			
 			llFollow -> {
-				follow_account?.let { who ->
+				follow_account?.let { whoRef ->
 					DlgContextMenu(
 						activity,
 						column,
-						who,
+						whoRef,
 						null,
 						notification
 					).show()
@@ -1029,12 +1035,12 @@ internal class ItemViewHolder(
 			}
 			
 			btnFollow -> {
-				follow_account?.let { who ->
+				follow_account?.let { whoRef ->
 					Action_Follow.followFromAnotherAccount(
 						activity,
 						activity.nextPosition(column),
 						access_info,
-						who
+						whoRef.find()
 					)
 				}
 				return true

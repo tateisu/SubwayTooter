@@ -1579,7 +1579,7 @@ class PollingWorker private constructor(c : Context) {
 				
 				var a = getNotificationLine(
 					item.notification.type,
-					item.notification.account?.decoded_display_name ?: "?"
+					item.notification.accountRef?.decoded_display_name ?: "?"
 				)
 				val acct = item.access_info.acct
 				if(data_list.size == 1) {
@@ -1598,7 +1598,7 @@ class PollingWorker private constructor(c : Context) {
 						item = data_list[i]
 						a = getNotificationLine(
 							item.notification.type,
-							item.notification.account?.decoded_display_name ?: "?"
+							item.notification.accountRef?.decoded_display_name ?: "?"
 						)
 						style.addLine(a)
 					}

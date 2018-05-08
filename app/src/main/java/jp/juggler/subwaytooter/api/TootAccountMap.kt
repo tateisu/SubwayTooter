@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.api
 
 import jp.juggler.subwaytooter.api.entity.ServiceType
 import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import java.util.concurrent.ConcurrentHashMap
 
 object TootAccountMap{
@@ -47,6 +48,9 @@ object TootAccountMap{
 	
 	fun find(id : Int) : TootAccount {
 		return requireNotNull(accountMap[id])
+	}
+	fun find(ref: TootAccountRef) : TootAccount {
+		return requireNotNull(accountMap[ref.id])
 	}
 	
 	fun register(parser:TootParser, who : TootAccount) : Int {

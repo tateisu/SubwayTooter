@@ -47,12 +47,14 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 	// 取得に失敗するとINVALID_IDになる
 	val id : Long
 	
+	
+
 	// The TootAccount which posted the status
-	val accountRef : Int
+	val accountRef : TootAccountRef
 
 	val account : TootAccount
 		get(){
-			return TootAccountMap.find(accountRef)
+			return TootAccountMap.find(accountRef.id)
 		}
 	
 	//The number of reblogs for the status
@@ -164,7 +166,7 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 		val who =parser.account(src.optJSONObject("account"))
 			?: throw RuntimeException("missing account")
 
-		this.accountRef = TootAccountMap.register(parser,who)
+		this.accountRef = TootAccountRef( parser,who)
 		
 		when(parser.serviceType) {
 			ServiceType.MASTODON -> {

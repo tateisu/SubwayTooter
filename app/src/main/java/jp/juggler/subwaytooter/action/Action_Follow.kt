@@ -7,6 +7,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.dialog.AccountPicker
@@ -26,12 +27,14 @@ object Action_Follow {
 		activity : ActMain,
 		pos : Int,
 		access_info : SavedAccount,
-		who : TootAccount,
-		bFollow : Boolean =true,
-		bConfirmMoved : Boolean =false,
-		bConfirmed : Boolean =false,
+		whoRef : TootAccountRef,
+		bFollow : Boolean = true,
+		bConfirmMoved : Boolean = false,
+		bConfirmed : Boolean = false,
 		callback : EmptyCallback? = null
 	) {
+		val who = whoRef.find()
+		
 		if(access_info.isMe(who)) {
 			showToast(activity, false, R.string.it_is_you)
 			return
@@ -39,15 +42,27 @@ object Action_Follow {
 		
 		if(! bConfirmMoved && bFollow && who.moved != null) {
 			AlertDialog.Builder(activity)
-				.setMessage(activity.getString(R.string.jump_moved_user, access_info.getFullAcct(who), access_info.getFullAcct(who.moved)
-				))
-				.setPositiveButton(R.string.ok) { _, _ -> Action_User.profileFromAnotherAccount(activity, pos, access_info, who.moved) }
+				.setMessage(
+					activity.getString(
+						R.string.jump_moved_user,
+						access_info.getFullAcct(who),
+						access_info.getFullAcct(who.moved)
+					)
+				)
+				.setPositiveButton(R.string.ok) { _, _ ->
+					Action_User.profileFromAnotherAccount(
+						activity,
+						pos,
+						access_info,
+						who.moved
+					)
+				}
 				.setNeutralButton(R.string.ignore_suggestion) { _, _ ->
 					follow(
 						activity,
 						pos,
 						access_info,
-						who,
+						whoRef,
 						bFollow = bFollow,
 						bConfirmMoved = true, // CHANGED
 						bConfirmed = bConfirmed,
@@ -63,33 +78,41 @@ object Action_Follow {
 			if(bFollow && who.locked) {
 				DlgConfirm.open(
 					activity,
-					activity.getString(R.string.confirm_follow_request_who_from, who.decoded_display_name, AcctColor.getNickname(access_info.acct))
+					activity.getString(
+						R.string.confirm_follow_request_who_from,
+						whoRef.decoded_display_name,
+						AcctColor.getNickname(access_info.acct)
+					)
 					, object : DlgConfirm.Callback {
-					
-					override fun onOK() {
-						follow(
-							activity,
-							pos,
-							access_info,
-							who,
-							bFollow = bFollow,
-							bConfirmMoved =bConfirmMoved,
-							bConfirmed=true, // CHANGED
-							callback=callback
-						)
-					}
-					
-					override var isConfirmEnabled : Boolean
-						get() = access_info.confirm_follow_locked
-						set(value) {
-							access_info.confirm_follow_locked = value
-							access_info.saveSetting()
-							activity.reloadAccountSetting(access_info)
+						
+						override fun onOK() {
+							follow(
+								activity,
+								pos,
+								access_info,
+								whoRef,
+								bFollow = bFollow,
+								bConfirmMoved = bConfirmMoved,
+								bConfirmed = true, // CHANGED
+								callback = callback
+							)
 						}
-				})
+						
+						override var isConfirmEnabled : Boolean
+							get() = access_info.confirm_follow_locked
+							set(value) {
+								access_info.confirm_follow_locked = value
+								access_info.saveSetting()
+								activity.reloadAccountSetting(access_info)
+							}
+					})
 				return
 			} else if(bFollow) {
-				val msg = activity.getString(R.string.confirm_follow_who_from, who.decoded_display_name, AcctColor.getNickname(access_info.acct))
+				val msg = activity.getString(
+					R.string.confirm_follow_who_from,
+					whoRef.decoded_display_name,
+					AcctColor.getNickname(access_info.acct)
+				)
 				
 				DlgConfirm.open(
 					activity,
@@ -101,11 +124,12 @@ object Action_Follow {
 								activity,
 								pos,
 								access_info,
-								who,
-								bFollow=bFollow,
-								bConfirmMoved=bConfirmMoved,
-								bConfirmed =true, //CHANGED
-								callback=callback)
+								whoRef,
+								bFollow = bFollow,
+								bConfirmMoved = bConfirmMoved,
+								bConfirmed = true, //CHANGED
+								callback = callback
+							)
 						}
 						
 						override var isConfirmEnabled : Boolean
@@ -120,7 +144,11 @@ object Action_Follow {
 			} else {
 				DlgConfirm.open(
 					activity,
-					activity.getString(R.string.confirm_unfollow_who_from, who.decoded_display_name, AcctColor.getNickname(access_info.acct)),
+					activity.getString(
+						R.string.confirm_unfollow_who_from,
+						whoRef.decoded_display_name,
+						AcctColor.getNickname(access_info.acct)
+					),
 					object : DlgConfirm.Callback {
 						
 						override fun onOK() {
@@ -128,11 +156,12 @@ object Action_Follow {
 								activity,
 								pos,
 								access_info,
-								who,
-								bFollow=bFollow,
-								bConfirmMoved=bConfirmMoved,
-								bConfirmed =true, // CHANGED
-								callback=callback)
+								whoRef,
+								bFollow = bFollow,
+								bConfirmMoved = bConfirmMoved,
+								bConfirmed = true, // CHANGED
+								callback = callback
+							)
 						}
 						
 						override var isConfirmEnabled : Boolean
@@ -158,11 +187,13 @@ object Action_Follow {
 					// リモートフォローする
 					val request_builder = Request.Builder().post(
 						RequestBody.create(
-							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "uri=" + who.acct.encodePercent()
-						))
+							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED,
+							"uri=" + who.acct.encodePercent()
+						)
+					)
 					
 					result = client.request("/api/v1/follows", request_builder)
-					val remote_who = TootParser(activity, access_info).account( result?.jsonObject)
+					val remote_who = TootParser(activity, access_info).account(result?.jsonObject)
 					if(remote_who != null) {
 						val rr = loadRelation1(client, access_info, remote_who.id)
 						result = rr.result
@@ -176,12 +207,16 @@ object Action_Follow {
 					val request_builder = Request.Builder().post(
 						RequestBody.create(
 							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" // 空データ
-						))
-					result = client.request("/api/v1/accounts/" + who.id
-						+ if(bFollow) "/follow" else "/unfollow", request_builder)
+						)
+					)
+					result = client.request(
+						"/api/v1/accounts/" + who.id
+							+ if(bFollow) "/follow" else "/unfollow", request_builder
+					)
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
-						relation = saveUserRelation(access_info, parseItem(::TootRelationShip,jsonObject))
+						relation =
+							saveUserRelation(access_info, parseItem(::TootRelationShip, jsonObject))
 					}
 				}
 				
@@ -197,17 +232,17 @@ object Action_Follow {
 					
 					activity.showColumnMatchAccount(access_info)
 					
-					if(bFollow && relation .getRequested(who)) {
+					if(bFollow && relation.getRequested(who)) {
 						// 鍵付きアカウントにフォローリクエストを申請した状態
 						showToast(activity, false, R.string.follow_requested)
-					} else if(! bFollow && relation .getRequested(who)) {
+					} else if(! bFollow && relation.getRequested(who)) {
 						showToast(activity, false, R.string.follow_request_cant_remove_by_sender)
 					} else {
 						// ローカル操作成功、もしくはリモートフォロー成功
 						if(callback != null) callback()
 					}
 					
-				} else if(bFollow && who.locked && ( result.response?.code() ?: -1)  == 422) {
+				} else if(bFollow && who.locked && (result.response?.code() ?: - 1) == 422) {
 					showToast(activity, false, R.string.cant_follow_locked_user)
 				} else {
 					showToast(activity, false, result.error)
@@ -223,8 +258,8 @@ object Action_Follow {
 		access_info : SavedAccount,
 		acct : String,
 		locked : Boolean,
-		bConfirmed : Boolean =false,
-		callback : EmptyCallback? =null
+		bConfirmed : Boolean = false,
+		callback : EmptyCallback? = null
 	) {
 		if(access_info.isMe(acct)) {
 			showToast(activity, false, R.string.it_is_you)
@@ -233,49 +268,63 @@ object Action_Follow {
 		
 		if(! bConfirmed) {
 			if(locked) {
-				DlgConfirm.open(activity, activity.getString(R.string.confirm_follow_request_who_from, AcctColor.getNickname(acct), AcctColor.getNickname(access_info.acct)), object : DlgConfirm.Callback {
-					override fun onOK() {
-						followRemote(
-							activity,
-							access_info,
-							acct,
-							locked,
-							bConfirmed= true, //CHANGE
-							callback=callback
-						)
-					}
-
-					override var isConfirmEnabled : Boolean
-						get() = access_info.confirm_follow_locked
-						set(value) {
-							access_info.confirm_follow_locked = value
-							access_info.saveSetting()
-							activity.reloadAccountSetting(access_info)
+				DlgConfirm.open(
+					activity,
+					activity.getString(
+						R.string.confirm_follow_request_who_from,
+						AcctColor.getNickname(acct),
+						AcctColor.getNickname(access_info.acct)
+					),
+					object : DlgConfirm.Callback {
+						override fun onOK() {
+							followRemote(
+								activity,
+								access_info,
+								acct,
+								locked,
+								bConfirmed = true, //CHANGE
+								callback = callback
+							)
 						}
-				})
+						
+						override var isConfirmEnabled : Boolean
+							get() = access_info.confirm_follow_locked
+							set(value) {
+								access_info.confirm_follow_locked = value
+								access_info.saveSetting()
+								activity.reloadAccountSetting(access_info)
+							}
+					})
 				return
 			} else {
-				DlgConfirm.open(activity, activity.getString(R.string.confirm_follow_who_from, AcctColor.getNickname(acct), AcctColor.getNickname(access_info.acct)), object : DlgConfirm.Callback {
-					
-					override fun onOK() {
-						followRemote(
-							activity,
-							access_info,
-							acct,
-							locked,
-							bConfirmed= true, //CHANGE
-							callback=callback
-						)
-					}
-					
-					override var isConfirmEnabled : Boolean
-						get() = access_info.confirm_follow
-						set(value) {
-							access_info.confirm_follow = value
-							access_info.saveSetting()
-							activity.reloadAccountSetting(access_info)
+				DlgConfirm.open(
+					activity,
+					activity.getString(
+						R.string.confirm_follow_who_from,
+						AcctColor.getNickname(acct),
+						AcctColor.getNickname(access_info.acct)
+					),
+					object : DlgConfirm.Callback {
+						
+						override fun onOK() {
+							followRemote(
+								activity,
+								access_info,
+								acct,
+								locked,
+								bConfirmed = true, //CHANGE
+								callback = callback
+							)
 						}
-				})
+						
+						override var isConfirmEnabled : Boolean
+							get() = access_info.confirm_follow
+							set(value) {
+								access_info.confirm_follow = value
+								access_info.saveSetting()
+								activity.reloadAccountSetting(access_info)
+							}
+					})
 				return
 			}
 		}
@@ -289,13 +338,14 @@ object Action_Follow {
 				val request_builder = Request.Builder().post(
 					RequestBody.create(
 						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "uri=" + acct.encodePercent()
-					))
+					)
+				)
 				
 				var result = client.request("/api/v1/follows", request_builder)
 				val remote_who = TootParser(activity, access_info).account(result?.jsonObject)
 				if(remote_who != null) {
 					this.remote_who = remote_who
-					val rr = loadRelation1(client, access_info, remote_who .id)
+					val rr = loadRelation1(client, access_info, remote_who.id)
 					result = rr.result
 					relation = rr.relation
 				}
@@ -313,7 +363,7 @@ object Action_Follow {
 					
 					if(callback != null) callback()
 					
-				} else if(locked && (result.response?.code() ?: -1 )== 422) {
+				} else if(locked && (result.response?.code() ?: - 1) == 422) {
 					showToast(activity, false, R.string.cant_follow_locked_user)
 				} else {
 					showToast(activity, false, result.error)
@@ -328,14 +378,19 @@ object Action_Follow {
 		pos : Int,
 		access_info : SavedAccount,
 		account : TootAccount?,
-		bConfirmMoved : Boolean =false
+		bConfirmMoved : Boolean = false
 	) {
 		if(account == null) return
 		
 		if(! bConfirmMoved && account.moved != null) {
 			AlertDialog.Builder(activity)
-				.setMessage(activity.getString(R.string.jump_moved_user, access_info.getFullAcct(account), access_info.getFullAcct(account.moved)
-				))
+				.setMessage(
+					activity.getString(
+						R.string.jump_moved_user,
+						access_info.getFullAcct(account),
+						access_info.getFullAcct(account.moved)
+					)
+				)
 				.setPositiveButton(R.string.ok) { _, _ ->
 					Action_User.profileFromAnotherAccount(activity, pos, access_info, account.moved)
 				}
@@ -371,8 +426,12 @@ object Action_Follow {
 	}
 	
 	fun authorizeFollowRequest(
-		activity : ActMain, access_info : SavedAccount, who : TootAccount, bAllow : Boolean
+		activity : ActMain,
+		access_info : SavedAccount,
+		whoRef : TootAccountRef,
+		bAllow : Boolean
 	) {
+		val who = whoRef.find()
 		if(access_info.isMe(who)) {
 			showToast(activity, false, R.string.it_is_you)
 			return
@@ -383,10 +442,13 @@ object Action_Follow {
 				val request_builder = Request.Builder().post(
 					RequestBody.create(
 						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" // 空データ
-					))
+					)
+				)
 				
 				return client.request(
-					"/api/v1/follow_requests/" + who.id + if(bAllow) "/authorize" else "/reject", request_builder)
+					"/api/v1/follow_requests/" + who.id + if(bAllow) "/authorize" else "/reject",
+					request_builder
+				)
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
@@ -398,7 +460,12 @@ object Action_Follow {
 						column.removeFollowRequest(access_info, who.id)
 					}
 					
-					showToast(activity, false, if(bAllow) R.string.follow_request_authorized else R.string.follow_request_rejected, who.decoded_display_name)
+					showToast(
+						activity,
+						false,
+						if(bAllow) R.string.follow_request_authorized else R.string.follow_request_rejected,
+						whoRef.decoded_display_name
+					)
 				} else {
 					showToast(activity, false, result.error)
 				}

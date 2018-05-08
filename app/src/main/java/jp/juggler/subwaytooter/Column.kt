@@ -328,7 +328,7 @@ class Column(
 	
 	// プロフカラムでのアカウント情報
 	@Volatile
-	internal var who_account : TootAccount? = null
+	internal var who_account : TootAccountRef? = null
 	
 	// リストカラムでのリスト情報
 	@Volatile
@@ -612,13 +612,16 @@ class Column(
 	internal fun getColumnName(bLong : Boolean) : String {
 		return when(column_type) {
 			
-			TYPE_PROFILE -> context.getString(
-				R.string.profile_of,
-				if(who_account != null)
-					AcctColor.getNickname(access_info.getFullAcct(who_account))
-				else
-					profile_id.toString()
-			)
+			TYPE_PROFILE -> {
+				val who = who_account?.find()
+				context.getString(
+					R.string.profile_of,
+					if(who != null)
+						AcctColor.getNickname(access_info.getFullAcct(who))
+					else
+						profile_id.toString()
+				)
+			}
 			
 			TYPE_LIST_MEMBER -> context.getString(
 				R.string.list_member_of,
@@ -748,8 +751,8 @@ class Column(
 				if(who_id == (o.account?.id ?: INVALID_ACCOUNT)) continue
 				if(who_id == (o.status?.account?.id ?: INVALID_ACCOUNT)) continue
 				if(who_id == (o.status?.reblog?.account?.id ?: INVALID_ACCOUNT)) continue
-			} else if(o is TootAccount) {
-				if(who_id == o.id) continue
+			} else if(o is TootAccountRef) {
+				if(who_id == o.find().id) continue
 			}
 			
 			tmp_list.add(o)
@@ -767,8 +770,8 @@ class Column(
 		if(column_type == TYPE_MUTES && target_account.acct == access_info.acct) {
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
-				if(o is TootAccount) {
-					if(o.id == who_id) continue
+				if(o is TootAccountRef) {
+					if(o.find().id == who_id) continue
 				}
 				tmp_list.add(o)
 			}
@@ -785,8 +788,8 @@ class Column(
 		if(column_type == TYPE_BLOCKS && target_account.acct == access_info.acct) {
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
-				if(o is TootAccount) {
-					if(o.id == who_id) continue
+				if(o is TootAccountRef) {
+					if(o.find().id == who_id) continue
 				}
 				tmp_list.add(o)
 			}
@@ -805,8 +808,8 @@ class Column(
 		if(column_type == TYPE_FOLLOW_REQUESTS) {
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
-				if(o is TootAccount) {
-					if(o.id == who_id) continue
+				if(o is TootAccountRef) {
+					if(o.find().id == who_id) continue
 				}
 				tmp_list.add(o)
 			}
@@ -1259,7 +1262,8 @@ class Column(
 	internal fun loadProfileAccount(client : TootApiClient, bForceReload : Boolean) {
 		if(bForceReload || this.who_account == null) {
 			val result = client.request(String.format(Locale.JAPAN, PATH_ACCOUNT, profile_id))
-			val a = TootParser(context, access_info).account(result?.jsonObject)
+			val parser =TootParser(context, access_info)
+			val a = TootAccountRef.mayNull(parser,parser.account(result?.jsonObject))
 			if(a != null) {
 				this.who_account = a
 				client.publishApiProgress("") // カラムヘッダの再表示
@@ -1286,24 +1290,28 @@ class Column(
 		internal val acct_set = HashSet<String>()
 		internal val tag_set = HashSet<String>()
 		
-		internal fun add(a : TootAccount?) {
-			if(a == null) return
-			who_set.add(a.id)
-			acct_set.add("@" + access_info.getFullAcct(a))
-			//
-			add(a.moved)
+		internal fun add(whoRef : TootAccountRef?) {
+			add(whoRef?.find())
 		}
-		
+
+		internal fun add(who : TootAccount?) {
+			who?:return
+			who_set.add(who.id)
+			acct_set.add("@" + access_info.getFullAcct(who))
+			//
+			add(who.movedRef)
+		}
+
 		internal fun add(s : TootStatus?) {
 			if(s == null) return
-			add(s.account)
+			add(s.accountRef)
 			add(s.reblog)
 			s.tags?.forEach { tag_set.add(it.name) }
 		}
 		
 		internal fun add(n : TootNotification?) {
 			if(n == null) return
-			add(n.account)
+			add(n.accountRef)
 			add(n.status)
 		}
 		
@@ -1382,17 +1390,17 @@ class Column(
 	private fun updateRelation(
 		client : TootApiClient,
 		list : ArrayList<TimelineItem>?,
-		who : TootAccount?
+		whoRef : TootAccountRef?
 	) {
 		if(access_info.isPseudo) return
 		
 		val env = UpdateRelationEnv()
 		
-		env.add(who)
+		env.add(whoRef)
 		
 		list?.forEach {
 			when(it) {
-				is TootAccount -> env.add(it)
+				is TootAccountRef -> env.add(it)
 				is TootStatus -> env.add(it)
 				is TootNotification -> env.add(it)
 			}

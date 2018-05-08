@@ -15,7 +15,7 @@ import java.util.regex.Pattern
 open class TootAccount(
 	parser : TootParser,
 	src : JSONObject
-) : TimelineItem() {
+) {
 	
 	//URL of the user's profile page (can be remote)
 	// https://mastodon.juggler.jp/@tateisu
@@ -35,9 +35,6 @@ open class TootAccount(
 	
 	//	The account's display name
 	val display_name : String
-	
-	//	The account's display name
-	val decoded_display_name : Spannable
 	
 	//Boolean for when the account cannot be followed without waiting for approval first
 	val locked : Boolean
@@ -60,8 +57,6 @@ open class TootAccount(
 	// 説明文。改行は\r\n。リンクなどはHTMLタグで書かれている
 	val note : String?
 	
-	val decoded_note : Spannable
-	
 	//	URL to the avatar image
 	val avatar : String?
 	
@@ -78,19 +73,22 @@ open class TootAccount(
 	
 	val profile_emojis : HashMap<String, NicoProfileEmoji>?
 	
+	val movedRef : TootAccountRef?
+	
 	val moved : TootAccount?
+		get() = movedRef?.find()
 	
 	val fields : ArrayList<Pair<String, String>>?
 	
 	val custom_emojis : java.util.HashMap<String, CustomEmoji>?
 	
-	val bot :Boolean
+	val bot : Boolean
 	
 	init {
 		var sv : String?
 		
 		// 絵文字データは先に読んでおく
-		this.custom_emojis = parseMapOrNull(::CustomEmoji, src.optJSONArray("emojis") )
+		this.custom_emojis = parseMapOrNull(::CustomEmoji, src.optJSONArray("emojis"))
 		this.profile_emojis = parseMapOrNull(::NicoProfileEmoji, src.optJSONArray("profile_emojis"))
 		
 		// 疑似アカウントにacctとusernameだけ
@@ -100,28 +98,22 @@ open class TootAccount(
 		//
 		sv = src.parseString("display_name")
 		this.display_name = if(sv?.isNotEmpty() == true) sv.sanitizeBDI() else username
-		this.decoded_display_name = decodeDisplayName(parser.context)
 		
 		//
 		this.note = src.parseString("note")
-		this.decoded_note = DecodeOptions(
-			parser.context,
-			parser.linkHelper,
-			short = true,
-			decodeEmoji = true,
-			emojiMapProfile = this.profile_emojis,
-			emojiMapCustom = this.custom_emojis,
-			unwrapEmojiImageTag = true
-		).decodeHTML(this.note)
 		
 		this.source = parseSource(src.optJSONObject("source"))
-		this.moved =
-			src.optJSONObject("moved")?.let { TootAccount(parser, it) }
+		this.movedRef = TootAccountRef.mayNull(
+			parser,
+			src.optJSONObject("moved")?.let {
+				TootAccount(parser, it)
+			}
+		)
 		this.locked = src.optBoolean("locked")
 		
 		this.fields = parseFields(src.optJSONArray("fields"))
 		
-		this.bot = src.optBoolean("bot",false)
+		this.bot = src.optBoolean("bot", false)
 		
 		when(parser.serviceType) {
 			ServiceType.MASTODON -> {
@@ -297,9 +289,9 @@ open class TootAccount(
 				val v = item.parseString("value") ?: continue
 				dst.add(Pair(k, v))
 			}
-			return if( dst.isEmpty() ){
+			return if(dst.isEmpty()) {
 				null
-			}else{
+			} else {
 				dst
 			}
 		}

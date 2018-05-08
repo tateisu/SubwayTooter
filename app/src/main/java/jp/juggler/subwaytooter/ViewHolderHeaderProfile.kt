@@ -15,6 +15,7 @@ import jp.juggler.emoji.EmojiMap201709
 import jp.juggler.subwaytooter.action.Action_Follow
 import jp.juggler.subwaytooter.action.Action_User
 import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.UserRelation
@@ -49,9 +50,9 @@ internal class ViewHolderHeaderProfile(
 	private val note_invalidator : NetworkEmojiInvalidator
 	private val llFields : LinearLayout
 	
-	private var who : TootAccount? = null
+	private var whoRef : TootAccountRef? = null
 	
-	private var who_moved : TootAccount? = null
+	private var movedRef : TootAccountRef? = null
 	
 	private val llMoved : View
 	private val tvMoved : TextView
@@ -140,8 +141,9 @@ internal class ViewHolderHeaderProfile(
 			tvCreated.textSize = activity.acct_font_size_sp
 		}
 		
-		val who = column.who_account
-		this.who = who
+		val whoRef = column.who_account
+		this.whoRef = whoRef
+		val who = whoRef?.find()
 		
 		showColor()
 		
@@ -184,7 +186,7 @@ internal class ViewHolderHeaderProfile(
 				access_info.supplyBaseUrl(who.avatar)
 			)
 			
-			val name = who.decoded_display_name
+			val name = whoRef.decoded_display_name
 			tvDisplayName.text = name
 			name_invalidator.register(name)
 			
@@ -210,7 +212,7 @@ internal class ViewHolderHeaderProfile(
 			}
 			tvAcct.text = sb
 			
-			val note = who.decoded_note
+			val note = whoRef.decoded_note
 			tvNote.text = note
 			note_invalidator.register(note)
 			
@@ -221,7 +223,7 @@ internal class ViewHolderHeaderProfile(
 			val relation = UserRelation.load(access_info.db_id, who.id)
 			Styler.setFollowIcon(activity, btnFollow, ivFollowedBy, relation, who)
 			
-			showMoved(who, who.moved)
+			showMoved(who, who.movedRef)
 			
 			if(who.fields != null) {
 				
@@ -295,9 +297,10 @@ internal class ViewHolderHeaderProfile(
 		}
 	}
 	
-	private fun showMoved(who : TootAccount, who_moved : TootAccount?) {
-		if(who_moved == null) return
-		this.who_moved = who_moved
+	private fun showMoved(who : TootAccount, movedRef : TootAccountRef?) {
+		if(movedRef == null) return
+		this.movedRef = movedRef
+		val moved = movedRef.find()
 		
 		llMoved.visibility = View.VISIBLE
 		tvMoved.visibility = View.VISIBLE
@@ -314,16 +317,16 @@ internal class ViewHolderHeaderProfile(
 		ivMoved.setImageUrl(
 			activity.pref,
 			Styler.calcIconRound(ivMoved.layoutParams),
-			access_info.supplyBaseUrl(who_moved.avatar_static)
+			access_info.supplyBaseUrl(moved.avatar_static)
 		)
 		
-		tvMovedName.text = who_moved.decoded_display_name
-		moved_name_invalidator.register(who_moved.decoded_display_name)
+		tvMovedName.text = movedRef.decoded_display_name
+		moved_name_invalidator.register(movedRef.decoded_display_name)
 		
-		setAcct(tvMovedAcct, access_info.getFullAcct(who_moved), who_moved.acct)
+		setAcct(tvMovedAcct, access_info.getFullAcct(moved), moved.acct)
 		
-		val relation = UserRelation.load(access_info.db_id, who_moved.id)
-		Styler.setFollowIcon(activity, btnMoved, ivMovedBy, relation, who_moved)
+		val relation = UserRelation.load(access_info.db_id, moved.id)
+		Styler.setFollowIcon(activity, btnMoved, ivMovedBy, relation, moved)
 	}
 	
 	private fun setAcct(tv : TextView, acctLong : String, acctShort : String) {
@@ -353,7 +356,7 @@ internal class ViewHolderHeaderProfile(
 		
 		when(v.id) {
 			
-			R.id.ivBackground, R.id.tvRemoteProfileWarning -> who?.url?.let { url ->
+			R.id.ivBackground, R.id.tvRemoteProfileWarning -> whoRef?.find()?.url?.let { url ->
 				App1.openCustomTab(activity, url)
 			}
 			
@@ -375,27 +378,27 @@ internal class ViewHolderHeaderProfile(
 				column.startLoading()
 			}
 			
-			R.id.btnMore -> who?.let { who ->
-				DlgContextMenu(activity, column, who, null, null).show()
+			R.id.btnMore -> whoRef?.let { whoRef ->
+				DlgContextMenu(activity, column, whoRef, null, null).show()
 			}
 			
-			R.id.btnFollow -> who?.let { who ->
-				DlgContextMenu(activity, column, who, null, null).show()
+			R.id.btnFollow -> whoRef?.let { whoRef ->
+				DlgContextMenu(activity, column, whoRef, null, null).show()
 			}
 			
-			R.id.btnMoved -> who_moved?.let { who_moved ->
-				DlgContextMenu(activity, column, who_moved, null, null).show()
+			R.id.btnMoved -> movedRef?.let { movedRef ->
+				DlgContextMenu(activity, column, movedRef, null, null).show()
 			}
 			
-			R.id.llMoved -> who_moved?.let { who_moved ->
+			R.id.llMoved -> movedRef?.let { movedRef ->
 				if(access_info.isPseudo) {
-					DlgContextMenu(activity, column, who_moved, null, null).show()
+					DlgContextMenu(activity, column, movedRef, null, null).show()
 				} else {
 					Action_User.profileLocal(
 						activity,
 						activity.nextPosition(column),
 						access_info,
-						who_moved
+						movedRef.find()
 					)
 				}
 			}
@@ -410,7 +413,7 @@ internal class ViewHolderHeaderProfile(
 					activity,
 					activity.nextPosition(column),
 					access_info,
-					who
+					whoRef?.find()
 				)
 				return true
 			}
@@ -420,7 +423,7 @@ internal class ViewHolderHeaderProfile(
 					activity,
 					activity.nextPosition(column),
 					access_info,
-					who_moved
+					movedRef?.find()
 				)
 				return true
 			}
@@ -433,7 +436,7 @@ internal class ViewHolderHeaderProfile(
 	}
 	
 	fun updateRelativeTime() {
-		val who = this.who
+		val who = whoRef?.find()
 		if(who != null) {
 			tvCreated.text = TootStatus.formatTime(tvCreated.context, who.time_created_at, true)
 		}

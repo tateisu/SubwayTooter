@@ -226,7 +226,8 @@ internal class StatusButtons(
 			}
 			
 			btnFollow2 -> {
-				val account = status.account
+				val accountRef = status.accountRef
+				val account = accountRef.find()
 				val relation = this.relation ?: return
 				
 				when {
@@ -250,7 +251,7 @@ internal class StatusButtons(
 							activity,
 							activity.nextPosition(column),
 							access_info,
-							account,
+							accountRef,
 							bFollow = false,
 							callback = activity.unfollow_complete_callback
 						)
@@ -262,7 +263,7 @@ internal class StatusButtons(
 							activity,
 							activity.nextPosition(column),
 							access_info,
-							account,
+							accountRef,
 							bFollow = true,
 							callback = activity.follow_complete_callback
 						)
@@ -270,7 +271,7 @@ internal class StatusButtons(
 				}
 			}
 			
-			btnMore -> DlgContextMenu(activity, column, status.account, status, notification).show()
+			btnMore -> DlgContextMenu(activity, column, status.accountRef, status, notification).show()
 		}
 	}
 	

@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
+import jp.juggler.subwaytooter.api.TootAccountMap
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.notEmptyOrThrow
 import jp.juggler.subwaytooter.util.parseLong
@@ -12,11 +13,14 @@ class TootNotification(
 	val id : Long,
 	val type : String,    //	One of: "mention", "reblog", "favourite", "follow"
 	private val created_at : String?,    //	The time the notification was created
-	val account : TootAccount?,    //	The Account sending the notification to the user
+	val accountRef : TootAccountRef?,    //	The Account sending the notification to the user
 	val status : TootStatus?    //	The Status associated with the notification, if applicable
 ) : TimelineItem() {
 	
 	val time_created_at : Long
+
+	val account : TootAccount?
+		get() = accountRef?.find()
 	
 	init {
 		time_created_at = TootStatus.parseTime(created_at)
@@ -27,7 +31,7 @@ class TootNotification(
 		id = src.parseLong("id") ?: - 1L,
 		type = src.notEmptyOrThrow("type"),
 		created_at = src.parseString("created_at"),
-		account = parser.account(src.optJSONObject("account")),
+		accountRef = TootAccountRef.mayNull( parser, parser.account(src.optJSONObject("account"))),
 		status = parser.status(src.optJSONObject("status"))
 	)
 	

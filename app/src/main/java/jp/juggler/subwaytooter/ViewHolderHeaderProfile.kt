@@ -210,6 +210,21 @@ internal class ViewHolderHeaderProfile(
 					)
 				}
 			}
+			if(who.bot){
+				sb.append(" ")
+				val start = sb.length
+				sb.append("bot")
+				val end = sb.length
+				val info = EmojiMap201709.sShortNameToImageId["robot_face"]
+				if(info != null) {
+					sb.setSpan(
+						EmojiImageSpan(activity, info.image_id),
+						start,
+						end,
+						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+					)
+				}
+			}
 			tvAcct.text = sb
 			
 			val note = whoRef.decoded_note

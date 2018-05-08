@@ -14,6 +14,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import jp.juggler.emoji.EmojiMap201709
 
 import java.util.ArrayList
 
@@ -461,7 +462,12 @@ internal class ItemViewHolder(
 		btnSearchTag.text = activity.getString(R.string.read_gap)
 	}
 	
-	private fun showBoost(whoRef : TootAccountRef, time : Long, icon_attr_id : Int, text : Spannable) {
+	private fun showBoost(
+		whoRef : TootAccountRef,
+		time : Long,
+		icon_attr_id : Int,
+		text : Spannable
+	) {
 		boost_account = whoRef
 		val who = whoRef.find()
 		boost_time = time
@@ -664,6 +670,24 @@ internal class ItemViewHolder(
 		//		}
 		
 		if(status != null) {
+			
+			if(status.account.bot) {
+				if(sb.isNotEmpty()) sb.append(' ')
+				
+				val start = sb.length
+				sb.append("bot")
+				val end = sb.length
+				val info = EmojiMap201709.sShortNameToImageId["robot_face"]
+				if(info != null) {
+					sb.setSpan(
+						EmojiImageSpan(activity, info.image_id),
+						start,
+						end,
+						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+					)
+				}
+			}
+			
 			if(status.hasMedia() && status.sensitive) {
 				if(sb.isNotEmpty()) sb.append(' ')
 				
@@ -968,14 +992,26 @@ internal class ItemViewHolder(
 			
 			btnFollowRequestAccept -> follow_account?.let { whoRef ->
 				val who = whoRef.find()
-				DlgConfirm.openSimple(activity,activity.getString(R.string.follow_accept_confirm,AcctColor.getNickname(access_info.getFullAcct(who)))){
+				DlgConfirm.openSimple(
+					activity,
+					activity.getString(
+						R.string.follow_accept_confirm,
+						AcctColor.getNickname(access_info.getFullAcct(who))
+					)
+				) {
 					Action_Follow.authorizeFollowRequest(activity, access_info, whoRef, true)
 				}
 			}
 			
 			btnFollowRequestDeny -> follow_account?.let { whoRef ->
 				val who = whoRef.find()
-				DlgConfirm.openSimple(activity,activity.getString(R.string.follow_deny_confirm,AcctColor.getNickname(access_info.getFullAcct(who)))){
+				DlgConfirm.openSimple(
+					activity,
+					activity.getString(
+						R.string.follow_deny_confirm,
+						AcctColor.getNickname(access_info.getFullAcct(who))
+					)
+				) {
 					Action_Follow.authorizeFollowRequest(activity, access_info, whoRef, false)
 				}
 			}
@@ -1885,15 +1921,15 @@ internal class ItemViewHolder(
 					background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 					contentDescription = context.getString(R.string.follow_accept)
 					imageResource = Styler.getAttributeResourceId(context, R.attr.ic_check)
-					setPadding(0,0,0,0)
-				}.lparams(dip(48f),dip(32f))
+					setPadding(0, 0, 0, 0)
+				}.lparams(dip(48f), dip(32f))
 				
 				btnFollowRequestDeny = imageButton {
 					background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 					contentDescription = context.getString(R.string.follow_deny)
 					imageResource = Styler.getAttributeResourceId(context, R.attr.btn_close)
-					setPadding(0,0,0,0)
-				}.lparams(dip(48f),dip(32f)){
+					setPadding(0, 0, 0, 0)
+				}.lparams(dip(48f), dip(32f)) {
 					startMargin = dip(4)
 				}
 			}

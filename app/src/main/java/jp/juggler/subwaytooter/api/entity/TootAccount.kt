@@ -84,6 +84,8 @@ open class TootAccount(
 	
 	val custom_emojis : java.util.HashMap<String, CustomEmoji>?
 	
+	val bot :Boolean
+	
 	init {
 		var sv : String?
 		
@@ -118,6 +120,8 @@ open class TootAccount(
 		this.locked = src.optBoolean("locked")
 		
 		this.fields = parseFields(src.optJSONArray("fields"))
+		
+		this.bot = src.optBoolean("bot",false)
 		
 		when(parser.serviceType) {
 			ServiceType.MASTODON -> {

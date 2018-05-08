@@ -6,6 +6,7 @@ import android.text.SpannableString
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.api.TootAccountMap
 import jp.juggler.subwaytooter.api.TootApiClient
 
 import org.json.JSONObject
@@ -47,7 +48,12 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 	val id : Long
 	
 	// The TootAccount which posted the status
+	val accountRef : Int
+
 	val account : TootAccount
+		get(){
+			return TootAccountMap.find(accountRef)
+		}
 	
 	//The number of reblogs for the status
 	var reblogs_count : Long? = null  // アプリから変更する。検索サービスでは提供されない(null)
@@ -155,8 +161,10 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 		this.profile_emojis =
 			parseMapOrNull(::NicoProfileEmoji, src.optJSONArray("profile_emojis"), log)
 		
-		this.account = parser.account(src.optJSONObject("account"))
+		val who =parser.account(src.optJSONObject("account"))
 			?: throw RuntimeException("missing account")
+
+		this.accountRef = TootAccountMap.register(parser,who)
 		
 		when(parser.serviceType) {
 			ServiceType.MASTODON -> {

@@ -324,6 +324,7 @@ object Utils {
 fun <T : Comparable<T>> clipRange(min : T, max : T, src : T) =
 	if(src < min) min else if(src > max) max else src
 
+
 ////////////////////////////////////////////////////////////////////
 // ByteArray
 

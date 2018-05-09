@@ -671,25 +671,29 @@ internal class ItemViewHolder(
 		
 		if(status != null) {
 			
+			// botマーク
 			if(status.account.bot) {
-				if(sb.isNotEmpty()) sb.append(' ')
+				if(sb.isNotEmpty()) sb.append('\u200B')
 				
-				val start = sb.length
-				sb.append("bot")
-				val end = sb.length
-				val info = EmojiMap201709.sShortNameToImageId["robot_face"]
-				if(info != null) {
-					sb.setSpan(
-						EmojiImageSpan(activity, info.image_id),
-						start,
-						end,
-						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-					)
-				}
+				sb.appendColorShadeIcon(activity, R.drawable.ic_bot, "bot")
+				
+//				val start = sb.length
+//				sb.append("bot")
+//				val end = sb.length
+//				val info = EmojiMap201709.sShortNameToImageId["robot_face"]
+//				if(info != null) {
+//					sb.setSpan(
+//						EmojiImageSpan(activity, info.image_id),
+//						start,
+//						end,
+//						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+//					)
+//				}
 			}
 			
+			// NSFWマーク
 			if(status.hasMedia() && status.sensitive) {
-				if(sb.isNotEmpty()) sb.append(' ')
+				if(sb.isNotEmpty()) sb.append('\u200B')
 				
 				val start = sb.length
 				sb.append("NSFW")
@@ -703,9 +707,10 @@ internal class ItemViewHolder(
 				)
 			}
 			
+			// visibility
 			val visIconAttrId = Styler.getVisibilityIconAttr(status.visibility)
 			if(R.attr.ic_public != visIconAttrId) {
-				if(sb.isNotEmpty()) sb.append(' ')
+				if(sb.isNotEmpty()) sb.append('\u200B')
 				val start = sb.length
 				sb.append(status.visibility)
 				val end = sb.length
@@ -717,19 +722,22 @@ internal class ItemViewHolder(
 					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 				)
 			}
-			
+
+			// pinned
 			if(status.pinned) {
-				if(sb.isNotEmpty()) sb.append(' ')
-				val start = sb.length
-				sb.append("pinned")
-				val end = sb.length
-				val icon_id = Styler.getAttributeResourceId(activity, R.attr.ic_pin)
-				sb.setSpan(
-					EmojiImageSpan(activity, icon_id),
-					start,
-					end,
-					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-				)
+				if(sb.isNotEmpty()) sb.append('\u200B')
+				sb.appendColorShadeIcon(activity, R.drawable.ic_pin, "pinned")
+				
+//				val start = sb.length
+//				sb.append("pinned")
+//				val end = sb.length
+//				val icon_id = Styler.getAttributeResourceId(activity, R.attr.ic_pin)
+//				sb.setSpan(
+//					EmojiImageSpan(activity, icon_id),
+//					start,
+//					end,
+//					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+//				)
 			}
 			
 		}

@@ -517,40 +517,44 @@ class ColumnViewHolder(
 	}
 	
 	fun showColumnStatus() {
-		val column = this.column
 		
 		val sb = SpannableStringBuilder()
 		
-		
-		
 		try {
+			val column = this.column
 			if(column == null) {
 				sb.append('?')
 			} else {
 				val task = column.lastTask
-				if( task != null){
-					sb.append(when(task.ctType){
-						ColumnTaskType.LOADING -> 'L'
-						ColumnTaskType.REFRESH_TOP ->'T'
-						ColumnTaskType.REFRESH_BOTTOM ->'B'
-						ColumnTaskType.GAP->'G'
-					})
-					sb.append(when{
-						task.isCancelled -> "~"
-						task.ctClosed.get() -> "!"
-						task.ctStarted.get() -> ""
-						else-> "?"
-					})
+				if(task != null) {
+					sb.append(
+						when(task.ctType) {
+							ColumnTaskType.LOADING -> 'L'
+							ColumnTaskType.REFRESH_TOP -> 'T'
+							ColumnTaskType.REFRESH_BOTTOM -> 'B'
+							ColumnTaskType.GAP -> 'G'
+						}
+					)
+					sb.append(
+						when {
+							task.isCancelled -> "~"
+							task.ctClosed.get() -> "!"
+							task.ctStarted.get() -> ""
+							else -> "?"
+						}
+					)
 				}
 				when(column.getStreamingStatus()) {
 					StreamingIndicatorState.NONE -> {
 					}
-					StreamingIndicatorState.REGISTERED ->{
-						sb.appendColorShadeIcon(activity,R.drawable.ic_pulse,"Streaming")
+					
+					StreamingIndicatorState.REGISTERED -> {
+						sb.appendColorShadeIcon(activity, R.drawable.ic_pulse, "Streaming")
 						sb.append("?")
 					}
+					
 					StreamingIndicatorState.LISTENING -> {
-						sb.appendColorShadeIcon(activity,R.drawable.ic_pulse,"Streaming")
+						sb.appendColorShadeIcon(activity, R.drawable.ic_pulse, "Streaming")
 					}
 				}
 			}
@@ -560,10 +564,6 @@ class ColumnViewHolder(
 			tvColumnStatus.text = sb
 		}
 	}
-	
-
-	
-	
 	
 	fun showColumnColor() {
 		val column = this.column

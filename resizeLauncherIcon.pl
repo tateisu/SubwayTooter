@@ -53,6 +53,7 @@ sub resize_scales{
 			my($dir_suffix,$scale)=@$_;
 			my $subdir = "$res_dir/$dir_prefix-$dir_suffix";
 			mkdir($subdir,0777);
+			unlink "$subdir/$res_name.webp";
 			resize( $src, "$subdir/$res_name.png", $w,$h,$scale);
 		}
 	}else{
@@ -60,6 +61,7 @@ sub resize_scales{
 			my($dir_suffix,$scale)=@$_;
 			my $subdir = "$res_dir/$dir_prefix-$dir_suffix";
 			mkdir($subdir,0777);
+			unlink "$subdir/$res_name.webp";
 			resize( $src, "$subdir/$res_name.png", $scale * $w, $scale * $h );
 		}
 	}
@@ -116,4 +118,6 @@ my $res_dir = "app/src/main/res";
 #resize_scales( "_ArtWork/v0.5.1/ic_launcher_foreground.png"		,$res_dir,"mipmap","ic_launcher_foreground",0,108);
 #resize_scales( "_ArtWork/v0.5.1/ic_launcher_background.png"		,$res_dir,"mipmap","ic_launcher_background",0,108);
 
-resize_scales( "_ArtWork/ic_pulse.png"	,$res_dir,"drawable","ic_pulse",0,32);
+# resize_scales( "_ArtWork/ic_pulse.png"	,$res_dir,"drawable","ic_pulse",0,32);
+resize_scales( "_ArtWork/ic_bot.png"	,$res_dir,"drawable","ic_bot",0,24);
+resize_scales( "_ArtWork/ic_pin.png"	,$res_dir,"drawable","ic_pin",0,24);

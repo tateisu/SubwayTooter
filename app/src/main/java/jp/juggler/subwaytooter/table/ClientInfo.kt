@@ -66,9 +66,9 @@ object ClientInfo :TableCompanion {
 	}
 	
 	// 単体テスト用。インスタンス名を指定して削除する
-	internal fun delete(instance : String) {
+	fun delete(instance : String,client_name : String ) {
 		try {
-			App1.database.delete(table, "$COL_HOST=?", arrayOf(instance))
+			App1.database.delete(table, "$COL_HOST=? and $COL_CLIENT_NAME=?", arrayOf(instance, client_name))
 		} catch(ex : Throwable) {
 			log.e(ex, "delete failed.")
 		}

@@ -938,5 +938,6 @@
     <string name="available_mastodon_2_4_later">(マストドン2.4以降で利用可能)</string>
     <string name="confirm_boost_private_from">非公開トゥートを %1$s からブーストしますか? 全てのフォロワーに公開されます</string>
     <string name="boost_private_toot_not_allowed">非公開トゥートをブーストできるのは本人だけです</string>
+    <string name="push_notification_test">Push Notification Test (Mastodon 2.4 or later)</string>
 
 </resources>

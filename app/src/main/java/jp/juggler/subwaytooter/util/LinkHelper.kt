@@ -6,7 +6,6 @@ interface LinkHelper {
 	
 	// SavedAccountのロード時にhostを供給する必要があった
 	val host : String?
-		get() = null
 	
 	fun findAcctColor(url : String?) : AcctColor? = null
 	

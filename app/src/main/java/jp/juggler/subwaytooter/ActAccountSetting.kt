@@ -27,6 +27,7 @@ import android.widget.CompoundButton
 import android.widget.EditText
 import android.widget.Switch
 import android.widget.TextView
+import jp.juggler.subwaytooter.api.*
 
 import java.io.File
 import java.io.FileInputStream
@@ -34,12 +35,8 @@ import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
@@ -52,6 +49,7 @@ import okhttp3.MultipartBody
 import okhttp3.Request
 import okhttp3.RequestBody
 import okio.BufferedSink
+import org.json.JSONObject
 
 class ActAccountSetting
 	: AppCompatActivity(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
@@ -103,6 +101,7 @@ class ActAccountSetting
 	private lateinit var swNSFWOpen : Switch
 	private lateinit var swDontShowTimeout : Switch
 	private lateinit var btnOpenBrowser : Button
+	private lateinit var btnPushTest : Button
 	private lateinit var cbNotificationMention : CheckBox
 	private lateinit var cbNotificationBoost : CheckBox
 	private lateinit var cbNotificationFavourite : CheckBox
@@ -274,6 +273,7 @@ class ActAccountSetting
 		swNSFWOpen = findViewById(R.id.swNSFWOpen)
 		swDontShowTimeout = findViewById(R.id.swDontShowTimeout)
 		btnOpenBrowser = findViewById(R.id.btnOpenBrowser)
+		btnPushTest= findViewById(R.id.btnPushTest)
 		cbNotificationMention = findViewById(R.id.cbNotificationMention)
 		cbNotificationBoost = findViewById(R.id.cbNotificationBoost)
 		cbNotificationFavourite = findViewById(R.id.cbNotificationFavourite)
@@ -318,6 +318,7 @@ class ActAccountSetting
 		btnFields = findViewById(R.id.btnFields)
 		
 		btnOpenBrowser.setOnClickListener(this)
+		btnPushTest.setOnClickListener(this)
 		btnAccessToken.setOnClickListener(this)
 		btnInputAccessToken.setOnClickListener(this)
 		btnAccountRemove.setOnClickListener(this)
@@ -488,7 +489,8 @@ class ActAccountSetting
 			R.id.btnAccountRemove -> performAccountRemove()
 			R.id.btnVisibility -> performVisibility()
 			R.id.btnOpenBrowser -> open_browser("https://" + account.host + "/")
-			
+			R.id.btnPushTest-> startTest()
+
 			R.id.btnUserCustom -> ActNickname.open(
 				this,
 				full_acct,
@@ -895,11 +897,11 @@ class ActAccountSetting
 		}
 	}
 	
-	internal fun updateCredential(key : String, value : Any) {
+	private fun updateCredential(key : String, value : Any) {
 		updateCredential(listOf(Pair(key, value)))
 	}
 	
-	internal fun updateCredential(args : List<Pair<String, Any>>) {
+	private fun updateCredential(args : List<Pair<String, Any>>) {
 		
 		TootTaskRunner(this).run(account, object : TootTask {
 			
@@ -1324,5 +1326,75 @@ class ActAccountSetting
 		task.executeOnExecutor(App1.task_executor)
 	}
 	
+	@SuppressLint("StaticFieldLeak")
+	private fun startTest() {
+		TootTaskRunner(this).run(account,object:TootTask{
+			val sb = StringBuilder()
+			
+			private fun addLog(s:String) {
+				if(sb.isNotEmpty()) sb.append('\n')
+				sb.append(s)
+			}
+			
+			override fun background(client : TootApiClient) : TootApiResult? { // TODO
+				// インスタンスバージョンの確認
+				var r = client.getInstanceInformation2()
+				val ti = r?.data as? TootInstance ?: return r
+				if(!ti.isEnoughVersion(TootInstance.VERSION_2_4)){
+					addLog("Too old instance version ${ti.version} that does not support Push API.")
+					return r
+				}
+				
+				// プッシュ通知の登録
+				var json :JSONObject? = JSONObject().also{
+					it.put("subscription",JSONObject().also {
+						it.put("endpoint","${PollingWorker.APP_SERVER}/webpushcallback")
+						it.put("keys",JSONObject().also {
+							it.put(
+								"p256dh",
+								"BEm_a0bdPDhf0SOsrnB2-ategf1hHoCnpXgQsFj5JCkcoMrMt2WHoPfEYOYPzOIs9mZE8ZUaD7VA5vouy0kEkr8="
+							)
+							it.put("auth", "eH_C8rq2raXqlcBVDa1gLg==")
+						})
+					})
+					it.put("data","<<DATA>>")
+				}
+				var req = Request.Builder().post(
+					RequestBody.create(TootApiClient.MEDIA_TYPE_JSON,json.toString())
+				)
+				r = client.request("/api/v1/push/subscription",req)
+				var response = r?.response
+				if( response != null ){
+					when(response.code()){
+						404 ->{
+							addLog("this instance has no API endpoint 'POST /api/v1/push/subscription'. instance version is ${ti.version}")
+							return r
+						}
+						403 ->{
+							addLog("Your access token does not contains push scope. updating access token is recommended.")
+							return r
+						}
+					}
+					
+					addLog( "${response.request()}" )
+					addLog("${response.code()} ${response.message()}")
+					json = r?.jsonObject
+					if(json != null) {
+						addLog(json.toString())
+					}
+				}
+				return r
+			}
+			override fun handleResult(result : TootApiResult?) {
+				val e = result?.error
+				if(e != null) addLog(e)
+				AlertDialog.Builder(this@ActAccountSetting)
+					.setMessage(sb)
+					.setPositiveButton(R.string.close,null)
+					.show()
+			}
+		})
+	}
+
 }
 

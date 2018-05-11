@@ -645,4 +645,5 @@
     <string name="available_mastodon_2_4_later">(available in Mastodon 2.4 or later)</string>
     <string name="confirm_boost_private_from">Boost private status from %1$s ? It\'s shown to all followers.</string>
     <string name="boost_private_toot_not_allowed">You can\'t boost private toot by another person.</string>
+    <string name="push_notification_test">Push Notification Test (Mastodon 2.4 or later)</string>
 </resources>

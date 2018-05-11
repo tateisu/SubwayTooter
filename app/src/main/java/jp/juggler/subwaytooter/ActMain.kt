@@ -1609,7 +1609,10 @@ class ActMain : AppCompatActivity()
 				this.host = instance
 				val client_name = Pref.spClientName(this@ActMain)
 				val result = client.authentication2(client_name, code)
-				this.ta = TootParser(this@ActMain, object : LinkHelper {})
+				this.ta = TootParser(this@ActMain, object : LinkHelper {
+					override val host : String?
+						get() = instance
+				})
 					.account(result?.jsonObject)
 				return result
 			}
@@ -1752,8 +1755,10 @@ class ActMain : AppCompatActivity()
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val result = client.getUserCredential(access_token)
-				this.ta =
-					TootParser(this@ActMain, object : LinkHelper {}).account(result?.jsonObject)
+				this.ta = TootParser(this@ActMain, object : LinkHelper {
+					override val host : String?
+						get() = host
+				}).account(result?.jsonObject)
 				return result
 			}
 			

@@ -9,6 +9,9 @@ class TootInstance(parser:TootParser,src : JSONObject) {
 	
 	companion object {
 		val rePleroma = Pattern.compile("\\bpleroma\\b",Pattern.CASE_INSENSITIVE)
+		
+		val VERSION_2_4 = VersionString("2.4")
+		
 	}
 	
 	// いつ取得したか(内部利用)

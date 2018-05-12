@@ -23,9 +23,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService() {
 		if(data != null) {
 			for((key, value) in data) {
 				log.d("onMessageReceived: %s=%s", key, value)
-				
-				if("notification_tag" == key) {
-					tag = value
+				when(key){
+					"notification_tag" -> tag = value
+					"acct" -> tag= "acct<>$value"
 				}
 			}
 		}

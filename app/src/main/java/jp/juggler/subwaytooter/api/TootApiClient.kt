@@ -845,16 +845,31 @@ class TootApiClient(
 	////////////////////////////////////////////////////////////////////////
 	// JSONデータ以外を扱うリクエスト
 	
-	// 疑似アカウントでステータスURLからステータスIDを取得するためにHTMLを取得する
-	fun getHttp(url : String) : TootApiResult? {
-		val result = TootApiResult.makeWithCaption(url)
+	fun http(req:Request) : TootApiResult? {
+		val result = TootApiResult.makeWithCaption(req.url().host())
 		if(result.error != null) return result
 		
-		if(! sendRequest(result, progressPath = url) {
-				Request.Builder().url(url).build()
-			}) return result
-		return parseString(result)
-		
+		sendRequest(result, progressPath = null) { req }
+		return result
+	}
+	
+	fun requestJson(req:Request) : TootApiResult? {
+		val result = TootApiResult.makeWithCaption(req.url().host())
+		if(result.error != null) return result
+		if( sendRequest(result, progressPath = null) { req } ){
+			parseJson(result)
+		}
+		return result
+	}
+	
+	
+	// 疑似アカウントでステータスURLからステータスIDを取得するためにHTMLを取得する
+	fun getHttp(url:String): TootApiResult? {
+		val result = http(Request.Builder().url(url).build())
+		if(result !=null && result.error == null){
+			parseString(result)
+		}
+		return result
 	}
 	
 	fun getHttpBytes(url : String) : TootApiResult? {

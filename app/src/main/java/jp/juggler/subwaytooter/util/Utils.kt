@@ -11,6 +11,7 @@ import android.os.Looper
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
+import android.util.Base64
 import android.util.SparseBooleanArray
 import android.view.View
 import android.view.ViewGroup
@@ -25,15 +26,15 @@ import java.io.FileInputStream
 import java.io.IOException
 import java.lang.ref.WeakReference
 import java.security.MessageDigest
-import java.util.ArrayList
-import java.util.HashMap
-import java.util.LinkedList
-import java.util.Locale
 import java.util.regex.Pattern
 
 import org.apache.commons.io.IOUtils
 import org.json.JSONArray
 import org.json.JSONObject
+import java.security.NoSuchAlgorithmException
+import java.util.Locale
+import java.util.LinkedList
+
 
 object Utils {
 	
@@ -337,25 +338,25 @@ private fun ByteArray.encodeHex() : String {
 	return sb.toString()
 }
 
-//private fun ByteArray.encodeSHA256() : ByteArray? {
-//	return try {
-//		val digest = MessageDigest.getInstance("SHA-256")
-//		digest.reset()
-//		digest.digest(this)
-//	} catch(e1 : NoSuchAlgorithmException) {
-//		null
-//	}
-//
-//}
-//
-//private fun ByteArray?.encodeBase64Safe() : String? {
-//	this ?: return null
-//	return try {
-//		Base64.encodeToString(this, Base64.URL_SAFE)
-//	} catch(ex : Throwable) {
-//		null
-//	}
-//}
+fun ByteArray.digestSHA256() : ByteArray? {
+	return try {
+		val digest = MessageDigest.getInstance("SHA-256")
+		digest.reset()
+		digest.digest(this)
+	} catch(e1 : NoSuchAlgorithmException) {
+		null
+	}
+
+}
+
+fun ByteArray?.encodeBase64Safe() : String? {
+	this ?: return null
+	return try {
+		Base64 .encodeToString(this, Base64.URL_SAFE)
+	} catch(ex : Throwable) {
+		null
+	}
+}
 
 ////////////////////////////////////////////////////////////////////
 // CharSequence

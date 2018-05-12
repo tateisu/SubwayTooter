@@ -101,7 +101,7 @@ class ActAccountSetting
 	private lateinit var swNSFWOpen : Switch
 	private lateinit var swDontShowTimeout : Switch
 	private lateinit var btnOpenBrowser : Button
-	private lateinit var btnPushTest : Button
+	private lateinit var btnPushSubscription : Button
 	private lateinit var cbNotificationMention : CheckBox
 	private lateinit var cbNotificationBoost : CheckBox
 	private lateinit var cbNotificationFavourite : CheckBox
@@ -273,7 +273,7 @@ class ActAccountSetting
 		swNSFWOpen = findViewById(R.id.swNSFWOpen)
 		swDontShowTimeout = findViewById(R.id.swDontShowTimeout)
 		btnOpenBrowser = findViewById(R.id.btnOpenBrowser)
-		btnPushTest= findViewById(R.id.btnPushTest)
+		btnPushSubscription = findViewById(R.id.btnPushSubscription)
 		cbNotificationMention = findViewById(R.id.cbNotificationMention)
 		cbNotificationBoost = findViewById(R.id.cbNotificationBoost)
 		cbNotificationFavourite = findViewById(R.id.cbNotificationFavourite)
@@ -318,7 +318,7 @@ class ActAccountSetting
 		btnFields = findViewById(R.id.btnFields)
 		
 		btnOpenBrowser.setOnClickListener(this)
-		btnPushTest.setOnClickListener(this)
+		btnPushSubscription.setOnClickListener(this)
 		btnAccessToken.setOnClickListener(this)
 		btnInputAccessToken.setOnClickListener(this)
 		btnAccountRemove.setOnClickListener(this)
@@ -407,6 +407,7 @@ class ActAccountSetting
 		btnAccessToken.isEnabled = enabled
 		btnInputAccessToken.isEnabled = enabled
 		btnVisibility.isEnabled = enabled
+		btnPushSubscription.isEnabled = enabled
 		
 		btnNotificationSoundEdit.isEnabled = Build.VERSION.SDK_INT < 26 && enabled
 		btnNotificationSoundReset.isEnabled = Build.VERSION.SDK_INT < 26 && enabled
@@ -489,8 +490,8 @@ class ActAccountSetting
 			R.id.btnAccountRemove -> performAccountRemove()
 			R.id.btnVisibility -> performVisibility()
 			R.id.btnOpenBrowser -> open_browser("https://" + account.host + "/")
-			R.id.btnPushTest-> startTest()
-
+			R.id.btnPushSubscription -> startTest()
+			
 			R.id.btnUserCustom -> ActNickname.open(
 				this,
 				full_acct,
@@ -843,22 +844,22 @@ class ActAccountSetting
 							else -> fields[i].first
 						}
 					)
-					et.setText( text )
+					et.setText(text)
 					et.isEnabled = true
-					val invalidator = NetworkEmojiInvalidator(et.handler,et)
+					val invalidator = NetworkEmojiInvalidator(et.handler, et)
 					invalidator.register(text)
 				}
 				
 				listEtFieldValue.forEachIndexed { i, et ->
-					val text =decodeOptions.decodeEmoji(
+					val text = decodeOptions.decodeEmoji(
 						when {
 							i >= fields.size -> ""
 							else -> fields[i].second
 						}
 					)
-					et.setText( text )
+					et.setText(text)
 					et.isEnabled = true
-					val invalidator = NetworkEmojiInvalidator(et.handler,et)
+					val invalidator = NetworkEmojiInvalidator(et.handler, et)
 					invalidator.register(text)
 				}
 				
@@ -866,7 +867,7 @@ class ActAccountSetting
 				val fields = src.fields
 				
 				listEtFieldName.forEachIndexed { i, et ->
-					val text = 	decodeOptionsNoCustomEmoji.decodeEmoji(
+					val text = decodeOptionsNoCustomEmoji.decodeEmoji(
 						when {
 							fields == null || i >= fields.size -> ""
 							else -> fields[i].first
@@ -874,12 +875,12 @@ class ActAccountSetting
 					)
 					et.setText(text)
 					et.isEnabled = true
-					val invalidator = NetworkEmojiInvalidator(et.handler,et)
+					val invalidator = NetworkEmojiInvalidator(et.handler, et)
 					invalidator.register(text)
 				}
 				
 				listEtFieldValue.forEachIndexed { i, et ->
-					val text =  decodeOptions.decodeHTML(
+					val text = decodeOptions.decodeHTML(
 						when {
 							fields == null || i >= fields.size -> ""
 							else -> fields[i].second
@@ -887,7 +888,7 @@ class ActAccountSetting
 					)
 					et.text = text
 					et.isEnabled = true
-					val invalidator = NetworkEmojiInvalidator(et.handler,et)
+					val invalidator = NetworkEmojiInvalidator(et.handler, et)
 					invalidator.register(text)
 				}
 			}
@@ -1328,73 +1329,25 @@ class ActAccountSetting
 	
 	@SuppressLint("StaticFieldLeak")
 	private fun startTest() {
-		TootTaskRunner(this).run(account,object:TootTask{
-			val sb = StringBuilder()
+		TootTaskRunner(this).run(account, object : TootTask {
+			val wps = WebPushSubscription(this@ActAccountSetting,verbose = true)
 			
-			private fun addLog(s:String) {
-				if(sb.isNotEmpty()) sb.append('\n')
-				sb.append(s)
+			override fun background(client : TootApiClient) : TootApiResult? {
+				return wps.updateSubscription(client,account)
 			}
 			
-			override fun background(client : TootApiClient) : TootApiResult? { // TODO
-				// インスタンスバージョンの確認
-				var r = client.getInstanceInformation2()
-				val ti = r?.data as? TootInstance ?: return r
-				if(!ti.isEnoughVersion(TootInstance.VERSION_2_4)){
-					addLog("Too old instance version ${ti.version} that does not support Push API.")
-					return r
-				}
-				
-				// プッシュ通知の登録
-				var json :JSONObject? = JSONObject().also{
-					it.put("subscription",JSONObject().also {
-						it.put("endpoint","${PollingWorker.APP_SERVER}/webpushcallback")
-						it.put("keys",JSONObject().also {
-							it.put(
-								"p256dh",
-								"BEm_a0bdPDhf0SOsrnB2-ategf1hHoCnpXgQsFj5JCkcoMrMt2WHoPfEYOYPzOIs9mZE8ZUaD7VA5vouy0kEkr8="
-							)
-							it.put("auth", "eH_C8rq2raXqlcBVDa1gLg==")
-						})
-					})
-					it.put("data","<<DATA>>")
-				}
-				var req = Request.Builder().post(
-					RequestBody.create(TootApiClient.MEDIA_TYPE_JSON,json.toString())
-				)
-				r = client.request("/api/v1/push/subscription",req)
-				var response = r?.response
-				if( response != null ){
-					when(response.code()){
-						404 ->{
-							addLog("this instance has no API endpoint 'POST /api/v1/push/subscription'. instance version is ${ti.version}")
-							return r
-						}
-						403 ->{
-							addLog("Your access token does not contains push scope. updating access token is recommended.")
-							return r
-						}
-					}
-					
-					addLog( "${response.request()}" )
-					addLog("${response.code()} ${response.message()}")
-					json = r?.jsonObject
-					if(json != null) {
-						addLog(json.toString())
-					}
-				}
-				return r
-			}
 			override fun handleResult(result : TootApiResult?) {
-				val e = result?.error
-				if(e != null) addLog(e)
-				AlertDialog.Builder(this@ActAccountSetting)
-					.setMessage(sb)
-					.setPositiveButton(R.string.close,null)
-					.show()
+				result ?: return
+				val log = wps.log
+				if( log.isNotEmpty() ){
+					AlertDialog.Builder(this@ActAccountSetting)
+						.setMessage(log)
+						.setPositiveButton(R.string.close, null)
+						.show()
+				}
 			}
 		})
 	}
-
+	
 }
 

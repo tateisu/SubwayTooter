@@ -938,6 +938,15 @@
     <string name="available_mastodon_2_4_later">(マストドン2.4以降で利用可能)</string>
     <string name="confirm_boost_private_from">非公開トゥートを %1$s からブーストしますか? 全てのフォロワーに公開されます</string>
     <string name="boost_private_toot_not_allowed">非公開トゥートをブーストできるのは本人だけです</string>
-    <string name="push_notification_test">Push Notification Test (Mastodon 2.4 or later)</string>
+    <string name="update_push_subscription">プッシュ通知購読の更新 (Mastodon2.4以降)</string>
+    <string name="pseudo_account_not_supported">疑似アカウントでは通知を利用できません。</string>
+    <string name="instance_does_not_support_push_api">タンスのバージョン %1$s は古くてプッシュAPIを利用できません</string>
+    <string name="missing_fcm_device_id">FCMのデバイスIDを準備できません。しばらく後に試してください。</string>
+    <string name="missing_install_id">インストールIDを準備できません。しばらく後に試してください。</string>
+    <string name="token_exported">アプリデータのエクスポート、インポート、バックアップからの復元などでアクセストークンが他のデバイスでも使われている可能性があります。アクセストークンの更新をおすすめします。</string>
+    <string name="push_subscription_deleted">プッシュ通知の購読を取り消しました。</string>
+    <string name="missing_push_api">このタンスはなぜかプッシュAPIがありません。</string>
+    <string name="missing_push_scope">このアクセストークンは古いのでプッシュAPIを利用する権限がありません。アクセストークンの更新をおすすめします。</string>
+    <string name="push_subscription_updated">プッシュ通知の購読を更新しました。</string>
 
 </resources>

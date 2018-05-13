@@ -1097,28 +1097,28 @@ class PollingWorker private constructor(c : Context) {
 					
 					client.account = account
 					
-					val wps = WebPushSubscription(context)
-					wps.updateSubscription(client, account)
+					val wps = WebPushSubscription(context,account)
+					if( wps.flags != 0) {
+						job.bPollingRequired.set(true)
+					}
+
+					wps.updateSubscription(client)
 					val wps_log = wps.log
 					if(wps_log.isNotEmpty()) {
 						log.d("WebPushSubscription: ${account.acct} $wps_log")
 					}
 					
 					if(job.isJobCancelled) return
-					
 					if(wps.flags == 0) {
 						unregisterDeviceToken()
 						return
 					}
 					
-					if(! wps.subscribed) {
+					if(wps.subscribed) {
+						unregisterDeviceToken()
+					} else {
 						registerDeviceToken()
 					}
-					
-					
-					if(job.isJobCancelled) return
-					
-					job.bPollingRequired.set(true)
 					
 					if(job.isJobCancelled) return
 					

@@ -36,7 +36,6 @@ import java.io.IOException
 import java.io.InputStream
 
 import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
@@ -49,7 +48,6 @@ import okhttp3.MultipartBody
 import okhttp3.Request
 import okhttp3.RequestBody
 import okio.BufferedSink
-import org.json.JSONObject
 
 class ActAccountSetting
 	: AppCompatActivity(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
@@ -959,7 +957,7 @@ class ActAccountSetting
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
 						val a = TootParser(this@ActAccountSetting, account).account(jsonObject)
-						if(a == null) return TootApiResult("TootAccount parse failed.")
+							?: return TootApiResult("TootAccount parse failed.")
 						data = a
 					}
 					
@@ -1330,10 +1328,14 @@ class ActAccountSetting
 	@SuppressLint("StaticFieldLeak")
 	private fun startTest() {
 		TootTaskRunner(this).run(account, object : TootTask {
-			val wps = WebPushSubscription(this@ActAccountSetting,verbose = true)
-			
+			val wps = WebPushSubscription(
+				this@ActAccountSetting,
+				account,
+				verbose = true
+			)
+
 			override fun background(client : TootApiClient) : TootApiResult? {
-				return wps.updateSubscription(client,account)
+				return wps.updateSubscription(client)
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

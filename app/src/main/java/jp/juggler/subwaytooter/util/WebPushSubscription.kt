@@ -11,11 +11,25 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import org.json.JSONObject
 
-class WebPushSubscription(val context : Context,val verbose: Boolean = false) {
+class WebPushSubscription(
+	val context : Context,
+	val account : SavedAccount,
+	val verbose : Boolean = false
+) {
+	
+	val flags : Int
 	
 	var enabled : Boolean = false
 	var subscribed : Boolean = false
-	var flags = 0
+	
+	init {
+		var n = 0
+		if(account.notification_boost) n += 1
+		if(account.notification_favourite) n += 2
+		if(account.notification_follow) n += 4
+		if(account.notification_mention) n += 8
+		this.flags = n
+	}
 	
 	val log : String
 		get() = sb.toString()
@@ -27,13 +41,8 @@ class WebPushSubscription(val context : Context,val verbose: Boolean = false) {
 		sb.append(s)
 	}
 	
-	private fun updateSubscription_sub(client : TootApiClient, account : SavedAccount) : TootApiResult? {
+	private fun updateSubscription_sub(client : TootApiClient) : TootApiResult? {
 		try {
-			
-			if(account.notification_boost) flags += 1
-			if(account.notification_favourite) flags += 2
-			if(account.notification_follow) flags += 4
-			if(account.notification_mention) flags += 8
 			
 			// 疑似アカウントの確認
 			if(account.isPseudo) {
@@ -44,7 +53,12 @@ class WebPushSubscription(val context : Context,val verbose: Boolean = false) {
 			var r = client.getInstanceInformation2()
 			val ti = r?.data as? TootInstance ?: return r
 			if(! ti.isEnoughVersion(TootInstance.VERSION_2_4)) {
-				return TootApiResult(error = context.getString(R.string.instance_does_not_support_push_api,ti.version))
+				return TootApiResult(
+					error = context.getString(
+						R.string.instance_does_not_support_push_api,
+						ti.version
+					)
+				)
 			}
 			
 			// FCMのデバイスIDを取得
@@ -78,7 +92,6 @@ class WebPushSubscription(val context : Context,val verbose: Boolean = false) {
 			}
 			
 			enabled = true
-
 			
 			// TODO 現在の購読状態を取得できれば良いのに…
 			
@@ -93,30 +106,31 @@ class WebPushSubscription(val context : Context,val verbose: Boolean = false) {
 				
 				when(res.code()) {
 					200 -> {
+						// バックグラウンド実行時はログ出力しない
+						if(! verbose) return TootApiResult()
+
 						addLog(context.getString(R.string.push_subscription_deleted))
 						return r
 					}
 					
 					404 -> {
 						enabled = false
-						return if(verbose){
-							addLog(context.getString(R.string.missing_push_api))
-							r
-						}else{
-							// バックグラウンド実行時は別にコレでも構わないので正常終了扱いとする
-							TootApiResult()
-						}
+						
+						// バックグラウンド実行時はログ出力しない
+						if(! verbose) return TootApiResult()
+						
+						addLog(context.getString(R.string.missing_push_api))
+						return r
 					}
 					
 					403 -> {
 						enabled = false
-						return if(verbose){
-							addLog(context.getString(R.string.missing_push_scope))
-							r
-						}else{
-							// バックグラウンド実行時は別にコレでも構わないので正常終了扱いとする
-							TootApiResult()
-						}
+						
+						// バックグラウンド実行時はログ出力しない
+						if(! verbose) return TootApiResult()
+						
+						addLog(context.getString(R.string.missing_push_scope))
+						return r
 					}
 					
 				}
@@ -136,7 +150,7 @@ class WebPushSubscription(val context : Context,val verbose: Boolean = false) {
 			// プッシュ通知の登録
 			var json : JSONObject? = JSONObject().also {
 				it.put("subscription", JSONObject().also {
-					it.put("endpoint", endpoint )
+					it.put("endpoint", endpoint)
 					it.put("keys", JSONObject().also {
 						it.put(
 							"p256dh",
@@ -169,17 +183,27 @@ class WebPushSubscription(val context : Context,val verbose: Boolean = false) {
 			
 			when(res.code()) {
 				404 -> {
+					// バックグラウンド実行時はログ出力しない
+					if(! verbose) return TootApiResult()
+
 					addLog(context.getString(R.string.missing_push_api))
 					return r
 				}
 				
 				403 -> {
+					// バックグラウンド実行時はログ出力しない
+					if(! verbose) return TootApiResult()
+
 					addLog(context.getString(R.string.missing_push_scope))
 					return r
 				}
 				
 				200 -> {
 					subscribed = true
+					
+					// バックグラウンド実行時はログ出力しない
+					if(! verbose) return TootApiResult()
+
 					addLog(context.getString(R.string.push_subscription_updated))
 					return r
 				}
@@ -195,8 +219,8 @@ class WebPushSubscription(val context : Context,val verbose: Boolean = false) {
 		}
 	}
 	
-	fun updateSubscription(client : TootApiClient, account : SavedAccount) : TootApiResult? {
-		val result = updateSubscription_sub(client, account)
+	fun updateSubscription(client : TootApiClient) : TootApiResult? {
+		val result = updateSubscription_sub(client)
 		val e = result?.error
 		if(e != null) addLog(e)
 		return result

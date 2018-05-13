@@ -205,7 +205,7 @@ class PostHelper(
 						instance = instance_tmp ?: return r2
 						account.instance = instance
 					}
-					visibility_checked = if(instance.isEnoughVersion(version_1_6)) {
+					visibility_checked = if(instance.versionGE(version_1_6)) {
 						null
 					} else {
 						val r2 = getCredential(client)

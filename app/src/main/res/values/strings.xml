@@ -647,12 +647,14 @@
     <string name="boost_private_toot_not_allowed">You can\'t boost private toot by another person.</string>
     <string name="update_push_subscription">Update push subscription (Mastodon 2.4 or later)</string>
     <string name="pseudo_account_not_supported">Pseudo account can\'t use notifications.</string>
-    <string name="instance_does_not_support_push_api">Instance version %1$s too old. that does not support Push API.</string>
+    <string name="instance_does_not_support_push_api">Instance version %1$s too old. that does not support push subscription.</string>
     <string name="missing_fcm_device_id">Can\'t prepare FCM device ID. please retry later.</string>
     <string name="missing_install_id">Can\'t prepare install ID. please retry later.</string>
     <string name="token_exported">Due to exporting application data or restoring from backup, this access token may be used by other devices as well. Because access tokens that are not used by other devices are required to use push notifications, we recommend updating the access token.</string>
-    <string name="push_subscription_deleted">Push subscription deleted.</string>
-    <string name="missing_push_api">The instance has no Push API endpoint.</string>
+    <string name="missing_push_api">The instance has no push subscription API.</string>
     <string name="missing_push_scope">Your access token does not contains push scope. updating access token is recommended.</string>
+    <string name="push_subscription_deleted">Push subscription deleted.</string>
     <string name="push_subscription_updated">Push subscription updated.</string>
+    <string name="push_subscription_not_exists">Push subscription is not required.</string>
+    <string name="push_subscription_already_exists">Push subscription is up to date.</string>
 </resources>

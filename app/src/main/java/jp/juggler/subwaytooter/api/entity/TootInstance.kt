@@ -5,12 +5,13 @@ import jp.juggler.subwaytooter.util.*
 import org.json.JSONObject
 import java.util.regex.Pattern
 
-class TootInstance(parser:TootParser,src : JSONObject) {
+class TootInstance(parser : TootParser, src : JSONObject) {
 	
 	companion object {
-		val rePleroma = Pattern.compile("\\bpleroma\\b",Pattern.CASE_INSENSITIVE)
+		private val rePleroma = Pattern.compile("\\bpleroma\\b", Pattern.CASE_INSENSITIVE)
 		
-		val VERSION_2_4 = VersionString("2.4")
+		val VERSION_2_4_0 = VersionString("2.4.0")
+		val VERSION_2_4_1 = VersionString("2.4.1")
 		
 	}
 	
@@ -49,11 +50,13 @@ class TootInstance(parser:TootParser,src : JSONObject) {
 	val max_toot_chars : Int?
 	
 	// インスタンスの種別
-	enum class InstanceType{
+	enum class InstanceType {
+		
 		Mastodon,
 		Pleroma
 	}
-	val instanceType : InstanceType
+	
+	private val instanceType : InstanceType
 	
 	// XXX: urls をパースしてない。使ってないから…
 	
@@ -68,22 +71,22 @@ class TootInstance(parser:TootParser,src : JSONObject) {
 		this.thumbnail = src.parseString("thumbnail")
 		
 		this.max_toot_chars = src.parseInt("max_toot_chars")
-
-		this.instanceType = when{
-			rePleroma.matcher(version ?:"").find() -> InstanceType.Pleroma
-			else->InstanceType.Mastodon
+		
+		this.instanceType = when {
+			rePleroma.matcher(version ?: "").find() -> InstanceType.Pleroma
+			else -> InstanceType.Mastodon
 		}
 		
 		languages = src.optJSONArray("languages")?.toStringArrayList()
 		
 		val parser2 = TootParser(
 			parser.context,
-			object:LinkHelper {
-				override val host :String
-					get()= uri ?: "?"
+			object : LinkHelper {
+				override val host : String
+					get() = uri ?: "?"
 			}
 		)
-		contact_account = parseItem(::TootAccount,parser2,src.optJSONObject("contact_account"))
+		contact_account = parseItem(::TootAccount, parser2, src.optJSONObject("contact_account"))
 	}
 	
 	class Stats(src : JSONObject) {
@@ -98,10 +101,15 @@ class TootInstance(parser:TootParser,src : JSONObject) {
 		}
 	}
 	
-	fun isEnoughVersion(check : VersionString) : Boolean {
+	fun versionGE(check : VersionString) : Boolean {
 		if(decoded_version.isEmpty || check.isEmpty) return false
 		val i = VersionString.compare(decoded_version, check)
 		return i >= 0
 	}
 	
+	fun versionEquals(check : VersionString) : Boolean {
+		if(decoded_version.isEmpty || check.isEmpty) return false
+		val i = VersionString.compare(decoded_version, check)
+		return i == 0
+	}
 }

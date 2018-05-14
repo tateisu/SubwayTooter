@@ -21,7 +21,6 @@ class WebPushSubscription(
 	
 	val flags : Int
 	
-	var enabled : Boolean = false
 	var subscribed : Boolean = false
 	
 	init {
@@ -53,21 +52,73 @@ class WebPushSubscription(
 				return TootApiResult(error = context.getString(R.string.pseudo_account_not_supported))
 			}
 			
-			// インスタンスバージョンの確認
-			var r = client.getInstanceInformation2()
-			val ti = r?.data as? TootInstance ?: return r
-			if(! ti.versionGE(TootInstance.VERSION_2_4_0)) {
-				return TootApiResult(
-					error = context.getString(
-						R.string.instance_does_not_support_push_api,
-						ti.version
+			// 現在の購読状態を取得
+			// https://github.com/tootsuite/mastodon/pull/7471
+			// https://github.com/tootsuite/mastodon/pull/7472
+			var r = client.request("/api/v1/push/subscription")
+			var res = r?.response ?: return r // cancelled or missing response
+			var subscription404 = false
+			when(res.code()) {
+				200 -> {
+					// たぶん購読が存在する
+				}
+				
+				404 -> {
+					subscription404 = true
+				}
+				
+				else -> {
+					addLog("${res.request()}")
+					addLog("${res.code()} ${res.message()}")
+				}
+			}
+			
+			val oldSubscription = parseItem(::TootPushSubscription, r.jsonObject)
+			
+			if(oldSubscription == null) {
+				
+				// 現在の購読状況が分からない場合はインスタンスのバージョンを調べる必要がある
+				r = client.getInstanceInformation2()
+				val ti = r?.data as? TootInstance ?: return r
+				
+				if(! ti.versionGE(TootInstance.VERSION_2_4_0)) {
+					// 2.3.x 以下にはプッシュ購読APIはない
+					return TootApiResult(
+						error = context.getString(
+							R.string.instance_does_not_support_push_api,
+							ti.version
+						)
 					)
-				)
+				}
+				
+				if(subscription404 && flags == 0) {
+					if(ti.versionGE(TootInstance.VERSION_2_4_1)
+						|| ti.versionEquals(TootInstance.VERSION_2_4_0)
+					) {
+						// 購読が不要で現在の状況が404だった場合
+						// 2.4.0正式版と2.4.1以降では購読が存在しないので何もしなくてよい
+						if(verbose) addLog(context.getString(R.string.push_subscription_not_exists))
+						return TootApiResult()
+					} else {
+						// コミット単位でバージョン比較する方法はないので、2.4.0正式ではない2.4.0xxxでは存在確認はできない
+					}
+				}
 			}
 			
 			// FCMのデバイスIDを取得
 			val device_id = PollingWorker.getDeviceId(context)
 				?: return TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
+			
+			// FCM経由での配信に必要なパラメータをendpoint URLに埋め込む
+			val endpoint =
+				"${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.encodePercent()}/$flags"
+			
+			if(oldSubscription?.endpoint == endpoint) {
+				// 既に登録済みで、endpointも一致しているなら何もしない
+				subscribed = true
+				if(verbose) addLog(context.getString(R.string.push_subscription_already_exists))
+				return TootApiResult()
+			}
 			
 			// インストールIDを取得
 			val install_id = PollingWorker.prepareInstallId(context)
@@ -89,59 +140,18 @@ class WebPushSubscription(
 					.build()
 			)
 			
-			var res = r?.response ?: return r
-			
+			res = r?.response ?: return r
 			if(res.code() != 200) {
 				return TootApiResult(error = context.getString(R.string.token_exported))
-			}
-			
-			enabled = true
-			
-			// 現在の購読状態を取得
-			// https://github.com/tootsuite/mastodon/issues/7468
-			// https://github.com/tootsuite/mastodon/pull/7471
-			// https://github.com/tootsuite/mastodon/pull/7472
-			r = client.request("/api/v1/push/subscription")
-			res = r?.response ?: return r // cancelled or missing response
-			var subscriptionNotRegistered = false
-			when(res.code()) {
-				200 -> {
-					// 購読が存在する
-				}
-				
-				404 -> {
-					if(ti.versionGE(TootInstance.VERSION_2_4_1)
-						|| ti.versionEquals(TootInstance.VERSION_2_4_0)
-					) {
-						// 2.4.0正式版と2.4.1以降では購読が存在しないと解釈できる
-						subscriptionNotRegistered = true
-					} else {
-						// 2.4.0rc の #7472 以後は購読が存在しないことを示す
-						// 2.4.0rc の #7472 未満はAPIがないことを示す
-						// コミット単位でバージョン比較する方法はないので、2.4.0正式ではない2.4.0xxxでは存在確認はできない
-					}
-				}
-				
-				else -> {
-					addLog("${res.request()}")
-					addLog("${res.code()} ${res.message()}")
-				}
 			}
 			
 			if(flags == 0) {
 				// 通知設定が全てカラなので、購読を取り消したい
 				
-				if(subscriptionNotRegistered) {
-					if(verbose) addLog(context.getString(R.string.push_subscription_not_exists))
-					return TootApiResult()
-				}
-				
-				// delete subscription
 				r = client.request(
 					"/api/v1/push/subscription",
 					Request.Builder().delete()
 				)
-				
 				res = r?.response ?: return r
 				
 				return when(res.code()) {
@@ -155,7 +165,6 @@ class WebPushSubscription(
 					}
 					
 					404 -> {
-						enabled = false
 						if(! verbose) {
 							TootApiResult()
 						} else {
@@ -165,7 +174,6 @@ class WebPushSubscription(
 					}
 					
 					403 -> {
-						enabled = false
 						if(! verbose) {
 							TootApiResult()
 						} else {
@@ -184,19 +192,6 @@ class WebPushSubscription(
 			} else {
 				// 通知設定が空ではないので購読を行いたい
 				
-				// FCM経由での配信に必要なパラメータをendpoint URLに埋め込む
-				val endpoint =
-					"${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.encodePercent()}/$flags"
-				
-				// 既に登録済みで、endpointも一致しているなら何もしない
-				val oldSubscription = parseItem(::TootPushSubscription, r?.jsonObject)
-				if(oldSubscription?.endpoint == endpoint) {
-					subscribed = true
-					if(verbose) addLog(context.getString(R.string.push_subscription_already_exists))
-					return TootApiResult()
-				}
-				
-				// プッシュ通知の登録
 				val json = JSONObject().apply {
 					put("subscription", JSONObject().apply {
 						put("endpoint", endpoint)

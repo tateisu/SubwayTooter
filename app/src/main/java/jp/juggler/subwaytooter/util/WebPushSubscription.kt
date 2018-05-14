@@ -81,8 +81,8 @@ class WebPushSubscription(
 				r = client.getInstanceInformation2()
 				val ti = r?.data as? TootInstance ?: return r
 				
-				if(! ti.versionGE(TootInstance.VERSION_2_4_0)) {
-					// 2.3.x 以下にはプッシュ購読APIはない
+				if( ! ti.versionGE(TootInstance.VERSION_2_4_0_rc1)) {
+					// 2.4.0rc1 未満にはプッシュ購読APIはない
 					return TootApiResult(
 						error = context.getString(
 							R.string.instance_does_not_support_push_api,
@@ -92,15 +92,13 @@ class WebPushSubscription(
 				}
 				
 				if(subscription404 && flags == 0) {
-					if(ti.versionGE(TootInstance.VERSION_2_4_1)
-						|| ti.versionEquals(TootInstance.VERSION_2_4_0)
-					) {
+					if(ti.versionGE(TootInstance.VERSION_2_4_0_rc2) ) {
 						// 購読が不要で現在の状況が404だった場合
-						// 2.4.0正式版と2.4.1以降では購読が存在しないので何もしなくてよい
+						// 2.4.0rc2以降では「購読が存在しない」を示すので何もしなくてよい
 						if(verbose) addLog(context.getString(R.string.push_subscription_not_exists))
 						return TootApiResult()
 					} else {
-						// コミット単位でバージョン比較する方法はないので、2.4.0正式ではない2.4.0xxxでは存在確認はできない
+						// 2.4.0rc1では「APIが存在しない」と「購読が存在しない」を判別できない
 					}
 				}
 			}

@@ -241,8 +241,7 @@ class Column(
 			}
 		}
 		
-		internal val version_1_6 = VersionString("1.6")
-		
+
 		@Suppress("HasPlatformType")
 		val reMaxId = Pattern.compile("[&?]max_id=(\\d+)") // より古いデータの取得に使う
 		
@@ -1711,7 +1710,7 @@ class Column(
 									if(with_attachment && ! with_highlight) path += "&only_media=1"
 									
 									if(instance != null
-										&& instance.versionGE(version_1_6)
+										&& instance.versionGE(TootInstance.VERSION_1_6)
 									// 将来的に正しく判定できる見込みがないので、Pleroma条件でのフィルタは行わない
 									// && instance.instanceType != TootInstance.InstanceType.Pleroma
 									) {

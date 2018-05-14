@@ -10,8 +10,9 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 	companion object {
 		private val rePleroma = Pattern.compile("\\bpleroma\\b", Pattern.CASE_INSENSITIVE)
 		
-		val VERSION_2_4_0 = VersionString("2.4.0")
-		val VERSION_2_4_1 = VersionString("2.4.1")
+		val VERSION_1_6 = VersionString("1.6")
+		val VERSION_2_4_0_rc1 = VersionString("2.4.0rc1")
+		val VERSION_2_4_0_rc2 = VersionString("2.4.0rc2")
 		
 	}
 	
@@ -106,10 +107,5 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 		val i = VersionString.compare(decoded_version, check)
 		return i >= 0
 	}
-	
-	fun versionEquals(check : VersionString) : Boolean {
-		if(decoded_version.isEmpty || check.isEmpty) return false
-		val i = VersionString.compare(decoded_version, check)
-		return i == 0
-	}
+
 }

@@ -59,7 +59,7 @@ class PostHelper(
 		private val reCharsNotTag = Pattern.compile("[・\\s\\-+.,:;/]")
 		private val reCharsNotEmoji = Pattern.compile("[^0-9A-Za-z_-]")
 		
-		private val version_1_6 = VersionString("1.6")
+
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////
@@ -205,7 +205,7 @@ class PostHelper(
 						instance = instance_tmp ?: return r2
 						account.instance = instance
 					}
-					visibility_checked = if(instance.versionGE(version_1_6)) {
+					visibility_checked = if(instance.versionGE(TootInstance.VERSION_1_6)) {
 						null
 					} else {
 						val r2 = getCredential(client)

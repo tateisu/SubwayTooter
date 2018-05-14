@@ -2,8 +2,9 @@ package jp.juggler.subwaytooter.util
 
 import java.math.BigInteger
 import java.util.ArrayList
+import java.util.regex.Pattern
 
-class VersionString(src : String?) {
+class VersionString(src : String?) : Comparable<VersionString> {
 	
 	private val src : String
 	
@@ -16,97 +17,143 @@ class VersionString(src : String?) {
 		return src
 	}
 	
+	private class RC(val x : Int) : Comparable<RC> {
+		override fun compareTo(other : RC) : Int {
+			val i = x - other.x
+			return if(i > 0) 1 else if(i < 0) - 1 else 0
+		}
+		
+		override fun toString() : String {
+			return "RC($x)"
+		}
+	}
+	
+	override fun compareTo(other : VersionString) : Int {
+		return compare(this, other)
+	}
+	
 	init {
 		this.src = src ?: ""
-		if( src != null && src.isNotEmpty() ){
+		if(src != null && src.isNotEmpty()) {
 			val end = src.length
 			var next = 0
 			while(next < end) {
 				var c = src[next]
 				
-				if(isDelimiter(c)) {
-					// 先頭の区切り文字を無視する
-					++ next
-				} else if(Character.isDigit(c)) {
-					// 数字列のノード
-					val start = next ++
-					while(next < end && Character.isDigit(src[next])) ++ next
-					val value = BigInteger(src.substring(start, next))
-					node_list.add(value)
-				} else {
-					// 区切り文字と数字以外の文字が並ぶノード
-					val start = next ++
-					while(next < end) {
-						c = src[next]
-						if(isDelimiter(c)) break
-						if(Character.isDigit(c)) break
+				when {
+					isDelimiter(c) -> {
+						// 先頭の区切り文字を無視する
 						++ next
 					}
-					val value = src.substring(start, next)
-					node_list.add(value)
+					
+					Character.isDigit(c) -> {
+						// 数字列のノード
+						val start = next ++
+						while(next < end && Character.isDigit(src[next])) ++ next
+						val value = BigInteger(src.substring(start, next))
+						node_list.add(value)
+					}
+					
+					else -> {
+						val m = reRcX.matcher(src)
+						
+						if(DUMP) {
+							if(m.find(next)) {
+								println("next=$next, matct_start=${m.start()}")
+							} else {
+								println("next=$next, not match.")
+							}
+						}
+						
+						if(m.find(next) && m.start() == next) {
+							// RCノード
+							next = m.end()
+							val numStr = m.group(1)
+							val num = if(numStr?.isNotEmpty() == true) {
+								numStr.toInt()
+							} else {
+								0
+							}
+							node_list.add(RC(num))
+						} else {
+							// 区切り文字と数字以外の文字が並ぶノード
+							val start = next ++
+							while(next < end) {
+								c = src[next]
+								if(isDelimiter(c)) break
+								if(Character.isDigit(c)) break
+								++ next
+							}
+							val value = src.substring(start, next)
+							node_list.add(value)
+							
+						}
+						
+					}
 				}
 			}
 		}
 	}
 	
-	companion object {
-
-		// private val warning = new LogCategory( "VersionString" )
+	companion object : Comparator<VersionString> {
+		
+		private const val DUMP = false
 		
 		private fun isDelimiter(c : Char) : Boolean {
 			return c == '.' || c == ' '
 		}
 		
+		private val reRcX = Pattern.compile("rc(\\d*)")
+		
+		private fun checkTail(b : Any) : Int {
+			// 1.0 < 1.0.n  => -1
+			// 1.0 < 1.0xxx => -1
+			// 1.0 > 1.0rc1  => 1
+			return if(b is RC) 1 else - 1
+		}
+		
+		private fun checkBigInteger(a : BigInteger, b : Any) : Int {
+			if(b is BigInteger) return a.compareTo(b)
+			// 数字 > 数字以外
+			// 1.5.n > 1.5xxx
+			// 1.5.n > 1.5rc1
+			return 1
+		}
+		
+		private fun checkRc(a : RC, b : Any) : Int {
+			if(b is RC) return a.compareTo(b)
+			// RC < string
+			// 1.5rc < 1.5xxx
+			return - 1
+		}
+		
 		// return -1 if a<b , return 1 if a>b , return 0 if a==b
-		fun compare(a : VersionString, b : VersionString) : Int {
-			
+		override fun compare(a : VersionString, b : VersionString) : Int {
 			var idx = 0
-			while(true) {
+			loop@ while(true) {
 				val ao = if(idx >= a.node_list.size) null else a.node_list[idx]
 				val bo = if(idx >= b.node_list.size) null else b.node_list[idx]
-				if(ao == null) {
-					// 1.0 < 1.0.n
-					// 1.0 < 1.0 xxx
-					return if(bo == null) 0 else - 1
-				} else if(bo == null) {
-					// 1.0.n > 1.0
-					// 1.0 xxx > 1.0
-					return 1
-				}
+				if(DUMP) println("a=$ao,b=$bo")
 				
-				return if(ao is BigInteger) {
-					if(bo is BigInteger) {
-						// 数字同士の場合
-						val i = ao.compareTo(bo)
-						if(i == 0) {
-							++ idx
-							continue
-						}else {
-							i
-						}
-					} else {
-						// 数字 > 数字以外
-						// 1.5.n > 1.5 xxx
-						1
+				val i = when {
+					ao == null -> {
+						if(bo == null) return 0
+						checkTail(bo)
 					}
-				} else if(bo is BigInteger) {
-					// 数字以外 < 数字
-					// 1.5 xxx < 1.5.n
-					- 1
-				} else if( ao is String && bo is String ){
-					// 文字列どうしは辞書順で比較
-					val i =ao.compareTo(bo )
-					if(i == 0) {
-						++ idx
-						continue
-					}
-					i
-				}else{
-					throw RuntimeException("node is not string")
+					
+					bo == null -> - checkTail(ao)
+					ao is BigInteger -> checkBigInteger(ao, bo)
+					bo is BigInteger -> - checkBigInteger(bo, ao)
+					ao is RC -> checkRc(ao, bo)
+					bo is RC -> - checkRc(bo, ao)
+					else -> a.toString().compareTo(b.toString())
 				}
+				if(i == 0) {
+					++ idx
+					continue@loop
+				}
+				return i
 			}
 		}
 	}
-	
-	
 }

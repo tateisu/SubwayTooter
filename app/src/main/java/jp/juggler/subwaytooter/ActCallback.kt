@@ -14,7 +14,7 @@ import java.util.ArrayList
 import java.util.concurrent.atomic.AtomicReference
 
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.digestSHA256
+import jp.juggler.subwaytooter.util.digestSHA256Hex
 
 class ActCallback : AppCompatActivity() {
 	
@@ -154,7 +154,7 @@ class ActCallback : AppCompatActivity() {
 		
 		cache_dir.mkdirs()
 		
-		val name = "img." + System.currentTimeMillis().toString() + "." + uri.toString().digestSHA256()
+		val name = "img." + System.currentTimeMillis().toString() + "." + uri.toString().digestSHA256Hex()
 		
 		val dst = File(cache_dir, name)
 		

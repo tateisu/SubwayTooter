@@ -31,10 +31,8 @@ import java.util.regex.Pattern
 import org.apache.commons.io.IOUtils
 import org.json.JSONArray
 import org.json.JSONObject
-import java.security.NoSuchAlgorithmException
 import java.util.Locale
 import java.util.LinkedList
-
 
 object Utils {
 	
@@ -198,7 +196,7 @@ object Utils {
 	}
 	
 	//	fun url2name(url : String?) : String? {
-	//		return if(url == null) null else encodeBase64Safe(encodeSHA256(encodeUTF8(url)))
+	//		return if(url == null) null else encodeBase64Url(encodeSHA256(encodeUTF8(url)))
 	//	}
 	
 	//	public static String name2url(String entry) {
@@ -337,25 +335,30 @@ private fun ByteArray.encodeHex() : String {
 	}
 	return sb.toString()
 }
-
-fun ByteArray.digestSHA256() : ByteArray? {
-	return try {
-		val digest = MessageDigest.getInstance("SHA-256")
-		digest.reset()
-		digest.digest(this)
-	} catch(e1 : NoSuchAlgorithmException) {
-		null
-	}
-
+fun ByteArray.encodeBase64Url() : String {
+	return Base64.encodeToString(this, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP )
 }
 
-fun ByteArray?.encodeBase64Safe() : String? {
-	this ?: return null
-	return try {
-		Base64 .encodeToString(this, Base64.URL_SAFE)
-	} catch(ex : Throwable) {
-		null
-	}
+fun ByteArray.digestSHA256() : ByteArray {
+	val digest = MessageDigest.getInstance("SHA-256")
+	digest.reset()
+	return digest.digest(this)
+}
+
+//// MD5ハッシュの作成
+//@Suppress("unused")
+//fun String.digestMD5() : String {
+//	val md = MessageDigest.getInstance("MD5")
+//	md.reset()
+//	return md.digest(this.encodeUTF8()).encodeHex()
+//}
+
+fun String.digestSHA256Hex() : String {
+	return this.encodeUTF8().digestSHA256().encodeHex()
+}
+
+fun String.digestSHA256Base64Url() : String {
+	return this.encodeUTF8().digestSHA256().encodeBase64Url()
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -483,19 +486,6 @@ fun String.encodePercent(allow : String? = null) : String = Uri.encode(this, all
 //	return sb
 //}
 
-// MD5ハッシュの作成
-@Suppress("unused")
-fun String.digestMD5() : String {
-	val md = MessageDigest.getInstance("MD5")
-	md.reset()
-	return md.digest(this.encodeUTF8()).encodeHex()
-}
-
-fun String.digestSHA256() : String {
-	val md = MessageDigest.getInstance("SHA-256")
-	md.reset()
-	return md.digest(this.encodeUTF8()).encodeHex()
-}
 
 ////////////////////////////////////////////////////////////////////
 // long

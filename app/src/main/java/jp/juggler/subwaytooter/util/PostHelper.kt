@@ -297,7 +297,7 @@ class PostHelper(
 				val request_builder = Request.Builder().post(request_body)
 				
 				if(! Pref.bpDontDuplicationCheck(pref)) {
-					val digest = (body_string + account.acct).digestSHA256()
+					val digest = (body_string + account.acct).digestSHA256Hex()
 					request_builder.header("Idempotency-Key", digest)
 				}
 				

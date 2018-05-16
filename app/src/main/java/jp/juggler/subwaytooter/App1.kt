@@ -101,7 +101,9 @@ class App1 : Application() {
 		// 2018/3/16 v226 21=>22 FavMuteテーブルを追加
 		// 2018/4/17 v236 22=>23 SavedAccountテーブルに項目追加
 		// 2018/4/20 v240 23=>24 SavedAccountテーブルに項目追加
-		internal const val DB_VERSION = 24
+		// 2018/5/16 v252 24=>25 SubscriptionServerKey テーブルを追加
+		// 2018/5/16 v252 25=>26 SubscriptionServerKey テーブルを丸ごと変更
+		internal const val DB_VERSION = 26
 		
 		private val tableList = arrayOf(
 			LogData,
@@ -118,7 +120,8 @@ class App1 : Application() {
 			PostDraft,
 			TagSet,
 			HighlightWord,
-			FavMute
+			FavMute,
+			SubscriptionServerKey
 		)
 		
 		private lateinit var db_open_helper : DBOpenHelper

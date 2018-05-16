@@ -1328,7 +1328,7 @@ class ActAccountSetting
 	@SuppressLint("StaticFieldLeak")
 	private fun startTest() {
 		TootTaskRunner(this).run(account, object : TootTask {
-			val wps = WebPushSubscription(
+			val wps = PushSubscriptionHelper(
 				this@ActAccountSetting,
 				account,
 				verbose = true

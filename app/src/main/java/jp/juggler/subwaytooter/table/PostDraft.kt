@@ -12,7 +12,7 @@ import java.util.Collections
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.digestSHA256
+import jp.juggler.subwaytooter.util.digestSHA256Hex
 import jp.juggler.subwaytooter.util.toJsonObject
 
 class PostDraft {
@@ -111,7 +111,7 @@ class PostDraft {
 					sb.append("=")
 					sb.append(v)
 				}
-				val hash = sb.toString().digestSHA256()
+				val hash = sb.toString().digestSHA256Hex()
 				
 				// save to db
 				val cv = ContentValues()

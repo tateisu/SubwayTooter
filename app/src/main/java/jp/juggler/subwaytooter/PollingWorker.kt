@@ -187,7 +187,7 @@ class PollingWorker private constructor(c : Context) {
 					return null
 				}
 				
-				sv = (device_token + UUID.randomUUID() + body).digestSHA256()
+				sv = (device_token + UUID.randomUUID() + body).digestSHA256Base64Url()
 				prefDevice.edit().putString(PrefDevice.KEY_INSTALL_ID, sv).apply()
 				
 				return sv
@@ -1097,7 +1097,7 @@ class PollingWorker private constructor(c : Context) {
 					
 					client.account = account
 					
-					val wps = WebPushSubscription(context,account)
+					val wps = PushSubscriptionHelper(context,account)
 					if( wps.flags != 0) {
 						job.bPollingRequired.set(true)
 					}
@@ -1105,7 +1105,7 @@ class PollingWorker private constructor(c : Context) {
 					wps.updateSubscription(client)
 					val wps_log = wps.log
 					if(wps_log.isNotEmpty()) {
-						log.d("WebPushSubscription: ${account.acct} $wps_log")
+						log.d("PushSubscriptionHelper: ${account.acct} $wps_log")
 					}
 					
 					if(job.isJobCancelled) return
@@ -1225,7 +1225,7 @@ class PollingWorker private constructor(c : Context) {
 					
 					if(tag?.isEmpty() != false) {
 						account.notification_tag =
-							(job.install_id + account.db_id + account.acct).digestSHA256()
+							(job.install_id + account.db_id + account.acct).digestSHA256Hex()
 						tag = account.notification_tag
 						account.saveNotificationTag()
 					}
@@ -1235,7 +1235,7 @@ class PollingWorker private constructor(c : Context) {
 						+ device_token
 						+ (if(mCustomStreamListenerSecret == null) "" else mCustomStreamListenerSecret)
 						+ if(mCustomStreamListenerSettingString == null) "" else mCustomStreamListenerSettingString
-						).digestSHA256()
+						).digestSHA256Hex()
 					
 					val now = System.currentTimeMillis()
 					if(reg_key == account.register_key && now - account.register_time < 3600000 * 3) {

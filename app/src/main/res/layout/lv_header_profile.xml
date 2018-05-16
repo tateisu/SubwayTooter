@@ -163,14 +163,6 @@
                 android:gravity="center_horizontal"
                 tools:text="説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 説明文 "
                 />
-
-            <LinearLayout
-
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/llFields"
-                android:orientation="vertical"
-                />
         </LinearLayout>
 
         <FrameLayout
@@ -205,6 +197,26 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:id="@+id/llFields"
+        android:orientation="vertical"
+        />
+
+    <TextView
+        android:id="@+id/tvRemoteProfileWarning"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:background="@drawable/btn_bg_transparent"
+        android:gravity="center"
+        android:padding="12dp"
+        android:text="@string/remote_profile_warning"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
         android:gravity="center"
         android:orientation="horizontal"
         >
@@ -247,13 +259,5 @@
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/tvRemoteProfileWarning"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/btn_bg_transparent"
-        android:gravity="center"
-        android:padding="12dp"
-        android:text="@string/remote_profile_warning"
-        />
+
 </LinearLayout>

@@ -33,7 +33,7 @@ object Action_Follow {
 		bConfirmed : Boolean = false,
 		callback : EmptyCallback? = null
 	) {
-		val who = whoRef.find()
+		val who = whoRef.get()
 		
 		if(access_info.isMe(who)) {
 			showToast(activity, false, R.string.it_is_you)
@@ -431,7 +431,7 @@ object Action_Follow {
 		whoRef : TootAccountRef,
 		bAllow : Boolean
 	) {
-		val who = whoRef.find()
+		val who = whoRef.get()
 		if(access_info.isMe(who)) {
 			showToast(activity, false, R.string.it_is_you)
 			return

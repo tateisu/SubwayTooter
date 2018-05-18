@@ -241,7 +241,6 @@ class Column(
 			}
 		}
 		
-
 		@Suppress("HasPlatformType")
 		val reMaxId = Pattern.compile("[&?]max_id=(\\d+)") // より古いデータの取得に使う
 		
@@ -612,7 +611,7 @@ class Column(
 		return when(column_type) {
 			
 			TYPE_PROFILE -> {
-				val who = who_account?.find()
+				val who = who_account?.get()
 				context.getString(
 					R.string.profile_of,
 					if(who != null)
@@ -751,7 +750,7 @@ class Column(
 				if(who_id == (o.status?.account?.id ?: INVALID_ACCOUNT)) continue
 				if(who_id == (o.status?.reblog?.account?.id ?: INVALID_ACCOUNT)) continue
 			} else if(o is TootAccountRef) {
-				if(who_id == o.find().id) continue
+				if(who_id == o.get().id) continue
 			}
 			
 			tmp_list.add(o)
@@ -770,7 +769,7 @@ class Column(
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
 				if(o is TootAccountRef) {
-					if(o.find().id == who_id) continue
+					if(o.get().id == who_id) continue
 				}
 				tmp_list.add(o)
 			}
@@ -788,7 +787,7 @@ class Column(
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
 				if(o is TootAccountRef) {
-					if(o.find().id == who_id) continue
+					if(o.get().id == who_id) continue
 				}
 				tmp_list.add(o)
 			}
@@ -808,7 +807,7 @@ class Column(
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
 				if(o is TootAccountRef) {
-					if(o.find().id == who_id) continue
+					if(o.get().id == who_id) continue
 				}
 				tmp_list.add(o)
 			}
@@ -1253,21 +1252,22 @@ class Column(
 	//	@Nullable String parseMaxId( TootApiResult result ){
 	//		if( result != null && result.link_older != null ){
 	//			Matcher m = reMaxId.matcher( result.link_older );
-	//			if( m.find() ) return m.group( 1 );
+	//			if( m.get() ) return m.group( 1 );
 	//		}
 	//		return null;
 	//	}
 	
-	internal fun loadProfileAccount(client : TootApiClient, bForceReload : Boolean) {
+	internal fun loadProfileAccount(client : TootApiClient, bForceReload : Boolean) : TootAccount? {
 		if(bForceReload || this.who_account == null) {
 			val result = client.request(String.format(Locale.JAPAN, PATH_ACCOUNT, profile_id))
-			val parser =TootParser(context, access_info)
-			val a = TootAccountRef.mayNull(parser,parser.account(result?.jsonObject))
+			val parser = TootParser(context, access_info)
+			val a = TootAccountRef.mayNull(parser, parser.account(result?.jsonObject))
 			if(a != null) {
 				this.who_account = a
 				client.publishApiProgress("") // カラムヘッダの再表示
 			}
 		}
+		return this.who_account?.get()
 	}
 	
 	internal fun loadListInfo(client : TootApiClient, bForceReload : Boolean) {
@@ -1290,17 +1290,17 @@ class Column(
 		internal val tag_set = HashSet<String>()
 		
 		internal fun add(whoRef : TootAccountRef?) {
-			add(whoRef?.find())
+			add(whoRef?.get())
 		}
-
+		
 		internal fun add(who : TootAccount?) {
-			who?:return
+			who ?: return
 			who_set.add(who.id)
 			acct_set.add("@" + access_info.getFullAcct(who))
 			//
 			add(who.movedRef)
 		}
-
+		
 		internal fun add(s : TootStatus?) {
 			if(s == null) return
 			add(s.accountRef)
@@ -3692,7 +3692,7 @@ class Column(
 					holder.setScrollPosition(ScrollPosition(0, 0))
 				} else if(restore_idx < - 1) {
 					// 可視範囲の検出に失敗
-					log.d("mergeStreamingMessage: has VH. can't find visible range.")
+					log.d("mergeStreamingMessage: has VH. can't get visible range.")
 				} else {
 					// 現在の要素が表示され続けるようにしたい
 					log.d("mergeStreamingMessage: has VH. added=$added")

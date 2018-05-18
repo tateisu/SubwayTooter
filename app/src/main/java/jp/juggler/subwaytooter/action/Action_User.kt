@@ -226,7 +226,7 @@ object Action_User {
 				if(jsonObject != null) {
 					val tmp = TootParser(activity, access_info).results(jsonObject)
 					if(tmp != null && tmp.accounts.isNotEmpty()) {
-						who_local = tmp.accounts[0].find()
+						who_local = tmp.accounts[0].get()
 					} else {
 						return TootApiResult(activity.getString(R.string.user_id_conversion_failed))
 					}

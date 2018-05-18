@@ -54,7 +54,7 @@ internal class DlgContextMenu(
 		
 		val column_type = column.column_type
 		
-		val who = whoRef?.find()
+		val who = whoRef?.get()
 		val status = this.status
 		
 		this.relation = UserRelation.load(access_info.db_id, who?.id ?: - 1)
@@ -365,7 +365,7 @@ internal class DlgContextMenu(
 		val pos = activity.nextPosition(column)
 		
 		val whoRef = this.whoRef
-		val who = whoRef?.find()
+		val who = whoRef?.get()
 		
 		if(whoRef != null && who != null) {
 			when(v.id) {
@@ -653,7 +653,7 @@ internal class DlgContextMenu(
 	}
 	
 	override fun onLongClick(v : View) : Boolean {
-		val who = whoRef?.find()
+		val who = whoRef?.get()
 		
 		when(v.id) {
 			R.id.btnFollow -> {

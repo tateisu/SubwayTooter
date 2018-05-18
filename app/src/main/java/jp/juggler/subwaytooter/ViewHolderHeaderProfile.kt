@@ -1,10 +1,6 @@
 package jp.juggler.subwaytooter
 
-import android.graphics.Paint
 import android.graphics.Typeface
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.ShapeDrawable
-import android.graphics.drawable.shapes.Shape
 import android.support.v4.view.ViewCompat
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -143,7 +139,7 @@ internal class ViewHolderHeaderProfile(
 		
 		val whoRef = column.who_account
 		this.whoRef = whoRef
-		val who = whoRef?.find()
+		val who = whoRef?.get()
 		
 		showColor()
 		
@@ -315,7 +311,7 @@ internal class ViewHolderHeaderProfile(
 	private fun showMoved(who : TootAccount, movedRef : TootAccountRef?) {
 		if(movedRef == null) return
 		this.movedRef = movedRef
-		val moved = movedRef.find()
+		val moved = movedRef.get()
 		
 		llMoved.visibility = View.VISIBLE
 		tvMoved.visibility = View.VISIBLE
@@ -371,7 +367,7 @@ internal class ViewHolderHeaderProfile(
 		
 		when(v.id) {
 			
-			R.id.ivBackground, R.id.tvRemoteProfileWarning -> whoRef?.find()?.url?.let { url ->
+			R.id.ivBackground, R.id.tvRemoteProfileWarning -> whoRef?.get()?.url?.let { url ->
 				App1.openCustomTab(activity, url)
 			}
 			
@@ -413,7 +409,7 @@ internal class ViewHolderHeaderProfile(
 						activity,
 						activity.nextPosition(column),
 						access_info,
-						movedRef.find()
+						movedRef.get()
 					)
 				}
 			}
@@ -428,7 +424,7 @@ internal class ViewHolderHeaderProfile(
 					activity,
 					activity.nextPosition(column),
 					access_info,
-					whoRef?.find()
+					whoRef?.get()
 				)
 				return true
 			}
@@ -438,7 +434,7 @@ internal class ViewHolderHeaderProfile(
 					activity,
 					activity.nextPosition(column),
 					access_info,
-					movedRef?.find()
+					movedRef?.get()
 				)
 				return true
 			}
@@ -451,7 +447,7 @@ internal class ViewHolderHeaderProfile(
 	}
 	
 	fun updateRelativeTime() {
-		val who = whoRef?.find()
+		val who = whoRef?.get()
 		if(who != null) {
 			tvCreated.text = TootStatus.formatTime(tvCreated.context, who.time_created_at, true)
 		}

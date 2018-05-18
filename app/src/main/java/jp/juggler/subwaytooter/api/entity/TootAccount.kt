@@ -76,13 +76,15 @@ open class TootAccount(
 	val movedRef : TootAccountRef?
 	
 	val moved : TootAccount?
-		get() = movedRef?.find()
+		get() = movedRef?.get()
 	
 	val fields : ArrayList<Pair<String, String>>?
 	
 	val custom_emojis : java.util.HashMap<String, CustomEmoji>?
 	
 	val bot : Boolean
+	
+	val user_hides_network : Boolean
 	
 	init {
 		var sv : String?
@@ -114,7 +116,8 @@ open class TootAccount(
 		this.fields = parseFields(src.optJSONArray("fields"))
 		
 		this.bot = src.optBoolean("bot", false)
-		
+		this.user_hides_network = src.optBoolean("user_hides_network")
+
 		when(parser.serviceType) {
 			ServiceType.MASTODON -> {
 				
@@ -124,7 +127,7 @@ open class TootAccount(
 				
 				this.acct = src.notEmptyOrThrow("acct")
 				this.host = findHostFromUrl(acct, hostAccess, url)
-					?: throw RuntimeException("can't find host from acct or url")
+					?: throw RuntimeException("can't get host from acct or url")
 				
 				this.followers_count = src.parseLong("followers_count")
 				this.following_count = src.parseLong("following_count")
@@ -146,7 +149,7 @@ open class TootAccount(
 				
 				sv = src.notEmptyOrThrow("acct")
 				this.host = findHostFromUrl(sv, null, url)
-					?: throw RuntimeException("can't find host from acct or url")
+					?: throw RuntimeException("can't get host from acct or url")
 				this.acct = this.username + "@" + this.host
 				
 				this.followers_count = src.parseLong("followers_count")
@@ -167,7 +170,7 @@ open class TootAccount(
 				
 				// MSPはLTLの情報しか持ってないのでacctは常にホスト名部分を持たない
 				this.host = findHostFromUrl(null, null, url)
-					?: throw RuntimeException("can't find host from url")
+					?: throw RuntimeException("can't get host from url")
 				this.acct = this.username + "@" + host
 				
 				this.followers_count = null

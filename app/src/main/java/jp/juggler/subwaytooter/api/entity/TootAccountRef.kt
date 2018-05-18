@@ -26,9 +26,7 @@ class TootAccountRef(parser: TootParser, account:TootAccount) : TimelineItem() {
 		).decodeHTML(account.note)
 	}
 	
-	fun find() : TootAccount {
-		return TootAccountMap.find(this)
-	}
+	fun get() = TootAccountMap.find(this)
 	
 	companion object {
 		fun mayNull(parser: TootParser, account:TootAccount?) :TootAccountRef? {

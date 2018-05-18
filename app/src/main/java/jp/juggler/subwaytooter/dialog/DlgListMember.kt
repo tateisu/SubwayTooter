@@ -193,7 +193,7 @@ class DlgListMember(
 				val search_result = TootParser(activity, list_owner ).results(jsonObject)
 				if(search_result != null) {
 					for(aRef in search_result.accounts) {
-						val a = aRef.find()
+						val a = aRef.get()
 						if(target_user_full_acct.equals(list_owner .getFullAcct(a), ignoreCase = true)) {
 							local_who = a
 							break

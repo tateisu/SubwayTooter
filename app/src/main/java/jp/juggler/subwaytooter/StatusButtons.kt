@@ -227,7 +227,7 @@ internal class StatusButtons(
 			
 			btnFollow2 -> {
 				val accountRef = status.accountRef
-				val account = accountRef.find()
+				val account = accountRef.get()
 				val relation = this.relation ?: return
 				
 				when {

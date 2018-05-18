@@ -14,7 +14,6 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import jp.juggler.emoji.EmojiMap201709
 
 import java.util.ArrayList
 
@@ -377,7 +376,7 @@ internal class ItemViewHolder(
 	private fun showNotification(n : TootNotification) {
 		val n_status = n.status
 		val n_accountRef = n.accountRef
-		val n_account = n_accountRef?.find()
+		val n_account = n_accountRef?.get()
 		when(n.type) {
 			TootNotification.TYPE_FAVOURITE -> {
 				if(n_account != null) showBoost(
@@ -469,7 +468,7 @@ internal class ItemViewHolder(
 		text : Spannable
 	) {
 		boost_account = whoRef
-		val who = whoRef.find()
+		val who = whoRef.get()
 		boost_time = time
 		llBoosted.visibility = View.VISIBLE
 		ivBoosted.setImageResource(Styler.getAttributeResourceId(activity, icon_attr_id))
@@ -481,7 +480,7 @@ internal class ItemViewHolder(
 	
 	private fun showAccount(whoRef : TootAccountRef) {
 		follow_account = whoRef
-		val who = whoRef.find()
+		val who = whoRef.get()
 		llFollow.visibility = View.VISIBLE
 		ivFollow.setImageUrl(
 			activity.pref,
@@ -508,7 +507,7 @@ internal class ItemViewHolder(
 		showStatusTime(activity, tvTime, who = status.account, status = status)
 		
 		val whoRef = status.accountRef
-		val who = whoRef.find()
+		val who = whoRef.get()
 		this.status_account = whoRef
 		
 		setAcct(tvAcct, access_info.getFullAcct(who), who.acct)
@@ -914,7 +913,7 @@ internal class ItemViewHolder(
 				if(access_info.isPseudo) {
 					DlgContextMenu(activity, column, whoRef, null, notification).show()
 				} else {
-					Action_User.profileLocal(activity, pos, access_info, whoRef.find())
+					Action_User.profileLocal(activity, pos, access_info, whoRef.get())
 				}
 			}
 			
@@ -922,7 +921,7 @@ internal class ItemViewHolder(
 				if(access_info.isPseudo) {
 					DlgContextMenu(activity, column, whoRef, null, notification).show()
 				} else {
-					Action_User.profileLocal(activity, pos, access_info, whoRef.find())
+					Action_User.profileLocal(activity, pos, access_info, whoRef.get())
 				}
 			}
 			
@@ -930,7 +929,7 @@ internal class ItemViewHolder(
 				if(access_info.isPseudo) {
 					DlgContextMenu(activity, column, whoRef, null, notification).show()
 				} else {
-					Action_User.profileLocal(activity, pos, access_info, whoRef.find())
+					Action_User.profileLocal(activity, pos, access_info, whoRef.get())
 				}
 			}
 			btnFollow -> follow_account?.let { who ->
@@ -999,7 +998,7 @@ internal class ItemViewHolder(
 			}
 			
 			btnFollowRequestAccept -> follow_account?.let { whoRef ->
-				val who = whoRef.find()
+				val who = whoRef.get()
 				DlgConfirm.openSimple(
 					activity,
 					activity.getString(
@@ -1012,7 +1011,7 @@ internal class ItemViewHolder(
 			}
 			
 			btnFollowRequestDeny -> follow_account?.let { whoRef ->
-				val who = whoRef.find()
+				val who = whoRef.get()
 				DlgConfirm.openSimple(
 					activity,
 					activity.getString(
@@ -1084,7 +1083,7 @@ internal class ItemViewHolder(
 						activity,
 						activity.nextPosition(column),
 						access_info,
-						whoRef.find()
+						whoRef.get()
 					)
 				}
 				return true

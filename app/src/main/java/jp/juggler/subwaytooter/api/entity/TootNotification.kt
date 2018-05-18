@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.subwaytooter.api.TootAccountMap
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.notEmptyOrThrow
 import jp.juggler.subwaytooter.util.parseLong
@@ -20,7 +19,7 @@ class TootNotification(
 	val time_created_at : Long
 
 	val account : TootAccount?
-		get() = accountRef?.find()
+		get() = accountRef?.get()
 	
 	init {
 		time_created_at = TootStatus.parseTime(created_at)

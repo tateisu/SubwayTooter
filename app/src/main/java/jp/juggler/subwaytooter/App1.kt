@@ -9,6 +9,7 @@ import android.content.SharedPreferences
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.net.Uri
+import android.os.Build
 import android.support.customtabs.CustomTabsIntent
 import android.util.Log
 
@@ -35,12 +36,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import jp.juggler.subwaytooter.api.entity.TootAttachment
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
-import okhttp3.Cache
-import okhttp3.CacheControl
-import okhttp3.CipherSuite
-import okhttp3.ConnectionSpec
-import okhttp3.OkHttpClient
-import okhttp3.Response
+import okhttp3.*
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig
 
 class App1 : Application() {
@@ -193,8 +189,15 @@ class App1 : Application() {
 			val spec_list = ArrayList<ConnectionSpec>()
 			spec_list.add(spec)
 			spec_list.add(ConnectionSpec.CLEARTEXT)
-			
-			
+
+			val user_agent_interceptor = Interceptor { chain ->
+				val original_request = chain.request()
+				val request_with_user_agent = original_request.newBuilder()
+					.header("User-Agent", "SubwayTooter/" + BuildConfig.VERSION_NAME + " Android/" + Build.VERSION.RELEASE)
+					.build()
+				chain.proceed(request_with_user_agent)
+			}
+
 			return OkHttpClient.Builder()
 				.connectTimeout(30, TimeUnit.SECONDS)
 				.readTimeout(60, TimeUnit.SECONDS)
@@ -202,6 +205,7 @@ class App1 : Application() {
 				.pingInterval(10, TimeUnit.SECONDS)
 				.connectionSpecs(spec_list)
 				.addInterceptor(ProgressResponseBody.makeInterceptor())
+				.addInterceptor(user_agent_interceptor)
 		}
 		
 		lateinit var ok_http_client : OkHttpClient

@@ -77,8 +77,13 @@ class ActAppSetting : AppCompatActivity()
 		const val colorFF000000 : Int = (0xff shl 24)
 		
 		fun open(activity : ActMain, request_code : Int) {
-			activity.startActivityForResult(Intent(activity, ActAppSetting::class.java), request_code)
+			activity.startActivityForResult(
+				Intent(activity, ActAppSetting::class.java),
+				request_code
+			)
 		}
+		
+		private val reLinefeed = Regex("[\\x0d\\x0a]+")
 		
 	}
 	
@@ -90,8 +95,6 @@ class ActAppSetting : AppCompatActivity()
 	)
 	
 	private val booleanViewList = ArrayList<BooleanViewInfo>()
-	
-
 	
 	private lateinit var spBackButtonAction : Spinner
 	private lateinit var spUITheme : Spinner
@@ -115,11 +118,11 @@ class ActAppSetting : AppCompatActivity()
 	private lateinit var etColumnWidth : EditText
 	private lateinit var etMediaThumbHeight : EditText
 	private lateinit var etClientName : EditText
+	private lateinit var etUserAgent : EditText
 	private lateinit var etQuoteNameFormat : EditText
 	private lateinit var etAutoCWLines : EditText
 	private lateinit var etMediaSizeMax : EditText
 	private lateinit var etRoundRatio : EditText
-	
 	
 	private lateinit var tvTimelineFontUrl : TextView
 	private var timeline_font : String? = null
@@ -131,7 +134,9 @@ class ActAppSetting : AppCompatActivity()
 	private lateinit var tvTimelineFontSize : TextView
 	private lateinit var tvAcctFontSize : TextView
 	private lateinit var etAvatarIconSize : EditText
-	private lateinit var etPullNotificationCheckInterval: EditText
+	private lateinit var etPullNotificationCheckInterval : EditText
+	
+	private lateinit var tvUserAgentError : TextView
 	
 	private var load_busy : Boolean = false
 	
@@ -143,7 +148,7 @@ class ActAppSetting : AppCompatActivity()
 		
 		// Pull通知チェック間隔を変更したかもしれないのでジョブを再設定する
 		try {
-			PollingWorker.scheduleJob(this,PollingWorker.JOB_POLLING)
+			PollingWorker.scheduleJob(this, PollingWorker.JOB_POLLING)
 		} catch(ex : Throwable) {
 			log.trace(ex)
 		}
@@ -162,10 +167,10 @@ class ActAppSetting : AppCompatActivity()
 		setContentView(R.layout.act_app_setting)
 		
 		Styler.fixHorizontalPadding(findViewById(R.id.svContent))
-
+		
 		// initialize Switch and CheckBox
 		for(info in Pref.map.values) {
-			if( info is Pref.BooleanPref && info.id != 0 ) {
+			if(info is Pref.BooleanPref && info.id != 0) {
 				val view = findViewById<CompoundButton>(info.id)
 				view.setOnCheckedChangeListener(this)
 				booleanViewList.add(BooleanViewInfo(info, view))
@@ -182,7 +187,12 @@ class ActAppSetting : AppCompatActivity()
 		}
 		
 		run {
-			val caption_list = arrayOf(getString(R.string.ask_always), getString(R.string.close_column), getString(R.string.open_column_list), getString(R.string.app_exit))
+			val caption_list = arrayOf(
+				getString(R.string.ask_always),
+				getString(R.string.close_column),
+				getString(R.string.open_column_list),
+				getString(R.string.app_exit)
+			)
 			val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, caption_list)
 			adapter.setDropDownViewResource(R.layout.lv_spinner_dropdown)
 			spBackButtonAction = findViewById(R.id.spBackButtonAction)
@@ -191,7 +201,8 @@ class ActAppSetting : AppCompatActivity()
 		}
 		
 		run {
-			val caption_list = arrayOf(getString(R.string.theme_light), getString(R.string.theme_dark))
+			val caption_list =
+				arrayOf(getString(R.string.theme_light), getString(R.string.theme_dark))
 			val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, caption_list)
 			adapter.setDropDownViewResource(R.layout.lv_spinner_dropdown)
 			spUITheme = findViewById(R.id.spUITheme)
@@ -199,7 +210,13 @@ class ActAppSetting : AppCompatActivity()
 			spUITheme.onItemSelectedListener = this
 		}
 		run {
-			val caption_list = arrayOf(getString(R.string.dont_resize), getString(R.string.long_side_pixel, 640), getString(R.string.long_side_pixel, 800), getString(R.string.long_side_pixel, 1024), getString(R.string.long_side_pixel, 1280)) //// サーバ側でさらに縮小されるようなので、1280より上は用意しない
+			val caption_list = arrayOf(
+				getString(R.string.dont_resize),
+				getString(R.string.long_side_pixel, 640),
+				getString(R.string.long_side_pixel, 800),
+				getString(R.string.long_side_pixel, 1024),
+				getString(R.string.long_side_pixel, 1280)
+			) //// サーバ側でさらに縮小されるようなので、1280より上は用意しない
 			//	Integer.toString( 1600 ),
 			//	Integer.toString( 2048 ),
 			val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, caption_list)
@@ -210,7 +227,11 @@ class ActAppSetting : AppCompatActivity()
 		}
 		
 		run {
-			val caption_list = arrayOf(getString(R.string.refresh_scroll_to_toot), getString(R.string.refresh_no_scroll), getString(R.string.dont_refresh))
+			val caption_list = arrayOf(
+				getString(R.string.refresh_scroll_to_toot),
+				getString(R.string.refresh_no_scroll),
+				getString(R.string.dont_refresh)
+			)
 			val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, caption_list)
 			adapter.setDropDownViewResource(R.layout.lv_spinner_dropdown)
 			spRefreshAfterToot = findViewById(R.id.spRefreshAfterToot)
@@ -262,6 +283,9 @@ class ActAppSetting : AppCompatActivity()
 		etClientName = findViewById(R.id.etClientName)
 		etClientName.addTextChangedListener(this)
 		
+		etUserAgent = findViewById(R.id.etUserAgent)
+		etUserAgent.addTextChangedListener(this)
+		
 		etQuoteNameFormat = findViewById(R.id.etQuoteNameFormat)
 		etQuoteNameFormat.addTextChangedListener(this)
 		
@@ -278,10 +302,22 @@ class ActAppSetting : AppCompatActivity()
 		tvAcctFontSize = findViewById(R.id.tvAcctFontSize)
 		
 		etTimelineFontSize = findViewById(R.id.etTimelineFontSize)
-		etTimelineFontSize.addTextChangedListener(SizeCheckTextWatcher(tvTimelineFontSize, etTimelineFontSize, default_timeline_font_size))
+		etTimelineFontSize.addTextChangedListener(
+			SizeCheckTextWatcher(
+				tvTimelineFontSize,
+				etTimelineFontSize,
+				default_timeline_font_size
+			)
+		)
 		
 		etAcctFontSize = findViewById(R.id.etAcctFontSize)
-		etAcctFontSize.addTextChangedListener(SizeCheckTextWatcher(tvAcctFontSize, etAcctFontSize, default_acct_font_size))
+		etAcctFontSize.addTextChangedListener(
+			SizeCheckTextWatcher(
+				tvAcctFontSize,
+				etAcctFontSize,
+				default_acct_font_size
+			)
+		)
 		
 		etAvatarIconSize = findViewById(R.id.etAvatarIconSize)
 		etPullNotificationCheckInterval = findViewById(R.id.etPullNotificationCheckInterval)
@@ -289,6 +325,8 @@ class ActAppSetting : AppCompatActivity()
 		tvTimelineFontUrl = findViewById(R.id.tvTimelineFontUrl)
 		tvTimelineFontBoldUrl = findViewById(R.id.tvTimelineFontBoldUrl)
 		
+		
+		tvUserAgentError = findViewById(R.id.tvUserAgentError)
 	}
 	
 	private fun loadUIFromData() {
@@ -304,7 +342,11 @@ class ActAppSetting : AppCompatActivity()
 		spRefreshAfterToot.setSelection(Pref.ipRefreshAfterToot(pref))
 		
 		spDefaultAccount.setSelection(
-			(spDefaultAccount.adapter as AccountAdapter).getIndexFromId( Pref.lpTabletTootDefaultAccount(pref))
+			(spDefaultAccount.adapter as AccountAdapter).getIndexFromId(
+				Pref.lpTabletTootDefaultAccount(
+					pref
+				)
+			)
 		)
 		
 		footer_button_bg_color = Pref.ipFooterButtonBgColor(pref)
@@ -316,6 +358,7 @@ class ActAppSetting : AppCompatActivity()
 		etColumnWidth.setText(Pref.spColumnWidth(pref))
 		etMediaThumbHeight.setText(Pref.spMediaThumbHeight(pref))
 		etClientName.setText(Pref.spClientName(pref))
+		etUserAgent.setText(Pref.spUserAgent(pref))
 		etQuoteNameFormat.setText(Pref.spQuoteNameFormat(pref))
 		etAutoCWLines.setText(Pref.spAutoCWLines(pref))
 		etAvatarIconSize.setText(Pref.spAvatarIconSize(pref))
@@ -330,6 +373,7 @@ class ActAppSetting : AppCompatActivity()
 		etTimelineFontSize.setText(formatFontSize(Pref.fpTimelineFontSize(pref)))
 		etAcctFontSize.setText(formatFontSize(Pref.fpAcctFontSize(pref)))
 		
+		etUserAgent.hint = App1.userAgentDefault
 		
 		load_busy = false
 		
@@ -339,6 +383,8 @@ class ActAppSetting : AppCompatActivity()
 		
 		showFontSize(tvTimelineFontSize, etTimelineFontSize, default_timeline_font_size)
 		showFontSize(tvAcctFontSize, etAcctFontSize, default_acct_font_size)
+		
+		showUserAgentError()
 	}
 	
 	private fun saveUIToData() {
@@ -351,26 +397,38 @@ class ActAppSetting : AppCompatActivity()
 		}
 		
 		e
-			.put(Pref.lpTabletTootDefaultAccount,
+			.put(
+				Pref.lpTabletTootDefaultAccount,
 				(spDefaultAccount.adapter as AccountAdapter)
 					.getIdFromIndex(spDefaultAccount.selectedItemPosition)
 			)
 			
-			.put(Pref.fpTimelineFontSize, parseFontSize(etTimelineFontSize.text.toString().trim { it <= ' ' }))
-			.put(Pref.fpAcctFontSize, parseFontSize(etAcctFontSize.text.toString().trim { it <= ' ' }))
+			.put(
+				Pref.fpTimelineFontSize,
+				parseFontSize(etTimelineFontSize.text.toString().trim { it <= ' ' })
+			)
+			.put(
+				Pref.fpAcctFontSize,
+				parseFontSize(etAcctFontSize.text.toString().trim { it <= ' ' })
+			)
 			
 			.put(Pref.spColumnWidth, etColumnWidth.text.toString().trim { it <= ' ' })
 			.put(Pref.spMediaThumbHeight, etMediaThumbHeight.text.toString().trim { it <= ' ' })
 			.put(Pref.spClientName, etClientName.text.toString().trim { it <= ' ' })
+			.put(
+				Pref.spUserAgent,
+				etUserAgent.text.toString().replace(reLinefeed, " ").trim { it <= ' ' })
 			.put(Pref.spQuoteNameFormat, etQuoteNameFormat.text.toString()) // not trimmed
 			.put(Pref.spAutoCWLines, etAutoCWLines.text.toString().trim { it <= ' ' })
 			.put(Pref.spAvatarIconSize, etAvatarIconSize.text.toString().trim { it <= ' ' })
-			.put(Pref.spPullNotificationCheckInterval, etPullNotificationCheckInterval.text.toString().trim { it <= ' ' })
+			.put(
+				Pref.spPullNotificationCheckInterval,
+				etPullNotificationCheckInterval.text.toString().trim { it <= ' ' })
 			.put(Pref.spMediaSizeMax, etMediaSizeMax.text.toString().trim { it <= ' ' })
 			.put(Pref.spRoundRatio, etRoundRatio.text.toString().trim { it <= ' ' })
 			
-			.put(Pref.spTimelineFont, timeline_font ?:"")
-			.put(Pref.spTimelineFontBold, timeline_font_bold?:"")
+			.put(Pref.spTimelineFont, timeline_font ?: "")
+			.put(Pref.spTimelineFontBold, timeline_font_bold ?: "")
 			
 			.put(Pref.ipBackButtonAction, spBackButtonAction.selectedItemPosition)
 			.put(Pref.ipUiTheme, spUITheme.selectedItemPosition)
@@ -383,6 +441,17 @@ class ActAppSetting : AppCompatActivity()
 			.put(Pref.ipFooterTabIndicatorColor, footer_tab_indicator_color)
 			
 			.apply()
+		
+		showUserAgentError()
+		
+	}
+	
+	private fun showUserAgentError() {
+		val m = App1.reNotAllowedInUserAgent.matcher(etUserAgent.text.toString())
+		tvUserAgentError.text = when(m.find()) {
+			true -> getString(R.string.user_agent_error, m.group())
+			else -> ""
+		}
 	}
 	
 	override fun onCheckedChanged(buttonView : CompoundButton, isChecked : Boolean) {
@@ -399,7 +468,11 @@ class ActAppSetting : AppCompatActivity()
 	override fun onClick(v : View) {
 		when(v.id) {
 			
-			R.id.btnFooterBackgroundEdit -> openColorPicker(COLOR_DIALOG_ID_FOOTER_BUTTON_BG, footer_button_bg_color, false)
+			R.id.btnFooterBackgroundEdit -> openColorPicker(
+				COLOR_DIALOG_ID_FOOTER_BUTTON_BG,
+				footer_button_bg_color,
+				false
+			)
 			
 			R.id.btnFooterBackgroundReset -> {
 				footer_button_bg_color = 0
@@ -407,7 +480,11 @@ class ActAppSetting : AppCompatActivity()
 				showFooterColor()
 			}
 			
-			R.id.btnFooterForegroundColorEdit -> openColorPicker(COLOR_DIALOG_ID_FOOTER_BUTTON_FG, footer_button_fg_color, false)
+			R.id.btnFooterForegroundColorEdit -> openColorPicker(
+				COLOR_DIALOG_ID_FOOTER_BUTTON_FG,
+				footer_button_fg_color,
+				false
+			)
 			
 			R.id.btnFooterForegroundColorReset -> {
 				footer_button_fg_color = 0
@@ -415,7 +492,11 @@ class ActAppSetting : AppCompatActivity()
 				showFooterColor()
 			}
 			
-			R.id.btnTabBackgroundColorEdit -> openColorPicker(COLOR_DIALOG_ID_FOOTER_TAB_BG, footer_tab_bg_color, false)
+			R.id.btnTabBackgroundColorEdit -> openColorPicker(
+				COLOR_DIALOG_ID_FOOTER_TAB_BG,
+				footer_tab_bg_color,
+				false
+			)
 			
 			R.id.btnTabBackgroundColorReset -> {
 				footer_tab_bg_color = 0
@@ -423,7 +504,11 @@ class ActAppSetting : AppCompatActivity()
 				showFooterColor()
 			}
 			
-			R.id.btnTabDividerColorEdit -> openColorPicker(COLOR_DIALOG_ID_FOOTER_TAB_DIVIDER, footer_tab_divider_color, false)
+			R.id.btnTabDividerColorEdit -> openColorPicker(
+				COLOR_DIALOG_ID_FOOTER_TAB_DIVIDER,
+				footer_tab_divider_color,
+				false
+			)
 			
 			R.id.btnTabDividerColorReset -> {
 				footer_tab_divider_color = 0
@@ -431,7 +516,11 @@ class ActAppSetting : AppCompatActivity()
 				showFooterColor()
 			}
 			
-			R.id.btnTabIndicatorColorEdit -> openColorPicker(COLOR_DIALOG_ID_FOOTER_TAB_INDICATOR, footer_tab_indicator_color, true)
+			R.id.btnTabIndicatorColorEdit -> openColorPicker(
+				COLOR_DIALOG_ID_FOOTER_TAB_INDICATOR,
+				footer_tab_indicator_color,
+				true
+			)
 			
 			R.id.btnTabIndicatorColorReset -> {
 				footer_tab_indicator_color = 0
@@ -507,7 +596,10 @@ class ActAppSetting : AppCompatActivity()
 			if(data != null) {
 				val uri = data.data
 				if(uri != null) {
-					contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+					contentResolver.takePersistableUriPermission(
+						uri,
+						Intent.FLAG_GRANT_READ_URI_PERMISSION
+					)
 					importAppData(false, uri)
 				}
 			}
@@ -588,15 +680,30 @@ class ActAppSetting : AppCompatActivity()
 		
 		c = footer_tab_bg_color
 		if(c == 0) {
-			llFooterBG.setBackgroundColor(Styler.getAttributeColor(this, R.attr.colorColumnStripBackground))
+			llFooterBG.setBackgroundColor(
+				Styler.getAttributeColor(
+					this,
+					R.attr.colorColumnStripBackground
+				)
+			)
 		} else {
 			llFooterBG.setBackgroundColor(c)
 		}
 		
 		c = footer_tab_divider_color
 		if(c == 0) {
-			vFooterDivider1.setBackgroundColor(Styler.getAttributeColor(this, R.attr.colorImageButton))
-			vFooterDivider2.setBackgroundColor(Styler.getAttributeColor(this, R.attr.colorImageButton))
+			vFooterDivider1.setBackgroundColor(
+				Styler.getAttributeColor(
+					this,
+					R.attr.colorImageButton
+				)
+			)
+			vFooterDivider2.setBackgroundColor(
+				Styler.getAttributeColor(
+					this,
+					R.attr.colorImageButton
+				)
+			)
 		} else {
 			vFooterDivider1.setBackgroundColor(c)
 			vFooterDivider2.setBackgroundColor(c)
@@ -622,7 +729,11 @@ class ActAppSetting : AppCompatActivity()
 		saveUIToData()
 	}
 	
-	private inner class SizeCheckTextWatcher internal constructor(internal val sample : TextView, internal val et : EditText, internal val default_size_sp : Float) : TextWatcher {
+	private inner class SizeCheckTextWatcher internal constructor(
+		internal val sample : TextView,
+		internal val et : EditText,
+		internal val default_size_sp : Float
+	) : TextWatcher {
 		
 		override fun beforeTextChanged(s : CharSequence, start : Int, count : Int, after : Int) {
 		
@@ -708,7 +819,7 @@ class ActAppSetting : AppCompatActivity()
 			
 			dir.mkdir()
 			
-			val tmp_file = File(dir, file_name + ".tmp")
+			val tmp_file = File(dir, "$file_name.tmp")
 			
 			val source = contentResolver.openInputStream(uri) // nullable
 			if(source == null) {
@@ -757,7 +868,10 @@ class ActAppSetting : AppCompatActivity()
 					
 					cache_dir.mkdir()
 					
-					val file = File(cache_dir, "SubwayTooter." + android.os.Process.myPid() + "." + android.os.Process.myTid() + ".json")
+					val file = File(
+						cache_dir,
+						"SubwayTooter." + android.os.Process.myPid() + "." + android.os.Process.myTid() + ".json"
+					)
 					FileWriterWithEncoding(file, "UTF-8").use { w ->
 						val jw = JsonWriter(w)
 						AppDataExporter.encodeAppData(this@ActAppSetting, jw)
@@ -785,7 +899,11 @@ class ActAppSetting : AppCompatActivity()
 				}
 				
 				try {
-					val uri = FileProvider.getUriForFile(this@ActAppSetting, App1.FILE_PROVIDER_AUTHORITY, result)
+					val uri = FileProvider.getUriForFile(
+						this@ActAppSetting,
+						App1.FILE_PROVIDER_AUTHORITY,
+						result
+					)
 					val intent = Intent(Intent.ACTION_SEND)
 					intent.type = contentResolver.getType(uri)
 					intent.putExtra(Intent.EXTRA_SUBJECT, "SubwayTooter app data")
@@ -866,7 +984,11 @@ class ActAppSetting : AppCompatActivity()
 		}
 		
 		override fun getView(position : Int, viewOld : View?, parent : ViewGroup) : View {
-			val view = viewOld ?: layoutInflater.inflate(android.R.layout.simple_spinner_item, parent, false)
+			val view = viewOld ?: layoutInflater.inflate(
+				android.R.layout.simple_spinner_item,
+				parent,
+				false
+			)
 			view.findViewById<TextView>(android.R.id.text1).text =
 				if(position == 0)
 					getString(R.string.ask_always)
@@ -876,7 +998,8 @@ class ActAppSetting : AppCompatActivity()
 		}
 		
 		override fun getDropDownView(position : Int, viewOld : View?, parent : ViewGroup) : View {
-			val view = viewOld ?: layoutInflater.inflate(R.layout.lv_spinner_dropdown, parent, false)
+			val view =
+				viewOld ?: layoutInflater.inflate(R.layout.lv_spinner_dropdown, parent, false)
 			view.findViewById<TextView>(android.R.id.text1).text =
 				if(position == 0)
 					getString(R.string.ask_always)

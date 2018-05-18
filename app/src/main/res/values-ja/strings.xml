@@ -950,5 +950,7 @@
     <string name="push_subscription_updated">プッシュ購読を更新しました。</string>
     <string name="push_subscription_not_exists">プッシュ購読は必要ありません。</string>
     <string name="push_subscription_already_exists">プッシュ購読は既に最新の状態です。</string>
+    <string name="user_agent">User-Agent HTTPヘッダ</string>
+    <string name="user_agent_error">User-Agentには非ASCII文字を使えません。[%1$s]</string>
 
 </resources>

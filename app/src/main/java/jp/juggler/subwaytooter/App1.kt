@@ -38,6 +38,7 @@ import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 import okhttp3.*
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig
+import java.util.regex.Pattern
 
 class App1 : Application() {
 	
@@ -53,7 +54,7 @@ class App1 : Application() {
 	}
 	
 	class DBOpenHelper(context : Context) : SQLiteOpenHelper(context, DB_NAME, null, DB_VERSION) {
-
+		
 		override fun onCreate(db : SQLiteDatabase) {
 			for(ti in tableList) {
 				ti.onDBCreate(db)
@@ -181,6 +182,25 @@ class App1 : Application() {
 		//		return maxSize * 1024;
 		//	}
 		
+		val reNotAllowedInUserAgent = Pattern.compile("[^\\x21-\\x7e]+") !!
+		
+		val userAgentDefault =
+			"SubwayTooter/${BuildConfig.VERSION_NAME} Android/${Build.VERSION.RELEASE}"
+		
+		private val user_agent_interceptor = Interceptor { chain ->
+			val userAgentCustom = Pref.spUserAgent(pref)
+			
+			val request_with_user_agent = chain.request().newBuilder()
+				.header(
+					"User-Agent", when {
+						userAgentCustom.isNotEmpty() && ! reNotAllowedInUserAgent.matcher(userAgentCustom).find() -> userAgentCustom
+						else -> userAgentDefault
+					}
+				)
+				.build()
+			chain.proceed(request_with_user_agent)
+		}
+		
 		private fun prepareOkHttp() : OkHttpClient.Builder {
 			val spec = ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
 				.cipherSuites(*APPROVED_CIPHER_SUITES)
@@ -189,15 +209,7 @@ class App1 : Application() {
 			val spec_list = ArrayList<ConnectionSpec>()
 			spec_list.add(spec)
 			spec_list.add(ConnectionSpec.CLEARTEXT)
-
-			val user_agent_interceptor = Interceptor { chain ->
-				val original_request = chain.request()
-				val request_with_user_agent = original_request.newBuilder()
-					.header("User-Agent", "SubwayTooter/" + BuildConfig.VERSION_NAME + " Android/" + Build.VERSION.RELEASE)
-					.build()
-				chain.proceed(request_with_user_agent)
-			}
-
+			
 			return OkHttpClient.Builder()
 				.connectTimeout(30, TimeUnit.SECONDS)
 				.readTimeout(60, TimeUnit.SECONDS)

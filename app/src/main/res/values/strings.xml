@@ -657,4 +657,6 @@
     <string name="push_subscription_updated">Push subscription updated.</string>
     <string name="push_subscription_not_exists">Push subscription is not required.</string>
     <string name="push_subscription_already_exists">Push subscription is up to date.</string>
+    <string name="user_agent">User-Agent HTTP header</string>
+    <string name="user_agent_error">User-Agent can\'t contains NON-ASCII characters. [%1$s]</string>
 </resources>

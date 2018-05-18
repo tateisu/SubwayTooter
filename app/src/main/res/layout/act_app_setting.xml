@@ -317,6 +317,32 @@
 
         <View style="@style/setting_divider"/>
 
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etUserAgent"
+            android:text="@string/user_agent"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etUserAgent"
+                style="@style/setting_horizontal_stretch"
+                android:inputType="textMultiLine"
+                />
+
+        </LinearLayout>
+        <LinearLayout style="@style/setting_row_form">
+
+            <TextView
+                android:id="@+id/tvUserAgentError"
+                style="@style/setting_horizontal_stretch"
+                android:textColor="?attr/colorRegexFilterError"
+                />
+
+        </LinearLayout>
+        <View style="@style/setting_divider"/>
+
         <!-- =============================================== -->
 
         <TextView

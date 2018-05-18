@@ -335,7 +335,6 @@ object Pref {
 	const val RAT_DONT_REFRESH = 2
 	
 	// string
-	
 	val spColumnWidth = StringPref("ColumnWidth", "")
 	val spMediaThumbHeight = StringPref("MediaThumbHeight", "")
 	val spClientName = StringPref("client_name", "")
@@ -352,9 +351,9 @@ object Pref {
 	val spEmojiPickerRecent = StringPref("emoji_picker_recent", "")
 	val spRoundRatio = StringPref("round_ratio", "33")
 	val spPullNotificationCheckInterval = StringPref("PullNotificationCheckInterval", "15")
-	
+	val spUserAgent = StringPref("UserAgent", "")
+
 	// long
-	
 	val lpTabletTootDefaultAccount = LongPref("tablet_toot_default_account", - 1L)
 	
 	// float

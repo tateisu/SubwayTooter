@@ -296,7 +296,7 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 		get() = id
 	
 	val busyKey : String
-		get() = hostAccessOrOriginal + ":" + idAccessOrOriginal
+		get() = "$hostAccessOrOriginal:$idAccessOrOriginal"
 	
 	fun checkMuted(muted_app : HashSet<String>?, muted_word : WordTrieTree?) : Boolean {
 		

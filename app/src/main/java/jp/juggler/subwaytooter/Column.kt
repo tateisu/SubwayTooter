@@ -1156,6 +1156,8 @@ class Column(
 		
 		if(column_regex_filter(status.decoded_content)) return true
 		if(column_regex_filter(status.reblog?.decoded_content)) return true
+		if(column_regex_filter(status.decoded_spoiler_text)) return true
+		if(column_regex_filter(status.reblog?.decoded_spoiler_text)) return true
 		
 		return status.checkMuted(muted_app, muted_word)
 		

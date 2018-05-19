@@ -1536,12 +1536,18 @@ class Column(
 			
 			internal fun parseAccountList(
 				client : TootApiClient,
-				path_base : String
+				path_base : String,
+				emptyMessage : String? = null
 			) : TootApiResult? {
 				val result = client.request(path_base)
 				if(result != null) {
 					saveRange(result, true, true)
-					this.list_tmp = addAll(null, parser.accountList(result.jsonArray))
+					val src = parser.accountList(result.jsonArray)
+					if(src.isEmpty() && emptyMessage != null) {
+						this.list_tmp = addOne(null, TootMessageHolder(emptyMessage))
+					} else {
+						this.list_tmp = addAll(null, src)
+					}
 				}
 				return result
 			}
@@ -1682,12 +1688,14 @@ class Column(
 								
 								TAB_FOLLOWING -> return parseAccountList(
 									client,
-									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id)
+									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id),
+									emptyMessage = context.getString(R.string.none_or_hidden_following)
 								)
 								
 								TAB_FOLLOWERS -> return parseAccountList(
 									client,
-									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id)
+									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id),
+									emptyMessage = context.getString(R.string.none_or_hidden_followers)
 								)
 								
 								TAB_STATUS -> {
@@ -2641,13 +2649,15 @@ class Column(
 						
 						TYPE_PROFILE -> {
 							loadProfileAccount(client, false)
+							
+							
 							when(profile_tab) {
 								TAB_FOLLOWING -> getAccountList(
 									client,
 									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id)
 								)
 								
-								TAB_FOLLOWERS -> return getAccountList(
+								TAB_FOLLOWERS -> getAccountList(
 									client,
 									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id)
 								)
@@ -3176,6 +3186,7 @@ class Column(
 						TYPE_FOLLOW_REQUESTS -> getAccountList(client, PATH_FOLLOW_REQUESTS)
 						
 						TYPE_PROFILE -> when(profile_tab) {
+							
 							TAB_FOLLOWING -> getAccountList(
 								client,
 								String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id)

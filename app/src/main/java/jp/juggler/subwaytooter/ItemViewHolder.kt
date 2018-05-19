@@ -119,6 +119,7 @@ internal class ItemViewHolder(
 	
 	private lateinit var tvApplication : TextView
 	
+	private lateinit var tvMessageHolder: TextView
 	private lateinit var access_info : SavedAccount
 	
 	private var buttons_for_status : StatusButtons? = null
@@ -193,6 +194,7 @@ internal class ItemViewHolder(
 			tvContent.textSize = activity.timeline_font_size_sp
 			btnShowMedia.textSize = activity.timeline_font_size_sp
 			tvApplication.textSize = activity.timeline_font_size_sp
+			tvMessageHolder.textSize = activity.timeline_font_size_sp
 			btnListTL.textSize = activity.timeline_font_size_sp
 		}
 		
@@ -318,6 +320,7 @@ internal class ItemViewHolder(
 		llList.visibility = View.GONE
 		llFollowRequest.visibility = View.GONE
 		llExtra.removeAllViews()
+		tvMessageHolder.visibility = View.GONE
 		
 		var c : Int
 		c = if(column.content_color != 0) column.content_color else content_color_default
@@ -329,6 +332,7 @@ internal class ItemViewHolder(
 		tvContent.setTextColor(c)
 		//NSFWは文字色固定 btnShowMedia.setTextColor( c );
 		tvApplication.setTextColor(c)
+		tvMessageHolder.setTextColor(c)
 		
 		c = if(column.acct_color != 0) column.acct_color else Styler.getAttributeColor(
 			activity,
@@ -343,13 +347,6 @@ internal class ItemViewHolder(
 		
 		this.item = item
 		when(item) {
-			is TootTag -> showSearchTag(item)
-			is TootAccountRef -> showAccount(item)
-			is TootNotification -> showNotification(item)
-			is TootGap -> showGap()
-			is TootDomainBlock -> showDomainBlock(item)
-			is TootList -> showList(item)
-			
 			is TootStatus -> {
 				val reblog = item.reblog
 				if(reblog != null) {
@@ -368,9 +365,26 @@ internal class ItemViewHolder(
 				}
 			}
 			
+			is TootAccountRef -> showAccount(item)
+			
+			is TootNotification -> showNotification(item)
+
+			is TootTag -> showSearchTag(item)
+			is TootGap -> showGap()
+			is TootDomainBlock -> showDomainBlock(item)
+			is TootList -> showList(item)
+			
+			is TootMessageHolder -> showMessageHolder(item)
+			
 			else -> {
 			}
 		}
+	}
+	
+	private fun showMessageHolder(item : TootMessageHolder) {
+		tvMessageHolder.visibility = View.VISIBLE
+		tvMessageHolder.text = item.text
+		tvMessageHolder.gravity = item.gravity
 	}
 	
 	private fun showNotification(n : TootNotification) {
@@ -1917,6 +1931,10 @@ internal class ItemViewHolder(
 					startMargin = dip(4)
 				}
 			}
+			
+			tvMessageHolder = textView{
+				padding =dip(4)
+			}.lparams(matchParent, wrapContent)
 			
 			llFollowRequest = linearLayout {
 				lparams(matchParent, wrapContent) {

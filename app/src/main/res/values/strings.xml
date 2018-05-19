@@ -659,4 +659,6 @@
     <string name="push_subscription_already_exists">Push subscription is up to date.</string>
     <string name="user_agent">User-Agent HTTP header</string>
     <string name="user_agent_error">User-Agent can\'t contains NON-ASCII characters. [%1$s]</string>
+    <string name="none_or_hidden_following">There is no follows, or hidden by setting.</string>
+    <string name="none_or_hidden_followers">There is no followers, or hidden by setting.</string>
 </resources>

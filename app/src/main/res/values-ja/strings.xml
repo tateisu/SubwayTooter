@@ -952,5 +952,7 @@
     <string name="push_subscription_already_exists">プッシュ購読は既に最新の状態です。</string>
     <string name="user_agent">User-Agent HTTPヘッダ</string>
     <string name="user_agent_error">User-Agentには非ASCII文字を使えません。[%1$s]</string>
+    <string name="none_or_hidden_following">フォロー中がいません。または設定により隠されています。</string>
+    <string name="none_or_hidden_followers">フォロワーはいません。または設定により隠されています。</string>
 
 </resources>

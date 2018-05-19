@@ -113,6 +113,17 @@ class PushSubscriptionHelper(
 					subscription404 = true
 				}
 				
+				403 -> {
+					// アクセストークンにpushスコープがない
+					return if(verbose){
+						addLog(context.getString(R.string.missing_push_scope))
+						r
+					}else{
+						if( flags!=0 ) addLog(context.getString(R.string.missing_push_scope))
+						TootApiResult()
+					}
+				}
+				
 				else -> {
 					addLog("${res.request()}")
 					addLog("${res.code()} ${res.message()}")

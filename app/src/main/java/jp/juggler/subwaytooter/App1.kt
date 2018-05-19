@@ -21,7 +21,7 @@ import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory
 import com.bumptech.glide.load.engine.executor.GlideExecutor
 import com.bumptech.glide.load.engine.executor.GlideExecutor.newDiskCacheExecutor
 import com.bumptech.glide.load.engine.executor.GlideExecutor.newSourceExecutor
-import com.bumptech.glide.load.model.GlideUrl
+import com.bumptech.glide.load.model.*
 import jp.juggler.subwaytooter.api.TootApiClient
 
 import java.io.File
@@ -187,16 +187,17 @@ class App1 : Application() {
 		val userAgentDefault =
 			"SubwayTooter/${BuildConfig.VERSION_NAME} Android/${Build.VERSION.RELEASE}"
 		
-		private val user_agent_interceptor = Interceptor { chain ->
+		private fun getUserAgent() : String {
 			val userAgentCustom = Pref.spUserAgent(pref)
-			
+			return when {
+				userAgentCustom.isNotEmpty() && ! reNotAllowedInUserAgent.matcher(userAgentCustom).find() -> userAgentCustom
+				else -> userAgentDefault
+			}
+		}
+		
+		private val user_agent_interceptor = Interceptor { chain ->
 			val request_with_user_agent = chain.request().newBuilder()
-				.header(
-					"User-Agent", when {
-						userAgentCustom.isNotEmpty() && ! reNotAllowedInUserAgent.matcher(userAgentCustom).find() -> userAgentCustom
-						else -> userAgentDefault
-					}
-				)
+				.header("User-Agent", getUserAgent())
 				.build()
 			chain.proceed(request_with_user_agent)
 		}
@@ -227,8 +228,6 @@ class App1 : Application() {
 		lateinit var pref : SharedPreferences
 		
 		lateinit var task_executor : ThreadPoolExecutor
-		
-		private lateinit var glide_okhttp3_factory : OkHttpUrlLoader.Factory
 		
 		@SuppressLint("StaticFieldLeak")
 		lateinit var custom_emoji_cache : CustomEmojiCache
@@ -352,12 +351,12 @@ class App1 : Application() {
 		
 		@Suppress("UNUSED_PARAMETER")
 		fun registerGlideComponents(context : Context, glide : Glide, registry : Registry) {
-			
-			glide_okhttp3_factory = OkHttpUrlLoader.Factory(ok_http_client)
-			registry.append(GlideUrl::class.java, InputStream::class.java, glide_okhttp3_factory)
-			
-			// registry.append(Photo.class, InputStream.class, new FlickrModelLoader.Factory());
-			// 3.xの書き方 Glide.get(app_context).register(GlideUrl::class.java, InputStream::class.java, glide_okhttp3_factory)
+			// カスタムされたokhttpを優先的に使うためにprependを指定する
+			registry.prepend(
+				GlideUrl::class.java,
+				InputStream::class.java,
+				OkHttpUrlLoader.Factory(ok_http_client)
+			)
 		}
 		
 		fun applyGlideOptions(context : Context, builder : GlideBuilder) {

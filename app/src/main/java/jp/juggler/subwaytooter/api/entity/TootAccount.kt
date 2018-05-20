@@ -84,7 +84,8 @@ open class TootAccount(
 	
 	val bot : Boolean
 	
-	val user_hides_network : Boolean
+	// user_hides_network is preference, not exposed in API
+	// val user_hides_network : Boolean
 	
 	init {
 		var sv : String?
@@ -116,7 +117,8 @@ open class TootAccount(
 		this.fields = parseFields(src.optJSONArray("fields"))
 		
 		this.bot = src.optBoolean("bot", false)
-		this.user_hides_network = src.optBoolean("user_hides_network")
+		
+		// this.user_hides_network = src.optBoolean("user_hides_network")
 
 		when(parser.serviceType) {
 			ServiceType.MASTODON -> {

@@ -954,5 +954,7 @@
     <string name="user_agent_error">User-Agentには非ASCII文字を使えません。[%1$s]</string>
     <string name="none_or_hidden_following">フォロー中がいません。または設定により隠されています。</string>
     <string name="none_or_hidden_followers">フォロワーはいません。または設定により隠されています。</string>
+    <string name="yourself_can_see_your_network">もしあなたがソーシャルグラフを隠す選択をした場合でも、あなた自身はそれを見ることができます。</string>
+    <string name="follow_follower_list_may_restrict">もしリモートのユーザがソーシャルグラフを隠す選択をした場合、表示されるのはこのタンスのユーザだけです。</string>
 
 </resources>

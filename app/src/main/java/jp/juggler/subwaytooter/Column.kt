@@ -1259,7 +1259,10 @@ class Column(
 	//		return null;
 	//	}
 	
-	internal fun loadProfileAccount(client : TootApiClient, bForceReload : Boolean) : TootAccount? {
+	internal fun loadProfileAccount(
+		client : TootApiClient,
+		bForceReload : Boolean
+	) : TootApiResult? {
 		if(bForceReload || this.who_account == null) {
 			val result = client.request(String.format(Locale.JAPAN, PATH_ACCOUNT, profile_id))
 			val parser = TootParser(context, access_info)
@@ -1268,8 +1271,10 @@ class Column(
 				this.who_account = a
 				client.publishApiProgress("") // カラムヘッダの再表示
 			}
+			return result
+		} else {
+			return null
 		}
-		return this.who_account?.get()
 	}
 	
 	internal fun loadListInfo(client : TootApiClient, bForceReload : Boolean) {
@@ -1543,11 +1548,41 @@ class Column(
 				if(result != null) {
 					saveRange(result, true, true)
 					val src = parser.accountList(result.jsonArray)
-					if(src.isEmpty() && emptyMessage != null) {
-						this.list_tmp = addOne(null, TootMessageHolder(emptyMessage))
-					} else {
-						this.list_tmp = addAll(null, src)
+					
+					val list_tmp = ArrayList<TimelineItem>()
+					this.list_tmp = list_tmp
+					
+					if(emptyMessage != null) {
+						// フォロー/フォロワー一覧には警告の表示が必要だった
+						val who = who_account?.get()
+						when {
+							
+							access_info.isMe(who) -> list_tmp.add(
+								TootMessageHolder(
+									context.getString(
+										R.string.yourself_can_see_your_network
+									)
+								)
+							)
+							
+							else -> {
+
+								if(who != null && access_info.isRemoteUser(who)) list_tmp.add(
+									TootMessageHolder(
+										context.getString(
+											R.string.follow_follower_list_may_restrict
+										)
+									)
+								)
+
+								if(src.isEmpty())
+									list_tmp.add(TootMessageHolder(emptyMessage))
+							}
+							
+						}
 					}
+					
+					this.list_tmp = addAll(this.list_tmp, src)
 				}
 				return result
 			}
@@ -1682,7 +1717,8 @@ class Column(
 						
 						TYPE_PROFILE -> {
 							
-							loadProfileAccount(client, true)
+							val who_result = loadProfileAccount(client, true)
+							if(client.isApiCancelled || who_account == null) return who_result
 							
 							when(profile_tab) {
 								

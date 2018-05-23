@@ -676,6 +676,8 @@
 	<string name="user_agent_error">User-Agent can\'t contains NON-ASCII characters. [%1$s]</string>
 	<string name="none_or_hidden_following">There is no follows, or hidden by setting.</string>
 	<string name="none_or_hidden_followers">There is no followers, or hidden by setting.</string>
+	<string name="yourself_can_see_your_network">Even if you choose to hide social graphs, yourself can see it.</string>
+	<string name="follow_follower_list_may_restrict">If remote user chooses to hide the social graph, only the followings/followers on this instance will be displayed.</string>
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

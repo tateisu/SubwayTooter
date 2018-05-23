@@ -53,6 +53,9 @@ class PushSubscriptionHelper(
 		if( serverKey == null ){
 			addLog("(missing server public key in subscription.)")
 			return
+		}else if( serverKey.isEmpty() ){
+			addLog("(empty server public key in subscription.)")
+			return
 		}
 
 		// 既に登録済みの値と同じなら何もしない

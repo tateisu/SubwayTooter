@@ -119,7 +119,7 @@ internal class ItemViewHolder(
 	
 	private lateinit var tvApplication : TextView
 	
-	private lateinit var tvMessageHolder: TextView
+	private lateinit var tvMessageHolder : TextView
 	private lateinit var access_info : SavedAccount
 	
 	private var buttons_for_status : StatusButtons? = null
@@ -354,10 +354,7 @@ internal class ItemViewHolder(
 						item.accountRef,
 						item.time_created_at,
 						R.attr.btn_boost,
-						item.accountRef.decoded_display_name.intoStringResource(
-							activity,
-							R.string.display_name_boosted_by
-						)
+						R.string.display_name_boosted_by
 					)
 					showStatus(activity, reblog)
 				} else {
@@ -368,7 +365,7 @@ internal class ItemViewHolder(
 			is TootAccountRef -> showAccount(item)
 			
 			is TootNotification -> showNotification(item)
-
+			
 			is TootTag -> showSearchTag(item)
 			is TootGap -> showGap()
 			is TootDomainBlock -> showDomainBlock(item)
@@ -397,10 +394,7 @@ internal class ItemViewHolder(
 					n_accountRef,
 					n.time_created_at,
 					if(access_info.isNicoru(n_account)) R.attr.ic_nicoru else R.attr.btn_favourite,
-					n_accountRef.decoded_display_name.intoStringResource(
-						activity,
-						R.string.display_name_favourited_by
-					)
+					R.string.display_name_favourited_by
 				)
 				if(n_status != null) showStatus(activity, n_status)
 			}
@@ -410,10 +404,7 @@ internal class ItemViewHolder(
 					n_accountRef,
 					n.time_created_at,
 					R.attr.btn_boost,
-					n_accountRef.decoded_display_name.intoStringResource(
-						activity,
-						R.string.display_name_boosted_by
-					)
+					R.string.display_name_boosted_by
 				)
 				if(n_status != null) showStatus(activity, n_status)
 				
@@ -425,10 +416,7 @@ internal class ItemViewHolder(
 						n_accountRef,
 						n.time_created_at,
 						R.attr.ic_follow_plus,
-						n_accountRef.decoded_display_name.intoStringResource(
-							activity,
-							R.string.display_name_followed_by
-						)
+						R.string.display_name_followed_by
 					)
 					showAccount(n_accountRef)
 				}
@@ -440,10 +428,8 @@ internal class ItemViewHolder(
 						n_accountRef,
 						n.time_created_at,
 						R.attr.btn_reply,
-						n_accountRef.decoded_display_name.intoStringResource(
-							activity,
-							R.string.display_name_replied_by
-						)
+						R.string.display_name_replied_by
+					
 					)
 				}
 				if(n_status != null) showStatus(activity, n_status)
@@ -479,10 +465,19 @@ internal class ItemViewHolder(
 		whoRef : TootAccountRef,
 		time : Long,
 		icon_attr_id : Int,
-		text : Spannable
+		string_id : Int
 	) {
 		boost_account = whoRef
 		val who = whoRef.get()
+		
+		val text : Spannable = if(string_id == R.string.display_name_followed_by) {
+			// フォローの場合 decoded_display_name が2箇所で表示に使われるのを避ける必要がある
+			who.decodeDisplayName(activity)
+		} else {
+			// それ以外の場合は decoded_display_name を再利用して構わない
+			whoRef.decoded_display_name
+		}.intoStringResource(activity, string_id)
+		
 		boost_time = time
 		llBoosted.visibility = View.VISIBLE
 		ivBoosted.setImageResource(Styler.getAttributeResourceId(activity, icon_attr_id))
@@ -690,18 +685,18 @@ internal class ItemViewHolder(
 				
 				sb.appendColorShadeIcon(activity, R.drawable.ic_bot, "bot")
 				
-//				val start = sb.length
-//				sb.append("bot")
-//				val end = sb.length
-//				val info = EmojiMap201709.sShortNameToImageId["robot_face"]
-//				if(info != null) {
-//					sb.setSpan(
-//						EmojiImageSpan(activity, info.image_id),
-//						start,
-//						end,
-//						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-//					)
-//				}
+				//				val start = sb.length
+				//				sb.append("bot")
+				//				val end = sb.length
+				//				val info = EmojiMap201709.sShortNameToImageId["robot_face"]
+				//				if(info != null) {
+				//					sb.setSpan(
+				//						EmojiImageSpan(activity, info.image_id),
+				//						start,
+				//						end,
+				//						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+				//					)
+				//				}
 			}
 			
 			// NSFWマーク
@@ -735,22 +730,22 @@ internal class ItemViewHolder(
 					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 				)
 			}
-
+			
 			// pinned
 			if(status.pinned) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
 				sb.appendColorShadeIcon(activity, R.drawable.ic_pin, "pinned")
 				
-//				val start = sb.length
-//				sb.append("pinned")
-//				val end = sb.length
-//				val icon_id = Styler.getAttributeResourceId(activity, R.attr.ic_pin)
-//				sb.setSpan(
-//					EmojiImageSpan(activity, icon_id),
-//					start,
-//					end,
-//					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-//				)
+				//				val start = sb.length
+				//				sb.append("pinned")
+				//				val end = sb.length
+				//				val icon_id = Styler.getAttributeResourceId(activity, R.attr.ic_pin)
+				//				sb.setSpan(
+				//					EmojiImageSpan(activity, icon_id),
+				//					start,
+				//					end,
+				//					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+				//				)
 			}
 			
 		}
@@ -1932,8 +1927,8 @@ internal class ItemViewHolder(
 				}
 			}
 			
-			tvMessageHolder = textView{
-				padding =dip(4)
+			tvMessageHolder = textView {
+				padding = dip(4)
 			}.lparams(matchParent, wrapContent)
 			
 			llFollowRequest = linearLayout {

@@ -45,52 +45,55 @@ class PushSubscriptionHelper(
 		}
 	}
 	
+	// returns error string or null
 	private fun updateServerKey(
 		client : TootApiClient,
 		clientIdentifier : String,
 		serverKey : String?
-	) {
-		if( serverKey == null ){
-			addLog("(missing server public key in subscription.)")
-			return
-		}else if( serverKey.isEmpty() ){
-			addLog("(empty server public key in subscription.)")
-			return
+	) : TootApiResult? {
+		
+		if(serverKey == null) {
+			return TootApiResult(error="!! Server public key is missing. There is server misconfiguration , push notification will not work.")
+		} else if(serverKey.isEmpty()) {
+			return TootApiResult(error="!! Server public key is empty. There is server misconfiguration, push notification will not work.")
 		}
-
+		
 		// 既に登録済みの値と同じなら何もしない
 		val oldKey = SubscriptionServerKey.find(clientIdentifier)
-		if(oldKey == serverKey) return
-
-		// サーバキーをアプリサーバに登録
-		val r = client.http(
-			Request.Builder()
-				.url("${PollingWorker.APP_SERVER}/webpushserverkey")
-				.post(
-					RequestBody.create(
-						TootApiClient.MEDIA_TYPE_JSON,
-						JSONObject().apply {
-							put("client_id", clientIdentifier)
-							put("server_key", serverKey)
-						}.toString()
-					)
-				)
-				.build()
-		)
-		
-		val res = r?.response ?: return
-		when(res.code()) {
-			200 -> {
-				// 登録できたサーバーキーをアプリ内DBに保存
-				SubscriptionServerKey.save(clientIdentifier, serverKey)
-				addLog("(server public key is registered.)")
-			}
+		if(oldKey != serverKey) {
 			
-			else -> {
-				addLog("(server public key registration failed.)")
-				addLog("${res.code()} ${res.message()}")
+			// サーバキーをアプリサーバに登録
+			val r = client.http(
+				Request.Builder()
+					.url("${PollingWorker.APP_SERVER}/webpushserverkey")
+					.post(
+						RequestBody.create(
+							TootApiClient.MEDIA_TYPE_JSON,
+							JSONObject().apply {
+								put("client_id", clientIdentifier)
+								put("server_key", serverKey)
+							}.toString()
+						)
+					)
+					.build()
+			)
+			val res = r?.response
+			if(res != null) {
+				when(res.code()) {
+					200 -> {
+						// 登録できたサーバーキーをアプリ内DBに保存
+						SubscriptionServerKey.save(clientIdentifier, serverKey)
+						addLog("(server public key is registered.)")
+					}
+					
+					else -> {
+						addLog("(server public key registration failed.)")
+						addLog("${res.code()} ${res.message()}")
+					}
+				}
 			}
 		}
+		return TootApiResult()
 	}
 	
 	private fun updateSubscription_sub(client : TootApiClient) : TootApiResult? {
@@ -118,11 +121,11 @@ class PushSubscriptionHelper(
 				
 				403 -> {
 					// アクセストークンにpushスコープがない
-					return if(verbose){
+					return if(verbose) {
 						addLog(context.getString(R.string.missing_push_scope))
 						r
-					}else{
-						if( flags!=0 ) addLog(context.getString(R.string.missing_push_scope))
+					} else {
+						if(flags != 0) addLog(context.getString(R.string.missing_push_scope))
 						TootApiResult()
 					}
 				}
@@ -177,20 +180,19 @@ class PushSubscriptionHelper(
 			
 			// アクセストークンのダイジェスト
 			val tokenDigest = accessToken.digestSHA256Base64Url()
-
+			
 			// クライアント識別子
 			val clientIdentifier = "$accessToken$install_id".digestSHA256Base64Url()
 			
 			val endpoint =
 				"${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.encodePercent()}/$flags/$clientIdentifier"
 			
-			if( oldSubscription != null) {
+			if(oldSubscription != null) {
 				if(oldSubscription.endpoint == endpoint) {
 					// 既に登録済みで、endpointも一致している
 					subscribed = true
 					if(verbose) addLog(context.getString(R.string.push_subscription_already_exists))
-					updateServerKey(client, clientIdentifier, oldSubscription.server_key)
-					return TootApiResult()
+					return updateServerKey(client, clientIdentifier, oldSubscription.server_key)
 				}
 			}
 			
@@ -317,15 +319,19 @@ class PushSubscriptionHelper(
 					200 -> {
 						subscribed = true
 						
-						if( verbose) {
+						if(verbose) {
 							addLog(context.getString(R.string.push_subscription_updated))
 						}
-
+						
 						val newSubscription = parseItem(::TootPushSubscription, r?.jsonObject)
 						if(newSubscription != null) {
-							updateServerKey(client, clientIdentifier, newSubscription.server_key)
+							return updateServerKey(
+								client,
+								clientIdentifier,
+								newSubscription.server_key
+							)
 						}
-
+						
 						TootApiResult()
 					}
 					

@@ -5,6 +5,7 @@ import android.content.Context
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.SystemClock
+import android.view.Gravity
 import jp.juggler.subwaytooter.api.*
 
 import org.json.JSONException
@@ -1891,6 +1892,7 @@ class Column(
 //								if(i != 0) i else a.name.compareTo(b.name)
 //							})
 							this.list_tmp = addAll(this.list_tmp, src)
+							this.list_tmp = addOne(this.list_tmp,TootMessageHolder(context.getString(R.string.trend_tag_desc),gravity = Gravity.END))
 							return result
 							
 						}

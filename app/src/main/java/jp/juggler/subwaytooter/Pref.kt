@@ -321,6 +321,9 @@ object Pref {
 	val ipResizeImage = IntPref("resize_image", 4)
 	
 	val ipRefreshAfterToot = IntPref("refresh_after_toot", 0)
+	const val RAT_REFRESH_SCROLL = 0
+	const val RAT_REFRESH_DONT_SCROLL = 1
+	const val RAT_DONT_REFRESH = 2
 	
 	val ipFooterButtonBgColor = IntPref("footer_button_bg_color", 0)
 	val ipFooterButtonFgColor = IntPref("footer_button_fg_color", 0)
@@ -329,10 +332,9 @@ object Pref {
 	val ipFooterTabIndicatorColor = IntPref("footer_tab_indicator_color", 0)
 	val ipLastColumnPos = IntPref("last_column_pos", - 1)
 	
-	// ipRefreshAfterToot の値
-	const val RAT_REFRESH_SCROLL = 0
-	const val RAT_REFRESH_DONT_SCROLL = 1
-	const val RAT_DONT_REFRESH = 2
+	val ipTrendTagCountShowing = IntPref("TrendTagCountShowing", 0)
+	const val TTCS_WEEKLY = 0
+	const val TTCS_DAILY = 1
 	
 	// string
 	val spColumnWidth = StringPref("ColumnWidth", "")

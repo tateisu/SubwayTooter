@@ -664,5 +664,5 @@
     <string name="yourself_can_see_your_network">Even if you choose to hide social graphs, yourself can see it.</string>
     <string name="follow_follower_list_may_restrict">If remote user chooses to hide the social graph, only the followings/followers on this instance will be displayed.</string>
     <string name="trend_tag">Trending tags</string>
-    <string name="people_talking">%1$d people talking</string>
+    <string name="people_talking">%1$d(%2$d) people talking</string>
 </resources>

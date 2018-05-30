@@ -403,9 +403,8 @@ internal class ItemViewHolder(
 	private fun showTrendTag(item : TootTrendTag) {
 		llTrendTag.visibility = View.VISIBLE
 		tvTrendTagName.text = "#${item.name}"
-		val latest = item.history.first()
-		tvTrendTagDesc.text = activity.getString(R.string.people_talking, latest.accounts)
-		tvTrendTagCount.text = latest.uses.toString()
+		tvTrendTagDesc.text = activity.getString(R.string.people_talking, item.accountDaily,item.accountWeekly)
+		tvTrendTagCount.text = "${item.countDaily}(${item.countWeekly})"
 		cvTrendTagHistory.setHistory(item.history)
 	}
 	

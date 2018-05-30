@@ -212,7 +212,7 @@ class Column(
 				TYPE_LIST_MEMBER -> context.getString(R.string.list_member)
 				TYPE_LIST_TL -> context.getString(R.string.list_timeline)
 				TYPE_DIRECT_MESSAGES -> context.getString(R.string.direct_messages)
-				TYPE_TREND_TAG ->context.getString(R.string.trend_tag)
+				TYPE_TREND_TAG -> context.getString(R.string.trend_tag)
 				else -> "?"
 			}
 		}
@@ -1570,7 +1570,7 @@ class Column(
 							)
 							
 							else -> {
-
+								
 								if(who != null && access_info.isRemoteUser(who)) list_tmp.add(
 									TootMessageHolder(
 										context.getString(
@@ -1578,7 +1578,7 @@ class Column(
 										)
 									)
 								)
-
+								
 								if(src.isEmpty())
 									list_tmp.add(TootMessageHolder(emptyMessage))
 							}
@@ -1882,16 +1882,18 @@ class Column(
 							return result
 						}
 						
-						TYPE_TREND_TAG ->{
-							result = client.request( "/api/v1/trends" )
+						TYPE_TREND_TAG -> {
+							result = client.request("/api/v1/trends")
 							val src = parser.trendTagList(result?.jsonArray)
-							src.sortBy { - it.history.first().uses }
+// Gargron によるとレスポンスは既にソートされているらしい
+//							src.sortWith(Comparator { a, b ->
+//								val i = b.history.first().uses.compareTo(a.history.first().uses)
+//								if(i != 0) i else a.name.compareTo(b.name)
+//							})
 							this.list_tmp = addAll(this.list_tmp, src)
 							return result
 							
 						}
-						
-						
 						
 						TYPE_SEARCH -> {
 							if(access_info.isPseudo) {
@@ -1900,38 +1902,40 @@ class Column(
 							}
 							
 							var instance = access_info.instance
-							if( instance == null ){
-								// まだ取得してない
-								val r2 = getInstanceInformation(client, null)
+							if(instance == null) {
+								getInstanceInformation(client, null)
 								if(instance_tmp != null) {
 									instance = instance_tmp
 									access_info.instance = instance
 								}
 							}
-
-							if( instance != null && instance.versionGE(TootInstance.VERSION_2_4_0) ){
+							
+							if( instance != null && instance.versionGE(TootInstance.VERSION_2_4_0)) {
 								// v2 api を試す
 								var path = String.format(
-										Locale.JAPAN,
-										PATH_SEARCH_V2,
-										search_query.encodePercent()
-									)
+									Locale.JAPAN,
+									PATH_SEARCH_V2,
+									search_query.encodePercent()
+								)
 								if(search_resolve) path += "&resolve=1"
 								
 								result = client.request(path)
 								val jsonObject = result?.jsonObject
-								if( jsonObject != null ){
+								if(jsonObject != null) {
 									val tmp = parser.resultsV2(jsonObject)
 									if(tmp != null) {
 										list_tmp = ArrayList()
 										addAll(list_tmp, tmp.hashtags)
 										addAll(list_tmp, tmp.accounts)
 										addAll(list_tmp, tmp.statuses)
+										return result
 									}
+								}
+								if( instance.versionGE(TootInstance.VERSION_2_4_1_rc1)){
+									// 2.4.1rc1以降はv2が確実に存在するはずなので、v1へのフォールバックを行わない
 									return result
 								}
 							}
-							
 							
 							var path =
 								String.format(
@@ -3520,10 +3524,10 @@ class Column(
 	fun canStatusFilter() : Boolean {
 		return when(column_type) {
 			TYPE_REPORTS, TYPE_MUTES, TYPE_BLOCKS, TYPE_DOMAIN_BLOCKS, TYPE_FOLLOW_REQUESTS,
-			TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_INSTANCE_INFORMATION, TYPE_LIST_LIST, TYPE_LIST_MEMBER -> false
+			TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_INSTANCE_INFORMATION, TYPE_LIST_LIST, TYPE_LIST_MEMBER,
+			TYPE_TREND_TAG -> false
 			else -> true
 		}
-		
 	}
 	
 	// カラム設定に「すべての画像を隠す」ボタンを含めるなら真
@@ -3564,8 +3568,8 @@ class Column(
 			TYPE_SEARCH_MSP,
 			TYPE_SEARCH_TS,
 			TYPE_CONVERSATION,
-			TYPE_LIST_LIST ,
-			TYPE_TREND_TAG-> true
+			TYPE_LIST_LIST,
+			TYPE_TREND_TAG -> true
 			else -> false
 		}
 	}

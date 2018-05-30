@@ -1,9 +1,8 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.notEmptyOrThrow
-import jp.juggler.subwaytooter.util.parseLong
-import jp.juggler.subwaytooter.util.parseString
+import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.util.*
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -13,17 +12,30 @@ class TootTrendTag(
 	val history : ArrayList<History>
 ) : TootTag(name, url) {
 	
+	val countDaily :Int
+	val countWeekly :Int
+	val accountDaily: Int
+	val accountWeekly: Int
+	
+	init{
+		countDaily = history.first().uses
+		countWeekly = history.sumBy { it.uses }
+		
+		accountDaily = history.first().accounts
+		accountWeekly = history.map { it.accounts }.max() ?: accountDaily
+	}
+	
 	class History(src : JSONObject) {
 		val day : Long
-		val uses : Long
-		val accounts : Long
+		val uses : Int
+		val accounts : Int
 		
 		init {
 			day = src.parseLong("day")
 				?: throw RuntimeException("TootTrendTag.History: missing day")
-			uses = src.parseLong("uses")
+			uses = src.parseInt("uses")
 				?: throw RuntimeException("TootTrendTag.History: missing uses")
-			accounts = src.parseLong("accounts")
+			accounts = src.parseInt("accounts")
 				?: throw RuntimeException("TootTrendTag.History: missing accounts")
 		}
 		

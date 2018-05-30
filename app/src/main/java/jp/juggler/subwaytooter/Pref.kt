@@ -332,9 +332,9 @@ object Pref {
 	val ipFooterTabIndicatorColor = IntPref("footer_tab_indicator_color", 0)
 	val ipLastColumnPos = IntPref("last_column_pos", - 1)
 	
-	val ipTrendTagCountShowing = IntPref("TrendTagCountShowing", 0)
-	const val TTCS_WEEKLY = 0
-	const val TTCS_DAILY = 1
+//	val ipTrendTagCountShowing = IntPref("TrendTagCountShowing", 0)
+//	const val TTCS_WEEKLY = 0
+//	const val TTCS_DAILY = 1
 	
 	// string
 	val spColumnWidth = StringPref("ColumnWidth", "")

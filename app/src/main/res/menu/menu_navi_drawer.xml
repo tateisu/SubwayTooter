@@ -4,17 +4,17 @@
     <group android:checkableBehavior="single">
 
         <item android:title="@string/account">
-        <menu>
+            <menu>
 
-        <item
-            android:id="@+id/nav_account_add"
-            android:icon="?attr/ic_account_add"
-            android:title="@string/account_add"/>
-            <item
-                android:id="@+id/nav_account_setting"
-                android:icon="?attr/ic_setting"
-                android:title="@string/account_setting"/>
-        </menu>
+                <item
+                    android:id="@+id/nav_account_add"
+                    android:icon="?attr/ic_account_add"
+                    android:title="@string/account_add"/>
+                <item
+                    android:id="@+id/nav_account_setting"
+                    android:icon="?attr/ic_setting"
+                    android:title="@string/account_setting"/>
+            </menu>
         </item>
         <item android:title="@string/column">
             <menu>
@@ -31,6 +31,7 @@
                     android:id="@+id/nav_add_notifications"
                     android:icon="?attr/btn_notification"
                     android:title="@string/notifications"/>
+
                 <item
                     android:id="@+id/nav_add_direct_message"
                     android:icon="?attr/ic_mail"
@@ -46,7 +47,6 @@
                     android:icon="?attr/btn_federate_tl"
                     android:title="@string/federate_timeline"/>
 
-
                 <item
                     android:id="@+id/nav_add_list"
                     android:icon="?attr/ic_list_list"
@@ -56,6 +56,11 @@
                     android:id="@+id/nav_add_tl_search"
                     android:icon="?attr/ic_search"
                     android:title="@string/search"/>
+
+                <item
+                    android:id="@+id/nav_add_trend_tag"
+                    android:icon="?attr/ic_hashtag"
+                    android:title="@string/trend_tag"/>
 
                 <item
                     android:id="@+id/nav_add_favourites"
@@ -92,7 +97,6 @@
                 <!--android:icon="?attr/btn_report"-->
                 <!--android:title="@string/your_reports"/>-->
 
-
                 <!--<item-->
                 <!--android:id="@+id/nav_slideshow"-->
                 <!--android:icon="?attr/ic_menu_slideshow"-->
@@ -115,7 +119,6 @@
                     android:title="@string/mastodon_search_portal"/>
             </menu>
         </item>
-
 
         <item android:title="@string/setting">
             <menu>
@@ -149,9 +152,9 @@
                     android:title="@string/app_about"/>
 
                 <!--<item-->
-                    <!--android:id="@+id/nav_translation"-->
-                    <!--android:icon="?attr/ic_info"-->
-                    <!--android:title="@string/help_translation"/>-->
+                <!--android:id="@+id/nav_translation"-->
+                <!--android:icon="?attr/ic_info"-->
+                <!--android:title="@string/help_translation"/>-->
 
                 <item
                     android:id="@+id/nav_oss_license"

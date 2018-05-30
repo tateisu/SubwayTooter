@@ -95,6 +95,7 @@ class Column(
 		private const val PATH_STATUSES = "/api/v1/statuses/%d" // 1:status_id
 		private const val PATH_STATUSES_CONTEXT = "/api/v1/statuses/%d/context" // 1:status_id
 		const val PATH_SEARCH = "/api/v1/search?q=%s"
+		const val PATH_SEARCH_V2 = "/api/v2/search?q=%s"
 		// search args 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
 		private const val PATH_INSTANCE = "/api/v1/instance"
 		private const val PATH_LIST_INFO = "/api/v1/lists/%s"
@@ -164,6 +165,7 @@ class Column(
 		internal const val TYPE_LIST_MEMBER = 21
 		internal const val TYPE_SEARCH_TS = 22
 		internal const val TYPE_DIRECT_MESSAGES = 23
+		internal const val TYPE_TREND_TAG = 24
 		
 		internal const val TAB_STATUS = 0
 		internal const val TAB_FOLLOWING = 1
@@ -210,6 +212,7 @@ class Column(
 				TYPE_LIST_MEMBER -> context.getString(R.string.list_member)
 				TYPE_LIST_TL -> context.getString(R.string.list_timeline)
 				TYPE_DIRECT_MESSAGES -> context.getString(R.string.direct_messages)
+				TYPE_TREND_TAG ->context.getString(R.string.trend_tag)
 				else -> "?"
 			}
 		}
@@ -237,6 +240,7 @@ class Column(
 				TYPE_LIST_MEMBER -> R.attr.ic_list_member
 				TYPE_LIST_TL -> R.attr.ic_list_tl
 				TYPE_DIRECT_MESSAGES -> R.attr.ic_mail
+				TYPE_TREND_TAG -> R.attr.ic_hashtag
 				else -> R.attr.ic_info
 			}
 		}
@@ -1878,11 +1882,57 @@ class Column(
 							return result
 						}
 						
+						TYPE_TREND_TAG ->{
+							result = client.request( "/api/v1/trends" )
+							val src = parser.trendTagList(result?.jsonArray)
+							src.sortBy { - it.history.first().uses }
+							this.list_tmp = addAll(this.list_tmp, src)
+							return result
+							
+						}
+						
+						
+						
 						TYPE_SEARCH -> {
 							if(access_info.isPseudo) {
 								// 1.5.0rc からマストドンの検索APIは認証を要求するようになった
 								return TootApiResult(context.getString(R.string.search_is_not_available_on_pseudo_account))
 							}
+							
+							var instance = access_info.instance
+							if( instance == null ){
+								// まだ取得してない
+								val r2 = getInstanceInformation(client, null)
+								if(instance_tmp != null) {
+									instance = instance_tmp
+									access_info.instance = instance
+								}
+							}
+
+							if( instance != null && instance.versionGE(TootInstance.VERSION_2_4_0) ){
+								// v2 api を試す
+								var path = String.format(
+										Locale.JAPAN,
+										PATH_SEARCH_V2,
+										search_query.encodePercent()
+									)
+								if(search_resolve) path += "&resolve=1"
+								
+								result = client.request(path)
+								val jsonObject = result?.jsonObject
+								if( jsonObject != null ){
+									val tmp = parser.resultsV2(jsonObject)
+									if(tmp != null) {
+										list_tmp = ArrayList()
+										addAll(list_tmp, tmp.hashtags)
+										addAll(list_tmp, tmp.accounts)
+										addAll(list_tmp, tmp.statuses)
+									}
+									return result
+								}
+							}
+							
+							
 							var path =
 								String.format(
 									Locale.JAPAN,
@@ -3510,7 +3560,12 @@ class Column(
 	
 	fun canReloadWhenRefreshTop() : Boolean {
 		return when(column_type) {
-			TYPE_SEARCH, TYPE_SEARCH_MSP, TYPE_SEARCH_TS, TYPE_CONVERSATION, TYPE_LIST_LIST -> true
+			TYPE_SEARCH,
+			TYPE_SEARCH_MSP,
+			TYPE_SEARCH_TS,
+			TYPE_CONVERSATION,
+			TYPE_LIST_LIST ,
+			TYPE_TREND_TAG-> true
 			else -> false
 		}
 	}

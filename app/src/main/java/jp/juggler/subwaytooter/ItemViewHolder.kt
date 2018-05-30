@@ -106,6 +106,11 @@ internal class ItemViewHolder(
 	
 	private lateinit var llSearchTag : View
 	private lateinit var btnSearchTag : Button
+	private lateinit var llTrendTag : View
+	private lateinit var tvTrendTagName : TextView
+	private lateinit var tvTrendTagDesc : TextView
+	private lateinit var tvTrendTagCount : TextView
+	private lateinit var cvTrendTagHistory : TrendTagHistoryView
 	
 	private lateinit var llList : View
 	private lateinit var btnListTL : Button
@@ -181,6 +186,8 @@ internal class ItemViewHolder(
 		
 		btnHideMedia.setOnClickListener(this)
 		
+		llTrendTag.setOnClickListener(this)
+		llTrendTag.setOnLongClickListener(this)
 		
 		
 		this.content_color_default = tvContent.textColors.defaultColor
@@ -196,6 +203,8 @@ internal class ItemViewHolder(
 			tvApplication.textSize = activity.timeline_font_size_sp
 			tvMessageHolder.textSize = activity.timeline_font_size_sp
 			btnListTL.textSize = activity.timeline_font_size_sp
+			tvTrendTagName.textSize = activity.timeline_font_size_sp
+			tvTrendTagCount.textSize = activity.timeline_font_size_sp
 		}
 		
 		if(! activity.acct_font_size_sp.isNaN()) {
@@ -204,6 +213,7 @@ internal class ItemViewHolder(
 			tvFollowerAcct.textSize = activity.acct_font_size_sp
 			tvAcct.textSize = activity.acct_font_size_sp
 			tvTime.textSize = activity.acct_font_size_sp
+			tvTrendTagDesc.textSize = activity.acct_font_size_sp
 		}
 		
 		ivThumbnail.layoutParams.height = activity.avatarIconSize
@@ -241,7 +251,11 @@ internal class ItemViewHolder(
 						// ボタンは太字なので触らない
 					} else if(v is TextView) {
 						val typeface = when {
-							v === tvName || v === tvFollowerName || v === tvBoosted -> activity.timeline_font_bold
+							v === tvName ||
+								v === tvFollowerName ||
+								v === tvBoosted ||
+								v === tvTrendTagCount ||
+								v === tvTrendTagName -> activity.timeline_font_bold
 								?: activity.timeline_font
 							else -> activity.timeline_font ?: activity.timeline_font_bold
 						}
@@ -321,6 +335,7 @@ internal class ItemViewHolder(
 		llFollowRequest.visibility = View.GONE
 		llExtra.removeAllViews()
 		tvMessageHolder.visibility = View.GONE
+		llTrendTag.visibility = View.GONE
 		
 		var c : Int
 		c = if(column.content_color != 0) column.content_color else content_color_default
@@ -333,6 +348,9 @@ internal class ItemViewHolder(
 		//NSFWは文字色固定 btnShowMedia.setTextColor( c );
 		tvApplication.setTextColor(c)
 		tvMessageHolder.setTextColor(c)
+		tvTrendTagName.setTextColor(c)
+		tvTrendTagCount.setTextColor(c)
+		cvTrendTagHistory.setColor(c)
 		
 		c = if(column.acct_color != 0) column.acct_color else Styler.getAttributeColor(
 			activity,
@@ -341,6 +359,7 @@ internal class ItemViewHolder(
 		this.acct_color = c
 		tvBoostedTime.setTextColor(c)
 		tvTime.setTextColor(c)
+		tvTrendTagDesc.setTextColor(c)
 		//			tvBoostedAcct.setTextColor( c );
 		//			tvFollowerAcct.setTextColor( c );
 		//			tvAcct.setTextColor( c );
@@ -366,16 +385,28 @@ internal class ItemViewHolder(
 			
 			is TootNotification -> showNotification(item)
 			
-			is TootTag -> showSearchTag(item)
 			is TootGap -> showGap()
 			is TootDomainBlock -> showDomainBlock(item)
 			is TootList -> showList(item)
 			
 			is TootMessageHolder -> showMessageHolder(item)
+		
+		// TootTrendTag の後に TootTagを判定すること
+			is TootTrendTag -> showTrendTag(item)
+			is TootTag -> showSearchTag(item)
 			
 			else -> {
 			}
 		}
+	}
+	
+	private fun showTrendTag(item : TootTrendTag) {
+		llTrendTag.visibility = View.VISIBLE
+		tvTrendTagName.text = "#${item.name}"
+		val latest = item.history.first()
+		tvTrendTagDesc.text = activity.getString(R.string.people_talking, latest.accounts)
+		tvTrendTagCount.text = latest.uses.toString()
+		cvTrendTagHistory.setHistory(item.history)
 	}
 	
 	private fun showMessageHolder(item : TootMessageHolder) {
@@ -945,7 +976,7 @@ internal class ItemViewHolder(
 				DlgContextMenu(activity, column, who, null, notification).show()
 			}
 			
-			btnSearchTag -> when(item) {
+			btnSearchTag, llTrendTag -> when(item) {
 				is TootGap -> column.startGap(item)
 				
 				is TootDomainBlock -> {
@@ -1098,7 +1129,7 @@ internal class ItemViewHolder(
 				return true
 			}
 			
-			btnSearchTag -> {
+			btnSearchTag, llTrendTag -> {
 				val item = this.item
 				when(item) {
 				//					is TootGap -> column.startGap(item)
@@ -1905,6 +1936,36 @@ internal class ItemViewHolder(
 					background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 					allCaps = false
 				}.lparams(matchParent, wrapContent)
+			}
+			
+			llTrendTag = linearLayout {
+				lparams(matchParent, wrapContent)
+				
+				gravity = Gravity.CENTER_VERTICAL
+				background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+				
+				verticalLayout {
+					lparams(0, wrapContent) {
+						weight = 1f
+					}
+					tvTrendTagName = textView {
+					}.lparams(matchParent, wrapContent)
+					tvTrendTagDesc = textView {
+						textColor = Styler.getAttributeColor(context, R.attr.colorTimeSmall)
+						textSize = 12f // SP
+					}.lparams(matchParent, wrapContent)
+				}
+				tvTrendTagCount = textView {
+				
+				}.lparams(wrapContent, wrapContent) {
+					startMargin = dip(6)
+					endMargin = dip(6)
+				}
+				
+				cvTrendTagHistory = trendTagHistoryView {
+				
+				}.lparams(dip(64), dip(32))
+				
 			}
 			
 			llList = linearLayout {

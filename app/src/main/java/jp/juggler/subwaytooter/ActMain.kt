@@ -1008,6 +1008,12 @@ class ActMain : AppCompatActivity()
 				false,
 				Column.TYPE_FOLLOW_REQUESTS
 			)
+			R.id.nav_add_trend_tag ->Action_Account.timeline(
+				this,
+				defaultInsertPosition,
+				true,
+				Column.TYPE_TREND_TAG
+			)
 		
 		// トゥート検索
 			R.id.mastodon_search_portal -> addColumn(

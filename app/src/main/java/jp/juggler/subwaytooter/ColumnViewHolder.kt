@@ -484,10 +484,10 @@ class ColumnViewHolder(
 			
 			when(column.column_type) {
 				
-				Column.TYPE_CONVERSATION, Column.TYPE_INSTANCE_INFORMATION -> refreshLayout.isEnabled =
-					false
+				Column.TYPE_CONVERSATION,
+				Column.TYPE_INSTANCE_INFORMATION -> refreshLayout.isEnabled = false
 				
-				Column.TYPE_SEARCH -> {
+				Column.TYPE_SEARCH, Column.TYPE_TREND_TAG -> {
 					refreshLayout.isEnabled = true
 					refreshLayout.direction = SwipyRefreshLayoutDirection.TOP
 				}

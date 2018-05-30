@@ -956,5 +956,7 @@
     <string name="none_or_hidden_followers">フォロワーはいません。または設定により隠されています。</string>
     <string name="yourself_can_see_your_network">もしあなたがソーシャルグラフを隠す選択をした場合でも、あなた自身はそれを見ることができます。</string>
     <string name="follow_follower_list_may_restrict">もしリモートのユーザがソーシャルグラフを隠す選択をした場合、表示されるのはこのタンスのユーザだけです。</string>
+    <string name="trend_tag">トレンドタグ</string>
+    <string name="people_talking">%1$d人がトゥート</string>
 
 </resources>

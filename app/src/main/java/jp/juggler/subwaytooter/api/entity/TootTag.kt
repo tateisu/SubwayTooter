@@ -6,13 +6,12 @@ import jp.juggler.subwaytooter.util.parseString
 import org.json.JSONArray
 import org.json.JSONObject
 
-class TootTag(
+open class TootTag(
 	// The hashtag, not including the preceding #
 	val name : String,
 	// The URL of the hashtag. may null if generated from TootContext
 	val url : String? = null
 ) : TimelineItem() {
-	
 	
 	constructor(src : JSONObject) : this(
 		name = src.notEmptyOrThrow("name"),

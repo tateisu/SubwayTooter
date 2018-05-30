@@ -678,8 +678,10 @@
 	<string name="none_or_hidden_followers">There is no followers, or hidden by setting.</string>
 	<string name="yourself_can_see_your_network">Even if you choose to hide social graphs, yourself can see it.</string>
 	<string name="follow_follower_list_may_restrict">If remote user chooses to hide the social graph, only the followings/followers on this instance will be displayed.</string>
+    <string name="trend_tag">Trending tags</string>
+    <string name="people_talking">%1$d people talking</string>
 
-	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

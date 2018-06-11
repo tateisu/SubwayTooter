@@ -12,16 +12,14 @@ import org.json.JSONException
 import org.json.JSONObject
 
 import java.lang.ref.WeakReference
-import java.util.ArrayList
-import java.util.HashSet
-import java.util.LinkedList
-import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.regex.Pattern
 
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
+import java.text.SimpleDateFormat
+import java.util.*
 
 enum class StreamingIndicatorState {
 	NONE,
@@ -254,6 +252,12 @@ class Column(
 		
 		val COLUMN_REGEX_FILTER_DEFAULT = { _ : CharSequence? -> false }
 		
+		private val time_format_hhmm = SimpleDateFormat("HH:mm", Locale.getDefault())
+		
+		private fun getResetTimeString() :String{
+			time_format_hhmm.timeZone = TimeZone.getDefault()
+			return time_format_hhmm.format(Date(0L))
+		}
 	}
 	
 	private var callback_ref : WeakReference<Callback>? = null
@@ -1268,7 +1272,7 @@ class Column(
 		client : TootApiClient,
 		bForceReload : Boolean
 	) : TootApiResult? {
-		if(bForceReload || this.who_account == null) {
+		return if(bForceReload || this.who_account == null) {
 			val result = client.request(String.format(Locale.JAPAN, PATH_ACCOUNT, profile_id))
 			val parser = TootParser(context, access_info)
 			val a = TootAccountRef.mayNull(parser, parser.account(result?.jsonObject))
@@ -1276,9 +1280,9 @@ class Column(
 				this.who_account = a
 				client.publishApiProgress("") // カラムヘッダの再表示
 			}
-			return result
+			result
 		} else {
-			return null
+			null
 		}
 	}
 	
@@ -1886,13 +1890,14 @@ class Column(
 						TYPE_TREND_TAG -> {
 							result = client.request("/api/v1/trends")
 							val src = parser.trendTagList(result?.jsonArray)
-// Gargron によるとレスポンスは既にソートされているらしい
-//							src.sortWith(Comparator { a, b ->
-//								val i = b.history.first().uses.compareTo(a.history.first().uses)
-//								if(i != 0) i else a.name.compareTo(b.name)
-//							})
+
 							this.list_tmp = addAll(this.list_tmp, src)
-							this.list_tmp = addOne(this.list_tmp,TootMessageHolder(context.getString(R.string.trend_tag_desc),gravity = Gravity.END))
+							this.list_tmp = addOne(
+								this.list_tmp, TootMessageHolder(
+									context.getString(R.string.trend_tag_desc,getResetTimeString()),
+									gravity = Gravity.END
+								)
+							)
 							return result
 							
 						}
@@ -1912,7 +1917,7 @@ class Column(
 								}
 							}
 							
-							if( instance != null && instance.versionGE(TootInstance.VERSION_2_4_0)) {
+							if(instance != null && instance.versionGE(TootInstance.VERSION_2_4_0)) {
 								// v2 api を試す
 								var path = String.format(
 									Locale.JAPAN,
@@ -1933,7 +1938,7 @@ class Column(
 										return result
 									}
 								}
-								if( instance.versionGE(TootInstance.VERSION_2_4_1_rc1)){
+								if(instance.versionGE(TootInstance.VERSION_2_4_1_rc1)) {
 									// 2.4.1rc1以降はv2が確実に存在するはずなので、v1へのフォールバックを行わない
 									return result
 								}

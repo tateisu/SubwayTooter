@@ -57,10 +57,11 @@
                     android:icon="?attr/ic_search"
                     android:title="@string/search"/>
 
-                <item
-                    android:id="@+id/nav_add_trend_tag"
-                    android:icon="?attr/ic_hashtag"
-                    android:title="@string/trend_tag"/>
+                <!--トレンドタグは2.4.1リリース時にAPIごと削除された-->
+                <!--<item-->
+                    <!--android:id="@+id/nav_add_trend_tag"-->
+                    <!--android:icon="?attr/ic_hashtag"-->
+                    <!--android:title="@string/trend_tag"/>-->
 
                 <item
                     android:id="@+id/nav_add_favourites"

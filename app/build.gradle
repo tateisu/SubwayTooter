@@ -12,8 +12,8 @@ android {
         minSdkVersion 21
         targetSdkVersion 27
 
-        versionCode 256
-        versionName "2.5.6"
+        versionCode 257
+        versionName "2.5.7"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         // https://stackoverflow.com/questions/47791227/java-lang-illegalstateexception-dex-archives-setting-dex-extension-only-for
@@ -74,8 +74,9 @@ dependencies {
     implementation "com.android.support:customtabs:$asl_version"
     implementation "com.android.support:support-v13:$asl_version"
 
-    implementation "com.google.firebase:firebase-core:$firebase_version"
-    implementation "com.google.firebase:firebase-messaging:$firebase_version"
+    // https://firebase.google.com/support/release-notes/android
+    implementation "com.google.firebase:firebase-core:16.0.0"
+    implementation "com.google.firebase:firebase-messaging:17.0.0"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"

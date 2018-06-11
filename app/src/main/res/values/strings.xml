@@ -665,5 +665,5 @@
     <string name="follow_follower_list_may_restrict">If remote user chooses to hide the social graph, only the followings/followers on this instance will be displayed.</string>
     <string name="trend_tag">Trending tags</string>
     <string name="people_talking">%1$d(%2$d) people talking</string>
-    <string name="trend_tag_desc">The numbers indicate \'daily(weekly)\'. Daily numbers are reset at 0:00 UTC.</string>
+    <string name="trend_tag_desc">The numbers indicate \'daily(weekly)\'. Daily numbers are reset at %1$s.</string>
 </resources>

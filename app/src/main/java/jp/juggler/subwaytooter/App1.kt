@@ -508,7 +508,7 @@ class App1 : Application() {
 		// Chrome Custom Tab を開く
 		fun openCustomTab(activity : Activity, url : String) {
 			try {
-				if(Pref.bpPriorChrome(pref)) {
+				if(url.startsWith("http") && Pref.bpPriorChrome(pref)) {
 					try {
 						// 初回はChrome指定で試す
 						val builder = CustomTabsIntent.Builder()
@@ -539,7 +539,17 @@ class App1 : Application() {
 				customTabsIntent.launchUrl(activity, Uri.parse(url))
 			} catch(ex : Throwable) {
 				log.trace(ex)
-				showToast(activity, false, "can't open browser app")
+				val scheme = try{
+					Uri.parse(url).scheme
+				}catch(_:Throwable){
+					url
+				}
+				showToast(
+					activity,
+					true,
+					"can't open browser app for %s",scheme
+					
+				)
 			}
 			
 		}

@@ -387,6 +387,8 @@ object HTMLDecoder {
 			}
 		}
 		
+		private val reNormalLink = Pattern.compile("\\A\\w+://")
+		
 		private fun encodeUrl(
 			options : DecodeOptions,
 			display_url : String,
@@ -398,7 +400,10 @@ object HTMLDecoder {
 				return display_url
 			}
 			
-			if(! display_url.startsWith("http")) {
+			// 通常リンクはhttp,httpsだけでなく幾つかのスキーマ名が含まれる
+			// スキーマ名の直後には必ず :// が出現する
+			// https://github.com/tootsuite/mastodon/pull/7810
+			if(! reNormalLink.matcher(display_url).find() ) {
 				if(display_url.startsWith("@") && href != null && Pref.bpMentionFullAcct(App1.pref)) {
 					// メンションをfull acct にする
 					val m = TootAccount.reAccountUrl.matcher(href)
@@ -409,8 +414,6 @@ object HTMLDecoder {
 				// ハッシュタグやメンションはURLの短縮表示の対象外
 				return display_url
 			}
-			
-			
 			
 			if(options.isMediaAttachment(href)) {
 				val sb = SpannableStringBuilder()
@@ -429,6 +432,10 @@ object HTMLDecoder {
 			try {
 				val uri = Uri.parse(display_url)
 				val sb = StringBuilder()
+				if(! display_url.startsWith("http")){
+					sb.append(uri.scheme)
+					sb.append("://")
+				}
 				sb.append(uri.authority)
 				val a = uri.encodedPath
 				val q = uri.encodedQuery

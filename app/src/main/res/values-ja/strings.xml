@@ -959,5 +959,9 @@
     <string name="trend_tag">トレンドタグ</string>
     <string name="people_talking">%1$d(%2$d)人がトゥート</string>
     <string name="trend_tag_desc">数字は「日毎（週毎）」を示します。 日毎の数字は%1$sにリセットされます。</string>
+    <string name="redraft_and_delete">削除して再編集</string>
+    <string name="cant_sync_toot">トゥートを同期できません</string>
+    <string name="cant_change_account_when_redraft">再編集中は投稿先アカウントを変更できません</string>
+    <string name="delete_base_status_before_toot">元トゥートを削除して投稿します。お気に入りとブーストは失われます。返信は切断されます。マストドン2.4.1未満の場合は添付メディアは維持されません。よろしいですか?</string>
 
 </resources>

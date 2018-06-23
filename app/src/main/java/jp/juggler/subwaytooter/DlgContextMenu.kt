@@ -73,6 +73,8 @@ internal class DlgContextMenu(
 		val btnBoostAnotherAccount = viewRoot.findViewById<View>(R.id.btnBoostAnotherAccount)
 		val btnReplyAnotherAccount = viewRoot.findViewById<View>(R.id.btnReplyAnotherAccount)
 		val btnDelete = viewRoot.findViewById<View>(R.id.btnDelete)
+		val btnRedraft = viewRoot.findViewById<View>(R.id.btnRedraft)
+		
 		val btnReport = viewRoot.findViewById<View>(R.id.btnReport)
 		val btnMuteApp = viewRoot.findViewById<Button>(R.id.btnMuteApp)
 		val llAccountActionBar = viewRoot.findViewById<View>(R.id.llAccountActionBar)
@@ -118,6 +120,7 @@ internal class DlgContextMenu(
 		btnReport.setOnClickListener(this)
 		btnMuteApp.setOnClickListener(this)
 		btnDelete.setOnClickListener(this)
+		btnRedraft.setOnClickListener(this)
 		btnFollow.setOnClickListener(this)
 		btnMute.setOnClickListener(this)
 		btnBlock.setOnClickListener(this)
@@ -166,6 +169,7 @@ internal class DlgContextMenu(
 			val status_by_me = access_info.isMe(status.account)
 			
 			btnDelete.visibility = if(status_by_me) View.VISIBLE else View.GONE
+			btnRedraft.visibility = if(status_by_me) View.VISIBLE else View.GONE
 			
 			btnReport.visibility =
 				if(status_by_me || access_info.isPseudo) View.GONE else View.VISIBLE
@@ -609,6 +613,9 @@ internal class DlgContextMenu(
 						)
 					}
 					.show()
+			}
+			R.id.btnRedraft ->status?.let { status ->
+				Action_Toot.redraft(activity,access_info,status)
 			}
 			
 			R.id.btnMuteApp -> status?.application?.let {

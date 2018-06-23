@@ -21,11 +21,12 @@ class NicoEnquete(
 	// one of enquete,enquete_result
 	val type : String?
 	
-	// HTML text
-	val question : Spannable // 表示用にデコードしてしまうのでNonNullになる
+	val question : String? // HTML text
+	
+	val decoded_question : Spannable // 表示用にデコードしてしまうのでNonNullになる
 	
 	// array of text with emoji
-	val items : ArrayList<Spannable>?
+	val items : ArrayList<Choice>?
 	
 	// 結果の数値 // null or array of number
 	private val ratios : ArrayList<Float>?
@@ -40,7 +41,8 @@ class NicoEnquete(
 	init {
 		this.type = src.parseString("type")
 		
-		this.question = DecodeOptions(
+		this.question = src.parseString("question")
+		this.decoded_question = DecodeOptions(
 			parser.context,
 			parser.linkHelper,
 			short = true,
@@ -49,7 +51,7 @@ class NicoEnquete(
 			linkTag = status,
 			emojiMapCustom = status.custom_emojis,
 			emojiMapProfile = status.profile_emojis
-		).decodeHTML(src.parseString("question") ?: "?")
+		).decodeHTML(this.question ?: "?")
 		
 		this.items = parseChoiceList(parser.context, status, parseStringArray(src, "items"))
 		
@@ -60,6 +62,8 @@ class NicoEnquete(
 		this.status_id = status.id
 		
 	}
+	
+	class Choice(val text : String, val decoded_text : Spannable)
 	
 	companion object {
 		internal val log = LogCategory("NicoEnquete")
@@ -121,22 +125,22 @@ class NicoEnquete(
 			context : Context,
 			status : TootStatus,
 			stringArray : ArrayList<String>?
-		) : ArrayList<Spannable>? {
+		) : ArrayList<Choice>? {
 			if(stringArray != null) {
 				val size = stringArray.size
-				val items = ArrayList<Spannable>(size)
+				val items = ArrayList<Choice>(size)
+				val options = DecodeOptions(
+					context,
+					emojiMapCustom = status.custom_emojis,
+					emojiMapProfile = status.profile_emojis
+				)
 				for(i in 0 until size) {
-					items.add(
-						DecodeOptions(
-							context,
-							emojiMapCustom = status.custom_emojis,
-							emojiMapProfile = status.profile_emojis
-						).decodeEmoji(
-							reWhitespace
-								.matcher(stringArray[i].sanitizeBDI())
-								.replaceAll(" ")
-						)
-					)
+					val text = reWhitespace
+						.matcher(stringArray[i].sanitizeBDI())
+						.replaceAll(" ")
+					val decoded_text = options.decodeEmoji(text)
+					
+					items.add(Choice(text, decoded_text))
 				}
 				if(items.isNotEmpty()) return items
 			}

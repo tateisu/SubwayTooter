@@ -48,6 +48,9 @@ class TootAttachment(src : JSONObject) : TootAttachmentLike {
 	override val focusX : Float
 	override val focusY : Float
 	
+	// 内部フラグ: 再編集で引き継いだ添付メディアなら真
+	var redraft :Boolean = false
+	
 	///////////////////////////////
 	
 	override fun hasUrl(url : String) : Boolean = when(url) {

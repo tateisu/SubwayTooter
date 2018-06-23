@@ -13,26 +13,28 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Column
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
+import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.dialog.LoginForm
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.showToast
 import org.json.JSONObject
 
 object Action_Account {
-
+	
 	@Suppress("unused")
 	private val log = LogCategory("Action_Account")
 	
 	// アカウントの追加
 	fun add(activity : ActMain) {
 		
-		LoginForm.showLoginForm(activity, null) { dialog, instance, bPseudoAccount, bInputAccessToken ->
+		LoginForm.showLoginForm(
+			activity,
+			null
+		) { dialog, instance, bPseudoAccount, bInputAccessToken ->
 			TootTaskRunner(activity).run(instance, object : TootTask {
 				
 				override fun background(client : TootApiClient) : TootApiResult? {
@@ -69,15 +71,22 @@ object Action_Account {
 								activity.getString(R.string.access_token),
 								null,
 								object : DlgTextInput.Callback {
-
+									
 									@Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
 									override fun onOK(
 										dialog_token : Dialog,
-										text : String) {
-
+										text : String
+									) {
+										
 										// dialog引数が二つあるのに注意
-										activity.checkAccessToken(dialog, dialog_token, instance, text, null)
-
+										activity.checkAccessToken(
+											dialog,
+											dialog_token,
+											instance,
+											text,
+											null
+										)
+										
 									}
 									
 									override fun onEmptyError() {
@@ -103,12 +112,14 @@ object Action_Account {
 							}
 						}
 					} else {
-						val error = result.error ?: "(no ingormation)"
+						val error = result.error ?: "(no information)"
 						if(error.contains("SSLHandshakeException")
 							&& (Build.VERSION.RELEASE.startsWith("7.0")
-							|| Build.VERSION.RELEASE.startsWith("7.1") && ! Build.VERSION.RELEASE.startsWith("7.1.")
+								|| Build.VERSION.RELEASE.startsWith("7.1") && ! Build.VERSION.RELEASE.startsWith(
+								"7.1."
 							)
-							) {
+								)
+						) {
 							AlertDialog.Builder(activity)
 								.setMessage(error + "\n\n" + activity.getString(R.string.ssl_bug_7_0))
 								.setNeutralButton(R.string.close, null)
@@ -128,8 +139,8 @@ object Action_Account {
 		AccountPicker.pick(
 			activity,
 			bAllowPseudo = true,
-			bAuto =  true,
-			message =  activity.getString(R.string.account_picker_open_setting)
+			bAuto = true,
+			message = activity.getString(R.string.account_picker_open_setting)
 		) { ai -> ActAccountSetting.open(activity, ai, ActMain.REQUEST_CODE_ACCOUNT_SETTING) }
 	}
 	
@@ -139,9 +150,12 @@ object Action_Account {
 	) {
 		AccountPicker.pick(
 			activity,
-			bAllowPseudo=bAllowPseudo,
+			bAllowPseudo = bAllowPseudo,
 			bAuto = true,
-			message = activity.getString(R.string.account_picker_add_timeline_of, Column.getColumnTypeName(activity, type))
+			message = activity.getString(
+				R.string.account_picker_add_timeline_of,
+				Column.getColumnTypeName(activity, type)
+			)
 		) { ai ->
 			when(type) {
 				Column.TYPE_PROFILE -> {
@@ -173,4 +187,4 @@ object Action_Account {
 			) { ai -> ActPost.open(activity, ActMain.REQUEST_CODE_POST, ai.db_id, initial_text) }
 		}
 	}
-} // 投稿画面を開く。簡易入力があれば初期値はそれになる
+}

@@ -903,6 +903,40 @@ object Action_Toot {
 			})
 	}
 	
+	// 投稿画面を開く。初期テキストを指定する
+	fun redraft(
+		activity : ActMain,
+		accessInfo :SavedAccount,
+		status : TootStatus
+	) {
+		activity.post_helper.closeAcctPopup()
+		if( status.in_reply_to_id == null ) {
+			ActPost.openRedraft(activity, ActMain.REQUEST_CODE_POST, accessInfo.db_id, status)
+			return
+		}
+		
+		TootTaskRunner(activity).run(accessInfo, object : TootTask {
+			
+			var reply_status :TootStatus? = null
+			override fun background(client : TootApiClient) : TootApiResult? {
+				val result = client.request("/api/v1/statuses/${status.in_reply_to_id}")
+				reply_status = TootParser( activity,accessInfo ).status(result?.jsonObject)
+				return result
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				if(result == null) return  // cancelled.
+				
+				val reply_status = this.reply_status
+				if( reply_status != null){
+					ActPost.openRedraft(activity, ActMain.REQUEST_CODE_POST, accessInfo.db_id, status,reply_status)
+					return
+				}
+				val error = result.error ?: "(no information)"
+				showToast(activity,true,activity.getString(R.string.cant_sync_toot)+" : $error")
+			}
+		})
+	}
 	////////////////////////////////////////
 	
 	fun muteConversation(

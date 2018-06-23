@@ -666,4 +666,8 @@
     <string name="trend_tag">Trending tags</string>
     <string name="people_talking">%1$d(%2$d) people talking</string>
     <string name="trend_tag_desc">The numbers indicate \'daily(weekly)\'. Daily numbers are reset at %1$s.</string>
+    <string name="redraft_and_delete">Redraft and delete</string>
+    <string name="cant_sync_toot">Can\'t synchronize toot.</string>
+    <string name="cant_change_account_when_redraft">Can\'t change account while using redraft.</string>
+    <string name="delete_base_status_before_toot">Delete based status before post. All of favourites,boosts will be lost. Replies will be disconnected. Media attachments will not kept on Mastodon pre-2.4.1 . Are you sure?</string>
 </resources>

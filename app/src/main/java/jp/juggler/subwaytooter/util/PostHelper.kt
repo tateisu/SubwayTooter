@@ -59,7 +59,6 @@ class PostHelper(
 		private val reCharsNotTag = Pattern.compile("[・\\s\\-+.,:;/]")
 		private val reCharsNotEmoji = Pattern.compile("[^0-9A-Za-z_-]")
 		
-
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////
@@ -72,12 +71,14 @@ class PostHelper(
 	var in_reply_to_id : Long = 0
 	var attachment_list : ArrayList<PostAttachment>? = null
 	var enquete_items : ArrayList<String>? = null
-	var emojiMapCustom : HashMap<String, CustomEmoji>? =null
+	var emojiMapCustom : HashMap<String, CustomEmoji>? = null
+	var redraft_status_id : Long = 0L
 	
 	fun post(
 		account : SavedAccount,
-		bConfirmTag : Boolean,
-		bConfirmAccount : Boolean,
+		bConfirmTag : Boolean = false,
+		bConfirmAccount : Boolean = false,
+		bConfirmRedraft : Boolean = false,
 		callback : PostCompleteCallback
 	) {
 		val content = this.content ?: ""
@@ -90,7 +91,7 @@ class PostHelper(
 		
 		val hasAttachment = attachment_list?.isNotEmpty() ?: false
 		
-		if(!hasAttachment && content.isEmpty()) {
+		if(! hasAttachment && content.isEmpty()) {
 			showToast(activity, true, R.string.post_error_contents_empty)
 			return
 		}
@@ -148,7 +149,7 @@ class PostHelper(
 						}
 					
 					override fun onOK() {
-						post(account, bConfirmTag, true, callback)
+						post(account, bConfirmTag, true, bConfirmRedraft, callback)
 					}
 				})
 			return
@@ -166,12 +167,31 @@ class PostHelper(
 							account,
 							true,
 							bConfirmAccount,
+							bConfirmRedraft,
 							callback
 						)
 					}
 					.show()
 				return
 			}
+		}
+		
+		if(! bConfirmRedraft && redraft_status_id != 0L) {
+			AlertDialog.Builder(activity)
+				.setCancelable(true)
+				.setMessage(R.string.delete_base_status_before_toot)
+				.setNegativeButton(R.string.cancel, null)
+				.setPositiveButton(R.string.ok) { _, _ ->
+					post(
+						account,
+						bConfirmTag,
+						bConfirmAccount,
+						true,
+						callback
+					)
+				}
+				.show()
+			return
 		}
 		
 		TootTaskRunner(activity).run(account, object : TootTask {
@@ -184,7 +204,8 @@ class PostHelper(
 			
 			internal fun getInstanceInformation(client : TootApiClient) : TootApiResult? {
 				val result = client.request("/api/v1/instance")
-				instance_tmp = parseItem(::TootInstance, TootParser(activity, account),result?.jsonObject)
+				instance_tmp =
+					parseItem(::TootInstance, TootParser(activity, account), result?.jsonObject)
 				return result
 			}
 			
@@ -196,15 +217,29 @@ class PostHelper(
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
+				var result : TootApiResult?
+
+				// 元の投稿を削除する
+				if(redraft_status_id != 0L) {
+					result = client.request(
+						"/api/v1/statuses/$redraft_status_id",
+						Request.Builder().delete()
+					)
+					log.d("delete redraft. result=$result")
+
+					Thread.sleep(2000L)
+				}
+				
 				var visibility_checked : String? = visibility
 				
+				var instance = account.instance
+				if(instance == null) {
+					val r2 = getInstanceInformation(client)
+					instance = instance_tmp ?: return r2
+					account.instance = instance
+				}
+
 				if(TootStatus.VISIBILITY_WEB_SETTING == visibility) {
-					var instance = account.instance
-					if(instance == null) {
-						val r2 = getInstanceInformation(client)
-						instance = instance_tmp ?: return r2
-						account.instance = instance
-					}
 					visibility_checked = if(instance.versionGE(TootInstance.VERSION_1_6)) {
 						null
 					} else {
@@ -216,83 +251,61 @@ class PostHelper(
 					}
 				}
 				
-				val request_body : RequestBody
-				val body_string : String
 				
-				if(enquete_items?.isNotEmpty() == true) {
-					
-					val json = JSONObject()
-					try {
-						json.put("status", EmojiDecoder.decodeShortCode(content,emojiMapCustom=emojiMapCustom))
-						if(visibility_checked != null) {
-							json.put("visibility", visibility_checked)
-						}
-						json.put("sensitive", bNSFW)
-						json.put("spoiler_text", EmojiDecoder.decodeShortCode(spoiler_text ?: "",emojiMapCustom=emojiMapCustom))
-						json.put(
-							"in_reply_to_id",
-							if(in_reply_to_id == - 1L) null else in_reply_to_id
+				
+				val json = JSONObject()
+				try {
+					json.put(
+						"status",
+						EmojiDecoder.decodeShortCode(content, emojiMapCustom = emojiMapCustom)
+					)
+					if(visibility_checked != null) {
+						json.put("visibility", visibility_checked)
+					}
+					json.put("sensitive", bNSFW)
+					json.put(
+						"spoiler_text",
+						EmojiDecoder.decodeShortCode(
+							spoiler_text ?: "",
+							emojiMapCustom = emojiMapCustom
 						)
-						var array = JSONArray()
-						if(attachment_list != null) {
-							for(pa in attachment_list) {
-								val a = pa.attachment
-								if(a != null) array.put(a.id)
-							}
+					)
+					
+					if(in_reply_to_id != - 1L) {
+						json.put("in_reply_to_id", in_reply_to_id)
+					}
+					var array = JSONArray()
+					if(attachment_list != null) {
+						for(pa in attachment_list) {
+							val a = pa.attachment ?: continue
+							if(a.redraft && ! instance.versionGE(TootInstance.VERSION_2_4_1)) continue
+							array.put(a.id)
 						}
-						json.put("media_ids", array)
+					}
+					json.put("media_ids", array)
+					
+					if(enquete_items?.isNotEmpty() == true) {
 						json.put("isEnquete", true)
 						array = JSONArray()
 						for(item in enquete_items) {
-							array.put(EmojiDecoder.decodeShortCode(item,emojiMapCustom=emojiMapCustom))
+							array.put(
+								EmojiDecoder.decodeShortCode(
+									item,
+									emojiMapCustom = emojiMapCustom
+								)
+							)
 						}
 						json.put("enquete_items", array)
-					} catch(ex : JSONException) {
-						log.trace(ex)
-						log.e(ex, "status encoding failed.")
 					}
-					
-					body_string = json.toString()
-					request_body = RequestBody.create(
-						TootApiClient.MEDIA_TYPE_JSON, body_string
-					)
-				} else {
-					val sb = StringBuilder()
-					
-					sb.append("status=")
-					sb.append(EmojiDecoder.decodeShortCode(content,emojiMapCustom=emojiMapCustom).encodePercent())
-					
-					if(visibility_checked != null) {
-						sb.append("&visibility=")
-						sb.append(visibility_checked.encodePercent())
-					}
-					
-					if(bNSFW) {
-						sb.append("&sensitive=1")
-					}
-					
-					if(spoiler_text?.isNotEmpty() == true) {
-						sb.append("&spoiler_text=")
-						sb.append(EmojiDecoder.decodeShortCode(spoiler_text,emojiMapCustom=emojiMapCustom).encodePercent())
-					}
-					
-					if(in_reply_to_id != - 1L) {
-						sb.append("&in_reply_to_id=")
-						sb.append(in_reply_to_id.toString())
-					}
-					
-					if(attachment_list != null) {
-						for(pa in attachment_list) {
-							val a = pa.attachment
-							if(a != null) sb.append("&media_ids[]=").append(a.id)
-						}
-					}
-					
-					body_string = sb.toString()
-					request_body = RequestBody.create(
-						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, body_string
-					)
+				} catch(ex : JSONException) {
+					log.trace(ex)
+					log.e(ex, "status encoding failed.")
 				}
+				
+				val body_string = json.toString()
+				val request_body = RequestBody.create(
+					TootApiClient.MEDIA_TYPE_JSON, body_string
+				)
 				
 				val request_builder = Request.Builder().post(request_body)
 				
@@ -301,10 +314,11 @@ class PostHelper(
 					request_builder.header("Idempotency-Key", digest)
 				}
 				
-				val result = client.request("/api/v1/statuses", request_builder)
+				result = client.request("/api/v1/statuses", request_builder)
 				val status = TootParser(activity, account).status(result?.jsonObject)
 				this.status = status
 				if(status != null) {
+					
 					// タグを覚えておく
 					val s = status.decoded_content
 					val span_list = s.getSpans(0, s.length, MyClickableSpan::class.java)
@@ -324,6 +338,7 @@ class PostHelper(
 						}
 						
 					}
+					
 				}
 				return result
 			}
@@ -486,7 +501,7 @@ class PostHelper(
 			}
 			
 			// : の手前は始端か改行か空白でなければならない
-			if( ! EmojiDecoder.canStartShortCode(src,last_colon) ) {
+			if(! EmojiDecoder.canStartShortCode(src, last_colon)) {
 				log.d("checkEmoji: invalid character before shortcode.")
 				closeAcctPopup()
 				return
@@ -664,9 +679,9 @@ class PostHelper(
 			
 			val src = et.text
 			val src_length = src.length
-			val end = Math.min( src_length,et.selectionEnd)
+			val end = Math.min(src_length, et.selectionEnd)
 			val start = src.lastIndexOf(':', end - 1)
-			if( start == - 1 || end - start < 1) return@EmojiPicker
+			if(start == - 1 || end - start < 1) return@EmojiPicker
 			
 			val sb = SpannableStringBuilder()
 				.append(src.subSequence(0, start))

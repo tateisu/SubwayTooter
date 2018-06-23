@@ -125,6 +125,7 @@ class ActMain : AppCompatActivity()
 	private var posted_acct : String? = null
 	private var posted_status_id : Long = 0
 	private var posted_reply_id : String? = null
+	private var posted_redraft_id : Long = 0L
 	
 	var timeline_font_size_sp = Float.NaN
 	var acct_font_size_sp = Float.NaN
@@ -550,6 +551,18 @@ class ActMain : AppCompatActivity()
 	private fun refreshAfterPost() {
 		val posted_acct = this.posted_acct
 		if(posted_acct?.isNotEmpty() == true) {
+			
+			if( posted_redraft_id != 0L ) {
+				val delm = posted_acct.indexOf('@')
+				if(delm != - 1) {
+					val host = posted_acct.substring(delm + 1)
+					for(column in app_state.column_list) {
+						column.onStatusRemoved(host, posted_redraft_id)
+					}
+				}
+				posted_redraft_id = 0L
+			}
+
 			val refresh_after_toot = Pref.ipRefreshAfterToot(pref)
 			if(refresh_after_toot != Pref.RAT_DONT_REFRESH) {
 				for(column in app_state.column_list) {
@@ -641,13 +654,12 @@ class ActMain : AppCompatActivity()
 		
 		post_helper.post(
 			account
-			, false
-			, false
 		) { target_account, status ->
 			etQuickToot.setText("")
 			posted_acct = target_account.acct
 			posted_status_id = status.id
 			posted_reply_id = status.in_reply_to_id
+			posted_redraft_id = 0L
 			refreshAfterPost()
 		}
 	}
@@ -736,6 +748,8 @@ class ActMain : AppCompatActivity()
 					posted_acct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)
 					posted_status_id = data.getLongExtra(ActPost.EXTRA_POSTED_STATUS_ID, 0L)
 					posted_reply_id = data.getStringExtra(ActPost.EXTRA_POSTED_REPLY_ID)
+					posted_redraft_id= data.getLongExtra(ActPost.EXTRA_POSTED_REDRAFT_ID, 0L)
+					
 				}
 				
 			} else if(requestCode == REQUEST_CODE_COLUMN_COLOR) {

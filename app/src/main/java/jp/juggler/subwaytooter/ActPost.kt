@@ -79,9 +79,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		internal const val EXTRA_POSTED_ACCT = "posted_acct"
 		internal const val EXTRA_POSTED_STATUS_ID = "posted_status_id"
 		internal const val EXTRA_POSTED_REPLY_ID = "posted_reply_id"
+		internal const val EXTRA_POSTED_REDRAFT_ID = "posted_redraft_id"
 		
 		internal const val KEY_ACCOUNT_DB_ID = "account_db_id"
 		internal const val KEY_REPLY_STATUS = "reply_status"
+		internal const val KEY_REDRAFT_STATUS = "redraft_status"
 		internal const val KEY_INITIAL_TEXT = "initial_text"
 		internal const val KEY_SENT_INTENT = "sent_intent"
 		
@@ -146,6 +148,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		private const val STATE_MUSHROOM_INPUT = "mushroom_input"
 		private const val STATE_MUSHROOM_START = "mushroom_start"
 		private const val STATE_MUSHROOM_END = "mushroom_end"
+		private const val STATE_REDRAFT_STATUS_ID = "redraft_status_id"
 		
 		fun open(
 			activity : Activity,
@@ -155,6 +158,22 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		) {
 			val intent = Intent(activity, ActPost::class.java)
 			intent.putExtra(KEY_ACCOUNT_DB_ID, account_db_id)
+			if(reply_status != null) {
+				intent.putExtra(KEY_REPLY_STATUS, reply_status.json.toString())
+			}
+			activity.startActivityForResult(intent, request_code)
+		}
+		
+		fun openRedraft(
+			activity : Activity,
+			request_code : Int,
+			account_db_id : Long,
+			base_status : TootStatus,
+			reply_status : TootStatus? = null
+		) {
+			val intent = Intent(activity, ActPost::class.java)
+			intent.putExtra(KEY_ACCOUNT_DB_ID, account_db_id)
+			intent.putExtra(KEY_REDRAFT_STATUS, base_status.json.toString())
 			if(reply_status != null) {
 				intent.putExtra(KEY_REPLY_STATUS, reply_status.json.toString())
 			}
@@ -242,6 +261,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	internal var density : Float = 0f
 	
 	private lateinit var account_list : ArrayList<SavedAccount>
+	
+	private var redraft_status_id : Long = 0L
 	
 	private val text_watcher : TextWatcher = object : TextWatcher {
 		override fun beforeTextChanged(charSequence : CharSequence, i : Int, i1 : Int, i2 : Int) {
@@ -388,6 +409,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			mushroom_input = savedInstanceState.getInt(STATE_MUSHROOM_INPUT, 0)
 			mushroom_start = savedInstanceState.getInt(STATE_MUSHROOM_START, 0)
 			mushroom_end = savedInstanceState.getInt(STATE_MUSHROOM_END, 0)
+			redraft_status_id = savedInstanceState.getLong(STATE_REDRAFT_STATUS_ID)
 			
 			val account_db_id =
 				savedInstanceState.getLong(KEY_ACCOUNT_DB_ID, SavedAccount.INVALID_DB_ID)
@@ -605,6 +627,69 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				}
 				
 			}
+		
+			// 再編集
+			sv = intent.getStringExtra(KEY_REDRAFT_STATUS)
+			if(sv != null && account != null) {
+				try {
+					val base_status = TootParser(this@ActPost, account).status(sv.toJsonObject())
+					if(base_status != null) {
+						
+						redraft_status_id = base_status.id
+						
+						this.visibility = base_status.visibility
+						
+						val src_attachments = base_status.media_attachments
+						if(src_attachments?.isNotEmpty() == true) {
+							app_state.attachment_list = this.attachment_list
+							this.attachment_list.clear()
+							try {
+								for(src in src_attachments) {
+									if(src is TootAttachment){
+										src.redraft = true
+										val pa = PostAttachment(src)
+										pa.status = PostAttachment.STATUS_UPLOADED
+										this.attachment_list.add(pa)
+									}
+								}
+							} catch(ex : Throwable) {
+								log.trace(ex)
+							}
+						}
+						
+						val decodeOptions = DecodeOptions(this)
+						etContent.text = decodeOptions.decodeHTML(base_status.content)
+						etContent.setSelection(etContent.text.length)
+						etContentWarning.setText(decodeOptions.decodeEmoji(base_status.spoiler_text))
+						etContentWarning.setSelection(etContentWarning.text.length)
+						cbContentWarning.isChecked = etContentWarning.text.isNotEmpty()
+						cbNSFW.isChecked = base_status.sensitive == true
+						
+						val src_enquete = base_status.enquete
+						val src_items = src_enquete?.items
+						if(src_items != null) {
+							cbEnquete.isChecked = true
+							etContent.text = decodeOptions.decodeHTML(src_enquete.question)
+							etContent.setSelection(etContent.text.length)
+							
+							var src_index = 0
+							for(et in list_etChoice) {
+								if(src_index < src_items.size) {
+									val choice = src_items[src_index]
+									et.setText(decodeOptions.decodeEmoji(choice.text))
+									++ src_index
+								} else {
+									et.setText("")
+								}
+							}
+						}
+					}
+					
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+			}
 		}
 		
 		visibility = when {
@@ -644,6 +729,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		outState.putInt(STATE_MUSHROOM_INPUT, mushroom_input)
 		outState.putInt(STATE_MUSHROOM_START, mushroom_start)
 		outState.putInt(STATE_MUSHROOM_END, mushroom_end)
+		outState.putLong(STATE_REDRAFT_STATUS_ID, redraft_status_id)
 		
 		val account = this.account
 		if(account != null) {
@@ -907,6 +993,12 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		if(! attachment_list.isEmpty()) {
 			// 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
 			showToast(this, false, R.string.cant_change_account_when_attachment_specified)
+			return
+		}
+		
+		if(redraft_status_id != 0L) {
+			// 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
+			showToast(this, false, R.string.cant_change_account_when_redraft)
 			return
 		}
 		
@@ -1437,7 +1529,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					val opener = createOpener(uri, mime_type)
 					
 					val media_size_max =
-						1000000 * Math.max(1, Pref.spMediaSizeMax.toInt(pref) )
+						1000000 * Math.max(1, Pref.spMediaSizeMax.toInt(pref))
 					
 					val content_length = getStreamSize(true, opener.open())
 					if(content_length > media_size_max) {
@@ -1759,10 +1851,13 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		post_helper.emojiMapCustom = App1.custom_emoji_lister.getMap(account.host)
 		
-		post_helper.post(account, false, false) { target_account, status ->
+		post_helper.redraft_status_id = redraft_status_id
+		
+		post_helper.post(account) { target_account, status ->
 			val data = Intent()
 			data.putExtra(EXTRA_POSTED_ACCT, target_account.acct)
 			data.putExtra(EXTRA_POSTED_STATUS_ID, status.id)
+			data.putExtra(EXTRA_POSTED_REDRAFT_ID,redraft_status_id)
 			val reply_id = status.in_reply_to_id
 			if(reply_id != null) data.putExtra(EXTRA_POSTED_REPLY_ID, reply_id)
 			setResult(RESULT_OK, data)

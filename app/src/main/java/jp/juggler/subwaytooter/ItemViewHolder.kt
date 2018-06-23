@@ -576,7 +576,7 @@ internal class ItemViewHolder(
 		// ニコフレのアンケートの表示
 		val enquete = status.enquete
 		if(enquete != null && NicoEnquete.TYPE_ENQUETE == enquete.type) {
-			val question = enquete.question
+			val question = enquete.decoded_question
 			val items = enquete.items
 			
 			if(question.isNotBlank()) content = question
@@ -584,7 +584,7 @@ internal class ItemViewHolder(
 				val now = System.currentTimeMillis()
 				var n = 0
 				for(item in items) {
-					makeEnqueteChoiceView(enquete, now, n ++, item)
+					makeEnqueteChoiceView(enquete, now, n ++, item.decoded_text)
 				}
 			}
 			makeEnqueteTimerView(enquete)

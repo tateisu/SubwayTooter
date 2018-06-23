@@ -35,6 +35,7 @@ import android.widget.ImageButton
 import android.widget.ScrollView
 import android.widget.TextView
 import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.entity.*
 
 import org.apache.commons.io.IOUtils
 import org.json.JSONArray
@@ -51,10 +52,6 @@ import java.util.ArrayList
 import java.util.HashSet
 import java.util.Locale
 
-import jp.juggler.subwaytooter.api.entity.TootAttachment
-import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.dialog.*
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.PostDraft
@@ -627,7 +624,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				}
 				
 			}
-		
+			
 			// 再編集
 			sv = intent.getStringExtra(KEY_REDRAFT_STATUS)
 			if(sv != null && account != null) {
@@ -645,7 +642,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 							this.attachment_list.clear()
 							try {
 								for(src in src_attachments) {
-									if(src is TootAttachment){
+									if(src is TootAttachment) {
 										src.redraft = true
 										val pa = PostAttachment(src)
 										pa.status = PostAttachment.STATUS_UPLOADED
@@ -667,7 +664,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						
 						val src_enquete = base_status.enquete
 						val src_items = src_enquete?.items
-						if(src_items != null) {
+						if(src_items != null && src_enquete.type == NicoEnquete.TYPE_ENQUETE ) {
 							cbEnquete.isChecked = true
 							etContent.text = decodeOptions.decodeHTML(src_enquete.question)
 							etContent.setSelection(etContent.text.length)
@@ -676,11 +673,15 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 							for(et in list_etChoice) {
 								if(src_index < src_items.size) {
 									val choice = src_items[src_index]
-									et.setText(decodeOptions.decodeEmoji(choice.text))
-									++ src_index
-								} else {
-									et.setText("")
+									if(src_index == src_items.size - 1 && choice.text == "\uD83E\uDD14") {
+										// :thinking_face: は再現しない
+									} else {
+										et.setText(decodeOptions.decodeEmoji(choice.text))
+										++ src_index
+										continue
+									}
 								}
+								et.setText("")
 							}
 						}
 					}
@@ -1857,7 +1858,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			val data = Intent()
 			data.putExtra(EXTRA_POSTED_ACCT, target_account.acct)
 			data.putExtra(EXTRA_POSTED_STATUS_ID, status.id)
-			data.putExtra(EXTRA_POSTED_REDRAFT_ID,redraft_status_id)
+			data.putExtra(EXTRA_POSTED_REDRAFT_ID, redraft_status_id)
 			val reply_id = status.in_reply_to_id
 			if(reply_id != null) data.putExtra(EXTRA_POSTED_REPLY_ID, reply_id)
 			setResult(RESULT_OK, data)

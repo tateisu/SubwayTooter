@@ -670,4 +670,6 @@
     <string name="cant_sync_toot">Can\'t synchronize toot.</string>
     <string name="cant_change_account_when_redraft">Can\'t change account while using redraft.</string>
     <string name="delete_base_status_before_toot">Delete based status before post. All of favourites,boosts will be lost. Replies will be disconnected. Media attachments will not kept on Mastodon pre-2.4.1 . Are you sure?</string>
+    <string name="notification_tl_font_size">Notification TL font size (unit:sp. leave empty to default. app restart required)</string>
+    <string name="notification_tl_icon_size">Notification TL icon size (unit:dp. default:32. app restart required)</string>
 </resources>

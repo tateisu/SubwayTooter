@@ -193,7 +193,6 @@ internal class ItemViewHolder(
 		this.content_color_default = tvContent.textColors.defaultColor
 		
 		if(! activity.timeline_font_size_sp.isNaN()) {
-			tvBoosted.textSize = activity.timeline_font_size_sp
 			tvFollowerName.textSize = activity.timeline_font_size_sp
 			tvName.textSize = activity.timeline_font_size_sp
 			tvMentions.textSize = activity.timeline_font_size_sp
@@ -205,6 +204,9 @@ internal class ItemViewHolder(
 			btnListTL.textSize = activity.timeline_font_size_sp
 			tvTrendTagName.textSize = activity.timeline_font_size_sp
 			tvTrendTagCount.textSize = activity.timeline_font_size_sp
+		}
+		if(! activity.notification_tl_font_size_sp.isNaN() ){
+			tvBoosted.textSize = activity.notification_tl_font_size_sp
 		}
 		
 		if(! activity.acct_font_size_sp.isNaN()) {
@@ -220,6 +222,7 @@ internal class ItemViewHolder(
 		ivThumbnail.layoutParams.width = activity.avatarIconSize
 		ivFollow.layoutParams.width = activity.avatarIconSize
 		ivBoosted.layoutParams.width = activity.avatarIconSize
+		ivBoosted.layoutParams.height = activity.notificationTlIconSize
 		
 		this.content_invalidator = NetworkEmojiInvalidator(activity.handler, tvContent)
 		this.spoiler_invalidator = NetworkEmojiInvalidator(activity.handler, tvContentWarning)

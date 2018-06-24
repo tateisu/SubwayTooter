@@ -963,5 +963,7 @@
     <string name="cant_sync_toot">トゥートを同期できません</string>
     <string name="cant_change_account_when_redraft">再編集中は投稿先アカウントを変更できません</string>
     <string name="delete_base_status_before_toot">元トゥートを削除して投稿します。お気に入りとブーストは失われます。返信は切断されます。マストドン2.4.1未満の場合は添付メディアは維持されません。よろしいですか?</string>
+    <string name="notification_tl_font_size">通知TLのフォントサイズ (単位:sp。空欄でデフォルト。アプリ再起動が必要)</string>
+    <string name="notification_tl_icon_size">通知TLのアイコンサイズ (単位:dp。デフォルト:32。アプリ再起動が必要)</string>
 
 </resources>

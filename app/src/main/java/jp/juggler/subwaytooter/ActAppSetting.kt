@@ -62,6 +62,7 @@ class ActAppSetting : AppCompatActivity()
 		
 		internal const val default_timeline_font_size = 14f
 		internal const val default_acct_font_size = 12f
+		internal const val default_notification_tl_font_size = 14f
 		
 		internal const val COLOR_DIALOG_ID_FOOTER_BUTTON_BG = 1
 		internal const val COLOR_DIALOG_ID_FOOTER_BUTTON_FG = 2
@@ -135,6 +136,10 @@ class ActAppSetting : AppCompatActivity()
 	private lateinit var tvAcctFontSize : TextView
 	private lateinit var etAvatarIconSize : EditText
 	private lateinit var etPullNotificationCheckInterval : EditText
+	
+	private lateinit var etNotificationTlFontSize : EditText
+	private lateinit var tvNotificationTlFontSize : TextView
+	private lateinit var etNotificationTlIconSize : EditText
 	
 	private lateinit var tvUserAgentError : TextView
 	
@@ -300,6 +305,7 @@ class ActAppSetting : AppCompatActivity()
 		
 		tvTimelineFontSize = findViewById(R.id.tvTimelineFontSize)
 		tvAcctFontSize = findViewById(R.id.tvAcctFontSize)
+		tvNotificationTlFontSize = findViewById(R.id.tvNotificationTlFontSize)
 		
 		etTimelineFontSize = findViewById(R.id.etTimelineFontSize)
 		etTimelineFontSize.addTextChangedListener(
@@ -319,7 +325,17 @@ class ActAppSetting : AppCompatActivity()
 			)
 		)
 		
+		etNotificationTlFontSize = findViewById(R.id.etNotificationTlFontSize)
+		etNotificationTlFontSize.addTextChangedListener(
+			SizeCheckTextWatcher(
+				tvNotificationTlFontSize,
+				etNotificationTlFontSize,
+				default_notification_tl_font_size
+			)
+		)
+		
 		etAvatarIconSize = findViewById(R.id.etAvatarIconSize)
+		etNotificationTlIconSize = findViewById(R.id.etNotificationTlIconSize)
 		etPullNotificationCheckInterval = findViewById(R.id.etPullNotificationCheckInterval)
 		
 		tvTimelineFontUrl = findViewById(R.id.tvTimelineFontUrl)
@@ -362,6 +378,7 @@ class ActAppSetting : AppCompatActivity()
 		etQuoteNameFormat.setText(Pref.spQuoteNameFormat(pref))
 		etAutoCWLines.setText(Pref.spAutoCWLines(pref))
 		etAvatarIconSize.setText(Pref.spAvatarIconSize(pref))
+		etNotificationTlIconSize.setText(Pref.spNotificationTlIconSize(pref))
 		etPullNotificationCheckInterval.setText(Pref.spPullNotificationCheckInterval(pref))
 		
 		etMediaSizeMax.setText(Pref.spMediaSizeMax(pref))
@@ -372,7 +389,8 @@ class ActAppSetting : AppCompatActivity()
 		
 		etTimelineFontSize.setText(formatFontSize(Pref.fpTimelineFontSize(pref)))
 		etAcctFontSize.setText(formatFontSize(Pref.fpAcctFontSize(pref)))
-		
+		etNotificationTlFontSize.setText(formatFontSize(Pref.fpNotificationTlFontSize(pref)))
+
 		etUserAgent.hint = App1.userAgentDefault
 		
 		load_busy = false
@@ -383,6 +401,7 @@ class ActAppSetting : AppCompatActivity()
 		
 		showFontSize(tvTimelineFontSize, etTimelineFontSize, default_timeline_font_size)
 		showFontSize(tvAcctFontSize, etAcctFontSize, default_acct_font_size)
+		showFontSize(tvNotificationTlFontSize, etNotificationTlFontSize, default_notification_tl_font_size)
 		
 		showUserAgentError()
 	}
@@ -411,6 +430,10 @@ class ActAppSetting : AppCompatActivity()
 				Pref.fpAcctFontSize,
 				parseFontSize(etAcctFontSize.text.toString().trim { it <= ' ' })
 			)
+			.put(
+				Pref.fpNotificationTlFontSize,
+				parseFontSize(etNotificationTlFontSize.text.toString().trim { it <= ' ' })
+			)
 			
 			.put(Pref.spColumnWidth, etColumnWidth.text.toString().trim { it <= ' ' })
 			.put(Pref.spMediaThumbHeight, etMediaThumbHeight.text.toString().trim { it <= ' ' })
@@ -421,6 +444,7 @@ class ActAppSetting : AppCompatActivity()
 			.put(Pref.spQuoteNameFormat, etQuoteNameFormat.text.toString()) // not trimmed
 			.put(Pref.spAutoCWLines, etAutoCWLines.text.toString().trim { it <= ' ' })
 			.put(Pref.spAvatarIconSize, etAvatarIconSize.text.toString().trim { it <= ' ' })
+			.put(Pref.spNotificationTlIconSize, etNotificationTlIconSize.text.toString().trim { it <= ' ' })
 			.put(
 				Pref.spPullNotificationCheckInterval,
 				etPullNotificationCheckInterval.text.toString().trim { it <= ' ' })

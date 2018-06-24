@@ -89,7 +89,7 @@ object Pref {
 	
 	class StringPref(
 		key : String,
-		private val defVal : String,
+		val defVal : String,
 		val skipImport : Boolean = false
 	) : BasePref<String>(key) {
 		
@@ -343,6 +343,7 @@ object Pref {
 	val spQuoteNameFormat = StringPref("quote_name_format", "")
 	val spAutoCWLines = StringPref("auto_cw_lines", "0")
 	val spAvatarIconSize = StringPref("avatar_icon_size", "48")
+	val spNotificationTlIconSize = StringPref("notification_tl_icon_size", "32")
 	val spMediaSizeMax = StringPref("max_media_size", "8")
 	val spTimelineFont = StringPref("timeline_font", "", skipImport = true)
 	val spTimelineFontBold = StringPref("timeline_font_bold", "", skipImport = true)
@@ -362,6 +363,7 @@ object Pref {
 	
 	val fpTimelineFontSize = FloatPref("timeline_font_size", Float.NaN)
 	val fpAcctFontSize = FloatPref("acct_font_size", Float.NaN)
+	val fpNotificationTlFontSize = FloatPref("notification_tl_font_size", Float.NaN)
 	
 }
 

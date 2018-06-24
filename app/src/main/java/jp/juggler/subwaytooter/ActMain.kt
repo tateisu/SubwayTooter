@@ -129,6 +129,7 @@ class ActMain : AppCompatActivity()
 	
 	var timeline_font_size_sp = Float.NaN
 	var acct_font_size_sp = Float.NaN
+	var notification_tl_font_size_sp = Float.NaN
 	
 	internal var bStart : Boolean = false
 	
@@ -151,6 +152,7 @@ class ActMain : AppCompatActivity()
 	var timeline_font : Typeface? = null
 	var timeline_font_bold : Typeface? = null
 	var avatarIconSize : Int = 0
+	var notificationTlIconSize : Int = 0
 	
 	private lateinit var llQuickTootBar : View
 	private lateinit var etQuickToot : MyEditText
@@ -372,6 +374,7 @@ class ActMain : AppCompatActivity()
 		
 		timeline_font_size_sp = validateFloat(Pref.fpTimelineFontSize(pref))
 		acct_font_size_sp = validateFloat(Pref.fpAcctFontSize(pref))
+		notification_tl_font_size_sp = validateFloat(Pref.fpNotificationTlFontSize(pref))
 		
 		initUI()
 		
@@ -1092,11 +1095,10 @@ class ActMain : AppCompatActivity()
 			
 		}
 		
-		
-		run {
-			var icon_size_dp = 48f
+		fun parseIconSize(stringPref: Pref.StringPref) : Int {
+			var icon_size_dp = stringPref.defVal.toFloat()
 			try {
-				sv = Pref.spAvatarIconSize(pref)
+				sv = stringPref(pref)
 				val fv = if(sv.isEmpty()) Float.NaN else sv.toFloat()
 				if(fv.isFinite() && fv >= 1f) {
 					icon_size_dp = fv
@@ -1104,9 +1106,11 @@ class ActMain : AppCompatActivity()
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}
-			
-			avatarIconSize = (0.5f + icon_size_dp * density).toInt()
+			return (0.5f + icon_size_dp * density).toInt()
 		}
+		
+		avatarIconSize = parseIconSize(Pref.spAvatarIconSize)
+		notificationTlIconSize = parseIconSize(Pref.spNotificationTlIconSize)
 		
 		run {
 			var round_ratio = 33f

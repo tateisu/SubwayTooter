@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.util
 
 import android.content.SharedPreferences
 import android.os.Handler
+import android.os.SystemClock
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.text.*
@@ -73,6 +74,10 @@ class PostHelper(
 	var enquete_items : ArrayList<String>? = null
 	var emojiMapCustom : HashMap<String, CustomEmoji>? = null
 	var redraft_status_id : Long = 0L
+	
+	private var last_post_tapped : Long = 0L
+	
+	var last_post_task : TootTaskRunner? = null
 	
 	fun post(
 		account : SavedAccount,
@@ -194,22 +199,41 @@ class PostHelper(
 			return
 		}
 		
-		TootTaskRunner(activity).run(account, object : TootTask {
+		// 確認を終えたらボタン連打判定
+		val now = SystemClock.elapsedRealtime()
+		val delta = now - last_post_tapped
+		last_post_tapped = now
+		if(delta < 1000L) {
+			showToast(activity, false, R.string.post_button_tapped_repeatly)
+			return
+		}
+		
+		if(last_post_task?.isActive == true) {
+			showToast(activity, false, R.string.post_button_tapped_repeatly)
+			return
+		}
+		
+		// 全ての確認を終えたらバックグラウンドでの処理を開始する
+		last_post_task = TootTaskRunner(activity
+			, progressSetupCallback = { progressDialog ->
+				progressDialog.setCanceledOnTouchOutside(false)
+			}
+		).run(account, object : TootTask {
 			
-			internal var status : TootStatus? = null
+			var status : TootStatus? = null
 			
-			internal var instance_tmp : TootInstance? = null
+			var instance_tmp : TootInstance? = null
 			
-			internal var credential_tmp : TootAccount? = null
+			var credential_tmp : TootAccount? = null
 			
-			internal fun getInstanceInformation(client : TootApiClient) : TootApiResult? {
+			fun getInstanceInformation(client : TootApiClient) : TootApiResult? {
 				val result = client.request("/api/v1/instance")
 				instance_tmp =
 					parseItem(::TootInstance, TootParser(activity, account), result?.jsonObject)
 				return result
 			}
 			
-			internal fun getCredential(client : TootApiClient) : TootApiResult? {
+			fun getCredential(client : TootApiClient) : TootApiResult? {
 				val result = client.request("/api/v1/accounts/verify_credentials")
 				credential_tmp = TootParser(activity, account).account(result?.jsonObject)
 				return result
@@ -218,7 +242,7 @@ class PostHelper(
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				var result : TootApiResult?
-
+				
 				// 元の投稿を削除する
 				if(redraft_status_id != 0L) {
 					result = client.request(
@@ -226,7 +250,7 @@ class PostHelper(
 						Request.Builder().delete()
 					)
 					log.d("delete redraft. result=$result")
-
+					
 					Thread.sleep(2000L)
 				}
 				
@@ -238,7 +262,7 @@ class PostHelper(
 					instance = instance_tmp ?: return r2
 					account.instance = instance
 				}
-
+				
 				if(TootStatus.VISIBILITY_WEB_SETTING == visibility) {
 					visibility_checked = if(instance.versionGE(TootInstance.VERSION_1_6)) {
 						null
@@ -250,8 +274,6 @@ class PostHelper(
 							?: return TootApiResult(activity.getString(R.string.cant_get_web_setting_visibility))
 					}
 				}
-				
-				
 				
 				val json = JSONObject()
 				try {

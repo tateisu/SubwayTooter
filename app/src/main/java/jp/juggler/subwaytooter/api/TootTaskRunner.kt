@@ -21,10 +21,11 @@ import jp.juggler.subwaytooter.table.SavedAccount
 	- TootApiClientからの進捗イベントをProgressDialogに伝達します。
 */
 
-@Suppress("DEPRECATION","MemberVisibilityCanPrivate")
+@Suppress("DEPRECATION", "MemberVisibilityCanPrivate")
 class TootTaskRunner(
 	context : Context,
-	private val progress_style : Int = PROGRESS_SPINNER
+	private val progress_style : Int = PROGRESS_SPINNER,
+	private val progressSetupCallback : (progress : ProgressDialogEx) -> Unit = { _ -> }
 ) : TootApiCallback {
 	
 	companion object {
@@ -41,7 +42,7 @@ class TootTaskRunner(
 	}
 	
 	private class ProgressInfo {
-
+		
 		// HORIZONTALスタイルの場合、初期メッセージがないと後からメッセージを指定しても表示されない
 		internal var message = " "
 		internal var isIndeterminate = true
@@ -53,11 +54,16 @@ class TootTaskRunner(
 	private class MyTask(
 		private val runner : TootTaskRunner
 	) : AsyncTask<Void, Void, TootApiResult?>() {
-		var isActive :Boolean = true
+		
+		var isActive : Boolean = true
 		
 		override fun doInBackground(vararg voids : Void) : TootApiResult? {
 			val callback = runner.callback
-			return if( callback == null)  TootApiResult("callback is null") else callback.background(runner.client)
+			return if(callback == null) {
+				TootApiResult("callback is null")
+			} else {
+				callback.background(runner.client)
+			}
 		}
 		
 		override fun onCancelled(result : TootApiResult?) {
@@ -86,40 +92,42 @@ class TootTaskRunner(
 	private val proc_progress_message = object : Runnable {
 		override fun run() {
 			synchronized(this) {
-				if( progress?.isShowing == true ){
+				if(progress?.isShowing == true) {
 					showProgressMessage()
 				}
 			}
 		}
 	}
 	
-
 	init {
 		this.refContext = WeakReference(context)
 		this.handler = Handler()
-		this.client = TootApiClient(context, callback=this)
+		this.client = TootApiClient(context, callback = this)
 		this.task = MyTask(this)
 	}
 	
 	val isActive : Boolean
-		get()= task.isActive
+		get() = task.isActive
 	
-	fun run(callback : TootTask) {
+	fun run(callback : TootTask) : TootTaskRunner {
 		openProgress()
 		
 		this.callback = callback
 		
 		task.executeOnExecutor(App1.task_executor)
+		
+		return this
 	}
 	
-	fun run(access_info : SavedAccount, callback : TootTask) {
-		client.account =access_info
-		run(callback)
+	fun run(access_info : SavedAccount, callback : TootTask) : TootTaskRunner {
+		client.account = access_info
+		return run(callback)
 	}
 	
-	fun run(instance : String, callback : TootTask) {
+	fun run(instance : String, callback : TootTask) : TootTaskRunner {
 		client.instance = instance
-		run(callback)
+		return run(callback)
+		
 	}
 	
 	fun progressPrefix(s : String) : TootTaskRunner {
@@ -131,7 +139,7 @@ class TootTaskRunner(
 	// implements TootApiClient.Callback
 	
 	override val isApiCancelled : Boolean
-		get()=  task.isCancelled
+		get() = task.isCancelled
 	
 	override fun publishApiProgress(s : String) {
 		synchronized(this) {
@@ -163,6 +171,7 @@ class TootTaskRunner(
 				progress.setCancelable(true)
 				progress.setOnCancelListener { task.cancel(true) }
 				progress.setProgressStyle(progress_style)
+				progressSetupCallback(progress)
 				showProgressMessage()
 				progress.show()
 			}
@@ -182,12 +191,12 @@ class TootTaskRunner(
 		
 		val message = info.message.trim { it <= ' ' }
 		val progress_prefix = this.progress_prefix
-		progress .setMessage(
-			if( progress_prefix == null || progress_prefix.isEmpty() ) {
+		progress.setMessage(
+			if(progress_prefix == null || progress_prefix.isEmpty()) {
 				message
-			}else if( message.isEmpty()) {
+			} else if(message.isEmpty()) {
 				progress_prefix
-			}else {
+			} else {
 				"$progress_prefix\n$message"
 			}
 		)

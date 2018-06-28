@@ -36,6 +36,7 @@ import jp.juggler.subwaytooter.table.TagSet
 import jp.juggler.subwaytooter.view.MyEditText
 import okhttp3.Request
 import okhttp3.RequestBody
+import java.lang.ref.WeakReference
 import java.util.HashMap
 
 class PostHelper(
@@ -77,7 +78,7 @@ class PostHelper(
 	
 	private var last_post_tapped : Long = 0L
 	
-	var last_post_task : TootTaskRunner? = null
+	private var last_post_task : WeakReference<TootTaskRunner>? = null
 	
 	fun post(
 		account : SavedAccount,
@@ -200,6 +201,12 @@ class PostHelper(
 		}
 		
 		// 確認を終えたらボタン連打判定
+
+		if(last_post_task?.get()?.isActive == true) {
+			showToast(activity, false, R.string.post_button_tapped_repeatly)
+			return
+		}
+
 		val now = SystemClock.elapsedRealtime()
 		val delta = now - last_post_tapped
 		last_post_tapped = now
@@ -208,13 +215,8 @@ class PostHelper(
 			return
 		}
 		
-		if(last_post_task?.isActive == true) {
-			showToast(activity, false, R.string.post_button_tapped_repeatly)
-			return
-		}
-		
 		// 全ての確認を終えたらバックグラウンドでの処理を開始する
-		last_post_task = TootTaskRunner(activity
+		last_post_task = WeakReference(TootTaskRunner(activity
 			, progressSetupCallback = { progressDialog ->
 				progressDialog.setCanceledOnTouchOutside(false)
 			}
@@ -377,7 +379,7 @@ class PostHelper(
 				}
 				
 			}
-		})
+		}))
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////

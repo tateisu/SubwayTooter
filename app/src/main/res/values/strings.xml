@@ -673,4 +673,5 @@
     <string name="notification_tl_font_size">Notification TL font size (unit:sp. leave empty to default. app restart required)</string>
     <string name="notification_tl_icon_size">Notification TL icon size (unit:dp. default:32. app restart required)</string>
     <string name="post_button_tapped_repeatly">Post button was tapped repeatedly</string>
+    <string name="regex_filter_matches_empty_string">regex filter matches to empty string.</string>
 </resources>

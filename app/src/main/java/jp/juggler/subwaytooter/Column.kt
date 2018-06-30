@@ -1121,7 +1121,7 @@ class Column(
 			try {
 				val re = Pattern.compile(regex_text)
 				column_regex_filter =
-					{ text : CharSequence? -> if(text == null) false else re.matcher(text).find() }
+					{ text : CharSequence? -> if(text?.isEmpty() != false ) false else re.matcher(text).find() }
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}

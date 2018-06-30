@@ -29,8 +29,6 @@ import android.support.v7.widget.ListRecyclerView
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.SpannableStringBuilder
-import android.text.Spanned
-import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.ListDivider
 import java.io.Closeable
@@ -127,30 +125,34 @@ class ColumnViewHolder(
 	private var last_image_bitmap : Bitmap? = null
 	private var last_image_task : AsyncTask<Void, Void, Bitmap?>? = null
 	
-	private val isRegexValid : Boolean
-		get() {
-			val s = etRegexFilter.text.toString()
-			if(s.isEmpty()) {
-				tvRegexFilterError.text = ""
-				return true
+	private fun checkRegexFilterError(src : String) : String? {
+		try {
+			if(src.isEmpty()) {
+				return null
 			}
-			try {
-				val m = Pattern.compile(s).matcher("")
-				if(m.find()) {
-					// XXX: 空文字列にマッチする正規表現はエラー扱いにする? しなくてもよい？
-					// tvRegexFilterError.text = activity.getString(R.string.)
-				}
-			} catch(ex : Throwable) {
-				val message = ex.message
-				tvRegexFilterError.text = if(message != null && message.isNotEmpty()) {
-					message
-				} else {
-					ex.withCaption(activity.resources, R.string.regex_error)
-				}
-				return false
+			val m = Pattern.compile(src).matcher("")
+			if(m.find()) {
+				// 空文字列にマッチする正規表現はエラー扱いにする
+				// そうしないとCWの警告テキストにマッチしてしまう
+				return activity.getString(R.string.regex_filter_matches_empty_string)
 			}
-			return true
+			return null
+		} catch(ex : Throwable) {
+			val message = ex.message
+			return if(message != null && message.isNotEmpty()) {
+				message
+			} else {
+				ex.withCaption(activity.resources, R.string.regex_error)
+			}
 		}
+	}
+	
+	private fun isRegexValid() : Boolean {
+		val s = etRegexFilter.text.toString()
+		val error = checkRegexFilterError(s)
+		tvRegexFilterError.text = error ?: ""
+		return error == null
+	}
 	
 	val isColumnSettingShown : Boolean
 		get() = llColumnSetting.visibility == View.VISIBLE
@@ -292,8 +294,8 @@ class ColumnViewHolder(
 			override fun afterTextChanged(s : Editable) {
 				if(loading_busy) return
 				activity.handler.removeCallbacks(proc_start_filter)
-				if(isRegexValid) {
-					activity.handler.postDelayed(proc_start_filter, 1500L)
+				if(isRegexValid()) {
+					activity.handler.postDelayed(proc_start_filter, 666L)
 				}
 			}
 		})
@@ -312,8 +314,7 @@ class ColumnViewHolder(
 	}
 	
 	private val proc_start_filter = Runnable {
-		if(isPageDestroyed) return@Runnable
-		if(isRegexValid) {
+		if(! isPageDestroyed && isRegexValid() ) {
 			val column = this.column ?: return@Runnable
 			column.regex_text = etRegexFilter.text.toString()
 			activity.app_state.saveColumnList()
@@ -479,7 +480,7 @@ class ColumnViewHolder(
 			
 			// tvRegexFilterErrorの表示を更新
 			if(bAllowFilter) {
-				isRegexValid
+				isRegexValid()
 			}
 			
 			when(column.column_type) {

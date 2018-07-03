@@ -73,10 +73,11 @@ class Column(
 			"/api/v1/accounts/%d/following?limit=$READ_LIMIT" // 1:account_id
 		private const val PATH_ACCOUNT_FOLLOWERS =
 			"/api/v1/accounts/%d/followers?limit=$READ_LIMIT" // 1:account_id
-		private const val PATH_MUTES = "/api/v1/mutes?limit=$READ_LIMIT" // 1:account_id
-		private const val PATH_BLOCKS = "/api/v1/blocks?limit=$READ_LIMIT" // 1:account_id
-		private const val PATH_FOLLOW_REQUESTS =
-			"/api/v1/follow_requests?limit=$READ_LIMIT" // 1:account_id
+		private const val PATH_MUTES = "/api/v1/mutes?limit=$READ_LIMIT"
+		private const val PATH_BLOCKS = "/api/v1/blocks?limit=$READ_LIMIT"
+		private const val PATH_FOLLOW_REQUESTS = "/api/v1/follow_requests?limit=$READ_LIMIT"
+		private const val PATH_FOLLOW_SUGGESTION = "/api/v1/suggestions?limit=$READ_LIMIT"
+		
 		private const val PATH_BOOSTED_BY =
 			"/api/v1/statuses/%s/reblogged_by?limit=$READ_LIMIT" // 1:status_id
 		private const val PATH_FAVOURITED_BY =
@@ -165,6 +166,7 @@ class Column(
 		internal const val TYPE_SEARCH_TS = 22
 		internal const val TYPE_DIRECT_MESSAGES = 23
 		internal const val TYPE_TREND_TAG = 24
+		internal const val TYPE_FOLLOW_SUGGESTION = 25
 		
 		internal const val TAB_STATUS = 0
 		internal const val TAB_FOLLOWING = 1
@@ -207,6 +209,7 @@ class Column(
 				TYPE_SEARCH_TS -> context.getString(R.string.toot_search_ts)
 				TYPE_INSTANCE_INFORMATION -> context.getString(R.string.instance_information)
 				TYPE_FOLLOW_REQUESTS -> context.getString(R.string.follow_requests)
+				TYPE_FOLLOW_SUGGESTION -> context.getString(R.string.follow_suggestion)
 				TYPE_LIST_LIST -> context.getString(R.string.lists)
 				TYPE_LIST_MEMBER -> context.getString(R.string.list_member)
 				TYPE_LIST_TL -> context.getString(R.string.list_timeline)
@@ -235,6 +238,7 @@ class Column(
 				TYPE_SEARCH, TYPE_SEARCH_MSP, TYPE_SEARCH_TS -> R.attr.ic_search
 				TYPE_INSTANCE_INFORMATION -> R.attr.ic_info
 				TYPE_FOLLOW_REQUESTS -> R.attr.ic_follow_wait
+				TYPE_FOLLOW_SUGGESTION -> R.attr.ic_follow_plus
 				TYPE_LIST_LIST -> R.attr.ic_list_list
 				TYPE_LIST_MEMBER -> R.attr.ic_list_member
 				TYPE_LIST_TL -> R.attr.ic_list_tl
@@ -254,7 +258,7 @@ class Column(
 		
 		private val time_format_hhmm = SimpleDateFormat("HH:mm", Locale.getDefault())
 		
-		private fun getResetTimeString() :String{
+		private fun getResetTimeString() : String {
 			time_format_hhmm.timeZone = TimeZone.getDefault()
 			return time_format_hhmm.format(Date(0L))
 		}
@@ -1121,7 +1125,11 @@ class Column(
 			try {
 				val re = Pattern.compile(regex_text)
 				column_regex_filter =
-					{ text : CharSequence? -> if(text?.isEmpty() != false ) false else re.matcher(text).find() }
+					{ text : CharSequence? ->
+						if(text?.isEmpty() != false) false else re.matcher(
+							text
+						).find()
+					}
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}
@@ -1807,6 +1815,10 @@ class Column(
 							client,
 							PATH_FOLLOW_REQUESTS
 						)
+						TYPE_FOLLOW_SUGGESTION -> return parseAccountList(
+							client,
+							PATH_FOLLOW_SUGGESTION
+						)
 						
 						TYPE_FAVOURITES -> return getStatuses(client, PATH_FAVOURITES)
 						
@@ -1890,11 +1902,14 @@ class Column(
 						TYPE_TREND_TAG -> {
 							result = client.request("/api/v1/trends")
 							val src = parser.trendTagList(result?.jsonArray)
-
+							
 							this.list_tmp = addAll(this.list_tmp, src)
 							this.list_tmp = addOne(
 								this.list_tmp, TootMessageHolder(
-									context.getString(R.string.trend_tag_desc,getResetTimeString()),
+									context.getString(
+										R.string.trend_tag_desc,
+										getResetTimeString()
+									),
 									gravity = Gravity.END
 								)
 							)
@@ -2800,6 +2815,7 @@ class Column(
 						TYPE_DOMAIN_BLOCKS -> getDomainList(client, PATH_DOMAIN_BLOCK)
 						
 						TYPE_FOLLOW_REQUESTS -> getAccountList(client, PATH_FOLLOW_REQUESTS)
+						TYPE_FOLLOW_SUGGESTION -> getAccountList(client, PATH_FOLLOW_SUGGESTION)
 						
 						TYPE_HASHTAG -> getStatusList(client, makeHashtagUrl(hashtag))
 						
@@ -3281,6 +3297,7 @@ class Column(
 						TYPE_BLOCKS -> getAccountList(client, PATH_BLOCKS)
 						
 						TYPE_FOLLOW_REQUESTS -> getAccountList(client, PATH_FOLLOW_REQUESTS)
+						TYPE_FOLLOW_SUGGESTION -> getAccountList(client, PATH_FOLLOW_SUGGESTION)
 						
 						TYPE_PROFILE -> when(profile_tab) {
 							
@@ -3530,7 +3547,8 @@ class Column(
 	// カラム設定に正規表現フィルタを含めるなら真
 	fun canStatusFilter() : Boolean {
 		return when(column_type) {
-			TYPE_REPORTS, TYPE_MUTES, TYPE_BLOCKS, TYPE_DOMAIN_BLOCKS, TYPE_FOLLOW_REQUESTS,
+			TYPE_REPORTS, TYPE_MUTES, TYPE_BLOCKS, TYPE_DOMAIN_BLOCKS,
+			TYPE_FOLLOW_REQUESTS, TYPE_FOLLOW_SUGGESTION,
 			TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_INSTANCE_INFORMATION, TYPE_LIST_LIST, TYPE_LIST_MEMBER,
 			TYPE_TREND_TAG -> false
 			else -> true

@@ -1025,6 +1025,12 @@ class ActMain : AppCompatActivity()
 				false,
 				Column.TYPE_FOLLOW_REQUESTS
 			)
+			R.id.nav_follow_suggestion-> Action_Account.timeline(
+				this,
+				defaultInsertPosition,
+				false,
+				Column.TYPE_FOLLOW_SUGGESTION
+			)
 //			R.id.nav_add_trend_tag ->Action_Account.timeline(
 //				this,
 //				defaultInsertPosition,

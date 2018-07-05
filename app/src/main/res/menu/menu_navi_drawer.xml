@@ -24,6 +24,11 @@
                     android:title="@string/column_list"/>
 
                 <item
+                    android:id="@+id/nav_close_all_columns"
+                    android:icon="?attr/btn_close"
+                    android:title="@string/close_all_columns"/>
+
+                <item
                     android:id="@+id/nav_add_tl_home"
                     android:icon="?attr/btn_home"
                     android:title="@string/home"/>

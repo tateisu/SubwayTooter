@@ -968,5 +968,7 @@
     <string name="post_button_tapped_repeatly">投稿ボタンの連打を検出</string>
     <string name="regex_filter_matches_empty_string">正規表現フィルタは空文字列にマッチしてしまいます</string>
     <string name="follow_suggestion">フォロー推奨ユーザ</string>
+    <string name="close_all_columns">全てのカラムを閉じる</string>
+    <string name="confirm_close_column_all">(保護されていない)全てのカラムが閉じられます。よろしいですか?</string>
 
 </resources>

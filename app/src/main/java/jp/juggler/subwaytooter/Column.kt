@@ -1452,15 +1452,15 @@ class Column(
 		
 		val task = @SuppressLint("StaticFieldLeak")
 		object : ColumnTask(ColumnTaskType.LOADING) {
-			internal var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
+			var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 			
-			internal var instance_tmp : TootInstance? = null
+			var instance_tmp : TootInstance? = null
 			
-			internal var list_pinned : ArrayList<TimelineItem>? = null
+			var list_pinned : ArrayList<TimelineItem>? = null
 			
-			internal var list_tmp : ArrayList<TimelineItem>? = null
+			var list_tmp : ArrayList<TimelineItem>? = null
 			
-			internal fun getInstanceInformation(
+			fun getInstanceInformation(
 				client : TootApiClient,
 				instance_name : String?
 			) : TootApiResult? {
@@ -1478,7 +1478,7 @@ class Column(
 				return result
 			}
 			
-			internal fun getStatusesPinned(client : TootApiClient, path_base : String) {
+			fun getStatusesPinned(client : TootApiClient, path_base : String) {
 				val result = client.request(path_base)
 				val jsonArray = result?.jsonArray
 				if(jsonArray != null) {
@@ -1497,7 +1497,7 @@ class Column(
 				log.d("getStatusesPinned: list size=%s", list_pinned?.size ?: - 1)
 			}
 			
-			internal fun getStatuses(client : TootApiClient, path_base : String) : TootApiResult? {
+			fun getStatuses(client : TootApiClient, path_base : String) : TootApiResult? {
 				
 				val time_start = SystemClock.elapsedRealtime()
 				val result = client.request(path_base)
@@ -1556,7 +1556,7 @@ class Column(
 				return result
 			}
 			
-			internal fun parseAccountList(
+			fun parseAccountList(
 				client : TootApiClient,
 				path_base : String,
 				emptyMessage : String? = null
@@ -1604,7 +1604,7 @@ class Column(
 				return result
 			}
 			
-			internal fun parseDomainList(
+			fun parseDomainList(
 				client : TootApiClient,
 				path_base : String
 			) : TootApiResult? {
@@ -1616,7 +1616,7 @@ class Column(
 				return result
 			}
 			
-			internal fun parseReports(client : TootApiClient, path_base : String) : TootApiResult? {
+			fun parseReports(client : TootApiClient, path_base : String) : TootApiResult? {
 				val result = client.request(path_base)
 				if(result != null) {
 					saveRange(result, true, true)
@@ -1625,7 +1625,7 @@ class Column(
 				return result
 			}
 			
-			internal fun parseListList(
+			fun parseListList(
 				client : TootApiClient,
 				path_base : String
 			) : TootApiResult? {
@@ -1639,7 +1639,7 @@ class Column(
 				return result
 			}
 			
-			internal fun parseNotifications(client : TootApiClient) : TootApiResult? {
+			fun parseNotifications(client : TootApiClient) : TootApiResult? {
 				val path_base = makeNotificationUrl()
 				
 				val time_start = SystemClock.elapsedRealtime()
@@ -2218,11 +2218,11 @@ class Column(
 				else -> ColumnTaskType.REFRESH_TOP
 			}
 		) {
-			internal var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
+			var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 			
-			internal var list_tmp : ArrayList<TimelineItem>? = null
+			var list_tmp : ArrayList<TimelineItem>? = null
 			
-			internal fun getAccountList(
+			fun getAccountList(
 				client : TootApiClient,
 				path_base : String
 			) : TootApiResult? {
@@ -2287,7 +2287,7 @@ class Column(
 				return result
 			}
 			
-			internal fun getDomainList(
+			fun getDomainList(
 				client : TootApiClient,
 				path_base : String
 			) : TootApiResult? {
@@ -2339,7 +2339,7 @@ class Column(
 				return result
 			}
 			
-			internal fun getListList(client : TootApiClient, path_base : String) : TootApiResult? {
+			fun getListList(client : TootApiClient, path_base : String) : TootApiResult? {
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				val last_since_id = since_id
@@ -2402,7 +2402,7 @@ class Column(
 				return result
 			}
 			
-			internal fun getReportList(
+			fun getReportList(
 				client : TootApiClient,
 				path_base : String
 			) : TootApiResult? {
@@ -2466,7 +2466,7 @@ class Column(
 				return result
 			}
 			
-			internal fun getNotificationList(client : TootApiClient) : TootApiResult? {
+			fun getNotificationList(client : TootApiClient) : TootApiResult? {
 				val path_base = makeNotificationUrl()
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
@@ -2586,7 +2586,7 @@ class Column(
 				return result
 			}
 			
-			internal fun getStatusList(
+			fun getStatusList(
 				client : TootApiClient,
 				path_base : String
 			) : TootApiResult? {
@@ -3024,13 +3024,13 @@ class Column(
 		
 		val task = @SuppressLint("StaticFieldLeak")
 		object : ColumnTask(ColumnTaskType.GAP) {
-			internal var max_id = gap.max_id
-			internal val since_id = gap.since_id
-			internal var list_tmp : ArrayList<TimelineItem>? = null
+			var max_id = gap.max_id
+			val since_id = gap.since_id
+			var list_tmp : ArrayList<TimelineItem>? = null
 			
-			internal var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
+			var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 			
-			internal fun getAccountList(
+			fun getAccountList(
 				client : TootApiClient,
 				path_base : String
 			) : TootApiResult? {
@@ -3082,7 +3082,7 @@ class Column(
 				return result
 			}
 			
-			internal fun getReportList(
+			fun getReportList(
 				client : TootApiClient,
 				path_base : String
 			) : TootApiResult? {
@@ -3132,7 +3132,7 @@ class Column(
 				return result
 			}
 			
-			internal fun getNotificationList(client : TootApiClient) : TootApiResult? {
+			fun getNotificationList(client : TootApiClient) : TootApiResult? {
 				val path_base = makeNotificationUrl()
 				
 				val time_start = SystemClock.elapsedRealtime()
@@ -3189,7 +3189,7 @@ class Column(
 				return result
 			}
 			
-			internal fun getStatusList(
+			fun getStatusList(
 				client : TootApiClient,
 				path_base : String
 			) : TootApiResult? {

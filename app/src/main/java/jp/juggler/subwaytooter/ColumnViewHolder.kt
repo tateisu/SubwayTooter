@@ -29,6 +29,7 @@ import android.support.v7.widget.ListRecyclerView
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.SpannableStringBuilder
+import jp.juggler.subwaytooter.action.Action_App
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.ListDivider
 import java.io.Closeable
@@ -39,7 +40,7 @@ class ColumnViewHolder(
 	viewRoot : View
 ) : View.OnClickListener,
 	SwipyRefreshLayout.OnRefreshListener,
-	CompoundButton.OnCheckedChangeListener {
+	CompoundButton.OnCheckedChangeListener, View.OnLongClickListener {
 	
 	companion object {
 		private val log = LogCategory("ColumnViewHolder")
@@ -256,6 +257,7 @@ class ColumnViewHolder(
 		btnColumnSetting.setOnClickListener(this)
 		btnColumnReload.setOnClickListener(this)
 		btnColumnClose.setOnClickListener(this)
+		btnColumnClose.setOnLongClickListener(this)
 		btnDeleteNotification.setOnClickListener(this)
 		
 		viewRoot.findViewById<View>(R.id.btnColor).setOnClickListener(this)
@@ -912,6 +914,18 @@ class ColumnViewHolder(
 		}
 		
 	}
+	
+	override fun onLongClick(v : View) : Boolean {
+		return when(v.id){
+			R.id.btnColumnClose-> {
+				val idx = activity.app_state.column_list.indexOf(column)
+				activity.closeColumnAll( idx )
+				true
+			}
+			else->false
+		}
+	}
+	
 	
 	private fun showError(message : String) {
 		tvLoading.visibility = View.VISIBLE

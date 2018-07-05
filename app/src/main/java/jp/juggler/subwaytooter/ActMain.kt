@@ -27,7 +27,6 @@ import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.AppCompatActivity
-import android.view.Menu
 import android.view.MenuItem
 import android.view.Window
 import android.view.WindowManager
@@ -555,7 +554,7 @@ class ActMain : AppCompatActivity()
 		val posted_acct = this.posted_acct
 		if(posted_acct?.isNotEmpty() == true) {
 			
-			if( posted_redraft_id != 0L ) {
+			if(posted_redraft_id != 0L) {
 				val delm = posted_acct.indexOf('@')
 				if(delm != - 1) {
 					val host = posted_acct.substring(delm + 1)
@@ -565,7 +564,7 @@ class ActMain : AppCompatActivity()
 				}
 				posted_redraft_id = 0L
 			}
-
+			
 			val refresh_after_toot = Pref.ipRefreshAfterToot(pref)
 			if(refresh_after_toot != Pref.RAT_DONT_REFRESH) {
 				for(column in app_state.column_list) {
@@ -751,7 +750,7 @@ class ActMain : AppCompatActivity()
 					posted_acct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)
 					posted_status_id = data.getLongExtra(ActPost.EXTRA_POSTED_STATUS_ID, 0L)
 					posted_reply_id = data.getStringExtra(ActPost.EXTRA_POSTED_REPLY_ID)
-					posted_redraft_id= data.getLongExtra(ActPost.EXTRA_POSTED_REDRAFT_ID, 0L)
+					posted_redraft_id = data.getLongExtra(ActPost.EXTRA_POSTED_REDRAFT_ID, 0L)
 					
 				}
 				
@@ -944,6 +943,9 @@ class ActMain : AppCompatActivity()
 		
 		// カラム
 			R.id.nav_column_list -> Action_App.columnList(this)
+			
+			R.id.nav_close_all_columns -> closeColumnAll()
+			
 			R.id.nav_add_tl_home -> Action_Account.timeline(
 				this,
 				defaultInsertPosition,
@@ -1025,18 +1027,18 @@ class ActMain : AppCompatActivity()
 				false,
 				Column.TYPE_FOLLOW_REQUESTS
 			)
-			R.id.nav_follow_suggestion-> Action_Account.timeline(
+			R.id.nav_follow_suggestion -> Action_Account.timeline(
 				this,
 				defaultInsertPosition,
 				false,
 				Column.TYPE_FOLLOW_SUGGESTION
 			)
-//			R.id.nav_add_trend_tag ->Action_Account.timeline(
-//				this,
-//				defaultInsertPosition,
-//				true,
-//				Column.TYPE_TREND_TAG
-//			)
+		//			R.id.nav_add_trend_tag ->Action_Account.timeline(
+		//				this,
+		//				defaultInsertPosition,
+		//				true,
+		//				Column.TYPE_TREND_TAG
+		//			)
 		
 		// トゥート検索
 			R.id.mastodon_search_portal -> addColumn(
@@ -1101,7 +1103,7 @@ class ActMain : AppCompatActivity()
 			
 		}
 		
-		fun parseIconSize(stringPref: Pref.StringPref) : Int {
+		fun parseIconSize(stringPref : Pref.StringPref) : Int {
 			var icon_size_dp = stringPref.defVal.toFloat()
 			try {
 				sv = stringPref(pref)
@@ -1586,9 +1588,9 @@ class ActMain : AppCompatActivity()
 		// subwaytooter://oauth/?...
 		TootTaskRunner(this@ActMain).run(object : TootTask {
 			
-			internal var ta : TootAccount? = null
-			internal var sa : SavedAccount? = null
-			internal var host : String? = null
+			var ta : TootAccount? = null
+			var sa : SavedAccount? = null
+			var host : String? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
@@ -1781,7 +1783,7 @@ class ActMain : AppCompatActivity()
 		
 		TootTaskRunner(this@ActMain).run(host, object : TootTask {
 			
-			internal var ta : TootAccount? = null
+			var ta : TootAccount? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val result = client.getUserCredential(access_token)
@@ -1899,6 +1901,54 @@ class ActMain : AppCompatActivity()
 				}
 			}
 		})
+	}
+	
+	fun closeColumnAll(
+		_lastColumnIndex : Int = - 1,
+		bConfirmed : Boolean = false
+	) {
+		
+		if(! bConfirmed) {
+			AlertDialog.Builder(this)
+				.setMessage(R.string.confirm_close_column_all)
+				.setNegativeButton(R.string.cancel, null)
+				.setPositiveButton(R.string.ok) { _, _ -> closeColumnAll(_lastColumnIndex, true) }
+				.show()
+			return
+		}
+		
+		var lastColumnIndex = when(_lastColumnIndex) {
+			- 1 -> phoneTab(
+				{ pe -> pe.pager.currentItem },
+				{ _ -> 0 }
+			)
+			else -> _lastColumnIndex
+		}
+		
+		phoneOnly { env -> env.pager.adapter = null }
+		
+		for(i in (0 until app_state.column_list.size).reversed()) {
+			val column = app_state.column_list[i]
+			if(column.dont_close) continue
+			app_state.column_list.removeAt(i).dispose()
+			if(lastColumnIndex >= i) -- lastColumnIndex
+		}
+		
+		phoneTab(
+			{ env -> env.pager.adapter = env.pager_adapter },
+			{ env -> resizeColumnWidth(env) }
+		)
+		
+		app_state.saveColumnList()
+		updateColumnStrip()
+		
+		if(app_state.column_list.isNotEmpty() && lastColumnIndex >= 0 && lastColumnIndex < app_state.column_list.size) {
+			scrollToColumn(lastColumnIndex)
+			val c = app_state.column_list[lastColumnIndex]
+			if(! c.bFirstInitialized) {
+				c.startLoading()
+			}
+		}
 	}
 	
 	//////////////////////////////////////////////////////////////
@@ -2312,7 +2362,7 @@ class ActMain : AppCompatActivity()
 		val task = @SuppressLint("StaticFieldLeak") object :
 			AsyncTask<Void, String, ArrayList<Column>?>() {
 			
-			internal fun setProgressMessage(sv : String) {
+			fun setProgressMessage(sv : String) {
 				runOnMainLooper { progress.setMessage(sv) }
 			}
 			

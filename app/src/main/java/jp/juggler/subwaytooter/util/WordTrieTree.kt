@@ -25,12 +25,12 @@ class WordTrieTree {
 	
 	private val node_root = Node()
 	
-	val isEmpty :Boolean
+	val isEmpty : Boolean
 		get() = node_root.child_nodes.size() == 0
 	
 	// 単語の追加
 	fun add(s : String) {
-		val t = grouper.tokenizer().reset( s,0,s.length)
+		val t = grouper.tokenizer().reset(s, 0, s.length)
 		
 		var token_count = 0
 		var node = node_root
@@ -44,7 +44,7 @@ class WordTrieTree {
 				
 				// より長いマッチ単語を覚えておく
 				val old_word = node.match_word
-				if(old_word == null ||old_word.length < t.text.length) {
+				if(old_word == null || old_word.length < t.text.length) {
 					node.match_word = t.text.toString()
 				}
 				
@@ -135,6 +135,5 @@ class WordTrieTree {
 		
 		return dst
 	}
-	
 	
 }

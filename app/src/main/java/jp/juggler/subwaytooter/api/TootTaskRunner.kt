@@ -101,7 +101,7 @@ class TootTaskRunner(
 	
 	init {
 		this.refContext = WeakReference(context)
-		this.handler = Handler()
+		this.handler = Handler(context.mainLooper)
 		this.client = TootApiClient(context, callback = this)
 		this.task = MyTask(this)
 	}

@@ -543,6 +543,12 @@ internal class ItemViewHolder(
 	}
 	
 	private fun showStatus(activity : ActMain, status : TootStatus) {
+
+		if(status.filtered){
+			showMessageHolder(TootMessageHolder(activity.getString(R.string.filtered)))
+			return
+		}
+
 		this.status_showing = status
 		llStatus.visibility = View.VISIBLE
 		

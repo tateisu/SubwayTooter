@@ -2,8 +2,6 @@ package jp.juggler.subwaytooter.util
 
 import android.util.SparseIntArray
 
-
-
 class CharacterGroup {
 	
 	companion object {
@@ -12,11 +10,11 @@ class CharacterGroup {
 		const val END = - 1
 		
 		// 文字コードから文字列を作る
-		fun c2s( tmp: CharArray,c : Char) : String {
+		fun c2s(tmp : CharArray, c : Char) : String {
 			tmp[0] = c
 			return String(tmp, 0, 1)
 		}
-
+		
 		fun i2s(tmp : CharArray, c : Int) : String {
 			tmp[0] = c.toChar()
 			return String(tmp, 0, 1)
@@ -48,7 +46,7 @@ class CharacterGroup {
 		}
 		
 		// 文字列のリストからグループIDを決定する
-		private fun findGroupId( list : Array<String>) : Int {
+		private fun findGroupId(list : Array<String>) : Int {
 			// グループのIDは、グループ中の文字(長さ1)のunicode値の最小
 			var id = Integer.MAX_VALUE
 			for(s in list) {
@@ -73,7 +71,7 @@ class CharacterGroup {
 	private val map2 = SparseIntArray()
 	
 	// グループをmapに登録する
-	private fun addGroup( list: Array<String> ) {
+	private fun addGroup(list : Array<String>) {
 		
 		val group_id = findGroupId(list)
 		
@@ -102,7 +100,7 @@ class CharacterGroup {
 	}
 	
 	// 入力された文字列から 文字,グループ,終端 のどれかを順に列挙する
-	inner class Tokenizer{
+	inner class Tokenizer {
 		
 		internal var text : CharSequence = ""
 		internal var end : Int = 0
@@ -158,12 +156,12 @@ class CharacterGroup {
 	
 	init {
 		val tmp = CharArray(1)
-		val array2 = arrayOf("","")
-		val array4 = arrayOf("","","","")
+		val array2 = arrayOf("", "")
+		val array4 = arrayOf("", "", "", "")
 		// 数字
 		for(i in 0 .. 8) {
-			array2[0] = c2s(tmp,'0' + i)
-			array2[1] = c2s(tmp,'０' + i)
+			array2[0] = c2s(tmp, '0' + i)
+			array2[1] = c2s(tmp, '０' + i)
 			addGroup(array2)
 		}
 		
@@ -177,18 +175,20 @@ class CharacterGroup {
 		}
 		
 		// ハイフン
-		addGroup(arrayOf(
-			i2s(tmp, 0x002D), // ASCIIのハイフン
-			i2s(tmp, 0x30FC), // 全角カナの長音 Shift_JIS由来
-			i2s(tmp, 0x2010),
-			i2s(tmp, 0x2011),
-			i2s(tmp, 0x2013),
-			i2s(tmp, 0x2014),
-			i2s(tmp, 0x2015), // 全角カナのダッシュ Shift_JIS由来
-			i2s(tmp, 0x2212),
-			i2s(tmp, 0xFF0d), // 全角カナの長音 MS932由来
-			i2s(tmp, 0xFF70) // 半角カナの長音 MS932由来
-		))
+		addGroup(
+			arrayOf(
+				i2s(tmp, 0x002D), // ASCIIのハイフン
+				i2s(tmp, 0x30FC), // 全角カナの長音 Shift_JIS由来
+				i2s(tmp, 0x2010),
+				i2s(tmp, 0x2011),
+				i2s(tmp, 0x2013),
+				i2s(tmp, 0x2014),
+				i2s(tmp, 0x2015), // 全角カナのダッシュ Shift_JIS由来
+				i2s(tmp, 0x2212),
+				i2s(tmp, 0xFF0d), // 全角カナの長音 MS932由来
+				i2s(tmp, 0xFF70) // 半角カナの長音 MS932由来
+			)
+		)
 		
 		addGroup(arrayOf("！", "!"))
 		addGroup(arrayOf("＂", "\""))

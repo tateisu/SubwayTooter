@@ -2,7 +2,9 @@ package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.toJsonArray
 import jp.juggler.subwaytooter.util.toJsonObject
+import org.json.JSONArray
 import org.json.JSONObject
 import java.util.regex.Pattern
 
@@ -16,7 +18,12 @@ object TootPayload {
 	private val reNumber = Pattern.compile("([-]?\\d+)")
 	
 	// ストリーミングAPIのペイロード部分をTootStatus,TootNotification,整数IDのどれかに解釈する
-	fun parsePayload(parser : TootParser, event : String, parent : JSONObject, parent_text : String) : Any? {
+	fun parsePayload(
+		parser : TootParser,
+		event : String,
+		parent : JSONObject,
+		parent_text : String
+	) : Any? {
 		try {
 			if(parent.isNull(PAYLOAD)) {
 				return null
@@ -25,22 +32,23 @@ object TootPayload {
 			val payload = parent.opt(PAYLOAD)
 			
 			if(payload is JSONObject) {
-				when(event) {
-					
-					"update" ->
-						// ここを通るケースはまだ確認できていない
-						return parser.status(payload)
-					
-					"notification" ->
-						// ここを通るケースはまだ確認できていない
-						return parser.notification(payload)
-					
+				return when(event) {
+				
+				// ここを通るケースはまだ確認できていない
+					"update" -> parser.status(payload)
+				
+				// ここを通るケースはまだ確認できていない
+					"notification" -> parser.notification(payload)
+				
+				// ここを通るケースはまだ確認できていない
 					else -> {
-						// ここを通るケースはまだ確認できていない
 						log.e("unknown payload(1). message=%s", parent_text)
-						return null
+						null
 					}
 				}
+			} else if(payload is JSONArray) {
+				log.e("unknown payload(1b). message=%s", parent_text)
+				return null
 			}
 			
 			if(payload is Number) {
@@ -53,21 +61,23 @@ object TootPayload {
 				if(payload[0] == '{') {
 					val src = payload.toJsonObject()
 					return when(event) {
-						"update" ->
-							// 2017/8/24 18:37 mastodon.juggler.jpでここを通った
-							parser.status(src)
-						
-						"notification" ->
-							// 2017/8/24 18:37 mastodon.juggler.jpでここを通った
-							parser.notification(src)
-						
+					// 2017/8/24 18:37 mastodon.juggler.jpでここを通った
+						"update" -> parser.status(src)
+					
+					// 2017/8/24 18:37 mastodon.juggler.jpでここを通った
+						"notification" -> parser.notification(src)
+					
+					// ここを通るケースはまだ確認できていない
 						else -> {
-							// ここを通るケースはまだ確認できていない
 							log.e("unknown payload(2). message=%s", parent_text)
 							null
 						}
 					}
+				} else if(payload[0] == '[') {
+					log.e("unknown payload(2b). message=%s", parent_text)
+					return null
 				}
+				
 				// 2017/8/24 18:37 mdx.ggtea.org でここを通った
 				val m = reNumber.matcher(payload)
 				if(m.find()) {

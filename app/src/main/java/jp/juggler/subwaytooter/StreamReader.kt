@@ -131,6 +131,11 @@ internal class StreamReader(
 					return
 				}
 				
+				if( event == "filters_changed"){
+					Column.onFiltersChanged(context,access_info)
+					return
+				}
+				
 				val payload = TootPayload.parsePayload(parser, event, obj, text)
 				
 				runOnMainLooper {
@@ -138,6 +143,7 @@ internal class StreamReader(
 						if(bDisposed.get()) return@runOnMainLooper
 						
 						when(event) {
+							
 							"delete" -> {
 								if(payload is Long) {
 									val tl_host = access_info.host

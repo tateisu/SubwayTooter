@@ -31,5 +31,5 @@ class TootParser(
 	fun trendTagList(array : JSONArray?)= parseList(::TootTrendTag, array)
 	
 	fun resultsV2(src : JSONObject) = parseItem(::TootResultsV2, this, src)
-	
+
 }

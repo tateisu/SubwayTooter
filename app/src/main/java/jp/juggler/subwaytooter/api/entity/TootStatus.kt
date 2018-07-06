@@ -47,13 +47,11 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 	// 取得に失敗するとINVALID_IDになる
 	val id : Long
 	
-	
-
 	// The TootAccount which posted the status
 	val accountRef : TootAccountRef
-
+	
 	val account : TootAccount
-		get(){
+		get() {
 			return TootAccountMap.find(accountRef.id)
 		}
 	
@@ -163,10 +161,10 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 		this.profile_emojis =
 			parseMapOrNull(::NicoProfileEmoji, src.optJSONArray("profile_emojis"), log)
 		
-		val who =parser.account(src.optJSONObject("account"))
+		val who = parser.account(src.optJSONObject("account"))
 			?: throw RuntimeException("missing account")
-
-		this.accountRef = TootAccountRef( parser,who)
+		
+		this.accountRef = TootAccountRef(parser, who)
 		
 		when(parser.serviceType) {
 			ServiceType.MASTODON -> {
@@ -298,7 +296,10 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 	val busyKey : String
 		get() = "$hostAccessOrOriginal:$idAccessOrOriginal"
 	
-	fun checkMuted(muted_app : HashSet<String>?, muted_word : WordTrieTree?) : Boolean {
+	fun checkMuted(
+		muted_app : HashSet<String>?,
+		muted_word : WordTrieTree?
+	) : Boolean {
 		
 		// app mute
 		if(muted_app != null) {
@@ -325,6 +326,29 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 		return (reblog == null
 			&& access_info.isMe(account)
 			&& (VISIBILITY_PUBLIC == visibility || VISIBILITY_UNLISTED == visibility))
+	}
+	
+	// 内部で使う
+	private var _filtered = false
+	
+	val filtered :Boolean
+		get() = _filtered || reblog?._filtered == true
+	
+	fun updateFiltered(muted_words : WordTrieTree?) {
+		_filtered = checkFiltered(muted_words)
+		reblog?.updateFiltered(muted_words)
+	}
+	
+	private fun checkFiltered(muted_words : WordTrieTree?) : Boolean {
+		muted_words ?: return false
+		//
+		var t = decoded_spoiler_text
+		if(t.isNotEmpty() && muted_words.matchShort(t)) return true
+		//
+		t = decoded_content
+		if(t.isNotEmpty() && muted_words.matchShort(t)) return true
+		//
+		return false
 	}
 	
 	companion object {
@@ -589,4 +613,5 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 		}
 		
 	}
+	
 }

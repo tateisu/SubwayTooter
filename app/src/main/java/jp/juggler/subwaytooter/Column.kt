@@ -100,6 +100,8 @@ class Column(
 		private const val PATH_INSTANCE = "/api/v1/instance"
 		private const val PATH_LIST_INFO = "/api/v1/lists/%s"
 		
+		const val PATH_FILTERS = "/api/v1/filters"
+		
 		internal const val KEY_ACCOUNT_ROW_ID = "account_id"
 		internal const val KEY_TYPE = "type"
 		internal const val KEY_DONT_CLOSE = "dont_close"
@@ -262,6 +264,37 @@ class Column(
 			time_format_hhmm.timeZone = TimeZone.getDefault()
 			return time_format_hhmm.format(Date(0L))
 		}
+		
+		fun onFiltersChanged(context : Context, access_info : SavedAccount) {
+			
+			TootTaskRunner(context, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,
+				object : TootTask {
+					
+					var filter_list : ArrayList<TootFilter>? = null
+					
+					override fun background(client : TootApiClient) : TootApiResult? {
+						val result = client.request(Column.PATH_FILTERS)
+						val jsonArray = result?.jsonArray
+						if(jsonArray != null) {
+							filter_list = TootFilter.parseList(jsonArray)
+						}
+						return result
+					}
+					
+					override fun handleResult(result : TootApiResult?) {
+						val filter_list = this.filter_list
+						if(filter_list != null) {
+							val stream_acct = access_info.acct
+							log.d("update filters for $stream_acct")
+							for(column in App1.getAppState(context).column_list) {
+								if(column.access_info.acct == stream_acct) {
+									column.onFiltersChanged2(filter_list)
+								}
+							}
+						}
+					}
+				})
+		}
 	}
 	
 	private var callback_ref : WeakReference<Callback>? = null
@@ -398,6 +431,7 @@ class Column(
 	private var column_regex_filter = COLUMN_REGEX_FILTER_DEFAULT
 	private var muted_app : HashSet<String>? = null
 	private var muted_word : WordTrieTree? = null
+	private var muted_word2 : WordTrieTree? = null
 	private var favMuteSet : HashSet<String>? = null
 	private var highlight_trie : WordTrieTree? = null
 	
@@ -909,7 +943,9 @@ class Column(
 		val muted_app = MutedApp.nameSet
 		val muted_word = MutedWord.nameSet
 		
-		val checker = { status : TootStatus? -> status?.checkMuted(muted_app, muted_word) ?: false }
+		val checker = { status : TootStatus? ->
+			status?.checkMuted(muted_app, muted_word) ?: false
+		}
 		
 		for(o in list_data) {
 			if(o is TootStatus) {
@@ -1154,6 +1190,9 @@ class Column(
 	
 	private fun isFiltered(status : TootStatus) : Boolean {
 		
+		// word mute2
+		status.updateFiltered(muted_word2)
+		
 		if(isFilteredByAttachment(status)) return true
 		
 		if(dont_show_boost) {
@@ -1177,7 +1216,6 @@ class Column(
 		if(column_regex_filter(status.reblog?.decoded_spoiler_text)) return true
 		
 		return status.checkMuted(muted_app, muted_word)
-		
 	}
 	
 	private inline fun <reified T : TimelineItem> addAll(
@@ -1248,6 +1286,9 @@ class Column(
 		
 		val status = item.status
 		if(status != null) {
+			
+			status.updateFiltered(muted_word2)
+			
 			if(status.checkMuted(muted_app, muted_word)) {
 				log.d("isFiltered: status muted.")
 				return true
@@ -1724,6 +1765,8 @@ class Column(
 					var result : TootApiResult?
 					val q : String
 					
+					muted_word2 = encodeFilterTree(loadFilter2(client))
+					
 					when(column_type) {
 						
 						TYPE_DIRECT_MESSAGES -> return getStatuses(client, PATH_DIRECT_MESSAGES)
@@ -1815,6 +1858,7 @@ class Column(
 							client,
 							PATH_FOLLOW_REQUESTS
 						)
+						
 						TYPE_FOLLOW_SUGGESTION -> return parseAccountList(
 							client,
 							PATH_FOLLOW_SUGGESTION
@@ -2713,6 +2757,8 @@ class Column(
 				return result
 			}
 			
+			var filterUpdated = false
+			
 			override fun doInBackground(vararg params : Void) : TootApiResult? {
 				ctStarted.set(true)
 				
@@ -2730,6 +2776,14 @@ class Column(
 				})
 				client.account = access_info
 				try {
+					
+					if(! bBottom) {
+						val filterList = loadFilter2(client)
+						if(filterList != null) {
+							muted_word2 = encodeFilterTree(filterList)
+							filterUpdated = true
+						}
+					}
 					
 					return when(column_type) {
 						
@@ -2896,6 +2950,10 @@ class Column(
 				try {
 					lastTask = null
 					bRefreshLoading = false
+					
+					if(filterUpdated) {
+						checkFiltersForListData(muted_word2)
+					}
 					
 					val error = result.error
 					if(error != null) {
@@ -3546,13 +3604,22 @@ class Column(
 	
 	// カラム設定に正規表現フィルタを含めるなら真
 	fun canStatusFilter() : Boolean {
+		if(getFilterContext() != TootFilter.CONTEXT_NONE) return true
+		
 		return when(column_type) {
-			TYPE_REPORTS, TYPE_MUTES, TYPE_BLOCKS, TYPE_DOMAIN_BLOCKS,
-			TYPE_FOLLOW_REQUESTS, TYPE_FOLLOW_SUGGESTION,
-			TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_INSTANCE_INFORMATION, TYPE_LIST_LIST, TYPE_LIST_MEMBER,
-			TYPE_TREND_TAG -> false
-			else -> true
+			TYPE_SEARCH_MSP, TYPE_SEARCH_TS -> true
+			else -> false
 		}
+	}
+	
+	// マストドン2.4.3rcのキーワードフィルタのコンテキスト
+	private fun getFilterContext() = when(column_type) {
+		TYPE_HOME, TYPE_LIST_TL -> TootFilter.CONTEXT_HOME
+		TYPE_NOTIFICATIONS -> TootFilter.CONTEXT_NOTIFICATIONS
+		TYPE_CONVERSATION -> TootFilter.CONTEXT_THREAD
+		TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_PROFILE, TYPE_SEARCH -> TootFilter.CONTEXT_PUBLIC
+		TYPE_DIRECT_MESSAGES -> TootFilter.CONTEXT_PUBLIC
+		else -> TootFilter.CONTEXT_NONE
 	}
 	
 	// カラム設定に「すべての画像を隠す」ボタンを含めるなら真
@@ -3883,4 +3950,63 @@ class Column(
 		return sb.toString()
 	}
 	
+	private fun loadFilter2(client : TootApiClient) : ArrayList<TootFilter>? {
+		val column_context = getFilterContext()
+		if(column_context == 0) return null
+		val result = client.request(PATH_FILTERS)
+		
+		val jsonArray = result?.jsonArray ?: return null
+		return TootFilter.parseList(jsonArray)
+	}
+	
+	private fun encodeFilterTree(filterList : ArrayList<TootFilter>?) : WordTrieTree? {
+		val column_context = getFilterContext()
+		if(column_context == 0 || filterList == null) return null
+		val tree = WordTrieTree()
+		for(filter in filterList) {
+			if((filter.context and column_context) != 0) {
+				tree.add(filter.phrase)
+			}
+		}
+		return tree
+	}
+	
+	private fun checkFiltersForListData(tree : WordTrieTree?) {
+		tree ?: return
+		
+		val changeList = ArrayList<AdapterChange>()
+		list_data.forEachIndexed { idx, item ->
+			when(item) {
+				is TootStatus -> {
+					val old_filtered = item.filtered
+					item.updateFiltered(tree)
+					if(old_filtered != item.filtered) {
+						changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx))
+					}
+				}
+				
+				is TootNotification -> {
+					val s = item.status
+					if(s != null) {
+						val old_filtered = s.filtered
+						s.updateFiltered(tree)
+						if(old_filtered != s.filtered) {
+							changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx))
+						}
+					}
+				}
+			}
+		}
+		
+		fireShowContent(reason = "filter updated", changeList = changeList)
+		
+	}
+	
+	private fun onFiltersChanged2(filterList : ArrayList<TootFilter>) {
+		
+		val newFilter = encodeFilterTree(filterList) ?: return
+		
+		this.muted_word2 = newFilter
+		checkFiltersForListData(newFilter)
+	}
 }

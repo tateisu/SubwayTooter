@@ -692,6 +692,7 @@
 	<string name="follow_suggestion">Follow suggestion</string>
     <string name="close_all_columns">Close all columns</string>
     <string name="confirm_close_column_all">All columns (exclude protected) will be closed. Are tou sure?</string>
+    <string name="filtered">filtered</string>
 
     <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

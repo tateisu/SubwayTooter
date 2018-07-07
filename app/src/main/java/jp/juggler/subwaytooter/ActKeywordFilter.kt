@@ -44,14 +44,14 @@ class ActKeywordFilter
 		internal const val STATE_EXPIRE_SPINNER = "expire_spinner"
 		
 		private val expire_duration_list = arrayOf(
-			-1, // dont change
+			- 1, // dont change
 			0, // unlimited
 			1800,
 			3600,
-			3600*6,
-			3600*12,
+			3600 * 6,
+			3600 * 12,
 			86400,
-			86400*7
+			86400 * 7
 		)
 		
 	}
@@ -80,10 +80,8 @@ class ActKeywordFilter
 		
 		val intent = this.intent
 		
-		// filter ID の有無はUIに影響するのでinitUIより先に呼び出す
+		// filter ID の有無はUIに影響するのでinitUIより先に初期化する
 		this.filter_id = intent.getLongExtra(EXTRA_FILTER_ID, - 1L)
-		
-		initUI()
 		
 		val a = SavedAccount.loadAccount(this, intent.getLongExtra(EXTRA_ACCOUNT_DB_ID, - 1L))
 		if(a == null) {
@@ -91,6 +89,8 @@ class ActKeywordFilter
 			return
 		}
 		this.account = a
+		
+		initUI()
 		
 		if(savedInstanceState == null) {
 			if(filter_id != - 1L) {
@@ -118,7 +118,8 @@ class ActKeywordFilter
 	}
 	
 	private fun initUI() {
-		title = getString(if(filter_id==-1L) R.string.keyword_filter_new else R.string.keyword_filter_edit)
+		title =
+			getString(if(filter_id == - 1L) R.string.keyword_filter_new else R.string.keyword_filter_edit)
 		
 		this.density = resources.displayMetrics.density
 		setContentView(R.layout.act_keyword_filter)
@@ -151,7 +152,6 @@ class ActKeywordFilter
 		spExpire.adapter = adapter
 	}
 	
-	
 	private fun startLoading() {
 		loading = true
 		TootTaskRunner(this).run(account, object : TootTask {
@@ -179,22 +179,22 @@ class ActKeywordFilter
 			}
 		})
 	}
-
-	private fun onLoadComplete(filter:TootFilter){
+	
+	private fun onLoadComplete(filter : TootFilter) {
 		loading = false
 		
-		etPhrase.setText( filter.phrase)
-		setContextChecked(filter,cbContextHome,TootFilter.CONTEXT_HOME)
-		setContextChecked(filter,cbContextNotification,TootFilter.CONTEXT_NOTIFICATIONS)
-		setContextChecked(filter,cbContextPublic,TootFilter.CONTEXT_PUBLIC)
-		setContextChecked(filter,cbContextThread,TootFilter.CONTEXT_THREAD)
-
+		etPhrase.setText(filter.phrase)
+		setContextChecked(filter, cbContextHome, TootFilter.CONTEXT_HOME)
+		setContextChecked(filter, cbContextNotification, TootFilter.CONTEXT_NOTIFICATIONS)
+		setContextChecked(filter, cbContextPublic, TootFilter.CONTEXT_PUBLIC)
+		setContextChecked(filter, cbContextThread, TootFilter.CONTEXT_THREAD)
+		
 		cbFilterIrreversible.isChecked = filter.irreversible
 		
-		tvExpire.text = if( filter.time_expires_at == 0L ){
+		tvExpire.text = if(filter.time_expires_at == 0L) {
 			getString(R.string.filter_expire_unlimited)
-		}else{
-			TootStatus.formatTime(this,filter.time_expires_at,false)
+		} else {
+			TootStatus.formatTime(this, filter.time_expires_at, false)
 		}
 	}
 	
@@ -204,82 +204,80 @@ class ActKeywordFilter
 		}
 	}
 	
-	private fun setContextChecked(filter:TootFilter,cb:CheckBox,bit:Int){
-		cb.isChecked = ( (filter.context and bit) != 0)
+	private fun setContextChecked(filter : TootFilter, cb : CheckBox, bit : Int) {
+		cb.isChecked = ((filter.context and bit) != 0)
 	}
-	private fun JSONArray.putContextChecked(cb:CheckBox,key:String){
-		if( cb.isChecked ) this.put(key)
+	
+	private fun JSONArray.putContextChecked(cb : CheckBox, key : String) {
+		if(cb.isChecked) this.put(key)
 	}
-
-	private fun save(){
+	
+	private fun save() {
 		if(loading) return
 		
 		val params = JSONObject().apply {
-
-			put("phrase",etPhrase.text.toString())
-
-			put( "context",JSONArray().apply {
-				putContextChecked(cbContextHome,"home")
-				putContextChecked(cbContextNotification,"notifications")
-				putContextChecked(cbContextPublic,"public")
-				putContextChecked(cbContextThread,"thread")
-			})
-
-			put( "irreversible", cbFilterIrreversible.isChecked)
 			
-			var seconds = -1
+			put("phrase", etPhrase.text.toString())
+			
+			put("context", JSONArray().apply {
+				putContextChecked(cbContextHome, "home")
+				putContextChecked(cbContextNotification, "notifications")
+				putContextChecked(cbContextPublic, "public")
+				putContextChecked(cbContextThread, "thread")
+			})
+			
+			put("irreversible", cbFilterIrreversible.isChecked)
+			
+			var seconds = - 1
+			
 			val i = spExpire.selectedItemPosition
-			if( i >= 0 && i < expire_duration_list.size) {
+			if(i >= 0 && i < expire_duration_list.size) {
 				seconds = expire_duration_list[i]
 			}
-			if( seconds == -1 && filter_id == - 1L) {
-				seconds = 0
+			
+			when(seconds) {
+			
+			// dont change
+				- 1 -> put("expires_in", "")
+			
+			// set unlimited
+				0 -> if(filter_id == - 1L) {
+					// set blank to dont set expire
+					put("expires_in", "")
+				} else {
+					// FIXME: currently no way to remove expire from existing filter
+					put("expires_in", (Int.MAX_VALUE shr 5))
+				}
+			
+			// set seconds
+				else -> put("expires_in", seconds)
 			}
-			when(seconds){
-				-1 ->{ // dont change
-					put("expires_in","")
-				}
-				0 ->{ // set unlimited
-					if( filter_id == - 1L) {
-						// set blank to dont set expire
-						put("expires_in","")
-					}else {
-						// FIXME: currently no way to remove expire from existing filter
-						put("expires_in",(Int.MAX_VALUE shr 5) )
-					}
-				}
-				else->{
-					put("expires_in",seconds)
-				}
-			}
+			
 		}.toString()
 		
 		TootTaskRunner(this).run(account, object : TootTask {
-			override fun background(client : TootApiClient) : TootApiResult? {
-				
-				val result = if( filter_id == -1L){
-					val builder = Request.Builder()
-						.post(RequestBody.create(TootApiClient.MEDIA_TYPE_JSON,params))
-					client.request(Column.PATH_FILTERS,builder)
-				}else{
-					val builder = Request.Builder()
-						.put(RequestBody.create(TootApiClient.MEDIA_TYPE_JSON,params))
-					client.request("${Column.PATH_FILTERS}/${filter_id}",builder)
-				}
-				return result
+			
+			override fun background(client : TootApiClient) = if(filter_id == - 1L) {
+				val builder = Request.Builder()
+					.post(RequestBody.create(TootApiClient.MEDIA_TYPE_JSON, params))
+				client.request(Column.PATH_FILTERS, builder)
+			} else {
+				val builder = Request.Builder()
+					.put(RequestBody.create(TootApiClient.MEDIA_TYPE_JSON, params))
+				client.request("${Column.PATH_FILTERS}/$filter_id", builder)
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
 				result ?: return
 				val error = result.error
-				if( error!=null){
-					showToast(this@ActKeywordFilter,true,result.error)
-				}else{
+				if(error != null) {
+					showToast(this@ActKeywordFilter, true, result.error)
+				} else {
 					val app_state = App1.prepare(applicationContext)
-					for( column in app_state.column_list ){
-						if( column.access_info.acct == account.acct
+					for(column in app_state.column_list) {
+						if(column.access_info.acct == account.acct
 							&& column.column_type == Column.TYPE_KEYWORD_FILTER
-						){
+						) {
 							column.filter_reload_required = true
 						}
 					}

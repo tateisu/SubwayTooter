@@ -971,6 +971,7 @@
     <string name="close_all_columns">全てのカラムを閉じる</string>
     <string name="confirm_close_column_all">(保護されていない)全てのカラムが閉じられます。よろしいですか?</string>
     <string name="filtered">フィルタされました</string>
+    <string name="keyword_filter">単語フィルタ</string>
     <string name="keyword_filters">単語フィルタ</string>
     <string name="filter_context">適用箇所</string>
     <string name="filter_expires_at">期限</string>
@@ -981,17 +982,16 @@
     <string name="filter_irreversible">不可逆</string>
     <string name="filter_delete_confirm">フィルタ \'%1$s\' は削除されます。よろしいですか?</string>
     <string name="filter_of">フィルタ \'%1$s\'</string>
-    <string name="filter_phrase">Phrase</string>
-    <string name="dont_change">Don\'t change</string>
-    <string name="filter_expire_unlimited">Unlimited</string>
-    <string name="filter_expire_30min">30 minutes after save</string>
-    <string name="filter_expire_1hour">1 hour after save</string>
-    <string name="filter_expire_6hour">6 hours after save</string>
-    <string name="filter_expire_12hour">12 hours after save</string>
-    <string name="filter_expire_1day">1 day after save</string>
-    <string name="filter_expire_1week">1 week after save</string>
-    <string name="keyword_filter_new">New filter</string>
-    <string name="keyword_filter_edit">Edit filter</string>
-    <string name="keyword_filter">Keyword filter</string>
+    <string name="filter_phrase">フレーズ</string>
+    <string name="dont_change">変更しない</string>
+    <string name="filter_expire_unlimited">無期限</string>
+    <string name="filter_expire_30min">30分後</string>
+    <string name="filter_expire_1hour">1時間後</string>
+    <string name="filter_expire_6hour">6時間後</string>
+    <string name="filter_expire_12hour">12時間後</string>
+    <string name="filter_expire_1day">1日後</string>
+    <string name="filter_expire_1week">1週間後</string>
+    <string name="keyword_filter_new">フィルタの作成</string>
+    <string name="keyword_filter_edit">フィルタの編集</string>
 
 </resources>

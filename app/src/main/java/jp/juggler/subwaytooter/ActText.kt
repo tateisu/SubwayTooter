@@ -31,6 +31,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 		internal const val EXTRA_TEXT = "text"
 		internal const val EXTRA_CONTENT_START = "content_start"
 		internal const val EXTRA_CONTENT_END = "content_end"
+		internal const val EXTRA_ACCOUNT_DB_ID = "account_db_id"
 		
 		private fun addAfterLine(sb : StringBuilder, text : String) {
 			if(sb.isNotEmpty() && sb[sb.length - 1] != '\n') {
@@ -136,6 +137,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 		
 		fun open(activity : ActMain, request_code : Int, access_info : SavedAccount, status : TootStatus) {
 			val intent = Intent(activity, ActText::class.java)
+			intent.putExtra(EXTRA_ACCOUNT_DB_ID,access_info.db_id)
 			encodeStatus(intent, activity, access_info, status)
 			
 			activity.startActivityForResult(intent, request_code)
@@ -143,6 +145,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 		
 		fun open(activity : ActMain, request_code : Int, access_info : SavedAccount, who : TootAccount) {
 			val intent = Intent(activity, ActText::class.java)
+			intent.putExtra(EXTRA_ACCOUNT_DB_ID,access_info.db_id)
 			encodeAccount(intent, activity, access_info, who)
 			
 			activity.startActivityForResult(intent, request_code)
@@ -164,13 +167,19 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			}
 		}
 	
+	private var account : SavedAccount? = null
+	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		super.onCreate(savedInstanceState)
 		App1.setActivityTheme(this, false)
+		
+		val intent = intent
+		
+		account = SavedAccount.loadAccount(this,intent.getLongExtra(EXTRA_ACCOUNT_DB_ID,-1L))
+
 		initUI()
 		
 		if(savedInstanceState == null) {
-			val intent = intent
 			val sv = intent.getStringExtra(EXTRA_TEXT)
 			val content_start = intent.getIntExtra(EXTRA_CONTENT_START, 0)
 			val content_end = intent.getIntExtra(EXTRA_CONTENT_END, sv.length)
@@ -191,8 +200,14 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 		findViewById<View>(R.id.btnSearch).setOnClickListener(this)
 		findViewById<View>(R.id.btnSend).setOnClickListener(this)
 		findViewById<View>(R.id.btnMuteWord).setOnClickListener(this)
+		
 		findViewById<View>(R.id.btnSearchMSP).setOnClickListener(this)
 		findViewById<View>(R.id.btnSearchTS).setOnClickListener(this)
+
+		val btnKeywordFilter :View = findViewById(R.id.btnKeywordFilter)
+		btnKeywordFilter.setOnClickListener(this)
+		btnKeywordFilter.isEnabled = account?.isPseudo == false
+		
 	}
 	
 	override fun onClick(v : View) {
@@ -209,6 +224,8 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			R.id.btnSearchMSP -> searchToot(RESULT_SEARCH_MSP)
 			
 			R.id.btnSearchTS -> searchToot(RESULT_SEARCH_TS)
+			
+			R.id.btnKeywordFilter -> keywordFilter()
 		}
 	}
 	
@@ -299,5 +316,10 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 		
 	}
 	
+	private fun keywordFilter() {
+		val account = this.account
+		if( account?.isPseudo != false ) return
+		ActKeywordFilter.open(this,account,initial_phrase = selection)
+	}
 	
 }

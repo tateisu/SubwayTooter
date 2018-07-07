@@ -31,7 +31,7 @@ import okhttp3.RequestBody
 
 object Action_Toot {
 	
-	private val log = LogCategory("Action_Favourite")
+	private val log = LogCategory("Action_Toot")
 	
 	private val reDetailedStatusTime =
 		Pattern.compile("<a\\b[^>]*?\\bdetailed-status__datetime\\b[^>]*href=\"https://[^/]+/@[^/]+/(\\d+)\"")
@@ -127,7 +127,7 @@ object Action_Toot {
 		//
 		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
 			
-			internal var new_status : TootStatus? = null
+			var new_status : TootStatus? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				var result : TootApiResult?
 				
@@ -374,7 +374,7 @@ object Action_Toot {
 		
 		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
 			
-			internal var new_status : TootStatus? = null
+			var new_status : TootStatus? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				val parser = TootParser(activity, access_info)
@@ -695,7 +695,7 @@ object Action_Toot {
 			.progressPrefix(activity.getString(R.string.progress_synchronize_toot))
 			.run(access_info, object : TootTask {
 				
-				internal var local_status_id = - 1L
+				var local_status_id = - 1L
 				override fun background(client : TootApiClient) : TootApiResult? {
 					var result : TootApiResult?
 					if(access_info.isPseudo) {
@@ -767,7 +767,7 @@ object Action_Toot {
 			
 			.run(access_info, object : TootTask {
 				
-				internal var new_status : TootStatus? = null
+				var new_status : TootStatus? = null
 				override fun background(client : TootApiClient) : TootApiResult? {
 					val result : TootApiResult?
 					
@@ -865,7 +865,7 @@ object Action_Toot {
 			
 			.run(access_info, object : TootTask {
 				
-				internal var local_status : TootStatus? = null
+				var local_status : TootStatus? = null
 				override fun background(client : TootApiClient) : TootApiResult? {
 					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
 					val path = String.format(
@@ -947,7 +947,7 @@ object Action_Toot {
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
-			internal var local_status : TootStatus? = null
+			var local_status : TootStatus? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val request_builder = Request.Builder()

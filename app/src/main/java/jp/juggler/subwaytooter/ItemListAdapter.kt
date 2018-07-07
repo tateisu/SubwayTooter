@@ -113,6 +113,14 @@ internal class ItemListAdapter(
 				return holder
 			}
 			
+			Column.HeaderType.Filter.viewType ->{
+				val viewRoot =
+					activity.layoutInflater.inflate(R.layout.lv_header_filter, parent, false)
+				val holder = ViewHolderHeaderFilter(activity, viewRoot)
+				viewRoot.tag = holder
+				return holder
+			}
+			
 			else -> throw RuntimeException("unknown viewType: $viewType")
 		}
 	}

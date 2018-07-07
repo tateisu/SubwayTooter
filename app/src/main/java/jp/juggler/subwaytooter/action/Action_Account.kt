@@ -14,11 +14,9 @@ import jp.juggler.subwaytooter.Column
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.dialog.LoginForm
-import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.showToast
 import org.json.JSONObject

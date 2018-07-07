@@ -14,15 +14,10 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import jp.juggler.subwaytooter.action.*
 
 import java.util.ArrayList
 
-import jp.juggler.subwaytooter.action.Action_Follow
-import jp.juggler.subwaytooter.action.Action_HashTag
-import jp.juggler.subwaytooter.action.Action_Instance
-import jp.juggler.subwaytooter.action.Action_List
-import jp.juggler.subwaytooter.action.Action_Toot
-import jp.juggler.subwaytooter.action.Action_User
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
@@ -120,6 +115,10 @@ internal class ItemViewHolder(
 	private lateinit var btnFollowRequestAccept : View
 	private lateinit var btnFollowRequestDeny : View
 	
+	private lateinit var llFilter : View
+	private lateinit var tvFilterPhrase : TextView
+	private lateinit var tvFilterDetail : TextView
+	
 	private lateinit var llExtra : LinearLayout
 	
 	private lateinit var tvApplication : TextView
@@ -188,6 +187,7 @@ internal class ItemViewHolder(
 		
 		llTrendTag.setOnClickListener(this)
 		llTrendTag.setOnLongClickListener(this)
+		llFilter.setOnClickListener (this)
 		
 		
 		this.content_color_default = tvContent.textColors.defaultColor
@@ -204,6 +204,7 @@ internal class ItemViewHolder(
 			btnListTL.textSize = activity.timeline_font_size_sp
 			tvTrendTagName.textSize = activity.timeline_font_size_sp
 			tvTrendTagCount.textSize = activity.timeline_font_size_sp
+			tvFilterPhrase.textSize = activity.timeline_font_size_sp
 		}
 		if(! activity.notification_tl_font_size_sp.isNaN() ){
 			tvBoosted.textSize = activity.notification_tl_font_size_sp
@@ -216,6 +217,7 @@ internal class ItemViewHolder(
 			tvAcct.textSize = activity.acct_font_size_sp
 			tvTime.textSize = activity.acct_font_size_sp
 			tvTrendTagDesc.textSize = activity.acct_font_size_sp
+			tvFilterDetail.textSize = activity.acct_font_size_sp
 		}
 		
 		ivThumbnail.layoutParams.height = activity.avatarIconSize
@@ -248,6 +250,8 @@ internal class ItemViewHolder(
 		this.access_info = column.access_info
 		
 		if(activity.timeline_font != null || activity.timeline_font_bold != null) {
+			val font_bold = activity.timeline_font_bold ?: activity.timeline_font
+			val font_normal =  activity.timeline_font ?: activity.timeline_font_bold
 			viewRoot.scan { v ->
 				try {
 					if(v is Button) {
@@ -258,9 +262,9 @@ internal class ItemViewHolder(
 								v === tvFollowerName ||
 								v === tvBoosted ||
 								v === tvTrendTagCount ||
-								v === tvTrendTagName -> activity.timeline_font_bold
-								?: activity.timeline_font
-							else -> activity.timeline_font ?: activity.timeline_font_bold
+								v === tvTrendTagName ||
+								v === tvFilterPhrase -> font_bold
+							else ->font_normal
 						}
 						if(typeface != null) v.typeface = typeface
 					}
@@ -272,6 +276,7 @@ internal class ItemViewHolder(
 			tvName.typeface = Typeface.DEFAULT_BOLD
 			tvFollowerName.typeface = Typeface.DEFAULT_BOLD
 			tvBoosted.typeface = Typeface.DEFAULT_BOLD
+			tvTrendTagCount.typeface = Typeface.DEFAULT_BOLD
 		}
 		
 		if(bSimpleList) {
@@ -339,6 +344,7 @@ internal class ItemViewHolder(
 		llExtra.removeAllViews()
 		tvMessageHolder.visibility = View.GONE
 		llTrendTag.visibility = View.GONE
+		llFilter.visibility = View.GONE
 		
 		var c : Int
 		c = if(column.content_color != 0) column.content_color else content_color_default
@@ -354,6 +360,7 @@ internal class ItemViewHolder(
 		tvTrendTagName.setTextColor(c)
 		tvTrendTagCount.setTextColor(c)
 		cvTrendTagHistory.setColor(c)
+		tvFilterPhrase.setTextColor(c)
 		
 		c = if(column.acct_color != 0) column.acct_color else Styler.getAttributeColor(
 			activity,
@@ -366,6 +373,7 @@ internal class ItemViewHolder(
 		//			tvBoostedAcct.setTextColor( c );
 		//			tvFollowerAcct.setTextColor( c );
 		//			tvAcct.setTextColor( c );
+		tvFilterPhrase.setTextColor(c)
 		
 		this.item = item
 		when(item) {
@@ -397,6 +405,8 @@ internal class ItemViewHolder(
 		// TootTrendTag の後に TootTagを判定すること
 			is TootTrendTag -> showTrendTag(item)
 			is TootTag -> showSearchTag(item)
+			
+			is TootFilter -> showFilter(item)
 			
 			else -> {
 			}
@@ -482,6 +492,27 @@ internal class ItemViewHolder(
 	private fun showDomainBlock(domain_block : TootDomainBlock) {
 		llSearchTag.visibility = View.VISIBLE
 		btnSearchTag.text = domain_block.domain
+	}
+	
+	private fun showFilter(filter : TootFilter){
+		llFilter.visibility = View.VISIBLE
+		tvFilterPhrase.text = filter.phrase
+		val sb = StringBuffer()
+		sb.append( activity.getString(R.string.filter_context))
+			.append(": ")
+			.append(filter.getContextNames(activity).joinToString("/"))
+		if( filter.irreversible){
+			sb.append(", ")
+				.append(activity.getString(R.string.filter_irreversible))
+			
+		}
+		if( filter.time_expires_at != 0L ){
+			sb.append(", ")
+				.append(activity.getString(R.string.filter_expires_at))
+				.append(": ")
+				.append( TootStatus.formatTime(activity,filter.time_expires_at,false))
+		}
+		tvFilterDetail.text = sb.toString()
 	}
 	
 	private fun showSearchTag(tag : TootTag) {
@@ -1071,6 +1102,10 @@ internal class ItemViewHolder(
 				}
 			}
 			
+			llFilter ->if(item is TootFilter) {
+				openFilterMenu(item)
+			}
+			
 			else -> when(v.id) {
 				R.id.ivCardThumbnail -> status_showing?.card?.url?.let { url ->
 					if(url.isNotEmpty()) App1.openCustomTab(activity, url)
@@ -1396,6 +1431,20 @@ internal class ItemViewHolder(
 			}
 		})
 	}
+	
+	private fun openFilterMenu(item : TootFilter) {
+		val ad = ActionsDialog()
+		ad.addAction(activity.getString(R.string.edit)){
+			ActKeywordFilter.open(activity,access_info,item.id)
+		}
+		ad.addAction(activity.getString(R.string.delete)){
+			Action_Filter.delete(activity,access_info,item)
+		}
+		ad.show(activity,activity.getString(R.string.filter_of,item.phrase))
+	}
+	
+	
+	/////////////////////////////////////////////////////////////////////
 	
 	private fun inflate(ui : AnkoContext<Context>) = with(ui) {
 		verticalLayout {
@@ -2021,6 +2070,21 @@ internal class ItemViewHolder(
 				}.lparams(dip(48f), dip(32f)) {
 					startMargin = dip(4)
 				}
+			}
+			
+			llFilter = verticalLayout {
+				lparams(matchParent, wrapContent) {
+				}
+				minimumHeight = dip(40)
+
+				tvFilterPhrase = textView{
+					typeface = Typeface.DEFAULT_BOLD
+				}.lparams(matchParent, wrapContent)
+
+				tvFilterDetail = textView{
+					textColor = Styler.getAttributeColor(context, R.attr.colorTimeSmall)
+					textSize = 12f // SP
+				}.lparams(matchParent, wrapContent)
 			}
 		}
 	}

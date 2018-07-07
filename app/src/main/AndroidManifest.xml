@@ -188,6 +188,11 @@
             />
 
         <activity
+            android:name=".ActKeywordFilter"
+            android:label="@string/keyword_filter_new"
+            />
+
+        <activity
             android:name=".ActHighlightWordList"
             android:label="@string/highlight_word"
             />

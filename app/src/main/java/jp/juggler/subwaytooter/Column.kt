@@ -169,6 +169,7 @@ class Column(
 		internal const val TYPE_DIRECT_MESSAGES = 23
 		internal const val TYPE_TREND_TAG = 24
 		internal const val TYPE_FOLLOW_SUGGESTION = 25
+		internal const val TYPE_KEYWORD_FILTER = 26
 		
 		internal const val TAB_STATUS = 0
 		internal const val TAB_FOLLOWING = 1
@@ -204,6 +205,7 @@ class Column(
 				TYPE_FAVOURITED_BY -> context.getString(R.string.favourited_by)
 				TYPE_HASHTAG -> context.getString(R.string.hashtag)
 				TYPE_MUTES -> context.getString(R.string.muted_users)
+				TYPE_KEYWORD_FILTER -> context.getString(R.string.keyword_filters)
 				TYPE_BLOCKS -> context.getString(R.string.blocked_users)
 				TYPE_DOMAIN_BLOCKS -> context.getString(R.string.blocked_domains)
 				TYPE_SEARCH -> context.getString(R.string.search)
@@ -235,6 +237,7 @@ class Column(
 				TYPE_FAVOURITED_BY -> if(SavedAccount.isNicoru(acct)) R.attr.ic_nicoru else R.attr.btn_favourite
 				TYPE_HASHTAG -> R.attr.ic_hashtag
 				TYPE_MUTES -> R.attr.ic_mute
+				TYPE_KEYWORD_FILTER -> R.attr.ic_mute
 				TYPE_BLOCKS -> R.attr.ic_block
 				TYPE_DOMAIN_BLOCKS -> R.attr.ic_domain_block
 				TYPE_SEARCH, TYPE_SEARCH_MSP, TYPE_SEARCH_TS -> R.attr.ic_search
@@ -387,6 +390,8 @@ class Column(
 	internal val is_dispose = AtomicBoolean()
 	
 	internal var bFirstInitialized = false
+	
+	var filter_reload_required : Boolean = false
 	
 	//////////////////////////////////////////////////////////////////////////////////////
 	
@@ -1645,6 +1650,19 @@ class Column(
 				return result
 			}
 			
+			fun parseFilterList(
+				client : TootApiClient,
+				path_base : String
+			) : TootApiResult? {
+				val result = client.request(path_base)
+				if(result != null) {
+					val src = TootFilter.parseList(result.jsonArray)
+					
+					this.list_tmp = addAll(null, src)
+				}
+				return result
+			}
+			
 			fun parseDomainList(
 				client : TootApiClient,
 				path_base : String
@@ -1831,6 +1849,7 @@ class Column(
 						}
 						
 						TYPE_MUTES -> return parseAccountList(client, PATH_MUTES)
+						TYPE_KEYWORD_FILTER -> return parseFilterList(client, PATH_FILTERS)
 						
 						TYPE_BLOCKS -> return parseAccountList(client, PATH_BLOCKS)
 						
@@ -3498,6 +3517,7 @@ class Column(
 		Profile(1),
 		Search(2),
 		Instance(3),
+		Filter(4),
 	}
 	
 	val headerType : HeaderType?
@@ -3507,6 +3527,7 @@ class Column(
 			Column.TYPE_SEARCH_MSP -> HeaderType.Search
 			Column.TYPE_SEARCH_TS -> HeaderType.Search
 			Column.TYPE_INSTANCE_INFORMATION -> HeaderType.Instance
+			Column.TYPE_KEYWORD_FILTER -> HeaderType.Filter
 			else -> null
 		}
 	
@@ -3574,6 +3595,13 @@ class Column(
 		// 初期ロード中なら何もしない
 		if(bInitialLoading) {
 			log.d("onStart: column is in initial loading.")
+			return
+		}
+
+		// フィルタ一覧のリロードが必要
+		if( filter_reload_required ){
+			filter_reload_required = false
+			startLoading()
 			return
 		}
 		
@@ -4005,8 +4033,29 @@ class Column(
 	private fun onFiltersChanged2(filterList : ArrayList<TootFilter>) {
 		
 		val newFilter = encodeFilterTree(filterList) ?: return
-		
 		this.muted_word2 = newFilter
 		checkFiltersForListData(newFilter)
+	}
+	
+	fun onFilterDeleted(filter : TootFilter, filterList : ArrayList<TootFilter>) {
+		if(column_type == TYPE_KEYWORD_FILTER) {
+			val tmp_list = ArrayList<TimelineItem>(list_data.size)
+			for(o in list_data) {
+				if(o is TootFilter) {
+					if(o.id == filter.id) continue
+				}
+				tmp_list.add(o)
+			}
+			if(tmp_list.size != list_data.size) {
+				list_data.clear()
+				list_data.addAll(tmp_list)
+				fireShowContent(reason = "onFilterDeleted")
+			}
+		} else {
+			val context = getFilterContext()
+			if(context != TootFilter.CONTEXT_NONE) {
+				onFiltersChanged2(filterList)
+			}
+		}
 	}
 }

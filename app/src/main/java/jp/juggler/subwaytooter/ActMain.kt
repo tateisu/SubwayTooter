@@ -1009,6 +1009,12 @@ class ActMain : AppCompatActivity()
 				false,
 				Column.TYPE_BLOCKS
 			)
+			R.id.nav_keyword_filter-> Action_Account.timeline(
+				this,
+				defaultInsertPosition,
+				false,
+				Column.TYPE_KEYWORD_FILTER
+			)
 			R.id.nav_add_domain_blocks -> Action_Account.timeline(
 				this,
 				defaultInsertPosition,

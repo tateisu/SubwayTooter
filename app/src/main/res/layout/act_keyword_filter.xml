@@ -1,140 +1,154 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/svContent"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-
-    android:clipToPadding="false"
-    android:fillViewport="true"
-    android:paddingBottom="128dp"
-    android:paddingTop="12dp"
-    android:scrollbarStyle="outsideOverlay"
-    tools:ignore="TooManyViews"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
     >
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+
+        android:clipToPadding="false"
+        android:fillViewport="true"
+        android:paddingBottom="128dp"
+        android:paddingTop="12dp"
+        android:scrollbarStyle="outsideOverlay"
+        tools:ignore="TooManyViews"
         >
 
-        <View style="@style/setting_divider"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            >
 
-        <TextView
-            style="@style/setting_row_label"
-            android:labelFor="@+id/etPhrase"
-            android:text="@string/filter_phrase"
-            />
+            <View style="@style/setting_divider"/>
 
-        <LinearLayout style="@style/setting_row_form">
-
-            <EditText
-                android:id="@+id/etPhrase"
-                style="@style/setting_horizontal_stretch"
-                android:inputType="text"
+            <TextView
+                style="@style/setting_row_label"
+                android:labelFor="@+id/etPhrase"
+                android:text="@string/filter_phrase"
                 />
 
-        </LinearLayout>
+            <LinearLayout style="@style/setting_row_form">
 
-        <View style="@style/setting_divider"/>
+                <EditText
+                    android:id="@+id/etPhrase"
+                    style="@style/setting_horizontal_stretch"
+                    android:inputType="text"
+                    />
 
-        <TextView
-            style="@style/setting_row_label"
-            android:text="@string/filter_context"
-            />
+            </LinearLayout>
 
-        <LinearLayout style="@style/setting_row_form">
+            <View style="@style/setting_divider"/>
 
-            <CheckBox
-                android:id="@+id/cbContextHome"
-                style="@style/setting_horizontal_stretch"
-                android:text="@string/filter_home"
+            <TextView
+                style="@style/setting_row_label"
+                android:text="@string/filter_context"
                 />
 
-        </LinearLayout>
+            <LinearLayout style="@style/setting_row_form">
 
-        <LinearLayout style="@style/setting_row_form">
+                <CheckBox
+                    android:id="@+id/cbContextHome"
+                    style="@style/setting_horizontal_stretch"
+                    android:checked="true"
+                    android:text="@string/filter_home"
+                    />
 
-            <CheckBox
-                android:id="@+id/cbContextNotification"
-                style="@style/setting_horizontal_stretch"
-                android:text="@string/filter_notification"
-                />
+            </LinearLayout>
 
-        </LinearLayout>
+            <LinearLayout style="@style/setting_row_form">
 
-        <LinearLayout style="@style/setting_row_form">
+                <CheckBox
+                    android:id="@+id/cbContextNotification"
+                    style="@style/setting_horizontal_stretch"
+                    android:checked="true"
+                    android:text="@string/filter_notification"
+                    />
 
-            <CheckBox
-                android:id="@+id/cbContextPublic"
-                style="@style/setting_horizontal_stretch"
-                android:text="@string/filter_public"
-                />
+            </LinearLayout>
 
-        </LinearLayout>
+            <LinearLayout style="@style/setting_row_form">
 
-        <LinearLayout style="@style/setting_row_form">
+                <CheckBox
+                    android:id="@+id/cbContextPublic"
+                    style="@style/setting_horizontal_stretch"
+                    android:checked="true"
+                    android:text="@string/filter_public"
+                    />
 
-            <CheckBox
-                android:id="@+id/cbContextThread"
-                style="@style/setting_horizontal_stretch"
-                android:text="@string/filter_thread"
-                />
+            </LinearLayout>
 
-        </LinearLayout>
+            <LinearLayout style="@style/setting_row_form">
 
-        <View style="@style/setting_divider"/>
+                <CheckBox
+                    android:id="@+id/cbContextThread"
+                    style="@style/setting_horizontal_stretch"
+                    android:checked="true"
+                    android:text="@string/filter_thread"
+                    />
 
-        <TextView
-            style="@style/setting_row_label"
-            android:text="@string/filter_irreversible"
-            />
+            </LinearLayout>
 
-        <LinearLayout style="@style/setting_row_form">
+            <View style="@style/setting_divider"/>
 
-            <CheckBox
-                android:id="@+id/cbFilterIrreversible"
-                style="@style/setting_horizontal_stretch"
+            <TextView
+                style="@style/setting_row_label"
                 android:text="@string/filter_irreversible"
                 />
 
-        </LinearLayout>
+            <LinearLayout style="@style/setting_row_form">
 
-        <View style="@style/setting_divider"/>
+                <CheckBox
+                    android:id="@+id/cbFilterIrreversible"
+                    style="@style/setting_horizontal_stretch"
+                    android:text="@string/filter_irreversible"
+                    />
 
-        <TextView
-            style="@style/setting_row_label"
-            android:text="@string/filter_expires_at"
-            />
+            </LinearLayout>
 
-        <LinearLayout style="@style/setting_row_form">
+            <View style="@style/setting_divider"/>
 
             <TextView
-                android:id="@+id/tvExpire"
-                style="@style/setting_horizontal_stretch"
+                style="@style/setting_row_label"
+                android:text="@string/filter_expires_at"
                 />
+
+            <LinearLayout style="@style/setting_row_form">
+
+                <TextView
+                    android:id="@+id/tvExpire"
+                    style="@style/setting_horizontal_stretch"
+                    />
+            </LinearLayout>
+
+            <LinearLayout style="@style/setting_row_form">
+
+                <Spinner
+                    android:id="@+id/spExpire"
+                    style="@style/setting_horizontal_stretch"
+                    />
+            </LinearLayout>
+
+            <View style="@style/setting_divider"/>
+
+            <LinearLayout style="@style/setting_row_form">
+
+            </LinearLayout>
+
         </LinearLayout>
+    </ScrollView>
 
-        <LinearLayout style="@style/setting_row_form">
-
-            <Spinner
-                android:id="@+id/spExpire"
-                style="@style/setting_horizontal_stretch"
-                />
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <Button
-                android:id="@+id/btnSave"
-                style="@style/setting_horizontal_stretch"
-                android:text="@string/save"
-                />
-        </LinearLayout>
-
-    </LinearLayout>
-</ScrollView>
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/save"
+        />
+</LinearLayout>

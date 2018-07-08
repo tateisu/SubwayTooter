@@ -497,21 +497,26 @@ internal class ItemViewHolder(
 	private fun showFilter(filter : TootFilter){
 		llFilter.visibility = View.VISIBLE
 		tvFilterPhrase.text = filter.phrase
+
 		val sb = StringBuffer()
+		//
 		sb.append( activity.getString(R.string.filter_context))
 			.append(": ")
 			.append(filter.getContextNames(activity).joinToString("/"))
-		if( filter.irreversible){
-			sb.append(", ")
-				.append(activity.getString(R.string.filter_irreversible))
-			
-		}
+		//
 		if( filter.time_expires_at != 0L ){
-			sb.append(", ")
+			sb.append('\n')
 				.append(activity.getString(R.string.filter_expires_at))
 				.append(": ")
 				.append( TootStatus.formatTime(activity,filter.time_expires_at,false))
 		}
+		//
+		if( filter.irreversible){
+			sb.append('\n')
+				.append(activity.getString(R.string.filter_irreversible))
+			
+		}
+
 		tvFilterDetail.text = sb.toString()
 	}
 	

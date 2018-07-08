@@ -4,11 +4,45 @@ import android.support.v4.util.SparseArrayCompat
 
 import java.util.ArrayList
 
-class WordTrieTree {
+class WordTrieTree(private var validator : (src : CharSequence, start : Int, end : Int) -> Boolean = EMPTY_VALIDATOR) {
 	
 	companion object {
 		
 		private val grouper = CharacterGroup()
+		
+		private val EMPTY_VALIDATOR = { _ : CharSequence, _ : Int, _ : Int -> true }
+		
+		// マストドン2.4.3rc2でキーワードフィルタは単語の前後に 正規表現 \b を仮定するようになった
+		// Trie木でマッチ候補が出たらマッチ範囲と前後の文字で単語区切りを検証する
+		val WORD_VALIDATOR = { sequence : CharSequence, start : Int, end : Int ->
+			
+			// 文字種を正規化してから正規表現の単語構成文字 \w [A-Za-z0-9_] にマッチするか調べる
+			// 全角半角大文字小文字の違いは吸収されるが、英字数字アンダーバー以外にはマッチしない
+			fun isWordCharacter(c : Char) : Boolean {
+				val uc = grouper.getUnifiedCharacter(c)
+				return when {
+					'A' <= uc && uc <= 'Z' -> true
+					'a' <= uc && uc <= 'z' -> true
+					'0' <= uc && uc <= '9' -> true
+					uc == '_' -> true
+					else -> false
+				}
+			}
+			
+			when {
+			// マッチ範囲の始端とその直前がともに単語構成文字だった場合、\bを満たさない
+				isWordCharacter(sequence[start])
+					&& start > 0
+					&& isWordCharacter(sequence[start - 1]) -> false
+			
+			// マッチ範囲の終端とその直後がともに単語構成文字だった場合、\bを満たさない
+				isWordCharacter(sequence[end - 1])
+					&& end < sequence.length
+					&& isWordCharacter(sequence[end]) -> false
+				
+				else -> true
+			}
+		}
 	}
 	
 	private class Node {
@@ -65,7 +99,10 @@ class WordTrieTree {
 	class Match internal constructor(val start : Int, val end : Int, val word : String)
 	
 	// Tokenizer が列挙する文字を使って Trie Tree を探索する
-	private fun match(allowShortMatch : Boolean, t : CharacterGroup.Tokenizer) : Match? {
+	private fun match(
+		allowShortMatch : Boolean,
+		t : CharacterGroup.Tokenizer
+	) : Match? {
 		
 		val start = t.offset
 		var dst : Match? = null
@@ -73,12 +110,18 @@ class WordTrieTree {
 		var node = node_root
 		while(true) {
 			
-			// このノードは単語の終端でもある
+			// match_wordが定義されたノードは単語の終端を示す
 			val match_word = node.match_word
-			if(match_word != null) {
+			// マッチ候補はvalidatorで単語区切りなどの検査を行う
+			if(match_word != null && validator(t.text, start, t.offset)) {
+				
+				// マッチしたことを覚えておく
 				dst = Match(start, t.offset, match_word)
+				
 				// ミュート用途の場合、ひとつでも単語にマッチすればより長い探索は必要ない
 				if(allowShortMatch) break
+				
+				// それ以外の場合は最長マッチを探索する
 			}
 			
 			val id = t.next()
@@ -113,7 +156,7 @@ class WordTrieTree {
 	}
 	
 	// ハイライト用。複数マッチする。マッチした位置を覚える
-	internal fun matchList(src : CharSequence, start : Int, end : Int) : ArrayList<Match>? {
+	fun matchList(src : CharSequence, start : Int, end : Int) : ArrayList<Match>? {
 		
 		var dst : ArrayList<Match>? = null
 		

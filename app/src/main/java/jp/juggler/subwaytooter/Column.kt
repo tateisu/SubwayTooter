@@ -3684,6 +3684,7 @@ class Column(
 	
 	fun canReloadWhenRefreshTop() : Boolean {
 		return when(column_type) {
+			TYPE_KEYWORD_FILTER,
 			TYPE_SEARCH,
 			TYPE_SEARCH_MSP,
 			TYPE_SEARCH_TS,
@@ -3990,7 +3991,7 @@ class Column(
 	private fun encodeFilterTree(filterList : ArrayList<TootFilter>?) : WordTrieTree? {
 		val column_context = getFilterContext()
 		if(column_context == 0 || filterList == null) return null
-		val tree = WordTrieTree()
+		val tree = WordTrieTree(WordTrieTree.WORD_VALIDATOR)
 		for(filter in filterList) {
 			if((filter.context and column_context) != 0) {
 				tree.add(filter.phrase)

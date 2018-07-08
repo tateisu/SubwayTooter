@@ -73,7 +73,7 @@ class TootFilter( src: JSONObject) :TimelineItem() {
 		context = parseFilterContext(src.optJSONArray("context"))
 		expires_at = src.parseString("expires_at") // may null
 		time_expires_at = TootStatus.parseTime(expires_at)
-		irreversible = false // FIXME: irreversible flag is not shown in filter API
+		irreversible = src.optBoolean("irreversible")
 	}
 	
 	fun getContextNames(context: Context) : ArrayList<String> {

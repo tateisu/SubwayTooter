@@ -316,7 +316,7 @@ class ColumnViewHolder(
 	}
 	
 	private val proc_start_filter = Runnable {
-		if(! isPageDestroyed && isRegexValid() ) {
+		if(! isPageDestroyed && isRegexValid()) {
 			val column = this.column ?: return@Runnable
 			column.regex_text = etRegexFilter.text.toString()
 			activity.app_state.saveColumnList()
@@ -490,7 +490,7 @@ class ColumnViewHolder(
 				Column.TYPE_CONVERSATION,
 				Column.TYPE_INSTANCE_INFORMATION -> refreshLayout.isEnabled = false
 				
-				Column.TYPE_SEARCH, Column.TYPE_TREND_TAG -> {
+				Column.TYPE_KEYWORD_FILTER, Column.TYPE_SEARCH, Column.TYPE_TREND_TAG -> {
 					refreshLayout.isEnabled = true
 					refreshLayout.direction = SwipyRefreshLayoutDirection.TOP
 				}
@@ -916,16 +916,16 @@ class ColumnViewHolder(
 	}
 	
 	override fun onLongClick(v : View) : Boolean {
-		return when(v.id){
-			R.id.btnColumnClose-> {
+		return when(v.id) {
+			R.id.btnColumnClose -> {
 				val idx = activity.app_state.column_list.indexOf(column)
-				activity.closeColumnAll( idx )
+				activity.closeColumnAll(idx)
 				true
 			}
-			else->false
+			
+			else -> false
 		}
 	}
-	
 	
 	private fun showError(message : String) {
 		tvLoading.visibility = View.VISIBLE
@@ -1048,9 +1048,6 @@ class ColumnViewHolder(
 				column.mRefreshLoadingError = ""
 			}
 		}
-		
-		// 表示状態が変わった後にもう一度呼び出す必要があるらしい。。。
-		// 試しにやめてみる status_adapter.notifyChange()
 		
 		proc_restoreScrollPosition.run()
 	}

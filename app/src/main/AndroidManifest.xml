@@ -190,6 +190,7 @@
         <activity
             android:name=".ActKeywordFilter"
             android:label="@string/keyword_filter_new"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden"
             />
 
         <activity

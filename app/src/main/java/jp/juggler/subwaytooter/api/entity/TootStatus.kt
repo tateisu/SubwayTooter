@@ -339,14 +339,14 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 		reblog?.updateFiltered(muted_words)
 	}
 	
-	private fun checkFiltered(muted_words : WordTrieTree?) : Boolean {
-		muted_words ?: return false
+	private fun checkFiltered(filter_tree : WordTrieTree?) : Boolean {
+		filter_tree ?: return false
 		//
 		var t = decoded_spoiler_text
-		if(t.isNotEmpty() && muted_words.matchShort(t)) return true
+		if(t.isNotEmpty() && filter_tree.matchShort(t)) return true
 		//
 		t = decoded_content
-		if(t.isNotEmpty() && muted_words.matchShort(t)) return true
+		if(t.isNotEmpty() && filter_tree.matchShort(t)) return true
 		//
 		return false
 	}

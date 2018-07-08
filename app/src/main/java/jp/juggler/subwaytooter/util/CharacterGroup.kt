@@ -6,6 +6,7 @@ class CharacterGroup {
 	
 	companion object {
 		
+
 		// Tokenizerが終端に達したことを示す
 		const val END = - 1
 		
@@ -69,6 +70,13 @@ class CharacterGroup {
 	
 	// 文字数2: unicode 二つを合成した数値 => group_id。半角カナ＋濁音など
 	private val map2 = SparseIntArray()
+
+	// ユニコード文字を正規化する。
+	// 簡易版なので全ての文字には対応していない
+	fun getUnifiedCharacter(c:Char):Char{
+		val v1 = map1[c.toInt()]
+		return if( v1 != 0 ) v1.toChar() else c
+	}
 	
 	// グループをmapに登録する
 	private fun addGroup(list : Array<String>) {

@@ -240,13 +240,13 @@ class ActKeywordFilter
 			// dont change
 				- 1 -> put("expires_in", "")
 			
-			// set unlimited
+			// unlimited
 				0 -> if(filter_id == - 1L) {
-					// set blank to dont set expire
+					// don't specify expires_in for creating
 					put("expires_in", "")
 				} else {
-					// FIXME: currently no way to remove expire from existing filter
-					put("expires_in", (Int.MAX_VALUE shr 5))
+					// FIXME: currently there is no way to remove expires from existing filter.
+					put("expires_in", (Int.MAX_VALUE shr 1))
 				}
 			
 			// set seconds

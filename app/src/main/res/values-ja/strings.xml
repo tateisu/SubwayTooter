@@ -1003,6 +1003,7 @@
     <string name="filter_expire_12hour">12時間後</string>
     <string name="filter_expire_1day">1日後</string>
     <string name="filter_expire_1week">1週間後</string>
-    <string name="scroll_top_from_column_strip">Scroll to top when tapping visible column in column strip</string>
+
+    <string name="scroll_top_from_column_strip">カラムストリップのタップで上端にスクロール</string>
 
 </resources>

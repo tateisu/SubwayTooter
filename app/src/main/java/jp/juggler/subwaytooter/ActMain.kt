@@ -1009,7 +1009,7 @@ class ActMain : AppCompatActivity()
 				false,
 				Column.TYPE_BLOCKS
 			)
-			R.id.nav_keyword_filter-> Action_Account.timeline(
+			R.id.nav_keyword_filter -> Action_Account.timeline(
 				this,
 				defaultInsertPosition,
 				false,
@@ -1314,6 +1314,18 @@ class ActMain : AppCompatActivity()
 			})
 	}
 	
+	private fun isVisibleColumn(idx : Int) = phoneTab({ env ->
+		val c = env.pager.currentItem
+		c == idx
+	}, { env ->
+		val vs = env.tablet_layout_manager.findFirstVisibleItemPosition()
+		var ve = env.tablet_layout_manager.findLastVisibleItemPosition()
+		if(ve - vs > nScreenColumn - 1) {
+			ve = vs + nScreenColumn - 1
+		}
+		vs != RecyclerView.NO_POSITION && vs <= idx && idx <= ve
+	})
+	
 	internal fun updateColumnStrip() {
 		llEmpty.visibility = if(app_state.column_list.isEmpty()) View.VISIBLE else View.GONE
 		
@@ -1326,7 +1338,14 @@ class ActMain : AppCompatActivity()
 			val ivIcon = viewRoot.findViewById<ImageView>(R.id.ivIcon)
 			
 			viewRoot.tag = i
-			viewRoot.setOnClickListener { v -> scrollToColumn(v.tag as Int) }
+			viewRoot.setOnClickListener { v ->
+				val idx = v.tag as Int
+				if(Pref.bpScrollTopFromColumnStrip(pref) && isVisibleColumn(idx)) {
+					app_state.column_list[i].viewHolder?.scrollToTop2()
+					return@setOnClickListener
+				}
+				scrollToColumn(idx)
+			}
 			viewRoot.contentDescription = column.getColumnName(true)
 			//
 			

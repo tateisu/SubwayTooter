@@ -851,6 +851,8 @@ class ColumnViewHolder(
 		}
 	}
 	
+
+	
 	override fun onClick(v : View) {
 		val column = this.column
 		val status_adapter = this.status_adapter
@@ -883,11 +885,7 @@ class ColumnViewHolder(
 				column.startLoading()
 			}
 			
-			R.id.llColumnHeader -> {
-				if(status_adapter.itemCount > 0) {
-					scrollToTop()
-				}
-			}
+			R.id.llColumnHeader -> scrollToTop2()
 			
 			R.id.btnColumnSetting -> llColumnSetting.visibility =
 				if(llColumnSetting.visibility == View.VISIBLE) View.GONE else View.VISIBLE
@@ -1210,5 +1208,12 @@ class ColumnViewHolder(
 		} catch(ignored : Throwable) {
 		}
 	}
-	
+
+	fun scrollToTop2() {
+		val status_adapter = this.status_adapter
+		if(loading_busy || status_adapter == null) return
+		if(status_adapter.itemCount > 0) {
+			scrollToTop()
+		}
+	}
 }

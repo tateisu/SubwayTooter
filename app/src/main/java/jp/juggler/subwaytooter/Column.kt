@@ -3991,10 +3991,13 @@ class Column(
 	private fun encodeFilterTree(filterList : ArrayList<TootFilter>?) : WordTrieTree? {
 		val column_context = getFilterContext()
 		if(column_context == 0 || filterList == null) return null
-		val tree = WordTrieTree(WordTrieTree.WORD_VALIDATOR)
+		val tree = WordTrieTree()
 		for(filter in filterList) {
 			if((filter.context and column_context) != 0) {
-				tree.add(filter.phrase)
+				tree.add(filter.phrase,validator = when(filter.whole_word){
+					true -> WordTrieTree.WORD_VALIDATOR
+						else -> WordTrieTree.EMPTY_VALIDATOR
+				})
 			}
 		}
 		return tree

@@ -312,7 +312,11 @@ object Pref {
 		false,
 		R.id.swDontRetrievePreviewCard
 	)
-	
+	val bpScrollTopFromColumnStrip = BooleanPref(
+		"ScrollTopFromColumnStrip",
+		false,
+		R.id.swScrollTopFromColumnStrip
+	)
 	
 	// int
 	

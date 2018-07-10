@@ -100,7 +100,7 @@
 
             <TextView
                 style="@style/setting_row_label"
-                android:text="@string/filter_irreversible"
+                android:text="@string/filter_options"
                 />
 
             <LinearLayout style="@style/setting_row_form">
@@ -108,11 +108,19 @@
                 <CheckBox
                     android:id="@+id/cbFilterIrreversible"
                     style="@style/setting_horizontal_stretch"
-                    android:text="@string/filter_irreversible"
+                    android:text="@string/filter_irreversible_long"
                     />
 
             </LinearLayout>
+            <LinearLayout style="@style/setting_row_form">
 
+                <CheckBox
+                    android:id="@+id/cbFilterWordMatch"
+                    style="@style/setting_horizontal_stretch"
+                    android:text="@string/filter_word_match_long"
+                    />
+
+            </LinearLayout>
             <View style="@style/setting_divider"/>
 
             <TextView

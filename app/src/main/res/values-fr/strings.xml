@@ -692,18 +692,31 @@
 	<string name="follow_suggestion">Follow suggestion</string>
     <string name="close_all_columns">Close all columns</string>
     <string name="confirm_close_column_all">All columns (exclude protected) will be closed. Are tou sure?</string>
-    <string name="filtered">filtered</string>
-    <string name="keyword_filters">Keyword filters</string>
-    <string name="filter_context">context</string>
-	<string name="filter_expires_at">expires_at</string>
-    <string name="filter_home">home</string>
+
+	<string name="keyword_filters">Keyword filters</string>
+	<string name="keyword_filter">Keyword filter</string>
+	<string name="keyword_filter_new">New filter</string>
+	<string name="keyword_filter_edit">Edit filter</string>
+	<string name="filter_delete_confirm">The filter \'%1$s\' will be deleted. Are you sure?</string>
+	<string name="filter_of">Filter \'%1$s\'</string>
+	<string name="filtered">filtered</string>
+
+	<string name="filter_phrase">Phrase</string>
+	<string name="filter_context">Filter contexts</string>
+
+	<string name="filter_options">Options</string>
+	<string name="filter_irreversible">Irreversible</string>
+	<string name="filter_irreversible_long">Irreversible. Drop instead of hide. Filtered toots will disappear irreversibly, even if filter is later removed.</string>
+	<string name="filter_word_match">Whole word</string>
+	<string name="filter_word_match_long">Whole word. Recommended to enable only phrases consisting of alphanumeric characters.</string>
+
+	<string name="filter_expires_at">Expire</string>
+
+	<string name="filter_home">home</string>
 	<string name="filter_notification">notification</string>
 	<string name="filter_public">public</string>
 	<string name="filter_thread">conversation</string>
-    <string name="filter_irreversible">irreversible</string>
-	<string name="filter_delete_confirm">The filter \'%1$s\' will be deleted. Are you sure?</string>
-	<string name="filter_of">Filter \'%1$s\'</string>
-	<string name="filter_phrase">Phrase</string>
+
 	<string name="dont_change">Don\'t change</string>
 	<string name="filter_expire_unlimited">Unlimited</string>
 	<string name="filter_expire_30min">30 minutes after save</string>
@@ -712,11 +725,9 @@
 	<string name="filter_expire_12hour">12 hours after save</string>
 	<string name="filter_expire_1day">1 day after save</string>
 	<string name="filter_expire_1week">1 week after save</string>
-	<string name="keyword_filter_new">New filter</string>
-	<string name="keyword_filter_edit">Edit filter</string>
-    <string name="keyword_filter">Keyword filter</string>
+    <string name="scroll_top_from_column_strip">Scroll to top when tapping visible column in column strip</string>
 
-	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

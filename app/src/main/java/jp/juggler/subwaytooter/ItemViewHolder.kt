@@ -504,17 +504,19 @@ internal class ItemViewHolder(
 			.append(": ")
 			.append(filter.getContextNames(activity).joinToString("/"))
 		//
+		val flags = ArrayList<String>()
+		if( filter.irreversible ) flags.add(activity.getString(R.string.filter_irreversible))
+		if( filter.whole_word ) flags.add(activity.getString(R.string.filter_word_match))
+		if( flags.isNotEmpty() ){
+			sb.append('\n')
+				.append( flags.joinToString(", "))
+		}
+		//
 		if( filter.time_expires_at != 0L ){
 			sb.append('\n')
 				.append(activity.getString(R.string.filter_expires_at))
 				.append(": ")
 				.append( TootStatus.formatTime(activity,filter.time_expires_at,false))
-		}
-		//
-		if( filter.irreversible){
-			sb.append('\n')
-				.append(activity.getString(R.string.filter_irreversible))
-			
 		}
 
 		tvFilterDetail.text = sb.toString()

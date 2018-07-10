@@ -42,6 +42,7 @@ class ActKeywordFilter
 		}
 		
 		internal const val STATE_EXPIRE_SPINNER = "expire_spinner"
+		internal const val STATE_EXPIRE_AT = "expire_at"
 		
 		private val expire_duration_list = arrayOf(
 			- 1, // dont change
@@ -64,12 +65,14 @@ class ActKeywordFilter
 	private lateinit var cbContextPublic : CheckBox
 	private lateinit var cbContextThread : CheckBox
 	private lateinit var cbFilterIrreversible : CheckBox
+	private lateinit var cbFilterWordMatch : CheckBox
 	private lateinit var tvExpire : TextView
 	private lateinit var spExpire : Spinner
 	
 	private var loading = false
 	private var density : Float = 1f
 	private var filter_id : Long = - 1L
+	private var filter_expire : Long = 0L
 	
 	///////////////////////////////////////////////////
 	
@@ -107,6 +110,7 @@ class ActKeywordFilter
 			if(iv != - 1) {
 				spExpire.setSelection(iv)
 			}
+			filter_expire = savedInstanceState.getLong(STATE_EXPIRE_AT, filter_expire)
 		}
 	}
 	
@@ -114,6 +118,7 @@ class ActKeywordFilter
 		super.onSaveInstanceState(outState)
 		if(! loading) {
 			outState.putInt(STATE_EXPIRE_SPINNER, spExpire.selectedItemPosition)
+			outState.putLong(STATE_EXPIRE_AT,filter_expire)
 		}
 	}
 	
@@ -132,6 +137,7 @@ class ActKeywordFilter
 		cbContextPublic = findViewById(R.id.cbContextPublic)
 		cbContextThread = findViewById(R.id.cbContextThread)
 		cbFilterIrreversible = findViewById(R.id.cbFilterIrreversible)
+		cbFilterWordMatch = findViewById(R.id.cbFilterWordMatch)
 		tvExpire = findViewById(R.id.tvExpire)
 		spExpire = findViewById(R.id.spExpire)
 		
@@ -183,6 +189,8 @@ class ActKeywordFilter
 	private fun onLoadComplete(filter : TootFilter) {
 		loading = false
 		
+		filter_expire = filter.time_expires_at
+		
 		etPhrase.setText(filter.phrase)
 		setContextChecked(filter, cbContextHome, TootFilter.CONTEXT_HOME)
 		setContextChecked(filter, cbContextNotification, TootFilter.CONTEXT_NOTIFICATIONS)
@@ -190,6 +198,7 @@ class ActKeywordFilter
 		setContextChecked(filter, cbContextThread, TootFilter.CONTEXT_THREAD)
 		
 		cbFilterIrreversible.isChecked = filter.irreversible
+		cbFilterWordMatch.isChecked = filter.whole_word
 		
 		tvExpire.text = if(filter.time_expires_at == 0L) {
 			getString(R.string.filter_expire_unlimited)
@@ -227,6 +236,7 @@ class ActKeywordFilter
 			})
 			
 			put("irreversible", cbFilterIrreversible.isChecked)
+			put("whole_word", cbFilterWordMatch.isChecked)
 			
 			var seconds = - 1
 			
@@ -238,15 +248,14 @@ class ActKeywordFilter
 			when(seconds) {
 			
 			// dont change
-				- 1 -> put("expires_in", "")
+				- 1 -> {}
 			
 			// unlimited
-				0 -> if(filter_id == - 1L) {
-					// don't specify expires_in for creating
-					put("expires_in", "")
+				0 -> if( filter_expire <= 0L ) {
+					// already unlimited. don't change.
 				} else {
 					// FIXME: currently there is no way to remove expires from existing filter.
-					put("expires_in", (Int.MAX_VALUE shr 1))
+					put("expires_in", Int.MAX_VALUE )
 				}
 			
 			// set seconds

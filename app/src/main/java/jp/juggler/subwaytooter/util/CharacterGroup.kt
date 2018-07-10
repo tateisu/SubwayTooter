@@ -6,7 +6,6 @@ class CharacterGroup {
 	
 	companion object {
 		
-
 		// Tokenizerが終端に達したことを示す
 		const val END = - 1
 		

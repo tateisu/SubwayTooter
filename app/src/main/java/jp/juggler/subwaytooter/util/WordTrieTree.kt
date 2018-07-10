@@ -4,13 +4,13 @@ import android.support.v4.util.SparseArrayCompat
 
 import java.util.ArrayList
 
-class WordTrieTree(private var validator : (src : CharSequence, start : Int, end : Int) -> Boolean = EMPTY_VALIDATOR) {
+class WordTrieTree {
 	
 	companion object {
 		
 		private val grouper = CharacterGroup()
 		
-		private val EMPTY_VALIDATOR = { _ : CharSequence, _ : Int, _ : Int -> true }
+		val EMPTY_VALIDATOR = { _ : CharSequence, _ : Int, _ : Int -> true }
 		
 		// マストドン2.4.3rc2でキーワードフィルタは単語の前後に 正規表現 \b を仮定するようになった
 		// Trie木でマッチ候補が出たらマッチ範囲と前後の文字で単語区切りを検証する
@@ -55,6 +55,10 @@ class WordTrieTree(private var validator : (src : CharSequence, start : Int, end
 		
 		// Trieツリー的には終端単語と続くノードの両方が存在する場合がありうる。
 		// たとえば ABC と ABCDEF を登録してから ABCDEFG を探索したら、単語 ABC と単語 ABCDEF にマッチする。
+		
+		// このノードが終端なら、単語マッチの有無を覚えておく
+		internal var validator : (src : CharSequence, start : Int, end : Int) -> Boolean =
+			EMPTY_VALIDATOR
 	}
 	
 	private val node_root = Node()
@@ -63,7 +67,10 @@ class WordTrieTree(private var validator : (src : CharSequence, start : Int, end
 		get() = node_root.child_nodes.size() == 0
 	
 	// 単語の追加
-	fun add(s : String) {
+	fun add(
+		s : String,
+		validator : (src : CharSequence, start : Int, end : Int) -> Boolean = EMPTY_VALIDATOR
+	) {
 		val t = grouper.tokenizer().reset(s, 0, s.length)
 		
 		var token_count = 0
@@ -80,6 +87,7 @@ class WordTrieTree(private var validator : (src : CharSequence, start : Int, end
 				val old_word = node.match_word
 				if(old_word == null || old_word.length < t.text.length) {
 					node.match_word = t.text.toString()
+					node.validator = validator
 				}
 				
 				return
@@ -113,7 +121,9 @@ class WordTrieTree(private var validator : (src : CharSequence, start : Int, end
 			// match_wordが定義されたノードは単語の終端を示す
 			val match_word = node.match_word
 			// マッチ候補はvalidatorで単語区切りなどの検査を行う
-			if(match_word != null && validator(t.text, start, t.offset)) {
+			if(match_word != null
+				&& node.validator(t.text, start, t.offset)
+			) {
 				
 				// マッチしたことを覚えておく
 				dst = Match(start, t.offset, match_word)

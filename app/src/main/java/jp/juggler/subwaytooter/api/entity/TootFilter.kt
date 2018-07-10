@@ -66,6 +66,7 @@ class TootFilter( src: JSONObject) :TimelineItem() {
 	private val expires_at : String? // null is not specified, or "2018-07-06T00:59:13.161Z"
 	val time_expires_at : Long // 0L if not specified
 	val irreversible : Boolean
+	val whole_word : Boolean
 	
 	init{
 		id = src.parseLong("id") ?: throw RuntimeException("missing id")
@@ -74,6 +75,7 @@ class TootFilter( src: JSONObject) :TimelineItem() {
 		expires_at = src.parseString("expires_at") // may null
 		time_expires_at = TootStatus.parseTime(expires_at)
 		irreversible = src.optBoolean("irreversible")
+		whole_word = src.optBoolean("whole_word")
 	}
 	
 	fun getContextNames(context: Context) : ArrayList<String> {

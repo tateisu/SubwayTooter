@@ -726,6 +726,8 @@
 	<string name="filter_expire_1day">1 day after save</string>
 	<string name="filter_expire_1week">1 week after save</string>
     <string name="scroll_top_from_column_strip">Scroll to top when tapping visible column in column strip</string>
+	<string name="delete_suggestion">Delete from follow suggestion…</string>
+	<string name="delete_succeeded_confirm">The user \"%1$s\" will be removed from follow suggestion. Are you sure?</string>
 
     <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

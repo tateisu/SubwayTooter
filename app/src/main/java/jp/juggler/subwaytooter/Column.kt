@@ -815,9 +815,8 @@ class Column(
 		}
 	}
 	
-	// ミュート解除が成功した時に呼ばれる
-	fun removeFromMuteList(target_account : SavedAccount, who_id : Long) {
-		if(column_type == TYPE_MUTES && target_account.acct == access_info.acct) {
+	fun removeUser(targetAccount : SavedAccount,columnType:Int,who_id:Long){
+		if(column_type == columnType && targetAccount.acct == access_info.acct) {
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
 				if(o is TootAccountRef) {
@@ -828,49 +827,8 @@ class Column(
 			if(tmp_list.size != list_data.size) {
 				list_data.clear()
 				list_data.addAll(tmp_list)
-				fireShowContent(reason = "removeFromMuteList")
+				fireShowContent(reason = "removeUser")
 			}
-		}
-	}
-	
-	// ブロック解除が成功したので、ブロックリストから削除する
-	fun removeFromBlockList(target_account : SavedAccount, who_id : Long) {
-		if(column_type == TYPE_BLOCKS && target_account.acct == access_info.acct) {
-			val tmp_list = ArrayList<TimelineItem>(list_data.size)
-			for(o in list_data) {
-				if(o is TootAccountRef) {
-					if(o.get().id == who_id) continue
-				}
-				tmp_list.add(o)
-			}
-			if(tmp_list.size != list_data.size) {
-				list_data.clear()
-				list_data.addAll(tmp_list)
-				fireShowContent(reason = "removeFromBlockList")
-			}
-			
-		}
-	}
-	
-	fun removeFollowRequest(target_account : SavedAccount, who_id : Long) {
-		if(target_account.acct != access_info.acct) return
-		
-		if(column_type == TYPE_FOLLOW_REQUESTS) {
-			val tmp_list = ArrayList<TimelineItem>(list_data.size)
-			for(o in list_data) {
-				if(o is TootAccountRef) {
-					if(o.get().id == who_id) continue
-				}
-				tmp_list.add(o)
-			}
-			if(tmp_list.size != list_data.size) {
-				list_data.clear()
-				list_data.addAll(tmp_list)
-				fireShowContent(reason = "removeFollowRequest 1")
-			}
-		} else {
-			// 他のカラムでもフォロー状態の表示更新が必要
-			fireRebindAdapterItems()
 		}
 	}
 	
@@ -4062,4 +4020,6 @@ class Column(
 			}
 		}
 	}
+	
+
 }

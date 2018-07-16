@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.action
 
+import android.app.AlertDialog
 import org.json.JSONObject
 
 import java.util.Locale
@@ -45,7 +46,7 @@ object Action_User {
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
-			internal var relation : UserRelation? = null
+			var relation : UserRelation? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				val request_builder = Request.Builder().post(
@@ -96,7 +97,7 @@ object Action_User {
 							}
 						} else {
 							// 「ミュートしたユーザ」カラムからユーザを除去
-							column.removeFromMuteList(access_info, who.id)
+							column.removeUser(access_info, Column.TYPE_MUTES, who.id)
 						}
 					}
 					
@@ -125,7 +126,7 @@ object Action_User {
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
-			internal var relation : UserRelation? = null
+			var relation : UserRelation? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				val request_builder = Request.Builder().post(
@@ -170,7 +171,7 @@ object Action_User {
 							}
 						} else {
 							//「ブロックしたユーザ」カラムのリストから消える
-							column.removeFromBlockList(access_info, who.id)
+							column.removeUser(access_info, Column.TYPE_BLOCKS, who.id)
 						}
 					}
 					
@@ -212,7 +213,7 @@ object Action_User {
 	) {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
-			internal var who_local : TootAccount? = null
+			var who_local : TootAccount? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				val path = String.format(
@@ -325,7 +326,7 @@ object Action_User {
 				bAuto = false,
 				message = activity.getString(
 					R.string.account_picker_open_user_who,
-					AcctColor.getNickname(user + "@" + host)
+					AcctColor.getNickname("$user@$host")
 				),
 				accountListArg = makeAccountListNonPseudo(activity, host)
 			) { ai ->
@@ -413,7 +414,7 @@ object Action_User {
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
-			internal var relation : TootRelationShip? = null
+			var relation : TootRelationShip? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				val content = JSONObject()
@@ -485,5 +486,50 @@ object Action_User {
 		) { ai ->
 			mention(activity, ai, initial_text)
 		}
+	}
+	
+	fun deleteSuggestion(
+		activity : ActMain,
+		access_info : SavedAccount,
+		who : TootAccount,
+		bConfirmed :Boolean = false
+	) {
+		if(!bConfirmed){
+			
+			val name = who.decodeDisplayName(activity)
+			AlertDialog.Builder(activity)
+				.setMessage( name.intoStringResource(activity,R.string.delete_succeeded_confirm))
+				.setNegativeButton(R.string.cancel,null)
+				.setPositiveButton(R.string.ok){ _ , _  ->
+					deleteSuggestion(activity,access_info,who,bConfirmed=true)
+				}
+				.show()
+			return
+		}
+		TootTaskRunner(activity).run(access_info, object : TootTask {
+			override fun background(client : TootApiClient) : TootApiResult? {
+				val result = client.request("/api/v1/suggestions/${who.id}",Request.Builder().delete())
+				return result
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				// cancelled
+				result ?: return
+				
+				// error
+				val error = result.error
+				if( error != null ){
+					showToast(activity,true,result.error)
+					return
+				}
+				
+				showToast(activity,false,R.string.delete_succeeded)
+
+				// update suggestion column
+				for( column in activity.app_state.column_list){
+					column.removeUser(access_info,Column.TYPE_FOLLOW_SUGGESTION,who.id)
+				}
+			}
+		})
 	}
 }

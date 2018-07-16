@@ -87,6 +87,7 @@ internal class DlgContextMenu(
 		val btnAccountWebPage = viewRoot.findViewById<View>(R.id.btnAccountWebPage)
 		val btnFollowRequestOK = viewRoot.findViewById<View>(R.id.btnFollowRequestOK)
 		val btnFollowRequestNG = viewRoot.findViewById<View>(R.id.btnFollowRequestNG)
+		val btnDeleteSuggestion = viewRoot.findViewById<View>(R.id.btnDeleteSuggestion)
 		val btnFollowFromAnotherAccount =
 			viewRoot.findViewById<View>(R.id.btnFollowFromAnotherAccount)
 		val btnSendMessageFromAnotherAccount =
@@ -130,6 +131,7 @@ internal class DlgContextMenu(
 		btnAccountWebPage.setOnClickListener(this)
 		btnFollowRequestOK.setOnClickListener(this)
 		btnFollowRequestNG.setOnClickListener(this)
+		btnDeleteSuggestion.setOnClickListener(this)
 		btnFollowFromAnotherAccount.setOnClickListener(this)
 		btnSendMessageFromAnotherAccount.setOnClickListener(this)
 		btnOpenProfileFromAnotherAccount.setOnClickListener(this)
@@ -299,6 +301,10 @@ internal class DlgContextMenu(
 			btnFollowRequestNG.visibility = View.GONE
 		}
 		
+		if( column_type != Column.TYPE_FOLLOW_SUGGESTION) {
+			btnDeleteSuggestion.visibility = View.GONE
+		}
+		
 		if(account_list_non_pseudo.isEmpty()) {
 			btnFollowFromAnotherAccount.visibility = View.GONE
 			btnSendMessageFromAnotherAccount.visibility = View.GONE
@@ -461,6 +467,9 @@ internal class DlgContextMenu(
 				
 				R.id.btnFollowRequestOK ->
 					Action_Follow.authorizeFollowRequest(activity, access_info, whoRef, true)
+				
+				R.id.btnDeleteSuggestion ->
+					Action_User.deleteSuggestion(activity, access_info, who)
 				
 				R.id.btnFollowRequestNG ->
 					Action_Follow.authorizeFollowRequest(activity, access_info, whoRef, false)

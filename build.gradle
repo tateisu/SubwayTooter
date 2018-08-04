@@ -1,8 +1,8 @@
 buildscript {
 
-    ext.kotlin_version = '1.2.51'
-    ext.kotlin_coroutines_version = '0.21.2'
-    ext.anko_version='0.10.4'
+    ext.kotlin_version = '1.2.60'
+    ext.kotlin_coroutines_version = '0.24.0'
+    ext.anko_version='0.10.5'
     ext.asl_version='27.1.1'
 
     repositories {

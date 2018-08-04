@@ -6,35 +6,25 @@ import android.net.Uri
 import android.os.AsyncTask
 import android.os.SystemClock
 import android.support.v4.view.ViewCompat
+import android.support.v7.widget.LinearLayoutManager
+import android.support.v7.widget.ListRecyclerView
+import android.support.v7.widget.RecyclerView
 import android.text.Editable
+import android.text.SpannableStringBuilder
 import android.text.TextWatcher
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.CompoundButton
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.TextView
-
+import android.widget.*
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
 import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection
-
-import java.util.regex.Pattern
-
 import jp.juggler.subwaytooter.action.Action_List
 import jp.juggler.subwaytooter.action.Action_Notification
 import jp.juggler.subwaytooter.table.AcctColor
-import android.support.v7.widget.ListRecyclerView
-import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.RecyclerView
-import android.text.SpannableStringBuilder
-import jp.juggler.subwaytooter.action.Action_App
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.ListDivider
 import java.io.Closeable
 import java.lang.reflect.Field
+import java.util.regex.Pattern
 
 class ColumnViewHolder(
 	val activity : ActMain,
@@ -64,8 +54,8 @@ class ColumnViewHolder(
 		
 		val heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
 		
-		var lastRefreshError :String =""
-		var lastRefreshErrorShown :Long = 0L
+		var lastRefreshError : String = ""
+		var lastRefreshErrorShown : Long = 0L
 	}
 	
 	var column : Column? = null
@@ -845,8 +835,6 @@ class ColumnViewHolder(
 		}
 	}
 	
-
-	
 	override fun onClick(v : View) {
 		val column = this.column
 		val status_adapter = this.status_adapter
@@ -1037,23 +1025,25 @@ class ColumnViewHolder(
 			val refreshError = column.mRefreshLoadingError
 			val refreshErrorTime = column.mRefreshLoadingErrorTime
 			if(refreshError.isNotEmpty()) {
-				showRefreshError(refreshError,refreshErrorTime)
+				showRefreshError(refreshError, refreshErrorTime)
 				column.mRefreshLoadingError = ""
 			}
 		}
 		proc_restoreScrollPosition.run()
 	}
 	
-	private fun showRefreshError(refreshError:String,refreshErrorTime:Long){
-		// 同じメッセージを連投しない
-//		if( refreshError == lastRefreshError && refreshErrorTime <= lastRefreshErrorShown + 300000L ){
-//			return
-//		}
+	private fun showRefreshError(
+		refreshError : String,
+		@Suppress("UNUSED_PARAMETER") refreshErrorTime : Long
+	) {
+		// XXX: 同じメッセージを連投しないようにするべきかどうか
+		//		if( refreshError == lastRefreshError && refreshErrorTime <= lastRefreshErrorShown + 300000L ){
+		//			return
+		//		}
 		lastRefreshError = refreshError
 		lastRefreshErrorShown = SystemClock.elapsedRealtime()
 		showToast(activity, true, refreshError)
 	}
-	
 	
 	private fun saveScrollPosition() {
 		val column = this.column
@@ -1213,7 +1203,7 @@ class ColumnViewHolder(
 		} catch(ignored : Throwable) {
 		}
 	}
-
+	
 	fun scrollToTop2() {
 		val status_adapter = this.status_adapter
 		if(loading_busy || status_adapter == null) return

@@ -10,19 +10,24 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.Styler
 
 class ListDivider(context : Context) : RecyclerView.ItemDecoration() {
-
+	
 	companion object {
-		var height : Int =0
+		var height : Int = 0
 	}
-
+	
 	private val drawable : Drawable
 	
 	init {
 		drawable = Styler.getAttributeDrawable(context, R.attr.colorSettingDivider)
-		height = (context.resources.displayMetrics.density * 1f +0.5f).toInt()
+		height = (context.resources.displayMetrics.density * 1f + 0.5f).toInt()
 	}
 	
-	override fun getItemOffsets(outRect : Rect, view : View, parent : RecyclerView, state : RecyclerView.State) {
+	override fun getItemOffsets(
+		outRect : Rect,
+		view : View,
+		parent : RecyclerView,
+		state : RecyclerView.State
+	) {
 		outRect.set(0, 0, 0, height)
 	}
 	
@@ -39,5 +44,5 @@ class ListDivider(context : Context) : RecyclerView.ItemDecoration() {
 			drawable.draw(canvas)
 		}
 	}
-
+	
 }

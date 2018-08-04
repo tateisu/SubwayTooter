@@ -508,8 +508,7 @@ object Action_User {
 		}
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val result = client.request("/api/v1/suggestions/${who.id}",Request.Builder().delete())
-				return result
+				return client.request("/api/v1/suggestions/${who.id}",Request.Builder().delete())
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

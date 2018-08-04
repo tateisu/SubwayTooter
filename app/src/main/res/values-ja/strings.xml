@@ -1007,5 +1007,6 @@
     <string name="scroll_top_from_column_strip">カラムストリップのタップで上端にスクロール</string>
     <string name="delete_suggestion">フォロー推奨から削除…</string>
     <string name="delete_succeeded_confirm">ユーザ \"%1$s\" はフォロー推奨から削除されます。よろしいですか?</string>
+    <string name="toot_context_parse_failed">会話データのデコードに失敗</string>
 
 </resources>

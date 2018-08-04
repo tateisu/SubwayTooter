@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.AsyncTask
+import android.os.SystemClock
 import android.support.v4.view.ViewCompat
 import android.text.Editable
 import android.text.TextWatcher
@@ -63,6 +64,8 @@ class ColumnViewHolder(
 		
 		val heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
 		
+		var lastRefreshError :String =""
+		var lastRefreshErrorShown :Long = 0L
 	}
 	
 	var column : Column? = null
@@ -419,15 +422,6 @@ class ColumnViewHolder(
 			listView.addItemDecoration(ListDivider(activity))
 			val status_adapter = ItemListAdapter(activity, column, this, bSimpleList)
 			this.status_adapter = status_adapter
-			
-			//			status_adapter.header = when(column.column_type) {
-			//				Column.TYPE_PROFILE -> ViewHolderHeaderProfile(activity, column, listView)
-			//				Column.TYPE_SEARCH -> ViewHolderHeaderSearch(activity, column, listView, activity.getString(R.string.search_desc_mastodon_api))
-			//				Column.TYPE_SEARCH_MSP -> ViewHolderHeaderSearch(activity, column, listView, getSearchDesc(R.raw.search_desc_msp_en, R.raw.search_desc_msp_ja))
-			//				Column.TYPE_SEARCH_TS -> ViewHolderHeaderSearch(activity, column, listView, getSearchDesc(R.raw.search_desc_ts_en, R.raw.search_desc_ts_ja))
-			//				Column.TYPE_INSTANCE_INFORMATION -> ViewHolderHeaderInstance(activity, column, listView)
-			//				else -> null
-			//			}
 			
 			val isNotificationColumn = column.column_type == Column.TYPE_NOTIFICATIONS
 			
@@ -1041,14 +1035,25 @@ class ColumnViewHolder(
 		if(! column.bRefreshLoading) {
 			refreshLayout.isRefreshing = false
 			val refreshError = column.mRefreshLoadingError
+			val refreshErrorTime = column.mRefreshLoadingErrorTime
 			if(refreshError.isNotEmpty()) {
-				showToast(activity, true, refreshError)
+				showRefreshError(refreshError,refreshErrorTime)
 				column.mRefreshLoadingError = ""
 			}
 		}
-		
 		proc_restoreScrollPosition.run()
 	}
+	
+	private fun showRefreshError(refreshError:String,refreshErrorTime:Long){
+		// 同じメッセージを連投しない
+//		if( refreshError == lastRefreshError && refreshErrorTime <= lastRefreshErrorShown + 300000L ){
+//			return
+//		}
+		lastRefreshError = refreshError
+		lastRefreshErrorShown = SystemClock.elapsedRealtime()
+		showToast(activity, true, refreshError)
+	}
+	
 	
 	private fun saveScrollPosition() {
 		val column = this.column

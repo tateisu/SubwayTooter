@@ -6,6 +6,7 @@ import android.os.SystemClock
 import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewCompat
 import android.support.v7.app.AlertDialog
+import android.support.v7.widget.RecyclerView
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -44,6 +45,8 @@ internal class ItemViewHolder(
 	
 	companion object {
 		private val log = LogCategory("ItemViewHolder")
+		
+
 	}
 	
 	val viewRoot : View
@@ -187,7 +190,7 @@ internal class ItemViewHolder(
 		
 		llTrendTag.setOnClickListener(this)
 		llTrendTag.setOnLongClickListener(this)
-		llFilter.setOnClickListener (this)
+		llFilter.setOnClickListener(this)
 		
 		
 		this.content_color_default = tvContent.textColors.defaultColor
@@ -206,7 +209,7 @@ internal class ItemViewHolder(
 			tvTrendTagCount.textSize = activity.timeline_font_size_sp
 			tvFilterPhrase.textSize = activity.timeline_font_size_sp
 		}
-		if(! activity.notification_tl_font_size_sp.isNaN() ){
+		if(! activity.notification_tl_font_size_sp.isNaN()) {
 			tvBoosted.textSize = activity.notification_tl_font_size_sp
 		}
 		
@@ -243,6 +246,13 @@ internal class ItemViewHolder(
 		bSimpleList : Boolean,
 		item : TimelineItem
 	) {
+//		// LGT32で区切り線の下の余白が増えていく件の対策？
+//		(this.viewRoot.layoutParams as? RecyclerView.LayoutParams)?.let {
+//			it.topMargin = 0
+//			it.bottomMargin = 0
+//			it.setDirtyInset()
+//		}
+		
 		this.list_adapter = list_adapter
 		this.column = column
 		this.bSimpleList = bSimpleList
@@ -251,7 +261,7 @@ internal class ItemViewHolder(
 		
 		if(activity.timeline_font != null || activity.timeline_font_bold != null) {
 			val font_bold = activity.timeline_font_bold ?: activity.timeline_font
-			val font_normal =  activity.timeline_font ?: activity.timeline_font_bold
+			val font_normal = activity.timeline_font ?: activity.timeline_font_bold
 			viewRoot.scan { v ->
 				try {
 					if(v is Button) {
@@ -264,7 +274,7 @@ internal class ItemViewHolder(
 								v === tvTrendTagCount ||
 								v === tvTrendTagName ||
 								v === tvFilterPhrase -> font_bold
-							else ->font_normal
+							else -> font_normal
 						}
 						if(typeface != null) v.typeface = typeface
 					}
@@ -416,7 +426,8 @@ internal class ItemViewHolder(
 	private fun showTrendTag(item : TootTrendTag) {
 		llTrendTag.visibility = View.VISIBLE
 		tvTrendTagName.text = "#${item.name}"
-		tvTrendTagDesc.text = activity.getString(R.string.people_talking, item.accountDaily,item.accountWeekly)
+		tvTrendTagDesc.text =
+			activity.getString(R.string.people_talking, item.accountDaily, item.accountWeekly)
 		tvTrendTagCount.text = "${item.countDaily}(${item.countWeekly})"
 		cvTrendTagHistory.setHistory(item.history)
 	}
@@ -494,31 +505,31 @@ internal class ItemViewHolder(
 		btnSearchTag.text = domain_block.domain
 	}
 	
-	private fun showFilter(filter : TootFilter){
+	private fun showFilter(filter : TootFilter) {
 		llFilter.visibility = View.VISIBLE
 		tvFilterPhrase.text = filter.phrase
-
+		
 		val sb = StringBuffer()
 		//
-		sb.append( activity.getString(R.string.filter_context))
+		sb.append(activity.getString(R.string.filter_context))
 			.append(": ")
 			.append(filter.getContextNames(activity).joinToString("/"))
 		//
 		val flags = ArrayList<String>()
-		if( filter.irreversible ) flags.add(activity.getString(R.string.filter_irreversible))
-		if( filter.whole_word ) flags.add(activity.getString(R.string.filter_word_match))
-		if( flags.isNotEmpty() ){
+		if(filter.irreversible) flags.add(activity.getString(R.string.filter_irreversible))
+		if(filter.whole_word) flags.add(activity.getString(R.string.filter_word_match))
+		if(flags.isNotEmpty()) {
 			sb.append('\n')
-				.append( flags.joinToString(", "))
+				.append(flags.joinToString(", "))
 		}
 		//
-		if( filter.time_expires_at != 0L ){
+		if(filter.time_expires_at != 0L) {
 			sb.append('\n')
 				.append(activity.getString(R.string.filter_expires_at))
 				.append(": ")
-				.append( TootStatus.formatTime(activity,filter.time_expires_at,false))
+				.append(TootStatus.formatTime(activity, filter.time_expires_at, false))
 		}
-
+		
 		tvFilterDetail.text = sb.toString()
 	}
 	
@@ -581,12 +592,12 @@ internal class ItemViewHolder(
 	}
 	
 	private fun showStatus(activity : ActMain, status : TootStatus) {
-
-		if(status.filtered){
+		
+		if(status.filtered) {
 			showMessageHolder(TootMessageHolder(activity.getString(R.string.filtered)))
 			return
 		}
-
+		
 		this.status_showing = status
 		llStatus.visibility = View.VISIBLE
 		
@@ -1109,7 +1120,7 @@ internal class ItemViewHolder(
 				}
 			}
 			
-			llFilter ->if(item is TootFilter) {
+			llFilter -> if(item is TootFilter) {
 				openFilterMenu(item)
 			}
 			
@@ -1441,22 +1452,22 @@ internal class ItemViewHolder(
 	
 	private fun openFilterMenu(item : TootFilter) {
 		val ad = ActionsDialog()
-		ad.addAction(activity.getString(R.string.edit)){
-			ActKeywordFilter.open(activity,access_info,item.id)
+		ad.addAction(activity.getString(R.string.edit)) {
+			ActKeywordFilter.open(activity, access_info, item.id)
 		}
-		ad.addAction(activity.getString(R.string.delete)){
-			Action_Filter.delete(activity,access_info,item)
+		ad.addAction(activity.getString(R.string.delete)) {
+			Action_Filter.delete(activity, access_info, item)
 		}
-		ad.show(activity,activity.getString(R.string.filter_of,item.phrase))
+		ad.show(activity, activity.getString(R.string.filter_of, item.phrase))
 	}
-	
 	
 	/////////////////////////////////////////////////////////////////////
 	
 	private fun inflate(ui : AnkoContext<Context>) = with(ui) {
 		verticalLayout {
 			// トップレベルのViewGroupのlparamsはイニシャライザ内部に置くしかないみたい
-			lparams(matchParent, wrapContent)
+			layoutParams = RecyclerView.LayoutParams(matchParent, wrapContent)
+			
 			
 			topPadding = dip(3)
 			bottomPadding = dip(3)
@@ -2083,12 +2094,12 @@ internal class ItemViewHolder(
 				lparams(matchParent, wrapContent) {
 				}
 				minimumHeight = dip(40)
-
-				tvFilterPhrase = textView{
+				
+				tvFilterPhrase = textView {
 					typeface = Typeface.DEFAULT_BOLD
 				}.lparams(matchParent, wrapContent)
-
-				tvFilterDetail = textView{
+				
+				tvFilterDetail = textView {
 					textColor = Styler.getAttributeColor(context, R.attr.colorTimeSmall)
 					textSize = 12f // SP
 				}.lparams(matchParent, wrapContent)

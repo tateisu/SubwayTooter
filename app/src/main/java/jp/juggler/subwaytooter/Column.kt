@@ -416,6 +416,7 @@ class Column(
 	
 	internal var mInitialLoadingError : String = ""
 	internal var mRefreshLoadingError : String = ""
+	internal var mRefreshLoadingErrorTime : Long = 0L
 	
 	internal var task_progress : String? = null
 	
@@ -1901,8 +1902,8 @@ class Column(
 									)
 								//
 							} else {
-								showToast(context, true, "TootContext parse failed.")
 								this.list_tmp = addOne(this.list_tmp, target_status)
+								this.list_tmp = addOne(this.list_tmp, TootMessageHolder(context.getString(R.string.toot_context_parse_failed)))
 							}
 							
 							// カードを取得する
@@ -2935,6 +2936,7 @@ class Column(
 					val error = result.error
 					if(error != null) {
 						mRefreshLoadingError = error
+						mRefreshLoadingErrorTime = SystemClock.elapsedRealtime()
 						fireShowContent(reason = "refresh error", changeList = ArrayList())
 						return
 					}
@@ -3938,6 +3940,7 @@ class Column(
 	}
 	
 	private fun loadFilter2(client : TootApiClient) : ArrayList<TootFilter>? {
+		if( access_info.isPseudo ) return null
 		val column_context = getFilterContext()
 		if(column_context == 0) return null
 		val result = client.request(PATH_FILTERS)
@@ -3993,7 +3996,6 @@ class Column(
 	}
 	
 	private fun onFiltersChanged2(filterList : ArrayList<TootFilter>) {
-		
 		val newFilter = encodeFilterTree(filterList) ?: return
 		this.muted_word2 = newFilter
 		checkFiltersForListData(newFilter)

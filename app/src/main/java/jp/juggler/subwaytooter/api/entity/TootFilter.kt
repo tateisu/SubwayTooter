@@ -41,7 +41,7 @@ class TootFilter( src: JSONObject) :TimelineItem() {
 					if( v !=null) n+= v.bit
 				}
 			}
-			return if(n==0) CONTEXT_ALL else n
+			return n
 		}
 		
 		fun parseList(src:JSONArray?): ArrayList<TootFilter>{

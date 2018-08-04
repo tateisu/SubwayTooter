@@ -105,15 +105,38 @@ class NetworkEmojiSpan internal constructor(private val url : String) : Replacem
 			log.e("draw: bitmap is null or recycled.")
 			return
 		}
+		val srcWidth = b.width
+		val srcHeight = b.height
+		if(srcWidth < 1 || srcHeight <1){
+			log.e("draw: bitmap size is too small.")
+			return
+		}
+		rect_src.set(0, 0, srcWidth, srcHeight )
+
+		// 絵文字の正方形のサイズ
+		val dstSize = scale_ratio * textPaint.textSize
+
+		// ベースラインから上下方向にずらすオフセット
+		val c_descent = dstSize * descent_ratio
+		val transY = baseline - dstSize + c_descent
 		
-		val size = (0.5f + scale_ratio * textPaint.textSize).toInt()
-		val c_descent = (0.5f + size * descent_ratio).toInt()
-		val transY = baseline - size + c_descent
+		// 絵文字のアスペクト比から描画範囲の幅と高さを決める
+		val dstWidth:Float
+		val dstHeight:Float
+		val aspectSrc = srcWidth.toFloat() / srcHeight.toFloat()
+		if( aspectSrc >= 1f){
+			dstWidth = dstSize
+			dstHeight = dstSize /aspectSrc
+		}else{
+			dstHeight = dstSize
+			dstWidth = dstSize * aspectSrc
+		}
+		val dstX = (dstSize-dstWidth)/2f
+		val dstY = (dstSize-dstHeight)/2f
+		rect_dst.set(dstX,dstY,dstX+dstWidth,dstY+dstHeight)
 		
 		canvas.save()
-		canvas.translate(x, transY.toFloat())
-		rect_src.set(0, 0, b.width, b.height)
-		rect_dst.set(0f, 0f, size.toFloat(), size.toFloat())
+		canvas.translate(x, transY)
 		canvas.drawBitmap(b, rect_src, rect_dst, mPaint)
 		canvas.restore()
 		

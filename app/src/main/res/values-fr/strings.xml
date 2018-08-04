@@ -728,6 +728,7 @@
     <string name="scroll_top_from_column_strip">Scroll to top when tapping visible column in column strip</string>
 	<string name="delete_suggestion">Delete from follow suggestion…</string>
 	<string name="delete_succeeded_confirm">The user \"%1$s\" will be removed from follow suggestion. Are you sure?</string>
+    <string name="toot_context_parse_failed">conversation parse failed.</string>
 
     <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

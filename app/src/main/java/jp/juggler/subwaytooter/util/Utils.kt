@@ -4,10 +4,14 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.res.Resources
+import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
+import android.support.v7.widget.RecyclerView
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -31,6 +35,7 @@ import java.util.regex.Pattern
 import org.apache.commons.io.IOUtils
 import org.json.JSONArray
 import org.json.JSONObject
+import java.lang.reflect.Field
 import java.util.Locale
 import java.util.LinkedList
 
@@ -739,6 +744,28 @@ fun View.showKeyboard() {
 	}
 }
 
+fun getPrivateField( clazz: Class<*> ,name:String) : Field? {
+	return try{
+		clazz.getDeclaredField(name).apply{
+			isAccessible = true
+		}
+	}catch(_:Throwable){
+		null
+	}
+}
+
+private val RVLP_Clazz = RecyclerView.LayoutParams::class.java
+private val RVLP_mDecorInsets = getPrivateField(RVLP_Clazz,"mDecorInsets")
+private val RVLP_mInsetsDirty = getPrivateField(RVLP_Clazz,"mInsetsDirty")
+
+fun RecyclerView.LayoutParams.setDirtyInset() {
+	val rect = (RVLP_mDecorInsets?.get(this) as? Rect) ?: return
+	if(rect.bottom != 0){
+		rect.set(0,0,0,0)
+		RVLP_mInsetsDirty?.setBoolean(this, true)
+	}
+}
+
 ////////////////////////////////////////////////////////////////////
 // context
 
@@ -795,3 +822,4 @@ fun showToast(context : Context, bLong : Boolean, string_id : Int, vararg args :
 fun showToast(context : Context, ex : Throwable, string_id : Int, vararg args : Any) {
 	Utils.showToastImpl(context, true, ex.withCaption(context.resources, string_id, *args))
 }
+

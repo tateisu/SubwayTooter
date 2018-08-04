@@ -1008,5 +1008,6 @@
     <string name="delete_suggestion">フォロー推奨から削除…</string>
     <string name="delete_succeeded_confirm">ユーザ \"%1$s\" はフォロー推奨から削除されます。よろしいですか?</string>
     <string name="toot_context_parse_failed">会話データのデコードに失敗</string>
+    <string name="toot_default_text">Default text when composing toot. (not affected to quick toot bar and switching account in toot composing screen)</string>
 
 </resources>

@@ -9,8 +9,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.support.v4.app.ActivityCompat
-import android.support.v4.content.ContextCompat
 import android.support.v7.widget.RecyclerView
 import android.text.Spannable
 import android.text.SpannableString
@@ -23,21 +21,25 @@ import android.view.inputmethod.InputMethodManager
 import android.webkit.MimeTypeMap
 import android.widget.Toast
 import me.drakeet.support.toast.ToastCompat
-
+import org.apache.commons.io.IOUtils
+import org.json.JSONArray
+import org.json.JSONObject
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 import java.lang.ref.WeakReference
-import java.security.MessageDigest
-import java.util.regex.Pattern
-
-import org.apache.commons.io.IOUtils
-import org.json.JSONArray
-import org.json.JSONObject
 import java.lang.reflect.Field
-import java.util.Locale
+import java.security.MessageDigest
 import java.util.LinkedList
+import java.util.Locale
+import java.util.regex.Pattern
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
+import kotlin.collections.isEmpty
+import kotlin.collections.isNotEmpty
+import kotlin.collections.set
+import kotlin.collections.toString
 
 object Utils {
 	
@@ -183,7 +185,7 @@ object Utils {
 			try {
 				val duration = if(bLong) Toast.LENGTH_LONG else Toast.LENGTH_SHORT
 				val t = ToastCompat.makeText(context, message, duration)
-				t.setBadTokenListener({})
+				t.setBadTokenListener {}
 				t.show()
 				refToast = WeakReference(t)
 			} catch(ex : Throwable) {

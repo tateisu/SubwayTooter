@@ -729,6 +729,7 @@
 	<string name="delete_suggestion">Delete from follow suggestion…</string>
 	<string name="delete_succeeded_confirm">The user \"%1$s\" will be removed from follow suggestion. Are you sure?</string>
     <string name="toot_context_parse_failed">conversation parse failed.</string>
+    <string name="toot_default_text">Default text when composing toot. (not affected to quick toot bar and switching account in toot composing screen)</string>
 
     <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

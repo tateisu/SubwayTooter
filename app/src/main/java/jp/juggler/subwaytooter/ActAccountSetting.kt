@@ -20,6 +20,8 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
@@ -133,8 +135,12 @@ class ActAccountSetting
 	private lateinit var etNote : EditText
 	private lateinit var cbLocked : CheckBox
 	private lateinit var btnNote : View
+	private lateinit var etDefaultText :EditText
+	
+	
 	private lateinit var name_invalidator : NetworkEmojiInvalidator
 	private lateinit var note_invalidator : NetworkEmojiInvalidator
+	private lateinit var default_text_invalidator : NetworkEmojiInvalidator
 	internal lateinit var handler : Handler
 	
 	internal var loading = false
@@ -294,6 +300,7 @@ class ActAccountSetting
 		btnProfileAvatar = findViewById(R.id.btnProfileAvatar)
 		btnProfileHeader = findViewById(R.id.btnProfileHeader)
 		etDisplayName = findViewById(R.id.etDisplayName)
+		etDefaultText= findViewById(R.id.etDefaultText)
 		btnDisplayName = findViewById(R.id.btnDisplayName)
 		etNote = findViewById(R.id.etNote)
 		btnNote = findViewById(R.id.btnNote)
@@ -354,6 +361,7 @@ class ActAccountSetting
 		
 		name_invalidator = NetworkEmojiInvalidator(handler, etDisplayName)
 		note_invalidator = NetworkEmojiInvalidator(handler, etNote)
+		default_text_invalidator = NetworkEmojiInvalidator(handler, etDefaultText)
 		
 		listFieldNameInvalidator = listEtFieldName.map {
 			NetworkEmojiInvalidator(handler, it)
@@ -362,6 +370,28 @@ class ActAccountSetting
 		listFieldValueInvalidator = listEtFieldValue.map {
 			NetworkEmojiInvalidator(handler, it)
 		}
+		
+		etDefaultText.addTextChangedListener(object:TextWatcher{
+			override fun afterTextChanged(s : Editable?) {
+				saveUIToData()
+			}
+			
+			override fun beforeTextChanged(
+				s : CharSequence?,
+				start : Int,
+				count : Int,
+				after : Int
+			) {
+			}
+			
+			override fun onTextChanged(
+				s : CharSequence?,
+				start : Int,
+				before : Int,
+				count : Int
+			) {
+			}
+		})
 		
 	}
 	
@@ -398,6 +428,8 @@ class ActAccountSetting
 		cbConfirmToot.isChecked = a.confirm_post
 		
 		notification_sound_uri = a.sound_uri
+		
+		etDefaultText.setText( a.default_text )
 		
 		loading = false
 		
@@ -467,6 +499,7 @@ class ActAccountSetting
 		account.confirm_unboost = cbConfirmUnboost.isChecked
 		account.confirm_unfavourite = cbConfirmUnfavourite.isChecked
 		account.confirm_post = cbConfirmToot.isChecked
+		account.default_text = etDefaultText.text.toString()
 		
 		account.saveSetting()
 		

@@ -58,6 +58,7 @@ class SavedAccount(
 	var notification_tag : String? = null
 	var register_key : String? = null
 	var register_time : Long = 0
+	var default_text : String = ""
 	
 	private val refInstance = AtomicReference<TootInstance>(null)
 	
@@ -153,6 +154,8 @@ class SavedAccount(
 		this.token_info = cursor.getString(cursor.getColumnIndex(COL_TOKEN)).toJsonObject()
 		
 		this.sound_uri = cursor.getString(cursor.getColumnIndex(COL_SOUND_URI))
+		
+		this.default_text = cursor.getString(cursor.getColumnIndex(COL_DEFAULT_TEXT)) ?: ""
 	}
 	
 	val isNA : Boolean
@@ -163,7 +166,7 @@ class SavedAccount(
 	
 	fun delete() {
 		try {
-			App1.database.delete(table, COL_ID + "=?", arrayOf(db_id.toString()))
+			App1.database.delete(table, "$COL_ID=?", arrayOf(db_id.toString()))
 		} catch(ex : Throwable) {
 			log.trace(ex)
 			throw RuntimeException("SavedAccount.delete failed.", ex)
@@ -180,7 +183,7 @@ class SavedAccount(
 		
 		val cv = ContentValues()
 		cv.put(COL_TOKEN, token_info.toString())
-		App1.database.update(table, cv, COL_ID + "=?", arrayOf(db_id.toString()))
+		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
 	}
 	
 	fun saveSetting() {
@@ -207,12 +210,13 @@ class SavedAccount(
 		cv.put(COL_CONFIRM_POST, confirm_post.b2i())
 		
 		cv.put(COL_SOUND_URI, sound_uri)
+		cv.put(COL_DEFAULT_TEXT, default_text)
 		
 		// UIからは更新しない
 		// notification_tag
 		// register_key
 		
-		App1.database.update(table, cv, COL_ID + "=?", arrayOf(db_id.toString()))
+		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
 	}
 	
 	fun saveNotificationTag() {
@@ -222,7 +226,7 @@ class SavedAccount(
 		val cv = ContentValues()
 		cv.put(COL_NOTIFICATION_TAG, notification_tag)
 		
-		App1.database.update(table, cv, COL_ID + "=?", arrayOf(db_id.toString()))
+		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
 	}
 	
 	fun saveRegisterKey() {
@@ -233,7 +237,7 @@ class SavedAccount(
 		cv.put(COL_REGISTER_KEY, register_key)
 		cv.put(COL_REGISTER_TIME, register_time)
 		
-		App1.database.update(table, cv, COL_ID + "=?", arrayOf(db_id.toString()))
+		App1.database.update(table, cv, "$COL_ID=?", arrayOf(db_id.toString()))
 	}
 	
 	// onResumeの時に設定を読み直す
@@ -259,6 +263,7 @@ class SavedAccount(
 		this.notification_favourite = b.notification_favourite
 		this.notification_follow = b.notification_follow
 		this.notification_tag = b.notification_tag
+		this.default_text = b.default_text
 		
 		this.sound_uri = b.sound_uri
 	}
@@ -321,7 +326,7 @@ class SavedAccount(
 	fun supplyBaseUrl(url : String?) : String? {
 		return when {
 			url == null || url.isEmpty() -> return null
-			url[0] == '/' -> "https://" + host + url
+			url[0] == '/' -> "https://$host$url"
 			else -> url
 		}
 	}
@@ -397,6 +402,9 @@ class SavedAccount(
 		private const val COL_CONFIRM_UNBOOST = "confirm_unboost"
 		private const val COL_CONFIRM_UNFAVOURITE = "confirm_unfavourite"
 		
+		// スキーマ27から
+		private const val COL_DEFAULT_TEXT = "default_text"
+		
 		/////////////////////////////////
 		// login information
 		const val INVALID_DB_ID = - 1L
@@ -454,6 +462,9 @@ class SavedAccount(
 					// 以下はDBスキーマ24で更新
 					+ ",$COL_CONFIRM_UNBOOST integer default 1"
 					+ ",$COL_CONFIRM_UNFAVOURITE integer default 1"
+					
+					// 以下はDBスキーマ27で更新
+					+ ",$COL_DEFAULT_TEXT text default ''"
 					
 					+ ")"
 			)
@@ -573,6 +584,15 @@ class SavedAccount(
 				}
 				
 			}
+			if(oldVersion < 27 && newVersion >= 27) {
+				try {
+					db.execSQL("alter table $table add column $COL_DEFAULT_TEXT text default ''")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+			}
+			
 		}
 		
 		// 横断検索用の、何とも紐ついていないアカウント
@@ -631,7 +651,7 @@ class SavedAccount(
 				App1.database.query(
 					table,
 					null,
-					COL_ID + "=?",
+					"$COL_ID=?",
 					arrayOf(db_id.toString()),
 					null,
 					null,
@@ -676,7 +696,7 @@ class SavedAccount(
 				App1.database.query(
 					table,
 					null,
-					COL_NOTIFICATION_TAG + "=?",
+					"$COL_NOTIFICATION_TAG=?",
 					arrayOf(tag),
 					null,
 					null,
@@ -703,7 +723,7 @@ class SavedAccount(
 				App1.database.query(
 					table,
 					null,
-					COL_USER + "=?",
+					"$COL_USER=?",
 					arrayOf(full_acct),
 					null,
 					null,
@@ -727,7 +747,7 @@ class SavedAccount(
 				App1.database.query(
 					table,
 					null,
-					COL_USER + " NOT LIKE '?@%'",
+					"$COL_USER NOT LIKE '?@%'",
 					null,
 					null,
 					null,

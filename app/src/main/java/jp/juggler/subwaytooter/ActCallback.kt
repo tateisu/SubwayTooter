@@ -62,6 +62,16 @@ class ActCallback : AppCompatActivity() {
 		finish()
 	}
 	
+	private fun copyExtraTexts(dst:Intent,src:Intent){
+		var sv:String?
+		//
+		sv = src.getStringExtra(Intent.EXTRA_TEXT)
+		if(sv!=null) dst.putExtra(Intent.EXTRA_TEXT,sv)
+		//
+		sv = src.getStringExtra(Intent.EXTRA_SUBJECT)
+		if(sv!=null) dst.putExtra(Intent.EXTRA_SUBJECT,sv)
+	}
+	
 	private fun remake(src : Intent) : Intent? {
 		
 		sweepOldCache()
@@ -77,6 +87,7 @@ class ActCallback : AppCompatActivity() {
 							val uri = saveToCache(uriOriginal)
 							val dst = Intent(action)
 							dst.setDataAndType(uri, type)
+							copyExtraTexts(dst,src)
 							return dst
 						} catch(ex : Throwable) {
 							log.trace(ex)
@@ -96,6 +107,7 @@ class ActCallback : AppCompatActivity() {
 							val dst = Intent(action)
 							dst.type = type
 							dst.putExtra(Intent.EXTRA_STREAM, uri)
+							copyExtraTexts(dst,src)
 							return dst
 						} catch(ex : Throwable) {
 							log.trace(ex)
@@ -120,6 +132,7 @@ class ActCallback : AppCompatActivity() {
 					val dst = Intent(action)
 					dst.type = type
 					dst.putParcelableArrayListExtra(Intent.EXTRA_STREAM, list_dst)
+					copyExtraTexts(dst,src)
 					return dst
 				}
 			} else if(Intent.ACTION_SEND == action) {
@@ -127,15 +140,12 @@ class ActCallback : AppCompatActivity() {
 				// Swarmアプリから送られたインテントは getType()==null だが EXTRA_TEXT は含まれている
 				// EXTRA_TEXT の存在を確認してからtypeがnullもしくは text/plain なら受け取る
 				
-				var sv = src.getStringExtra(Intent.EXTRA_TEXT)
+				val sv = src.getStringExtra(Intent.EXTRA_TEXT)
 				if( sv?.isNotEmpty() == true && (type == null || type.startsWith("text/"))) {
-					val subject = src.getStringExtra(Intent.EXTRA_SUBJECT)
-					if( subject?.isNotEmpty() == true ) {
-						sv = subject + " " + sv
-					}
 					val dst = Intent(action)
 					dst.type = "text/plain"
-					dst.putExtra(Intent.EXTRA_TEXT, sv)
+					copyExtraTexts(dst,src)
+					
 					return dst
 				}
 			}

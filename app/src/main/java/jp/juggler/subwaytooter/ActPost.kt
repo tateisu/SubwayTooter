@@ -497,9 +497,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					if(Intent.ACTION_VIEW == action) {
 						val uri = sent_intent.data
 						if(uri != null) addAttachment(uri, type)
+						appendContentText(sent_intent)
 					} else if(Intent.ACTION_SEND == action) {
 						val uri = sent_intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
 						if(uri != null) addAttachment(uri, type)
+						appendContentText(sent_intent)
 					} else if(Intent.ACTION_SEND_MULTIPLE == action) {
 						val list_uri =
 							sent_intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
@@ -508,31 +510,21 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 								if(uri != null) addAttachment(uri)
 							}
 						}
+						appendContentText(sent_intent)
 					}
 				} else if(type.startsWith("text/")) {
 					if(Intent.ACTION_SEND == action) {
-						val sv = sent_intent.getStringExtra(Intent.EXTRA_TEXT)
-						if(sv != null) {
-							val svEmoji =
-								DecodeOptions(context = this, decodeEmoji = true).decodeEmoji(sv)
-							etContent.setText(svEmoji)
-							etContent.setSelection(svEmoji.length)
-						}
+						appendContentText(sent_intent)
 					}
 					
 				}
 			}
 			
-			var sv : String? = intent.getStringExtra(KEY_INITIAL_TEXT)
-			if(sv != null) {
-				val svEmoji = DecodeOptions(this, decodeEmoji = true).decodeEmoji(sv)
-				etContent.setText(svEmoji)
-				etContent.setSelection(svEmoji.length)
-			}
+			appendContentText(intent.getStringExtra(KEY_INITIAL_TEXT))
 			
 			val account = this.account
 			
-			sv = intent.getStringExtra(KEY_REPLY_STATUS)
+			var sv = intent.getStringExtra(KEY_REPLY_STATUS)
 			if(sv != null && account != null) {
 				try {
 					val reply_status = TootParser(this@ActPost, account).status(sv.toJsonObject())
@@ -557,17 +549,15 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 									if(! mention_list.contains(sv)) {
 										mention_list.add(sv)
 									}
-									
 								}
 							}
 						}
 						
-						// 今回メンションを追加する？
 						val who_acct = account.getFullAcct(reply_status.account)
 						if(mention_list.contains("@$who_acct")) {
 							// 既に含まれている
-						} else if(! account.isMe(reply_status.account) || mention_list.isEmpty()) {
-							// 自分ではない、もしくは、メンションが空
+						} else if(! account.isMe(reply_status.account) ) {
+							// 自分ではない
 							mention_list.add("@$who_acct")
 						}
 						
@@ -576,13 +566,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 							if(sb.isNotEmpty()) sb.append(' ')
 							sb.append(acct)
 						}
-						if(sb.isNotEmpty()) {
-							sb.append(' ')
-							val svEmoji =
-								DecodeOptions(this, decodeEmoji = true).decodeEmoji(sb.toString())
-							etContent.setText(svEmoji)
-							etContent.setSelection(svEmoji.length)
-						}
+						appendContentText(sb.toString())
 						
 						// リプライ表示をつける
 						in_reply_to_id = reply_status.id
@@ -625,6 +609,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				
 			}
 			
+			appendContentText(account?.default_text ,selectBefore = true)
+			
 			// 再編集
 			sv = intent.getStringExtra(KEY_REDRAFT_STATUS)
 			if(sv != null && account != null) {
@@ -653,6 +639,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 								log.trace(ex)
 							}
 						}
+						
+						// 再編集の場合はdefault_textは反映されない
 						
 						val decodeOptions = DecodeOptions(this)
 						etContent.text = decodeOptions.decodeHTML(base_status.content)
@@ -766,6 +754,44 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		updateTextCount()
 		showReplyTo()
 		showEnquete()
+	}
+	
+	private fun appendContentText(
+		src:String?,
+		selectBefore: Boolean = false
+	){
+		if( src?.isEmpty() != false ) return
+		val svEmoji = DecodeOptions(context = this, decodeEmoji = true).decodeEmoji(src)
+		if( svEmoji.isEmpty()) return
+		
+		val editable = etContent.text
+		if( editable.isNotEmpty() ) editable.append(' ')
+		
+		if( selectBefore) {
+			val start = editable.length
+			editable.append(' ')
+			editable.append( svEmoji)
+			etContent.text= editable
+			etContent.setSelection(start)
+		}else{
+			editable.append( svEmoji)
+			etContent.text= editable
+			etContent.setSelection(editable.length)
+		}
+	}
+		
+	private fun appendContentText( src : Intent){
+		val list = ArrayList<String>()
+
+		var sv:String?
+		sv = src.getStringExtra(Intent.EXTRA_SUBJECT)
+		if( sv?.isNotEmpty() == true) list.add(sv)
+		sv = src.getStringExtra(Intent.EXTRA_TEXT)
+		if( sv?.isNotEmpty() == true) list.add(sv)
+
+		if( list.isNotEmpty()){
+			appendContentText( list.joinToString(" "))
+		}
 	}
 	
 	private fun initUI() {

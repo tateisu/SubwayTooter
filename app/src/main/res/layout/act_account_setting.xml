@@ -84,6 +84,27 @@
 
         <TextView
             style="@style/setting_row_label"
+            android:text="@string/toot_default_text"
+            android:labelFor="@+id/etDefaultText"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etDefaultText"
+                style="@style/setting_horizontal_stretch"
+                android:layout_gravity="center_vertical"
+                android:padding="4dp"
+                android:inputType="textMultiLine"
+                />
+
+        </LinearLayout>
+
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
             android:text="@string/public_profile"
             />
 

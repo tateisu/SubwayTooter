@@ -7,7 +7,6 @@ import android.os.AsyncTask
 import android.os.SystemClock
 import android.support.v4.view.ViewCompat
 import android.support.v7.widget.LinearLayoutManager
-import android.support.v7.widget.ListRecyclerView
 import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.SpannableStringBuilder
@@ -63,7 +62,7 @@ class ColumnViewHolder(
 	private var page_idx : Int = 0
 	
 	private val tvLoading : TextView
-	val listView : ListRecyclerView
+	val listView : RecyclerView
 	val refreshLayout : SwipyRefreshLayout
 	lateinit var listLayoutManager : LinearLayoutManager
 	

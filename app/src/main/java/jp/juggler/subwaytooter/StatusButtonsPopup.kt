@@ -3,16 +3,15 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.graphics.drawable.ColorDrawable
 import android.os.SystemClock
+import android.support.v7.widget.RecyclerView
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
 import android.widget.PopupWindow
-
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.util.LogCategory
-import android.support.v7.widget.ListRecyclerView
 
 class StatusButtonsPopup(
 	private val activity : ActMain,
@@ -65,7 +64,7 @@ class StatusButtonsPopup(
 	
 	@SuppressLint("RtlHardcoded")
 	fun show(
-		listView : ListRecyclerView
+		listView : RecyclerView
 		, anchor : View
 		, status : TootStatus
 		, notification : TootNotification?

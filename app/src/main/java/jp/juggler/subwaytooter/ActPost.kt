@@ -487,22 +487,21 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			
 			val sent_intent = intent.getParcelableExtra<Intent>(KEY_SENT_INTENT)
 			if(sent_intent != null) {
-				val action = sent_intent.action
-				val type = sent_intent.type
 				
-				if(type == null) {
-					//
-				} else if(type.startsWith("image/") || type.startsWith("video/")) {
-					
-					if(Intent.ACTION_VIEW == action) {
+				appendContentText(sent_intent)
+				val action = sent_intent.action
+				when(action){
+					Intent.ACTION_VIEW -> {
 						val uri = sent_intent.data
-						if(uri != null) addAttachment(uri, type)
-						appendContentText(sent_intent)
-					} else if(Intent.ACTION_SEND == action) {
+						val type = sent_intent.type
+						if(uri!=null) addAttachment(uri,type)
+					}
+					Intent.ACTION_SEND -> {
 						val uri = sent_intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
-						if(uri != null) addAttachment(uri, type)
-						appendContentText(sent_intent)
-					} else if(Intent.ACTION_SEND_MULTIPLE == action) {
+						val type = sent_intent.type
+						if(uri!=null) addAttachment(uri,type)
+					}
+					Intent.ACTION_SEND_MULTIPLE -> {
 						val list_uri =
 							sent_intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
 						if(list_uri != null) {
@@ -510,13 +509,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 								if(uri != null) addAttachment(uri)
 							}
 						}
-						appendContentText(sent_intent)
 					}
-				} else if(type.startsWith("text/")) {
-					if(Intent.ACTION_SEND == action) {
-						appendContentText(sent_intent)
-					}
-					
 				}
 			}
 			
@@ -556,7 +549,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						val who_acct = account.getFullAcct(reply_status.account)
 						if(mention_list.contains("@$who_acct")) {
 							// 既に含まれている
-						} else if(! account.isMe(reply_status.account) ) {
+						} else if(! account.isMe(reply_status.account)) {
 							// 自分ではない
 							mention_list.add("@$who_acct")
 						}
@@ -566,7 +559,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 							if(sb.isNotEmpty()) sb.append(' ')
 							sb.append(acct)
 						}
-						appendContentText(sb.toString())
+						if(sb.isNotEmpty()) {
+							appendContentText(sb.append(' ').toString())
+						}
 						
 						// リプライ表示をつける
 						in_reply_to_id = reply_status.id
@@ -581,7 +576,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 								visibility?.isNotEmpty() == true -> visibility
 								account.visibility?.isNotEmpty() == true -> account.visibility
 								else -> TootStatus.VISIBILITY_PUBLIC
-							// VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになる
+								// VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになる
 							}
 							
 							if(TootStatus.VISIBILITY_WEB_SETTING == visibility) {
@@ -609,7 +604,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				
 			}
 			
-			appendContentText(account?.default_text ,selectBefore = true)
+			appendContentText(account?.default_text, selectBefore = true)
 			
 			// 再編集
 			sv = intent.getStringExtra(KEY_REDRAFT_STATUS)
@@ -652,7 +647,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						
 						val src_enquete = base_status.enquete
 						val src_items = src_enquete?.items
-						if(src_items != null && src_enquete.type == NicoEnquete.TYPE_ENQUETE ) {
+						if(src_items != null && src_enquete.type == NicoEnquete.TYPE_ENQUETE) {
 							cbEnquete.isChecked = true
 							etContent.text = decodeOptions.decodeHTML(src_enquete.question)
 							etContent.setSelection(etContent.text.length)
@@ -685,9 +680,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			visibility?.isNotEmpty() == true -> visibility
 			account?.visibility?.isNotEmpty() == true -> account?.visibility
 			else -> TootStatus.VISIBILITY_PUBLIC
-		
-		// 2017/9/13 VISIBILITY_WEB_SETTING から VISIBILITY_PUBLICに変更した
-		// VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになるので…
+			
+			// 2017/9/13 VISIBILITY_WEB_SETTING から VISIBILITY_PUBLICに変更した
+			// VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになるので…
 		}
 		
 		if(this.account == null) {
@@ -757,40 +752,44 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	}
 	
 	private fun appendContentText(
-		src:String?,
-		selectBefore: Boolean = false
-	){
-		if( src?.isEmpty() != false ) return
+		src : String?,
+		selectBefore : Boolean = false
+	) {
+		if(src?.isEmpty() != false) return
 		val svEmoji = DecodeOptions(context = this, decodeEmoji = true).decodeEmoji(src)
-		if( svEmoji.isEmpty()) return
+		if(svEmoji.isEmpty()) return
 		
 		val editable = etContent.text
-		if( editable.isNotEmpty() ) editable.append(' ')
+		if(editable.isNotEmpty()
+			&& ! CharacterGroup.isWhitespace(editable[editable.length - 1].toInt())
+		) {
+			editable.append(' ')
+		}
 		
-		if( selectBefore) {
+		if(selectBefore) {
 			val start = editable.length
 			editable.append(' ')
-			editable.append( svEmoji)
-			etContent.text= editable
+			editable.append(svEmoji)
+			etContent.text = editable
 			etContent.setSelection(start)
-		}else{
-			editable.append( svEmoji)
-			etContent.text= editable
+		} else {
+			editable.append(svEmoji)
+			etContent.text = editable
 			etContent.setSelection(editable.length)
 		}
 	}
-		
-	private fun appendContentText( src : Intent){
+	
+	private fun appendContentText(src : Intent) {
 		val list = ArrayList<String>()
-
-		var sv:String?
+		
+		var sv : String?
 		sv = src.getStringExtra(Intent.EXTRA_SUBJECT)
-		if( sv?.isNotEmpty() == true) list.add(sv)
+		if(sv?.isNotEmpty() == true) list.add(sv)
 		sv = src.getStringExtra(Intent.EXTRA_TEXT)
-		if( sv?.isNotEmpty() == true) list.add(sv)
-
-		if( list.isNotEmpty()){
-			appendContentText( list.joinToString(" "))
+		if(sv?.isNotEmpty() == true) list.add(sv)
+		
+		if(list.isNotEmpty()) {
+			appendContentText(list.joinToString(" "))
 		}
 	}
 	
@@ -1113,7 +1112,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			.progressPrefix(getString(R.string.progress_synchronize_toot))
 			.run(access_info, object : TootTask {
 				
-				internal var target_status : TootStatus? = null
+				var target_status : TootStatus? = null
 				override fun background(client : TootApiClient) : TootApiResult? {
 					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
 					val path = String.format(
@@ -1305,7 +1304,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		TootTaskRunner(this).run(this@ActPost.account ?: return, object : TootTask {
 			
-			internal var new_attachment : TootAttachment? = null
+			var new_attachment : TootAttachment? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val json = JSONObject()
@@ -1990,8 +1989,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		val task = @SuppressLint("StaticFieldLeak")
 		object : AsyncTask<Void, String, String?>() {
 			
-			internal val list_warning = ArrayList<String>()
-			internal var account : SavedAccount? = null
+			val list_warning = ArrayList<String>()
+			var account : SavedAccount? = null
 			
 			override fun doInBackground(vararg params : Void) : String? {
 				

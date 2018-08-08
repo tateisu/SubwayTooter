@@ -15,17 +15,6 @@ class MyFirebaseInstanceIDService : FirebaseInstanceIdService() {
 	override fun onTokenRefresh() {
 		super.onTokenRefresh()
 		
-		try {
-			val token = FirebaseInstanceId.getInstance().token
-			log.d("onTokenRefresh: instance_token=%s", token)
-			
-			PrefDevice.prefDevice(this).edit().putString(PrefDevice.KEY_DEVICE_TOKEN, token).apply()
-			
-			PollingWorker.queueFCMTokenUpdated(this)
-			
-		} catch(ex : Throwable) {
-			log.trace(ex)
-		}
 		
 	}
 	

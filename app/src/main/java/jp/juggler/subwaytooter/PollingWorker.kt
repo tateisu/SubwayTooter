@@ -61,6 +61,9 @@ class PollingWorker private constructor(c : Context) {
 	companion object {
 		internal val log = LogCategory("PollingWorker")
 		
+		private const val FCM_SENDER_ID ="433682361381"
+		private const val FCM_SCOPE = "FCM"
+
 		const val NOTIFICATION_ID = 1
 		const val NOTIFICATION_ID_ERROR = 3
 		
@@ -112,15 +115,21 @@ class PollingWorker private constructor(c : Context) {
 			return s
 		}
 		
+		
+		
 		fun getDeviceId(context : Context) : String? {
+			// 設定ファイルに保持されていたらそれを使う
 			val prefDevice = PrefDevice.prefDevice(context)
 			var device_token = prefDevice.getString(PrefDevice.KEY_DEVICE_TOKEN, null)
 			if(device_token?.isNotEmpty() == true) return device_token
 			
 			try {
-				device_token = FirebaseInstanceId.getInstance().token
+				// FirebaseのAPIから取得する
+				device_token = FirebaseInstanceId.getInstance().getToken(FCM_SENDER_ID,FCM_SCOPE)
 				if(device_token?.isNotEmpty() == true) {
-					prefDevice.edit().putString(PrefDevice.KEY_DEVICE_TOKEN, device_token)
+					prefDevice
+						.edit()
+						.putString(PrefDevice.KEY_DEVICE_TOKEN, device_token)
 						.apply()
 					return device_token
 				}
@@ -143,26 +152,25 @@ class PollingWorker private constructor(c : Context) {
 			
 			var sv = prefDevice.getString(PrefDevice.KEY_INSTALL_ID, null)
 			if(sv?.isNotEmpty() == true) return sv
+
 			SavedAccount.clearRegistrationCache()
 			
 			try {
 				var device_token = prefDevice.getString(PrefDevice.KEY_DEVICE_TOKEN, null)
-				if(device_token == null || device_token.isEmpty()) {
+				if(device_token?.isEmpty() != false ) {
 					try {
-						device_token = FirebaseInstanceId.getInstance().token
+						device_token = FirebaseInstanceId.getInstance().getToken(FCM_SENDER_ID,FCM_SCOPE)
 						if(device_token == null || device_token.isEmpty()) {
 							log.e("getInstallId: missing device token.")
 							return null
 						} else {
-							prefDevice.edit().putString(PrefDevice.KEY_DEVICE_TOKEN, device_token)
-								.apply()
+							prefDevice.edit().putString(PrefDevice.KEY_DEVICE_TOKEN, device_token).apply()
 						}
 					} catch(ex : Throwable) {
 						log.e("getInstallId: could not get device token.")
 						log.trace(ex)
 						return null
 					}
-					
 				}
 				
 				val request = Request.Builder()
@@ -857,12 +865,12 @@ class PollingWorker private constructor(c : Context) {
 					TASK_BOOT_COMPLETED -> NotificationTracking.resetPostAll()
 					
 					TASK_PACKAGE_REPLACED -> NotificationTracking.resetPostAll()
-				
-				// デバイストークンが更新された
+					
+					// デバイストークンが更新された
 					TASK_FCM_DEVICE_TOKEN -> {
 					}
-				
-				// プッシュ通知が届いた
+					
+					// プッシュ通知が届いた
 					TASK_FCM_MESSAGE -> {
 						var bDone = false
 						val tag = taskData.parseString(EXTRA_TAG)
@@ -1097,11 +1105,11 @@ class PollingWorker private constructor(c : Context) {
 					
 					client.account = account
 					
-					val wps = PushSubscriptionHelper(context,account)
-					if( wps.flags != 0) {
+					val wps = PushSubscriptionHelper(context, account)
+					if(wps.flags != 0) {
 						job.bPollingRequired.set(true)
 					}
-
+					
 					wps.updateSubscription(client)
 					val wps_log = wps.log
 					if(wps_log.isNotEmpty()) {

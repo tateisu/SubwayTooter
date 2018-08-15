@@ -532,7 +532,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			
 			val account = this.account
 			
-			var sv = intent.getStringExtra(KEY_REPLY_STATUS)
+			sv = intent.getStringExtra(KEY_REPLY_STATUS)
 			if(sv != null && account != null) {
 				try {
 					val reply_status = TootParser(this@ActPost, account).status(sv.toJsonObject())

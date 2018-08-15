@@ -69,6 +69,7 @@ class ActAppSetting : AppCompatActivity()
 		internal const val COLOR_DIALOG_ID_FOOTER_TAB_BG = 3
 		internal const val COLOR_DIALOG_ID_FOOTER_TAB_DIVIDER = 4
 		internal const val COLOR_DIALOG_ID_FOOTER_TAB_INDICATOR = 5
+		internal const val COLOR_DIALOG_ID_LIST_DIVIDER = 6
 		
 		internal const val REQUEST_CODE_TIMELINE_FONT = 1
 		internal const val REQUEST_CODE_TIMELINE_FONT_BOLD = 2
@@ -108,6 +109,7 @@ class ActAppSetting : AppCompatActivity()
 	private var footer_tab_bg_color : Int = 0
 	private var footer_tab_divider_color : Int = 0
 	private var footer_tab_indicator_color : Int = 0
+	private var list_divider_color : Int = 0
 	
 	private lateinit var ivFooterToot : ImageView
 	private lateinit var ivFooterMenu : ImageView
@@ -262,6 +264,8 @@ class ActAppSetting : AppCompatActivity()
 		findViewById<View>(R.id.btnTabDividerColorReset).setOnClickListener(this)
 		findViewById<View>(R.id.btnTabIndicatorColorEdit).setOnClickListener(this)
 		findViewById<View>(R.id.btnTabIndicatorColorReset).setOnClickListener(this)
+		findViewById<View>(R.id.btnListDividerColorEdit).setOnClickListener(this)
+		findViewById<View>(R.id.btnListDividerColorReset).setOnClickListener(this)
 		
 		findViewById<View>(R.id.btnTimelineFontEdit).setOnClickListener(this)
 		findViewById<View>(R.id.btnTimelineFontReset).setOnClickListener(this)
@@ -370,6 +374,7 @@ class ActAppSetting : AppCompatActivity()
 		footer_tab_bg_color = Pref.ipFooterTabBgColor(pref)
 		footer_tab_divider_color = Pref.ipFooterTabDividerColor(pref)
 		footer_tab_indicator_color = Pref.ipFooterTabIndicatorColor(pref)
+		list_divider_color = Pref.ipListDividerColor(pref)
 		
 		etColumnWidth.setText(Pref.spColumnWidth(pref))
 		etMediaThumbHeight.setText(Pref.spMediaThumbHeight(pref))
@@ -463,6 +468,7 @@ class ActAppSetting : AppCompatActivity()
 			.put(Pref.ipFooterTabBgColor, footer_tab_bg_color)
 			.put(Pref.ipFooterTabDividerColor, footer_tab_divider_color)
 			.put(Pref.ipFooterTabIndicatorColor, footer_tab_indicator_color)
+			.put(Pref.ipListDividerColor, list_divider_color)
 			
 			.apply()
 		
@@ -551,7 +557,18 @@ class ActAppSetting : AppCompatActivity()
 				saveUIToData()
 				showFooterColor()
 			}
+
+			R.id.btnListDividerColorEdit -> openColorPicker(
+				COLOR_DIALOG_ID_LIST_DIVIDER,
+				list_divider_color,
+				true
+			)
 			
+			R.id.btnListDividerColorReset -> {
+				list_divider_color = 0
+				saveUIToData()
+			}
+
 			R.id.btnTimelineFontReset -> {
 				timeline_font = ""
 				saveUIToData()
@@ -672,6 +689,11 @@ class ActAppSetting : AppCompatActivity()
 				footer_tab_indicator_color = if(colorSelected == 0) 0x01000000 else colorSelected
 				saveUIToData()
 				showFooterColor()
+			}
+			
+			COLOR_DIALOG_ID_LIST_DIVIDER ->{
+				list_divider_color = if(colorSelected == 0) 0x01000000 else colorSelected
+				saveUIToData()
 			}
 		}
 	}

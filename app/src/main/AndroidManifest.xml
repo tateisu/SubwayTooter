@@ -71,9 +71,9 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
 
                 <data
-                    android:scheme="subwaytooter"
                     android:host="*"
                     android:pathPattern=".*"
+                    android:scheme="subwaytooter"
                     />
             </intent-filter>
 
@@ -84,9 +84,9 @@
                 <category android:name="android.intent.category.BROWSABLE"/>
 
                 <data
-                    android:scheme="https"
                     android:host="*"
                     android:pathPrefix="/@"
+                    android:scheme="https"
                     />
             </intent-filter>
 
@@ -248,11 +248,10 @@
 
         <receiver android:name=".DownloadReceiver">
             <intent-filter>
-                <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED" />
-                <action android:name="android.intent.action.DOWNLOAD_COMPLETE" />
+                <action android:name="android.intent.action.DOWNLOAD_NOTIFICATION_CLICKED"/>
+                <action android:name="android.intent.action.DOWNLOAD_COMPLETE"/>
             </intent-filter>
         </receiver>
-
 
         <!-- okhttp3クライアントを指定する必要があるため、マニフェスト経由での組み込みは行わない -->
         <!--<meta-data-->
@@ -269,7 +268,7 @@
         </service>
 
         <!-- Set custom default icon. This is used when no icon is set for incoming notification messages.
-     See README(https://goo.gl/l4GJaQ) for more. -->
+             See README(https://goo.gl/l4GJaQ) for more. -->
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
             android:resource="@drawable/ic_notification"

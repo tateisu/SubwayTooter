@@ -65,6 +65,7 @@ import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanClickCallback
 import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.view.ListDivider
 
 class ActMain : AppCompatActivity()
 	, NavigationView.OnNavigationItemSelectedListener
@@ -105,6 +106,7 @@ class ActMain : AppCompatActivity()
 		
 		@Suppress("HasPlatformType")
 		val reStatusPage = Pattern.compile("\\Ahttps://([^/]+)/@([A-Za-z0-9_]+)/(\\d+)(?:\\z|[?#])")
+		
 	}
 	
 	//	@Override
@@ -450,6 +452,9 @@ class ActMain : AppCompatActivity()
 		
 		bStart = true
 		log.d("onStart")
+		
+		// カラーカスタマイズを読み直す
+		ListDivider.color = Pref.ipListDividerColor(pref)
 		
 		// アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
 		run {
@@ -1149,16 +1154,8 @@ class ActMain : AppCompatActivity()
 		
 		llEmpty = findViewById(R.id.llEmpty)
 		
-		//		// toolbar
-		//		Toolbar toolbar = (Toolbar) findViewById( R.id.toolbar );
-		//		setSupportActionBar( toolbar );
-		
-		// navigation drawer
 		drawer = findViewById(R.id.drawer_layout)
-		//		ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-		//			this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close );
 		drawer.addDrawerListener(this)
-		//		toggle.syncState();
 		
 		val navigationView = findViewById<NavigationView>(R.id.nav_view)
 		navigationView.setNavigationItemSelectedListener(this)

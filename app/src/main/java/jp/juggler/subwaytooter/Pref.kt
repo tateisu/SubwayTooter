@@ -328,6 +328,7 @@ object Pref {
 	val ipFooterTabBgColor = IntPref("footer_tab_bg_color", 0)
 	val ipFooterTabDividerColor = IntPref("footer_tab_divider_color", 0)
 	val ipFooterTabIndicatorColor = IntPref("footer_tab_indicator_color", 0)
+	val ipListDividerColor = IntPref("listDividerColor", 0)
 	val ipLastColumnPos = IntPref("last_column_pos", - 1)
 	
 //	val ipTrendTagCountShowing = IntPref("TrendTagCountShowing", 0)

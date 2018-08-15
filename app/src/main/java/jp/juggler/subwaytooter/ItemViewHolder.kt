@@ -246,13 +246,7 @@ internal class ItemViewHolder(
 		bSimpleList : Boolean,
 		item : TimelineItem
 	) {
-//		// LGT32で区切り線の下の余白が増えていく件の対策？
-//		(this.viewRoot.layoutParams as? RecyclerView.LayoutParams)?.let {
-//			it.topMargin = 0
-//			it.bottomMargin = 0
-//			it.setDirtyInset()
-//		}
-		
+
 		this.list_adapter = list_adapter
 		this.column = column
 		this.bSimpleList = bSimpleList

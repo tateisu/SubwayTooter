@@ -408,7 +408,10 @@ class ColumnViewHolder(
 			tvColumnStatus.text = "?"
 			
 			listView.adapter = null
-			listView.addItemDecoration(ListDivider(activity))
+			if(listView.itemDecorationCount == 0) {
+				listView.addItemDecoration(ListDivider(activity))
+			}
+			
 			val status_adapter = ItemListAdapter(activity, column, this, bSimpleList)
 			this.status_adapter = status_adapter
 			

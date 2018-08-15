@@ -746,28 +746,6 @@ fun View.showKeyboard() {
 	}
 }
 
-fun getPrivateField( clazz: Class<*> ,name:String) : Field? {
-	return try{
-		clazz.getDeclaredField(name).apply{
-			isAccessible = true
-		}
-	}catch(_:Throwable){
-		null
-	}
-}
-
-private val RVLP_Clazz = RecyclerView.LayoutParams::class.java
-private val RVLP_mDecorInsets = getPrivateField(RVLP_Clazz,"mDecorInsets")
-private val RVLP_mInsetsDirty = getPrivateField(RVLP_Clazz,"mInsetsDirty")
-
-fun RecyclerView.LayoutParams.setDirtyInset() {
-	val rect = (RVLP_mDecorInsets?.get(this) as? Rect) ?: return
-	if(rect.bottom != 0){
-		rect.set(0,0,0,0)
-		RVLP_mInsetsDirty?.setBoolean(this, true)
-	}
-}
-
 ////////////////////////////////////////////////////////////////////
 // context
 

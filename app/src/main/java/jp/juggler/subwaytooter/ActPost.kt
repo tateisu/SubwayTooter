@@ -355,10 +355,10 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			} else {
 				// 画像のURL
 				val uri = data?.data ?: uriCameraImage
-				if( uri != null ){
+				if(uri != null) {
 					addAttachment(uri)
-				}else{
-					showToast(this@ActPost,false,"missing image uri")
+				} else {
+					showToast(this@ActPost, false, "missing image uri")
 				}
 			}
 		} else if(requestCode == REQUEST_CODE_VIDEO && resultCode == Activity.RESULT_OK) {
@@ -394,7 +394,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
 		
-		var sv :String?
+		var sv : String?
 		
 		super.onCreate(savedInstanceState)
 		App1.setActivityTheme(this, true)
@@ -418,10 +418,10 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			redraft_status_id = savedInstanceState.getLong(STATE_REDRAFT_STATUS_ID)
 			
 			sv = savedInstanceState.getString(STATE_URI_CAMERA_IMAGE)
-			if( sv?.isNotEmpty() == true){
+			if(sv?.isNotEmpty() == true) {
 				uriCameraImage = Uri.parse(sv)
 			}
-
+			
 			val account_db_id =
 				savedInstanceState.getLong(KEY_ACCOUNT_DB_ID, SavedAccount.INVALID_DB_ID)
 			if(account_db_id != SavedAccount.INVALID_DB_ID) {
@@ -452,9 +452,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					pa.callback = this
 				}
 				
-			} else{
+			} else {
 				sv = savedInstanceState.getString(KEY_ATTACHMENT_LIST)
-				if(sv?.isNotEmpty() == true ) {
+				if(sv?.isNotEmpty() == true) {
 					
 					// state から復元する
 					app_state.attachment_list = this.attachment_list
@@ -505,17 +505,19 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				
 				appendContentText(sent_intent)
 				val action = sent_intent.action
-				when(action){
+				when(action) {
 					Intent.ACTION_VIEW -> {
 						val uri = sent_intent.data
 						val type = sent_intent.type
-						if(uri!=null) addAttachment(uri,type)
+						if(uri != null) addAttachment(uri, type)
 					}
+					
 					Intent.ACTION_SEND -> {
 						val uri = sent_intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
 						val type = sent_intent.type
-						if(uri!=null) addAttachment(uri,type)
+						if(uri != null) addAttachment(uri, type)
 					}
+					
 					Intent.ACTION_SEND_MULTIPLE -> {
 						val list_uri =
 							sent_intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
@@ -729,8 +731,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		outState.putInt(STATE_MUSHROOM_START, mushroom_start)
 		outState.putInt(STATE_MUSHROOM_END, mushroom_end)
 		outState.putLong(STATE_REDRAFT_STATUS_ID, redraft_status_id)
-		if(uriCameraImage!=null) {
-			outState.putString(STATE_URI_CAMERA_IMAGE,uriCameraImage.toString())
+		if(uriCameraImage != null) {
+			outState.putString(STATE_URI_CAMERA_IMAGE, uriCameraImage.toString())
 		}
 		
 		val account = this.account
@@ -1209,7 +1211,12 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	
 	// 添付した画像をタップ
 	private fun performAttachmentClick(idx : Int) {
-		val pa = attachment_list[idx]
+		val pa = try {
+			attachment_list[idx]
+		} catch(ex : Throwable) {
+			showToast(this, false, ex.withCaption("can't get attachment item[$idx]."))
+			return
+		}
 		
 		AlertDialog.Builder(this)
 			.setTitle(R.string.media_attachment)

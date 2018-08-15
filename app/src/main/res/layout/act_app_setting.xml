@@ -389,23 +389,6 @@
 
         <View style="@style/setting_divider"/>
 
-        <TextView
-            style="@style/setting_row_label"
-            android:text="@string/allow_non_space_before_emoji_code"
-            />
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <Switch
-                android:id="@+id/swAllowNonSpaceBeforeEmojiShortcode"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
-
         <!-- =============================================== -->
 
         <TextView

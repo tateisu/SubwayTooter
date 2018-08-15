@@ -106,12 +106,6 @@ object Pref {
 	
 	// boolean
 	
-	val bpAllowNonSpaceBeforeEmojiShortcode = BooleanPref(
-		"allow_non_space_before_emoji_shortcode",
-		false,
-		R.id.swAllowNonSpaceBeforeEmojiShortcode
-	)
-	
 	val bpDisableEmojiAnimation = BooleanPref(
 		"disable_emoji_animation",
 		false,

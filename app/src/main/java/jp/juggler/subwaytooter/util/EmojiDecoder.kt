@@ -192,7 +192,6 @@ object EmojiDecoder {
 	}
 	
 	private const val codepointColon = ':'.toInt()
-	private const val codepointAtmark = '@'.toInt()
 	
 	private val shortCodeCharacterSet : SparseBooleanArray by lazy {
 		val set = SparseBooleanArray()
@@ -220,20 +219,11 @@ object EmojiDecoder {
 			
 			// 絵文字パターンの開始位置を探索する
 			start = i
-			while(i < end) {
+			loop@ while(i < end) {
 				val c = s.codePointAt(i)
 				val width = Character.charCount(c)
 				if(c == codepointColon) {
-					if(Pref.bpAllowNonSpaceBeforeEmojiShortcode(App1.pref)) {
-						// アプリ設定により、: の手前に空白を要求しない
-						break
-					} else if(i + width < end && s.codePointAt(i + width) == codepointAtmark) {
-						// フレニコのプロフ絵文字 :@who: は手前の空白を要求しない
-						break
-					} else if(canStartShortCode(s, i)) {
-						// 絵文字ショートコードの開始とみなす
-						break
-					}
+					break@loop
 				}
 				i += width
 			}

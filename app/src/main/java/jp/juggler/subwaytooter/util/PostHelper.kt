@@ -201,12 +201,12 @@ class PostHelper(
 		}
 		
 		// 確認を終えたらボタン連打判定
-
+		
 		if(last_post_task?.get()?.isActive == true) {
 			showToast(activity, false, R.string.post_button_tapped_repeatly)
 			return
 		}
-
+		
 		val now = SystemClock.elapsedRealtime()
 		val delta = now - last_post_tapped
 		last_post_tapped = now
@@ -379,7 +379,8 @@ class PostHelper(
 				}
 				
 			}
-		}))
+		})
+		)
 	}
 	
 	///////////////////////////////////////////////////////////////////////////////////

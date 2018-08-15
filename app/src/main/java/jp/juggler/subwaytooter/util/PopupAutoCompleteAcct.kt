@@ -127,20 +127,19 @@ internal class PopupAutoCompleteAcct(
 					val start = Math.min(src_length, sel_start)
 					val end = Math.min(src_length, sel_end)
 					
-					
 					val sb = SpannableStringBuilder()
 						.append(src.subSequence(0, start))
 					
-					if( acct[0] == ' ' ) {
+					if(acct[0] == ' ') {
 						// 絵文字ショートコード
 						if(! EmojiDecoder.canStartShortCode(src, start)) sb.append(' ')
 						sb.append(acct.subSequence(2, acct.length))
-					}else {
+					} else {
 						// @user@host, #hashtag
 						// 直後に空白を付与する
 						sb.append(acct).append(" ")
 					}
-
+					
 					val newSelection = sb.length
 					if(end < src_length) sb.append(src.subSequence(end, src_length))
 					

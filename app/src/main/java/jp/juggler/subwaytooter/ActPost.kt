@@ -146,6 +146,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		private const val STATE_MUSHROOM_START = "mushroom_start"
 		private const val STATE_MUSHROOM_END = "mushroom_end"
 		private const val STATE_REDRAFT_STATUS_ID = "redraft_status_id"
+		private const val STATE_URI_CAMERA_IMAGE = "uri_camera_image"
 		
 		fun open(
 			activity : Activity,
@@ -353,7 +354,12 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				}
 			} else {
 				// 画像のURL
-				(data?.data ?: uriCameraImage)?.let { addAttachment(it) }
+				val uri = data?.data ?: uriCameraImage
+				if( uri != null ){
+					addAttachment(uri)
+				}else{
+					showToast(this@ActPost,false,"missing image uri")
+				}
 			}
 		} else if(requestCode == REQUEST_CODE_VIDEO && resultCode == Activity.RESULT_OK) {
 			data?.data?.let { addAttachment(it) }
@@ -387,6 +393,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	}
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
+		
+		var sv :String?
+		
 		super.onCreate(savedInstanceState)
 		App1.setActivityTheme(this, true)
 		
@@ -408,6 +417,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			mushroom_end = savedInstanceState.getInt(STATE_MUSHROOM_END, 0)
 			redraft_status_id = savedInstanceState.getLong(STATE_REDRAFT_STATUS_ID)
 			
+			sv = savedInstanceState.getString(STATE_URI_CAMERA_IMAGE)
+			if( sv?.isNotEmpty() == true){
+				uriCameraImage = Uri.parse(sv)
+			}
+
 			val account_db_id =
 				savedInstanceState.getLong(KEY_ACCOUNT_DB_ID, SavedAccount.INVALID_DB_ID)
 			if(account_db_id != SavedAccount.INVALID_DB_ID) {
@@ -425,8 +439,6 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			
 			this.visibility = savedInstanceState.getString(KEY_VISIBILITY)
 			
-			val sv = savedInstanceState.getString(KEY_ATTACHMENT_LIST)
-			
 			if(app_state.attachment_list != null) {
 				
 				val list_in_state = app_state.attachment_list
@@ -440,26 +452,29 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					pa.callback = this
 				}
 				
-			} else if(sv != null && sv.isNotEmpty()) {
-				
-				// state から復元する
-				app_state.attachment_list = this.attachment_list
-				this.attachment_list.clear()
-				
-				try {
-					val array = sv.toJsonArray()
-					for(i in 0 until array.length()) {
-						try {
-							val a = parseItem(::TootAttachment, array.optJSONObject(i))
-							if(a != null) attachment_list.add(PostAttachment(a))
-						} catch(ex : Throwable) {
-							log.trace(ex)
+			} else{
+				sv = savedInstanceState.getString(KEY_ATTACHMENT_LIST)
+				if(sv?.isNotEmpty() == true ) {
+					
+					// state から復元する
+					app_state.attachment_list = this.attachment_list
+					this.attachment_list.clear()
+					
+					try {
+						val array = sv.toJsonArray()
+						for(i in 0 until array.length()) {
+							try {
+								val a = parseItem(::TootAttachment, array.optJSONObject(i))
+								if(a != null) attachment_list.add(PostAttachment(a))
+							} catch(ex : Throwable) {
+								log.trace(ex)
+							}
 						}
+					} catch(ex : Throwable) {
+						log.trace(ex)
 					}
-				} catch(ex : Throwable) {
-					log.trace(ex)
+					
 				}
-				
 			}
 			
 			this.in_reply_to_id = savedInstanceState.getLong(KEY_IN_REPLY_TO_ID, - 1L)
@@ -714,6 +729,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		outState.putInt(STATE_MUSHROOM_START, mushroom_start)
 		outState.putInt(STATE_MUSHROOM_END, mushroom_end)
 		outState.putLong(STATE_REDRAFT_STATUS_ID, redraft_status_id)
+		if(uriCameraImage!=null) {
+			outState.putString(STATE_URI_CAMERA_IMAGE,uriCameraImage.toString())
+		}
 		
 		val account = this.account
 		if(account != null) {

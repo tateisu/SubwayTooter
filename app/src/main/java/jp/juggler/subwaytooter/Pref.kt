@@ -312,11 +312,16 @@ object Pref {
 		R.id.swScrollTopFromColumnStrip
 	)
 	
+
 	// int
 	
 	val ipBackButtonAction = IntPref("back_button_action", 0)
 	val ipUiTheme = IntPref("ui_theme", 0)
 	val ipResizeImage = IntPref("resize_image", 4)
+	val ipRepliesCount = IntPref("RepliesCount",0)
+	const val RC_SIMPLE = 0
+	const val RC_ACTUAL = 1
+	const val RC_NONE = 2
 	
 	val ipRefreshAfterToot = IntPref("refresh_after_toot", 0)
 	const val RAT_REFRESH_SCROLL = 0

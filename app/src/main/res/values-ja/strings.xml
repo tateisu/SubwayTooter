@@ -1010,5 +1010,9 @@
     <string name="toot_context_parse_failed">会話データのデコードに失敗</string>
     <string name="toot_default_text">トゥート作成時のデフォルトテキスト (簡易投稿や投稿画面でのアカウント切り替えには影響しません)</string>
     <string name="list_divider_color">区切り線の色</string>
+    <string name="display_replies_count">返信の数の表示</string>
+    <string name="replies_count_simple">0/1/1+</string>
+    <string name="replies_count_actual">詳細</string>
+    <string name="replies_count_none">なし</string>
 
 </resources>

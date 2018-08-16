@@ -22,7 +22,7 @@ internal class StatusButtons(
 	private val bSimpleList : Boolean,
 	
 	private val btnConversation : ImageButton,
-	private val btnReply : ImageButton,
+	private val btnReply : Button,
 	private val btnBoost : Button,
 	private val btnFavourite : Button,
 	private val llFollow2 : View,
@@ -69,6 +69,25 @@ internal class StatusButtons(
 		val fav_icon_attr =
 			if(access_info.isNicoru(status.account)) R.attr.ic_nicoru else R.attr.btn_favourite
 		
+		val replies_count = status.replies_count
+		setButton(
+			btnReply,
+			true,
+			color_normal,
+			R.attr.btn_reply,
+			when{
+				replies_count == null || status.visibility == TootStatus.VISIBILITY_DIRECT -> ""
+				else->when(Pref.ipRepliesCount(activity.pref)){
+					Pref.RC_SIMPLE -> when{
+						replies_count >= 1 -> "1+"
+						else -> replies_count.toString()
+					}
+					Pref.RC_ACTUAL -> replies_count.toString()
+					else->""
+				}
+			}
+		)
+		
 		// ブーストボタン
 		when {
 			TootStatus.VISIBILITY_DIRECT == status.visibility -> setButton(
@@ -78,14 +97,14 @@ internal class StatusButtons(
 				R.attr.ic_mail,
 				""
 			)
-// マストドン2.4.0から非公開トゥートもブーストできるようになった
-//			TootStatus.VISIBILITY_PRIVATE == status.visibility -> setButton(
-//				btnBoost,
-//				false,
-//				color_accent,
-//				R.attr.ic_lock,
-//				""
-//			)
+			// マストドン2.4.0から非公開トゥートもブーストできるようになった
+			//			TootStatus.VISIBILITY_PRIVATE == status.visibility -> setButton(
+			//				btnBoost,
+			//				false,
+			//				color_accent,
+			//				R.attr.ic_lock,
+			//				""
+			//			)
 			activity.app_state.isBusyBoost(access_info, status) -> setButton(
 				btnBoost,
 				false,
@@ -192,7 +211,7 @@ internal class StatusButtons(
 						NOT_CROSS_ACCOUNT,
 						when {
 							! bSimpleList -> null
-						// 簡略表示なら結果をトースト表示
+							// 簡略表示なら結果をトースト表示
 							bSet -> activity.boost_complete_callback
 							else -> activity.unboost_complete_callback
 						},
@@ -216,7 +235,7 @@ internal class StatusButtons(
 						NOT_CROSS_ACCOUNT,
 						when {
 							! bSimpleList -> null
-						// 簡略表示なら結果をトースト表示
+							// 簡略表示なら結果をトースト表示
 							bSet -> activity.favourite_complete_callback
 							else -> activity.unfavourite_complete_callback
 						},
@@ -271,7 +290,13 @@ internal class StatusButtons(
 				}
 			}
 			
-			btnMore -> DlgContextMenu(activity, column, status.accountRef, status, notification).show()
+			btnMore -> DlgContextMenu(
+				activity,
+				column,
+				status.accountRef,
+				status,
+				notification
+			).show()
 		}
 	}
 	

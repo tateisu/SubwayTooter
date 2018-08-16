@@ -33,15 +33,16 @@
             android:src="?attr/ic_conversation"
             />
 
-        <ImageButton
+        <Button
             android:id="@+id/btnReply"
             android:layout_width="wrap_content"
             android:layout_height="40dp"
             android:layout_marginStart="2dp"
             android:background="@drawable/btn_bg_transparent"
-            android:contentDescription="@string/reply"
-            android:minWidth="40dp"
-            android:src="?attr/btn_reply"
+            android:drawablePadding="1dp"
+            android:minWidth="48dp"
+            android:paddingEnd="4dp"
+            android:paddingStart="4dp"
             />
 
         <Button
@@ -50,7 +51,7 @@
             android:layout_height="40dp"
             android:layout_marginStart="2dp"
             android:background="@drawable/btn_bg_transparent"
-            android:drawablePadding="4dp"
+            android:drawablePadding="1dp"
             android:minWidth="48dp"
             android:paddingEnd="4dp"
             android:paddingStart="4dp"
@@ -62,7 +63,7 @@
             android:layout_height="40dp"
             android:layout_marginStart="2dp"
             android:background="@drawable/btn_bg_transparent"
-            android:drawablePadding="4dp"
+            android:drawablePadding="1dp"
             android:minWidth="48dp"
             android:paddingEnd="4dp"
             android:paddingStart="4dp"

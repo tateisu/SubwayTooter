@@ -9,6 +9,7 @@ import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.support.annotation.ColorInt
+import android.support.annotation.IdRes
 import android.support.v4.content.FileProvider
 import android.support.v4.view.ViewCompat
 import android.support.v7.app.AlertDialog
@@ -103,6 +104,7 @@ class ActAppSetting : AppCompatActivity()
 	private lateinit var spResizeImage : Spinner
 	private lateinit var spRefreshAfterToot : Spinner
 	private lateinit var spDefaultAccount : Spinner
+	private lateinit var spRepliesCount : Spinner
 	
 	private var footer_button_bg_color : Int = 0
 	private var footer_button_fg_color : Int = 0
@@ -193,66 +195,49 @@ class ActAppSetting : AppCompatActivity()
 			}
 		}
 		
-		run {
-			val caption_list = arrayOf(
-				getString(R.string.ask_always),
-				getString(R.string.close_column),
-				getString(R.string.open_column_list),
-				getString(R.string.app_exit)
-			)
-			val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, caption_list)
-			adapter.setDropDownViewResource(R.layout.lv_spinner_dropdown)
-			spBackButtonAction = findViewById(R.id.spBackButtonAction)
-			spBackButtonAction.adapter = adapter
-			spBackButtonAction.onItemSelectedListener = this
+		spBackButtonAction = initSpinner(
+			R.id.spBackButtonAction
+			, getString(R.string.ask_always)
+			, getString(R.string.close_column)
+			, getString(R.string.open_column_list)
+			, getString(R.string.app_exit)
+		)
+		
+		spRepliesCount = initSpinner(
+			R.id.spRepliesCount
+			, getString(R.string.replies_count_simple)
+			, getString(R.string.replies_count_actual)
+			, getString(R.string.replies_count_none)
+		)
+		
+		spUITheme = initSpinner(
+			R.id.spUITheme
+			, getString(R.string.theme_light)
+			, getString(R.string.theme_dark)
+		)
+		
+		spResizeImage = initSpinner(
+			R.id.spResizeImage
+			, getString(R.string.dont_resize)
+			, getString(R.string.long_side_pixel, 640)
+			, getString(R.string.long_side_pixel, 800)
+			, getString(R.string.long_side_pixel, 1024)
+			, getString(R.string.long_side_pixel, 1280)
+			// サーバ側でさらに縮小されるようなので、1280より上は用意しない
+		)
+		
+		spRefreshAfterToot = initSpinner(
+			R.id.spRefreshAfterToot
+			, getString(R.string.refresh_scroll_to_toot)
+			, getString(R.string.refresh_no_scroll)
+			, getString(R.string.dont_refresh)
+		)
+		
+		spDefaultAccount = findViewById<Spinner>(R.id.spDefaultAccount).also {
+			it.adapter = AccountAdapter()
+			it.onItemSelectedListener = this@ActAppSetting
 		}
 		
-		run {
-			val caption_list =
-				arrayOf(getString(R.string.theme_light), getString(R.string.theme_dark))
-			val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, caption_list)
-			adapter.setDropDownViewResource(R.layout.lv_spinner_dropdown)
-			spUITheme = findViewById(R.id.spUITheme)
-			spUITheme.adapter = adapter
-			spUITheme.onItemSelectedListener = this
-		}
-		run {
-			val caption_list = arrayOf(
-				getString(R.string.dont_resize),
-				getString(R.string.long_side_pixel, 640),
-				getString(R.string.long_side_pixel, 800),
-				getString(R.string.long_side_pixel, 1024),
-				getString(R.string.long_side_pixel, 1280)
-			) //// サーバ側でさらに縮小されるようなので、1280より上は用意しない
-			//	Integer.toString( 1600 ),
-			//	Integer.toString( 2048 ),
-			val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, caption_list)
-			adapter.setDropDownViewResource(R.layout.lv_spinner_dropdown)
-			spResizeImage = findViewById(R.id.spResizeImage)
-			spResizeImage.adapter = adapter
-			spResizeImage.onItemSelectedListener = this
-		}
-		
-		run {
-			val caption_list = arrayOf(
-				getString(R.string.refresh_scroll_to_toot),
-				getString(R.string.refresh_no_scroll),
-				getString(R.string.dont_refresh)
-			)
-			val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, caption_list)
-			adapter.setDropDownViewResource(R.layout.lv_spinner_dropdown)
-			spRefreshAfterToot = findViewById(R.id.spRefreshAfterToot)
-			spRefreshAfterToot.adapter = adapter
-			spRefreshAfterToot.onItemSelectedListener = this
-		}
-		
-		run {
-			
-			val adapter = AccountAdapter()
-			spDefaultAccount = findViewById(R.id.spDefaultAccount)
-			spDefaultAccount.adapter = adapter
-			spDefaultAccount.onItemSelectedListener = this
-		}
 		
 		findViewById<View>(R.id.btnFooterBackgroundEdit).setOnClickListener(this)
 		findViewById<View>(R.id.btnFooterBackgroundReset).setOnClickListener(this)
@@ -349,6 +334,16 @@ class ActAppSetting : AppCompatActivity()
 		tvUserAgentError = findViewById(R.id.tvUserAgentError)
 	}
 	
+	private fun initSpinner(@IdRes viewId : Int, vararg captions : String) : Spinner {
+		val caption_list : Array<String> = arrayOf(*captions)
+		val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, caption_list)
+		adapter.setDropDownViewResource(R.layout.lv_spinner_dropdown)
+		val sp : Spinner = findViewById(viewId)
+		sp.adapter = adapter
+		sp.onItemSelectedListener = this
+		return sp
+	}
+	
 	private fun loadUIFromData() {
 		load_busy = true
 		
@@ -357,6 +352,7 @@ class ActAppSetting : AppCompatActivity()
 		}
 		
 		spBackButtonAction.setSelection(Pref.ipBackButtonAction(pref))
+		spRepliesCount.setSelection(Pref.ipRepliesCount(pref))
 		spUITheme.setSelection(Pref.ipUiTheme(pref))
 		spResizeImage.setSelection(Pref.ipResizeImage(pref))
 		spRefreshAfterToot.setSelection(Pref.ipRefreshAfterToot(pref))
@@ -395,7 +391,7 @@ class ActAppSetting : AppCompatActivity()
 		etTimelineFontSize.setText(formatFontSize(Pref.fpTimelineFontSize(pref)))
 		etAcctFontSize.setText(formatFontSize(Pref.fpAcctFontSize(pref)))
 		etNotificationTlFontSize.setText(formatFontSize(Pref.fpNotificationTlFontSize(pref)))
-
+		
 		etUserAgent.hint = App1.userAgentDefault
 		
 		load_busy = false
@@ -406,7 +402,11 @@ class ActAppSetting : AppCompatActivity()
 		
 		showFontSize(tvTimelineFontSize, etTimelineFontSize, default_timeline_font_size)
 		showFontSize(tvAcctFontSize, etAcctFontSize, default_acct_font_size)
-		showFontSize(tvNotificationTlFontSize, etNotificationTlFontSize, default_notification_tl_font_size)
+		showFontSize(
+			tvNotificationTlFontSize,
+			etNotificationTlFontSize,
+			default_notification_tl_font_size
+		)
 		
 		showUserAgentError()
 	}
@@ -449,7 +449,9 @@ class ActAppSetting : AppCompatActivity()
 			.put(Pref.spQuoteNameFormat, etQuoteNameFormat.text.toString()) // not trimmed
 			.put(Pref.spAutoCWLines, etAutoCWLines.text.toString().trim { it <= ' ' })
 			.put(Pref.spAvatarIconSize, etAvatarIconSize.text.toString().trim { it <= ' ' })
-			.put(Pref.spNotificationTlIconSize, etNotificationTlIconSize.text.toString().trim { it <= ' ' })
+			.put(
+				Pref.spNotificationTlIconSize,
+				etNotificationTlIconSize.text.toString().trim { it <= ' ' })
 			.put(
 				Pref.spPullNotificationCheckInterval,
 				etPullNotificationCheckInterval.text.toString().trim { it <= ' ' })
@@ -460,6 +462,7 @@ class ActAppSetting : AppCompatActivity()
 			.put(Pref.spTimelineFontBold, timeline_font_bold ?: "")
 			
 			.put(Pref.ipBackButtonAction, spBackButtonAction.selectedItemPosition)
+			.put(Pref.ipRepliesCount, spRepliesCount.selectedItemPosition)
 			.put(Pref.ipUiTheme, spUITheme.selectedItemPosition)
 			.put(Pref.ipResizeImage, spResizeImage.selectedItemPosition)
 			.put(Pref.ipRefreshAfterToot, spRefreshAfterToot.selectedItemPosition)
@@ -473,7 +476,6 @@ class ActAppSetting : AppCompatActivity()
 			.apply()
 		
 		showUserAgentError()
-		
 	}
 	
 	private fun showUserAgentError() {
@@ -557,7 +559,7 @@ class ActAppSetting : AppCompatActivity()
 				saveUIToData()
 				showFooterColor()
 			}
-
+			
 			R.id.btnListDividerColorEdit -> openColorPicker(
 				COLOR_DIALOG_ID_LIST_DIVIDER,
 				list_divider_color,
@@ -568,7 +570,7 @@ class ActAppSetting : AppCompatActivity()
 				list_divider_color = 0
 				saveUIToData()
 			}
-
+			
 			R.id.btnTimelineFontReset -> {
 				timeline_font = ""
 				saveUIToData()
@@ -691,7 +693,7 @@ class ActAppSetting : AppCompatActivity()
 				showFooterColor()
 			}
 			
-			COLOR_DIALOG_ID_LIST_DIVIDER ->{
+			COLOR_DIALOG_ID_LIST_DIVIDER -> {
 				list_divider_color = if(colorSelected == 0) 0x01000000 else colorSelected
 				saveUIToData()
 			}

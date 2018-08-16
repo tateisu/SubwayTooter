@@ -94,7 +94,7 @@ internal class ItemViewHolder(
 	
 	private lateinit var llButtonBar : View
 	private lateinit var btnConversation : ImageButton
-	private lateinit var btnReply : ImageButton
+	private lateinit var btnReply : Button
 	private lateinit var btnBoost : Button
 	private lateinit var btnFavourite : Button
 	private lateinit var llFollow2 : View
@@ -1891,6 +1891,9 @@ internal class ItemViewHolder(
 								topMargin = dip(3)
 							}
 							
+							val marginBetween = dip(2)
+							val compoundPadding= dip(0.5f)
+							
 							btnConversation = imageButton {
 								
 								background = ContextCompat.getDrawable(
@@ -1903,19 +1906,18 @@ internal class ItemViewHolder(
 									Styler.getAttributeResourceId(context, R.attr.ic_conversation)
 							}.lparams(wrapContent, matchParent)
 							
-							btnReply = imageButton {
+							btnReply = button {
 								
 								background = ContextCompat.getDrawable(
 									context,
 									R.drawable.btn_bg_transparent
 								)
-								contentDescription = context.getString(R.string.reply)
-								minimumWidth = dip(40)
-								imageResource =
-									Styler.getAttributeResourceId(context, R.attr.btn_reply)
-								
+								compoundDrawablePadding = compoundPadding
+								minWidthCompat = dip(48)
+								setPaddingStartEnd(dip(4), dip(4))
+								// imageResource = Styler.getAttributeResourceId(context, R.attr.btn_reply)
 							}.lparams(wrapContent, matchParent) {
-								startMargin = dip(2)
+								startMargin = marginBetween
 							}
 							
 							btnBoost = button {
@@ -1924,12 +1926,12 @@ internal class ItemViewHolder(
 									context,
 									R.drawable.btn_bg_transparent
 								)
-								compoundDrawablePadding = dip(4)
+								compoundDrawablePadding = compoundPadding
 								
 								minWidthCompat = dip(48)
 								setPaddingStartEnd(dip(4), dip(4))
 							}.lparams(wrapContent, matchParent) {
-								startMargin = dip(2)
+								startMargin = marginBetween
 							}
 							
 							btnFavourite = button {
@@ -1937,17 +1939,17 @@ internal class ItemViewHolder(
 									context,
 									R.drawable.btn_bg_transparent
 								)
-								compoundDrawablePadding = dip(4)
+								compoundDrawablePadding = compoundPadding
 								minWidthCompat = dip(48)
 								setPaddingStartEnd(dip(4), dip(4))
 								
 							}.lparams(wrapContent, matchParent) {
-								startMargin = dip(2)
+								startMargin = marginBetween
 							}
 							
 							llFollow2 = frameLayout {
 								lparams(dip(40), dip(40)) {
-									startMargin = dip(2)
+									startMargin = marginBetween
 								}
 								
 								btnFollow2 = imageButton {
@@ -1984,9 +1986,8 @@ internal class ItemViewHolder(
 									Styler.getAttributeResourceId(context, R.attr.btn_more)
 								minimumWidth = dip(40)
 							}.lparams(wrapContent, matchParent) {
-								startMargin = dip(2)
+								startMargin = marginBetween
 							}
-							
 						}
 						
 						tvApplication = textView {

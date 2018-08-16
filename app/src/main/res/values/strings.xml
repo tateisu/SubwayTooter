@@ -717,4 +717,8 @@
     <string name="toot_context_parse_failed">conversation parse failed.</string>
     <string name="toot_default_text">Default text when composing toot. (not affected to quick toot bar and switching account in toot composing screen)</string>
     <string name="list_divider_color">List divider color</string>
+    <string name="display_replies_count">Show replies count</string>
+    <string name="replies_count_simple">0/1/1+</string>
+    <string name="replies_count_actual">Actual</string>
+    <string name="replies_count_none">None</string>
 </resources>

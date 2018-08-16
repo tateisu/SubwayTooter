@@ -731,8 +731,12 @@
     <string name="toot_context_parse_failed">conversation parse failed.</string>
     <string name="toot_default_text">Default text when composing toot. (not affected to quick toot bar and switching account in toot composing screen)</string>
     <string name="list_divider_color">List divider color</string>
+    <string name="display_replies_count">Show replies count</string>
+	<string name="replies_count_simple">0/1/1+</string>
+	<string name="replies_count_actual">Actual</string>
+	<string name="replies_count_none">None</string>
 
-    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

@@ -125,6 +125,9 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 	
 	var enquete : NicoEnquete? = null
 	
+	//
+	var replies_count :Long? = null
+	
 	///////////////////////////////////////////////////////////////////
 	// 以下はentityから取得したデータではなく、アプリ内部で使う
 	
@@ -166,14 +169,16 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 		
 		this.accountRef = TootAccountRef(parser, who)
 		
+		this.reblogs_count = src.parseLong("reblogs_count")
+		this.favourites_count = src.parseLong("favourites_count")
+		this.replies_count = src.parseLong("replies_count")
+
 		when(parser.serviceType) {
 			ServiceType.MASTODON -> {
 				this.host_access = parser.linkHelper.host
 				
 				this.id = src.parseLong("id") ?: INVALID_ID
 				
-				this.reblogs_count = src.parseLong("reblogs_count")
-				this.favourites_count = src.parseLong("favourites_count")
 				this.reblogged = src.optBoolean("reblogged")
 				this.favourited = src.optBoolean("favourited")
 				
@@ -190,10 +195,6 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 				
 				// 投稿元タンスでのIDを調べる。失敗するかもしれない
 				this.id = findStatusIdFromUri(uri, url)
-				
-				
-				this.reblogs_count = src.parseLong("reblogs_count")
-				this.favourites_count = src.parseLong("favourites_count")
 				
 				this.time_created_at = TootStatus.parseTime(this.created_at)
 				this.media_attachments =

@@ -25,7 +25,7 @@ internal fun findAccountByName(
 ) {
 	TootTaskRunner(activity).run(access_info, object : TootTask {
 		
-		internal var who : TootAccount? = null
+		var who : TootAccount? = null
 		
 		override fun background(client : TootApiClient) : TootApiResult? {
 			
@@ -38,10 +38,9 @@ internal fun findAccountByName(
 				for(i in 0 until array.length()) {
 					val a = parser.account(array.optJSONObject(i))
 					if(a != null) {
-						if(a.username == user && access_info.getFullAcct(a).equals(
-								user + "@" + host,
-								ignoreCase = true
-							)) {
+						if(a.username == user
+							&& access_info.getFullAcct(a).equals("$user@$host", ignoreCase = true)
+						) {
 							who = a
 							break
 						}
@@ -62,11 +61,14 @@ internal fun findAccountByName(
 // 既に存在する場合は再利用する
 // 実アカウントを返すことはない
 internal fun addPseudoAccount(
-	context : Context, host : String
+	context : Context,
+	host : String,
+	isMisskey : Boolean = false
 ) : SavedAccount? {
+	
 	try {
 		val username = "?"
-		val full_acct = username + "@" + host
+		val full_acct = "$username@$host"
 		
 		var account = SavedAccount.loadAccountByAcct(context, full_acct)
 		if(account != null) {
@@ -77,7 +79,8 @@ internal fun addPseudoAccount(
 		account_info.put("username", username)
 		account_info.put("acct", username)
 		
-		val row_id = SavedAccount.insert(host, full_acct, account_info, JSONObject())
+		val row_id =
+			SavedAccount.insert(host, full_acct, account_info, JSONObject(), isMisskey = isMisskey)
 		account = SavedAccount.loadAccount(context, row_id)
 		if(account == null) {
 			throw RuntimeException("loadAccount returns null.")
@@ -132,7 +135,7 @@ internal fun loadRelation1(
 	client : TootApiClient, access_info : SavedAccount, who_id : Long
 ) : RelationResult {
 	val rr = RelationResult()
-	rr.result = client.request("/api/v1/accounts/relationships?id=" + who_id)
+	rr.result = client.request("/api/v1/accounts/relationships?id=$who_id")
 	val r2 = rr.result
 	val jsonArray = r2?.jsonArray
 	if(jsonArray != null) {

@@ -18,6 +18,7 @@ object TootAccountMap{
 				ServiceType.MASTODON -> requireNotNull(parser.linkHelper.host)
 				ServiceType.TOOTSEARCH -> "?tootsearch"
 				ServiceType.MSP -> "?msp"
+				ServiceType.MISSKEY -> "?misskey"
 			}
 		}
 		

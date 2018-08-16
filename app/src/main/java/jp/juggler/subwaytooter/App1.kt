@@ -101,7 +101,8 @@ class App1 : Application() {
 		// 2018/5/16 v252 24=>25 SubscriptionServerKey テーブルを追加
 		// 2018/5/16 v252 25=>26 SubscriptionServerKey テーブルを丸ごと変更
 		// 2018/8/5 v264 26 => 27 SavedAccountテーブルに項目追加
-		internal const val DB_VERSION = 27
+		// 2018/8/17 v267 27 => 28 SavedAccountテーブルに項目追加
+		internal const val DB_VERSION = 28
 		
 		private val tableList = arrayOf(
 			LogData,

@@ -1028,7 +1028,13 @@ internal class ItemViewHolder(
 			}
 			
 			btnSearchTag, llTrendTag -> when(item) {
-				is TootGap -> column.startGap(item)
+				is TootGap -> {
+					if( access_info.isMisskey){
+						showToast(activity,false, "Misskey does not allows gap reading.")
+					}else {
+						column.startGap(item)
+					}
+				}
 				
 				is TootDomainBlock -> {
 					val domain = item.domain

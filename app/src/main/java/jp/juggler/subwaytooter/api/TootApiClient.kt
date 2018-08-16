@@ -445,10 +445,36 @@ class TootApiClient(
 	fun getInstanceInformation() : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(instance)
 		if(result.error != null) return result
-		if(! sendRequest(result) {
+		
+		if(sendRequest(result) {
 				Request.Builder().url("https://$instance/api/v1/instance").build()
-			}) return result
-		return parseJson(result)
+			}
+			&& parseJson(result) != null
+			&& result.jsonObject != null
+		) {
+			// インスタンス情報のjsonを読めたらマストドンのインスタンス
+			return result
+		}
+		
+		// misskeyか試してみる
+		val r2 = TootApiResult.makeWithCaption(instance)
+		if(sendRequest(r2) {
+				Request.Builder().post(RequestBody.create(MEDIA_TYPE_JSON,JSONObject().apply{
+					put("dummy",1)
+				}.toString()))
+					.url("https://$instance/api/notes/local-timeline").build()
+			}
+		) {
+			if(parseJson(r2) != null  && r2.jsonArray != null) {
+				r2.data = JSONObject().apply{
+					put("isMisskey", true)
+				}
+				return r2
+			}
+		}
+		
+		// misskeyの事は忘れて本来のエラー情報を返す
+		return result
 	}
 	
 	// インスタンス情報を取得する
@@ -845,7 +871,7 @@ class TootApiClient(
 	////////////////////////////////////////////////////////////////////////
 	// JSONデータ以外を扱うリクエスト
 	
-	fun http(req:Request) : TootApiResult? {
+	fun http(req : Request) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(req.url().host())
 		if(result.error != null) return result
 		
@@ -853,20 +879,19 @@ class TootApiClient(
 		return result
 	}
 	
-	fun requestJson(req:Request) : TootApiResult? {
+	fun requestJson(req : Request) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(req.url().host())
 		if(result.error != null) return result
-		if( sendRequest(result, progressPath = null) { req } ){
+		if(sendRequest(result, progressPath = null) { req }) {
 			parseJson(result)
 		}
 		return result
 	}
 	
-	
 	// 疑似アカウントでステータスURLからステータスIDを取得するためにHTMLを取得する
-	fun getHttp(url:String): TootApiResult? {
+	fun getHttp(url : String) : TootApiResult? {
 		val result = http(Request.Builder().url(url).build())
-		if(result !=null && result.error == null){
+		if(result != null && result.error == null) {
 			parseString(result)
 		}
 		return result

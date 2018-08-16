@@ -4,4 +4,5 @@ enum class ServiceType {
 	MASTODON,
 	TOOTSEARCH,
 	MSP,
+	MISSKEY,
 }

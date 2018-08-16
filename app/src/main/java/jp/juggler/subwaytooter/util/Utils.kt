@@ -20,7 +20,10 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.webkit.MimeTypeMap
 import android.widget.Toast
+import jp.juggler.subwaytooter.api.TootApiClient
 import me.drakeet.support.toast.ToastCompat
+import okhttp3.Request
+import okhttp3.RequestBody
 import org.apache.commons.io.IOUtils
 import org.json.JSONArray
 import org.json.JSONObject
@@ -650,6 +653,9 @@ fun JSONObject.parseInt(key : String) : Int? {
 		else -> null // may null or JSONObject.NULL or object,array,boolean
 	}
 }
+
+fun JSONObject.toPostRequestBuilder()=
+	Request.Builder().post(RequestBody.create(TootApiClient.MEDIA_TYPE_JSON,this.toString()))
 
 ////////////////////////////////////////////////////////////////////
 // Bundle

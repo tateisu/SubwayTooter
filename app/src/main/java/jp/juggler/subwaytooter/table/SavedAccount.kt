@@ -28,7 +28,8 @@ class SavedAccount(
 	val acct : String,
 	hostArg : String? = null,
 	var token_info : JSONObject? = null,
-	var loginAccount : TootAccount? = null // 疑似アカウントではnull
+	var loginAccount : TootAccount? = null, // 疑似アカウントではnull
+	var isMisskey :Boolean = false // 疑似アカウントでのみtrue
 ) : LinkHelper {
 	
 	val username : String
@@ -156,6 +157,8 @@ class SavedAccount(
 		this.sound_uri = cursor.getString(cursor.getColumnIndex(COL_SOUND_URI))
 		
 		this.default_text = cursor.getString(cursor.getColumnIndex(COL_DEFAULT_TEXT)) ?: ""
+		
+		this.isMisskey = cursor.getInt(cursor.getColumnIndex(COL_IS_MISSKEY)).i2b()
 	}
 	
 	val isNA : Boolean
@@ -405,6 +408,9 @@ class SavedAccount(
 		// スキーマ27から
 		private const val COL_DEFAULT_TEXT = "default_text"
 		
+		// スキーマ28から
+		private const val COL_IS_MISSKEY = "is_misskey"
+
 		/////////////////////////////////
 		// login information
 		const val INVALID_DB_ID = - 1L
@@ -466,6 +472,8 @@ class SavedAccount(
 					// 以下はDBスキーマ27で更新
 					+ ",$COL_DEFAULT_TEXT text default ''"
 					
+					// 以下はDBスキーマ28で更新
+					+ ",$COL_IS_MISSKEY integer default 0"
 					+ ")"
 			)
 			db.execSQL("create index if not exists ${table}_user on ${table}(u)")
@@ -592,7 +600,14 @@ class SavedAccount(
 				}
 				
 			}
-			
+			if(oldVersion < 28 && newVersion >= 28) {
+				try {
+					db.execSQL("alter table $table add column $COL_IS_MISSKEY integer default 0")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+			}
 		}
 		
 		// 横断検索用の、何とも紐ついていないアカウント
@@ -621,7 +636,8 @@ class SavedAccount(
 			host : String,
 			acct : String,
 			account : JSONObject,
-			token : JSONObject
+			token : JSONObject,
+			isMisskey : Boolean = false
 		) : Long {
 			try {
 				val cv = ContentValues()
@@ -629,6 +645,7 @@ class SavedAccount(
 				cv.put(COL_USER, acct)
 				cv.put(COL_ACCOUNT, account.toString())
 				cv.put(COL_TOKEN, token.toString())
+				cv.put(COL_IS_MISSKEY, isMisskey.b2i() )
 				return App1.database.insert(table, null, cv)
 			} catch(ex : Throwable) {
 				log.trace(ex)

@@ -95,7 +95,7 @@ object Action_Account {
 							
 						} else {
 							// 疑似アカウントを追加
-							val a = addPseudoAccount(activity, instance)
+							val a = addPseudoAccount(activity, instance, data.optBoolean("isMisskey",false))
 							if(a != null) {
 								showToast(activity, false, R.string.server_confirmed)
 								val pos = App1.getAppState(activity).column_list.size

@@ -7,19 +7,17 @@ import android.os.AsyncTask
 import android.os.SystemClock
 import android.view.Gravity
 import jp.juggler.subwaytooter.api.*
-
-import org.json.JSONException
-import org.json.JSONObject
-
-import java.lang.ref.WeakReference
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.regex.Pattern
-
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.regex.Pattern
 
 enum class StreamingIndicatorState {
 	NONE,
@@ -309,6 +307,9 @@ class Column(
 	
 	private val streamPath : String?
 		get() {
+			// misskeyの疑似アカウントはストリーミング対応していない
+			if(access_info.isPseudo && access_info.isMisskey) return null
+			
 			return when(column_type) {
 				TYPE_HOME, TYPE_NOTIFICATIONS -> "/api/v1/streaming/?stream=user"
 				TYPE_LOCAL -> "/api/v1/streaming/?stream=public:local"
@@ -320,7 +321,7 @@ class Column(
 				TYPE_HASHTAG -> when(instance_local) {
 					true -> "/api/v1/streaming/?stream=" + Uri.encode("hashtag:local") + "&tag=" + hashtag.encodePercent()
 					else -> "/api/v1/streaming/?stream=hashtag&tag=" + hashtag.encodePercent()
-				// タグ先頭の#を含まない
+					// タグ先頭の#を含まない
 				}
 				else -> null
 			}
@@ -816,7 +817,7 @@ class Column(
 		}
 	}
 	
-	fun removeUser(targetAccount : SavedAccount,columnType:Int,who_id:Long){
+	fun removeUser(targetAccount : SavedAccount, columnType : Int, who_id : Long) {
 		if(column_type == columnType && targetAccount.acct == access_info.acct) {
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
@@ -1502,13 +1503,36 @@ class Column(
 				log.d("getStatusesPinned: list size=%s", list_pinned?.size ?: - 1)
 			}
 			
-			fun getStatuses(client : TootApiClient, path_base : String) : TootApiResult? {
+			fun getStatuses(
+				client : TootApiClient,
+				path_base : String,
+				isMisskey : Boolean = false
+			) : TootApiResult? {
+				
+				val params = JSONObject()
+				if(isMisskey) {
+					parser.serviceType = ServiceType.MISSKEY
+					params.put("limit", 100)
+					if(with_attachment) {
+						params.put("mediaOnly", true)
+					}
+				}
 				
 				val time_start = SystemClock.elapsedRealtime()
-				val result = client.request(path_base)
+				val result = if(isMisskey) {
+					client.request(path_base, params.toPostRequestBuilder())
+				} else {
+					client.request(path_base)
+				}
+				
 				var jsonArray = result?.jsonArray
 				if(jsonArray != null) {
-					saveRange(result, true, true)
+					if(isMisskey) {
+						saveRangeMisskey(jsonArray, true, true)
+					} else {
+						saveRange(result, true, true)
+					}
+					
 					//
 					var src = parser.statusList(jsonArray)
 					
@@ -1540,9 +1564,16 @@ class Column(
 							log.d("loading-statuses: timeout.")
 							break
 						}
-						val path = path_base + delimiter + "max_id=" + max_id
-						val result2 = client.request(path)
+						val result2 = if(isMisskey) {
+							params.put("untilId", max_id)
+							client.request(path_base, params.toPostRequestBuilder())
+						} else {
+							val path = path_base + delimiter + "max_id=" + max_id
+							client.request(path)
+						}
+						
 						jsonArray = result2?.jsonArray
+						
 						if(jsonArray == null) {
 							log.d("loading-statuses: error or cancelled.")
 							break
@@ -1552,9 +1583,16 @@ class Column(
 						
 						addWithFilterStatus(list_tmp, src)
 						
-						if(! saveRangeEnd(result2)) {
-							log.d("loading-statuses: missing range info.")
-							break
+						if(isMisskey) {
+							if(! saveRangeEndMisskey(jsonArray)) {
+								log.d("loading-statuses: missing range info.")
+								break
+							}
+						} else {
+							if(! saveRangeEnd(result2)) {
+								log.d("loading-statuses: missing range info.")
+								break
+							}
 						}
 					}
 				}
@@ -1748,9 +1786,22 @@ class Column(
 						
 						TYPE_DIRECT_MESSAGES -> return getStatuses(client, PATH_DIRECT_MESSAGES)
 						
-						TYPE_LOCAL -> return getStatuses(client, makePublicLocalUrl())
-						
-						TYPE_FEDERATE -> return getStatuses(client, makePublicFederateUrl())
+						TYPE_LOCAL -> return when(access_info.isMisskey) {
+							true -> getStatuses(
+								client,
+								"/api/notes/local-timeline",
+								isMisskey = true
+							)
+							else -> getStatuses(client, makePublicLocalUrl())
+						}
+						TYPE_FEDERATE -> return when(access_info.isMisskey) {
+							true -> getStatuses(
+								client,
+								"/api/notes/global-timeline",
+								isMisskey = true
+							)
+							else -> return getStatuses(client, makePublicFederateUrl())
+						}
 						
 						TYPE_PROFILE -> {
 							
@@ -1903,7 +1954,10 @@ class Column(
 								//
 							} else {
 								this.list_tmp = addOne(this.list_tmp, target_status)
-								this.list_tmp = addOne(this.list_tmp, TootMessageHolder(context.getString(R.string.toot_context_parse_failed)))
+								this.list_tmp = addOne(
+									this.list_tmp,
+									TootMessageHolder(context.getString(R.string.toot_context_parse_failed))
+								)
 							}
 							
 							// カードを取得する
@@ -2132,6 +2186,31 @@ class Column(
 		}
 	}
 	
+	private fun saveRangeMisskey(src : JSONArray?, bBottom : Boolean, bTop : Boolean) {
+		src ?: return
+		var id_min : String? = null
+		var id_max : String? = null
+		for(i in 0 until src.length()) {
+			val id = src.optJSONObject(i)?.optString("id", null) ?: continue
+			if(id_min == null || id < id_min) id_min = id
+			if(id_max == null || id > id_max) id_max = id
+		}
+		if(bBottom) {
+			when {
+				id_min == null -> max_id = ""
+				max_id.isEmpty() || id_min < max_id -> max_id = id_min
+			}
+		}
+		if(bTop) {
+			when {
+				id_max == null -> {
+				}
+				
+				since_id.isEmpty() || id_max > since_id -> since_id = id_max
+			}
+		}
+	}
+	
 	private fun saveRangeEnd(result : TootApiResult?) : Boolean {
 		if(result != null) {
 			if(result.link_older == null) {
@@ -2142,6 +2221,23 @@ class Column(
 					max_id = m.group(1)
 					return true
 				}
+			}
+		}
+		return false
+	}
+	
+	private fun saveRangeEndMisskey(src : JSONArray?) : Boolean {
+		if(src != null) {
+			var id_min : String? = null
+			for(i in 0 until src.length()) {
+				val id = src.optJSONObject(i)?.optString("id", null) ?: continue
+				if(id_min == null || id < id_min) id_min = id
+			}
+			if(id_min?.isEmpty() != false) {
+				max_id = ""
+			} else {
+				max_id = id_min
+				return true
 			}
 		}
 		return false
@@ -2610,18 +2706,43 @@ class Column(
 			
 			fun getStatusList(
 				client : TootApiClient,
-				path_base : String
+				path_base : String,
+				isMisskey : Boolean = false
 			) : TootApiResult? {
+				
+				val params = JSONObject()
+				if(isMisskey) {
+					parser.serviceType = ServiceType.MISSKEY
+					params.put("limit", 100)
+					if(with_attachment) {
+						params.put("mediaOnly", true)
+					}
+				}
 				
 				val time_start = SystemClock.elapsedRealtime()
 				
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				val last_since_id = since_id
 				
-				val result = client.request(addRange(bBottom, path_base))
+				val result = if(isMisskey) {
+					if(bBottom) {
+						if(max_id.isNotEmpty()) params.put("untilId", max_id)
+					} else {
+						if(since_id.isNotEmpty()) params.put("sinceId", since_id)
+					}
+					client.request(path_base, params.toPostRequestBuilder())
+				} else {
+					client.request(addRange(bBottom, path_base))
+				}
+				
 				var jsonArray = result?.jsonArray
 				if(jsonArray != null) {
-					saveRange(result, bBottom, ! bBottom)
+					if(isMisskey) {
+						saveRangeMisskey(jsonArray, bBottom, ! bBottom)
+					} else {
+						saveRange(result, bBottom, ! bBottom)
+					}
+					
 					var src = parser.statusList(jsonArray)
 					list_tmp = addWithFilterStatus(null, src)
 					
@@ -2657,8 +2778,14 @@ class Column(
 								break
 							}
 							
-							val path = path_base + delimiter + "max_id=" + max_id
-							val result2 = client.request(path)
+							val result2 = if(isMisskey) {
+								params.put("untilId", max_id)
+								client.request(path_base, params.toPostRequestBuilder())
+							} else {
+								val path = path_base + delimiter + "max_id=" + max_id
+								client.request(path)
+							}
+							
 							jsonArray = result2?.jsonArray
 							if(jsonArray == null) {
 								log.d("refresh-status-bottom: error or cancelled.")
@@ -2669,9 +2796,16 @@ class Column(
 							
 							addWithFilterStatus(list_tmp, src)
 							
-							if(! saveRangeEnd(result2)) {
-								log.d("refresh-status-bottom: saveRangeEnd failed.")
-								break
+							if(isMisskey) {
+								if(! saveRangeEndMisskey(jsonArray)) {
+									log.d("refresh-status-bottom: saveRangeEnd failed.")
+									break
+								}
+							} else {
+								if(! saveRangeEnd(result2)) {
+									log.d("refresh-status-bottom: saveRangeEnd failed.")
+									break
+								}
 							}
 						}
 					} else {
@@ -2706,6 +2840,13 @@ class Column(
 								log.d("refresh-status-offset: timeout. make gap.")
 								// タイムアウト
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
+								addOne(list_tmp, TootGap(max_id, last_since_id))
+								bGapAdded = true
+								break
+							}
+							
+							if(isMisskey) {
+								log.d("refresh-status-offset: misskey does not allows gap reading.")
 								addOne(list_tmp, TootGap(max_id, last_since_id))
 								bGapAdded = true
 								break
@@ -2767,9 +2908,23 @@ class Column(
 						
 						TYPE_DIRECT_MESSAGES -> getStatusList(client, PATH_DIRECT_MESSAGES)
 						
-						TYPE_LOCAL -> getStatusList(client, makePublicLocalUrl())
+						TYPE_LOCAL -> when(access_info.isMisskey) {
+							true -> getStatusList(
+								client,
+								"/api/notes/local-timeline",
+								isMisskey = true
+							)
+							else -> getStatusList(client, makePublicLocalUrl())
+						}
 						
-						TYPE_FEDERATE -> getStatusList(client, makePublicFederateUrl())
+						TYPE_FEDERATE -> when(access_info.isMisskey) {
+							true -> getStatusList(
+								client,
+								"/api/notes/global-timeline",
+								isMisskey = true
+							)
+							else -> getStatusList(client, makePublicFederateUrl())
+						}
 						
 						TYPE_FAVOURITES -> getStatusList(client, PATH_FAVOURITES)
 						
@@ -3015,15 +3170,15 @@ class Column(
 							//
 							val scroll_save = this@Column.scroll_save
 							when {
-							// ViewHolderがある場合は増加件数分+deltaの位置にスクロールする
+								// ViewHolderがある場合は増加件数分+deltaの位置にスクロールする
 								sp != null -> {
 									sp.adapterIndex += added
 									val delta = if(bSilent) 0f else - 20f
 									holder?.setScrollPosition(sp, delta)
 								}
-							// ViewHolderがなくて保存中の位置がある場合、増加件数分ずらす。deltaは難しいので反映しない
+								// ViewHolderがなくて保存中の位置がある場合、増加件数分ずらす。deltaは難しいので反映しない
 								scroll_save != null -> scroll_save.adapterIndex += added
-							// 保存中の位置がない場合、保存中の位置を新しく作る
+								// 保存中の位置がない場合、保存中の位置を新しく作る
 								else -> this@Column.scroll_save =
 									ScrollPosition(toAdapterIndex(added), 0)
 							}
@@ -3053,6 +3208,8 @@ class Column(
 			showToast(context, true, R.string.column_is_busy)
 			return
 		}
+		
+		
 		
 		viewHolder?.refreshLayout?.isRefreshing = true
 		
@@ -3557,9 +3714,9 @@ class Column(
 			log.d("onStart: column is in initial loading.")
 			return
 		}
-
+		
 		// フィルタ一覧のリロードが必要
-		if( filter_reload_required ){
+		if(filter_reload_required) {
 			filter_reload_required = false
 			startLoading()
 			return
@@ -3659,8 +3816,11 @@ class Column(
 		return canStreaming() && column_type != TYPE_NOTIFICATIONS
 	}
 	
-	internal fun canStreaming() : Boolean {
-		return ! access_info.isNA && if(access_info.isPseudo) isPublicStream else streamPath != null
+	internal fun canStreaming() = when {
+		access_info.isNA -> false
+		access_info.isMisskey -> false
+		access_info.isPseudo -> isPublicStream
+		else -> streamPath != null
 	}
 	
 	private val streamCallback = object : StreamReader.StreamCallback {
@@ -3918,6 +4078,7 @@ class Column(
 		} else {
 			PATH_LOCAL
 		}
+		
 	}
 	
 	private fun makePublicFederateUrl() : String {
@@ -3940,7 +4101,7 @@ class Column(
 	}
 	
 	private fun loadFilter2(client : TootApiClient) : ArrayList<TootFilter>? {
-		if( access_info.isPseudo ) return null
+		if(access_info.isPseudo) return null
 		val column_context = getFilterContext()
 		if(column_context == 0) return null
 		val result = client.request(PATH_FILTERS)
@@ -3955,10 +4116,12 @@ class Column(
 		val tree = WordTrieTree()
 		for(filter in filterList) {
 			if((filter.context and column_context) != 0) {
-				tree.add(filter.phrase,validator = when(filter.whole_word){
-					true -> WordTrieTree.WORD_VALIDATOR
+				tree.add(
+					filter.phrase, validator = when(filter.whole_word) {
+						true -> WordTrieTree.WORD_VALIDATOR
 						else -> WordTrieTree.EMPTY_VALIDATOR
-				})
+					}
+				)
 			}
 		}
 		return tree
@@ -4023,5 +4186,4 @@ class Column(
 		}
 	}
 	
-
 }

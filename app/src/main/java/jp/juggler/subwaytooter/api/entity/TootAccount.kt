@@ -90,106 +90,155 @@ open class TootAccount(
 	init {
 		var sv : String?
 		
-		// 絵文字データは先に読んでおく
-		this.custom_emojis = parseMapOrNull(::CustomEmoji, src.optJSONArray("emojis"))
-		this.profile_emojis = parseMapOrNull(::NicoProfileEmoji, src.optJSONArray("profile_emojis"))
-		
-		// 疑似アカウントにacctとusernameだけ
-		this.url = src.parseString("url")
-		this.username = src.notEmptyOrThrow("username")
-		
-		//
-		sv = src.parseString("display_name")
-		this.display_name = if(sv?.isNotEmpty() == true) sv.sanitizeBDI() else username
-		
-		//
-		this.note = src.parseString("note")
-		
-		this.source = parseSource(src.optJSONObject("source"))
-		this.movedRef = TootAccountRef.mayNull(
-			parser,
-			src.optJSONObject("moved")?.let {
-				TootAccount(parser, it)
-			}
-		)
-		this.locked = src.optBoolean("locked")
-		
-		this.fields = parseFields(src.optJSONArray("fields"))
-		
-		this.bot = src.optBoolean("bot", false)
-		
-		// this.user_hides_network = src.optBoolean("user_hides_network")
-
-		when(parser.serviceType) {
-			ServiceType.MASTODON -> {
-				
-				val hostAccess = parser.linkHelper.host
-				
-				this.id = src.parseLong("id") ?: INVALID_ID
-				
-				this.acct = src.notEmptyOrThrow("acct")
-				this.host = findHostFromUrl(acct, hostAccess, url)
-					?: throw RuntimeException("can't get host from acct or url")
-				
-				this.followers_count = src.parseLong("followers_count")
-				this.following_count = src.parseLong("following_count")
-				this.statuses_count = src.parseLong("statuses_count")
-				
-				this.created_at = src.parseString("created_at")
-				this.time_created_at = TootStatus.parseTime(this.created_at)
-				
-				this.avatar = src.parseString("avatar")
-				this.avatar_static = src.parseString("avatar_static")
-				this.header = src.parseString("header")
-				this.header_static = src.parseString("header_static")
-				
-			}
+		if(parser.serviceType == ServiceType.MISSKEY) {
 			
-			ServiceType.TOOTSEARCH -> {
-				// tootsearch のアカウントのIDはどのタンス上のものか分からないので役に立たない
-				this.id = INVALID_ID // src.parseLong( "id", INVALID_ID)
-				
-				sv = src.notEmptyOrThrow("acct")
-				this.host = findHostFromUrl(sv, null, url)
-					?: throw RuntimeException("can't get host from acct or url")
-				this.acct = this.username + "@" + this.host
-				
-				this.followers_count = src.parseLong("followers_count")
-				this.following_count = src.parseLong("following_count")
-				this.statuses_count = src.parseLong("statuses_count")
-				
-				this.created_at = src.parseString("created_at")
-				this.time_created_at = TootStatus.parseTime(this.created_at)
-				
-				this.avatar = src.parseString("avatar")
-				this.avatar_static = src.parseString("avatar_static")
-				this.header = src.parseString("header")
-				this.header_static = src.parseString("header_static")
-			}
+			val instance = src.parseString("host") ?: parser.linkHelper.host ?: error("missing host")
 			
-			ServiceType.MSP -> {
-				this.id = src.parseLong("id") ?: INVALID_ID
-				
-				// MSPはLTLの情報しか持ってないのでacctは常にホスト名部分を持たない
-				this.host = findHostFromUrl(null, null, url)
-					?: throw RuntimeException("can't get host from url")
-				this.acct = this.username + "@" + host
-				
-				this.followers_count = null
-				this.following_count = null
-				this.statuses_count = null
-				
-				this.created_at = null
-				this.time_created_at = 0L
-				
-				val avatar = src.parseString("avatar")
-				this.avatar = avatar
-				this.avatar_static = avatar
-				this.header = null
-				this.header_static = null
-				
-			}
+			this.custom_emojis = null
+			this.profile_emojis = null
 			
+			this.username = src.notEmptyOrThrow("username")
+			this.url = "https://$instance/@$username"
+			
+			//
+			sv = src.parseString("name")
+			this.display_name = if(sv?.isNotEmpty() == true) sv.sanitizeBDI() else username
+			
+			//
+			this.note = src.parseString("description")
+			
+			this.source = null
+			this.movedRef = null
+			this.locked = src.optBoolean("isLocked")
+			
+			this.fields = null
+			
+			this.bot = src.optBoolean("isBot", false)
+			
+			// this.user_hides_network = src.optBoolean("user_hides_network")
+			
+			this.id = INVALID_ID
+			
+			this.acct = "$username@$instance"
+			this.host = instance
+			
+			this.followers_count = src.parseLong("followersCount") ?: -1L
+			this.following_count = src.parseLong("followingCount") ?: -1L
+			this.statuses_count = src.parseLong("notesCount") ?: -1L
+			
+			this.created_at = src.parseString("createdAt")
+			this.time_created_at = TootStatus.parseTime(this.created_at)
+			
+			this.avatar = src.parseString("avatarUrl")
+			this.avatar_static = src.parseString("avatarUrl")
+			this.header =src.parseString("bannerUrl")
+			this.header_static = src.parseString("bannerUrl")
+			
+		} else {
+			
+			// 絵文字データは先に読んでおく
+			this.custom_emojis = parseMapOrNull(::CustomEmoji, src.optJSONArray("emojis"))
+			this.profile_emojis =
+				parseMapOrNull(::NicoProfileEmoji, src.optJSONArray("profile_emojis"))
+			
+			// 疑似アカウントにacctとusernameだけ
+			this.url = src.parseString("url")
+			this.username = src.notEmptyOrThrow("username")
+			
+			//
+			sv = src.parseString("display_name")
+			this.display_name = if(sv?.isNotEmpty() == true) sv.sanitizeBDI() else username
+			
+			//
+			this.note = src.parseString("note")
+			
+			this.source = parseSource(src.optJSONObject("source"))
+			this.movedRef = TootAccountRef.mayNull(
+				parser,
+				src.optJSONObject("moved")?.let {
+					TootAccount(parser, it)
+				}
+			)
+			this.locked = src.optBoolean("locked")
+			
+			this.fields = parseFields(src.optJSONArray("fields"))
+			
+			this.bot = src.optBoolean("bot", false)
+			
+			// this.user_hides_network = src.optBoolean("user_hides_network")
+			
+			when(parser.serviceType) {
+				ServiceType.MASTODON -> {
+					
+					val hostAccess = parser.linkHelper.host
+					
+					this.id = src.parseLong("id") ?: INVALID_ID
+					
+					this.acct = src.notEmptyOrThrow("acct")
+					this.host = findHostFromUrl(acct, hostAccess, url)
+						?: throw RuntimeException("can't get host from acct or url")
+					
+					this.followers_count = src.parseLong("followers_count")
+					this.following_count = src.parseLong("following_count")
+					this.statuses_count = src.parseLong("statuses_count")
+					
+					this.created_at = src.parseString("created_at")
+					this.time_created_at = TootStatus.parseTime(this.created_at)
+					
+					this.avatar = src.parseString("avatar")
+					this.avatar_static = src.parseString("avatar_static")
+					this.header = src.parseString("header")
+					this.header_static = src.parseString("header_static")
+					
+				}
+				
+				ServiceType.TOOTSEARCH -> {
+					// tootsearch のアカウントのIDはどのタンス上のものか分からないので役に立たない
+					this.id = INVALID_ID // src.parseLong( "id", INVALID_ID)
+					
+					sv = src.notEmptyOrThrow("acct")
+					this.host = findHostFromUrl(sv, null, url)
+						?: throw RuntimeException("can't get host from acct or url")
+					this.acct = this.username + "@" + this.host
+					
+					this.followers_count = src.parseLong("followers_count")
+					this.following_count = src.parseLong("following_count")
+					this.statuses_count = src.parseLong("statuses_count")
+					
+					this.created_at = src.parseString("created_at")
+					this.time_created_at = TootStatus.parseTime(this.created_at)
+					
+					this.avatar = src.parseString("avatar")
+					this.avatar_static = src.parseString("avatar_static")
+					this.header = src.parseString("header")
+					this.header_static = src.parseString("header_static")
+				}
+				
+				ServiceType.MSP -> {
+					this.id = src.parseLong("id") ?: INVALID_ID
+					
+					// MSPはLTLの情報しか持ってないのでacctは常にホスト名部分を持たない
+					this.host = findHostFromUrl(null, null, url)
+						?: throw RuntimeException("can't get host from url")
+					this.acct = this.username + "@" + host
+					
+					this.followers_count = null
+					this.following_count = null
+					this.statuses_count = null
+					
+					this.created_at = null
+					this.time_created_at = 0L
+					
+					val avatar = src.parseString("avatar")
+					this.avatar = avatar
+					this.avatar_static = avatar
+					this.header = null
+					this.header_static = null
+					
+				}
+				
+				else -> error("will not happen")
+			}
 		}
 	}
 	

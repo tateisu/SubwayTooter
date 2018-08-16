@@ -18,8 +18,10 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
+import org.json.JSONArray
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
 @Suppress("MemberVisibilityCanPrivate")
 class TootStatus(parser : TootParser, src : JSONObject) :
@@ -155,133 +157,271 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 	init {
 		this.json = src
 		
-		this.uri = src.parseString("uri") // MSPだとuriは提供されない
-		this.url = src.parseString("url") // 頻繁にnullになる
-		this.created_at = src.parseString("created_at")
-		
-		// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
-		this.custom_emojis = parseMapOrNull(::CustomEmoji, src.optJSONArray("emojis"), log)
-		this.profile_emojis =
-			parseMapOrNull(::NicoProfileEmoji, src.optJSONArray("profile_emojis"), log)
-		
-		val who = parser.account(src.optJSONObject("account"))
-			?: throw RuntimeException("missing account")
-		
-		this.accountRef = TootAccountRef(parser, who)
-		
-		this.reblogs_count = src.parseLong("reblogs_count")
-		this.favourites_count = src.parseLong("favourites_count")
-		this.replies_count = src.parseLong("replies_count")
+		if( parser.serviceType == ServiceType.MISSKEY) {
+			val instance = parser.linkHelper.host
+			val misskeyId = src.parseString("id")
+			this.host_access = parser.linkHelper.host
+			
+			this.uri = "https://$instance/notes/$misskeyId"
+			this.url = "https://$instance/notes/$misskeyId"
+			this.created_at = src.parseString("createdAt")
+			this.time_created_at = parseTime(this.created_at)
+			this.id = INVALID_ID
+			
+			// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
+			this.custom_emojis = null
+			this.profile_emojis = null
+			
+			val who = parser.account(src.optJSONObject("user"))
+				?: throw RuntimeException("missing account")
+			
+			this.accountRef = TootAccountRef(parser, who)
+			
+			this.reblogs_count = 0L
+			this.favourites_count = 0L
+			this.replies_count = 0L
+			
+			this.reblogged = false
+			this.favourited = false
+			
+			this.media_attachments = parseMediaAttachmentMisskey(src.optJSONArray("media"))
+			this.visibility = src.parseString("visibility")
+			this.sensitive = src.optBoolean("sensitive")
+			
+			
+			this.in_reply_to_id = null
+			this.in_reply_to_account_id = null
+			this.mentions = null
+			this.tags = null
+			this.application = parseItem(::TootApplication, src.optJSONObject("appId"), log)
+			this.pinned = parser.pinned
+			this.muted = false
+			this.language = null
+			
+			this.decoded_mentions = HTMLDecoder.decodeMentions(
+				parser.linkHelper,
+				this.mentions,
+				this
+			) ?: EMPTY_SPANNABLE
+			
+			// this.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
+			
+			// content
+			this.content = src.parseString("text")
+			
+			var options = DecodeOptions(
+				parser.context,
+				parser.linkHelper,
+				short = true,
+				decodeEmoji = true,
+				emojiMapCustom = custom_emojis,
+				emojiMapProfile = profile_emojis,
+				attachmentList = media_attachments,
+				highlightTrie = parser.highlightTrie
+			)
+			
+			this.decoded_content = options.decodeHTML(content)
+			this.hasHighlight = this.hasHighlight || options.hasHighlight
+			if(options.highlight_sound != null && this.highlight_sound == null) {
+				this.highlight_sound = options.highlight_sound
+			}
+			
+			// spoiler_text
+			this.spoiler_text = reWhitespace
+				.matcher(src.parseString("cw") ?: "")
+				.replaceAll(" ")
+				.sanitizeBDI()
+			
+			options = DecodeOptions(
+				parser.context,
+				emojiMapCustom = custom_emojis,
+				emojiMapProfile = profile_emojis,
+				highlightTrie = parser.highlightTrie
+			)
+			
+			this.decoded_spoiler_text = options.decodeEmoji(spoiler_text)
+			
+			this.hasHighlight = this.hasHighlight || options.hasHighlight
+			if(options.highlight_sound != null && this.highlight_sound == null) {
+				this.highlight_sound = options.highlight_sound
+			}
+			
+			this.enquete = null
+			
+			this.reblog = parser.status(src.optJSONObject("renote"))
 
-		when(parser.serviceType) {
-			ServiceType.MASTODON -> {
-				this.host_access = parser.linkHelper.host
+		}else{
+			this.uri = src.parseString("uri") // MSPだとuriは提供されない
+			this.url = src.parseString("url") // 頻繁にnullになる
+			this.created_at = src.parseString("created_at")
+			
+			// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
+			this.custom_emojis = parseMapOrNull(::CustomEmoji, src.optJSONArray("emojis"), log)
+			this.profile_emojis =
+				parseMapOrNull(::NicoProfileEmoji, src.optJSONArray("profile_emojis"), log)
+			
+			val who = parser.account(src.optJSONObject("account"))
+				?: throw RuntimeException("missing account")
+			
+			this.accountRef = TootAccountRef(parser, who)
+			
+			this.reblogs_count = src.parseLong("reblogs_count")
+			this.favourites_count = src.parseLong("favourites_count")
+			this.replies_count = src.parseLong("replies_count")
+			
+			when(parser.serviceType) {
+				ServiceType.MASTODON -> {
+					this.host_access = parser.linkHelper.host
+					
+					this.id = src.parseLong("id") ?: INVALID_ID
+					
+					this.reblogged = src.optBoolean("reblogged")
+					this.favourited = src.optBoolean("favourited")
+					
+					this.time_created_at = parseTime(this.created_at)
+					this.media_attachments =
+						parseListOrNull(::TootAttachment, src.optJSONArray("media_attachments"), log)
+					this.visibility = src.parseString("visibility")
+					this.sensitive = src.optBoolean("sensitive")
+					
+				}
 				
-				this.id = src.parseLong("id") ?: INVALID_ID
+				ServiceType.TOOTSEARCH -> {
+					this.host_access = null
+					
+					// 投稿元タンスでのIDを調べる。失敗するかもしれない
+					this.id = findStatusIdFromUri(uri, url)
+					
+					this.time_created_at = TootStatus.parseTime(this.created_at)
+					this.media_attachments =
+						parseListOrNull(::TootAttachment, src.optJSONArray("media_attachments"), log)
+					this.visibility = VISIBILITY_PUBLIC
+					this.sensitive = src.optBoolean("sensitive")
+					
+				}
 				
-				this.reblogged = src.optBoolean("reblogged")
-				this.favourited = src.optBoolean("favourited")
-				
-				this.time_created_at = parseTime(this.created_at)
-				this.media_attachments =
-					parseListOrNull(::TootAttachment, src.optJSONArray("media_attachments"), log)
-				this.visibility = src.parseString("visibility")
-				this.sensitive = src.optBoolean("sensitive")
-				
+				ServiceType.MSP -> {
+					this.host_access = null
+					
+					// MSPのデータはLTLから呼んだものなので、常に投稿元タンスでのidが得られる
+					this.id = src.parseLong("id") ?: INVALID_ID
+					
+					this.time_created_at = parseTimeMSP(created_at)
+					this.media_attachments =
+						TootAttachmentMSP.parseList(src.optJSONArray("media_attachments"))
+					this.visibility = VISIBILITY_PUBLIC
+					this.sensitive = src.optInt("sensitive", 0) != 0
+				}
+				else-> error("will not happen")
 			}
 			
-			ServiceType.TOOTSEARCH -> {
-				this.host_access = null
-				
-				// 投稿元タンスでのIDを調べる。失敗するかもしれない
-				this.id = findStatusIdFromUri(uri, url)
-				
-				this.time_created_at = TootStatus.parseTime(this.created_at)
-				this.media_attachments =
-					parseListOrNull(::TootAttachment, src.optJSONArray("media_attachments"), log)
-				this.visibility = VISIBILITY_PUBLIC
-				this.sensitive = src.optBoolean("sensitive")
-				
+			this.in_reply_to_id = src.parseString("in_reply_to_id")
+			this.in_reply_to_account_id = src.parseString("in_reply_to_account_id")
+			this.mentions = parseListOrNull(::TootMention, src.optJSONArray("mentions"), log)
+			this.tags = parseListOrNull(::TootTag, src.optJSONArray("tags"))
+			this.application = parseItem(::TootApplication, src.optJSONObject("application"), log)
+			this.pinned = parser.pinned || src.optBoolean("pinned")
+			this.muted = src.optBoolean("muted")
+			this.language = src.parseString("language")
+			this.decoded_mentions = HTMLDecoder.decodeMentions(
+				parser.linkHelper,
+				this.mentions,
+				this
+			) ?: EMPTY_SPANNABLE
+			// this.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
+			
+			// content
+			this.content = src.parseString("content")
+			
+			var options = DecodeOptions(
+				parser.context,
+				parser.linkHelper,
+				short = true,
+				decodeEmoji = true,
+				emojiMapCustom = custom_emojis,
+				emojiMapProfile = profile_emojis,
+				attachmentList = media_attachments,
+				highlightTrie = parser.highlightTrie
+			)
+			
+			this.decoded_content = options.decodeHTML(content)
+			this.hasHighlight = this.hasHighlight || options.hasHighlight
+			if(options.highlight_sound != null && this.highlight_sound == null) {
+				this.highlight_sound = options.highlight_sound
 			}
 			
-			ServiceType.MSP -> {
-				this.host_access = null
-				
-				// MSPのデータはLTLから呼んだものなので、常に投稿元タンスでのidが得られる
-				this.id = src.parseLong("id") ?: INVALID_ID
-				
-				this.time_created_at = parseTimeMSP(created_at)
-				this.media_attachments =
-					TootAttachmentMSP.parseList(src.optJSONArray("media_attachments"))
-				this.visibility = VISIBILITY_PUBLIC
-				this.sensitive = src.optInt("sensitive", 0) != 0
+			// spoiler_text
+			this.spoiler_text = reWhitespace
+				.matcher(src.parseString("spoiler_text") ?: "")
+				.replaceAll(" ")
+				.sanitizeBDI()
+			
+			options = DecodeOptions(
+				parser.context,
+				emojiMapCustom = custom_emojis,
+				emojiMapProfile = profile_emojis,
+				highlightTrie = parser.highlightTrie
+			)
+			
+			this.decoded_spoiler_text = options.decodeEmoji(spoiler_text)
+			
+			this.hasHighlight = this.hasHighlight || options.hasHighlight
+			if(options.highlight_sound != null && this.highlight_sound == null) {
+				this.highlight_sound = options.highlight_sound
+			}
+			
+			this.enquete = NicoEnquete.parse(
+				parser,
+				this,
+				media_attachments,
+				src.parseString("enquete")
+			)
+			
+			// Pinned TL を取得した時にreblogが登場することはないので、reblogについてpinned 状態を気にする必要はない
+			this.reblog = parser.status(src.optJSONObject("reblog"))
+			
+		}
+	}
+	
+	private fun parseMediaAttachmentMisskey2(src : JSONObject?) : TootAttachment? {
+		src?: return null
+
+		val mimeType = src.parseString("type")
+		val url = src.parseString("url")
+		val thumbnailUrl = src.parseString("thumbnailUrl")
+		val dst = JSONObject()
+		dst.put("id",-1L)
+		dst.put("type", when{
+			mimeType?.startsWith("image/") ==true -> TootAttachmentLike.TYPE_IMAGE
+			mimeType?.startsWith("video/") ==true -> TootAttachmentLike.TYPE_VIDEO
+			else-> TootAttachmentLike.TYPE_UNKNOWN
+		})
+		dst.put("url",url)
+		dst.put("remote_url",url)
+		dst.put("text_url",url)
+		dst.put("preview_url",thumbnailUrl)
+		dst.put("description",src.parseString("comment"))
+		
+		return parseItem(::TootAttachment,dst)
+	}
+
+	private fun parseMediaAttachmentMisskey(src : JSONArray?) : ArrayList<TootAttachmentLike>? {
+		var rv :ArrayList<TootAttachmentLike>? = null
+		if(src!=null){
+			for(i in 0 until  src.length() ){
+				val item = try{
+					parseMediaAttachmentMisskey2(src.optJSONObject(i))
+				}catch(ex:Throwable){
+					log.e(ex,"parseMediaAttachmentMisskey")
+					null
+				}
+				if( item != null ){
+					if(rv==null) rv = ArrayList()
+					rv.add(item)
+				}
 			}
 		}
-		
-		this.in_reply_to_id = src.parseString("in_reply_to_id")
-		this.in_reply_to_account_id = src.parseString("in_reply_to_account_id")
-		this.mentions = parseListOrNull(::TootMention, src.optJSONArray("mentions"), log)
-		this.tags = parseListOrNull(::TootTag, src.optJSONArray("tags"))
-		this.application = parseItem(::TootApplication, src.optJSONObject("application"), log)
-		this.pinned = parser.pinned || src.optBoolean("pinned")
-		this.muted = src.optBoolean("muted")
-		this.language = src.parseString("language")
-		this.decoded_mentions = HTMLDecoder.decodeMentions(
-			parser.linkHelper,
-			this.mentions,
-			this
-		) ?: EMPTY_SPANNABLE
-		// this.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
-		
-		// content
-		this.content = src.parseString("content")
-		
-		var options = DecodeOptions(
-			parser.context,
-			parser.linkHelper,
-			short = true,
-			decodeEmoji = true,
-			emojiMapCustom = custom_emojis,
-			emojiMapProfile = profile_emojis,
-			attachmentList = media_attachments,
-			highlightTrie = parser.highlightTrie
-		)
-		
-		this.decoded_content = options.decodeHTML(content)
-		this.hasHighlight = this.hasHighlight || options.hasHighlight
-		if(options.highlight_sound != null && this.highlight_sound == null) {
-			this.highlight_sound = options.highlight_sound
-		}
-		
-		// spoiler_text
-		this.spoiler_text = reWhitespace
-			.matcher(src.parseString("spoiler_text") ?: "")
-			.replaceAll(" ")
-			.sanitizeBDI()
-		
-		options = DecodeOptions(
-			parser.context,
-			emojiMapCustom = custom_emojis,
-			emojiMapProfile = profile_emojis,
-			highlightTrie = parser.highlightTrie
-		)
-		
-		this.decoded_spoiler_text = options.decodeEmoji(spoiler_text)
-		
-		this.hasHighlight = this.hasHighlight || options.hasHighlight
-		if(options.highlight_sound != null && this.highlight_sound == null) {
-			this.highlight_sound = options.highlight_sound
-		}
-		
-		this.enquete = NicoEnquete.parse(
-			parser,
-			this,
-			media_attachments,
-			src.parseString("enquete")
-		)
-		
-		// Pinned TL を取得した時にreblogが登場することはないので、reblogについてpinned 状態を気にする必要はない
-		this.reblog = parser.status(src.optJSONObject("reblog"))
+		return rv
 	}
 	
 	///////////////////////////////////////////////////

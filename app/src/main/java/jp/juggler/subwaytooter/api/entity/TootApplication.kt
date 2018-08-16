@@ -13,4 +13,9 @@ class TootApplication(
 		name = src.parseString("name"),
 		website = src.parseString("website")
 	)
+	
+	constructor(src:String?):this(
+		name = src,
+		website = null
+	)
 }

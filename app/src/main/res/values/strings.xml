@@ -575,6 +575,7 @@
     <string name="open_browser_of">Open \"%1$s\" in browser</string>
     <string name="open_in_browser">Open in browser</string>
     <string name="share_url">Share URL</string>
+    <string name="share_url_more">Share URL…</string>
     <string name="copy_url">Copy URL to clipboard</string>
     <string name="media_attachment_empty">Missing media attachments.</string>
     <string name="media_attachment_type_error">The type of media attachment is \"%1$s\". ST can\'t handle it, but you can try open in browser.</string>

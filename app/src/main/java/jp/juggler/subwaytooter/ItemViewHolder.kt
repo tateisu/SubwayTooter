@@ -1030,7 +1030,7 @@ internal class ItemViewHolder(
 			btnSearchTag, llTrendTag -> when(item) {
 				is TootGap -> {
 					if( access_info.isMisskey){
-						showToast(activity,false, "Misskey does not allows gap reading.")
+						showToast(activity,false, "Misskey does not allow gap reading.")
 					}else {
 						column.startGap(item)
 					}

@@ -2846,7 +2846,7 @@ class Column(
 							}
 							
 							if(isMisskey) {
-								log.d("refresh-status-offset: misskey does not allows gap reading.")
+								log.d("refresh-status-offset: Misskey does not allow gap reading.")
 								addOne(list_tmp, TootGap(max_id, last_since_id))
 								bGapAdded = true
 								break

@@ -869,6 +869,7 @@
     <string name="open_browser_of">\"%1$s\"をブラウザで開く</string>
     <string name="open_in_browser">ブラウザで開く</string>
     <string name="share_url">URLを共有</string>
+    <string name="share_url_more">URLを共有…</string>
     <string name="copy_url">URLをクリップボードにコピー</string>
     <string name="media_attachment_empty">添付メディアがありません</string>
     <string name="media_attachment_type_error">添付メディアの種類\"%1$s\"はこのアプリでは開けません。下の「…」にある「ブラウザで開く」を試すことができます</string>

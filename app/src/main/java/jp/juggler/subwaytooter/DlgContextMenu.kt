@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.graphics.PorterDuff
+import android.support.v4.app.ShareCompat
 import android.support.v7.app.AlertDialog
 import android.view.View
 import android.view.WindowManager
@@ -150,6 +151,8 @@ internal class DlgContextMenu(
 		
 		viewRoot.findViewById<View>(R.id.btnQuoteUrlStatus).setOnClickListener(this)
 		viewRoot.findViewById<View>(R.id.btnQuoteUrlAccount).setOnClickListener(this)
+		viewRoot.findViewById<View>(R.id.btnShareUrlStatus).setOnClickListener(this)
+		viewRoot.findViewById<View>(R.id.btnShareUrlAccount).setOnClickListener(this)
 		viewRoot.findViewById<View>(R.id.btnQuoteName).setOnClickListener(this)
 		
 		val account_list = SavedAccount.loadAccountList(activity)
@@ -648,7 +651,13 @@ internal class DlgContextMenu(
 			R.id.btnQuoteUrlAccount -> who?.url?.let { url ->
 				if(url.isNotEmpty()) Action_Account.openPost(activity, url)
 			}
+			R.id.btnShareUrlStatus -> status?.url?.let { url ->
+				if(url.isNotEmpty()) shareText(activity, url)
+			}
 			
+			R.id.btnShareUrlAccount -> who?.url?.let { url ->
+				if(url.isNotEmpty()) shareText(activity, url)
+			}
 			R.id.btnNotificationDelete -> notification?.let { notification ->
 				Action_Notification.deleteOne(activity, access_info, notification)
 			}
@@ -666,6 +675,13 @@ internal class DlgContextMenu(
 			}
 			
 		}
+	}
+	
+	private fun shareText(activity : ActMain, text : String) {
+		ShareCompat.IntentBuilder.from(activity)
+			.setText(text)
+			.setType("text/plain")
+			.startChooser()
 	}
 	
 	override fun onLongClick(v : View) : Boolean {

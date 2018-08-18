@@ -1001,10 +1001,10 @@ internal class ItemViewHolder(
 			}
 			
 			ivThumbnail -> status_account?.let { whoRef ->
-				if(access_info.isPseudo) {
-					DlgContextMenu(activity, column, whoRef, null, notification).show()
-				} else {
-					Action_User.profileLocal(activity, pos, access_info, whoRef.get())
+				when {
+					access_info.isMisskey -> Action_User.profileLocal(activity, pos, access_info, whoRef.get())
+					access_info.isPseudo -> DlgContextMenu(activity, column, whoRef, null, notification).show()
+					else -> Action_User.profileLocal(activity, pos, access_info, whoRef.get())
 				}
 			}
 			
@@ -1028,13 +1028,7 @@ internal class ItemViewHolder(
 			}
 			
 			btnSearchTag, llTrendTag -> when(item) {
-				is TootGap -> {
-					if( access_info.isMisskey){
-						showToast(activity,false, "Misskey does not allow gap reading.")
-					}else {
-						column.startGap(item)
-					}
-				}
+				is TootGap -> column.startGap(item)
 				
 				is TootDomainBlock -> {
 					val domain = item.domain
@@ -1088,7 +1082,7 @@ internal class ItemViewHolder(
 							activity
 							, activity.getString(R.string.list_delete_confirm, item.title)
 						) {
-							Action_List.delete(activity, access_info, item.id)
+							Action_List.delete(activity, access_info, item.id.toLong())
 						}
 					}
 					.show(activity, item.title)
@@ -1245,7 +1239,11 @@ internal class ItemViewHolder(
 				is TootAttachment -> {
 					if(Pref.bpUseInternalMediaViewer(App1.pref)) {
 						// 内蔵メディアビューア
-						ActMediaViewer.open(activity, media_attachments, i)
+						val serviceType = when(access_info.isMisskey){
+							true -> ServiceType.MISSKEY
+							else -> ServiceType.MASTODON
+						}
+						ActMediaViewer.open(activity, serviceType, media_attachments, i)
 						
 					} else {
 						// ブラウザで開く

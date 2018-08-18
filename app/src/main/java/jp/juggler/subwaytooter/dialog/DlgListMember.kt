@@ -29,6 +29,7 @@ import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootList
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.parseList
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -181,7 +182,7 @@ class DlgListMember(
 		
 		TootTaskRunner(activity).run(list_owner , object : TootTask {
 			
-			internal var new_list : ArrayList<TootList>? = null
+			var new_list : ArrayList<TootList>? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				// リストに追加したいアカウントの自タンスでのアカウントIDを取得する
@@ -209,7 +210,7 @@ class DlgListMember(
 				var jsonArray = result?.jsonArray ?:return result
 				
 				// 結果を解釈する
-				val set_registered = HashSet<Long>()
+				val set_registered = HashSet<EntityId>()
 				for(a in parseList(::TootList,jsonArray)) {
 					set_registered.add(a.id)
 				}

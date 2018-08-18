@@ -108,7 +108,7 @@
     <string name="cant_change_account_when_attachment_specified">You can\'t change account when you have an attachment.</string>
     <string name="column">Column</string>
     <string name="conversation_view">Conversation view</string>
-    <string name="conversation_around">Conversation around toot:%1$d</string>
+    <string name="conversation_around">Conversation around toot:%1$s</string>
     <string name="instance_not_need_slash">Hostname of the instance, without \'/\', \'\@\'.</string>
     <string name="mail_address_not_contains_at_mark">Use emails that contains \'\@\' and \'.\'</string>
     <string name="instance_hint">ex) mastodon.social</string>

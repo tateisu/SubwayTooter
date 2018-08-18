@@ -75,7 +75,7 @@ class TootApiClient(
 		private const val mspSearchUrl = "http://mastodonsearch.jp/api/v1.0.1/cross"
 		private const val mspApiKey = "e53de7f66130208f62d1808672bf6320523dcd0873dc69bc"
 		
-		fun getMspMaxId(array : JSONArray, max_id : String) : String {
+		fun getMspMaxId(array : JSONArray, old : String?) : String? {
 			// max_id の更新
 			val size = array.length()
 			if(size > 0) {
@@ -85,7 +85,8 @@ class TootApiClient(
 					if(sv?.isNotEmpty() == true) return sv
 				}
 			}
-			return max_id
+			// MSPでは終端は分からず、何度もリトライする
+			return old
 		}
 		
 		fun getTootsearchHits(root : JSONObject) : JSONArray? {
@@ -94,15 +95,13 @@ class TootApiClient(
 		}
 		
 		// returns the number for "from" parameter of next page.
-		// returns "" if no more next page.
-		fun getTootsearchMaxId(root : JSONObject, old : String) : String {
-			val old_from = old.optInt() ?: 0
-			val hits2 = getTootsearchHits(root)
-			if(hits2 != null) {
-				val size = hits2.length()
-				return if(size == 0) "" else Integer.toString(old_from + hits2.length())
+		// returns null if no more next page.
+		fun getTootsearchMaxId(root : JSONObject, old : Long?) : Long? {
+			val size = getTootsearchHits(root)?.length() ?: 0
+			return when {
+				size <= 0 -> null
+				else -> (old ?: 0L) + size.toLong()
 			}
-			return ""
 		}
 		
 		val DEFAULT_JSON_ERROR_PARSER = { json : JSONObject -> json.parseString("error") }
@@ -459,14 +458,14 @@ class TootApiClient(
 		// misskeyか試してみる
 		val r2 = TootApiResult.makeWithCaption(instance)
 		if(sendRequest(r2) {
-				Request.Builder().post(RequestBody.create(MEDIA_TYPE_JSON,JSONObject().apply{
-					put("dummy",1)
+				Request.Builder().post(RequestBody.create(MEDIA_TYPE_JSON, JSONObject().apply {
+					put("dummy", 1)
 				}.toString()))
 					.url("https://$instance/api/notes/local-timeline").build()
 			}
 		) {
-			if(parseJson(r2) != null  && r2.jsonArray != null) {
-				r2.data = JSONObject().apply{
+			if(parseJson(r2) != null && r2.jsonArray != null) {
+				r2.data = JSONObject().apply {
 					put("isMisskey", true)
 				}
 				return r2
@@ -769,7 +768,7 @@ class TootApiClient(
 		
 	}
 	
-	fun searchMsp(query : String, max_id : String) : TootApiResult? {
+	fun searchMsp(query : String, max_id : String?) : TootApiResult? {
 		
 		// ユーザトークンを読む
 		var user_token : String? = Pref.spMspUserToken(pref)
@@ -815,13 +814,14 @@ class TootApiClient(
 			if(result.error != null) return result
 			
 			if(! sendRequest(result) {
-					val url = (mspSearchUrl
-						+ "?apikey=" + mspApiKey.encodePercent()
-						+ "&utoken=" + user_token.encodePercent()
-						+ "&q=" + query.encodePercent()
-						+ "&max=" + max_id.encodePercent())
+					val url = StringBuilder()
+						.append(mspSearchUrl)
+						.append("?apikey=").append(mspApiKey.encodePercent())
+						.append("&utoken=").append(user_token.encodePercent())
+						.append("&q=").append(query.encodePercent())
+						.append("&max=").append(max_id?.encodePercent() ?:"")
 					
-					Request.Builder().url(url).build()
+					Request.Builder().url(url.toString()).build()
 				}) return result
 			
 			var isUserTokenError = false
@@ -847,20 +847,23 @@ class TootApiClient(
 	
 	fun searchTootsearch(
 		query : String,
-		max_id : String // 空文字列、もしくはfromに指定するパラメータ
+		from : Long?
 	) : TootApiResult? {
 		
 		val result = TootApiResult.makeWithCaption("Tootsearch")
 		if(result.error != null) return result
 		
 		if(! sendRequest(result) {
-				val url = ("https://tootsearch.chotto.moe/api/v1/search"
-					+ "?sort=" + "created_at:desc".encodePercent()
-					+ "&from=" + max_id.encodePercent()
-					+ "&q=" + query.encodePercent())
+				val sb = StringBuilder()
+					.append("https://tootsearch.chotto.moe/api/v1/search?sort=")
+					.append("created_at:desc".encodePercent())
+					.append("&q=").append(query.encodePercent())
+				if(from != null) {
+					sb.append("&from=").append(from.toString().encodePercent())
+				}
 				
 				Request.Builder()
-					.url(url)
+					.url(sb.toString())
 					.build()
 				
 			}) return result

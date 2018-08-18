@@ -186,13 +186,12 @@ class TestDuplicateMap {
 			put("url", "http://${parser.linkHelper.host}/@user$id")
 		}
 		
-		val item = TootAccount(parser,itemJson)
+		val item = TootAccountRef.notNull(parser,TootAccount(parser,itemJson))
 		assertNotNull(item)
 		generatedItems.add(item)
 		assertEquals(false, map.isDuplicate(item))
-		assertEquals(true, map.isDuplicate(item))
+		assertEquals(true, map.isDuplicate(item)) // 二回目はtrueになる
 	}
-	
 	
 	private fun testDuplicateAccount() {
 		val map = DuplicateMap()

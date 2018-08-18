@@ -38,6 +38,8 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.EntityIdLong
 
 import org.apache.commons.io.IOUtils
 
@@ -124,9 +126,9 @@ class ActMain : AppCompatActivity()
 	// onActivityResultで設定されてonResumeで消化される
 	// 状態保存の必要なし
 	private var posted_acct : String? = null
-	private var posted_status_id : Long = 0
-	private var posted_reply_id : String? = null
-	private var posted_redraft_id : Long = 0L
+	private var posted_status_id : EntityId? = null
+	private var posted_reply_id : EntityId? = null
+	private var posted_redraft_id : EntityId? = null
 	
 	var timeline_font_size_sp = Float.NaN
 	var acct_font_size_sp = Float.NaN
@@ -427,6 +429,11 @@ class ActMain : AppCompatActivity()
 					outState.putInt(STATE_CURRENT_PAGE, ve)
 				}
 			})
+		
+		for( column in app_state.column_list){
+			column.onSaveInstanceState()
+		}
+		
 	}
 	
 	override fun onRestoreInstanceState(savedInstanceState : Bundle) {
@@ -552,14 +559,17 @@ class ActMain : AppCompatActivity()
 		
 		pref.edit().put(Pref.ipLastColumnPos, last_pos).apply()
 		
+		
 		super.onPause()
 	}
 	
 	private fun refreshAfterPost() {
 		val posted_acct = this.posted_acct
-		if(posted_acct?.isNotEmpty() == true) {
+		val posted_status_id = this.posted_status_id
+		if(posted_acct?.isNotEmpty() == true && posted_status_id != null) {
 			
-			if(posted_redraft_id != 0L) {
+			val posted_redraft_id = this.posted_redraft_id
+			if(posted_redraft_id !=null ) {
 				val delm = posted_acct.indexOf('@')
 				if(delm != - 1) {
 					val host = posted_acct.substring(delm + 1)
@@ -567,7 +577,7 @@ class ActMain : AppCompatActivity()
 						column.onStatusRemoved(host, posted_redraft_id)
 					}
 				}
-				posted_redraft_id = 0L
+				this.posted_redraft_id = null
 			}
 			
 			val refresh_after_toot = Pref.ipRefreshAfterToot(pref)
@@ -583,6 +593,7 @@ class ActMain : AppCompatActivity()
 			}
 		}
 		this.posted_acct = null
+		this.posted_status_id = null
 	}
 	
 	private fun handleSentIntent(intent : Intent) {
@@ -652,7 +663,7 @@ class ActMain : AppCompatActivity()
 		post_helper.spoiler_text = null
 		post_helper.visibility = account.visibility
 		post_helper.bNSFW = false
-		post_helper.in_reply_to_id = - 1L
+		post_helper.in_reply_to_id = null
 		post_helper.attachment_list = null
 		post_helper.emojiMapCustom = App1.custom_emoji_lister.getMap(account.host)
 		
@@ -666,7 +677,7 @@ class ActMain : AppCompatActivity()
 			posted_acct = target_account.acct
 			posted_status_id = status.id
 			posted_reply_id = status.in_reply_to_id
-			posted_redraft_id = 0L
+			posted_redraft_id = null
 			refreshAfterPost()
 		}
 	}
@@ -753,9 +764,9 @@ class ActMain : AppCompatActivity()
 				if(data != null) {
 					etQuickToot.setText("")
 					posted_acct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)
-					posted_status_id = data.getLongExtra(ActPost.EXTRA_POSTED_STATUS_ID, 0L)
-					posted_reply_id = data.getStringExtra(ActPost.EXTRA_POSTED_REPLY_ID)
-					posted_redraft_id = data.getLongExtra(ActPost.EXTRA_POSTED_REDRAFT_ID, 0L)
+					posted_status_id = EntityId.from(data,ActPost.EXTRA_POSTED_STATUS_ID)
+					posted_reply_id = EntityId.from(data,ActPost.EXTRA_POSTED_REPLY_ID)
+					posted_redraft_id = EntityId.from(data,ActPost.EXTRA_POSTED_REDRAFT_ID)
 					
 				}
 				
@@ -1471,7 +1482,7 @@ class ActMain : AppCompatActivity()
 			try {
 				// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
 				val host = m.group(1)
-				val status_id = m.group(3).toLong(10)
+				val status_id = EntityIdLong(m.group(3).toLong(10))
 				// ステータスをアプリ内で開く
 				Action_Toot.conversationOtherInstance(
 					this@ActMain,
@@ -2050,7 +2061,7 @@ class ActMain : AppCompatActivity()
 					try {
 						// https://mastodon.juggler.jp/@SubwayTooter/(status_id)
 						val host = m.group(1)
-						val status_id = m.group(3).toLong(10)
+						val status_id = EntityIdLong(m.group(3).toLong(10))
 						if(accessInto.isNA || ! host.equals(accessInto.host, ignoreCase = true)) {
 							Action_Toot.conversationOtherInstance(
 								this@ActMain,

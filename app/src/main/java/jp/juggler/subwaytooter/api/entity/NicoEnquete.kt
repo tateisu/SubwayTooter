@@ -36,7 +36,7 @@ class NicoEnquete(
 	
 	// 以下はJSONには存在しないが内部で使う
 	val time_start : Long
-	val status_id : Long
+	val status_id : EntityId
 	
 	init {
 		this.type = src.parseString("type")

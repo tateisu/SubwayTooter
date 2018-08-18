@@ -5,11 +5,12 @@ import android.content.SharedPreferences
 import org.json.JSONObject
 
 import jp.juggler.subwaytooter.Pref
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.clipRange
 import jp.juggler.subwaytooter.util.parseLong
 import jp.juggler.subwaytooter.util.parseString
 
-class TootAttachment(src : JSONObject) : TootAttachmentLike {
+class TootAttachment(serviceType:ServiceType,src : JSONObject) : TootAttachmentLike {
 	
 	companion object {
 		private fun parseFocusValue(parent : JSONObject?, key : String) : Float {
@@ -22,10 +23,12 @@ class TootAttachment(src : JSONObject) : TootAttachmentLike {
 		}
 	}
 	
+	constructor(parser:TootParser,src:JSONObject):this(parser.serviceType,src)
+	
 	val json : JSONObject
 	
 	//	ID of the attachment
-	val id : Long
+	val id : EntityId
 	
 	//One of: "image", "video", "gifv". or may null ? may "unknown" ?
 	override val type : String?
@@ -51,6 +54,9 @@ class TootAttachment(src : JSONObject) : TootAttachmentLike {
 	// 内部フラグ: 再編集で引き継いだ添付メディアなら真
 	var redraft :Boolean = false
 	
+	// MisskeyはメディアごとにNSFWフラグがある
+	val isSensitive :Boolean
+	
 	///////////////////////////////
 	
 	override fun hasUrl(url : String) : Boolean = when(url) {
@@ -60,17 +66,42 @@ class TootAttachment(src : JSONObject) : TootAttachmentLike {
 	
 	init {
 		json = src
-		id = src.parseLong("id") ?: - 1L
-		type = src.parseString("type")
-		url = src.parseString("url")
-		remote_url = src.parseString("remote_url")
-		preview_url = src.parseString("preview_url")
-		text_url = src.parseString("text_url")
-		description = src.parseString("description")
 		
-		val focus = src.optJSONObject("meta")?.optJSONObject("focus")
-		focusX = parseFocusValue(focus, "x")
-		focusY = parseFocusValue(focus, "y")
+		when(serviceType) {
+			ServiceType.MISSKEY -> {
+				id = EntityId.from( src.parseString("id") ?: error("missing id"))
+				
+				val mimeType  = src.parseString("type") ?: "?"
+				this.type = when{
+					mimeType.startsWith("image/")  -> TootAttachmentLike.TYPE_IMAGE
+					mimeType.startsWith("video/")  -> TootAttachmentLike.TYPE_VIDEO
+					else-> TootAttachmentLike.TYPE_UNKNOWN
+				}
+				
+				url = src.parseString("url")
+				preview_url = src.parseString("thumbnailUrl")
+				remote_url = url
+				text_url = url
+				description = src.parseString("comment")
+				focusX = 0f // TODO
+				focusY = 0f // TODO
+				isSensitive = src.optBoolean("isSensitive",false)
+			}
+			else->{
+				id= EntityIdLong(src.parseLong("id") ?: - 1L)
+				type = src.parseString("type")
+				url = src.parseString("url")
+				remote_url = src.parseString("remote_url")
+				preview_url = src.parseString("preview_url")
+				text_url = src.parseString("text_url")
+				description = src.parseString("description")
+				isSensitive = false
+				
+				val focus = src.optJSONObject("meta")?.optJSONObject("focus")
+				focusX = parseFocusValue(focus, "x")
+				focusY = parseFocusValue(focus, "y")
+			}
+		}
 	}
 	
 	override val urlForThumbnail : String?

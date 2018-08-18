@@ -61,15 +61,23 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 		internal const val EXTRA_IDX = "idx"
 		internal const val EXTRA_DATA = "data"
+		internal const val EXTRA_SERVICE_TYPE = "serviceType"
 		
 		internal fun <T : TootAttachmentLike> encodeMediaList(list : ArrayList<T>?) =
 			list?.encodeJson()?.toString() ?: "[]"
 		
-		internal fun decodeMediaList(src : String?) = parseList(::TootAttachment, src?.toJsonArray() )
+		internal fun decodeMediaList(serviceType : ServiceType, src : String?) =
+			parseList(::TootAttachment, serviceType, src?.toJsonArray())
 		
-		fun open(activity : ActMain, list : ArrayList<TootAttachmentLike>, idx : Int) {
+		fun open(
+			activity : ActMain,
+			serviceType : ServiceType,
+			list : ArrayList<TootAttachmentLike>,
+			idx : Int
+		) {
 			val intent = Intent(activity, ActMediaViewer::class.java)
 			intent.putExtra(EXTRA_IDX, idx)
+			intent.putExtra(EXTRA_SERVICE_TYPE, serviceType.ordinal)
 			intent.putExtra(EXTRA_DATA, encodeMediaList(list))
 			activity.startActivity(intent)
 		}
@@ -77,6 +85,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	
 	internal var idx : Int = 0
 	private lateinit var media_list : ArrayList<TootAttachment>
+	private lateinit var serviceType : ServiceType
 	
 	private lateinit var pbvImage : PinchBitmapView
 	private lateinit var btnPrevious : View
@@ -91,7 +100,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	internal var buffering_last_shown : Long = 0
 	
 	private val player_listener = object : Player.EventListener {
-
+		
 		override fun onTimelineChanged(
 			timeline : Timeline?,
 			manifest : Any?,
@@ -100,7 +109,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			log.d("exoPlayer onTimelineChanged manifest=$manifest reason=$reason")
 		}
 		
-		override fun onSeekProcessed(){
+		override fun onSeekProcessed() {
 		}
 		
 		override fun onShuffleModeEnabledChanged(shuffleModeEnabled : Boolean) {
@@ -159,6 +168,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		outState ?: return
 		
 		outState.putInt(EXTRA_IDX, idx)
+		outState.putInt(EXTRA_SERVICE_TYPE, serviceType.ordinal)
 		outState.putString(EXTRA_DATA, encodeMediaList(media_list))
 	}
 	
@@ -171,8 +181,15 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 		this.idx = savedInstanceState?.getInt(EXTRA_IDX) ?: intent.getIntExtra(EXTRA_IDX, idx)
 		
+		this.serviceType = ServiceType.values()[
+			savedInstanceState?.getInt(EXTRA_SERVICE_TYPE)
+				?: intent.getIntExtra(EXTRA_SERVICE_TYPE, 0)
+		]
+		
 		this.media_list = decodeMediaList(
-			savedInstanceState?.getString(EXTRA_DATA) ?: intent.getStringExtra(EXTRA_DATA)
+			serviceType,
+			savedInstanceState?.getString(EXTRA_DATA)
+				?: intent.getStringExtra(EXTRA_DATA)
 		)
 		
 		if(idx < 0 || idx >= media_list.size) idx = 0
@@ -314,7 +331,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				App1.getAppState(this).handler,
 				mediaSourceEventListener
 			)
-
+		
 		exoPlayer.prepare(mediaSource)
 		exoPlayer.playWhenReady = true
 		if(TootAttachmentLike.TYPE_GIFV == ta.type) {
@@ -325,7 +342,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		}
 	}
 	
-	val mediaSourceEventListener = object: MediaSourceEventListener{
+	val mediaSourceEventListener = object : MediaSourceEventListener {
 		override fun onLoadStarted(
 			dataSpec : DataSpec?,
 			dataType : Int,
@@ -405,7 +422,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			error : IOException?,
 			wasCanceled : Boolean
 		) {
-			if( error != null) {
+			if(error != null) {
 				showError(error.withCaption("load error."))
 			}
 		}
@@ -462,10 +479,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				val request = okhttp3.Request.Builder()
 					.url(url)
 					.cacheControl(App1.CACHE_5MIN)
-					.addHeader("Accept","image/webp,image/*,*/*;q=0.8")
+					.addHeader("Accept", "image/webp,image/*,*/*;q=0.8")
 					.build()
 				
-				if(! client.sendRequest(result,cached = true) {
+				if(! client.sendRequest(result, cached = true) {
 						request
 					}) return result
 				
@@ -474,7 +491,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				if(! response.isSuccessful) {
 					return result.setError(TootApiClient.formatResponse(response, result.caption))
 				}
-//				log.d("cached=${ response.cacheResponse() != null }")
+				//				log.d("cached=${ response.cacheResponse() != null }")
 				
 				try {
 					result.data = ProgressResponseBody.bytes(response) { bytesRead, bytesTotal ->
@@ -528,16 +545,16 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				R.id.btnPrevious -> loadDelta(- 1)
 				R.id.btnNext -> loadDelta(+ 1)
 				R.id.btnDownload -> download(media_list[idx])
-			
-			//			case R.id.btnBrowser:
-			//				share( Intent.ACTION_VIEW, media_list.get( idx ) );
-			//				break;
-			//			case R.id.btnShare:
-			//				share( Intent.ACTION_SEND, media_list.get( idx ) );
-			//				break;
-			//			case R.id.btnCopy:
-			//				copy( media_list.get( idx ) );
-			//				break;
+				
+				//			case R.id.btnBrowser:
+				//				share( Intent.ACTION_VIEW, media_list.get( idx ) );
+				//				break;
+				//			case R.id.btnShare:
+				//				share( Intent.ACTION_SEND, media_list.get( idx ) );
+				//				break;
+				//			case R.id.btnCopy:
+				//				copy( media_list.get( idx ) );
+				//				break;
 				
 				R.id.btnMore -> more(media_list[idx])
 			}

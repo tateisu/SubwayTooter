@@ -18,14 +18,12 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
-import org.json.JSONArray
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
 
 @Suppress("MemberVisibilityCanPrivate")
-class TootStatus(parser : TootParser, src : JSONObject) :
-	TimelineItem() {
+class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	val json : JSONObject
 	
@@ -47,15 +45,22 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 	// ステータスID。
 	// host_access が null の場合は投稿元タンスでのIDかもしれない。
 	// 取得に失敗するとINVALID_IDになる
-	val id : Long
+	// Misskeyでは文字列のID。
+	val id : EntityId
+	
+	// misskey ではページネーションにIDではなくエポック秒を使う
+	private val _orderId : EntityId
+	
+	override fun getOrderId() = _orderId
+	
+//	val isMisskey :Boolean
+//		get()= id is EntityIdString
 	
 	// The TootAccount which posted the status
 	val accountRef : TootAccountRef
 	
 	val account : TootAccount
-		get() {
-			return TootAccountMap.find(accountRef.id)
-		}
+		get() = TootAccountMap.find(accountRef.mapId)
 	
 	//The number of reblogs for the status
 	var reblogs_count : Long? = null  // アプリから変更する。検索サービスでは提供されない(null)
@@ -100,7 +105,7 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 	private val created_at : String?
 	
 	//	null or the ID of the status it replies to
-	val in_reply_to_id : String?
+	val in_reply_to_id : EntityId?
 	
 	//	null or the ID of the account it replies to
 	private val in_reply_to_account_id : String?
@@ -166,7 +171,11 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 			this.url = "https://$instance/notes/$misskeyId"
 			this.created_at = src.parseString("createdAt")
 			this.time_created_at = parseTime(this.created_at)
-			this.id = INVALID_ID
+			this.id = EntityIdString( src.parseString("id") ?: error("missing id") )
+			
+			// ページネーションには日時を使う
+			this._orderId = EntityIdLong(time_created_at)
+
 			
 			// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
 			this.custom_emojis = null
@@ -183,11 +192,20 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 			
 			this.reblogged = false
 			this.favourited = false
-			
-			this.media_attachments = parseMediaAttachmentMisskey(src.optJSONArray("media"))
+
 			this.visibility = src.parseString("visibility")
-			this.sensitive = src.optBoolean("sensitive")
+			// TODO Misskey has "visibleUserIds": string[],
 			
+			this.media_attachments = parseListOrNull(::TootAttachment,parser,src.optJSONArray("media"))
+			
+			// Misskeyは画像毎にNSFWフラグがある。どれか１枚でもNSFWならトゥート全体がNSFWということにする
+			var bv = src.optBoolean("sensitive")
+			media_attachments?.forEach {
+				if( (it as? TootAttachment)?.isSensitive == true){
+					bv =true
+				}
+			}
+			this.sensitive = bv
 			
 			this.in_reply_to_id = null
 			this.in_reply_to_account_id = null
@@ -273,14 +291,14 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 				ServiceType.MASTODON -> {
 					this.host_access = parser.linkHelper.host
 					
-					this.id = src.parseLong("id") ?: INVALID_ID
+					this.id = EntityIdLong(src.parseLong("id") ?: INVALID_ID)
 					
 					this.reblogged = src.optBoolean("reblogged")
 					this.favourited = src.optBoolean("favourited")
 					
 					this.time_created_at = parseTime(this.created_at)
 					this.media_attachments =
-						parseListOrNull(::TootAttachment, src.optJSONArray("media_attachments"), log)
+						parseListOrNull(::TootAttachment, parser,src.optJSONArray("media_attachments"), log)
 					this.visibility = src.parseString("visibility")
 					this.sensitive = src.optBoolean("sensitive")
 					
@@ -290,11 +308,11 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 					this.host_access = null
 					
 					// 投稿元タンスでのIDを調べる。失敗するかもしれない
-					this.id = findStatusIdFromUri(uri, url)
+					this.id = findStatusIdFromUri(uri, url) ?: error("missing id")
 					
 					this.time_created_at = TootStatus.parseTime(this.created_at)
 					this.media_attachments =
-						parseListOrNull(::TootAttachment, src.optJSONArray("media_attachments"), log)
+						parseListOrNull(::TootAttachment, parser,src.optJSONArray("media_attachments"), log)
 					this.visibility = VISIBILITY_PUBLIC
 					this.sensitive = src.optBoolean("sensitive")
 					
@@ -304,7 +322,7 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 					this.host_access = null
 					
 					// MSPのデータはLTLから呼んだものなので、常に投稿元タンスでのidが得られる
-					this.id = src.parseLong("id") ?: INVALID_ID
+					this.id = EntityIdLong(src.parseLong("id") ?: INVALID_ID)
 					
 					this.time_created_at = parseTimeMSP(created_at)
 					this.media_attachments =
@@ -312,10 +330,12 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 					this.visibility = VISIBILITY_PUBLIC
 					this.sensitive = src.optInt("sensitive", 0) != 0
 				}
-				else-> error("will not happen")
+				
+				ServiceType.MISSKEY-> error("will not happen")
 			}
 			
-			this.in_reply_to_id = src.parseString("in_reply_to_id")
+			this._orderId = this.id
+			this.in_reply_to_id = EntityId.mayNull( src.parseLong("in_reply_to_id"))
 			this.in_reply_to_account_id = src.parseString("in_reply_to_account_id")
 			this.mentions = parseListOrNull(::TootMention, src.optJSONArray("mentions"), log)
 			this.tags = parseListOrNull(::TootTag, src.optJSONArray("tags"))
@@ -383,46 +403,7 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 		}
 	}
 	
-	private fun parseMediaAttachmentMisskey2(src : JSONObject?) : TootAttachment? {
-		src?: return null
 
-		val mimeType = src.parseString("type")
-		val url = src.parseString("url")
-		val thumbnailUrl = src.parseString("thumbnailUrl")
-		val dst = JSONObject()
-		dst.put("id",-1L)
-		dst.put("type", when{
-			mimeType?.startsWith("image/") ==true -> TootAttachmentLike.TYPE_IMAGE
-			mimeType?.startsWith("video/") ==true -> TootAttachmentLike.TYPE_VIDEO
-			else-> TootAttachmentLike.TYPE_UNKNOWN
-		})
-		dst.put("url",url)
-		dst.put("remote_url",url)
-		dst.put("text_url",url)
-		dst.put("preview_url",thumbnailUrl)
-		dst.put("description",src.parseString("comment"))
-		
-		return parseItem(::TootAttachment,dst)
-	}
-
-	private fun parseMediaAttachmentMisskey(src : JSONArray?) : ArrayList<TootAttachmentLike>? {
-		var rv :ArrayList<TootAttachmentLike>? = null
-		if(src!=null){
-			for(i in 0 until  src.length() ){
-				val item = try{
-					parseMediaAttachmentMisskey2(src.optJSONObject(i))
-				}catch(ex:Throwable){
-					log.e(ex,"parseMediaAttachmentMisskey")
-					null
-				}
-				if( item != null ){
-					if(rv==null) rv = ArrayList()
-					rv.add(item)
-				}
-			}
-		}
-		return rv
-	}
 	
 	///////////////////////////////////////////////////
 	// ユーティリティ
@@ -430,8 +411,7 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 	val hostAccessOrOriginal : String
 		get() = validHost(host_access) ?: validHost(host_original) ?: "(null)"
 	
-	// id != -1L ? id : findStatusIdFromUri();
-	val idAccessOrOriginal : Long
+	val idAccessOrOriginal : EntityId
 		get() = id
 	
 	val busyKey : String
@@ -709,7 +689,7 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 		}
 		
 		// 投稿元タンスでのステータスIDを調べる
-		fun findStatusIdFromUri(uri : String?, url : String?) : Long {
+		fun findStatusIdFromUri(uri : String?, url : String?) : EntityId? {
 			
 			// pleromaのuriやURL からはステータスIDは取れません
 			// uri https://pleroma.miniwa.moe/objects/d6e83d3c-cf9e-46ac-8245-f91716088e17
@@ -719,15 +699,15 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 				if(uri?.isNotEmpty() == true) {
 					// https://friends.nico/users/(who)/statuses/(status_id)
 					var m = reTootUriAP1.matcher(uri)
-					if(m.find()) return m.group(2).toLong(10)
+					if(m.find()) return EntityIdLong(m.group(2).toLong(10))
 					
 					// tag:mstdn.osaka,2017-12-19:objectId=5672321:objectType=Status
 					m = reTootUriOS.matcher(uri)
-					if(m.find()) return m.group(2).toLong(10)
+					if(m.find()) return EntityIdLong(m.group(2).toLong(10))
 					
 					//
 					m = reTootUriAP2.matcher(uri)
-					if(m.find()) return m.group(2).toLong(10)
+					if(m.find()) return EntityIdLong(m.group(2).toLong(10))
 					
 					log.e("can't parse status uri: $uri")
 				}
@@ -736,11 +716,11 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 					
 					// https://friends.nico/users/(who)/statuses/(status_id)
 					var m = reTootUriAP1.matcher(url)
-					if(m.find()) return m.group(2).toLong(10)
+					if(m.find()) return EntityIdLong(m.group(2).toLong(10))
 					
 					// https://friends.nico/@(who)/(status_id)
 					m = reTootUriAP2.matcher(url)
-					if(m.find()) return m.group(2).toLong(10)
+					if(m.find()) return EntityIdLong(m.group(2).toLong(10))
 					
 					
 					log.e("can't parse status URL: $url")
@@ -750,7 +730,7 @@ class TootStatus(parser : TootParser, src : JSONObject) :
 				log.e(ex, "can't parse status number: $uri,$url")
 			}
 			
-			return INVALID_ID
+			return null
 		}
 		
 	}

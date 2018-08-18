@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.api.entity.parseList
@@ -31,7 +32,7 @@ object Action_ListMember {
 	fun add(
 		activity : ActMain,
 		access_info : SavedAccount,
-		list_id : Long,
+		list_id : EntityId,
 		local_who : TootAccount,
 		bFollow : Boolean,
 		callback : Callback?
@@ -45,6 +46,7 @@ object Action_ListMember {
 				
 				var result : TootApiResult?
 				
+				// TODO: リスト追加時に 422 既に登録されてます みたいなエラーが出る
 				if(bFollow) {
 					val relation : TootRelationShip?
 					if(access_info.isLocalUser(local_who)) {
@@ -185,7 +187,7 @@ object Action_ListMember {
 	fun delete(
 		activity : ActMain,
 		access_info : SavedAccount,
-		list_id : Long,
+		list_id : EntityId,
 		local_who : TootAccount,
 		callback : Callback?
 	) {

@@ -196,11 +196,10 @@ object Action_User {
 		access_info : SavedAccount,
 		who : TootAccount
 	) {
-		if(access_info.isPseudo) {
-			// ココを通る動線はないっぽいが、念のため
-			profileFromAnotherAccount(activity, pos, access_info, who)
-		} else {
-			activity.addColumn(pos, access_info, Column.TYPE_PROFILE, who.id)
+		when {
+			access_info.isMisskey -> activity.addColumn(pos, access_info, Column.TYPE_PROFILE, who.id)
+			access_info.isPseudo -> profileFromAnotherAccount(activity, pos, access_info, who)
+			else -> activity.addColumn(pos, access_info, Column.TYPE_PROFILE, who.id)
 		}
 	}
 	

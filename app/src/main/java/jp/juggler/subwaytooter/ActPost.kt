@@ -260,7 +260,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	
 	private lateinit var account_list : ArrayList<SavedAccount>
 	
-	private var redraft_status_id : Long = 0L
+	private var redraft_status_id : EntityId? = null
 	
 	private val text_watcher : TextWatcher = object : TextWatcher {
 		override fun beforeTextChanged(charSequence : CharSequence, i : Int, i1 : Int, i2 : Int) {
@@ -293,7 +293,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	
 	/////////////////////////////////////////////////
 	
-	internal var in_reply_to_id = - 1L
+	internal var in_reply_to_id :EntityId? = null
 	internal var in_reply_to_text : String? = null
 	internal var in_reply_to_image : String? = null
 	internal var in_reply_to_url : String? = null
@@ -415,7 +415,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			mushroom_input = savedInstanceState.getInt(STATE_MUSHROOM_INPUT, 0)
 			mushroom_start = savedInstanceState.getInt(STATE_MUSHROOM_START, 0)
 			mushroom_end = savedInstanceState.getInt(STATE_MUSHROOM_END, 0)
-			redraft_status_id = savedInstanceState.getLong(STATE_REDRAFT_STATUS_ID)
+			redraft_status_id = EntityId.from( savedInstanceState, STATE_REDRAFT_STATUS_ID)
 			
 			sv = savedInstanceState.getString(STATE_URI_CAMERA_IMAGE)
 			if(sv?.isNotEmpty() == true) {
@@ -464,7 +464,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						val array = sv.toJsonArray()
 						for(i in 0 until array.length()) {
 							try {
-								val a = parseItem(::TootAttachment, array.optJSONObject(i))
+								val a = parseItem(::TootAttachment, ServiceType.MASTODON,array.optJSONObject(i))
 								if(a != null) attachment_list.add(PostAttachment(a))
 							} catch(ex : Throwable) {
 								log.trace(ex)
@@ -477,7 +477,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				}
 			}
 			
-			this.in_reply_to_id = savedInstanceState.getLong(KEY_IN_REPLY_TO_ID, - 1L)
+			this.in_reply_to_id = EntityId.from(savedInstanceState,KEY_IN_REPLY_TO_ID)
 			this.in_reply_to_text = savedInstanceState.getString(KEY_IN_REPLY_TO_TEXT)
 			this.in_reply_to_image = savedInstanceState.getString(KEY_IN_REPLY_TO_IMAGE)
 			this.in_reply_to_url = savedInstanceState.getString(KEY_IN_REPLY_TO_URL)
@@ -730,7 +730,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		outState.putInt(STATE_MUSHROOM_INPUT, mushroom_input)
 		outState.putInt(STATE_MUSHROOM_START, mushroom_start)
 		outState.putInt(STATE_MUSHROOM_END, mushroom_end)
-		outState.putLong(STATE_REDRAFT_STATUS_ID, redraft_status_id)
+		redraft_status_id?.putTo(outState,STATE_REDRAFT_STATUS_ID)
 		if(uriCameraImage != null) {
 			outState.putString(STATE_URI_CAMERA_IMAGE, uriCameraImage.toString())
 		}
@@ -755,7 +755,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			outState.putString(KEY_ATTACHMENT_LIST, array.toString())
 		}
 		
-		outState.putLong(KEY_IN_REPLY_TO_ID, in_reply_to_id)
+		in_reply_to_id?.putTo(outState,KEY_IN_REPLY_TO_ID)
 		outState.putString(KEY_IN_REPLY_TO_TEXT, in_reply_to_text)
 		outState.putString(KEY_IN_REPLY_TO_IMAGE, in_reply_to_image)
 		outState.putString(KEY_IN_REPLY_TO_URL, in_reply_to_url)
@@ -1042,7 +1042,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			return
 		}
 		
-		if(redraft_status_id != 0L) {
+		if(redraft_status_id !=null ) {
 			// 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
 			showToast(this, false, R.string.cant_change_account_when_redraft)
 			return
@@ -1056,7 +1056,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		) { ai ->
 			
 			// 別タンスのアカウントに変更したならならin_reply_toの変換が必要
-			if(in_reply_to_id != - 1L && ! ai.host.equals(account?.host, ignoreCase = true)) {
+			if(in_reply_to_id !=null && ! ai.host.equals(account?.host, ignoreCase = true)) {
 				startReplyConversion(ai)
 			}
 			
@@ -1260,7 +1260,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 											)
 										)
 										new_attachment =
-											parseItem(::TootAttachment, result?.jsonObject)
+											parseItem(::TootAttachment, ServiceType.MASTODON,result?.jsonObject)
 										return result
 									} catch(ex : Throwable) {
 										return TootApiResult(ex.withCaption("set focus point failed."))
@@ -1346,7 +1346,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				)
 				val request_builder = Request.Builder().put(request_body)
 				val result = client.request("/api/v1/media/$attachment_id", request_builder)
-				new_attachment = parseItem(::TootAttachment, result?.jsonObject)
+				new_attachment = parseItem(::TootAttachment, ServiceType.MASTODON,result?.jsonObject)
 				return result
 			}
 			
@@ -1629,7 +1629,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
-						val a = parseItem(::TootAttachment, jsonObject)
+						val a = parseItem(::TootAttachment,ServiceType.MASTODON, jsonObject)
 						if(a == null) {
 							result.error = "TootAttachment.parse failed"
 						} else {
@@ -1907,10 +1907,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		post_helper.post(account) { target_account, status ->
 			val data = Intent()
 			data.putExtra(EXTRA_POSTED_ACCT, target_account.acct)
-			data.putExtra(EXTRA_POSTED_STATUS_ID, status.id)
-			data.putExtra(EXTRA_POSTED_REDRAFT_ID, redraft_status_id)
-			val reply_id = status.in_reply_to_id
-			if(reply_id != null) data.putExtra(EXTRA_POSTED_REPLY_ID, reply_id)
+			status.id.putTo(data,EXTRA_POSTED_STATUS_ID )
+			redraft_status_id?.putTo(data,EXTRA_POSTED_REDRAFT_ID )
+			status.in_reply_to_id?.putTo(data,EXTRA_POSTED_REPLY_ID)
 			setResult(RESULT_OK, data)
 			isPostComplete = true
 			this@ActPost.finish()
@@ -1918,7 +1917,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	}
 	
 	internal fun showReplyTo() {
-		if(in_reply_to_id == - 1L) {
+		if(in_reply_to_id == null) {
 			llReply.visibility = View.GONE
 		} else {
 			llReply.visibility = View.VISIBLE
@@ -1934,7 +1933,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	}
 	
 	private fun removeReply() {
-		in_reply_to_id = - 1L
+		in_reply_to_id = null
 		in_reply_to_text = null
 		in_reply_to_image = null
 		in_reply_to_url = null
@@ -1980,7 +1979,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			json.put(DRAFT_VISIBILITY, visibility)
 			json.put(DRAFT_ACCOUNT_DB_ID, account?.db_id ?: - 1L)
 			json.put(DRAFT_ATTACHMENT_LIST, tmp_attachment_list)
-			json.put(DRAFT_REPLY_ID, in_reply_to_id)
+			in_reply_to_id?.putTo(json,DRAFT_REPLY_ID)
 			json.put(DRAFT_REPLY_TEXT, in_reply_to_text)
 			json.put(DRAFT_REPLY_IMAGE, in_reply_to_image)
 			json.put(DRAFT_REPLY_URL, in_reply_to_url)
@@ -2031,7 +2030,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						val ie = tmp_attachment_list.length()
 						while(i < ie) {
 							val ta =
-								parseItem(::TootAttachment, tmp_attachment_list.optJSONObject(i))
+								parseItem(::TootAttachment, ServiceType.MASTODON,tmp_attachment_list.optJSONObject(i))
 							val text_url = ta?.text_url
 							if(text_url?.isNotEmpty() == true) {
 								content = content.replace(text_url, "")
@@ -2065,7 +2064,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				
 				api_client.account = account
 				
-				if(in_reply_to_id != - 1L) {
+				if( in_reply_to_id !=null ) {
 					val result = api_client.request("/api/v1/statuses/$in_reply_to_id")
 					if(isCancelled) return null
 					val jsonObject = result?.jsonObject
@@ -2080,7 +2079,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					var isSomeAttachmentRemoved = false
 					for(i in tmp_attachment_list.length() - 1 downTo 0) {
 						if(isCancelled) return null
-						val ta = parseItem(::TootAttachment, tmp_attachment_list.optJSONObject(i))
+						val ta = parseItem(::TootAttachment, ServiceType.MASTODON,tmp_attachment_list.optJSONObject(i))
 						if(ta == null) {
 							isSomeAttachmentRemoved = true
 							tmp_attachment_list.remove(i)
@@ -2122,7 +2121,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				val content_warning_checked = draft.optBoolean(DRAFT_CONTENT_WARNING_CHECK)
 				val nsfw_checked = draft.optBoolean(DRAFT_NSFW_CHECK)
 				val tmp_attachment_list = draft.optJSONArray(DRAFT_ATTACHMENT_LIST)
-				val reply_id = draft.parseLong(DRAFT_REPLY_ID) ?: - 1L
+				val reply_id = EntityId.from(draft,DRAFT_REPLY_ID)
 				val reply_text = draft.optString(DRAFT_REPLY_TEXT, null)
 				val reply_image = draft.optString(DRAFT_REPLY_IMAGE, null)
 				val reply_url = draft.optString(DRAFT_REPLY_URL, null)
@@ -2158,7 +2157,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					var i = 0
 					val ie = tmp_attachment_list.length()
 					while(i < ie) {
-						val ta = parseItem(::TootAttachment, tmp_attachment_list.optJSONObject(i))
+						val ta = parseItem(::TootAttachment, ServiceType.MASTODON,tmp_attachment_list.optJSONObject(i))
 						if(ta != null) {
 							val pa = PostAttachment(ta)
 							attachment_list.add(pa)
@@ -2166,7 +2165,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						++ i
 					}
 				}
-				if(reply_id != - 1L) {
+				if(reply_id != null) {
 					in_reply_to_id = reply_id
 					in_reply_to_text = reply_text
 					in_reply_to_image = reply_image

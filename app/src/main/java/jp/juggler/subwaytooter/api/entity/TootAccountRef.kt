@@ -7,13 +7,15 @@ import jp.juggler.subwaytooter.util.DecodeOptions
 
 class TootAccountRef(parser: TootParser, account:TootAccount) : TimelineItem() {
 	
-	val id:Int
+	val mapId:Int
 	//	The account's display name
 	val decoded_display_name : Spannable
 	val decoded_note : Spannable
 	
+	override fun getOrderId() : EntityId = this.get().id
+
 	init{
-		this.id = TootAccountMap.register(parser,account)
+		this.mapId = TootAccountMap.register(parser,account)
 		this.decoded_display_name = account.decodeDisplayName(parser.context)
 		this.decoded_note = DecodeOptions(
 			parser.context,
@@ -35,6 +37,7 @@ class TootAccountRef(parser: TootParser, account:TootAccount) : TimelineItem() {
 				else -> TootAccountRef(parser,account)
 			}
 		}
+		fun notNull(parser: TootParser, account:TootAccount) =TootAccountRef(parser,account)
 		
 		fun wrapList(parser: TootParser,  src : ArrayList<TootAccount>) : ArrayList<TootAccountRef> {
 			val dst = ArrayList<TootAccountRef>()

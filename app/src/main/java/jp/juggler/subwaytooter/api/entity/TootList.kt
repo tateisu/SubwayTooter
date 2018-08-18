@@ -10,25 +10,26 @@ import java.util.regex.Pattern
 import jp.juggler.subwaytooter.util.parseLong
 import jp.juggler.subwaytooter.util.parseString
 
-class TootList(
-	val id : Long,
+class TootList(src : JSONObject): TimelineItem(), Comparable<TootList> {
+
+	val id : EntityId
+
 	val title : String?
-) : TimelineItem(), Comparable<TootList> {
 	
 	// タイトルの数字列部分は数字の大小でソートされるようにしたい
 	private val title_for_sort : ArrayList<Any>?
+	
 	
 	// 内部で使用する
 	var isRegistered : Boolean = false
 	
 	init {
+		id = EntityIdLong(src.parseLong("id") ?: error("missing id"))
+		title = src.parseString("title")
 		this.title_for_sort = makeTitleForSort(this.title)
 	}
 	
-	constructor(src : JSONObject) : this(
-		id = src.parseLong("id") ?: - 1L,
-		title = src.parseString("title")
-	)
+	override fun getOrderId() = id
 	
 	companion object {
 		private var log = LogCategory("TootList")

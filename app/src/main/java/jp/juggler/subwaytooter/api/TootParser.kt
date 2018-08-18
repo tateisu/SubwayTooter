@@ -14,7 +14,8 @@ class TootParser(
 	val linkHelper : LinkHelper,
 	var pinned : Boolean = false, // プロフィールカラムからpinned TL を読んだ時だけ真
 	var highlightTrie : WordTrieTree? = null,
-	var serviceType : ServiceType = ServiceType.MASTODON
+	var serviceType : ServiceType = ServiceType.MASTODON,
+	var misskeyDecodeProfilePin :Boolean = false
 ) {
 	
 	fun account(src : JSONObject?) = parseItem(::TootAccount, this, src)

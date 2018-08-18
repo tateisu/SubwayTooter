@@ -349,27 +349,32 @@ class ColumnViewHolder(
 				return
 			}
 			
-			val sp = column.scroll_save ?: //復元後にもここを通るがこれは正常である
-			// warning.d( "restoreScrollPosition [%d] %s , column has no saved scroll position.", page_idx, column.getColumnName( true ) );
-			return
+			//復元後にもここを通るがこれは正常である
+			val sp = column.scroll_save
+			if(sp==null) {
+				log.d(
+					"restoreScrollPosition [$page_idx] %s , column has no saved scroll position."
+					, column.getColumnName( true )
+				)
+				return
+			}
 			
 			column.scroll_save = null
 			
 			if(listView.visibility != View.VISIBLE) {
 				log.d(
-					"restoreScrollPosition [%d] %s , listView is not visible. saved position %s,%s is dropped.",
-					page_idx,
-					column.getColumnName(true),
-					sp.adapterIndex,
-					sp.offset
+					"restoreScrollPosition [$page_idx] %s , listView is not visible. saved position %s,%s is dropped."
+					,column.getColumnName(true)
+					,sp.adapterIndex
+					,sp.offset
 				)
 			} else {
 				log.d(
-					"restoreScrollPosition [%d] %s , listView is visible. resume %s,%s",
-					page_idx,
-					column.getColumnName(true),
-					sp.adapterIndex,
-					sp.offset
+					"restoreScrollPosition [%d] %s , listView is visible. resume %s,%s"
+					,page_idx
+					,column.getColumnName(true)
+					,sp.adapterIndex
+					,sp.offset
 				)
 				sp.restore(this@ColumnViewHolder)
 			}
@@ -736,7 +741,7 @@ class ColumnViewHolder(
 			return
 		}
 		
-		column.startRefresh(false, direction == SwipyRefreshLayoutDirection.BOTTOM, - 1L, - 1)
+		column.startRefresh(false, direction == SwipyRefreshLayoutDirection.BOTTOM )
 	}
 	
 	override fun onCheckedChanged(view : CompoundButton, isChecked : Boolean) {
@@ -1047,7 +1052,7 @@ class ColumnViewHolder(
 		showToast(activity, true, refreshError)
 	}
 	
-	private fun saveScrollPosition() {
+	fun saveScrollPosition() {
 		val column = this.column
 		when {
 			column == null -> log.d("saveScrollPosition [%d] , column==null", page_idx)

@@ -8,7 +8,7 @@ import jp.juggler.subwaytooter.util.parseLong
 class TootRelationShip(src : JSONObject) {
 	
 	// Target account id
-	val id : Long
+	val id : EntityId?
 	
 	// Whether the authorized user is currently following the target account.
 	// maybe faked in response of follow-request.
@@ -32,7 +32,7 @@ class TootRelationShip(src : JSONObject) {
 	val showing_reblogs : Int
 	
 	init {
-		this.id = src.parseLong("id") ?: - 1L
+		this.id = EntityId.mayNull(src.parseLong("id") )
 		
 		var ov = src.opt("following")
 		if(ov is JSONObject) {

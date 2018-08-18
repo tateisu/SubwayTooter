@@ -70,11 +70,11 @@ class PostHelper(
 	var spoiler_text : String? = null
 	var visibility : String? = null
 	var bNSFW : Boolean = false
-	var in_reply_to_id : Long = 0
+	var in_reply_to_id : EntityId? = null
 	var attachment_list : ArrayList<PostAttachment>? = null
 	var enquete_items : ArrayList<String>? = null
 	var emojiMapCustom : HashMap<String, CustomEmoji>? = null
-	var redraft_status_id : Long = 0L
+	var redraft_status_id : EntityId? = null
 	
 	private var last_post_tapped : Long = 0L
 	
@@ -182,7 +182,7 @@ class PostHelper(
 			}
 		}
 		
-		if(! bConfirmRedraft && redraft_status_id != 0L) {
+		if(! bConfirmRedraft && redraft_status_id !=null ) {
 			AlertDialog.Builder(activity)
 				.setCancelable(true)
 				.setMessage(R.string.delete_base_status_before_toot)
@@ -246,7 +246,7 @@ class PostHelper(
 				var result : TootApiResult?
 				
 				// 元の投稿を削除する
-				if(redraft_status_id != 0L) {
+				if(redraft_status_id != null ) {
 					result = client.request(
 						"/api/v1/statuses/$redraft_status_id",
 						Request.Builder().delete()
@@ -295,9 +295,14 @@ class PostHelper(
 						)
 					)
 					
-					if(in_reply_to_id != - 1L) {
-						json.put("in_reply_to_id", in_reply_to_id)
+					if( in_reply_to_id != null){
+						if( account.isMisskey){
+							// TODO
+						}else{
+							json.put("in_reply_to_id",in_reply_to_id.toLong())
+						}
 					}
+
 					var array = JSONArray()
 					if(attachment_list != null) {
 						for(pa in attachment_list) {

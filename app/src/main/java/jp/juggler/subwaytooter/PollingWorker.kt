@@ -46,6 +46,7 @@ import java.util.concurrent.atomic.AtomicReference
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 import okhttp3.Call
@@ -1502,7 +1503,8 @@ class PollingWorker private constructor(c : Context) {
 				
 				val nt = NotificationTracking.load(account.db_id)
 				
-				if(item.notification.time_created_at == nt.post_time && item.notification.id == nt.post_id) {
+				if(item.notification.time_created_at == nt.post_time
+					&& item.notification.id.toLong() == nt.post_id) {
 					// 先頭にあるデータが同じなら、通知を更新しない
 					// このマーカーは端末再起動時にリセットされるので、再起動後は通知が出るはず
 					
@@ -1511,7 +1513,7 @@ class PollingWorker private constructor(c : Context) {
 					return
 				}
 				
-				nt.updatePost(item.notification.id, item.notification.time_created_at)
+				nt.updatePost(item.notification.id.toLong(), item.notification.time_created_at)
 				
 				log.d("showNotification[${account.acct}] creating notification(1)")
 				
@@ -1673,7 +1675,7 @@ class PollingWorker private constructor(c : Context) {
 				
 				val nr = NotificationTracking.load(data.account_db_id)
 				
-				val duplicate_check = HashSet<Long>()
+				val duplicate_check = HashSet<EntityId>()
 				
 				val dst_array = ArrayList<JSONObject>()
 				try {
@@ -1683,7 +1685,7 @@ class PollingWorker private constructor(c : Context) {
 						val array = last_data.toJsonArray()
 						for(i in array.length() - 1 downTo 0) {
 							val src = array.optJSONObject(i)
-							val id = src.parseLong("id")
+							val id = EntityId.mayNull( src.parseLong("id") )
 							if(id != null) {
 								dst_array.add(src)
 								duplicate_check.add(id)

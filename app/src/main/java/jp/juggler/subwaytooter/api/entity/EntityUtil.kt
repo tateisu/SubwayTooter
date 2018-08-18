@@ -48,6 +48,26 @@ inline fun <reified T> parseList(
 	return dst
 }
 
+inline fun <reified T> parseList(
+	factory : (serviceType : ServiceType, src : JSONObject) -> T,
+	serviceType : ServiceType,
+	src : JSONArray?,
+	log : LogCategory = EntityUtil.log
+) : ArrayList<T> {
+	val dst = ArrayList<T>()
+	if(src != null) {
+		val src_length = src.length()
+		if(src_length > 0) {
+			dst.ensureCapacity(src_length)
+			for(i in 0 until src.length()) {
+				val item = parseItem(factory, serviceType, src.optJSONObject(i), log)
+				if(item != null) dst.add(item)
+			}
+		}
+	}
+	return dst
+}
+
 inline fun <reified T> parseListOrNull(
 	factory : (src : JSONObject) -> T,
 	src : JSONArray?,
@@ -115,6 +135,22 @@ inline fun <reified T> parseItem(
 	if(src == null) return null
 	return try {
 		factory(parser, src)
+	} catch(ex : Throwable) {
+		log.trace(ex)
+		log.e(ex, "${T::class.simpleName} parse failed.")
+		null
+	}
+}
+
+inline fun <reified T> parseItem(
+	factory : (serviceType : ServiceType, src : JSONObject) -> T,
+	serviceType : ServiceType,
+	src : JSONObject?,
+	log : LogCategory = EntityUtil.log
+) : T? {
+	if(src == null) return null
+	return try {
+		factory(serviceType, src)
 	} catch(ex : Throwable) {
 		log.trace(ex)
 		log.e(ex, "${T::class.simpleName} parse failed.")

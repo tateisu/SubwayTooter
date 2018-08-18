@@ -6,10 +6,10 @@ import java.util.HashSet
 
 class DuplicateMap {
 	
-	private val set_status_id = HashSet<Long>()
-	private val set_notification_id = HashSet<Long>()
-	private val set_report_id = HashSet<Long>()
-	private val set_account_id = HashSet<Long>()
+	private val set_status_id = HashSet<EntityId>()
+	private val set_notification_id = HashSet<EntityId>()
+	private val set_report_id = HashSet<EntityId>()
+	private val set_account_id = HashSet<EntityId>()
 	private val set_status_uri = HashSet<String>()
 	
 	fun clear() {

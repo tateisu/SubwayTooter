@@ -61,16 +61,17 @@ class Column(
 		private const val PATH_DIRECT_MESSAGES = "/api/v1/timelines/direct?limit=$READ_LIMIT"
 		
 		private const val PATH_LOCAL = "/api/v1/timelines/public?limit=$READ_LIMIT&local=true"
+		private const val PATH_TL_FEDERATE = "/api/v1/timelines/public?limit=$READ_LIMIT"
 		private const val PATH_FAVOURITES = "/api/v1/favourites?limit=$READ_LIMIT"
 		private const val PATH_ACCOUNT_STATUSES =
-			"/api/v1/accounts/%d/statuses?limit=$READ_LIMIT" // 1:account_id
+			"/api/v1/accounts/%s/statuses?limit=$READ_LIMIT" // 1:account_id
 		private const val PATH_LIST_TL = "/api/v1/timelines/list/%s?limit=$READ_LIMIT"
 		
 		// アカウントのリストを返すAPI
 		private const val PATH_ACCOUNT_FOLLOWING =
-			"/api/v1/accounts/%d/following?limit=$READ_LIMIT" // 1:account_id
+			"/api/v1/accounts/%s/following?limit=$READ_LIMIT" // 1:account_id
 		private const val PATH_ACCOUNT_FOLLOWERS =
-			"/api/v1/accounts/%d/followers?limit=$READ_LIMIT" // 1:account_id
+			"/api/v1/accounts/%s/followers?limit=$READ_LIMIT" // 1:account_id
 		private const val PATH_MUTES = "/api/v1/mutes?limit=$READ_LIMIT"
 		private const val PATH_BLOCKS = "/api/v1/blocks?limit=$READ_LIMIT"
 		private const val PATH_FOLLOW_REQUESTS = "/api/v1/follow_requests?limit=$READ_LIMIT"
@@ -89,9 +90,9 @@ class Column(
 		private const val PATH_LIST_LIST = "/api/v1/lists?limit=$READ_LIMIT"
 		
 		// リストではなくオブジェクトを返すAPI
-		private const val PATH_ACCOUNT = "/api/v1/accounts/%d" // 1:account_id
-		private const val PATH_STATUSES = "/api/v1/statuses/%d" // 1:status_id
-		private const val PATH_STATUSES_CONTEXT = "/api/v1/statuses/%d/context" // 1:status_id
+		private const val PATH_ACCOUNT = "/api/v1/accounts/%s" // 1:account_id
+		private const val PATH_STATUSES = "/api/v1/statuses/%s" // 1:status_id
+		private const val PATH_STATUSES_CONTEXT = "/api/v1/statuses/%s/context" // 1:status_id
 		const val PATH_SEARCH = "/api/v1/search?q=%s"
 		const val PATH_SEARCH_V2 = "/api/v2/search?q=%s"
 		// search args 1: query(urlencoded) , also, append "&resolve=1" if resolve non-local accounts
@@ -99,6 +100,12 @@ class Column(
 		private const val PATH_LIST_INFO = "/api/v1/lists/%s"
 		
 		const val PATH_FILTERS = "/api/v1/filters"
+		
+		const val PATH_MISSKEY_PROFILE_FOLLOWING = "/api/users/following"
+		const val PATH_MISSKEY_PROFILE_FOLLOWERS = "/api/users/followers"
+		const val PATH_MISSKEY_PROFILE_STATUSES = "/api/users/notes"
+		const val PATH_MISSKEY_PROFILE = "/api/users/show"
+		
 		
 		internal const val KEY_ACCOUNT_ROW_ID = "account_id"
 		internal const val KEY_TYPE = "type"
@@ -308,7 +315,7 @@ class Column(
 	private val streamPath : String?
 		get() {
 			// misskeyの疑似アカウントはストリーミング対応していない
-			if(access_info.isPseudo && access_info.isMisskey) return null
+			if(isMisskey && access_info.isPseudo) return null
 			
 			return when(column_type) {
 				TYPE_HOME, TYPE_NOTIFICATIONS -> "/api/v1/streaming/?stream=user"
@@ -364,10 +371,10 @@ class Column(
 	
 	internal var profile_tab = TAB_STATUS
 	
-	private var status_id : Long = 0
+	private var status_id : EntityId? = null
 	
 	// プロフカラムではアカウントのID。リストカラムではリストのID
-	private var profile_id : Long = 0
+	private var profile_id : EntityId? = null
 	
 	internal var search_query : String = ""
 	internal var search_resolve : Boolean = false
@@ -442,8 +449,10 @@ class Column(
 	private var favMuteSet : HashSet<String>? = null
 	private var highlight_trie : WordTrieTree? = null
 	
-	private var max_id : String = ""
-	private var since_id : String = ""
+	// タイムライン中のデータの始端と終端
+	// misskeyは
+	private var idRecent : EntityId? = null
+	private var idOld : EntityId? = null
 	
 	var bRefreshingTop : Boolean = false
 	
@@ -468,11 +477,11 @@ class Column(
 		}
 	
 	@Suppress("unused")
-	val listId : Long
+	val listId : EntityId?
 		get() {
 			return when(column_type) {
 				TYPE_LIST_MEMBER, TYPE_LIST_TL -> profile_id
-				else -> - 1L
+				else -> null
 			}
 		}
 	
@@ -548,15 +557,25 @@ class Column(
 		
 		when(column_type) {
 			
-			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY -> status_id =
-				src.parseLong(KEY_STATUS_ID) ?: - 1L
+			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY -> status_id = when(isMisskey) {
+				true -> EntityId.mayNull(src.parseString(KEY_STATUS_ID))
+				else -> EntityId.mayNull(src.parseLong(KEY_STATUS_ID))
+			}
 			
 			TYPE_PROFILE -> {
-				profile_id = src.parseLong(KEY_PROFILE_ID) ?: - 1L
+				profile_id = when(isMisskey) {
+					true -> EntityId.mayNull(src.parseString(KEY_PROFILE_ID))
+					else -> EntityId.mayNull(src.parseLong(KEY_PROFILE_ID))
+				}
 				profile_tab = src.optInt(KEY_PROFILE_TAB)
 			}
 			
-			TYPE_LIST_MEMBER, TYPE_LIST_TL -> profile_id = src.parseLong(KEY_PROFILE_ID) ?: - 1L
+			TYPE_LIST_MEMBER, TYPE_LIST_TL -> {
+				profile_id = when(isMisskey) {
+					true -> EntityId.mayNull(src.parseString(KEY_PROFILE_ID))
+					else -> EntityId.mayNull(src.parseLong(KEY_PROFILE_ID))
+				}
+			}
 			
 			TYPE_HASHTAG -> hashtag = src.optString(KEY_HASHTAG)
 			
@@ -632,15 +651,17 @@ class Column(
 		return try {
 			when(type) {
 				
-				TYPE_PROFILE, TYPE_LIST_TL, TYPE_LIST_MEMBER -> getParamAt<Long>(
-					params,
-					0
-				) == profile_id
+				TYPE_PROFILE, TYPE_LIST_TL, TYPE_LIST_MEMBER ->
+					profile_id == when(isMisskey) {
+						true -> EntityIdString(getParamAt(params, 0))
+						else -> EntityIdLong(getParamAt(params, 0))
+					}
 				
-				TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY -> getParamAt<Long>(
-					params,
-					0
-				) == status_id
+				TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY ->
+					status_id == when(isMisskey) {
+						true -> EntityIdString(getParamAt(params, 0))
+						else -> EntityIdLong(getParamAt(params, 0))
+					}
 				
 				TYPE_HASHTAG -> getParamAt<String>(params, 0) == hashtag
 				
@@ -685,7 +706,10 @@ class Column(
 				list_info?.title ?: profile_id.toString()
 			)
 			
-			TYPE_CONVERSATION -> context.getString(R.string.conversation_around, status_id)
+			TYPE_CONVERSATION -> context.getString(
+				R.string.conversation_around,
+				(status_id?.toString() ?: "null")
+			)
 			
 			TYPE_HASHTAG -> context.getString(R.string.hashtag_of, hashtag)
 			
@@ -760,7 +784,7 @@ class Column(
 	// ブーストやお気に入りの更新に使う。ステータスを列挙する。
 	fun findStatus(
 		target_instance : String,
-		target_status_id : Long,
+		target_status_id : EntityId,
 		callback : (account : SavedAccount, status : TootStatus) -> Boolean
 		// callback return true if rebind view required
 	) {
@@ -789,7 +813,7 @@ class Column(
 	
 	// ミュート、ブロックが成功した時に呼ばれる
 	// リストメンバーカラムでメンバーをリストから除去した時に呼ばれる
-	fun removeAccountInTimeline(target_account : SavedAccount, who_id : Long) {
+	fun removeAccountInTimeline(target_account : SavedAccount, who_id : EntityId) {
 		if(target_account.acct != access_info.acct) return
 		
 		val INVALID_ACCOUNT = - 1L
@@ -817,7 +841,7 @@ class Column(
 		}
 	}
 	
-	fun removeUser(targetAccount : SavedAccount, columnType : Int, who_id : Long) {
+	fun removeUser(targetAccount : SavedAccount, columnType : Int, who_id : EntityId) {
 		if(column_type == columnType && targetAccount.acct == access_info.acct) {
 			val tmp_list = ArrayList<TimelineItem>(list_data.size)
 			for(o in list_data) {
@@ -835,7 +859,7 @@ class Column(
 	}
 	
 	// ステータスが削除された時に呼ばれる
-	fun onStatusRemoved(tl_host : String, status_id : Long) {
+	fun onStatusRemoved(tl_host : String, status_id : EntityId) {
 		
 		if(is_dispose.get() || bInitialLoading || bRefreshLoading) return
 		
@@ -872,8 +896,8 @@ class Column(
 		bRefreshLoading = false
 		mInitialLoadingError = ""
 		bInitialLoading = false
-		max_id = ""
-		since_id = ""
+		idOld = null
+		idRecent = null
 		
 		list_data.clear()
 		duplicate_map.clear()
@@ -1015,7 +1039,7 @@ class Column(
 	
 	fun onListMemberUpdated(
 		account : SavedAccount,
-		list_id : Long,
+		list_id : EntityId,
 		who : TootAccount,
 		bAdd : Boolean
 	) {
@@ -1165,14 +1189,12 @@ class Column(
 		}
 		
 		if(dont_show_reply) {
-			if(status.in_reply_to_id?.isNotEmpty() == true) return true
-			if(status.reblog?.in_reply_to_id?.isNotEmpty() == true) return true
+			if(status.in_reply_to_id !=null ) return true
+			if(status.reblog?.in_reply_to_id != null ) return true
 		}
 		
 		if(dont_show_normal_toot) {
-			if(status.in_reply_to_id?.isEmpty() != false
-				&& status.reblog == null
-			) return true
+			if(status.in_reply_to_id == null && status.reblog == null ) return true
 		}
 		
 		if(column_regex_filter(status.decoded_content)) return true
@@ -1185,29 +1207,36 @@ class Column(
 	
 	private inline fun <reified T : TimelineItem> addAll(
 		dstArg : ArrayList<TimelineItem>?,
-		src : ArrayList<T>
+		src : List<T>
 	) : ArrayList<TimelineItem> {
-		val dst = dstArg ?: ArrayList()
-		for(item in src) {
-			dst.add(item as TimelineItem)
-		}
+		val dst = dstArg ?: ArrayList(src.size)
+		dst.addAll(src)
 		return dst
 	}
 	
 	private fun addOne(
 		dstArg : ArrayList<TimelineItem>?,
-		item : TimelineItem
+		item : TimelineItem?
 	) : ArrayList<TimelineItem> {
 		val dst = dstArg ?: ArrayList()
-		dst.add(item)
+		if(item != null) dst.add(item)
+		return dst
+	}
+	
+	private fun addOneFirst(
+		dstArg : ArrayList<TimelineItem>?,
+		item : TimelineItem?
+	) : ArrayList<TimelineItem> {
+		val dst = dstArg ?: ArrayList()
+		if(item != null) dst.add(0, item)
 		return dst
 	}
 	
 	private fun addWithFilterStatus(
 		dstArg : ArrayList<TimelineItem>?,
-		src : ArrayList<TootStatus>
+		src : List<TootStatus>
 	) : ArrayList<TimelineItem> {
-		val dst = dstArg ?: ArrayList()
+		val dst = dstArg ?: ArrayList(src.size)
 		for(status in src) {
 			if(! isFiltered(status)) {
 				dst.add(status)
@@ -1218,9 +1247,9 @@ class Column(
 	
 	private fun addWithFilterNotification(
 		dstArg : ArrayList<TimelineItem>?,
-		src : ArrayList<TootNotification>
+		src : List<TootNotification>
 	) : ArrayList<TimelineItem> {
-		val dst = dstArg ?: ArrayList()
+		val dst = dstArg ?: ArrayList(src.size)
 		for(item in src) {
 			if(! isFiltered(item)) dst.add(item)
 		}
@@ -1287,14 +1316,36 @@ class Column(
 		bForceReload : Boolean
 	) : TootApiResult? {
 		return if(bForceReload || this.who_account == null) {
-			val result = client.request(String.format(Locale.JAPAN, PATH_ACCOUNT, profile_id))
-			val parser = TootParser(context, access_info)
-			val a = TootAccountRef.mayNull(parser, parser.account(result?.jsonObject))
-			if(a != null) {
-				this.who_account = a
-				client.publishApiProgress("") // カラムヘッダの再表示
+			
+			if( isMisskey){
+				val params= JSONObject()
+				params.put("userId",profile_id)
+				val result = client.request("/api/users/show",params.toPostRequestBuilder())
+				val parser = TootParser(
+					context,
+					access_info,
+					serviceType = ServiceType.MISSKEY,
+					misskeyDecodeProfilePin = true
+				)
+				val a = TootAccountRef.mayNull(parser, parser.account(result?.jsonObject))
+				if(a != null) {
+					this.who_account = a
+					client.publishApiProgress("") // カラムヘッダの再表示
+				}
+				result
+				
+			}else{
+				val result = client.request(String.format(Locale.JAPAN, PATH_ACCOUNT, profile_id))
+				val parser = TootParser(context, access_info)
+				val a = TootAccountRef.mayNull(parser, parser.account(result?.jsonObject))
+				if(a != null) {
+					this.who_account = a
+					client.publishApiProgress("") // カラムヘッダの再表示
+				}
+				result
+				
 			}
-			result
+			
 		} else {
 			null
 		}
@@ -1315,7 +1366,7 @@ class Column(
 	}
 	
 	private inner class UpdateRelationEnv {
-		internal val who_set = HashSet<Long>()
+		internal val who_set = HashSet<EntityId>()
 		internal val acct_set = HashSet<String>()
 		internal val tag_set = HashSet<String>()
 		
@@ -1352,7 +1403,7 @@ class Column(
 			// アカウントIDの集合からRelationshipを取得してデータベースに記録する
 			size = who_set.size
 			if(size > 0) {
-				val who_list = ArrayList<Long>(size)
+				val who_list = ArrayList<EntityId>(size)
 				who_list.addAll(who_set)
 				
 				val now = System.currentTimeMillis()
@@ -1449,8 +1500,8 @@ class Column(
 		bFirstInitialized = true
 		bInitialLoading = true
 		bRefreshLoading = false
-		max_id = ""
-		since_id = ""
+		idOld = null
+		idRecent = null
 		
 		duplicate_map.clear()
 		list_data.clear()
@@ -1506,19 +1557,16 @@ class Column(
 			fun getStatuses(
 				client : TootApiClient,
 				path_base : String,
-				isMisskey : Boolean = false
+				misskeyParams : JSONObject? = null
 			) : TootApiResult? {
 				
-				val params = JSONObject()
-				if(isMisskey) {
-					parser.serviceType = ServiceType.MISSKEY
-					params.put("limit", 100)
-					if(with_attachment) {
-						params.put("mediaOnly", true)
-					}
-				}
+				val params = misskeyParams ?: makeMisskeyTimelineParameter(parser)
+				
+				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				
 				val time_start = SystemClock.elapsedRealtime()
+				
+				// 初回の取得
 				val result = if(isMisskey) {
 					client.request(path_base, params.toPostRequestBuilder())
 				} else {
@@ -1527,48 +1575,52 @@ class Column(
 				
 				var jsonArray = result?.jsonArray
 				if(jsonArray != null) {
-					if(isMisskey) {
-						saveRangeMisskey(jsonArray, true, true)
-					} else {
-						saveRange(result, true, true)
-					}
 					
-					//
 					var src = parser.statusList(jsonArray)
 					
 					this.list_tmp = addWithFilterStatus(ArrayList(src.size), src)
+					
+					saveRange(true, true, result, src)
+					
 					//
-					val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 					while(true) {
+						
 						if(client.isApiCancelled) {
 							log.d("loading-statuses: cancelled.")
 							break
 						}
+						
 						if(! isFilterEnabled) {
 							log.d("loading-statuses: isFiltered is false.")
 							break
 						}
-						if(max_id.isEmpty()) {
-							log.d("loading-statuses: max_id is empty.")
+						
+						if(idOld == null) {
+							log.d("loading-statuses: idOld is empty.")
 							break
 						}
+						
 						if((list_tmp?.size ?: 0) >= LOOP_READ_ENOUGH) {
 							log.d("loading-statuses: read enough data.")
 							break
 						}
+						
 						if(src.isEmpty()) {
 							log.d("loading-statuses: previous response is empty.")
 							break
 						}
+						
 						if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
 							log.d("loading-statuses: timeout.")
 							break
 						}
+						
+						// フィルタなどが有効な場合は2回目以降の取得
 						val result2 = if(isMisskey) {
-							params.put("untilId", max_id)
+							idOld?.putMisskeyUntil(params)
 							client.request(path_base, params.toPostRequestBuilder())
 						} else {
-							val path = path_base + delimiter + "max_id=" + max_id
+							val path = "$path_base${delimiter}max_id=${idOld}"
 							client.request(path)
 						}
 						
@@ -1583,16 +1635,9 @@ class Column(
 						
 						addWithFilterStatus(list_tmp, src)
 						
-						if(isMisskey) {
-							if(! saveRangeEndMisskey(jsonArray)) {
-								log.d("loading-statuses: missing range info.")
-								break
-							}
-						} else {
-							if(! saveRangeEnd(result2)) {
-								log.d("loading-statuses: missing range info.")
-								break
-							}
+						if(! saveRangeEnd(result = result2, list = src)) {
+							log.d("loading-statuses: missing range info.")
+							break
 						}
 					}
 				}
@@ -1602,47 +1647,49 @@ class Column(
 			fun parseAccountList(
 				client : TootApiClient,
 				path_base : String,
-				emptyMessage : String? = null
+				emptyMessage : String? = null,
+				misskeyParams :JSONObject? = null,
+				misskeyArrayFinder : ( JSONObject)-> JSONArray? = { null }
 			) : TootApiResult? {
-				val result = client.request(path_base)
-				if(result != null) {
-					saveRange(result, true, true)
-					val src = parser.accountList(result.jsonArray)
+				
+				val result = if(misskeyParams != null){
 					
-					val list_tmp = ArrayList<TimelineItem>()
-					this.list_tmp = list_tmp
+					client.request(path_base,misskeyParams.toPostRequestBuilder())
+				}else{
+					client.request(path_base)
+				}
+				
+				if(result != null) {
+					val jsonArray = result.jsonArray
+					val jsonObject = result.jsonObject
+					val array = when {
+						jsonArray != null -> jsonArray
+						jsonObject != null -> misskeyArrayFinder(jsonObject)
+						else-> null
+					} ?: error("missing json data.")
+					val src = parser.accountList(array)
+					saveRange(true, true, result, src)
+					
+					val tmp = ArrayList<TimelineItem>()
 					
 					if(emptyMessage != null) {
 						// フォロー/フォロワー一覧には警告の表示が必要だった
 						val who = who_account?.get()
-						when {
-							
-							access_info.isMe(who) -> list_tmp.add(
+						if(! access_info.isMe(who)) {
+							if(who != null && access_info.isRemoteUser(who)) tmp.add(
 								TootMessageHolder(
-									context.getString(
-										R.string.yourself_can_see_your_network
-									)
+									context.getString(R.string.follow_follower_list_may_restrict)
 								)
 							)
 							
-							else -> {
+							if(src.isEmpty()) {
+								tmp.add(TootMessageHolder(emptyMessage))
 								
-								if(who != null && access_info.isRemoteUser(who)) list_tmp.add(
-									TootMessageHolder(
-										context.getString(
-											R.string.follow_follower_list_may_restrict
-										)
-									)
-								)
-								
-								if(src.isEmpty())
-									list_tmp.add(TootMessageHolder(emptyMessage))
 							}
-							
 						}
 					}
-					
-					this.list_tmp = addAll(this.list_tmp, src)
+					tmp.addAll(src)
+					list_tmp = addAll(null, tmp)
 				}
 				return result
 			}
@@ -1654,7 +1701,6 @@ class Column(
 				val result = client.request(path_base)
 				if(result != null) {
 					val src = TootFilter.parseList(result.jsonArray)
-					
 					this.list_tmp = addAll(null, src)
 				}
 				return result
@@ -1666,8 +1712,9 @@ class Column(
 			) : TootApiResult? {
 				val result = client.request(path_base)
 				if(result != null) {
-					saveRange(result, true, true)
-					this.list_tmp = addAll(null, TootDomainBlock.parseList(result.jsonArray))
+					val src = TootDomainBlock.parseList(result.jsonArray)
+					saveRange(true, true, result, src)
+					this.list_tmp = addAll(null, src)
 				}
 				return result
 			}
@@ -1675,37 +1722,41 @@ class Column(
 			fun parseReports(client : TootApiClient, path_base : String) : TootApiResult? {
 				val result = client.request(path_base)
 				if(result != null) {
-					saveRange(result, true, true)
-					list_tmp = addAll(null, parseList(::TootReport, result.jsonArray))
+					val src = parseList(::TootReport, result.jsonArray)
+					saveRange(true, true, result, src)
+					list_tmp = addAll(null, src)
 				}
 				return result
 			}
 			
-			fun parseListList(
-				client : TootApiClient,
-				path_base : String
-			) : TootApiResult? {
+			fun parseListList(client : TootApiClient, path_base : String) : TootApiResult? {
 				val result = client.request(path_base)
 				if(result != null) {
-					saveRange(result, true, true)
 					val src = parseList(::TootList, result.jsonArray)
 					src.sort()
+					saveRange(true, true, result, src)
 					this.list_tmp = addAll(null, src)
 				}
 				return result
 			}
 			
 			fun parseNotifications(client : TootApiClient) : TootApiResult? {
+				
+				val params = makeMisskeyBaseParameter(parser)
+				
 				val path_base = makeNotificationUrl()
 				
 				val time_start = SystemClock.elapsedRealtime()
-				val result = client.request(path_base)
+				val result = if(isMisskey) {
+					client.request(path_base, params.toPostRequestBuilder())
+				} else {
+					client.request(path_base)
+				}
 				var jsonArray = result?.jsonArray
 				if(jsonArray != null) {
-					saveRange(result, true, true)
-					//
 					var src = parser.notificationList(jsonArray)
-					this.list_tmp = addWithFilterNotification(ArrayList(src.size), src)
+					saveRange(true, true, result, src)
+					this.list_tmp = addWithFilterNotification(null, src)
 					//
 					if(! src.isEmpty()) {
 						PollingWorker.injectData(context, access_info.db_id, src)
@@ -1721,7 +1772,7 @@ class Column(
 							log.d("loading-notifications: isFiltered is false.")
 							break
 						}
-						if(max_id.isEmpty()) {
+						if(idOld == null) {
 							log.d("loading-notifications: max_id is empty.")
 							break
 						}
@@ -1737,8 +1788,15 @@ class Column(
 							log.d("loading-notifications: timeout.")
 							break
 						}
-						val path = path_base + delimiter + "max_id=" + max_id
-						val result2 = client.request(path)
+						
+						val result2 = if(isMisskey) {
+							idOld?.putMisskeyUntil(params)
+							client.request(path_base, params.toPostRequestBuilder())
+						} else {
+							val path = "$path_base${delimiter}max_id=$idOld"
+							client.request(path)
+						}
+						
 						jsonArray = result2?.jsonArray
 						if(jsonArray == null) {
 							log.d("loading-notifications: error or cancelled.")
@@ -1749,7 +1807,7 @@ class Column(
 						
 						addWithFilterNotification(list_tmp, src)
 						
-						if(! saveRangeEnd(result2)) {
+						if(! saveRangeEnd(result2, src)) {
 							log.d("loading-notifications: missing range info.")
 							break
 						}
@@ -1786,72 +1844,99 @@ class Column(
 						
 						TYPE_DIRECT_MESSAGES -> return getStatuses(client, PATH_DIRECT_MESSAGES)
 						
-						TYPE_LOCAL -> return when(access_info.isMisskey) {
-							true -> getStatuses(
-								client,
-								"/api/notes/local-timeline",
-								isMisskey = true
-							)
-							else -> getStatuses(client, makePublicLocalUrl())
-						}
-						TYPE_FEDERATE -> return when(access_info.isMisskey) {
-							true -> getStatuses(
-								client,
-								"/api/notes/global-timeline",
-								isMisskey = true
-							)
-							else -> return getStatuses(client, makePublicFederateUrl())
-						}
+						TYPE_LOCAL -> return getStatuses(client, makePublicLocalUrl())
+						
+						TYPE_FEDERATE -> return getStatuses(client, makePublicFederateUrl())
 						
 						TYPE_PROFILE -> {
 							
 							val who_result = loadProfileAccount(client, true)
 							if(client.isApiCancelled || who_account == null) return who_result
 							
+
 							when(profile_tab) {
 								
-								TAB_FOLLOWING -> return parseAccountList(
-									client,
-									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id),
-									emptyMessage = context.getString(R.string.none_or_hidden_following)
-								)
+								TAB_FOLLOWING -> return if(isMisskey){
+									parseAccountList(
+										client,
+										PATH_MISSKEY_PROFILE_FOLLOWING,
+										emptyMessage = context.getString(R.string.none_or_hidden_following),
+										misskeyParams = makeMisskeyParamsUserId(parser),
+										misskeyArrayFinder = { it.optJSONArray("users") }
+									)
+								}else{
+									parseAccountList(
+										client,
+										String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id),
+										emptyMessage = context.getString(R.string.none_or_hidden_following)
+									)
+								}
 								
-								TAB_FOLLOWERS -> return parseAccountList(
-									client,
-									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id),
-									emptyMessage = context.getString(R.string.none_or_hidden_followers)
-								)
+								
+								TAB_FOLLOWERS -> return if(isMisskey){
+									parseAccountList(
+										client,
+										PATH_MISSKEY_PROFILE_FOLLOWERS,
+										emptyMessage = context.getString(R.string.none_or_hidden_followers),
+										misskeyParams = makeMisskeyParamsUserId(parser),
+										misskeyArrayFinder = { it.optJSONArray("users") }
+									)
+								}else{
+									parseAccountList(
+										client,
+										String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id),
+										emptyMessage = context.getString(R.string.none_or_hidden_followers)
+									)
+								}
 								
 								TAB_STATUS -> {
 									
 									var instance = access_info.instance
-									// まだ取得してない
-									// 疑似アカウントの場合は過去のデータが別タンスかもしれない?
-									if(instance == null || access_info.isPseudo) {
-										val r2 = getInstanceInformation(client, null)
-										if(instance_tmp != null) {
-											instance = instance_tmp
-											access_info.instance = instance
+
+									return if(!isMisskey) {
+										// まだ取得してない
+										// 疑似アカウントの場合は過去のデータが別タンスかもしれない?
+										if(instance == null || access_info.isPseudo) {
+											val r2 = getInstanceInformation(client, null)
+											if(instance_tmp != null) {
+												instance = instance_tmp
+												access_info.instance = instance
+											}
+											if(access_info.isPseudo) return r2
 										}
-										if(access_info.isPseudo) return r2
+										
+										var path = String.format(
+											Locale.JAPAN,
+											PATH_ACCOUNT_STATUSES,
+											profile_id
+										)
+										if(with_attachment && ! with_highlight) path += "&only_media=1"
+										
+										if(instance != null
+											&& instance.versionGE(TootInstance.VERSION_1_6)
+										// 将来的に正しく判定できる見込みがないので、Pleroma条件でのフィルタは行わない
+										// && instance.instanceType != TootInstance.InstanceType.Pleroma
+										) {
+											getStatusesPinned(client, "$path&pinned=true")
+										}
+										getStatuses(client, path)
+									}else{
+										// 固定トゥートの取得
+										val pinnedNote = who_account?.get()?.pinnedNote
+										if( pinnedNote != null){
+											pinnedNote.pinned = true
+											val src = ArrayList<TootStatus>()
+											src.add( pinnedNote )
+											this.list_pinned = addWithFilterStatus(null, src)
+										}
+										
+										// 通常トゥートの取得
+										getStatuses(
+											client,
+											PATH_MISSKEY_PROFILE_STATUSES,
+											misskeyParams = makeMisskeyParamsProfileStatuses(parser)
+										)
 									}
-									
-									var path = String.format(
-										Locale.JAPAN,
-										PATH_ACCOUNT_STATUSES,
-										profile_id
-									)
-									if(with_attachment && ! with_highlight) path += "&only_media=1"
-									
-									if(instance != null
-										&& instance.versionGE(TootInstance.VERSION_1_6)
-									// 将来的に正しく判定できる見込みがないので、Pleroma条件でのフィルタは行わない
-									// && instance.instanceType != TootInstance.InstanceType.Pleroma
-									) {
-										getStatusesPinned(client, "$path&pinned=true")
-									}
-									
-									return getStatuses(client, path)
 								}
 								
 								else -> throw RuntimeException("profile_tab : invalid value.")
@@ -1869,10 +1954,7 @@ class Column(
 						
 						TYPE_LIST_TL -> {
 							loadListInfo(client, true)
-							return getStatuses(
-								client,
-								String.format(Locale.JAPAN, PATH_LIST_TL, profile_id)
-							)
+							return getStatuses(client, makeListTlUrl())
 						}
 						
 						TYPE_LIST_MEMBER -> {
@@ -2058,18 +2140,22 @@ class Column(
 						}
 						
 						TYPE_SEARCH_MSP -> {
-							
-							max_id = ""
+							idOld = null
 							q = search_query.trim { it <= ' ' }
 							if(q.isEmpty()) {
 								list_tmp = ArrayList()
 								result = TootApiResult()
 							} else {
-								result = client.searchMsp(search_query, max_id)
+								result = client.searchMsp(search_query, idOld?.toString())
 								val jsonArray = result?.jsonArray
 								if(jsonArray != null) {
 									// max_id の更新
-									max_id = TootApiClient.getMspMaxId(jsonArray, max_id)
+									idOld = EntityId.mayNull(
+										TootApiClient.getMspMaxId(
+											jsonArray,
+											idOld?.toString()
+										)
+									)
 									// リストデータの用意
 									parser.serviceType = ServiceType.MSP
 									list_tmp =
@@ -2080,17 +2166,23 @@ class Column(
 						}
 						
 						TYPE_SEARCH_TS -> {
-							max_id = "0"
+							idOld = null
 							q = search_query.trim { it <= ' ' }
 							if(q.isEmpty()) {
 								list_tmp = ArrayList()
 								result = TootApiResult()
 							} else {
-								result = client.searchTootsearch(search_query, max_id)
+								result = client.searchTootsearch(search_query, idOld?.toLong())
 								val jsonObject = result?.jsonObject
 								if(jsonObject != null) {
 									// max_id の更新
-									max_id = TootApiClient.getTootsearchMaxId(jsonObject, max_id)
+									idOld = EntityId.mayNull(
+										TootApiClient.getTootsearchMaxId(
+											jsonObject,
+											idOld?.toLong()
+										)
+									)
+									
 									// リストデータの用意
 									val search_result =
 										TootStatus.parseListTootsearch(parser, jsonObject)
@@ -2111,7 +2203,7 @@ class Column(
 							return result
 						}
 						
-						else -> return getStatuses(client, PATH_HOME)
+						else -> return getStatuses(client,makeHomeTlUrl())
 					}
 				} finally {
 					try {
@@ -2167,120 +2259,151 @@ class Column(
 		this.lastTask = task
 		task.executeOnExecutor(App1.task_executor)
 	}
-	// int scroll_hack;
 	
-	private fun saveRange(result : TootApiResult?, bBottom : Boolean, bTop : Boolean) {
-		if(result != null) {
-			if(bBottom) {
-				if(result.link_older == null) {
-					max_id = ""
-				} else {
-					val m = reMaxId.matcher(result.link_older)
-					if(m.find()) max_id = m.group(1)
-				}
+	private fun parseRange(
+		result : TootApiResult?,
+		list : List<TimelineItem>?
+	) : Pair<EntityId?, EntityId?> {
+		var idMin : EntityId? = null
+		var idMax : EntityId? = null
+		
+		if(isMisskey && list != null) {
+			// MisskeyはLinkヘッダがないので、常にデータからIDを読む
+			for(item in list) {
+				val id = item.getOrderId()
+				if(idMin == null || id < idMin) idMin = id
+				if(idMax == null || id > idMax) idMax = id
 			}
-			if(bTop && result.link_newer != null) {
-				val m = reSinceId.matcher(result.link_newer)
-				if(m.find()) since_id = m.group(1)
-			}
-		}
-	}
-	
-	private fun saveRangeMisskey(src : JSONArray?, bBottom : Boolean, bTop : Boolean) {
-		src ?: return
-		var id_min : String? = null
-		var id_max : String? = null
-		for(i in 0 until src.length()) {
-			val id = src.optJSONObject(i)?.optString("id", null) ?: continue
-			if(id_min == null || id < id_min) id_min = id
-			if(id_max == null || id > id_max) id_max = id
-		}
-		if(bBottom) {
-			when {
-				id_min == null -> max_id = ""
-				max_id.isEmpty() || id_min < max_id -> max_id = id_min
-			}
-		}
-		if(bTop) {
-			when {
-				id_max == null -> {
-				}
-				
-				since_id.isEmpty() || id_max > since_id -> since_id = id_max
-			}
-		}
-	}
-	
-	private fun saveRangeEnd(result : TootApiResult?) : Boolean {
-		if(result != null) {
-			if(result.link_older == null) {
-				max_id = ""
+		} else if(result != null) {
+			// Linkヘッダを読む
+			idMin = if(result.link_older == null) {
+				null
 			} else {
 				val m = reMaxId.matcher(result.link_older)
 				if(m.find()) {
-					max_id = m.group(1)
-					return true
+					EntityIdString(m.group(1))
+				} else {
+					null
+				}
+			}
+			
+			idMax = if(result.link_newer == null) {
+				null
+			} else {
+				val m = reSinceId.matcher(result.link_newer)
+				if(m.find()) {
+					EntityIdString(m.group(1))
+				} else {
+					null
 				}
 			}
 		}
-		return false
+		
+		return Pair(idMin, idMax)
 	}
+	// int scroll_hack;
 	
-	private fun saveRangeEndMisskey(src : JSONArray?) : Boolean {
-		if(src != null) {
-			var id_min : String? = null
-			for(i in 0 until src.length()) {
-				val id = src.optJSONObject(i)?.optString("id", null) ?: continue
-				if(id_min == null || id < id_min) id_min = id
-			}
-			if(id_min?.isEmpty() != false) {
-				max_id = ""
+	// return true if list bottom may have unread remain
+	private fun saveRange(
+		bBottom : Boolean,
+		bTop : Boolean,
+		result : TootApiResult?,
+		list : List<TimelineItem>?
+	) : Boolean {
+		val (idMin, idMax) = parseRange(result, list)
+		
+		var hasBottomRemain = false
+		
+		if(bBottom) {
+			if(idMin == null) {
+				// リストの終端
+				idOld = null
 			} else {
-				max_id = id_min
-				return true
+				val i = idOld?.compareTo(idMin)
+				if(i == null || i > 0) {
+					idOld = idMin
+					hasBottomRemain = true
+				}
 			}
 		}
-		return false
+		
+		if(bTop) {
+			if(idMax == null) {
+				// リロードを許容するため、取得内容がカラでもidRecentを変更しない
+			} else {
+				val i = idRecent?.compareTo(idMax)
+				if(i == null || i < 0) {
+					idRecent = idMax
+				}
+			}
+		}
+		
+		return hasBottomRemain
 	}
+	
+	// return true if list bottom may have unread remain
+	private fun saveRangeEnd(result : TootApiResult?, list : List<TimelineItem>?) =
+		saveRange(true, false, result = result, list = list)
 	
 	private fun addRange(bBottom : Boolean, path : String) : String {
 		val delimiter = if(- 1 != path.indexOf('?')) '&' else '?'
 		if(bBottom) {
-			if(max_id.isNotEmpty()) return path + delimiter + "max_id=" + max_id
+			if(idOld != null) return "$path${delimiter}max_id=${idOld}"
 		} else {
-			if(since_id.isNotEmpty()) return path + delimiter + "since_id=" + since_id
+			if(idRecent != null) return "$path${delimiter}since_id=${idRecent}"
 		}
 		return path
 	}
 	
+	private fun addRangeMisskey(bBottom : Boolean, params : JSONObject) : JSONObject {
+		if(bBottom) {
+			idOld?.putMisskeyUntil(params)
+		} else {
+			idRecent?.putMisskeySince(params)
+		}
+		return params
+	}
+	
 	internal fun startRefreshForPost(
 		refresh_after_post : Int,
-		posted_status_id : Long,
-		posted_reply_id : String?
+		posted_status_id : EntityId,
+		posted_reply_id : EntityId?
 	) {
 		when(column_type) {
-			TYPE_HOME, TYPE_LOCAL, TYPE_FEDERATE, TYPE_DIRECT_MESSAGES -> startRefresh(
-				true, false, posted_status_id,
-				refresh_after_post
-			)
+			TYPE_HOME, TYPE_LOCAL, TYPE_FEDERATE, TYPE_DIRECT_MESSAGES -> {
+				startRefresh(
+					true,
+					false,
+					posted_status_id,
+					refresh_after_post
+				)
+			}
 			
-			TYPE_PROFILE -> if(profile_tab == TAB_STATUS && profile_id == access_info.loginAccount?.id) {
-				startRefresh(true, false, posted_status_id, refresh_after_post)
+			TYPE_PROFILE -> {
+				if(profile_tab == TAB_STATUS
+					&& profile_id == access_info.loginAccount?.id
+				) {
+					startRefresh(
+						true,
+						false,
+						posted_status_id,
+						refresh_after_post
+					)
+				}
 			}
 			
 			TYPE_CONVERSATION -> {
 				// 会話への返信が行われたなら会話を更新する
 				try {
-					val reply_id = posted_reply_id?.toLong()
-					if(reply_id != null) {
+					if(posted_reply_id != null) {
 						for(item in list_data) {
-							if(item is TootStatus && item.id == reply_id) {
+							if(item is TootStatus && item.id == posted_reply_id) {
 								startLoading()
 								break
 							}
 						}
 					}
-				} catch(ignored : Throwable) {
+				} catch(_ : Throwable) {
 				}
 			}
 		}
@@ -2289,8 +2412,8 @@ class Column(
 	internal fun startRefresh(
 		bSilent : Boolean,
 		bBottom : Boolean,
-		posted_status_id : Long,
-		refresh_after_toot : Int
+		posted_status_id : EntityId? = null,
+		refresh_after_toot : Int = - 1
 	) {
 		
 		if(lastTask != null) {
@@ -2300,14 +2423,14 @@ class Column(
 				if(holder != null) holder.refreshLayout.isRefreshing = false
 			}
 			return
-		} else if(bBottom && max_id.isEmpty()) {
+		} else if(bBottom && idOld == null) {
 			if(! bSilent) {
 				showToast(context, true, R.string.end_of_list)
 				val holder = viewHolder
 				if(holder != null) holder.refreshLayout.isRefreshing = false
 			}
 			return
-		} else if(! bBottom && since_id.isEmpty()) {
+		} else if(! bBottom && idRecent == null) {
 			val holder = viewHolder
 			if(holder != null) holder.refreshLayout.isRefreshing = false
 			startLoading()
@@ -2342,233 +2465,296 @@ class Column(
 			
 			fun getAccountList(
 				client : TootApiClient,
-				path_base : String
+				path_base : String,
+				misskeyParams : JSONObject? = null,
+				misskeyArrayFinder : (JSONObject)->JSONArray? = {null}
 			) : TootApiResult? {
-				val time_start = SystemClock.elapsedRealtime()
-				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
-				val last_since_id = since_id
 				
-				val result = client.request(addRange(bBottom, path_base))
+				val params = misskeyParams ?: makeMisskeyBaseParameter(parser)
+				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
+				
+				val last_since_id = idRecent
+				
+				val time_start = SystemClock.elapsedRealtime()
+				
+				var result = if(isMisskey) {
+					addRangeMisskey(bBottom, params)
+					client.request(path_base,params.toPostRequestBuilder())
+				} else {
+					client.request(addRange(bBottom, path_base))
+				}
+				val firstResult = result
+
+				var jsonObject = result?.jsonObject
 				var jsonArray = result?.jsonArray
-				if(jsonArray != null) {
-					saveRange(result, bBottom, ! bBottom)
-					var src = parser.accountList(jsonArray)
+				var array = when{
+					jsonArray != null -> jsonArray
+					jsonObject != null -> misskeyArrayFinder(jsonObject)
+					else->null
+				}
+
+				if(array != null) {
+					
+					var src = parser.accountList(array)
+					if(isMisskey && !bBottom) src.reverse()
+					saveRange(bBottom, ! bBottom, result, src)
 					list_tmp = addAll(null, src)
+					
 					if(! bBottom) {
-						var bGapAdded = false
-						while(true) {
-							if(isCancelled) {
-								log.d("refresh-account-offset: cancelled.")
-								break
+						
+						if(isMisskey) {
+							var bHeadGap = false
+							
+							// misskeyの場合、sinceIdを指定したら未読範囲の古い方から読んでしまう
+							// 最新まで読めるとは限らない
+							// 先頭にギャップを置くかもしれない
+							while(true) {
+								
+								if(isCancelled) {
+									log.d("refresh-account-top: cancelled.")
+									break
+								}
+								
+								if(src.isEmpty()) {
+									// 直前のデータが0個なら終了とみなす
+									log.d("refresh-account-top: previous size == 0.")
+									break
+								}
+								
+								if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+									log.d("refresh-account-top: timeout.")
+									bHeadGap = true
+									break
+								}
+								
+								idRecent?.putMisskeySince(params)
+								result = client.request(path_base, params.toPostRequestBuilder())
+								
+								jsonObject = result?.jsonObject
+								jsonArray = result?.jsonArray
+								array = when{
+									jsonArray != null -> jsonArray
+									jsonObject != null -> misskeyArrayFinder(jsonObject)
+									else->null
+								}
+								
+								if(array == null) {
+									log.d("refresh-account-top: error or cancelled.")
+									bHeadGap = true
+									break
+								}
+								
+								src = parser.accountList(array)
+								src.reverse()
+								
+								addAll(list_tmp, src)
+								saveRange(false, true, result, src)
 							}
 							
-							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
-							// 直前のデータが0個なら終了とみなすしかなさそう
-							if(src.isEmpty()) {
-								log.d("refresh-account-offset: previous size == 0.")
-								break
+							if(! isCancelled
+								&& list_tmp?.isNotEmpty() == true
+								&& (bHeadGap || Pref.bpForceGap(context))
+							) {
+								addOneFirst(list_tmp, TootGap.mayNull(null, idRecent))
 							}
 							
-							// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
-							val max_id = src[src.size - 1].id.toString()
-							
-							if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
-								log.d("refresh-account-offset: timeout. make gap.")
-								// タイムアウト
-								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
-								addOne(list_tmp, TootGap(max_id, last_since_id))
-								bGapAdded = true
-								break
+						} else {
+							var bGapAdded = false
+							var max_id : EntityId? = null
+							while(true) {
+								if(isCancelled) {
+									log.d("refresh-account-top: cancelled.")
+									break
+								}
+								
+								// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
+								// 直前のデータが0個なら終了とみなすしかなさそう
+								if(src.isEmpty()) {
+									log.d("refresh-account-top: previous size == 0.")
+									break
+								}
+								
+								max_id = parseRange(result, src).first
+								
+								if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+									log.d("refresh-account-top: timeout. make gap.")
+									// タイムアウト
+									// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
+									addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
+									bGapAdded = true
+									break
+								}
+								
+								val path =
+									"$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
+								result = client.request(path)
+								
+								jsonArray = result?.jsonArray
+								
+								if(jsonArray == null) {
+									log.d("refresh-account-top: error or cancelled. make gap.")
+									// エラー
+									// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
+									addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
+									bGapAdded = true
+									break
+								}
+								
+								src = parser.accountList(jsonArray)
+								addAll(list_tmp, src)
 							}
-							
-							val path =
-								path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
-							val result2 = client.request(path)
-							jsonArray = result2?.jsonArray
-							if(jsonArray == null) {
-								log.d("refresh-account-offset: error or cancelled. make gap.")
-								// エラー
-								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
-								addOne(list_tmp, TootGap(max_id, last_since_id))
-								bGapAdded = true
-								break
+							if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
+								addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
 							}
-							
-							src = parser.accountList(jsonArray)
-							addAll(list_tmp, src)
-						}
-						if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
-							addOne(list_tmp, TootGap(max_id, last_since_id))
 						}
 					}
+					// フィルタがないので下端更新の繰り返しは発生しない
 				}
-				return result
+				return firstResult
 			}
 			
 			fun getDomainList(
 				client : TootApiClient,
 				path_base : String
 			) : TootApiResult? {
+				
+				if(isMisskey) return TootApiResult("misskey support is not yet implemented.")
+				
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
-				val last_since_id = since_id
+				val last_since_id = idRecent
 				
-				val result = client.request(addRange(bBottom, path_base))
+				var result = client.request(addRange(bBottom, path_base))
+				val firstResult = result
+				
 				var jsonArray = result?.jsonArray
 				if(jsonArray != null) {
-					saveRange(result, bBottom, ! bBottom)
 					var src = TootDomainBlock.parseList(jsonArray)
+					// ページネーションはサーバ側の内部パラメータで行われる
+					saveRange(bBottom, ! bBottom, result, src)
 					list_tmp = addAll(null, src)
 					if(! bBottom) {
-						while(true) {
-							if(isCancelled) {
-								log.d("refresh-domain-offset: cancelled.")
-								break
+						if(isMisskey) {
+							// Misskey非対応
+						} else {
+							var bGapAdded = false
+							var max_id : EntityId? = null
+							while(true) {
+								
+								if(isCancelled) {
+									log.d("refresh-domain-top: cancelled.")
+									break
+								}
+								
+								// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
+								// 直前のデータが0個なら終了とみなすしかなさそう
+								if(src.isEmpty()) {
+									log.d("refresh-domain-top: previous size == 0.")
+									break
+								}
+								
+								// 直前に読んだ範囲のmaxIdを調べる
+								max_id = parseRange(result, src).first
+								
+								if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+									log.d("refresh-domain-top: timeout.")
+									
+									// タイムアウト
+									// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
+									addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
+									bGapAdded = true
+									break
+								}
+								
+								val path =
+									"$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
+								result = client.request(path)
+								jsonArray = result?.jsonArray
+								if(jsonArray == null) {
+									log.d("refresh-domain-top: error or cancelled.")
+									// エラー
+									// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
+									addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
+									bGapAdded = true
+									break
+								}
+								
+								src = TootDomainBlock.parseList(jsonArray)
+								addAll(list_tmp, src)
 							}
-							
-							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
-							// 直前のデータが0個なら終了とみなすしかなさそう
-							if(src.isEmpty()) {
-								log.d("refresh-domain-offset: previous size == 0.")
-								break
+							if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
+								addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
 							}
-							
-							if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
-								log.d("refresh-domain-offset: timeout.")
-								// タイムアウト
-								break
-							}
-							
-							val path =
-								path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
-							val result2 = client.request(path)
-							jsonArray = result2?.jsonArray
-							if(jsonArray == null) {
-								log.d("refresh-domain-offset: error or cancelled.")
-								// エラー
-								break
-							}
-							
-							src = TootDomainBlock.parseList(jsonArray)
-							addAll(list_tmp, src)
 						}
+						
 					}
+					// フィルタがないので下端更新の繰り返しはない
 				}
-				return result
+				return firstResult
 			}
 			
-			fun getListList(client : TootApiClient, path_base : String) : TootApiResult? {
-				val time_start = SystemClock.elapsedRealtime()
-				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
-				val last_since_id = since_id
-				val result = client.request(addRange(bBottom, path_base))
-				var jsonArray = result?.jsonArray
-				if(jsonArray != null) {
-					saveRange(result, bBottom, ! bBottom)
-					var src = parseList(::TootList, jsonArray)
-					src.sort()
-					list_tmp = addAll(null, src)
-					if(! bBottom) {
-						var bGapAdded = false
-						while(true) {
-							if(isCancelled) {
-								log.d("refresh-list-offset: cancelled.")
-								break
-							}
-							
-							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
-							// 直前のデータが0個なら終了とみなすしかなさそう
-							if(src.isEmpty()) {
-								log.d("refresh-list-offset: previous size == 0.")
-								break
-							}
-							
-							// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
-							val max_id = src[src.size - 1].id.toString()
-							
-							if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
-								log.d("refresh-list-offset: timeout. make gap.")
-								// タイムアウト
-								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
-								addOne(list_tmp, TootGap(max_id, last_since_id))
-								bGapAdded = true
-								break
-							}
-							
-							val path =
-								path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
-							val result2 = client.request(path)
-							jsonArray = result2?.jsonArray
-							if(jsonArray == null) {
-								log.d("refresh-list-offset: timeout. error or retry. make gap.")
-								// エラー
-								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
-								addOne(list_tmp, TootGap(max_id, last_since_id))
-								bGapAdded = true
-								break
-							}
-							
-							src = parseList(::TootList, jsonArray)
-							src.sort()
-							addAll(list_tmp, src)
-						}
-						if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
-							addOne(list_tmp, TootGap(max_id, last_since_id))
-						}
-					}
-				}
-				return result
-			}
+			//			fun getListList(client : TootApiClient, path_base : String) : TootApiResult? {
+			//
+			//				if(isMisskey) return TootApiResult("misskey support is not yet implemented.")
+			//
+			//				return TootApiResult("Mastodon's /api/v1/lists has no pagination.")
+			//			}
 			
 			fun getReportList(
 				client : TootApiClient,
 				path_base : String
 			) : TootApiResult? {
+				
+				if(isMisskey) return TootApiResult("misskey support is not yet implemented.")
+				
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
-				val last_since_id = since_id
-				val result = client.request(addRange(bBottom, path_base))
+				val last_since_id = idRecent
+				var result = client.request(addRange(bBottom, path_base))
+				val firstResult = result
 				var jsonArray = result?.jsonArray
 				if(jsonArray != null) {
-					saveRange(result, bBottom, ! bBottom)
 					var src = parseList(::TootReport, jsonArray)
 					list_tmp = addAll(null, src)
+					saveRange(bBottom, ! bBottom, result, src)
+					
 					if(! bBottom) {
 						var bGapAdded = false
+						var max_id : EntityId? = null
 						while(true) {
 							if(isCancelled) {
-								log.d("refresh-report-offset: cancelled.")
+								log.d("refresh-report-top: cancelled.")
 								break
 							}
 							
 							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
 							// 直前のデータが0個なら終了とみなすしかなさそう
 							if(src.isEmpty()) {
-								log.d("refresh-report-offset: previous size == 0.")
+								log.d("refresh-report-top: previous size == 0.")
 								break
 							}
 							
-							// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
-							val max_id = src[src.size - 1].id.toString()
+							// 直前に読んだ範囲のmaxIdを調べる
+							max_id = parseRange(result, src).first
 							
 							if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
-								log.d("refresh-report-offset: timeout. make gap.")
+								log.d("refresh-report-top: timeout. make gap.")
 								// タイムアウト
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
-								addOne(list_tmp, TootGap(max_id, last_since_id))
+								addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
 								bGapAdded = true
 								break
 							}
 							
 							val path =
-								path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
-							val result2 = client.request(path)
-							jsonArray = result2?.jsonArray
+								"$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
+							result = client.request(path)
+							jsonArray = result?.jsonArray
 							if(jsonArray == null) {
-								log.d("refresh-report-offset: timeout. error or retry. make gap.")
+								log.d("refresh-report-top: timeout. error or retry. make gap.")
 								// エラー
 								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
-								addOne(list_tmp, TootGap(max_id, last_since_id))
+								addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
 								bGapAdded = true
 								break
 							}
@@ -2577,79 +2763,151 @@ class Column(
 							addAll(list_tmp, src)
 						}
 						if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
-							addOne(list_tmp, TootGap(max_id, last_since_id))
+							addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
 						}
 					}
+					// レポートにはフィルタがないので下端更新は繰り返さない
 				}
-				return result
+				return firstResult
 			}
 			
 			fun getNotificationList(client : TootApiClient) : TootApiResult? {
-				val path_base = makeNotificationUrl()
-				val time_start = SystemClock.elapsedRealtime()
-				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
-				val last_since_id = since_id
 				
-				val result = client.request(addRange(bBottom, path_base))
+				val path_base = makeNotificationUrl()
+				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
+				val last_since_id = idRecent
+				
+				val params = makeMisskeyBaseParameter(parser)
+				
+				val time_start = SystemClock.elapsedRealtime()
+				
+				var result = if(isMisskey) {
+					addRangeMisskey(bBottom, params)
+					client.request(path_base, params.toPostRequestBuilder())
+				} else {
+					client.request(addRange(bBottom, path_base))
+				}
+				val firstResult = result
 				var jsonArray = result?.jsonArray
 				if(jsonArray != null) {
-					saveRange(result, bBottom, ! bBottom)
 					var src = parser.notificationList(jsonArray)
+					if(isMisskey && !bBottom) src.reverse()
+					
 					list_tmp = addWithFilterNotification(null, src)
+					saveRange(bBottom, ! bBottom, result, src)
+					
+					if(! src.isEmpty()) {
+						PollingWorker.injectData(context, access_info.db_id, src)
+					}
 					
 					if(! bBottom) {
+						// 頭の方を読む時は隙間を減らすため、フィルタの有無に関係なく繰り返しを行う
 						
-						if(! src.isEmpty()) {
-							PollingWorker.injectData(context, access_info.db_id, src)
+						if(isMisskey) {
+							// misskey ではsinceIdを指定すると古い方から読める
+							// 先頭にギャップを追加するかもしれない
+							var bHeadGap = false
+							
+							while(true) {
+								
+								if(isCancelled) {
+									log.d("refresh-notification-top: cancelled.")
+									break
+								}
+								
+								// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
+								// 直前のデータが0個なら終了とみなすしかなさそう
+								if(src.isEmpty()) {
+									log.d("refresh-notification-top: previous size == 0.")
+									break
+								}
+								
+								if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+									log.d("refresh-notification-top: timeout. make gap.")
+									// タイムアウト
+									bHeadGap = true
+									break
+								}
+								
+								idRecent?.putMisskeySince(params)
+								result = client.request(path_base, params.toPostRequestBuilder())
+								jsonArray = result?.jsonArray
+								if(jsonArray == null) {
+									log.d("refresh-notification-top: error or cancelled. make gap.")
+									// エラー
+									bHeadGap = true
+									break
+								}
+								
+								src = parser.notificationList(jsonArray)
+								src.reverse()
+								
+								saveRange(false, true, result, src)
+								if(! src.isEmpty()) {
+									addWithFilterNotification(list_tmp, src)
+									PollingWorker.injectData(context, access_info.db_id, src)
+								}
+							}
+							
+							if(! isCancelled
+								&& list_tmp?.isNotEmpty() == true
+								&& (bHeadGap || Pref.bpForceGap(context))
+							) {
+								addOneFirst(list_tmp, TootGap.mayNull(null, idRecent))
+							}
+							
+						} else {
+							
+							var bGapAdded = false
+							var max_id : EntityId? = null
+							while(true) {
+								if(isCancelled) {
+									log.d("refresh-notification-offset: cancelled.")
+									break
+								}
+								
+								// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
+								// 直前のデータが0個なら終了とみなすしかなさそう
+								if(src.isEmpty()) {
+									log.d("refresh-notification-offset: previous size == 0.")
+									break
+								}
+								
+								max_id = parseRange(result, src).first
+								
+								if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+									log.d("refresh-notification-offset: timeout. make gap.")
+									// タイムアウト
+									// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
+									addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
+									bGapAdded = true
+									break
+								}
+								
+								val path =
+									"$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
+								result = client.request(path)
+								jsonArray = result?.jsonArray
+								if(jsonArray == null) {
+									log.d("refresh-notification-offset: error or cancelled. make gap.")
+									// エラー
+									// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
+									addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
+									bGapAdded = true
+									break
+								}
+								
+								src = parser.notificationList(jsonArray)
+								if(! src.isEmpty()) {
+									addWithFilterNotification(list_tmp, src)
+									PollingWorker.injectData(context, access_info.db_id, src)
+								}
+							}
+							if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
+								addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
+							}
 						}
-						var bGapAdded = false
-						while(true) {
-							if(isCancelled) {
-								log.d("refresh-notification-offset: cancelled.")
-								break
-							}
-							
-							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
-							// 直前のデータが0個なら終了とみなすしかなさそう
-							if(src.isEmpty()) {
-								log.d("refresh-notification-offset: previous size == 0.")
-								break
-							}
-							
-							// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
-							val max_id = src[src.size - 1].id.toString()
-							
-							if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
-								log.d("refresh-notification-offset: timeout. make gap.")
-								// タイムアウト
-								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
-								addOne(list_tmp, TootGap(max_id, last_since_id))
-								bGapAdded = true
-								break
-							}
-							
-							val path =
-								path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
-							val result2 = client.request(path)
-							jsonArray = result2?.jsonArray
-							if(jsonArray == null) {
-								log.d("refresh-notification-offset: error or cancelled. make gap.")
-								// エラー
-								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
-								addOne(list_tmp, TootGap(max_id, last_since_id))
-								bGapAdded = true
-								break
-							}
-							
-							src = parser.notificationList(jsonArray)
-							if(! src.isEmpty()) {
-								addWithFilterNotification(list_tmp, src)
-								PollingWorker.injectData(context, access_info.db_id, src)
-							}
-						}
-						if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
-							addOne(list_tmp, TootGap(max_id, last_since_id))
-						}
+						
 					} else {
 						while(true) {
 							if(isCancelled) {
@@ -2682,9 +2940,15 @@ class Column(
 								break
 							}
 							
-							val path = path_base + delimiter + "max_id=" + max_id
-							val result2 = client.request(path)
-							jsonArray = result2?.jsonArray
+							result = if(isMisskey) {
+								idOld?.putMisskeyUntil(params)
+								client.request(path_base)
+							} else {
+								val path = path_base + delimiter + "max_id=" + idOld
+								client.request(path)
+								
+							}
+							jsonArray = result?.jsonArray
 							if(jsonArray == null) {
 								log.d("refresh-notification-bottom: error or cancelled.")
 								break
@@ -2694,59 +2958,165 @@ class Column(
 							
 							addWithFilterNotification(list_tmp, src)
 							
-							if(! saveRangeEnd(result2)) {
+							if(! saveRangeEnd(result, src)) {
 								log.d("refresh-notification-bottom: saveRangeEnd failed.")
 								break
 							}
 						}
 					}
 				}
-				return result
+				return firstResult
 			}
 			
 			fun getStatusList(
 				client : TootApiClient,
 				path_base : String,
-				isMisskey : Boolean = false
+				misskeyParams:JSONObject? = null
 			) : TootApiResult? {
 				
-				val params = JSONObject()
-				if(isMisskey) {
-					parser.serviceType = ServiceType.MISSKEY
-					params.put("limit", 100)
-					if(with_attachment) {
-						params.put("mediaOnly", true)
-					}
-				}
+				val isMisskey = access_info.isMisskey
+				
+				val params = misskeyParams ?: makeMisskeyTimelineParameter(parser)
 				
 				val time_start = SystemClock.elapsedRealtime()
 				
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
-				val last_since_id = since_id
+				val last_since_id = idRecent
 				
-				val result = if(isMisskey) {
-					if(bBottom) {
-						if(max_id.isNotEmpty()) params.put("untilId", max_id)
-					} else {
-						if(since_id.isNotEmpty()) params.put("sinceId", since_id)
-					}
+				var result = if(isMisskey) {
+					addRangeMisskey(bBottom, params)
 					client.request(path_base, params.toPostRequestBuilder())
 				} else {
 					client.request(addRange(bBottom, path_base))
 				}
+				val firstResult = result
 				
 				var jsonArray = result?.jsonArray
 				if(jsonArray != null) {
-					if(isMisskey) {
-						saveRangeMisskey(jsonArray, bBottom, ! bBottom)
-					} else {
-						saveRange(result, bBottom, ! bBottom)
-					}
-					
 					var src = parser.statusList(jsonArray)
+					if(isMisskey && !bBottom) src.reverse()
+					saveRange(bBottom, ! bBottom, result, src)
 					list_tmp = addWithFilterStatus(null, src)
 					
-					if(bBottom) {
+					if(! bBottom) {
+						if(isMisskey) {
+							// Misskeyの場合はsinceIdを指定しても取得できるのは未読のうち古い範囲に偏る
+							var bHeadGap = false
+							while(true) {
+								if(isCancelled) {
+									log.d("refresh-status-top: cancelled.")
+									break
+								}
+								
+								// 頭の方を読む時は隙間を減らすため、フィルタの有無に関係なく繰り返しを行う
+								
+								// 直前のデータが0個なら終了とみなす
+								if(src.isEmpty()) {
+									log.d("refresh-status-top: previous size == 0.")
+									break
+								}
+								
+								if((list_tmp?.size ?: 0) >= LOOP_READ_ENOUGH) {
+									log.d("refresh-status-offset: read enough. make gap.")
+									bHeadGap = true
+									break
+								}
+								
+								if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+									log.d("refresh-status-top: timeout. make gap.")
+									bHeadGap = true
+									break
+								}
+								
+								idRecent?.putMisskeySince(params)
+								result =
+									client.request(path_base, params.toPostRequestBuilder())
+								
+								jsonArray = result?.jsonArray
+								if(jsonArray == null) {
+									log.d("refresh-status-top: error or cancelled. make gap.")
+									bHeadGap = true
+									break
+								}
+								
+								src = parser.statusList(jsonArray)
+								src.reverse()
+								
+								saveRange(false, true, result, src)
+								
+								addWithFilterStatus(list_tmp, src)
+							}
+							
+							if(! isCancelled
+								&& list_tmp?.isNotEmpty() == true
+								&& (bHeadGap || Pref.bpForceGap(context))
+							) {
+								addOneFirst(list_tmp, TootGap.mayNull(null, idRecent))
+							}
+							
+						} else {
+							var bGapAdded = false
+							var max_id : EntityId? = null
+							while(true) {
+								if(isCancelled) {
+									log.d("refresh-status-top: cancelled.")
+									break
+								}
+								
+								// 頭の方を読む時は隙間を減らすため、フィルタの有無に関係なく繰り返しを行う
+								
+								// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
+								// 直前のデータが0個なら終了とみなすしかなさそう
+								if(src.isEmpty()) {
+									log.d("refresh-status-top: previous size == 0.")
+									break
+								}
+								
+								max_id = parseRange(result, src).first
+								
+								if((list_tmp?.size ?: 0) >= LOOP_READ_ENOUGH) {
+									log.d("refresh-status-top: read enough. make gap.")
+									// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
+									addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
+									bGapAdded = true
+									break
+								}
+								
+								if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+									log.d("refresh-status-top: timeout. make gap.")
+									// タイムアウト
+									// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
+									addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
+									bGapAdded = true
+									break
+								}
+								
+								val path =
+									"$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
+								result = client.request(path)
+								
+								jsonArray = result?.jsonArray
+								if(jsonArray == null) {
+									log.d("refresh-status-top: error or cancelled. make gap.")
+									// エラー
+									// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
+									addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
+									bGapAdded = true
+									break
+								}
+								
+								src = parser.statusList(jsonArray)
+								
+								addWithFilterStatus(list_tmp, src)
+							}
+							
+							if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
+								addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
+							}
+							
+						}
+						
+					} else {
 						while(true) {
 							if(isCancelled) {
 								log.d("refresh-status-bottom: cancelled.")
@@ -2778,15 +3148,15 @@ class Column(
 								break
 							}
 							
-							val result2 = if(isMisskey) {
-								params.put("untilId", max_id)
+							result = if(isMisskey) {
+								idOld?.putMisskeyUntil(params)
 								client.request(path_base, params.toPostRequestBuilder())
 							} else {
-								val path = path_base + delimiter + "max_id=" + max_id
+								val path = "$path_base${delimiter}max_id=$idOld"
 								client.request(path)
 							}
 							
-							jsonArray = result2?.jsonArray
+							jsonArray = result?.jsonArray
 							if(jsonArray == null) {
 								log.d("refresh-status-bottom: error or cancelled.")
 								break
@@ -2796,84 +3166,14 @@ class Column(
 							
 							addWithFilterStatus(list_tmp, src)
 							
-							if(isMisskey) {
-								if(! saveRangeEndMisskey(jsonArray)) {
-									log.d("refresh-status-bottom: saveRangeEnd failed.")
-									break
-								}
-							} else {
-								if(! saveRangeEnd(result2)) {
-									log.d("refresh-status-bottom: saveRangeEnd failed.")
-									break
-								}
-							}
-						}
-					} else {
-						var bGapAdded = false
-						while(true) {
-							if(isCancelled) {
-								log.d("refresh-status-offset: cancelled.")
+							if(! saveRangeEnd(result, src)) {
+								log.d("refresh-status-bottom: saveRangeEnd failed.")
 								break
 							}
-							
-							// 頭の方を読む時は隙間を減らすため、フィルタの有無に関係なく繰り返しを行う
-							
-							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
-							// 直前のデータが0個なら終了とみなすしかなさそう
-							if(src.isEmpty()) {
-								log.d("refresh-status-offset: previous size == 0.")
-								break
-							}
-							
-							// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
-							val max_id = src[src.size - 1].id.toString()
-							
-							if((list_tmp?.size ?: 0) >= LOOP_READ_ENOUGH) {
-								log.d("refresh-status-offset: read enough. make gap.")
-								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
-								addOne(list_tmp, TootGap(max_id, last_since_id))
-								bGapAdded = true
-								break
-							}
-							
-							if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
-								log.d("refresh-status-offset: timeout. make gap.")
-								// タイムアウト
-								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
-								addOne(list_tmp, TootGap(max_id, last_since_id))
-								bGapAdded = true
-								break
-							}
-							
-							if(isMisskey) {
-								log.d("refresh-status-offset: Misskey does not allow gap reading.")
-								addOne(list_tmp, TootGap(max_id, last_since_id))
-								bGapAdded = true
-								break
-							}
-							
-							val path =
-								path_base + delimiter + "max_id=" + max_id + "&since_id=" + last_since_id
-							val result2 = client.request(path)
-							jsonArray = result2?.jsonArray
-							if(jsonArray == null) {
-								log.d("refresh-status-offset: error or cancelled. make gap.")
-								// エラー
-								// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
-								addOne(list_tmp, TootGap(max_id, last_since_id))
-								bGapAdded = true
-								break
-							}
-							
-							src = parser.statusList(jsonArray)
-							addWithFilterStatus(list_tmp, src)
-						}
-						if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
-							addOne(list_tmp, TootGap(max_id, last_since_id))
 						}
 					}
 				}
-				return result
+				return firstResult
 			}
 			
 			var filterUpdated = false
@@ -2908,23 +3208,9 @@ class Column(
 						
 						TYPE_DIRECT_MESSAGES -> getStatusList(client, PATH_DIRECT_MESSAGES)
 						
-						TYPE_LOCAL -> when(access_info.isMisskey) {
-							true -> getStatusList(
-								client,
-								"/api/notes/local-timeline",
-								isMisskey = true
-							)
-							else -> getStatusList(client, makePublicLocalUrl())
-						}
+						TYPE_LOCAL -> getStatusList(client, makePublicLocalUrl())
 						
-						TYPE_FEDERATE -> when(access_info.isMisskey) {
-							true -> getStatusList(
-								client,
-								"/api/notes/global-timeline",
-								isMisskey = true
-							)
-							else -> getStatusList(client, makePublicFederateUrl())
-						}
+						TYPE_FEDERATE -> getStatusList(client, makePublicFederateUrl())
 						
 						TYPE_FAVOURITES -> getStatusList(client, PATH_FAVOURITES)
 						
@@ -2951,40 +3237,61 @@ class Column(
 							
 							
 							when(profile_tab) {
-								TAB_FOLLOWING -> getAccountList(
-									client,
-									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id)
-								)
+								TAB_FOLLOWING -> if(isMisskey){
+									getAccountList(
+										client,
+										PATH_MISSKEY_PROFILE_FOLLOWING,
+										misskeyParams = makeMisskeyParamsUserId(parser),
+										misskeyArrayFinder = { it.optJSONArray("users")}
+									)
+								}else{
+									getAccountList(
+										client,
+										String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id)
+									)
+								}
 								
-								TAB_FOLLOWERS -> getAccountList(
-									client,
-									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id)
-								)
 								
-								else -> {
-									if(access_info.isPseudo) {
-										client.request(PATH_INSTANCE)
-									} else {
-										var s = String.format(
-											Locale.JAPAN,
-											PATH_ACCOUNT_STATUSES,
-											profile_id
+								TAB_FOLLOWERS -> if(isMisskey){
+										getAccountList(
+											client,
+											PATH_MISSKEY_PROFILE_FOLLOWERS,
+											misskeyParams = makeMisskeyParamsUserId(parser),
+											misskeyArrayFinder = { it.optJSONArray("users") }
 										)
-										if(with_attachment && ! with_highlight) s += "&only_media=1"
-										getStatusList(client, s)
-									}
+								}else{
+										getAccountList(
+											client,
+											String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id)
+										)
+								}
+								
+								else -> if(isMisskey){
+									getStatusList(
+										client,
+										PATH_MISSKEY_PROFILE_STATUSES,
+										misskeyParams = makeMisskeyParamsProfileStatuses(parser)
+									)
+								}else{
+									var s = String.format(
+										Locale.JAPAN,
+										PATH_ACCOUNT_STATUSES,
+										profile_id
+									)
+									if(with_attachment && ! with_highlight) s += "&only_media=1"
+									getStatusList(client, s)
 								}
 							}
 						}
 						
-						TYPE_LIST_LIST -> getListList(client, PATH_LIST_LIST)
+						TYPE_LIST_LIST -> {
+							//getListList(client, PATH_LIST_LIST)
+							TootApiResult("list API does not support refresh loading.")
+						}
 						
 						TYPE_LIST_TL -> {
 							loadListInfo(client, false)
-							getStatusList(
-								client,
-								String.format(Locale.JAPAN, PATH_LIST_TL, profile_id)
-							)
+							getStatusList(client, makeListTlUrl())
 						}
 						
 						TYPE_LIST_MEMBER -> {
@@ -3016,11 +3323,16 @@ class Column(
 									list_tmp = ArrayList()
 									result = TootApiResult(context.getString(R.string.end_of_list))
 								} else {
-									result = client.searchMsp(search_query, max_id)
+									result = client.searchMsp(search_query, idOld?.toString())
 									val jsonArray = result?.jsonArray
 									if(jsonArray != null) {
 										// max_id の更新
-										max_id = TootApiClient.getMspMaxId(jsonArray, max_id)
+										idOld = EntityId.mayNull(
+											TootApiClient.getMspMaxId(
+												jsonArray,
+												idOld?.toString()
+											)
+										)
 										// リストデータの用意
 										parser.serviceType = ServiceType.MSP
 										list_tmp = addWithFilterStatus(
@@ -3037,15 +3349,20 @@ class Column(
 						} else {
 							val result : TootApiResult?
 							val q = search_query.trim { it <= ' ' }
-							if(q.isEmpty() || max_id.isEmpty()) {
+							if(q.isEmpty() || idOld == null) {
 								list_tmp = ArrayList()
 								result = TootApiResult(context.getString(R.string.end_of_list))
 							} else {
-								result = client.searchTootsearch(search_query, max_id)
+								result = client.searchTootsearch(search_query, idOld?.toLong())
 								val jsonObject = result?.jsonObject
 								if(jsonObject != null) {
 									// max_id の更新
-									max_id = TootApiClient.getTootsearchMaxId(jsonObject, max_id)
+									idOld = EntityId.mayNull(
+										TootApiClient.getTootsearchMaxId(
+											jsonObject,
+											idOld?.toLong()
+										)
+									)
 									// リストデータの用意
 									val search_result =
 										TootStatus.parseListTootsearch(parser, jsonObject)
@@ -3131,6 +3448,13 @@ class Column(
 						}
 					} else {
 						
+						val changeList = ArrayList<AdapterChange>()
+						
+						if(list_data.isNotEmpty() && list_data[0] is TootGap) {
+							changeList.add(AdapterChange(AdapterChangeType.RangeRemove, 0, 1))
+							list_data.removeAt(0)
+						}
+						
 						for(o in list_new) {
 							if(o is TootStatus) {
 								val highlight_sound = o.highlight_sound
@@ -3151,8 +3475,7 @@ class Column(
 							}
 						}
 						
-						val changeList =
-							listOf(AdapterChange(AdapterChangeType.RangeInsert, 0, added))
+						changeList.add(AdapterChange(AdapterChangeType.RangeInsert, 0, added))
 						list_data.addAll(0, list_new)
 						fireShowContent(reason = "refresh updated head", changeList = changeList)
 						
@@ -3200,16 +3523,16 @@ class Column(
 	}
 	
 	internal fun startGap(gap : TootGap?) {
+		
 		if(gap == null) {
 			showToast(context, true, "gap is null")
 			return
 		}
+		
 		if(lastTask != null) {
 			showToast(context, true, R.string.column_is_busy)
 			return
 		}
-		
-		
 		
 		viewHolder?.refreshLayout?.isRefreshing = true
 		
@@ -3218,8 +3541,10 @@ class Column(
 		
 		val task = @SuppressLint("StaticFieldLeak")
 		object : ColumnTask(ColumnTaskType.GAP) {
-			var max_id = gap.max_id
-			val since_id = gap.since_id
+			
+			var max_id : EntityId? = gap.max_id
+			var since_id : EntityId? = gap.since_id
+			
 			var list_tmp : ArrayList<TimelineItem>? = null
 			
 			var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
@@ -3228,50 +3553,96 @@ class Column(
 				client : TootApiClient,
 				path_base : String
 			) : TootApiResult? {
+				
+				val params = makeMisskeyBaseParameter(parser)
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				list_tmp = ArrayList()
 				
 				var result : TootApiResult? = null
-				while(true) {
-					if(isCancelled) {
-						log.d("gap-account: cancelled.")
-						break
-					}
+				
+				if(isMisskey) {
 					
-					if(result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
-						log.d("gap-account: timeout. make gap.")
-						// タイムアウト
-						// 隙間が残る
-						addOne(list_tmp, TootGap(max_id, since_id))
-						break
-					}
+					// missKeyではgapを下から読む
+					var bHeadGap = false
 					
-					val path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + since_id
-					val r2 = client.request(path)
-					val jsonArray = r2?.jsonArray
-					if(jsonArray == null) {
-						log.d("gap-account: error timeout. make gap.")
+					while(true) {
 						
-						if(result == null) result = r2
+						if(isCancelled) {
+							log.d("gap-account: cancelled.")
+							break
+						}
 						
-						// 隙間が残る
-						addOne(list_tmp, TootGap(max_id, since_id))
-						break
+						if(result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+							log.d("gap-account: timeout. make gap.")
+							bHeadGap = true
+							break
+						}
+						
+						since_id?.putMisskeySince(params)
+						val r2 = client.request(path_base, params.toPostRequestBuilder())
+						val jsonArray = r2?.jsonArray
+						if(jsonArray == null) {
+							log.d("gap-account: error timeout. make gap.")
+							if(result == null) result = r2
+							bHeadGap = true
+							break
+						}
+						result = r2
+						val src = parser.accountList(jsonArray)
+						src.reverse()
+						if(src.isEmpty()) {
+							log.d("gap-account: empty.")
+							break
+						}
+						
+						addAll(list_tmp, src)
+						since_id = parseRange(result, src).second
 					}
-					result = r2
-					val src = parser.accountList(jsonArray)
-					
-					if(src.isEmpty()) {
-						log.d("gap-account: empty.")
-						break
+					if(bHeadGap) {
+						addOneFirst(list_tmp, TootGap.mayNull(max_id, since_id))
 					}
 					
-					addAll(list_tmp, src)
-					
-					// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
-					max_id = src[src.size - 1].id.toString()
-					
+				} else {
+					while(true) {
+						
+						if(isCancelled) {
+							log.d("gap-account: cancelled.")
+							break
+						}
+						
+						if(result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+							log.d("gap-account: timeout. make gap.")
+							// タイムアウト
+							// 隙間が残る
+							addOne(list_tmp, TootGap.mayNull(max_id, since_id))
+							break
+						}
+						
+						val path = "$path_base${delimiter}max_id=$max_id&since_id=$since_id"
+						val r2 = client.request(path)
+						
+						val jsonArray = r2?.jsonArray
+						if(jsonArray == null) {
+							log.d("gap-account: error timeout. make gap.")
+							
+							if(result == null) result = r2
+							
+							// 隙間が残る
+							addOne(list_tmp, TootGap.mayNull(max_id, since_id))
+							break
+						}
+						result = r2
+						val src = parser.accountList(jsonArray)
+						
+						if(src.isEmpty()) {
+							log.d("gap-account: empty.")
+							break
+						}
+						
+						addAll(list_tmp, src)
+						max_id = parseRange(result, src).first
+					}
 				}
 				return result
 			}
@@ -3281,105 +3652,199 @@ class Column(
 				path_base : String
 			) : TootApiResult? {
 				val time_start = SystemClock.elapsedRealtime()
+				val params = makeMisskeyBaseParameter(parser)
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				list_tmp = ArrayList()
 				
 				var result : TootApiResult? = null
-				while(true) {
-					if(isCancelled) {
-						log.d("gap-report: cancelled.")
-						break
+				
+				if(isMisskey) {
+					var bHeadGap = false
+					while(true) {
+						if(isCancelled) {
+							log.d("gap-report: cancelled.")
+							break
+						}
+						
+						if(result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+							log.d("gap-report: timeout. make gap.")
+							bHeadGap = true
+							break
+						}
+						
+						since_id?.putMisskeySince(params)
+						val r2 = client.request(path_base, params.toPostRequestBuilder())
+						val jsonArray = r2?.jsonArray
+						if(jsonArray == null) {
+							log.d("gap-report: error or cancelled. make gap.")
+							if(result == null) result = r2
+							bHeadGap = true
+							break
+						}
+						
+						result = r2
+						val src = parseList(::TootReport, jsonArray)
+						if(src.isEmpty()) {
+							log.d("gap-report: empty.")
+							break
+						}
+						src.reverse()
+						
+						addAll(list_tmp, src)
+						
+						// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
+						since_id = parseRange(result, src).second
 					}
-					
-					if(result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
-						log.d("gap-report: timeout. make gap.")
-						// タイムアウト
-						// 隙間が残る
-						addOne(list_tmp, TootGap(max_id, since_id))
-						break
+					if(bHeadGap) {
+						addOneFirst(list_tmp, TootGap.mayNull(max_id, since_id))
 					}
-					
-					val path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + since_id
-					val r2 = client.request(path)
-					val jsonArray = r2?.jsonArray
-					if(jsonArray == null) {
-						log.d("gap-report: error or cancelled. make gap.")
-						if(result == null) result = r2
-						// 隙間が残る
-						addOne(list_tmp, TootGap(max_id, since_id))
-						break
+				} else {
+					while(true) {
+						if(isCancelled) {
+							log.d("gap-report: cancelled.")
+							break
+						}
+						
+						if(result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+							log.d("gap-report: timeout. make gap.")
+							// タイムアウト
+							// 隙間が残る
+							addOne(list_tmp, TootGap.mayNull(max_id, since_id))
+							break
+						}
+						
+						val path =
+							path_base + delimiter + "max_id=" + max_id + "&since_id=" + since_id
+						val r2 = client.request(path)
+						val jsonArray = r2?.jsonArray
+						if(jsonArray == null) {
+							log.d("gap-report: error or cancelled. make gap.")
+							if(result == null) result = r2
+							// 隙間が残る
+							addOne(list_tmp, TootGap.mayNull(max_id, since_id))
+							break
+						}
+						
+						result = r2
+						val src = parseList(::TootReport, jsonArray)
+						if(src.isEmpty()) {
+							log.d("gap-report: empty.")
+							// コレ以上取得する必要はない
+							break
+						}
+						
+						addAll(list_tmp, src)
+						
+						// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
+						max_id = parseRange(result, src).first
 					}
-					
-					result = r2
-					val src = parseList(::TootReport, jsonArray)
-					if(src.isEmpty()) {
-						log.d("gap-report: empty.")
-						// コレ以上取得する必要はない
-						break
-					}
-					
-					addAll(list_tmp, src)
-					
-					// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
-					max_id = src[src.size - 1].id.toString()
 				}
 				return result
 			}
 			
 			fun getNotificationList(client : TootApiClient) : TootApiResult? {
 				val path_base = makeNotificationUrl()
-				
+				val params = makeMisskeyBaseParameter(parser)
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
-				
-				
 				
 				list_tmp = ArrayList()
 				
 				var result : TootApiResult? = null
-				while(true) {
-					if(isCancelled) {
-						log.d("gap-notification: cancelled.")
-						break
-					}
-					
-					if(result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
-						log.d("gap-notification: timeout. make gap.")
-						// タイムアウト
-						// 隙間が残る
-						addOne(list_tmp, TootGap(max_id, since_id))
-						break
-					}
-					val path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + since_id
-					val r2 = client.request(path)
-					val jsonArray = r2?.jsonArray
-					if(jsonArray == null) {
-						// エラー
-						log.d("gap-notification: error or response. make gap.")
+				
+				if(isMisskey) {
+					var bHeadGap = false
+					while(true) {
+						if(isCancelled) {
+							log.d("gap-notification: cancelled.")
+							break
+						}
 						
-						if(result == null) result = r2
+						if(result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+							log.d("gap-notification: timeout. make gap.")
+							bHeadGap = true
+							break
+						}
 						
-						// 隙間が残る
-						addOne(list_tmp, TootGap(max_id, since_id))
-						break
+						since_id?.putMisskeySince(params)
+						val r2 = client.request(path_base, params.toPostRequestBuilder())
+						val jsonArray = r2?.jsonArray
+						if(jsonArray == null) {
+							// エラー
+							log.d("gap-notification: error or response. make gap.")
+							if(result == null) result = r2
+							// 隙間が残る
+							bHeadGap = true
+							break
+						}
+						
+						result = r2
+						val src = parser.notificationList(jsonArray)
+						
+						if(src.isEmpty()) {
+							log.d("gap-notification: empty.")
+							break
+						}
+						src.reverse()
+						
+						// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
+						since_id = parseRange(result, src).second
+						
+						addWithFilterNotification(list_tmp, src)
+						
+						PollingWorker.injectData(context, access_info.db_id, src)
 					}
 					
-					result = r2
-					val src = parser.notificationList(jsonArray)
-					
-					if(src.isEmpty()) {
-						log.d("gap-notification: empty.")
-						break
+					if(bHeadGap) {
+						addOneFirst(list_tmp, TootGap.mayNull(max_id, since_id))
 					}
-					
-					// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
-					max_id = src[src.size - 1].id.toString()
-					
-					addWithFilterNotification(list_tmp, src)
-					
-					PollingWorker.injectData(context, access_info.db_id, src)
-					
+				} else {
+					while(true) {
+						if(isCancelled) {
+							log.d("gap-notification: cancelled.")
+							break
+						}
+						
+						if(result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+							log.d("gap-notification: timeout. make gap.")
+							// タイムアウト
+							// 隙間が残る
+							addOne(list_tmp, TootGap.mayNull(max_id, since_id))
+							break
+						}
+						val path =
+							path_base + delimiter + "max_id=" + max_id + "&since_id=" + since_id
+						val r2 = client.request(path)
+						val jsonArray = r2?.jsonArray
+						if(jsonArray == null) {
+							// エラー
+							log.d("gap-notification: error or response. make gap.")
+							
+							if(result == null) result = r2
+							
+							// 隙間が残る
+							addOne(list_tmp, TootGap.mayNull(max_id, since_id))
+							break
+						}
+						
+						result = r2
+						val src = parser.notificationList(jsonArray)
+						
+						if(src.isEmpty()) {
+							log.d("gap-notification: empty.")
+							break
+						}
+						
+						// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
+						max_id = parseRange(result, src).first
+						
+						addWithFilterNotification(list_tmp, src)
+						
+						PollingWorker.injectData(context, access_info.db_id, src)
+						
+					}
 				}
+				
 				return result
 			}
 			
@@ -3387,54 +3852,118 @@ class Column(
 				client : TootApiClient,
 				path_base : String
 			) : TootApiResult? {
+				
+				val isMisskey = access_info.isMisskey
+				
+				val params = makeMisskeyTimelineParameter(parser)
+				
 				val time_start = SystemClock.elapsedRealtime()
+				
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
+				
 				list_tmp = ArrayList()
 				
 				var result : TootApiResult? = null
-				while(true) {
-					if(isCancelled) {
-						log.d("gap-statuses: cancelled.")
-						break
-					}
-					
-					if(result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
-						log.d("gap-statuses: timeout.")
-						// タイムアウト
-						// 隙間が残る
-						addOne(list_tmp, TootGap(max_id, since_id))
-						break
-					}
-					
-					val path = path_base + delimiter + "max_id=" + max_id + "&since_id=" + since_id
-					
-					val r2 = client.request(path)
-					val jsonArray = r2?.jsonArray
-					if(jsonArray == null) {
-						log.d("gap-statuses: error or cancelled. make gap.")
+				if(isMisskey) {
+					var bHeadGap = false
+					while(true) {
+						if(isCancelled) {
+							log.d("gap-statuses: cancelled.")
+							break
+						}
 						
-						// 成功データがない場合だけ、今回のエラーを返すようにする
-						if(result == null) result = r2
+						if(result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+							log.d("gap-statuses: timeout.")
+							bHeadGap = true
+							break
+						}
 						
-						// 隙間が残る
-						addOne(list_tmp, TootGap(max_id, since_id))
+						since_id?.putMisskeySince(params)
+						val r2 = client.request(path_base, params.toPostRequestBuilder())
 						
-						break
+						val jsonArray = r2?.jsonArray
+						if(jsonArray == null) {
+							log.d("gap-statuses: error or cancelled. make gap.")
+							
+							// 成功データがない場合だけ、今回のエラーを返すようにする
+							if(result == null) result = r2
+							
+							bHeadGap = true
+							
+							break
+						}
+						
+						// 成功した場合はそれを返したい
+						result = r2
+						
+						val src = parser.statusList(jsonArray)
+						
+						if(src.isEmpty()) {
+							// 直前の取得でカラのデータが帰ってきたら終了
+							log.d("gap-statuses: empty.")
+							break
+						}
+						src.reverse()
+						
+						// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
+						since_id = parseRange(result, src).second
+						
+						addWithFilterStatus(list_tmp, src)
 					}
 					
-					// 成功した場合はそれを返したい
-					result = r2
-					
-					val src = parser.statusList(jsonArray)
-					if(src.size == 0) {
-						// 直前の取得でカラのデータが帰ってきたら終了
-						log.d("gap-statuses: empty.")
-						break
+					if(bHeadGap) {
+						addOneFirst(list_tmp, TootGap.mayNull(max_id, since_id))
 					}
-					// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
-					max_id = src[src.size - 1].id.toString()
 					
-					addWithFilterStatus(list_tmp, src)
+				} else {
+					var bLastGap = false
+					while(true) {
+						if(isCancelled) {
+							log.d("gap-statuses: cancelled.")
+							break
+						}
+						
+						if(result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+							log.d("gap-statuses: timeout.")
+							// タイムアウト
+							bLastGap = true
+							break
+						}
+						
+						val path = "${path_base}${delimiter}max_id=${max_id}&since_id=${since_id}"
+						val r2 = client.request(path)
+						
+						val jsonArray = r2?.jsonArray
+						if(jsonArray == null) {
+							log.d("gap-statuses: error or cancelled. make gap.")
+							
+							// 成功データがない場合だけ、今回のエラーを返すようにする
+							if(result == null) result = r2
+							
+							bLastGap = true
+							
+							break
+						}
+						
+						// 成功した場合はそれを返したい
+						result = r2
+						
+						val src = parser.statusList(jsonArray)
+						
+						if(src.isEmpty()) {
+							// 直前の取得でカラのデータが帰ってきたら終了
+							log.d("gap-statuses: empty.")
+							break
+						}
+						
+						// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
+						max_id = parseRange(result, src).first
+						
+						addWithFilterStatus(list_tmp, src)
+					}
+					if(bLastGap) {
+						addOne(list_tmp, TootGap.mayNull(max_id, since_id))
+					}
 				}
 				return result
 			}
@@ -3459,14 +3988,12 @@ class Column(
 				
 				try {
 					return when(column_type) {
+						
 						TYPE_LOCAL -> getStatusList(client, makePublicLocalUrl())
 						
 						TYPE_FEDERATE -> getStatusList(client, makePublicFederateUrl())
 						
-						TYPE_LIST_TL -> getStatusList(
-							client,
-							String.format(Locale.JAPAN, PATH_LIST_TL, profile_id)
-						)
+						TYPE_LIST_TL -> getStatusList(client, makeListTlUrl())
 						
 						TYPE_FAVOURITES -> getStatusList(client, PATH_FAVOURITES)
 						
@@ -3685,12 +4212,12 @@ class Column(
 	////////////////////////////////////////////////////////////////////////
 	// Streaming
 	
-	private fun getId(o : Any) : Long {
+	private fun getId(o : Any) : EntityId? {
 		return when(o) {
 			is TootNotification -> o.id
 			is TootStatus -> o.id
 			is TootAccount -> o.id
-			else -> throw RuntimeException("getId: object is not status,notification")
+			else -> null
 		}
 	}
 	
@@ -3736,7 +4263,7 @@ class Column(
 		) {
 			// リフレッシュしてからストリーミング開始
 			log.d("onStart: start auto refresh.")
-			startRefresh(true, false, - 1L, - 1)
+			startRefresh(true, false)
 		} else if(isSearchColumn) {
 			// 検索カラムはリフレッシュもストリーミングもないが、表示開始のタイミングでリストの再描画を行いたい
 			fireShowContent(reason = "Column onStart isSearchColumn", reset = true)
@@ -3953,22 +4480,21 @@ class Column(
 			}
 			
 			// 最新のIDをsince_idとして覚える(ソートはしない)
-			var new_id_max = Long.MIN_VALUE
-			var new_id_min = Long.MAX_VALUE
+			var new_id_max :EntityId? = null
+			var new_id_min  :EntityId? = null
 			for(o in list_new) {
 				try {
-					val id = getId(o)
-					if(id < 0) continue
-					if(id > new_id_max) new_id_max = id
-					if(id < new_id_min) new_id_min = id
+					val id = getId(o) ?: continue
+					if(new_id_max ==null || id > new_id_max) new_id_max = id
+					if(new_id_min==null || id < new_id_min) new_id_min = id
 				} catch(ex : Throwable) {
 					// IDを取得できないタイプのオブジェクトだった
 					// ストリームに来るのは通知かステータスだから、多分ここは通らない
 					log.trace(ex)
 				}
 			}
-			if(new_id_max != Long.MAX_VALUE) {
-				since_id = new_id_max.toString()
+			if(new_id_max !=null) {
+				idRecent = EntityIdString( new_id_max.toString() )
 				// XXX: コレはリフレッシュ時に取得漏れを引き起こすのでは…？
 				// しかしコレなしだとリフレッシュ時に大量に読むことになる…
 			}
@@ -3997,9 +4523,9 @@ class Column(
 			if(bPutGap) {
 				bPutGap = false
 				try {
-					if(list_data.size > 0 && new_id_min != Long.MAX_VALUE) {
+					if(list_data.size > 0 && new_id_min !=null) {
 						val since = getId(list_data[0])
-						if(new_id_min > since) {
+						if(since != null && new_id_min > since) {
 							val gap = TootGap(new_id_min, since)
 							list_new.add(gap)
 						}
@@ -4059,33 +4585,77 @@ class Column(
 		}
 	}
 	
-	private fun makeNotificationUrl() : String {
-		return if(! dont_show_favourite && ! dont_show_boost && ! dont_show_follow && ! dont_show_reply) {
-			PATH_NOTIFICATIONS
-		} else {
-			val sb = StringBuilder(PATH_NOTIFICATIONS) // always contain "?limit=XX"
-			if(dont_show_favourite) sb.append("&exclude_types[]=favourite")
-			if(dont_show_boost) sb.append("&exclude_types[]=reblog")
-			if(dont_show_follow) sb.append("&exclude_types[]=follow")
-			if(dont_show_reply) sb.append("&exclude_types[]=mention")
-			sb.toString()
+	private fun makeMisskeyBaseParameter(parser : TootParser?) : JSONObject {
+		val params = JSONObject()
+		if(access_info.isMisskey) {
+			if(parser!=null) parser.serviceType = ServiceType.MISSKEY
+			params.put("limit", 100)
 		}
+		return params
 	}
 	
-	private fun makePublicLocalUrl() : String {
-		return if(with_attachment) {
-			"$PATH_LOCAL&only_media=true" // mastodon 2.3 or later
-		} else {
-			PATH_LOCAL
+	private fun JSONObject.putMisskeyParamsTimeline() :JSONObject{
+		if(with_attachment && ! with_highlight ) {
+			put("mediaOnly", true)
 		}
-		
+		return this
+	}
+
+	private fun makeMisskeyParamsUserId(parser : TootParser) :JSONObject =
+		makeMisskeyBaseParameter(parser).put("userId",profile_id.toString())
+	
+	private fun makeMisskeyTimelineParameter(parser : TootParser) =
+		makeMisskeyBaseParameter(parser).putMisskeyParamsTimeline()
+	
+	
+	private fun makeMisskeyParamsProfileStatuses(parser : TootParser) =
+		makeMisskeyParamsUserId(parser).putMisskeyParamsTimeline()
+	
+	private fun makePublicLocalUrl() : String {
+		return when {
+			access_info.isMisskey -> "/api/notes/local-timeline"
+			with_attachment -> "$PATH_LOCAL&only_media=true" // mastodon 2.3 or later
+			else -> PATH_LOCAL
+		}
 	}
 	
 	private fun makePublicFederateUrl() : String {
-		val sb = StringBuilder("/api/v1/timelines/public?limit=")
-			.append(READ_LIMIT)
-		if(with_attachment) sb.append("&only_media=true")
-		return sb.toString()
+		return when {
+			access_info.isMisskey -> "/api/notes/global-timeline"
+			with_attachment -> "$PATH_TL_FEDERATE&only_media=true"
+			else -> PATH_TL_FEDERATE
+		}
+	}
+	
+	private fun makeHomeTlUrl() : String {
+		return when {
+			access_info.isMisskey -> "/api/notes/timeline"
+			with_attachment -> "$PATH_HOME&only_media=true"
+			else -> PATH_HOME
+		}
+	}
+	
+	private fun makeNotificationUrl() : String {
+		return when {
+			access_info.isMisskey -> "/api/i/notifications"
+			! dont_show_favourite
+				&& ! dont_show_boost
+				&& ! dont_show_follow
+				&& ! dont_show_reply -> PATH_NOTIFICATIONS
+			
+			else -> {
+				val sb = StringBuilder(PATH_NOTIFICATIONS) // always contain "?limit=XX"
+				if(dont_show_favourite) sb.append("&exclude_types[]=favourite")
+				if(dont_show_boost) sb.append("&exclude_types[]=reblog")
+				if(dont_show_follow) sb.append("&exclude_types[]=follow")
+				if(dont_show_reply) sb.append("&exclude_types[]=mention")
+				sb.toString()
+			}
+		}
+	}
+	
+	private fun makeListTlUrl() : String {
+		return String.format(Locale.JAPAN, PATH_LIST_TL, profile_id)
 	}
 	
 	private fun makeHashtagUrl(
@@ -4099,7 +4669,7 @@ class Column(
 		if(instance_local) sb.append("&local=true")
 		return sb.toString()
 	}
-	
+
 	private fun loadFilter2(client : TootApiClient) : ArrayList<TootFilter>? {
 		if(access_info.isPseudo) return null
 		val column_context = getFilterContext()
@@ -4185,5 +4755,12 @@ class Column(
 			}
 		}
 	}
+	
+	val isMisskey : Boolean = access_info.isMisskey
+	
+	fun onSaveInstanceState() {
+		viewHolder?.saveScrollPosition()
+	}
+	
 	
 }

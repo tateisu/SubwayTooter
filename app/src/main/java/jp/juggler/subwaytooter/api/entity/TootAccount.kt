@@ -12,10 +12,7 @@ import org.json.JSONObject
 import java.util.ArrayList
 import java.util.regex.Pattern
 
-open class TootAccount(
-	parser : TootParser,
-	src : JSONObject
-) {
+open class TootAccount(parser : TootParser, src : JSONObject) {
 	
 	//URL of the user's profile page (can be remote)
 	// https://mastodon.juggler.jp/@tateisu
@@ -23,7 +20,7 @@ open class TootAccount(
 	val url : String?
 	
 	//	The ID of the account
-	val id : Long
+	val id : EntityId
 	
 	//	Equals username for local users, includes @domain for remote ones
 	val acct : String
@@ -87,12 +84,16 @@ open class TootAccount(
 	// user_hides_network is preference, not exposed in API
 	// val user_hides_network : Boolean
 	
+	var pinnedNote : TootStatus? = null
+	var pinnedNoteId : String? = null
+	
 	init {
 		var sv : String?
 		
 		if(parser.serviceType == ServiceType.MISSKEY) {
 			
-			val instance = src.parseString("host") ?: parser.linkHelper.host ?: error("missing host")
+			val instance =
+				src.parseString("host") ?: parser.linkHelper.host ?: error("missing host")
 			
 			this.custom_emojis = null
 			this.profile_emojis = null
@@ -117,23 +118,28 @@ open class TootAccount(
 			
 			// this.user_hides_network = src.optBoolean("user_hides_network")
 			
-			this.id = INVALID_ID
+			this.id = EntityId.mayNull(src.parseString("id")) ?: error("missing id")
 			
 			this.acct = "$username@$instance"
 			this.host = instance
 			
-			this.followers_count = src.parseLong("followersCount") ?: -1L
-			this.following_count = src.parseLong("followingCount") ?: -1L
-			this.statuses_count = src.parseLong("notesCount") ?: -1L
+			this.followers_count = src.parseLong("followersCount") ?: - 1L
+			this.following_count = src.parseLong("followingCount") ?: - 1L
+			this.statuses_count = src.parseLong("notesCount") ?: - 1L
 			
 			this.created_at = src.parseString("createdAt")
 			this.time_created_at = TootStatus.parseTime(this.created_at)
 			
 			this.avatar = src.parseString("avatarUrl")
 			this.avatar_static = src.parseString("avatarUrl")
-			this.header =src.parseString("bannerUrl")
+			this.header = src.parseString("bannerUrl")
 			this.header_static = src.parseString("bannerUrl")
 			
+			this.pinnedNoteId = src.parseString("pinnedNoteId")
+			if(parser.misskeyDecodeProfilePin) {
+				this.pinnedNote = parseItem(::TootStatus, parser, src.optJSONObject("pinnedNote"))
+				
+			}
 		} else {
 			
 			// 絵文字データは先に読んでおく
@@ -172,7 +178,7 @@ open class TootAccount(
 					
 					val hostAccess = parser.linkHelper.host
 					
-					this.id = src.parseLong("id") ?: INVALID_ID
+					this.id = EntityId.from(src.parseLong("id") ?: INVALID_ID)
 					
 					this.acct = src.notEmptyOrThrow("acct")
 					this.host = findHostFromUrl(acct, hostAccess, url)
@@ -194,7 +200,7 @@ open class TootAccount(
 				
 				ServiceType.TOOTSEARCH -> {
 					// tootsearch のアカウントのIDはどのタンス上のものか分からないので役に立たない
-					this.id = INVALID_ID // src.parseLong( "id", INVALID_ID)
+					this.id = EntityId.from(INVALID_ID) // src.parseLong( "id", INVALID_ID)
 					
 					sv = src.notEmptyOrThrow("acct")
 					this.host = findHostFromUrl(sv, null, url)
@@ -215,7 +221,7 @@ open class TootAccount(
 				}
 				
 				ServiceType.MSP -> {
-					this.id = src.parseLong("id") ?: INVALID_ID
+					this.id = EntityId.from(src.parseLong("id") ?: INVALID_ID)
 					
 					// MSPはLTLの情報しか持ってないのでacctは常にホスト名部分を持たない
 					this.host = findHostFromUrl(null, null, url)
@@ -237,7 +243,7 @@ open class TootAccount(
 					
 				}
 				
-				else -> error("will not happen")
+				ServiceType.MISSKEY -> error("will not happen")
 			}
 		}
 	}

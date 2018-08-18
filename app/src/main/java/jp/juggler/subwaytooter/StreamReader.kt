@@ -15,6 +15,7 @@ import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.EntityIdLong
 import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootPayload
 import jp.juggler.subwaytooter.table.SavedAccount
@@ -149,7 +150,7 @@ internal class StreamReader(
 									val tl_host = access_info.host
 									for(column in App1.getAppState(context).column_list) {
 										try {
-											column.onStatusRemoved(tl_host, payload)
+											column.onStatusRemoved(tl_host, EntityIdLong(payload))
 										} catch(ex : Throwable) {
 											log.trace(ex)
 										}

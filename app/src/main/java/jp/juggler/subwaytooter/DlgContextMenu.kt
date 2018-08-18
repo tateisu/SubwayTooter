@@ -58,7 +58,7 @@ internal class DlgContextMenu(
 		val who = whoRef?.get()
 		val status = this.status
 		
-		this.relation = UserRelation.load(access_info.db_id, who?.id ?: - 1)
+		this.relation = UserRelation.load(access_info.db_id, who?.id)
 		
 		val viewRoot = activity.layoutInflater.inflate(R.layout.dlg_context_menu, null, false)
 		this.dialog = Dialog(activity)

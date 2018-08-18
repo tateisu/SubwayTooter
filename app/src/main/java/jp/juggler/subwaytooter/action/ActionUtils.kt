@@ -8,9 +8,7 @@ import java.util.ArrayList
 
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootRelationShip
-import jp.juggler.subwaytooter.api.entity.parseList
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.*
@@ -145,6 +143,20 @@ internal fun loadRelation1(
 		}
 	}
 	return rr
+}
+
+// relationshipを取得
+internal fun loadRelation1(
+	client : TootApiClient, access_info : SavedAccount, who_id : EntityId
+) =when(who_id) {
+	is EntityIdLong -> loadRelation1(client,access_info,who_id.toLong())
+	else-> {
+		// TODO Misskey対応
+		val rr = RelationResult()
+		rr.result = TootApiResult("misskey support is not yet implemented")
+		rr.relation = null // TODO
+		rr
+	}
 }
 
 // 別アカ操作と別タンスの関係

@@ -47,11 +47,12 @@ object TootAccountMap{
 	private var serialSeed = Integer.MIN_VALUE
 	private val accountEnum = HashMap<AccountUniqueKey,Int>()
 	
-	fun find(id : Int) : TootAccount {
-		return requireNotNull(accountMap[id])
+	fun find(mapId : Int) : TootAccount {
+		return requireNotNull(accountMap[mapId])
 	}
+	
 	fun find(ref: TootAccountRef) : TootAccount {
-		return requireNotNull(accountMap[ref.id])
+		return requireNotNull(accountMap[ref.mapId])
 	}
 	
 	fun register(parser:TootParser, who : TootAccount) : Int {

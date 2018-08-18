@@ -74,7 +74,8 @@ object ContentWarning :TableCompanion{
 			
 			val cv = ContentValues()
 			cv.put(COL_HOST, status.hostAccessOrOriginal)
-			cv.put(COL_STATUS_ID, status.idAccessOrOriginal)
+			cv.put(COL_STATUS_ID, status.idAccessOrOriginal.toLong())
+			// TODO: Misskey用には別のテーブルを作るべき
 			cv.put(COL_SHOWN, is_shown.b2i())
 			cv.put(COL_TIME_SAVE, now)
 			App1.database.replace(table, null, cv)

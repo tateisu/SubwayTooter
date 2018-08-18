@@ -104,7 +104,7 @@
 	<string name="content_warning_hint">Saisissez le texte d\'avertissement de contenu.</string>
 	<string name="contributor">Contributeur(s)</string>
 	<string name="conversation">Conversation</string>
-	<string name="conversation_around">Conversation du statut: %1$d</string>
+	<string name="conversation_around">Conversation du statut: %1$s</string>
 	<string name="conversation_view">Visualiser la conversation</string>
 	<string name="copy">Copier</string>
 	<string name="copy_complete">Clipboard mis à jour.</string>

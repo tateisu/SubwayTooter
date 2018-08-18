@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.*
 import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootFilter
 import jp.juggler.subwaytooter.api.entity.TootStatus
 
@@ -31,12 +32,12 @@ class ActKeywordFilter
 		fun open(
 			activity : Activity,
 			ai : SavedAccount,
-			filter_id : Long = - 1L,
+			filter_id : EntityId? =null,
 			initial_phrase : String? = null
 		) {
 			val intent = Intent(activity, ActKeywordFilter::class.java)
 			intent.putExtra(EXTRA_ACCOUNT_DB_ID, ai.db_id)
-			intent.putExtra(EXTRA_FILTER_ID, filter_id)
+			filter_id?.putTo(intent,EXTRA_FILTER_ID)
 			if(initial_phrase != null) intent.putExtra(EXTRA_INITIAL_PHRASE, initial_phrase)
 			activity.startActivity(intent)
 		}
@@ -71,7 +72,7 @@ class ActKeywordFilter
 	
 	private var loading = false
 	private var density : Float = 1f
-	private var filter_id : Long = - 1L
+	private var filter_id : EntityId? = null
 	private var filter_expire : Long = 0L
 	
 	///////////////////////////////////////////////////
@@ -84,7 +85,7 @@ class ActKeywordFilter
 		val intent = this.intent
 		
 		// filter ID の有無はUIに影響するのでinitUIより先に初期化する
-		this.filter_id = intent.getLongExtra(EXTRA_FILTER_ID, - 1L)
+		this.filter_id = EntityId.from(intent,EXTRA_FILTER_ID)
 		
 		val a = SavedAccount.loadAccount(this, intent.getLongExtra(EXTRA_ACCOUNT_DB_ID, - 1L))
 		if(a == null) {
@@ -96,7 +97,7 @@ class ActKeywordFilter
 		initUI()
 		
 		if(savedInstanceState == null) {
-			if(filter_id != - 1L) {
+			if(filter_id != null ) {
 				startLoading()
 			} else {
 				val sv = intent.getStringExtra(EXTRA_INITIAL_PHRASE)
@@ -124,7 +125,7 @@ class ActKeywordFilter
 	
 	private fun initUI() {
 		title =
-			getString(if(filter_id == - 1L) R.string.keyword_filter_new else R.string.keyword_filter_edit)
+			getString(if(filter_id ==null ) R.string.keyword_filter_new else R.string.keyword_filter_edit)
 		
 		this.density = resources.displayMetrics.density
 		setContentView(R.layout.act_keyword_filter)
@@ -266,7 +267,7 @@ class ActKeywordFilter
 		
 		TootTaskRunner(this).run(account, object : TootTask {
 			
-			override fun background(client : TootApiClient) = if(filter_id == - 1L) {
+			override fun background(client : TootApiClient) = if(filter_id == null) {
 				val builder = Request.Builder()
 					.post(RequestBody.create(TootApiClient.MEDIA_TYPE_JSON, params))
 				client.request(Column.PATH_FILTERS, builder)

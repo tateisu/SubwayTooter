@@ -60,7 +60,7 @@ class TootFilter( src: JSONObject) :TimelineItem() {
 		}
 	}
 	
-	val id:Long
+	val id:EntityId
 	val phrase :String
 	val context: Int
 	private val expires_at : String? // null is not specified, or "2018-07-06T00:59:13.161Z"
@@ -69,8 +69,8 @@ class TootFilter( src: JSONObject) :TimelineItem() {
 	val whole_word : Boolean
 	
 	init{
-		id = src.parseLong("id") ?: throw RuntimeException("missing id")
-		phrase = src.parseString("phrase")?: throw RuntimeException("missing phrase")
+		id = EntityId.mayNull(src.parseLong("id") ) ?: error("missing id")
+		phrase = src.parseString("phrase")?: error("missing phrase")
 		context = parseFilterContext(src.optJSONArray("context"))
 		expires_at = src.parseString("expires_at") // may null
 		time_expires_at = TootStatus.parseTime(expires_at)

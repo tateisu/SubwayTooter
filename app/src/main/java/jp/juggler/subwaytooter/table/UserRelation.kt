@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.support.v4.util.LruCache
 
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.util.LogCategory
@@ -29,7 +30,7 @@ class UserRelation private constructor() {
 		return if(requested && ! following && who != null && ! who.locked) false else requested
 	}
 	
-	companion object :TableCompanion{
+	companion object : TableCompanion {
 		
 		private val log = LogCategory("UserRelation")
 		
@@ -47,8 +48,10 @@ class UserRelation private constructor() {
 		// Whether the boosts from target account will be shown on authorized user's home TL.
 		private const val COL_FOLLOWING_REBLOGS = "following_reblogs"
 		
-		const val REBLOG_HIDE = 0 // don't show the boosts from target account will be shown on authorized user's home TL.
-		const val REBLOG_SHOW = 1 // show the boosts from target account will be shown on authorized user's home TL.
+		const val REBLOG_HIDE =
+			0 // don't show the boosts from target account will be shown on authorized user's home TL.
+		const val REBLOG_SHOW =
+			1 // show the boosts from target account will be shown on authorized user's home TL.
 		const val REBLOG_UNKNOWN = 2 // not following, or instance don't support hide reblog.
 		
 		override fun onDBCreate(db : SQLiteDatabase) {
@@ -99,7 +102,7 @@ class UserRelation private constructor() {
 			try {
 				// 古いデータを掃除する
 				val expire = now - 86400000L * 365
-				App1.database.delete(table, COL_TIME_SAVE + "<?", arrayOf(expire.toString()))
+				App1.database.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
 				
 			} catch(ex : Throwable) {
 				log.e(ex, "deleteOld failed.")
@@ -108,11 +111,13 @@ class UserRelation private constructor() {
 		}
 		
 		fun save1(now : Long, db_id : Long, src : TootRelationShip) : UserRelation {
+			
 			try {
 				val cv = ContentValues()
 				cv.put(COL_TIME_SAVE, now)
 				cv.put(COL_DB_ID, db_id)
-				cv.put(COL_WHO_ID, src.id)
+				cv.put(COL_WHO_ID, src.id?.toLong() ?: -1L)
+				// TODO misskey用にIDがStringのテーブルを用意する？
 				cv.put(COL_FOLLOWING, if(src.following) 1 else 0)
 				cv.put(COL_FOLLOWED_BY, if(src.followed_by) 1 else 0)
 				cv.put(COL_BLOCKING, if(src.blocking) 1 else 0)
@@ -141,12 +146,13 @@ class UserRelation private constructor() {
 			db.execSQL("BEGIN TRANSACTION")
 			try {
 				for(src in src_list) {
-					cv.put(COL_WHO_ID, src.id)
-					cv.put(COL_FOLLOWING, src.following.b2i() )
-					cv.put(COL_FOLLOWED_BY, src.followed_by.b2i() )
-					cv.put(COL_BLOCKING, src.blocking.b2i() )
-					cv.put(COL_MUTING, src.muting.b2i() )
-					cv.put(COL_REQUESTED, src.requested.b2i() )
+					cv.put(COL_WHO_ID, src.id?.toLong() ?: -1L)
+					// TODO misskey用にidがStringのテーブルを用意する？
+					cv.put(COL_FOLLOWING, src.following.b2i())
+					cv.put(COL_FOLLOWED_BY, src.followed_by.b2i())
+					cv.put(COL_BLOCKING, src.blocking.b2i())
+					cv.put(COL_MUTING, src.muting.b2i())
+					cv.put(COL_REQUESTED, src.requested.b2i())
 					cv.put(COL_FOLLOWING_REBLOGS, src.showing_reblogs)
 					db.replace(table, null, cv)
 					
@@ -178,6 +184,11 @@ class UserRelation private constructor() {
 			}
 		}
 		
+		// TODO UserRelationテーブルのMisskey対応
+		// 文字列IDなら別テーブル参照とかできそう
+		fun load(db_id : Long, who_id : EntityId?)=
+			load(db_id,who_id?.toLong() ?: -1L)
+
 		fun load(db_id : Long, who_id : Long) : UserRelation {
 			
 			val key = String.format("%s:%s", db_id, who_id)
@@ -194,11 +205,13 @@ class UserRelation private constructor() {
 						if(cursor.moveToNext()) {
 							val dst = UserRelation()
 							dst.following = 0 != cursor.getInt(cursor.getColumnIndex(COL_FOLLOWING))
-							dst.followed_by = 0 != cursor.getInt(cursor.getColumnIndex(COL_FOLLOWED_BY))
+							dst.followed_by = 0 !=
+								cursor.getInt(cursor.getColumnIndex(COL_FOLLOWED_BY))
 							dst.blocking = 0 != cursor.getInt(cursor.getColumnIndex(COL_BLOCKING))
 							dst.muting = 0 != cursor.getInt(cursor.getColumnIndex(COL_MUTING))
 							dst.requested = 0 != cursor.getInt(cursor.getColumnIndex(COL_REQUESTED))
-							dst.following_reblogs = cursor.getInt(cursor.getColumnIndex(COL_FOLLOWING_REBLOGS))
+							dst.following_reblogs =
+								cursor.getInt(cursor.getColumnIndex(COL_FOLLOWING_REBLOGS))
 							return dst
 						}
 					}

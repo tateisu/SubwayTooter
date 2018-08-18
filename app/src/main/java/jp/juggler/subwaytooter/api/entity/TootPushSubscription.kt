@@ -5,13 +5,13 @@ import org.json.JSONObject
 import jp.juggler.subwaytooter.util.parseString
 
 class TootPushSubscription(src : JSONObject){
-	val id: Long?
+	val id: EntityId?
 	val endpoint : String?
-	val alerts= HashMap<String,Boolean>()
+	private val alerts= HashMap<String,Boolean>()
 	val server_key : String?
 
 	init{
-		id = src.parseLong("id")
+		id = EntityId.mayNull(src.parseLong("id"))
 		endpoint = src.parseString("endpoint")
 		server_key = src.parseString("server_key")
 		

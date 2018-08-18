@@ -208,7 +208,7 @@
 
     <string name="conversation_view">会話ビュー</string>
 
-    <string name="conversation_around">会話の流れ(id:%1$d)</string>
+    <string name="conversation_around">会話の流れ(id:%1$s)</string>
 
     <string name="instance_not_need_slash">インスタンスには\'/\',\'\@\'を含めずに、ホスト名だけを指定してください</string>
 

@@ -23,20 +23,20 @@ object MediaShown:TableCompanion {
 		db.execSQL(
 			"create table if not exists " + table
 				+ "(_id INTEGER PRIMARY KEY"
-				+ ",h text not null"
-				+ ",si integer not null"
-				+ ",sh integer not null"
-				+ ",time_save integer default 0"
+				+ ",$COL_HOST text not null"
+				+ ",$COL_STATUS_ID integer not null"
+				+ ",$COL_SHOWN integer not null"
+				+ ",$COL_TIME_SAVE integer default 0"
 				+ ")"
 		)
 		db.execSQL(
-			"create unique index if not exists " + table + "_status_id on " + table + "(h,si)"
+			"create unique index if not exists " + table + "_status_id on " + table + "($COL_HOST,$COL_STATUS_ID)"
 		)
 	}
 	
 	override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
 		if(oldVersion < 5 && newVersion >= 5) {
-			db.execSQL("drop table if exists " + table)
+			db.execSQL("drop table if exists $table")
 			onDBCreate(db)
 		}
 	}
@@ -73,14 +73,15 @@ object MediaShown:TableCompanion {
 			
 			val cv = ContentValues()
 			cv.put(COL_HOST, status.hostAccessOrOriginal)
-			cv.put(COL_STATUS_ID, status.idAccessOrOriginal)
+			cv.put(COL_STATUS_ID, status.idAccessOrOriginal.toLong())
+				//TODO Misskey用のテーブルを作る？
 			cv.put(COL_SHOWN, is_shown.b2i())
 			cv.put(COL_TIME_SAVE, now)
 			App1.database.replace(table, null, cv)
 			
 			// 古いデータを掃除する
 			val expire = now - 86400000L * 365
-			App1.database.delete(table, COL_TIME_SAVE + "<?", arrayOf(expire.toString()))
+			App1.database.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
 			
 		} catch(ex : Throwable) {
 			log.e(ex, "save failed.")

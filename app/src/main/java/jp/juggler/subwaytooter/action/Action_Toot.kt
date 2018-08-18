@@ -17,6 +17,8 @@ import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.EntityIdLong
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
@@ -490,7 +492,7 @@ object Action_Toot {
 	}
 	
 	fun delete(
-		activity : ActMain, access_info : SavedAccount, status_id : Long
+		activity : ActMain, access_info : SavedAccount, status_id : EntityId
 	) {
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
@@ -532,7 +534,10 @@ object Action_Toot {
 	
 	// ローカルから見える会話の流れを表示する
 	fun conversationLocal(
-		activity : ActMain, pos : Int, access_info : SavedAccount, status_id : Long
+		activity : ActMain,
+		pos : Int,
+		access_info : SavedAccount,
+		status_id : EntityId
 	) {
 		activity.addColumn(pos, access_info, Column.TYPE_CONVERSATION, status_id)
 	}
@@ -553,11 +558,11 @@ object Action_Toot {
 		
 		// 検索サービスではステータスTLをどのタンスから読んだのか分からない
 			status.host_access == null ->
-				conversationOtherInstance(activity, pos, url, status.id, null, - 1L)
+				conversationOtherInstance(activity, pos, url, status.id )
 		
 		// TLアカウントのホストとトゥートのアカウントのホストが同じ
 			status.host_original == status.host_access ->
-				conversationOtherInstance(activity, pos, url, status.id, null, - 1L)
+				conversationOtherInstance(activity, pos, url, status.id )
 			
 			else -> {
 				// トゥートを取得したタンスと投稿元タンスが異なる場合
@@ -582,9 +587,9 @@ object Action_Toot {
 		activity : ActMain,
 		pos : Int,
 		url : String,
-		status_id_original : Long,
-		host_access : String?,
-		status_id_access : Long
+		status_id_original : EntityId?=null,
+		host_access : String? =null,
+		status_id_access : EntityId?=null
 	) {
 		
 		val dialog = ActionsDialog()
@@ -613,11 +618,11 @@ object Action_Toot {
 			// 疑似アカウントは後でまとめて処理する
 			if(a.isPseudo) continue
 			
-			if(status_id_original >= 0L && a.host.equals(host_original, ignoreCase = true)) {
+			if(status_id_original !=null && a.host.equals(host_original, ignoreCase = true)) {
 				// アクセス情報＋ステータスID でアクセスできるなら
 				// 同タンスのアカウントならステータスIDの変換なしに表示できる
 				local_account_list.add(a)
-			} else if(status_id_access >= 0L && a.host.equals(host_access, ignoreCase = true)) {
+			} else if(status_id_access !=null && a.host.equals(host_access, ignoreCase = true)) {
 				// 既に変換済みのステータスIDがあるなら、そのアカウントでもステータスIDの変換は必要ない
 				access_account_list.add(a)
 			} else {
@@ -628,7 +633,7 @@ object Action_Toot {
 		
 		// 同タンスのアカウントがないなら、疑似アカウントで開く選択肢
 		if(local_account_list.isEmpty()) {
-			if(status_id_original >= 0L) {
+			if(status_id_original !=null ) {
 				dialog.addAction(
 					activity.getString(R.string.open_in_pseudo_account, "?@$host_original")
 				) {
@@ -650,27 +655,31 @@ object Action_Toot {
 		}
 		
 		// ローカルアカウント
-		SavedAccount.sort(local_account_list)
-		for(a in local_account_list) {
-			dialog.addAction(
-				AcctColor.getStringWithNickname(
-					activity,
-					R.string.open_in_account,
-					a.acct
-				)
-			) { conversationLocal(activity, pos, a, status_id_original) }
+		if( status_id_original != null ){
+			SavedAccount.sort(local_account_list)
+			for(a in local_account_list) {
+				dialog.addAction(
+					AcctColor.getStringWithNickname(
+						activity,
+						R.string.open_in_account,
+						a.acct
+					)
+				) { conversationLocal(activity, pos, a, status_id_original) }
+			}
 		}
 		
 		// アクセスしたアカウント
-		SavedAccount.sort(access_account_list)
-		for(a in access_account_list) {
-			dialog.addAction(
-				AcctColor.getStringWithNickname(
-					activity,
-					R.string.open_in_account,
-					a.acct
-				)
-			) { conversationLocal(activity, pos, a, status_id_access) }
+		if(status_id_access != null){
+			SavedAccount.sort(access_account_list)
+			for(a in access_account_list) {
+				dialog.addAction(
+					AcctColor.getStringWithNickname(
+						activity,
+						R.string.open_in_account,
+						a.acct
+					)
+				) { conversationLocal(activity, pos, a, status_id_access) }
+			}
 		}
 		
 		// その他の実アカウント
@@ -695,7 +704,7 @@ object Action_Toot {
 			.progressPrefix(activity.getString(R.string.progress_synchronize_toot))
 			.run(access_info, object : TootTask {
 				
-				var local_status_id = - 1L
+				var local_status_id :EntityId? = null
 				override fun background(client : TootApiClient) : TootApiResult? {
 					var result : TootApiResult?
 					if(access_info.isPseudo) {
@@ -706,15 +715,16 @@ object Action_Toot {
 							try {
 								val m = reDetailedStatusTime.matcher(string)
 								if(m.find()) {
-									local_status_id = m.group(1).toLong(10)
+									local_status_id = EntityIdLong(m.group(1).toLong(10))
 								}
 							} catch(ex : Throwable) {
 								log.e(ex, "openStatusRemote: can't parse status id from HTML data.")
 							}
 							
-							if(local_status_id == - 1L) {
-								result =
-									TootApiResult(activity.getString(R.string.status_id_conversion_failed))
+							if(local_status_id == null) {
+								result = TootApiResult(
+									activity.getString(R.string.status_id_conversion_failed)
+								)
 							}
 						}
 					} else {
@@ -733,7 +743,7 @@ object Action_Toot {
 								local_status_id = status.id
 								log.d("status id conversion %s => %s", remote_status_url, status.id)
 							}
-							if(local_status_id == - 1L) {
+							if(local_status_id == null) {
 								result =
 									TootApiResult(activity.getString(R.string.status_id_conversion_failed))
 							}
@@ -745,7 +755,8 @@ object Action_Toot {
 				override fun handleResult(result : TootApiResult?) {
 					if(result == null) return // cancelled.
 					
-					if(local_status_id != - 1L) {
+					val local_status_id = this.local_status_id
+					if(local_status_id !=null) {
 						conversationLocal(activity, pos, access_info, local_status_id)
 					} else {
 						showToast(activity, true, result.error)

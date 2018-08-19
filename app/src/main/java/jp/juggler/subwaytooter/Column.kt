@@ -621,18 +621,25 @@ class Column(
 		dst.put(KEY_COLUMN_BACKGROUND_IMAGE_ALPHA, column_bg_image_alpha.toDouble())
 		
 		when(column_type) {
-			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY -> dst.put(
-				KEY_STATUS_ID,
-				status_id
-			)
-			TYPE_PROFILE -> dst.put(KEY_PROFILE_ID, profile_id).put(KEY_PROFILE_TAB, profile_tab)
-			TYPE_LIST_MEMBER, TYPE_LIST_TL -> dst.put(KEY_PROFILE_ID, profile_id)
+
+			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY ->
+				dst.put(KEY_STATUS_ID,status_id.toString())
+
+			TYPE_PROFILE ->
+				dst.put(KEY_PROFILE_ID, profile_id.toString()).put(KEY_PROFILE_TAB, profile_tab)
+
+			TYPE_LIST_MEMBER, TYPE_LIST_TL ->
+				dst.put(KEY_PROFILE_ID, profile_id.toString())
+			
 			TYPE_HASHTAG -> dst.put(KEY_HASHTAG, hashtag)
+
 			TYPE_SEARCH -> dst.put(KEY_SEARCH_QUERY, search_query).put(
 				KEY_SEARCH_RESOLVE,
 				search_resolve
 			)
+
 			TYPE_SEARCH_MSP, TYPE_SEARCH_TS -> dst.put(KEY_SEARCH_QUERY, search_query)
+
 			TYPE_INSTANCE_INFORMATION -> dst.put(KEY_INSTANCE_URI, instance_uri)
 		}
 		

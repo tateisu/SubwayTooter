@@ -10,6 +10,8 @@ import android.provider.BaseColumns
 import android.util.JsonReader
 import android.util.JsonToken
 import android.util.JsonWriter
+import jp.juggler.subwaytooter.api.entity.EntityIdLong
+import jp.juggler.subwaytooter.api.entity.EntityIdString
 import jp.juggler.subwaytooter.table.*
 
 import org.json.JSONException
@@ -68,6 +70,16 @@ object AppDataExporter {
 						writer.name(k)
 						writer.value(o)
 						
+					}
+					
+					is EntityIdLong ->{
+						writer.name(k)
+						writer.value(o.toLong())
+					}
+					
+					is EntityIdString ->{
+						writer.name(k)
+						writer.value(o.toString())
 					}
 					
 					else -> throw RuntimeException(

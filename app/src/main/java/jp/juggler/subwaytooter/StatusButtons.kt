@@ -70,22 +70,25 @@ internal class StatusButtons(
 			if(access_info.isNicoru(status.account)) R.attr.ic_nicoru else R.attr.btn_favourite
 		
 		val replies_count = status.replies_count
+
 		setButton(
 			btnReply,
 			true,
 			color_normal,
 			R.attr.btn_reply,
-			when{
+			when {
 				replies_count == null || status.visibility == TootStatus.VISIBILITY_DIRECT -> ""
-				else->when(Pref.ipRepliesCount(activity.pref)){
-					Pref.RC_SIMPLE -> when{
-						replies_count >= 1 -> "1+"
-						else -> replies_count.toString()
+				else -> when(Pref.ipRepliesCount(activity.pref)) {
+					Pref.RC_SIMPLE -> when {
+						replies_count >= 2L -> "1+"
+						replies_count == 1L -> "1"
+						else -> ""
 					}
 					Pref.RC_ACTUAL -> replies_count.toString()
-					else->""
+					else -> ""
 				}
-			}
+			},
+			activity.getString(R.string.reply)
 		)
 		
 		// ブーストボタン
@@ -95,33 +98,27 @@ internal class StatusButtons(
 				false,
 				color_accent,
 				R.attr.ic_mail,
-				""
+				"",
+				activity.getString(R.string.boost)
 			)
-			// マストドン2.4.0から非公開トゥートもブーストできるようになった
-			//			TootStatus.VISIBILITY_PRIVATE == status.visibility -> setButton(
-			//				btnBoost,
-			//				false,
-			//				color_accent,
-			//				R.attr.ic_lock,
-			//				""
-			//			)
+			
 			activity.app_state.isBusyBoost(access_info, status) -> setButton(
 				btnBoost,
 				false,
 				color_normal,
 				R.attr.btn_refresh,
-				"?"
+				"?",
+				activity.getString(R.string.boost)
 			)
 			
-			else -> {
-				setButton(
-					btnBoost,
-					true,
-					if(status.reblogged) color_accent else color_normal,
-					R.attr.btn_boost,
-					status.reblogs_count?.toString() ?: ""
-				)
-			}
+			else -> setButton(
+				btnBoost,
+				true,
+				if(status.reblogged) color_accent else color_normal,
+				R.attr.btn_boost,
+				status.reblogs_count?.toString() ?: "",
+				activity.getString(R.string.boost)
+			)
 		}
 		
 		when {
@@ -130,18 +127,18 @@ internal class StatusButtons(
 				false,
 				color_normal,
 				R.attr.btn_refresh,
-				"?"
+				"?",
+				activity.getString(R.string.favourite)
 			)
 			
-			else -> {
-				setButton(
-					btnFavourite,
-					true,
-					if(status.favourited) color_accent else color_normal,
-					fav_icon_attr,
-					status.favourites_count?.toString() ?: ""
-				)
-			}
+			else -> setButton(
+				btnFavourite,
+				true,
+				if(status.favourited) color_accent else color_normal,
+				fav_icon_attr,
+				status.favourites_count?.toString() ?: "",
+				activity.getString(R.string.favourite)
+			)
 		}
 		
 		val account = status.account
@@ -163,12 +160,14 @@ internal class StatusButtons(
 		enabled : Boolean,
 		color : Int,
 		icon_attr : Int,
-		text : String
+		text : String,
+		contentDescription : String
 	) {
 		val d = Styler.getAttributeDrawable(activity, icon_attr).mutate()
 		d.setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
 		b.setCompoundDrawablesRelativeWithIntrinsicBounds(d, null, null, null)
 		b.text = text
+		b.contentDescription = contentDescription + text
 		b.setTextColor(color)
 		b.isEnabled = enabled
 	}

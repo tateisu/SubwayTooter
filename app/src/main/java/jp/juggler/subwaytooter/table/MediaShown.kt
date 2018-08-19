@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.api.entity.EntityIdString
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.util.LogCategory
 
@@ -42,6 +43,7 @@ object MediaShown:TableCompanion {
 	}
 	
 	fun isShown(status : TootStatus, default_value : Boolean) : Boolean {
+		if( status.idAccessOrOriginal is EntityIdString) return MediaShownMisskey.isShown(status,default_value)
 		try {
 			App1.database.query(
 				table,
@@ -68,6 +70,7 @@ object MediaShown:TableCompanion {
 	}
 	
 	fun save(status : TootStatus, is_shown : Boolean) {
+		if( status.idAccessOrOriginal is EntityIdString) return MediaShownMisskey.save(status,is_shown)
 		try {
 			val now = System.currentTimeMillis()
 			

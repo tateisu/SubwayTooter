@@ -31,7 +31,8 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 	//	A description for the instance
 	val description : String?
 	
-	//	An email address which can be used to contact the instance administrator
+	// An email address which can be used to contact the instance administrator
+	// misskeyの場合はURLらしい
 	val email : String?
 	
 	val version : String?
@@ -57,40 +58,59 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 	enum class InstanceType {
 		
 		Mastodon,
-		Pleroma
+		Pleroma,
+		Misskey
 	}
 	
-	private val instanceType : InstanceType
+	val instanceType : InstanceType
 	
 	// XXX: urls をパースしてない。使ってないから…
 	
 	init {
-		this.uri = src.parseString("uri")
-		this.title = src.parseString("title")
-		this.description = src.parseString("description")
-		this.email = src.parseString("email")
-		this.version = src.parseString("version")
-		this.decoded_version = VersionString(version)
-		this.stats = parseItem(::Stats, src.optJSONObject("stats"))
-		this.thumbnail = src.parseString("thumbnail")
-		
-		this.max_toot_chars = src.parseInt("max_toot_chars")
-		
-		this.instanceType = when {
-			rePleroma.matcher(version ?: "").find() -> InstanceType.Pleroma
-			else -> InstanceType.Mastodon
-		}
-		
-		languages = src.optJSONArray("languages")?.toStringArrayList()
-		
-		val parser2 = TootParser(
-			parser.context,
-			object : LinkHelper {
-				override val host : String
-					get() = uri ?: "?"
+		if(parser.serviceType == ServiceType.MISSKEY){
+			
+			this.uri = parser.linkHelper.host
+			this.title = parser.linkHelper.host
+			this.description = "(Misskey instance)"
+			this.email = src.optJSONObject("maintainer")?.parseString("url")
+			this.version = src.parseString("version")
+			this.decoded_version = VersionString(version)
+			this.stats = null
+			this.thumbnail = null
+			this.max_toot_chars = 1000
+			this.instanceType = InstanceType.Misskey
+			this.languages = ArrayList<String>().also{ it.add("?")}
+			this.contact_account = null
+			
+		}else {
+			this.uri = src.parseString("uri")
+			this.title = src.parseString("title")
+			this.description = src.parseString("description")
+			this.email = src.parseString("email")
+			this.version = src.parseString("version")
+			this.decoded_version = VersionString(version)
+			this.stats = parseItem(::Stats, src.optJSONObject("stats"))
+			this.thumbnail = src.parseString("thumbnail")
+			
+			this.max_toot_chars = src.parseInt("max_toot_chars")
+			
+			this.instanceType = when {
+				rePleroma.matcher(version ?: "").find() -> InstanceType.Pleroma
+				else -> InstanceType.Mastodon
 			}
-		)
-		contact_account = parseItem(::TootAccount, parser2, src.optJSONObject("contact_account"))
+			
+			languages = src.optJSONArray("languages")?.toStringArrayList()
+			
+			val parser2 = TootParser(
+				parser.context,
+				object : LinkHelper {
+					override val host : String
+						get() = uri ?: "?"
+				}
+			)
+			contact_account =
+				parseItem(::TootAccount, parser2, src.optJSONObject("contact_account"))
+		}
 	}
 	
 	class Stats(src : JSONObject) {

@@ -38,8 +38,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.EntityIdLong
+import jp.juggler.subwaytooter.api.entity.*
 
 import org.apache.commons.io.IOUtils
 
@@ -52,8 +51,6 @@ import java.util.ArrayList
 import java.util.HashSet
 import java.util.regex.Pattern
 
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.table.AcctColor
@@ -1464,15 +1461,13 @@ class ActMain : AppCompatActivity()
 	
 	// ActOAuthCallbackで受け取ったUriを処理する
 	private fun handleIntentUri(uri : Uri) {
-		
-		if("subwaytooter" == uri.scheme) {
-			try {
+	
+		when(uri.scheme){
+			"subwaytooter","misskeyclientproto" -> return try{
 				handleOAuth2CallbackUri(uri)
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}
-			
-			return
 		}
 		
 		val url = uri.toString()
@@ -1627,59 +1622,108 @@ class ActMain : AppCompatActivity()
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
-				// エラー時
-				// subwaytooter://oauth
-				// ?error=access_denied
-				// &error_description=%E3%83%AA%E3%82%BD%E3%83%BC%E3%82%B9%E3%81%AE%E6%89%80%E6%9C%89%E8%80%85%E3%81%BE%E3%81%9F%E3%81%AF%E8%AA%8D%E8%A8%BC%E3%82%B5%E3%83%BC%E3%83%90%E3%83%BC%E3%81%8C%E8%A6%81%E6%B1%82%E3%82%92%E6%8B%92%E5%90%A6%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F%E3%80%82
-				// &state=db%3A3
-				val error = uri.getQueryParameter("error_description")
-				if(error?.isNotEmpty() == true) {
-					return TootApiResult(error)
-				}
-				
-				// subwaytooter://oauth
-				//    ?code=113cc036e078ac500d3d0d3ad345cd8181456ab087abc67270d40f40a4e9e3c2
-				//    &state=host%3Amastodon.juggler.jp
-				
-				val code = uri.getQueryParameter("code")
-				if(code?.isEmpty() != false) {
-					return TootApiResult("missing code in callback url.")
-				}
-				
-				val sv = uri.getQueryParameter("state")
-				if(sv?.isEmpty() != false) {
-					return TootApiResult("missing state in callback url.")
-				}
-				
-				if(sv.startsWith("db:")) {
-					try {
-						val dataId = sv.substring(3).toLong(10)
-						val sa = SavedAccount.loadAccount(this@ActMain, dataId)
-							?: return TootApiResult("missing account db_id=$dataId")
-						this.sa = sa
-						client.account = sa
-					} catch(ex : Throwable) {
-						log.trace(ex)
-						return TootApiResult(ex.withCaption("invalid state"))
+				val uriStr = uri.toString()
+				if( uriStr.startsWith("subwaytooter://misskey/auth_callback")
+					|| uriStr.startsWith("misskeyclientproto://misskeyclientproto/auth_callback")
+				){
+					
+					// Misskey 認証コールバック
+					val token = uri.getQueryParameter("token")
+					if(token?.isEmpty() != false) {
+						return TootApiResult("missing token in callback URL")
+					}
+					val prefDevice = PrefDevice.prefDevice(this@ActMain)
+
+					val db_id = prefDevice.getLong(PrefDevice.LAST_AUTH_DB_ID,-1L)
+
+					val instance = prefDevice.getString(PrefDevice.LAST_AUTH_INSTANCE,null)
+						?: return TootApiResult("missing instance name.")
+					
+					if( db_id != -1L ){
+						try {
+							val sa = SavedAccount.loadAccount(this@ActMain, db_id)
+								?: return TootApiResult("missing account db_id=$db_id")
+							this.sa = sa
+							client.account = sa
+						} catch(ex : Throwable) {
+							log.trace(ex)
+							return TootApiResult(ex.withCaption("invalid state"))
+						}
+					}else{
+						client.instance = instance
 					}
 					
-				} else if(sv.startsWith("host:")) {
-					val host = sv.substring(5)
-					client.instance = host
+					this.host = instance
+					val client_name = Pref.spClientName(this@ActMain)
+					val result = client.authentication2Misskey(client_name, token)
+					this.ta = TootParser(
+						this@ActMain,
+						object : LinkHelper {
+							override val host : String?
+								get() = instance
+						},
+						serviceType = ServiceType.MISSKEY
+					).account(result?.jsonObject)
+					return result
+					
+				}else{
+					// Mastodon 認証コールバック
+					
+					// エラー時
+					// subwaytooter://oauth
+					// ?error=access_denied
+					// &error_description=%E3%83%AA%E3%82%BD%E3%83%BC%E3%82%B9%E3%81%AE%E6%89%80%E6%9C%89%E8%80%85%E3%81%BE%E3%81%9F%E3%81%AF%E8%AA%8D%E8%A8%BC%E3%82%B5%E3%83%BC%E3%83%90%E3%83%BC%E3%81%8C%E8%A6%81%E6%B1%82%E3%82%92%E6%8B%92%E5%90%A6%E3%81%97%E3%81%BE%E3%81%97%E3%81%9F%E3%80%82
+					// &state=db%3A3
+					val error = uri.getQueryParameter("error_description")
+					if(error?.isNotEmpty() == true) {
+						return TootApiResult(error)
+					}
+					
+					// subwaytooter://oauth
+					//    ?code=113cc036e078ac500d3d0d3ad345cd8181456ab087abc67270d40f40a4e9e3c2
+					//    &state=host%3Amastodon.juggler.jp
+					
+					val code = uri.getQueryParameter("code")
+					if(code?.isEmpty() != false) {
+						return TootApiResult("missing code in callback url.")
+					}
+					
+					val sv = uri.getQueryParameter("state")
+					if(sv?.isEmpty() != false) {
+						return TootApiResult("missing state in callback url.")
+					}
+					
+					if(sv.startsWith("db:")) {
+						try {
+							val dataId = sv.substring(3).toLong(10)
+							val sa = SavedAccount.loadAccount(this@ActMain, dataId)
+								?: return TootApiResult("missing account db_id=$dataId")
+							this.sa = sa
+							client.account = sa
+						} catch(ex : Throwable) {
+							log.trace(ex)
+							return TootApiResult(ex.withCaption("invalid state"))
+						}
+						
+					} else if(sv.startsWith("host:")) {
+						val host = sv.substring(5)
+						client.instance = host
+					}
+					
+					val instance = client.instance
+						?: return TootApiResult("missing instance  in callback url.")
+					
+					this.host = instance
+					val client_name = Pref.spClientName(this@ActMain)
+					val result = client.authentication2(client_name, code)
+					this.ta = TootParser(this@ActMain, object : LinkHelper {
+						override val host : String?
+							get() = instance
+					})
+						.account(result?.jsonObject)
+					return result
 				}
 				
-				val instance = client.instance
-					?: return TootApiResult("missing instance  in callback url.")
-				
-				this.host = instance
-				val client_name = Pref.spClientName(this@ActMain)
-				val result = client.authentication2(client_name, code)
-				this.ta = TootParser(this@ActMain, object : LinkHelper {
-					override val host : String?
-						get() = instance
-				})
-					.account(result?.jsonObject)
-				return result
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
@@ -1757,7 +1801,13 @@ class ActMain : AppCompatActivity()
 			// アカウント追加時
 			val user = ta.username + "@" + host
 			
-			val row_id = SavedAccount.insert(host, user, jsonObject, token_info)
+			val row_id = SavedAccount.insert(
+				host,
+				user,
+				jsonObject,
+				token_info,
+				isMisskey = token_info.optBoolean(TootApiClient.KEY_IS_MISSKEY)
+			)
 			val account = SavedAccount.loadAccount(this@ActMain, row_id)
 			if(account != null) {
 				var bModified = false

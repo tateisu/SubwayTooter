@@ -14,4 +14,7 @@ object PrefDevice {
 	internal const val KEY_DEVICE_TOKEN = "device_token"
 	internal const val KEY_INSTALL_ID = "install_id"
 	
+	const val LAST_AUTH_INSTANCE="lastAuthInstance"
+	const val LAST_AUTH_SECRET="lastAuthSecret"
+	const val LAST_AUTH_DB_ID ="lastAuthDbId"
 }

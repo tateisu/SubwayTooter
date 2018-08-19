@@ -12,8 +12,8 @@ android {
         minSdkVersion 21
         targetSdkVersion 27
 
-        versionCode 266
-        versionName "2.6.6"
+        versionCode 267
+        versionName "2.6.7"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         // https://stackoverflow.com/questions/47791227/java-lang-illegalstateexception-dex-archives-setting-dex-extension-only-for

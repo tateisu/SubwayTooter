@@ -102,14 +102,17 @@ class App1 : Application() {
 		// 2018/5/16 v252 25=>26 SubscriptionServerKey テーブルを丸ごと変更
 		// 2018/8/5 v264 26 => 27 SavedAccountテーブルに項目追加
 		// 2018/8/17 v267 27 => 28 SavedAccountテーブルに項目追加
-		internal const val DB_VERSION = 28
+		// 2018/8/19 v267 28 => 29 ContentWarningMisskey, MediaShownMisskey テーブルを追加
+		internal const val DB_VERSION = 29
 		
 		private val tableList = arrayOf(
 			LogData,
 			SavedAccount,
 			ClientInfo,
 			MediaShown,
+			MediaShownMisskey,
 			ContentWarning,
+			ContentWarningMisskey,
 			NotificationTracking,
 			MutedApp,
 			UserRelation,

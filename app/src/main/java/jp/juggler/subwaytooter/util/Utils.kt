@@ -4,12 +4,10 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.res.Resources
-import android.graphics.Rect
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.support.v7.widget.RecyclerView
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -32,7 +30,6 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
 import java.lang.ref.WeakReference
-import java.lang.reflect.Field
 import java.security.MessageDigest
 import java.util.LinkedList
 import java.util.Locale
@@ -48,7 +45,7 @@ object Utils {
 	
 	val log = LogCategory("Utils")
 	
-	val hex =
+	val hexLower =
 		charArrayOf('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f')
 	
 	/////////////////////////////////////////////
@@ -430,9 +427,20 @@ fun String.encodeUTF8() = this.toByteArray(charsetUTF8)
 fun ByteArray.decodeUTF8() = this.toString(charsetUTF8)
 
 fun StringBuilder.appendHex2(value : Int) : StringBuilder {
-	this.append(Utils.hex[(value shr 4) and 15])
-	this.append(Utils.hex[value and 15])
+	this.append(Utils.hexLower[(value shr 4) and 15])
+	this.append(Utils.hexLower[value and 15])
 	return this
+}
+
+fun ByteArray.encodeHexLower() : String {
+	val size = this.size
+	val sb = StringBuilder(size *2)
+	for( i in 0 until size){
+		val value = this[i].toInt()
+		sb.append(Utils.hexLower[(value shr 4) and 15])
+		sb.append(Utils.hexLower[value and 15])
+	}
+	return sb.toString()
 }
 
 fun String?.optInt() : Int? {

@@ -100,7 +100,7 @@ object LoginForm {
 			activity, R.layout.lv_spinner_dropdown, ArrayList()
 		) {
 			
-			internal val nameFilter : Filter = object : Filter() {
+			val nameFilter : Filter = object : Filter() {
 				override fun convertResultToString(value : Any) : CharSequence {
 					return value as String
 				}

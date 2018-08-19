@@ -157,36 +157,43 @@ object Styler {
 		// follow button
 		val color_attr : Int
 		val icon_attr : Int
+		val contentDescription : String
 		
 		when {
 			relation.blocking -> {
 				icon_attr = R.attr.ic_block
 				color_attr = R.attr.colorImageButton
+				contentDescription = context.getString(R.string.follow)
 			}
 			
 			relation.muting -> {
 				icon_attr = R.attr.ic_mute
 				color_attr = R.attr.colorImageButton
+				contentDescription = context.getString(R.string.follow)
 			}
 			
 			relation.getFollowing(who) -> {
 				icon_attr = R.attr.ic_follow_cross
 				color_attr = R.attr.colorImageButtonAccent
+				contentDescription = context.getString(R.string.unfollow)
 			}
 			
 			relation.getRequested(who) -> {
 				icon_attr = R.attr.ic_follow_wait
 				color_attr = R.attr.colorRegexFilterError
+				contentDescription = context.getString(R.string.unfollow)
 			}
 			
 			else -> {
 				icon_attr = R.attr.ic_follow_plus
 				color_attr = R.attr.colorImageButton
+				contentDescription = context.getString(R.string.follow)
 			}
 		}
 		
 		val color = Styler.getAttributeColor(context, color_attr)
 		setIconCustomColor(context, ibFollow, color, icon_attr)
+		ibFollow.contentDescription = contentDescription
 	}
 	
 	// 色を指定してRippleDrawableを生成する

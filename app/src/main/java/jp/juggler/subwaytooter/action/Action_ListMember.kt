@@ -46,7 +46,6 @@ object Action_ListMember {
 				
 				var result : TootApiResult?
 				
-				// TODO: リスト追加時に 422 既に登録されてます みたいなエラーが出る
 				if(bFollow) {
 					val relation : TootRelationShip?
 					if(access_info.isLocalUser(local_who)) {

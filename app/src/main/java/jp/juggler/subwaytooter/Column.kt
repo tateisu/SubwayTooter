@@ -4590,6 +4590,8 @@ class Column(
 		if(access_info.isMisskey) {
 			if(parser!=null) parser.serviceType = ServiceType.MISSKEY
 			params.put("limit", 100)
+			val apiKey = access_info.token_info?.parseString(TootApiClient.KEY_API_KEY_MISSKEY)
+			if( apiKey?.isNotEmpty() == true) params.put("i",apiKey)
 		}
 		return params
 	}

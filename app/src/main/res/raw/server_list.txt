@@ -836,8 +836,9 @@ mimumedon.com
 mindful.masto.host
 minidon.bacardi55.org
 misanthropy.wang
-misskey.xyz
 misskey.jp
+misskey.m544.net
+misskey.xyz
 mist.so
 mistermi.me
 mn.kitetu.com
@@ -858,6 +859,7 @@ mr.am
 mrt.al
 msdn.yourrhythm.jp
 msgdn.xyz
+msky.cafe
 mst.ongstar.jp
 mst3k.interlinked.me
 mstd.tokyo

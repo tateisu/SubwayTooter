@@ -2001,7 +2001,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			json.put(DRAFT_CONTENT_WARNING, content_warning)
 			json.put(DRAFT_CONTENT_WARNING_CHECK, cbContentWarning.isChecked)
 			json.put(DRAFT_NSFW_CHECK, cbNSFW.isChecked)
-			json.put(DRAFT_VISIBILITY, visibility)
+			visibility?.let{ json.put(DRAFT_VISIBILITY, it.id.toString()) }
 			json.put(DRAFT_ACCOUNT_DB_ID, account?.db_id ?: - 1L)
 			json.put(DRAFT_ATTACHMENT_LIST, tmp_attachment_list)
 			in_reply_to_id?.putTo(json, DRAFT_REPLY_ID)

@@ -1811,28 +1811,29 @@ class ActMain : AppCompatActivity()
 			val account = SavedAccount.loadAccount(this@ActMain, row_id)
 			if(account != null) {
 				var bModified = false
+
 				if(account.loginAccount?.locked == true) {
 					bModified = true
-					account.visibility = TootStatus.VISIBILITY_PRIVATE
+					account.visibility = TootVisibility.PrivateFollowers
 				}
-				val source = ta.source
-				if(source != null) {
-					try {
-						val privacy = source.privacy
-						TootStatus.parseVisibility(privacy) // 失敗すると例外
-						bModified = true
-						account.visibility = privacy
-					} catch(ignored : Throwable) {
-						// privacyの値がおかしい
+				if(!account.isMisskey){
+					val source = ta.source
+					if(source != null) {
+						val privacy = TootVisibility.parseMastodon(source.privacy)
+						if( privacy != null ){
+							bModified = true
+							account.visibility = privacy
+						}
+						
+						// XXX ta.source.sensitive パラメータを読んで「添付画像をデフォルトでNSFWにする」を実現する
+						// 現在、アカウント設定にはこの項目はない( 「NSFWな添付メディアを隠さない」はあるが全く別の効果)
 					}
 					
-					// XXX ta.source.sensitive パラメータを読んで「添付画像をデフォルトでNSFWにする」を実現する
-					// 現在、アカウント設定にはこの項目はない( 「NSFWな添付メディアを隠さない」はあるが全く別の効果)
+					if(bModified) {
+						account.saveSetting()
+					}
 				}
-				
-				if(bModified) {
-					account.saveSetting()
-				}
+
 				showToast(this@ActMain, false, R.string.account_confirmed)
 				
 				// 通知の更新が必要かもしれない
@@ -1863,8 +1864,6 @@ class ActMain : AppCompatActivity()
 		access_token : String,
 		sa : SavedAccount?
 	) {
-		// TODO Misskeyに対応してない
-		// Misskeyの場合はi パラメータを直接持てるのだろうか…？
 		
 		TootTaskRunner(this@ActMain).run(host, object : TootTask {
 			
@@ -1874,6 +1873,12 @@ class ActMain : AppCompatActivity()
 				val r1 =client.getInstanceInformation()
 				val ti = r1?.jsonObject ?: return r1
 				val isMisskey = ti.optBoolean(TootApiClient.KEY_IS_MISSKEY)
+				
+				if( isMisskey ){
+					// XXX Misskeyの場合はi アクセストークンとAPIキー(i)が別なので入力画面の表記から直さないとダメ
+					return TootApiResult("This operation is not yet supported for Misskey instance.")
+				}
+				
 				val linkHelper = LinkHelper .newLinkHelper(host,isMisskey=isMisskey)
 				val result = client.getUserCredential(access_token,isMisskey = isMisskey)
 				this.ta = TootParser(this@ActMain, linkHelper)

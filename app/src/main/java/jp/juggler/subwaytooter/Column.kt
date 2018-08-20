@@ -1553,7 +1553,7 @@ class Column(
 				} else {
 					// カラムに紐付けられたアカウントのタンスのインスタンス情報
 				}
-				val result = client.getInstanceInformation2()
+				val result = client.parseInstanceInformation(client.getInstanceInformation())
 				instance_tmp = result?.data as? TootInstance
 				return result
 			}
@@ -4724,6 +4724,7 @@ class Column(
 	private fun JSONObject.putMisskeyParamsTimeline() : JSONObject {
 		if(with_attachment && ! with_highlight) {
 			put("mediaOnly", true)
+			put("withMedia", true)
 		}
 		return this
 	}
@@ -4735,7 +4736,10 @@ class Column(
 		makeMisskeyBaseParameter(parser).putMisskeyParamsTimeline()
 	
 	private fun makeMisskeyParamsProfileStatuses(parser : TootParser) =
-		makeMisskeyParamsUserId(parser).putMisskeyParamsTimeline()
+		makeMisskeyParamsUserId(parser)
+			.putMisskeyParamsTimeline()
+			.put("includeReplies",true)
+	
 	
 	private fun makePublicLocalUrl() : String {
 		return when {

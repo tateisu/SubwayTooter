@@ -20,7 +20,7 @@ open class TootTag(
 	
 	companion object {
 		// 検索結果のhashtagリストから生成する
-		fun parseStringArray(array : JSONArray?) : ArrayList<TootTag> {
+		fun parseTootTagList(array : JSONArray?) : ArrayList<TootTag> {
 			val result = ArrayList<TootTag>()
 			if(array != null) {
 				for(i in 0 until array.length()) {

@@ -766,6 +766,44 @@ internal class ItemViewHolder(
 		
 		if(status != null) {
 			
+			if(status.account.isAdmin) {
+				if(sb.isNotEmpty()) sb.append('\u200B')
+				
+				sb.appendColorShadeIcon(activity, R.drawable.ic_shield, "admin")
+				
+				//				val start = sb.length
+				//				sb.append("bot")
+				//				val end = sb.length
+				//				val info = EmojiMap201709.sShortNameToImageId["robot_face"]
+				//				if(info != null) {
+				//					sb.setSpan(
+				//						EmojiImageSpan(activity, info.image_id),
+				//						start,
+				//						end,
+				//						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+				//					)
+				//				}
+			}
+
+			if(status.account.isCat) {
+				if(sb.isNotEmpty()) sb.append('\u200B')
+				
+				sb.appendColorShadeIcon(activity, R.drawable.ic_cat, "cat")
+				
+				//				val start = sb.length
+				//				sb.append("bot")
+				//				val end = sb.length
+				//				val info = EmojiMap201709.sShortNameToImageId["robot_face"]
+				//				if(info != null) {
+				//					sb.setSpan(
+				//						EmojiImageSpan(activity, info.image_id),
+				//						start,
+				//						end,
+				//						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+				//					)
+				//				}
+			}
+
 			// botマーク
 			if(status.account.bot) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
@@ -803,11 +841,11 @@ internal class ItemViewHolder(
 			}
 			
 			// visibility
-			val visIconAttrId = Styler.getVisibilityIconAttr(status.visibility)
+			val visIconAttrId = Styler.getVisibilityIconAttr(access_info.isMisskey,status.visibility)
 			if(R.attr.ic_public != visIconAttrId) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
 				val start = sb.length
-				sb.append(status.visibility)
+				sb.append(Styler.getVisibilityString(activity,access_info.isMisskey,status.visibility))
 				val end = sb.length
 				val iconResId = Styler.getAttributeResourceId(activity, visIconAttrId)
 				sb.setSpan(

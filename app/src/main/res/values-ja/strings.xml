@@ -1019,5 +1019,12 @@
     <string name="missing_available_account">この目的に使えるアカウントがありません。</string>
     <string name="misskey_account_not_supported">Misskey account is not supported.</string>
     <string name="misskey_cant_show_all_descendants">Misskeyでは対象ノートへの直接の返信が列挙されます。子孫の全ては表示できません。</string>
+    <string name="cant_get_misskey_app_secret">This misskey instance does not provide app secret in the response of /api/app/create API. please consider update misskey service version to instance owner.</string>
+    <string name="visibility_style">公開範囲の名称とアイコン</string>
+    <string name="visibility_style_by_account">カラムのアカウントに合わせる</string>
+    <string name="mastodon">Mastodon</string>
+    <string name="misskey">Misskey</string>
+    <string name="visibility_home">ホーム</string>
+    <string name="visibility_followers">フォロワー</string>
 
 </resources>

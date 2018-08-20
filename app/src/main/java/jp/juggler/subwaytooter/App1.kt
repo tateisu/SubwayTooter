@@ -103,8 +103,9 @@ class App1 : Application() {
 		// 2018/8/5 v264 26 => 27 SavedAccountテーブルに項目追加
 		// 2018/8/17 v267 27 => 28 SavedAccountテーブルに項目追加
 		// 2018/8/19 v267 28 => 29 (失敗)ContentWarningMisskey, MediaShownMisskey テーブルを追加
-		// 2018/8/19 v267 29 => 30 ContentWarningMisskey, MediaShownMisskey, UserRelationMisskeyテーブルを追加
-		internal const val DB_VERSION = 30
+		// 2018/8/19 v268 29 => 30 ContentWarningMisskey, MediaShownMisskey, UserRelationMisskeyテーブルを追加
+		// 2018/8/19 v268 30 => 31 (29)で失敗しておかしくなったContentWarningとMediaShownを作り直す
+		internal const val DB_VERSION = 31
 		
 		private val tableList = arrayOf(
 			LogData,

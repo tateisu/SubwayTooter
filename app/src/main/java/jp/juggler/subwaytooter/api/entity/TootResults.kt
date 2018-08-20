@@ -15,6 +15,6 @@ class TootResults(
 	constructor(parser : TootParser, src : JSONObject) : this(
 		accounts = parser.accountList(src.optJSONArray("accounts")),
 		statuses = parser.statusList( src.optJSONArray("statuses")),
-		hashtags = TootTag.parseStringArray(src.optJSONArray("hashtags"))
+		hashtags = TootTag.parseTootTagList(src.optJSONArray("hashtags"))
 	)
 }

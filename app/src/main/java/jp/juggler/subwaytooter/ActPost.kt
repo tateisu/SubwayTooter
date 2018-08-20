@@ -289,11 +289,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	//////////////////////////////////////////////////////////////////////
 	// visibility
 	
-	internal var visibility : String? = null
+	internal var visibility : TootVisibility? = null
 	
 	/////////////////////////////////////////////////
 	
-	internal var in_reply_to_id :EntityId? = null
+	internal var in_reply_to_id : EntityId? = null
 	internal var in_reply_to_text : String? = null
 	internal var in_reply_to_image : String? = null
 	internal var in_reply_to_url : String? = null
@@ -415,7 +415,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			mushroom_input = savedInstanceState.getInt(STATE_MUSHROOM_INPUT, 0)
 			mushroom_start = savedInstanceState.getInt(STATE_MUSHROOM_START, 0)
 			mushroom_end = savedInstanceState.getInt(STATE_MUSHROOM_END, 0)
-			redraft_status_id = EntityId.from( savedInstanceState, STATE_REDRAFT_STATUS_ID)
+			redraft_status_id = EntityId.from(savedInstanceState, STATE_REDRAFT_STATUS_ID)
 			
 			sv = savedInstanceState.getString(STATE_URI_CAMERA_IMAGE)
 			if(sv?.isNotEmpty() == true) {
@@ -437,7 +437,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				}
 			}
 			
-			this.visibility = savedInstanceState.getString(KEY_VISIBILITY)
+			this.visibility = TootVisibility.fromId(savedInstanceState.getInt(KEY_VISIBILITY, - 1))
 			
 			if(app_state.attachment_list != null) {
 				
@@ -464,7 +464,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						val array = sv.toJsonArray()
 						for(i in 0 until array.length()) {
 							try {
-								val a = parseItem(::TootAttachment, ServiceType.MASTODON,array.optJSONObject(i))
+								val a = parseItem(
+									::TootAttachment,
+									ServiceType.MASTODON,
+									array.optJSONObject(i)
+								)
 								if(a != null) attachment_list.add(PostAttachment(a))
 							} catch(ex : Throwable) {
 								log.trace(ex)
@@ -477,7 +481,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				}
 			}
 			
-			this.in_reply_to_id = EntityId.from(savedInstanceState,KEY_IN_REPLY_TO_ID)
+			this.in_reply_to_id = EntityId.from(savedInstanceState, KEY_IN_REPLY_TO_ID)
 			this.in_reply_to_text = savedInstanceState.getString(KEY_IN_REPLY_TO_TEXT)
 			this.in_reply_to_image = savedInstanceState.getString(KEY_IN_REPLY_TO_IMAGE)
 			this.in_reply_to_url = savedInstanceState.getString(KEY_IN_REPLY_TO_URL)
@@ -563,15 +567,13 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 								}
 							}
 						}
-
-						// 自分のacct
+						
+						// 元レスのacctを追加する
 						val who_acct = account.getFullAcct(reply_status.account)
-						if( !account.isMe(reply_status.account)
-							&&!mention_list.contains("@$who_acct")
-						){
-							// 自己レスにはメンションを追加しない
-							// 既に含まれているならメンションを追加しない
-							// 自分以外への返信ならメンションを追加する
+						if(! account.isMe(reply_status.account) // 自己レスにはメンションを追加しない
+							&& ! mention_list.contains("@$who_acct") // 既に含まれているならメンションを追加しない
+						) {
+							mention_list.add("@$who_acct")
 						}
 						
 						val sb = StringBuilder()
@@ -592,19 +594,17 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						// 公開範囲
 						try {
 							// 比較する前にデフォルトの公開範囲を計算する
-							visibility = when {
-								visibility?.isNotEmpty() == true -> visibility
-								account.visibility?.isNotEmpty() == true -> account.visibility
-								else -> TootStatus.VISIBILITY_PUBLIC
-								// VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになる
-							}
+							visibility = visibility
+								?: account.visibility
+								?: TootVisibility.Public
+							// VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになる
 							
-							if(TootStatus.VISIBILITY_WEB_SETTING == visibility) {
+							if(TootVisibility.WebSetting == visibility) {
 								// 「Web設定に合わせる」だった場合は無条件にリプライ元の公開範囲に変更する
 								this.visibility = reply_status.visibility
 							} else {
 								// デフォルトの方が公開範囲が大きい場合、リプライ元に合わせて公開範囲を狭める
-								if(TootStatus.isVisibilitySpoilRequired(
+								if(TootVisibility.isVisibilitySpoilRequired(
 										this.visibility,
 										reply_status.visibility
 									)) {
@@ -696,14 +696,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			}
 		}
 		
-		visibility = when {
-			visibility?.isNotEmpty() == true -> visibility
-			account?.visibility?.isNotEmpty() == true -> account?.visibility
-			else -> TootStatus.VISIBILITY_PUBLIC
-			
-			// 2017/9/13 VISIBILITY_WEB_SETTING から VISIBILITY_PUBLICに変更した
-			// VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになるので…
-		}
+		visibility = visibility
+			?: account?.visibility
+			?: TootVisibility.Public
+		// 2017/9/13 VISIBILITY_WEB_SETTING から VISIBILITY_PUBLICに変更した
+		// VISIBILITY_WEB_SETTING だと 1.5未満のタンスでトラブルになるので…
 		
 		if(this.account == null) {
 			// 表示を未選択に更新
@@ -733,7 +730,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		outState.putInt(STATE_MUSHROOM_INPUT, mushroom_input)
 		outState.putInt(STATE_MUSHROOM_START, mushroom_start)
 		outState.putInt(STATE_MUSHROOM_END, mushroom_end)
-		redraft_status_id?.putTo(outState,STATE_REDRAFT_STATUS_ID)
+		redraft_status_id?.putTo(outState, STATE_REDRAFT_STATUS_ID)
 		if(uriCameraImage != null) {
 			outState.putString(STATE_URI_CAMERA_IMAGE, uriCameraImage.toString())
 		}
@@ -743,8 +740,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			outState.putLong(KEY_ACCOUNT_DB_ID, account.db_id)
 		}
 		
-		if(visibility != null) {
-			outState.putString(KEY_VISIBILITY, visibility)
+		visibility?.let {
+			outState.putInt(KEY_VISIBILITY, it.id)
 		}
 		
 		if(! attachment_list.isEmpty()) {
@@ -758,7 +755,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			outState.putString(KEY_ATTACHMENT_LIST, array.toString())
 		}
 		
-		in_reply_to_id?.putTo(outState,KEY_IN_REPLY_TO_ID)
+		in_reply_to_id?.putTo(outState, KEY_IN_REPLY_TO_ID)
 		outState.putString(KEY_IN_REPLY_TO_TEXT, in_reply_to_text)
 		outState.putString(KEY_IN_REPLY_TO_IMAGE, in_reply_to_image)
 		outState.putString(KEY_IN_REPLY_TO_URL, in_reply_to_url)
@@ -929,7 +926,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		if(account != null
 			&& ! account.isPseudo
 			&& ! account.isMisskey
-			) {
+		) {
 			val info = account.instance
 			var lastTask = lastInstanceTask
 			
@@ -1005,14 +1002,14 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	internal fun selectAccount(a : SavedAccount?) {
 		this.account = a
 		if(a == null) {
-			post_helper.setInstance(null,false)
+			post_helper.setInstance(null, false)
 			btnAccount.text = getString(R.string.not_selected)
 			btnAccount.setTextColor(Styler.getAttributeColor(this, android.R.attr.textColorPrimary))
 			btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent)
 		} else {
-			post_helper.setInstance(a.host,a.isMisskey)
+			post_helper.setInstance(a.host, a.isMisskey)
 			
-			if(!a.isMisskey) {
+			if(! a.isMisskey) {
 				// 先読みしてキャッシュに保持しておく
 				App1.custom_emoji_lister.getList(a.host) {
 					// 何もしない
@@ -1050,7 +1047,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			return
 		}
 		
-		if(redraft_status_id !=null ) {
+		if(redraft_status_id != null) {
 			// 添付ファイルがあったら確認の上添付ファイルを捨てないと切り替えられない
 			showToast(this, false, R.string.cant_change_account_when_redraft)
 			return
@@ -1064,7 +1061,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		) { ai ->
 			
 			// 別タンスのアカウントに変更したならならin_reply_toの変換が必要
-			if(in_reply_to_id !=null && ! ai.host.equals(account?.host, ignoreCase = true)) {
+			if(in_reply_to_id != null && ! ai.host.equals(account?.host, ignoreCase = true)) {
 				startReplyConversion(ai)
 			}
 			
@@ -1112,16 +1109,15 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	internal fun setAccountWithVisibilityConversion(a : SavedAccount) {
 		selectAccount(a)
 		try {
-			if(TootStatus.isVisibilitySpoilRequired(this.visibility, a.visibility)) {
+			if(TootVisibility.isVisibilitySpoilRequired(this.visibility, a.visibility)) {
 				showToast(this@ActPost, true, R.string.spoil_visibility_for_account)
 				this.visibility = a.visibility
-				showVisibility()
 			}
 			
 		} catch(ex : Throwable) {
 			log.trace(ex)
 		}
-		
+		showVisibility()
 	}
 	
 	@SuppressLint("StaticFieldLeak")
@@ -1268,7 +1264,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 											)
 										)
 										new_attachment =
-											parseItem(::TootAttachment, ServiceType.MASTODON,result?.jsonObject)
+											parseItem(
+												::TootAttachment,
+												ServiceType.MASTODON,
+												result?.jsonObject
+											)
 										return result
 									} catch(ex : Throwable) {
 										return TootApiResult(ex.withCaption("set focus point failed."))
@@ -1354,7 +1354,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				)
 				val request_builder = Request.Builder().put(request_body)
 				val result = client.request("/api/v1/media/$attachment_id", request_builder)
-				new_attachment = parseItem(::TootAttachment, ServiceType.MASTODON,result?.jsonObject)
+				new_attachment =
+					parseItem(::TootAttachment, ServiceType.MASTODON, result?.jsonObject)
 				return result
 			}
 			
@@ -1637,7 +1638,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
-						val a = parseItem(::TootAttachment,ServiceType.MASTODON, jsonObject)
+						val a = parseItem(::TootAttachment, ServiceType.MASTODON, jsonObject)
 						if(a == null) {
 							result.error = "TootAttachment.parse failed"
 						} else {
@@ -1808,29 +1809,45 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	}
 	
 	private fun showVisibility() {
-		btnVisibility.setImageResource(Styler.getVisibilityIcon(this, visibility))
+		btnVisibility.setImageResource(
+			Styler.getVisibilityIcon(
+				this
+				,account?.isMisskey == true
+				,visibility ?: TootVisibility.Public
+			)
+		)
 	}
 	
 	private fun performVisibility() {
-		val caption_list = arrayOf(
-			Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_WEB_SETTING),
-			Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_PUBLIC),
-			Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_UNLISTED),
-			Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_PRIVATE),
-			Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_DIRECT)
-		)
+		val list = if(account?.isMisskey == true) {
+			arrayOf(
+			//	TootVisibility.WebSetting,
+				TootVisibility.Public,
+				TootVisibility.UnlistedHome,
+				TootVisibility.PrivateFollowers,
+				TootVisibility.DirectSpecified,
+				TootVisibility.DirectPrivate
+			)
+		} else {
+			arrayOf(
+				TootVisibility.WebSetting,
+				TootVisibility.Public,
+				TootVisibility.UnlistedHome,
+				TootVisibility.PrivateFollowers,
+				TootVisibility.DirectSpecified
+			)
+		}
+		val caption_list = list
+			.map { Styler.getVisibilityCaption(this, account?.isMisskey == true, it) }
+			.toTypedArray()
 		
 		AlertDialog.Builder(this)
 			.setTitle(R.string.choose_visibility)
 			.setItems(caption_list) { _, which ->
-				when(which) {
-					0 -> visibility = TootStatus.VISIBILITY_WEB_SETTING
-					1 -> visibility = TootStatus.VISIBILITY_PUBLIC
-					2 -> visibility = TootStatus.VISIBILITY_UNLISTED
-					3 -> visibility = TootStatus.VISIBILITY_PRIVATE
-					4 -> visibility = TootStatus.VISIBILITY_DIRECT
+				if(which in 0 until list.size) {
+					visibility = list[which]
+					showVisibility()
 				}
-				showVisibility()
 			}
 			.setNegativeButton(R.string.cancel, null)
 			.show()
@@ -1901,7 +1918,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			post_helper.spoiler_text = etContentWarning.text.toString().trim { it <= ' ' }
 		}
 		
-		post_helper.visibility = this.visibility
+		post_helper.visibility = this.visibility ?: TootVisibility.Public
 		post_helper.bNSFW = cbNSFW.isChecked
 		
 		post_helper.in_reply_to_id = this.in_reply_to_id
@@ -1915,9 +1932,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		post_helper.post(account) { target_account, status ->
 			val data = Intent()
 			data.putExtra(EXTRA_POSTED_ACCT, target_account.acct)
-			status.id.putTo(data,EXTRA_POSTED_STATUS_ID )
-			redraft_status_id?.putTo(data,EXTRA_POSTED_REDRAFT_ID )
-			status.in_reply_to_id?.putTo(data,EXTRA_POSTED_REPLY_ID)
+			status.id.putTo(data, EXTRA_POSTED_STATUS_ID)
+			redraft_status_id?.putTo(data, EXTRA_POSTED_REDRAFT_ID)
+			status.in_reply_to_id?.putTo(data, EXTRA_POSTED_REPLY_ID)
 			setResult(RESULT_OK, data)
 			isPostComplete = true
 			this@ActPost.finish()
@@ -1987,7 +2004,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			json.put(DRAFT_VISIBILITY, visibility)
 			json.put(DRAFT_ACCOUNT_DB_ID, account?.db_id ?: - 1L)
 			json.put(DRAFT_ATTACHMENT_LIST, tmp_attachment_list)
-			in_reply_to_id?.putTo(json,DRAFT_REPLY_ID)
+			in_reply_to_id?.putTo(json, DRAFT_REPLY_ID)
 			json.put(DRAFT_REPLY_TEXT, in_reply_to_text)
 			json.put(DRAFT_REPLY_IMAGE, in_reply_to_image)
 			json.put(DRAFT_REPLY_URL, in_reply_to_url)
@@ -2038,7 +2055,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						val ie = tmp_attachment_list.length()
 						while(i < ie) {
 							val ta =
-								parseItem(::TootAttachment, ServiceType.MASTODON,tmp_attachment_list.optJSONObject(i))
+								parseItem(
+									::TootAttachment,
+									ServiceType.MASTODON,
+									tmp_attachment_list.optJSONObject(i)
+								)
 							val text_url = ta?.text_url
 							if(text_url?.isNotEmpty() == true) {
 								content = content.replace(text_url, "")
@@ -2072,7 +2093,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				
 				api_client.account = account
 				
-				if( in_reply_to_id !=null ) {
+				if(in_reply_to_id != null) {
 					val result = api_client.request("/api/v1/statuses/$in_reply_to_id")
 					if(isCancelled) return null
 					val jsonObject = result?.jsonObject
@@ -2087,7 +2108,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					var isSomeAttachmentRemoved = false
 					for(i in tmp_attachment_list.length() - 1 downTo 0) {
 						if(isCancelled) return null
-						val ta = parseItem(::TootAttachment, ServiceType.MASTODON,tmp_attachment_list.optJSONObject(i))
+						val ta = parseItem(
+							::TootAttachment,
+							ServiceType.MASTODON,
+							tmp_attachment_list.optJSONObject(i)
+						)
 						if(ta == null) {
 							isSomeAttachmentRemoved = true
 							tmp_attachment_list.remove(i)
@@ -2129,11 +2154,12 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				val content_warning_checked = draft.optBoolean(DRAFT_CONTENT_WARNING_CHECK)
 				val nsfw_checked = draft.optBoolean(DRAFT_NSFW_CHECK)
 				val tmp_attachment_list = draft.optJSONArray(DRAFT_ATTACHMENT_LIST)
-				val reply_id = EntityId.from(draft,DRAFT_REPLY_ID)
+				val reply_id = EntityId.from(draft, DRAFT_REPLY_ID)
 				val reply_text = draft.optString(DRAFT_REPLY_TEXT, null)
 				val reply_image = draft.optString(DRAFT_REPLY_IMAGE, null)
 				val reply_url = draft.optString(DRAFT_REPLY_URL, null)
-				val draft_visibility = draft.parseString(DRAFT_VISIBILITY)
+				val draft_visibility = TootVisibility
+					.parseSavedVisibility(draft.parseString(DRAFT_VISIBILITY))
 				
 				val evEmoji = DecodeOptions(this@ActPost, decodeEmoji = true).decodeEmoji(content)
 				etContent.setText(evEmoji)
@@ -2165,7 +2191,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					var i = 0
 					val ie = tmp_attachment_list.length()
 					while(i < ie) {
-						val ta = parseItem(::TootAttachment, ServiceType.MASTODON,tmp_attachment_list.optJSONObject(i))
+						val ta = parseItem(
+							::TootAttachment,
+							ServiceType.MASTODON,
+							tmp_attachment_list.optJSONObject(i)
+						)
 						if(ta != null) {
 							val pa = PostAttachment(ta)
 							attachment_list.add(pa)

@@ -318,6 +318,7 @@ object Pref {
 	val ipBackButtonAction = IntPref("back_button_action", 0)
 	val ipUiTheme = IntPref("ui_theme", 0)
 	val ipResizeImage = IntPref("resize_image", 4)
+	
 	val ipRepliesCount = IntPref("RepliesCount",0)
 	const val RC_SIMPLE = 0
 	const val RC_ACTUAL = 1
@@ -327,6 +328,11 @@ object Pref {
 	const val RAT_REFRESH_SCROLL = 0
 	const val RAT_REFRESH_DONT_SCROLL = 1
 	const val RAT_DONT_REFRESH = 2
+	
+	val ipVisibilityStyle = IntPref("ipVisibilityStyle", 0)
+	const val VS_BY_ACCOUNT = 0
+	const val VS_MASTODON = 1
+	const val VS_MISSKEY = 2
 	
 	val ipFooterButtonBgColor = IntPref("footer_button_bg_color", 0)
 	val ipFooterButtonFgColor = IntPref("footer_button_fg_color", 0)

@@ -4,11 +4,7 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.PorterDuff
-import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
-import android.graphics.drawable.RippleDrawable
-import android.graphics.drawable.ShapeDrawable
-import android.graphics.drawable.StateListDrawable
+import android.graphics.drawable.*
 import android.graphics.drawable.shapes.RectShape
 import android.os.Build
 import android.support.v4.content.ContextCompat
@@ -18,13 +14,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
-
-import java.util.Locale
-
 import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.span.EmojiImageSpan
+import jp.juggler.subwaytooter.table.UserRelation
+import java.util.*
 
 object Styler {
 	
@@ -82,53 +76,79 @@ object Styler {
 		imageView.setImageDrawable(d)
 	}
 	
-	fun getVisibilityIconAttr(visibility : String?) : Int {
-		return when(visibility) {
-			null -> R.attr.ic_public
-			TootStatus.VISIBILITY_PUBLIC -> R.attr.ic_public
-			TootStatus.VISIBILITY_UNLISTED -> R.attr.ic_lock_open
-			TootStatus.VISIBILITY_PRIVATE -> R.attr.ic_lock
-			TootStatus.VISIBILITY_DIRECT -> R.attr.ic_mail
-			TootStatus.VISIBILITY_WEB_SETTING -> R.attr.ic_question
-			else -> R.attr.ic_question
+	fun getVisibilityIconAttr(isMisskeyData:Boolean ,visibility : TootVisibility):Int {
+		val isMisskey = when(Pref.ipVisibilityStyle(App1.pref)){
+			Pref.VS_MASTODON -> false
+			Pref.VS_MISSKEY ->true
+			else-> isMisskeyData
+		}
+		return when{
+			isMisskey -> when(visibility) {
+				TootVisibility.Public -> R.attr.ic_public
+				TootVisibility.UnlistedHome -> R.attr.btn_home
+				TootVisibility.PrivateFollowers -> R.attr.ic_lock_open
+				TootVisibility.DirectSpecified -> R.attr.ic_mail
+				TootVisibility.DirectPrivate -> R.attr.ic_lock
+				TootVisibility.WebSetting -> R.attr.ic_question
+			}
+			else-> when(visibility) {
+				TootVisibility.Public -> R.attr.ic_public
+				TootVisibility.UnlistedHome -> R.attr.ic_lock_open
+				TootVisibility.PrivateFollowers -> R.attr.ic_lock
+				TootVisibility.DirectSpecified -> R.attr.ic_mail
+				TootVisibility.DirectPrivate -> R.attr.ic_mail
+				TootVisibility.WebSetting -> R.attr.ic_question
+			}
 		}
 	}
 	
-	fun getVisibilityIcon(context : Context, visibility : String?) : Int {
-		return getAttributeResourceId(context, getVisibilityIconAttr(visibility))
+	fun getVisibilityIcon(context : Context, isMisskeyData:Boolean ,visibility : TootVisibility) : Int {
+		return getAttributeResourceId(context, getVisibilityIconAttr(isMisskeyData,visibility))
 	}
 	
-	fun getVisibilityString(context : Context, visibility : String) : String {
-		return when(visibility) {
-			TootStatus.VISIBILITY_PUBLIC -> context.getString(R.string.visibility_public)
-			TootStatus.VISIBILITY_UNLISTED -> context.getString(R.string.visibility_unlisted)
-			TootStatus.VISIBILITY_PRIVATE -> context.getString(R.string.visibility_private)
-			TootStatus.VISIBILITY_DIRECT -> context.getString(R.string.visibility_direct)
-			TootStatus.VISIBILITY_WEB_SETTING -> context.getString(R.string.visibility_web_setting)
-			else -> "?"
+	fun getVisibilityString(context : Context,isMisskeyData:Boolean ,visibility : TootVisibility):String {
+		val isMisskey = when(Pref.ipVisibilityStyle(App1.pref)){
+			Pref.VS_MASTODON -> false
+			Pref.VS_MISSKEY ->true
+			else-> isMisskeyData
+		}
+		return when{
+			isMisskey -> when(visibility) {
+				TootVisibility.Public ->context.getString(R.string.visibility_public)
+				TootVisibility.UnlistedHome -> context.getString(R.string.visibility_home)
+				TootVisibility.PrivateFollowers -> context.getString(R.string.visibility_followers)
+				TootVisibility.DirectSpecified -> context.getString(R.string.visibility_direct)
+				TootVisibility.DirectPrivate -> context.getString(R.string.visibility_private)
+				TootVisibility.WebSetting -> context.getString(R.string.visibility_web_setting)
+			}
+			else-> when(visibility) {
+				TootVisibility.Public -> context.getString(R.string.visibility_public)
+				TootVisibility.UnlistedHome -> context.getString(R.string.visibility_unlisted)
+				TootVisibility.PrivateFollowers -> context.getString(R.string.visibility_private)
+				TootVisibility.DirectSpecified -> context.getString(R.string.visibility_direct)
+				TootVisibility.DirectPrivate -> context.getString(R.string.visibility_direct)
+				TootVisibility.WebSetting -> context.getString(R.string.visibility_web_setting)
+			}
 		}
 	}
 	
 	// アイコン付きの装飾テキストを返す
-	fun getVisibilityCaption(context : Context, visibility : String) : CharSequence {
+	fun getVisibilityCaption(context : Context, isMisskeyData:Boolean ,visibility : TootVisibility) : CharSequence {
 		
+		val icon_id = getVisibilityIcon(context, isMisskeyData,visibility)
+		val sv = getVisibilityString(context, isMisskeyData,visibility)
+
 		val sb = SpannableStringBuilder()
-		
+
 		// アイコン部分
 		val start = sb.length
-		sb.append(visibility)
+		sb.append(" ")
 		val end = sb.length
-		val icon_id = getVisibilityIcon(context, visibility)
 		sb.setSpan(EmojiImageSpan(context, icon_id), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 		
 		// 文字列部分
 		sb.append(' ')
-		sb.append(getVisibilityString(context, visibility))
-		if(TootStatus.VISIBILITY_WEB_SETTING == visibility) {
-			sb.append("\n　　(")
-			sb.append(context.getString(R.string.mastodon_1_6_later))
-			sb.append(")")
-		}
+		sb.append(sv)
 		
 		return sb
 	}

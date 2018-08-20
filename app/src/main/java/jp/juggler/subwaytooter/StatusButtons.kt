@@ -12,6 +12,7 @@ import jp.juggler.subwaytooter.action.Action_Toot
 import jp.juggler.subwaytooter.action.NOT_CROSS_ACCOUNT
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LogCategory
@@ -76,8 +77,8 @@ internal class StatusButtons(
 			true,
 			color_normal,
 			R.attr.btn_reply,
-			when {
-				replies_count == null || status.visibility == TootStatus.VISIBILITY_DIRECT -> ""
+			when(replies_count) {
+				null -> ""
 				else -> when(Pref.ipRepliesCount(activity.pref)) {
 					Pref.RC_SIMPLE -> when {
 						replies_count >= 2L -> "1+"
@@ -93,7 +94,8 @@ internal class StatusButtons(
 		
 		// ブーストボタン
 		when {
-			TootStatus.VISIBILITY_DIRECT == status.visibility -> setButton(
+			// マストドンではDirectはブーストできない (Misskeyはできる)
+			(!access_info.isMisskey && status.visibility.order <= TootVisibility.DirectSpecified.order) -> setButton(
 				btnBoost,
 				false,
 				color_accent,

@@ -68,7 +68,7 @@ class PostHelper(
 	
 	var content : String? = null
 	var spoiler_text : String? = null
-	var visibility : String? = null
+	var visibility : TootVisibility = TootVisibility.Public
 	var bNSFW : Boolean = false
 	var in_reply_to_id : EntityId? = null
 	var attachment_list : ArrayList<PostAttachment>? = null
@@ -93,7 +93,7 @@ class PostHelper(
 		val in_reply_to_id = this.in_reply_to_id
 		val attachment_list = this.attachment_list
 		val enquete_items = this.enquete_items
-		var visibility = this.visibility ?: ""
+		val visibility = this.visibility
 		
 		val hasAttachment = attachment_list?.isNotEmpty() ?: false
 		
@@ -107,10 +107,6 @@ class PostHelper(
 		if(spoiler_text != null && spoiler_text.isEmpty()) {
 			showToast(activity, true, R.string.post_error_contents_warning_empty)
 			return
-		}
-		
-		if(visibility.isEmpty()) {
-			visibility = TootStatus.VISIBILITY_PUBLIC
 		}
 		
 		if(enquete_items?.isNotEmpty() == true) {
@@ -162,8 +158,11 @@ class PostHelper(
 		}
 		
 		if(! bConfirmTag) {
-			val m = reTag.matcher(content)
-			if(m.find() && TootStatus.VISIBILITY_PUBLIC != visibility) {
+			
+			if( !account.isMisskey
+				&& visibility != TootVisibility.Public
+				&& reTag.matcher(content).find()
+			) {
 				AlertDialog.Builder(activity)
 					.setCancelable(true)
 					.setMessage(R.string.hashtag_and_visibility_not_match)
@@ -180,6 +179,7 @@ class PostHelper(
 					.show()
 				return
 			}
+			// MisskeyのWebUIはタグ種別による警告とかはないみたいだ
 		}
 		
 		if(! bConfirmRedraft && redraft_status_id != null) {
@@ -274,7 +274,7 @@ class PostHelper(
 					Thread.sleep(2000L)
 				}
 				
-				var visibility_checked : String? = visibility
+				var visibility_checked : TootVisibility? = visibility
 				
 				var instance = account.instance
 				if(instance == null) {
@@ -283,15 +283,15 @@ class PostHelper(
 					account.instance = instance
 				}
 				
-				if(TootStatus.VISIBILITY_WEB_SETTING == visibility) {
+				if( visibility == TootVisibility.WebSetting) {
 					visibility_checked = if(account.isMisskey || instance.versionGE(TootInstance.VERSION_1_6)) {
 						null
 					} else {
 						val r2 = getCredential(client)
-						val credential_tmp = this.credential_tmp
-							?: return r2
-						credential_tmp.source?.privacy
+						val credential_tmp = this.credential_tmp ?: return r2
+						val privacy = credential_tmp.source?.privacy
 							?: return TootApiResult(activity.getString(R.string.cant_get_web_setting_visibility))
+						TootVisibility.parseMastodon(privacy)
 					}
 				}
 				
@@ -307,35 +307,32 @@ class PostHelper(
 							)
 						)
 						if(visibility_checked != null) {
-							json.put("visibility",when(visibility_checked){
-								TootStatus.VISIBILITY_PUBLIC -> "public"
-								TootStatus.VISIBILITY_UNLISTED,"home" ->"home"
-								TootStatus.VISIBILITY_PRIVATE,"followers" ->"followers"
-								// TootStatus.VISIBILITY_DIRECT
-								else->{
-									val userIds = JSONArray()
-									val reMention = Pattern.compile("(?:\\A|\\s)@([a-zA-Z0-9_]{1,20})(?:@([\\w\\.\\:-]+))?(?:\\z|\\s)")
-									val m = reMention.matcher(content)
-									while(m.find()){
-										val username = m.group(1)
-										val host = m.group(2)
-										val queryParams = account.putMisskeyApiToken(JSONObject())
-										if(username?.isNotEmpty()==true) queryParams.put("username",username)
-										if(host?.isNotEmpty()==true) queryParams.put("host",host)
-										result = client.request("/api/users/show",queryParams.toPostRequestBuilder())
-										val id = result?.jsonObject?.parseString("id")
-										if( id?.isNotEmpty() == true ){
-											userIds.put( id)
-										}
-									}
-									if( userIds.length() == 0 ){
-										"private"
-									}else{
-										json.put("visibleUserIds",userIds)
-										"specified"
+							
+							if( visibility_checked == TootVisibility.DirectSpecified ){
+								val userIds = JSONArray()
+								val reMention = Pattern.compile("(?:\\A|\\s)@([a-zA-Z0-9_]{1,20})(?:@([\\w\\.\\:-]+))?(?:\\z|\\s)")
+								val m = reMention.matcher(content)
+								while(m.find()){
+									val username = m.group(1)
+									val host = m.group(2)
+									val queryParams = account.putMisskeyApiToken(JSONObject())
+									if(username?.isNotEmpty()==true) queryParams.put("username",username)
+									if(host?.isNotEmpty()==true) queryParams.put("host",host)
+									result = client.request("/api/users/show",queryParams.toPostRequestBuilder())
+									val id = result?.jsonObject?.parseString("id")
+									if( id?.isNotEmpty() == true ){
+										userIds.put( id)
 									}
 								}
-							})
+								json.put("visibility",if( userIds.length() == 0 ){
+									"private"
+								}else{
+									json.put("visibleUserIds",userIds)
+									"specified"
+								})
+							}else {
+								json.put("visibility",visibility_checked.strMisskey)
+							}
 						}
 						
 						// TODO Misskeyの場合、NSFWするにはアップロード済みの画像を drive/files/update で更新する
@@ -398,7 +395,7 @@ class PostHelper(
 							)
 						)
 						if(visibility_checked != null) {
-							json.put("visibility", visibility_checked)
+							json.put("visibility", visibility_checked.strMastodon)
 						}
 						json.put("sensitive", bNSFW)
 						json.put(

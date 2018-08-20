@@ -23,22 +23,10 @@ import android.support.v7.app.AppCompatActivity
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.CompoundButton
-import android.widget.EditText
-import android.widget.Switch
-import android.widget.TextView
+import android.widget.*
 import jp.juggler.subwaytooter.api.*
-
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStream
-
 import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import jp.juggler.subwaytooter.table.AcctColor
@@ -50,10 +38,11 @@ import okhttp3.MultipartBody
 import okhttp3.Request
 import okhttp3.RequestBody
 import okio.BufferedSink
+import org.json.JSONObject
+import java.io.*
 
 class ActAccountSetting
 	: AppCompatActivity(), View.OnClickListener, CompoundButton.OnCheckedChangeListener {
-	
 	
 	companion object {
 		
@@ -153,7 +142,7 @@ class ActAccountSetting
 	
 	///////////////////////////////////////////////////
 	
-	internal var visibility = TootStatus.VISIBILITY_PUBLIC
+	internal var visibility = TootVisibility.Public
 	
 	private var uriCameraImage : Uri? = null
 	
@@ -402,10 +391,7 @@ class ActAccountSetting
 		tvInstance.text = a.host
 		tvUser.text = a.acct
 		
-		val sv = a.visibility
-		if(sv != null) {
-			visibility = sv
-		}
+		this.visibility = a.visibility
 		
 		loading = true
 		
@@ -569,30 +555,42 @@ class ActAccountSetting
 	}
 	
 	private fun updateVisibility() {
-		btnVisibility.text = Styler.getVisibilityString(this, visibility)
+		btnVisibility.text = Styler.getVisibilityString(this, account.isMisskey,visibility)
 	}
 	
 	private fun performVisibility() {
-		val caption_list = arrayOf(
-			Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_WEB_SETTING),
-			Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_PUBLIC),
-			Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_UNLISTED),
-			Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_PRIVATE),
-			Styler.getVisibilityCaption(this, TootStatus.VISIBILITY_DIRECT)
-		)
+		
+		val list = if( account.isMisskey){
+			arrayOf(
+			//	TootVisibility.WebSetting,
+				TootVisibility.Public,
+				TootVisibility.UnlistedHome,
+				TootVisibility.PrivateFollowers,
+				TootVisibility.DirectSpecified,
+				TootVisibility.DirectPrivate
+			)
+		}else{
+			arrayOf(
+				TootVisibility.WebSetting,
+				TootVisibility.Public,
+				TootVisibility.UnlistedHome,
+				TootVisibility.PrivateFollowers,
+				TootVisibility.DirectSpecified
+			)
+		}
+		
+		val caption_list = list.map{
+			Styler.getVisibilityCaption(this, account.isMisskey,it)
+		}.toTypedArray()
 		
 		AlertDialog.Builder(this)
 			.setTitle(R.string.choose_visibility)
 			.setItems(caption_list) { _, which ->
-				when(which) {
-					0 -> visibility = TootStatus.VISIBILITY_WEB_SETTING
-					1 -> visibility = TootStatus.VISIBILITY_PUBLIC
-					2 -> visibility = TootStatus.VISIBILITY_UNLISTED
-					3 -> visibility = TootStatus.VISIBILITY_PRIVATE
-					4 -> visibility = TootStatus.VISIBILITY_DIRECT
+				if( which in 0 until list.size ){
+					visibility = list[which]
+					updateVisibility()
+					saveUIToData()
 				}
-				updateVisibility()
-				saveUIToData()
 			}
 			.setNegativeButton(R.string.cancel, null)
 			.show()
@@ -618,7 +616,7 @@ class ActAccountSetting
 				val task = @SuppressLint("StaticFieldLeak")
 				object : AsyncTask<Void, Void, String?>() {
 					
-					internal fun unregister() {
+					fun unregister() {
 						try {
 							
 							val install_id = PrefDevice.prefDevice(this@ActAccountSetting)
@@ -787,15 +785,28 @@ class ActAccountSetting
 		
 		TootTaskRunner(this).run(account, object : TootTask {
 			
-			internal var data : TootAccount? = null
+			var data : TootAccount? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val result = client.request("/api/v1/accounts/verify_credentials")
-				val jsonObject = result?.jsonObject
-				if(jsonObject != null) {
-					data = TootParser(this@ActAccountSetting, account).account(jsonObject)
-					if(data == null) return TootApiResult("TootAccount parse failed.")
+				if( account.isMisskey){
+					val params = account.putMisskeyApiToken(JSONObject())
+					val result = client.request("/api/i",params.toPostRequestBuilder())
+					val jsonObject = result?.jsonObject
+					if(jsonObject != null) {
+						data = TootParser(this@ActAccountSetting, account).account(jsonObject)
+						if(data == null) return TootApiResult("TootAccount parse failed.")
+					}
+					return result
+					
+				}else{
+					val result = client.request("/api/v1/accounts/verify_credentials")
+					val jsonObject = result?.jsonObject
+					if(jsonObject != null) {
+						data = TootParser(this@ActAccountSetting, account).account(jsonObject)
+						if(data == null) return TootApiResult("TootAccount parse failed.")
+					}
+					return result
+					
 				}
-				return result
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
@@ -937,7 +948,7 @@ class ActAccountSetting
 		
 		TootTaskRunner(this).run(account, object : TootTask {
 			
-			internal var data : TootAccount? = null
+			var data : TootAccount? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				try {

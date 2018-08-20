@@ -740,8 +740,15 @@
     <string name="missing_available_account">There is no account available for this purpose.</string>
 	<string name="misskey_account_not_supported">Misskey account is not supported.</string>
     <string name="misskey_cant_show_all_descendants">In Misskey, only direct replies to target note are enumerated. Not all descendants can be displayed.</string>
+    <string name="cant_get_misskey_app_secret">This misskey instance does not provide app secret in the response of /api/app/create API. please consider update misskey service version to instance owner.</string>
+    <string name="visibility_style"><![CDATA[Visibility name & icon]]></string>
+	<string name="visibility_style_by_account">Fit to column account</string>
+	<string name="mastodon">Mastodon</string>
+	<string name="misskey">Misskey</string>
+	<string name="visibility_home">Home</string>
+	<string name="visibility_followers">Followers</string>
 
-    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

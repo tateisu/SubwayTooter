@@ -81,6 +81,8 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	val custom_emojis : java.util.HashMap<String, CustomEmoji>?
 	
 	val bot : Boolean
+	val isCat : Boolean
+	val isAdmin : Boolean
 	
 	// user_hides_network is preference, not exposed in API
 	// val user_hides_network : Boolean
@@ -116,6 +118,8 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			this.fields = null
 			
 			this.bot = src.optBoolean("isBot", false)
+			this.isCat = src.optBoolean("isCat", false)
+			this.isAdmin = src.optBoolean("isAdmin", false)
 			
 			// this.user_hides_network = src.optBoolean("user_hides_network")
 			
@@ -177,7 +181,8 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			this.fields = parseFields(src.optJSONArray("fields"))
 			
 			this.bot = src.optBoolean("bot", false)
-			
+			this.isAdmin = false // TODO
+			this.isCat = false // TODO
 			// this.user_hides_network = src.optBoolean("user_hides_network")
 			
 			when(parser.serviceType) {

@@ -42,6 +42,10 @@ object MediaShown : TableCompanion {
 			db.execSQL("drop table if exists $table")
 			onDBCreate(db)
 		}
+		if(oldVersion < 31 && newVersion >= 31) {
+			db.execSQL("drop table if exists $table")
+			onDBCreate(db)
+		}
 	}
 	
 	fun isShown(status : TootStatus, default_value : Boolean) : Boolean {

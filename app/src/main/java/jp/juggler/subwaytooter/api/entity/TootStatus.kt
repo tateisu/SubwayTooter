@@ -18,6 +18,7 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
+import org.json.JSONArray
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.collections.ArrayList
@@ -114,7 +115,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	val reblog : TootStatus?
 	
 	//One of: public, unlisted, private, direct
-	val visibility : String?
+	val visibility : TootVisibility
+	
+	val misskeyVisibleIds : ArrayList<String>?
 	
 	//	An array of Attachments
 	val media_attachments : ArrayList<TootAttachmentLike>?
@@ -186,15 +189,16 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			this.accountRef = TootAccountRef(parser, who)
 			
-			this.reblogs_count = 0L
+			this.reblogs_count = src.parseLong("renoteCount") ?: 0L
 			this.favourites_count = 0L
-			this.replies_count = 0L
+			this.replies_count = src.parseLong("repliesCount") ?: 0L
 			
 			this.reblogged = false
 			this.favourited = false
 
-			this.visibility = src.parseString("visibility")
-			// TODO Misskey has "visibleUserIds": string[],
+			this.visibility = TootVisibility.parseMisskey(src.parseString("visibility")) ?: TootVisibility.Public
+			
+			this.misskeyVisibleIds = parseStringArray(src.optJSONArray("visibleUserIds"))
 			
 			this.media_attachments = parseListOrNull(::TootAttachment,parser,src.optJSONArray("media"))
 			
@@ -211,7 +215,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.in_reply_to_account_id = null
 			this.mentions = null
 			this.tags = null
-			this.application = parseItem(::TootApplication, src.optJSONObject("appId"), log)
+			this.application = parseItem(::TootApplication, parser,src.optJSONObject("app"), log)
 			this.pinned = parser.pinned
 			this.muted = false
 			this.language = null
@@ -269,6 +273,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.reblog = parser.status(src.optJSONObject("renote"))
 
 		}else{
+			misskeyVisibleIds = null
+			
 			this.uri = src.parseString("uri") // MSPだとuriは提供されない
 			this.url = src.parseString("url") // 頻繁にnullになる
 			this.created_at = src.parseString("created_at")
@@ -299,7 +305,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					this.time_created_at = parseTime(this.created_at)
 					this.media_attachments =
 						parseListOrNull(::TootAttachment, parser,src.optJSONArray("media_attachments"), log)
-					this.visibility = src.parseString("visibility")
+					this.visibility = TootVisibility.parseMastodon(src.parseString("visibility")) ?: TootVisibility.Public
 					this.sensitive = src.optBoolean("sensitive")
 					
 				}
@@ -313,7 +319,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					this.time_created_at = TootStatus.parseTime(this.created_at)
 					this.media_attachments =
 						parseListOrNull(::TootAttachment, parser,src.optJSONArray("media_attachments"), log)
-					this.visibility = VISIBILITY_PUBLIC
+					this.visibility = TootVisibility.Public
 					this.sensitive = src.optBoolean("sensitive")
 					
 				}
@@ -327,7 +333,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					this.time_created_at = parseTimeMSP(created_at)
 					this.media_attachments =
 						TootAttachmentMSP.parseList(src.optJSONArray("media_attachments"))
-					this.visibility = VISIBILITY_PUBLIC
+					this.visibility = TootVisibility.Public
 					this.sensitive = src.optInt("sensitive", 0) != 0
 				}
 				
@@ -339,7 +345,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.in_reply_to_account_id = src.parseString("in_reply_to_account_id")
 			this.mentions = parseListOrNull(::TootMention, src.optJSONArray("mentions"), log)
 			this.tags = parseListOrNull(::TootTag, src.optJSONArray("tags"))
-			this.application = parseItem(::TootApplication, src.optJSONObject("application"), log)
+			this.application = parseItem(::TootApplication,parser, src.optJSONObject("application"), log)
 			this.pinned = parser.pinned || src.optBoolean("pinned")
 			this.muted = src.optBoolean("muted")
 			this.language = src.parseString("language")
@@ -441,9 +447,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	}
 	
 	fun canPin(access_info : SavedAccount) : Boolean {
-		return (reblog == null
+		return reblog == null
 			&& access_info.isMe(account)
-			&& (VISIBILITY_PUBLIC == visibility || VISIBILITY_UNLISTED == visibility))
+			&& visibility.canPin( access_info.isMisskey)
 	}
 	
 	// 内部で使う
@@ -473,11 +479,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		
 		internal val log = LogCategory("TootStatus")
 		
-		const val VISIBILITY_PUBLIC = "public"
-		const val VISIBILITY_UNLISTED = "unlisted"
-		const val VISIBILITY_PRIVATE = "private"
-		const val VISIBILITY_DIRECT = "direct"
-		const val VISIBILITY_WEB_SETTING = "web_setting"
+
 		
 		private val reWhitespace = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
 		
@@ -644,41 +646,21 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			return date_format.format(Date(t))
 		}
 		
-		// 公開範囲を比較する
-		// 公開範囲が広い => 大きい
-		// aの方が小さい（狭い)ならマイナス
-		// aの方が大きい（狭い)ならプラス
-		// IndexOutOfBoundsException 公開範囲が想定外
-		@Suppress("unused")
-		fun compareVisibility(a : String, b : String) : Int {
-			val ia = parseVisibility(a)
-			val ib = parseVisibility(b)
-			if(ia < ib) return - 1
-			return if(ia > ib) 1 else 0
-		}
+
 		
-		// visibilityが既知の文字列か調べる。ダメなら例外を出す
-		fun parseVisibility(a : String?) : Int {
-			if(TootStatus.VISIBILITY_DIRECT == a) return 0
-			if(TootStatus.VISIBILITY_PRIVATE == a) return 1
-			if(TootStatus.VISIBILITY_UNLISTED == a) return 2
-			if(TootStatus.VISIBILITY_PUBLIC == a) return 3
-			if(TootStatus.VISIBILITY_WEB_SETTING == a) return 4
-			throw IndexOutOfBoundsException("visibility not in range")
-		}
 		
-		fun isVisibilitySpoilRequired(
-			current_visibility : String?,
-			max_visibility : String?
-		) : Boolean {
-			return try {
-				val cvi = parseVisibility(current_visibility)
-				val mvi = parseVisibility(max_visibility)
-				cvi > mvi
-			} catch(ex : Throwable) {
-				log.trace(ex)
-				false
+		fun parseStringArray(src:JSONArray?):ArrayList<String>?{
+			var rv : ArrayList<String>? = null
+			if( src != null ){
+				for( i in 0 until src.length()){
+					val s = src.optString(i,null)
+					if( s?.isNotEmpty() == true){
+						if( rv == null) rv = ArrayList()
+						rv.add(s)
+					}
+				}
 			}
+			return rv
 		}
 		
 		private fun validHost(host : String?) : String? {

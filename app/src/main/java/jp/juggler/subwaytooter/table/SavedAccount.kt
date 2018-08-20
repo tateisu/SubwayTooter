@@ -5,25 +5,20 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
-
-import org.json.JSONObject
-
-import java.util.ArrayList
-import java.util.Collections
-import java.util.Comparator
-import java.util.concurrent.atomic.AtomicReference
-import java.util.regex.Pattern
-
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.entity.ServiceType
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.parseString
 import jp.juggler.subwaytooter.util.toJsonObject
+import org.json.JSONObject
+import java.util.*
+import java.util.concurrent.atomic.AtomicReference
+import java.util.regex.Pattern
 
 class SavedAccount(
 	val db_id : Long,
@@ -31,7 +26,7 @@ class SavedAccount(
 	hostArg : String? = null,
 	var token_info : JSONObject? = null,
 	var loginAccount : TootAccount? = null, // 疑似アカウントではnull
-	private val _isMisskey :Boolean = false // 疑似アカウントでのみtrue
+	private val _isMisskey : Boolean = false // 疑似アカウントでのみtrue
 ) : LinkHelper {
 	
 	override val isMisskey : Boolean
@@ -41,7 +36,7 @@ class SavedAccount(
 	
 	override val host : String
 	
-	var visibility : String? = null
+	var visibility : TootVisibility = TootVisibility.Public
 	var confirm_boost : Boolean = false
 	var confirm_favourite : Boolean = false
 	var confirm_unboost : Boolean = false
@@ -102,17 +97,17 @@ class SavedAccount(
 		cursor.getLong(cursor.getColumnIndex(COL_ID)), // db_id
 		cursor.getString(cursor.getColumnIndex(COL_USER)), // acct
 		cursor.getString(cursor.getColumnIndex(COL_HOST)) // host
-		,_isMisskey = cursor.getInt(cursor.getColumnIndex(COL_IS_MISSKEY)).i2b()
+		, _isMisskey = cursor.getInt(cursor.getColumnIndex(COL_IS_MISSKEY)).i2b()
 	) {
 		
 		val jsonAccount = cursor.getString(cursor.getColumnIndex(COL_ACCOUNT)).toJsonObject()
-		if( jsonAccount.opt("id")== null){
+		if(jsonAccount.opt("id") == null) {
 			// 疑似アカウント
 			this.loginAccount = null
-		}else{
+		} else {
 			val loginAccount = TootParser(
 				context,
-				LinkHelper.newLinkHelper(this@SavedAccount.host,isMisskey=isMisskey)
+				LinkHelper.newLinkHelper(this@SavedAccount.host, isMisskey = isMisskey)
 			).account(jsonAccount)
 			
 			if(loginAccount == null) {
@@ -124,16 +119,16 @@ class SavedAccount(
 			this.loginAccount = loginAccount
 		}
 		
-		
 		val colIdx_visibility = cursor.getColumnIndex(COL_VISIBILITY)
-		this.visibility =
-			if(cursor.isNull(colIdx_visibility)) null else cursor.getString(colIdx_visibility)
+		val sv = if(cursor.isNull(colIdx_visibility)) null else cursor.getString(colIdx_visibility)
+		this.visibility = TootVisibility.parseSavedVisibility(sv) ?: TootVisibility.Public
 		
 		this.confirm_boost = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_BOOST)).i2b()
 		this.confirm_favourite = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_FAVOURITE)).i2b()
 		this.confirm_unboost = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_UNBOOST)).i2b()
-		this.confirm_unfavourite = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_UNFAVOURITE)).i2b()
-
+		this.confirm_unfavourite =
+			cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_UNFAVOURITE)).i2b()
+		
 		this.dont_hide_nsfw = cursor.getInt(cursor.getColumnIndex(COL_DONT_HIDE_NSFW)).i2b()
 		this.dont_show_timeout = cursor.getInt(cursor.getColumnIndex(COL_DONT_SHOW_TIMEOUT)).i2b()
 		
@@ -166,7 +161,6 @@ class SavedAccount(
 		this.sound_uri = cursor.getString(cursor.getColumnIndex(COL_SOUND_URI))
 		
 		this.default_text = cursor.getString(cursor.getColumnIndex(COL_DEFAULT_TEXT)) ?: ""
-		
 		
 	}
 	
@@ -203,12 +197,12 @@ class SavedAccount(
 		if(db_id == INVALID_DB_ID) throw RuntimeException("saveSetting: missing db_id")
 		
 		val cv = ContentValues()
-		cv.put(COL_VISIBILITY, visibility)
+		cv.put(COL_VISIBILITY, visibility.id.toString())
 		cv.put(COL_CONFIRM_BOOST, confirm_boost.b2i())
 		cv.put(COL_CONFIRM_FAVOURITE, confirm_favourite.b2i())
 		cv.put(COL_CONFIRM_UNBOOST, confirm_unboost.b2i())
 		cv.put(COL_CONFIRM_UNFAVOURITE, confirm_unfavourite.b2i())
-
+		
 		cv.put(COL_DONT_HIDE_NSFW, dont_hide_nsfw.b2i())
 		cv.put(COL_DONT_SHOW_TIMEOUT, dont_show_timeout.b2i())
 		cv.put(COL_NOTIFICATION_MENTION, notification_mention.b2i())
@@ -393,7 +387,6 @@ class SavedAccount(
 		private const val COL_CONFIRM_UNFOLLOW = "confirm_unfollow"
 		private const val COL_CONFIRM_POST = "confirm_post"
 		
-		
 		// スキーマ13から
 		const val COL_NOTIFICATION_TAG = "notification_server"
 		
@@ -409,7 +402,7 @@ class SavedAccount(
 		
 		// スキーマ23から
 		private const val COL_CONFIRM_FAVOURITE = "confirm_favourite"
-
+		
 		// スキーマ24から
 		private const val COL_CONFIRM_UNBOOST = "confirm_unboost"
 		private const val COL_CONFIRM_UNFAVOURITE = "confirm_unfavourite"
@@ -419,7 +412,7 @@ class SavedAccount(
 		
 		// スキーマ28から
 		private const val COL_IS_MISSKEY = "is_misskey"
-
+		
 		/////////////////////////////////
 		// login information
 		const val INVALID_DB_ID = - 1L
@@ -654,7 +647,7 @@ class SavedAccount(
 				cv.put(COL_USER, acct)
 				cv.put(COL_ACCOUNT, account.toString())
 				cv.put(COL_TOKEN, token.toString())
-				cv.put(COL_IS_MISSKEY, isMisskey.b2i() )
+				cv.put(COL_IS_MISSKEY, isMisskey.b2i())
 				return App1.database.insert(table, null, cv)
 			} catch(ex : Throwable) {
 				log.trace(ex)
@@ -878,7 +871,7 @@ class SavedAccount(
 		return token_info?.parseString("access_token")
 	}
 	
-	fun putMisskeyApiToken(params : JSONObject) :JSONObject{
+	fun putMisskeyApiToken(params : JSONObject) : JSONObject {
 		val apiKey = token_info?.parseString(TootApiClient.KEY_API_KEY_MISSKEY)
 		if(apiKey?.isNotEmpty() == true) params.put("i", apiKey)
 		return params

@@ -37,7 +37,7 @@ object MediaShownMisskey : TableCompanion {
 	}
 	
 	override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
-		if(oldVersion < 309 && newVersion >= 30) {
+		if(oldVersion < 30 && newVersion >= 30) {
 			db.execSQL("drop table if exists $table")
 			onDBCreate(db)
 		}

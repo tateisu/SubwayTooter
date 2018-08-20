@@ -9,7 +9,6 @@ import org.json.JSONObject
 
 import jp.juggler.subwaytooter.table.ClientInfo
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.api.entity.ServiceType
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.util.*
 import okhttp3.*
@@ -64,17 +63,18 @@ class TootApiClient(
 		private const val REDIRECT_URL = "subwaytooter://oauth/"
 		
 		const val KEY_IS_MISSKEY = "isMisskey"
+		const val KEY_MISSKEY_APP_SECRET = "secret"
 		const val KEY_API_KEY_MISSKEY = "apiKeyMisskey"
 		
-		// APIからsecretを得られないバグがあるので定数を渡す
-		const val appSecretError =
-			"Currently Misskey does not allow client registration from API, please tell me notify instance name that you want login via Subway Tooter."
-		val testAppSecretMap = mapOf(
-			Pair("misskey.xyz", "NGiWNZFP37WiAee3SGcVe8eSiDyLbbWf")
-			, Pair("misskey.jp", "GO45N7JgeEWtlNUS4xRcOFY56JMjUTZk")
-			, Pair("msky.cafe", "lvU12i7CXAB5xiqkABwzyJRzdAqhf0k3")
-			, Pair("misskey.m544.net", "SLcaqff0Puymh4Fl30JCc09i6uumwJ4t")
-		)
+//		// APIからsecretを得られないバグがあるので定数を渡す
+//		const val appSecretError =
+//			"This Misskey instance Currently Misskey does not allow client registration from API, please tell me notify instance name that you want login via Subway Tooter."
+//		val testAppSecretMap = mapOf(
+//			Pair("misskey.xyz", "NGiWNZFP37WiAee3SGcVe8eSiDyLbbWf")
+//			, Pair("misskey.jp", "GO45N7JgeEWtlNUS4xRcOFY56JMjUTZk")
+//			, Pair("msky.cafe", "lvU12i7CXAB5xiqkABwzyJRzdAqhf0k3")
+//			, Pair("misskey.m544.net", "SLcaqff0Puymh4Fl30JCc09i6uumwJ4t")
+//		)
 		
 		private const val NO_INFORMATION = "(no information)"
 		
@@ -153,7 +153,7 @@ class TootApiClient(
 			jsonErrorParser : (json : JSONObject) -> String? = DEFAULT_JSON_ERROR_PARSER
 		) : String {
 			val url = response.request()?.url()
-			if( url?.toString()?.contains("misskey") == true){
+			if(url?.toString()?.contains("misskey") == true) {
 				log.d("Misskey response error: url=$url")
 			}
 			val sb = StringBuilder()
@@ -209,6 +209,10 @@ class TootApiClient(
 				put("drive-write")
 				put("notification-read")
 				put("notification-write")
+				put("favorite-write")
+				put("account/read")
+				put("account/write")
+				// https://github.com/syuilo/misskey/issues/2341
 			}
 		
 	}
@@ -290,6 +294,12 @@ class TootApiClient(
 		
 		val bodyString = response.body()?.string()
 		if(isApiCancelled) return null
+		
+		// Misskey の /api/notes/favorites/create は 204(no content)を返す。ボディはカラになる。
+		if( bodyString?.isEmpty() != false && response.code() in 200 until 300 ){
+			result.bodyString = ""
+			return ""
+		}
 		
 		if(! response.isSuccessful || bodyString?.isEmpty() != false) {
 			
@@ -410,7 +420,12 @@ class TootApiClient(
 			val bodyString = readBodyString(result, progressPath, jsonErrorParser)
 				?: return if(isApiCancelled) null else result
 			
-			if(reStartJsonArray.matcher(bodyString).find()) {
+			if( bodyString.isEmpty() ){
+
+				// 204 no content は 空オブジェクトと解釈する
+				result.data = JSONObject()
+
+			} else if(reStartJsonArray.matcher(bodyString).find()) {
 				result.data = bodyString.toJsonArray()
 				
 			} else if(reStartJsonObject.matcher(bodyString).find()) {
@@ -421,7 +436,7 @@ class TootApiClient(
 				} else {
 					result.data = json
 				}
-			} else {
+			}else {
 				result.error = context.getString(R.string.response_not_json) + "\n" + bodyString
 			}
 			
@@ -490,24 +505,23 @@ class TootApiClient(
 	}
 	
 	// インスタンス情報を取得する
-	private fun getInstanceInformation2Misskey() : TootApiResult? {
-		val r = getInstanceInformationMisskey()
-		if(r != null) {
-			val json = r.jsonObject
+	internal fun parseInstanceInformation(result : TootApiResult?) : TootApiResult? {
+		if(result != null) {
+			val json = result.jsonObject
 			if(json != null) {
 				val parser = TootParser(
 					context,
-					LinkHelper.newLinkHelper(instance,isMisskey = true)
+					LinkHelper.newLinkHelper(instance, isMisskey = json.optBoolean(KEY_IS_MISSKEY))
 				)
 				val ti = parser.instance(json)
 				if(ti != null) {
-					r.data = ti
+					result.data = ti
 				} else {
-					r.setError("can't parse data in /api/meta")
+					result.setError("can't parse data in instance information.")
 				}
 			}
 		}
-		return r
+		return result
 	}
 	
 	private fun getAppInfoMisskey(appId : String?) : TootApiResult? {
@@ -528,7 +542,7 @@ class TootApiClient(
 		return result
 	}
 	
-	private fun prepareBrowserUrlMisskey(@Suppress("UNUSED_PARAMETER") clientInfo : JSONObject) : String? {
+	private fun prepareBrowserUrlMisskey( appSecret:String) : String? {
 		
 		val result = TootApiResult.makeWithCaption(instance)
 		
@@ -537,11 +551,7 @@ class TootApiClient(
 			return null
 		}
 		
-		val appSecret = testAppSecretMap[instance?.toLowerCase()]
-		if(appSecret == null) {
-			showToast(context, true, appSecretError)
-			return null
-		}
+		
 		
 		if(! sendRequest(result) {
 				JSONObject().apply {
@@ -629,15 +639,18 @@ class TootApiClient(
 		val scope_array = getScopeArrayMisskey(ti)
 		
 		if(client_info != null && client_info.optBoolean(KEY_IS_MISSKEY)) {
+			val appSecret = client_info.parseString(KEY_MISSKEY_APP_SECRET)
+			
 			val r2 = getAppInfoMisskey(client_info.parseString("id"))
 			val tmpClientInfo = r2?.jsonObject
 			// tmpClientInfo はsecretを含まないので保存してはいけない
 			if(tmpClientInfo != null // アプリが登録済みで
 				&& client_name == tmpClientInfo.parseString("name") // クライアント名が一致してて
 				&& tmpClientInfo.optJSONArray("permission")?.length() == scope_array.length() // パーミッションが同じ
+				&& appSecret?.isNotEmpty() == true
 			) {
 				// クライアント情報を再利用する
-				result.data = prepareBrowserUrlMisskey(client_info)
+				result.data = prepareBrowserUrlMisskey(appSecret)
 				return result
 			} else {
 				// XXX appSecretを使ってクライアント情報を削除できるようにするべきだが、該当するAPIが存在しない
@@ -647,6 +660,11 @@ class TootApiClient(
 		val r2 = registerClientMisskey(scope_array, client_name)
 		val jsonObject = r2?.jsonObject ?: return r2
 		
+		val appSecret = jsonObject.parseString(KEY_MISSKEY_APP_SECRET)
+		if( appSecret?.isEmpty() != false) {
+			showToast(context,true,context.getString(R.string.cant_get_misskey_app_secret))
+			return null
+		}
 		//		{
 		//			"createdAt": "2018-08-19T00:43:10.105Z",
 		//			"userId": null,
@@ -675,7 +693,7 @@ class TootApiClient(
 		jsonObject.put(KEY_IS_MISSKEY, true)
 		jsonObject.put(KEY_AUTH_VERSION, AUTH_VERSION)
 		ClientInfo.save(instance, client_name, jsonObject.toString())
-		result.data = prepareBrowserUrlMisskey(jsonObject)
+		result.data = prepareBrowserUrlMisskey(appSecret)
 		
 		return result
 	}
@@ -691,10 +709,11 @@ class TootApiClient(
 		val client_info = ClientInfo.load(instance, client_name)
 			?: return result.setError("missing client id")
 		
-		// XXX: client_info中にsecretがあればそれを使う
-		val appSecret = testAppSecretMap[instance.toLowerCase()]
-			?: return result.setError(appSecretError)
-		
+		val appSecret = client_info.parseString(KEY_MISSKEY_APP_SECRET)
+		if( appSecret?.isEmpty() != false) {
+			return result.setError(context.getString(R.string.cant_get_misskey_app_secret))
+		}
+
 		if(! sendRequest(result) {
 				JSONObject().apply {
 					put("appSecret", appSecret)
@@ -712,7 +731,7 @@ class TootApiClient(
 		
 		val token_info = result.jsonObject ?: return result
 		
-		// {"accessToken":"XSdxQcaCCS5VDRNigfDDj9xNDBpPlD8K","user":{…}}
+		// {"accessToken":"...","user":{…}}
 		
 		val access_token = token_info.parseString("accessToken")
 		if(access_token?.isEmpty() != false) {
@@ -738,8 +757,6 @@ class TootApiClient(
 	
 	//////////////////////////////////////////////////////////////////////
 	
-	////////////////////////////////////////////////////////////////
-	
 	// 疑似アカウントの追加時に、インスタンスの検証を行う
 	private fun getInstanceInformationMastodon() : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(instance)
@@ -756,57 +773,7 @@ class TootApiClient(
 		return result
 	}
 	
-	private fun getInstanceInformation2Mastodon() : TootApiResult? {
-		val r = getInstanceInformationMastodon()
-		if(r != null) {
-			val json = r.jsonObject
-			if(json != null) {
-				val parser = TootParser(context, LinkHelper.newLinkHelper(instance))
-				val ti = parser.instance(json)
-				if(ti != null) {
-					r.data = ti
-				} else {
-					r.setError("can't parse data in /api/v1/instance")
-				}
-			}
-		}
-		return r
-	}
-	
-	// 疑似アカウントの追加時に、インスタンスの検証を行う
-	fun getInstanceInformation() : TootApiResult? {
-		// マストドンのインスタンス情報を読めたら、それはマストドンのインスタンス
-		val r1 = getInstanceInformationMastodon() ?: return null // null means cancelled.
-		if(r1.jsonObject != null) return r1
-		
-		// misskeyのインスタンス情報を読めたら、それはmisskeyのインスタンス
-		val r2 = getInstanceInformationMisskey() ?: return null // null means cancelled.
-		if(r2.jsonObject != null) return r2
-		
-		return r1 // 通信エラーの表示ならr1でもr2でも構わないはず
-	}
-	
-	// インスタンス情報を取得する
-	internal fun getInstanceInformation2() : TootApiResult? {
-		val r = getInstanceInformation()
-		if(r != null) {
-			val json = r.jsonObject
-			if(json != null) {
-				val parser = TootParser(
-					context,
-					LinkHelper.newLinkHelper(instance,isMisskey = json.optBoolean(KEY_IS_MISSKEY))
-				)
-				val ti = parser.instance(json)
-				if(ti != null) {
-					r.data = ti
-				} else {
-					r.setError("can't parse data in instance information.")
-				}
-			}
-		}
-		return r
-	}
-	
+
 	// クライアントをタンスに登録
 	private fun registerClient(scope_string : String, clientName : String) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(this.instance)
@@ -1007,18 +974,31 @@ class TootApiClient(
 		return result
 	}
 	
+	// 疑似アカウントの追加時に、インスタンスの検証を行う
+	fun getInstanceInformation() : TootApiResult? {
+		// マストドンのインスタンス情報を読めたら、それはマストドンのインスタンス
+		val r1 = getInstanceInformationMastodon() ?: return null
+		if(r1.jsonObject != null) return r1
+		
+		// misskeyのインスタンス情報を読めたら、それはmisskeyのインスタンス
+		val r2 = getInstanceInformationMisskey() ?: return null
+		if(r2.jsonObject != null) return r2
+		
+		return r1 // 通信エラーの表示ならr1でもr2でも構わないはず
+	}
+	
 	// クライアントを登録してブラウザで開くURLを生成する
 	fun authentication1(clientNameArg : String) : TootApiResult? {
 		
 		// マストドンのインスタンス情報
-		var ri = getInstanceInformation2Mastodon()
+		var ri = parseInstanceInformation(getInstanceInformationMastodon())
 		var ti = ri?.data as? TootInstance
 		if(ti != null && (ri?.response?.code() ?: 0) in 200 until 300) {
 			return authentication1Mastodon(clientNameArg, ti)
 		}
 		
 		// misskeyのインスタンス情報
-		ri = getInstanceInformation2Misskey()
+		ri = parseInstanceInformation(getInstanceInformationMisskey())
 		ti = ri?.data as? TootInstance
 		if(ti != null && (ri?.response?.code() ?: 0) in 200 until 300) {
 			return authentication1Misskey(clientNameArg, ti)
@@ -1077,17 +1057,17 @@ class TootApiClient(
 	// verify_credentialsを呼び出す
 	fun getUserCredential(
 		access_token : String
-		,tokenInfo : JSONObject = JSONObject()
-			,isMisskey :Boolean = false
+		, tokenInfo : JSONObject = JSONObject()
+		, isMisskey : Boolean = false
 	) : TootApiResult? {
-		if( isMisskey){
+		if(isMisskey) {
 			val result = TootApiResult.makeWithCaption(instance)
 			if(result.error != null) return result
 			
 			// 認証されたアカウントのユーザ情報を取得する
 			if(! sendRequest(result) {
 					JSONObject()
-						.put("i",access_token)
+						.put("i", access_token)
 						.toPostRequestBuilder()
 						.url("https://$instance/api/i")
 						.build()
@@ -1097,13 +1077,13 @@ class TootApiClient(
 			if(r2?.jsonObject != null) {
 				// ユーザ情報を読めたならtokenInfoを保存する
 				tokenInfo.put(KEY_AUTH_VERSION, AUTH_VERSION)
-				tokenInfo.put(KEY_API_KEY_MISSKEY,access_token)
-				tokenInfo.put(KEY_IS_MISSKEY,true)
+				tokenInfo.put(KEY_API_KEY_MISSKEY, access_token)
+				tokenInfo.put(KEY_IS_MISSKEY, true)
 				result.tokenInfo = tokenInfo
 			}
 			return r2
 			
-		}else{
+		} else {
 			val result = TootApiResult.makeWithCaption(instance)
 			if(result.error != null) return result
 			
@@ -1242,14 +1222,14 @@ class TootApiClient(
 		return result
 	}
 	
-//	fun requestJson(req : Request) : TootApiResult? {
-//		val result = TootApiResult.makeWithCaption(req.url().host())
-//		if(result.error != null) return result
-//		if(sendRequest(result, progressPath = null) { req }) {
-//			parseJson(result)
-//		}
-//		return result
-//	}
+	//	fun requestJson(req : Request) : TootApiResult? {
+	//		val result = TootApiResult.makeWithCaption(req.url().host())
+	//		if(result.error != null) return result
+	//		if(sendRequest(result, progressPath = null) { req }) {
+	//			parseJson(result)
+	//		}
+	//		return result
+	//	}
 	
 	// 疑似アカウントでステータスURLからステータスIDを取得するためにHTMLを取得する
 	fun getHttp(url : String) : TootApiResult? {
@@ -1302,5 +1282,6 @@ class TootApiClient(
 		return result
 		
 	}
-	
 }
+	
+

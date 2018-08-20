@@ -144,7 +144,7 @@ class PushSubscriptionHelper(
 			if(oldSubscription == null) {
 				
 				// 現在の購読状況が分からない場合はインスタンスのバージョンを調べる必要がある
-				r = client.getInstanceInformation2()
+				r = client.parseInstanceInformation(client.getInstanceInformation())
 				val ti = r?.data as? TootInstance ?: return r
 				
 				if(! ti.versionGE(TootInstance.VERSION_2_4_0_rc1)) {

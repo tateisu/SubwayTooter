@@ -209,7 +209,7 @@
 	<string name="nickname_applied_after_reload">Le changement de pseudo/couleur sera appliqué après actualisation.</string>
 	<string name="nickname_label">Pseudo et couleur. (s\'il est spécifié, il remplacera le nom du compte affiché)</string>
 	<string name="not_available_for_pseudo_account">Non disponible pour les personnes non connectés</string>
-	<string name="not_available_for_misskey">Not available for Misskey account</string>
+	<string name="not_available_for_misskey_account">Not available for Misskey account</string>
 	<string name="not_selected">(Aucune sélection)</string>
 	<string name="notification_count">%1$d notifications</string>
 	<string name="notification_delete">Effacer les notifications</string>

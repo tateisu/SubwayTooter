@@ -338,6 +338,7 @@ internal class ItemViewHolder(
 		this.boost_account = null
 		this.follow_account = null
 		this.boost_time = 0L
+		this.viewRoot.setBackgroundColor(0)
 		
 		llBoosted.visibility = View.GONE
 		llFollow.visibility = View.GONE
@@ -594,6 +595,10 @@ internal class ItemViewHolder(
 		
 		this.status_showing = status
 		llStatus.visibility = View.VISIBLE
+		
+		if( status.conversation_main) {
+			this.viewRoot.setBackgroundColor( (Styler.getAttributeColor(activity,R.attr.colorImageButtonAccent) and 0xffffff ) or 0x20000000)
+		}
 		
 		showStatusTime(activity, tvTime, who = status.account, status = status)
 		

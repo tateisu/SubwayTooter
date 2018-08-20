@@ -691,6 +691,7 @@ class Column(
 		}
 	}
 	
+	
 	internal fun getColumnName(bLong : Boolean) : String {
 		return when(column_type) {
 			
@@ -1552,11 +1553,8 @@ class Column(
 				} else {
 					// カラムに紐付けられたアカウントのタンスのインスタンス情報
 				}
-				val result = client.request("/api/v1/instance")
-				val jsonObject = result?.jsonObject
-				if(jsonObject != null) {
-					instance_tmp = parseItem(::TootInstance, parser, jsonObject)
-				}
+				val result = client.getInstanceInformation2()
+				instance_tmp = result?.data as? TootInstance
 				return result
 			}
 			
@@ -2026,67 +2024,125 @@ class Column(
 						)
 						
 						TYPE_CONVERSATION -> {
-							
-							// 指定された発言そのもの
-							result = client.request(
-								String.format(Locale.JAPAN, PATH_STATUSES, status_id)
-							)
-							var jsonObject = result?.jsonObject ?: return result
-							val target_status = parser.status(jsonObject)
-								?: return TootApiResult("TootStatus parse failed.")
-							
-							// 前後の会話
-							result = client.request(
-								String.format(Locale.JAPAN, PATH_STATUSES_CONTEXT, status_id)
-							)
-							jsonObject = result?.jsonObject ?: return result
-							val conversation_context = parseItem(::TootContext, parser, jsonObject)
-							
-							// 一つのリストにまとめる
-							target_status.conversation_main = true
-							if(conversation_context != null) {
-								
-								this.list_tmp = ArrayList(
-									1
-										+ (conversation_context.ancestors?.size ?: 0)
-										+ (conversation_context.descendants?.size ?: 0)
+							if(isMisskey){
+								// 指定された発言そのもの
+								val queryParams = makeMisskeyBaseParameter(parser)
+									.put("noteId",status_id)
+								result = client.request(
+									"/api/notes/show"
+										,queryParams.toPostRequestBuilder()
 								)
-								//
-								if(conversation_context.ancestors != null)
-									addWithFilterStatus(
-										this.list_tmp,
-										conversation_context.ancestors
+								var jsonObject = result?.jsonObject ?: return result
+								val target_status = parser.status(jsonObject)
+									?: return TootApiResult("TootStatus parse failed.")
+								target_status.conversation_main = true
+
+								// 祖先
+								val list_asc = ArrayList<TootStatus>()
+								while(true){
+									if( client.isApiCancelled) return null
+									queryParams.put("offset",list_asc.size)
+									result = client.request(
+										"/api/notes/conversation"
+										,queryParams.toPostRequestBuilder()
 									)
-								//
-								addOne(list_tmp, target_status)
-								//
-								if(conversation_context.descendants != null)
-									addWithFilterStatus(
-										this.list_tmp,
-										conversation_context.descendants
-									)
-								//
-							} else {
-								this.list_tmp = addOne(this.list_tmp, target_status)
-								this.list_tmp = addOne(
-									this.list_tmp,
-									TootMessageHolder(context.getString(R.string.toot_context_parse_failed))
-								)
-							}
-							
-							// カードを取得する
-							if(! Pref.bpDontRetrievePreviewCard(context)) {
-								this.list_tmp?.forEach { o ->
-									if(o is TootStatus)
-										o.card = parseItem(
-											::TootCard,
-											client.request("/api/v1/statuses/" + o.id + "/card")?.jsonObject
-										)
+									val jsonArray = result?.jsonArray ?: return result
+									val src  = parser.statusList(jsonArray)
+									if(src.isEmpty()) break
+									list_asc.addAll(src)
 								}
+								
+								// 直接の子リプライ。(子孫をたどることまではしない)
+								val list_desc = ArrayList<TootStatus>()
+								while(true){
+									if( client.isApiCancelled) return null
+									queryParams.put("offset",list_desc.size)
+									result = client.request(
+										"/api/notes/replies"
+										,queryParams.toPostRequestBuilder()
+									)
+									val jsonArray = result?.jsonArray ?: return result
+									val src  = parser.statusList(jsonArray)
+									if(src.isEmpty()) break
+									list_desc.addAll(src)
+								}
+								
+								// 一つのリストにまとめる
+								this.list_tmp = ArrayList<TimelineItem>(
+									list_asc.size + list_desc.size +2
+								).apply{
+									addAll( list_asc.sortedBy{it.time_created_at })
+									add( target_status)
+									addAll( list_desc.sortedBy{it.time_created_at })
+									add( TootMessageHolder(context.getString(R.string.misskey_cant_show_all_descendants)))
+								}
+								
+								//
+								return result
+								
+							}else{
+								// 指定された発言そのもの
+								result = client.request(
+									String.format(Locale.JAPAN, PATH_STATUSES, status_id)
+								)
+								var jsonObject = result?.jsonObject ?: return result
+								val target_status = parser.status(jsonObject)
+									?: return TootApiResult("TootStatus parse failed.")
+								
+								// 前後の会話
+								result = client.request(
+									String.format(Locale.JAPAN, PATH_STATUSES_CONTEXT, status_id)
+								)
+								jsonObject = result?.jsonObject ?: return result
+								val conversation_context = parseItem(::TootContext, parser, jsonObject)
+								
+								// 一つのリストにまとめる
+								target_status.conversation_main = true
+								if(conversation_context != null) {
+									
+									this.list_tmp = ArrayList(
+										1
+											+ (conversation_context.ancestors?.size ?: 0)
+											+ (conversation_context.descendants?.size ?: 0)
+									)
+									//
+									if(conversation_context.ancestors != null)
+										addWithFilterStatus(
+											this.list_tmp,
+											conversation_context.ancestors
+										)
+									//
+									addOne(list_tmp, target_status)
+									//
+									if(conversation_context.descendants != null)
+										addWithFilterStatus(
+											this.list_tmp,
+											conversation_context.descendants
+										)
+									//
+								} else {
+									this.list_tmp = addOne(this.list_tmp, target_status)
+									this.list_tmp = addOne(
+										this.list_tmp,
+										TootMessageHolder(context.getString(R.string.toot_context_parse_failed))
+									)
+								}
+								
+								// カードを取得する
+								if(! Pref.bpDontRetrievePreviewCard(context)) {
+									this.list_tmp?.forEach { o ->
+										if(o is TootStatus)
+											o.card = parseItem(
+												::TootCard,
+												client.request("/api/v1/statuses/" + o.id + "/card")?.jsonObject
+											)
+									}
+								}
+								
+								//
+								return result
+								
 							}
-							
-							//
-							return result
 						}
 						
 						TYPE_TREND_TAG -> {

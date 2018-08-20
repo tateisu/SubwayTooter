@@ -171,11 +171,15 @@ internal class ViewHolderHeaderInstance(
 			
 			R.id.btnEmail -> instance?.email?.let { email ->
 				try {
-					val intent = Intent(Intent.ACTION_SEND)
-					intent.type = "text/plain"
-					intent.putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
-					intent.putExtra(Intent.EXTRA_TEXT, email)
-					activity.startActivity(intent)
+					if(email.contains("://") ) {
+						App1.openCustomTab(activity,email)
+					}else {
+						val intent = Intent(Intent.ACTION_SEND)
+						intent.type = "text/plain"
+						intent.putExtra(Intent.EXTRA_EMAIL, arrayOf(email))
+						intent.putExtra(Intent.EXTRA_TEXT, email)
+						activity.startActivity(intent)
+					}
 					
 				} catch(ex : Throwable) {
 					log.e(ex, "startActivity failed. mail=$email")

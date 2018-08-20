@@ -1018,5 +1018,6 @@
     <string name="replies_count_none">なし</string>
     <string name="missing_available_account">この目的に使えるアカウントがありません。</string>
     <string name="misskey_account_not_supported">Misskey account is not supported.</string>
+    <string name="misskey_cant_show_all_descendants">Misskeyでは対象ノートへの直接の返信が列挙されます。子孫の全ては表示できません。</string>
 
 </resources>

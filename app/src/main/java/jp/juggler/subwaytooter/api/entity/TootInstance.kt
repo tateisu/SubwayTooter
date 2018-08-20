@@ -72,7 +72,12 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			this.uri = parser.linkHelper.host
 			this.title = parser.linkHelper.host
 			this.description = "(Misskey instance)"
-			this.email = src.optJSONObject("maintainer")?.parseString("url")
+			val sv = src.optJSONObject("maintainer")?.parseString("url")
+			this.email = when{
+				sv?.startsWith("mailto:") ==true-> sv.substring(7)
+				else-> sv
+			}
+			
 			this.version = src.parseString("version")
 			this.decoded_version = VersionString(version)
 			this.stats = null
@@ -86,7 +91,13 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			this.uri = src.parseString("uri")
 			this.title = src.parseString("title")
 			this.description = src.parseString("description")
-			this.email = src.parseString("email")
+			
+			val sv = src.parseString("email")
+			this.email = when{
+				sv?.startsWith("mailto:") ==true-> sv.substring(7)
+				else-> sv
+			}
+			
 			this.version = src.parseString("version")
 			this.decoded_version = VersionString(version)
 			this.stats = parseItem(::Stats, src.optJSONObject("stats"))

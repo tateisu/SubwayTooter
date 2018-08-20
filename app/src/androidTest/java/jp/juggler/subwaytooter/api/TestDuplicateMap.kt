@@ -155,7 +155,10 @@ class TestDuplicateMap {
 		map : DuplicateMap,
 		id : Long
 	) {
-		val item = TootReport( id,"eat" )
+		val item = TootReport(JSONObject().apply{
+			put("id",id)
+			put("action_taken","eat")
+		})
 		
 		assertNotNull(item)
 		generatedItems.add(item)

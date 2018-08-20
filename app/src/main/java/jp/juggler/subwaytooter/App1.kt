@@ -102,8 +102,9 @@ class App1 : Application() {
 		// 2018/5/16 v252 25=>26 SubscriptionServerKey テーブルを丸ごと変更
 		// 2018/8/5 v264 26 => 27 SavedAccountテーブルに項目追加
 		// 2018/8/17 v267 27 => 28 SavedAccountテーブルに項目追加
-		// 2018/8/19 v267 28 => 29 ContentWarningMisskey, MediaShownMisskey テーブルを追加
-		internal const val DB_VERSION = 29
+		// 2018/8/19 v267 28 => 29 (失敗)ContentWarningMisskey, MediaShownMisskey テーブルを追加
+		// 2018/8/19 v267 29 => 30 ContentWarningMisskey, MediaShownMisskey, UserRelationMisskeyテーブルを追加
+		internal const val DB_VERSION = 30
 		
 		private val tableList = arrayOf(
 			LogData,
@@ -116,6 +117,7 @@ class App1 : Application() {
 			NotificationTracking,
 			MutedApp,
 			UserRelation,
+			UserRelationMisskey,
 			AcctSet,
 			AcctColor,
 			MutedWord,
@@ -294,8 +296,15 @@ class App1 : Application() {
 			//				db_open_helper.onCreate( db );
 			//			}
 			
-			UserRelation.deleteOld(System.currentTimeMillis())
-			AcctSet.deleteOld(System.currentTimeMillis())
+			val now = System.currentTimeMillis()
+			AcctSet.deleteOld(now)
+			UserRelation.deleteOld(now)
+			UserRelationMisskey.deleteOld(now)
+			ContentWarning.deleteOld(now)
+			ContentWarningMisskey.deleteOld(now)
+			MediaShown.deleteOld(now)
+			MediaShownMisskey.deleteOld(now)
+			
 			
 			//		if( USE_OLD_EMOJIONE ){
 			//			if( typeface_emoji == null ){

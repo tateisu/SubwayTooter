@@ -549,6 +549,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						val mention_list = ArrayList<String>()
 						
 						// 元レスにあった mention
+						// TODO Misskey対応
 						val old_mentions = reply_status.mentions
 						if(old_mentions != null) {
 							for(mention in old_mentions) {
@@ -562,13 +563,15 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 								}
 							}
 						}
-						
+
+						// 自分のacct
 						val who_acct = account.getFullAcct(reply_status.account)
-						if(mention_list.contains("@$who_acct")) {
-							// 既に含まれている
-						} else if(! account.isMe(reply_status.account)) {
-							// 自分ではない
-							mention_list.add("@$who_acct")
+						if( !account.isMe(reply_status.account)
+							&&!mention_list.contains("@$who_acct")
+						){
+							// 自己レスにはメンションを追加しない
+							// 既に含まれているならメンションを追加しない
+							// 自分以外への返信ならメンションを追加する
 						}
 						
 						val sb = StringBuilder()
@@ -923,7 +926,10 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	
 	private fun getMaxCharCount() : Int {
 		val account = account
-		if(account != null && ! account.isPseudo) {
+		if(account != null
+			&& ! account.isPseudo
+			&& ! account.isMisskey
+			) {
 			val info = account.instance
 			var lastTask = lastInstanceTask
 			
@@ -999,16 +1005,18 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	internal fun selectAccount(a : SavedAccount?) {
 		this.account = a
 		if(a == null) {
-			post_helper.setInstance(null)
+			post_helper.setInstance(null,false)
 			btnAccount.text = getString(R.string.not_selected)
 			btnAccount.setTextColor(Styler.getAttributeColor(this, android.R.attr.textColorPrimary))
 			btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent)
 		} else {
-			post_helper.setInstance(a.host)
+			post_helper.setInstance(a.host,a.isMisskey)
 			
-			// 先読みしてキャッシュに保持しておく
-			App1.custom_emoji_lister.getList(a.host) {
-				// 何もしない
+			if(!a.isMisskey) {
+				// 先読みしてキャッシュに保持しておく
+				App1.custom_emoji_lister.getList(a.host) {
+					// 何もしない
+				}
 			}
 			
 			val acct = a.acct

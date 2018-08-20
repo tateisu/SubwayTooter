@@ -106,7 +106,6 @@ class Column(
 		const val PATH_MISSKEY_PROFILE_STATUSES = "/api/users/notes"
 		const val PATH_MISSKEY_PROFILE = "/api/users/show"
 		
-		
 		internal const val KEY_ACCOUNT_ROW_ID = "account_id"
 		internal const val KEY_TYPE = "type"
 		internal const val KEY_DONT_CLOSE = "dont_close"
@@ -316,6 +315,9 @@ class Column(
 		get() {
 			// misskeyの疑似アカウントはストリーミング対応していない
 			if(isMisskey && access_info.isPseudo) return null
+			
+			// XXX misskeyのストリーミングはまだサポートしない
+			if(isMisskey) return null
 			
 			return when(column_type) {
 				TYPE_HOME, TYPE_NOTIFICATIONS -> "/api/v1/streaming/?stream=user"
@@ -621,25 +623,25 @@ class Column(
 		dst.put(KEY_COLUMN_BACKGROUND_IMAGE_ALPHA, column_bg_image_alpha.toDouble())
 		
 		when(column_type) {
-
+			
 			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY ->
-				dst.put(KEY_STATUS_ID,status_id.toString())
-
+				dst.put(KEY_STATUS_ID, status_id.toString())
+			
 			TYPE_PROFILE ->
 				dst.put(KEY_PROFILE_ID, profile_id.toString()).put(KEY_PROFILE_TAB, profile_tab)
-
+			
 			TYPE_LIST_MEMBER, TYPE_LIST_TL ->
 				dst.put(KEY_PROFILE_ID, profile_id.toString())
 			
 			TYPE_HASHTAG -> dst.put(KEY_HASHTAG, hashtag)
-
+			
 			TYPE_SEARCH -> dst.put(KEY_SEARCH_QUERY, search_query).put(
 				KEY_SEARCH_RESOLVE,
 				search_resolve
 			)
-
+			
 			TYPE_SEARCH_MSP, TYPE_SEARCH_TS -> dst.put(KEY_SEARCH_QUERY, search_query)
-
+			
 			TYPE_INSTANCE_INFORMATION -> dst.put(KEY_INSTANCE_URI, instance_uri)
 		}
 		
@@ -1196,12 +1198,12 @@ class Column(
 		}
 		
 		if(dont_show_reply) {
-			if(status.in_reply_to_id !=null ) return true
-			if(status.reblog?.in_reply_to_id != null ) return true
+			if(status.in_reply_to_id != null) return true
+			if(status.reblog?.in_reply_to_id != null) return true
 		}
 		
 		if(dont_show_normal_toot) {
-			if(status.in_reply_to_id == null && status.reblog == null ) return true
+			if(status.in_reply_to_id == null && status.reblog == null) return true
 		}
 		
 		if(column_regex_filter(status.decoded_content)) return true
@@ -1324,14 +1326,13 @@ class Column(
 	) : TootApiResult? {
 		return if(bForceReload || this.who_account == null) {
 			
-			if( isMisskey){
-				val params= JSONObject()
-				params.put("userId",profile_id)
-				val result = client.request("/api/users/show",params.toPostRequestBuilder())
+			if(isMisskey) {
+				val params = JSONObject()
+				params.put("userId", profile_id)
+				val result = client.request(PATH_MISSKEY_PROFILE, params.toPostRequestBuilder())
 				val parser = TootParser(
 					context,
 					access_info,
-					serviceType = ServiceType.MISSKEY,
 					misskeyDecodeProfilePin = true
 				)
 				val a = TootAccountRef.mayNull(parser, parser.account(result?.jsonObject))
@@ -1341,7 +1342,7 @@ class Column(
 				}
 				result
 				
-			}else{
+			} else {
 				val result = client.request(String.format(Locale.JAPAN, PATH_ACCOUNT, profile_id))
 				val parser = TootParser(context, access_info)
 				val a = TootAccountRef.mayNull(parser, parser.account(result?.jsonObject))
@@ -1402,35 +1403,51 @@ class Column(
 			add(n.status)
 		}
 		
-		internal fun update(client : TootApiClient) {
+		internal fun update(client : TootApiClient,parser:TootParser) {
 			
 			var n : Int
 			var size : Int
 			
-			// アカウントIDの集合からRelationshipを取得してデータベースに記録する
-			size = who_set.size
-			if(size > 0) {
-				val who_list = ArrayList<EntityId>(size)
-				who_list.addAll(who_set)
-				
+			if( isMisskey){
+				// parser内部にアカウントIDとRelationのマップが生成されるので、それをデータベースに記録する
 				val now = System.currentTimeMillis()
-				
-				n = 0
-				while(n < who_list.size) {
-					val sb = StringBuilder()
-					sb.append("/api/v1/accounts/relationships")
-					for(i in 0 until RELATIONSHIP_LOAD_STEP) {
-						if(n >= size) break
-						sb.append(if(i == 0) '?' else '&')
-						sb.append("id[]=")
-						sb.append(who_list[n ++].toString())
-					}
-					val result = client.request(sb.toString()) ?: break // cancelled.
-					val list = parseList(::TootRelationShip, result.jsonArray)
-					if(list.size > 0) UserRelation.saveList(now, access_info.db_id, list)
+				val who_list = parser.misskeyUserRelationMap.entries.toMutableList()
+				var start = 0
+				val end = who_list.size
+				while(start < end){
+					var step = end-start
+					if( step > RELATIONSHIP_LOAD_STEP) step = RELATIONSHIP_LOAD_STEP
+					UserRelationMisskey.saveList(now, access_info.db_id, who_list,start,step)
+					start += step
 				}
-				log.d("updateRelation: update %d relations.", n)
+				log.d("updateRelation: update %d relations.", end)
 				
+			}else{
+				// アカウントIDの集合からRelationshipを取得してデータベースに記録する
+				size = who_set.size
+				if(size > 0 ) {
+					val who_list = ArrayList<EntityId>(size)
+					who_list.addAll(who_set)
+					
+					val now = System.currentTimeMillis()
+					
+					n = 0
+					while(n < who_list.size) {
+						val sb = StringBuilder()
+						sb.append("/api/v1/accounts/relationships")
+						for(i in 0 until RELATIONSHIP_LOAD_STEP) {
+							if(n >= size) break
+							sb.append(if(i == 0) '?' else '&')
+							sb.append("id[]=")
+							sb.append(who_list[n ++].toString())
+						}
+						val result = client.request(sb.toString()) ?: break // cancelled.
+						val list = parseList(::TootRelationShip, result.jsonArray)
+						if(list.size > 0) UserRelation.saveList(now, access_info.db_id, list)
+					}
+					log.d("updateRelation: update %d relations.", n)
+					
+				}
 			}
 			
 			// 出現したacctをデータベースに記録する
@@ -1477,7 +1494,8 @@ class Column(
 	private fun updateRelation(
 		client : TootApiClient,
 		list : ArrayList<TimelineItem>?,
-		whoRef : TootAccountRef?
+		whoRef : TootAccountRef?,
+		parser:TootParser
 	) {
 		if(access_info.isPseudo) return
 		
@@ -1492,7 +1510,7 @@ class Column(
 				is TootNotification -> env.add(it)
 			}
 		}
-		env.update(client)
+		env.update(client,parser)
 	}
 	
 	internal fun startLoading() {
@@ -1655,14 +1673,14 @@ class Column(
 				client : TootApiClient,
 				path_base : String,
 				emptyMessage : String? = null,
-				misskeyParams :JSONObject? = null,
-				misskeyArrayFinder : ( JSONObject)-> JSONArray? = { null }
+				misskeyParams : JSONObject? = null,
+				misskeyArrayFinder : (JSONObject) -> JSONArray? = { null }
 			) : TootApiResult? {
 				
-				val result = if(misskeyParams != null){
+				val result = if(misskeyParams != null) {
 					
-					client.request(path_base,misskeyParams.toPostRequestBuilder())
-				}else{
+					client.request(path_base, misskeyParams.toPostRequestBuilder())
+				} else {
 					client.request(path_base)
 				}
 				
@@ -1672,7 +1690,7 @@ class Column(
 					val array = when {
 						jsonArray != null -> jsonArray
 						jsonObject != null -> misskeyArrayFinder(jsonObject)
-						else-> null
+						else -> null
 					} ?: error("missing json data.")
 					val src = parser.accountList(array)
 					saveRange(true, true, result, src)
@@ -1860,10 +1878,10 @@ class Column(
 							val who_result = loadProfileAccount(client, true)
 							if(client.isApiCancelled || who_account == null) return who_result
 							
-
+							
 							when(profile_tab) {
 								
-								TAB_FOLLOWING -> return if(isMisskey){
+								TAB_FOLLOWING -> return if(isMisskey) {
 									parseAccountList(
 										client,
 										PATH_MISSKEY_PROFILE_FOLLOWING,
@@ -1871,16 +1889,19 @@ class Column(
 										misskeyParams = makeMisskeyParamsUserId(parser),
 										misskeyArrayFinder = { it.optJSONArray("users") }
 									)
-								}else{
+								} else {
 									parseAccountList(
 										client,
-										String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id),
+										String.format(
+											Locale.JAPAN,
+											PATH_ACCOUNT_FOLLOWING,
+											profile_id
+										),
 										emptyMessage = context.getString(R.string.none_or_hidden_following)
 									)
 								}
 								
-								
-								TAB_FOLLOWERS -> return if(isMisskey){
+								TAB_FOLLOWERS -> return if(isMisskey) {
 									parseAccountList(
 										client,
 										PATH_MISSKEY_PROFILE_FOLLOWERS,
@@ -1888,10 +1909,14 @@ class Column(
 										misskeyParams = makeMisskeyParamsUserId(parser),
 										misskeyArrayFinder = { it.optJSONArray("users") }
 									)
-								}else{
+								} else {
 									parseAccountList(
 										client,
-										String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id),
+										String.format(
+											Locale.JAPAN,
+											PATH_ACCOUNT_FOLLOWERS,
+											profile_id
+										),
 										emptyMessage = context.getString(R.string.none_or_hidden_followers)
 									)
 								}
@@ -1899,8 +1924,8 @@ class Column(
 								TAB_STATUS -> {
 									
 									var instance = access_info.instance
-
-									return if(!isMisskey) {
+									
+									return if(! isMisskey) {
 										// まだ取得してない
 										// 疑似アカウントの場合は過去のデータが別タンスかもしれない?
 										if(instance == null || access_info.isPseudo) {
@@ -1927,13 +1952,13 @@ class Column(
 											getStatusesPinned(client, "$path&pinned=true")
 										}
 										getStatuses(client, path)
-									}else{
+									} else {
 										// 固定トゥートの取得
 										val pinnedNote = who_account?.get()?.pinnedNote
-										if( pinnedNote != null){
+										if(pinnedNote != null) {
 											pinnedNote.pinned = true
 											val src = ArrayList<TootStatus>()
-											src.add( pinnedNote )
+											src.add(pinnedNote)
 											this.list_pinned = addWithFilterStatus(null, src)
 										}
 										
@@ -2210,11 +2235,11 @@ class Column(
 							return result
 						}
 						
-						else -> return getStatuses(client,makeHomeTlUrl())
+						else -> return getStatuses(client, makeHomeTlUrl())
 					}
 				} finally {
 					try {
-						updateRelation(client, list_tmp, who_account)
+						updateRelation(client, list_tmp, who_account,parser)
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
@@ -2474,7 +2499,7 @@ class Column(
 				client : TootApiClient,
 				path_base : String,
 				misskeyParams : JSONObject? = null,
-				misskeyArrayFinder : (JSONObject)->JSONArray? = {null}
+				misskeyArrayFinder : (JSONObject) -> JSONArray? = { null }
 			) : TootApiResult? {
 				
 				val params = misskeyParams ?: makeMisskeyBaseParameter(parser)
@@ -2486,24 +2511,24 @@ class Column(
 				
 				var result = if(isMisskey) {
 					addRangeMisskey(bBottom, params)
-					client.request(path_base,params.toPostRequestBuilder())
+					client.request(path_base, params.toPostRequestBuilder())
 				} else {
 					client.request(addRange(bBottom, path_base))
 				}
 				val firstResult = result
-
+				
 				var jsonObject = result?.jsonObject
 				var jsonArray = result?.jsonArray
-				var array = when{
+				var array = when {
 					jsonArray != null -> jsonArray
 					jsonObject != null -> misskeyArrayFinder(jsonObject)
-					else->null
+					else -> null
 				}
-
+				
 				if(array != null) {
 					
 					var src = parser.accountList(array)
-					if(isMisskey && !bBottom) src.reverse()
+					if(isMisskey && ! bBottom) src.reverse()
 					saveRange(bBottom, ! bBottom, result, src)
 					list_tmp = addAll(null, src)
 					
@@ -2539,10 +2564,10 @@ class Column(
 								
 								jsonObject = result?.jsonObject
 								jsonArray = result?.jsonArray
-								array = when{
+								array = when {
 									jsonArray != null -> jsonArray
 									jsonObject != null -> misskeyArrayFinder(jsonObject)
-									else->null
+									else -> null
 								}
 								
 								if(array == null) {
@@ -2798,7 +2823,7 @@ class Column(
 				var jsonArray = result?.jsonArray
 				if(jsonArray != null) {
 					var src = parser.notificationList(jsonArray)
-					if(isMisskey && !bBottom) src.reverse()
+					if(isMisskey && ! bBottom) src.reverse()
 					
 					list_tmp = addWithFilterNotification(null, src)
 					saveRange(bBottom, ! bBottom, result, src)
@@ -2978,7 +3003,7 @@ class Column(
 			fun getStatusList(
 				client : TootApiClient,
 				path_base : String,
-				misskeyParams:JSONObject? = null
+				misskeyParams : JSONObject? = null
 			) : TootApiResult? {
 				
 				val isMisskey = access_info.isMisskey
@@ -3001,7 +3026,7 @@ class Column(
 				var jsonArray = result?.jsonArray
 				if(jsonArray != null) {
 					var src = parser.statusList(jsonArray)
-					if(isMisskey && !bBottom) src.reverse()
+					if(isMisskey && ! bBottom) src.reverse()
 					saveRange(bBottom, ! bBottom, result, src)
 					list_tmp = addWithFilterStatus(null, src)
 					
@@ -3244,42 +3269,49 @@ class Column(
 							
 							
 							when(profile_tab) {
-								TAB_FOLLOWING -> if(isMisskey){
+								TAB_FOLLOWING -> if(isMisskey) {
 									getAccountList(
 										client,
 										PATH_MISSKEY_PROFILE_FOLLOWING,
 										misskeyParams = makeMisskeyParamsUserId(parser),
-										misskeyArrayFinder = { it.optJSONArray("users")}
+										misskeyArrayFinder = { it.optJSONArray("users") }
 									)
-								}else{
+								} else {
 									getAccountList(
 										client,
-										String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id)
+										String.format(
+											Locale.JAPAN,
+											PATH_ACCOUNT_FOLLOWING,
+											profile_id
+										)
 									)
 								}
 								
-								
-								TAB_FOLLOWERS -> if(isMisskey){
-										getAccountList(
-											client,
-											PATH_MISSKEY_PROFILE_FOLLOWERS,
-											misskeyParams = makeMisskeyParamsUserId(parser),
-											misskeyArrayFinder = { it.optJSONArray("users") }
+								TAB_FOLLOWERS -> if(isMisskey) {
+									getAccountList(
+										client,
+										PATH_MISSKEY_PROFILE_FOLLOWERS,
+										misskeyParams = makeMisskeyParamsUserId(parser),
+										misskeyArrayFinder = { it.optJSONArray("users") }
+									)
+								} else {
+									getAccountList(
+										client,
+										String.format(
+											Locale.JAPAN,
+											PATH_ACCOUNT_FOLLOWERS,
+											profile_id
 										)
-								}else{
-										getAccountList(
-											client,
-											String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id)
-										)
+									)
 								}
 								
-								else -> if(isMisskey){
+								else -> if(isMisskey) {
 									getStatusList(
 										client,
 										PATH_MISSKEY_PROFILE_STATUSES,
 										misskeyParams = makeMisskeyParamsProfileStatuses(parser)
 									)
-								}else{
+								} else {
 									var s = String.format(
 										Locale.JAPAN,
 										PATH_ACCOUNT_STATUSES,
@@ -3379,11 +3411,11 @@ class Column(
 							result
 						}
 						
-						else -> getStatusList(client, PATH_HOME)
+						else -> getStatusList(client, makeHomeTlUrl())
 					}
 				} finally {
 					try {
-						updateRelation(client, list_tmp, who_account)
+						updateRelation(client, list_tmp, who_account,parser)
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
@@ -3557,11 +3589,12 @@ class Column(
 			var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 			
 			fun getAccountList(
-				client : TootApiClient,
-				path_base : String
+				client : TootApiClient
+				, path_base : String
+				, misskeyParams : JSONObject? = null
 			) : TootApiResult? {
 				
-				val params = makeMisskeyBaseParameter(parser)
+				val params = misskeyParams ?: makeMisskeyBaseParameter(parser)
 				val time_start = SystemClock.elapsedRealtime()
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				list_tmp = ArrayList()
@@ -3857,12 +3890,13 @@ class Column(
 			
 			fun getStatusList(
 				client : TootApiClient,
-				path_base : String
+				path_base : String,
+				misskeyParams : JSONObject? = null
 			) : TootApiResult? {
 				
 				val isMisskey = access_info.isMisskey
 				
-				val params = makeMisskeyTimelineParameter(parser)
+				val params = misskeyParams ?: makeMisskeyTimelineParameter(parser)
 				
 				val time_start = SystemClock.elapsedRealtime()
 				
@@ -4029,33 +4063,62 @@ class Column(
 						
 						TYPE_PROFILE -> when(profile_tab) {
 							
-							TAB_FOLLOWING -> getAccountList(
-								client,
-								String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id)
-							)
-							
-							TAB_FOLLOWERS -> getAccountList(
-								client,
-								String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id)
-							)
-							
-							else -> if(access_info.isPseudo) {
-								client.request(PATH_INSTANCE)
+							TAB_FOLLOWING -> if(isMisskey) {
+								getAccountList(
+									client
+									, PATH_MISSKEY_PROFILE_FOLLOWING
+									, misskeyParams = makeMisskeyParamsUserId(parser)
+								)
 							} else {
-								var s =
-									String.format(Locale.JAPAN, PATH_ACCOUNT_STATUSES, profile_id)
-								if(with_attachment && ! with_highlight) s += "&only_media=1"
-								getStatusList(client, s)
+								getAccountList(
+									client,
+									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWING, profile_id)
+								)
+							}
+							
+							TAB_FOLLOWERS -> if(isMisskey) {
+								getAccountList(
+									client
+									, PATH_MISSKEY_PROFILE_FOLLOWERS
+									, misskeyParams = makeMisskeyParamsUserId(parser)
+								)
+								
+							} else {
+								getAccountList(
+									client,
+									String.format(Locale.JAPAN, PATH_ACCOUNT_FOLLOWERS, profile_id)
+								)
+							}
+							
+							else -> if(isMisskey) {
+								getStatusList(
+									client
+									, PATH_MISSKEY_PROFILE_STATUSES
+									, misskeyParams = makeMisskeyParamsProfileStatuses(parser)
+								)
+							} else {
+								if(access_info.isPseudo) {
+									client.request(PATH_INSTANCE)
+								} else {
+									var s =
+										String.format(
+											Locale.JAPAN,
+											PATH_ACCOUNT_STATUSES,
+											profile_id
+										)
+									if(with_attachment && ! with_highlight) s += "&only_media=1"
+									getStatusList(client, s)
+								}
 							}
 						}
 						
 						TYPE_DIRECT_MESSAGES -> getStatusList(client, PATH_DIRECT_MESSAGES)
 						
-						else -> getStatusList(client, PATH_HOME)
+						else -> getStatusList(client, makeHomeTlUrl())
 					}
 				} finally {
 					try {
-						updateRelation(client, list_tmp, who_account)
+						updateRelation(client, list_tmp, who_account,parser)
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
@@ -4487,21 +4550,21 @@ class Column(
 			}
 			
 			// 最新のIDをsince_idとして覚える(ソートはしない)
-			var new_id_max :EntityId? = null
-			var new_id_min  :EntityId? = null
+			var new_id_max : EntityId? = null
+			var new_id_min : EntityId? = null
 			for(o in list_new) {
 				try {
 					val id = getId(o) ?: continue
-					if(new_id_max ==null || id > new_id_max) new_id_max = id
-					if(new_id_min==null || id < new_id_min) new_id_min = id
+					if(new_id_max == null || id > new_id_max) new_id_max = id
+					if(new_id_min == null || id < new_id_min) new_id_min = id
 				} catch(ex : Throwable) {
 					// IDを取得できないタイプのオブジェクトだった
 					// ストリームに来るのは通知かステータスだから、多分ここは通らない
 					log.trace(ex)
 				}
 			}
-			if(new_id_max !=null) {
-				idRecent = EntityIdString( new_id_max.toString() )
+			if(new_id_max != null) {
+				idRecent = EntityIdString(new_id_max.toString())
 				// XXX: コレはリフレッシュ時に取得漏れを引き起こすのでは…？
 				// しかしコレなしだとリフレッシュ時に大量に読むことになる…
 			}
@@ -4530,7 +4593,7 @@ class Column(
 			if(bPutGap) {
 				bPutGap = false
 				try {
-					if(list_data.size > 0 && new_id_min !=null) {
+					if(list_data.size > 0 && new_id_min != null) {
 						val since = getId(list_data[0])
 						if(since != null && new_id_min > since) {
 							val gap = TootGap(new_id_min, since)
@@ -4592,30 +4655,28 @@ class Column(
 		}
 	}
 	
-	private fun makeMisskeyBaseParameter(parser : TootParser?) : JSONObject {
-		val params = JSONObject()
-		if(access_info.isMisskey) {
-			if(parser!=null) parser.serviceType = ServiceType.MISSKEY
-			params.put("limit", 100)
-			val apiKey = access_info.token_info?.parseString(TootApiClient.KEY_API_KEY_MISSKEY)
-			if( apiKey?.isNotEmpty() == true) params.put("i",apiKey)
-		}
-		return params
-	}
+	private fun makeMisskeyBaseParameter(parser : TootParser?) : JSONObject =
+		access_info
+			.putMisskeyApiToken(JSONObject())
+			.apply{
+				if(access_info.isMisskey) {
+					if(parser != null) parser.serviceType = ServiceType.MISSKEY
+					put("limit", 100)
+				}
+			}
 	
-	private fun JSONObject.putMisskeyParamsTimeline() :JSONObject{
-		if(with_attachment && ! with_highlight ) {
+	private fun JSONObject.putMisskeyParamsTimeline() : JSONObject {
+		if(with_attachment && ! with_highlight) {
 			put("mediaOnly", true)
 		}
 		return this
 	}
-
-	private fun makeMisskeyParamsUserId(parser : TootParser) :JSONObject =
-		makeMisskeyBaseParameter(parser).put("userId",profile_id.toString())
+	
+	private fun makeMisskeyParamsUserId(parser : TootParser) : JSONObject =
+		makeMisskeyBaseParameter(parser).put("userId", profile_id.toString())
 	
 	private fun makeMisskeyTimelineParameter(parser : TootParser) =
 		makeMisskeyBaseParameter(parser).putMisskeyParamsTimeline()
-	
 	
 	private fun makeMisskeyParamsProfileStatuses(parser : TootParser) =
 		makeMisskeyParamsUserId(parser).putMisskeyParamsTimeline()
@@ -4678,9 +4739,9 @@ class Column(
 		if(instance_local) sb.append("&local=true")
 		return sb.toString()
 	}
-
+	
 	private fun loadFilter2(client : TootApiClient) : ArrayList<TootFilter>? {
-		if(access_info.isPseudo) return null
+		if(access_info.isPseudo || access_info.isMisskey) return null
 		val column_context = getFilterContext()
 		if(column_context == 0) return null
 		val result = client.request(PATH_FILTERS)
@@ -4770,6 +4831,5 @@ class Column(
 	fun onSaveInstanceState() {
 		viewHolder?.saveScrollPosition()
 	}
-	
 	
 }

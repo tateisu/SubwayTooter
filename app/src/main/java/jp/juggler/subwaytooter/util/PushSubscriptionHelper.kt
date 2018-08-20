@@ -102,6 +102,9 @@ class PushSubscriptionHelper(
 			// 疑似アカウントの確認
 			if(account.isPseudo) {
 				return TootApiResult(error = context.getString(R.string.pseudo_account_not_supported))
+			}else if( account.isMisskey){
+				return TootApiResult(error = context.getString(R.string.misskey_account_not_supported))
+				
 			}
 			
 			// 現在の購読状態を取得

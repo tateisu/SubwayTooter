@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.api
 
 import android.content.Context
 import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.table.UserRelation
 
 import org.json.JSONArray
 import org.json.JSONObject
@@ -17,6 +18,11 @@ class TootParser(
 	var serviceType : ServiceType = ServiceType.MASTODON,
 	var misskeyDecodeProfilePin :Boolean = false
 ) {
+	val misskeyUserRelationMap = HashMap<EntityId, UserRelation>()
+	
+	init{
+		if(linkHelper.isMisskey) serviceType = ServiceType.MISSKEY
+	}
 	
 	fun account(src : JSONObject?) = parseItem(::TootAccount, this, src)
 	fun accountList(array : JSONArray?) = TootAccountRef.wrapList(this,parseList(::TootAccount, this, array))
@@ -33,4 +39,6 @@ class TootParser(
 	
 	fun resultsV2(src : JSONObject) = parseItem(::TootResultsV2, this, src)
 
+	
+	fun getMisskeyUserRelation(whoId:EntityId) = misskeyUserRelationMap[whoId]
 }

@@ -408,6 +408,7 @@
     <string name="close">閉じる</string>
 
     <string name="not_available_for_pseudo_account">疑似アカウントでは利用できません</string>
+    <string name="not_available_for_misskey_account">Misskeyアカウントでは利用できません</string>
 
     <string name="pseudo_account">疑似アカウント(ログインなし、公開データを読めるだけ)</string>
 
@@ -1015,5 +1016,7 @@
     <string name="replies_count_simple">0/1/1+</string>
     <string name="replies_count_actual">詳細</string>
     <string name="replies_count_none">なし</string>
+    <string name="missing_available_account">この目的に使えるアカウントがありません。</string>
+    <string name="misskey_account_not_supported">Misskey account is not supported.</string>
 
 </resources>

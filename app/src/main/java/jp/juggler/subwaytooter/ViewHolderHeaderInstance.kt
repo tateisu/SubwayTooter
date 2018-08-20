@@ -183,14 +183,14 @@ internal class ViewHolderHeaderInstance(
 				}
 				
 			}
+			
 			R.id.btnContact -> instance?.contact_account?.let { who ->
 				Action_Account.timeline(
-					activity,
-					activity.nextPosition(column),
-					false,
-					Column.TYPE_SEARCH,
-					"@"+who.username +"@"+ who.host,
-					true
+					activity
+					,activity.nextPosition(column)
+					,Column.TYPE_SEARCH
+					,bAllowPseudo = false
+					,args=arrayOf("@"+who.username +"@"+ who.host,true)
 				)
 			}
 			

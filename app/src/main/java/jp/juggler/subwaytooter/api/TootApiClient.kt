@@ -152,6 +152,10 @@ class TootApiClient(
 			bodyString : String? = null,
 			jsonErrorParser : (json : JSONObject) -> String? = DEFAULT_JSON_ERROR_PARSER
 		) : String {
+			val url = response.request()?.url()
+			if( url?.toString()?.contains("misskey") == true){
+				log.d("Misskey response error: url=$url")
+			}
 			val sb = StringBuilder()
 			try {
 				// body は既に読み終わっているか、そうでなければこれから読む
@@ -493,11 +497,7 @@ class TootApiClient(
 			if(json != null) {
 				val parser = TootParser(
 					context,
-					object : LinkHelper {
-						override val host : String?
-							get() = instance
-					},
-					serviceType = ServiceType.MISSKEY
+					LinkHelper.newLinkHelper(instance,isMisskey = true)
 				)
 				val ti = parser.instance(json)
 				if(ti != null) {
@@ -761,10 +761,7 @@ class TootApiClient(
 		if(r != null) {
 			val json = r.jsonObject
 			if(json != null) {
-				val parser = TootParser(context, object : LinkHelper {
-					override val host : String?
-						get() = instance
-				})
+				val parser = TootParser(context, LinkHelper.newLinkHelper(instance))
 				val ti = parser.instance(json)
 				if(ti != null) {
 					r.data = ti
@@ -795,15 +792,15 @@ class TootApiClient(
 		if(r != null) {
 			val json = r.jsonObject
 			if(json != null) {
-				val parser = TootParser(context, object : LinkHelper {
-					override val host : String?
-						get() = instance
-				})
+				val parser = TootParser(
+					context,
+					LinkHelper.newLinkHelper(instance,isMisskey = json.optBoolean(KEY_IS_MISSKEY))
+				)
 				val ti = parser.instance(json)
 				if(ti != null) {
 					r.data = ti
 				} else {
-					r.setError("can't parse data in /api/v1/instance")
+					r.setError("can't parse data in instance information.")
 				}
 			}
 		}
@@ -1079,28 +1076,55 @@ class TootApiClient(
 	// アクセストークン手動入力でアカウントを更新する場合
 	// verify_credentialsを呼び出す
 	fun getUserCredential(
-		access_token : String,
-		tokenInfo : JSONObject = JSONObject()
+		access_token : String
+		,tokenInfo : JSONObject = JSONObject()
+			,isMisskey :Boolean = false
 	) : TootApiResult? {
-		val result = TootApiResult.makeWithCaption(instance)
-		if(result.error != null) return result
-		
-		// 認証されたアカウントのユーザ情報を取得する
-		if(! sendRequest(result) {
-				Request.Builder()
-					.url("https://$instance/api/v1/accounts/verify_credentials")
-					.header("Authorization", "Bearer $access_token")
-					.build()
-			}) return result
-		
-		val r2 = parseJson(result)
-		if(r2?.jsonObject != null) {
-			// ユーザ情報を読めたならtokenInfoを保存する
-			tokenInfo.put(KEY_AUTH_VERSION, AUTH_VERSION)
-			tokenInfo.put("access_token", access_token)
-			result.tokenInfo = tokenInfo
+		if( isMisskey){
+			val result = TootApiResult.makeWithCaption(instance)
+			if(result.error != null) return result
+			
+			// 認証されたアカウントのユーザ情報を取得する
+			if(! sendRequest(result) {
+					JSONObject()
+						.put("i",access_token)
+						.toPostRequestBuilder()
+						.url("https://$instance/api/i")
+						.build()
+				}) return result
+			
+			val r2 = parseJson(result)
+			if(r2?.jsonObject != null) {
+				// ユーザ情報を読めたならtokenInfoを保存する
+				tokenInfo.put(KEY_AUTH_VERSION, AUTH_VERSION)
+				tokenInfo.put(KEY_API_KEY_MISSKEY,access_token)
+				tokenInfo.put(KEY_IS_MISSKEY,true)
+				result.tokenInfo = tokenInfo
+			}
+			return r2
+			
+		}else{
+			val result = TootApiResult.makeWithCaption(instance)
+			if(result.error != null) return result
+			
+			// 認証されたアカウントのユーザ情報を取得する
+			if(! sendRequest(result) {
+					Request.Builder()
+						.url("https://$instance/api/v1/accounts/verify_credentials")
+						.header("Authorization", "Bearer $access_token")
+						.build()
+				}) return result
+			
+			val r2 = parseJson(result)
+			if(r2?.jsonObject != null) {
+				// ユーザ情報を読めたならtokenInfoを保存する
+				tokenInfo.put(KEY_AUTH_VERSION, AUTH_VERSION)
+				tokenInfo.put("access_token", access_token)
+				result.tokenInfo = tokenInfo
+			}
+			return r2
+			
 		}
-		return r2
 		
 	}
 	

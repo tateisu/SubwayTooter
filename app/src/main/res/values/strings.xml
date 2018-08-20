@@ -212,6 +212,7 @@
     <string name="pseudo_account">Pseudo account (non-login,only reading public data)</string>
     <string name="server_confirmed">Server confirmed.</string>
     <string name="not_available_for_pseudo_account">Not available for pseudo account</string>
+    <string name="not_available_for_misskey_account">Not available for Misskey account</string>
     <string name="exit_app_when_close_protected_column">Exit app when try to close protected column with back button without confirm</string>
     <string name="resize_image">Resize attachment image (JPEG,PNG)</string>
     <string name="dont_resize">Don\'t resize</string>
@@ -722,4 +723,6 @@
     <string name="replies_count_simple">0/1/1+</string>
     <string name="replies_count_actual">Actual</string>
     <string name="replies_count_none">None</string>
+    <string name="missing_available_account">There is no account available for this purpose.</string>
+    <string name="misskey_account_not_supported">Misskey account is not supported.</string>
 </resources>

@@ -7,10 +7,10 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.util.LogCategory
 
-object ContentWarningMisskey :TableCompanion{
-	private val log = LogCategory("ContentWarning")
+object ContentWarningMisskey : TableCompanion {
+	private val log = LogCategory("ContentWarningMisskey")
 	
-	private const val table = "content_warning"
+	private const val table = "content_warning_misskey"
 	private const val COL_HOST = "h"
 	private const val COL_STATUS_ID = "si"
 	private const val COL_SHOWN = "sh"
@@ -21,13 +21,15 @@ object ContentWarningMisskey :TableCompanion{
 	override fun onDBCreate(db : SQLiteDatabase) {
 		log.d("onDBCreate!")
 		db.execSQL(
-			"create table if not exists $table"
-				+ "(_id INTEGER PRIMARY KEY"
-				+ ",$COL_HOST text not null"
-				+ ",$COL_STATUS_ID text not null"
-				+ ",$COL_SHOWN integer not null"
-				+ ",$COL_TIME_SAVE integer default 0"
-				+ ")"
+			"""
+			create table if not exists $table
+			(_id INTEGER PRIMARY KEY
+			,$COL_HOST text not null
+			,$COL_STATUS_ID text not null
+			,$COL_SHOWN integer not null
+			,$COL_TIME_SAVE integer default 0
+			)
+			""".trimIndent()
 		)
 		db.execSQL(
 			"create unique index if not exists ${table}_status_id on $table($COL_HOST,$COL_STATUS_ID)"
@@ -35,7 +37,7 @@ object ContentWarningMisskey :TableCompanion{
 	}
 	
 	override fun onDBUpgrade(db : SQLiteDatabase, oldVersion : Int, newVersion : Int) {
-		if(oldVersion < 29 && newVersion >= 29 ) {
+		if(oldVersion < 30 && newVersion >= 30) {
 			db.execSQL("drop table if exists $table")
 			onDBCreate(db)
 		}
@@ -49,7 +51,7 @@ object ContentWarningMisskey :TableCompanion{
 				"h=? and si=?",
 				arrayOf(
 					status.hostAccessOrOriginal,
-					status.idAccessOrOriginal.toString()
+					status.id.toString()
 				),
 				null,
 				null,
@@ -74,18 +76,22 @@ object ContentWarningMisskey :TableCompanion{
 			
 			val cv = ContentValues()
 			cv.put(COL_HOST, status.hostAccessOrOriginal)
-			cv.put(COL_STATUS_ID, status.idAccessOrOriginal.toString())
+			cv.put(COL_STATUS_ID, status.id.toString())
 			cv.put(COL_SHOWN, is_shown.b2i())
 			cv.put(COL_TIME_SAVE, now)
 			App1.database.replace(table, null, cv)
 			
-			// 古いデータを掃除する
-			val expire = now - 86400000L * 365
-			App1.database.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
-			
 		} catch(ex : Throwable) {
 			log.e(ex, "save failed.")
 		}
-		
+	}
+	
+	fun deleteOld(now : Long) {
+		try {
+			val expire = now - 86400000L * 365
+			App1.database.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
+		} catch(ex : Throwable) {
+			log.e(ex, "deleteOld failed.")
+		}
 	}
 }

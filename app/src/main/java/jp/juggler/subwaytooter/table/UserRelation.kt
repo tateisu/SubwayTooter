@@ -6,17 +6,19 @@ import android.support.v4.util.LruCache
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.EntityIdString
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.util.LogCategory
+import org.json.JSONObject
 
-class UserRelation private constructor() {
+class UserRelation{
 	
-	private var following : Boolean = false   // 認証ユーザからのフォロー状態にある
+	var following : Boolean = false   // 認証ユーザからのフォロー状態にある
 	var followed_by : Boolean = false // 認証ユーザは被フォロー状態にある
 	var blocking : Boolean = false
 	var muting : Boolean = false
-	private var requested : Boolean = false  // 認証ユーザからのフォローは申請中である
+	var requested : Boolean = false  // 認証ユーザからのフォローは申請中である
 	
 	var following_reblogs : Int = 0 // このユーザからのブーストをTLに表示する
 	
@@ -53,6 +55,16 @@ class UserRelation private constructor() {
 		const val REBLOG_SHOW =
 			1 // show the boosts from target account will be shown on authorized user's home TL.
 		const val REBLOG_UNKNOWN = 2 // not following, or instance don't support hide reblog.
+		
+		internal val mMemoryCache = LruCache<String, UserRelation>(2048)
+		
+		private const val load_where = "$COL_DB_ID=? and $COL_WHO_ID=?"
+		
+		private val load_where_arg = object : ThreadLocal<Array<String?>>() {
+			override fun initialValue() : Array<String?> {
+				return Array(2) { _ -> null }
+			}
+		}
 		
 		override fun onDBCreate(db : SQLiteDatabase) {
 			log.d("onDBCreate!")
@@ -110,14 +122,13 @@ class UserRelation private constructor() {
 			
 		}
 		
+		// マストドン用
 		fun save1(now : Long, db_id : Long, src : TootRelationShip) : UserRelation {
-			
 			try {
 				val cv = ContentValues()
 				cv.put(COL_TIME_SAVE, now)
 				cv.put(COL_DB_ID, db_id)
-				cv.put(COL_WHO_ID, src.id?.toLong() ?: -1L)
-				// TODO misskey用にIDがStringのテーブルを用意する？
+				cv.put(COL_WHO_ID, src.id.toLong())
 				cv.put(COL_FOLLOWING, if(src.following) 1 else 0)
 				cv.put(COL_FOLLOWED_BY, if(src.followed_by) 1 else 0)
 				cv.put(COL_BLOCKING, if(src.blocking) 1 else 0)
@@ -125,16 +136,16 @@ class UserRelation private constructor() {
 				cv.put(COL_REQUESTED, if(src.requested) 1 else 0)
 				cv.put(COL_FOLLOWING_REBLOGS, src.showing_reblogs)
 				App1.database.replace(table, null, cv)
-				
 				val key = String.format("%s:%s", db_id, src.id)
 				mMemoryCache.remove(key)
 			} catch(ex : Throwable) {
 				log.e(ex, "save failed.")
 			}
 			
-			return load(db_id, src.id)
+			return load(db_id,src.id )
 		}
 		
+		// マストドン用
 		fun saveList(now : Long, db_id : Long, src_list : ArrayList<TootRelationShip>) {
 			
 			val cv = ContentValues()
@@ -146,7 +157,7 @@ class UserRelation private constructor() {
 			db.execSQL("BEGIN TRANSACTION")
 			try {
 				for(src in src_list) {
-					cv.put(COL_WHO_ID, src.id?.toLong() ?: -1L)
+					cv.put(COL_WHO_ID, src.id.toLong())
 					// TODO misskey用にidがStringのテーブルを用意する？
 					cv.put(COL_FOLLOWING, src.following.b2i())
 					cv.put(COL_FOLLOWED_BY, src.followed_by.b2i())
@@ -174,28 +185,24 @@ class UserRelation private constructor() {
 			}
 		}
 		
-		private val mMemoryCache = LruCache<String, UserRelation>(2048)
-		
-		private const val load_where = "$COL_DB_ID=? and $COL_WHO_ID=?"
-		
-		private val load_where_arg = object : ThreadLocal<Array<String?>>() {
-			override fun initialValue() : Array<String?> {
-				return Array(2) { _ -> null }
-			}
-		}
-		
-		// TODO UserRelationテーブルのMisskey対応
-		// 文字列IDなら別テーブル参照とかできそう
-		fun load(db_id : Long, who_id : EntityId?)=
-			load(db_id,who_id?.toLong() ?: -1L)
 
-		fun load(db_id : Long, who_id : Long) : UserRelation {
-			
-			val key = String.format("%s:%s", db_id, who_id)
-			
+		fun load(db_id:Long, whoId:EntityId):UserRelation{
+			//
+			val key = String.format("%s:%s", db_id, whoId)
 			val cached : UserRelation? = mMemoryCache.get(key)
 			if(cached != null) return cached
-			
+
+			val dst =if( whoId is EntityIdString){
+				UserRelationMisskey.load(db_id,whoId.toString() )
+			}else{
+				load(db_id,whoId.toLong() )
+			} ?: UserRelation()
+
+			mMemoryCache.put(key, dst)
+			return dst
+		}
+		
+		private fun load(db_id : Long, who_id : Long) : UserRelation? {
 			try {
 				val where_arg = load_where_arg.get()
 				where_arg[0] = db_id.toString()
@@ -219,10 +226,15 @@ class UserRelation private constructor() {
 				log.trace(ex)
 				log.e(ex, "load failed.")
 			}
-			
-			val dst = UserRelation()
-			mMemoryCache.put(key, dst)
-			return dst
+			return null
+		}
+		
+		// Misskey用
+		fun parseMisskeyUser(src:JSONObject) =UserRelation().apply{
+			following = src.optBoolean("isFollowing")
+			followed_by = src.optBoolean("isFollowed")
+			muting = src.optBoolean("isMuted")
+			blocking = false
 		}
 	}
 	

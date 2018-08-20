@@ -16,4 +16,18 @@ interface LinkHelper {
 			else -> "$acct@$host"
 		}
 	}
+	
+	val isMisskey : Boolean
+		get() = false
+	
+	companion object {
+		
+		fun newLinkHelper(host : String?, isMisskey : Boolean = false) : LinkHelper =
+			object : LinkHelper {
+				override val host : String?
+					get() = host
+				override val isMisskey : Boolean
+					get() = isMisskey
+			}
+	}
 }

@@ -26,35 +26,56 @@ object AccountPicker {
 	fun pick(
 		activity : AppCompatActivity,
 		bAllowPseudo : Boolean = false,
+		bAllowMisskey : Boolean = true,
 		bAuto : Boolean = false,
 		message : String? = null,
 		accountListArg : ArrayList<SavedAccount>? = null,
 		dismiss_callback : DialogInterfaceCallback? = null,
 		callback : SavedAccountCallback
 	) {
-		val account_list : ArrayList<SavedAccount> = accountListArg ?: {
-			val l = SavedAccount.loadAccountList(activity)
+		var removedMisskey =0
+		var removedPseudo =0
+		val account_list : MutableList<SavedAccount> = accountListArg ?: {
+			val l = SavedAccount.loadAccountList(activity).filter { a->
+				var bOk = true
+
+				if( !bAllowMisskey && a.isMisskey ){
+					++removedMisskey
+					bOk=false
+				}
+
+				if( !bAllowPseudo && a.isPseudo ){
+					++removedPseudo
+					bOk=false
+				}
+
+				bOk
+			}.toMutableList()
 			SavedAccount.sort(l)
 			l
 		}()
 		
 		if(account_list.isEmpty()) {
-			showToast(activity, false, R.string.account_empty)
+
+			val sb=StringBuilder()
+
+			if( removedPseudo > 0 ){
+				sb.append(activity.getString(R.string.not_available_for_pseudo_account))
+			}
+
+			if( removedMisskey > 0 ){
+				if(sb.isNotEmpty() ) sb.append('\n')
+				sb.append(activity.getString(R.string.not_available_for_misskey_account))
+			}
+
+			if( sb.isEmpty() ){
+				sb.append(activity.getString(R.string.account_empty))
+			}
+			
+			showToast(activity, false,sb.toString())
 			return
-		} else if(! bAllowPseudo) {
-			val tmp_list = ArrayList<SavedAccount>()
-			for(a in account_list) {
-				if(a.isPseudo) continue
-				tmp_list.add(a)
-			}
-			account_list.clear()
-			account_list.addAll(tmp_list)
-			if(account_list.isEmpty()) {
-				showToast(activity, false, R.string.not_available_for_pseudo_account)
-				return
-			}
 		}
-		
+
 		if(bAuto && account_list.size == 1) {
 			callback(account_list[0])
 			return
@@ -85,7 +106,7 @@ object AccountPicker {
 		
 		val density = activity.resources.displayMetrics.density
 		
-		val llAccounts = viewRoot.findViewById<LinearLayout>(R.id.llAccounts)
+		val llAccounts :LinearLayout= viewRoot.findViewById(R.id.llAccounts)
 		val pad_se = (0.5f + 12f * density).toInt()
 		val pad_tb = (0.5f + 6f * density).toInt()
 		

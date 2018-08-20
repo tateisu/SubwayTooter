@@ -58,8 +58,10 @@ internal class DlgContextMenu(
 		val who = whoRef?.get()
 		val status = this.status
 		
-		this.relation = UserRelation.load(access_info.db_id, who?.id)
-		
+		this.relation = when {
+			who != null -> UserRelation.load(access_info.db_id, who.id)
+			else -> UserRelation()
+		}
 		val viewRoot = activity.layoutInflater.inflate(R.layout.dlg_context_menu, null, false)
 		this.dialog = Dialog(activity)
 		dialog.setContentView(viewRoot)
@@ -304,7 +306,7 @@ internal class DlgContextMenu(
 			btnFollowRequestNG.visibility = View.GONE
 		}
 		
-		if( column_type != Column.TYPE_FOLLOW_SUGGESTION) {
+		if(column_type != Column.TYPE_FOLLOW_SUGGESTION) {
 			btnDeleteSuggestion.visibility = View.GONE
 		}
 		
@@ -336,10 +338,12 @@ internal class DlgContextMenu(
 				btnHideFavourite.visibility = View.GONE
 				btnShowFavourite.visibility = View.GONE
 			}
+			
 			FavMute.contains(access_info.getFullAcct(who)) -> {
 				btnHideFavourite.visibility = View.GONE
 				btnShowFavourite.visibility = View.VISIBLE
 			}
+			
 			else -> {
 				btnHideFavourite.visibility = View.VISIBLE
 				btnShowFavourite.visibility = View.GONE
@@ -626,8 +630,8 @@ internal class DlgContextMenu(
 					}
 					.show()
 			}
-			R.id.btnRedraft ->status?.let { status ->
-				Action_Toot.redraft(activity,access_info,status)
+			R.id.btnRedraft -> status?.let { status ->
+				Action_Toot.redraft(activity, access_info, status)
 			}
 			
 			R.id.btnMuteApp -> status?.application?.let {

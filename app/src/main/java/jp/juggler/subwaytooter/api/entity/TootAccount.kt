@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.text.Spannable
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.*
 
 import org.json.JSONArray
@@ -92,8 +93,8 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		
 		if(parser.serviceType == ServiceType.MISSKEY) {
 			
-			val instance =
-				src.parseString("host") ?: parser.linkHelper.host ?: error("missing host")
+			val remoteHost = src.parseString("host")
+			val instance = remoteHost ?: parser.linkHelper.host ?: error("missing host")
 			
 			this.custom_emojis = null
 			this.profile_emojis = null
@@ -120,8 +121,11 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			
 			this.id = EntityId.mayNull(src.parseString("id")) ?: error("missing id")
 			
-			this.acct = "$username@$instance"
 			this.host = instance
+			this.acct = when {
+				remoteHost?.isNotEmpty() == true -> "$username@$remoteHost"
+				else -> username
+			}
 			
 			this.followers_count = src.parseLong("followersCount") ?: - 1L
 			this.following_count = src.parseLong("followingCount") ?: - 1L
@@ -140,6 +144,9 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				this.pinnedNote = parseItem(::TootStatus, parser, src.optJSONObject("pinnedNote"))
 				
 			}
+			
+			parser.misskeyUserRelationMap[id]=UserRelation.parseMisskeyUser(src)
+			
 		} else {
 			
 			// 絵文字データは先に読んでおく

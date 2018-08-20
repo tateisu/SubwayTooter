@@ -143,11 +143,18 @@ object Action_Account {
 	
 	// アカウントを選んでタイムラインカラムを追加
 	fun timeline(
-		activity : ActMain, pos : Int, bAllowPseudo : Boolean, type : Int, vararg args : Any
+		activity : ActMain,
+		pos : Int,
+		type : Int,
+		bAllowPseudo : Boolean,
+		bAllowMisskey: Boolean =true,
+		args : Array<out Any> = emptyArray()
 	) {
+		
 		AccountPicker.pick(
 			activity,
 			bAllowPseudo = bAllowPseudo,
+			bAllowMisskey = bAllowMisskey,
 			bAuto = true,
 			message = activity.getString(
 				R.string.account_picker_add_timeline_of,

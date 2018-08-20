@@ -413,7 +413,7 @@ object Action_User {
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
-			var relation : TootRelationShip? = null
+			var relation : UserRelation? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				val content = JSONObject()
@@ -423,17 +423,13 @@ object Action_User {
 					return TootApiResult(ex.withCaption("json encoding error"))
 				}
 				
-				val request_builder = Request.Builder().post(
-					RequestBody.create(
-						TootApiClient.MEDIA_TYPE_JSON, content.toString()
-					)
-				)
+				val request_builder = content.toPostRequestBuilder()
 				
 				val result =
 					client.request("/api/v1/accounts/" + who.id + "/follow", request_builder)
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
-					relation = parseItem(::TootRelationShip, jsonObject)
+					relation =saveUserRelation(access_info,parseItem(::TootRelationShip, jsonObject))
 				}
 				return result
 			}
@@ -443,7 +439,6 @@ object Action_User {
 				if(result == null) return  // cancelled.
 				
 				if(relation != null) {
-					saveUserRelation(access_info, relation)
 					showToast(activity, true, R.string.operation_succeeded)
 				} else {
 					showToast(activity, true, result.error)

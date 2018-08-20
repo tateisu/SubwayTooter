@@ -33,6 +33,7 @@ import jp.juggler.subwaytooter.view.NetworkEmojiView
 class EmojiPicker(
 	private val activity : Activity,
 	private val instance : String?,
+	private val isMisskey : Boolean,
 	private val onEmojiPicked : (name : String, instance : String?, bInstanceHasCustomEmoji : Boolean) -> Unit
 	// onEmojiPickedのinstance引数は通常の絵文字ならnull、カスタム絵文字なら非null、
 ) : View.OnClickListener {
@@ -114,8 +115,15 @@ class EmojiPicker(
 		// create page
 		this.recent_page_idx = page_list.size
 		page_list.add(EmojiPickerPage(CATEGORY_RECENT, R.string.emoji_category_recent))
-		this.custom_page_idx = page_list.size
-		page_list.add(EmojiPickerPage(CATEGORY_CUSTOM, R.string.emoji_category_custom))
+		
+
+		if(!isMisskey) {
+			this.custom_page_idx = page_list.size
+			page_list.add(EmojiPickerPage(CATEGORY_CUSTOM, R.string.emoji_category_custom))
+		}else{
+			this.custom_page_idx = -1
+		}
+
 		page_list.add(
 			EmojiPickerPage(
 				EmojiMap201709.CATEGORY_PEOPLE,
@@ -172,14 +180,17 @@ class EmojiPicker(
 		pager.adapter = pager_adapter
 		pager_strip.setViewPager(pager)
 		
-		// カスタム絵文字をロードする
-		if(instance != null && instance.isNotEmpty()) {
-			setCustomEmojiList(
-				App1.custom_emoji_lister.getList(instance) {
-					setCustomEmojiList(it) // ロード完了時に呼ばれる
-				}
-			)
+		if( !isMisskey){
+			// カスタム絵文字をロードする
+			if(instance != null && instance.isNotEmpty()) {
+				setCustomEmojiList(
+					App1.custom_emoji_lister.getList(instance) {
+						setCustomEmojiList(it) // ロード完了時に呼ばれる
+					}
+				)
+			}
 		}
+		
 		
 		this.dialog = Dialog(activity)
 		dialog.setContentView(viewRoot)

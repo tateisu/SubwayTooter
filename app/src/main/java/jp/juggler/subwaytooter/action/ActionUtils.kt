@@ -11,6 +11,7 @@ import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.table.UserRelationMisskey
 import jp.juggler.subwaytooter.util.*
 
 // ユーザ名からアカウントIDを取得する
@@ -119,21 +120,27 @@ fun makeAccountListNonPseudo(
 	return list_same_host
 }
 
-internal fun saveUserRelation(
-	access_info : SavedAccount,
-	src : TootRelationShip?
-) : UserRelation? {
-	if(src == null) return null
+internal fun saveUserRelation(access_info : SavedAccount,src : TootRelationShip?) : UserRelation? {
+	src ?: return null
 	val now = System.currentTimeMillis()
 	return UserRelation.save1(now, access_info.db_id, src)
 }
+internal fun saveUserRelationMisskey(access_info : SavedAccount,whoId:EntityId,parser:TootParser) : UserRelation? {
+	val now = System.currentTimeMillis()
+	val relation = parser.getMisskeyUserRelation(whoId)
+	if( relation != null){
+		UserRelationMisskey.save1(now, access_info.db_id, whoId.toString(),relation)
+	}
+	return relation
+}
 
 // relationshipを取得
-internal fun loadRelation1(
-	client : TootApiClient, access_info : SavedAccount, who_id : Long
-) : RelationResult {
-	val rr = RelationResult()
-	rr.result = client.request("/api/v1/accounts/relationships?id=$who_id")
+internal fun loadRelation1Mastodon(
+	client : TootApiClient,
+	access_info : SavedAccount,
+	who : TootAccount
+):RelationResult{val rr = RelationResult()
+	rr.result = client.request("/api/v1/accounts/relationships?id=${who.id}")
 	val r2 = rr.result
 	val jsonArray = r2?.jsonArray
 	if(jsonArray != null) {
@@ -145,19 +152,6 @@ internal fun loadRelation1(
 	return rr
 }
 
-// relationshipを取得
-internal fun loadRelation1(
-	client : TootApiClient, access_info : SavedAccount, who_id : EntityId
-) =when(who_id) {
-	is EntityIdLong -> loadRelation1(client,access_info,who_id.toLong())
-	else-> {
-		// TODO Misskey対応
-		val rr = RelationResult()
-		rr.result = TootApiResult("misskey support is not yet implemented")
-		rr.relation = null // TODO
-		rr
-	}
-}
 
 // 別アカ操作と別タンスの関係
 const val NOT_CROSS_ACCOUNT = 1

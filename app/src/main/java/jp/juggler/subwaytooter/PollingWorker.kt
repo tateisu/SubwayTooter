@@ -947,6 +947,7 @@ class PollingWorker private constructor(c : Context) {
 				val thread_list = LinkedList<AccountThread>()
 				for(_a in SavedAccount.loadAccountList(context)) {
 					if(_a.isPseudo) continue
+					if(_a.isMisskey) continue // XXX: Misskey is not yet supported.
 					if(process_db_id != - 1L && _a.db_id != process_db_id) continue
 					val t = AccountThread(_a)
 					thread_list.add(t)

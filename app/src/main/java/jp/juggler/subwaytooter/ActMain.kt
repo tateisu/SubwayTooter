@@ -695,14 +695,15 @@ class ActMain : AppCompatActivity()
 					column.startLoading()
 				}
 				scrollColumnStrip(position)
-				post_helper.setInstance(if(column.access_info.isNA) null else column.access_info.host)
+				when{
+					column.access_info.isNA ->post_helper.setInstance(null,false)
+					else->post_helper.setInstance(column.access_info.host,column.access_info.isMisskey)
+				}
 			}
 		}
-		
 	}
-	
+
 	override fun onPageScrollStateChanged(state : Int) {
-	
 	}
 	
 	private fun isOrderChanged(new_order : ArrayList<Int>) : Boolean {
@@ -739,12 +740,11 @@ class ActMain : AppCompatActivity()
 					val search = data.getStringExtra(ActAbout.EXTRA_SEARCH)
 					if(search?.isNotEmpty() == true) {
 						Action_Account.timeline(
-							this@ActMain,
-							defaultInsertPosition,
-							true,
-							Column.TYPE_SEARCH,
-							search,
-							true
+							this@ActMain
+							,defaultInsertPosition
+							,Column.TYPE_SEARCH
+							,bAllowPseudo =true
+							,args = arrayOf(search,true)
 						)
 					}
 					return
@@ -960,97 +960,102 @@ class ActMain : AppCompatActivity()
 			R.id.nav_close_all_columns -> closeColumnAll()
 			
 			R.id.nav_add_tl_home -> Action_Account.timeline(
-				this,
-				defaultInsertPosition,
-				false,
-				Column.TYPE_HOME
+				this
+				,defaultInsertPosition
+				,Column.TYPE_HOME
+				,bAllowPseudo = false
 			)
 			R.id.nav_add_tl_local -> Action_Account.timeline(
-				this,
-				defaultInsertPosition,
-				true,
-				Column.TYPE_LOCAL
+				this
+				,defaultInsertPosition
+				,Column.TYPE_LOCAL
+				,bAllowPseudo =true
 			)
 			R.id.nav_add_tl_federate -> Action_Account.timeline(
-				this,
-				defaultInsertPosition,
-				true,
-				Column.TYPE_FEDERATE
+				this
+				,defaultInsertPosition
+				,Column.TYPE_FEDERATE
+				,bAllowPseudo =true
 			)
 			R.id.nav_add_favourites -> Action_Account.timeline(
-				this,
-				defaultInsertPosition,
-				false,
-				Column.TYPE_FAVOURITES
+				this
+				,defaultInsertPosition
+				,Column.TYPE_FAVOURITES
+				,bAllowPseudo =false
 			)
 			R.id.nav_add_statuses -> Action_Account.timeline(
-				this,
-				defaultInsertPosition,
-				false,
-				Column.TYPE_PROFILE
+				this
+				,defaultInsertPosition
+				,Column.TYPE_PROFILE
+				,bAllowPseudo =false
 			)
 			R.id.nav_add_notifications -> Action_Account.timeline(
-				this,
-				defaultInsertPosition,
-				false,
-				Column.TYPE_NOTIFICATIONS
+				this
+				,defaultInsertPosition
+				,Column.TYPE_NOTIFICATIONS
+				,bAllowPseudo =false
 			)
 			
 			R.id.nav_add_direct_message -> Action_Account.timeline(
-				this,
-				defaultInsertPosition,
-				false,
-				Column.TYPE_DIRECT_MESSAGES
+				this
+				,defaultInsertPosition
+				,Column.TYPE_DIRECT_MESSAGES
+				,bAllowPseudo =false
+				,bAllowMisskey = false
 			)
 			R.id.nav_add_tl_search -> Action_Account.timeline(
-				this,
-				defaultInsertPosition,
-				false,
-				Column.TYPE_SEARCH,
-				"",
-				false
+				this
+				,defaultInsertPosition
+				,Column.TYPE_SEARCH
+				,bAllowPseudo =false
+				,args=arrayOf("",false)
 			)
 			R.id.nav_add_mutes -> Action_Account.timeline(
-				this,
-				defaultInsertPosition,
-				false,
-				Column.TYPE_MUTES
+				this
+				,defaultInsertPosition
+				,Column.TYPE_MUTES
+				,bAllowPseudo =false
 			)
 			R.id.nav_add_blocks -> Action_Account.timeline(
-				this,
-				defaultInsertPosition,
-				false,
-				Column.TYPE_BLOCKS
+				this
+				,defaultInsertPosition
+				,Column.TYPE_BLOCKS
+				,bAllowPseudo =false
+				,bAllowMisskey = false
 			)
 			R.id.nav_keyword_filter -> Action_Account.timeline(
-				this,
-				defaultInsertPosition,
-				false,
-				Column.TYPE_KEYWORD_FILTER
+				this
+				,defaultInsertPosition
+				,Column.TYPE_KEYWORD_FILTER
+				,bAllowPseudo =false
+				,bAllowMisskey = false
 			)
 			R.id.nav_add_domain_blocks -> Action_Account.timeline(
-				this,
-				defaultInsertPosition,
-				false,
-				Column.TYPE_DOMAIN_BLOCKS
+				this
+				,defaultInsertPosition
+				,Column.TYPE_DOMAIN_BLOCKS
+				,bAllowPseudo =false
+				,bAllowMisskey = false
 			)
 			R.id.nav_add_list -> Action_Account.timeline(
-				this,
-				defaultInsertPosition,
-				false,
-				Column.TYPE_LIST_LIST
+				this
+				,defaultInsertPosition
+				,Column.TYPE_LIST_LIST
+				,bAllowPseudo =false
 			)
 			R.id.nav_follow_requests -> Action_Account.timeline(
-				this,
-				defaultInsertPosition,
-				false,
-				Column.TYPE_FOLLOW_REQUESTS
+				this
+				,defaultInsertPosition
+				,Column.TYPE_FOLLOW_REQUESTS
+				,bAllowPseudo =false
+				,bAllowMisskey = false
 			)
 			R.id.nav_follow_suggestion -> Action_Account.timeline(
-				this,
-				defaultInsertPosition,
-				false,
-				Column.TYPE_FOLLOW_SUGGESTION
+				this
+				,defaultInsertPosition
+				,Column.TYPE_FOLLOW_SUGGESTION
+				,bAllowPseudo =false
+				,bAllowMisskey = false
 			)
 		//			R.id.nav_add_trend_tag ->Action_Account.timeline(
 		//				this,
@@ -1061,16 +1066,16 @@ class ActMain : AppCompatActivity()
 		
 		// トゥート検索
 			R.id.mastodon_search_portal -> addColumn(
-				defaultInsertPosition,
-				SavedAccount.na,
-				Column.TYPE_SEARCH_MSP,
-				""
+				defaultInsertPosition
+				,SavedAccount.na
+				,Column.TYPE_SEARCH_MSP
+				,""
 			)
 			R.id.tootsearch -> addColumn(
-				defaultInsertPosition,
-				SavedAccount.na,
-				Column.TYPE_SEARCH_TS,
-				""
+				defaultInsertPosition
+				,SavedAccount.na
+				,Column.TYPE_SEARCH_TS
+				,""
 			)
 		
 		// 設定
@@ -1657,12 +1662,8 @@ class ActMain : AppCompatActivity()
 					val client_name = Pref.spClientName(this@ActMain)
 					val result = client.authentication2Misskey(client_name, token)
 					this.ta = TootParser(
-						this@ActMain,
-						object : LinkHelper {
-							override val host : String?
-								get() = instance
-						},
-						serviceType = ServiceType.MISSKEY
+						this@ActMain
+						, LinkHelper.newLinkHelper(instance,isMisskey = true)
 					).account(result?.jsonObject)
 					return result
 					
@@ -1716,11 +1717,10 @@ class ActMain : AppCompatActivity()
 					this.host = instance
 					val client_name = Pref.spClientName(this@ActMain)
 					val result = client.authentication2(client_name, code)
-					this.ta = TootParser(this@ActMain, object : LinkHelper {
-						override val host : String?
-							get() = instance
-					})
-						.account(result?.jsonObject)
+					this.ta = TootParser(
+						this@ActMain
+						, LinkHelper.newLinkHelper(instance)
+					).account(result?.jsonObject)
 					return result
 				}
 				
@@ -1863,17 +1863,21 @@ class ActMain : AppCompatActivity()
 		access_token : String,
 		sa : SavedAccount?
 	) {
+		// TODO Misskeyに対応してない
+		// Misskeyの場合はi パラメータを直接持てるのだろうか…？
 		
 		TootTaskRunner(this@ActMain).run(host, object : TootTask {
 			
 			var ta : TootAccount? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val result = client.getUserCredential(access_token)
-				this.ta = TootParser(this@ActMain, object : LinkHelper {
-					override val host : String?
-						get() = host
-				}).account(result?.jsonObject)
+				val r1 =client.getInstanceInformation()
+				val ti = r1?.jsonObject ?: return r1
+				val isMisskey = ti.optBoolean(TootApiClient.KEY_IS_MISSKEY)
+				val linkHelper = LinkHelper .newLinkHelper(host,isMisskey=isMisskey)
+				val result = client.getUserCredential(access_token,isMisskey = isMisskey)
+				this.ta = TootParser(this@ActMain, linkHelper)
+					.account(result?.jsonObject)
 				return result
 			}
 			

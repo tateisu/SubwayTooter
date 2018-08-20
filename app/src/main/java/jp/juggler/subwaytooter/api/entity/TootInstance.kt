@@ -103,10 +103,7 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			
 			val parser2 = TootParser(
 				parser.context,
-				object : LinkHelper {
-					override val host : String
-						get() = uri ?: "?"
-				}
+				LinkHelper.newLinkHelper(uri ?: "?")
 			)
 			contact_account =
 				parseItem(::TootAccount, parser2, src.optJSONObject("contact_account"))

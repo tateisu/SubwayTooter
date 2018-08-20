@@ -182,7 +182,7 @@ class PostHelper(
 			}
 		}
 		
-		if(! bConfirmRedraft && redraft_status_id !=null ) {
+		if(! bConfirmRedraft && redraft_status_id != null) {
 			AlertDialog.Builder(activity)
 				.setCancelable(true)
 				.setMessage(R.string.delete_base_status_before_toot)
@@ -228,16 +228,24 @@ class PostHelper(
 			
 			var credential_tmp : TootAccount? = null
 			
+			val parser = TootParser(activity, account )
+			
 			fun getInstanceInformation(client : TootApiClient) : TootApiResult? {
-				val result = client.request("/api/v1/instance")
-				instance_tmp =
-					parseItem(::TootInstance, TootParser(activity, account), result?.jsonObject)
+				val result = if( account.isMisskey){
+					val params = JSONObject().apply{
+						put("dummy",1)
+					}
+					client.request("/api/meta",params.toPostRequestBuilder())
+				}else{
+					client.request("/api/v1/instance")
+				}
+				instance_tmp = parseItem(::TootInstance,parser , result?.jsonObject)
 				return result
 			}
 			
 			fun getCredential(client : TootApiClient) : TootApiResult? {
 				val result = client.request("/api/v1/accounts/verify_credentials")
-				credential_tmp = TootParser(activity, account).account(result?.jsonObject)
+				credential_tmp = parser.account(result?.jsonObject)
 				return result
 			}
 			
@@ -246,13 +254,23 @@ class PostHelper(
 				var result : TootApiResult?
 				
 				// 元の投稿を削除する
-				if(redraft_status_id != null ) {
-					result = client.request(
-						"/api/v1/statuses/$redraft_status_id",
-						Request.Builder().delete()
-					)
+				if(redraft_status_id != null) {
+					result = if( isMisskey ){
+						val params = account.putMisskeyApiToken(JSONObject()).apply{
+							put("noteId",redraft_status_id)
+						}
+						client.request(
+							"/api/notes/delete",
+							params.toPostRequestBuilder()
+						)
+					}else{
+						client.request(
+							"/api/v1/statuses/$redraft_status_id",
+							Request.Builder().delete()
+						)
+						
+					}
 					log.d("delete redraft. result=$result")
-					
 					Thread.sleep(2000L)
 				}
 				
@@ -266,7 +284,7 @@ class PostHelper(
 				}
 				
 				if(TootStatus.VISIBILITY_WEB_SETTING == visibility) {
-					visibility_checked = if(instance.versionGE(TootInstance.VERSION_1_6)) {
+					visibility_checked = if(account.isMisskey || instance.versionGE(TootInstance.VERSION_1_6)) {
 						null
 					} else {
 						val r2 = getCredential(client)
@@ -279,52 +297,150 @@ class PostHelper(
 				
 				val json = JSONObject()
 				try {
-					json.put(
-						"status",
-						EmojiDecoder.decodeShortCode(content, emojiMapCustom = emojiMapCustom)
-					)
-					if(visibility_checked != null) {
-						json.put("visibility", visibility_checked)
-					}
-					json.put("sensitive", bNSFW)
-					json.put(
-						"spoiler_text",
-						EmojiDecoder.decodeShortCode(
-							spoiler_text ?: "",
-							emojiMapCustom = emojiMapCustom
+					if(account.isMisskey) {
+						account.putMisskeyApiToken(json)
+						json.put(
+							"text",
+							EmojiDecoder.decodeShortCode(
+								content,
+								emojiMapCustom = emojiMapCustom
+							)
 						)
-					)
-					
-					if( in_reply_to_id != null){
-						if( account.isMisskey){
-							// TODO
-						}else{
-							json.put("in_reply_to_id",in_reply_to_id.toLong())
+						if(visibility_checked != null) {
+							json.put("visibility",when(visibility_checked){
+								TootStatus.VISIBILITY_PUBLIC -> "public"
+								TootStatus.VISIBILITY_UNLISTED,"home" ->"home"
+								TootStatus.VISIBILITY_PRIVATE,"followers" ->"followers"
+								// TootStatus.VISIBILITY_DIRECT
+								else->{
+									val userIds = JSONArray()
+									val reMention = Pattern.compile("(?:\\A|\\s)@([a-zA-Z0-9_]{1,20})(?:@([\\w\\.\\:-]+))?(?:\\z|\\s)")
+									val m = reMention.matcher(content)
+									while(m.find()){
+										val username = m.group(1)
+										val host = m.group(2)
+										val queryParams = account.putMisskeyApiToken(JSONObject())
+										if(username?.isNotEmpty()==true) queryParams.put("username",username)
+										if(host?.isNotEmpty()==true) queryParams.put("host",host)
+										result = client.request("/api/users/show",queryParams.toPostRequestBuilder())
+										val id = result?.jsonObject?.parseString("id")
+										if( id?.isNotEmpty() == true ){
+											userIds.put( id)
+										}
+									}
+									if( userIds.length() == 0 ){
+										"private"
+									}else{
+										json.put("visibleUserIds",userIds)
+										"specified"
+									}
+								}
+							})
 						}
-					}
-
-					var array = JSONArray()
-					if(attachment_list != null) {
-						for(pa in attachment_list) {
-							val a = pa.attachment ?: continue
-							if(a.redraft && ! instance.versionGE(TootInstance.VERSION_2_4_1)) continue
-							array.put(a.id)
-						}
-					}
-					json.put("media_ids", array)
-					
-					if(enquete_items?.isNotEmpty() == true) {
-						json.put("isEnquete", true)
-						array = JSONArray()
-						for(item in enquete_items) {
-							array.put(
+						
+						// TODO Misskeyの場合、NSFWするにはアップロード済みの画像を drive/files/update で更新する
+						// json.put("sensitive", bNSFW)
+						
+						if(spoiler_text?.isNotEmpty() == true ) {
+							json.put(
+								"cw",
 								EmojiDecoder.decodeShortCode(
-									item,
+									spoiler_text,
 									emojiMapCustom = emojiMapCustom
 								)
 							)
 						}
-						json.put("enquete_items", array)
+						
+						if(in_reply_to_id != null) {
+							if(account.isMisskey) {
+								json.put("replyId", in_reply_to_id.toString())
+							} else {
+								json.put("in_reply_to_id", in_reply_to_id.toLong())
+							}
+						}
+						
+						json.put("viaMobile",true)
+						
+						if(attachment_list != null) {
+							val array = JSONArray()
+							for(pa in attachment_list) {
+								val a = pa.attachment ?: continue
+								// Misskeyは画像の再利用に問題がないので redraftとバージョンのチェックは行わない
+								array.put(a.id.toString())
+							}
+							if( array.length() > 0) json.put("mediaIds", array)
+						}
+						
+						if(enquete_items?.isNotEmpty() == true) {
+							val choices = JSONArray().apply {
+								for(item in enquete_items) {
+									val text =EmojiDecoder.decodeShortCode(
+										item,
+										emojiMapCustom = emojiMapCustom
+									)
+									if( text.isEmpty() ) continue
+									put(text)
+								}
+							}
+							if( choices.length() > 0 ) {
+								json.put("poll",JSONObject().apply {
+									put("choices",choices)
+								})
+							}
+						}
+						
+					} else {
+						json.put(
+							"status",
+							EmojiDecoder.decodeShortCode(
+								content,
+								emojiMapCustom = emojiMapCustom
+							)
+						)
+						if(visibility_checked != null) {
+							json.put("visibility", visibility_checked)
+						}
+						json.put("sensitive", bNSFW)
+						json.put(
+							"spoiler_text",
+							EmojiDecoder.decodeShortCode(
+								spoiler_text ?: "",
+								emojiMapCustom = emojiMapCustom
+							)
+						)
+						
+						if(in_reply_to_id != null) {
+							if(account.isMisskey) {
+								json.put("replyId", in_reply_to_id.toString())
+							} else {
+								json.put("in_reply_to_id", in_reply_to_id.toLong())
+							}
+						}
+						
+						if(attachment_list != null) {
+							val array = JSONArray()
+							for(pa in attachment_list) {
+								val a = pa.attachment ?: continue
+								if(a.redraft && ! instance.versionGE(TootInstance.VERSION_2_4_1)) continue
+								array.put(a.id)
+							}
+							json.put("media_ids", array)
+						}
+						
+						if(enquete_items?.isNotEmpty() == true) {
+							json.put("isEnquete", true)
+							val array = JSONArray()
+							for(item in enquete_items) {
+								array.put(
+									EmojiDecoder.decodeShortCode(
+										item,
+										emojiMapCustom = emojiMapCustom
+									)
+								)
+							}
+							json.put("enquete_items", array)
+						}
+						
 					}
 				} catch(ex : JSONException) {
 					log.trace(ex)
@@ -342,9 +458,19 @@ class PostHelper(
 					val digest = (body_string + account.acct).digestSHA256Hex()
 					request_builder.header("Idempotency-Key", digest)
 				}
+
+				result = if(isMisskey){
+					client.request("/api/notes/create", request_builder)
+					// TODO {"error":{}} が返ってきた時にどう扱えばいい？
+				}else{
+					client.request("/api/v1/statuses", request_builder)
+				}
 				
-				result = client.request("/api/v1/statuses", request_builder)
-				val status = TootParser(activity, account).status(result?.jsonObject)
+				val status = parser.status(if(isMisskey) {
+					result?.jsonObject?.optJSONObject("createdNote") ?: result?.jsonObject
+				}else{
+					result?.jsonObject
+				})
 				this.status = status
 				if(status != null) {
 					
@@ -408,6 +534,7 @@ class PostHelper(
 	private var bMainScreen : Boolean = false
 	
 	private var instance : String? = null
+	private var isMisskey = false
 	
 	private val onEmojiListLoad : (list : ArrayList<CustomEmoji>) -> Unit =
 		{ _ : ArrayList<CustomEmoji> ->
@@ -550,7 +677,7 @@ class PostHelper(
 				
 				// カスタム絵文字を検索
 				val instance = this@PostHelper.instance
-				if(instance != null && instance.isNotEmpty()) {
+				if(instance != null && instance.isNotEmpty() && ! isMisskey) {
 					val custom_list = App1.custom_emoji_lister.getList(instance, onEmojiListLoad)
 					if(custom_list != null) {
 						val needle = src.substring(last_colon + 1, end)
@@ -604,11 +731,12 @@ class PostHelper(
 		fun canOpenPopup() : Boolean
 	}
 	
-	fun setInstance(_instance : String?) {
+	fun setInstance(_instance : String?, isMisskey : Boolean) {
 		val instance = _instance?.toLowerCase()
 		this.instance = instance
+		this.isMisskey = isMisskey
 		
-		if(instance != null) {
+		if(instance != null && ! isMisskey) {
 			App1.custom_emoji_lister.getList(instance, onEmojiListLoad)
 		}
 		
@@ -704,7 +832,7 @@ class PostHelper(
 	}
 	
 	private val open_picker_emoji : Runnable = Runnable {
-		EmojiPicker(activity, instance) { name, instance, bInstanceHasCustomEmoji ->
+		EmojiPicker(activity, instance, isMisskey) { name, instance, bInstanceHasCustomEmoji ->
 			val et = this.et ?: return@EmojiPicker
 			
 			val src = et.text
@@ -732,7 +860,7 @@ class PostHelper(
 	}
 	
 	fun openEmojiPickerFromMore() {
-		EmojiPicker(activity, instance) { name, instance, bInstanceHasCustomEmoji ->
+		EmojiPicker(activity, instance, isMisskey) { name, instance, bInstanceHasCustomEmoji ->
 			val et = this.et ?: return@EmojiPicker
 			
 			val src = et.text

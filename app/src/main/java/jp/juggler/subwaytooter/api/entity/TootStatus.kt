@@ -411,11 +411,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	val hostAccessOrOriginal : String
 		get() = validHost(host_access) ?: validHost(host_original) ?: "(null)"
 	
-	val idAccessOrOriginal : EntityId
-		get() = id
-	
 	val busyKey : String
-		get() = "$hostAccessOrOriginal:$idAccessOrOriginal"
+		get() = "$hostAccessOrOriginal:$id"
 	
 	fun checkMuted(
 		muted_app : HashSet<String>?,

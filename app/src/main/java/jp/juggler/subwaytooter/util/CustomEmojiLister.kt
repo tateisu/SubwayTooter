@@ -107,9 +107,9 @@ class CustomEmojiLister(internal val context : Context) {
 	}
 	
 	fun getMap(host : String) : HashMap<String, CustomEmoji>? {
-		val list = getList(host,{
+		val list = getList(host) {
 			// 遅延ロード非対応
-		}) ?: return null
+		} ?: return null
 		//
 		val dst = HashMap<String, CustomEmoji>()
 		for( e in list){

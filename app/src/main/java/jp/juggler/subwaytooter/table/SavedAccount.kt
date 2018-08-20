@@ -15,7 +15,9 @@ import java.util.concurrent.atomic.AtomicReference
 import java.util.regex.Pattern
 
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.entity.ServiceType
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.util.LinkHelper
@@ -29,8 +31,11 @@ class SavedAccount(
 	hostArg : String? = null,
 	var token_info : JSONObject? = null,
 	var loginAccount : TootAccount? = null, // 疑似アカウントではnull
-	var isMisskey :Boolean = false // 疑似アカウントでのみtrue
+	private val _isMisskey :Boolean = false // 疑似アカウントでのみtrue
 ) : LinkHelper {
+	
+	override val isMisskey : Boolean
+		get() = _isMisskey
 	
 	val username : String
 	
@@ -97,24 +102,28 @@ class SavedAccount(
 		cursor.getLong(cursor.getColumnIndex(COL_ID)), // db_id
 		cursor.getString(cursor.getColumnIndex(COL_USER)), // acct
 		cursor.getString(cursor.getColumnIndex(COL_HOST)) // host
+		,_isMisskey = cursor.getInt(cursor.getColumnIndex(COL_IS_MISSKEY)).i2b()
 	) {
 		
 		val jsonAccount = cursor.getString(cursor.getColumnIndex(COL_ACCOUNT)).toJsonObject()
-		
-		val loginAccount = TootParser(
-			context,
-			object : LinkHelper {
-				override val host : String? get() = this@SavedAccount.host
+		if( jsonAccount.opt("id")== null){
+			// 疑似アカウント
+			this.loginAccount = null
+		}else{
+			val loginAccount = TootParser(
+				context,
+				LinkHelper.newLinkHelper(this@SavedAccount.host,isMisskey=isMisskey)
+			).account(jsonAccount)
+			
+			if(loginAccount == null) {
+				log.e(
+					"missing loginAccount for %s",
+					cursor.getString(cursor.getColumnIndex(COL_ACCOUNT))
+				)
 			}
-		).account(jsonAccount)
-		
-		if(loginAccount == null) {
-			log.e(
-				"missing loginAccount for %s",
-				cursor.getString(cursor.getColumnIndex(COL_ACCOUNT))
-			)
+			this.loginAccount = loginAccount
 		}
-		this.loginAccount = loginAccount
+		
 		
 		val colIdx_visibility = cursor.getColumnIndex(COL_VISIBILITY)
 		this.visibility =
@@ -158,7 +167,7 @@ class SavedAccount(
 		
 		this.default_text = cursor.getString(cursor.getColumnIndex(COL_DEFAULT_TEXT)) ?: ""
 		
-		this.isMisskey = cursor.getInt(cursor.getColumnIndex(COL_IS_MISSKEY)).i2b()
+		
 	}
 	
 	val isNA : Boolean
@@ -859,7 +868,7 @@ class SavedAccount(
 			sa.compareTo(sb, ignoreCase = true)
 		}
 		
-		fun sort(account_list : ArrayList<SavedAccount>) {
+		fun sort(account_list : MutableList<SavedAccount>) {
 			Collections.sort(account_list, account_comparator)
 		}
 		
@@ -867,6 +876,12 @@ class SavedAccount(
 	
 	fun getAccessToken() : String? {
 		return token_info?.parseString("access_token")
+	}
+	
+	fun putMisskeyApiToken(params : JSONObject) :JSONObject{
+		val apiKey = token_info?.parseString(TootApiClient.KEY_API_KEY_MISSKEY)
+		if(apiKey?.isNotEmpty() == true) params.put("i", apiKey)
+		return params
 	}
 	
 }

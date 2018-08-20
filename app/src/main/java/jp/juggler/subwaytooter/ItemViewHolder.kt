@@ -768,60 +768,24 @@ internal class ItemViewHolder(
 			
 			if(status.account.isAdmin) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
-				
 				sb.appendColorShadeIcon(activity, R.drawable.ic_shield, "admin")
-				
-				//				val start = sb.length
-				//				sb.append("bot")
-				//				val end = sb.length
-				//				val info = EmojiMap201709.sShortNameToImageId["robot_face"]
-				//				if(info != null) {
-				//					sb.setSpan(
-				//						EmojiImageSpan(activity, info.image_id),
-				//						start,
-				//						end,
-				//						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-				//					)
-				//				}
 			}
 
 			if(status.account.isCat) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
-				
 				sb.appendColorShadeIcon(activity, R.drawable.ic_cat, "cat")
-				
-				//				val start = sb.length
-				//				sb.append("bot")
-				//				val end = sb.length
-				//				val info = EmojiMap201709.sShortNameToImageId["robot_face"]
-				//				if(info != null) {
-				//					sb.setSpan(
-				//						EmojiImageSpan(activity, info.image_id),
-				//						start,
-				//						end,
-				//						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-				//					)
-				//				}
 			}
 
 			// botマーク
 			if(status.account.bot) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
-				
 				sb.appendColorShadeIcon(activity, R.drawable.ic_bot, "bot")
-				
-				//				val start = sb.length
-				//				sb.append("bot")
-				//				val end = sb.length
-				//				val info = EmojiMap201709.sShortNameToImageId["robot_face"]
-				//				if(info != null) {
-				//					sb.setSpan(
-				//						EmojiImageSpan(activity, info.image_id),
-				//						start,
-				//						end,
-				//						Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-				//					)
-				//				}
+			}
+			
+			// mobileマーク
+			if(status.viaMobile) {
+				if(sb.isNotEmpty()) sb.append('\u200B')
+				sb.appendColorShadeIcon(activity, R.drawable.ic_mobile, "mobile")
 			}
 			
 			// NSFWマーク

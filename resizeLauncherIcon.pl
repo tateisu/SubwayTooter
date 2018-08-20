@@ -122,5 +122,6 @@ my $res_dir = "app/src/main/res";
 #resize_scales( "_ArtWork/ic_bot.png"	,$res_dir,"drawable","ic_bot",0,24);
 #resize_scales( "_ArtWork/ic_pin.png"	,$res_dir,"drawable","ic_pin",0,24);
 
-resize_scales( "_ArtWork/ic_cat.png"	,$res_dir,"drawable","ic_cat",0,24);
-resize_scales( "_ArtWork/ic_shield.png"	,$res_dir,"drawable","ic_shield",0,24);
+#resize_scales( "_ArtWork/ic_cat.png"	,$res_dir,"drawable","ic_cat",0,24);
+#resize_scales( "_ArtWork/ic_shield.png"	,$res_dir,"drawable","ic_shield",0,24);
+resize_scales( "_ArtWork/ic_mobile.png"	,$res_dir,"drawable","ic_mobile",0,24);

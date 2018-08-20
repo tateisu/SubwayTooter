@@ -54,8 +54,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	override fun getOrderId() = _orderId
 	
-//	val isMisskey :Boolean
-//		get()= id is EntityIdString
+	//	val isMisskey :Boolean
+	//		get()= id is EntityIdString
 	
 	// The TootAccount which posted the status
 	val accountRef : TootAccountRef
@@ -136,7 +136,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	var enquete : NicoEnquete? = null
 	
 	//
-	var replies_count :Long? = null
+	var replies_count : Long? = null
+	
+	var viaMobile : Boolean = false
 	
 	///////////////////////////////////////////////////////////////////
 	// 以下はentityから取得したデータではなく、アプリ内部で使う
@@ -165,7 +167,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	init {
 		this.json = src
 		
-		if( parser.serviceType == ServiceType.MISSKEY) {
+		if(parser.serviceType == ServiceType.MISSKEY) {
 			val instance = parser.linkHelper.host
 			val misskeyId = src.parseString("id")
 			this.host_access = parser.linkHelper.host
@@ -174,11 +176,10 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.url = "https://$instance/notes/$misskeyId"
 			this.created_at = src.parseString("createdAt")
 			this.time_created_at = parseTime(this.created_at)
-			this.id = EntityIdString( src.parseString("id") ?: error("missing id") )
+			this.id = EntityIdString(src.parseString("id") ?: error("missing id"))
 			
 			// ページネーションには日時を使う
 			this._orderId = EntityIdLong(time_created_at)
-
 			
 			// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
 			this.custom_emojis = null
@@ -195,18 +196,20 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			this.reblogged = false
 			this.favourited = false
-
-			this.visibility = TootVisibility.parseMisskey(src.parseString("visibility")) ?: TootVisibility.Public
+			
+			this.visibility = TootVisibility.parseMisskey(src.parseString("visibility")) ?:
+				TootVisibility.Public
 			
 			this.misskeyVisibleIds = parseStringArray(src.optJSONArray("visibleUserIds"))
 			
-			this.media_attachments = parseListOrNull(::TootAttachment,parser,src.optJSONArray("media"))
+			this.media_attachments =
+				parseListOrNull(::TootAttachment, parser, src.optJSONArray("media"))
 			
 			// Misskeyは画像毎にNSFWフラグがある。どれか１枚でもNSFWならトゥート全体がNSFWということにする
 			var bv = src.optBoolean("sensitive")
 			media_attachments?.forEach {
-				if( (it as? TootAttachment)?.isSensitive == true){
-					bv =true
+				if((it as? TootAttachment)?.isSensitive == true) {
+					bv = true
 				}
 			}
 			this.sensitive = bv
@@ -214,11 +217,18 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.in_reply_to_id = null
 			this.in_reply_to_account_id = null
 			this.mentions = null
-			this.tags = null
-			this.application = parseItem(::TootApplication, parser,src.optJSONObject("app"), log)
 			this.pinned = parser.pinned
 			this.muted = false
 			this.language = null
+			
+			// "mentionedRemoteUsers" -> "[{"uri":"https:\/\/mastodon.juggler.jp\/users\/tateisu","username":"tateisu","host":"mastodon.juggler.jp"}]"
+			
+			
+			this.tags = parseMisskeyTags(src.optJSONArray("tags"))
+			
+			this.application = parseItem(::TootApplication, parser, src.optJSONObject("app"), log)
+			
+			this.viaMobile = src.optBoolean("viaMobile")
 			
 			this.decoded_mentions = HTMLDecoder.decodeMentions(
 				parser.linkHelper,
@@ -268,11 +278,17 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				this.highlight_sound = options.highlight_sound
 			}
 			
-			this.enquete = null
+			// contentを読んだ後にアンケートのデコード
+			this.enquete = NicoEnquete.parse(
+				parser,
+				this,
+				media_attachments,
+				src.optJSONObject("poll")
+			)
 			
 			this.reblog = parser.status(src.optJSONObject("renote"))
-
-		}else{
+			
+		} else {
 			misskeyVisibleIds = null
 			
 			this.uri = src.parseString("uri") // MSPだとuriは提供されない
@@ -304,8 +320,14 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					
 					this.time_created_at = parseTime(this.created_at)
 					this.media_attachments =
-						parseListOrNull(::TootAttachment, parser,src.optJSONArray("media_attachments"), log)
-					this.visibility = TootVisibility.parseMastodon(src.parseString("visibility")) ?: TootVisibility.Public
+						parseListOrNull(
+							::TootAttachment,
+							parser,
+							src.optJSONArray("media_attachments"),
+							log
+						)
+					this.visibility = TootVisibility.parseMastodon(src.parseString("visibility")) ?:
+						TootVisibility.Public
 					this.sensitive = src.optBoolean("sensitive")
 					
 				}
@@ -318,7 +340,12 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					
 					this.time_created_at = TootStatus.parseTime(this.created_at)
 					this.media_attachments =
-						parseListOrNull(::TootAttachment, parser,src.optJSONArray("media_attachments"), log)
+						parseListOrNull(
+							::TootAttachment,
+							parser,
+							src.optJSONArray("media_attachments"),
+							log
+						)
 					this.visibility = TootVisibility.Public
 					this.sensitive = src.optBoolean("sensitive")
 					
@@ -337,15 +364,16 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					this.sensitive = src.optInt("sensitive", 0) != 0
 				}
 				
-				ServiceType.MISSKEY-> error("will not happen")
+				ServiceType.MISSKEY -> error("will not happen")
 			}
 			
 			this._orderId = this.id
-			this.in_reply_to_id = EntityId.mayNull( src.parseLong("in_reply_to_id"))
+			this.in_reply_to_id = EntityId.mayNull(src.parseLong("in_reply_to_id"))
 			this.in_reply_to_account_id = src.parseString("in_reply_to_account_id")
 			this.mentions = parseListOrNull(::TootMention, src.optJSONArray("mentions"), log)
 			this.tags = parseListOrNull(::TootTag, src.optJSONArray("tags"))
-			this.application = parseItem(::TootApplication,parser, src.optJSONObject("application"), log)
+			this.application =
+				parseItem(::TootApplication, parser, src.optJSONObject("application"), log)
 			this.pinned = parser.pinned || src.optBoolean("pinned")
 			this.muted = src.optBoolean("muted")
 			this.language = src.parseString("language")
@@ -409,7 +437,19 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		}
 	}
 	
-
+	private fun parseMisskeyTags(src : JSONArray?) : ArrayList<TootTag>? {
+		var rv : ArrayList<TootTag>? = null
+		if(src != null) {
+			for(i in 0 until src.length()) {
+				val sv = src.optString(i, null)
+				if(sv?.isNotEmpty() == true) {
+					if(rv == null) rv = ArrayList()
+					rv.add(TootTag(name = sv))
+				}
+			}
+		}
+		return rv
+	}
 	
 	///////////////////////////////////////////////////
 	// ユーティリティ
@@ -449,13 +489,13 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	fun canPin(access_info : SavedAccount) : Boolean {
 		return reblog == null
 			&& access_info.isMe(account)
-			&& visibility.canPin( access_info.isMisskey)
+			&& visibility.canPin(access_info.isMisskey)
 	}
 	
 	// 内部で使う
 	private var _filtered = false
 	
-	val filtered :Boolean
+	val filtered : Boolean
 		get() = _filtered || reblog?._filtered == true
 	
 	fun updateFiltered(muted_words : WordTrieTree?) {
@@ -478,8 +518,6 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	companion object {
 		
 		internal val log = LogCategory("TootStatus")
-		
-
 		
 		private val reWhitespace = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
 		
@@ -646,16 +684,13 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			return date_format.format(Date(t))
 		}
 		
-
-		
-		
-		fun parseStringArray(src:JSONArray?):ArrayList<String>?{
+		fun parseStringArray(src : JSONArray?) : ArrayList<String>? {
 			var rv : ArrayList<String>? = null
-			if( src != null ){
-				for( i in 0 until src.length()){
-					val s = src.optString(i,null)
-					if( s?.isNotEmpty() == true){
-						if( rv == null) rv = ArrayList()
+			if(src != null) {
+				for(i in 0 until src.length()) {
+					val s = src.optString(i, null)
+					if(s?.isNotEmpty() == true) {
+						if(rv == null) rv = ArrayList()
 						rv.add(s)
 					}
 				}

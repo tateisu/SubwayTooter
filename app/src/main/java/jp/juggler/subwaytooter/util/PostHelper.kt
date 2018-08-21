@@ -335,9 +335,6 @@ class PostHelper(
 							}
 						}
 						
-						// TODO Misskeyの場合、NSFWするにはアップロード済みの画像を drive/files/update で更新する
-						// json.put("sensitive", bNSFW)
-						
 						if(spoiler_text?.isNotEmpty() == true ) {
 							json.put(
 								"cw",
@@ -364,6 +361,15 @@ class PostHelper(
 								val a = pa.attachment ?: continue
 								// Misskeyは画像の再利用に問題がないので redraftとバージョンのチェックは行わない
 								array.put(a.id.toString())
+								
+								// Misskeyの場合、NSFWするにはアップロード済みの画像を drive/files/update で更新する
+								if( bNSFW){
+									val params = account.putMisskeyApiToken(JSONObject())
+										.put("fileId",a.id.toString())
+										.put("isSensitive",true)
+									val r = client.request("/api/drive/files/update",params.toPostRequestBuilder())
+									if(r==null|| r.error!=null ) return r
+								}
 							}
 							if( array.length() > 0) json.put("mediaIds", array)
 						}

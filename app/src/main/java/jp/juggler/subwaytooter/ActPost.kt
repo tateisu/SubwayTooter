@@ -1600,9 +1600,18 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 							)
 						)
 					}
-					val multipart_body = MultipartBody.Builder()
-						.setType(MultipartBody.FORM)
-						.addFormDataPart(
+					
+					
+					if(account.isMisskey){
+						val multipart_builder = MultipartBody.Builder()
+							.setType(MultipartBody.FORM)
+
+						val apiKey = account.token_info?.parseString(TootApiClient.KEY_API_KEY_MISSKEY)
+						if( apiKey?.isNotEmpty()== true){
+							multipart_builder.addFormDataPart("i",apiKey)
+						}
+						
+						multipart_builder.addFormDataPart(
 							"file", getDocumentName(uri), object : RequestBody() {
 								override fun contentType() : MediaType? {
 									return MediaType.parse(opener.mimeType)
@@ -1626,26 +1635,72 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 								}
 							}
 						)
-						.build()
-					
-					val request_builder = Request.Builder()
-						.post(multipart_body)
-					
-					val result = client.request("/api/v1/media", request_builder)
-					
-					opener.deleteTempFile()
-					onUploadEnd()
-					
-					val jsonObject = result?.jsonObject
-					if(jsonObject != null) {
-						val a = parseItem(::TootAttachment, ServiceType.MASTODON, jsonObject)
-						if(a == null) {
-							result.error = "TootAttachment.parse failed"
-						} else {
-							pa.attachment = a
+
+						val request_builder = Request.Builder().post(multipart_builder.build())
+						
+						val result = client.request("/api/drive/files/create", request_builder)
+						
+						opener.deleteTempFile()
+						onUploadEnd()
+						
+						val jsonObject = result?.jsonObject
+						if(jsonObject != null) {
+							val a = parseItem(::TootAttachment, ServiceType.MISSKEY, jsonObject)
+							if(a == null) {
+								result.error = "TootAttachment.parse failed"
+							} else {
+								pa.attachment = a
+							}
 						}
+						return result
+					}else{
+						val multipart_body = MultipartBody.Builder()
+							.setType(MultipartBody.FORM)
+							.addFormDataPart(
+								"file", getDocumentName(uri), object : RequestBody() {
+									override fun contentType() : MediaType? {
+										return MediaType.parse(opener.mimeType)
+									}
+									
+									@Throws(IOException::class)
+									override fun contentLength() : Long {
+										return content_length
+									}
+									
+									@Throws(IOException::class)
+									override fun writeTo(sink : BufferedSink) {
+										opener.open().use { inData ->
+											val tmp = ByteArray(4096)
+											while(true) {
+												val r = inData.read(tmp, 0, tmp.size)
+												if(r <= 0) break
+												sink.write(tmp, 0, r)
+											}
+										}
+									}
+								}
+							)
+							.build()
+						
+						val request_builder = Request.Builder()
+							.post(multipart_body)
+						
+						val result = client.request("/api/v1/media", request_builder)
+						
+						opener.deleteTempFile()
+						onUploadEnd()
+						
+						val jsonObject = result?.jsonObject
+						if(jsonObject != null) {
+							val a = parseItem(::TootAttachment, ServiceType.MASTODON, jsonObject)
+							if(a == null) {
+								result.error = "TootAttachment.parse failed"
+							} else {
+								pa.attachment = a
+							}
+						}
+						return result
 					}
-					return result
 					
 				} catch(ex : Throwable) {
 					return TootApiResult(ex.withCaption("read failed."))

@@ -1026,6 +1026,7 @@
     <string name="misskey">Misskey</string>
     <string name="visibility_home">ホーム</string>
     <string name="visibility_followers">フォロワー</string>
-    <string name="vote_count_text">%1$d votes</string>
+    <string name="vote_count_text">%1$d票</string>
+    <string name="reaction_add">リアクションの追加</string>
 
 </resources>

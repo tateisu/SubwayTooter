@@ -291,7 +291,7 @@ fun SpannableStringBuilder.appendColorShadeIcon(
 	context:Context,
 	drawable_id:Int,
 	text:String
-){
+):SpannableStringBuilder{
 	val start = this.length
 	this.append(text)
 	val end = this.length
@@ -301,4 +301,22 @@ fun SpannableStringBuilder.appendColorShadeIcon(
 		end,
 		Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 	)
+	return this
+}
+
+fun SpannableStringBuilder.appendDrawableIcon(
+	context:Context,
+	drawable_id:Int,
+	text:String
+):SpannableStringBuilder{
+	val start = this.length
+	this.append(text)
+	val end = this.length
+	this.setSpan(
+		EmojiImageSpan(context, drawable_id),
+		start,
+		end,
+		Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+	)
+	return this
 }

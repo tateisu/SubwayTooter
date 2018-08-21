@@ -21,7 +21,7 @@ class ActionsDialog {
 		return this
 	}
 	
-	fun show(context : Context, title : CharSequence?) : ActionsDialog {
+	fun show(context : Context, title : CharSequence? = null ) : ActionsDialog {
 		val caption_list = arrayOfNulls<CharSequence>(action_list.size)
 		var i = 0
 		val ie = caption_list.size

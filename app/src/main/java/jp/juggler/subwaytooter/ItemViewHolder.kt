@@ -15,6 +15,9 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
+import com.google.android.flexbox.AlignItems
+import com.google.android.flexbox.FlexWrap
+import com.google.android.flexbox.FlexboxLayout
 import jp.juggler.subwaytooter.action.*
 
 import java.util.ArrayList
@@ -46,7 +49,6 @@ internal class ItemViewHolder(
 	companion object {
 		private val log = LogCategory("ItemViewHolder")
 		
-
 	}
 	
 	val viewRoot : View
@@ -246,7 +248,7 @@ internal class ItemViewHolder(
 		bSimpleList : Boolean,
 		item : TimelineItem
 	) {
-
+		
 		this.list_adapter = list_adapter
 		this.column = column
 		this.bSimpleList = bSimpleList
@@ -406,8 +408,8 @@ internal class ItemViewHolder(
 			is TootList -> showList(item)
 			
 			is TootMessageHolder -> showMessageHolder(item)
-		
-		// TootTrendTag の後に TootTagを判定すること
+			
+			// TootTrendTag の後に TootTagを判定すること
 			is TootTrendTag -> showTrendTag(item)
 			is TootTag -> showSearchTag(item)
 			
@@ -596,8 +598,13 @@ internal class ItemViewHolder(
 		this.status_showing = status
 		llStatus.visibility = View.VISIBLE
 		
-		if( status.conversation_main) {
-			this.viewRoot.setBackgroundColor( (Styler.getAttributeColor(activity,R.attr.colorImageButtonAccent) and 0xffffff ) or 0x20000000)
+		if(status.conversation_main) {
+			this.viewRoot.setBackgroundColor(
+				(Styler.getAttributeColor(
+					activity,
+					R.attr.colorImageButtonAccent
+				) and 0xffffff) or 0x20000000
+			)
 		}
 		
 		showStatusTime(activity, tvTime, who = status.account, status = status)
@@ -726,6 +733,8 @@ internal class ItemViewHolder(
 			setMedia(ivMedia4, status, media_attachments, 3)
 		}
 		
+		makeReactionsView(status.reactionCounts)
+		
 		buttons_for_status?.bind(status, (item as? TootNotification))
 		
 		val application = status.application
@@ -770,12 +779,12 @@ internal class ItemViewHolder(
 				if(sb.isNotEmpty()) sb.append('\u200B')
 				sb.appendColorShadeIcon(activity, R.drawable.ic_shield, "admin")
 			}
-
+			
 			if(status.account.isCat) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
 				sb.appendColorShadeIcon(activity, R.drawable.ic_cat, "cat")
 			}
-
+			
 			// botマーク
 			if(status.account.bot) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
@@ -805,11 +814,18 @@ internal class ItemViewHolder(
 			}
 			
 			// visibility
-			val visIconAttrId = Styler.getVisibilityIconAttr(access_info.isMisskey,status.visibility)
+			val visIconAttrId =
+				Styler.getVisibilityIconAttr(access_info.isMisskey, status.visibility)
 			if(R.attr.ic_public != visIconAttrId) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
 				val start = sb.length
-				sb.append(Styler.getVisibilityString(activity,access_info.isMisskey,status.visibility))
+				sb.append(
+					Styler.getVisibilityString(
+						activity,
+						access_info.isMisskey,
+						status.visibility
+					)
+				)
 				val end = sb.length
 				val iconResId = Styler.getAttributeResourceId(activity, visIconAttrId)
 				sb.setSpan(
@@ -1009,8 +1025,19 @@ internal class ItemViewHolder(
 			
 			ivThumbnail -> status_account?.let { whoRef ->
 				when {
-					access_info.isMisskey -> Action_User.profileLocal(activity, pos, access_info, whoRef.get())
-					access_info.isPseudo -> DlgContextMenu(activity, column, whoRef, null, notification).show()
+					access_info.isMisskey -> Action_User.profileLocal(
+						activity,
+						pos,
+						access_info,
+						whoRef.get()
+					)
+					access_info.isPseudo -> DlgContextMenu(
+						activity,
+						column,
+						whoRef,
+						null,
+						notification
+					).show()
 					else -> Action_User.profileLocal(activity, pos, access_info, whoRef.get())
 				}
 			}
@@ -1194,16 +1221,16 @@ internal class ItemViewHolder(
 			btnSearchTag, llTrendTag -> {
 				val item = this.item
 				when(item) {
-				//					is TootGap -> column.startGap(item)
-				//
-				//					is TootDomainBlock -> {
-				//						val domain = item.domain
-				//						AlertDialog.Builder(activity)
-				//							.setMessage(activity.getString(R.string.confirm_unblock_domain, domain))
-				//							.setNegativeButton(R.string.cancel, null)
-				//							.setPositiveButton(R.string.ok) { _, _ -> Action_Instance.blockDomain(activity, access_info, domain, false) }
-				//							.show()
-				//					}
+					//					is TootGap -> column.startGap(item)
+					//
+					//					is TootDomainBlock -> {
+					//						val domain = item.domain
+					//						AlertDialog.Builder(activity)
+					//							.setMessage(activity.getString(R.string.confirm_unblock_domain, domain))
+					//							.setNegativeButton(R.string.cancel, null)
+					//							.setPositiveButton(R.string.ok) { _, _ -> Action_Instance.blockDomain(activity, access_info, domain, false) }
+					//							.show()
+					//					}
 					
 					is TootTag -> {
 						// search_tag は#を含まない
@@ -1246,7 +1273,7 @@ internal class ItemViewHolder(
 				is TootAttachment -> {
 					if(Pref.bpUseInternalMediaViewer(App1.pref)) {
 						// 内蔵メディアビューア
-						val serviceType = when(access_info.isMisskey){
+						val serviceType = when(access_info.isMisskey) {
 							true -> ServiceType.MISSKEY
 							else -> ServiceType.MASTODON
 						}
@@ -1360,6 +1387,148 @@ internal class ItemViewHolder(
 			sb.append("</a>")
 		}
 		
+	}
+	
+	private fun makeReactionsView(reactionsCount : HashMap<String, Int>?) {
+
+		if( ! access_info.isMisskey) return
+
+		//		reactionsCount?:return
+//		MisskeyReaction.values().find {
+//			val c = reactionsCount[it.shortcode]
+//			c != null && c > 0
+//		} ?: return
+		
+		
+		
+		val density = activity.resources.displayMetrics.density
+		val compoundPadding = (density * 0.5f + 0.5f).toInt()
+		val endMargin = (density * 3f + 0.5f).toInt()
+		val paddingHorizontal = (density * 4f + 0.5f).toInt()
+		val btnHeight = (density * 40f + 0.5f).toInt()
+		
+		val box = FlexboxLayout(activity)
+		val boxLp = LinearLayout.LayoutParams(
+			LinearLayout.LayoutParams.MATCH_PARENT,
+			LinearLayout.LayoutParams.WRAP_CONTENT
+		)
+		box.layoutParams = boxLp
+		boxLp.topMargin = (0.5f + density * 3f).toInt()
+		box.flexWrap = FlexWrap.WRAP
+		box.alignItems = AlignItems.FLEX_START
+		
+		// +ボタン
+		run{
+			val b = ImageButton(activity)
+			val blp = FlexboxLayout.LayoutParams(
+				btnHeight,
+				btnHeight
+			)
+			b.layoutParams = blp
+			blp.endMargin = endMargin
+			b.background = ContextCompat.getDrawable(
+				activity,
+				R.drawable.btn_bg_transparent
+			)
+			b.minimumWidth = (density * 40f + 0.5f).toInt()
+			b.contentDescription = activity.getString(R.string.reaction_add)
+			b.imageResource = Styler.getAttributeResourceId(activity,R.attr.ic_add)
+			b.padding= paddingHorizontal
+			b.setOnClickListener{ addReaction(status_showing,null) }
+			box.addView(b)
+		}
+		var lastButton : Button? = null
+		for(mr in MisskeyReaction.values()) {
+			val count = reactionsCount?.get(mr.shortcode)
+			if(count == null || count <= 0) continue
+			val b = Button(activity)
+			val blp = FlexboxLayout.LayoutParams(
+				FlexboxLayout.LayoutParams.WRAP_CONTENT,
+				btnHeight
+			)
+			b.layoutParams = blp
+			blp.endMargin = endMargin
+			b.background = ContextCompat.getDrawable(
+				activity,
+				R.drawable.btn_bg_transparent
+			)
+			b.minWidthCompat = (density * 40f + 0.5f).toInt()
+			b.text = count.toString()
+			b.compoundDrawablePadding = compoundPadding
+			b.padding= paddingHorizontal
+			b.tag = mr.shortcode
+			b.setOnClickListener{addReaction(status_showing,it.tag as? String) }
+			val d = ContextCompat.getDrawable(activity, mr.drawableId)
+			b.setCompoundDrawablesRelativeWithIntrinsicBounds(d, null, null, null)
+			box.addView(b)
+			lastButton = b
+		}
+		
+		if( lastButton != null ){
+			val lp = lastButton.layoutParams
+			if( lp is ViewGroup.MarginLayoutParams){
+				lp.endMargin = 0
+			}
+		}
+		
+		
+		
+		llExtra.addView(box)
+	}
+	
+	private fun addReaction(status:TootStatus?,code : String?) {
+		status?:return
+		
+		if( access_info.isPseudo || !access_info.isMisskey) return
+
+		if(code == null ){
+			val ad = ActionsDialog()
+			for( mr in MisskeyReaction.values()){
+				val code= mr.shortcode
+				val sb = SpannableStringBuilder()
+					.appendDrawableIcon(activity,mr.drawableId," ")
+					.append(' ')
+					.append(mr.shortcode)
+				ad.addAction(sb){
+					addReaction(status,code)
+				}
+			}
+			ad.show(activity)
+			return
+		}
+
+		TootTaskRunner(activity,progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,object :TootTask{
+			override fun background(client : TootApiClient) : TootApiResult? {
+				val params = access_info.putMisskeyApiToken(JSONObject())
+					.put("noteId",status.id.toString())
+					.put("reaction",code)
+				val result = client.request("/api/notes/reactions/create",params.toPostRequestBuilder())
+				// 成功すると204 no content
+				return result
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				result?: return
+				
+				val error = result.error
+				if( error!=null){
+					showToast(activity,false,error)
+					return
+				}
+				
+				if( (result.response?.code()?:-1) in 200 until 300 ){
+					if( status.reactionCounts == null ){
+						status.reactionCounts = HashMap()
+					}
+					val count = status.reactionCounts?.get(code) ?: 0
+					status.reactionCounts?.put(code,count+1)
+					// 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
+					list_adapter.notifyChange(reason = "addReaction complete", reset = true)
+				}
+				
+			}
+			
+		})
 	}
 	
 	private fun makeEnqueteChoiceView(
@@ -1903,7 +2072,7 @@ internal class ItemViewHolder(
 							}
 							
 							val marginBetween = dip(2)
-							val compoundPadding= dip(0.5f)
+							val compoundPadding = dip(0.5f)
 							
 							btnConversation = imageButton {
 								

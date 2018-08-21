@@ -748,6 +748,7 @@
 	<string name="visibility_home">Home</string>
 	<string name="visibility_followers">Followers</string>
     <string name="vote_count_text">%1$d votes</string>
+    <string name="reaction_add">Add reaction</string>
 
     <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

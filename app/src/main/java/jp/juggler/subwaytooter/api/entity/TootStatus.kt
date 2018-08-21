@@ -140,6 +140,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	var viaMobile : Boolean = false
 	
+	var reactionCounts : HashMap<String, Int>? = null
+	
 	///////////////////////////////////////////////////////////////////
 	// 以下はentityから取得したデータではなく、アプリ内部で使う
 	
@@ -223,7 +225,6 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			// "mentionedRemoteUsers" -> "[{"uri":"https:\/\/mastodon.juggler.jp\/users\/tateisu","username":"tateisu","host":"mastodon.juggler.jp"}]"
 			
-			
 			this.tags = parseMisskeyTags(src.optJSONArray("tags"))
 			
 			this.application = parseItem(::TootApplication, parser, src.optJSONObject("app"), log)
@@ -286,11 +287,12 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				src.optJSONObject("poll")
 			)
 			
+			this.reactionCounts = parseReactionCounts(src.optJSONObject("reactionCounts"))
+			
 			this.reblog = parser.status(src.optJSONObject("renote"))
 			
 		} else {
 			misskeyVisibleIds = null
-			
 			this.uri = src.parseString("uri") // MSPだとuriは提供されない
 			this.url = src.parseString("url") // 頻繁にnullになる
 			this.created_at = src.parseString("created_at")
@@ -435,20 +437,6 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.reblog = parser.status(src.optJSONObject("reblog"))
 			
 		}
-	}
-	
-	private fun parseMisskeyTags(src : JSONArray?) : ArrayList<TootTag>? {
-		var rv : ArrayList<TootTag>? = null
-		if(src != null) {
-			for(i in 0 until src.length()) {
-				val sv = src.optString(i, null)
-				if(sv?.isNotEmpty() == true) {
-					if(rv == null) rv = ArrayList()
-					rv.add(TootTag(name = sv))
-				}
-			}
-		}
-		return rv
 	}
 	
 	///////////////////////////////////////////////////
@@ -692,6 +680,33 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					if(s?.isNotEmpty() == true) {
 						if(rv == null) rv = ArrayList()
 						rv.add(s)
+					}
+				}
+			}
+			return rv
+		}
+		
+		private fun parseReactionCounts(src : JSONObject?) : HashMap<String, Int>? {
+			var rv : HashMap<String, Int>? = null
+			if(src != null) {
+				for(key in src.keys()) {
+					val v = src.parseInt(key) ?: continue
+					MisskeyReaction.shortcodeMap[key] ?: continue
+					if(rv == null) rv = HashMap()
+					rv[key] = v
+				}
+			}
+			return rv
+		}
+		
+		private fun parseMisskeyTags(src : JSONArray?) : ArrayList<TootTag>? {
+			var rv : ArrayList<TootTag>? = null
+			if(src != null) {
+				for(i in 0 until src.length()) {
+					val sv = src.optString(i, null)
+					if(sv?.isNotEmpty() == true) {
+						if(rv == null) rv = ArrayList()
+						rv.add(TootTag(name = sv))
 					}
 				}
 			}

@@ -427,7 +427,7 @@ class ActMain : AppCompatActivity()
 				}
 			})
 		
-		for( column in app_state.column_list){
+		for(column in app_state.column_list) {
 			column.onSaveInstanceState()
 		}
 		
@@ -566,7 +566,7 @@ class ActMain : AppCompatActivity()
 		if(posted_acct?.isNotEmpty() == true && posted_status_id != null) {
 			
 			val posted_redraft_id = this.posted_redraft_id
-			if(posted_redraft_id !=null ) {
+			if(posted_redraft_id != null) {
 				val delm = posted_acct.indexOf('@')
 				if(delm != - 1) {
 					val host = posted_acct.substring(delm + 1)
@@ -695,14 +695,17 @@ class ActMain : AppCompatActivity()
 					column.startLoading()
 				}
 				scrollColumnStrip(position)
-				when{
-					column.access_info.isNA ->post_helper.setInstance(null,false)
-					else->post_helper.setInstance(column.access_info.host,column.access_info.isMisskey)
+				when {
+					column.access_info.isNA -> post_helper.setInstance(null, false)
+					else -> post_helper.setInstance(
+						column.access_info.host,
+						column.access_info.isMisskey
+					)
 				}
 			}
 		}
 	}
-
+	
 	override fun onPageScrollStateChanged(state : Int) {
 	}
 	
@@ -741,10 +744,10 @@ class ActMain : AppCompatActivity()
 					if(search?.isNotEmpty() == true) {
 						Action_Account.timeline(
 							this@ActMain
-							,defaultInsertPosition
-							,Column.TYPE_SEARCH
-							,bAllowPseudo =true
-							,args = arrayOf(search,true)
+							, defaultInsertPosition
+							, Column.TYPE_SEARCH
+							, bAllowPseudo = true
+							, args = arrayOf(search, true)
 						)
 					}
 					return
@@ -761,9 +764,9 @@ class ActMain : AppCompatActivity()
 				if(data != null) {
 					etQuickToot.setText("")
 					posted_acct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)
-					posted_status_id = EntityId.from(data,ActPost.EXTRA_POSTED_STATUS_ID)
-					posted_reply_id = EntityId.from(data,ActPost.EXTRA_POSTED_REPLY_ID)
-					posted_redraft_id = EntityId.from(data,ActPost.EXTRA_POSTED_REDRAFT_ID)
+					posted_status_id = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
+					posted_reply_id = EntityId.from(data, ActPost.EXTRA_POSTED_REPLY_ID)
+					posted_redraft_id = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
 					
 				}
 				
@@ -950,135 +953,136 @@ class ActMain : AppCompatActivity()
 		
 		
 		when(id) {
-		// アカウント
+			// アカウント
 			R.id.nav_account_add -> Action_Account.add(this)
 			R.id.nav_account_setting -> Action_Account.setting(this)
-		
-		// カラム
+			
+			// カラム
 			R.id.nav_column_list -> Action_App.columnList(this)
 			
 			R.id.nav_close_all_columns -> closeColumnAll()
 			
 			R.id.nav_add_tl_home -> Action_Account.timeline(
 				this
-				,defaultInsertPosition
-				,Column.TYPE_HOME
-				,bAllowPseudo = false
+				, defaultInsertPosition
+				, Column.TYPE_HOME
+				, bAllowPseudo = false
 			)
 			R.id.nav_add_tl_local -> Action_Account.timeline(
 				this
-				,defaultInsertPosition
-				,Column.TYPE_LOCAL
-				,bAllowPseudo =true
+				, defaultInsertPosition
+				, Column.TYPE_LOCAL
+				, bAllowPseudo = true
 			)
 			R.id.nav_add_tl_federate -> Action_Account.timeline(
 				this
-				,defaultInsertPosition
-				,Column.TYPE_FEDERATE
-				,bAllowPseudo =true
+				, defaultInsertPosition
+				, Column.TYPE_FEDERATE
+				, bAllowPseudo = true
 			)
 			R.id.nav_add_favourites -> Action_Account.timeline(
 				this
-				,defaultInsertPosition
-				,Column.TYPE_FAVOURITES
-				,bAllowPseudo =false
+				, defaultInsertPosition
+				, Column.TYPE_FAVOURITES
+				, bAllowPseudo = false
 			)
 			R.id.nav_add_statuses -> Action_Account.timeline(
 				this
-				,defaultInsertPosition
-				,Column.TYPE_PROFILE
-				,bAllowPseudo =false
+				, defaultInsertPosition
+				, Column.TYPE_PROFILE
+				, bAllowPseudo = false
 			)
 			R.id.nav_add_notifications -> Action_Account.timeline(
 				this
-				,defaultInsertPosition
-				,Column.TYPE_NOTIFICATIONS
-				,bAllowPseudo =false
+				, defaultInsertPosition
+				, Column.TYPE_NOTIFICATIONS
+				, bAllowPseudo = false
 			)
 			
 			R.id.nav_add_direct_message -> Action_Account.timeline(
 				this
-				,defaultInsertPosition
-				,Column.TYPE_DIRECT_MESSAGES
-				,bAllowPseudo =false
-				,bAllowMisskey = false
+				, defaultInsertPosition
+				, Column.TYPE_DIRECT_MESSAGES
+				, bAllowPseudo = false
+				, bAllowMisskey = false
 			)
 			R.id.nav_add_tl_search -> Action_Account.timeline(
 				this
-				,defaultInsertPosition
-				,Column.TYPE_SEARCH
-				,bAllowPseudo =false
-				,args=arrayOf("",false)
+				, defaultInsertPosition
+				, Column.TYPE_SEARCH
+				, bAllowPseudo = false
+				, args = arrayOf("", false)
 			)
 			R.id.nav_add_mutes -> Action_Account.timeline(
 				this
-				,defaultInsertPosition
-				,Column.TYPE_MUTES
-				,bAllowPseudo =false
+				, defaultInsertPosition
+				, Column.TYPE_MUTES
+				, bAllowPseudo = false
 			)
 			R.id.nav_add_blocks -> Action_Account.timeline(
 				this
-				,defaultInsertPosition
-				,Column.TYPE_BLOCKS
-				,bAllowPseudo =false
-				,bAllowMisskey = false
+				, defaultInsertPosition
+				, Column.TYPE_BLOCKS
+				, bAllowPseudo = false
+				, bAllowMisskey = false
 			)
 			R.id.nav_keyword_filter -> Action_Account.timeline(
 				this
-				,defaultInsertPosition
-				,Column.TYPE_KEYWORD_FILTER
-				,bAllowPseudo =false
-				,bAllowMisskey = false
+				, defaultInsertPosition
+				, Column.TYPE_KEYWORD_FILTER
+				, bAllowPseudo = false
+				, bAllowMisskey = false
 			)
 			R.id.nav_add_domain_blocks -> Action_Account.timeline(
 				this
-				,defaultInsertPosition
-				,Column.TYPE_DOMAIN_BLOCKS
-				,bAllowPseudo =false
-				,bAllowMisskey = false
+				, defaultInsertPosition
+				, Column.TYPE_DOMAIN_BLOCKS
+				, bAllowPseudo = false
+				, bAllowMisskey = false
 			)
 			R.id.nav_add_list -> Action_Account.timeline(
 				this
-				,defaultInsertPosition
-				,Column.TYPE_LIST_LIST
-				,bAllowPseudo =false
+				, defaultInsertPosition
+				, Column.TYPE_LIST_LIST
+				, bAllowPseudo = false
 			)
+			
 			R.id.nav_follow_requests -> Action_Account.timeline(
 				this
-				,defaultInsertPosition
-				,Column.TYPE_FOLLOW_REQUESTS
-				,bAllowPseudo =false
-				,bAllowMisskey = false
+				, defaultInsertPosition
+				, Column.TYPE_FOLLOW_REQUESTS
+				, bAllowPseudo = false
 			)
+			
 			R.id.nav_follow_suggestion -> Action_Account.timeline(
 				this
-				,defaultInsertPosition
-				,Column.TYPE_FOLLOW_SUGGESTION
-				,bAllowPseudo =false
-				,bAllowMisskey = false
+				, defaultInsertPosition
+				, Column.TYPE_FOLLOW_SUGGESTION
+				, bAllowPseudo = false
+				, bAllowMisskey = false
 			)
-		//			R.id.nav_add_trend_tag ->Action_Account.timeline(
-		//				this,
-		//				defaultInsertPosition,
-		//				true,
-		//				Column.TYPE_TREND_TAG
-		//			)
-		
-		// トゥート検索
+			//			R.id.nav_add_trend_tag ->Action_Account.timeline(
+			//				this,
+			//				defaultInsertPosition,
+			//				true,
+			//				Column.TYPE_TREND_TAG
+			//			)
+			
+			// トゥート検索
 			R.id.mastodon_search_portal -> addColumn(
 				defaultInsertPosition
-				,SavedAccount.na
-				,Column.TYPE_SEARCH_MSP
-				,""
+				, SavedAccount.na
+				, Column.TYPE_SEARCH_MSP
+				, ""
 			)
 			R.id.tootsearch -> addColumn(
 				defaultInsertPosition
-				,SavedAccount.na
-				,Column.TYPE_SEARCH_TS
-				,""
+				, SavedAccount.na
+				, Column.TYPE_SEARCH_TS
+				, ""
 			)
-		
-		// 設定
+			
+			// 設定
 			R.id.nav_app_setting -> ActAppSetting.open(this, REQUEST_CODE_APP_SETTING)
 			R.id.nav_muted_app -> startActivity(Intent(this, ActMutedApp::class.java))
 			R.id.nav_muted_word -> startActivity(Intent(this, ActMutedWord::class.java))
@@ -1466,9 +1470,9 @@ class ActMain : AppCompatActivity()
 	
 	// ActOAuthCallbackで受け取ったUriを処理する
 	private fun handleIntentUri(uri : Uri) {
-	
-		when(uri.scheme){
-			"subwaytooter","misskeyclientproto" -> return try{
+		
+		when(uri.scheme) {
+			"subwaytooter", "misskeyclientproto" -> return try {
 				handleOAuth2CallbackUri(uri)
 			} catch(ex : Throwable) {
 				log.trace(ex)
@@ -1628,9 +1632,9 @@ class ActMain : AppCompatActivity()
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				val uriStr = uri.toString()
-				if( uriStr.startsWith("subwaytooter://misskey/auth_callback")
+				if(uriStr.startsWith("subwaytooter://misskey/auth_callback")
 					|| uriStr.startsWith("misskeyclientproto://misskeyclientproto/auth_callback")
-				){
+				) {
 					
 					// Misskey 認証コールバック
 					val token = uri.getQueryParameter("token")
@@ -1638,13 +1642,13 @@ class ActMain : AppCompatActivity()
 						return TootApiResult("missing token in callback URL")
 					}
 					val prefDevice = PrefDevice.prefDevice(this@ActMain)
-
-					val db_id = prefDevice.getLong(PrefDevice.LAST_AUTH_DB_ID,-1L)
-
-					val instance = prefDevice.getString(PrefDevice.LAST_AUTH_INSTANCE,null)
+					
+					val db_id = prefDevice.getLong(PrefDevice.LAST_AUTH_DB_ID, - 1L)
+					
+					val instance = prefDevice.getString(PrefDevice.LAST_AUTH_INSTANCE, null)
 						?: return TootApiResult("missing instance name.")
 					
-					if( db_id != -1L ){
+					if(db_id != - 1L) {
 						try {
 							val sa = SavedAccount.loadAccount(this@ActMain, db_id)
 								?: return TootApiResult("missing account db_id=$db_id")
@@ -1654,7 +1658,7 @@ class ActMain : AppCompatActivity()
 							log.trace(ex)
 							return TootApiResult(ex.withCaption("invalid state"))
 						}
-					}else{
+					} else {
 						client.instance = instance
 					}
 					
@@ -1663,11 +1667,11 @@ class ActMain : AppCompatActivity()
 					val result = client.authentication2Misskey(client_name, token)
 					this.ta = TootParser(
 						this@ActMain
-						, LinkHelper.newLinkHelper(instance,isMisskey = true)
+						, LinkHelper.newLinkHelper(instance, isMisskey = true)
 					).account(result?.jsonObject)
 					return result
 					
-				}else{
+				} else {
 					// Mastodon 認証コールバック
 					
 					// エラー時
@@ -1811,16 +1815,16 @@ class ActMain : AppCompatActivity()
 			val account = SavedAccount.loadAccount(this@ActMain, row_id)
 			if(account != null) {
 				var bModified = false
-
+				
 				if(account.loginAccount?.locked == true) {
 					bModified = true
 					account.visibility = TootVisibility.PrivateFollowers
 				}
-				if(!account.isMisskey){
+				if(! account.isMisskey) {
 					val source = ta.source
 					if(source != null) {
 						val privacy = TootVisibility.parseMastodon(source.privacy)
-						if( privacy != null ){
+						if(privacy != null) {
 							bModified = true
 							account.visibility = privacy
 						}
@@ -1833,7 +1837,7 @@ class ActMain : AppCompatActivity()
 						account.saveSetting()
 					}
 				}
-
+				
 				showToast(this@ActMain, false, R.string.account_confirmed)
 				
 				// 通知の更新が必要かもしれない
@@ -1870,17 +1874,12 @@ class ActMain : AppCompatActivity()
 			var ta : TootAccount? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val r1 =client.getInstanceInformation()
+				val r1 = client.getInstanceInformation()
 				val ti = r1?.jsonObject ?: return r1
 				val isMisskey = ti.optBoolean(TootApiClient.KEY_IS_MISSKEY)
 				
-				if( isMisskey ){
-					// XXX Misskeyの場合はi アクセストークンとAPIキー(i)が別なので入力画面の表記から直さないとダメ
-					return TootApiResult("This operation is not yet supported for Misskey instance.")
-				}
-				
-				val linkHelper = LinkHelper .newLinkHelper(host,isMisskey=isMisskey)
-				val result = client.getUserCredential(access_token,isMisskey = isMisskey)
+				val linkHelper = LinkHelper.newLinkHelper(host, isMisskey = isMisskey)
+				val result = client.getUserCredential(access_token, isMisskey = isMisskey)
 				this.ta = TootParser(this@ActMain, linkHelper)
 					.account(result?.jsonObject)
 				return result
@@ -1913,7 +1912,7 @@ class ActMain : AppCompatActivity()
 		
 		DlgTextInput.show(
 			this,
-			getString(R.string.access_token),
+			getString(R.string.access_token_or_api_token),
 			null,
 			object : DlgTextInput.Callback {
 				override fun onOK(dialog : Dialog, text : String) {

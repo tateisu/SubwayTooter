@@ -142,6 +142,10 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	var reactionCounts : HashMap<String, Int>? = null
 	
+	var reply : TootStatus?
+	
+	var renoteReply : String? = null
+	
 	///////////////////////////////////////////////////////////////////
 	// 以下はentityから取得したデータではなく、アプリ内部で使う
 	
@@ -216,7 +220,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			}
 			this.sensitive = bv
 			
-			this.in_reply_to_id = null
+			this.in_reply_to_id = EntityId.Companion.mayNull(src.parseString("replyId"))
 			this.in_reply_to_account_id = null
 			this.mentions = null
 			this.pinned = parser.pinned
@@ -290,9 +294,12 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.reactionCounts = parseReactionCounts(src.optJSONObject("reactionCounts"))
 			
 			this.reblog = parser.status(src.optJSONObject("renote"))
+			this.reply = parser.status(src.optJSONObject("reply"))
 			
 		} else {
 			misskeyVisibleIds = null
+			reply = null
+
 			this.uri = src.parseString("uri") // MSPだとuriは提供されない
 			this.url = src.parseString("url") // 頻繁にnullになる
 			this.created_at = src.parseString("created_at")

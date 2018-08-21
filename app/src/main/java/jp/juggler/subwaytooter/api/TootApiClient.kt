@@ -417,7 +417,7 @@ class TootApiClient(
 		val response = result.response !! // nullにならないはず
 		
 		try {
-			val bodyString = readBodyString(result, progressPath, jsonErrorParser)
+			var bodyString = readBodyString(result, progressPath, jsonErrorParser)
 				?: return if(isApiCancelled) null else result
 			
 			if( bodyString.isEmpty() ){
@@ -437,7 +437,34 @@ class TootApiClient(
 					result.data = json
 				}
 			}else {
-				result.error = context.getString(R.string.response_not_json) + "\n" + bodyString
+				// HTMLならタグを除去する
+				val ct = response.body()?.contentType()
+				if(ct?.subtype() == "html") {
+					val decoded = DecodeOptions().decodeHTML(bodyString).toString()
+					bodyString =decoded
+				}
+			
+				
+				val sb = StringBuilder()
+					.append(context.getString(R.string.response_not_json))
+					.append(' ')
+					.append(bodyString)
+
+				if(sb.isNotEmpty()) sb.append(' ')
+				sb.append("(HTTP ").append(Integer.toString(response.code()))
+				
+				val message = response.message()
+				if(message != null && message.isNotEmpty()) {
+					sb.append(' ').append(message)
+				}
+				sb.append(")")
+				
+				val url =  response.request()?.url()?.toString()
+				if(url?.isNotEmpty()==true) {
+					sb.append(' ').append(url)
+				}
+				
+				result.error = sb.toString()
 			}
 			
 		} catch(ex : Throwable) {

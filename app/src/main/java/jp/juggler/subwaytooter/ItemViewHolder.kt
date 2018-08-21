@@ -341,6 +341,7 @@ internal class ItemViewHolder(
 		this.follow_account = null
 		this.boost_time = 0L
 		this.viewRoot.setBackgroundColor(0)
+		this.boostedAction = defaultBoostedAction
 		
 		llBoosted.visibility = View.GONE
 		llFollow.visibility = View.GONE
@@ -440,6 +441,7 @@ internal class ItemViewHolder(
 		val n_accountRef = n.accountRef
 		val n_account = n_accountRef?.get()
 		when(n.type) {
+			
 			TootNotification.TYPE_FAVOURITE -> {
 				if(n_account != null) showBoost(
 					n_accountRef,
@@ -450,7 +452,7 @@ internal class ItemViewHolder(
 				if(n_status != null) showStatus(activity, n_status)
 			}
 			
-			TootNotification.TYPE_REBLOG -> {
+			TootNotification.TYPE_REBLOG  -> {
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
@@ -460,7 +462,18 @@ internal class ItemViewHolder(
 				if(n_status != null) showStatus(activity, n_status)
 				
 			}
-			
+			TootNotification.TYPE_RENOTE  -> {
+				// 引用のないreblog
+				if(n_account != null) showBoost(
+					n_accountRef,
+					n.time_created_at,
+					R.attr.btn_boost,
+					R.string.display_name_boosted_by
+				)
+				if(n_status != null){
+					showStatus(activity, n_status.reblog ?: n_status)
+				}
+			}
 			TootNotification.TYPE_FOLLOW -> {
 				if(n_account != null) {
 					showBoost(
@@ -473,21 +486,80 @@ internal class ItemViewHolder(
 				}
 			}
 			
-			TootNotification.TYPE_MENTION -> {
-				if(! bSimpleList) {
+			TootNotification.TYPE_MENTION,TootNotification.TYPE_REPLY -> {
+				// ミスキーは返信にメンションがないので説明文がないとなぜ通知にでるのか分からない
+				// 感力表示オフでも説明文を表示する
+				if(! bSimpleList || !access_info.isMisskey) {
 					if(n_account != null) showBoost(
 						n_accountRef,
 						n.time_created_at,
 						R.attr.btn_reply,
 						R.string.display_name_replied_by
-					
 					)
 				}
 				if(n_status != null) showStatus(activity, n_status)
 				
 			}
+			TootNotification.TYPE_REACTION -> {
+				val reaction = MisskeyReaction.shortcodeMap[n.reaction?:""]
+				if(n_account != null) showBoost(
+					n_accountRef,
+					n.time_created_at,
+					R.attr.ic_question,
+					R.string.display_name_reaction_by
+					,reaction?.drawableId
+				)
+				if(n_status != null) showStatus(activity, n_status)
+				
+			}
+			
+			TootNotification.TYPE_QUOTE ->{
+				if(n_account != null) showBoost(
+					n_accountRef,
+					n.time_created_at,
+					R.attr.btn_boost,
+					R.string.display_name_quoted_by
+				)
+				if(n_status != null) showStatus(activity, n_status)
+			}
+			
+			TootNotification.TYPE_VOTE ->{
+				if(n_account != null) showBoost(
+					n_accountRef,
+					n.time_created_at,
+					R.attr.ic_vote,
+					R.string.display_name_voted_by
+				)
+				if(n_status != null) showStatus(activity, n_status)
+			}
+			
+			TootNotification.TYPE_FOLLOW_REQUEST ->{
+				if(n_account != null) showBoost(
+					n_accountRef,
+					n.time_created_at,
+					R.attr.ic_follow_wait,
+					R.string.display_name_follow_request_by
+				)
+				boostedAction = {
+					activity.addColumn(
+						activity.nextPosition(column)
+						, access_info
+						, Column.TYPE_FOLLOW_REQUESTS
+					)
+				}
+			}
 			
 			else -> {
+				if(n_account != null) showBoost(
+					n_accountRef,
+					n.time_created_at,
+					R.attr.ic_question,
+					R.string.unknown_notification_from
+				)
+				if(n_status != null) showStatus(activity, n_status)
+				tvMessageHolder.visibility = View.VISIBLE
+				tvMessageHolder.text = "notification type is ${n.type}"
+				tvMessageHolder.gravity = Gravity.CENTER
 			}
 		}
 	}
@@ -544,7 +616,8 @@ internal class ItemViewHolder(
 		whoRef : TootAccountRef,
 		time : Long,
 		icon_attr_id : Int,
-		string_id : Int
+		string_id : Int,
+		reactionDrawableId : Int? = null
 	) {
 		boost_account = whoRef
 		val who = whoRef.get()
@@ -557,9 +630,15 @@ internal class ItemViewHolder(
 			whoRef.decoded_display_name
 		}.intoStringResource(activity, string_id)
 		
+		if( reactionDrawableId != null){
+			ivBoosted.setImageResource(reactionDrawableId)
+		}else{
+			ivBoosted.setImageResource(Styler.getAttributeResourceId(activity, icon_attr_id))
+			
+		}
+		
 		boost_time = time
 		llBoosted.visibility = View.VISIBLE
-		ivBoosted.setImageResource(Styler.getAttributeResourceId(activity, icon_attr_id))
 		showStatusTime(activity, tvBoostedTime, who, time = time)
 		tvBoosted.text = text
 		boost_invalidator.register(text)
@@ -990,6 +1069,19 @@ internal class ItemViewHolder(
 		iv.visibility = View.GONE
 	}
 	
+	private val defaultBoostedAction :()->Unit = {
+		val pos = activity.nextPosition(column)
+		val notification = (item as? TootNotification)
+		boost_account?.let { whoRef ->
+			if(access_info.isPseudo) {
+				DlgContextMenu(activity, column, whoRef, null, notification).show()
+			} else {
+				Action_User.profileLocal(activity, pos, access_info, whoRef.get())
+			}
+		}
+	}
+	private var boostedAction :()->Unit =defaultBoostedAction
+	
 	override fun onClick(v : View) {
 		
 		val pos = activity.nextPosition(column)
@@ -1042,13 +1134,7 @@ internal class ItemViewHolder(
 				}
 			}
 			
-			llBoosted -> boost_account?.let { whoRef ->
-				if(access_info.isPseudo) {
-					DlgContextMenu(activity, column, whoRef, null, notification).show()
-				} else {
-					Action_User.profileLocal(activity, pos, access_info, whoRef.get())
-				}
-			}
+			llBoosted -> boostedAction()
 			
 			llFollow -> follow_account?.let { whoRef ->
 				if(access_info.isPseudo) {

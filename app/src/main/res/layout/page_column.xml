@@ -196,6 +196,20 @@
                     android:layout_height="wrap_content"
                     android:text="@string/dont_show_reply"
                     />
+
+                <CheckBox
+                    android:id="@+id/cbDontShowReaction"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dont_show_reaction"
+                    />
+                <CheckBox
+                    android:id="@+id/cbDontShowVote"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/dont_show_vote"
+                    />
+
                 <CheckBox
                     android:id="@+id/cbDontShowNormalToot"
                     android:layout_width="match_parent"

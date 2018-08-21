@@ -109,6 +109,7 @@
         <item name="ic_volume_up">@drawable/ic_volume_up</item>
         <item name="ic_face">@drawable/ic_face</item>
         <item name="ic_check">@drawable/ic_check</item>
+        <item name="ic_vote">@drawable/ic_vote</item>
 
     </style>
 
@@ -222,6 +223,7 @@
         <item name="ic_volume_up">@drawable/ic_volume_up_dark</item>
         <item name="ic_face">@drawable/ic_face_dark</item>
         <item name="ic_check">@drawable/ic_check_dark</item>
+        <item name="ic_vote">@drawable/ic_vote_dark</item>
 
     </style>
 

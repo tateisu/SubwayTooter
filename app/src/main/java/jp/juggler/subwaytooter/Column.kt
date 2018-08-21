@@ -115,6 +115,8 @@ class Column(
 		private const val KEY_DONT_SHOW_FAVOURITE = "dont_show_favourite"
 		private const val KEY_DONT_SHOW_FOLLOW = "dont_show_follow"
 		private const val KEY_DONT_SHOW_REPLY = "dont_show_reply"
+		private const val KEY_DONT_SHOW_REACTION = "dont_show_reaction"
+		private const val KEY_DONT_SHOW_VOTE = "dont_show_vote"
 		private const val KEY_DONT_SHOW_NORMAL_TOOT = "dont_show_normal_toot"
 		private const val KEY_DONT_STREAMING = "dont_streaming"
 		private const val KEY_DONT_AUTO_REFRESH = "dont_auto_refresh"
@@ -350,6 +352,9 @@ class Column(
 	internal var with_highlight : Boolean = false
 	internal var dont_show_boost : Boolean = false
 	internal var dont_show_reply : Boolean = false
+	internal var dont_show_reaction : Boolean = false
+	internal var dont_show_vote : Boolean = false
+	
 	internal var dont_show_normal_toot : Boolean = false
 	internal var dont_show_favourite : Boolean = false // 通知カラムのみ
 	internal var dont_show_follow : Boolean = false // 通知カラムのみ
@@ -440,6 +445,8 @@ class Column(
 			|| dont_show_favourite
 			|| dont_show_follow
 			|| dont_show_reply
+			|| dont_show_reaction
+			|| dont_show_vote
 			|| dont_show_normal_toot
 			|| regex_text.isNotEmpty()
 			)
@@ -538,6 +545,8 @@ class Column(
 		dont_show_follow = src.optBoolean(KEY_DONT_SHOW_FOLLOW)
 		dont_show_favourite = src.optBoolean(KEY_DONT_SHOW_FAVOURITE)
 		dont_show_reply = src.optBoolean(KEY_DONT_SHOW_REPLY)
+		dont_show_reaction = src.optBoolean(KEY_DONT_SHOW_REACTION)
+		dont_show_vote = src.optBoolean(KEY_DONT_SHOW_VOTE)
 		dont_show_normal_toot = src.optBoolean(KEY_DONT_SHOW_NORMAL_TOOT)
 		dont_streaming = src.optBoolean(KEY_DONT_STREAMING)
 		dont_auto_refresh = src.optBoolean(KEY_DONT_AUTO_REFRESH)
@@ -603,6 +612,8 @@ class Column(
 		dst.put(KEY_DONT_SHOW_FOLLOW, dont_show_follow)
 		dst.put(KEY_DONT_SHOW_FAVOURITE, dont_show_favourite)
 		dst.put(KEY_DONT_SHOW_REPLY, dont_show_reply)
+		dst.put(KEY_DONT_SHOW_REACTION, dont_show_reaction)
+		dst.put(KEY_DONT_SHOW_VOTE, dont_show_vote)
 		dst.put(KEY_DONT_SHOW_NORMAL_TOOT, dont_show_normal_toot)
 		dst.put(KEY_DONT_STREAMING, dont_streaming)
 		dst.put(KEY_DONT_AUTO_REFRESH, dont_auto_refresh)
@@ -691,7 +702,6 @@ class Column(
 		}
 	}
 	
-	
 	internal fun getColumnName(bLong : Boolean) : String {
 		return when(column_type) {
 			
@@ -747,32 +757,43 @@ class Column(
 	}
 	
 	private fun getNotificationTypeString() : String {
-		return if(! dont_show_reply && ! dont_show_follow && ! dont_show_boost && ! dont_show_favourite) {
-			""
-		} else if(dont_show_reply && dont_show_follow && dont_show_boost && dont_show_favourite) {
-			""
-		} else {
-			val sb = StringBuilder()
-			if(! dont_show_reply) {
-				if(sb.isNotEmpty()) sb.append(", ")
-				sb.append(context.getString(R.string.notification_type_mention))
-			}
-			if(! dont_show_follow) {
-				if(sb.isNotEmpty()) sb.append(", ")
-				sb.append(context.getString(R.string.notification_type_follow))
-			}
-			if(! dont_show_boost) {
-				if(sb.isNotEmpty()) sb.append(", ")
-				sb.append(context.getString(R.string.notification_type_boost))
-			}
-			if(! dont_show_favourite) {
-				if(sb.isNotEmpty()) sb.append(", ")
-				sb.append(context.getString(R.string.notification_type_favourite))
-			}
-			sb.insert(0, "(")
-			sb.append(")")
-			sb.toString()
+		var n = 0
+		val sb = StringBuilder()
+		sb.append("(")
+		if(! dont_show_reply) {
+			++n
+			if(sb.isNotEmpty()) sb.append(", ")
+			sb.append(context.getString(R.string.notification_type_mention))
 		}
+		
+		if(! dont_show_follow) {
+			++n
+			if(sb.isNotEmpty()) sb.append(", ")
+			sb.append(context.getString(R.string.notification_type_follow))
+		}
+		if(! dont_show_boost) {
+			++n
+			if(sb.isNotEmpty()) sb.append(", ")
+			sb.append(context.getString(R.string.notification_type_boost))
+		}
+		if(! dont_show_favourite) {
+			++n
+			if(sb.isNotEmpty()) sb.append(", ")
+			sb.append(context.getString(R.string.notification_type_favourite))
+		}
+		if(! dont_show_reaction) {
+			++n
+			if(sb.isNotEmpty()) sb.append(", ")
+			sb.append(context.getString(R.string.notification_type_reaction))
+		}
+		if(! dont_show_vote) {
+			++n
+			if(sb.isNotEmpty()) sb.append(", ")
+			sb.append(context.getString(R.string.notification_type_vote))
+		}
+		if( n == 0 || n == 6 ) return "" // 全部か皆無なら部分表記は要らない
+		sb.append(")")
+		return sb.toString()
 	}
 	
 	internal fun dispose() {
@@ -1268,26 +1289,36 @@ class Column(
 	
 	private fun isFiltered(item : TootNotification) : Boolean {
 		
-		if(dont_show_favourite && TootNotification.TYPE_FAVOURITE == item.type) {
-			log.d("isFiltered: favourite notification filtered.")
-			return true
+		when(item.type){
+			TootNotification.TYPE_FAVOURITE->if(dont_show_favourite){
+				log.d("isFiltered: favourite notification filtered.")
+				return true
+			}
+			TootNotification.TYPE_REBLOG,
+			TootNotification.TYPE_RENOTE,
+			TootNotification.TYPE_QUOTE -> if(dont_show_boost){
+				log.d("isFiltered: reblog notification filtered.")
+				return true
+			}
+			TootNotification.TYPE_FOLLOW -> if(dont_show_follow){
+				log.d("isFiltered: follow notification filtered.")
+				return true
+			}
+			TootNotification.TYPE_MENTION,
+			TootNotification.TYPE_REPLY ->if(dont_show_reply){
+				log.d("isFiltered: mention notification filtered.")
+				return true
+			}
+			TootNotification.TYPE_REACTION -> if(dont_show_reaction){
+				log.d("isFiltered: reaction notification filtered.")
+				return true
+			}
+			TootNotification.TYPE_VOTE ->if(dont_show_vote){
+				log.d("isFiltered: vote notification filtered.")
+				return true
+			}
 		}
-		
-		if(dont_show_boost && TootNotification.TYPE_REBLOG == item.type) {
-			log.d("isFiltered: reblog notification filtered.")
-			return true
-		}
-		
-		if(dont_show_follow && TootNotification.TYPE_FOLLOW == item.type) {
-			log.d("isFiltered: follow notification filtered.")
-			return true
-		}
-		
-		if(dont_show_reply && TootNotification.TYPE_MENTION == item.type) {
-			log.d("isFiltered: mention notification filtered.")
-			return true
-		}
-		
+
 		val status = item.status
 		if(status != null) {
 			
@@ -1301,7 +1332,13 @@ class Column(
 		
 		// ふぁぼ魔ミュート
 		when(item.type) {
-			TootNotification.TYPE_REBLOG, TootNotification.TYPE_FAVOURITE, TootNotification.TYPE_FOLLOW -> {
+			TootNotification.TYPE_REBLOG,
+			TootNotification.TYPE_RENOTE,
+			TootNotification.TYPE_QUOTE,
+			TootNotification.TYPE_FAVOURITE,
+			TootNotification.TYPE_REACTION,
+			TootNotification.TYPE_VOTE,
+			TootNotification.TYPE_FOLLOW -> {
 				val who = item.account
 				if(who != null && favMuteSet?.contains(access_info.getFullAcct(who)) == true) {
 					PollingWorker.log.d("%s is in favMuteSet.", access_info.getFullAcct(who))
@@ -1404,29 +1441,29 @@ class Column(
 			add(n.status)
 		}
 		
-		internal fun update(client : TootApiClient,parser:TootParser) {
+		internal fun update(client : TootApiClient, parser : TootParser) {
 			
 			var n : Int
 			var size : Int
 			
-			if( isMisskey){
+			if(isMisskey) {
 				// parser内部にアカウントIDとRelationのマップが生成されるので、それをデータベースに記録する
 				val now = System.currentTimeMillis()
 				val who_list = parser.misskeyUserRelationMap.entries.toMutableList()
 				var start = 0
 				val end = who_list.size
-				while(start < end){
-					var step = end-start
-					if( step > RELATIONSHIP_LOAD_STEP) step = RELATIONSHIP_LOAD_STEP
-					UserRelationMisskey.saveList(now, access_info.db_id, who_list,start,step)
+				while(start < end) {
+					var step = end - start
+					if(step > RELATIONSHIP_LOAD_STEP) step = RELATIONSHIP_LOAD_STEP
+					UserRelationMisskey.saveList(now, access_info.db_id, who_list, start, step)
 					start += step
 				}
 				log.d("updateRelation: update %d relations.", end)
 				
-			}else{
+			} else {
 				// アカウントIDの集合からRelationshipを取得してデータベースに記録する
 				size = who_set.size
-				if(size > 0 ) {
+				if(size > 0) {
 					val who_list = ArrayList<EntityId>(size)
 					who_list.addAll(who_set)
 					
@@ -1496,7 +1533,7 @@ class Column(
 		client : TootApiClient,
 		list : ArrayList<TimelineItem>?,
 		whoRef : TootAccountRef?,
-		parser:TootParser
+		parser : TootParser
 	) {
 		if(access_info.isPseudo) return
 		
@@ -1511,7 +1548,7 @@ class Column(
 				is TootNotification -> env.add(it)
 			}
 		}
-		env.update(client,parser)
+		env.update(client, parser)
 	}
 	
 	internal fun startLoading() {
@@ -1676,20 +1713,20 @@ class Column(
 			) : TootApiResult? {
 				
 				val result = if(misskeyParams != null) {
-					
 					client.request(path_base, misskeyParams.toPostRequestBuilder())
 				} else {
 					client.request(path_base)
 				}
 				
-				if(result != null) {
+				if(result != null && result.error == null) {
 					val jsonArray = result.jsonArray
 					val jsonObject = result.jsonObject
 					val array = when {
 						jsonArray != null -> jsonArray
 						jsonObject != null -> misskeyArrayFinder(jsonObject)
 						else -> null
-					} ?: error("missing json data.")
+					} ?: return result.setError("missing JSON data.")
+					
 					val src = parser.accountList(array)
 					saveRange(true, true, result, src)
 					
@@ -1995,10 +2032,18 @@ class Column(
 							)
 						}
 						
-						TYPE_FOLLOW_REQUESTS -> return parseAccountList(
-							client,
-							PATH_FOLLOW_REQUESTS
-						)
+						TYPE_FOLLOW_REQUESTS -> return if(isMisskey) {
+							parseAccountList(
+								client
+								, "/api/following/requests/list"
+								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+							)
+						} else {
+							parseAccountList(
+								client,
+								PATH_FOLLOW_REQUESTS
+							)
+						}
 						
 						TYPE_FOLLOW_SUGGESTION -> return parseAccountList(
 							client,
@@ -2024,63 +2069,63 @@ class Column(
 						)
 						
 						TYPE_CONVERSATION -> {
-							if(isMisskey){
+							if(isMisskey) {
 								// 指定された発言そのもの
 								val queryParams = makeMisskeyBaseParameter(parser)
-									.put("noteId",status_id)
+									.put("noteId", status_id)
 								result = client.request(
 									"/api/notes/show"
-										,queryParams.toPostRequestBuilder()
+									, queryParams.toPostRequestBuilder()
 								)
-								var jsonObject = result?.jsonObject ?: return result
+								val jsonObject = result?.jsonObject ?: return result
 								val target_status = parser.status(jsonObject)
 									?: return TootApiResult("TootStatus parse failed.")
 								target_status.conversation_main = true
-
+								
 								// 祖先
 								val list_asc = ArrayList<TootStatus>()
-								while(true){
-									if( client.isApiCancelled) return null
-									queryParams.put("offset",list_asc.size)
+								while(true) {
+									if(client.isApiCancelled) return null
+									queryParams.put("offset", list_asc.size)
 									result = client.request(
 										"/api/notes/conversation"
-										,queryParams.toPostRequestBuilder()
+										, queryParams.toPostRequestBuilder()
 									)
 									val jsonArray = result?.jsonArray ?: return result
-									val src  = parser.statusList(jsonArray)
+									val src = parser.statusList(jsonArray)
 									if(src.isEmpty()) break
 									list_asc.addAll(src)
 								}
 								
 								// 直接の子リプライ。(子孫をたどることまではしない)
 								val list_desc = ArrayList<TootStatus>()
-								while(true){
-									if( client.isApiCancelled) return null
-									queryParams.put("offset",list_desc.size)
+								while(true) {
+									if(client.isApiCancelled) return null
+									queryParams.put("offset", list_desc.size)
 									result = client.request(
 										"/api/notes/replies"
-										,queryParams.toPostRequestBuilder()
+										, queryParams.toPostRequestBuilder()
 									)
 									val jsonArray = result?.jsonArray ?: return result
-									val src  = parser.statusList(jsonArray)
+									val src = parser.statusList(jsonArray)
 									if(src.isEmpty()) break
 									list_desc.addAll(src)
 								}
 								
 								// 一つのリストにまとめる
 								this.list_tmp = ArrayList<TimelineItem>(
-									list_asc.size + list_desc.size +2
-								).apply{
-									addAll( list_asc.sortedBy{it.time_created_at })
-									add( target_status)
-									addAll( list_desc.sortedBy{it.time_created_at })
-									add( TootMessageHolder(context.getString(R.string.misskey_cant_show_all_descendants)))
+									list_asc.size + list_desc.size + 2
+								).apply {
+									addAll(list_asc.sortedBy { it.time_created_at })
+									add(target_status)
+									addAll(list_desc.sortedBy { it.time_created_at })
+									add(TootMessageHolder(context.getString(R.string.misskey_cant_show_all_descendants)))
 								}
 								
 								//
 								return result
 								
-							}else{
+							} else {
 								// 指定された発言そのもの
 								result = client.request(
 									String.format(Locale.JAPAN, PATH_STATUSES, status_id)
@@ -2094,7 +2139,8 @@ class Column(
 									String.format(Locale.JAPAN, PATH_STATUSES_CONTEXT, status_id)
 								)
 								jsonObject = result?.jsonObject ?: return result
-								val conversation_context = parseItem(::TootContext, parser, jsonObject)
+								val conversation_context =
+									parseItem(::TootContext, parser, jsonObject)
 								
 								// 一つのリストにまとめる
 								target_status.conversation_main = true
@@ -2295,7 +2341,7 @@ class Column(
 					}
 				} finally {
 					try {
-						updateRelation(client, list_tmp, who_account,parser)
+						updateRelation(client, list_tmp, who_account, parser)
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
@@ -3403,7 +3449,16 @@ class Column(
 						
 						TYPE_DOMAIN_BLOCKS -> getDomainList(client, PATH_DOMAIN_BLOCK)
 						
-						TYPE_FOLLOW_REQUESTS -> getAccountList(client, PATH_FOLLOW_REQUESTS)
+						TYPE_FOLLOW_REQUESTS -> if(isMisskey) {
+							getAccountList(
+								client
+								, "/api/following/requests/list"
+								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+							)
+							
+						} else {
+							getAccountList(client, PATH_FOLLOW_REQUESTS)
+						}
 						TYPE_FOLLOW_SUGGESTION -> getAccountList(client, PATH_FOLLOW_SUGGESTION)
 						
 						TYPE_HASHTAG -> getStatusList(client, makeHashtagUrl(hashtag))
@@ -3471,7 +3526,7 @@ class Column(
 					}
 				} finally {
 					try {
-						updateRelation(client, list_tmp, who_account,parser)
+						updateRelation(client, list_tmp, who_account, parser)
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
@@ -4174,7 +4229,7 @@ class Column(
 					}
 				} finally {
 					try {
-						updateRelation(client, list_tmp, who_account,parser)
+						updateRelation(client, list_tmp, who_account, parser)
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
@@ -4429,6 +4484,7 @@ class Column(
 	fun canFilterBoost() : Boolean {
 		return when(column_type) {
 			TYPE_HOME, TYPE_PROFILE, TYPE_NOTIFICATIONS, TYPE_LIST_TL -> true
+			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH,TYPE_CONVERSATION,TYPE_DIRECT_MESSAGES -> isMisskey
 			else -> false
 		}
 	}
@@ -4436,7 +4492,8 @@ class Column(
 	// カラム設定に「返信を表示しない」ボタンを含めるなら真
 	fun canFilterReply() : Boolean {
 		return when(column_type) {
-			TYPE_HOME, TYPE_PROFILE, TYPE_LIST_TL, TYPE_NOTIFICATIONS, TYPE_DIRECT_MESSAGES -> true
+			TYPE_HOME, TYPE_PROFILE, TYPE_NOTIFICATIONS,TYPE_LIST_TL, TYPE_DIRECT_MESSAGES -> true
+			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH -> isMisskey
 			else -> false
 		}
 	}
@@ -4714,7 +4771,7 @@ class Column(
 	private fun makeMisskeyBaseParameter(parser : TootParser?) : JSONObject =
 		access_info
 			.putMisskeyApiToken(JSONObject())
-			.apply{
+			.apply {
 				if(access_info.isMisskey) {
 					if(parser != null) parser.serviceType = ServiceType.MISSKEY
 					put("limit", 100)
@@ -4738,8 +4795,7 @@ class Column(
 	private fun makeMisskeyParamsProfileStatuses(parser : TootParser) =
 		makeMisskeyParamsUserId(parser)
 			.putMisskeyParamsTimeline()
-			.put("includeReplies",true)
-	
+			.put("includeReplies", true)
 	
 	private fun makePublicLocalUrl() : String {
 		return when {
@@ -4768,17 +4824,13 @@ class Column(
 	private fun makeNotificationUrl() : String {
 		return when {
 			access_info.isMisskey -> "/api/i/notifications"
-			! dont_show_favourite
-				&& ! dont_show_boost
-				&& ! dont_show_follow
-				&& ! dont_show_reply -> PATH_NOTIFICATIONS
-			
-			else -> {
+			else->{
 				val sb = StringBuilder(PATH_NOTIFICATIONS) // always contain "?limit=XX"
 				if(dont_show_favourite) sb.append("&exclude_types[]=favourite")
 				if(dont_show_boost) sb.append("&exclude_types[]=reblog")
 				if(dont_show_follow) sb.append("&exclude_types[]=follow")
 				if(dont_show_reply) sb.append("&exclude_types[]=mention")
+				// reaction,voteはmastodonにはない
 				sb.toString()
 			}
 		}

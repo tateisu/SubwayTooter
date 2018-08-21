@@ -80,6 +80,11 @@
     <string name="display_name_favourited_by">%1$s favourited</string>
     <string name="display_name_boosted_by">%1$s boosted</string>
     <string name="display_name_replied_by">%1$s replied</string>
+    <string name="display_name_voted_by">%1$s voted</string>
+    <string name="display_name_follow_request_by">%1$s sent follow request</string>
+
+    <string name="display_name_quoted_by">%1$s quoted</string>
+    <string name="display_name_reaction_by">%1$s reactioned</string>
     <string name="display_name_followed_by">%1$s is following you</string>
     <string name="account">Account</string>
     <string name="account_setting">Account settings</string>
@@ -410,7 +415,7 @@
     <string name="mute_this_conversation">Mute more notifications for this conversation</string>
     <string name="unmute_this_conversation">Unmute more notifications for this conversation</string>
     <string name="input_access_token">Specify access token (for advanced users)</string>
-    <string name="access_token">Access token</string>
+    <string name="access_token_or_api_token">Access token (if using Misskey, please input API token)</string>
     <string name="token_not_specified">Please input access token.</string>
     <string name="quote_name">Quote name…</string>
     <string name="format_of_quote_name">Format of \"Quote name\" (set text that contains %1$s)</string>
@@ -607,6 +612,8 @@
     <string name="notification_type_follow">follow</string>
     <string name="notification_type_boost">boost</string>
     <string name="notification_type_favourite">fav.</string>
+    <string name="notification_type_reaction">reaction</string>
+    <string name="notification_type_vote">vote</string>
     <string name="dont_show_normal_toot">Don\'t show normal toot</string>
     <string name="set_focus_point">set focus point (Mastodon 2.3 or later)</string>
     <string name="report_forward_desc">The account is from another instance. Send an anonymized copy of the report there as well?</string>
@@ -735,4 +742,7 @@
     <string name="visibility_followers">Followers</string>
     <string name="vote_count_text">%1$d votes</string>
     <string name="reaction_add">Add reaction</string>
+    <string name="unknown_notification_from">unknown notification from %1$s</string>
+    <string name="dont_show_reaction">Don\'t show reaction</string>
+    <string name="dont_show_vote">Don\'t show vote</string>
 </resources>

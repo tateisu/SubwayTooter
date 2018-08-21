@@ -151,7 +151,11 @@
     <string name="display_name_boosted_by">%1$sがブーストしました</string>
 
     <string name="display_name_replied_by">%1$sからの返信</string>
+    <string name="display_name_voted_by">%1$sが投票しました</string>
+    <string name="display_name_quoted_by">%1$sが引用しました</string>
+    <string name="display_name_follow_request_by">%1$sがフォローリクエストを申請しました</string>
 
+    <string name="display_name_reaction_by">%1$sがリアクション</string>
     <string name="display_name_followed_by">%1$sにフォローされました</string>
 
     <string name="account">アカウント</string>
@@ -696,7 +700,7 @@
     <string name="delete_this_notification">この通知を削除</string>
     <string name="mute_this_conversation">この会話の次回以降の通知をミュート</string>
     <string name="unmute_this_conversation">この会話の次回以降の通知をミュート解除</string>
-    <string name="access_token">アクセストークン</string>
+    <string name="access_token_or_api_token">アクセストークン (Misskeyタンスの場合はAPIトークン)</string>
     <string name="input_access_token">アクセストークンを指定する(上級者向け)</string>
     <string name="token_not_specified">アクセストークンを入力してください</string>
     <string name="quote_name">名前を引用…</string>
@@ -901,6 +905,8 @@
     <string name="notification_type_follow">フォロー</string>
     <string name="notification_type_boost">ブースト</string>
     <string name="notification_type_favourite">お気に入り</string>
+    <string name="notification_type_reaction">リアクション</string>
+    <string name="notification_type_vote">投票</string>
     <string name="dont_show_normal_toot">通常トゥートを表示しない</string>
     <string name="set_focus_point">焦点を設定 (マストドン2.3以降)</string>
     <string name="report_forward_desc">対象ユーザは別のインスタンスに所属しています。通報内容を投稿元タンスに匿名で転送しますか?</string>
@@ -1028,5 +1034,8 @@
     <string name="visibility_followers">フォロワー</string>
     <string name="vote_count_text">%1$d票</string>
     <string name="reaction_add">リアクションの追加</string>
+    <string name="unknown_notification_from">%1$s からの謎の通知</string>
+    <string name="dont_show_reaction">リアクションを表示しない</string>
+    <string name="dont_show_vote">投票を表示しない</string>
 
 </resources>

@@ -65,7 +65,7 @@ object Action_Account {
 							// アクセストークンの手動入力
 							DlgTextInput.show(
 								activity,
-								activity.getString(R.string.access_token),
+								activity.getString(R.string.access_token_or_api_token),
 								null,
 								object : DlgTextInput.Callback {
 									

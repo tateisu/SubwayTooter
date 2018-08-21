@@ -106,6 +106,8 @@ class ActMain : AppCompatActivity()
 		@Suppress("HasPlatformType")
 		val reStatusPage = Pattern.compile("\\Ahttps://([^/]+)/@([A-Za-z0-9_]+)/(\\d+)(?:\\z|[?#])")
 		
+		var boostButtonSize = 0
+	
 	}
 	
 	//	@Override
@@ -1147,6 +1149,7 @@ class ActMain : AppCompatActivity()
 		
 		avatarIconSize = parseIconSize(Pref.spAvatarIconSize)
 		notificationTlIconSize = parseIconSize(Pref.spNotificationTlIconSize)
+		boostButtonSize = parseIconSize(Pref.spBoostButtonSize)
 		
 		run {
 			var round_ratio = 33f

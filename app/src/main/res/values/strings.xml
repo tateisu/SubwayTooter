@@ -745,4 +745,5 @@
     <string name="unknown_notification_from">unknown notification from %1$s</string>
     <string name="dont_show_reaction">Don\'t show reaction</string>
     <string name="dont_show_vote">Don\'t show vote</string>
+    <string name="boost_button_size">Boost button size( unit:dp, default=40, app restart required)</string>
 </resources>

@@ -1,12 +1,16 @@
 package jp.juggler.subwaytooter
 
+import android.content.Context
 import android.graphics.PorterDuff
+import android.support.v4.content.ContextCompat
 import android.view.View
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.PopupWindow
-
+import com.google.android.flexbox.FlexWrap
+import com.google.android.flexbox.FlexboxLayout
+import com.google.android.flexbox.JustifyContent
 import jp.juggler.subwaytooter.action.Action_Follow
 import jp.juggler.subwaytooter.action.Action_Toot
 import jp.juggler.subwaytooter.action.NOT_CROSS_ACCOUNT
@@ -16,20 +20,17 @@ import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.startMargin
+import jp.juggler.subwaytooter.view.CountImageButton
+import org.jetbrains.anko.*
+import org.jetbrains.anko.custom.customView
 
 internal class StatusButtons(
 	private val activity : ActMain,
 	private val column : Column,
 	private val bSimpleList : Boolean,
 	
-	private val btnConversation : ImageButton,
-	private val btnReply : Button,
-	private val btnBoost : Button,
-	private val btnFavourite : Button,
-	private val llFollow2 : View,
-	private val btnFollow2 : ImageButton,
-	private val ivFollowedBy2 : ImageView,
-	private val btnMore : ImageButton
+	private val holder : StatusButtonsViewHolder
 
 ) : View.OnClickListener, View.OnLongClickListener {
 	
@@ -43,6 +44,16 @@ internal class StatusButtons(
 	private var notification : TootNotification? = null
 	
 	var close_window : PopupWindow? = null
+	
+	private val btnConversation = holder.btnConversation
+	private val btnReply  = holder.btnReply
+	private val btnBoost  = holder.btnBoost
+	private val btnFavourite  = holder.btnFavourite
+	private val llFollow2  = holder.llFollow2
+	private val btnFollow2  = holder.btnFollow2
+	private val ivFollowedBy2  = holder.ivFollowedBy2
+	private val btnMore  = holder.btnMore
+	
 	
 	init {
 		this.access_info = column.access_info
@@ -71,7 +82,7 @@ internal class StatusButtons(
 			if(access_info.isNicoru(status.account)) R.attr.ic_nicoru else R.attr.btn_favourite
 		
 		val replies_count = status.replies_count
-
+		
 		setButton(
 			btnReply,
 			true,
@@ -95,7 +106,7 @@ internal class StatusButtons(
 		// ブーストボタン
 		when {
 			// マストドンではDirectはブーストできない (Misskeyはできる)
-			(!access_info.isMisskey && status.visibility.order <= TootVisibility.DirectSpecified.order) -> setButton(
+			(! access_info.isMisskey && status.visibility.order <= TootVisibility.DirectSpecified.order) -> setButton(
 				btnBoost,
 				false,
 				color_accent,
@@ -158,19 +169,19 @@ internal class StatusButtons(
 	}
 	
 	private fun setButton(
-		b : Button,
+		b : CountImageButton,
 		enabled : Boolean,
 		color : Int,
 		icon_attr : Int,
-		text : String,
+		count : String,
 		contentDescription : String
 	) {
 		val d = Styler.getAttributeDrawable(activity, icon_attr).mutate()
 		d.setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
-		b.setCompoundDrawablesRelativeWithIntrinsicBounds(d, null, null, null)
-		b.text = text
-		b.contentDescription = contentDescription + text
+		b.setImageDrawable(d)
+		b.setPaddingAndText(holder.paddingH,holder.paddingV,count,14f,holder.compoundPaddingDp)
 		b.setTextColor(color)
+		b.contentDescription = contentDescription + count
 		b.isEnabled = enabled
 	}
 	
@@ -333,4 +344,154 @@ internal class StatusButtons(
 		return true
 	}
 	
+}
+
+open class _FlexboxLayout(ctx: Context): FlexboxLayout(ctx) {
+	inline fun <T: View> T.lparams(
+		width: Int = android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+		height: Int = android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+		init: FlexboxLayout.LayoutParams.() -> Unit = {}
+	): T {
+		val layoutParams = FlexboxLayout.LayoutParams(width, height)
+		layoutParams.init()
+		this@lparams.layoutParams = layoutParams
+		return this
+	}
+}
+
+class StatusButtonsViewHolder(
+	activity : ActMain
+	,lpWidth:Int
+	,topMarginDp:Float
+, @JustifyContent justifyContent : Int = JustifyContent.CENTER
+)  {
+	
+	private val buttonHeight = ActMain.boostButtonSize
+	private val marginBetween = (ActMain.boostButtonSize.toFloat() * 0.05f + 0.5f).toInt()
+
+	val paddingH = (buttonHeight.toFloat()/10 +0.5f).toInt()
+	val paddingV = (buttonHeight.toFloat()/10 +0.5f).toInt()
+	val compoundPaddingDp = ActMain.boostButtonSize.toFloat() * -0.085f / activity.resources.displayMetrics.density
+
+	val viewRoot : FlexboxLayout
+
+	lateinit var btnConversation : ImageButton
+	lateinit var btnReply : CountImageButton
+	lateinit var btnBoost : CountImageButton
+	lateinit var btnFavourite : CountImageButton
+	lateinit var llFollow2 : View
+	lateinit var btnFollow2 : ImageButton
+	lateinit var ivFollowedBy2 : ImageView
+	lateinit var btnMore : ImageButton
+	
+	
+	init {
+		viewRoot = with(activity.UI{}) {
+
+			customView<_FlexboxLayout> {
+				// トップレベルのViewGroupのlparamsはイニシャライザ内部に置くしかないみたい
+				layoutParams = LinearLayout.LayoutParams(lpWidth, wrapContent).apply {
+					topMargin = dip(topMarginDp)
+				}
+				flexWrap = FlexWrap.WRAP
+				this.justifyContent = justifyContent
+				
+				btnConversation = imageButton {
+					
+					background = ContextCompat.getDrawable(
+						context,
+						R.drawable.btn_bg_transparent
+					)
+					contentDescription = context.getString(R.string.conversation_view)
+					
+					setPadding(paddingH, paddingV, paddingH, paddingV)
+					scaleType = ImageView.ScaleType.FIT_CENTER
+					imageResource =
+						Styler.getAttributeResourceId(context, R.attr.ic_conversation)
+				}.lparams(buttonHeight, buttonHeight)
+				
+				btnReply = customView<CountImageButton> {
+					
+					background = ContextCompat.getDrawable(
+						context,
+						R.drawable.btn_bg_transparent
+					)
+					setPadding(paddingH, paddingV, paddingH, paddingV)
+					scaleType = ImageView.ScaleType.FIT_CENTER
+					minimumWidth = buttonHeight
+				}.lparams(wrapContent, buttonHeight) {
+					startMargin = marginBetween
+				}
+				
+				btnBoost = customView<CountImageButton> {
+					
+					background = ContextCompat.getDrawable(
+						context,
+						R.drawable.btn_bg_transparent
+					)
+					setPadding(paddingH, paddingV, paddingH, paddingV)
+					scaleType = ImageView.ScaleType.FIT_CENTER
+					minimumWidth = buttonHeight
+				}.lparams(wrapContent, buttonHeight) {
+					startMargin = marginBetween
+				}
+				
+				btnFavourite = customView<CountImageButton> {
+					background = ContextCompat.getDrawable(
+						context,
+						R.drawable.btn_bg_transparent
+					)
+					setPadding(paddingH, paddingV, paddingH, paddingV)
+					scaleType = ImageView.ScaleType.FIT_CENTER
+					minimumWidth = buttonHeight
+					
+				}.lparams(wrapContent, buttonHeight) {
+					startMargin = marginBetween
+				}
+				
+				llFollow2 = frameLayout {
+					lparams(buttonHeight, buttonHeight) {
+						startMargin = marginBetween
+					}
+					
+					btnFollow2 = imageButton {
+						
+						background = ContextCompat.getDrawable(
+							context,
+							R.drawable.btn_bg_transparent
+						)
+						setPadding(paddingH, paddingV, paddingH, paddingV)
+						scaleType = ImageView.ScaleType.FIT_CENTER
+						
+						contentDescription = context.getString(R.string.follow)
+						
+					}.lparams(matchParent, matchParent)
+					
+					ivFollowedBy2 = imageView {
+						
+						setPadding(paddingH, paddingV, paddingH, paddingV)
+						scaleType = ImageView.ScaleType.FIT_CENTER
+						
+						importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+					}.lparams(matchParent, matchParent)
+				}
+				
+				btnMore = imageButton {
+					background = ContextCompat.getDrawable(
+						context,
+						R.drawable.btn_bg_transparent
+					)
+					setPadding(paddingH, paddingV, paddingH, paddingV)
+					scaleType = ImageView.ScaleType.FIT_CENTER
+					
+					contentDescription = context.getString(R.string.more)
+					imageResource =
+						Styler.getAttributeResourceId(context, R.attr.btn_more)
+				}.lparams(buttonHeight, buttonHeight) {
+					startMargin = marginBetween
+				}
+			}
+			
+		}
+	}
 }

@@ -1023,9 +1023,9 @@
     <string name="replies_count_actual">詳細</string>
     <string name="replies_count_none">なし</string>
     <string name="missing_available_account">この目的に使えるアカウントがありません。</string>
-    <string name="misskey_account_not_supported">Misskey account is not supported.</string>
+    <string name="misskey_account_not_supported">この操作はMisskeyアカウントに対応してません。</string>
     <string name="misskey_cant_show_all_descendants">Misskeyでは対象ノートへの直接の返信が列挙されます。子孫の全ては表示できません。</string>
-    <string name="cant_get_misskey_app_secret">This misskey instance does not provide app secret in the response of /api/app/create API. please consider update misskey service version to instance owner.</string>
+    <string name="cant_get_misskey_app_secret">このMisskeyタンスのアプリ登録APIは応答にapp secretが含まれません。タンス所有者にMisskeyをアップデートするよう相談してください。</string>
     <string name="visibility_style">公開範囲の名称とアイコン</string>
     <string name="visibility_style_by_account">カラムのアカウントに合わせる</string>
     <string name="mastodon">Mastodon</string>
@@ -1037,5 +1037,6 @@
     <string name="unknown_notification_from">%1$s からの謎の通知</string>
     <string name="dont_show_reaction">リアクションを表示しない</string>
     <string name="dont_show_vote">投票を表示しない</string>
+    <string name="boost_button_size">ブーストボタンのサイズ(単位:dp。デフォルト:40。アプリ再起動が必要)</string>
 
 </resources>

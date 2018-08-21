@@ -145,6 +145,8 @@ class ActAppSetting : AppCompatActivity()
 	private lateinit var etNotificationTlFontSize : EditText
 	private lateinit var tvNotificationTlFontSize : TextView
 	private lateinit var etNotificationTlIconSize : EditText
+
+	private lateinit var etBoostButtonSize : EditText
 	
 	private lateinit var tvUserAgentError : TextView
 	
@@ -335,6 +337,8 @@ class ActAppSetting : AppCompatActivity()
 		etNotificationTlIconSize = findViewById(R.id.etNotificationTlIconSize)
 		etPullNotificationCheckInterval = findViewById(R.id.etPullNotificationCheckInterval)
 		
+		etBoostButtonSize = findViewById(R.id.etBoostButtonSize)
+		
 		tvTimelineFontUrl = findViewById(R.id.tvTimelineFontUrl)
 		tvTimelineFontBoldUrl = findViewById(R.id.tvTimelineFontBoldUrl)
 		
@@ -390,6 +394,7 @@ class ActAppSetting : AppCompatActivity()
 		etAutoCWLines.setText(Pref.spAutoCWLines(pref))
 		etAvatarIconSize.setText(Pref.spAvatarIconSize(pref))
 		etNotificationTlIconSize.setText(Pref.spNotificationTlIconSize(pref))
+		etBoostButtonSize.setText(Pref.spBoostButtonSize(pref))
 		etPullNotificationCheckInterval.setText(Pref.spPullNotificationCheckInterval(pref))
 		
 		etMediaSizeMax.setText(Pref.spMediaSizeMax(pref))
@@ -462,6 +467,9 @@ class ActAppSetting : AppCompatActivity()
 			.put(
 				Pref.spNotificationTlIconSize,
 				etNotificationTlIconSize.text.toString().trim { it <= ' ' })
+			.put(
+				Pref.spBoostButtonSize,
+				etBoostButtonSize.text.toString().trim { it <= ' ' })
 			.put(
 				Pref.spPullNotificationCheckInterval,
 				etPullNotificationCheckInterval.text.toString().trim { it <= ' ' })

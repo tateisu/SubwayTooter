@@ -15,13 +15,10 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
-import com.google.android.flexbox.AlignItems
 import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
+import com.google.android.flexbox.JustifyContent
 import jp.juggler.subwaytooter.action.*
-
-import java.util.ArrayList
-
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
@@ -29,18 +26,16 @@ import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
-import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.table.ContentWarning
-import jp.juggler.subwaytooter.table.MediaShown
-import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.span.EmojiImageSpan
+import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.*
 import okhttp3.Request
 import okhttp3.RequestBody
 import org.jetbrains.anko.*
 import org.json.JSONObject
+import java.util.ArrayList
+import kotlin.collections.HashMap
 
 internal class ItemViewHolder(
 	val activity : ActMain
@@ -48,7 +43,6 @@ internal class ItemViewHolder(
 	
 	companion object {
 		private val log = LogCategory("ItemViewHolder")
-		
 	}
 	
 	val viewRoot : View
@@ -94,15 +88,8 @@ internal class ItemViewHolder(
 	private lateinit var ivMedia4 : MyNetworkImageView
 	private lateinit var btnHideMedia : View
 	
+	private lateinit var statusButtonsViewHolder : StatusButtonsViewHolder
 	private lateinit var llButtonBar : View
-	private lateinit var btnConversation : ImageButton
-	private lateinit var btnReply : Button
-	private lateinit var btnBoost : Button
-	private lateinit var btnFavourite : Button
-	private lateinit var llFollow2 : View
-	private lateinit var btnFollow2 : ImageButton
-	private lateinit var ivFollowedBy2 : ImageView
-	private lateinit var btnMore : ImageButton
 	
 	private lateinit var llSearchTag : View
 	private lateinit var btnSearchTag : Button
@@ -153,7 +140,7 @@ internal class ItemViewHolder(
 	private val extra_invalidator_list = ArrayList<NetworkEmojiInvalidator>()
 	
 	init {
-		this.viewRoot = inflate(activity.UI {})
+		this.viewRoot = inflate(activity)
 		
 		btnListTL.setOnClickListener(this)
 		btnListMore.setOnClickListener(this)
@@ -260,7 +247,9 @@ internal class ItemViewHolder(
 			val font_normal = activity.timeline_font ?: activity.timeline_font_bold
 			viewRoot.scan { v ->
 				try {
-					if(v is Button) {
+					if(v is CountImageButton) {
+						// ボタンは太字なので触らない
+					} else if(v is Button) {
 						// ボタンは太字なので触らない
 					} else if(v is TextView) {
 						val typeface = when {
@@ -322,16 +311,7 @@ internal class ItemViewHolder(
 				activity,
 				column,
 				false,
-				
-				btnConversation = btnConversation,
-				btnReply = btnReply,
-				btnBoost = btnBoost,
-				btnFavourite = btnFavourite,
-				llFollow2 = llFollow2,
-				btnFollow2 = btnFollow2,
-				ivFollowedBy2 = ivFollowedBy2,
-				btnMore = btnMore
-			
+				statusButtonsViewHolder
 			)
 		}
 		
@@ -452,7 +432,7 @@ internal class ItemViewHolder(
 				if(n_status != null) showStatus(activity, n_status)
 			}
 			
-			TootNotification.TYPE_REBLOG  -> {
+			TootNotification.TYPE_REBLOG -> {
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
@@ -462,7 +442,8 @@ internal class ItemViewHolder(
 				if(n_status != null) showStatus(activity, n_status)
 				
 			}
-			TootNotification.TYPE_RENOTE  -> {
+			
+			TootNotification.TYPE_RENOTE -> {
 				// 引用のないreblog
 				if(n_account != null) showBoost(
 					n_accountRef,
@@ -470,10 +451,11 @@ internal class ItemViewHolder(
 					R.attr.btn_boost,
 					R.string.display_name_boosted_by
 				)
-				if(n_status != null){
+				if(n_status != null) {
 					showStatus(activity, n_status.reblog ?: n_status)
 				}
 			}
+			
 			TootNotification.TYPE_FOLLOW -> {
 				if(n_account != null) {
 					showBoost(
@@ -486,10 +468,10 @@ internal class ItemViewHolder(
 				}
 			}
 			
-			TootNotification.TYPE_MENTION,TootNotification.TYPE_REPLY -> {
+			TootNotification.TYPE_MENTION, TootNotification.TYPE_REPLY -> {
 				// ミスキーは返信にメンションがないので説明文がないとなぜ通知にでるのか分からない
 				// 感力表示オフでも説明文を表示する
-				if(! bSimpleList || !access_info.isMisskey) {
+				if(! bSimpleList || ! access_info.isMisskey) {
 					if(n_account != null) showBoost(
 						n_accountRef,
 						n.time_created_at,
@@ -500,20 +482,21 @@ internal class ItemViewHolder(
 				if(n_status != null) showStatus(activity, n_status)
 				
 			}
+			
 			TootNotification.TYPE_REACTION -> {
-				val reaction = MisskeyReaction.shortcodeMap[n.reaction?:""]
+				val reaction = MisskeyReaction.shortcodeMap[n.reaction ?: ""]
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
 					R.attr.ic_question,
 					R.string.display_name_reaction_by
-					,reaction?.drawableId
+					, reaction?.drawableId
 				)
 				if(n_status != null) showStatus(activity, n_status)
 				
 			}
 			
-			TootNotification.TYPE_QUOTE ->{
+			TootNotification.TYPE_QUOTE -> {
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
@@ -523,7 +506,7 @@ internal class ItemViewHolder(
 				if(n_status != null) showStatus(activity, n_status)
 			}
 			
-			TootNotification.TYPE_VOTE ->{
+			TootNotification.TYPE_VOTE -> {
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
@@ -533,7 +516,7 @@ internal class ItemViewHolder(
 				if(n_status != null) showStatus(activity, n_status)
 			}
 			
-			TootNotification.TYPE_FOLLOW_REQUEST ->{
+			TootNotification.TYPE_FOLLOW_REQUEST -> {
 				if(n_account != null) showBoost(
 					n_accountRef,
 					n.time_created_at,
@@ -630,9 +613,9 @@ internal class ItemViewHolder(
 			whoRef.decoded_display_name
 		}.intoStringResource(activity, string_id)
 		
-		if( reactionDrawableId != null){
+		if(reactionDrawableId != null) {
 			ivBoosted.setImageResource(reactionDrawableId)
-		}else{
+		} else {
 			ivBoosted.setImageResource(Styler.getAttributeResourceId(activity, icon_attr_id))
 			
 		}
@@ -1069,7 +1052,7 @@ internal class ItemViewHolder(
 		iv.visibility = View.GONE
 	}
 	
-	private val defaultBoostedAction :()->Unit = {
+	private val defaultBoostedAction : () -> Unit = {
 		val pos = activity.nextPosition(column)
 		val notification = (item as? TootNotification)
 		boost_account?.let { whoRef ->
@@ -1080,7 +1063,7 @@ internal class ItemViewHolder(
 			}
 		}
 	}
-	private var boostedAction :()->Unit =defaultBoostedAction
+	private var boostedAction : () -> Unit = defaultBoostedAction
 	
 	override fun onClick(v : View) {
 		
@@ -1476,22 +1459,27 @@ internal class ItemViewHolder(
 	}
 	
 	private fun makeReactionsView(reactionsCount : HashMap<String, Int>?) {
-
-		if( ! access_info.isMisskey) return
-
+		
+		if(! access_info.isMisskey) return
+		
 		//		reactionsCount?:return
-//		MisskeyReaction.values().find {
-//			val c = reactionsCount[it.shortcode]
-//			c != null && c > 0
-//		} ?: return
+		//		MisskeyReaction.values().find {
+		//			val c = reactionsCount[it.shortcode]
+		//			c != null && c > 0
+		//		} ?: return
 		
-		
+		val textColor =
+			if(column.content_color != 0) column.content_color else content_color_default
 		
 		val density = activity.resources.displayMetrics.density
-		val compoundPadding = (density * 0.5f + 0.5f).toInt()
-		val endMargin = (density * 3f + 0.5f).toInt()
-		val paddingHorizontal = (density * 4f + 0.5f).toInt()
-		val btnHeight = (density * 40f + 0.5f).toInt()
+		
+		val buttonHeight = ActMain.boostButtonSize
+		val marginBetween = (ActMain.boostButtonSize.toFloat() * 0.05f + 0.5f).toInt()
+		
+		val paddingH = (buttonHeight.toFloat()/10 +0.5f).toInt()
+		val paddingV = (buttonHeight.toFloat()/10 +0.5f).toInt()
+		val compoundPaddingDp = ActMain.boostButtonSize.toFloat() * 0.00f / activity.resources.displayMetrics.density
+		
 		
 		val box = FlexboxLayout(activity)
 		val boxLp = LinearLayout.LayoutParams(
@@ -1501,120 +1489,130 @@ internal class ItemViewHolder(
 		box.layoutParams = boxLp
 		boxLp.topMargin = (0.5f + density * 3f).toInt()
 		box.flexWrap = FlexWrap.WRAP
-		box.alignItems = AlignItems.FLEX_START
+		box.justifyContent = JustifyContent.FLEX_START
 		
 		// +ボタン
-		run{
+		run {
 			val b = ImageButton(activity)
 			val blp = FlexboxLayout.LayoutParams(
-				btnHeight,
-				btnHeight
+				buttonHeight,
+				buttonHeight
 			)
+			blp.endMargin = marginBetween
 			b.layoutParams = blp
-			blp.endMargin = endMargin
 			b.background = ContextCompat.getDrawable(
 				activity,
 				R.drawable.btn_bg_transparent
 			)
-			b.minimumWidth = (density * 40f + 0.5f).toInt()
 			b.contentDescription = activity.getString(R.string.reaction_add)
-			b.imageResource = Styler.getAttributeResourceId(activity,R.attr.ic_add)
-			b.padding= paddingHorizontal
-			b.setOnClickListener{ addReaction(status_showing,null) }
+			b.imageResource = Styler.getAttributeResourceId(activity, R.attr.ic_add)
+			b.scaleType = ImageView.ScaleType.FIT_CENTER
+			b.padding = paddingV
+			b.setOnClickListener { addReaction(status_showing, null) }
 			box.addView(b)
 		}
-		var lastButton : Button? = null
+		var lastButton : View? = null
 		for(mr in MisskeyReaction.values()) {
 			val count = reactionsCount?.get(mr.shortcode)
 			if(count == null || count <= 0) continue
-			val b = Button(activity)
+			val b = CountImageButton(activity)
 			val blp = FlexboxLayout.LayoutParams(
 				FlexboxLayout.LayoutParams.WRAP_CONTENT,
-				btnHeight
+				buttonHeight
 			)
+			b.minimumWidth = buttonHeight
+			
+			b.imageResource = mr.drawableId
+			b.scaleType = ImageView.ScaleType.FIT_CENTER
+			
 			b.layoutParams = blp
-			blp.endMargin = endMargin
+			blp.endMargin = marginBetween
 			b.background = ContextCompat.getDrawable(
 				activity,
 				R.drawable.btn_bg_transparent
 			)
-			b.minWidthCompat = (density * 40f + 0.5f).toInt()
-			b.text = count.toString()
-			b.compoundDrawablePadding = compoundPadding
-			b.padding= paddingHorizontal
+			b.setTextColor(textColor)
+			b.setPaddingAndText(
+				paddingH, paddingV
+				, count.toString()
+				, 14f
+				, compoundPaddingDp
+			)
 			b.tag = mr.shortcode
-			b.setOnClickListener{addReaction(status_showing,it.tag as? String) }
-			val d = ContextCompat.getDrawable(activity, mr.drawableId)
-			b.setCompoundDrawablesRelativeWithIntrinsicBounds(d, null, null, null)
+			b.setOnClickListener { addReaction(status_showing, it.tag as? String) }
 			box.addView(b)
 			lastButton = b
 		}
 		
-		if( lastButton != null ){
+		if(lastButton != null) {
 			val lp = lastButton.layoutParams
-			if( lp is ViewGroup.MarginLayoutParams){
+			if(lp is ViewGroup.MarginLayoutParams) {
 				lp.endMargin = 0
 			}
 		}
 		
-		
-		
 		llExtra.addView(box)
 	}
 	
-	private fun addReaction(status:TootStatus?,code : String?) {
-		status?:return
+	private fun addReaction(status : TootStatus?, code : String?) {
+		status ?: return
 		
-		if( access_info.isPseudo || !access_info.isMisskey) return
-
-		if(code == null ){
+		if(access_info.isPseudo || ! access_info.isMisskey) return
+		
+		if(code == null) {
 			val ad = ActionsDialog()
-			for( mr in MisskeyReaction.values()){
-				val code= mr.shortcode
+			for(mr in MisskeyReaction.values()) {
+				val newCode = mr.shortcode
 				val sb = SpannableStringBuilder()
-					.appendDrawableIcon(activity,mr.drawableId," ")
+					.appendDrawableIcon(activity, mr.drawableId, " ")
 					.append(' ')
 					.append(mr.shortcode)
-				ad.addAction(sb){
-					addReaction(status,code)
+				ad.addAction(sb) {
+					addReaction(status, newCode)
 				}
 			}
 			ad.show(activity)
 			return
 		}
-
-		TootTaskRunner(activity,progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,object :TootTask{
-			override fun background(client : TootApiClient) : TootApiResult? {
-				val params = access_info.putMisskeyApiToken(JSONObject())
-					.put("noteId",status.id.toString())
-					.put("reaction",code)
-				val result = client.request("/api/notes/reactions/create",params.toPostRequestBuilder())
-				// 成功すると204 no content
-				return result
-			}
-			
-			override fun handleResult(result : TootApiResult?) {
-				result?: return
-				
-				val error = result.error
-				if( error!=null){
-					showToast(activity,false,error)
-					return
+		
+		TootTaskRunner(activity, progress_style = TootTaskRunner.PROGRESS_NONE).run(access_info,
+			object : TootTask {
+				override fun background(client : TootApiClient) : TootApiResult? {
+					val params = access_info.putMisskeyApiToken(JSONObject())
+						.put("noteId", status.id.toString())
+						.put("reaction", code)
+					
+					@Suppress("UnnecessaryVariable")
+					val result =
+						client.request("/api/notes/reactions/create", params.toPostRequestBuilder())
+					
+					// 成功すると204 no content
+					
+					return result
 				}
 				
-				if( (result.response?.code()?:-1) in 200 until 300 ){
-					if( status.reactionCounts == null ){
-						status.reactionCounts = HashMap()
+				override fun handleResult(result : TootApiResult?) {
+					result ?: return
+					
+					val error = result.error
+					if(error != null) {
+						showToast(activity, false, error)
+						return
 					}
-					val count = status.reactionCounts?.get(code) ?: 0
-					status.reactionCounts?.put(code,count+1)
-					// 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
-					list_adapter.notifyChange(reason = "addReaction complete", reset = true)
+					
+					if((result.response?.code() ?: - 1) in 200 until 300) {
+						if(status.reactionCounts == null) {
+							status.reactionCounts = HashMap()
+						}
+						val count = status.reactionCounts?.get(code) ?: 0
+						status.reactionCounts?.put(code, count + 1)
+						// 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
+						list_adapter.notifyChange(reason = "addReaction complete", reset = true)
+					}
+					
 				}
 				
-			}
-			
-		})
+			})
 	}
 	
 	private fun makeEnqueteChoiceView(
@@ -1723,7 +1721,7 @@ internal class ItemViewHolder(
 	
 	/////////////////////////////////////////////////////////////////////
 	
-	private fun inflate(ui : AnkoContext<Context>) = with(ui) {
+	private fun inflate(activity : ActMain) = with(activity.UI {}) {
 		verticalLayout {
 			// トップレベルのViewGroupのlparamsはイニシャライザ内部に置くしかないみたい
 			layoutParams = RecyclerView.LayoutParams(matchParent, wrapContent)
@@ -2152,109 +2150,14 @@ internal class ItemViewHolder(
 						}
 						
 						// button bar
-						llButtonBar = linearLayout {
-							lparams(wrapContent, dip(40)) {
-								topMargin = dip(3)
-							}
-							
-							val marginBetween = dip(2)
-							val compoundPadding = dip(0.5f)
-							
-							btnConversation = imageButton {
-								
-								background = ContextCompat.getDrawable(
-									context,
-									R.drawable.btn_bg_transparent
-								)
-								contentDescription = context.getString(R.string.conversation_view)
-								minimumWidth = dip(40)
-								imageResource =
-									Styler.getAttributeResourceId(context, R.attr.ic_conversation)
-							}.lparams(wrapContent, matchParent)
-							
-							btnReply = button {
-								
-								background = ContextCompat.getDrawable(
-									context,
-									R.drawable.btn_bg_transparent
-								)
-								compoundDrawablePadding = compoundPadding
-								minWidthCompat = dip(48)
-								setPaddingStartEnd(dip(4), dip(4))
-								// imageResource = Styler.getAttributeResourceId(context, R.attr.btn_reply)
-							}.lparams(wrapContent, matchParent) {
-								startMargin = marginBetween
-							}
-							
-							btnBoost = button {
-								
-								background = ContextCompat.getDrawable(
-									context,
-									R.drawable.btn_bg_transparent
-								)
-								compoundDrawablePadding = compoundPadding
-								
-								minWidthCompat = dip(48)
-								setPaddingStartEnd(dip(4), dip(4))
-							}.lparams(wrapContent, matchParent) {
-								startMargin = marginBetween
-							}
-							
-							btnFavourite = button {
-								background = ContextCompat.getDrawable(
-									context,
-									R.drawable.btn_bg_transparent
-								)
-								compoundDrawablePadding = compoundPadding
-								minWidthCompat = dip(48)
-								setPaddingStartEnd(dip(4), dip(4))
-								
-							}.lparams(wrapContent, matchParent) {
-								startMargin = marginBetween
-							}
-							
-							llFollow2 = frameLayout {
-								lparams(dip(40), dip(40)) {
-									startMargin = marginBetween
-								}
-								
-								btnFollow2 = imageButton {
-									
-									background = ContextCompat.getDrawable(
-										context,
-										R.drawable.btn_bg_transparent
-									)
-									contentDescription = context.getString(R.string.follow)
-									scaleType = ImageView.ScaleType.CENTER
-									// tools:src="?attr/ic_follow_plus"
-									minimumWidth = dip(40)
-									
-								}.lparams(matchParent, matchParent)
-								
-								ivFollowedBy2 = imageView {
-									
-									scaleType = ImageView.ScaleType.CENTER
-									imageResource = Styler.getAttributeResourceId(
-										context,
-										R.attr.ic_followed_by
-									)
-									importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-								}.lparams(matchParent, matchParent)
-							}
-							
-							btnMore = imageButton {
-								background = ContextCompat.getDrawable(
-									context,
-									R.drawable.btn_bg_transparent
-								)
-								contentDescription = context.getString(R.string.more)
-								imageResource =
-									Styler.getAttributeResourceId(context, R.attr.btn_more)
-								minimumWidth = dip(40)
-							}.lparams(wrapContent, matchParent) {
-								startMargin = marginBetween
-							}
-						}
+						statusButtonsViewHolder = StatusButtonsViewHolder(
+							activity
+							, matchParent
+							, 3f
+							, justifyContent = JustifyContent.FLEX_END
+						)
+						llButtonBar = statusButtonsViewHolder.viewRoot
+						addView(llButtonBar)
 						
 						tvApplication = textView {
 							gravity = Gravity.END

@@ -8,10 +8,12 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
 import android.view.WindowManager
+import android.widget.LinearLayout
 import android.widget.PopupWindow
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.util.LogCategory
+import org.jetbrains.anko.matchParent
 
 class StatusButtonsPopup(
 	private val activity : ActMain,
@@ -40,18 +42,13 @@ class StatusButtonsPopup(
 	init {
 		@SuppressLint("InflateParams")
 		this.viewRoot = activity.layoutInflater.inflate(R.layout.list_item_popup, null, false)
+		val statusButtonsViewHolder = StatusButtonsViewHolder(activity, matchParent,0f)
+		viewRoot.findViewById<LinearLayout>(R.id.llBarPlaceHolder).addView(statusButtonsViewHolder.viewRoot)
 		this.buttons_for_status = StatusButtons(
 			activity,
 			column,
 			bSimpleList,
-			btnConversation = viewRoot.findViewById(R.id.btnConversation),
-			btnReply = viewRoot.findViewById(R.id.btnReply),
-			btnBoost = viewRoot.findViewById(R.id.btnBoost),
-			btnFavourite = viewRoot.findViewById(R.id.btnFavourite),
-			llFollow2 = viewRoot.findViewById(R.id.llFollow2),
-			btnFollow2 = viewRoot.findViewById(R.id.btnFollow2),
-			ivFollowedBy2 = viewRoot.findViewById(R.id.ivFollowedBy2),
-			btnMore = viewRoot.findViewById(R.id.btnMore)
+			statusButtonsViewHolder
 		)
 	}
 	

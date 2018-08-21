@@ -757,38 +757,32 @@ class Column(
 	}
 	
 	private fun getNotificationTypeString() : String {
-		var n = 0
 		val sb = StringBuilder()
 		sb.append("(")
+
+		var n = 0
 		if(! dont_show_reply) {
-			++n
-			if(sb.isNotEmpty()) sb.append(", ")
+			if(n++>0) sb.append(", ")
 			sb.append(context.getString(R.string.notification_type_mention))
 		}
-		
 		if(! dont_show_follow) {
-			++n
-			if(sb.isNotEmpty()) sb.append(", ")
+			if(n++>0) sb.append(", ")
 			sb.append(context.getString(R.string.notification_type_follow))
 		}
 		if(! dont_show_boost) {
-			++n
-			if(sb.isNotEmpty()) sb.append(", ")
+			if(n++>0) sb.append(", ")
 			sb.append(context.getString(R.string.notification_type_boost))
 		}
 		if(! dont_show_favourite) {
-			++n
-			if(sb.isNotEmpty()) sb.append(", ")
+			if(n++>0) sb.append(", ")
 			sb.append(context.getString(R.string.notification_type_favourite))
 		}
 		if(! dont_show_reaction) {
-			++n
-			if(sb.isNotEmpty()) sb.append(", ")
+			if(n++>0) sb.append(", ")
 			sb.append(context.getString(R.string.notification_type_reaction))
 		}
 		if(! dont_show_vote) {
-			++n
-			if(sb.isNotEmpty()) sb.append(", ")
+			if(n++>0) sb.append(", ")
 			sb.append(context.getString(R.string.notification_type_vote))
 		}
 		if( n == 0 || n == 6 ) return "" // 全部か皆無なら部分表記は要らない

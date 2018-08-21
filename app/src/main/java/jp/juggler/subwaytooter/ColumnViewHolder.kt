@@ -163,13 +163,13 @@ class ColumnViewHolder(
 	
 	init {
 		
-		if(activity.timeline_font != null) {
+		if(ActMain.timeline_font != null) {
 			viewRoot.scan { v ->
 				try {
 					if(v is Button) {
 						// ボタンは触らない
 					} else if(v is TextView) {
-						v.typeface = activity.timeline_font
+						v.typeface = ActMain.timeline_font
 					}
 				} catch(ex : Throwable) {
 					log.trace(ex)

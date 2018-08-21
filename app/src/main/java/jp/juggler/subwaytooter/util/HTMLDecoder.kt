@@ -52,7 +52,7 @@ object HTMLDecoder {
 		set
 	}
 	
-	private fun isWhitespaceOrLineFeed(codepoint : Int) : Boolean {
+	fun isWhitespaceOrLineFeed(codepoint : Int) : Boolean {
 		return CharacterGroup.isWhitespace(codepoint) || when(codepoint) {
 			0x0a, 0x0d -> true
 			else -> false
@@ -469,6 +469,10 @@ object HTMLDecoder {
 	}
 	
 	fun decodeHTML(options : DecodeOptions, src : String?) : SpannableStringBuilder {
+		
+		if( options.linkHelper?.isMisskey == true){
+			return MisskeyMarkdownDecoder.decodeMarkdown(options,src)
+		}
 		
 		val sb = SpannableStringBuilder()
 		

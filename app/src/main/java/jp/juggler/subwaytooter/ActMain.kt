@@ -107,7 +107,8 @@ class ActMain : AppCompatActivity()
 		val reStatusPage = Pattern.compile("\\Ahttps://([^/]+)/@([A-Za-z0-9_]+)/(\\d+)(?:\\z|[?#])")
 		
 		var boostButtonSize = 0
-	
+		var timeline_font : Typeface = Typeface.DEFAULT
+		var timeline_font_bold : Typeface = Typeface.DEFAULT_BOLD
 	}
 	
 	//	@Override
@@ -151,8 +152,7 @@ class ActMain : AppCompatActivity()
 	
 	val viewPool = RecyclerView.RecycledViewPool()
 	
-	var timeline_font : Typeface? = null
-	var timeline_font_bold : Typeface? = null
+
 	var avatarIconSize : Int = 0
 	var notificationTlIconSize : Int = 0
 	

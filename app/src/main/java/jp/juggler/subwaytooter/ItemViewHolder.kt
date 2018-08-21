@@ -242,9 +242,9 @@ internal class ItemViewHolder(
 		
 		this.access_info = column.access_info
 		
-		if(activity.timeline_font != null || activity.timeline_font_bold != null) {
-			val font_bold = activity.timeline_font_bold ?: activity.timeline_font
-			val font_normal = activity.timeline_font ?: activity.timeline_font_bold
+		if(ActMain.timeline_font != null || ActMain.timeline_font_bold != null) {
+			val font_bold = ActMain.timeline_font_bold ?: ActMain.timeline_font
+			val font_normal = ActMain.timeline_font ?: ActMain.timeline_font_bold
 			viewRoot.scan { v ->
 				try {
 					if(v is CountImageButton) {

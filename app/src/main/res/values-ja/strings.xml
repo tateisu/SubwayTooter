@@ -1038,5 +1038,9 @@
     <string name="dont_show_reaction">リアクションを表示しない</string>
     <string name="dont_show_vote">投票を表示しない</string>
     <string name="boost_button_size">ブーストボタンのサイズ(単位:dp。デフォルト:40。アプリ再起動が必要)</string>
+    <string name="boost_button_alignment">ブーストボタン列の左右の配置 (アプリ再起動が必要)</string>
+    <string name="start">始端</string>
+    <string name="center">中央</string>
+    <string name="end">終端</string>
 
 </resources>

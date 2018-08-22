@@ -1382,6 +1382,21 @@
 
         <TextView
             style="@style/setting_row_label"
+            android:text="@string/boost_button_alignment"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Spinner
+                android:id="@+id/spBoostButtonJustify"
+                style="@style/setting_horizontal_stretch"
+                />
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
             android:labelFor="@+id/etAvatarIconSize"
             android:text="@string/avatar_icon_size"
             />

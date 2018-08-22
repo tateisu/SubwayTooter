@@ -106,7 +106,7 @@ class ActAppSetting : AppCompatActivity()
 	private lateinit var spDefaultAccount : Spinner
 	private lateinit var spRepliesCount : Spinner
 	private lateinit var spVisibilityStyle : Spinner
-	
+	private lateinit var spBoostButtonJustify : Spinner
 	private var footer_button_bg_color : Int = 0
 	private var footer_button_fg_color : Int = 0
 	private var footer_tab_bg_color : Int = 0
@@ -219,7 +219,12 @@ class ActAppSetting : AppCompatActivity()
 			, getString(R.string.mastodon)
 			, getString(R.string.misskey)
 		)
-		
+		spBoostButtonJustify= initSpinner(
+			R.id.spBoostButtonJustify
+			, getString(R.string.start)
+			, getString(R.string.center)
+			, getString(R.string.end)
+		)
 		spUITheme = initSpinner(
 			R.id.spUITheme
 			, getString(R.string.theme_light)
@@ -366,6 +371,7 @@ class ActAppSetting : AppCompatActivity()
 		spBackButtonAction.setSelection(Pref.ipBackButtonAction(pref))
 		spRepliesCount.setSelection(Pref.ipRepliesCount(pref))
 		spVisibilityStyle.setSelection(Pref.ipVisibilityStyle(pref))
+		spBoostButtonJustify.setSelection(Pref.ipBoostButtonJustify(pref))
 		spUITheme.setSelection(Pref.ipUiTheme(pref))
 		spResizeImage.setSelection(Pref.ipResizeImage(pref))
 		spRefreshAfterToot.setSelection(Pref.ipRefreshAfterToot(pref))
@@ -482,6 +488,7 @@ class ActAppSetting : AppCompatActivity()
 			.put(Pref.ipBackButtonAction, spBackButtonAction.selectedItemPosition)
 			.put(Pref.ipRepliesCount, spRepliesCount.selectedItemPosition)
 			.put(Pref.ipVisibilityStyle, spVisibilityStyle.selectedItemPosition)
+			.put(Pref.ipBoostButtonJustify, spBoostButtonJustify.selectedItemPosition)
 			.put(Pref.ipUiTheme, spUITheme.selectedItemPosition)
 			.put(Pref.ipResizeImage, spResizeImage.selectedItemPosition)
 			.put(Pref.ipRefreshAfterToot, spRefreshAfterToot.selectedItemPosition)

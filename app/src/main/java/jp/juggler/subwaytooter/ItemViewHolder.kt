@@ -1471,10 +1471,10 @@ internal class ItemViewHolder(
 		val buttonHeight = ActMain.boostButtonSize
 		val marginBetween = (ActMain.boostButtonSize.toFloat() * 0.05f + 0.5f).toInt()
 		
-		val paddingH = (buttonHeight.toFloat()/10 +0.5f).toInt()
-		val paddingV = (buttonHeight.toFloat()/10 +0.5f).toInt()
-		val compoundPaddingDp = ActMain.boostButtonSize.toFloat() * 0.00f / activity.resources.displayMetrics.density
-		
+		val paddingH = (buttonHeight.toFloat() / 10 + 0.5f).toInt()
+		val paddingV = (buttonHeight.toFloat() / 10 + 0.5f).toInt()
+		val compoundPaddingDp =
+			ActMain.boostButtonSize.toFloat() * 0.00f / activity.resources.displayMetrics.density
 		
 		val box = FlexboxLayout(activity)
 		val boxLp = LinearLayout.LayoutParams(
@@ -2149,7 +2149,11 @@ internal class ItemViewHolder(
 							activity
 							, matchParent
 							, 3f
-							, justifyContent = JustifyContent.FLEX_END
+							, justifyContent = when(Pref.ipBoostButtonJustify(App1.pref)) {
+								0 -> JustifyContent.FLEX_START
+								1 -> JustifyContent.CENTER
+								else -> JustifyContent.FLEX_END
+							}
 						)
 						llButtonBar = statusButtonsViewHolder.viewRoot
 						addView(llButtonBar)
@@ -2157,8 +2161,8 @@ internal class ItemViewHolder(
 						tvApplication = textView {
 							gravity = Gravity.END
 						}.lparams(matchParent, wrapContent)
-						
 					}
+					
 				}
 				
 			}

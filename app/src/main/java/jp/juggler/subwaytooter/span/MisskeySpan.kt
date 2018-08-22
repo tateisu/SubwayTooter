@@ -1,12 +1,10 @@
 package jp.juggler.subwaytooter.span
 
-import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.text.TextPaint
 import android.text.style.MetricAffectingSpan
 import java.lang.ref.WeakReference
-import java.util.*
 
 class MisskeyBigSpan (
 	private val typeface : Typeface
@@ -70,7 +68,7 @@ class MisskeyBigSpan (
 
 class MisskeyMotionSpan (
 	private val typeface : Typeface
-): MetricAffectingSpan() ,AnimatableSpan{
+): MetricAffectingSpan() ,AnimatableSpan {
 	
 	private var invalidate_callback : AnimatableSpanInvalidator? = null
 	private var refDrawTarget : WeakReference<Any>? = null

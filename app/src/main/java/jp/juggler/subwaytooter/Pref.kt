@@ -341,6 +341,7 @@ object Pref {
 	val ipFooterTabIndicatorColor = IntPref("footer_tab_indicator_color", 0)
 	val ipListDividerColor = IntPref("listDividerColor", 0)
 	val ipLastColumnPos = IntPref("last_column_pos", - 1)
+	val ipBoostButtonJustify = IntPref("ipBoostButtonJustify", 2) // 0=左,1=中央,2=右
 	
 //	val ipTrendTagCountShowing = IntPref("TrendTagCountShowing", 0)
 //	const val TTCS_WEEKLY = 0

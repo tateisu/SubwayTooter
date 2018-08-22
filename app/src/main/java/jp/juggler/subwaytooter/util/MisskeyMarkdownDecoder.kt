@@ -973,7 +973,7 @@ object MisskeyMarkdownDecoder {
 								context.getString(R.string.search),
 								"https://www.google.co.jp/search?q="+(text?:"Subway Tooter").encodePercent()
 							)
-							sb.setSpan(RelativeSizeSpan(1.5f), kw_start, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+							sb.setSpan(RelativeSizeSpan(1.2f), kw_start, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
 							appendText("\n")
 						}
 					}

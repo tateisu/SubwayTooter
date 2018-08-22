@@ -37,7 +37,8 @@ object MisskeySyntaxHighlighter {
 		}
 	}
 	
-	private val keywords = ArrayList<String>().apply {
+	// 識別子に対して既存の名前と一致するか調べるようになったので、もはやソートの必要はない
+	private val keywords = HashSet<String>().apply {
 		
 		val _keywords = arrayOf(
 			"true",
@@ -130,8 +131,7 @@ object MisskeySyntaxHighlighter {
 		// Snake
 		addAll(_keywords.map { k -> k[0].toUpperCase() + k.substring(1) })
 		
-		// 長い順にソート
-		sortWith(Comparator { a, b -> b.length - a.length })
+		add("NaN")
 	}
 	
 	private class Token(
@@ -149,11 +149,10 @@ object MisskeySyntaxHighlighter {
 	
 	private val reLineComment = Pattern.compile("""\A//.*""")
 	private val reBlockComment = Pattern.compile("""\A/\*.*?\*/""", Pattern.DOTALL)
-	private val reLabel = Pattern.compile("""\A@[A-Z_-][A-Z0-9_-]*?""", Pattern.CASE_INSENSITIVE)
 	private val reNumber = Pattern.compile("""\A[+-]?[\d.]+""")
-	private val reMethod =
-		Pattern.compile("""\A([A-Z_][A-Z0-9_-]*?)\s*\(""", Pattern.CASE_INSENSITIVE)
-	private val reProperty = Pattern.compile("""\A[a-zA-Z0-9_-]+""")
+	private val reLabel = Pattern.compile("""\A@([A-Z_-][A-Z0-9_-]*)""", Pattern.CASE_INSENSITIVE)
+	private val reKeyword =
+		Pattern.compile("""\A([A-Z_-][A-Z0-9_-]*)([ \t]*\()?""", Pattern.CASE_INSENSITIVE)
 	
 	private val elements = arrayOf(
 		
@@ -227,15 +226,25 @@ object MisskeySyntaxHighlighter {
 		
 		// label
 		{ env : Env ->
+			// 直前に識別子があればNG
+			val prev = if(env.pos <= 0) null else env.source[env.pos - 1]
+			if(prev?.isLetterOrDigit() == true) return@arrayOf null
+
 			val match = reLabel.matcher(env.remain)
 			if(! match.find()) return@arrayOf null
-			Token(length = match.end(), color = 0xe9003f)
+
+			val end = match.end()
+			when{
+				// @user@host のように直後に@が続くのはNG
+				env.remain.length > end && env.remain[end] =='@' -> null
+				else->Token(length = match.end(), color = 0xe9003f)
+			}
 		},
 		
 		// number
 		{ env : Env ->
 			val prev = if(env.pos <= 0) null else env.source[env.pos - 1]
-			if(prev?.isLetter() == true) return@arrayOf null
+			if(prev?.isLetterOrDigit() == true) return@arrayOf null
 			val match = reNumber.matcher(env.remain)
 			when {
 				match.find() -> Token(length = match.end(), color = 0xae81ff)
@@ -243,56 +252,38 @@ object MisskeySyntaxHighlighter {
 			}
 		},
 		
-		// nan
+		// method, property, keyword
 		{ env : Env ->
+			// 直前の文字が識別子に使えるなら識別子の開始とはみなさない
 			val prev = if(env.pos <= 0) null else env.source[env.pos - 1]
-			if(prev?.isLetter() == true) return@arrayOf null
+			if(prev?.isLetterOrDigit() == true || prev == '_') return@arrayOf null
+			
+			val match = reKeyword.matcher(env.remain)
+			if(! match.find()) return@arrayOf null
+			val kw = match.group(1)
+			val bracket = match.group(2)
+			
 			when {
-				env.remain.safeSubstring(3) == "NaN" ->
-					Token(length = 3, color = 0xae81ff)
-				else ->
-					null
+				// メソッド呼び出しは対照が変数かプロパティかに関わらずメソッドの色になる
+				bracket?.isNotEmpty() == true ->
+					Token(length = kw.length, color = 0x8964c1, italic = true)
+				
+				// 変数や定数ではなくプロパティならプロパティの色になる
+				prev == '.' ->Token(length = kw.length, color = 0xa71d5d)
+				
+				keywords.contains(kw) -> when(kw) {
+
+					// 定数
+					"true", "false", "null", "nil", "undefined" ,"NaN" ->
+						Token(length = kw.length, color = 0xae81ff)
+
+					// その他の予約語
+					else ->Token(length = kw.length, color = 0x2973b7)
+				}
+				
+				// 強調表示しないが、識別子単位で読み飛ばす
+				else -> Token(length = kw.length)
 			}
-		},
-		
-		// method
-		{ env : Env ->
-			val match = reMethod.matcher(env.remain)
-			when {
-				match.find() -> Token(length = match.end(), color = 0x8964c1, italic = true)
-				else -> null
-			}
-		},
-		
-		// property
-		{ env : Env ->
-			val prev = if(env.pos <= 0) null else env.source[env.pos - 1]
-			if(prev != '.') return@arrayOf null
-			
-			val match = reProperty.matcher(env.remain)
-			when {
-				match.find() -> Token(length = match.end(), color = 0xa71d5d)
-				else -> null
-			}
-		},
-		
-		// keyword
-		{ env : Env ->
-			val prev = if(env.pos <= 0) null else env.source[env.pos - 1]
-			if(prev?.isLetter() == true) return@arrayOf null
-			
-			val match = keywords.find {
-				env.remain.safeSubstring(it.length) == it
-			} ?: return@arrayOf null
-			
-			val kw = env.remain.safeSubstring(match.length)
-			when(kw) {
-				"true", "false", "null", "nil", "undefined" ->
-					Token(length = kw.length, color = 0xae81ff)
-				else ->
-					Token(length = kw.length, color = 0x2973b7)
-			}
-			
 		},
 		
 		// symbol
@@ -316,12 +307,12 @@ object MisskeySyntaxHighlighter {
 			sb.append(source.substring(pos, end))
 			env.pos = end
 			
-			if( token.comment ) {
+			if(token.comment) {
 				sb.setSpan(
 					ForegroundColorSpan(Color.BLACK or 0x808000)
 					, pos, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 				)
-			}else{
+			} else {
 				var c = token.color
 				if(c != 0) {
 					if(c < 0x1000000) {
@@ -403,12 +394,13 @@ object MisskeyMarkdownDecoder {
 		val text : String
 		, var pos : Int
 		, var remain : String
-	){
+	) {
+		
 		internal fun genNode1(
 			type : NodeType,
 			sourceLength : Int,
 			data : ArrayList<String?>?
-		) =Node(
+		) = Node(
 			type = type,
 			sourceStart = pos,
 			sourceLength = sourceLength,
@@ -431,39 +423,40 @@ object MisskeyMarkdownDecoder {
 		}
 	}
 	
-	private val reLink = Pattern.compile("""^\??\[([^\[\]]+?)]\((https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+?)\)""")
-
+	private val reLink =
+		Pattern.compile("""^\??\[([^\[\]]+?)]\((https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+?)\)""")
+	
 	private val reCodeInline = Pattern.compile("""^`(.+?)`""")
-
+	
 	private val reMention = Pattern.compile(
 		"""^@([a-z0-9_]+)(?:@([a-z0-9.\-]+[a-z0-9]))?"""
-		,Pattern.CASE_INSENSITIVE
+		, Pattern.CASE_INSENSITIVE
 	)
 	
 	private val reHashtag = Pattern.compile("""^#([^\s]+)""")
 	
 	private val reMotion1 = Pattern.compile("""^\Q(((\E(.+?)\Q)))\E""")
 	private val reMotion2 = Pattern.compile("""^<motion>(.+?)</motion>""")
-
+	
 	private val nodeParserList = arrayOf(
-
+		
 		// 処理順序に意味があるので入れ替えないこと
 		// 記号列が長い順
 		simpleParser(
 			NodeType.Big,
 			Pattern.compile("""^\Q***\E(.+?)\Q***\E""")
 		),
-
+		
 		simpleParser(
 			NodeType.Bold,
 			Pattern.compile("""^\Q**\E(.+?)\Q**\E""")
 		),
-
+		
 		simpleParser(
 			NodeType.Title,
 			Pattern.compile("""^[【\[](.+?)[】\]]\n""")
 		),
-
+		
 		simpleParser(
 			NodeType.Url,
 			Pattern.compile("""^(https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+)""")
@@ -524,7 +517,7 @@ object MisskeyMarkdownDecoder {
 		
 		simpleParser(
 			NodeType.CodeBlock,
-			Pattern.compile("""^```(.+?)```""",Pattern.DOTALL)
+			Pattern.compile("""^```(.+?)```""", Pattern.DOTALL)
 		),
 		
 		{ env : ParserEnv ->
@@ -561,7 +554,7 @@ object MisskeyMarkdownDecoder {
 			NodeType.Search,
 			Pattern.compile(
 				"""^(.+?)[ 　](検索|\[検索]|Search|\[Search])(\n|${'$'})"""
-				,Pattern.CASE_INSENSITIVE
+				, Pattern.CASE_INSENSITIVE
 			)
 		),
 		
@@ -650,7 +643,7 @@ object MisskeyMarkdownDecoder {
 		return result
 	}
 	
-	class SpannableStringBuilderEx : SpannableStringBuilder(){
+	class SpannableStringBuilderEx : SpannableStringBuilder() {
 		
 		var mentions : ArrayList<TootMention>? = null
 	}
@@ -807,7 +800,7 @@ object MisskeyMarkdownDecoder {
 							
 							val username = data?.get(0) ?: ""
 							val host = data?.get(1) ?: ""
-
+							
 							val linkHelper = options.linkHelper
 							if(linkHelper == null) {
 								appendText(
@@ -817,33 +810,38 @@ object MisskeyMarkdownDecoder {
 									}
 								)
 							} else {
-
+								
 								val shortAcct = when {
 									host.isEmpty()
-										|| host.equals(linkHelper.host,ignoreCase = true) ->
+										|| host.equals(linkHelper.host, ignoreCase = true) ->
 										username
 									else ->
 										"$username@$host"
 								}
-
-								val userHost =when{
+								
+								val userHost = when {
 									host.isEmpty() -> linkHelper.host
 									else -> host
 								}
 								val userUrl = "https://$userHost/@$username"
 								
 								var mentions = sb.mentions
-								if( mentions == null ){
+								if(mentions == null) {
 									mentions = ArrayList()
 									sb.mentions = mentions
 								}
-								mentions.add(TootMention(
-									EntityIdLong(-1L)
-									,userUrl
-									,shortAcct
-									,username
-								))
-
+								
+								if(mentions.find { it.acct == shortAcct } == null) {
+									mentions.add(
+										TootMention(
+											EntityIdLong(- 1L)
+											, userUrl
+											, shortAcct
+											, username
+										)
+									)
+								}
+								
 								appendLink(
 									when {
 										Pref.bpMentionFullAcct(App1.pref) -> "@$username@$userHost"

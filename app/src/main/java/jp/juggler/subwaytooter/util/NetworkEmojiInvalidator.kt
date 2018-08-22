@@ -8,10 +8,11 @@ import android.view.View
 import java.util.ArrayList
 
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.span.NetworkEmojiSpan
+import jp.juggler.subwaytooter.span.AnimatableSpan
+import jp.juggler.subwaytooter.span.AnimatableSpanInvalidator
 import java.lang.ref.WeakReference
 
-class NetworkEmojiInvalidator(internal val handler : Handler, internal val view : View) : Runnable, NetworkEmojiSpan.InvalidateCallback {
+class NetworkEmojiInvalidator(internal val handler : Handler, internal val view : View) : Runnable, AnimatableSpanInvalidator {
 	
 	private val draw_target_list = ArrayList<WeakReference<Any>>()
 	
@@ -41,7 +42,7 @@ class NetworkEmojiInvalidator(internal val handler : Handler, internal val view 
 		draw_target_list.clear()
 		
 		if(dst != null) {
-			for(span in dst.getSpans(0, dst.length, NetworkEmojiSpan::class.java)) {
+			for(span in dst.getSpans(0, dst.length, AnimatableSpan::class.java)) {
 				val tag = WeakReference(Any())
 				draw_target_list.add(tag)
 				span.setInvalidateCallback(tag, this)

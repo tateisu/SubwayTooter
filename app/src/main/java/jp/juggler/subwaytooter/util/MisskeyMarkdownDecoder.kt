@@ -15,9 +15,7 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.span.EmojiImageSpan
-import jp.juggler.subwaytooter.span.HighlightSpan
-import jp.juggler.subwaytooter.span.MyClickableSpan
+import jp.juggler.subwaytooter.span.*
 import jp.juggler.subwaytooter.table.HighlightWord
 import uk.co.chrisjenx.calligraphy.CalligraphyTypefaceSpan
 import java.util.regex.Pattern
@@ -656,6 +654,16 @@ object MisskeyMarkdownDecoder {
 		generateMotionNodeParser(NodeType.Motion)
 	)
 	
+	
+	private val reStartEmptyLines = """\A(?:[ 　]*?[\x0d\x0a]+)+""".toRegex()
+	private val reEndEmptyLines = """[\s\x0d\x0a]+\z""".toRegex()
+	private fun trimBlock(s:String?):String?{
+		s?:return null
+		return s
+			.replace(reStartEmptyLines,"")
+			.replace(reEndEmptyLines,"")
+	}
+	
 	private fun parse(source : String?) : ArrayList<Node> {
 		val result = ArrayList<Node>()
 
@@ -762,7 +770,7 @@ object MisskeyMarkdownDecoder {
 		try {
 			if(src != null) {
 
-				val font_bold = ActMain.timeline_font_bold ?: ActMain.timeline_font
+				val font_bold = ActMain.timeline_font_bold
 
 				for( node in parse(src) ){
 					val nodeSource = src.substring(node.sourceStart,node.sourceStart+node.sourceLength)
@@ -884,57 +892,12 @@ object MisskeyMarkdownDecoder {
 								appendLink(acct,"https://${linkHelper}/$acct")
 							}
 						}
+						
 						NodeType.Hashtag ->{
 							val tag = data?.get(0)
 							if(tag?.isNotEmpty()==true){
 								appendLink("#$tag","https://misskey.m544.net/tags/"+tag.encodePercent())
 							}
-						}
-						NodeType.Text->{
-							appendText(nodeSource)
-						}
-						NodeType.Big ->{
-							appendText(data?.get(0))
-							setSpan(RelativeSizeSpan(1.5f))
-							setSpan(CalligraphyTypefaceSpan(font_bold))
-							// TODO アニメーション
-						}
-						
-						NodeType.Bold->{
-							appendText(data?.get(0))
-							setSpan(CalligraphyTypefaceSpan(font_bold))
-						}
-						NodeType.Title->{
-							appendText(data?.get(0)?.trim{it<=' '})
-							setSpan(AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER))
-							// TODO 見出し背景に色をつける
-							
-							// ブロック要素なので改行必須
-							appendText("\n")
-						}
-						NodeType.CodeBlock->{
-							appendTextCode(data?.get(0)?.trimEnd())
-							setSpan(BackgroundColorSpan(0x40808080))
-							setSpan(CalligraphyTypefaceSpan(Typeface.MONOSPACE))
-							
-							// ブロック要素なので改行必須
-							appendText("\n")
-
-							// TODO Syntax highlight
-						}
-
-						NodeType.CodeInline->{
-							appendTextCode(data?.get(0))
-							setSpan(BackgroundColorSpan(0x40808080))
-							setSpan(CalligraphyTypefaceSpan(Typeface.MONOSPACE))
-							// TODO Syntax highlight
-						}
-
-						NodeType.Quote->{
-							appendText(data?.get(0)?.trim())
-							setSpan(CalligraphyTypefaceSpan(Typeface.defaultFromStyle(Typeface.ITALIC)))
-							// ブロック要素なので改行必須
-							appendText("\n")
 						}
 						
 						NodeType.Emoji->{
@@ -944,23 +907,74 @@ object MisskeyMarkdownDecoder {
 							}
 						}
 						
-						NodeType.Search->{
-							val text = data?.get(0)
-							if( text?.isNotEmpty()==true){
-								appendText(text)
-								start = sb.length
-								appendLink(
-									context.getString(R.string.search),
-									"https://www.google.co.jp/search?q="+text.encodePercent()
-								)
-								// ブロック要素なので改行必須
-								appendText("\n")
-							}
+						////////////////////////////////////////////
+						// 装飾インライン要素
+						
+						NodeType.Text->{
+							appendText(nodeSource)
 						}
+						
+						NodeType.Big ->{
+							appendText(data?.get(0))
+							setSpan(MisskeyBigSpan(font_bold))
+						}
+						
 						NodeType.Motion->{
 							val code = data?.get(0)
 							appendText(code)
-							// TODO なんかする
+							setSpan(MisskeyMotionSpan(ActMain.timeline_font))
+						}
+						
+						NodeType.Bold->{
+							appendText(data?.get(0))
+							setSpan(CalligraphyTypefaceSpan(font_bold))
+						}
+						
+						NodeType.CodeInline->{
+							appendTextCode(data?.get(0))
+							setSpan(BackgroundColorSpan(0x40808080))
+							setSpan(CalligraphyTypefaceSpan(Typeface.MONOSPACE))
+						}
+						
+						////////////////////////////////////////////
+						// ブロック要素
+
+						NodeType.Title->{
+							
+							appendText(trimBlock(data?.get(0)))
+							setSpan(AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER))
+							setSpan(BackgroundColorSpan(0x20808080))
+							setSpan(RelativeSizeSpan(1.5f))
+							appendText("\n")
+						}
+
+						NodeType.CodeBlock->{
+							appendTextCode(trimBlock(data?.get(0)))
+							setSpan(BackgroundColorSpan(0x40808080))
+							setSpan(RelativeSizeSpan(0.7f))
+							setSpan(CalligraphyTypefaceSpan(Typeface.MONOSPACE))
+							appendText("\n")
+						}
+
+						NodeType.Quote->{
+							appendText(trimBlock(data?.get(0)))
+							setSpan(BackgroundColorSpan(0x20808080))
+							setSpan(CalligraphyTypefaceSpan(Typeface.defaultFromStyle(Typeface.ITALIC)))
+							appendText("\n")
+						}
+						
+						NodeType.Search->{
+							val text = data?.get(0)
+							val kw_start = sb.length // キーワードの開始位置
+							appendText(text)
+							appendText(" ")
+							start = sb.length // 検索リンクの開始位置
+							appendLink(
+								context.getString(R.string.search),
+								"https://www.google.co.jp/search?q="+(text?:"Subway Tooter").encodePercent()
+							)
+							sb.setSpan(RelativeSizeSpan(1.5f), kw_start, sb.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+							appendText("\n")
 						}
 					}
 				}

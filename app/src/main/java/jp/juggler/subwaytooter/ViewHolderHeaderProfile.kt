@@ -262,8 +262,8 @@ internal class ViewHolderHeaderProfile(
 				val content_color = column.content_color
 				val c = if(content_color != 0) content_color else default_color
 				
-				val nameTypeface = ActMain.timeline_font_bold ?: Typeface.DEFAULT_BOLD
-				val valueTypeface = ActMain.timeline_font ?: Typeface.DEFAULT
+				val nameTypeface = ActMain.timeline_font_bold
+				val valueTypeface = ActMain.timeline_font
 				
 				for(item in who.fields) {
 					

@@ -1113,7 +1113,6 @@ class ActMain : AppCompatActivity()
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}
-			
 		}
 		
 		sv = Pref.spTimelineFontBold(pref)
@@ -1124,13 +1123,12 @@ class ActMain : AppCompatActivity()
 				log.trace(ex)
 			}
 			
-		} else if(timeline_font != null) {
+		} else {
 			try {
 				timeline_font_bold = Typeface.create(timeline_font, Typeface.BOLD)
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}
-			
 		}
 		
 		fun parseIconSize(stringPref : Pref.StringPref) : Int {

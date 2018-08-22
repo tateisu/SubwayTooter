@@ -24,9 +24,7 @@ internal abstract class ViewHolderHeaderBase(val activity : ActMain, val viewRoo
 				if(v is Button) {
 					// ボタンは太字なので触らない
 				} else if(v is TextView) {
-					if(ActMain.timeline_font != null) {
-						v.typeface = ActMain.timeline_font
-					}
+					v.typeface = ActMain.timeline_font
 					if(! activity.timeline_font_size_sp.isNaN()) {
 						v.textSize = activity.timeline_font_size_sp
 					}

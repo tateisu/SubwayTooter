@@ -13,7 +13,7 @@ import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.util.LogCategory
 import java.lang.ref.WeakReference
 
-class NetworkEmojiSpan internal constructor(private val url : String) : ReplacementSpan() {
+class NetworkEmojiSpan internal constructor(private val url : String) : ReplacementSpan(),AnimatableSpan {
 	
 	companion object {
 		
@@ -27,9 +27,7 @@ class NetworkEmojiSpan internal constructor(private val url : String) : Replacem
 	private val rect_src = Rect()
 	private val rect_dst = RectF()
 	
-	private var invalidate_callback : InvalidateCallback? = null
-	private var refDrawTarget : WeakReference<Any>? = null
-	
+
 	// フレーム探索結果を格納する構造体を確保しておく
 	private val mFrameFindResult = ApngFrames.FindFrameResult()
 	
@@ -37,18 +35,17 @@ class NetworkEmojiSpan internal constructor(private val url : String) : Replacem
 		mPaint.isFilterBitmap = true
 	}
 	
-	interface InvalidateCallback {
-		val timeFromStart : Long
-		fun delayInvalidate(delay : Long)
-	}
+	private var invalidate_callback : AnimatableSpanInvalidator? = null
+	private var refDrawTarget : WeakReference<Any>? = null
 	
-	fun setInvalidateCallback(
+	override fun setInvalidateCallback(
 		draw_target_tag : Any,
-		invalidate_callback : InvalidateCallback
+		invalidate_callback : AnimatableSpanInvalidator
 	) {
 		this.refDrawTarget = WeakReference(draw_target_tag)
 		this.invalidate_callback = invalidate_callback
 	}
+
 	
 	override fun getSize(
 		paint : Paint,

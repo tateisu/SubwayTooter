@@ -242,36 +242,31 @@ internal class ItemViewHolder(
 		
 		this.access_info = column.access_info
 		
-		if(ActMain.timeline_font != null || ActMain.timeline_font_bold != null) {
-			val font_bold = ActMain.timeline_font_bold ?: ActMain.timeline_font
-			val font_normal = ActMain.timeline_font ?: ActMain.timeline_font_bold
-			viewRoot.scan { v ->
-				try {
-					if(v is CountImageButton) {
-						// ボタンは太字なので触らない
-					} else if(v is Button) {
-						// ボタンは太字なので触らない
-					} else if(v is TextView) {
-						val typeface = when {
-							v === tvName ||
-								v === tvFollowerName ||
-								v === tvBoosted ||
-								v === tvTrendTagCount ||
-								v === tvTrendTagName ||
-								v === tvFilterPhrase -> font_bold
-							else -> font_normal
-						}
-						if(typeface != null) v.typeface = typeface
+		val font_bold = ActMain.timeline_font_bold
+		val font_normal = ActMain.timeline_font
+		viewRoot.scan { v ->
+			try {
+				when(v) {
+					// ボタンは太字なので触らない
+					is CountImageButton -> {
 					}
-				} catch(ex : Throwable) {
-					log.trace(ex)
+					// ボタンは太字なので触らない
+					is Button -> {
+					}
+					
+					is TextView -> v.typeface = when {
+						v === tvName ||
+							v === tvFollowerName ||
+							v === tvBoosted ||
+							v === tvTrendTagCount ||
+							v === tvTrendTagName ||
+							v === tvFilterPhrase -> font_bold
+						else -> font_normal
+					}
 				}
+			} catch(ex : Throwable) {
+				log.trace(ex)
 			}
-		} else {
-			tvName.typeface = Typeface.DEFAULT_BOLD
-			tvFollowerName.typeface = Typeface.DEFAULT_BOLD
-			tvBoosted.typeface = Typeface.DEFAULT_BOLD
-			tvTrendTagCount.typeface = Typeface.DEFAULT_BOLD
 		}
 		
 		if(bSimpleList) {

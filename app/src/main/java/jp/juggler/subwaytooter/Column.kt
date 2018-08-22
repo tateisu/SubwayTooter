@@ -777,15 +777,20 @@ class Column(
 			if(n++>0) sb.append(", ")
 			sb.append(context.getString(R.string.notification_type_favourite))
 		}
-		if(! dont_show_reaction) {
+		if( isMisskey && ! dont_show_reaction) {
 			if(n++>0) sb.append(", ")
 			sb.append(context.getString(R.string.notification_type_reaction))
 		}
-		if(! dont_show_vote) {
+		if( isMisskey && ! dont_show_vote) {
 			if(n++>0) sb.append(", ")
 			sb.append(context.getString(R.string.notification_type_vote))
 		}
-		if( n == 0 || n == 6 ) return "" // 全部か皆無なら部分表記は要らない
+		val n_max = if(isMisskey){
+			6
+		}else{
+			4
+		}
+		if( n == 0 || n == n_max ) return "" // 全部か皆無なら部分表記は要らない
 		sb.append(")")
 		return sb.toString()
 	}

@@ -354,8 +354,10 @@ class SavedAccount(
 	// implements LinkHelper
 	override fun findAcctColor(url : String?) : AcctColor? {
 		if(url != null) {
-			val m = TootAccount.reAccountUrl.matcher(url)
-			if(m.find()) return AcctColor.load(m.group(2) + "@" + m.group(1))
+			val acct = TootAccount.getAcctFromUrl(url)
+			if( acct != null){
+				return AcctColor.load(acct)
+			}
 		}
 		return null
 	}

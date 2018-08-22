@@ -83,8 +83,8 @@ class TootAttachment(serviceType:ServiceType,src : JSONObject) : TootAttachmentL
 				remote_url = url
 				text_url = url
 				description = src.parseString("comment")
-				focusX = 0f // TODO
-				focusY = 0f // TODO
+				focusX = 0f
+				focusY = 0f
 				isSensitive = src.optBoolean("isSensitive",false)
 			}
 			else->{

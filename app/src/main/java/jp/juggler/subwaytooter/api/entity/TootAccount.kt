@@ -181,8 +181,8 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			this.fields = parseFields(src.optJSONArray("fields"))
 			
 			this.bot = src.optBoolean("bot", false)
-			this.isAdmin = false // TODO
-			this.isCat = false // TODO
+			this.isAdmin = false
+			this.isCat = false
 			// this.user_hides_network = src.optBoolean("user_hides_network")
 			
 			when(parser.serviceType) {
@@ -308,7 +308,20 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		
 		@Suppress("HasPlatformType")
 		val reAccountUrl =
-			Pattern.compile("\\Ahttps://([A-Za-z0-9.-]+)/@([A-Za-z0-9_]+)(?:\\z|[?#])")
+			Pattern.compile("\\Ahttps://([A-Za-z0-9.-]+)/@([A-Za-z0-9_]+(?:@[A-Za-z0-9][A-Za-z0-9.-]+?[A-Za-z0-9])?)(?:\\z|[?#])")
+		fun getAcctFromUrl(url:String):String?{
+			val m = TootAccount.reAccountUrl.matcher(url)
+			if(m.find()){
+				val instance = m.group(1)
+				val acct = m.group(2)
+				return if( acct.contains('@')){
+					acct
+				}else{
+					"$acct@$instance"
+				}
+			}
+			return null
+		}
 		
 		private fun parseSource(src : JSONObject?) : Source? {
 			src ?: return null

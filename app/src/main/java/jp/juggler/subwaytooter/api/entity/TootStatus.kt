@@ -222,7 +222,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			this.in_reply_to_id = EntityId.Companion.mayNull(src.parseString("replyId"))
 			this.in_reply_to_account_id = null
-			this.mentions = null
+			
 			this.pinned = parser.pinned
 			this.muted = false
 			this.language = null
@@ -235,11 +235,6 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			this.viaMobile = src.optBoolean("viaMobile")
 			
-			this.decoded_mentions = HTMLDecoder.decodeMentions(
-				parser.linkHelper,
-				this.mentions,
-				this
-			) ?: EMPTY_SPANNABLE
 			
 			// this.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
 			
@@ -262,6 +257,13 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			if(options.highlight_sound != null && this.highlight_sound == null) {
 				this.highlight_sound = options.highlight_sound
 			}
+			// Markdownのデコード結果からmentionsを読むのだった
+			this.mentions = (decoded_content as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
+			this.decoded_mentions = HTMLDecoder.decodeMentions(
+				parser.linkHelper,
+				this.mentions,
+				this
+			) ?: EMPTY_SPANNABLE
 			
 			// spoiler_text
 			this.spoiler_text = reWhitespace

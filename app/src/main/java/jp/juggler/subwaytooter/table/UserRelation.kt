@@ -158,7 +158,6 @@ class UserRelation{
 			try {
 				for(src in src_list) {
 					cv.put(COL_WHO_ID, src.id.toLong())
-					// TODO misskey用にidがStringのテーブルを用意する？
 					cv.put(COL_FOLLOWING, src.following.b2i())
 					cv.put(COL_FOLLOWED_BY, src.followed_by.b2i())
 					cv.put(COL_BLOCKING, src.blocking.b2i())

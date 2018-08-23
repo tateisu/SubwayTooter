@@ -12,7 +12,7 @@ class TootAccountRef(parser: TootParser, account:TootAccount) : TimelineItem() {
 	val decoded_display_name : Spannable
 	val decoded_note : Spannable
 	
-	override fun getOrderId() : EntityId = this.get().id
+	override fun getOrderId() : EntityId = this.get().getOrderId()
 
 	init{
 		this.mapId = TootAccountMap.register(parser,account)

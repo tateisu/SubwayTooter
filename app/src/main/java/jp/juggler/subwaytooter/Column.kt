@@ -307,6 +307,26 @@ class Column(
 					}
 				})
 		}
+		
+		private val misskeyCustomParserFollowRequest =
+			{ parser:TootParser, jsonArray : JSONArray ->
+				val dst = ArrayList<TootAccountRef>()
+				for( i in 0 until jsonArray.length()){
+					val src = jsonArray.optJSONObject(i) ?: continue
+					
+					val followerRef = TootAccountRef.mayNull(
+						parser,
+						parser.account( src.optJSONObject("follower"))
+					) ?:continue
+					
+					val requestId = EntityId.mayNull(src.parseString("id")) ?:continue
+					
+					followerRef.get()._orderId = requestId
+					
+					dst.add( followerRef )
+				}
+				dst
+			}
 	}
 	
 	private var callback_ref : WeakReference<Callback>? = null
@@ -1712,7 +1732,9 @@ class Column(
 				path_base : String,
 				emptyMessage : String? = null,
 				misskeyParams : JSONObject? = null,
-				misskeyArrayFinder : (JSONObject) -> JSONArray? = { null }
+				misskeyArrayFinder : (JSONObject) -> JSONArray? = { null },
+				misskeyCustomParser : (parser:TootParser ,jsonArray:JSONArray) -> ArrayList<TootAccountRef> =
+					{ parser,jsonArray ->  parser.accountList(jsonArray) }
 			) : TootApiResult? {
 				
 				val result = if(misskeyParams != null) {
@@ -1722,15 +1744,14 @@ class Column(
 				}
 				
 				if(result != null && result.error == null) {
-					val jsonArray = result.jsonArray
 					val jsonObject = result.jsonObject
-					val array = when {
-						jsonArray != null -> jsonArray
-						jsonObject != null -> misskeyArrayFinder(jsonObject)
-						else -> null
-					} ?: return result.setError("missing JSON data.")
+					if( jsonObject != null){
+						result.data = misskeyArrayFinder(jsonObject)
+					}
+					val jsonArray = result.jsonArray
+							?: return result.setError("missing JSON data.")
 					
-					val src = parser.accountList(array)
+					val src = misskeyCustomParser(parser,jsonArray)
 					saveRange(true, true, result, src)
 					
 					val tmp = ArrayList<TimelineItem>()
@@ -2036,11 +2057,14 @@ class Column(
 							)
 						}
 						
+
+						
 						TYPE_FOLLOW_REQUESTS -> return if(isMisskey) {
 							parseAccountList(
 								client
 								, "/api/following/requests/list"
 								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+								,misskeyCustomParser = misskeyCustomParserFollowRequest
 							)
 						} else {
 							parseAccountList(
@@ -2605,7 +2629,9 @@ class Column(
 				client : TootApiClient,
 				path_base : String,
 				misskeyParams : JSONObject? = null,
-				misskeyArrayFinder : (JSONObject) -> JSONArray? = { null }
+				misskeyArrayFinder : (JSONObject) -> JSONArray? = { null },
+				misskeyCustomParser : (parser:TootParser ,jsonArray:JSONArray) -> ArrayList<TootAccountRef> =
+					{ parser,jsonArray ->  parser.accountList(jsonArray) }
 			) : TootApiResult? {
 				
 				val params = misskeyParams ?: makeMisskeyBaseParameter(parser)
@@ -2624,16 +2650,14 @@ class Column(
 				val firstResult = result
 				
 				var jsonObject = result?.jsonObject
-				var jsonArray = result?.jsonArray
-				var array = when {
-					jsonArray != null -> jsonArray
-					jsonObject != null -> misskeyArrayFinder(jsonObject)
-					else -> null
+				if( jsonObject != null){
+					result!!.data = misskeyArrayFinder(jsonObject)
 				}
+				var array = result?.jsonArray
 				
 				if(array != null) {
 					
-					var src = parser.accountList(array)
+					var src = misskeyCustomParser(parser,array)
 					if(isMisskey && ! bBottom) src.reverse()
 					saveRange(bBottom, ! bBottom, result, src)
 					list_tmp = addAll(null, src)
@@ -2669,20 +2693,18 @@ class Column(
 								result = client.request(path_base, params.toPostRequestBuilder())
 								
 								jsonObject = result?.jsonObject
-								jsonArray = result?.jsonArray
-								array = when {
-									jsonArray != null -> jsonArray
-									jsonObject != null -> misskeyArrayFinder(jsonObject)
-									else -> null
+								if( jsonObject != null){
+									result?.data = misskeyArrayFinder(jsonObject)
 								}
-								
+
+								array = result?.jsonArray
 								if(array == null) {
 									log.d("refresh-account-top: error or cancelled.")
 									bHeadGap = true
 									break
 								}
 								
-								src = parser.accountList(array)
+								src = misskeyCustomParser(parser,array)
 								src.reverse()
 								
 								addAll(list_tmp, src)
@@ -2727,7 +2749,12 @@ class Column(
 									"$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
 								result = client.request(path)
 								
-								jsonArray = result?.jsonArray
+								jsonObject = result?.jsonObject
+								if( jsonObject != null){
+									result?.data = misskeyArrayFinder(jsonObject)
+								}
+								
+								val jsonArray = result?.jsonArray
 								
 								if(jsonArray == null) {
 									log.d("refresh-account-top: error or cancelled. make gap.")
@@ -2738,7 +2765,7 @@ class Column(
 									break
 								}
 								
-								src = parser.accountList(jsonArray)
+								src = misskeyCustomParser(parser,jsonArray)
 								addAll(list_tmp, src)
 							}
 							if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
@@ -3459,6 +3486,7 @@ class Column(
 								client
 								, "/api/following/requests/list"
 								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+								,misskeyCustomParser = misskeyCustomParserFollowRequest
 							)
 							
 						} else {
@@ -3708,6 +3736,9 @@ class Column(
 				client : TootApiClient
 				, path_base : String
 				, misskeyParams : JSONObject? = null
+				,misskeyCustomParser : (parser:TootParser ,jsonArray:JSONArray) -> ArrayList<TootAccountRef> =
+					{ parser,jsonArray ->  parser.accountList(jsonArray) }
+			
 			) : TootApiResult? {
 				
 				val params = misskeyParams ?: makeMisskeyBaseParameter(parser)
@@ -3737,15 +3768,17 @@ class Column(
 						
 						since_id?.putMisskeySince(params)
 						val r2 = client.request(path_base, params.toPostRequestBuilder())
+						
 						val jsonArray = r2?.jsonArray
 						if(jsonArray == null) {
-							log.d("gap-account: error timeout. make gap.")
+							log.d("gap-account: error. make gap.")
 							if(result == null) result = r2
 							bHeadGap = true
 							break
 						}
 						result = r2
-						val src = parser.accountList(jsonArray)
+						
+						val src = misskeyCustomParser(parser,jsonArray)
 						src.reverse()
 						if(src.isEmpty()) {
 							log.d("gap-account: empty.")
@@ -3789,7 +3822,7 @@ class Column(
 							break
 						}
 						result = r2
-						val src = parser.accountList(jsonArray)
+						val src = misskeyCustomParser(parser,jsonArray)
 						
 						if(src.isEmpty()) {
 							log.d("gap-account: empty.")
@@ -4175,7 +4208,19 @@ class Column(
 						
 						TYPE_BLOCKS -> getAccountList(client, PATH_BLOCKS)
 						
-						TYPE_FOLLOW_REQUESTS -> getAccountList(client, PATH_FOLLOW_REQUESTS)
+						TYPE_FOLLOW_REQUESTS ->if(isMisskey) {
+							getAccountList(
+								client
+								, "/api/following/requests/list"
+								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+								,misskeyCustomParser = misskeyCustomParserFollowRequest
+							)
+						}else{
+							getAccountList(
+								client
+								, PATH_FOLLOW_REQUESTS
+							)
+						}
 						TYPE_FOLLOW_SUGGESTION -> getAccountList(client, PATH_FOLLOW_SUGGESTION)
 						
 						TYPE_PROFILE -> when(profile_tab) {
@@ -4961,4 +5006,5 @@ class Column(
 		viewHolder?.saveScrollPosition()
 	}
 	
+
 }

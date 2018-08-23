@@ -205,6 +205,7 @@ class TootApiClient(
 				put("note-write")
 				put("reaction-write")
 				put("following-write")
+				put("following-read") // フォロリク申請一覧で使われていた
 				put("drive-read")
 				put("drive-write")
 				put("notification-read")
@@ -212,6 +213,7 @@ class TootApiClient(
 				put("favorite-write")
 				put("account/read")
 				put("account/write")
+
 				// https://github.com/syuilo/misskey/issues/2341
 			}
 		

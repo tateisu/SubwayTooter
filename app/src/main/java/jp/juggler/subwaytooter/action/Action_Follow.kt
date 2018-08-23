@@ -522,16 +522,26 @@ object Action_Follow {
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val request_builder = Request.Builder().post(
-					RequestBody.create(
-						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" // 空データ
-					)
-				)
 				
-				return client.request(
-					"/api/v1/follow_requests/" + who.id + if(bAllow) "/authorize" else "/reject",
-					request_builder
-				)
+				if( access_info.isMisskey){
+					val params = access_info.putMisskeyApiToken(JSONObject())
+						.put("userId",who.id )
+					
+					return client.request(
+						"/api/following/requests/${if(bAllow) "accept" else "cancel"}",
+						params.toPostRequestBuilder()
+					)
+				}else{
+					val request_builder = Request.Builder().post(
+						RequestBody.create(
+							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" // 空データ
+						)
+					)
+					return client.request(
+						"/api/v1/follow_requests/" + who.id + if(bAllow) "/authorize" else "/reject",
+						request_builder
+					)
+				}
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

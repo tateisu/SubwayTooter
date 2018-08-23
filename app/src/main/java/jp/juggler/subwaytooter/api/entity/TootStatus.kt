@@ -54,9 +54,6 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	override fun getOrderId() = _orderId
 	
-	//	val isMisskey :Boolean
-	//		get()= id is EntityIdString
-	
 	// The TootAccount which posted the status
 	val accountRef : TootAccountRef
 	
@@ -146,6 +143,11 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	var renoteReply : String? = null
 	
+	val serviceType :ServiceType
+	
+	val deletedAt : String?
+	val time_deleted_at : Long
+	
 	///////////////////////////////////////////////////////////////////
 	// 以下はentityから取得したデータではなく、アプリ内部で使う
 	
@@ -172,6 +174,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	init {
 		this.json = src
+		this.serviceType = parser.serviceType
 		
 		if(parser.serviceType == ServiceType.MISSKEY) {
 			val instance = parser.linkHelper.host
@@ -298,9 +301,13 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.reblog = parser.status(src.optJSONObject("renote"))
 			this.reply = parser.status(src.optJSONObject("reply"))
 			
+			this.deletedAt = src.parseString("deletedAt")
+			this.time_deleted_at = parseTime(deletedAt)
 		} else {
 			misskeyVisibleIds = null
 			reply = null
+			deletedAt = null
+			time_deleted_at =0L
 
 			this.uri = src.parseString("uri") // MSPだとuriは提供されない
 			this.url = src.parseString("url") // 頻繁にnullになる
@@ -510,6 +517,16 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		if(t.isNotEmpty() && filter_tree.matchShort(t)) return true
 		//
 		return false
+	}
+	
+	fun hasAnyContent() =when{
+		reblog == null -> true // reblog以外はオリジナルコンテンツがあると見なす
+		serviceType != ServiceType.MISSKEY -> false // misskey以外のreblogはコンテンツがないと見なす
+		content?.isNotEmpty()== true
+			|| spoiler_text?.isNotEmpty()== true
+			|| media_attachments?.isNotEmpty()== true
+			|| enquete != null -> true
+		else-> false
 	}
 	
 	companion object {

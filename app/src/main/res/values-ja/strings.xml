@@ -1045,5 +1045,8 @@
     <string name="end">終端</string>
     <string name="misskey_hybrid_timeline_long">ソーシャルTL(Misskey)</string>
     <string name="misskey_hybrid_timeline">ソーシャルTL</string>
+    <string name="renote_to">%1$sへのリノート</string>
+    <string name="reply_to">%1$sへの返信</string>
+    <string name="deleted_at">%1$sに削除されました</string>
 
 </resources>

@@ -52,11 +52,16 @@ internal class ItemViewHolder(
 	lateinit var column : Column
 	
 	private lateinit var list_adapter : ItemListAdapter
+	
 	private lateinit var llBoosted : View
 	private lateinit var ivBoosted : ImageView
 	private lateinit var tvBoosted : TextView
 	private lateinit var tvBoostedAcct : TextView
 	private lateinit var tvBoostedTime : TextView
+	
+	private lateinit var llReply : View
+	private lateinit var ivReply : ImageView
+	private lateinit var tvReply : TextView
 	
 	private lateinit var llFollow : View
 	private lateinit var ivFollow : MyNetworkImageView
@@ -123,6 +128,7 @@ internal class ItemViewHolder(
 	private var item : TimelineItem? = null
 	
 	private var status_showing : TootStatus? = null
+	private var status_reply : TootStatus? = null
 	private var status_account : TootAccountRef? = null
 	private var boost_account : TootAccountRef? = null
 	private var follow_account : TootAccountRef? = null
@@ -133,6 +139,7 @@ internal class ItemViewHolder(
 	private var acct_color : Int = 0
 	
 	private val boost_invalidator : NetworkEmojiInvalidator
+	private val reply_invalidator : NetworkEmojiInvalidator
 	private val follow_invalidator : NetworkEmojiInvalidator
 	private val name_invalidator : NetworkEmojiInvalidator
 	private val content_invalidator : NetworkEmojiInvalidator
@@ -157,12 +164,18 @@ internal class ItemViewHolder(
 		btnFollow.setOnLongClickListener(this)
 		
 		ivThumbnail.setOnClickListener(this)
-		// ここを個別タップにすると邪魔すぎる tvName.setOnClickListener( this );
+
 		llBoosted.setOnClickListener(this)
 		llBoosted.setOnLongClickListener(this)
+
+		llReply.setOnClickListener(this)
+		llReply.setOnLongClickListener(this)
+
 		llFollow.setOnClickListener(this)
 		llFollow.setOnLongClickListener(this)
+
 		btnFollow.setOnClickListener(this)
+
 		
 		btnFollowRequestAccept.setOnClickListener(this)
 		btnFollowRequestDeny.setOnClickListener(this)
@@ -200,6 +213,7 @@ internal class ItemViewHolder(
 		}
 		if(! activity.notification_tl_font_size_sp.isNaN()) {
 			tvBoosted.textSize = activity.notification_tl_font_size_sp
+			tvReply.textSize = activity.notification_tl_font_size_sp
 		}
 		
 		if(! activity.acct_font_size_sp.isNaN()) {
@@ -221,6 +235,7 @@ internal class ItemViewHolder(
 		this.content_invalidator = NetworkEmojiInvalidator(activity.handler, tvContent)
 		this.spoiler_invalidator = NetworkEmojiInvalidator(activity.handler, tvContentWarning)
 		this.boost_invalidator = NetworkEmojiInvalidator(activity.handler, tvBoosted)
+		this.reply_invalidator = NetworkEmojiInvalidator(activity.handler, tvReply)
 		this.follow_invalidator = NetworkEmojiInvalidator(activity.handler, tvFollowerName)
 		this.name_invalidator = NetworkEmojiInvalidator(activity.handler, tvName)
 	}
@@ -258,6 +273,7 @@ internal class ItemViewHolder(
 						v === tvName ||
 							v === tvFollowerName ||
 							v === tvBoosted ||
+							v === tvReply ||
 							v === tvTrendTagCount ||
 							v === tvTrendTagName ||
 							v === tvFilterPhrase -> font_bold
@@ -311,6 +327,7 @@ internal class ItemViewHolder(
 		}
 		
 		this.status_showing = null
+		this.status_reply = null
 		this.status_account = null
 		this.boost_account = null
 		this.follow_account = null
@@ -319,6 +336,7 @@ internal class ItemViewHolder(
 		this.boostedAction = defaultBoostedAction
 		
 		llBoosted.visibility = View.GONE
+		llReply.visibility = View.GONE
 		llFollow.visibility = View.GONE
 		llStatus.visibility = View.GONE
 		llSearchTag.visibility = View.GONE
@@ -332,6 +350,7 @@ internal class ItemViewHolder(
 		var c : Int
 		c = if(column.content_color != 0) column.content_color else content_color_default
 		tvBoosted.setTextColor(c)
+		tvReply.setTextColor(c)
 		tvFollowerName.setTextColor(c)
 		tvName.setTextColor(c)
 		tvMentions.setTextColor(c)
@@ -362,16 +381,27 @@ internal class ItemViewHolder(
 		when(item) {
 			is TootStatus -> {
 				val reblog = item.reblog
-				if(reblog != null) {
-					showBoost(
-						item.accountRef,
-						item.time_created_at,
-						R.attr.btn_boost,
-						R.string.display_name_boosted_by
-					)
-					showStatus(activity, reblog)
-				} else {
-					showStatus(activity, item)
+				when{
+					reblog == null -> showStatusOrReply(item)
+					item.hasAnyContent() -> {
+						// 引用Renote
+						showReply(
+							reblog,
+							R.attr.btn_boost,
+							R.string.renote_to
+						)
+						showStatus(activity, item)
+					}
+					else ->{
+						// 引用なしブースト
+						showBoost(
+							item.accountRef,
+							item.time_created_at,
+							R.attr.btn_boost,
+							R.string.display_name_boosted_by
+						)
+						showStatusOrReply(item.reblog)
+					}
 				}
 			}
 			
@@ -396,6 +426,21 @@ internal class ItemViewHolder(
 		}
 	}
 	
+	private fun showStatusOrReply(item:TootStatus){
+		val reply = item.reply
+		if( reply != null) {
+			// 返信
+			showReply(
+				reply,
+				R.attr.btn_reply,
+				R.string.reply_to
+			)
+			showStatus(activity, item)
+		}else{
+			showStatus(activity, item)
+		}
+	}
+	
 	private fun showTrendTag(item : TootTrendTag) {
 		llTrendTag.visibility = View.VISIBLE
 		tvTrendTagName.text = "#${item.name}"
@@ -411,10 +456,30 @@ internal class ItemViewHolder(
 		tvMessageHolder.gravity = item.gravity
 	}
 	
+
+	
 	private fun showNotification(n : TootNotification) {
 		val n_status = n.status
 		val n_accountRef = n.accountRef
 		val n_account = n_accountRef?.get()
+		
+		fun showNotificationStatus(item :TootStatus){
+			val reblog = item.reblog
+			when{
+				reblog == null -> showStatusOrReply(item)
+				!item.hasAnyContent() ->showStatusOrReply(reblog) // ブースト表示は通知イベントと被るのでしない
+				else -> {
+					// 引用Renote
+					showReply(
+						reblog,
+						R.attr.btn_boost,
+						R.string.renote_to
+					)
+					showStatus(activity, item)
+				}
+			}
+		}
+		
 		when(n.type) {
 			
 			TootNotification.TYPE_FAVOURITE -> {
@@ -424,7 +489,9 @@ internal class ItemViewHolder(
 					if(access_info.isNicoru(n_account)) R.attr.ic_nicoru else R.attr.btn_favourite,
 					R.string.display_name_favourited_by
 				)
-				if(n_status != null) showStatus(activity, n_status)
+				if(n_status != null){
+					showNotificationStatus(n_status)
+				}
 			}
 			
 			TootNotification.TYPE_REBLOG -> {
@@ -434,7 +501,9 @@ internal class ItemViewHolder(
 					R.attr.btn_boost,
 					R.string.display_name_boosted_by
 				)
-				if(n_status != null) showStatus(activity, n_status)
+				if(n_status != null){
+					showNotificationStatus(n_status)
+				}
 				
 			}
 			
@@ -446,8 +515,8 @@ internal class ItemViewHolder(
 					R.attr.btn_boost,
 					R.string.display_name_boosted_by
 				)
-				if(n_status != null) {
-					showStatus(activity, n_status.reblog ?: n_status)
+				if(n_status != null){
+					showNotificationStatus(n_status)
 				}
 			}
 			
@@ -464,9 +533,7 @@ internal class ItemViewHolder(
 			}
 			
 			TootNotification.TYPE_MENTION, TootNotification.TYPE_REPLY -> {
-				// ミスキーは返信にメンションがないので説明文がないとなぜ通知にでるのか分からない
-				// 感力表示オフでも説明文を表示する
-				if(! bSimpleList || ! access_info.isMisskey) {
+				if(! bSimpleList && ! access_info.isMisskey) {
 					if(n_account != null) showBoost(
 						n_accountRef,
 						n.time_created_at,
@@ -474,8 +541,9 @@ internal class ItemViewHolder(
 						R.string.display_name_replied_by
 					)
 				}
-				if(n_status != null) showStatus(activity, n_status)
-				
+				if(n_status != null){
+					showNotificationStatus(n_status)
+				}
 			}
 			
 			TootNotification.TYPE_REACTION -> {
@@ -487,8 +555,9 @@ internal class ItemViewHolder(
 					R.string.display_name_reaction_by
 					, reaction?.btnDrawableId
 				)
-				if(n_status != null) showStatus(activity, n_status)
-				
+				if(n_status != null){
+					showNotificationStatus(n_status)
+				}
 			}
 			
 			TootNotification.TYPE_QUOTE -> {
@@ -498,7 +567,9 @@ internal class ItemViewHolder(
 					R.attr.btn_boost,
 					R.string.display_name_quoted_by
 				)
-				if(n_status != null) showStatus(activity, n_status)
+				if(n_status != null){
+					showNotificationStatus(n_status)
+				}
 			}
 			
 			TootNotification.TYPE_VOTE -> {
@@ -508,7 +579,9 @@ internal class ItemViewHolder(
 					R.attr.ic_vote,
 					R.string.display_name_voted_by
 				)
-				if(n_status != null) showStatus(activity, n_status)
+				if(n_status != null){
+					showNotificationStatus(n_status)
+				}
 			}
 			
 			TootNotification.TYPE_FOLLOW_REQUEST -> {
@@ -534,7 +607,9 @@ internal class ItemViewHolder(
 					R.attr.ic_question,
 					R.string.unknown_notification_from
 				)
-				if(n_status != null) showStatus(activity, n_status)
+				if(n_status != null){
+					showNotificationStatus(n_status)
+				}
 				tvMessageHolder.visibility = View.VISIBLE
 				tvMessageHolder.text = "notification type is ${n.type}"
 				tvMessageHolder.gravity = Gravity.CENTER
@@ -588,6 +663,26 @@ internal class ItemViewHolder(
 	private fun showGap() {
 		llSearchTag.visibility = View.VISIBLE
 		btnSearchTag.text = activity.getString(R.string.read_gap)
+	}
+	
+	private fun showReply(
+		reply : TootStatus,
+		iconAttrId : Int,
+		stringId : Int
+	) {
+		status_reply = reply
+
+		llReply.visibility = View.VISIBLE
+		
+		// val who = reply.account
+		// showStatusTime(activity, tvReplyTime, who, time = reply.time_created_at)
+		// setAcct(tvReplyAcct, access_info.getFullAcct(who), who.acct)
+
+		ivReply.setImageResource(Styler.getAttributeResourceId(activity, iconAttrId))
+
+		val text = reply.accountRef.decoded_display_name.intoStringResource(activity, stringId)
+		tvReply.text = text
+		reply_invalidator.register(text)
 	}
 	
 	private fun showBoost(
@@ -729,6 +824,14 @@ internal class ItemViewHolder(
 		} else {
 			tvMentions.visibility = View.VISIBLE
 			tvMentions.text = status.decoded_mentions
+		}
+		
+		if( status.time_deleted_at > 0L){
+			val s = SpannableStringBuilder()
+				.append('(')
+				.append(activity.getString(R.string.deleted_at,TootStatus.formatTime(activity,status.time_deleted_at,true)))
+				.append(')')
+			content= s
 		}
 		
 		tvContent.text = content
@@ -1114,6 +1217,12 @@ internal class ItemViewHolder(
 			
 			llBoosted -> boostedAction()
 			
+			llReply ->{
+				status_reply?.let { s  ->
+					Action_Toot.conversation(activity,pos,access_info,s)
+				}
+			}
+			
 			llFollow -> follow_account?.let { whoRef ->
 				if(access_info.isPseudo) {
 					DlgContextMenu(activity, column, whoRef, null, notification).show()
@@ -1255,6 +1364,18 @@ internal class ItemViewHolder(
 					).show()
 				}
 				return true
+			}
+			
+			llReply ->{
+				status_reply?.let { s  ->
+					DlgContextMenu(
+						activity,
+						column,
+						s.accountRef,
+						s,
+						notification
+					).show()
+				}
 			}
 			
 			llFollow -> {
@@ -1831,6 +1952,8 @@ internal class ItemViewHolder(
 				}
 			}
 			
+			
+			
 			llStatus = verticalLayout {
 				lparams(matchParent, wrapContent)
 				
@@ -1878,9 +2001,28 @@ internal class ItemViewHolder(
 						}
 						
 						tvName = textView {
-							
-							// tools:text="Displayname"
 						}.lparams(matchParent, wrapContent)
+						
+						llReply = linearLayout {
+							lparams(matchParent, wrapContent) {
+								bottomMargin = dip(3)
+							}
+							
+							background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+							gravity = Gravity.CENTER_VERTICAL
+							
+							ivReply = imageView {
+								scaleType = ImageView.ScaleType.FIT_END
+								importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+							}.lparams(dip(32), dip(32)) {
+								endMargin = dip(4)
+							}
+							
+							tvReply = textView {
+							}.lparams(dip(0), wrapContent) {
+								weight = 1f
+							}
+						}
 						
 						llContentWarning = linearLayout {
 							lparams(matchParent, wrapContent) {

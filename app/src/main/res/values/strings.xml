@@ -753,4 +753,8 @@
     <string name="end">End</string>
     <string name="misskey_hybrid_timeline">Social timeline</string>
     <string name="misskey_hybrid_timeline_long">Social TL (Misskey)</string>
+    <string name="renote_to">Renote to %1$s</string>
+    <string name="reply_to">Reply to %1$s</string>
+    <string name="deleted_at">deleted at %1$s</string>
+
 </resources>

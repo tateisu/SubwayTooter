@@ -407,7 +407,7 @@ object HTMLDecoder {
 				if(display_url.startsWith("@") && href != null && Pref.bpMentionFullAcct(App1.pref)) {
 					// メンションをfull acct にする
 					val acct = TootAccount.getAcctFromUrl(href)
-					if( acct!= null) return acct
+					if( acct!= null) return "@$acct"
 				}
 				// ハッシュタグやメンションはURLの短縮表示の対象外
 				return display_url

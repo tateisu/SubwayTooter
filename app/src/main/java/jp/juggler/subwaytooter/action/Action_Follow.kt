@@ -528,7 +528,7 @@ object Action_Follow {
 						.put("userId",who.id )
 					
 					return client.request(
-						"/api/following/requests/${if(bAllow) "accept" else "cancel"}",
+						"/api/following/requests/${if(bAllow) "accept" else "reject"}",
 						params.toPostRequestBuilder()
 					)
 				}else{

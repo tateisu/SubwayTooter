@@ -106,7 +106,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	val in_reply_to_id : EntityId?
 	
 	//	null or the ID of the account it replies to
-	private val in_reply_to_account_id : String?
+	private val in_reply_to_account_id : EntityId?
 	
 	//	null or the reblogged Status
 	val reblog : TootStatus?
@@ -223,8 +223,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			}
 			this.sensitive = bv
 			
-			this.in_reply_to_id = EntityId.Companion.mayNull(src.parseString("replyId"))
-			this.in_reply_to_account_id = null
+			this.reply = parser.status(src.optJSONObject("reply"))
+			this.in_reply_to_id = EntityId.mayNull(src.parseString("replyId"))
+			this.in_reply_to_account_id = reply?.account?.id
 			
 			this.pinned = parser.pinned
 			this.muted = false
@@ -299,7 +300,6 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.reactionCounts = parseReactionCounts(src.optJSONObject("reactionCounts"))
 			
 			this.reblog = parser.status(src.optJSONObject("renote"))
-			this.reply = parser.status(src.optJSONObject("reply"))
 			
 			this.deletedAt = src.parseString("deletedAt")
 			this.time_deleted_at = parseTime(deletedAt)
@@ -387,7 +387,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			this._orderId = this.id
 			this.in_reply_to_id = EntityId.mayNull(src.parseLong("in_reply_to_id"))
-			this.in_reply_to_account_id = src.parseString("in_reply_to_account_id")
+			this.in_reply_to_account_id = EntityId.mayNull(src.parseLong("in_reply_to_account_id"))
 			this.mentions = parseListOrNull(::TootMention, src.optJSONArray("mentions"), log)
 			this.tags = parseListOrNull(::TootTag, src.optJSONArray("tags"))
 			this.application =

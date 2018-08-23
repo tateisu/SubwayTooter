@@ -355,7 +355,7 @@ object Pref {
 	val spAutoCWLines = StringPref("auto_cw_lines", "0")
 	val spAvatarIconSize = StringPref("avatar_icon_size", "48")
 	val spNotificationTlIconSize = StringPref("notification_tl_icon_size", "32")
-	val spBoostButtonSize = StringPref("BoostButtonSize", "40")
+	val spBoostButtonSize = StringPref("BoostButtonSize", "35")
 	val spMediaSizeMax = StringPref("max_media_size", "8")
 	val spTimelineFont = StringPref("timeline_font", "", skipImport = true)
 	val spTimelineFontBold = StringPref("timeline_font_bold", "", skipImport = true)

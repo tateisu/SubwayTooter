@@ -138,10 +138,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	var viaMobile : Boolean = false
 	
 	var reactionCounts : HashMap<String, Int>? = null
+	var myReaction :String? =null
 	
 	var reply : TootStatus?
-	
-	var renoteReply : String? = null
 	
 	val serviceType :ServiceType
 	
@@ -298,7 +297,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			)
 			
 			this.reactionCounts = parseReactionCounts(src.optJSONObject("reactionCounts"))
-			
+			this.myReaction = src.parseString("myReaction")
 			this.reblog = parser.status(src.optJSONObject("renote"))
 			
 			this.deletedAt = src.parseString("deletedAt")

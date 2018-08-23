@@ -771,6 +771,7 @@
 	<string name="renote_to">Renote to %1$s</string>
 	<string name="reply_to">Reply to %1$s</string>
 	<string name="deleted_at">deleted at %1$s</string>
+	<string name="already_reactioned">already reactioned.</string>
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

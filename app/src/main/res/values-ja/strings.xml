@@ -1048,5 +1048,6 @@
     <string name="renote_to">%1$sへのリノート</string>
     <string name="reply_to">%1$sへの返信</string>
     <string name="deleted_at">%1$sに削除されました</string>
+    <string name="already_reactioned">リアクション済みです</string>
 
 </resources>

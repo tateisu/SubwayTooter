@@ -1672,6 +1672,11 @@ internal class ItemViewHolder(
 	private fun addReaction(status : TootStatus?, code : String?) {
 		status ?: return
 		
+		if( status.myReaction?.isNotEmpty() == true){
+			showToast(activity,false,R.string.already_reactioned)
+			return
+		}
+		
 		if(access_info.isPseudo || ! access_info.isMisskey) return
 		
 		if(code == null) {
@@ -1721,6 +1726,7 @@ internal class ItemViewHolder(
 						}
 						val count = status.reactionCounts?.get(code) ?: 0
 						status.reactionCounts?.put(code, count + 1)
+						status.myReaction = code
 						// 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
 						list_adapter.notifyChange(reason = "addReaction complete", reset = true)
 					}

@@ -215,6 +215,8 @@
 	<string name="nickname_label">Pseudo et couleur. (s\'il est spécifié, il remplacera le nom du compte affiché)</string>
 	<string name="not_available_for_pseudo_account">Non disponible pour les personnes non connectés</string>
 	<string name="not_available_for_misskey_account">Not available for Misskey account</string>
+	<string name="not_available_for_mastodon_account">Not available for Mastodon account</string>
+
 	<string name="not_selected">(Aucune sélection)</string>
 	<string name="notification_count">%1$d notifications</string>
 	<string name="notification_delete">Effacer les notifications</string>
@@ -764,8 +766,9 @@
     <string name="start">Start</string>
 	<string name="center">Center</string>
 	<string name="end">End</string>
-
-	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+    <string name="misskey_hybrid_timeline">Social timeline</string>
+	<string name="misskey_hybrid_timeline_long">Social TL (Misskey)</string>
+    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

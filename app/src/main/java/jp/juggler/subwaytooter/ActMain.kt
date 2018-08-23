@@ -970,12 +970,22 @@ class ActMain : AppCompatActivity()
 				, Column.TYPE_HOME
 				, bAllowPseudo = false
 			)
+
 			R.id.nav_add_tl_local -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
 				, Column.TYPE_LOCAL
 				, bAllowPseudo = true
 			)
+
+			R.id.nav_add_tl_misskey_hybrid-> Action_Account.timeline(
+				this
+				, defaultInsertPosition
+				, Column.TYPE_MISSKEY_HYBRID
+				, bAllowPseudo = true
+			,bAllowMastodon = false
+			)
+
 			R.id.nav_add_tl_federate -> Action_Account.timeline(
 				this
 				, defaultInsertPosition

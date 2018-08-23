@@ -27,6 +27,7 @@ object AccountPicker {
 		activity : AppCompatActivity,
 		bAllowPseudo : Boolean = false,
 		bAllowMisskey : Boolean = true,
+		bAllowMastodon: Boolean = true,
 		bAuto : Boolean = false,
 		message : String? = null,
 		accountListArg : ArrayList<SavedAccount>? = null,
@@ -35,10 +36,16 @@ object AccountPicker {
 	) {
 		var removedMisskey =0
 		var removedPseudo =0
+		var removeMastodon = 0
 		val account_list : MutableList<SavedAccount> = accountListArg ?: {
 			val l = SavedAccount.loadAccountList(activity).filter { a->
 				var bOk = true
-
+				
+				if( !bAllowMastodon && !a.isMisskey ){
+					++removeMastodon
+					bOk=false
+				}
+				
 				if( !bAllowMisskey && a.isMisskey ){
 					++removedMisskey
 					bOk=false
@@ -66,6 +73,10 @@ object AccountPicker {
 			if( removedMisskey > 0 ){
 				if(sb.isNotEmpty() ) sb.append('\n')
 				sb.append(activity.getString(R.string.not_available_for_misskey_account))
+			}
+			if( removeMastodon > 0 ){
+				if(sb.isNotEmpty() ) sb.append('\n')
+				sb.append(activity.getString(R.string.not_available_for_mastodon_account))
 			}
 
 			if( sb.isEmpty() ){

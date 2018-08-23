@@ -218,6 +218,7 @@
     <string name="server_confirmed">Server confirmed.</string>
     <string name="not_available_for_pseudo_account">Not available for pseudo account</string>
     <string name="not_available_for_misskey_account">Not available for Misskey account</string>
+    <string name="not_available_for_mastodon_account">Not available for Mastodon account</string>
     <string name="exit_app_when_close_protected_column">Exit app when try to close protected column with back button without confirm</string>
     <string name="resize_image">Resize attachment image (JPEG,PNG)</string>
     <string name="dont_resize">Don\'t resize</string>
@@ -750,4 +751,6 @@
     <string name="start">Start</string>
     <string name="center">Center</string>
     <string name="end">End</string>
+    <string name="misskey_hybrid_timeline">Social timeline</string>
+    <string name="misskey_hybrid_timeline_long">Social TL (Misskey)</string>
 </resources>

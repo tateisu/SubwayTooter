@@ -413,6 +413,7 @@
 
     <string name="not_available_for_pseudo_account">疑似アカウントでは利用できません</string>
     <string name="not_available_for_misskey_account">Misskeyアカウントでは利用できません</string>
+    <string name="not_available_for_mastodon_account">Mastodonアカウントでは利用できません</string>
 
     <string name="pseudo_account">疑似アカウント(ログインなし、公開データを読めるだけ)</string>
 
@@ -1042,5 +1043,7 @@
     <string name="start">始端</string>
     <string name="center">中央</string>
     <string name="end">終端</string>
+    <string name="misskey_hybrid_timeline_long">ソーシャルTL(Misskey)</string>
+    <string name="misskey_hybrid_timeline">ソーシャルTL</string>
 
 </resources>

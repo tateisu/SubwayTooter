@@ -148,6 +148,7 @@ object Action_Account {
 		type : Int,
 		bAllowPseudo : Boolean,
 		bAllowMisskey: Boolean =true,
+		bAllowMastodon: Boolean =true,
 		args : Array<out Any> = emptyArray()
 	) {
 		
@@ -155,6 +156,7 @@ object Action_Account {
 			activity,
 			bAllowPseudo = bAllowPseudo,
 			bAllowMisskey = bAllowMisskey,
+			bAllowMastodon = bAllowMastodon,
 			bAuto = true,
 			message = activity.getString(
 				R.string.account_picker_add_timeline_of,

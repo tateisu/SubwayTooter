@@ -176,6 +176,7 @@ class Column(
 		internal const val TYPE_TREND_TAG = 24
 		internal const val TYPE_FOLLOW_SUGGESTION = 25
 		internal const val TYPE_KEYWORD_FILTER = 26
+		internal const val TYPE_MISSKEY_HYBRID = 27
 		
 		internal const val TAB_STATUS = 0
 		internal const val TAB_FOLLOWING = 1
@@ -201,6 +202,7 @@ class Column(
 			return when(type) {
 				TYPE_HOME -> context.getString(R.string.home)
 				TYPE_LOCAL -> context.getString(R.string.local_timeline)
+				TYPE_MISSKEY_HYBRID->context.getString(R.string.misskey_hybrid_timeline)
 				TYPE_FEDERATE -> context.getString(R.string.federate_timeline)
 				TYPE_PROFILE -> context.getString(R.string.profile)
 				TYPE_FAVOURITES -> context.getString(R.string.favourites)
@@ -234,6 +236,7 @@ class Column(
 				TYPE_REPORTS -> R.attr.ic_info
 				TYPE_HOME -> R.attr.btn_home
 				TYPE_LOCAL -> R.attr.btn_local_tl
+				TYPE_MISSKEY_HYBRID->R.attr.ic_share
 				TYPE_FEDERATE -> R.attr.btn_federate_tl
 				TYPE_PROFILE -> R.attr.btn_statuses
 				TYPE_FAVOURITES -> if(SavedAccount.isNicoru(acct)) R.attr.ic_nicoru else R.attr.btn_favourite
@@ -324,6 +327,7 @@ class Column(
 			return when(column_type) {
 				TYPE_HOME, TYPE_NOTIFICATIONS -> "/api/v1/streaming/?stream=user"
 				TYPE_LOCAL -> "/api/v1/streaming/?stream=public:local"
+				TYPE_MISSKEY_HYBRID-> null // FIXME MisskeyだしMastodonのURLではない
 				TYPE_FEDERATE -> "/api/v1/streaming/?stream=public"
 				TYPE_LIST_TL -> "/api/v1/streaming/?stream=list&list=" + profile_id.toString()
 				
@@ -1904,6 +1908,7 @@ class Column(
 						TYPE_DIRECT_MESSAGES -> return getStatuses(client, PATH_DIRECT_MESSAGES)
 						
 						TYPE_LOCAL -> return getStatuses(client, makePublicLocalUrl())
+						TYPE_MISSKEY_HYBRID-> return getStatuses(client, makeMisskeyHybridTlUrl())
 						
 						TYPE_FEDERATE -> return getStatuses(client, makePublicFederateUrl())
 						
@@ -2503,7 +2508,7 @@ class Column(
 		posted_reply_id : EntityId?
 	) {
 		when(column_type) {
-			TYPE_HOME, TYPE_LOCAL, TYPE_FEDERATE, TYPE_DIRECT_MESSAGES -> {
+			TYPE_HOME, TYPE_LOCAL, TYPE_FEDERATE, TYPE_DIRECT_MESSAGES ,TYPE_MISSKEY_HYBRID-> {
 				startRefresh(
 					true,
 					false,
@@ -3342,7 +3347,8 @@ class Column(
 						TYPE_DIRECT_MESSAGES -> getStatusList(client, PATH_DIRECT_MESSAGES)
 						
 						TYPE_LOCAL -> getStatusList(client, makePublicLocalUrl())
-						
+						TYPE_MISSKEY_HYBRID-> getStatusList(client, makeMisskeyHybridTlUrl())
+
 						TYPE_FEDERATE -> getStatusList(client, makePublicFederateUrl())
 						
 						TYPE_FAVOURITES -> getStatusList(client, PATH_FAVOURITES)
@@ -4141,6 +4147,7 @@ class Column(
 					return when(column_type) {
 						
 						TYPE_LOCAL -> getStatusList(client, makePublicLocalUrl())
+						TYPE_MISSKEY_HYBRID-> getStatusList(client, makeMisskeyHybridTlUrl())
 						
 						TYPE_FEDERATE -> getStatusList(client, makePublicFederateUrl())
 						
@@ -4466,12 +4473,13 @@ class Column(
 	
 	// マストドン2.4.3rcのキーワードフィルタのコンテキスト
 	private fun getFilterContext() = when(column_type) {
-		TYPE_HOME, TYPE_LIST_TL -> TootFilter.CONTEXT_HOME
+		TYPE_HOME, TYPE_LIST_TL,TYPE_MISSKEY_HYBRID -> TootFilter.CONTEXT_HOME
 		TYPE_NOTIFICATIONS -> TootFilter.CONTEXT_NOTIFICATIONS
 		TYPE_CONVERSATION -> TootFilter.CONTEXT_THREAD
 		TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_PROFILE, TYPE_SEARCH -> TootFilter.CONTEXT_PUBLIC
 		TYPE_DIRECT_MESSAGES -> TootFilter.CONTEXT_PUBLIC
 		else -> TootFilter.CONTEXT_NONE
+		// TYPE_MISSKEY_HYBRID はHOMEでもPUBLICでもある… Misskeyだし関係ないかが、NONEにするとアプリ内で完結するフィルタも働かなくなる
 	}
 	
 	// カラム設定に「すべての画像を隠す」ボタンを含めるなら真
@@ -4482,8 +4490,9 @@ class Column(
 	// カラム設定に「ブーストを表示しない」ボタンを含めるなら真
 	fun canFilterBoost() : Boolean {
 		return when(column_type) {
-			TYPE_HOME, TYPE_PROFILE, TYPE_NOTIFICATIONS, TYPE_LIST_TL -> true
-			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH,TYPE_CONVERSATION,TYPE_DIRECT_MESSAGES -> isMisskey
+			TYPE_HOME, TYPE_MISSKEY_HYBRID,TYPE_PROFILE, TYPE_NOTIFICATIONS, TYPE_LIST_TL -> true
+			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH -> isMisskey
+			TYPE_CONVERSATION,TYPE_DIRECT_MESSAGES -> isMisskey
 			else -> false
 		}
 	}
@@ -4491,7 +4500,7 @@ class Column(
 	// カラム設定に「返信を表示しない」ボタンを含めるなら真
 	fun canFilterReply() : Boolean {
 		return when(column_type) {
-			TYPE_HOME, TYPE_PROFILE, TYPE_NOTIFICATIONS,TYPE_LIST_TL, TYPE_DIRECT_MESSAGES -> true
+			TYPE_HOME, TYPE_MISSKEY_HYBRID, TYPE_PROFILE, TYPE_NOTIFICATIONS,TYPE_LIST_TL, TYPE_DIRECT_MESSAGES -> true
 			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH -> isMisskey
 			else -> false
 		}
@@ -4499,7 +4508,8 @@ class Column(
 	
 	fun canFilterNormalToot() : Boolean {
 		return when(column_type) {
-			TYPE_HOME, TYPE_LIST_TL -> true
+			TYPE_HOME,TYPE_MISSKEY_HYBRID, TYPE_LIST_TL -> true
+			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH -> isMisskey
 			else -> false
 		}
 	}
@@ -4550,6 +4560,7 @@ class Column(
 			} else if(item is TootStatus) {
 				if(column_type == TYPE_NOTIFICATIONS) return
 				if(column_type == TYPE_LOCAL && item.account.acct.indexOf('@') != - 1) return
+				
 				if(isFiltered(item)) return
 				if(this@Column.enable_speech) {
 					App1.getAppState(context).addSpeech(item.reblog ?: item)
@@ -4799,6 +4810,13 @@ class Column(
 	private fun makePublicLocalUrl() : String {
 		return when {
 			access_info.isMisskey -> "/api/notes/local-timeline"
+			with_attachment -> "$PATH_LOCAL&only_media=true" // mastodon 2.3 or later
+			else -> PATH_LOCAL
+		}
+	}
+	private fun makeMisskeyHybridTlUrl() : String {
+		return when {
+			access_info.isMisskey -> "/api/notes/hybrid-timeline"
 			with_attachment -> "$PATH_LOCAL&only_media=true" // mastodon 2.3 or later
 			else -> PATH_LOCAL
 		}

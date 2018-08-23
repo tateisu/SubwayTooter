@@ -43,6 +43,11 @@
                     android:title="@string/direct_messages"/>
 
                 <item
+                    android:id="@+id/nav_add_tl_misskey_hybrid"
+                    android:icon="?attr/ic_share"
+                    android:title="@string/misskey_hybrid_timeline_long"/>
+
+                <item
                     android:id="@+id/nav_add_tl_local"
                     android:icon="?attr/btn_local_tl"
                     android:title="@string/local_timeline"/>

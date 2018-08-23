@@ -369,9 +369,9 @@ class StatusButtonsViewHolder(
 	private val buttonHeight = ActMain.boostButtonSize
 	private val marginBetween = (ActMain.boostButtonSize.toFloat() * 0.05f + 0.5f).toInt()
 
-	val paddingH = (buttonHeight.toFloat()/10 +0.5f).toInt()
-	val paddingV = (buttonHeight.toFloat()/10 +0.5f).toInt()
-	val compoundPaddingDp = ActMain.boostButtonSize.toFloat() * -0.085f / activity.resources.displayMetrics.density
+	val paddingH = (buttonHeight.toFloat()*0.1f +0.5f).toInt()
+	val paddingV = (buttonHeight.toFloat()*0.1f +0.5f).toInt()
+	val compoundPaddingDp = 0f //  ActMain.boostButtonSize.toFloat() * -0f / activity.resources.displayMetrics.density
 
 	val viewRoot : FlexboxLayout
 

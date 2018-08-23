@@ -485,7 +485,7 @@ internal class ItemViewHolder(
 					n.time_created_at,
 					R.attr.ic_question,
 					R.string.display_name_reaction_by
-					, reaction?.drawableId
+					, reaction?.btnDrawableId
 				)
 				if(n_status != null) showStatus(activity, n_status)
 				
@@ -1471,10 +1471,9 @@ internal class ItemViewHolder(
 		val buttonHeight = ActMain.boostButtonSize
 		val marginBetween = (ActMain.boostButtonSize.toFloat() * 0.05f + 0.5f).toInt()
 		
-		val paddingH = (buttonHeight.toFloat() / 10 + 0.5f).toInt()
-		val paddingV = (buttonHeight.toFloat() / 10 + 0.5f).toInt()
-		val compoundPaddingDp =
-			ActMain.boostButtonSize.toFloat() * 0.00f / activity.resources.displayMetrics.density
+		val paddingH = (buttonHeight.toFloat() *0.1f + 0.5f).toInt()
+		val paddingV = (buttonHeight.toFloat() *0.1f + 0.5f).toInt()
+		val compoundPaddingDp = 0f // ActMain.boostButtonSize.toFloat() * 0f / activity.resources.displayMetrics.density
 		
 		val box = FlexboxLayout(activity)
 		val boxLp = LinearLayout.LayoutParams(
@@ -1517,7 +1516,7 @@ internal class ItemViewHolder(
 			)
 			b.minimumWidth = buttonHeight
 			
-			b.imageResource = mr.drawableId
+			b.imageResource = mr.btnDrawableId
 			b.scaleType = ImageView.ScaleType.FIT_CENTER
 			
 			b.layoutParams = blp

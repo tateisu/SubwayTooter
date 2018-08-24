@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.util
 
+import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
 import android.net.Uri
@@ -11,6 +12,7 @@ import android.text.style.AlignmentSpan
 import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
+import android.util.SparseArray
 import android.util.SparseBooleanArray
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
@@ -229,15 +231,15 @@ object MisskeySyntaxHighlighter {
 			// 直前に識別子があればNG
 			val prev = if(env.pos <= 0) null else env.source[env.pos - 1]
 			if(prev?.isLetterOrDigit() == true) return@arrayOf null
-
+			
 			val match = reLabel.matcher(env.remain)
 			if(! match.find()) return@arrayOf null
-
+			
 			val end = match.end()
-			when{
+			when {
 				// @user@host のように直後に@が続くのはNG
-				env.remain.length > end && env.remain[end] =='@' -> null
-				else->Token(length = match.end(), color = 0xe9003f)
+				env.remain.length > end && env.remain[end] == '@' -> null
+				else -> Token(length = match.end(), color = 0xe9003f)
 			}
 		},
 		
@@ -269,16 +271,16 @@ object MisskeySyntaxHighlighter {
 					Token(length = kw.length, color = 0x8964c1, italic = true)
 				
 				// 変数や定数ではなくプロパティならプロパティの色になる
-				prev == '.' ->Token(length = kw.length, color = 0xa71d5d)
+				prev == '.' -> Token(length = kw.length, color = 0xa71d5d)
 				
 				keywords.contains(kw) -> when(kw) {
-
+					
 					// 定数
-					"true", "false", "null", "nil", "undefined" ,"NaN" ->
+					"true", "false", "null", "nil", "undefined", "NaN" ->
 						Token(length = kw.length, color = 0xae81ff)
-
+					
 					// その他の予約語
-					else ->Token(length = kw.length, color = 0x2973b7)
+					else -> Token(length = kw.length, color = 0x2973b7)
 				}
 				
 				// 強調表示しないが、識別子単位で読み飛ばす
@@ -366,291 +368,22 @@ object MisskeyMarkdownDecoder {
 	
 	private val log = LogCategory("MisskeyMarkdownDecoder")
 	
-	enum class NodeType {
-		Text,
-		Big,
-		Bold,
-		Title,
-		Url,
-		Link,
-		Mention,
-		Hashtag,
-		CodeBlock,
-		CodeInline,
-		Quote,
-		Emoji,
-		Search,
-		Motion
-	}
-	
-	private class Node(
-		var type : NodeType,
-		var sourceStart : Int,
-		var sourceLength : Int,
-		var data : ArrayList<String?>?
-	)
-	
-	private class ParserEnv(
-		val text : String
-		, var pos : Int
-		, var remain : String
-	) {
-		
-		internal fun genNode1(
-			type : NodeType,
-			sourceLength : Int,
-			data : ArrayList<String?>?
-		) = Node(
-			type = type,
-			sourceStart = pos,
-			sourceLength = sourceLength,
-			data = data
-		)
-	}
-	
-	private fun simpleParser(
-		type : NodeType,
-		pattern : Pattern
-	) = { env : ParserEnv ->
-		val matcher = pattern.matcher(env.remain)
-		when {
-			matcher.find() -> env.genNode1(
-				type
-				, matcher.end()
-				, arrayListOf(matcher.group(1))
-			)
-			else -> null
-		}
-	}
-	
-	private val reLink =
-		Pattern.compile("""^\??\[([^\[\]]+?)]\((https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+?)\)""")
-	
-	private val reCodeInline = Pattern.compile("""^`(.+?)`""")
-	
-	private val reMention = Pattern.compile(
-		"""^@([a-z0-9_]+)(?:@([a-z0-9.\-]+[a-z0-9]))?"""
-		, Pattern.CASE_INSENSITIVE
-	)
-	
-	private val reHashtag = Pattern.compile("""^#([^\s]+)""")
-	
-	private val reMotion1 = Pattern.compile("""^\Q(((\E(.+?)\Q)))\E""")
-	private val reMotion2 = Pattern.compile("""^<motion>(.+?)</motion>""")
-	
-	private val nodeParserList = arrayOf(
-		
-		// 処理順序に意味があるので入れ替えないこと
-		// 記号列が長い順
-		simpleParser(
-			NodeType.Big,
-			Pattern.compile("""^\Q***\E(.+?)\Q***\E""")
-		),
-		
-		simpleParser(
-			NodeType.Bold,
-			Pattern.compile("""^\Q**\E(.+?)\Q**\E""")
-		),
-		
-		simpleParser(
-			NodeType.Title,
-			Pattern.compile("""^[【\[](.+?)[】\]]\n""")
-		),
-		
-		simpleParser(
-			NodeType.Url,
-			Pattern.compile("""^(https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+)""")
-		),
-		
-		{ env : ParserEnv ->
-			val matcher = reLink.matcher(env.remain)
-			when {
-				matcher.find() -> env.genNode1(
-					NodeType.Link
-					, matcher.end()
-					, arrayListOf(
-						matcher.group(1) // title
-						, matcher.group(2) // url
-						, env.remain[0].toString()   // silent なら "?" になる
-					)
-				)
-				else -> null
-			}
-		},
-		
-		{ env : ParserEnv ->
-			val matcher = reMention.matcher(env.remain)
-			when {
-				matcher.find() -> env.genNode1(
-					NodeType.Mention
-					, matcher.end()
-					, arrayListOf(
-						matcher.group(1) // username
-						, matcher.group(2) // host
-					)
-				)
-				else -> null
-			}
-		},
-		
-		{ env : ParserEnv ->
-			val matcher = reHashtag.matcher(env.remain)
-			when {
-				matcher.find() -> when {
-					
-					// 先頭以外では直前に空白が必要らしい
-					env.pos > 0 && ! CharacterGroup.isWhitespace(
-						env.text[env.pos - 1].toInt()
-					) -> null
-					
-					else -> env.genNode1(
-						NodeType.Hashtag
-						, matcher.end()
-						, arrayListOf(
-							matcher.group(1) // 先頭の#を含まないハッシュタグ
-						)
-					)
-				}
-				else -> null
-			}
-		},
-		
-		simpleParser(
-			NodeType.CodeBlock,
-			Pattern.compile("""^```(.+?)```""", Pattern.DOTALL)
-		),
-		
-		{ env : ParserEnv ->
-			val matcher = reCodeInline.matcher(env.remain)
-			when {
-				matcher.find() -> when {
-					
-					// インラインコードは内部にある文字を含むと認識されない。理由は謎
-					matcher.group(1).contains('´') -> null
-					
-					else -> env.genNode1(
-						NodeType.CodeInline
-						, matcher.end()
-						, arrayListOf(
-							matcher.group(1)
-						)
-					)
-				}
-				else -> null
-			}
-		},
-		
-		simpleParser(
-			NodeType.Quote,
-			Pattern.compile("""^"([\s\S]+?)\n"""")
-		),
-		
-		simpleParser(
-			NodeType.Emoji,
-			Pattern.compile("""^:([a-zA-Z0-9+-_]+):""")
-		),
-		
-		simpleParser(
-			NodeType.Search,
-			Pattern.compile(
-				"""^(.+?)[ 　](検索|\[検索]|Search|\[Search])(\n|${'$'})"""
-				, Pattern.CASE_INSENSITIVE
-			)
-		),
-		
-		{ env : ParserEnv ->
-			var found = false
-			var matcher = reMotion1.matcher(env.remain)
-			if(matcher.find()) {
-				found = true
-			} else {
-				matcher = reMotion2.matcher(env.remain)
-				if(matcher.find()) {
-					found = true
-				}
-			}
-			when(found) {
-				true -> env.genNode1(
-					NodeType.Motion
-					, matcher.end()
-					, arrayListOf(
-						matcher.group(1) // 先頭の#を含まないハッシュタグ
-					)
-				)
-				else -> null
-			}
-		}
-	)
-	
-	private val reStartEmptyLines = """\A(?:[ 　]*?[\x0d\x0a]+)+""".toRegex()
-	private val reEndEmptyLines = """[\s\x0d\x0a]+\z""".toRegex()
-	private fun trimBlock(s : String?) : String? {
-		s ?: return null
-		return s
-			.replace(reStartEmptyLines, "")
-			.replace(reEndEmptyLines, "")
-	}
-	
-	private fun parse(source : String?) : ArrayList<Node> {
-		val result = ArrayList<Node>()
-		
-		if(source != null) {
-			
-			val env = ParserEnv(
-				text = source,
-				pos = 0,
-				remain = source
-			)
-			
-			//
-			var textNode : Node? = null
-			fun closeTextNode() {
-				val node = textNode ?: return
-				val length = env.pos - node.sourceStart
-				if(length > 0) {
-					node.sourceLength = length
-					result.add(node)
-				}
-				textNode = null
-			}
-			//
-			loop1@ while(env.remain.isNotEmpty()) {
-				
-				for(el in nodeParserList) {
-					val node = el(env) ?: continue
-					closeTextNode()
-					result.add(node)
-					env.pos += node.sourceLength
-					env.remain = env.text.substring(env.pos)
-					continue@loop1
-				}
-				
-				// テキストノードの開始
-				if(textNode == null) {
-					textNode = Node(
-						NodeType.Text,
-						env.pos,
-						0,
-						null
-					)
-				}
-				
-				env.remain = env.text.substring(++ env.pos)
-			}
-			closeTextNode()
-		}
-		
-		return result
-	}
-	
 	class SpannableStringBuilderEx : SpannableStringBuilder() {
-		
 		var mentions : ArrayList<TootMention>? = null
 	}
 	
-	fun decodeMarkdown(options : DecodeOptions, src : String?) : SpannableStringBuilderEx {
-		val sb = SpannableStringBuilderEx()
-		val context = options.context ?: return sb
+	private class DecodeEnv(val options : DecodeOptions, val sb : SpannableStringBuilderEx) {
+		val context : Context
+		val font_bold = ActMain.timeline_font_bold
+		var start = 0
+		var nodeSource : String = ""
+		var data : ArrayList<String?>? = null
+		val linkHelper : LinkHelper?
+		
+		init {
+			context = options.context ?: error("missing context")
+			linkHelper = options.linkHelper
+		}
 		
 		fun urlShorter(display_url : String, href : String) : CharSequence {
 			
@@ -696,268 +429,557 @@ object MisskeyMarkdownDecoder {
 			}
 		}
 		
-		try {
-			if(src != null) {
+		fun closePreviousBlock() {
+			if(start > 0 && sb[start - 1] != '\n') {
+				sb.append('\n')
+				start = sb.length
+			}
+		}
+		
+		fun setSpan(span : Any) {
+			val end = sb.length
+			sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+		}
+		
+		fun setHighlight() {
+			val list = options.highlightTrie?.matchList(sb, start, sb.length)
+			if(list != null) {
+				for(range in list) {
+					val word = HighlightWord.load(range.word)
+					if(word != null) {
+						options.hasHighlight = true
+						sb.setSpan(
+							HighlightSpan(word.color_fg, word.color_bg),
+							range.start,
+							range.end,
+							Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+						)
+						if(word.sound_type != HighlightWord.SOUND_TYPE_NONE) {
+							options.highlight_sound = word
+						}
+					}
+				}
+			}
+		}
+		
+		fun appendText(text : CharSequence?, preventHighlight : Boolean = false) {
+			text ?: return
+			
+			sb.append(text)
+			
+			if(! preventHighlight) {
+				setHighlight()
+			}
+		}
+		
+		fun appendTextCode(text : String?, preventHighlight : Boolean = false) {
+			text ?: return
+			
+			sb.append(MisskeySyntaxHighlighter.parse(text))
+			
+			if(! preventHighlight) {
+				setHighlight()
+			}
+		}
+		
+		fun appendLink(text : String, url : String, allowShort : Boolean = false) {
+			when {
+				text.isEmpty() -> return
+				! allowShort -> appendText(text, preventHighlight = true)
 				
-				val font_bold = ActMain.timeline_font_bold
+				else -> {
+					val short = urlShorter(text, url)
+					appendText(short, preventHighlight = true)
+				}
+			}
+			val linkHelper = options.linkHelper
+			if(linkHelper != null) {
+				setSpan(
+					MyClickableSpan(
+						text,
+						url,
+						linkHelper.findAcctColor(url),
+						options.linkTag
+					)
+				)
+			}
+			setHighlight()
+		}
+		
+	}
+	
+	//////////////////////////////////////////////////////
+	// リンクを作ったりデータを参照したりする要素
+	
+	private val dEmoji : DecodeEnv.() -> Unit = {
+		val code = data?.get(0)
+		if(code?.isNotEmpty() == true) {
+			appendText(options.decodeEmoji(":$code:"))
+		}
+	}
+	
+	private val dHashtag : DecodeEnv.() -> Unit = {
+		val linkHelper = linkHelper
+		val tag = data?.get(0)
+		if(tag?.isNotEmpty() == true && linkHelper != null) {
+			appendLink(
+				"#$tag",
+				"https://${linkHelper.host}/tags/" + tag.encodePercent()
+			)
+		}
+	}
+	
+	private val dMention : DecodeEnv.() -> Unit = {
+		
+		val username = data?.get(0) ?: ""
+		val host = data?.get(1) ?: ""
+		
+		val linkHelper = linkHelper
+		if(linkHelper == null) {
+			appendText(
+				when {
+					host.isEmpty() -> "@$username"
+					else -> "@$username@$host"
+				}
+			)
+		} else {
+			
+			val shortAcct = when {
+				host.isEmpty()
+					|| host.equals(linkHelper.host, ignoreCase = true) ->
+					username
+				else ->
+					"$username@$host"
+			}
+			
+			val userHost = when {
+				host.isEmpty() -> linkHelper.host
+				else -> host
+			}
+			val userUrl = "https://$userHost/@$username"
+			
+			var mentions = sb.mentions
+			if(mentions == null) {
+				mentions = ArrayList()
+				sb.mentions = mentions
+			}
+			
+			if(mentions.find { it.acct == shortAcct } == null) {
+				mentions.add(
+					TootMention(
+						EntityIdLong(- 1L)
+						, userUrl
+						, shortAcct
+						, username
+					)
+				)
+			}
+			
+			appendLink(
+				when {
+					Pref.bpMentionFullAcct(App1.pref) -> "@$username@$userHost"
+					else -> "@$shortAcct"
+				}
+				, userUrl
+			)
+		}
+	}
+	
+	//////////////////////////////////////////////////////
+	// インラインの装飾要素
+	
+	private val dText : DecodeEnv.() -> Unit = {
+		appendText(nodeSource)
+	}
+	
+	private val dBig : DecodeEnv.() -> Unit = {
+		appendText(data?.get(0))
+		setSpan(MisskeyBigSpan(font_bold))
+	}
+	
+	private val dBold : DecodeEnv.() -> Unit = {
+		appendText(data?.get(0))
+		setSpan(CalligraphyTypefaceSpan(font_bold))
+	}
+	
+	private val dCodeInline : DecodeEnv.() -> Unit = {
+		appendTextCode(data?.get(0))
+		setSpan(BackgroundColorSpan(0x40808080))
+		setSpan(CalligraphyTypefaceSpan(Typeface.MONOSPACE))
+	}
+	
+	private val dMotion : DecodeEnv.() -> Unit = {
+		val code = data?.get(0)
+		appendText(code)
+		setSpan(MisskeyMotionSpan(ActMain.timeline_font))
+	}
+	
+	private val dUrl : DecodeEnv.() -> Unit = {
+		val url = data?.get(0)
+		if(url?.isNotEmpty() == true) {
+			appendLink(url, url, allowShort = true)
+		}
+	}
+	
+	private val dLink : DecodeEnv.() -> Unit = {
+		val title = data?.get(0) ?: "?"
+		val url = data?.get(1)
+		// val silent = data?.get(2)
+		// silentはプレビュー表示を抑制するが、Subwayにはもともとないので関係なかった
+		if(url?.isNotEmpty() == true) {
+			appendLink(title, url)
+		}
+	}
+	
+	//////////////////////////////////////////////////////
+	// ブロック要素
+	
+	private val dCodeBlock : DecodeEnv.() -> Unit = {
+		closePreviousBlock()
+		appendTextCode(trimBlock(data?.get(0)))
+		setSpan(BackgroundColorSpan(0x40808080))
+		setSpan(RelativeSizeSpan(0.7f))
+		setSpan(CalligraphyTypefaceSpan(Typeface.MONOSPACE))
+		appendText("\n")
+	}
+	
+	private val dQuote : DecodeEnv.() -> Unit = {
+		closePreviousBlock()
+		appendText(trimBlock(data?.get(0)))
+		setSpan(BackgroundColorSpan(0x20808080))
+		setSpan(CalligraphyTypefaceSpan(Typeface.defaultFromStyle(Typeface.ITALIC)))
+		appendText("\n")
+	}
+	
+	private val dTitle : DecodeEnv.() -> Unit = {
+		closePreviousBlock()
+		appendText(trimBlock(data?.get(0)))
+		setSpan(AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER))
+		setSpan(BackgroundColorSpan(0x20808080))
+		setSpan(RelativeSizeSpan(1.5f))
+		appendText("\n")
+	}
+	
+	private val dSearch : DecodeEnv.() -> Unit = {
+		val text = data?.get(0)
+		closePreviousBlock()
+		val kw_start = sb.length // キーワードの開始位置
+		appendText(text)
+		appendText(" ")
+		start = sb.length // 検索リンクの開始位置
+		appendLink(
+			context.getString(R.string.search),
+			"https://www.google.co.jp/search?q=" + (text
+				?: "Subway Tooter").encodePercent()
+		)
+		sb.setSpan(
+			RelativeSizeSpan(1.2f),
+			kw_start,
+			sb.length,
+			Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+		)
+		appendText("\n")
+	}
+	
+	//////////////////////////////////////////////////////
+	
+	private class ParseParams(val text : String) {
+		var remain : String = ""
+		var previous : String = ""
+		
+		var pos : Int = 0
+			set(value) {
+				field = value
+				remain = text.substring(pos)
+				previous = text.substring(0, pos)
+			}
+	}
+	
+	private class Node(
+		var start : Int, // ソース文字列中の開始位置
+		var length : Int, // ソース文字列中の長さ
+		var decoder : DecodeEnv.() -> Unit, // ノード種別
+		var data : ArrayList<String?>? // パラメータ
+	)
+	
+	// generate lambda with captured parameter.
+	private fun simpleParser(
+		decoder : DecodeEnv.() -> Unit,
+		pattern : Pattern
+	) : (ParseParams) -> Node? = { env : ParseParams ->
+		val matcher = pattern.matcher(env.remain)
+		when {
+			! matcher.find() -> null
+			else -> Node(
+				env.pos,
+				matcher.end(),
+				decoder,
+				arrayListOf(matcher.group(1))
+			)
+		}
+	}
+	
+	private val nodeParserMap = SparseArray<Array<out (ParseParams) -> Node?>>().apply {
+		
+		fun addParser(firstChars : String, vararg nodeParsers : (ParseParams) -> Node?) {
+			for(s in firstChars) {
+				put(s.toInt(), nodeParsers)
+			}
+		}
+		
+		addParser(
+			"\""
+			, simpleParser(
+				dQuote,
+				Pattern.compile("""^"([\s\S]+?)\n"""")
+			)
+		)
+		
+		addParser(
+			":"
+			, simpleParser(
+				dEmoji,
+				Pattern.compile("""^:([a-zA-Z0-9+-_]+):""")
+			)
+		)
+		
+		addParser(
+			"("
+			, simpleParser(
+				dMotion,
+				Pattern.compile("""^\Q(((\E(.+?)\Q)))\E""")
+			)
+		)
+		
+		addParser(
+			"<"
+			, simpleParser(
+				dMotion,
+				Pattern.compile("""^<motion>(.+?)</motion>""")
+			)
+		)
+		
+		addParser(
+			"*"
+			// 処理順序に意味があるので入れ替えないこと
+			// 記号列が長い順
+			, simpleParser(
+				dBig,
+				Pattern.compile("""^\Q***\E(.+?)\Q***\E""")
+			)
+			, simpleParser(
+				dBold,
+				Pattern.compile("""^\Q**\E(.+?)\Q**\E""")
+			)
+		)
+		
+		addParser(
+			"h"
+			, simpleParser(
+				dUrl,
+				Pattern.compile("""^(https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+)""")
+			)
+		)
+		
+		// 検索だけはボタン開始位置からバックトラックした方が効率的
+		val reSearchButton = Pattern.compile(
+			"""^(検索|\[検索]|Search|\[Search])(\n|${'$'})"""
+			, Pattern.CASE_INSENSITIVE
+		)
+		
+		fun parseSearchPrev(prev : String) : String? {
+			val delm = prev.lastIndexOf('\n')
+			val end = prev.length
+			return when {
+				end <= 1 -> null // キーワードを含まないくらい短い
+				delm + 1 >= end - 1 -> null // 改行より後の部分が短すぎる
+				! " 　".contains(prev.last()) -> null // 末尾が空白ではない
+				else -> prev.substring(delm + 1, end - 1) // キーワード部分を返す
+			}
+		}
+		
+		val searchParser = { env : ParseParams ->
+			val matcher = reSearchButton.matcher(env.remain)
+			when {
+				! matcher.find() -> null
 				
-				for(node in parse(src)) {
-					val nodeSource =
-						src.substring(node.sourceStart, node.sourceStart + node.sourceLength)
-					var start = sb.length
-					val data = node.data
-					
-					fun setSpan(span : Any) {
-						val end = sb.length
-						sb.setSpan(span, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+				else -> {
+					val buttonLength = matcher.end()
+					val keyword = parseSearchPrev(env.previous)
+					when {
+						keyword?.isEmpty() != false -> null
+						else -> Node(
+							env.pos - (keyword.length + 1)
+							, buttonLength + (keyword.length + 1)
+							, dSearch
+							, arrayListOf(keyword)
+						)
 					}
-					
-					fun setHighlight() {
-						val list = options.highlightTrie?.matchList(sb, start, sb.length)
-						if(list != null) {
-							for(range in list) {
-								val word = HighlightWord.load(range.word)
-								if(word != null) {
-									options.hasHighlight = true
-									sb.setSpan(
-										HighlightSpan(word.color_fg, word.color_bg),
-										range.start,
-										range.end,
-										Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-									)
-									if(word.sound_type != HighlightWord.SOUND_TYPE_NONE) {
-										options.highlight_sound = word
-									}
-								}
-							}
-						}
+				}
+			}
+		}
+		
+		val titleParser = simpleParser(dTitle, Pattern.compile("""^[【\[](.+?)[】\]]\n"""))
+		
+		val reLink = Pattern.compile(
+			"""^\??\[([^\[\]]+?)]\((https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+?)\)"""
+		)
+
+		val linkParser = { env : ParseParams ->
+			val matcher = reLink.matcher(env.remain)
+			when {
+				! matcher.find() -> null
+				else -> Node(
+					env.pos
+					, matcher.end()
+					, dLink
+					, arrayListOf(
+						matcher.group(1) // title
+						, matcher.group(2) // url
+						, env.remain[0].toString()   // silent なら "?" になる
+					)
+				)
+			}
+		}
+		
+		addParser("[", titleParser, searchParser, linkParser)
+		addParser("【", titleParser)
+		addParser("検Ss", searchParser)
+		addParser("?", linkParser)
+		
+		val reMention = Pattern.compile(
+			"""^@([a-z0-9_]+)(?:@([a-z0-9.\-]+[a-z0-9]))?"""
+			, Pattern.CASE_INSENSITIVE
+		)
+		
+		addParser("@", { env : ParseParams ->
+			val matcher = reMention.matcher(env.remain)
+			when {
+				! matcher.find() -> null
+				else -> Node(
+					env.pos
+					, matcher.end()
+					, dMention
+					, arrayListOf(matcher.group(1), matcher.group(2)) // username, host
+				)
+			}
+		})
+		
+		val reHashtag = Pattern.compile("""^#([^\s]+)""")
+		addParser("#"
+			, { env : ParseParams ->
+				val matcher = reHashtag.matcher(env.remain)
+				when {
+					! matcher.find() -> null
+					else -> when {
+						// 先頭以外では直前に空白が必要らしい
+						env.pos > 0
+							&& ! CharacterGroup.isWhitespace(env.text[env.pos - 1].toInt()) ->
+							null
+						
+						else -> Node(
+							env.pos
+							, matcher.end()
+							, dHashtag
+							, arrayListOf(matcher.group(1))
+							// 先頭の#を含まないハッシュタグ
+						)
 					}
-					
-					fun appendText(text : CharSequence?, preventHighlight : Boolean = false) {
-						text ?: return
-						
-						sb.append(text)
-						
-						if(! preventHighlight) {
-							setHighlight()
-						}
-					}
-					
-					fun appendTextCode(text : String?, preventHighlight : Boolean = false) {
-						text ?: return
-						
-						sb.append(MisskeySyntaxHighlighter.parse(text))
-						
-						if(! preventHighlight) {
-							setHighlight()
-						}
-					}
-					
-					fun appendLink(text : String, url : String, allowShort : Boolean = false) {
-						when {
-							text.isEmpty() -> return
-							! allowShort -> appendText(text, preventHighlight = true)
-							
-							else -> {
-								val short = urlShorter(text, url)
-								appendText(short, preventHighlight = true)
-							}
-						}
-						val linkHelper = options.linkHelper
-						if(linkHelper != null) {
-							setSpan(
-								MyClickableSpan(
-									text,
-									url,
-									linkHelper.findAcctColor(url),
-									options.linkTag
-								)
-							)
-						}
-						setHighlight()
-					}
-					
-					when(node.type) {
-						
-						NodeType.Url -> {
-							val url = data?.get(0)
-							if(url?.isNotEmpty() == true) {
-								appendLink(url, url, allowShort = true)
-							}
-						}
-						
-						NodeType.Link -> {
-							val title = data?.get(0) ?: "?"
-							val url = data?.get(1)
-							// val silent = data?.get(2)
-							// silentはプレビュー表示を抑制するが、Subwayにはもともとないので関係なかった
-							if(url?.isNotEmpty() == true) {
-								appendLink(title, url)
-							}
-						}
-						
-						NodeType.Mention -> {
-							
-							val username = data?.get(0) ?: ""
-							val host = data?.get(1) ?: ""
-							
-							val linkHelper = options.linkHelper
-							if(linkHelper == null) {
-								appendText(
-									when {
-										host.isEmpty() -> "@$username"
-										else -> "@$username@$host"
-									}
-								)
-							} else {
-								
-								val shortAcct = when {
-									host.isEmpty()
-										|| host.equals(linkHelper.host, ignoreCase = true) ->
-										username
-									else ->
-										"$username@$host"
-								}
-								
-								val userHost = when {
-									host.isEmpty() -> linkHelper.host
-									else -> host
-								}
-								val userUrl = "https://$userHost/@$username"
-								
-								var mentions = sb.mentions
-								if(mentions == null) {
-									mentions = ArrayList()
-									sb.mentions = mentions
-								}
-								
-								if(mentions.find { it.acct == shortAcct } == null) {
-									mentions.add(
-										TootMention(
-											EntityIdLong(- 1L)
-											, userUrl
-											, shortAcct
-											, username
-										)
-									)
-								}
-								
-								appendLink(
-									when {
-										Pref.bpMentionFullAcct(App1.pref) -> "@$username@$userHost"
-										else -> "@$shortAcct"
-									}
-									, userUrl
-								)
-							}
-						}
-						
-						NodeType.Hashtag -> {
-							val linkHelper = options.linkHelper
-							val tag = data?.get(0)
-							if(tag?.isNotEmpty() == true && linkHelper != null) {
-								appendLink(
-									"#$tag",
-									"https://${linkHelper.host}/tags/" + tag.encodePercent()
-								)
-							}
-						}
-						
-						NodeType.Emoji -> {
-							val code = data?.get(0)
-							if(code?.isNotEmpty() == true) {
-								appendText(options.decodeEmoji(":$code:"))
-							}
-						}
-						
-						////////////////////////////////////////////
-						// 装飾インライン要素
-						
-						NodeType.Text -> {
-							appendText(nodeSource)
-						}
-						
-						NodeType.Big -> {
-							appendText(data?.get(0))
-							setSpan(MisskeyBigSpan(font_bold))
-						}
-						
-						NodeType.Motion -> {
-							val code = data?.get(0)
-							appendText(code)
-							setSpan(MisskeyMotionSpan(ActMain.timeline_font))
-						}
-						
-						NodeType.Bold -> {
-							appendText(data?.get(0))
-							setSpan(CalligraphyTypefaceSpan(font_bold))
-						}
-						
-						NodeType.CodeInline -> {
-							appendTextCode(data?.get(0))
-							setSpan(BackgroundColorSpan(0x40808080))
-							setSpan(CalligraphyTypefaceSpan(Typeface.MONOSPACE))
-						}
-						
-						////////////////////////////////////////////
-						// ブロック要素
-						
-						NodeType.Title -> {
-							
-							appendText(trimBlock(data?.get(0)))
-							setSpan(AlignmentSpan.Standard(Layout.Alignment.ALIGN_CENTER))
-							setSpan(BackgroundColorSpan(0x20808080))
-							setSpan(RelativeSizeSpan(1.5f))
-							appendText("\n")
-						}
-						
-						NodeType.CodeBlock -> {
-							appendTextCode(trimBlock(data?.get(0)))
-							setSpan(BackgroundColorSpan(0x40808080))
-							setSpan(RelativeSizeSpan(0.7f))
-							setSpan(CalligraphyTypefaceSpan(Typeface.MONOSPACE))
-							appendText("\n")
-						}
-						
-						NodeType.Quote -> {
-							appendText(trimBlock(data?.get(0)))
-							setSpan(BackgroundColorSpan(0x20808080))
-							setSpan(CalligraphyTypefaceSpan(Typeface.defaultFromStyle(Typeface.ITALIC)))
-							appendText("\n")
-						}
-						
-						NodeType.Search -> {
-							val text = data?.get(0)
-							val kw_start = sb.length // キーワードの開始位置
-							appendText(text)
-							appendText(" ")
-							start = sb.length // 検索リンクの開始位置
-							appendLink(
-								context.getString(R.string.search),
-								"https://www.google.co.jp/search?q=" + (text
-									?: "Subway Tooter").encodePercent()
-							)
-							sb.setSpan(
-								RelativeSizeSpan(1.2f),
-								kw_start,
-								sb.length,
-								Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-							)
-							appendText("\n")
-						}
+				}
+			}
+		)
+		
+		addParser(
+			"`"
+			, simpleParser(
+				dCodeBlock,
+				Pattern.compile("""^```(.+?)```""", Pattern.DOTALL)
+			)
+			, simpleParser(
+				dCodeInline,
+				Pattern.compile("""^`([^`´\x0d\x0a]+)`""")
+				// インラインコードは内部にとある文字を含むと認識されない。理由は顔文字と衝突するからだとか
+			)
+		)
+	}
+	
+	private val reStartEmptyLines = """\A(?:[ 　]*?[\x0d\x0a]+)+""".toRegex()
+	private val reEndEmptyLines = """[\s\x0d\x0a]+\z""".toRegex()
+	private fun trimBlock(s : String?) : String? {
+		s ?: return null
+		return s
+			.replace(reStartEmptyLines, "")
+			.replace(reEndEmptyLines, "")
+	}
+	
+	// 配列中の要素をラムダ式で変換して、戻り値が非nullならそこで処理を打ち切る
+	private inline fun <T, V> Array<out T>.firstNonNull(predicate : (T) -> V?) : V? {
+		for(element in this) return predicate(element) ?: continue
+		return null
+	}
+	
+	private fun parse(source : String?) : ArrayList<Node> {
+		val result = ArrayList<Node>()
+		
+		if(source != null) {
+			val env = ParseParams(source)
+			val end = source.length
+			var lastEnd = 0 // 直前のノードの終了位置
+			var pos = 0 //スキャン中の位置
+			
+			// 直前のノードの終了位置から次のノードの開始位置の手前までをresultに追加する
+			fun closeText(endText : Int) {
+				val length = endText - lastEnd
+				if(length > 0) result.add(Node(lastEnd, length, dText, null))
+			}
+			
+			while(pos < end) {
+				val lastParsers = nodeParserMap[source[pos].toInt()]
+				if(lastParsers == null) {
+					++ pos
+					continue
+				}
+				env.pos = pos
+				val node = lastParsers.firstNonNull { it(env) }
+				if( node == null) {
+					++ pos
+					continue
+				}
+				closeText(node.start)
+				result.add(node)
+				lastEnd = node.start + node.length
+				pos = lastEnd
+			}
+			closeText(pos)
+		}
+		
+		return result
+	}
+	
+	fun decodeMarkdown(options : DecodeOptions, src : String?) =
+		SpannableStringBuilderEx().apply {
+			try {
+				val env = DecodeEnv(options, this)
+				
+				if(src != null) {
+					for(node in parse(src)) {
+						env.nodeSource = src.substring(node.start, node.start + node.length)
+						env.start = length
+						env.data = node.data
+						val decoder = node.decoder
+						env.decoder()
 					}
 				}
 				
 				// 末尾の空白を取り除く
-				var end = sb.length
-				while(end > 0 && HTMLDecoder.isWhitespaceOrLineFeed(sb[end - 1].toInt())) -- end
-				if(end < sb.length) sb.delete(end, sb.length)
+				val end = length
+				var pos = end
+				while(pos > 0 && HTMLDecoder.isWhitespaceOrLineFeed(get(pos - 1).toInt())) -- pos
+				if(pos < end) delete(pos, end)
+				
+			} catch(ex : Throwable) {
+				log.trace(ex)
+				log.e(ex, "decodeMarkdown failed")
 			}
-		} catch(ex : Throwable) {
-			log.trace(ex)
 		}
-		
-		return sb
-	}
 }
-

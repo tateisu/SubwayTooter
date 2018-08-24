@@ -504,18 +504,23 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 
 	private fun hasReceipt(access_info:SavedAccount):TootVisibility{
-		val reply = this.reply
-		if( reply != null && ! access_info.isMe(reply.account)) {
+		val fullAcctMe = access_info.getFullAcct(account)
+		
+		val reply_account = reply?.account
+		if( reply_account != null && fullAcctMe != access_info.getFullAcct(reply_account) ) {
 			return TootVisibility.DirectSpecified
 		}
+		
 		val in_reply_to_account_id = this.in_reply_to_account_id
-		if( in_reply_to_account_id != null && in_reply_to_account_id != access_info.loginAccount?.id) {
+		if( in_reply_to_account_id != null && in_reply_to_account_id != account.id) {
 			return TootVisibility.DirectSpecified
 		}
+		
 		mentions?.forEach{
-			if(!access_info.isMe(it.acct))
+			if(fullAcctMe != access_info.getFullAcct(it.acct))
 				return@hasReceipt TootVisibility.DirectSpecified
 		}
+		
 		return TootVisibility.DirectPrivate
 	}
 

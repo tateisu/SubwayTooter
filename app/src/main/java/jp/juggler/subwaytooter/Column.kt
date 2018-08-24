@@ -56,6 +56,8 @@ class Column(
 		private const val RELATIONSHIP_LOAD_STEP = 40
 		private const val ACCT_DB_STEP = 100
 		
+		private const val MISSKEY_HASHTAG_LIMIT=30
+		
 		// ステータスのリストを返すAPI
 		private const val PATH_HOME = "/api/v1/timelines/home?limit=$READ_LIMIT"
 		private const val PATH_DIRECT_MESSAGES = "/api/v1/timelines/direct?limit=$READ_LIMIT"
@@ -202,7 +204,7 @@ class Column(
 			return when(type) {
 				TYPE_HOME -> context.getString(R.string.home)
 				TYPE_LOCAL -> context.getString(R.string.local_timeline)
-				TYPE_MISSKEY_HYBRID->context.getString(R.string.misskey_hybrid_timeline)
+				TYPE_MISSKEY_HYBRID -> context.getString(R.string.misskey_hybrid_timeline)
 				TYPE_FEDERATE -> context.getString(R.string.federate_timeline)
 				TYPE_PROFILE -> context.getString(R.string.profile)
 				TYPE_FAVOURITES -> context.getString(R.string.favourites)
@@ -236,7 +238,7 @@ class Column(
 				TYPE_REPORTS -> R.attr.ic_info
 				TYPE_HOME -> R.attr.btn_home
 				TYPE_LOCAL -> R.attr.btn_local_tl
-				TYPE_MISSKEY_HYBRID->R.attr.ic_share
+				TYPE_MISSKEY_HYBRID -> R.attr.ic_share
 				TYPE_FEDERATE -> R.attr.btn_federate_tl
 				TYPE_PROFILE -> R.attr.btn_statuses
 				TYPE_FAVOURITES -> if(SavedAccount.isNicoru(acct)) R.attr.ic_nicoru else R.attr.btn_favourite
@@ -309,21 +311,21 @@ class Column(
 		}
 		
 		private val misskeyCustomParserFollowRequest =
-			{ parser:TootParser, jsonArray : JSONArray ->
+			{ parser : TootParser, jsonArray : JSONArray ->
 				val dst = ArrayList<TootAccountRef>()
-				for( i in 0 until jsonArray.length()){
+				for(i in 0 until jsonArray.length()) {
 					val src = jsonArray.optJSONObject(i) ?: continue
 					
 					val followerRef = TootAccountRef.mayNull(
 						parser,
-						parser.account( src.optJSONObject("follower"))
-					) ?:continue
+						parser.account(src.optJSONObject("follower"))
+					) ?: continue
 					
-					val requestId = EntityId.mayNull(src.parseString("id")) ?:continue
+					val requestId = EntityId.mayNull(src.parseString("id")) ?: continue
 					
 					followerRef.get()._orderId = requestId
 					
-					dst.add( followerRef )
+					dst.add(followerRef)
 				}
 				dst
 			}
@@ -347,7 +349,7 @@ class Column(
 			return when(column_type) {
 				TYPE_HOME, TYPE_NOTIFICATIONS -> "/api/v1/streaming/?stream=user"
 				TYPE_LOCAL -> "/api/v1/streaming/?stream=public:local"
-				TYPE_MISSKEY_HYBRID-> null // FIXME MisskeyだしMastodonのURLではない
+				TYPE_MISSKEY_HYBRID -> null // FIXME MisskeyだしMastodonのURLではない
 				TYPE_FEDERATE -> "/api/v1/streaming/?stream=public"
 				TYPE_LIST_TL -> "/api/v1/streaming/?stream=list&list=" + profile_id.toString()
 				
@@ -783,38 +785,38 @@ class Column(
 	private fun getNotificationTypeString() : String {
 		val sb = StringBuilder()
 		sb.append("(")
-
+		
 		var n = 0
 		if(! dont_show_reply) {
-			if(n++>0) sb.append(", ")
+			if(n ++ > 0) sb.append(", ")
 			sb.append(context.getString(R.string.notification_type_mention))
 		}
 		if(! dont_show_follow) {
-			if(n++>0) sb.append(", ")
+			if(n ++ > 0) sb.append(", ")
 			sb.append(context.getString(R.string.notification_type_follow))
 		}
 		if(! dont_show_boost) {
-			if(n++>0) sb.append(", ")
+			if(n ++ > 0) sb.append(", ")
 			sb.append(context.getString(R.string.notification_type_boost))
 		}
 		if(! dont_show_favourite) {
-			if(n++>0) sb.append(", ")
+			if(n ++ > 0) sb.append(", ")
 			sb.append(context.getString(R.string.notification_type_favourite))
 		}
-		if( isMisskey && ! dont_show_reaction) {
-			if(n++>0) sb.append(", ")
+		if(isMisskey && ! dont_show_reaction) {
+			if(n ++ > 0) sb.append(", ")
 			sb.append(context.getString(R.string.notification_type_reaction))
 		}
-		if( isMisskey && ! dont_show_vote) {
-			if(n++>0) sb.append(", ")
+		if(isMisskey && ! dont_show_vote) {
+			if(n ++ > 0) sb.append(", ")
 			sb.append(context.getString(R.string.notification_type_vote))
 		}
-		val n_max = if(isMisskey){
+		val n_max = if(isMisskey) {
 			6
-		}else{
+		} else {
 			4
 		}
-		if( n == 0 || n == n_max ) return "" // 全部か皆無なら部分表記は要らない
+		if(n == 0 || n == n_max) return "" // 全部か皆無なら部分表記は要らない
 		sb.append(")")
 		return sb.toString()
 	}
@@ -1312,36 +1314,36 @@ class Column(
 	
 	private fun isFiltered(item : TootNotification) : Boolean {
 		
-		when(item.type){
-			TootNotification.TYPE_FAVOURITE->if(dont_show_favourite){
+		when(item.type) {
+			TootNotification.TYPE_FAVOURITE -> if(dont_show_favourite) {
 				log.d("isFiltered: favourite notification filtered.")
 				return true
 			}
 			TootNotification.TYPE_REBLOG,
 			TootNotification.TYPE_RENOTE,
-			TootNotification.TYPE_QUOTE -> if(dont_show_boost){
+			TootNotification.TYPE_QUOTE -> if(dont_show_boost) {
 				log.d("isFiltered: reblog notification filtered.")
 				return true
 			}
-			TootNotification.TYPE_FOLLOW -> if(dont_show_follow){
+			TootNotification.TYPE_FOLLOW -> if(dont_show_follow) {
 				log.d("isFiltered: follow notification filtered.")
 				return true
 			}
 			TootNotification.TYPE_MENTION,
-			TootNotification.TYPE_REPLY ->if(dont_show_reply){
+			TootNotification.TYPE_REPLY -> if(dont_show_reply) {
 				log.d("isFiltered: mention notification filtered.")
 				return true
 			}
-			TootNotification.TYPE_REACTION -> if(dont_show_reaction){
+			TootNotification.TYPE_REACTION -> if(dont_show_reaction) {
 				log.d("isFiltered: reaction notification filtered.")
 				return true
 			}
-			TootNotification.TYPE_VOTE ->if(dont_show_vote){
+			TootNotification.TYPE_VOTE -> if(dont_show_vote) {
 				log.d("isFiltered: vote notification filtered.")
 				return true
 			}
 		}
-
+		
 		val status = item.status
 		if(status != null) {
 			
@@ -1733,8 +1735,8 @@ class Column(
 				emptyMessage : String? = null,
 				misskeyParams : JSONObject? = null,
 				misskeyArrayFinder : (JSONObject) -> JSONArray? = { null },
-				misskeyCustomParser : (parser:TootParser ,jsonArray:JSONArray) -> ArrayList<TootAccountRef> =
-					{ parser,jsonArray ->  parser.accountList(jsonArray) }
+				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootAccountRef> =
+					{ parser, jsonArray -> parser.accountList(jsonArray) }
 			) : TootApiResult? {
 				
 				val result = if(misskeyParams != null) {
@@ -1745,13 +1747,13 @@ class Column(
 				
 				if(result != null && result.error == null) {
 					val jsonObject = result.jsonObject
-					if( jsonObject != null){
+					if(jsonObject != null) {
 						result.data = misskeyArrayFinder(jsonObject)
 					}
 					val jsonArray = result.jsonArray
-							?: return result.setError("missing JSON data.")
+						?: return result.setError("missing JSON data.")
 					
-					val src = misskeyCustomParser(parser,jsonArray)
+					val src = misskeyCustomParser(parser, jsonArray)
 					saveRange(true, true, result, src)
 					
 					val tmp = ArrayList<TimelineItem>()
@@ -1929,7 +1931,7 @@ class Column(
 						TYPE_DIRECT_MESSAGES -> return getStatuses(client, PATH_DIRECT_MESSAGES)
 						
 						TYPE_LOCAL -> return getStatuses(client, makePublicLocalUrl())
-						TYPE_MISSKEY_HYBRID-> return getStatuses(client, makeMisskeyHybridTlUrl())
+						TYPE_MISSKEY_HYBRID -> return getStatuses(client, makeMisskeyHybridTlUrl())
 						
 						TYPE_FEDERATE -> return getStatuses(client, makePublicFederateUrl())
 						
@@ -2057,14 +2059,12 @@ class Column(
 							)
 						}
 						
-
-						
 						TYPE_FOLLOW_REQUESTS -> return if(isMisskey) {
 							parseAccountList(
 								client
 								, "/api/following/requests/list"
 								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
-								,misskeyCustomParser = misskeyCustomParserFollowRequest
+								, misskeyCustomParser = misskeyCustomParserFollowRequest
 							)
 						} else {
 							parseAccountList(
@@ -2080,7 +2080,17 @@ class Column(
 						
 						TYPE_FAVOURITES -> return getStatuses(client, PATH_FAVOURITES)
 						
-						TYPE_HASHTAG -> return getStatuses(client, makeHashtagUrl(hashtag))
+						TYPE_HASHTAG -> return if(isMisskey) {
+							getStatuses(
+								client
+								, makeHashtagUrl(hashtag)
+								, misskeyParams = makeMisskeyTimelineParameter(parser)
+									.put("tag", hashtag)
+									.put("limit",MISSKEY_HASHTAG_LIMIT)
+							)
+						} else {
+							getStatuses(client, makeHashtagUrl(hashtag))
+						}
 						
 						TYPE_REPORTS -> return parseReports(client, PATH_REPORTS)
 						
@@ -2532,7 +2542,7 @@ class Column(
 		posted_reply_id : EntityId?
 	) {
 		when(column_type) {
-			TYPE_HOME, TYPE_LOCAL, TYPE_FEDERATE, TYPE_DIRECT_MESSAGES ,TYPE_MISSKEY_HYBRID-> {
+			TYPE_HOME, TYPE_LOCAL, TYPE_FEDERATE, TYPE_DIRECT_MESSAGES, TYPE_MISSKEY_HYBRID -> {
 				startRefresh(
 					true,
 					false,
@@ -2630,8 +2640,8 @@ class Column(
 				path_base : String,
 				misskeyParams : JSONObject? = null,
 				misskeyArrayFinder : (JSONObject) -> JSONArray? = { null },
-				misskeyCustomParser : (parser:TootParser ,jsonArray:JSONArray) -> ArrayList<TootAccountRef> =
-					{ parser,jsonArray ->  parser.accountList(jsonArray) }
+				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootAccountRef> =
+					{ parser, jsonArray -> parser.accountList(jsonArray) }
 			) : TootApiResult? {
 				
 				val params = misskeyParams ?: makeMisskeyBaseParameter(parser)
@@ -2650,14 +2660,14 @@ class Column(
 				val firstResult = result
 				
 				var jsonObject = result?.jsonObject
-				if( jsonObject != null){
-					result!!.data = misskeyArrayFinder(jsonObject)
+				if(jsonObject != null) {
+					result !!.data = misskeyArrayFinder(jsonObject)
 				}
 				var array = result?.jsonArray
 				
 				if(array != null) {
 					
-					var src = misskeyCustomParser(parser,array)
+					var src = misskeyCustomParser(parser, array)
 					if(isMisskey && ! bBottom) src.reverse()
 					saveRange(bBottom, ! bBottom, result, src)
 					list_tmp = addAll(null, src)
@@ -2693,10 +2703,10 @@ class Column(
 								result = client.request(path_base, params.toPostRequestBuilder())
 								
 								jsonObject = result?.jsonObject
-								if( jsonObject != null){
+								if(jsonObject != null) {
 									result?.data = misskeyArrayFinder(jsonObject)
 								}
-
+								
 								array = result?.jsonArray
 								if(array == null) {
 									log.d("refresh-account-top: error or cancelled.")
@@ -2704,7 +2714,7 @@ class Column(
 									break
 								}
 								
-								src = misskeyCustomParser(parser,array)
+								src = misskeyCustomParser(parser, array)
 								src.reverse()
 								
 								addAll(list_tmp, src)
@@ -2750,7 +2760,7 @@ class Column(
 								result = client.request(path)
 								
 								jsonObject = result?.jsonObject
-								if( jsonObject != null){
+								if(jsonObject != null) {
 									result?.data = misskeyArrayFinder(jsonObject)
 								}
 								
@@ -2765,7 +2775,7 @@ class Column(
 									break
 								}
 								
-								src = misskeyCustomParser(parser,jsonArray)
+								src = misskeyCustomParser(parser, jsonArray)
 								addAll(list_tmp, src)
 							}
 							if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
@@ -3374,8 +3384,8 @@ class Column(
 						TYPE_DIRECT_MESSAGES -> getStatusList(client, PATH_DIRECT_MESSAGES)
 						
 						TYPE_LOCAL -> getStatusList(client, makePublicLocalUrl())
-						TYPE_MISSKEY_HYBRID-> getStatusList(client, makeMisskeyHybridTlUrl())
-
+						TYPE_MISSKEY_HYBRID -> getStatusList(client, makeMisskeyHybridTlUrl())
+						
 						TYPE_FEDERATE -> getStatusList(client, makePublicFederateUrl())
 						
 						TYPE_FAVOURITES -> getStatusList(client, PATH_FAVOURITES)
@@ -3486,7 +3496,7 @@ class Column(
 								client
 								, "/api/following/requests/list"
 								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
-								,misskeyCustomParser = misskeyCustomParserFollowRequest
+								, misskeyCustomParser = misskeyCustomParserFollowRequest
 							)
 							
 						} else {
@@ -3494,7 +3504,17 @@ class Column(
 						}
 						TYPE_FOLLOW_SUGGESTION -> getAccountList(client, PATH_FOLLOW_SUGGESTION)
 						
-						TYPE_HASHTAG -> getStatusList(client, makeHashtagUrl(hashtag))
+						TYPE_HASHTAG -> if(isMisskey) {
+							getStatusList(
+								client
+								, makeHashtagUrl(hashtag)
+								, misskeyParams = makeMisskeyTimelineParameter(parser)
+									.put("tag", hashtag)
+									.put("limit",MISSKEY_HASHTAG_LIMIT)
+							)
+						} else {
+							getStatusList(client, makeHashtagUrl(hashtag))
+						}
 						
 						TYPE_SEARCH_MSP ->
 							if(! bBottom) {
@@ -3734,10 +3754,13 @@ class Column(
 			
 			fun getAccountList(
 				client : TootApiClient
-				, path_base : String
-				, misskeyParams : JSONObject? = null
-				,misskeyCustomParser : (parser:TootParser ,jsonArray:JSONArray) -> ArrayList<TootAccountRef> =
-					{ parser,jsonArray ->  parser.accountList(jsonArray) }
+				,
+				path_base : String
+				,
+				misskeyParams : JSONObject? = null
+				,
+				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootAccountRef> =
+					{ parser, jsonArray -> parser.accountList(jsonArray) }
 			
 			) : TootApiResult? {
 				
@@ -3778,7 +3801,7 @@ class Column(
 						}
 						result = r2
 						
-						val src = misskeyCustomParser(parser,jsonArray)
+						val src = misskeyCustomParser(parser, jsonArray)
 						src.reverse()
 						if(src.isEmpty()) {
 							log.d("gap-account: empty.")
@@ -3822,7 +3845,7 @@ class Column(
 							break
 						}
 						result = r2
-						val src = misskeyCustomParser(parser,jsonArray)
+						val src = misskeyCustomParser(parser, jsonArray)
 						
 						if(src.isEmpty()) {
 							log.d("gap-account: empty.")
@@ -4180,7 +4203,7 @@ class Column(
 					return when(column_type) {
 						
 						TYPE_LOCAL -> getStatusList(client, makePublicLocalUrl())
-						TYPE_MISSKEY_HYBRID-> getStatusList(client, makeMisskeyHybridTlUrl())
+						TYPE_MISSKEY_HYBRID -> getStatusList(client, makeMisskeyHybridTlUrl())
 						
 						TYPE_FEDERATE -> getStatusList(client, makePublicFederateUrl())
 						
@@ -4192,7 +4215,17 @@ class Column(
 						
 						TYPE_NOTIFICATIONS -> getNotificationList(client)
 						
-						TYPE_HASHTAG -> getStatusList(client, makeHashtagUrl(hashtag))
+						TYPE_HASHTAG -> if(isMisskey) {
+							getStatusList(
+								client
+								, makeHashtagUrl(hashtag)
+								, misskeyParams = makeMisskeyTimelineParameter(parser)
+									.put("tag", hashtag)
+									.put("limit",MISSKEY_HASHTAG_LIMIT)
+							)
+						} else {
+							getStatusList(client, makeHashtagUrl(hashtag))
+						}
 						
 						TYPE_BOOSTED_BY -> getAccountList(
 							client,
@@ -4208,14 +4241,14 @@ class Column(
 						
 						TYPE_BLOCKS -> getAccountList(client, PATH_BLOCKS)
 						
-						TYPE_FOLLOW_REQUESTS ->if(isMisskey) {
+						TYPE_FOLLOW_REQUESTS -> if(isMisskey) {
 							getAccountList(
 								client
 								, "/api/following/requests/list"
 								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
-								,misskeyCustomParser = misskeyCustomParserFollowRequest
+								, misskeyCustomParser = misskeyCustomParserFollowRequest
 							)
-						}else{
+						} else {
 							getAccountList(
 								client
 								, PATH_FOLLOW_REQUESTS
@@ -4518,7 +4551,7 @@ class Column(
 	
 	// マストドン2.4.3rcのキーワードフィルタのコンテキスト
 	private fun getFilterContext() = when(column_type) {
-		TYPE_HOME, TYPE_LIST_TL,TYPE_MISSKEY_HYBRID -> TootFilter.CONTEXT_HOME
+		TYPE_HOME, TYPE_LIST_TL, TYPE_MISSKEY_HYBRID -> TootFilter.CONTEXT_HOME
 		TYPE_NOTIFICATIONS -> TootFilter.CONTEXT_NOTIFICATIONS
 		TYPE_CONVERSATION -> TootFilter.CONTEXT_THREAD
 		TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_PROFILE, TYPE_SEARCH -> TootFilter.CONTEXT_PUBLIC
@@ -4535,9 +4568,9 @@ class Column(
 	// カラム設定に「ブーストを表示しない」ボタンを含めるなら真
 	fun canFilterBoost() : Boolean {
 		return when(column_type) {
-			TYPE_HOME, TYPE_MISSKEY_HYBRID,TYPE_PROFILE, TYPE_NOTIFICATIONS, TYPE_LIST_TL -> true
+			TYPE_HOME, TYPE_MISSKEY_HYBRID, TYPE_PROFILE, TYPE_NOTIFICATIONS, TYPE_LIST_TL -> true
 			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH -> isMisskey
-			TYPE_CONVERSATION,TYPE_DIRECT_MESSAGES -> isMisskey
+			TYPE_CONVERSATION, TYPE_DIRECT_MESSAGES -> isMisskey
 			else -> false
 		}
 	}
@@ -4545,7 +4578,7 @@ class Column(
 	// カラム設定に「返信を表示しない」ボタンを含めるなら真
 	fun canFilterReply() : Boolean {
 		return when(column_type) {
-			TYPE_HOME, TYPE_MISSKEY_HYBRID, TYPE_PROFILE, TYPE_NOTIFICATIONS,TYPE_LIST_TL, TYPE_DIRECT_MESSAGES -> true
+			TYPE_HOME, TYPE_MISSKEY_HYBRID, TYPE_PROFILE, TYPE_NOTIFICATIONS, TYPE_LIST_TL, TYPE_DIRECT_MESSAGES -> true
 			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH -> isMisskey
 			else -> false
 		}
@@ -4553,7 +4586,7 @@ class Column(
 	
 	fun canFilterNormalToot() : Boolean {
 		return when(column_type) {
-			TYPE_HOME,TYPE_MISSKEY_HYBRID, TYPE_LIST_TL -> true
+			TYPE_HOME, TYPE_MISSKEY_HYBRID, TYPE_LIST_TL -> true
 			TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_SEARCH -> isMisskey
 			else -> false
 		}
@@ -4837,6 +4870,7 @@ class Column(
 		if(with_attachment && ! with_highlight) {
 			put("mediaOnly", true)
 			put("withMedia", true)
+			put("media", true)
 		}
 		return this
 	}
@@ -4859,6 +4893,7 @@ class Column(
 			else -> PATH_LOCAL
 		}
 	}
+	
 	private fun makeMisskeyHybridTlUrl() : String {
 		return when {
 			access_info.isMisskey -> "/api/notes/hybrid-timeline"
@@ -4886,7 +4921,8 @@ class Column(
 	private fun makeNotificationUrl() : String {
 		return when {
 			access_info.isMisskey -> "/api/i/notifications"
-			else->{
+			
+			else -> {
 				val sb = StringBuilder(PATH_NOTIFICATIONS) // always contain "?limit=XX"
 				if(dont_show_favourite) sb.append("&exclude_types[]=favourite")
 				if(dont_show_boost) sb.append("&exclude_types[]=reblog")
@@ -4905,13 +4941,17 @@ class Column(
 	private fun makeHashtagUrl(
 		hashtag : String // 先頭の#を含まない
 	) : String {
-		val sb = StringBuilder("/api/v1/timelines/tag/")
-			.append(hashtag.encodePercent())
-			.append("?limit=")
-			.append(READ_LIMIT)
-		if(with_attachment) sb.append("&only_media=true")
-		if(instance_local) sb.append("&local=true")
-		return sb.toString()
+		return if(isMisskey) {
+			"/api/notes/search_by_tag"
+		} else {
+			val sb = StringBuilder("/api/v1/timelines/tag/")
+				.append(hashtag.encodePercent())
+				.append("?limit=")
+				.append(READ_LIMIT)
+			if(with_attachment) sb.append("&only_media=true")
+			if(instance_local) sb.append("&local=true")
+			sb.toString()
+		}
 	}
 	
 	private fun loadFilter2(client : TootApiClient) : ArrayList<TootFilter>? {
@@ -5006,5 +5046,4 @@ class Column(
 		viewHolder?.saveScrollPosition()
 	}
 	
-
 }

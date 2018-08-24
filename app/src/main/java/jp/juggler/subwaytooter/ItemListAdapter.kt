@@ -238,4 +238,5 @@ internal class ItemListAdapter(
 		
 		// diffを取る部分をワーカースレッドで実行したいが、直後にスクロール位置の処理があるので差支えがある…
 	}
+	
 }

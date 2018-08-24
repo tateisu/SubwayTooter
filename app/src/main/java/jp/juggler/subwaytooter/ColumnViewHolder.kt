@@ -356,6 +356,21 @@ class ColumnViewHolder(
 			//復元後にもここを通るがこれは正常である
 			val sp = column.scroll_save
 			if(sp==null) {
+//				val lvi = column.last_viewing_item_id
+//				if( lvi != null ){
+//					column.last_viewing_item_id = null
+//					val listIndex = column.findListIndexByTimelineId(lvi)
+//					if( listIndex != null){
+//						log.d(
+//							"restoreScrollPosition [$page_idx] %s , restore from last_viewing_item_id %d"
+//							, column.getColumnName( true )
+//							,listIndex
+//						)
+//						ScrollPosition(column.toAdapterIndex(listIndex),0).restore(this@ColumnViewHolder)
+//						return
+//					}
+//				}
+
 				log.d(
 					"restoreScrollPosition [$page_idx] %s , column has no saved scroll position."
 					, column.getColumnName( true )
@@ -1072,7 +1087,7 @@ class ColumnViewHolder(
 		showToast(activity, true, refreshError)
 	}
 	
-	fun saveScrollPosition() {
+	fun saveScrollPosition() :Boolean{
 		val column = this.column
 		when {
 			column == null -> log.d("saveScrollPosition [%d] , column==null", page_idx)
@@ -1092,6 +1107,7 @@ class ColumnViewHolder(
 					, scroll_save.adapterIndex
 					, scroll_save.offset
 				)
+				return true
 			}
 			
 			else -> {
@@ -1104,8 +1120,10 @@ class ColumnViewHolder(
 					, scroll_save.adapterIndex
 					, scroll_save.offset
 				)
+				return true
 			}
 		}
+		return false
 	}
 	
 	fun setScrollPosition(sp : ScrollPosition, deltaDp : Float = 0f) {

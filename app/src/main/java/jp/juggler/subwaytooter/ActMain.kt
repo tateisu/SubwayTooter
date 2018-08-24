@@ -430,7 +430,7 @@ class ActMain : AppCompatActivity()
 			})
 		
 		for(column in app_state.column_list) {
-			column.onSaveInstanceState()
+			column.saveScrollPosition()
 		}
 		
 	}
@@ -522,6 +522,11 @@ class ActMain : AppCompatActivity()
 		
 		app_state.stream_reader.stopAll()
 		
+		for(column in app_state.column_list) {
+			column.saveScrollPosition()
+		}
+		app_state.saveColumnList(bEnableSpeech = false)
+		
 		super.onStop()
 		
 	}
@@ -560,8 +565,15 @@ class ActMain : AppCompatActivity()
 			{ env -> env.pager.currentItem },
 			{ env -> env.tablet_layout_manager.findFirstVisibleItemPosition() })
 		
-		pref.edit().put(Pref.ipLastColumnPos, last_pos).apply()
-		
+		val e = pref.edit()
+			.put(Pref.ipLastColumnPos, last_pos)
+		e.apply()
+
+		for(column in app_state.column_list) {
+			column.saveScrollPosition()
+		}
+
+		app_state.saveColumnList(bEnableSpeech = false)
 		
 		super.onPause()
 	}
@@ -2629,9 +2641,7 @@ class ActMain : AppCompatActivity()
 		if(timeline_font_size_sp.isNaN()) {
 			tv.textSize = timeline_font_size_sp
 		}
-		if(timeline_font != null) {
-			tv.typeface = timeline_font
-		}
+		tv.typeface = timeline_font
 		tv.text = text
 		tv.measure(
 			View.MeasureSpec.makeMeasureSpec(nAutoCwCellWidth, View.MeasureSpec.EXACTLY),

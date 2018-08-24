@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.SystemClock
@@ -127,6 +128,7 @@ class Column(
 		private const val KEY_INSTANCE_LOCAL = "instance_local"
 		
 		private const val KEY_ENABLE_SPEECH = "enable_speech"
+		private const val KEY_LAST_VIEWING_ITEM = "lastViewingItem"
 		
 		private const val KEY_REGEX_TEXT = "regex_text"
 		
@@ -427,6 +429,7 @@ class Column(
 	internal var instance_information : TootInstance? = null
 	
 	internal var scroll_save : ScrollPosition? = null
+	internal var last_viewing_item_id :EntityId? = null
 	
 	internal val is_dispose = AtomicBoolean()
 	
@@ -581,6 +584,7 @@ class Column(
 		instance_local = src.optBoolean(KEY_INSTANCE_LOCAL)
 		
 		enable_speech = src.optBoolean(KEY_ENABLE_SPEECH)
+		last_viewing_item_id = EntityId.from(src,KEY_LAST_VIEWING_ITEM)
 		
 		regex_text = src.parseString(KEY_REGEX_TEXT) ?: ""
 		
@@ -648,6 +652,7 @@ class Column(
 		dst.put(KEY_INSTANCE_LOCAL, instance_local)
 		
 		dst.put(KEY_ENABLE_SPEECH, enable_speech)
+		last_viewing_item_id?.putTo(dst,KEY_LAST_VIEWING_ITEM)
 		
 		dst.put(KEY_REGEX_TEXT, regex_text)
 		
@@ -5042,8 +5047,27 @@ class Column(
 	
 	val isMisskey : Boolean = access_info.isMisskey
 	
-	fun onSaveInstanceState() {
-		viewHolder?.saveScrollPosition()
+	fun saveScrollPosition() {
+		try {
+			if(viewHolder?.saveScrollPosition() == true) {
+				val ss = this.scroll_save
+				if( ss != null ) {
+					val item = list_data[toListIndex(ss.adapterIndex)]
+					this.last_viewing_item_id = item.getOrderId()
+					// とりあえず保存はするが
+					// TLデータそのものを永続化しないかぎり出番はないっぽい
+				}
+			}
+		}catch(ex:Throwable) {
+			log.e(ex,"can't get last_viewing_item_id.")
+		}
+	}
+	
+	fun findListIndexByTimelineId(orderId : EntityId) : Int? {
+		list_data.forEachIndexed{ i,v->
+			if( v.getOrderId() == orderId ) return i
+		}
+		return null
 	}
 	
 }

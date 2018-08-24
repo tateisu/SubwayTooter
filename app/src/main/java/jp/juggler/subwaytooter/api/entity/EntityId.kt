@@ -47,7 +47,7 @@ abstract class EntityId : Comparable<EntityId> {
 		}
 	}
 	
-	private fun encode():String{
+	fun encode():String{
 		val prefix = when(this){
 			is EntityIdLong ->'L'
 			is EntityIdString->'S'

@@ -252,10 +252,10 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		return array
 	}
 	
-	internal fun saveColumnList() {
+	internal fun saveColumnList(bEnableSpeech :Boolean = true) {
 		val array = encodeColumnList()
 		saveColumnList(context, FILE_COLUMN_LIST, array)
-		enableSpeech()
+		if(bEnableSpeech) enableSpeech()
 	}
 	
 	private fun loadColumnList() {

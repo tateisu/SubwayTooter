@@ -806,19 +806,22 @@ internal class ItemViewHolder(
 		
 		// ニコフレのアンケートの表示
 		val enquete = status.enquete
-		if(enquete != null && NicoEnquete.TYPE_ENQUETE == enquete.type) {
-			val question = enquete.decoded_question
-			val items = enquete.items
-			
-			if(question.isNotBlank()) content = question
-			if(items != null) {
-				val now = System.currentTimeMillis()
-				var n = 0
-				for(item in items) {
-					makeEnqueteChoiceView(enquete, now, n ++, item.decoded_text)
+		if(enquete != null ){
+			if( access_info.isMisskey || NicoEnquete.TYPE_ENQUETE == enquete.type) {
+				val question = enquete.decoded_question
+				val items = enquete.items
+				
+				if(question.isNotBlank()) content = question
+				if(items != null) {
+					val now = System.currentTimeMillis()
+					var n = 0
+					for(item in items) {
+						makeEnqueteChoiceView(enquete, now, n ++, item)
+					}
 				}
+				
+				if(!access_info.isMisskey) makeEnqueteTimerView(enquete)
 			}
-			makeEnqueteTimerView(enquete)
 		}
 		
 		// カードの表示(会話ビューのみ)
@@ -1760,10 +1763,14 @@ internal class ItemViewHolder(
 		enquete : NicoEnquete,
 		now : Long,
 		i : Int,
-		item : Spannable
+		item : NicoEnquete.Choice
 	) {
-		
-		val remain = enquete.time_start + NicoEnquete.ENQUETE_EXPIRE - now
+		val canVote = if( access_info.isMisskey ){
+			enquete.myVoted == null
+		}else{
+			val remain = enquete.time_start + NicoEnquete.ENQUETE_EXPIRE - now
+			enquete.myVoted == null && remain > 0L
+		}
 		
 		val lp = LinearLayout.LayoutParams(
 			LinearLayout.LayoutParams.MATCH_PARENT,
@@ -1774,11 +1781,25 @@ internal class ItemViewHolder(
 		val b = Button(activity)
 		b.layoutParams = lp
 		b.setAllCaps(false)
-		b.text = item
+
+		val text = if( access_info.isMisskey ){
+			val sb = SpannableStringBuilder()
+				.append(item.decoded_text)
+				
+				if(enquete.myVoted != null ) {
+					sb.append(" / ")
+					sb.append(activity.getString(R.string.vote_count_text, item.votes))
+					if(i == enquete.myVoted) sb.append(' ').append(0x2713.toChar())
+				}
+			sb
+		}else{
+			item.decoded_text
+		}
+		b.text = text
 		val invalidator = NetworkEmojiInvalidator(activity.handler, b)
 		extra_invalidator_list.add(invalidator)
-		invalidator.register(item)
-		if(remain <= 0) {
+		invalidator.register(text)
+		if(!canVote) {
 			b.isEnabled = false
 		} else {
 			val accessInfo = this@ItemViewHolder.access_info
@@ -1807,26 +1828,40 @@ internal class ItemViewHolder(
 		idx : Int
 	) {
 		val now = System.currentTimeMillis()
-		val remain = enquete.time_start + NicoEnquete.ENQUETE_EXPIRE - now
-		if(remain <= 0) {
-			showToast(context, false, R.string.enquete_was_end)
+		if( enquete.myVoted != null ) {
+			showToast(context, false, R.string.already_voted)
 			return
+		}
+		if(!accessInfo.isMisskey){
+			val remain = enquete.time_start + NicoEnquete.ENQUETE_EXPIRE - now
+			if( remain <=0L) {
+				showToast(context, false, R.string.enquete_was_end)
+				return
+			}
 		}
 		
 		TootTaskRunner(context).run(accessInfo, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val form = JSONObject()
-				try {
-					form.put("item_index", Integer.toString(idx))
-				} catch(ex : Throwable) {
-					log.e(ex, "json encode failed.")
-					ex.printStackTrace()
+				if( accessInfo.isMisskey ){
+					val params = accessInfo.putMisskeyApiToken(JSONObject())
+									.put("noteId",enquete.status_id.toString())
+									.put("choice",idx)
+					return client.request("/api/notes/polls/vote",params.toPostRequestBuilder())
+				}else{
+					val form = JSONObject()
+					try {
+						form.put("item_index", Integer.toString(idx))
+					} catch(ex : Throwable) {
+						log.e(ex, "json encode failed.")
+						ex.printStackTrace()
+					}
+					
+					val request_builder = Request.Builder()
+						.post(RequestBody.create(TootApiClient.MEDIA_TYPE_JSON, form.toString()))
+					
+					return client.request("/api/v1/votes/" + enquete.status_id, request_builder)
+					
 				}
-				
-				val request_builder = Request.Builder()
-					.post(RequestBody.create(TootApiClient.MEDIA_TYPE_JSON, form.toString()))
-				
-				return client.request("/api/v1/votes/" + enquete.status_id, request_builder)
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
@@ -1834,12 +1869,25 @@ internal class ItemViewHolder(
 				
 				val data = result.jsonObject
 				if(data != null) {
-					val message = data.parseString("message") ?: "?"
-					val valid = data.optBoolean("valid")
-					if(valid) {
+					if(accessInfo.isMisskey){
+						enquete.myVoted = idx
+						val choice = enquete.items?.get(idx)
+						if( choice != null ) choice.votes ++
+
+						// 204 no content
 						showToast(context, false, R.string.enquete_voted)
-					} else {
-						showToast(context, true, R.string.enquete_vote_failed, message)
+
+						// 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
+						list_adapter.notifyChange(reason = "onClickEnqueteChoice", reset = true)
+					}else{
+						val message = data.parseString("message") ?: "?"
+						val valid = data.optBoolean("valid")
+						if(valid) {
+							showToast(context, false, R.string.enquete_voted)
+						} else {
+							showToast(context, true, R.string.enquete_vote_failed, message)
+						}
+						
 					}
 				} else {
 					showToast(context, true, result.error)

@@ -1037,7 +1037,7 @@
     <string name="reaction_add">リアクションの追加</string>
     <string name="unknown_notification_from">%1$s からの謎の通知</string>
     <string name="dont_show_reaction">リアクションを表示しない</string>
-    <string name="dont_show_vote">投票を表示しない</string>
+    <string name="dont_show_vote">アンケートを表示しない</string>
     <string name="boost_button_size">ブーストボタンのサイズ(単位:dp。デフォルト:40。アプリ再起動が必要)</string>
     <string name="boost_button_alignment">ブーストボタン列の左右の配置 (アプリ再起動が必要)</string>
     <string name="start">始端</string>
@@ -1053,5 +1053,6 @@
     <string name="background_color_follower">トゥート背景色 \'フォロワーのみ\'</string>
     <string name="background_color_direct_with_user">トゥート背景色 \'ダイレクト(対象ユーザあり)\'</string>
     <string name="background_color_direct_no_user">トゥート背景色 \'ダイレクト(自分のみ)\'</string>
+    <string name="already_voted">投票済です</string>
 
 </resources>

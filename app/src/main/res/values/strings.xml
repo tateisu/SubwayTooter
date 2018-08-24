@@ -745,7 +745,7 @@
     <string name="reaction_add">Add reaction</string>
     <string name="unknown_notification_from">unknown notification from %1$s</string>
     <string name="dont_show_reaction">Don\'t show reaction</string>
-    <string name="dont_show_vote">Don\'t show vote</string>
+    <string name="dont_show_vote">Don\'t show enquete</string>
     <string name="boost_button_size">Boost button size( unit:dp, default=40, app restart required)</string>
     <string name="boost_button_alignment">Boost button alignment (app restart required)</string>
     <string name="start">Start</string>
@@ -761,5 +761,6 @@
     <string name="background_color_follower">Toot background color of \'follower\' visibility</string>
     <string name="background_color_direct_with_user">Toot background color of \'Direct to users\' visibility</string>
     <string name="background_color_direct_no_user">Toot background color of \'Direct only me\' visibility</string>
+    <string name="already_voted">Already voted.</string>
 
 </resources>

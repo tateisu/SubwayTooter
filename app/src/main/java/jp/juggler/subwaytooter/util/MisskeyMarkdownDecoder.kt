@@ -802,7 +802,7 @@ object MisskeyMarkdownDecoder {
 				else -> Node(
 					pos
 					, matcher.end()
-					, arrayOf(matcher.group(1), matcher.group(2)) // username, host
+					, arrayOf(matcher.group(1), matcher.group(2)?:"") // username, host
 				) {
 					val username = data[0]
 					val host = data[1]

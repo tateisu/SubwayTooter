@@ -200,19 +200,36 @@ class TootApiClient(
 		
 		fun getScopeArrayMisskey(@Suppress("UNUSED_PARAMETER") ti : TootInstance) =
 			JSONArray().apply {
+
 				put("account-read")
 				put("account-write")
+
+				put("note-read")
 				put("note-write")
+
+				put("reaction-read")
 				put("reaction-write")
-				put("following-write")
+
 				put("following-read") // フォロリク申請一覧で使われていた
+				put("following-write")
+
 				put("drive-read")
 				put("drive-write")
+
 				put("notification-read")
 				put("notification-write")
+
+				put("favorite-read")
 				put("favorite-write")
+
 				put("account/read")
 				put("account/write")
+
+				put("messaging-read")
+				put("messaging-write")
+
+				put("vote-read")
+				put("vote-write")
 
 				// https://github.com/syuilo/misskey/issues/2341
 			}

@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.api.entity
 
 import android.content.Context
 import android.text.Spannable
+import android.text.SpannableString
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.*
@@ -33,6 +34,8 @@ class NicoEnquete(
 	// 結果の数値のテキスト // null or array of string
 	private val ratios_text : MutableList<String>?
 	
+	var myVoted : Int? = null
+	
 	// 以下はJSONには存在しないが内部で使う
 	val time_start : Long
 	val status_id : EntityId
@@ -45,40 +48,30 @@ class NicoEnquete(
 		if(parser.serviceType == ServiceType.MISSKEY) {
 			
 			this.items = parseChoiceListMisskey(
-				parser.context,
-				status,
-				src.optJSONArray("items")
+				
+				src.optJSONArray("choices")
 			)
-			var hasVoteResult = false
-
+			
 			val votesList = ArrayList<Int>()
 			var votesMax = 1
-
-			if( items != null){
-				for( choice in items){
-					val votes = choice.votes
-					if( votes != null ){
-						hasVoteResult = true
-						votesList.add(votes)
-						if( votes > votesMax) votesMax = votes
-					}else{
-						votesList.add(0)
-					}
-				}
+			items?.forEachIndexed { index, choice ->
+				if(choice.isVoted) this.myVoted = index
+				val votes = choice.votes
+				votesList.add(votes)
+				if(votes > votesMax) votesMax = votes
 			}
-
-			if( hasVoteResult ){
-				this.ratios = votesList.map { (it.toFloat()/votesMax.toFloat()) }.toMutableList()
-				this.ratios_text = votesList.map{ parser.context.getString(R.string.vote_count_text,it)}.toMutableList()
-			}else{
+			
+			if(votesList.isNotEmpty()) {
+				this.ratios = votesList.map { (it.toFloat() / votesMax.toFloat()) }.toMutableList()
+				this.ratios_text =
+					votesList.map { parser.context.getString(R.string.vote_count_text, it) }
+						.toMutableList()
+			} else {
 				this.ratios = null
 				this.ratios_text = null
 			}
 			
-			this.type = when(hasVoteResult){
-				true -> "enquete_result"
-				else-> "enquete"
-			}
+			this.type = NicoEnquete.TYPE_ENQUETE
 			
 			this.question = status.content
 			this.decoded_question = DecodeOptions(
@@ -122,9 +115,8 @@ class NicoEnquete(
 	class Choice(
 		val text : String,
 		val decoded_text : Spannable,
-		val id : EntityId? = null, // misskey
 		var isVoted : Boolean = false, // misskey
-		var votes : Int? = null // misskey
+		var votes : Int = 0 // misskey
 	)
 	
 	companion object {
@@ -159,11 +151,12 @@ class NicoEnquete(
 				null
 			}
 		}
+		
 		fun parse(
 			parser : TootParser,
 			status : TootStatus,
 			list_attachment : ArrayList<TootAttachmentLike>?,
-			src:JSONObject?
+			src : JSONObject?
 		) : NicoEnquete? {
 			src ?: return null
 			return try {
@@ -178,6 +171,7 @@ class NicoEnquete(
 				null
 			}
 		}
+		
 		private fun parseStringArray(src : JSONObject, name : String) : ArrayList<String>? {
 			val array = src.optJSONArray(name)
 			if(array != null) {
@@ -228,17 +222,9 @@ class NicoEnquete(
 		}
 		
 		private fun parseChoiceListMisskey(
-			context : Context,
-			status : TootStatus,
 			choices : JSONArray?
 		) : ArrayList<Choice>? {
 			if(choices != null) {
-				val options = DecodeOptions(
-					context,
-					emojiMapCustom = status.custom_emojis,
-					emojiMapProfile = status.profile_emojis
-				)
-				
 				val items = ArrayList<Choice>()
 				for(i in 0 until choices.length()) {
 					val src = choices.optJSONObject(i)
@@ -246,13 +232,13 @@ class NicoEnquete(
 					val text = reWhitespace
 						.matcher(src.parseString("text")?.sanitizeBDI() ?: "")
 						.replaceAll(" ")
-					val decoded_text = options.decodeEmoji(text)
+					val decoded_text = SpannableString(text) // misskey ではマークダウン不可で絵文字もない
 					
 					val dst = Choice(
 						text = text,
 						decoded_text = decoded_text,
-						id = EntityId.mayNull(src.parseString("id")),
-						votes = src.parseInt("votes"),
+						// 配列インデクスと同じだった id = EntityId.mayNull(src.parseLong("id")),
+						votes = src.parseInt("votes")?:0,
 						isVoted = src.optBoolean("isVoted")
 					)
 					items.add(dst)

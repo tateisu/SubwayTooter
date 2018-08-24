@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.graphics.PorterDuff
+import android.opengl.Visibility
 import android.support.v4.app.ShareCompat
 import android.support.v7.app.AlertDialog
 import android.view.View
@@ -414,7 +415,30 @@ internal class DlgContextMenu(
 							who,
 							bMute = false
 						)
-					} else {
+					} else if(access_info.isMisskey) {
+						// Misskey には「このユーザからの通知もミュート」オプションはない
+						
+						@SuppressLint("InflateParams")
+						val view =
+							activity.layoutInflater.inflate(R.layout.dlg_confirm, null, false)
+						val tvMessage = view.findViewById<TextView>(R.id.tvMessage)
+						tvMessage.text =
+							activity.getString(R.string.confirm_mute_user, who.username)
+						val cbMuteNotification = view.findViewById<CheckBox>(R.id.cbSkipNext)
+						cbMuteNotification.visibility = View.GONE
+						AlertDialog.Builder(activity)
+							.setView(view)
+							.setNegativeButton(R.string.cancel, null)
+							.setPositiveButton(R.string.ok) { _, _ ->
+								Action_User.mute(
+									activity,
+									access_info,
+									who
+								)
+							}
+							.show()
+					}else{
+						
 						@SuppressLint("InflateParams")
 						val view =
 							activity.layoutInflater.inflate(R.layout.dlg_confirm, null, false)

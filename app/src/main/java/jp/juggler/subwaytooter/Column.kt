@@ -312,22 +312,43 @@ class Column(
 				})
 		}
 		
+		private val misskeyArrayFinderUsers = { it:JSONObject -> it.optJSONArray("users") }
+		
 		private val misskeyCustomParserFollowRequest =
 			{ parser : TootParser, jsonArray : JSONArray ->
 				val dst = ArrayList<TootAccountRef>()
 				for(i in 0 until jsonArray.length()) {
 					val src = jsonArray.optJSONObject(i) ?: continue
 					
-					val followerRef = TootAccountRef.mayNull(
+					val accountRef = TootAccountRef.mayNull(
 						parser,
 						parser.account(src.optJSONObject("follower"))
 					) ?: continue
 					
 					val requestId = EntityId.mayNull(src.parseString("id")) ?: continue
 					
-					followerRef.get()._orderId = requestId
+					accountRef.get()._orderId = requestId
 					
-					dst.add(followerRef)
+					dst.add(accountRef)
+				}
+				dst
+			}
+		val misskeyCustomParserMutes =
+			{ parser : TootParser, jsonArray : JSONArray ->
+				val dst = ArrayList<TootAccountRef>()
+				for(i in 0 until jsonArray.length()) {
+					val src = jsonArray.optJSONObject(i) ?: continue
+					
+					val accountRef = TootAccountRef.mayNull(
+						parser,
+						parser.account(src.optJSONObject("follower"))
+					) ?: continue
+					
+					val requestId = EntityId.mayNull(src.parseString("id")) ?: continue
+					
+					accountRef.get()._orderId = requestId
+					
+					dst.add(accountRef)
 				}
 				dst
 			}
@@ -1970,7 +1991,7 @@ class Column(
 										PATH_MISSKEY_PROFILE_FOLLOWING,
 										emptyMessage = context.getString(R.string.none_or_hidden_following),
 										misskeyParams = makeMisskeyParamsUserId(parser),
-										misskeyArrayFinder = { it.optJSONArray("users") }
+										misskeyArrayFinder = misskeyArrayFinderUsers
 									)
 								} else {
 									parseAccountList(
@@ -1990,7 +2011,7 @@ class Column(
 										PATH_MISSKEY_PROFILE_FOLLOWERS,
 										emptyMessage = context.getString(R.string.none_or_hidden_followers),
 										misskeyParams = makeMisskeyParamsUserId(parser),
-										misskeyArrayFinder = { it.optJSONArray("users") }
+										misskeyArrayFinder = misskeyArrayFinderUsers
 									)
 								} else {
 									parseAccountList(
@@ -2058,7 +2079,18 @@ class Column(
 							}
 						}
 						
-						TYPE_MUTES -> return parseAccountList(client, PATH_MUTES)
+						TYPE_MUTES -> return if(isMisskey){
+							
+							parseAccountList(
+								client
+								, "/api/mute/list"
+								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+								
+							,misskeyArrayFinder = misskeyArrayFinderUsers
+							)
+						}else{
+							parseAccountList(client, PATH_MUTES)
+						}
 						TYPE_KEYWORD_FILTER -> return parseFilterList(client, PATH_FILTERS)
 						
 						TYPE_BLOCKS -> return parseAccountList(client, PATH_BLOCKS)
@@ -3460,7 +3492,7 @@ class Column(
 										client,
 										PATH_MISSKEY_PROFILE_FOLLOWING,
 										misskeyParams = makeMisskeyParamsUserId(parser),
-										misskeyArrayFinder = { it.optJSONArray("users") }
+										misskeyArrayFinder = misskeyArrayFinderUsers
 									)
 								} else {
 									getAccountList(
@@ -3478,7 +3510,7 @@ class Column(
 										client,
 										PATH_MISSKEY_PROFILE_FOLLOWERS,
 										misskeyParams = makeMisskeyParamsUserId(parser),
-										misskeyArrayFinder = { it.optJSONArray("users") }
+										misskeyArrayFinder = misskeyArrayFinderUsers
 									)
 								} else {
 									getAccountList(
@@ -3527,7 +3559,17 @@ class Column(
 							)
 						}
 						
-						TYPE_MUTES -> getAccountList(client, PATH_MUTES)
+						TYPE_MUTES -> if(isMisskey){
+							getAccountList(
+								client
+								, "/api/mute/list"
+								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+								
+								,misskeyArrayFinder = misskeyArrayFinderUsers
+							)
+						}else{
+							getAccountList(client, PATH_MUTES)
+						}
 						
 						TYPE_BLOCKS -> getAccountList(client, PATH_BLOCKS)
 						
@@ -3796,13 +3838,11 @@ class Column(
 			
 			fun getAccountList(
 				client : TootApiClient
-				,
-				path_base : String
-				,
-				misskeyParams : JSONObject? = null
-				,
-				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootAccountRef> =
+				,path_base : String
+				,misskeyParams : JSONObject? = null
+				,misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootAccountRef> =
 					{ parser, jsonArray -> parser.accountList(jsonArray) }
+				,misskeyArrayFinder :(jsonObject:JSONObject)->JSONArray? = {null}
 			
 			) : TootApiResult? {
 				
@@ -3833,6 +3873,11 @@ class Column(
 						
 						since_id?.putMisskeySince(params)
 						val r2 = client.request(path_base, params.toPostRequestBuilder())
+						
+						val jsonObject = r2?.jsonObject
+						if( jsonObject != null ){
+							r2.data = misskeyArrayFinder(jsonObject)
+						}
 						
 						val jsonArray = r2?.jsonArray
 						if(jsonArray == null) {
@@ -4292,7 +4337,17 @@ class Column(
 							String.format(Locale.JAPAN, PATH_FAVOURITED_BY, status_id)
 						)
 						
-						TYPE_MUTES -> getAccountList(client, PATH_MUTES)
+						TYPE_MUTES -> if(isMisskey){
+							getAccountList(
+								client
+								, "/api/mute/list"
+								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+								
+								,misskeyArrayFinder = misskeyArrayFinderUsers
+							)
+						}else{
+							getAccountList(client, PATH_MUTES)
+						}
 						
 						TYPE_BLOCKS -> getAccountList(client, PATH_BLOCKS)
 						

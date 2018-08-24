@@ -48,32 +48,52 @@ object Action_User {
 			
 			var relation : UserRelation? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
-				
-				val request_builder = Request.Builder().post(
-					if(! bMute)
-						RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "")
-					else if(bMuteNotification)
-						RequestBody.create(
-							TootApiClient.MEDIA_TYPE_JSON,
-							"{\"notifications\": true}"
-						)
-					else
-						RequestBody.create(
-							TootApiClient.MEDIA_TYPE_JSON,
-							"{\"notifications\": false}"
-						)
-				)
-				
-				val result = client.request(
-					"/api/v1/accounts/" + who.id + if(bMute) "/mute" else "/unmute",
-					request_builder
-				)
-				val jsonObject = result?.jsonObject
-				if(jsonObject != null) {
-					relation =
-						saveUserRelation(access_info, parseItem(::TootRelationShip, jsonObject))
+				if(access_info.isMisskey){
+					val params = access_info.putMisskeyApiToken(JSONObject())
+						.put("userId",who.id.toString())
+					
+					val result = client.request(when(bMute){
+						true-> "/api/mute/create"
+						else->"/api/mute/delete"
+					},params.toPostRequestBuilder())
+					if( result?.jsonObject != null ){
+						// 204 no content
+						
+						// update user relation
+						val ur = UserRelation.load(access_info.db_id,who.id)
+						ur.muting = bMute
+						saveUserRelationMisskey(access_info,who.id,TootParser(activity,access_info))
+						this.relation = ur
+					}
+					return result
+				}else{
+					val request_builder = Request.Builder().post(
+						if(! bMute)
+							RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "")
+						else if(bMuteNotification)
+							RequestBody.create(
+								TootApiClient.MEDIA_TYPE_JSON,
+								"{\"notifications\": true}"
+							)
+						else
+							RequestBody.create(
+								TootApiClient.MEDIA_TYPE_JSON,
+								"{\"notifications\": false}"
+							)
+					)
+					
+					val result = client.request(
+						"/api/v1/accounts/" + who.id + if(bMute) "/mute" else "/unmute",
+						request_builder
+					)
+					val jsonObject = result?.jsonObject
+					if(jsonObject != null) {
+						relation =
+							saveUserRelation(access_info, parseItem(::TootRelationShip, jsonObject))
+					}
+					return result
+					
 				}
-				return result
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

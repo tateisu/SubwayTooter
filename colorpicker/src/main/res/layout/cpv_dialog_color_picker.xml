@@ -4,87 +4,103 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-
-  <LinearLayout
-      xmlns:android="http://schemas.android.com/apk/res/android"
-      xmlns:tools="http://schemas.android.com/tools"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:orientation="vertical">
-
-    <com.jrummyapps.android.colorpicker.ColorPickerView
-        android:id="@id/cpv_color_picker_view"
-        style="@style/cpv_ColorPickerViewStyle"
-        android:padding="16dp"/>
+    android:layout_height="wrap_content"
+    >
 
     <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:paddingBottom="16dp"
-          android:paddingLeft="16dp"
-          android:paddingRight="16dp"
-          tools:ignore="RtlHardcoded"
-          >
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
 
-        <com.jrummyapps.android.colorpicker.ColorPanelView
-            android:id="@id/cpv_color_panel_old"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            app:cpv_colorShape="square"
+        <com.jrummyapps.android.colorpicker.ColorPickerView
+            android:id="@id/cpv_color_picker_view"
+            style="@style/cpv_ColorPickerViewStyle"
+            android:padding="16dp"
             />
 
-        <ImageView
-            android:id="@+id/cpv_arrow_right"
-            android:layout_width="wrap_content"
+        <com.google.android.flexbox.FlexboxLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:paddingLeft="3dp"
-            android:paddingRight="3dp"
-            android:src="@drawable/cpv_ic_arrow_right_black_24dp"
-            tools:ignore="ContentDescription"/>
+            android:paddingBottom="16dp"
+            android:paddingLeft="16dp"
+            android:paddingRight="16dp"
+            app:flexWrap="wrap"
+            app:justifyContent="flex_start"
+            tools:ignore="RtlHardcoded"
+            >
 
-        <com.jrummyapps.android.colorpicker.ColorPanelView
-            android:id="@id/cpv_color_panel_new"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            app:cpv_colorShape="square"/>
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:descendantFocusability="beforeDescendants"
-            android:focusableInTouchMode="true"
-            android:gravity="right"
-            android:orientation="horizontal"
-            tools:ignore="RtlHardcoded">
-
-            <TextView
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="#"
-                android:typeface="monospace"
-                tools:ignore="HardcodedText"/>
+                >
 
-            <EditText
-                android:id="@+id/cpv_hex"
+                <com.jrummyapps.android.colorpicker.ColorPanelView
+                    android:id="@id/cpv_color_panel_old"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    app:cpv_colorShape="square"
+                    />
+
+                <ImageView
+                    android:id="@+id/cpv_arrow_right"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:paddingLeft="3dp"
+                    android:paddingRight="3dp"
+                    android:src="@drawable/cpv_ic_arrow_right_black_24dp"
+                    tools:ignore="ContentDescription"
+                    />
+
+                <com.jrummyapps.android.colorpicker.ColorPanelView
+                    android:id="@id/cpv_color_panel_new"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    app:cpv_colorShape="square"
+                    />
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:digits="0123456789ABCDEFabcdef"
-                android:focusable="true"
-                android:imeOptions="actionGo"
-                android:inputType="textNoSuggestions"
-                android:maxLength="8"
-                android:maxLines="1"
-                android:minWidth="110dp"
-                android:typeface="monospace"
-                tools:text="88888888"/>
+                android:layout_marginLeft="8dp"
+                android:descendantFocusability="beforeDescendants"
+                android:focusableInTouchMode="true"
+                android:gravity="right"
+                android:orientation="horizontal"
+                tools:ignore="RtlHardcoded"
+                >
 
-        </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="#"
+                    android:typeface="monospace"
+                    tools:ignore="HardcodedText"
+                    />
+
+                <EditText
+                    android:id="@+id/cpv_hex"
+                    android:layout_width="110sp"
+                    android:layout_height="wrap_content"
+                    android:digits="0123456789ABCDEFabcdef"
+                    android:focusable="true"
+                    android:imeOptions="actionGo"
+                    android:inputType="textNoSuggestions"
+                    android:maxLength="8"
+                    android:maxLines="1"
+                    android:minWidth="110dp"
+                    android:typeface="monospace"
+                    tools:text="88888888"
+                    />
+
+            </LinearLayout>
+        </com.google.android.flexbox.FlexboxLayout>
+
     </LinearLayout>
-
-  </LinearLayout>
 </ScrollView>

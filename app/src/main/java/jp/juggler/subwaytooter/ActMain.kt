@@ -461,6 +461,10 @@ class ActMain : AppCompatActivity()
 		
 		// カラーカスタマイズを読み直す
 		ListDivider.color = Pref.ipListDividerColor(pref)
+		ItemViewHolder.toot_color_unlisted = Pref.ipTootColorUnlisted(pref)
+		ItemViewHolder.toot_color_follower = Pref.ipTootColorFollower(pref)
+		ItemViewHolder.toot_color_direct_user = Pref.ipTootColorDirectUser(pref)
+		ItemViewHolder.toot_color_direct_me = Pref.ipTootColorDirectMe(pref)
 		
 		// アカウント設定から戻ってきたら、カラムを消す必要があるかもしれない
 		run {

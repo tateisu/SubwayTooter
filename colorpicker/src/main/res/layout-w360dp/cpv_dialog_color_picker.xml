@@ -4,7 +4,9 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    tools:ignore="RtlHardcoded"
+    >
 
   <LinearLayout
       xmlns:android="http://schemas.android.com/apk/res/android"
@@ -18,16 +20,20 @@
         style="@style/cpv_ColorPickerViewStyle"
         android:padding="16dp"/>
 
-    <LinearLayout
+    <com.google.android.flexbox.FlexboxLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:paddingBottom="16dp"
         android:paddingLeft="16dp"
         android:paddingRight="16dp"
-        tools:ignore="RtlHardcoded"
+        app:flexWrap="wrap"
+        app:justifyContent="flex_start"
         >
 
+      <LinearLayout
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          >
       <com.jrummyapps.android.colorpicker.ColorPanelView
           android:id="@id/cpv_color_panel_old"
           android:layout_width="@dimen/cpv_dialog_preview_width"
@@ -49,11 +55,7 @@
           android:layout_width="@dimen/cpv_dialog_preview_width"
           android:layout_height="@dimen/cpv_dialog_preview_height"
           app:cpv_colorShape="square"/>
-
-      <Space
-          android:layout_width="0dp"
-          android:layout_height="0dp"
-          android:layout_weight="1"/>
+      </LinearLayout>
 
       <LinearLayout
           android:layout_width="wrap_content"
@@ -63,18 +65,20 @@
           android:focusableInTouchMode="true"
           android:gravity="right"
           android:orientation="horizontal"
-          tools:ignore="RtlHardcoded">
+          >
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="#"
             android:typeface="monospace"
-            tools:ignore="HardcodedText"/>
+            tools:ignore="HardcodedText"
+            android:labelFor="@+id/cpv_hex"
+            />
 
         <EditText
             android:id="@+id/cpv_hex"
-            android:layout_width="110dp"
+            android:layout_width="110sp"
             android:layout_height="wrap_content"
             android:digits="0123456789ABCDEFabcdef"
             android:focusable="true"
@@ -87,7 +91,7 @@
 
       </LinearLayout>
 
-    </LinearLayout>
+    </com.google.android.flexbox.FlexboxLayout>
 
   </LinearLayout>
 </ScrollView>

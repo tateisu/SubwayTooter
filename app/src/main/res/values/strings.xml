@@ -757,5 +757,9 @@
     <string name="reply_to">Reply to %1$s</string>
     <string name="deleted_at">deleted at %1$s</string>
     <string name="already_reactioned">already reactioned.</string>
+    <string name="background_color_unlisted">Toot background color of \'Unlisted\' visibility</string>
+    <string name="background_color_follower">Toot background color of \'follower\' visibility</string>
+    <string name="background_color_direct_with_user">Toot background color of \'Direct to users\' visibility</string>
+    <string name="background_color_direct_no_user">Toot background color of \'Direct only me\' visibility</string>
 
 </resources>

@@ -43,6 +43,10 @@ internal class ItemViewHolder(
 	
 	companion object {
 		private val log = LogCategory("ItemViewHolder")
+		var toot_color_unlisted : Int =0
+		var toot_color_follower : Int =0
+		var toot_color_direct_user : Int =0
+		var toot_color_direct_me : Int =0
 	}
 	
 	val viewRoot : View
@@ -757,6 +761,17 @@ internal class ItemViewHolder(
 					R.attr.colorImageButtonAccent
 				) and 0xffffff) or 0x20000000
 			)
+		}else{
+			val c = when(status.getBackgroundColorType(access_info)){
+				TootVisibility.UnlistedHome-> toot_color_unlisted
+				TootVisibility.PrivateFollowers-> toot_color_follower
+				TootVisibility.DirectSpecified-> toot_color_direct_user
+				TootVisibility.DirectPrivate-> toot_color_direct_me
+				else->0
+			}
+			if(c!=0){
+				this.viewRoot.setBackgroundColor(c)
+			}
 		}
 		
 		showStatusTime(activity, tvTime, who = status.account, status = status)

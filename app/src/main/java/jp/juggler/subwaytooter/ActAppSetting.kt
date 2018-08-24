@@ -72,6 +72,11 @@ class ActAppSetting : AppCompatActivity()
 		internal const val COLOR_DIALOG_ID_FOOTER_TAB_INDICATOR = 5
 		internal const val COLOR_DIALOG_ID_LIST_DIVIDER = 6
 		
+		internal const val COLOR_DIALOG_ID_TOOT_BG_UNLISTED = 7
+		internal const val COLOR_DIALOG_ID_TOOT_BG_FOLLOWER = 8
+		internal const val COLOR_DIALOG_ID_TOOT_BG_DIRECT_USER = 9
+		internal const val COLOR_DIALOG_ID_TOOT_BG_DIRECT_ME  = 10
+		
 		internal const val REQUEST_CODE_TIMELINE_FONT = 1
 		internal const val REQUEST_CODE_TIMELINE_FONT_BOLD = 2
 		internal const val REQUEST_CODE_APP_DATA_EXPORT = 3
@@ -113,6 +118,10 @@ class ActAppSetting : AppCompatActivity()
 	private var footer_tab_divider_color : Int = 0
 	private var footer_tab_indicator_color : Int = 0
 	private var list_divider_color : Int = 0
+	private var toot_color_unlisted : Int = 0
+	private var toot_color_follower : Int = 0
+	private var toot_color_direct_user : Int = 0
+	private var toot_color_direct_me : Int = 0
 	
 	private lateinit var ivFooterToot : ImageView
 	private lateinit var ivFooterMenu : ImageView
@@ -267,6 +276,16 @@ class ActAppSetting : AppCompatActivity()
 		findViewById<View>(R.id.btnListDividerColorEdit).setOnClickListener(this)
 		findViewById<View>(R.id.btnListDividerColorReset).setOnClickListener(this)
 		
+		findViewById<View>(R.id.btnBackgroundColorUnlistedEdit).setOnClickListener(this)
+		findViewById<View>(R.id.btnBackgroundColorUnlistedReset).setOnClickListener(this)
+		findViewById<View>(R.id.btnBackgroundColorFollowerEdit).setOnClickListener(this)
+		findViewById<View>(R.id.btnBackgroundColorFollowerReset).setOnClickListener(this)
+		findViewById<View>(R.id.btnBackgroundColorDirectWithUserEdit).setOnClickListener(this)
+		findViewById<View>(R.id.btnBackgroundColorDirectWithUserReset).setOnClickListener(this)
+		findViewById<View>(R.id.btnBackgroundColorDirectNoUserEdit).setOnClickListener(this)
+		findViewById<View>(R.id.btnBackgroundColorDirectNoUserReset).setOnClickListener(this)
+		
+		
 		findViewById<View>(R.id.btnTimelineFontEdit).setOnClickListener(this)
 		findViewById<View>(R.id.btnTimelineFontReset).setOnClickListener(this)
 		findViewById<View>(R.id.btnTimelineFontBoldEdit).setOnClickListener(this)
@@ -391,6 +410,10 @@ class ActAppSetting : AppCompatActivity()
 		footer_tab_divider_color = Pref.ipFooterTabDividerColor(pref)
 		footer_tab_indicator_color = Pref.ipFooterTabIndicatorColor(pref)
 		list_divider_color = Pref.ipListDividerColor(pref)
+		toot_color_unlisted = Pref.ipTootColorUnlisted(pref)
+		toot_color_follower = Pref.ipTootColorFollower(pref)
+		toot_color_direct_user = Pref.ipTootColorDirectUser(pref)
+		toot_color_direct_me = Pref.ipTootColorDirectMe(pref)
 		
 		etColumnWidth.setText(Pref.spColumnWidth(pref))
 		etMediaThumbHeight.setText(Pref.spMediaThumbHeight(pref))
@@ -498,6 +521,11 @@ class ActAppSetting : AppCompatActivity()
 			.put(Pref.ipFooterTabDividerColor, footer_tab_divider_color)
 			.put(Pref.ipFooterTabIndicatorColor, footer_tab_indicator_color)
 			.put(Pref.ipListDividerColor, list_divider_color)
+
+			.put(Pref.ipTootColorUnlisted, toot_color_unlisted)
+			.put(Pref.ipTootColorFollower, toot_color_follower)
+			.put(Pref.ipTootColorDirectUser, toot_color_direct_user)
+			.put(Pref.ipTootColorDirectMe, toot_color_direct_me)
 			
 			.apply()
 		
@@ -592,8 +620,48 @@ class ActAppSetting : AppCompatActivity()
 				true
 			)
 			
+			R.id.btnBackgroundColorUnlistedEdit -> openColorPicker(
+				COLOR_DIALOG_ID_TOOT_BG_UNLISTED,
+				toot_color_unlisted,
+				true
+			)
+
+			R.id.btnBackgroundColorFollowerEdit -> openColorPicker(
+				COLOR_DIALOG_ID_TOOT_BG_FOLLOWER,
+				toot_color_follower,
+				true
+			)
+
+			R.id.btnBackgroundColorDirectWithUserEdit -> openColorPicker(
+				COLOR_DIALOG_ID_TOOT_BG_DIRECT_USER,
+				toot_color_direct_user,
+				true
+			)
+
+			R.id.btnBackgroundColorDirectNoUserEdit -> openColorPicker(
+				COLOR_DIALOG_ID_TOOT_BG_DIRECT_ME,
+				toot_color_direct_me,
+				true
+			)
+			
 			R.id.btnListDividerColorReset -> {
 				list_divider_color = 0
+				saveUIToData()
+			}
+			R.id.btnBackgroundColorUnlistedReset -> {
+				toot_color_unlisted = 0
+				saveUIToData()
+			}
+			R.id.btnBackgroundColorFollowerReset -> {
+				toot_color_follower = 0
+				saveUIToData()
+			}
+			R.id.btnBackgroundColorDirectWithUserReset -> {
+				toot_color_direct_user = 0
+				saveUIToData()
+			}
+			R.id.btnBackgroundColorDirectNoUserReset -> {
+				toot_color_direct_me = 0
 				saveUIToData()
 			}
 			
@@ -723,6 +791,24 @@ class ActAppSetting : AppCompatActivity()
 				list_divider_color = if(colorSelected == 0) 0x01000000 else colorSelected
 				saveUIToData()
 			}
+			
+			COLOR_DIALOG_ID_TOOT_BG_UNLISTED -> {
+				toot_color_unlisted = if(colorSelected == 0) 0x01000000 else colorSelected
+				saveUIToData()
+			}
+			COLOR_DIALOG_ID_TOOT_BG_FOLLOWER -> {
+				toot_color_follower = if(colorSelected == 0) 0x01000000 else colorSelected
+				saveUIToData()
+			}
+			COLOR_DIALOG_ID_TOOT_BG_DIRECT_USER -> {
+				toot_color_direct_user= if(colorSelected == 0) 0x01000000 else colorSelected
+				saveUIToData()
+			}
+			COLOR_DIALOG_ID_TOOT_BG_DIRECT_ME -> {
+				toot_color_direct_me = if(colorSelected == 0) 0x01000000 else colorSelected
+				saveUIToData()
+			}
+
 		}
 	}
 	

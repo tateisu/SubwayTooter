@@ -500,6 +500,32 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	val filtered : Boolean
 		get() = _filtered || reblog?._filtered == true
+
+	
+
+	private fun hasReceipt(access_info:SavedAccount):TootVisibility{
+		val reply = this.reply
+		if( reply != null && ! access_info.isMe(reply.account)) {
+			return TootVisibility.DirectSpecified
+		}
+		val in_reply_to_account_id = this.in_reply_to_account_id
+		if( in_reply_to_account_id != null && in_reply_to_account_id != access_info.loginAccount?.id) {
+			return TootVisibility.DirectSpecified
+		}
+		mentions?.forEach{
+			if(!access_info.isMe(it.acct))
+				return@hasReceipt TootVisibility.DirectSpecified
+		}
+		return TootVisibility.DirectPrivate
+	}
+
+	fun getBackgroundColorType(access_info:SavedAccount) =
+		when(visibility){
+			TootVisibility.DirectPrivate,
+			TootVisibility.DirectSpecified -> hasReceipt(access_info)
+			else-> visibility
+		}
+	
 	
 	fun updateFiltered(muted_words : WordTrieTree?) {
 		_filtered = checkFiltered(muted_words)

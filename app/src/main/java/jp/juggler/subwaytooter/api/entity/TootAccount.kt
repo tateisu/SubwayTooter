@@ -83,6 +83,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	val bot : Boolean
 	val isCat : Boolean
 	val isAdmin : Boolean
+	val isPro : Boolean
 	
 	// user_hides_network is preference, not exposed in API
 	// val user_hides_network : Boolean
@@ -120,6 +121,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			this.bot = src.optBoolean("isBot", false)
 			this.isCat = src.optBoolean("isCat", false)
 			this.isAdmin = src.optBoolean("isAdmin", false)
+			this.isPro = src.optBoolean("isPro", false)
 			
 			// this.user_hides_network = src.optBoolean("user_hides_network")
 			
@@ -183,6 +185,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			this.bot = src.optBoolean("bot", false)
 			this.isAdmin = false
 			this.isCat = false
+			this.isPro = false
 			// this.user_hides_network = src.optBoolean("user_hides_network")
 			
 			when(parser.serviceType) {

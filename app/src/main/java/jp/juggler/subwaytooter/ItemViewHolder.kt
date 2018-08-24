@@ -954,7 +954,12 @@ internal class ItemViewHolder(
 				if(sb.isNotEmpty()) sb.append('\u200B')
 				sb.appendColorShadeIcon(activity, R.drawable.ic_shield, "admin")
 			}
-			
+
+			if(status.account.isPro) {
+				if(sb.isNotEmpty()) sb.append('\u200B')
+				sb.appendColorShadeIcon(activity, R.drawable.ic_authorized, "pro")
+			}
+
 			if(status.account.isCat) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
 				sb.appendColorShadeIcon(activity, R.drawable.ic_cat, "cat")

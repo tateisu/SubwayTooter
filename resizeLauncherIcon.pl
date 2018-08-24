@@ -127,14 +127,15 @@ my $res_dir = "app/src/main/res";
 #resize_scales( "_ArtWork/ic_mobile.png"	,$res_dir,"drawable","ic_mobile",0,24);
 
 
-resize_scales( "_ArtWork/misskey-reaction/btn_reaction_angry.png"			,$res_dir,"drawable","btn_reaction_angry",0,32);
-resize_scales( "_ArtWork/misskey-reaction/btn_reaction_confused.png"			,$res_dir,"drawable","btn_reaction_confused",0,32);
-resize_scales( "_ArtWork/misskey-reaction/btn_reaction_congrats.png"			,$res_dir,"drawable","btn_reaction_congrats",0,32);
-resize_scales( "_ArtWork/misskey-reaction/btn_reaction_hmm.png"			,$res_dir,"drawable","btn_reaction_hmm",0,32);
-resize_scales( "_ArtWork/misskey-reaction/btn_reaction_laugh.png"			,$res_dir,"drawable","btn_reaction_laugh",0,32);
-resize_scales( "_ArtWork/misskey-reaction/btn_reaction_like.png"			,$res_dir,"drawable","btn_reaction_like",0,32);
-resize_scales( "_ArtWork/misskey-reaction/btn_reaction_love.png"			,$res_dir,"drawable","btn_reaction_love",0,32);
-resize_scales( "_ArtWork/misskey-reaction/btn_reaction_pudding.png"			,$res_dir,"drawable","btn_reaction_pudding",0,32);
-resize_scales( "_ArtWork/misskey-reaction/btn_reaction_rip.png"			,$res_dir,"drawable","btn_reaction_rip",0,32);
-resize_scales( "_ArtWork/misskey-reaction/btn_reaction_surprise.png"			,$res_dir,"drawable","btn_reaction_surprise",0,32);
-
+#resize_scales( "_ArtWork/misskey-reaction/btn_reaction_angry.png"			,$res_dir,"drawable","btn_reaction_angry",0,32);
+#resize_scales( "_ArtWork/misskey-reaction/btn_reaction_confused.png"			,$res_dir,"drawable","btn_reaction_confused",0,32);
+#resize_scales( "_ArtWork/misskey-reaction/btn_reaction_congrats.png"			,$res_dir,"drawable","btn_reaction_congrats",0,32);
+#resize_scales( "_ArtWork/misskey-reaction/btn_reaction_hmm.png"			,$res_dir,"drawable","btn_reaction_hmm",0,32);
+#resize_scales( "_ArtWork/misskey-reaction/btn_reaction_laugh.png"			,$res_dir,"drawable","btn_reaction_laugh",0,32);
+#resize_scales( "_ArtWork/misskey-reaction/btn_reaction_like.png"			,$res_dir,"drawable","btn_reaction_like",0,32);
+#resize_scales( "_ArtWork/misskey-reaction/btn_reaction_love.png"			,$res_dir,"drawable","btn_reaction_love",0,32);
+#resize_scales( "_ArtWork/misskey-reaction/btn_reaction_pudding.png"			,$res_dir,"drawable","btn_reaction_pudding",0,32);
+#resize_scales( "_ArtWork/misskey-reaction/btn_reaction_rip.png"			,$res_dir,"drawable","btn_reaction_rip",0,32);
+#resize_scales( "_ArtWork/misskey-reaction/btn_reaction_surprise.png"			,$res_dir,"drawable","btn_reaction_surprise",0,32);
+#
+resize_scales( "_ArtWork/ic_medal.png"	,$res_dir,"drawable","ic_authorized",0,24);

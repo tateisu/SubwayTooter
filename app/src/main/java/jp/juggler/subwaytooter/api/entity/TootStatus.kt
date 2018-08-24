@@ -50,7 +50,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	val id : EntityId
 	
 	// misskey ではページネーションにIDではなくエポック秒を使う
-	private val _orderId : EntityId
+	internal var _orderId : EntityId
 	
 	override fun getOrderId() = _orderId
 	
@@ -188,6 +188,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			// ページネーションには日時を使う
 			this._orderId = EntityIdLong(time_created_at)
+			// お気に入りカラムなどではパース直後に変更することがある
 			
 			// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
 			this.custom_emojis = null

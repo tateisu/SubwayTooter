@@ -57,7 +57,7 @@ class Column(
 		private const val RELATIONSHIP_LOAD_STEP = 40
 		private const val ACCT_DB_STEP = 100
 		
-		private const val MISSKEY_HASHTAG_LIMIT=30
+		private const val MISSKEY_HASHTAG_LIMIT = 30
 		
 		// ステータスのリストを返すAPI
 		private const val PATH_HOME = "/api/v1/timelines/home?limit=$READ_LIMIT"
@@ -331,6 +331,19 @@ class Column(
 				}
 				dst
 			}
+		private val misskeyCustomParserFavorites =
+			{ parser : TootParser, jsonArray : JSONArray ->
+				val dst = ArrayList<TootStatus>()
+				for(i in 0 until jsonArray.length()) {
+					val src = jsonArray.optJSONObject(i) ?: continue
+					val note = parser.status(src.optJSONObject("note")) ?: continue
+					val favId = EntityId.mayNull(src.parseString("id")) ?: continue
+					note.favourited = true
+					note._orderId = favId
+					dst.add(note)
+				}
+				dst
+			}
 	}
 	
 	private var callback_ref : WeakReference<Callback>? = null
@@ -429,7 +442,7 @@ class Column(
 	internal var instance_information : TootInstance? = null
 	
 	internal var scroll_save : ScrollPosition? = null
-	internal var last_viewing_item_id :EntityId? = null
+	internal var last_viewing_item_id : EntityId? = null
 	
 	internal val is_dispose = AtomicBoolean()
 	
@@ -584,7 +597,7 @@ class Column(
 		instance_local = src.optBoolean(KEY_INSTANCE_LOCAL)
 		
 		enable_speech = src.optBoolean(KEY_ENABLE_SPEECH)
-		last_viewing_item_id = EntityId.from(src,KEY_LAST_VIEWING_ITEM)
+		last_viewing_item_id = EntityId.from(src, KEY_LAST_VIEWING_ITEM)
 		
 		regex_text = src.parseString(KEY_REGEX_TEXT) ?: ""
 		
@@ -652,7 +665,7 @@ class Column(
 		dst.put(KEY_INSTANCE_LOCAL, instance_local)
 		
 		dst.put(KEY_ENABLE_SPEECH, enable_speech)
-		last_viewing_item_id?.putTo(dst,KEY_LAST_VIEWING_ITEM)
+		last_viewing_item_id?.putTo(dst, KEY_LAST_VIEWING_ITEM)
 		
 		dst.put(KEY_REGEX_TEXT, regex_text)
 		
@@ -1648,6 +1661,9 @@ class Column(
 				client : TootApiClient,
 				path_base : String,
 				misskeyParams : JSONObject? = null
+				,
+				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootStatus> =
+					{ parser, jsonArray -> parser.statusList(jsonArray) }
 			) : TootApiResult? {
 				
 				val params = misskeyParams ?: makeMisskeyTimelineParameter(parser)
@@ -1666,7 +1682,7 @@ class Column(
 				var jsonArray = result?.jsonArray
 				if(jsonArray != null) {
 					
-					var src = parser.statusList(jsonArray)
+					var src = misskeyCustomParser(parser, jsonArray)
 					
 					this.list_tmp = addWithFilterStatus(ArrayList(src.size), src)
 					
@@ -1721,7 +1737,7 @@ class Column(
 							break
 						}
 						
-						src = parser.statusList(jsonArray)
+						src = misskeyCustomParser(parser, jsonArray)
 						
 						addWithFilterStatus(list_tmp, src)
 						
@@ -2083,7 +2099,16 @@ class Column(
 							PATH_FOLLOW_SUGGESTION
 						)
 						
-						TYPE_FAVOURITES -> return getStatuses(client, PATH_FAVOURITES)
+						TYPE_FAVOURITES -> return if(isMisskey) {
+							getStatuses(
+								client
+								, "/api/i/favorites"
+								, misskeyParams = makeMisskeyTimelineParameter(parser)
+								, misskeyCustomParser = misskeyCustomParserFavorites
+							)
+						} else {
+							getStatuses(client, PATH_FAVOURITES)
+						}
 						
 						TYPE_HASHTAG -> return if(isMisskey) {
 							getStatuses(
@@ -2091,7 +2116,7 @@ class Column(
 								, makeHashtagUrl(hashtag)
 								, misskeyParams = makeMisskeyTimelineParameter(parser)
 									.put("tag", hashtag)
-									.put("limit",MISSKEY_HASHTAG_LIMIT)
+									.put("limit", MISSKEY_HASHTAG_LIMIT)
 							)
 						} else {
 							getStatuses(client, makeHashtagUrl(hashtag))
@@ -3152,6 +3177,9 @@ class Column(
 				client : TootApiClient,
 				path_base : String,
 				misskeyParams : JSONObject? = null
+				,
+				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootStatus> =
+					{ parser, jsonArray -> parser.statusList(jsonArray) }
 			) : TootApiResult? {
 				
 				val isMisskey = access_info.isMisskey
@@ -3171,9 +3199,9 @@ class Column(
 				}
 				val firstResult = result
 				
-				var jsonArray = result?.jsonArray
+				val jsonArray = result?.jsonArray
 				if(jsonArray != null) {
-					var src = parser.statusList(jsonArray)
+					var src = misskeyCustomParser(parser, jsonArray)
 					if(isMisskey && ! bBottom) src.reverse()
 					saveRange(bBottom, ! bBottom, result, src)
 					list_tmp = addWithFilterStatus(null, src)
@@ -3212,14 +3240,14 @@ class Column(
 								result =
 									client.request(path_base, params.toPostRequestBuilder())
 								
-								jsonArray = result?.jsonArray
-								if(jsonArray == null) {
+								val jsonArray2 = result?.jsonArray
+								if(jsonArray2 == null) {
 									log.d("refresh-status-top: error or cancelled. make gap.")
 									bHeadGap = true
 									break
 								}
 								
-								src = parser.statusList(jsonArray)
+								src = misskeyCustomParser(parser, jsonArray2)
 								src.reverse()
 								
 								saveRange(false, true, result, src)
@@ -3275,8 +3303,8 @@ class Column(
 									"$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
 								result = client.request(path)
 								
-								jsonArray = result?.jsonArray
-								if(jsonArray == null) {
+								val jsonArray2 = result?.jsonArray
+								if(jsonArray2 == null) {
 									log.d("refresh-status-top: error or cancelled. make gap.")
 									// エラー
 									// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
@@ -3285,7 +3313,7 @@ class Column(
 									break
 								}
 								
-								src = parser.statusList(jsonArray)
+								src = misskeyCustomParser(parser, jsonArray2)
 								
 								addWithFilterStatus(list_tmp, src)
 							}
@@ -3336,13 +3364,13 @@ class Column(
 								client.request(path)
 							}
 							
-							jsonArray = result?.jsonArray
-							if(jsonArray == null) {
+							val jsonArray2 = result?.jsonArray
+							if(jsonArray2 == null) {
 								log.d("refresh-status-bottom: error or cancelled.")
 								break
 							}
 							
-							src = parser.statusList(jsonArray)
+							src = misskeyCustomParser(parser, jsonArray2)
 							
 							addWithFilterStatus(list_tmp, src)
 							
@@ -3393,7 +3421,16 @@ class Column(
 						
 						TYPE_FEDERATE -> getStatusList(client, makePublicFederateUrl())
 						
-						TYPE_FAVOURITES -> getStatusList(client, PATH_FAVOURITES)
+						TYPE_FAVOURITES -> if(isMisskey) {
+							getStatusList(
+								client
+								, "/api/i/favorites"
+								, misskeyParams = makeMisskeyTimelineParameter(parser)
+								, misskeyCustomParser = misskeyCustomParserFavorites
+							)
+						} else {
+							getStatusList(client, PATH_FAVOURITES)
+						}
 						
 						TYPE_REPORTS -> getReportList(client, PATH_REPORTS)
 						
@@ -3515,7 +3552,7 @@ class Column(
 								, makeHashtagUrl(hashtag)
 								, misskeyParams = makeMisskeyTimelineParameter(parser)
 									.put("tag", hashtag)
-									.put("limit",MISSKEY_HASHTAG_LIMIT)
+									.put("limit", MISSKEY_HASHTAG_LIMIT)
 							)
 						} else {
 							getStatusList(client, makeHashtagUrl(hashtag))
@@ -4069,6 +4106,9 @@ class Column(
 				client : TootApiClient,
 				path_base : String,
 				misskeyParams : JSONObject? = null
+				,
+				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootStatus> =
+					{ parser, jsonArray -> parser.statusList(jsonArray) }
 			) : TootApiResult? {
 				
 				val isMisskey = access_info.isMisskey
@@ -4114,7 +4154,7 @@ class Column(
 						// 成功した場合はそれを返したい
 						result = r2
 						
-						val src = parser.statusList(jsonArray)
+						val src = misskeyCustomParser(parser, jsonArray)
 						
 						if(src.isEmpty()) {
 							// 直前の取得でカラのデータが帰ってきたら終了
@@ -4166,7 +4206,7 @@ class Column(
 						// 成功した場合はそれを返したい
 						result = r2
 						
-						val src = parser.statusList(jsonArray)
+						val src = misskeyCustomParser(parser, jsonArray)
 						
 						if(src.isEmpty()) {
 							// 直前の取得でカラのデータが帰ってきたら終了
@@ -4214,7 +4254,17 @@ class Column(
 						
 						TYPE_LIST_TL -> getStatusList(client, makeListTlUrl())
 						
-						TYPE_FAVOURITES -> getStatusList(client, PATH_FAVOURITES)
+						TYPE_FAVOURITES -> if(isMisskey) {
+							getStatusList(
+								client,
+								"/api/i/favorites"
+								, misskeyParams = makeMisskeyTimelineParameter(parser)
+								, misskeyCustomParser = misskeyCustomParserFavorites
+							)
+						} else {
+							getStatusList(client, PATH_FAVOURITES)
+							
+						}
 						
 						TYPE_REPORTS -> getReportList(client, PATH_REPORTS)
 						
@@ -4226,7 +4276,7 @@ class Column(
 								, makeHashtagUrl(hashtag)
 								, misskeyParams = makeMisskeyTimelineParameter(parser)
 									.put("tag", hashtag)
-									.put("limit",MISSKEY_HASHTAG_LIMIT)
+									.put("limit", MISSKEY_HASHTAG_LIMIT)
 							)
 						} else {
 							getStatusList(client, makeHashtagUrl(hashtag))
@@ -5051,21 +5101,21 @@ class Column(
 		try {
 			if(viewHolder?.saveScrollPosition() == true) {
 				val ss = this.scroll_save
-				if( ss != null ) {
+				if(ss != null) {
 					val item = list_data[toListIndex(ss.adapterIndex)]
 					this.last_viewing_item_id = item.getOrderId()
 					// とりあえず保存はするが
 					// TLデータそのものを永続化しないかぎり出番はないっぽい
 				}
 			}
-		}catch(ex:Throwable) {
-			log.e(ex,"can't get last_viewing_item_id.")
+		} catch(ex : Throwable) {
+			log.e(ex, "can't get last_viewing_item_id.")
 		}
 	}
 	
 	fun findListIndexByTimelineId(orderId : EntityId) : Int? {
-		list_data.forEachIndexed{ i,v->
-			if( v.getOrderId() == orderId ) return i
+		list_data.forEachIndexed { i, v ->
+			if(v.getOrderId() == orderId) return i
 		}
 		return null
 	}

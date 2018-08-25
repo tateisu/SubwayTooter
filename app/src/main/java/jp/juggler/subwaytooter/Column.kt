@@ -1913,7 +1913,7 @@ class Column(
 					this.list_tmp = addWithFilterNotification(null, src)
 					//
 					if(! src.isEmpty()) {
-						PollingWorker.injectData(context, access_info.db_id, src)
+						PollingWorker.injectData(context, access_info, src)
 					}
 					//
 					val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
@@ -3113,7 +3113,7 @@ class Column(
 					saveRange(bBottom, ! bBottom, result, src)
 					
 					if(! src.isEmpty()) {
-						PollingWorker.injectData(context, access_info.db_id, src)
+						PollingWorker.injectData(context, access_info, src)
 					}
 					
 					if(! bBottom) {
@@ -3161,7 +3161,7 @@ class Column(
 								saveRange(false, true, result, src)
 								if(! src.isEmpty()) {
 									addWithFilterNotification(list_tmp, src)
-									PollingWorker.injectData(context, access_info.db_id, src)
+									PollingWorker.injectData(context, access_info, src)
 								}
 							}
 							
@@ -3216,7 +3216,7 @@ class Column(
 								src = parser.notificationList(jsonArray)
 								if(! src.isEmpty()) {
 									addWithFilterNotification(list_tmp, src)
-									PollingWorker.injectData(context, access_info.db_id, src)
+									PollingWorker.injectData(context, access_info, src)
 								}
 							}
 							if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
@@ -4190,7 +4190,7 @@ class Column(
 						
 						addWithFilterNotification(list_tmp, src)
 						
-						PollingWorker.injectData(context, access_info.db_id, src)
+						PollingWorker.injectData(context, access_info, src)
 					}
 					
 					if(bHeadGap) {
@@ -4238,7 +4238,7 @@ class Column(
 						
 						addWithFilterNotification(list_tmp, src)
 						
-						PollingWorker.injectData(context, access_info.db_id, src)
+						PollingWorker.injectData(context, access_info, src)
 						
 					}
 				}
@@ -5008,7 +5008,7 @@ class Column(
 			if(list_new.isEmpty()) return
 			
 			// 通知カラムならストリーミング経由で届いたデータを通知ワーカーに伝達する
-			if(column_type == TYPE_NOTIFICATIONS && !isMisskey) {
+			if(column_type == TYPE_NOTIFICATIONS ) {
 				val list = ArrayList<TootNotification>()
 				for(o in list_new) {
 					if(o is TootNotification) {
@@ -5016,7 +5016,7 @@ class Column(
 					}
 				}
 				if(! list.isEmpty()) {
-					PollingWorker.injectData(context, access_info.db_id, list)
+					PollingWorker.injectData(context, access_info, list)
 				}
 			}
 			

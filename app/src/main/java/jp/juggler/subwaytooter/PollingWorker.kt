@@ -276,12 +276,15 @@ class PollingWorker private constructor(c : Context) {
 			addTask(context, true, TASK_UPDATE_NOTIFICATION, null)
 		}
 		
-		fun injectData(context : Context, account_db_id : Long, src : ArrayList<TootNotification>) {
+		fun injectData(context : Context, account : SavedAccount, src : ArrayList<TootNotification>) {
+			
+			if(account.isMisskey) return // FIXME
 			
 			if(src.isEmpty()) return
 			
+			
 			val id = InjectData()
-			id.account_db_id = account_db_id
+			id.account_db_id = account.db_id
 			id.list.addAll(src)
 			inject_queue.add(id)
 			

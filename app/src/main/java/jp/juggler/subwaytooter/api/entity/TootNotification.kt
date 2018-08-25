@@ -21,6 +21,7 @@ class TootNotification(parser : TootParser, src : JSONObject) : TimelineItem() {
 		
 		// フォロー
 		const val TYPE_FOLLOW = "follow" // Mastodon,Misskey
+		const val TYPE_UNFOLLOW = "unfollow" // Mastodon,Misskey
 		
 		const val TYPE_FAVOURITE = "favourite"
 		const val TYPE_REACTION = "reaction"
@@ -53,9 +54,15 @@ class TootNotification(parser : TootParser, src : JSONObject) : TimelineItem() {
 		
 		if( parser.serviceType == ServiceType.MISSKEY){
 			id = when {
-				parser.serviceType == ServiceType.MISSKEY -> EntityId.mayNull(src.parseString("id"))
-				else -> EntityId.mayNull(src.parseLong("id"))
-			} ?: error("missing id")
+
+				// Misskeyはストリーミングからくる通知にIDが振られていない
+				parser.serviceType == ServiceType.MISSKEY ->
+					EntityId.mayNull(src.parseString("id")) ?: EntityIdString("")
+
+				// Mastodon
+				else -> EntityId.mayNull(src.parseLong("id")) ?: error("missing id")
+			}
+			
 			
 			type = src.notEmptyOrThrow("type")
 			

@@ -1087,7 +1087,6 @@ class ActMain : AppCompatActivity()
 				, defaultInsertPosition
 				, Column.TYPE_FOLLOW_SUGGESTION
 				, bAllowPseudo = false
-				, bAllowMisskey = false
 			)
 			//			R.id.nav_add_trend_tag ->Action_Account.timeline(
 			//				this,

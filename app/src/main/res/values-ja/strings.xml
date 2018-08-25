@@ -157,6 +157,7 @@
 
     <string name="display_name_reaction_by">%1$sがリアクション</string>
     <string name="display_name_followed_by">%1$sにフォローされました</string>
+    <string name="display_name_unfollowed_by">%1$sにフォロー解除されました</string>
 
     <string name="account">アカウント</string>
 

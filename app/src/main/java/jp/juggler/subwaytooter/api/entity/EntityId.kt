@@ -93,7 +93,7 @@ class EntityIdString(val x : String) : EntityId() {
 	
 	override fun compareTo(other : EntityId) = when(other) {
 		is EntityIdString -> x.compareTo(other.x)
-		else -> error("EntityIdLong: compare with ${other::javaClass.name}")
+		else -> error("EntityIdLong: compare with ${other::class.java.simpleName}")
 	}
 	
 	override fun equals(other : Any?) =when(other) {

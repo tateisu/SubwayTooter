@@ -499,20 +499,16 @@ class ColumnViewHolder(
 				isRegexValid()
 			}
 			
-			when(column.column_type) {
-				
-				Column.TYPE_CONVERSATION,
-				Column.TYPE_INSTANCE_INFORMATION -> refreshLayout.isEnabled = false
-				
-				Column.TYPE_KEYWORD_FILTER, Column.TYPE_SEARCH, Column.TYPE_TREND_TAG -> {
-					refreshLayout.isEnabled = true
-					refreshLayout.direction = SwipyRefreshLayoutDirection.TOP
-				}
-				
-				else -> {
-					refreshLayout.isEnabled = true
-					refreshLayout.direction = SwipyRefreshLayoutDirection.BOTH
-				}
+			val canRefreshTop = column.canRefreshTopBySwipe()
+			val canRefreshBottom = column.canRefreshBottomBySwipe()
+			
+			refreshLayout.isEnabled = canRefreshTop || canRefreshBottom
+			refreshLayout.direction = if( canRefreshTop && canRefreshBottom) {
+				SwipyRefreshLayoutDirection.BOTH
+			}else if( canRefreshTop){
+				SwipyRefreshLayoutDirection.TOP
+			}else{
+				SwipyRefreshLayoutDirection.BOTTOM
 			}
 			
 			//

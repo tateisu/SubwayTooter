@@ -86,6 +86,7 @@
     <string name="display_name_quoted_by">%1$s quoted</string>
     <string name="display_name_reaction_by">%1$s reactioned</string>
     <string name="display_name_followed_by">%1$s is following you</string>
+    <string name="display_name_unfollowed_by">%1$s unfollowed you</string>
     <string name="account">Account</string>
     <string name="account_setting">Account settings</string>
     <string name="setting">Settings</string>

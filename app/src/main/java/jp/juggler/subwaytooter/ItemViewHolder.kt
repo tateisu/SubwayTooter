@@ -535,7 +535,17 @@ internal class ItemViewHolder(
 					showAccount(n_accountRef)
 				}
 			}
-			
+			TootNotification.TYPE_UNFOLLOW -> {
+				if(n_account != null) {
+					showBoost(
+						n_accountRef,
+						n.time_created_at,
+						R.attr.ic_follow_cross,
+						R.string.display_name_unfollowed_by
+					)
+					showAccount(n_accountRef)
+				}
+			}
 			TootNotification.TYPE_MENTION, TootNotification.TYPE_REPLY -> {
 				if(! bSimpleList && ! access_info.isMisskey) {
 					if(n_account != null) showBoost(

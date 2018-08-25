@@ -19,14 +19,11 @@ import jp.juggler.subwaytooter.api.entity.EntityIdLong
 import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootPayload
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.WordTrieTree
-import jp.juggler.subwaytooter.util.runOnMainLooper
-import jp.juggler.subwaytooter.util.toJsonObject
+import jp.juggler.subwaytooter.util.*
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
-
+import org.json.JSONObject
 
 internal class StreamReader(
 	val context : Context,
@@ -34,13 +31,15 @@ internal class StreamReader(
 	val pref : SharedPreferences
 ) {
 	
-	internal interface StreamCallback{
+	internal interface StreamCallback {
 		fun onTimelineItem(item : TimelineItem)
 		fun onListeningStateChanged()
 	}
 	
 	companion object {
 		val log = LogCategory("StreamReader")
+		
+		const val MISSKEY_ALIVE_INTERVAL = 60000L
 		
 		@Suppress("HasPlatformType")
 		val reAuthorizeError = Pattern.compile("authorize", Pattern.CASE_INSENSITIVE)
@@ -58,11 +57,8 @@ internal class StreamReader(
 		internal val bListening = AtomicBoolean()
 		internal val socket = AtomicReference<WebSocket>(null)
 		internal val callback_list = LinkedList<StreamCallback>()
-		internal val parser : TootParser
-		
-		init {
-			this.parser = TootParser(context, access_info, highlightTrie = highlight_trie)
-		}
+		internal val parser : TootParser =
+			TootParser(context, access_info, highlightTrie = highlight_trie)
 		
 		internal fun dispose() {
 			bDisposed.set(true)
@@ -73,6 +69,21 @@ internal class StreamReader(
 		internal val proc_reconnect : Runnable = Runnable {
 			if(bDisposed.get()) return@Runnable
 			startRead()
+		}
+		internal val proc_alive : Runnable = Runnable {
+			fireAlive()
+		}
+		
+		fun fireAlive() {
+			handler.removeCallbacks(proc_alive)
+			if(bDisposed.get()) return
+			try {
+				if(socket.get()?.send("""{"type":"alive"}""") == true) {
+					handler.postDelayed(proc_alive, MISSKEY_ALIVE_INTERVAL)
+				}
+			} catch(ex : Throwable) {
+				log.d(ex.withCaption("fireAlive failed."))
+			}
 		}
 		
 		@Synchronized
@@ -96,26 +107,45 @@ internal class StreamReader(
 				if(c === stream_callback) it.remove()
 			}
 		}
+		
 		fun containsCallback(streamCallback : StreamCallback) : Boolean {
 			return callback_list.contains(streamCallback)
 		}
 		
 		@Synchronized
-		fun fireListeningChanged(){
+		fun fireListeningChanged() {
 			for(c in callback_list) {
-				try{
+				try {
 					c.onListeningStateChanged()
-				}catch(ex:Throwable){
+				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
 			}
 		}
+		
 		/**
 		 * Invoked when a web socket has been accepted by the remote peer and may begin transmitting
 		 * messages.
 		 */
 		override fun onOpen(webSocket : WebSocket, response : Response) {
 			log.d("WebSocket onOpen. url=%s .", webSocket.request().url())
+			if(access_info.isMisskey) {
+				handler.removeCallbacks(proc_alive)
+				handler.postDelayed(proc_alive, MISSKEY_ALIVE_INTERVAL)
+			}
+		}
+		
+		private fun fireTimelineItem(item : TimelineItem?) {
+			item ?: return
+			runOnMainLooper {
+				for(callback in callback_list) {
+					try {
+						callback.onTimelineItem(item)
+					} catch(ex : Throwable) {
+						log.trace(ex)
+					}
+				}
+			}
 		}
 		
 		/**
@@ -124,61 +154,97 @@ internal class StreamReader(
 		override fun onMessage(webSocket : WebSocket, text : String) {
 			// warning.d( "WebSocket onMessage. url=%s, message=%s", webSocket.request().url(), text );
 			try {
+				if(text?.get(0) != '{') {
+					log.d("onMessage: text is not JSON: $text")
+					return
+				}
 				val obj = text.toJsonObject()
 				
-				val event = obj.optString("event")
-				if(event == null || event.isEmpty()) {
-					log.d("onMessage: missing event parameter")
-					return
-				}
-				
-				if( event == "filters_changed"){
-					Column.onFiltersChanged(context,access_info)
-					return
-				}
-				
-				val payload = TootPayload.parsePayload(parser, event, obj, text)
-				
-				runOnMainLooper {
-					synchronized(this) {
-						if(bDisposed.get()) return@runOnMainLooper
+				if(access_info.isMisskey) {
+					val type = obj.optString("type")
+					if(type?.isEmpty() != false) {
+						log.d("onMessage: missing type parameter")
+						return
+					}
+					when(type) {
 						
-						when(event) {
-							
-							"delete" -> {
-								if(payload is Long) {
-									val tl_host = access_info.host
-									for(column in App1.getAppState(context).column_list) {
-										try {
-											column.onStatusRemoved(tl_host, EntityIdLong(payload))
-										} catch(ex : Throwable) {
-											log.trace(ex)
-										}
-									}
-								} else {
-									log.d("payload is not long. $payload")
-								}
-							}
-							
-							else -> {
-								if(payload is TimelineItem) {
-									for(callback in callback_list) {
-										try {
-											callback.onTimelineItem(payload)
-										} catch(ex : Throwable) {
-											log.trace(ex)
-										}
-									}
-								} else {
-									log.d("payload is not TimelineItem. $payload")
-								}
-							}
+						"note" -> {
+							val status = parser.status(obj.optJSONObject("body"))
+							if(status != null) fireTimelineItem(status)
 						}
 						
+						"notification" -> {
+							val body = obj.optJSONObject("body")
+							fireTimelineItem(parser.notification(body))
+						}
+/*
+						"read_all_notifications",
+						"unread_notification",
+						"meUpdated",
+						"followed", // 他の誰かからフォローされた
+						"reply",
+						"renote",
+						"follow", // 自分が他の誰かをフォローした
+						"unfollow", // 自分が他の誰かをフォロー解除した
+*/
+						else -> {
+							log.v("ignore streaming event $type")
+						}
+					}
+					
+				} else {
+					val event = obj.optString("event")
+					if(event == null || event.isEmpty()) {
+						log.d("onMessage: missing event parameter")
+						return
+					}
+					
+					if(event == "filters_changed") {
+						Column.onFiltersChanged(context, access_info)
+						return
+					}
+					
+					val payload = TootPayload.parsePayload(parser, event, obj, text)
+					
+					runOnMainLooper {
+						synchronized(this) {
+							if(bDisposed.get()) return@runOnMainLooper
+							
+							when(event) {
+								
+								"delete" -> {
+									if(payload is Long) {
+										val tl_host = access_info.host
+										for(column in App1.getAppState(context).column_list) {
+											try {
+												column.onStatusRemoved(
+													tl_host,
+													EntityIdLong(payload)
+												)
+											} catch(ex : Throwable) {
+												log.trace(ex)
+											}
+										}
+									} else {
+										log.d("payload is not long. $payload")
+									}
+								}
+								
+								else -> {
+									if(payload is TimelineItem) {
+										fireTimelineItem(payload)
+									} else {
+										log.d("payload is not TimelineItem. $payload")
+									}
+								}
+							}
+							
+						}
 					}
 				}
 			} catch(ex : Throwable) {
 				log.trace(ex)
+				log.e("data=$text")
 			}
 		}
 		
@@ -194,6 +260,7 @@ internal class StreamReader(
 			)
 			webSocket.cancel()
 			bListening.set(false)
+			handler.removeCallbacks(proc_alive)
 			handler.removeCallbacks(proc_reconnect)
 			handler.postDelayed(proc_reconnect, 10000L)
 			fireListeningChanged()
@@ -211,6 +278,7 @@ internal class StreamReader(
 				webSocket.request().url()
 			)
 			bListening.set(false)
+			handler.removeCallbacks(proc_alive)
 			handler.removeCallbacks(proc_reconnect)
 			handler.postDelayed(proc_reconnect, 10000L)
 			fireListeningChanged()
@@ -226,6 +294,7 @@ internal class StreamReader(
 			
 			bListening.set(false)
 			handler.removeCallbacks(proc_reconnect)
+			handler.removeCallbacks(proc_alive)
 			fireListeningChanged()
 			
 			if(ex is ProtocolException) {
@@ -247,7 +316,7 @@ internal class StreamReader(
 				log.d("startRead: already listening.")
 				return
 			}
-
+			
 			socket.set(null)
 			bListening.set(true)
 			fireListeningChanged()
@@ -255,7 +324,7 @@ internal class StreamReader(
 			TootTaskRunner(context).run(access_info, object : TootTask {
 				override fun background(client : TootApiClient) : TootApiResult? {
 					val result = client.webSocket(end_point, this@Reader)
-
+					
 					if(result == null) {
 						log.d("startRead: cancelled.")
 						bListening.set(false)
@@ -283,9 +352,8 @@ internal class StreamReader(
 			})
 		}
 		
-
 	}
-
+	
 	private fun prepareReader(
 		accessInfo : SavedAccount,
 		endPoint : String,
@@ -361,14 +429,14 @@ internal class StreamReader(
 		streamCallback : StreamCallback
 	) : StreamingIndicatorState {
 		synchronized(reader_list) {
-			for( reader in reader_list){
+			for(reader in reader_list) {
 				if(reader.access_info.db_id == accessInfo.db_id
 					&& reader.end_point == endPoint
-					&& reader.containsCallback( streamCallback )
+					&& reader.containsCallback(streamCallback)
 				) {
-					return if(reader.bListening.get() && reader.socket.get() != null ) {
+					return if(reader.bListening.get() && reader.socket.get() != null) {
 						StreamingIndicatorState.LISTENING
-					}else {
+					} else {
 						StreamingIndicatorState.REGISTERED
 					}
 				}

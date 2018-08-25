@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.content.SharedPreferences
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.SystemClock
@@ -107,7 +106,19 @@ class Column(
 		const val PATH_MISSKEY_PROFILE_FOLLOWING = "/api/users/following"
 		const val PATH_MISSKEY_PROFILE_FOLLOWERS = "/api/users/followers"
 		const val PATH_MISSKEY_PROFILE_STATUSES = "/api/users/notes"
+		
 		const val PATH_MISSKEY_PROFILE = "/api/users/show"
+		const val PATH_MISSKEY_MUTES = "/api/mute/list"
+		const val PATH_MISSKEY_FOLLOW_REQUESTS = "/api/following/requests/list"
+		const val PATH_MISSKEY_FOLLOW_SUGGESTION = "/api/users/recommendation"
+		const val PATH_MISSKEY_FAVORITES = "/api/i/favorites"
+		
+		private enum class PagingType {
+			Default,
+			Cursor,
+			Offset,
+			None,
+		}
 		
 		internal const val KEY_ACCOUNT_ROW_ID = "account_id"
 		internal const val KEY_TYPE = "type"
@@ -312,7 +323,7 @@ class Column(
 				})
 		}
 		
-		private val misskeyArrayFinderUsers = { it:JSONObject -> it.optJSONArray("users") }
+		private val misskeyArrayFinderUsers = { it : JSONObject -> it.optJSONArray("users") }
 		
 		private val misskeyCustomParserFollowRequest =
 			{ parser : TootParser, jsonArray : JSONArray ->
@@ -333,25 +344,7 @@ class Column(
 				}
 				dst
 			}
-		val misskeyCustomParserMutes =
-			{ parser : TootParser, jsonArray : JSONArray ->
-				val dst = ArrayList<TootAccountRef>()
-				for(i in 0 until jsonArray.length()) {
-					val src = jsonArray.optJSONObject(i) ?: continue
-					
-					val accountRef = TootAccountRef.mayNull(
-						parser,
-						parser.account(src.optJSONObject("follower"))
-					) ?: continue
-					
-					val requestId = EntityId.mayNull(src.parseString("id")) ?: continue
-					
-					accountRef.get()._orderId = requestId
-					
-					dst.add(accountRef)
-				}
-				dst
-			}
+		
 		private val misskeyCustomParserFavorites =
 			{ parser : TootParser, jsonArray : JSONArray ->
 				val dst = ArrayList<TootStatus>()
@@ -375,17 +368,24 @@ class Column(
 		}
 	
 	private val streamPath : String?
-		get() {
-			// misskeyの疑似アカウントはストリーミング対応していない
-			if(isMisskey && access_info.isPseudo) return null
-			
-			// XXX misskeyのストリーミングはまだサポートしない
-			if(isMisskey) return null
-			
-			return when(column_type) {
+		get() = if(isMisskey) {
+			val misskeyApiToken = access_info.misskeyApiToken
+			if(misskeyApiToken == null) {
+				// misskeyの疑似アカウントはストリーミング対応していない
+				null
+			} else {
+				when(column_type) {
+					TYPE_HOME, TYPE_NOTIFICATIONS -> "/?i=$misskeyApiToken"
+					TYPE_LOCAL -> "/local-timeline?i=$misskeyApiToken"
+					TYPE_MISSKEY_HYBRID -> "/hybrid-timeline?i=$misskeyApiToken"
+					TYPE_FEDERATE ->"/global-timeline?i=$misskeyApiToken"
+					else -> null
+				}
+			}
+		} else {
+			when(column_type) {
 				TYPE_HOME, TYPE_NOTIFICATIONS -> "/api/v1/streaming/?stream=user"
 				TYPE_LOCAL -> "/api/v1/streaming/?stream=public:local"
-				TYPE_MISSKEY_HYBRID -> null // FIXME MisskeyだしMastodonのURLではない
 				TYPE_FEDERATE -> "/api/v1/streaming/?stream=public"
 				TYPE_LIST_TL -> "/api/v1/streaming/?stream=list&list=" + profile_id.toString()
 				
@@ -398,6 +398,7 @@ class Column(
 				}
 				else -> null
 			}
+			
 		}
 	
 	private val isPublicStream : Boolean
@@ -463,7 +464,7 @@ class Column(
 	internal var instance_information : TootInstance? = null
 	
 	internal var scroll_save : ScrollPosition? = null
-	internal var last_viewing_item_id : EntityId? = null
+	private var last_viewing_item_id : EntityId? = null
 	
 	internal val is_dispose = AtomicBoolean()
 	
@@ -525,6 +526,8 @@ class Column(
 	// misskeyは
 	private var idRecent : EntityId? = null
 	private var idOld : EntityId? = null
+	private var offsetNext : Int = 0
+	private var pagingType : PagingType = PagingType.Default
 	
 	var bRefreshingTop : Boolean = false
 	
@@ -993,6 +996,8 @@ class Column(
 		bInitialLoading = false
 		idOld = null
 		idRecent = null
+		offsetNext = 0
+		pagingType = PagingType.Default
 		
 		list_data.clear()
 		duplicate_map.clear()
@@ -1629,6 +1634,8 @@ class Column(
 		bRefreshLoading = false
 		idOld = null
 		idRecent = null
+		offsetNext = 0
+		pagingType = PagingType.Default
 		
 		duplicate_map.clear()
 		list_data.clear()
@@ -1772,11 +1779,16 @@ class Column(
 			}
 			
 			fun parseAccountList(
-				client : TootApiClient,
-				path_base : String,
-				emptyMessage : String? = null,
-				misskeyParams : JSONObject? = null,
-				misskeyArrayFinder : (JSONObject) -> JSONArray? = { null },
+				client : TootApiClient
+				,
+				path_base : String
+				,
+				emptyMessage : String? = null
+				,
+				misskeyParams : JSONObject? = null
+				,
+				misskeyArrayFinder : (JSONObject) -> JSONArray? = { null }
+				,
 				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootAccountRef> =
 					{ parser, jsonArray -> parser.accountList(jsonArray) }
 			) : TootApiResult? {
@@ -1790,13 +1802,27 @@ class Column(
 				if(result != null && result.error == null) {
 					val jsonObject = result.jsonObject
 					if(jsonObject != null) {
+						if(pagingType == PagingType.Cursor) {
+							idOld = EntityId.mayNull(jsonObject.parseString("next"))
+						}
 						result.data = misskeyArrayFinder(jsonObject)
 					}
 					val jsonArray = result.jsonArray
 						?: return result.setError("missing JSON data.")
 					
 					val src = misskeyCustomParser(parser, jsonArray)
-					saveRange(true, true, result, src)
+					when(pagingType) {
+						PagingType.Default -> {
+							saveRange(true, true, result, src)
+						}
+						
+						PagingType.Offset -> {
+							offsetNext += src.size
+						}
+						
+						else -> {
+						}
+					}
 					
 					val tmp = ArrayList<TimelineItem>()
 					
@@ -1986,11 +2012,16 @@ class Column(
 							when(profile_tab) {
 								
 								TAB_FOLLOWING -> return if(isMisskey) {
+									pagingType = PagingType.Cursor
 									parseAccountList(
-										client,
-										PATH_MISSKEY_PROFILE_FOLLOWING,
-										emptyMessage = context.getString(R.string.none_or_hidden_following),
-										misskeyParams = makeMisskeyParamsUserId(parser),
+										client
+										,
+										PATH_MISSKEY_PROFILE_FOLLOWING
+										,
+										emptyMessage = context.getString(R.string.none_or_hidden_following)
+										,
+										misskeyParams = makeMisskeyParamsUserId(parser)
+										,
 										misskeyArrayFinder = misskeyArrayFinderUsers
 									)
 								} else {
@@ -2006,6 +2037,7 @@ class Column(
 								}
 								
 								TAB_FOLLOWERS -> return if(isMisskey) {
+									pagingType = PagingType.Cursor
 									parseAccountList(
 										client,
 										PATH_MISSKEY_PROFILE_FOLLOWERS,
@@ -2079,16 +2111,15 @@ class Column(
 							}
 						}
 						
-						TYPE_MUTES -> return if(isMisskey){
-							
+						TYPE_MUTES -> return if(isMisskey) {
+							pagingType = PagingType.Cursor
 							parseAccountList(
 								client
-								, "/api/mute/list"
+								, PATH_MISSKEY_MUTES
 								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
-								
-							,misskeyArrayFinder = misskeyArrayFinderUsers
+								, misskeyArrayFinder = misskeyArrayFinderUsers
 							)
-						}else{
+						} else {
 							parseAccountList(client, PATH_MUTES)
 						}
 						TYPE_KEYWORD_FILTER -> return parseFilterList(client, PATH_FILTERS)
@@ -2113,9 +2144,10 @@ class Column(
 						}
 						
 						TYPE_FOLLOW_REQUESTS -> return if(isMisskey) {
+							pagingType = PagingType.None
 							parseAccountList(
 								client
-								, "/api/following/requests/list"
+								, PATH_MISSKEY_FOLLOW_REQUESTS
 								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
 								, misskeyCustomParser = misskeyCustomParserFollowRequest
 							)
@@ -2126,15 +2158,24 @@ class Column(
 							)
 						}
 						
-						TYPE_FOLLOW_SUGGESTION -> return parseAccountList(
-							client,
-							PATH_FOLLOW_SUGGESTION
-						)
+						TYPE_FOLLOW_SUGGESTION -> return if(isMisskey) {
+							pagingType = PagingType.Offset
+							parseAccountList(
+								client
+								, PATH_MISSKEY_FOLLOW_SUGGESTION
+								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+							)
+						} else {
+							parseAccountList(
+								client,
+								PATH_FOLLOW_SUGGESTION
+							)
+						}
 						
 						TYPE_FAVOURITES -> return if(isMisskey) {
 							getStatuses(
 								client
-								, "/api/i/favorites"
+								, PATH_MISSKEY_FAVORITES
 								, misskeyParams = makeMisskeyTimelineParameter(parser)
 								, misskeyCustomParser = misskeyCustomParserFavorites
 							)
@@ -2657,14 +2698,14 @@ class Column(
 				if(holder != null) holder.refreshLayout.isRefreshing = false
 			}
 			return
-		} else if(bBottom && idOld == null) {
+		} else if(bBottom && ! canRefreshBottom()) {
 			if(! bSilent) {
 				showToast(context, true, R.string.end_of_list)
 				val holder = viewHolder
 				if(holder != null) holder.refreshLayout.isRefreshing = false
 			}
 			return
-		} else if(! bBottom && idRecent == null) {
+		} else if(! bBottom && ! canRefreshTop()) {
 			val holder = viewHolder
 			if(holder != null) holder.refreshLayout.isRefreshing = false
 			startLoading()
@@ -2706,6 +2747,26 @@ class Column(
 					{ parser, jsonArray -> parser.accountList(jsonArray) }
 			) : TootApiResult? {
 				
+				@Suppress("NON_EXHAUSTIVE_WHEN")
+				when(bBottom) {
+					false -> when(pagingType) {
+						PagingType.Cursor,
+						PagingType.None,
+						PagingType.Offset -> {
+							return TootApiResult("can't refresh top.")
+						}
+					}
+					true -> when(pagingType) {
+						PagingType.Cursor -> if(idOld == null) {
+							return TootApiResult(context.getString(R.string.end_of_list))
+						}
+						
+						PagingType.None -> {
+							return TootApiResult(context.getString(R.string.end_of_list))
+						}
+					}
+				}
+				
 				val params = misskeyParams ?: makeMisskeyBaseParameter(parser)
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				
@@ -2714,7 +2775,12 @@ class Column(
 				val time_start = SystemClock.elapsedRealtime()
 				
 				var result = if(isMisskey) {
-					addRangeMisskey(bBottom, params)
+					@Suppress("NON_EXHAUSTIVE_WHEN")
+					when(pagingType) {
+						PagingType.Default -> addRangeMisskey(bBottom, params)
+						PagingType.Offset -> params.put("offset", offsetNext)
+						PagingType.Cursor -> params.put("cursor", idOld)
+					}
 					client.request(path_base, params.toPostRequestBuilder())
 				} else {
 					client.request(addRange(bBottom, path_base))
@@ -2723,15 +2789,27 @@ class Column(
 				
 				var jsonObject = result?.jsonObject
 				if(jsonObject != null) {
+					if(pagingType == PagingType.Cursor) {
+						idOld = EntityId.mayNull(jsonObject.parseString("next"))
+					}
 					result !!.data = misskeyArrayFinder(jsonObject)
 				}
-				var array = result?.jsonArray
 				
+				var array = result?.jsonArray
 				if(array != null) {
 					
 					var src = misskeyCustomParser(parser, array)
-					if(isMisskey && ! bBottom) src.reverse()
-					saveRange(bBottom, ! bBottom, result, src)
+					@Suppress("NON_EXHAUSTIVE_WHEN")
+					when(pagingType) {
+						PagingType.Default -> {
+							if(isMisskey && ! bBottom) src.reverse()
+							saveRange(bBottom, ! bBottom, firstResult, src)
+						}
+						
+						PagingType.Offset -> {
+							offsetNext += src.size
+						}
+					}
 					list_tmp = addAll(null, src)
 					
 					if(! bBottom) {
@@ -2762,11 +2840,12 @@ class Column(
 								}
 								
 								idRecent?.putMisskeySince(params)
+								
 								result = client.request(path_base, params.toPostRequestBuilder())
 								
 								jsonObject = result?.jsonObject
 								if(jsonObject != null) {
-									result?.data = misskeyArrayFinder(jsonObject)
+									result !!.data = misskeyArrayFinder(jsonObject)
 								}
 								
 								array = result?.jsonArray
@@ -3456,7 +3535,7 @@ class Column(
 						TYPE_FAVOURITES -> if(isMisskey) {
 							getStatusList(
 								client
-								, "/api/i/favorites"
+								, PATH_MISSKEY_FAVORITES
 								, misskeyParams = makeMisskeyTimelineParameter(parser)
 								, misskeyCustomParser = misskeyCustomParserFavorites
 							)
@@ -3559,15 +3638,14 @@ class Column(
 							)
 						}
 						
-						TYPE_MUTES -> if(isMisskey){
+						TYPE_MUTES -> if(isMisskey) {
 							getAccountList(
 								client
-								, "/api/mute/list"
+								, PATH_MISSKEY_MUTES
 								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
-								
-								,misskeyArrayFinder = misskeyArrayFinderUsers
+								, misskeyArrayFinder = misskeyArrayFinderUsers
 							)
-						}else{
+						} else {
 							getAccountList(client, PATH_MUTES)
 						}
 						
@@ -3578,7 +3656,7 @@ class Column(
 						TYPE_FOLLOW_REQUESTS -> if(isMisskey) {
 							getAccountList(
 								client
-								, "/api/following/requests/list"
+								, PATH_MISSKEY_FOLLOW_REQUESTS
 								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
 								, misskeyCustomParser = misskeyCustomParserFollowRequest
 							)
@@ -3586,7 +3664,15 @@ class Column(
 						} else {
 							getAccountList(client, PATH_FOLLOW_REQUESTS)
 						}
-						TYPE_FOLLOW_SUGGESTION -> getAccountList(client, PATH_FOLLOW_SUGGESTION)
+						TYPE_FOLLOW_SUGGESTION -> if(isMisskey) {
+							getAccountList(
+								client
+								, PATH_MISSKEY_FOLLOW_SUGGESTION
+								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+							)
+						} else {
+							getAccountList(client, PATH_FOLLOW_SUGGESTION)
+						}
 						
 						TYPE_HASHTAG -> if(isMisskey) {
 							getStatusList(
@@ -3838,13 +3924,26 @@ class Column(
 			
 			fun getAccountList(
 				client : TootApiClient
-				,path_base : String
-				,misskeyParams : JSONObject? = null
-				,misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootAccountRef> =
+				,
+				path_base : String
+				,
+				misskeyParams : JSONObject? = null
+				,
+				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootAccountRef> =
 					{ parser, jsonArray -> parser.accountList(jsonArray) }
-				,misskeyArrayFinder :(jsonObject:JSONObject)->JSONArray? = {null}
+				,
+				misskeyArrayFinder : (jsonObject : JSONObject) -> JSONArray? = { null }
 			
 			) : TootApiResult? {
+				
+				@Suppress("NON_EXHAUSTIVE_WHEN")
+				when(pagingType) {
+					PagingType.Offset,
+					PagingType.Cursor,
+					PagingType.None -> {
+						return TootApiResult("can't support gap")
+					}
+				}
 				
 				val params = misskeyParams ?: makeMisskeyBaseParameter(parser)
 				val time_start = SystemClock.elapsedRealtime()
@@ -3875,7 +3974,7 @@ class Column(
 						val r2 = client.request(path_base, params.toPostRequestBuilder())
 						
 						val jsonObject = r2?.jsonObject
-						if( jsonObject != null ){
+						if(jsonObject != null) {
 							r2.data = misskeyArrayFinder(jsonObject)
 						}
 						
@@ -4302,7 +4401,7 @@ class Column(
 						TYPE_FAVOURITES -> if(isMisskey) {
 							getStatusList(
 								client,
-								"/api/i/favorites"
+								PATH_MISSKEY_FAVORITES
 								, misskeyParams = makeMisskeyTimelineParameter(parser)
 								, misskeyCustomParser = misskeyCustomParserFavorites
 							)
@@ -4337,15 +4436,15 @@ class Column(
 							String.format(Locale.JAPAN, PATH_FAVOURITED_BY, status_id)
 						)
 						
-						TYPE_MUTES -> if(isMisskey){
+						TYPE_MUTES -> if(isMisskey) {
 							getAccountList(
 								client
-								, "/api/mute/list"
+								, PATH_MISSKEY_MUTES
 								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
 								
-								,misskeyArrayFinder = misskeyArrayFinderUsers
+								, misskeyArrayFinder = misskeyArrayFinderUsers
 							)
-						}else{
+						} else {
 							getAccountList(client, PATH_MUTES)
 						}
 						
@@ -4354,7 +4453,7 @@ class Column(
 						TYPE_FOLLOW_REQUESTS -> if(isMisskey) {
 							getAccountList(
 								client
-								, "/api/following/requests/list"
+								, PATH_MISSKEY_FOLLOW_REQUESTS
 								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
 								, misskeyCustomParser = misskeyCustomParserFollowRequest
 							)
@@ -4364,9 +4463,21 @@ class Column(
 								, PATH_FOLLOW_REQUESTS
 							)
 						}
-						TYPE_FOLLOW_SUGGESTION -> getAccountList(client, PATH_FOLLOW_SUGGESTION)
+						TYPE_FOLLOW_SUGGESTION -> if(isMisskey) {
+							getAccountList(
+								client
+								, PATH_MISSKEY_FOLLOW_SUGGESTION
+								, misskeyParams = access_info.putMisskeyApiToken(JSONObject())
+							)
+						} else {
+							getAccountList(
+								client
+								, PATH_FOLLOW_SUGGESTION
+							)
+						}
 						
-						TYPE_PROFILE -> when(profile_tab) {
+						TYPE_PROFILE
+						-> when(profile_tab) {
 							
 							TAB_FOLLOWING -> if(isMisskey) {
 								getAccountList(
@@ -4708,14 +4819,63 @@ class Column(
 	
 	fun canReloadWhenRefreshTop() : Boolean {
 		return when(column_type) {
+			
 			TYPE_KEYWORD_FILTER,
 			TYPE_SEARCH,
 			TYPE_SEARCH_MSP,
 			TYPE_SEARCH_TS,
 			TYPE_CONVERSATION,
 			TYPE_LIST_LIST,
-			TYPE_TREND_TAG -> true
+			TYPE_TREND_TAG,
+			TYPE_FOLLOW_SUGGESTION -> true
+			
+			TYPE_MUTES,
+			TYPE_FOLLOW_REQUESTS -> isMisskey
+			
 			else -> false
+		}
+	}
+	
+	// カラム操作的にリフレッシュを許容するかどうか
+	fun canRefreshTopBySwipe() : Boolean {
+		return canReloadWhenRefreshTop() || when(column_type) {
+			TYPE_CONVERSATION,
+			TYPE_INSTANCE_INFORMATION -> false
+			else -> true
+		}
+	}
+	
+	// カラム操作的にリフレッシュを許容するかどうか
+	fun canRefreshBottomBySwipe() : Boolean {
+		return when(column_type) {
+			
+			TYPE_CONVERSATION,
+			TYPE_INSTANCE_INFORMATION,
+			TYPE_KEYWORD_FILTER,
+			TYPE_SEARCH,
+			TYPE_TREND_TAG,
+			TYPE_FOLLOW_SUGGESTION -> false
+			
+			TYPE_FOLLOW_REQUESTS -> isMisskey
+			
+			else -> true
+		}
+	}
+	
+	// データ的にリフレッシュを許容するかどうか
+	private fun canRefreshTop() : Boolean {
+		return when(pagingType) {
+			PagingType.Default -> idRecent != null
+			else -> false
+		}
+	}
+	
+	// データ的にリフレッシュを許容するかどうか
+	private fun canRefreshBottom() : Boolean {
+		return when(pagingType) {
+			PagingType.Default, PagingType.Cursor -> idOld != null
+			PagingType.None -> false
+			PagingType.Offset -> true
 		}
 	}
 	
@@ -4747,7 +4907,7 @@ class Column(
 				if(isFiltered(item)) return
 			} else if(item is TootStatus) {
 				if(column_type == TYPE_NOTIFICATIONS) return
-				if(column_type == TYPE_LOCAL && item.account.acct.indexOf('@') != - 1) return
+				if(column_type == TYPE_LOCAL && !isMisskey && item.account.acct.indexOf('@') != - 1) return
 				
 				if(isFiltered(item)) return
 				if(this@Column.enable_speech) {
@@ -4848,7 +5008,7 @@ class Column(
 			if(list_new.isEmpty()) return
 			
 			// 通知カラムならストリーミング経由で届いたデータを通知ワーカーに伝達する
-			if(column_type == TYPE_NOTIFICATIONS) {
+			if(column_type == TYPE_NOTIFICATIONS && !isMisskey) {
 				val list = ArrayList<TootNotification>()
 				for(o in list_new) {
 					if(o is TootNotification) {
@@ -4866,6 +5026,7 @@ class Column(
 			for(o in list_new) {
 				try {
 					val id = getId(o) ?: continue
+					if( id.toString().isEmpty() ) continue
 					if(new_id_max == null || id > new_id_max) new_id_max = id
 					if(new_id_min == null || id < new_id_min) new_id_min = id
 				} catch(ex : Throwable) {
@@ -5168,11 +5329,11 @@ class Column(
 		}
 	}
 	
-	fun findListIndexByTimelineId(orderId : EntityId) : Int? {
-		list_data.forEachIndexed { i, v ->
-			if(v.getOrderId() == orderId) return i
-		}
-		return null
-	}
+	//	fun findListIndexByTimelineId(orderId : EntityId) : Int? {
+	//		list_data.forEachIndexed { i, v ->
+	//			if(v.getOrderId() == orderId) return i
+	//		}
+	//		return null
+	//	}
 	
 }

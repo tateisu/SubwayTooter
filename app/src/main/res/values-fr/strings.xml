@@ -118,6 +118,7 @@
 	<string name="display_name_boosted_by">Partagé par %1$s</string>
 	<string name="display_name_favourited_by">Aimé par %1$s</string>
 	<string name="display_name_followed_by">Suivi par %1$s</string>
+	<string name="display_name_unfollowed_by">%1$s unfollowed you</string>
 	<string name="display_name_replied_by">Répondu par %1$s</string>
 	<string name="display_name_voted_by">%1$s voted</string>
 	<string name="display_name_quoted_by">%1$s quoted</string>

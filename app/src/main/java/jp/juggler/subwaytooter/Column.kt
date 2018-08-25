@@ -4698,14 +4698,7 @@ class Column(
 	////////////////////////////////////////////////////////////////////////
 	// Streaming
 	
-	private fun getId(o : Any) : EntityId? {
-		return when(o) {
-			is TootNotification -> o.id
-			is TootStatus -> o.id
-			is TootAccount -> o.id
-			else -> null
-		}
-	}
+
 	
 	internal fun onStart(callback : Callback) {
 		this.callback_ref = WeakReference(callback)
@@ -5025,7 +5018,7 @@ class Column(
 			var new_id_min : EntityId? = null
 			for(o in list_new) {
 				try {
-					val id = getId(o) ?: continue
+					val id = o.getOrderId()
 					if( id.toString().isEmpty() ) continue
 					if(new_id_max == null || id > new_id_max) new_id_max = id
 					if(new_id_min == null || id < new_id_min) new_id_min = id
@@ -5066,7 +5059,7 @@ class Column(
 				bPutGap = false
 				try {
 					if(list_data.size > 0 && new_id_min != null) {
-						val since = getId(list_data[0])
+						val since = list_data[0].getOrderId()
 						if(since != null && new_id_min > since) {
 							val gap = TootGap(new_id_min, since)
 							list_new.add(gap)

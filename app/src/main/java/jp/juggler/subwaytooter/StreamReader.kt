@@ -59,15 +59,16 @@ internal class StreamReader(
 			socket.set(null)
 		}
 		
-		internal val proc_reconnect : Runnable = Runnable {
+		private val proc_reconnect : Runnable = Runnable {
 			if(bDisposed.get()) return@Runnable
 			startRead()
 		}
-		internal val proc_alive : Runnable = Runnable {
+		
+		private val proc_alive : Runnable = Runnable {
 			fireAlive()
 		}
 		
-		fun fireAlive() {
+		private fun fireAlive() {
 			handler.removeCallbacks(proc_alive)
 			if(bDisposed.get()) return
 			try {
@@ -131,11 +132,14 @@ internal class StreamReader(
 		private fun fireTimelineItem(item : TimelineItem?) {
 			item ?: return
 			runOnMainLooper {
-				for(callback in callback_list) {
-					try {
-						callback.onTimelineItem(item)
-					} catch(ex : Throwable) {
-						log.trace(ex)
+				synchronized(this) {
+					if(bDisposed.get()) return@runOnMainLooper
+					for(callback in callback_list) {
+						try {
+							callback.onTimelineItem(item)
+						} catch(ex : Throwable) {
+							log.trace(ex)
+						}
 					}
 				}
 			}
@@ -147,12 +151,12 @@ internal class StreamReader(
 		override fun onMessage(webSocket : WebSocket, text : String) {
 			// warning.d( "WebSocket onMessage. url=%s, message=%s", webSocket.request().url(), text );
 			try {
-
+				
 				if(text.isEmpty() || text[0] != '{') {
 					log.d("onMessage: text is not JSON: $text")
 					return
 				}
-
+				
 				val obj = text.toJsonObject()
 				
 				if(access_info.isMisskey) {
@@ -172,16 +176,16 @@ internal class StreamReader(
 							val body = obj.optJSONObject("body")
 							fireTimelineItem(parser.notification(body))
 						}
-/*
-						"read_all_notifications",
-						"unread_notification",
-						"meUpdated",
-						"followed", // 他の誰かからフォローされた
-						"reply",
-						"renote",
-						"follow", // 自分が他の誰かをフォローした
-						"unfollow", // 自分が他の誰かをフォロー解除した
-*/
+						/*
+												"read_all_notifications",
+												"unread_notification",
+												"meUpdated",
+												"followed", // 他の誰かからフォローされた
+												"reply",
+												"renote",
+												"follow", // 自分が他の誰かをフォローした
+												"unfollow", // 自分が他の誰かをフォロー解除した
+						*/
 						else -> {
 							log.v("ignore streaming event $type")
 						}
@@ -201,14 +205,14 @@ internal class StreamReader(
 					
 					val payload = TootPayload.parsePayload(parser, event, obj, text)
 					
-					runOnMainLooper {
-						synchronized(this) {
-							if(bDisposed.get()) return@runOnMainLooper
-							
-							when(event) {
-								
-								"delete" -> {
-									if(payload is Long) {
+					when(event) {
+						
+						"delete" -> {
+							if(payload is Long) {
+								runOnMainLooper {
+									synchronized(this) {
+										if(bDisposed.get()) return@runOnMainLooper
+										
 										val tl_host = access_info.host
 										for(column in App1.getAppState(context).column_list) {
 											try {
@@ -220,22 +224,23 @@ internal class StreamReader(
 												log.trace(ex)
 											}
 										}
-									} else {
-										log.d("payload is not long. $payload")
 									}
 								}
 								
-								else -> {
-									if(payload is TimelineItem) {
-										fireTimelineItem(payload)
-									} else {
-										log.d("payload is not TimelineItem. $payload")
-									}
-								}
+							} else {
+								log.d("payload is not long. $payload")
 							}
-							
+						}
+						
+						else -> {
+							if(payload is TimelineItem) {
+								fireTimelineItem(payload)
+							} else {
+								log.d("payload is not TimelineItem. $payload")
+							}
 						}
 					}
+					
 				}
 			} catch(ex : Throwable) {
 				log.trace(ex)

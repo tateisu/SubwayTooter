@@ -15,11 +15,8 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
-import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.EntityIdLong
-import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
@@ -277,8 +274,9 @@ object Action_Toot {
 		val who_host = timeline_account.host
 		val status_owner = timeline_account.getFullAcct(status.account)
 		
-		val isPrivateToot = !timeline_account.isMisskey && status.visibility == TootVisibility.PrivateFollowers
-		if( isPrivateToot ) {
+		val isPrivateToot =
+			! timeline_account.isMisskey && status.visibility == TootVisibility.PrivateFollowers
+		if(isPrivateToot) {
 			val list = ArrayList<SavedAccount>()
 			for(a in SavedAccount.loadAccountList(activity)) {
 				if(a.acct == status_owner) list.add(a)
@@ -341,7 +339,8 @@ object Action_Toot {
 		}
 		
 		// 非公開トゥートをブーストできるのは本人だけ
-		val isPrivateToot = !access_info.isMisskey && arg_status.visibility == TootVisibility.PrivateFollowers
+		val isPrivateToot =
+			! access_info.isMisskey && arg_status.visibility == TootVisibility.PrivateFollowers
 		if(isPrivateToot && access_info.acct != status_owner_acct) {
 			showToast(activity, false, R.string.boost_private_toot_not_allowed)
 			return
@@ -607,25 +606,48 @@ object Action_Toot {
 			
 			// 検索サービスではステータスTLをどのタンスから読んだのか分からない
 			status.host_access == null ->
-				conversationOtherInstance(activity, pos, url, status.id)
+				conversationOtherInstance(
+					activity
+					, pos
+					, url
+					, TootStatus.validStatusId(status.id)
+						?: TootStatus.findStatusIdFromUri(
+							status.uri,
+							status.url,
+							bAllowStringId = true
+						)
+				)
 			
 			// TLアカウントのホストとトゥートのアカウントのホストが同じ
 			status.host_original == status.host_access ->
-				conversationOtherInstance(activity, pos, url, status.id)
+				conversationOtherInstance(
+					activity
+					, pos
+					, url
+					, TootStatus.validStatusId(status.id)
+						?: TootStatus.findStatusIdFromUri(
+							status.uri,
+							status.url,
+							bAllowStringId = true
+						)
+				)
 			
 			else -> {
 				// トゥートを取得したタンスと投稿元タンスが異なる場合
 				// status.id はトゥートを取得したタンスでのIDである
 				// 投稿元タンスでのIDはuriやURLから調べる
 				// pleromaではIDがuuidなので失敗する(その時はURLを検索してIDを見つける)
-				val status_id_original = TootStatus.findStatusIdFromUri(status.uri, status.url)
 				conversationOtherInstance(
-					activity,
-					pos,
-					url,
-					status_id_original,
-					status.host_access,
-					status.id
+					activity
+					, pos
+					, url
+					, TootStatus.findStatusIdFromUri(
+						status.uri,
+						status.url,
+						bAllowStringId = true
+					)
+					, status.host_access
+					, TootStatus.validStatusId(status.id)
 				)
 			}
 		}

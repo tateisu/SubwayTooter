@@ -354,7 +354,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					this.host_access = null
 					
 					// 投稿元タンスでのIDを調べる。失敗するかもしれない
-					this.id = findStatusIdFromUri(uri, url) ?: error("missing id")
+					this.id = findStatusIdFromUri(uri, url) ?: EntityIdLong(INVALID_ID)
 					
 					this.time_created_at = TootStatus.parseTime(this.created_at)
 					this.media_attachments =
@@ -774,8 +774,26 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			return if(host != null && host.isNotEmpty() && host != "?") host else null
 		}
 		
+		private val reMisskeyNoteUrl = Pattern.compile("""https://([^/]+)/notes/([0-9A-F]+)""",Pattern.CASE_INSENSITIVE)
+		
+		fun readMisskeyNoteId(url:String):EntityId?{
+			// https://misskey.xyz/notes/5b802367744b650030a13640
+			val m = reMisskeyNoteUrl.matcher(url)
+			if(m.find() ) return EntityIdString(m.group(2))
+			return null
+		}
+		
+		fun validStatusId(src:EntityId?):EntityId?{
+			return when{
+				src == null -> null
+				src is EntityIdLong && src.toLong() == TootStatus.INVALID_ID ->null
+				else ->src
+			}
+		}
+		
+		
 		// 投稿元タンスでのステータスIDを調べる
-		fun findStatusIdFromUri(uri : String?, url : String?) : EntityId? {
+		fun findStatusIdFromUri(uri : String?, url : String?, bAllowStringId:Boolean =false) : EntityId? {
 			
 			// pleromaのuriやURL からはステータスIDは取れません
 			// uri https://pleroma.miniwa.moe/objects/d6e83d3c-cf9e-46ac-8245-f91716088e17
@@ -795,6 +813,11 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					m = reTootUriAP2.matcher(uri)
 					if(m.find()) return EntityIdLong(m.group(2).toLong(10))
 					
+					if(bAllowStringId){
+						val id = readMisskeyNoteId(uri)
+						if(id!=null) return id
+					}
+					
 					log.e("can't parse status uri: $uri")
 				}
 				
@@ -808,6 +831,10 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					m = reTootUriAP2.matcher(url)
 					if(m.find()) return EntityIdLong(m.group(2).toLong(10))
 					
+					if(bAllowStringId){
+						val id = readMisskeyNoteId(url)
+						if(id!=null) return id
+					}
 					
 					log.e("can't parse status URL: $url")
 				}

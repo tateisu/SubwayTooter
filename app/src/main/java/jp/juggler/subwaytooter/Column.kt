@@ -2556,7 +2556,7 @@ class Column(
 			} else {
 				val m = reMaxId.matcher(result.link_older)
 				if(m.find()) {
-					EntityIdString(m.group(1))
+					EntityIdLong(m.group(1).toLong())
 				} else {
 					null
 				}
@@ -2567,7 +2567,7 @@ class Column(
 			} else {
 				val m = reSinceId.matcher(result.link_newer)
 				if(m.find()) {
-					EntityIdString(m.group(1))
+					EntityIdLong(m.group(1).toLong())
 				} else {
 					null
 				}
@@ -2590,25 +2590,36 @@ class Column(
 		var hasBottomRemain = false
 		
 		if(bBottom) {
-			if(idMin == null) {
-				// リストの終端
-				idOld = null
-			} else {
-				val i = idOld?.compareTo(idMin)
-				if(i == null || i > 0) {
-					idOld = idMin
-					hasBottomRemain = true
+			when {
+				idMin == null -> idOld = null // リストの終端
+				idMin is EntityIdString && ! isMisskey -> {
+					log.e("EntityId should be Long for non-misskey column! columnType=$column_type")
+				}
+				else -> {
+					val i = idOld?.compareTo(idMin)
+					if(i == null || i > 0) {
+						idOld = idMin
+						hasBottomRemain = true
+					}
 				}
 			}
 		}
 		
 		if(bTop) {
-			if(idMax == null) {
+			when {
 				// リロードを許容するため、取得内容がカラでもidRecentを変更しない
-			} else {
-				val i = idRecent?.compareTo(idMax)
-				if(i == null || i < 0) {
-					idRecent = idMax
+				idMax == null -> {
+				}
+				
+				idMax is EntityIdString && ! isMisskey -> {
+					log.e("EntityId should be Long for non-misskey column! columnType=$column_type")
+				}
+				
+				else -> {
+					val i = idRecent?.compareTo(idMax)
+					if(i == null || i < 0) {
+						idRecent = idMax
+					}
 				}
 			}
 		}
@@ -5029,9 +5040,14 @@ class Column(
 			
 			val tmpRecent = idRecent
 			val tmpNewMax = new_id_max
-			if(tmpNewMax != null
-				&& (tmpRecent?.compareTo(tmpNewMax) ?: - 1) == - 1
-			) {
+			
+			if(tmpNewMax is EntityIdString && !isMisskey ){
+				log.e("EntityId should be Long for non-misskey column! columnType=$column_type")
+			}else if( tmpRecent is EntityIdString && tmpNewMax is EntityIdLong){
+				log.e("EntityId type mismatch! recent=String,newMax=Long,columnType=$column_type")
+			}else if( tmpRecent is EntityIdLong && tmpNewMax is EntityIdString){
+				log.e("EntityId type mismatch! recent=Long,newMax=String,columnType=$column_type")
+			}else if(tmpNewMax != null && (tmpRecent?.compareTo(tmpNewMax) ?: - 1) == - 1 ) {
 				idRecent = tmpNewMax
 				// XXX: コレはリフレッシュ時に取得漏れを引き起こすのでは…？
 				// しかしコレなしだとリフレッシュ時に大量に読むことになる…

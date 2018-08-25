@@ -5029,7 +5029,7 @@ class Column(
 				}
 			}
 			if(new_id_max != null) {
-				idRecent = EntityIdString(new_id_max.toString())
+				idRecent = new_id_max
 				// XXX: コレはリフレッシュ時に取得漏れを引き起こすのでは…？
 				// しかしコレなしだとリフレッシュ時に大量に読むことになる…
 			}

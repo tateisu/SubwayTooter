@@ -5060,7 +5060,7 @@ class Column(
 				try {
 					if(list_data.size > 0 && new_id_min != null) {
 						val since = list_data[0].getOrderId()
-						if(since != null && new_id_min > since) {
+						if(new_id_min > since) {
 							val gap = TootGap(new_id_min, since)
 							list_new.add(gap)
 						}

@@ -378,7 +378,7 @@ class Column(
 					TYPE_HOME, TYPE_NOTIFICATIONS -> "/?i=$misskeyApiToken"
 					TYPE_LOCAL -> "/local-timeline?i=$misskeyApiToken"
 					TYPE_MISSKEY_HYBRID -> "/hybrid-timeline?i=$misskeyApiToken"
-					TYPE_FEDERATE ->"/global-timeline?i=$misskeyApiToken"
+					TYPE_FEDERATE -> "/global-timeline?i=$misskeyApiToken"
 					else -> null
 				}
 			}
@@ -4698,8 +4698,6 @@ class Column(
 	////////////////////////////////////////////////////////////////////////
 	// Streaming
 	
-
-	
 	internal fun onStart(callback : Callback) {
 		this.callback_ref = WeakReference(callback)
 		
@@ -4900,7 +4898,7 @@ class Column(
 				if(isFiltered(item)) return
 			} else if(item is TootStatus) {
 				if(column_type == TYPE_NOTIFICATIONS) return
-				if(column_type == TYPE_LOCAL && !isMisskey && item.account.acct.indexOf('@') != - 1) return
+				if(column_type == TYPE_LOCAL && ! isMisskey && item.account.acct.indexOf('@') != - 1) return
 				
 				if(isFiltered(item)) return
 				if(this@Column.enable_speech) {
@@ -5001,7 +4999,7 @@ class Column(
 			if(list_new.isEmpty()) return
 			
 			// 通知カラムならストリーミング経由で届いたデータを通知ワーカーに伝達する
-			if(column_type == TYPE_NOTIFICATIONS ) {
+			if(column_type == TYPE_NOTIFICATIONS) {
 				val list = ArrayList<TootNotification>()
 				for(o in list_new) {
 					if(o is TootNotification) {
@@ -5019,7 +5017,7 @@ class Column(
 			for(o in list_new) {
 				try {
 					val id = o.getOrderId()
-					if( id.toString().isEmpty() ) continue
+					if(id.toString().isEmpty()) continue
 					if(new_id_max == null || id > new_id_max) new_id_max = id
 					if(new_id_min == null || id < new_id_min) new_id_min = id
 				} catch(ex : Throwable) {
@@ -5028,8 +5026,13 @@ class Column(
 					log.trace(ex)
 				}
 			}
-			if(new_id_max != null) {
-				idRecent = new_id_max
+			
+			val tmpRecent = idRecent
+			val tmpNewMax = new_id_max
+			if(tmpNewMax != null
+				&& (tmpRecent?.compareTo(tmpNewMax) ?: - 1) == - 1
+			) {
+				idRecent = tmpNewMax
 				// XXX: コレはリフレッシュ時に取得漏れを引き起こすのでは…？
 				// しかしコレなしだとリフレッシュ時に大量に読むことになる…
 			}

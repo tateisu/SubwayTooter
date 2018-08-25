@@ -3,18 +3,7 @@ package jp.juggler.subwaytooter
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Handler
-
-import java.net.ProtocolException
-import java.util.LinkedList
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicReference
-import java.util.regex.Pattern
-
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
-import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.EntityIdLong
 import jp.juggler.subwaytooter.api.entity.TimelineItem
 import jp.juggler.subwaytooter.api.entity.TootPayload
@@ -23,7 +12,11 @@ import jp.juggler.subwaytooter.util.*
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
-import org.json.JSONObject
+import java.net.ProtocolException
+import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
+import java.util.regex.Pattern
 
 internal class StreamReader(
 	val context : Context,

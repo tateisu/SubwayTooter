@@ -4878,7 +4878,7 @@ class Column(
 	
 	internal fun canStreaming() = when {
 		access_info.isNA -> false
-		access_info.isMisskey -> false
+		access_info.isMisskey -> streamPath != null
 		access_info.isPseudo -> isPublicStream
 		else -> streamPath != null
 	}

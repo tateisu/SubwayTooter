@@ -131,12 +131,27 @@ internal class StreamReader(
 		
 		private fun fireTimelineItem(item : TimelineItem?) {
 			item ?: return
+			synchronized(this) {
+				if(bDisposed.get()) return@synchronized
+				for(callback in callback_list) {
+					try {
+						callback.onTimelineItem(item)
+					} catch(ex : Throwable) {
+						log.trace(ex)
+					}
+				}
+			}
+		}
+		
+		private fun fireDeleteId(id : Long) {
+			val tl_host = access_info.host
+			val eid = EntityIdLong(id)
 			runOnMainLooper {
 				synchronized(this) {
 					if(bDisposed.get()) return@runOnMainLooper
-					for(callback in callback_list) {
+					for(column in App1.getAppState(context).column_list) {
 						try {
-							callback.onTimelineItem(item)
+							column.onStatusRemoved(tl_host, eid)
 						} catch(ex : Throwable) {
 							log.trace(ex)
 						}
@@ -168,31 +183,24 @@ internal class StreamReader(
 					when(type) {
 						
 						"note" -> {
-							val status = parser.status(obj.optJSONObject("body"))
-							if(status != null) fireTimelineItem(status)
+							val body = obj.optJSONObject("body")
+							fireTimelineItem(parser.status(body))
 						}
 						
 						"notification" -> {
 							val body = obj.optJSONObject("body")
 							fireTimelineItem(parser.notification(body))
 						}
-						/*
-												"read_all_notifications",
-												"unread_notification",
-												"meUpdated",
-												"followed", // 他の誰かからフォローされた
-												"reply",
-												"renote",
-												"follow", // 自分が他の誰かをフォローした
-												"unfollow", // 自分が他の誰かをフォロー解除した
-						*/
+						
 						else -> {
 							log.v("ignore streaming event $type")
 						}
 					}
 					
 				} else {
+					
 					val event = obj.optString("event")
+					
 					if(event == null || event.isEmpty()) {
 						log.d("onMessage: missing event parameter")
 						return
@@ -209,23 +217,7 @@ internal class StreamReader(
 						
 						"delete" -> {
 							if(payload is Long) {
-								runOnMainLooper {
-									synchronized(this) {
-										if(bDisposed.get()) return@runOnMainLooper
-										
-										val tl_host = access_info.host
-										for(column in App1.getAppState(context).column_list) {
-											try {
-												column.onStatusRemoved(
-													tl_host,
-													EntityIdLong(payload)
-												)
-											} catch(ex : Throwable) {
-												log.trace(ex)
-											}
-										}
-									}
-								}
+								fireDeleteId(payload)
 								
 							} else {
 								log.d("payload is not long. $payload")

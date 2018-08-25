@@ -16,7 +16,9 @@ import org.json.JSONObject
 import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.Pattern
 
 enum class StreamingIndicatorState {
@@ -533,8 +535,8 @@ class Column(
 	
 	// ListViewの表示更新が追いつかないとスクロール位置が崩れるので
 	// 一定時間より短期間にはデータ更新しないようにする
-	private var last_show_stream_data : Long = 0
-	private val stream_data_queue = LinkedList<TimelineItem>()
+	private val last_show_stream_data = AtomicLong(0L)
+	private val stream_data_queue = ConcurrentLinkedQueue<TimelineItem>()
 	
 	private var bPutGap : Boolean = false
 	
@@ -4910,14 +4912,12 @@ class Column(
 			} else if(item is TootStatus) {
 				if(column_type == TYPE_NOTIFICATIONS) return
 				if(column_type == TYPE_LOCAL && ! isMisskey && item.account.acct.indexOf('@') != - 1) return
-				
 				if(isFiltered(item)) return
-				if(this@Column.enable_speech) {
-					App1.getAppState(context).addSpeech(item.reblog ?: item)
-				}
 			}
-			stream_data_queue.addFirst(item)
-			mergeStreamingMessage.run()
+			stream_data_queue.add(item)
+
+			val handler = App1.getAppState(context).handler
+			handler.post(mergeStreamingMessage)
 		}
 		
 	}
@@ -4990,24 +4990,38 @@ class Column(
 		return app_state.stream_reader.getStreamingStatus(access_info, stream_path, streamCallback)
 	}
 	
-	private val mergeStreamingMessage = object : Runnable {
+	
+	private val mergeStreamingMessage :Runnable = object : Runnable {
 		override fun run() {
-			App1.getAppState(context).handler.removeCallbacks(this)
-			
-			val now = SystemClock.elapsedRealtime()
 			
 			// 前回マージしてから暫くは待機する
-			val remain = last_show_stream_data + 333L - now
-			if(remain > 0) {
-				App1.getAppState(context).handler.postDelayed(this, remain)
+			val handler =App1.getAppState(context).handler
+			val now = SystemClock.elapsedRealtime()
+			val remain = last_show_stream_data.get() + 333L - now
+			if( remain > 0) {
+				handler.removeCallbacks(this)
+				handler.postDelayed(this, remain)
 				return
 			}
-			last_show_stream_data = now
+			last_show_stream_data.set(now)
 			
-			val list_new = duplicate_map.filterDuplicate(stream_data_queue)
-			stream_data_queue.clear()
+			val tmpList = ArrayList<TimelineItem>()
+			while(stream_data_queue.isNotEmpty() ){
+				tmpList.add(stream_data_queue.poll())
+			}
+			if(tmpList.isEmpty()) return
 			
+			// キューから読めた件数が0の場合を除き、少し後に再処理させることでマージ漏れを防ぐ
+			handler.postDelayed(this, 333L)
+			
+			val list_new = duplicate_map.filterDuplicate(tmpList)
 			if(list_new.isEmpty()) return
+
+			for( item in list_new){
+				if( enable_speech && item is TootStatus ){
+					App1.getAppState(context).addSpeech(item.reblog ?: item)
+				}
+			}
 			
 			// 通知カラムならストリーミング経由で届いたデータを通知ワーカーに伝達する
 			if(column_type == TYPE_NOTIFICATIONS) {

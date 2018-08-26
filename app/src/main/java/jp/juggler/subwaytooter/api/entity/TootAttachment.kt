@@ -69,7 +69,7 @@ class TootAttachment(serviceType:ServiceType,src : JSONObject) : TootAttachmentL
 		
 		when(serviceType) {
 			ServiceType.MISSKEY -> {
-				id = EntityId.from( src.parseString("id") ?: error("missing id"))
+				id = EntityId.mayDefault( src.parseString("id"))
 				
 				val mimeType  = src.parseString("type") ?: "?"
 				this.type = when{
@@ -88,7 +88,7 @@ class TootAttachment(serviceType:ServiceType,src : JSONObject) : TootAttachmentL
 				isSensitive = src.optBoolean("isSensitive",false)
 			}
 			else->{
-				id= EntityIdLong(src.parseLong("id") ?: - 1L)
+				id= EntityId.mayDefault(src.parseLong("id") )
 				type = src.parseString("type")
 				url = src.parseString("url")
 				remote_url = src.parseString("remote_url")

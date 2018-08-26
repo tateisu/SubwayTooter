@@ -125,7 +125,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			
 			// this.user_hides_network = src.optBoolean("user_hides_network")
 			
-			this.id = EntityId.mayNull(src.parseString("id")) ?: error("missing id")
+			this.id = EntityId.mayDefault(src.parseString("id"))
 			
 			this.host = instance
 			this.acct = when {
@@ -193,7 +193,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 					
 					val hostAccess = parser.linkHelper.host
 					
-					this.id = EntityId.from(src.parseLong("id") ?: INVALID_ID)
+					this.id = EntityId.mayDefault(src.parseLong("id"))
 					
 					this.acct = src.notEmptyOrThrow("acct")
 					this.host = findHostFromUrl(acct, hostAccess, url)
@@ -215,7 +215,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				
 				ServiceType.TOOTSEARCH -> {
 					// tootsearch のアカウントのIDはどのタンス上のものか分からないので役に立たない
-					this.id = EntityId.from(INVALID_ID) // src.parseLong( "id", INVALID_ID)
+					this.id = EntityId.defaultLong
 					
 					sv = src.notEmptyOrThrow("acct")
 					this.host = findHostFromUrl(sv, null, url)
@@ -236,7 +236,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				}
 				
 				ServiceType.MSP -> {
-					this.id = EntityId.from(src.parseLong("id") ?: INVALID_ID)
+					this.id = EntityId.mayDefault(src.parseLong("id") )
 					
 					// MSPはLTLの情報しか持ってないのでacctは常にホスト名部分を持たない
 					this.host = findHostFromUrl(null, null, url)
@@ -303,8 +303,6 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	
 	companion object {
 		private val log = LogCategory("TootAccount")
-		
-		const val INVALID_ID = - 1L
 		
 		@Suppress("HasPlatformType")
 		private val reWhitespace = Pattern.compile("[\\s\\t\\x0d\\x0a]+")

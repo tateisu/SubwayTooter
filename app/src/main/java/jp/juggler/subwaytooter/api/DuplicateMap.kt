@@ -1,65 +1,49 @@
 package jp.juggler.subwaytooter.api
 
+import com.google.android.exoplayer2.Timeline
 import jp.juggler.subwaytooter.api.entity.*
 import java.util.ArrayList
 import java.util.HashSet
 
 class DuplicateMap {
 	
-	private val set_status_id = HashSet<EntityId>()
-	private val set_notification_id = HashSet<EntityId>()
-	private val set_report_id = HashSet<EntityId>()
-	private val set_account_id = HashSet<EntityId>()
-	private val set_status_uri = HashSet<String>()
+	private val set_id = HashSet<EntityId>()
+	private val set_uri = HashSet<String>()
 	
 	fun clear() {
-		set_status_id.clear()
-		set_notification_id.clear()
-		set_report_id.clear()
-		set_account_id.clear()
-		set_status_uri.clear()
+		set_id.clear()
+		set_uri.clear()
 	}
 	
 	fun isDuplicate(o : TimelineItem) : Boolean {
 		
-		when(o) {
-
-			is TootStatus ->{
-				val uri = o.uri
-				val url = o.url
-				when {
-					uri?.isNotEmpty() == true -> {
-						if(set_status_uri.contains(uri)) return true
-						set_status_uri.add(uri)
-					}
-					url?.isNotEmpty() == true -> {
-						// URIとURLで同じマップを使いまわすが、害はないと思う…
-						if(set_status_uri.contains(url)) return true
-						set_status_uri.add(url)
-					}
-					else -> {
-						if(set_status_id.contains(o.id)) return true
-						set_status_id.add(o.id)
-					}
+		if(o is TootStatus) {
+			val uri = o.uri
+			val url = o.url
+			when {
+				uri?.isNotEmpty() == true -> {
+					if(set_uri.contains(uri)) return true
+					set_uri.add(uri)
+				}
+				
+				url?.isNotEmpty() == true -> {
+					// URIとURLで同じマップを使いまわすが、害はないと思う…
+					if(set_uri.contains(url)) return true
+					set_uri.add(url)
 				}
 			}
+		}
 
+		when(o) {
+			is TootReport,
+			is TootStatus,
+			is TootAccount,
 			is TootNotification -> {
-				if(set_notification_id.contains(o.id)) return true
-				set_notification_id.add(o.id)
-				
-			}
-
-			is TootReport -> {
-				if(set_report_id.contains(o.id)) return true
-				set_report_id.add(o.id)
-				
-			}
-
-			is TootAccountRef -> {
-				val id = o.get().id
-				if(set_account_id.contains(id)) return true
-				set_account_id.add(id)
+				val id = o.getOrderId()
+				if(id.notDefault){
+					if(set_id.contains(o.getOrderId())) return true
+					set_id.add(o.getOrderId())
+				}
 			}
 		}
 		
@@ -68,7 +52,7 @@ class DuplicateMap {
 	
 	fun filterDuplicate(src : Collection<TimelineItem>?) : ArrayList<TimelineItem> {
 		val list_new = ArrayList<TimelineItem>()
-		if( src != null ) {
+		if(src != null) {
 			for(o in src) {
 				if(isDuplicate(o)) continue
 				list_new.add(o)

@@ -10,17 +10,25 @@ abstract class EntityId : Comparable<EntityId> {
 	abstract fun putMisskeyUntil(dst : JSONObject) : JSONObject
 	abstract fun putMisskeySince(dst : JSONObject) : JSONObject
 	
-	
 	companion object {
 		
-		fun from(x : Long) =  EntityIdLong(x)
+		val defaultLong = EntityIdLong(TootStatus.INVALID_ID)
+		val defaultString = EntityIdString("")
+		
+		fun mayDefault(x : Long?) = when(x) {
+			null -> defaultLong
+			else -> EntityIdLong(x)
+		}
+		
+		fun mayDefault(x : String?) = when(x) {
+			null -> defaultString
+			else -> EntityIdString(x)
+		}
 		
 		fun mayNull(x : Long?) = when(x) {
 			null -> null
 			else -> EntityIdLong(x)
 		}
-
-		fun from(x : String) =  EntityIdString(x)
 		
 		fun mayNull(x : String?) = when(x) {
 			null -> null
@@ -29,8 +37,8 @@ abstract class EntityId : Comparable<EntityId> {
 		
 		fun String.decode():EntityId?{
 			if(this.isEmpty()) return null
-			if(this[0]=='L') return from(this.substring(1).toLong())
-			if(this[0]=='S') return from(this.substring(1))
+			if(this[0]=='L') return EntityIdLong(this.substring(1).toLong())
+			if(this[0]=='S') return EntityIdString(this.substring(1))
 			return null
 		}
 		
@@ -62,6 +70,8 @@ abstract class EntityId : Comparable<EntityId> {
 	
 	fun putTo(data:JSONObject, key : String):JSONObject = data.put( key,encode())
 
+	val notDefault :Boolean
+		get()= !(this == defaultLong || this== defaultString)
 }
 
 class EntityIdLong(val x : Long) : EntityId() {

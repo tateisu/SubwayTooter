@@ -2597,6 +2597,7 @@ class Column(
 				idMin is EntityIdString && ! isMisskey -> {
 					log.e("EntityId should be Long for non-misskey column! columnType=$column_type")
 				}
+				
 				else -> {
 					val i = idOld?.compareTo(idMin)
 					if(i == null || i > 0) {
@@ -2815,7 +2816,6 @@ class Column(
 					@Suppress("NON_EXHAUSTIVE_WHEN")
 					when(pagingType) {
 						PagingType.Default -> {
-							if(isMisskey && ! bBottom) src.reverse()
 							saveRange(bBottom, ! bBottom, firstResult, src)
 						}
 						
@@ -2858,6 +2858,7 @@ class Column(
 								
 								jsonObject = result?.jsonObject
 								if(jsonObject != null) {
+									// pagingType is always default.
 									result !!.data = misskeyArrayFinder(jsonObject)
 								}
 								
@@ -2869,10 +2870,17 @@ class Column(
 								}
 								
 								src = misskeyCustomParser(parser, array)
-								src.reverse()
 								
 								addAll(list_tmp, src)
+								
+								// pagingType is always default.
 								saveRange(false, true, result, src)
+							}
+							
+							// pagingType is always default.
+							if(isMisskey && ! bBottom){
+								list_tmp?.sortBy{ it.getOrderId() }
+								list_tmp?.reverse()
 							}
 							
 							if(! isCancelled
@@ -3120,7 +3128,6 @@ class Column(
 				var jsonArray = result?.jsonArray
 				if(jsonArray != null) {
 					var src = parser.notificationList(jsonArray)
-					if(isMisskey && ! bBottom) src.reverse()
 					
 					list_tmp = addWithFilterNotification(null, src)
 					saveRange(bBottom, ! bBottom, result, src)
@@ -3169,7 +3176,6 @@ class Column(
 								}
 								
 								src = parser.notificationList(jsonArray)
-								src.reverse()
 								
 								saveRange(false, true, result, src)
 								if(! src.isEmpty()) {
@@ -3178,6 +3184,11 @@ class Column(
 								}
 							}
 							
+							if(isMisskey && ! bBottom){
+								list_tmp?.sortBy{it.getOrderId()}
+								list_tmp?.reverse()
+							}
+
 							if(! isCancelled
 								&& list_tmp?.isNotEmpty() == true
 								&& (bHeadGap || Pref.bpForceGap(context))
@@ -3300,8 +3311,7 @@ class Column(
 			fun getStatusList(
 				client : TootApiClient,
 				path_base : String,
-				misskeyParams : JSONObject? = null
-				,
+				misskeyParams : JSONObject? = null,
 				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootStatus> =
 					{ parser, jsonArray -> parser.statusList(jsonArray) }
 			) : TootApiResult? {
@@ -3326,7 +3336,7 @@ class Column(
 				val jsonArray = result?.jsonArray
 				if(jsonArray != null) {
 					var src = misskeyCustomParser(parser, jsonArray)
-					if(isMisskey && ! bBottom) src.reverse()
+					
 					saveRange(bBottom, ! bBottom, result, src)
 					list_tmp = addWithFilterStatus(null, src)
 					
@@ -3349,7 +3359,7 @@ class Column(
 								}
 								
 								if((list_tmp?.size ?: 0) >= LOOP_READ_ENOUGH) {
-									log.d("refresh-status-offset: read enough. make gap.")
+									log.d("refresh-status-top: read enough. make gap.")
 									bHeadGap = true
 									break
 								}
@@ -3372,11 +3382,15 @@ class Column(
 								}
 								
 								src = misskeyCustomParser(parser, jsonArray2)
-								src.reverse()
 								
 								saveRange(false, true, result, src)
 								
 								addWithFilterStatus(list_tmp, src)
+							}
+
+							if(isMisskey && ! bBottom ){
+								list_tmp?.sortBy { it.getOrderId() }
+								list_tmp?.reverse()
 							}
 							
 							if(! isCancelled
@@ -3438,10 +3452,9 @@ class Column(
 								}
 								
 								src = misskeyCustomParser(parser, jsonArray2)
-								
 								addWithFilterStatus(list_tmp, src)
 							}
-							
+
 							if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
 								addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
 							}
@@ -3495,7 +3508,6 @@ class Column(
 							}
 							
 							src = misskeyCustomParser(parser, jsonArray2)
-							
 							addWithFilterStatus(list_tmp, src)
 							
 							if(! saveRangeEnd(result, src)) {
@@ -4001,7 +4013,6 @@ class Column(
 						result = r2
 						
 						val src = misskeyCustomParser(parser, jsonArray)
-						src.reverse()
 						if(src.isEmpty()) {
 							log.d("gap-account: empty.")
 							break
@@ -4009,6 +4020,10 @@ class Column(
 						
 						addAll(list_tmp, src)
 						since_id = parseRange(result, src).second
+					}
+					if(isMisskey ){
+						list_tmp?.sortBy{it.getOrderId()}
+						list_tmp?.reverse()
 					}
 					if(bHeadGap) {
 						addOneFirst(list_tmp, TootGap.mayNull(max_id, since_id))
@@ -4099,13 +4114,20 @@ class Column(
 							log.d("gap-report: empty.")
 							break
 						}
-						src.reverse()
 						
 						addAll(list_tmp, src)
 						
 						// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
 						since_id = parseRange(result, src).second
 					}
+					
+					// レポート一覧ってそもそもMisskey対応してないので、ここをどうするかは不明
+					// 多分 sinceIDによるページングではないと思う
+					if(isMisskey ){
+						list_tmp?.sortBy{it.getOrderId()}
+						list_tmp?.reverse()
+					}
+
 					if(bHeadGap) {
 						addOneFirst(list_tmp, TootGap.mayNull(max_id, since_id))
 					}
@@ -4196,7 +4218,6 @@ class Column(
 							log.d("gap-notification: empty.")
 							break
 						}
-						src.reverse()
 						
 						// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
 						since_id = parseRange(result, src).second
@@ -4204,6 +4225,11 @@ class Column(
 						addWithFilterNotification(list_tmp, src)
 						
 						PollingWorker.injectData(context, access_info, src)
+					}
+					
+					if(isMisskey ){
+						list_tmp?.sortBy{it.getOrderId()}
+						list_tmp?.reverse()
 					}
 					
 					if(bHeadGap) {
@@ -4318,12 +4344,17 @@ class Column(
 							log.d("gap-statuses: empty.")
 							break
 						}
-						src.reverse()
+						
 						
 						// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
 						since_id = parseRange(result, src).second
 						
 						addWithFilterStatus(list_tmp, src)
+					}
+
+					if(isMisskey ){
+						list_tmp?.sortBy { it.getOrderId() }
+						list_tmp?.reverse()
 					}
 					
 					if(bHeadGap) {
@@ -4915,7 +4946,7 @@ class Column(
 				if(isFiltered(item)) return
 			}
 			stream_data_queue.add(item)
-
+			
 			val handler = App1.getAppState(context).handler
 			handler.post(mergeStreamingMessage)
 		}
@@ -4990,15 +5021,14 @@ class Column(
 		return app_state.stream_reader.getStreamingStatus(access_info, stream_path, streamCallback)
 	}
 	
-	
-	private val mergeStreamingMessage :Runnable = object : Runnable {
+	private val mergeStreamingMessage : Runnable = object : Runnable {
 		override fun run() {
 			
 			// 前回マージしてから暫くは待機する
-			val handler =App1.getAppState(context).handler
+			val handler = App1.getAppState(context).handler
 			val now = SystemClock.elapsedRealtime()
 			val remain = last_show_stream_data.get() + 333L - now
-			if( remain > 0) {
+			if(remain > 0) {
 				handler.removeCallbacks(this)
 				handler.postDelayed(this, remain)
 				return
@@ -5006,7 +5036,7 @@ class Column(
 			last_show_stream_data.set(now)
 			
 			val tmpList = ArrayList<TimelineItem>()
-			while(stream_data_queue.isNotEmpty() ){
+			while(stream_data_queue.isNotEmpty()) {
 				tmpList.add(stream_data_queue.poll())
 			}
 			if(tmpList.isEmpty()) return
@@ -5016,9 +5046,9 @@ class Column(
 			
 			val list_new = duplicate_map.filterDuplicate(tmpList)
 			if(list_new.isEmpty()) return
-
-			for( item in list_new){
-				if( enable_speech && item is TootStatus ){
+			
+			for(item in list_new) {
+				if(enable_speech && item is TootStatus) {
 					App1.getAppState(context).addSpeech(item.reblog ?: item)
 				}
 			}
@@ -5055,13 +5085,13 @@ class Column(
 			val tmpRecent = idRecent
 			val tmpNewMax = new_id_max
 			
-			if(tmpNewMax is EntityIdString && !isMisskey ){
+			if(tmpNewMax is EntityIdString && ! isMisskey) {
 				log.e("EntityId should be Long for non-misskey column! columnType=$column_type")
-			}else if( tmpRecent is EntityIdString && tmpNewMax is EntityIdLong){
+			} else if(tmpRecent is EntityIdString && tmpNewMax is EntityIdLong) {
 				log.e("EntityId type mismatch! recent=String,newMax=Long,columnType=$column_type")
-			}else if( tmpRecent is EntityIdLong && tmpNewMax is EntityIdString){
+			} else if(tmpRecent is EntityIdLong && tmpNewMax is EntityIdString) {
 				log.e("EntityId type mismatch! recent=Long,newMax=String,columnType=$column_type")
-			}else if(tmpNewMax != null && (tmpRecent?.compareTo(tmpNewMax) ?: - 1) == - 1 ) {
+			} else if(tmpNewMax != null && (tmpRecent?.compareTo(tmpNewMax) ?: - 1) == - 1) {
 				idRecent = tmpNewMax
 				// XXX: コレはリフレッシュ時に取得漏れを引き起こすのでは…？
 				// しかしコレなしだとリフレッシュ時に大量に読むことになる…

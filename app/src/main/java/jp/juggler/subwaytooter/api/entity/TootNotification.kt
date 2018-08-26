@@ -45,24 +45,14 @@ class TootNotification(parser : TootParser, src : JSONObject) : TimelineItem() {
 	val account : TootAccount?
 		get() = accountRef?.get()
 	
-	override fun getOrderId() = id
-	
-	
+	private val _orderId :EntityId
+	override fun getOrderId() = _orderId
 	
 	init {
 		json = src
 		
 		if( parser.serviceType == ServiceType.MISSKEY){
-			id = when {
-
-				// Misskeyはストリーミングからくる通知にIDが振られていない
-				parser.serviceType == ServiceType.MISSKEY ->
-					EntityId.mayNull(src.parseString("id")) ?: EntityIdString("")
-
-				// Mastodon
-				else -> EntityId.mayNull(src.parseLong("id")) ?: error("missing id")
-			}
-			
+			id = EntityId.mayDefault(src.parseString("id"))
 			
 			type = src.notEmptyOrThrow("type")
 			
@@ -73,11 +63,14 @@ class TootNotification(parser : TootParser, src : JSONObject) : TimelineItem() {
 			status = parser.status(src.optJSONObject("note"))
 			
 			reaction = src.parseString("reaction")
+			
+			
+			// Misskeyの通知APIはページネーションをIDでしか行えない
+			// これは改善される予定 https://github.com/syuilo/misskey/issues/2275
+			_orderId = id
+			
 		}else{
-			id = when {
-				parser.serviceType == ServiceType.MISSKEY -> EntityId.mayNull(src.parseString("id"))
-				else -> EntityId.mayNull(src.parseLong("id"))
-			} ?: error("missing id")
+			id = EntityId.mayDefault(src.parseLong("id"))
 			
 			type = src.notEmptyOrThrow("type")
 			created_at = src.parseString("created_at")
@@ -85,6 +78,7 @@ class TootNotification(parser : TootParser, src : JSONObject) : TimelineItem() {
 			accountRef = TootAccountRef.mayNull(parser, parser.account(src.optJSONObject("account")))
 			status = parser.status(src.optJSONObject("status"))
 			
+			_orderId = id
 		}
 	}
 	

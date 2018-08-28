@@ -5386,11 +5386,14 @@ class Column(
 		try {
 			if(viewHolder?.saveScrollPosition() == true) {
 				val ss = this.scroll_save
-				if(ss != null) {
-					val item = list_data[toListIndex(ss.adapterIndex)]
-					this.last_viewing_item_id = item.getOrderId()
-					// とりあえず保存はするが
-					// TLデータそのものを永続化しないかぎり出番はないっぽい
+				if(ss != null ) {
+					val idx = toListIndex(ss.adapterIndex)
+					if( 0<= idx && idx < list_data.size ){
+						val item = list_data[idx]
+						this.last_viewing_item_id = item.getOrderId()
+						// とりあえず保存はするが
+						// TLデータそのものを永続化しないかぎり出番はないっぽい
+					}
 				}
 			}
 		} catch(ex : Throwable) {

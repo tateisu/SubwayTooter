@@ -818,7 +818,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 						if(id!=null) return id
 					}
 					
-					log.e("can't parse status uri: $uri")
+					log.w("can't parse status uri: $uri")
 				}
 				
 				if(url?.isNotEmpty() == true) {
@@ -836,11 +836,11 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 						if(id!=null) return id
 					}
 					
-					log.e("can't parse status URL: $url")
+					log.w("can't parse status URL: $url")
 				}
 				
 			} catch(ex : Throwable) {
-				log.e(ex, "can't parse status number: $uri,$url")
+				log.e(ex, "can't parse status from: $uri,$url")
 			}
 			
 			return null

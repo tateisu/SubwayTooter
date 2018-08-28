@@ -179,9 +179,9 @@ fun createResizedBitmap(
 			sourceBitmap.recycle()
 		}
 	} catch(ex : SecurityException) {
-		BitmapUtils.log.e(ex, "maybe we need pick up image again.")
+		BitmapUtils.log.w(ex, "maybe we need pick up image again.")
 	} catch(ex : Throwable) {
-		BitmapUtils.log.trace(ex)
+		BitmapUtils.log.trace(ex,"createResizedBitmap")
 	}
 	return null
 }

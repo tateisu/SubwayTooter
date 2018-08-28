@@ -116,6 +116,7 @@ internal class DlgContextMenu(
 		val btnShowFavourite = viewRoot.findViewById<View>(R.id.btnShowFavourite)
 		
 		val btnListMemberAddRemove = viewRoot.findViewById<View>(R.id.btnListMemberAddRemove)
+		val btnEndorse :Button = viewRoot.findViewById(R.id.btnEndorse)
 		
 		btnStatusWebPage.setOnClickListener(this)
 		btnText.setOnClickListener(this)
@@ -151,6 +152,7 @@ internal class DlgContextMenu(
 		btnListMemberAddRemove.setOnClickListener(this)
 		btnInstanceInformation.setOnClickListener(this)
 		btnDomainBlock.setOnClickListener(this)
+		btnEndorse.setOnClickListener(this)
 		
 		viewRoot.findViewById<View>(R.id.btnQuoteUrlStatus).setOnClickListener(this)
 		viewRoot.findViewById<View>(R.id.btnQuoteUrlAccount).setOnClickListener(this)
@@ -300,6 +302,12 @@ internal class DlgContextMenu(
 		if(access_info.isPseudo) {
 			btnProfile.visibility = View.GONE
 			btnSendMessage.visibility = View.GONE
+			btnEndorse.visibility = View.GONE
+		}
+		
+		btnEndorse.text = when(relation.endorsed){
+			false -> activity.getString(R.string.endorse_set)
+			else->activity.getString(R.string.endorse_unset)
 		}
 		
 		if(column_type != Column.TYPE_FOLLOW_REQUESTS) {
@@ -606,6 +614,7 @@ internal class DlgContextMenu(
 				R.id.btnInstanceInformation ->
 					Action_Instance.information(activity, pos, who.host)
 				
+				R.id.btnEndorse -> Action_Account.endorse(activity,access_info,who,!relation.endorsed)
 			}
 		}
 		

@@ -1088,6 +1088,14 @@ class ActMain : AppCompatActivity()
 				, Column.TYPE_FOLLOW_SUGGESTION
 				, bAllowPseudo = false
 			)
+			R.id.nav_endorsement -> Action_Account.timeline(
+				this
+				, defaultInsertPosition
+				, Column.TYPE_ENDORSEMENT
+				, bAllowPseudo = false
+				,bAllowMisskey = false
+			)
+			
 			//			R.id.nav_add_trend_tag ->Action_Account.timeline(
 			//				this,
 			//				defaultInsertPosition,

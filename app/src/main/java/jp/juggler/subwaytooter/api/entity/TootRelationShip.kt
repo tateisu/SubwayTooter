@@ -31,8 +31,11 @@ class TootRelationShip(src : JSONObject) {
 	// Whether the boosts from target account will be shown on authorized user's home TL.
 	val showing_reblogs : Int
 	
+	// 「プロフィールで紹介する」「プロフィールから外す」
+	val endorsed : Boolean
+	
 	init {
-		this.id = EntityIdLong( src.parseLong("id") ?: -1L )
+		this.id = EntityId.mayDefault( src.parseLong("id") )
 		
 		var ov = src.opt("following")
 		if(ov is JSONObject) {
@@ -47,7 +50,6 @@ class TootRelationShip(src : JSONObject) {
 			} else {
 				this.showing_reblogs = UserRelation.REBLOG_UNKNOWN
 			}
-			
 		} else {
 			// 2.0 までの挙動
 			this.following = if(ov is Boolean) ov else false
@@ -59,11 +61,13 @@ class TootRelationShip(src : JSONObject) {
 			} else {
 				this.showing_reblogs = UserRelation.REBLOG_UNKNOWN
 			}
+
 		}
 		
 		this.followed_by = src.optBoolean("followed_by")
 		this.blocking = src.optBoolean("blocking")
 		this.muting = src.optBoolean("muting")
 		this.requested = src.optBoolean("requested")
+		this.endorsed = src.optBoolean("endorsed")
 	}
 }

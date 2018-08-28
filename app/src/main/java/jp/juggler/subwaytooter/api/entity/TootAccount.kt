@@ -309,7 +309,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		
 		@Suppress("HasPlatformType")
 		val reAccountUrl =
-			Pattern.compile("\\Ahttps://([A-Za-z0-9.-]+)/@([A-Za-z0-9_]+(?:@[A-Za-z0-9][A-Za-z0-9.-]+?[A-Za-z0-9])?)(?:\\z|[?#])")
+			Pattern.compile("\\Ahttps://([A-Za-z0-9._-]+)/@([A-Za-z0-9_]+(?:@[A-Za-z0-9._-]+)?)(?:\\z|[?#])")
 
 		fun getAcctFromUrl(url:String):String?{
 			val m = TootAccount.reAccountUrl.matcher(url)

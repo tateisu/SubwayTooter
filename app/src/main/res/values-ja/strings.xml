@@ -1055,5 +1055,9 @@
     <string name="background_color_direct_with_user">トゥート背景色 \'ダイレクト(対象ユーザあり)\'</string>
     <string name="background_color_direct_no_user">トゥート背景色 \'ダイレクト(自分のみ)\'</string>
     <string name="already_voted">投票済です</string>
+    <string name="endorse_set">プロフィールに紹介</string>
+    <string name="endorse_unset">「プロフィールに紹介」を取り消す</string>
+    <string name="endorse_succeeded">紹介を追加しました</string>
+    <string name="remove_endorse_succeeded">紹介を削除しました</string>
 
 </resources>

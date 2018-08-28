@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.support.v7.app.AlertDialog
+import com.bumptech.glide.RequestBuilder
 
 import jp.juggler.subwaytooter.ActAccountSetting
 import jp.juggler.subwaytooter.ActMain
@@ -14,11 +15,18 @@ import jp.juggler.subwaytooter.Column
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.entity.TootAccount
+import jp.juggler.subwaytooter.api.entity.TootRelationShip
+import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.dialog.LoginForm
+import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.showToast
+import okhttp3.Request
+import okhttp3.RequestBody
 import org.json.JSONObject
 
 object Action_Account {
@@ -192,5 +200,57 @@ object Action_Account {
 				message = activity.getString(R.string.account_picker_toot)
 			) { ai -> ActPost.open(activity, ActMain.REQUEST_CODE_POST, ai.db_id, initial_text) }
 		}
+	}
+	
+	fun endorse(
+		activity : ActMain,
+		access_info : SavedAccount,
+		who : TootAccount,
+		bSet : Boolean
+	) {
+		if( access_info.isMisskey ){
+			showToast(activity,false,"This feature is not provided on Misskey account.")
+			return
+		}
+		
+		
+		TootTaskRunner(activity).run(access_info, object : TootTask {
+			
+			var relation : UserRelation? = null
+			
+			override fun background(client : TootApiClient) : TootApiResult? {
+				val builder = Request.Builder().post(
+					RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED,"")
+				)
+				var result = client.request(
+					"/api/v1/accounts/${who.id}/"+when(bSet){
+						true ->"pin"
+						false ->"unpin"
+					}
+					,builder
+				)
+				val jsonObject = result?.jsonObject
+				if( jsonObject != null ){
+					val tr = parseItem(::TootRelationShip,jsonObject)
+					if( tr != null ) {
+						this.relation = saveUserRelation(access_info,tr)
+					}
+				}
+				return result
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				result ?: return
+				
+				if( result.error != null ){
+					showToast(activity,true,result.error)
+				}else{
+					showToast(activity,false,when(bSet){
+						true->R.string.endorse_succeeded
+						else->R.string.remove_endorse_succeeded
+					})
+				}
+			}
+		})
 	}
 }

@@ -92,7 +92,10 @@
                     android:id="@+id/nav_follow_suggestion"
                     android:icon="?attr/ic_follow_plus"
                     android:title="@string/follow_suggestion"/>
-
+                <item
+                    android:id="@+id/nav_endorsement"
+                    android:icon="?attr/ic_follow_plus"
+                    android:title="@string/endorse_set"/>
                 <item
                     android:id="@+id/nav_add_mutes"
                     android:icon="?attr/ic_mute"

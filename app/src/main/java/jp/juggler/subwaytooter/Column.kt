@@ -80,6 +80,7 @@ class Column(
 		private const val PATH_BLOCKS = "/api/v1/blocks?limit=$READ_LIMIT"
 		private const val PATH_FOLLOW_REQUESTS = "/api/v1/follow_requests?limit=$READ_LIMIT"
 		private const val PATH_FOLLOW_SUGGESTION = "/api/v1/suggestions?limit=$READ_LIMIT"
+		private const val PATH_ENDORSEMENT = "/api/v1/endorsements?limit=$READ_LIMIT"
 		
 		private const val PATH_BOOSTED_BY =
 			"/api/v1/statuses/%s/reblogged_by?limit=$READ_LIMIT" // 1:status_id
@@ -194,6 +195,7 @@ class Column(
 		internal const val TYPE_FOLLOW_SUGGESTION = 25
 		internal const val TYPE_KEYWORD_FILTER = 26
 		internal const val TYPE_MISSKEY_HYBRID = 27
+		internal const val TYPE_ENDORSEMENT = 28
 		
 		internal const val TAB_STATUS = 0
 		internal const val TAB_FOLLOWING = 1
@@ -239,6 +241,8 @@ class Column(
 				TYPE_INSTANCE_INFORMATION -> context.getString(R.string.instance_information)
 				TYPE_FOLLOW_REQUESTS -> context.getString(R.string.follow_requests)
 				TYPE_FOLLOW_SUGGESTION -> context.getString(R.string.follow_suggestion)
+				TYPE_ENDORSEMENT ->context.getString(R.string.endorse_set)
+				
 				TYPE_LIST_LIST -> context.getString(R.string.lists)
 				TYPE_LIST_MEMBER -> context.getString(R.string.list_member)
 				TYPE_LIST_TL -> context.getString(R.string.list_timeline)
@@ -270,6 +274,7 @@ class Column(
 				TYPE_INSTANCE_INFORMATION -> R.attr.ic_info
 				TYPE_FOLLOW_REQUESTS -> R.attr.ic_follow_wait
 				TYPE_FOLLOW_SUGGESTION -> R.attr.ic_follow_plus
+				TYPE_ENDORSEMENT -> R.attr.ic_follow_plus
 				TYPE_LIST_LIST -> R.attr.ic_list_list
 				TYPE_LIST_MEMBER -> R.attr.ic_list_member
 				TYPE_LIST_TL -> R.attr.ic_list_tl
@@ -2174,6 +2179,11 @@ class Column(
 							)
 						}
 						
+						TYPE_ENDORSEMENT -> return parseAccountList(
+							client,
+							PATH_ENDORSEMENT
+						)
+						
 						TYPE_FAVOURITES -> return if(isMisskey) {
 							getStatuses(
 								client
@@ -3698,7 +3708,8 @@ class Column(
 						} else {
 							getAccountList(client, PATH_FOLLOW_SUGGESTION)
 						}
-						
+						TYPE_ENDORSEMENT -> getAccountList(client, PATH_ENDORSEMENT)
+
 						TYPE_HASHTAG -> if(isMisskey) {
 							getStatusList(
 								client
@@ -4519,6 +4530,8 @@ class Column(
 								, PATH_FOLLOW_SUGGESTION
 							)
 						}
+						
+						TYPE_ENDORSEMENT -> getAccountList(client, PATH_ENDORSEMENT)
 						
 						TYPE_PROFILE
 						-> when(profile_tab) {

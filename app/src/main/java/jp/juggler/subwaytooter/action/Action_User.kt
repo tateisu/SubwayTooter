@@ -10,14 +10,10 @@ import jp.juggler.subwaytooter.ActPost
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Column
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.ReportForm
@@ -234,53 +230,9 @@ object Action_User {
 			
 			var who_local : TootAccount? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
-				
-				if( access_info.isMisskey){
-					val acct = TootAccount.getAcctFromUrl(who_url)
-						?: return TootApiResult("can't find acct from $who_url")
-					val delm = acct.indexOf('@')
-					val params = access_info.putMisskeyApiToken(JSONObject())
-					if(delm!=-1){
-						params.put("username",acct.substring(0,delm))
-						params.put("host",acct.substring(delm+1))
-					}else{
-						params.put("username",acct)
-					}
-					val result = client.request("/api/users/show",params.toPostRequestBuilder())
-					val jsonObject = result?.jsonObject
-					
-					if(jsonObject != null) {
-						val tmp = TootParser(activity, access_info).account(jsonObject)
-						if(tmp != null){
-							who_local = tmp
-						} else {
-							return TootApiResult(activity.getString(R.string.user_id_conversion_failed))
-						}
-					}
-					
-					return result
-					
-				}else{
-					val path = String.format(
-						Locale.JAPAN,
-						Column.PATH_SEARCH,
-						who_url.encodePercent()
-					) + "&resolve=1"
-					val result = client.request(path)
-					val jsonObject = result?.jsonObject
-					
-					if(jsonObject != null) {
-						val tmp = TootParser(activity, access_info).results(jsonObject)
-						if(tmp != null && tmp.accounts.isNotEmpty()) {
-							who_local = tmp.accounts[0].get()
-						} else {
-							return TootApiResult(activity.getString(R.string.user_id_conversion_failed))
-						}
-					}
-					
-					return result
-					
-				}
+				val result = client.syncAccountByUrl(access_info,who_url)
+				who_local = result?.data as? TootAccount
+				return result
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

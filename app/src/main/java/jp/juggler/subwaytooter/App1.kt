@@ -105,7 +105,8 @@ class App1 : Application() {
 		// 2018/8/19 v267 28 => 29 (失敗)ContentWarningMisskey, MediaShownMisskey テーブルを追加
 		// 2018/8/19 v268 29 => 30 ContentWarningMisskey, MediaShownMisskey, UserRelationMisskeyテーブルを追加
 		// 2018/8/19 v268 30 => 31 (29)で失敗しておかしくなったContentWarningとMediaShownを作り直す
-		internal const val DB_VERSION = 31
+		// 2018/8/28 v279 31 => 32 UserRelation,UserRelationMisskey にendorsedを追加
+		internal const val DB_VERSION = 32
 		
 		private val tableList = arrayOf(
 			LogData,

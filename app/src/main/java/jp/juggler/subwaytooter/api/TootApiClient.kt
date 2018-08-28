@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.api
 import android.content.Context
 import android.content.SharedPreferences
 import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.api.entity.TootAccount
 
 import org.json.JSONException
 import org.json.JSONObject
@@ -13,6 +14,7 @@ import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.util.*
 import okhttp3.*
 import org.json.JSONArray
+import java.util.*
 import java.util.regex.Pattern
 
 class TootApiClient(
@@ -1330,4 +1332,91 @@ class TootApiClient(
 	}
 }
 	
+fun TootApiClient.syncAccountByUrl(accessInfo:SavedAccount,who_url:String):TootApiResult?{
+	if( accessInfo.isMisskey){
+		val acct = TootAccount.getAcctFromUrl(who_url)
+			?: return TootApiResult(context.getString(R.string.user_id_conversion_failed))
+		
+		val delm = acct.indexOf('@')
+		val params = accessInfo.putMisskeyApiToken(JSONObject())
+		if(delm!=-1){
+			params.put("username",acct.substring(0,delm))
+			params.put("host",acct.substring(delm+1))
+		}else{
+			params.put("username",acct)
+		}
 
+		val result = this.request("/api/users/show",params.toPostRequestBuilder())
+		val jsonObject = result?.jsonObject
+		
+		if(jsonObject != null) {
+			val tmp = TootParser(this.context,accessInfo).account(jsonObject)
+			if(tmp != null){
+				result.data = tmp
+			} else {
+				result.setError(context.getString(R.string.user_id_conversion_failed))
+			}
+		}
+		return result
+	}else{
+		val path = String.format(
+			Locale.JAPAN,
+			Column.PATH_SEARCH,
+			who_url.encodePercent()
+		) + "&resolve=1"
+		val result = this.request(path)
+		val jsonObject = result?.jsonObject
+		if(jsonObject != null) {
+			val tmp = TootParser(this.context,accessInfo).results(jsonObject)
+			if(tmp != null && tmp.accounts.isNotEmpty()) {
+				result.data = tmp.accounts[0].get()
+			} else {
+				result.setError(context.getString(R.string.user_id_conversion_failed))
+			}
+		}
+		return result
+	}
+}
+
+fun TootApiClient.syncAccountByAcct(accessInfo:SavedAccount,acct:String):TootApiResult?{
+	if( accessInfo.isMisskey){
+		val delm = acct.indexOf('@')
+		val params = accessInfo.putMisskeyApiToken(JSONObject())
+		if(delm!=-1){
+			params.put("username",acct.substring(0,delm))
+			params.put("host",acct.substring(delm+1))
+		}else{
+			params.put("username",acct)
+		}
+		
+		val result = this.request("/api/users/show",params.toPostRequestBuilder())
+		val jsonObject = result?.jsonObject
+		
+		if(jsonObject != null) {
+			val tmp = TootParser(this.context,accessInfo).account(jsonObject)
+			if(tmp != null){
+				result.data = tmp
+			} else {
+				result.setError(context.getString(R.string.user_id_conversion_failed))
+			}
+		}
+		return result
+	}else{
+		val path = String.format(
+			Locale.JAPAN,
+			Column.PATH_SEARCH,
+			acct.encodePercent()
+		) + "&resolve=1"
+		val result = this.request(path)
+		val jsonObject = result?.jsonObject
+		if(jsonObject != null) {
+			val tmp = TootParser(this.context,accessInfo).results(jsonObject)
+			if(tmp != null && tmp.accounts.isNotEmpty()) {
+				result.data = tmp.accounts[0].get()
+			} else {
+				result.setError(context.getString(R.string.user_id_conversion_failed))
+			}
+		}
+		return result
+	}
+}

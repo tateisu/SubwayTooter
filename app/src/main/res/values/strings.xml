@@ -764,4 +764,10 @@
     <string name="background_color_direct_no_user">Toot background color of \'Direct only me\' visibility</string>
     <string name="already_voted">Already voted.</string>
 
+    <string name="endorse_set">Endorse in your profile</string>
+    <string name="endorse_unset">Remove endorsement in your profile</string>
+    <string name="endorse_succeeded">Endorsement added.</string>
+    <string name="remove_endorse_succeeded">Endorsement removed.</string>
+
+
 </resources>

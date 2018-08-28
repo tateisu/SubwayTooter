@@ -12,15 +12,15 @@ import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.util.LogCategory
 import org.json.JSONObject
 
-class UserRelation{
+class UserRelation {
 	
 	var following : Boolean = false   // 認証ユーザからのフォロー状態にある
 	var followed_by : Boolean = false // 認証ユーザは被フォロー状態にある
 	var blocking : Boolean = false
 	var muting : Boolean = false
 	var requested : Boolean = false  // 認証ユーザからのフォローは申請中である
-	
 	var following_reblogs : Int = 0 // このユーザからのブーストをTLに表示する
+	var endorsed : Boolean = false // ユーザをプロフィールで紹介する
 	
 	// 認証ユーザからのフォロー状態
 	fun getFollowing(who : TootAccount?) : Boolean {
@@ -45,6 +45,7 @@ class UserRelation{
 		private const val COL_BLOCKING = "blocking"
 		private const val COL_MUTING = "muting"
 		private const val COL_REQUESTED = "requested"
+		private const val COL_ENDORSED = "endorsed"
 		
 		// (mastodon 2.1 or later) per-following-user setting.
 		// Whether the boosts from target account will be shown on authorized user's home TL.
@@ -69,24 +70,26 @@ class UserRelation{
 		override fun onDBCreate(db : SQLiteDatabase) {
 			log.d("onDBCreate!")
 			db.execSQL(
-				"create table if not exists " + table
-					+ "(_id INTEGER PRIMARY KEY"
-					+ "," + COL_TIME_SAVE + " integer not null"
-					+ "," + COL_DB_ID + " integer not null"
-					+ "," + COL_WHO_ID + " integer not null"
-					+ "," + COL_FOLLOWING + " integer not null"
-					+ "," + COL_FOLLOWED_BY + " integer not null"
-					+ "," + COL_BLOCKING + " integer not null"
-					+ "," + COL_MUTING + " integer not null"
-					+ "," + COL_REQUESTED + " integer not null"
-					+ "," + COL_FOLLOWING_REBLOGS + " integer not null"
-					+ ")"
+				"""
+				create table if not exists $table
+				(_id INTEGER PRIMARY KEY
+				,$COL_TIME_SAVE integer not null
+				,$COL_DB_ID integer not null
+				,$COL_WHO_ID integer not null
+				,$COL_FOLLOWING integer not null
+				,$COL_FOLLOWED_BY integer not null
+				,$COL_BLOCKING integer not null
+				,$COL_MUTING integer not null
+				,$COL_REQUESTED integer not null
+				,$COL_FOLLOWING_REBLOGS integer not null
+				,$COL_ENDORSED integer default 0
+				)"""
 			)
 			db.execSQL(
-				"create unique index if not exists " + table + "_id on " + table + "(" + COL_DB_ID + "," + COL_WHO_ID + ")"
+				"create unique index if not exists ${table}_id on $table ($COL_DB_ID,$COL_WHO_ID)"
 			)
 			db.execSQL(
-				"create index if not exists " + table + "_time on " + table + "(" + COL_TIME_SAVE + ")"
+				"create index if not exists ${table}_time on $table ($COL_TIME_SAVE)"
 			)
 		}
 		
@@ -107,6 +110,13 @@ class UserRelation{
 					log.trace(ex)
 				}
 				
+			}
+			if(oldVersion < 32 && newVersion >= 32) {
+				try {
+					db.execSQL("alter table $table add column $COL_ENDORSED integer default 0")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
 			}
 		}
 		
@@ -129,12 +139,13 @@ class UserRelation{
 				cv.put(COL_TIME_SAVE, now)
 				cv.put(COL_DB_ID, db_id)
 				cv.put(COL_WHO_ID, src.id.toLong())
-				cv.put(COL_FOLLOWING, if(src.following) 1 else 0)
-				cv.put(COL_FOLLOWED_BY, if(src.followed_by) 1 else 0)
-				cv.put(COL_BLOCKING, if(src.blocking) 1 else 0)
-				cv.put(COL_MUTING, if(src.muting) 1 else 0)
-				cv.put(COL_REQUESTED, if(src.requested) 1 else 0)
+				cv.put(COL_FOLLOWING, src.following.b2i())
+				cv.put(COL_FOLLOWED_BY, src.followed_by.b2i())
+				cv.put(COL_BLOCKING, src.blocking.b2i())
+				cv.put(COL_MUTING, src.muting.b2i())
+				cv.put(COL_REQUESTED, src.requested.b2i())
 				cv.put(COL_FOLLOWING_REBLOGS, src.showing_reblogs)
+				cv.put(COL_ENDORSED,src.endorsed.b2i() )
 				App1.database.replace(table, null, cv)
 				val key = String.format("%s:%s", db_id, src.id)
 				mMemoryCache.remove(key)
@@ -142,7 +153,7 @@ class UserRelation{
 				log.e(ex, "save failed.")
 			}
 			
-			return load(db_id,src.id )
+			return load(db_id, src.id)
 		}
 		
 		// マストドン用
@@ -164,6 +175,7 @@ class UserRelation{
 					cv.put(COL_MUTING, src.muting.b2i())
 					cv.put(COL_REQUESTED, src.requested.b2i())
 					cv.put(COL_FOLLOWING_REBLOGS, src.showing_reblogs)
+					cv.put(COL_ENDORSED,src.endorsed.b2i() )
 					db.replace(table, null, cv)
 					
 				}
@@ -184,19 +196,18 @@ class UserRelation{
 			}
 		}
 		
-
-		fun load(db_id:Long, whoId:EntityId):UserRelation{
+		fun load(db_id : Long, whoId : EntityId) : UserRelation {
 			//
 			val key = String.format("%s:%s", db_id, whoId)
 			val cached : UserRelation? = mMemoryCache.get(key)
 			if(cached != null) return cached
-
-			val dst =if( whoId is EntityIdString){
-				UserRelationMisskey.load(db_id,whoId.toString() )
-			}else{
-				load(db_id,whoId.toLong() )
+			
+			val dst = if(whoId is EntityIdString) {
+				UserRelationMisskey.load(db_id, whoId.toString())
+			} else {
+				load(db_id, whoId.toLong())
 			} ?: UserRelation()
-
+			
 			mMemoryCache.put(key, dst)
 			return dst
 		}
@@ -218,6 +229,7 @@ class UserRelation{
 							dst.requested = 0 != cursor.getInt(cursor.getColumnIndex(COL_REQUESTED))
 							dst.following_reblogs =
 								cursor.getInt(cursor.getColumnIndex(COL_FOLLOWING_REBLOGS))
+							dst.endorsed = 0 != cursor.getInt(cursor.getColumnIndex(COL_ENDORSED))
 							return dst
 						}
 					}
@@ -229,71 +241,13 @@ class UserRelation{
 		}
 		
 		// Misskey用
-		fun parseMisskeyUser(src:JSONObject) =UserRelation().apply{
+		fun parseMisskeyUser(src : JSONObject) = UserRelation().apply {
 			following = src.optBoolean("isFollowing")
 			followed_by = src.optBoolean("isFollowed")
 			muting = src.optBoolean("isMuted")
 			blocking = false
+			endorsed = false
 		}
 	}
-	
-	//	public static Cursor createCursor(){
-	//		return App1.getDB().query( table, null, null, null, null, null, COL_NAME + " asc" );
-	//	}
-	//
-	//	public static void delete( String name ){
-	//		try{
-	//			App1.getDB().delete( table, COL_NAME + "=?", new String[]{ name } );
-	//		}catch( Throwable ex ){
-	//			warning.e( ex, "delete failed." );
-	//		}
-	//	}
-	//
-	//	public static HashSet< String > getNameSet(){
-	//		HashSet< String > dst = new HashSet<>();
-	//		try{
-	//			Cursor cursor = App1.getDB().query( table, null, null, null, null, null, null );
-	//			if( cursor != null ){
-	//				try{
-	//					int idx_name = cursor.getColumnIndex( COL_NAME );
-	//					while( cursor.moveToNext() ){
-	//						String s = cursor.getString( idx_name );
-	//						dst.add( s );
-	//					}
-	//				}finally{
-	//					cursor.close();
-	//				}
-	//			}
-	//		}catch( Throwable ex ){
-	//			warning.e(ex,"getNameSet() failed.")
-	//		}
-	//		return dst;
-	//	}
-	
-	//	private static final String[] isMuted_projection = new String[]{COL_NAME};
-	//	private static final String   isMuted_where = COL_NAME+"=?";
-	//	private static final ThreadLocal<String[]> isMuted_where_arg = new ThreadLocal<String[]>() {
-	//		@Override protected String[] initialValue() {
-	//			return new String[1];
-	//		}
-	//	};
-	//	public static boolean isMuted( String app_name ){
-	//		if( app_name == null ) return false;
-	//		try{
-	//			String[] where_arg = isMuted_where_arg.get();
-	//			where_arg[0] = app_name;
-	//			Cursor cursor = App1.getDB().query( table, isMuted_projection,isMuted_where , where_arg, null, null, null );
-	//			try{
-	//				if( cursor.moveToFirst() ){
-	//					return true;
-	//				}
-	//			}finally{
-	//				cursor.close();
-	//			}
-	//		}catch( Throwable ex ){
-	//			warning.e( ex, "load failed." );
-	//		}
-	//		return false;
-	//	}
-	
+
 }

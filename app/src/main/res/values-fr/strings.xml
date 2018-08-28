@@ -779,6 +779,11 @@
 	<string name="background_color_direct_no_user">Toot background color of \'Direct only me\' visibility</string>
 	<string name="already_voted">Already voted.</string>
 
+	<string name="endorse_set">Endorse in your profile</string>
+	<string name="endorse_unset">Remove endorsement in your profile</string>
+	<string name="endorse_succeeded">Endorsement added.</string>
+	<string name="remove_endorse_succeeded">Endorsement removed.</string>
+
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->

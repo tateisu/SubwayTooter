@@ -6,15 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
-import android.widget.BaseAdapter
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.CompoundButton
-import android.widget.TextView
-
-import java.util.ArrayList
-import java.util.HashSet
-
+import android.widget.*
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
@@ -22,24 +14,18 @@ import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.action.Action_List
 import jp.juggler.subwaytooter.action.Action_ListMember
 import jp.juggler.subwaytooter.action.makeAccountListNonPseudo
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
+import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootList
-import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.parseList
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
-import jp.juggler.subwaytooter.util.encodePercent
 import jp.juggler.subwaytooter.util.showToast
-import jp.juggler.subwaytooter.util.toPostRequestBuilder
 import jp.juggler.subwaytooter.view.MyListView
 import jp.juggler.subwaytooter.view.MyNetworkImageView
-import org.json.JSONObject
+import java.util.*
 
 @SuppressLint("InflateParams")
 class DlgListMember(
@@ -188,50 +174,15 @@ class DlgListMember(
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				// リストに追加したいアカウントの自タンスでのアカウントIDを取得する
-				local_who = null
+				var result = client.syncAccountByAcct(list_owner,target_user_full_acct)
+				local_who = result?.data as? TootAccount
 				
-				if( list_owner.isMisskey){
-					val acct = target_user_full_acct
-					val delm = acct.indexOf('@')
-					val params = list_owner.putMisskeyApiToken(JSONObject())
-					if(delm!=-1){
-						params.put("username",acct.substring(0,delm))
-						params.put("host",acct.substring(delm+1))
-					}else{
-						params.put("username",acct)
-					}
-					val result = client.request("/api/users/show",params.toPostRequestBuilder())
-					val jsonObject = result?.jsonObject
-					
-					if(jsonObject != null) {
-						val tmp = TootParser(activity, list_owner).account(jsonObject)
-						if(tmp != null){
-							local_who = tmp
-						}
-					}
-					
-				}else{
-					val result = client.request("/api/v1/search?resolve=true&q=" + target_user_full_acct.encodePercent())
-					val jsonObject = result?.jsonObject ?: return result
-					
-					
-					val search_result = TootParser(activity, list_owner ).results(jsonObject)
-					if(search_result != null) {
-						for(aRef in search_result.accounts) {
-							val a = aRef.get()
-							if(target_user_full_acct.equals(list_owner .getFullAcct(a), ignoreCase = true)) {
-								local_who = a
-								break
-							}
-						}
-					}
-				}
 				
 				val local_who = this@DlgListMember.local_who
 					?: return TootApiResult(activity.getString(R.string.account_sync_failed))
 				
 				// リスト登録状況を取得
-				var result = client.request("/api/v1/accounts/" + local_who .id + "/lists")
+				result = client.request("/api/v1/accounts/" + local_who .id + "/lists")
 				var jsonArray = result?.jsonArray ?:return result
 				
 				// 結果を解釈する

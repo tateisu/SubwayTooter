@@ -41,7 +41,7 @@ class ActAbout : AppCompatActivity() {
 			val tv = findViewById<TextView>(R.id.tvVersion)
 				tv.text = getString(R.string.version_is, pInfo.versionName)
 		} catch(ex : PackageManager.NameNotFoundException) {
-			log.trace(ex)
+			log.trace(ex,"getPackageInfo failed.")
 		}
 		
 		var b : Button
@@ -102,7 +102,7 @@ class ActAbout : AppCompatActivity() {
 			val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
 			startActivity(intent)
 		} catch(ex : Throwable) {
-			log.trace(ex)
+			log.trace(ex,"open_browser failed.")
 		}
 		
 	}

@@ -171,7 +171,7 @@ class ActAppSetting : AppCompatActivity()
 		try {
 			PollingWorker.scheduleJob(this, PollingWorker.JOB_POLLING)
 		} catch(ex : Throwable) {
-			log.trace(ex)
+			log.trace(ex,"PollingWorker.scheduleJob failed.")
 		}
 	}
 	

@@ -549,7 +549,7 @@ class ActAccountSetting
 			val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
 			startActivity(intent)
 		} catch(ex : Throwable) {
-			log.trace(ex)
+			log.trace(ex,"open_browser failed.")
 		}
 		
 	}
@@ -654,7 +654,7 @@ class ActAccountSetting
 							log.e("performAccountRemove: %s", response)
 							
 						} catch(ex : Throwable) {
-							log.trace(ex)
+							log.trace(ex,"performAccountRemove failed.")
 						}
 						
 					}
@@ -1201,7 +1201,7 @@ class ActAccountSetting
 			intent.putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/*", "video/*"))
 			startActivityForResult(intent, request_code)
 		} catch(ex : Throwable) {
-			log.trace(ex)
+			log.trace(ex,"ACTION_OPEN_DOCUMENT failed.")
 			showToast(this, ex, "ACTION_OPEN_DOCUMENT failed.")
 		}
 		
@@ -1223,7 +1223,7 @@ class ActAccountSetting
 			
 			startActivityForResult(intent, request_code)
 		} catch(ex : Throwable) {
-			log.trace(ex)
+			log.trace(ex,"opening camera app failed.")
 			showToast(this, ex, "opening camera app failed.")
 		}
 		
@@ -1296,7 +1296,7 @@ class ActAccountSetting
 				}
 				
 			} catch(ex : Throwable) {
-				log.trace(ex)
+				log.trace(ex,"Resizing image failed.")
 				showToast(this, ex, "Resizing image failed.")
 			}
 			

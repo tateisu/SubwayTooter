@@ -7,6 +7,7 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 import java.io.ByteArrayOutputStream
+import java.io.FileNotFoundException
 import java.util.LinkedList
 
 class TaskList {
@@ -38,9 +39,10 @@ class TaskList {
 					}
 					
 				}
+			} catch(ex : FileNotFoundException) {
+				log.e(ex, "prepareList: file not found.")
 			} catch(ex : Throwable) {
-				log.trace(ex)
-				log.e(ex, "TaskList: prepareArray failed.")
+				log.trace(ex,"TaskList: prepareArray failed.")
 			}
 			
 		}

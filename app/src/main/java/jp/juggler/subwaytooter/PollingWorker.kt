@@ -137,8 +137,7 @@ class PollingWorker private constructor(c : Context) {
 				log.e("getDeviceId: missing device token.")
 				return null
 			} catch(ex : Throwable) {
-				log.e("getDeviceId: could not get device token.")
-				log.trace(ex)
+				log.trace(ex,"getDeviceId: could not get device token.")
 				return null
 			}
 		}
@@ -168,8 +167,7 @@ class PollingWorker private constructor(c : Context) {
 							prefDevice.edit().putString(PrefDevice.KEY_DEVICE_TOKEN, device_token).apply()
 						}
 					} catch(ex : Throwable) {
-						log.e("getInstallId: could not get device token.")
-						log.trace(ex)
+						log.trace(ex,"getInstallId: could not get device token.")
 						return null
 					}
 				}
@@ -202,7 +200,7 @@ class PollingWorker private constructor(c : Context) {
 				return sv
 				
 			} catch(ex : Throwable) {
-				log.trace(ex)
+				log.trace(ex,"prepareInstallId")
 			}
 			return null
 		}
@@ -513,7 +511,7 @@ class PollingWorker private constructor(c : Context) {
 		}
 		
 		override fun run() {
-			log.e("worker thread start.")
+			log.d("worker thread start.")
 			job_status.set("worker thread start.")
 			while(! bThreadCancelled.get()) {
 				try {
@@ -550,7 +548,7 @@ class PollingWorker private constructor(c : Context) {
 				
 			}
 			job_status.set("worker thread end.")
-			log.e("worker thread end.")
+			log.d("worker thread end.")
 		}
 	}
 	
@@ -786,8 +784,7 @@ class PollingWorker private constructor(c : Context) {
 							jobService.jobFinished(jobParams, willReschedule)
 						}
 					} catch(ex : Throwable) {
-						log.trace(ex)
-						log.e(ex, "jobFinished failed(1).")
+						log.trace(ex,"jobFinished failed(1).")
 					}
 				})
 			}
@@ -826,7 +823,7 @@ class PollingWorker private constructor(c : Context) {
 		
 		fun runTask(job : JobItem, taskId : Int, taskData : JSONObject) {
 			try {
-				log.e("(runTask: taskId=${taskId}")
+				log.d("(runTask: taskId=${taskId}")
 				job_status.set("start task $taskId")
 				
 				this.job = job
@@ -977,10 +974,9 @@ class PollingWorker private constructor(c : Context) {
 				if(! job.isJobCancelled) job.bPollingComplete = true
 				
 			} catch(ex : Throwable) {
-				log.trace(ex)
-				log.e(ex, "task execution failed.")
+				log.trace(ex,"task execution failed.")
 			} finally {
-				log.e(")runTask: taskId=$taskId")
+				log.d(")runTask: taskId=$taskId")
 				job_status.set("end task $taskId")
 			}
 		}
@@ -1187,7 +1183,7 @@ class PollingWorker private constructor(c : Context) {
 					
 					val response = call.execute()
 					
-					log.e("unregisterDeviceToken: %s", response)
+					log.d("unregisterDeviceToken: %s", response)
 					
 					if(response.isSuccessful) {
 						account.register_key = SavedAccount.REGISTER_KEY_UNREGISTERED
@@ -1293,7 +1289,7 @@ class PollingWorker private constructor(c : Context) {
 					} catch(ignored : Throwable) {
 					}
 					
-					log.e("registerDeviceToken: %s (%s)", response, body ?: "")
+					log.d("registerDeviceToken: %s (%s)", response, body ?: "")
 					
 					val code = response.code()
 					

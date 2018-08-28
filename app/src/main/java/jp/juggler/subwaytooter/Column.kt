@@ -2370,6 +2370,21 @@ class Column(
 							
 							list_tmp = ArrayList()
 							
+							val queryAccount = search_query.trim().replace("^@".toRegex(),"")
+							if(queryAccount.isNotEmpty() ){
+
+								params = access_info.putMisskeyApiToken(JSONObject())
+									.put("query",queryAccount)
+									.put("localOnly",!search_resolve)
+
+								result = client.request("/api/users/search",params.toPostRequestBuilder())
+								val jsonArray = result?.jsonArray
+								if( jsonArray != null){
+									val src = TootParser(context,access_info).accountList(jsonArray)
+									list_tmp = addAll(list_tmp, src)
+								}
+							}
+
 							val queryTag = search_query.trim().replace("^#".toRegex(),"")
 							if(queryTag.isNotEmpty() ){
 								params = access_info.putMisskeyApiToken(JSONObject())
@@ -2380,18 +2395,6 @@ class Column(
 									val src = TootTag.parseTootTagList(parser,jsonArray)
 									list_tmp = addAll(list_tmp, src)
 								}
-							}
-							val queryAccount = search_query.trim().replace("^@".toRegex(),"")
-							if(queryAccount.isNotEmpty() ){
-								params = access_info.putMisskeyApiToken(JSONObject())
-									.put("query",queryAccount)
-								result = client.request("/api/users/search",params.toPostRequestBuilder())
-								val jsonArray = result?.jsonArray
-								if( jsonArray != null){
-									val src = TootParser(context,access_info).accountList(jsonArray)
-									list_tmp = addAll(list_tmp, src)
-								}
-
 							}
 							if(search_query.isNotEmpty() ){
 								params = access_info.putMisskeyApiToken(JSONObject())

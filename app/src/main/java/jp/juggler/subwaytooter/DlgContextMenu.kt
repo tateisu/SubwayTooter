@@ -400,15 +400,26 @@ internal class DlgContextMenu(
 				}
 				
 				R.id.btnFollow ->
-					if(access_info.isPseudo) {
-						Action_Follow.followFromAnotherAccount(activity, pos, access_info, who)
-					} else {
-						val bSet = ! (relation.getFollowing(who) || relation.getRequested(who))
-						Action_Follow.follow(
+					when {
+
+						access_info.isPseudo -> Action_Follow.followFromAnotherAccount(activity, pos, access_info, who)
+
+						access_info.isMisskey && relation.getRequested(who) && !relation.getFollowing(who) -> Action_Follow.deleteFollowRequest(
 							activity, pos, access_info, whoRef,
-							bFollow = bSet,
-							callback = if(bSet) activity.follow_complete_callback else activity.unfollow_complete_callback
+							callback = activity.cancel_follow_request_complete_callback
 						)
+
+						else -> {
+							val bSet = !(relation.getRequested(who) || relation.getFollowing(who) )
+							Action_Follow.follow(
+								activity, pos, access_info, whoRef,
+								bFollow = bSet,
+								callback = when(bSet) {
+									true -> activity.follow_complete_callback
+									else -> activity.unfollow_complete_callback
+								}
+							)
+						}
 					}
 				
 				R.id.btnAccountText ->

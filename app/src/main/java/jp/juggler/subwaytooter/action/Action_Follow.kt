@@ -176,6 +176,7 @@ object Action_Follow {
 		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
 			
 			var relation : UserRelation? = null
+			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				var result : TootApiResult?
 				
@@ -187,12 +188,13 @@ object Action_Follow {
 					
 					// リモートユーザの同期
 					if(who.acct.contains("@")) {
-						val params = access_info.putMisskeyApiToken(JSONObject())
-							.put("username", who.username)
-							.put("host", who.host)
-						result = client.request("/api/users/show", params.toPostRequestBuilder())
-						val user = parser.account(result?.jsonObject) ?: return result
-						userId = user.id
+						result = client.syncAccountByAcct(access_info, who.acct)
+						val user = result?.data as? TootAccount
+						if(user != null) {
+							userId = user.id
+						} else {
+							return result
+						}
 					}
 					
 					val params = access_info.putMisskeyApiToken(JSONObject())
@@ -203,21 +205,22 @@ object Action_Follow {
 							else -> "/api/following/delete"
 						}, params.toPostRequestBuilder()
 					)
-					if(result?.error?.contains("already following") == true){
+					if(result?.error?.contains("already following") == true) {
 						// DBから読み直す
-						this.relation = UserRelation.load(access_info.db_id,userId).apply{
+						this.relation = UserRelation.load(access_info.db_id, userId).apply {
 							following = true
 						}
-					}else if(result?.error?.contains("already not following") == true){
+					} else if(result?.error?.contains("already not following") == true) {
 						// DBから読み直す
-						this.relation = UserRelation.load(access_info.db_id,userId).apply{
+						this.relation = UserRelation.load(access_info.db_id, userId).apply {
 							following = false
 						}
 					} else {
 						// parserに残ってるRelationをDBに保存する
 						val user = parser.account(result?.jsonObject) ?: return result
-						this.relation = saveUserRelationMisskey(access_info,user.id,parser)
+						this.relation = saveUserRelationMisskey(access_info, user.id, parser)
 					}
+					
 					
 				} else {
 					if(bFollow and who.acct.contains("@")) {
@@ -247,12 +250,12 @@ object Action_Follow {
 							)
 						)
 						result = client.request(
-							"/api/v1/accounts/${who.id}/${ if(bFollow) "follow" else "unfollow" }"
+							"/api/v1/accounts/${who.id}/${if(bFollow) "follow" else "unfollow"}"
 							, request_builder
 						)
-						val newRelation = parseItem(::TootRelationShip, result?.jsonObject )
+						val newRelation = parseItem(::TootRelationShip, result?.jsonObject)
 						if(newRelation != null) {
-							relation = saveUserRelation(access_info,newRelation)
+							relation = saveUserRelation(access_info, newRelation)
 						}
 					}
 				}
@@ -267,8 +270,6 @@ object Action_Follow {
 				val relation = this.relation
 				if(relation != null) {
 					
-					
-					
 					if(bFollow && relation.getRequested(who)) {
 						// 鍵付きアカウントにフォローリクエストを申請した状態
 						showToast(activity, false, R.string.follow_requested)
@@ -277,8 +278,6 @@ object Action_Follow {
 					} else {
 						// ローカル操作成功、もしくはリモートフォロー成功
 						
-						
-						
 						if(callback != null) callback()
 					}
 					
@@ -286,6 +285,110 @@ object Action_Follow {
 					
 				} else if(bFollow && who.locked && (result.response?.code() ?: - 1) == 422) {
 					showToast(activity, false, R.string.cant_follow_locked_user)
+				} else {
+					showToast(activity, false, result.error)
+				}
+				
+			}
+		})
+	}
+	
+	fun deleteFollowRequest(
+		activity : ActMain,
+		pos : Int,
+		access_info : SavedAccount,
+		whoRef : TootAccountRef,
+		bConfirmed : Boolean = false,
+		callback : EmptyCallback? = null
+	) {
+		if(!access_info.isMisskey){
+			follow(
+				activity,
+				pos,
+				access_info,
+				whoRef,
+				bFollow = false,
+				bConfirmed = bConfirmed,
+				callback = callback
+			)
+			return
+		}
+		
+		val who = whoRef.get()
+		
+		if(access_info.isMe(who)) {
+			showToast(activity, false, R.string.it_is_you)
+			return
+		}
+		
+		if(! bConfirmed) {
+			DlgConfirm.openSimple(
+				activity,
+				activity.getString(
+					R.string.confirm_cancel_follow_request_who_from,
+					whoRef.decoded_display_name,
+					AcctColor.getNickname(access_info.acct)
+				)
+			){
+				deleteFollowRequest(
+					activity,
+					pos,
+					access_info,
+					whoRef,
+					bConfirmed = true, // CHANGED
+					callback = callback
+				)
+			}
+			return
+		}
+		
+		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
+			
+			var relation : UserRelation? = null
+			
+			override fun background(client : TootApiClient) : TootApiResult? {
+
+				var result : TootApiResult? =null
+				
+				val parser = TootParser(activity, access_info)
+				
+				if(access_info.isMisskey) {
+					
+					var userId : EntityId = who.id
+					
+					// リモートユーザの同期
+					if(who.acct.contains("@")) {
+						result = client.syncAccountByAcct(access_info, who.acct)
+						val user = result?.data as? TootAccount
+						if(user != null) {
+							userId = user.id
+						} else {
+							return result
+						}
+					}
+					
+					val params = access_info.putMisskeyApiToken(JSONObject())
+						.put("userId", userId)
+					result = client.request("/api/following/requests/cancel"
+						, params.toPostRequestBuilder()
+					)
+					// parserに残ってるRelationをDBに保存する
+					val user = parser.account(result?.jsonObject) ?: return result
+					this.relation = saveUserRelationMisskey(access_info, user.id, parser)
+				}
+				
+				return result
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				
+				if(result == null) return  // cancelled.
+				
+				val relation = this.relation
+				if(relation != null) {
+					// ローカル操作成功、もしくはリモートフォロー成功
+					if(callback != null) callback()
+					activity.showColumnMatchAccount(access_info)
 				} else {
 					showToast(activity, false, result.error)
 				}
@@ -376,15 +479,15 @@ object Action_Follow {
 			var remote_who : TootAccount? = null
 			var relation : UserRelation? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
-
-				val parser = TootParser(activity,access_info)
-				var result:TootApiResult?
-
+				
+				val parser = TootParser(activity, access_info)
+				var result : TootApiResult?
+				
 				if(access_info.isMisskey) {
 					
 					val delimiter = acct.indexOf('@')
-					val username = acct.substring(0,delimiter)
-					val host = acct.substring(delimiter+1)
+					val username = acct.substring(0, delimiter)
+					val host = acct.substring(delimiter + 1)
 					
 					// リモートユーザの同期
 					var params = access_info.putMisskeyApiToken(JSONObject())
@@ -396,7 +499,7 @@ object Action_Follow {
 					
 					params = access_info.putMisskeyApiToken(JSONObject())
 						.put("userId", userId)
-
+					
 					result = client.request(
 						"/api/following/create",
 						params.toPostRequestBuilder()
@@ -406,13 +509,13 @@ object Action_Follow {
 						|| result?.error?.contains("already not following") == true
 					) {
 						// DBから読み直して値を変更する
-						this.relation = UserRelation.load(access_info.db_id,userId).apply{
+						this.relation = UserRelation.load(access_info.db_id, userId).apply {
 							following = true
 						}
 					} else {
 						// parserに残ってるRelationをDBに保存する
 						user = parser.account(result?.jsonObject) ?: return result
-						this.relation = saveUserRelationMisskey(access_info,user.id,parser)
+						this.relation = saveUserRelationMisskey(access_info, user.id, parser)
 					}
 					
 				} else {
@@ -430,7 +533,7 @@ object Action_Follow {
 						result = rr.result
 						relation = rr.relation
 					}
-				
+					
 				}
 				
 				return result
@@ -523,15 +626,15 @@ object Action_Follow {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
-				if( access_info.isMisskey){
+				if(access_info.isMisskey) {
 					val params = access_info.putMisskeyApiToken(JSONObject())
-						.put("userId",who.id )
+						.put("userId", who.id)
 					
 					return client.request(
 						"/api/following/requests/${if(bAllow) "accept" else "reject"}",
 						params.toPostRequestBuilder()
 					)
-				}else{
+				} else {
 					val request_builder = Request.Builder().post(
 						RequestBody.create(
 							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" // 空データ

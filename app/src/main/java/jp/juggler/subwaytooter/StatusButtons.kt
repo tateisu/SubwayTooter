@@ -276,6 +276,15 @@ internal class StatusButtons(
 						// 何もしない
 					}
 					
+					access_info.isMisskey && relation.getRequested(account) && !relation.getFollowing(account) ->
+						Action_Follow.deleteFollowRequest(
+							activity,
+							activity.nextPosition(column),
+							access_info,
+							accountRef,
+							callback = activity.cancel_follow_request_complete_callback
+						)
+					
 					relation.getFollowing(account) || relation.getRequested(account) -> {
 						// フォロー解除
 						Action_Follow.follow(

@@ -20,7 +20,7 @@ class TootResults(parser : TootParser, src : JSONObject) {
 	init {
 		accounts = parser.accountList(src.optJSONArray("accounts"))
 		statuses = parser.statusList(src.optJSONArray("statuses"))
-		hashtags = TootTag.parseTootTagList(src.optJSONArray("hashtags"))
+		hashtags = TootTag.parseTootTagList(parser,src.optJSONArray("hashtags"))
 	}
 	
 }

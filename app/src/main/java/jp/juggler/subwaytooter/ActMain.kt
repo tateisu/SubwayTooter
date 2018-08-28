@@ -275,7 +275,9 @@ class ActMain : AppCompatActivity()
 	val unfollow_complete_callback : EmptyCallback = {
 		showToast(this@ActMain, false, R.string.unfollow_succeeded)
 	}
-	
+	val cancel_follow_request_complete_callback : EmptyCallback = {
+		showToast(this@ActMain, false, R.string.follow_request_cancelled)
+	}
 	val favourite_complete_callback : EmptyCallback = {
 		showToast(this@ActMain, false, R.string.favourite_succeeded)
 	}

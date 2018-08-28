@@ -76,7 +76,7 @@ object Action_Toot {
 		}
 		
 		// 必要なら確認を出す
-		if(! bConfirmed) {
+		if(! bConfirmed && !access_info.isMisskey) {
 			DlgConfirm.open(
 				activity,
 				activity.getString(

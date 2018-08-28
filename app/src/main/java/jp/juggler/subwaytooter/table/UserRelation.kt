@@ -247,6 +247,7 @@ class UserRelation {
 			muting = src.optBoolean("isMuted")
 			blocking = false
 			endorsed = false
+			requested = src.optBoolean("hasPendingFollowRequestFromYou")
 		}
 	}
 

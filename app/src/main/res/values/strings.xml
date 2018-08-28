@@ -768,6 +768,7 @@
     <string name="endorse_unset">Remove endorsement in your profile</string>
     <string name="endorse_succeeded">Endorsement added.</string>
     <string name="remove_endorse_succeeded">Endorsement removed.</string>
-
+    <string name="follow_request_cancelled">Follow request was cancelled.</string>
+    <string name="confirm_cancel_follow_request_who_from">Follow request from %2$s to %1$s will be cancelled. Are you sure?</string>
 
 </resources>

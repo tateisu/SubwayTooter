@@ -1059,5 +1059,7 @@
     <string name="endorse_unset">「プロフィールに紹介」を取り消す</string>
     <string name="endorse_succeeded">紹介を追加しました</string>
     <string name="remove_endorse_succeeded">紹介を削除しました</string>
+    <string name="follow_request_cancelled">フォローリクエストを取り消しました</string>
+    <string name="confirm_cancel_follow_request_who_from">%2$s から %1$s へのフォローリクエストを取り消します。よろしいですか?</string>
 
 </resources>

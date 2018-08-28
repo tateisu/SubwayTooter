@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import java.util.regex.Pattern
+import kotlin.collections.ArrayList
 
 enum class StreamingIndicatorState {
 	NONE,
@@ -1441,8 +1442,8 @@ class Column(
 		return if(bForceReload || this.who_account == null) {
 			
 			if(isMisskey) {
-				val params = JSONObject()
-				params.put("userId", profile_id)
+				val params = access_info.putMisskeyApiToken(JSONObject())
+					.put("userId", profile_id)
 				val result = client.request(PATH_MISSKEY_PROFILE, params.toPostRequestBuilder())
 				val parser = TootParser(
 					context,
@@ -2362,7 +2363,49 @@ class Column(
 							
 						}
 						
-						TYPE_SEARCH -> {
+						TYPE_SEARCH -> if(isMisskey){
+							var result : TootApiResult? = null
+							val parser = TootParser(context,access_info)
+							var params:JSONObject
+							
+							list_tmp = ArrayList()
+							
+							val queryTag = search_query.trim().replace("^#".toRegex(),"")
+							if(queryTag.isNotEmpty() ){
+								params = access_info.putMisskeyApiToken(JSONObject())
+									.put("query",queryTag)
+								result = client.request("/api/hashtags/search",params.toPostRequestBuilder())
+								val jsonArray = result?.jsonArray
+								if( jsonArray != null){
+									val src = TootTag.parseTootTagList(parser,jsonArray)
+									list_tmp = addAll(list_tmp, src)
+								}
+							}
+							val queryAccount = search_query.trim().replace("^@".toRegex(),"")
+							if(queryAccount.isNotEmpty() ){
+								params = access_info.putMisskeyApiToken(JSONObject())
+									.put("query",queryAccount)
+								result = client.request("/api/users/search",params.toPostRequestBuilder())
+								val jsonArray = result?.jsonArray
+								if( jsonArray != null){
+									val src = TootParser(context,access_info).accountList(jsonArray)
+									list_tmp = addAll(list_tmp, src)
+								}
+
+							}
+							if(search_query.isNotEmpty() ){
+								params = access_info.putMisskeyApiToken(JSONObject())
+									.put("query",search_query)
+								result = client.request("/api/notes/search",params.toPostRequestBuilder())
+								val jsonArray = result?.jsonArray
+								if( jsonArray != null){
+									val src = parser.statusList(jsonArray)
+									list_tmp = addWithFilterStatus(list_tmp, src)
+								}
+							}
+							
+							return result
+						}else{
 							if(access_info.isPseudo) {
 								// 1.5.0rc からマストドンの検索APIは認証を要求するようになった
 								return TootApiResult(context.getString(R.string.search_is_not_available_on_pseudo_account))

@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.notEmptyOrThrow
 import jp.juggler.subwaytooter.util.parseString
 
@@ -19,14 +20,27 @@ open class TootTag(
 	)
 	
 	companion object {
+
 		// 検索結果のhashtagリストから生成する
-		fun parseTootTagList(array : JSONArray?) : ArrayList<TootTag> {
+		fun parseTootTagList(parser:TootParser,array : JSONArray?) : ArrayList<TootTag> {
 			val result = ArrayList<TootTag>()
-			if(array != null) {
-				for(i in 0 until array.length()) {
-					val sv = array.parseString(i)
-					if(sv?.isNotEmpty() == true) {
-						result.add(TootTag(name = sv))
+			if( parser.serviceType == ServiceType.MISSKEY){
+				if(array != null) {
+					for(i in 0 until array.length()) {
+						val sv = array.parseString(i)
+						if(sv?.isNotEmpty() == true) {
+							result.add(TootTag(name = sv))
+						}
+					}
+				}
+				
+			}else {
+				if(array != null) {
+					for(i in 0 until array.length()) {
+						val sv = array.parseString(i)
+						if(sv?.isNotEmpty() == true) {
+							result.add(TootTag(name = sv))
+						}
 					}
 				}
 			}

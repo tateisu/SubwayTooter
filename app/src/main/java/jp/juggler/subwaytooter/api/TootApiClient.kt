@@ -238,6 +238,16 @@ class TootApiClient(
 				// https://github.com/syuilo/misskey/issues/2341
 			}
 		
+		private fun encodeScopeArray(scope_array : JSONArray?) : String? {
+			scope_array ?: return null
+			val list = scope_array.toStringArrayList()
+			list.sort()
+			return list.joinToString(",")
+		}
+		
+		private fun compareScopeArray(a : JSONArray, b : JSONArray?) : Boolean {
+			return encodeScopeArray(a) == encodeScopeArray(b)
+		}
 	}
 	
 	@Suppress("unused")
@@ -695,7 +705,10 @@ class TootApiClient(
 			// tmpClientInfo はsecretを含まないので保存してはいけない
 			if(tmpClientInfo != null // アプリが登録済みで
 				&& client_name == tmpClientInfo.parseString("name") // クライアント名が一致してて
-				&& tmpClientInfo.optJSONArray("permission")?.length() == scope_array.length() // パーミッションが同じ
+				&& compareScopeArray(
+					scope_array,
+					tmpClientInfo.optJSONArray("permission")
+				) // パーミッションが同じ
 				&& appSecret?.isNotEmpty() == true
 			) {
 				// クライアント情報を再利用する
@@ -1423,6 +1436,8 @@ fun TootApiClient.syncAccountByAcct(accessInfo : SavedAccount, acct : String) : 
 }
 
 fun TootApiClient.syncStatus(accessInfo : SavedAccount, url : String) : TootApiResult? {
+
+	// FIXME Misskeyアカウントでも別アカのトゥートをローカルに同期したい！
 	if(accessInfo.isMisskey) {
 		return TootApiResult("Misskey has no API to sync note from remote to local.")
 	}
@@ -1447,9 +1462,12 @@ fun TootApiClient.syncStatus(
 	accessInfo : SavedAccount,
 	statusRemote : TootStatus
 ) : TootApiResult? {
+	
+	// FIXME Misskeyアカウントでも別アカのトゥートをローカルに同期したい！
 	if(accessInfo.isMisskey) {
 		return TootApiResult("Misskey has no API to sync note from remote to local.")
 	}
+	
 	var result : TootApiResult? = TootApiResult("missing url or uri")
 	var sv = statusRemote.url
 	when {

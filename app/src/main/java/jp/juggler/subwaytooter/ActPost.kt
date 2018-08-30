@@ -552,8 +552,6 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						
 						val mention_list = ArrayList<String>()
 						
-						// 元レスにあった mention
-						// TODO Misskey対応
 						val old_mentions = reply_status.mentions
 						if(old_mentions != null) {
 							for(mention in old_mentions) {

@@ -10,6 +10,7 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.util.LinkHelper
 import jp.juggler.subwaytooter.util.LogCategory
@@ -49,6 +50,8 @@ class SavedAccount(
 	var notification_boost : Boolean = false
 	var notification_favourite : Boolean = false
 	var notification_follow : Boolean = false
+	var notification_reaction : Boolean = false
+	var notification_vote : Boolean = false
 	var sound_uri = ""
 	
 	var confirm_follow : Boolean = false
@@ -140,6 +143,12 @@ class SavedAccount(
 		this.notification_follow =
 			cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_FOLLOW)).i2b()
 		
+		this.notification_reaction =
+			cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_REACTION)).i2b()
+		
+		this.notification_vote =
+			cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_VOTE)).i2b()
+		
 		this.confirm_follow = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_FOLLOW)).i2b()
 		this.confirm_follow_locked =
 			cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_FOLLOW_LOCKED)).i2b()
@@ -209,6 +218,8 @@ class SavedAccount(
 		cv.put(COL_NOTIFICATION_BOOST, notification_boost.b2i())
 		cv.put(COL_NOTIFICATION_FAVOURITE, notification_favourite.b2i())
 		cv.put(COL_NOTIFICATION_FOLLOW, notification_follow.b2i())
+		cv.put(COL_NOTIFICATION_REACTION, notification_reaction.b2i())
+		cv.put(COL_NOTIFICATION_VOTE, notification_vote.b2i())
 		
 		cv.put(COL_CONFIRM_FOLLOW, confirm_follow.b2i())
 		cv.put(COL_CONFIRM_FOLLOW_LOCKED, confirm_follow_locked.b2i())
@@ -264,10 +275,12 @@ class SavedAccount(
 		this.dont_hide_nsfw = b.dont_hide_nsfw
 		this.dont_show_timeout = b.dont_show_timeout
 		this.token_info = b.token_info
-		this.notification_mention = b.notification_follow
+		this.notification_mention = b.notification_mention
 		this.notification_boost = b.notification_boost
 		this.notification_favourite = b.notification_favourite
 		this.notification_follow = b.notification_follow
+		this.notification_reaction = b.notification_reaction
+		this.notification_vote = b.notification_vote
 		this.notification_tag = b.notification_tag
 		this.default_text = b.default_text
 		
@@ -355,7 +368,7 @@ class SavedAccount(
 	override fun findAcctColor(url : String?) : AcctColor? {
 		if(url != null) {
 			val acct = TootAccount.getAcctFromUrl(url)
-			if( acct != null){
+			if(acct != null) {
 				return AcctColor.load(acct)
 			}
 		}
@@ -414,6 +427,10 @@ class SavedAccount(
 		
 		// スキーマ28から
 		private const val COL_IS_MISSKEY = "is_misskey"
+		
+		// スキーマ33から
+		private const val COL_NOTIFICATION_REACTION = "notification_reaction"
+		private const val COL_NOTIFICATION_VOTE = "notification_vote"
 		
 		/////////////////////////////////
 		// login information
@@ -478,6 +495,11 @@ class SavedAccount(
 					
 					// 以下はDBスキーマ28で更新
 					+ ",$COL_IS_MISSKEY integer default 0"
+					
+					// スキーマ33から
+					+ ",$COL_NOTIFICATION_REACTION integer default 1"
+					+ ",$COL_NOTIFICATION_VOTE integer default 1"
+					
 					+ ")"
 			)
 			db.execSQL("create index if not exists ${table}_user on ${table}(u)")
@@ -612,6 +634,19 @@ class SavedAccount(
 				}
 				
 			}
+			if(oldVersion < 33 && newVersion >= 33) {
+				try {
+					db.execSQL("alter table $table add column $COL_NOTIFICATION_REACTION integer default 1")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				try {
+					db.execSQL("alter table $table add column $COL_NOTIFICATION_VOTE integer default 1")
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				
+			}
 		}
 		
 		// 横断検索用の、何とも紐ついていないアカウント
@@ -622,6 +657,8 @@ class SavedAccount(
 			dst.notification_favourite = false
 			dst.notification_boost = false
 			dst.notification_mention = false
+			dst.notification_reaction = false
+			dst.notification_vote = false
 			
 			dst
 		}
@@ -872,13 +909,36 @@ class SavedAccount(
 	fun getAccessToken() : String? {
 		return token_info?.parseString("access_token")
 	}
+	
 	val misskeyApiToken : String?
-		get()= token_info?.parseString(TootApiClient.KEY_API_KEY_MISSKEY)
-
+		get() = token_info?.parseString(TootApiClient.KEY_API_KEY_MISSKEY)
+	
 	fun putMisskeyApiToken(params : JSONObject) : JSONObject {
 		val apiKey = misskeyApiToken
 		if(apiKey?.isNotEmpty() == true) params.put("i", apiKey)
 		return params
+	}
+	
+	fun canNotificationShowing(type : String?) = when(type) {
+		
+		TootNotification.TYPE_MENTION,
+		TootNotification.TYPE_REPLY -> notification_mention
+		
+		TootNotification.TYPE_REBLOG,
+		TootNotification.TYPE_RENOTE,
+		TootNotification.TYPE_QUOTE -> notification_boost
+		
+		TootNotification.TYPE_FAVOURITE -> notification_favourite
+		
+		TootNotification.TYPE_FOLLOW_REQUEST,
+		TootNotification.TYPE_FOLLOW,
+		TootNotification.TYPE_UNFOLLOW -> notification_follow
+		
+		TootNotification.TYPE_REACTION -> notification_reaction
+		
+		TootNotification.TYPE_VOTE -> notification_vote
+		
+		else -> false
 	}
 	
 }

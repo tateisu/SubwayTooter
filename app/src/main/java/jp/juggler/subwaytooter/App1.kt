@@ -106,7 +106,8 @@ class App1 : Application() {
 		// 2018/8/19 v268 29 => 30 ContentWarningMisskey, MediaShownMisskey, UserRelationMisskeyテーブルを追加
 		// 2018/8/19 v268 30 => 31 (29)で失敗しておかしくなったContentWarningとMediaShownを作り直す
 		// 2018/8/28 v279 31 => 32 UserRelation,UserRelationMisskey にendorsedを追加
-		internal const val DB_VERSION = 32
+		// 2018/8/28 v280 32 => 33 NotificationTracking テーブルの作り直し。SavedAccountに通知二種類を追加
+		internal const val DB_VERSION = 33
 		
 		private val tableList = arrayOf(
 			LogData,

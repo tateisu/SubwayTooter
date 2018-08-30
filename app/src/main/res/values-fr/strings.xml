@@ -785,6 +785,8 @@
 	<string name="remove_endorse_succeeded">Endorsement removed.</string>
     <string name="follow_request_cancelled">Follow request was cancelled.</string>
 	<string name="confirm_cancel_follow_request_who_from">Follow request from %2$s to %1$s will be cancelled. Are you sure?</string>
+    <string name="reaction">Reaction (Misskey)</string>
+	<string name="vote">Vote (Misskey)</string>
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

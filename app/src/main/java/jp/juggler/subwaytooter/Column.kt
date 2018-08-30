@@ -5103,6 +5103,9 @@ class Column(
 			// キューから読めた件数が0の場合を除き、少し後に再処理させることでマージ漏れを防ぐ
 			handler.postDelayed(this, 333L)
 			
+			tmpList.sortBy { it.getOrderId() }
+			tmpList.reverse()
+			
 			val list_new = duplicate_map.filterDuplicate(tmpList)
 			if(list_new.isEmpty()) return
 			

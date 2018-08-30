@@ -47,6 +47,8 @@ import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.EntityIdLong
+import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 import okhttp3.Call
@@ -276,10 +278,7 @@ class PollingWorker private constructor(c : Context) {
 		
 		fun injectData(context : Context, account : SavedAccount, src : ArrayList<TootNotification>) {
 			
-			if(account.isMisskey) return // FIXME
-			
 			if(src.isEmpty()) return
-			
 			
 			val id = InjectData()
 			id.account_db_id = account.db_id
@@ -392,6 +391,24 @@ class PollingWorker private constructor(c : Context) {
 					break
 				}
 				
+			}
+		}
+		
+		private fun EntityId.isLatestThan(previous:EntityId?) = when(previous) {
+			null -> true
+			else -> this > previous
+		}
+		
+		private fun getEntityOrderId(account:SavedAccount,src:JSONObject) :EntityId{
+			return when {
+				!account.isMisskey -> EntityId.mayDefault(src.parseLong("id"))
+				else -> {
+					val created_at = src.parseString("createdAt")
+					when(created_at) {
+						null -> EntityId.defaultLong
+						else -> EntityIdLong(TootStatus.parseTime(created_at))
+					}
+				}
 			}
 		}
 	}
@@ -947,7 +964,6 @@ class PollingWorker private constructor(c : Context) {
 				val thread_list = LinkedList<AccountThread>()
 				for(_a in SavedAccount.loadAccountList(context)) {
 					if(_a.isPseudo) continue
-					if(_a.isMisskey) continue // XXX: Misskey is not yet supported.
 					if(process_db_id != - 1L && _a.db_id != process_db_id) continue
 					val t = AccountThread(_a)
 					thread_list.add(t)
@@ -1071,7 +1087,7 @@ class PollingWorker private constructor(c : Context) {
 					get() = job.isJobCancelled
 			})
 			
-			private val duplicate_check = HashSet<Long>()
+			private val duplicate_check = HashSet<EntityId>()
 			private val dstListJson = ArrayList<JSONObject>()
 			private val dstListData = ArrayList<Data>()
 			private val muted_app : HashSet<String> get() = job.muted_app
@@ -1080,7 +1096,7 @@ class PollingWorker private constructor(c : Context) {
 			private lateinit var nr : NotificationTracking
 			private lateinit var parser : TootParser
 			
-			private var nid_last_show = - 1L
+			private var nid_last_show :EntityId? = null
 			
 			init {
 				client.currentCallCallback = this
@@ -1105,7 +1121,7 @@ class PollingWorker private constructor(c : Context) {
 					if(account.isPseudo) return
 					
 					client.account = account
-					
+
 					val wps = PushSubscriptionHelper(context, account)
 					if(wps.flags != 0) {
 						job.bPollingRequired.set(true)
@@ -1119,14 +1135,14 @@ class PollingWorker private constructor(c : Context) {
 					
 					if(job.isJobCancelled) return
 					if(wps.flags == 0) {
-						unregisterDeviceToken()
+						if(!account.isMisskey) unregisterDeviceToken()
 						return
 					}
 					
 					if(wps.subscribed) {
-						unregisterDeviceToken()
+						if(!account.isMisskey) unregisterDeviceToken()
 					} else {
-						registerDeviceToken()
+						if(!account.isMisskey) registerDeviceToken()
 					}
 					
 					if(job.isJobCancelled) return
@@ -1309,6 +1325,7 @@ class PollingWorker private constructor(c : Context) {
 				this.nr = NotificationTracking.load(account.db_id)
 				this.parser = TootParser(context, account)
 				
+				
 				// まずキャッシュされたデータを処理する
 				try {
 					val last_data = nr.last_data
@@ -1335,12 +1352,17 @@ class PollingWorker private constructor(c : Context) {
 					for(nTry in 0 .. 3) {
 						if(job.isJobCancelled) return
 						
-						val path = when {
-							nid_last_show != - 1L -> "$PATH_NOTIFICATIONS?since_id=$nid_last_show"
-							else -> PATH_NOTIFICATIONS
+						val result = if(account.isMisskey){
+							val params = account.putMisskeyApiToken(JSONObject())
+							client.request("/api/i/notifications",params.toPostRequestBuilder())
+						}else {
+							val path = when {
+								nid_last_show != null -> "$PATH_NOTIFICATIONS?since_id=$nid_last_show"
+								else -> PATH_NOTIFICATIONS
+							}
+							
+							client.request(path)
 						}
-						
-						val result = client.request(path)
 						if(result == null) {
 							log.d("cancelled.")
 							break
@@ -1399,43 +1421,42 @@ class PollingWorker private constructor(c : Context) {
 				nr.save()
 			}
 			
+
+			
 			@Throws(JSONException::class)
 			private fun update_sub(src : JSONObject) {
 				
-				if(nr.nid_read == 0L || nr.nid_show == 0L) {
-					log.d("update_sub account_db_id=${account.db_id}, nid_read=${nr.nid_read}, nid_show=${nr.nid_show}")
+				if(nr.nid_read ==null || nr.nid_show ==null ) {
+					log.d("update_sub[${account.db_id}], nid_read=${nr.nid_read}, nid_show=${nr.nid_show}")
 				}
 				
-				val id = src.parseLong("id")
+				val id = getEntityOrderId(account,src)
 				
-				if(id == null || duplicate_check.contains(id)) return
+				if( id.isDefault || duplicate_check.contains(id)) return
 				duplicate_check.add(id)
 				
-				if(id > nid_last_show) {
+				if( id.isLatestThan(nid_last_show)){
 					nid_last_show = id
 				}
 				
-				if(id <= nr.nid_read) {
-					// warning.d("update_sub: ignore data that id=${id}, <= read id ${nr.nid_read} ");
+				if( !id.isLatestThan(nr.nid_read) ){
+					// 既読のID以下なら何もしない
 					return
 				}
 				
 				log.d("update_sub: found data that id=${id}, > read id ${nr.nid_read}")
 				
-				if(id > nr.nid_show) {
+				if( id.isLatestThan(nr.nid_show)){
 					log.d("update_sub: found new data that id=${id}, greater than shown id ${nr.nid_show}")
 					// 種別チェックより先に「表示済み」idの更新を行う
 					nr.nid_show = id
 				}
 				
 				val type = src.parseString("type")
-				if(! account.notification_mention && TootNotification.TYPE_MENTION == type
-					|| ! account.notification_boost && TootNotification.TYPE_REBLOG == type
-					|| ! account.notification_favourite && TootNotification.TYPE_FAVOURITE == type
-					|| ! account.notification_follow && TootNotification.TYPE_FOLLOW == type) {
-					return
-				}
 				
+				if(!account.canNotificationShowing(type)) return
+				
+
 				val notification = parser.notification(src) ?: return
 				
 				// アプリミュートと単語ミュート
@@ -1463,22 +1484,37 @@ class PollingWorker private constructor(c : Context) {
 				dstListJson.add(src)
 			}
 			
-			private fun getNotificationLine(type : String, display_name : CharSequence) : String {
-				if(TootNotification.TYPE_FAVOURITE == type) {
-					return "- " + context.getString(
-						R.string.display_name_favourited_by,
-						display_name
-					)
-				}
-				if(TootNotification.TYPE_REBLOG == type) {
-					return "- " + context.getString(R.string.display_name_boosted_by, display_name)
-				}
-				if(TootNotification.TYPE_MENTION == type) {
-					return "- " + context.getString(R.string.display_name_replied_by, display_name)
-				}
-				return if(TootNotification.TYPE_FOLLOW == type) {
+			private fun getNotificationLine(type : String, display_name : CharSequence) = when(type){
+				TootNotification.TYPE_MENTION,
+				TootNotification.TYPE_REPLY ->
+					"- " + context.getString(R.string.display_name_replied_by, display_name)
+				
+				TootNotification.TYPE_RENOTE,
+				TootNotification.TYPE_REBLOG ->
+					"- " + context.getString(R.string.display_name_boosted_by, display_name)
+				
+				TootNotification.TYPE_QUOTE ->
+					"- " + context.getString(R.string.display_name_quoted_by, display_name)
+				
+				TootNotification.TYPE_FOLLOW ->
 					"- " + context.getString(R.string.display_name_followed_by, display_name)
-				} else "- " + "?"
+				
+				TootNotification.TYPE_UNFOLLOW ->
+					"- " + context.getString(R.string.display_name_unfollowed_by, display_name)
+				
+				TootNotification.TYPE_FAVOURITE->
+					"- " + context.getString(R.string.display_name_favourited_by,display_name)
+				
+				TootNotification.TYPE_REACTION->
+					"- " + context.getString(R.string.display_name_reaction_by,display_name)
+				
+				TootNotification.TYPE_VOTE->
+					"- " + context.getString(R.string.display_name_voted_by,display_name)
+				
+				TootNotification.TYPE_FOLLOW_REQUEST->
+					"- " + context.getString(R.string.display_name_follow_request_by,display_name)
+
+				else->"- " + "?"
 			}
 			
 			private fun showNotification(data_list : ArrayList<Data>) {
@@ -1502,7 +1538,8 @@ class PollingWorker private constructor(c : Context) {
 				val nt = NotificationTracking.load(account.db_id)
 				
 				if(item.notification.time_created_at == nt.post_time
-					&& item.notification.id.toLong() == nt.post_id) {
+					&& item.notification.id == nt.post_id
+				) {
 					// 先頭にあるデータが同じなら、通知を更新しない
 					// このマーカーは端末再起動時にリセットされるので、再起動後は通知が出るはず
 					
@@ -1511,7 +1548,7 @@ class PollingWorker private constructor(c : Context) {
 					return
 				}
 				
-				nt.updatePost(item.notification.id.toLong(), item.notification.time_created_at)
+				nt.updatePost(item.notification.id, item.notification.time_created_at)
 				
 				log.d("showNotification[${account.acct}] creating notification(1)")
 				
@@ -1683,8 +1720,8 @@ class PollingWorker private constructor(c : Context) {
 						val array = last_data.toJsonArray()
 						for(i in array.length() - 1 downTo 0) {
 							val src = array.optJSONObject(i)
-							val id = EntityId.mayNull( src.parseLong("id") )
-							if(id != null) {
+							val id = getEntityOrderId(account,src)
+							if(id.notDefault ) {
 								dst_array.add(src)
 								duplicate_check.add(id)
 								log.d("add old. id=${id}")
@@ -1704,11 +1741,7 @@ class PollingWorker private constructor(c : Context) {
 						duplicate_check.add(item.id)
 						
 						val type = item.type
-						
-						if(! account.notification_mention && TootNotification.TYPE_MENTION == type
-							|| ! account.notification_boost && TootNotification.TYPE_REBLOG == type
-							|| ! account.notification_favourite && TootNotification.TYPE_FAVOURITE == type
-							|| ! account.notification_follow && TootNotification.TYPE_FOLLOW == type) {
+						if(! account.canNotificationShowing(type)){
 							log.d("skip by setting. id=${item.id}")
 							continue
 						}

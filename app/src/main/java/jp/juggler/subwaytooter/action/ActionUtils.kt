@@ -88,6 +88,8 @@ internal fun addPseudoAccount(
 		account.notification_favourite = false
 		account.notification_boost = false
 		account.notification_mention = false
+		account.notification_reaction = false
+		account.notification_vote = false
 		account.saveSetting()
 		return account
 	} catch(ex : Throwable) {

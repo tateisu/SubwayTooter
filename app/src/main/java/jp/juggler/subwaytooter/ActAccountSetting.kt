@@ -95,6 +95,8 @@ class ActAccountSetting
 	private lateinit var cbNotificationBoost : CheckBox
 	private lateinit var cbNotificationFavourite : CheckBox
 	private lateinit var cbNotificationFollow : CheckBox
+	private lateinit var cbNotificationReaction : CheckBox
+	private lateinit var cbNotificationVote : CheckBox
 	
 	private lateinit var cbConfirmFollow : CheckBox
 	private lateinit var cbConfirmFollowLockedUser : CheckBox
@@ -271,6 +273,8 @@ class ActAccountSetting
 		cbNotificationBoost = findViewById(R.id.cbNotificationBoost)
 		cbNotificationFavourite = findViewById(R.id.cbNotificationFavourite)
 		cbNotificationFollow = findViewById(R.id.cbNotificationFollow)
+		cbNotificationReaction = findViewById(R.id.cbNotificationReaction)
+		cbNotificationVote = findViewById(R.id.cbNotificationVote)
 		
 		cbConfirmFollow = findViewById(R.id.cbConfirmFollow)
 		cbConfirmFollowLockedUser = findViewById(R.id.cbConfirmFollowLockedUser)
@@ -330,6 +334,8 @@ class ActAccountSetting
 		cbNotificationBoost.setOnCheckedChangeListener(this)
 		cbNotificationFavourite.setOnCheckedChangeListener(this)
 		cbNotificationFollow.setOnCheckedChangeListener(this)
+		cbNotificationReaction.setOnCheckedChangeListener(this)
+		cbNotificationVote.setOnCheckedChangeListener(this)
 		cbLocked.setOnCheckedChangeListener(this)
 		
 		cbConfirmFollow.setOnCheckedChangeListener(this)
@@ -401,6 +407,8 @@ class ActAccountSetting
 		cbNotificationBoost.isChecked = a.notification_boost
 		cbNotificationFavourite.isChecked = a.notification_favourite
 		cbNotificationFollow.isChecked = a.notification_follow
+		cbNotificationReaction.isChecked = a.notification_reaction
+		cbNotificationVote.isChecked = a.notification_vote
 		
 		cbConfirmFollow.isChecked = a.confirm_follow
 		cbConfirmFollowLockedUser.isChecked = a.confirm_follow_locked
@@ -433,6 +441,8 @@ class ActAccountSetting
 		cbNotificationBoost.isEnabled = enabled
 		cbNotificationFavourite.isEnabled = enabled
 		cbNotificationFollow.isEnabled = enabled
+		cbNotificationReaction.isEnabled = enabled
+		cbNotificationVote.isEnabled = enabled
 		
 		cbConfirmFollow.isEnabled = enabled
 		cbConfirmFollowLockedUser.isEnabled = enabled
@@ -474,6 +484,8 @@ class ActAccountSetting
 		account.notification_boost = cbNotificationBoost.isChecked
 		account.notification_favourite = cbNotificationFavourite.isChecked
 		account.notification_follow = cbNotificationFollow.isChecked
+		account.notification_reaction = cbNotificationReaction.isChecked
+		account.notification_vote = cbNotificationVote.isChecked
 		
 		account.sound_uri = notification_sound_uri ?: ""
 		

@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.res.Resources
+import android.database.Cursor
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
@@ -854,3 +855,11 @@ fun showToast(context : Context, ex : Throwable, string_id : Int, vararg args : 
 	Utils.showToastImpl(context, true, ex.withCaption(context.resources, string_id, *args))
 }
 
+fun Cursor.getStringOrNull(colName:String):String?{
+	val colIdx = getColumnIndex(colName)
+	return if( isNull(colIdx)){
+		null
+	}else{
+		getString(colIdx)
+	}
+}

@@ -366,7 +366,7 @@ class PushSubscriptionHelper(
 	}
 	
 	fun updateSubscription(client : TootApiClient) : TootApiResult? {
-		if( !preventRapid() ) return TootApiResult()
+		if( !preventRapid() ) return TootApiResult("updateSubscription: prevent repeatedly subscription check.")
 		val result = updateSubscription_sub(client)
 		val e = result?.error
 		if(e != null) addLog(e)

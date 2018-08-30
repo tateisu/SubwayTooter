@@ -1332,8 +1332,6 @@ class PollingWorker private constructor(c : Context) {
 				if(now - nr.last_load >= 60000L * 2) {
 					nr.last_load = now
 					
-					
-					
 					for(nTry in 0 .. 3) {
 						if(job.isJobCancelled) return
 						

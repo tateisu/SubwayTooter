@@ -1078,9 +1078,10 @@ class TestTootApiClient {
 		val instance = "unit-test"
 		client.instance = instance
 		val clientName = "SubwayTooterUnitTest"
+		val scope_string = "read+write+follow+push"
 		
 		// まずクライアント情報を作らないとcredentialのテストができない
-		var result = client.registerClient(clientName)
+		var result = client.registerClient(scope_string , clientName)
 		assertNotNull(result)
 		assertEquals(null, result?.error)
 		var jsonObject = result?.jsonObject
@@ -1108,7 +1109,7 @@ class TestTootApiClient {
 		var url : String?
 		
 		// ブラウザURLの作成
-		url = client.prepareBrowserUrl(clientInfo)
+		url = client.prepareBrowserUrl(scope_string,clientInfo)
 		assertNotNull(url)
 		println(url)
 		

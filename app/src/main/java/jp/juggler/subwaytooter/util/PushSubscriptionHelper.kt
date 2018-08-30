@@ -20,6 +20,22 @@ class PushSubscriptionHelper(
 	val verbose : Boolean = false
 ) {
 	
+	companion object {
+		private val lastCheckedMap :HashMap<String,Long> = HashMap()
+	}
+	
+	private fun preventRapid() :Boolean {
+		if(verbose ) return true
+		val now = System.currentTimeMillis()
+		synchronized(lastCheckedMap){
+			val lastChecked = lastCheckedMap[ account.acct ]
+			lastCheckedMap[ account.acct] = now
+			return ( lastChecked == null || now - lastChecked >= 600000L)
+		}
+	}
+
+
+
 	val flags : Int
 	
 	var subscribed : Boolean = false
@@ -350,6 +366,7 @@ class PushSubscriptionHelper(
 	}
 	
 	fun updateSubscription(client : TootApiClient) : TootApiResult? {
+		if( !preventRapid() ) return TootApiResult()
 		val result = updateSubscription_sub(client)
 		val e = result?.error
 		if(e != null) addLog(e)

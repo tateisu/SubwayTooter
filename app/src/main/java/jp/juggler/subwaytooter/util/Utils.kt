@@ -662,8 +662,46 @@ fun JSONObject.parseInt(key : String) : Int? {
 	}
 }
 
-fun JSONObject.toPostRequestBuilder()=
+fun JSONObject.toPostRequestBuilder():Request.Builder=
 	Request.Builder().post(RequestBody.create(TootApiClient.MEDIA_TYPE_JSON,this.toString()))
+
+fun removeJsonNull(o : Any?) = if(JSONObject.NULL === o) null else o
+
+inline fun JSONArray.forEach(block : (v : Any?) -> Unit) {
+	val e = this.length()
+	var i = 0
+	while(i < e) {
+		block(removeJsonNull(this.opt(i)))
+		++ i
+	}
+}
+
+
+inline fun JSONArray.forEachIndexed(block : (i : Int, v : Any?) -> Unit) {
+	val e = this.length()
+	var i = 0
+	while(i < e) {
+		block(i, removeJsonNull(this.opt(i)))
+		++ i
+	}
+}
+
+inline fun JSONArray.downForEach(block : (v : Any?) -> Unit) {
+	var i = this.length() - 1
+	while(i >= 0) {
+		block(removeJsonNull(this.opt(i)))
+		-- i
+	}
+}
+
+inline fun JSONArray.downForEachIndexed(block : (i : Int, v : Any?) -> Unit) {
+	var i = this.length() - 1
+	while(i >= 0) {
+		block(i, removeJsonNull(this.opt(i)))
+		-- i
+	}
+}
+
 
 ////////////////////////////////////////////////////////////////////
 // Bundle

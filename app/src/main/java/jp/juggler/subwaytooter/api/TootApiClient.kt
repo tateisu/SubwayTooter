@@ -823,7 +823,7 @@ class TootApiClient(
 	
 
 	// クライアントをタンスに登録
-	private fun registerClient(scope_string : String, clientName : String) : TootApiResult? {
+	fun registerClient(scope_string : String, clientName : String) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(this.instance)
 		if(result.error != null) return result
 		val instance = result.caption // same to instance

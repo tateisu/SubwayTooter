@@ -135,21 +135,21 @@ class PushSubscriptionHelper(
 				// FCMのデバイスIDを取得
 				val device_id = PollingWorker.getDeviceId(context)
 					?: return TootApiResult(error = context.getString(R.string.missing_fcm_device_id))
-				
-				// アクセストークン
-				val accessToken = account.misskeyApiToken
-					?: return TootApiResult(error = "missing misskeyApiToken.")
-				
-				// インストールIDを取得
-				val install_id = PollingWorker.prepareInstallId(context)
-					?: return TootApiResult(error = context.getString(R.string.missing_install_id))
-				
-				// アクセストークンのダイジェスト
-				val tokenDigest = accessToken.digestSHA256Base64Url()
-				
-				// クライアント識別子
-				val clientIdentifier = "$accessToken$install_id".digestSHA256Base64Url()
-				
+
+//				// アクセストークン
+//				val accessToken = account.misskeyApiToken
+//					?: return TootApiResult(error = "missing misskeyApiToken.")
+//
+//				// インストールIDを取得
+//				val install_id = PollingWorker.prepareInstallId(context)
+//					?: return TootApiResult(error = context.getString(R.string.missing_install_id))
+//
+//				// アクセストークンのダイジェスト
+//				val tokenDigest = accessToken.digestSHA256Base64Url()
+//
+//				// クライアント識別子
+//				val clientIdentifier = "$accessToken$install_id".digestSHA256Base64Url()
+//
 				val endpoint =
 					"${PollingWorker.APP_SERVER}/webpushcallback/${device_id.encodePercent()}/${account.acct.encodePercent()}/$flags"
 				// FIXME 現時点ではサーバキーの検証を行えないので clientIdentifier を指定しない

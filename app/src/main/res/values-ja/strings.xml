@@ -1061,7 +1061,7 @@
     <string name="remove_endorse_succeeded">紹介を削除しました</string>
     <string name="follow_request_cancelled">フォローリクエストを取り消しました</string>
     <string name="confirm_cancel_follow_request_who_from">%2$s から %1$s へのフォローリクエストを取り消します。よろしいですか?</string>
-    <string name="reaction">Reaction (Misskey)</string>
-    <string name="vote">Vote (Misskey)</string>
+    <string name="reaction">リアクション (Misskey)</string>
+    <string name="vote">投票 (Misskey)</string>
 
 </resources>

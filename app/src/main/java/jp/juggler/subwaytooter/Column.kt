@@ -1978,7 +1978,7 @@ class Column(
 				return result
 			}
 			
-			override fun doInBackground(vararg params : Void) : TootApiResult? {
+			override fun doInBackground(vararg unused : Void) : TootApiResult? {
 				ctStarted.set(true)
 				
 				val client = TootApiClient(context, callback = object : TootApiCallback {
@@ -2364,7 +2364,7 @@ class Column(
 						}
 						
 						TYPE_SEARCH -> if(isMisskey){
-							var result : TootApiResult? = null
+							result = TootApiResult()
 							val parser = TootParser(context,access_info)
 							var params:JSONObject
 							

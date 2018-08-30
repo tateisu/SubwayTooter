@@ -11,6 +11,7 @@ import org.json.JSONObject
 import jp.juggler.subwaytooter.table.ClientInfo
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.util.*
 import okhttp3.*
 import org.json.JSONArray
@@ -68,15 +69,15 @@ class TootApiClient(
 		const val KEY_MISSKEY_APP_SECRET = "secret"
 		const val KEY_API_KEY_MISSKEY = "apiKeyMisskey"
 		
-//		// APIからsecretを得られないバグがあるので定数を渡す
-//		const val appSecretError =
-//			"This Misskey instance Currently Misskey does not allow client registration from API, please tell me notify instance name that you want login via Subway Tooter."
-//		val testAppSecretMap = mapOf(
-//			Pair("misskey.xyz", "NGiWNZFP37WiAee3SGcVe8eSiDyLbbWf")
-//			, Pair("misskey.jp", "GO45N7JgeEWtlNUS4xRcOFY56JMjUTZk")
-//			, Pair("msky.cafe", "lvU12i7CXAB5xiqkABwzyJRzdAqhf0k3")
-//			, Pair("misskey.m544.net", "SLcaqff0Puymh4Fl30JCc09i6uumwJ4t")
-//		)
+		//		// APIからsecretを得られないバグがあるので定数を渡す
+		//		const val appSecretError =
+		//			"This Misskey instance Currently Misskey does not allow client registration from API, please tell me notify instance name that you want login via Subway Tooter."
+		//		val testAppSecretMap = mapOf(
+		//			Pair("misskey.xyz", "NGiWNZFP37WiAee3SGcVe8eSiDyLbbWf")
+		//			, Pair("misskey.jp", "GO45N7JgeEWtlNUS4xRcOFY56JMjUTZk")
+		//			, Pair("msky.cafe", "lvU12i7CXAB5xiqkABwzyJRzdAqhf0k3")
+		//			, Pair("misskey.m544.net", "SLcaqff0Puymh4Fl30JCc09i6uumwJ4t")
+		//		)
 		
 		private const val NO_INFORMATION = "(no information)"
 		
@@ -202,37 +203,38 @@ class TootApiClient(
 		
 		fun getScopeArrayMisskey(@Suppress("UNUSED_PARAMETER") ti : TootInstance) =
 			JSONArray().apply {
-
+				
 				put("account-read")
 				put("account-write")
-
+				
 				put("note-read")
 				put("note-write")
-
+				
 				put("reaction-read")
 				put("reaction-write")
-
+				
 				put("following-read") // フォロリク申請一覧で使われていた
 				put("following-write")
-
+				
 				put("drive-read")
 				put("drive-write")
-
+				
 				put("notification-read")
 				put("notification-write")
-
+				
 				put("favorite-read")
+				put("favorites-read")
 				put("favorite-write")
-
+				
 				put("account/read")
 				put("account/write")
-
+				
 				put("messaging-read")
 				put("messaging-write")
-
+				
 				put("vote-read")
 				put("vote-write")
-
+				
 				// https://github.com/syuilo/misskey/issues/2341
 			}
 		
@@ -317,7 +319,7 @@ class TootApiClient(
 		if(isApiCancelled) return null
 		
 		// Misskey の /api/notes/favorites/create は 204(no content)を返す。ボディはカラになる。
-		if( bodyString?.isEmpty() != false && response.code() in 200 until 300 ){
+		if(bodyString?.isEmpty() != false && response.code() in 200 until 300) {
 			result.bodyString = ""
 			return ""
 		}
@@ -441,11 +443,11 @@ class TootApiClient(
 			var bodyString = readBodyString(result, progressPath, jsonErrorParser)
 				?: return if(isApiCancelled) null else result
 			
-			if( bodyString.isEmpty() ){
-
+			if(bodyString.isEmpty()) {
+				
 				// 204 no content は 空オブジェクトと解釈する
 				result.data = JSONObject()
-
+				
 			} else if(reStartJsonArray.matcher(bodyString).find()) {
 				result.data = bodyString.toJsonArray()
 				
@@ -457,20 +459,19 @@ class TootApiClient(
 				} else {
 					result.data = json
 				}
-			}else {
+			} else {
 				// HTMLならタグを除去する
 				val ct = response.body()?.contentType()
 				if(ct?.subtype() == "html") {
 					val decoded = DecodeOptions().decodeHTML(bodyString).toString()
-					bodyString =decoded
+					bodyString = decoded
 				}
-			
 				
 				val sb = StringBuilder()
 					.append(context.getString(R.string.response_not_json))
 					.append(' ')
 					.append(bodyString)
-
+				
 				if(sb.isNotEmpty()) sb.append(' ')
 				sb.append("(HTTP ").append(Integer.toString(response.code()))
 				
@@ -480,8 +481,8 @@ class TootApiClient(
 				}
 				sb.append(")")
 				
-				val url =  response.request()?.url()?.toString()
-				if(url?.isNotEmpty()==true) {
+				val url = response.request()?.url()?.toString()
+				if(url?.isNotEmpty() == true) {
 					sb.append(' ').append(url)
 				}
 				
@@ -590,7 +591,7 @@ class TootApiClient(
 		return result
 	}
 	
-	private fun prepareBrowserUrlMisskey( appSecret:String) : String? {
+	private fun prepareBrowserUrlMisskey(appSecret : String) : String? {
 		
 		val result = TootApiResult.makeWithCaption(instance)
 		
@@ -709,8 +710,8 @@ class TootApiClient(
 		val jsonObject = r2?.jsonObject ?: return r2
 		
 		val appSecret = jsonObject.parseString(KEY_MISSKEY_APP_SECRET)
-		if( appSecret?.isEmpty() != false) {
-			showToast(context,true,context.getString(R.string.cant_get_misskey_app_secret))
+		if(appSecret?.isEmpty() != false) {
+			showToast(context, true, context.getString(R.string.cant_get_misskey_app_secret))
 			return null
 		}
 		//		{
@@ -758,10 +759,10 @@ class TootApiClient(
 			?: return result.setError("missing client id")
 		
 		val appSecret = client_info.parseString(KEY_MISSKEY_APP_SECRET)
-		if( appSecret?.isEmpty() != false) {
+		if(appSecret?.isEmpty() != false) {
 			return result.setError(context.getString(R.string.cant_get_misskey_app_secret))
 		}
-
+		
 		if(! sendRequest(result) {
 				JSONObject().apply {
 					put("appSecret", appSecret)
@@ -821,7 +822,6 @@ class TootApiClient(
 		return result
 	}
 	
-
 	// クライアントをタンスに登録
 	fun registerClient(scope_string : String, clientName : String) : TootApiResult? {
 		val result = TootApiResult.makeWithCaption(this.instance)
@@ -1330,35 +1330,36 @@ class TootApiClient(
 		return result
 		
 	}
-}
 	
-fun TootApiClient.syncAccountByUrl(accessInfo:SavedAccount,who_url:String):TootApiResult?{
-	if( accessInfo.isMisskey){
+}
+
+fun TootApiClient.syncAccountByUrl(accessInfo : SavedAccount, who_url : String) : TootApiResult? {
+	if(accessInfo.isMisskey) {
 		val acct = TootAccount.getAcctFromUrl(who_url)
 			?: return TootApiResult(context.getString(R.string.user_id_conversion_failed))
 		
 		val delm = acct.indexOf('@')
 		val params = accessInfo.putMisskeyApiToken(JSONObject())
-		if(delm!=-1){
-			params.put("username",acct.substring(0,delm))
-			params.put("host",acct.substring(delm+1))
-		}else{
-			params.put("username",acct)
+		if(delm != - 1) {
+			params.put("username", acct.substring(0, delm))
+			params.put("host", acct.substring(delm + 1))
+		} else {
+			params.put("username", acct)
 		}
-
-		val result = this.request("/api/users/show",params.toPostRequestBuilder())
+		
+		val result = this.request("/api/users/show", params.toPostRequestBuilder())
 		val jsonObject = result?.jsonObject
 		
 		if(jsonObject != null) {
-			val tmp = TootParser(this.context,accessInfo).account(jsonObject)
-			if(tmp != null){
+			val tmp = TootParser(this.context, accessInfo).account(jsonObject)
+			if(tmp != null) {
 				result.data = tmp
 			} else {
 				result.setError(context.getString(R.string.user_id_conversion_failed))
 			}
 		}
 		return result
-	}else{
+	} else {
 		val path = String.format(
 			Locale.JAPAN,
 			Column.PATH_SEARCH,
@@ -1367,7 +1368,7 @@ fun TootApiClient.syncAccountByUrl(accessInfo:SavedAccount,who_url:String):TootA
 		val result = this.request(path)
 		val jsonObject = result?.jsonObject
 		if(jsonObject != null) {
-			val tmp = TootParser(this.context,accessInfo).results(jsonObject)
+			val tmp = TootParser(this.context, accessInfo).results(jsonObject)
 			if(tmp != null && tmp.accounts.isNotEmpty()) {
 				result.data = tmp.accounts[0].get()
 			} else {
@@ -1378,30 +1379,30 @@ fun TootApiClient.syncAccountByUrl(accessInfo:SavedAccount,who_url:String):TootA
 	}
 }
 
-fun TootApiClient.syncAccountByAcct(accessInfo:SavedAccount,acct:String):TootApiResult?{
-	if( accessInfo.isMisskey){
+fun TootApiClient.syncAccountByAcct(accessInfo : SavedAccount, acct : String) : TootApiResult? {
+	if(accessInfo.isMisskey) {
 		val delm = acct.indexOf('@')
 		val params = accessInfo.putMisskeyApiToken(JSONObject())
-		if(delm!=-1){
-			params.put("username",acct.substring(0,delm))
-			params.put("host",acct.substring(delm+1))
-		}else{
-			params.put("username",acct)
+		if(delm != - 1) {
+			params.put("username", acct.substring(0, delm))
+			params.put("host", acct.substring(delm + 1))
+		} else {
+			params.put("username", acct)
 		}
 		
-		val result = this.request("/api/users/show",params.toPostRequestBuilder())
+		val result = this.request("/api/users/show", params.toPostRequestBuilder())
 		val jsonObject = result?.jsonObject
 		
 		if(jsonObject != null) {
-			val tmp = TootParser(this.context,accessInfo).account(jsonObject)
-			if(tmp != null){
+			val tmp = TootParser(this.context, accessInfo).account(jsonObject)
+			if(tmp != null) {
 				result.data = tmp
 			} else {
 				result.setError(context.getString(R.string.user_id_conversion_failed))
 			}
 		}
 		return result
-	}else{
+	} else {
 		val path = String.format(
 			Locale.JAPAN,
 			Column.PATH_SEARCH,
@@ -1410,7 +1411,7 @@ fun TootApiClient.syncAccountByAcct(accessInfo:SavedAccount,acct:String):TootApi
 		val result = this.request(path)
 		val jsonObject = result?.jsonObject
 		if(jsonObject != null) {
-			val tmp = TootParser(this.context,accessInfo).results(jsonObject)
+			val tmp = TootParser(this.context, accessInfo).results(jsonObject)
 			if(tmp != null && tmp.accounts.isNotEmpty()) {
 				result.data = tmp.accounts[0].get()
 			} else {
@@ -1419,4 +1420,58 @@ fun TootApiClient.syncAccountByAcct(accessInfo:SavedAccount,acct:String):TootApi
 		}
 		return result
 	}
+}
+
+fun TootApiClient.syncStatus(accessInfo : SavedAccount, url : String) : TootApiResult? {
+	if(accessInfo.isMisskey) {
+		return TootApiResult("Misskey has no API to sync note from remote to local.")
+	}
+	
+	val path = String.format(
+		Locale.JAPAN,
+		Column.PATH_SEARCH,
+		url.encodePercent()
+	) + "&resolve=1"
+	
+	val result = request(path)
+	if(result != null) {
+		val tmp = TootParser(context, accessInfo).results(result.jsonObject)
+		if(tmp != null && tmp.statuses.isNotEmpty()) {
+			result.data = tmp.statuses[0]
+		}
+	}
+	return result
+}
+
+fun TootApiClient.syncStatus(
+	accessInfo : SavedAccount,
+	statusRemote : TootStatus
+) : TootApiResult? {
+	if(accessInfo.isMisskey) {
+		return TootApiResult("Misskey has no API to sync note from remote to local.")
+	}
+	var result : TootApiResult? = TootApiResult("missing url or uri")
+	var sv = statusRemote.url
+	when {
+		sv?.isEmpty() != false -> {
+		}
+		
+		sv.contains("/notes/") -> {
+			// Misskeyタンスから読んだマストドンの投稿はurlがmisskeyタンス上のものになる
+			// uri で試す
+		}
+		
+		else -> {
+			result = syncStatus(accessInfo, sv)
+			if(result == null || result.data is TootStatus) {
+				return result
+			}
+		}
+	}
+	
+	sv = statusRemote.uri
+	if(sv?.isNotEmpty() == true) {
+		result = syncStatus(accessInfo, sv)
+	}
+	return result
 }

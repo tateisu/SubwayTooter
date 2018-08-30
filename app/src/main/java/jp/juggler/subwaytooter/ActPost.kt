@@ -590,7 +590,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						in_reply_to_text = reply_status.content
 						in_reply_to_image = reply_status.account.avatar_static
 						in_reply_to_url = reply_status.url
-						
+
 						// 公開範囲
 						try {
 							// 比較する前にデフォルトの公開範囲を計算する
@@ -1138,20 +1138,10 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				
 				var target_status : TootStatus? = null
 				override fun background(client : TootApiClient) : TootApiResult? {
-					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
-					val path = String.format(
-						Locale.JAPAN,
-						Column.PATH_SEARCH,
-						in_reply_to_url.encodePercent()
-					) + "&resolve=1"
 					
-					val result = client.request(path)
-					val jsonObject = result?.jsonObject
-					if(jsonObject != null) {
-						val tmp = TootParser(this@ActPost, access_info).results(jsonObject)
-						if(tmp?.statuses?.isNotEmpty() == true) {
-							target_status = tmp.statuses[0]
-						}
+					val result = client.syncStatus(access_info,in_reply_to_url)
+					if( result?.data != null ) {
+						target_status = result.data as? TootStatus
 						if(target_status == null) {
 							return TootApiResult(getString(R.string.status_id_conversion_failed))
 						}

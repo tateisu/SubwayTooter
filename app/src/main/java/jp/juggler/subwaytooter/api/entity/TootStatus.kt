@@ -180,8 +180,15 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			val misskeyId = src.parseString("id")
 			this.host_access = parser.linkHelper.host
 			
-			this.uri = "https://$instance/notes/$misskeyId"
-			this.url = "https://$instance/notes/$misskeyId"
+			val uri = src.parseString("uri")
+			if( uri != null ){
+				this.uri = uri
+				this.url = uri
+			}else {
+				this.uri = "https://$instance/notes/$misskeyId"
+				this.url = "https://$instance/notes/$misskeyId"
+			}
+			
 			this.created_at = src.parseString("createdAt")
 			this.time_created_at = parseTime(this.created_at)
 			this.id = EntityIdString(src.parseString("id") ?: error("missing id"))

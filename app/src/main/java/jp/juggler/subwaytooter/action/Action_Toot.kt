@@ -1,31 +1,26 @@
 package jp.juggler.subwaytooter.action
 
 import android.net.Uri
-
-import java.util.ArrayList
-import java.util.Locale
-import java.util.regex.Pattern
-
-import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.ActPost
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Column
-import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
-import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.api.entity.*
+import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.EntityIdLong
+import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.util.EmptyCallback
+import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.showToast
+import jp.juggler.subwaytooter.util.toPostRequestBuilder
 import okhttp3.Request
 import okhttp3.RequestBody
 import org.json.JSONObject
+import java.util.*
+import java.util.regex.Pattern
 
 object Action_Toot {
 	
@@ -130,38 +125,17 @@ object Action_Toot {
 				
 				var result : TootApiResult?
 				
-				var target_status : TootStatus?
+				val target_status : TootStatus
 				if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
 					
-					if(access_info.isMisskey) {
-						return TootApiResult("Misskey has no API to sync note from remote to local.")
-					}
-					
-					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
-					val status_url = arg_status.url
-					if(status_url?.isEmpty() != false) return TootApiResult("missing status URL")
-					val path = String.format(
-						Locale.JAPAN,
-						Column.PATH_SEARCH,
-						status_url.encodePercent()
-					) + "&resolve=1"
-					
-					result = client.request(path)
-					val jsonObject = result?.jsonObject ?: return result
-					
-					target_status = null
-					val tmp = TootParser(activity, access_info).results(jsonObject)
-					if(tmp != null) {
-						if(tmp.statuses.isNotEmpty()) {
-							target_status = tmp.statuses[0]
-							log.d("status id conversion %s => %s", arg_status.id, target_status.id)
-						}
-					}
-					if(target_status == null) {
-						return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
-					} else if(target_status.favourited) {
+					result = client.syncStatus( access_info,arg_status)
+					if( result?.data == null)  return result
+					target_status = result.data as? TootStatus
+						?: return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
+					if(target_status.favourited) {
 						return TootApiResult(activity.getString(R.string.already_favourited))
 					}
+					
 				} else {
 					target_status = arg_status
 				}
@@ -400,34 +374,14 @@ object Action_Toot {
 				
 				var result : TootApiResult?
 				
-				var target_status : TootStatus?
+				val target_status : TootStatus
 				if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
 					
-					if(access_info.isMisskey) {
-						// XXX Misskey対応はトゥートの同期方法が分からないので保留
-						return TootApiResult("Misskey has no API to sync the note from remote to local.")
-					}
-					
-					val status_url = arg_status.url
-					if(status_url?.isEmpty() != false) return TootApiResult("missing status URL")
-					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
-					val path = String.format(
-						Locale.JAPAN,
-						Column.PATH_SEARCH,
-						status_url.encodePercent()
-					) + "&resolve=1"
-					
-					result = client.request(path)
-					val jsonObject = result?.jsonObject ?: return result
-					
-					target_status = null
-					val tmp = parser.results(jsonObject)
-					if(tmp?.statuses?.isNotEmpty() == true) {
-						target_status = tmp.statuses[0]
-					}
-					if(target_status == null) {
-						return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
-					} else if(target_status.reblogged) {
+					result = client.syncStatus(access_info,arg_status)
+					if( result?.data == null) return result
+					target_status = result.data as? TootStatus
+						?: return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
+					if(target_status.reblogged) {
 						return TootApiResult(activity.getString(R.string.already_boosted))
 					}
 				} else {
@@ -799,26 +753,12 @@ object Action_Toot {
 							}
 						}
 					} else {
-						// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
-						val path = String.format(
-							Locale.JAPAN,
-							Column.PATH_SEARCH,
-							remote_status_url.encodePercent()
-						) + "&resolve=1"
-						result = client.request(path)
-						val jsonObject = result?.jsonObject
-						if(jsonObject != null) {
-							val tmp = TootParser(activity, access_info).results(jsonObject)
-							if(tmp?.statuses?.isNotEmpty() == true) {
-								val status = tmp.statuses[0]
-								local_status_id = status.id
-								log.d("status id conversion %s => %s", remote_status_url, status.id)
-							}
-							if(local_status_id == null) {
-								result =
-									TootApiResult(activity.getString(R.string.status_id_conversion_failed))
-							}
-						}
+						result = client.syncStatus(access_info,remote_status_url)
+						if( result?.data == null ) return result
+						val status = result.data as? TootStatus
+							?: return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
+						local_status_id = status.id
+						log.d("status id conversion %s => %s", remote_status_url, status.id)
 					}
 					return result
 				}
@@ -949,25 +889,10 @@ object Action_Toot {
 				
 				var local_status : TootStatus? = null
 				override fun background(client : TootApiClient) : TootApiResult? {
-					// 検索APIに他タンスのステータスのURLを投げると、自タンスのステータスを得られる
-					val path = String.format(
-						Locale.JAPAN,
-						Column.PATH_SEARCH,
-						remote_status_url.encodePercent()
-					) + "&resolve=1"
-					
-					val result = client.request(path)
-					val jsonObject = result?.jsonObject
-					if(jsonObject != null) {
-						val tmp = TootParser(activity, access_info).results(jsonObject)
-						if(tmp?.statuses?.isNotEmpty() == true) {
-							val ls = tmp.statuses[0]
-							local_status = ls
-							log.d("status id conversion %s => %s", remote_status_url, ls.id)
-						}
-						local_status
-							?: return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
-					}
+					val result = client.syncStatus(access_info,remote_status_url)
+					if( result?.data == null) return result
+					local_status = result.data as? TootStatus
+						?: return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
 					return result
 				}
 				

@@ -234,4 +234,9 @@
     <string name="toot">التبويق</string>
     <string name="progress_synchronize_toot">مزامنة التبويق…</string>
     <string name="quick_toot_hint">تبويق سريع</string>
+    <string name="attachment_too_many">على الأكثر 4 ملفات.</string>
+    <string name="login_failed">فشلت عملية التسجيل</string>
+    <string name="visibility_private">للمتابِعين فقط</string>
+    <string name="choose_visibility">إختيار طريقة العرض</string>
+    <string name="wait_previous_operation">الرجاء الانتظار حتى تنتهي العملية الأخيرة.</string>
     </resources>

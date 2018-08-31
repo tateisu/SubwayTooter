@@ -1,8 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<resources
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="MissingTranslation"
-    >
+<?xml version='1.0' encoding='UTF-8'?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
 
 
 
@@ -48,7 +45,7 @@
 	<string name="block">Bloquer</string>
 	<string name="block_succeeded">Blocage effectué</string>
 	<string name="blocked_users">Utilisateurs bloqués</string>
-	<string name="boost">Partager</string>
+	<string name="boost">boost</string>
 	<string name="boost_from_another_account">Partager à partir d\'un autre compte</string>
 	<string name="boost_succeeded">Partagé avec succès</string>
 	<string name="unboost_succeeded">boost removed</string>
@@ -103,7 +100,7 @@
 	<string name="content_warning">Avertissement de contenu</string>
 	<string name="content_warning_hint">Saisissez le texte d\'avertissement de contenu.</string>
 	<string name="contributor">Contributeur(s)</string>
-	<string name="conversation">Conversation</string>
+	<string name="conversation">conversation</string>
 	<string name="conversation_around">Conversation du statut: %1$s</string>
 	<string name="conversation_view">Visualiser la conversation</string>
 	<string name="copy">Copier</string>
@@ -148,7 +145,7 @@
 	<string name="favourites">Favoris</string>
 	<string name="federate_timeline">Chronologie fédérée</string>
 	<string name="file_size_too_big">Taille du fichier est trop grande. La limite maximale est de %1$d Mo.</string>
-	<string name="follow">Suivre</string>
+	<string name="follow">follow</string>
 	<string name="follow_from_another_account">Suivre (sélection du compte)</string>
 	<string name="follow_locked_user">Suivre un utilisateur verrouillé</string>
 	<string name="follow_request_authorized">Demande de suivi de %1$s accepté</string>
@@ -170,7 +167,7 @@
 	<string name="help_translation">Aide à la traduction</string>
 	<string name="hide">Masquer</string>
 	<string name="hide_media_default">Ne pas afficher les pièces jointes</string>
-	<string name="home">Accueil</string>
+	<string name="home">home</string>
 	<string name="image">Image</string>
 	<string name="image_alpha">Transparence de l\'image</string>
 	<string name="image_capture">Utiliser l\'appareil photo</string>
@@ -192,7 +189,7 @@
 	<string name="mail_not_specified">E-mail non spécifié</string>
 	<string name="media_attachment">Ajouter une pièce jointe</string>
 	<string name="media_thumbnail_height">Hauteur des pièces jointes dans l\'interface \n(défaut=64(dp), redémarrage nécessaire)</string>
-	<string name="mention">Mention</string>
+	<string name="mention">mention</string>
 	<string name="mention2">Mention</string>
 	<string name="menu">Menu</string>
 	<string name="minimum_column_width">Largeur minimum des colonnes \n(défaut=300(dp), redémarrage nécessaire)</string>
@@ -267,7 +264,7 @@
 	<string name="report_reason">Décrire la raison du signalement</string>
 	<string name="reports">Signalements</string>
 	<string name="request_access_token">Demander l\'autorisation d\'accès à l\'instance…</string>
-	<string name="request_api">Acquiring: %1$s %2$s</string>
+	<string name="request_api">Acquisition : %1$s %2$s</string>
 	<string name="reading_api">Reading: %1$s %2$s</string>
 
 	<string name="reset">Reset</string>
@@ -785,8 +782,8 @@
 	<string name="remove_endorse_succeeded">Endorsement removed.</string>
     <string name="follow_request_cancelled">Follow request was cancelled.</string>
 	<string name="confirm_cancel_follow_request_who_from">Follow request from %2$s to %1$s will be cancelled. Are you sure?</string>
-    <string name="reaction">Reaction (Misskey)</string>
-	<string name="vote">Vote (Misskey)</string>
+    <string name="reaction">reaction</string>
+	<string name="vote">vote</string>
 
 	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->

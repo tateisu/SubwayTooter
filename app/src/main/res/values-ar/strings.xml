@@ -85,7 +85,7 @@
     <string name="background_color">لون الخلفية</string>
     <string name="nickname_and_color_and_notification_sound">الإسم المستعار،ك واللون والإشعارات الصوتية</string>
     <string name="nickname_and_color">الإسم المستعار واللون</string>
-    <string name="follow_requested">تم إرسال طلب المتابعة</string>
+    <string name="follow_requested">تم إرسال طلب المتابعة.</string>
     <string name="confirmation">التأكيد</string>
     <string name="profile">الملف الشخصي</string>
     <string name="boosted_by">رقّاه…</string>
@@ -197,7 +197,7 @@
     <string name="error_response">خطأ في الإستجابة.</string>
     <string name="request_access_token">جارٍ طلب رمز النفاذ…</string>
     <string name="request_api">جلب: %1$s %2$s</string>
-    <string name="reading_api">قراءة: %1$ s %2$ s</string>
+    <string name="reading_api">قراءة: %1$s %2$s</string>
     <string name="reply">الردّ</string>
     <string name="more">المزيد</string>
     <string name="thumbnail">الصورة المصغرة</string>
@@ -240,4 +240,26 @@
     <string name="visibility_private">للمتابِعين فقط</string>
     <string name="choose_visibility">إختيار طريقة العرض</string>
     <string name="wait_previous_operation">الرجاء الانتظار حتى تنتهي العملية الأخيرة.</string>
+    <string name="pseudo_account">حساب افتراضي (دون تسجيل، قراءة البيانات العامة فقط)</string>
+    <string name="input_access_token">تحديد رمز النفاذ (للمستخدمين المتقدمين)</string>
+    <string name="title">العنوان</string>
+    <string name="instance_information">معلومات عن مثيل الخادوم</string>
+    <string name="later">لاحقًا</string>
+    <string name="time_within_second">الآن</string>
+
+    <string name="relative_time_second_1">%1$d ثانية %2$s</string>
+    <string name="relative_time_second_2">%1$d ثواني %2$s</string>
+    <string name="relative_time_minute_1">%1$d دقيقة %2$s</string>
+    <string name="relative_time_minute_2">%1$d دقائق %2$s</string>
+    <string name="relative_time_hour_1">%1$d ساعة %2$s</string>
+    <string name="relative_time_hour_2">%1$d ساعات %2$s</string>
+    <string name="relative_time_day_1">%1$d يوم %2$s</string>
+    <string name="relative_time_day_2">%1$d أيام %2$s</string>
+    <string name="make_enquete">إنشاء استطلاع للرأي</string>
+    <string name="profile_pin">تدبيس على الملف الشخصي</string>
+    <string name="profile_unpin">إلغاء التدبيس مِن الملف الشخصي</string>
+    <string name="loading_notification_title">جارٍ تحميل الإشعار…</string>
+    <string name="open_hashtag_column">فتح عمود الوسوم</string>
+    <string name="video_pick">إختر فيديو</string>
+    <string name="keyword_filters">الكلمات المُصفّاة</string>
     </resources>

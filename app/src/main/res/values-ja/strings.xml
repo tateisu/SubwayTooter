@@ -1,3 +1,4 @@
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
 
     <string name="app_name">Subway Tooter</string>
@@ -370,7 +371,7 @@
 
     <string name="spoil_visibility_for_account">公開範囲をアカウントの既定値に狭めました</string>
 
-    <string name="contributor">contributor</string>
+    <string name="contributor">寄稿者</string>
 
     <string name="thanks_for">Thanks for %1$s</string>
 

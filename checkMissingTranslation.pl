@@ -49,7 +49,6 @@ $master or die "missing master languages.\n";
 my %missing;
 my %allNames;
 while(my($lang,$names)=each %langs ){
-	next if $lang eq "master";
 	while(my($name,$value)=each %$names){
 		$allNames{$name}=1;
 		if(not $master->{$name} ){

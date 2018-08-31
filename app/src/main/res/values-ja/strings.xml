@@ -1063,5 +1063,6 @@
     <string name="confirm_cancel_follow_request_who_from">%2$s から %1$s へのフォローリクエストを取り消します。よろしいですか?</string>
     <string name="reaction">リアクション (Misskey)</string>
     <string name="vote">投票 (Misskey)</string>
+    <string name="timeout_for_embed_media_viewer">内蔵メディアビューアのタイムアウト (単位:秒 アプリ再起動(アプリ履歴からの消去)が必要)</string>
 
 </resources>

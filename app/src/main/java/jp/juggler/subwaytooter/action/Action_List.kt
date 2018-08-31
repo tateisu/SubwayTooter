@@ -5,15 +5,15 @@ import org.json.JSONObject
 
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
+import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootList
 import jp.juggler.subwaytooter.api.entity.parseItem
+import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.showToast
+import jp.juggler.subwaytooter.util.toPostRequestBuilder
 import jp.juggler.subwaytooter.util.withCaption
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -30,26 +30,34 @@ object Action_List {
 	) {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			
-			internal var list : TootList? = null
+			var list : TootList? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
-				val content = JSONObject()
-				try {
-					content.put("title", title)
-				} catch(ex : Throwable) {
-					return TootApiResult(ex.withCaption("can't encoding json parameter."))
+				val result = if(access_info.isMisskey) {
+					val params = access_info.putMisskeyApiToken(JSONObject())
+						.put("title", title)
+					
+					client.request("/api/users/lists/create", params.toPostRequestBuilder())
+				} else {
+					
+					val content = JSONObject()
+					try {
+						content.put("title", title)
+					} catch(ex : Throwable) {
+						return TootApiResult(ex.withCaption("can't encoding json parameter."))
+					}
+					
+					val request_builder = Request.Builder().post(
+						RequestBody.create(
+							TootApiClient.MEDIA_TYPE_JSON, content.toString()
+						)
+					)
+					
+					client.request("/api/v1/lists", request_builder)
 				}
 				
-				val request_builder = Request.Builder().post(
-					RequestBody.create(
-						TootApiClient.MEDIA_TYPE_JSON, content.toString()
-					)
-				)
-				
-				val result = client.request("/api/v1/lists", request_builder)
-				
 				client.publishApiProgress(activity.getString(R.string.parsing_response))
-				list = parseItem(::TootList, result?.jsonObject)
+				list = parseItem(::TootList, TootParser(activity, access_info), result?.jsonObject)
 				
 				return result
 			}
@@ -76,11 +84,33 @@ object Action_List {
 	
 	// リストを削除する
 	fun delete(
-		activity : ActMain, access_info : SavedAccount, list_id : Long
+		activity : ActMain,
+		access_info : SavedAccount,
+		list : TootList,
+		bConfirmed : Boolean = false
 	) {
+		if(access_info.isMisskey) {
+			showToast(activity, false, "Misskey has no API to delete list")
+			return
+		}
+		
+		if(! bConfirmed) {
+			DlgConfirm.openSimple(
+				activity
+				, activity.getString(R.string.list_delete_confirm, list.title)
+			) {
+				delete(activity, access_info, list, bConfirmed = true)
+			}
+			return
+		}
+		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				return client.request("/api/v1/lists/" + list_id, Request.Builder().delete())
+				return if(access_info.isMisskey) {
+					TootApiResult("Misskey has no API to delete list")
+				} else {
+					client.request("/api/v1/lists/{list.id}", Request.Builder().delete())
+				}
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
@@ -101,7 +131,16 @@ object Action_List {
 		})
 	}
 	
-	fun rename(activity : ActMain, access_info : SavedAccount, item : TootList) {
+	fun rename(
+		activity : ActMain,
+		access_info : SavedAccount,
+		item : TootList
+	) {
+		if(access_info.isMisskey) {
+			showToast(activity, false, "Misskey has no API to rename list")
+			return
+		}
+		
 		DlgTextInput.show(
 			activity,
 			activity.getString(R.string.rename),
@@ -112,9 +151,14 @@ object Action_List {
 				}
 				
 				override fun onOK(dialog : Dialog, text : String) {
+					
 					TootTaskRunner(activity).run(access_info, object : TootTask {
-						internal var list : TootList? = null
+						var list : TootList? = null
 						override fun background(client : TootApiClient) : TootApiResult? {
+							if(access_info.isMisskey) {
+								return TootApiResult("Misskey has no API to rename list")
+							}
+							
 							val content = JSONObject()
 							try {
 								content.put("title", text)
@@ -128,10 +172,15 @@ object Action_List {
 								)
 							)
 							
-							val result = client.request("/api/v1/lists/${item.id}", request_builder)
+							val result =
+								client.request("/api/v1/lists/${item.id}", request_builder)
 							
 							client.publishApiProgress(activity.getString(R.string.parsing_response))
-							list = parseItem(::TootList, result?.jsonObject)
+							list = parseItem(
+								::TootList,
+								TootParser(activity, access_info),
+								result?.jsonObject
+							)
 							
 							return result
 						}

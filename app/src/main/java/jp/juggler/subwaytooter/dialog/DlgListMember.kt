@@ -23,8 +23,10 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.util.showToast
+import jp.juggler.subwaytooter.util.toPostRequestBuilder
 import jp.juggler.subwaytooter.view.MyListView
 import jp.juggler.subwaytooter.view.MyNetworkImageView
+import org.json.JSONObject
 import java.util.*
 
 @SuppressLint("InflateParams")
@@ -173,36 +175,47 @@ class DlgListMember(
 			var new_list : ArrayList<TootList>? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
+
 				// リストに追加したいアカウントの自タンスでのアカウントIDを取得する
 				var result = client.syncAccountByAcct(list_owner,target_user_full_acct)
 				local_who = result?.data as? TootAccount
 				
-				
 				val local_who = this@DlgListMember.local_who
 					?: return TootApiResult(activity.getString(R.string.account_sync_failed))
 				
-				// リスト登録状況を取得
-				result = client.request("/api/v1/accounts/" + local_who .id + "/lists")
-				var jsonArray = result?.jsonArray ?:return result
-				
-				// 結果を解釈する
-				val set_registered = HashSet<EntityId>()
-				for(a in parseList(::TootList,jsonArray)) {
-					set_registered.add(a.id)
-				}
-				
-				// リスト一覧を取得
-				result = client.request("/api/v1/lists")
-				jsonArray = result?.jsonArray ?: return result
-
-				val new_list = parseList(::TootList,jsonArray)
-				new_list.sort()
-				
-				this.new_list = new_list
-				
-				// isRegistered を設定する
-				for(a in new_list) {
-					if(set_registered.contains(a.id)) a.isRegistered = true
+				if(list_owner.isMisskey){
+					// 今のmisskeyではリスト全スキャンしないとユーザの登録状況が分からない
+					val params = list_owner.putMisskeyApiToken(JSONObject())
+					result = client.request("/api/users/lists/list",params.toPostRequestBuilder())
+					val jsonArray = result?.jsonArray ?:return result
+					this.new_list = parseList(::TootList,TootParser(activity,list_owner),jsonArray)
+					this.new_list?.forEach { list->
+						list.isRegistered = null != list.userIds?.find { it == local_who.id }
+					}
+				}else{
+					// リスト登録状況を取得
+					result = client.request("/api/v1/accounts/" + local_who .id + "/lists")
+					var jsonArray = result?.jsonArray ?:return result
+					
+					// 結果を解釈する
+					val set_registered = HashSet<EntityId>()
+					for(a in parseList(::TootList,TootParser(activity,list_owner),jsonArray)) {
+						set_registered.add(a.id)
+					}
+					
+					// リスト一覧を取得
+					result = client.request("/api/v1/lists")
+					jsonArray = result?.jsonArray ?: return result
+					
+					val new_list = parseList(::TootList,TootParser(activity,list_owner),jsonArray)
+					new_list.sort()
+					
+					this.new_list = new_list
+					
+					// isRegistered を設定する
+					for(a in new_list) {
+						if(set_registered.contains(a.id)) a.isRegistered = true
+					}
 				}
 				
 				return result
@@ -367,7 +380,7 @@ class DlgListMember(
 			
 			// 状態をサーバに伝える
 			if(isChecked) {
-				Action_ListMember.add(activity, list_owner , item.id, local_who , false, this)
+				Action_ListMember.add(activity, list_owner , item.id, local_who , callback =  this)
 			} else {
 				Action_ListMember.delete(activity, list_owner , item.id, local_who , this)
 			}

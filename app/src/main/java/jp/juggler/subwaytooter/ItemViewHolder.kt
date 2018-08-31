@@ -43,10 +43,10 @@ internal class ItemViewHolder(
 	
 	companion object {
 		private val log = LogCategory("ItemViewHolder")
-		var toot_color_unlisted : Int =0
-		var toot_color_follower : Int =0
-		var toot_color_direct_user : Int =0
-		var toot_color_direct_me : Int =0
+		var toot_color_unlisted : Int = 0
+		var toot_color_follower : Int = 0
+		var toot_color_direct_user : Int = 0
+		var toot_color_direct_me : Int = 0
 	}
 	
 	val viewRoot : View
@@ -168,18 +168,18 @@ internal class ItemViewHolder(
 		btnFollow.setOnLongClickListener(this)
 		
 		ivThumbnail.setOnClickListener(this)
-
+		
 		llBoosted.setOnClickListener(this)
 		llBoosted.setOnLongClickListener(this)
-
+		
 		llReply.setOnClickListener(this)
 		llReply.setOnLongClickListener(this)
-
+		
 		llFollow.setOnClickListener(this)
 		llFollow.setOnLongClickListener(this)
-
+		
 		btnFollow.setOnClickListener(this)
-
+		
 		
 		btnFollowRequestAccept.setOnClickListener(this)
 		btnFollowRequestDeny.setOnClickListener(this)
@@ -385,8 +385,9 @@ internal class ItemViewHolder(
 		when(item) {
 			is TootStatus -> {
 				val reblog = item.reblog
-				when{
+				when {
 					reblog == null -> showStatusOrReply(item)
+					
 					item.hasAnyContent() -> {
 						// 引用Renote
 						showReply(
@@ -396,7 +397,8 @@ internal class ItemViewHolder(
 						)
 						showStatus(activity, item)
 					}
-					else ->{
+					
+					else -> {
 						// 引用なしブースト
 						showBoost(
 							item.accountRef,
@@ -430,9 +432,9 @@ internal class ItemViewHolder(
 		}
 	}
 	
-	private fun showStatusOrReply(item:TootStatus){
+	private fun showStatusOrReply(item : TootStatus) {
 		val reply = item.reply
-		if( reply != null) {
+		if(reply != null) {
 			// 返信
 			showReply(
 				reply,
@@ -440,7 +442,7 @@ internal class ItemViewHolder(
 				R.string.reply_to
 			)
 			showStatus(activity, item)
-		}else{
+		} else {
 			showStatus(activity, item)
 		}
 	}
@@ -460,18 +462,16 @@ internal class ItemViewHolder(
 		tvMessageHolder.gravity = item.gravity
 	}
 	
-
-	
 	private fun showNotification(n : TootNotification) {
 		val n_status = n.status
 		val n_accountRef = n.accountRef
 		val n_account = n_accountRef?.get()
 		
-		fun showNotificationStatus(item :TootStatus){
+		fun showNotificationStatus(item : TootStatus) {
 			val reblog = item.reblog
-			when{
+			when {
 				reblog == null -> showStatusOrReply(item)
-				!item.hasAnyContent() ->showStatusOrReply(reblog) // ブースト表示は通知イベントと被るのでしない
+				! item.hasAnyContent() -> showStatusOrReply(reblog) // ブースト表示は通知イベントと被るのでしない
 				else -> {
 					// 引用Renote
 					showReply(
@@ -493,7 +493,7 @@ internal class ItemViewHolder(
 					if(access_info.isNicoru(n_account)) R.attr.ic_nicoru else R.attr.btn_favourite,
 					R.string.display_name_favourited_by
 				)
-				if(n_status != null){
+				if(n_status != null) {
 					showNotificationStatus(n_status)
 				}
 			}
@@ -505,7 +505,7 @@ internal class ItemViewHolder(
 					R.attr.btn_boost,
 					R.string.display_name_boosted_by
 				)
-				if(n_status != null){
+				if(n_status != null) {
 					showNotificationStatus(n_status)
 				}
 				
@@ -519,7 +519,7 @@ internal class ItemViewHolder(
 					R.attr.btn_boost,
 					R.string.display_name_boosted_by
 				)
-				if(n_status != null){
+				if(n_status != null) {
 					showNotificationStatus(n_status)
 				}
 			}
@@ -535,6 +535,7 @@ internal class ItemViewHolder(
 					showAccount(n_accountRef)
 				}
 			}
+			
 			TootNotification.TYPE_UNFOLLOW -> {
 				if(n_account != null) {
 					showBoost(
@@ -546,6 +547,7 @@ internal class ItemViewHolder(
 					showAccount(n_accountRef)
 				}
 			}
+			
 			TootNotification.TYPE_MENTION, TootNotification.TYPE_REPLY -> {
 				if(! bSimpleList && ! access_info.isMisskey) {
 					if(n_account != null) showBoost(
@@ -555,7 +557,7 @@ internal class ItemViewHolder(
 						R.string.display_name_replied_by
 					)
 				}
-				if(n_status != null){
+				if(n_status != null) {
 					showNotificationStatus(n_status)
 				}
 			}
@@ -569,7 +571,7 @@ internal class ItemViewHolder(
 					R.string.display_name_reaction_by
 					, reaction?.btnDrawableId
 				)
-				if(n_status != null){
+				if(n_status != null) {
 					showNotificationStatus(n_status)
 				}
 			}
@@ -581,7 +583,7 @@ internal class ItemViewHolder(
 					R.attr.btn_boost,
 					R.string.display_name_quoted_by
 				)
-				if(n_status != null){
+				if(n_status != null) {
 					showNotificationStatus(n_status)
 				}
 			}
@@ -593,7 +595,7 @@ internal class ItemViewHolder(
 					R.attr.ic_vote,
 					R.string.display_name_voted_by
 				)
-				if(n_status != null){
+				if(n_status != null) {
 					showNotificationStatus(n_status)
 				}
 			}
@@ -621,7 +623,7 @@ internal class ItemViewHolder(
 					R.attr.ic_question,
 					R.string.unknown_notification_from
 				)
-				if(n_status != null){
+				if(n_status != null) {
 					showNotificationStatus(n_status)
 				}
 				tvMessageHolder.visibility = View.VISIBLE
@@ -685,15 +687,15 @@ internal class ItemViewHolder(
 		stringId : Int
 	) {
 		status_reply = reply
-
+		
 		llReply.visibility = View.VISIBLE
 		
 		// val who = reply.account
 		// showStatusTime(activity, tvReplyTime, who, time = reply.time_created_at)
 		// setAcct(tvReplyAcct, access_info.getFullAcct(who), who.acct)
-
+		
 		ivReply.setImageResource(Styler.getAttributeResourceId(activity, iconAttrId))
-
+		
 		val text = reply.accountRef.decoded_display_name.intoStringResource(activity, stringId)
 		tvReply.text = text
 		reply_invalidator.register(text)
@@ -771,15 +773,15 @@ internal class ItemViewHolder(
 					R.attr.colorImageButtonAccent
 				) and 0xffffff) or 0x20000000
 			)
-		}else{
-			val c = when(status.getBackgroundColorType(access_info)){
-				TootVisibility.UnlistedHome-> toot_color_unlisted
-				TootVisibility.PrivateFollowers-> toot_color_follower
-				TootVisibility.DirectSpecified-> toot_color_direct_user
-				TootVisibility.DirectPrivate-> toot_color_direct_me
-				else->0
+		} else {
+			val c = when(status.getBackgroundColorType(access_info)) {
+				TootVisibility.UnlistedHome -> toot_color_unlisted
+				TootVisibility.PrivateFollowers -> toot_color_follower
+				TootVisibility.DirectSpecified -> toot_color_direct_user
+				TootVisibility.DirectPrivate -> toot_color_direct_me
+				else -> 0
 			}
-			if(c!=0){
+			if(c != 0) {
 				this.viewRoot.setBackgroundColor(c)
 			}
 		}
@@ -816,8 +818,8 @@ internal class ItemViewHolder(
 		
 		// ニコフレのアンケートの表示
 		val enquete = status.enquete
-		if(enquete != null ){
-			if( access_info.isMisskey || NicoEnquete.TYPE_ENQUETE == enquete.type) {
+		if(enquete != null) {
+			if(access_info.isMisskey || NicoEnquete.TYPE_ENQUETE == enquete.type) {
 				val question = enquete.decoded_question
 				val items = enquete.items
 				
@@ -830,7 +832,7 @@ internal class ItemViewHolder(
 					}
 				}
 				
-				if(!access_info.isMisskey) makeEnqueteTimerView(enquete)
+				if(! access_info.isMisskey) makeEnqueteTimerView(enquete)
 			}
 		}
 		
@@ -854,12 +856,17 @@ internal class ItemViewHolder(
 			tvMentions.text = status.decoded_mentions
 		}
 		
-		if( status.time_deleted_at > 0L){
+		if(status.time_deleted_at > 0L) {
 			val s = SpannableStringBuilder()
 				.append('(')
-				.append(activity.getString(R.string.deleted_at,TootStatus.formatTime(activity,status.time_deleted_at,true)))
+				.append(
+					activity.getString(
+						R.string.deleted_at,
+						TootStatus.formatTime(activity, status.time_deleted_at, true)
+					)
+				)
 				.append(')')
-			content= s
+			content = s
 		}
 		
 		tvContent.text = content
@@ -967,12 +974,12 @@ internal class ItemViewHolder(
 				if(sb.isNotEmpty()) sb.append('\u200B')
 				sb.appendColorShadeIcon(activity, R.drawable.ic_shield, "admin")
 			}
-
+			
 			if(status.account.isPro) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
 				sb.appendColorShadeIcon(activity, R.drawable.ic_authorized, "pro")
 			}
-
+			
 			if(status.account.isCat) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
 				sb.appendColorShadeIcon(activity, R.drawable.ic_cat, "cat")
@@ -1250,9 +1257,9 @@ internal class ItemViewHolder(
 			
 			llBoosted -> boostedAction()
 			
-			llReply ->{
-				status_reply?.let { s  ->
-					Action_Toot.conversation(activity,pos,access_info,s)
+			llReply -> {
+				status_reply?.let { s ->
+					Action_Toot.conversation(activity, pos, access_info, s)
 				}
 			}
 			
@@ -1318,12 +1325,7 @@ internal class ItemViewHolder(
 						Action_List.rename(activity, access_info, item)
 					}
 					.addAction(activity.getString(R.string.delete)) {
-						DlgConfirm.openSimple(
-							activity
-							, activity.getString(R.string.list_delete_confirm, item.title)
-						) {
-							Action_List.delete(activity, access_info, item.id.toLong())
-						}
+						Action_List.delete(activity, access_info, item)
 					}
 					.show(activity, item.title)
 			}
@@ -1399,8 +1401,8 @@ internal class ItemViewHolder(
 				return true
 			}
 			
-			llReply ->{
-				status_reply?.let { s  ->
+			llReply -> {
+				status_reply?.let { s ->
 					DlgContextMenu(
 						activity,
 						column,
@@ -1625,9 +1627,10 @@ internal class ItemViewHolder(
 		val buttonHeight = ActMain.boostButtonSize
 		val marginBetween = (ActMain.boostButtonSize.toFloat() * 0.05f + 0.5f).toInt()
 		
-		val paddingH = (buttonHeight.toFloat() *0.1f + 0.5f).toInt()
-		val paddingV = (buttonHeight.toFloat() *0.1f + 0.5f).toInt()
-		val compoundPaddingDp = 0f // ActMain.boostButtonSize.toFloat() * 0f / activity.resources.displayMetrics.density
+		val paddingH = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
+		val paddingV = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
+		val compoundPaddingDp =
+			0f // ActMain.boostButtonSize.toFloat() * 0f / activity.resources.displayMetrics.density
 		
 		val box = FlexboxLayout(activity)
 		val boxLp = LinearLayout.LayoutParams(
@@ -1705,8 +1708,8 @@ internal class ItemViewHolder(
 	private fun addReaction(status : TootStatus?, code : String?) {
 		status ?: return
 		
-		if( status.myReaction?.isNotEmpty() == true){
-			showToast(activity,false,R.string.already_reactioned)
+		if(status.myReaction?.isNotEmpty() == true) {
+			showToast(activity, false, R.string.already_reactioned)
 			return
 		}
 		
@@ -1775,9 +1778,9 @@ internal class ItemViewHolder(
 		i : Int,
 		item : NicoEnquete.Choice
 	) {
-		val canVote = if( access_info.isMisskey ){
+		val canVote = if(access_info.isMisskey) {
 			enquete.myVoted == null
-		}else{
+		} else {
 			val remain = enquete.time_start + NicoEnquete.ENQUETE_EXPIRE - now
 			enquete.myVoted == null && remain > 0L
 		}
@@ -1791,25 +1794,25 @@ internal class ItemViewHolder(
 		val b = Button(activity)
 		b.layoutParams = lp
 		b.setAllCaps(false)
-
-		val text = if( access_info.isMisskey ){
+		
+		val text = if(access_info.isMisskey) {
 			val sb = SpannableStringBuilder()
 				.append(item.decoded_text)
-				
-				if(enquete.myVoted != null ) {
-					sb.append(" / ")
-					sb.append(activity.getString(R.string.vote_count_text, item.votes))
-					if(i == enquete.myVoted) sb.append(' ').append(0x2713.toChar())
-				}
+			
+			if(enquete.myVoted != null) {
+				sb.append(" / ")
+				sb.append(activity.getString(R.string.vote_count_text, item.votes))
+				if(i == enquete.myVoted) sb.append(' ').append(0x2713.toChar())
+			}
 			sb
-		}else{
+		} else {
 			item.decoded_text
 		}
 		b.text = text
 		val invalidator = NetworkEmojiInvalidator(activity.handler, b)
 		extra_invalidator_list.add(invalidator)
 		invalidator.register(text)
-		if(!canVote) {
+		if(! canVote) {
 			b.isEnabled = false
 		} else {
 			val accessInfo = this@ItemViewHolder.access_info
@@ -1838,13 +1841,13 @@ internal class ItemViewHolder(
 		idx : Int
 	) {
 		val now = System.currentTimeMillis()
-		if( enquete.myVoted != null ) {
+		if(enquete.myVoted != null) {
 			showToast(context, false, R.string.already_voted)
 			return
 		}
-		if(!accessInfo.isMisskey){
+		if(! accessInfo.isMisskey) {
 			val remain = enquete.time_start + NicoEnquete.ENQUETE_EXPIRE - now
-			if( remain <=0L) {
+			if(remain <= 0L) {
 				showToast(context, false, R.string.enquete_was_end)
 				return
 			}
@@ -1852,12 +1855,12 @@ internal class ItemViewHolder(
 		
 		TootTaskRunner(context).run(accessInfo, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				if( accessInfo.isMisskey ){
+				if(accessInfo.isMisskey) {
 					val params = accessInfo.putMisskeyApiToken(JSONObject())
-									.put("noteId",enquete.status_id.toString())
-									.put("choice",idx)
-					return client.request("/api/notes/polls/vote",params.toPostRequestBuilder())
-				}else{
+						.put("noteId", enquete.status_id.toString())
+						.put("choice", idx)
+					return client.request("/api/notes/polls/vote", params.toPostRequestBuilder())
+				} else {
 					val form = JSONObject()
 					try {
 						form.put("item_index", Integer.toString(idx))
@@ -1879,17 +1882,17 @@ internal class ItemViewHolder(
 				
 				val data = result.jsonObject
 				if(data != null) {
-					if(accessInfo.isMisskey){
+					if(accessInfo.isMisskey) {
 						enquete.myVoted = idx
 						val choice = enquete.items?.get(idx)
-						if( choice != null ) choice.votes ++
-
+						if(choice != null) choice.votes ++
+						
 						// 204 no content
 						showToast(context, false, R.string.enquete_voted)
-
+						
 						// 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
 						list_adapter.notifyChange(reason = "onClickEnqueteChoice", reset = true)
-					}else{
+					} else {
 						val message = data.parseString("message") ?: "?"
 						val valid = data.optBoolean("valid")
 						if(valid) {
@@ -2092,7 +2095,8 @@ internal class ItemViewHolder(
 								bottomMargin = dip(3)
 							}
 							
-							background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+							background =
+								ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 							gravity = Gravity.CENTER_VERTICAL
 							
 							ivReply = imageView {

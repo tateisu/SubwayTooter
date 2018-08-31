@@ -45,6 +45,7 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.PinchBitmapView
+import okhttp3.Request
 import java.io.IOException
 
 class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
@@ -447,7 +448,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			
 			private val options = BitmapFactory.Options()
 			
-			internal var bitmap : Bitmap? = null
+			var bitmap : Bitmap? = null
 			
 			private fun decodeBitmap(data : ByteArray, pixel_max : Int) : Bitmap? {
 				
@@ -473,10 +474,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				return BitmapFactory.decodeByteArray(data, 0, data.size, options)
 			}
 			
-			internal fun getHttpCached(client : TootApiClient, url : String) : TootApiResult? {
+			fun getHttpCached(client : TootApiClient, url : String) : TootApiResult? {
 				val result = TootApiResult.makeWithCaption(url)
 				
-				val request = okhttp3.Request.Builder()
+				val request = Request.Builder()
 					.url(url)
 					.cacheControl(App1.CACHE_5MIN)
 					.addHeader("Accept", "image/webp,image/*,*/*;q=0.8")

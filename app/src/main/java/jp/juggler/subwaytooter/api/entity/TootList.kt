@@ -1,7 +1,9 @@
 package jp.juggler.subwaytooter.api.entity
 
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.b2i
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.forEach
 import org.json.JSONObject
 
 import java.util.ArrayList
@@ -10,7 +12,7 @@ import java.util.regex.Pattern
 import jp.juggler.subwaytooter.util.parseLong
 import jp.juggler.subwaytooter.util.parseString
 
-class TootList(src : JSONObject): TimelineItem(), Comparable<TootList> {
+class TootList(parser:TootParser,src : JSONObject): TimelineItem(), Comparable<TootList> {
 
 	val id : EntityId
 
@@ -23,10 +25,24 @@ class TootList(src : JSONObject): TimelineItem(), Comparable<TootList> {
 	// 内部で使用する
 	var isRegistered : Boolean = false
 	
+	var userIds :ArrayList<EntityId>? = null
+	
 	init {
-		id = EntityIdLong(src.parseLong("id") ?: error("missing id"))
-		title = src.parseString("title")
-		this.title_for_sort = makeTitleForSort(this.title)
+		if( parser.serviceType == ServiceType.MISSKEY){
+			id = EntityId.mayDefault(src.parseString("id") )
+			title = src.parseString("title")
+			this.title_for_sort = makeTitleForSort(this.title)
+			val user_list = ArrayList<EntityId>()
+			userIds = user_list
+			src.optJSONArray("userIds")?.forEach {
+				val id = EntityId.mayNull( it as? String )
+				if(id != null ) user_list.add(id )
+			}
+		}else {
+			id = EntityId.mayDefault(src.parseLong("id") )
+			title = src.parseString("title")
+			this.title_for_sort = makeTitleForSort(this.title)
+		}
 	}
 	
 	override fun getOrderId() = id

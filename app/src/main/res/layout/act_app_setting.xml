@@ -1618,6 +1618,24 @@
 
         <View style="@style/setting_divider"/>
 
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/timeout_for_embed_media_viewer"
+            android:labelFor="@+id/etMediaReadTimeout"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etMediaReadTimeout"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
         <!-- =============================================== -->
         <TextView
             style="@style/setting_group_header"

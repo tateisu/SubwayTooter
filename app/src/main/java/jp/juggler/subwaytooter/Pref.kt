@@ -372,7 +372,9 @@ object Pref {
 	val spRoundRatio = StringPref("round_ratio", "33")
 	val spPullNotificationCheckInterval = StringPref("PullNotificationCheckInterval", "15")
 	val spUserAgent = StringPref("UserAgent", "")
-
+	
+	val spMediaReadTimeout = StringPref("spMediaReadTimeout", "60")
+	
 	// long
 	val lpTabletTootDefaultAccount = LongPref("tablet_toot_default_account", - 1L)
 	

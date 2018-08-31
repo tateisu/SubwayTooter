@@ -387,6 +387,7 @@ class Column(
 					TYPE_LOCAL -> "/local-timeline?i=$misskeyApiToken"
 					TYPE_MISSKEY_HYBRID -> "/hybrid-timeline?i=$misskeyApiToken"
 					TYPE_FEDERATE -> "/global-timeline?i=$misskeyApiToken"
+					TYPE_LIST_TL -> "/user-list?i=$misskeyApiToken&listId=$profile_id"
 					else -> null
 				}
 			}
@@ -395,7 +396,7 @@ class Column(
 				TYPE_HOME, TYPE_NOTIFICATIONS -> "/api/v1/streaming/?stream=user"
 				TYPE_LOCAL -> "/api/v1/streaming/?stream=public:local"
 				TYPE_FEDERATE -> "/api/v1/streaming/?stream=public"
-				TYPE_LIST_TL -> "/api/v1/streaming/?stream=list&list=" + profile_id.toString()
+				TYPE_LIST_TL -> "/api/v1/streaming/?stream=list&list=$profile_id"
 				
 				TYPE_DIRECT_MESSAGES -> "/api/v1/streaming/?stream=direct"
 				
@@ -1475,11 +1476,18 @@ class Column(
 	}
 	
 	internal fun loadListInfo(client : TootApiClient, bForceReload : Boolean) {
+		val parser =  TootParser(context,access_info)
 		if(bForceReload || this.list_info == null) {
-			val result = client.request(String.format(Locale.JAPAN, PATH_LIST_INFO, profile_id))
+			val result = if(isMisskey){
+				val params = makeMisskeyBaseParameter(parser)
+					.put("listId",profile_id)
+				client.request("/api/users/lists/show",params.toPostRequestBuilder())
+			}else{
+				client.request(String.format(Locale.JAPAN, PATH_LIST_INFO, profile_id))
+			}
 			val jsonObject = result?.jsonObject
 			if(jsonObject != null) {
-				val data = parseItem(::TootList, jsonObject)
+				val data = parseItem(::TootList,parser,jsonObject)
 				if(data != null) {
 					this.list_info = data
 					client.publishApiProgress("") // カラムヘッダの再表示
@@ -1891,10 +1899,18 @@ class Column(
 				return result
 			}
 			
-			fun parseListList(client : TootApiClient, path_base : String) : TootApiResult? {
-				val result = client.request(path_base)
+			fun parseListList(
+				client : TootApiClient,
+				path_base : String,
+				misskeyParams: JSONObject? = null
+				) : TootApiResult? {
+				val result = if( misskeyParams != null){
+					client.request(path_base,misskeyParams.toPostRequestBuilder())
+				}else{
+					client.request(path_base)
+				}
 				if(result != null) {
-					val src = parseList(::TootList, result.jsonArray)
+					val src =  parseList(::TootList, parser,result.jsonArray)
 					src.sort()
 					saveRange(true, true, result, src)
 					this.list_tmp = addAll(null, src)
@@ -2136,19 +2152,51 @@ class Column(
 						
 						TYPE_DOMAIN_BLOCKS -> return parseDomainList(client, PATH_DOMAIN_BLOCK)
 						
-						TYPE_LIST_LIST -> return parseListList(client, PATH_LIST_LIST)
+						TYPE_LIST_LIST -> if(isMisskey){
+							val params = makeMisskeyBaseParameter(parser)
+							return parseListList(
+								client,
+								"/api/users/lists/list",
+								misskeyParams = params
+							)
+						}else{
+							return parseListList(client, PATH_LIST_LIST)
+							
+						}
 						
 						TYPE_LIST_TL -> {
 							loadListInfo(client, true)
-							return getStatuses(client, makeListTlUrl())
+							return if(isMisskey){
+								val params = makeMisskeyTimelineParameter(parser)
+									.put("listId",profile_id)
+								getStatuses(client, makeListTlUrl(),misskeyParams = params)
+							}else{
+								getStatuses(client, makeListTlUrl())
+							}
 						}
 						
 						TYPE_LIST_MEMBER -> {
 							loadListInfo(client, true)
-							return parseAccountList(
-								client,
-								String.format(Locale.JAPAN, PATH_LIST_MEMBER, profile_id)
-							)
+							return if( isMisskey){
+								pagingType = PagingType.None
+								val params = access_info.putMisskeyApiToken(JSONObject())
+									.put("userIds",JSONArray().apply {
+										list_info?.userIds?.forEach {
+											this.put( it.toString())
+										}
+									})
+								parseAccountList(
+									client,
+									"/api/users/show",
+									misskeyParams = params
+								)
+								
+							}else {
+								parseAccountList(
+									client,
+									String.format(Locale.JAPAN, PATH_LIST_MEMBER, profile_id)
+								)
+							}
 						}
 						
 						TYPE_FOLLOW_REQUESTS -> return if(isMisskey) {
@@ -3702,13 +3750,18 @@ class Column(
 						}
 						
 						TYPE_LIST_LIST -> {
-							//getListList(client, PATH_LIST_LIST)
 							TootApiResult("list API does not support refresh loading.")
 						}
 						
 						TYPE_LIST_TL -> {
 							loadListInfo(client, false)
-							getStatusList(client, makeListTlUrl())
+							if(isMisskey){
+								val params = makeMisskeyTimelineParameter(parser)
+									.put("listId",profile_id)
+								getStatusList(client, makeListTlUrl(),misskeyParams = params)
+							}else{
+								getStatusList(client, makeListTlUrl())
+							}
 						}
 						
 						TYPE_LIST_MEMBER -> {
@@ -4497,7 +4550,13 @@ class Column(
 						
 						TYPE_FEDERATE -> getStatusList(client, makePublicFederateUrl())
 						
-						TYPE_LIST_TL -> getStatusList(client, makeListTlUrl())
+						TYPE_LIST_TL -> if(isMisskey){
+							val params = makeMisskeyTimelineParameter(parser)
+								.put("listId",profile_id)
+							getStatusList(client, makeListTlUrl(),misskeyParams = params)
+						}else{
+							getStatusList(client, makeListTlUrl())
+						}
 						
 						TYPE_FAVOURITES -> if(isMisskey) {
 							getStatusList(
@@ -4872,7 +4931,7 @@ class Column(
 		TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_PROFILE, TYPE_SEARCH -> TootFilter.CONTEXT_PUBLIC
 		TYPE_DIRECT_MESSAGES -> TootFilter.CONTEXT_PUBLIC
 		else -> TootFilter.CONTEXT_NONE
-		// TYPE_MISSKEY_HYBRID はHOMEでもPUBLICでもある… Misskeyだし関係ないかが、NONEにするとアプリ内で完結するフィルタも働かなくなる
+		// TYPE_MISSKEY_HYBRID はHOMEでもPUBLICでもある… Misskeyだし関係ないが、NONEにするとアプリ内で完結するフィルタも働かなくなる
 	}
 	
 	// カラム設定に「すべての画像を隠す」ボタンを含めるなら真
@@ -4923,6 +4982,7 @@ class Column(
 			TYPE_TREND_TAG,
 			TYPE_FOLLOW_SUGGESTION -> true
 			
+			TYPE_LIST_MEMBER,
 			TYPE_MUTES,
 			TYPE_FOLLOW_REQUESTS -> isMisskey
 			
@@ -4942,7 +5002,7 @@ class Column(
 	// カラム操作的にリフレッシュを許容するかどうか
 	fun canRefreshBottomBySwipe() : Boolean {
 		return when(column_type) {
-			
+			TYPE_LIST_LIST,
 			TYPE_CONVERSATION,
 			TYPE_INSTANCE_INFORMATION,
 			TYPE_KEYWORD_FILTER,
@@ -4951,6 +5011,8 @@ class Column(
 			TYPE_FOLLOW_SUGGESTION -> false
 			
 			TYPE_FOLLOW_REQUESTS -> isMisskey
+			
+			TYPE_LIST_MEMBER -> !isMisskey
 			
 			else -> true
 		}
@@ -5324,7 +5386,11 @@ class Column(
 	}
 	
 	private fun makeListTlUrl() : String {
-		return String.format(Locale.JAPAN, PATH_LIST_TL, profile_id)
+		return if( isMisskey){
+			"/api/notes/user-list-timeline"
+		}else{
+			String.format(Locale.JAPAN, PATH_LIST_TL, profile_id)
+		}
 	}
 	
 	private fun makeHashtagUrl(

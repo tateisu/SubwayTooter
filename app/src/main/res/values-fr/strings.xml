@@ -787,8 +787,9 @@
 	<string name="confirm_cancel_follow_request_who_from">Follow request from %2$s to %1$s will be cancelled. Are you sure?</string>
     <string name="reaction">Reaction (Misskey)</string>
 	<string name="vote">Vote (Misskey)</string>
+    <string name="timeout_for_embed_media_viewer">Timeout for embed media viewer (unit:seconds, app restart(delete from app history) required)</string>
 
-	<!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
+    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
 	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
 	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
 	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->

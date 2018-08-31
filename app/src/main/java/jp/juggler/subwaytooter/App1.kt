@@ -212,7 +212,10 @@ class App1 : Application() {
 			chain.proceed(request_with_user_agent)
 		}
 		
-		private fun prepareOkHttp() : OkHttpClient.Builder {
+		private fun prepareOkHttp(
+			timeoutSecondsConnect:Int,
+			timeoutSecondsRead:Int
+		) : OkHttpClient.Builder {
 			val spec = ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
 				.cipherSuites(*APPROVED_CIPHER_SUITES)
 				.build()
@@ -222,9 +225,9 @@ class App1 : Application() {
 			spec_list.add(ConnectionSpec.CLEARTEXT)
 			
 			return OkHttpClient.Builder()
-				.connectTimeout(30, TimeUnit.SECONDS)
-				.readTimeout(60, TimeUnit.SECONDS)
-				.writeTimeout(60, TimeUnit.SECONDS)
+				.connectTimeout(timeoutSecondsConnect.toLong(), TimeUnit.SECONDS)
+				.readTimeout(timeoutSecondsRead.toLong(), TimeUnit.SECONDS)
+				.writeTimeout(timeoutSecondsRead.toLong(), TimeUnit.SECONDS)
 				.pingInterval(10, TimeUnit.SECONDS)
 				.connectionSpecs(spec_list)
 				.addInterceptor(ProgressResponseBody.makeInterceptor())
@@ -323,12 +326,14 @@ class App1 : Application() {
 			//		}
 			
 			run {
-				val builder = prepareOkHttp()
+				val builder = prepareOkHttp(30,60)
 				ok_http_client = builder.build()
 			}
 			
 			run {
-				val builder = prepareOkHttp()
+				var mediaReadTimeout = Pref.spMediaReadTimeout.toInt(pref)
+				if( mediaReadTimeout < 3 ) mediaReadTimeout = 3
+				val builder = prepareOkHttp(mediaReadTimeout,mediaReadTimeout)
 				
 				val cacheDir = File(app_context.cacheDir, "http2")
 				val cache = Cache(cacheDir, 30000000L)

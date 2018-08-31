@@ -138,6 +138,8 @@ class ActAppSetting : AppCompatActivity()
 	private lateinit var etAutoCWLines : EditText
 	private lateinit var etMediaSizeMax : EditText
 	private lateinit var etRoundRatio : EditText
+	private lateinit var etMediaReadTimeout : EditText
+	
 	
 	private lateinit var tvTimelineFontUrl : TextView
 	private var timeline_font : String? = null
@@ -326,6 +328,9 @@ class ActAppSetting : AppCompatActivity()
 		etRoundRatio = findViewById(R.id.etRoundRatio)
 		etRoundRatio.addTextChangedListener(this)
 		
+		etMediaReadTimeout= findViewById(R.id.etMediaReadTimeout)
+		etMediaReadTimeout.addTextChangedListener(this)
+		
 		tvTimelineFontSize = findViewById(R.id.tvTimelineFontSize)
 		tvAcctFontSize = findViewById(R.id.tvAcctFontSize)
 		tvNotificationTlFontSize = findViewById(R.id.tvNotificationTlFontSize)
@@ -429,6 +434,8 @@ class ActAppSetting : AppCompatActivity()
 		etMediaSizeMax.setText(Pref.spMediaSizeMax(pref))
 		etRoundRatio.setText(Pref.spRoundRatio(pref))
 		
+		etMediaReadTimeout.setText(Pref.spMediaReadTimeout(pref))
+		
 		timeline_font = Pref.spTimelineFont(pref)
 		timeline_font_bold = Pref.spTimelineFontBold(pref)
 		
@@ -504,6 +511,8 @@ class ActAppSetting : AppCompatActivity()
 				etPullNotificationCheckInterval.text.toString().trim { it <= ' ' })
 			.put(Pref.spMediaSizeMax, etMediaSizeMax.text.toString().trim { it <= ' ' })
 			.put(Pref.spRoundRatio, etRoundRatio.text.toString().trim { it <= ' ' })
+			.put(Pref.spMediaReadTimeout, etMediaReadTimeout.text.toString().trim { it <= ' ' })
+		
 			
 			.put(Pref.spTimelineFont, timeline_font ?: "")
 			.put(Pref.spTimelineFontBold, timeline_font_bold ?: "")

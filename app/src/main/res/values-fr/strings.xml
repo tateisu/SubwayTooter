@@ -1,11 +1,5 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<resources
-    xmlns:tools="http://schemas.android.com/tools"
-    tools:ignore="MissingTranslation"
-    >
-
-
-
+<?xml version='1.0' encoding='UTF-8'?>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
 	<string name="access_token_updated_for">L\'autorisation d\'accès a été mis à jour pour %1$s.</string>
 	<string name="account">Compte</string>
 	<string name="account_add">Ajouter un compte</string>
@@ -48,7 +42,7 @@
 	<string name="block">Bloquer</string>
 	<string name="block_succeeded">Blocage effectué</string>
 	<string name="blocked_users">Utilisateurs bloqués</string>
-	<string name="boost">Partager</string>
+	<string name="boost">boost</string>
 	<string name="boost_from_another_account">Partager à partir d\'un autre compte</string>
 	<string name="boost_succeeded">Partagé avec succès</string>
 	<string name="unboost_succeeded">boost removed</string>
@@ -103,7 +97,7 @@
 	<string name="content_warning">Avertissement de contenu</string>
 	<string name="content_warning_hint">Saisissez le texte d\'avertissement de contenu.</string>
 	<string name="contributor">Contributeur(s)</string>
-	<string name="conversation">Conversation</string>
+	<string name="conversation">conversation</string>
 	<string name="conversation_around">Conversation du statut: %1$s</string>
 	<string name="conversation_view">Visualiser la conversation</string>
 	<string name="copy">Copier</string>
@@ -148,7 +142,7 @@
 	<string name="favourites">Favoris</string>
 	<string name="federate_timeline">Chronologie fédérée</string>
 	<string name="file_size_too_big">Taille du fichier est trop grande. La limite maximale est de %1$d Mo.</string>
-	<string name="follow">Suivre</string>
+	<string name="follow">follow</string>
 	<string name="follow_from_another_account">Suivre (sélection du compte)</string>
 	<string name="follow_locked_user">Suivre un utilisateur verrouillé</string>
 	<string name="follow_request_authorized">Demande de suivi de %1$s accepté</string>
@@ -170,7 +164,7 @@
 	<string name="help_translation">Aide à la traduction</string>
 	<string name="hide">Masquer</string>
 	<string name="hide_media_default">Ne pas afficher les pièces jointes</string>
-	<string name="home">Accueil</string>
+	<string name="home">home</string>
 	<string name="image">Image</string>
 	<string name="image_alpha">Transparence de l\'image</string>
 	<string name="image_capture">Utiliser l\'appareil photo</string>
@@ -192,7 +186,7 @@
 	<string name="mail_not_specified">E-mail non spécifié</string>
 	<string name="media_attachment">Ajouter une pièce jointe</string>
 	<string name="media_thumbnail_height">Hauteur des pièces jointes dans l\'interface \n(défaut=64(dp), redémarrage nécessaire)</string>
-	<string name="mention">Mention</string>
+	<string name="mention">mention</string>
 	<string name="mention2">Mention</string>
 	<string name="menu">Menu</string>
 	<string name="minimum_column_width">Largeur minimum des colonnes \n(défaut=300(dp), redémarrage nécessaire)</string>
@@ -267,7 +261,7 @@
 	<string name="report_reason">Décrire la raison du signalement</string>
 	<string name="reports">Signalements</string>
 	<string name="request_access_token">Demander l\'autorisation d\'accès à l\'instance…</string>
-	<string name="request_api">Acquiring: %1$s %2$s</string>
+	<string name="request_api">Acquisition : %1$s %2$s</string>
 	<string name="reading_api">Reading: %1$s %2$s</string>
 
 	<string name="reset">Reset</string>
@@ -788,27 +782,5 @@
     <string name="reaction">Reaction (Misskey)</string>
 	<string name="vote">Vote (Misskey)</string>
     <string name="timeout_for_embed_media_viewer">Timeout for embed media viewer (unit:seconds, app restart(delete from app history) required)</string>
-
-    <!--<string name="abc_action_bar_home_description">Revenir à l\'accueil</string>-->
-	<!--<string name="abc_action_bar_home_description_format">%1$s, %2$s</string>-->
-	<!--<string name="abc_action_bar_home_subtitle_description_format">%1$s, %2$s, %3$s</string>-->
-	<!--<string name="abc_action_bar_up_description">Revenir en haut de la page</string>-->
-	<!--<string name="abc_action_menu_overflow_description">Plus d\'options</string>-->
-	<!--<string name="abc_action_mode_done">OK</string>-->
-	<!--<string name="abc_activity_chooser_view_see_all">Tout afficher</string>-->
-	<!--<string name="abc_activitychooserview_choose_application">Sélectionner une application</string>-->
-	<!--<string name="abc_capital_off">DÉSACTIVÉ</string>-->
-	<!--<string name="abc_capital_on">ACTIVÉ</string>-->
-	<!--<string name="abc_search_hint">Rechercher…</string>-->
-	<!--<string name="abc_searchview_description_clear">Effacer la requête</string>-->
-	<!--<string name="abc_searchview_description_query">Requête de recherche</string>-->
-	<!--<string name="abc_searchview_description_search">Rechercher</string>-->
-	<!--<string name="abc_searchview_description_submit">Envoyer la requête</string>-->
-	<!--<string name="abc_searchview_description_voice">Recherche vocale</string>-->
-	<!--<string name="abc_shareactionprovider_share_with">Partager avec</string>-->
-	<!--<string name="abc_shareactionprovider_share_with_application">Partager avec %s</string>-->
-	<!--<string name="abc_toolbar_collapse_description">Réduire</string>-->
-	<!--<string name="search_menu_title">Rechercher</string>-->
-	<!--<string name="status_bar_notification_info_overflow">&gt;999</string>-->
 
 </resources>

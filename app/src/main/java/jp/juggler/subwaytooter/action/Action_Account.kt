@@ -191,14 +191,14 @@ object Action_Account {
 		
 		val db_id = activity.currentPostTargetId
 		if(db_id != - 1L) {
-			ActPost.open(activity, ActMain.REQUEST_CODE_POST, db_id, initial_text)
+			ActPost.open(activity, ActMain.REQUEST_CODE_POST, db_id, initial_text = initial_text)
 		} else {
 			AccountPicker.pick(
 				activity,
 				bAllowPseudo = false,
 				bAuto = true,
 				message = activity.getString(R.string.account_picker_toot)
-			) { ai -> ActPost.open(activity, ActMain.REQUEST_CODE_POST, ai.db_id, initial_text) }
+			) { ai -> ActPost.open(activity, ActMain.REQUEST_CODE_POST, ai.db_id, initial_text = initial_text) }
 		}
 	}
 	

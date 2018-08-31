@@ -50,6 +50,15 @@ class JsonArrayForEach {
 			++count
 		}
 		
-		assertEquals(count,16)
+		for( o in array.iterator() ){
+			println("JSONArray.iterator $o")
+			++count
+		}
+		for( o in array.reverseIterator() ){
+			println("JSONArray.reverseIterator $o")
+			++count
+		}
+		
+		assertEquals(count,24)
 	}
 }

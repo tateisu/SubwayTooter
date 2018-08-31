@@ -852,7 +852,12 @@ object Action_Toot {
 	fun reply(
 		activity : ActMain, access_info : SavedAccount, status : TootStatus
 	) {
-		ActPost.open(activity, ActMain.REQUEST_CODE_POST, access_info.db_id, status)
+		ActPost.open(
+			activity,
+			ActMain.REQUEST_CODE_POST,
+			access_info.db_id,
+			reply_status = status
+		)
 	}
 	
 	fun replyFromAnotherAccount(
@@ -917,8 +922,14 @@ object Action_Toot {
 		status : TootStatus
 	) {
 		activity.post_helper.closeAcctPopup()
+		
+		if( accessInfo.isMisskey){
+			ActPost.open(activity, ActMain.REQUEST_CODE_POST, accessInfo.db_id, redraft_status = status, reply_status = status.reply)
+			return
+		}
+		
 		if(status.in_reply_to_id == null) {
-			ActPost.openRedraft(activity, ActMain.REQUEST_CODE_POST, accessInfo.db_id, status)
+			ActPost.open(activity, ActMain.REQUEST_CODE_POST, accessInfo.db_id, redraft_status = status)
 			return
 		}
 		
@@ -936,12 +947,12 @@ object Action_Toot {
 				
 				val reply_status = this.reply_status
 				if(reply_status != null) {
-					ActPost.openRedraft(
+					ActPost.open(
 						activity,
 						ActMain.REQUEST_CODE_POST,
 						accessInfo.db_id,
-						status,
-						reply_status
+						redraft_status = status,
+						reply_status = reply_status
 					)
 					return
 				}

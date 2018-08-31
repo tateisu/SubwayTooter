@@ -623,7 +623,7 @@ class ActMain : AppCompatActivity()
 			, dismiss_callback = { sent_intent2 = null }
 		) { ai ->
 			sent_intent2 = null
-			ActPost.open(this@ActMain, REQUEST_CODE_POST, ai.db_id, intent)
+			ActPost.open(this@ActMain, REQUEST_CODE_POST, ai.db_id,sent_intent = intent)
 		}
 	}
 	

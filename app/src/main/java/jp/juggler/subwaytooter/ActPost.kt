@@ -28,36 +28,15 @@ import android.text.method.LinkMovementMethod
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.ScrollView
-import android.widget.TextView
+import android.widget.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
-
-import org.apache.commons.io.IOUtils
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
-
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.IOException
-import java.io.InputStream
-import java.lang.ref.WeakReference
-import java.util.ArrayList
-import java.util.HashSet
-import java.util.Locale
-
 import jp.juggler.subwaytooter.dialog.*
+import jp.juggler.subwaytooter.span.MyClickableSpan
+import jp.juggler.subwaytooter.span.MyClickableSpanClickCallback
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.PostDraft
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.span.MyClickableSpan
-import jp.juggler.subwaytooter.span.MyClickableSpanClickCallback
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.FocusPointView
 import jp.juggler.subwaytooter.view.MyEditText
@@ -67,6 +46,13 @@ import okhttp3.MultipartBody
 import okhttp3.Request
 import okhttp3.RequestBody
 import okio.BufferedSink
+import org.apache.commons.io.IOUtils
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
+import java.io.*
+import java.lang.ref.WeakReference
+import java.util.*
 
 class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callback {
 	
@@ -152,59 +138,36 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			activity : Activity,
 			request_code : Int,
 			account_db_id : Long,
-			reply_status : TootStatus?
+
+			// 再編集する投稿。アカウントと同一のタンスであること
+			redraft_status : TootStatus? =null,
+
+			// 返信対象の投稿。同一タンス上に同期済みであること
+			reply_status : TootStatus? = null,
+
+			//初期テキスト
+			initial_text : String? =null,
+
+			// 外部アプリから共有されたインテント
+			sent_intent : Intent? =null
 		) {
 			val intent = Intent(activity, ActPost::class.java)
 			intent.putExtra(KEY_ACCOUNT_DB_ID, account_db_id)
+			if( redraft_status != null ){
+				intent.putExtra(KEY_REDRAFT_STATUS, redraft_status.json.toString())
+			}
 			if(reply_status != null) {
 				intent.putExtra(KEY_REPLY_STATUS, reply_status.json.toString())
 			}
-			activity.startActivityForResult(intent, request_code)
-		}
-		
-		fun openRedraft(
-			activity : Activity,
-			request_code : Int,
-			account_db_id : Long,
-			base_status : TootStatus,
-			reply_status : TootStatus? = null
-		) {
-			val intent = Intent(activity, ActPost::class.java)
-			intent.putExtra(KEY_ACCOUNT_DB_ID, account_db_id)
-			intent.putExtra(KEY_REDRAFT_STATUS, base_status.json.toString())
-			if(reply_status != null) {
-				intent.putExtra(KEY_REPLY_STATUS, reply_status.json.toString())
-			}
-			activity.startActivityForResult(intent, request_code)
-		}
-		
-		fun open(
-			activity : Activity,
-			request_code : Int,
-			account_db_id : Long,
-			initial_text : String?
-		) {
-			val intent = Intent(activity, ActPost::class.java)
-			intent.putExtra(KEY_ACCOUNT_DB_ID, account_db_id)
 			if(initial_text != null) {
 				intent.putExtra(KEY_INITIAL_TEXT, initial_text)
 			}
-			activity.startActivityForResult(intent, request_code)
-		}
-		
-		fun open(
-			activity : Activity,
-			request_code : Int,
-			account_db_id : Long,
-			sent_intent : Intent?
-		) {
-			val intent = Intent(activity, ActPost::class.java)
-			intent.putExtra(KEY_ACCOUNT_DB_ID, account_db_id)
 			if(sent_intent != null) {
 				intent.putExtra(KEY_SENT_INTENT, sent_intent)
 			}
 			activity.startActivityForResult(intent, request_code)
 		}
+		
 		
 		internal fun check_exist(url : String?) : Boolean {
 			if(url?.isEmpty() != false) return false
@@ -1059,11 +1022,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		) { ai ->
 			
 			// 別タンスのアカウントに変更したならならin_reply_toの変換が必要
-			if(in_reply_to_id != null && ! ai.host.equals(account?.host, ignoreCase = true)) {
+			if( in_reply_to_id != null && ! ai.host.equals(account?.host, ignoreCase = true) ) {
 				startReplyConversion(ai)
+			}else {
+				setAccountWithVisibilityConversion(ai)
 			}
-			
-			setAccountWithVisibilityConversion(ai)
 		}
 		
 		//		final ArrayList< SavedAccount > tmp_account_list = new ArrayList<>();
@@ -1120,7 +1083,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	
 	@SuppressLint("StaticFieldLeak")
 	private fun startReplyConversion(access_info : SavedAccount) {
+
 		val in_reply_to_url = this.in_reply_to_url
+
 		if(in_reply_to_url == null) {
 			// 下書きが古い形式の場合、URLがないので別タンスへの移動ができない
 			AlertDialog.Builder(this@ActPost)

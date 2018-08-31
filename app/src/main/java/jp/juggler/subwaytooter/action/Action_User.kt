@@ -1,15 +1,7 @@
 package jp.juggler.subwaytooter.action
 
 import android.app.AlertDialog
-import org.json.JSONObject
-
-import java.util.Locale
-
-import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.ActPost
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Column
-import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
@@ -23,6 +15,7 @@ import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.*
 import okhttp3.Request
 import okhttp3.RequestBody
+import org.json.JSONObject
 
 object Action_User {
 	
@@ -452,7 +445,10 @@ object Action_User {
 		activity : ActMain, account : SavedAccount, initial_text : String
 	) {
 		ActPost.open(
-			activity, ActMain.REQUEST_CODE_POST, account.db_id, initial_text
+			activity,
+			ActMain.REQUEST_CODE_POST,
+			account.db_id,
+			initial_text = initial_text
 		)
 	}
 	

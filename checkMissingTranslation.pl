@@ -4,6 +4,8 @@ use strict;
 use warnings;
 use File::Find;
 
+my $master_name = "_master";
+
 my @files;
 
 find(sub{
@@ -19,7 +21,7 @@ for my $file(@files){
 	if( $file =~ m|values-([^/]+)| ){
 		$lang = $1;
 	}else{
-		$lang="master";
+		$lang=$master_name;
 	}
 	my %names;
 	my $parser = XML::Parser->new(Handlers => {
@@ -43,12 +45,13 @@ for my $file(@files){
 	$langs{ $lang } = \%names;
 }
 
-my $master = $langs{ "master" };
+my $master = $langs{ $master_name };
 $master or die "missing master languages.\n";
 
 my %missing;
 my %allNames;
-while(my($lang,$names)=each %langs ){
+for my $lang ( sort keys %langs ){
+	my $names = $langs{$lang};
 	while(my($name,$value)=each %$names){
 		$allNames{$name}=1;
 		if(not $master->{$name} ){

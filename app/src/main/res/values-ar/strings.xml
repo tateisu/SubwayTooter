@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources><string name="action_settings">الإعدادات</string>
+<resources>
+    <string name="action_settings">الإعدادات</string>
     <string name="account_add">إضافة حساب</string>
     <string name="cancel">إلغاء</string>
     <string name="api_error">خطأ في واجهة برمجة التطبيقات. %1$s</string>

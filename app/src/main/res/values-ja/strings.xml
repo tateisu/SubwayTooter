@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-
+<resources>
     <string name="access_token_or_api_token">アクセストークン (Misskeyタンスの場合はAPIトークン)</string>
     <string name="access_token_updated_for">%1$sのアクセストークンを更新しました</string>
     <string name="account">アカウント</string>

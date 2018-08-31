@@ -153,5 +153,14 @@
             android:layout_height="0dp"
             android:layout_weight="1"
             />
+
+        <Button
+            android:id="@+id/btnWeblate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/btn_bg_transparent"
+            android:padding="8dp"
+            android:textAllCaps="false"
+            />
     </LinearLayout>
 </ScrollView>

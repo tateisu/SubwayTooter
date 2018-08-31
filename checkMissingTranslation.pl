@@ -67,4 +67,13 @@ my @missing = sort keys %missing;
 
 my $nameCount = 0+ keys %allNames;
 print "(total)string resource count=$nameCount\n";
+
+print "# Fetching all remotes..\n";
+system qq(git fetch --all -q);
+
+my @list = `git branch -a --no-merged`;
+for(@list){
+	print "# Unmerged branch: $_\n";
+}
+
 exit 0;

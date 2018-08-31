@@ -24,8 +24,14 @@ class ActAbout : AppCompatActivity() {
 		const val developer_acct = "tateisu@mastodon.juggler.jp"
 		
 		const val url_futaba = "https://www.instagram.com/hinomoto_hutaba/"
+
+		const val url_weblate = "https://hosted.weblate.org/projects/subway-tooter/"
 		
-		val contributors = arrayOf("@Balor@freeradical.zone", "update english language", "@Luattic@oc.todon.fr", "update french language")
+		val contributors = arrayOf(
+			"@Balor@freeradical.zone", "update english language",
+			"@Luattic@oc.todon.fr", "update french language",
+			"@BoF@mstdn.fr", "update arabic language"
+		)
 	}
 	
 	override fun onCreate(savedInstanceState : Bundle?) {
@@ -62,6 +68,10 @@ class ActAbout : AppCompatActivity() {
 		b = findViewById(R.id.btnIconDesign)
 		b.text = url_futaba
 		b.setOnClickListener { open_browser(url_futaba) }
+		
+		b = findViewById(R.id.btnWeblate)
+		b.text = "Please help translation!"
+		b.setOnClickListener { open_browser(url_weblate) }
 		
 		val ll = findViewById<LinearLayout>(R.id.llContributors)
 		val density = resources.displayMetrics.density

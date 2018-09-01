@@ -95,7 +95,7 @@
 	<string name="confirmation">Confirmation</string>
 	<string name="content_hint">Veuillez saisir votre statut</string>
 	<string name="content_warning">Avertissement de contenu</string>
-	<string name="content_warning_hint">Saisissez le texte d\'avertissement de contenu.</string>
+	<string name="content_warning_hint">Saisissez ici votre texte d’avertissement</string>
 	<string name="contributor">Contributeur(s)</string>
 	<string name="conversation">conversation</string>
 	<string name="conversation_around">Conversation du statut: %1$s</string>
@@ -145,7 +145,7 @@
 	<string name="follow">follow</string>
 	<string name="follow_from_another_account">Suivre (sélection du compte)</string>
 	<string name="follow_locked_user">Suivre un utilisateur verrouillé</string>
-	<string name="follow_request_authorized">Demande de suivi de %1$s accepté</string>
+	<string name="follow_request_authorized">Demande de suivi de %1$s acceptée.</string>
 	<string name="follow_request_cant_remove_by_sender">Il semble que la demande de suivit ne puisse pas être supprimé par l\'expéditeur…</string>
 	<string name="follow_request_ng">Demande de suivi rejeté</string>
 	<string name="follow_request_ok">Autoriser demande de suivi</string>
@@ -235,7 +235,7 @@
 	<string name="please_donate">Merci de soutenir cette application !</string>
 	<string name="please_rate">Merci de prendre un peu de temps pour\nnoter cette application et donner votre avis !</string>
 	<string name="post_error_contents_empty">Veuillez saisir votre statut.</string>
-	<string name="post_error_contents_warning_empty">Veuillez saisir l\'avertissement de contenu</string>
+	<string name="post_error_contents_warning_empty">Votre pouet a besoin d’un avertissement de contenu.</string>
 	<string name="post_from">Publier par</string>
 	<string name="preview">Pré-visualiser</string>
 	<string name="prior_local_url_when_open_attachment">Priorité à l\'URL locale lors de l\'ouverture de pièce(s) jointe(s)</string>
@@ -255,7 +255,7 @@
 	<string name="reload">Rafraîchir</string>
 	<string name="reply">Répondre</string>
 	<string name="reply_from_another_account">Répondre avec un autre compte</string>
-	<string name="reply_to_this_status">Répondre à ce statut:</string>
+	<string name="reply_to_this_status">Répondre à ce statut :</string>
 	<string name="report">Signaler</string>
 	<string name="report_completed">Signalement terminé.</string>
 	<string name="report_reason">Décrire la raison du signalement</string>
@@ -314,7 +314,7 @@
 	<string name="update_access_token">Mettre à jour l\'autorisation d\'accès à l\'instance</string>
 	<string name="user">Utilisateur</string>
 	<string name="user_mail_address">Adresse e-mail de l\'utilisateur</string>
-	<string name="user_name_not_match">Le nom d\'utilisateur ne correspond pas.</string>
+	<string name="user_name_not_match">Le nom d\'utilisateur ne correspond pas</string>
 	<string name="user_password">Mot de passe de l\'utilisateur</string>
 	<string name="version_is">Version: %1$s</string>
 	<string name="vibration">Vibration</string>
@@ -462,7 +462,7 @@
 	<string name="notification_channel_description">These setting is used to notification for %1$s</string>
 	<string name="notification_style_before_oreo">Notification style(before Android 8. if your device is Android 8.0 or later, please check Account Setting )</string>
     <string name="enquete_was_end">Enquete was end.</string>
-	<string name="enquete_voted">Voted!</string>
+	<string name="enquete_voted">a voté !</string>
 	<string name="enquete_vote_failed">Vote failed. %1$s</string>
 	<string name="choice1">choice 1</string>
 	<string name="choice2">choice 2</string>
@@ -555,10 +555,10 @@
 	<string name="list_member_delete_confirm">\"%1$s\" will be deleted from \"%2$s\". Are you sure?</string>
 	<string name="target_user">Target user</string>
 	<string name="list_owner">List owner</string>
-	<string name="list_create">(Create new list…)</string>
+	<string name="list_create">Création d’une nouvelle liste…</string>
 	<string name="list">List</string>
 	<string name="list_not_supported">this instance does not support list.</string>
-	<string name="cant_access_list">Can\'t access to lists.</string>
+	<string name="cant_access_list">Impossible d’accéder aux listes</string>
 	<string name="account_sync_failed">account sync failed.</string>
 	<string name="list_retry_with_follow">You have not followed %1$s yet. Would you like to follow and then add to list?</string>
 	<string name="cant_add_list_follow_requesting">Can\'t add user to list:\nif the user is "locked", please wait until follow request is approved. else please retry 2…3 times.</string>

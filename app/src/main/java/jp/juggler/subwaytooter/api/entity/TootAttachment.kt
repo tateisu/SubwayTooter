@@ -83,7 +83,14 @@ class TootAttachment(serviceType:ServiceType,src : JSONObject) : TootAttachmentL
 				preview_url = src.parseString("thumbnailUrl")
 				remote_url = url
 				text_url = url
-				description = src.parseString("comment")
+
+				description = arrayOf(
+					src.parseString("name"),
+					src.parseString("comment")
+				)
+					.filterNotNull()
+					.joinToString(" / ")
+					
 				focusX = 0f
 				focusY = 0f
 				isSensitive = src.optBoolean("isSensitive",false)

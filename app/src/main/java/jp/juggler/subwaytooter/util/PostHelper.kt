@@ -346,11 +346,7 @@ class PostHelper(
 						}
 						
 						if(in_reply_to_id != null) {
-							if(account.isMisskey) {
-								json.put("replyId", in_reply_to_id.toString())
-							} else {
-								json.put("in_reply_to_id", in_reply_to_id.toLong())
-							}
+							json.put("replyId", in_reply_to_id.toString())
 						}
 						
 						json.put("viaMobile",true)
@@ -413,11 +409,7 @@ class PostHelper(
 						)
 						
 						if(in_reply_to_id != null) {
-							if(account.isMisskey) {
-								json.put("replyId", in_reply_to_id.toString())
-							} else {
-								json.put("in_reply_to_id", in_reply_to_id.toLong())
-							}
+							json.put("in_reply_to_id", in_reply_to_id.toLong())
 						}
 						
 						if(attachment_list != null) {

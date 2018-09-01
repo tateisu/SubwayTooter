@@ -246,7 +246,7 @@
 	<string name="qr_code">Code QR</string>
 	<string name="question">\?</string>
 	<string name="rate_on_store">Noter sur la boutique</string>
-	<string name="read_gap">Lire gap</string>
+	<string name="read_gap">Chargement des messages manquants</string>
 	<string name="refresh_after_toot">Action après un toot</string>
 	<string name="refresh_no_scroll">Ne pas faire défiler</string>
 	<string name="refresh_scroll_to_toot">Faire défiler</string>

@@ -1158,7 +1158,7 @@ class ActAccountSetting
 		}
 		
 		val a = ActionsDialog()
-		a.addAction(getString(R.string.image_pick)) {
+		a.addAction(getString(R.string.pick_image)) {
 			performAttachment(
 				if(permission_request_code == PERMISSION_REQUEST_AVATAR)
 					REQUEST_CODE_AVATAR_ATTACHMENT

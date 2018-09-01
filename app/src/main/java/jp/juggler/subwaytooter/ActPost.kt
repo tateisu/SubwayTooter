@@ -81,6 +81,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		private const val REQUEST_CODE_CAMERA = 2
 		private const val REQUEST_CODE_MUSHROOM = 3
 		private const val REQUEST_CODE_VIDEO = 4
+		private const val REQUEST_CODE_ATTACHMENT_OLD = 5
 		
 		private const val PERMISSION_REQUEST_CODE = 1
 		
@@ -294,7 +295,19 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	}
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
-		if(requestCode == REQUEST_CODE_ATTACHMENT && resultCode == Activity.RESULT_OK) {
+		if(requestCode == REQUEST_CODE_ATTACHMENT_OLD && resultCode == Activity.RESULT_OK) {
+			if( data != null) {
+				// 単一選択
+				data.data?.let { addAttachment(it, data.type) }
+				// 複数選択
+				val cd = data.clipData
+				if(cd != null) {
+					for(i in 0 until cd.itemCount) {
+						cd.getItemAt(i)?.uri?.let { addAttachment(it) }
+					}
+				}
+			}
+		}else if(requestCode == REQUEST_CODE_ATTACHMENT && resultCode == Activity.RESULT_OK) {
 			if(data != null) {
 				// 単一選択
 				data.data?.let { addAttachment(it, data.type) }
@@ -1333,6 +1346,17 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	}
 	
 	private fun openAttachment() {
+		
+		if(attachment_list.size >= 4) {
+			showToast(this, false, R.string.attachment_too_many)
+			return
+		}
+		
+		if(account == null) {
+			showToast(this, false, R.string.account_select_please)
+			return
+		}
+		
 		val permissionCheck =
 			ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
 		if(permissionCheck != PackageManager.PERMISSION_GRANTED) {
@@ -1347,7 +1371,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		//		}
 		
 		val a = ActionsDialog()
-		a.addAction(getString(R.string.image_pick)) { performAttachment() }
+		a.addAction(getString(R.string.pick_images_saf)) { performAttachmentSaf() }
+		a.addAction(getString(R.string.pick_images_old)) { performAttachmentOld() }
 		a.addAction(getString(R.string.image_capture)) { performCamera() }
 		
 		//		a.addAction( getString( R.string.video_capture ), new Runnable() {
@@ -1359,17 +1384,36 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 	}
 	
-	private fun performAttachment() {
-		
-		if(attachment_list.size >= 4) {
-			showToast(this, false, R.string.attachment_too_many)
-			return
+	private fun performAttachmentOld() {
+		// SAFのIntentで開く
+		try {
+			val intent = Intent(Intent.ACTION_GET_CONTENT , MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+			intent.addCategory( Intent.CATEGORY_OPENABLE )
+			
+			// EXTRA_ALLOW_MULTIPLE は API 18 (4.3)以降。ACTION_GET_CONTENT でも ACTION_OPEN_DOCUMENT でも指定できる
+			intent.putExtra( Intent.EXTRA_ALLOW_MULTIPLE, true );
+			
+			// EXTRA_MIME_TYPES は API 19以降。ACTION_GET_CONTENT でも ACTION_OPEN_DOCUMENT でも指定できる
+			intent.putExtra( "android.intent.extra.MIME_TYPES", arrayOf("image/*", "video/*") )
+			
+			if( Build.VERSION.SDK_INT >= 23){
+				// On Android 6.0 and above using "video/* image/" or "image/ video/*" type doesn't work
+				// it only recognizes the first filter you specify.
+				intent.type = "*/*"
+			}else {
+				intent.type = "image/* video/*"
+			}
+			
+			startActivityForResult(Intent.createChooser( intent, getString(R.string.pick_images_old) ), REQUEST_CODE_ATTACHMENT_OLD)
+		} catch(ex : Throwable) {
+			log.trace(ex)
+			showToast(this, ex, "ACTION_GET_CONTENT failed.")
 		}
 		
-		if(account == null) {
-			showToast(this, false, R.string.account_select_please)
-			return
-		}
+	}
+	private fun performAttachmentSaf() {
+		
+		
 		
 		// SAFのIntentで開く
 		try {
@@ -1385,7 +1429,6 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		}
 		
 	}
-	
 	internal interface InputStreamOpener {
 		
 		val mimeType : String

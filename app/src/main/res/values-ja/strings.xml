@@ -350,7 +350,6 @@
     <string name="image">画像</string>
     <string name="image_alpha">画像の不透明度</string>
     <string name="image_capture">カメラで撮影</string>
-    <string name="image_pick">画像を選択</string>
     <string name="in_reply_to_id_conversion_failed">アカウント切り替えできません。in_reply_toのID変換に失敗しました。</string>
     <string name="input_access_token">アクセストークンを指定する(上級者向け)</string>
     <string name="input_url_and_secret_then_test">URLとシークレットを入力してテストボタンを押してください</string>
@@ -508,7 +507,12 @@
     <string name="password_not_specified">パスワードを指定してください</string>
     <string name="people_talking">%1$d(%2$d)人がトゥート</string>
     <string name="performance">性能</string>
-    <string name="pick_image">画像の選択</string>
+
+    <string name="pick_image">画像を選択</string>
+    <string name="pick_images">画像を選択</string>
+    <string name="pick_images_saf">画像を選択(SAF)</string>
+    <string name="pick_images_old">画像を選択(旧式)</string>
+
     <string name="please_add_account">アカウントがありません。事前にアカウントの追加を行ってください</string>
     <string name="please_donate">開発継続のために寄付をお願いします！</string>
     <string name="please_rate">ストアで評価やレビューをお願いします！</string>

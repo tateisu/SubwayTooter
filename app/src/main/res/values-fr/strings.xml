@@ -168,7 +168,8 @@
 	<string name="image">Image</string>
 	<string name="image_alpha">Transparence de l\'image</string>
 	<string name="image_capture">Utiliser l\'appareil photo</string>
-	<string name="image_pick">Choisir une image</string>
+	<string name="pick_image">Choisir une image</string>
+	<string name="pick_images">Choisir une image</string>
 	<string name="instance">Instance</string>
 	<string name="instance_hint">Ex) mastodon.social</string>
 	<string name="instance_not_need_slash">Veuillez entrer seulement le nom de l\'hôte de l\'instance, sans « / » ni « \@ ».</string>

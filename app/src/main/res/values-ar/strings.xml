@@ -269,4 +269,8 @@
     <string name="open_profile_from_another_account">فتح الملف الشخصي بحساب آخَر</string>
     <string name="column_header">رأسية العمود</string>
     <string name="content_color">لون نص المحتوى</string>
+    <string name="send_message">إبعث له رسالة</string>
+    <string name="send_message_from_another_account">إبعث رسالة مِن حساب آخَر</string>
+    <string name="dont_confirm_again">لا تطلب مِنّي التأكيد مُجددًا</string>
+    <string name="profile_of">الملف الشخصي لـ %1$s</string>
     </resources>

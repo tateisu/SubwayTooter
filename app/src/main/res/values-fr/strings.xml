@@ -170,6 +170,7 @@
 	<string name="image_capture">Utiliser l\'appareil photo</string>
 	<string name="pick_image">Choisir une image</string>
 	<string name="pick_images">Choisir une image</string>
+
 	<string name="instance">Instance</string>
 	<string name="instance_hint">Ex) mastodon.social</string>
 	<string name="instance_not_need_slash">Veuillez entrer seulement le nom de l\'hôte de l\'instance, sans « / » ni « \@ ».</string>
@@ -231,7 +232,6 @@
 	<string name="open_web_page">Ouvrir la page Web</string>
 	<string name="oss_license">Licence OSS</string>
 	<string name="password_not_specified">Mot de passe non spécifié</string>
-	<string name="pick_image">Choisir une image</string>
 	<string name="please_add_account">Compte manquant. Veuillez ajouter un compte avant de poster.</string>
 	<string name="please_donate">Merci de soutenir cette application !</string>
 	<string name="please_rate">Merci de prendre un peu de temps pour\nnoter cette application et donner votre avis !</string>

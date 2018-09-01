@@ -297,15 +297,21 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
 		if(requestCode == REQUEST_CODE_ATTACHMENT_OLD && resultCode == Activity.RESULT_OK) {
 			if( data != null) {
+				val urlList = ArrayList<Pair<Uri,String?>>()
 				// 単一選択
-				data.data?.let { addAttachment(it, data.type) }
+				data.data?.let {urlList.add(Pair(it, data.type))  }
 				// 複数選択
 				val cd = data.clipData
 				if(cd != null) {
 					for(i in 0 until cd.itemCount) {
-						cd.getItemAt(i)?.uri?.let { addAttachment(it) }
+						cd.getItemAt(i)?.uri?.let { uri->
+							if(null == urlList.find { it.first == uri }){
+								urlList.add(Pair(uri,null as String?))
+							}
+						}
 					}
 				}
+				urlList.forEach{addAttachment(it.first,it.second)}
 			}
 		}else if(requestCode == REQUEST_CODE_ATTACHMENT && resultCode == Activity.RESULT_OK) {
 			if(data != null) {
@@ -1371,8 +1377,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		//		}
 		
 		val a = ActionsDialog()
-		a.addAction(getString(R.string.pick_images_saf)) { performAttachmentSaf() }
-		a.addAction(getString(R.string.pick_images_old)) { performAttachmentOld() }
+//		a.addAction(getString(R.string.pick_images_saf)) { performAttachmentSaf() }
+		a.addAction(getString(R.string.pick_images)) { performAttachmentOld() }
 		a.addAction(getString(R.string.image_capture)) { performCamera() }
 		
 		//		a.addAction( getString( R.string.video_capture ), new Runnable() {
@@ -1404,17 +1410,16 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				intent.type = "image/* video/*"
 			}
 			
-			startActivityForResult(Intent.createChooser( intent, getString(R.string.pick_images_old) ), REQUEST_CODE_ATTACHMENT_OLD)
+			startActivityForResult(Intent.createChooser( intent, getString(R.string.pick_images) ), REQUEST_CODE_ATTACHMENT_OLD)
 		} catch(ex : Throwable) {
 			log.trace(ex)
 			showToast(this, ex, "ACTION_GET_CONTENT failed.")
 		}
 		
 	}
+
 	private fun performAttachmentSaf() {
-		
-		
-		
+
 		// SAFのIntentで開く
 		try {
 			val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
@@ -1422,13 +1427,13 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			intent.type = "*/*"
 			intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
 			intent.putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/*", "video/*"))
-			startActivityForResult(intent, REQUEST_CODE_ATTACHMENT)
+			startActivityForResult(Intent.createChooser( intent, getString(R.string.pick_images) ), REQUEST_CODE_ATTACHMENT)
 		} catch(ex : Throwable) {
 			log.trace(ex)
 			showToast(this, ex, "ACTION_OPEN_DOCUMENT failed.")
 		}
-		
 	}
+
 	internal interface InputStreamOpener {
 		
 		val mimeType : String

@@ -483,7 +483,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 					.addHeader("Accept", "image/webp,image/*,*/*;q=0.8")
 					.build()
 				
-				if(! client.sendRequest(result, cached = true) {
+				if(! client.sendRequest(result, tmpOkhttpClient = App1.ok_http_client_media_viewer ) {
 						request
 					}) return result
 				

@@ -238,6 +238,8 @@ class App1 : Application() {
 		
 		lateinit var ok_http_client2 : OkHttpClient
 		
+		lateinit var ok_http_client_media_viewer : OkHttpClient
+		
 		lateinit var pref : SharedPreferences
 		
 		lateinit var task_executor : ThreadPoolExecutor
@@ -326,23 +328,29 @@ class App1 : Application() {
 			//		}
 			
 			run {
-				val builder = prepareOkHttp(30,60)
+				// API用のHTTP設定はキャッシュを使わない
+				var builder = prepareOkHttp(30,60)
 				ok_http_client = builder.build()
-			}
-			
-			run {
-				var mediaReadTimeout = Pref.spMediaReadTimeout.toInt(pref)
-				if( mediaReadTimeout < 3 ) mediaReadTimeout = 3
-				val builder = prepareOkHttp(mediaReadTimeout,mediaReadTimeout)
-				
+
+
+				// ディスクキャッシュ
 				val cacheDir = File(app_context.cacheDir, "http2")
 				val cache = Cache(cacheDir, 30000000L)
+				
+				// カスタム絵文字用のHTTP設定はキャッシュを使う
+				builder = prepareOkHttp(30,60)
 				builder.cache(cache)
 				
 				ok_http_client2 = builder.build()
+				
+				// 内蔵メディアビューア用のHTTP設定は同じキャッシュを使うが、タイムアウトは別の値を指定する
+				var mediaReadTimeout = Pref.spMediaReadTimeout.toInt(pref)
+				if( mediaReadTimeout < 3 ) mediaReadTimeout = 3
+
+				builder = prepareOkHttp(mediaReadTimeout,mediaReadTimeout)
+				builder.cache(cache)
+				ok_http_client_media_viewer = builder.build()
 			}
-			
-			
 			
 			custom_emoji_cache = CustomEmojiCache(app_context)
 			

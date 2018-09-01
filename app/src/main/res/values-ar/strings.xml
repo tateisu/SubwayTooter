@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='UTF-8'?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
     <string name="action_settings">الإعدادات</string>
     <string name="account_add">إضافة حساب</string>
     <string name="cancel">إلغاء</string>
@@ -197,7 +197,7 @@
     <string name="error_response">خطأ في الإستجابة.</string>
     <string name="request_access_token">جارٍ طلب رمز النفاذ…</string>
     <string name="request_api">جلب: %1$s %2$s</string>
-    <string name="reading_api">قراءة: %1$ s %2$ s</string>
+    <string name="reading_api">قراءة: %1$s %2$s</string>
     <string name="reply">الردّ</string>
     <string name="more">المزيد</string>
     <string name="thumbnail">الصورة المصغرة</string>

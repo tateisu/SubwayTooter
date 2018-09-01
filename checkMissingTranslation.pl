@@ -3,6 +3,10 @@ use XML::Parser;
 use strict;
 use warnings;
 use File::Find;
+use XML::Simple;
+use Data::Dump qw(dump);
+
+my $xml = XML::Simple->new;
 
 my $master_name = "_master";
 
@@ -23,30 +27,25 @@ for my $file(@files){
 	}else{
 		$lang=$master_name;
 	}
+	my $data = $xml->XMLin($file);
+	#print dump($data);
+	#exit;
+	
 	my %names;
-	my $parser = XML::Parser->new(Handlers => {
-			Start => sub{
-				my($expat,$element)=@_;
-				if( $element eq "string" ){
-					my $ie=0+@_;
-					for(my $i=2;$i<$ie;$i+=2){
-						my $k=$_[$i];
-						my $v=$_[$i+1];
-						if( $k eq "name" ){
-							$names{$v}=1;
-						}
-					}
-				}
-			}
-			,End   => sub{}
-			,Char  => sub{}
-	});
-	$parser->parsefile($file);
+	while(my($name,$o)=each %{$data->{string}}){
+		$names{$name}=$o->{content};
+	}
 	$langs{ $lang } = \%names;
 }
 
 my $master = $langs{ $master_name };
 $master or die "missing master languages.\n";
+my %params;
+while(my($name,$value)=each %$master){
+	my @params = $value =~ /(%\d+\$[sdxf])/g;
+	$params{$name} = join ',', sort @params;
+}
+
 
 my %missing;
 my %allNames;
@@ -56,6 +55,12 @@ for my $lang ( sort keys %langs ){
 		$allNames{$name}=1;
 		if(not $master->{$name} ){
 			$missing{$name} =1;
+		}
+		my @params = $value =~ /(%\d+\$[sdxf])/g;
+		my $params = join ',', sort @params;
+		my $master_params = $params{$name} // '';
+		if( $params ne $master_params){
+			print "!! ($lang)$name : parameter mismatch. master=$master_params, found=$params\n";
 		}
 	}
 	my $nameCount = 0+ keys %$names;
@@ -68,9 +73,8 @@ my @missing = sort keys %missing;
 my $nameCount = 0+ keys %allNames;
 print "(total)string resource count=$nameCount\n";
 
-print "# Fetching all remotes..\n";
-system qq(git fetch --all -q);
-
+# Weblateの未マージのブランチがあるか調べる
+system qq(git fetch weblate -q);
 my @list = `git branch -a --no-merged`;
 for(@list){
 	print "# Unmerged branch: $_\n";

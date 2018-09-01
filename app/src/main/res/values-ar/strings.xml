@@ -180,7 +180,7 @@
 
     <string name="visibility_home">الرئيسية</string>
     <string name="visibility_followers">المُتابِعون</string>
-    <string name="dont_show_vote">لا تقم بإظهار استطلاعات الرأي</string>
+    <string name="dont_show_vote">إخفاء استطلاع الرأي</string>
     <string name="center">الوسط</string>
     <string name="misskey_hybrid_timeline_long">الخيط الزمني الاجتماعي (ميسكي)</string>
     <string name="app_name">Subway Tooter</string>
@@ -262,4 +262,15 @@
     <string name="open_hashtag_column">فتح عمود الوسوم</string>
     <string name="video_pick">إختر فيديو</string>
     <string name="keyword_filters">الكلمات المُصفّاة</string>
+    <string name="display_name_favourited_by">أُعجِب به %1$s</string>
+    <string name="sensitive_content_default_open">فتح المحتوى الحساس دائمًا</string>
+    <string name="send_header_content_warning">التحذير عن المحتوى</string>
+    <string name="open_profile">فتح الملف الشخصي</string>
+    <string name="open_profile_from_another_account">فتح الملف الشخصي بحساب آخَر</string>
+    <string name="column_header">رأسية العمود</string>
+    <string name="content_color">لون نص المحتوى</string>
+    <string name="send_message">إبعث له رسالة</string>
+    <string name="send_message_from_another_account">إبعث رسالة مِن حساب آخَر</string>
+    <string name="dont_confirm_again">لا تطلب مِنّي التأكيد مُجددًا</string>
+    <string name="profile_of">الملف الشخصي لـ %1$s</string>
     </resources>

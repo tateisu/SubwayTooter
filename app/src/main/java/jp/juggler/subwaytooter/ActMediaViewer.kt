@@ -343,7 +343,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		}
 	}
 	
-	val mediaSourceEventListener = object : MediaSourceEventListener {
+	private val mediaSourceEventListener = object : MediaSourceEventListener {
 		override fun onLoadStarted(
 			dataSpec : DataSpec?,
 			dataType : Int,

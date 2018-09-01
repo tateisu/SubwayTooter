@@ -75,6 +75,7 @@ class TootAttachment(serviceType:ServiceType,src : JSONObject) : TootAttachmentL
 				this.type = when{
 					mimeType.startsWith("image/")  -> TootAttachmentLike.TYPE_IMAGE
 					mimeType.startsWith("video/")  -> TootAttachmentLike.TYPE_VIDEO
+					mimeType.startsWith("audio/")  -> TootAttachmentLike.TYPE_VIDEO
 					else-> TootAttachmentLike.TYPE_UNKNOWN
 				}
 				

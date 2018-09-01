@@ -38,11 +38,13 @@ for my $file(@files){
 	$langs{ $lang } = \%names;
 }
 
+my $hasError = 0;
+
 my $master = $langs{ $master_name };
 $master or die "missing master languages.\n";
 my %params;
 while(my($name,$value)=each %$master){
-	my @params = $value =~ /(%\d+\$[sdxf])/g;
+	my @params = $value =~ /(%\d+\$[\d\.]*[sdxf])/g;
 	$params{$name} = join ',', sort @params;
 }
 
@@ -56,11 +58,20 @@ for my $lang ( sort keys %langs ){
 		if(not $master->{$name} ){
 			$missing{$name} =1;
 		}
-		my @params = $value =~ /(%\d+\$[sdxf])/g;
+		my @params = $value =~ /(%\d+\$[\d\.]*[sdxf])/g;
 		my $params = join ',', sort @params;
 		my $master_params = $params{$name} // '';
 		if( $params ne $master_params){
+			$hasError =1;
 			print "!! ($lang)$name : parameter mismatch. master=$master_params, found=$params\n";
+		}
+
+		# 残りの部分に%が登場したらエラー
+		my $sv = $value;
+		$sv =~ s/(%\d+\$[\d\.]*[sdxf])//g;
+		if( $sv =~ /%/ && not $sv=~/:%/ ){
+			$hasError =1;
+			print "!! ($lang)$name : broken param: $sv // $value\n";
 		}
 	}
 	my $nameCount = 0+ keys %$names;
@@ -72,6 +83,8 @@ my @missing = sort keys %missing;
 
 my $nameCount = 0+ keys %allNames;
 print "(total)string resource count=$nameCount\n";
+
+$hasError and die "please fix error(s).\n";
 
 # Weblateの未マージのブランチがあるか調べる
 system qq(git fetch weblate -q);

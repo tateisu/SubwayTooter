@@ -100,6 +100,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			add("image/gif")
 			add("video/webm")
 			add("video/mp4")
+			add("video/quicktime")
 		}
 		
 		//	private void performCameraVideo(){
@@ -139,22 +140,22 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			activity : Activity,
 			request_code : Int,
 			account_db_id : Long,
-
+			
 			// 再編集する投稿。アカウントと同一のタンスであること
-			redraft_status : TootStatus? =null,
-
+			redraft_status : TootStatus? = null,
+			
 			// 返信対象の投稿。同一タンス上に同期済みであること
 			reply_status : TootStatus? = null,
-
+			
 			//初期テキスト
-			initial_text : String? =null,
-
+			initial_text : String? = null,
+			
 			// 外部アプリから共有されたインテント
-			sent_intent : Intent? =null
+			sent_intent : Intent? = null
 		) {
 			val intent = Intent(activity, ActPost::class.java)
 			intent.putExtra(KEY_ACCOUNT_DB_ID, account_db_id)
-			if( redraft_status != null ){
+			if(redraft_status != null) {
 				intent.putExtra(KEY_REDRAFT_STATUS, redraft_status.json.toString())
 			}
 			if(reply_status != null) {
@@ -168,7 +169,6 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			}
 			activity.startActivityForResult(intent, request_code)
 		}
-		
 		
 		internal fun check_exist(url : String?) : Boolean {
 			if(url?.isEmpty() != false) return false
@@ -296,24 +296,24 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
 		if(requestCode == REQUEST_CODE_ATTACHMENT_OLD && resultCode == Activity.RESULT_OK) {
-			if( data != null) {
-				val urlList = ArrayList<Pair<Uri,String?>>()
+			if(data != null) {
+				val urlList = ArrayList<Pair<Uri, String?>>()
 				// 単一選択
-				data.data?.let {urlList.add(Pair(it, data.type))  }
+				data.data?.let { urlList.add(Pair(it, data.type)) }
 				// 複数選択
 				val cd = data.clipData
 				if(cd != null) {
 					for(i in 0 until cd.itemCount) {
-						cd.getItemAt(i)?.uri?.let { uri->
-							if(null == urlList.find { it.first == uri }){
-								urlList.add(Pair(uri,null as String?))
+						cd.getItemAt(i)?.uri?.let { uri ->
+							if(null == urlList.find { it.first == uri }) {
+								urlList.add(Pair(uri, null as String?))
 							}
 						}
 					}
 				}
-				urlList.forEach{addAttachment(it.first,it.second)}
+				urlList.forEach { addAttachment(it.first, it.second) }
 			}
-		}else if(requestCode == REQUEST_CODE_ATTACHMENT && resultCode == Activity.RESULT_OK) {
+		} else if(requestCode == REQUEST_CODE_ATTACHMENT && resultCode == Activity.RESULT_OK) {
 			if(data != null) {
 				// 単一選択
 				data.data?.let { addAttachment(it, data.type) }
@@ -570,7 +570,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						in_reply_to_text = reply_status.content
 						in_reply_to_image = reply_status.account.avatar_static
 						in_reply_to_url = reply_status.url
-
+						
 						// 公開範囲
 						try {
 							// 比較する前にデフォルトの公開範囲を計算する
@@ -1041,9 +1041,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		) { ai ->
 			
 			// 別タンスのアカウントに変更したならならin_reply_toの変換が必要
-			if( in_reply_to_id != null && ! ai.host.equals(account?.host, ignoreCase = true) ) {
+			if(in_reply_to_id != null && ! ai.host.equals(account?.host, ignoreCase = true)) {
 				startReplyConversion(ai)
-			}else {
+			} else {
 				setAccountWithVisibilityConversion(ai)
 			}
 		}
@@ -1102,9 +1102,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	
 	@SuppressLint("StaticFieldLeak")
 	private fun startReplyConversion(access_info : SavedAccount) {
-
+		
 		val in_reply_to_url = this.in_reply_to_url
-
+		
 		if(in_reply_to_url == null) {
 			// 下書きが古い形式の場合、URLがないので別タンスへの移動ができない
 			AlertDialog.Builder(this@ActPost)
@@ -1121,8 +1121,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				var target_status : TootStatus? = null
 				override fun background(client : TootApiClient) : TootApiResult? {
 					
-					val result = client.syncStatus(access_info,in_reply_to_url)
-					if( result?.data != null ) {
+					val result = client.syncStatus(access_info, in_reply_to_url)
+					if(result?.data != null) {
 						target_status = result.data as? TootStatus
 						if(target_status == null) {
 							return TootApiResult(getString(R.string.status_id_conversion_failed))
@@ -1377,7 +1377,6 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		//		}
 		
 		val a = ActionsDialog()
-//		a.addAction(getString(R.string.pick_images_saf)) { performAttachmentSaf() }
 		a.addAction(getString(R.string.pick_images)) { performAttachmentOld() }
 		a.addAction(getString(R.string.image_capture)) { performCamera() }
 		
@@ -1393,47 +1392,34 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	private fun performAttachmentOld() {
 		// SAFのIntentで開く
 		try {
-			val intent = Intent(Intent.ACTION_GET_CONTENT , MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-			intent.addCategory( Intent.CATEGORY_OPENABLE )
+			val intent =
+				Intent(Intent.ACTION_GET_CONTENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+			intent.addCategory(Intent.CATEGORY_OPENABLE)
 			
 			// EXTRA_ALLOW_MULTIPLE は API 18 (4.3)以降。ACTION_GET_CONTENT でも ACTION_OPEN_DOCUMENT でも指定できる
-			intent.putExtra( Intent.EXTRA_ALLOW_MULTIPLE, true );
+			intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
 			
 			// EXTRA_MIME_TYPES は API 19以降。ACTION_GET_CONTENT でも ACTION_OPEN_DOCUMENT でも指定できる
-			intent.putExtra( "android.intent.extra.MIME_TYPES", arrayOf("image/*", "video/*") )
+			intent.putExtra("android.intent.extra.MIME_TYPES", arrayOf("image/*", "video/*"))
 			
-			if( Build.VERSION.SDK_INT >= 23){
+			if(Build.VERSION.SDK_INT >= 23) {
 				// On Android 6.0 and above using "video/* image/" or "image/ video/*" type doesn't work
 				// it only recognizes the first filter you specify.
 				intent.type = "*/*"
-			}else {
+			} else {
 				intent.type = "image/* video/*"
 			}
 			
-			startActivityForResult(Intent.createChooser( intent, getString(R.string.pick_images) ), REQUEST_CODE_ATTACHMENT_OLD)
+			startActivityForResult(
+				Intent.createChooser(intent, getString(R.string.pick_images)),
+				REQUEST_CODE_ATTACHMENT_OLD
+			)
 		} catch(ex : Throwable) {
 			log.trace(ex)
 			showToast(this, ex, "ACTION_GET_CONTENT failed.")
 		}
-		
 	}
-
-	private fun performAttachmentSaf() {
-
-		// SAFのIntentで開く
-		try {
-			val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-			intent.addCategory(Intent.CATEGORY_OPENABLE)
-			intent.type = "*/*"
-			intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-			intent.putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/*", "video/*"))
-			startActivityForResult(Intent.createChooser( intent, getString(R.string.pick_images) ), REQUEST_CODE_ATTACHMENT)
-		} catch(ex : Throwable) {
-			log.trace(ex)
-			showToast(this, ex, "ACTION_OPEN_DOCUMENT failed.")
-		}
-	}
-
+	
 	internal interface InputStreamOpener {
 		
 		val mimeType : String
@@ -1603,13 +1589,14 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					}
 					
 					
-					if(account.isMisskey){
+					if(account.isMisskey) {
 						val multipart_builder = MultipartBody.Builder()
 							.setType(MultipartBody.FORM)
-
-						val apiKey = account.token_info?.parseString(TootApiClient.KEY_API_KEY_MISSKEY)
-						if( apiKey?.isNotEmpty()== true){
-							multipart_builder.addFormDataPart("i",apiKey)
+						
+						val apiKey =
+							account.token_info?.parseString(TootApiClient.KEY_API_KEY_MISSKEY)
+						if(apiKey?.isNotEmpty() == true) {
+							multipart_builder.addFormDataPart("i", apiKey)
 						}
 						
 						multipart_builder.addFormDataPart(
@@ -1636,7 +1623,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 								}
 							}
 						)
-
+						
 						val request_builder = Request.Builder().post(multipart_builder.build())
 						
 						val result = client.request("/api/drive/files/create", request_builder)
@@ -1654,7 +1641,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 							}
 						}
 						return result
-					}else{
+					} else {
 						val multipart_body = MultipartBody.Builder()
 							.setType(MultipartBody.FORM)
 							.addFormDataPart(
@@ -1868,8 +1855,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		btnVisibility.setImageResource(
 			Styler.getVisibilityIcon(
 				this
-				,account?.isMisskey == true
-				,visibility ?: TootVisibility.Public
+				, account?.isMisskey == true
+				, visibility ?: TootVisibility.Public
 			)
 		)
 	}
@@ -1877,7 +1864,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	private fun performVisibility() {
 		val list = if(account?.isMisskey == true) {
 			arrayOf(
-			//	TootVisibility.WebSetting,
+				//	TootVisibility.WebSetting,
 				TootVisibility.Public,
 				TootVisibility.UnlistedHome,
 				TootVisibility.PrivateFollowers,
@@ -2057,7 +2044,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			json.put(DRAFT_CONTENT_WARNING, content_warning)
 			json.put(DRAFT_CONTENT_WARNING_CHECK, cbContentWarning.isChecked)
 			json.put(DRAFT_NSFW_CHECK, cbNSFW.isChecked)
-			visibility?.let{ json.put(DRAFT_VISIBILITY, it.id.toString()) }
+			visibility?.let { json.put(DRAFT_VISIBILITY, it.id.toString()) }
 			json.put(DRAFT_ACCOUNT_DB_ID, account?.db_id ?: - 1L)
 			json.put(DRAFT_ATTACHMENT_LIST, tmp_attachment_list)
 			in_reply_to_id?.putTo(json, DRAFT_REPLY_ID)

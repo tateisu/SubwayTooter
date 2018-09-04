@@ -330,4 +330,8 @@
     <string name="description_empty">ليس هناك وصف.</string>
     <string name="operation_succeeded">تمت العملية بنجاح.</string>
 
+    <string name="list_create_hint">اسم القائمة الجديدة</string>
+    <string name="list_created">تم إنشاء القائمة الجديدة.</string>
+    <string name="list_member">قائمة المستخدِمين</string>
+    <string name="target_user">المستخدم المستهدَف</string>
     </resources>

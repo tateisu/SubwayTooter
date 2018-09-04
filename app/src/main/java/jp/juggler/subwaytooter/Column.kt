@@ -379,8 +379,11 @@ class Column(
 		get() = if(isMisskey) {
 			val misskeyApiToken = access_info.misskeyApiToken
 			if(misskeyApiToken == null) {
-				// misskeyの疑似アカウントはストリーミング対応していない
-				null
+				// Misskey 8.25 からLTLだけ認証なしでも見れるようになった
+				when(column_type) {
+					TYPE_LOCAL -> "/local-timeline"
+					else -> null
+				}
 			} else {
 				when(column_type) {
 					TYPE_HOME, TYPE_NOTIFICATIONS -> "/?i=$misskeyApiToken"

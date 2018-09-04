@@ -11,7 +11,7 @@
 	<string name="account_picker_favourite">Avec quelle compte voulez-vous mettre en favori ?</string>
 	<string name="account_picker_follow">Avec quelle compte voulez-vous suivre ?</string>
 	<string name="account_picker_open_setting">Avec quelle compte ouvrir les paramètres ?</string>
-	<string name="account_picker_open_user_who">Avec quelle compte ouvrir l\'utilisateur %1$s ?</string>
+	<string name="account_picker_open_user_who">Avec quelle compte ouvrir l’utilisateur %1$s ?</string>
 	<string name="account_picker_reply">Répondre à partir de quel compte ?</string>
 	<string name="account_picker_toot">Avec quelle compte tooter ?</string>
 	<string name="account_remove">Retirer le compte de cette application</string>
@@ -27,7 +27,7 @@
 	<string name="already_favourited">Déjà dans les favoris.</string>
 	<string name="api_error">Erreur API %1$s</string>
 	<string name="app_about">À propos de Subway Tooter</string>
-	<string name="app_exit">Fermer l\'application</string>
+	<string name="app_exit">Fermer l’application</string>
 	<string name="app_name">Subway Tooter</string>
 	<string name="app_setting">Paramètres de Subway Tooter</string>
 	<string name="app_was_muted">Application non autorisée.</string>
@@ -53,7 +53,7 @@
 	<string name="cancelled">Annulé</string>
 	<string name="cant_change_account_when_attachment_specified">Impossible de changer de compte quand la pièce jointe est spécifiée.</string>
 	<string name="cant_close_column_by_back_button_when_multiple_column_shown">Le bouton retour ne peut fermer la colonne quand plusieurs d\'entre elles sont visibles.</string>
-	<string name="cant_follow_locked_user">Impossible de suivre l\'utilisateur non public</string>
+	<string name="cant_follow_locked_user">Impossible de suivre l’utilisateur non public</string>
 	<string name="cant_remove_boost_while_favourited">Impossible de supprimer le partage s\'il est dans les favoris</string>
 	<string name="choose_account">Choisissez un compte</string>
 	<string name="choose_visibility">Choisir la visibilité</string>
@@ -87,7 +87,7 @@
 	<string name="confirm_delete_attachment">Retirer cette pièce jointe ?</string>
 	<string name="confirm_delete_notification">Toutes vos notifications sur votre instance seront effacées.\nÊtes-vous sur ?</string>
 	<string name="confirm_delete_status">Ce toot va être supprimé. Êtes-vous sur ?</string>
-	<string name="confirm_follow_request_who_from">Envoyer une demande de suivi de %2$s vers l\'utilisateur verrouillé %1$s ?</string>
+	<string name="confirm_follow_request_who_from">Envoyer une demande de suivi de %2$s vers l’utilisateur verrouillé %1$s ?</string>
 	<string name="confirm_follow_who_from">Suivre %1$s depuis %2$s ?</string>
 	<string name="confirm_mute_user">L\'utilisateur \'%1$s\' sera muet. Êtes-vous sur ?</string>
 	<string name="confirm_post_from">Envoyer un toot du compte %1$s. Êtes-vous sur ?</string>
@@ -123,17 +123,17 @@
 	<string name="dont_confirm_again">Ne plus demander de confirmation</string>
 	<string name="dont_confirm_before_close_column">Ne pas confirmer à la fermeture d\'une colonne</string>
 	<string name="dont_refresh">Ne pas actualiser</string>
-	<string name="dont_refresh_on_activity_resume">Ne pas actualiser à la reprise d\'activité</string>
+	<string name="dont_refresh_on_activity_resume">Désactiver la réactualisation lors du retour vers l’application.</string>
 	<string name="dont_resize">Conserver les dimensions</string>
 
-	<string name="dont_screen_off">Garder l\'écran allumé quand l\'application est affichée</string>
+	<string name="dont_screen_off">Garder l’écran allumé lors de l’utilisation de l’application.</string>
 	<string name="dont_show_boost">Masquer les partages</string>
 	<string name="dont_show_reply">Masquer les réponses</string>
 	<string name="dont_use_streaming_api">Ne pas auto-actualiser</string>
 	<string name="drag_handle">Faites glisser la poignée</string>
 	<string name="edit">Éditer</string>
 	<string name="end_of_list">Fin de la liste</string>
-	<string name="exit_app_when_close_protected_column">Quitter l\'application sans confirmation après avoir essayé de fermer une colonne protégée</string>
+	<string name="exit_app_when_close_protected_column">Quitter l’application sans confirmation après avoir essayé de fermer une colonne protégée</string>
 	<string name="favourite">Favori</string>
 	<string name="favourite_from_another_account">Placer dans les favoris à partir d\'un autre compte</string>
 	<string name="favourite_succeeded">Mis en favori avec succès</string>
@@ -146,7 +146,7 @@
 	<string name="follow_from_another_account">Suivre (sélection du compte)</string>
 	<string name="follow_locked_user">Suivre un utilisateur verrouillé</string>
 	<string name="follow_request_authorized">Demande de suivi de %1$s acceptée.</string>
-	<string name="follow_request_cant_remove_by_sender">Il semble que la demande de suivit ne puisse pas être supprimé par l\'expéditeur…</string>
+	<string name="follow_request_cant_remove_by_sender">Il semble que la demande de suivit ne puisse pas être supprimé par l’expéditeur…</string>
 	<string name="follow_request_ng">Demande de suivi rejeté</string>
 	<string name="follow_request_ok">Autoriser demande de suivi</string>
 	<string name="follow_request_rejected">Demande de suivi de %1$s rejeté.</string>
@@ -166,14 +166,14 @@
 	<string name="hide_media_default">Ne pas afficher les pièces jointes</string>
 	<string name="home">home</string>
 	<string name="image">Image</string>
-	<string name="image_alpha">Transparence de l\'image</string>
-	<string name="image_capture">Utiliser l\'appareil photo</string>
+	<string name="image_alpha">Transparence de l’image</string>
+	<string name="image_capture">Utiliser l’appareil photo</string>
 	<string name="pick_image">Choisir une image</string>
-	<string name="pick_images">Choisir une image</string>
+	<string name="pick_images">Choisir une image…</string>
 
 	<string name="instance">Instance</string>
 	<string name="instance_hint">Ex) mastodon.social</string>
-	<string name="instance_not_need_slash">Veuillez entrer seulement le nom de l\'hôte de l\'instance, sans « / » ni « \@ ».</string>
+	<string name="instance_not_need_slash">Veuillez entrer seulement le nom de l’hôte de l’instance, sans « / » ni « @ ».</string>
 	<string name="instance_not_specified">Instance non spécifiée</string>
 	<string name="it_is_you">C\'est vous.</string>
 	<string name="last_selection">Dernière sélection</string>
@@ -183,11 +183,12 @@
 	<string name="login_failed">Échec de la connexion</string>
 	<string name="login_required">Veuillez mettre à jour votre connexion à partir des paramètres du compte.</string>
 	<string name="long_side_pixel">Côté le plus long mis à %1$d pixels</string>
-	<string name="mail_address_not_contains_at_mark">veuillez entrer l\'adresse e-mail de l\'utilisateur contenant « \@ » et « . »</string>
+	<string name="mail_address_not_contains_at_mark">veuillez entrer l’adresse e-mail de l’utilisateur contenant « @ » et « . »</string>
 	<string name="mail_hint">Ex) votre\@e-mail.address</string>
 	<string name="mail_not_specified">E-mail non spécifié</string>
 	<string name="media_attachment">Ajouter une pièce jointe</string>
-	<string name="media_thumbnail_height">Hauteur des pièces jointes dans l\'interface \n(défaut=64(dp), redémarrage nécessaire)</string>
+	<string name="media_thumbnail_height">Hauteur des pièces jointes dans l’interface 
+\n(défaut=64(dp), redémarrage nécessaire)</string>
 	<string name="mention">mention</string>
 	<string name="mention2">Mention</string>
 	<string name="menu">Menu</string>
@@ -197,7 +198,7 @@
     <string name="more">Plus</string>
 	<string name="mute">Désactiver le son</string>
 	<string name="mute_app_desc">Faire glisser pour supprimer. Vous devez rafraîchir pour voir les changements effectués.</string>
-	<string name="mute_app_of">Interdire l\'application \"%1$s\""</string>
+	<string name="mute_app_of">Interdire l’application \"%1$s\"</string>
 	<string name="mute_succeeded">Désactivation du son réussie</string>
 	<string name="mute_word">Interdire le(s) mot(s)</string>
 	<string name="muted_app">Applications non autorisées</string>
@@ -239,7 +240,7 @@
 	<string name="post_error_contents_warning_empty">Votre pouet a besoin d’un avertissement de contenu.</string>
 	<string name="post_from">Publier par</string>
 	<string name="preview">Pré-visualiser</string>
-	<string name="prior_local_url_when_open_attachment">Priorité à l\'URL locale lors de l\'ouverture de pièce(s) jointe(s)</string>
+	<string name="prior_local_url_when_open_attachment">Priorité à l’URL locale lors de l’ouverture de pièce(s) jointe(s)</string>
 	<string name="profile">Profil</string>
 	<string name="profile_of">Profil de %1$s</string>
 	<string name="pseudo_account">Voir les données publiques sans se connecter</string>
@@ -261,14 +262,14 @@
 	<string name="report_completed">Signalement terminé.</string>
 	<string name="report_reason">Décrire la raison du signalement</string>
 	<string name="reports">Signalements</string>
-	<string name="request_access_token">Demander l\'autorisation d\'accès à l\'instance…</string>
+	<string name="request_access_token">Demander l’autorisation d\'accès à l’instance…</string>
 	<string name="request_api">Acquisition : %1$s %2$s</string>
 	<string name="reading_api">Reading: %1$s %2$s</string>
 
 	<string name="reset">Reset</string>
 	<string name="resize_image">Changer la taille des images jointes (JPEG,PNG)</string>
 	<string name="resolve_non_local_account">Résoudre le compte non local</string>
-	<string name="response_not_json">La réponse de l\'API n\'est pas JSON.</string>
+	<string name="response_not_json">La réponse de l’API n\'est pas JSON.</string>
 	<string name="save">Sauvegarder</string>
 	<string name="search">Rechercher</string>
 	<string name="search_for">Rechercher %1$s</string>
@@ -278,9 +279,9 @@
 	<string name="send">Envoyer</string>
 	<string name="send_header_content_warning">Contenu délicat (masqué)</string>
 	<string name="send_header_date">Date</string>
-	<string name="send_header_from_acct">Envoyer l\'entête du compte</string>
-	<string name="send_header_from_name">Envoyer l\'entête du Nom</string>
-	<string name="send_header_url">Envoyer l\'URL du statut</string>
+	<string name="send_header_from_acct">Envoyer l’entête du compte</string>
+	<string name="send_header_from_name">Envoyer l’entête du Nom</string>
+	<string name="send_header_url">Envoyer l’URL du statut</string>
 	<string name="send_message">Envoyer un message</string>
 	<string name="send_message_from_another_account">Envoyer un message avec un autre compte</string>
 	<string name="send_text">Envoyer du texte vers</string>
@@ -305,18 +306,19 @@
 	<string name="theme_light">Clair</string>
 	<string name="thumbnail">vignette</string>
 	<string name="toot">Toot</string>
-	<string name="ui_theme">Thème de l\'interface utilisateur \n(redémarrage nécessaire)</string>
+	<string name="ui_theme">Thème de l’interface utilisateur 
+\n(redémarrage nécessaire)</string>
 	<string name="unblock">Débloquer</string>
 	<string name="unblock_succeeded">Déblocage réussi</string>
 	<string name="unfollow">Se désabonner</string>
 	<string name="unfollow_succeeded">Désabonnement réussi</string>
 	<string name="unmute">Activer le son</string>
 	<string name="unmute_succeeded">Activation du son réussie</string>
-	<string name="update_access_token">Mettre à jour l\'autorisation d\'accès à l\'instance</string>
+	<string name="update_access_token">Mettre à jour l’autorisation d\'accès à l’instance</string>
 	<string name="user">Utilisateur</string>
-	<string name="user_mail_address">Adresse e-mail de l\'utilisateur</string>
+	<string name="user_mail_address">Adresse e-mail de l’utilisateur</string>
 	<string name="user_name_not_match">Le nom d\'utilisateur ne correspond pas</string>
-	<string name="user_password">Mot de passe de l\'utilisateur</string>
+	<string name="user_password">Mot de passe de l’utilisateur</string>
 	<string name="version_is">Version: %1$s</string>
 	<string name="vibration">Vibration</string>
 	<string name="visibility">Visibilité</string>
@@ -329,23 +331,30 @@
 	<string name="wait_previous_operation">Veuillez attendre la fin de la dernière opération.</string>
 	<string name="with_attachment">Avec pièce(s) jointe(s)</string>
 	<string name="with_highlight">with highlight</string>
-	<string name="word_was_muted">Ce mot a été interdit!</string>
+	<string name="word_was_muted">Ce mot a été interdit.</string>
 	<string name="your_statuses">Vos statuts</string>
-	<string name="launcher_icon_by">Icone de l\'application créée par フタバ</string>
-	<string name="ssl_bug_7_0">Android 7.0 ne peut utiliser qu\'elliptic curve \"prime256v1\" pour les connexions sécurisées.\nL\'instance à laquelle vous voulez vous connecter semble ne pas le gérer.\n-Vous pouvez mettre à jour le système d\'exploitation vers Android 7.1.1.\n-Ou, demander au propriétaire de l\'instance de prendre en charge elliptic curve \"prime256v1\".\nPlus de détails ici: https://code.google.com/p/android/issues/detail?id=224438</string>
-	<string name="timeline_font">Changer la police de caractères de l\'interface\n(redémarrage nécessaire)</string>
-	<string name="timeline_font_bold">Changer la police de caractères de l\'interface (bold)\n(redémarrage nécessaire)</string>
+	<string name="launcher_icon_by">Merci à フタバ pour l’icône de l’application.</string>
+	<string name="ssl_bug_7_0">Android 7.0 ne peut utiliser qu\'elliptic curve \"prime256v1\" pour les connexions sécurisées.
+\nL\'instance à laquelle vous voulez vous connecter semble ne pas le gérer.
+\n-Vous pouvez mettre à jour le système d\'exploitation vers Android 7.1.1.
+\n-Ou, demander au propriétaire de l’instance de prendre en charge elliptic curve \"prime256v1\".
+\nPlus de détails ici: https://code.google.com/p/android/issues/detail?id=224438</string>
+	<string name="timeline_font">Changer la police de caractères de l’interface
+\n(redémarrage nécessaire)</string>
+	<string name="timeline_font_bold">Changer la police de caractères de l’interface (bold)
+\n(redémarrage nécessaire)</string>
 	<string name="account_in_draft_is_lost">Le compte utilisé pour ce brouillon a été supprimé de Subway Tooter. Le lien avec le toot d\'origine ne peut être restauré.</string>
 	<string name="attachment_in_draft_is_lost">Une ou plusieurs pièces jointes de ce brouillon sont introuvables.</string>
 	<string name="reply_to_in_draft_is_lost">Le toot auquel ce brouillon fait référence n\'existe plus, vous ne pouvez plus y répondre.</string>
 	<string name="restore_draft">Restaurer un brouillon</string>
-	<string name="select_draft">Sélectionnez le brouillon à restaurer</string>
+	<string name="select_draft">Quel brouillon désirez-vous restaurer ?</string>
 	<string name="app_data_export">Exporter les données de Subway Tooter</string>
 	<string name="app_data_import">Importer les données dans Subway Tooter</string>
-	<string name="app_data_import_confirm">Toutes les données actuelles seront remplacées lors de l\'importation.\nÊtes-vous sur ?</string>
+	<string name="app_data_import_confirm">Toutes les données actuelles seront remplacées lors de l’importation.
+\nÊtes-vous sur ?</string>
 	<string name="app_data_import_desc">Vous pouvez exporter les données vers toute application qui pourra les recevoir. L\'importation ne peut s\'effectuer que depuis le stockage de votre appareil ou Google Drive !\nColumn background image may be not exported/imported over device.\nTimeline font is not exported/imported.\nCustom notification sound may be not exported/imported over device.</string>
 
-	<string name="user_id_conversion_failed">Conversion de l\'identification utilisateur échouée.</string>
+	<string name="user_id_conversion_failed">Conversion de l’identification utilisateur échouée.</string>
 	<string name="draft_deleted">Brouillon effacé !</string>
 	<string name="draft_picker_desc">[Appuie long, pour effacer]</string>
 	<string name="dont_crop_media_thumbnail">Ne pas recadrer les aperçus de pièces jointes\n(redémarrage nécessaire)</string>
@@ -427,7 +436,7 @@
 	<string name="background_image_alpha">Background image alpha</string>
 	<string name="acct_color">Acct text color</string>
 	<string name="content_color">Content text color</string>
-	<string name="content_sample">(sample)Le cœur déçu mais l\'âme plutôt naïve, Louÿs rêva de crapaüter en canoë au delà des îles, près du mälströn où brûlent les novæ.</string>
+	<string name="content_sample">(sample)Le cœur déçu mais l’âme plutôt naïve, Louÿs rêva de crapaüter en canoë au delà des îles, près du mälströn où brûlent les novæ.</string>
 	<string name="enable_gif_animation">Enable GIF animation (It wastes the battery very much)</string>
 	<string name="acct_sample">(sample)username@instance</string>
 	<string name="mention_full_acct">Show mention as full acct (column reload required)</string>
@@ -481,7 +490,9 @@
     <string name="profile_pin">Pin on profile</string>
 	<string name="profile_unpin">Unpin from profile</string>
     <string name="profile_pin_progress">Changing pinned status…</string>
-	<string name="length_warning">\"%1$s\" is too long (%2$d/%3$d characters).\nIt is not acceptable in the standard instance, but it may be acceptable in some instances.\nAre you sure?</string>
+	<string name="length_warning">\"%1$s\" is too long (%2$d/%3$d characters).
+\nIt is not acceptable in the standard instance, but it may be acceptable in some instances.
+\nAre you sure?</string>
 
 	<string name="short_acct_local_user">Short acct for local user (app restart required)</string>
     <string name="loading_notification_title">Loading notification…</string>

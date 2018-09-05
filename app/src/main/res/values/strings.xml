@@ -561,7 +561,7 @@
     <string name="cant_access_list">Can\'t access to lists</string>
     <string name="account_sync_failed">account sync failed.</string>
     <string name="list_retry_with_follow">You are not following %1$s yet. Would you like to follow and then add to list?</string>
-    <string name="cant_add_list_follow_requesting">Can\'t add user to list:\nPlease retry 2…3 times. Or if user is "locked", please wait until follow request is approved.</string>
+    <string name="cant_add_list_follow_requesting">Can\'t add user to list:\nPlease retry 2…3 times. Or if user is \"locked\", please wait until follow request is approved.</string>
     <string name="cant_add_list_follow_failed">Can\'t add user to list:\nfollow operation failed.</string>
     <string name="list_member_added">User has been added to the list.</string>
     <string name="confirm_mute_notification_for_user">Mute notification from this user</string>
@@ -634,9 +634,9 @@
     <string name="thumbnails_arrange_vertically">Vertical arrange thumbnails (app restart required)</string>
     <string name="instance_local">Instance local</string>
     <string name="send_access_token_to_app_server">Send access token to app server</string>
-    <string name="send_access_token_to_app_server_desc">Normally you can use "pull" notification (with delay) without app server, because it works on your device.
-\nBut if you want to use "custom notification listener", or if you are the member of very limited instances that is supported by ST\'s app server,
-\nyou can use "push" notifications, but you have to allow sending access tokens to the app server. (this is mastodon's defect)</string>
+    <string name="send_access_token_to_app_server_desc">Normally you can use \"pull\" notification (with delay) without app server, because it works on your device.
+\nBut if you want to use \"custom notification listener\", or if you are the member of very limited instances that is supported by ST\'s app server,
+\nyou can use \"push\" notifications, but you have to allow sending access tokens to the app server. (this is mastodon\'s defect)</string>
     <string name="pull_notification_check_interval">Pull notification check interval (unit: minutes, default:15, min:15)</string>
     <string name="follow_accept">accept</string>
     <string name="follow_deny">deny</string>

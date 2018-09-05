@@ -611,7 +611,7 @@
     <string name="select_plugin">プラグインの選択</string>
     <string name="send">共有</string>
     <string name="send_access_token_to_app_server">アクセストークンをアプリサーバに送信する</string>
-    <string name="send_access_token_to_app_server_desc">通常は"pull"通知(すこし遅れる)を利用できます。それは端末上で動作するのでアプリサーバは必要ありません。しかしカスタム通知リスナを使う場合やSTがサポートする限られたインスタンスのユーザである場合は"push"通知を利用することができます。ただしアクセストークンをアプリサーバに送信する必要があります(これはマストドンの欠陥です)。</string>
+    <string name="send_access_token_to_app_server_desc">通常は\"pull\"通知(すこし遅れる)を利用できます。それは端末上で動作するのでアプリサーバは必要ありません。しかしカスタム通知リスナを使う場合やSTがサポートする限られたインスタンスのユーザである場合は\"push\"通知を利用することができます。ただしアクセストークンをアプリサーバに送信する必要があります(これはマストドンの欠陥です)。</string>
     <string name="send_header_account_acct">Account-Acct</string>
     <string name="send_header_account_created_at">Account-Created-At</string>
     <string name="send_header_account_followers_count">Account-Followers-Count</string>

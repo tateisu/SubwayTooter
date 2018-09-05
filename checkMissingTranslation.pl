@@ -73,6 +73,11 @@ for my $lang ( sort keys %langs ){
 			$hasError =1;
 			print "!! ($lang)$name : broken param: $sv // $value\n";
 		}
+		
+		# エスケープされていないシングルクォートがあればエラー
+		if( $value =~ m/(?<!\\)['"]/ ){
+			print "!! ($lang)$name : containg single or double quote without escape.\n";
+		}
 	}
 	my $nameCount = 0+ keys %$names;
 	print "($lang)string resource count=$nameCount\n";

@@ -21,12 +21,12 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
+import android.text.SpannableString
 import android.text.TextWatcher
 import android.view.View
 import android.widget.*
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import jp.juggler.subwaytooter.table.AcctColor
@@ -873,7 +873,14 @@ class ActAccountSetting
 			name_invalidator.register(name)
 			
 			val noteString = src.source?.note ?: src.note
-			val noteSpannable = decodeOptions.decodeEmoji(noteString)
+			val noteSpannable = when {
+				account.isMisskey -> {
+					SpannableString(noteString)
+				}
+				else -> {
+					decodeOptions.decodeEmoji(noteString)
+				}
+			}
 			
 			etNote.setText(noteSpannable)
 			note_invalidator.register(noteSpannable)
@@ -960,64 +967,165 @@ class ActAccountSetting
 		
 		TootTaskRunner(this).run(account, object : TootTask {
 			
+			private fun uploadImageMisskey(
+				client : TootApiClient,
+				opener : InputStreamOpener
+			):TootApiResult? {
+				
+				val size = getStreamSize(true,opener.open())
+				
+				val multipart_builder = MultipartBody.Builder()
+					.setType(MultipartBody.FORM)
+				
+				val apiKey =
+					account.token_info?.parseString(TootApiClient.KEY_API_KEY_MISSKEY)
+				if(apiKey?.isNotEmpty() == true) {
+					multipart_builder.addFormDataPart("i", apiKey)
+				}
+				
+				multipart_builder.addFormDataPart(
+					"file",
+					getDocumentName(contentResolver,opener.uri),
+					object : RequestBody() {
+						override fun contentType() : MediaType? {
+							return MediaType.parse(opener.mimeType)
+						}
+						
+						@Throws(IOException::class)
+						override fun contentLength() : Long {
+							return size
+						}
+						
+						@Throws(IOException::class)
+						override fun writeTo(sink : BufferedSink) {
+							opener.open().use { inData ->
+								val tmp = ByteArray(4096)
+								while(true) {
+									val r = inData.read(tmp, 0, tmp.size)
+									if(r <= 0) break
+									sink.write(tmp, 0, r)
+								}
+							}
+						}
+					}
+				)
+				
+				val request_builder = Request.Builder().post(multipart_builder.build())
+				
+				val result = client.request("/api/drive/files/create", request_builder)
+				
+				val jsonObject = result?.jsonObject
+				if(jsonObject != null) {
+					val a = parseItem(::TootAttachment, ServiceType.MISSKEY, jsonObject)
+					if(a == null) {
+						result.error = "TootAttachment.parse failed"
+					} else {
+						result.data = a
+					}
+				}
+				return result
+			}
+			
 			var data : TootAccount? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				try {
-					val multipart_body_builder = MultipartBody.Builder()
-						.setType(MultipartBody.FORM)
-					
-					for(arg in args) {
-						val key = arg.first
-						val value = arg.second
+					if(account.isMisskey){
+						val params = account.putMisskeyApiToken()
 						
-						if(value is String) {
-							multipart_body_builder.addFormDataPart(key, value)
-						} else if(value is Boolean) {
-							multipart_body_builder.addFormDataPart(
-								key,
-								if(value) "true" else "false"
-							)
+						for(arg in args) {
+							val key = arg.first
+							val value = arg.second
 							
-						} else if(value is InputStreamOpener) {
+							val misskeyKey = when(key){
+								"header"->"bannerId"
+								"avatar" ->"avatarId"
+								"display_name" ->"name"
+								"note" -> "description"
+								"locked" -> "isLocked"
+								else->return TootApiResult("Misskey does not support property '${key}'")
+							}
 							
-							val fileName = "%x".format(System.currentTimeMillis())
+							when(value) {
+								is String -> params.put(misskeyKey,value)
+								is Boolean -> params.put(misskeyKey, value)
+								is InputStreamOpener -> {
+									val result = uploadImageMisskey(client,value)
+									val ta = result?. data as? TootAttachment ?: return result
+									params.put(misskeyKey, ta.id)
+								}
+							}
+						}
+						
+						val result =
+							client.request("/api/i/update",params.toPostRequestBuilder())
+						val jsonObject = result?.jsonObject
+						if(jsonObject != null) {
+							val a = TootParser(this@ActAccountSetting, account).account(jsonObject)
+								?: return TootApiResult("TootAccount parse failed.")
+							data = a
+						}
+						
+						return result
+						
+					}else{
+						val multipart_body_builder = MultipartBody.Builder()
+							.setType(MultipartBody.FORM)
+						
+						for(arg in args) {
+							val key = arg.first
+							val value = arg.second
 							
-							multipart_body_builder.addFormDataPart(
-								key,
-								fileName,
-								object : RequestBody() {
-									override fun contentType() : MediaType? {
-										return MediaType.parse(value.mimeType)
-									}
-									
-									override fun writeTo(sink : BufferedSink) {
-										value.open().use { inData ->
-											val tmp = ByteArray(4096)
-											while(true) {
-												val r = inData.read(tmp, 0, tmp.size)
-												if(r <= 0) break
-												sink.write(tmp, 0, r)
+							if(value is String) {
+								multipart_body_builder.addFormDataPart(key, value)
+							} else if(value is Boolean) {
+								multipart_body_builder.addFormDataPart(
+									key,
+									if(value) "true" else "false"
+								)
+								
+							} else if(value is InputStreamOpener) {
+								
+								val fileName = "%x".format(System.currentTimeMillis())
+								
+								multipart_body_builder.addFormDataPart(
+									key,
+									fileName,
+									object : RequestBody() {
+										override fun contentType() : MediaType? {
+											return MediaType.parse(value.mimeType)
+										}
+										
+										override fun writeTo(sink : BufferedSink) {
+											value.open().use { inData ->
+												val tmp = ByteArray(4096)
+												while(true) {
+													val r = inData.read(tmp, 0, tmp.size)
+													if(r <= 0) break
+													sink.write(tmp, 0, r)
+												}
 											}
 										}
-									}
-								})
+									})
+							}
 						}
+						
+						val request_builder = Request.Builder()
+							.patch(multipart_body_builder.build())
+						
+						val result =
+							client.request("/api/v1/accounts/update_credentials", request_builder)
+						val jsonObject = result?.jsonObject
+						if(jsonObject != null) {
+							val a = TootParser(this@ActAccountSetting, account).account(jsonObject)
+								?: return TootApiResult("TootAccount parse failed.")
+							data = a
+						}
+						
+						return result
+						
 					}
 					
-					val request_builder = Request.Builder()
-						.patch(multipart_body_builder.build())
-					
-					val result =
-						client.request("/api/v1/accounts/update_credentials", request_builder)
-					val jsonObject = result?.jsonObject
-					if(jsonObject != null) {
-						val a = TootParser(this@ActAccountSetting, account).account(jsonObject)
-							?: return TootApiResult("TootAccount parse failed.")
-						data = a
-					}
-					
-					return result
 					
 				} finally {
 					for(arg in args) {
@@ -1245,13 +1353,15 @@ class ActAccountSetting
 		
 		val mimeType : String
 		
+		val uri: Uri
+		
 		@Throws(IOException::class)
 		fun open() : InputStream
 		
 		fun deleteTempFile()
 	}
 	
-	private fun createOpener(uri : Uri, mime_type : String) : InputStreamOpener {
+	private fun createOpener(uriArg : Uri, mime_type : String) : InputStreamOpener {
 		
 		while(true) {
 			try {
@@ -1267,7 +1377,7 @@ class ActAccountSetting
 				// 設定からリサイズ指定を読む
 				val resize_to = 1280
 				
-				val bitmap = createResizedBitmap(this, uri, resize_to)
+				val bitmap = createResizedBitmap(this, uriArg, resize_to)
 				if(bitmap != null) {
 					try {
 						val cache_dir = externalCacheDir
@@ -1295,6 +1405,10 @@ class ActAccountSetting
 							override val mimeType : String
 								get() = mime_type
 							
+							override val uri : Uri
+								get() = uriArg
+							
+							
 							@Throws(IOException::class)
 							override fun open() = FileInputStream(temp_file)
 							
@@ -1314,10 +1428,14 @@ class ActAccountSetting
 			
 			break
 		}
+		
 		return object : InputStreamOpener {
 			
 			override val mimeType : String
 				get() = mime_type
+			
+			override val uri : Uri
+				get() = uriArg
 			
 			@Throws(IOException::class)
 			override fun open() : InputStream {

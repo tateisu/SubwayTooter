@@ -5324,6 +5324,7 @@ class Column(
 		if(with_attachment && ! with_highlight) {
 			put("mediaOnly", true)
 			put("withMedia", true)
+			put("withFiles", true)
 			put("media", true)
 		}
 		return this

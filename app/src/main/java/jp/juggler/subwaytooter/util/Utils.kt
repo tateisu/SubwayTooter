@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.util
 
 import android.app.Activity
+import android.content.ContentResolver
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.res.Resources
@@ -9,6 +10,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.provider.OpenableColumns
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
@@ -26,10 +28,7 @@ import okhttp3.RequestBody
 import org.apache.commons.io.IOUtils
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.ByteArrayOutputStream
-import java.io.File
-import java.io.FileInputStream
-import java.io.IOException
+import java.io.*
 import java.lang.ref.WeakReference
 import java.security.MessageDigest
 import java.util.LinkedList
@@ -879,5 +878,39 @@ fun Cursor.getStringOrNull(colName : String) : String? {
 		null
 	} else {
 		getString(colIdx)
+	}
+}
+
+fun getDocumentName(contentResolver:ContentResolver,uri : Uri) : String {
+	val errorName = "no_name"
+	return contentResolver.query(uri, null, null, null, null, null)
+		?.use { cursor ->
+			return if(! cursor.moveToFirst()) {
+				errorName
+			} else {
+				val colIdx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+				if(cursor.isNull(colIdx)) {
+					errorName
+				} else {
+					cursor.getString(colIdx)
+				}
+			}
+		}
+		?: errorName
+}
+
+@Throws(IOException::class)
+fun getStreamSize(bClose : Boolean, inStream : InputStream) : Long {
+	try {
+		var size = 0L
+		while(true) {
+			val r = IOUtils.skip(inStream, 16384)
+			if(r <= 0) break
+			size += r
+		}
+		return size
+	} finally {
+		@Suppress("DEPRECATION")
+		if(bClose) IOUtils.closeQuietly(inStream)
 	}
 }

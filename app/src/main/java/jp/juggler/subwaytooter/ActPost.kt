@@ -15,7 +15,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.provider.MediaStore
-import android.provider.OpenableColumns
 import android.support.v13.view.inputmethod.InputConnectionCompat
 import android.support.v13.view.inputmethod.InputContentInfoCompat
 import android.support.v4.app.ActivityCompat
@@ -46,7 +45,6 @@ import okhttp3.MultipartBody
 import okhttp3.Request
 import okhttp3.RequestBody
 import okio.BufferedSink
-import org.apache.commons.io.IOUtils
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -1600,7 +1598,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						}
 						
 						multipart_builder.addFormDataPart(
-							"file", getDocumentName(uri), object : RequestBody() {
+							"file", getDocumentName(contentResolver,uri), object : RequestBody() {
 								override fun contentType() : MediaType? {
 									return MediaType.parse(opener.mimeType)
 								}
@@ -1645,7 +1643,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						val multipart_body = MultipartBody.Builder()
 							.setType(MultipartBody.FORM)
 							.addFormDataPart(
-								"file", getDocumentName(uri), object : RequestBody() {
+								"file", getDocumentName(contentResolver,uri), object : RequestBody() {
 									override fun contentType() : MediaType? {
 										return MediaType.parse(opener.mimeType)
 									}
@@ -1817,40 +1815,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		}
 	}
 	
-	fun getDocumentName(uri : Uri) : String {
-		val errorName = "no_name"
-		return contentResolver.query(uri, null, null, null, null, null)
-			?.use { cursor ->
-				return if(! cursor.moveToFirst()) {
-					errorName
-				} else {
-					val colIdx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-					if(cursor.isNull(colIdx)) {
-						errorName
-					} else {
-						cursor.getString(colIdx)
-					}
-				}
-			}
-			?: errorName
-	}
-	
-	@Throws(IOException::class)
-	internal fun getStreamSize(bClose : Boolean, inStream : InputStream) : Long {
-		try {
-			var size = 0L
-			while(true) {
-				val r = IOUtils.skip(inStream, 16384)
-				if(r <= 0) break
-				size += r
-			}
-			return size
-		} finally {
-			@Suppress("DEPRECATION")
-			if(bClose) IOUtils.closeQuietly(inStream)
-		}
-	}
-	
+
+
 	private fun showVisibility() {
 		btnVisibility.setImageResource(
 			Styler.getVisibilityIcon(

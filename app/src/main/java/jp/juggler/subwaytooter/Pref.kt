@@ -362,6 +362,7 @@ object Pref {
 	val spNotificationTlIconSize = StringPref("notification_tl_icon_size", "32")
 	val spBoostButtonSize = StringPref("BoostButtonSize", "35")
 	val spMediaSizeMax = StringPref("max_media_size", "8")
+	val spMovieSizeMax = StringPref("max_movie_size", "40")
 	val spTimelineFont = StringPref("timeline_font", "", skipImport = true)
 	val spTimelineFontBold = StringPref("timeline_font_bold", "", skipImport = true)
 	val spStreamListenerSecret = StringPref("stream_listener_secret", "")

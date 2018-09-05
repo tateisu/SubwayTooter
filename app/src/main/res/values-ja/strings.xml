@@ -413,6 +413,7 @@
     <string name="media_attachment">添付メディア</string>
     <string name="media_attachment_empty">添付メディアがありません</string>
     <string name="media_attachment_max_byte_size">添付メディアの最大バイト数(単位:MB。デフォルトは8)</string>
+    <string name="media_attachment_max_byte_size_movie">添付メディア(動画)の最大バイト数(単位:MB。デフォルトは40)</string>
     <string name="media_attachment_still_uploading">添付メディアのアップロードが終わってません</string>
     <string name="media_attachment_type_error">添付メディアの種類\"%1$s\"はこのアプリでは開けません。下の「…」にある「ブラウザで開く」を試すことができます</string>
     <string name="media_description">(添付 %1$d) %2$s</string>

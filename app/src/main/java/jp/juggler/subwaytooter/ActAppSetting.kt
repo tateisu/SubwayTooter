@@ -137,6 +137,7 @@ class ActAppSetting : AppCompatActivity()
 	private lateinit var etQuoteNameFormat : EditText
 	private lateinit var etAutoCWLines : EditText
 	private lateinit var etMediaSizeMax : EditText
+	private lateinit var etMovieSizeMax : EditText
 	private lateinit var etRoundRatio : EditText
 	private lateinit var etMediaReadTimeout : EditText
 	
@@ -324,6 +325,9 @@ class ActAppSetting : AppCompatActivity()
 		
 		etMediaSizeMax = findViewById(R.id.etMediaSizeMax)
 		etMediaSizeMax.addTextChangedListener(this)
+
+		etMovieSizeMax= findViewById(R.id.etMovieSizeMax)
+		etMovieSizeMax.addTextChangedListener(this)
 		
 		etRoundRatio = findViewById(R.id.etRoundRatio)
 		etRoundRatio.addTextChangedListener(this)
@@ -432,6 +436,7 @@ class ActAppSetting : AppCompatActivity()
 		etPullNotificationCheckInterval.setText(Pref.spPullNotificationCheckInterval(pref))
 		
 		etMediaSizeMax.setText(Pref.spMediaSizeMax(pref))
+		etMovieSizeMax.setText(Pref.spMovieSizeMax(pref))
 		etRoundRatio.setText(Pref.spRoundRatio(pref))
 		
 		etMediaReadTimeout.setText(Pref.spMediaReadTimeout(pref))
@@ -510,6 +515,8 @@ class ActAppSetting : AppCompatActivity()
 				Pref.spPullNotificationCheckInterval,
 				etPullNotificationCheckInterval.text.toString().trim { it <= ' ' })
 			.put(Pref.spMediaSizeMax, etMediaSizeMax.text.toString().trim { it <= ' ' })
+			.put(Pref.spMovieSizeMax, etMovieSizeMax.text.toString().trim { it <= ' ' })
+		
 			.put(Pref.spRoundRatio, etRoundRatio.text.toString().trim { it <= ' ' })
 			.put(Pref.spMediaReadTimeout, etMediaReadTimeout.text.toString().trim { it <= ' ' })
 		

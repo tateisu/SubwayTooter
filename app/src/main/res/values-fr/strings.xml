@@ -515,7 +515,7 @@
 	<string name="mime_type_missing">Type MIME manquant.</string>
 	<string name="mime_type_not_acceptable">MIME type %1$s is not acceptable.\nSupported MIME types are image/jpeg, image/png, image/gif, video/webm, video/mp4 .</string>
     <string name="thumbnail_1_6_1_later">Miniature (Mastodon 1.6.1 ou version ultérieure)</string>
-    <string name="dont_show_timeout">"Ne pas afficher les notifications \"Délai d\'expiration du serveur\" "</string>
+    <string name="dont_show_timeout">Ne pas afficher les notifications \"Délai d\'expiration du serveur\"</string>
 	<string name="emoji_category_people">People</string>
 	<string name="emoji_category_nature">Nature</string>
 	<string name="emoji_category_foods">Alimentation</string>

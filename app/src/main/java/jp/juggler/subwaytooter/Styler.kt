@@ -124,7 +124,7 @@ object Styler {
 			else-> when(visibility) {
 				TootVisibility.Public -> context.getString(R.string.visibility_public)
 				TootVisibility.UnlistedHome -> context.getString(R.string.visibility_unlisted)
-				TootVisibility.PrivateFollowers -> context.getString(R.string.visibility_private)
+				TootVisibility.PrivateFollowers -> context.getString(R.string.visibility_followers)
 				TootVisibility.DirectSpecified -> context.getString(R.string.visibility_direct)
 				TootVisibility.DirectPrivate -> context.getString(R.string.visibility_direct)
 				TootVisibility.WebSetting -> context.getString(R.string.visibility_web_setting)

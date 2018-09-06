@@ -270,7 +270,7 @@
     <string name="column_header">رأسية العمود</string>
     <string name="content_color">لون نص المحتوى</string>
     <string name="send_message">إبعث له رسالة</string>
-    <string name="send_message_from_another_account">إبعث رسالة مِن حساب آخَر</string>
+    <string name="send_message_from_another_account">إبعث رسالة مِن خلال حساب آخَر</string>
     <string name="dont_confirm_again">لا تطلب مِنّي التأكيد مُجددًا</string>
     <string name="profile_of">الملف الشخصي لـ %1$s</string>
     <string name="display_name_replied_by">ردّ %1$s</string>
@@ -334,4 +334,12 @@
     <string name="list_created">تم إنشاء القائمة الجديدة.</string>
     <string name="list_member">قائمة المستخدِمين</string>
     <string name="target_user">المستخدم المستهدَف</string>
+    <string name="reply_from_another_account">الردّ بحساب آخَر</string>
+    <string name="conversation_from_another_account">عرض المحادثة مِن خلال حساب آخَر</string>
+    <string name="quote_url">اقتباس الرابط…</string>
+    <string name="url_is_copied">تم نسخ الرابط إلى الحافظة</string>
+    <string name="share_url">مشاركة الرابط</string>
+    <string name="share_url_more">شارك الرابط…</string>
+    <string name="copy_url">نسخ رابط العنوان إلى الحافظة</string>
+    <string name="boost_private_toot_not_allowed">ليس بمقدورك ترقيته تبويق خاص نَشَرَه شخص آخَر.</string>
     </resources>

@@ -757,5 +757,6 @@
     <string name="your_statuses">あなたのトゥート</string>
     <string name="yourself_can_see_your_network">もしあなたがソーシャルグラフを隠す選択をした場合でも、あなた自身はそれを見ることができます。</string>
     <string name="zooming_of">×%3$.1f\n%1$d×%2$d</string>
+    <string name="link_color">リンクの色 (アプリ再起動が必要)</string>
 
 </resources>

@@ -75,6 +75,7 @@ class ActAppSetting : AppCompatActivity()
 		internal const val COLOR_DIALOG_ID_TOOT_BG_FOLLOWER = 8
 		internal const val COLOR_DIALOG_ID_TOOT_BG_DIRECT_USER = 9
 		internal const val COLOR_DIALOG_ID_TOOT_BG_DIRECT_ME  = 10
+		internal const val COLOR_DIALOG_ID_LINK  = 11
 		
 		internal const val REQUEST_CODE_TIMELINE_FONT = 1
 		internal const val REQUEST_CODE_TIMELINE_FONT_BOLD = 2
@@ -121,6 +122,7 @@ class ActAppSetting : AppCompatActivity()
 	private var toot_color_follower : Int = 0
 	private var toot_color_direct_user : Int = 0
 	private var toot_color_direct_me : Int = 0
+	private var link_color : Int = 0
 	
 	private lateinit var ivFooterToot : ImageView
 	private lateinit var ivFooterMenu : ImageView
@@ -287,6 +289,8 @@ class ActAppSetting : AppCompatActivity()
 		findViewById<View>(R.id.btnBackgroundColorDirectNoUserEdit).setOnClickListener(this)
 		findViewById<View>(R.id.btnBackgroundColorDirectNoUserReset).setOnClickListener(this)
 		
+		findViewById<View>(R.id.btnLinkColorEdit).setOnClickListener(this)
+		findViewById<View>(R.id.btnLinkColorReset).setOnClickListener(this)
 		
 		findViewById<View>(R.id.btnTimelineFontEdit).setOnClickListener(this)
 		findViewById<View>(R.id.btnTimelineFontReset).setOnClickListener(this)
@@ -422,6 +426,7 @@ class ActAppSetting : AppCompatActivity()
 		toot_color_follower = Pref.ipTootColorFollower(pref)
 		toot_color_direct_user = Pref.ipTootColorDirectUser(pref)
 		toot_color_direct_me = Pref.ipTootColorDirectMe(pref)
+		link_color = Pref.ipLinkColor(pref)
 		
 		etColumnWidth.setText(Pref.spColumnWidth(pref))
 		etMediaThumbHeight.setText(Pref.spMediaThumbHeight(pref))
@@ -542,6 +547,8 @@ class ActAppSetting : AppCompatActivity()
 			.put(Pref.ipTootColorDirectUser, toot_color_direct_user)
 			.put(Pref.ipTootColorDirectMe, toot_color_direct_me)
 			
+			.put(Pref.ipLinkColor, link_color)
+			
 			.apply()
 		
 		showUserAgentError()
@@ -658,7 +665,7 @@ class ActAppSetting : AppCompatActivity()
 				toot_color_direct_me,
 				true
 			)
-			
+
 			R.id.btnListDividerColorReset -> {
 				list_divider_color = 0
 				saveUIToData()
@@ -677,6 +684,16 @@ class ActAppSetting : AppCompatActivity()
 			}
 			R.id.btnBackgroundColorDirectNoUserReset -> {
 				toot_color_direct_me = 0
+				saveUIToData()
+			}
+			
+			R.id.btnLinkColorEdit -> openColorPicker(
+				COLOR_DIALOG_ID_LINK,
+				link_color,
+				true
+			)
+			R.id.btnLinkColorReset -> {
+				link_color = 0
 				saveUIToData()
 			}
 			
@@ -820,7 +837,10 @@ class ActAppSetting : AppCompatActivity()
 				toot_color_direct_me = if(colorSelected == 0) 0x01000000 else colorSelected
 				saveUIToData()
 			}
-
+			COLOR_DIALOG_ID_LINK ->{
+				link_color = if(colorSelected == 0) 0x01000000 else colorSelected
+				saveUIToData()
+			}
 		}
 	}
 	

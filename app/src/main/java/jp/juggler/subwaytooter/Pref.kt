@@ -343,6 +343,8 @@ object Pref {
 	val ipLastColumnPos = IntPref("last_column_pos", - 1)
 	val ipBoostButtonJustify = IntPref("ipBoostButtonJustify", 0) // 0=左,1=中央,2=右
 	
+	val ipLinkColor = IntPref("LinkColor", 0)
+	
 	val ipTootColorUnlisted = IntPref("ipTootColorUnlisted", 0)
 	val ipTootColorFollower = IntPref("ipTootColorFollower", 0)
 	val ipTootColorDirectUser = IntPref("ipTootColorDirectUser", 0)

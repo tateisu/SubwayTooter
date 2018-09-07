@@ -20,6 +20,7 @@ class MyClickableSpan(
 	
 	companion object {
 		var link_callback : WeakReference<MyClickableSpanClickCallback>? = null
+		var defaultLinkColor : Int =0
 	}
 
 	val color_fg : Int
@@ -41,8 +42,13 @@ class MyClickableSpan(
 	
 	override fun updateDrawState(ds : TextPaint) {
 		super.updateDrawState(ds)
-		if(color_fg != 0) ds.color = color_fg
 		if(color_bg != 0) ds.bgColor = color_bg
+
+		if(color_fg != 0){
+			ds.color = color_fg
+		}else if( defaultLinkColor != 0){
+			ds.color = defaultLinkColor
+		}
 	}
 	
 }

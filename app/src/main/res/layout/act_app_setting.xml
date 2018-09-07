@@ -1093,6 +1093,32 @@
 
         </LinearLayout>
 
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/link_color"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnLinkColorEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnLinkColorReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
 
         <View style="@style/setting_divider"/>
 

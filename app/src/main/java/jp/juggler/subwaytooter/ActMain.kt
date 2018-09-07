@@ -1141,6 +1141,8 @@ class ActMain : AppCompatActivity()
 	internal fun initUI() {
 		setContentView(R.layout.act_main)
 		
+		MyClickableSpan.defaultLinkColor = Pref.ipLinkColor(pref)
+		
 		var sv = Pref.spTimelineFont(pref)
 		if(sv.isNotEmpty()) {
 			try {

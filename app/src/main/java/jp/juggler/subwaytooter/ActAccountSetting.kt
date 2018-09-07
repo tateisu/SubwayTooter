@@ -865,7 +865,7 @@ class ActAccountSetting
 			val noteString = src.source?.note ?: src.note
 			val noteSpannable = when {
 				account.isMisskey -> {
-					SpannableString(noteString)
+					SpannableString(noteString ?: "")
 				}
 				else -> {
 					decodeOptions.decodeEmoji(noteString)

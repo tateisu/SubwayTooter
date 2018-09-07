@@ -163,12 +163,14 @@
                     android:layout_height="wrap_content"
                     android:text="@string/with_attachment"
                     />
+
                 <CheckBox
                     android:id="@+id/cbWithHighlight"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/with_highlight"
                     />
+
                 <CheckBox
                     android:id="@+id/cbDontShowBoost"
                     android:layout_width="match_parent"
@@ -203,6 +205,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/dont_show_reaction"
                     />
+
                 <CheckBox
                     android:id="@+id/cbDontShowVote"
                     android:layout_width="match_parent"
@@ -244,12 +247,14 @@
                     android:layout_height="wrap_content"
                     android:text="@string/hide_media_default"
                     />
+
                 <CheckBox
                     android:id="@+id/cbSystemNotificationNotRelated"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/system_notification_not_related"
                     />
+
                 <CheckBox
                     android:id="@+id/cbEnableSpeech"
                     android:layout_width="match_parent"
@@ -310,82 +315,93 @@
             </LinearLayout>
         </jp.juggler.subwaytooter.view.MaxHeightScrollView>
 
-        <RelativeLayout
+        <LinearLayout
             android:id="@+id/llSearch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/colorSearchFormBackground"
+            android:orientation="vertical"
             android:paddingBottom="3dp"
             android:paddingEnd="12dp"
             android:paddingStart="12dp"
             android:paddingTop="3dp"
             >
 
-            <ImageButton
-                android:id="@+id/btnSearch"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentTop="true"
-                android:background="@drawable/btn_bg_transparent"
-                android:contentDescription="@string/search"
-                android:src="?attr/ic_search"
-                />
-
-            <EditText
-                android:id="@+id/etSearch"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_toStartOf="@id/btnSearch"
-                android:imeOptions="actionSearch"
-                android:inputType="text"
-                tools:ignore="LabelFor"
-                />
+                android:baselineAligned="false"
+                android:gravity="center"
+                android:orientation="horizontal"
+                >
+
+                <EditText
+                    android:id="@+id/etSearch"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    tools:ignore="LabelFor"
+                    />
+
+                <ImageButton
+                    android:id="@+id/btnSearch"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:contentDescription="@string/search"
+                    android:src="?attr/ic_search"
+                    />
+
+            </LinearLayout>
 
             <CheckBox
                 android:id="@+id/cbResolve"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/etSearch"
                 android:text="@string/resolve_non_local_account"
                 />
 
-        </RelativeLayout>
+        </LinearLayout>
 
-        <RelativeLayout
+        <LinearLayout
             android:id="@+id/llListList"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="?attr/colorSearchFormBackground"
+            android:baselineAligned="false"
+            android:gravity="center"
+            android:orientation="horizontal"
             android:paddingBottom="3dp"
             android:paddingEnd="12dp"
             android:paddingStart="12dp"
             android:paddingTop="3dp"
             >
 
-            <ImageButton
-                android:id="@+id/btnListAdd"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_alignParentEnd="true"
-                android:layout_alignParentTop="true"
-                android:background="@drawable/btn_bg_transparent"
-                android:contentDescription="@string/search"
-                android:src="?attr/ic_add"
-                />
-
             <EditText
                 android:id="@+id/etListName"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_toStartOf="@id/btnListAdd"
+                android:layout_weight="1"
                 android:hint="@string/list_create_hint"
                 android:imeOptions="actionSend"
                 android:inputType="text"
                 tools:ignore="LabelFor"
                 />
 
-        </RelativeLayout>
+            <ImageButton
+                android:id="@+id/btnListAdd"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_marginStart="4dp"
+                android:background="@drawable/btn_bg_transparent"
+                android:contentDescription="@string/search"
+                android:src="?attr/ic_add"
+                />
+
+        </LinearLayout>
 
         <FrameLayout
             android:id="@+id/flColumnBackground"
@@ -422,14 +438,13 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
 
-                    android:paddingEnd="12dp"
-                    android:paddingStart="12dp"
                     android:clipToPadding="false"
-
-                    android:scrollbars="vertical"
                     android:fadeScrollbars="false"
-                    android:scrollbarStyle="outsideOverlay"
+                    android:paddingEnd="12dp"
 
+                    android:paddingStart="12dp"
+                    android:scrollbarStyle="outsideOverlay"
+                    android:scrollbars="vertical"
 
                     />
 

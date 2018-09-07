@@ -14,6 +14,7 @@ import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 import java.lang.ref.WeakReference
+import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -47,11 +48,14 @@ class Column(
 	val app_state : AppState,
 	val context : Context,
 	val access_info : SavedAccount,
-	val column_type : Int
+	val column_type : Int,
+	val column_id: String
 ) {
 	
 	companion object {
 		private val log = LogCategory("Column")
+		
+		const val DIR_BACKGROUND_IMAGE = "columnBackground"
 		
 		private const val READ_LIMIT = 80 // API側の上限が80です。ただし指定しても40しか返ってこないことが多い
 		private const val LOOP_TIMEOUT = 10000L
@@ -126,6 +130,7 @@ class Column(
 		
 		internal const val KEY_ACCOUNT_ROW_ID = "account_id"
 		internal const val KEY_TYPE = "type"
+		internal const val KEY_COLUMN_ID = "column_id"
 		internal const val KEY_DONT_CLOSE = "dont_close"
 		private const val KEY_WITH_ATTACHMENT = "with_attachment"
 		private const val KEY_WITH_HIGHLIGHT = "with_highlight"
@@ -366,6 +371,38 @@ class Column(
 				}
 				dst
 			}
+		
+		
+		private val columnIdMap = HashMap<String,WeakReference<Column>?>()
+		private fun registerColumnId(id:String,column:Column){
+			synchronized(columnIdMap){
+				columnIdMap[id] = WeakReference(column)
+			}
+		}
+		private fun generateColumnId():String{
+			synchronized(columnIdMap){
+				val buffer = ByteBuffer.allocate(8)
+				var id=""
+				while( id.isEmpty() || columnIdMap.containsKey(id) ){
+					if(id.isNotEmpty()) Thread.sleep(1L)
+					buffer.clear()
+					buffer.putLong(System.currentTimeMillis())
+					id = buffer.array().encodeBase64Url()
+				}
+				columnIdMap[id] = null
+				return id
+			}
+		}
+
+		private fun decodeColumnId(src:JSONObject):String{
+			return src.parseString(KEY_COLUMN_ID) ?: generateColumnId()
+		}
+		
+		fun findColumnById(id : String) : Column? {
+			synchronized(columnIdMap){
+				return columnIdMap[id]?.get()
+			}
+		}
 	}
 	
 	private var callback_ref : WeakReference<Callback>? = null
@@ -550,6 +587,8 @@ class Column(
 	
 	private var bPutGap : Boolean = false
 	
+
+	
 	@Suppress("unused")
 	val listTitle : String
 		get() {
@@ -591,7 +630,7 @@ class Column(
 		type : Int,
 		vararg params : Any
 	)
-		: this(app_state, app_state.context, access_info, type) {
+		: this(app_state, app_state.context, access_info, type, generateColumnId() ) {
 		this.callback_ref = WeakReference(callback)
 		when(type) {
 			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY -> status_id =
@@ -614,7 +653,8 @@ class Column(
 		app_state,
 		app_state.context,
 		loadAccount(app_state.context, src),
-		src.optInt(KEY_TYPE)
+		src.optInt(KEY_TYPE),
+		decodeColumnId(src)
 	) {
 		dont_close = src.optBoolean(KEY_DONT_CLOSE)
 		with_attachment = src.optBoolean(KEY_WITH_ATTACHMENT)
@@ -684,6 +724,7 @@ class Column(
 	fun encodeJSON(dst : JSONObject, old_index : Int) {
 		dst.put(KEY_ACCOUNT_ROW_ID, access_info.db_id)
 		dst.put(KEY_TYPE, column_type)
+		dst.put(KEY_COLUMN_ID, column_id)
 		dst.put(KEY_DONT_CLOSE, dont_close)
 		dst.put(KEY_WITH_ATTACHMENT, with_attachment)
 		dst.put(KEY_WITH_HIGHLIGHT, with_highlight)
@@ -3629,7 +3670,7 @@ class Column(
 			
 			var filterUpdated = false
 			
-			override fun doInBackground(vararg params : Void) : TootApiResult? {
+			override fun doInBackground(vararg unused : Void) : TootApiResult? {
 				ctStarted.set(true)
 				
 				val client = TootApiClient(context, callback = object : TootApiCallback {
@@ -4527,7 +4568,7 @@ class Column(
 				return result
 			}
 			
-			override fun doInBackground(vararg params : Void) : TootApiResult? {
+			override fun doInBackground(vararg unused : Void) : TootApiResult? {
 				ctStarted.set(true)
 				
 				val client = TootApiClient(context, callback = object : TootApiCallback {
@@ -5527,4 +5568,7 @@ class Column(
 	//		return null
 	//	}
 	
+	init{
+		registerColumnId(column_id,this)
+	}
 }

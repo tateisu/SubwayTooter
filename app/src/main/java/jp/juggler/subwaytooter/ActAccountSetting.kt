@@ -202,27 +202,17 @@ class ActAccountSetting
 			}
 			
 			REQUEST_CODE_AVATAR_ATTACHMENT, REQUEST_CODE_HEADER_ATTACHMENT -> {
-				
+
 				if(resultCode == Activity.RESULT_OK && data != null) {
-					val uri1 = data.data
-					if(uri1 != null) {
-						// 単一選択
-						val type = data.type
+					data.handleGetContentResult(contentResolver).firstOrNull()?.let{
 						addAttachment(
 							requestCode,
-							uri1,
-							if(type?.isNotEmpty() == true) type else contentResolver.getType(uri1)
+							it.first,
+							if( it.second?.isNotEmpty() == true)
+								it.second
+							else
+								contentResolver.getType(it.first)
 						)
-					} else {
-						// 複数選択
-						data.clipData?.let { clipData ->
-							if(clipData.itemCount > 0) {
-								clipData.getItemAt(0)?.uri?.let { uri2 ->
-									val type = contentResolver.getType(uri2)
-									addAttachment(requestCode, uri2, type)
-								}
-							}
-						}
 					}
 				}
 			}
@@ -1312,17 +1302,12 @@ class ActAccountSetting
 	}
 	
 	private fun performAttachment(request_code : Int) {
-		// SAFのIntentで開く
 		try {
-			val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-			intent.addCategory(Intent.CATEGORY_OPENABLE)
-			intent.type = "*/*"
-			intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, false)
-			intent.putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/*", "video/*"))
+			val intent = intentGetContent(false,getString(R.string.pick_image),"image/*")
 			startActivityForResult(intent, request_code)
 		} catch(ex : Throwable) {
-			log.trace(ex,"ACTION_OPEN_DOCUMENT failed.")
-			showToast(this, ex, "ACTION_OPEN_DOCUMENT failed.")
+			log.trace(ex,"performAttachment failed.")
+			showToast(this, ex, "performAttachment failed.")
 		}
 		
 	}

@@ -292,36 +292,17 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		}
 	}
 	
+
+	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
 		if(requestCode == REQUEST_CODE_ATTACHMENT_OLD && resultCode == Activity.RESULT_OK) {
-			if(data != null) {
-				val urlList = ArrayList<Pair<Uri, String?>>()
-				// 単一選択
-				data.data?.let { urlList.add(Pair(it, data.type)) }
-				// 複数選択
-				val cd = data.clipData
-				if(cd != null) {
-					for(i in 0 until cd.itemCount) {
-						cd.getItemAt(i)?.uri?.let { uri ->
-							if(null == urlList.find { it.first == uri }) {
-								urlList.add(Pair(uri, null as String?))
-							}
-						}
-					}
-				}
-				urlList.forEach { addAttachment(it.first, it.second) }
+			data?.handleGetContentResult(contentResolver)?.forEach {
+				addAttachment(it.first, it.second)
 			}
+		
 		} else if(requestCode == REQUEST_CODE_ATTACHMENT && resultCode == Activity.RESULT_OK) {
-			if(data != null) {
-				// 単一選択
-				data.data?.let { addAttachment(it, data.type) }
-				// 複数選択
-				val cd = data.clipData
-				if(cd != null) {
-					for(i in 0 until cd.itemCount) {
-						cd.getItemAt(i)?.uri?.let { addAttachment(it) }
-					}
-				}
+			data?.handleGetContentResult(contentResolver)?.forEach {
+				addAttachment(it.first, it.second)
 			}
 		} else if(requestCode == REQUEST_CODE_CAMERA) {
 			
@@ -1387,31 +1368,17 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 	}
 	
+
 	private fun performAttachmentOld() {
 		// SAFのIntentで開く
 		try {
-			val intent =
-				Intent(Intent.ACTION_GET_CONTENT, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-			intent.addCategory(Intent.CATEGORY_OPENABLE)
-			
-			// EXTRA_ALLOW_MULTIPLE は API 18 (4.3)以降。ACTION_GET_CONTENT でも ACTION_OPEN_DOCUMENT でも指定できる
-			intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-			
-			// EXTRA_MIME_TYPES は API 19以降。ACTION_GET_CONTENT でも ACTION_OPEN_DOCUMENT でも指定できる
-			intent.putExtra("android.intent.extra.MIME_TYPES", arrayOf("image/*", "video/*"))
-			
-			if(Build.VERSION.SDK_INT >= 23) {
-				// On Android 6.0 and above using "video/* image/" or "image/ video/*" type doesn't work
-				// it only recognizes the first filter you specify.
-				intent.type = "*/*"
-			} else {
-				intent.type = "image/* video/*"
-			}
-			
-			startActivityForResult(
-				Intent.createChooser(intent, getString(R.string.pick_images)),
-				REQUEST_CODE_ATTACHMENT_OLD
+			val intent = intentGetContent(
+				true,
+				getString(R.string.pick_images)
+				, "image/*"
+				, "video/*"
 			)
+			startActivityForResult(intent, REQUEST_CODE_ATTACHMENT_OLD)
 		} catch(ex : Throwable) {
 			log.trace(ex)
 			showToast(this, ex, "ACTION_GET_CONTENT failed.")
@@ -1573,11 +1540,12 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				try {
 					val opener = createOpener(uri, mime_type)
 					
-					val media_size_max = when{
-						mime_type.startsWith("video") ->{
+					val media_size_max = when {
+						mime_type.startsWith("video") -> {
 							1000000 * Math.max(1, Pref.spMovieSizeMax.toInt(pref))
 						}
-						else->{
+						
+						else -> {
 							1000000 * Math.max(1, Pref.spMediaSizeMax.toInt(pref))
 						}
 					}
@@ -1604,7 +1572,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						}
 						
 						multipart_builder.addFormDataPart(
-							"file", getDocumentName(contentResolver,uri), object : RequestBody() {
+							"file", getDocumentName(contentResolver, uri), object : RequestBody() {
 								override fun contentType() : MediaType? {
 									return MediaType.parse(opener.mimeType)
 								}
@@ -1649,7 +1617,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						val multipart_body = MultipartBody.Builder()
 							.setType(MultipartBody.FORM)
 							.addFormDataPart(
-								"file", getDocumentName(contentResolver,uri), object : RequestBody() {
+								"file",
+								getDocumentName(contentResolver, uri),
+								object : RequestBody() {
 									override fun contentType() : MediaType? {
 										return MediaType.parse(opener.mimeType)
 									}
@@ -1821,8 +1791,6 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		}
 	}
 	
-
-
 	private fun showVisibility() {
 		btnVisibility.setImageResource(
 			Styler.getVisibilityIcon(

@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter
 
+import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -17,12 +18,13 @@ import android.widget.TextView
 
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
+import jp.juggler.subwaytooter.util.*
+import org.apache.commons.io.IOUtils
+import java.io.File
+import java.io.FileOutputStream
 
 import java.text.NumberFormat
 import java.util.Locale
-
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.createResizedBitmap
 
 class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPickerDialogListener {
 	
@@ -181,9 +183,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			}
 			
 			R.id.btnColumnBackgroundImage -> {
-				val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-				intent.addCategory(Intent.CATEGORY_OPENABLE)
-				intent.type = "image/*"
+				val intent = intentOpenDocument("image/*")
 				startActivityForResult(intent, REQUEST_CODE_PICK_BACKGROUND)
 			}
 			
@@ -220,16 +220,20 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 	override fun onDialogDismissed(dialogId : Int) {}
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
-		if(requestCode == REQUEST_CODE_PICK_BACKGROUND && resultCode == RESULT_OK) {
-			if(data != null) {
-				val uri = data.data
-				if(uri != null) {
-					contentResolver.takePersistableUriPermission(
-						uri,
-						Intent.FLAG_GRANT_READ_URI_PERMISSION
-					)
-					column.column_bg_image = uri.toString()
+		if(requestCode == REQUEST_CODE_PICK_BACKGROUND && data != null && resultCode == RESULT_OK) {
+			data.handleGetContentResult(contentResolver).firstOrNull()?.let { pair->
+				try{
+					val backgroundDir = getDir(Column.DIR_BACKGROUND_IMAGE, Context.MODE_PRIVATE)
+					val file = File(backgroundDir,column.column_id)
+					FileOutputStream(file).use{ outStream->
+						contentResolver.openInputStream(pair.first).use{ inStream->
+							IOUtils.copy(inStream,outStream)
+						}
+					}
+					column.column_bg_image = Uri.fromFile(file).toString()
 					show()
+				}catch(ex:Throwable){
+					showToast(this@ActColumnCustomize,true,ex.withCaption("can't update background image."))
 				}
 			}
 		}

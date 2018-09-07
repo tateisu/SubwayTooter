@@ -37,6 +37,7 @@ import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.util.*
+import java.io.File
 
 class AppState(internal val context : Context, internal val pref : SharedPreferences) {
 	
@@ -275,7 +276,18 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 				++ i
 			}
 		}
+		
 		enableSpeech()
+		
+		// 背景フォルダの掃除
+		val backgroundDir = context.getDir(Column.DIR_BACKGROUND_IMAGE,Context.MODE_PRIVATE)
+		backgroundDir.list().forEach {name->
+			val file = File(backgroundDir,name)
+			if( file.isFile ){
+				val column = Column.findColumnById( name )
+				if( column == null) file.delete()
+			}
+		}
 	}
 	
 	fun isBusyFav(account : SavedAccount, status : TootStatus) : Boolean {

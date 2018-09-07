@@ -4,9 +4,11 @@ import android.app.Activity
 import android.content.ContentResolver
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.Intent
 import android.content.res.Resources
 import android.database.Cursor
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -36,10 +38,7 @@ import java.util.Locale
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
-import kotlin.collections.isEmpty
-import kotlin.collections.isNotEmpty
 import kotlin.collections.set
-import kotlin.collections.toString
 
 object Utils {
 	
@@ -913,4 +912,70 @@ fun getStreamSize(bClose : Boolean, inStream : InputStream) : Long {
 		@Suppress("DEPRECATION")
 		if(bClose) IOUtils.closeQuietly(inStream)
 	}
+}
+
+fun intentOpenDocument(mimeType : String):Intent{
+	val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
+	intent.addCategory(Intent.CATEGORY_OPENABLE)
+	intent.type = mimeType // "image/*"
+	return intent
+}
+
+fun intentGetContent(
+	allowMultiple : Boolean,
+	caption : String,
+	vararg mimeTypes : String
+) : Intent {
+	val intent = Intent(Intent.ACTION_GET_CONTENT)
+	intent.addCategory(Intent.CATEGORY_OPENABLE)
+	
+	if(allowMultiple) {
+		// EXTRA_ALLOW_MULTIPLE は API 18 (4.3)以降。ACTION_GET_CONTENT でも ACTION_OPEN_DOCUMENT でも指定できる
+		intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+	}
+	
+	// EXTRA_MIME_TYPES は API 19以降。ACTION_GET_CONTENT でも ACTION_OPEN_DOCUMENT でも指定できる
+	intent.putExtra("android.intent.extra.MIME_TYPES", mimeTypes)
+	
+	intent.type =when {
+		mimeTypes.size == 1 ->  mimeTypes[0]
+
+		// On Android 6.0 and above using "video/* image/" or "image/ video/*" type doesn't work
+		// it only recognizes the first filter you specify.
+		Build.VERSION.SDK_INT >= 23 -> "*/*"
+
+		else -> mimeTypes.joinToString(" ")
+	}
+	
+	return Intent.createChooser(intent, caption)
+}
+
+// returns list of pair of uri and mime-type.
+fun Intent.handleGetContentResult(contentResolver : ContentResolver) : ArrayList<Pair<Uri, String?>> {
+	val urlList = ArrayList<Pair<Uri, String?>>()
+	// 単一選択
+	this.data?.let {
+		urlList.add(Pair(it, this.type))
+	}
+	// 複数選択
+	val cd = this.clipData
+	if(cd != null) {
+		for(i in 0 until cd.itemCount) {
+			cd.getItemAt(i)?.uri?.let { uri ->
+				if(null == urlList.find { it.first == uri }) {
+					urlList.add(Pair(uri, null as String?))
+				}
+			}
+		}
+	}
+	urlList.forEach {
+		try{
+			contentResolver.takePersistableUriPermission(
+				it.first,
+				Intent.FLAG_GRANT_READ_URI_PERMISSION
+			)
+		}catch(_:Throwable){
+		}
+	}
+	return urlList
 }

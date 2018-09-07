@@ -43,8 +43,7 @@ import java.util.Locale
 
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.showToast
+import jp.juggler.subwaytooter.util.*
 
 class ActAppSetting : AppCompatActivity()
 	, CompoundButton.OnCheckedChangeListener
@@ -688,9 +687,7 @@ class ActAppSetting : AppCompatActivity()
 			}
 			
 			R.id.btnTimelineFontEdit -> try {
-				val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-				intent.addCategory(Intent.CATEGORY_OPENABLE)
-				intent.type = "*/*"
+				val intent = intentOpenDocument("*/*")
 				startActivityForResult(intent, REQUEST_CODE_TIMELINE_FONT)
 			} catch(ex : Throwable) {
 				showToast(this, ex, "could not open picker for font")
@@ -703,9 +700,7 @@ class ActAppSetting : AppCompatActivity()
 			}
 			
 			R.id.btnTimelineFontBoldEdit -> try {
-				val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-				intent.addCategory(Intent.CATEGORY_OPENABLE)
-				intent.type = "*/*"
+				val intent = intentOpenDocument("*/*")
 				startActivityForResult(intent, REQUEST_CODE_TIMELINE_FONT_BOLD)
 			} catch(ex : Throwable) {
 				showToast(this, ex, "could not open picker for font")
@@ -732,29 +727,30 @@ class ActAppSetting : AppCompatActivity()
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
 		if(resultCode == RESULT_OK && data != null && requestCode == REQUEST_CODE_TIMELINE_FONT) {
-			val file = saveTimelineFont(data.data, "TimelineFont")
-			if(file != null) {
-				timeline_font = file.absolutePath
-				saveUIToData()
-				showTimelineFont(tvTimelineFontUrl, timeline_font)
+			data.handleGetContentResult(contentResolver).firstOrNull()?.first?.let{ uri->
+				val file = saveTimelineFont(uri, "TimelineFont")
+				if(file != null) {
+					timeline_font = file.absolutePath
+					saveUIToData()
+					showTimelineFont(tvTimelineFontUrl, timeline_font)
+				}
 			}
 		} else if(resultCode == RESULT_OK && data != null && requestCode == REQUEST_CODE_TIMELINE_FONT_BOLD) {
-			val file = saveTimelineFont(data.data, "TimelineFontBold")
-			if(file != null) {
-				timeline_font_bold = file.absolutePath
-				saveUIToData()
-				showTimelineFont(tvTimelineFontBoldUrl, timeline_font_bold)
-			}
-		} else if(resultCode == RESULT_OK && requestCode == REQUEST_CODE_APP_DATA_IMPORT) {
-			if(data != null) {
-				val uri = data.data
-				if(uri != null) {
-					contentResolver.takePersistableUriPermission(
-						uri,
-						Intent.FLAG_GRANT_READ_URI_PERMISSION
-					)
-					importAppData(false, uri)
+			data.handleGetContentResult(contentResolver).firstOrNull()?.first?.let{ uri->
+				val file = saveTimelineFont(uri, "TimelineFontBold")
+				if(file != null) {
+					timeline_font_bold = file.absolutePath
+					saveUIToData()
+					showTimelineFont(tvTimelineFontBoldUrl, timeline_font_bold)
 				}
+			}
+		} else if(resultCode == RESULT_OK && data != null && requestCode == REQUEST_CODE_APP_DATA_IMPORT) {
+			data.handleGetContentResult(contentResolver).firstOrNull()?.first?.let{ uri->
+				contentResolver.takePersistableUriPermission(
+					uri,
+					Intent.FLAG_GRANT_READ_URI_PERMISSION
+				)
+				importAppData(false, uri)
 			}
 		}
 		super.onActivityResult(requestCode, resultCode, data)
@@ -1104,9 +1100,7 @@ class ActAppSetting : AppCompatActivity()
 	
 	private fun importAppData() {
 		try {
-			val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
-			intent.addCategory(Intent.CATEGORY_OPENABLE)
-			intent.type = "*/*"
+			val intent = intentOpenDocument("*/*")
 			startActivityForResult(intent, REQUEST_CODE_APP_DATA_IMPORT)
 		} catch(ex : Throwable) {
 			showToast(this, ex, "importAppData(1) failed.")

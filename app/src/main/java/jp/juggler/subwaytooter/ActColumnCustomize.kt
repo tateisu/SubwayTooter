@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
@@ -18,6 +17,10 @@ import android.widget.TextView
 
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
+import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.TootTask
+import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.util.*
 import org.apache.commons.io.IOUtils
 import java.io.File
@@ -25,6 +28,7 @@ import java.io.FileOutputStream
 
 import java.text.NumberFormat
 import java.util.Locale
+import kotlin.math.max
 
 class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPickerDialogListener {
 	
@@ -183,7 +187,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			}
 			
 			R.id.btnColumnBackgroundImage -> {
-				val intent = intentOpenDocument("image/*")
+				val intent = intentGetContent(false, getString(R.string.pick_image), "image/*")
 				startActivityForResult(intent, REQUEST_CODE_PICK_BACKGROUND)
 			}
 			
@@ -221,22 +225,74 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
 		if(requestCode == REQUEST_CODE_PICK_BACKGROUND && data != null && resultCode == RESULT_OK) {
-			data.handleGetContentResult(contentResolver).firstOrNull()?.let { pair->
-				try{
-					val backgroundDir = getDir(Column.DIR_BACKGROUND_IMAGE, Context.MODE_PRIVATE)
-					val file = File(backgroundDir,column.column_id)
-					FileOutputStream(file).use{ outStream->
-						contentResolver.openInputStream(pair.first).use{ inStream->
-							IOUtils.copy(inStream,outStream)
-						}
-					}
-					column.column_bg_image = Uri.fromFile(file).toString()
-					show()
-				}catch(ex:Throwable){
-					showToast(this@ActColumnCustomize,true,ex.withCaption("can't update background image."))
-				}
+			data.handleGetContentResult(contentResolver).firstOrNull()?.let { pair ->
+				updateBackground(pair.first)
 			}
 		}
+	}
+	
+	private fun updateBackground(uriArg : Uri) {
+		TootTaskRunner(this).run(object : TootTask {
+			override fun background(client : TootApiClient) : TootApiResult? {
+				try {
+					val backgroundDir = Column.getBackgroundImageDir(this@ActColumnCustomize)
+					val file =
+						File(backgroundDir, "${column.column_id}:${System.currentTimeMillis()}")
+					val fileUri = Uri.fromFile(file)
+
+					client.publishApiProgress("loading image from ${uriArg}")
+					contentResolver.openInputStream(uriArg).use { inStream ->
+						FileOutputStream(file).use { outStream ->
+							IOUtils.copy(inStream, outStream)
+						}
+					}
+					
+					// リサイズや回転が必要ならする
+					client.publishApiProgress("check resize/rotation…")
+					
+					val size = (max(
+						resources.displayMetrics.widthPixels,
+						resources.displayMetrics.heightPixels
+					) * 1.5f ).toInt()
+					
+					val bitmap = createResizedBitmap(
+						this@ActColumnCustomize,
+						fileUri,
+						size,
+						skipIfNoNeedToResizeAndRotate = true
+					)
+					if(bitmap != null) {
+						try {
+							client.publishApiProgress("save resized(${bitmap.width}x${bitmap.height}) image to ${file}")
+							FileOutputStream(file).use { os ->
+								bitmap.compress(Bitmap.CompressFormat.PNG, 100, os)
+							}
+						}finally{
+							bitmap.recycle()
+						}
+					}
+					
+					val result = TootApiResult()
+					result.data = fileUri.toString()
+					return result
+				} catch(ex : Throwable) {
+					log.trace(ex)
+					return TootApiResult(ex.withCaption("can't update background image."))
+				}
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				when {
+					result == null -> return
+					result.error != null -> showToast(this@ActColumnCustomize, true, result.error)
+					
+					else -> {
+						column.column_bg_image = result.data as String
+						show()
+					}
+				}
+			}
+		})
 	}
 	
 	private fun initUI() {
@@ -443,7 +499,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			// 画像をロードして、成功したら表示してURLを覚える
 			val resize_max = (0.5f + 64f * density).toInt()
 			val uri = Uri.parse(url)
-			last_image_bitmap = createResizedBitmap( this, uri, resize_max )
+			last_image_bitmap = createResizedBitmap(this, uri, resize_max)
 			if(last_image_bitmap != null) {
 				ivColumnBackground.setImageBitmap(last_image_bitmap)
 				last_image_uri = url

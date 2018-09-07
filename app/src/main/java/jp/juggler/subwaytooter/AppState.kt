@@ -225,7 +225,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 			
 		}
 		
-		internal fun restartTTS() {
+		fun restartTTS() {
 			log.d("restart TextToSpeech")
 			tts?.shutdown()
 			tts = null
@@ -280,11 +280,13 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		enableSpeech()
 		
 		// 背景フォルダの掃除
-		val backgroundDir = context.getDir(Column.DIR_BACKGROUND_IMAGE,Context.MODE_PRIVATE)
-		backgroundDir.list().forEach {name->
-			val file = File(backgroundDir,name)
+		val backgroundImageDir = Column.getBackgroundImageDir(context)
+		backgroundImageDir.list().forEach {name->
+			val file = File(backgroundImageDir,name)
 			if( file.isFile ){
-				val column = Column.findColumnById( name )
+				val delm = name.indexOf(':')
+				val id = if(delm!=-1) name.substring(0, delm) else name
+				val column = Column.findColumnById( id )
 				if( column == null) file.delete()
 			}
 		}
@@ -330,7 +332,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 			log.d("initializing TextToSpeech…")
 			
 			object : AsyncTask<Void, Void, TextToSpeech?>() {
-				internal var tmp_tts : TextToSpeech? = null
+				var tmp_tts : TextToSpeech? = null
 				
 				override fun doInBackground(vararg params : Void) : TextToSpeech {
 					val tts = TextToSpeech(context, tts_init_listener)
@@ -338,7 +340,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 					return tts
 				}
 				
-				internal val tts_init_listener : TextToSpeech.OnInitListener =
+				val tts_init_listener : TextToSpeech.OnInitListener =
 					TextToSpeech.OnInitListener { status ->
 						
 						val tts = this.tmp_tts

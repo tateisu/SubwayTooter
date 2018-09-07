@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.net.Uri
 import android.os.AsyncTask
+import android.os.Environment
 import android.os.SystemClock
 import android.view.Gravity
 import jp.juggler.subwaytooter.api.*
@@ -13,6 +14,7 @@ import jp.juggler.subwaytooter.util.*
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.File
 import java.lang.ref.WeakReference
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
@@ -55,7 +57,7 @@ class Column(
 	companion object {
 		private val log = LogCategory("Column")
 		
-		const val DIR_BACKGROUND_IMAGE = "columnBackground"
+		private const val DIR_BACKGROUND_IMAGE = "columnBackground"
 		
 		private const val READ_LIMIT = 80 // API側の上限が80です。ただし指定しても40しか返ってこないことが多い
 		private const val LOOP_TIMEOUT = 10000L
@@ -402,6 +404,28 @@ class Column(
 			synchronized(columnIdMap){
 				return columnIdMap[id]?.get()
 			}
+		}
+		
+		fun getBackgroundImageDir(context : Context) : File {
+			val externalDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+			if( externalDir == null) {
+				log.e("getExternalFilesDir is null.")
+			}else{
+				val state = Environment.getExternalStorageState()
+				if( state != Environment.MEDIA_MOUNTED ){
+					log.e("getExternalStorageState: ${state}")
+				}else {
+					log.i("externalDir: ${externalDir}")
+					externalDir.mkdir()
+					val backgroundDir = File(externalDir,DIR_BACKGROUND_IMAGE)
+					backgroundDir.mkdir()
+					log.i("backgroundDir: ${backgroundDir} exists=${backgroundDir.exists()}")
+					return backgroundDir
+				}
+			}
+			val backgroundDir = context.getDir(Column.DIR_BACKGROUND_IMAGE,Context.MODE_PRIVATE)
+			log.i("backgroundDir: ${backgroundDir} exists=${backgroundDir.exists()}")
+			return backgroundDir
 		}
 	}
 	
@@ -2196,15 +2220,15 @@ class Column(
 						
 						TYPE_DOMAIN_BLOCKS -> return parseDomainList(client, PATH_DOMAIN_BLOCK)
 						
-						TYPE_LIST_LIST -> if(isMisskey){
+						TYPE_LIST_LIST -> return if(isMisskey){
 							val params = makeMisskeyBaseParameter(parser)
-							return parseListList(
+							parseListList(
 								client,
 								"/api/users/lists/list",
 								misskeyParams = params
 							)
 						}else{
-							return parseListList(client, PATH_LIST_LIST)
+							parseListList(client, PATH_LIST_LIST)
 							
 						}
 						

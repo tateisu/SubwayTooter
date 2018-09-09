@@ -342,4 +342,10 @@
     <string name="share_url_more">شارك الرابط…</string>
     <string name="copy_url">نسخ رابط العنوان إلى الحافظة</string>
     <string name="boost_private_toot_not_allowed">ليس بمقدورك ترقيته تبويق خاص نَشَرَه شخص آخَر.</string>
+    <string name="post_error_contents_warning_empty">تبويقك بحاجة إلى نص تحذيري.</string>
+    <string name="display_name_boosted_by">قام بترقيته %1$s</string>
+    <string name="display_name_follow_request_by">أرسَل %1$s طلبًا للمتابَعة</string>
+
+    <string name="pick_images">اختر صورة…</string>
+
     </resources>

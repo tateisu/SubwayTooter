@@ -28,8 +28,9 @@ for my $file(@files){
 		$lang=$master_name;
 	}
 	my $data = $xml->XMLin($file);
-	#print dump($data);
-	#exit;
+	if( not $data->{string} or ($data->{string}{content} and not ref $data->{string}{content} )){
+		die "!! please make at least 2 string entries in $file\n";
+	}
 	
 	my %names;
 	while(my($name,$o)=each %{$data->{string}}){

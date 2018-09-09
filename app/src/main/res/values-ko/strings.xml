@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="account">계정</string>
+    <string name="account_add">계정 추가</string>
+</resources>

@@ -348,4 +348,28 @@
 
     <string name="pick_images">اختر صورة…</string>
 
+    <string name="register_app_to_server">تسجيل هذا التطبيق على %1$s…</string>
+    <string name="act_post">نشر تبويق</string>
+    <string name="not_selected">(لم يتم اختياره)</string>
+    <string name="post_from">حقل النشر</string>
+    <string name="response_not_json">استجابة الـ API ليست بصيغة الـ JSON.</string>
+    <string name="tab_divider_color">لون قاسم التبويبات</string>
+    <string name="help_translation">ساهم في الترجمة</string>
+    <string name="dont_screen_off">الإبقاء على الشاشة مشتعلة عند استخدام التطبيق.</string>
+    <string name="disable_tablet_mode">تعطيل وضع الكمبيوتر اللوحي (إعادة تشغيل التطبيق مطلوب)</string>
+    <string name="restore_draft">الإستعادة مِن المسودات</string>
+    <string name="select_draft">أية مُسودّة تريد استرجاعها؟</string>
+    <string name="mastodon_1_6_later">ماستدون 1.6 أو الأحدث</string>
+    <string name="previous">السابق</string>
+    <string name="next">التالي</string>
+    <string name="download_complete">إكتمل التنزيل. %1$s</string>
+    <string name="download_failed">فشل التنزيل. %1$s</string>
+    <string name="open_browser_of">إفتح \"%1$s\" في المتصفّح</string>
+    <string name="open_in_browser">إفتحه في المتصفّح</string>
+    <string name="new_item">عنصر جديد…</string>
+    <string name="check_sound">فحص الصوت</string>
+    <string name="keyword">الكلمة المفتاحية</string>
+    <string name="rename">إعادة التسمية…</string>
+    <string name="allow_column_duplication">السماح بازدواجية العمود</string>
+    <string name="report_forward_to">التحويل إلى %1$s</string>
     </resources>

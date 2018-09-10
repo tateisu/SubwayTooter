@@ -45,7 +45,7 @@
 	<string name="boost">boost</string>
 	<string name="boost_from_another_account">Partager à partir d\'un autre compte</string>
 	<string name="boost_succeeded">Partagé avec succès</string>
-	<string name="unboost_succeeded">boost removed</string>
+	<string name="unboost_succeeded">boost supprimé</string>
 	<string name="boosted_by">Partagé par …</string>
 	<string name="button_background_color">Couleur d\'arrière plan des onglets</string>
 	<string name="button_foreground_color">Couleur des onglets</string>
@@ -112,13 +112,13 @@
 	<string name="display_name_boosted_by">Partagé par %1$s</string>
 	<string name="display_name_favourited_by">Aimé par %1$s</string>
 	<string name="display_name_followed_by">Suivi par %1$s</string>
-	<string name="display_name_unfollowed_by">%1$s unfollowed you</string>
+	<string name="display_name_unfollowed_by">%1$s a cessé de vous suivre</string>
 	<string name="display_name_replied_by">Répondu par %1$s</string>
-	<string name="display_name_voted_by">%1$s voted</string>
+	<string name="display_name_voted_by">%1$s ont voté</string>
 	<string name="display_name_quoted_by">%1$s quoted</string>
 	<string name="display_name_follow_request_by">%1$s sent follow request</string>
 
-	<string name="display_name_reaction_by">%1$s reactioned</string>
+	<string name="display_name_reaction_by">%1$s a réagi</string>
 	<string name="dont_close_column">Ne pas fermer la colonne</string>
 	<string name="dont_confirm_again">Ne plus demander de confirmation</string>
 	<string name="dont_confirm_before_close_column">Ne pas confirmer à la fermeture d\'une colonne</string>
@@ -212,8 +212,8 @@
 	<string name="nickname_applied_after_reload">Le changement de pseudo/couleur sera appliqué après actualisation.</string>
 	<string name="nickname_label">Pseudo et couleur. (s\'il est spécifié, il remplacera le nom du compte affiché)</string>
 	<string name="not_available_for_pseudo_account">Non disponible pour les personnes non connectés</string>
-	<string name="not_available_for_misskey_account">Not available for Misskey account</string>
-	<string name="not_available_for_mastodon_account">Not available for Mastodon account</string>
+	<string name="not_available_for_misskey_account">Non disponible pour le compte Misskey</string>
+	<string name="not_available_for_mastodon_account">Non disponible pour le compte Mastodon</string>
 
 	<string name="not_selected">(Aucune sélection)</string>
 	<string name="notification_count">%1$d notifications</string>
@@ -305,7 +305,7 @@
 	<string name="theme_dark">Sombre</string>
 	<string name="theme_light">Clair</string>
 	<string name="thumbnail">vignette</string>
-	<string name="toot">Toot</string>
+	<string name="toot">Pouet</string>
 	<string name="ui_theme">Thème de l’interface utilisateur 
 \n(redémarrage nécessaire)</string>
 	<string name="unblock">Débloquer</string>
@@ -330,7 +330,7 @@
 
 	<string name="wait_previous_operation">Veuillez attendre la fin de la dernière opération.</string>
 	<string name="with_attachment">Avec pièce(s) jointe(s)</string>
-	<string name="with_highlight">with highlight</string>
+	<string name="with_highlight">avec surbrillance</string>
 	<string name="word_was_muted">Ce mot a été interdit.</string>
 	<string name="your_statuses">Vos statuts</string>
 	<string name="launcher_icon_by">Merci à フタバ pour l’icône de l’application.</string>
@@ -371,33 +371,33 @@
 	<string name="plugin_not_installed">Aucun plugin Mushroom n\'est installé.</string>
 	<string name="language_code">fr</string>
 	<string name="recommended_plugin">Plugins Mushroom recommandés</string>
-    <string name="appearance">Appearance</string>
-    <string name="behavior">Behavior</string>
+    <string name="appearance">Apparence</string>
+    <string name="behavior">Comportement</string>
     <string name="notification_on_off_desc">See also account setting to enable/disable notification.</string>
     <string name="performance">Performance</string>
-    <string name="tablet_mode">Tablet mode</string>
+    <string name="tablet_mode">Mode tablette</string>
 	<string name="post">Post</string>
-    <string name="toot_button_default_account">Default acount when toot button tapped</string>
+    <string name="toot_button_default_account">Compte par défaut lorsque le bouton \"Pouet\" est appuyé</string>
 	<string name="account_change_failed_old_draft_has_no_in_reply_to_url">Account change failed. Old draft data has no in_reply_to_url, can\'t convert in_repley_to for selected instance.</string>
 	<string name="in_reply_to_id_conversion_failed">\"in_reply_to\" ID conversion failed.</string>
-    <string name="prior_chrome_custom_tabs">Prior Chrome Custom Tabs</string>
-    <string name="enable_speech">Enables speech</string>
-    <string name="url_omitted">(URL omitted)</string>
-    <string name="blocked_domains">Blocked domains</string>
-	<string name="block_domain_that">Block whole domain \"%1$s\"</string>
+    <string name="prior_chrome_custom_tabs">Onglets personnalisés Chrome</string>
+    <string name="enable_speech">Activer la lecture vocale</string>
+    <string name="url_omitted">(URL omise)</string>
+    <string name="blocked_domains">Domaines bloqués</string>
+	<string name="block_domain_that">Bloquer l\'ensemble du domaine \"%1$s\"</string>
 	<string name="confirm_block_domain">Whole domain \"%1$s\" will be blocked. Are you sure?</string>
 	<string name="confirm_unblock_domain">Unblock domain \"%1$s\"?</string>
 
-	<string name="text_to_speech_initializing">TextToSpeech initializing…</string>
+	<string name="text_to_speech_initializing">Initialisation de la lecture vocale…</string>
 	<string name="text_to_speech_initialize_failed">TextToSpeech initializing failed. status=%1$s</string>
-	<string name="text_to_speech_shutdown">TextToSpeech shutdown…</string>
+	<string name="text_to_speech_shutdown">Arrêt de la lecture vocale…</string>
 	<string name="show_post_button_bar_top">Show buttons bar at the top of posting screen</string>
-    <string name="client_name">Client name (access token set required)</string>
-    <string name="toot_search">Toot search</string>
+    <string name="client_name">Nom du client (jeu de jetons d\'accès requis)</string>
+    <string name="toot_search">Recherche de pouets</string>
     <string name="mastodon_search_portal">MSP(JP)</string>
-	<string name="search_desc_mastodon_api">Account/Hashtag search using Mastodon API.</string>
+	<string name="search_desc_mastodon_api">Recherche de compte/étiquette à l\'aide de l\'API Mastodon.</string>
 	<string name="toot_search_of">Toot Rechercher \"%1$s\"</string>
-	<string name="progress_synchronize_toot">Syncing Toot…</string>
+	<string name="progress_synchronize_toot">Synchronisation du pouet…</string>
 	<string name="send_header_account_name">Account-Name</string>
 	<string name="send_header_account_acct">Account-Acct</string>
 	<string name="send_header_account_created_at">Account-Created-At</string>
@@ -794,5 +794,8 @@
     <string name="reaction">Reaction (Misskey)</string>
 	<string name="vote">Vote (Misskey)</string>
     <string name="timeout_for_embed_media_viewer">Timeout for embed media viewer (unit:seconds, app restart(delete from app history) required)</string>
+
+<string name="media_attachment_max_byte_size_movie">Taille maximale en octets des médias vidéo (unité : méga octets. par défaut : 40)</string>
+    <string name="link_color">Couleur des liens (redémarrage de l\'application requis)</string>
 
 </resources>

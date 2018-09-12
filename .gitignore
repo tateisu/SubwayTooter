@@ -10,3 +10,7 @@
 .externalNativeBuild
 /rc
 _Emoji/emoji-data/
+
+*.apk
+output.json
+*.log

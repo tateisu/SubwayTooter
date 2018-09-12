@@ -5,15 +5,15 @@ apply plugin: 'kotlin-android'
 // apply plugin: 'kotlin-android-extensions'
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion '27.0.3'
+    compileSdkVersion target_sdk_version
+
     defaultConfig {
-        applicationId "jp.juggler.subwaytooter"
-        minSdkVersion 21
-        targetSdkVersion 27
+        targetSdkVersion target_sdk_version
+        minSdkVersion min_sdk_version
 
         versionCode 285
         versionName "2.8.5"
+        applicationId "jp.juggler.subwaytooter"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         // https://stackoverflow.com/questions/47791227/java-lang-illegalstateexception-dex-archives-setting-dex-extension-only-for
@@ -80,7 +80,7 @@ dependencies {
 
     // https://firebase.google.com/support/release-notes/android
     implementation "com.google.firebase:firebase-core:16.0.3"
-    implementation "com.google.firebase:firebase-messaging:17.3.0"
+    implementation "com.google.firebase:firebase-messaging:17.3.1"
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
@@ -137,5 +137,5 @@ repositories {
     mavenCentral()
 }
 
-apply plugin: 'com.google.gms.google-services'
 apply plugin: 'kotlin-kapt'
+apply plugin: 'com.google.gms.google-services'

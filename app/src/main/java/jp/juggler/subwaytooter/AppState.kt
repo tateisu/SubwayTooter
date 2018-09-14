@@ -280,15 +280,21 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		enableSpeech()
 		
 		// 背景フォルダの掃除
-		val backgroundImageDir = Column.getBackgroundImageDir(context)
-		backgroundImageDir.list().forEach {name->
-			val file = File(backgroundImageDir,name)
-			if( file.isFile ){
-				val delm = name.indexOf(':')
-				val id = if(delm!=-1) name.substring(0, delm) else name
-				val column = Column.findColumnById( id )
-				if( column == null) file.delete()
+		try {
+			val backgroundImageDir = Column.getBackgroundImageDir(context)
+			backgroundImageDir.list().forEach { name ->
+				val file = File(backgroundImageDir, name)
+				if(file.isFile) {
+					val delm = name.indexOf(':')
+					val id = if(delm != - 1) name.substring(0, delm) else name
+					val column = Column.findColumnById(id)
+					if(column == null) file.delete()
+				}
 			}
+		}catch(ex:Throwable){
+			// クラッシュレポートによると状態が悪いとダメらしい
+			// java.lang.IllegalStateException
+			log.trace(ex)
 		}
 	}
 	

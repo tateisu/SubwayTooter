@@ -2360,23 +2360,23 @@ class ActMain : AppCompatActivity()
 		
 		phoneOnly { env -> env.pager.adapter = null }
 		
+		val ie = app_state.column_list.size
+		
 		val tmp_list = ArrayList<Column>()
 		val used_set = HashSet<Int>()
-		
+
+		// copy by new_order
 		for(i in new_order) {
-			used_set.add(i)
-			tmp_list.add(app_state.column_list[i])
+			if( 0<= i && i < ie ){
+				used_set.add(i)
+				tmp_list.add(app_state.column_list[i])
+			}
 		}
 		
-		var i = 0
-		val ie = app_state.column_list.size
-		while(i < ie) {
-			if(used_set.contains(i)) {
-				++ i
-				continue
-			}
+		// dispose unused elements.
+		for( i in 0 until ie ){
+			if(used_set.contains(i)) continue
 			app_state.column_list[i].dispose()
-			++ i
 		}
 		app_state.column_list.clear()
 		app_state.column_list.addAll(tmp_list)

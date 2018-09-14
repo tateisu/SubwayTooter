@@ -190,7 +190,7 @@ object AppDataExporter {
 		
 		db.execSQL("BEGIN TRANSACTION")
 		try {
-			db.execSQL("delete from " + table)
+			db.execSQL("delete from $table")
 			
 			val cv = ContentValues()
 			
@@ -306,18 +306,18 @@ object AppDataExporter {
 			
 			val prefItem = Pref.map[k]
 			when(prefItem) {
-				is Pref.BooleanPref -> e.putBoolean(k, reader.nextBoolean())
-				is Pref.IntPref -> e.putInt(k, reader.nextInt())
-				is Pref.LongPref -> e.putLong(k, reader.nextLong())
+				is BooleanPref -> e.putBoolean(k, reader.nextBoolean())
+				is IntPref -> e.putInt(k, reader.nextInt())
+				is LongPref -> e.putLong(k, reader.nextLong())
 				
-				is Pref.StringPref -> if(prefItem.skipImport) {
+				is StringPref -> if(prefItem.skipImport) {
 					reader.skipValue()
 					e.remove(k)
 				} else {
 					e.putString(k, reader.nextString())
 				}
 				
-				is Pref.FloatPref -> {
+				is FloatPref -> {
 					val dv = reader.nextDouble()
 					e.putFloat(k, if(dv <= MAGIC_NAN) Float.NaN else dv.toFloat())
 				}

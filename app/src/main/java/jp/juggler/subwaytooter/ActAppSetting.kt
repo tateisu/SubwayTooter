@@ -98,7 +98,7 @@ class ActAppSetting : AppCompatActivity()
 	internal lateinit var pref : SharedPreferences
 	
 	class BooleanViewInfo(
-		val info : Pref.BooleanPref,
+		val info : BooleanPref,
 		val view : CompoundButton
 	)
 	
@@ -195,7 +195,7 @@ class ActAppSetting : AppCompatActivity()
 		
 		// initialize Switch and CheckBox
 		for(info in Pref.map.values) {
-			if(info is Pref.BooleanPref && info.id != 0) {
+			if(info is BooleanPref && info.id != 0) {
 				val view = findViewById<CompoundButton>(info.id)
 				view.setOnCheckedChangeListener(this)
 				booleanViewList.add(BooleanViewInfo(info, view))

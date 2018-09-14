@@ -1168,7 +1168,7 @@ class ActMain : AppCompatActivity()
 			}
 		}
 		
-		fun parseIconSize(stringPref : Pref.StringPref) : Int {
+		fun parseIconSize(stringPref : StringPref) : Int {
 			var icon_size_dp = stringPref.defVal.toFloat()
 			try {
 				sv = stringPref(pref)

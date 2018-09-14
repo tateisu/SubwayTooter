@@ -5,6 +5,125 @@ import android.content.SharedPreferences
 import android.preference.PreferenceManager
 import jp.juggler.subwaytooter.util.optInt
 
+@Suppress("EqualsOrHashCode")
+abstract class BasePref<T>(val key : String) {
+	
+	init {
+		@Suppress("LeakingThis")
+		Pref.map[this.key] = this
+	}
+	
+	override fun equals(other : Any?) : Boolean {
+		return this === other
+	}
+	
+	fun remove(e : SharedPreferences.Editor) {
+		e.remove(key)
+	}
+	
+	abstract fun put(editor : SharedPreferences.Editor, v : T)
+	abstract fun invoke(pref : SharedPreferences) : T
+	
+	operator fun invoke(context : Context) : T {
+		return invoke(Pref.pref(context))
+	}
+	
+}
+fun SharedPreferences.Editor.remove(item : BasePref<*>) : SharedPreferences.Editor {
+	item.remove(this)
+	return this
+}
+
+class BooleanPref(
+	key : String,
+	private val defVal : Boolean,
+	val id : Int
+) : BasePref<Boolean>(key) {
+	
+	override operator fun invoke(pref : SharedPreferences) : Boolean {
+		return pref.getBoolean(key, defVal)
+	}
+	
+	override fun put(editor : SharedPreferences.Editor, v : Boolean) {
+		editor.putBoolean(key, v)
+	}
+}
+
+class IntPref(key : String, private val defVal : Int) : BasePref<Int>(key) {
+	
+	override operator fun invoke(pref : SharedPreferences) : Int {
+		return pref.getInt(key, defVal)
+	}
+	
+	override fun put(editor : SharedPreferences.Editor, v : Int) {
+		editor.putInt(key, v)
+	}
+}
+
+class LongPref(key : String, private val defVal : Long) : BasePref<Long>(key) {
+	
+	override operator fun invoke(pref : SharedPreferences) : Long {
+		return pref.getLong(key, defVal)
+	}
+	
+	override fun put(editor : SharedPreferences.Editor, v : Long) {
+		editor.putLong(key, v)
+	}
+}
+
+class FloatPref(key : String, private val defVal : Float) : BasePref<Float>(key) {
+	
+	override operator fun invoke(pref : SharedPreferences) : Float {
+		return pref.getFloat(key, defVal)
+	}
+	
+	override fun put(editor : SharedPreferences.Editor, v : Float) {
+		editor.putFloat(key, v)
+	}
+}
+
+class StringPref(
+	key : String,
+	val defVal : String,
+	val skipImport : Boolean = false
+) : BasePref<String>(key) {
+	
+	override operator fun invoke(pref : SharedPreferences) : String {
+		return pref.getString(key, defVal)
+	}
+	
+	override fun put(editor : SharedPreferences.Editor, v : String) {
+		editor.putString(key, v)
+	}
+	
+	fun toInt(pref : SharedPreferences) = invoke(pref).optInt() ?: defVal.toInt()
+}
+
+fun SharedPreferences.Editor.put(item : BooleanPref, v : Boolean) : SharedPreferences.Editor {
+	item.put(this, v)
+	return this
+}
+
+fun SharedPreferences.Editor.put(item : StringPref, v : String) : SharedPreferences.Editor {
+	item.put(this, v)
+	return this
+}
+
+fun SharedPreferences.Editor.put(item : IntPref, v : Int) : SharedPreferences.Editor {
+	item.put(this, v)
+	return this
+}
+
+fun SharedPreferences.Editor.put(item : LongPref, v : Long) : SharedPreferences.Editor {
+	item.put(this, v)
+	return this
+}
+
+fun SharedPreferences.Editor.put(item : FloatPref, v : Float) : SharedPreferences.Editor {
+	item.put(this, v)
+	return this
+}
+
 object Pref {
 	
 	fun pref(context : Context) : SharedPreferences {
@@ -14,95 +133,6 @@ object Pref {
 	// キー名と設定項目のマップ。インポートやアプリ設定で使う
 	val map = HashMap<String, BasePref<*>>()
 	
-	@Suppress("EqualsOrHashCode")
-	abstract class BasePref<T>(val key : String) {
-		
-		init {
-			@Suppress("LeakingThis")
-			map[this.key] = this
-		}
-		
-		override fun equals(other : Any?) : Boolean {
-			return this === other
-		}
-		
-		fun remove(e : SharedPreferences.Editor) {
-			e.remove(key)
-		}
-		
-		abstract fun put(editor : SharedPreferences.Editor, v : T)
-		abstract fun invoke(pref : SharedPreferences) : T
-		
-		operator fun invoke(context : Context) : T {
-			return invoke(pref(context))
-		}
-		
-	}
-	
-	class BooleanPref(
-		key : String,
-		private val defVal : Boolean,
-		val id : Int
-	) : BasePref<Boolean>(key) {
-		
-		override operator fun invoke(pref : SharedPreferences) : Boolean {
-			return pref.getBoolean(key, defVal)
-		}
-		
-		override fun put(editor : SharedPreferences.Editor, v : Boolean) {
-			editor.putBoolean(key, v)
-		}
-	}
-	
-	class IntPref(key : String, private val defVal : Int) : BasePref<Int>(key) {
-		
-		override operator fun invoke(pref : SharedPreferences) : Int {
-			return pref.getInt(key, defVal)
-		}
-		
-		override fun put(editor : SharedPreferences.Editor, v : Int) {
-			editor.putInt(key, v)
-		}
-	}
-	
-	class LongPref(key : String, private val defVal : Long) : BasePref<Long>(key) {
-		
-		override operator fun invoke(pref : SharedPreferences) : Long {
-			return pref.getLong(key, defVal)
-		}
-		
-		override fun put(editor : SharedPreferences.Editor, v : Long) {
-			editor.putLong(key, v)
-		}
-	}
-	
-	class FloatPref(key : String, private val defVal : Float) : BasePref<Float>(key) {
-		
-		override operator fun invoke(pref : SharedPreferences) : Float {
-			return pref.getFloat(key, defVal)
-		}
-		
-		override fun put(editor : SharedPreferences.Editor, v : Float) {
-			editor.putFloat(key, v)
-		}
-	}
-	
-	class StringPref(
-		key : String,
-		val defVal : String,
-		val skipImport : Boolean = false
-	) : BasePref<String>(key) {
-		
-		override operator fun invoke(pref : SharedPreferences) : String {
-			return pref.getString(key, defVal)
-		}
-		
-		override fun put(editor : SharedPreferences.Editor, v : String) {
-			editor.putString(key, v)
-		}
-		
-		fun toInt(pref : SharedPreferences) = invoke(pref).optInt() ?: defVal.toInt()
-	}
 	
 	// boolean
 	
@@ -322,14 +352,17 @@ object Pref {
 	val ipRepliesCount = IntPref("RepliesCount",0)
 	const val RC_SIMPLE = 0
 	const val RC_ACTUAL = 1
+	@Suppress("unused")
 	const val RC_NONE = 2
 	
 	val ipRefreshAfterToot = IntPref("refresh_after_toot", 0)
 	const val RAT_REFRESH_SCROLL = 0
+	@Suppress("unused")
 	const val RAT_REFRESH_DONT_SCROLL = 1
 	const val RAT_DONT_REFRESH = 2
 	
 	val ipVisibilityStyle = IntPref("ipVisibilityStyle", 0)
+	@Suppress("unused")
 	const val VS_BY_ACCOUNT = 0
 	const val VS_MASTODON = 1
 	const val VS_MISSKEY = 2
@@ -387,14 +420,4 @@ object Pref {
 	val fpAcctFontSize = FloatPref("acct_font_size", Float.NaN)
 	val fpNotificationTlFontSize = FloatPref("notification_tl_font_size", Float.NaN)
 	
-}
-
-fun <T> SharedPreferences.Editor.put(item : Pref.BasePref<T>, v : T) : SharedPreferences.Editor {
-	item.put(this, v)
-	return this
-}
-
-fun SharedPreferences.Editor.remove(item : Pref.BasePref<*>) : SharedPreferences.Editor {
-	item.remove(this)
-	return this
 }

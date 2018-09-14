@@ -1,7 +1,7 @@
 buildscript {
 
     ext.kotlin_version = '1.2.70'
-    ext.kotlin_coroutines_version = '0.25.3'
+    ext.kotlinx_coroutines_version = '0.25.3'
     ext.anko_version='0.10.5'
     ext.asl_version='27.1.1'
     ext.target_sdk_version = 27

@@ -351,6 +351,40 @@ fun ByteArray.digestSHA256() : ByteArray {
 	return digest.digest(this)
 }
 
+fun ByteArray.startWith(
+	key:ByteArray,
+	thisOffset :Int =0,
+	keyOffset:Int=0,
+	length:Int = key.size-keyOffset
+):Boolean{
+	if( this.size -thisOffset >= length && key.size -keyOffset >=length ){
+		for( i in 0 until length ){
+			if( this[i+thisOffset] != key[i+keyOffset]) return false
+		}
+		return true
+	}
+	return false
+}
+
+// 各要素の下位8ビットを使ってバイト配列を作る
+fun IntArray.toByteArray():ByteArray{
+	val dst = ByteArray(this.size)
+	for(i in 0 until this.size){
+		dst[i] = this[i].toByte()
+	}
+	return dst
+}
+
+// 各要素の下位8ビットを使ってバイト配列を作る
+fun CharArray.toByteArray():ByteArray{
+	val dst = ByteArray(this.size)
+	for(i in 0 until this.size){
+		dst[i] = this[i].toByte()
+	}
+	return dst
+}
+
+
 //// MD5ハッシュの作成
 //@Suppress("unused")
 //fun String.digestMD5() : String {

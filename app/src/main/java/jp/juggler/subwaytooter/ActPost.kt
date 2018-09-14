@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
+import android.content.ContentResolver
 import android.content.ContentValues
 import android.content.Intent
 import android.content.SharedPreferences
@@ -99,6 +100,29 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			add("video/webm")
 			add("video/mp4")
 			add("video/quicktime")
+		}
+		
+		private val imageHeaderList = arrayOf(
+			Pair("image/jpeg",intArrayOf(0xff,0xd8,0xff,0xe0).toByteArray()),
+			Pair("image/png",intArrayOf(0x89 ,0x50 ,0x4E ,0x47 ,0x0D ,0x0A ,0x1A ,0x0A).toByteArray()),
+			Pair("image/gif", charArrayOf('G' ,'I' ,'F').toByteArray())
+		)
+		
+		private fun checkImageHeaderList(contentResolver:ContentResolver, uri : Uri) : String? {
+			try{
+				contentResolver.openInputStream(uri)?.use{ inStream ->
+					val data = ByteArray(32)
+					val nRead = inStream.read(data,0,data.size)
+					for( pair in imageHeaderList ){
+						val type = pair.first
+						val header = pair.second
+						if( nRead >= header.size && data.startWith(header) ) return type
+					}
+				}
+			}catch(ex:Throwable){
+				log.e(ex,"checkImageHeaderList failed.")
+			}
+			return null
 		}
 		
 		//	private void performCameraVideo(){
@@ -1481,8 +1505,17 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	
 	private fun getMimeType(uri : Uri, mimeTypeArg : String?) : String? {
 		
+		// image/j()pg だの image/j(e)pg だの、mime type を誤記するアプリがあまりに多い
+		// クレームで消耗するのを減らすためにファイルヘッダを確認する
+		if(mimeTypeArg == null || mimeTypeArg.startsWith("image/")){
+			val sv = checkImageHeaderList(contentResolver,uri)
+			if( sv != null) return sv
+		}
+
 		// 既に引数で与えられてる
-		if(mimeTypeArg?.isNotEmpty() == true) return mimeTypeArg
+		if(mimeTypeArg?.isNotEmpty() == true){
+			return mimeTypeArg
+		}
 		
 		// ContentResolverに尋ねる
 		var sv = contentResolver.getType(uri)
@@ -1494,6 +1527,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		return null
 	}
+	
+
 	
 	@SuppressLint("StaticFieldLeak")
 	private fun addAttachment(

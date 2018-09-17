@@ -209,6 +209,8 @@ class Column(
 		internal const val TAB_FOLLOWING = 1
 		internal const val TAB_FOLLOWERS = 2
 		
+		
+		
 		@Suppress("UNCHECKED_CAST")
 		private inline fun <reified T> getParamAt(params : Array<out Any>, idx : Int) : T {
 			return params[idx] as T
@@ -588,11 +590,17 @@ class Column(
 			|| regex_text.isNotEmpty()
 			)
 	
+	@Volatile
 	private var column_regex_filter = COLUMN_REGEX_FILTER_DEFAULT
-	private var muted_app : HashSet<String>? = null
-	private var muted_word : WordTrieTree? = null
+	
+	
+	@Volatile
 	private var muted_word2 : WordTrieTree? = null
+	
+	@Volatile
 	private var favMuteSet : HashSet<String>? = null
+	
+	@Volatile
 	private var highlight_trie : WordTrieTree? = null
 	
 	// タイムライン中のデータの始端と終端
@@ -1103,16 +1111,11 @@ class Column(
 		}
 	}
 	
-	fun onMuteAppUpdated() {
+	fun onMuteUpdated() {
+		
+		val checker = { status : TootStatus? -> status?.checkMuted() ?: false }
+		
 		val tmp_list = ArrayList<TimelineItem>(list_data.size)
-		
-		val muted_app = MutedApp.nameSet
-		val muted_word = MutedWord.nameSet
-		
-		val checker = { status : TootStatus? ->
-			status?.checkMuted(muted_app, muted_word) ?: false
-		}
-		
 		for(o in list_data) {
 			if(o is TootStatus) {
 				if(checker(o)) continue
@@ -1125,7 +1128,7 @@ class Column(
 		if(tmp_list.size != list_data.size) {
 			list_data.clear()
 			list_data.addAll(tmp_list)
-			fireShowContent(reason = "onMuteAppUpdated")
+			fireShowContent(reason = "onMuteUpdated")
 		}
 	}
 	
@@ -1337,8 +1340,6 @@ class Column(
 			}
 		}
 		
-		muted_app = MutedApp.nameSet
-		muted_word = MutedWord.nameSet
 		favMuteSet = FavMute.acctSet
 		highlight_trie = HighlightWord.nameSet
 	}
@@ -1379,7 +1380,7 @@ class Column(
 		if(column_regex_filter(status.decoded_spoiler_text)) return true
 		if(column_regex_filter(status.reblog?.decoded_spoiler_text)) return true
 		
-		return status.checkMuted(muted_app, muted_word)
+		return status.checkMuted()
 	}
 	
 	private inline fun <reified T : TimelineItem> addAll(
@@ -1466,14 +1467,12 @@ class Column(
 		}
 		
 		val status = item.status
-		if(status != null) {
-			
-			status.updateFiltered(muted_word2)
-			
-			if(status.checkMuted(muted_app, muted_word)) {
-				log.d("isFiltered: status muted.")
-				return true
-			}
+		
+		status?.updateFiltered(muted_word2)
+		
+		if(status?.checkMuted() == true) {
+			log.d("isFiltered: status muted.")
+			return true
 		}
 		
 		// ふぁぼ魔ミュート

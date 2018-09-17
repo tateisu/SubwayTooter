@@ -12,10 +12,7 @@ import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootVisibility
-import jp.juggler.subwaytooter.util.LinkHelper
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.parseString
-import jp.juggler.subwaytooter.util.toJsonObject
+import jp.juggler.subwaytooter.util.*
 import org.json.JSONObject
 import java.util.*
 import java.util.concurrent.atomic.AtomicReference
@@ -742,7 +739,7 @@ class SavedAccount(
 			} catch(ex : Throwable) {
 				log.trace(ex)
 				log.e(ex, "loadAccountList failed.")
-				throw RuntimeException("SavedAccount.loadAccountList failed.", ex)
+				showToast(context,true,ex.withCaption("(SubwayTooter) broken in-app database?"))
 			}
 			
 			return result

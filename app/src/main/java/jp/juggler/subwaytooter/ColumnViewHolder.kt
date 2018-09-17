@@ -883,7 +883,7 @@ class ColumnViewHolder(
 		column.addColumnViewHolder(this)
 		
 		when(v.id) {
-			R.id.btnColumnClose -> activity.closeColumn(false, column)
+			R.id.btnColumnClose -> activity.closeColumn(column )
 			
 			R.id.btnColumnReload -> {
 				App1.custom_emoji_cache.clearErrorCache()

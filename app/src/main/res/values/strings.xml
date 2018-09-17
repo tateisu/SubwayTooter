@@ -776,5 +776,6 @@
     <string name="vote">Vote (Misskey)</string>
     <string name="timeout_for_embed_media_viewer">Timeout for embed media viewer (unit:seconds, app restart(delete from app history) required)</string>
     <string name="link_color">Link color (app restart required)</string>
+    <string name="missing_closeable_column">missing closeable column in visible range.</string>
 
 </resources>

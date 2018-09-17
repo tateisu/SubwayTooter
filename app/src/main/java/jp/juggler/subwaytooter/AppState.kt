@@ -36,6 +36,8 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.span.MyClickableSpan
+import jp.juggler.subwaytooter.table.MutedApp
+import jp.juggler.subwaytooter.table.MutedWord
 import jp.juggler.subwaytooter.util.*
 import java.io.File
 
@@ -278,6 +280,10 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		}
 		
 		enableSpeech()
+		
+		// ミュートデータのロード
+		TootStatus.muted_app = MutedApp.nameSet
+		TootStatus.muted_word = MutedWord.nameSet
 		
 		// 背景フォルダの掃除
 		try {
@@ -561,6 +567,14 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 			log.trace(ex)
 		}
 		
+	}
+	
+	fun onMuteUpdated() {
+		TootStatus.muted_app = MutedApp.nameSet
+		TootStatus.muted_word = MutedWord.nameSet
+		for(column in column_list) {
+			column.onMuteUpdated()
+		}
 	}
 	
 }

@@ -55,7 +55,7 @@ import okhttp3.Call
 import okhttp3.Request
 import okhttp3.RequestBody
 
-class PollingWorker private constructor(c : Context) {
+class PollingWorker private constructor(contextArg : Context) {
 	
 	interface JobStatusCallback {
 		fun onStatus(sv : String)
@@ -64,9 +64,9 @@ class PollingWorker private constructor(c : Context) {
 	companion object {
 		internal val log = LogCategory("PollingWorker")
 		
-		private const val FCM_SENDER_ID ="433682361381"
+		private const val FCM_SENDER_ID = "433682361381"
 		private const val FCM_SCOPE = "FCM"
-
+		
 		const val NOTIFICATION_ID = 1
 		const val NOTIFICATION_ID_ERROR = 3
 		
@@ -118,8 +118,6 @@ class PollingWorker private constructor(c : Context) {
 			return s
 		}
 		
-		
-		
 		fun getDeviceId(context : Context) : String? {
 			// 設定ファイルに保持されていたらそれを使う
 			val prefDevice = PrefDevice.prefDevice(context)
@@ -128,7 +126,7 @@ class PollingWorker private constructor(c : Context) {
 			
 			try {
 				// FirebaseのAPIから取得する
-				device_token = FirebaseInstanceId.getInstance().getToken(FCM_SENDER_ID,FCM_SCOPE)
+				device_token = FirebaseInstanceId.getInstance().getToken(FCM_SENDER_ID, FCM_SCOPE)
 				if(device_token?.isNotEmpty() == true) {
 					prefDevice
 						.edit()
@@ -139,7 +137,7 @@ class PollingWorker private constructor(c : Context) {
 				log.e("getDeviceId: missing device token.")
 				return null
 			} catch(ex : Throwable) {
-				log.trace(ex,"getDeviceId: could not get device token.")
+				log.trace(ex, "getDeviceId: could not get device token.")
 				return null
 			}
 		}
@@ -154,22 +152,24 @@ class PollingWorker private constructor(c : Context) {
 			
 			var sv = prefDevice.getString(PrefDevice.KEY_INSTALL_ID, null)
 			if(sv?.isNotEmpty() == true) return sv
-
+			
 			SavedAccount.clearRegistrationCache()
 			
 			try {
 				var device_token = prefDevice.getString(PrefDevice.KEY_DEVICE_TOKEN, null)
-				if(device_token?.isEmpty() != false ) {
+				if(device_token?.isEmpty() != false) {
 					try {
-						device_token = FirebaseInstanceId.getInstance().getToken(FCM_SENDER_ID,FCM_SCOPE)
+						device_token =
+							FirebaseInstanceId.getInstance().getToken(FCM_SENDER_ID, FCM_SCOPE)
 						if(device_token == null || device_token.isEmpty()) {
 							log.e("getInstallId: missing device token.")
 							return null
 						} else {
-							prefDevice.edit().putString(PrefDevice.KEY_DEVICE_TOKEN, device_token).apply()
+							prefDevice.edit().putString(PrefDevice.KEY_DEVICE_TOKEN, device_token)
+								.apply()
 						}
 					} catch(ex : Throwable) {
-						log.trace(ex,"getInstallId: could not get device token.")
+						log.trace(ex, "getInstallId: could not get device token.")
 						return null
 					}
 				}
@@ -202,7 +202,7 @@ class PollingWorker private constructor(c : Context) {
 				return sv
 				
 			} catch(ex : Throwable) {
-				log.trace(ex,"prepareInstallId")
+				log.trace(ex, "prepareInstallId")
 			}
 			return null
 		}
@@ -276,7 +276,11 @@ class PollingWorker private constructor(c : Context) {
 			addTask(context, true, TASK_UPDATE_NOTIFICATION, null)
 		}
 		
-		fun injectData(context : Context, account : SavedAccount, src : ArrayList<TootNotification>) {
+		fun injectData(
+			context : Context,
+			account : SavedAccount,
+			src : ArrayList<TootNotification>
+		) {
 			
 			if(src.isEmpty()) return
 			
@@ -394,14 +398,15 @@ class PollingWorker private constructor(c : Context) {
 			}
 		}
 		
-		private fun EntityId.isLatestThan(previous:EntityId?) = when(previous) {
+		private fun EntityId.isLatestThan(previous : EntityId?) = when(previous) {
 			null -> true
 			else -> this > previous
 		}
 		
-		private fun getEntityOrderId(account:SavedAccount,src:JSONObject) :EntityId{
+		private fun getEntityOrderId(account : SavedAccount, src : JSONObject) : EntityId {
 			return when {
-				!account.isMisskey -> EntityId.mayDefault(src.parseLong("id"))
+				! account.isMisskey -> EntityId.mayDefault(src.parseLong("id"))
+				
 				else -> {
 					val created_at = src.parseString("createdAt")
 					when(created_at) {
@@ -414,6 +419,7 @@ class PollingWorker private constructor(c : Context) {
 	}
 	
 	internal val context : Context
+	private val appState : AppState
 	internal val handler : Handler
 	internal val pref : SharedPreferences
 	internal val connectivityManager : ConnectivityManager
@@ -438,24 +444,25 @@ class PollingWorker private constructor(c : Context) {
 	init {
 		log.d("ctor")
 		
-		val context = c.applicationContext
+		val context = contextArg.applicationContext
+		
 		this.context = context
 		
 		this.connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-			?: throw NotImplementedError("missing ConnectivityManager system service")
+			?: error("missing ConnectivityManager system service")
 		
 		this.notification_manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
-			?: throw NotImplementedError("missing NotificationManager system service")
+			?: error("missing NotificationManager system service")
 		
 		this.scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as? JobScheduler
-			?: throw NotImplementedError("missing JobScheduler system service")
+			?: error("missing JobScheduler system service")
 		
 		this.power_manager = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
-			?: throw NotImplementedError("missing PowerManager system service")
+			?: error("missing PowerManager system service")
 		
 		// WifiManagerの取得時はgetApplicationContext を使わないとlintに怒られる
 		this.wifi_manager = context.applicationContext.getSystemService(Context.WIFI_SERVICE) as? WifiManager
-			?: throw NotImplementedError("missing WifiManager system service")
+			?: error("missing WifiManager system service")
 		
 		power_lock = power_manager.newWakeLock(
 			PowerManager.PARTIAL_WAKE_LOCK,
@@ -468,7 +475,7 @@ class PollingWorker private constructor(c : Context) {
 		
 		// クラッシュレポートによると App1.onCreate より前にここを通る場合がある
 		// データベースへアクセスできるようにする
-		App1.prepare(context)
+		this.appState = App1.prepare(context)
 		this.pref = App1.pref
 		this.handler = Handler(context.mainLooper)
 		
@@ -504,7 +511,6 @@ class PollingWorker private constructor(c : Context) {
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}
-			
 		}
 		
 		private fun releasePowerLock() {
@@ -801,7 +807,7 @@ class PollingWorker private constructor(c : Context) {
 							jobService.jobFinished(jobParams, willReschedule)
 						}
 					} catch(ex : Throwable) {
-						log.trace(ex,"jobFinished failed(1).")
+						log.trace(ex, "jobFinished failed(1).")
 					}
 				})
 			}
@@ -990,7 +996,7 @@ class PollingWorker private constructor(c : Context) {
 				if(! job.isJobCancelled) job.bPollingComplete = true
 				
 			} catch(ex : Throwable) {
-				log.trace(ex,"task execution failed.")
+				log.trace(ex, "task execution failed.")
 			} finally {
 				log.d(")runTask: taskId=$taskId")
 				job_status.set("end task $taskId")
@@ -1090,13 +1096,11 @@ class PollingWorker private constructor(c : Context) {
 			private val duplicate_check = HashSet<EntityId>()
 			private val dstListJson = ArrayList<JSONObject>()
 			private val dstListData = ArrayList<Data>()
-			private val muted_app : HashSet<String> get() = job.muted_app
-			private val muted_word : WordTrieTree get() = job.muted_word
 			private val favMuteSet : HashSet<String> get() = job.favMuteSet
 			private lateinit var nr : NotificationTracking
 			private lateinit var parser : TootParser
 			
-			private var nid_last_show :EntityId? = null
+			private var nid_last_show : EntityId? = null
 			
 			init {
 				client.currentCallCallback = this
@@ -1121,7 +1125,7 @@ class PollingWorker private constructor(c : Context) {
 					if(account.isPseudo) return
 					
 					client.account = account
-
+					
 					val wps = PushSubscriptionHelper(context, account)
 					if(wps.flags != 0) {
 						job.bPollingRequired.set(true)
@@ -1135,14 +1139,14 @@ class PollingWorker private constructor(c : Context) {
 					
 					if(job.isJobCancelled) return
 					if(wps.flags == 0) {
-						if(!account.isMisskey) unregisterDeviceToken()
+						if(! account.isMisskey) unregisterDeviceToken()
 						return
 					}
 					
 					if(wps.subscribed) {
-						if(!account.isMisskey) unregisterDeviceToken()
+						if(! account.isMisskey) unregisterDeviceToken()
 					} else {
-						if(!account.isMisskey) registerDeviceToken()
+						if(! account.isMisskey) registerDeviceToken()
 					}
 					
 					if(job.isJobCancelled) return
@@ -1325,7 +1329,6 @@ class PollingWorker private constructor(c : Context) {
 				this.nr = NotificationTracking.load(account.db_id)
 				this.parser = TootParser(context, account)
 				
-				
 				// まずキャッシュされたデータを処理する
 				try {
 					val last_data = nr.last_data
@@ -1352,10 +1355,10 @@ class PollingWorker private constructor(c : Context) {
 					for(nTry in 0 .. 3) {
 						if(job.isJobCancelled) return
 						
-						val result = if(account.isMisskey){
+						val result = if(account.isMisskey) {
 							val params = account.putMisskeyApiToken(JSONObject())
-							client.request("/api/i/notifications",params.toPostRequestBuilder())
-						}else {
+							client.request("/api/i/notifications", params.toPostRequestBuilder())
+						} else {
 							val path = when {
 								nid_last_show != null -> "$PATH_NOTIFICATIONS?since_id=$nid_last_show"
 								else -> PATH_NOTIFICATIONS
@@ -1421,32 +1424,30 @@ class PollingWorker private constructor(c : Context) {
 				nr.save()
 			}
 			
-
-			
 			@Throws(JSONException::class)
 			private fun update_sub(src : JSONObject) {
 				
-				if(nr.nid_read ==null || nr.nid_show ==null ) {
+				if(nr.nid_read == null || nr.nid_show == null) {
 					log.d("update_sub[${account.db_id}], nid_read=${nr.nid_read}, nid_show=${nr.nid_show}")
 				}
 				
-				val id = getEntityOrderId(account,src)
+				val id = getEntityOrderId(account, src)
 				
-				if( id.isDefault || duplicate_check.contains(id)) return
+				if(id.isDefault || duplicate_check.contains(id)) return
 				duplicate_check.add(id)
 				
-				if( id.isLatestThan(nid_last_show)){
+				if(id.isLatestThan(nid_last_show)) {
 					nid_last_show = id
 				}
 				
-				if( !id.isLatestThan(nr.nid_read) ){
+				if(! id.isLatestThan(nr.nid_read)) {
 					// 既読のID以下なら何もしない
 					return
 				}
 				
 				log.d("update_sub: found data that id=${id}, > read id ${nr.nid_read}")
 				
-				if( id.isLatestThan(nr.nid_show)){
+				if(id.isLatestThan(nr.nid_show)) {
 					log.d("update_sub: found new data that id=${id}, greater than shown id ${nr.nid_show}")
 					// 種別チェックより先に「表示済み」idの更新を行う
 					nr.nid_show = id
@@ -1454,14 +1455,12 @@ class PollingWorker private constructor(c : Context) {
 				
 				val type = src.parseString("type")
 				
-				if(!account.canNotificationShowing(type)) return
+				if(! account.canNotificationShowing(type)) return
 				
-
 				val notification = parser.notification(src) ?: return
 				
 				// アプリミュートと単語ミュート
-				val status = notification.status
-				if(status != null && status.checkMuted(muted_app, muted_word)) {
+				if(notification.status?.checkMuted() == true) {
 					return
 				}
 				
@@ -1484,38 +1483,42 @@ class PollingWorker private constructor(c : Context) {
 				dstListJson.add(src)
 			}
 			
-			private fun getNotificationLine(type : String, display_name : CharSequence) = when(type){
-				TootNotification.TYPE_MENTION,
-				TootNotification.TYPE_REPLY ->
-					"- " + context.getString(R.string.display_name_replied_by, display_name)
-				
-				TootNotification.TYPE_RENOTE,
-				TootNotification.TYPE_REBLOG ->
-					"- " + context.getString(R.string.display_name_boosted_by, display_name)
-				
-				TootNotification.TYPE_QUOTE ->
-					"- " + context.getString(R.string.display_name_quoted_by, display_name)
-				
-				TootNotification.TYPE_FOLLOW ->
-					"- " + context.getString(R.string.display_name_followed_by, display_name)
-				
-				TootNotification.TYPE_UNFOLLOW ->
-					"- " + context.getString(R.string.display_name_unfollowed_by, display_name)
-				
-				TootNotification.TYPE_FAVOURITE->
-					"- " + context.getString(R.string.display_name_favourited_by,display_name)
-				
-				TootNotification.TYPE_REACTION->
-					"- " + context.getString(R.string.display_name_reaction_by,display_name)
-				
-				TootNotification.TYPE_VOTE->
-					"- " + context.getString(R.string.display_name_voted_by,display_name)
-				
-				TootNotification.TYPE_FOLLOW_REQUEST->
-					"- " + context.getString(R.string.display_name_follow_request_by,display_name)
-
-				else->"- " + "?"
-			}
+			private fun getNotificationLine(type : String, display_name : CharSequence) =
+				when(type) {
+					TootNotification.TYPE_MENTION,
+					TootNotification.TYPE_REPLY ->
+						"- " + context.getString(R.string.display_name_replied_by, display_name)
+					
+					TootNotification.TYPE_RENOTE,
+					TootNotification.TYPE_REBLOG ->
+						"- " + context.getString(R.string.display_name_boosted_by, display_name)
+					
+					TootNotification.TYPE_QUOTE ->
+						"- " + context.getString(R.string.display_name_quoted_by, display_name)
+					
+					TootNotification.TYPE_FOLLOW ->
+						"- " + context.getString(R.string.display_name_followed_by, display_name)
+					
+					TootNotification.TYPE_UNFOLLOW ->
+						"- " + context.getString(R.string.display_name_unfollowed_by, display_name)
+					
+					TootNotification.TYPE_FAVOURITE ->
+						"- " + context.getString(R.string.display_name_favourited_by, display_name)
+					
+					TootNotification.TYPE_REACTION ->
+						"- " + context.getString(R.string.display_name_reaction_by, display_name)
+					
+					TootNotification.TYPE_VOTE ->
+						"- " + context.getString(R.string.display_name_voted_by, display_name)
+					
+					TootNotification.TYPE_FOLLOW_REQUEST ->
+						"- " + context.getString(
+							R.string.display_name_follow_request_by,
+							display_name
+						)
+					
+					else -> "- " + "?"
+				}
 			
 			private fun showNotification(data_list : ArrayList<Data>) {
 				
@@ -1720,8 +1723,8 @@ class PollingWorker private constructor(c : Context) {
 						val array = last_data.toJsonArray()
 						for(i in array.length() - 1 downTo 0) {
 							val src = array.optJSONObject(i)
-							val id = getEntityOrderId(account,src)
-							if(id.notDefault ) {
+							val id = getEntityOrderId(account, src)
+							if(id.notDefault) {
 								dst_array.add(src)
 								duplicate_check.add(id)
 								log.d("add old. id=${id}")
@@ -1741,7 +1744,7 @@ class PollingWorker private constructor(c : Context) {
 						duplicate_check.add(item.id)
 						
 						val type = item.type
-						if(! account.canNotificationShowing(type)){
+						if(! account.canNotificationShowing(type)) {
 							log.d("skip by setting. id=${item.id}")
 							continue
 						}

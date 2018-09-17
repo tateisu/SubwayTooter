@@ -471,25 +471,24 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	val busyKey : String
 		get() = "$hostAccessOrOriginal:$id"
 	
-	fun checkMuted(
-		muted_app : HashSet<String>?,
-		muted_word : WordTrieTree?
-	) : Boolean {
+	fun checkMuted() : Boolean {
 		
 		// app mute
+		val muted_app = TootStatus.muted_app
 		if(muted_app != null) {
 			val name = application?.name
 			if(name != null && muted_app.contains(name)) return true
 		}
 		
 		// word mute
+		val muted_word = TootStatus.muted_word
 		if(muted_word != null) {
 			if(muted_word.matchShort(decoded_content)) return true
 			if(muted_word.matchShort(decoded_spoiler_text)) return true
 		}
 		
 		// reblog
-		return true == reblog?.checkMuted(muted_app, muted_word)
+		return true == reblog?.checkMuted()
 		
 	}
 	
@@ -570,6 +569,12 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	companion object {
 		
 		internal val log = LogCategory("TootStatus")
+		
+		@Volatile
+		internal var muted_app : HashSet<String>? = null
+		
+		@Volatile
+		internal var muted_word : WordTrieTree? = null
 		
 		private val reWhitespace = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
 		

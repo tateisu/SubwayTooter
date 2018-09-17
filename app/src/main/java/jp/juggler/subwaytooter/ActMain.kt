@@ -65,6 +65,7 @@ import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanClickCallback
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.ListDivider
+import kotlin.math.min
 
 class ActMain : AppCompatActivity()
 	, NavigationView.OnNavigationItemSelectedListener
@@ -171,8 +172,20 @@ class ActMain : AppCompatActivity()
 		internal lateinit var tablet_pager_adapter : TabletColumnPagerAdapter
 		internal lateinit var tablet_layout_manager : LinearLayoutManager
 		internal lateinit var tablet_snap_helper : GravitySnapHelper
+		
 	}
-	
+
+	private val TabletEnv.visibleRange :IntRange
+		get() {
+			val vs = tablet_layout_manager.findFirstVisibleItemPosition()
+			val ve = tablet_layout_manager.findLastVisibleItemPosition()
+			return if(vs == RecyclerView.NO_POSITION || ve == RecyclerView.NO_POSITION) {
+				IntRange(- 1, - 2) // empty and less than zero
+			}else {
+				IntRange(vs, min(ve,vs + nScreenColumn - 1))
+			}
+		}
+
 	private var phoneEnv : PhoneEnv? = null
 	private var tabletEnv : TabletEnv? = null
 	
@@ -327,13 +340,33 @@ class ActMain : AppCompatActivity()
 					return c.access_info.db_id
 				}
 				return - 1L
-			},
-			{ _ ->
-				val db_id = Pref.lpTabletTootDefaultAccount(App1.pref)
-				val a = SavedAccount.loadAccount(this@ActMain, db_id)
-				return a?.db_id ?: - 1L
 			}
-		)
+		) { env ->
+			
+			val db_id = Pref.lpTabletTootDefaultAccount(App1.pref)
+			SavedAccount.loadAccount(this@ActMain, db_id)?.let{
+				return it.db_id
+			}
+			
+			val accounts = ArrayList<SavedAccount>()
+			for( i in env.visibleRange  ){
+				try {
+					val a = app_state.column_list[i].access_info
+					if( a.isPseudo ){
+						accounts.clear()
+						break
+					}else if( null == accounts.find { it.acct == a.acct } ){
+						accounts.add(a)
+					}
+				}catch(ex:Throwable){
+				
+				}
+			}
+			if(accounts.size == 1){
+				return accounts.first().db_id
+			}
+			return - 1L
+		}
 	
 	// スマホモードなら現在のカラムを、タブレットモードなら-1Lを返す
 	// (カラム一覧画面のデフォルト選択位置に使われる)
@@ -567,9 +600,7 @@ class ActMain : AppCompatActivity()
 			{ env -> env.pager.currentItem },
 			{ env -> env.tablet_layout_manager.findFirstVisibleItemPosition() })
 		
-		val e = pref.edit()
-			.put(Pref.ipLastColumnPos, last_pos)
-		e.apply()
+		pref.edit().put(Pref.ipLastColumnPos, last_pos).apply()
 
 		for(column in app_state.column_list) {
 			column.saveScrollPosition()
@@ -873,93 +904,71 @@ class ActMain : AppCompatActivity()
 			return
 		}
 		
+		fun getClosableColumnList() : List<Column>{
+			val visibleColumnList = ArrayList<Column>()
+			phoneTab({ env ->
+				try{
+					visibleColumnList.add(app_state.column_list[env.pager.currentItem])
+				}catch(ex:Throwable){
+				}
+			}, { env ->
+				for(i in env.visibleRange ){
+					try{
+						visibleColumnList.add(app_state.column_list[i])
+					}catch(ex:Throwable){
+					}
+				}
+			})
+			
+			return visibleColumnList.filter { !it.dont_close }
+			
+		}
+		
 		// カラムが1個以上ある場合は設定に合わせて挙動を変える
 		when(Pref.ipBackButtonAction(pref)) {
-			ActAppSetting.BACK_ASK_ALWAYS -> {
-				val dialog = ActionsDialog()
-				
-				val add_column_closer = { current_column : Column ->
-					if(! current_column.dont_close) {
-						dialog.addAction(getString(R.string.close_column)) {
-							closeColumn(
-								true,
-								current_column
-							)
-						}
-					}
-					
-				}
-				phoneTab({ env ->
-					app_state.column_list[env.pager.currentItem].let(add_column_closer)
-				}, { env ->
-					val vs = env.tablet_layout_manager.findFirstVisibleItemPosition()
-					val ve = env.tablet_layout_manager.findLastVisibleItemPosition()
-					if(vs == ve && vs != RecyclerView.NO_POSITION) {
-						app_state.column_list[vs].let(add_column_closer)
-					}
-				})
-				
-				dialog.addAction(getString(R.string.open_column_list)) { Action_App.columnList(this@ActMain) }
-				
-				dialog.addAction(getString(R.string.app_exit)) { this@ActMain.finish() }
-				dialog.show(this, null)
-			}
-			
-			ActAppSetting.BACK_CLOSE_COLUMN -> {
-				
-				val closer = { column : Column ->
-					if(column.dont_close
-						&& Pref.bpExitAppWhenCloseProtectedColumn(pref)
-						&& Pref.bpDontConfirmBeforeCloseColumn(pref)
-					) {
-						this@ActMain.finish()
-					} else {
-						closeColumn(false, column)
-					}
-				}
-				
-				phoneTab({ env ->
-					env.pager_adapter.getColumn(env.pager.currentItem)?.let(closer)
-				}, { env ->
-					val vs = env.tablet_layout_manager.findFirstVisibleItemPosition()
-					val ve = env.tablet_layout_manager.findLastVisibleItemPosition()
-					if(vs == ve && vs != RecyclerView.NO_POSITION) {
-						app_state.column_list[vs].let(closer)
-					} else {
-						showToast(
-							this,
-							false,
-							getString(R.string.cant_close_column_by_back_button_when_multiple_column_shown)
-						)
-					}
-				})
-			}
-			
+
 			ActAppSetting.BACK_EXIT_APP -> this@ActMain.finish()
 			
 			ActAppSetting.BACK_OPEN_COLUMN_LIST -> Action_App.columnList(this@ActMain)
-			
-			else -> {
-				val dialog = ActionsDialog()
-				val add_close_column = { current_column : Column ->
-					if(! current_column.dont_close) {
-						dialog.addAction(getString(R.string.close_column)) {
-							closeColumn(
-								true,
-								current_column
-							)
+
+			ActAppSetting.BACK_CLOSE_COLUMN -> {
+				
+				val closeableColumnList = getClosableColumnList()
+				when(closeableColumnList.size){
+					0 ->{
+						if(Pref.bpExitAppWhenCloseProtectedColumn(pref)
+							&& Pref.bpDontConfirmBeforeCloseColumn(pref)
+						){
+							this@ActMain.finish()
+						}else{
+							showToast(this@ActMain,false,R.string.missing_closeable_column)
 						}
 					}
-				}
-				phoneTab({ env ->
-					app_state.column_list[env.pager.currentItem].let(add_close_column)
-				}, { env ->
-					val vs = env.tablet_layout_manager.findFirstVisibleItemPosition()
-					val ve = env.tablet_layout_manager.findLastVisibleItemPosition()
-					if(vs == ve && vs != RecyclerView.NO_POSITION) {
-						app_state.column_list[vs].let(add_close_column)
+					1->{
+						closeColumn(closeableColumnList.first() )
 					}
-				})
+					else->{
+						showToast(this@ActMain,false,R.string.cant_close_column_by_back_button_when_multiple_column_shown)
+					}
+				}
+			}
+			
+			
+			// ActAppSetting.BACK_ASK_ALWAYS
+			else -> {
+				
+				val closeableColumnList = getClosableColumnList()
+				
+				val dialog = ActionsDialog()
+				
+				
+				if( closeableColumnList.size == 1 ){
+					val column = closeableColumnList.first()
+					dialog.addAction(getString(R.string.close_column)) {
+						closeColumn( column, bConfirmed = true )
+					}
+				}
+
 				dialog.addAction(getString(R.string.open_column_list)) { Action_App.columnList(this@ActMain) }
 				dialog.addAction(getString(R.string.app_exit)) { this@ActMain.finish() }
 				dialog.show(this, null)
@@ -1322,6 +1331,7 @@ class ActMain : AppCompatActivity()
 			env.tablet_pager.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 				override fun onScrollStateChanged(recyclerView : RecyclerView?, newState : Int) {
 					super.onScrollStateChanged(recyclerView, newState)
+					
 					val vs = env.tablet_layout_manager.findFirstVisibleItemPosition()
 					val ve = env.tablet_layout_manager.findLastVisibleItemPosition()
 					// 端に近い方に合わせる
@@ -1370,12 +1380,8 @@ class ActMain : AppCompatActivity()
 		val c = env.pager.currentItem
 		c == idx
 	}, { env ->
-		val vs = env.tablet_layout_manager.findFirstVisibleItemPosition()
-		var ve = env.tablet_layout_manager.findLastVisibleItemPosition()
-		if(ve - vs > nScreenColumn - 1) {
-			ve = vs + nScreenColumn - 1
-		}
-		vs != RecyclerView.NO_POSITION && vs <= idx && idx <= ve
+		idx >= 0 && idx in env.visibleRange
+		
 	})
 	
 	internal fun updateColumnStrip() {
@@ -1454,19 +1460,14 @@ class ActMain : AppCompatActivity()
 					}
 					
 				}, { env ->
-					val first = env.tablet_layout_manager.findFirstVisibleItemPosition()
-					var last = env.tablet_layout_manager.findLastVisibleItemPosition()
-					
-					if(last - first > nScreenColumn - 1) {
-						last = first + nScreenColumn - 1
-					}
+					val vr = env.visibleRange
 					var slide_ratio = 0f
-					if(first != RecyclerView.NO_POSITION && nColumnWidth > 0) {
-						val child = env.tablet_layout_manager.findViewByPosition(first)
+					if( vr.first <= vr.last ) {
+						val child = env.tablet_layout_manager.findViewByPosition(vr.first)
 						slide_ratio = Math.abs(child.left / nColumnWidth.toFloat())
 					}
 					
-					llColumnStrip.setVisibleRange(first, last, slide_ratio)
+					llColumnStrip.setVisibleRange(vr.first, vr.last, slide_ratio)
 				})
 			}
 		})
@@ -1986,18 +1987,18 @@ class ActMain : AppCompatActivity()
 		}
 	}
 	
-	fun closeColumn(bConfirm : Boolean, column : Column) {
+	fun closeColumn(column : Column,bConfirmed : Boolean =false ) {
 		
 		if(column.dont_close) {
 			showToast(this, false, R.string.column_has_dont_close_option)
 			return
 		}
 		
-		if(! bConfirm && ! Pref.bpDontConfirmBeforeCloseColumn(pref)) {
+		if(! bConfirmed && ! Pref.bpDontConfirmBeforeCloseColumn(pref)) {
 			AlertDialog.Builder(this)
 				.setMessage(R.string.confirm_close_column)
 				.setNegativeButton(R.string.cancel, null)
-				.setPositiveButton(R.string.ok) { _, _ -> closeColumn(true, column) }
+				.setPositiveButton(R.string.ok) { _, _ -> closeColumn(column, bConfirmed= true) }
 				.show()
 			return
 		}

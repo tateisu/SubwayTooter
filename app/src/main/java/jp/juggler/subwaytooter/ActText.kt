@@ -305,9 +305,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 	private fun muteWord() {
 		try {
 			MutedWord.save(selection)
-			for(column in App1.getAppState(this).column_list) {
-				column.onMuteAppUpdated()
-			}
+			App1.getAppState(this).onMuteUpdated()
 			showToast(this, false, R.string.word_was_muted)
 		} catch(ex : Throwable) {
 			log.trace(ex)

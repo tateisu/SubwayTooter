@@ -20,9 +20,7 @@ object Action_App {
 		activity : ActMain, application : TootApplication
 	) {
 		MutedApp.save(application.name)
-		for(column in App1.getAppState(activity).column_list) {
-			column.onMuteAppUpdated()
-		}
+		App1.getAppState(activity).onMuteUpdated()
 		showToast(activity, false, R.string.app_was_muted)
 	}
 	

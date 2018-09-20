@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.net.Uri
 import android.provider.BaseColumns
 import android.util.JsonReader
 import android.util.JsonToken
@@ -17,13 +18,18 @@ import jp.juggler.subwaytooter.table.*
 import org.json.JSONException
 import org.json.JSONObject
 
-import java.io.IOException
 import java.util.ArrayList
 import java.util.HashMap
 import java.util.Locale
 
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.parseLong
+import org.apache.commons.io.IOUtils
+import java.io.*
+import java.util.regex.Matcher
+import java.util.regex.Pattern
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 object AppDataExporter {
 	
@@ -72,12 +78,12 @@ object AppDataExporter {
 						
 					}
 					
-					is EntityIdLong ->{
+					is EntityIdLong -> {
 						writer.name(k)
 						writer.value(o.toLong())
 					}
 					
-					is EntityIdString ->{
+					is EntityIdString -> {
 						writer.name(k)
 						writer.value(o.toString())
 					}
@@ -452,4 +458,71 @@ object AppDataExporter {
 		return result
 	}
 	
+	fun saveBackgroundImage(
+		context : Context,
+		zipStream : ZipOutputStream,
+		column : Column
+	) {
+		try {
+			val sv = column.column_bg_image
+			if(sv.isEmpty()) return
+			context.contentResolver.openInputStream(Uri.parse(sv)).use { inStream ->
+
+				zipStream.putNextEntry(ZipEntry("background-image/${column.column_id}"))
+				try {
+					IOUtils.copy(inStream,zipStream)
+				} finally {
+					zipStream.closeEntry()
+				}
+			}
+		} catch(ex : Throwable) {
+			log.trace(ex)
+		}
+	}
+	
+	internal val reBackgroundImage = Pattern.compile("background-image/(.+)")
+
+	// エントリが背景画像のソレなら真を返す
+	// column.column_bg_image を更新する場合がある
+	fun restoreBackgroundImage(
+		context : Context,
+		columnList : ArrayList<Column>?,
+		inStream : InputStream,
+		entryName : String
+	) :Boolean{
+		
+		// entryName がバックグラウンド画像のそれと一致するか
+		val m = AppDataExporter.reBackgroundImage.matcher(entryName)
+		if(!m.find() ) return false
+		
+		try {
+			if( columnList == null ) {
+				log.e("missing column list before background image.")
+			}else{
+				val id = m.group(1)
+				val column = columnList.find { it.column_id == id }
+				if(column == null) {
+					log.e("missing column for id $id")
+				}else{
+
+					val uri = Uri.parse(column.column_bg_image)
+					val path = uri.path
+					if(uri.scheme == "file" && path.contains(id)) {
+
+						val backgroundDir = Column.getBackgroundImageDir(context)
+						val file = File(backgroundDir,File(path).name)
+
+						FileOutputStream(file).use { outStream ->
+							IOUtils.copy(inStream, outStream)
+						}
+
+						column.column_bg_image = Uri.fromFile(file).toString()
+					}
+				}
+			}
+		} catch(ex : Throwable) {
+			log.trace(ex)
+		}
+		return true
+	}
 }

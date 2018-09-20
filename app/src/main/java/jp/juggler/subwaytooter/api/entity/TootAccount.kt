@@ -304,25 +304,26 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	companion object {
 		private val log = LogCategory("TootAccount")
 		
-		@Suppress("HasPlatformType")
-		private val reWhitespace = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
-		
-		@Suppress("HasPlatformType")
-		val reAccountUrl =
-			Pattern.compile("\\Ahttps://([A-Za-z0-9._-]+)/@([A-Za-z0-9_]+(?:@[A-Za-z0-9._-]+)?)(?:\\z|[?#])")
+		internal val reWhitespace:Pattern = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
 
+		// host, user ,(instance)
+		internal val reAccountUrl :Pattern =
+			Pattern.compile("\\Ahttps://([A-Za-z0-9._-]+)/@([A-Za-z0-9_]+(?:@[A-Za-z0-9._-]+)?)(?:\\z|[?#])")
+		
 		fun getAcctFromUrl(url:String):String?{
-			val m = TootAccount.reAccountUrl.matcher(url)
-			if(m.find()){
-				val instance = m.group(1)
-				val acct = m.group(2)
-				return if( acct.contains('@')){
-					acct
+			val m = reAccountUrl.matcher(url)
+			return if(m.find()){
+				val host = m.group(1)
+				val user = m.group(2).unescapeUri()
+				val instance = m.groupOrNull(3)?.unescapeUri()
+				if( instance?.isNotEmpty() == true){
+					"$user@$instance"
 				}else{
-					"$acct@$instance"
+					"$user@$host"
 				}
+			}else{
+				null
 			}
-			return null
 		}
 		
 		private fun parseSource(src : JSONObject?) : Source? {

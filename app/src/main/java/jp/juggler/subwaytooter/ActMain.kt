@@ -65,6 +65,7 @@ import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanClickCallback
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.ListDivider
+import java.util.zip.ZipInputStream
 import kotlin.math.min
 
 class ActMain : AppCompatActivity()
@@ -97,12 +98,8 @@ class ActMain : AppCompatActivity()
 		
 		internal var sent_intent2 : Intent? = null
 		
-		@Suppress("HasPlatformType")
-		val reUrlHashTag =
+		internal val reUrlHashTag =
 			Pattern.compile("\\Ahttps://([^/]+)/tags/([^?#・\\s\\-+.,:;/]+)(?:\\z|[?#])")
-		
-		@Suppress("HasPlatformType")
-		val reUserPage = Pattern.compile("\\Ahttps://([^/]+)/@([A-Za-z0-9_]+)(?:\\z|[?#])")
 		
 		@Suppress("HasPlatformType")
 		val reStatusPage = Pattern.compile("\\Ahttps://([^/]+)/@([A-Za-z0-9_]+)/(\\d+)(?:\\z|[?#])")
@@ -153,7 +150,6 @@ class ActMain : AppCompatActivity()
 	
 	val viewPool = RecyclerView.RecycledViewPool()
 	
-
 	var avatarIconSize : Int = 0
 	var notificationTlIconSize : Int = 0
 	
@@ -174,18 +170,18 @@ class ActMain : AppCompatActivity()
 		internal lateinit var tablet_snap_helper : GravitySnapHelper
 		
 	}
-
-	private val TabletEnv.visibleRange :IntRange
+	
+	private val TabletEnv.visibleRange : IntRange
 		get() {
 			val vs = tablet_layout_manager.findFirstVisibleItemPosition()
 			val ve = tablet_layout_manager.findLastVisibleItemPosition()
 			return if(vs == RecyclerView.NO_POSITION || ve == RecyclerView.NO_POSITION) {
 				IntRange(- 1, - 2) // empty and less than zero
-			}else {
-				IntRange(vs, min(ve,vs + nScreenColumn - 1))
+			} else {
+				IntRange(vs, min(ve, vs + nScreenColumn - 1))
 			}
 		}
-
+	
 	private var phoneEnv : PhoneEnv? = null
 	private var tabletEnv : TabletEnv? = null
 	
@@ -260,7 +256,7 @@ class ActMain : AppCompatActivity()
 					val m = reUrlHashTag.matcher(s.url)
 					if(m.find()) {
 						val s_tag =
-							if(s.text.startsWith("#")) s.text else "#" + Uri.decode(m.group(2))
+							if(s.text.startsWith("#")) s.text else "#" + m.group(2).unescapeUri()
 						if(tag_list == null) tag_list = ArrayList()
 						tag_list.add(s_tag)
 					}
@@ -344,25 +340,25 @@ class ActMain : AppCompatActivity()
 		) { env ->
 			
 			val db_id = Pref.lpTabletTootDefaultAccount(App1.pref)
-			SavedAccount.loadAccount(this@ActMain, db_id)?.let{
+			SavedAccount.loadAccount(this@ActMain, db_id)?.let {
 				return it.db_id
 			}
 			
 			val accounts = ArrayList<SavedAccount>()
-			for( i in env.visibleRange  ){
+			for(i in env.visibleRange) {
 				try {
 					val a = app_state.column_list[i].access_info
-					if( a.isPseudo ){
+					if(a.isPseudo) {
 						accounts.clear()
 						break
-					}else if( null == accounts.find { it.acct == a.acct } ){
+					} else if(null == accounts.find { it.acct == a.acct }) {
 						accounts.add(a)
 					}
-				}catch(ex:Throwable){
+				} catch(ex : Throwable) {
 				
 				}
 			}
-			if(accounts.size == 1){
+			if(accounts.size == 1) {
 				return accounts.first().db_id
 			}
 			return - 1L
@@ -601,11 +597,11 @@ class ActMain : AppCompatActivity()
 			{ env -> env.tablet_layout_manager.findFirstVisibleItemPosition() })
 		
 		pref.edit().put(Pref.ipLastColumnPos, last_pos).apply()
-
+		
 		for(column in app_state.column_list) {
 			column.saveScrollPosition()
 		}
-
+		
 		app_state.saveColumnList(bEnableSpeech = false)
 		
 		super.onPause()
@@ -654,7 +650,7 @@ class ActMain : AppCompatActivity()
 			, dismiss_callback = { sent_intent2 = null }
 		) { ai ->
 			sent_intent2 = null
-			ActPost.open(this@ActMain, REQUEST_CODE_POST, ai.db_id,sent_intent = intent)
+			ActPost.open(this@ActMain, REQUEST_CODE_POST, ai.db_id, sent_intent = intent)
 		}
 	}
 	
@@ -904,55 +900,60 @@ class ActMain : AppCompatActivity()
 			return
 		}
 		
-		fun getClosableColumnList() : List<Column>{
+		fun getClosableColumnList() : List<Column> {
 			val visibleColumnList = ArrayList<Column>()
 			phoneTab({ env ->
-				try{
+				try {
 					visibleColumnList.add(app_state.column_list[env.pager.currentItem])
-				}catch(ex:Throwable){
+				} catch(ex : Throwable) {
 				}
 			}, { env ->
-				for(i in env.visibleRange ){
-					try{
+				for(i in env.visibleRange) {
+					try {
 						visibleColumnList.add(app_state.column_list[i])
-					}catch(ex:Throwable){
+					} catch(ex : Throwable) {
 					}
 				}
 			})
 			
-			return visibleColumnList.filter { !it.dont_close }
+			return visibleColumnList.filter { ! it.dont_close }
 			
 		}
 		
 		// カラムが1個以上ある場合は設定に合わせて挙動を変える
 		when(Pref.ipBackButtonAction(pref)) {
-
+			
 			ActAppSetting.BACK_EXIT_APP -> this@ActMain.finish()
 			
 			ActAppSetting.BACK_OPEN_COLUMN_LIST -> Action_App.columnList(this@ActMain)
-
+			
 			ActAppSetting.BACK_CLOSE_COLUMN -> {
 				
 				val closeableColumnList = getClosableColumnList()
-				when(closeableColumnList.size){
-					0 ->{
+				when(closeableColumnList.size) {
+					0 -> {
 						if(Pref.bpExitAppWhenCloseProtectedColumn(pref)
 							&& Pref.bpDontConfirmBeforeCloseColumn(pref)
-						){
+						) {
 							this@ActMain.finish()
-						}else{
-							showToast(this@ActMain,false,R.string.missing_closeable_column)
+						} else {
+							showToast(this@ActMain, false, R.string.missing_closeable_column)
 						}
 					}
-					1->{
-						closeColumn(closeableColumnList.first() )
+					
+					1 -> {
+						closeColumn(closeableColumnList.first())
 					}
-					else->{
-						showToast(this@ActMain,false,R.string.cant_close_column_by_back_button_when_multiple_column_shown)
+					
+					else -> {
+						showToast(
+							this@ActMain,
+							false,
+							R.string.cant_close_column_by_back_button_when_multiple_column_shown
+						)
 					}
 				}
 			}
-			
 			
 			// ActAppSetting.BACK_ASK_ALWAYS
 			else -> {
@@ -962,13 +963,13 @@ class ActMain : AppCompatActivity()
 				val dialog = ActionsDialog()
 				
 				
-				if( closeableColumnList.size == 1 ){
+				if(closeableColumnList.size == 1) {
 					val column = closeableColumnList.first()
 					dialog.addAction(getString(R.string.close_column)) {
-						closeColumn( column, bConfirmed = true )
+						closeColumn(column, bConfirmed = true)
 					}
 				}
-
+				
 				dialog.addAction(getString(R.string.open_column_list)) { Action_App.columnList(this@ActMain) }
 				dialog.addAction(getString(R.string.app_exit)) { this@ActMain.finish() }
 				dialog.show(this, null)
@@ -997,22 +998,22 @@ class ActMain : AppCompatActivity()
 				, Column.TYPE_HOME
 				, bAllowPseudo = false
 			)
-
+			
 			R.id.nav_add_tl_local -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
 				, Column.TYPE_LOCAL
 				, bAllowPseudo = true
 			)
-
-			R.id.nav_add_tl_misskey_hybrid-> Action_Account.timeline(
+			
+			R.id.nav_add_tl_misskey_hybrid -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
 				, Column.TYPE_MISSKEY_HYBRID
 				, bAllowPseudo = true
-			,bAllowMastodon = false
+				, bAllowMastodon = false
 			)
-
+			
 			R.id.nav_add_tl_federate -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
@@ -1104,7 +1105,7 @@ class ActMain : AppCompatActivity()
 				, defaultInsertPosition
 				, Column.TYPE_ENDORSEMENT
 				, bAllowPseudo = false
-				,bAllowMisskey = false
+				, bAllowMisskey = false
 			)
 			
 			//			R.id.nav_add_trend_tag ->Action_Account.timeline(
@@ -1462,7 +1463,7 @@ class ActMain : AppCompatActivity()
 				}, { env ->
 					val vr = env.visibleRange
 					var slide_ratio = 0f
-					if( vr.first <= vr.last ) {
+					if(vr.first <= vr.last) {
 						val child = env.tablet_layout_manager.findViewByPosition(vr.first)
 						slide_ratio = Math.abs(child.left / nColumnWidth.toFloat())
 					}
@@ -1530,7 +1531,7 @@ class ActMain : AppCompatActivity()
 				Action_Toot.conversationOtherInstance(
 					this@ActMain,
 					defaultInsertPosition,
-					uri.toString(),
+					url,
 					status_id,
 					host,
 					status_id
@@ -1542,18 +1543,32 @@ class ActMain : AppCompatActivity()
 			return
 		}
 		
-		m = reUserPage.matcher(url)
+		// ユーザページをアプリ内で開く
+		m = TootAccount.reAccountUrl.matcher(url)
 		if(m.find()) {
-			// https://mastodon.juggler.jp/@SubwayTooter
-			// ユーザページをアプリ内で開く
-			Action_User.profile(
-				this@ActMain,
-				defaultInsertPosition,
-				null,
-				uri.toString(),
-				m.group(1),
-				Uri.decode(m.group(2))
-			)
+			val host = m.group(1)
+			val user = m.group(2).unescapeUri()
+			val instance = m.groupOrNull(3)?.unescapeUri()
+			
+			if(instance?.isNotEmpty() == true) {
+				Action_User.profile(
+					this@ActMain,
+					defaultInsertPosition,
+					null,
+					"https://$instance/@$user",
+					instance,
+					user
+				)
+			} else {
+				Action_User.profile(
+					this@ActMain,
+					defaultInsertPosition,
+					null,
+					url,
+					host,
+					user
+				)
+			}
 			return
 		}
 		
@@ -1987,7 +2002,7 @@ class ActMain : AppCompatActivity()
 		}
 	}
 	
-	fun closeColumn(column : Column,bConfirmed : Boolean =false ) {
+	fun closeColumn(column : Column, bConfirmed : Boolean = false) {
 		
 		if(column.dont_close) {
 			showToast(this, false, R.string.column_has_dont_close_option)
@@ -1998,7 +2013,7 @@ class ActMain : AppCompatActivity()
 			AlertDialog.Builder(this)
 				.setMessage(R.string.confirm_close_column)
 				.setNegativeButton(R.string.cancel, null)
-				.setPositiveButton(R.string.ok) { _, _ -> closeColumn(column, bConfirmed= true) }
+				.setPositiveButton(R.string.ok) { _, _ -> closeColumn(column, bConfirmed = true) }
 				.show()
 			return
 		}
@@ -2139,7 +2154,7 @@ class ActMain : AppCompatActivity()
 				if(m.find()) {
 					// https://mastodon.juggler.jp/tags/%E3%83%8F%E3%83%83%E3%82%B7%E3%83%A5%E3%82%BF%E3%82%B0
 					val host = m.group(1)
-					val tag_without_sharp = Uri.decode(m.group(2))
+					val tag_without_sharp = m.group(2).unescapeUri()
 					Action_HashTag.dialog(
 						this@ActMain,
 						opener.pos,
@@ -2183,20 +2198,35 @@ class ActMain : AppCompatActivity()
 					return
 				}
 				
-				// https://mastodon.juggler.jp/@SubwayTooter
-				m = reUserPage.matcher(opener.url)
+				// ユーザページをアプリ内で開く
+				m = TootAccount.reAccountUrl.matcher(opener.url)
 				if(m.find()) {
-					// ユーザページをアプリ内で開く
-					Action_User.profile(
-						this@ActMain,
-						opener.pos,
-						accessInto,
-						opener.url,
-						m.group(1),
-						Uri.decode(m.group(2))
-					)
+					val host = m.group(1)
+					val user = m.group(2).unescapeUri()
+					val instance = m.groupOrNull(3)?.unescapeUri()
+					
+					if(instance?.isNotEmpty() == true) {
+						Action_User.profile(
+							this@ActMain,
+							opener.pos,
+							null,
+							"https://$instance/@$user",
+							instance,
+							user
+						)
+					} else {
+						Action_User.profile(
+							this@ActMain,
+							opener.pos,
+							accessInto,
+							opener.url,
+							host,
+							user
+						)
+					}
 					return
 				}
+				
 			}
 			
 			App1.openCustomTab(this, opener.url)
@@ -2365,17 +2395,17 @@ class ActMain : AppCompatActivity()
 		
 		val tmp_list = ArrayList<Column>()
 		val used_set = HashSet<Int>()
-
+		
 		// copy by new_order
 		for(i in new_order) {
-			if( 0<= i && i < ie ){
+			if(0 <= i && i < ie) {
 				used_set.add(i)
 				tmp_list.add(app_state.column_list[i])
 			}
 		}
 		
 		// dispose unused elements.
-		for( i in 0 until ie ){
+		for(i in 0 until ie) {
 			if(used_set.contains(i)) continue
 			app_state.column_list[i].dispose()
 		}
@@ -2497,27 +2527,28 @@ class ActMain : AppCompatActivity()
 			}
 			
 			override fun doInBackground(vararg params : Void) : ArrayList<Column>? {
+				
+				var newColumnList : ArrayList<Column>? = null
+				
 				try {
+					
 					setProgressMessage("import data to local storage...")
 					
+					// アプリ内領域に一時ファイルを作ってコピーする
 					val cacheDir = cacheDir
-					
 					cacheDir.mkdir()
 					val file = File(
 						cacheDir,
-						"SubwayTooter." + android.os.Process.myPid() + "." + android.os.Process.myTid() + ".json"
+						"SubwayTooter.${android.os.Process.myPid()}.${android.os.Process.myTid()}.tmp"
 					)
-					
-					// ローカルファイルにコピーする
 					val source = contentResolver.openInputStream(uri)
 					if(source == null) {
 						showToast(this@ActMain, true, "openInputStream failed.")
 						return null
-					} else {
-						source.use { inStream ->
-							FileOutputStream(file).use { outStream ->
-								IOUtils.copy(inStream, outStream)
-							}
+					}
+					source.use { inStream ->
+						FileOutputStream(file).use { outStream ->
+							IOUtils.copy(inStream, outStream)
 						}
 					}
 					
@@ -2529,17 +2560,61 @@ class ActMain : AppCompatActivity()
 						log.d("syncing polling task...")
 					}
 					
-					// JSONを読みだす
+					// データを読み込む
 					setProgressMessage("reading app data...")
-					InputStreamReader(FileInputStream(file), "UTF-8").use { inStream ->
-						return AppDataExporter.decodeAppData(this@ActMain, JsonReader(inStream))
+					var zipEntryCount = 0
+					try {
+						ZipInputStream(FileInputStream(file)).use { zipStream ->
+							while(true) {
+								val entry = zipStream.nextEntry ?: break
+								++zipEntryCount
+								try {
+									//
+									val entryName = entry.name
+									if(entryName.endsWith(".json")) {
+										newColumnList = AppDataExporter.decodeAppData(
+											this@ActMain,
+											JsonReader(InputStreamReader(zipStream, "UTF-8"))
+										)
+										continue
+									}
+									
+									if( AppDataExporter.restoreBackgroundImage(
+											this@ActMain,
+											newColumnList,
+											zipStream,
+											entryName
+										)
+									){
+										continue
+									}
+								} finally {
+									zipStream.closeEntry()
+								}
+							}
+						}
+					} catch(ex : Throwable) {
+						log.trace(ex)
+						if(zipEntryCount!=0) {
+							showToast(this@ActMain, ex, "importAppData failed.")
+						}
 					}
+					// zipではなかった場合、zipEntryがない状態になる。例外はPH-1では出なかったが、出ても問題ないようにする。
+					if(zipEntryCount==0) {
+						InputStreamReader(FileInputStream(file), "UTF-8").use { inStream ->
+							newColumnList = AppDataExporter.decodeAppData(
+								this@ActMain,
+								JsonReader(inStream)
+							)
+						}
+					}
+					
 				} catch(ex : Throwable) {
 					log.trace(ex)
 					showToast(this@ActMain, ex, "importAppData failed.")
 				}
 				
-				return null
+				return newColumnList
 			}
 			
 			override fun onCancelled(result : ArrayList<Column>?) {

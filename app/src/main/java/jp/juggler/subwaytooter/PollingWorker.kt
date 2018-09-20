@@ -202,7 +202,7 @@ class PollingWorker private constructor(contextArg : Context) {
 				return sv
 				
 			} catch(ex : Throwable) {
-				log.trace(ex, "prepareInstallId")
+				log.trace(ex, "prepareInstallId failed.")
 			}
 			return null
 		}

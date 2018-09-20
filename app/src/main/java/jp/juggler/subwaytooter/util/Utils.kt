@@ -35,6 +35,7 @@ import java.lang.ref.WeakReference
 import java.security.MessageDigest
 import java.util.LinkedList
 import java.util.Locale
+import java.util.regex.Matcher
 import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
@@ -400,6 +401,10 @@ fun String.digestSHA256Hex() : String {
 fun String.digestSHA256Base64Url() : String {
 	return this.encodeUTF8().digestSHA256().encodeBase64Url()
 }
+
+fun String.toUri():Uri = Uri.parse(this)
+
+fun String.unescapeUri():String = Uri.decode(this)
 
 ////////////////////////////////////////////////////////////////////
 // CharSequence
@@ -1013,3 +1018,11 @@ fun Intent.handleGetContentResult(contentResolver : ContentResolver) : ArrayList
 	}
 	return urlList
 }
+
+fun Matcher.groupOrNull( g:Int):String? =
+	if( groupCount() >= g ){
+		group(g)
+	}else {
+		null
+	}
+

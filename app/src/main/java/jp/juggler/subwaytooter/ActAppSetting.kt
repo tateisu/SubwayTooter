@@ -44,6 +44,11 @@ import java.util.Locale
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
+import org.json.JSONObject
+import java.io.FileInputStream
+import java.io.OutputStreamWriter
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 class ActAppSetting : AppCompatActivity()
 	, CompoundButton.OnCheckedChangeListener
@@ -1057,18 +1062,33 @@ class ActAppSetting : AppCompatActivity()
 			override fun doInBackground(vararg params : Void) : File? {
 				try {
 					val cache_dir = cacheDir
-					
 					cache_dir.mkdir()
 					
 					val file = File(
 						cache_dir,
-						"SubwayTooter." + android.os.Process.myPid() + "." + android.os.Process.myTid() + ".json"
+						"SubwayTooter.${android.os.Process.myPid()}.${android.os.Process.myTid()}.zip"
 					)
-					FileWriterWithEncoding(file, "UTF-8").use { w ->
-						val jw = JsonWriter(w)
-						AppDataExporter.encodeAppData(this@ActAppSetting, jw)
-						jw.flush()
+					
+					// ZipOutputStreamオブジェクトの作成
+					ZipOutputStream(FileOutputStream(file)).use{ zipStream->
+						
+						// アプリデータjson
+						zipStream.putNextEntry(ZipEntry("AppData.json"))
+						try {
+							val jw = JsonWriter(OutputStreamWriter(zipStream, "UTF-8"))
+							AppDataExporter.encodeAppData(this@ActAppSetting, jw)
+							jw.flush()
+						}finally{
+							zipStream.closeEntry()
+						}
+
+						// カラム背景画像
+						val appState = App1.getAppState(this@ActAppSetting)
+						for(column in appState.column_list) {
+							AppDataExporter.saveBackgroundImage(this@ActAppSetting,zipStream,column)
+						}
 					}
+
 					return file
 				} catch(ex : Throwable) {
 					log.trace(ex)

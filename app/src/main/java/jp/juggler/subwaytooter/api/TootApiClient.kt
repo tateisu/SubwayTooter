@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.api
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.entity.TootAccount
 
@@ -1346,6 +1347,18 @@ class TootApiClient(
 }
 
 fun TootApiClient.syncAccountByUrl(accessInfo : SavedAccount, who_url : String) : TootApiResult? {
+
+	// misskey由来のアカウントURLは https://host/@user@instance などがある
+	val m = TootAccount.reAccountUrl.matcher(who_url)
+	if( m.find() ){
+		// val host = m.group(1)
+		val user = m.group(2).unescapeUri()
+		val instance = m.groupOrNull(3)?.unescapeUri()
+		if( instance?.isNotEmpty()==true){
+			return this.syncAccountByUrl( accessInfo,"https://$instance/@$user")
+		}
+	}
+	
 	if(accessInfo.isMisskey) {
 		val acct = TootAccount.getAcctFromUrl(who_url)
 			?: return TootApiResult(context.getString(R.string.user_id_conversion_failed))

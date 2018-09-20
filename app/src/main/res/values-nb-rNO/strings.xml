@@ -549,7 +549,7 @@
     <string name="keyword_filter">Nøkkelordfilter</string>
     <string name="keyword_filter_new">Nytt filter</string>
     <string name="keyword_filter_edit">Rediger filter</string>
-    <string name="filter_delete_confirm">Filteret \"%1½s\" vil bli slettet. Er du sikker?</string>
+    <string name="filter_delete_confirm">Filteret \"%1$s\" vil bli slettet. Er du sikker?</string>
     <string name="filter_of">Filtrer \"%1$s\"</string>
     <string name="filtered">filtrert</string>
 

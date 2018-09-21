@@ -14,19 +14,16 @@ import android.util.JsonWriter
 import jp.juggler.subwaytooter.api.entity.EntityIdLong
 import jp.juggler.subwaytooter.api.entity.EntityIdString
 import jp.juggler.subwaytooter.table.*
-
-import org.json.JSONException
-import org.json.JSONObject
-
-import java.util.ArrayList
-import java.util.HashMap
-import java.util.Locale
-
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.parseLong
 import org.apache.commons.io.IOUtils
-import java.io.*
-import java.util.regex.Matcher
+import org.json.JSONException
+import org.json.JSONObject
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import java.io.InputStream
+import java.util.*
 import java.util.regex.Pattern
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
@@ -467,10 +464,10 @@ object AppDataExporter {
 			val sv = column.column_bg_image
 			if(sv.isEmpty()) return
 			context.contentResolver.openInputStream(Uri.parse(sv)).use { inStream ->
-
+				
 				zipStream.putNextEntry(ZipEntry("background-image/${column.column_id}"))
 				try {
-					IOUtils.copy(inStream,zipStream)
+					IOUtils.copy(inStream, zipStream)
 				} finally {
 					zipStream.closeEntry()
 				}
@@ -480,8 +477,8 @@ object AppDataExporter {
 		}
 	}
 	
-	internal val reBackgroundImage = Pattern.compile("background-image/(.+)")
-
+	private val reBackgroundImage = Pattern.compile("background-image/(.+)")
+	
 	// エントリが背景画像のソレなら真を返す
 	// column.column_bg_image を更新する場合がある
 	fun restoreBackgroundImage(
@@ -489,40 +486,30 @@ object AppDataExporter {
 		columnList : ArrayList<Column>?,
 		inStream : InputStream,
 		entryName : String
-	) :Boolean{
+	) : Boolean {
 		
 		// entryName がバックグラウンド画像のそれと一致するか
 		val m = AppDataExporter.reBackgroundImage.matcher(entryName)
-		if(!m.find() ) return false
+		if(! m.find()) return false
 		
 		try {
-			if( columnList == null ) {
-				log.e("missing column list before background image.")
-			}else{
-				val id = m.group(1)
-				val column = columnList.find { it.column_id == id }
-				if(column == null) {
-					log.e("missing column for id $id")
-				}else{
-
-					val uri = Uri.parse(column.column_bg_image)
-					val path = uri.path
-					if(uri.scheme == "file" && path.contains(id)) {
-
-						val backgroundDir = Column.getBackgroundImageDir(context)
-						val file = File(backgroundDir,File(path).name)
-
-						FileOutputStream(file).use { outStream ->
-							IOUtils.copy(inStream, outStream)
-						}
-
-						column.column_bg_image = Uri.fromFile(file).toString()
-					}
+			val id = m.group(1)
+			val column = columnList?.find { it.column_id == id }
+			if(column == null) {
+				log.e("missing column for id $id")
+			} else {
+				val backgroundDir = Column.getBackgroundImageDir(context)
+				val file =
+					File(backgroundDir, "${column.column_id}:${System.currentTimeMillis()}")
+				FileOutputStream(file).use { outStream ->
+					IOUtils.copy(inStream, outStream)
 				}
+				column.column_bg_image = Uri.fromFile(file).toString()
 			}
 		} catch(ex : Throwable) {
 			log.trace(ex)
 		}
+		
 		return true
 	}
 }

@@ -252,13 +252,13 @@
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/prior_chrome_custom_tabs"
+            android:text="@string/dont_use_custom_tabs"
             />
 
         <LinearLayout style="@style/setting_row_form">
 
             <Switch
-                android:id="@+id/swPriorChrome"
+                android:id="@+id/swDontUseCustomTabs"
                 style="@style/setting_horizontal_stretch"
                 />
 
@@ -268,13 +268,13 @@
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/dont_use_custom_tabs"
+            android:text="@string/prior_chrome_custom_tabs"
             />
 
         <LinearLayout style="@style/setting_row_form">
 
             <Switch
-                android:id="@+id/swDontUseCustomTabs"
+                android:id="@+id/swPriorChrome"
                 style="@style/setting_horizontal_stretch"
                 />
 
@@ -1690,6 +1690,7 @@
                 android:id="@+id/etMediaReadTimeout"
                 style="@style/setting_horizontal_stretch"
                 android:gravity="center"
+                android:inputType="number"
                 />
 
         </LinearLayout>

@@ -365,10 +365,10 @@
     <string name="behavior">Behavior</string>
     <string name="notification_on_off_desc">See also account setting to enable/disable notification.</string>
     <string name="post">Post</string>
-    <string name="toot_button_default_account">Default acount when toot button tapped</string>
+    <string name="toot_button_default_account">Default account when toot button tapped</string>
     <string name="account_change_failed_old_draft_has_no_in_reply_to_url">Account change failed. Old draft data has no in_reply_to_url, can\'t convert in_repley_to for selected instance.</string>
     <string name="in_reply_to_id_conversion_failed">\"in_reply_to\" ID conversion failed.</string>
-    <string name="prior_chrome_custom_tabs">Prior Chrome Custom Tabs</string>
+    <string name="prior_chrome_custom_tabs">Prior Google Chrome (if using Custom Tabs is enabled)</string>
     <string name="enable_speech">Enables speech</string>
     <string name="url_omitted">(URL omitted)</string>
     <string name="blocked_domains">Blocked domains</string>

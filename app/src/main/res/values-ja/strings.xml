@@ -525,7 +525,7 @@
     <string name="post_from">投稿元</string>
     <string name="preview">プレビュー</string>
     <string name="previous">前</string>
-    <string name="prior_chrome_custom_tabs">Chrome Custom Tabs を優先的に利用する</string>
+    <string name="prior_chrome_custom_tabs">(Custom Tabsを使う際に)Google Chromeを優先的に選択する</string>
     <string name="prior_local_url_when_open_attachment">添付メディアを開く時に自タンスURLを重視</string>
     <string name="profile">プロフィール</string>
     <string name="profile_metadata">プロフィール補足情報</string>

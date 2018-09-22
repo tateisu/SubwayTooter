@@ -101,7 +101,7 @@
    },
    {
       "shortcode" : "a",
-      "unicode" : "1F170"
+      "unicode" : "1F170-FE0F"
    },
    {
       "shortcode" : "ab",
@@ -129,7 +129,51 @@
    },
    {
       "shortcode" : "admission_tickets",
-      "unicode" : "1F39F"
+      "unicode" : "1F39F-FE0F"
+   },
+   {
+      "shortcode" : "adult",
+      "unicode" : "1F9D1"
+   },
+   {
+      "shortcode" : "adult_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FF"
+   },
+   {
+      "shortcode" : "adult_light_skin_tone",
+      "unicode" : "1F9D1-1F3FB"
+   },
+   {
+      "shortcode" : "adult_medium_dark_skin_tone",
+      "unicode" : "1F9D1-1F3FE"
+   },
+   {
+      "shortcode" : "adult_medium_light_skin_tone",
+      "unicode" : "1F9D1-1F3FC"
+   },
+   {
+      "shortcode" : "adult_medium_skin_tone",
+      "unicode" : "1F9D1-1F3FD"
+   },
+   {
+      "shortcode" : "adult_tone1",
+      "unicode" : "1F9D1-1F3FB"
+   },
+   {
+      "shortcode" : "adult_tone2",
+      "unicode" : "1F9D1-1F3FC"
+   },
+   {
+      "shortcode" : "adult_tone3",
+      "unicode" : "1F9D1-1F3FD"
+   },
+   {
+      "shortcode" : "adult_tone4",
+      "unicode" : "1F9D1-1F3FE"
+   },
+   {
+      "shortcode" : "adult_tone5",
+      "unicode" : "1F9D1-1F3FF"
    },
    {
       "shortcode" : "ae",
@@ -153,7 +197,7 @@
    },
    {
       "shortcode" : "airplane",
-      "unicode" : "2708"
+      "unicode" : "2708-FE0F"
    },
    {
       "shortcode" : "airplane_arriving",
@@ -165,7 +209,7 @@
    },
    {
       "shortcode" : "airplane_small",
-      "unicode" : "1F6E9"
+      "unicode" : "1F6E9-FE0F"
    },
    {
       "shortcode" : "al",
@@ -177,7 +221,7 @@
    },
    {
       "shortcode" : "alembic",
-      "unicode" : "2697"
+      "unicode" : "2697-FE0F"
    },
    {
       "shortcode" : "alien",
@@ -249,7 +293,7 @@
    },
    {
       "shortcode" : "anger_right",
-      "unicode" : "1F5EF"
+      "unicode" : "1F5EF-FE0F"
    },
    {
       "shortcode" : "angry",
@@ -293,7 +337,7 @@
    },
    {
       "shortcode" : "arrow_backward",
-      "unicode" : "25C0"
+      "unicode" : "25C0-FE0F"
    },
    {
       "shortcode" : "arrow_double_down",
@@ -305,7 +349,7 @@
    },
    {
       "shortcode" : "arrow_down",
-      "unicode" : "2B07"
+      "unicode" : "2B07-FE0F"
    },
    {
       "shortcode" : "arrow_down_small",
@@ -313,43 +357,43 @@
    },
    {
       "shortcode" : "arrow_forward",
-      "unicode" : "25B6"
+      "unicode" : "25B6-FE0F"
    },
    {
       "shortcode" : "arrow_heading_down",
-      "unicode" : "2935"
+      "unicode" : "2935-FE0F"
    },
    {
       "shortcode" : "arrow_heading_up",
-      "unicode" : "2934"
+      "unicode" : "2934-FE0F"
    },
    {
       "shortcode" : "arrow_left",
-      "unicode" : "2B05"
+      "unicode" : "2B05-FE0F"
    },
    {
       "shortcode" : "arrow_lower_left",
-      "unicode" : "2199"
+      "unicode" : "2199-FE0F"
    },
    {
       "shortcode" : "arrow_lower_right",
-      "unicode" : "2198"
+      "unicode" : "2198-FE0F"
    },
    {
       "shortcode" : "arrow_right",
-      "unicode" : "27A1"
+      "unicode" : "27A1-FE0F"
    },
    {
       "shortcode" : "arrow_right_hook",
-      "unicode" : "21AA"
+      "unicode" : "21AA-FE0F"
    },
    {
       "shortcode" : "arrow_up",
-      "unicode" : "2B06"
+      "unicode" : "2B06-FE0F"
    },
    {
       "shortcode" : "arrow_up_down",
-      "unicode" : "2195"
+      "unicode" : "2195-FE0F"
    },
    {
       "shortcode" : "arrow_up_small",
@@ -357,11 +401,11 @@
    },
    {
       "shortcode" : "arrow_upper_left",
-      "unicode" : "2196"
+      "unicode" : "2196-FE0F"
    },
    {
       "shortcode" : "arrow_upper_right",
-      "unicode" : "2197"
+      "unicode" : "2197-FE0F"
    },
    {
       "shortcode" : "arrows_clockwise",
@@ -385,7 +429,7 @@
    },
    {
       "shortcode" : "asterisk",
-      "unicode" : "002A-20E3"
+      "unicode" : "002A-FE0F-20E3"
    },
    {
       "shortcode" : "asterisk_symbol",
@@ -409,11 +453,11 @@
    },
    {
       "shortcode" : "atom",
-      "unicode" : "269B"
+      "unicode" : "269B-FE0F"
    },
    {
       "shortcode" : "atom_symbol",
-      "unicode" : "269B"
+      "unicode" : "269B-FE0F"
    },
    {
       "shortcode" : "au",
@@ -437,7 +481,7 @@
    },
    {
       "shortcode" : "b",
-      "unicode" : "1F171"
+      "unicode" : "1F171-FE0F"
    },
    {
       "shortcode" : "ba",
@@ -553,15 +597,15 @@
    },
    {
       "shortcode" : "ballot_box",
-      "unicode" : "1F5F3"
+      "unicode" : "1F5F3-FE0F"
    },
    {
       "shortcode" : "ballot_box_with_ballot",
-      "unicode" : "1F5F3"
+      "unicode" : "1F5F3-FE0F"
    },
    {
       "shortcode" : "ballot_box_with_check",
-      "unicode" : "2611"
+      "unicode" : "2611-FE0F"
    },
    {
       "shortcode" : "bamboo",
@@ -573,7 +617,7 @@
    },
    {
       "shortcode" : "bangbang",
-      "unicode" : "203C"
+      "unicode" : "203C-FE0F"
    },
    {
       "shortcode" : "bank",
@@ -589,7 +633,7 @@
    },
    {
       "shortcode" : "barely_sunny",
-      "unicode" : "1F325"
+      "unicode" : "1F325-FE0F"
    },
    {
       "shortcode" : "baseball",
@@ -601,7 +645,7 @@
    },
    {
       "shortcode" : "basketball_player",
-      "unicode" : "26F9"
+      "unicode" : "26F9-FE0F"
    },
    {
       "shortcode" : "basketball_player_tone1",
@@ -693,23 +737,67 @@
    },
    {
       "shortcode" : "beach",
-      "unicode" : "1F3D6"
+      "unicode" : "1F3D6-FE0F"
    },
    {
       "shortcode" : "beach_umbrella",
-      "unicode" : "26F1"
+      "unicode" : "26F1-FE0F"
    },
    {
       "shortcode" : "beach_with_umbrella",
-      "unicode" : "1F3D6"
+      "unicode" : "1F3D6-FE0F"
    },
    {
       "shortcode" : "bear",
       "unicode" : "1F43B"
    },
    {
+      "shortcode" : "bearded_person",
+      "unicode" : "1F9D4"
+   },
+   {
+      "shortcode" : "bearded_person_dark_skin_tone",
+      "unicode" : "1F9D4-1F3FF"
+   },
+   {
+      "shortcode" : "bearded_person_light_skin_tone",
+      "unicode" : "1F9D4-1F3FB"
+   },
+   {
+      "shortcode" : "bearded_person_medium_dark_skin_tone",
+      "unicode" : "1F9D4-1F3FE"
+   },
+   {
+      "shortcode" : "bearded_person_medium_light_skin_tone",
+      "unicode" : "1F9D4-1F3FC"
+   },
+   {
+      "shortcode" : "bearded_person_medium_skin_tone",
+      "unicode" : "1F9D4-1F3FD"
+   },
+   {
+      "shortcode" : "bearded_person_tone1",
+      "unicode" : "1F9D4-1F3FB"
+   },
+   {
+      "shortcode" : "bearded_person_tone2",
+      "unicode" : "1F9D4-1F3FC"
+   },
+   {
+      "shortcode" : "bearded_person_tone3",
+      "unicode" : "1F9D4-1F3FD"
+   },
+   {
+      "shortcode" : "bearded_person_tone4",
+      "unicode" : "1F9D4-1F3FE"
+   },
+   {
+      "shortcode" : "bearded_person_tone5",
+      "unicode" : "1F9D4-1F3FF"
+   },
+   {
       "shortcode" : "bed",
-      "unicode" : "1F6CF"
+      "unicode" : "1F6CF-FE0F"
    },
    {
       "shortcode" : "bee",
@@ -737,11 +825,11 @@
    },
    {
       "shortcode" : "bellhop",
-      "unicode" : "1F6CE"
+      "unicode" : "1F6CE-FE0F"
    },
    {
       "shortcode" : "bellhop_bell",
-      "unicode" : "1F6CE"
+      "unicode" : "1F6CE-FE0F"
    },
    {
       "shortcode" : "bento",
@@ -816,12 +904,16 @@
       "unicode" : "1F459"
    },
    {
+      "shortcode" : "billed_cap",
+      "unicode" : "1F9E2"
+   },
+   {
       "shortcode" : "biohazard",
-      "unicode" : "2623"
+      "unicode" : "2623-FE0F"
    },
    {
       "shortcode" : "biohazard_sign",
-      "unicode" : "2623"
+      "unicode" : "2623-FE0F"
    },
    {
       "shortcode" : "bird",
@@ -845,7 +937,7 @@
    },
    {
       "shortcode" : "black_circle_for_record",
-      "unicode" : "23FA"
+      "unicode" : "23FA-FE0F"
    },
    {
       "shortcode" : "black_heart",
@@ -861,7 +953,7 @@
    },
    {
       "shortcode" : "black_left_pointing_double_triangle_with_vertical_bar",
-      "unicode" : "23EE"
+      "unicode" : "23EE-FE0F"
    },
    {
       "shortcode" : "black_medium_small_square",
@@ -869,23 +961,23 @@
    },
    {
       "shortcode" : "black_medium_square",
-      "unicode" : "25FC"
+      "unicode" : "25FC-FE0F"
    },
    {
       "shortcode" : "black_nib",
-      "unicode" : "2712"
+      "unicode" : "2712-FE0F"
    },
    {
       "shortcode" : "black_right_pointing_double_triangle_with_vertical_bar",
-      "unicode" : "23ED"
+      "unicode" : "23ED-FE0F"
    },
    {
       "shortcode" : "black_right_pointing_triangle_with_double_vertical_bar",
-      "unicode" : "23EF"
+      "unicode" : "23EF-FE0F"
    },
    {
       "shortcode" : "black_small_square",
-      "unicode" : "25AA"
+      "unicode" : "25AA-FE0F"
    },
    {
       "shortcode" : "black_square_button",
@@ -893,7 +985,7 @@
    },
    {
       "shortcode" : "black_square_for_stop",
-      "unicode" : "23F9"
+      "unicode" : "23F9-FE0F"
    },
    {
       "shortcode" : "blond_haired_man",
@@ -1116,6 +1208,10 @@
       "unicode" : "1F647-1F3FF"
    },
    {
+      "shortcode" : "bowl_with_spoon",
+      "unicode" : "1F963"
+   },
+   {
       "shortcode" : "bowling",
       "unicode" : "1F3B3"
    },
@@ -1180,8 +1276,56 @@
       "unicode" : "1F1E7-1F1F7"
    },
    {
+      "shortcode" : "brain",
+      "unicode" : "1F9E0"
+   },
+   {
       "shortcode" : "bread",
       "unicode" : "1F35E"
+   },
+   {
+      "shortcode" : "breast_feeding",
+      "unicode" : "1F931"
+   },
+   {
+      "shortcode" : "breast_feeding_dark_skin_tone",
+      "unicode" : "1F931-1F3FF"
+   },
+   {
+      "shortcode" : "breast_feeding_light_skin_tone",
+      "unicode" : "1F931-1F3FB"
+   },
+   {
+      "shortcode" : "breast_feeding_medium_dark_skin_tone",
+      "unicode" : "1F931-1F3FE"
+   },
+   {
+      "shortcode" : "breast_feeding_medium_light_skin_tone",
+      "unicode" : "1F931-1F3FC"
+   },
+   {
+      "shortcode" : "breast_feeding_medium_skin_tone",
+      "unicode" : "1F931-1F3FD"
+   },
+   {
+      "shortcode" : "breast_feeding_tone1",
+      "unicode" : "1F931-1F3FB"
+   },
+   {
+      "shortcode" : "breast_feeding_tone2",
+      "unicode" : "1F931-1F3FC"
+   },
+   {
+      "shortcode" : "breast_feeding_tone3",
+      "unicode" : "1F931-1F3FD"
+   },
+   {
+      "shortcode" : "breast_feeding_tone4",
+      "unicode" : "1F931-1F3FE"
+   },
+   {
+      "shortcode" : "breast_feeding_tone5",
+      "unicode" : "1F931-1F3FF"
    },
    {
       "shortcode" : "bride_with_veil",
@@ -1236,6 +1380,10 @@
       "unicode" : "1F4BC"
    },
    {
+      "shortcode" : "broccoli",
+      "unicode" : "1F966"
+   },
+   {
       "shortcode" : "broken_heart",
       "unicode" : "1F494"
    },
@@ -1253,7 +1401,7 @@
    },
    {
       "shortcode" : "building_construction",
-      "unicode" : "1F3D7"
+      "unicode" : "1F3D7-FE0F"
    },
    {
       "shortcode" : "bulb",
@@ -1325,7 +1473,7 @@
    },
    {
       "shortcode" : "calendar_spiral",
-      "unicode" : "1F5D3"
+      "unicode" : "1F5D3-FE0F"
    },
    {
       "shortcode" : "call_me",
@@ -1413,7 +1561,7 @@
    },
    {
       "shortcode" : "camping",
-      "unicode" : "1F3D5"
+      "unicode" : "1F3D5-FE0F"
    },
    {
       "shortcode" : "cancer",
@@ -1421,11 +1569,15 @@
    },
    {
       "shortcode" : "candle",
-      "unicode" : "1F56F"
+      "unicode" : "1F56F-FE0F"
    },
    {
       "shortcode" : "candy",
       "unicode" : "1F36C"
+   },
+   {
+      "shortcode" : "canned_food",
+      "unicode" : "1F96B"
    },
    {
       "shortcode" : "canoe",
@@ -1445,11 +1597,11 @@
    },
    {
       "shortcode" : "card_box",
-      "unicode" : "1F5C3"
+      "unicode" : "1F5C3-FE0F"
    },
    {
       "shortcode" : "card_file_box",
-      "unicode" : "1F5C3"
+      "unicode" : "1F5C3-FE0F"
    },
    {
       "shortcode" : "card_index",
@@ -1457,7 +1609,7 @@
    },
    {
       "shortcode" : "card_index_dividers",
-      "unicode" : "1F5C2"
+      "unicode" : "1F5C2-FE0F"
    },
    {
       "shortcode" : "carousel_horse",
@@ -1521,7 +1673,7 @@
    },
    {
       "shortcode" : "chains",
-      "unicode" : "26D3"
+      "unicode" : "26D3-FE0F"
    },
    {
       "shortcode" : "champagne",
@@ -1572,6 +1724,50 @@
       "unicode" : "1F414"
    },
    {
+      "shortcode" : "child",
+      "unicode" : "1F9D2"
+   },
+   {
+      "shortcode" : "child_dark_skin_tone",
+      "unicode" : "1F9D2-1F3FF"
+   },
+   {
+      "shortcode" : "child_light_skin_tone",
+      "unicode" : "1F9D2-1F3FB"
+   },
+   {
+      "shortcode" : "child_medium_dark_skin_tone",
+      "unicode" : "1F9D2-1F3FE"
+   },
+   {
+      "shortcode" : "child_medium_light_skin_tone",
+      "unicode" : "1F9D2-1F3FC"
+   },
+   {
+      "shortcode" : "child_medium_skin_tone",
+      "unicode" : "1F9D2-1F3FD"
+   },
+   {
+      "shortcode" : "child_tone1",
+      "unicode" : "1F9D2-1F3FB"
+   },
+   {
+      "shortcode" : "child_tone2",
+      "unicode" : "1F9D2-1F3FC"
+   },
+   {
+      "shortcode" : "child_tone3",
+      "unicode" : "1F9D2-1F3FD"
+   },
+   {
+      "shortcode" : "child_tone4",
+      "unicode" : "1F9D2-1F3FE"
+   },
+   {
+      "shortcode" : "child_tone5",
+      "unicode" : "1F9D2-1F3FF"
+   },
+   {
       "shortcode" : "children_crossing",
       "unicode" : "1F6B8"
    },
@@ -1581,11 +1777,15 @@
    },
    {
       "shortcode" : "chipmunk",
-      "unicode" : "1F43F"
+      "unicode" : "1F43F-FE0F"
    },
    {
       "shortcode" : "chocolate_bar",
       "unicode" : "1F36B"
+   },
+   {
+      "shortcode" : "chopsticks",
+      "unicode" : "1F962"
    },
    {
       "shortcode" : "christmas_tree",
@@ -1621,7 +1821,7 @@
    },
    {
       "shortcode" : "cityscape",
-      "unicode" : "1F3D9"
+      "unicode" : "1F3D9-FE0F"
    },
    {
       "shortcode" : "ck",
@@ -1681,7 +1881,7 @@
    },
    {
       "shortcode" : "classical_building",
-      "unicode" : "1F3DB"
+      "unicode" : "1F3DB-FE0F"
    },
    {
       "shortcode" : "clinking_glass",
@@ -1697,7 +1897,7 @@
    },
    {
       "shortcode" : "clock",
-      "unicode" : "1F570"
+      "unicode" : "1F570-FE0F"
    },
    {
       "shortcode" : "clock1",
@@ -1809,39 +2009,39 @@
    },
    {
       "shortcode" : "cloud",
-      "unicode" : "2601"
+      "unicode" : "2601-FE0F"
    },
    {
       "shortcode" : "cloud_lightning",
-      "unicode" : "1F329"
+      "unicode" : "1F329-FE0F"
    },
    {
       "shortcode" : "cloud_rain",
-      "unicode" : "1F327"
+      "unicode" : "1F327-FE0F"
    },
    {
       "shortcode" : "cloud_snow",
-      "unicode" : "1F328"
+      "unicode" : "1F328-FE0F"
    },
    {
       "shortcode" : "cloud_tornado",
-      "unicode" : "1F32A"
+      "unicode" : "1F32A-FE0F"
    },
    {
       "shortcode" : "cloud_with_lightning",
-      "unicode" : "1F329"
+      "unicode" : "1F329-FE0F"
    },
    {
       "shortcode" : "cloud_with_rain",
-      "unicode" : "1F327"
+      "unicode" : "1F327-FE0F"
    },
    {
       "shortcode" : "cloud_with_snow",
-      "unicode" : "1F328"
+      "unicode" : "1F328-FE0F"
    },
    {
       "shortcode" : "cloud_with_tornado",
-      "unicode" : "1F32A"
+      "unicode" : "1F32A-FE0F"
    },
    {
       "shortcode" : "clown",
@@ -1853,7 +2053,7 @@
    },
    {
       "shortcode" : "clubs",
-      "unicode" : "2663"
+      "unicode" : "2663-FE0F"
    },
    {
       "shortcode" : "cm",
@@ -1868,8 +2068,16 @@
       "unicode" : "1F1E8-1F1F4"
    },
    {
+      "shortcode" : "coat",
+      "unicode" : "1F9E5"
+   },
+   {
       "shortcode" : "cocktail",
       "unicode" : "1F378"
+   },
+   {
+      "shortcode" : "coconut",
+      "unicode" : "1F965"
    },
    {
       "shortcode" : "coffee",
@@ -1877,7 +2085,7 @@
    },
    {
       "shortcode" : "coffin",
-      "unicode" : "26B0"
+      "unicode" : "26B0-FE0F"
    },
    {
       "shortcode" : "cold_sweat",
@@ -1889,11 +2097,11 @@
    },
    {
       "shortcode" : "comet",
-      "unicode" : "2604"
+      "unicode" : "2604-FE0F"
    },
    {
       "shortcode" : "compression",
-      "unicode" : "1F5DC"
+      "unicode" : "1F5DC-FE0F"
    },
    {
       "shortcode" : "computer",
@@ -1917,7 +2125,7 @@
    },
    {
       "shortcode" : "congratulations",
-      "unicode" : "3297"
+      "unicode" : "3297-FE0F"
    },
    {
       "shortcode" : "construction",
@@ -1925,7 +2133,7 @@
    },
    {
       "shortcode" : "construction_site",
-      "unicode" : "1F3D7"
+      "unicode" : "1F3D7-FE0F"
    },
    {
       "shortcode" : "construction_worker",
@@ -1973,7 +2181,7 @@
    },
    {
       "shortcode" : "control_knobs",
-      "unicode" : "1F39B"
+      "unicode" : "1F39B-FE0F"
    },
    {
       "shortcode" : "convenience_store",
@@ -2037,7 +2245,7 @@
    },
    {
       "shortcode" : "copyright",
-      "unicode" : "00A9"
+      "unicode" : "00A9-FE0F"
    },
    {
       "shortcode" : "corn",
@@ -2045,11 +2253,11 @@
    },
    {
       "shortcode" : "couch",
-      "unicode" : "1F6CB"
+      "unicode" : "1F6CB-FE0F"
    },
    {
       "shortcode" : "couch_and_lamp",
-      "unicode" : "1F6CB"
+      "unicode" : "1F6CB-FE0F"
    },
    {
       "shortcode" : "couple",
@@ -2117,7 +2325,7 @@
    },
    {
       "shortcode" : "crayon",
-      "unicode" : "1F58D"
+      "unicode" : "1F58D-FE0F"
    },
    {
       "shortcode" : "credit_card",
@@ -2129,7 +2337,7 @@
    },
    {
       "shortcode" : "cricket",
-      "unicode" : "1F3CF"
+      "unicode" : "1F997"
    },
    {
       "shortcode" : "cricket_bat_and_ball",
@@ -2149,7 +2357,51 @@
    },
    {
       "shortcode" : "cross",
-      "unicode" : "271D"
+      "unicode" : "271D-FE0F"
+   },
+   {
+      "shortcode" : "crossed_fingers",
+      "unicode" : "1F91E"
+   },
+   {
+      "shortcode" : "crossed_fingers_dark_skin_tone",
+      "unicode" : "1F91E-1F3FF"
+   },
+   {
+      "shortcode" : "crossed_fingers_light_skin_tone",
+      "unicode" : "1F91E-1F3FB"
+   },
+   {
+      "shortcode" : "crossed_fingers_medium_dark_skin_tone",
+      "unicode" : "1F91E-1F3FE"
+   },
+   {
+      "shortcode" : "crossed_fingers_medium_light_skin_tone",
+      "unicode" : "1F91E-1F3FC"
+   },
+   {
+      "shortcode" : "crossed_fingers_medium_skin_tone",
+      "unicode" : "1F91E-1F3FD"
+   },
+   {
+      "shortcode" : "crossed_fingers_tone1",
+      "unicode" : "1F91E-1F3FB"
+   },
+   {
+      "shortcode" : "crossed_fingers_tone2",
+      "unicode" : "1F91E-1F3FC"
+   },
+   {
+      "shortcode" : "crossed_fingers_tone3",
+      "unicode" : "1F91E-1F3FD"
+   },
+   {
+      "shortcode" : "crossed_fingers_tone4",
+      "unicode" : "1F91E-1F3FE"
+   },
+   {
+      "shortcode" : "crossed_fingers_tone5",
+      "unicode" : "1F91E-1F3FF"
    },
    {
       "shortcode" : "crossed_flags",
@@ -2157,7 +2409,7 @@
    },
    {
       "shortcode" : "crossed_swords",
-      "unicode" : "2694"
+      "unicode" : "2694-FE0F"
    },
    {
       "shortcode" : "crown",
@@ -2165,7 +2417,7 @@
    },
    {
       "shortcode" : "cruise_ship",
-      "unicode" : "1F6F3"
+      "unicode" : "1F6F3-FE0F"
    },
    {
       "shortcode" : "cry",
@@ -2188,8 +2440,16 @@
       "unicode" : "1F952"
    },
    {
+      "shortcode" : "cup_with_straw",
+      "unicode" : "1F964"
+   },
+   {
       "shortcode" : "cupid",
       "unicode" : "1F498"
+   },
+   {
+      "shortcode" : "curling_stone",
+      "unicode" : "1F94C"
    },
    {
       "shortcode" : "curly_loop",
@@ -2210,6 +2470,10 @@
    {
       "shortcode" : "customs",
       "unicode" : "1F6C3"
+   },
+   {
+      "shortcode" : "cut_of_meat",
+      "unicode" : "1F969"
    },
    {
       "shortcode" : "cv",
@@ -2237,11 +2501,11 @@
    },
    {
       "shortcode" : "dagger",
-      "unicode" : "1F5E1"
+      "unicode" : "1F5E1-FE0F"
    },
    {
       "shortcode" : "dagger_knife",
-      "unicode" : "1F5E1"
+      "unicode" : "1F5E1-FE0F"
    },
    {
       "shortcode" : "dancer",
@@ -2297,7 +2561,7 @@
    },
    {
       "shortcode" : "dark_sunglasses",
-      "unicode" : "1F576"
+      "unicode" : "1F576-FE0F"
    },
    {
       "shortcode" : "dart",
@@ -2329,23 +2593,23 @@
    },
    {
       "shortcode" : "derelict_house_building",
-      "unicode" : "1F3DA"
+      "unicode" : "1F3DA-FE0F"
    },
    {
       "shortcode" : "desert",
-      "unicode" : "1F3DC"
+      "unicode" : "1F3DC-FE0F"
    },
    {
       "shortcode" : "desert_island",
-      "unicode" : "1F3DD"
+      "unicode" : "1F3DD-FE0F"
    },
    {
       "shortcode" : "desktop",
-      "unicode" : "1F5A5"
+      "unicode" : "1F5A5-FE0F"
    },
    {
       "shortcode" : "desktop_computer",
-      "unicode" : "1F5A5"
+      "unicode" : "1F5A5-FE0F"
    },
    {
       "shortcode" : "dg",
@@ -2357,7 +2621,7 @@
    },
    {
       "shortcode" : "diamonds",
-      "unicode" : "2666"
+      "unicode" : "2666-FE0F"
    },
    {
       "shortcode" : "digit_eight",
@@ -2409,7 +2673,7 @@
    },
    {
       "shortcode" : "dividers",
-      "unicode" : "1F5C2"
+      "unicode" : "1F5C2-FE0F"
    },
    {
       "shortcode" : "dizzy",
@@ -2465,7 +2729,7 @@
    },
    {
       "shortcode" : "double_vertical_bar",
-      "unicode" : "23F8"
+      "unicode" : "23F8-FE0F"
    },
    {
       "shortcode" : "doughnut",
@@ -2473,11 +2737,11 @@
    },
    {
       "shortcode" : "dove",
-      "unicode" : "1F54A"
+      "unicode" : "1F54A-FE0F"
    },
    {
       "shortcode" : "dove_of_peace",
-      "unicode" : "1F54A"
+      "unicode" : "1F54A-FE0F"
    },
    {
       "shortcode" : "dragon",
@@ -2518,6 +2782,10 @@
    {
       "shortcode" : "duck",
       "unicode" : "1F986"
+   },
+   {
+      "shortcode" : "dumpling",
+      "unicode" : "1F95F"
    },
    {
       "shortcode" : "dvd",
@@ -2625,23 +2893,23 @@
    },
    {
       "shortcode" : "eight",
-      "unicode" : "0038-20E3"
+      "unicode" : "0038-FE0F-20E3"
    },
    {
       "shortcode" : "eight_pointed_black_star",
-      "unicode" : "2734"
+      "unicode" : "2734-FE0F"
    },
    {
       "shortcode" : "eight_spoked_asterisk",
-      "unicode" : "2733"
+      "unicode" : "2733-FE0F"
    },
    {
       "shortcode" : "eject",
-      "unicode" : "23CF"
+      "unicode" : "23CF-FE0F"
    },
    {
       "shortcode" : "eject_symbol",
-      "unicode" : "23CF"
+      "unicode" : "23CF-FE0F"
    },
    {
       "shortcode" : "electric_plug",
@@ -2650,6 +2918,50 @@
    {
       "shortcode" : "elephant",
       "unicode" : "1F418"
+   },
+   {
+      "shortcode" : "elf",
+      "unicode" : "1F9DD"
+   },
+   {
+      "shortcode" : "elf_dark_skin_tone",
+      "unicode" : "1F9DD-1F3FF"
+   },
+   {
+      "shortcode" : "elf_light_skin_tone",
+      "unicode" : "1F9DD-1F3FB"
+   },
+   {
+      "shortcode" : "elf_medium_dark_skin_tone",
+      "unicode" : "1F9DD-1F3FE"
+   },
+   {
+      "shortcode" : "elf_medium_light_skin_tone",
+      "unicode" : "1F9DD-1F3FC"
+   },
+   {
+      "shortcode" : "elf_medium_skin_tone",
+      "unicode" : "1F9DD-1F3FD"
+   },
+   {
+      "shortcode" : "elf_tone1",
+      "unicode" : "1F9DD-1F3FB"
+   },
+   {
+      "shortcode" : "elf_tone2",
+      "unicode" : "1F9DD-1F3FC"
+   },
+   {
+      "shortcode" : "elf_tone3",
+      "unicode" : "1F9DD-1F3FD"
+   },
+   {
+      "shortcode" : "elf_tone4",
+      "unicode" : "1F9DD-1F3FE"
+   },
+   {
+      "shortcode" : "elf_tone5",
+      "unicode" : "1F9DD-1F3FF"
    },
    {
       "shortcode" : "email",
@@ -2661,7 +2973,7 @@
    },
    {
       "shortcode" : "envelope",
-      "unicode" : "2709"
+      "unicode" : "2709-FE0F"
    },
    {
       "shortcode" : "envelope_with_arrow",
@@ -2728,12 +3040,16 @@
       "unicode" : "1F930-1F3FF"
    },
    {
+      "shortcode" : "exploding_head",
+      "unicode" : "1F92F"
+   },
+   {
       "shortcode" : "expressionless",
       "unicode" : "1F611"
    },
    {
       "shortcode" : "eye",
-      "unicode" : "1F441"
+      "unicode" : "1F441-FE0F"
    },
    {
       "shortcode" : "eye_in_speech_bubble",
@@ -2792,16 +3108,48 @@
       "unicode" : "1F926-1F3FF"
    },
    {
+      "shortcode" : "face_vomiting",
+      "unicode" : "1F92E"
+   },
+   {
       "shortcode" : "face_with_cowboy_hat",
       "unicode" : "1F920"
+   },
+   {
+      "shortcode" : "face_with_finger_covering_closed_lips",
+      "unicode" : "1F92B"
+   },
+   {
+      "shortcode" : "face_with_hand_over_mouth",
+      "unicode" : "1F92D"
    },
    {
       "shortcode" : "face_with_head_bandage",
       "unicode" : "1F915"
    },
    {
+      "shortcode" : "face_with_monocle",
+      "unicode" : "1F9D0"
+   },
+   {
+      "shortcode" : "face_with_one_eyebrow_raised",
+      "unicode" : "1F928"
+   },
+   {
+      "shortcode" : "face_with_open_mouth_vomiting",
+      "unicode" : "1F92E"
+   },
+   {
+      "shortcode" : "face_with_raised_eyebrow",
+      "unicode" : "1F928"
+   },
+   {
       "shortcode" : "face_with_rolling_eyes",
       "unicode" : "1F644"
+   },
+   {
+      "shortcode" : "face_with_symbols_on_mouth",
+      "unicode" : "1F92C"
    },
    {
       "shortcode" : "face_with_thermometer",
@@ -2878,6 +3226,50 @@
    {
       "shortcode" : "factory",
       "unicode" : "1F3ED"
+   },
+   {
+      "shortcode" : "fairy",
+      "unicode" : "1F9DA"
+   },
+   {
+      "shortcode" : "fairy_dark_skin_tone",
+      "unicode" : "1F9DA-1F3FF"
+   },
+   {
+      "shortcode" : "fairy_light_skin_tone",
+      "unicode" : "1F9DA-1F3FB"
+   },
+   {
+      "shortcode" : "fairy_medium_dark_skin_tone",
+      "unicode" : "1F9DA-1F3FE"
+   },
+   {
+      "shortcode" : "fairy_medium_light_skin_tone",
+      "unicode" : "1F9DA-1F3FC"
+   },
+   {
+      "shortcode" : "fairy_medium_skin_tone",
+      "unicode" : "1F9DA-1F3FD"
+   },
+   {
+      "shortcode" : "fairy_tone1",
+      "unicode" : "1F9DA-1F3FB"
+   },
+   {
+      "shortcode" : "fairy_tone2",
+      "unicode" : "1F9DA-1F3FC"
+   },
+   {
+      "shortcode" : "fairy_tone3",
+      "unicode" : "1F9DA-1F3FD"
+   },
+   {
+      "shortcode" : "fairy_tone4",
+      "unicode" : "1F9DA-1F3FE"
+   },
+   {
+      "shortcode" : "fairy_tone5",
+      "unicode" : "1F9DA-1F3FF"
    },
    {
       "shortcode" : "fallen_leaf",
@@ -3268,6 +3660,50 @@
       "unicode" : "1F469-1F3FF-200D-2695-FE0F"
    },
    {
+      "shortcode" : "female_elf",
+      "unicode" : "1F9DD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_elf_dark_skin_tone",
+      "unicode" : "1F9DD-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_elf_light_skin_tone",
+      "unicode" : "1F9DD-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_elf_medium_dark_skin_tone",
+      "unicode" : "1F9DD-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_elf_medium_light_skin_tone",
+      "unicode" : "1F9DD-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_elf_medium_skin_tone",
+      "unicode" : "1F9DD-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_elf_tone1",
+      "unicode" : "1F9DD-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_elf_tone2",
+      "unicode" : "1F9DD-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_elf_tone3",
+      "unicode" : "1F9DD-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_elf_tone4",
+      "unicode" : "1F9DD-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_elf_tone5",
+      "unicode" : "1F9DD-1F3FF-200D-2640-FE0F"
+   },
+   {
       "shortcode" : "female_factory_worker",
       "unicode" : "1F469-200D-1F3ED"
    },
@@ -3310,6 +3746,50 @@
    {
       "shortcode" : "female_factory_worker_tone5",
       "unicode" : "1F469-1F3FF-200D-1F3ED"
+   },
+   {
+      "shortcode" : "female_fairy",
+      "unicode" : "1F9DA-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_fairy_dark_skin_tone",
+      "unicode" : "1F9DA-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_fairy_light_skin_tone",
+      "unicode" : "1F9DA-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_fairy_medium_dark_skin_tone",
+      "unicode" : "1F9DA-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_fairy_medium_light_skin_tone",
+      "unicode" : "1F9DA-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_fairy_medium_skin_tone",
+      "unicode" : "1F9DA-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_fairy_tone1",
+      "unicode" : "1F9DA-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_fairy_tone2",
+      "unicode" : "1F9DA-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_fairy_tone3",
+      "unicode" : "1F9DA-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_fairy_tone4",
+      "unicode" : "1F9DA-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_fairy_tone5",
+      "unicode" : "1F9DA-1F3FF-200D-2640-FE0F"
    },
    {
       "shortcode" : "female_farmer",
@@ -3400,6 +3880,10 @@
       "unicode" : "1F469-1F3FF-200D-1F692"
    },
    {
+      "shortcode" : "female_genie",
+      "unicode" : "1F9DE-200D-2640-FE0F"
+   },
+   {
       "shortcode" : "female_guard",
       "unicode" : "1F482-200D-2640-FE0F"
    },
@@ -3486,6 +3970,50 @@
    {
       "shortcode" : "female_judge_tone5",
       "unicode" : "1F469-1F3FF-200D-2696-FE0F"
+   },
+   {
+      "shortcode" : "female_mage",
+      "unicode" : "1F9D9-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_mage_dark_skin_tone",
+      "unicode" : "1F9D9-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_mage_light_skin_tone",
+      "unicode" : "1F9D9-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_mage_medium_dark_skin_tone",
+      "unicode" : "1F9D9-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_mage_medium_light_skin_tone",
+      "unicode" : "1F9D9-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_mage_medium_skin_tone",
+      "unicode" : "1F9D9-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_mage_tone1",
+      "unicode" : "1F9D9-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_mage_tone2",
+      "unicode" : "1F9D9-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_mage_tone3",
+      "unicode" : "1F9D9-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_mage_tone4",
+      "unicode" : "1F9D9-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_mage_tone5",
+      "unicode" : "1F9D9-1F3FF-200D-2640-FE0F"
    },
    {
       "shortcode" : "female_mechanic",
@@ -3709,7 +4237,7 @@
    },
    {
       "shortcode" : "female_sign",
-      "unicode" : "2640"
+      "unicode" : "2640-FE0F"
    },
    {
       "shortcode" : "female_singer",
@@ -3888,6 +4416,54 @@
       "unicode" : "1F469-1F3FF-200D-1F4BB"
    },
    {
+      "shortcode" : "female_vampire",
+      "unicode" : "1F9DB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_vampire_dark_skin_tone",
+      "unicode" : "1F9DB-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_vampire_light_skin_tone",
+      "unicode" : "1F9DB-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_vampire_medium_dark_skin_tone",
+      "unicode" : "1F9DB-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_vampire_medium_light_skin_tone",
+      "unicode" : "1F9DB-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_vampire_medium_skin_tone",
+      "unicode" : "1F9DB-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_vampire_tone1",
+      "unicode" : "1F9DB-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_vampire_tone2",
+      "unicode" : "1F9DB-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_vampire_tone3",
+      "unicode" : "1F9DB-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_vampire_tone4",
+      "unicode" : "1F9DB-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_vampire_tone5",
+      "unicode" : "1F9DB-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "female_zombie",
+      "unicode" : "1F9DF-200D-2640-FE0F"
+   },
+   {
       "shortcode" : "fencer",
       "unicode" : "1F93A"
    },
@@ -3901,7 +4477,7 @@
    },
    {
       "shortcode" : "ferry",
-      "unicode" : "26F4"
+      "unicode" : "26F4-FE0F"
    },
    {
       "shortcode" : "fi",
@@ -3917,7 +4493,7 @@
    },
    {
       "shortcode" : "file_cabinet",
-      "unicode" : "1F5C4"
+      "unicode" : "1F5C4-FE0F"
    },
    {
       "shortcode" : "file_folder",
@@ -3925,11 +4501,11 @@
    },
    {
       "shortcode" : "film_frames",
-      "unicode" : "1F39E"
+      "unicode" : "1F39E-FE0F"
    },
    {
       "shortcode" : "film_projector",
-      "unicode" : "1F4FD"
+      "unicode" : "1F4FD-FE0F"
    },
    {
       "shortcode" : "fingers_crossed",
@@ -4041,7 +4617,7 @@
    },
    {
       "shortcode" : "five",
-      "unicode" : "0035-20E3"
+      "unicode" : "0035-FE0F-20E3"
    },
    {
       "shortcode" : "fj",
@@ -4334,6 +4910,10 @@
    {
       "shortcode" : "flag_eh",
       "unicode" : "1F1EA-1F1ED"
+   },
+   {
+      "shortcode" : "flag_england",
+      "unicode" : "1F3F4-E0067-E0062-E0065-E006E-E0067-E007F"
    },
    {
       "shortcode" : "flag_er",
@@ -4860,6 +5440,10 @@
       "unicode" : "1F1F8-1F1E8"
    },
    {
+      "shortcode" : "flag_scotland",
+      "unicode" : "1F3F4-E0067-E0062-E0073-E0063-E0074-E007F"
+   },
+   {
       "shortcode" : "flag_sd",
       "unicode" : "1F1F8-1F1E9"
    },
@@ -5056,12 +5640,16 @@
       "unicode" : "1F1FB-1F1FA"
    },
    {
+      "shortcode" : "flag_wales",
+      "unicode" : "1F3F4-E0067-E0062-E0077-E006C-E0073-E007F"
+   },
+   {
       "shortcode" : "flag_wf",
       "unicode" : "1F1FC-1F1EB"
    },
    {
       "shortcode" : "flag_white",
-      "unicode" : "1F3F3"
+      "unicode" : "1F3F3-FE0F"
    },
    {
       "shortcode" : "flag_ws",
@@ -5109,7 +5697,7 @@
    },
    {
       "shortcode" : "fleur_de_lis",
-      "unicode" : "269C"
+      "unicode" : "269C-FE0F"
    },
    {
       "shortcode" : "flipper",
@@ -5128,6 +5716,10 @@
       "unicode" : "1F633"
    },
    {
+      "shortcode" : "flying_saucer",
+      "unicode" : "1F6F8"
+   },
+   {
       "shortcode" : "fm",
       "unicode" : "1F1EB-1F1F2"
    },
@@ -5137,7 +5729,7 @@
    },
    {
       "shortcode" : "fog",
-      "unicode" : "1F32B"
+      "unicode" : "1F32B-FE0F"
    },
    {
       "shortcode" : "foggy",
@@ -5157,11 +5749,15 @@
    },
    {
       "shortcode" : "fork_and_knife_with_plate",
-      "unicode" : "1F37D"
+      "unicode" : "1F37D-FE0F"
    },
    {
       "shortcode" : "fork_knife_plate",
-      "unicode" : "1F37D"
+      "unicode" : "1F37D-FE0F"
+   },
+   {
+      "shortcode" : "fortune_cookie",
+      "unicode" : "1F960"
    },
    {
       "shortcode" : "fountain",
@@ -5169,7 +5765,7 @@
    },
    {
       "shortcode" : "four",
-      "unicode" : "0034-20E3"
+      "unicode" : "0034-FE0F-20E3"
    },
    {
       "shortcode" : "four_leaf_clover",
@@ -5189,11 +5785,11 @@
    },
    {
       "shortcode" : "frame_photo",
-      "unicode" : "1F5BC"
+      "unicode" : "1F5BC-FE0F"
    },
    {
       "shortcode" : "frame_with_picture",
-      "unicode" : "1F5BC"
+      "unicode" : "1F5BC-FE0F"
    },
    {
       "shortcode" : "free",
@@ -5225,7 +5821,7 @@
    },
    {
       "shortcode" : "frowning2",
-      "unicode" : "2639"
+      "unicode" : "2639-FE0F"
    },
    {
       "shortcode" : "fuelpump",
@@ -5241,7 +5837,7 @@
    },
    {
       "shortcode" : "funeral_urn",
-      "unicode" : "26B1"
+      "unicode" : "26B1-FE0F"
    },
    {
       "shortcode" : "ga",
@@ -5269,7 +5865,7 @@
    },
    {
       "shortcode" : "gear",
-      "unicode" : "2699"
+      "unicode" : "2699-FE0F"
    },
    {
       "shortcode" : "gem",
@@ -5278,6 +5874,10 @@
    {
       "shortcode" : "gemini",
       "unicode" : "264A"
+   },
+   {
+      "shortcode" : "genie",
+      "unicode" : "1F9DE"
    },
    {
       "shortcode" : "gf",
@@ -5306,6 +5906,10 @@
    {
       "shortcode" : "gift_heart",
       "unicode" : "1F49D"
+   },
+   {
+      "shortcode" : "giraffe_face",
+      "unicode" : "1F992"
    },
    {
       "shortcode" : "girl",
@@ -5364,6 +5968,10 @@
       "unicode" : "1F310"
    },
    {
+      "shortcode" : "gloves",
+      "unicode" : "1F9E4"
+   },
+   {
       "shortcode" : "gm",
       "unicode" : "1F1EC-1F1F2"
    },
@@ -5389,7 +5997,7 @@
    },
    {
       "shortcode" : "golfer",
-      "unicode" : "1F3CC"
+      "unicode" : "1F3CC-FE0F"
    },
    {
       "shortcode" : "golfer_dark_skin_tone",
@@ -5510,6 +6118,14 @@
    {
       "shortcode" : "grinning",
       "unicode" : "1F600"
+   },
+   {
+      "shortcode" : "grinning_face_with_one_large_and_one_small_eye",
+      "unicode" : "1F92A"
+   },
+   {
+      "shortcode" : "grinning_face_with_star_eyes",
+      "unicode" : "1F929"
    },
    {
       "shortcode" : "gs",
@@ -5637,15 +6253,15 @@
    },
    {
       "shortcode" : "hammer_and_pick",
-      "unicode" : "2692"
+      "unicode" : "2692-FE0F"
    },
    {
       "shortcode" : "hammer_and_wrench",
-      "unicode" : "1F6E0"
+      "unicode" : "1F6E0-FE0F"
    },
    {
       "shortcode" : "hammer_pick",
-      "unicode" : "2692"
+      "unicode" : "2692-FE0F"
    },
    {
       "shortcode" : "hamster",
@@ -5677,7 +6293,7 @@
    },
    {
       "shortcode" : "hand_splayed",
-      "unicode" : "1F590"
+      "unicode" : "1F590-FE0F"
    },
    {
       "shortcode" : "hand_splayed_tone1",
@@ -5825,7 +6441,7 @@
    },
    {
       "shortcode" : "hash",
-      "unicode" : "0023-20E3"
+      "unicode" : "0023-FE0F-20E3"
    },
    {
       "shortcode" : "hatched_chick",
@@ -5849,7 +6465,7 @@
    },
    {
       "shortcode" : "heart",
-      "unicode" : "2764"
+      "unicode" : "2764-FE0F"
    },
    {
       "shortcode" : "heart_decoration",
@@ -5857,7 +6473,7 @@
    },
    {
       "shortcode" : "heart_exclamation",
-      "unicode" : "2763"
+      "unicode" : "2763-FE0F"
    },
    {
       "shortcode" : "heart_eyes",
@@ -5877,11 +6493,11 @@
    },
    {
       "shortcode" : "hearts",
-      "unicode" : "2665"
+      "unicode" : "2665-FE0F"
    },
    {
       "shortcode" : "heavy_check_mark",
-      "unicode" : "2714"
+      "unicode" : "2714-FE0F"
    },
    {
       "shortcode" : "heavy_division_sign",
@@ -5897,7 +6513,7 @@
    },
    {
       "shortcode" : "heavy_heart_exclamation_mark_ornament",
-      "unicode" : "2763"
+      "unicode" : "2763-FE0F"
    },
    {
       "shortcode" : "heavy_minus_sign",
@@ -5905,11 +6521,15 @@
    },
    {
       "shortcode" : "heavy_multiplication_x",
-      "unicode" : "2716"
+      "unicode" : "2716-FE0F"
    },
    {
       "shortcode" : "heavy_plus_sign",
       "unicode" : "2795"
+   },
+   {
+      "shortcode" : "hedgehog",
+      "unicode" : "1F994"
    },
    {
       "shortcode" : "helicopter",
@@ -5917,11 +6537,11 @@
    },
    {
       "shortcode" : "helmet_with_cross",
-      "unicode" : "26D1"
+      "unicode" : "26D1-FE0F"
    },
    {
       "shortcode" : "helmet_with_white_cross",
-      "unicode" : "26D1"
+      "unicode" : "26D1-FE0F"
    },
    {
       "shortcode" : "herb",
@@ -5961,11 +6581,11 @@
    },
    {
       "shortcode" : "hole",
-      "unicode" : "1F573"
+      "unicode" : "1F573-FE0F"
    },
    {
       "shortcode" : "homes",
-      "unicode" : "1F3D8"
+      "unicode" : "1F3D8-FE0F"
    },
    {
       "shortcode" : "honey_pot",
@@ -6033,7 +6653,7 @@
    },
    {
       "shortcode" : "hot_pepper",
-      "unicode" : "1F336"
+      "unicode" : "1F336-FE0F"
    },
    {
       "shortcode" : "hotdog",
@@ -6045,7 +6665,7 @@
    },
    {
       "shortcode" : "hotsprings",
-      "unicode" : "2668"
+      "unicode" : "2668-FE0F"
    },
    {
       "shortcode" : "hourglass",
@@ -6061,11 +6681,11 @@
    },
    {
       "shortcode" : "house_abandoned",
-      "unicode" : "1F3DA"
+      "unicode" : "1F3DA-FE0F"
    },
    {
       "shortcode" : "house_buildings",
-      "unicode" : "1F3D8"
+      "unicode" : "1F3D8-FE0F"
    },
    {
       "shortcode" : "house_with_garden",
@@ -6096,6 +6716,50 @@
       "unicode" : "1F62F"
    },
    {
+      "shortcode" : "i_love_you_hand_sign",
+      "unicode" : "1F91F"
+   },
+   {
+      "shortcode" : "i_love_you_hand_sign_dark_skin_tone",
+      "unicode" : "1F91F-1F3FF"
+   },
+   {
+      "shortcode" : "i_love_you_hand_sign_light_skin_tone",
+      "unicode" : "1F91F-1F3FB"
+   },
+   {
+      "shortcode" : "i_love_you_hand_sign_medium_dark_skin_tone",
+      "unicode" : "1F91F-1F3FE"
+   },
+   {
+      "shortcode" : "i_love_you_hand_sign_medium_light_skin_tone",
+      "unicode" : "1F91F-1F3FC"
+   },
+   {
+      "shortcode" : "i_love_you_hand_sign_medium_skin_tone",
+      "unicode" : "1F91F-1F3FD"
+   },
+   {
+      "shortcode" : "i_love_you_hand_sign_tone1",
+      "unicode" : "1F91F-1F3FB"
+   },
+   {
+      "shortcode" : "i_love_you_hand_sign_tone2",
+      "unicode" : "1F91F-1F3FC"
+   },
+   {
+      "shortcode" : "i_love_you_hand_sign_tone3",
+      "unicode" : "1F91F-1F3FD"
+   },
+   {
+      "shortcode" : "i_love_you_hand_sign_tone4",
+      "unicode" : "1F91F-1F3FE"
+   },
+   {
+      "shortcode" : "i_love_you_hand_sign_tone5",
+      "unicode" : "1F91F-1F3FF"
+   },
+   {
       "shortcode" : "ic",
       "unicode" : "1F1EE-1F1E8"
    },
@@ -6109,7 +6773,7 @@
    },
    {
       "shortcode" : "ice_skate",
-      "unicode" : "26F8"
+      "unicode" : "26F8-FE0F"
    },
    {
       "shortcode" : "icecream",
@@ -6201,7 +6865,7 @@
    },
    {
       "shortcode" : "information_source",
-      "unicode" : "2139"
+      "unicode" : "2139-FE0F"
    },
    {
       "shortcode" : "innocent",
@@ -6209,7 +6873,7 @@
    },
    {
       "shortcode" : "interrobang",
-      "unicode" : "2049"
+      "unicode" : "2049-FE0F"
    },
    {
       "shortcode" : "io",
@@ -6233,7 +6897,7 @@
    },
    {
       "shortcode" : "island",
-      "unicode" : "1F3DD"
+      "unicode" : "1F3DD-FE0F"
    },
    {
       "shortcode" : "it",
@@ -6289,7 +6953,7 @@
    },
    {
       "shortcode" : "joystick",
-      "unicode" : "1F579"
+      "unicode" : "1F579-FE0F"
    },
    {
       "shortcode" : "jp",
@@ -6385,19 +7049,19 @@
    },
    {
       "shortcode" : "key2",
-      "unicode" : "1F5DD"
+      "unicode" : "1F5DD-FE0F"
    },
    {
       "shortcode" : "keyboard",
-      "unicode" : "2328"
+      "unicode" : "2328-FE0F"
    },
    {
       "shortcode" : "keycap_asterisk",
-      "unicode" : "002A-20E3"
+      "unicode" : "002A-FE0F-20E3"
    },
    {
       "shortcode" : "keycap_star",
-      "unicode" : "002A-20E3"
+      "unicode" : "002A-FE0F-20E3"
    },
    {
       "shortcode" : "keycap_ten",
@@ -6477,7 +7141,7 @@
    },
    {
       "shortcode" : "knife_fork_plate",
-      "unicode" : "1F37D"
+      "unicode" : "1F37D-FE0F"
    },
    {
       "shortcode" : "koala",
@@ -6513,7 +7177,7 @@
    },
    {
       "shortcode" : "label",
-      "unicode" : "1F3F7"
+      "unicode" : "1F3F7-FE0F"
    },
    {
       "shortcode" : "lantern",
@@ -6541,7 +7205,7 @@
    },
    {
       "shortcode" : "latin_cross",
-      "unicode" : "271D"
+      "unicode" : "271D-FE0F"
    },
    {
       "shortcode" : "laughing",
@@ -6637,15 +7301,15 @@
    },
    {
       "shortcode" : "left_right_arrow",
-      "unicode" : "2194"
+      "unicode" : "2194-FE0F"
    },
    {
       "shortcode" : "left_speech_bubble",
-      "unicode" : "1F5E8"
+      "unicode" : "1F5E8-FE0F"
    },
    {
       "shortcode" : "leftwards_arrow_with_hook",
-      "unicode" : "21A9"
+      "unicode" : "21A9-FE0F"
    },
    {
       "shortcode" : "lemon",
@@ -6661,11 +7325,11 @@
    },
    {
       "shortcode" : "level_slider",
-      "unicode" : "1F39A"
+      "unicode" : "1F39A-FE0F"
    },
    {
       "shortcode" : "levitate",
-      "unicode" : "1F574"
+      "unicode" : "1F574-FE0F"
    },
    {
       "shortcode" : "li",
@@ -6681,7 +7345,7 @@
    },
    {
       "shortcode" : "lifter",
-      "unicode" : "1F3CB"
+      "unicode" : "1F3CB-FE0F"
    },
    {
       "shortcode" : "lifter_tone1",
@@ -6709,11 +7373,11 @@
    },
    {
       "shortcode" : "lightning",
-      "unicode" : "1F329"
+      "unicode" : "1F329-FE0F"
    },
    {
       "shortcode" : "lightning_cloud",
-      "unicode" : "1F329"
+      "unicode" : "1F329-FE0F"
    },
    {
       "shortcode" : "link",
@@ -6721,7 +7385,7 @@
    },
    {
       "shortcode" : "linked_paperclips",
-      "unicode" : "1F587"
+      "unicode" : "1F587-FE0F"
    },
    {
       "shortcode" : "lion",
@@ -6785,19 +7449,19 @@
    },
    {
       "shortcode" : "lower_left_ballpoint_pen",
-      "unicode" : "1F58A"
+      "unicode" : "1F58A-FE0F"
    },
    {
       "shortcode" : "lower_left_crayon",
-      "unicode" : "1F58D"
+      "unicode" : "1F58D-FE0F"
    },
    {
       "shortcode" : "lower_left_fountain_pen",
-      "unicode" : "1F58B"
+      "unicode" : "1F58B-FE0F"
    },
    {
       "shortcode" : "lower_left_paintbrush",
-      "unicode" : "1F58C"
+      "unicode" : "1F58C-FE0F"
    },
    {
       "shortcode" : "lr",
@@ -6829,7 +7493,7 @@
    },
    {
       "shortcode" : "m",
-      "unicode" : "24C2"
+      "unicode" : "24C2-FE0F"
    },
    {
       "shortcode" : "ma",
@@ -6842,6 +7506,50 @@
    {
       "shortcode" : "mag_right",
       "unicode" : "1F50E"
+   },
+   {
+      "shortcode" : "mage",
+      "unicode" : "1F9D9"
+   },
+   {
+      "shortcode" : "mage_dark_skin_tone",
+      "unicode" : "1F9D9-1F3FF"
+   },
+   {
+      "shortcode" : "mage_light_skin_tone",
+      "unicode" : "1F9D9-1F3FB"
+   },
+   {
+      "shortcode" : "mage_medium_dark_skin_tone",
+      "unicode" : "1F9D9-1F3FE"
+   },
+   {
+      "shortcode" : "mage_medium_light_skin_tone",
+      "unicode" : "1F9D9-1F3FC"
+   },
+   {
+      "shortcode" : "mage_medium_skin_tone",
+      "unicode" : "1F9D9-1F3FD"
+   },
+   {
+      "shortcode" : "mage_tone1",
+      "unicode" : "1F9D9-1F3FB"
+   },
+   {
+      "shortcode" : "mage_tone2",
+      "unicode" : "1F9D9-1F3FC"
+   },
+   {
+      "shortcode" : "mage_tone3",
+      "unicode" : "1F9D9-1F3FD"
+   },
+   {
+      "shortcode" : "mage_tone4",
+      "unicode" : "1F9D9-1F3FE"
+   },
+   {
+      "shortcode" : "mage_tone5",
+      "unicode" : "1F9D9-1F3FF"
    },
    {
       "shortcode" : "mahjong",
@@ -7152,6 +7860,50 @@
       "unicode" : "1F468-1F3FF-200D-2695-FE0F"
    },
    {
+      "shortcode" : "male_elf",
+      "unicode" : "1F9DD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_elf_dark_skin_tone",
+      "unicode" : "1F9DD-1F3FF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_elf_light_skin_tone",
+      "unicode" : "1F9DD-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_elf_medium_dark_skin_tone",
+      "unicode" : "1F9DD-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_elf_medium_light_skin_tone",
+      "unicode" : "1F9DD-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_elf_medium_skin_tone",
+      "unicode" : "1F9DD-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_elf_tone1",
+      "unicode" : "1F9DD-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_elf_tone2",
+      "unicode" : "1F9DD-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_elf_tone3",
+      "unicode" : "1F9DD-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_elf_tone4",
+      "unicode" : "1F9DD-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_elf_tone5",
+      "unicode" : "1F9DD-1F3FF-200D-2642-FE0F"
+   },
+   {
       "shortcode" : "male_factory_worker",
       "unicode" : "1F468-200D-1F3ED"
    },
@@ -7194,6 +7946,50 @@
    {
       "shortcode" : "male_factory_worker_tone5",
       "unicode" : "1F468-1F3FF-200D-1F3ED"
+   },
+   {
+      "shortcode" : "male_fairy",
+      "unicode" : "1F9DA-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_fairy_dark_skin_tone",
+      "unicode" : "1F9DA-1F3FF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_fairy_light_skin_tone",
+      "unicode" : "1F9DA-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_fairy_medium_dark_skin_tone",
+      "unicode" : "1F9DA-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_fairy_medium_light_skin_tone",
+      "unicode" : "1F9DA-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_fairy_medium_skin_tone",
+      "unicode" : "1F9DA-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_fairy_tone1",
+      "unicode" : "1F9DA-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_fairy_tone2",
+      "unicode" : "1F9DA-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_fairy_tone3",
+      "unicode" : "1F9DA-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_fairy_tone4",
+      "unicode" : "1F9DA-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_fairy_tone5",
+      "unicode" : "1F9DA-1F3FF-200D-2642-FE0F"
    },
    {
       "shortcode" : "male_farmer",
@@ -7284,6 +8080,10 @@
       "unicode" : "1F468-1F3FF-200D-1F692"
    },
    {
+      "shortcode" : "male_genie",
+      "unicode" : "1F9DE-200D-2642-FE0F"
+   },
+   {
       "shortcode" : "male_guard",
       "unicode" : "1F482-200D-2642-FE0F"
    },
@@ -7370,6 +8170,50 @@
    {
       "shortcode" : "male_judge_tone5",
       "unicode" : "1F468-1F3FF-200D-2696-FE0F"
+   },
+   {
+      "shortcode" : "male_mage",
+      "unicode" : "1F9D9-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_mage_dark_skin_tone",
+      "unicode" : "1F9D9-1F3FF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_mage_light_skin_tone",
+      "unicode" : "1F9D9-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_mage_medium_dark_skin_tone",
+      "unicode" : "1F9D9-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_mage_medium_light_skin_tone",
+      "unicode" : "1F9D9-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_mage_medium_skin_tone",
+      "unicode" : "1F9D9-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_mage_tone1",
+      "unicode" : "1F9D9-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_mage_tone2",
+      "unicode" : "1F9D9-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_mage_tone3",
+      "unicode" : "1F9D9-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_mage_tone4",
+      "unicode" : "1F9D9-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_mage_tone5",
+      "unicode" : "1F9D9-1F3FF-200D-2642-FE0F"
    },
    {
       "shortcode" : "male_mechanic",
@@ -7593,7 +8437,7 @@
    },
    {
       "shortcode" : "male_sign",
-      "unicode" : "2642"
+      "unicode" : "2642-FE0F"
    },
    {
       "shortcode" : "male_singer",
@@ -7770,6 +8614,54 @@
    {
       "shortcode" : "male_technologist_tone5",
       "unicode" : "1F468-1F3FF-200D-1F4BB"
+   },
+   {
+      "shortcode" : "male_vampire",
+      "unicode" : "1F9DB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_vampire_dark_skin_tone",
+      "unicode" : "1F9DB-1F3FF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_vampire_light_skin_tone",
+      "unicode" : "1F9DB-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_vampire_medium_dark_skin_tone",
+      "unicode" : "1F9DB-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_vampire_medium_light_skin_tone",
+      "unicode" : "1F9DB-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_vampire_medium_skin_tone",
+      "unicode" : "1F9DB-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_vampire_tone1",
+      "unicode" : "1F9DB-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_vampire_tone2",
+      "unicode" : "1F9DB-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_vampire_tone3",
+      "unicode" : "1F9DB-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_vampire_tone4",
+      "unicode" : "1F9DB-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_vampire_tone5",
+      "unicode" : "1F9DB-1F3FF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "male_zombie",
+      "unicode" : "1F9DF-200D-2642-FE0F"
    },
    {
       "shortcode" : "man",
@@ -8050,6 +8942,50 @@
    {
       "shortcode" : "man_cartwheeling_tone5",
       "unicode" : "1F938-1F3FF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_climbing",
+      "unicode" : "1F9D7-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_climbing_dark_skin_tone",
+      "unicode" : "1F9D7-1F3FF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_climbing_light_skin_tone",
+      "unicode" : "1F9D7-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_climbing_medium_dark_skin_tone",
+      "unicode" : "1F9D7-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_climbing_medium_light_skin_tone",
+      "unicode" : "1F9D7-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_climbing_medium_skin_tone",
+      "unicode" : "1F9D7-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_climbing_tone1",
+      "unicode" : "1F9D7-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_climbing_tone2",
+      "unicode" : "1F9D7-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_climbing_tone3",
+      "unicode" : "1F9D7-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_climbing_tone4",
+      "unicode" : "1F9D7-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_climbing_tone5",
+      "unicode" : "1F9D7-1F3FF-200D-2642-FE0F"
    },
    {
       "shortcode" : "man_construction_worker",
@@ -8821,7 +9757,7 @@
    },
    {
       "shortcode" : "man_in_business_suit_levitating",
-      "unicode" : "1F574"
+      "unicode" : "1F574-FE0F"
    },
    {
       "shortcode" : "man_in_business_suit_levitating_dark_skin_tone",
@@ -8862,6 +9798,94 @@
    {
       "shortcode" : "man_in_business_suit_levitating_tone5",
       "unicode" : "1F574-1F3FF"
+   },
+   {
+      "shortcode" : "man_in_lotus_position",
+      "unicode" : "1F9D8-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_lotus_position_dark_skin_tone",
+      "unicode" : "1F9D8-1F3FF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_lotus_position_light_skin_tone",
+      "unicode" : "1F9D8-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_lotus_position_medium_dark_skin_tone",
+      "unicode" : "1F9D8-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_lotus_position_medium_light_skin_tone",
+      "unicode" : "1F9D8-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_lotus_position_medium_skin_tone",
+      "unicode" : "1F9D8-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_lotus_position_tone1",
+      "unicode" : "1F9D8-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_lotus_position_tone2",
+      "unicode" : "1F9D8-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_lotus_position_tone3",
+      "unicode" : "1F9D8-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_lotus_position_tone4",
+      "unicode" : "1F9D8-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_lotus_position_tone5",
+      "unicode" : "1F9D8-1F3FF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_steamy_room",
+      "unicode" : "1F9D6-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_steamy_room_dark_skin_tone",
+      "unicode" : "1F9D6-1F3FF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_steamy_room_light_skin_tone",
+      "unicode" : "1F9D6-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_steamy_room_medium_dark_skin_tone",
+      "unicode" : "1F9D6-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_steamy_room_medium_light_skin_tone",
+      "unicode" : "1F9D6-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_steamy_room_medium_skin_tone",
+      "unicode" : "1F9D6-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_steamy_room_tone1",
+      "unicode" : "1F9D6-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_steamy_room_tone2",
+      "unicode" : "1F9D6-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_steamy_room_tone3",
+      "unicode" : "1F9D6-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_steamy_room_tone4",
+      "unicode" : "1F9D6-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "man_in_steamy_room_tone5",
+      "unicode" : "1F9D6-1F3FF-200D-2642-FE0F"
    },
    {
       "shortcode" : "man_in_tuxedo",
@@ -10189,15 +11213,15 @@
    },
    {
       "shortcode" : "mantelpiece_clock",
-      "unicode" : "1F570"
+      "unicode" : "1F570-FE0F"
    },
    {
       "shortcode" : "mantlepiece_clock",
-      "unicode" : "1F570"
+      "unicode" : "1F570-FE0F"
    },
    {
       "shortcode" : "map",
-      "unicode" : "1F5FA"
+      "unicode" : "1F5FA-FE0F"
    },
    {
       "shortcode" : "maple_leaf",
@@ -10277,7 +11301,7 @@
    },
    {
       "shortcode" : "medical_symbol",
-      "unicode" : "2695"
+      "unicode" : "2695-FE0F"
    },
    {
       "shortcode" : "mega",
@@ -10310,6 +11334,138 @@
    {
       "shortcode" : "mens",
       "unicode" : "1F6B9"
+   },
+   {
+      "shortcode" : "mermaid",
+      "unicode" : "1F9DC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "mermaid_dark_skin_tone",
+      "unicode" : "1F9DC-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "mermaid_light_skin_tone",
+      "unicode" : "1F9DC-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "mermaid_medium_dark_skin_tone",
+      "unicode" : "1F9DC-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "mermaid_medium_light_skin_tone",
+      "unicode" : "1F9DC-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "mermaid_medium_skin_tone",
+      "unicode" : "1F9DC-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "mermaid_tone1",
+      "unicode" : "1F9DC-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "mermaid_tone2",
+      "unicode" : "1F9DC-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "mermaid_tone3",
+      "unicode" : "1F9DC-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "mermaid_tone4",
+      "unicode" : "1F9DC-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "mermaid_tone5",
+      "unicode" : "1F9DC-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "merman",
+      "unicode" : "1F9DC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "merman_dark_skin_tone",
+      "unicode" : "1F9DC-1F3FF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "merman_light_skin_tone",
+      "unicode" : "1F9DC-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "merman_medium_dark_skin_tone",
+      "unicode" : "1F9DC-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "merman_medium_light_skin_tone",
+      "unicode" : "1F9DC-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "merman_medium_skin_tone",
+      "unicode" : "1F9DC-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "merman_tone1",
+      "unicode" : "1F9DC-1F3FB-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "merman_tone2",
+      "unicode" : "1F9DC-1F3FC-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "merman_tone3",
+      "unicode" : "1F9DC-1F3FD-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "merman_tone4",
+      "unicode" : "1F9DC-1F3FE-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "merman_tone5",
+      "unicode" : "1F9DC-1F3FF-200D-2642-FE0F"
+   },
+   {
+      "shortcode" : "merperson",
+      "unicode" : "1F9DC"
+   },
+   {
+      "shortcode" : "merperson_dark_skin_tone",
+      "unicode" : "1F9DC-1F3FF"
+   },
+   {
+      "shortcode" : "merperson_light_skin_tone",
+      "unicode" : "1F9DC-1F3FB"
+   },
+   {
+      "shortcode" : "merperson_medium_dark_skin_tone",
+      "unicode" : "1F9DC-1F3FE"
+   },
+   {
+      "shortcode" : "merperson_medium_light_skin_tone",
+      "unicode" : "1F9DC-1F3FC"
+   },
+   {
+      "shortcode" : "merperson_medium_skin_tone",
+      "unicode" : "1F9DC-1F3FD"
+   },
+   {
+      "shortcode" : "merperson_tone1",
+      "unicode" : "1F9DC-1F3FB"
+   },
+   {
+      "shortcode" : "merperson_tone2",
+      "unicode" : "1F9DC-1F3FC"
+   },
+   {
+      "shortcode" : "merperson_tone3",
+      "unicode" : "1F9DC-1F3FD"
+   },
+   {
+      "shortcode" : "merperson_tone4",
+      "unicode" : "1F9DC-1F3FE"
+   },
+   {
+      "shortcode" : "merperson_tone5",
+      "unicode" : "1F9DC-1F3FF"
    },
    {
       "shortcode" : "metal",
@@ -10357,7 +11513,7 @@
    },
    {
       "shortcode" : "microphone2",
-      "unicode" : "1F399"
+      "unicode" : "1F399-FE0F"
    },
    {
       "shortcode" : "microscope",
@@ -10409,7 +11565,7 @@
    },
    {
       "shortcode" : "military_medal",
-      "unicode" : "1F396"
+      "unicode" : "1F396-FE0F"
    },
    {
       "shortcode" : "milk",
@@ -10493,7 +11649,7 @@
    },
    {
       "shortcode" : "mostly_sunny",
-      "unicode" : "1F324"
+      "unicode" : "1F324-FE0F"
    },
    {
       "shortcode" : "mother_christmas",
@@ -10541,7 +11697,7 @@
    },
    {
       "shortcode" : "motor_boat",
-      "unicode" : "1F6E5"
+      "unicode" : "1F6E5-FE0F"
    },
    {
       "shortcode" : "motor_scooter",
@@ -10553,15 +11709,15 @@
    },
    {
       "shortcode" : "motorboat",
-      "unicode" : "1F6E5"
+      "unicode" : "1F6E5-FE0F"
    },
    {
       "shortcode" : "motorcycle",
-      "unicode" : "1F3CD"
+      "unicode" : "1F3CD-FE0F"
    },
    {
       "shortcode" : "motorway",
-      "unicode" : "1F6E3"
+      "unicode" : "1F6E3-FE0F"
    },
    {
       "shortcode" : "mount_fuji",
@@ -10569,7 +11725,7 @@
    },
    {
       "shortcode" : "mountain",
-      "unicode" : "26F0"
+      "unicode" : "26F0-FE0F"
    },
    {
       "shortcode" : "mountain_bicyclist",
@@ -10625,7 +11781,7 @@
    },
    {
       "shortcode" : "mountain_snow",
-      "unicode" : "1F3D4"
+      "unicode" : "1F3D4-FE0F"
    },
    {
       "shortcode" : "mouse",
@@ -10637,7 +11793,7 @@
    },
    {
       "shortcode" : "mouse_three_button",
-      "unicode" : "1F5B1"
+      "unicode" : "1F5B1-FE0F"
    },
    {
       "shortcode" : "movie_camera",
@@ -10662,6 +11818,26 @@
    {
       "shortcode" : "mrs_claus",
       "unicode" : "1F936"
+   },
+   {
+      "shortcode" : "mrs_claus_dark_skin_tone",
+      "unicode" : "1F936-1F3FF"
+   },
+   {
+      "shortcode" : "mrs_claus_light_skin_tone",
+      "unicode" : "1F936-1F3FB"
+   },
+   {
+      "shortcode" : "mrs_claus_medium_dark_skin_tone",
+      "unicode" : "1F936-1F3FE"
+   },
+   {
+      "shortcode" : "mrs_claus_medium_light_skin_tone",
+      "unicode" : "1F936-1F3FC"
+   },
+   {
+      "shortcode" : "mrs_claus_medium_skin_tone",
+      "unicode" : "1F936-1F3FD"
    },
    {
       "shortcode" : "mrs_claus_tone1",
@@ -10833,7 +12009,7 @@
    },
    {
       "shortcode" : "national_park",
-      "unicode" : "1F3DE"
+      "unicode" : "1F3DE-FE0F"
    },
    {
       "shortcode" : "nauseated_face",
@@ -10885,11 +12061,11 @@
    },
    {
       "shortcode" : "newspaper2",
-      "unicode" : "1F5DE"
+      "unicode" : "1F5DE-FE0F"
    },
    {
       "shortcode" : "next_track",
-      "unicode" : "23ED"
+      "unicode" : "23ED-FE0F"
    },
    {
       "shortcode" : "nf",
@@ -10913,7 +12089,7 @@
    },
    {
       "shortcode" : "nine",
-      "unicode" : "0039-20E3"
+      "unicode" : "0039-FE0F-20E3"
    },
    {
       "shortcode" : "nl",
@@ -11057,7 +12233,7 @@
    },
    {
       "shortcode" : "notepad_spiral",
-      "unicode" : "1F5D2"
+      "unicode" : "1F5D2-FE0F"
    },
    {
       "shortcode" : "notes",
@@ -11089,7 +12265,7 @@
    },
    {
       "shortcode" : "o2",
-      "unicode" : "1F17E"
+      "unicode" : "1F17E-FE0F"
    },
    {
       "shortcode" : "ocean",
@@ -11113,11 +12289,11 @@
    },
    {
       "shortcode" : "oil",
-      "unicode" : "1F6E2"
+      "unicode" : "1F6E2-FE0F"
    },
    {
       "shortcode" : "oil_drum",
-      "unicode" : "1F6E2"
+      "unicode" : "1F6E2-FE0F"
    },
    {
       "shortcode" : "ok",
@@ -11213,7 +12389,51 @@
    },
    {
       "shortcode" : "old_key",
-      "unicode" : "1F5DD"
+      "unicode" : "1F5DD-FE0F"
+   },
+   {
+      "shortcode" : "older_adult",
+      "unicode" : "1F9D3"
+   },
+   {
+      "shortcode" : "older_adult_dark_skin_tone",
+      "unicode" : "1F9D3-1F3FF"
+   },
+   {
+      "shortcode" : "older_adult_light_skin_tone",
+      "unicode" : "1F9D3-1F3FB"
+   },
+   {
+      "shortcode" : "older_adult_medium_dark_skin_tone",
+      "unicode" : "1F9D3-1F3FE"
+   },
+   {
+      "shortcode" : "older_adult_medium_light_skin_tone",
+      "unicode" : "1F9D3-1F3FC"
+   },
+   {
+      "shortcode" : "older_adult_medium_skin_tone",
+      "unicode" : "1F9D3-1F3FD"
+   },
+   {
+      "shortcode" : "older_adult_tone1",
+      "unicode" : "1F9D3-1F3FB"
+   },
+   {
+      "shortcode" : "older_adult_tone2",
+      "unicode" : "1F9D3-1F3FC"
+   },
+   {
+      "shortcode" : "older_adult_tone3",
+      "unicode" : "1F9D3-1F3FD"
+   },
+   {
+      "shortcode" : "older_adult_tone4",
+      "unicode" : "1F9D3-1F3FE"
+   },
+   {
+      "shortcode" : "older_adult_tone5",
+      "unicode" : "1F9D3-1F3FF"
    },
    {
       "shortcode" : "older_man",
@@ -11309,7 +12529,7 @@
    },
    {
       "shortcode" : "om_symbol",
-      "unicode" : "1F549"
+      "unicode" : "1F549-FE0F"
    },
    {
       "shortcode" : "on",
@@ -11333,7 +12553,7 @@
    },
    {
       "shortcode" : "one",
-      "unicode" : "0031-20E3"
+      "unicode" : "0031-FE0F-20E3"
    },
    {
       "shortcode" : "open_book",
@@ -11400,8 +12620,12 @@
       "unicode" : "1F4D9"
    },
    {
+      "shortcode" : "orange_heart",
+      "unicode" : "1F9E1"
+   },
+   {
       "shortcode" : "orthodox_cross",
-      "unicode" : "2626"
+      "unicode" : "2626-FE0F"
    },
    {
       "shortcode" : "outbox_tray",
@@ -11441,11 +12665,55 @@
    },
    {
       "shortcode" : "paintbrush",
-      "unicode" : "1F58C"
+      "unicode" : "1F58C-FE0F"
    },
    {
       "shortcode" : "palm_tree",
       "unicode" : "1F334"
+   },
+   {
+      "shortcode" : "palms_up_together",
+      "unicode" : "1F932"
+   },
+   {
+      "shortcode" : "palms_up_together_dark_skin_tone",
+      "unicode" : "1F932-1F3FF"
+   },
+   {
+      "shortcode" : "palms_up_together_light_skin_tone",
+      "unicode" : "1F932-1F3FB"
+   },
+   {
+      "shortcode" : "palms_up_together_medium_dark_skin_tone",
+      "unicode" : "1F932-1F3FE"
+   },
+   {
+      "shortcode" : "palms_up_together_medium_light_skin_tone",
+      "unicode" : "1F932-1F3FC"
+   },
+   {
+      "shortcode" : "palms_up_together_medium_skin_tone",
+      "unicode" : "1F932-1F3FD"
+   },
+   {
+      "shortcode" : "palms_up_together_tone1",
+      "unicode" : "1F932-1F3FB"
+   },
+   {
+      "shortcode" : "palms_up_together_tone2",
+      "unicode" : "1F932-1F3FC"
+   },
+   {
+      "shortcode" : "palms_up_together_tone3",
+      "unicode" : "1F932-1F3FD"
+   },
+   {
+      "shortcode" : "palms_up_together_tone4",
+      "unicode" : "1F932-1F3FE"
+   },
+   {
+      "shortcode" : "palms_up_together_tone5",
+      "unicode" : "1F932-1F3FF"
    },
    {
       "shortcode" : "pancakes",
@@ -11461,19 +12729,19 @@
    },
    {
       "shortcode" : "paperclips",
-      "unicode" : "1F587"
+      "unicode" : "1F587-FE0F"
    },
    {
       "shortcode" : "park",
-      "unicode" : "1F3DE"
+      "unicode" : "1F3DE-FE0F"
    },
    {
       "shortcode" : "parking",
-      "unicode" : "1F17F"
+      "unicode" : "1F17F-FE0F"
    },
    {
       "shortcode" : "part_alternation_mark",
-      "unicode" : "303D"
+      "unicode" : "303D-FE0F"
    },
    {
       "shortcode" : "partly_sunny",
@@ -11481,11 +12749,11 @@
    },
    {
       "shortcode" : "partly_sunny_rain",
-      "unicode" : "1F326"
+      "unicode" : "1F326-FE0F"
    },
    {
       "shortcode" : "passenger_ship",
-      "unicode" : "1F6F3"
+      "unicode" : "1F6F3-FE0F"
    },
    {
       "shortcode" : "passport_control",
@@ -11493,7 +12761,7 @@
    },
    {
       "shortcode" : "pause_button",
-      "unicode" : "23F8"
+      "unicode" : "23F8-FE0F"
    },
    {
       "shortcode" : "paw_prints",
@@ -11505,11 +12773,11 @@
    },
    {
       "shortcode" : "peace",
-      "unicode" : "262E"
+      "unicode" : "262E-FE0F"
    },
    {
       "shortcode" : "peace_symbol",
-      "unicode" : "262E"
+      "unicode" : "262E-FE0F"
    },
    {
       "shortcode" : "peach",
@@ -11525,11 +12793,11 @@
    },
    {
       "shortcode" : "pen_ballpoint",
-      "unicode" : "1F58A"
+      "unicode" : "1F58A-FE0F"
    },
    {
       "shortcode" : "pen_fountain",
-      "unicode" : "1F58B"
+      "unicode" : "1F58B-FE0F"
    },
    {
       "shortcode" : "pencil",
@@ -11537,7 +12805,7 @@
    },
    {
       "shortcode" : "pencil2",
-      "unicode" : "270F"
+      "unicode" : "270F-FE0F"
    },
    {
       "shortcode" : "penguin",
@@ -11554,6 +12822,50 @@
    {
       "shortcode" : "persevere",
       "unicode" : "1F623"
+   },
+   {
+      "shortcode" : "person_climbing",
+      "unicode" : "1F9D7"
+   },
+   {
+      "shortcode" : "person_climbing_dark_skin_tone",
+      "unicode" : "1F9D7-1F3FF"
+   },
+   {
+      "shortcode" : "person_climbing_light_skin_tone",
+      "unicode" : "1F9D7-1F3FB"
+   },
+   {
+      "shortcode" : "person_climbing_medium_dark_skin_tone",
+      "unicode" : "1F9D7-1F3FE"
+   },
+   {
+      "shortcode" : "person_climbing_medium_light_skin_tone",
+      "unicode" : "1F9D7-1F3FC"
+   },
+   {
+      "shortcode" : "person_climbing_medium_skin_tone",
+      "unicode" : "1F9D7-1F3FD"
+   },
+   {
+      "shortcode" : "person_climbing_tone1",
+      "unicode" : "1F9D7-1F3FB"
+   },
+   {
+      "shortcode" : "person_climbing_tone2",
+      "unicode" : "1F9D7-1F3FC"
+   },
+   {
+      "shortcode" : "person_climbing_tone3",
+      "unicode" : "1F9D7-1F3FD"
+   },
+   {
+      "shortcode" : "person_climbing_tone4",
+      "unicode" : "1F9D7-1F3FE"
+   },
+   {
+      "shortcode" : "person_climbing_tone5",
+      "unicode" : "1F9D7-1F3FF"
    },
    {
       "shortcode" : "person_doing_cartwheel",
@@ -11724,8 +13036,96 @@
       "unicode" : "1F6CC-1F3FF"
    },
    {
+      "shortcode" : "person_in_lotus_position",
+      "unicode" : "1F9D8"
+   },
+   {
+      "shortcode" : "person_in_lotus_position_dark_skin_tone",
+      "unicode" : "1F9D8-1F3FF"
+   },
+   {
+      "shortcode" : "person_in_lotus_position_light_skin_tone",
+      "unicode" : "1F9D8-1F3FB"
+   },
+   {
+      "shortcode" : "person_in_lotus_position_medium_dark_skin_tone",
+      "unicode" : "1F9D8-1F3FE"
+   },
+   {
+      "shortcode" : "person_in_lotus_position_medium_light_skin_tone",
+      "unicode" : "1F9D8-1F3FC"
+   },
+   {
+      "shortcode" : "person_in_lotus_position_medium_skin_tone",
+      "unicode" : "1F9D8-1F3FD"
+   },
+   {
+      "shortcode" : "person_in_lotus_position_tone1",
+      "unicode" : "1F9D8-1F3FB"
+   },
+   {
+      "shortcode" : "person_in_lotus_position_tone2",
+      "unicode" : "1F9D8-1F3FC"
+   },
+   {
+      "shortcode" : "person_in_lotus_position_tone3",
+      "unicode" : "1F9D8-1F3FD"
+   },
+   {
+      "shortcode" : "person_in_lotus_position_tone4",
+      "unicode" : "1F9D8-1F3FE"
+   },
+   {
+      "shortcode" : "person_in_lotus_position_tone5",
+      "unicode" : "1F9D8-1F3FF"
+   },
+   {
+      "shortcode" : "person_in_steamy_room",
+      "unicode" : "1F9D6"
+   },
+   {
+      "shortcode" : "person_in_steamy_room_dark_skin_tone",
+      "unicode" : "1F9D6-1F3FF"
+   },
+   {
+      "shortcode" : "person_in_steamy_room_light_skin_tone",
+      "unicode" : "1F9D6-1F3FB"
+   },
+   {
+      "shortcode" : "person_in_steamy_room_medium_dark_skin_tone",
+      "unicode" : "1F9D6-1F3FE"
+   },
+   {
+      "shortcode" : "person_in_steamy_room_medium_light_skin_tone",
+      "unicode" : "1F9D6-1F3FC"
+   },
+   {
+      "shortcode" : "person_in_steamy_room_medium_skin_tone",
+      "unicode" : "1F9D6-1F3FD"
+   },
+   {
+      "shortcode" : "person_in_steamy_room_tone1",
+      "unicode" : "1F9D6-1F3FB"
+   },
+   {
+      "shortcode" : "person_in_steamy_room_tone2",
+      "unicode" : "1F9D6-1F3FC"
+   },
+   {
+      "shortcode" : "person_in_steamy_room_tone3",
+      "unicode" : "1F9D6-1F3FD"
+   },
+   {
+      "shortcode" : "person_in_steamy_room_tone4",
+      "unicode" : "1F9D6-1F3FE"
+   },
+   {
+      "shortcode" : "person_in_steamy_room_tone5",
+      "unicode" : "1F9D6-1F3FF"
+   },
+   {
       "shortcode" : "person_with_ball",
-      "unicode" : "26F9"
+      "unicode" : "26F9-FE0F"
    },
    {
       "shortcode" : "person_with_ball_dark_skin_tone",
@@ -11812,6 +13212,50 @@
       "unicode" : "1F471-1F3FF"
    },
    {
+      "shortcode" : "person_with_headscarf",
+      "unicode" : "1F9D5"
+   },
+   {
+      "shortcode" : "person_with_headscarf_dark_skin_tone",
+      "unicode" : "1F9D5-1F3FF"
+   },
+   {
+      "shortcode" : "person_with_headscarf_light_skin_tone",
+      "unicode" : "1F9D5-1F3FB"
+   },
+   {
+      "shortcode" : "person_with_headscarf_medium_dark_skin_tone",
+      "unicode" : "1F9D5-1F3FE"
+   },
+   {
+      "shortcode" : "person_with_headscarf_medium_light_skin_tone",
+      "unicode" : "1F9D5-1F3FC"
+   },
+   {
+      "shortcode" : "person_with_headscarf_medium_skin_tone",
+      "unicode" : "1F9D5-1F3FD"
+   },
+   {
+      "shortcode" : "person_with_headscarf_tone1",
+      "unicode" : "1F9D5-1F3FB"
+   },
+   {
+      "shortcode" : "person_with_headscarf_tone2",
+      "unicode" : "1F9D5-1F3FC"
+   },
+   {
+      "shortcode" : "person_with_headscarf_tone3",
+      "unicode" : "1F9D5-1F3FD"
+   },
+   {
+      "shortcode" : "person_with_headscarf_tone4",
+      "unicode" : "1F9D5-1F3FE"
+   },
+   {
+      "shortcode" : "person_with_headscarf_tone5",
+      "unicode" : "1F9D5-1F3FF"
+   },
+   {
       "shortcode" : "person_with_pouting_face",
       "unicode" : "1F64E"
    },
@@ -11869,11 +13313,15 @@
    },
    {
       "shortcode" : "phone",
-      "unicode" : "260E"
+      "unicode" : "260E-FE0F"
    },
    {
       "shortcode" : "pick",
-      "unicode" : "26CF"
+      "unicode" : "26CF-FE0F"
+   },
+   {
+      "shortcode" : "pie",
+      "unicode" : "1F967"
    },
    {
       "shortcode" : "pig",
@@ -11921,7 +13369,7 @@
    },
    {
       "shortcode" : "play_pause",
-      "unicode" : "23EF"
+      "unicode" : "23EF-FE0F"
    },
    {
       "shortcode" : "pm",
@@ -12065,7 +13513,7 @@
    },
    {
       "shortcode" : "point_up",
-      "unicode" : "261D"
+      "unicode" : "261D-FE0F"
    },
    {
       "shortcode" : "point_up_2",
@@ -12308,8 +13756,12 @@
       "unicode" : "1F930-1F3FF"
    },
    {
+      "shortcode" : "pretzel",
+      "unicode" : "1F968"
+   },
+   {
       "shortcode" : "previous_track",
-      "unicode" : "23EE"
+      "unicode" : "23EE-FE0F"
    },
    {
       "shortcode" : "prince",
@@ -12401,11 +13853,11 @@
    },
    {
       "shortcode" : "printer",
-      "unicode" : "1F5A8"
+      "unicode" : "1F5A8-FE0F"
    },
    {
       "shortcode" : "projector",
-      "unicode" : "1F4FD"
+      "unicode" : "1F4FD-FE0F"
    },
    {
       "shortcode" : "ps",
@@ -12505,7 +13957,7 @@
    },
    {
       "shortcode" : "race_car",
-      "unicode" : "1F3CE"
+      "unicode" : "1F3CE-FE0F"
    },
    {
       "shortcode" : "racehorse",
@@ -12513,11 +13965,11 @@
    },
    {
       "shortcode" : "racing_car",
-      "unicode" : "1F3CE"
+      "unicode" : "1F3CE-FE0F"
    },
    {
       "shortcode" : "racing_motorcycle",
-      "unicode" : "1F3CD"
+      "unicode" : "1F3CD-FE0F"
    },
    {
       "shortcode" : "radio",
@@ -12529,11 +13981,11 @@
    },
    {
       "shortcode" : "radioactive",
-      "unicode" : "2622"
+      "unicode" : "2622-FE0F"
    },
    {
       "shortcode" : "radioactive_sign",
-      "unicode" : "2622"
+      "unicode" : "2622-FE0F"
    },
    {
       "shortcode" : "rage",
@@ -12541,7 +13993,7 @@
    },
    {
       "shortcode" : "railroad_track",
-      "unicode" : "1F6E4"
+      "unicode" : "1F6E4-FE0F"
    },
    {
       "shortcode" : "railway_car",
@@ -12549,11 +14001,11 @@
    },
    {
       "shortcode" : "railway_track",
-      "unicode" : "1F6E4"
+      "unicode" : "1F6E4-FE0F"
    },
    {
       "shortcode" : "rain_cloud",
-      "unicode" : "1F327"
+      "unicode" : "1F327-FE0F"
    },
    {
       "shortcode" : "rainbow",
@@ -12653,7 +14105,7 @@
    },
    {
       "shortcode" : "raised_hand_with_fingers_splayed",
-      "unicode" : "1F590"
+      "unicode" : "1F590-FE0F"
    },
    {
       "shortcode" : "raised_hand_with_fingers_splayed_dark_skin_tone",
@@ -12825,11 +14277,11 @@
    },
    {
       "shortcode" : "record_button",
-      "unicode" : "23FA"
+      "unicode" : "23FA-FE0F"
    },
    {
       "shortcode" : "recycle",
-      "unicode" : "267B"
+      "unicode" : "267B-FE0F"
    },
    {
       "shortcode" : "red_car",
@@ -12945,11 +14397,11 @@
    },
    {
       "shortcode" : "registered",
-      "unicode" : "00AE"
+      "unicode" : "00AE-FE0F"
    },
    {
       "shortcode" : "relaxed",
-      "unicode" : "263A"
+      "unicode" : "263A-FE0F"
    },
    {
       "shortcode" : "relieved",
@@ -12957,7 +14409,7 @@
    },
    {
       "shortcode" : "reminder_ribbon",
-      "unicode" : "1F397"
+      "unicode" : "1F397-FE0F"
    },
    {
       "shortcode" : "repeat",
@@ -13053,7 +14505,7 @@
    },
    {
       "shortcode" : "right_anger_bubble",
-      "unicode" : "1F5EF"
+      "unicode" : "1F5EF-FE0F"
    },
    {
       "shortcode" : "right_facing_fist",
@@ -13149,7 +14601,7 @@
    },
    {
       "shortcode" : "rolled_up_newspaper",
-      "unicode" : "1F5DE"
+      "unicode" : "1F5DE-FE0F"
    },
    {
       "shortcode" : "roller_coaster",
@@ -13173,7 +14625,7 @@
    },
    {
       "shortcode" : "rosette",
-      "unicode" : "1F3F5"
+      "unicode" : "1F3F5-FE0F"
    },
    {
       "shortcode" : "rotating_light",
@@ -13337,7 +14789,7 @@
    },
    {
       "shortcode" : "sa",
-      "unicode" : "1F202"
+      "unicode" : "1F202-FE0F"
    },
    {
       "shortcode" : "sagittarius",
@@ -13358,6 +14810,10 @@
    {
       "shortcode" : "sandal",
       "unicode" : "1F461"
+   },
+   {
+      "shortcode" : "sandwich",
+      "unicode" : "1F96A"
    },
    {
       "shortcode" : "santa",
@@ -13405,7 +14861,7 @@
    },
    {
       "shortcode" : "satellite",
-      "unicode" : "1F6F0"
+      "unicode" : "1F6F0-FE0F"
    },
    {
       "shortcode" : "satellite_antenna",
@@ -13413,7 +14869,7 @@
    },
    {
       "shortcode" : "satellite_orbital",
-      "unicode" : "1F6F0"
+      "unicode" : "1F6F0-FE0F"
    },
    {
       "shortcode" : "satisfied",
@@ -13426,6 +14882,10 @@
    {
       "shortcode" : "saudiarabia",
       "unicode" : "1F1F8-1F1E6"
+   },
+   {
+      "shortcode" : "sauropod",
+      "unicode" : "1F995"
    },
    {
       "shortcode" : "saxophone",
@@ -13441,7 +14901,11 @@
    },
    {
       "shortcode" : "scales",
-      "unicode" : "2696"
+      "unicode" : "2696-FE0F"
+   },
+   {
+      "shortcode" : "scarf",
+      "unicode" : "1F9E3"
    },
    {
       "shortcode" : "school",
@@ -13453,7 +14917,7 @@
    },
    {
       "shortcode" : "scissors",
-      "unicode" : "2702"
+      "unicode" : "2702-FE0F"
    },
    {
       "shortcode" : "scooter",
@@ -13501,7 +14965,7 @@
    },
    {
       "shortcode" : "secret",
-      "unicode" : "3299"
+      "unicode" : "3299-FE0F"
    },
    {
       "shortcode" : "see_no_evil",
@@ -13556,8 +15020,12 @@
       "unicode" : "1F933-1F3FF"
    },
    {
+      "shortcode" : "serious_face_with_symbols_covering_mouth",
+      "unicode" : "1F92C"
+   },
+   {
       "shortcode" : "seven",
-      "unicode" : "0037-20E3"
+      "unicode" : "0037-FE0F-20E3"
    },
    {
       "shortcode" : "sg",
@@ -13577,7 +15045,7 @@
    },
    {
       "shortcode" : "shamrock",
-      "unicode" : "2618"
+      "unicode" : "2618-FE0F"
    },
    {
       "shortcode" : "shark",
@@ -13601,11 +15069,11 @@
    },
    {
       "shortcode" : "shield",
-      "unicode" : "1F6E1"
+      "unicode" : "1F6E1-FE0F"
    },
    {
       "shortcode" : "shinto_shrine",
-      "unicode" : "26E9"
+      "unicode" : "26E9-FE0F"
    },
    {
       "shortcode" : "ship",
@@ -13620,12 +15088,16 @@
       "unicode" : "1F4A9"
    },
    {
+      "shortcode" : "shocked_face_with_exploding_head",
+      "unicode" : "1F92F"
+   },
+   {
       "shortcode" : "shoe",
       "unicode" : "1F45E"
    },
    {
       "shortcode" : "shopping_bags",
-      "unicode" : "1F6CD"
+      "unicode" : "1F6CD-FE0F"
    },
    {
       "shortcode" : "shopping_cart",
@@ -13688,6 +15160,10 @@
       "unicode" : "1F937-1F3FF"
    },
    {
+      "shortcode" : "shushing_face",
+      "unicode" : "1F92B"
+   },
+   {
       "shortcode" : "si",
       "unicode" : "1F1F8-1F1EE"
    },
@@ -13745,7 +15221,7 @@
    },
    {
       "shortcode" : "six",
-      "unicode" : "0036-20E3"
+      "unicode" : "0036-FE0F-20E3"
    },
    {
       "shortcode" : "six_pointed_star",
@@ -13769,7 +15245,7 @@
    },
    {
       "shortcode" : "skier",
-      "unicode" : "26F7"
+      "unicode" : "26F7-FE0F"
    },
    {
       "shortcode" : "skin_tone_2",
@@ -13797,15 +15273,19 @@
    },
    {
       "shortcode" : "skull_and_crossbones",
-      "unicode" : "2620"
+      "unicode" : "2620-FE0F"
    },
    {
       "shortcode" : "skull_crossbones",
-      "unicode" : "2620"
+      "unicode" : "2620-FE0F"
    },
    {
       "shortcode" : "sl",
       "unicode" : "1F1F8-1F1F1"
+   },
+   {
+      "shortcode" : "sled",
+      "unicode" : "1F6F7"
    },
    {
       "shortcode" : "sleeping",
@@ -13861,7 +15341,7 @@
    },
    {
       "shortcode" : "sleuth_or_spy",
-      "unicode" : "1F575"
+      "unicode" : "1F575-FE0F"
    },
    {
       "shortcode" : "sleuth_or_spy_dark_skin_tone",
@@ -13929,7 +15409,7 @@
    },
    {
       "shortcode" : "small_airplane",
-      "unicode" : "1F6E9"
+      "unicode" : "1F6E9-FE0F"
    },
    {
       "shortcode" : "small_blue_diamond",
@@ -13962,6 +15442,10 @@
    {
       "shortcode" : "smiley_cat",
       "unicode" : "1F63A"
+   },
+   {
+      "shortcode" : "smiling_face_with_smiling_eyes_and_hand_covering_mouth",
+      "unicode" : "1F92D"
    },
    {
       "shortcode" : "smiling_imp",
@@ -14001,11 +15485,11 @@
    },
    {
       "shortcode" : "snow_capped_mountain",
-      "unicode" : "1F3D4"
+      "unicode" : "1F3D4-FE0F"
    },
    {
       "shortcode" : "snow_cloud",
-      "unicode" : "1F328"
+      "unicode" : "1F328-FE0F"
    },
    {
       "shortcode" : "snowboarder",
@@ -14053,7 +15537,7 @@
    },
    {
       "shortcode" : "snowflake",
-      "unicode" : "2744"
+      "unicode" : "2744-FE0F"
    },
    {
       "shortcode" : "snowman",
@@ -14061,7 +15545,7 @@
    },
    {
       "shortcode" : "snowman2",
-      "unicode" : "2603"
+      "unicode" : "2603-FE0F"
    },
    {
       "shortcode" : "snowman_without_snow",
@@ -14078,6 +15562,10 @@
    {
       "shortcode" : "soccer",
       "unicode" : "26BD"
+   },
+   {
+      "shortcode" : "socks",
+      "unicode" : "1F9E6"
    },
    {
       "shortcode" : "soon",
@@ -14097,7 +15585,7 @@
    },
    {
       "shortcode" : "spades",
-      "unicode" : "2660"
+      "unicode" : "2660-FE0F"
    },
    {
       "shortcode" : "spaghetti",
@@ -14105,7 +15593,7 @@
    },
    {
       "shortcode" : "sparkle",
-      "unicode" : "2747"
+      "unicode" : "2747-FE0F"
    },
    {
       "shortcode" : "sparkler",
@@ -14129,11 +15617,11 @@
    },
    {
       "shortcode" : "speaking_head",
-      "unicode" : "1F5E3"
+      "unicode" : "1F5E3-FE0F"
    },
    {
       "shortcode" : "speaking_head_in_silhouette",
-      "unicode" : "1F5E3"
+      "unicode" : "1F5E3-FE0F"
    },
    {
       "shortcode" : "speech_balloon",
@@ -14141,7 +15629,7 @@
    },
    {
       "shortcode" : "speech_left",
-      "unicode" : "1F5E8"
+      "unicode" : "1F5E8-FE0F"
    },
    {
       "shortcode" : "speedboat",
@@ -14149,19 +15637,19 @@
    },
    {
       "shortcode" : "spider",
-      "unicode" : "1F577"
+      "unicode" : "1F577-FE0F"
    },
    {
       "shortcode" : "spider_web",
-      "unicode" : "1F578"
+      "unicode" : "1F578-FE0F"
    },
    {
       "shortcode" : "spiral_calendar_pad",
-      "unicode" : "1F5D3"
+      "unicode" : "1F5D3-FE0F"
    },
    {
       "shortcode" : "spiral_note_pad",
-      "unicode" : "1F5D2"
+      "unicode" : "1F5D2-FE0F"
    },
    {
       "shortcode" : "spock_hand",
@@ -14217,7 +15705,7 @@
    },
    {
       "shortcode" : "spy",
-      "unicode" : "1F575"
+      "unicode" : "1F575-FE0F"
    },
    {
       "shortcode" : "spy_tone1",
@@ -14257,11 +15745,11 @@
    },
    {
       "shortcode" : "stadium",
-      "unicode" : "1F3DF"
+      "unicode" : "1F3DF-FE0F"
    },
    {
       "shortcode" : "staff_of_aesculapius",
-      "unicode" : "2695"
+      "unicode" : "2695-FE0F"
    },
    {
       "shortcode" : "star",
@@ -14273,11 +15761,15 @@
    },
    {
       "shortcode" : "star_and_crescent",
-      "unicode" : "262A"
+      "unicode" : "262A-FE0F"
    },
    {
       "shortcode" : "star_of_david",
-      "unicode" : "2721"
+      "unicode" : "2721-FE0F"
+   },
+   {
+      "shortcode" : "star_struck",
+      "unicode" : "1F929"
    },
    {
       "shortcode" : "stars",
@@ -14301,7 +15793,7 @@
    },
    {
       "shortcode" : "stop_button",
-      "unicode" : "23F9"
+      "unicode" : "23F9-FE0F"
    },
    {
       "shortcode" : "stop_sign",
@@ -14309,7 +15801,7 @@
    },
    {
       "shortcode" : "stopwatch",
-      "unicode" : "23F1"
+      "unicode" : "23F1-FE0F"
    },
    {
       "shortcode" : "straight_ruler",
@@ -14333,7 +15825,7 @@
    },
    {
       "shortcode" : "studio_microphone",
-      "unicode" : "1F399"
+      "unicode" : "1F399-FE0F"
    },
    {
       "shortcode" : "stuffed_flatbread",
@@ -14345,15 +15837,15 @@
    },
    {
       "shortcode" : "sun_behind_cloud",
-      "unicode" : "1F325"
+      "unicode" : "1F325-FE0F"
    },
    {
       "shortcode" : "sun_behind_rain_cloud",
-      "unicode" : "1F326"
+      "unicode" : "1F326-FE0F"
    },
    {
       "shortcode" : "sun_small_cloud",
-      "unicode" : "1F324"
+      "unicode" : "1F324-FE0F"
    },
    {
       "shortcode" : "sun_with_face",
@@ -14369,7 +15861,7 @@
    },
    {
       "shortcode" : "sunny",
-      "unicode" : "2600"
+      "unicode" : "2600-FE0F"
    },
    {
       "shortcode" : "sunrise",
@@ -14520,6 +16012,10 @@
       "unicode" : "1F1F8-1F1FF"
    },
    {
+      "shortcode" : "t_rex",
+      "unicode" : "1F996"
+   },
+   {
       "shortcode" : "ta",
       "unicode" : "1F1F9-1F1E6"
    },
@@ -14538,6 +16034,10 @@
    {
       "shortcode" : "tada",
       "unicode" : "1F389"
+   },
+   {
+      "shortcode" : "takeout_box",
+      "unicode" : "1F961"
    },
    {
       "shortcode" : "tanabata_tree",
@@ -14569,7 +16069,7 @@
    },
    {
       "shortcode" : "telephone",
-      "unicode" : "260E"
+      "unicode" : "260E-FE0F"
    },
    {
       "shortcode" : "telephone_receiver",
@@ -14645,7 +16145,7 @@
    },
    {
       "shortcode" : "thermometer",
-      "unicode" : "1F321"
+      "unicode" : "1F321-FE0F"
    },
    {
       "shortcode" : "thermometer_face",
@@ -14673,11 +16173,11 @@
    },
    {
       "shortcode" : "three",
-      "unicode" : "0033-20E3"
+      "unicode" : "0033-FE0F-20E3"
    },
    {
       "shortcode" : "three_button_mouse",
-      "unicode" : "1F5B1"
+      "unicode" : "1F5B1-FE0F"
    },
    {
       "shortcode" : "thumbdown",
@@ -14817,11 +16317,11 @@
    },
    {
       "shortcode" : "thunder_cloud_and_rain",
-      "unicode" : "26C8"
+      "unicode" : "26C8-FE0F"
    },
    {
       "shortcode" : "thunder_cloud_rain",
-      "unicode" : "26C8"
+      "unicode" : "26C8-FE0F"
    },
    {
       "shortcode" : "ticket",
@@ -14829,7 +16329,7 @@
    },
    {
       "shortcode" : "tickets",
-      "unicode" : "1F39F"
+      "unicode" : "1F39F-FE0F"
    },
    {
       "shortcode" : "tiger",
@@ -14841,11 +16341,11 @@
    },
    {
       "shortcode" : "timer",
-      "unicode" : "23F2"
+      "unicode" : "23F2-FE0F"
    },
    {
       "shortcode" : "timer_clock",
-      "unicode" : "23F2"
+      "unicode" : "23F2-FE0F"
    },
    {
       "shortcode" : "tired_face",
@@ -14865,7 +16365,7 @@
    },
    {
       "shortcode" : "tm",
-      "unicode" : "2122"
+      "unicode" : "2122-FE0F"
    },
    {
       "shortcode" : "tn",
@@ -14913,7 +16413,7 @@
    },
    {
       "shortcode" : "tools",
-      "unicode" : "1F6E0"
+      "unicode" : "1F6E0-FE0F"
    },
    {
       "shortcode" : "top",
@@ -14925,11 +16425,11 @@
    },
    {
       "shortcode" : "tornado",
-      "unicode" : "1F32A"
+      "unicode" : "1F32A-FE0F"
    },
    {
       "shortcode" : "tornado_cloud",
-      "unicode" : "1F32A"
+      "unicode" : "1F32A-FE0F"
    },
    {
       "shortcode" : "tr",
@@ -14937,15 +16437,15 @@
    },
    {
       "shortcode" : "track_next",
-      "unicode" : "23ED"
+      "unicode" : "23ED-FE0F"
    },
    {
       "shortcode" : "track_previous",
-      "unicode" : "23EE"
+      "unicode" : "23EE-FE0F"
    },
    {
       "shortcode" : "trackball",
-      "unicode" : "1F5B2"
+      "unicode" : "1F5B2-FE0F"
    },
    {
       "shortcode" : "tractor",
@@ -15073,7 +16573,7 @@
    },
    {
       "shortcode" : "two",
-      "unicode" : "0032-20E3"
+      "unicode" : "0032-FE0F-20E3"
    },
    {
       "shortcode" : "two_hearts",
@@ -15109,7 +16609,7 @@
    },
    {
       "shortcode" : "u6708",
-      "unicode" : "1F237"
+      "unicode" : "1F237-FE0F"
    },
    {
       "shortcode" : "u6709",
@@ -15153,15 +16653,15 @@
    },
    {
       "shortcode" : "umbrella",
-      "unicode" : "2602"
+      "unicode" : "2602-FE0F"
    },
    {
       "shortcode" : "umbrella2",
-      "unicode" : "2602"
+      "unicode" : "2602-FE0F"
    },
    {
       "shortcode" : "umbrella_on_ground",
-      "unicode" : "26F1"
+      "unicode" : "26F1-FE0F"
    },
    {
       "shortcode" : "umbrella_with_rain_drops",
@@ -15205,7 +16705,7 @@
    },
    {
       "shortcode" : "urn",
-      "unicode" : "26B1"
+      "unicode" : "26B1-FE0F"
    },
    {
       "shortcode" : "us",
@@ -15221,7 +16721,7 @@
    },
    {
       "shortcode" : "v",
-      "unicode" : "270C"
+      "unicode" : "270C-FE0F"
    },
    {
       "shortcode" : "v_dark_skin_tone",
@@ -15266,6 +16766,50 @@
    {
       "shortcode" : "va",
       "unicode" : "1F1FB-1F1E6"
+   },
+   {
+      "shortcode" : "vampire",
+      "unicode" : "1F9DB"
+   },
+   {
+      "shortcode" : "vampire_dark_skin_tone",
+      "unicode" : "1F9DB-1F3FF"
+   },
+   {
+      "shortcode" : "vampire_light_skin_tone",
+      "unicode" : "1F9DB-1F3FB"
+   },
+   {
+      "shortcode" : "vampire_medium_dark_skin_tone",
+      "unicode" : "1F9DB-1F3FE"
+   },
+   {
+      "shortcode" : "vampire_medium_light_skin_tone",
+      "unicode" : "1F9DB-1F3FC"
+   },
+   {
+      "shortcode" : "vampire_medium_skin_tone",
+      "unicode" : "1F9DB-1F3FD"
+   },
+   {
+      "shortcode" : "vampire_tone1",
+      "unicode" : "1F9DB-1F3FB"
+   },
+   {
+      "shortcode" : "vampire_tone2",
+      "unicode" : "1F9DB-1F3FC"
+   },
+   {
+      "shortcode" : "vampire_tone3",
+      "unicode" : "1F9DB-1F3FD"
+   },
+   {
+      "shortcode" : "vampire_tone4",
+      "unicode" : "1F9DB-1F3FE"
+   },
+   {
+      "shortcode" : "vampire_tone5",
+      "unicode" : "1F9DB-1F3FF"
    },
    {
       "shortcode" : "vc",
@@ -15409,11 +16953,11 @@
    },
    {
       "shortcode" : "warning",
-      "unicode" : "26A0"
+      "unicode" : "26A0-FE0F"
    },
    {
       "shortcode" : "wastebasket",
-      "unicode" : "1F5D1"
+      "unicode" : "1F5D1-FE0F"
    },
    {
       "shortcode" : "watch",
@@ -15521,11 +17065,11 @@
    },
    {
       "shortcode" : "waving_white_flag",
-      "unicode" : "1F3F3"
+      "unicode" : "1F3F3-FE0F"
    },
    {
       "shortcode" : "wavy_dash",
-      "unicode" : "3030"
+      "unicode" : "3030-FE0F"
    },
    {
       "shortcode" : "waxing_crescent_moon",
@@ -15549,7 +17093,7 @@
    },
    {
       "shortcode" : "weight_lifter",
-      "unicode" : "1F3CB"
+      "unicode" : "1F3CB-FE0F"
    },
    {
       "shortcode" : "weight_lifter_dark_skin_tone",
@@ -15605,7 +17149,7 @@
    },
    {
       "shortcode" : "wheel_of_dharma",
-      "unicode" : "2638"
+      "unicode" : "2638-FE0F"
    },
    {
       "shortcode" : "wheelchair",
@@ -15629,7 +17173,7 @@
    },
    {
       "shortcode" : "white_frowning_face",
-      "unicode" : "2639"
+      "unicode" : "2639-FE0F"
    },
    {
       "shortcode" : "white_large_square",
@@ -15641,11 +17185,11 @@
    },
    {
       "shortcode" : "white_medium_square",
-      "unicode" : "25FB"
+      "unicode" : "25FB-FE0F"
    },
    {
       "shortcode" : "white_small_square",
-      "unicode" : "25AB"
+      "unicode" : "25AB-FE0F"
    },
    {
       "shortcode" : "white_square_button",
@@ -15653,27 +17197,27 @@
    },
    {
       "shortcode" : "white_sun_behind_cloud",
-      "unicode" : "1F325"
+      "unicode" : "1F325-FE0F"
    },
    {
       "shortcode" : "white_sun_behind_cloud_with_rain",
-      "unicode" : "1F326"
+      "unicode" : "1F326-FE0F"
    },
    {
       "shortcode" : "white_sun_cloud",
-      "unicode" : "1F325"
+      "unicode" : "1F325-FE0F"
    },
    {
       "shortcode" : "white_sun_rain_cloud",
-      "unicode" : "1F326"
+      "unicode" : "1F326-FE0F"
    },
    {
       "shortcode" : "white_sun_small_cloud",
-      "unicode" : "1F324"
+      "unicode" : "1F324-FE0F"
    },
    {
       "shortcode" : "white_sun_with_small_cloud",
-      "unicode" : "1F324"
+      "unicode" : "1F324-FE0F"
    },
    {
       "shortcode" : "wilted_flower",
@@ -15685,7 +17229,7 @@
    },
    {
       "shortcode" : "wind_blowing_face",
-      "unicode" : "1F32C"
+      "unicode" : "1F32C-FE0F"
    },
    {
       "shortcode" : "wind_chime",
@@ -15978,6 +17522,50 @@
    {
       "shortcode" : "woman_cartwheeling_tone5",
       "unicode" : "1F938-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_climbing",
+      "unicode" : "1F9D7-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_climbing_dark_skin_tone",
+      "unicode" : "1F9D7-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_climbing_light_skin_tone",
+      "unicode" : "1F9D7-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_climbing_medium_dark_skin_tone",
+      "unicode" : "1F9D7-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_climbing_medium_light_skin_tone",
+      "unicode" : "1F9D7-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_climbing_medium_skin_tone",
+      "unicode" : "1F9D7-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_climbing_tone1",
+      "unicode" : "1F9D7-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_climbing_tone2",
+      "unicode" : "1F9D7-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_climbing_tone3",
+      "unicode" : "1F9D7-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_climbing_tone4",
+      "unicode" : "1F9D7-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_climbing_tone5",
+      "unicode" : "1F9D7-1F3FF-200D-2640-FE0F"
    },
    {
       "shortcode" : "woman_construction_worker",
@@ -16706,6 +18294,94 @@
    {
       "shortcode" : "woman_heart_woman",
       "unicode" : "1F469-200D-2764-FE0F-200D-1F469"
+   },
+   {
+      "shortcode" : "woman_in_lotus_position",
+      "unicode" : "1F9D8-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_lotus_position_dark_skin_tone",
+      "unicode" : "1F9D8-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_lotus_position_light_skin_tone",
+      "unicode" : "1F9D8-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_lotus_position_medium_dark_skin_tone",
+      "unicode" : "1F9D8-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_lotus_position_medium_light_skin_tone",
+      "unicode" : "1F9D8-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_lotus_position_medium_skin_tone",
+      "unicode" : "1F9D8-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_lotus_position_tone1",
+      "unicode" : "1F9D8-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_lotus_position_tone2",
+      "unicode" : "1F9D8-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_lotus_position_tone3",
+      "unicode" : "1F9D8-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_lotus_position_tone4",
+      "unicode" : "1F9D8-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_lotus_position_tone5",
+      "unicode" : "1F9D8-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_steamy_room",
+      "unicode" : "1F9D6-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_steamy_room_dark_skin_tone",
+      "unicode" : "1F9D6-1F3FF-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_steamy_room_light_skin_tone",
+      "unicode" : "1F9D6-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_steamy_room_medium_dark_skin_tone",
+      "unicode" : "1F9D6-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_steamy_room_medium_light_skin_tone",
+      "unicode" : "1F9D6-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_steamy_room_medium_skin_tone",
+      "unicode" : "1F9D6-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_steamy_room_tone1",
+      "unicode" : "1F9D6-1F3FB-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_steamy_room_tone2",
+      "unicode" : "1F9D6-1F3FC-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_steamy_room_tone3",
+      "unicode" : "1F9D6-1F3FD-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_steamy_room_tone4",
+      "unicode" : "1F9D6-1F3FE-200D-2640-FE0F"
+   },
+   {
+      "shortcode" : "woman_in_steamy_room_tone5",
+      "unicode" : "1F9D6-1F3FF-200D-2640-FE0F"
    },
    {
       "shortcode" : "woman_judge",
@@ -17901,7 +19577,7 @@
    },
    {
       "shortcode" : "world_map",
-      "unicode" : "1F5FA"
+      "unicode" : "1F5FA-FE0F"
    },
    {
       "shortcode" : "worried",
@@ -17925,7 +19601,7 @@
    },
    {
       "shortcode" : "writing_hand",
-      "unicode" : "270D"
+      "unicode" : "270D-FE0F"
    },
    {
       "shortcode" : "writing_hand_dark_skin_tone",
@@ -17993,7 +19669,7 @@
    },
    {
       "shortcode" : "yin_yang",
-      "unicode" : "262F"
+      "unicode" : "262F-FE0F"
    },
    {
       "shortcode" : "yt",
@@ -18008,12 +19684,20 @@
       "unicode" : "1F1FF-1F1E6"
    },
    {
+      "shortcode" : "zany_face",
+      "unicode" : "1F92A"
+   },
+   {
       "shortcode" : "zap",
       "unicode" : "26A1"
    },
    {
+      "shortcode" : "zebra_face",
+      "unicode" : "1F993"
+   },
+   {
       "shortcode" : "zero",
-      "unicode" : "0030-20E3"
+      "unicode" : "0030-FE0F-20E3"
    },
    {
       "shortcode" : "zipper_mouth",
@@ -18026,6 +19710,10 @@
    {
       "shortcode" : "zm",
       "unicode" : "1F1FF-1F1F2"
+   },
+   {
+      "shortcode" : "zombie",
+      "unicode" : "1F9DF"
    },
    {
       "shortcode" : "zw",

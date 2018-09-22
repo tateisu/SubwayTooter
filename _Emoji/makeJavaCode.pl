@@ -259,7 +259,7 @@ for my $emoji ( @$emoji_list ){
 
 for my $variant ( @emoji_variants ){
 	next if not $emoji_variants_used{$variant};
-	warn "$variant ",join(',',@{$emoji_variants_used{$variant}})," ...\n";
+	warn "variant: $variant ",join(',',@{$emoji_variants_used{$variant}})," ...\n";
 }
 
 ##############################################################
@@ -386,6 +386,7 @@ sub removeZWJ($){
 
 my @fix_code;
 my @fix_name;
+my @fix_category;
 
 while(<DATA>){
 	s/#.*//;
@@ -393,12 +394,14 @@ while(<DATA>){
 	s/\s*$//;
 	if( s/(\w+)\s*(\w+)\s*// ){
 		my($type,$key)=($1,$2);
-		my @data = ( /([\w-]+)/g );
+		my @data = ( /([\w\+-]+)/g );
 		next if @data != 1;
 		if( $type eq 'code'){
 			push @fix_code,[$key,$data[0]];
 		}elsif( $type eq 'name'){
 			push @fix_name,[$key,$data[0]];
+		}elsif( $type eq 'category'){
+			push @fix_category,[$key,$data[0]];
 		}else{
 			die "bad fix_data type=$type";
 		}
@@ -440,6 +443,20 @@ for(@fix_name){
 	$found or die "missing relation for $name and $selected_res_name\n";
 }
 
+for(@fix_category){
+	my($cname,$name)=@$_;
+
+	my $rh = $name_map{parseShortName($name)};
+	my($res_info)= values %$rh;
+	if( not $res_info ){
+		warn "category=$cname emoji=$name missing resource\n";
+		next;
+	}
+	my $ra = $res_info->{category_list};
+	$ra or $ra = $res_info->{category_list} =[];
+	push @$ra,$cname;
+}
+
 updateCodeMap();
 updateNameMap();
 
@@ -478,9 +495,9 @@ for my $code (sort keys %code_map){
 # カテゴリ情報を読む
 
 my $category_data;
-if(0){
+if(1){
 	my $json = JSON->new->allow_nonref->relaxed(1);
-	my $d1 = loadFile "./category.json";
+	my $d1 = loadFile "./emoji-mart/data/all.json";
 	my $d2="";
 	while( $d1 =~/("[^"]*"|\w+|[^"\w]+)/g ){
 		my $a = $1;
@@ -521,7 +538,11 @@ for my $category( @{ $category_data->{categories} } ){
 	while( my($res_name,$res_info)=each %res_map ){
 		next if $res_info->{no_tone};
 		if( not $res_info->{category_list} ){
-			push @missing,join(',',sort keys %{$res_info->{shortname_map}});
+			my $key = join(',',sort keys %{$res_info->{shortname_map}});
+			push @missing,$key;
+			if( not $key ){
+				warn "no key: ",dump($res_info),"\n";
+			}
 		}
 	}
 	for(sort @missing){
@@ -609,14 +630,27 @@ for my $name (sort keys %name_map){
 	addCode( qq{name( "$name", R.drawable.$res_info->{res_name}, "$java_chars" );});
 }
 
+my %categoryNameMapping =(
+ 'smileys & people'=>'emoji_category_people',
+ 'animals & nature'=>'emoji_category_nature',
+ 'food & drink'=>'emoji_category_foods',
+ 'activities'=>'emoji_category_activity',
+ 'travel & places'=>'emoji_category_places',
+ 'objects'=>'emoji_category_objects',
+ 'symbols'=>'emoji_category_symbols',
+ 'flags'=>'emoji_category_flags',
+);
+
 # カテゴリを書きだす
 for my $category( @{ $category_data->{categories} } ){
 	my $cname = lc $category->{name};
 	my $emojis = $category->{emojis};
 	warn "category $cname\n";
+	my $catResName = $categoryNameMapping{$cname};
+	$catResName or die "missing category resource name for $cname\n";
 	for my $name( @$emojis ){
 		$name = parseShortName($name);
-		addCode( qq{category(R.string.emoji_category_$cname,"$name");} );
+		addCode( qq{category(R.string.$catResName, "$name");} );
 	}
 }
 
@@ -810,7 +844,7 @@ code e66e emj_1f6be,emj_1f6bd,emj_1f6bb #  / 1F6BE 🚾 / 1F6BD 🚽 / 1F6BB �
 code e671 emj_1f379,emj_1f378 #  / 1F379 🍹 / 1F378 🍸
 code e672 emj_1f37a # ビール / 1F37B 🍻 / 1F37A 🍺
 code e674 emj_1f460 # ブティック(ハイヒール) / 1F460 👠 / 1F461 👡
-code e675 emj_2702 # 美容院(はさみ) / 1F487 💇 / 2702 ✂
+code e675 emj_2702_fe0f # 美容院(はさみ) / 1F487 💇 / 2702 ✂
 code e677 emj_1f3a5 # 映画 / 1F3A5 🎥 / 1F3A6 🎦 / 1F4F9 📹
 
 
@@ -818,7 +852,7 @@ code e677 emj_1f3a5 # 映画 / 1F3A5 🎥 / 1F3A6 🎦 / 1F4F9 📹
 code e682 emj_1f45c # カバン / 1F4BC 💼 / 1F45C 👜
 code e683 emj_1f4d9 # 本 / 1F4D8 📘 / 1F4D2 📒 / 1F4DA 📚 / 1F4C7 📇 / 1F4D7 📗 / 1F4D6 📖 / 1F4D5 📕 / 1F4D3 📓 / 1F4D4 📔 / 1F4D9 📙
 code e685 emj_1f381 # プレゼント / 1F4E6 📦 / 1F381 🎁
-code e687 emj_260e # 電話 / 1F4DE 📞 / 260E ☎
+code e687 emj_260e_fe0f # 電話 / 1F4DE 📞 / 260E ☎
 code e689 emj_1f4c4 # メモ / 1F4CB 📋 / 1F4C4 📄 / 1F4DD 📝 / 1F4C3 📃 / 1F4D1 📑
 code e68c emj_1f4bf # ＣＤ / 1F4BF 💿 / 1F4C0 📀
 code e695 emj_270b # 手（パー） / 1F44B 👋 / 270B ✋ / 1F450 👐
@@ -841,13 +875,13 @@ code e6f0 emj_1f604 # わーい（嬉しい顔） / 1F63A 😺 / 263A ☺ / 1F46
 code e6f1 emj_1f620 # ちっ（怒った顔） / 1F620 😠 / 1F64E 🙎
 code e6f3 emj_1f616 # もうやだ～（悲しい顔） / 1F640 🙀 / 1F616 😖 / 1F629 😩 / 1F64D 🙍
 code e6f4 emj_1f635 # ふらふら / 1F635 😵 / 1F632 😲
-code e6f7 emj_2668 # いい気分（温泉） / 1F6C0 🛀 / 2668 ♨
-code e6f8 emj_2734 # かわいい / 1F49F 💟 / 2733 ✳ / 1F4A0 💠 / 2734 ✴
+code e6f7 emj_2668_fe0f # いい気分（温泉） / 1F6C0 🛀 / 2668 ♨
+code e6f8 emj_2734_fe0f # かわいい / 1F49F 💟 / 2733 ✳ / 1F4A0 💠 / 2734 ✴
 code e6f9 emj_1f48b #  キスマーク / 1F48F 💏 / 1F444 👄 / 1F48B 💋
 code e6fa emj_2728 # ぴかぴか（新しい） / 2728 ✨ / 2747 ❇
 code e6fb emj_1f4a1 # ひらめき / 1F526 🔦 / 1F4A1 💡
 code e6ff emj_1f3b6 # ムード  / 1F3BC 🎼 / 1F3B6 🎶
-code e700 emj_2935 # バッド（下向き矢印） / 1F44E 👎 / 2935 ⤵
+code e700 emj_2935_fe0f # バッド（下向き矢印） / 1F44E 👎 / 2935 ⤵
 code e701 emj_1f4a4 # 眠い(睡眠) / 1F62A 😪 / 1F4A4 💤
 code e702 emj_2757 # exclamation / 2757 ❗ / 2755 ❕
 code e70a emj_27b0 # ー（長音記号２） / 27B0 ➰ / 1F4DC 📜
@@ -867,7 +901,7 @@ code e72b emj_1f623 # docomo がまん顔 / 1F62B 😫 / 1F623 😣
 code e72e emj_1f622 # docomo 涙 / 1F63F 😿 / 1F622 😢
 code e72f emj_1f196 # docomo NG / 26D4 ⛔ / 1F196 🆖 / 1F645 🙅
 code e733 emj_1f3c3 # docomo 走る人(右向き) / 1F3C3 🏃 / 1F6B6 🚶
-code e735 emj_267b  # docomo リサイクル(緑) / 267B ♻ / 1F503 🔃
+code e735 emj_267b_fe0f  # docomo リサイクル(緑) / 267B ♻ / 1F503 🔃
 code e738 emj_1f232 # docomo 禁止 / 1F6AB 🚫 / 1F232 🈲
 code e741 emj_1f340 # docomo 四葉のクローバー / 1F340 🍀 / 1F33F 🌿
 code e745 emj_1f34e # docomo りんご(赤い) / 1F34E 🍎 / 1F34F 🍏
@@ -895,8 +929,11 @@ name email         emj_1f4e7
 name family        emj_1f46a
 name man_woman_boy emj_1f468_200d_1f469_200d_1f466
 name medal         emj_1f3c5
-name satellite     emj_1f6f0
+name satellite     emj_1f6f0_fe0f
 name snowman       emj_26c4
-name umbrella      emj_2602
+name umbrella      emj_2602_fe0f
+name cricket      emj_1f997
+name cricket_bat_and_ball emj_1f3cf
 
 
+category activities military_medal

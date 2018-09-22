@@ -100,9 +100,20 @@ sub getEmojiResId($$){
 	my $dst_name = "emj_". lc($image);
 	$dst_name =~ tr/-/_/;
 	my $dst_path = "png/$dst_name";
+
 	if( not -f $dst_path ){
-		copy( $image_path,$dst_path ) or die "$dst_path $!";
+
+		# override?
+		my $override = "override/$dst_name";
+		if( -f $override){
+			copy( $override,$dst_path ) or die "$dst_path $!";
+		}else{
+			copy( $image_path,$dst_path ) or die "$dst_path $!";
+		}
 	}
+	
+	# override?
+	my $override = "override/$dst_name";
 	
 	# 画像リソースの名前
 	my $res_name = $dst_name;

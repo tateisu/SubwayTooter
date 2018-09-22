@@ -12344,7 +12344,7 @@
 		category(CATEGORY_FLAGS, "waving_black_flag");
 		category(CATEGORY_FLAGS, "waving_white_flag");
 	}
-	static final int utf16_max_length=14;
+	public static final int utf16_max_length=14;
 
 	static void initAll(){
 		init1();

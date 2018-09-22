@@ -13,6 +13,13 @@ git clone git@github.com:Gargron/emoji-mart.git
 # (上のemoji-martのpackages.jsonで指定されたバージョンに合わせる
 git clone -b v4.0.4 git@github.com:iamcal/emoji-data.git
 
+オーバライド用
+override フォルダにPNG画像を用意する
+
+マストドンのタンスにある絵文字を以下のようにPNGに変換します
+
+magick.exe -density 128 -background none 1f923.svg emj_1f923.png
+
 ########################################
 
 * 前準備

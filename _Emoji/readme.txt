@@ -18,7 +18,8 @@ override フォルダにPNG画像を用意する
 
 マストドンのタンスにある絵文字を以下のようにPNGに変換します
 
-magick.exe -density 128 -background none 1f923.svg emj_1f923.png
+magick.exe -density 128 -background none 1f923.svg png32:emj_1f923.png
+
 
 ########################################
 

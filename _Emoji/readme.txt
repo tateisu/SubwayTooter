@@ -13,11 +13,12 @@ git clone git@github.com:Gargron/emoji-mart.git
 # (上のemoji-martのpackages.jsonで指定されたバージョンに合わせる
 git clone -b v4.0.4 git@github.com:iamcal/emoji-data.git
 
-オーバライド用
+# マストドン公式
+git clone git@github.com:tootsuite/mastodon.git
+
+#オーバライド用
 override フォルダにPNG画像を用意する
-
 マストドンのタンスにある絵文字を以下のようにPNGに変換します
-
 magick.exe -density 128 -background none 1f923.svg png32:emj_1f923.png
 
 
@@ -54,6 +55,13 @@ https://github.com/Gargron/emoji-mart/blob/master/data/all.json
 
 絵文字データはコレ
 https://github.com/iamcal/emoji-data/blob/v4.0.4/emoji.json
+
+が、上記は絵文字ピッカーの話であり投稿後のデータの絵文字表示には使われていない。
+
+たとえば rolling_on_the_floor_laughing は絵文字ピッカー内部では泣いていないが、投稿後は泣いている。
+
+投稿後のデータのUnicode絵文字に使われているのはMastodon公式リポジトリにあるsvgファイルだ。
+https://github.com/tootsuite/mastodon/tree/master/public/emoji
 
 
 

@@ -103,13 +103,24 @@ sub getEmojiResId($$){
 
 	if( not -f $dst_path ){
 
-		# override?
-		my $override = "override/$dst_name";
-		if( -f $override){
-			copy( $override,$dst_path ) or die "$dst_path $!";
+		# using svg from mastodon folder?
+		my $mastodonSvg = "mastodon/public/emoji/".lc($image);
+		$mastodonSvg =~ s/\.png$/\.svg/i;
+		if( -f $mastodonSvg ){
+			warn "convert from mastodon SVG file: $mastodonSvg\n";
+			system qq(magick.exe -density 128 -background none $mastodonSvg png32:$dst_path);
+
 		}else{
-			copy( $image_path,$dst_path ) or die "$dst_path $!";
+			# override?
+			my $override = "override/$dst_name";
+			if( -f $override){
+				copy( $override,$dst_path ) or die "$dst_path $!";
+			}else{
+				copy( $image_path,$dst_path ) or die "$dst_path $!";
+			}
 		}
+
+
 	}
 	
 	# override?

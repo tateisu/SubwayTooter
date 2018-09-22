@@ -631,14 +631,14 @@ for my $name (sort keys %name_map){
 }
 
 my %categoryNameMapping =(
- 'smileys & people'=>'emoji_category_people',
- 'animals & nature'=>'emoji_category_nature',
- 'food & drink'=>'emoji_category_foods',
- 'activities'=>'emoji_category_activity',
- 'travel & places'=>'emoji_category_places',
- 'objects'=>'emoji_category_objects',
- 'symbols'=>'emoji_category_symbols',
- 'flags'=>'emoji_category_flags',
+ 'smileys & people'=>'CATEGORY_PEOPLE',
+ 'animals & nature'=>'CATEGORY_NATURE',
+ 'food & drink'=>'CATEGORY_FOODS',
+ 'activities'=>'CATEGORY_ACTIVITY',
+ 'travel & places'=>'CATEGORY_PLACES',
+ 'objects'=>'CATEGORY_OBJECTS',
+ 'symbols'=>'CATEGORY_SYMBOLS',
+ 'flags'=>'CATEGORY_FLAGS',
 );
 
 # カテゴリを書きだす
@@ -650,7 +650,7 @@ for my $category( @{ $category_data->{categories} } ){
 	$catResName or die "missing category resource name for $cname\n";
 	for my $name( @$emojis ){
 		$name = parseShortName($name);
-		addCode( qq{category(R.string.$catResName, "$name");} );
+		addCode( qq{category($catResName, "$name");} );
 	}
 }
 
@@ -663,7 +663,7 @@ if( $line_num > 0 ){
 
 # write function to call init**()
 
-print $fh "\tstatic final int utf16_max_length=$utf16_max_length;\n\n";
+print $fh "\tpublic static final int utf16_max_length=$utf16_max_length;\n\n";
 print $fh "\tstatic void initAll(){\n";
 for(my $i=1;$i <= $func_num;++$i){
 	print  $fh "\t\tinit$i();\n";

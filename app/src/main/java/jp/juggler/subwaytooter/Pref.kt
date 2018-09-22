@@ -245,7 +245,11 @@ object Pref {
 		true,
 		R.id.swPriorChrome
 	)
-	
+	val bpDontUseCustomTabs = BooleanPref(
+		"DontUseCustomTabs",
+		false,
+		R.id.swDontUseCustomTabs
+	)
 	val bpPriorLocalURL = BooleanPref(
 		"prior_local_url",
 		false,

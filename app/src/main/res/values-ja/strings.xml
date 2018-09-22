@@ -759,5 +759,6 @@
     <string name="zooming_of">×%3$.1f\n%1$d×%2$d</string>
     <string name="link_color">リンクの色 (アプリ再起動が必要)</string>
     <string name="missing_closeable_column">閉じれるカラムが表示範囲内にありません</string>
+    <string name="dont_use_custom_tabs">リンクを開く際に (ChromeやFirefoxの) Custom Tabsを使わない</string>
 
 </resources>

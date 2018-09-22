@@ -5,6 +5,7 @@ import android.app.Activity
 import android.app.Application
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
@@ -213,8 +214,8 @@ class App1 : Application() {
 		}
 		
 		private fun prepareOkHttp(
-			timeoutSecondsConnect:Int,
-			timeoutSecondsRead:Int
+			timeoutSecondsConnect : Int,
+			timeoutSecondsRead : Int
 		) : OkHttpClient.Builder {
 			val spec = ConnectionSpec.Builder(ConnectionSpec.MODERN_TLS)
 				.cipherSuites(*APPROVED_CIPHER_SUITES)
@@ -313,7 +314,6 @@ class App1 : Application() {
 			MediaShown.deleteOld(now)
 			MediaShownMisskey.deleteOld(now)
 			
-			
 			//		if( USE_OLD_EMOJIONE ){
 			//			if( typeface_emoji == null ){
 			//				typeface_emoji = TypefaceUtils.load( app_context.getAssets(), "emojione_android.ttf" );
@@ -329,25 +329,24 @@ class App1 : Application() {
 			
 			run {
 				// API用のHTTP設定はキャッシュを使わない
-				var builder = prepareOkHttp(30,60)
+				var builder = prepareOkHttp(30, 60)
 				ok_http_client = builder.build()
-
-
+				
 				// ディスクキャッシュ
 				val cacheDir = File(app_context.cacheDir, "http2")
 				val cache = Cache(cacheDir, 30000000L)
 				
 				// カスタム絵文字用のHTTP設定はキャッシュを使う
-				builder = prepareOkHttp(30,60)
+				builder = prepareOkHttp(30, 60)
 				builder.cache(cache)
 				
 				ok_http_client2 = builder.build()
 				
 				// 内蔵メディアビューア用のHTTP設定は同じキャッシュを使うが、タイムアウトは別の値を指定する
 				var mediaReadTimeout = Pref.spMediaReadTimeout.toInt(pref)
-				if( mediaReadTimeout < 3 ) mediaReadTimeout = 3
-
-				builder = prepareOkHttp(mediaReadTimeout,mediaReadTimeout)
+				if(mediaReadTimeout < 3) mediaReadTimeout = 3
+				
+				builder = prepareOkHttp(mediaReadTimeout, mediaReadTimeout)
 				builder.cache(cache)
 				ok_http_client_media_viewer = builder.build()
 			}
@@ -538,57 +537,59 @@ class App1 : Application() {
 		// Chrome Custom Tab を開く
 		fun openCustomTab(activity : Activity, url : String) {
 			try {
-				if(url.startsWith("http") && Pref.bpPriorChrome(pref)) {
-					try {
-						// 初回はChrome指定で試す
-						val builder = CustomTabsIntent.Builder()
-						builder.setToolbarColor(
-							Styler.getAttributeColor(
-								activity,
-								R.attr.colorPrimary
+				if( Pref.bpDontUseCustomTabs(pref)){
+					val intent = Intent(Intent.ACTION_VIEW,Uri.parse(url))
+					activity.startActivity(intent)
+
+				}else{
+
+					if(url.startsWith("http") && Pref.bpPriorChrome(pref)) {
+						try {
+							// 初回はChrome指定で試す
+							val customTabsIntent = CustomTabsIntent.Builder()
+								.setToolbarColor(
+									Styler.getAttributeColor(
+										activity,
+										R.attr.colorPrimary
+									)
+								)
+								.setShowTitle(true)
+								.build()
+							customTabsIntent.intent.component = ComponentName(
+								"com.android.chrome",
+								"com.google.android.apps.chrome.Main"
 							)
-						).setShowTitle(true)
-						val customTabsIntent = builder.build()
-						customTabsIntent.intent.component = ComponentName(
-							"com.android.chrome",
-							"com.google.android.apps.chrome.Main"
-						)
-						customTabsIntent.launchUrl(activity, Uri.parse(url))
-						return
-					} catch(ex2 : Throwable) {
-						log.e(ex2, "openChromeTab: missing chrome. retry to other application.")
+							customTabsIntent.launchUrl(activity, Uri.parse(url))
+							return
+						} catch(ex2 : Throwable) {
+							log.e(ex2, "openChromeTab: missing chrome. retry to other application.")
+						}
+						
 					}
+
+					// Chromeがないようなのでcomponent指定なしでリトライ
+					CustomTabsIntent.Builder()
+						.setToolbarColor(Styler.getAttributeColor(activity, R.attr.colorPrimary))
+						.setShowTitle(true)
+						.build()
+						.launchUrl(activity, Uri.parse(url))
 					
 				}
-				
-				// chromeがないなら ResolverActivity でアプリを選択させる
-				val builder = CustomTabsIntent.Builder()
-				builder.setToolbarColor(Styler.getAttributeColor(activity, R.attr.colorPrimary))
-					.setShowTitle(true)
-				val customTabsIntent = builder.build()
-				customTabsIntent.launchUrl(activity, Uri.parse(url))
 			} catch(ex : Throwable) {
 				log.trace(ex)
-				val scheme = try{
+				val scheme = try {
 					Uri.parse(url).scheme
-				}catch(_:Throwable){
+				} catch(_ : Throwable) {
 					url
 				}
-				showToast(
-					activity,
-					true,
-					"can't open browser app for %s",scheme
-					
-				)
+				showToast(activity,true,"can't open browser app for %s", scheme)
 			}
 			
 		}
 		
 		fun openCustomTab(activity : Activity, ta : TootAttachment) {
-			val url = ta.getLargeUrl(pref)
-			if(url != null) {
-				openCustomTab(activity, url)
-			}
+			val url = ta.getLargeUrl(pref) ?: return
+			openCustomTab(activity, url)
 		}
 		
 	}

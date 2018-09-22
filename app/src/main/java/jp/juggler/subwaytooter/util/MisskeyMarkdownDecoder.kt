@@ -413,7 +413,7 @@ object MisskeyMarkdownDecoder {
 				val start = 0
 				val end = sbTmp.length
 				sbTmp.setSpan(
-					EmojiImageSpan(context, R.drawable.emj_1f5bc),
+					EmojiImageSpan(context, R.drawable.emj_1f5bc_fe0f),
 					start,
 					end,
 					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE

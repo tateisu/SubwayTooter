@@ -60,7 +60,7 @@ public class EmojiMap201709 {
 	private static void code( @DrawableRes int image_id, @NonNull String code ){
 		// 素の数字とcopyright,registered, trademark は絵文字にしない
 		int c = code.charAt( 0 );
-		if( code.length() == 1 && ( c <= 0xae ) || c == 0x2122 ){
+		if( code.length() == 1 && c <= 0xae || c == 0x2122 ){
 			return;
 		}
 		sUTF16ToImageId.put( code, image_id );

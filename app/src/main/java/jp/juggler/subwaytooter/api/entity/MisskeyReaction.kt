@@ -9,7 +9,7 @@ enum class MisskeyReaction(
 ) {
 	
 	Like("like", R.drawable.emj_1f44d,  R.drawable.btn_reaction_like),
-	Love("love", R.drawable.emj_2665, R.drawable.btn_reaction_love),
+	Love("love", R.drawable.emj_2665_fe0f, R.drawable.btn_reaction_love),
 	Laugh("laugh", R.drawable.emj_1f606, R.drawable.btn_reaction_laugh),
 	Hmm("hmm", R.drawable.emj_1f914, R.drawable.btn_reaction_hmm),
 	Surprise("surprise", R.drawable.emj_1f62e, R.drawable.btn_reaction_surprise),

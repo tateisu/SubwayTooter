@@ -251,7 +251,7 @@ class EmojiPicker(
 	private fun showSkinTone() {
 		for(button in ibSkinTone) {
 			if(selected_tone == button.id) {
-				button.setImageResource(R.drawable.emj_2714)
+				button.setImageResource(R.drawable.emj_2714_fe0f)
 			} else {
 				button.setImageDrawable(null)
 			}

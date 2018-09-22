@@ -64,9 +64,3 @@ https://github.com/iamcal/emoji-data/blob/v4.0.4/emoji.json
 https://github.com/tootsuite/mastodon/tree/master/public/emoji
 
 
-
-
-
-########################################
-古い内容
-

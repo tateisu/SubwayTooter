@@ -81,7 +81,7 @@
 	<string name="confirm_boost_from">%1$s voulez-vous partager ce toot ?,\nil sera affiché chez vos abonnés et sur votre profil.</string>
 	<string name="confirm_unboost_from">Unboost this status from %1$s ?</string>
     <string name="confirm_favourite_from">Favourite this status from %1$s ? Notification will be sent to the author.</string>
-	<string name="confirm_unfavourite_from">Unfavourite this status from %1$s ?</string>
+	<string name="confirm_unfavourite_from"></string>
 
     <string name="confirm_close_column">Fermer cette colonne ?</string>
 	<string name="confirm_delete_attachment">Retirer cette pièce jointe ?</string>
@@ -326,7 +326,7 @@
 	<string name="visibility_private">Abonnés</string>
 	<string name="visibility_public">Public</string>
 	<string name="visibility_unlisted">Non listé</string>
-	<string name="visibility_web_setting">Trace web app setting</string>
+	<string name="visibility_web_setting"></string>
 
 	<string name="wait_previous_operation">Veuillez attendre la fin de la dernière opération.</string>
 	<string name="with_attachment">Avec pièce(s) jointe(s)</string>
@@ -385,8 +385,8 @@
     <string name="url_omitted">(URL omise)</string>
     <string name="blocked_domains">Domaines bloqués</string>
 	<string name="block_domain_that">Bloquer l\'ensemble du domaine \"%1$s\"</string>
-	<string name="confirm_block_domain">Whole domain \"%1$s\" will be blocked. Are you sure?</string>
-	<string name="confirm_unblock_domain">Unblock domain \"%1$s\"?</string>
+	<string name="confirm_block_domain">L\'ensemble du domaine \"%1$s\" sera bloqué. Êtes-vous sûr ?</string>
+	<string name="confirm_unblock_domain">Débloquer le domaine \"%1$s\" ?</string>
 
 	<string name="text_to_speech_initializing">Initialisation de la lecture vocale…</string>
 	<string name="text_to_speech_initialize_failed">TextToSpeech initializing failed. status=%1$s</string>
@@ -490,9 +490,7 @@
     <string name="profile_pin">Épingler sur le profil</string>
 	<string name="profile_unpin">Unpin from profile</string>
     <string name="profile_pin_progress">Changing pinned status…</string>
-	<string name="length_warning">\"%1$s\" is too long (%2$d/%3$d characters).
-\nIt is not acceptable in the standard instance, but it may be acceptable in some instances.
-\nAre you sure?</string>
+	<string name="length_warning"></string>
 
 	<string name="short_acct_local_user">Short acct for local user (app restart required)</string>
     <string name="loading_notification_title">Chargement de la notification…</string>
@@ -543,11 +541,11 @@
     <string name="not_blocked">Non bloqué.</string>
     <string name="not_muted">Pas mis en sourdine.</string>
     <string name="media_description">(pièce jointe %1$d) %2$s</string>
-    <string name="set_description">set description(Mastodon 2.0 or later)</string>
+    <string name="set_description">set description(Mastodon 2.0 ou plus récent)</string>
     <string name="attachment_description_cant_edit_while_uploading">La description de la pièce jointe ne peut être modifiée pendant le téléversement.</string>
     <string name="attachment_description">description de la pièce jointe</string>
     <string name="description_empty">aucune description.</string>
-    <string name="attachment_description_sending">sending attachment description…</string>
+    <string name="attachment_description_sending">envoi de la description de la pièce jointe …</string>
 	<string name="hide_boost_in_home">Hide boosts from this user to your home</string>
 	<string name="show_boost_in_home">Show boosts from this user to your home</string>
 	<string name="operation_succeeded">Operation succeeded.</string>
@@ -561,10 +559,10 @@
 	<string name="list_create_hint">name of new list</string>
 	<string name="list_name_empty">please input name of new list.</string>
 	<string name="list_created">new list created.</string>
-	<string name="list_delete_confirm">\"%1$s\" list will be deleted. Are you sure?</string>
+	<string name="list_delete_confirm">\"%1$s\" sera supprimé. Êtes-vous sûr ?</string>
 	<string name="list_member">List users</string>
 	<string name="list_timeline">List timeline</string>
-	<string name="list_member_delete_confirm">\"%1$s\" will be deleted from \"%2$s\". Are you sure?</string>
+	<string name="list_member_delete_confirm">\"%1$s\" sera supprimé de \"%2$s\". Vous êtes sûr ?</string>
 	<string name="target_user">Target user</string>
 	<string name="list_owner">List owner</string>
 	<string name="list_create">Création d’une nouvelle liste…</string>
@@ -572,7 +570,7 @@
 	<string name="list_not_supported">this instance does not support list.</string>
 	<string name="cant_access_list">Impossible d’accéder aux listes</string>
 	<string name="account_sync_failed">account sync failed.</string>
-	<string name="list_retry_with_follow">You have not followed %1$s yet. Would you like to follow and then add to list?</string>
+	<string name="list_retry_with_follow"></string>
 	<string name="cant_add_list_follow_requesting">Can\'t add user to list:\nif the user is \"locked\", please wait until follow request is approved. else please retry 2…3 times.</string>
 	<string name="cant_add_list_follow_failed">Can\'t add user to list:\nfollow operation failed.</string>
 	<string name="list_member_added">User has been added to the list.</string>
@@ -582,7 +580,7 @@
 	<string name="ignore_suggestion">ignore suggestion</string>
 	<string name="list_not_created">(list is not created)</string>
 	<string name="your_lists">Your lists</string>
-	<string name="media_attachment_max_byte_size">Max byte size of media attachment(unit:Mega byte. default is 8)</string>
+	<string name="media_attachment_max_byte_size"></string>
     <string name="toot_search_msp">Toot search(MSP)</string>
 	<string name="toot_search_msp_of">Toot search(MSP) \"%1$s\"</string>
 	<string name="toot_search_ts">Toot search(ts)</string>
@@ -637,7 +635,7 @@
 	<string name="notification_type_vote">vote</string>
     <string name="dont_show_normal_toot">Don\'t show normal toot</string>
     <string name="set_focus_point">set focus point (Mastodon 2.3 or later)</string>
-    <string name="report_forward_desc">The account is from another instance. Send an anonymized copy of the report there as well?</string>
+    <string name="report_forward_desc">Le compte provient d\'une autre instance. Envoyer une copie anonyme du rapport à cette instance aussi ?</string>
 	<string name="report_forward_to">Forward to %1$s</string>
     <string name="locked_account">Locked account</string>
     <string name="contact">contact account</string>
@@ -702,20 +700,20 @@
     <string name="redraft_and_delete">Redraft and delete</string>
     <string name="cant_sync_toot">Can\'t synchronize toot.</string>
     <string name="cant_change_account_when_redraft">Can\'t change account while using redraft.</string>
-	<string name="delete_base_status_before_toot">Delete based status before post. All of favourites,boosts will be lost. Replies will be disconnected. Media attachments will not kept on Mastodon pre-2.4.1 . Are you sure?</string>
+	<string name="delete_base_status_before_toot"></string>
     <string name="notification_tl_font_size">Notification TL font size (unit:sp. leave empty to default. app restart required)</string>
     <string name="notification_tl_icon_size">Notification TL icon size (unit:dp. default:32. app restart required)</string>
     <string name="post_button_tapped_repeatly">Post button was tapped repeatedly</string>
     <string name="regex_filter_matches_empty_string">regex filter matches to empty string.</string>
 	<string name="follow_suggestion">Follow suggestion</string>
     <string name="close_all_columns">Close all columns</string>
-    <string name="confirm_close_column_all">All columns (exclude protected) will be closed. Are tou sure?</string>
+    <string name="confirm_close_column_all">Toutes les colonnes (à l\'exclusion des colonnes protégées) seront fermées. Vous en êtes sûr ?</string>
 
 	<string name="keyword_filters">Keyword filters</string>
 	<string name="keyword_filter">Keyword filter</string>
 	<string name="keyword_filter_new">New filter</string>
 	<string name="keyword_filter_edit">Edit filter</string>
-	<string name="filter_delete_confirm">The filter \'%1$s\' will be deleted. Are you sure?</string>
+	<string name="filter_delete_confirm">Le filtre\'%1$s\' sera supprimé. Vous êtes sûr ?</string>
 	<string name="filter_of">Filter \'%1$s\'</string>
 	<string name="filtered">filtered</string>
 
@@ -745,7 +743,7 @@
 	<string name="filter_expire_1week">1 week after save</string>
     <string name="scroll_top_from_column_strip">Scroll to top when tapping visible column in column strip</string>
 	<string name="delete_suggestion">Delete from follow suggestion…</string>
-	<string name="delete_succeeded_confirm">The user \"%1$s\" will be removed from follow suggestion. Are you sure?</string>
+	<string name="delete_succeeded_confirm">L\'utilisateur·trice \"%1$s\" sera retiré·é de la liste des comptes recommandés. Êtes-vous sûr ?</string>
     <string name="toot_context_parse_failed">conversation parse failed.</string>
     <string name="toot_default_text">Default text when composing toot. (not affected to quick toot bar and switching account in toot composing screen)</string>
     <string name="list_divider_color">List divider color</string>
@@ -790,12 +788,14 @@
 	<string name="endorse_succeeded">Endorsement added.</string>
 	<string name="remove_endorse_succeeded">Endorsement removed.</string>
     <string name="follow_request_cancelled">Follow request was cancelled.</string>
-	<string name="confirm_cancel_follow_request_who_from">Follow request from %2$s to %1$s will be cancelled. Are you sure?</string>
+	<string name="confirm_cancel_follow_request_who_from"></string>
     <string name="reaction">Reaction (Misskey)</string>
 	<string name="vote">Vote (Misskey)</string>
     <string name="timeout_for_embed_media_viewer">Timeout for embed media viewer (unit:seconds, app restart(delete from app history) required)</string>
 
 <string name="media_attachment_max_byte_size_movie">Taille maximale en octets des médias vidéo (unité : méga octets. par défaut : 40)</string>
     <string name="link_color">Couleur des liens (redémarrage de l\'application requis)</string>
+
+<string name="dont_use_custom_tabs">Ne pas utiliser d\'onglets personnalisés (Chrome/Firefox) lorsque vous ouvrez des liens</string>
 
 </resources>

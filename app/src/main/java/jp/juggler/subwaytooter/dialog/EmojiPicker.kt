@@ -33,10 +33,10 @@ import jp.juggler.subwaytooter.view.NetworkEmojiView
 class EmojiPicker(
 	private val activity : Activity,
 	private val instance : String?,
-	private val isMisskey : Boolean,
+	@Suppress("CanBeParameter") private val isMisskey : Boolean,
 	private val onEmojiPicked : (name : String, instance : String?, bInstanceHasCustomEmoji : Boolean) -> Unit
 	// onEmojiPickedのinstance引数は通常の絵文字ならnull、カスタム絵文字なら非null、
-) : View.OnClickListener {
+) : View.OnClickListener, ViewPager.OnPageChangeListener {
 	
 	companion object {
 		
@@ -114,54 +114,72 @@ class EmojiPicker(
 		
 		// create page
 		this.recent_page_idx = page_list.size
-		page_list.add(EmojiPickerPage(CATEGORY_RECENT, R.string.emoji_category_recent))
+		page_list.add(EmojiPickerPage(false, CATEGORY_RECENT, R.string.emoji_category_recent))
 		
-
-		if(!isMisskey) {
+		
+		if(! isMisskey) {
 			this.custom_page_idx = page_list.size
-			page_list.add(EmojiPickerPage(CATEGORY_CUSTOM, R.string.emoji_category_custom))
-		}else{
-			this.custom_page_idx = -1
+			page_list.add(EmojiPickerPage(false, CATEGORY_CUSTOM, R.string.emoji_category_custom))
+		} else {
+			this.custom_page_idx = - 1
 		}
-
+		
 		page_list.add(
 			EmojiPickerPage(
+				true,
 				EmojiMap201709.CATEGORY_PEOPLE,
 				R.string.emoji_category_people
 			)
 		)
 		page_list.add(
 			EmojiPickerPage(
+				true,
 				EmojiMap201709.CATEGORY_NATURE,
 				R.string.emoji_category_nature
 			)
 		)
-		page_list.add(EmojiPickerPage(EmojiMap201709.CATEGORY_FOODS, R.string.emoji_category_foods))
 		page_list.add(
 			EmojiPickerPage(
+				true,
+				EmojiMap201709.CATEGORY_FOODS,
+				R.string.emoji_category_foods
+			)
+		)
+		page_list.add(
+			EmojiPickerPage(
+				true,
 				EmojiMap201709.CATEGORY_ACTIVITY,
 				R.string.emoji_category_activity
 			)
 		)
 		page_list.add(
 			EmojiPickerPage(
+				true,
 				EmojiMap201709.CATEGORY_PLACES,
 				R.string.emoji_category_places
 			)
 		)
 		page_list.add(
 			EmojiPickerPage(
+				true,
 				EmojiMap201709.CATEGORY_OBJECTS,
 				R.string.emoji_category_objects
 			)
 		)
 		page_list.add(
 			EmojiPickerPage(
+				true,
 				EmojiMap201709.CATEGORY_SYMBOLS,
 				R.string.emoji_category_symbols
 			)
 		)
-		page_list.add(EmojiPickerPage(EmojiMap201709.CATEGORY_FLAGS, R.string.emoji_category_flags))
+		page_list.add(
+			EmojiPickerPage(
+				true,
+				EmojiMap201709.CATEGORY_FLAGS,
+				R.string.emoji_category_flags
+			)
+		)
 		
 		this.viewRoot = activity.layoutInflater.inflate(R.layout.dlg_picker_emoji, null, false)
 		this.pager = viewRoot.findViewById(R.id.pager)
@@ -180,17 +198,17 @@ class EmojiPicker(
 		pager.adapter = pager_adapter
 		pager_strip.setViewPager(pager)
 		
-		if( !isMisskey){
-			// カスタム絵文字をロードする
-			if(instance != null && instance.isNotEmpty()) {
-				setCustomEmojiList(
-					App1.custom_emoji_lister.getList(instance) {
-						setCustomEmojiList(it) // ロード完了時に呼ばれる
-					}
-				)
-			}
-		}
+		pager.addOnPageChangeListener(this)
+		onPageSelected(0)
 		
+		// カスタム絵文字をロードする
+		if(! isMisskey && instance != null && instance.isNotEmpty()) {
+			setCustomEmojiList(
+				App1.custom_emoji_lister.getList(instance) {
+					setCustomEmojiList(it) // ロード完了時に呼ばれる
+				}
+			)
+		}
 		
 		this.dialog = Dialog(activity)
 		dialog.setContentView(viewRoot)
@@ -218,7 +236,29 @@ class EmojiPicker(
 		dialog.show()
 	}
 	
+	override fun onPageScrollStateChanged(state : Int) {
+	}
+	
+	override fun onPageScrolled(
+		position : Int,
+		positionOffset : Float,
+		positionOffsetPixels : Int
+	) {
+	}
+	
+	override fun onPageSelected(position : Int) {
+		try{
+			val hasSkinTone =page_list[position].hasSkinTone
+			val visibility = if(hasSkinTone) View.VISIBLE else View.INVISIBLE
+			ibSkinTone.forEach { it.visibility = visibility }
+		}catch(ex:Throwable){
+			log.trace(ex)
+		}
+	}
+	
 	private fun applySkinTone(nameArg : String) : String {
+		if(selected_tone == 0) return nameArg
+		
 		var name = nameArg
 		
 		// Recentなどでは既にsuffixがついた名前が用意されている
@@ -262,9 +302,15 @@ class EmojiPicker(
 		val id = view.id
 		selected_tone = if(selected_tone == id) 0 else id
 		showSkinTone()
+		pager_adapter.eachViewHolder { _, vh -> vh.reload() }
 	}
 	
-	internal inner class EmojiPickerPage(category_id : Int, title_id : Int) {
+	internal inner class EmojiPickerPage(
+		val hasSkinTone : Boolean,
+		category_id : Int,
+		title_id : Int
+	) {
+		
 		val title : String
 		val emoji_list : ArrayList<EmojiItem>
 		
@@ -294,7 +340,7 @@ class EmojiPicker(
 	inner class EmojiPickerPageViewHolder(activity : Activity, root : View) : BaseAdapter(),
 		AdapterView.OnItemClickListener {
 		
-		private val gridView : GridView
+		val gridView : GridView
 		private val wh : Int
 		
 		private var page : EmojiPickerPage? = null
@@ -313,6 +359,10 @@ class EmojiPicker(
 		
 		internal fun onPageDestroy() {
 		
+		}
+		
+		internal fun reload() {
+			this.notifyDataSetChanged()
 		}
 		
 		override fun getCount() : Int {
@@ -349,7 +399,13 @@ class EmojiPicker(
 				}
 				view.tag = item
 				if(view is ImageView) {
-					val info = EmojiMap201709.sShortNameToImageId[item.name]
+					val name = if( page.hasSkinTone ){
+						applySkinTone(item.name)
+					}else{
+						item.name
+					}
+					
+					val info = EmojiMap201709.sShortNameToImageId[name]
 					if(info != null) {
 						view.setImageResource(info.image_id)
 					}
@@ -376,18 +432,28 @@ class EmojiPicker(
 			val page = this.page ?: return
 			
 			val item = page.emoji_list[idx]
-			val name = item.name
+			var name = item.name
 			if(item.instance != null && item.instance.isNotEmpty()) {
 				// カスタム絵文字
 				selected(name, item.instance)
 			} else {
-				EmojiMap201709.sShortNameToImageId[name] ?: return
 				// 普通の絵文字
-				selected(if(selected_tone != 0) applySkinTone(name) else name, null)
+				EmojiMap201709.sShortNameToImageId[name] ?: return
+
+				if( page.hasSkinTone ){
+					val sv = applySkinTone(name)
+					if(EmojiMap201709.sShortNameToImageId[sv]!=null){
+						name=sv
+					}
+				}
+
+				selected(name, null)
 			}
 		}
+		
 	}
 	
+	// name はスキントーン適用済みであること
 	internal fun selected(name : String, instance : String?) {
 		
 		dialog.dismiss()
@@ -418,8 +484,8 @@ class EmojiPicker(
 			var nCount = 0
 			while(it.hasNext()) {
 				val item = it.next()
-				if(name == item.parseString( "name")
-					&& instance == item.parseString( "instance")
+				if(name == item.parseString("name")
+					&& instance == item.parseString("instance")
 				) {
 					it.remove()
 				} else if(++ nCount >= 256) {
@@ -464,12 +530,21 @@ class EmojiPicker(
 			return page_list.size
 		}
 		
+		private fun Int.validPage() = this >= 0 && this < page_list.size
+		
 		private fun getPage(idx : Int) : EmojiPickerPage? {
-			return if(idx >= 0 && idx < page_list.size) page_list[idx] else null
+			return if(idx.validPage() ) page_list[idx] else null
 		}
 		
 		fun getPageViewHolder(idx : Int) : EmojiPickerPageViewHolder? {
-			return if(idx >= 0 && idx < holder_list.size()) holder_list.get(idx) else null
+			return if(idx.validPage() ) holder_list.get(idx) else null
+		}
+		
+		inline fun eachViewHolder(block : (Int, EmojiPickerPageViewHolder) -> Unit) {
+			for(i in 0 until page_list.size ){
+				val vh = holder_list.get(i) ?: continue
+				block(i, vh)
+			}
 		}
 		
 		override fun getPageTitle(page_idx : Int) : CharSequence? {

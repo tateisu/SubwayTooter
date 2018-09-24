@@ -601,4 +601,17 @@
     <string name="reply_to">Svar %1$s</string>
     <string name="deleted_at">slettet %1$s</string>
     <string name="already_reactioned">allerede reagert på.</string>
+    <string name="mention">Nevn</string>
+    <string name="boost_from_another_account">Framhev fra en annen konto</string>
+    <string name="disable_fast_scroller">Skru av rask rulling (programomstart påkrevd)</string>
+    <string name="resize_image">Endre størrelse på bildevedlegg (JPEG, PNG)</string>
+    <string name="missing_permission_to_access_media">Mangler programtilgang for å åpne media.</string>
+    <string name="attachment_uploaded">Opplasting av multimediavedlegg fullført.</string>
+    <string name="tab_indicator_color">Fanens indikatorfarge</string>
+    <string name="text_to_speech_initializing">Starter tekst-til-tale…</string>
+    <string name="text_to_speech_initialize_failed">Starting av tekst-til-tale mislyktes. status=%1$s</string>
+    <string name="text_to_speech_shutdown">Tekst-til-tale -avstenging…</string>
+    <string name="toot_search_msp">Tut-søk (MSP)</string>
+    <string name="search_desc_mastodon_api">Konto/emneknagg -søk ved bruk av Mastodon-API.</string>
+    <string name="toot_search_msp_of">Tut-søk (MSP) \"%1$s\"</string>
     </resources>

@@ -102,12 +102,12 @@
     <string name="confirm_account_remove">Remove account along with all columns?</string>
     <string name="user_name_not_match">Username doesn\'t match</string>
     <string name="access_token_updated_for">%1$s\'s access token was updated.</string>
-    <string name="back_to_column_list">Go to columns list when pressing \"←\"</string>
+    <string name="back_to_column_list">Go to columns list when pressing \"Back\"</string>
     <string name="account_empty">No account set up. Add one.</string>
     <string name="dont_confirm_before_close_column">Close column without confirmation</string>
     <string name="drag_handle">Drag handle</string>
     <string name="delete">Delete</string>
-    <string name="column_list_desc">Swipe → delete. Long press → sort. Reload to apply changes.</string>
+    <string name="column_list_desc">Swipe to delete. Long press to sort. Reload to apply changes.</string>
     <string name="last_selection">Last selection</string>
     <string name="column_index">%1$d/%2$d</string>
     <string name="reply_to_this_status">Reply to toot:</string>
@@ -162,7 +162,7 @@
     <string name="app_exit">Close</string>
     <string name="ask_always">Always ask</string>
     <string name="open_column_list">Open column list</string>
-    <string name="back_button_action">Action of \"←\" button</string>
+    <string name="back_button_action">Action of \"Back\" button</string>
     <string name="prior_local_url_when_open_attachment">prioritise local URLs when open attachments</string>
     <string name="disable_fast_scroller">Turn off fast scrolling (app restart required)</string>
     <string name="delete_succeeded">Deleted</string>
@@ -196,7 +196,7 @@
     <string name="contributor">contributor</string>
     <string name="thanks_for">Thanks for %1$s</string>
     <string name="simple_list">Simple list (app restart required)</string>
-    <string name="mute_app_desc">Swipe → delete. Reload to show statuses published by unmuted apps.</string>
+    <string name="mute_app_desc">Swipe leftwards to delete. Reload to show statuses published by unmuted apps.</string>
     <string name="muted_app">Muted apps</string>
     <string name="application_is">app: %1$s</string>
     <string name="mute_app_of">mute app \"%1$s\"</string>
@@ -212,15 +212,15 @@
     <string name="follow_requests">Follow requests</string>
     <string name="follow_request_ok">Accept follow request</string>
     <string name="follow_request_ng">Decline follow request</string>
-    <string name="follow_request_rejected">%1$s\ accepted.</string>
-    <string name="follow_request_authorized">%1$s\ accepted.</string>
+    <string name="follow_request_rejected">%1$s rejected.</string>
+    <string name="follow_request_authorized">%1$s accepted.</string>
     <string name="close">Close</string>
     <string name="pseudo_account">Pseudo account (non-login, only reads public data)</string>
     <string name="server_confirmed">Server confirmed.</string>
     <string name="not_available_for_pseudo_account">Unavailable for pseudo accounts</string>
     <string name="not_available_for_misskey_account">Unavailable for Misskey accounts</string>
     <string name="not_available_for_mastodon_account">Unavailable for Mastodon accounts</string>
-    <string name="exit_app_when_close_protected_column">Exit app when trying to close protected column with \"←\" button without confirming</string>
+    <string name="exit_app_when_close_protected_column">Exit app when trying to close protected column with \"Back\" button without confirming</string>
     <string name="resize_image">Resize image attachment (JPEG, PNG)</string>
     <string name="dont_resize">Don\'t resize</string>
     <string name="long_side_pixel">Resize to %1$d pixels</string>
@@ -265,7 +265,7 @@
     <string name="profile_of">%1$s\'s profile</string>
     <string name="it_is_you">It\'s you.</string>
     <string name="refresh_after_toot">Refresh after tooting</string>
-    <string name="refresh_scroll_to_toot">Refresh, scroll → toot</string>
+    <string name="refresh_scroll_to_toot">Refresh, scroll to toot</string>
     <string name="refresh_no_scroll">Refresh, don\'t scroll</string>
     <string name="dont_refresh">Don\'t refresh</string>
     <string name="boosted_by">Boosted by…</string>
@@ -300,7 +300,7 @@
     <string name="image">Image</string>
     <string name="column_header">Column header</string>
     <string name="foreground_color">Foreground colour</string>
-    <string name="hashtag_and_visibility_not_match">Send public toot containing hashtags, (which are not normally searchable in public messages)?</string>
+    <string name="hashtag_and_visibility_not_match">Send non-public toot containing hashtags, (which are not normally searchable in public messages)?</string>
     <string name="copy">Copy</string>
     <string name="send">Send</string>
     <string name="mute_word">Ban word</string>
@@ -323,7 +323,7 @@
     <string name="already_boosted">Already boosted.</string>
     <string name="dont_screen_off">Keep the screen on when using the app.</string>
     <string name="hide_media_default">Hide all media</string>
-    <string name="cant_close_column_by_back_button_when_multiple_column_shown">You can\'t close the column using the \"←\" button with multiple columns visible.</string>
+    <string name="cant_close_column_by_back_button_when_multiple_column_shown">You can\'t close the column using the \"Back\" button with multiple columns visible.</string>
     <string name="disable_tablet_mode">Disable tablet mode (app restart required)</string>
     <!-- Density-independent pixels, written as dp (pronounced “dips”), are flexible units that scale to have uniform dimensions on any screen. https://material.io/design/layout/understanding-layout.html#pixel-density -->
     <string name="minimum_column_width">Minimum column width (default=300 dp), (app restart required)</string>
@@ -333,7 +333,7 @@
     <string name="launcher_icon_by">Thanks to フタバ for the app icon.</string>
     <string name="ssl_bug_7_0">Android 7.0 can only use the elliptic curve \"prime256v1\", which your instance doesn\t support.\nUpgrade to Android 7.1.1 or later, or add support for elliptic curve \"prime256v1\" on your instance.\nSee https://code.google.com/p/android/issues/detail?id=224438</string>
     <string name="timeline_font">Timeline font (app restart required)</string>
-    <string name="timeline_font_bold">Bold (app restart required)</string>
+    <string name="timeline_font_bold">Bold timeline font (app restart required)</string>
     <string name="restore_draft">Restore from draft</string>
     <string name="select_draft">Which draft to restore?</string>
     <string name="account_in_draft_is_lost">The account used to make this draft has been removed from the app. The following context can not be restored: in_reply_to, media attachment.</string>
@@ -344,14 +344,14 @@
     <string name="app_data_import_desc">You can export data to any app that can receive data, but maybe you can import data only from device\'s storage or a cloud service.\nColumn background image may be not exported/imported over device.\nTimeline font is not exported/imported.\nCustom notification sound may be not exported/imported over device.</string>
     <string name="app_data_import_confirm">existing data ( before import ) will be cleared. Are you sure?</string>
     <string name="user_id_conversion_failed">User ID conversion failed.</string>
-    <string name="draft_picker_desc">Long tap → delete.</string>
+    <string name="draft_picker_desc">Long tap to delete.</string>
     <string name="draft_deleted">Draft deleted.</string>
     <string name="dont_crop_media_thumbnail">Don\'t crop media thumbnail (app restart required)</string>
     <string name="custom_stream_listener">Custom notification listener</string>
     <string name="configuration_url">Configuration URL</string>
     <string name="secret">Secret</string>
     <string name="test">Test</string>
-    <string name="custom_stream_listener_desc">Setting for advanced users.</string>
+    <string name="custom_stream_listener_desc">Setting for advanced users only.</string>
     <string name="custom_stream_listener_was_reset">Custom notification listener reset.</string>
     <string name="input_url_and_secret_then_test">Input URL and secret, then tap the \"Test\" button.</string>
     <string name="tab_indicator_color">Tab indicator colour</string>
@@ -369,7 +369,7 @@
     <string name="toot_button_default_account">Default account when \"Toot\" button is tapped</string>
     <string name="account_change_failed_old_draft_has_no_in_reply_to_url">Could not switch account. Old draft data has no in_reply_to_url, can\'t convert in_reply_to for selected instance.</string>
     <string name="in_reply_to_id_conversion_failed">\"in_reply_to\" ID conversion failed.</string>
-    <string name="prior_chrome_custom_tabs">Prioritise Google Chrome (\"Custom tabs\" is turned on)</string>
+    <string name="prior_chrome_custom_tabs">Prioritise Google Chrome (\"Custom tabs\" is enabled)</string>
     <string name="enable_speech">Enables speech</string>
     <string name="url_omitted">(URL omitted)</string>
     <string name="blocked_domains">Blocked domains</string>
@@ -433,7 +433,7 @@
     <string name="enable_gif_animation">Enable GIF animations (Wastes a lot of battery)</string>
     <string name="acct_sample">(sample)username@instance</string>
     <string name="mention_full_acct">Show mention as full acct (column reload required)</string>
-    <string name="remote_profile_warning">Info on remote profile pages may not be displayed accurately. Press to view profile in web browser.</string>
+    <string name="remote_profile_warning">Information on remote profile pages may not be displayed accurately. Press to view profile in web browser.</string>
     <string name="public_profile">Public profile</string>
     <string name="change_avatar">Change avatar icon</string>
     <string name="change_header">Change header image</string>
@@ -474,7 +474,7 @@
     <string name="choice4">choice 4 (optional)</string>
     <string name="make_enquete">Make enquete</string>
     <string name="dont_use_action_button_with_quick_toot_bar">Disable IME Action button when using \"Quick Toot\" bar (app restart required)</string>
-    <string name="auto_cw">Auto hide long text longer than: (app restart required)</string>
+    <string name="auto_cw">Auto hide long text by setting \"Line counts\" greater than 0 (app restart required)</string>
     <string name="auto_cw_prefix">(Automatic CW)</string>
     <string name="enquete_item_is_empty">Enquete choice %1$d empty.</string>
     <string name="enquete_item_too_long">Enquete choice %1$d too long. Remove %2$d character(s).</string>
@@ -482,7 +482,7 @@
     <string name="profile_pin">Pin on profile</string>
     <string name="profile_unpin">Unpin from profile</string>
     <string name="profile_pin_progress">Changing pinning status…</string>
-    <string name="length_warning">Send \"%1$s\" too long (by %2$d/%3$d characters) for standard instances to accept?</string>
+    <string name="length_warning">\"%1$s\" was too long (by %2$d/%3$d characters)</string>
 
     <string name="short_acct_local_user">Short acct for local user (app restart required)</string>
     <string name="loading_notification_title">Loading notification…</string>
@@ -500,9 +500,9 @@
     <string name="user_count">Users</string>
     <string name="toot_count">Toots</string>
     <string name="domain_count">Connected domain count</string>
-    <string name="not_provided_mastodon_under_1_6">Not provided in Mastodon 1.6</string>
+    <string name="not_provided_mastodon_under_1_6">Not provided in versions older than Mastodon 1.6</string>
     <string name="mime_type_missing">Missing MIME type.</string>
-    <string name="mime_type_not_acceptable">Use one of the accepted MIME types: image/jpeg, image/png, image/gif, video/webm, video/mp4 .</string>
+    <string name="mime_type_not_acceptable">The MIME type was not one of the accepted: image/jpeg, image/png, image/gif, video/webm, or video/mp4 .</string>
     <string name="thumbnail_1_6_1_later">Thumbnail (Mastodon 1.6.1 or later)</string>
     <string name="dont_show_timeout">Don\'t show \"Server timeout\" notification</string>
     <string name="emoji_category_people">People</string>
@@ -527,7 +527,7 @@
     <string name="card_header_card">Card</string>
     <string name="card_header_author">Author</string>
     <string name="card_header_provider">Provider</string>
-    <string name="allow_non_space_before_emoji_code">Allow non-space character before emoji shortcode Emojis converted at posting can\'t be restored to shortcode. (Affects visibility and post. to set display, app restart and column reload required)</string>
+    <string name="allow_non_space_before_emoji_code">Allow non-space character before emoji shortcode affecting visibility and post. Emojis converted when posting can\'t be restored to shortcode. (app restart and column reload required)</string>
     <string name="emoji">Emoji</string>
     <string name="not_blocked">Not blocked.</string>
     <string name="not_muted">Not muted.</string>
@@ -537,8 +537,8 @@
     <string name="attachment_description">attachment description</string>
     <string name="description_empty">description not specified.</string>
     <string name="attachment_description_sending">sending attachment description…</string>
-    <string name="hide_boost_in_home">Hide boosts from this user on home screen</string>
-    <string name="show_boost_in_home">Show boosts from this user on home screen</string>
+    <string name="hide_boost_in_home">Hide boosts from this user from the home screen</string>
+    <string name="show_boost_in_home">Show boosts from this user on the home screen</string>
     <string name="operation_succeeded">Done.</string>
 
     <string name="list_member_add_remove">Add/remove from lists…</string>
@@ -561,7 +561,7 @@
     <string name="list_not_supported">this instance does not support lists.</string>
     <string name="cant_access_list">Can\'t access lists</string>
     <string name="account_sync_failed">Could not sync account.</string>
-    <string name="list_retry_with_follow">Follow %1$s and add to list?</string>
+    <string name="list_retry_with_follow">Try to follow and add %1$s to list?</string>
     <string name="cant_add_list_follow_requesting">Can\'t add user to list:\nPlease retry 2…3 times. Or if user is \"locked\", please wait until the follow request is approved.</string>
     <string name="cant_add_list_follow_failed">Can\'t add user to list:\nFollow declined.</string>
     <string name="list_member_added">Added.</string>
@@ -589,16 +589,16 @@
     <string name="share_url_more">Share URL…</string>
     <string name="copy_url">Copy URL to clipboard</string>
     <string name="media_attachment_empty">Missing media attachments.</string>
-    <string name="media_attachment_type_error">Could not open the \"%1$s\" media attachment. Try to open it in a web browser.</string>
+    <string name="media_attachment_type_error">Cannot open the \"%1$s\" media attachment. Try to open it in a web browser.</string>
     <string name="video_buffering">Buffering…</string>
-    <string name="dont_repeat_download_to_same_url">Can\'t download the same URL again so soon.</string>
+    <string name="dont_repeat_download_to_same_url">Can\'t download the same URL twice in a few seconds.</string>
     <string name="zooming_of">×%3$.1f\n%1$d×%2$d</string>
     <string name="media_attachment_still_uploading">Still sending media…</string>
     <string name="highlight_word">Highlight keyword</string>
     <string name="new_item">New item…</string>
     <string name="word_empty">Please input keyword.</string>
     <string name="already_exist">already exist.</string>
-    <string name="highlight_desc">Swipe → delete. You may need to reload the column to check whether it is set.</string>
+    <string name="highlight_desc">Swipe leftwards to delete. You may need to reload the column to check whether it is set.</string>
     <string name="check_sound">Play notification sound</string>
     <string name="keyword">Keyword</string>
     <string name="domain_block_from_pseudo">Can\'t use domain block from pseudo account.</string>
@@ -662,7 +662,7 @@
     <string name="boost_private_toot_not_allowed">You can\'t boost a private toot by another person.</string>
     <string name="update_push_subscription">Update push subscription (Mastodon 2.4 or later)</string>
     <string name="pseudo_account_not_supported">Pseudo accounts can\'t use notifications.</string>
-    <string name="instance_does_not_support_push_api">The instance version %1$s too old. It does not support push.</string>
+    <string name="instance_does_not_support_push_api">The instance version %1$s too old. It does not support push subscription.</string>
     <string name="missing_fcm_device_id">Can\'t prepare FCM device ID. Please retry later.</string>
     <string name="missing_install_id">Can\'t prepare install ID. Please retry later.</string>
     <string name="token_exported">Due to exporting app data or restoring from backup, this access token may be used by more than one app, and thus needs to be updated to work.</string>
@@ -676,7 +676,7 @@
     <string name="user_agent_error">User-Agent can\'t contains NON-ASCII characters. [%1$s]</string>
     <string name="none_or_hidden_following">No follows, or they are hidden by setting.</string>
     <string name="none_or_hidden_followers">No followers, or they are hidden by setting.</string>
-    <string name="yourself_can_see_your_network">Hiding social graphs only means others can\'t see them.</string>
+    <string name="yourself_can_see_your_network">Hiding social graphs means only you can see them.</string>
     <string name="follow_follower_list_may_restrict">If the remote user chooses to hide the social graph, only followings/followers on this instance will be displayed.</string>
     <string name="trend_tag">Trending tags</string>
     <string name="people_talking">%1$d(%2$d) people talking</string>
@@ -781,6 +781,6 @@
     <string name="timeout_for_embed_media_viewer">Timeout for embedded media viewer Unit: Seconds (app restart (delete from app history) required)</string>
     <string name="link_color">Link colour (app restart required)</string>
     <string name="missing_closeable_column">missing closeable column in visible range.</string>
-    <string name="dont_use_custom_tabs">Don\'t use custom (Chrome/Firefox) tabs when opening links</string>
+    <string name="dont_use_custom_tabs">Don\'t use (Chrome/Firefox) Custom Tabs when opening links</string>
 
 </resources>

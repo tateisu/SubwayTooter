@@ -345,7 +345,7 @@
 \n(redémarrage nécessaire)</string>
 	<string name="account_in_draft_is_lost">Le compte utilisé pour ce brouillon a été supprimé de Subway Tooter. Le lien avec le toot d\'origine ne peut être restauré.</string>
 	<string name="attachment_in_draft_is_lost">Une ou plusieurs pièces jointes de ce brouillon sont introuvables.</string>
-	<string name="reply_to_in_draft_is_lost">Le toot auquel ce brouillon fait référence n\'existe plus, vous ne pouvez plus y répondre.</string>
+	<string name="reply_to_in_draft_is_lost">Le toot auquel ce brouillon fait référence n\'existe plus, vous ne pouvez plus y répondre a un contexte supprimé. in_reply_to</string>
 	<string name="restore_draft">Restaurer un brouillon</string>
 	<string name="select_draft">Quel brouillon désirez-vous restaurer ?</string>
 	<string name="app_data_export">Exporter les données de Subway Tooter</string>
@@ -358,7 +358,7 @@
 	<string name="draft_deleted">Brouillon effacé !</string>
 	<string name="draft_picker_desc">Appui long pour effacer.</string>
 	<string name="dont_crop_media_thumbnail">Ne pas recadrer les aperçus de pièces jointes\n(redémarrage nécessaire)</string>
-	<string name="custom_stream_listener"></string>
+	<string name="custom_stream_listener"/>
 	<string name="configuration_url">Configuration URL</string>
 	<string name="secret">Secret</string>
 	<string name="test">Tester</string>
@@ -378,8 +378,8 @@
     <string name="tablet_mode">Mode tablette</string>
 	<string name="post">Post</string>
     <string name="toot_button_default_account">Compte par défaut lorsque le bouton \"Pouet\" est appuyé</string>
-	<string name="account_change_failed_old_draft_has_no_in_reply_to_url"></string>
-	<string name="in_reply_to_id_conversion_failed"></string>
+	<string name="account_change_failed_old_draft_has_no_in_reply_to_url"/>
+	<string name="in_reply_to_id_conversion_failed"/>
     <string name="prior_chrome_custom_tabs">Onglets personnalisés Chrome (if using Custom Tabs is enabled)</string>
     <string name="enable_speech">Activer la lecture vocale</string>
     <string name="url_omitted">(URL omise)</string>
@@ -429,7 +429,7 @@
 	<string name="access_token_or_api_token">Jeton d\'accès (si vous utilisez Misskey, veuillez entrer le jeton de l\'API)</string>
 	<string name="token_not_specified">Veuillez saisir le jeton d\'accès.</string>
     <string name="quote_name">Citer le nom …</string>
-	<string name="format_of_quote_name"></string>
+	<string name="format_of_quote_name"/>
     <string name="dont_show_favourite">Masquer les favourite</string>
 	<string name="dont_show_follow">Masquer les follow</string>
 	<string name="background_image">Image de fond</string>
@@ -439,7 +439,7 @@
 	<string name="content_sample">(sample)Le cœur déçu mais l’âme plutôt naïve, Louÿs rêva de crapaüter en canoë au delà des îles, près du mälströn où brûlent les novæ.</string>
 	<string name="enable_gif_animation">Activer l\'animation GIF (Cela consomme beaucoup de batterie)</string>
 	<string name="acct_sample">(exemple) utilisateur@instance</string>
-	<string name="mention_full_acct"></string>
+	<string name="mention_full_acct"/>
 	<string name="remote_profile_warning">Remote user\'s profile may be inadequate information. You can check more accurate information on the web page.</string>
 	<string name="public_profile">Profil public</string>
 	<string name="change_avatar">Changer l\'icône de l\'avatar</string>
@@ -455,8 +455,8 @@
 	<string name="instance_information">Informations sur l\'instance</string>
     <string name="missing_mail_app">App de courriel manquante.</string>
 	<string name="relative_timestamp">Afficher les horodatages relatifs</string>
-	<string name="ago"></string>
-	<string name="later"></string>
+	<string name="ago"/>
+	<string name="later"/>
 	<string name="time_within_second">à l\'instant</string>
 	<string name="relative_time_second_1">%1$d seconde %2$s</string>
 	<string name="relative_time_second_2">%1$d secondes %2$s</string>
@@ -469,7 +469,7 @@
     <string name="notification_sound_before_oreo">Son de notification (avant Android 8.0)</string>
 	<string name="notification_style_after_oreo">Style de notification (Android 8.0 ou version ultérieure)</string>
     <string name="notification_for">Notification for %1$s</string>
-	<string name="notification_channel_description"></string>
+	<string name="notification_channel_description"/>
 	<string name="notification_style_before_oreo">Style de notification (avant Android 8. Si votre appareil est sous Android 8.0 ou version ultérieure, veuillez vérifier les Paramètres du compte).</string>
     <string name="enquete_was_end">Sondage terminé.</string>
 	<string name="enquete_voted">a voté !</string>
@@ -479,20 +479,20 @@
 	<string name="choice3">choix 3 (facultatif)</string>
 	<string name="choice4">choix 4 (facultatif)</string>
     <string name="make_enquete">Effectuer un sondage</string>
-	<string name="dont_use_action_button_with_quick_toot_bar"></string>
+	<string name="dont_use_action_button_with_quick_toot_bar"/>
 
 	<string name="auto_cw">Masquer automatiquement les longs textes (définir un nombre de lignes supérieur à 0 pour activer cette option. Redémarrage de l\'application requis)</string>
     <string name="auto_cw_prefix">(CW automatique)</string>
 
-	<string name="enquete_item_is_empty"></string>
-	<string name="enquete_item_too_long"></string>
-	<string name="enquete_item_duplicate"></string>
+	<string name="enquete_item_is_empty"/>
+	<string name="enquete_item_too_long"/>
+	<string name="enquete_item_duplicate"/>
     <string name="profile_pin">Épingler sur le profil</string>
 	<string name="profile_unpin">Détacher du profil</string>
-    <string name="profile_pin_progress"></string>
+    <string name="profile_pin_progress"/>
 	<string name="length_warning"/>
 
-	<string name="short_acct_local_user"></string>
+	<string name="short_acct_local_user"/>
     <string name="loading_notification_title">Chargement de la notification…</string>
 	<string name="error_notification_title">Délai d\'attente du serveur</string>
 	<string name="error_notification_summary">Si l\'instance est détruite, veuillez supprimer le compte sur ce serveur.</string>
@@ -511,7 +511,7 @@
     <string name="not_provided_mastodon_under_1_6">Non fourni sous Mastodon 1.6</string>
 
 	<string name="mime_type_missing">Type MIME manquant.</string>
-	<string name="mime_type_not_acceptable"></string>
+	<string name="mime_type_not_acceptable"/>
     <string name="thumbnail_1_6_1_later">Miniature (Mastodon 1.6.1 ou version ultérieure)</string>
     <string name="dont_show_timeout">Ne pas afficher les notifications \"Délai d\'expiration du serveur\"</string>
 	<string name="emoji_category_people">People</string>
@@ -536,7 +536,7 @@
     <string name="card_header_card">Carte</string>
     <string name="card_header_author">Author</string>
     <string name="card_header_provider">Provider</string>
-	<string name="allow_non_space_before_emoji_code"></string>
+	<string name="allow_non_space_before_emoji_code"/>
 	<string name="emoji">Emoji</string>
     <string name="not_blocked">Non bloqué.</string>
     <string name="not_muted">Pas mis en sourdine.</string>
@@ -550,18 +550,18 @@
 	<string name="show_boost_in_home">Afficher les boosts de cet utilisateur sur votre fil principal</string>
 	<string name="operation_succeeded">Opération réussie.</string>
 
-	<string name="list_member_add_remove"></string>
+	<string name="list_member_add_remove"/>
 	<string name="lists">Listes</string>
 	<string name="list_show_member">Afficher les utilisateurs de la liste</string>
-	<string name="list_show_timeline"></string>
-	<string name="list_member_of"></string>
+	<string name="list_show_timeline"/>
+	<string name="list_member_of"/>
 	<string name="list_tl_of">\"%1$s\" list</string>
 	<string name="list_create_hint">name of new list</string>
 	<string name="list_name_empty">Veuillez entrer le nom de la nouvelle liste.</string>
 	<string name="list_created">La nouvelle liste est créée.</string>
 	<string name="list_delete_confirm">\"%1$s\" sera supprimé. Êtes-vous sûr ?</string>
-	<string name="list_member"></string>
-	<string name="list_timeline"></string>
+	<string name="list_member"/>
+	<string name="list_timeline"/>
 	<string name="list_member_delete_confirm">\"%1$s\" sera supprimé de \"%2$s\". Vous êtes sûr ?</string>
 	<string name="target_user">Utilisateur cible</string>
 	<string name="list_owner">Propriétaire de la liste</string>
@@ -661,8 +661,8 @@
     <string name="follow_accept_confirm">Approve the follow request from %1$s ?</string>
 	<string name="follow_deny_confirm">Reject the follow request from %1$s ?</string>
 	<string name="direct_messages">Messages privés</string>
-    <string name="unfavourite"></string>
-	<string name="unboost"></string>
+    <string name="unfavourite"/>
+	<string name="unboost"/>
     <string name="dont_retrieve_preview_card">Ne pas récupérer les cartes de prévisualisation</string>
 	<string name="field_name1">label1</string>
 	<string name="field_name2">label2</string>
@@ -674,30 +674,30 @@
 	<string name="field_value4">Valeur 4</string>
 	<string name="profile_metadata">Métadonnées de profil</string>
 	<string name="available_mastodon_2_4_later">(disponible dans Mastodon 2.4 ou plus récent)</string>
-	<string name="confirm_boost_private_from"></string>
+	<string name="confirm_boost_private_from"/>
 	<string name="boost_private_toot_not_allowed">Vous ne pouvez pas booster un toot privé publié par une autre personne.</string>
 
-	<string name="update_push_subscription"></string>
-	<string name="pseudo_account_not_supported"></string>
+	<string name="update_push_subscription"/>
+	<string name="pseudo_account_not_supported"/>
 	<string name="instance_does_not_support_push_api">La version de l\'Instance %1$s est trop ancienne et ne prend pas en charge l\'abonnement push.</string>
-	<string name="missing_fcm_device_id"></string>
-	<string name="missing_install_id"></string>
-	<string name="token_exported"></string>
-	<string name="missing_push_api"></string>
-	<string name="missing_push_scope"></string>
-	<string name="push_subscription_deleted"></string>
-	<string name="push_subscription_updated"></string>
-	<string name="push_subscription_not_exists"></string>
-	<string name="push_subscription_already_exists"></string>
+	<string name="missing_fcm_device_id"/>
+	<string name="missing_install_id"/>
+	<string name="token_exported"/>
+	<string name="missing_push_api"/>
+	<string name="missing_push_scope"/>
+	<string name="push_subscription_deleted"/>
+	<string name="push_subscription_updated"/>
+	<string name="push_subscription_not_exists"/>
+	<string name="push_subscription_already_exists"/>
     <string name="user_agent">En-tête HTTP du User-Agent</string>
-	<string name="user_agent_error"></string>
-	<string name="none_or_hidden_following"></string>
-	<string name="none_or_hidden_followers"></string>
+	<string name="user_agent_error"/>
+	<string name="none_or_hidden_following"/>
+	<string name="none_or_hidden_followers"/>
 	<string name="yourself_can_see_your_network">Même si vous choisissez de cacher les graphiques sociaux, vous pouvez les voir.</string>
-	<string name="follow_follower_list_may_restrict"></string>
+	<string name="follow_follower_list_may_restrict"/>
     <string name="trend_tag">Les tendances des tags</string>
-    <string name="people_talking"></string>
-	<string name="trend_tag_desc"></string>
+    <string name="people_talking"/>
+	<string name="trend_tag_desc"/>
     <string name="redraft_and_delete">Redraft and delete</string>
     <string name="cant_sync_toot">Can\'t synchronize toot.</string>
     <string name="cant_change_account_when_redraft">Can\'t change account while using redraft.</string>

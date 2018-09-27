@@ -46,7 +46,7 @@ object SubscriptionServerKey : TableCompanion {
 	
 	fun find(clientIdentifier : String) : String? {
 		try {
-			val whereArgs = findWhereArgs.get()
+			val whereArgs = findWhereArgs.get() ?: arrayOfNulls<String?>(1)
 			whereArgs[0] = clientIdentifier
 			App1.database.query(
 				table,

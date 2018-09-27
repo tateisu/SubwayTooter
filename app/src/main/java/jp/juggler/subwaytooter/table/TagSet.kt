@@ -124,7 +124,7 @@ object TagSet :TableCompanion{
 		val dst = ArrayList<CharSequence>()
 		
 		try {
-			val where_arg = prefix_search_where_arg.get()
+			val where_arg = prefix_search_where_arg.get()?: arrayOfNulls<String?>(1)
 			where_arg[0] = makePattern(prefix)
 			App1.database.query(
 				table,
@@ -133,7 +133,7 @@ object TagSet :TableCompanion{
 				where_arg,
 				null,
 				null,
-				COL_TAG + " asc limit " + limit
+				"$COL_TAG asc limit $limit"
 			).use { cursor ->
 				dst.ensureCapacity(cursor.count)
 				val idx_acct = cursor.getColumnIndex(COL_TAG)

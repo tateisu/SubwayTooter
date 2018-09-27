@@ -133,7 +133,7 @@ class AcctColor {
 			if(cached != null) return cached
 			
 			try {
-				val where_arg = load_where_arg.get()
+				val where_arg = load_where_arg.get() ?: arrayOfNulls<String?>(1)
 				where_arg[0] = acct
 				App1.database.query(table, null, load_where, where_arg, null, null, null)
 					.use { cursor ->

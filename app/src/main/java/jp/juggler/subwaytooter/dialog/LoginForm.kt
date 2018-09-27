@@ -38,12 +38,14 @@ object LoginForm {
 		) -> Unit
 	) {
 		val view = activity.layoutInflater.inflate(R.layout.dlg_account_add, null, false)
-		val etInstance :AutoCompleteTextView = view.findViewById(R.id.etInstance)
-		val btnOk :View = view.findViewById(R.id.btnOk)
-		val cbPseudoAccount :CheckBox = view.findViewById(R.id.cbPseudoAccount)
-		val cbInputAccessToken :CheckBox = view.findViewById(R.id.cbInputAccessToken)
+		val etInstance : AutoCompleteTextView = view.findViewById(R.id.etInstance)
+		val btnOk : View = view.findViewById(R.id.btnOk)
+		val cbPseudoAccount : CheckBox = view.findViewById(R.id.cbPseudoAccount)
+		val cbInputAccessToken : CheckBox = view.findViewById(R.id.cbInputAccessToken)
 		
-		cbPseudoAccount.setOnCheckedChangeListener { _, _ -> cbInputAccessToken.isEnabled = ! cbPseudoAccount.isChecked }
+		cbPseudoAccount.setOnCheckedChangeListener { _, _ ->
+			cbInputAccessToken.isEnabled = ! cbPseudoAccount.isChecked
+		}
 		
 		if(instanceArg != null && instanceArg.isNotEmpty()) {
 			etInstance.setText(instanceArg)
@@ -61,36 +63,34 @@ object LoginForm {
 		}
 		val dialog = Dialog(activity)
 		dialog.setContentView(view)
-		btnOk.setOnClickListener(View.OnClickListener {
+		btnOk.setOnClickListener { _ ->
 			val instance = etInstance.text.toString().trim { it <= ' ' }
 			
-			if( instance.isEmpty() ) {
-				showToast(activity, true, R.string.instance_not_specified)
-				return@OnClickListener
-			} else if(instance.contains("/") || instance.contains("@")) {
-				showToast(activity, true, R.string.instance_not_need_slash)
-				return@OnClickListener
+			when {
+				instance.isEmpty() -> showToast(activity, true, R.string.instance_not_specified)
+				instance.contains("/") || instance.contains("@") -> showToast(
+					activity,
+					true,
+					R.string.instance_not_need_slash
+				)
+				else -> onClickOk(
+					dialog,
+					instance,
+					cbPseudoAccount.isChecked,
+					cbInputAccessToken.isChecked
+				)
 			}
-			onClickOk(dialog, instance, cbPseudoAccount.isChecked, cbInputAccessToken.isChecked)
-		})
+		}
 		view.findViewById<View>(R.id.btnCancel).setOnClickListener { dialog.cancel() }
 		
 		val instance_list = ArrayList<String>()
 		try {
-			val `is` = activity.resources.openRawResource(R.raw.server_list)
-			try {
-				val br = BufferedReader(InputStreamReader(`is`, "UTF-8"))
+			activity.resources.openRawResource(R.raw.server_list).use { inStream ->
+				val br = BufferedReader(InputStreamReader(inStream, "UTF-8"))
 				while(true) {
 					val s : String = br.readLine()?.trim { it <= ' ' }?.toLowerCase() ?: break
 					if(s.isNotEmpty()) instance_list.add(s)
 				}
-			} finally {
-				try {
-					`is`.close()
-				} catch(ignored : Throwable) {
-				
-				}
-				
 			}
 		} catch(ex : Throwable) {
 			log.trace(ex)
@@ -107,7 +107,7 @@ object LoginForm {
 				
 				override fun performFiltering(constraint : CharSequence?) : Filter.FilterResults {
 					val result = Filter.FilterResults()
-					if( constraint?.isNotEmpty() ==true ) {
+					if(constraint?.isNotEmpty() == true) {
 						val key = constraint.toString().toLowerCase()
 						// suggestions リストは毎回生成する必要がある。publishResultsと同時にアクセスされる場合がある
 						val suggestions = StringArray()
@@ -123,7 +123,10 @@ object LoginForm {
 					return result
 				}
 				
-				override fun publishResults(constraint : CharSequence?, results : Filter.FilterResults?) {
+				override fun publishResults(
+					constraint : CharSequence?,
+					results : Filter.FilterResults?
+				) {
 					clear()
 					val values = results?.values
 					if(values is StringArray) {
@@ -145,7 +148,8 @@ object LoginForm {
 		
 		dialog.window?.setLayout(
 			WindowManager.LayoutParams.MATCH_PARENT,
-			WindowManager.LayoutParams.WRAP_CONTENT)
+			WindowManager.LayoutParams.WRAP_CONTENT
+		)
 		dialog.show()
 	}
 	

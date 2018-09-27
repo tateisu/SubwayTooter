@@ -619,7 +619,7 @@ object Action_Toot {
 		
 		val dialog = ActionsDialog()
 		
-		val host_original = Uri.parse(url).authority
+		val host_original = Uri.parse(url).authority  ?: ""
 		
 		// 選択肢：ブラウザで表示する
 		dialog.addAction(

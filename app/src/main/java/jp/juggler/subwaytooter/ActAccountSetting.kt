@@ -1424,7 +1424,7 @@ class ActAccountSetting
 			
 			@Throws(IOException::class)
 			override fun open() : InputStream {
-				return contentResolver.openInputStream(uri)
+				return contentResolver.openInputStream(uri) ?: error("openInputStream returns null")
 			}
 			
 			override fun deleteTempFile() {

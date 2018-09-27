@@ -111,7 +111,7 @@ object AcctSet :TableCompanion{
 	
 	fun searchPrefix(prefix : String, limit : Int) : ArrayList<CharSequence> {
 		try {
-			val where_arg = prefix_search_where_arg.get()
+			val where_arg = prefix_search_where_arg.get() ?: arrayOfNulls<String?>(1)
 			where_arg[0] = makePattern(prefix)
 			App1.database.query(table, null, prefix_search_where, where_arg, null, null, COL_ACCT + " asc limit " + limit)
 				.use { cursor ->

@@ -23,6 +23,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.text.Editable
+import android.text.Spannable
 import android.text.TextWatcher
 import android.text.method.LinkMovementMethod
 import android.view.View
@@ -641,19 +642,26 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						// 再編集の場合はdefault_textは反映されない
 						
 						val decodeOptions = DecodeOptions(this)
-						etContent.text = decodeOptions.decodeHTML(base_status.content)
-						etContent.setSelection(etContent.text.length)
-						etContentWarning.setText(decodeOptions.decodeEmoji(base_status.spoiler_text))
-						etContentWarning.setSelection(etContentWarning.text.length)
-						cbContentWarning.isChecked = etContentWarning.text.isNotEmpty()
+
+						var text :Spannable
+						
+						text = decodeOptions.decodeHTML(base_status.content)
+						etContent.text = text
+						etContent.setSelection(text.length )
+
+						text =decodeOptions.decodeEmoji(base_status.spoiler_text)
+						etContentWarning.setText(text)
+						etContentWarning.setSelection(text.length)
+						cbContentWarning.isChecked = text.isNotEmpty()
 						cbNSFW.isChecked = base_status.sensitive == true
 						
 						val src_enquete = base_status.enquete
 						val src_items = src_enquete?.items
 						if(src_items != null && src_enquete.type == NicoEnquete.TYPE_ENQUETE) {
 							cbEnquete.isChecked = true
-							etContent.text = decodeOptions.decodeHTML(src_enquete.question)
-							etContent.setSelection(etContent.text.length)
+							text = decodeOptions.decodeHTML(src_enquete.question)
+							etContent.text = text
+							etContent.setSelection(text.length)
 							
 							var src_index = 0
 							for(et in list_etChoice) {
@@ -763,22 +771,37 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		if(svEmoji.isEmpty()) return
 		
 		val editable = etContent.text
-		if(editable.isNotEmpty()
-			&& ! CharacterGroup.isWhitespace(editable[editable.length - 1].toInt())
-		) {
-			editable.append(' ')
-		}
-		
-		if(selectBefore) {
-			val start = editable.length
-			editable.append(' ')
-			editable.append(svEmoji)
-			etContent.text = editable
-			etContent.setSelection(start)
-		} else {
-			editable.append(svEmoji)
-			etContent.text = editable
-			etContent.setSelection(editable.length)
+		if( editable == null ) {
+			val sb = StringBuilder ()
+			if(selectBefore) {
+				val start = 0
+				sb.append(' ')
+				sb.append(svEmoji)
+				etContent.setText(sb)
+				etContent.setSelection(start)
+			} else {
+				sb.append(svEmoji)
+				etContent.setText(sb)
+				etContent.setSelection(sb.length)
+			}
+		}else{
+			if(editable.isNotEmpty()
+				&& ! CharacterGroup.isWhitespace(editable[editable.length - 1].toInt())
+			) {
+				editable.append(' ')
+			}
+			
+			if(selectBefore) {
+				val start = editable.length
+				editable.append(' ')
+				editable.append(svEmoji)
+				etContent.text = editable
+				etContent.setSelection(start)
+			} else {
+				editable.append(svEmoji)
+				etContent.text = editable
+				etContent.setSelection(editable.length)
+			}
 		}
 	}
 	
@@ -1494,7 +1517,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			
 			@Throws(IOException::class)
 			override fun open() : InputStream {
-				return contentResolver.openInputStream(uri)
+				return contentResolver.openInputStream(uri) ?: error("openInputStream returns null")
 			}
 			
 			override fun deleteTempFile() {
@@ -2348,7 +2371,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			else -> R.raw.recommended_plugin_en
 		}
 		
-		this.loadRawResource(res_id)?.let { data ->
+		this.loadRawResource(res_id).let { data ->
 			val text = data.decodeUTF8()
 			val viewRoot = layoutInflater.inflate(R.layout.dlg_plugin_missing, null, false)
 			

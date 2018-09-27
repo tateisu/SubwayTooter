@@ -194,7 +194,7 @@ class ColumnViewHolder(
 		listView = viewRoot.findViewById(R.id.listView)
 		
 		if(Pref.bpShareViewPool(activity.pref)) {
-			listView.recycledViewPool = activity.viewPool
+			listView.setRecycledViewPool( activity.viewPool)
 		}
 		listView.itemAnimator = null
 		//

@@ -27,7 +27,8 @@ class ScrollPosition {
 	}
 	
 	fun restore(holder : ColumnViewHolder) {
-		if(adapterIndex in 0 until holder.listView.adapter.itemCount) {
+		val adapter = holder.listView.adapter ?: return
+		if(adapterIndex in 0 until adapter.itemCount) {
 			holder.listLayoutManager.scrollToPositionWithOffset(adapterIndex, offset)
 		}
 	}

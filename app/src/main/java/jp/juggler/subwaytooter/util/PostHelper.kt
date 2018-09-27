@@ -310,7 +310,7 @@ class PostHelper(
 							
 							if( visibility_checked == TootVisibility.DirectSpecified ){
 								val userIds = JSONArray()
-								val reMention = Pattern.compile("(?:\\A|\\s)@([a-zA-Z0-9_]{1,20})(?:@([\\w\\.\\:-]+))?(?:\\z|\\s)")
+								val reMention = Pattern.compile("(?:\\A|\\s)@([a-zA-Z0-9_]{1,20})(?:@([\\w.:-]+))?(?:\\z|\\s)")
 								val m = reMention.matcher(content)
 								while(m.find()){
 									val username = m.group(1)
@@ -830,7 +830,7 @@ class PostHelper(
 		EmojiPicker(activity, instance, isMisskey) { name, instance, bInstanceHasCustomEmoji ->
 			val et = this.et ?: return@EmojiPicker
 			
-			val src = et.text
+			val src = et.text ?: ""
 			val src_length = src.length
 			val end = Math.min(src_length, et.selectionEnd)
 			val start = src.lastIndexOf(':', end - 1)
@@ -841,7 +841,7 @@ class PostHelper(
 				.appendEmoji(name, instance, bInstanceHasCustomEmoji)
 			
 			val newSelection = sb.length
-			if(end < src_length) sb.append(src.subSequence(end, src_length))
+			if(end < src_length) sb.append(src.subSequence(end, src_length) )
 			
 			et.text = sb
 			et.setSelection(newSelection)
@@ -858,17 +858,17 @@ class PostHelper(
 		EmojiPicker(activity, instance, isMisskey) { name, instance, bInstanceHasCustomEmoji ->
 			val et = this.et ?: return@EmojiPicker
 			
-			val src = et.text
+			val src = et.text ?: ""
 			val src_length = src.length
 			val start = Math.min(src_length, et.selectionStart)
 			val end = Math.min(src_length, et.selectionEnd)
 			
 			val sb = SpannableStringBuilder()
-				.append(src.subSequence(0, start))
+				.append(src.subSequence(0, start) )
 				.appendEmoji(name, instance, bInstanceHasCustomEmoji)
 			
 			val newSelection = sb.length
-			if(end < src_length) sb.append(src.subSequence(end, src_length))
+			if(end < src_length) sb.append(src.subSequence(end, src_length) )
 			
 			et.text = sb
 			et.setSelection(newSelection)

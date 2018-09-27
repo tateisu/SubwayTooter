@@ -74,7 +74,7 @@ object UserRelationMisskey : TableCompanion {
 			cv.put(COL_MUTING, src.muting.b2i())
 			cv.put(COL_REQUESTED, src.requested.b2i())
 			cv.put(COL_FOLLOWING_REBLOGS, src.following_reblogs)
-			cv.put(COL_ENDORSED,src.endorsed.b2i())
+			cv.put(COL_ENDORSED, src.endorsed.b2i())
 			App1.database.replace(table, null, cv)
 			
 			val key = String.format("%s:%s", db_id, whoId)
@@ -112,7 +112,7 @@ object UserRelationMisskey : TableCompanion {
 				cv.put(COL_MUTING, src.muting.b2i())
 				cv.put(COL_REQUESTED, src.requested.b2i())
 				cv.put(COL_FOLLOWING_REBLOGS, src.following_reblogs)
-				cv.put(COL_ENDORSED,src.endorsed.b2i())
+				cv.put(COL_ENDORSED, src.endorsed.b2i())
 				db.replace(table, null, cv)
 			}
 			bOK = true
@@ -144,22 +144,22 @@ object UserRelationMisskey : TableCompanion {
 	fun load(db_id : Long, who_id : String) : UserRelation? {
 		
 		try {
-			val where_arg = load_where_arg.get()
+			val where_arg = load_where_arg.get() ?: arrayOfNulls<String?>(2)
 			where_arg[0] = db_id.toString()
 			where_arg[1] = who_id
 			App1.database.query(table, null, load_where, where_arg, null, null, null)
 				.use { cursor ->
 					if(cursor.moveToNext()) {
 						val dst = UserRelation()
-						dst.following = 0 != cursor.getInt(cursor.getColumnIndex(COL_FOLLOWING))
-						dst.followed_by = 0 !=
-							cursor.getInt(cursor.getColumnIndex(COL_FOLLOWED_BY))
-						dst.blocking = 0 != cursor.getInt(cursor.getColumnIndex(COL_BLOCKING))
-						dst.muting = 0 != cursor.getInt(cursor.getColumnIndex(COL_MUTING))
-						dst.requested = 0 != cursor.getInt(cursor.getColumnIndex(COL_REQUESTED))
+						dst.following = cursor.getInt(cursor.getColumnIndex(COL_FOLLOWING)).i2b()
+						dst.followed_by =
+							cursor.getInt(cursor.getColumnIndex(COL_FOLLOWED_BY)).i2b()
+						dst.blocking = cursor.getInt(cursor.getColumnIndex(COL_BLOCKING)).i2b()
+						dst.muting = cursor.getInt(cursor.getColumnIndex(COL_MUTING)).i2b()
+						dst.requested = cursor.getInt(cursor.getColumnIndex(COL_REQUESTED)).i2b()
 						dst.following_reblogs =
 							cursor.getInt(cursor.getColumnIndex(COL_FOLLOWING_REBLOGS))
-						dst.endorsed =  0 != cursor.getInt(cursor.getColumnIndex(COL_ENDORSED))
+						dst.endorsed = cursor.getInt(cursor.getColumnIndex(COL_ENDORSED)).i2b()
 						return dst
 					}
 				}

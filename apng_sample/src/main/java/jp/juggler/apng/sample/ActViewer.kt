@@ -10,14 +10,13 @@ import android.util.Log
 import android.view.View
 import android.widget.TextView
 import jp.juggler.apng.ApngFrames
-import kotlinx.coroutines.experimental.CommonPool
-import kotlinx.coroutines.experimental.android.UI
-import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.*
+import kotlinx.coroutines.experimental.android.Main
 import java.io.File
 import java.io.FileOutputStream
+import kotlin.coroutines.experimental.CoroutineContext
 
-class ActViewer : AppCompatActivity() {
+class ActViewer : AppCompatActivity() , CoroutineScope {
 	
 	companion object {
 		const val TAG="ActViewer"
@@ -35,7 +34,13 @@ class ActViewer : AppCompatActivity() {
 	private lateinit var apngView : ApngView
 	private lateinit var tvError : TextView
 	
+	private lateinit var activityJob: Job
+	
+	override val coroutineContext: CoroutineContext
+		get() = Dispatchers.Main + activityJob
+
 	override fun onCreate(savedInstanceState : Bundle?) {
+		activityJob = Job()
 		super.onCreate(savedInstanceState)
 		
 		val intent = this.intent
@@ -56,11 +61,11 @@ class ActViewer : AppCompatActivity() {
 			return@setOnLongClickListener true
 		}
 		
-		launch(UI) {
+		launch{
+			var apngFrames : ApngFrames? = null
 			try {
-				if(isDestroyed) return@launch
 				
-				val apngFrames = async(CommonPool) {
+				apngFrames = async(Dispatchers.IO) {
 					resources.openRawResource(resId).use {
 						ApngFrames.parseApng(
 							it,
@@ -70,16 +75,11 @@ class ActViewer : AppCompatActivity() {
 					}
 				}.await()
 				
+				apngView.visibility = View.VISIBLE
+				tvError.visibility = View.GONE
+				apngView.apngFrames = apngFrames
+				apngFrames = null
 				
-				
-				
-				if(isDestroyed) {
-					apngFrames.dispose()
-				} else {
-					apngView.visibility = View.VISIBLE
-					tvError.visibility = View.GONE
-					apngView.apngFrames = apngFrames
-				}
 			} catch(ex : Throwable) {
 				ex.printStackTrace()
 				Log.e(ActList.TAG, "load error: ${ex.javaClass.simpleName} ${ex.message}")
@@ -90,6 +90,8 @@ class ActViewer : AppCompatActivity() {
 					tvError.visibility = View.VISIBLE
 					tvError.text = message
 				}
+			}finally{
+				apngFrames?.dispose()
 			}
 		}
 	}
@@ -97,11 +99,13 @@ class ActViewer : AppCompatActivity() {
 	override fun onDestroy() {
 		super.onDestroy()
 		apngView.apngFrames?.dispose()
+		activityJob.cancel()
 	}
 	
 	private fun save(apngFrames:ApngFrames){
 		val title = this.title
-		launch(CommonPool){
+		
+		launch(Dispatchers.IO){
 			val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
 			dir.mkdirs()
 			if(! dir.exists() ) {

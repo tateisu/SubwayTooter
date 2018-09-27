@@ -411,7 +411,7 @@ class MyNetworkImageView : AppCompatImageView {
 		invalidate()
 	}
 	
-	override fun onVisibilityChanged(changedView : View?, visibility : Int) {
+	override fun onVisibilityChanged(changedView : View, visibility : Int) {
 		super.onVisibilityChanged(changedView, visibility)
 		loadImageIfNecessary()
 	}

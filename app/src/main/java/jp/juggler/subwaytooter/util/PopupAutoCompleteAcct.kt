@@ -122,17 +122,19 @@ internal class PopupAutoCompleteAcct(
 				}
 				v.setOnClickListener {
 					
-					val src = et.text
-					val src_length = src.length
-					val start = Math.min(src_length, sel_start)
-					val end = Math.min(src_length, sel_end)
-					
+					val start : Int
+					val editable = et.text ?: ""
 					val sb = SpannableStringBuilder()
-						.append(src.subSequence(0, start))
+					
+					val src_length = editable.length
+					start = Math.min(src_length, sel_start)
+					val end = Math.min(src_length, sel_end)
+					sb.append(editable.subSequence(0, start))
+					val remain = editable.subSequence(end, src_length)
 					
 					if(acct[0] == ' ') {
 						// 絵文字ショートコード
-						if(! EmojiDecoder.canStartShortCode(src, start)) sb.append(' ')
+						if(! EmojiDecoder.canStartShortCode(sb, start)) sb.append(' ')
 						sb.append(acct.subSequence(2, acct.length))
 					} else {
 						// @user@host, #hashtag
@@ -141,7 +143,7 @@ internal class PopupAutoCompleteAcct(
 					}
 					
 					val newSelection = sb.length
-					if(end < src_length) sb.append(src.subSequence(end, src_length))
+					sb.append(remain)
 					
 					et.text = sb
 					et.setSelection(newSelection)

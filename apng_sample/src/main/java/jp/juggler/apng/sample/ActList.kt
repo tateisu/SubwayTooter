@@ -3,23 +3,24 @@ package jp.juggler.apng.sample
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.os.SystemClock
 import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.BaseAdapter
+import android.widget.ListView
+import android.widget.TextView
 import jp.juggler.apng.ApngFrames
 import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.android.UI
-import java.lang.ref.WeakReference
-import android.support.v4.content.ContextCompat
+import kotlinx.coroutines.experimental.android.Main
+import kotlin.coroutines.experimental.CoroutineContext
 
-
-
-class ActList : AppCompatActivity() {
+class ActList : AppCompatActivity(), CoroutineScope {
 	
 	companion object {
 		const val TAG = "ActList"
@@ -33,7 +34,15 @@ class ActList : AppCompatActivity() {
 	private lateinit var listAdapter : MyAdapter
 	private var timeAnimationStart : Long = 0L
 	
+	private lateinit var activityJob: Job
+	
+	override val coroutineContext: CoroutineContext
+		get() = Dispatchers.Main + activityJob
+	
 	override fun onCreate(savedInstanceState : Bundle?) {
+		
+		activityJob = Job()
+		
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.act_list)
 		this.listView = findViewById(R.id.listView)
@@ -56,35 +65,13 @@ class ActList : AppCompatActivity() {
 				)
 			}
 		}
-		
-		
-		launch(UI) {
-			
-			if(isDestroyed) return@launch
-			
-			val list = async(CommonPool) {
-				// RawリソースのIDと名前の一覧
-				R.raw::class.java.fields
-					.mapNotNull { it.get(null) as? Int }
-					.map { id ->
-						ListItem(
-							id,
-							resources.getResourceName(id)
-								.replaceFirst(""".+/""".toRegex(), "")
-						)
-					}
-					.toMutableList()
-					.apply { sortBy { it.caption } }
-				
-			}.await()
-			
-			if(isDestroyed) return@launch
-			
-			listAdapter.list.addAll(list)
-			listAdapter.notifyDataSetChanged()
-		}
+		load()
 	}
 	
+	override fun onDestroy() {
+		super.onDestroy()
+		activityJob.cancel()
+	}
 
 	override fun onRequestPermissionsResult(
 		requestCode : Int,
@@ -106,6 +93,27 @@ class ActList : AppCompatActivity() {
 		// other 'case' lines to check for other
 		// permissions this app might request
 		}
+	}
+	
+	private fun load() = launch{
+		val list = async(Dispatchers.IO) {
+			// RawリソースのIDと名前の一覧
+			R.raw::class.java.fields
+				.mapNotNull { it.get(null) as? Int }
+				.map { id ->
+					ListItem(
+						id,
+						resources.getResourceName(id)
+							.replaceFirst(""".+/""".toRegex(), "")
+					)
+				}
+				.toMutableList()
+				.apply { sortBy { it.caption } }
+			
+		}.await()
+		
+		listAdapter.list.addAll(list)
+		listAdapter.notifyDataSetChanged()
 	}
 	
 	inner class MyAdapter : BaseAdapter(), AdapterView.OnItemClickListener {
@@ -155,12 +163,11 @@ class ActList : AppCompatActivity() {
 		
 	}
 	
-	class MyViewHolder(
+	inner class MyViewHolder(
 		viewRoot : View,
 		_activity : ActList
 	) {
 		
-		private val activity = ref(_activity)
 		private val tvCaption : TextView = viewRoot.findViewById(R.id.tvCaption)
 		private val apngView : ApngView = viewRoot.findViewById(R.id.apngView)
 		
@@ -179,41 +186,33 @@ class ActList : AppCompatActivity() {
 				lastId = resId
 				apngView.apngFrames?.dispose()
 				apngView.apngFrames = null
-				launch(UI) {
+				launch{
+					var apngFrames :ApngFrames? = null
 					try {
-						if(activity()?.isDestroyed != false) return@launch
-						
 						lastJob?.cancelAndJoin()
-						
-						val job = async(CommonPool) {
-							activity()?.resources?.openRawResource(resId)?.use { inStream ->
+
+						val job = async(Dispatchers.IO) {
+							resources?.openRawResource(resId)?.use { inStream ->
 								ApngFrames.parseApng(inStream, 128)
 							}
 						}
+
 						lastJob = job
-						val apngFrames = job.await()
-						
-						if(activity()?.isDestroyed == false
-							&& lastId == resId
-							&& apngFrames != null
-						) {
+						apngFrames = job.await()
+
+						if(apngFrames != null && lastId == resId ){
 							apngView.apngFrames = apngFrames
-						} else {
-							apngFrames?.dispose()
+							apngFrames = null
 						}
+
 					} catch(ex : Throwable) {
 						ex.printStackTrace()
 						Log.e(TAG, "load error: ${ex.javaClass.simpleName} ${ex.message}")
+					}finally{
+						apngFrames?.dispose()
 					}
 				}
 			}
 		}
 	}
-	
 }
-
-class WeakRef<T : Any>(t : T) : WeakReference<T>(t) {
-	operator fun invoke() : T? = get()
-}
-
-fun <T : Any> ref(t : T) = WeakRef(t)

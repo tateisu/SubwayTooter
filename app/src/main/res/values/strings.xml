@@ -778,5 +778,7 @@
     <string name="link_color">Link color (app restart required)</string>
     <string name="missing_closeable_column">missing closeable column in visible range.</string>
     <string name="dont_use_custom_tabs">Don\'t use (Chrome/Firefox) Custom Tabs when open links</string>
+    <string name="privacy_policy">Privacy Policy</string>
+    <string name="agree">Agree</string>
 
 </resources>

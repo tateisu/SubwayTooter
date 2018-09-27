@@ -4900,7 +4900,7 @@ class Column(
 	
 	private fun loadSearchDesc(raw_en : Int, raw_ja : Int) : String {
 		val res_id = if("ja" == context.getString(R.string.language_code)) raw_ja else raw_en
-		return context.loadRawResource(res_id)?.decodeUTF8() ?: "?"
+		return context.loadRawResource(res_id).decodeUTF8()
 	}
 	
 	private var cacheHeaderDesc : String? = null

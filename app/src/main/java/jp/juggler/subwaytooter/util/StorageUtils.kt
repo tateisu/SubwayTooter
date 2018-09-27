@@ -104,7 +104,7 @@ object StorageUtils{
 			// tree
 			return paths[1]
 		}
-		throw IllegalArgumentException("Invalid URI: " + documentUri)
+		throw IllegalArgumentException("Invalid URI: $documentUri")
 	}
 	
 	fun getFile(context : Context, path : String) : File? {
@@ -138,7 +138,7 @@ object StorageUtils{
 				}
 			}
 			// MediaStore Uri
-			context.contentResolver.query(uri, null, null, null, null).use { cursor ->
+			context.contentResolver.query(uri, null, null, null, null)?.use { cursor ->
 				if(cursor.moveToFirst()) {
 					val col_count = cursor.columnCount
 					for(i in 0 until col_count) {

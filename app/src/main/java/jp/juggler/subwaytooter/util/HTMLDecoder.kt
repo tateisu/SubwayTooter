@@ -262,7 +262,7 @@ object HTMLDecoder {
 					log.d("parseChild: %s|%s %s [%s]", indent, child.tag, open_type, child.text)
 				
 				if(OPEN_TYPE_OPEN == open_type) {
-					child.addChild(t, indent + "--")
+					child.addChild(t, "$indent--")
 				}
 			}
 			if(DEBUG_HTML_PARSER) log.d("parseChild: %s)%s", indent, tag)
@@ -435,10 +435,10 @@ object HTMLDecoder {
 					sb.append("://")
 				}
 				sb.append(uri.authority)
-				val a = uri.encodedPath
+				val a = uri.encodedPath ?: ""
 				val q = uri.encodedQuery
 				val f = uri.encodedFragment
-				val remain = a + (if(q == null) "" else "?" + q) + if(f == null) "" else "#" + f
+				val remain = a + (if(q==null) "" else "?$q") + if(f==null) "" else "#$f"
 				if(remain.length > 10) {
 					sb.append(remain.substring(0, 10))
 					sb.append("…")

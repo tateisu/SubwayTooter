@@ -214,22 +214,21 @@ class UserRelation {
 		
 		private fun load(db_id : Long, who_id : Long) : UserRelation? {
 			try {
-				val where_arg = load_where_arg.get()
+				val where_arg = load_where_arg.get() ?: arrayOfNulls<String?>(2)
 				where_arg[0] = db_id.toString()
 				where_arg[1] = who_id.toString()
 				App1.database.query(table, null, load_where, where_arg, null, null, null)
 					.use { cursor ->
 						if(cursor.moveToNext()) {
 							val dst = UserRelation()
-							dst.following = 0 != cursor.getInt(cursor.getColumnIndex(COL_FOLLOWING))
-							dst.followed_by = 0 !=
-								cursor.getInt(cursor.getColumnIndex(COL_FOLLOWED_BY))
-							dst.blocking = 0 != cursor.getInt(cursor.getColumnIndex(COL_BLOCKING))
-							dst.muting = 0 != cursor.getInt(cursor.getColumnIndex(COL_MUTING))
-							dst.requested = 0 != cursor.getInt(cursor.getColumnIndex(COL_REQUESTED))
+							dst.following = cursor.getInt(cursor.getColumnIndex(COL_FOLLOWING)).i2b()
+							dst.followed_by =cursor.getInt(cursor.getColumnIndex(COL_FOLLOWED_BY)).i2b()
+							dst.blocking = cursor.getInt(cursor.getColumnIndex(COL_BLOCKING)).i2b()
+							dst.muting = cursor.getInt(cursor.getColumnIndex(COL_MUTING)).i2b()
+							dst.requested = cursor.getInt(cursor.getColumnIndex(COL_REQUESTED)).i2b()
 							dst.following_reblogs =
 								cursor.getInt(cursor.getColumnIndex(COL_FOLLOWING_REBLOGS))
-							dst.endorsed = 0 != cursor.getInt(cursor.getColumnIndex(COL_ENDORSED))
+							dst.endorsed = cursor.getInt(cursor.getColumnIndex(COL_ENDORSED)).i2b()
 							return dst
 						}
 					}

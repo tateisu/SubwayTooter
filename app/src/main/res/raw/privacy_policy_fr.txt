@@ -1,0 +1,54 @@
+
+## Subway Tooter Privacy Policy
+
+### User data handled by Subway Tooter
+
+#### Access token of SNS services
+
+In accordance with access delegation of SNS services (Mastodon, Misskey, etc.), Subway Tooter saves the access token to application data.
+
+Also due to old Mastodon restrictions, In accordance with user's explicit permission, Subway Tooter send an access token to the application server or notification listener server for push notification.
+
+Also due to current Mastodon restrictions, Subway Tooter send an unrecoverable digest of access token to the application server for push subscription.
+
+#### User information registered in the SNS service
+
+In accordance with access delegation of SNS services (Mastodon, Misskey, etc.), Subway Tooter saves the information and settings of login account to application data. This includes not only the public profile, also may include information that the login account only can read or update.
+
+Except in the case of sending to the relevant SNS service for editing account information with accordance with user's explicit intent, Subway Tooter does not send this information to the outside of app.
+
+When deleting account information from Subway Tooter, also the user information will  be deleted from Subway Tooter's application data.
+
+#### Activities on the SNS service
+
+Subway Tooter has the function to read / update the activities from login account on SNS service such as posts, favorites, boosts, and lists.
+
+Subway Tooter will not send these information to outside the application EXCEPT in the following cases.
+- With user's explicit intent, sending activity update/delete request to relevant SNS service.
+- With user's explicit intent, sharing URLs or datas to external web browser or other applications.
+- With user's explicit intent, downloading data to the folder that is accessible by other applications.
+
+#### Information coming from the input plugin
+
+Subway Tooter has a function to get information from input plugin (external application).
+With user's explicit intent, Those information may send to relevant SNS service.
+
+#### User tracking
+
+Subway Tooter uses Firebase Cloud Messaging for push notifications.
+Following information will be send to external server.
+- Firebase Cloud Messaging sends message recipient information to Google server.
+- Subway Tooter sends push subscription management information to the app server.
+
+There is no other kind of user tracking.
+
+#### User location
+
+Subway Tooter has no function to get user location.
+The user location may be entered from input plugin, but Subway Tooter handles it as like as normal text.
+
+#### Advertisement
+Subway Tooter has no function to show Advertisement.
+
+There are cases SNS services may show ad in its API response, but Subway Tooter does not participate in those.
+

@@ -60,7 +60,7 @@ class BucketList<E> constructor(
 	// allocalted を指定しない場合は BucketPosを生成します
 	private fun findPos(
 		total_index : Int,
-		result : BucketPos = pos_internal.get()
+		result : BucketPos = pos_internal.get()!!
 	) : BucketPos {
 
 		if(total_index < 0 || total_index >= size) {

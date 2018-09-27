@@ -89,7 +89,7 @@ class StringPref(
 ) : BasePref<String>(key) {
 	
 	override operator fun invoke(pref : SharedPreferences) : String {
-		return pref.getString(key, defVal)
+		return pref.getString(key,defVal) ?: defVal
 	}
 	
 	override fun put(editor : SharedPreferences.Editor, v : String) {
@@ -414,6 +414,7 @@ object Pref {
 	val spUserAgent = StringPref("UserAgent", "")
 	
 	val spMediaReadTimeout = StringPref("spMediaReadTimeout", "60")
+	val spAgreedPrivacyPolicyDigest= StringPref("spAgreedPrivacyPolicyDigest", "")
 	
 	// long
 	val lpTabletTootDefaultAccount = LongPref("tablet_toot_default_account", - 1L)

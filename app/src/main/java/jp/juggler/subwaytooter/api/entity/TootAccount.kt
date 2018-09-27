@@ -358,8 +358,11 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			if(url != null) {
 				try {
 					// たぶんどんなURLでもauthorityの部分にホスト名が来るだろう(慢心)
-					val uri = Uri.parse(url)
-					return uri.authority.toLowerCase()
+					val host = Uri.parse(url).authority
+					if( host?.isNotEmpty() == true){
+						return host.toLowerCase()
+					}
+					log.e("findHostFromUrl: can't parse host from URL $url")
 				} catch(ex : Throwable) {
 					log.e(ex, "findHostFromUrl: can't parse host from URL $url")
 				}

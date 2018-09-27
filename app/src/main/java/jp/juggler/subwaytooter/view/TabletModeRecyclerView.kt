@@ -51,6 +51,8 @@ class TabletModeRecyclerView : RecyclerView {
 				if(index >= 0) {
 					if(mForbidStartDragging) return false
 					
+					val layoutManager = this.layoutManager ?: return false
+					
 					val x = (e.getX(index) + 0.5f).toInt()
 					val y = (e.getY(index) + 0.5f).toInt()
 					val canScrollHorizontally = layoutManager.canScrollHorizontally()

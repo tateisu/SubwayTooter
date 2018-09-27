@@ -856,18 +856,14 @@ fun View.showKeyboard() {
 ////////////////////////////////////////////////////////////////////
 // context
 
-fun Context.loadRawResource(res_id : Int) : ByteArray? {
-	try {
-		this.resources.openRawResource(res_id).use { inStream ->
-			val bao = ByteArrayOutputStream()
-			IOUtils.copy(inStream, bao)
-			return bao.toByteArray()
-		}
-	} catch(ex : Throwable) {
-		Utils.log.trace(ex)
+fun Context.loadRawResource( resId:Int):ByteArray{
+	resources.openRawResource(resId).use{ inStream->
+		val bao = ByteArrayOutputStream( inStream.available() )
+		IOUtils.copy(inStream,bao)
+		return bao.toByteArray()
 	}
-	return null
 }
+
 
 ////////////////////////////////////////////////////////////////////
 // file

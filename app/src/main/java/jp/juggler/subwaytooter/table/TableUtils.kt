@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.table
 
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 
 // SQLite にBooleanをそのまま保存することはできないのでInt型との変換が必要になる

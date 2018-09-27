@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -42,10 +43,6 @@ import jp.juggler.subwaytooter.api.entity.*
 
 import org.apache.commons.io.IOUtils
 
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.io.InputStreamReader
 import java.lang.ref.WeakReference
 import java.util.ArrayList
 import java.util.HashSet
@@ -65,6 +62,7 @@ import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanClickCallback
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.ListDivider
+import java.io.*
 import java.util.zip.ZipInputStream
 import kotlin.math.min
 
@@ -433,6 +431,8 @@ class ActMain : AppCompatActivity()
 		if(savedInstanceState != null) {
 			sent_intent2?.let { handleSentIntent(it) }
 		}
+		
+		checkPrivacyPolicy()
 	}
 	
 	override fun onDestroy() {
@@ -850,9 +850,7 @@ class ActMain : AppCompatActivity()
 			showFooterColor()
 			
 			if(resultCode == RESULT_APP_DATA_IMPORT) {
-				if(data != null) {
-					importAppData(data.data)
-				}
+				importAppData(data?.data)
 			}
 			
 		} else if(requestCode == REQUEST_CODE_TEXT) {
@@ -1330,7 +1328,9 @@ class ActMain : AppCompatActivity()
 			env.tablet_pager.adapter = env.tablet_pager_adapter
 			env.tablet_pager.layoutManager = env.tablet_layout_manager
 			env.tablet_pager.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-				override fun onScrollStateChanged(recyclerView : RecyclerView?, newState : Int) {
+				
+				
+				override fun onScrollStateChanged(recyclerView : RecyclerView, newState : Int) {
 					super.onScrollStateChanged(recyclerView, newState)
 					
 					val vs = env.tablet_layout_manager.findFirstVisibleItemPosition()
@@ -1345,7 +1345,7 @@ class ActMain : AppCompatActivity()
 					}
 				}
 				
-				override fun onScrolled(recyclerView : RecyclerView?, dx : Int, dy : Int) {
+				override fun onScrolled(recyclerView : RecyclerView, dx : Int, dy : Int) {
 					super.onScrolled(recyclerView, dx, dy)
 					updateColumnStripSelection(- 1, - 1f)
 				}
@@ -1465,7 +1465,7 @@ class ActMain : AppCompatActivity()
 					var slide_ratio = 0f
 					if(vr.first <= vr.last) {
 						val child = env.tablet_layout_manager.findViewByPosition(vr.first)
-						slide_ratio = Math.abs(child.left / nColumnWidth.toFloat())
+						slide_ratio = Math.abs( (child?.left ?: 0) / nColumnWidth.toFloat())
 					}
 					
 					llColumnStrip.setVisibleRange(vr.first, vr.last, slide_ratio)
@@ -2339,8 +2339,12 @@ class ActMain : AppCompatActivity()
 		}, { env ->
 			for(i in 0 until env.tablet_layout_manager.childCount) {
 				val v = env.tablet_layout_manager.getChildAt(i)
-				val columnViewHolder =
-					(env.tablet_pager.getChildViewHolder(v) as? TabletColumnViewHolder)?.columnViewHolder
+				
+				val columnViewHolder =when(v){
+					null-> null
+					else->(env.tablet_pager.getChildViewHolder(v) as? TabletColumnViewHolder)?.columnViewHolder
+				}
+				
 				if(columnViewHolder?.isColumnSettingShown == true) {
 					columnViewHolder.closeColumnSetting()
 					return@closeColumnSetting true
@@ -2496,7 +2500,8 @@ class ActMain : AppCompatActivity()
 	
 	//////////////////////////////////////////////////////////////////////////////////////////////
 	
-	private fun importAppData(uri : Uri) {
+	private fun importAppData(uri : Uri?) {
+		uri ?: return
 		
 		// remove all columns
 		run {
@@ -2763,5 +2768,46 @@ class ActMain : AppCompatActivity()
 			}
 		}
 	}
+	
+	private var dlgPrivacyPolicy : WeakReference<Dialog>?=null
+	
+	private fun checkPrivacyPolicy() {
+		
+		// 既に表示中かもしれない
+		if( dlgPrivacyPolicy?.get()?.isShowing == true) return
+		
+		
+		val res_id = when(getString(R.string.language_code)) {
+			"ja" -> R.raw.privacy_policy_ja
+			"fr" -> R.raw.privacy_policy_fr
+			else -> R.raw.privacy_policy_en
+		}
+		
+		// プライバシーポリシーデータの読み込み
+		val bytes = loadRawResource(res_id)
+		if( bytes.isEmpty() ) return
+		
+		// 同意ずみなら表示しない
+		val digest = bytes.digestSHA256().encodeBase64Url()
+		if( digest == Pref.spAgreedPrivacyPolicyDigest(pref) ) return
+		
+		val dialog = AlertDialog.Builder(this)
+			.setTitle(R.string.privacy_policy)
+			.setMessage( bytes.decodeUTF8())
+			.setNegativeButton(R.string.cancel){_,_ ->
+				finish()
+			}
+			.setOnCancelListener{_->
+				finish()
+			}
+			.setPositiveButton(R.string.agree){_,_ ->
+				pref.edit().put(Pref.spAgreedPrivacyPolicyDigest,digest).apply()
+			}
+			.create()
+		dlgPrivacyPolicy = WeakReference(dialog)
+		dialog.show()
+	}
+	
+	
 	
 }

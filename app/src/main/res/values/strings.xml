@@ -689,7 +689,7 @@
     <string name="regex_filter_matches_empty_string">regex filter matches to empty string.</string>
     <string name="follow_suggestion">Follow suggestion</string>
     <string name="close_all_columns">Close all columns</string>
-    <string name="confirm_close_column_all">All columns (exclude protected) will be closed. Are tou sure?</string>
+    <string name="confirm_close_column_all">All columns (exclude protected) will be closed. Are you sure?</string>
 
 
     <string name="keyword_filters">Keyword filters</string>

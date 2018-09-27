@@ -32,9 +32,17 @@ for my $file(@files){
 		die "!! please make at least 2 string entries in $file\n";
 	}
 	
+	if($lang eq 'fr'){
+		print dump($data);
+		exit;
+	}
+
 	my %names;
 	while(my($name,$o)=each %{$data->{string}}){
-		$names{$name}=$o->{content};
+		if( not $o->{content} ){
+			warn "$lang : $name : missing content in ",dump($o),"\n";
+		}
+		$names{$name}=$o->{content} // "";
 	}
 	$langs{ $lang } = \%names;
 }
@@ -55,6 +63,9 @@ my %allNames;
 for my $lang ( sort keys %langs ){
 	my $names = $langs{$lang};
 	while(my($name,$value)=each %$names){
+		
+		$value = $value // "";
+		
 		$allNames{$name}=1;
 		if(not $master->{$name} ){
 			$missing{$name} =1;

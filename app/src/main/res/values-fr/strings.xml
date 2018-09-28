@@ -698,7 +698,7 @@
     <string name="yourself_can_see_your_network">Même si vous choisissez de cacher les graphiques sociaux, vous pouvez les voir.</string>
     <string name="follow_follower_list_may_restrict">Si l\'utilisateur distant choisit de masquer le graphique social, seuls les abonnés/suivants sur cette instance seront affichés.</string>
     <string name="trend_tag">Les tendances des tags</string>
-    <string name="people_talking">1$d(%2$d) personnes discutent</string>
+    <string name="people_talking">%1$d(%2$d) personnes discutent</string>
     <string name="trend_tag_desc">The numbers indicate \'daily(weekly)\'. Daily numbers are reset at %1$s.</string>
     <string name="redraft_and_delete">Supprimer et reformuler</string>
     <string name="cant_sync_toot">Impossible de synchroniser le pouet.</string>

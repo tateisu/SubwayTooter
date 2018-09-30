@@ -677,10 +677,16 @@ class ActMain : AppCompatActivity()
 	private fun performQuickPost(account : SavedAccount?) {
 		if(account == null) {
 			phoneTab({ env ->
+
 				// スマホモードなら表示中のカラムがあればそれで
-				val c = app_state.column_list[env.pager.currentItem]
-				// 表示中のカラムは疑似アカウントかもしれない
-				if(! c.access_info.isPseudo) {
+				val c = try{
+					app_state.column_list[env.pager.currentItem]
+				}catch(ex:Throwable){
+					null
+				}
+
+				if( c?.access_info?.isPseudo == false ) {
+					// 疑似アカウントではない
 					performQuickPost(c.access_info)
 				} else {
 					// アカウント選択してやり直し

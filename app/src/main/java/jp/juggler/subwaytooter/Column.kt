@@ -294,11 +294,12 @@ class Column(
 			}
 		}
 		
-		@Suppress("HasPlatformType")
-		val reMaxId = Pattern.compile("[&?]max_id=(\\d+)") // より古いデータの取得に使う
+		internal val reMaxId = Pattern.compile("[&?]max_id=(\\d+)") // より古いデータの取得に使う
 		
-		@Suppress("HasPlatformType")
-		private val reSinceId = Pattern.compile("[&?]since_id=(\\d+)") // より新しいデータの取得に使う
+		private val reMinId = Pattern.compile("[&?]min_id=(\\d+)") // より新しいデータの取得に使う (マストドン2.6.0以降)
+
+		private val reSinceId = Pattern.compile("[&?]since_id=(\\d+)") // より新しいデータの取得に使う(マストドン2.6.0未満)
+		
 		
 		val COLUMN_REGEX_FILTER_DEFAULT = { _ : CharSequence? -> false }
 		
@@ -2708,6 +2709,8 @@ class Column(
 		task.executeOnExecutor(App1.task_executor)
 	}
 	
+	var bMinIdMatched : Boolean = false
+	
 	private fun parseRange(
 		result : TootApiResult?,
 		list : List<TimelineItem>?
@@ -2738,11 +2741,18 @@ class Column(
 			idMax = if(result.link_newer == null) {
 				null
 			} else {
-				val m = reSinceId.matcher(result.link_newer)
+				var m = reMinId.matcher(result.link_newer)
 				if(m.find()) {
+					bMinIdMatched = true
 					EntityIdLong(m.group(1).toLong())
 				} else {
-					null
+					m = reSinceId.matcher(result.link_newer)
+					if(m.find()) {
+						bMinIdMatched = false
+						EntityIdLong(m.group(1).toLong())
+					} else {
+						null
+					}
 				}
 			}
 		}

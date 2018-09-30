@@ -4,6 +4,7 @@ import android.content.Context
 import okhttp3.*
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
+import jp.juggler.subwaytooter.App1
 
 // okhttpそのままだとモックしづらいので
 // リクエストを投げてレスポンスを得る部分をインタフェースにまとめる
@@ -27,21 +28,13 @@ interface SimpleHttpClient {
 }
 
 class SimpleHttpClientImpl(
-	context : Context,
+	val context : Context,
 	private val okHttpClient : OkHttpClient
 ) : SimpleHttpClient {
 	
 	
 	companion object {
 		val log = LogCategory("SimpleHttpClientImpl")
-		var connectivityManager : ConnectivityManager? = null
-	}
-	
-	init {
-		if(connectivityManager == null) {
-			connectivityManager =
-				context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-		}
 	}
 	
 	override var currentCallCallback : CurrentCallCallback? = null
@@ -50,7 +43,7 @@ class SimpleHttpClientImpl(
 		request : Request,
 		tmpOkhttpClient : OkHttpClient?
 	) : Response {
-		checkNetworkState()
+		App1.getAppState(context).networkTracker.checkNetworkState()
 		val call = (tmpOkhttpClient ?: this.okHttpClient).newCall(request)
 		currentCallCallback?.onCallCreated(call)
 		return call.execute()
@@ -60,33 +53,9 @@ class SimpleHttpClientImpl(
 		request : Request,
 		webSocketListener : WebSocketListener
 	) : WebSocket {
-		checkNetworkState()
+		App1.getAppState(context).networkTracker.checkNetworkState()
 		return okHttpClient.newWebSocket(request, webSocketListener)
 	}
 	
-	private fun checkNetworkState() {
-		
-		val cm = connectivityManager
-		if(cm == null) {
-			log.d("missing ConnectivityManager")
-		} else {
-			val networkInfo = cm.activeNetworkInfo
-				?: throw RuntimeException("missing ActiveNetwork")
-			
-			val state = networkInfo.state
-			val detailedState = networkInfo.detailedState
-			if(! networkInfo.isConnected) {
-				throw RuntimeException("network not ready. state=$state detail=$detailedState")
-			}
-			if(state == NetworkInfo.State.CONNECTED && detailedState == NetworkInfo.DetailedState.CONNECTED) {
-				// no logging
-			} else {
-				log.d("checkNetworkState state=$state detail=$detailedState")
-			}
-		}
-		
-	}
 	
 }
-
-

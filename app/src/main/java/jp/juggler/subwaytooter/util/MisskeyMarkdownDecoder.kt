@@ -430,7 +430,7 @@ object MisskeyMarkdownDecoder {
 					sbTmp.append("://")
 				}
 				sbTmp.append(uri.authority)
-				val a = uri.encodedPath
+				val a = uri.encodedPath ?: ""
 				val q = uri.encodedQuery
 				val f = uri.encodedFragment
 				val remain = a + (if(q == null) "" else "?$q") + if(f == null) "" else "#$f"

@@ -815,21 +815,7 @@ class PollingWorker private constructor(contextArg : Context) {
 		}
 		
 		private fun checkNetwork() : Boolean {
-			val ni = connectivityManager.activeNetworkInfo
-			return if(ni == null) {
-				log.d("checkNetwork: getActiveNetworkInfo() returns null.")
-				false
-			} else {
-				val state = ni.state
-				val detail = ni.detailedState
-				log.d("checkNetwork: state=${state},detail=${detail}")
-				if(state != NetworkInfo.State.CONNECTED) {
-					log.d("checkNetwork: not connected.")
-					false
-				} else {
-					true
-				}
-			}
+			return App1.getAppState(context).networkTracker.isConnected
 		}
 	}
 	

@@ -127,6 +127,8 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 	
 	private var last_sound : Long = 0
 	
+	val networkTracker :NetworkStateTracker
+	
 	// initからプロパティにアクセスする場合、そのプロパティはinitより上で定義されていないとダメっぽい
 	// そしてその他のメソッドからval プロパティにアクセスする場合、そのプロパティはメソッドより上で初期化されていないとダメっぽい
 	
@@ -134,7 +136,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		this.handler = Handler()
 		this.density = context.resources.displayMetrics.density
 		this.stream_reader = StreamReader(context, handler, pref)
-		
+		this.networkTracker = NetworkStateTracker(context)
 		loadColumnList()
 	}
 	
@@ -235,6 +237,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 			enableSpeech()
 		}
 	}
+
 	
 	internal fun encodeColumnList() : JSONArray {
 		val array = JSONArray()

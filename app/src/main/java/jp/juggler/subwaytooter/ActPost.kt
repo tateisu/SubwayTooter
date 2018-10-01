@@ -390,6 +390,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		initUI()
 		
+		// Android 9 から、明示的にフォーカスを当てる必要がある
+		if( savedInstanceState==null){
+			etContent.requestFocus()
+		}
+		
 		if(account_list.isEmpty()) {
 			showToast(this, true, R.string.please_add_account)
 			finish()
@@ -923,6 +928,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		etContent.contentMineTypeArray =
 			acceptable_mime_types.toArray(arrayOfNulls<String>(ActPost.acceptable_mime_types.size))
 		etContent.commitContentListener = commitContentListener
+	
 	}
 	
 	private var lastInstanceTask : TootTaskRunner? = null

@@ -22,21 +22,17 @@ import android.view.View
 import android.view.Window
 import android.widget.TextView
 import com.google.android.exoplayer2.*
-
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import com.google.android.exoplayer2.source.ExtractorMediaSource
+import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.MediaSourceEventListener
 import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.ui.PlayerView
-import com.google.android.exoplayer2.upstream.DataSpec
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
-
-import java.util.LinkedList
-
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
@@ -47,6 +43,7 @@ import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.PinchBitmapView
 import okhttp3.Request
 import java.io.IOException
+import java.util.*
 
 class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	
@@ -327,11 +324,9 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 		val mediaSource = ExtractorMediaSource.Factory(dataSourceFactory)
 			.setExtractorsFactory(extractorsFactory)
-			.createMediaSource(
-				Uri.parse(url),
-				App1.getAppState(this).handler,
-				mediaSourceEventListener
-			)
+			.createMediaSource(Uri.parse(url))
+
+		mediaSource.addEventListener(App1.getAppState(this).handler,mediaSourceEventListener)
 		
 		exoPlayer.prepare(mediaSource)
 		exoPlayer.playWhenReady = true
@@ -345,87 +340,80 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 	
 	private val mediaSourceEventListener = object : MediaSourceEventListener {
 		override fun onLoadStarted(
-			dataSpec : DataSpec?,
-			dataType : Int,
-			trackType : Int,
-			trackFormat : Format?,
-			trackSelectionReason : Int,
-			trackSelectionData : Any?,
-			mediaStartTimeMs : Long,
-			mediaEndTimeMs : Long,
-			elapsedRealtimeMs : Long
-		) {
+			windowIndex : Int,
+			mediaPeriodId : MediaSource.MediaPeriodId?,
+			loadEventInfo : MediaSourceEventListener.LoadEventInfo?,
+			mediaLoadData : MediaSourceEventListener.MediaLoadData?
+		)  {
 			log.d("onLoadStarted")
 		}
 		
 		override fun onDownstreamFormatChanged(
-			trackType : Int,
-			trackFormat : Format?,
-			trackSelectionReason : Int,
-			trackSelectionData : Any?,
-			mediaTimeMs : Long
-		) {
+			windowIndex : Int,
+			mediaPeriodId : MediaSource.MediaPeriodId?,
+			mediaLoadData : MediaSourceEventListener.MediaLoadData?
+		)  {
 			log.d("onDownstreamFormatChanged")
 		}
 		
 		override fun onUpstreamDiscarded(
-			trackType : Int,
-			mediaStartTimeMs : Long,
-			mediaEndTimeMs : Long
-		) {
+			windowIndex : Int,
+			mediaPeriodId : MediaSource.MediaPeriodId?,
+			mediaLoadData : MediaSourceEventListener.MediaLoadData?
+		){
 			log.d("onUpstreamDiscarded")
 		}
 		
 		override fun onLoadCompleted(
-			dataSpec : DataSpec?,
-			dataType : Int,
-			trackType : Int,
-			trackFormat : Format?,
-			trackSelectionReason : Int,
-			trackSelectionData : Any?,
-			mediaStartTimeMs : Long,
-			mediaEndTimeMs : Long,
-			elapsedRealtimeMs : Long,
-			loadDurationMs : Long,
-			bytesLoaded : Long
+			windowIndex : Int,
+			mediaPeriodId : MediaSource.MediaPeriodId?,
+			loadEventInfo : MediaSourceEventListener.LoadEventInfo?,
+			mediaLoadData : MediaSourceEventListener.MediaLoadData?
 		) {
 			log.d("onLoadCompleted")
 		}
 		
 		override fun onLoadCanceled(
-			dataSpec : DataSpec?,
-			dataType : Int,
-			trackType : Int,
-			trackFormat : Format?,
-			trackSelectionReason : Int,
-			trackSelectionData : Any?,
-			mediaStartTimeMs : Long,
-			mediaEndTimeMs : Long,
-			elapsedRealtimeMs : Long,
-			loadDurationMs : Long,
-			bytesLoaded : Long
+			windowIndex : Int,
+			mediaPeriodId : MediaSource.MediaPeriodId?,
+			loadEventInfo : MediaSourceEventListener.LoadEventInfo?,
+			mediaLoadData : MediaSourceEventListener.MediaLoadData?
 		) {
 			log.d("onLoadCanceled")
 		}
 		
 		override fun onLoadError(
-			dataSpec : DataSpec?,
-			dataType : Int,
-			trackType : Int,
-			trackFormat : Format?,
-			trackSelectionReason : Int,
-			trackSelectionData : Any?,
-			mediaStartTimeMs : Long,
-			mediaEndTimeMs : Long,
-			elapsedRealtimeMs : Long,
-			loadDurationMs : Long,
-			bytesLoaded : Long,
+			windowIndex : Int,
+			mediaPeriodId : MediaSource.MediaPeriodId?,
+			loadEventInfo : MediaSourceEventListener.LoadEventInfo?,
+			mediaLoadData : MediaSourceEventListener.MediaLoadData?,
 			error : IOException?,
 			wasCanceled : Boolean
 		) {
 			if(error != null) {
 				showError(error.withCaption("load error."))
 			}
+		}
+		
+		override fun onMediaPeriodCreated(
+			windowIndex : Int,
+			mediaPeriodId : MediaSource.MediaPeriodId?
+		) {
+			log.d("onMediaPeriodCreated")
+		}
+		
+		override fun onMediaPeriodReleased(
+			windowIndex : Int,
+			mediaPeriodId : MediaSource.MediaPeriodId?
+		) {
+			log.d("onMediaPeriodReleased")
+		}
+		
+		override fun onReadingStarted(
+			windowIndex : Int,
+			mediaPeriodId : MediaSource.MediaPeriodId?
+		) {
+			log.d("onReadingStarted")
 		}
 		
 	}

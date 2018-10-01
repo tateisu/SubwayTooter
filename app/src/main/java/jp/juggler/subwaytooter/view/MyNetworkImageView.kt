@@ -23,7 +23,6 @@ import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.load.resource.gif.MyGifDrawable
-import com.bumptech.glide.request.target.BaseTarget
 import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.target.Target
@@ -40,27 +39,27 @@ class MyNetworkImageView : AppCompatImageView {
 	}
 	
 	// ロード中などに表示するDrawableのリソースID
-	private var mDefaultImageId : Int = 0
+	private var mDefaultImageId  = 0
 	
 	// エラー時に表示するDrawableのリソースID
-	private var mErrorImageId : Int = 0
+	private var mErrorImageId  = 0
 	
 	// 角丸の半径。元画像の短辺に対する割合を指定するらしい
-	internal var mCornerRadius : Float = 0.toFloat()
+	internal var mCornerRadius  = 0f
 	
 	// 表示したい画像のURL
 	private var mUrl : String? = null
 	private var mMayGif : Boolean = false
 	
 	// 非同期処理のキャンセル
-	private var mTarget : BaseTarget<*>? = null
+	private var mTarget : Target<*>? = null
 	
 	private val proc_load_image : Runnable = Runnable { loadImageIfNecessary() }
 	private val proc_focus_point : Runnable = Runnable { updateFocusPoint() }
 	
 	private var media_type_drawable : Drawable? = null
-	private var media_type_bottom : Int = 0
-	private var media_type_left : Int = 0
+	private var media_type_bottom  = 0
+	private var media_type_left  = 0
 	
 	constructor(context : Context)
 		: super(context)

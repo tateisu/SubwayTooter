@@ -5,14 +5,20 @@ apply plugin: 'kotlin-android'
 // apply plugin: 'kotlin-android-extensions'
 
 android {
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+
     compileSdkVersion target_sdk_version
 
     defaultConfig {
         targetSdkVersion target_sdk_version
         minSdkVersion min_sdk_version
 
-        versionCode 290
-        versionName "2.9.0"
+        versionCode 291
+        versionName "2.9.1"
         applicationId "jp.juggler.subwaytooter"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -99,10 +105,11 @@ dependencies {
 
     testImplementation 'junit:junit:4.12' // しばらくはkotlin-testとjunitを併用
 
-    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
-    testImplementation 'com.squareup.okhttp3:mockwebserver:3.10.0'
-    androidTestImplementation 'com.squareup.okhttp3:mockwebserver:3.10.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.11.0'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:3.11.0'
+    androidTestImplementation 'com.squareup.okhttp3:mockwebserver:3.11.0'
 
+    // glide 4.8.0 は CustomTarget がないので保留
     implementation 'com.github.bumptech.glide:glide:4.7.1'
     implementation 'com.github.bumptech.glide:okhttp3-integration:4.7.1'
     implementation 'com.github.bumptech.glide:annotations:4.7.1'
@@ -122,11 +129,12 @@ dependencies {
 
     implementation 'org.hjson:hjson:3.0.0'
 
-    implementation 'com.google.android:flexbox:0.3.2'
+    implementation 'com.google.android:flexbox:1.0.0' // 1.1.0 から AndroidX 依存
 
     implementation 'com.astuetz:pagerslidingtabstrip:1.0.1'
 
-    implementation 'com.google.android.exoplayer:exoplayer:2.7.3'
+    // exoplayer 2.9.0 は Java 8 compiler support を要求する
+    implementation 'com.google.android.exoplayer:exoplayer:2.8.4'
 
     // implementation 'com.simplecityapps:recyclerview-fastscroll:1.0.16'
 

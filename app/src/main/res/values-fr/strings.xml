@@ -164,7 +164,7 @@
     <string name="help_translation">Aide à la traduction</string>
     <string name="hide">Masquer</string>
     <string name="hide_media_default">Ne pas afficher les pièces jointes</string>
-    <string name="home">home</string>
+    <string name="home">Fil principal</string>
     <string name="image">Image</string>
     <string name="image_alpha">Transparence de l’image</string>
     <string name="image_capture">Utiliser l’appareil photo</string>
@@ -355,7 +355,7 @@
     <string name="app_data_import_desc">Vous pouvez exporter les données vers toute application qui pourra les recevoir. L\'importation ne peut s\'effectuer que depuis le stockage de votre appareil ou Google Drive !\nColumn background image may be not exported/imported over device.\nTimeline font is not exported/imported.\nCustom notification sound may be not exported/imported over device.</string>
 
     <string name="user_id_conversion_failed">Conversion de l’identification utilisateur échouée.</string>
-    <string name="draft_deleted">Brouillon effacé !</string>
+    <string name="draft_deleted">Brouillon effacé.</string>
     <string name="draft_picker_desc">Appui long pour effacer.</string>
     <string name="dont_crop_media_thumbnail">Ne pas recadrer les aperçus de pièces jointes\n(redémarrage nécessaire)</string>
     <string name="custom_stream_listener">Écouteur de notification personnalisé</string>
@@ -470,7 +470,7 @@
     <string name="notification_style_after_oreo">Style de notification (Android 8.0 ou version ultérieure)</string>
     <string name="notification_for">Notification for %1$s</string>
     <string name="notification_channel_description">Ces paramètres sont utilisés pour la notification pour %1$s</string>
-    <string name="notification_style_before_oreo">Style de notification (avant Android 8. Si votre appareil est sous Android 8.0 ou version ultérieure, veuillez vérifier les Paramètres du compte).</string>
+    <string name="notification_style_before_oreo">Style de notification (avant Android 8. Si votre appareil est sous Android 8.0 ou version ultérieure, veuillez vérifier les Paramètres du compte)</string>
     <string name="enquete_was_end">Sondage terminé.</string>
     <string name="enquete_voted">a voté !</string>
     <string name="enquete_vote_failed">Le vote a échoué. %1$s</string>
@@ -490,8 +490,8 @@
     <string name="profile_pin">Épingler sur le profil</string>
     <string name="profile_unpin">Détacher du profil</string>
     <string name="profile_pin_progress">Modification du statut épinglé …</string>
-    <string name="length_warning">\"%1$s\" est trop long (%2$d/%3$d caractères).
-\nElle n\'est pas acceptable dans le cas standard, mais elle peut l\'être dans certains cas.
+    <string name="length_warning">\"%1$s\" est trop long (%2$d/%3$d caractères). 
+\nIl n’est pas acceptable sur une instance standard, mais peut être permit dans certains cas. 
 \nVous êtes sûr ?</string>
 
     <string name="short_acct_local_user">Compte court pour l\'utilisateur local (redémarrage de l\'application requis)</string>
@@ -513,8 +513,8 @@
     <string name="not_provided_mastodon_under_1_6">Non fourni sous Mastodon 1.6</string>
 
     <string name="mime_type_missing">Type MIME manquant.</string>
-    <string name="mime_type_not_acceptable">MIME type %1$s is not acceptable.
-\nSupported MIME types are image/jpeg, image/png, image/gif, video/webm, video/mp4 .</string>
+    <string name="mime_type_not_acceptable">Type MIME %1$s n\'est pas acceptable.
+\nTypes MIME pris en charge sont les suivants : image/jpeg, image/png, image/gif,/video/webm, video/mp4.</string>
     <string name="thumbnail_1_6_1_later">Miniature (Mastodon 1.6.1 ou version ultérieure)</string>
     <string name="dont_show_timeout">Ne pas afficher les notifications \"Délai d\'expiration du serveur\"</string>
     <string name="emoji_category_people">People</string>
@@ -744,7 +744,7 @@
     <string name="filter_expire_12hour">12 heures après l\'enregistrement</string>
     <string name="filter_expire_1day">1 jour après l\'enregistrement</string>
     <string name="filter_expire_1week">1 semaine après l\'enregistrement</string>
-    <string name="scroll_top_from_column_strip">Faire défiler vers le haut lorsque vous tapez sur une colonne visible dans la bande de colonne.</string>
+    <string name="scroll_top_from_column_strip">Faire défiler vers le haut lorsque vous tapez sur une colonne visible dans la bande de colonne</string>
     <string name="delete_suggestion">Enlever de vos suggestions d’abonnement …</string>
     <string name="delete_succeeded_confirm">L\'utilisateur·trice \"%1$s\" sera retiré·é de la liste des comptes recommandés. Êtes-vous sûr ?</string>
     <string name="toot_context_parse_failed">échec de l’analyse de la conversation.</string>
@@ -802,4 +802,14 @@
     <string name="dont_use_custom_tabs">Ne pas utiliser d\'onglets personnalisés (Chrome/Firefox) lorsque vous ouvrez des liens</string>
 
     <string name="missing_closeable_column">missing closeable column in visible range.</string>
-</resources>
+<string name="privacy_policy">Politique de confidentialité</string>
+    <string name="agree">J’accepte</string>
+
+    <string name="ltl_around_toot">Fil local autour de ce pouet … (Mastodon 2.6)</string>
+    <string name="ltl_around">Fil local autour de …</string>
+    <string name="ltl_around_of">Fil local autour de %1$s</string>
+
+    <string name="ftl_around">Fil global autour de …</string>
+    <string name="ftl_around_of">Fil global autour de %1$s</string>
+
+    </resources>

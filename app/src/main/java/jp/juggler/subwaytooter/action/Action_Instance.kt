@@ -6,10 +6,9 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Column
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
+import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.encodePercent
@@ -54,6 +53,7 @@ object Action_Instance {
 		}
 	}
 	
+	
 	// ドメインブロック
 	fun blockDomain(
 		activity : ActMain, access_info : SavedAccount, domain : String, bBlock : Boolean
@@ -94,5 +94,102 @@ object Action_Instance {
 			}
 		})
 	}
+	
+	// 指定タンスのローカルタイムラインを開く
+	fun timelinePublicAround2(
+		activity : ActMain,
+		access_info : SavedAccount,
+		pos:Int,
+		id:EntityId,
+		columnType:Int
+	) {
+		activity.addColumn(pos, access_info, columnType,id)
+	}
+
+	private fun timelinePublicAround3(
+		activity : ActMain,
+		access_info : SavedAccount,
+		pos:Int,
+		status:TootStatus,
+		columnType:Int
+	) {
+		TootTaskRunner(activity).run(access_info,object:TootTask{
+			override fun background(client : TootApiClient) : TootApiResult? {
+				return client.syncStatus(access_info,status)
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				result?: return
+				val localStatus = result. data as? TootStatus
+				if( localStatus != null ){
+					timelinePublicAround2(activity,access_info,pos,localStatus.id,columnType)
+				}else{
+					showToast(activity,true,result.error)
+				}
+			}
+		})
+	}
+
+	// 指定タンスのローカルタイムラインを開く
+	fun timelinePublicAround(
+		activity : ActMain,
+		access_info : SavedAccount,
+		pos:Int,
+		host : String?,
+		status:TootStatus?,
+		columnType:Int,
+		allowPseudo :Boolean = true
+	) {
+		if( host?.isEmpty() != false || host == "?") return
+		status?: return
+		
+		// 利用可能なアカウントを列挙する
+		val account_list1 = ArrayList<SavedAccount>() // 閲覧アカウントとホストが同じ
+		val account_list2 = ArrayList<SavedAccount>() // その他実アカウント
+		label@ for(a in SavedAccount.loadAccountList(activity)) {
+
+			when{
+				//
+				a.isNA-> continue@label
+
+				// Misskeyアカウントはステータスの同期が出来ないので選択させない
+				a.isMisskey -> continue@label
+
+				// 閲覧アカウントとホスト名が同じならステータスIDの変換が必要ない
+				a.host.equals( access_info.host,ignoreCase = true) ->{
+					if( ! allowPseudo && a.isPseudo) continue@label
+					account_list1.add(a)
+				}
+				
+				// 実アカウントならステータスを同期して同時間帯のTLを見れる
+				!a.isPseudo ->{
+					account_list2.add(a)
+				}
+			}
+		}
+		SavedAccount.sort(account_list1)
+		SavedAccount.sort(account_list2)
+		account_list1.addAll(account_list2)
+		
+		if( account_list1.isNotEmpty()) {
+			AccountPicker.pick(
+				activity,
+				bAuto =  true,
+				message = "select account to read timeline",
+				accountListArg = account_list1
+			) { ai ->
+				if( !ai.isNA && ai.host.equals( access_info.host,ignoreCase = true) ){
+					timelinePublicAround2(activity,account_list1[0], pos, status.id,columnType)
+				}else {
+					timelinePublicAround3(activity, ai, pos, status,columnType)
+				}
+			}
+			return
+		}
+		
+		showToast(activity, false, R.string.missing_available_account)
+	}
+	
+
 	
 }

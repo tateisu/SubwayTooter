@@ -299,6 +299,51 @@
                     android:textAllCaps="false"
                     />
 
+                <Button
+                    android:id="@+id/btnAroundAccountTL"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:gravity="start|center_vertical"
+                    android:minHeight="32dp"
+                    android:paddingBottom="4dp"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+                    android:text="@string/account_tl_around_toot"
+                    android:textAllCaps="false"
+                    />
+
+                <Button
+                    android:id="@+id/btnAroundLTL"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:gravity="start|center_vertical"
+                    android:minHeight="32dp"
+                    android:paddingBottom="4dp"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+                    android:text="@string/ltl_around_toot"
+                    android:textAllCaps="false"
+                    />
+                <Button
+                    android:id="@+id/btnAroundFTL"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/btn_bg_transparent"
+                    android:gravity="start|center_vertical"
+                    android:minHeight="32dp"
+                    android:paddingBottom="4dp"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="8dp"
+                    android:paddingTop="4dp"
+                    android:text="@string/ftl_around_toot"
+                    android:textAllCaps="false"
+                    />
+
+
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"

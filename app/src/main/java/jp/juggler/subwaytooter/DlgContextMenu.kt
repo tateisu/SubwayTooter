@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.graphics.PorterDuff
-import android.opengl.Visibility
 import android.support.v4.app.ShareCompat
 import android.support.v7.app.AlertDialog
 import android.view.View
@@ -12,16 +11,7 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
-
-import java.util.ArrayList
-
-import jp.juggler.subwaytooter.action.Action_Account
-import jp.juggler.subwaytooter.action.Action_App
-import jp.juggler.subwaytooter.action.Action_Follow
-import jp.juggler.subwaytooter.action.Action_Instance
-import jp.juggler.subwaytooter.action.Action_Notification
-import jp.juggler.subwaytooter.action.Action_Toot
-import jp.juggler.subwaytooter.action.Action_User
+import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
@@ -32,6 +22,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.showToast
+import java.util.*
 
 @SuppressLint("InflateParams")
 internal class DlgContextMenu(
@@ -116,7 +107,15 @@ internal class DlgContextMenu(
 		val btnShowFavourite = viewRoot.findViewById<View>(R.id.btnShowFavourite)
 		
 		val btnListMemberAddRemove = viewRoot.findViewById<View>(R.id.btnListMemberAddRemove)
-		val btnEndorse :Button = viewRoot.findViewById(R.id.btnEndorse)
+		val btnEndorse : Button = viewRoot.findViewById(R.id.btnEndorse)
+		
+		val btnAroundAccountTL = viewRoot.findViewById<View>(R.id.btnAroundAccountTL)
+		val btnAroundLTL = viewRoot.findViewById<View>(R.id.btnAroundLTL)
+		val btnAroundFTL = viewRoot.findViewById<View>(R.id.btnAroundFTL)
+		
+		btnAroundAccountTL.setOnClickListener(this)
+		btnAroundLTL.setOnClickListener(this)
+		btnAroundFTL.setOnClickListener(this)
 		
 		btnStatusWebPage.setOnClickListener(this)
 		btnText.setOnClickListener(this)
@@ -305,9 +304,9 @@ internal class DlgContextMenu(
 			btnEndorse.visibility = View.GONE
 		}
 		
-		btnEndorse.text = when(relation.endorsed){
+		btnEndorse.text = when(relation.endorsed) {
 			false -> activity.getString(R.string.endorse_set)
-			else->activity.getString(R.string.endorse_unset)
+			else -> activity.getString(R.string.endorse_unset)
 		}
 		
 		if(column_type != Column.TYPE_FOLLOW_REQUESTS) {
@@ -401,16 +400,23 @@ internal class DlgContextMenu(
 				
 				R.id.btnFollow ->
 					when {
-
-						access_info.isPseudo -> Action_Follow.followFromAnotherAccount(activity, pos, access_info, who)
-
-						access_info.isMisskey && relation.getRequested(who) && !relation.getFollowing(who) -> Action_Follow.deleteFollowRequest(
+						
+						access_info.isPseudo -> Action_Follow.followFromAnotherAccount(
+							activity,
+							pos,
+							access_info,
+							who
+						)
+						
+						access_info.isMisskey && relation.getRequested(who) && ! relation.getFollowing(
+							who
+						) -> Action_Follow.deleteFollowRequest(
 							activity, pos, access_info, whoRef,
 							callback = activity.cancel_follow_request_complete_callback
 						)
-
+						
 						else -> {
-							val bSet = !(relation.getRequested(who) || relation.getFollowing(who) )
+							val bSet = ! (relation.getRequested(who) || relation.getFollowing(who))
 							Action_Follow.follow(
 								activity, pos, access_info, whoRef,
 								bFollow = bSet,
@@ -426,60 +432,66 @@ internal class DlgContextMenu(
 					ActText.open(activity, ActMain.REQUEST_CODE_TEXT, access_info, who)
 				
 				R.id.btnMute ->
-					if(relation.muting) {
+					when {
+						
 						//解除
-						Action_User.mute(
-							activity,
-							access_info,
-							who,
-							bMute = false
-						)
-					} else if(access_info.isMisskey) {
-						// Misskey には「このユーザからの通知もミュート」オプションはない
+						relation.muting ->
+							Action_User.mute(
+								activity,
+								access_info,
+								who,
+								bMute = false
+							)
 						
-						@SuppressLint("InflateParams")
-						val view =
-							activity.layoutInflater.inflate(R.layout.dlg_confirm, null, false)
-						val tvMessage = view.findViewById<TextView>(R.id.tvMessage)
-						tvMessage.text =
-							activity.getString(R.string.confirm_mute_user, who.username)
-						val cbMuteNotification = view.findViewById<CheckBox>(R.id.cbSkipNext)
-						cbMuteNotification.visibility = View.GONE
-						AlertDialog.Builder(activity)
-							.setView(view)
-							.setNegativeButton(R.string.cancel, null)
-							.setPositiveButton(R.string.ok) { _, _ ->
-								Action_User.mute(
-									activity,
-									access_info,
-									who
-								)
-							}
-							.show()
-					}else{
+						access_info.isMisskey -> {
+							// Misskey には「このユーザからの通知もミュート」オプションはない
+							
+							@SuppressLint("InflateParams")
+							val view =
+								activity.layoutInflater.inflate(R.layout.dlg_confirm, null, false)
+							val tvMessage = view.findViewById<TextView>(R.id.tvMessage)
+							tvMessage.text =
+								activity.getString(R.string.confirm_mute_user, who.username)
+							val cbMuteNotification = view.findViewById<CheckBox>(R.id.cbSkipNext)
+							cbMuteNotification.visibility = View.GONE
+							AlertDialog.Builder(activity)
+								.setView(view)
+								.setNegativeButton(R.string.cancel, null)
+								.setPositiveButton(R.string.ok) { _, _ ->
+									Action_User.mute(
+										activity,
+										access_info,
+										who
+									)
+								}
+								.show()
+						}
 						
-						@SuppressLint("InflateParams")
-						val view =
-							activity.layoutInflater.inflate(R.layout.dlg_confirm, null, false)
-						val tvMessage = view.findViewById<TextView>(R.id.tvMessage)
-						tvMessage.text =
-							activity.getString(R.string.confirm_mute_user, who.username)
-						val cbMuteNotification = view.findViewById<CheckBox>(R.id.cbSkipNext)
-						cbMuteNotification.setText(R.string.confirm_mute_notification_for_user)
-						cbMuteNotification.isChecked = true
-						// オプション指定つきでミュート
-						AlertDialog.Builder(activity)
-							.setView(view)
-							.setNegativeButton(R.string.cancel, null)
-							.setPositiveButton(R.string.ok) { _, _ ->
-								Action_User.mute(
-									activity,
-									access_info,
-									who,
-									bMuteNotification = cbMuteNotification.isChecked
-								)
-							}
-							.show()
+						else -> {
+							
+							@SuppressLint("InflateParams")
+							val view =
+								activity.layoutInflater.inflate(R.layout.dlg_confirm, null, false)
+							val tvMessage = view.findViewById<TextView>(R.id.tvMessage)
+							tvMessage.text =
+								activity.getString(R.string.confirm_mute_user, who.username)
+							val cbMuteNotification = view.findViewById<CheckBox>(R.id.cbSkipNext)
+							cbMuteNotification.setText(R.string.confirm_mute_notification_for_user)
+							cbMuteNotification.isChecked = true
+							// オプション指定つきでミュート
+							AlertDialog.Builder(activity)
+								.setView(view)
+								.setNegativeButton(R.string.cancel, null)
+								.setPositiveButton(R.string.ok) { _, _ ->
+									Action_User.mute(
+										activity,
+										access_info,
+										who,
+										bMuteNotification = cbMuteNotification.isChecked
+									)
+								}
+								.show()
+						}
 					}
 				
 				R.id.btnBlock ->
@@ -625,7 +637,41 @@ internal class DlgContextMenu(
 				R.id.btnInstanceInformation ->
 					Action_Instance.information(activity, pos, who.host)
 				
-				R.id.btnEndorse -> Action_Account.endorse(activity,access_info,who,!relation.endorsed)
+				R.id.btnEndorse -> Action_Account.endorse(
+					activity,
+					access_info,
+					who,
+					! relation.endorsed
+				)
+				
+				R.id.btnAroundAccountTL -> Action_Instance.timelinePublicAround(
+					activity,
+					access_info,
+					pos,
+					who.host,
+					status,
+					Column.TYPE_ACCOUNT_AROUND
+					,allowPseudo = false
+				)
+
+				R.id.btnAroundLTL -> Action_Instance.timelinePublicAround(
+					activity,
+					access_info,
+					pos,
+					who.host,
+					status,
+					Column.TYPE_LOCAL_AROUND
+				)
+
+				R.id.btnAroundFTL -> Action_Instance.timelinePublicAround(
+					activity,
+					access_info,
+					pos,
+					who.host,
+					status,
+					Column.TYPE_FEDERATED_AROUND
+				)
+				
 			}
 		}
 		

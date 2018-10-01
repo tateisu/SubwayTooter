@@ -51,7 +51,7 @@ class Column(
 	val context : Context,
 	val access_info : SavedAccount,
 	val column_type : Int,
-	val column_id: String
+	val column_id : String
 ) {
 	
 	companion object {
@@ -204,12 +204,14 @@ class Column(
 		internal const val TYPE_KEYWORD_FILTER = 26
 		internal const val TYPE_MISSKEY_HYBRID = 27
 		internal const val TYPE_ENDORSEMENT = 28
+		internal const val TYPE_LOCAL_AROUND = 29
+		internal const val TYPE_FEDERATED_AROUND = 30
+		internal const val TYPE_ACCOUNT_AROUND = 31
+		
 		
 		internal const val TAB_STATUS = 0
 		internal const val TAB_FOLLOWING = 1
 		internal const val TAB_FOLLOWERS = 2
-		
-		
 		
 		@Suppress("UNCHECKED_CAST")
 		private inline fun <reified T> getParamAt(params : Array<out Any>, idx : Int) : T {
@@ -230,9 +232,16 @@ class Column(
 		fun getColumnTypeName(context : Context, type : Int) : String {
 			return when(type) {
 				TYPE_HOME -> context.getString(R.string.home)
+				
+				TYPE_LOCAL_AROUND -> context.getString(R.string.ltl_around)
+				TYPE_FEDERATED_AROUND -> context.getString(R.string.ftl_around)
+				TYPE_ACCOUNT_AROUND-> context.getString(R.string.account_tl_around)
+				
 				TYPE_LOCAL -> context.getString(R.string.local_timeline)
-				TYPE_MISSKEY_HYBRID -> context.getString(R.string.misskey_hybrid_timeline)
 				TYPE_FEDERATE -> context.getString(R.string.federate_timeline)
+				
+				TYPE_MISSKEY_HYBRID -> context.getString(R.string.misskey_hybrid_timeline)
+
 				TYPE_PROFILE -> context.getString(R.string.profile)
 				TYPE_FAVOURITES -> context.getString(R.string.favourites)
 				TYPE_REPORTS -> context.getString(R.string.reports)
@@ -251,7 +260,7 @@ class Column(
 				TYPE_INSTANCE_INFORMATION -> context.getString(R.string.instance_information)
 				TYPE_FOLLOW_REQUESTS -> context.getString(R.string.follow_requests)
 				TYPE_FOLLOW_SUGGESTION -> context.getString(R.string.follow_suggestion)
-				TYPE_ENDORSEMENT ->context.getString(R.string.endorse_set)
+				TYPE_ENDORSEMENT -> context.getString(R.string.endorse_set)
 				
 				TYPE_LIST_LIST -> context.getString(R.string.lists)
 				TYPE_LIST_MEMBER -> context.getString(R.string.list_member)
@@ -266,9 +275,15 @@ class Column(
 			return when(type) {
 				TYPE_REPORTS -> R.attr.ic_info
 				TYPE_HOME -> R.attr.btn_home
+				
+				TYPE_LOCAL_AROUND -> R.attr.btn_local_tl
+				TYPE_FEDERATED_AROUND -> R.attr.btn_federate_tl
+				TYPE_ACCOUNT_AROUND -> R.attr.btn_statuses
+
 				TYPE_LOCAL -> R.attr.btn_local_tl
-				TYPE_MISSKEY_HYBRID -> R.attr.ic_share
 				TYPE_FEDERATE -> R.attr.btn_federate_tl
+				TYPE_MISSKEY_HYBRID -> R.attr.ic_share
+
 				TYPE_PROFILE -> R.attr.btn_statuses
 				TYPE_FAVOURITES -> if(SavedAccount.isNicoru(acct)) R.attr.ic_nicoru else R.attr.btn_favourite
 				TYPE_NOTIFICATIONS -> R.attr.btn_notification
@@ -297,9 +312,9 @@ class Column(
 		internal val reMaxId = Pattern.compile("[&?]max_id=(\\d+)") // より古いデータの取得に使う
 		
 		private val reMinId = Pattern.compile("[&?]min_id=(\\d+)") // より新しいデータの取得に使う (マストドン2.6.0以降)
-
-		private val reSinceId = Pattern.compile("[&?]since_id=(\\d+)") // より新しいデータの取得に使う(マストドン2.6.0未満)
 		
+		private val reSinceId =
+			Pattern.compile("[&?]since_id=(\\d+)") // より新しいデータの取得に使う(マストドン2.6.0未満)
 		
 		val COLUMN_REGEX_FILTER_DEFAULT = { _ : CharSequence? -> false }
 		
@@ -377,18 +392,18 @@ class Column(
 				dst
 			}
 		
-		
-		private val columnIdMap = HashMap<String,WeakReference<Column>?>()
-		private fun registerColumnId(id:String,column:Column){
-			synchronized(columnIdMap){
+		private val columnIdMap = HashMap<String, WeakReference<Column>?>()
+		private fun registerColumnId(id : String, column : Column) {
+			synchronized(columnIdMap) {
 				columnIdMap[id] = WeakReference(column)
 			}
 		}
-		private fun generateColumnId():String{
-			synchronized(columnIdMap){
+		
+		private fun generateColumnId() : String {
+			synchronized(columnIdMap) {
 				val buffer = ByteBuffer.allocate(8)
-				var id=""
-				while( id.isEmpty() || columnIdMap.containsKey(id) ){
+				var id = ""
+				while(id.isEmpty() || columnIdMap.containsKey(id)) {
 					if(id.isNotEmpty()) Thread.sleep(1L)
 					buffer.clear()
 					buffer.putLong(System.currentTimeMillis())
@@ -398,35 +413,35 @@ class Column(
 				return id
 			}
 		}
-
-		private fun decodeColumnId(src:JSONObject):String{
+		
+		private fun decodeColumnId(src : JSONObject) : String {
 			return src.parseString(KEY_COLUMN_ID) ?: generateColumnId()
 		}
 		
 		fun findColumnById(id : String) : Column? {
-			synchronized(columnIdMap){
+			synchronized(columnIdMap) {
 				return columnIdMap[id]?.get()
 			}
 		}
 		
 		fun getBackgroundImageDir(context : Context) : File {
 			val externalDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-			if( externalDir == null) {
+			if(externalDir == null) {
 				log.e("getExternalFilesDir is null.")
-			}else{
+			} else {
 				val state = Environment.getExternalStorageState()
-				if( state != Environment.MEDIA_MOUNTED ){
+				if(state != Environment.MEDIA_MOUNTED) {
 					log.e("getExternalStorageState: ${state}")
-				}else {
+				} else {
 					log.i("externalDir: ${externalDir}")
 					externalDir.mkdir()
-					val backgroundDir = File(externalDir,DIR_BACKGROUND_IMAGE)
+					val backgroundDir = File(externalDir, DIR_BACKGROUND_IMAGE)
 					backgroundDir.mkdir()
 					log.i("backgroundDir: ${backgroundDir} exists=${backgroundDir.exists()}")
 					return backgroundDir
 				}
 			}
-			val backgroundDir = context.getDir(Column.DIR_BACKGROUND_IMAGE,Context.MODE_PRIVATE)
+			val backgroundDir = context.getDir(Column.DIR_BACKGROUND_IMAGE, Context.MODE_PRIVATE)
 			log.i("backgroundDir: ${backgroundDir} exists=${backgroundDir.exists()}")
 			return backgroundDir
 		}
@@ -480,7 +495,7 @@ class Column(
 	private val isPublicStream : Boolean
 		get() {
 			return when(column_type) {
-				TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG -> true
+				TYPE_LOCAL, TYPE_FEDERATE, TYPE_HASHTAG, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND -> true
 				else -> false
 			}
 		}
@@ -594,7 +609,6 @@ class Column(
 	@Volatile
 	private var column_regex_filter = COLUMN_REGEX_FILTER_DEFAULT
 	
-	
 	@Volatile
 	private var muted_word2 : WordTrieTree? = null
 	
@@ -619,8 +633,6 @@ class Column(
 	private val stream_data_queue = ConcurrentLinkedQueue<TimelineItem>()
 	
 	private var bPutGap : Boolean = false
-	
-
 	
 	@Suppress("unused")
 	val listTitle : String
@@ -663,10 +675,10 @@ class Column(
 		type : Int,
 		vararg params : Any
 	)
-		: this(app_state, app_state.context, access_info, type, generateColumnId() ) {
+		: this(app_state, app_state.context, access_info, type, generateColumnId()) {
 		this.callback_ref = WeakReference(callback)
 		when(type) {
-			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY -> status_id =
+			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND ,TYPE_ACCOUNT_AROUND-> status_id =
 				getParamAt(params, 0)
 			TYPE_PROFILE, TYPE_LIST_TL, TYPE_LIST_MEMBER -> profile_id = getParamAt(params, 0)
 			TYPE_HASHTAG -> hashtag = getParamAt(params, 0)
@@ -720,10 +732,11 @@ class Column(
 		
 		when(column_type) {
 			
-			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY -> status_id = when(isMisskey) {
-				true -> EntityId.mayNull(src.parseString(KEY_STATUS_ID))
-				else -> EntityId.mayNull(src.parseLong(KEY_STATUS_ID))
-			}
+			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND ,TYPE_ACCOUNT_AROUND-> status_id =
+				when(isMisskey) {
+					true -> EntityId.mayNull(src.parseString(KEY_STATUS_ID))
+					else -> EntityId.mayNull(src.parseLong(KEY_STATUS_ID))
+				}
 			
 			TYPE_PROFILE -> {
 				profile_id = when(isMisskey) {
@@ -789,7 +802,7 @@ class Column(
 		
 		when(column_type) {
 			
-			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY ->
+			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND ,TYPE_ACCOUNT_AROUND->
 				dst.put(KEY_STATUS_ID, status_id.toString())
 			
 			TYPE_PROFILE ->
@@ -831,7 +844,7 @@ class Column(
 						else -> EntityIdLong(getParamAt(params, 0))
 					}
 				
-				TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY ->
+				TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND ,TYPE_ACCOUNT_AROUND->
 					status_id == when(isMisskey) {
 						true -> EntityIdString(getParamAt(params, 0))
 						else -> EntityIdLong(getParamAt(params, 0))
@@ -882,6 +895,21 @@ class Column(
 			
 			TYPE_CONVERSATION -> context.getString(
 				R.string.conversation_around,
+				(status_id?.toString() ?: "null")
+			)
+
+			TYPE_LOCAL_AROUND -> context.getString(
+				R.string.ltl_around_of,
+				(status_id?.toString() ?: "null")
+			)
+
+			TYPE_FEDERATED_AROUND -> context.getString(
+				R.string.ftl_around_of,
+				(status_id?.toString() ?: "null")
+			)
+
+			TYPE_ACCOUNT_AROUND-> context.getString(
+				R.string.account_tl_around_of,
 				(status_id?.toString() ?: "null")
 			)
 			
@@ -1544,18 +1572,18 @@ class Column(
 	}
 	
 	internal fun loadListInfo(client : TootApiClient, bForceReload : Boolean) {
-		val parser =  TootParser(context,access_info)
+		val parser = TootParser(context, access_info)
 		if(bForceReload || this.list_info == null) {
-			val result = if(isMisskey){
+			val result = if(isMisskey) {
 				val params = makeMisskeyBaseParameter(parser)
-					.put("listId",profile_id)
-				client.request("/api/users/lists/show",params.toPostRequestBuilder())
-			}else{
+					.put("listId", profile_id)
+				client.request("/api/users/lists/show", params.toPostRequestBuilder())
+			} else {
 				client.request(String.format(Locale.JAPAN, PATH_LIST_INFO, profile_id))
 			}
 			val jsonObject = result?.jsonObject
 			if(jsonObject != null) {
-				val data = parseItem(::TootList,parser,jsonObject)
+				val data = parseItem(::TootList, parser, jsonObject)
 				if(data != null) {
 					this.list_info = data
 					client.publishApiProgress("") // カラムヘッダの再表示
@@ -1772,8 +1800,10 @@ class Column(
 			fun getStatuses(
 				client : TootApiClient,
 				path_base : String,
-				misskeyParams : JSONObject? = null
-				,
+				aroundMin : Boolean = false,
+				aroundMax : Boolean = false,
+				
+				misskeyParams : JSONObject? = null,
 				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootStatus> =
 					{ parser, jsonArray -> parser.statusList(jsonArray) }
 			) : TootApiResult? {
@@ -1785,10 +1815,11 @@ class Column(
 				val time_start = SystemClock.elapsedRealtime()
 				
 				// 初回の取得
-				val result = if(isMisskey) {
-					client.request(path_base, params.toPostRequestBuilder())
-				} else {
-					client.request(path_base)
+				val result = when {
+					isMisskey -> client.request(path_base, params.toPostRequestBuilder())
+					aroundMin -> client.request("$path_base&min_id=$status_id")
+					aroundMax -> client.request("$path_base&max_id=$status_id")
+					else -> client.request(path_base)
 				}
 				
 				var jsonArray = result?.jsonArray
@@ -1796,66 +1827,128 @@ class Column(
 					
 					var src = misskeyCustomParser(parser, jsonArray)
 					
-					this.list_tmp = addWithFilterStatus(ArrayList(src.size), src)
+					if(list_tmp == null) {
+						list_tmp = ArrayList(src.size)
+					}
+					this.list_tmp = addWithFilterStatus(list_tmp, src)
 					
 					saveRange(true, true, result, src)
 					
-					//
-					while(true) {
-						
-						if(client.isApiCancelled) {
-							log.d("loading-statuses: cancelled.")
-							break
+					if(aroundMin) {
+						while(true) {
+							if(client.isApiCancelled) {
+								log.d("loading-statuses: cancelled.")
+								break
+							}
+							
+							if(! isFilterEnabled) {
+								log.d("loading-statuses: isFiltered is false.")
+								break
+							}
+							
+							if(idRecent == null) {
+								log.d("loading-statuses: idRecent is empty.")
+								break
+							}
+							
+							if((list_tmp?.size ?: 0) >= LOOP_READ_ENOUGH) {
+								log.d("loading-statuses: read enough data.")
+								break
+							}
+							
+							if(src.isEmpty()) {
+								log.d("loading-statuses: previous response is empty.")
+								break
+							}
+							
+							if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+								log.d("loading-statuses: timeout.")
+								break
+							}
+							
+							// フィルタなどが有効な場合は2回目以降の取得
+							val result2 = if(isMisskey) {
+								idOld?.putMisskeyUntil(params)
+								client.request(path_base, params.toPostRequestBuilder())
+							} else {
+								val path = "$path_base${delimiter}min_id=${idRecent}"
+								client.request(path)
+							}
+							
+							jsonArray = result2?.jsonArray
+							
+							if(jsonArray == null) {
+								log.d("loading-statuses: error or cancelled.")
+								break
+							}
+							
+							src = misskeyCustomParser(parser, jsonArray)
+							
+							addWithFilterStatus(list_tmp, src)
+							
+							if(! saveRangeStart(result = result2, list = src)) {
+								log.d("loading-statuses: missing range info.")
+								break
+							}
 						}
 						
-						if(! isFilterEnabled) {
-							log.d("loading-statuses: isFiltered is false.")
-							break
-						}
-						
-						if(idOld == null) {
-							log.d("loading-statuses: idOld is empty.")
-							break
-						}
-						
-						if((list_tmp?.size ?: 0) >= LOOP_READ_ENOUGH) {
-							log.d("loading-statuses: read enough data.")
-							break
-						}
-						
-						if(src.isEmpty()) {
-							log.d("loading-statuses: previous response is empty.")
-							break
-						}
-						
-						if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
-							log.d("loading-statuses: timeout.")
-							break
-						}
-						
-						// フィルタなどが有効な場合は2回目以降の取得
-						val result2 = if(isMisskey) {
-							idOld?.putMisskeyUntil(params)
-							client.request(path_base, params.toPostRequestBuilder())
-						} else {
-							val path = "$path_base${delimiter}max_id=${idOld}"
-							client.request(path)
-						}
-						
-						jsonArray = result2?.jsonArray
-						
-						if(jsonArray == null) {
-							log.d("loading-statuses: error or cancelled.")
-							break
-						}
-						
-						src = misskeyCustomParser(parser, jsonArray)
-						
-						addWithFilterStatus(list_tmp, src)
-						
-						if(! saveRangeEnd(result = result2, list = src)) {
-							log.d("loading-statuses: missing range info.")
-							break
+					} else {
+						while(true) {
+							
+							if(client.isApiCancelled) {
+								log.d("loading-statuses: cancelled.")
+								break
+							}
+							
+							if(! isFilterEnabled) {
+								log.d("loading-statuses: isFiltered is false.")
+								break
+							}
+							
+							if(idOld == null) {
+								log.d("loading-statuses: idOld is empty.")
+								break
+							}
+							
+							if((list_tmp?.size ?: 0) >= LOOP_READ_ENOUGH) {
+								log.d("loading-statuses: read enough data.")
+								break
+							}
+							
+							if(src.isEmpty()) {
+								log.d("loading-statuses: previous response is empty.")
+								break
+							}
+							
+							if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+								log.d("loading-statuses: timeout.")
+								break
+							}
+							
+							// フィルタなどが有効な場合は2回目以降の取得
+							val result2 = if(isMisskey) {
+								idOld?.putMisskeyUntil(params)
+								client.request(path_base, params.toPostRequestBuilder())
+							} else {
+								val path = "$path_base${delimiter}max_id=${idOld}"
+								client.request(path)
+							}
+							
+							jsonArray = result2?.jsonArray
+							
+							if(jsonArray == null) {
+								log.d("loading-statuses: error or cancelled.")
+								break
+							}
+							
+							src = misskeyCustomParser(parser, jsonArray)
+							
+							addWithFilterStatus(list_tmp, src)
+							
+							if(! saveRangeEnd(result = result2, list = src)) {
+								log.d("loading-statuses: missing range info.")
+								break
+							}
 						}
 					}
 				}
@@ -1863,16 +1956,11 @@ class Column(
 			}
 			
 			fun parseAccountList(
-				client : TootApiClient
-				,
-				path_base : String
-				,
-				emptyMessage : String? = null
-				,
-				misskeyParams : JSONObject? = null
-				,
-				misskeyArrayFinder : (JSONObject) -> JSONArray? = { null }
-				,
+				client : TootApiClient,
+				path_base : String,
+				emptyMessage : String? = null,
+				misskeyParams : JSONObject? = null,
+				misskeyArrayFinder : (JSONObject) -> JSONArray? = { null },
 				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootAccountRef> =
 					{ parser, jsonArray -> parser.accountList(jsonArray) }
 			) : TootApiResult? {
@@ -1970,15 +2058,15 @@ class Column(
 			fun parseListList(
 				client : TootApiClient,
 				path_base : String,
-				misskeyParams: JSONObject? = null
-				) : TootApiResult? {
-				val result = if( misskeyParams != null){
-					client.request(path_base,misskeyParams.toPostRequestBuilder())
-				}else{
+				misskeyParams : JSONObject? = null
+			) : TootApiResult? {
+				val result = if(misskeyParams != null) {
+					client.request(path_base, misskeyParams.toPostRequestBuilder())
+				} else {
 					client.request(path_base)
 				}
 				if(result != null) {
-					val src =  parseList(::TootList, parser,result.jsonArray)
+					val src = parseList(::TootList, parser, result.jsonArray)
 					src.sort()
 					saveRange(true, true, result, src)
 					this.list_tmp = addAll(null, src)
@@ -2062,6 +2150,74 @@ class Column(
 				return result
 			}
 			
+			fun getPublicAroundStatuses(client : TootApiClient, url : String) : TootApiResult? {
+				// (Mastodonのみ対応)
+				
+				// ステータスIDに該当するトゥート
+				// タンスをまたいだりすると存在しないかもしれないが、エラーは出さない
+				var result : TootApiResult? =
+					client.request(String.format(Locale.JAPAN, PATH_STATUSES, status_id))
+				val target_status = parser.status(result?.jsonObject)
+				if(target_status != null) {
+					list_tmp = addOne(list_tmp, target_status)
+				}
+				
+				idOld = null
+				idRecent = null
+				
+				// 指定より新しいトゥート
+				result = getStatuses(client, url, aroundMin = true)
+				if(result == null || result.error != null) return result
+				
+				// 指定位置より古いトゥート
+				result = getStatuses(client, url, aroundMax = true)
+				if(result == null || result.error != null) return result
+				
+				list_tmp?.sortBy { it.getOrderId() }
+				list_tmp?.reverse()
+				
+				return result
+				
+			}
+			
+			fun getAccountAroundStatuses(client : TootApiClient) : TootApiResult? {
+				// (Mastodonのみ対応)
+				
+				// ステータスIDに該当するトゥート
+				// タンスをまたいだりすると存在しないかもしれない
+				var result : TootApiResult? =
+					client.request(String.format(Locale.JAPAN, PATH_STATUSES, status_id))
+				val target_status = parser.status(result?.jsonObject) ?: return result
+				list_tmp = addOne(list_tmp, target_status)
+
+				// ↑のトゥートのアカウントのID
+				profile_id = target_status.account.id
+				
+				var path = String.format(
+					Locale.JAPAN,
+					PATH_ACCOUNT_STATUSES,
+					profile_id
+				)
+				if(with_attachment && ! with_highlight) path += "&only_media=1"
+
+				idOld = null
+				idRecent = null
+				
+				// 指定より新しいトゥート
+				result = getStatuses(client, path, aroundMin = true)
+				if(result == null || result?.error != null) return result
+				
+				// 指定位置より古いトゥート
+				result = getStatuses(client, path, aroundMax = true)
+				if(result == null || result?.error != null) return result
+				
+				list_tmp?.sortBy { it.getOrderId() }
+				list_tmp?.reverse()
+				
+				return result
+				
+			}
+			
 			override fun doInBackground(vararg unused : Void) : TootApiResult? {
 				ctStarted.set(true)
 				
@@ -2091,6 +2247,21 @@ class Column(
 						TYPE_DIRECT_MESSAGES -> return getStatuses(client, PATH_DIRECT_MESSAGES)
 						
 						TYPE_LOCAL -> return getStatuses(client, makePublicLocalUrl())
+						
+						TYPE_LOCAL_AROUND -> return getPublicAroundStatuses(
+							client,
+							makePublicLocalUrl()
+						)
+						
+						TYPE_FEDERATED_AROUND -> return getPublicAroundStatuses(
+							client,
+							makePublicFederateUrl()
+						)
+						TYPE_ACCOUNT_AROUND->return getAccountAroundStatuses(
+							client
+							
+						)
+						
 						TYPE_MISSKEY_HYBRID -> return getStatuses(client, makeMisskeyHybridTlUrl())
 						
 						TYPE_FEDERATE -> return getStatuses(client, makePublicFederateUrl())
@@ -2220,37 +2391,37 @@ class Column(
 						
 						TYPE_DOMAIN_BLOCKS -> return parseDomainList(client, PATH_DOMAIN_BLOCK)
 						
-						TYPE_LIST_LIST -> return if(isMisskey){
+						TYPE_LIST_LIST -> return if(isMisskey) {
 							val params = makeMisskeyBaseParameter(parser)
 							parseListList(
 								client,
 								"/api/users/lists/list",
 								misskeyParams = params
 							)
-						}else{
+						} else {
 							parseListList(client, PATH_LIST_LIST)
 							
 						}
 						
 						TYPE_LIST_TL -> {
 							loadListInfo(client, true)
-							return if(isMisskey){
+							return if(isMisskey) {
 								val params = makeMisskeyTimelineParameter(parser)
-									.put("listId",profile_id)
-								getStatuses(client, makeListTlUrl(),misskeyParams = params)
-							}else{
+									.put("listId", profile_id)
+								getStatuses(client, makeListTlUrl(), misskeyParams = params)
+							} else {
 								getStatuses(client, makeListTlUrl())
 							}
 						}
 						
 						TYPE_LIST_MEMBER -> {
 							loadListInfo(client, true)
-							return if( isMisskey){
+							return if(isMisskey) {
 								pagingType = PagingType.None
 								val params = access_info.putMisskeyApiToken(JSONObject())
-									.put("userIds",JSONArray().apply {
+									.put("userIds", JSONArray().apply {
 										list_info?.userIds?.forEach {
-											this.put( it.toString())
+											this.put(it.toString())
 										}
 									})
 								parseAccountList(
@@ -2259,7 +2430,7 @@ class Column(
 									misskeyParams = params
 								)
 								
-							}else {
+							} else {
 								parseAccountList(
 									client,
 									String.format(Locale.JAPAN, PATH_LIST_MEMBER, profile_id)
@@ -2479,52 +2650,62 @@ class Column(
 							
 						}
 						
-						TYPE_SEARCH -> if(isMisskey){
+						TYPE_SEARCH -> if(isMisskey) {
 							result = TootApiResult()
-							val parser = TootParser(context,access_info)
-							var params:JSONObject
+							val parser = TootParser(context, access_info)
+							var params : JSONObject
 							
 							list_tmp = ArrayList()
 							
-							val queryAccount = search_query.trim().replace("^@".toRegex(),"")
-							if(queryAccount.isNotEmpty() ){
-
+							val queryAccount = search_query.trim().replace("^@".toRegex(), "")
+							if(queryAccount.isNotEmpty()) {
+								
 								params = access_info.putMisskeyApiToken(JSONObject())
-									.put("query",queryAccount)
-									.put("localOnly",!search_resolve)
-
-								result = client.request("/api/users/search",params.toPostRequestBuilder())
+									.put("query", queryAccount)
+									.put("localOnly", ! search_resolve)
+								
+								result = client.request(
+									"/api/users/search",
+									params.toPostRequestBuilder()
+								)
 								val jsonArray = result?.jsonArray
-								if( jsonArray != null){
-									val src = TootParser(context,access_info).accountList(jsonArray)
+								if(jsonArray != null) {
+									val src =
+										TootParser(context, access_info).accountList(jsonArray)
 									list_tmp = addAll(list_tmp, src)
 								}
 							}
-
-							val queryTag = search_query.trim().replace("^#".toRegex(),"")
-							if(queryTag.isNotEmpty() ){
+							
+							val queryTag = search_query.trim().replace("^#".toRegex(), "")
+							if(queryTag.isNotEmpty()) {
 								params = access_info.putMisskeyApiToken(JSONObject())
-									.put("query",queryTag)
-								result = client.request("/api/hashtags/search",params.toPostRequestBuilder())
+									.put("query", queryTag)
+								result = client.request(
+									"/api/hashtags/search",
+									params.toPostRequestBuilder()
+								)
 								val jsonArray = result?.jsonArray
-								if( jsonArray != null){
-									val src = TootTag.parseTootTagList(parser,jsonArray)
+								if(jsonArray != null) {
+									val src = TootTag.parseTootTagList(parser, jsonArray)
 									list_tmp = addAll(list_tmp, src)
 								}
 							}
-							if(search_query.isNotEmpty() ){
+							if(search_query.isNotEmpty()) {
 								params = access_info.putMisskeyApiToken(JSONObject())
-									.put("query",search_query)
-								result = client.request("/api/notes/search",params.toPostRequestBuilder())
+									.put("query", search_query)
+								result = client.request(
+									"/api/notes/search",
+									params.toPostRequestBuilder()
+								)
 								val jsonArray = result?.jsonArray
-								if( jsonArray != null){
+								if(jsonArray != null) {
 									val src = parser.statusList(jsonArray)
 									list_tmp = addWithFilterStatus(list_tmp, src)
 								}
 							}
 							
 							return result
-						}else{
+						} else {
 							if(access_info.isPseudo) {
 								// 1.5.0rc からマストドンの検索APIは認証を要求するようになった
 								return TootApiResult(context.getString(R.string.search_is_not_available_on_pseudo_account))
@@ -2815,6 +2996,10 @@ class Column(
 	private fun saveRangeEnd(result : TootApiResult?, list : List<TimelineItem>?) =
 		saveRange(true, false, result = result, list = list)
 	
+	// return true if list bottom may have unread remain
+	private fun saveRangeStart(result : TootApiResult?, list : List<TimelineItem>?) =
+		saveRange(false, true, result = result, list = list)
+	
 	private fun addRange(bBottom : Boolean, path : String) : String {
 		val delimiter = if(- 1 != path.indexOf('?')) '&' else '?'
 		if(bBottom) {
@@ -2822,6 +3007,12 @@ class Column(
 		} else {
 			if(idRecent != null) return "$path${delimiter}since_id=${idRecent}"
 		}
+		return path
+	}
+	
+	private fun addRangeMin(path : String) : String {
+		val delimiter = if(- 1 != path.indexOf('?')) '&' else '?'
+		if(idRecent != null) return "$path${delimiter}min_id=${idRecent}"
 		return path
 	}
 	
@@ -3059,8 +3250,8 @@ class Column(
 							}
 							
 							// pagingType is always default.
-							if(isMisskey && ! bBottom){
-								list_tmp?.sortBy{ it.getOrderId() }
+							if(isMisskey && ! bBottom) {
+								list_tmp?.sortBy { it.getOrderId() }
 								list_tmp?.reverse()
 							}
 							
@@ -3365,11 +3556,11 @@ class Column(
 								}
 							}
 							
-							if(isMisskey && ! bBottom){
-								list_tmp?.sortBy{it.getOrderId()}
+							if(isMisskey && ! bBottom) {
+								list_tmp?.sortBy { it.getOrderId() }
 								list_tmp?.reverse()
 							}
-
+							
 							if(! isCancelled
 								&& list_tmp?.isNotEmpty() == true
 								&& (bHeadGap || Pref.bpForceGap(context))
@@ -3492,6 +3683,7 @@ class Column(
 			fun getStatusList(
 				client : TootApiClient,
 				path_base : String,
+				aroundMin : Boolean = false,
 				misskeyParams : JSONObject? = null,
 				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootStatus> =
 					{ parser, jsonArray -> parser.statusList(jsonArray) }
@@ -3506,11 +3698,14 @@ class Column(
 				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
 				val last_since_id = idRecent
 				
-				var result = if(isMisskey) {
-					addRangeMisskey(bBottom, params)
-					client.request(path_base, params.toPostRequestBuilder())
-				} else {
-					client.request(addRange(bBottom, path_base))
+				var result = when {
+					isMisskey -> {
+						addRangeMisskey(bBottom, params)
+						client.request(path_base, params.toPostRequestBuilder())
+					}
+					
+					aroundMin -> client.request(addRangeMin(path_base))
+					else -> client.request(addRange(bBottom, path_base))
 				}
 				val firstResult = result
 				
@@ -3568,8 +3763,8 @@ class Column(
 								
 								addWithFilterStatus(list_tmp, src)
 							}
-
-							if(isMisskey && ! bBottom ){
+							
+							if(isMisskey && ! bBottom) {
 								list_tmp?.sortBy { it.getOrderId() }
 								list_tmp?.reverse()
 							}
@@ -3581,6 +3776,46 @@ class Column(
 								addOneFirst(list_tmp, TootGap.mayNull(null, idRecent))
 							}
 							
+						} else if(aroundMin) {
+							while(true) {
+								
+								saveRangeStart(result, src)
+								
+								if(isCancelled) {
+									log.d("refresh-status-aroundMin: cancelled.")
+									break
+								}
+								
+								// 頭の方を読む時は隙間を減らすため、フィルタの有無に関係なく繰り返しを行う
+								
+								// 直前のデータが0個なら終了とみなすしかなさそう
+								if(src.isEmpty()) {
+									log.d("refresh-status-aroundMin: previous size == 0.")
+									break
+								}
+								
+								if((list_tmp?.size ?: 0) >= LOOP_READ_ENOUGH) {
+									log.d("refresh-status-aroundMin: read enough.")
+									break
+								}
+								
+								if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+									log.d("refresh-status-aroundMin: timeout.")
+									break
+								}
+								
+								val path = "$path_base${delimiter}min_id=$idRecent"
+								result = client.request(path)
+								
+								val jsonArray2 = result?.jsonArray
+								if(jsonArray2 == null) {
+									log.d("refresh-status-aroundMin: error or cancelled.")
+									break
+								}
+								
+								src = misskeyCustomParser(parser, jsonArray2)
+								addWithFilterStatus(list_tmp, src)
+							}
 						} else {
 							var bGapAdded = false
 							var max_id : EntityId? = null
@@ -3635,11 +3870,10 @@ class Column(
 								src = misskeyCustomParser(parser, jsonArray2)
 								addWithFilterStatus(list_tmp, src)
 							}
-
+							
 							if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
 								addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
 							}
-							
 						}
 						
 					} else {
@@ -3734,6 +3968,53 @@ class Column(
 						TYPE_DIRECT_MESSAGES -> getStatusList(client, PATH_DIRECT_MESSAGES)
 						
 						TYPE_LOCAL -> getStatusList(client, makePublicLocalUrl())
+						
+						TYPE_LOCAL_AROUND -> {
+							if(bBottom) {
+								// 通常と同じ
+								getStatusList(client, makePublicLocalUrl())
+							} else {
+								val rv =
+									getStatusList(client, makePublicLocalUrl(), aroundMin = true)
+								list_tmp?.sortBy { it.getOrderId() }
+								list_tmp?.reverse()
+								rv
+							}
+						}
+						
+						TYPE_FEDERATED_AROUND -> {
+							if(bBottom) {
+								// 通常と同じ
+								getStatusList(client, makePublicFederateUrl())
+							} else {
+								val rv =
+									getStatusList(client, makePublicFederateUrl(), aroundMin = true)
+								list_tmp?.sortBy { it.getOrderId() }
+								list_tmp?.reverse()
+								rv
+							}
+						}
+						
+						TYPE_ACCOUNT_AROUND->{
+							var s = String.format(
+								Locale.JAPAN,
+								PATH_ACCOUNT_STATUSES,
+								profile_id
+							)
+							if(with_attachment && ! with_highlight) s += "&only_media=1"
+							getStatusList(client, s)
+							
+							if(bBottom) {
+								getStatusList(client, s)
+							} else {
+								val rv =
+									getStatusList(client, s, aroundMin = true)
+								list_tmp?.sortBy { it.getOrderId() }
+								list_tmp?.reverse()
+								rv
+							}
+						}
+						
 						TYPE_MISSKEY_HYBRID -> getStatusList(client, makeMisskeyHybridTlUrl())
 						
 						TYPE_FEDERATE -> getStatusList(client, makePublicFederateUrl())
@@ -3832,11 +4113,11 @@ class Column(
 						
 						TYPE_LIST_TL -> {
 							loadListInfo(client, false)
-							if(isMisskey){
+							if(isMisskey) {
 								val params = makeMisskeyTimelineParameter(parser)
-									.put("listId",profile_id)
-								getStatusList(client, makeListTlUrl(),misskeyParams = params)
-							}else{
+									.put("listId", profile_id)
+								getStatusList(client, makeListTlUrl(), misskeyParams = params)
+							} else {
 								getStatusList(client, makeListTlUrl())
 							}
 						}
@@ -3885,7 +4166,7 @@ class Column(
 							getAccountList(client, PATH_FOLLOW_SUGGESTION)
 						}
 						TYPE_ENDORSEMENT -> getAccountList(client, PATH_ENDORSEMENT)
-
+						
 						TYPE_HASHTAG -> if(isMisskey) {
 							getStatusList(
 								client
@@ -4208,8 +4489,8 @@ class Column(
 						addAll(list_tmp, src)
 						since_id = parseRange(result, src).second
 					}
-					if(isMisskey ){
-						list_tmp?.sortBy{it.getOrderId()}
+					if(isMisskey) {
+						list_tmp?.sortBy { it.getOrderId() }
 						list_tmp?.reverse()
 					}
 					if(bHeadGap) {
@@ -4310,11 +4591,11 @@ class Column(
 					
 					// レポート一覧ってそもそもMisskey対応してないので、ここをどうするかは不明
 					// 多分 sinceIDによるページングではないと思う
-					if(isMisskey ){
-						list_tmp?.sortBy{it.getOrderId()}
+					if(isMisskey) {
+						list_tmp?.sortBy { it.getOrderId() }
 						list_tmp?.reverse()
 					}
-
+					
 					if(bHeadGap) {
 						addOneFirst(list_tmp, TootGap.mayNull(max_id, since_id))
 					}
@@ -4414,8 +4695,8 @@ class Column(
 						PollingWorker.injectData(context, access_info, src)
 					}
 					
-					if(isMisskey ){
-						list_tmp?.sortBy{it.getOrderId()}
+					if(isMisskey) {
+						list_tmp?.sortBy { it.getOrderId() }
 						list_tmp?.reverse()
 					}
 					
@@ -4532,14 +4813,13 @@ class Column(
 							break
 						}
 						
-						
 						// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
 						since_id = parseRange(result, src).second
 						
 						addWithFilterStatus(list_tmp, src)
 					}
-
-					if(isMisskey ){
+					
+					if(isMisskey) {
 						list_tmp?.sortBy { it.getOrderId() }
 						list_tmp?.reverse()
 					}
@@ -4627,11 +4907,11 @@ class Column(
 						
 						TYPE_FEDERATE -> getStatusList(client, makePublicFederateUrl())
 						
-						TYPE_LIST_TL -> if(isMisskey){
+						TYPE_LIST_TL -> if(isMisskey) {
 							val params = makeMisskeyTimelineParameter(parser)
-								.put("listId",profile_id)
-							getStatusList(client, makeListTlUrl(),misskeyParams = params)
-						}else{
+								.put("listId", profile_id)
+							getStatusList(client, makeListTlUrl(), misskeyParams = params)
+						} else {
 							getStatusList(client, makeListTlUrl())
 						}
 						
@@ -5089,7 +5369,7 @@ class Column(
 			
 			TYPE_FOLLOW_REQUESTS -> isMisskey
 			
-			TYPE_LIST_MEMBER -> !isMisskey
+			TYPE_LIST_MEMBER -> ! isMisskey
 			
 			else -> true
 		}
@@ -5464,9 +5744,9 @@ class Column(
 	}
 	
 	private fun makeListTlUrl() : String {
-		return if( isMisskey){
+		return if(isMisskey) {
 			"/api/notes/user-list-timeline"
-		}else{
+		} else {
 			String.format(Locale.JAPAN, PATH_LIST_TL, profile_id)
 		}
 	}
@@ -5579,9 +5859,9 @@ class Column(
 		try {
 			if(viewHolder?.saveScrollPosition() == true) {
 				val ss = this.scroll_save
-				if(ss != null ) {
+				if(ss != null) {
 					val idx = toListIndex(ss.adapterIndex)
-					if( 0<= idx && idx < list_data.size ){
+					if(0 <= idx && idx < list_data.size) {
 						val item = list_data[idx]
 						this.last_viewing_item_id = item.getOrderId()
 						// とりあえず保存はするが
@@ -5601,7 +5881,7 @@ class Column(
 	//		return null
 	//	}
 	
-	init{
-		registerColumnId(column_id,this)
+	init {
+		registerColumnId(column_id, this)
 	}
 }

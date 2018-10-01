@@ -781,4 +781,16 @@
     <string name="privacy_policy">Privacy Policy</string>
     <string name="agree">Agree</string>
 
+    <string name="ltl_around_toot">Local TL around this toot… (Mastodon 2.6)</string>
+    <string name="ltl_around">Local timeline around …</string>
+    <string name="ltl_around_of">Local timeline around %1$s</string>
+
+    <string name="ftl_around_toot">Federated TL around this toot… (Mastodon 2.6)</string>
+    <string name="ftl_around">Federated timeline around …</string>
+    <string name="ftl_around_of">Federated timeline around %1$s</string>
+
+    <string name="account_tl_around_toot">Account TL around this toot… (Mastodon 2.6)</string>
+    <string name="account_tl_around">Account timeline around …</string>
+    <string name="account_tl_around_of">Account timeline around %1$s</string>
+
 </resources>

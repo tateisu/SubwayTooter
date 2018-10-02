@@ -439,7 +439,7 @@
     <string name="content_sample">(sample)Le cœur déçu mais l’âme plutôt naïve, Louÿs rêva de crapaüter en canoë au delà des îles, près du mälströn où brûlent les novæ.</string>
     <string name="enable_gif_animation">Activer l\'animation GIF (Cela consomme beaucoup de batterie)</string>
     <string name="acct_sample">(exemple) utilisateur@instance</string>
-    <string name="mention_full_acct">Show mention as full acct (column reload required)</string>
+    <string name="mention_full_acct">Afficher la mention en tant que compte complet (recharge de colonne requise)</string>
     <string name="remote_profile_warning">Remote user\'s profile may be inadequate information. You can check more accurate information on the web page.</string>
     <string name="public_profile">Profil public</string>
     <string name="change_avatar">Changer l\'icône de l\'avatar</string>
@@ -456,7 +456,7 @@
     <string name="missing_mail_app">App de courriel manquante.</string>
     <string name="relative_timestamp">Afficher les horodatages relatifs</string>
     <string name="ago">ago</string>
-    <string name="later">plutard</string>
+    <string name="later">plus tard</string>
     <string name="time_within_second">à l\'instant</string>
     <string name="relative_time_second_1">%1$d seconde %2$s</string>
     <string name="relative_time_second_2">%1$d secondes %2$s</string>
@@ -812,4 +812,5 @@
     <string name="ftl_around">Fil global autour de …</string>
     <string name="ftl_around_of">Fil global autour de %1$s</string>
 
+    <string name="ftl_around_toot">Fil fédéré autour de ce pouet … (Mastodon 2.6)</string>
     </resources>

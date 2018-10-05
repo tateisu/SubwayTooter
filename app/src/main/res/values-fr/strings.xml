@@ -6,14 +6,14 @@
     <string name="account_confirmed">Compte confirmé.</string>
     <string name="account_empty">Le compte n\'est pas configuré. Veuillez ajouter un compte.</string>
     <string name="account_pick">Sélectionner un compte</string>
-    <string name="account_picker_add_timeline_of">Avec quelle compte voulez-vous ouvrir %1$s ?</string>
-    <string name="account_picker_boost">Avec quelle compte voulez-vous partager ?</string>
-    <string name="account_picker_favourite">Avec quelle compte voulez-vous mettre en favori ?</string>
-    <string name="account_picker_follow">Avec quelle compte voulez-vous suivre ?</string>
-    <string name="account_picker_open_setting">Avec quelle compte ouvrir les paramètres ?</string>
-    <string name="account_picker_open_user_who">Avec quelle compte ouvrir l’utilisateur %1$s ?</string>
+    <string name="account_picker_add_timeline_of">Avec quel compte voulez-vous ouvrir %1$s \?</string>
+    <string name="account_picker_boost">Avec quel compte désirez-vous booster \?</string>
+    <string name="account_picker_favourite">Avec quel compte voulez-vous mettre en favori \?</string>
+    <string name="account_picker_follow">Avec quel compte souhaitez-vous suivre \?</string>
+    <string name="account_picker_open_setting">Lequel de ces comptes désirez-vous en ouvrir les paramètres \?</string>
+    <string name="account_picker_open_user_who">Avec quel compte souhaitez-vous ouvrir l’utilisateur %1$s \?</string>
     <string name="account_picker_reply">Répondre à partir de quel compte ?</string>
-    <string name="account_picker_toot">Avec quelle compte tooter ?</string>
+    <string name="account_picker_toot">Avec quel compte souhaitez-vous poueter \?</string>
     <string name="account_remove">Retirer le compte de cette application</string>
     <string name="account_select_please">Veuillez sélectionner un compte</string>
     <string name="account_setting">Paramètre du compte</string>
@@ -334,11 +334,11 @@
     <string name="word_was_muted">Ce mot a été interdit.</string>
     <string name="your_statuses">Vos statuts</string>
     <string name="launcher_icon_by">Merci à フタバ pour l’icône de l’application.</string>
-    <string name="ssl_bug_7_0">Android 7.0 ne peut utiliser qu\'elliptic curve \"prime256v1\" pour les connexions sécurisées.
-\nL\'instance à laquelle vous voulez vous connecter semble ne pas le gérer.
-\n-Vous pouvez mettre à jour le système d\'exploitation vers Android 7.1.1.
-\n-Ou, demander au propriétaire de l’instance de prendre en charge elliptic curve \"prime256v1\".
-\nPlus de détails ici: https://code.google.com/p/android/issues/detail?id=224438</string>
+    <string name="ssl_bug_7_0">Android 7.0 ne peut utiliser qu\'elliptic curve \"prime256v1\" pour les connexions sécurisées. 
+\nL\'instance à laquelle vous voulez vous connecter semble ne pas le gérer. 
+\n-Vous pouvez mettre à jour le système d\'exploitation vers Android 7.1.1. 
+\n-Ou, demander au propriétaire de l’instance de prendre en charge elliptic curve \"prime256v1\". 
+\nPlus de détails ici: https://code.google.com/p/android/issues/detail\?id=224438</string>
     <string name="timeline_font">Changer la police de caractères de l’interface
 \n(redémarrage nécessaire)</string>
     <string name="timeline_font_bold">Changer la police de caractères de l’interface (bold)
@@ -731,7 +731,7 @@
 
     <string name="filter_expires_at">Expire</string>
 
-    <string name="filter_home">home</string>
+    <string name="filter_home">Fil principal</string>
     <string name="filter_notification">notification</string>
     <string name="filter_public">public</string>
     <string name="filter_thread">conversation</string>
@@ -762,7 +762,7 @@
     <string name="visibility_style_by_account">Fit to column account</string>
     <string name="mastodon">Mastodon</string>
     <string name="misskey">Misskey</string>
-    <string name="visibility_home">Home</string>
+    <string name="visibility_home">Fil principal</string>
     <string name="visibility_followers">Followers</string>
     <string name="vote_count_text">%1$d votes</string>
     <string name="reaction_add">Add reaction</string>

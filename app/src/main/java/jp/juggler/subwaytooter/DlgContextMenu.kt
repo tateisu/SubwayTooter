@@ -205,8 +205,8 @@ internal class DlgContextMenu(
 			val canPin = status.canPin(access_info)
 			btnProfileUnpin.visibility = if(canPin && status.pinned) View.VISIBLE else View.GONE
 			btnProfilePin.visibility = if(canPin && ! status.pinned) View.VISIBLE else View.GONE
-			
 		}
+
 		var bShowConversationMute = false
 		if(status != null) {
 			if(access_info.isMe(status.account)) {

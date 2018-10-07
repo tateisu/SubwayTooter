@@ -2,20 +2,17 @@ package jp.juggler.subwaytooter.api
 
 import android.content.Context
 import android.content.SharedPreferences
-import android.net.Uri
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.entity.TootAccount
-
-import org.json.JSONException
-import org.json.JSONObject
-
-import jp.juggler.subwaytooter.table.ClientInfo
-import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.table.ClientInfo
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import okhttp3.*
 import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
 import java.util.*
 import java.util.regex.Pattern
 
@@ -1346,16 +1343,32 @@ class TootApiClient(
 	
 }
 
-fun TootApiClient.syncAccountByUrl(accessInfo : SavedAccount, who_url : String) : TootApiResult? {
+private fun parseMisskeyApShow(parser : TootParser, jsonObject : JSONObject?) : Any? {
+	return when(jsonObject?.parseString("type")) {
+		"Note" -> {
+			parser.status(jsonObject.optJSONObject("object"))
+		}
+		
+		"User" -> {
+			parser.status(jsonObject.optJSONObject("object"))
+		}
+		
+		else -> {
+			null
+		}
+	}
+}
 
+fun TootApiClient.syncAccountByUrl(accessInfo : SavedAccount, who_url : String) : TootApiResult? {
+	
 	// misskey由来のアカウントURLは https://host/@user@instance などがある
 	val m = TootAccount.reAccountUrl.matcher(who_url)
-	if( m.find() ){
+	if(m.find()) {
 		// val host = m.group(1)
 		val user = m.group(2).unescapeUri()
 		val instance = m.groupOrNull(3)?.unescapeUri()
-		if( instance?.isNotEmpty()==true){
-			return this.syncAccountByUrl( accessInfo,"https://$instance/@$user")
+		if(instance?.isNotEmpty() == true) {
+			return this.syncAccountByUrl(accessInfo, "https://$instance/@$user")
 		}
 	}
 	
@@ -1447,61 +1460,75 @@ fun TootApiClient.syncAccountByAcct(accessInfo : SavedAccount, acct : String) : 
 	}
 }
 
-fun TootApiClient.syncStatus(accessInfo : SavedAccount, url : String) : TootApiResult? {
-
-	// FIXME Misskeyアカウントでも別アカのトゥートをローカルに同期したい！
+fun TootApiClient.syncStatus(accessInfo : SavedAccount, url : String) =
 	if(accessInfo.isMisskey) {
-		return TootApiResult("Misskey has no API to sync note from remote to local.")
-	}
-	
-	val path = String.format(
-		Locale.JAPAN,
-		Column.PATH_SEARCH,
-		url.encodePercent()
-	) + "&resolve=1"
-	
-	val result = request(path)
-	if(result != null) {
-		val tmp = TootParser(context, accessInfo).results(result.jsonObject)
-		if(tmp != null && tmp.statuses.isNotEmpty()) {
-			result.data = tmp.statuses[0]
+		val params = accessInfo.putMisskeyApiToken().put("uri", url)
+		val result = request("/api/ap/show", params.toPostRequestBuilder())
+		if(result != null) {
+			val obj = parseMisskeyApShow(TootParser(context, accessInfo), result.jsonObject)
+			if(obj != null) result.data = obj
 		}
+		result
+	} else {
+		val path = String.format(
+			Locale.JAPAN,
+			Column.PATH_SEARCH,
+			url.encodePercent()
+		) + "&resolve=1"
+		
+		val result = request(path)
+		if(result != null) {
+			val tmp = TootParser(context, accessInfo).results(result.jsonObject)
+			if(tmp != null && tmp.statuses.isNotEmpty()) {
+				result.data = tmp.statuses[0]
+			}
+		}
+		result
 	}
-	return result
-}
+
+private inline fun <Z:Any?> String?.useNotEmpty( block:(String)->Z? ) :Z? =
+	if(this?.isNotEmpty() == true) {
+		block(this)
+	}else{
+		null
+	}
 
 fun TootApiClient.syncStatus(
 	accessInfo : SavedAccount,
 	statusRemote : TootStatus
 ) : TootApiResult? {
 	
-	// FIXME Misskeyアカウントでも別アカのトゥートをローカルに同期したい！
-	if(accessInfo.isMisskey) {
-		return TootApiResult("Misskey has no API to sync note from remote to local.")
-	}
+	// URL->URIの順に試す
 	
-	var result : TootApiResult? = TootApiResult("missing url or uri")
-	var sv = statusRemote.url
-	when {
-		sv?.isEmpty() != false -> {
-		}
-		
-		sv.contains("/notes/") -> {
+	val uriList = ArrayList<String>(2)
+
+	statusRemote.url.useNotEmpty {
+		if( it.contains("/notes/") ){
 			// Misskeyタンスから読んだマストドンの投稿はurlがmisskeyタンス上のものになる
-			// uri で試す
+			// ActivityPub object id としては不適切なので使わない
+		}else {
+			uriList.add(it)
 		}
-		
-		else -> {
-			result = syncStatus(accessInfo, sv)
-			if(result == null || result.data is TootStatus) {
-				return result
-			}
+	}
+
+	statusRemote.uri.useNotEmpty {
+		// uri の方は↑の問題はない
+		uriList.add(it)
+	}
+	
+	if( accessInfo.isMisskey && uriList.size >1 && uriList[0].contains("@") ){
+		// https://github.com/syuilo/misskey/pull/2832
+		// @user を含むuri はMisskeyだと少し効率が悪いそうなので順序を入れ替える
+		uriList.reverse()
+	}
+	
+	for( uri in uriList){
+		val result = syncStatus(accessInfo, uri)
+		if(result == null || result.data is TootStatus) {
+			return result
 		}
 	}
 	
-	sv = statusRemote.uri
-	if(sv?.isNotEmpty() == true) {
-		result = syncStatus(accessInfo, sv)
-	}
-	return result
+	return TootApiResult("can't resolve status URL/URI.")
+	
 }

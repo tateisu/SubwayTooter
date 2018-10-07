@@ -342,9 +342,8 @@ private fun ByteArray.encodeHex() : String {
 	return sb.toString()
 }
 
-fun ByteArray.encodeBase64Url() : String {
-	return Base64.encodeToString(this, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
-}
+fun ByteArray.encodeBase64Url() : String =
+	Base64.encodeToString(this, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
 
 fun ByteArray.digestSHA256() : ByteArray {
 	val digest = MessageDigest.getInstance("SHA-256")

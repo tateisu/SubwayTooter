@@ -2890,7 +2890,7 @@ class Column(
 		task.executeOnExecutor(App1.task_executor)
 	}
 	
-	var bMinIdMatched : Boolean = false
+	private var bMinIdMatched : Boolean = false
 	
 	private fun parseRange(
 		result : TootApiResult?,

@@ -34,7 +34,7 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import org.jetbrains.anko.*
 import org.json.JSONObject
-import java.util.ArrayList
+import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
 internal class ItemViewHolder(
@@ -346,7 +346,7 @@ internal class ItemViewHolder(
 		llSearchTag.visibility = View.GONE
 		llList.visibility = View.GONE
 		llFollowRequest.visibility = View.GONE
-		llExtra.removeAllViews()
+		removeExtraView()
 		tvMessageHolder.visibility = View.GONE
 		llTrendTag.visibility = View.GONE
 		llFilter.visibility = View.GONE
@@ -395,7 +395,7 @@ internal class ItemViewHolder(
 							R.attr.btn_boost,
 							R.string.renote_to
 						)
-						showStatus(activity, item)
+						showStatus(item)
 					}
 					
 					else -> {
@@ -427,9 +427,84 @@ internal class ItemViewHolder(
 			
 			is TootFilter -> showFilter(item)
 			
+			is TootConversationSummary -> {
+				showStatus(item.last_status)
+				showConversationIcons(item.accounts)
+			}
+			
 			else -> {
 			}
 		}
+	}
+	
+	private fun removeExtraView() {
+		llExtra.scan { v ->
+			if(v is MyNetworkImageView) {
+				v.cancelLoading()
+			}
+		}
+		llExtra.removeAllViews()
+	}
+	
+	private fun showConversationIcons(accounts : ArrayList<TootAccountRef>) {
+		if(accounts.isEmpty()) return
+
+// 消えてしまったりちらついたりするので保留
+//		val density = llExtra.resources.displayMetrics.density
+//		val wh = (activity.avatarIconSize * 0.75f + 0.5f).toInt()
+//		val me = (density * 3f + 0.5f).toInt()
+//		val mt = (density * 3f + 0.5f).toInt()
+//
+//		val llIconBar = FlexboxLayout(activity)
+//		val boxLp = LinearLayout.LayoutParams(
+//			LinearLayout.LayoutParams.MATCH_PARENT,
+//			LinearLayout.LayoutParams.WRAP_CONTENT
+//		)
+//		boxLp.topMargin = mt
+//		llIconBar.layoutParams = boxLp
+//		llIconBar.flexWrap = FlexWrap.WRAP
+//		llIconBar.justifyContent = JustifyContent.FLEX_START
+//		llExtra.addView(llIconBar)
+//
+//		for(whoRef in accounts) {
+//			val who = whoRef.get()
+//			val icon = MyNetworkImageView(activity)
+//			val lp = FlexboxLayout.LayoutParams(wh, wh)
+//			lp.marginEnd = me
+//			icon.layoutParams = lp
+//			icon.contentDescription = who.acct
+//			icon.scaleType = ImageView.ScaleType.CENTER_CROP
+//			llIconBar.addView(icon)
+//
+//			// ビュー階層に追加した後にURLをセットする
+//			icon.setImageUrl(
+//				activity.pref,
+//				Styler.calcIconRound(lp),
+//				access_info.supplyBaseUrl(who.avatar_static),
+//				access_info.supplyBaseUrl(who.avatar)
+//			)
+//			icon.setOnClickListener {
+//				val pos = activity.nextPosition(column)
+//				when {
+//					access_info.isMisskey -> Action_User.profileLocal(
+//						activity,
+//						pos,
+//						access_info,
+//						who
+//					)
+//					access_info.isPseudo -> DlgContextMenu(
+//						activity,
+//						column,
+//						whoRef,
+//						null,
+//						null
+//					).show()
+//					else -> Action_User.profileLocal(activity, pos, access_info, who)
+//				}
+//			}
+//
+//		}
+		
 	}
 	
 	private fun showStatusOrReply(item : TootStatus) {
@@ -441,9 +516,9 @@ internal class ItemViewHolder(
 				R.attr.btn_reply,
 				R.string.reply_to
 			)
-			showStatus(activity, item)
+			showStatus(item)
 		} else {
-			showStatus(activity, item)
+			showStatus(item)
 		}
 	}
 	
@@ -479,7 +554,7 @@ internal class ItemViewHolder(
 						R.attr.btn_boost,
 						R.string.renote_to
 					)
-					showStatus(activity, item)
+					showStatus(item)
 				}
 			}
 		}
@@ -756,7 +831,7 @@ internal class ItemViewHolder(
 		}
 	}
 	
-	private fun showStatus(activity : ActMain, status : TootStatus) {
+	private fun showStatus(status : TootStatus) {
 		
 		if(status.filtered) {
 			showMessageHolder(TootMessageHolder(activity.getString(R.string.filtered)))
@@ -1793,7 +1868,7 @@ internal class ItemViewHolder(
 			lp.topMargin = (0.5f + llExtra.resources.displayMetrics.density * 3f).toInt()
 		val b = Button(activity)
 		b.layoutParams = lp
-		b.setAllCaps(false)
+		b.isAllCaps = false
 		
 		val text = if(access_info.isMisskey) {
 			val sb = SpannableStringBuilder()

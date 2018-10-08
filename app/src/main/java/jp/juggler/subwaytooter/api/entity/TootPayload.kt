@@ -67,6 +67,8 @@ object TootPayload {
 					// 2017/8/24 18:37 mastodon.juggler.jpでここを通った
 						"notification" -> parser.notification(src)
 					
+						"conversation" -> parseItem(::TootConversationSummary,parser,src)
+						
 					// ここを通るケースはまだ確認できていない
 						else -> {
 							log.e("unknown payload(2). message=%s", parent_text)

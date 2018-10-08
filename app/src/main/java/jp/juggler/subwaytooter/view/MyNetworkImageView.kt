@@ -116,7 +116,7 @@ class MyNetworkImageView : AppCompatImageView {
 		return null
 	}
 	
-	private fun cancelLoading(defaultDrawable : Drawable?) {
+	fun cancelLoading(defaultDrawable : Drawable? =null) {
 		
 		val d = drawable
 		if(d is Animatable) {

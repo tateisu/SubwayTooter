@@ -70,6 +70,7 @@ class Column(
 		// ステータスのリストを返すAPI
 		private const val PATH_HOME = "/api/v1/timelines/home?limit=$READ_LIMIT"
 		private const val PATH_DIRECT_MESSAGES = "/api/v1/timelines/direct?limit=$READ_LIMIT"
+		private const val PATH_DIRECT_MESSAGES2 = "/api/v1/conversations?limit=$READ_LIMIT"
 		
 		private const val PATH_LOCAL = "/api/v1/timelines/public?limit=$READ_LIMIT&local=true"
 		private const val PATH_TL_FEDERATE = "/api/v1/timelines/public?limit=$READ_LIMIT"
@@ -208,7 +209,6 @@ class Column(
 		internal const val TYPE_FEDERATED_AROUND = 30
 		internal const val TYPE_ACCOUNT_AROUND = 31
 		
-		
 		internal const val TAB_STATUS = 0
 		internal const val TAB_FOLLOWING = 1
 		internal const val TAB_FOLLOWERS = 2
@@ -235,13 +235,13 @@ class Column(
 				
 				TYPE_LOCAL_AROUND -> context.getString(R.string.ltl_around)
 				TYPE_FEDERATED_AROUND -> context.getString(R.string.ftl_around)
-				TYPE_ACCOUNT_AROUND-> context.getString(R.string.account_tl_around)
+				TYPE_ACCOUNT_AROUND -> context.getString(R.string.account_tl_around)
 				
 				TYPE_LOCAL -> context.getString(R.string.local_timeline)
 				TYPE_FEDERATE -> context.getString(R.string.federate_timeline)
 				
 				TYPE_MISSKEY_HYBRID -> context.getString(R.string.misskey_hybrid_timeline)
-
+				
 				TYPE_PROFILE -> context.getString(R.string.profile)
 				TYPE_FAVOURITES -> context.getString(R.string.favourites)
 				TYPE_REPORTS -> context.getString(R.string.reports)
@@ -279,11 +279,11 @@ class Column(
 				TYPE_LOCAL_AROUND -> R.attr.btn_local_tl
 				TYPE_FEDERATED_AROUND -> R.attr.btn_federate_tl
 				TYPE_ACCOUNT_AROUND -> R.attr.btn_statuses
-
+				
 				TYPE_LOCAL -> R.attr.btn_local_tl
 				TYPE_FEDERATE -> R.attr.btn_federate_tl
 				TYPE_MISSKEY_HYBRID -> R.attr.ic_share
-
+				
 				TYPE_PROFILE -> R.attr.btn_statuses
 				TYPE_FAVOURITES -> if(SavedAccount.isNicoru(acct)) R.attr.ic_nicoru else R.attr.btn_favourite
 				TYPE_NOTIFICATIONS -> R.attr.btn_notification
@@ -678,7 +678,7 @@ class Column(
 		: this(app_state, app_state.context, access_info, type, generateColumnId()) {
 		this.callback_ref = WeakReference(callback)
 		when(type) {
-			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND ,TYPE_ACCOUNT_AROUND-> status_id =
+			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND, TYPE_ACCOUNT_AROUND -> status_id =
 				getParamAt(params, 0)
 			TYPE_PROFILE, TYPE_LIST_TL, TYPE_LIST_MEMBER -> profile_id = getParamAt(params, 0)
 			TYPE_HASHTAG -> hashtag = getParamAt(params, 0)
@@ -732,7 +732,7 @@ class Column(
 		
 		when(column_type) {
 			
-			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND ,TYPE_ACCOUNT_AROUND-> status_id =
+			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND, TYPE_ACCOUNT_AROUND -> status_id =
 				when(isMisskey) {
 					true -> EntityId.mayNull(src.parseString(KEY_STATUS_ID))
 					else -> EntityId.mayNull(src.parseLong(KEY_STATUS_ID))
@@ -802,7 +802,7 @@ class Column(
 		
 		when(column_type) {
 			
-			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND ,TYPE_ACCOUNT_AROUND->
+			TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND, TYPE_ACCOUNT_AROUND ->
 				dst.put(KEY_STATUS_ID, status_id.toString())
 			
 			TYPE_PROFILE ->
@@ -844,7 +844,7 @@ class Column(
 						else -> EntityIdLong(getParamAt(params, 0))
 					}
 				
-				TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND ,TYPE_ACCOUNT_AROUND->
+				TYPE_CONVERSATION, TYPE_BOOSTED_BY, TYPE_FAVOURITED_BY, TYPE_LOCAL_AROUND, TYPE_FEDERATED_AROUND, TYPE_ACCOUNT_AROUND ->
 					status_id == when(isMisskey) {
 						true -> EntityIdString(getParamAt(params, 0))
 						else -> EntityIdLong(getParamAt(params, 0))
@@ -897,18 +897,18 @@ class Column(
 				R.string.conversation_around,
 				(status_id?.toString() ?: "null")
 			)
-
+			
 			TYPE_LOCAL_AROUND -> context.getString(
 				R.string.ltl_around_of,
 				(status_id?.toString() ?: "null")
 			)
-
+			
 			TYPE_FEDERATED_AROUND -> context.getString(
 				R.string.ftl_around_of,
 				(status_id?.toString() ?: "null")
 			)
-
-			TYPE_ACCOUNT_AROUND-> context.getString(
+			
+			TYPE_ACCOUNT_AROUND -> context.getString(
 				R.string.account_tl_around_of,
 				(status_id?.toString() ?: "null")
 			)
@@ -1452,6 +1452,19 @@ class Column(
 		return dst
 	}
 	
+	private fun addWithFilterConversationSummary(
+		dstArg : ArrayList<TimelineItem>?,
+		src : List<TootConversationSummary>
+	) : ArrayList<TimelineItem> {
+		val dst = dstArg ?: ArrayList(src.size)
+		for(cs in src) {
+			if(! isFiltered(cs.last_status)) {
+				dst.add(cs)
+			}
+		}
+		return dst
+	}
+	
 	private fun addWithFilterNotification(
 		dstArg : ArrayList<TimelineItem>?,
 		src : List<TootNotification>
@@ -1732,6 +1745,8 @@ class Column(
 		env.update(client, parser)
 	}
 	
+	private var useConversationSummarys = false
+	
 	internal fun startLoading() {
 		cancelLastTask()
 		
@@ -1947,6 +1962,163 @@ class Column(
 							
 							if(! saveRangeEnd(result = result2, list = src)) {
 								log.d("loading-statuses: missing range info.")
+								break
+							}
+						}
+					}
+				}
+				return result
+			}
+			
+			fun getConversationSummary(
+				client : TootApiClient,
+				path_base : String,
+				aroundMin : Boolean = false,
+				aroundMax : Boolean = false,
+				misskeyParams : JSONObject? = null,
+				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootConversationSummary> =
+					{ parser, jsonArray -> parseList(::TootConversationSummary, parser, jsonArray) }
+			) : TootApiResult? {
+				
+				val params = misskeyParams ?: makeMisskeyTimelineParameter(parser)
+				
+				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
+				
+				val time_start = SystemClock.elapsedRealtime()
+				
+				// 初回の取得
+				val result = when {
+					isMisskey -> client.request(path_base, params.toPostRequestBuilder())
+					aroundMin -> client.request("$path_base&min_id=$status_id")
+					aroundMax -> client.request("$path_base&max_id=$status_id")
+					else -> client.request(path_base)
+				}
+				
+				var jsonArray = result?.jsonArray
+				if(jsonArray != null) {
+					
+					var src = misskeyCustomParser(parser, jsonArray !!)
+					
+					if(list_tmp == null) {
+						list_tmp = ArrayList(src.size)
+					}
+					this.list_tmp = addWithFilterConversationSummary(list_tmp, src)
+					
+					saveRange(true, true, result, src)
+					
+					if(aroundMin) {
+						while(true) {
+							if(client.isApiCancelled) {
+								log.d("loading-ConversationSummary: cancelled.")
+								break
+							}
+							
+							if(! isFilterEnabled) {
+								log.d("loading-ConversationSummary: isFiltered is false.")
+								break
+							}
+							
+							if(idRecent == null) {
+								log.d("loading-ConversationSummary: idRecent is empty.")
+								break
+							}
+							
+							if((list_tmp?.size ?: 0) >= LOOP_READ_ENOUGH) {
+								log.d("loading-ConversationSummary: read enough data.")
+								break
+							}
+							
+							if(src.isEmpty()) {
+								log.d("loading-ConversationSummary: previous response is empty.")
+								break
+							}
+							
+							if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+								log.d("loading-ConversationSummary: timeout.")
+								break
+							}
+							
+							// フィルタなどが有効な場合は2回目以降の取得
+							val result2 = if(isMisskey) {
+								idOld?.putMisskeyUntil(params)
+								client.request(path_base, params.toPostRequestBuilder())
+							} else {
+								val path = "$path_base${delimiter}min_id=${idRecent}"
+								client.request(path)
+							}
+							
+							jsonArray = result2?.jsonArray
+							
+							if(jsonArray == null) {
+								log.d("loading-ConversationSummary: error or cancelled.")
+								break
+							}
+							
+							src = misskeyCustomParser(parser, jsonArray !!)
+							
+							addWithFilterConversationSummary(list_tmp, src)
+							
+							if(! saveRangeStart(result = result2, list = src)) {
+								log.d("loading-ConversationSummary: missing range info.")
+								break
+							}
+						}
+						
+					} else {
+						while(true) {
+							
+							if(client.isApiCancelled) {
+								log.d("loading-ConversationSummary: cancelled.")
+								break
+							}
+							
+							if(! isFilterEnabled) {
+								log.d("loading-ConversationSummary: isFiltered is false.")
+								break
+							}
+							
+							if(idOld == null) {
+								log.d("loading-ConversationSummary: idOld is empty.")
+								break
+							}
+							
+							if((list_tmp?.size ?: 0) >= LOOP_READ_ENOUGH) {
+								log.d("loading-ConversationSummary: read enough data.")
+								break
+							}
+							
+							if(src.isEmpty()) {
+								log.d("loading-ConversationSummary: previous response is empty.")
+								break
+							}
+							
+							if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+								log.d("loading-ConversationSummary: timeout.")
+								break
+							}
+							
+							// フィルタなどが有効な場合は2回目以降の取得
+							val result2 = if(isMisskey) {
+								idOld?.putMisskeyUntil(params)
+								client.request(path_base, params.toPostRequestBuilder())
+							} else {
+								val path = "$path_base${delimiter}max_id=${idOld}"
+								client.request(path)
+							}
+							
+							jsonArray = result2?.jsonArray
+							
+							if(jsonArray == null) {
+								log.d("loading-ConversationSummary: error or cancelled.")
+								break
+							}
+							
+							src = misskeyCustomParser(parser, jsonArray !!)
+							
+							addWithFilterConversationSummary(list_tmp, src)
+							
+							if(! saveRangeEnd(result = result2, list = src)) {
+								log.d("loading-ConversationSummary: missing range info.")
 								break
 							}
 						}
@@ -2189,7 +2361,7 @@ class Column(
 					client.request(String.format(Locale.JAPAN, PATH_STATUSES, status_id))
 				val target_status = parser.status(result?.jsonObject) ?: return result
 				list_tmp = addOne(list_tmp, target_status)
-
+				
 				// ↑のトゥートのアカウントのID
 				profile_id = target_status.account.id
 				
@@ -2199,7 +2371,7 @@ class Column(
 					profile_id
 				)
 				if(with_attachment && ! with_highlight) path += "&only_media=1"
-
+				
 				idOld = null
 				idRecent = null
 				
@@ -2244,7 +2416,27 @@ class Column(
 					
 					when(column_type) {
 						
-						TYPE_DIRECT_MESSAGES -> return getStatuses(client, PATH_DIRECT_MESSAGES)
+						TYPE_DIRECT_MESSAGES -> {
+							
+							// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
+							val result = getConversationSummary(client, PATH_DIRECT_MESSAGES2)
+							return when {
+								
+								// cancelled
+								result == null -> null
+								
+								//  not error
+								result.error.isNullOrBlank() -> {
+									useConversationSummarys = true
+									result
+								}
+								
+								else -> {
+									// fallback to old api
+									getStatuses(client, PATH_DIRECT_MESSAGES)
+								}
+							}
+						}
 						
 						TYPE_LOCAL -> return getStatuses(client, makePublicLocalUrl())
 						
@@ -2257,9 +2449,9 @@ class Column(
 							client,
 							makePublicFederateUrl()
 						)
-						TYPE_ACCOUNT_AROUND->return getAccountAroundStatuses(
+						TYPE_ACCOUNT_AROUND -> return getAccountAroundStatuses(
 							client
-							
+						
 						)
 						
 						TYPE_MISSKEY_HYBRID -> return getStatuses(client, makeMisskeyHybridTlUrl())
@@ -3680,6 +3872,261 @@ class Column(
 				return firstResult
 			}
 			
+			fun getConversationSummaryList(
+				client : TootApiClient,
+				path_base : String,
+				aroundMin : Boolean = false,
+				misskeyParams : JSONObject? = null,
+				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootConversationSummary> =
+					{ parser, jsonArray -> parseList(::TootConversationSummary,parser,jsonArray) }
+			) : TootApiResult? {
+				
+				val isMisskey = access_info.isMisskey
+				
+				val params = misskeyParams ?: makeMisskeyTimelineParameter(parser)
+				
+				val time_start = SystemClock.elapsedRealtime()
+				
+				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
+				val last_since_id = idRecent
+				
+				var result = when {
+					isMisskey -> {
+						addRangeMisskey(bBottom, params)
+						client.request(path_base, params.toPostRequestBuilder())
+					}
+					
+					aroundMin -> client.request(addRangeMin(path_base))
+					else -> client.request(addRange(bBottom, path_base))
+				}
+				val firstResult = result
+				
+				val jsonArray = result?.jsonArray
+				if(jsonArray != null) {
+					var src = misskeyCustomParser(parser, jsonArray)
+					
+					saveRange(bBottom, ! bBottom, result, src)
+					list_tmp = addWithFilterConversationSummary(null, src)
+					
+					if(! bBottom) {
+						if(isMisskey) {
+							// Misskeyの場合はsinceIdを指定しても取得できるのは未読のうち古い範囲に偏る
+							var bHeadGap = false
+							while(true) {
+								if(isCancelled) {
+									log.d("refresh-ConversationSummary-top: cancelled.")
+									break
+								}
+								
+								// 頭の方を読む時は隙間を減らすため、フィルタの有無に関係なく繰り返しを行う
+								
+								// 直前のデータが0個なら終了とみなす
+								if(src.isEmpty()) {
+									log.d("refresh-ConversationSummary-top: previous size == 0.")
+									break
+								}
+								
+								if((list_tmp?.size ?: 0) >= LOOP_READ_ENOUGH) {
+									log.d("refresh-ConversationSummary-top: read enough. make gap.")
+									bHeadGap = true
+									break
+								}
+								
+								if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+									log.d("refresh-ConversationSummary-top: timeout. make gap.")
+									bHeadGap = true
+									break
+								}
+								
+								idRecent?.putMisskeySince(params)
+								result =
+									client.request(path_base, params.toPostRequestBuilder())
+								
+								val jsonArray2 = result?.jsonArray
+								if(jsonArray2 == null) {
+									log.d("refresh-ConversationSummary-top: error or cancelled. make gap.")
+									bHeadGap = true
+									break
+								}
+								
+								src = misskeyCustomParser(parser, jsonArray2)
+								
+								saveRange(false, true, result, src)
+								
+								addWithFilterConversationSummary(list_tmp, src)
+							}
+							
+							if(isMisskey && ! bBottom) {
+								list_tmp?.sortBy { it.getOrderId() }
+								list_tmp?.reverse()
+							}
+							
+							if(! isCancelled
+								&& list_tmp?.isNotEmpty() == true
+								&& (bHeadGap || Pref.bpForceGap(context))
+							) {
+								addOneFirst(list_tmp, TootGap.mayNull(null, idRecent))
+							}
+							
+						} else if(aroundMin) {
+							while(true) {
+								
+								saveRangeStart(result, src)
+								
+								if(isCancelled) {
+									log.d("refresh-ConversationSummary-aroundMin: cancelled.")
+									break
+								}
+								
+								// 頭の方を読む時は隙間を減らすため、フィルタの有無に関係なく繰り返しを行う
+								
+								// 直前のデータが0個なら終了とみなすしかなさそう
+								if(src.isEmpty()) {
+									log.d("refresh-ConversationSummary-aroundMin: previous size == 0.")
+									break
+								}
+								
+								if((list_tmp?.size ?: 0) >= LOOP_READ_ENOUGH) {
+									log.d("refresh-ConversationSummary-aroundMin: read enough.")
+									break
+								}
+								
+								if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+									log.d("refresh-ConversationSummary-aroundMin: timeout.")
+									break
+								}
+								
+								val path = "$path_base${delimiter}min_id=$idRecent"
+								result = client.request(path)
+								
+								val jsonArray2 = result?.jsonArray
+								if(jsonArray2 == null) {
+									log.d("refresh-ConversationSummary-aroundMin: error or cancelled.")
+									break
+								}
+								
+								src = misskeyCustomParser(parser, jsonArray2)
+								addWithFilterConversationSummary(list_tmp, src)
+							}
+						} else {
+							var bGapAdded = false
+							var max_id : EntityId? = null
+							while(true) {
+								if(isCancelled) {
+									log.d("refresh-ConversationSummary-top: cancelled.")
+									break
+								}
+								
+								// 頭の方を読む時は隙間を減らすため、フィルタの有無に関係なく繰り返しを行う
+								
+								// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
+								// 直前のデータが0個なら終了とみなすしかなさそう
+								if(src.isEmpty()) {
+									log.d("refresh-ConversationSummary-top: previous size == 0.")
+									break
+								}
+								
+								max_id = parseRange(result, src).first
+								
+								if((list_tmp?.size ?: 0) >= LOOP_READ_ENOUGH) {
+									log.d("refresh-ConversationSummary-top: read enough. make gap.")
+									// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
+									addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
+									bGapAdded = true
+									break
+								}
+								
+								if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+									log.d("refresh-ConversationSummary-top: timeout. make gap.")
+									// タイムアウト
+									// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
+									addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
+									bGapAdded = true
+									break
+								}
+								
+								val path =
+									"$path_base${delimiter}max_id=$max_id&since_id=$last_since_id"
+								result = client.request(path)
+								
+								val jsonArray2 = result?.jsonArray
+								if(jsonArray2 == null) {
+									log.d("refresh-ConversationSummary-top: error or cancelled. make gap.")
+									// エラー
+									// 隙間ができるかもしれない。後ほど手動で試してもらうしかない
+									addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
+									bGapAdded = true
+									break
+								}
+								
+								src = misskeyCustomParser(parser, jsonArray2)
+								addWithFilterConversationSummary(list_tmp, src)
+							}
+							
+							if(Pref.bpForceGap(context) && ! isCancelled && ! bGapAdded && list_tmp?.isNotEmpty() == true) {
+								addOne(list_tmp, TootGap.mayNull(max_id, last_since_id))
+							}
+						}
+						
+					} else {
+						while(true) {
+							if(isCancelled) {
+								log.d("refresh-ConversationSummary-bottom: cancelled.")
+								break
+							}
+							
+							// bottomの場合、フィルタなしなら繰り返さない
+							if(! isFilterEnabled) {
+								log.d("refresh-ConversationSummary-bottom: isFiltered is false.")
+								break
+							}
+							
+							// max_id だけを指定した場合、必ずlimit個のデータが帰ってくるとは限らない
+							// 直前のデータが0個なら終了とみなすしかなさそう
+							if(src.isEmpty()) {
+								log.d("refresh-ConversationSummary-bottom: previous size == 0.")
+								break
+							}
+							
+							// 十分読んだらそれで終了
+							if((list_tmp?.size ?: 0) >= LOOP_READ_ENOUGH) {
+								log.d("refresh-ConversationSummary-bottom: read enough data.")
+								break
+							}
+							
+							if(SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+								// タイムアウト
+								log.d("refresh-ConversationSummary-bottom: loop timeout.")
+								break
+							}
+							
+							result = if(isMisskey) {
+								idOld?.putMisskeyUntil(params)
+								client.request(path_base, params.toPostRequestBuilder())
+							} else {
+								val path = "$path_base${delimiter}max_id=$idOld"
+								client.request(path)
+							}
+							
+							val jsonArray2 = result?.jsonArray
+							if(jsonArray2 == null) {
+								log.d("refresh-ConversationSummary-bottom: error or cancelled.")
+								break
+							}
+							
+							src = misskeyCustomParser(parser, jsonArray2)
+							addWithFilterConversationSummary(list_tmp, src)
+							
+							if(! saveRangeEnd(result, src)) {
+								log.d("refresh-ConversationSummary-bottom: saveRangeEnd failed.")
+								break
+							}
+						}
+					}
+				}
+				return firstResult
+			}
+			
 			fun getStatusList(
 				client : TootApiClient,
 				path_base : String,
@@ -3935,6 +4382,7 @@ class Column(
 				return firstResult
 			}
 			
+			
 			var filterUpdated = false
 			
 			override fun doInBackground(vararg unused : Void) : TootApiResult? {
@@ -3965,7 +4413,13 @@ class Column(
 					
 					return when(column_type) {
 						
-						TYPE_DIRECT_MESSAGES -> getStatusList(client, PATH_DIRECT_MESSAGES)
+						TYPE_DIRECT_MESSAGES -> if(useConversationSummarys) {
+							// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
+							getConversationSummaryList(client, PATH_DIRECT_MESSAGES2)
+						}else {
+							// fallback to old api
+							getStatusList(client, PATH_DIRECT_MESSAGES)
+						}
 						
 						TYPE_LOCAL -> getStatusList(client, makePublicLocalUrl())
 						
@@ -3995,7 +4449,7 @@ class Column(
 							}
 						}
 						
-						TYPE_ACCOUNT_AROUND->{
+						TYPE_ACCOUNT_AROUND -> {
 							var s = String.format(
 								Locale.JAPAN,
 								PATH_ACCOUNT_STATUSES,
@@ -4881,6 +5335,135 @@ class Column(
 				return result
 			}
 			
+			
+			fun getConversationSummaryList(
+				client : TootApiClient,
+				path_base : String,
+				misskeyParams : JSONObject? = null
+				,
+				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootConversationSummary> =
+					{ parser, jsonArray -> parseList(::TootConversationSummary,parser,jsonArray) }
+			) : TootApiResult? {
+				
+				val isMisskey = access_info.isMisskey
+				
+				val params = misskeyParams ?: makeMisskeyTimelineParameter(parser)
+				
+				val time_start = SystemClock.elapsedRealtime()
+				
+				val delimiter = if(- 1 != path_base.indexOf('?')) '&' else '?'
+				
+				list_tmp = ArrayList()
+				
+				var result : TootApiResult? = null
+				if(isMisskey) {
+					var bHeadGap = false
+					while(true) {
+						if(isCancelled) {
+							log.d("gap-statuses: cancelled.")
+							break
+						}
+						
+						if(result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+							log.d("gap-statuses: timeout.")
+							bHeadGap = true
+							break
+						}
+						
+						since_id?.putMisskeySince(params)
+						val r2 = client.request(path_base, params.toPostRequestBuilder())
+						
+						val jsonArray = r2?.jsonArray
+						if(jsonArray == null) {
+							log.d("gap-statuses: error or cancelled. make gap.")
+							
+							// 成功データがない場合だけ、今回のエラーを返すようにする
+							if(result == null) result = r2
+							
+							bHeadGap = true
+							
+							break
+						}
+						
+						// 成功した場合はそれを返したい
+						result = r2
+						
+						val src = misskeyCustomParser(parser, jsonArray)
+						
+						if(src.isEmpty()) {
+							// 直前の取得でカラのデータが帰ってきたら終了
+							log.d("gap-statuses: empty.")
+							break
+						}
+						
+						// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
+						since_id = parseRange(result, src).second
+						
+						addWithFilterConversationSummary(list_tmp, src)
+					}
+					
+					if(isMisskey) {
+						list_tmp?.sortBy { it.getOrderId() }
+						list_tmp?.reverse()
+					}
+					
+					if(bHeadGap) {
+						addOneFirst(list_tmp, TootGap.mayNull(max_id, since_id))
+					}
+					
+				} else {
+					var bLastGap = false
+					while(true) {
+						if(isCancelled) {
+							log.d("gap-statuses: cancelled.")
+							break
+						}
+						
+						if(result != null && SystemClock.elapsedRealtime() - time_start > LOOP_TIMEOUT) {
+							log.d("gap-statuses: timeout.")
+							// タイムアウト
+							bLastGap = true
+							break
+						}
+						
+						val path = "${path_base}${delimiter}max_id=${max_id}&since_id=${since_id}"
+						val r2 = client.request(path)
+						
+						val jsonArray = r2?.jsonArray
+						if(jsonArray == null) {
+							log.d("gap-statuses: error or cancelled. make gap.")
+							
+							// 成功データがない場合だけ、今回のエラーを返すようにする
+							if(result == null) result = r2
+							
+							bLastGap = true
+							
+							break
+						}
+						
+						// 成功した場合はそれを返したい
+						result = r2
+						
+						val src = misskeyCustomParser(parser, jsonArray)
+						
+						if(src.isEmpty()) {
+							// 直前の取得でカラのデータが帰ってきたら終了
+							log.d("gap-statuses: empty.")
+							break
+						}
+						
+						// 隙間の最新のステータスIDは取得データ末尾のステータスIDである
+						max_id = parseRange(result, src).first
+						
+						addWithFilterConversationSummary(list_tmp, src)
+					}
+					if(bLastGap) {
+						addOne(list_tmp, TootGap.mayNull(max_id, since_id))
+					}
+				}
+				return result
+			}
+			
 			override fun doInBackground(vararg unused : Void) : TootApiResult? {
 				ctStarted.set(true)
 				
@@ -5047,7 +5630,14 @@ class Column(
 							}
 						}
 						
-						TYPE_DIRECT_MESSAGES -> getStatusList(client, PATH_DIRECT_MESSAGES)
+						TYPE_DIRECT_MESSAGES ->  if(useConversationSummarys) {
+							// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
+							getConversationSummaryList(client, PATH_DIRECT_MESSAGES2)
+						}else {
+							// fallback to old api
+							getStatusList(client, PATH_DIRECT_MESSAGES)
+						}
+				
 						
 						else -> getStatusList(client, makeHomeTlUrl())
 					}
@@ -5415,14 +6005,20 @@ class Column(
 		override fun onTimelineItem(item : TimelineItem) {
 			if(is_dispose.get()) return
 			
-			if(item is TootNotification) {
+			if(item is TootConversationSummary) {
+				if(column_type != TYPE_DIRECT_MESSAGES) return
+				if(isFiltered(item.last_status)) return
+			}else if(item is TootNotification) {
 				if(column_type != TYPE_NOTIFICATIONS) return
 				if(isFiltered(item)) return
 			} else if(item is TootStatus) {
 				if(column_type == TYPE_NOTIFICATIONS) return
+				if(useConversationSummarys) return
+				
 				if(column_type == TYPE_LOCAL && ! isMisskey && item.account.acct.indexOf('@') != - 1) return
 				if(isFiltered(item)) return
 			}
+
 			stream_data_queue.add(item)
 			
 			val handler = App1.getAppState(context).handler
@@ -5547,6 +6143,8 @@ class Column(
 				}
 			}
 			
+			
+			
 			// 最新のIDをsince_idとして覚える(ソートはしない)
 			var new_id_max : EntityId? = null
 			var new_id_min : EntityId? = null
@@ -5615,19 +6213,40 @@ class Column(
 				
 			}
 			
-			for(o in list_new) {
-				if(o is TootStatus) {
-					val highlight_sound = o.highlight_sound
-					if(highlight_sound != null) {
-						App1.sound(highlight_sound)
-						break
+			val removeSet = HashSet<EntityId>()
+			loop@ for(o in list_new) {
+				when(o) {
+
+					is TootStatus -> {
+						val highlight_sound = o.highlight_sound
+						if(highlight_sound != null) {
+							App1.sound(highlight_sound)
+							break@loop
+						}
+					}
+					
+					is TootConversationSummary -> {
+						removeSet.add( o.getOrderId() )
 					}
 				}
 			}
 			
 			val added = list_new.size
-			val changeList = listOf(AdapterChange(AdapterChangeType.RangeInsert, 0, added))
+			val changeList = ArrayList<AdapterChange>()
+
+			if( list_data .isNotEmpty() && removeSet.isNotEmpty() ){
+				for( i in list_data.size-1 downTo 0 ){
+					val o = list_data[i]
+					if( o is TootConversationSummary && removeSet.contains(o.id) ){
+						changeList.add(AdapterChange(AdapterChangeType.RangeRemove, i, 1))
+						list_data.removeAt(i)
+					}
+				}
+			}
+
+			changeList.add(AdapterChange(AdapterChangeType.RangeInsert, 0, added))
 			list_data.addAll(0, list_new)
+			
 			fireShowContent(reason = "mergeStreamingMessage", changeList = changeList)
 			
 			if(holder != null) {

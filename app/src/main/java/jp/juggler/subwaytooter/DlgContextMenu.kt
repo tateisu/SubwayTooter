@@ -30,7 +30,7 @@ internal class DlgContextMenu(
 	private val column : Column,
 	private val whoRef : TootAccountRef?,
 	private val status : TootStatus?,
-	private val notification : TootNotification?
+	private val notification : TootNotification? = null
 ) : View.OnClickListener, View.OnLongClickListener {
 	
 	companion object {

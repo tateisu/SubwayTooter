@@ -792,5 +792,6 @@
     <string name="account_tl_around_toot">Account TL around this toot… (Mastodon 2.6)</string>
     <string name="account_tl_around">Account timeline around …</string>
     <string name="account_tl_around_of">Account timeline around %1$s</string>
+    <string name="verified_at">verified at</string>
 
 </resources>

@@ -892,7 +892,7 @@ class ActAccountSetting
 					val text = decodeOptionsNoCustomEmoji.decodeEmoji(
 						when {
 							i >= fields.size -> ""
-							else -> fields[i].first
+							else -> fields[i].name
 						}
 					)
 					et.setText(text)
@@ -905,7 +905,7 @@ class ActAccountSetting
 					val text = decodeOptions.decodeEmoji(
 						when {
 							i >= fields.size -> ""
-							else -> fields[i].second
+							else -> fields[i].value
 						}
 					)
 					et.setText(text)
@@ -921,7 +921,7 @@ class ActAccountSetting
 					val text = decodeOptionsNoCustomEmoji.decodeEmoji(
 						when {
 							fields == null || i >= fields.size -> ""
-							else -> fields[i].first
+							else -> fields[i].name
 						}
 					)
 					et.setText(text)
@@ -934,7 +934,7 @@ class ActAccountSetting
 					val text = decodeOptions.decodeHTML(
 						when {
 							fields == null || i >= fields.size -> ""
-							else -> fields[i].second
+							else -> fields[i].value
 						}
 					)
 					et.text = text

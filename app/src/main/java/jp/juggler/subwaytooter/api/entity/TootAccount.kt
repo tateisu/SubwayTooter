@@ -15,6 +15,105 @@ import java.util.regex.Pattern
 
 open class TootAccount(parser : TootParser, src : JSONObject) {
 	
+	class Field(
+		val name :String,
+		val value :String,
+		val verified_at: Long // 0L if not verified
+	)
+	
+	companion object {
+		private val log = LogCategory("TootAccount")
+		
+		internal val reWhitespace:Pattern = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
+		
+		// host, user ,(instance)
+		internal val reAccountUrl :Pattern =
+			Pattern.compile("\\Ahttps://([A-Za-z0-9._-]+)/@([A-Za-z0-9_]+(?:@[A-Za-z0-9._-]+)?)(?:\\z|[?#])")
+		
+		fun getAcctFromUrl(url:String):String?{
+			val m = reAccountUrl.matcher(url)
+			return if(m.find()){
+				val host = m.group(1)
+				val user = m.group(2).unescapeUri()
+				val instance = m.groupOrNull(3)?.unescapeUri()
+				if( instance?.isNotEmpty() == true){
+					"$user@$instance"
+				}else{
+					"$user@$host"
+				}
+			}else{
+				null
+			}
+		}
+		
+		private fun parseSource(src : JSONObject?) : Source? {
+			src ?: return null
+			return try {
+				Source(src)
+			} catch(ex : Throwable) {
+				log.trace(ex)
+				log.e("parseSource failed.")
+				null
+			}
+		}
+		
+		// Tootsearch用。URLやUriを使ってアカウントのインスタンス名を調べる
+		fun findHostFromUrl(acct : String?, accessHost : String?, url : String?) : String? {
+			
+			// acctから調べる
+			if(acct != null) {
+				val pos = acct.indexOf('@')
+				if(pos != - 1) {
+					val host = acct.substring(pos + 1)
+					if(host.isNotEmpty()) return host.toLowerCase()
+				}
+			}
+			
+			// accessHostから調べる
+			if(accessHost != null) {
+				return accessHost
+			}
+			
+			// URLから調べる
+			if(url != null) {
+				try {
+					// たぶんどんなURLでもauthorityの部分にホスト名が来るだろう(慢心)
+					val host = Uri.parse(url).authority
+					if( host?.isNotEmpty() == true){
+						return host.toLowerCase()
+					}
+					log.e("findHostFromUrl: can't parse host from URL $url")
+				} catch(ex : Throwable) {
+					log.e(ex, "findHostFromUrl: can't parse host from URL $url")
+				}
+			}
+			
+			return null
+		}
+		
+		fun parseFields(src : JSONArray?) : ArrayList<Field>? {
+			src ?: return null
+			val dst = ArrayList<Field>()
+			for(i in 0 until src.length()) {
+				val item = src.optJSONObject(i) ?: continue
+				val name = item.parseString("name") ?: continue
+				val value = item.parseString("value") ?: continue
+				val svVerifiedAt = item.parseString("verified_at")
+				val verifiedAt = when(svVerifiedAt){
+					null -> 0L
+					else-> TootStatus.parseTime(svVerifiedAt)
+				}
+				dst.add( Field(name,value,verifiedAt))
+			}
+			return if(dst.isEmpty()) {
+				null
+			} else {
+				dst
+			}
+		}
+	}
+	
+	
 	//URL of the user's profile page (can be remote)
 	// https://mastodon.juggler.jp/@tateisu
 	// 疑似アカウントではnullになります
@@ -76,7 +175,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	val moved : TootAccount?
 		get() = movedRef?.get()
 	
-	val fields : ArrayList<Pair<String, String>>?
+	val fields : ArrayList<Field>?
 	
 	val custom_emojis : java.util.HashMap<String, CustomEmoji>?
 	
@@ -274,7 +373,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		val note : String?
 		
 		// 2.4.0 から？
-		val fields : ArrayList<Pair<String, String>>?
+		val fields : ArrayList<Field>?
 		
 		init {
 			this.privacy = src.parseString("privacy")
@@ -301,92 +400,6 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		).decodeEmoji(sv)
 	}
 	
-	companion object {
-		private val log = LogCategory("TootAccount")
-		
-		internal val reWhitespace:Pattern = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
-
-		// host, user ,(instance)
-		internal val reAccountUrl :Pattern =
-			Pattern.compile("\\Ahttps://([A-Za-z0-9._-]+)/@([A-Za-z0-9_]+(?:@[A-Za-z0-9._-]+)?)(?:\\z|[?#])")
-		
-		fun getAcctFromUrl(url:String):String?{
-			val m = reAccountUrl.matcher(url)
-			return if(m.find()){
-				val host = m.group(1)
-				val user = m.group(2).unescapeUri()
-				val instance = m.groupOrNull(3)?.unescapeUri()
-				if( instance?.isNotEmpty() == true){
-					"$user@$instance"
-				}else{
-					"$user@$host"
-				}
-			}else{
-				null
-			}
-		}
-		
-		private fun parseSource(src : JSONObject?) : Source? {
-			src ?: return null
-			return try {
-				Source(src)
-			} catch(ex : Throwable) {
-				log.trace(ex)
-				log.e("parseSource failed.")
-				null
-			}
-		}
-		
-		// Tootsearch用。URLやUriを使ってアカウントのインスタンス名を調べる
-		fun findHostFromUrl(acct : String?, accessHost : String?, url : String?) : String? {
-			
-			// acctから調べる
-			if(acct != null) {
-				val pos = acct.indexOf('@')
-				if(pos != - 1) {
-					val host = acct.substring(pos + 1)
-					if(host.isNotEmpty()) return host.toLowerCase()
-				}
-			}
-			
-			// accessHostから調べる
-			if(accessHost != null) {
-				return accessHost
-			}
-			
-			// URLから調べる
-			if(url != null) {
-				try {
-					// たぶんどんなURLでもauthorityの部分にホスト名が来るだろう(慢心)
-					val host = Uri.parse(url).authority
-					if( host?.isNotEmpty() == true){
-						return host.toLowerCase()
-					}
-					log.e("findHostFromUrl: can't parse host from URL $url")
-				} catch(ex : Throwable) {
-					log.e(ex, "findHostFromUrl: can't parse host from URL $url")
-				}
-			}
-			
-			return null
-		}
-		
-		fun parseFields(src : JSONArray?) : ArrayList<Pair<String, String>>? {
-			src ?: return null
-			val dst = ArrayList<Pair<String, String>>()
-			for(i in 0 until src.length()) {
-				val item = src.optJSONObject(i) ?: continue
-				val k = item.parseString("name") ?: continue
-				val v = item.parseString("value") ?: continue
-				dst.add(Pair(k, v))
-			}
-			return if(dst.isEmpty()) {
-				null
-			} else {
-				dst
-			}
-		}
-	}
 	
 	var _orderId : EntityId? = null
 

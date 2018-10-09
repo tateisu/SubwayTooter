@@ -27,6 +27,7 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.span.EmojiImageSpan
+import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.*
@@ -449,11 +450,44 @@ internal class ItemViewHolder(
 	private fun showConversationIcons(accounts : ArrayList<TootAccountRef>) {
 		if(accounts.isEmpty()) return
 
-// 消えてしまったりちらついたりするので保留
+		// 絵文字スパンにしてもやはり消えたりちらついたりする。なんでだ。
 //		val density = llExtra.resources.displayMetrics.density
 //		val wh = (activity.avatarIconSize * 0.75f + 0.5f).toInt()
 //		val me = (density * 3f + 0.5f).toInt()
 //		val mt = (density * 3f + 0.5f).toInt()
+//
+//		val lp = LinearLayout.LayoutParams(
+//			LinearLayout.LayoutParams.MATCH_PARENT,
+//			LinearLayout.LayoutParams.WRAP_CONTENT
+//		)
+//		lp.topMargin = mt
+//
+//		val b = MyTextView(activity)
+//		b.layoutParams = lp
+//		b.isAllCaps = false
+//		llExtra.addView(b)
+//
+//		val sb = SpannableStringBuilder()
+//		val invalidator = NetworkEmojiInvalidator(activity.handler, b)
+//		extra_invalidator_list.add(invalidator)
+//		for(ar in accounts) {
+//			val a = ar.get()
+//			val url = access_info.supplyBaseUrl(a.avatar_static)
+//			if(url?.isNotEmpty() == true) {
+//				if(sb.isNotEmpty()) sb.append(' ')
+//				val start = sb.length
+//				sb.append(a.acct)
+//				val end = sb.length
+//				sb.setSpan(
+//					NetworkEmojiSpan(url)
+//					, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+//				)
+//			}
+//		}
+//		b.text = sb
+//		invalidator.register(sb)
+		
+// 消えてしまったりちらついたりするので保留
 //
 //		val llIconBar = FlexboxLayout(activity)
 //		val boxLp = LinearLayout.LayoutParams(

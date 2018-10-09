@@ -773,5 +773,6 @@
     <string name="account_tl_around_toot">周辺のアカウントTL… (Mastodon2.6以降)</string>
     <string name="account_tl_around">…周辺のアカウントTL</string>
     <string name="account_tl_around_of">%1$s周辺のアカウントTL</string>
+    <string name="verified_at">検証時刻</string>
 
 </resources>

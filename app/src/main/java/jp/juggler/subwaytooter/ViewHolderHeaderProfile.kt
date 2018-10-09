@@ -1,9 +1,11 @@
 package jp.juggler.subwaytooter
 
+import android.graphics.Color
 import android.graphics.Typeface
 import android.support.v4.view.ViewCompat
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.widget.*
 import jp.juggler.emoji.EmojiMap201709
@@ -273,7 +275,7 @@ internal class ViewHolderHeaderProfile(
 						LinearLayout.LayoutParams.MATCH_PARENT,
 						LinearLayout.LayoutParams.WRAP_CONTENT
 					)
-					val nameText = decodeOptionsNoCustomEmoji.decodeEmoji(item.first)
+					val nameText = decodeOptionsNoCustomEmoji.decodeEmoji(item.name)
 					val nameInvalidator = NetworkEmojiInvalidator(activity.handler, nameView)
 					nameInvalidator.register(nameText)
 					
@@ -291,7 +293,23 @@ internal class ViewHolderHeaderProfile(
 						LinearLayout.LayoutParams.MATCH_PARENT,
 						LinearLayout.LayoutParams.WRAP_CONTENT
 					)
-					val valueText = decodeOptions.decodeHTML(item.second)
+					
+					val valueText = decodeOptions.decodeHTML(item.value)
+					if(item.verified_at > 0L){
+						valueText.append('\n')
+
+						val start = valueText.length
+						valueText.append( activity.getString(R.string.verified_at))
+						valueText.append( ": ")
+						valueText.append(TootStatus.formatTime(activity,item.verified_at,false))
+						val end = valueText.length
+
+						valueText.setSpan(
+							ForegroundColorSpan(Color.BLACK or 0x7fbc99)
+							,start,end,Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+						)
+					}
+					
 					val valueInvalidator = NetworkEmojiInvalidator(activity.handler, valueView)
 					valueInvalidator.register(valueText)
 					
@@ -301,6 +319,11 @@ internal class ViewHolderHeaderProfile(
 					valueView.setTextColor(c)
 					valueView.typeface = valueTypeface
 					valueView.movementMethod = MyLinkMovementMethod
+					
+					if(item.verified_at > 0L){
+						valueView.setBackgroundColor(0x337fbc99)
+					}
+					
 					llFields.addView(valueView)
 					
 				}

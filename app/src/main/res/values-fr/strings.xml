@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
-    <string name="access_token_updated_for">L\'autorisation d\'accès a été mis à jour pour %1$s.</string>
-    <string name="account">Compte</string>
+    <string name="access_token_updated_for">Le jeton d’accès à %1$s a été mis à jour.</string>
+    <string name="account">Comptes</string>
     <string name="account_add">Ajouter un compte</string>
     <string name="account_confirmed">Compte confirmé.</string>
     <string name="account_empty">Le compte n\'est pas configuré. Veuillez ajouter un compte.</string>
@@ -16,7 +16,7 @@
     <string name="account_picker_toot">Avec quel compte souhaitez-vous poueter \?</string>
     <string name="account_remove">Retirer le compte de cette application</string>
     <string name="account_select_please">Veuillez sélectionner un compte</string>
-    <string name="account_setting">Paramètre du compte</string>
+    <string name="account_setting">Paramètres du compte</string>
     <string name="acct">Compte</string>
     <string name="act_post">Publication d\'un toot</string>
     <string name="action_settings">Paramètres</string>
@@ -101,7 +101,7 @@
     <string name="conversation_around">Conversation du statut: %1$s</string>
     <string name="conversation_view">Visualiser la conversation</string>
     <string name="copy">Copier</string>
-    <string name="copy_complete">Clipboard mis à jour.</string>
+    <string name="copy_complete">Presse-papiers mis à jour.</string>
     <string name="default_status_visibility">Visibilité par défaut du statut</string>
     <string name="delete">Supprimer</string>
     <string name="delete_succeeded">Effacé avec succès</string>
@@ -239,7 +239,7 @@
     <string name="post_error_contents_empty">Veuillez saisir votre statut.</string>
     <string name="post_error_contents_warning_empty">Votre pouet a besoin d’un avertissement de contenu.</string>
     <string name="post_from">Publier par</string>
-    <string name="preview">Pré-visualiser</string>
+    <string name="preview">Aperçu</string>
     <string name="prior_local_url_when_open_attachment">Priorité à l’URL locale lors de l’ouverture de pièce(s) jointe(s)</string>
     <string name="profile">Profil</string>
     <string name="profile_of">Profil de %1$s</string>
@@ -287,7 +287,7 @@
     <string name="send_text">Envoyer du texte vers</string>
     <string name="sensitive_content_default_open">Ouverture par défaut du contenu sensible</string>
     <string name="server_confirmed">Confirmation du serveur.</string>
-    <string name="setting">Paramètre</string>
+    <string name="setting">Paramètres</string>
     <string name="show">Afficher</string>
     <string name="show_follow_button_in_button_bar">Voir le bouton suivre dans la barre d\'actions \n(redémarrage nécessaire)</string>
     <string name="simple_list">Cacher la barre d\'actions, elle apparaîtra en appuyant sur le toot\n(redémarrage nécessaire)</string>
@@ -314,7 +314,7 @@
     <string name="unfollow_succeeded">Désabonnement réussi</string>
     <string name="unmute">Activer le son</string>
     <string name="unmute_succeeded">Activation du son réussie</string>
-    <string name="update_access_token">Mettre à jour l’autorisation d\'accès à l’instance</string>
+    <string name="update_access_token">Mettre à jour le jeton d’accès</string>
     <string name="user">Utilisateur</string>
     <string name="user_mail_address">Adresse e-mail de l’utilisateur</string>
     <string name="user_name_not_match">Le nom d\'utilisateur ne correspond pas</string>
@@ -326,7 +326,7 @@
     <string name="visibility_private">Abonnés</string>
     <string name="visibility_public">Public</string>
     <string name="visibility_unlisted">Non listé</string>
-    <string name="visibility_web_setting">Trace web app setting</string>
+    <string name="visibility_web_setting">Selon les paramètres de l\'application Web</string>
 
     <string name="wait_previous_operation">Veuillez attendre la fin de la dernière opération.</string>
     <string name="with_attachment">Avec pièce(s) jointe(s)</string>
@@ -334,11 +334,10 @@
     <string name="word_was_muted">Ce mot a été interdit.</string>
     <string name="your_statuses">Vos statuts</string>
     <string name="launcher_icon_by">Merci à フタバ pour l’icône de l’application.</string>
-    <string name="ssl_bug_7_0">Android 7.0 ne peut utiliser qu\'elliptic curve \"prime256v1\" pour les connexions sécurisées. 
-\nL\'instance à laquelle vous voulez vous connecter semble ne pas le gérer. 
-\n-Vous pouvez mettre à jour le système d\'exploitation vers Android 7.1.1. 
-\n-Ou, demander au propriétaire de l’instance de prendre en charge elliptic curve \"prime256v1\". 
-\nPlus de détails ici: https://code.google.com/p/android/issues/detail\?id=224438</string>
+    <string name="ssl_bug_7_0">Android 7.0 ne peut utiliser que les courbées elliptiques « prime256v1 » pour les connexions sécurisées. 
+\nL\'instance à laquelle vous voulez vous connecter semble ne pas les gérer. 
+\nVous pouvez mettre à jour le système d\'exploitation vers Android 7.1.1 ou demander à l’administrateur de votre instance de prendre en charge les courbes elliptiques « prime256v1 ». 
+\nPlus de détails ici : https://code.google.com/p/android/issues/detail\?id=224438</string>
     <string name="timeline_font">Changer la police de caractères de l’interface
 \n(redémarrage nécessaire)</string>
     <string name="timeline_font_bold">Changer la police de caractères de l’interface (bold)
@@ -445,7 +444,7 @@
     <string name="change_avatar">Changer l\'icône de l\'avatar</string>
     <string name="change_header">Changer l\'image d\'en-tête</string>
     <string name="display_name">Nom à afficher</string>
-    <string name="note">Note</string>
+    <string name="note">Description</string>
     <string name="uri">URI</string>
     <string name="title">Titre</string>
     <string name="email">E-mail</string>

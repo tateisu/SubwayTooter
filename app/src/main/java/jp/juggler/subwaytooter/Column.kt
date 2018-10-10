@@ -151,6 +151,7 @@ class Column(
 		private const val KEY_INSTANCE_LOCAL = "instance_local"
 		
 		private const val KEY_ENABLE_SPEECH = "enable_speech"
+		private const val KEY_USE_OLD_API = "use_old_api"
 		private const val KEY_LAST_VIEWING_ITEM = "lastViewingItem"
 		
 		private const val KEY_REGEX_TEXT = "regex_text"
@@ -518,7 +519,8 @@ class Column(
 	internal var system_notification_not_related : Boolean = false
 	internal var instance_local : Boolean = false
 	
-	var enable_speech : Boolean = false
+	internal var enable_speech : Boolean = false
+	internal var use_old_api = false
 	
 	internal var regex_text : String = ""
 	
@@ -718,6 +720,7 @@ class Column(
 		instance_local = src.optBoolean(KEY_INSTANCE_LOCAL)
 		
 		enable_speech = src.optBoolean(KEY_ENABLE_SPEECH)
+		use_old_api = src.optBoolean(KEY_USE_OLD_API)
 		last_viewing_item_id = EntityId.from(src, KEY_LAST_VIEWING_ITEM)
 		
 		regex_text = src.parseString(KEY_REGEX_TEXT) ?: ""
@@ -766,28 +769,34 @@ class Column(
 		}
 	}
 	
+	private fun JSONObject.putIfTrue(key:String,value:Boolean){
+		if(value) put( key,true)
+	}
+	
 	@Throws(JSONException::class)
 	fun encodeJSON(dst : JSONObject, old_index : Int) {
 		dst.put(KEY_ACCOUNT_ROW_ID, access_info.db_id)
 		dst.put(KEY_TYPE, column_type)
 		dst.put(KEY_COLUMN_ID, column_id)
-		dst.put(KEY_DONT_CLOSE, dont_close)
-		dst.put(KEY_WITH_ATTACHMENT, with_attachment)
-		dst.put(KEY_WITH_HIGHLIGHT, with_highlight)
-		dst.put(KEY_DONT_SHOW_BOOST, dont_show_boost)
-		dst.put(KEY_DONT_SHOW_FOLLOW, dont_show_follow)
-		dst.put(KEY_DONT_SHOW_FAVOURITE, dont_show_favourite)
-		dst.put(KEY_DONT_SHOW_REPLY, dont_show_reply)
-		dst.put(KEY_DONT_SHOW_REACTION, dont_show_reaction)
-		dst.put(KEY_DONT_SHOW_VOTE, dont_show_vote)
-		dst.put(KEY_DONT_SHOW_NORMAL_TOOT, dont_show_normal_toot)
-		dst.put(KEY_DONT_STREAMING, dont_streaming)
-		dst.put(KEY_DONT_AUTO_REFRESH, dont_auto_refresh)
-		dst.put(KEY_HIDE_MEDIA_DEFAULT, hide_media_default)
-		dst.put(KEY_SYSTEM_NOTIFICATION_NOT_RELATED, system_notification_not_related)
-		dst.put(KEY_INSTANCE_LOCAL, instance_local)
 		
-		dst.put(KEY_ENABLE_SPEECH, enable_speech)
+		dst.putIfTrue(KEY_DONT_CLOSE, dont_close)
+		dst.putIfTrue(KEY_WITH_ATTACHMENT, with_attachment)
+		dst.putIfTrue(KEY_WITH_HIGHLIGHT, with_highlight)
+		dst.putIfTrue(KEY_DONT_SHOW_BOOST, dont_show_boost)
+		dst.putIfTrue(KEY_DONT_SHOW_FOLLOW, dont_show_follow)
+		dst.putIfTrue(KEY_DONT_SHOW_FAVOURITE, dont_show_favourite)
+		dst.putIfTrue(KEY_DONT_SHOW_REPLY, dont_show_reply)
+		dst.putIfTrue(KEY_DONT_SHOW_REACTION, dont_show_reaction)
+		dst.putIfTrue(KEY_DONT_SHOW_VOTE, dont_show_vote)
+		dst.putIfTrue(KEY_DONT_SHOW_NORMAL_TOOT, dont_show_normal_toot)
+		dst.putIfTrue(KEY_DONT_STREAMING, dont_streaming)
+		dst.putIfTrue(KEY_DONT_AUTO_REFRESH, dont_auto_refresh)
+		dst.putIfTrue(KEY_HIDE_MEDIA_DEFAULT, hide_media_default)
+		dst.putIfTrue(KEY_SYSTEM_NOTIFICATION_NOT_RELATED, system_notification_not_related)
+		dst.putIfTrue(KEY_INSTANCE_LOCAL, instance_local)
+		dst.putIfTrue(KEY_ENABLE_SPEECH, enable_speech)
+		dst.putIfTrue(KEY_USE_OLD_API, use_old_api)
+		
 		last_viewing_item_id?.putTo(dst, KEY_LAST_VIEWING_ITEM)
 		
 		dst.put(KEY_REGEX_TEXT, regex_text)
@@ -1745,7 +1754,11 @@ class Column(
 		env.update(client, parser)
 	}
 	
-	private var useConversationSummarys = false
+	// DMカラム更新時に新APIの利用に成功したなら真
+	internal var useConversationSummarys = false
+
+	// DMカラムのストリーミングイベントで新形式のイベントを利用できたなら真
+	internal var useConversationSummaryStreaming = false
 	
 	internal fun startLoading() {
 		cancelLastTask()
@@ -2418,24 +2431,26 @@ class Column(
 						
 						TYPE_DIRECT_MESSAGES -> {
 							
-							// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
-							val result = getConversationSummary(client, PATH_DIRECT_MESSAGES2)
-							return when {
-								
-								// cancelled
-								result == null -> null
-								
-								//  not error
-								result.error.isNullOrBlank() -> {
-									useConversationSummarys = true
-									result
-								}
-								
-								else -> {
-									// fallback to old api
-									getStatuses(client, PATH_DIRECT_MESSAGES)
+							useConversationSummarys = false
+							if(! use_old_api){
+
+								// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
+								val result = getConversationSummary(client, PATH_DIRECT_MESSAGES2)
+
+								when{
+									// cancelled
+									result == null -> return null
+									
+									//  not error
+									result.error.isNullOrBlank() -> {
+										useConversationSummarys = true
+										return result
+									}
 								}
 							}
+							
+							// fallback to old api
+							return getStatuses(client, PATH_DIRECT_MESSAGES)
 						}
 						
 						TYPE_LOCAL -> return getStatuses(client, makePublicLocalUrl())
@@ -6002,18 +6017,27 @@ class Column(
 			}
 		}
 		
+		
 		override fun onTimelineItem(item : TimelineItem) {
 			if(is_dispose.get()) return
 			
 			if(item is TootConversationSummary) {
 				if(column_type != TYPE_DIRECT_MESSAGES) return
 				if(isFiltered(item.last_status)) return
+				if( use_old_api ){
+					useConversationSummaryStreaming = false
+					return
+				}else{
+					useConversationSummaryStreaming = true
+				}
 			}else if(item is TootNotification) {
 				if(column_type != TYPE_NOTIFICATIONS) return
 				if(isFiltered(item)) return
 			} else if(item is TootStatus) {
 				if(column_type == TYPE_NOTIFICATIONS) return
-				if(useConversationSummarys) return
+
+				// マストドン2.6.0形式のDMカラム用イベントを利用したならば、その直後に発生する普通の投稿イベントを無視する
+				if( useConversationSummaryStreaming ) return
 				
 				if(column_type == TYPE_LOCAL && ! isMisskey && item.account.acct.indexOf('@') != - 1) return
 				if(isFiltered(item)) return

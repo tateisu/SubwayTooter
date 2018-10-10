@@ -262,6 +262,13 @@
                     android:text="@string/enable_speech"
                     />
 
+                <CheckBox
+                    android:id="@+id/cbOldApi"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/use_old_api"
+                    />
+
                 <LinearLayout
                     android:id="@+id/llRegexFilter"
                     android:layout_width="match_parent"

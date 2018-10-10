@@ -104,6 +104,7 @@ class ColumnViewHolder(
 	private val cbHideMediaDefault : CheckBox
 	private val cbSystemNotificationNotRelated : CheckBox
 	private val cbEnableSpeech : CheckBox
+	private val cbOldApi : CheckBox
 	private val llRegexFilter : View
 	private val btnDeleteNotification : Button
 	
@@ -194,7 +195,7 @@ class ColumnViewHolder(
 		listView = viewRoot.findViewById(R.id.listView)
 		
 		if(Pref.bpShareViewPool(activity.pref)) {
-			listView.setRecycledViewPool( activity.viewPool)
+			listView.setRecycledViewPool(activity.viewPool)
 		}
 		listView.itemAnimator = null
 		//
@@ -241,6 +242,7 @@ class ColumnViewHolder(
 		cbHideMediaDefault = viewRoot.findViewById(R.id.cbHideMediaDefault)
 		cbSystemNotificationNotRelated = viewRoot.findViewById(R.id.cbSystemNotificationNotRelated)
 		cbEnableSpeech = viewRoot.findViewById(R.id.cbEnableSpeech)
+		cbOldApi = viewRoot.findViewById(R.id.cbOldApi)
 		etRegexFilter = viewRoot.findViewById(R.id.etRegexFilter)
 		llRegexFilter = viewRoot.findViewById(R.id.llRegexFilter)
 		tvRegexFilterError = viewRoot.findViewById(R.id.tvRegexFilterError)
@@ -276,6 +278,7 @@ class ColumnViewHolder(
 		cbHideMediaDefault.setOnCheckedChangeListener(this)
 		cbSystemNotificationNotRelated.setOnCheckedChangeListener(this)
 		cbEnableSpeech.setOnCheckedChangeListener(this)
+		cbOldApi.setOnCheckedChangeListener(this)
 		
 		// 入力の追跡
 		etRegexFilter.addTextChangedListener(object : TextWatcher {
@@ -355,25 +358,25 @@ class ColumnViewHolder(
 			
 			//復元後にもここを通るがこれは正常である
 			val sp = column.scroll_save
-			if(sp==null) {
-//				val lvi = column.last_viewing_item_id
-//				if( lvi != null ){
-//					column.last_viewing_item_id = null
-//					val listIndex = column.findListIndexByTimelineId(lvi)
-//					if( listIndex != null){
-//						log.d(
-//							"restoreScrollPosition [$page_idx] %s , restore from last_viewing_item_id %d"
-//							, column.getColumnName( true )
-//							,listIndex
-//						)
-//						ScrollPosition(column.toAdapterIndex(listIndex),0).restore(this@ColumnViewHolder)
-//						return
-//					}
-//				}
-
+			if(sp == null) {
+				//				val lvi = column.last_viewing_item_id
+				//				if( lvi != null ){
+				//					column.last_viewing_item_id = null
+				//					val listIndex = column.findListIndexByTimelineId(lvi)
+				//					if( listIndex != null){
+				//						log.d(
+				//							"restoreScrollPosition [$page_idx] %s , restore from last_viewing_item_id %d"
+				//							, column.getColumnName( true )
+				//							,listIndex
+				//						)
+				//						ScrollPosition(column.toAdapterIndex(listIndex),0).restore(this@ColumnViewHolder)
+				//						return
+				//					}
+				//				}
+				
 				log.d(
 					"restoreScrollPosition [$page_idx] %s , column has no saved scroll position."
-					, column.getColumnName( true )
+					, column.getColumnName(true)
 				)
 				return
 			}
@@ -383,17 +386,17 @@ class ColumnViewHolder(
 			if(listView.visibility != View.VISIBLE) {
 				log.d(
 					"restoreScrollPosition [$page_idx] %s , listView is not visible. saved position %s,%s is dropped."
-					,column.getColumnName(true)
-					,sp.adapterIndex
-					,sp.offset
+					, column.getColumnName(true)
+					, sp.adapterIndex
+					, sp.offset
 				)
 			} else {
 				log.d(
 					"restoreScrollPosition [%d] %s , listView is visible. resume %s,%s"
-					,page_idx
-					,column.getColumnName(true)
-					,sp.adapterIndex
-					,sp.offset
+					, page_idx
+					, column.getColumnName(true)
+					, sp.adapterIndex
+					, sp.offset
 				)
 				sp.restore(this@ColumnViewHolder)
 			}
@@ -462,6 +465,7 @@ class ColumnViewHolder(
 			cbHideMediaDefault.isChecked = column.hide_media_default
 			cbSystemNotificationNotRelated.isChecked = column.system_notification_not_related
 			cbEnableSpeech.isChecked = column.enable_speech
+			cbOldApi.isChecked = column.use_old_api
 			
 			etRegexFilter.setText(column.regex_text)
 			etSearch.setText(column.search_query)
@@ -488,6 +492,8 @@ class ColumnViewHolder(
 			vg(cbHideMediaDefault, column.canNSFWDefault())
 			vg(cbSystemNotificationNotRelated, column.column_type == Column.TYPE_NOTIFICATIONS)
 			vg(cbEnableSpeech, column.canSpeech())
+			vg(cbOldApi, column.column_type == Column.TYPE_DIRECT_MESSAGES)
+			
 			
 			vg(btnDeleteNotification, column.column_type == Column.TYPE_NOTIFICATIONS)
 			vg(llSearch, column.isSearchColumn)
@@ -503,11 +509,11 @@ class ColumnViewHolder(
 			val canRefreshBottom = column.canRefreshBottomBySwipe()
 			
 			refreshLayout.isEnabled = canRefreshTop || canRefreshBottom
-			refreshLayout.direction = if( canRefreshTop && canRefreshBottom) {
+			refreshLayout.direction = if(canRefreshTop && canRefreshBottom) {
 				SwipyRefreshLayoutDirection.BOTH
-			}else if( canRefreshTop){
+			} else if(canRefreshTop) {
 				SwipyRefreshLayoutDirection.TOP
-			}else{
+			} else {
 				SwipyRefreshLayoutDirection.BOTTOM
 			}
 			
@@ -760,7 +766,7 @@ class ColumnViewHolder(
 			return
 		}
 		
-		column.startRefresh(false, direction == SwipyRefreshLayoutDirection.BOTTOM )
+		column.startRefresh(false, direction == SwipyRefreshLayoutDirection.BOTTOM)
 	}
 	
 	override fun onCheckedChanged(view : CompoundButton, isChecked : Boolean) {
@@ -803,19 +809,19 @@ class ColumnViewHolder(
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}
-
+			
 			R.id.cbDontShowReaction -> {
 				column.dont_show_reaction = isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}
-
+			
 			R.id.cbDontShowVote -> {
 				column.dont_show_vote = isChecked
 				activity.app_state.saveColumnList()
 				column.startLoading()
 			}
-
+			
 			R.id.cbDontShowNormalToot -> {
 				column.dont_show_normal_toot = isChecked
 				activity.app_state.saveColumnList()
@@ -870,6 +876,12 @@ class ColumnViewHolder(
 				column.enable_speech = isChecked
 				activity.app_state.saveColumnList()
 			}
+			
+			R.id.cbOldApi -> {
+				column.use_old_api = isChecked
+				activity.app_state.saveColumnList()
+				column.startLoading()
+			}
 		}
 	}
 	
@@ -883,7 +895,7 @@ class ColumnViewHolder(
 		column.addColumnViewHolder(this)
 		
 		when(v.id) {
-			R.id.btnColumnClose -> activity.closeColumn(column )
+			R.id.btnColumnClose -> activity.closeColumn(column)
 			
 			R.id.btnColumnReload -> {
 				App1.custom_emoji_cache.clearErrorCache()
@@ -1083,7 +1095,7 @@ class ColumnViewHolder(
 		showToast(activity, true, refreshError)
 	}
 	
-	fun saveScrollPosition() :Boolean{
+	fun saveScrollPosition() : Boolean {
 		val column = this.column
 		when {
 			column == null -> log.d("saveScrollPosition [%d] , column==null", page_idx)

@@ -17,8 +17,8 @@ android {
         targetSdkVersion target_sdk_version
         minSdkVersion min_sdk_version
 
-        versionCode 292
-        versionName "2.9.2"
+        versionCode 293
+        versionName "2.9.3"
         applicationId "jp.juggler.subwaytooter"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 

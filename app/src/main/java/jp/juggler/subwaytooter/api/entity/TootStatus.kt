@@ -211,7 +211,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.replies_count = src.parseLong("repliesCount") ?: 0L
 			
 			this.reblogged = false
-			this.favourited = false
+			this.favourited = src.optBoolean("isFavorited")
 			
 			this.visibility = TootVisibility.parseMisskey(src.parseString("visibility")) ?:
 				TootVisibility.Public

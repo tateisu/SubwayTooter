@@ -1,28 +1,26 @@
 package jp.juggler.subwaytooter.api.entity
 
-import java.util.regex.Pattern
-
 enum class TootVisibility(
-	val id:Int
-	,val order:Int // 公開範囲の広い方とWeb設定に合わせる方が大きい
-	,val strMastodon:String
-	,val strMisskey:String
-){
+	val id : Int
+	, val order : Int // 公開範囲の広い方とWeb設定に合わせる方が大きい
+	, val strMastodon : String
+	, val strMisskey : String
+) {
 	
 	// IDは下書き保存などで永続化するので、リリース後は変更しないこと！
 	
 	// WebUIの設定に合わせる。
-	WebSetting(0, 100,strMastodon = "web_setting",strMisskey ="web_setting")
+	WebSetting(0, 100, strMastodon = "web_setting", strMisskey = "web_setting"),
 	
 	// 公開TLに流す
-	,Public(1, 90,strMastodon="public",strMisskey="public")
-
+	Public(1, 90, strMastodon = "public", strMisskey = "public"),
+	
 	// LTL,FTLには表示されない。
 	// フォロワーのホームには表示される。
 	// 公開プロフから見える。
 	// (Mastodon)タグTLには出ない。
 	// (Misskey)タグTLには出る。
-	,UnlistedHome(2,80,strMastodon="unlisted",strMisskey="home")
+	UnlistedHome(2, 80, strMastodon = "unlisted", strMisskey = "home"),
 	
 	// 未フォローには見せない。
 	// (Mastodon)フォロワーのHTLに出る。
@@ -31,8 +29,8 @@ enum class TootVisibility(
 	// (Misskey)ローカルのフォロワーのHTL,LTL,FTLに出る。リモートのフォロワーのHTL,FTLに出る。
 	// (Misskey)非ログインの閲覧者から見たのタグTLには出るが内容は隠される。「あの人はエロゲのタグで何か話してた」とか分かっちゃう。
 	// (Misskey)非ログインの閲覧者から見たのプロフには出るが内容は隠される。「あの人は寝てるはずの時間に何か投稿してた」とか分かっちゃう。
-	,PrivateFollowers(3,70,strMastodon="private",strMisskey="followers")
-
+	PrivateFollowers(3, 70, strMastodon = "private", strMisskey = "followers"),
+	
 	// 指定したユーザにのみ送信する。
 	// (Misskey)送信先ユーザのIDをリストで指定する。投稿前にユーザの存在確認を行う機会がある。
 	// (Misskey)送信先ユーザが1以上ならspecified、0ならprivateを指定する。
@@ -41,47 +39,42 @@ enum class TootVisibility(
 	// ローカルのフォロワーのHTL,LTL,FTLに出る。リモートのフォロワーのHTL,FTLに出る。
 	// (Misskey)非ログインの閲覧者から見たのタグTLには出るが内容は隠される。「あの人はエロゲのタグで何か話してた」とか分かっちゃう。
 	// (Misskey)非ログインの閲覧者から見たのプロフには出るが内容は隠される。「あの人は寝てるはずの時間に何か投稿してた」とか分かっちゃう。
-	,DirectSpecified(4,60,strMastodon="direct",strMisskey="specified")
-	,DirectPrivate(5,50,strMastodon="direct",strMisskey="private")
-
+	DirectSpecified(4, 60, strMastodon = "direct", strMisskey = "specified"),
+	DirectPrivate(5, 50, strMastodon = "direct", strMisskey = "private"),
 	
 	;
 	
 	fun canPin(isMisskey : Boolean) : Boolean {
 		return when {
-			isMisskey ->when(this){
-				Public,UnlistedHome -> true
-				else->false
+			isMisskey -> when(this) {
+				Public, UnlistedHome -> true
+				else -> false
 			}
-			else->when(this){
-				Public,UnlistedHome -> true
-				else->false
+			else -> when(this) {
+				Public, UnlistedHome -> true
+				else -> false
 			}
 		}
 	}
 	
 	companion object {
-
-		fun parseMastodon(a:String?): TootVisibility?{
-			for( v in TootVisibility.values() ){
+		
+		fun parseMastodon(a : String?) : TootVisibility? {
+			for(v in TootVisibility.values()) {
 				if(v.strMastodon == a) return v
 			}
 			return null
-			//	throw IndexOutOfBoundsException("visibility not in range")
-			// 例外を投げなくなった
 		}
 		
 		fun parseMisskey(a : String?) : TootVisibility? {
-			for( v in TootVisibility.values() ){
+			for(v in TootVisibility.values()) {
 				if(v.strMisskey == a) return v
 			}
 			return null
-			//	throw IndexOutOfBoundsException("visibility not in range")
-			// 例外を投げなくなった
 		}
 		
 		fun fromId(id : Int) : TootVisibility? {
-			for( v in TootVisibility.values() ){
+			for(v in TootVisibility.values()) {
 				if(v.id == id) return v
 			}
 			return null
@@ -91,27 +84,26 @@ enum class TootVisibility(
 			sv ?: return null
 			
 			// 新しい方式ではenumのID
-			for( v in TootVisibility.values() ){
-				if(v.id.toString() == sv ) return v
+			for(v in TootVisibility.values()) {
+				if(v.id.toString() == sv) return v
 			}
 			
 			// 古い方式ではマストドンの公開範囲文字列かweb_setting
-			for( v in TootVisibility.values() ){
-				if( v.strMastodon == sv ) return v
+			for(v in TootVisibility.values()) {
+				if(v.strMastodon == sv) return v
 			}
 			
 			return null
 		}
-		
 		
 		fun isVisibilitySpoilRequired(
 			current_visibility : TootVisibility?,
 			max_visibility : TootVisibility?
 		) : Boolean {
 			return try {
-				if( current_visibility == null || max_visibility==null){
+				if(current_visibility == null || max_visibility == null) {
 					false
-				}else {
+				} else {
 					current_visibility.order > max_visibility.order
 				}
 			} catch(ex : Throwable) {
@@ -128,13 +120,12 @@ enum class TootVisibility(
 		fun compareVisibility(a : TootVisibility, b : TootVisibility) : Int {
 			val ia = a.order
 			val ib = b.order
-			return when{
-				ia < ib -> -1
+			return when {
+				ia < ib -> - 1
 				ia > ib -> 1
 				else -> 0
 			}
 		}
-		
 		
 	}
 	

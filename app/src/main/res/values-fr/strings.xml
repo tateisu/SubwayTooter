@@ -140,7 +140,7 @@
     <string name="unfavourite_succeeded">Mis en unfavori avec succès</string>
     <string name="favourited_by">Mis en favori par …</string>
     <string name="favourites">Favoris</string>
-    <string name="federate_timeline">Chronologie fédérée</string>
+    <string name="federate_timeline">Fil fédéré</string>
     <string name="file_size_too_big">Taille du fichier est trop grande. La limite maximale est de %1$d Mo.</string>
     <string name="follow">follow</string>
     <string name="follow_from_another_account">Suivre (sélection du compte)</string>
@@ -173,13 +173,13 @@
 
     <string name="instance">Instance</string>
     <string name="instance_hint">Ex) mastodon.social</string>
-    <string name="instance_not_need_slash">Veuillez entrer seulement le nom de l’hôte de l’instance, sans « / » ni « @ ».</string>
+    <string name="instance_not_need_slash">Nom de l’hôte de l’instance, sans « / » ni « @ ».</string>
     <string name="instance_not_specified">Instance non spécifiée</string>
     <string name="it_is_you">C\'est vous.</string>
     <string name="last_selection">Dernière sélection</string>
     <string name="led">Diode</string>
     <string name="list_empty">Aucun élément dans la liste</string>
-    <string name="local_timeline">Chronologie locale</string>
+    <string name="local_timeline">Fil local</string>
     <string name="login_failed">Échec de la connexion</string>
     <string name="login_required">Veuillez mettre à jour votre connexion à partir des paramètres du compte.</string>
     <string name="long_side_pixel">Côté le plus long mis à %1$d pixels</string>
@@ -419,7 +419,7 @@
     <string name="search_is_not_available_on_pseudo_account">Search function became not available on pseudo account .</string>
     <string name="conversation_from_another_account">Consulter la conversation à partir d’un autre compte</string>
     <string name="show_avatar_image">Afficher l’avatar</string>
-    <string name="quote_url">Quote URL…</string>
+    <string name="quote_url">Citer l’URL …</string>
     <string name="actions_for_notification">Actions for notification</string>
     <string name="delete_this_notification">Supprimer cette notification</string>
     <string name="mute_this_conversation">Mettre en sourdine plus de notifications pour cette conversation</string>
@@ -435,7 +435,7 @@
     <string name="background_image_alpha">Transparence de l’image de fond</string>
     <string name="acct_color">Couleur du texte du compte</string>
     <string name="content_color">Content text color</string>
-    <string name="content_sample">(sample)Le cœur déçu mais l’âme plutôt naïve, Louÿs rêva de crapaüter en canoë au delà des îles, près du mälströn où brûlent les novæ.</string>
+    <string name="content_sample">(Exemple) Le cœur déçu mais l’âme plutôt naïve, Louÿs rêva de crapaüter en canoë au delà des îles, près du mälströn où brûlent les novæ.</string>
     <string name="enable_gif_animation">Activer l\'animation GIF (Cela consomme beaucoup de batterie)</string>
     <string name="acct_sample">(exemple) utilisateur@instance</string>
     <string name="mention_full_acct">Afficher la mention en tant que compte complet (recharge de colonne requise)</string>
@@ -468,7 +468,7 @@
     <string name="notification_sound_before_oreo">Son de notification (avant Android 8.0)</string>
     <string name="notification_style_after_oreo">Style de notification (Android 8.0 ou version ultérieure)</string>
     <string name="notification_for">Notification for %1$s</string>
-    <string name="notification_channel_description">Ces paramètres sont utilisés pour la notification pour %1$s</string>
+    <string name="notification_channel_description">Ces paramètres sont utilisés pour les notifications sur %1$s</string>
     <string name="notification_style_before_oreo">Style de notification (avant Android 8. Si votre appareil est sous Android 8.0 ou version ultérieure, veuillez vérifier les Paramètres du compte)</string>
     <string name="enquete_was_end">Sondage terminé.</string>
     <string name="enquete_voted">a voté !</string>
@@ -478,7 +478,7 @@
     <string name="choice3">choix 3 (facultatif)</string>
     <string name="choice4">choix 4 (facultatif)</string>
     <string name="make_enquete">Effectuer un sondage</string>
-    <string name="dont_use_action_button_with_quick_toot_bar">Désactiver le bouton d\'action IME lors de l\'utilisation de la barre \"Quick Toot\" (redémarrage de l\'application requis).</string>
+    <string name="dont_use_action_button_with_quick_toot_bar">Désactive le bouton d’action IME lors de l-utilisation de la barre « Pouet rapide » (redémarrage de l\'application requis)</string>
 
     <string name="auto_cw">Masquer automatiquement les longs textes (définir un nombre de lignes supérieur à 0 pour activer cette option. Redémarrage de l\'application requis)</string>
     <string name="auto_cw_prefix">(CW automatique)</string>
@@ -498,8 +498,8 @@
     <string name="error_notification_title">Délai d\'attente du serveur</string>
     <string name="error_notification_summary">Si l\'instance est détruite, veuillez supprimer le compte sur ce serveur.</string>
     <string name="open_hashtag_column">Ouvrir la colonne de hashtags</string>
-    <string name="quote_hashtag_of">Citer le hashtag \"%1$s\"</string>
-    <string name="quote_all_hashtag_of">Citer tous les hashtags \"%1$s\"</string>
+    <string name="quote_hashtag_of">Citer le hashtag « %1$s »</string>
+    <string name="quote_all_hashtag_of">Citer tous les hashtags « %1$s »</string>
     <string name="parsing_response">Analyse de la réponse …</string>
     <string name="video_pick">Choisir une vidéo</string>
     <string name="video_capture">Capturer une vidéo</string>
@@ -558,12 +558,12 @@
     <string name="list_show_timeline">afficher le fil de la liste</string>
     <string name="list_member_of">\"%1$s\" list users</string>
     <string name="list_tl_of">\"%1$s\" list</string>
-    <string name="list_create_hint">name of new list</string>
-    <string name="list_name_empty">Veuillez entrer le nom de la nouvelle liste.</string>
+    <string name="list_create_hint">Nom de la nouvelle liste</string>
+    <string name="list_name_empty">Veuillez entrer un nom pour la nouvelle liste.</string>
     <string name="list_created">La nouvelle liste est créée.</string>
     <string name="list_delete_confirm">\"%1$s\" sera supprimé. Êtes-vous sûr ?</string>
     <string name="list_member">Liste des utilisateurs</string>
-    <string name="list_timeline">Chronologie de la liste</string>
+    <string name="list_timeline">Le fil de la liste</string>
     <string name="list_member_delete_confirm">\"%1$s\" sera supprimé de \"%2$s\". Vous êtes sûr ?</string>
     <string name="target_user">Utilisateur cible</string>
     <string name="list_owner">Propriétaire de la liste</string>
@@ -812,4 +812,6 @@
     <string name="ftl_around_of">Fil global autour de %1$s</string>
 
     <string name="ftl_around_toot">Fil fédéré autour de ce pouet … (Mastodon 2.6)</string>
-    </resources>
+    <string name="verified_at">vérifié à</string>
+
+</resources>

@@ -614,4 +614,138 @@
     <string name="toot_search_msp">Tut-søk (MSP)</string>
     <string name="search_desc_mastodon_api">Konto/emneknagg -søk ved bruk av Mastodon-API.</string>
     <string name="toot_search_msp_of">Tut-søk (MSP) \"%1$s\"</string>
-    </resources>
+    <string name="nsfw">Obskønt</string>
+    <string name="drag_handle">Dragingshåndtak</string>
+    <string name="unfollow">Avfølg</string>
+    <string name="prior_local_url_when_open_attachment">tidligere lokal nettadresse ved åpning av vedlegg</string>
+    <string name="nickname_applied_after_reload">Endring av kallenavn/farge vil endres etter at kolonnen gjeninnlastes.</string>
+    <string name="show_follow_button_in_button_bar">Vis følge-knapp i knappefelt (programomstart kreves)</string>
+    <string name="account_picker_open_user_who">Hvilken konto vil du åpne brukeren %1$s med\?</string>
+    <string name="account_picker_add_timeline_of">Hvilken konto vil du åpne %1$s med\?</string>
+    <string name="account_picker_open_setting">Hvilken konto vil du åpne innstillingene med\?</string>
+    <string name="account_picker_favourite">Hvilken konto vil du favorisere\?</string>
+    <string name="account_picker_boost">Hvilken konto vil du framheve\?</string>
+    <string name="account_picker_follow">Hvilken konto vil du følge\?</string>
+    <string name="account_picker_toot">Hvilken konto vil du tute\?</string>
+    <string name="image_alpha">Bilde-alfa</string>
+    <string name="hashtag_and_visibility_not_match">denne meldingen inneholder emneknagger, men meldingssynligheten er ikke offentlig. Normalt er emneknagger kun søkbare i offentlige meldinger. Er du sikker\?</string>
+    <string name="dont_use_streaming_api">Gjenoppfrisk strømmene manuelt</string>
+    <string name="dont_refresh_on_activity_resume">Skru av automatisk gjenoppfriskning ved returnering til programmet</string>
+    <string name="status_id_conversion_failed">Kunne ikke konvertere status-ID</string>
+    <string name="minimum_column_width">Minimal kolonnebredde (forvalg=300(dp), programstart kreves)</string>
+    <string name="media_thumbnail_height">Mediaminiatyrbildehøyde (forvalg=64(dp), programstart kreves)</string>
+    <string name="ssl_bug_7_0">Android 7.0 kan kun bruke elliptisk kurve \"prime256v1\".
+\nDin instans ser beklageligvis ikke ut til å støtte det.
+\nDenne feilen har blitt fikset i Android 7.1.1.
+\nDu kan enten oppgradere ditt OS eller spørre administratoren for din instans om å legge til støtte for elliptisk kurve \"prime256v1\".
+\nSe også https://code.google.com/p/android/issues/detail\?id=224438</string>
+    <string name="account_in_draft_is_lost">Kontoen brukt for denne kladden har blitt fjernet fra programmet. Følgende bindeleddsinformasjon kan ikke gjenopprettes: in_reply_to, mediavedlegg</string>
+    <string name="attachment_in_draft_is_lost">Noen av mediavedleggene i malen har gått tapt.</string>
+    <string name="app_data_import_desc">Du kan eksportere data til alle programmer som kan motta data, men kanskje du kun kan importere data fra enhetens lagring eller Google Drive.
+\nKolonnebakgrunnsbildet kan ikke eksporteres/importeres til annen enhet.
+\nTidslinjeskriften blir ikke eksporter/importert.
+\nEgendefinert merknadslyd kan ikke ekspoteres/importeres til annen enhet.</string>
+    <string name="app_data_import_confirm">eksisterende data (før import) vil bli tømt. Er du sikker\?</string>
+    <string name="user_id_conversion_failed">Kunne ikke konvertere bruker-ID</string>
+    <string name="dont_crop_media_thumbnail">Ikke beskjær mediaminiatyrbilde (programstart kreves)</string>
+    <string name="custom_stream_listener">Egendefinert merknadslytter</string>
+    <string name="custom_stream_listener_was_reset">Egendefinert merknadslytter tilbakestilt.</string>
+    <string name="input_url_and_secret_then_test">Skriv inn nettadresse og hemmelighet, trykk så på \"Test\".</string>
+    <string name="notification_on_off_desc">Sjekk også kontoinnstillingen for å skru på/av merknad.</string>
+    <string name="in_reply_to_id_conversion_failed">Kunne ikke konvertere \"in_reply_to\"-ID</string>
+    <string name="prior_chrome_custom_tabs">Tidligere Google Chrome (hvis egendefinerte faner er påslått)</string>
+    <string name="enable_speech">Skrur på tale</string>
+    <string name="toot_search_ts">Tutsøk (ts)</string>
+
+    <string name="toot_search_ts_of">Tutsøk (ts) \"%1$s\"</string>
+    <string name="open_local_timeline_for">Åpne \"%1$s\"-tidslinje</string>
+    <string name="notification_sound">Merknadslyd</string>
+    <string name="timeline_font_size">Skriftstørrelse for tidslinje (enhet:sp. La stå tom for forvalg. Programomstart kreves)</string>
+    <string name="show_quick_toot_bar">Vis \"Rask tut\"-felt (programomstart kreves.)</string>
+    <string name="search_is_not_available_on_pseudo_account">Søkefunksjon ikke tilgjengelig på pseudo-konto.</string>
+    <string name="conversation_from_another_account">Samtalevisning fra en annen konto</string>
+    <string name="quote_url">Sitat-nettadresse…</string>
+    <string name="format_of_quote_name">Format for \"sitatnavn\" (sett tekst som inneholder %1$s)</string>
+    <string name="content_sample">(eksempel) Høvdingens kjære squaw får litt pizza i Mexico by.</string>
+    <string name="remote_profile_warning">Informasjon på andre profilsider kan ikke vises rett. Trykk her for å vise profilen i din nettleser.</string>
+    <string name="notification_style_before_oreo">Merknadsstil (før Android 8. Hvis din enhet har Android 8.0 eller senere, sjekk kontoinnstilling).</string>
+    <string name="auto_cw">Skjul lang tekst automatisk (sett linjeopptelling større enn 0 for å skru på dette valget. Programomstart kreves)</string>
+    <string name="auto_cw_prefix">(Automatisk CW)</string>
+    <string name="profile_pin">Fest på profil</string>
+    <string name="profile_unpin">Fjern fra profil</string>
+    <string name="profile_pin_progress">Endrer fastsatt status…</string>
+    <string name="length_warning">\"%1$s\" er for lang (%2$d/%3$d tegn).
+\nGodtas ikke i standardinstans, men kan være gangbar mynt i noen instanser.
+\nEr du sikker\?</string>
+
+    <string name="error_notification_summary">Hvis det er en nedlagt instans, fjern kontoen på den tjeneren.</string>
+    <string name="open_hashtag_column">Åpne emneknaggskolonne</string>
+    <string name="quote_hashtag_of">Siter emneknagg \"%1$s\"</string>
+    <string name="quote_all_hashtag_of">Siter alle emneknagger \"%1$s\"</string>
+    <string name="parsing_response">Tolker svar…</string>
+    <string name="cant_get_web_setting_visibility">Kan ikke hente synlighetsinnstilling i nettprogram.</string>
+    <string name="not_provided_mastodon_under_1_6">Tilbys ikke i Mastodon 1.6</string>
+    <string name="mime_type_not_acceptable">MIME-typen %1$s godtas ikke.
+\nStøttede MIME-typer: image/jpeg, image/png, image/gif, video/webm, video/mp4 .</string>
+    <string name="disable_custom_emoji_animation">Skru av egendefinert emoji-animasjon (programomstart og gjeninnlasting av kolonne kreves)</string>
+    <string name="list_member_add_remove">Legg til/fjern fra lister…</string>
+    <string name="cant_add_list_follow_requesting">Kan ikke legge til bruker i liste:
+\nPrøv igjen 2…3 ganger. Eller hvis brukeren er \"låst\", vent til følgingsforespørselen godkjennes.</string>
+    <string name="cant_add_list_follow_failed">Kan ikke legge til bruker på liste:
+\nFølging mislyktes.</string>
+    <string name="media_attachment_max_byte_size">Maksimal størrelse for mediavedlegg (bilde) (Enhet:Megabyte. Forvalget er 8)</string>
+    <string name="media_attachment_max_byte_size_movie">Maksimal størrelse for mediavedlegg (film) (Enhet:Megabyte. Forvalget er 40)</string>
+    <string name="tootsearch">tutsøk (JP)</string>
+    <string name="cant_handle_uri_of">Subway Tooter kan ikke håndtere URI-en \"%1$s\". Velg et annet program.</string>
+    <string name="media_attachment_type_error">Mediavedleggstypen er \"%1$s\". ST kan ikke håndtere den, men du kan prøve å åpne den i en nettleser.</string>
+    <string name="video_buffering">Mellomlagrer…</string>
+    <string name="dont_repeat_download_to_same_url">Kan ikke laste ned samme nettadresse i løpet av et par sekunder.</string>
+    <string name="zooming_of">×%3$.1f
+\n%1$d×%2$d</string>
+    <string name="media_attachment_still_uploading">Media har ikke blitt lastet opp enda.</string>
+    <string name="highlight_word">Framhev nøkkelord</string>
+    <string name="avatar_icon_size">Avatarikonstørrelse (enhet:dp. Forvalg:48. Programomstart kreves)</string>
+    <string name="avatar_icon_round_ratio">Avatarikonstørrelseforhold (enhet:%. Forvalg:33. Programomstart kreves)</string>
+    <string name="avatar_icon_dont_round">Ikke avrund avatarikonets hjørner (programomstart kreves)</string>
+    <string name="allow_column_duplication">Tillat duplisering av kolonner</string>
+    <string name="system_notification_not_related">Ikke valgt når systemmerknad trykkes</string>
+    <string name="append_attachment_url_to_content">Legg til vedleggsnettadresse i bindeleddstekst</string>
+    <string name="instance_local">Lokal instans</string>
+    <string name="send_access_token_to_app_server_desc">Normalt kan du bruke \"pull\"-merknader (med forsinkelse) uten programtjener, fordi det virker på din enhet.
+\nHvis du ønsker å bruke \"egendefinert merknadslytter\", eller hvis du er medlem av veldig begrensede instanser som støttes av STs programtjener,
+\nkan du bruke \"push\"-merknader, men du må tillate innsending av tilgangssymboler til programtjeneren. (Dette er en begrensning i Mastodon).</string>
+    <string name="pull_notification_check_interval">Sjekkintervall for pull-merknad (enhet: minutter, forvalg:15, min:15)</string>
+    <string name="token_exported">Som følge av eksport av programdata eller gjenoppretting fra sikkerhetskopi, brukes dette tilgangssymbolet også av andre enheter. Fordi tilgangssymboler som ikke brukes av andre enheter kreves for å bruke push-merknader, anbefales oppdatering av tilgangssymbolet.</string>
+    <string name="missing_push_api">Instansen har inget API for push-merknader.</string>
+    <string name="follow_follower_list_may_restrict">Hvis en bruker annensteds hen velger å skjule den sosiale grafen, vil kun følgende/følgere på denne instansen vises.</string>
+    <string name="trend_tag_desc">Nummer indikerer \'daglig(ukentlig)\'. Daglige nummer tilbakestilles %1$s.</string>
+    <string name="post_button_tapped_repeatly">Postingsknapp ble trykket gjentatte ganger</string>
+    <string name="regex_filter_matches_empty_string">Filtersøk med regulært uttrykk samsvarer med tom streng.</string>
+    <string name="filter_irreversible_long">Kan ikke angres. Dropp istedenfor å skjule. Filtrerte tutinger vil fjernes for godt, som om filteret fjernes senere.</string>
+    <string name="replies_count_simple">0/1/1+</string>
+    <string name="visibility_style">Synlighetsnavn og ikon</string>
+    <string name="visibility_style_by_account">Tilpass til kolonnekonto</string>
+    <string name="already_voted">Du har allerede stemt.</string>
+
+    <string name="follow_request_cancelled">Følgingsforespørsel forkastet.</string>
+    <string name="confirm_cancel_follow_request_who_from">Følgingsforespørsel fra %1$s til %1$s vil forkastes. Er du sikker\?</string>
+    <string name="reaction">Reaksjon (Misskey)</string>
+    <string name="vote">Stem (Misskey)</string>
+    <string name="timeout_for_embed_media_viewer">Tidsavbrudd for innebygd mediaviser (enhet:sekunder, programomstart (sletting fra programhistorikk) kreves)</string>
+    <string name="link_color">Lenkefarge (programomstart kreves)</string>
+    <string name="missing_closeable_column">mangler lukkbar kolonne i synlig område.</string>
+    <string name="dont_use_custom_tabs">Ikke åpne lenker i egendefinerte faner (Chrome/Firefox)</string>
+    <string name="privacy_policy">Personvernspraksis</string>
+    <string name="agree">Jeg samtykker</string>
+
+    <string name="ltl_around_toot">Lokal tidslinje rundt denne tutingen… (Mastodon 2.6)</string>
+    <string name="ltl_around">Lokal tidslinje rundt…</string>
+    <string name="ltl_around_of">Lokal tidslinje rundt %1$s</string>
+
+    <string name="account_tl_around_toot">Kontotidslinje rundt denne tutingen… (Mastodon 2.6)</string>
+    <string name="account_tl_around">Konto-tidslinje rundt …</string>
+    <string name="account_tl_around_of">Konto-tidslinje rundt %1$s</string>
+    <string name="verified_at">bekreftet den</string>
+    <string name="use_old_api">Bruk gammelt API</string>
+
+</resources>

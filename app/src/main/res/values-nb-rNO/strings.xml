@@ -138,7 +138,7 @@
     <string name="search_of">Søk \"%1$s\"</string>
     <string name="search">Søk</string>
     <string name="resolve_non_local_account">Last inn ikke-lokal konto</string>
-    <string name="question">?</string>
+    <string name="question">\?</string>
     <string name="confirm_close_column">Lukk denne kolonnen?</string>
     <string name="favourite_from_another_account">Favoriser fra en annen konto</string>
     <string name="app_about">Om</string>
@@ -728,7 +728,7 @@
     <string name="already_voted">Du har allerede stemt.</string>
 
     <string name="follow_request_cancelled">Følgingsforespørsel forkastet.</string>
-    <string name="confirm_cancel_follow_request_who_from">Følgingsforespørsel fra %1$s til %1$s vil forkastes. Er du sikker\?</string>
+    <string name="confirm_cancel_follow_request_who_from">Følgingsforespørsel fra %1$s til %2$s vil forkastes. Er du sikker\?</string>
     <string name="reaction">Reaksjon (Misskey)</string>
     <string name="vote">Stem (Misskey)</string>
     <string name="timeout_for_embed_media_viewer">Tidsavbrudd for innebygd mediaviser (enhet:sekunder, programomstart (sletting fra programhistorikk) kreves)</string>

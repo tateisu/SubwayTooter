@@ -81,7 +81,7 @@
     <string name="confirm_boost_from">%1$s voulez-vous partager ce toot ?,\nil sera affiché chez vos abonnés et sur votre profil.</string>
     <string name="confirm_unboost_from">Unboost this status from %1$s ?</string>
     <string name="confirm_favourite_from">Favourite this status from %1$s ? Notification will be sent to the author.</string>
-    <string name="confirm_unfavourite_from">Unfavourite this status from %1$s ?</string>
+    <string name="confirm_unfavourite_from">Voulez-vous retirer ce statut des favoris de %1$s \?</string>
 
     <string name="confirm_close_column">Fermer cette colonne ?</string>
     <string name="confirm_delete_attachment">Retirer cette pièce jointe ?</string>
@@ -428,7 +428,7 @@
     <string name="access_token_or_api_token">Jeton d\'accès (si vous utilisez Misskey, veuillez entrer le jeton de l\'API)</string>
     <string name="token_not_specified">Veuillez saisir le jeton d\'accès.</string>
     <string name="quote_name">Citer le nom …</string>
-    <string name="format_of_quote_name">Format of \"Quote name\" (set text that contains %1$s)</string>
+    <string name="format_of_quote_name">Format du \"nom cité\" (texte contenant %1$s)</string>
     <string name="dont_show_favourite">Masquer les favourite</string>
     <string name="dont_show_follow">Masquer les follow</string>
     <string name="background_image">Image de fond</string>
@@ -556,7 +556,7 @@
     <string name="lists">Listes</string>
     <string name="list_show_member">Afficher les utilisateurs de la liste</string>
     <string name="list_show_timeline">afficher le fil de la liste</string>
-    <string name="list_member_of">\"%1$s\" list users</string>
+    <string name="list_member_of">Liste des utilisateurs \"%1$s\"</string>
     <string name="list_tl_of">\"%1$s\" list</string>
     <string name="list_create_hint">Nom de la nouvelle liste</string>
     <string name="list_name_empty">Veuillez entrer un nom pour la nouvelle liste.</string>
@@ -614,7 +614,7 @@
     <string name="new_item">New item…</string>
     <string name="word_empty">Veuillez entrer un mot-clé.</string>
     <string name="already_exist">déjà existant.</string>
-    <string name="highlight_desc">Swipe to delete. You may need reload column to check set.</string>
+    <string name="highlight_desc">Glissez pour supprimer. Il se peut que vous ayez besoin de recharger la colonne afin de vérifier le paramètre.</string>
     <string name="check_sound">Contrôle du son</string>
     <string name="keyword">Mot-clé</string>
     <string name="domain_block_from_pseudo">Impossible d\'utiliser le blocage de domaines à partir d\'un pseudo compte.</string>

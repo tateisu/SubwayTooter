@@ -29,7 +29,8 @@ for my $file(@files){
 	}
 	my $data = $xml->XMLin($file);
 	if( not $data->{string} or ($data->{string}{content} and not ref $data->{string}{content} )){
-		die "!! please make at least 2 string entries in $file\n";
+		warn "!! please make at least 2 string entries in $file\n";
+		next;
 	}
 	
 	my %names;

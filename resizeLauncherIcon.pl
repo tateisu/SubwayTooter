@@ -138,4 +138,8 @@ my $res_dir = "app/src/main/res";
 #resize_scales( "_ArtWork/misskey-reaction/btn_reaction_rip.png"			,$res_dir,"drawable","btn_reaction_rip",0,32);
 #resize_scales( "_ArtWork/misskey-reaction/btn_reaction_surprise.png"			,$res_dir,"drawable","btn_reaction_surprise",0,32);
 #
-resize_scales( "_ArtWork/ic_medal.png"	,$res_dir,"drawable","ic_authorized",0,24);
+# resize_scales( "_ArtWork/ic_medal.png"	,$res_dir,"drawable","ic_authorized",0,24);
+
+
+resize_scales( "../extra-SubwayTooter/_ArtWork/ic_unread.png"	,$res_dir,"drawable","ic_unread",0,24);
+

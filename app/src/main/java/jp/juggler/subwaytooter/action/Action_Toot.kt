@@ -3,10 +3,7 @@ package jp.juggler.subwaytooter.action
 import android.net.Uri
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.EntityIdLong
-import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.api.entity.TootVisibility
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
@@ -523,13 +520,40 @@ object Action_Toot {
 	/////////////////////////////////////////////////////////////////////////////////////
 	// open conversation
 	
+	internal fun clearConversationUnread(
+		activity : ActMain,
+		access_info : SavedAccount,
+		conversationSummary : TootConversationSummary?
+	){
+		conversationSummary?: return
+		TootTaskRunner(activity,progress_style = TootTaskRunner.PROGRESS_NONE)
+			.run(access_info, object : TootTask {
+				override fun background(client : TootApiClient) : TootApiResult? {
+					return client.request(
+						"/api/v1/conversations/${conversationSummary.id}/read"
+						,Request.Builder().post(RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED,""))
+					)
+				}
+				
+				override fun handleResult(result : TootApiResult?) {
+					// 何もしない
+				}
+			})
+		
+	}
+	
+	
 	// ローカルかリモートか判断する
 	fun conversation(
-		activity : ActMain, pos : Int, access_info : SavedAccount, status : TootStatus
+		activity : ActMain,
+		pos : Int,
+		access_info : SavedAccount,
+		status : TootStatus
 	) {
 		if(access_info.isNA || ! access_info.host.equals(status.host_access, ignoreCase = true)) {
 			conversationOtherInstance(activity, pos, status)
 		} else {
+			
 			conversationLocal(activity, pos, access_info, status.id)
 		}
 	}

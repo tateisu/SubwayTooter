@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
-import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -13,56 +12,46 @@ import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.support.design.widget.NavigationView
+import android.support.v4.view.GravityCompat
 import android.support.v4.view.ViewCompat
 import android.support.v4.view.ViewPager
+import android.support.v4.widget.DrawerLayout
 import android.support.v7.app.AlertDialog
+import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.InputType
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.util.JsonReader
-import android.view.Gravity
-import android.view.View
-import android.support.design.widget.NavigationView
-import android.support.v4.view.GravityCompat
-import android.support.v4.widget.DrawerLayout
-import android.support.v7.app.AppCompatActivity
-import android.view.MenuItem
-import android.view.Window
-import android.view.WindowManager
+import android.view.*
 import android.view.inputmethod.EditorInfo
-import android.widget.HorizontalScrollView
-import android.widget.ImageButton
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.*
 import jp.juggler.subwaytooter.action.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
-
-import org.apache.commons.io.IOUtils
-
-import java.lang.ref.WeakReference
-import java.util.ArrayList
-import java.util.HashSet
-import java.util.regex.Pattern
-
 import jp.juggler.subwaytooter.dialog.AccountPicker
-import jp.juggler.subwaytooter.dialog.DlgTextInput
-import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.dialog.ActionsDialog
+import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
-import jp.juggler.subwaytooter.view.ColumnStripLinearLayout
-import jp.juggler.subwaytooter.view.GravitySnapHelper
-import jp.juggler.subwaytooter.view.MyEditText
-
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.span.MyClickableSpanClickCallback
+import jp.juggler.subwaytooter.table.AcctColor
+import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.view.ColumnStripLinearLayout
+import jp.juggler.subwaytooter.view.GravitySnapHelper
 import jp.juggler.subwaytooter.view.ListDivider
-import java.io.*
+import jp.juggler.subwaytooter.view.MyEditText
+import org.apache.commons.io.IOUtils
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.InputStreamReader
+import java.lang.ref.WeakReference
+import java.util.*
+import java.util.regex.Pattern
 import java.util.zip.ZipInputStream
 import kotlin.math.min
 
@@ -135,7 +124,7 @@ class ActMain : AppCompatActivity()
 	// 画面上のUI操作で生成されて
 	// onPause,onPageDestroy 等のタイミングで閉じられる
 	// 状態保存の必要なし
-	var listItemPopup : StatusButtonsPopup? = null
+	internal var listItemPopup : StatusButtonsPopup? = null
 	
 	private lateinit var llEmpty : View
 	internal lateinit var drawer : DrawerLayout

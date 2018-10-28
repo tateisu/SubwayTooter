@@ -27,7 +27,7 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.span.EmojiImageSpan
-import jp.juggler.subwaytooter.span.NetworkEmojiSpan
+import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.*
@@ -35,8 +35,6 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import org.jetbrains.anko.*
 import org.json.JSONObject
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 internal class ItemViewHolder(
 	val activity : ActMain
@@ -56,7 +54,7 @@ internal class ItemViewHolder(
 	
 	lateinit var column : Column
 	
-	private lateinit var list_adapter : ItemListAdapter
+	internal lateinit var list_adapter : ItemListAdapter
 	
 	private lateinit var llBoosted : View
 	private lateinit var ivBoosted : ImageView
@@ -308,7 +306,8 @@ internal class ItemViewHolder(
 			viewRoot.setOnClickListener { viewClicked ->
 				activity.closeListItemPopup()
 				status_showing?.let { status ->
-					val popup = StatusButtonsPopup(activity, column, bSimpleList)
+					val popup =
+						StatusButtonsPopup(activity, column, bSimpleList, this@ItemViewHolder)
 					activity.listItemPopup = popup
 					popup.show(
 						list_adapter.columnVh.listView,
@@ -327,7 +326,8 @@ internal class ItemViewHolder(
 				activity,
 				column,
 				false,
-				statusButtonsViewHolder
+				statusButtonsViewHolder,
+				this
 			)
 		}
 		
@@ -449,95 +449,95 @@ internal class ItemViewHolder(
 	
 	private fun showConversationIcons(accounts : ArrayList<TootAccountRef>) {
 		if(accounts.isEmpty()) return
-
-		// 絵文字スパンにしてもやはり消えたりちらついたりする。なんでだ。
-//		val density = llExtra.resources.displayMetrics.density
-//		val wh = (activity.avatarIconSize * 0.75f + 0.5f).toInt()
-//		val me = (density * 3f + 0.5f).toInt()
-//		val mt = (density * 3f + 0.5f).toInt()
-//
-//		val lp = LinearLayout.LayoutParams(
-//			LinearLayout.LayoutParams.MATCH_PARENT,
-//			LinearLayout.LayoutParams.WRAP_CONTENT
-//		)
-//		lp.topMargin = mt
-//
-//		val b = MyTextView(activity)
-//		b.layoutParams = lp
-//		b.isAllCaps = false
-//		llExtra.addView(b)
-//
-//		val sb = SpannableStringBuilder()
-//		val invalidator = NetworkEmojiInvalidator(activity.handler, b)
-//		extra_invalidator_list.add(invalidator)
-//		for(ar in accounts) {
-//			val a = ar.get()
-//			val url = access_info.supplyBaseUrl(a.avatar_static)
-//			if(url?.isNotEmpty() == true) {
-//				if(sb.isNotEmpty()) sb.append(' ')
-//				val start = sb.length
-//				sb.append(a.acct)
-//				val end = sb.length
-//				sb.setSpan(
-//					NetworkEmojiSpan(url)
-//					, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-//				)
-//			}
-//		}
-//		b.text = sb
-//		invalidator.register(sb)
 		
-// 消えてしまったりちらついたりするので保留
-//
-//		val llIconBar = FlexboxLayout(activity)
-//		val boxLp = LinearLayout.LayoutParams(
-//			LinearLayout.LayoutParams.MATCH_PARENT,
-//			LinearLayout.LayoutParams.WRAP_CONTENT
-//		)
-//		boxLp.topMargin = mt
-//		llIconBar.layoutParams = boxLp
-//		llIconBar.flexWrap = FlexWrap.WRAP
-//		llIconBar.justifyContent = JustifyContent.FLEX_START
-//		llExtra.addView(llIconBar)
-//
-//		for(whoRef in accounts) {
-//			val who = whoRef.get()
-//			val icon = MyNetworkImageView(activity)
-//			val lp = FlexboxLayout.LayoutParams(wh, wh)
-//			lp.marginEnd = me
-//			icon.layoutParams = lp
-//			icon.contentDescription = who.acct
-//			icon.scaleType = ImageView.ScaleType.CENTER_CROP
-//			llIconBar.addView(icon)
-//
-//			// ビュー階層に追加した後にURLをセットする
-//			icon.setImageUrl(
-//				activity.pref,
-//				Styler.calcIconRound(lp),
-//				access_info.supplyBaseUrl(who.avatar_static),
-//				access_info.supplyBaseUrl(who.avatar)
-//			)
-//			icon.setOnClickListener {
-//				val pos = activity.nextPosition(column)
-//				when {
-//					access_info.isMisskey -> Action_User.profileLocal(
-//						activity,
-//						pos,
-//						access_info,
-//						who
-//					)
-//					access_info.isPseudo -> DlgContextMenu(
-//						activity,
-//						column,
-//						whoRef,
-//						null,
-//						null
-//					).show()
-//					else -> Action_User.profileLocal(activity, pos, access_info, who)
-//				}
-//			}
-//
-//		}
+		// 絵文字スパンにしてもやはり消えたりちらついたりする。なんでだ。
+		//		val density = llExtra.resources.displayMetrics.density
+		//		val wh = (activity.avatarIconSize * 0.75f + 0.5f).toInt()
+		//		val me = (density * 3f + 0.5f).toInt()
+		//		val mt = (density * 3f + 0.5f).toInt()
+		//
+		//		val lp = LinearLayout.LayoutParams(
+		//			LinearLayout.LayoutParams.MATCH_PARENT,
+		//			LinearLayout.LayoutParams.WRAP_CONTENT
+		//		)
+		//		lp.topMargin = mt
+		//
+		//		val b = MyTextView(activity)
+		//		b.layoutParams = lp
+		//		b.isAllCaps = false
+		//		llExtra.addView(b)
+		//
+		//		val sb = SpannableStringBuilder()
+		//		val invalidator = NetworkEmojiInvalidator(activity.handler, b)
+		//		extra_invalidator_list.add(invalidator)
+		//		for(ar in accounts) {
+		//			val a = ar.get()
+		//			val url = access_info.supplyBaseUrl(a.avatar_static)
+		//			if(url?.isNotEmpty() == true) {
+		//				if(sb.isNotEmpty()) sb.append(' ')
+		//				val start = sb.length
+		//				sb.append(a.acct)
+		//				val end = sb.length
+		//				sb.setSpan(
+		//					NetworkEmojiSpan(url)
+		//					, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+		//				)
+		//			}
+		//		}
+		//		b.text = sb
+		//		invalidator.register(sb)
+		
+		// 消えてしまったりちらついたりするので保留
+		//
+		//		val llIconBar = FlexboxLayout(activity)
+		//		val boxLp = LinearLayout.LayoutParams(
+		//			LinearLayout.LayoutParams.MATCH_PARENT,
+		//			LinearLayout.LayoutParams.WRAP_CONTENT
+		//		)
+		//		boxLp.topMargin = mt
+		//		llIconBar.layoutParams = boxLp
+		//		llIconBar.flexWrap = FlexWrap.WRAP
+		//		llIconBar.justifyContent = JustifyContent.FLEX_START
+		//		llExtra.addView(llIconBar)
+		//
+		//		for(whoRef in accounts) {
+		//			val who = whoRef.get()
+		//			val icon = MyNetworkImageView(activity)
+		//			val lp = FlexboxLayout.LayoutParams(wh, wh)
+		//			lp.marginEnd = me
+		//			icon.layoutParams = lp
+		//			icon.contentDescription = who.acct
+		//			icon.scaleType = ImageView.ScaleType.CENTER_CROP
+		//			llIconBar.addView(icon)
+		//
+		//			// ビュー階層に追加した後にURLをセットする
+		//			icon.setImageUrl(
+		//				activity.pref,
+		//				Styler.calcIconRound(lp),
+		//				access_info.supplyBaseUrl(who.avatar_static),
+		//				access_info.supplyBaseUrl(who.avatar)
+		//			)
+		//			icon.setOnClickListener {
+		//				val pos = activity.nextPosition(column)
+		//				when {
+		//					access_info.isMisskey -> Action_User.profileLocal(
+		//						activity,
+		//						pos,
+		//						access_info,
+		//						who
+		//					)
+		//					access_info.isPseudo -> DlgContextMenu(
+		//						activity,
+		//						column,
+		//						whoRef,
+		//						null,
+		//						null
+		//					).show()
+		//					else -> Action_User.profileLocal(activity, pos, access_info, who)
+		//				}
+		//			}
+		//
+		//		}
 		
 	}
 	
@@ -1162,6 +1162,34 @@ internal class ItemViewHolder(
 				//				)
 			}
 			
+			// unread
+			if(status.conversationSummary?.unread == true) {
+				if(sb.isNotEmpty()) sb.append('\u200B')
+				
+				val color = if(MyClickableSpan.defaultLinkColor != 0) {
+					MyClickableSpan.defaultLinkColor
+				} else {
+					Styler.getAttributeColor(activity, R.attr.colorLink)
+				}
+				
+				sb.appendColorShadeIcon(
+					activity,
+					R.drawable.ic_unread,
+					"unread",
+					color = color
+				)
+				
+				//				val start = sb.length
+				//				sb.append("pinned")
+				//				val end = sb.length
+				//				val icon_id = Styler.getAttributeResourceId(activity, R.attr.ic_pin)
+				//				sb.setSpan(
+				//					EmojiImageSpan(activity, icon_id),
+				//					start,
+				//					end,
+				//					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+				//				)
+			}
 		}
 		
 		if(sb.isNotEmpty()) sb.append(' ')
@@ -1379,6 +1407,7 @@ internal class ItemViewHolder(
 					Action_User.profileLocal(activity, pos, access_info, whoRef.get())
 				}
 			}
+			
 			btnFollow -> follow_account?.let { who ->
 				DlgContextMenu(activity, column, who, null, notification).show()
 			}

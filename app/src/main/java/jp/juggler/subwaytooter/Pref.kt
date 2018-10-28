@@ -337,7 +337,7 @@ object Pref {
 	
 	val bpDontRetrievePreviewCard = BooleanPref(
 		"DontRetrievePreviewCard",
-		false,
+		true,
 		R.id.swDontRetrievePreviewCard
 	)
 	val bpScrollTopFromColumnStrip = BooleanPref(

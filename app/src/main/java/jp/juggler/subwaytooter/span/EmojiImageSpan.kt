@@ -12,7 +12,8 @@ import java.lang.ref.WeakReference
 class EmojiImageSpan(
 	context : Context,
 	private val res_id : Int,
-	private val useColorShader : Boolean = false
+	private val useColorShader : Boolean = false,
+	private val color : Int? = null
 ) : ReplacementSpan() {
 	
 	companion object {
@@ -90,8 +91,15 @@ class EmojiImageSpan(
 		d.setBounds(0, 0, size, size)
 		
 		if(useColorShader) {
-			val pc = paint.color
-			val pa = paint.alpha
+			val pc:Int
+				val pa:Int
+			if( color ==null) {
+				pc = paint.color
+				pa = paint.alpha
+			}else{
+				pc = color or Color.BLACK
+				pa = color ushr 24
+			}
 			// Log.d("EmojiImageSpan",String.format("paint c=0x%x a=0x%x",pc,pa))
 			if(pc != lastColor || lastColorFilter == null) {
 				lastColor = pc

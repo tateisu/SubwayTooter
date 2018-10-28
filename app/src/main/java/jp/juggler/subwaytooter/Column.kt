@@ -2435,16 +2435,16 @@ class Column(
 							if(! use_old_api){
 
 								// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
-								val result = getConversationSummary(client, PATH_DIRECT_MESSAGES2)
+								val resultCS = getConversationSummary(client, PATH_DIRECT_MESSAGES2)
 
 								when{
 									// cancelled
-									result == null -> return null
+									resultCS == null -> return null
 									
 									//  not error
-									result.error.isNullOrBlank() -> {
+									resultCS.error.isNullOrBlank() -> {
 										useConversationSummarys = true
-										return result
+										return resultCS
 									}
 								}
 							}
@@ -2825,7 +2825,7 @@ class Column(
 								// カードを取得する
 								if(! Pref.bpDontRetrievePreviewCard(context)) {
 									this.list_tmp?.forEach { o ->
-										if(o is TootStatus)
+										if( o is TootStatus && o.card==null )
 											o.card = parseItem(
 												::TootCard,
 												client.request("/api/v1/statuses/" + o.id + "/card")?.jsonObject
@@ -4800,6 +4800,8 @@ class Column(
 							}
 						}
 						
+						replaceConversationSummary(changeList,list_new,list_data)
+						
 						// 投稿後のリフレッシュなら当該投稿の位置を探す
 						var status_index = - 1
 						for(i in 0 until added) {
@@ -5693,22 +5695,26 @@ class Column(
 						return
 					}
 					
+					val list_tmp = this.list_tmp
+					if(list_tmp == null) {
+						fireShowContent(reason = "gap list_tmp is null", changeList = ArrayList())
+						return
+					}
+
+					val list_new = duplicate_map.filterDuplicate(list_tmp)
+					// 0個でもギャップを消すために以下の処理を続ける
+					
+					val added = list_new.size // may 0
+					val changeList = ArrayList<AdapterChange>()
+					
+					replaceConversationSummary(changeList,list_new,list_data)
+					
 					val position = list_data.indexOf(gap)
 					if(position == - 1) {
 						log.d("gap not found..")
 						fireShowContent(reason = "gap not found", changeList = ArrayList())
 						return
 					}
-					
-					val list_tmp = this.list_tmp
-					if(list_tmp == null) {
-						fireShowContent(reason = "gap list_tmp is null", changeList = ArrayList())
-						return
-					}
-					
-					// 0個でもギャップを消すために以下の処理を続ける
-					
-					val list_new = duplicate_map.filterDuplicate(list_tmp)
 					
 					// idx番目の要素がListViewのtopから何ピクセル下にあるか
 					var restore_idx = position + 1
@@ -5726,12 +5732,10 @@ class Column(
 							}
 						}
 					}
-					
-					val added = list_new.size // may 0
+
 					list_data.removeAt(position)
 					list_data.addAll(position, list_new)
 					
-					val changeList = ArrayList<AdapterChange>()
 					changeList.add(AdapterChange(AdapterChangeType.RangeRemove, position))
 					if(added > 0) {
 						changeList.add(
@@ -6237,7 +6241,11 @@ class Column(
 				
 			}
 			
-			val removeSet = HashSet<EntityId>()
+			val added = list_new.size
+			val changeList = ArrayList<AdapterChange>()
+
+			replaceConversationSummary(changeList,list_new,list_data)
+			
 			loop@ for(o in list_new) {
 				when(o) {
 
@@ -6247,23 +6255,6 @@ class Column(
 							App1.sound(highlight_sound)
 							break@loop
 						}
-					}
-					
-					is TootConversationSummary -> {
-						removeSet.add( o.getOrderId() )
-					}
-				}
-			}
-			
-			val added = list_new.size
-			val changeList = ArrayList<AdapterChange>()
-
-			if( list_data .isNotEmpty() && removeSet.isNotEmpty() ){
-				for( i in list_data.size-1 downTo 0 ){
-					val o = list_data[i]
-					if( o is TootConversationSummary && removeSet.contains(o.id) ){
-						changeList.add(AdapterChange(AdapterChangeType.RangeRemove, i, 1))
-						list_data.removeAt(i)
 					}
 				}
 			}
@@ -6305,6 +6296,31 @@ class Column(
 				}
 			}
 		}
+	}
+	
+	private fun replaceConversationSummary(
+		changeList :ArrayList<AdapterChange>,
+		list_new: ArrayList<TimelineItem>,
+		list_data: BucketList<TimelineItem>
+	){
+		val removeSet = HashSet<EntityId>()
+		loop@ for(o in list_new) {
+			if( o is TootConversationSummary ) {
+				removeSet.add( o.getOrderId() )
+			}
+		}
+		
+		if( list_data .isNotEmpty() && removeSet.isNotEmpty() ){
+			for( i in list_data.size-1 downTo 0 ){
+				val o = list_data[i]
+				if( o is TootConversationSummary && removeSet.contains(o.id) ){
+					changeList.add(AdapterChange(AdapterChangeType.RangeRemove, i, 1))
+					list_data.removeAt(i)
+					log.d("remove old TootConversationSummary")
+				}
+			}
+		}
+		
 	}
 	
 	private fun makeMisskeyBaseParameter(parser : TootParser?) : JSONObject =

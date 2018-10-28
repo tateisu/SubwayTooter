@@ -169,6 +169,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	val time_created_at : Long
 	
+	var conversationSummary : TootConversationSummary? = null
+	
+	
 	////////////////////////////////////////////////////////
 	
 	init {
@@ -459,6 +462,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			// Pinned TL を取得した時にreblogが登場することはないので、reblogについてpinned 状態を気にする必要はない
 			this.reblog = parser.status(src.optJSONObject("reblog"))
 			
+			// 2.6.0からステータスにもカード情報が含まれる
+			this.card = parseItem(::TootCard,src.optJSONObject("card"))
 		}
 	}
 	

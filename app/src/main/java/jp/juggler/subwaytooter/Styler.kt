@@ -290,13 +290,14 @@ object Styler {
 fun SpannableStringBuilder.appendColorShadeIcon(
 	context:Context,
 	drawable_id:Int,
-	text:String
+	text:String,
+	color : Int? = null
 ):SpannableStringBuilder{
 	val start = this.length
 	this.append(text)
 	val end = this.length
 	this.setSpan(
-		EmojiImageSpan(context, drawable_id,useColorShader=true),
+		EmojiImageSpan(context, drawable_id,useColorShader=true,color=color),
 		start,
 		end,
 		Spanned.SPAN_EXCLUSIVE_EXCLUSIVE

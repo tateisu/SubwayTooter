@@ -15,10 +15,11 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.util.LogCategory
 import org.jetbrains.anko.matchParent
 
-class StatusButtonsPopup(
+internal class StatusButtonsPopup(
 	private val activity : ActMain,
 	column : Column,
-	bSimpleList : Boolean
+	bSimpleList : Boolean,
+	itemViewHolder : ItemViewHolder
 ) {
 	
 	companion object {
@@ -48,7 +49,8 @@ class StatusButtonsPopup(
 			activity,
 			column,
 			bSimpleList,
-			statusButtonsViewHolder
+			statusButtonsViewHolder,
+			itemViewHolder
 		)
 	}
 	

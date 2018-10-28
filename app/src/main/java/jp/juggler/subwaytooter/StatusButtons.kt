@@ -30,7 +30,8 @@ internal class StatusButtons(
 	private val column : Column,
 	private val bSimpleList : Boolean,
 	
-	private val holder : StatusButtonsViewHolder
+	private val holder : StatusButtonsViewHolder,
+	private val itemViewHolder : ItemViewHolder
 
 ) : View.OnClickListener, View.OnLongClickListener {
 	
@@ -194,12 +195,31 @@ internal class StatusButtons(
 		
 		when(v) {
 			
-			btnConversation -> Action_Toot.conversation(
-				activity,
-				activity.nextPosition(column),
-				access_info,
-				status
-			)
+			btnConversation -> {
+
+				val cs = status.conversationSummary
+				if( cs != null){
+
+					if(cs.unread) {
+						cs.unread = false
+						// 表示の更新
+						itemViewHolder.list_adapter.notifyChange(
+							reason = "ConversationSummary reset unread",
+							reset = true
+						)
+						// 未読フラグのクリアをサーバに送る
+						Action_Toot.clearConversationUnread(activity,access_info,cs)
+					}
+				}
+
+				Action_Toot.conversation(
+					activity,
+					activity.nextPosition(column),
+					access_info,
+					status
+				)
+				
+			}
 			
 			btnReply -> if(! access_info.isPseudo) {
 				Action_Toot.reply(activity, access_info, status)

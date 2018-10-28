@@ -1,8 +1,27 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
 
-    <string name="account_add">Add an account</string>
+    <string name="account_add"></string>
     <string name="column_empty">Use the left-bottom menu button to add a column</string>
 
 
-</resources>
+<string name="instance">Achos</string>
+    <string name="user_mail_address">E-bost</string>
+    <string name="user_password">Cyfrinair</string>
+    <string name="home">Hafan</string>
+    <string name="reply">Ateb</string>
+    <string name="more">Mwy</string>
+    <string name="follow">Dilyn</string>
+    <string name="followers">Dilynwyr</string>
+    <string name="status">Tŵt</string>
+    <string name="unfollow">Dad-ddilyn</string>
+    <string name="unmute">Dad-dawelu</string>
+    <string name="unblock">Dadflocio</string>
+    <string name="blocked_users">Defnyddwyr a flociwyd</string>
+    <string name="close">Cau</string>
+    <string name="toot">Tŵt</string>
+    <string name="lists">Rhestrau</string>
+    <string name="filter_home">hafan</string>
+    <string name="visibility_home">Hafan</string>
+    <string name="reply_to">Ateb i %1$s</string>
+    </resources>

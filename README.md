@@ -13,3 +13,8 @@ Mastodon client app for Android
 <ul>
 <li><a href="https://mastodon.juggler.jp/@tateisu" rel="me">tateisu@mastodon.juggler.jp</a></li>
 </ul>
+
+## Related link
+- Fantia https://fantia.jp/fanclubs/8239
+- Discord https://discord.gg/6YPA7UP
+- Amazon(jp) wish list http://amzn.asia/2SAYD5Q

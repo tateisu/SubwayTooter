@@ -1,11 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <resources>
 
-    <string name="account_add"></string>
     <string name="column_empty">Use the left-bottom menu button to add a column</string>
-
-
-<string name="instance">Achos</string>
+    <string name="instance">Achos</string>
     <string name="user_mail_address">E-bost</string>
     <string name="user_password">Cyfrinair</string>
     <string name="home">Hafan</string>
@@ -24,4 +21,5 @@
     <string name="filter_home">hafan</string>
     <string name="visibility_home">Hafan</string>
     <string name="reply_to">Ateb i %1$s</string>
-    </resources>
+
+</resources>

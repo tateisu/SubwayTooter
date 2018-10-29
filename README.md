@@ -3,7 +3,7 @@ Mastodon client app for Android
 
 ## Requirements
 - Android 5.0 or later
-- Play service (for push notification. if not found, this app uses pull notification 15 min period.)
+- Google Play service (for push notification. if not found, this app uses pull notification 15 min period.)
 
 ## Install
 - Play store: https://play.google.com/store/apps/details?id=jp.juggler.subwaytooter

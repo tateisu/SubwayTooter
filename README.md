@@ -18,6 +18,6 @@ Mastodon client app for Android
 - https://discord.gg/6YPA7UP
 
 ## Donation?
-- Amazon(jp) wish list http://amzn.asia/2SAYD5Q
+- Amazon(jp) wish list http://amzn.asia/axmNivM
 - Fantia https://fantia.jp/fanclubs/8239
 - Kyash ID: tateisu

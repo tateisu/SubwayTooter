@@ -1,6 +1,6 @@
 # SubwayTooter
 
-Mastodon client app for Android
+Mastodon client app for Android phone/tablet.
 
 ## Requirements
 - Android 5.0 or later

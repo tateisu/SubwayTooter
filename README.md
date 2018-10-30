@@ -17,9 +17,9 @@ Mastodon client app for Android
 - "Emoji" same glyphs as the PC browser version
 - "Custom emoji" fully supported
 - "Tablet mode" that shows multiple columns at once
-- "Many filters" Media TL, App mute, Word mute, Regex filter, etc.
+- "Many filters" media TL, app mute, word mute, regex filter, etc.
 - "Auto CW" that folds very long texts automatically
-- "Push notification" (this feature requires Google Play service. if not found, this app uses pull notification 15 min period.)
+- "Push notification" (Google Play service required. if not found, this app uses pull notification 15 min period.)
 - Fastest support for Mastodon's new feature
 
 ## Install
@@ -32,7 +32,7 @@ Mastodon client app for Android
 </ul>
 
 ## resources
-- blog (JP) http://subwaytooter.hatenadiary.jp/
+- Official blog (JP) http://subwaytooter.hatenadiary.jp/
 - Discord https://discord.gg/6YPA7UP
 
 ## Donation?

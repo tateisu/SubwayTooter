@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.getInt
 
 object ContentWarningMisskey : TableCompanion {
 	private val log = LogCategory("ContentWarningMisskey")
@@ -58,7 +59,7 @@ object ContentWarningMisskey : TableCompanion {
 				null
 			).use { cursor ->
 				if(cursor.moveToFirst()) {
-					val iv = cursor.getInt(cursor.getColumnIndex(COL_SHOWN))
+					val iv = cursor.getInt(COL_SHOWN)
 					return 0 != iv
 				}
 				

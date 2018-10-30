@@ -1046,19 +1046,21 @@ class ActMain : AppCompatActivity()
 				, bAllowPseudo = false
 				, args = arrayOf("", false)
 			)
+			
 			R.id.nav_add_mutes -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
 				, Column.TYPE_MUTES
 				, bAllowPseudo = false
 			)
+			
 			R.id.nav_add_blocks -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
 				, Column.TYPE_BLOCKS
 				, bAllowPseudo = false
-				, bAllowMisskey = false
 			)
+			
 			R.id.nav_keyword_filter -> Action_Account.timeline(
 				this
 				, defaultInsertPosition
@@ -1421,9 +1423,9 @@ class ActMain : AppCompatActivity()
 			
 			c = column.header_fg_color
 			if(c == 0) {
-				Styler.setIconDefaultColor(this, ivIcon, column.getIconAttrId(column.column_type))
+				Styler.setIconAttr(this, ivIcon, column.getIconAttrId(column.column_type))
 			} else {
-				Styler.setIconCustomColor(this, ivIcon, c, column.getIconAttrId(column.column_type))
+				Styler.setIconAttr(this, ivIcon, column.getIconAttrId(column.column_type),c)
 			}
 			
 			//
@@ -2266,13 +2268,13 @@ class ActMain : AppCompatActivity()
 		
 		c = footer_button_fg_color
 		if(c == 0) {
-			Styler.setIconDefaultColor(this, btnToot, R.attr.ic_edit)
-			Styler.setIconDefaultColor(this, btnMenu, R.attr.ic_hamburger)
-			Styler.setIconDefaultColor(this, btnQuickToot, R.attr.btn_post)
+			Styler.setIconAttr(this, btnToot, R.attr.ic_edit)
+			Styler.setIconAttr(this, btnMenu, R.attr.ic_hamburger)
+			Styler.setIconAttr(this, btnQuickToot, R.attr.btn_post)
 		} else {
-			Styler.setIconCustomColor(this, btnToot, c, R.attr.ic_edit)
-			Styler.setIconCustomColor(this, btnMenu, c, R.attr.ic_hamburger)
-			Styler.setIconCustomColor(this, btnQuickToot, c, R.attr.btn_post)
+			Styler.setIconAttr(this, btnToot,  R.attr.ic_edit,c)
+			Styler.setIconAttr(this, btnMenu,  R.attr.ic_hamburger,c)
+			Styler.setIconAttr(this, btnQuickToot,  R.attr.btn_post,c)
 		}
 		
 		c = footer_tab_bg_color

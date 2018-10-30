@@ -7,6 +7,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.EntityIdString
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.getInt
 
 object ContentWarning : TableCompanion {
 	private val log = LogCategory("ContentWarning")
@@ -66,7 +67,7 @@ object ContentWarning : TableCompanion {
 				null
 			).use { cursor ->
 				if(cursor.moveToFirst()) {
-					val iv = cursor.getInt(cursor.getColumnIndex(COL_SHOWN))
+					val iv = cursor.getInt(COL_SHOWN)
 					return 0 != iv
 				}
 				

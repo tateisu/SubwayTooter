@@ -12,6 +12,7 @@ import jp.juggler.subwaytooter.dialog.ReportForm
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.table.UserRelationMisskey
 import jp.juggler.subwaytooter.util.*
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -37,25 +38,31 @@ object Action_User {
 			
 			var relation : UserRelation? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
-				if(access_info.isMisskey){
+				if(access_info.isMisskey) {
 					val params = access_info.putMisskeyApiToken(JSONObject())
-						.put("userId",who.id.toString())
+						.put("userId", who.id.toString())
 					
-					val result = client.request(when(bMute){
-						true-> "/api/mute/create"
-						else->"/api/mute/delete"
-					},params.toPostRequestBuilder())
-					if( result?.jsonObject != null ){
+					val result = client.request(
+						when(bMute) {
+							true -> "/api/mute/create"
+							else -> "/api/mute/delete"
+						}, params.toPostRequestBuilder()
+					)
+					if(result?.jsonObject != null) {
 						// 204 no content
 						
 						// update user relation
-						val ur = UserRelation.load(access_info.db_id,who.id)
+						val ur = UserRelation.load(access_info.db_id, who.id)
 						ur.muting = bMute
-						saveUserRelationMisskey(access_info,who.id,TootParser(activity,access_info))
+						saveUserRelationMisskey(
+							access_info,
+							who.id,
+							TootParser(activity, access_info)
+						)
 						this.relation = ur
 					}
 					return result
-				}else{
+				} else {
 					val request_builder = Request.Builder().post(
 						if(! bMute)
 							RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "")
@@ -126,7 +133,10 @@ object Action_User {
 	
 	// ユーザをブロック/ブロック解除する
 	fun block(
-		activity : ActMain, access_info : SavedAccount, who : TootAccount, bBlock : Boolean
+		activity : ActMain,
+		access_info : SavedAccount,
+		who : TootAccount,
+		bBlock : Boolean
 	) {
 		if(access_info.isMe(who)) {
 			showToast(activity, false, R.string.it_is_you)
@@ -138,23 +148,52 @@ object Action_User {
 			var relation : UserRelation? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
-				val request_builder = Request.Builder().post(
-					RequestBody.create(
-						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" // 空データ
+				if(access_info.isMisskey) {
+					val params = access_info.putMisskeyApiToken()
+						.put("userId", who.id)
+					val result = client.request(
+						if(bBlock)
+							"/api/blocking/create"
+						else
+							"/api/blocking/delete",
+						params.toPostRequestBuilder()
 					)
-				)
-				
-				val result = client.request(
-					"/api/v1/accounts/" + who.id + if(bBlock) "/block" else "/unblock",
-					request_builder
-				)
-				val jsonObject = result?.jsonObject
-				if(jsonObject != null) {
-					relation =
-						saveUserRelation(access_info, parseItem(::TootRelationShip, jsonObject))
+					
+					if(result?.jsonObject != null) {
+						// ユーザ情報があるがリレーションが含まれないっぽい
+						
+						// update user relation
+						val ur = UserRelation.load(access_info.db_id, who.id)
+						ur.blocking = bBlock
+						saveUserRelationMisskey(
+							access_info,
+							who.id,
+							TootParser(activity, access_info)
+						)
+						this.relation = ur
+					}
+					
+					
+					return result
+				} else {
+					val request_builder = Request.Builder().post(
+						RequestBody.create(
+							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" // 空データ
+						)
+					)
+					
+					val result = client.request(
+						"/api/v1/accounts/" + who.id + if(bBlock) "/block" else "/unblock",
+						request_builder
+					)
+					val jsonObject = result?.jsonObject
+					if(jsonObject != null) {
+						relation =
+							saveUserRelation(access_info, parseItem(::TootRelationShip, jsonObject))
+					}
+					
+					return result
 				}
-				
-				return result
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
@@ -170,24 +209,38 @@ object Action_User {
 						return
 					}
 					
+					
 					for(column in App1.getAppState(activity).column_list) {
-						if(relation.blocking) {
-							if(column.column_type == Column.TYPE_PROFILE) {
-								// プロフページのトゥートはブロックしてても見れる
-								continue
-							} else {
-								column.removeAccountInTimeline(access_info, who.id)
+						when {
+							
+							//ブロック解除したら「ブロックしたユーザ」カラムのリストから消える
+							! relation.blocking -> column.removeUser(
+								access_info,
+								Column.TYPE_BLOCKS,
+								who.id
+							)
+							
+							// Misskeyのブロックはフォロー解除とフォロー拒否だけなので
+							// カラム中の投稿を消すなどの効果はない
+							access_info.isMisskey -> {
 							}
-						} else {
-							//「ブロックしたユーザ」カラムのリストから消える
-							column.removeUser(access_info, Column.TYPE_BLOCKS, who.id)
+							
+							// プロフページのトゥートはブロックしてても見れる
+							column.column_type == Column.TYPE_PROFILE -> {
+							}
+							
+							// MastodonではブロックしたらTLからそのアカウントの投稿が消える
+							else -> column.removeAccountInTimeline(access_info, who.id)
 						}
 					}
 					
 					showToast(
 						activity,
 						false,
-						if(relation.blocking) R.string.block_succeeded else R.string.unblock_succeeded
+						if(relation.blocking)
+							R.string.block_succeeded
+						else
+							R.string.unblock_succeeded
 					)
 					
 				} else {
@@ -206,7 +259,12 @@ object Action_User {
 		who : TootAccount
 	) {
 		when {
-			access_info.isMisskey -> activity.addColumn(pos, access_info, Column.TYPE_PROFILE, who.id)
+			access_info.isMisskey -> activity.addColumn(
+				pos,
+				access_info,
+				Column.TYPE_PROFILE,
+				who.id
+			)
 			access_info.isPseudo -> profileFromAnotherAccount(activity, pos, access_info, who)
 			else -> activity.addColumn(pos, access_info, Column.TYPE_PROFILE, who.id)
 		}
@@ -223,7 +281,7 @@ object Action_User {
 			
 			var who_local : TootAccount? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val result = client.syncAccountByUrl(access_info,who_url)
+				val result = client.syncAccountByUrl(access_info, who_url)
 				who_local = result?.data as? TootAccount
 				return result
 			}
@@ -422,7 +480,8 @@ object Action_User {
 					client.request("/api/v1/accounts/" + who.id + "/follow", request_builder)
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
-					relation =saveUserRelation(access_info,parseItem(::TootRelationShip, jsonObject))
+					relation =
+						saveUserRelation(access_info, parseItem(::TootRelationShip, jsonObject))
 				}
 				return result
 			}
@@ -482,23 +541,23 @@ object Action_User {
 		activity : ActMain,
 		access_info : SavedAccount,
 		who : TootAccount,
-		bConfirmed :Boolean = false
+		bConfirmed : Boolean = false
 	) {
-		if(!bConfirmed){
+		if(! bConfirmed) {
 			
 			val name = who.decodeDisplayName(activity)
 			AlertDialog.Builder(activity)
-				.setMessage( name.intoStringResource(activity,R.string.delete_succeeded_confirm))
-				.setNegativeButton(R.string.cancel,null)
-				.setPositiveButton(R.string.ok){ _ , _  ->
-					deleteSuggestion(activity,access_info,who,bConfirmed=true)
+				.setMessage(name.intoStringResource(activity, R.string.delete_succeeded_confirm))
+				.setNegativeButton(R.string.cancel, null)
+				.setPositiveButton(R.string.ok) { _, _ ->
+					deleteSuggestion(activity, access_info, who, bConfirmed = true)
 				}
 				.show()
 			return
 		}
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				return client.request("/api/v1/suggestions/${who.id}",Request.Builder().delete())
+				return client.request("/api/v1/suggestions/${who.id}", Request.Builder().delete())
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
@@ -507,16 +566,16 @@ object Action_User {
 				
 				// error
 				val error = result.error
-				if( error != null ){
-					showToast(activity,true,result.error)
+				if(error != null) {
+					showToast(activity, true, result.error)
 					return
 				}
 				
-				showToast(activity,false,R.string.delete_succeeded)
-
+				showToast(activity, false, R.string.delete_succeeded)
+				
 				// update suggestion column
-				for( column in activity.app_state.column_list){
-					column.removeUser(access_info,Column.TYPE_FOLLOW_SUGGESTION,who.id)
+				for(column in activity.app_state.column_list) {
+					column.removeUser(access_info, Column.TYPE_FOLLOW_SUGGESTION, who.id)
 				}
 			}
 		})

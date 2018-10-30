@@ -141,5 +141,8 @@ my $res_dir = "app/src/main/res";
 # resize_scales( "_ArtWork/ic_medal.png"	,$res_dir,"drawable","ic_authorized",0,24);
 
 
-resize_scales( "../extra-SubwayTooter/_ArtWork/ic_unread.png"	,$res_dir,"drawable","ic_unread",0,24);
+#resize_scales( "../extra-SubwayTooter/_ArtWork/ic_unread.png"	,$res_dir,"drawable","ic_unread",0,24);
+
+resize_scales( "../extra-SubwayTooter/_ArtWork/ic_blocked_by.png"	,$res_dir,"drawable","ic_blocked_by",0,32);
+resize_scales( "../extra-SubwayTooter/_ArtWork/ic_requested_by.png"	,$res_dir,"drawable","ic_requested_by",0,32);
 

@@ -905,14 +905,35 @@ fun showToast(context : Context, ex : Throwable, string_id : Int, vararg args : 
 	Utils.showToastImpl(context, true, ex.withCaption(context.resources, string_id, *args))
 }
 
-fun Cursor.getStringOrNull(colName : String) : String? {
-	val colIdx = getColumnIndex(colName)
-	return if(isNull(colIdx)) {
-		null
-	} else {
-		getString(colIdx)
-	}
-}
+
+fun Cursor.getInt(key:String) =
+	getInt(getColumnIndex(key))
+
+fun Cursor.getIntOrNull(idx:Int) =
+	if(isNull(idx)) null else getInt(idx)
+
+fun Cursor.getIntOrNull(key:String) =
+	getIntOrNull(getColumnIndex(key))
+
+fun Cursor.getLong(key:String) =
+	getLong(getColumnIndex(key))
+
+//fun Cursor.getLongOrNull(idx:Int) =
+//	if(isNull(idx)) null else getLong(idx)
+
+//fun Cursor.getLongOrNull(key:String) =
+//	getLongOrNull(getColumnIndex(key))
+
+fun Cursor.getString(key:String) :String =
+	getString(getColumnIndex(key))
+
+fun Cursor.getStringOrNull(keyIdx:Int) =
+	if(isNull(keyIdx)) null else getString(keyIdx)
+
+fun Cursor.getStringOrNull(key:String) =
+	getStringOrNull(getColumnIndex(key))
+
+
 
 fun getDocumentName(contentResolver:ContentResolver,uri : Uri) : String {
 	val errorName = "no_name"
@@ -921,12 +942,7 @@ fun getDocumentName(contentResolver:ContentResolver,uri : Uri) : String {
 			return if(! cursor.moveToFirst()) {
 				errorName
 			} else {
-				val colIdx = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-				if(cursor.isNull(colIdx)) {
-					errorName
-				} else {
-					cursor.getString(colIdx)
-				}
+				cursor.getStringOrNull(OpenableColumns.DISPLAY_NAME) ?: errorName
 			}
 		}
 		?: errorName

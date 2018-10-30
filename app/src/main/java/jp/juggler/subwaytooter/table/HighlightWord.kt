@@ -131,14 +131,12 @@ class HighlightWord {
 	}
 	
 	constructor(cursor : Cursor) {
-		this.id = cursor.getLong(cursor.getColumnIndex(COL_ID))
-		this.name = cursor.getString(cursor.getColumnIndex(COL_NAME))
-		this.color_bg = cursor.getInt(cursor.getColumnIndex(COL_COLOR_BG))
-		this.color_fg = cursor.getInt(cursor.getColumnIndex(COL_COLOR_FG))
-		this.sound_type = cursor.getInt(cursor.getColumnIndex(COL_SOUND_TYPE))
-		val colIdx_sound_uri = cursor.getColumnIndex(COL_SOUND_URI)
-		this.sound_uri =
-			if(cursor.isNull(colIdx_sound_uri)) null else cursor.getString(colIdx_sound_uri)
+		this.id = cursor.getLong(COL_ID)
+		this.name = cursor.getString(COL_NAME)
+		this.color_bg = cursor.getInt(COL_COLOR_BG)
+		this.color_fg = cursor.getInt(COL_COLOR_FG)
+		this.sound_type = cursor.getInt(COL_SOUND_TYPE)
+		this.sound_uri = cursor.getStringOrNull(COL_SOUND_URI)
 	}
 	
 	fun save() {

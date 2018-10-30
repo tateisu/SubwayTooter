@@ -11,6 +11,8 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
+import jp.juggler.subwaytooter.util.getIntOrNull
+import jp.juggler.subwaytooter.util.getStringOrNull
 import jp.juggler.subwaytooter.util.sanitizeBDI
 
 import java.util.Locale
@@ -80,7 +82,7 @@ class AcctColor {
 		
 		private const val CHAR_REPLACE : Char = 0x328A.toChar()
 		
-		private const val load_where = COL_ACCT + "=?"
+		private const val load_where = "$COL_ACCT=?"
 		
 		private val load_where_arg = object : ThreadLocal<Array<String?>>() {
 			override fun initialValue() : Array<String?> {
@@ -138,22 +140,13 @@ class AcctColor {
 				App1.database.query(table, null, load_where, where_arg, null, null, null)
 					.use { cursor ->
 						if(cursor.moveToNext()) {
-							var idx : Int
 							
 							val ac = AcctColor(acct)
-							
-							idx = cursor.getColumnIndex(COL_COLOR_FG)
-							ac.color_fg = if(cursor.isNull(idx)) 0 else cursor.getInt(idx)
-							
-							idx = cursor.getColumnIndex(COL_COLOR_BG)
-							ac.color_bg = if(cursor.isNull(idx)) 0 else cursor.getInt(idx)
-							
-							idx = cursor.getColumnIndex(COL_NICKNAME)
-							ac.nickname = if(cursor.isNull(idx)) null else cursor.getString(idx)
-							
-							idx = cursor.getColumnIndex(COL_NOTIFICATION_SOUND)
-							ac.notification_sound =
-								if(cursor.isNull(idx)) null else cursor.getString(idx)
+						
+							ac.color_fg = cursor.getIntOrNull(COL_COLOR_FG) ?: 0
+							ac.color_bg = cursor.getIntOrNull(COL_COLOR_BG) ?: 0
+							ac.nickname = cursor.getStringOrNull(COL_NICKNAME)
+							ac.notification_sound = cursor.getStringOrNull(COL_NOTIFICATION_SOUND)
 							
 							mMemoryCache.put(acct, ac)
 							return ac

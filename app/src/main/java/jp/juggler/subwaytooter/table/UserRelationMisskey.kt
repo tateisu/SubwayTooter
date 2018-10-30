@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.getInt
 
 object UserRelationMisskey : TableCompanion {
 	
@@ -21,6 +22,8 @@ object UserRelationMisskey : TableCompanion {
 	private const val COL_REQUESTED = "requested"
 	private const val COL_FOLLOWING_REBLOGS = "following_reblogs"
 	private const val COL_ENDORSED = "endorsed"
+	private const val COL_BLOCKED_BY = "blocked_by"
+	private const val COL_REQUESTED_BY = "requested_by"
 	
 	override fun onDBCreate(db : SQLiteDatabase) {
 		log.d("onDBCreate!")
@@ -38,6 +41,8 @@ object UserRelationMisskey : TableCompanion {
 				,$COL_REQUESTED integer not null
 				,$COL_FOLLOWING_REBLOGS integer not null
 				,$COL_ENDORSED integer default 0
+				,$COL_BLOCKED_BY integer default 0
+				,$COL_REQUESTED_BY integer default 0
 				)"""
 		)
 		db.execSQL(
@@ -60,9 +65,24 @@ object UserRelationMisskey : TableCompanion {
 				log.trace(ex)
 			}
 		}
+		if(oldVersion < 34 && newVersion >= 34) {
+			try {
+				db.execSQL("alter table $table add column $COL_BLOCKED_BY integer default 0")
+			} catch(ex : Throwable) {
+				log.trace(ex)
+			}
+		}
+		if(oldVersion < 35 && newVersion >= 35) {
+			try {
+				db.execSQL("alter table $table add column $COL_REQUESTED_BY integer default 0")
+			} catch(ex : Throwable) {
+				log.trace(ex)
+			}
+		}
 	}
 	
-	fun save1(now : Long, db_id : Long, whoId : String, src : UserRelation) {
+	fun save1(now : Long, db_id : Long, whoId : String, src : UserRelation?) {
+		src?:return
 		try {
 			val cv = ContentValues()
 			cv.put(COL_TIME_SAVE, now)
@@ -75,6 +95,8 @@ object UserRelationMisskey : TableCompanion {
 			cv.put(COL_REQUESTED, src.requested.b2i())
 			cv.put(COL_FOLLOWING_REBLOGS, src.following_reblogs)
 			cv.put(COL_ENDORSED, src.endorsed.b2i())
+			cv.put(COL_BLOCKED_BY,src.blocked_by.b2i())
+			cv.put(COL_REQUESTED_BY,src.requested_by.b2i())
 			App1.database.replace(table, null, cv)
 			
 			val key = String.format("%s:%s", db_id, whoId)
@@ -113,6 +135,8 @@ object UserRelationMisskey : TableCompanion {
 				cv.put(COL_REQUESTED, src.requested.b2i())
 				cv.put(COL_FOLLOWING_REBLOGS, src.following_reblogs)
 				cv.put(COL_ENDORSED, src.endorsed.b2i())
+				cv.put(COL_BLOCKED_BY,src.blocked_by.b2i())
+				cv.put(COL_REQUESTED_BY,src.requested_by.b2i())
 				db.replace(table, null, cv)
 			}
 			bOK = true
@@ -151,15 +175,15 @@ object UserRelationMisskey : TableCompanion {
 				.use { cursor ->
 					if(cursor.moveToNext()) {
 						val dst = UserRelation()
-						dst.following = cursor.getInt(cursor.getColumnIndex(COL_FOLLOWING)).i2b()
-						dst.followed_by =
-							cursor.getInt(cursor.getColumnIndex(COL_FOLLOWED_BY)).i2b()
-						dst.blocking = cursor.getInt(cursor.getColumnIndex(COL_BLOCKING)).i2b()
-						dst.muting = cursor.getInt(cursor.getColumnIndex(COL_MUTING)).i2b()
-						dst.requested = cursor.getInt(cursor.getColumnIndex(COL_REQUESTED)).i2b()
-						dst.following_reblogs =
-							cursor.getInt(cursor.getColumnIndex(COL_FOLLOWING_REBLOGS))
-						dst.endorsed = cursor.getInt(cursor.getColumnIndex(COL_ENDORSED)).i2b()
+						dst.following = cursor.getBoolean(COL_FOLLOWING)
+						dst.followed_by = cursor.getBoolean(COL_FOLLOWED_BY)
+						dst.blocking = cursor.getBoolean(COL_BLOCKING)
+						dst.muting = cursor.getBoolean(COL_MUTING)
+						dst.requested = cursor.getBoolean(COL_REQUESTED)
+						dst.following_reblogs = cursor.getInt(COL_FOLLOWING_REBLOGS)
+						dst.endorsed =cursor.getBoolean(COL_ENDORSED)
+						dst.blocked_by = cursor.getBoolean(COL_BLOCKED_BY)
+						dst.requested_by = cursor.getBoolean(COL_REQUESTED_BY)
 						return dst
 					}
 				}

@@ -624,27 +624,27 @@ class ColumnViewHolder(
 						android.R.attr.textColorPrimary
 					)
 				)
-				Styler.setIconDefaultColor(
+				Styler.setIconAttr(
 					activity,
 					ivColumnIcon,
 					column.getIconAttrId(column.column_type)
 				)
-				Styler.setIconDefaultColor(activity, btnColumnSetting, R.attr.ic_tune)
-				Styler.setIconDefaultColor(activity, btnColumnReload, R.attr.btn_refresh)
-				Styler.setIconDefaultColor(activity, btnColumnClose, R.attr.btn_close)
+				Styler.setIconAttr(activity, btnColumnSetting, R.attr.ic_tune)
+				Styler.setIconAttr(activity, btnColumnReload, R.attr.btn_refresh)
+				Styler.setIconAttr(activity, btnColumnClose, R.attr.btn_close)
 			} else {
 				tvColumnIndex.setTextColor(c)
 				tvColumnStatus.setTextColor(c)
 				tvColumnName.setTextColor(c)
-				Styler.setIconCustomColor(
+				Styler.setIconAttr(
 					activity,
 					ivColumnIcon,
-					c,
-					column.getIconAttrId(column.column_type)
+					column.getIconAttrId(column.column_type),
+					c
 				)
-				Styler.setIconCustomColor(activity, btnColumnSetting, c, R.attr.ic_tune)
-				Styler.setIconCustomColor(activity, btnColumnReload, c, R.attr.btn_refresh)
-				Styler.setIconCustomColor(activity, btnColumnClose, c, R.attr.btn_close)
+				Styler.setIconAttr(activity, btnColumnSetting,  R.attr.ic_tune,c)
+				Styler.setIconAttr(activity, btnColumnReload,  R.attr.btn_refresh,c)
+				Styler.setIconAttr(activity, btnColumnClose,  R.attr.btn_close,c)
 			}
 			
 			c = column.column_bg_color

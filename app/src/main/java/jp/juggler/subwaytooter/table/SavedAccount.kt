@@ -94,13 +94,13 @@ class SavedAccount(
 	}
 	
 	constructor(context : Context, cursor : Cursor) : this(
-		cursor.getLong(cursor.getColumnIndex(COL_ID)), // db_id
-		cursor.getString(cursor.getColumnIndex(COL_USER)), // acct
-		cursor.getString(cursor.getColumnIndex(COL_HOST)) // host
-		, _isMisskey = cursor.getInt(cursor.getColumnIndex(COL_IS_MISSKEY)).i2b()
+		cursor.getLong(COL_ID), // db_id
+		cursor.getString(COL_USER), // acct
+		cursor.getString(COL_HOST) // host
+		, _isMisskey = cursor.getBoolean(COL_IS_MISSKEY)
 	) {
 		
-		val jsonAccount = cursor.getString(cursor.getColumnIndex(COL_ACCOUNT)).toJsonObject()
+		val jsonAccount = cursor.getString(COL_ACCOUNT).toJsonObject()
 		if(jsonAccount.opt("id") == null) {
 			// 疑似アカウント
 			this.loginAccount = null
@@ -113,60 +113,45 @@ class SavedAccount(
 			if(loginAccount == null) {
 				log.e(
 					"missing loginAccount for %s",
-					cursor.getString(cursor.getColumnIndex(COL_ACCOUNT))
+					cursor.getString(COL_ACCOUNT)
 				)
 			}
 			this.loginAccount = loginAccount
 		}
 		
-		val colIdx_visibility = cursor.getColumnIndex(COL_VISIBILITY)
-		val sv = if(cursor.isNull(colIdx_visibility)) null else cursor.getString(colIdx_visibility)
+		val sv = cursor.getStringOrNull(COL_VISIBILITY)
 		this.visibility = TootVisibility.parseSavedVisibility(sv) ?: TootVisibility.Public
 		
-		this.confirm_boost = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_BOOST)).i2b()
-		this.confirm_favourite = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_FAVOURITE)).i2b()
-		this.confirm_unboost = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_UNBOOST)).i2b()
-		this.confirm_unfavourite =
-			cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_UNFAVOURITE)).i2b()
+		this.confirm_boost = cursor.getBoolean(COL_CONFIRM_BOOST)
+		this.confirm_favourite = cursor.getBoolean(COL_CONFIRM_FAVOURITE)
+		this.confirm_unboost = cursor.getBoolean(COL_CONFIRM_UNBOOST)
+		this.confirm_unfavourite = cursor.getBoolean(COL_CONFIRM_UNFAVOURITE)
+		this.confirm_follow = cursor.getBoolean(COL_CONFIRM_FOLLOW)
+		this.confirm_follow_locked = cursor.getBoolean(COL_CONFIRM_FOLLOW_LOCKED)
+		this.confirm_unfollow = cursor.getBoolean(COL_CONFIRM_UNFOLLOW)
+		this.confirm_post = cursor.getBoolean(COL_CONFIRM_POST)
 		
-		this.dont_hide_nsfw = cursor.getInt(cursor.getColumnIndex(COL_DONT_HIDE_NSFW)).i2b()
-		this.dont_show_timeout = cursor.getInt(cursor.getColumnIndex(COL_DONT_SHOW_TIMEOUT)).i2b()
+		this.notification_mention = cursor.getBoolean(COL_NOTIFICATION_MENTION)
+		this.notification_boost = cursor.getBoolean(COL_NOTIFICATION_BOOST)
+		this.notification_favourite = cursor.getBoolean(COL_NOTIFICATION_FAVOURITE)
+		this.notification_follow = cursor.getBoolean(COL_NOTIFICATION_FOLLOW)
+		this.notification_reaction = cursor.getBoolean(COL_NOTIFICATION_REACTION)
+		this.notification_vote = cursor.getBoolean(COL_NOTIFICATION_VOTE)
+
+		this.dont_hide_nsfw = cursor.getBoolean(COL_DONT_HIDE_NSFW)
+		this.dont_show_timeout = cursor.getBoolean(COL_DONT_SHOW_TIMEOUT)
 		
-		this.notification_mention =
-			cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_MENTION)).i2b()
-		this.notification_boost = cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_BOOST)).i2b()
-		this.notification_favourite =
-			cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_FAVOURITE)).i2b()
-		this.notification_follow =
-			cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_FOLLOW)).i2b()
+		this.notification_tag = cursor.getStringOrNull(COL_NOTIFICATION_TAG)
 		
-		this.notification_reaction =
-			cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_REACTION)).i2b()
+		this.register_key = cursor.getStringOrNull(COL_REGISTER_KEY)
 		
-		this.notification_vote =
-			cursor.getInt(cursor.getColumnIndex(COL_NOTIFICATION_VOTE)).i2b()
+		this.register_time = cursor.getLong(COL_REGISTER_TIME)
 		
-		this.confirm_follow = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_FOLLOW)).i2b()
-		this.confirm_follow_locked =
-			cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_FOLLOW_LOCKED)).i2b()
-		this.confirm_unfollow = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_UNFOLLOW)).i2b()
-		this.confirm_post = cursor.getInt(cursor.getColumnIndex(COL_CONFIRM_POST)).i2b()
+		this.token_info = cursor.getString(COL_TOKEN).toJsonObject()
 		
-		val idx_notification_tag = cursor.getColumnIndex(COL_NOTIFICATION_TAG)
-		this.notification_tag =
-			if(cursor.isNull(idx_notification_tag)) null else cursor.getString(idx_notification_tag)
+		this.sound_uri = cursor.getString(COL_SOUND_URI)
 		
-		val idx_register_key = cursor.getColumnIndex(COL_REGISTER_KEY)
-		this.register_key =
-			if(cursor.isNull(idx_register_key)) null else cursor.getString(idx_register_key)
-		
-		this.register_time = cursor.getLong(cursor.getColumnIndex(COL_REGISTER_TIME))
-		
-		this.token_info = cursor.getString(cursor.getColumnIndex(COL_TOKEN)).toJsonObject()
-		
-		this.sound_uri = cursor.getString(cursor.getColumnIndex(COL_SOUND_URI))
-		
-		this.default_text = cursor.getString(cursor.getColumnIndex(COL_DEFAULT_TEXT)) ?: ""
+		this.default_text = cursor.getStringOrNull(COL_DEFAULT_TEXT) ?: ""
 		
 	}
 	
@@ -739,7 +724,7 @@ class SavedAccount(
 			} catch(ex : Throwable) {
 				log.trace(ex)
 				log.e(ex, "loadAccountList failed.")
-				showToast(context,true,ex.withCaption("(SubwayTooter) broken in-app database?"))
+				showToast(context, true, ex.withCaption("(SubwayTooter) broken in-app database?"))
 			}
 			
 			return result
@@ -910,7 +895,7 @@ class SavedAccount(
 	val misskeyApiToken : String?
 		get() = token_info?.parseString(TootApiClient.KEY_API_KEY_MISSKEY)
 	
-	fun putMisskeyApiToken(params : JSONObject =JSONObject()) : JSONObject {
+	fun putMisskeyApiToken(params : JSONObject = JSONObject()) : JSONObject {
 		val apiKey = misskeyApiToken
 		if(apiKey?.isNotEmpty() == true) params.put("i", apiKey)
 		return params

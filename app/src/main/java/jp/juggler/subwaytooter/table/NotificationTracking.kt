@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.putMayNull
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.getStringOrNull
+import jp.juggler.subwaytooter.util.getLong
 
 class NotificationTracking {
 	
@@ -160,13 +161,13 @@ class NotificationTracking {
 					null
 				)?.use { cursor ->
 					if(cursor.moveToFirst()) {
-						dst.id = cursor.getLong(cursor.getColumnIndex(COL_ID))
-						dst.last_load = cursor.getLong(cursor.getColumnIndex(COL_LAST_LOAD))
+						dst.id = cursor.getLong(COL_ID)
+						dst.last_load = cursor.getLong(COL_LAST_LOAD)
 						
 						dst.nid_show = EntityId.from(cursor, COL_NID_SHOW)
 						dst.nid_read = EntityId.from(cursor, COL_NID_READ)
 						dst.post_id = EntityId.from(cursor, COL_POST_ID)
-						dst.post_time = cursor.getLong(cursor.getColumnIndex(COL_POST_TIME))
+						dst.post_time = cursor.getLong(COL_POST_TIME)
 						
 						dst.last_data = cursor.getStringOrNull(COL_LAST_DATA)
 						

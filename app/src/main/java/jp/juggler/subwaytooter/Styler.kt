@@ -58,22 +58,31 @@ object Styler {
 		)
 	}
 	
-	// ImageViewにアイコンを設定する
-	fun setIconDefaultColor(context : Context, imageView : ImageView, iconAttrId : Int) {
-		imageView.setImageResource(getAttributeResourceId(context, iconAttrId))
-	}
-	
-	// ImageViewにアイコンを設定する。色を変えてしまう
-	fun setIconCustomColor(
+	private fun setIconDrawableId(
 		context : Context,
 		imageView : ImageView,
-		color : Int,
-		iconAttrId : Int
+		drawableId : Int,
+		color:Int? = null
 	) {
-		val d = getAttributeDrawable(context, iconAttrId)
-		d.mutate() // 色指定が他のアイコンに影響しないようにする
-		d.setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
-		imageView.setImageDrawable(d)
+		if( color == null) {
+			// ImageViewにアイコンを設定する。デフォルトの色
+			imageView.setImageResource(drawableId)
+		}else{
+			// ImageViewにアイコンを設定する。色を変えてしまう
+			val d = ContextCompat.getDrawable(context,drawableId) ?: return
+			d.mutate() // 色指定が他のアイコンに影響しないようにする
+			d.setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
+			imageView.setImageDrawable(d)
+		}
+	}
+	
+	fun setIconAttr(
+		context : Context,
+		imageView : ImageView,
+		iconAttrId : Int,
+		color:Int? = null
+	) {
+		setIconDrawableId(context,imageView,getAttributeResourceId(context, iconAttrId),color)
 	}
 	
 	fun getVisibilityIconAttr(isMisskeyData:Boolean ,visibility : TootVisibility):Int {
@@ -162,15 +171,34 @@ object Styler {
 	) {
 		
 		// 被フォロー状態
-		if(! relation.followed_by) {
-			ivDot.visibility = View.GONE
-		} else {
-			ivDot.visibility = View.VISIBLE
-			setIconDefaultColor(context, ivDot, R.attr.ic_followed_by)
+		when {
 			
-			// 被フォローリクエスト状態の時に followed_by が 真と偽の両方がありえるようなので
-			// Relationshipだけを見ても被フォローリクエスト状態は分からないっぽい
-			// 仕方ないので馬鹿正直に「 followed_byが真ならバッジをつける」しかできない
+			relation.blocked_by -> {
+				ivDot.visibility = View.VISIBLE
+				setIconDrawableId(context, ivDot, R.drawable.ic_blocked_by,
+					color=Styler.getAttributeColor(context, R.attr.colorRegexFilterError)
+				)
+			}
+			
+			relation.requested_by -> {
+				ivDot.visibility = View.VISIBLE
+				setIconDrawableId(context, ivDot, R.drawable.ic_requested_by,
+					color=Styler.getAttributeColor(context, R.attr.colorRegexFilterError)
+				)
+			}
+			
+			relation.followed_by-> {
+				ivDot.visibility = View.VISIBLE
+				setIconAttr(context, ivDot, R.attr.ic_followed_by)
+				
+				// 被フォローリクエスト状態の時に followed_by が 真と偽の両方がありえるようなので
+				// Relationshipだけを見ても被フォローリクエスト状態は分からないっぽい
+				// 仕方ないので馬鹿正直に「 followed_byが真ならバッジをつける」しかできない
+			}
+			
+			else -> {
+				ivDot.visibility = View.GONE
+			}
 		}
 		
 		// フォローボタン
@@ -211,8 +239,7 @@ object Styler {
 			}
 		}
 		
-		val color = Styler.getAttributeColor(context, color_attr)
-		setIconCustomColor(context, ibFollow, color, icon_attr)
+		setIconAttr(context, ibFollow, icon_attr, color =Styler.getAttributeColor(context, color_attr) )
 		ibFollow.contentDescription = contentDescription
 	}
 	

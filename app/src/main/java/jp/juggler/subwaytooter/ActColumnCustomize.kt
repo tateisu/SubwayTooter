@@ -414,18 +414,18 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 						android.R.attr.textColorPrimary
 					)
 				)
-				Styler.setIconDefaultColor(
+				Styler.setIconAttr(
 					this,
 					ivColumnHeader,
 					column.getIconAttrId(column.column_type)
 				)
 			} else {
 				tvColumnName.setTextColor(c)
-				Styler.setIconCustomColor(
+				Styler.setIconAttr(
 					this,
 					ivColumnHeader,
-					c,
-					column.getIconAttrId(column.column_type)
+					column.getIconAttrId(column.column_type),
+					color = c
 				)
 			}
 			

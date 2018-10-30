@@ -35,6 +35,9 @@ class TootRelationShip(src : JSONObject) {
 	val endorsed : Boolean
 	
 	init {
+		
+		// Misskey はこのEntityを使わない
+		
 		this.id = EntityId.mayDefault( src.parseLong("id") )
 		
 		var ov = src.opt("following")

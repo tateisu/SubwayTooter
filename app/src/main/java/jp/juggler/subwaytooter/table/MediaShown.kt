@@ -7,6 +7,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.EntityIdString
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.getInt
 
 object MediaShown : TableCompanion {
 	private val log = LogCategory("MediaShown")
@@ -65,7 +66,7 @@ object MediaShown : TableCompanion {
 				null
 			).use { cursor ->
 				if(cursor.moveToFirst()) {
-					return 0 != cursor.getInt(cursor.getColumnIndex(COL_SHOWN))
+					return 0 != cursor.getInt(COL_SHOWN)
 				}
 			}
 		} catch(ex : Throwable) {

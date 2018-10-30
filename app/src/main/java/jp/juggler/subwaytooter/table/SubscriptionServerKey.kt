@@ -6,6 +6,7 @@ import android.provider.BaseColumns
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.getString
 
 object SubscriptionServerKey : TableCompanion {
 	
@@ -58,8 +59,7 @@ object SubscriptionServerKey : TableCompanion {
 				null
 			)?.use { cursor ->
 				if(cursor.moveToNext()) {
-					val idx = cursor.getColumnIndex(COL_SERVER_KEY)
-					return cursor.getString(idx)
+					return cursor.getString(COL_SERVER_KEY)
 				}
 			}
 		} catch(ex : Throwable) {

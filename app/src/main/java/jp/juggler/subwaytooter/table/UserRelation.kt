@@ -3,22 +3,24 @@ package jp.juggler.subwaytooter.table
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.support.v4.util.LruCache
-
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.EntityIdString
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.getInt
 import org.json.JSONObject
 
 class UserRelation {
 	
 	var following : Boolean = false   // 認証ユーザからのフォロー状態にある
 	var followed_by : Boolean = false // 認証ユーザは被フォロー状態にある
-	var blocking : Boolean = false
+	var blocking : Boolean = false // 認証ユーザからブロックした
+	var blocked_by : Boolean = false // 認証ユーザからブロックされた(Misskeyのみ。Mastodonでは常にfalse)
 	var muting : Boolean = false
 	var requested : Boolean = false  // 認証ユーザからのフォローは申請中である
+	var requested_by : Boolean = false  // 相手から認証ユーザへのフォローリクエスト申請中(Misskeyのみ。Mastodonでは常にfalse)
 	var following_reblogs : Int = 0 // このユーザからのブーストをTLに表示する
 	var endorsed : Boolean = false // ユーザをプロフィールで紹介する
 	
@@ -221,14 +223,13 @@ class UserRelation {
 					.use { cursor ->
 						if(cursor.moveToNext()) {
 							val dst = UserRelation()
-							dst.following = cursor.getInt(cursor.getColumnIndex(COL_FOLLOWING)).i2b()
-							dst.followed_by =cursor.getInt(cursor.getColumnIndex(COL_FOLLOWED_BY)).i2b()
-							dst.blocking = cursor.getInt(cursor.getColumnIndex(COL_BLOCKING)).i2b()
-							dst.muting = cursor.getInt(cursor.getColumnIndex(COL_MUTING)).i2b()
-							dst.requested = cursor.getInt(cursor.getColumnIndex(COL_REQUESTED)).i2b()
-							dst.following_reblogs =
-								cursor.getInt(cursor.getColumnIndex(COL_FOLLOWING_REBLOGS))
-							dst.endorsed = cursor.getInt(cursor.getColumnIndex(COL_ENDORSED)).i2b()
+							dst.following = cursor.getBoolean(COL_FOLLOWING)
+							dst.followed_by =cursor.getBoolean(COL_FOLLOWED_BY)
+							dst.blocking = cursor.getBoolean(COL_BLOCKING)
+							dst.muting = cursor.getBoolean(COL_MUTING)
+							dst.requested = cursor.getBoolean(COL_REQUESTED)
+							dst.following_reblogs = cursor.getInt(COL_FOLLOWING_REBLOGS)
+							dst.endorsed = cursor.getBoolean(COL_ENDORSED)
 							return dst
 						}
 					}
@@ -240,13 +241,21 @@ class UserRelation {
 		}
 		
 		// Misskey用
-		fun parseMisskeyUser(src : JSONObject) = UserRelation().apply {
-			following = src.optBoolean("isFollowing")
-			followed_by = src.optBoolean("isFollowed")
-			muting = src.optBoolean("isMuted")
-			blocking = false
-			endorsed = false
-			requested = src.optBoolean("hasPendingFollowRequestFromYou")
+		fun parseMisskeyUser(src : JSONObject) :UserRelation? {
+
+			// リレーションを返さない場合がある
+			src.opt("isFollowing") ?: return null
+
+			return UserRelation().apply {
+				following = src.optBoolean("isFollowing")
+				followed_by = src.optBoolean("isFollowed")
+				muting = src.optBoolean("isMuted")
+				blocking = src.optBoolean("isBlocking")
+				blocked_by = src.optBoolean("isBlocked")
+				endorsed = false
+				requested = src.optBoolean("hasPendingFollowRequestFromYou")
+				requested_by = src.optBoolean("hasPendingFollowRequestToYou")
+			}
 		}
 	}
 

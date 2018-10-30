@@ -496,7 +496,12 @@ internal class DlgContextMenu(
 				
 				R.id.btnBlock ->
 					if(relation.blocking) {
-						Action_User.block(activity, access_info, who, false)
+						Action_User.block(
+							activity,
+							access_info,
+							who,
+							false
+						)
 					} else {
 						AlertDialog.Builder(activity)
 							.setMessage(

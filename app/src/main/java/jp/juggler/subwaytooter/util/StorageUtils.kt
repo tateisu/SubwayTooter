@@ -9,8 +9,7 @@ import android.os.Environment
 import android.os.storage.StorageManager
 import android.webkit.MimeTypeMap
 import java.io.File
-import java.util.ArrayList
-import java.util.HashMap
+import java.util.*
 
 object StorageUtils{
 	
@@ -145,7 +144,7 @@ object StorageUtils{
 						val type = cursor.getType(i)
 						if(type != Cursor.FIELD_TYPE_STRING) continue
 						val name = cursor.getColumnName(i)
-						val value = if(cursor.isNull(i)) null else cursor.getString(i)
+						val value = cursor.getStringOrNull(i)
 						if(value != null && value.isNotEmpty() && "filePath" == name) return File(value)
 					}
 				}

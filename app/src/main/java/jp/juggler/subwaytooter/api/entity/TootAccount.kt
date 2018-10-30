@@ -16,32 +16,32 @@ import java.util.regex.Pattern
 open class TootAccount(parser : TootParser, src : JSONObject) {
 	
 	class Field(
-		val name :String,
-		val value :String,
-		val verified_at: Long // 0L if not verified
+		val name : String,
+		val value : String,
+		val verified_at : Long // 0L if not verified
 	)
 	
 	companion object {
 		private val log = LogCategory("TootAccount")
 		
-		internal val reWhitespace:Pattern = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
+		internal val reWhitespace : Pattern = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
 		
 		// host, user ,(instance)
-		internal val reAccountUrl :Pattern =
+		internal val reAccountUrl : Pattern =
 			Pattern.compile("\\Ahttps://([A-Za-z0-9._-]+)/@([A-Za-z0-9_]+(?:@[A-Za-z0-9._-]+)?)(?:\\z|[?#])")
 		
-		fun getAcctFromUrl(url:String):String?{
+		fun getAcctFromUrl(url : String) : String? {
 			val m = reAccountUrl.matcher(url)
-			return if(m.find()){
+			return if(m.find()) {
 				val host = m.group(1)
 				val user = m.group(2).unescapeUri()
 				val instance = m.groupOrNull(3)?.unescapeUri()
-				if( instance?.isNotEmpty() == true){
+				if(instance?.isNotEmpty() == true) {
 					"$user@$instance"
-				}else{
+				} else {
 					"$user@$host"
 				}
-			}else{
+			} else {
 				null
 			}
 		}
@@ -79,7 +79,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				try {
 					// たぶんどんなURLでもauthorityの部分にホスト名が来るだろう(慢心)
 					val host = Uri.parse(url).authority
-					if( host?.isNotEmpty() == true){
+					if(host?.isNotEmpty() == true) {
 						return host.toLowerCase()
 					}
 					log.e("findHostFromUrl: can't parse host from URL $url")
@@ -99,11 +99,11 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				val name = item.parseString("name") ?: continue
 				val value = item.parseString("value") ?: continue
 				val svVerifiedAt = item.parseString("verified_at")
-				val verifiedAt = when(svVerifiedAt){
+				val verifiedAt = when(svVerifiedAt) {
 					null -> 0L
-					else-> TootStatus.parseTime(svVerifiedAt)
+					else -> TootStatus.parseTime(svVerifiedAt)
 				}
-				dst.add( Field(name,value,verifiedAt))
+				dst.add(Field(name, value, verifiedAt))
 			}
 			return if(dst.isEmpty()) {
 				null
@@ -112,7 +112,6 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			}
 		}
 	}
-	
 	
 	//URL of the user's profile page (can be remote)
 	// https://mastodon.juggler.jp/@tateisu
@@ -250,7 +249,16 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				
 			}
 			
-			parser.misskeyUserRelationMap[id]=UserRelation.parseMisskeyUser(src)
+			// プロフカラムで ユーザのプロフ(A)とアカウントTL(B)を順に取得すると
+			// (A)ではisBlockingに情報が入っているが、(B)では情報が入っていない
+			// 対策として(A)でリレーションを取得済みのユーザは(B)のタイミングではリレーションを読み捨てる
+			val map = parser.misskeyUserRelationMap
+			if(map[id] == null) {
+				val relation = UserRelation.parseMisskeyUser(src)
+				if( relation != null) {
+					map[id] = relation
+				}
+			}
 			
 		} else {
 			
@@ -335,7 +343,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				}
 				
 				ServiceType.MSP -> {
-					this.id = EntityId.mayDefault(src.parseLong("id") )
+					this.id = EntityId.mayDefault(src.parseLong("id"))
 					
 					// MSPはLTLの情報しか持ってないのでacctは常にホスト名部分を持たない
 					this.host = findHostFromUrl(null, null, url)
@@ -400,9 +408,8 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		).decodeEmoji(sv)
 	}
 	
-	
 	var _orderId : EntityId? = null
-
-	fun getOrderId() :EntityId = _orderId ?: id
+	
+	fun getOrderId() : EntityId = _orderId ?: id
 	
 }

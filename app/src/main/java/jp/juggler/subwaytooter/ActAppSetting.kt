@@ -19,34 +19,22 @@ import android.text.TextWatcher
 import android.util.JsonWriter
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.BaseAdapter
-import android.widget.CompoundButton
-import android.widget.EditText
-import android.widget.ImageView
-import android.widget.Spinner
-import android.widget.TextView
-
+import android.widget.*
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
-
-import org.apache.commons.io.IOUtils
-import org.apache.commons.io.output.FileWriterWithEncoding
-
-import java.io.File
-import java.io.FileOutputStream
-import java.text.NumberFormat
-import java.util.ArrayList
-import java.util.Locale
-
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.*
-import org.json.JSONObject
-import java.io.FileInputStream
+import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.handleGetContentResult
+import jp.juggler.subwaytooter.util.intentOpenDocument
+import jp.juggler.subwaytooter.util.showToast
+import org.apache.commons.io.IOUtils
+import java.io.File
+import java.io.FileOutputStream
 import java.io.OutputStreamWriter
+import java.text.NumberFormat
+import java.util.*
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
@@ -868,11 +856,11 @@ class ActAppSetting : AppCompatActivity()
 		
 		c = footer_button_fg_color
 		if(c == 0) {
-			Styler.setIconDefaultColor(this, ivFooterToot, R.attr.ic_edit)
-			Styler.setIconDefaultColor(this, ivFooterMenu, R.attr.ic_hamburger)
+			Styler.setIconAttr(this, ivFooterToot, R.attr.ic_edit)
+			Styler.setIconAttr(this, ivFooterMenu, R.attr.ic_hamburger)
 		} else {
-			Styler.setIconCustomColor(this, ivFooterToot, c, R.attr.ic_edit)
-			Styler.setIconCustomColor(this, ivFooterMenu, c, R.attr.ic_hamburger)
+			Styler.setIconAttr(this, ivFooterToot,  R.attr.ic_edit,color=c)
+			Styler.setIconAttr(this, ivFooterMenu,  R.attr.ic_hamburger,color=c)
 		}
 		
 		c = footer_tab_bg_color

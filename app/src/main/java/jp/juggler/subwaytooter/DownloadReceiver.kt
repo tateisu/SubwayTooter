@@ -4,6 +4,8 @@ import android.app.DownloadManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import jp.juggler.subwaytooter.util.getIntOrNull
+import jp.juggler.subwaytooter.util.getStringOrNull
 
 import jp.juggler.subwaytooter.util.showToast
 
@@ -22,12 +24,10 @@ class DownloadReceiver : BroadcastReceiver() {
 			val query = DownloadManager.Query().setFilterById(id)
 			downloadManager.query(query)?.use { cursor ->
 				if(cursor.moveToFirst()) {
-					val idx_status = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
-					val idx_title = cursor.getColumnIndex(DownloadManager.COLUMN_TITLE)
 					
-					val title = cursor.getString(idx_title)
+					val title = cursor.getStringOrNull(DownloadManager.COLUMN_TITLE)
 					
-					if(DownloadManager.STATUS_SUCCESSFUL == cursor.getInt(idx_status)) {
+					if(DownloadManager.STATUS_SUCCESSFUL == cursor.getIntOrNull(DownloadManager.COLUMN_STATUS) ) {
 						/*
 							ダウンロード完了通知がシステムからのものと重複することがある
 

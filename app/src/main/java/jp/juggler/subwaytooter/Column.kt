@@ -769,8 +769,8 @@ class Column(
 		}
 	}
 	
-	private fun JSONObject.putIfTrue(key:String,value:Boolean){
-		if(value) put( key,true)
+	private fun JSONObject.putIfTrue(key : String, value : Boolean) {
+		if(value) put(key, true)
 	}
 	
 	@Throws(JSONException::class)
@@ -1556,41 +1556,43 @@ class Column(
 	
 	internal fun loadProfileAccount(
 		client : TootApiClient,
+		parser : TootParser,
 		bForceReload : Boolean
 	) : TootApiResult? {
-		return if(bForceReload || this.who_account == null) {
+		
+		return if(this.who_account != null && ! bForceReload) {
+			// リロード不要なら何もしない
+			null
+		} else if(isMisskey) {
+			val params = access_info.putMisskeyApiToken(JSONObject())
+				.put("userId", profile_id)
 			
-			if(isMisskey) {
-				val params = access_info.putMisskeyApiToken(JSONObject())
-					.put("userId", profile_id)
-				val result = client.request(PATH_MISSKEY_PROFILE, params.toPostRequestBuilder())
-				val parser = TootParser(
-					context,
-					access_info,
-					misskeyDecodeProfilePin = true
-				)
+			val result = client.request(PATH_MISSKEY_PROFILE, params.toPostRequestBuilder())
+			
+			// ユーザリレーションの取り扱いのため、別のparserを作ってはいけない
+			parser.misskeyDecodeProfilePin = true
+			try {
 				val a = TootAccountRef.mayNull(parser, parser.account(result?.jsonObject))
 				if(a != null) {
 					this.who_account = a
 					client.publishApiProgress("") // カラムヘッダの再表示
 				}
-				result
-				
-			} else {
-				val result = client.request(String.format(Locale.JAPAN, PATH_ACCOUNT, profile_id))
-				val parser = TootParser(context, access_info)
-				val a = TootAccountRef.mayNull(parser, parser.account(result?.jsonObject))
-				if(a != null) {
-					this.who_account = a
-					client.publishApiProgress("") // カラムヘッダの再表示
-				}
-				result
-				
+			} finally {
+				parser.misskeyDecodeProfilePin = false
 			}
 			
+			result
+			
 		} else {
-			null
+			val result = client.request(String.format(Locale.JAPAN, PATH_ACCOUNT, profile_id))
+			val a = TootAccountRef.mayNull(parser, parser.account(result?.jsonObject))
+			if(a != null) {
+				this.who_account = a
+				client.publishApiProgress("") // カラムヘッダの再表示
+			}
+			result
 		}
+		
 	}
 	
 	internal fun loadListInfo(client : TootApiClient, bForceReload : Boolean) {
@@ -1756,7 +1758,7 @@ class Column(
 	
 	// DMカラム更新時に新APIの利用に成功したなら真
 	internal var useConversationSummarys = false
-
+	
 	// DMカラムのストリーミングイベントで新形式のイベントを利用できたなら真
 	internal var useConversationSummaryStreaming = false
 	
@@ -2432,12 +2434,12 @@ class Column(
 						TYPE_DIRECT_MESSAGES -> {
 							
 							useConversationSummarys = false
-							if(! use_old_api){
-
+							if(! use_old_api) {
+								
 								// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
 								val resultCS = getConversationSummary(client, PATH_DIRECT_MESSAGES2)
-
-								when{
+								
+								when {
 									// cancelled
 									resultCS == null -> return null
 									
@@ -2475,7 +2477,7 @@ class Column(
 						
 						TYPE_PROFILE -> {
 							
-							val who_result = loadProfileAccount(client, true)
+							val who_result = loadProfileAccount(client, parser, true)
 							if(client.isApiCancelled || who_account == null) return who_result
 							
 							
@@ -2594,7 +2596,11 @@ class Column(
 						}
 						TYPE_KEYWORD_FILTER -> return parseFilterList(client, PATH_FILTERS)
 						
-						TYPE_BLOCKS -> return parseAccountList(client, PATH_BLOCKS)
+						TYPE_BLOCKS -> return if(isMisskey){
+							TootApiResult("Misskey has no API to get block list")
+						}else{
+							parseAccountList(client, PATH_BLOCKS)
+						}
 						
 						TYPE_DOMAIN_BLOCKS -> return parseDomainList(client, PATH_DOMAIN_BLOCK)
 						
@@ -2825,7 +2831,7 @@ class Column(
 								// カードを取得する
 								if(! Pref.bpDontRetrievePreviewCard(context)) {
 									this.list_tmp?.forEach { o ->
-										if( o is TootStatus && o.card==null )
+										if(o is TootStatus && o.card == null)
 											o.card = parseItem(
 												::TootCard,
 												client.request("/api/v1/statuses/" + o.id + "/card")?.jsonObject
@@ -3893,7 +3899,7 @@ class Column(
 				aroundMin : Boolean = false,
 				misskeyParams : JSONObject? = null,
 				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootConversationSummary> =
-					{ parser, jsonArray -> parseList(::TootConversationSummary,parser,jsonArray) }
+					{ parser, jsonArray -> parseList(::TootConversationSummary, parser, jsonArray) }
 			) : TootApiResult? {
 				
 				val isMisskey = access_info.isMisskey
@@ -4397,7 +4403,6 @@ class Column(
 				return firstResult
 			}
 			
-			
 			var filterUpdated = false
 			
 			override fun doInBackground(vararg unused : Void) : TootApiResult? {
@@ -4431,7 +4436,7 @@ class Column(
 						TYPE_DIRECT_MESSAGES -> if(useConversationSummarys) {
 							// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
 							getConversationSummaryList(client, PATH_DIRECT_MESSAGES2)
-						}else {
+						} else {
 							// fallback to old api
 							getStatusList(client, PATH_DIRECT_MESSAGES)
 						}
@@ -4518,7 +4523,7 @@ class Column(
 						)
 						
 						TYPE_PROFILE -> {
-							loadProfileAccount(client, false)
+							loadProfileAccount(client, parser, false)
 							
 							
 							when(profile_tab) {
@@ -4800,7 +4805,7 @@ class Column(
 							}
 						}
 						
-						replaceConversationSummary(changeList,list_new,list_data)
+						replaceConversationSummary(changeList, list_new, list_data)
 						
 						// 投稿後のリフレッシュなら当該投稿の位置を探す
 						var status_index = - 1
@@ -5352,14 +5357,13 @@ class Column(
 				return result
 			}
 			
-			
 			fun getConversationSummaryList(
 				client : TootApiClient,
 				path_base : String,
 				misskeyParams : JSONObject? = null
 				,
 				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootConversationSummary> =
-					{ parser, jsonArray -> parseList(::TootConversationSummary,parser,jsonArray) }
+					{ parser, jsonArray -> parseList(::TootConversationSummary, parser, jsonArray) }
 			) : TootApiResult? {
 				
 				val isMisskey = access_info.isMisskey
@@ -5647,14 +5651,13 @@ class Column(
 							}
 						}
 						
-						TYPE_DIRECT_MESSAGES ->  if(useConversationSummarys) {
+						TYPE_DIRECT_MESSAGES -> if(useConversationSummarys) {
 							// try 2.6.0 new API https://github.com/tootsuite/mastodon/pull/8832
 							getConversationSummaryList(client, PATH_DIRECT_MESSAGES2)
-						}else {
+						} else {
 							// fallback to old api
 							getStatusList(client, PATH_DIRECT_MESSAGES)
 						}
-				
 						
 						else -> getStatusList(client, makeHomeTlUrl())
 					}
@@ -5700,14 +5703,14 @@ class Column(
 						fireShowContent(reason = "gap list_tmp is null", changeList = ArrayList())
 						return
 					}
-
+					
 					val list_new = duplicate_map.filterDuplicate(list_tmp)
 					// 0個でもギャップを消すために以下の処理を続ける
 					
 					val added = list_new.size // may 0
 					val changeList = ArrayList<AdapterChange>()
 					
-					replaceConversationSummary(changeList,list_new,list_data)
+					replaceConversationSummary(changeList, list_new, list_data)
 					
 					val position = list_data.indexOf(gap)
 					if(position == - 1) {
@@ -5732,7 +5735,7 @@ class Column(
 							}
 						}
 					}
-
+					
 					list_data.removeAt(position)
 					list_data.addAll(position, list_new)
 					
@@ -6021,32 +6024,31 @@ class Column(
 			}
 		}
 		
-		
 		override fun onTimelineItem(item : TimelineItem) {
 			if(is_dispose.get()) return
 			
 			if(item is TootConversationSummary) {
 				if(column_type != TYPE_DIRECT_MESSAGES) return
 				if(isFiltered(item.last_status)) return
-				if( use_old_api ){
+				if(use_old_api) {
 					useConversationSummaryStreaming = false
 					return
-				}else{
+				} else {
 					useConversationSummaryStreaming = true
 				}
-			}else if(item is TootNotification) {
+			} else if(item is TootNotification) {
 				if(column_type != TYPE_NOTIFICATIONS) return
 				if(isFiltered(item)) return
 			} else if(item is TootStatus) {
 				if(column_type == TYPE_NOTIFICATIONS) return
-
+				
 				// マストドン2.6.0形式のDMカラム用イベントを利用したならば、その直後に発生する普通の投稿イベントを無視する
-				if( useConversationSummaryStreaming ) return
+				if(useConversationSummaryStreaming) return
 				
 				if(column_type == TYPE_LOCAL && ! isMisskey && item.account.acct.indexOf('@') != - 1) return
 				if(isFiltered(item)) return
 			}
-
+			
 			stream_data_queue.add(item)
 			
 			val handler = App1.getAppState(context).handler
@@ -6171,8 +6173,6 @@ class Column(
 				}
 			}
 			
-			
-			
 			// 最新のIDをsince_idとして覚える(ソートはしない)
 			var new_id_max : EntityId? = null
 			var new_id_min : EntityId? = null
@@ -6243,12 +6243,12 @@ class Column(
 			
 			val added = list_new.size
 			val changeList = ArrayList<AdapterChange>()
-
-			replaceConversationSummary(changeList,list_new,list_data)
+			
+			replaceConversationSummary(changeList, list_new, list_data)
 			
 			loop@ for(o in list_new) {
 				when(o) {
-
+					
 					is TootStatus -> {
 						val highlight_sound = o.highlight_sound
 						if(highlight_sound != null) {
@@ -6258,7 +6258,7 @@ class Column(
 					}
 				}
 			}
-
+			
 			changeList.add(AdapterChange(AdapterChangeType.RangeInsert, 0, added))
 			list_data.addAll(0, list_new)
 			
@@ -6299,21 +6299,21 @@ class Column(
 	}
 	
 	private fun replaceConversationSummary(
-		changeList :ArrayList<AdapterChange>,
-		list_new: ArrayList<TimelineItem>,
-		list_data: BucketList<TimelineItem>
-	){
+		changeList : ArrayList<AdapterChange>,
+		list_new : ArrayList<TimelineItem>,
+		list_data : BucketList<TimelineItem>
+	) {
 		val removeSet = HashSet<EntityId>()
 		loop@ for(o in list_new) {
-			if( o is TootConversationSummary ) {
-				removeSet.add( o.getOrderId() )
+			if(o is TootConversationSummary) {
+				removeSet.add(o.getOrderId())
 			}
 		}
 		
-		if( list_data .isNotEmpty() && removeSet.isNotEmpty() ){
-			for( i in list_data.size-1 downTo 0 ){
+		if(list_data.isNotEmpty() && removeSet.isNotEmpty()) {
+			for(i in list_data.size - 1 downTo 0) {
 				val o = list_data[i]
-				if( o is TootConversationSummary && removeSet.contains(o.id) ){
+				if(o is TootConversationSummary && removeSet.contains(o.id)) {
 					changeList.add(AdapterChange(AdapterChangeType.RangeRemove, i, 1))
 					list_data.removeAt(i)
 					log.d("remove old TootConversationSummary")

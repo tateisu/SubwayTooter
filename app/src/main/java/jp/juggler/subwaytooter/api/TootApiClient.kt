@@ -957,6 +957,7 @@ class TootApiClient(
 			+ "&state=" + (if(account != null) "db:${account.db_id}" else "host:$instance")
 			+ "&grant_type=authorization_code"
 			+ "&approval_prompt=force"
+			+ "&force_login=true"
 			//		+"&access_type=offline"
 			)
 	}

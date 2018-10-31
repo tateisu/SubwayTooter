@@ -1035,13 +1035,13 @@ class TootApiClient(
 	
 	// 疑似アカウントの追加時に、インスタンスの検証を行う
 	fun getInstanceInformation() : TootApiResult? {
-		// マストドンのインスタンス情報を読めたら、それはマストドンのインスタンス
-		val r1 = getInstanceInformationMastodon() ?: return null
-		if(r1.jsonObject != null) return r1
-		
 		// misskeyのインスタンス情報を読めたら、それはmisskeyのインスタンス
 		val r2 = getInstanceInformationMisskey() ?: return null
 		if(r2.jsonObject != null) return r2
+
+		// マストドンのインスタンス情報を読めたら、それはマストドンのインスタンス
+		val r1 = getInstanceInformationMastodon() ?: return null
+		if(r1.jsonObject != null) return r1
 		
 		return r1 // 通信エラーの表示ならr1でもr2でも構わないはず
 	}
@@ -1049,18 +1049,18 @@ class TootApiClient(
 	// クライアントを登録してブラウザで開くURLを生成する
 	fun authentication1(clientNameArg : String) : TootApiResult? {
 		
-		// マストドンのインスタンス情報
-		var ri = parseInstanceInformation(getInstanceInformationMastodon())
+		// misskeyのインスタンス情報
+		var ri = parseInstanceInformation(getInstanceInformationMisskey())
 		var ti = ri?.data as? TootInstance
 		if(ti != null && (ri?.response?.code() ?: 0) in 200 until 300) {
-			return authentication1Mastodon(clientNameArg, ti)
+			return authentication1Misskey(clientNameArg, ti)
 		}
 		
-		// misskeyのインスタンス情報
-		ri = parseInstanceInformation(getInstanceInformationMisskey())
+		// マストドンのインスタンス情報
+		ri = parseInstanceInformation(getInstanceInformationMastodon())
 		ti = ri?.data as? TootInstance
 		if(ti != null && (ri?.response?.code() ?: 0) in 200 until 300) {
-			return authentication1Misskey(clientNameArg, ti)
+			return authentication1Mastodon(clientNameArg, ti)
 		}
 		
 		return ri
@@ -1487,10 +1487,10 @@ fun TootApiClient.syncStatus(accessInfo : SavedAccount, url : String) =
 		result
 	}
 
-private inline fun <Z:Any?> String?.useNotEmpty( block:(String)->Z? ) :Z? =
+private inline fun <Z : Any?> String?.useNotEmpty(block : (String) -> Z?) : Z? =
 	if(this?.isNotEmpty() == true) {
 		block(this)
-	}else{
+	} else {
 		null
 	}
 
@@ -1502,28 +1502,28 @@ fun TootApiClient.syncStatus(
 	// URL->URIの順に試す
 	
 	val uriList = ArrayList<String>(2)
-
+	
 	statusRemote.url.useNotEmpty {
-		if( it.contains("/notes/") ){
+		if(it.contains("/notes/")) {
 			// Misskeyタンスから読んだマストドンの投稿はurlがmisskeyタンス上のものになる
 			// ActivityPub object id としては不適切なので使わない
-		}else {
+		} else {
 			uriList.add(it)
 		}
 	}
-
+	
 	statusRemote.uri.useNotEmpty {
 		// uri の方は↑の問題はない
 		uriList.add(it)
 	}
 	
-	if( accessInfo.isMisskey && uriList.size >1 && uriList[0].contains("@") ){
+	if(accessInfo.isMisskey && uriList.size > 1 && uriList[0].contains("@")) {
 		// https://github.com/syuilo/misskey/pull/2832
 		// @user を含むuri はMisskeyだと少し効率が悪いそうなので順序を入れ替える
 		uriList.reverse()
 	}
 	
-	for( uri in uriList){
+	for(uri in uriList) {
 		val result = syncStatus(accessInfo, uri)
 		if(result == null || result.data is TootStatus) {
 			return result

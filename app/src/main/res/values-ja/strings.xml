@@ -762,18 +762,19 @@
     <string name="dont_use_custom_tabs">リンクを開く際に (ChromeやFirefoxの) Custom Tabsを使わない</string>
     <string name="privacy_policy">プライバシーポリシー</string>
     <string name="agree">同意</string>
-    <string name="ltl_around_toot">周辺のローカルTL… (Mastodon2.6以降)</string>
+    <string name="ltl_around_toot">周辺のローカルTL</string>
     <string name="ltl_around">…周辺のローカルTL</string>
     <string name="ltl_around_of">%1$s周辺のローカルTL</string>
 
-    <string name="ftl_around_toot">周辺の連合TL… (Mastodon2.6以降)</string>
+    <string name="ftl_around_toot">周辺の連合TL</string>
     <string name="ftl_around">…周辺の連合TL</string>
     <string name="ftl_around_of">%1$s周辺の連合TL</string>
 
-    <string name="account_tl_around_toot">周辺のアカウントTL… (Mastodon2.6以降)</string>
+    <string name="account_tl_around_toot">周辺のアカウントTL</string>
     <string name="account_tl_around">…周辺のアカウントTL</string>
     <string name="account_tl_around_of">%1$s周辺のアカウントTL</string>
     <string name="verified_at">検証時刻</string>
     <string name="use_old_api">古いAPIを使う</string>
+    <string name="around_toot_limitation_warning">バージョン2.6.0より古いインスタンスでは「指定時刻の周辺のTL」機能に制限があります。指定時間から新しい側のTLを取得することができません。</string>
 
 </resources>

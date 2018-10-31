@@ -2340,6 +2340,15 @@ class Column(
 			fun getPublicAroundStatuses(client : TootApiClient, url : String) : TootApiResult? {
 				// (Mastodonのみ対応)
 				
+				var instance = access_info.instance
+				if(instance == null) {
+					getInstanceInformation(client, null)
+					if(instance_tmp != null) {
+						instance = instance_tmp
+						access_info.instance = instance
+					}
+				}
+				
 				// ステータスIDに該当するトゥート
 				// タンスをまたいだりすると存在しないかもしれないが、エラーは出さない
 				var result : TootApiResult? =
@@ -2352,9 +2361,14 @@ class Column(
 				idOld = null
 				idRecent = null
 				
-				// 指定より新しいトゥート
-				result = getStatuses(client, url, aroundMin = true)
-				if(result == null || result.error != null) return result
+				var bInstanceTooOld = false
+				if( instance?.versionGE( TootInstance.VERSION_2_6_0) == true ){
+					// 指定より新しいトゥート
+					result = getStatuses(client, url, aroundMin = true)
+					if(result == null || result.error != null) return result
+				}else{
+					bInstanceTooOld = true
+				}
 				
 				// 指定位置より古いトゥート
 				result = getStatuses(client, url, aroundMax = true)
@@ -2362,6 +2376,9 @@ class Column(
 				
 				list_tmp?.sortBy { it.getOrderId() }
 				list_tmp?.reverse()
+				if( bInstanceTooOld ){
+					list_tmp?.add(0,TootMessageHolder(context.getString(R.string.around_toot_limitation_warning)))
+				}
 				
 				return result
 				
@@ -2369,6 +2386,15 @@ class Column(
 			
 			fun getAccountAroundStatuses(client : TootApiClient) : TootApiResult? {
 				// (Mastodonのみ対応)
+				
+				var instance = access_info.instance
+				if(instance == null) {
+					getInstanceInformation(client, null)
+					if(instance_tmp != null) {
+						instance = instance_tmp
+						access_info.instance = instance
+					}
+				}
 				
 				// ステータスIDに該当するトゥート
 				// タンスをまたいだりすると存在しないかもしれない
@@ -2390,9 +2416,14 @@ class Column(
 				idOld = null
 				idRecent = null
 				
-				// 指定より新しいトゥート
-				result = getStatuses(client, path, aroundMin = true)
-				if(result == null || result?.error != null) return result
+				var bInstanceTooOld = false
+				if( instance?.versionGE( TootInstance.VERSION_2_6_0) == true ){
+					// 指定より新しいトゥート
+					result = getStatuses(client, path, aroundMin = true)
+					if(result == null || result?.error != null) return result
+				}else{
+					bInstanceTooOld = true
+				}
 				
 				// 指定位置より古いトゥート
 				result = getStatuses(client, path, aroundMax = true)
@@ -2400,6 +2431,9 @@ class Column(
 				
 				list_tmp?.sortBy { it.getOrderId() }
 				list_tmp?.reverse()
+				if( bInstanceTooOld ){
+					list_tmp?.add(0,TootMessageHolder(context.getString(R.string.around_toot_limitation_warning)))
+				}
 				
 				return result
 				
@@ -2552,8 +2586,7 @@ class Column(
 										)
 										if(with_attachment && ! with_highlight) path += "&only_media=1"
 										
-										if(instance != null
-											&& instance.versionGE(TootInstance.VERSION_1_6)
+										if(instance?.versionGE(TootInstance.VERSION_1_6) ==true
 										// 将来的に正しく判定できる見込みがないので、Pleroma条件でのフィルタは行わない
 										// && instance.instanceType != TootInstance.InstanceType.Pleroma
 										) {
@@ -2933,7 +2966,7 @@ class Column(
 								}
 							}
 							
-							if(instance != null && instance.versionGE(TootInstance.VERSION_2_4_0)) {
+							if(instance?.versionGE(TootInstance.VERSION_2_4_0) == true) {
 								// v2 api を試す
 								var path = String.format(
 									Locale.JAPAN,
@@ -2954,7 +2987,7 @@ class Column(
 										return result
 									}
 								}
-								if(instance.versionGE(TootInstance.VERSION_2_4_1_rc1)) {
+								if(instance?.versionGE(TootInstance.VERSION_2_4_1_rc1) ==true) {
 									// 2.4.1rc1以降はv2が確実に存在するはずなので、v1へのフォールバックを行わない
 									return result
 								}

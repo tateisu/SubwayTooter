@@ -781,18 +781,19 @@
     <string name="privacy_policy">Privacy Policy</string>
     <string name="agree">Agree</string>
 
-    <string name="ltl_around_toot">Local TL around this toot… (Mastodon 2.6)</string>
+    <string name="ltl_around_toot">Local TL around this toot</string>
     <string name="ltl_around">Local timeline around …</string>
     <string name="ltl_around_of">Local timeline around %1$s</string>
 
-    <string name="ftl_around_toot">Federated TL around this toot… (Mastodon 2.6)</string>
+    <string name="ftl_around_toot">Federated TL around this toot</string>
     <string name="ftl_around">Federated timeline around …</string>
     <string name="ftl_around_of">Federated timeline around %1$s</string>
 
-    <string name="account_tl_around_toot">Account TL around this toot… (Mastodon 2.6)</string>
+    <string name="account_tl_around_toot">Account TL around this toot</string>
     <string name="account_tl_around">Account timeline around …</string>
     <string name="account_tl_around_of">Account timeline around %1$s</string>
     <string name="verified_at">verified at</string>
     <string name="use_old_api">Use old API</string>
+    <string name="around_toot_limitation_warning">\"timeline around the specified time\" feature has limitation for the instance older than version 2.6.0. It is impossible to get a little newer timeline from the specified time.</string>
 
 </resources>

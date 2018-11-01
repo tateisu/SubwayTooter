@@ -85,7 +85,7 @@ object Action_User {
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
 						relation =
-							saveUserRelation(access_info, parseItem(::TootRelationShip, jsonObject))
+							saveUserRelation(access_info, parseItem(::TootRelationShip,  TootParser(activity,access_info),jsonObject))
 					}
 					return result
 					
@@ -104,16 +104,29 @@ object Action_User {
 					}
 					
 					for(column in App1.getAppState(activity).column_list) {
-						if(relation.muting) {
-							if(column.column_type == Column.TYPE_PROFILE) {
-								// プロフページのトゥートはミュートしてても見れる
-								continue
-							} else {
+						if( column.access_info.acct != access_info.acct) continue
+						when{
+							!relation.muting ->{
+								if( column.column_type == Column.TYPE_MUTES){
+									// ミュート解除したら「ミュートしたユーザ」カラムから消える
+									column.removeUser(access_info, Column.TYPE_MUTES, who.id)
+								}else{
+									// 他のカラムではフォローアイコンの表示更新が走る
+									column.updateFollowIcons(access_info)
+								}
+								
+							}
+							
+							column.column_type == Column.TYPE_PROFILE && column.profile_id == who.id ->{
+								// 該当ユーザのプロフページのトゥートはミュートしてても見れる
+								// しかしフォローアイコンの表示更新は必要
+								column.updateFollowIcons(access_info)
+							}
+							
+							else->{
+								// ミュートしたユーザの情報はTLから消える
 								column.removeAccountInTimeline(access_info, who.id)
 							}
-						} else {
-							// 「ミュートしたユーザ」カラムからユーザを除去
-							column.removeUser(access_info, Column.TYPE_MUTES, who.id)
 						}
 					}
 					
@@ -159,20 +172,33 @@ object Action_User {
 						params.toPostRequestBuilder()
 					)
 					
-					if(result?.jsonObject != null) {
-						// ユーザ情報があるがリレーションが含まれないっぽい
-						
-						// update user relation
+					fun saveBlock (v:Boolean){
 						val ur = UserRelation.load(access_info.db_id, who.id)
-						ur.blocking = bBlock
-						saveUserRelationMisskey(
-							access_info,
-							who.id,
-							TootParser(activity, access_info)
+						ur.blocking = v
+						UserRelationMisskey.save1(
+							System.currentTimeMillis(),
+							access_info.db_id,
+							who.id.toString(),
+							ur
 						)
-						this.relation = ur
+						relation = ur
 					}
 					
+					val error = result?.error
+					when {
+						// cancelled.
+						result == null -> {
+						}
+						
+						// success
+						error ==null  -> saveBlock( bBlock)
+						
+						// already
+						error.contains("already blocking") -> saveBlock( bBlock)
+						error.contains("already not blocking") -> saveBlock( bBlock)
+						
+						// else something error
+					}
 					
 					return result
 				} else {
@@ -189,7 +215,7 @@ object Action_User {
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
 						relation =
-							saveUserRelation(access_info, parseItem(::TootRelationShip, jsonObject))
+							saveUserRelation(access_info, parseItem(::TootRelationShip,  TootParser(activity,access_info),jsonObject))
 					}
 					
 					return result
@@ -209,24 +235,38 @@ object Action_User {
 						return
 					}
 					
-					
 					for(column in App1.getAppState(activity).column_list) {
+						
+						if( column.access_info.acct != access_info.acct ) continue
+						
 						when {
 							
-							//ブロック解除したら「ブロックしたユーザ」カラムのリストから消える
-							! relation.blocking -> column.removeUser(
-								access_info,
-								Column.TYPE_BLOCKS,
-								who.id
-							)
-							
-							// Misskeyのブロックはフォロー解除とフォロー拒否だけなので
-							// カラム中の投稿を消すなどの効果はない
-							access_info.isMisskey -> {
+							! relation.blocking -> {
+
+								if(column.column_type == Column.TYPE_BLOCKS) {
+									// ブロック解除したら「ブロックしたユーザ」カラムのリストから消える
+									column.removeUser(
+										access_info,
+										Column.TYPE_BLOCKS,
+										who.id
+									)
+								}else{
+									// 他のカラムではフォローアイコンの更新を行う
+									column.updateFollowIcons(access_info)
+								}
 							}
 							
-							// プロフページのトゥートはブロックしてても見れる
-							column.column_type == Column.TYPE_PROFILE -> {
+							access_info.isMisskey -> {
+								// Misskeyのブロックはフォロー解除とフォロー拒否だけなので
+								// カラム中の投稿を消すなどの効果はない
+								// しかしカラム中のフォローアイコン表示の更新は必要
+								column.updateFollowIcons(access_info)
+							}
+
+							// 該当ユーザのプロフカラムではブロックしててもトゥートを見れる
+							// しかしカラム中のフォローアイコン表示の更新は必要
+							column.column_type == Column.TYPE_PROFILE && who.id == column.profile_id -> {
+								column.updateFollowIcons(access_info)
 							}
 							
 							// MastodonではブロックしたらTLからそのアカウントの投稿が消える
@@ -481,7 +521,7 @@ object Action_User {
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
 					relation =
-						saveUserRelation(access_info, parseItem(::TootRelationShip, jsonObject))
+						saveUserRelation(access_info, parseItem(::TootRelationShip, TootParser(activity,access_info),jsonObject))
 				}
 				return result
 			}

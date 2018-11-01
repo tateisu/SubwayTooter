@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.EntityId
+import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.getInt
 
@@ -157,6 +158,45 @@ object UserRelationMisskey : TableCompanion {
 		}
 	}
 	
+	fun saveList2(now : Long, db_id : Long, list : ArrayList<TootRelationShip>) {
+		val cv = ContentValues()
+		cv.put(COL_TIME_SAVE, now)
+		cv.put(COL_DB_ID, db_id)
+		
+		var bOK = false
+		val db = App1.database
+		db.execSQL("BEGIN TRANSACTION")
+		try {
+			for(src in list) {
+				cv.put(COL_WHO_ID, src.id.toString())
+				cv.put(COL_FOLLOWING, src.following.b2i())
+				cv.put(COL_FOLLOWED_BY, src.followed_by.b2i())
+				cv.put(COL_BLOCKING, src.blocking.b2i())
+				cv.put(COL_MUTING, src.muting.b2i())
+				cv.put(COL_REQUESTED, src.requested.b2i())
+				cv.put(COL_FOLLOWING_REBLOGS, src.showing_reblogs)
+				cv.put(COL_ENDORSED, src.endorsed.b2i())
+				cv.put(COL_BLOCKED_BY,src.blocked_by.b2i())
+				cv.put(COL_REQUESTED_BY,src.requested_by.b2i())
+				db.replace(table, null, cv)
+			}
+			bOK = true
+		} catch(ex : Throwable) {
+			log.trace(ex)
+			log.e(ex, "saveList2 failed.")
+		}
+		
+		if(bOK) {
+			db.execSQL("COMMIT TRANSACTION")
+			for(src in list) {
+				val key = String.format("%s:%s", db_id, src.id)
+				UserRelation.mMemoryCache.remove(key)
+			}
+		} else {
+			db.execSQL("ROLLBACK TRANSACTION")
+		}
+	}
+	
 	private const val load_where = "$COL_DB_ID=? and $COL_WHO_ID=?"
 	
 	private val load_where_arg = object : ThreadLocal<Array<String?>>() {
@@ -203,4 +243,6 @@ object UserRelationMisskey : TableCompanion {
 			log.e(ex, "deleteOld failed.")
 		}
 	}
+	
+
 }

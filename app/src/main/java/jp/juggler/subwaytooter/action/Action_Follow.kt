@@ -13,6 +13,7 @@ import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.table.UserRelationMisskey
 import jp.juggler.subwaytooter.util.*
 import okhttp3.Request
 import okhttp3.RequestBody
@@ -205,22 +206,35 @@ object Action_Follow {
 							else -> "/api/following/delete"
 						}, params.toPostRequestBuilder()
 					)
-					if(result?.error?.contains("already following") == true) {
-						// DBから読み直す
-						this.relation = UserRelation.load(access_info.db_id, userId).apply {
-							following = true
-						}
-					} else if(result?.error?.contains("already not following") == true) {
-						// DBから読み直す
-						this.relation = UserRelation.load(access_info.db_id, userId).apply {
-							following = false
-						}
-					} else {
-						// parserに残ってるRelationをDBに保存する
-						val user = parser.account(result?.jsonObject) ?: return result
-						this.relation = saveUserRelationMisskey(access_info, user.id, parser)
+					
+					fun saveFollow (f:Boolean){
+						val ur = UserRelation.load(access_info.db_id, userId)
+						ur.following = f
+						UserRelationMisskey.save1(
+							System.currentTimeMillis(),
+							access_info.db_id,
+							userId.toString(),
+							ur
+						)
+						relation = ur
 					}
 					
+					val error = result?.error
+					
+					when {
+						// cancelled.
+						result == null -> {
+						}
+						
+						// success
+						error ==null  -> saveFollow( bFollow)
+						
+						// already followed/unfollowed
+						error.contains("already following") -> saveFollow( bFollow)
+						error.contains("already not following") -> saveFollow( bFollow)
+
+						// else something error
+					}
 					
 				} else {
 					if(bFollow and who.acct.contains("@")) {
@@ -253,7 +267,11 @@ object Action_Follow {
 							"/api/v1/accounts/${who.id}/${if(bFollow) "follow" else "unfollow"}"
 							, request_builder
 						)
-						val newRelation = parseItem(::TootRelationShip, result?.jsonObject)
+						val newRelation = parseItem(
+							::TootRelationShip,
+							TootParser(client.context, access_info),
+							result?.jsonObject
+						)
 						if(newRelation != null) {
 							relation = saveUserRelation(access_info, newRelation)
 						}
@@ -301,7 +319,7 @@ object Action_Follow {
 		bConfirmed : Boolean = false,
 		callback : EmptyCallback? = null
 	) {
-		if(!access_info.isMisskey){
+		if(! access_info.isMisskey) {
 			follow(
 				activity,
 				pos,
@@ -329,7 +347,7 @@ object Action_Follow {
 					whoRef.decoded_display_name,
 					AcctColor.getNickname(access_info.acct)
 				)
-			){
+			) {
 				deleteFollowRequest(
 					activity,
 					pos,
@@ -347,8 +365,8 @@ object Action_Follow {
 			var relation : UserRelation? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
-
-				var result : TootApiResult? =null
+				
+				var result : TootApiResult? = null
 				
 				val parser = TootParser(activity, access_info)
 				
@@ -369,7 +387,8 @@ object Action_Follow {
 					
 					val params = access_info.putMisskeyApiToken(JSONObject())
 						.put("userId", userId)
-					result = client.request("/api/following/requests/cancel"
+					result = client.request(
+						"/api/following/requests/cancel"
 						, params.toPostRequestBuilder()
 					)
 					// parserに残ってるRelationをDBに保存する

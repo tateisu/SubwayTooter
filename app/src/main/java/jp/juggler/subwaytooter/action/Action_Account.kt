@@ -231,7 +231,7 @@ object Action_Account {
 				)
 				val jsonObject = result?.jsonObject
 				if( jsonObject != null ){
-					val tr = parseItem(::TootRelationShip,jsonObject)
+					val tr = parseItem(::TootRelationShip,TootParser(client.context,access_info),jsonObject)
 					if( tr != null ) {
 						this.relation = saveUserRelation(access_info,tr)
 					}

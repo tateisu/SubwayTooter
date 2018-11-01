@@ -379,6 +379,25 @@ class Column(
 				dst
 			}
 		
+		private val misskeyCustomParserBlocks =
+			{ parser : TootParser, jsonArray : JSONArray ->
+				val dst = ArrayList<TootAccountRef>()
+				for(i in 0 until jsonArray.length()) {
+					val src = jsonArray.optJSONObject(i) ?: continue
+					
+					val accountRef = TootAccountRef.mayNull(
+						parser,
+						parser.account(src.optJSONObject("blockee"))
+					) ?: continue
+					
+					val requestId = EntityId.mayNull(src.parseString("id")) ?: continue
+					
+					accountRef.get()._orderId = requestId
+					
+					dst.add(accountRef)
+				}
+				dst
+			}
 		private val misskeyCustomParserFavorites =
 			{ parser : TootParser, jsonArray : JSONArray ->
 				val dst = ArrayList<TootStatus>()
@@ -537,7 +556,7 @@ class Column(
 	private var status_id : EntityId? = null
 	
 	// プロフカラムではアカウントのID。リストカラムではリストのID
-	private var profile_id : EntityId? = null
+	internal var profile_id : EntityId? = null
 	
 	internal var search_query : String = ""
 	internal var search_resolve : Boolean = false
@@ -1034,7 +1053,11 @@ class Column(
 	
 	// ミュート、ブロックが成功した時に呼ばれる
 	// リストメンバーカラムでメンバーをリストから除去した時に呼ばれる
-	fun removeAccountInTimeline(target_account : SavedAccount, who_id : EntityId) {
+	fun removeAccountInTimeline(
+		target_account : SavedAccount,
+		who_id : EntityId,
+		removeFromUserList : Boolean = false
+	) {
 		if(target_account.acct != access_info.acct) return
 		
 		val INVALID_ACCOUNT = - 1L
@@ -1048,7 +1071,7 @@ class Column(
 				if(who_id == (o.account?.id ?: INVALID_ACCOUNT)) continue
 				if(who_id == (o.status?.account?.id ?: INVALID_ACCOUNT)) continue
 				if(who_id == (o.status?.reblog?.account?.id ?: INVALID_ACCOUNT)) continue
-			} else if(o is TootAccountRef) {
+			} else if(o is TootAccountRef && removeFromUserList) {
 				if(who_id == o.get().id) continue
 			}
 			
@@ -1058,8 +1081,14 @@ class Column(
 			list_data.clear()
 			list_data.addAll(tmp_list)
 			fireShowContent(reason = "removeAccountInTimeline")
-			
 		}
+	}
+	
+	// misskeyカラムやプロフカラムでブロック成功した時に呼ばれる
+	fun updateFollowIcons(target_account : SavedAccount) {
+		if(target_account.acct != access_info.acct) return
+		
+		fireShowContent(reason = "updateFollowIcons", reset = true)
 	}
 	
 	fun removeUser(targetAccount : SavedAccount, columnType : Int, who_id : EntityId) {
@@ -1652,18 +1681,63 @@ class Column(
 			var size : Int
 			
 			if(isMisskey) {
+				
 				// parser内部にアカウントIDとRelationのマップが生成されるので、それをデータベースに記録する
-				val now = System.currentTimeMillis()
-				val who_list = parser.misskeyUserRelationMap.entries.toMutableList()
-				var start = 0
-				val end = who_list.size
-				while(start < end) {
-					var step = end - start
-					if(step > RELATIONSHIP_LOAD_STEP) step = RELATIONSHIP_LOAD_STEP
-					UserRelationMisskey.saveList(now, access_info.db_id, who_list, start, step)
-					start += step
+				run {
+					val now = System.currentTimeMillis()
+					val who_list = parser.misskeyUserRelationMap.entries.toMutableList()
+					var start = 0
+					val end = who_list.size
+					while(start < end) {
+						var step = end - start
+						if(step > RELATIONSHIP_LOAD_STEP) step = RELATIONSHIP_LOAD_STEP
+						UserRelationMisskey.saveList(now, access_info.db_id, who_list, start, step)
+						start += step
+					}
+					log.d("updateRelation: update %d relations.", end)
 				}
-				log.d("updateRelation: update %d relations.", end)
+				
+				// 2018/11/1 Misskeyにもリレーション取得APIができた
+				// アカウントIDの集合からRelationshipを取得してデータベースに記録する
+				
+				size = who_set.size
+				if(size > 0) {
+					val who_list = ArrayList<EntityId>(size)
+					who_list.addAll(who_set)
+					
+					val now = System.currentTimeMillis()
+					
+					n = 0
+					while(n < who_list.size) {
+						val userIdList = ArrayList<EntityId>(RELATIONSHIP_LOAD_STEP)
+						for(i in 0 until RELATIONSHIP_LOAD_STEP) {
+							if(n >= size) break
+							if(! parser.misskeyUserRelationMap.containsKey(who_list[n])) {
+								userIdList.add(who_list[n])
+							}
+							++ n
+						}
+						if(userIdList.isEmpty()) continue
+						
+						val params = access_info.putMisskeyApiToken()
+							.put("userId", JSONArray().apply {
+								for(id in userIdList) put(id.toString())
+							})
+						
+						val result =
+							client.request("/api/users/relation", params.toPostRequestBuilder())
+						result ?: break
+						val list = parseList(::TootRelationShip, parser, result.jsonArray)
+						if(list.size == userIdList.size) {
+							for(i in 0 until list.size) {
+								list[i].id = userIdList[i]
+							}
+							UserRelationMisskey.saveList2(now, access_info.db_id, list)
+						}
+					}
+					log.d("updateRelation: update %d relations.", n)
+					
+				}
 				
 			} else {
 				// アカウントIDの集合からRelationshipを取得してデータベースに記録する
@@ -1685,11 +1759,10 @@ class Column(
 							sb.append(who_list[n ++].toString())
 						}
 						val result = client.request(sb.toString()) ?: break // cancelled.
-						val list = parseList(::TootRelationShip, result.jsonArray)
+						val list = parseList(::TootRelationShip, parser, result.jsonArray)
 						if(list.size > 0) UserRelation.saveList(now, access_info.db_id, list)
 					}
 					log.d("updateRelation: update %d relations.", n)
-					
 				}
 			}
 			
@@ -1751,6 +1824,7 @@ class Column(
 				is TootAccountRef -> env.add(it)
 				is TootStatus -> env.add(it)
 				is TootNotification -> env.add(it)
+				is TootConversationSummary -> env.add(it.last_status)
 			}
 		}
 		env.update(client, parser)
@@ -2362,11 +2436,11 @@ class Column(
 				idRecent = null
 				
 				var bInstanceTooOld = false
-				if( instance?.versionGE( TootInstance.VERSION_2_6_0) == true ){
+				if(instance?.versionGE(TootInstance.VERSION_2_6_0) == true) {
 					// 指定より新しいトゥート
 					result = getStatuses(client, url, aroundMin = true)
 					if(result == null || result.error != null) return result
-				}else{
+				} else {
 					bInstanceTooOld = true
 				}
 				
@@ -2376,8 +2450,11 @@ class Column(
 				
 				list_tmp?.sortBy { it.getOrderId() }
 				list_tmp?.reverse()
-				if( bInstanceTooOld ){
-					list_tmp?.add(0,TootMessageHolder(context.getString(R.string.around_toot_limitation_warning)))
+				if(bInstanceTooOld) {
+					list_tmp?.add(
+						0,
+						TootMessageHolder(context.getString(R.string.around_toot_limitation_warning))
+					)
 				}
 				
 				return result
@@ -2417,11 +2494,11 @@ class Column(
 				idRecent = null
 				
 				var bInstanceTooOld = false
-				if( instance?.versionGE( TootInstance.VERSION_2_6_0) == true ){
+				if(instance?.versionGE(TootInstance.VERSION_2_6_0) == true) {
 					// 指定より新しいトゥート
 					result = getStatuses(client, path, aroundMin = true)
 					if(result == null || result?.error != null) return result
-				}else{
+				} else {
 					bInstanceTooOld = true
 				}
 				
@@ -2431,8 +2508,11 @@ class Column(
 				
 				list_tmp?.sortBy { it.getOrderId() }
 				list_tmp?.reverse()
-				if( bInstanceTooOld ){
-					list_tmp?.add(0,TootMessageHolder(context.getString(R.string.around_toot_limitation_warning)))
+				if(bInstanceTooOld) {
+					list_tmp?.add(
+						0,
+						TootMessageHolder(context.getString(R.string.around_toot_limitation_warning))
+					)
 				}
 				
 				return result
@@ -2586,7 +2666,7 @@ class Column(
 										)
 										if(with_attachment && ! with_highlight) path += "&only_media=1"
 										
-										if(instance?.versionGE(TootInstance.VERSION_1_6) ==true
+										if(instance?.versionGE(TootInstance.VERSION_1_6) == true
 										// 将来的に正しく判定できる見込みがないので、Pleroma条件でのフィルタは行わない
 										// && instance.instanceType != TootInstance.InstanceType.Pleroma
 										) {
@@ -2629,9 +2709,16 @@ class Column(
 						}
 						TYPE_KEYWORD_FILTER -> return parseFilterList(client, PATH_FILTERS)
 						
-						TYPE_BLOCKS -> return if(isMisskey){
-							TootApiResult("Misskey has no API to get block list")
-						}else{
+						TYPE_BLOCKS -> return if(isMisskey) {
+							pagingType = PagingType.Default
+							val params = access_info.putMisskeyApiToken(JSONObject())
+							parseAccountList(
+								client,
+								"/api/blocking/list",
+								misskeyParams = params,
+								misskeyCustomParser = misskeyCustomParserBlocks
+							)
+						} else {
 							parseAccountList(client, PATH_BLOCKS)
 						}
 						
@@ -2987,7 +3074,7 @@ class Column(
 										return result
 									}
 								}
-								if(instance?.versionGE(TootInstance.VERSION_2_4_1_rc1) ==true) {
+								if(instance?.versionGE(TootInstance.VERSION_2_4_1_rc1) == true) {
 									// 2.4.1rc1以降はv2が確実に存在するはずなので、v1へのフォールバックを行わない
 									return result
 								}
@@ -4648,7 +4735,18 @@ class Column(
 							getAccountList(client, PATH_MUTES)
 						}
 						
-						TYPE_BLOCKS -> getAccountList(client, PATH_BLOCKS)
+						TYPE_BLOCKS -> if(isMisskey) {
+							pagingType = PagingType.Default
+							val params = access_info.putMisskeyApiToken(JSONObject())
+							getAccountList(
+								client,
+								"/api/blocking/list",
+								misskeyParams = params,
+								misskeyCustomParser = misskeyCustomParserBlocks
+							)
+						} else {
+							getAccountList(client, PATH_BLOCKS)
+						}
 						
 						TYPE_DOMAIN_BLOCKS -> getDomainList(client, PATH_DOMAIN_BLOCK)
 						
@@ -4925,15 +5023,11 @@ class Column(
 			var parser = TootParser(context, access_info, highlightTrie = highlight_trie)
 			
 			fun getAccountList(
-				client : TootApiClient
-				,
-				path_base : String
-				,
-				misskeyParams : JSONObject? = null
-				,
+				client : TootApiClient,
+				path_base : String,
+				misskeyParams : JSONObject? = null,
 				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootAccountRef> =
-					{ parser, jsonArray -> parser.accountList(jsonArray) }
-				,
+					{ parser, jsonArray -> parser.accountList(jsonArray) },
 				misskeyArrayFinder : (jsonObject : JSONObject) -> JSONArray? = { null }
 			
 			) : TootApiResult? {
@@ -5602,7 +5696,18 @@ class Column(
 							getAccountList(client, PATH_MUTES)
 						}
 						
-						TYPE_BLOCKS -> getAccountList(client, PATH_BLOCKS)
+						TYPE_BLOCKS -> if(isMisskey) {
+							pagingType = PagingType.Default
+							val params = access_info.putMisskeyApiToken(JSONObject())
+							getAccountList(
+								client,
+								"/api/blocking/list",
+								misskeyParams = params,
+								misskeyCustomParser = misskeyCustomParserBlocks
+							)
+						} else {
+							getAccountList(client, PATH_BLOCKS)
+						}
 						
 						TYPE_FOLLOW_REQUESTS -> if(isMisskey) {
 							getAccountList(

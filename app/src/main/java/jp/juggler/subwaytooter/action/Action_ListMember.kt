@@ -48,6 +48,8 @@ object Action_ListMember {
 				
 				var result : TootApiResult?
 				
+				val parser = TootParser(activity, access_info)
+				
 				return if(access_info.isMisskey) {
 					// misskeyのリストはフォロー無関係
 					
@@ -84,7 +86,7 @@ object Action_ListMember {
 							
 							val jsonObject = result?.jsonObject ?: return result
 							
-							val a = TootParser(activity, access_info).account(jsonObject)
+							val a = parser.account(jsonObject)
 								?: return result.setError("parse error.")
 							
 							// リモートフォローの後にリレーションシップを取得しなおす
@@ -92,7 +94,7 @@ object Action_ListMember {
 						}
 						val jsonArray = result?.jsonArray ?: return result
 						
-						val relation_list = parseList(::TootRelationShip, jsonArray)
+						val relation_list = parseList(::TootRelationShip,parser, jsonArray)
 						relation = if(relation_list.isEmpty()) null else relation_list[0]
 						
 						if(relation == null) {

@@ -150,7 +150,7 @@ internal fun loadRelation1Mastodon(
 	val r2 = rr.result
 	val jsonArray = r2?.jsonArray
 	if(jsonArray != null) {
-		val list = parseList(::TootRelationShip, jsonArray)
+		val list = parseList(::TootRelationShip,TootParser(client.context,access_info), jsonArray)
 		if(list.isNotEmpty()) {
 			rr.relation = saveUserRelation(access_info, list[0])
 		}

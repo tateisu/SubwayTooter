@@ -190,7 +190,7 @@
     <string name="media_thumbnail_height">Hauteur des pièces jointes dans l’interface
 \n(défaut=64(dp), redémarrage nécessaire)</string>
     <string name="mention">mention</string>
-    <string name="mention2">Mention</string>
+    <string name="mention2">Mentionner</string>
     <string name="menu">Menu</string>
     <string name="minimum_column_width">Largeur minimum des colonnes \n(défaut=300(dp), redémarrage nécessaire)</string>
     <string name="missing_permission_to_access_media">Missing app permission to access media.</string>
@@ -814,4 +814,5 @@
     <string name="ftl_around_toot">Fil fédéré autour de ce pouet … (Mastodon 2.6)</string>
     <string name="verified_at">vérifié à</string>
 
-</resources>
+<string name="use_old_api">Utiliser l’ancienne API</string>
+    </resources>

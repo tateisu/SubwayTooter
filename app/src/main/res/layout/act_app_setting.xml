@@ -902,9 +902,28 @@
                 android:id="@+id/etAutoCWLines"
                 style="@style/setting_horizontal_stretch"
                 android:gravity="center"
-                android:inputType="numberDecimal"
+                android:inputType="number"
                 />
         </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etCardDescriptionLength"
+            android:text="@string/card_description_length"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <EditText
+                android:id="@+id/etCardDescriptionLength"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="number"
+                />
+        </LinearLayout>
+
 
         <View style="@style/setting_divider"/>
 

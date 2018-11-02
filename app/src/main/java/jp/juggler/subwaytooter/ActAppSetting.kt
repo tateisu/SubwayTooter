@@ -130,6 +130,7 @@ class ActAppSetting : AppCompatActivity()
 	private lateinit var etUserAgent : EditText
 	private lateinit var etQuoteNameFormat : EditText
 	private lateinit var etAutoCWLines : EditText
+	private lateinit var etCardDescriptionLength : EditText
 	private lateinit var etMediaSizeMax : EditText
 	private lateinit var etMovieSizeMax : EditText
 	private lateinit var etRoundRatio : EditText
@@ -318,7 +319,10 @@ class ActAppSetting : AppCompatActivity()
 		
 		etAutoCWLines = findViewById(R.id.etAutoCWLines)
 		etAutoCWLines.addTextChangedListener(this)
-		
+
+		etCardDescriptionLength = findViewById(R.id.etCardDescriptionLength)
+		etCardDescriptionLength.addTextChangedListener(this)
+
 		etMediaSizeMax = findViewById(R.id.etMediaSizeMax)
 		etMediaSizeMax.addTextChangedListener(this)
 
@@ -427,6 +431,7 @@ class ActAppSetting : AppCompatActivity()
 		etUserAgent.setText(Pref.spUserAgent(pref))
 		etQuoteNameFormat.setText(Pref.spQuoteNameFormat(pref))
 		etAutoCWLines.setText(Pref.spAutoCWLines(pref))
+		etCardDescriptionLength.setText(Pref.spCardDescriptionLength(pref))
 		etAvatarIconSize.setText(Pref.spAvatarIconSize(pref))
 		etNotificationTlIconSize.setText(Pref.spNotificationTlIconSize(pref))
 		etBoostButtonSize.setText(Pref.spBoostButtonSize(pref))
@@ -501,6 +506,7 @@ class ActAppSetting : AppCompatActivity()
 				etUserAgent.text.toString().replace(reLinefeed, " ").trim { it <= ' ' })
 			.put(Pref.spQuoteNameFormat, etQuoteNameFormat.text.toString()) // not trimmed
 			.put(Pref.spAutoCWLines, etAutoCWLines.text.toString().trim { it <= ' ' })
+			.put(Pref.spCardDescriptionLength, etCardDescriptionLength.text.toString().trim { it <= ' ' })
 			.put(Pref.spAvatarIconSize, etAvatarIconSize.text.toString().trim { it <= ' ' })
 			.put(
 				Pref.spNotificationTlIconSize,

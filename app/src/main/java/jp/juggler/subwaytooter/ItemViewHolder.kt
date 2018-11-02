@@ -11,6 +11,7 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.TextUtils
+import android.text.TextUtils.ellipsize
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -1683,7 +1684,10 @@ internal class ItemViewHolder(
 		val description = card.description
 		if(description != null && description.isNotEmpty()) {
 			if(sb.isNotEmpty()) sb.append("<br>")
-			sb.append(HTMLDecoder.encodeEntity(description))
+			
+			val limit = Pref.spCardDescriptionLength.toInt(activity.pref)
+			
+			sb.append(HTMLDecoder.encodeEntity(ellipsize(description,if( limit <= 0 ) 64 else limit)))
 		}
 		val html = sb.toString()
 		//
@@ -1712,6 +1716,14 @@ internal class ItemViewHolder(
 			)
 			
 			llExtra.addView(iv)
+		}
+	}
+	
+	private fun ellipsize(src:String,limit:Int):String{
+		return if( src.codePointCount(0,src.length) <= limit ) {
+			src
+		}else {
+			"${src.substring(0,  src.offsetByCodePoints(0,limit))}…"
 		}
 	}
 	

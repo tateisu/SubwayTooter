@@ -776,5 +776,6 @@
     <string name="verified_at">検証時刻</string>
     <string name="use_old_api">古いAPIを使う</string>
     <string name="around_toot_limitation_warning">バージョン2.6.0より古いインスタンスでは「指定時刻の周辺のTL」機能に制限があります。指定時間から新しい側のTLを取得することができません。</string>
+    <string name="card_description_length">プレビューカード説明文の最大文字数</string>
 
 </resources>

@@ -5009,7 +5009,7 @@ class Column(
 			return
 		}
 		
-		viewHolder?.refreshLayout.isRefreshing = true
+		viewHolder?.refreshLayout?.isRefreshing = true
 		
 		bRefreshLoading = true
 		mRefreshLoadingError = ""

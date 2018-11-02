@@ -397,6 +397,7 @@ object Pref {
 	val spClientName = StringPref("client_name", "")
 	val spQuoteNameFormat = StringPref("quote_name_format", "")
 	val spAutoCWLines = StringPref("auto_cw_lines", "0")
+	val spCardDescriptionLength = StringPref("CardDescriptionLength", "64")
 	val spAvatarIconSize = StringPref("avatar_icon_size", "48")
 	val spNotificationTlIconSize = StringPref("notification_tl_icon_size", "32")
 	val spBoostButtonSize = StringPref("BoostButtonSize", "35")

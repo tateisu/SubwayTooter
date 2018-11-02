@@ -795,5 +795,6 @@
     <string name="verified_at">verified at</string>
     <string name="use_old_api">Use old API</string>
     <string name="around_toot_limitation_warning">\"timeline around the specified time\" feature has limitation for the instance older than version 2.6.0. It is impossible to get a little newer timeline from the specified time.</string>
+    <string name="card_description_length">Preview card description max character count</string>
 
 </resources>

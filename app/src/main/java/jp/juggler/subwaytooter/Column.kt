@@ -1726,7 +1726,9 @@ class Column(
 						
 						val result =
 							client.request("/api/users/relation", params.toPostRequestBuilder())
-						result ?: break
+
+						if( result == null || result.response?.code() in 400 until 500 ) break
+						
 						val list = parseList(::TootRelationShip, parser, result.jsonArray)
 						if(list.size == userIdList.size) {
 							for(i in 0 until list.size) {
@@ -5007,7 +5009,7 @@ class Column(
 			return
 		}
 		
-		viewHolder?.refreshLayout?.isRefreshing = true
+		viewHolder?.refreshLayout.isRefreshing = true
 		
 		bRefreshLoading = true
 		mRefreshLoadingError = ""

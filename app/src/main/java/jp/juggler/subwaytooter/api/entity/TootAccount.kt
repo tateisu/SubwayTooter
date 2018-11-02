@@ -5,6 +5,7 @@ import android.net.Uri
 import android.text.Spannable
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.table.UserRelationMisskey
 import jp.juggler.subwaytooter.util.*
 
 import org.json.JSONArray
@@ -249,16 +250,8 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 				
 			}
 			
-			// プロフカラムで ユーザのプロフ(A)とアカウントTL(B)を順に取得すると
-			// (A)ではisBlockingに情報が入っているが、(B)では情報が入っていない
-			// 対策として(A)でリレーションを取得済みのユーザは(B)のタイミングではリレーションを読み捨てる
-			val map = parser.misskeyUserRelationMap
-			if(map[id] == null) {
-				val relation = UserRelation.parseMisskeyUser(src)
-				if( relation != null) {
-					map[id] = relation
-				}
-			}
+			UserRelationMisskey.fromAccount(parser,src,id)
+			
 			
 		} else {
 			

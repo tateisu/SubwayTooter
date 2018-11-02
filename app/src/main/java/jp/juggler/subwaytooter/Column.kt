@@ -1674,7 +1674,7 @@ class Column(
 			add(n.accountRef)
 			add(n.status)
 		}
-		
+
 		internal fun update(client : TootApiClient, parser : TootParser) {
 			
 			var n : Int

@@ -3,10 +3,12 @@ package jp.juggler.subwaytooter.table
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.getInt
+import org.json.JSONObject
 
 object UserRelationMisskey : TableCompanion {
 	
@@ -244,5 +246,28 @@ object UserRelationMisskey : TableCompanion {
 		}
 	}
 	
+	// MisskeyはUserエンティティにユーザリレーションが含まれたり含まれなかったりする
+	fun fromAccount(parser: TootParser, src : JSONObject,id:EntityId) {
+		
+		// アカウントのjsonがユーザリレーションを含まないなら何もしない
+		src.opt("isFollowing") ?:return
+		
+		// プロフカラムで ユーザのプロフ(A)とアカウントTL(B)を順に取得すると
+		// (A)ではisBlockingに情報が入っているが、(B)では情報が入っていない
+		// 対策として(A)でリレーションを取得済みのユーザは(B)のタイミングではリレーションを読み捨てる
 
+		val map = parser.misskeyUserRelationMap
+		if( map.containsKey(id) ) return
+
+		map[id] = UserRelation().apply {
+			following = src.optBoolean("isFollowing")
+			followed_by = src.optBoolean("isFollowed")
+			muting = src.optBoolean("isMuted")
+			blocking = src.optBoolean("isBlocking")
+			blocked_by = src.optBoolean("isBlocked")
+			endorsed = false
+			requested = src.optBoolean("hasPendingFollowRequestFromYou")
+			requested_by = src.optBoolean("hasPendingFollowRequestToYou")
+		}
+	}
 }

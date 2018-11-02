@@ -239,24 +239,5 @@ class UserRelation {
 			}
 			return null
 		}
-		
-		// Misskey用
-		fun parseMisskeyUser(src : JSONObject) :UserRelation? {
-
-			// リレーションを返さない場合がある
-			src.opt("isFollowing") ?: return null
-
-			return UserRelation().apply {
-				following = src.optBoolean("isFollowing")
-				followed_by = src.optBoolean("isFollowed")
-				muting = src.optBoolean("isMuted")
-				blocking = src.optBoolean("isBlocking")
-				blocked_by = src.optBoolean("isBlocked")
-				endorsed = false
-				requested = src.optBoolean("hasPendingFollowRequestFromYou")
-				requested_by = src.optBoolean("hasPendingFollowRequestToYou")
-			}
-		}
 	}
-
 }

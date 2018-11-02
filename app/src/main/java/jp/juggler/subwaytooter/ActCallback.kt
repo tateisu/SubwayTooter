@@ -26,35 +26,50 @@ class ActCallback : AppCompatActivity() {
 		internal val last_uri = AtomicReference<Uri>(null)
 		internal val sent_intent = AtomicReference<Intent>(null)
 	}
-
+	
 	override fun onCreate(savedInstanceState : Bundle?) {
+		log.d("onCreate flags=%x", intent.flags)
 		super.onCreate(savedInstanceState)
+
 		var intent : Intent? = intent
-		if(intent != null) {
-			val action = intent.action
-			val type = intent.type
-			if(
-			// ACTION_SEND か ACTION_SEND_MULTIPLE
-			Intent.ACTION_SEND == action
-				|| Intent.ACTION_SEND_MULTIPLE == action
-				// ACTION_VIEW かつ  type が 画像かビデオ
-				|| Intent.ACTION_VIEW == action && type != null && (type.startsWith("image/") || type.startsWith("video/"))) {
-				
-				// Google Photo などから送られるIntentに含まれるuriの有効期間はActivityが閉じられるまで
-				// http://qiita.com/pside/items/a821e2fe9ae6b7c1a98c
-				
-				// 有効期間を延長する
-				intent = remake(intent)
-				if(intent != null) {
-					sent_intent.set(intent)
-				}
-			} else {
-				val uri = intent.data
-				if(uri != null) {
-					last_uri.set(uri)
+		when {
+			intent == null -> {
+				// 多分起きないと思う
+			}
+			
+			(intent.flags and Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0 -> {
+				// 履歴から開いた場合はIntentの中味を読まない
+			}
+			
+			else -> {
+				val action = intent.action
+				val type = intent.type
+				if(
+				// ACTION_SEND か ACTION_SEND_MULTIPLE
+					Intent.ACTION_SEND == action
+					|| Intent.ACTION_SEND_MULTIPLE == action
+					// ACTION_VIEW かつ  type が 画像かビデオ
+					|| Intent.ACTION_VIEW == action && type != null && (type.startsWith("image/") || type.startsWith(
+						"video/"
+					))) {
+					
+					// Google Photo などから送られるIntentに含まれるuriの有効期間はActivityが閉じられるまで
+					// http://qiita.com/pside/items/a821e2fe9ae6b7c1a98c
+					
+					// 有効期間を延長する
+					intent = remake(intent)
+					if(intent != null) {
+						sent_intent.set(intent)
+					}
+				} else {
+					val uri = intent.data
+					if(uri != null) {
+						last_uri.set(uri)
+					}
 				}
 			}
 		}
+		
 		// どうであれメイン画面に戻る
 		intent = Intent(this, ActMain::class.java)
 		intent.addFlags(Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY or Intent.FLAG_ACTIVITY_NEW_TASK)
@@ -62,14 +77,14 @@ class ActCallback : AppCompatActivity() {
 		finish()
 	}
 	
-	private fun copyExtraTexts(dst:Intent,src:Intent){
-		var sv:String?
+	private fun copyExtraTexts(dst : Intent, src : Intent) {
+		var sv : String?
 		//
 		sv = src.getStringExtra(Intent.EXTRA_TEXT)
-		if(sv!=null) dst.putExtra(Intent.EXTRA_TEXT,sv)
+		if(sv != null) dst.putExtra(Intent.EXTRA_TEXT, sv)
 		//
 		sv = src.getStringExtra(Intent.EXTRA_SUBJECT)
-		if(sv!=null) dst.putExtra(Intent.EXTRA_SUBJECT,sv)
+		if(sv != null) dst.putExtra(Intent.EXTRA_SUBJECT, sv)
 	}
 	
 	private fun remake(src : Intent) : Intent? {
@@ -87,7 +102,7 @@ class ActCallback : AppCompatActivity() {
 							val uri = saveToCache(uriOriginal)
 							val dst = Intent(action)
 							dst.setDataAndType(uri, type)
-							copyExtraTexts(dst,src)
+							copyExtraTexts(dst, src)
 							return dst
 						} catch(ex : Throwable) {
 							log.trace(ex)
@@ -107,7 +122,7 @@ class ActCallback : AppCompatActivity() {
 							val dst = Intent(action)
 							dst.type = type
 							dst.putExtra(Intent.EXTRA_STREAM, uri)
-							copyExtraTexts(dst,src)
+							copyExtraTexts(dst, src)
 							return dst
 						} catch(ex : Throwable) {
 							log.trace(ex)
@@ -115,7 +130,8 @@ class ActCallback : AppCompatActivity() {
 						
 					}
 				} else if(Intent.ACTION_SEND_MULTIPLE == action) {
-					val list_uri = src.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM) ?: return null
+					val list_uri =
+						src.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM) ?: return null
 					val list_dst = ArrayList<Uri>()
 					for(uriOriginal in list_uri) {
 						if(uriOriginal != null) {
@@ -132,7 +148,7 @@ class ActCallback : AppCompatActivity() {
 					val dst = Intent(action)
 					dst.type = type
 					dst.putParcelableArrayListExtra(Intent.EXTRA_STREAM, list_dst)
-					copyExtraTexts(dst,src)
+					copyExtraTexts(dst, src)
 					return dst
 				}
 			} else if(Intent.ACTION_SEND == action) {
@@ -141,10 +157,10 @@ class ActCallback : AppCompatActivity() {
 				// EXTRA_TEXT の存在を確認してからtypeがnullもしくは text/plain なら受け取る
 				
 				val sv = src.getStringExtra(Intent.EXTRA_TEXT)
-				if( sv?.isNotEmpty() == true && (type == null || type.startsWith("text/"))) {
+				if(sv?.isNotEmpty() == true && (type == null || type.startsWith("text/"))) {
 					val dst = Intent(action)
 					dst.type = "text/plain"
-					copyExtraTexts(dst,src)
+					copyExtraTexts(dst, src)
 					
 					return dst
 				}
@@ -164,13 +180,14 @@ class ActCallback : AppCompatActivity() {
 		
 		cache_dir.mkdirs()
 		
-		val name = "img." + System.currentTimeMillis().toString() + "." + uri.toString().digestSHA256Hex()
+		val name =
+			"img." + System.currentTimeMillis().toString() + "." + uri.toString().digestSHA256Hex()
 		
 		val dst = File(cache_dir, name)
 		
 		FileOutputStream(dst).use { outStream ->
 			val source = contentResolver.openInputStream(uri)
-				?:throw RuntimeException("getContentResolver.openInputStream returns null.")
+				?: throw RuntimeException("getContentResolver.openInputStream returns null.")
 			source.use { inStream ->
 				IOUtils.copy(inStream, outStream)
 			}

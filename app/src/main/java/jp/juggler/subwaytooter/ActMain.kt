@@ -83,6 +83,7 @@ class ActMain : AppCompatActivity()
 		
 		const val STATE_CURRENT_PAGE = "current_page"
 		
+		// 外部からインテントを受信した後、アカウント選択中に画面回転したらアカウント選択からやり直す
 		internal var sent_intent2 : Intent? = null
 		
 		internal val reUrlHashTag =
@@ -1507,7 +1508,9 @@ class ActMain : AppCompatActivity()
 	
 	// ActOAuthCallbackで受け取ったUriを処理する
 	private fun handleIntentUri(uri : Uri) {
-		
+
+		log.d("handleIntentUri ${uri}")
+
 		when(uri.scheme) {
 			"subwaytooter", "misskeyclientproto" -> return try {
 				handleOAuth2CallbackUri(uri)

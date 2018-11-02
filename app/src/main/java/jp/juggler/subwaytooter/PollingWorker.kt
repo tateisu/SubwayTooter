@@ -996,6 +996,7 @@ class PollingWorker private constructor(contextArg : Context) {
 			
 			// 通知タップ時のPendingIntent
 			val intent_click = Intent(context, ActCallback::class.java)
+			// FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
 			intent_click.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 			val pi_click = PendingIntent.getActivity(
 				context,
@@ -1546,6 +1547,7 @@ class PollingWorker private constructor(contextArg : Context) {
 				intent_click.action = ActCallback.ACTION_NOTIFICATION_CLICK
 				intent_click.data =
 					Uri.parse("subwaytooter://notification_click/?db_id=" + account.db_id)
+				// FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
 				intent_click.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 				val pi_click = PendingIntent.getActivity(
 					context,

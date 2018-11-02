@@ -68,7 +68,7 @@ object Action_Toot {
 		}
 		
 		// 必要なら確認を出す
-		if(! bConfirmed && !access_info.isMisskey) {
+		if(! bConfirmed && ! access_info.isMisskey) {
 			DlgConfirm.open(
 				activity,
 				activity.getString(
@@ -125,10 +125,11 @@ object Action_Toot {
 				val target_status : TootStatus
 				if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
 					
-					result = client.syncStatus( access_info,arg_status)
-					if( result?.data == null)  return result
+					result = client.syncStatus(access_info, arg_status)
+					if(result?.data == null) return result
 					target_status = result.data as? TootStatus
-						?: return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
+						?:
+						return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
 					if(target_status.favourited) {
 						return TootApiResult(activity.getString(R.string.already_favourited))
 					}
@@ -374,10 +375,11 @@ object Action_Toot {
 				val target_status : TootStatus
 				if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
 					
-					result = client.syncStatus(access_info,arg_status)
-					if( result?.data == null) return result
+					result = client.syncStatus(access_info, arg_status)
+					if(result?.data == null) return result
 					target_status = result.data as? TootStatus
-						?: return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
+						?:
+						return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
 					if(target_status.reblogged) {
 						return TootApiResult(activity.getString(R.string.already_boosted))
 					}
@@ -496,9 +498,20 @@ object Action_Toot {
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val request_builder = Request.Builder().delete()
-				
-				return client.request("/api/v1/statuses/$status_id", request_builder)
+				return if(access_info.isMisskey) {
+					val params = access_info.putMisskeyApiToken()
+						.put("noteId", status_id)
+					
+					client.request("/api/notes/delete", params.toPostRequestBuilder())
+					
+					// 204 no content
+					
+				} else {
+					val request_builder = Request.Builder().delete()
+					
+					client.request("/api/v1/statuses/$status_id", request_builder)
+					
+				}
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
@@ -524,14 +537,20 @@ object Action_Toot {
 		activity : ActMain,
 		access_info : SavedAccount,
 		conversationSummary : TootConversationSummary?
-	){
-		conversationSummary?: return
-		TootTaskRunner(activity,progress_style = TootTaskRunner.PROGRESS_NONE)
+	) {
+		conversationSummary ?: return
+		TootTaskRunner(activity, progress_style = TootTaskRunner.PROGRESS_NONE)
 			.run(access_info, object : TootTask {
 				override fun background(client : TootApiClient) : TootApiResult? {
 					return client.request(
 						"/api/v1/conversations/${conversationSummary.id}/read"
-						,Request.Builder().post(RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED,""))
+						,
+						Request.Builder().post(
+							RequestBody.create(
+								TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED,
+								""
+							)
+						)
 					)
 				}
 				
@@ -541,7 +560,6 @@ object Action_Toot {
 			})
 		
 	}
-	
 	
 	// ローカルかリモートか判断する
 	fun conversation(
@@ -643,7 +661,7 @@ object Action_Toot {
 		
 		val dialog = ActionsDialog()
 		
-		val host_original = Uri.parse(url).authority  ?: ""
+		val host_original = Uri.parse(url).authority ?: ""
 		
 		// 選択肢：ブラウザで表示する
 		dialog.addAction(
@@ -777,8 +795,8 @@ object Action_Toot {
 							}
 						}
 					} else {
-						result = client.syncStatus(access_info,remote_status_url)
-						if( result?.data == null ) return result
+						result = client.syncStatus(access_info, remote_status_url)
+						if(result?.data == null) return result
 						val status = result.data as? TootStatus
 							?: return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
 						local_status_id = status.id
@@ -918,10 +936,11 @@ object Action_Toot {
 				
 				var local_status : TootStatus? = null
 				override fun background(client : TootApiClient) : TootApiResult? {
-					val result = client.syncStatus(access_info,remote_status_url)
-					if( result?.data == null) return result
+					val result = client.syncStatus(access_info, remote_status_url)
+					if(result?.data == null) return result
 					local_status = result.data as? TootStatus
-						?: return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
+						?:
+						return TootApiResult(activity.getString(R.string.status_id_conversion_failed))
 					return result
 				}
 				
@@ -947,13 +966,24 @@ object Action_Toot {
 	) {
 		activity.post_helper.closeAcctPopup()
 		
-		if( accessInfo.isMisskey){
-			ActPost.open(activity, ActMain.REQUEST_CODE_POST, accessInfo.db_id, redraft_status = status, reply_status = status.reply)
+		if(accessInfo.isMisskey) {
+			ActPost.open(
+				activity,
+				ActMain.REQUEST_CODE_POST,
+				accessInfo.db_id,
+				redraft_status = status,
+				reply_status = status.reply
+			)
 			return
 		}
 		
 		if(status.in_reply_to_id == null) {
-			ActPost.open(activity, ActMain.REQUEST_CODE_POST, accessInfo.db_id, redraft_status = status)
+			ActPost.open(
+				activity,
+				ActMain.REQUEST_CODE_POST,
+				accessInfo.db_id,
+				redraft_status = status
+			)
 			return
 		}
 		

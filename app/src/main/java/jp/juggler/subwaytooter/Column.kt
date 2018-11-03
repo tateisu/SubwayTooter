@@ -1145,7 +1145,7 @@ class Column(
 			
 			val changeList = ArrayList<AdapterChange>()
 			
-			// TODO userId が自分かどうか調べる
+			// userId が自分かどうか調べる
 			val myId = EntityId.from(access_info.token_info,TootApiClient.KEY_USER_ID)
 			val byMe = myId != null && myId == ev.userId
 

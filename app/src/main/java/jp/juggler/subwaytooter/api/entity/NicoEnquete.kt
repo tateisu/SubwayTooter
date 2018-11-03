@@ -238,7 +238,7 @@ class NicoEnquete(
 						text = text,
 						decoded_text = decoded_text,
 						// 配列インデクスと同じだった id = EntityId.mayNull(src.parseLong("id")),
-						votes = src.parseInt("votes")?:0,
+						votes = src.parseInt("votes") ?: 0,
 						isVoted = src.optBoolean("isVoted")
 					)
 					items.add(dst)
@@ -251,13 +251,17 @@ class NicoEnquete(
 	}
 	
 	// misskey用
-	fun increaseVote(context:Context,argChoice : Int?,isMyVoted :Boolean) : Boolean {
+	fun increaseVote(context : Context, argChoice : Int?, isMyVoted : Boolean) : Boolean {
 		argChoice ?: return false
+		
 		try {
+			// 既に投票済み状態なら何もしない
+			if(myVoted != null) return false
+			
 			val item = this.items?.get(argChoice) ?: return false
 			item.votes += 1
-			if( isMyVoted) item.isVoted = true
-
+			if(isMyVoted) item.isVoted = true
+			
 			// update ratios
 			val votesList = ArrayList<Int>()
 			var votesMax = 1
@@ -267,29 +271,28 @@ class NicoEnquete(
 				votesList.add(votes)
 				if(votes > votesMax) votesMax = votes
 			}
-
+			
 			if(votesList.isNotEmpty()) {
-
+				
 				this.ratios = votesList.asSequence()
 					.map { (it.toFloat() / votesMax.toFloat()) }
 					.toMutableList()
-
+				
 				this.ratios_text = votesList.asSequence()
 					.map { context.getString(R.string.vote_count_text, it) }
 					.toMutableList()
-
+				
 			} else {
 				this.ratios = null
 				this.ratios_text = null
 			}
 			
 			return true
-
-		}catch(ex:Throwable){
-			log.e(ex,"increaseVote failed")
+			
+		} catch(ex : Throwable) {
+			log.e(ex, "increaseVote failed")
 			return false
 		}
 	}
-	
 	
 }

@@ -575,18 +575,26 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	fun increaseReaction(reaction : String?,byMe:Boolean):Boolean {
 		reaction?: return false
 		MisskeyReaction.shortcodeMap[reaction] ?: return false
+		
+		if(byMe) {
+			if(myReaction != null){
+				// 自分でリアクションしたらUIで更新した後にストリーミングイベントが届くことがある
+				return false
+			}else{
+				// 別クライアントから更新したのだろう
+				myReaction = reaction
+			}
+		}
+		
+		// カウントを増やす
 		var map = this.reactionCounts
 		if(map==null) {
 			map = HashMap()
 			this.reactionCounts = map
 		}
 		val v = map[ reaction ]
-		map[ reaction ] = if( v==null ){
-			1
-		}else{
-			v+1
-		}
-		if( byMe) myReaction = reaction
+		map[ reaction ] = (v?:0) +1
+
 		return true
 	}
 	

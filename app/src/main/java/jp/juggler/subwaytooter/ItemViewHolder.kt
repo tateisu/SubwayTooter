@@ -1907,14 +1907,10 @@ internal class ItemViewHolder(
 					}
 					
 					if((result.response?.code() ?: - 1) in 200 until 300) {
-						if(status.reactionCounts == null) {
-							status.reactionCounts = HashMap()
+						if(status.increaseReaction(code,true,"addReaction")){
+							// 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
+							list_adapter.notifyChange(reason = "addReaction complete", reset = true)
 						}
-						val count = status.reactionCounts?.get(code) ?: 0
-						status.reactionCounts?.put(code, count + 1)
-						status.myReaction = code
-						// 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
-						list_adapter.notifyChange(reason = "addReaction complete", reset = true)
 					}
 					
 				}
@@ -2033,15 +2029,14 @@ internal class ItemViewHolder(
 				val data = result.jsonObject
 				if(data != null) {
 					if(accessInfo.isMisskey) {
-						enquete.myVoted = idx
-						val choice = enquete.items?.get(idx)
-						if(choice != null) choice.votes ++
+						if( enquete.increaseVote(activity,idx,true) ){
+							showToast(context, false, R.string.enquete_voted)
+
+							// 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
+							list_adapter.notifyChange(reason = "onClickEnqueteChoice", reset = true)
+						}
 						
-						// 204 no content
-						showToast(context, false, R.string.enquete_voted)
 						
-						// 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
-						list_adapter.notifyChange(reason = "onClickEnqueteChoice", reset = true)
 					} else {
 						val message = data.parseString("message") ?: "?"
 						val valid = data.optBoolean("valid")

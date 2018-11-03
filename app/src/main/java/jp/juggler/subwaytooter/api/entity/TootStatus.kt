@@ -138,11 +138,11 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	var viaMobile : Boolean = false
 	
 	var reactionCounts : HashMap<String, Int>? = null
-	var myReaction :String? =null
+	var myReaction : String? = null
 	
 	var reply : TootStatus?
 	
-	val serviceType :ServiceType
+	val serviceType : ServiceType
 	
 	val deletedAt : String?
 	val time_deleted_at : Long
@@ -171,7 +171,6 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	var conversationSummary : TootConversationSummary? = null
 	
-	
 	////////////////////////////////////////////////////////
 	
 	init {
@@ -184,10 +183,10 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.host_access = parser.linkHelper.host
 			
 			val uri = src.parseString("uri")
-			if( uri != null ){
+			if(uri != null) {
 				this.uri = uri
 				this.url = uri
-			}else {
+			} else {
 				this.uri = "https://$instance/notes/$misskeyId"
 				this.url = "https://$instance/notes/$misskeyId"
 			}
@@ -249,7 +248,6 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			this.viaMobile = src.optBoolean("viaMobile")
 			
-			
 			// this.decoded_tags = HTMLDecoder.decodeTags( account,status.tags );
 			
 			// content
@@ -272,7 +270,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				this.highlight_sound = options.highlight_sound
 			}
 			// Markdownのデコード結果からmentionsを読むのだった
-			this.mentions = (decoded_content as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
+			this.mentions =
+				(decoded_content as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
 			this.decoded_mentions = HTMLDecoder.decodeMentions(
 				parser.linkHelper,
 				this.mentions,
@@ -317,8 +316,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			misskeyVisibleIds = null
 			reply = null
 			deletedAt = null
-			time_deleted_at =0L
-
+			time_deleted_at = 0L
+			
 			this.uri = src.parseString("uri") // MSPだとuriは提供されない
 			this.url = src.parseString("url") // 頻繁にnullになる
 			this.created_at = src.parseString("created_at")
@@ -463,7 +462,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.reblog = parser.status(src.optJSONObject("reblog"))
 			
 			// 2.6.0からステータスにもカード情報が含まれる
-			this.card = parseItem(::TootCard,src.optJSONObject("card"))
+			this.card = parseItem(::TootCard, src.optJSONObject("card"))
 		}
 	}
 	
@@ -512,37 +511,34 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	val filtered : Boolean
 		get() = _filtered || reblog?._filtered == true
-
 	
-
-	private fun hasReceipt(access_info:SavedAccount):TootVisibility{
+	private fun hasReceipt(access_info : SavedAccount) : TootVisibility {
 		val fullAcctMe = access_info.getFullAcct(account)
 		
 		val reply_account = reply?.account
-		if( reply_account != null && fullAcctMe != access_info.getFullAcct(reply_account) ) {
+		if(reply_account != null && fullAcctMe != access_info.getFullAcct(reply_account)) {
 			return TootVisibility.DirectSpecified
 		}
 		
 		val in_reply_to_account_id = this.in_reply_to_account_id
-		if( in_reply_to_account_id != null && in_reply_to_account_id != account.id) {
+		if(in_reply_to_account_id != null && in_reply_to_account_id != account.id) {
 			return TootVisibility.DirectSpecified
 		}
 		
-		mentions?.forEach{
+		mentions?.forEach {
 			if(fullAcctMe != access_info.getFullAcct(it.acct))
 				return@hasReceipt TootVisibility.DirectSpecified
 		}
 		
 		return TootVisibility.DirectPrivate
 	}
-
-	fun getBackgroundColorType(access_info:SavedAccount) =
-		when(visibility){
+	
+	fun getBackgroundColorType(access_info : SavedAccount) =
+		when(visibility) {
 			TootVisibility.DirectPrivate,
 			TootVisibility.DirectSpecified -> hasReceipt(access_info)
-			else-> visibility
+			else -> visibility
 		}
-	
 	
 	fun updateFiltered(muted_words : WordTrieTree?) {
 		_filtered = checkFiltered(muted_words)
@@ -561,53 +557,55 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		return false
 	}
 	
-	fun hasAnyContent() =when{
+	fun hasAnyContent() = when {
 		reblog == null -> true // reblog以外はオリジナルコンテンツがあると見なす
 		serviceType != ServiceType.MISSKEY -> false // misskey以外のreblogはコンテンツがないと見なす
-		content?.isNotEmpty()== true
-			|| spoiler_text?.isNotEmpty()== true
-			|| media_attachments?.isNotEmpty()== true
+		content?.isNotEmpty() == true
+			|| spoiler_text?.isNotEmpty() == true
+			|| media_attachments?.isNotEmpty() == true
 			|| enquete != null -> true
-		else-> false
+		else -> false
 	}
 	
 	// return true if updated
-	fun increaseReaction(reaction : String?,byMe:Boolean):Boolean {
-		reaction?: return false
+	fun increaseReaction(reaction : String?, byMe : Boolean,caller:String) : Boolean {
+		reaction ?: return false
+
 		MisskeyReaction.shortcodeMap[reaction] ?: return false
 		
-		if(byMe) {
-			if(myReaction != null){
-				// 自分でリアクションしたらUIで更新した後にストリーミングイベントが届くことがある
-				return false
-			}else{
-				// 別クライアントから更新したのだろう
+		synchronized(this) {
+			
+			if(byMe) {
+				if(myReaction != null) {
+					// 自分でリアクションしたらUIで更新した後にストリーミングイベントが届くことがある
+					return false
+				}
 				myReaction = reaction
 			}
+			log.d("increaseReaction noteId=$id byMe=$byMe caller=$caller")
+			
+			// カウントを増やす
+			var map = this.reactionCounts
+			if(map == null) {
+				map = HashMap()
+				this.reactionCounts = map
+			}
+			map[reaction] = (map[reaction] ?: 0) + 1
+			
+			return true
 		}
-		
-		// カウントを増やす
-		var map = this.reactionCounts
-		if(map==null) {
-			map = HashMap()
-			this.reactionCounts = map
-		}
-		val v = map[ reaction ]
-		map[ reaction ] = (v?:0) +1
-
-		return true
 	}
 	
-	fun markDeleted(context : Context, deletedAt: Long? ) : Boolean? {
-
+	fun markDeleted(context : Context, deletedAt : Long?) : Boolean? {
+		
 		var sv = if(deletedAt != null) {
-			context.getString(R.string.status_deleted_at, formatTime(context,deletedAt,false))
-		}else{
+			context.getString(R.string.status_deleted_at, formatTime(context, deletedAt, false))
+		} else {
 			context.getString(R.string.status_deleted)
 		}
 		this.content = sv
 		this.decoded_content = SpannableString(sv)
-
+		
 		sv = ""
 		this.spoiler_text = sv
 		this.decoded_spoiler_text = SpannableString(sv)
@@ -835,26 +833,30 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			return if(host != null && host.isNotEmpty() && host != "?") host else null
 		}
 		
-		private val reMisskeyNoteUrl = Pattern.compile("""https://([^/]+)/notes/([0-9A-F]+)""",Pattern.CASE_INSENSITIVE)
+		private val reMisskeyNoteUrl =
+			Pattern.compile("""https://([^/]+)/notes/([0-9A-F]+)""", Pattern.CASE_INSENSITIVE)
 		
-		fun readMisskeyNoteId(url:String):EntityId?{
+		fun readMisskeyNoteId(url : String) : EntityId? {
 			// https://misskey.xyz/notes/5b802367744b650030a13640
 			val m = reMisskeyNoteUrl.matcher(url)
-			if(m.find() ) return EntityIdString(m.group(2))
+			if(m.find()) return EntityIdString(m.group(2))
 			return null
 		}
 		
-		fun validStatusId(src:EntityId?):EntityId?{
-			return when{
+		fun validStatusId(src : EntityId?) : EntityId? {
+			return when {
 				src == null -> null
-				src is EntityIdLong && src.toLong() == TootStatus.INVALID_ID ->null
-				else ->src
+				src is EntityIdLong && src.toLong() == TootStatus.INVALID_ID -> null
+				else -> src
 			}
 		}
 		
-		
 		// 投稿元タンスでのステータスIDを調べる
-		fun findStatusIdFromUri(uri : String?, url : String?, bAllowStringId:Boolean =false) : EntityId? {
+		fun findStatusIdFromUri(
+			uri : String?,
+			url : String?,
+			bAllowStringId : Boolean = false
+		) : EntityId? {
 			
 			// pleromaのuriやURL からはステータスIDは取れません
 			// uri https://pleroma.miniwa.moe/objects/d6e83d3c-cf9e-46ac-8245-f91716088e17
@@ -874,9 +876,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					m = reTootUriAP2.matcher(uri)
 					if(m.find()) return EntityIdLong(m.group(2).toLong(10))
 					
-					if(bAllowStringId){
+					if(bAllowStringId) {
 						val id = readMisskeyNoteId(uri)
-						if(id!=null) return id
+						if(id != null) return id
 					}
 					
 					log.w("can't parse status uri: $uri")
@@ -892,9 +894,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					m = reTootUriAP2.matcher(url)
 					if(m.find()) return EntityIdLong(m.group(2).toLong(10))
 					
-					if(bAllowStringId){
+					if(bAllowStringId) {
 						val id = readMisskeyNoteId(url)
-						if(id!=null) return id
+						if(id != null) return id
 					}
 					
 					log.w("can't parse status URL: $url")

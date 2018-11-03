@@ -254,44 +254,47 @@ class NicoEnquete(
 	fun increaseVote(context : Context, argChoice : Int?, isMyVoted : Boolean) : Boolean {
 		argChoice ?: return false
 		
-		try {
-			// 既に投票済み状態なら何もしない
-			if(myVoted != null) return false
-			
-			val item = this.items?.get(argChoice) ?: return false
-			item.votes += 1
-			if(isMyVoted) item.isVoted = true
-			
-			// update ratios
-			val votesList = ArrayList<Int>()
-			var votesMax = 1
-			items.forEachIndexed { index, choice ->
-				if(choice.isVoted) this.myVoted = index
-				val votes = choice.votes
-				votesList.add(votes)
-				if(votes > votesMax) votesMax = votes
+		synchronized(this){
+			try {
+				// 既に投票済み状態なら何もしない
+				if(myVoted != null) return false
+				
+				val item = this.items?.get(argChoice) ?: return false
+				item.votes += 1
+				if(isMyVoted) item.isVoted = true
+				
+				// update ratios
+				val votesList = ArrayList<Int>()
+				var votesMax = 1
+				items.forEachIndexed { index, choice ->
+					if(choice.isVoted) this.myVoted = index
+					val votes = choice.votes
+					votesList.add(votes)
+					if(votes > votesMax) votesMax = votes
+				}
+				
+				if(votesList.isNotEmpty()) {
+					
+					this.ratios = votesList.asSequence()
+						.map { (it.toFloat() / votesMax.toFloat()) }
+						.toMutableList()
+					
+					this.ratios_text = votesList.asSequence()
+						.map { context.getString(R.string.vote_count_text, it) }
+						.toMutableList()
+					
+				} else {
+					this.ratios = null
+					this.ratios_text = null
+				}
+				
+				return true
+				
+			} catch(ex : Throwable) {
+				log.e(ex, "increaseVote failed")
+				return false
 			}
 			
-			if(votesList.isNotEmpty()) {
-				
-				this.ratios = votesList.asSequence()
-					.map { (it.toFloat() / votesMax.toFloat()) }
-					.toMutableList()
-				
-				this.ratios_text = votesList.asSequence()
-					.map { context.getString(R.string.vote_count_text, it) }
-					.toMutableList()
-				
-			} else {
-				this.ratios = null
-				this.ratios_text = null
-			}
-			
-			return true
-			
-		} catch(ex : Throwable) {
-			log.e(ex, "increaseVote failed")
-			return false
 		}
 	}
 	

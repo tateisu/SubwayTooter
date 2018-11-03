@@ -26,6 +26,7 @@ internal class StreamReader(
 	internal interface StreamCallback {
 		fun onTimelineItem(item : TimelineItem)
 		fun onListeningStateChanged()
+		fun onNoteUpdated(ev:MisskeyNoteUpdate)
 	}
 	
 	companion object {
@@ -162,10 +163,9 @@ internal class StreamReader(
 			runOnMainLooper {
 				synchronized(this) {
 					if(bDisposed.get()) return@runOnMainLooper
-					val acct = access_info.acct
-					for(column in App1.getAppState(context).column_list) {
+					for(callback in callback_list) {
 						try {
-							if( column.access_info.acct == acct) column.onNoteUpdated(ev)
+							callback.onNoteUpdated(ev)
 						} catch(ex : Throwable) {
 							log.trace(ex)
 						}

@@ -1139,62 +1139,6 @@ class Column(
 		
 	}
 	
-	fun onNoteUpdated( ev: MisskeyNoteUpdate ) {
-		runOnMainLooper {
-			if(is_dispose.get() ) return@runOnMainLooper
-			
-			val changeList = ArrayList<AdapterChange>()
-			
-			// userId が自分かどうか調べる
-			val myId = EntityId.from(access_info.token_info,TootApiClient.KEY_USER_ID)
-			val byMe = myId != null && myId == ev.userId
-
-			fun scanStatus1(s:TootStatus?,idx:Int,block:(s:TootStatus,byMe:Boolean)->Boolean){
-				s ?: return
-				if(s.id == ev.noteId){
-					if( block(s,byMe) ){
-						changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx, 1))
-					}
-				}
-				scanStatus1(s.reblog,idx,block)
-				scanStatus1(s.reply,idx,block)
-			}
-			
-			fun scanStatusAll(block:(s:TootStatus,byMe:Boolean)->Boolean){
-				for( i in 0 until list_data.size){
-					val o = list_data[i]
-					if(o is TootStatus) {
-						scanStatus1(o,i,block)
-					}else if( o is TootNotification) {
-						scanStatus1(o.status,i,block)
-					}
-				}
-			}
-			
-			when(ev.type){
-				MisskeyNoteUpdate.Type.REACTION ->{
-					scanStatusAll{ s,byMe->
-						s.increaseReaction(ev.reaction,byMe)
-					}
-				}
-				MisskeyNoteUpdate.Type.VOTED ->{
-					scanStatusAll{ s,byMe->
-						s.enquete?.increaseVote(context,ev.choice,byMe) ?: false
-					}
-				}
-				MisskeyNoteUpdate.Type.DELETED ->{
-					scanStatusAll{ s,_->
-						s.markDeleted(context,ev.deletedAt) ?: false
-					}
-				}
-			}
-			
-			if( changeList.isNotEmpty()){
-				fireShowContent(reason="onNoteUpdated",changeList = changeList)
-			}
-		}
-	}
-	
 	fun removeNotifications() {
 		cancelLastTask()
 		
@@ -1730,7 +1674,7 @@ class Column(
 			add(n.accountRef)
 			add(n.status)
 		}
-
+		
 		internal fun update(client : TootApiClient, parser : TootParser) {
 			
 			var n : Int
@@ -1782,8 +1726,8 @@ class Column(
 						
 						val result =
 							client.request("/api/users/relation", params.toPostRequestBuilder())
-
-						if( result == null || result.response?.code() in 400 until 500 ) break
+						
+						if(result == null || result.response?.code() in 400 until 500) break
 						
 						val list = parseList(::TootRelationShip, parser, result.jsonArray)
 						if(list.size == userIdList.size) {
@@ -6224,11 +6168,12 @@ class Column(
 		override fun onListeningStateChanged() {
 			if(is_dispose.get()) return
 			runOnMainLooper {
-				when{
-					is_dispose.get() ->{
+				when {
+					is_dispose.get() -> {
 					
 					}
-					else-> {
+					
+					else -> {
 						fireShowColumnStatus()
 						updateMisskeyCapture()
 					}
@@ -6267,6 +6212,70 @@ class Column(
 			handler.post(mergeStreamingMessage)
 		}
 		
+		override fun onNoteUpdated(ev : MisskeyNoteUpdate) {
+			// userId が自分かどうか調べる
+			// アクセストークンの更新をして自分のuserIdが分かる状態でないとキャプチャ結果を反映させない
+			// （でないとリアクションの2重カウントなどが発生してしまう)
+			val myId = EntityId.from(access_info.token_info, TootApiClient.KEY_USER_ID)
+			if(myId == null) {
+				log.w("onNoteUpdated: missing my userId. updating access token is recommenced!!")
+				return
+			}
+			
+			val byMe = myId == ev.userId
+			
+			runOnMainLooper {
+				if(is_dispose.get()) return@runOnMainLooper
+				
+				val changeList = ArrayList<AdapterChange>()
+				
+				fun scanStatus1(s : TootStatus?, idx : Int, block : (s : TootStatus) -> Boolean) {
+					s ?: return
+					if(s.id == ev.noteId) {
+						if(block(s)) {
+							changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx, 1))
+						}
+					}
+					scanStatus1(s.reblog, idx, block)
+					scanStatus1(s.reply, idx, block)
+				}
+				
+				fun scanStatusAll(block : (s : TootStatus) -> Boolean) {
+					for(i in 0 until list_data.size) {
+						val o = list_data[i]
+						if(o is TootStatus) {
+							scanStatus1(o, i, block)
+						} else if(o is TootNotification) {
+							scanStatus1(o.status, i, block)
+						}
+					}
+				}
+				
+				when(ev.type) {
+					MisskeyNoteUpdate.Type.REACTION -> {
+						scanStatusAll { s ->
+							s.increaseReaction(ev.reaction, byMe, "onNoteUpdated ${ev.userId}")
+						}
+					}
+					
+					MisskeyNoteUpdate.Type.VOTED -> {
+						scanStatusAll { s ->
+							s.enquete?.increaseVote(context, ev.choice, byMe) ?: false
+						}
+					}
+					
+					MisskeyNoteUpdate.Type.DELETED -> {
+						scanStatusAll { s ->
+							s.markDeleted(context, ev.deletedAt) ?: false
+						}
+					}
+				}
+				
+				if(changeList.isNotEmpty()) {
+					fireShowContent(reason = "onNoteUpdated", changeList = changeList)
+				}
+			}
+		}
 	}
 	
 	private fun resumeStreaming(bPutGap : Boolean) {
@@ -6317,7 +6326,12 @@ class Column(
 		
 		stream_data_queue.clear()
 		
-		streamReader =app_state.stream_reader.register(access_info, stream_path, highlight_trie, streamCallback)
+		streamReader = app_state.stream_reader.register(
+			access_info,
+			stream_path,
+			highlight_trie,
+			streamCallback
+		)
 		fireShowColumnStatus()
 	}
 	
@@ -6515,32 +6529,32 @@ class Column(
 		}
 	}
 	
-	private fun min(a:Int,b:Int):Int = if( a<b) a else b
+	private fun min(a : Int, b : Int) : Int = if(a < b) a else b
 	
-	private fun updateMisskeyCapture(){
-		if(!isMisskey) return
-		streamReader?: return
+	private fun updateMisskeyCapture() {
+		if(! isMisskey) return
+		streamReader ?: return
 		
 		val max = 40
-		val list = ArrayList<EntityId>(max*2) // リブログなどで膨れる場合がある
-
-		fun add(s:TootStatus?){
-			s?:return
-			list.add( s.id )
-			add( s.reblog)
-			add( s.reply)
+		val list = ArrayList<EntityId>(max * 2) // リブログなどで膨れる場合がある
+		
+		fun add(s : TootStatus?) {
+			s ?: return
+			list.add(s.id)
+			add(s.reblog)
+			add(s.reply)
 		}
 		
-		for(i in 0 until min( max, list_data.size)){
+		for(i in 0 until min(max, list_data.size)) {
 			val o = list_data[i]
-			if( o is TootStatus ){
+			if(o is TootStatus) {
 				add(o)
-			}else if( o is TootNotification){
+			} else if(o is TootNotification) {
 				add(o.status)
 			}
 		}
 		
-		if( list.isNotEmpty() ) streamReader?.capture(list)
+		if(list.isNotEmpty()) streamReader?.capture(list)
 	}
 	
 	private fun replaceConversationSummary(
@@ -6777,8 +6791,6 @@ class Column(
 			log.e(ex, "can't get last_viewing_item_id.")
 		}
 	}
-	
-
 	
 	//	fun findListIndexByTimelineId(orderId : EntityId) : Int? {
 	//		list_data.forEachIndexed { i, v ->

@@ -372,4 +372,28 @@
     <string name="rename">إعادة التسمية…</string>
     <string name="allow_column_duplication">السماح بازدواجية العمود</string>
     <string name="report_forward_to">التحويل إلى %1$s</string>
+    <string name="login_required">يرجى تهيئة رمز نفاذك مِن خلال إعدادات الحساب.</string>
+    <string name="visibility_web_setting">حسب إعدادات تطبيق الويب</string>
+    <string name="display_name_unfollowed_by">قام بإلغاء %1$s متابَعتِك</string>
+    <string name="update_access_token">تحديث رمز النفاذ</string>
+    <string name="default_status_visibility">الرؤية الافتراضية للتبويق</string>
+    <string name="confirm_account_remove">سيتم حذف هذا الحساب وإزالة كافة الأعمدة.
+\nهل أنت متأكد؟</string>
+    <string name="user_name_not_match">اسم المستخدم غير مطابق</string>
+    <string name="access_token_updated_for">تم تحديث رمز نفاذ %1$s.</string>
+    <string name="back_to_column_list">الانتقال إلى قائمة الاعمدة عند الضغط على زر العودة</string>
+    <string name="last_selection">آخر خيار</string>
+    <string name="cant_change_account_when_attachment_specified">لا يمكنك تغيير الحساب و لديك مرفق.</string>
+    <string name="mail_address_not_contains_at_mark">استخدم عناوين بريد إكترونية تحتوي على \' @ \' و \'. \'</string>
+    <string name="follow_succeeded">تمت المتابعة بنجاح</string>
+    <string name="unfollow_succeeded">تم إلغاء المتابعة بنجاح</string>
+    <string name="unmute_succeeded">تم إلغاء الكتم بنجاح</string>
+    <string name="mute_succeeded">تم كتمه بنجاح</string>
+    <string name="unblock_succeeded">نجح إلغاء الحظر</string>
+    <string name="report_completed">اكتمل التقرير.</string>
+    <string name="please_rate">يرجى أخذ القليل من الوقت لتقييم التطبيق!</string>
+    <string name="send_text">إرسال النص عبر</string>
+    <string name="ui_theme">سمة واجهة المستخدم (مطلوب أعادة تشغيل التطبيق)</string>
+    <string name="simple_list">قائمة بسيطة (مطلوب أعادة تشغيل التطبيق)</string>
+    <string name="unfavourite_succeeded">تم حذف المفضلة</string>
     </resources>

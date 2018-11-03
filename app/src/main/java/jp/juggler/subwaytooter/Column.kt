@@ -1139,6 +1139,62 @@ class Column(
 		
 	}
 	
+	fun onNoteUpdated( ev: MisskeyNoteUpdate ) {
+		runOnMainLooper {
+			if(is_dispose.get() ) return@runOnMainLooper
+			
+			val changeList = ArrayList<AdapterChange>()
+			
+			// TODO userId が自分かどうか調べる
+			val myId = EntityId.from(access_info.token_info,TootApiClient.KEY_USER_ID)
+			val byMe = myId != null && myId == ev.userId
+
+			fun scanStatus1(s:TootStatus?,idx:Int,block:(s:TootStatus,byMe:Boolean)->Boolean){
+				s ?: return
+				if(s.id == ev.noteId){
+					if( block(s,byMe) ){
+						changeList.add(AdapterChange(AdapterChangeType.RangeChange, idx, 1))
+					}
+				}
+				scanStatus1(s.reblog,idx,block)
+				scanStatus1(s.reply,idx,block)
+			}
+			
+			fun scanStatusAll(block:(s:TootStatus,byMe:Boolean)->Boolean){
+				for( i in 0 until list_data.size){
+					val o = list_data[i]
+					if(o is TootStatus) {
+						scanStatus1(o,i,block)
+					}else if( o is TootNotification) {
+						scanStatus1(o.status,i,block)
+					}
+				}
+			}
+			
+			when(ev.type){
+				MisskeyNoteUpdate.Type.REACTION ->{
+					scanStatusAll{ s,byMe->
+						s.increaseReaction(ev.reaction,byMe)
+					}
+				}
+				MisskeyNoteUpdate.Type.VOTED ->{
+					scanStatusAll{ s,byMe->
+						s.enquete?.increaseVote(context,ev.choice,byMe) ?: false
+					}
+				}
+				MisskeyNoteUpdate.Type.DELETED ->{
+					scanStatusAll{ s,_->
+						s.markDeleted(context,ev.deletedAt) ?: false
+					}
+				}
+			}
+			
+			if( changeList.isNotEmpty()){
+				fireShowContent(reason="onNoteUpdated",changeList = changeList)
+			}
+		}
+	}
+	
 	fun removeNotifications() {
 		cancelLastTask()
 		
@@ -3219,6 +3275,8 @@ class Column(
 				
 				// 初期ロードの直後は先頭に移動する
 				viewHolder?.scrollToTop()
+				
+				updateMisskeyCapture()
 			}
 		}
 		this.lastTask = task
@@ -4982,6 +5040,9 @@ class Column(
 							}
 						}
 					}
+					
+					updateMisskeyCapture()
+					
 				} finally {
 					fireShowColumnStatus()
 					
@@ -5009,6 +5070,7 @@ class Column(
 			return
 		}
 		
+		@Suppress("UNNECESSARY_SAFE_CALL")
 		viewHolder?.refreshLayout?.isRefreshing = true
 		
 		bRefreshLoading = true
@@ -5904,6 +5966,8 @@ class Column(
 							scroll_save.adapterIndex += added - 1
 						}
 					}
+					
+					updateMisskeyCapture()
 				} finally {
 					fireShowColumnStatus()
 				}
@@ -6160,7 +6224,15 @@ class Column(
 		override fun onListeningStateChanged() {
 			if(is_dispose.get()) return
 			runOnMainLooper {
-				if(! is_dispose.get()) fireShowColumnStatus()
+				when{
+					is_dispose.get() ->{
+					
+					}
+					else-> {
+						fireShowColumnStatus()
+						updateMisskeyCapture()
+					}
+				}
 			}
 		}
 		
@@ -6245,13 +6317,16 @@ class Column(
 		
 		stream_data_queue.clear()
 		
-		app_state.stream_reader.register(access_info, stream_path, highlight_trie, streamCallback)
+		streamReader =app_state.stream_reader.register(access_info, stream_path, highlight_trie, streamCallback)
 		fireShowColumnStatus()
 	}
+	
+	private var streamReader : StreamReader.Reader? = null
 	
 	// onPauseの時はまとめて止められるが
 	// カラム破棄やリロード開始時は個別にストリーミングを止める必要がある
 	internal fun stopStreaming() {
+		streamReader = null
 		val stream_path = streamPath
 		if(stream_path != null) {
 			app_state.stream_reader.unregister(access_info, stream_path, streamCallback)
@@ -6435,7 +6510,37 @@ class Column(
 					scroll_save.adapterIndex += added
 				}
 			}
+			
+			updateMisskeyCapture()
 		}
+	}
+	
+	private fun min(a:Int,b:Int):Int = if( a<b) a else b
+	
+	private fun updateMisskeyCapture(){
+		if(!isMisskey) return
+		streamReader?: return
+		
+		val max = 40
+		val list = ArrayList<EntityId>(max*2) // リブログなどで膨れる場合がある
+
+		fun add(s:TootStatus?){
+			s?:return
+			list.add( s.id )
+			add( s.reblog)
+			add( s.reply)
+		}
+		
+		for(i in 0 until min( max, list_data.size)){
+			val o = list_data[i]
+			if( o is TootStatus ){
+				add(o)
+			}else if( o is TootNotification){
+				add(o.status)
+			}
+		}
+		
+		if( list.isNotEmpty() ) streamReader?.capture(list)
 	}
 	
 	private fun replaceConversationSummary(
@@ -6672,6 +6777,8 @@ class Column(
 			log.e(ex, "can't get last_viewing_item_id.")
 		}
 	}
+	
+
 	
 	//	fun findListIndexByTimelineId(orderId : EntityId) : Int? {
 	//		list_data.forEachIndexed { i, v ->

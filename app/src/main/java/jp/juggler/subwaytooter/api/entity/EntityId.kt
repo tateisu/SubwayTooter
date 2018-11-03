@@ -45,14 +45,15 @@ abstract class EntityId : Comparable<EntityId> {
 			return null
 		}
 		
-		fun from(intent : Intent, key : String) =
-			intent.getStringExtra(key)?.decode()
+		fun from(intent : Intent?, key : String) =
+			intent?.getStringExtra(key)?.decode()
 		
-		fun from(bundle : Bundle, key : String) =
-			bundle.getString(key)?.decode()
+		fun from(bundle : Bundle?, key : String) =
+			bundle?.getString(key)?.decode()
 		
-		fun from(data : JSONObject, key : String) : EntityId? {
-			val o = data.opt(key)
+		// 内部保存データのデコード用。APIレスポンスのパースに使ってはいけない
+		fun from(data : JSONObject?, key : String) : EntityId? {
+			val o = data?.opt(key)
 			if(o is Long) return EntityIdLong(o)
 			return (o as? String)?.decode()
 		}

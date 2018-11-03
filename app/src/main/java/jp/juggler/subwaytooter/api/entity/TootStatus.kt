@@ -85,12 +85,12 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	private val language : String?
 	
 	//If not empty, warning text that should be displayed before the actual content
-	val spoiler_text : String?
-	val decoded_spoiler_text : Spannable
+	var spoiler_text : String?
+	var decoded_spoiler_text : Spannable
 	
 	//	Body of the status; this will contain HTML (remote HTML already sanitized)
-	val content : String?
-	val decoded_content : Spannable
+	var content : String?
+	var decoded_content : Spannable
 	
 	//Application from which the status was posted
 	val application : TootApplication?
@@ -569,6 +569,42 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			|| media_attachments?.isNotEmpty()== true
 			|| enquete != null -> true
 		else-> false
+	}
+	
+	// return true if updated
+	fun increaseReaction(reaction : String?,byMe:Boolean):Boolean {
+		reaction?: return false
+		MisskeyReaction.shortcodeMap[reaction] ?: return false
+		var map = this.reactionCounts
+		if(map==null) {
+			map = HashMap()
+			this.reactionCounts = map
+		}
+		val v = map[ reaction ]
+		map[ reaction ] = if( v==null ){
+			1
+		}else{
+			v+1
+		}
+		if( byMe) myReaction = reaction
+		return true
+	}
+	
+	fun markDeleted(context : Context, deletedAt: Long? ) : Boolean? {
+
+		var sv = if(deletedAt != null) {
+			context.getString(R.string.status_deleted_at, formatTime(context,deletedAt,false))
+		}else{
+			context.getString(R.string.status_deleted)
+		}
+		this.content = sv
+		this.decoded_content = SpannableString(sv)
+
+		sv = ""
+		this.spoiler_text = sv
+		this.decoded_spoiler_text = SpannableString(sv)
+		
+		return true
 	}
 	
 	companion object {

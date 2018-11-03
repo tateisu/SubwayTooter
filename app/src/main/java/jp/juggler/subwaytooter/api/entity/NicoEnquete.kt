@@ -29,10 +29,10 @@ class NicoEnquete(
 	val items : ArrayList<Choice>?
 	
 	// 結果の数値 // null or array of number
-	private val ratios : MutableList<Float>?
+	private var ratios : MutableList<Float>?
 	
 	// 結果の数値のテキスト // null or array of string
-	private val ratios_text : MutableList<String>?
+	private var ratios_text : MutableList<String>?
 	
 	var myVoted : Int? = null
 	
@@ -249,4 +249,47 @@ class NicoEnquete(
 			return null
 		}
 	}
+	
+	// misskey用
+	fun increaseVote(context:Context,argChoice : Int?,isMyVoted :Boolean) : Boolean {
+		argChoice ?: return false
+		try {
+			val item = this.items?.get(argChoice) ?: return false
+			item.votes += 1
+			if( isMyVoted) item.isVoted = true
+
+			// update ratios
+			val votesList = ArrayList<Int>()
+			var votesMax = 1
+			items.forEachIndexed { index, choice ->
+				if(choice.isVoted) this.myVoted = index
+				val votes = choice.votes
+				votesList.add(votes)
+				if(votes > votesMax) votesMax = votes
+			}
+
+			if(votesList.isNotEmpty()) {
+
+				this.ratios = votesList.asSequence()
+					.map { (it.toFloat() / votesMax.toFloat()) }
+					.toMutableList()
+
+				this.ratios_text = votesList.asSequence()
+					.map { context.getString(R.string.vote_count_text, it) }
+					.toMutableList()
+
+			} else {
+				this.ratios = null
+				this.ratios_text = null
+			}
+			
+			return true
+
+		}catch(ex:Throwable){
+			log.e(ex,"increaseVote failed")
+			return false
+		}
+	}
+	
+	
 }

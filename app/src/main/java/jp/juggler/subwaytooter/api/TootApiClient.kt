@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.api
 import android.content.Context
 import android.content.SharedPreferences
 import jp.juggler.subwaytooter.*
+import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.api.entity.TootStatus
@@ -65,6 +66,7 @@ class TootApiClient(
 		const val KEY_IS_MISSKEY = "isMisskey"
 		const val KEY_MISSKEY_APP_SECRET = "secret"
 		const val KEY_API_KEY_MISSKEY = "apiKeyMisskey"
+		const val KEY_USER_ID = "userId"
 		
 		//		// APIからsecretを得られないバグがあるので定数を渡す
 		//		const val appSecretError =
@@ -797,13 +799,15 @@ class TootApiClient(
 			return result.setError("missing accessToken in the response.")
 		}
 		
-		val user = token_info.optJSONObject("user")
-			?: result.setError("missing user in the response.")
+		val user : JSONObject = token_info.optJSONObject("user")
+			?: return result.setError("missing user in the response.")
+
 		token_info.remove("user")
 		
 		val apiKey = "$access_token$appSecret".encodeUTF8().digestSHA256().encodeHexLower()
 		
 		// ユーザ情報を読めたならtokenInfoを保存する
+		EntityId.mayNull( user.parseString("id") )?.putTo(token_info,KEY_USER_ID)
 		token_info.put(KEY_IS_MISSKEY, true)
 		token_info.put(KEY_AUTH_VERSION, AUTH_VERSION)
 		token_info.put(KEY_API_KEY_MISSKEY, apiKey)

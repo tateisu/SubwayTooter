@@ -4,14 +4,13 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.os.Handler
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.EntityIdLong
-import jp.juggler.subwaytooter.api.entity.TimelineItem
-import jp.juggler.subwaytooter.api.entity.TootPayload
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
+import org.json.JSONObject
 import java.net.ProtocolException
 import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
@@ -40,7 +39,7 @@ internal class StreamReader(
 	
 	private val reader_list = LinkedList<Reader>()
 	
-	private inner class Reader(
+	internal inner class Reader(
 		internal val access_info : SavedAccount,
 		internal val end_point : String,
 		highlight_trie : WordTrieTree?
@@ -143,15 +142,30 @@ internal class StreamReader(
 			}
 		}
 		
-		private fun fireDeleteId(id : Long) {
+		private fun fireDeleteId(id : EntityId) {
 			val tl_host = access_info.host
-			val eid = EntityIdLong(id)
 			runOnMainLooper {
 				synchronized(this) {
 					if(bDisposed.get()) return@runOnMainLooper
 					for(column in App1.getAppState(context).column_list) {
 						try {
-							column.onStatusRemoved(tl_host, eid)
+							column.onStatusRemoved(tl_host, id)
+						} catch(ex : Throwable) {
+							log.trace(ex)
+						}
+					}
+				}
+			}
+		}
+		
+		private fun fireNoteUpdated(ev:MisskeyNoteUpdate) {
+			runOnMainLooper {
+				synchronized(this) {
+					if(bDisposed.get()) return@runOnMainLooper
+					val acct = access_info.acct
+					for(column in App1.getAppState(context).column_list) {
+						try {
+							if( column.access_info.acct == acct) column.onNoteUpdated(ev)
 						} catch(ex : Throwable) {
 							log.trace(ex)
 						}
@@ -186,7 +200,12 @@ internal class StreamReader(
 							val body = obj.optJSONObject("body")
 							fireTimelineItem(parser.status(body))
 						}
-						
+
+						"noteUpdated" -> {
+							val body = obj.optJSONObject("body")
+							fireNoteUpdated( MisskeyNoteUpdate(body))
+						}
+
 						"notification" -> {
 							val body = obj.optJSONObject("body")
 							fireTimelineItem(parser.notification(body))
@@ -217,7 +236,7 @@ internal class StreamReader(
 						
 						"delete" -> {
 							if(payload is Long) {
-								fireDeleteId(payload)
+								fireDeleteId(EntityId.mayDefault(payload))
 								
 							} else {
 								log.d("payload is not long. $payload")
@@ -311,6 +330,10 @@ internal class StreamReader(
 			
 			socket.set(null)
 			bListening.set(true)
+			synchronized(capturedId){
+				capturedId.clear()
+				log.d("capture cleared")
+			}
 			fireListeningChanged()
 			
 			TootTaskRunner(context).run(access_info, object : TootTask {
@@ -344,6 +367,34 @@ internal class StreamReader(
 			})
 		}
 		
+		// Misskeyの投稿キャプチャ
+		private val capturedId = HashSet<EntityId>()
+		
+		fun capture(list : ArrayList<EntityId>) {
+			val socket = socket.get()
+			when{
+				bDisposed.get() -> return
+				socket == null -> return
+				else->{
+					for( id in list ){
+						if(id.isDefault) continue
+						synchronized(capturedId){
+							if( capturedId.contains(id) ) return
+							try {
+								if(socket.send("""{"type":"subNote","body": {"id":"$id"}}""")) {
+									capturedId.add(id)
+									log.d("capture: $id")
+								}else{
+									log.w("capture: $id failed")
+								}
+							} catch(ex : Throwable) {
+								log.d(ex.withCaption("fireAlive failed."))
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 	
 	private fun prepareReader(
@@ -372,14 +423,14 @@ internal class StreamReader(
 		endPoint : String,
 		highlightTrie : WordTrieTree?,
 		streamCallback : StreamCallback
-	) {
+	) :Reader {
+
 		val reader = prepareReader(accessInfo, endPoint, highlightTrie)
-		
 		reader.addCallback(streamCallback)
-		
 		if(! reader.bListening.get()) {
 			reader.startRead()
 		}
+		return reader
 	}
 	
 	// カラム破棄やリロードのタイミングで呼ばれる

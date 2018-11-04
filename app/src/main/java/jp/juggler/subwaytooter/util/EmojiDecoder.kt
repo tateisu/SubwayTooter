@@ -106,7 +106,7 @@ object EmojiDecoder {
 			sb.append(text)
 			val end = sb.length
 			sb.setSpan(
-				NetworkEmojiSpan(url),
+				NetworkEmojiSpan(url,scale = options.enlargeCustomEmoji),
 				start,
 				end,
 				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE

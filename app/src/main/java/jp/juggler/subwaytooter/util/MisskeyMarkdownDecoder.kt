@@ -970,7 +970,10 @@ object MisskeyMarkdownDecoder {
 	// このファイルのエントリーポイント
 	fun decodeMarkdown(options : DecodeOptions, src : String?) =
 		SpannableStringBuilderEx().apply {
+			val save = options.enlargeCustomEmoji
+			options.enlargeCustomEmoji = 2.5f
 			try {
+				
 				val env = SpanOutputEnv(options, this)
 				
 				if(src != null) ParseEnv(src).parse { node ->
@@ -990,6 +993,8 @@ object MisskeyMarkdownDecoder {
 			} catch(ex : Throwable) {
 				log.trace(ex)
 				log.e(ex, "decodeMarkdown failed")
+			}finally {
+				options.enlargeCustomEmoji = save
 			}
 		}
 }

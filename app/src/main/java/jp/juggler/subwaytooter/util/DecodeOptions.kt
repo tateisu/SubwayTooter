@@ -20,7 +20,8 @@ class DecodeOptions(
 	var emojiMapCustom : HashMap<String, CustomEmoji>? = null,
 	var emojiMapProfile : HashMap<String, NicoProfileEmoji>? = null,
 	var highlightTrie : WordTrieTree? = null,
-	var unwrapEmojiImageTag :Boolean = false
+	var unwrapEmojiImageTag :Boolean = false,
+	var enlargeCustomEmoji :Float = 1f
 ) {
 	
 	internal fun isMediaAttachment(url : String?) : Boolean {

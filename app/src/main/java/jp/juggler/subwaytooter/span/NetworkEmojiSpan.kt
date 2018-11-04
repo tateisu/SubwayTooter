@@ -13,7 +13,10 @@ import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.util.LogCategory
 import java.lang.ref.WeakReference
 
-class NetworkEmojiSpan internal constructor(private val url : String) : ReplacementSpan(),AnimatableSpan {
+class NetworkEmojiSpan internal constructor(
+	private val url : String,
+	private val scale : Float = 1f
+) : ReplacementSpan(),AnimatableSpan {
 	
 	companion object {
 		
@@ -54,8 +57,7 @@ class NetworkEmojiSpan internal constructor(private val url : String) : Replacem
 		@IntRange(from = 0) end : Int,
 		fm : Paint.FontMetricsInt?
 	) : Int {
-		val size = (0.5f + scale_ratio * paint.textSize).toInt()
-		
+		val size = (paint.textSize * scale_ratio * scale + 0.5f).toInt()
 		if(fm != null) {
 			val c_descent = (0.5f + size * descent_ratio).toInt()
 			val c_ascent = c_descent - size
@@ -111,7 +113,7 @@ class NetworkEmojiSpan internal constructor(private val url : String) : Replacem
 		rect_src.set(0, 0, srcWidth, srcHeight )
 
 		// 絵文字の正方形のサイズ
-		val dstSize = scale_ratio * textPaint.textSize
+		val dstSize = textPaint.textSize * scale_ratio * scale
 
 		// ベースラインから上下方向にずらすオフセット
 		val c_descent = dstSize * descent_ratio

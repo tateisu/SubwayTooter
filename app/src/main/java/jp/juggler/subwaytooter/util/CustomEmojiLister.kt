@@ -3,20 +3,15 @@ package jp.juggler.subwaytooter.util
 import android.content.Context
 import android.os.Handler
 import android.os.SystemClock
-
-import java.util.ArrayList
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.ConcurrentLinkedQueue
-
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
-import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.api.entity.parseList
 import okhttp3.RequestBody
 import org.json.JSONObject
-import java.util.HashMap
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
 
 class CustomEmojiLister(internal val context : Context) {
 	

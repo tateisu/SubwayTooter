@@ -39,7 +39,7 @@ inline fun <reified T> parseList(
 		val src_length = src.length()
 		if(src_length > 0) {
 			dst.ensureCapacity(src_length)
-			for(i in 0 until src.length()) {
+			for(i in 0 until src_length) {
 				val item = parseItem(factory, src.optJSONObject(i), log)
 				if(item != null) dst.add(item)
 			}

@@ -705,7 +705,7 @@ class ActMain : AppCompatActivity()
 		post_helper.bNSFW = false
 		post_helper.in_reply_to_id = null
 		post_helper.attachment_list = null
-		post_helper.emojiMapCustom = App1.custom_emoji_lister.getMap(account.host)
+		post_helper.emojiMapCustom = App1.custom_emoji_lister.getMap(account.host,account.isMisskey)
 		
 		
 		etQuickToot.hideKeyboard()

@@ -672,8 +672,8 @@ class PostHelper(
 				
 				// カスタム絵文字を検索
 				val instance = this@PostHelper.instance
-				if(instance != null && instance.isNotEmpty() && ! isMisskey) {
-					val custom_list = App1.custom_emoji_lister.getList(instance, onEmojiListLoad)
+				if(instance != null && instance.isNotEmpty() ) {
+					val custom_list = App1.custom_emoji_lister.getList(instance,isMisskey, onEmojiListLoad)
 					if(custom_list != null) {
 						val needle = src.substring(last_colon + 1, end)
 						for(item in custom_list) {
@@ -731,8 +731,8 @@ class PostHelper(
 		this.instance = instance
 		this.isMisskey = isMisskey
 		
-		if(instance != null && ! isMisskey) {
-			App1.custom_emoji_lister.getList(instance, onEmojiListLoad)
+		if(instance != null ) {
+			App1.custom_emoji_lister.getList(instance, isMisskey,onEmojiListLoad)
 		}
 		
 		val popup = this.popup

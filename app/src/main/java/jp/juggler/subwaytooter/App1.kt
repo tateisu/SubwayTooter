@@ -508,13 +508,15 @@ class App1 : Application() {
 			
 		}
 		
-		fun getHttpCachedString(url : String) : String? {
+		fun getHttpCachedString(url : String, builderBlock:(Request.Builder)->Unit = {}) : String? {
 			val response : Response
 			
 			try {
 				val request_builder = okhttp3.Request.Builder()
-				request_builder.url(url)
-				request_builder.cacheControl(CACHE_5MIN)
+					.url(url)
+					.cacheControl(CACHE_5MIN)
+
+				builderBlock(request_builder)
 				
 				val call = App1.ok_http_client2.newCall(request_builder.build())
 				response = call.execute()

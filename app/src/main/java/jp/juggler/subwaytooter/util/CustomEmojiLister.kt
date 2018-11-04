@@ -9,8 +9,13 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ConcurrentLinkedQueue
 
 import jp.juggler.subwaytooter.App1
+import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
+import jp.juggler.subwaytooter.api.entity.TootInstance
+import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.api.entity.parseList
+import okhttp3.RequestBody
+import org.json.JSONObject
 import java.util.HashMap
 
 class CustomEmojiLister(internal val context : Context) {
@@ -43,6 +48,7 @@ class CustomEmojiLister(internal val context : Context) {
 	
 	internal class Request(
 		val instance : String,
+		val isMisskey : Boolean,
 		val onListLoaded : (list : ArrayList<CustomEmoji>) -> Unit?
 	)
 	
@@ -87,6 +93,7 @@ class CustomEmojiLister(internal val context : Context) {
 	
 	fun getList(
 		_instance : String,
+		isMisskey : Boolean,
 		onListLoaded : (list : ArrayList<CustomEmoji>) -> Unit
 	) : ArrayList<CustomEmoji>? {
 		try {
@@ -98,7 +105,7 @@ class CustomEmojiLister(internal val context : Context) {
 				if(item != null) return item.list
 			}
 			
-			queue.add(Request(instance, onListLoaded))
+			queue.add(Request(instance, isMisskey, onListLoaded))
 			worker.notifyEx()
 		} catch(ex : Throwable) {
 			log.trace(ex)
@@ -106,13 +113,13 @@ class CustomEmojiLister(internal val context : Context) {
 		return null
 	}
 	
-	fun getMap(host : String) : HashMap<String, CustomEmoji>? {
-		val list = getList(host) {
+	fun getMap(host : String, isMisskey : Boolean) : HashMap<String, CustomEmoji>? {
+		val list = getList(host, isMisskey) {
 			// 遅延ロード非対応
 		} ?: return null
 		//
 		val dst = HashMap<String, CustomEmoji>()
-		for( e in list){
+		for(e in list) {
 			dst[e.shortcode] = e
 		}
 		return dst
@@ -153,11 +160,21 @@ class CustomEmojiLister(internal val context : Context) {
 					
 					var list : ArrayList<CustomEmoji>? = null
 					try {
-						val data =
+						val data = if(request.isMisskey) {
+							App1.getHttpCachedString("https://" + request.instance + "/api/meta") { builder ->
+								builder.post(
+									RequestBody.create(TootApiClient.MEDIA_TYPE_JSON, "{}")
+								)
+							}
+							
+						} else {
 							App1.getHttpCachedString("https://" + request.instance + "/api/v1/custom_emojis")
-						if(data != null) {
-							list = decodeEmojiList(data, request.instance)
 						}
+
+						if(data != null) {
+							list = decodeEmojiList(data, request.instance, request.isMisskey)
+						}
+
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
@@ -213,17 +230,24 @@ class CustomEmojiLister(internal val context : Context) {
 			}
 		}
 		
-		private fun decodeEmojiList(data : String, instance : String) : ArrayList<CustomEmoji>? {
+		private fun decodeEmojiList(
+			data : String,
+			instance : String,
+			isMisskey : Boolean
+		) : ArrayList<CustomEmoji>? {
 			return try {
-				val list = parseList(::CustomEmoji, data.toJsonArray() )
-				list.sortWith(compareBy(String.CASE_INSENSITIVE_ORDER, { it.shortcode }))
+				val list = if(isMisskey) {
+					parseList(CustomEmoji.decodeMisskey, JSONObject(data).optJSONArray("emojis"))
+				} else {
+					parseList(CustomEmoji.decode, data.toJsonArray())
+				}
+				list.sortWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.shortcode })
 				list
 			} catch(ex : Throwable) {
 				log.e(ex, "decodeEmojiList failed. instance=%s", instance)
 				null
 			}
 		}
-		
 	}
 	
 }

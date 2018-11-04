@@ -1021,11 +1021,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		} else {
 			post_helper.setInstance(a.host, a.isMisskey)
 			
-			if(! a.isMisskey) {
-				// 先読みしてキャッシュに保持しておく
-				App1.custom_emoji_lister.getList(a.host) {
-					// 何もしない
-				}
+			// 先読みしてキャッシュに保持しておく
+			App1.custom_emoji_lister.getList(a.host,a.isMisskey) {
+				// 何もしない
 			}
 			
 			val acct = a.acct
@@ -1972,7 +1970,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		post_helper.attachment_list = this.attachment_list
 		
-		post_helper.emojiMapCustom = App1.custom_emoji_lister.getMap(account.host)
+		post_helper.emojiMapCustom = App1.custom_emoji_lister.getMap(account.host,account.isMisskey)
 		
 		post_helper.redraft_status_id = redraft_status_id
 		

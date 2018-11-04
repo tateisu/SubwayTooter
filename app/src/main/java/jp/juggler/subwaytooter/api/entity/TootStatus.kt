@@ -200,7 +200,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			// お気に入りカラムなどではパース直後に変更することがある
 			
 			// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
-			this.custom_emojis = null
+			this.custom_emojis = parseMapOrNull(CustomEmoji.decodeMisskey, src.optJSONArray("emojis"), log)
 			this.profile_emojis = null
 			
 			val who = parser.account(src.optJSONObject("user"))
@@ -323,7 +323,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.created_at = src.parseString("created_at")
 			
 			// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
-			this.custom_emojis = parseMapOrNull(::CustomEmoji, src.optJSONArray("emojis"), log)
+			this.custom_emojis = parseMapOrNull(CustomEmoji.decode, src.optJSONArray("emojis"), log)
 			this.profile_emojis =
 				parseMapOrNull(::NicoProfileEmoji, src.optJSONArray("profile_emojis"), log)
 			

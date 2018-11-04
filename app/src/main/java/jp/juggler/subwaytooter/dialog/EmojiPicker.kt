@@ -117,12 +117,8 @@ class EmojiPicker(
 		page_list.add(EmojiPickerPage(false, CATEGORY_RECENT, R.string.emoji_category_recent))
 		
 		
-		if(! isMisskey) {
-			this.custom_page_idx = page_list.size
-			page_list.add(EmojiPickerPage(false, CATEGORY_CUSTOM, R.string.emoji_category_custom))
-		} else {
-			this.custom_page_idx = - 1
-		}
+		this.custom_page_idx = page_list.size
+		page_list.add(EmojiPickerPage(false, CATEGORY_CUSTOM, R.string.emoji_category_custom))
 		
 		page_list.add(
 			EmojiPickerPage(
@@ -202,9 +198,9 @@ class EmojiPicker(
 		onPageSelected(0)
 		
 		// カスタム絵文字をロードする
-		if(! isMisskey && instance != null && instance.isNotEmpty()) {
+		if( instance != null && instance.isNotEmpty()) {
 			setCustomEmojiList(
-				App1.custom_emoji_lister.getList(instance) {
+				App1.custom_emoji_lister.getList(instance,isMisskey=isMisskey) {
 					setCustomEmojiList(it) // ロード完了時に呼ばれる
 				}
 			)

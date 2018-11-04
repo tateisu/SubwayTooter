@@ -198,7 +198,8 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			val remoteHost = src.parseString("host")
 			val instance = remoteHost ?: parser.linkHelper.host ?: error("missing host")
 			
-			this.custom_emojis = null
+			this.custom_emojis = parseMapOrNull(CustomEmoji.decodeMisskey, src.optJSONArray("emojis"))
+			
 			this.profile_emojis = null
 			
 			this.username = src.notEmptyOrThrow("username")
@@ -256,7 +257,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		} else {
 			
 			// 絵文字データは先に読んでおく
-			this.custom_emojis = parseMapOrNull(::CustomEmoji, src.optJSONArray("emojis"))
+			this.custom_emojis = parseMapOrNull(CustomEmoji.decode, src.optJSONArray("emojis"))
 			this.profile_emojis =
 				parseMapOrNull(::NicoProfileEmoji, src.optJSONArray("profile_emojis"))
 			

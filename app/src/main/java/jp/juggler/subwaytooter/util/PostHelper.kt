@@ -6,6 +6,7 @@ import android.os.SystemClock
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.text.*
+import android.text.style.ForegroundColorSpan
 import android.view.View
 import jp.juggler.emoji.EmojiMap201709
 
@@ -19,6 +20,7 @@ import java.util.regex.Pattern
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
@@ -159,7 +161,7 @@ class PostHelper(
 		
 		if(! bConfirmTag) {
 			
-			if( !account.isMisskey
+			if(! account.isMisskey
 				&& visibility != TootVisibility.Public
 				&& reTag.matcher(content).find()
 			) {
@@ -228,18 +230,18 @@ class PostHelper(
 			
 			var credential_tmp : TootAccount? = null
 			
-			val parser = TootParser(activity, account )
+			val parser = TootParser(activity, account)
 			
 			fun getInstanceInformation(client : TootApiClient) : TootApiResult? {
-				val result = if( account.isMisskey){
-					val params = JSONObject().apply{
-						put("dummy",1)
+				val result = if(account.isMisskey) {
+					val params = JSONObject().apply {
+						put("dummy", 1)
 					}
-					client.request("/api/meta",params.toPostRequestBuilder())
-				}else{
+					client.request("/api/meta", params.toPostRequestBuilder())
+				} else {
 					client.request("/api/v1/instance")
 				}
-				instance_tmp = parseItem(::TootInstance,parser , result?.jsonObject)
+				instance_tmp = parseItem(::TootInstance, parser, result?.jsonObject)
 				return result
 			}
 			
@@ -255,15 +257,15 @@ class PostHelper(
 				
 				// 元の投稿を削除する
 				if(redraft_status_id != null) {
-					result = if( isMisskey ){
-						val params = account.putMisskeyApiToken(JSONObject()).apply{
-							put("noteId",redraft_status_id)
+					result = if(isMisskey) {
+						val params = account.putMisskeyApiToken(JSONObject()).apply {
+							put("noteId", redraft_status_id)
 						}
 						client.request(
 							"/api/notes/delete",
 							params.toPostRequestBuilder()
 						)
-					}else{
+					} else {
 						client.request(
 							"/api/v1/statuses/$redraft_status_id",
 							Request.Builder().delete()
@@ -283,16 +285,17 @@ class PostHelper(
 					account.instance = instance
 				}
 				
-				if( visibility == TootVisibility.WebSetting) {
-					visibility_checked = if(account.isMisskey || instance.versionGE(TootInstance.VERSION_1_6)) {
-						null
-					} else {
-						val r2 = getCredential(client)
-						val credential_tmp = this.credential_tmp ?: return r2
-						val privacy = credential_tmp.source?.privacy
-							?: return TootApiResult(activity.getString(R.string.cant_get_web_setting_visibility))
-						TootVisibility.parseMastodon(privacy)
-					}
+				if(visibility == TootVisibility.WebSetting) {
+					visibility_checked =
+						if(account.isMisskey || instance.versionGE(TootInstance.VERSION_1_6)) {
+							null
+						} else {
+							val r2 = getCredential(client)
+							val credential_tmp = this.credential_tmp ?: return r2
+							val privacy = credential_tmp.source?.privacy
+								?: return TootApiResult(activity.getString(R.string.cant_get_web_setting_visibility))
+							TootVisibility.parseMastodon(privacy)
+						}
 				}
 				
 				val json = JSONObject()
@@ -308,34 +311,43 @@ class PostHelper(
 						)
 						if(visibility_checked != null) {
 							
-							if( visibility_checked == TootVisibility.DirectSpecified ){
+							if(visibility_checked == TootVisibility.DirectSpecified) {
 								val userIds = JSONArray()
-								val reMention = Pattern.compile("(?:\\A|\\s)@([a-zA-Z0-9_]{1,20})(?:@([\\w.:-]+))?(?:\\z|\\s)")
+								val reMention =
+									Pattern.compile("(?:\\A|\\s)@([a-zA-Z0-9_]{1,20})(?:@([\\w.:-]+))?(?:\\z|\\s)")
 								val m = reMention.matcher(content)
-								while(m.find()){
+								while(m.find()) {
 									val username = m.group(1)
 									val host = m.group(2)
 									val queryParams = account.putMisskeyApiToken(JSONObject())
-									if(username?.isNotEmpty()==true) queryParams.put("username",username)
-									if(host?.isNotEmpty()==true) queryParams.put("host",host)
-									result = client.request("/api/users/show",queryParams.toPostRequestBuilder())
+									if(username?.isNotEmpty() == true) queryParams.put(
+										"username",
+										username
+									)
+									if(host?.isNotEmpty() == true) queryParams.put("host", host)
+									result = client.request(
+										"/api/users/show",
+										queryParams.toPostRequestBuilder()
+									)
 									val id = result?.jsonObject?.parseString("id")
-									if( id?.isNotEmpty() == true ){
-										userIds.put( id)
+									if(id?.isNotEmpty() == true) {
+										userIds.put(id)
 									}
 								}
-								json.put("visibility",if( userIds.length() == 0 ){
-									"private"
-								}else{
-									json.put("visibleUserIds",userIds)
-									"specified"
-								})
-							}else {
-								json.put("visibility",visibility_checked.strMisskey)
+								json.put(
+									"visibility", if(userIds.length() == 0) {
+										"private"
+									} else {
+										json.put("visibleUserIds", userIds)
+										"specified"
+									}
+								)
+							} else {
+								json.put("visibility", visibility_checked.strMisskey)
 							}
 						}
 						
-						if(spoiler_text?.isNotEmpty() == true ) {
+						if(spoiler_text?.isNotEmpty() == true) {
 							json.put(
 								"cw",
 								EmojiDecoder.decodeShortCode(
@@ -349,7 +361,7 @@ class PostHelper(
 							json.put("replyId", in_reply_to_id.toString())
 						}
 						
-						json.put("viaMobile",true)
+						json.put("viaMobile", true)
 						
 						if(attachment_list != null) {
 							val array = JSONArray()
@@ -359,31 +371,34 @@ class PostHelper(
 								array.put(a.id.toString())
 								
 								// Misskeyの場合、NSFWするにはアップロード済みの画像を drive/files/update で更新する
-								if( bNSFW){
+								if(bNSFW) {
 									val params = account.putMisskeyApiToken(JSONObject())
-										.put("fileId",a.id.toString())
-										.put("isSensitive",true)
-									val r = client.request("/api/drive/files/update",params.toPostRequestBuilder())
-									if(r==null|| r.error!=null ) return r
+										.put("fileId", a.id.toString())
+										.put("isSensitive", true)
+									val r = client.request(
+										"/api/drive/files/update",
+										params.toPostRequestBuilder()
+									)
+									if(r == null || r.error != null) return r
 								}
 							}
-							if( array.length() > 0) json.put("mediaIds", array)
+							if(array.length() > 0) json.put("mediaIds", array)
 						}
 						
 						if(enquete_items?.isNotEmpty() == true) {
 							val choices = JSONArray().apply {
 								for(item in enquete_items) {
-									val text =EmojiDecoder.decodeShortCode(
+									val text = EmojiDecoder.decodeShortCode(
 										item,
 										emojiMapCustom = emojiMapCustom
 									)
-									if( text.isEmpty() ) continue
+									if(text.isEmpty()) continue
 									put(text)
 								}
 							}
-							if( choices.length() > 0 ) {
-								json.put("poll",JSONObject().apply {
-									put("choices",choices)
+							if(choices.length() > 0) {
+								json.put("poll", JSONObject().apply {
+									put("choices", choices)
 								})
 							}
 						}
@@ -453,19 +468,21 @@ class PostHelper(
 					val digest = (body_string + account.acct).digestSHA256Hex()
 					request_builder.header("Idempotency-Key", digest)
 				}
-
-				result = if(isMisskey){
+				
+				result = if(isMisskey) {
 					client.request("/api/notes/create", request_builder)
 					// TODO {"error":{}} が返ってきた時にどう扱えばいい？
-				}else{
+				} else {
 					client.request("/api/v1/statuses", request_builder)
 				}
 				
-				val status = parser.status(if(isMisskey) {
-					result?.jsonObject?.optJSONObject("createdNote") ?: result?.jsonObject
-				}else{
-					result?.jsonObject
-				})
+				val status = parser.status(
+					if(isMisskey) {
+						result?.jsonObject?.optJSONObject("createdNote") ?: result?.jsonObject
+					} else {
+						result?.jsonObject
+					}
+				)
 				this.status = status
 				if(status != null) {
 					
@@ -664,18 +681,21 @@ class PostHelper(
 					et, last_colon, end, null, picker_caption_emoji, open_picker_emoji
 				)
 			} else {
-				// 絵文字を部分一致で検索
+				
+				val code_list = ArrayList<CharSequence>()
 				val limit = 100
-				val s = src.substring(last_colon + 1, end).toLowerCase().replace('-', '_')
-				val code_list = EmojiDecoder.searchShortCode(activity, s, limit)
-				log.d("checkEmoji: search for %s, result=%d", s, code_list.size)
 				
 				// カスタム絵文字を検索
 				val instance = this@PostHelper.instance
-				if(instance != null && instance.isNotEmpty() ) {
-					val custom_list = App1.custom_emoji_lister.getList(instance,isMisskey, onEmojiListLoad)
+				if(instance != null && instance.isNotEmpty()) {
+					val custom_list = App1.custom_emoji_lister.getListWithAliases(
+						instance,
+						isMisskey,
+						onEmojiListLoad
+					)
 					if(custom_list != null) {
 						val needle = src.substring(last_colon + 1, end)
+						
 						for(item in custom_list) {
 							if(code_list.size >= limit) break
 							if(! item.shortcode.contains(needle)) continue
@@ -689,12 +709,41 @@ class PostHelper(
 								Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 							)
 							sb.append(' ')
+							if(item.alias != null) {
+								val start = sb.length
+								sb.append(":")
+								sb.append(item.alias)
+								sb.append(": → ")
+								sb.setSpan(
+									ForegroundColorSpan(
+										Styler.getAttributeColor(
+											activity,
+											R.attr.colorTimeSmall
+										)
+									),
+									start,
+									sb.length,
+									Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+								)
+							}
+							
 							sb.append(':')
 							sb.append(item.shortcode)
 							sb.append(':')
+							
 							code_list.add(sb)
 						}
 					}
+				}
+				
+				// 通常の絵文字を部分一致で検索
+				val remain = limit - code_list.size
+				if(remain > 0) {
+					val s = src.substring(last_colon + 1, end).toLowerCase().replace('-', '_')
+					val src = EmojiDecoder.searchShortCode(activity, s, remain)
+					log.d("checkEmoji: search for %s, result=%d", s, src.size)
+					code_list.addAll(src)
+					
 				}
 				
 				openPopup()?.setList(
@@ -731,8 +780,8 @@ class PostHelper(
 		this.instance = instance
 		this.isMisskey = isMisskey
 		
-		if(instance != null ) {
-			App1.custom_emoji_lister.getList(instance, isMisskey,onEmojiListLoad)
+		if(instance != null) {
+			App1.custom_emoji_lister.getList(instance, isMisskey, onEmojiListLoad)
 		}
 		
 		val popup = this.popup
@@ -841,7 +890,7 @@ class PostHelper(
 				.appendEmoji(name, instance, bInstanceHasCustomEmoji)
 			
 			val newSelection = sb.length
-			if(end < src_length) sb.append(src.subSequence(end, src_length) )
+			if(end < src_length) sb.append(src.subSequence(end, src_length))
 			
 			et.text = sb
 			et.setSelection(newSelection)
@@ -864,11 +913,11 @@ class PostHelper(
 			val end = Math.min(src_length, et.selectionEnd)
 			
 			val sb = SpannableStringBuilder()
-				.append(src.subSequence(0, start) )
+				.append(src.subSequence(0, start))
 				.appendEmoji(name, instance, bInstanceHasCustomEmoji)
 			
 			val newSelection = sb.length
-			if(end < src_length) sb.append(src.subSequence(end, src_length) )
+			if(end < src_length) sb.append(src.subSequence(end, src_length))
 			
 			et.text = sb
 			et.setSelection(newSelection)

@@ -18,6 +18,7 @@ import java.util.ArrayList
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.view.MyEditText
+import java.util.regex.Pattern
 
 @SuppressLint("InflateParams")
 internal class PopupAutoCompleteAcct(
@@ -30,6 +31,9 @@ internal class PopupAutoCompleteAcct(
 	companion object {
 		
 		internal val log = LogCategory("PopupAutoCompleteAcct")
+		
+		// 絵文字ショートコードにマッチするとても雑な正規表現
+		private val reLastShortCode = Pattern.compile(""":([^\s:]+):\z""")
 	}
 	
 	private val acct_popup : PopupWindow
@@ -135,7 +139,7 @@ internal class PopupAutoCompleteAcct(
 					if(acct[0] == ' ') {
 						// 絵文字ショートコード
 						if(! EmojiDecoder.canStartShortCode(sb, start)) sb.append(' ')
-						sb.append(acct.subSequence(2, acct.length))
+						sb.append( findShortCode(acct.toString()))
 					} else {
 						// @user@host, #hashtag
 						// 直後に空白を付与する
@@ -157,6 +161,14 @@ internal class PopupAutoCompleteAcct(
 		}
 		
 		updatePosition()
+	}
+	
+	
+	
+	private fun findShortCode(acct : String) : String {
+		val m = reLastShortCode.matcher(acct)
+		if(m.find()) return m.group(0)
+		return acct
 	}
 	
 	fun updatePosition() {

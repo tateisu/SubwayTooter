@@ -19,6 +19,7 @@ class TootParser(
 	var misskeyDecodeProfilePin :Boolean = false
 ) {
 	val misskeyUserRelationMap = HashMap<EntityId, UserRelation>()
+	val misskeyAccountDetailMap = HashMap<EntityId, TootAccount>()
 	
 	init{
 		if(linkHelper.isMisskey) serviceType = ServiceType.MISSKEY

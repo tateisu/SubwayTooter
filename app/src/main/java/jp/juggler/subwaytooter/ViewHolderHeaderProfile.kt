@@ -12,6 +12,7 @@ import jp.juggler.emoji.EmojiMap201709
 
 import jp.juggler.subwaytooter.action.Action_Follow
 import jp.juggler.subwaytooter.action.Action_User
+import jp.juggler.subwaytooter.api.MisskeyAccountDetailMap
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootStatus
@@ -129,6 +130,7 @@ internal class ViewHolderHeaderProfile(
 	override fun bindData(column : Column) {
 		super.bindData(column)
 		
+		
 		if(! activity.timeline_font_size_sp.isNaN()) {
 			tvMovedName.textSize = activity.timeline_font_size_sp
 			tvMoved.textSize = activity.timeline_font_size_sp
@@ -142,6 +144,13 @@ internal class ViewHolderHeaderProfile(
 		val whoRef = column.who_account
 		this.whoRef = whoRef
 		val who = whoRef?.get()
+
+		// Misskeyの場合はNote中のUserエンティティと /api/users/show の情報量がかなり異なる
+		val whoDetail = if(who == null) {
+			null
+		} else {
+			MisskeyAccountDetailMap.get(access_info, who.id)
+		}
 		
 		showColor()
 		
@@ -184,7 +193,7 @@ internal class ViewHolderHeaderProfile(
 				access_info.supplyBaseUrl(who.avatar)
 			)
 			
-			val name = whoRef.decoded_display_name
+			val name = whoDetail?.decodeDisplayName(activity) ?: whoRef.decoded_display_name
 			tvDisplayName.text = name
 			name_invalidator.register(name)
 			
@@ -193,7 +202,7 @@ internal class ViewHolderHeaderProfile(
 			
 			val sb = SpannableStringBuilder()
 			sb.append("@").append(access_info.getFullAcct(who))
-			if(who.locked) {
+			if(whoDetail?.locked ?: who.locked) {
 				sb.append(" ")
 				val start = sb.length
 				sb.append("locked")
@@ -208,7 +217,7 @@ internal class ViewHolderHeaderProfile(
 					)
 				}
 			}
-			if(who.bot){
+			if(who.bot) {
 				sb.append(" ")
 				val start = sb.length
 				sb.append("bot")
@@ -229,9 +238,12 @@ internal class ViewHolderHeaderProfile(
 			tvNote.text = note
 			note_invalidator.register(note)
 			
-			btnStatusCount.text = activity.getString(R.string.statuses) + "\n" + who.statuses_count
-			btnFollowing.text = activity.getString(R.string.following) + "\n" + who.following_count
-			btnFollowers.text = activity.getString(R.string.followers) + "\n" + who.followers_count
+			btnStatusCount.text = activity.getString(R.string.statuses) + "\n" +
+				(whoDetail?.statuses_count ?: who.statuses_count)
+			btnFollowing.text = activity.getString(R.string.following) + "\n" +
+				(whoDetail?.following_count ?: who.following_count)
+			btnFollowers.text = activity.getString(R.string.followers) + "\n" +
+				(whoDetail?.followers_count ?: who.followers_count)
 			
 			val relation = UserRelation.load(access_info.db_id, who.id)
 			Styler.setFollowIcon(activity, btnFollow, ivFollowedBy, relation, who)
@@ -259,8 +271,7 @@ internal class ViewHolderHeaderProfile(
 					short = true,
 					emojiMapProfile = who.profile_emojis
 				)
-
-
+				
 				val content_color = column.content_color
 				val c = if(content_color != 0) content_color else default_color
 				
@@ -295,18 +306,18 @@ internal class ViewHolderHeaderProfile(
 					)
 					
 					val valueText = decodeOptions.decodeHTML(item.value)
-					if(item.verified_at > 0L){
+					if(item.verified_at > 0L) {
 						valueText.append('\n')
-
+						
 						val start = valueText.length
-						valueText.append( activity.getString(R.string.verified_at))
-						valueText.append( ": ")
-						valueText.append(TootStatus.formatTime(activity,item.verified_at,false))
+						valueText.append(activity.getString(R.string.verified_at))
+						valueText.append(": ")
+						valueText.append(TootStatus.formatTime(activity, item.verified_at, false))
 						val end = valueText.length
-
+						
 						valueText.setSpan(
 							ForegroundColorSpan(Color.BLACK or 0x7fbc99)
-							,start,end,Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+							, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 						)
 					}
 					
@@ -320,7 +331,7 @@ internal class ViewHolderHeaderProfile(
 					valueView.typeface = valueTypeface
 					valueView.movementMethod = MyLinkMovementMethod
 					
-					if(item.verified_at > 0L){
+					if(item.verified_at > 0L) {
 						valueView.setBackgroundColor(0x337fbc99)
 					}
 					

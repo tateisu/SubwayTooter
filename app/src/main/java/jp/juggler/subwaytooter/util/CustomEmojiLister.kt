@@ -27,7 +27,11 @@ class CustomEmojiLister(internal val context : Context) {
 			get() = SystemClock.elapsedRealtime()
 	}
 	
-	internal class CacheItem(val instance : String, var list : ArrayList<CustomEmoji>?) {
+	internal class CacheItem(
+		val instance : String,
+		var list : ArrayList<CustomEmoji>? = null,
+		var listWithAliases : ArrayList<CustomEmoji>? = null
+	) {
 		
 		// 参照された時刻
 		var time_used : Long = 0
@@ -44,6 +48,7 @@ class CustomEmojiLister(internal val context : Context) {
 	internal class Request(
 		val instance : String,
 		val isMisskey : Boolean,
+		val reportWithAliases : Boolean = false,
 		val onListLoaded : (list : ArrayList<CustomEmoji>) -> Unit?
 	)
 	
@@ -53,7 +58,7 @@ class CustomEmojiLister(internal val context : Context) {
 	// エラーキャッシュ
 	internal val cache_error = ConcurrentHashMap<String, Long>()
 	
-	private val cache_error_item = CacheItem("error", null)
+	private val cache_error_item = CacheItem("error")
 	
 	// ロード要求
 	internal val queue = ConcurrentLinkedQueue<Request>()
@@ -100,7 +105,36 @@ class CustomEmojiLister(internal val context : Context) {
 				if(item != null) return item.list
 			}
 			
-			queue.add(Request(instance, isMisskey, onListLoaded))
+			queue.add(Request(instance, isMisskey, onListLoaded = onListLoaded))
+			worker.notifyEx()
+		} catch(ex : Throwable) {
+			log.trace(ex)
+		}
+		return null
+	}
+	
+	fun getListWithAliases(
+		_instance : String,
+		isMisskey : Boolean,
+		onListLoaded : (list : ArrayList<CustomEmoji>) -> Unit
+	) : ArrayList<CustomEmoji>? {
+		try {
+			if(_instance.isEmpty()) return null
+			val instance = _instance.toLowerCase()
+			
+			synchronized(cache) {
+				val item = getCached(elapsedTime, instance)
+				if(item != null) return item.listWithAliases
+			}
+			
+			queue.add(
+				Request(
+					instance,
+					isMisskey,
+					reportWithAliases = true,
+					onListLoaded = onListLoaded
+				)
+			)
 			worker.notifyEx()
 		} catch(ex : Throwable) {
 			log.trace(ex)
@@ -141,8 +175,9 @@ class CustomEmojiLister(internal val context : Context) {
 						val item = getCached(elapsedTime, request.instance)
 						return@synchronized if(item != null) {
 							val list = item.list
-							if(list != null) {
-								fireCallback(request, list)
+							val listWithAliases = item.listWithAliases
+							if(list != null && listWithAliases != null) {
+								fireCallback(request, list, listWithAliases)
 							}
 							true
 						} else {
@@ -154,6 +189,7 @@ class CustomEmojiLister(internal val context : Context) {
 					if(cached) continue
 					
 					var list : ArrayList<CustomEmoji>? = null
+					var listWithAlias : ArrayList<CustomEmoji>? = null
 					try {
 						val data = if(request.isMisskey) {
 							App1.getHttpCachedString("https://" + request.instance + "/api/meta") { builder ->
@@ -165,29 +201,32 @@ class CustomEmojiLister(internal val context : Context) {
 						} else {
 							App1.getHttpCachedString("https://" + request.instance + "/api/v1/custom_emojis")
 						}
-
+						
 						if(data != null) {
-							list = decodeEmojiList(data, request.instance, request.isMisskey)
+							val a = decodeEmojiList(data, request.instance, request.isMisskey)
+							list = a
+							listWithAlias = makeListWithAlias(a)
 						}
-
+						
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
 					
 					synchronized(cache) {
 						val now = elapsedTime
-						if(list == null) {
+						if(list == null || listWithAlias == null) {
 							cache_error.put(request.instance, now)
 						} else {
 							var item : CacheItem? = cache[request.instance]
 							if(item == null) {
-								item = CacheItem(request.instance, list)
+								item = CacheItem(request.instance, list, listWithAlias)
 								cache[request.instance] = item
 							} else {
 								item.list = list
+								item.listWithAliases = listWithAlias
 								item.time_update = now
 							}
-							fireCallback(request, list)
+							fireCallback(request, list, listWithAlias)
 						}
 					}
 				} catch(ex : Throwable) {
@@ -197,8 +236,21 @@ class CustomEmojiLister(internal val context : Context) {
 			}
 		}
 		
-		private fun fireCallback(request : Request, list : ArrayList<CustomEmoji>) {
-			handler.post { request.onListLoaded(list) }
+		
+		private fun fireCallback(
+			request : Request,
+			list : ArrayList<CustomEmoji>,
+			listWithAliases : ArrayList<CustomEmoji>
+		) {
+			handler.post {
+				request.onListLoaded(
+					if(request.reportWithAliases) {
+						listWithAliases
+					} else {
+						list
+					}
+				)
+			}
 		}
 		
 		// キャッシュの掃除
@@ -242,6 +294,23 @@ class CustomEmojiLister(internal val context : Context) {
 				log.e(ex, "decodeEmojiList failed. instance=%s", instance)
 				null
 			}
+		}
+		
+		
+		private fun makeListWithAlias(list : ArrayList<CustomEmoji>?) : ArrayList<CustomEmoji> {
+			val dst = ArrayList<CustomEmoji>()
+			if( list != null) {
+				dst.addAll(list)
+				for(item in list) {
+					val aliases = item.aliases ?: continue
+					for(alias in aliases) {
+						if( alias.equals(item.shortcode,ignoreCase = true)) continue
+						dst.add(item.makeAlias(alias))
+					}
+				}
+				dst.sortWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.alias ?: it.shortcode })
+			}
+			return dst
 		}
 	}
 	

@@ -3,15 +3,13 @@ package jp.juggler.subwaytooter.api.entity
 import android.content.Context
 import android.net.Uri
 import android.text.Spannable
+import jp.juggler.subwaytooter.api.MisskeyAccountDetailMap
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.table.UserRelationMisskey
 import jp.juggler.subwaytooter.util.*
-
 import org.json.JSONArray
 import org.json.JSONObject
-
-import java.util.ArrayList
+import java.util.*
 import java.util.regex.Pattern
 
 open class TootAccount(parser : TootParser, src : JSONObject) {
@@ -252,7 +250,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			}
 			
 			UserRelationMisskey.fromAccount(parser,src,id)
-			
+			MisskeyAccountDetailMap.fromAccount(parser,this,id)
 			
 		} else {
 			

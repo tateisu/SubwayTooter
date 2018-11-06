@@ -36,21 +36,21 @@ object EmojiDecoder {
 		return when(cp) {
 			- 1 -> true
 			cpColon -> false
-		// rubyの (Letter | Mark | Decimal_Number) はNG
-		// ftp://unicode.org/Public/5.1.0/ucd/UCD.html#General_Category_Values
+			// rubyの (Letter | Mark | Decimal_Number) はNG
+			// ftp://unicode.org/Public/5.1.0/ucd/UCD.html#General_Category_Values
 			else -> when(java.lang.Character.getType(cp).toByte()) {
-			// Letter
-			// LCはエイリアスなので文字から得られることはないはず
+				// Letter
+				// LCはエイリアスなので文字から得られることはないはず
 				Character.UPPERCASE_LETTER,
 				Character.LOWERCASE_LETTER,
 				Character.TITLECASE_LETTER,
 				Character.MODIFIER_LETTER,
 				Character.OTHER_LETTER -> false
-			// Mark
+				// Mark
 				Character.NON_SPACING_MARK,
 				Character.COMBINING_SPACING_MARK,
 				Character.ENCLOSING_MARK -> false
-			// Decimal_Number
+				// Decimal_Number
 				Character.DECIMAL_DIGIT_NUMBER -> false
 				
 				else -> true
@@ -106,7 +106,7 @@ object EmojiDecoder {
 			sb.append(text)
 			val end = sb.length
 			sb.setSpan(
-				NetworkEmojiSpan(url,scale = options.enlargeCustomEmoji),
+				NetworkEmojiSpan(url, scale = options.enlargeCustomEmoji),
 				start,
 				end,
 				Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -177,7 +177,7 @@ object EmojiDecoder {
 						val c = s[i ++]
 						sb.append(
 							when(c) {
-							// https://github.com/tateisu/SubwayTooter/issues/69
+								// https://github.com/tateisu/SubwayTooter/issues/69
 								'\u00AD' -> '-'
 								else -> c
 							}

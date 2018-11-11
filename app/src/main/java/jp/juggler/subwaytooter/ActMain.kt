@@ -2747,6 +2747,7 @@ class ActMain : AppCompatActivity()
 			if(nAutoCwLines > 0
 				&& line_count > nAutoCwLines
 				&& status.spoiler_text?.isEmpty() != false
+				&& (status.mentions?.size ?: 0) <= nAutoCwLines
 			) {
 				val sb = SpannableStringBuilder()
 				sb.append(getString(R.string.auto_cw_prefix))

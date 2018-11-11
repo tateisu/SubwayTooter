@@ -4904,14 +4904,14 @@ class Column(
 						sp = holder.scrollPosition
 					}
 					
-					val added = list_new.size
+					
 					
 					if(bBottom) {
 						val changeList = listOf(
 							AdapterChange(
 								AdapterChangeType.RangeInsert,
 								list_data.size,
-								added
+								list_new.size
 							)
 						)
 						list_data.addAll(list_new)
@@ -4941,6 +4941,8 @@ class Column(
 						}
 						
 						replaceConversationSummary(changeList, list_new, list_data)
+
+						val added = list_new.size // may 0
 						
 						// 投稿後のリフレッシュなら当該投稿の位置を探す
 						var status_index = - 1
@@ -5853,10 +5855,11 @@ class Column(
 					val list_new = duplicate_map.filterDuplicate(list_tmp)
 					// 0個でもギャップを消すために以下の処理を続ける
 					
-					val added = list_new.size // may 0
 					val changeList = ArrayList<AdapterChange>()
 					
 					replaceConversationSummary(changeList, list_new, list_data)
+					
+					val added = list_new.size // may 0
 					
 					val position = list_data.indexOf(gap)
 					if(position == - 1) {
@@ -6470,10 +6473,11 @@ class Column(
 				
 			}
 			
-			val added = list_new.size
 			val changeList = ArrayList<AdapterChange>()
 			
 			replaceConversationSummary(changeList, list_new, list_data)
+			
+			val added = list_new.size  // may 0
 			
 			loop@ for(o in list_new) {
 				when(o) {

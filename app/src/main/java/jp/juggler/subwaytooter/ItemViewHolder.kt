@@ -505,10 +505,10 @@ internal class ItemViewHolder(
 			}
 			
 			fun showIcon(iv : MyNetworkImageView, idx : Int) {
-				if(idx >= size) {
-					iv.visibility = View.GONE
-					return
-				}
+				val bShown = idx < size
+				iv.visibility = if(bShown) View.VISIBLE else View.GONE
+				if(!bShown) return
+
 				val who = accountsOther[idx].get()
 				iv.setImageUrl(
 					activity.pref,

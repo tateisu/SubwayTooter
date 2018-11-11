@@ -88,6 +88,11 @@ class BucketList<E> constructor(
 		return groups[pos.group_index][pos.bucket_index]
 	}
 	
+	override fun set(index : Int, element : E) : E {
+		val pos = findPos(index)
+		return groups[pos.group_index].set(pos.bucket_index,element)
+	}
+	
 	// 末尾への追加
 	override fun addAll(elements : Collection<E>) : Boolean {
 		val c_size = elements.size

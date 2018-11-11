@@ -11,7 +11,6 @@ import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.TextUtils
-import android.text.TextUtils.ellipsize
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -120,7 +119,22 @@ internal class ItemViewHolder(
 	private lateinit var tvFilterPhrase : TextView
 	private lateinit var tvFilterDetail : TextView
 	
+	private lateinit var tvMediaDescription : TextView
+	private lateinit var tvCardText : TextView
+	private lateinit var ivCardImage : MyNetworkImageView
+	
 	private lateinit var llExtra : LinearLayout
+	
+	
+	private lateinit var llConversationIcons : View
+	private lateinit var ivConversationIcon1 : MyNetworkImageView
+	private lateinit var ivConversationIcon2 : MyNetworkImageView
+	private lateinit var ivConversationIcon3 : MyNetworkImageView
+	private lateinit var ivConversationIcon4 : MyNetworkImageView
+	private lateinit var tvConversationIconsMore : TextView
+	private lateinit var tvConversationParticipants : TextView
+	
+	
 	
 	private lateinit var tvApplication : TextView
 	
@@ -167,6 +181,8 @@ internal class ItemViewHolder(
 		btnFollow.setOnClickListener(this)
 		btnFollow.setOnLongClickListener(this)
 		
+		ivCardImage.setOnClickListener(this)
+		
 		ivThumbnail.setOnClickListener(this)
 		
 		llBoosted.setOnClickListener(this)
@@ -177,7 +193,7 @@ internal class ItemViewHolder(
 		
 		llFollow.setOnClickListener(this)
 		llFollow.setOnLongClickListener(this)
-		
+		llConversationIcons.setOnLongClickListener(this)
 		btnFollow.setOnClickListener(this)
 		
 		
@@ -191,6 +207,7 @@ internal class ItemViewHolder(
 		tvContent.movementMethod = MyLinkMovementMethod
 		tvMentions.movementMethod = MyLinkMovementMethod
 		tvContentWarning.movementMethod = MyLinkMovementMethod
+		tvMediaDescription.movementMethod = MyLinkMovementMethod
 		
 		btnHideMedia.setOnClickListener(this)
 		
@@ -214,6 +231,10 @@ internal class ItemViewHolder(
 			tvTrendTagName.textSize = activity.timeline_font_size_sp
 			tvTrendTagCount.textSize = activity.timeline_font_size_sp
 			tvFilterPhrase.textSize = activity.timeline_font_size_sp
+			tvMediaDescription.textSize = activity.timeline_font_size_sp
+			tvCardText.textSize = activity.timeline_font_size_sp
+			tvConversationIconsMore.textSize = activity.timeline_font_size_sp
+			tvConversationParticipants.textSize = activity.timeline_font_size_sp
 		}
 		if(! activity.notification_tl_font_size_sp.isNaN()) {
 			tvBoosted.textSize = activity.notification_tl_font_size_sp
@@ -280,6 +301,8 @@ internal class ItemViewHolder(
 							v === tvReply ||
 							v === tvTrendTagCount ||
 							v === tvTrendTagName ||
+							v === tvConversationIconsMore ||
+							v === tvConversationParticipants ||
 							v === tvFilterPhrase -> font_bold
 						else -> font_normal
 					}
@@ -348,10 +371,15 @@ internal class ItemViewHolder(
 		llSearchTag.visibility = View.GONE
 		llList.visibility = View.GONE
 		llFollowRequest.visibility = View.GONE
-		removeExtraView()
 		tvMessageHolder.visibility = View.GONE
 		llTrendTag.visibility = View.GONE
 		llFilter.visibility = View.GONE
+		tvMediaDescription.visibility = View.GONE
+		tvCardText.visibility = View.GONE
+		ivCardImage.visibility = View.GONE
+		llConversationIcons.visibility = View.GONE
+		
+		removeExtraView()
 		
 		var c : Int
 		c = if(column.content_color != 0) column.content_color else content_color_default
@@ -369,6 +397,10 @@ internal class ItemViewHolder(
 		tvTrendTagCount.setTextColor(c)
 		cvTrendTagHistory.setColor(c)
 		tvFilterPhrase.setTextColor(c)
+		tvMediaDescription.setTextColor(c)
+		tvCardText.setTextColor(c)
+		tvConversationIconsMore.setTextColor(c)
+		tvConversationParticipants.setTextColor(c)
 		
 		c = if(column.acct_color != 0) column.acct_color else Styler.getAttributeColor(
 			activity,
@@ -431,7 +463,7 @@ internal class ItemViewHolder(
 			
 			is TootConversationSummary -> {
 				showStatus(item.last_status)
-				showConversationIcons(item.accounts)
+				showConversationIcons(item)
 			}
 			
 			else -> {
@@ -446,100 +478,82 @@ internal class ItemViewHolder(
 			}
 		}
 		llExtra.removeAllViews()
+		
+		for(invalidator in extra_invalidator_list) {
+			invalidator.register(null)
+		}
+		extra_invalidator_list.clear()
+		
+		
 	}
 	
-	private fun showConversationIcons(accounts : ArrayList<TootAccountRef>) {
-		if(accounts.isEmpty()) return
+	private fun showConversationIcons(cs:TootConversationSummary) {
 		
-		// 絵文字スパンにしてもやはり消えたりちらついたりする。なんでだ。
-		//		val density = llExtra.resources.displayMetrics.density
-		//		val wh = (activity.avatarIconSize * 0.75f + 0.5f).toInt()
-		//		val me = (density * 3f + 0.5f).toInt()
-		//		val mt = (density * 3f + 0.5f).toInt()
-		//
-		//		val lp = LinearLayout.LayoutParams(
-		//			LinearLayout.LayoutParams.MATCH_PARENT,
-		//			LinearLayout.LayoutParams.WRAP_CONTENT
-		//		)
-		//		lp.topMargin = mt
-		//
-		//		val b = MyTextView(activity)
-		//		b.layoutParams = lp
-		//		b.isAllCaps = false
-		//		llExtra.addView(b)
-		//
-		//		val sb = SpannableStringBuilder()
-		//		val invalidator = NetworkEmojiInvalidator(activity.handler, b)
-		//		extra_invalidator_list.add(invalidator)
-		//		for(ar in accounts) {
-		//			val a = ar.get()
-		//			val url = access_info.supplyBaseUrl(a.avatar_static)
-		//			if(url?.isNotEmpty() == true) {
-		//				if(sb.isNotEmpty()) sb.append(' ')
-		//				val start = sb.length
-		//				sb.append(a.acct)
-		//				val end = sb.length
-		//				sb.setSpan(
-		//					NetworkEmojiSpan(url)
-		//					, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-		//				)
-		//			}
-		//		}
-		//		b.text = sb
-		//		invalidator.register(sb)
+		val accounts = cs.accounts
+		val last_account_id = cs.last_status.account.id
 		
-		// 消えてしまったりちらついたりするので保留
-		//
-		//		val llIconBar = FlexboxLayout(activity)
-		//		val boxLp = LinearLayout.LayoutParams(
-		//			LinearLayout.LayoutParams.MATCH_PARENT,
-		//			LinearLayout.LayoutParams.WRAP_CONTENT
-		//		)
-		//		boxLp.topMargin = mt
-		//		llIconBar.layoutParams = boxLp
-		//		llIconBar.flexWrap = FlexWrap.WRAP
-		//		llIconBar.justifyContent = JustifyContent.FLEX_START
-		//		llExtra.addView(llIconBar)
-		//
-		//		for(whoRef in accounts) {
-		//			val who = whoRef.get()
-		//			val icon = MyNetworkImageView(activity)
-		//			val lp = FlexboxLayout.LayoutParams(wh, wh)
-		//			lp.marginEnd = me
-		//			icon.layoutParams = lp
-		//			icon.contentDescription = who.acct
-		//			icon.scaleType = ImageView.ScaleType.CENTER_CROP
-		//			llIconBar.addView(icon)
-		//
-		//			// ビュー階層に追加した後にURLをセットする
-		//			icon.setImageUrl(
-		//				activity.pref,
-		//				Styler.calcIconRound(lp),
-		//				access_info.supplyBaseUrl(who.avatar_static),
-		//				access_info.supplyBaseUrl(who.avatar)
-		//			)
-		//			icon.setOnClickListener {
-		//				val pos = activity.nextPosition(column)
-		//				when {
-		//					access_info.isMisskey -> Action_User.profileLocal(
-		//						activity,
-		//						pos,
-		//						access_info,
-		//						who
-		//					)
-		//					access_info.isPseudo -> DlgContextMenu(
-		//						activity,
-		//						column,
-		//						whoRef,
-		//						null,
-		//						null
-		//					).show()
-		//					else -> Action_User.profileLocal(activity, pos, access_info, who)
-		//				}
-		//			}
-		//
-		//		}
+		val accountsOther = cs.accounts.filter { it.get().id != last_account_id }
+		if(accountsOther.isNotEmpty()) {
+			llConversationIcons.visibility = View.VISIBLE
+			
+			val size = accountsOther.size
+			
+			tvConversationParticipants.text =if(size <= 1){
+				activity.getString(R.string.conversation_to)
+			}else{
+				activity.getString(R.string.participants)
+			}
+			
+			fun showIcon(iv : MyNetworkImageView, idx : Int) {
+				if(idx >= size) {
+					iv.visibility = View.GONE
+					return
+				}
+				val who = accountsOther[idx].get()
+				iv.setImageUrl(
+					activity.pref,
+					Styler.calcIconRound(iv.layoutParams),
+					access_info.supplyBaseUrl(who.avatar_static),
+					access_info.supplyBaseUrl(who.avatar)
+				)
+			}
+			showIcon(ivConversationIcon1, 0)
+			showIcon(ivConversationIcon2, 1)
+			showIcon(ivConversationIcon3, 2)
+			showIcon(ivConversationIcon4, 3)
+			
+			tvConversationIconsMore.text = when {
+				size <= 4 -> ""
+				else -> activity.getString(R.string.participants_and_more)
+			}
+		}
+
+		if( cs.last_status.in_reply_to_id != null ) {
+			llSearchTag.visibility = View.VISIBLE
+			btnSearchTag.text = activity.getString(R.string.show_conversation)
+		}
+	}
+	
+	private fun openConversationSummary(){
+		val cs = item as? TootConversationSummary ?: return
 		
+		if(cs.unread) {
+			cs.unread = false
+			// 表示の更新
+			list_adapter.notifyChange(
+				reason = "ConversationSummary reset unread",
+				reset = true
+			)
+			// 未読フラグのクリアをサーバに送る
+			Action_Toot.clearConversationUnread(activity,access_info,cs)
+		}
+		
+		Action_Toot.conversation(
+			activity,
+			activity.nextPosition(column),
+			access_info,
+			cs.last_status
+		)
 	}
 	
 	private fun showStatusOrReply(item : TootStatus) {
@@ -851,8 +865,10 @@ internal class ItemViewHolder(
 		ivFollow.setImageUrl(
 			activity.pref,
 			Styler.calcIconRound(ivFollow.layoutParams),
-			access_info.supplyBaseUrl(who.avatar_static)
+			access_info.supplyBaseUrl(who.avatar_static),
+			access_info.supplyBaseUrl(who.avatar)
 		)
+		
 		tvFollowerName.text = whoRef.decoded_display_name
 		follow_invalidator.register(whoRef.decoded_display_name)
 		
@@ -920,12 +936,7 @@ internal class ItemViewHolder(
 		//		}
 		
 		var content = status.decoded_content
-		llExtra.removeAllViews()
-		for(invalidator in extra_invalidator_list) {
-			invalidator.register(null)
-		}
-		extra_invalidator_list.clear()
-		
+
 		// ニコフレのアンケートの表示
 		val enquete = status.enquete
 		if(enquete != null) {
@@ -949,7 +960,7 @@ internal class ItemViewHolder(
 		// カードの表示(会話ビューのみ)
 		val card = status.card
 		if(card != null) {
-			makeCardView(activity, llExtra, card)
+			showPreviewCard(activity, card)
 		}
 		
 		//			if( status.decoded_tags == null ){
@@ -1032,10 +1043,15 @@ internal class ItemViewHolder(
 			
 			btnShowMedia.visibility = if(! is_shown) View.VISIBLE else View.GONE
 			llMedia.visibility = if(! is_shown) View.GONE else View.VISIBLE
-			setMedia(ivMedia1, status, media_attachments, 0)
-			setMedia(ivMedia2, status, media_attachments, 1)
-			setMedia(ivMedia3, status, media_attachments, 2)
-			setMedia(ivMedia4, status, media_attachments, 3)
+			val sb = StringBuilder()
+			setMedia(media_attachments, sb, ivMedia1, 0)
+			setMedia(media_attachments, sb, ivMedia2, 1)
+			setMedia(media_attachments, sb, ivMedia3, 2)
+			setMedia(media_attachments, sb, ivMedia4, 3)
+			if( sb. isNotEmpty()){
+				tvMediaDescription.visibility = View.VISIBLE
+				tvMediaDescription.text = sb
+			}
 		}
 		
 		makeReactionsView(status.reactionCounts)
@@ -1258,9 +1274,9 @@ internal class ItemViewHolder(
 	}
 	
 	private fun setMedia(
-		iv : MyNetworkImageView,
-		status : TootStatus,
 		media_attachments : ArrayList<TootAttachmentLike>,
+		sbDesc : StringBuilder,
+		iv : MyNetworkImageView,
 		idx : Int
 	) {
 		val ta = if(idx < media_attachments.size) media_attachments[idx] else null
@@ -1310,15 +1326,11 @@ internal class ItemViewHolder(
 						if(column.content_color != 0) column.content_color else content_color_default
 					tv.setTextColor(c)
 					
-					//
-					val desc =
-						activity.getString(R.string.media_description, idx + 1, ta.description)
-					tv.text = DecodeOptions(
-						activity,
-						emojiMapCustom = status.custom_emojis,
-						emojiMapProfile = status.profile_emojis
-					).decodeEmoji(desc)
-					llExtra.addView(tv)
+					if( ta.description ?. isNotEmpty() == true){
+						if( sbDesc.isNotEmpty()) sbDesc.append("\n")
+						val desc = activity.getString(R.string.media_description, idx + 1, ta.description)
+						sbDesc.append(desc)
+					}
 				}
 				
 				return
@@ -1340,6 +1352,8 @@ internal class ItemViewHolder(
 		}
 	}
 	private var boostedAction : () -> Unit = defaultBoostedAction
+	
+
 	
 	override fun onClick(v : View) {
 		
@@ -1414,6 +1428,9 @@ internal class ItemViewHolder(
 			}
 			
 			btnSearchTag, llTrendTag -> when(item) {
+				
+				is TootConversationSummary -> openConversationSummary()
+				
 				is TootGap -> column.startGap(item)
 				
 				is TootDomainBlock -> {
@@ -1499,12 +1516,11 @@ internal class ItemViewHolder(
 				openFilterMenu(item)
 			}
 			
-			else -> when(v.id) {
-				R.id.ivCardThumbnail -> status_showing?.card?.url?.let { url ->
-					if(url.isNotEmpty()) App1.openCustomTab(activity, url)
-				}
+			ivCardImage-> status_showing?.card?.url?.let { url ->
+				if(url.isNotEmpty()) App1.openCustomTab(activity, url)
 			}
 			
+			llConversationIcons -> openConversationSummary()
 		}
 	}
 	
@@ -1650,22 +1666,7 @@ internal class ItemViewHolder(
 		}
 	}
 	
-	private fun makeCardView(activity : ActMain, llExtra : LinearLayout, card : TootCard) {
-		var lp = LinearLayout.LayoutParams(
-			LinearLayout.LayoutParams.MATCH_PARENT,
-			LinearLayout.LayoutParams.WRAP_CONTENT
-		)
-		lp.topMargin = (0.5f + llExtra.resources.displayMetrics.density * 3f).toInt()
-		val tv = MyTextView(activity)
-		tv.layoutParams = lp
-		//
-		tv.movementMethod = MyLinkMovementMethod
-		if(! activity.timeline_font_size_sp.isNaN()) {
-			tv.textSize = activity.timeline_font_size_sp
-		}
-		val c = if(column.content_color != 0) column.content_color else content_color_default
-		tv.setTextColor(c)
-		
+	private fun showPreviewCard(activity : ActMain,  card : TootCard) {
 		val sb = StringBuilder()
 		addLinkAndCaption(sb, activity.getString(R.string.card_header_card), card.url, card.title)
 		addLinkAndCaption(
@@ -1689,33 +1690,24 @@ internal class ItemViewHolder(
 			
 			sb.append(HTMLDecoder.encodeEntity(ellipsize(description,if( limit <= 0 ) 64 else limit)))
 		}
-		val html = sb.toString()
-		//
-		tv.text = DecodeOptions(activity, access_info).decodeHTML(html)
-		llExtra.addView(tv)
+		
+		if( sb.isNotEmpty() ){
+			val text = DecodeOptions(activity, access_info).decodeHTML(sb.toString())
+			if( text.isNotEmpty()){
+				tvCardText.visibility = View.VISIBLE
+				tvCardText.text = text
+			}
+		}
 		
 		val image = card.image
 		if(image != null && image.isNotEmpty()) {
-			lp = LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT,
-				activity.app_state.media_thumb_height
-			)
-			lp.topMargin = (0.5f + llExtra.resources.displayMetrics.density * 3f).toInt()
-			val iv = MyNetworkImageView(activity)
-			iv.layoutParams = lp
-			//
-			iv.id = R.id.ivCardThumbnail
-			iv.setOnClickListener(this)
-			iv.scaleType =
-				if(Pref.bpDontCropMediaThumb(App1.pref)) ImageView.ScaleType.FIT_CENTER else ImageView.ScaleType.CENTER_CROP
-			iv.setImageUrl(
+			ivCardImage.visibility = View.VISIBLE
+			ivCardImage.setImageUrl(
 				activity.pref,
 				0f,
 				access_info.supplyBaseUrl(image),
 				access_info.supplyBaseUrl(image)
 			)
-			
-			llExtra.addView(iv)
 		}
 	}
 	
@@ -2185,7 +2177,6 @@ internal class ItemViewHolder(
 			}
 			
 			
-			
 			llStatus = verticalLayout {
 				lparams(matchParent, wrapContent)
 				
@@ -2508,7 +2499,26 @@ internal class ItemViewHolder(
 								}
 							}
 							
+							tvMediaDescription = textView{}.lparams(matchParent, wrapContent)
 							
+							tvCardText = textView{
+							
+							}.lparams(matchParent, wrapContent){
+								topMargin = dip(3)
+							}
+							
+							ivCardImage = myNetworkImageView {
+								
+								contentDescription = context.getString(R.string.thumbnail)
+								
+								scaleType = if(Pref.bpDontCropMediaThumb(App1.pref))
+									ImageView.ScaleType.FIT_CENTER
+								else
+									ImageView.ScaleType.CENTER_CROP
+								
+							}.lparams(matchParent, activity.app_state.media_thumb_height) {
+								topMargin = dip(3)
+							}
 							
 							
 							llExtra = verticalLayout {
@@ -2516,6 +2526,7 @@ internal class ItemViewHolder(
 									topMargin = dip(0)
 								}
 							}
+							
 						}
 						
 						// button bar
@@ -2539,6 +2550,44 @@ internal class ItemViewHolder(
 					
 				}
 				
+			}
+			
+			llConversationIcons = linearLayout {
+				lparams(matchParent, dip(40))
+				
+				isBaselineAligned = false
+				gravity = Gravity.START or Gravity.CENTER_VERTICAL
+				
+				tvConversationParticipants = textView {
+					text = context.getString(R.string.participants)
+				}.lparams(wrapContent,wrapContent){
+					endMargin = dip(3)
+				}
+				
+				ivConversationIcon1 = myNetworkImageView {
+					scaleType = ImageView.ScaleType.CENTER_CROP
+				}.lparams(dip(24),dip(24)) {
+					endMargin = dip(3)
+				}
+				ivConversationIcon2 = myNetworkImageView {
+					scaleType = ImageView.ScaleType.CENTER_CROP
+				}.lparams(dip(24),dip(24)) {
+					endMargin = dip(3)
+				}
+				ivConversationIcon3 = myNetworkImageView {
+					scaleType = ImageView.ScaleType.CENTER_CROP
+				}.lparams(dip(24),dip(24)) {
+					endMargin = dip(3)
+				}
+				ivConversationIcon4 = myNetworkImageView {
+					scaleType = ImageView.ScaleType.CENTER_CROP
+				}.lparams(dip(24),dip(24)) {
+					endMargin = dip(3)
+				}
+				
+				tvConversationIconsMore = textView {
+				
+				}.lparams(wrapContent,wrapContent)
 			}
 			
 			llSearchTag = linearLayout {

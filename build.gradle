@@ -26,6 +26,7 @@ buildscript {
         // https://issuetracker.google.com/issues/79122163
 
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        // kotlin 1.3.0 を入れるとIDEがindex作成でエラーを繰り返し出すようになるので様子見する
     }
 }
 

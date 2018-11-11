@@ -779,5 +779,10 @@
     <string name="card_description_length">プレビューカード説明文の最大文字数</string>
     <string name="status_deleted_at">この投稿は %1$s に削除されました</string>
     <string name="status_deleted">この投稿は削除されました</string>
+    <string name="conversation_without_reply">(返信なし)</string>
+    <string name="show_conversation">会話を見る</string>
+    <string name="participants">会話の参加者:</string>
+    <string name="participants_and_more">…他</string>
+    <string name="conversation_to">送り先:</string>
 
 </resources>

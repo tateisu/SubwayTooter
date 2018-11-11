@@ -6562,24 +6562,36 @@ class Column(
 		list_new : ArrayList<TimelineItem>,
 		list_data : BucketList<TimelineItem>
 	) {
-		val removeSet = HashSet<EntityId>()
-		loop@ for(o in list_new) {
-			if(o is TootConversationSummary) {
-				removeSet.add(o.getOrderId())
-			}
+		
+		val newMap = HashMap<EntityId,TootConversationSummary>()
+		for(o in list_new) {
+			if(o is TootConversationSummary) newMap[ o.id ] = o
 		}
 		
-		if(list_data.isNotEmpty() && removeSet.isNotEmpty()) {
+		if(list_data.isNotEmpty() && newMap.isNotEmpty()) {
+			val removeSet = HashSet<EntityId>()
 			for(i in list_data.size - 1 downTo 0) {
-				val o = list_data[i]
-				if(o is TootConversationSummary && removeSet.contains(o.id)) {
+				val o = list_data[i] as? TootConversationSummary ?: continue
+				val newItem = newMap[o.id] ?: continue
+				
+				if( o.last_status.uri == newItem.last_status.uri ){
+					// 投稿が同じなので順序を入れ替えず、その場所で更新する
+					changeList.add(AdapterChange(AdapterChangeType.RangeChange, i, 1))
+					list_data[i] = newItem
+					removeSet.add(newItem.id)
+					log.d("replaceConversationSummary: in-place update")
+				}else{
+					// 投稿が異なるので古い方を削除して、リストの順序を変える
 					changeList.add(AdapterChange(AdapterChangeType.RangeRemove, i, 1))
 					list_data.removeAt(i)
-					log.d("remove old TootConversationSummary")
+					log.d("replaceConversationSummary: order change")
 				}
 			}
+			for(i in list_new.size -1 downTo 0 ) {
+				val o = list_data[i] as? TootConversationSummary ?: continue
+				if(removeSet.contains(o.id)) list_new.removeAt(i)
+			}
 		}
-		
 	}
 	
 	private fun makeMisskeyBaseParameter(parser : TootParser?) : JSONObject =

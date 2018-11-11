@@ -798,5 +798,10 @@
     <string name="card_description_length">Preview card description max character count</string>
     <string name="status_deleted_at">This note has been deleted at %1$s</string>
     <string name="status_deleted">This note has been deleted</string>
+    <string name="conversation_without_reply">(no reply)</string>
+    <string name="show_conversation">SHOW CONVERSATION</string>
+    <string name="participants">Conversation participants:</string>
+    <string name="participants_and_more">… and more</string>
+    <string name="conversation_to">To:</string>
 
 </resources>

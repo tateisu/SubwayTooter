@@ -433,6 +433,10 @@ class ActMain : AppCompatActivity()
 		}
 	}
 	
+	override fun onNewIntent(intent : Intent?) {
+		super.onNewIntent(intent)
+		log.w("onNewIntent: isResumed = isResumed")
+	}
 	override fun onSaveInstanceState(outState : Bundle?) {
 		log.d("onSaveInstanceState")
 		super.onSaveInstanceState(outState)
@@ -549,9 +553,12 @@ class ActMain : AppCompatActivity()
 		
 	}
 	
+	private var isResumed = false
+	
 	override fun onResume() {
 		super.onResume()
 		log.d("onResume")
+		isResumed = true
 		
 		MyClickableSpan.link_callback = WeakReference(link_click_listener)
 		
@@ -577,6 +584,7 @@ class ActMain : AppCompatActivity()
 	
 	override fun onPause() {
 		log.d("onPause")
+		isResumed = false
 		
 		// 最後に表示していたカラムの位置
 		val last_pos = phoneTab(
@@ -629,15 +637,19 @@ class ActMain : AppCompatActivity()
 	
 	private fun handleSentIntent(intent : Intent) {
 		sent_intent2 = intent
-		AccountPicker.pick(
-			this,
-			bAllowPseudo = false,
-			bAuto = true,
-			message = getString(R.string.account_picker_toot)
-			, dismiss_callback = { sent_intent2 = null }
-		) { ai ->
-			sent_intent2 = null
-			ActPost.open(this@ActMain, REQUEST_CODE_POST, ai.db_id, sent_intent = intent)
+
+		// Galaxy S8+ で STのSSを取った後に出るポップアップからそのまま共有でSTを選ぶと何も起きない問題への対策
+		handler.post{
+			AccountPicker.pick(
+				this,
+				bAllowPseudo = false,
+				bAuto = true,
+				message = getString(R.string.account_picker_toot)
+				, dismiss_callback = { sent_intent2 = null }
+			) { ai ->
+				sent_intent2 = null
+				ActPost.open(this@ActMain, REQUEST_CODE_POST, ai.db_id, sent_intent = intent)
+			}
 		}
 	}
 	

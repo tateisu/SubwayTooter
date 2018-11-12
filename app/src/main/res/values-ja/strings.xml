@@ -785,5 +785,6 @@
     <string name="participants_and_more">…他</string>
     <string name="conversation_to">送り先:</string>
     <string name="make_quote_renote">引用Renoteにする</string>
+    <string name="mute_application_confirm">アプリ \"%1$s\" はミュートされます。よろしいですか?</string>
 
 </resources>

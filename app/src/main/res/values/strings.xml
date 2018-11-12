@@ -804,5 +804,6 @@
     <string name="participants_and_more">… and more</string>
     <string name="conversation_to">To:</string>
     <string name="make_quote_renote">Use \"Quoted Renote\"</string>
+    <string name="mute_application_confirm">Application \"%1$s\" will be muted. Are you sure ?</string>
 
 </resources>

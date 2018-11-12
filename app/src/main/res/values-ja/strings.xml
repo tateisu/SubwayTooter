@@ -784,5 +784,6 @@
     <string name="participants">会話の参加者:</string>
     <string name="participants_and_more">…他</string>
     <string name="conversation_to">送り先:</string>
+    <string name="make_quote_renote">引用Renoteにする</string>
 
 </resources>

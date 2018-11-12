@@ -152,6 +152,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		internal const val DRAFT_REPLY_URL = "reply_url"
 		internal const val DRAFT_IS_ENQUETE = "is_enquete"
 		internal const val DRAFT_ENQUETE_ITEMS = "enquete_items"
+		internal const val DRAFT_QUOTED_RENOTE = "quotedRenote"
 		
 		private const val STATE_MUSHROOM_INPUT = "mushroom_input"
 		private const val STATE_MUSHROOM_START = "mushroom_start"
@@ -222,6 +223,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	internal lateinit var cbContentWarning : CheckBox
 	internal lateinit var etContentWarning : MyEditText
 	internal lateinit var etContent : MyEditText
+	
+	internal lateinit var cbQuoteRenote : CheckBox
 	
 	internal lateinit var cbEnquete : CheckBox
 	private lateinit var llEnquete : View
@@ -703,13 +706,16 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			selectAccount(null)
 		}
 		
+		
 		updateContentWarning()
 		showMediaAttachment()
 		showVisibility()
 		updateTextCount()
 		showReplyTo()
 		showEnquete()
+		showQuotedRenote()
 	}
+	
 	
 	override fun onDestroy() {
 		post_helper.onDestroy()
@@ -765,6 +771,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		updateTextCount()
 		showReplyTo()
 		showEnquete()
+		showQuotedRenote()
 	}
 	
 	private fun appendContentText(
@@ -852,6 +859,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		cbContentWarning = findViewById(R.id.cbContentWarning)
 		etContentWarning = findViewById(R.id.etContentWarning)
 		etContent = findViewById(R.id.etContent)
+		
+		cbQuoteRenote= findViewById(R.id.cbQuoteRenote)
 		
 		cbEnquete = findViewById(R.id.cbEnquete)
 		llEnquete = findViewById(R.id.llEnquete)
@@ -1128,6 +1137,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			log.trace(ex)
 		}
 		showVisibility()
+		showQuotedRenote()
 	}
 	
 	@SuppressLint("StaticFieldLeak")
@@ -1974,6 +1984,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		post_helper.redraft_status_id = redraft_status_id
 		
+		post_helper.useQuotedRenote = cbQuoteRenote.isChecked
+		
 		post_helper.post(account) { target_account, status ->
 			val data = Intent()
 			data.putExtra(EXTRA_POSTED_ACCT, target_account.acct)
@@ -1984,6 +1996,12 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			isPostComplete = true
 			this@ActPost.finish()
 		}
+	}
+	
+	private fun showQuotedRenote() {
+		val isReply = in_reply_to_id != null
+		val isMisskey = account?.isMisskey == true
+		cbQuoteRenote.visibility = if( isReply && isMisskey ) View.VISIBLE else View.GONE
 	}
 	
 	internal fun showReplyTo() {
@@ -2008,6 +2026,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		in_reply_to_image = null
 		in_reply_to_url = null
 		showReplyTo()
+		showQuotedRenote()
 	}
 	
 	private fun saveDraft() {
@@ -2054,7 +2073,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			json.put(DRAFT_REPLY_IMAGE, in_reply_to_image)
 			json.put(DRAFT_REPLY_URL, in_reply_to_url)
 			
+			json.put(DRAFT_QUOTED_RENOTE,cbQuoteRenote.isChecked)
 			json.put(DRAFT_IS_ENQUETE, isEnquete)
+			
 			val array = JSONArray()
 			for(s in str_choice) {
 				array.put(s)
@@ -2206,6 +2227,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				val draft_visibility = TootVisibility
 					.parseSavedVisibility(draft.parseString(DRAFT_VISIBILITY))
 				
+				
 				val evEmoji = DecodeOptions(this@ActPost, decodeEmoji = true).decodeEmoji(content)
 				etContent.setText(evEmoji)
 				etContent.setSelection(evEmoji.length)
@@ -2215,6 +2237,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				cbNSFW.isChecked = nsfw_checked
 				if(draft_visibility != null) this@ActPost.visibility = draft_visibility
 				
+				cbQuoteRenote.isChecked = draft.optBoolean(DRAFT_QUOTED_RENOTE)
 				cbEnquete.isChecked = draft.optBoolean(DRAFT_IS_ENQUETE, false)
 				val array = draft.optJSONArray(DRAFT_ENQUETE_ITEMS)
 				if(array != null) {
@@ -2254,6 +2277,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					in_reply_to_image = reply_image
 					in_reply_to_url = reply_url
 				}
+
 				
 				updateContentWarning()
 				showMediaAttachment()
@@ -2261,6 +2285,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				updateTextCount()
 				showReplyTo()
 				showEnquete()
+				showQuotedRenote()
 				
 				if(! list_warning.isEmpty()) {
 					val sb = StringBuilder()

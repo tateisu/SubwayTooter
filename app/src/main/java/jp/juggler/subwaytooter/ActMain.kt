@@ -200,7 +200,7 @@ class ActMain : AppCompatActivity()
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	
-	private val link_click_listener : MyClickableSpanClickCallback = { viewClicked, span ->
+	internal val link_click_listener : MyClickableSpanClickCallback = { viewClicked, span ->
 		
 		var view = viewClicked
 		var column : Column? = null
@@ -353,8 +353,8 @@ class ActMain : AppCompatActivity()
 	// (カラム一覧画面のデフォルト選択位置に使われる)
 	val currentColumn : Int
 		get() = phoneTab(
-			{ pe -> pe.pager.currentItem },
-			{ _ -> - 1 }
+			{ it.pager.currentItem },
+			{ - 1 }
 		)
 	
 	// 新しいカラムをどこに挿入するか
@@ -369,8 +369,8 @@ class ActMain : AppCompatActivity()
 	// 新しいカラムをどこに挿入するか
 	private val defaultInsertPosition : Int
 		get() = phoneTab(
-			{ pe -> pe.pager.currentItem + 1 },
-			{ _ -> Integer.MAX_VALUE }
+			{ it.pager.currentItem + 1 },
+			{ Integer.MAX_VALUE }
 		)
 	
 	private fun validateFloat(fv : Float) : Float {
@@ -664,15 +664,15 @@ class ActMain : AppCompatActivity()
 	private fun performQuickPost(account : SavedAccount?) {
 		if(account == null) {
 			phoneTab({ env ->
-
+				
 				// スマホモードなら表示中のカラムがあればそれで
-				val c = try{
+				val c = try {
 					app_state.column_list[env.pager.currentItem]
-				}catch(ex:Throwable){
+				} catch(ex : Throwable) {
 					null
 				}
-
-				if( c?.access_info?.isPseudo == false ) {
+				
+				if(c?.access_info?.isPseudo == false) {
 					// 疑似アカウントではない
 					performQuickPost(c.access_info)
 				} else {
@@ -684,7 +684,7 @@ class ActMain : AppCompatActivity()
 						message = getString(R.string.account_picker_toot)
 					) { ai -> performQuickPost(ai) }
 				}
-			}, { _ ->
+			}, {
 				// アカウント選択してやり直し
 				AccountPicker.pick(
 					this,
@@ -702,7 +702,8 @@ class ActMain : AppCompatActivity()
 		post_helper.bNSFW = false
 		post_helper.in_reply_to_id = null
 		post_helper.attachment_list = null
-		post_helper.emojiMapCustom = App1.custom_emoji_lister.getMap(account.host,account.isMisskey)
+		post_helper.emojiMapCustom =
+			App1.custom_emoji_lister.getMap(account.host, account.isMisskey)
 		
 		
 		etQuickToot.hideKeyboard()
@@ -1324,7 +1325,6 @@ class ActMain : AppCompatActivity()
 			env.tablet_pager.layoutManager = env.tablet_layout_manager
 			env.tablet_pager.addOnScrollListener(object : RecyclerView.OnScrollListener() {
 				
-				
 				override fun onScrollStateChanged(recyclerView : RecyclerView, newState : Int) {
 					super.onScrollStateChanged(recyclerView, newState)
 					
@@ -1423,7 +1423,7 @@ class ActMain : AppCompatActivity()
 			if(c == 0) {
 				Styler.setIconAttr(this, ivIcon, column.getIconAttrId(column.column_type))
 			} else {
-				Styler.setIconAttr(this, ivIcon, column.getIconAttrId(column.column_type),c)
+				Styler.setIconAttr(this, ivIcon, column.getIconAttrId(column.column_type), c)
 			}
 			
 			//
@@ -1460,7 +1460,7 @@ class ActMain : AppCompatActivity()
 					var slide_ratio = 0f
 					if(vr.first <= vr.last) {
 						val child = env.tablet_layout_manager.findViewByPosition(vr.first)
-						slide_ratio = Math.abs( (child?.left ?: 0) / nColumnWidth.toFloat())
+						slide_ratio = Math.abs((child?.left ?: 0) / nColumnWidth.toFloat())
 					}
 					
 					llColumnStrip.setVisibleRange(vr.first, vr.last, slide_ratio)
@@ -1505,9 +1505,9 @@ class ActMain : AppCompatActivity()
 	
 	// ActOAuthCallbackで受け取ったUriを処理する
 	private fun handleIntentUri(uri : Uri) {
-
+		
 		log.d("handleIntentUri ${uri}")
-
+		
 		when(uri.scheme) {
 			"subwaytooter", "misskeyclientproto" -> return try {
 				handleOAuth2CallbackUri(uri)
@@ -2031,7 +2031,7 @@ class ActMain : AppCompatActivity()
 				}
 			}
 			
-		}, { _ ->
+		}, {
 			removeColumn(column)
 			
 			if(! app_state.column_list.isEmpty() && page_delete > 0) {
@@ -2061,8 +2061,8 @@ class ActMain : AppCompatActivity()
 		
 		var lastColumnIndex = when(_lastColumnIndex) {
 			- 1 -> phoneTab(
-				{ pe -> pe.pager.currentItem },
-				{ _ -> 0 }
+				{ it.pager.currentItem },
+				{ 0 }
 			)
 			else -> _lastColumnIndex
 		}
@@ -2272,9 +2272,9 @@ class ActMain : AppCompatActivity()
 			Styler.setIconAttr(this, btnMenu, R.attr.ic_hamburger)
 			Styler.setIconAttr(this, btnQuickToot, R.attr.btn_post)
 		} else {
-			Styler.setIconAttr(this, btnToot,  R.attr.ic_edit,c)
-			Styler.setIconAttr(this, btnMenu,  R.attr.ic_hamburger,c)
-			Styler.setIconAttr(this, btnQuickToot,  R.attr.btn_post,c)
+			Styler.setIconAttr(this, btnToot, R.attr.ic_edit, c)
+			Styler.setIconAttr(this, btnMenu, R.attr.ic_hamburger, c)
+			Styler.setIconAttr(this, btnQuickToot, R.attr.btn_post, c)
 		}
 		
 		c = footer_tab_bg_color
@@ -2337,9 +2337,9 @@ class ActMain : AppCompatActivity()
 			for(i in 0 until env.tablet_layout_manager.childCount) {
 				val v = env.tablet_layout_manager.getChildAt(i)
 				
-				val columnViewHolder =when(v){
-					null-> null
-					else->(env.tablet_pager.getChildViewHolder(v) as? TabletColumnViewHolder)?.columnViewHolder
+				val columnViewHolder = when(v) {
+					null -> null
+					else -> (env.tablet_pager.getChildViewHolder(v) as? TabletColumnViewHolder)?.columnViewHolder
 				}
 				
 				if(columnViewHolder?.isColumnSettingShown == true) {
@@ -2569,7 +2569,7 @@ class ActMain : AppCompatActivity()
 						ZipInputStream(FileInputStream(file)).use { zipStream ->
 							while(true) {
 								val entry = zipStream.nextEntry ?: break
-								++zipEntryCount
+								++ zipEntryCount
 								try {
 									//
 									val entryName = entry.name
@@ -2581,13 +2581,13 @@ class ActMain : AppCompatActivity()
 										continue
 									}
 									
-									if( AppDataExporter.restoreBackgroundImage(
+									if(AppDataExporter.restoreBackgroundImage(
 											this@ActMain,
 											newColumnList,
 											zipStream,
 											entryName
 										)
-									){
+									) {
 										continue
 									}
 								} finally {
@@ -2597,12 +2597,12 @@ class ActMain : AppCompatActivity()
 						}
 					} catch(ex : Throwable) {
 						log.trace(ex)
-						if(zipEntryCount!=0) {
+						if(zipEntryCount != 0) {
 							showToast(this@ActMain, ex, "importAppData failed.")
 						}
 					}
 					// zipではなかった場合、zipEntryがない状態になる。例外はPH-1では出なかったが、出ても問題ないようにする。
-					if(zipEntryCount==0) {
+					if(zipEntryCount == 0) {
 						InputStreamReader(FileInputStream(file), "UTF-8").use { inStream ->
 							newColumnList = AppDataExporter.decodeAppData(
 								this@ActMain,
@@ -2767,13 +2767,12 @@ class ActMain : AppCompatActivity()
 		}
 	}
 	
-	private var dlgPrivacyPolicy : WeakReference<Dialog>?=null
+	private var dlgPrivacyPolicy : WeakReference<Dialog>? = null
 	
 	private fun checkPrivacyPolicy() {
 		
 		// 既に表示中かもしれない
-		if( dlgPrivacyPolicy?.get()?.isShowing == true) return
-		
+		if(dlgPrivacyPolicy?.get()?.isShowing == true) return
 		
 		val res_id = when(getString(R.string.language_code)) {
 			"ja" -> R.raw.privacy_policy_ja
@@ -2783,29 +2782,27 @@ class ActMain : AppCompatActivity()
 		
 		// プライバシーポリシーデータの読み込み
 		val bytes = loadRawResource(res_id)
-		if( bytes.isEmpty() ) return
+		if(bytes.isEmpty()) return
 		
 		// 同意ずみなら表示しない
 		val digest = bytes.digestSHA256().encodeBase64Url()
-		if( digest == Pref.spAgreedPrivacyPolicyDigest(pref) ) return
+		if(digest == Pref.spAgreedPrivacyPolicyDigest(pref)) return
 		
 		val dialog = AlertDialog.Builder(this)
 			.setTitle(R.string.privacy_policy)
-			.setMessage( bytes.decodeUTF8())
-			.setNegativeButton(R.string.cancel){_,_ ->
+			.setMessage(bytes.decodeUTF8())
+			.setNegativeButton(R.string.cancel) { _, _ ->
 				finish()
 			}
-			.setOnCancelListener{_->
+			.setOnCancelListener {
 				finish()
 			}
-			.setPositiveButton(R.string.agree){_,_ ->
-				pref.edit().put(Pref.spAgreedPrivacyPolicyDigest,digest).apply()
+			.setPositiveButton(R.string.agree) { _, _ ->
+				pref.edit().put(Pref.spAgreedPrivacyPolicyDigest, digest).apply()
 			}
 			.create()
 		dlgPrivacyPolicy = WeakReference(dialog)
 		dialog.show()
 	}
-	
-	
 	
 }

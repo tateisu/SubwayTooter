@@ -21,7 +21,8 @@ class DecodeOptions(
 	var emojiMapProfile : HashMap<String, NicoProfileEmoji>? = null,
 	var highlightTrie : WordTrieTree? = null,
 	var unwrapEmojiImageTag :Boolean = false,
-	var enlargeCustomEmoji :Float = 1f
+	var enlargeCustomEmoji :Float = 1f,
+	var forceHtml : Boolean = false // force use HTML instead of Misskey Markdown
 ) {
 	
 	internal fun isMediaAttachment(url : String?) : Boolean {

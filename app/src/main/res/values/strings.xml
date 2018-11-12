@@ -803,5 +803,6 @@
     <string name="participants">Conversation participants:</string>
     <string name="participants_and_more">… and more</string>
     <string name="conversation_to">To:</string>
+    <string name="make_quote_renote">Use \"Quoted Renote\"</string>
 
 </resources>

@@ -26,6 +26,7 @@ import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
+import jp.juggler.subwaytooter.drawable.PreviewCardBorder
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.*
@@ -120,11 +121,12 @@ internal class ItemViewHolder(
 	private lateinit var tvFilterDetail : TextView
 	
 	private lateinit var tvMediaDescription : TextView
+	
+	private lateinit var llCardOuter : View
 	private lateinit var tvCardText : TextView
 	private lateinit var ivCardImage : MyNetworkImageView
 	
 	private lateinit var llExtra : LinearLayout
-	
 	
 	private lateinit var llConversationIcons : View
 	private lateinit var ivConversationIcon1 : MyNetworkImageView
@@ -133,8 +135,6 @@ internal class ItemViewHolder(
 	private lateinit var ivConversationIcon4 : MyNetworkImageView
 	private lateinit var tvConversationIconsMore : TextView
 	private lateinit var tvConversationParticipants : TextView
-	
-	
 	
 	private lateinit var tvApplication : TextView
 	
@@ -181,7 +181,8 @@ internal class ItemViewHolder(
 		btnFollow.setOnClickListener(this)
 		btnFollow.setOnLongClickListener(this)
 		
-		ivCardImage.setOnClickListener(this)
+		llCardOuter.setOnClickListener(this)
+		llCardOuter.setOnLongClickListener(this)
 		
 		ivThumbnail.setOnClickListener(this)
 		
@@ -263,6 +264,13 @@ internal class ItemViewHolder(
 		this.reply_invalidator = NetworkEmojiInvalidator(activity.handler, tvReply)
 		this.follow_invalidator = NetworkEmojiInvalidator(activity.handler, tvFollowerName)
 		this.name_invalidator = NetworkEmojiInvalidator(activity.handler, tvName)
+		
+		val cardBackground = llCardOuter.background
+		if(cardBackground is PreviewCardBorder) {
+			val density = activity.density
+			cardBackground.round = (density * 8f)
+			cardBackground.width = (density * 1f)
+		}
 	}
 	
 	fun onViewRecycled() {
@@ -375,6 +383,7 @@ internal class ItemViewHolder(
 		llTrendTag.visibility = View.GONE
 		llFilter.visibility = View.GONE
 		tvMediaDescription.visibility = View.GONE
+		llCardOuter.visibility = View.GONE
 		tvCardText.visibility = View.GONE
 		ivCardImage.visibility = View.GONE
 		llConversationIcons.visibility = View.GONE
@@ -401,6 +410,12 @@ internal class ItemViewHolder(
 		tvCardText.setTextColor(c)
 		tvConversationIconsMore.setTextColor(c)
 		tvConversationParticipants.setTextColor(c)
+		
+		val cardBackground = llCardOuter.background
+		if(cardBackground is PreviewCardBorder) {
+			cardBackground.color = c
+		}
+		
 		
 		c = if(column.acct_color != 0) column.acct_color else Styler.getAttributeColor(
 			activity,
@@ -484,12 +499,10 @@ internal class ItemViewHolder(
 		}
 		extra_invalidator_list.clear()
 		
-		
 	}
 	
-	private fun showConversationIcons(cs:TootConversationSummary) {
+	private fun showConversationIcons(cs : TootConversationSummary) {
 		
-		val accounts = cs.accounts
 		val last_account_id = cs.last_status.account.id
 		
 		val accountsOther = cs.accounts.filter { it.get().id != last_account_id }
@@ -498,17 +511,17 @@ internal class ItemViewHolder(
 			
 			val size = accountsOther.size
 			
-			tvConversationParticipants.text =if(size <= 1){
+			tvConversationParticipants.text = if(size <= 1) {
 				activity.getString(R.string.conversation_to)
-			}else{
+			} else {
 				activity.getString(R.string.participants)
 			}
 			
 			fun showIcon(iv : MyNetworkImageView, idx : Int) {
 				val bShown = idx < size
 				iv.visibility = if(bShown) View.VISIBLE else View.GONE
-				if(!bShown) return
-
+				if(! bShown) return
+				
 				val who = accountsOther[idx].get()
 				iv.setImageUrl(
 					activity.pref,
@@ -527,14 +540,14 @@ internal class ItemViewHolder(
 				else -> activity.getString(R.string.participants_and_more)
 			}
 		}
-
-		if( cs.last_status.in_reply_to_id != null ) {
+		
+		if(cs.last_status.in_reply_to_id != null) {
 			llSearchTag.visibility = View.VISIBLE
 			btnSearchTag.text = activity.getString(R.string.show_conversation)
 		}
 	}
 	
-	private fun openConversationSummary(){
+	private fun openConversationSummary() {
 		val cs = item as? TootConversationSummary ?: return
 		
 		if(cs.unread) {
@@ -545,7 +558,7 @@ internal class ItemViewHolder(
 				reset = true
 			)
 			// 未読フラグのクリアをサーバに送る
-			Action_Toot.clearConversationUnread(activity,access_info,cs)
+			Action_Toot.clearConversationUnread(activity, access_info, cs)
 		}
 		
 		Action_Toot.conversation(
@@ -936,7 +949,7 @@ internal class ItemViewHolder(
 		//		}
 		
 		var content = status.decoded_content
-
+		
 		// ニコフレのアンケートの表示
 		val enquete = status.enquete
 		if(enquete != null) {
@@ -958,10 +971,7 @@ internal class ItemViewHolder(
 		}
 		
 		// カードの表示(会話ビューのみ)
-		val card = status.card
-		if(card != null) {
-			showPreviewCard(activity, card)
-		}
+		showPreviewCard(activity, status)
 		
 		//			if( status.decoded_tags == null ){
 		//				tvTags.setVisibility( View.GONE );
@@ -1048,7 +1058,7 @@ internal class ItemViewHolder(
 			setMedia(media_attachments, sb, ivMedia2, 1)
 			setMedia(media_attachments, sb, ivMedia3, 2)
 			setMedia(media_attachments, sb, ivMedia4, 3)
-			if( sb. isNotEmpty()){
+			if(sb.isNotEmpty()) {
 				tvMediaDescription.visibility = View.VISIBLE
 				tvMediaDescription.text = sb
 			}
@@ -1326,9 +1336,10 @@ internal class ItemViewHolder(
 						if(column.content_color != 0) column.content_color else content_color_default
 					tv.setTextColor(c)
 					
-					if( ta.description ?. isNotEmpty() == true){
-						if( sbDesc.isNotEmpty()) sbDesc.append("\n")
-						val desc = activity.getString(R.string.media_description, idx + 1, ta.description)
+					if(ta.description?.isNotEmpty() == true) {
+						if(sbDesc.isNotEmpty()) sbDesc.append("\n")
+						val desc =
+							activity.getString(R.string.media_description, idx + 1, ta.description)
 						sbDesc.append(desc)
 					}
 				}
@@ -1352,8 +1363,6 @@ internal class ItemViewHolder(
 		}
 	}
 	private var boostedAction : () -> Unit = defaultBoostedAction
-	
-
 	
 	override fun onClick(v : View) {
 		
@@ -1516,8 +1525,26 @@ internal class ItemViewHolder(
 				openFilterMenu(item)
 			}
 			
-			ivCardImage-> status_showing?.card?.url?.let { url ->
-				if(url.isNotEmpty()) App1.openCustomTab(activity, url)
+			llCardOuter -> status_showing?.card?.let { card ->
+				val originalStatus = card.originalStatus
+				if(originalStatus != null) {
+					Action_Toot.conversation(
+						activity,
+						activity.nextPosition(column),
+						access_info,
+						originalStatus
+					)
+				} else {
+					val url = card.url
+					if(url?.isNotEmpty() == true) {
+						ChromeTabOpener(
+							activity,
+							pos,
+							url,
+							accessInfo = access_info
+						).open()
+					}
+				}
 			}
 			
 			llConversationIcons -> openConversationSummary()
@@ -1593,6 +1620,12 @@ internal class ItemViewHolder(
 				return true
 			}
 			
+			llCardOuter -> Action_Toot.conversationOtherInstance(
+				activity,
+				activity.nextPosition(column),
+				status_showing?.card?.originalStatus
+			)
+			
 			btnSearchTag, llTrendTag -> {
 				val item = this.item
 				when(item) {
@@ -1666,15 +1699,35 @@ internal class ItemViewHolder(
 		}
 	}
 	
-	private fun showPreviewCard(activity : ActMain,  card : TootCard) {
+	private fun showPreviewCard(activity : ActMain, status : TootStatus) {
+		val card = status.card ?: return
+		
+		// 会話カラムで返信ステータスなら捏造したカードを表示しない
+		if(column.column_type == Column.TYPE_CONVERSATION
+			&& card.originalStatus != null
+			&& status.reply != null
+		) {
+			return
+		}
+		
+		llCardOuter.visibility = View.VISIBLE
+		
 		val sb = StringBuilder()
-		addLinkAndCaption(sb, activity.getString(R.string.card_header_card), card.url, card.title)
+		
+		addLinkAndCaption(
+			sb,
+			activity.getString(R.string.card_header_card),
+			card.url,
+			card.title
+		)
+		
 		addLinkAndCaption(
 			sb,
 			activity.getString(R.string.card_header_author),
 			card.author_url,
 			card.author_name
 		)
+		
 		addLinkAndCaption(
 			sb,
 			activity.getString(R.string.card_header_provider),
@@ -1688,12 +1741,20 @@ internal class ItemViewHolder(
 			
 			val limit = Pref.spCardDescriptionLength.toInt(activity.pref)
 			
-			sb.append(HTMLDecoder.encodeEntity(ellipsize(description,if( limit <= 0 ) 64 else limit)))
+			sb.append(
+				HTMLDecoder.encodeEntity(
+					ellipsize(
+						description,
+						if(limit <= 0) 64 else limit
+					)
+				)
+			)
 		}
 		
-		if( sb.isNotEmpty() ){
-			val text = DecodeOptions(activity, access_info).decodeHTML(sb.toString())
-			if( text.isNotEmpty()){
+		if(sb.isNotEmpty()) {
+			val text =
+				DecodeOptions(activity, access_info, forceHtml = true).decodeHTML(sb.toString())
+			if(text.isNotEmpty()) {
 				tvCardText.visibility = View.VISIBLE
 				tvCardText.text = text
 			}
@@ -1711,11 +1772,11 @@ internal class ItemViewHolder(
 		}
 	}
 	
-	private fun ellipsize(src:String,limit:Int):String{
-		return if( src.codePointCount(0,src.length) <= limit ) {
+	private fun ellipsize(src : String, limit : Int) : String {
+		return if(src.codePointCount(0, src.length) <= limit) {
 			src
-		}else {
-			"${src.substring(0,  src.offsetByCodePoints(0,limit))}…"
+		} else {
+			"${src.substring(0, src.offsetByCodePoints(0, limit))}…"
 		}
 	}
 	
@@ -1899,7 +1960,7 @@ internal class ItemViewHolder(
 					}
 					
 					if((result.response?.code() ?: - 1) in 200 until 300) {
-						if(status.increaseReaction(code,true,"addReaction")){
+						if(status.increaseReaction(code, true, "addReaction")) {
 							// 1個だけ描画更新するのではなく、TLにある複数の要素をまとめて更新する
 							list_adapter.notifyChange(reason = "addReaction complete", reset = true)
 						}
@@ -2021,13 +2082,12 @@ internal class ItemViewHolder(
 				val data = result.jsonObject
 				if(data != null) {
 					if(accessInfo.isMisskey) {
-						if( enquete.increaseVote(activity,idx,true) ){
+						if(enquete.increaseVote(activity, idx, true)) {
 							showToast(context, false, R.string.enquete_voted)
-
+							
 							// 1個だけ開閉するのではなく、例えば通知TLにある複数の要素をまとめて開閉するなどある
 							list_adapter.notifyChange(reason = "onClickEnqueteChoice", reset = true)
 						}
-						
 						
 					} else {
 						val message = data.parseString("message") ?: "?"
@@ -2499,25 +2559,35 @@ internal class ItemViewHolder(
 								}
 							}
 							
-							tvMediaDescription = textView{}.lparams(matchParent, wrapContent)
+							tvMediaDescription = textView {}.lparams(matchParent, wrapContent)
 							
-							tvCardText = textView{
-							
-							}.lparams(matchParent, wrapContent){
-								topMargin = dip(3)
-							}
-							
-							ivCardImage = myNetworkImageView {
+							llCardOuter = verticalLayout {
+								lparams(matchParent, wrapContent) {
+									topMargin = dip(3)
+									startMargin = dip(12)
+									endMargin = dip(6)
+								}
+								padding = dip(3)
+								bottomPadding = dip(6)
 								
-								contentDescription = context.getString(R.string.thumbnail)
+								background = PreviewCardBorder()
 								
-								scaleType = if(Pref.bpDontCropMediaThumb(App1.pref))
-									ImageView.ScaleType.FIT_CENTER
-								else
-									ImageView.ScaleType.CENTER_CROP
+								tvCardText = textView {
+								}.lparams(matchParent, wrapContent) {
+								}
 								
-							}.lparams(matchParent, activity.app_state.media_thumb_height) {
-								topMargin = dip(3)
+								ivCardImage = myNetworkImageView {
+									
+									contentDescription = context.getString(R.string.thumbnail)
+									
+									scaleType = if(Pref.bpDontCropMediaThumb(App1.pref))
+										ImageView.ScaleType.FIT_CENTER
+									else
+										ImageView.ScaleType.CENTER_CROP
+									
+								}.lparams(matchParent, activity.app_state.media_thumb_height) {
+									topMargin = dip(3)
+								}
 							}
 							
 							
@@ -2526,7 +2596,6 @@ internal class ItemViewHolder(
 									topMargin = dip(0)
 								}
 							}
-							
 						}
 						
 						// button bar
@@ -2560,34 +2629,34 @@ internal class ItemViewHolder(
 				
 				tvConversationParticipants = textView {
 					text = context.getString(R.string.participants)
-				}.lparams(wrapContent,wrapContent){
+				}.lparams(wrapContent, wrapContent) {
 					endMargin = dip(3)
 				}
 				
 				ivConversationIcon1 = myNetworkImageView {
 					scaleType = ImageView.ScaleType.CENTER_CROP
-				}.lparams(dip(24),dip(24)) {
+				}.lparams(dip(24), dip(24)) {
 					endMargin = dip(3)
 				}
 				ivConversationIcon2 = myNetworkImageView {
 					scaleType = ImageView.ScaleType.CENTER_CROP
-				}.lparams(dip(24),dip(24)) {
+				}.lparams(dip(24), dip(24)) {
 					endMargin = dip(3)
 				}
 				ivConversationIcon3 = myNetworkImageView {
 					scaleType = ImageView.ScaleType.CENTER_CROP
-				}.lparams(dip(24),dip(24)) {
+				}.lparams(dip(24), dip(24)) {
 					endMargin = dip(3)
 				}
 				ivConversationIcon4 = myNetworkImageView {
 					scaleType = ImageView.ScaleType.CENTER_CROP
-				}.lparams(dip(24),dip(24)) {
+				}.lparams(dip(24), dip(24)) {
 					endMargin = dip(3)
 				}
 				
 				tvConversationIconsMore = textView {
 				
-				}.lparams(wrapContent,wrapContent)
+				}.lparams(wrapContent, wrapContent)
 			}
 			
 			llSearchTag = linearLayout {

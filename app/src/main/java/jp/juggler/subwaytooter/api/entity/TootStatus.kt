@@ -312,6 +312,18 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			this.deletedAt = src.parseString("deletedAt")
 			this.time_deleted_at = parseTime(deletedAt)
+			
+			if( card == null) {
+				
+				if(reblog != null && hasAnyContent() ) {
+					// 引用Renoteにプレビューカードをでっちあげる
+					card = TootCard(parser, reblog)
+				} else if(reply != null ) {
+					// 返信にプレビューカードをでっちあげる
+					card = TootCard(parser, reply!! )
+				}
+			}
+			
 		} else {
 			misskeyVisibleIds = null
 			reply = null

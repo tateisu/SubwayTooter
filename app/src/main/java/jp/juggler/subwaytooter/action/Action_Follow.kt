@@ -181,7 +181,6 @@ object Action_Follow {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				var result : TootApiResult?
 				
-				val parser = TootParser(activity, access_info)
 				
 				if(access_info.isMisskey) {
 					

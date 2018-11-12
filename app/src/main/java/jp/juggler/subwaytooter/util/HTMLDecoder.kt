@@ -468,7 +468,7 @@ object HTMLDecoder {
 	
 	fun decodeHTML(options : DecodeOptions, src : String?) : SpannableStringBuilder {
 		
-		if( options.linkHelper?.isMisskey == true){
+		if(  options.linkHelper?.isMisskey == true && !options.forceHtml ){
 			return MisskeyMarkdownDecoder.decodeMarkdown(options,src)
 		}
 		

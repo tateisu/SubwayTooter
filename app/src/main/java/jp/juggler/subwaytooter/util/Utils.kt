@@ -488,6 +488,12 @@ fun String?.optInt() : Int? {
 	}
 }
 
+fun String?.filterNotEmpty() :String? = when{
+	this==null -> null
+	this.isEmpty() -> null
+	else->this
+}
+
 //fun String.ellipsize(max : Int) = if(this.length > max) this.substring(0, max - 1) + "…" else this
 //
 //fun String.toCamelCase() : String {

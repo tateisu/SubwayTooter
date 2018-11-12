@@ -179,7 +179,7 @@ internal class ViewHolderHeaderProfile(
 			btnFollow.setImageDrawable(null)
 			tvRemoteProfileWarning.visibility = View.GONE
 		} else {
-			tvCreated.text = TootStatus.formatTime(tvCreated.context, who.time_created_at, true)
+			tvCreated.text = TootStatus.formatTime(tvCreated.context, (whoDetail?:who).time_created_at, true)
 			ivBackground.setImageUrl(
 				activity.pref,
 				0f,

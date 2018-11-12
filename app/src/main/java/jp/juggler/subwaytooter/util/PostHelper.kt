@@ -77,6 +77,7 @@ class PostHelper(
 	var enquete_items : ArrayList<String>? = null
 	var emojiMapCustom : HashMap<String, CustomEmoji>? = null
 	var redraft_status_id : EntityId? = null
+	var useQuotedRenote : Boolean = false
 	
 	private var last_post_tapped : Long = 0L
 	
@@ -358,7 +359,11 @@ class PostHelper(
 						}
 						
 						if(in_reply_to_id != null) {
-							json.put("replyId", in_reply_to_id.toString())
+							if( useQuotedRenote){
+								json.put("renoteId", in_reply_to_id.toString())
+							}else{
+								json.put("replyId", in_reply_to_id.toString())
+							}
 						}
 						
 						json.put("viaMobile", true)
@@ -470,8 +475,9 @@ class PostHelper(
 				}
 				
 				result = if(isMisskey) {
+					log.d("misskey json %s",body_string)
+					
 					client.request("/api/notes/create", request_builder)
-					// TODO {"error":{}} が返ってきた時にどう扱えばいい？
 				} else {
 					client.request("/api/v1/statuses", request_builder)
 				}
@@ -549,7 +555,7 @@ class PostHelper(
 	private var isMisskey = false
 	
 	private val onEmojiListLoad : (list : ArrayList<CustomEmoji>) -> Unit =
-		{ _ : ArrayList<CustomEmoji> ->
+		{
 			val popup = this@PostHelper.popup
 			if(popup?.isShowing == true) proc_text_changed.run()
 		}
@@ -740,9 +746,9 @@ class PostHelper(
 				val remain = limit - code_list.size
 				if(remain > 0) {
 					val s = src.substring(last_colon + 1, end).toLowerCase().replace('-', '_')
-					val src = EmojiDecoder.searchShortCode(activity, s, remain)
-					log.d("checkEmoji: search for %s, result=%d", s, src.size)
-					code_list.addAll(src)
+					val matches = EmojiDecoder.searchShortCode(activity, s, remain)
+					log.d("checkEmoji: search for %s, result=%d", s, matches.size)
+					code_list.addAll(matches)
 					
 				}
 				

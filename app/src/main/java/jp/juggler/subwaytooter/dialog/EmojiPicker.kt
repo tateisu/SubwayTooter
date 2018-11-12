@@ -27,6 +27,7 @@ import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.put
 import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.view.MyViewPager
 import jp.juggler.subwaytooter.view.NetworkEmojiView
 
 @SuppressLint("InflateParams")
@@ -60,7 +61,7 @@ class EmojiPicker(
 	
 	private val page_list = ArrayList<EmojiPickerPage>()
 	
-	private val pager : ViewPager
+	private val pager : MyViewPager
 	
 	private val dialog : Dialog
 	

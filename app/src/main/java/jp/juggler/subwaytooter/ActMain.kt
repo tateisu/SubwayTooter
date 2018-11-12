@@ -40,10 +40,7 @@ import jp.juggler.subwaytooter.span.MyClickableSpanClickCallback
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
-import jp.juggler.subwaytooter.view.ColumnStripLinearLayout
-import jp.juggler.subwaytooter.view.GravitySnapHelper
-import jp.juggler.subwaytooter.view.ListDivider
-import jp.juggler.subwaytooter.view.MyEditText
+import jp.juggler.subwaytooter.view.*
 import org.apache.commons.io.IOUtils
 import java.io.File
 import java.io.FileInputStream
@@ -147,7 +144,7 @@ class ActMain : AppCompatActivity()
 	lateinit var post_helper : PostHelper
 	
 	class PhoneEnv {
-		internal lateinit var pager : ViewPager
+		internal lateinit var pager : MyViewPager
 		internal lateinit var pager_adapter : ColumnPagerAdapter
 	}
 	

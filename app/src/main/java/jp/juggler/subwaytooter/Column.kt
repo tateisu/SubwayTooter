@@ -3039,7 +3039,12 @@ class Column(
 								}
 							}
 							
-							return result
+							// 検索機能が無効だとsearch_query が 400を返すが、他のAPIがデータを返したら成功したことにする
+							return if( list_tmp ?.isNotEmpty() ==true ){
+								TootApiResult()
+							}else {
+								result
+							}
 						} else {
 							if(access_info.isPseudo) {
 								// 1.5.0rc からマストドンの検索APIは認証を要求するようになった

@@ -1,5 +1,22 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <resources>
     <string name="account">계정</string>
     <string name="account_add">계정 추가</string>
-</resources>
+<string name="action_settings">설정</string>
+    <string name="instance">인스턴스</string>
+    <string name="user_mail_address">이메일</string>
+    <string name="user_password">비밀번호</string>
+    <string name="ok">OK</string>
+    <string name="cancel">취소</string>
+    <string name="account_pick">계정 선택</string>
+    <string name="reload">새로고침</string>
+    <string name="notifications">알림</string>
+    <string name="follow">팔로우</string>
+    <string name="attachment_too_many">첨부파일은 최대 4개까지 입니다.</string>
+    <string name="account_select_please">계정을 선택하십시오</string>
+    <string name="file_size_too_big">파일이 너무 큽니다. 최대 크기는 %1$dMB까지 입니다.</string>
+    <string name="choose_visibility">공개 범위 선택</string>
+    <string name="confirm_delete_attachment">첨부된 파일을 삭제하시겠습니까\?</string>
+    <string name="post_error_contents_empty">내용을 입력하세요.</string>
+    <string name="confirm">확인</string>
+    </resources>

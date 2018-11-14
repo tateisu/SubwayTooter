@@ -181,8 +181,8 @@ internal class ItemViewHolder(
 		btnFollow.setOnClickListener(this)
 		btnFollow.setOnLongClickListener(this)
 		
-		llCardOuter.setOnClickListener(this)
-		llCardOuter.setOnLongClickListener(this)
+		ivCardImage.setOnClickListener(this)
+		ivCardImage.setOnLongClickListener(this)
 		
 		ivThumbnail.setOnClickListener(this)
 		
@@ -1525,7 +1525,7 @@ internal class ItemViewHolder(
 				openFilterMenu(item)
 			}
 			
-			llCardOuter -> status_showing?.card?.let { card ->
+			ivCardImage -> status_showing?.card?.let { card ->
 				val originalStatus = card.originalStatus
 				if(originalStatus != null) {
 					Action_Toot.conversation(
@@ -1620,7 +1620,7 @@ internal class ItemViewHolder(
 				return true
 			}
 			
-			llCardOuter -> Action_Toot.conversationOtherInstance(
+			ivCardImage -> Action_Toot.conversationOtherInstance(
 				activity,
 				activity.nextPosition(column),
 				status_showing?.card?.originalStatus
@@ -1710,7 +1710,7 @@ internal class ItemViewHolder(
 			return
 		}
 		
-		llCardOuter.visibility = View.VISIBLE
+		var bShown = false
 		
 		val sb = StringBuilder()
 		
@@ -1757,6 +1757,7 @@ internal class ItemViewHolder(
 			if(text.isNotEmpty()) {
 				tvCardText.visibility = View.VISIBLE
 				tvCardText.text = text
+				bShown = true
 			}
 		}
 		
@@ -1769,7 +1770,13 @@ internal class ItemViewHolder(
 				access_info.supplyBaseUrl(image),
 				access_info.supplyBaseUrl(image)
 			)
+			bShown = true
 		}
+		
+		if(bShown){
+			llCardOuter.visibility = View.VISIBLE
+		}
+		
 	}
 	
 	private fun ellipsize(src : String, limit : Int) : String {

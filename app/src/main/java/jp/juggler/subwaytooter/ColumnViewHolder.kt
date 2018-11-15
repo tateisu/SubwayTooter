@@ -27,7 +27,7 @@ import java.util.regex.Pattern
 
 class ColumnViewHolder(
 	val activity : ActMain,
-	viewRoot : View
+	val viewRoot : View
 ) : View.OnClickListener,
 	SwipyRefreshLayout.OnRefreshListener,
 	CompoundButton.OnCheckedChangeListener, View.OnLongClickListener {
@@ -163,7 +163,7 @@ class ColumnViewHolder(
 	// Column から呼ばれる
 	
 	init {
-		
+
 		viewRoot.scan { v ->
 			try {
 				if(v is Button) {
@@ -311,7 +311,6 @@ class ColumnViewHolder(
 			}
 			false
 		})
-		
 	}
 	
 	private val proc_start_filter = Runnable {
@@ -535,46 +534,44 @@ class ColumnViewHolder(
 		}
 	}
 	
-	fun showColumnStatus() {
+	val procShowColumnStatus: Runnable = Runnable {
+		
+		val column = this.column
+		if(column == null || column.is_dispose.get() ) return@Runnable
 		
 		val sb = SpannableStringBuilder()
-		
 		try {
-			val column = this.column
-			if(column == null) {
-				sb.append('?')
-			} else {
-				val task = column.lastTask
-				if(task != null) {
-					sb.append(
-						when(task.ctType) {
-							ColumnTaskType.LOADING -> 'L'
-							ColumnTaskType.REFRESH_TOP -> 'T'
-							ColumnTaskType.REFRESH_BOTTOM -> 'B'
-							ColumnTaskType.GAP -> 'G'
-						}
-					)
-					sb.append(
-						when {
-							task.isCancelled -> "~"
-							task.ctClosed.get() -> "!"
-							task.ctStarted.get() -> ""
-							else -> "?"
-						}
-					)
+			
+			val task = column.lastTask
+			if(task != null) {
+				sb.append(
+					when(task.ctType) {
+						ColumnTaskType.LOADING -> 'L'
+						ColumnTaskType.REFRESH_TOP -> 'T'
+						ColumnTaskType.REFRESH_BOTTOM -> 'B'
+						ColumnTaskType.GAP -> 'G'
+					}
+				)
+				sb.append(
+					when {
+						task.isCancelled -> "~"
+						task.ctClosed.get() -> "!"
+						task.ctStarted.get() -> ""
+						else -> "?"
+					}
+				)
+			}
+			when(column.getStreamingStatus()) {
+				StreamingIndicatorState.NONE -> {
 				}
-				when(column.getStreamingStatus()) {
-					StreamingIndicatorState.NONE -> {
-					}
-					
-					StreamingIndicatorState.REGISTERED -> {
-						sb.appendColorShadeIcon(activity, R.drawable.ic_pulse, "Streaming")
-						sb.append("?")
-					}
-					
-					StreamingIndicatorState.LISTENING -> {
-						sb.appendColorShadeIcon(activity, R.drawable.ic_pulse, "Streaming")
-					}
+				
+				StreamingIndicatorState.REGISTERED -> {
+					sb.appendColorShadeIcon(activity, R.drawable.ic_pulse, "Streaming")
+					sb.append("?")
+				}
+				
+				StreamingIndicatorState.LISTENING -> {
+					sb.appendColorShadeIcon(activity, R.drawable.ic_pulse, "Streaming")
 				}
 			}
 			
@@ -582,6 +579,12 @@ class ColumnViewHolder(
 			log.d("showColumnStatus ${sb}")
 			tvColumnStatus.text = sb
 		}
+	}
+	
+	
+	fun showColumnStatus() {
+		activity.handler.removeCallbacks(procShowColumnStatus)
+		activity.handler.postDelayed( procShowColumnStatus ,50L)
 	}
 	
 	fun showColumnColor() {
@@ -642,9 +645,9 @@ class ColumnViewHolder(
 					column.getIconAttrId(column.column_type),
 					c
 				)
-				Styler.setIconAttr(activity, btnColumnSetting,  R.attr.ic_tune,c)
-				Styler.setIconAttr(activity, btnColumnReload,  R.attr.btn_refresh,c)
-				Styler.setIconAttr(activity, btnColumnClose,  R.attr.btn_close,c)
+				Styler.setIconAttr(activity, btnColumnSetting, R.attr.ic_tune, c)
+				Styler.setIconAttr(activity, btnColumnReload, R.attr.btn_refresh, c)
+				Styler.setIconAttr(activity, btnColumnClose, R.attr.btn_close, c)
 			}
 			
 			c = column.column_bg_color
@@ -983,9 +986,9 @@ class ColumnViewHolder(
 		}
 	}
 	
-	// カラムヘッダなど、負荷が低い部分の表示更新
-	fun showColumnHeader() {
-		val column = this.column ?: return
+	val procShowColumnHeader:Runnable = Runnable {
+		val column = this.column
+		if( column == null || column.is_dispose.get() ) return@Runnable
 		
 		val acct = column.access_info.acct
 		val ac = AcctColor.load(acct)
@@ -1015,6 +1018,12 @@ class ColumnViewHolder(
 		
 		showColumnCloseButton()
 		
+	}
+	
+	// カラムヘッダなど、負荷が低い部分の表示更新
+	fun showColumnHeader() {
+		activity.handler.removeCallbacks(procShowColumnHeader)
+		activity.handler.postDelayed(procShowColumnHeader,50L)
 	}
 	
 	internal fun showContent(

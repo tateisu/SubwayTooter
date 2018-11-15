@@ -5,10 +5,16 @@ import android.util.SparseArray
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-
-import java.util.ArrayList
+import jp.juggler.subwaytooter.util.Benchmark
+import jp.juggler.subwaytooter.util.LogCategory
+import java.util.*
 
 internal class ColumnPagerAdapter(private val activity : ActMain) : PagerAdapter() {
+	
+	companion object {
+		val log = LogCategory("ColumnPagerAdapter")
+	}
+	
 	private val inflater : LayoutInflater
 	private val column_list : ArrayList<Column>
 	private val holder_list = SparseArray<ColumnViewHolder>()
@@ -30,36 +36,43 @@ internal class ColumnPagerAdapter(private val activity : ActMain) : PagerAdapter
 		return holder_list.get(idx)
 	}
 	
-	
 	override fun getPageTitle(page_idx : Int) : CharSequence? {
-		return getColumn(page_idx) ?.getColumnName(false)
+		return getColumn(page_idx)?.getColumnName(false)
 	}
 	
 	override fun isViewFromObject(view : View, obj : Any) : Boolean {
 		return view === obj
 	}
 	
+	private val viewCache = LinkedList<ColumnViewHolder>()
+	
 	override fun instantiateItem(container : ViewGroup, page_idx : Int) : Any {
-		val root = inflater.inflate(R.layout.page_column, container, false)
-		container.addView(root, 0)
-		
-		val column = column_list[page_idx]
-		val holder = ColumnViewHolder(activity, root)
-		//
+		val viewRoot : View
+		val holder : ColumnViewHolder
+		if(viewCache.isNotEmpty()) {
+			val b = Benchmark(log, "instantiateItem: cached")
+			holder = viewCache.removeFirst()
+			viewRoot = holder.viewRoot
+			b.report()
+		} else {
+			val b = Benchmark(log, "instantiateItem: new")
+			viewRoot = inflater.inflate(R.layout.page_column, container, false)
+			holder = ColumnViewHolder(activity, viewRoot)
+			b.report()
+		}
+		container.addView(viewRoot, 0)
 		holder_list.put(page_idx, holder)
-		//
-		holder.onPageCreate(column, page_idx, column_list.size)
-		
-		return root
+		holder.onPageCreate(column_list[page_idx], page_idx, column_list.size)
+		return viewRoot
 	}
 	
 	override fun destroyItem(container : ViewGroup, page_idx : Int, obj : Any) {
-		if( obj is View ){
-			container.removeView(obj)
-		}
-		//
 		val holder = holder_list.get(page_idx)
 		holder_list.remove(page_idx)
-		holder?.onPageDestroy(page_idx)
+		if(holder != null) {
+			holder.onPageDestroy(page_idx)
+			container.removeView(holder.viewRoot)
+			viewCache.addLast(holder)
+		}
 	}
 }

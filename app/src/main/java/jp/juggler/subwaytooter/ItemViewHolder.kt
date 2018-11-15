@@ -283,6 +283,7 @@ internal class ItemViewHolder(
 		bSimpleList : Boolean,
 		item : TimelineItem
 	) {
+		val b = Benchmark(log, "Item-bind", 40L)
 		
 		this.list_adapter = list_adapter
 		this.column = column
@@ -484,6 +485,7 @@ internal class ItemViewHolder(
 			else -> {
 			}
 		}
+		b.report()
 	}
 	
 	private fun removeExtraView() {
@@ -1773,7 +1775,7 @@ internal class ItemViewHolder(
 			bShown = true
 		}
 		
-		if(bShown){
+		if(bShown) {
 			llCardOuter.visibility = View.VISIBLE
 		}
 		
@@ -2128,7 +2130,8 @@ internal class ItemViewHolder(
 	/////////////////////////////////////////////////////////////////////
 	
 	private fun inflate(activity : ActMain) = with(activity.UI {}) {
-		verticalLayout {
+		val b = Benchmark(log, "Item-Inflate", 40L)
+		val rv = verticalLayout {
 			// トップレベルのViewGroupのlparamsはイニシャライザ内部に置くしかないみたい
 			layoutParams = RecyclerView.LayoutParams(matchParent, wrapContent)
 			
@@ -2299,7 +2302,10 @@ internal class ItemViewHolder(
 							}
 							
 							background =
-								ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+								ContextCompat.getDrawable(
+									context,
+									R.drawable.btn_bg_transparent
+								)
 							gravity = Gravity.CENTER_VERTICAL
 							
 							ivReply = imageView {
@@ -2361,7 +2367,8 @@ internal class ItemViewHolder(
 							}
 							
 							val actMain = activity as? ActMain
-							val thumbnailHeight = actMain?.app_state?.media_thumb_height ?: dip(64)
+							val thumbnailHeight =
+								actMain?.app_state?.media_thumb_height ?: dip(64)
 							val verticalArrangeThumbnails = Pref.bpVerticalArrangeThumbnails(
 								actMain?.pref ?: Pref.pref(context)
 							)
@@ -2670,7 +2677,8 @@ internal class ItemViewHolder(
 				lparams(matchParent, wrapContent)
 				
 				btnSearchTag = button {
-					background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+					background =
+						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 					allCaps = false
 				}.lparams(matchParent, wrapContent)
 			}
@@ -2709,7 +2717,8 @@ internal class ItemViewHolder(
 				lparams(matchParent, wrapContent)
 				
 				btnListTL = button {
-					background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+					background =
+						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 					allCaps = false
 				}.lparams(0, wrapContent) {
 					weight = 1f
@@ -2717,7 +2726,8 @@ internal class ItemViewHolder(
 				
 				btnListMore = imageButton {
 					
-					background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+					background =
+						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 					imageResource = Styler.getAttributeResourceId(context, R.attr.btn_more)
 					contentDescription = context.getString(R.string.more)
 				}.lparams(dip(40), dip(40)) {
@@ -2736,14 +2746,16 @@ internal class ItemViewHolder(
 				gravity = Gravity.END
 				
 				btnFollowRequestAccept = imageButton {
-					background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+					background =
+						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 					contentDescription = context.getString(R.string.follow_accept)
 					imageResource = Styler.getAttributeResourceId(context, R.attr.ic_check)
 					setPadding(0, 0, 0, 0)
 				}.lparams(dip(48f), dip(32f))
 				
 				btnFollowRequestDeny = imageButton {
-					background = ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
+					background =
+						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 					contentDescription = context.getString(R.string.follow_deny)
 					imageResource = Styler.getAttributeResourceId(context, R.attr.btn_close)
 					setPadding(0, 0, 0, 0)
@@ -2767,8 +2779,9 @@ internal class ItemViewHolder(
 				}.lparams(matchParent, wrapContent)
 			}
 		}
+		b.report()
+		rv
 	}
-	
 }
 
 

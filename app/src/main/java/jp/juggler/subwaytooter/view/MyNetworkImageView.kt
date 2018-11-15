@@ -558,10 +558,6 @@ class MyNetworkImageView : AppCompatImageView {
 					}
 				}
 			}
-			
-			else -> {
-				log.d("updateFocusPoint: scaleType not match.")
-			}
 		}
 	}
 	

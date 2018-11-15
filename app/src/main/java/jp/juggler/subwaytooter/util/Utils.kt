@@ -8,10 +8,7 @@ import android.content.Intent
 import android.content.res.Resources
 import android.database.Cursor
 import android.net.Uri
-import android.os.Build
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.provider.OpenableColumns
 import android.text.Spannable
 import android.text.SpannableString

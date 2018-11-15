@@ -1356,6 +1356,7 @@ class Column(
 			throw RuntimeException("fireShowColumnStatus: not on main thread.")
 		}
 		viewHolder?.showColumnStatus()
+	
 	}
 	
 	internal fun fireColumnColor() {

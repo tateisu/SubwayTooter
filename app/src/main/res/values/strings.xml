@@ -66,6 +66,12 @@
     <string name="visibility_private">Followers-only</string>
     <string name="visibility_direct">Direct</string>
     <string name="visibility_web_setting">Trace web app setting</string>
+
+    <string name="visibility_local_public">Public (local)</string>
+    <string name="visibility_local_home">Home (local)</string>
+    <string name="visibility_local_followers">Followers-only (local)</string>
+    <string name="visibility_local_unlisted">Unlisted (local)</string>
+
     <string name="choose_visibility">Choose visibility</string>
     <string name="confirm_delete_attachment">Remove this attachment?</string>
     <string name="post_error_contents_empty">You can\'t post an empty toot.</string>

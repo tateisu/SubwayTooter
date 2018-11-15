@@ -99,6 +99,11 @@ object Styler {
 				TootVisibility.DirectSpecified -> R.attr.ic_mail
 				TootVisibility.DirectPrivate -> R.attr.ic_lock
 				TootVisibility.WebSetting -> R.attr.ic_question
+				
+				TootVisibility.LocalPublic-> R.attr.ic_local_ltl
+				TootVisibility.LocalHome-> R.attr.ic_local_home
+				TootVisibility.LocalFollowers-> R.attr.ic_local_lock_open
+				
 			}
 			else-> when(visibility) {
 				TootVisibility.Public -> R.attr.ic_public
@@ -107,6 +112,11 @@ object Styler {
 				TootVisibility.DirectSpecified -> R.attr.ic_mail
 				TootVisibility.DirectPrivate -> R.attr.ic_mail
 				TootVisibility.WebSetting -> R.attr.ic_question
+				
+				TootVisibility.LocalPublic-> R.attr.ic_local_ltl
+				TootVisibility.LocalHome-> R.attr.ic_local_lock_open
+				TootVisibility.LocalFollowers-> R.attr.ic_local_lock
+				
 			}
 		}
 	}
@@ -121,24 +131,32 @@ object Styler {
 			Pref.VS_MISSKEY ->true
 			else-> isMisskeyData
 		}
-		return when{
+		return context.getString(when{
 			isMisskey -> when(visibility) {
-				TootVisibility.Public ->context.getString(R.string.visibility_public)
-				TootVisibility.UnlistedHome -> context.getString(R.string.visibility_home)
-				TootVisibility.PrivateFollowers -> context.getString(R.string.visibility_followers)
-				TootVisibility.DirectSpecified -> context.getString(R.string.visibility_direct)
-				TootVisibility.DirectPrivate -> context.getString(R.string.visibility_private)
-				TootVisibility.WebSetting -> context.getString(R.string.visibility_web_setting)
+				TootVisibility.Public ->R.string.visibility_public
+				TootVisibility.UnlistedHome -> R.string.visibility_home
+				TootVisibility.PrivateFollowers -> R.string.visibility_followers
+				TootVisibility.DirectSpecified -> R.string.visibility_direct
+				TootVisibility.DirectPrivate -> R.string.visibility_private
+				TootVisibility.WebSetting -> R.string.visibility_web_setting
+				
+				TootVisibility.LocalPublic-> R.string.visibility_local_public
+				TootVisibility.LocalHome-> R.string.visibility_local_home
+				TootVisibility.LocalFollowers-> R.string.visibility_local_followers
 			}
 			else-> when(visibility) {
-				TootVisibility.Public -> context.getString(R.string.visibility_public)
-				TootVisibility.UnlistedHome -> context.getString(R.string.visibility_unlisted)
-				TootVisibility.PrivateFollowers -> context.getString(R.string.visibility_followers)
-				TootVisibility.DirectSpecified -> context.getString(R.string.visibility_direct)
-				TootVisibility.DirectPrivate -> context.getString(R.string.visibility_direct)
-				TootVisibility.WebSetting -> context.getString(R.string.visibility_web_setting)
+				TootVisibility.Public -> R.string.visibility_public
+				TootVisibility.UnlistedHome -> R.string.visibility_unlisted
+				TootVisibility.PrivateFollowers -> R.string.visibility_followers
+				TootVisibility.DirectSpecified -> R.string.visibility_direct
+				TootVisibility.DirectPrivate -> R.string.visibility_direct
+				TootVisibility.WebSetting -> R.string.visibility_web_setting
+				
+				TootVisibility.LocalPublic-> R.string.visibility_local_public
+				TootVisibility.LocalHome-> R.string.visibility_local_unlisted
+				TootVisibility.LocalFollowers-> R.string.visibility_local_followers
 			}
-		}
+		})
 	}
 	
 	// アイコン付きの装飾テキストを返す

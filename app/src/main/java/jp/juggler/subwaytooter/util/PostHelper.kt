@@ -344,7 +344,13 @@ class PostHelper(
 									}
 								)
 							} else {
-								json.put("visibility", visibility_checked.strMisskey)
+								val localVis = visibility_checked.strMisskey.replace("^local-".toRegex(),"")
+								if( localVis != visibility_checked.strMisskey){
+									json.put("localOnly", true)
+									json.put("visibility", localVis)
+								}else {
+									json.put("visibility", visibility_checked.strMisskey)
+								}
 							}
 						}
 						

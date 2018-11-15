@@ -746,6 +746,12 @@
     <string name="visibility_style_by_account">カラムのアカウントに合わせる</string>
     <string name="visibility_unlisted">未収載</string>
     <string name="visibility_web_setting">Webアプリの設定に追従する</string>
+
+    <string name="visibility_local_public">公開 (ローカル)</string>
+    <string name="visibility_local_home">ホーム (ローカル)</string>
+    <string name="visibility_local_followers">フォロワー (ローカル)</string>
+    <string name="visibility_local_unlisted">未収載 (ローカル)</string>
+
     <string name="vote">投票 (Misskey)</string>
     <string name="vote_count_text">%1$d票</string>
     <string name="wait_previous_operation">直前の操作が完了するまでお待ちください</string>

@@ -5,6 +5,7 @@ enum class TootVisibility(
 	, val order : Int // 公開範囲の広い方とWeb設定に合わせる方が大きい
 	, val strMastodon : String
 	, val strMisskey : String
+	, @Suppress("unused") val isLocal :Boolean = false
 ) {
 	
 	// IDは下書き保存などで永続化するので、リリース後は変更しないこと！
@@ -14,6 +15,7 @@ enum class TootVisibility(
 	
 	// 公開TLに流す
 	Public(1, 90, strMastodon = "public", strMisskey = "public"),
+	LocalPublic(6, 85, strMastodon = "public", strMisskey = "local-public",isLocal = true),
 	
 	// LTL,FTLには表示されない。
 	// フォロワーのホームには表示される。
@@ -21,6 +23,7 @@ enum class TootVisibility(
 	// (Mastodon)タグTLには出ない。
 	// (Misskey)タグTLには出る。
 	UnlistedHome(2, 80, strMastodon = "unlisted", strMisskey = "home"),
+	LocalHome(6, 75, strMastodon = "unlisted", strMisskey = "local-home",isLocal = true),
 	
 	// 未フォローには見せない。
 	// (Mastodon)フォロワーのHTLに出る。
@@ -30,7 +33,8 @@ enum class TootVisibility(
 	// (Misskey)非ログインの閲覧者から見たのタグTLには出るが内容は隠される。「あの人はエロゲのタグで何か話してた」とか分かっちゃう。
 	// (Misskey)非ログインの閲覧者から見たのプロフには出るが内容は隠される。「あの人は寝てるはずの時間に何か投稿してた」とか分かっちゃう。
 	PrivateFollowers(3, 70, strMastodon = "private", strMisskey = "followers"),
-	
+	LocalFollowers(3, 65, strMastodon = "private", strMisskey = "local-followers",isLocal = true),
+
 	// 指定したユーザにのみ送信する。
 	// (Misskey)送信先ユーザのIDをリストで指定する。投稿前にユーザの存在確認を行う機会がある。
 	// (Misskey)送信先ユーザが1以上ならspecified、0ならprivateを指定する。
@@ -48,6 +52,7 @@ enum class TootVisibility(
 		return when {
 			isMisskey -> when(this) {
 				Public, UnlistedHome -> true
+				LocalPublic, LocalHome -> true
 				else -> false
 			}
 			else -> when(this) {
@@ -66,9 +71,19 @@ enum class TootVisibility(
 			return null
 		}
 		
-		fun parseMisskey(a : String?) : TootVisibility? {
+		fun parseMisskey(a : String?,localOnly:Boolean = false ) : TootVisibility? {
 			for(v in TootVisibility.values()) {
-				if(v.strMisskey == a) return v
+				if(v.strMisskey == a){
+					if( localOnly ){
+						when(v){
+							Public -> return LocalPublic
+							UnlistedHome -> return LocalHome
+							PrivateFollowers -> return LocalFollowers
+							else->{}
+						}
+					}
+					return v
+				}
 			}
 			return null
 		}

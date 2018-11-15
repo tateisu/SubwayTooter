@@ -568,6 +568,9 @@ class ActAccountSetting
 				TootVisibility.Public,
 				TootVisibility.UnlistedHome,
 				TootVisibility.PrivateFollowers,
+				TootVisibility.LocalPublic,
+				TootVisibility.LocalHome,
+				TootVisibility.LocalFollowers,
 				TootVisibility.DirectSpecified,
 				TootVisibility.DirectPrivate
 			)

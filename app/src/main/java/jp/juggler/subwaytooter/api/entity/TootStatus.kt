@@ -147,6 +147,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	val deletedAt : String?
 	val time_deleted_at : Long
 	
+	var localOnly : Boolean = false
+	
 	///////////////////////////////////////////////////////////////////
 	// 以下はentityから取得したデータではなく、アプリ内部で使う
 	
@@ -215,7 +217,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.reblogged = false
 			this.favourited = src.optBoolean("isFavorited")
 			
-			this.visibility = TootVisibility.parseMisskey(src.parseString("visibility")) ?:
+			this.localOnly = src.optBoolean("localOnly")
+			this.visibility = TootVisibility.parseMisskey(src.parseString("visibility"),localOnly) ?:
 				TootVisibility.Public
 			
 			this.misskeyVisibleIds = parseStringArray(src.optJSONArray("visibleUserIds"))

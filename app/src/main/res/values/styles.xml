@@ -42,7 +42,6 @@
         <item name="colorPostFormBackground">@color/Light_colorPostFormBackground</item>
         <item name="colorColumnStripBackground">@color/Light_colorColumnStripBackground</item>
 
-
         <item name="btn_attachment">@drawable/btn_attachment</item>
         <item name="btn_boost">@drawable/btn_boost</item>
         <item name="btn_close">@drawable/btn_close</item>
@@ -110,6 +109,11 @@
         <item name="ic_face">@drawable/ic_face</item>
         <item name="ic_check">@drawable/ic_check</item>
         <item name="ic_vote">@drawable/ic_vote</item>
+
+        <item name="ic_local_home">@drawable/ic_local_home</item>
+        <item name="ic_local_lock">@drawable/ic_local_lock</item>
+        <item name="ic_local_lock_open">@drawable/ic_local_lock_open</item>
+        <item name="ic_local_ltl">@drawable/ic_local_ltl</item>
 
     </style>
 
@@ -225,13 +229,17 @@
         <item name="ic_check">@drawable/ic_check_dark</item>
         <item name="ic_vote">@drawable/ic_vote_dark</item>
 
+        <item name="ic_local_home">@drawable/ic_local_home_dark</item>
+        <item name="ic_local_lock">@drawable/ic_local_lock_dark</item>
+        <item name="ic_local_lock_open">@drawable/ic_local_lock_open_dark</item>
+        <item name="ic_local_ltl">@drawable/ic_local_ltl_dark</item>
+
     </style>
 
     <style name="AppTheme.Dark.NoActionBar" parent="AppTheme.Dark">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
-
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar"/>
 
@@ -272,6 +280,7 @@
         <item name="android:paddingEnd" tools:ignore="NewApi">0dp</item>
 
     </style>
+
     <style name="setting_row_form_fields" parent="setting_row_form">
         <item name="android:paddingLeft">8dp</item>
         <item name="android:paddingRight">0dp</item>
@@ -279,6 +288,7 @@
         <item name="android:paddingEnd" tools:ignore="NewApi">0dp</item>
 
     </style>
+
     <style name="setting_row_help">
         <item name="android:background">@drawable/btn_bg_transparent</item>
         <item name="android:textColor">?attr/colorAccent</item>
@@ -319,6 +329,5 @@
     <style name="setting_edit_text" parent="@style/setting_horizontal_stretch">
         <item name="android:imeOptions">actionDone</item>
     </style>
-
 
 </resources>

@@ -7,10 +7,7 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.RecyclerView
-import android.text.Spannable
-import android.text.SpannableStringBuilder
-import android.text.Spanned
-import android.text.TextUtils
+import android.text.*
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -441,9 +438,9 @@ internal class ItemViewHolder(
 					item.hasAnyContent() -> {
 						// 引用Renote
 						showReply(
-							reblog,
 							R.attr.btn_boost,
-							R.string.renote_to
+							R.string.renote_to,
+							reblog
 						)
 						showStatus(item)
 					}
@@ -478,7 +475,7 @@ internal class ItemViewHolder(
 			is TootFilter -> showFilter(item)
 			
 			is TootConversationSummary -> {
-				showStatus(item.last_status)
+				showStatusOrReply(item.last_status)
 				showConversationIcons(item)
 			}
 			
@@ -573,17 +570,24 @@ internal class ItemViewHolder(
 	
 	private fun showStatusOrReply(item : TootStatus) {
 		val reply = item.reply
-		if(reply != null) {
-			// 返信
-			showReply(
-				reply,
-				R.attr.btn_reply,
-				R.string.reply_to
-			)
-			showStatus(item)
-		} else {
-			showStatus(item)
+		val in_reply_to_id = item.in_reply_to_id
+		val in_reply_to_account_id = item.in_reply_to_account_id
+		when {
+			reply != null ->
+				showReply(
+					R.attr.btn_reply,
+					R.string.reply_to,
+					reply
+				)
+			in_reply_to_id != null && in_reply_to_account_id != null -> {
+				showReply(
+					R.attr.btn_reply,
+					in_reply_to_account_id,
+					item
+				)
+			}
 		}
+		showStatus(item)
 	}
 	
 	private fun showTrendTag(item : TootTrendTag) {
@@ -614,9 +618,9 @@ internal class ItemViewHolder(
 				else -> {
 					// 引用Renote
 					showReply(
-						reblog,
 						R.attr.btn_boost,
-						R.string.renote_to
+						R.string.renote_to,
+						reblog
 					)
 					showStatus(item)
 				}
@@ -821,23 +825,55 @@ internal class ItemViewHolder(
 	}
 	
 	private fun showReply(
-		reply : TootStatus,
 		iconAttrId : Int,
-		stringId : Int
+		text : Spannable
+	) {
+		llReply.visibility = View.VISIBLE
+		ivReply.setImageResource(Styler.getAttributeResourceId(activity, iconAttrId))
+		tvReply.text = text
+		reply_invalidator.register(text)
+	}
+	
+	private fun showReply(
+		iconAttrId : Int,
+		stringId : Int,
+		reply : TootStatus
 	) {
 		status_reply = reply
-		
-		llReply.visibility = View.VISIBLE
 		
 		// val who = reply.account
 		// showStatusTime(activity, tvReplyTime, who, time = reply.time_created_at)
 		// setAcct(tvReplyAcct, access_info.getFullAcct(who), who.acct)
 		
-		ivReply.setImageResource(Styler.getAttributeResourceId(activity, iconAttrId))
-		
 		val text = reply.accountRef.decoded_display_name.intoStringResource(activity, stringId)
-		tvReply.text = text
-		reply_invalidator.register(text)
+		showReply(iconAttrId,text)
+	}
+	
+	private fun showReply(
+		iconAttrId : Int,
+		accountId : EntityId,
+		replyStatus: TootStatus
+	) {
+		llReply.visibility = View.VISIBLE
+		
+		val name = if( accountId == replyStatus.account.id){
+			AcctColor.getNicknameWithColor(activity,access_info.getFullAcct(replyStatus.account))
+		}else {
+			val m = replyStatus.mentions?.find { it.id == accountId }
+			if( m != null){
+				AcctColor.getNicknameWithColor(activity,access_info.getFullAcct(m.acct))
+			}else{
+				SpannableString("ID(${accountId})")
+			}
+		}
+		
+		val text = name.intoStringResource(activity, R.string.reply_to)
+		
+		// val who = reply.account
+		// showStatusTime(activity, tvReplyTime, who, time = reply.time_created_at)
+		// setAcct(tvReplyAcct, access_info.getFullAcct(who), who.acct)
+		
+		showReply(iconAttrId,text)
 	}
 	
 	private fun showBoost(
@@ -1421,8 +1457,14 @@ internal class ItemViewHolder(
 			llBoosted -> boostedAction()
 			
 			llReply -> {
-				status_reply?.let { s ->
+				val s = status_reply
+				if( s != null){
 					Action_Toot.conversation(activity, pos, access_info, s)
+				}else{
+					val id = status_showing?.in_reply_to_id
+					if( id != null) {
+						Action_Toot.conversationLocal(activity, pos, access_info, id)
+					}
 				}
 			}
 			
@@ -1586,7 +1628,8 @@ internal class ItemViewHolder(
 			}
 			
 			llReply -> {
-				status_reply?.let { s ->
+				val s = status_reply
+				if( s != null){
 					DlgContextMenu(
 						activity,
 						column,
@@ -1594,6 +1637,11 @@ internal class ItemViewHolder(
 						s,
 						notification
 					).show()
+				}else{
+					val id = status_showing?.in_reply_to_id
+					if( id != null) {
+						Action_Toot.conversationLocal(activity, activity.nextPosition(column), access_info, id)
+					}
 				}
 			}
 			

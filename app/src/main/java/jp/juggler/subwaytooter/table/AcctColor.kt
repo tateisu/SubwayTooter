@@ -174,6 +174,32 @@ class AcctColor {
 			val nickname = ac.nickname
 			return if(nickname != null && nickname.isNotEmpty()) nickname.sanitizeBDI() else acct
 		}
+		fun getNicknameWithColor(
+			context : Context,
+			acct : String
+		) : CharSequence {
+			val ac = load(acct)
+			val nickname = ac.nickname
+			val name = if(nickname == null || nickname.isEmpty()) acct else nickname.sanitizeBDI()
+			val sb = SpannableStringBuilder( name )
+			val start = 0
+			val end = sb.length
+			if(ac.color_fg != 0) {
+				sb.setSpan(
+					ForegroundColorSpan(ac.color_fg),
+					start,end,
+					Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+				)
+			}
+			if(ac.color_bg != 0) {
+				sb.setSpan(
+					BackgroundColorSpan(ac.color_bg),
+					start,end,
+					Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+				)
+			}
+			return sb
+		}
 		
 		fun getNotificationSound(acct : String) : String? {
 			val ac = load(acct)

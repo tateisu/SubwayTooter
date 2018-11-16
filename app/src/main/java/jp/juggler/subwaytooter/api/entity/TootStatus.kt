@@ -106,7 +106,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	val in_reply_to_id : EntityId?
 	
 	//	null or the ID of the account it replies to
-	private val in_reply_to_account_id : EntityId?
+	val in_reply_to_account_id : EntityId?
 	
 	//	null or the reblogged Status
 	val reblog : TootStatus?

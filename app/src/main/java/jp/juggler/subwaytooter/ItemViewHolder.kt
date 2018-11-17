@@ -120,7 +120,7 @@ internal class ItemViewHolder(
 	private lateinit var tvMediaDescription : TextView
 	
 	private lateinit var llCardOuter : View
-	private lateinit var tvCardText : TextView
+	private lateinit var tvCardText : MyTextView
 	private lateinit var ivCardImage : MyNetworkImageView
 	
 	private lateinit var llExtra : LinearLayout
@@ -206,6 +206,7 @@ internal class ItemViewHolder(
 		tvMentions.movementMethod = MyLinkMovementMethod
 		tvContentWarning.movementMethod = MyLinkMovementMethod
 		tvMediaDescription.movementMethod = MyLinkMovementMethod
+		tvCardText.movementMethod = MyLinkMovementMethod
 		
 		btnHideMedia.setOnClickListener(this)
 		
@@ -2634,7 +2635,7 @@ internal class ItemViewHolder(
 								
 								background = PreviewCardBorder()
 								
-								tvCardText = textView {
+								tvCardText = myTextView {
 								}.lparams(matchParent, wrapContent) {
 								}
 								

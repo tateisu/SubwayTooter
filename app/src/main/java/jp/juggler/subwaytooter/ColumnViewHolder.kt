@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.AsyncTask
@@ -11,6 +12,8 @@ import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.SpannableStringBuilder
 import android.text.TextWatcher
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.*
@@ -35,9 +38,6 @@ class ColumnViewHolder(
 	companion object {
 		private val log = LogCategory("ColumnViewHolder")
 		
-		private fun vg(v : View, visible : Boolean) {
-			v.visibility = if(visible) View.VISIBLE else View.GONE
-		}
 		
 		val fieldRecycler : Field by lazy {
 			val field = RecyclerView::class.java.getDeclaredField("mRecycler")
@@ -159,9 +159,75 @@ class ColumnViewHolder(
 	val scrollPosition : ScrollPosition
 		get() = ScrollPosition(this)
 	
-	/////////////////////////////////////////////////////////////////
-	// Column から呼ばれる
 	
+	inner class ErrorFlickListener(
+		context: Context
+	) : View.OnTouchListener, GestureDetector.OnGestureListener{
+		
+		private val gd = GestureDetector(context, this)
+		private val density = context.resources.displayMetrics.density
+
+		override fun onTouch(v : View?, event : MotionEvent?) : Boolean {
+			return gd.onTouchEvent(event)
+		}
+		
+		override fun onShowPress(e : MotionEvent?) {
+		}
+		
+		override fun onLongPress(e : MotionEvent?) {
+		}
+
+		override fun onSingleTapUp(e : MotionEvent?) : Boolean {
+			return true
+		}
+		
+		override fun onDown(e : MotionEvent?) : Boolean {
+			return true
+		}
+		
+		override fun onScroll(
+			e1 : MotionEvent?,
+			e2 : MotionEvent?,
+			distanceX : Float,
+			distanceY : Float
+		) : Boolean {
+			return true
+		}
+		
+		override fun onFling(
+			e1 : MotionEvent?,
+			e2 : MotionEvent?,
+			velocityX : Float,
+			velocityY : Float
+		) : Boolean {
+			
+			val vx =velocityX.abs()
+			val vy =velocityY.abs()
+			if(vy < vx *1.5f) {
+				// フリック方向が上下ではない
+				log.d("fling? not vertical view. $vx $vy")
+			}else {
+
+				val vydp = vy / density
+				val limit = 1024f
+				log.d("fling? $vydp/$limit")
+				if( vydp >= limit ){
+
+					val column = column
+					if( column != null && column.lastTask == null ){
+						column.startLoading()
+					}
+				}
+			}
+			return true
+		}
+	}
+	
+	@SuppressLint("ClickableViewAccessibility")
+	private fun initLoadingTextView(){
+		tvLoading.setOnTouchListener(ErrorFlickListener(activity))
+	}
+
 	init {
 
 		viewRoot.scan { v ->
@@ -279,6 +345,8 @@ class ColumnViewHolder(
 		cbSystemNotificationNotRelated.setOnCheckedChangeListener(this)
 		cbEnableSpeech.setOnCheckedChangeListener(this)
 		cbOldApi.setOnCheckedChangeListener(this)
+		
+		initLoadingTextView()
 		
 		// 入力の追跡
 		etRegexFilter.addTextChangedListener(object : TextWatcher {

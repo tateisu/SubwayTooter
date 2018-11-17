@@ -855,6 +855,12 @@ fun View.showKeyboard() {
 	}
 }
 
+fun vg(v : View, visible : Boolean) {
+	v.visibility = if(visible) View.VISIBLE else View.GONE
+}
+
+fun Float.abs() :Float = Math.abs(this)
+
 ////////////////////////////////////////////////////////////////////
 // context
 

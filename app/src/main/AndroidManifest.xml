@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <!-- CAMERAパーミッションをつけるとPlayストアにプライバシーポリシーを記載する必要がある -->
     <!--<uses-permission android:name="android.permission.CAMERA"/>-->
 
@@ -280,6 +280,12 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/Light_colorAccent"
+            />
+
+        <!--https://android-developers.googleblog.com/2018/11/get-your-app-ready-for-foldable-phones.html-->
+        <meta-data
+            android:name="android.allow_multiple_resumed_activities"
+            android:value="true"
             />
 
     </application>

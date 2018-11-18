@@ -103,11 +103,11 @@ class NicoEnquete(
 			this.items = parseChoiceList(
 				parser.context,
 				status,
-				parseStringArray(src, "items")
+				src.parseStringArrayList("items")
 			)
 			
-			this.ratios = parseFloatArray(src, "ratios")
-			this.ratios_text = parseStringArray(src, "ratios_text")
+			this.ratios = src.parseFloatArrayList("ratios")
+			this.ratios_text = src.parseStringArrayList( "ratios_text")
 		}
 		
 	}
@@ -170,29 +170,6 @@ class NicoEnquete(
 				log.trace(ex)
 				null
 			}
-		}
-		
-		private fun parseStringArray(src : JSONObject, name : String) : ArrayList<String>? {
-			val array = src.optJSONArray(name)
-			if(array != null) {
-				val dst = array.toStringArrayList()
-				if(dst.isNotEmpty()) return dst
-			}
-			return null
-		}
-		
-		private fun parseFloatArray(src : JSONObject, name : String) : ArrayList<Float>? {
-			val array = src.optJSONArray(name)
-			if(array != null) {
-				val size = array.length()
-				val dst = ArrayList<Float>(size)
-				for(i in 0 until size) {
-					val dv = array.optDouble(i)
-					dst.add(dv.toFloat())
-				}
-				if(dst.isNotEmpty()) return dst
-			}
-			return null
 		}
 		
 		private fun parseChoiceList(

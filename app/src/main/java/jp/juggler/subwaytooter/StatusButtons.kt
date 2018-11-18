@@ -101,7 +101,7 @@ internal class StatusButtons(
 			color = color_normal
 		)
 		
-		val a = (((color_normal ushr 24)/255f) * 0.7f)
+//		val a = (((color_normal ushr 24)/255f) * 0.7f)
 
 		// setIconDrawableId で色を指定するとアルファ値も反映されるらしい
 //		btnConversation.alpha = a

@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.toStringArrayList
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -215,5 +216,3 @@ fun <T : TootAttachmentLike> ArrayList<T>.encodeJson() : JSONArray {
 	}
 	return a
 }
-
-

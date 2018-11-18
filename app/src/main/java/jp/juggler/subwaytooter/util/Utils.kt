@@ -684,6 +684,28 @@ fun JSONArray.toStringArrayList() : ArrayList<String> {
 	return dst_list
 }
 
+fun JSONObject.parseStringArrayList(name : String) : ArrayList<String>? {
+	val array = optJSONArray(name)
+	if(array != null) {
+		val dst = array.toStringArrayList()
+		if(dst.isNotEmpty()) return dst
+	}
+	return null
+}
+
+fun JSONObject.parseFloatArrayList(name : String) : ArrayList<Float>? {
+	val array = optJSONArray(name)
+	if(array != null) {
+		val size = array.length()
+		val dst = ArrayList<Float>(size)
+		for(i in 0 until size) {
+			val dv = array.optDouble(i)
+			dst.add(dv.toFloat())
+		}
+		if(dst.isNotEmpty()) return dst
+	}
+	return null
+}
 fun String.toJsonObject() = JSONObject(this)
 fun String.toJsonArray() = JSONArray(this)
 

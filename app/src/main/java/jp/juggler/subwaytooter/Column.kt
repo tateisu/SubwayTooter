@@ -1913,7 +1913,8 @@ class Column(
 				
 				misskeyParams : JSONObject? = null,
 				misskeyCustomParser : (parser : TootParser, jsonArray : JSONArray) -> ArrayList<TootStatus> =
-					{ parser, jsonArray -> parser.statusList(jsonArray) }
+					{ parser, jsonArray -> parser.statusList(jsonArray) },
+				initialUntilDate : Boolean = false
 			) : TootApiResult? {
 				
 				val params = misskeyParams ?: makeMisskeyTimelineParameter(parser)
@@ -1924,7 +1925,12 @@ class Column(
 				
 				// 初回の取得
 				val result = when {
-					isMisskey -> client.request(path_base, params.toPostRequestBuilder())
+					isMisskey -> {
+						if( initialUntilDate ){
+							params.put("untilDate",System.currentTimeMillis() + ( 86400000L * 365))
+						}
+						client.request(path_base, params.toPostRequestBuilder())
+					}
 					aroundMin -> client.request("$path_base&min_id=$status_id")
 					aroundMax -> client.request("$path_base&max_id=$status_id")
 					else -> client.request(path_base)
@@ -2647,7 +2653,7 @@ class Column(
 									)
 								}
 								
-								TAB_STATUS -> {
+								else -> {
 									
 									var instance = access_info.instance
 									
@@ -2679,24 +2685,21 @@ class Column(
 										getStatuses(client, path)
 									} else {
 										// 固定トゥートの取得
-										val pinnedNote = who_account?.get()?.pinnedNote
-										if(pinnedNote != null) {
-											pinnedNote.pinned = true
-											val src = ArrayList<TootStatus>()
-											src.add(pinnedNote)
-											this.list_pinned = addWithFilterStatus(null, src)
+										val pinnedNotes = who_account?.get()?.pinnedNotes
+										if(pinnedNotes != null) {
+											this.list_pinned =
+												addWithFilterStatus(null, pinnedNotes)
 										}
 										
 										// 通常トゥートの取得
 										getStatuses(
 											client,
 											PATH_MISSKEY_PROFILE_STATUSES,
-											misskeyParams = makeMisskeyParamsProfileStatuses(parser)
+											misskeyParams = makeMisskeyParamsProfileStatuses(parser),
+											initialUntilDate = true
 										)
 									}
 								}
-								
-								else -> throw RuntimeException("profile_tab : invalid value.")
 							}
 						}
 						
@@ -2827,6 +2830,7 @@ class Column(
 								, misskeyParams = makeMisskeyTimelineParameter(parser)
 									.put("tag", hashtag)
 									.put("limit", MISSKEY_HASHTAG_LIMIT)
+								
 							)
 						} else {
 							getStatuses(client, makeHashtagUrl(hashtag))
@@ -6815,13 +6819,13 @@ class Column(
 		}
 	}
 	
-	fun getContentColor(activity:AppCompatActivity) : Int = if(content_color != 0) {
+	fun getContentColor(activity : AppCompatActivity) : Int = if(content_color != 0) {
 		content_color
 	} else {
 		Styler.getAttributeColor(activity, R.attr.colorContentText)
 	}
 	
-	fun getAcctColor(activity:AppCompatActivity) : Int = if(acct_color != 0) {
+	fun getAcctColor(activity : AppCompatActivity) : Int = if(acct_color != 0) {
 		acct_color
 	} else {
 		Styler.getAttributeColor(activity, R.attr.colorTimeSmall)
@@ -6837,6 +6841,5 @@ class Column(
 	init {
 		registerColumnId(column_id, this)
 	}
-	
 	
 }

@@ -185,8 +185,8 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	// user_hides_network is preference, not exposed in API
 	// val user_hides_network : Boolean
 	
-	var pinnedNote : TootStatus? = null
-	var pinnedNoteId : String? = null
+	var pinnedNotes : ArrayList<TootStatus>? = null
+	var pinnedNoteIds : ArrayList<String>? = null
 	
 	init {
 		var sv : String?
@@ -243,10 +243,11 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			this.header = src.parseString("bannerUrl")
 			this.header_static = src.parseString("bannerUrl")
 			
-			this.pinnedNoteId = src.parseString("pinnedNoteId")
+			this.pinnedNoteIds = src.parseStringArrayList("pinnedNoteIds")
 			if(parser.misskeyDecodeProfilePin) {
-				this.pinnedNote = parseItem(::TootStatus, parser, src.optJSONObject("pinnedNote"))
-				
+				val list = parseList(::TootStatus, parser,src.optJSONArray("pinnedNotes"))
+				list.forEach { it.pinned = true }
+				this.pinnedNotes = if( list.isNotEmpty() ) list else null
 			}
 			
 			UserRelationMisskey.fromAccount(parser,src,id)

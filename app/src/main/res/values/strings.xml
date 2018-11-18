@@ -86,6 +86,7 @@
     <string name="display_name_favourited_by">%1$s favourited</string>
     <string name="display_name_boosted_by">%1$s boosted</string>
     <string name="display_name_replied_by">%1$s replied</string>
+    <string name="display_name_mentioned_by">%1$s mentioned</string>
     <string name="display_name_voted_by">%1$s voted</string>
     <string name="display_name_follow_request_by">%1$s sent follow request</string>
 

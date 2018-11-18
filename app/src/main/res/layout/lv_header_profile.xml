@@ -62,7 +62,6 @@
                 android:layout_height="wrap_content"
                 android:paddingEnd="4dp"
                 android:paddingStart="4dp"
-                android:textColor="?attr/colorTimeSmall"
                 android:textSize="12sp"
                 tools:text="aaaaaaaaaaaaaaaa"
                 />
@@ -101,7 +100,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="end"
-        android:textColor="?attr/colorTimeSmall"
         android:textSize="12sp"
         tools:text="xxxx-xx-xx xx:xx:xx"
         />

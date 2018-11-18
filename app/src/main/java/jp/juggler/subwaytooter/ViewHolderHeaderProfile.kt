@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter
 
 import android.graphics.Color
-import android.graphics.Typeface
 import android.support.v4.view.ViewCompat
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -9,16 +8,15 @@ import android.text.style.ForegroundColorSpan
 import android.view.View
 import android.widget.*
 import jp.juggler.emoji.EmojiMap201709
-
 import jp.juggler.subwaytooter.action.Action_Follow
 import jp.juggler.subwaytooter.action.Action_User
 import jp.juggler.subwaytooter.api.MisskeyAccountDetailMap
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootAccountRef
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
 import jp.juggler.subwaytooter.util.intoStringResource
@@ -26,6 +24,7 @@ import jp.juggler.subwaytooter.util.startMargin
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.subwaytooter.view.MyTextView
+import org.jetbrains.anko.textColor
 
 internal class ViewHolderHeaderProfile(
 	activity : ActMain,
@@ -62,8 +61,8 @@ internal class ViewHolderHeaderProfile(
 	private val ivMovedBy : ImageView
 	private val moved_caption_invalidator : NetworkEmojiInvalidator
 	private val moved_name_invalidator : NetworkEmojiInvalidator
-	private val default_color : Int
 	private val density : Float
+	private val btnMore : ImageButton
 	
 	init {
 		ivBackground = viewRoot.findViewById(R.id.ivBackground)
@@ -76,7 +75,7 @@ internal class ViewHolderHeaderProfile(
 		btnFollowers = viewRoot.findViewById(R.id.btnFollowers)
 		btnStatusCount = viewRoot.findViewById(R.id.btnStatusCount)
 		tvNote = viewRoot.findViewById(R.id.tvNote)
-		val btnMore = viewRoot.findViewById<View>(R.id.btnMore)
+		btnMore = viewRoot.findViewById(R.id.btnMore)
 		btnFollow = viewRoot.findViewById(R.id.btnFollow)
 		ivFollowedBy = viewRoot.findViewById(R.id.ivFollowedBy)
 		tvRemoteProfileWarning = viewRoot.findViewById(R.id.tvRemoteProfileWarning)
@@ -90,7 +89,6 @@ internal class ViewHolderHeaderProfile(
 		ivMovedBy = viewRoot.findViewById(R.id.ivMovedBy)
 		llFields = viewRoot.findViewById(R.id.llFields)
 		
-		default_color = tvDisplayName.textColors.defaultColor
 		density = tvDisplayName.resources.displayMetrics.density
 		
 		ivBackground.setOnClickListener(this)
@@ -127,24 +125,46 @@ internal class ViewHolderHeaderProfile(
 		llProfile.setBackgroundColor(c)
 	}
 	
+	private var contentColor = 0
+	
 	override fun bindData(column : Column) {
 		super.bindData(column)
 		
+		var f : Float
 		
-		if(! activity.timeline_font_size_sp.isNaN()) {
-			tvMovedName.textSize = activity.timeline_font_size_sp
-			tvMoved.textSize = activity.timeline_font_size_sp
+		f = activity.timeline_font_size_sp
+		if(! f.isNaN()) {
+			tvMovedName.textSize = f
+			tvMoved.textSize = f
 		}
 		
-		if(! activity.acct_font_size_sp.isNaN()) {
-			tvMovedAcct.textSize = activity.acct_font_size_sp
-			tvCreated.textSize = activity.acct_font_size_sp
+		f = activity.acct_font_size_sp
+		if(! f.isNaN()) {
+			tvMovedAcct.textSize = f
+			tvCreated.textSize = f
 		}
+		
+		val contentColor = column.getContentColor(activity)
+		this.contentColor = contentColor
+		
+		tvMoved.textColor = contentColor
+		tvMovedName.textColor = contentColor
+		tvDisplayName.textColor = contentColor
+		tvNote.textColor = contentColor
+		tvRemoteProfileWarning.textColor = contentColor
+		btnStatusCount.textColor = contentColor
+		btnFollowing.textColor = contentColor
+		btnFollowers.textColor = contentColor
+		Styler.setIconDrawableId(activity, btnMore, R.drawable.btn_more, color = contentColor)
+		
+		val acctColor = column.getAcctColor(activity)
+		tvCreated.textColor = acctColor
+		tvMovedAcct.textColor = acctColor
 		
 		val whoRef = column.who_account
 		this.whoRef = whoRef
 		val who = whoRef?.get()
-
+		
 		// Misskeyの場合はNote中のUserエンティティと /api/users/show の情報量がかなり異なる
 		val whoDetail = if(who == null) {
 			null
@@ -179,7 +199,8 @@ internal class ViewHolderHeaderProfile(
 			btnFollow.setImageDrawable(null)
 			tvRemoteProfileWarning.visibility = View.GONE
 		} else {
-			tvCreated.text = TootStatus.formatTime(tvCreated.context, (whoDetail?:who).time_created_at, true)
+			tvCreated.text =
+				TootStatus.formatTime(tvCreated.context, (whoDetail ?: who).time_created_at, true)
 			ivBackground.setImageUrl(
 				activity.pref,
 				0f,
@@ -246,7 +267,7 @@ internal class ViewHolderHeaderProfile(
 				(whoDetail?.followers_count ?: who.followers_count)
 			
 			val relation = UserRelation.load(access_info.db_id, who.id)
-			Styler.setFollowIcon(activity, btnFollow, ivFollowedBy, relation, who)
+			Styler.setFollowIcon(activity, btnFollow, ivFollowedBy, relation, who, contentColor)
 			
 			showMoved(who, who.movedRef)
 			
@@ -272,8 +293,7 @@ internal class ViewHolderHeaderProfile(
 					emojiMapProfile = who.profile_emojis
 				)
 				
-				val content_color = column.content_color
-				val c = if(content_color != 0) content_color else default_color
+				
 				
 				val nameTypeface = ActMain.timeline_font_bold
 				val valueTypeface = ActMain.timeline_font
@@ -293,7 +313,7 @@ internal class ViewHolderHeaderProfile(
 					nameLp.topMargin = (density * 6f).toInt()
 					nameView.layoutParams = nameLp
 					nameView.text = nameText
-					nameView.setTextColor(c)
+					nameView.setTextColor(contentColor)
 					nameView.typeface = nameTypeface
 					nameView.movementMethod = MyLinkMovementMethod
 					llFields.addView(nameView)
@@ -327,7 +347,7 @@ internal class ViewHolderHeaderProfile(
 					valueLp.startMargin = (density * 32f).toInt()
 					valueView.layoutParams = valueLp
 					valueView.text = valueText
-					valueView.setTextColor(c)
+					valueView.setTextColor(contentColor)
 					valueView.typeface = valueTypeface
 					valueView.movementMethod = MyLinkMovementMethod
 					
@@ -371,14 +391,14 @@ internal class ViewHolderHeaderProfile(
 		setAcct(tvMovedAcct, access_info.getFullAcct(moved), moved.acct)
 		
 		val relation = UserRelation.load(access_info.db_id, moved.id)
-		Styler.setFollowIcon(activity, btnMoved, ivMovedBy, relation, moved)
+		Styler.setFollowIcon(activity, btnMoved, ivMovedBy, relation, moved, contentColor)
 	}
 	
 	private fun setAcct(tv : TextView, acctLong : String, acctShort : String) {
 		val ac = AcctColor.load(acctLong)
 		tv.text = when {
 			AcctColor.hasNickname(ac) -> ac.nickname
-			Pref.bpShortAcctLocalUser(App1.pref) -> "@" + acctShort
+			Pref.bpShortAcctLocalUser(App1.pref) -> "@$acctShort"
 			else -> acctLong
 		}
 		
@@ -480,11 +500,11 @@ internal class ViewHolderHeaderProfile(
 	override fun onViewRecycled() {
 	}
 	
-	fun updateRelativeTime() {
-		val who = whoRef?.get()
-		if(who != null) {
-			tvCreated.text = TootStatus.formatTime(tvCreated.context, who.time_created_at, true)
-		}
-	}
+	//	fun updateRelativeTime() {
+	//		val who = whoRef?.get()
+	//		if(who != null) {
+	//			tvCreated.text = TootStatus.formatTime(tvCreated.context, who.time_created_at, true)
+	//		}
+	//	}
 	
 }

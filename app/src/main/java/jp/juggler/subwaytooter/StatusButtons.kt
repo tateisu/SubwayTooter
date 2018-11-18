@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.PorterDuff
 import android.support.v4.content.ContextCompat
 import android.view.View
@@ -47,14 +48,18 @@ internal class StatusButtons(
 	var close_window : PopupWindow? = null
 	
 	private val btnConversation = holder.btnConversation
-	private val btnReply  = holder.btnReply
-	private val btnBoost  = holder.btnBoost
-	private val btnFavourite  = holder.btnFavourite
-	private val llFollow2  = holder.llFollow2
-	private val btnFollow2  = holder.btnFollow2
-	private val ivFollowedBy2  = holder.ivFollowedBy2
-	private val btnMore  = holder.btnMore
+	private val btnReply = holder.btnReply
+	private val btnBoost = holder.btnBoost
+	private val btnFavourite = holder.btnFavourite
+	private val llFollow2 = holder.llFollow2
+	private val btnFollow2 = holder.btnFollow2
+	private val ivFollowedBy2 = holder.ivFollowedBy2
+	private val btnMore = holder.btnMore
 	
+	private val color_normal = column.getContentColor(activity)
+	
+	private val color_accent : Int
+		get() = Styler.getAttributeColor(activity, R.attr.colorImageButtonAccent)
 	
 	init {
 		this.access_info = column.access_info
@@ -70,25 +75,49 @@ internal class StatusButtons(
 		btnConversation.setOnLongClickListener(this)
 		btnReply.setOnClickListener(this)
 		btnReply.setOnLongClickListener(this)
-		
 	}
 	
 	fun bind(status : TootStatus, notification : TootNotification?) {
 		this.status = status
 		this.notification = notification
 		
-		val color_normal = Styler.getAttributeColor(activity, R.attr.colorImageButton)
-		val color_accent = Styler.getAttributeColor(activity, R.attr.colorImageButtonAccent)
-		val fav_icon_attr =
-			if(access_info.isNicoru(status.account)) R.attr.ic_nicoru else R.attr.btn_favourite
+		val fav_icon_drawable = when {
+			access_info.isNicoru(status.account) -> R.drawable.ic_nicoru_dark
+			else -> R.drawable.btn_favourite_dark
+		}
 		
 		val replies_count = status.replies_count
+		
+		Styler.setIconDrawableId(
+			activity,
+			btnConversation,
+			R.drawable.ic_conversation_dark,
+			color = color_normal
+		)
+		Styler.setIconDrawableId(
+			activity,
+			btnMore,
+			R.drawable.btn_more_dark,
+			color = color_normal
+		)
+		
+		val a = (((color_normal ushr 24)/255f) * 0.7f)
+
+		// setIconDrawableId で色を指定するとアルファ値も反映されるらしい
+//		btnConversation.alpha = a
+//		btnMore.alpha = a
+//
+//		btnReply.alpha = a
+//		btnBoost.alpha = a
+//		btnFavourite.alpha = a
+//		btnFollow2.alpha = a
+//		ivFollowedBy2.alpha = a
 		
 		setButton(
 			btnReply,
 			true,
 			color_normal,
-			R.attr.btn_reply,
+			R.drawable.btn_reply_dark,
 			when(replies_count) {
 				null -> ""
 				else -> when(Pref.ipRepliesCount(activity.pref)) {
@@ -111,7 +140,7 @@ internal class StatusButtons(
 				btnBoost,
 				false,
 				color_accent,
-				R.attr.ic_mail,
+				R.drawable.ic_mail_dark,
 				"",
 				activity.getString(R.string.boost)
 			)
@@ -120,7 +149,7 @@ internal class StatusButtons(
 				btnBoost,
 				false,
 				color_normal,
-				R.attr.btn_refresh,
+				R.drawable.btn_refresh_dark,
 				"?",
 				activity.getString(R.string.boost)
 			)
@@ -129,7 +158,7 @@ internal class StatusButtons(
 				btnBoost,
 				true,
 				if(status.reblogged) color_accent else color_normal,
-				R.attr.btn_boost,
+				R.drawable.btn_boost_dark,
 				status.reblogs_count?.toString() ?: "",
 				activity.getString(R.string.boost)
 			)
@@ -140,7 +169,7 @@ internal class StatusButtons(
 				btnFavourite,
 				false,
 				color_normal,
-				R.attr.btn_refresh,
+				R.drawable.btn_refresh_dark,
 				"?",
 				activity.getString(R.string.favourite)
 			)
@@ -149,7 +178,7 @@ internal class StatusButtons(
 				btnFavourite,
 				true,
 				if(status.favourited) color_accent else color_normal,
-				fav_icon_attr,
+				fav_icon_drawable,
 				status.favourites_count?.toString() ?: "",
 				activity.getString(R.string.favourite)
 			)
@@ -163,7 +192,14 @@ internal class StatusButtons(
 		} else {
 			llFollow2.visibility = View.VISIBLE
 			val relation = UserRelation.load(access_info.db_id, account.id)
-			Styler.setFollowIcon(activity, btnFollow2, ivFollowedBy2, relation, account)
+			Styler.setFollowIcon(
+				activity,
+				btnFollow2,
+				ivFollowedBy2,
+				relation,
+				account,
+				color_normal
+			)
 			relation
 		}
 		
@@ -173,14 +209,13 @@ internal class StatusButtons(
 		b : CountImageButton,
 		enabled : Boolean,
 		color : Int,
-		icon_attr : Int,
+		drawableId : Int,
 		count : String,
 		contentDescription : String
 	) {
-		val d = Styler.getAttributeDrawable(activity, icon_attr).mutate()
-		d.setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
+		val d = Styler.createColoredDrawable(activity,drawableId,color)
 		b.setImageDrawable(d)
-		b.setPaddingAndText(holder.paddingH,holder.paddingV,count,14f,holder.compoundPaddingDp)
+		b.setPaddingAndText(holder.paddingH, holder.paddingV, count, 14f, holder.compoundPaddingDp)
 		b.setTextColor(color)
 		b.contentDescription = contentDescription + count
 		b.isEnabled = enabled
@@ -196,10 +231,10 @@ internal class StatusButtons(
 		when(v) {
 			
 			btnConversation -> {
-
+				
 				val cs = status.conversationSummary
-				if( cs != null){
-
+				if(cs != null) {
+					
 					if(cs.unread) {
 						cs.unread = false
 						// 表示の更新
@@ -208,10 +243,10 @@ internal class StatusButtons(
 							reset = true
 						)
 						// 未読フラグのクリアをサーバに送る
-						Action_Toot.clearConversationUnread(activity,access_info,cs)
+						Action_Toot.clearConversationUnread(activity, access_info, cs)
 					}
 				}
-
+				
 				Action_Toot.conversation(
 					activity,
 					activity.nextPosition(column),
@@ -296,7 +331,9 @@ internal class StatusButtons(
 						// 何もしない
 					}
 					
-					access_info.isMisskey && relation.getRequested(account) && !relation.getFollowing(account) ->
+					access_info.isMisskey && relation.getRequested(account) && ! relation.getFollowing(
+						account
+					) ->
 						Action_Follow.deleteFollowRequest(
 							activity,
 							activity.nextPosition(column),
@@ -375,12 +412,12 @@ internal class StatusButtons(
 	
 }
 
-open class _FlexboxLayout(ctx: Context): FlexboxLayout(ctx) {
-	inline fun <T: View> T.lparams(
-		width: Int = android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
-		height: Int = android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
-		init: FlexboxLayout.LayoutParams.() -> Unit = {}
-	): T {
+open class _FlexboxLayout(ctx : Context) : FlexboxLayout(ctx) {
+	inline fun <T : View> T.lparams(
+		width : Int = android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+		height : Int = android.view.ViewGroup.LayoutParams.WRAP_CONTENT,
+		init : FlexboxLayout.LayoutParams.() -> Unit = {}
+	) : T {
 		val layoutParams = FlexboxLayout.LayoutParams(width, height)
 		layoutParams.init()
 		this@lparams.layoutParams = layoutParams
@@ -390,20 +427,21 @@ open class _FlexboxLayout(ctx: Context): FlexboxLayout(ctx) {
 
 class StatusButtonsViewHolder(
 	activity : ActMain
-	,lpWidth:Int
-	,topMarginDp:Float
-, @JustifyContent justifyContent : Int = JustifyContent.CENTER
-)  {
+	, lpWidth : Int
+	, topMarginDp : Float
+	, @JustifyContent justifyContent : Int = JustifyContent.CENTER
+) {
 	
 	private val buttonHeight = ActMain.boostButtonSize
 	private val marginBetween = (ActMain.boostButtonSize.toFloat() * 0.05f + 0.5f).toInt()
-
-	val paddingH = (buttonHeight.toFloat()*0.1f +0.5f).toInt()
-	val paddingV = (buttonHeight.toFloat()*0.1f +0.5f).toInt()
-	val compoundPaddingDp = 0f //  ActMain.boostButtonSize.toFloat() * -0f / activity.resources.displayMetrics.density
-
+	
+	val paddingH = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
+	val paddingV = (buttonHeight.toFloat() * 0.1f + 0.5f).toInt()
+	val compoundPaddingDp =
+		0f //  ActMain.boostButtonSize.toFloat() * -0f / activity.resources.displayMetrics.density
+	
 	val viewRoot : FlexboxLayout
-
+	
 	lateinit var btnConversation : ImageButton
 	lateinit var btnReply : CountImageButton
 	lateinit var btnBoost : CountImageButton
@@ -413,10 +451,9 @@ class StatusButtonsViewHolder(
 	lateinit var ivFollowedBy2 : ImageView
 	lateinit var btnMore : ImageButton
 	
-	
 	init {
-		viewRoot = with(activity.UI{}) {
-
+		viewRoot = with(activity.UI {}) {
+			
 			customView<_FlexboxLayout> {
 				// トップレベルのViewGroupのlparamsはイニシャライザ内部に置くしかないみたい
 				layoutParams = LinearLayout.LayoutParams(lpWidth, wrapContent).apply {

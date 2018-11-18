@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.AsyncTask
 import android.os.Environment
 import android.os.SystemClock
+import android.support.v7.app.AppCompatActivity
 import android.view.Gravity
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
@@ -1356,7 +1357,7 @@ class Column(
 			throw RuntimeException("fireShowColumnStatus: not on main thread.")
 		}
 		viewHolder?.showColumnStatus()
-	
+		
 	}
 	
 	internal fun fireColumnColor() {
@@ -3041,9 +3042,9 @@ class Column(
 							}
 							
 							// 検索機能が無効だとsearch_query が 400を返すが、他のAPIがデータを返したら成功したことにする
-							return if( list_tmp ?.isNotEmpty() ==true ){
+							return if(list_tmp?.isNotEmpty() == true) {
 								TootApiResult()
-							}else {
+							} else {
 								result
 							}
 						} else {
@@ -4947,7 +4948,7 @@ class Column(
 						}
 						
 						replaceConversationSummary(changeList, list_new, list_data)
-
+						
 						val added = list_new.size // may 0
 						
 						// 投稿後のリフレッシュなら当該投稿の位置を探す
@@ -6573,9 +6574,9 @@ class Column(
 		list_data : BucketList<TimelineItem>
 	) {
 		
-		val newMap = HashMap<EntityId,TootConversationSummary>()
+		val newMap = HashMap<EntityId, TootConversationSummary>()
 		for(o in list_new) {
-			if(o is TootConversationSummary) newMap[ o.id ] = o
+			if(o is TootConversationSummary) newMap[o.id] = o
 		}
 		
 		if(list_data.isNotEmpty() && newMap.isNotEmpty()) {
@@ -6584,20 +6585,20 @@ class Column(
 				val o = list_data[i] as? TootConversationSummary ?: continue
 				val newItem = newMap[o.id] ?: continue
 				
-				if( o.last_status.uri == newItem.last_status.uri ){
+				if(o.last_status.uri == newItem.last_status.uri) {
 					// 投稿が同じなので順序を入れ替えず、その場所で更新する
 					changeList.add(AdapterChange(AdapterChangeType.RangeChange, i, 1))
 					list_data[i] = newItem
 					removeSet.add(newItem.id)
 					log.d("replaceConversationSummary: in-place update")
-				}else{
+				} else {
 					// 投稿が異なるので古い方を削除して、リストの順序を変える
 					changeList.add(AdapterChange(AdapterChangeType.RangeRemove, i, 1))
 					list_data.removeAt(i)
 					log.d("replaceConversationSummary: order change")
 				}
 			}
-			for(i in list_new.size -1 downTo 0 ) {
+			for(i in list_new.size - 1 downTo 0) {
 				val o = list_data[i] as? TootConversationSummary ?: continue
 				if(removeSet.contains(o.id)) list_new.removeAt(i)
 			}
@@ -6814,6 +6815,18 @@ class Column(
 		}
 	}
 	
+	fun getContentColor(activity:AppCompatActivity) : Int = if(content_color != 0) {
+		content_color
+	} else {
+		Styler.getAttributeColor(activity, R.attr.colorContentText)
+	}
+	
+	fun getAcctColor(activity:AppCompatActivity) : Int = if(acct_color != 0) {
+		acct_color
+	} else {
+		Styler.getAttributeColor(activity, R.attr.colorTimeSmall)
+	}
+	
 	//	fun findListIndexByTimelineId(orderId : EntityId) : Int? {
 	//		list_data.forEachIndexed { i, v ->
 	//			if(v.getOrderId() == orderId) return i
@@ -6824,4 +6837,6 @@ class Column(
 	init {
 		registerColumnId(column_id, this)
 	}
+	
+	
 }

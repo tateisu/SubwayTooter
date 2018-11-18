@@ -207,6 +207,7 @@
     <string name="display_name_quoted_by">%1$sが引用しました</string>
     <string name="display_name_reaction_by">%1$sがリアクション</string>
     <string name="display_name_replied_by">%1$sからの返信</string>
+    <string name="display_name_mentioned_by">%1$sからのメンション</string>
     <string name="display_name_unfollowed_by">%1$sにフォロー解除されました</string>
     <string name="display_name_voted_by">%1$sが投票しました</string>
     <string name="display_replies_count">返信の数の表示</string>

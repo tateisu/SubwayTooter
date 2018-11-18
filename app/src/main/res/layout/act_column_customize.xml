@@ -163,6 +163,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
                         android:lineSpacingMultiplier="1.1"
+                        android:textColor="?attr/colorContentText"
                         android:gravity="start"
                         android:text="@string/content_sample"
                         android:id="@+id/tvSampleContent"

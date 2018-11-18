@@ -37,6 +37,10 @@
     <!-- 日時の表記 #888888 -->
     <attr name="colorTimeSmall" format="color"/>
 
+    <!-- 日時の表記 #888888 -->
+    <attr name="colorContentText" format="color"/>
+
+
     <!-- プロフ背景を薄くするマスク #C0FFFFFF -->
     <attr name="colorProfileBackgroundMask" format="color"/>
 

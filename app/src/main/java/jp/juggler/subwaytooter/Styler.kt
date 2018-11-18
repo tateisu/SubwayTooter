@@ -58,21 +58,34 @@ object Styler {
 		)
 	}
 	
-	private fun setIconDrawableId(
+	fun createColoredDrawable(
+		context : Context,
+		drawableId : Int,
+		color : Int
+	) : Drawable {
+		val rgb = (color and 0xffffff) or Color.BLACK
+		val alpha = (color ushr 24)
+		
+		// 色指定が他のアイコンに影響しないようにする
+		// カラーフィルターとアルファ値を設定する
+		val d = ContextCompat.getDrawable(context, drawableId) !!.mutate()
+		d.setColorFilter(rgb, PorterDuff.Mode.SRC_ATOP)
+		d.alpha = alpha
+		
+		return d
+	}
+	
+	fun setIconDrawableId(
 		context : Context,
 		imageView : ImageView,
 		drawableId : Int,
-		color:Int? = null
+		color : Int? = null
 	) {
-		if( color == null) {
+		if(color == null) {
 			// ImageViewにアイコンを設定する。デフォルトの色
-			imageView.setImageResource(drawableId)
-		}else{
-			// ImageViewにアイコンを設定する。色を変えてしまう
-			val d = ContextCompat.getDrawable(context,drawableId) ?: return
-			d.mutate() // 色指定が他のアイコンに影響しないようにする
-			d.setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
-			imageView.setImageDrawable(d)
+			imageView.setImageDrawable(ContextCompat.getDrawable(context, drawableId))
+		} else {
+			imageView.setImageDrawable(createColoredDrawable(context, drawableId, color))
 		}
 	}
 	
@@ -80,18 +93,18 @@ object Styler {
 		context : Context,
 		imageView : ImageView,
 		iconAttrId : Int,
-		color:Int? = null
+		color : Int? = null
 	) {
-		setIconDrawableId(context,imageView,getAttributeResourceId(context, iconAttrId),color)
+		setIconDrawableId(context, imageView, getAttributeResourceId(context, iconAttrId), color)
 	}
 	
-	fun getVisibilityIconAttr(isMisskeyData:Boolean ,visibility : TootVisibility):Int {
-		val isMisskey = when(Pref.ipVisibilityStyle(App1.pref)){
+	fun getVisibilityIconAttr(isMisskeyData : Boolean, visibility : TootVisibility) : Int {
+		val isMisskey = when(Pref.ipVisibilityStyle(App1.pref)) {
 			Pref.VS_MASTODON -> false
-			Pref.VS_MISSKEY ->true
-			else-> isMisskeyData
+			Pref.VS_MISSKEY -> true
+			else -> isMisskeyData
 		}
-		return when{
+		return when {
 			isMisskey -> when(visibility) {
 				TootVisibility.Public -> R.attr.ic_public
 				TootVisibility.UnlistedHome -> R.attr.btn_home
@@ -100,12 +113,12 @@ object Styler {
 				TootVisibility.DirectPrivate -> R.attr.ic_lock
 				TootVisibility.WebSetting -> R.attr.ic_question
 				
-				TootVisibility.LocalPublic-> R.attr.ic_local_ltl
-				TootVisibility.LocalHome-> R.attr.ic_local_home
-				TootVisibility.LocalFollowers-> R.attr.ic_local_lock_open
+				TootVisibility.LocalPublic -> R.attr.ic_local_ltl
+				TootVisibility.LocalHome -> R.attr.ic_local_home
+				TootVisibility.LocalFollowers -> R.attr.ic_local_lock_open
 				
 			}
-			else-> when(visibility) {
+			else -> when(visibility) {
 				TootVisibility.Public -> R.attr.ic_public
 				TootVisibility.UnlistedHome -> R.attr.ic_lock_open
 				TootVisibility.PrivateFollowers -> R.attr.ic_lock
@@ -113,60 +126,74 @@ object Styler {
 				TootVisibility.DirectPrivate -> R.attr.ic_mail
 				TootVisibility.WebSetting -> R.attr.ic_question
 				
-				TootVisibility.LocalPublic-> R.attr.ic_local_ltl
-				TootVisibility.LocalHome-> R.attr.ic_local_lock_open
-				TootVisibility.LocalFollowers-> R.attr.ic_local_lock
+				TootVisibility.LocalPublic -> R.attr.ic_local_ltl
+				TootVisibility.LocalHome -> R.attr.ic_local_lock_open
+				TootVisibility.LocalFollowers -> R.attr.ic_local_lock
 				
 			}
 		}
 	}
 	
-	fun getVisibilityIcon(context : Context, isMisskeyData:Boolean ,visibility : TootVisibility) : Int {
-		return getAttributeResourceId(context, getVisibilityIconAttr(isMisskeyData,visibility))
+	fun getVisibilityIcon(
+		context : Context,
+		isMisskeyData : Boolean,
+		visibility : TootVisibility
+	) : Int {
+		return getAttributeResourceId(context, getVisibilityIconAttr(isMisskeyData, visibility))
 	}
 	
-	fun getVisibilityString(context : Context,isMisskeyData:Boolean ,visibility : TootVisibility):String {
-		val isMisskey = when(Pref.ipVisibilityStyle(App1.pref)){
+	fun getVisibilityString(
+		context : Context,
+		isMisskeyData : Boolean,
+		visibility : TootVisibility
+	) : String {
+		val isMisskey = when(Pref.ipVisibilityStyle(App1.pref)) {
 			Pref.VS_MASTODON -> false
-			Pref.VS_MISSKEY ->true
-			else-> isMisskeyData
+			Pref.VS_MISSKEY -> true
+			else -> isMisskeyData
 		}
-		return context.getString(when{
-			isMisskey -> when(visibility) {
-				TootVisibility.Public ->R.string.visibility_public
-				TootVisibility.UnlistedHome -> R.string.visibility_home
-				TootVisibility.PrivateFollowers -> R.string.visibility_followers
-				TootVisibility.DirectSpecified -> R.string.visibility_direct
-				TootVisibility.DirectPrivate -> R.string.visibility_private
-				TootVisibility.WebSetting -> R.string.visibility_web_setting
-				
-				TootVisibility.LocalPublic-> R.string.visibility_local_public
-				TootVisibility.LocalHome-> R.string.visibility_local_home
-				TootVisibility.LocalFollowers-> R.string.visibility_local_followers
+		return context.getString(
+			when {
+				isMisskey -> when(visibility) {
+					TootVisibility.Public -> R.string.visibility_public
+					TootVisibility.UnlistedHome -> R.string.visibility_home
+					TootVisibility.PrivateFollowers -> R.string.visibility_followers
+					TootVisibility.DirectSpecified -> R.string.visibility_direct
+					TootVisibility.DirectPrivate -> R.string.visibility_private
+					TootVisibility.WebSetting -> R.string.visibility_web_setting
+					
+					TootVisibility.LocalPublic -> R.string.visibility_local_public
+					TootVisibility.LocalHome -> R.string.visibility_local_home
+					TootVisibility.LocalFollowers -> R.string.visibility_local_followers
+				}
+				else -> when(visibility) {
+					TootVisibility.Public -> R.string.visibility_public
+					TootVisibility.UnlistedHome -> R.string.visibility_unlisted
+					TootVisibility.PrivateFollowers -> R.string.visibility_followers
+					TootVisibility.DirectSpecified -> R.string.visibility_direct
+					TootVisibility.DirectPrivate -> R.string.visibility_direct
+					TootVisibility.WebSetting -> R.string.visibility_web_setting
+					
+					TootVisibility.LocalPublic -> R.string.visibility_local_public
+					TootVisibility.LocalHome -> R.string.visibility_local_unlisted
+					TootVisibility.LocalFollowers -> R.string.visibility_local_followers
+				}
 			}
-			else-> when(visibility) {
-				TootVisibility.Public -> R.string.visibility_public
-				TootVisibility.UnlistedHome -> R.string.visibility_unlisted
-				TootVisibility.PrivateFollowers -> R.string.visibility_followers
-				TootVisibility.DirectSpecified -> R.string.visibility_direct
-				TootVisibility.DirectPrivate -> R.string.visibility_direct
-				TootVisibility.WebSetting -> R.string.visibility_web_setting
-				
-				TootVisibility.LocalPublic-> R.string.visibility_local_public
-				TootVisibility.LocalHome-> R.string.visibility_local_unlisted
-				TootVisibility.LocalFollowers-> R.string.visibility_local_followers
-			}
-		})
+		)
 	}
 	
 	// アイコン付きの装飾テキストを返す
-	fun getVisibilityCaption(context : Context, isMisskeyData:Boolean ,visibility : TootVisibility) : CharSequence {
+	fun getVisibilityCaption(
+		context : Context,
+		isMisskeyData : Boolean,
+		visibility : TootVisibility
+	) : CharSequence {
 		
-		val icon_id = getVisibilityIcon(context, isMisskeyData,visibility)
-		val sv = getVisibilityString(context, isMisskeyData,visibility)
-
+		val icon_id = getVisibilityIcon(context, isMisskeyData, visibility)
+		val sv = getVisibilityString(context, isMisskeyData, visibility)
+		
 		val sb = SpannableStringBuilder()
-
+		
 		// アイコン部分
 		val start = sb.length
 		sb.append(" ")
@@ -186,29 +213,28 @@ object Styler {
 		, ivDot : ImageView
 		, relation : UserRelation
 		, who : TootAccount
+		, defaultColor : Int
 	) {
+		
+		fun colorError() = Styler.getAttributeColor(context, R.attr.colorRegexFilterError)
+		fun colorAccent() = Styler.getAttributeColor(context, R.attr.colorImageButtonAccent)
 		
 		// 被フォロー状態
 		when {
 			
 			relation.blocked_by -> {
 				ivDot.visibility = View.VISIBLE
-				setIconDrawableId(context, ivDot, R.drawable.ic_blocked_by,
-					color=Styler.getAttributeColor(context, R.attr.colorRegexFilterError)
-				)
+				setIconDrawableId(context, ivDot, R.drawable.ic_blocked_by, color = colorError())
 			}
 			
 			relation.requested_by -> {
 				ivDot.visibility = View.VISIBLE
-				setIconDrawableId(context, ivDot, R.drawable.ic_requested_by,
-					color=Styler.getAttributeColor(context, R.attr.colorRegexFilterError)
-				)
+				setIconDrawableId(context, ivDot, R.drawable.ic_requested_by, color = colorError())
 			}
 			
-			relation.followed_by-> {
+			relation.followed_by -> {
 				ivDot.visibility = View.VISIBLE
-				setIconAttr(context, ivDot, R.attr.ic_followed_by)
-				
+				setIconAttr(context, ivDot, R.attr.ic_followed_by, color = colorAccent())
 				// 被フォローリクエスト状態の時に followed_by が 真と偽の両方がありえるようなので
 				// Relationshipだけを見ても被フォローリクエスト状態は分からないっぽい
 				// 仕方ないので馬鹿正直に「 followed_byが真ならバッジをつける」しかできない
@@ -221,43 +247,43 @@ object Styler {
 		
 		// フォローボタン
 		// follow button
-		val color_attr : Int
+		val color : Int
 		val icon_attr : Int
 		val contentDescription : String
 		
 		when {
 			relation.blocking -> {
 				icon_attr = R.attr.ic_block
-				color_attr = R.attr.colorImageButton
+				color = defaultColor
 				contentDescription = context.getString(R.string.follow)
 			}
 			
 			relation.muting -> {
 				icon_attr = R.attr.ic_mute
-				color_attr = R.attr.colorImageButton
+				color = defaultColor
 				contentDescription = context.getString(R.string.follow)
 			}
 			
 			relation.getFollowing(who) -> {
 				icon_attr = R.attr.ic_follow_cross
-				color_attr = R.attr.colorImageButtonAccent
+				color = colorAccent()
 				contentDescription = context.getString(R.string.unfollow)
 			}
 			
 			relation.getRequested(who) -> {
 				icon_attr = R.attr.ic_follow_wait
-				color_attr = R.attr.colorRegexFilterError
+				color = colorError()
 				contentDescription = context.getString(R.string.unfollow)
 			}
 			
 			else -> {
 				icon_attr = R.attr.ic_follow_plus
-				color_attr = R.attr.colorImageButton
+				color = defaultColor
 				contentDescription = context.getString(R.string.follow)
 			}
 		}
 		
-		setIconAttr(context, ibFollow, icon_attr, color =Styler.getAttributeColor(context, color_attr) )
+		setIconAttr(context, ibFollow, icon_attr, color = color)
 		ibFollow.contentDescription = contentDescription
 	}
 	
@@ -333,16 +359,16 @@ object Styler {
 }
 
 fun SpannableStringBuilder.appendColorShadeIcon(
-	context:Context,
-	drawable_id:Int,
-	text:String,
+	context : Context,
+	drawable_id : Int,
+	text : String,
 	color : Int? = null
-):SpannableStringBuilder{
+) : SpannableStringBuilder {
 	val start = this.length
 	this.append(text)
 	val end = this.length
 	this.setSpan(
-		EmojiImageSpan(context, drawable_id,useColorShader=true,color=color),
+		EmojiImageSpan(context, drawable_id, useColorShader = true, color = color),
 		start,
 		end,
 		Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -351,10 +377,10 @@ fun SpannableStringBuilder.appendColorShadeIcon(
 }
 
 fun SpannableStringBuilder.appendDrawableIcon(
-	context:Context,
-	drawable_id:Int,
-	text:String
-):SpannableStringBuilder{
+	context : Context,
+	drawable_id : Int,
+	text : String
+) : SpannableStringBuilder {
 	val start = this.length
 	this.append(text)
 	val end = this.length

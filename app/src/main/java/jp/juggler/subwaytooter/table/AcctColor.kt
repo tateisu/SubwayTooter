@@ -175,7 +175,6 @@ class AcctColor {
 			return if(nickname != null && nickname.isNotEmpty()) nickname.sanitizeBDI() else acct
 		}
 		fun getNicknameWithColor(
-			context : Context,
 			acct : String
 		) : CharSequence {
 			val ac = load(acct)

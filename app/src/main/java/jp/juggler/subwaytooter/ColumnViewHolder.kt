@@ -24,6 +24,7 @@ import jp.juggler.subwaytooter.action.Action_Notification
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.ListDivider
+import org.jetbrains.anko.textColor
 import java.io.Closeable
 import java.lang.reflect.Field
 import java.util.regex.Pattern
@@ -37,7 +38,6 @@ class ColumnViewHolder(
 	
 	companion object {
 		private val log = LogCategory("ColumnViewHolder")
-		
 		
 		val fieldRecycler : Field by lazy {
 			val field = RecyclerView::class.java.getDeclaredField("mRecycler")
@@ -159,14 +159,14 @@ class ColumnViewHolder(
 	val scrollPosition : ScrollPosition
 		get() = ScrollPosition(this)
 	
-	
 	inner class ErrorFlickListener(
-		context: Context
-	) : View.OnTouchListener, GestureDetector.OnGestureListener{
+		context : Context
+	) : View.OnTouchListener, GestureDetector.OnGestureListener {
 		
 		private val gd = GestureDetector(context, this)
 		private val density = context.resources.displayMetrics.density
-
+		
+		@SuppressLint("ClickableViewAccessibility")
 		override fun onTouch(v : View?, event : MotionEvent?) : Boolean {
 			return gd.onTouchEvent(event)
 		}
@@ -176,7 +176,7 @@ class ColumnViewHolder(
 		
 		override fun onLongPress(e : MotionEvent?) {
 		}
-
+		
 		override fun onSingleTapUp(e : MotionEvent?) : Boolean {
 			return true
 		}
@@ -201,20 +201,20 @@ class ColumnViewHolder(
 			velocityY : Float
 		) : Boolean {
 			
-			val vx =velocityX.abs()
-			val vy =velocityY.abs()
-			if(vy < vx *1.5f) {
+			val vx = velocityX.abs()
+			val vy = velocityY.abs()
+			if(vy < vx * 1.5f) {
 				// フリック方向が上下ではない
 				log.d("fling? not vertical view. $vx $vy")
-			}else {
-
+			} else {
+				
 				val vydp = vy / density
 				val limit = 1024f
 				log.d("fling? $vydp/$limit")
-				if( vydp >= limit ){
-
+				if(vydp >= limit) {
+					
 					val column = column
-					if( column != null && column.lastTask == null ){
+					if(column != null && column.lastTask == null) {
 						column.startLoading()
 					}
 				}
@@ -224,12 +224,12 @@ class ColumnViewHolder(
 	}
 	
 	@SuppressLint("ClickableViewAccessibility")
-	private fun initLoadingTextView(){
+	private fun initLoadingTextView() {
 		tvLoading.setOnTouchListener(ErrorFlickListener(activity))
 	}
-
+	
 	init {
-
+		
 		viewRoot.scan { v ->
 			try {
 				if(v is Button) {
@@ -602,10 +602,10 @@ class ColumnViewHolder(
 		}
 	}
 	
-	val procShowColumnStatus: Runnable = Runnable {
+	val procShowColumnStatus : Runnable = Runnable {
 		
 		val column = this.column
-		if(column == null || column.is_dispose.get() ) return@Runnable
+		if(column == null || column.is_dispose.get()) return@Runnable
 		
 		val sb = SpannableStringBuilder()
 		try {
@@ -649,88 +649,88 @@ class ColumnViewHolder(
 		}
 	}
 	
-	
 	fun showColumnStatus() {
 		activity.handler.removeCallbacks(procShowColumnStatus)
-		activity.handler.postDelayed( procShowColumnStatus ,50L)
+		activity.handler.postDelayed(procShowColumnStatus, 50L)
 	}
 	
 	fun showColumnColor() {
 		val column = this.column
+		if(column == null || column.is_dispose.get()) return
 		
-		if(column != null) {
-			
-			var c = column.header_bg_color
-			if(c == 0) {
-				llColumnHeader.setBackgroundResource(R.drawable.btn_bg_ddd)
-			} else {
-				ViewCompat.setBackground(
-					llColumnHeader, Styler.getAdaptiveRippleDrawable(
-						c,
-						if(column.header_fg_color != 0)
-							column.header_fg_color
-						else
-							Styler.getAttributeColor(activity, R.attr.colorRippleEffect)
-					)
+		var c = column.header_bg_color
+		if(c == 0) {
+			llColumnHeader.setBackgroundResource(R.drawable.btn_bg_ddd)
+		} else {
+			ViewCompat.setBackground(
+				llColumnHeader,
+				Styler.getAdaptiveRippleDrawable(
+					c,
+					if(column.header_fg_color != 0)
+						column.header_fg_color
+					else
+						Styler.getAttributeColor(activity, R.attr.colorRippleEffect)
 				)
-			}
-			
-			c = column.header_fg_color
-			if(c == 0) {
-				tvColumnIndex.setTextColor(
-					Styler.getAttributeColor(
-						activity,
-						R.attr.colorColumnHeaderPageNumber
-					)
-				)
-				tvColumnStatus.setTextColor(
-					Styler.getAttributeColor(
-						activity,
-						R.attr.colorColumnHeaderPageNumber
-					)
-				)
-				tvColumnName.setTextColor(
-					Styler.getAttributeColor(
-						activity,
-						android.R.attr.textColorPrimary
-					)
-				)
-				Styler.setIconAttr(
-					activity,
-					ivColumnIcon,
-					column.getIconAttrId(column.column_type)
-				)
-				Styler.setIconAttr(activity, btnColumnSetting, R.attr.ic_tune)
-				Styler.setIconAttr(activity, btnColumnReload, R.attr.btn_refresh)
-				Styler.setIconAttr(activity, btnColumnClose, R.attr.btn_close)
-			} else {
-				tvColumnIndex.setTextColor(c)
-				tvColumnStatus.setTextColor(c)
-				tvColumnName.setTextColor(c)
-				Styler.setIconAttr(
-					activity,
-					ivColumnIcon,
-					column.getIconAttrId(column.column_type),
-					c
-				)
-				Styler.setIconAttr(activity, btnColumnSetting, R.attr.ic_tune, c)
-				Styler.setIconAttr(activity, btnColumnReload, R.attr.btn_refresh, c)
-				Styler.setIconAttr(activity, btnColumnClose, R.attr.btn_close, c)
-			}
-			
-			c = column.column_bg_color
-			if(c == 0) {
-				ViewCompat.setBackground(flColumnBackground, null)
-			} else {
-				flColumnBackground.setBackgroundColor(c)
-			}
-			
-			ivColumnBackgroundImage.alpha = column.column_bg_image_alpha
-			
-			loadBackgroundImage(ivColumnBackgroundImage, column.column_bg_image)
-			
-			status_adapter?.findHeaderViewHolder(listView)?.showColor()
+			)
 		}
+		
+		c = column.header_fg_color
+		if(c == 0) {
+			tvColumnIndex.setTextColor(
+				Styler.getAttributeColor(
+					activity,
+					R.attr.colorColumnHeaderPageNumber
+				)
+			)
+			tvColumnStatus.setTextColor(
+				Styler.getAttributeColor(
+					activity,
+					R.attr.colorColumnHeaderPageNumber
+				)
+			)
+			tvColumnName.setTextColor(
+				Styler.getAttributeColor(
+					activity,
+					android.R.attr.textColorPrimary
+				)
+			)
+			Styler.setIconAttr(
+				activity,
+				ivColumnIcon,
+				column.getIconAttrId(column.column_type)
+			)
+			Styler.setIconAttr(activity, btnColumnSetting, R.attr.ic_tune)
+			Styler.setIconAttr(activity, btnColumnReload, R.attr.btn_refresh)
+			Styler.setIconAttr(activity, btnColumnClose, R.attr.btn_close)
+		} else {
+			tvColumnIndex.setTextColor(c)
+			tvColumnStatus.setTextColor(c)
+			tvColumnName.setTextColor(c)
+			Styler.setIconAttr(
+				activity,
+				ivColumnIcon,
+				column.getIconAttrId(column.column_type),
+				c
+			)
+			Styler.setIconAttr(activity, btnColumnSetting, R.attr.ic_tune, c)
+			Styler.setIconAttr(activity, btnColumnReload, R.attr.btn_refresh, c)
+			Styler.setIconAttr(activity, btnColumnClose, R.attr.btn_close, c)
+		}
+		
+		c = column.column_bg_color
+		if(c == 0) {
+			ViewCompat.setBackground(flColumnBackground, null)
+		} else {
+			flColumnBackground.setBackgroundColor(c)
+		}
+		
+		ivColumnBackgroundImage.alpha = column.column_bg_image_alpha
+		
+		loadBackgroundImage(ivColumnBackgroundImage, column.column_bg_image)
+
+		tvLoading.textColor = column.getContentColor(activity)
+		
+		status_adapter?.findHeaderViewHolder(listView)?.showColor()
 	}
 	
 	private fun closeBitmaps() {
@@ -1054,24 +1054,29 @@ class ColumnViewHolder(
 		}
 	}
 	
-	val procShowColumnHeader:Runnable = Runnable {
+	val procShowColumnHeader : Runnable = Runnable {
+		
 		val column = this.column
-		if( column == null || column.is_dispose.get() ) return@Runnable
+		if(column == null || column.is_dispose.get()) return@Runnable
 		
 		val acct = column.access_info.acct
 		val ac = AcctColor.load(acct)
 		
 		val nickname = ac.nickname
-		tvColumnContext.text = if(nickname != null && nickname.isNotEmpty()) nickname else acct
+		tvColumnContext.text = if(nickname != null && nickname.isNotEmpty())
+			nickname
+		else
+			acct
 		
 		var c : Int
 		
 		c = ac.color_fg
 		tvColumnContext.setTextColor(
-			if(c != 0) c else Styler.getAttributeColor(
-				activity,
-				R.attr.colorTimeSmall
-			)
+			when {
+				c != 0 -> c
+			//	column.header_fg_color != 0 -> column.header_fg_color
+				else -> Styler.getAttributeColor(activity, R.attr.colorTimeSmall)
+			}
 		)
 		
 		c = ac.color_bg
@@ -1091,7 +1096,7 @@ class ColumnViewHolder(
 	// カラムヘッダなど、負荷が低い部分の表示更新
 	fun showColumnHeader() {
 		activity.handler.removeCallbacks(procShowColumnHeader)
-		activity.handler.postDelayed(procShowColumnHeader,50L)
+		activity.handler.postDelayed(procShowColumnHeader, 50L)
 	}
 	
 	internal fun showContent(

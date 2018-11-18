@@ -4,6 +4,7 @@
     <style name="AppTheme.Light" parent="Theme.AppCompat.Light.DarkActionBar">
 
         <item name="android:windowBackground">@drawable/window_background_light</item>
+        <item name="android:textColor">?attr/colorContentText</item>
 
         <!-- AndroidOne S2ではナビゲーションバーが明るすぎるとアイコン図柄が判別できなくなる-->
         <!-- <item name="android:navigationBarColor">@color/Light_color_column_header</item> -->
@@ -29,6 +30,7 @@
         <item name="colorThumbnailBackground">@color/Light_colorThumbnailBackground</item>
         <item name="colorColumnListItemText">@color/Light_colorColumnListItemText</item>
         <item name="colorTimeSmall">@color/Light_colorTimeSmall</item>
+        <item name="colorContentText">@color/Light_colorContentText</item>
         <item name="colorProfileBackgroundMask">@color/Light_colorProfileBackgroundMask</item>
         <item name="colorShowMediaBackground">@color/Light_colorShowMediaBackground</item>
         <item name="colorShowMediaText">@color/Light_colorShowMediaText</item>
@@ -124,7 +126,9 @@
 
     <!-- dark theme -->
     <style name="AppTheme.Dark" parent="Theme.AppCompat">
+
         <item name="android:windowBackground">@drawable/window_background_dark</item>
+        <item name="android:textColor">?attr/colorContentText</item>
 
         <item name="android:navigationBarColor">@color/Dark_colorColumnStripBackground</item>
 
@@ -150,6 +154,8 @@
 
         <item name="colorColumnListItemText">@color/Dark_colorColumnListItemText</item>
         <item name="colorTimeSmall">@color/Dark_colorTimeSmall</item>
+        <item name="colorContentText">@color/Dark_colorContentText</item>
+
         <item name="colorProfileBackgroundMask">@color/Dark_colorProfileBackgroundMask</item>
         <item name="colorShowMediaBackground">@color/Dark_colorShowMediaBackground</item>
         <item name="colorShowMediaText">@color/Dark_colorShowMediaText</item>

@@ -5,6 +5,7 @@ import android.widget.TextView
 
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
+import org.jetbrains.anko.textColor
 
 internal class ViewHolderHeaderSearch(
 	arg_activity : ActMain,
@@ -29,6 +30,7 @@ internal class ViewHolderHeaderSearch(
 		val sv = DecodeOptions(activity, access_info,decodeEmoji = true).decodeHTML( html)
 		
 		tvSearchDesc.text = sv
+		tvSearchDesc.textColor = column.getContentColor(activity)
 	}
 	
 	override fun onViewRecycled() {

@@ -7,7 +7,10 @@ import android.support.v4.content.ContextCompat
 import android.support.v4.view.ViewCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.RecyclerView
-import android.text.*
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.SpannableStringBuilder
+import android.text.TextUtils
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -24,7 +27,6 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.drawable.PreviewCardBorder
-import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
@@ -33,6 +35,7 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import org.jetbrains.anko.*
 import org.json.JSONObject
+import kotlin.math.max
 
 internal class ItemViewHolder(
 	val activity : ActMain
@@ -92,7 +95,7 @@ internal class ItemViewHolder(
 	private lateinit var ivMedia2 : MyNetworkImageView
 	private lateinit var ivMedia3 : MyNetworkImageView
 	private lateinit var ivMedia4 : MyNetworkImageView
-	private lateinit var btnHideMedia : View
+	private lateinit var btnHideMedia : ImageButton
 	
 	private lateinit var statusButtonsViewHolder : StatusButtonsViewHolder
 	private lateinit var llButtonBar : View
@@ -150,7 +153,7 @@ internal class ItemViewHolder(
 	
 	private var boost_time : Long = 0L
 	
-	private val content_color_default : Int
+	private var content_color : Int = 0
 	private var acct_color : Int = 0
 	
 	private val boost_invalidator : NetworkEmojiInvalidator
@@ -214,47 +217,53 @@ internal class ItemViewHolder(
 		llTrendTag.setOnLongClickListener(this)
 		llFilter.setOnClickListener(this)
 		
+		var f :Float
 		
-		this.content_color_default = tvContent.textColors.defaultColor
-		
-		if(! activity.timeline_font_size_sp.isNaN()) {
-			tvFollowerName.textSize = activity.timeline_font_size_sp
-			tvName.textSize = activity.timeline_font_size_sp
-			tvMentions.textSize = activity.timeline_font_size_sp
-			tvContentWarning.textSize = activity.timeline_font_size_sp
-			tvContent.textSize = activity.timeline_font_size_sp
-			btnShowMedia.textSize = activity.timeline_font_size_sp
-			tvApplication.textSize = activity.timeline_font_size_sp
-			tvMessageHolder.textSize = activity.timeline_font_size_sp
-			btnListTL.textSize = activity.timeline_font_size_sp
-			tvTrendTagName.textSize = activity.timeline_font_size_sp
-			tvTrendTagCount.textSize = activity.timeline_font_size_sp
-			tvFilterPhrase.textSize = activity.timeline_font_size_sp
-			tvMediaDescription.textSize = activity.timeline_font_size_sp
-			tvCardText.textSize = activity.timeline_font_size_sp
-			tvConversationIconsMore.textSize = activity.timeline_font_size_sp
-			tvConversationParticipants.textSize = activity.timeline_font_size_sp
-		}
-		if(! activity.notification_tl_font_size_sp.isNaN()) {
-			tvBoosted.textSize = activity.notification_tl_font_size_sp
-			tvReply.textSize = activity.notification_tl_font_size_sp
+		f = activity.timeline_font_size_sp
+		if(! f.isNaN()) {
+			tvFollowerName.textSize = f
+			tvName.textSize = f
+			tvMentions.textSize = f
+			tvContentWarning.textSize = f
+			tvContent.textSize = f
+			btnShowMedia.textSize = f
+			tvApplication.textSize = f
+			tvMessageHolder.textSize = f
+			btnListTL.textSize = f
+			tvTrendTagName.textSize = f
+			tvTrendTagCount.textSize = f
+			tvFilterPhrase.textSize = f
+			tvMediaDescription.textSize = f
+			tvCardText.textSize = f
+			tvConversationIconsMore.textSize = f
+			tvConversationParticipants.textSize = f
 		}
 		
-		if(! activity.acct_font_size_sp.isNaN()) {
-			tvBoostedAcct.textSize = activity.acct_font_size_sp
-			tvBoostedTime.textSize = activity.acct_font_size_sp
-			tvFollowerAcct.textSize = activity.acct_font_size_sp
-			tvAcct.textSize = activity.acct_font_size_sp
-			tvTime.textSize = activity.acct_font_size_sp
-			tvTrendTagDesc.textSize = activity.acct_font_size_sp
-			tvFilterDetail.textSize = activity.acct_font_size_sp
+		f = activity.notification_tl_font_size_sp
+		if(! f.isNaN()) {
+			tvBoosted.textSize = f
+			tvReply.textSize = f
 		}
 		
-		ivThumbnail.layoutParams.height = activity.avatarIconSize
-		ivThumbnail.layoutParams.width = activity.avatarIconSize
-		ivFollow.layoutParams.width = activity.avatarIconSize
-		ivBoosted.layoutParams.width = activity.avatarIconSize
-		ivBoosted.layoutParams.height = activity.notificationTlIconSize
+		f = activity.acct_font_size_sp
+		if(! f.isNaN()) {
+			tvBoostedAcct.textSize = f
+			tvBoostedTime.textSize = f
+			tvFollowerAcct.textSize = f
+			tvAcct.textSize = f
+			tvTime.textSize = f
+			tvTrendTagDesc.textSize = f
+			tvFilterDetail.textSize =f
+		}
+		
+		var s = activity.avatarIconSize
+		ivThumbnail.layoutParams.height = s
+		ivThumbnail.layoutParams.width = s
+		ivFollow.layoutParams.width = s
+		ivBoosted.layoutParams.width = s
+
+		s = activity.notificationTlIconSize
+		ivBoosted.layoutParams.height = s
 		
 		this.content_invalidator = NetworkEmojiInvalidator(activity.handler, tvContent)
 		this.spoiler_invalidator = NetworkEmojiInvalidator(activity.handler, tvContentWarning)
@@ -390,7 +399,9 @@ internal class ItemViewHolder(
 		removeExtraView()
 		
 		var c : Int
-		c = if(column.content_color != 0) column.content_color else content_color_default
+		c = column.getContentColor(activity)
+		this.content_color = c
+		
 		tvBoosted.setTextColor(c)
 		tvReply.setTextColor(c)
 		tvFollowerName.setTextColor(c)
@@ -410,24 +421,25 @@ internal class ItemViewHolder(
 		tvConversationIconsMore.setTextColor(c)
 		tvConversationParticipants.setTextColor(c)
 		
-		val cardBackground = llCardOuter.background
-		if(cardBackground is PreviewCardBorder) {
-			cardBackground.color = c
+		(llCardOuter.background as? PreviewCardBorder)?.let {
+			val rgb = c and 0xffffff
+			val alpha = max(1, c ushr (24+1)) // 本来の値の半分にする
+			it.color = rgb or ( alpha shl 24)
 		}
 		
-		
-		c = if(column.acct_color != 0) column.acct_color else Styler.getAttributeColor(
-			activity,
-			R.attr.colorTimeSmall
-		)
+		c = column.getAcctColor(activity)
+		log.d("acct_color %x",c)
 		this.acct_color = c
 		tvBoostedTime.setTextColor(c)
 		tvTime.setTextColor(c)
 		tvTrendTagDesc.setTextColor(c)
-		//			tvBoostedAcct.setTextColor( c );
-		//			tvFollowerAcct.setTextColor( c );
-		//			tvAcct.setTextColor( c );
+		tvFilterDetail.setTextColor(c)
 		tvFilterPhrase.setTextColor(c)
+		
+		// 以下のビューの文字色はsetAcct() で設定される
+		//		tvBoostedAcct.setTextColor(c)
+		//		tvFollowerAcct.setTextColor(c)
+		//		tvAcct.setTextColor(c)
 		
 		this.item = item
 		when(item) {
@@ -580,6 +592,7 @@ internal class ItemViewHolder(
 					R.string.reply_to,
 					reply
 				)
+			
 			in_reply_to_id != null && in_reply_to_account_id != null -> {
 				showReply(
 					R.attr.btn_reply,
@@ -615,7 +628,13 @@ internal class ItemViewHolder(
 			val reblog = item.reblog
 			when {
 				reblog == null -> showStatusOrReply(item)
-				! item.hasAnyContent() -> showStatusOrReply(reblog) // ブースト表示は通知イベントと被るのでしない
+
+				! item.hasAnyContent() -> {
+					// 通常のブースト。引用なしブースト。
+					// ブースト表示は通知イベントと被るのでしない
+					showStatusOrReply(reblog)
+				}
+
 				else -> {
 					// 引用Renote
 					showReply(
@@ -692,14 +711,25 @@ internal class ItemViewHolder(
 				}
 			}
 			
-			TootNotification.TYPE_MENTION, TootNotification.TYPE_REPLY -> {
+			TootNotification.TYPE_MENTION,
+			TootNotification.TYPE_REPLY -> {
 				if(! bSimpleList && ! access_info.isMisskey) {
-					if(n_account != null) showBoost(
-						n_accountRef,
-						n.time_created_at,
-						R.attr.btn_reply,
-						R.string.display_name_replied_by
-					)
+					if(n_account != null){
+						if( n_status?.in_reply_to_id != null
+							||n_status?.reply != null
+							){
+							// トゥート内部に「～への返信」を表示するので、
+							// 通知イベントの「～からの返信」は表示しない
+						}else{
+							// 返信ではなくメンションの場合は「～からの返信」を表示する
+							showBoost(
+								n_accountRef,
+								n.time_created_at,
+								R.attr.btn_reply,
+								R.string.display_name_mentioned_by
+							)
+						}
+					}
 				}
 				if(n_status != null) {
 					showNotificationStatus(n_status)
@@ -713,7 +743,7 @@ internal class ItemViewHolder(
 					n.time_created_at,
 					R.attr.ic_question,
 					R.string.display_name_reaction_by
-					, reaction?.btnDrawableId
+					,reactionDrawableId =  reaction?.btnDrawableId
 				)
 				if(n_status != null) {
 					showNotificationStatus(n_status)
@@ -830,7 +860,14 @@ internal class ItemViewHolder(
 		text : Spannable
 	) {
 		llReply.visibility = View.VISIBLE
-		ivReply.setImageResource(Styler.getAttributeResourceId(activity, iconAttrId))
+		
+		Styler.setIconAttr(
+			activity,
+			ivReply,
+			 iconAttrId,
+			color = content_color
+		)
+		
 		tvReply.text = text
 		reply_invalidator.register(text)
 	}
@@ -847,23 +884,23 @@ internal class ItemViewHolder(
 		// setAcct(tvReplyAcct, access_info.getFullAcct(who), who.acct)
 		
 		val text = reply.accountRef.decoded_display_name.intoStringResource(activity, stringId)
-		showReply(iconAttrId,text)
+		showReply(iconAttrId, text)
 	}
 	
 	private fun showReply(
 		iconAttrId : Int,
 		accountId : EntityId,
-		replyStatus: TootStatus
+		replyStatus : TootStatus
 	) {
 		llReply.visibility = View.VISIBLE
 		
-		val name = if( accountId == replyStatus.account.id){
-			AcctColor.getNicknameWithColor(activity,access_info.getFullAcct(replyStatus.account))
-		}else {
+		val name = if(accountId == replyStatus.account.id) {
+			AcctColor.getNicknameWithColor( access_info.getFullAcct(replyStatus.account))
+		} else {
 			val m = replyStatus.mentions?.find { it.id == accountId }
-			if( m != null){
-				AcctColor.getNicknameWithColor(activity,access_info.getFullAcct(m.acct))
-			}else{
+			if(m != null) {
+				AcctColor.getNicknameWithColor( access_info.getFullAcct(m.acct))
+			} else {
 				SpannableString("ID(${accountId})")
 			}
 		}
@@ -874,7 +911,7 @@ internal class ItemViewHolder(
 		// showStatusTime(activity, tvReplyTime, who, time = reply.time_created_at)
 		// setAcct(tvReplyAcct, access_info.getFullAcct(who), who.acct)
 		
-		showReply(iconAttrId,text)
+		showReply(iconAttrId, text)
 	}
 	
 	private fun showBoost(
@@ -896,10 +933,14 @@ internal class ItemViewHolder(
 		}.intoStringResource(activity, string_id)
 		
 		if(reactionDrawableId != null) {
-			ivBoosted.setImageResource(reactionDrawableId)
+			Styler.setIconDrawableId(activity, ivBoosted, reactionDrawableId)
 		} else {
-			ivBoosted.setImageResource(Styler.getAttributeResourceId(activity, icon_attr_id))
-			
+			Styler.setIconAttr(
+				activity,
+				ivBoosted,
+				icon_attr_id,
+				color = content_color
+			)
 		}
 		
 		boost_time = time
@@ -927,7 +968,7 @@ internal class ItemViewHolder(
 		setAcct(tvFollowerAcct, access_info.getFullAcct(who), who.acct)
 		
 		val relation = UserRelation.load(access_info.db_id, who.id)
-		Styler.setFollowIcon(activity, btnFollow, ivFollowedBy, relation, who)
+		Styler.setFollowIcon(activity, btnFollow, ivFollowedBy, relation, who,content_color)
 		
 		if(column.column_type == Column.TYPE_FOLLOW_REQUESTS) {
 			llFollowRequest.visibility = View.VISIBLE
@@ -1101,6 +1142,13 @@ internal class ItemViewHolder(
 				tvMediaDescription.visibility = View.VISIBLE
 				tvMediaDescription.text = sb
 			}
+			
+			Styler.setIconAttr(
+				activity,
+				btnHideMedia,
+				R.attr.btn_close,
+				color = content_color
+			)
 		}
 		
 		makeReactionsView(status.reactionCounts)
@@ -1175,17 +1223,7 @@ internal class ItemViewHolder(
 			// NSFWマーク
 			if(status.hasMedia() && status.sensitive) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
-				
-				val start = sb.length
-				sb.append("NSFW")
-				val end = sb.length
-				val icon_id = Styler.getAttributeResourceId(activity, R.attr.ic_eye_off)
-				sb.setSpan(
-					EmojiImageSpan(activity, icon_id),
-					start,
-					end,
-					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-				)
+				sb.appendColorShadeIcon(activity, R.drawable.ic_eye_off, "NSFW")
 			}
 			
 			// visibility
@@ -1193,21 +1231,14 @@ internal class ItemViewHolder(
 				Styler.getVisibilityIconAttr(access_info.isMisskey, status.visibility)
 			if(R.attr.ic_public != visIconAttrId) {
 				if(sb.isNotEmpty()) sb.append('\u200B')
-				val start = sb.length
-				sb.append(
+				sb.appendColorShadeIcon(
+					activity,
+					Styler.getAttributeResourceId(activity, visIconAttrId),
 					Styler.getVisibilityString(
 						activity,
 						access_info.isMisskey,
 						status.visibility
 					)
-				)
-				val end = sb.length
-				val iconResId = Styler.getAttributeResourceId(activity, visIconAttrId)
-				sb.setSpan(
-					EmojiImageSpan(activity, iconResId),
-					start,
-					end,
-					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 				)
 			}
 			
@@ -1244,17 +1275,6 @@ internal class ItemViewHolder(
 					"unread",
 					color = color
 				)
-				
-				//				val start = sb.length
-				//				sb.append("pinned")
-				//				val end = sb.length
-				//				val icon_id = Styler.getAttributeResourceId(activity, R.attr.ic_pin)
-				//				sb.setSpan(
-				//					EmojiImageSpan(activity, icon_id),
-				//					start,
-				//					end,
-				//					Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-				//				)
 			}
 		}
 		
@@ -1371,9 +1391,7 @@ internal class ItemViewHolder(
 					if(! activity.timeline_font_size_sp.isNaN()) {
 						tv.textSize = activity.timeline_font_size_sp
 					}
-					val c =
-						if(column.content_color != 0) column.content_color else content_color_default
-					tv.setTextColor(c)
+					tv.setTextColor(content_color)
 					
 					if(ta.description?.isNotEmpty() == true) {
 						if(sbDesc.isNotEmpty()) sbDesc.append("\n")
@@ -1459,11 +1477,11 @@ internal class ItemViewHolder(
 			
 			llReply -> {
 				val s = status_reply
-				if( s != null){
+				if(s != null) {
 					Action_Toot.conversation(activity, pos, access_info, s)
-				}else{
+				} else {
 					val id = status_showing?.in_reply_to_id
-					if( id != null) {
+					if(id != null) {
 						Action_Toot.conversationLocal(activity, pos, access_info, id)
 					}
 				}
@@ -1630,7 +1648,7 @@ internal class ItemViewHolder(
 			
 			llReply -> {
 				val s = status_reply
-				if( s != null){
+				if(s != null) {
 					DlgContextMenu(
 						activity,
 						column,
@@ -1638,10 +1656,15 @@ internal class ItemViewHolder(
 						s,
 						notification
 					).show()
-				}else{
+				} else {
 					val id = status_showing?.in_reply_to_id
-					if( id != null) {
-						Action_Toot.conversationLocal(activity, activity.nextPosition(column), access_info, id)
+					if(id != null) {
+						Action_Toot.conversationLocal(
+							activity,
+							activity.nextPosition(column),
+							access_info,
+							id
+						)
 					}
 				}
 			}
@@ -1880,8 +1903,7 @@ internal class ItemViewHolder(
 		//			c != null && c > 0
 		//		} ?: return
 		
-		val textColor =
-			if(column.content_color != 0) column.content_color else content_color_default
+		
 		
 		val density = activity.resources.displayMetrics.density
 		
@@ -1917,10 +1939,17 @@ internal class ItemViewHolder(
 				R.drawable.btn_bg_transparent
 			)
 			b.contentDescription = activity.getString(R.string.reaction_add)
-			b.imageResource = Styler.getAttributeResourceId(activity, R.attr.ic_add)
 			b.scaleType = ImageView.ScaleType.FIT_CENTER
 			b.padding = paddingV
 			b.setOnClickListener { addReaction(status_showing, null) }
+			
+			Styler.setIconDrawableId(
+				activity,
+				b,
+				R.drawable.ic_add,
+				color = content_color
+			)
+			
 			box.addView(b)
 		}
 		var lastButton : View? = null
@@ -1943,7 +1972,7 @@ internal class ItemViewHolder(
 				activity,
 				R.drawable.btn_bg_transparent
 			)
-			b.setTextColor(textColor)
+			b.setTextColor(content_color)
 			b.setPaddingAndText(
 				paddingH, paddingV
 				, count.toString()
@@ -2216,7 +2245,6 @@ internal class ItemViewHolder(
 							ellipsize = TextUtils.TruncateAt.END
 							gravity = Gravity.END
 							maxLines = 1
-							textColor = Styler.getAttributeColor(context, R.attr.colorTimeSmall)
 							textSize = 12f // textSize の単位はSP
 							// tools:text ="who@hoge"
 						}.lparams(dip(0), wrapContent) {
@@ -2228,7 +2256,6 @@ internal class ItemViewHolder(
 							startPadding = dip(2)
 							
 							gravity = Gravity.END
-							textColor = Styler.getAttributeColor(context, R.attr.colorTimeSmall)
 							textSize = 12f // textSize の単位はSP
 							// tools:ignore="RtlSymmetry"
 							// tools:text="2017-04-16 09:37:14"
@@ -2267,7 +2294,6 @@ internal class ItemViewHolder(
 					
 					tvFollowerAcct = textView {
 						setPaddingStartEnd(dip(4), dip(4))
-						textColor = Styler.getAttributeColor(context, R.attr.colorTimeSmall)
 						textSize = 12f // SP
 						// tools:text="aaaaaaaaaaaaaaaa"
 					}.lparams(matchParent, wrapContent)
@@ -2306,7 +2332,6 @@ internal class ItemViewHolder(
 						ellipsize = TextUtils.TruncateAt.END
 						gravity = Gravity.END
 						maxLines = 1
-						textColor = Styler.getAttributeColor(context, R.attr.colorTimeSmall)
 						textSize = 12f // SP
 						// tools:text="who@hoge"
 					}.lparams(dip(0), wrapContent) {
@@ -2316,7 +2341,6 @@ internal class ItemViewHolder(
 					tvTime = textView {
 						gravity = Gravity.END
 						startPadding = dip(2)
-						textColor = Styler.getAttributeColor(context, R.attr.colorTimeSmall)
 						textSize = 12f // SP
 						// tools:ignore="RtlSymmetry"
 						// tools:text="2017-04-16 09:37:14"
@@ -2744,8 +2768,8 @@ internal class ItemViewHolder(
 					}
 					tvTrendTagName = textView {
 					}.lparams(matchParent, wrapContent)
+					
 					tvTrendTagDesc = textView {
-						textColor = Styler.getAttributeColor(context, R.attr.colorTimeSmall)
 						textSize = 12f // SP
 					}.lparams(matchParent, wrapContent)
 				}
@@ -2823,7 +2847,6 @@ internal class ItemViewHolder(
 				}.lparams(matchParent, wrapContent)
 				
 				tvFilterDetail = textView {
-					textColor = Styler.getAttributeColor(context, R.attr.colorTimeSmall)
 					textSize = 12f // SP
 				}.lparams(matchParent, wrapContent)
 			}

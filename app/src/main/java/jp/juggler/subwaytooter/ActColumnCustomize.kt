@@ -71,7 +71,6 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 	private lateinit var tvSampleAcct : TextView
 	private lateinit var tvSampleContent : TextView
 	
-	private var content_color_default : Int = 0
 	
 	internal var loading_busy : Boolean = false
 	
@@ -157,13 +156,13 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			}
 			
 			R.id.btnAcctColor -> {
-				builder = ColorPickerDialog.newBuilder()
+				ColorPickerDialog.newBuilder()
 					.setDialogType(ColorPickerDialog.TYPE_CUSTOM)
 					.setAllowPresets(true)
 					.setShowAlphaSlider(true)
 					.setDialogId(COLOR_DIALOG_ID_ACCT_TEXT)
-				if(column.acct_color != 0) builder.setColor(column.acct_color)
-				builder.show(this)
+					.setColor(column.getAcctColor(this))
+					.show(this)
 			}
 			
 			R.id.btnAcctColorReset -> {
@@ -172,13 +171,13 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			}
 			
 			R.id.btnContentColor -> {
-				builder = ColorPickerDialog.newBuilder()
+				ColorPickerDialog.newBuilder()
 					.setDialogType(ColorPickerDialog.TYPE_CUSTOM)
 					.setAllowPresets(true)
 					.setShowAlphaSlider(true)
 					.setDialogId(COLOR_DIALOG_ID_CONTENT_TEXT)
-				if(column.content_color != 0) builder.setColor(column.content_color)
-				builder.show(this)
+					.setColor(column.getContentColor(this))
+					.show(this)
 			}
 			
 			R.id.btnContentColorReset -> {
@@ -239,7 +238,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 					val file =
 						File(backgroundDir, "${column.column_id}:${System.currentTimeMillis()}")
 					val fileUri = Uri.fromFile(file)
-
+					
 					client.publishApiProgress("loading image from ${uriArg}")
 					contentResolver.openInputStream(uriArg).use { inStream ->
 						FileOutputStream(file).use { outStream ->
@@ -253,7 +252,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 					val size = (max(
 						resources.displayMetrics.widthPixels,
 						resources.displayMetrics.heightPixels
-					) * 1.5f ).toInt()
+					) * 1.5f).toInt()
 					
 					val bitmap = createResizedBitmap(
 						this@ActColumnCustomize,
@@ -267,7 +266,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 							FileOutputStream(file).use { os ->
 								bitmap.compress(Bitmap.CompressFormat.PNG, 100, os)
 							}
-						}finally{
+						} finally {
 							bitmap.recycle()
 						}
 					}
@@ -321,9 +320,6 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 		findViewById<View>(R.id.btnAcctColorReset).setOnClickListener(this)
 		findViewById<View>(R.id.btnContentColor).setOnClickListener(this)
 		findViewById<View>(R.id.btnContentColorReset).setOnClickListener(this)
-		
-		
-		content_color_default = tvSampleContent.textColors.defaultColor
 		
 		sbColumnBackgroundAlpha = findViewById(R.id.sbColumnBackgroundAlpha)
 		sbColumnBackgroundAlpha.max = PROGRESS_MAX
@@ -455,14 +451,8 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			
 			loadImage(ivColumnBackground, column.column_bg_image)
 			
-			c = if(column.acct_color != 0) column.acct_color else Styler.getAttributeColor(
-				this,
-				R.attr.colorTimeSmall
-			)
-			tvSampleAcct.setTextColor(c)
-			
-			c = if(column.content_color != 0) column.content_color else content_color_default
-			tvSampleContent.setTextColor(c)
+			tvSampleAcct.setTextColor( column.getAcctColor(this))
+			tvSampleContent.setTextColor(column.getContentColor(this))
 			
 		} finally {
 			loading_busy = false

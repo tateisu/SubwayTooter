@@ -206,7 +206,7 @@ internal class DlgContextMenu(
 			btnProfileUnpin.visibility = if(canPin && status.pinned) View.VISIBLE else View.GONE
 			btnProfilePin.visibility = if(canPin && ! status.pinned) View.VISIBLE else View.GONE
 		}
-
+		
 		var bShowConversationMute = false
 		if(status != null) {
 			if(access_info.isMe(status.account)) {
@@ -242,39 +242,52 @@ internal class DlgContextMenu(
 				)
 			}
 			
-			// follow button
-			var icon_attr = when {
-				relation.getRequested(who) -> R.attr.ic_follow_wait
-				relation.getFollowing(who) -> R.attr.ic_follow_cross
-				else -> R.attr.ic_follow_plus
-			}
-			var color_attr = when {
-				relation.getRequested(who) -> R.attr.colorRegexFilterError
-				relation.getFollowing(who) -> R.attr.colorImageButtonAccent
-				else -> R.attr.colorImageButton
-			}
-			var color = Styler.getAttributeColor(activity, color_attr)
-			var d = Styler.getAttributeDrawable(activity, icon_attr).mutate()
-			d.setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
-			btnFollow.setImageDrawable(d)
+			btnFollow.setImageDrawable(
+				Styler.createColoredDrawable(
+					activity,
+					when {
+						relation.getRequested(who) -> R.drawable.ic_follow_wait_dark
+						relation.getFollowing(who) -> R.drawable.ic_follow_cross_dark
+						else -> R.drawable.ic_follow_plus_dark
+					},
+					Styler.getAttributeColor(
+						activity,
+						when {
+							relation.getRequested(who) -> R.attr.colorRegexFilterError
+							relation.getFollowing(who) -> R.attr.colorImageButtonAccent
+							else -> R.attr.colorImageButton
+						}
+					)
+				)
+			)
 			
-			// mute button
-			icon_attr = R.attr.ic_mute
-			color_attr =
-				if(relation.muting) R.attr.colorImageButtonAccent else R.attr.colorImageButton
-			color = Styler.getAttributeColor(activity, color_attr)
-			d = Styler.getAttributeDrawable(activity, icon_attr).mutate()
-			d.setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
-			btnMute.setImageDrawable(d)
+			btnMute.setImageDrawable(
+				Styler.createColoredDrawable(
+					activity,
+					R.drawable.ic_mute_dark,
+					Styler.getAttributeColor(
+						activity,
+						when(relation.muting) {
+							true -> R.attr.colorImageButtonAccent
+							else -> R.attr.colorImageButton
+						}
+					)
+				)
+			)
 			
-			// block button
-			icon_attr = R.attr.ic_block
-			color_attr =
-				if(relation.blocking) R.attr.colorImageButtonAccent else R.attr.colorImageButton
-			color = Styler.getAttributeColor(activity, color_attr)
-			d = Styler.getAttributeDrawable(activity, icon_attr).mutate()
-			d.setColorFilter(color, PorterDuff.Mode.SRC_ATOP)
-			btnBlock.setImageDrawable(d)
+			btnBlock.setImageDrawable(
+				Styler.createColoredDrawable(
+					activity,
+					R.drawable.ic_block_dark,
+					Styler.getAttributeColor(
+						activity,
+						when(relation.blocking) {
+							true -> R.attr.colorImageButtonAccent
+							else -> R.attr.colorImageButton
+						}
+					)
+				)
+			)
 			
 		}
 		
@@ -656,9 +669,9 @@ internal class DlgContextMenu(
 					who.host,
 					status,
 					Column.TYPE_ACCOUNT_AROUND
-					,allowPseudo = false
+					, allowPseudo = false
 				)
-
+				
 				R.id.btnAroundLTL -> Action_Instance.timelinePublicAround(
 					activity,
 					access_info,
@@ -667,7 +680,7 @@ internal class DlgContextMenu(
 					status,
 					Column.TYPE_LOCAL_AROUND
 				)
-
+				
 				R.id.btnAroundFTL -> Action_Instance.timelinePublicAround(
 					activity,
 					access_info,

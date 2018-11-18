@@ -558,6 +558,9 @@ class MyNetworkImageView : AppCompatImageView {
 					}
 				}
 			}
+			else->{
+				// not supported.
+			}
 		}
 	}
 	

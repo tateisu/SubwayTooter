@@ -6,9 +6,6 @@
         <item name="android:windowBackground">@drawable/window_background_light</item>
         <item name="android:textColor">?attr/colorContentText</item>
 
-        <!-- AndroidOne S2ではナビゲーションバーが明るすぎるとアイコン図柄が判別できなくなる-->
-        <!-- <item name="android:navigationBarColor">@color/Light_color_column_header</item> -->
-
         <item name="colorPrimary">@color/Light_colorPrimary</item>
         <item name="colorPrimaryDark">@color/Light_colorPrimaryDark</item>
         <item name="colorAccent">@color/Light_colorAccent</item>

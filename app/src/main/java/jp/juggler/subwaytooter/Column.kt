@@ -6838,10 +6838,7 @@ class Column(
 		val c = header_fg_color
 		return when {
 			c != 0 -> c
-			else -> Styler.getAttributeColor(
-				activity,
-				R.attr.colorColumnHeaderPageNumber
-			)
+			else -> Styler.getAttributeColor(activity,R.attr.colorColumnHeaderPageNumber)
 		}
 	}
 	
@@ -6849,23 +6846,28 @@ class Column(
 		val c = header_fg_color
 		return when {
 			c != 0 -> c
-			else -> Styler.getAttributeColor(
-				activity,
-				R.attr.colorColumnHeaderName
-			)
+			else -> Styler.getAttributeColor(activity,R.attr.colorColumnHeaderName)
+		}
+	}
+	
+	fun getHeaderBackgroundColor(activity : AppCompatActivity) : Int {
+		val c = header_bg_color
+		return when {
+			c != 0 -> c
+			else -> Styler.getAttributeColor(activity,R.attr.color_column_header)
 		}
 	}
 	
 	fun setHeaderBackground(activity : AppCompatActivity, view : View) {
-		val c = header_bg_color
-		if(c == 0) {
-			view.setBackgroundResource(R.drawable.bg_column_header)
-		} else {
-			ViewCompat.setBackground(
-				view, Styler.getAdaptiveRippleDrawable(c, getHeaderNameColor(activity))
+		ViewCompat.setBackground(
+			view,
+			Styler.getAdaptiveRippleDrawable(
+				getHeaderBackgroundColor(activity),
+				getHeaderNameColor(activity)
 			)
-		}
+		)
 	}
+	
 	
 	//	fun findListIndexByTimelineId(orderId : EntityId) : Int? {
 	//		list_data.forEachIndexed { i, v ->

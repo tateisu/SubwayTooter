@@ -108,17 +108,19 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 	}
 	
 	override fun onClick(v : View) {
+
 		val builder : ColorPickerDialog.Builder
+
 		when(v.id) {
 			
 			R.id.btnHeaderBackgroundEdit -> {
-				builder = ColorPickerDialog.newBuilder()
+				ColorPickerDialog.newBuilder()
 					.setDialogType(ColorPickerDialog.TYPE_CUSTOM)
 					.setAllowPresets(true)
 					.setShowAlphaSlider(false)
 					.setDialogId(COLOR_DIALOG_ID_HEADER_BACKGROUND)
-				if(column.header_bg_color != 0) builder.setColor(column.header_bg_color)
-				builder.show(this)
+					.setColor(column.getHeaderBackgroundColor(this))
+					.show(this)
 			}
 			
 			R.id.btnHeaderBackgroundReset -> {

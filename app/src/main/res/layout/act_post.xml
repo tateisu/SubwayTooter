@@ -358,7 +358,7 @@
         android:id="@+id/llFooterBar"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:background="?attr/color_column_header"
+        android:background="?attr/colorButtonBg"
         android:baselineAligned="false"
         android:orientation="horizontal"
         >
@@ -429,6 +429,7 @@
             android:background="@drawable/btn_bg_transparent"
             android:contentDescription="@string/toot"
             android:src="?attr/btn_post"
+
             />
     </LinearLayout>
 </LinearLayout>

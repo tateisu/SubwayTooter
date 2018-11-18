@@ -215,8 +215,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	
 	private lateinit var btnAccount : Button
 	private lateinit var btnVisibility : ImageButton
-	private lateinit var btnAttachment : View
-	private lateinit var btnPost : View
+	private lateinit var btnAttachment : ImageButton
+	private lateinit var btnPost : ImageButton
 	private lateinit var llAttachment : View
 	private lateinit var ivMedia : List<MyNetworkImageView>
 	internal lateinit var cbNSFW : CheckBox
@@ -895,14 +895,25 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		btnPost.setOnClickListener(this)
 		btnRemoveReply.setOnClickListener(this)
 		
-		findViewById<View>(R.id.btnPlugin).setOnClickListener(this)
-		findViewById<View>(R.id.btnEmojiPicker).setOnClickListener(this)
+		val btnPlugin :ImageButton = findViewById(R.id.btnPlugin)
+		val btnEmojiPicker :ImageButton = findViewById(R.id.btnEmojiPicker)
+		val btnMore: ImageButton = findViewById(R.id.btnMore)
+
+		btnPlugin.setOnClickListener(this)
+		btnEmojiPicker.setOnClickListener(this)
+		btnMore.setOnClickListener(this)
 		
 		for(iv in ivMedia) {
 			iv.setOnClickListener(this)
 			iv.setDefaultImageResId(Styler.getAttributeResourceId(this, R.attr.ic_loading))
 			iv.setErrorImageResId(Styler.getAttributeResourceId(this, R.attr.ic_unknown))
 		}
+		
+		setIcon(btnPost,R.drawable.btn_post)
+		setIcon(btnMore,R.drawable.btn_more)
+		setIcon(btnPlugin,R.drawable.ic_plugin)
+		setIcon(btnEmojiPicker,R.drawable.ic_face)
+		setIcon(btnAttachment,R.drawable.btn_attachment)
 		
 		cbContentWarning.setOnCheckedChangeListener { _, _ ->
 			updateContentWarning()
@@ -931,13 +942,20 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		scrollView.viewTreeObserver.addOnScrollChangedListener(scroll_listener)
 		
-		val v = findViewById<View>(R.id.btnMore)
-		v.setOnClickListener(this)
 		
 		etContent.contentMineTypeArray =
 			acceptable_mime_types.toArray(arrayOfNulls<String>(ActPost.acceptable_mime_types.size))
 		etContent.commitContentListener = commitContentListener
 	
+	}
+	
+	private fun setIcon(iv:ImageView,drawableId:Int) {
+		Styler.setIconDrawableId(
+			this,
+			iv,
+			drawableId,
+			Styler.getAttributeColor(this,R.attr.colorColumnHeaderName)
+		)
 	}
 	
 	private var lastInstanceTask : TootTaskRunner? = null
@@ -1864,13 +1882,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	}
 	
 	private fun showVisibility() {
-		btnVisibility.setImageResource(
-			Styler.getVisibilityIcon(
-				this
-				, account?.isMisskey == true
-				, visibility ?: TootVisibility.Public
-			)
-		)
+		setIcon(btnVisibility,Styler.getVisibilityIcon(
+			this
+			, account?.isMisskey == true
+			, visibility ?: TootVisibility.Public
+		))
 	}
 	
 	private fun performVisibility() {

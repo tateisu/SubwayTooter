@@ -1181,7 +1181,7 @@
                         android:id="@+id/ivFooterMenu"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:background="@drawable/btn_bg_ddd"
+                        android:background="@drawable/bg_button_cw"
                         android:importantForAccessibility="no"
                         app:srcCompat="?attr/ic_hamburger"
                         />
@@ -1239,7 +1239,7 @@
                         android:id="@+id/ivFooterToot"
                         android:layout_width="48dp"
                         android:layout_height="48dp"
-                        android:background="@drawable/btn_bg_ddd"
+                        android:background="@drawable/bg_button_cw"
                         android:contentDescription="@string/toot"
                         app:srcCompat="?attr/ic_edit"
                         />
@@ -1578,6 +1578,23 @@
             <Spinner
                 android:id="@+id/spBoostButtonJustify"
                 style="@style/setting_horizontal_stretch"
+                />
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:labelFor="@+id/etBoostAlpha"
+            android:text="@string/boost_button_alpha"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+            <EditText
+                android:id="@+id/etBoostAlpha"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                android:inputType="numberDecimal"
                 />
         </LinearLayout>
 

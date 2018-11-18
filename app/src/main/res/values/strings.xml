@@ -812,5 +812,6 @@
     <string name="conversation_to">To:</string>
     <string name="make_quote_renote">Use \"Quoted Renote\"</string>
     <string name="mute_application_confirm">Application \"%1$s\" will be muted. Are you sure ?</string>
+    <string name="boost_button_alpha">Boost button alpha opacity (Unit:%. app restart required. also affected of content text alpha.)</string>
 
 </resources>

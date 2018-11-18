@@ -155,7 +155,14 @@ internal class ViewHolderHeaderProfile(
 		btnStatusCount.textColor = contentColor
 		btnFollowing.textColor = contentColor
 		btnFollowers.textColor = contentColor
-		Styler.setIconDrawableId(activity, btnMore, R.drawable.btn_more, color = contentColor)
+
+		Styler.setIconDrawableId(
+			activity,
+			btnMore,
+			R.drawable.btn_more,
+			color = contentColor,
+			alphaMultiplier = Styler.boost_alpha
+		)
 		
 		val acctColor = column.getAcctColor(activity)
 		tvCreated.textColor = acctColor
@@ -292,8 +299,6 @@ internal class ViewHolderHeaderProfile(
 					short = true,
 					emojiMapProfile = who.profile_emojis
 				)
-				
-				
 				
 				val nameTypeface = ActMain.timeline_font_bold
 				val valueTypeface = ActMain.timeline_font

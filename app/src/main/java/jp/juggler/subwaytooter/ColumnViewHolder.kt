@@ -657,66 +657,29 @@ class ColumnViewHolder(
 	fun showColumnColor() {
 		val column = this.column
 		if(column == null || column.is_dispose.get()) return
+
+		// カラムヘッダ背景
+		column.setHeaderBackground(activity,llColumnHeader)
+
+		// カラムヘッダ文字色(A)
+		var c = column.getHeaderNameColor(activity)
+		tvColumnName.textColor =c
+		Styler.setIconAttr(
+			activity,
+			ivColumnIcon,
+			column.getIconAttrId(column.column_type),
+			c
+		)
+		Styler.setIconAttr(activity, btnColumnSetting, R.attr.ic_tune, c)
+		Styler.setIconAttr(activity, btnColumnReload, R.attr.btn_refresh, c)
+		Styler.setIconAttr(activity, btnColumnClose, R.attr.btn_close, c)
 		
-		var c = column.header_bg_color
-		if(c == 0) {
-			llColumnHeader.setBackgroundResource(R.drawable.btn_bg_ddd)
-		} else {
-			ViewCompat.setBackground(
-				llColumnHeader,
-				Styler.getAdaptiveRippleDrawable(
-					c,
-					if(column.header_fg_color != 0)
-						column.header_fg_color
-					else
-						Styler.getAttributeColor(activity, R.attr.colorRippleEffect)
-				)
-			)
-		}
+		// カラムヘッダ文字色(B)
+		c = column.getHeaderPageNumberColor(activity)
+		tvColumnIndex.textColor =c
+		tvColumnStatus.textColor =c
 		
-		c = column.header_fg_color
-		if(c == 0) {
-			tvColumnIndex.setTextColor(
-				Styler.getAttributeColor(
-					activity,
-					R.attr.colorColumnHeaderPageNumber
-				)
-			)
-			tvColumnStatus.setTextColor(
-				Styler.getAttributeColor(
-					activity,
-					R.attr.colorColumnHeaderPageNumber
-				)
-			)
-			tvColumnName.setTextColor(
-				Styler.getAttributeColor(
-					activity,
-					android.R.attr.textColorPrimary
-				)
-			)
-			Styler.setIconAttr(
-				activity,
-				ivColumnIcon,
-				column.getIconAttrId(column.column_type)
-			)
-			Styler.setIconAttr(activity, btnColumnSetting, R.attr.ic_tune)
-			Styler.setIconAttr(activity, btnColumnReload, R.attr.btn_refresh)
-			Styler.setIconAttr(activity, btnColumnClose, R.attr.btn_close)
-		} else {
-			tvColumnIndex.setTextColor(c)
-			tvColumnStatus.setTextColor(c)
-			tvColumnName.setTextColor(c)
-			Styler.setIconAttr(
-				activity,
-				ivColumnIcon,
-				column.getIconAttrId(column.column_type),
-				c
-			)
-			Styler.setIconAttr(activity, btnColumnSetting, R.attr.ic_tune, c)
-			Styler.setIconAttr(activity, btnColumnReload, R.attr.btn_refresh, c)
-			Styler.setIconAttr(activity, btnColumnClose, R.attr.btn_close, c)
-		}
-		
+		// カラム内部の背景色
 		c = column.column_bg_color
 		if(c == 0) {
 			ViewCompat.setBackground(flColumnBackground, null)
@@ -724,15 +687,17 @@ class ColumnViewHolder(
 			flColumnBackground.setBackgroundColor(c)
 		}
 		
+		// カラム内部の背景画像
 		ivColumnBackgroundImage.alpha = column.column_bg_image_alpha
-		
 		loadBackgroundImage(ivColumnBackgroundImage, column.column_bg_image)
 
+		// エラー表示
 		tvLoading.textColor = column.getContentColor(activity)
 		
 		status_adapter?.findHeaderViewHolder(listView)?.showColor()
 	}
 	
+
 	private fun closeBitmaps() {
 		try {
 			ivColumnBackgroundImage.visibility = View.GONE

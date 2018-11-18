@@ -1068,3 +1068,13 @@ fun Matcher.groupOrNull( g:Int):String? =
 		null
 	}
 
+// colorARGB.applyAlphaMultiplier(0.5f) でalpha値が半分になったARGB値を得る
+fun Int.applyAlphaMultiplier(alphaMultiplier: Float? = null):Int{
+	return if( alphaMultiplier ==null ){
+		this
+	}else{
+		val rgb = (this and 0xffffff)
+		val alpha = clipRange(0,255,((this ushr 24).toFloat() * alphaMultiplier +0.5f ).toInt())
+		return rgb or (alpha shl 24)
+	}
+}

@@ -217,7 +217,7 @@ internal class ItemViewHolder(
 		llTrendTag.setOnLongClickListener(this)
 		llFilter.setOnClickListener(this)
 		
-		var f :Float
+		var f : Float
 		
 		f = activity.timeline_font_size_sp
 		if(! f.isNaN()) {
@@ -253,7 +253,7 @@ internal class ItemViewHolder(
 			tvAcct.textSize = f
 			tvTime.textSize = f
 			tvTrendTagDesc.textSize = f
-			tvFilterDetail.textSize =f
+			tvFilterDetail.textSize = f
 		}
 		
 		var s = activity.avatarIconSize
@@ -261,7 +261,7 @@ internal class ItemViewHolder(
 		ivThumbnail.layoutParams.width = s
 		ivFollow.layoutParams.width = s
 		ivBoosted.layoutParams.width = s
-
+		
 		s = activity.notificationTlIconSize
 		ivBoosted.layoutParams.height = s
 		
@@ -423,12 +423,12 @@ internal class ItemViewHolder(
 		
 		(llCardOuter.background as? PreviewCardBorder)?.let {
 			val rgb = c and 0xffffff
-			val alpha = max(1, c ushr (24+1)) // 本来の値の半分にする
-			it.color = rgb or ( alpha shl 24)
+			val alpha = max(1, c ushr (24 + 1)) // 本来の値の半分にする
+			it.color = rgb or (alpha shl 24)
 		}
 		
 		c = column.getAcctColor(activity)
-		log.d("acct_color %x",c)
+		log.d("acct_color %x", c)
 		this.acct_color = c
 		tvBoostedTime.setTextColor(c)
 		tvTime.setTextColor(c)
@@ -628,13 +628,13 @@ internal class ItemViewHolder(
 			val reblog = item.reblog
 			when {
 				reblog == null -> showStatusOrReply(item)
-
+				
 				! item.hasAnyContent() -> {
 					// 通常のブースト。引用なしブースト。
 					// ブースト表示は通知イベントと被るのでしない
 					showStatusOrReply(reblog)
 				}
-
+				
 				else -> {
 					// 引用Renote
 					showReply(
@@ -714,13 +714,13 @@ internal class ItemViewHolder(
 			TootNotification.TYPE_MENTION,
 			TootNotification.TYPE_REPLY -> {
 				if(! bSimpleList && ! access_info.isMisskey) {
-					if(n_account != null){
-						if( n_status?.in_reply_to_id != null
-							||n_status?.reply != null
-							){
+					if(n_account != null) {
+						if(n_status?.in_reply_to_id != null
+							|| n_status?.reply != null
+						) {
 							// トゥート内部に「～への返信」を表示するので、
 							// 通知イベントの「～からの返信」は表示しない
-						}else{
+						} else {
 							// 返信ではなくメンションの場合は「～からの返信」を表示する
 							showBoost(
 								n_accountRef,
@@ -743,7 +743,7 @@ internal class ItemViewHolder(
 					n.time_created_at,
 					R.attr.ic_question,
 					R.string.display_name_reaction_by
-					,reactionDrawableId =  reaction?.btnDrawableId
+					, reactionDrawableId = reaction?.btnDrawableId
 				)
 				if(n_status != null) {
 					showNotificationStatus(n_status)
@@ -864,8 +864,9 @@ internal class ItemViewHolder(
 		Styler.setIconAttr(
 			activity,
 			ivReply,
-			 iconAttrId,
-			color = content_color
+			iconAttrId,
+			color = content_color,
+			alphaMultiplier = Styler.boost_alpha
 		)
 		
 		tvReply.text = text
@@ -895,11 +896,11 @@ internal class ItemViewHolder(
 		llReply.visibility = View.VISIBLE
 		
 		val name = if(accountId == replyStatus.account.id) {
-			AcctColor.getNicknameWithColor( access_info.getFullAcct(replyStatus.account))
+			AcctColor.getNicknameWithColor(access_info.getFullAcct(replyStatus.account))
 		} else {
 			val m = replyStatus.mentions?.find { it.id == accountId }
 			if(m != null) {
-				AcctColor.getNicknameWithColor( access_info.getFullAcct(m.acct))
+				AcctColor.getNicknameWithColor(access_info.getFullAcct(m.acct))
 			} else {
 				SpannableString("ID(${accountId})")
 			}
@@ -939,7 +940,8 @@ internal class ItemViewHolder(
 				activity,
 				ivBoosted,
 				icon_attr_id,
-				color = content_color
+				color = content_color,
+				alphaMultiplier = Styler.boost_alpha
 			)
 		}
 		
@@ -968,7 +970,15 @@ internal class ItemViewHolder(
 		setAcct(tvFollowerAcct, access_info.getFullAcct(who), who.acct)
 		
 		val relation = UserRelation.load(access_info.db_id, who.id)
-		Styler.setFollowIcon(activity, btnFollow, ivFollowedBy, relation, who,content_color)
+		Styler.setFollowIcon(
+			activity,
+			btnFollow,
+			ivFollowedBy,
+			relation,
+			who,
+			content_color,
+			alphaMultiplier = Styler.boost_alpha
+		)
 		
 		if(column.column_type == Column.TYPE_FOLLOW_REQUESTS) {
 			llFollowRequest.visibility = View.VISIBLE
@@ -1147,7 +1157,8 @@ internal class ItemViewHolder(
 				activity,
 				btnHideMedia,
 				R.attr.btn_close,
-				color = content_color
+				color = content_color,
+				alphaMultiplier = Styler.boost_alpha
 			)
 		}
 		
@@ -1903,8 +1914,6 @@ internal class ItemViewHolder(
 		//			c != null && c > 0
 		//		} ?: return
 		
-		
-		
 		val density = activity.resources.displayMetrics.density
 		
 		val buttonHeight = ActMain.boostButtonSize
@@ -1947,7 +1956,8 @@ internal class ItemViewHolder(
 				activity,
 				b,
 				R.drawable.ic_add,
-				color = content_color
+				color = content_color,
+				alphaMultiplier = Styler.boost_alpha
 			)
 			
 			box.addView(b)
@@ -2404,7 +2414,7 @@ internal class ItemViewHolder(
 							btnContentWarning = button {
 								
 								background =
-									ContextCompat.getDrawable(context, R.drawable.btn_bg_ddd)
+									ContextCompat.getDrawable(context, R.drawable.bg_button_cw)
 								minWidthCompat = dip(40)
 								padding = dip(4)
 								//tools:text="見る"

@@ -43,6 +43,8 @@
         <item name="colorRegexFilterError">@color/Light_colorRegexFilterError</item>
         <item name="colorPostFormBackground">@color/Light_colorPostFormBackground</item>
         <item name="colorColumnStripBackground">@color/Light_colorColumnStripBackground</item>
+        <item name="colorColumnHeaderName">@color/Light_colorColumnHeaderName</item>
+        <item name="colorButtonBg">@color/Light_colorButtonBg</item>
 
         <item name="btn_attachment">@drawable/btn_attachment</item>
         <item name="btn_boost">@drawable/btn_boost</item>
@@ -167,6 +169,8 @@
         <item name="colorRegexFilterError">@color/Dark_colorRegexFilterError</item>
         <item name="colorPostFormBackground">@color/Dark_colorPostFormBackground</item>
         <item name="colorColumnStripBackground">@color/Dark_colorColumnStripBackground</item>
+        <item name="colorColumnHeaderName">@color/Dark_colorColumnHeaderName</item>
+        <item name="colorButtonBg">@color/Dark_colorButtonBg</item>
 
         <item name="btn_attachment">@drawable/btn_attachment_dark</item>
         <item name="btn_boost">@drawable/btn_boost_dark</item>

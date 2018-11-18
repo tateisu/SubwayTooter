@@ -23,6 +23,7 @@ import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.util.*
 import org.apache.commons.io.IOUtils
+import org.jetbrains.anko.textColor
 import java.io.File
 import java.io.FileOutputStream
 
@@ -126,13 +127,13 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			}
 			
 			R.id.btnHeaderTextEdit -> {
-				builder = ColorPickerDialog.newBuilder()
+				ColorPickerDialog.newBuilder()
 					.setDialogType(ColorPickerDialog.TYPE_CUSTOM)
 					.setAllowPresets(true)
 					.setShowAlphaSlider(false)
 					.setDialogId(COLOR_DIALOG_ID_HEADER_FOREGROUND)
-				if(column.header_fg_color != 0) builder.setColor(column.header_fg_color)
-				builder.show(this)
+					.setColor(column.getHeaderNameColor(this))
+					.show(this)
 			}
 			
 			R.id.btnHeaderTextReset -> {
@@ -387,43 +388,19 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 	private fun show() {
 		try {
 			loading_busy = true
-			var c = column.header_bg_color
-			if(c == 0) {
-				llColumnHeader.setBackgroundResource(R.drawable.btn_bg_ddd)
-			} else {
-				ViewCompat.setBackground(
-					llColumnHeader, Styler.getAdaptiveRippleDrawable(
-						c,
-						if(column.header_fg_color != 0)
-							column.header_fg_color
-						else
-							Styler.getAttributeColor(this, R.attr.colorRippleEffect)
-					)
-				)
-			}
 			
-			c = column.header_fg_color
-			if(c == 0) {
-				tvColumnName.setTextColor(
-					Styler.getAttributeColor(
-						this,
-						android.R.attr.textColorPrimary
-					)
-				)
-				Styler.setIconAttr(
-					this,
-					ivColumnHeader,
-					column.getIconAttrId(column.column_type)
-				)
-			} else {
-				tvColumnName.setTextColor(c)
-				Styler.setIconAttr(
-					this,
-					ivColumnHeader,
-					column.getIconAttrId(column.column_type),
-					color = c
-				)
-			}
+			column.setHeaderBackground(this,llColumnHeader)
+			
+			
+			
+			var c = column.getHeaderNameColor(this)
+			tvColumnName.textColor = c
+			Styler.setIconAttr(
+				this,
+				ivColumnHeader,
+				column.getIconAttrId(column.column_type),
+				color = c
+			)
 			
 			tvColumnName.text = column.getColumnName(false)
 			

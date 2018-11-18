@@ -18,6 +18,7 @@ import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.table.UserRelation
+import jp.juggler.subwaytooter.util.clipRange
 import java.util.*
 
 object Styler {
@@ -58,13 +59,20 @@ object Styler {
 		)
 	}
 	
+
+	
 	fun createColoredDrawable(
 		context : Context,
 		drawableId : Int,
-		color : Int
+		color : Int,
+		alphaMultiplier: Float? = null
 	) : Drawable {
 		val rgb = (color and 0xffffff) or Color.BLACK
-		val alpha = (color ushr 24)
+		val alpha = if( alphaMultiplier ==null ){
+			(color ushr 24)
+		}else{
+			clipRange(0,255,((color ushr 24).toFloat() * alphaMultiplier +0.5f ).toInt())
+		}
 		
 		// 色指定が他のアイコンに影響しないようにする
 		// カラーフィルターとアルファ値を設定する
@@ -79,13 +87,14 @@ object Styler {
 		context : Context,
 		imageView : ImageView,
 		drawableId : Int,
-		color : Int? = null
+		color : Int? = null,
+		alphaMultiplier: Float? = null
 	) {
 		if(color == null) {
 			// ImageViewにアイコンを設定する。デフォルトの色
 			imageView.setImageDrawable(ContextCompat.getDrawable(context, drawableId))
 		} else {
-			imageView.setImageDrawable(createColoredDrawable(context, drawableId, color))
+			imageView.setImageDrawable(createColoredDrawable(context, drawableId, color,alphaMultiplier))
 		}
 	}
 	
@@ -93,9 +102,10 @@ object Styler {
 		context : Context,
 		imageView : ImageView,
 		iconAttrId : Int,
-		color : Int? = null
+		color : Int? = null,
+		alphaMultiplier: Float? = null
 	) {
-		setIconDrawableId(context, imageView, getAttributeResourceId(context, iconAttrId), color)
+		setIconDrawableId(context, imageView, getAttributeResourceId(context, iconAttrId), color,alphaMultiplier)
 	}
 	
 	fun getVisibilityIconAttr(isMisskeyData : Boolean, visibility : TootVisibility) : Int {
@@ -214,6 +224,7 @@ object Styler {
 		, relation : UserRelation
 		, who : TootAccount
 		, defaultColor : Int
+		,alphaMultiplier : Float? = null
 	) {
 		
 		fun colorError() = Styler.getAttributeColor(context, R.attr.colorRegexFilterError)
@@ -224,17 +235,17 @@ object Styler {
 			
 			relation.blocked_by -> {
 				ivDot.visibility = View.VISIBLE
-				setIconDrawableId(context, ivDot, R.drawable.ic_blocked_by, color = colorError())
+				setIconDrawableId(context, ivDot, R.drawable.ic_blocked_by, color = colorError(),alphaMultiplier = alphaMultiplier)
 			}
 			
 			relation.requested_by -> {
 				ivDot.visibility = View.VISIBLE
-				setIconDrawableId(context, ivDot, R.drawable.ic_requested_by, color = colorError())
+				setIconDrawableId(context, ivDot, R.drawable.ic_requested_by, color = colorError(),alphaMultiplier = alphaMultiplier)
 			}
 			
 			relation.followed_by -> {
 				ivDot.visibility = View.VISIBLE
-				setIconAttr(context, ivDot, R.attr.ic_followed_by, color = colorAccent())
+				setIconAttr(context, ivDot, R.attr.ic_followed_by, color = colorAccent(),alphaMultiplier = alphaMultiplier)
 				// 被フォローリクエスト状態の時に followed_by が 真と偽の両方がありえるようなので
 				// Relationshipだけを見ても被フォローリクエスト状態は分からないっぽい
 				// 仕方ないので馬鹿正直に「 followed_byが真ならバッジをつける」しかできない
@@ -283,7 +294,7 @@ object Styler {
 			}
 		}
 		
-		setIconAttr(context, ibFollow, icon_attr, color = color)
+		setIconAttr(context, ibFollow, icon_attr, color = color,alphaMultiplier = alphaMultiplier)
 		ibFollow.contentDescription = contentDescription
 	}
 	
@@ -350,6 +361,7 @@ object Styler {
 	
 	// ActMainの初期化時に更新される
 	var round_ratio : Float = 0.33f * 0.5f
+	var boost_alpha : Float? = null
 	
 	fun calcIconRound(wh : Int) = wh.toFloat() * round_ratio
 	

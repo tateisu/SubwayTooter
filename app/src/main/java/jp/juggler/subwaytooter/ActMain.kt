@@ -1222,6 +1222,20 @@ class ActMain : AppCompatActivity()
 			Styler.round_ratio = clipRange(0f, 1f, round_ratio / 100f) * 0.5f
 		}
 		
+		run {
+			var boost_alpha :Float? = 0.8f
+			try{
+				val f =  ( Pref.spBoostAlpha.toInt(pref).toFloat() +0.5f )/100f
+				boost_alpha = when{
+					f >= 1f -> null
+					f < 0f -> 0.66f
+					else-> f
+				}
+			} catch(ex : Throwable) {
+				log.trace(ex)
+			}
+			Styler.boost_alpha = boost_alpha
+		}
 		
 		llEmpty = findViewById(R.id.llEmpty)
 		
@@ -1415,28 +1429,11 @@ class ActMain : AppCompatActivity()
 			viewRoot.contentDescription = column.getColumnName(true)
 			//
 			
-			var c = column.header_bg_color
-			if(c == 0) {
-				viewRoot.setBackgroundResource(R.drawable.btn_bg_ddd)
-			} else {
-				ViewCompat.setBackground(
-					viewRoot, Styler.getAdaptiveRippleDrawable(
-						c,
-						if(column.header_fg_color != 0)
-							column.header_fg_color
-						else
-							Styler.getAttributeColor(this, R.attr.colorRippleEffect)
-					
-					)
-				)
-			}
+			column.setHeaderBackground(this,viewRoot)
 			
-			c = column.header_fg_color
-			if(c == 0) {
-				Styler.setIconAttr(this, ivIcon, column.getIconAttrId(column.column_type))
-			} else {
-				Styler.setIconAttr(this, ivIcon, column.getIconAttrId(column.column_type), c)
-			}
+			
+			var c = column.getHeaderNameColor(this)
+			Styler.setIconAttr(this, ivIcon, column.getIconAttrId(column.column_type), c)
 			
 			//
 			val ac = AcctColor.load(column.access_info.acct)
@@ -2265,9 +2262,9 @@ class ActMain : AppCompatActivity()
 		val footer_tab_indicator_color = Pref.ipFooterTabIndicatorColor(pref)
 		var c = footer_button_bg_color
 		if(c == 0) {
-			btnMenu.setBackgroundResource(R.drawable.btn_bg_ddd)
-			btnToot.setBackgroundResource(R.drawable.btn_bg_ddd)
-			btnQuickToot.setBackgroundResource(R.drawable.btn_bg_ddd)
+			btnMenu.setBackgroundResource(R.drawable.bg_button_cw)
+			btnToot.setBackgroundResource(R.drawable.bg_button_cw)
+			btnQuickToot.setBackgroundResource(R.drawable.bg_button_cw)
 		} else {
 			val fg = if(footer_button_fg_color != 0)
 				footer_button_fg_color

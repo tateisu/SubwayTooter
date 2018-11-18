@@ -18,7 +18,7 @@
             android:id="@+id/llColumnHeader"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@drawable/btn_bg_ddd"
+            android:background="@drawable/bg_column_header"
             android:orientation="vertical"
             android:paddingBottom="3dp"
             android:paddingEnd="12dp"

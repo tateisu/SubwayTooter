@@ -21,6 +21,7 @@ import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.applyAlphaMultiplier
 import jp.juggler.subwaytooter.util.startMargin
 import jp.juggler.subwaytooter.view.CountImageButton
 import org.jetbrains.anko.*
@@ -92,13 +93,15 @@ internal class StatusButtons(
 			activity,
 			btnConversation,
 			R.drawable.ic_conversation_dark,
-			color = color_normal
+			color = color_normal,
+			alphaMultiplier = Styler.boost_alpha
 		)
 		Styler.setIconDrawableId(
 			activity,
 			btnMore,
 			R.drawable.btn_more_dark,
-			color = color_normal
+			color = color_normal,
+			alphaMultiplier = Styler.boost_alpha
 		)
 		
 //		val a = (((color_normal ushr 24)/255f) * 0.7f)
@@ -198,7 +201,8 @@ internal class StatusButtons(
 				ivFollowedBy2,
 				relation,
 				account,
-				color_normal
+				color_normal,
+				alphaMultiplier = Styler.boost_alpha
 			)
 			relation
 		}
@@ -213,10 +217,10 @@ internal class StatusButtons(
 		count : String,
 		contentDescription : String
 	) {
-		val d = Styler.createColoredDrawable(activity,drawableId,color)
+		val d = Styler.createColoredDrawable(activity,drawableId,color,alphaMultiplier = Styler.boost_alpha)
 		b.setImageDrawable(d)
 		b.setPaddingAndText(holder.paddingH, holder.paddingV, count, 14f, holder.compoundPaddingDp)
-		b.setTextColor(color)
+		b.setTextColor(color.applyAlphaMultiplier(Styler.boost_alpha))
 		b.contentDescription = contentDescription + count
 		b.isEnabled = enabled
 	}

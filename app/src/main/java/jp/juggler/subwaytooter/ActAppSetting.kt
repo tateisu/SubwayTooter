@@ -134,6 +134,7 @@ class ActAppSetting : AppCompatActivity()
 	private lateinit var etMediaSizeMax : EditText
 	private lateinit var etMovieSizeMax : EditText
 	private lateinit var etRoundRatio : EditText
+	private lateinit var etBoostAlpha : EditText
 	private lateinit var etMediaReadTimeout : EditText
 	
 	
@@ -147,6 +148,7 @@ class ActAppSetting : AppCompatActivity()
 	private lateinit var tvTimelineFontSize : TextView
 	private lateinit var tvAcctFontSize : TextView
 	private lateinit var etAvatarIconSize : EditText
+	
 	private lateinit var etPullNotificationCheckInterval : EditText
 	
 	private lateinit var etNotificationTlFontSize : EditText
@@ -332,6 +334,9 @@ class ActAppSetting : AppCompatActivity()
 		etRoundRatio = findViewById(R.id.etRoundRatio)
 		etRoundRatio.addTextChangedListener(this)
 		
+		etBoostAlpha = findViewById(R.id.etBoostAlpha)
+		etBoostAlpha.addTextChangedListener(this)
+		
 		etMediaReadTimeout= findViewById(R.id.etMediaReadTimeout)
 		etMediaReadTimeout.addTextChangedListener(this)
 		
@@ -440,6 +445,7 @@ class ActAppSetting : AppCompatActivity()
 		etMediaSizeMax.setText(Pref.spMediaSizeMax(pref))
 		etMovieSizeMax.setText(Pref.spMovieSizeMax(pref))
 		etRoundRatio.setText(Pref.spRoundRatio(pref))
+		etBoostAlpha.setText(Pref.spBoostAlpha(pref))
 		
 		etMediaReadTimeout.setText(Pref.spMediaReadTimeout(pref))
 		
@@ -521,6 +527,8 @@ class ActAppSetting : AppCompatActivity()
 			.put(Pref.spMovieSizeMax, etMovieSizeMax.text.toString().trim { it <= ' ' })
 		
 			.put(Pref.spRoundRatio, etRoundRatio.text.toString().trim { it <= ' ' })
+			.put(Pref.spBoostAlpha, etBoostAlpha.text.toString().trim { it <= ' ' })
+		
 			.put(Pref.spMediaReadTimeout, etMediaReadTimeout.text.toString().trim { it <= ' ' })
 		
 			
@@ -849,8 +857,8 @@ class ActAppSetting : AppCompatActivity()
 		
 		var c = footer_button_bg_color
 		if(c == 0) {
-			ivFooterToot.setBackgroundResource(R.drawable.btn_bg_ddd)
-			ivFooterMenu.setBackgroundResource(R.drawable.btn_bg_ddd)
+			ivFooterToot.setBackgroundResource(R.drawable.bg_button_cw)
+			ivFooterMenu.setBackgroundResource(R.drawable.bg_button_cw)
 		} else {
 			val fg = if(footer_button_fg_color != 0)
 				footer_button_fg_color

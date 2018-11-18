@@ -7,6 +7,10 @@
     <!-- カラムヘッダ背景色、および一部ボタンの背景色 -->
     <attr name="color_column_header" format="color"/>
 
+    <!-- CWボタンなどの背景色 -->
+    <attr name="colorButtonBg" format="color"/>
+
+
     <!-- イメージボタンの図柄の色 0xff000000 -->
     <attr name="colorImageButton" format="color"/>
 
@@ -55,6 +59,9 @@
 
     <!-- カラムヘッダページ番号の文字色 #888 -->
     <attr name="colorColumnHeaderPageNumber" format="color"/>
+
+    <!-- カラムヘッダのカラム名の文字色 -->
+    <attr name="colorColumnHeaderName" format="color"/>
 
     <!-- カラム設定の背景色 #ccc -->
     <attr name="colorColumnSettingBackground" format="color"/>

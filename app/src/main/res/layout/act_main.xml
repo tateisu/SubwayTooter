@@ -65,7 +65,7 @@
                 android:id="@+id/btnMenu"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:background="@drawable/btn_bg_ddd"
+                android:background="@drawable/bg_button_cw"
                 android:contentDescription="@string/menu"
                 app:srcCompat="?attr/ic_hamburger"
                 />
@@ -109,7 +109,7 @@
                 android:id="@+id/btnToot"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:background="@drawable/btn_bg_ddd"
+                android:background="@drawable/bg_button_cw"
                 android:contentDescription="@string/toot"
                 app:srcCompat="?attr/ic_edit"
                 />
@@ -140,7 +140,7 @@
                 android:id="@+id/btnQuickToot"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:background="@drawable/btn_bg_ddd"
+                android:background="@drawable/bg_button_cw"
                 android:contentDescription="@string/post"
                 app:srcCompat="?attr/btn_post"
                 />

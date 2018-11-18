@@ -6,8 +6,10 @@ import android.net.Uri
 import android.os.AsyncTask
 import android.os.Environment
 import android.os.SystemClock
+import android.support.v4.view.ViewCompat
 import android.support.v7.app.AppCompatActivity
 import android.view.Gravity
+import android.view.View
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.*
@@ -1926,11 +1928,12 @@ class Column(
 				// 初回の取得
 				val result = when {
 					isMisskey -> {
-						if( initialUntilDate ){
-							params.put("untilDate",System.currentTimeMillis() + ( 86400000L * 365))
+						if(initialUntilDate) {
+							params.put("untilDate", System.currentTimeMillis() + (86400000L * 365))
 						}
 						client.request(path_base, params.toPostRequestBuilder())
 					}
+					
 					aroundMin -> client.request("$path_base&min_id=$status_id")
 					aroundMax -> client.request("$path_base&max_id=$status_id")
 					else -> client.request(path_base)
@@ -2830,7 +2833,7 @@ class Column(
 								, misskeyParams = makeMisskeyTimelineParameter(parser)
 									.put("tag", hashtag)
 									.put("limit", MISSKEY_HASHTAG_LIMIT)
-								
+							
 							)
 						} else {
 							getStatuses(client, makeHashtagUrl(hashtag))
@@ -6829,6 +6832,39 @@ class Column(
 		acct_color
 	} else {
 		Styler.getAttributeColor(activity, R.attr.colorTimeSmall)
+	}
+	
+	fun getHeaderPageNumberColor(activity : AppCompatActivity) : Int {
+		val c = header_fg_color
+		return when {
+			c != 0 -> c
+			else -> Styler.getAttributeColor(
+				activity,
+				R.attr.colorColumnHeaderPageNumber
+			)
+		}
+	}
+	
+	fun getHeaderNameColor(activity : AppCompatActivity) : Int {
+		val c = header_fg_color
+		return when {
+			c != 0 -> c
+			else -> Styler.getAttributeColor(
+				activity,
+				R.attr.colorColumnHeaderName
+			)
+		}
+	}
+	
+	fun setHeaderBackground(activity : AppCompatActivity, view : View) {
+		val c = header_bg_color
+		if(c == 0) {
+			view.setBackgroundResource(R.drawable.bg_column_header)
+		} else {
+			ViewCompat.setBackground(
+				view, Styler.getAdaptiveRippleDrawable(c, getHeaderNameColor(activity))
+			)
+		}
 	}
 	
 	//	fun findListIndexByTimelineId(orderId : EntityId) : Int? {

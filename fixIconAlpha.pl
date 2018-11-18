@@ -103,7 +103,7 @@ find(
 			my $relpath = $File::Find::name;
 			return if -d $relpath;
 			return if not $relpath =~ m|/drawable-|;
-			return if $relpath =~ m%/(media_type_|emoji_)%;
+			return if $relpath =~ m%/(media_type_|emoji_|media_bg_dark)%;
 			push @files,$relpath;
 		}
 	}

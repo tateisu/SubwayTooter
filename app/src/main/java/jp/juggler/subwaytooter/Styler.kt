@@ -83,7 +83,7 @@ object Styler {
 			}
 			
 			val size = colorFilterCache.size()
-			if(now - colorFilterCacheLastSweep >= 10000L && size >= 64) {
+			if(now - colorFilterCacheLastSweep >= 10000L && size >= 128) {
 				colorFilterCacheLastSweep = now
 				for(i in size - 1 downTo 0) {
 					val v = colorFilterCache.valueAt(i)
@@ -151,14 +151,13 @@ object Styler {
 				return cacheValue.drawable
 			}
 			
-			if(now - coloredDrawableCacheLastSweep >= 10000L && coloredDrawableCache.size >= 64) {
+			if(now - coloredDrawableCacheLastSweep >= 10000L && coloredDrawableCache.size >= 128) {
 				coloredDrawableCacheLastSweep = now
-				val it = coloredDrawableCache.entries.iterator()
-				while(it.hasNext()) {
-					val (_, v) = it.next()
-					if(now - v.lastUsed >= 10000L) {
-						it.remove()
-					}
+				val list = coloredDrawableCache.entries.sortedBy { it.value.lastUsed }
+				for(i in 0 until list.size - 64) {
+					val (k, v) = list[i]
+					if(now - v.lastUsed <= 10000L) break
+					coloredDrawableCache.remove(k)
 				}
 			}
 			

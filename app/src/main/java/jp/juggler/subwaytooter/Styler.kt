@@ -59,8 +59,6 @@ object Styler {
 		)
 	}
 	
-
-	
 	fun createColoredDrawable(
 		context : Context,
 		drawableId : Int,

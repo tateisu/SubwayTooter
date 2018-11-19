@@ -62,13 +62,10 @@
         </LinearLayout>
 
 
-        <LinearLayout style="@style/setting_row_form">
-
             <TextView
-                style="@style/setting_row_label"
+                style="@style/setting_row_label_indent1"
                 android:text="@string/background_color"
                 />
-        </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
 
@@ -89,13 +86,10 @@
         </LinearLayout>
 
 
-        <LinearLayout style="@style/setting_row_form">
-
             <TextView
-                style="@style/setting_row_label"
+                style="@style/setting_row_label_indent1"
                 android:text="@string/foreground_color"
                 />
-        </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
 

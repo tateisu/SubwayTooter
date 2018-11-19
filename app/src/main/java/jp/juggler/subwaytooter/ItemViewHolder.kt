@@ -399,7 +399,7 @@ internal class ItemViewHolder(
 		removeExtraView()
 		
 		var c : Int
-		c = column.getContentColor(activity)
+		c = column.getContentColor()
 		this.content_color = c
 		
 		tvBoosted.setTextColor(c)
@@ -427,7 +427,7 @@ internal class ItemViewHolder(
 			it.color = rgb or (alpha shl 24)
 		}
 		
-		c = column.getAcctColor(activity)
+		c = column.getAcctColor()
 		log.d("acct_color %x", c)
 		this.acct_color = c
 		tvBoostedTime.setTextColor(c)

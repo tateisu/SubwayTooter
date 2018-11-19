@@ -261,19 +261,6 @@
 
     </style>
 
-    <style name="setting_row_label">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-
-        <item name="android:paddingLeft">12dp</item>
-        <item name="android:paddingRight">0dp</item>
-
-        <item name="android:paddingStart" tools:ignore="NewApi">12dp</item>
-        <item name="android:paddingEnd" tools:ignore="NewApi">0dp</item>
-
-        <item name="android:textSize">14sp</item>
-    </style>
-
     <style name="setting_row_form">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -287,6 +274,37 @@
         <item name="android:paddingEnd" tools:ignore="NewApi">0dp</item>
 
     </style>
+
+    <style name="setting_row_label">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+
+        <item name="android:paddingLeft">12dp</item>
+        <item name="android:paddingRight">0dp</item>
+
+        <item name="android:paddingStart" tools:ignore="NewApi">12dp</item>
+        <item name="android:paddingEnd" tools:ignore="NewApi">0dp</item>
+
+        <item name="android:textSize">14sp</item>
+    </style>
+
+
+    <style name="setting_row_label_indent1">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:layout_marginTop">3dp</item>
+        <item name="android:baselineAligned">true</item>
+
+        <item name="android:paddingLeft">48dp</item>
+        <item name="android:paddingRight">0dp</item>
+
+        <item name="android:paddingStart" tools:ignore="NewApi">48dp</item>
+        <item name="android:paddingEnd" tools:ignore="NewApi">0dp</item>
+
+        <item name="android:textSize">14sp</item>
+    </style>
+
 
     <style name="setting_row_form_fields" parent="setting_row_form">
         <item name="android:paddingLeft">8dp</item>

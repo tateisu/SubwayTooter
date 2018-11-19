@@ -387,6 +387,12 @@ object Pref {
 	val ipTootColorDirectUser = IntPref("ipTootColorDirectUser", 0)
 	val ipTootColorDirectMe = IntPref("ipTootColorDirectMe", 0)
 	
+	val ipCcdHeaderBg = IntPref("ipCcdHeaderBg", 0)
+	val ipCcdHeaderFg = IntPref("ipCcdHeaderFg", 0)
+	val ipCcdContentBg = IntPref("ipCcdContentBg", 0)
+	val ipCcdContentAcct = IntPref("ipCcdContentAcct", 0)
+	val ipCcdContentText = IntPref("ipCcdContentText", 0)
+	
 	//	val ipTrendTagCountShowing = IntPref("TrendTagCountShowing", 0)
 //	const val TTCS_WEEKLY = 0
 //	const val TTCS_DAILY = 1

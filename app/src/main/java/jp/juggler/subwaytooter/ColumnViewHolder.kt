@@ -659,10 +659,10 @@ class ColumnViewHolder(
 		if(column == null || column.is_dispose.get()) return
 
 		// カラムヘッダ背景
-		column.setHeaderBackground(activity,llColumnHeader)
+		column.setHeaderBackground(llColumnHeader)
 
 		// カラムヘッダ文字色(A)
-		var c = column.getHeaderNameColor(activity)
+		var c = column.getHeaderNameColor()
 		tvColumnName.textColor =c
 		Styler.setIconAttr(
 			activity,
@@ -675,7 +675,7 @@ class ColumnViewHolder(
 		Styler.setIconAttr(activity, btnColumnClose, R.attr.btn_close, c)
 		
 		// カラムヘッダ文字色(B)
-		c = column.getHeaderPageNumberColor(activity)
+		c = column.getHeaderPageNumberColor()
 		tvColumnIndex.textColor =c
 		tvColumnStatus.textColor =c
 		
@@ -692,7 +692,7 @@ class ColumnViewHolder(
 		loadBackgroundImage(ivColumnBackgroundImage, column.column_bg_image)
 
 		// エラー表示
-		tvLoading.textColor = column.getContentColor(activity)
+		tvLoading.textColor = column.getContentColor()
 		
 		status_adapter?.findHeaderViewHolder(listView)?.showColor()
 	}

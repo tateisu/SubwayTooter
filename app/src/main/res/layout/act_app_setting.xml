@@ -924,7 +924,6 @@
                 />
         </LinearLayout>
 
-
         <View style="@style/setting_divider"/>
 
         <TextView
@@ -1020,11 +1019,18 @@
 
         </LinearLayout>
 
+        <!-- #################################################### -->
+
         <View style="@style/setting_divider"/>
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/background_color_unlisted"
+            android:text="@string/toot_background_color"
+            />
+
+        <TextView
+            style="@style/setting_row_label_indent1"
+            android:text="@string/unlisted_visibility"
             />
 
         <LinearLayout style="@style/setting_row_form">
@@ -1047,11 +1053,9 @@
 
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
-
         <TextView
-            style="@style/setting_row_label"
-            android:text="@string/background_color_follower"
+            style="@style/setting_row_label_indent1"
+            android:text="@string/followers_visibility"
             />
 
         <LinearLayout style="@style/setting_row_form">
@@ -1074,11 +1078,10 @@
 
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
 
         <TextView
-            style="@style/setting_row_label"
-            android:text="@string/background_color_direct_with_user"
+            style="@style/setting_row_label_indent1"
+            android:text="@string/direct_with_user_visibility"
             />
 
         <LinearLayout style="@style/setting_row_form">
@@ -1101,11 +1104,9 @@
 
         </LinearLayout>
 
-        <View style="@style/setting_divider"/>
-
         <TextView
-            style="@style/setting_row_label"
-            android:text="@string/background_color_direct_no_user"
+            style="@style/setting_row_label_indent1"
+            android:text="@string/direct_only_me_visibility"
             />
 
         <LinearLayout style="@style/setting_row_form">
@@ -1127,6 +1128,8 @@
                 />
 
         </LinearLayout>
+
+        <!-- ######################################################## -->
 
         <View style="@style/setting_divider"/>
 
@@ -1154,6 +1157,221 @@
                 />
 
         </LinearLayout>
+
+        <!-- カラム色のデフォルト ########################################################## -->
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/column_color_default"
+            />
+
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <LinearLayout
+                android:id="@+id/llColumnHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingBottom="3dp"
+                android:paddingEnd="12dp"
+                android:paddingStart="12dp"
+                android:paddingTop="3dp"
+                >
+
+                <ImageView
+                    android:id="@+id/ivColumnHeader"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginEnd="4dp"
+                    android:importantForAccessibility="no"
+                    tools:src="?attr/btn_federate_tl"
+                    />
+                <TextView
+                    android:id="@+id/tvColumnName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/federate_timeline"
+                    />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <TextView
+            style="@style/setting_row_label_indent1"
+            android:text="@string/header_background_color"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnCcdHeaderBackgroundEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnCcdHeaderBackgroundReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+        <TextView
+            style="@style/setting_row_label_indent1"
+            android:text="@string/header_foreground_color"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnCcdHeaderForegroundEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnCcdHeaderForegroundReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <FrameLayout
+                android:id="@+id/flColumnBackground"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp"
+                    android:orientation="vertical"
+                    >
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:gravity="start"
+                        android:maxLines="1"
+                        android:textColor="?attr/colorTimeSmall"
+                        android:textSize="12sp"
+                        android:text="@string/acct_sample"
+                        android:id="@+id/tvSampleAcct"
+                        />
+
+                    <jp.juggler.subwaytooter.view.MyTextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:lineSpacingMultiplier="1.1"
+                        android:textColor="?attr/colorContentText"
+                        android:gravity="start"
+                        android:text="@string/content_sample"
+                        android:id="@+id/tvSampleContent"
+                        />
+                </LinearLayout>
+            </FrameLayout>
+
+        </LinearLayout>
+
+
+        <TextView
+            style="@style/setting_row_label_indent1"
+            android:text="@string/content_background_color"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnCcdContentBackgroundEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnCcdContentBackgroundReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+        <TextView
+            style="@style/setting_row_label_indent1"
+            android:text="@string/content_acct_color"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnCcdContentAcctEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnCcdContentAcctReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+        <TextView
+            style="@style/setting_row_label_indent1"
+            android:text="@string/content_text_color"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Button
+                android:id="@+id/btnCcdContentTextEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/edit"
+                android:textAllCaps="false"
+                />
+
+            <Button
+                android:id="@+id/btnCcdContentTextReset"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reset"
+                android:textAllCaps="false"
+                />
+
+        </LinearLayout>
+
+        <!-- ########################################################## -->
 
         <View style="@style/setting_divider"/>
 
@@ -1255,13 +1473,10 @@
             </FrameLayout>
         </LinearLayout>
 
-        <LinearLayout style="@style/setting_row_form">
-
-            <TextView
-                style="@style/setting_row_label"
-                android:text="@string/button_background_color"
-                />
-        </LinearLayout>
+        <TextView
+            style="@style/setting_row_label_indent1"
+            android:text="@string/button_background_color"
+            />
 
         <LinearLayout style="@style/setting_row_form">
 
@@ -1283,14 +1498,10 @@
 
         </LinearLayout>
 
-        <LinearLayout style="@style/setting_row_form"
-            >
-
-            <TextView
-                style="@style/setting_row_label"
-                android:text="@string/button_foreground_color"
-                />
-        </LinearLayout>
+        <TextView
+            style="@style/setting_row_label_indent1"
+            android:text="@string/button_foreground_color"
+            />
 
         <LinearLayout style="@style/setting_row_form">
 
@@ -1312,13 +1523,10 @@
 
         </LinearLayout>
 
-        <LinearLayout style="@style/setting_row_form">
-
-            <TextView
-                style="@style/setting_row_label"
-                android:text="@string/tab_background_color"
-                />
-        </LinearLayout>
+        <TextView
+            style="@style/setting_row_label_indent1"
+            android:text="@string/quick_toot_bar_background_color"
+            />
 
         <LinearLayout style="@style/setting_row_form">
 
@@ -1340,13 +1548,10 @@
 
         </LinearLayout>
 
-        <LinearLayout style="@style/setting_row_form">
-
-            <TextView
-                style="@style/setting_row_label"
-                android:text="@string/tab_divider_color"
-                />
-        </LinearLayout>
+        <TextView
+            style="@style/setting_row_label_indent1"
+            android:text="@string/tab_divider_color"
+            />
 
         <LinearLayout style="@style/setting_row_form">
 
@@ -1368,13 +1573,10 @@
 
         </LinearLayout>
 
-        <LinearLayout style="@style/setting_row_form">
-
-            <TextView
-                style="@style/setting_row_label"
-                android:text="@string/tab_indicator_color"
-                />
-        </LinearLayout>
+        <TextView
+            style="@style/setting_row_label_indent1"
+            android:text="@string/tab_indicator_color"
+            />
 
         <LinearLayout style="@style/setting_row_form">
 
@@ -1396,6 +1598,8 @@
 
         </LinearLayout>
 
+        <!-- ################################################################## -->
+
         <View style="@style/setting_divider"/>
 
         <TextView
@@ -1409,7 +1613,6 @@
                 android:id="@+id/tvTimelineFontUrl"
                 style="@style/setting_horizontal_stretch"
                 />
-
         </LinearLayout>
 
         <LinearLayout style="@style/setting_row_form">
@@ -1431,6 +1634,8 @@
                 />
 
         </LinearLayout>
+
+        <!-- ################################################################## -->
 
         <View style="@style/setting_divider"/>
 
@@ -1590,6 +1795,7 @@
             />
 
         <LinearLayout style="@style/setting_row_form">
+
             <EditText
                 android:id="@+id/etBoostAlpha"
                 style="@style/setting_horizontal_stretch"
@@ -1716,8 +1922,8 @@
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/timeout_for_embed_media_viewer"
             android:labelFor="@+id/etMediaReadTimeout"
+            android:text="@string/timeout_for_embed_media_viewer"
             />
 
         <LinearLayout style="@style/setting_row_form">

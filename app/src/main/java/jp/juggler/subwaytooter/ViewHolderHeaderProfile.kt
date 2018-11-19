@@ -144,7 +144,7 @@ internal class ViewHolderHeaderProfile(
 			tvCreated.textSize = f
 		}
 		
-		val contentColor = column.getContentColor(activity)
+		val contentColor = column.getContentColor()
 		this.contentColor = contentColor
 		
 		tvMoved.textColor = contentColor
@@ -164,7 +164,7 @@ internal class ViewHolderHeaderProfile(
 			alphaMultiplier = Styler.boost_alpha
 		)
 		
-		val acctColor = column.getAcctColor(activity)
+		val acctColor = column.getAcctColor()
 		tvCreated.textColor = acctColor
 		tvMovedAcct.textColor = acctColor
 		
@@ -407,11 +407,7 @@ internal class ViewHolderHeaderProfile(
 			else -> acctLong
 		}
 		
-		val acct_color = when {
-			column.acct_color != 0 -> column.acct_color
-			else -> Styler.getAttributeColor(activity, R.attr.colorTimeSmall)
-		}
-		tv.setTextColor(if(AcctColor.hasColorForeground(ac)) ac.color_fg else acct_color)
+		tv.setTextColor(if(AcctColor.hasColorForeground(ac)) ac.color_fg else column.getAcctColor() )
 		
 		if(AcctColor.hasColorBackground(ac)) {
 			tv.setBackgroundColor(ac.color_bg)

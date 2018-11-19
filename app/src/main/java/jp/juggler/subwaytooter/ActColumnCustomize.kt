@@ -119,7 +119,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 					.setAllowPresets(true)
 					.setShowAlphaSlider(false)
 					.setDialogId(COLOR_DIALOG_ID_HEADER_BACKGROUND)
-					.setColor(column.getHeaderBackgroundColor(this))
+					.setColor(column.getHeaderBackgroundColor())
 					.show(this)
 			}
 			
@@ -134,7 +134,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 					.setAllowPresets(true)
 					.setShowAlphaSlider(false)
 					.setDialogId(COLOR_DIALOG_ID_HEADER_FOREGROUND)
-					.setColor(column.getHeaderNameColor(this))
+					.setColor(column.getHeaderNameColor())
 					.show(this)
 			}
 			
@@ -164,7 +164,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 					.setAllowPresets(true)
 					.setShowAlphaSlider(true)
 					.setDialogId(COLOR_DIALOG_ID_ACCT_TEXT)
-					.setColor(column.getAcctColor(this))
+					.setColor(column.getAcctColor())
 					.show(this)
 			}
 			
@@ -179,7 +179,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 					.setAllowPresets(true)
 					.setShowAlphaSlider(true)
 					.setDialogId(COLOR_DIALOG_ID_CONTENT_TEXT)
-					.setColor(column.getContentColor(this))
+					.setColor(column.getContentColor())
 					.show(this)
 			}
 			
@@ -391,11 +391,9 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 		try {
 			loading_busy = true
 			
-			column.setHeaderBackground(this,llColumnHeader)
+			column.setHeaderBackground(llColumnHeader)
 			
-			
-			
-			var c = column.getHeaderNameColor(this)
+			val c = column.getHeaderNameColor()
 			tvColumnName.textColor = c
 			Styler.setIconAttr(
 				this,
@@ -430,8 +428,8 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			
 			loadImage(ivColumnBackground, column.column_bg_image)
 			
-			tvSampleAcct.setTextColor( column.getAcctColor(this))
-			tvSampleContent.setTextColor(column.getContentColor(this))
+			tvSampleAcct.setTextColor( column.getAcctColor())
+			tvSampleContent.setTextColor(column.getContentColor())
 			
 		} finally {
 			loading_busy = false

@@ -200,7 +200,7 @@ class ActMain : AppCompatActivity()
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////
 	
-	internal val link_click_listener : MyClickableSpanClickCallback = { viewClicked, span ->
+	private val link_click_listener : MyClickableSpanClickCallback = { viewClicked, span ->
 		
 		var view = viewClicked
 		var column : Column? = null
@@ -437,6 +437,7 @@ class ActMain : AppCompatActivity()
 		super.onNewIntent(intent)
 		log.w("onNewIntent: isResumed = isResumed")
 	}
+	
 	override fun onSaveInstanceState(outState : Bundle?) {
 		log.d("onSaveInstanceState")
 		super.onSaveInstanceState(outState)
@@ -637,9 +638,9 @@ class ActMain : AppCompatActivity()
 	
 	private fun handleSentIntent(intent : Intent) {
 		sent_intent2 = intent
-
+		
 		// Galaxy S8+ で STのSSを取った後に出るポップアップからそのまま共有でSTを選ぶと何も起きない問題への対策
-		handler.post{
+		handler.post {
 			AccountPicker.pick(
 				this,
 				bAllowPseudo = false,
@@ -775,6 +776,11 @@ class ActMain : AppCompatActivity()
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
 		log.d("onActivityResult")
+		
+		if(requestCode == REQUEST_CODE_APP_SETTING) {
+			Column.reloadDefaultColor(this,pref)
+		}
+		
 		if(resultCode == Activity.RESULT_OK) {
 			if(requestCode == REQUEST_CODE_COLUMN_LIST) {
 				if(data != null) {
@@ -1159,6 +1165,8 @@ class ActMain : AppCompatActivity()
 		
 		MyClickableSpan.defaultLinkColor = Pref.ipLinkColor(pref)
 		
+		Column.reloadDefaultColor(this,pref)
+		
 		var sv = Pref.spTimelineFont(pref)
 		if(sv.isNotEmpty()) {
 			try {
@@ -1223,13 +1231,13 @@ class ActMain : AppCompatActivity()
 		}
 		
 		run {
-			var boost_alpha :Float? = 0.8f
-			try{
-				val f =  ( Pref.spBoostAlpha.toInt(pref).toFloat() +0.5f )/100f
-				boost_alpha = when{
+			var boost_alpha : Float? = 0.8f
+			try {
+				val f = (Pref.spBoostAlpha.toInt(pref).toFloat() + 0.5f) / 100f
+				boost_alpha = when {
 					f >= 1f -> null
 					f < 0f -> 0.66f
-					else-> f
+					else -> f
 				}
 			} catch(ex : Throwable) {
 				log.trace(ex)
@@ -1429,11 +1437,14 @@ class ActMain : AppCompatActivity()
 			viewRoot.contentDescription = column.getColumnName(true)
 			//
 			
-			column.setHeaderBackground(this,viewRoot)
+			column.setHeaderBackground( viewRoot)
 			
-			
-			var c = column.getHeaderNameColor(this)
-			Styler.setIconAttr(this, ivIcon, column.getIconAttrId(column.column_type), c)
+			Styler.setIconAttr(
+				this,
+				ivIcon,
+				column.getIconAttrId(column.column_type),
+				column.getHeaderNameColor()
+			)
 			
 			//
 			val ac = AcctColor.load(column.access_info.acct)
@@ -2260,16 +2271,17 @@ class ActMain : AppCompatActivity()
 		val footer_tab_bg_color = Pref.ipFooterTabBgColor(pref)
 		val footer_tab_divider_color = Pref.ipFooterTabDividerColor(pref)
 		val footer_tab_indicator_color = Pref.ipFooterTabIndicatorColor(pref)
+		
 		var c = footer_button_bg_color
 		if(c == 0) {
 			btnMenu.setBackgroundResource(R.drawable.bg_button_cw)
 			btnToot.setBackgroundResource(R.drawable.bg_button_cw)
 			btnQuickToot.setBackgroundResource(R.drawable.bg_button_cw)
 		} else {
-			val fg = if(footer_button_fg_color != 0)
-				footer_button_fg_color
-			else
-				Styler.getAttributeColor(this, R.attr.colorRippleEffect)
+			val fg = when {
+				footer_button_fg_color != 0 -> footer_button_fg_color
+				else -> Styler.getAttributeColor(this, R.attr.colorRippleEffect)
+			}
 			ViewCompat.setBackground(btnToot, Styler.getAdaptiveRippleDrawable(c, fg))
 			ViewCompat.setBackground(btnMenu, Styler.getAdaptiveRippleDrawable(c, fg))
 			ViewCompat.setBackground(btnQuickToot, Styler.getAdaptiveRippleDrawable(c, fg))
@@ -2287,47 +2299,14 @@ class ActMain : AppCompatActivity()
 		}
 		
 		c = footer_tab_bg_color
-		if(c == 0) {
-			svColumnStrip.setBackgroundColor(
-				Styler.getAttributeColor(
-					this,
-					R.attr.colorColumnStripBackground
-				)
-			)
-			llQuickTootBar.setBackgroundColor(
-				Styler.getAttributeColor(
-					this,
-					R.attr.colorColumnStripBackground
-				)
-			)
-		} else {
-			svColumnStrip.setBackgroundColor(c)
-			svColumnStrip.setBackgroundColor(
-				Styler.getAttributeColor(
-					this,
-					R.attr.colorColumnStripBackground
-				)
-			)
-		}
+		if(c == 0) c = Styler.getAttributeColor(this, R.attr.colorColumnStripBackground)
+		svColumnStrip.setBackgroundColor(c)
+		llQuickTootBar.setBackgroundColor(c)
 		
 		c = footer_tab_divider_color
-		if(c == 0) {
-			vFooterDivider1.setBackgroundColor(
-				Styler.getAttributeColor(
-					this,
-					R.attr.colorImageButton
-				)
-			)
-			vFooterDivider2.setBackgroundColor(
-				Styler.getAttributeColor(
-					this,
-					R.attr.colorImageButton
-				)
-			)
-		} else {
-			vFooterDivider1.setBackgroundColor(c)
-			vFooterDivider2.setBackgroundColor(c)
-		}
+		if(c == 0) c = Styler.getAttributeColor(this, R.attr.colorImageButton)
+		vFooterDivider1.setBackgroundColor(c)
+		vFooterDivider2.setBackgroundColor(c)
 		
 		llColumnStrip.indicatorColor = footer_tab_indicator_color
 	}

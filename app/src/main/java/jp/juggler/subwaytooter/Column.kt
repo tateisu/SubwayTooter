@@ -2,6 +2,7 @@ package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Environment
@@ -467,6 +468,42 @@ class Column(
 			val backgroundDir = context.getDir(Column.DIR_BACKGROUND_IMAGE, Context.MODE_PRIVATE)
 			log.i("backgroundDir: ${backgroundDir} exists=${backgroundDir.exists()}")
 			return backgroundDir
+		}
+		
+		private var defaultColorHeaderBg = 0
+		private var defaultColorHeaderName = 0
+		private var defaultColorHeaderPageNumber = 0
+		private var defaultColorContentBg = 0
+		private var defaultColorContentAcct = 0
+		private var defaultColorContentText = 0
+		
+		fun reloadDefaultColor(activity : AppCompatActivity, pref : SharedPreferences) {
+			var c : Int
+			
+			//
+			c = Pref.ipCcdHeaderBg(pref)
+			if(c == 0) c = Styler.getAttributeColor(activity, R.attr.color_column_header)
+			defaultColorHeaderBg = c
+			//
+			c = Pref.ipCcdHeaderFg(pref)
+			if(c == 0) c = Styler.getAttributeColor(activity, R.attr.colorColumnHeaderName)
+			defaultColorHeaderName = c
+			//
+			c = Pref.ipCcdHeaderFg(pref)
+			if(c == 0) c = Styler.getAttributeColor(activity, R.attr.colorColumnHeaderPageNumber)
+			defaultColorHeaderPageNumber = c
+			//
+			c = Pref.ipCcdContentBg(pref)
+			defaultColorContentBg = c
+			//
+			c = Pref.ipCcdContentAcct(pref)
+			if(c == 0) c = Styler.getAttributeColor(activity, R.attr.colorTimeSmall)
+			defaultColorContentAcct = c
+			//
+			c = Pref.ipCcdContentText(pref)
+			if(c == 0) c = Styler.getAttributeColor(activity, R.attr.colorContentText)
+			defaultColorContentText = c
+			
 		}
 	}
 	
@@ -6822,52 +6859,40 @@ class Column(
 		}
 	}
 	
-	fun getContentColor(activity : AppCompatActivity) : Int = if(content_color != 0) {
-		content_color
-	} else {
-		Styler.getAttributeColor(activity, R.attr.colorContentText)
+	fun getContentColor() : Int = when {
+		content_color != 0 -> content_color
+		else -> defaultColorContentText
 	}
 	
-	fun getAcctColor(activity : AppCompatActivity) : Int = if(acct_color != 0) {
-		acct_color
-	} else {
-		Styler.getAttributeColor(activity, R.attr.colorTimeSmall)
+	fun getAcctColor() : Int = when {
+		acct_color != 0 -> acct_color
+		else -> defaultColorContentAcct
 	}
 	
-	fun getHeaderPageNumberColor(activity : AppCompatActivity) : Int {
-		val c = header_fg_color
-		return when {
-			c != 0 -> c
-			else -> Styler.getAttributeColor(activity,R.attr.colorColumnHeaderPageNumber)
-		}
+	fun getHeaderPageNumberColor() = when {
+		header_fg_color != 0 -> header_fg_color
+		else -> defaultColorHeaderPageNumber
 	}
 	
-	fun getHeaderNameColor(activity : AppCompatActivity) : Int {
-		val c = header_fg_color
-		return when {
-			c != 0 -> c
-			else -> Styler.getAttributeColor(activity,R.attr.colorColumnHeaderName)
-		}
+	fun getHeaderNameColor() = when {
+		header_fg_color != 0 -> header_fg_color
+		else -> defaultColorHeaderName
 	}
 	
-	fun getHeaderBackgroundColor(activity : AppCompatActivity) : Int {
-		val c = header_bg_color
-		return when {
-			c != 0 -> c
-			else -> Styler.getAttributeColor(activity,R.attr.color_column_header)
-		}
+	fun getHeaderBackgroundColor() = when {
+		header_bg_color != 0 -> header_bg_color
+		else -> defaultColorHeaderBg
 	}
 	
-	fun setHeaderBackground(activity : AppCompatActivity, view : View) {
+	fun setHeaderBackground( view : View) {
 		ViewCompat.setBackground(
 			view,
 			Styler.getAdaptiveRippleDrawable(
-				getHeaderBackgroundColor(activity),
-				getHeaderNameColor(activity)
+				getHeaderBackgroundColor(),
+				getHeaderNameColor()
 			)
 		)
 	}
-	
 	
 	//	fun findListIndexByTimelineId(orderId : EntityId) : Int? {
 	//		list_data.forEachIndexed { i, v ->

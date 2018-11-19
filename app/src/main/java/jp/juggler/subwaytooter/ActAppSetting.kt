@@ -30,6 +30,7 @@ import jp.juggler.subwaytooter.util.handleGetContentResult
 import jp.juggler.subwaytooter.util.intentOpenDocument
 import jp.juggler.subwaytooter.util.showToast
 import org.apache.commons.io.IOUtils
+import org.jetbrains.anko.textColor
 import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
@@ -67,8 +68,14 @@ class ActAppSetting : AppCompatActivity()
 		internal const val COLOR_DIALOG_ID_TOOT_BG_UNLISTED = 7
 		internal const val COLOR_DIALOG_ID_TOOT_BG_FOLLOWER = 8
 		internal const val COLOR_DIALOG_ID_TOOT_BG_DIRECT_USER = 9
-		internal const val COLOR_DIALOG_ID_TOOT_BG_DIRECT_ME  = 10
-		internal const val COLOR_DIALOG_ID_LINK  = 11
+		internal const val COLOR_DIALOG_ID_TOOT_BG_DIRECT_ME = 10
+		internal const val COLOR_DIALOG_ID_LINK = 11
+		
+		internal const val COLOR_DIALOG_ID_COLUMN_HEADER_BG = 12
+		internal const val COLOR_DIALOG_ID_COLUMN_HEADER_FG = 13
+		internal const val COLOR_DIALOG_ID_COLUMN_BG = 14
+		internal const val COLOR_DIALOG_ID_COLUMN_ACCT = 15
+		internal const val COLOR_DIALOG_ID_COLUMN_TEXT = 16
 		
 		internal const val REQUEST_CODE_TIMELINE_FONT = 1
 		internal const val REQUEST_CODE_TIMELINE_FONT_BOLD = 2
@@ -117,6 +124,12 @@ class ActAppSetting : AppCompatActivity()
 	private var toot_color_direct_me : Int = 0
 	private var link_color : Int = 0
 	
+	private var color_column_header_bg : Int = 0
+	private var color_column_header_fg : Int = 0
+	private var color_column_bg : Int = 0
+	private var color_column_acct : Int = 0
+	private var color_column_text : Int = 0
+	
 	private lateinit var ivFooterToot : ImageView
 	private lateinit var ivFooterMenu : ImageView
 	private lateinit var llFooterBG : View
@@ -137,7 +150,6 @@ class ActAppSetting : AppCompatActivity()
 	private lateinit var etBoostAlpha : EditText
 	private lateinit var etMediaReadTimeout : EditText
 	
-	
 	private lateinit var tvTimelineFontUrl : TextView
 	private var timeline_font : String? = null
 	private lateinit var tvTimelineFontBoldUrl : TextView
@@ -154,10 +166,17 @@ class ActAppSetting : AppCompatActivity()
 	private lateinit var etNotificationTlFontSize : EditText
 	private lateinit var tvNotificationTlFontSize : TextView
 	private lateinit var etNotificationTlIconSize : EditText
-
+	
 	private lateinit var etBoostButtonSize : EditText
 	
 	private lateinit var tvUserAgentError : TextView
+	
+	private lateinit var llColumnHeader : View
+	private lateinit var ivColumnHeader : ImageView
+	private lateinit var tvColumnName : TextView
+	private lateinit var flColumnBackground : View
+	private lateinit var tvSampleAcct : TextView
+	private lateinit var tvSampleContent : TextView
 	
 	private var load_busy : Boolean = false
 	
@@ -171,7 +190,7 @@ class ActAppSetting : AppCompatActivity()
 		try {
 			PollingWorker.scheduleJob(this, PollingWorker.JOB_POLLING)
 		} catch(ex : Throwable) {
-			log.trace(ex,"PollingWorker.scheduleJob failed.")
+			log.trace(ex, "PollingWorker.scheduleJob failed.")
 		}
 	}
 	
@@ -222,13 +241,13 @@ class ActAppSetting : AppCompatActivity()
 			, getString(R.string.replies_count_none)
 		)
 		
-		spVisibilityStyle= initSpinner(
+		spVisibilityStyle = initSpinner(
 			R.id.spVisibilityStyle
 			, getString(R.string.visibility_style_by_account)
 			, getString(R.string.mastodon)
 			, getString(R.string.misskey)
 		)
-		spBoostButtonJustify= initSpinner(
+		spBoostButtonJustify = initSpinner(
 			R.id.spBoostButtonJustify
 			, getString(R.string.start)
 			, getString(R.string.center)
@@ -263,39 +282,51 @@ class ActAppSetting : AppCompatActivity()
 		}
 		
 		
-		findViewById<View>(R.id.btnFooterBackgroundEdit).setOnClickListener(this)
-		findViewById<View>(R.id.btnFooterBackgroundReset).setOnClickListener(this)
-		findViewById<View>(R.id.btnFooterForegroundColorEdit).setOnClickListener(this)
-		findViewById<View>(R.id.btnFooterForegroundColorReset).setOnClickListener(this)
-		findViewById<View>(R.id.btnTabBackgroundColorEdit).setOnClickListener(this)
-		findViewById<View>(R.id.btnTabBackgroundColorReset).setOnClickListener(this)
-		findViewById<View>(R.id.btnTabDividerColorEdit).setOnClickListener(this)
-		findViewById<View>(R.id.btnTabDividerColorReset).setOnClickListener(this)
-		findViewById<View>(R.id.btnTabIndicatorColorEdit).setOnClickListener(this)
-		findViewById<View>(R.id.btnTabIndicatorColorReset).setOnClickListener(this)
-		findViewById<View>(R.id.btnListDividerColorEdit).setOnClickListener(this)
-		findViewById<View>(R.id.btnListDividerColorReset).setOnClickListener(this)
+		intArrayOf(
+			R.id.btnFooterBackgroundEdit
+			, R.id.btnFooterBackgroundReset
+			, R.id.btnFooterForegroundColorEdit
+			, R.id.btnFooterForegroundColorReset
+			, R.id.btnTabBackgroundColorEdit
+			, R.id.btnTabBackgroundColorReset
+			, R.id.btnTabDividerColorEdit
+			, R.id.btnTabDividerColorReset
+			, R.id.btnTabIndicatorColorEdit
+			, R.id.btnTabIndicatorColorReset
+			, R.id.btnListDividerColorEdit
+			, R.id.btnListDividerColorReset
+			, R.id.btnBackgroundColorUnlistedEdit
+			, R.id.btnBackgroundColorUnlistedReset
+			, R.id.btnBackgroundColorFollowerEdit
+			, R.id.btnBackgroundColorFollowerReset
+			, R.id.btnBackgroundColorDirectWithUserEdit
+			, R.id.btnBackgroundColorDirectWithUserReset
+			, R.id.btnBackgroundColorDirectNoUserEdit
+			, R.id.btnBackgroundColorDirectNoUserReset
+			, R.id.btnLinkColorEdit
+			, R.id.btnLinkColorReset
+			, R.id.btnTimelineFontEdit
+			, R.id.btnTimelineFontReset
+			, R.id.btnTimelineFontBoldEdit
+			, R.id.btnTimelineFontBoldReset
+			, R.id.btnSettingExport
+			, R.id.btnSettingImport
+			, R.id.btnCustomStreamListenerEdit
+			, R.id.btnCustomStreamListenerReset
+			, R.id.btnCcdHeaderBackgroundEdit
+			, R.id.btnCcdHeaderBackgroundReset
+			, R.id.btnCcdHeaderForegroundEdit
+			, R.id.btnCcdHeaderForegroundReset
+			, R.id.btnCcdContentBackgroundEdit
+			, R.id.btnCcdContentBackgroundReset
+			, R.id.btnCcdContentAcctEdit
+			, R.id.btnCcdContentAcctReset
+			, R.id.btnCcdContentTextEdit
+			, R.id.btnCcdContentTextReset
+		).forEach {
+			findViewById<View>(it).setOnClickListener(this)
+		}
 		
-		findViewById<View>(R.id.btnBackgroundColorUnlistedEdit).setOnClickListener(this)
-		findViewById<View>(R.id.btnBackgroundColorUnlistedReset).setOnClickListener(this)
-		findViewById<View>(R.id.btnBackgroundColorFollowerEdit).setOnClickListener(this)
-		findViewById<View>(R.id.btnBackgroundColorFollowerReset).setOnClickListener(this)
-		findViewById<View>(R.id.btnBackgroundColorDirectWithUserEdit).setOnClickListener(this)
-		findViewById<View>(R.id.btnBackgroundColorDirectWithUserReset).setOnClickListener(this)
-		findViewById<View>(R.id.btnBackgroundColorDirectNoUserEdit).setOnClickListener(this)
-		findViewById<View>(R.id.btnBackgroundColorDirectNoUserReset).setOnClickListener(this)
-		
-		findViewById<View>(R.id.btnLinkColorEdit).setOnClickListener(this)
-		findViewById<View>(R.id.btnLinkColorReset).setOnClickListener(this)
-		
-		findViewById<View>(R.id.btnTimelineFontEdit).setOnClickListener(this)
-		findViewById<View>(R.id.btnTimelineFontReset).setOnClickListener(this)
-		findViewById<View>(R.id.btnTimelineFontBoldEdit).setOnClickListener(this)
-		findViewById<View>(R.id.btnTimelineFontBoldReset).setOnClickListener(this)
-		findViewById<View>(R.id.btnSettingExport).setOnClickListener(this)
-		findViewById<View>(R.id.btnSettingImport).setOnClickListener(this)
-		findViewById<View>(R.id.btnCustomStreamListenerEdit).setOnClickListener(this)
-		findViewById<View>(R.id.btnCustomStreamListenerReset).setOnClickListener(this)
 		
 		ivFooterToot = findViewById(R.id.ivFooterToot)
 		ivFooterMenu = findViewById(R.id.ivFooterMenu)
@@ -321,14 +352,14 @@ class ActAppSetting : AppCompatActivity()
 		
 		etAutoCWLines = findViewById(R.id.etAutoCWLines)
 		etAutoCWLines.addTextChangedListener(this)
-
+		
 		etCardDescriptionLength = findViewById(R.id.etCardDescriptionLength)
 		etCardDescriptionLength.addTextChangedListener(this)
-
+		
 		etMediaSizeMax = findViewById(R.id.etMediaSizeMax)
 		etMediaSizeMax.addTextChangedListener(this)
-
-		etMovieSizeMax= findViewById(R.id.etMovieSizeMax)
+		
+		etMovieSizeMax = findViewById(R.id.etMovieSizeMax)
 		etMovieSizeMax.addTextChangedListener(this)
 		
 		etRoundRatio = findViewById(R.id.etRoundRatio)
@@ -337,7 +368,7 @@ class ActAppSetting : AppCompatActivity()
 		etBoostAlpha = findViewById(R.id.etBoostAlpha)
 		etBoostAlpha.addTextChangedListener(this)
 		
-		etMediaReadTimeout= findViewById(R.id.etMediaReadTimeout)
+		etMediaReadTimeout = findViewById(R.id.etMediaReadTimeout)
 		etMediaReadTimeout.addTextChangedListener(this)
 		
 		tvTimelineFontSize = findViewById(R.id.tvTimelineFontSize)
@@ -382,6 +413,14 @@ class ActAppSetting : AppCompatActivity()
 		
 		
 		tvUserAgentError = findViewById(R.id.tvUserAgentError)
+		
+		llColumnHeader = findViewById(R.id.llColumnHeader)
+		ivColumnHeader = findViewById(R.id.ivColumnHeader)
+		tvColumnName = findViewById(R.id.tvColumnName)
+		flColumnBackground = findViewById(R.id.flColumnBackground)
+		tvSampleAcct = findViewById(R.id.tvSampleAcct)
+		tvSampleContent = findViewById(R.id.tvSampleContent)
+		
 	}
 	
 	private fun initSpinner(@IdRes viewId : Int, vararg captions : String) : Spinner {
@@ -430,6 +469,12 @@ class ActAppSetting : AppCompatActivity()
 		toot_color_direct_me = Pref.ipTootColorDirectMe(pref)
 		link_color = Pref.ipLinkColor(pref)
 		
+		color_column_header_bg = Pref.ipCcdHeaderBg(pref)
+		color_column_header_fg = Pref.ipCcdHeaderFg(pref)
+		color_column_bg = Pref.ipCcdContentBg(pref)
+		color_column_acct = Pref.ipCcdContentAcct(pref)
+		color_column_text = Pref.ipCcdContentText(pref)
+		
 		etColumnWidth.setText(Pref.spColumnWidth(pref))
 		etMediaThumbHeight.setText(Pref.spMediaThumbHeight(pref))
 		etClientName.setText(Pref.spClientName(pref))
@@ -473,6 +518,8 @@ class ActAppSetting : AppCompatActivity()
 		)
 		
 		showUserAgentError()
+		showColumnSample()
+		showColumnHeaderSample()
 	}
 	
 	private fun saveUIToData() {
@@ -512,7 +559,9 @@ class ActAppSetting : AppCompatActivity()
 				etUserAgent.text.toString().replace(reLinefeed, " ").trim { it <= ' ' })
 			.put(Pref.spQuoteNameFormat, etQuoteNameFormat.text.toString()) // not trimmed
 			.put(Pref.spAutoCWLines, etAutoCWLines.text.toString().trim { it <= ' ' })
-			.put(Pref.spCardDescriptionLength, etCardDescriptionLength.text.toString().trim { it <= ' ' })
+			.put(
+				Pref.spCardDescriptionLength,
+				etCardDescriptionLength.text.toString().trim { it <= ' ' })
 			.put(Pref.spAvatarIconSize, etAvatarIconSize.text.toString().trim { it <= ' ' })
 			.put(
 				Pref.spNotificationTlIconSize,
@@ -525,12 +574,11 @@ class ActAppSetting : AppCompatActivity()
 				etPullNotificationCheckInterval.text.toString().trim { it <= ' ' })
 			.put(Pref.spMediaSizeMax, etMediaSizeMax.text.toString().trim { it <= ' ' })
 			.put(Pref.spMovieSizeMax, etMovieSizeMax.text.toString().trim { it <= ' ' })
-		
+			
 			.put(Pref.spRoundRatio, etRoundRatio.text.toString().trim { it <= ' ' })
 			.put(Pref.spBoostAlpha, etBoostAlpha.text.toString().trim { it <= ' ' })
-		
+			
 			.put(Pref.spMediaReadTimeout, etMediaReadTimeout.text.toString().trim { it <= ' ' })
-		
 			
 			.put(Pref.spTimelineFont, timeline_font ?: "")
 			.put(Pref.spTimelineFontBold, timeline_font_bold ?: "")
@@ -548,7 +596,7 @@ class ActAppSetting : AppCompatActivity()
 			.put(Pref.ipFooterTabDividerColor, footer_tab_divider_color)
 			.put(Pref.ipFooterTabIndicatorColor, footer_tab_indicator_color)
 			.put(Pref.ipListDividerColor, list_divider_color)
-
+			
 			.put(Pref.ipTootColorUnlisted, toot_color_unlisted)
 			.put(Pref.ipTootColorFollower, toot_color_follower)
 			.put(Pref.ipTootColorDirectUser, toot_color_direct_user)
@@ -556,9 +604,16 @@ class ActAppSetting : AppCompatActivity()
 			
 			.put(Pref.ipLinkColor, link_color)
 			
+			.put(Pref.ipCcdHeaderBg, color_column_header_bg)
+			.put(Pref.ipCcdHeaderFg, color_column_header_fg)
+			.put(Pref.ipCcdContentBg, color_column_bg)
+			.put(Pref.ipCcdContentAcct, color_column_acct)
+			.put(Pref.ipCcdContentText, color_column_text)
+			
 			.apply()
 		
 		showUserAgentError()
+		
 	}
 	
 	private fun showUserAgentError() {
@@ -567,6 +622,53 @@ class ActAppSetting : AppCompatActivity()
 			true -> getString(R.string.user_agent_error, m.group())
 			else -> ""
 		}
+	}
+	
+	private fun showColumnHeaderSample() {
+		val header_bg = when {
+			color_column_header_bg != 0 -> color_column_header_bg
+			else -> Styler.getAttributeColor(this, R.attr.color_column_header)
+		}
+		
+		val header_fg = when {
+			color_column_header_fg != 0 -> color_column_header_fg
+			else -> Styler.getAttributeColor(this, R.attr.colorColumnHeaderName)
+		}
+		
+		ViewCompat.setBackground(
+			llColumnHeader,
+			Styler.getAdaptiveRippleDrawable(header_bg, header_fg)
+		)
+		
+		tvColumnName.textColor = header_fg
+		Styler.setIconAttr(
+			this,
+			ivColumnHeader,
+			R.attr.btn_federate_tl,
+			color = header_fg
+		)
+	}
+	
+	private fun showColumnSample() {
+		
+		var c = when {
+			color_column_bg != 0 -> color_column_bg
+			else -> 0
+		}
+		flColumnBackground.setBackgroundColor(c)
+		
+		c = when {
+			color_column_acct != 0 -> color_column_acct
+			else -> Styler.getAttributeColor(this, R.attr.colorTimeSmall)
+		}
+		tvSampleAcct.setTextColor(c)
+		
+		c = when {
+			color_column_text != 0 -> color_column_text
+			else -> Styler.getAttributeColor(this, R.attr.colorContentText)
+		}
+		tvSampleContent.setTextColor(c)
+		
 	}
 	
 	override fun onCheckedChanged(buttonView : CompoundButton, isChecked : Boolean) {
@@ -649,46 +751,50 @@ class ActAppSetting : AppCompatActivity()
 				true
 			)
 			
+			R.id.btnListDividerColorReset -> {
+				list_divider_color = 0
+				saveUIToData()
+			}
+			
 			R.id.btnBackgroundColorUnlistedEdit -> openColorPicker(
 				COLOR_DIALOG_ID_TOOT_BG_UNLISTED,
 				toot_color_unlisted,
 				true
 			)
-
+			
+			R.id.btnBackgroundColorUnlistedReset -> {
+				toot_color_unlisted = 0
+				saveUIToData()
+			}
+			
 			R.id.btnBackgroundColorFollowerEdit -> openColorPicker(
 				COLOR_DIALOG_ID_TOOT_BG_FOLLOWER,
 				toot_color_follower,
 				true
 			)
-
+			
+			R.id.btnBackgroundColorFollowerReset -> {
+				toot_color_follower = 0
+				saveUIToData()
+			}
+			
 			R.id.btnBackgroundColorDirectWithUserEdit -> openColorPicker(
 				COLOR_DIALOG_ID_TOOT_BG_DIRECT_USER,
 				toot_color_direct_user,
 				true
 			)
-
+			
+			R.id.btnBackgroundColorDirectWithUserReset -> {
+				toot_color_direct_user = 0
+				saveUIToData()
+			}
+			
 			R.id.btnBackgroundColorDirectNoUserEdit -> openColorPicker(
 				COLOR_DIALOG_ID_TOOT_BG_DIRECT_ME,
 				toot_color_direct_me,
 				true
 			)
-
-			R.id.btnListDividerColorReset -> {
-				list_divider_color = 0
-				saveUIToData()
-			}
-			R.id.btnBackgroundColorUnlistedReset -> {
-				toot_color_unlisted = 0
-				saveUIToData()
-			}
-			R.id.btnBackgroundColorFollowerReset -> {
-				toot_color_follower = 0
-				saveUIToData()
-			}
-			R.id.btnBackgroundColorDirectWithUserReset -> {
-				toot_color_direct_user = 0
-				saveUIToData()
-			}
+			
 			R.id.btnBackgroundColorDirectNoUserReset -> {
 				toot_color_direct_me = 0
 				saveUIToData()
@@ -699,9 +805,70 @@ class ActAppSetting : AppCompatActivity()
 				link_color,
 				true
 			)
+			
 			R.id.btnLinkColorReset -> {
 				link_color = 0
 				saveUIToData()
+			}
+			
+			R.id.btnCcdHeaderBackgroundEdit -> openColorPicker(
+				COLOR_DIALOG_ID_COLUMN_HEADER_BG,
+				color_column_header_bg,
+				false
+			)
+			
+			R.id.btnCcdHeaderBackgroundReset -> {
+				color_column_header_bg = 0
+				saveUIToData()
+				showColumnHeaderSample()
+			}
+			
+			R.id.btnCcdHeaderForegroundEdit -> openColorPicker(
+				COLOR_DIALOG_ID_COLUMN_HEADER_FG,
+				color_column_header_fg,
+				false
+			)
+			
+			R.id.btnCcdHeaderForegroundReset -> {
+				color_column_header_fg = 0
+				saveUIToData()
+				showColumnHeaderSample()
+			}
+			
+			R.id.btnCcdContentBackgroundEdit -> openColorPicker(
+				COLOR_DIALOG_ID_COLUMN_BG,
+				color_column_bg,
+				false
+			)
+			
+			R.id.btnCcdContentBackgroundReset -> {
+				color_column_bg = 0
+				saveUIToData()
+				showColumnSample()
+			}
+			
+			R.id.btnCcdContentAcctEdit -> openColorPicker(
+				COLOR_DIALOG_ID_COLUMN_ACCT,
+				color_column_acct,
+				true
+			)
+			
+			R.id.btnCcdContentAcctReset -> {
+				color_column_acct = 0
+				saveUIToData()
+				showColumnSample()
+			}
+			
+			R.id.btnCcdContentTextEdit -> openColorPicker(
+				COLOR_DIALOG_ID_COLUMN_TEXT,
+				color_column_text,
+				true
+			)
+			
+			R.id.btnCcdContentTextReset -> {
+				color_column_text = 0
+				saveUIToData()
+				showColumnSample()
 			}
 			
 			R.id.btnTimelineFontReset -> {
@@ -751,7 +918,7 @@ class ActAppSetting : AppCompatActivity()
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
 		if(resultCode == RESULT_OK && data != null && requestCode == REQUEST_CODE_TIMELINE_FONT) {
-			data.handleGetContentResult(contentResolver).firstOrNull()?.first?.let{ uri->
+			data.handleGetContentResult(contentResolver).firstOrNull()?.first?.let { uri ->
 				val file = saveTimelineFont(uri, "TimelineFont")
 				if(file != null) {
 					timeline_font = file.absolutePath
@@ -760,7 +927,7 @@ class ActAppSetting : AppCompatActivity()
 				}
 			}
 		} else if(resultCode == RESULT_OK && data != null && requestCode == REQUEST_CODE_TIMELINE_FONT_BOLD) {
-			data.handleGetContentResult(contentResolver).firstOrNull()?.first?.let{ uri->
+			data.handleGetContentResult(contentResolver).firstOrNull()?.first?.let { uri ->
 				val file = saveTimelineFont(uri, "TimelineFontBold")
 				if(file != null) {
 					timeline_font_bold = file.absolutePath
@@ -769,7 +936,7 @@ class ActAppSetting : AppCompatActivity()
 				}
 			}
 		} else if(resultCode == RESULT_OK && data != null && requestCode == REQUEST_CODE_APP_DATA_IMPORT) {
-			data.handleGetContentResult(contentResolver).firstOrNull()?.first?.let{ uri->
+			data.handleGetContentResult(contentResolver).firstOrNull()?.first?.let { uri ->
 				contentResolver.takePersistableUriPermission(
 					uri,
 					Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -791,62 +958,98 @@ class ActAppSetting : AppCompatActivity()
 	}
 	
 	override fun onColorSelected(dialogId : Int, @ColorInt colorSelected : Int) {
+		val colorOpaque = colorFF000000 or colorSelected
+		val colorAlpha = if(colorSelected == 0) 0x01000000 else colorSelected
 		when(dialogId) {
 			
 			COLOR_DIALOG_ID_FOOTER_BUTTON_BG -> {
-				footer_button_bg_color = colorFF000000 or colorSelected
+				footer_button_bg_color = colorOpaque
 				saveUIToData()
 				showFooterColor()
 			}
 			
 			COLOR_DIALOG_ID_FOOTER_BUTTON_FG -> {
-				footer_button_fg_color = colorFF000000 or colorSelected
+				footer_button_fg_color = colorOpaque
 				saveUIToData()
 				showFooterColor()
 			}
 			
 			COLOR_DIALOG_ID_FOOTER_TAB_BG -> {
-				footer_tab_bg_color = colorFF000000 or colorSelected
+				footer_tab_bg_color = colorOpaque
 				saveUIToData()
 				showFooterColor()
 			}
 			
 			COLOR_DIALOG_ID_FOOTER_TAB_DIVIDER -> {
-				footer_tab_divider_color = colorFF000000 or colorSelected
+				footer_tab_divider_color = colorOpaque
 				saveUIToData()
 				showFooterColor()
 			}
 			
 			COLOR_DIALOG_ID_FOOTER_TAB_INDICATOR -> {
-				footer_tab_indicator_color = if(colorSelected == 0) 0x01000000 else colorSelected
+				footer_tab_indicator_color = colorAlpha
 				saveUIToData()
 				showFooterColor()
 			}
 			
 			COLOR_DIALOG_ID_LIST_DIVIDER -> {
-				list_divider_color = if(colorSelected == 0) 0x01000000 else colorSelected
+				list_divider_color = colorAlpha
 				saveUIToData()
 			}
 			
 			COLOR_DIALOG_ID_TOOT_BG_UNLISTED -> {
-				toot_color_unlisted = if(colorSelected == 0) 0x01000000 else colorSelected
+				toot_color_unlisted = colorAlpha
 				saveUIToData()
 			}
+			
 			COLOR_DIALOG_ID_TOOT_BG_FOLLOWER -> {
-				toot_color_follower = if(colorSelected == 0) 0x01000000 else colorSelected
+				toot_color_follower = colorAlpha
 				saveUIToData()
 			}
+			
 			COLOR_DIALOG_ID_TOOT_BG_DIRECT_USER -> {
-				toot_color_direct_user= if(colorSelected == 0) 0x01000000 else colorSelected
+				toot_color_direct_user = colorAlpha
 				saveUIToData()
 			}
+			
 			COLOR_DIALOG_ID_TOOT_BG_DIRECT_ME -> {
-				toot_color_direct_me = if(colorSelected == 0) 0x01000000 else colorSelected
+				toot_color_direct_me = colorAlpha
 				saveUIToData()
 			}
-			COLOR_DIALOG_ID_LINK ->{
-				link_color = if(colorSelected == 0) 0x01000000 else colorSelected
+			
+			COLOR_DIALOG_ID_LINK -> {
+				link_color = colorAlpha
 				saveUIToData()
+			}
+			
+			COLOR_DIALOG_ID_COLUMN_HEADER_BG -> {
+				color_column_header_bg = colorOpaque
+				saveUIToData()
+				showColumnHeaderSample()
+			}
+			
+			COLOR_DIALOG_ID_COLUMN_HEADER_FG -> {
+				color_column_header_fg = colorOpaque
+				saveUIToData()
+				showColumnHeaderSample()
+			}
+			
+			COLOR_DIALOG_ID_COLUMN_BG -> {
+				color_column_bg = colorOpaque
+				saveUIToData()
+				showColumnSample()
+			}
+			
+			COLOR_DIALOG_ID_COLUMN_ACCT -> {
+				color_column_acct = colorAlpha
+				saveUIToData()
+				showColumnSample()
+			}
+			
+			COLOR_DIALOG_ID_COLUMN_TEXT -> {
+				color_column_text = colorAlpha
+				saveUIToData()
+				showColumnSample()
 			}
 		}
 	}
@@ -873,8 +1076,8 @@ class ActAppSetting : AppCompatActivity()
 			Styler.setIconAttr(this, ivFooterToot, R.attr.ic_edit)
 			Styler.setIconAttr(this, ivFooterMenu, R.attr.ic_hamburger)
 		} else {
-			Styler.setIconAttr(this, ivFooterToot,  R.attr.ic_edit,color=c)
-			Styler.setIconAttr(this, ivFooterMenu,  R.attr.ic_hamburger,color=c)
+			Styler.setIconAttr(this, ivFooterToot, R.attr.ic_edit, color = c)
+			Styler.setIconAttr(this, ivFooterMenu, R.attr.ic_hamburger, color = c)
 		}
 		
 		c = footer_tab_bg_color
@@ -1072,7 +1275,7 @@ class ActAppSetting : AppCompatActivity()
 					)
 					
 					// ZipOutputStreamオブジェクトの作成
-					ZipOutputStream(FileOutputStream(file)).use{ zipStream->
+					ZipOutputStream(FileOutputStream(file)).use { zipStream ->
 						
 						// アプリデータjson
 						zipStream.putNextEntry(ZipEntry("AppData.json"))
@@ -1080,17 +1283,21 @@ class ActAppSetting : AppCompatActivity()
 							val jw = JsonWriter(OutputStreamWriter(zipStream, "UTF-8"))
 							AppDataExporter.encodeAppData(this@ActAppSetting, jw)
 							jw.flush()
-						}finally{
+						} finally {
 							zipStream.closeEntry()
 						}
-
+						
 						// カラム背景画像
 						val appState = App1.getAppState(this@ActAppSetting)
 						for(column in appState.column_list) {
-							AppDataExporter.saveBackgroundImage(this@ActAppSetting,zipStream,column)
+							AppDataExporter.saveBackgroundImage(
+								this@ActAppSetting,
+								zipStream,
+								column
+							)
 						}
 					}
-
+					
 					return file
 				} catch(ex : Throwable) {
 					log.trace(ex)

@@ -57,7 +57,7 @@ internal class StatusButtons(
 	private val ivFollowedBy2 = holder.ivFollowedBy2
 	private val btnMore = holder.btnMore
 	
-	private val color_normal = column.getContentColor(activity)
+	private val color_normal = column.getContentColor()
 	
 	private val color_accent : Int
 		get() = Styler.getAttributeColor(activity, R.attr.colorImageButtonAccent)

@@ -30,7 +30,7 @@ internal class ViewHolderHeaderSearch(
 		val sv = DecodeOptions(activity, access_info,decodeEmoji = true).decodeHTML( html)
 		
 		tvSearchDesc.text = sv
-		tvSearchDesc.textColor = column.getContentColor(activity)
+		tvSearchDesc.textColor = column.getContentColor()
 	}
 	
 	override fun onViewRecycled() {

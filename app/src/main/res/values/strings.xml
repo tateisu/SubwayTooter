@@ -767,10 +767,10 @@
     <string name="reply_to">Reply to %1$s</string>
     <string name="deleted_at">deleted at %1$s</string>
     <string name="already_reactioned">already reactioned.</string>
-    <string name="background_color_unlisted">Toot background color of \'Unlisted\' visibility</string>
-    <string name="background_color_follower">Toot background color of \'follower\' visibility</string>
-    <string name="background_color_direct_with_user">Toot background color of \'Direct to users\' visibility</string>
-    <string name="background_color_direct_no_user">Toot background color of \'Direct only me\' visibility</string>
+    <string name="unlisted_visibility">\'Unlisted\' visibility</string>
+    <string name="followers_visibility">\'Followers\' visibility</string>
+    <string name="direct_with_user_visibility">\'Direct to users\' visibility</string>
+    <string name="direct_only_me_visibility">\'Direct only me\' visibility</string>
     <string name="already_voted">Already voted.</string>
 
     <string name="endorse_set">Endorse in your profile</string>
@@ -813,5 +813,13 @@
     <string name="make_quote_renote">Use \"Quoted Renote\"</string>
     <string name="mute_application_confirm">Application \"%1$s\" will be muted. Are you sure ?</string>
     <string name="boost_button_alpha">Boost button alpha opacity (Unit:%. app restart required. also affected of content text alpha.)</string>
+    <string name="toot_background_color">Toot background color</string>
+    <string name="column_color_default">Column color default(app restart required)</string>
+    <string name="header_background_color">Header background color</string>
+    <string name="header_foreground_color">Header foreground color</string>
+    <string name="content_background_color">Content background color</string>
+    <string name="content_acct_color">Content acct color</string>
+    <string name="content_text_color">Content text color</string>
+    <string name="quick_toot_bar_background_color">Quick toot bar background color</string>
 
 </resources>

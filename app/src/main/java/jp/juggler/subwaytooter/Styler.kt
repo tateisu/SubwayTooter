@@ -3,13 +3,17 @@ package jp.juggler.subwaytooter
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.graphics.ColorFilter
 import android.graphics.PorterDuff
+import android.graphics.PorterDuffColorFilter
 import android.graphics.drawable.*
 import android.graphics.drawable.shapes.RectShape
 import android.os.Build
+import android.os.SystemClock
 import android.support.v4.content.ContextCompat
 import android.text.SpannableStringBuilder
 import android.text.Spanned
+import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
@@ -59,40 +63,136 @@ object Styler {
 		)
 	}
 	
+	/////////////////////////////////////////////////////////
+	
+	private class ColorFilterCacheValue(
+		val filter : ColorFilter,
+		var lastUsed : Long
+	)
+	
+	private val colorFilterCache = SparseArray<ColorFilterCacheValue>()
+	private var colorFilterCacheLastSweep = 0L
+	
+	private fun createColorFilter(rgb : Int) : ColorFilter? {
+		synchronized(colorFilterCache) {
+			val now = SystemClock.elapsedRealtime()
+			val cacheValue = colorFilterCache[rgb]
+			if(cacheValue != null) {
+				cacheValue.lastUsed = now
+				return cacheValue.filter
+			}
+			
+			val size = colorFilterCache.size()
+			if(now - colorFilterCacheLastSweep >= 10000L && size >= 64) {
+				colorFilterCacheLastSweep = now
+				for(i in size - 1 downTo 0) {
+					val v = colorFilterCache.valueAt(i)
+					if(now - v.lastUsed >= 10000L) {
+						colorFilterCache.removeAt(i)
+					}
+				}
+			}
+			
+			val f = PorterDuffColorFilter(rgb, PorterDuff.Mode.SRC_ATOP)
+			colorFilterCache.put(rgb, ColorFilterCacheValue(f, now))
+			return f
+		}
+	}
+	
+	/////////////////////////////////////////////////////////
+	
+	private class ColoredDrawableCacheKey(
+		val drawableId : Int,
+		val rgb : Int,
+		val alpha : Int
+	) {
+		
+		override fun equals(other : Any?) : Boolean {
+			return this === other || (
+				other is ColoredDrawableCacheKey
+					&& drawableId == other.drawableId
+					&& rgb == other.rgb
+					&& alpha == other.alpha
+				)
+		}
+		
+		override fun hashCode() : Int {
+			return drawableId xor (rgb or (alpha shl 24))
+		}
+	}
+	
+	private class ColoredDrawableCacheValue(
+		val drawable : Drawable,
+		var lastUsed : Long
+	)
+	
+	private val coloredDrawableCache = HashMap<ColoredDrawableCacheKey, ColoredDrawableCacheValue>()
+	private var coloredDrawableCacheLastSweep = 0L
+	
 	fun createColoredDrawable(
 		context : Context,
 		drawableId : Int,
 		color : Int,
-		alphaMultiplier: Float? = null
+		alphaMultiplier : Float? = null
 	) : Drawable {
 		val rgb = (color and 0xffffff) or Color.BLACK
-		val alpha = if( alphaMultiplier ==null ){
+		val alpha = if(alphaMultiplier == null) {
 			(color ushr 24)
-		}else{
-			clipRange(0,255,((color ushr 24).toFloat() * alphaMultiplier +0.5f ).toInt())
+		} else {
+			clipRange(0, 255, ((color ushr 24).toFloat() * alphaMultiplier + 0.5f).toInt())
 		}
 		
-		// 色指定が他のアイコンに影響しないようにする
-		// カラーフィルターとアルファ値を設定する
-		val d = ContextCompat.getDrawable(context, drawableId) !!.mutate()
-		d.setColorFilter(rgb, PorterDuff.Mode.SRC_ATOP)
-		d.alpha = alpha
-		
-		return d
+		val cacheKey = ColoredDrawableCacheKey(drawableId, rgb, alpha)
+		synchronized(coloredDrawableCache) {
+			val now = SystemClock.elapsedRealtime()
+			val cacheValue = coloredDrawableCache[cacheKey]
+			if(cacheValue != null) {
+				cacheValue.lastUsed = now
+				return cacheValue.drawable
+			}
+			
+			if(now - coloredDrawableCacheLastSweep >= 10000L && coloredDrawableCache.size >= 64) {
+				coloredDrawableCacheLastSweep = now
+				val it = coloredDrawableCache.entries.iterator()
+				while(it.hasNext()) {
+					val (_, v) = it.next()
+					if(now - v.lastUsed >= 10000L) {
+						it.remove()
+					}
+				}
+			}
+			
+			// 色指定が他のアイコンに影響しないようにする
+			// カラーフィルターとアルファ値を設定する
+			val d = ContextCompat.getDrawable(context, drawableId) !!.mutate()
+			d.colorFilter = createColorFilter(rgb)
+			d.alpha = alpha
+			coloredDrawableCache[cacheKey] = ColoredDrawableCacheValue(d, now)
+			return d
+		}
 	}
+	
+	//////////////////////////////////////////////////////////////////
 	
 	fun setIconDrawableId(
 		context : Context,
 		imageView : ImageView,
 		drawableId : Int,
 		color : Int? = null,
-		alphaMultiplier: Float? = null
+		alphaMultiplier : Float? = null
 	) {
 		if(color == null) {
 			// ImageViewにアイコンを設定する。デフォルトの色
 			imageView.setImageDrawable(ContextCompat.getDrawable(context, drawableId))
 		} else {
-			imageView.setImageDrawable(createColoredDrawable(context, drawableId, color,alphaMultiplier))
+			imageView.setImageDrawable(
+				createColoredDrawable(
+					context,
+					drawableId,
+					color,
+					alphaMultiplier
+				)
+			)
 		}
 	}
 	
@@ -101,9 +201,15 @@ object Styler {
 		imageView : ImageView,
 		iconAttrId : Int,
 		color : Int? = null,
-		alphaMultiplier: Float? = null
+		alphaMultiplier : Float? = null
 	) {
-		setIconDrawableId(context, imageView, getAttributeResourceId(context, iconAttrId), color,alphaMultiplier)
+		setIconDrawableId(
+			context,
+			imageView,
+			getAttributeResourceId(context, iconAttrId),
+			color,
+			alphaMultiplier
+		)
 	}
 	
 	fun getVisibilityIconAttr(isMisskeyData : Boolean, visibility : TootVisibility) : Int {
@@ -222,7 +328,7 @@ object Styler {
 		, relation : UserRelation
 		, who : TootAccount
 		, defaultColor : Int
-		,alphaMultiplier : Float? = null
+		, alphaMultiplier : Float? = null
 	) {
 		
 		fun colorError() = Styler.getAttributeColor(context, R.attr.colorRegexFilterError)
@@ -233,17 +339,35 @@ object Styler {
 			
 			relation.blocked_by -> {
 				ivDot.visibility = View.VISIBLE
-				setIconDrawableId(context, ivDot, R.drawable.ic_blocked_by, color = colorError(),alphaMultiplier = alphaMultiplier)
+				setIconDrawableId(
+					context,
+					ivDot,
+					R.drawable.ic_blocked_by,
+					color = colorError(),
+					alphaMultiplier = alphaMultiplier
+				)
 			}
 			
 			relation.requested_by -> {
 				ivDot.visibility = View.VISIBLE
-				setIconDrawableId(context, ivDot, R.drawable.ic_requested_by, color = colorError(),alphaMultiplier = alphaMultiplier)
+				setIconDrawableId(
+					context,
+					ivDot,
+					R.drawable.ic_requested_by,
+					color = colorError(),
+					alphaMultiplier = alphaMultiplier
+				)
 			}
 			
 			relation.followed_by -> {
 				ivDot.visibility = View.VISIBLE
-				setIconAttr(context, ivDot, R.attr.ic_followed_by, color = colorAccent(),alphaMultiplier = alphaMultiplier)
+				setIconAttr(
+					context,
+					ivDot,
+					R.attr.ic_followed_by,
+					color = colorAccent(),
+					alphaMultiplier = alphaMultiplier
+				)
 				// 被フォローリクエスト状態の時に followed_by が 真と偽の両方がありえるようなので
 				// Relationshipだけを見ても被フォローリクエスト状態は分からないっぽい
 				// 仕方ないので馬鹿正直に「 followed_byが真ならバッジをつける」しかできない
@@ -292,7 +416,7 @@ object Styler {
 			}
 		}
 		
-		setIconAttr(context, ibFollow, icon_attr, color = color,alphaMultiplier = alphaMultiplier)
+		setIconAttr(context, ibFollow, icon_attr, color = color, alphaMultiplier = alphaMultiplier)
 		ibFollow.contentDescription = contentDescription
 	}
 	

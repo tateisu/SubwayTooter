@@ -775,15 +775,11 @@ class ActMain : AppCompatActivity()
 	}
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
-		log.d("onActivityResult")
-		
-		if(requestCode == REQUEST_CODE_APP_SETTING) {
-			Column.reloadDefaultColor(this,pref)
-		}
+		log.d("onActivityResult req=$requestCode res=$resultCode data=$data")
 		
 		if(resultCode == Activity.RESULT_OK) {
-			if(requestCode == REQUEST_CODE_COLUMN_LIST) {
-				if(data != null) {
+			when(requestCode) {
+				REQUEST_CODE_COLUMN_LIST -> if(data != null) {
 					val order = data.getIntegerArrayListExtra(ActColumnList.EXTRA_ORDER)
 					if(order != null && isOrderChanged(order)) {
 						setOrder(order)
@@ -797,30 +793,31 @@ class ActMain : AppCompatActivity()
 					}
 				}
 				
-			} else if(requestCode == REQUEST_APP_ABOUT) {
-				if(data != null) {
+				REQUEST_APP_ABOUT -> if(data != null) {
 					val search = data.getStringExtra(ActAbout.EXTRA_SEARCH)
 					if(search?.isNotEmpty() == true) {
 						Action_Account.timeline(
-							this@ActMain
-							, defaultInsertPosition
-							, Column.TYPE_SEARCH
-							, bAllowPseudo = true
-							, args = arrayOf(search, true)
+							this@ActMain,
+							defaultInsertPosition,
+							Column.TYPE_SEARCH,
+							bAllowPseudo = true,
+							args = arrayOf(search, true)
 						)
 					}
 					return
 				}
-			} else if(requestCode == REQUEST_CODE_NICKNAME) {
 				
-				updateColumnStrip()
-				
-				for(column in app_state.column_list) {
-					column.fireShowColumnHeader()
+				REQUEST_CODE_NICKNAME -> {
+					
+					updateColumnStrip()
+					
+					for(column in app_state.column_list) {
+						column.fireShowColumnHeader()
+					}
+					
 				}
 				
-			} else if(requestCode == REQUEST_CODE_POST) {
-				if(data != null) {
+				REQUEST_CODE_POST -> if(data != null) {
 					etQuickToot.setText("")
 					posted_acct = data.getStringExtra(ActPost.EXTRA_POSTED_ACCT)
 					posted_status_id = EntityId.from(data, ActPost.EXTRA_POSTED_STATUS_ID)
@@ -828,9 +825,8 @@ class ActMain : AppCompatActivity()
 					posted_redraft_id = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
 					
 				}
-				
-			} else if(requestCode == REQUEST_CODE_COLUMN_COLOR) {
-				if(data != null) {
+
+				REQUEST_CODE_COLUMN_COLOR -> if(data != null) {
 					app_state.saveColumnList()
 					val idx = data.getIntExtra(ActColumnCustomize.EXTRA_COLUMN_INDEX, 0)
 					if(idx >= 0 && idx < app_state.column_list.size) {
@@ -845,45 +841,55 @@ class ActMain : AppCompatActivity()
 			}
 		}
 		
-		if(requestCode == REQUEST_CODE_ACCOUNT_SETTING) {
-			updateColumnStrip()
+		when(requestCode) {
 			
-			for(column in app_state.column_list) {
-				column.fireShowColumnHeader()
+			REQUEST_CODE_ACCOUNT_SETTING -> {
+				updateColumnStrip()
+				
+				for(column in app_state.column_list) {
+					column.fireShowColumnHeader()
+				}
+				
+				if(resultCode == Activity.RESULT_OK && data != null) {
+					startAccessTokenUpdate(data)
+				} else if(resultCode == ActAccountSetting.RESULT_INPUT_ACCESS_TOKEN && data != null) {
+					val db_id = data.getLongExtra(ActAccountSetting.EXTRA_DB_ID, - 1L)
+					checkAccessToken2(db_id)
+				}
 			}
 			
-			if(resultCode == Activity.RESULT_OK && data != null) {
-				startAccessTokenUpdate(data)
-			} else if(resultCode == ActAccountSetting.RESULT_INPUT_ACCESS_TOKEN && data != null) {
-				val db_id = data.getLongExtra(ActAccountSetting.EXTRA_DB_ID, - 1L)
-				checkAccessToken2(db_id)
-			}
-		} else if(requestCode == REQUEST_CODE_APP_SETTING) {
-			showFooterColor()
-			
-			if(resultCode == RESULT_APP_DATA_IMPORT) {
-				importAppData(data?.data)
+			REQUEST_CODE_APP_SETTING -> {
+				Column.reloadDefaultColor(this, pref)
+				showFooterColor()
+				updateColumnStrip()
+				
+				if(resultCode == RESULT_APP_DATA_IMPORT) {
+					importAppData(data?.data)
+				}
 			}
 			
-		} else if(requestCode == REQUEST_CODE_TEXT) {
-			if(resultCode == ActText.RESULT_SEARCH_MSP) {
-				val text = data?.getStringExtra(Intent.EXTRA_TEXT)
-				addColumn(
-					false,
-					defaultInsertPosition,
-					SavedAccount.na,
-					Column.TYPE_SEARCH_MSP,
-					text ?: ""
-				)
-			} else if(resultCode == ActText.RESULT_SEARCH_TS) {
-				val text = data?.getStringExtra(Intent.EXTRA_TEXT)
-				addColumn(
-					false,
-					defaultInsertPosition,
-					SavedAccount.na,
-					Column.TYPE_SEARCH_TS,
-					text ?: ""
-				)
+			REQUEST_CODE_TEXT -> when(resultCode) {
+				ActText.RESULT_SEARCH_MSP -> {
+					val text = data?.getStringExtra(Intent.EXTRA_TEXT) ?: ""
+					addColumn(
+						false,
+						defaultInsertPosition,
+						SavedAccount.na,
+						Column.TYPE_SEARCH_MSP,
+						text
+					)
+				}
+				
+				ActText.RESULT_SEARCH_TS -> {
+					val text = data?.getStringExtra(Intent.EXTRA_TEXT) ?: ""
+					addColumn(
+						false,
+						defaultInsertPosition,
+						SavedAccount.na,
+						Column.TYPE_SEARCH_TS,
+						text
+					)
+				}
 			}
 		}
 		
@@ -1165,7 +1171,7 @@ class ActMain : AppCompatActivity()
 		
 		MyClickableSpan.defaultLinkColor = Pref.ipLinkColor(pref)
 		
-		Column.reloadDefaultColor(this,pref)
+		Column.reloadDefaultColor(this, pref)
 		
 		var sv = Pref.spTimelineFont(pref)
 		if(sv.isNotEmpty()) {
@@ -1437,7 +1443,7 @@ class ActMain : AppCompatActivity()
 			viewRoot.contentDescription = column.getColumnName(true)
 			//
 			
-			column.setHeaderBackground( viewRoot)
+			column.setHeaderBackground(viewRoot)
 			
 			Styler.setIconAttr(
 				this,

@@ -814,7 +814,7 @@
     <string name="mute_application_confirm">Application \"%1$s\" will be muted. Are you sure ?</string>
     <string name="boost_button_alpha">Boost button alpha opacity (Unit:%. app restart required. also affected of content text alpha.)</string>
     <string name="toot_background_color">Toot background color</string>
-    <string name="column_color_default">Column color default(app restart required)</string>
+    <string name="column_color_default">Column color default</string>
     <string name="header_background_color">Header background color</string>
     <string name="header_foreground_color">Header foreground color</string>
     <string name="content_background_color">Content background color</string>

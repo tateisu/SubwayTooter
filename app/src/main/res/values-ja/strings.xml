@@ -796,7 +796,7 @@
     <string name="followers_visibility">\'フォロワーのみ\' 公開範囲</string>
     <string name="direct_with_user_visibility">\'誰かへのDM\' 公開範囲</string>
     <string name="direct_only_me_visibility">\'自分へのDM\' 公開範囲</string>
-    <string name="column_color_default">カラムの色の既定値(アプリ再起動が必要)</string>
+    <string name="column_color_default">カラムの色の既定値</string>
     <string name="header_background_color">ヘッダーの背景色</string>
     <string name="header_foreground_color">ヘッダーのアイコンや文字の色</string>
     <string name="content_background_color">内容の背景色</string>

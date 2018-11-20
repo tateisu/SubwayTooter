@@ -648,6 +648,7 @@ class Column(
 	internal var mInitialLoadingError : String = ""
 	internal var mRefreshLoadingError : String = ""
 	internal var mRefreshLoadingErrorTime : Long = 0L
+	internal var mRefreshLoadingErrorPopupState : Int = 0
 	
 	internal var task_progress : String? = null
 	
@@ -1182,6 +1183,7 @@ class Column(
 	fun removeNotifications() {
 		cancelLastTask()
 		
+		mRefreshLoadingErrorPopupState =0
 		mRefreshLoadingError = ""
 		bRefreshLoading = false
 		mInitialLoadingError = ""
@@ -1886,6 +1888,7 @@ class Column(
 		
 		initFilter()
 		
+		mRefreshLoadingErrorPopupState =0
 		mRefreshLoadingError = ""
 		mInitialLoadingError = ""
 		bFirstInitialized = true
@@ -4746,13 +4749,23 @@ class Column(
 										misskeyParams = makeMisskeyParamsProfileStatuses(parser)
 									)
 								} else {
-									var s = String.format(
-										Locale.JAPAN,
-										PATH_ACCOUNT_STATUSES,
-										profile_id
-									)
-									if(with_attachment && ! with_highlight) s += "&only_media=1"
-									getStatusList(client, s)
+									// TODO テストが終わったら直すこと！
+									TootApiResult(
+"""
+TEST ERROR MESSAGE
+
+TEST ERROR MESSAGE
+
+TEST ERROR MESSAGE
+""".trimIndent())
+									
+//									var s = String.format(
+//										Locale.JAPAN,
+//										PATH_ACCOUNT_STATUSES,
+//										profile_id
+//									)
+//									if(with_attachment && ! with_highlight) s += "&only_media=1"
+//									getStatusList(client, s)
 								}
 							}
 						}

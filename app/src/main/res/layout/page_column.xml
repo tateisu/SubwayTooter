@@ -456,6 +456,33 @@
                     />
 
             </com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout>
+
+            <FrameLayout
+                android:id="@+id/llRefreshError"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="6dp"
+                android:background="@drawable/bg_refresh_error"
+                android:layout_gravity="bottom"
+                >
+                <ImageView
+                    android:id="@+id/ivRefreshError"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="start|center_vertical"
+                    android:layout_marginStart="4dp"
+                    android:scaleType="fitCenter"
+                    />
+                <TextView
+                    android:id="@+id/tvRefreshError"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="top"
+                    android:layout_marginStart="32dp"
+                    android:scaleType="center"
+                    android:textColor="#fff"
+                    />
+            </FrameLayout>
         </FrameLayout>
     </LinearLayout>
 

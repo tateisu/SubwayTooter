@@ -28,6 +28,7 @@
     <color name="Light_colorButtonBg">#cccccc</color>
     <color name="Light_colorReplyBackground">#cccccc</color>
 
+    <color name="Light_colorRefreshErrorBg">#8333</color>
 
 
     <color name="Light_colorPostFormBackground">#eee</color>
@@ -55,6 +56,8 @@
     <color name="Dark_colorColumnListItemText">#66FFFFFF</color>
     <color name="Dark_colorTimeSmall">#ff888888</color>
     <color name="Dark_colorContentText">#ffdddddd</color>
+    <color name="Dark_colorRefreshErrorBg">#8333</color>
+
     <color name="Dark_colorColumnHeaderAcct">#66FFFFFF</color>
     <color name="Dark_colorColumnHeaderPageNumber">#66FFFFFF</color>
     <color name="Dark_colorSettingDivider">#66FFFFFF</color><!-- ダイアログ背景が#424242なので、それより明るくないといけない -->

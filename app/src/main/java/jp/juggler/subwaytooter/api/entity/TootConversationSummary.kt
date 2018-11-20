@@ -18,10 +18,6 @@ class TootConversationSummary(parser:TootParser,src:JSONObject) : TimelineItem()
 		this.unread = src.optBoolean("unread")
 
 		this.last_status.conversationSummary = this
-
-		// TODO 未読状態の表示
-		// TODO 未読の会話を開いたら POST /api/v1/conversations/${id}/read で未読クリア
-		// TODO 未読の会話を開いたら未読状態の表示をクリア
 	}
 	
 	override fun getOrderId() =id

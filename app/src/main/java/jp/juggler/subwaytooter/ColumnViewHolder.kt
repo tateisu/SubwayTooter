@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.SystemClock
@@ -11,6 +12,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.SpannableStringBuilder
+import android.text.TextUtils
 import android.text.TextWatcher
 import android.view.GestureDetector
 import android.view.MotionEvent
@@ -28,6 +30,8 @@ import org.jetbrains.anko.textColor
 import java.io.Closeable
 import java.lang.reflect.Field
 import java.util.regex.Pattern
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
 
 class ColumnViewHolder(
 	val activity : ActMain,
@@ -53,8 +57,8 @@ class ColumnViewHolder(
 		
 		val heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
 		
-		var lastRefreshError : String = ""
-		var lastRefreshErrorShown : Long = 0L
+		//		var lastRefreshError : String = ""
+		//		var lastRefreshErrorShown : Long = 0L
 	}
 	
 	var column : Column? = null
@@ -107,6 +111,10 @@ class ColumnViewHolder(
 	private val cbOldApi : CheckBox
 	private val llRegexFilter : View
 	private val btnDeleteNotification : Button
+	
+	private val llRefreshError : FrameLayout
+	private val ivRefreshError : ImageView
+	private val tvRefreshError : TextView
 	
 	private val llListList : View
 	private val etListName : EditText
@@ -327,6 +335,13 @@ class ColumnViewHolder(
 		this.refreshLayout = viewRoot.findViewById(R.id.swipyRefreshLayout)
 		refreshLayout.setOnRefreshListener(this)
 		refreshLayout.setDistanceToTriggerSync((0.5f + 20f * activity.density).toInt())
+		
+		llRefreshError = viewRoot.findViewById(R.id.llRefreshError)
+		ivRefreshError = viewRoot.findViewById(R.id.ivRefreshError)
+		tvRefreshError = viewRoot.findViewById(R.id.tvRefreshError)
+		llRefreshError.setOnClickListener(this)
+		Styler.setIconDrawableId(activity, ivRefreshError, R.drawable.ic_error, Color.RED)
+		
 		
 		cbDontCloseColumn.setOnCheckedChangeListener(this)
 		cbWithAttachment.setOnCheckedChangeListener(this)
@@ -584,6 +599,10 @@ class ColumnViewHolder(
 				SwipyRefreshLayoutDirection.BOTTOM
 			}
 			
+			bRefreshErrorWillShown = false
+			llRefreshError.clearAnimation()
+			llRefreshError.visibility = View.GONE
+			
 			//
 			listLayoutManager = LinearLayoutManager(activity)
 			listView.layoutManager = listLayoutManager
@@ -657,13 +676,13 @@ class ColumnViewHolder(
 	fun showColumnColor() {
 		val column = this.column
 		if(column == null || column.is_dispose.get()) return
-
+		
 		// カラムヘッダ背景
 		column.setHeaderBackground(llColumnHeader)
-
+		
 		// カラムヘッダ文字色(A)
 		var c = column.getHeaderNameColor()
-		tvColumnName.textColor =c
+		tvColumnName.textColor = c
 		Styler.setIconAttr(
 			activity,
 			ivColumnIcon,
@@ -676,8 +695,8 @@ class ColumnViewHolder(
 		
 		// カラムヘッダ文字色(B)
 		c = column.getHeaderPageNumberColor()
-		tvColumnIndex.textColor =c
-		tvColumnStatus.textColor =c
+		tvColumnIndex.textColor = c
+		tvColumnStatus.textColor = c
 		
 		// カラム内部の背景色
 		c = column.column_bg_color
@@ -690,14 +709,13 @@ class ColumnViewHolder(
 		// カラム内部の背景画像
 		ivColumnBackgroundImage.alpha = column.column_bg_image_alpha
 		loadBackgroundImage(ivColumnBackgroundImage, column.column_bg_image)
-
+		
 		// エラー表示
 		tvLoading.textColor = column.getContentColor()
 		
 		status_adapter?.findHeaderViewHolder(listView)?.showColor()
 	}
 	
-
 	private fun closeBitmaps() {
 		try {
 			ivColumnBackgroundImage.visibility = View.GONE
@@ -977,6 +995,11 @@ class ColumnViewHolder(
 				}
 				Action_List.create(activity, column.access_info, tv, null)
 			}
+			
+			R.id.llRefreshError -> {
+				column.mRefreshLoadingErrorPopupState = 1 - column.mRefreshLoadingErrorPopupState
+				showRefreshError()
+			}
 		}
 		
 	}
@@ -994,6 +1017,7 @@ class ColumnViewHolder(
 	}
 	
 	private fun showError(message : String) {
+		hideRefreshError()
 		tvLoading.visibility = View.VISIBLE
 		tvLoading.text = message
 		
@@ -1039,7 +1063,7 @@ class ColumnViewHolder(
 		tvColumnContext.setTextColor(
 			when {
 				c != 0 -> c
-			//	column.header_fg_color != 0 -> column.header_fg_color
+				//	column.header_fg_color != 0 -> column.header_fg_color
 				else -> Styler.getAttributeColor(activity, R.attr.colorTimeSmall)
 			}
 		)
@@ -1117,29 +1141,77 @@ class ColumnViewHolder(
 		
 		status_adapter.findHeaderViewHolder(listView)?.bindData(column)
 		
-		if(! column.bRefreshLoading) {
+		if(column.bRefreshLoading) {
+			hideRefreshError()
+		} else {
 			refreshLayout.isRefreshing = false
-			val refreshError = column.mRefreshLoadingError
-			val refreshErrorTime = column.mRefreshLoadingErrorTime
-			if(refreshError.isNotEmpty()) {
-				showRefreshError(refreshError, refreshErrorTime)
-				column.mRefreshLoadingError = ""
-			}
+			showRefreshError()
 		}
 		proc_restoreScrollPosition.run()
 	}
 	
-	private fun showRefreshError(
-		refreshError : String,
-		@Suppress("UNUSED_PARAMETER") refreshErrorTime : Long
-	) {
-		// XXX: 同じメッセージを連投しないようにするべきかどうか
-		//		if( refreshError == lastRefreshError && refreshErrorTime <= lastRefreshErrorShown + 300000L ){
-		//			return
-		//		}
-		lastRefreshError = refreshError
-		lastRefreshErrorShown = SystemClock.elapsedRealtime()
-		showToast(activity, true, refreshError)
+	private var bRefreshErrorWillShown = false
+	
+	private fun hideRefreshError() {
+		if(! bRefreshErrorWillShown) return
+		bRefreshErrorWillShown = false
+		if(llRefreshError.visibility == View.GONE) return
+		val aa = AlphaAnimation(1f, 0f)
+		aa.duration = 666L
+		aa.setAnimationListener(object : Animation.AnimationListener {
+			override fun onAnimationRepeat(animation : Animation?) {
+			}
+			
+			override fun onAnimationStart(animation : Animation?) {
+			}
+			
+			override fun onAnimationEnd(animation : Animation?) {
+				if(! bRefreshErrorWillShown) llRefreshError.visibility = View.GONE
+			}
+		})
+		llRefreshError.clearAnimation()
+		llRefreshError.startAnimation(aa)
+	}
+	
+	private fun showRefreshError() {
+		val column = column
+		if(column == null) {
+			hideRefreshError()
+			return
+		}
+		
+		val refreshError = column.mRefreshLoadingError
+		//		val refreshErrorTime = column.mRefreshLoadingErrorTime
+		if(refreshError.isEmpty()) {
+			hideRefreshError()
+			return
+		}
+		
+		tvRefreshError.text = refreshError
+		when(column.mRefreshLoadingErrorPopupState) {
+			// initially expanded
+			0 -> {
+				tvRefreshError.setSingleLine(false)
+				tvRefreshError.ellipsize = null
+			}
+			
+			// tap to minimize
+			1 -> {
+				tvRefreshError.setSingleLine(true)
+				tvRefreshError.ellipsize = TextUtils.TruncateAt.END
+			}
+		}
+		
+		if(! bRefreshErrorWillShown) {
+			bRefreshErrorWillShown = true
+			if(llRefreshError.visibility == View.GONE) {
+				llRefreshError.visibility = View.VISIBLE
+				val aa = AlphaAnimation(0f, 1f)
+				aa.duration = 666L
+				llRefreshError.clearAnimation()
+				llRefreshError.startAnimation(aa)
+			}
+		}
 	}
 	
 	fun saveScrollPosition() : Boolean {

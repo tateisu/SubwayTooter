@@ -2996,20 +2996,21 @@ class Column(
 									)
 								}
 								
-								// カードを取得する
-								if(! Pref.bpDontRetrievePreviewCard(context)) {
-									this.list_tmp?.forEach { o ->
-										if(o is TootStatus && o.card == null)
-											o.card = parseItem(
-												::TootCard,
-												client.request("/api/v1/statuses/" + o.id + "/card")?.jsonObject
-											)
-									}
-								}
+								// マストドン2.6でTLにカード情報がレンダリングされたことにより、
+								// 個別にカードを取得する機能は ST3.0.7で廃止される
+								// この機能はRate limitの問題を引き起こすことが多かった
+								// if(! Pref.bpDontRetrievePreviewCard(context)) {
+								// 									this.list_tmp?.forEach { o ->
+								//										// カードを取得する
+								//										if(o is TootStatus && o.card == null)
+								//											o.card = parseItem(
+								//												::TootCard,
+								//												client.request("/api/v1/statuses/" + o.id + "/card")?.jsonObject
+								//											)
+								//									}
+								//								}
 								
-								//
 								return result
-								
 							}
 						}
 						
@@ -6884,7 +6885,7 @@ class Column(
 		else -> defaultColorHeaderBg
 	}
 	
-	fun setHeaderBackground( view : View) {
+	fun setHeaderBackground(view : View) {
 		ViewCompat.setBackground(
 			view,
 			Styler.getAdaptiveRippleDrawable(

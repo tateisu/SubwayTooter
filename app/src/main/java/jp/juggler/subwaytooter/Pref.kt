@@ -335,11 +335,12 @@ object Pref {
 		R.id.swSendAccessTokenToAppServer
 	)
 	
-	val bpDontRetrievePreviewCard = BooleanPref(
-		"DontRetrievePreviewCard",
-		true,
-		R.id.swDontRetrievePreviewCard
+	val bpDontShowPreviewCard = BooleanPref(
+		"DontShowPreviewCard",
+		false,
+		R.id.swDontShowPreviewCard
 	)
+	
 	val bpScrollTopFromColumnStrip = BooleanPref(
 		"ScrollTopFromColumnStrip",
 		false,

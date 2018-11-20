@@ -1060,8 +1060,7 @@ internal class ItemViewHolder(
 			}
 		}
 		
-		// カードの表示(会話ビューのみ)
-		showPreviewCard(activity, status)
+		showPreviewCard(status)
 		
 		//			if( status.decoded_tags == null ){
 		//				tvTags.setVisibility( View.GONE );
@@ -1784,7 +1783,10 @@ internal class ItemViewHolder(
 		}
 	}
 	
-	private fun showPreviewCard(activity : ActMain, status : TootStatus) {
+	private fun showPreviewCard(status : TootStatus) {
+		
+		if(Pref.bpDontShowPreviewCard(activity.pref)) return
+		
 		val card = status.card ?: return
 		
 		// 会話カラムで返信ステータスなら捏造したカードを表示しない

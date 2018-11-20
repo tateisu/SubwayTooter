@@ -803,5 +803,6 @@
     <string name="content_acct_color">内容のAcctの文字色</string>
     <string name="content_text_color">内容の本文の文字色</string>
     <string name="quick_toot_bar_background_color">簡易投稿入力の背景色</string>
+    <string name="dont_show_preview_card">プレビューカードを表示しない</string>
 
 </resources>

@@ -316,13 +316,13 @@
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/dont_retrieve_preview_card"
+            android:text="@string/dont_show_preview_card"
             />
 
         <LinearLayout style="@style/setting_row_form">
 
             <Switch
-                android:id="@+id/swDontRetrievePreviewCard"
+                android:id="@+id/swDontShowPreviewCard"
                 style="@style/setting_horizontal_stretch"
                 android:gravity="center"
                 />

@@ -4749,23 +4749,13 @@ class Column(
 										misskeyParams = makeMisskeyParamsProfileStatuses(parser)
 									)
 								} else {
-									// TODO テストが終わったら直すこと！
-									TootApiResult(
-"""
-TEST ERROR MESSAGE
-
-TEST ERROR MESSAGE
-
-TEST ERROR MESSAGE
-""".trimIndent())
-									
-//									var s = String.format(
-//										Locale.JAPAN,
-//										PATH_ACCOUNT_STATUSES,
-//										profile_id
-//									)
-//									if(with_attachment && ! with_highlight) s += "&only_media=1"
-//									getStatusList(client, s)
+									var s = String.format(
+										Locale.JAPAN,
+										PATH_ACCOUNT_STATUSES,
+										profile_id
+									)
+									if(with_attachment && ! with_highlight) s += "&only_media=1"
+									getStatusList(client, s)
 								}
 							}
 						}

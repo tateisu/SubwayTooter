@@ -316,23 +316,6 @@
 
         <TextView
             style="@style/setting_row_label"
-            android:text="@string/dont_show_preview_card"
-            />
-
-        <LinearLayout style="@style/setting_row_form">
-
-            <Switch
-                android:id="@+id/swDontShowPreviewCard"
-                style="@style/setting_horizontal_stretch"
-                android:gravity="center"
-                />
-
-        </LinearLayout>
-
-        <View style="@style/setting_divider"/>
-
-        <TextView
-            style="@style/setting_row_label"
             android:labelFor="@+id/etClientName"
             android:text="@string/client_name"
             />
@@ -797,6 +780,23 @@
 
             <Switch
                 android:id="@+id/swShowFollowButtonInButtonBar"
+                style="@style/setting_horizontal_stretch"
+                android:gravity="center"
+                />
+
+        </LinearLayout>
+
+        <View style="@style/setting_divider"/>
+
+        <TextView
+            style="@style/setting_row_label"
+            android:text="@string/dont_show_preview_card"
+            />
+
+        <LinearLayout style="@style/setting_row_form">
+
+            <Switch
+                android:id="@+id/swDontShowPreviewCard"
                 style="@style/setting_horizontal_stretch"
                 android:gravity="center"
                 />

@@ -428,7 +428,6 @@ internal class ItemViewHolder(
 		}
 		
 		c = column.getAcctColor()
-		log.d("acct_color %x", c)
 		this.acct_color = c
 		tvBoostedTime.setTextColor(c)
 		tvTime.setTextColor(c)

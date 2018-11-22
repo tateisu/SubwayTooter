@@ -8,8 +8,7 @@ import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.graphics.*
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -33,6 +32,7 @@ import com.google.android.exoplayer2.ui.PlayerView
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
+import it.sephiroth.android.library.exif2.ExifInterface
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
@@ -42,6 +42,7 @@ import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.PinchBitmapView
 import okhttp3.Request
+import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.*
 
@@ -325,8 +326,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		val mediaSource = ExtractorMediaSource.Factory(dataSourceFactory)
 			.setExtractorsFactory(extractorsFactory)
 			.createMediaSource(Uri.parse(url))
-
-		mediaSource.addEventListener(App1.getAppState(this).handler,mediaSourceEventListener)
+		
+		mediaSource.addEventListener(App1.getAppState(this).handler, mediaSourceEventListener)
 		
 		exoPlayer.prepare(mediaSource)
 		exoPlayer.playWhenReady = true
@@ -344,7 +345,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			mediaPeriodId : MediaSource.MediaPeriodId?,
 			loadEventInfo : MediaSourceEventListener.LoadEventInfo?,
 			mediaLoadData : MediaSourceEventListener.MediaLoadData?
-		)  {
+		) {
 			log.d("onLoadStarted")
 		}
 		
@@ -352,7 +353,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			windowIndex : Int,
 			mediaPeriodId : MediaSource.MediaPeriodId?,
 			mediaLoadData : MediaSourceEventListener.MediaLoadData?
-		)  {
+		) {
 			log.d("onDownstreamFormatChanged")
 		}
 		
@@ -360,7 +361,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			windowIndex : Int,
 			mediaPeriodId : MediaSource.MediaPeriodId?,
 			mediaLoadData : MediaSourceEventListener.MediaLoadData?
-		){
+		) {
 			log.d("onUpstreamDiscarded")
 		}
 		
@@ -440,6 +441,21 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			
 			private fun decodeBitmap(data : ByteArray, pixel_max : Int) : Bitmap? {
 				
+				// EXIF回転情報の取得
+				val orientation : Int? = try {
+					ExifInterface().apply {
+						readExif(
+							ByteArrayInputStream(data),
+							ExifInterface.Options.OPTION_IFD_0
+								or ExifInterface.Options.OPTION_IFD_1
+								or ExifInterface.Options.OPTION_IFD_EXIF
+						)
+					}.getTagIntValue(ExifInterface.TAG_ORIENTATION)
+				} catch(ex : Throwable) {
+					null
+				}
+				
+				// detects image size
 				options.inJustDecodeBounds = true
 				options.inScaled = false
 				options.outWidth = 0
@@ -451,6 +467,8 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 					log.e("can't decode bounds.")
 					return null
 				}
+				
+				// calc bits to reduce size
 				var bits = 0
 				while(w > pixel_max || h > pixel_max) {
 					++ bits
@@ -459,7 +477,119 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				}
 				options.inJustDecodeBounds = false
 				options.inSampleSize = 1 shl bits
-				return BitmapFactory.decodeByteArray(data, 0, data.size, options)
+				
+				// decode image
+				val bitmap1 = BitmapFactory.decodeByteArray(data, 0, data.size, options)
+				
+				// デコード失敗、または回転情報がない
+				if(bitmap1 == null || orientation == null) return bitmap1
+				
+				val src_width = bitmap1.width
+				val src_height = bitmap1.height
+				
+				// 回転行列を作る
+				val matrix = Matrix()
+				matrix.reset()
+				
+				// 画像の中心が原点に来るようにして
+				matrix.postTranslate(src_width * - 0.5f, src_height * - 0.5f)
+
+				// orientationに合わせた回転指定
+				val flipWh = when(orientation) {
+					2 -> {
+						// 上下反転
+						matrix.postScale(1f, - 1f)
+						false
+					}
+					
+					3 -> {
+						// 180度回転
+						matrix.postRotate(180f)
+						false
+					}
+					
+					4 -> {
+						// 左右反転
+						matrix.postScale(- 1f, 1f)
+						false
+					}
+					
+					5 -> {
+						// 上下反転して反時計回りに90度
+						matrix.postScale(1f, - 1f)
+						matrix.postRotate(- 90f)
+						true
+					}
+					
+					6 -> {
+						// 時計回りに90度
+						matrix.postRotate(90f)
+						true
+					}
+					
+					7 -> {
+						// 上下反転して時計回りに90度
+						matrix.postScale(1f, - 1f)
+						matrix.postRotate(90f)
+						true
+					}
+					
+					8 -> {
+						// 上下反転して反時計回りに90度
+						matrix.postRotate(- 90f)
+						true
+					}
+					
+					else -> {
+						// 回転は不要
+						return bitmap
+					}
+				}
+
+				// 出力サイズ
+				val dst_width : Int
+				val dst_height : Int
+				when(flipWh){
+					true -> {
+						dst_width = src_height
+						dst_height = src_width
+					}
+					
+					else -> {
+						dst_width = src_width
+						dst_height = src_height
+					}
+				}
+				
+				// 表示領域に埋まるように平行移動
+				matrix.postTranslate(dst_width * 0.5f, dst_height * 0.5f)
+				
+				// 回転後の画像
+				val bitmap2 = try {
+					Bitmap.createBitmap(dst_width, dst_height, Bitmap.Config.ARGB_8888)
+				} catch(ex : Throwable) {
+					log.trace(ex)
+					null
+				} ?: return bitmap1
+				
+				try {
+					Canvas(bitmap2).drawBitmap(
+						bitmap1,
+						matrix,
+						Paint().apply { isFilterBitmap = true }
+					)
+				} catch(ex : Throwable) {
+					log.trace(ex)
+					bitmap2.recycle()
+					return bitmap1
+				}
+				
+				try {
+					bitmap1.recycle()
+				} catch(ex : Throwable) {
+					log.trace(ex)
+				}
+				return bitmap2
 			}
 			
 			fun getHttpCached(client : TootApiClient, url : String) : TootApiResult? {
@@ -471,7 +601,10 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 					.addHeader("Accept", "image/webp,image/*,*/*;q=0.8")
 					.build()
 				
-				if(! client.sendRequest(result, tmpOkhttpClient = App1.ok_http_client_media_viewer ) {
+				if(! client.sendRequest(
+						result,
+						tmpOkhttpClient = App1.ok_http_client_media_viewer
+					) {
 						request
 					}) return result
 				

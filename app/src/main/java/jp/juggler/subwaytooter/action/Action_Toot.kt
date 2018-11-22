@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.action
 
 import android.net.Uri
+import android.text.SpannableStringBuilder
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
@@ -1066,4 +1067,137 @@ object Action_Toot {
 		})
 	}
 	
+	fun reaction(
+		activity : ActMain,
+		access_info : SavedAccount,
+		arg_status : TootStatus,
+		status_owner_acct : String,
+		nCrossAccountMode : Int,
+		callback : EmptyCallback?,
+		bSet : Boolean = true,
+		code : String? = null
+	) {
+		if(access_info.isPseudo || ! access_info.isMisskey) return
+		
+		// 自分の投稿にはリアクション出来ない
+		if(access_info.acct == status_owner_acct) {
+			showToast(activity, false, R.string.it_is_you)
+			return
+		}
+		
+		if(bSet && code == null) {
+			val ad = ActionsDialog()
+			for(mr in MisskeyReaction.values()) {
+				
+				val newCode = mr.shortcode
+				
+				val sb = SpannableStringBuilder()
+					.appendDrawableIcon(activity, mr.drawableId, " ")
+					.append(' ')
+					.append(mr.shortcode)
+				
+				ad.addAction(sb) {
+					reaction(
+						activity,
+						access_info,
+						arg_status,
+						status_owner_acct,
+						nCrossAccountMode,
+						callback,
+						bSet,
+						newCode
+					)
+				}
+			}
+			ad.show(activity)
+			return
+		}
+		
+		
+		TootTaskRunner(activity, TootTaskRunner.PROGRESS_NONE).run(access_info, object : TootTask {
+			
+			override fun background(client : TootApiClient) : TootApiResult? {
+				
+				val target_status : TootStatus
+				if(nCrossAccountMode == CROSS_ACCOUNT_REMOTE_INSTANCE) {
+					
+					val result = client.syncStatus(access_info, arg_status)
+					if(result?.data == null) return result
+					target_status = result.data as? TootStatus
+						?: return TootApiResult(
+						activity.getString(R.string.status_id_conversion_failed)
+					)
+					if(target_status.myReaction != null) {
+						return TootApiResult(activity.getString(R.string.already_reactioned))
+					}
+				} else {
+					// 既に自タンスのステータスがある
+					target_status = arg_status
+				}
+				
+				
+				return if(! bSet) {
+					client.request(
+						"/api/notes/reactions/delete",
+						access_info.putMisskeyApiToken()
+							.put("noteId", target_status.id.toString())
+							.toPostRequestBuilder()
+					)
+					// 成功すると204 no content
+				} else {
+					client.request(
+						"/api/notes/reactions/create",
+						access_info.putMisskeyApiToken()
+							.put("noteId", target_status.id.toString())
+							.put("reaction", code)
+							.toPostRequestBuilder()
+					)
+					// 成功すると204 no content
+				}
+			}
+			
+			override fun handleResult(result : TootApiResult?) {
+				
+				result ?: return
+				
+				val error = result.error
+				if(error != null) {
+					showToast(activity, false, error)
+					return
+				}
+				
+				if(callback != null) callback()
+			}
+		})
+	}
+	
+	fun reactionFromAnotherAccount(
+		activity : ActMain,
+		timeline_account : SavedAccount,
+		status : TootStatus?,
+		code :String? = null
+	) {
+		status ?: return
+		
+		val status_owner = timeline_account.getFullAcct(status.account)
+		
+		AccountPicker.pick(
+			activity,
+			bAllowPseudo = false,
+			bAllowMisskey = true,
+			bAllowMastodon = false,
+			bAuto = false,
+			message = activity.getString(R.string.account_picker_reaction)
+		) { action_account ->
+			reaction(
+				activity,
+				action_account,
+				status,
+				status_owner,
+				calcCrossAccountMode(timeline_account, action_account),
+				activity.reaction_complete_callback,
+				code = code
+			)
+		}
+	}
 }

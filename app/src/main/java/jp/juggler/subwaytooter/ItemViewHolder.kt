@@ -1952,6 +1952,15 @@ internal class ItemViewHolder(
 			b.scaleType = ImageView.ScaleType.FIT_CENTER
 			b.padding = paddingV
 			b.setOnClickListener { addReaction(status_showing, null) }
+
+			b.setOnLongClickListener {
+				Action_Toot.reactionFromAnotherAccount(
+					activity,
+					access_info,
+					status_showing
+				)
+				true
+			}
 			
 			Styler.setIconDrawableId(
 				activity,
@@ -1992,6 +2001,17 @@ internal class ItemViewHolder(
 			)
 			b.tag = mr.shortcode
 			b.setOnClickListener { addReaction(status_showing, it.tag as? String) }
+			
+			b.setOnLongClickListener {
+				Action_Toot.reactionFromAnotherAccount(
+					activity,
+					access_info,
+					status_showing,
+					it.tag as? String
+				)
+				true
+			}
+			
 			box.addView(b)
 			lastButton = b
 		}

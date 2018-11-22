@@ -332,7 +332,6 @@ internal class StreamReader(
 			bListening.set(true)
 			synchronized(capturedId){
 				capturedId.clear()
-				log.d("capture cleared")
 			}
 			fireListeningChanged()
 			
@@ -383,12 +382,11 @@ internal class StreamReader(
 							try {
 								if(socket.send("""{"type":"subNote","body": {"id":"$id"}}""")) {
 									capturedId.add(id)
-									log.d("capture: $id")
 								}else{
-									log.w("capture: $id failed")
+									log.w("capture failed.")
 								}
 							} catch(ex : Throwable) {
-								log.d(ex.withCaption("fireAlive failed."))
+								log.d(ex.withCaption("capture failed."))
 							}
 						}
 					}

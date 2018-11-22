@@ -155,6 +155,8 @@
     <string name="confirm_close_column">Close this column?</string>
     <string name="favourite_from_another_account">Favourite from another account</string>
     <string name="boost_from_another_account">Boost from another account</string>
+    <string name="reaction_from_another_account">Reaction from another account</string>
+
     <string name="app_about">About this app</string>
     <string name="oss_license">OSS license</string>
     <string name="please_rate">Please take the time to review the app!</string>
@@ -212,6 +214,7 @@
     <string name="unfavourite_succeeded">favourite removed</string>
     <string name="boost_succeeded">boost succeeded</string>
     <string name="unboost_succeeded">boost removed</string>
+    <string name="reaction_succeeded">reaction succeeded</string>
     <string name="notification_option">notification option</string>
     <string name="sound">sound</string>
     <string name="vibration">vibration</string>
@@ -284,6 +287,7 @@
     <string name="account_picker_open_setting">Which account do you open setting?</string>
     <string name="account_picker_favourite">Which account do you favourite ?</string>
     <string name="account_picker_boost">Which account do you boost?</string>
+    <string name="account_picker_reaction">Which account do you reaction?</string>
     <string name="account_picker_follow">Which account do you follow?</string>
     <string name="account_picker_toot">Which account do you toot?</string>
     <string name="qr_code">QR code</string>
@@ -822,5 +826,6 @@
     <string name="content_text_color">Content text color</string>
     <string name="quick_toot_bar_background_color">Quick toot bar background color</string>
     <string name="dont_show_preview_card">Don\'t show preview card</string>
+    <string name="instance_does_not_support_push_api_pleroma">This instance does not support push subscription API. maybe it is Pleroma</string>
 
 </resources>

@@ -187,6 +187,15 @@ class PushSubscriptionHelper(
 				var subscription404 = false
 				when(res.code()) {
 					200 -> {
+						if( r.error?.isNotEmpty() == true && r.jsonObject == null ){
+							// Pleromaが200応用でエラーHTMLを返す
+							return TootApiResult(
+								error = context.getString(
+									R.string.instance_does_not_support_push_api_pleroma
+								)
+							)
+						}
+
 						// たぶん購読が存在する
 					}
 					
@@ -203,6 +212,14 @@ class PushSubscriptionHelper(
 							if(flags != 0) addLog(context.getString(R.string.missing_push_scope))
 							TootApiResult()
 						}
+					}
+					
+					in 400 until 500 ->{
+						return TootApiResult(
+							error = context.getString(
+								R.string.instance_does_not_support_push_api_pleroma
+							)
+						)
 					}
 					
 					else -> {

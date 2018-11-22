@@ -43,6 +43,7 @@ class SpanPos(
 	val span : Any
 )
 
+// 文字装飾の指定を溜めておいてノードの親子関係に応じて順序を調整して、最後にまとめて適用する
 class SpanList {
 	val list = LinkedList<SpanPos>()
 	
@@ -447,7 +448,7 @@ object MisskeyMarkdownDecoder {
 	
 	internal val log = LogCategory("MisskeyMarkdownDecoder")
 	
-	internal val DEBUG = false
+	internal const val DEBUG = false
 	
 	// デコード結果にはメンションの配列を含む。TootStatusのパーサがこれを回収する。
 	class SpannableStringBuilderEx(
@@ -615,6 +616,24 @@ object MisskeyMarkdownDecoder {
 	}
 	
 	////////////////////////////////////////////////////////////////////////////
+	
+	private fun mixColor(col1 : Int, col2 : Int) : Int = Color.rgb(
+			(Color.red(col1) + Color.red(col2)) ushr 1,
+			(Color.green(col1) + Color.green(col2)) ushr 1,
+			(Color.blue(col1) + Color.blue(col2)) ushr 1
+		)
+
+	val quoteNestColors = intArrayOf(
+		mixColor(Color.GRAY,0x0000ff ),
+		mixColor(Color.GRAY,0x0080ff ),
+		mixColor(Color.GRAY,0x00ff80 ),
+		mixColor(Color.GRAY, 0x00ff00 ),
+		mixColor(Color.GRAY,0x80ff00 ),
+		mixColor(Color.GRAY,0xff8000 ),
+		mixColor(Color.GRAY,0xff0000 ),
+		mixColor(Color.GRAY,0xff0080 ),
+		mixColor(Color.GRAY,0x8000ff )
+	)
 	
 	fun <T> hashSetOf(vararg values : T) = HashSet<T>().apply { addAll(values) }
 	
@@ -817,7 +836,12 @@ object MisskeyMarkdownDecoder {
 		// リンクなどのデータを扱う要素
 		
 		LINK(
-			allowInside = hashSetOf(BIG, BOLD, MOTION, EMOJI),
+			allowInside = hashSetOf(
+				BIG,
+				BOLD,
+				MOTION,
+				EMOJI
+			),
 			render = {
 				val url = it.args[1]
 				// val silent = data?.get(2)
@@ -894,6 +918,7 @@ object MisskeyMarkdownDecoder {
 				
 				fireRenderChildNodes(it)
 				
+				val bg_color = quoteNestColors[ it.quoteNest % quoteNestColors.size ]
 				// TextView の文字装飾では「ブロック要素の入れ子」を表現できない
 				// 内容の各行の始端に何か追加するというのがまずキツい
 				// しかし各行の頭に引用マークをつけないと引用のネストで意味が通じなくなってしまう
@@ -911,7 +936,7 @@ object MisskeyMarkdownDecoder {
 						spanList.insert(i, 2)
 						spanList.addLast(
 							i, i + 1,
-							android.text.style.BackgroundColorSpan(0x20808080)
+							android.text.style.BackgroundColorSpan(bg_color)
 						)
 					}
 				}
@@ -941,10 +966,17 @@ object MisskeyMarkdownDecoder {
 	
 	class Node(
 		val type : Node2Type, // ノード種別
-		val args : Array<String> = emptyArray() // 引数
+		val args : Array<String> = emptyArray(), // 引数
+		parentNode : Node?
 	) {
 		
 		val childNodes = LinkedList<Node>()
+		
+		internal val quoteNest :Int = (parentNode?.quoteNest ?: 0) + when(type){
+			Node2Type.QUOTE_BLOCK,Node2Type.QUOTE_INLINE -> 1
+			else->0
+		}
+
 	}
 	
 	class NodeDetected(
@@ -961,40 +993,36 @@ object MisskeyMarkdownDecoder {
 		
 		val endInside : Int
 			get() = startInside + lengthInside
+		
 	}
 	
 	class NodeParseEnv(
-		val parent : Node,
+		private val parentNode : Node,
 		val text : String,
 		start : Int,
 		val end : Int
 	) {
 		
-		private val childNodes = parent.childNodes
-		private val allowInside = if(parent.type.allowInsideAll) {
+		private val childNodes = parentNode.childNodes
+		private val allowInside = if(parentNode.type.allowInsideAll) {
 			nodeTypeAllSet
 		} else {
-			parent.type.allowInside
+			parentNode.type.allowInside
 		}
 		
+		
+		var pos : Int = 0
 		var remain : String = ""
 		var previous : String = ""
 		
 		private var lastEnd = start // 直前のノードの終了位置
-		
-		var pos : Int = start
-			set(value) {
-				field = value
-				remain = text.substring(pos, end)
-				previous = text.substring(lastEnd, pos)
-			}
 		
 		// 直前のノードの終了位置から次のノードの開始位置の手前までをresultに追加する
 		private fun closeText(endText : Int) {
 			val length = endText - lastEnd
 			if(length <= 0) return
 			val textInside = text.substring(lastEnd, endText)
-			childNodes.add(Node(Node2Type.TEXT, arrayOf(textInside)))
+			childNodes.add(Node(Node2Type.TEXT, arrayOf(textInside),null))
 		}
 		
 		fun parseInside() {
@@ -1002,12 +1030,19 @@ object MisskeyMarkdownDecoder {
 			
 			var i = lastEnd //スキャン中の位置
 			while(i < end) {
+				// 注目位置の文字に関連するパーサー
 				val lastParsers = nodeParserMap[text[i].toInt()]
 				if(lastParsers == null) {
 					++ i
 					continue
 				}
+
+				// パーサー用のパラメータを用意する
+				// 部分文字列のコストは高くないと信じたい
 				pos = i
+				remain = text.substring(i, end)
+				previous = text.substring(lastEnd, i)
+
 				val detected = lastParsers.firstNonNull {
 					val d = this.it()
 					if(d == null) {
@@ -1016,7 +1051,7 @@ object MisskeyMarkdownDecoder {
 						val n = d.node
 						if(! allowInside.contains(d.node.type)) {
 							log.w(
-								"not allowed : ${parent.type} => ${n.type} ${text.substring(
+								"not allowed : ${parentNode.type} => ${n.type} ${text.substring(
 									d.start,
 									d.end
 								)}"
@@ -1027,10 +1062,12 @@ object MisskeyMarkdownDecoder {
 						}
 					}
 				}
+
 				if(detected == null) {
 					++ i
 					continue
 				}
+
 				closeText(detected.start)
 				childNodes.add(detected.node)
 				i = detected.end
@@ -1047,13 +1084,16 @@ object MisskeyMarkdownDecoder {
 		}
 		
 		fun makeDetected(
-			node : Node,
+			type: Node2Type,
+			args: Array<String>,
 			start : Int,
 			length : Int,
 			textInside : String,
 			startInside : Int,
 			lengthInside : Int
 		) : NodeDetected {
+			
+			val node = Node(type,args,parentNode)
 			
 			if(DEBUG) log.d(
 				"NodeDetected: ${node.type} inside=${
@@ -1085,7 +1125,8 @@ object MisskeyMarkdownDecoder {
 				
 				val textInside = matcher.group(1)
 				makeDetected(
-					Node(type, arrayOf(textInside)),
+					type,
+					arrayOf(textInside),
 					0, matcher.end(),
 					this.text, pos + matcher.start(1), textInside.length
 				)
@@ -1146,7 +1187,8 @@ object MisskeyMarkdownDecoder {
 			val textInside = content.toString()
 			
 			makeDetected(
-				Node(Node2Type.QUOTE_BLOCK),
+				Node2Type.QUOTE_BLOCK,
+				emptyArray(),
 				0, p,
 				textInside, 0, textInside.length
 			)
@@ -1231,7 +1273,8 @@ object MisskeyMarkdownDecoder {
 						keyword?.isEmpty() != false -> null
 						
 						else -> makeDetected(
-							Node(Node2Type.SEARCH, arrayOf(keyword)),
+							Node2Type.SEARCH,
+							arrayOf(keyword),
 							- (keyword.length + 1),
 							buttonLength + (keyword.length + 1),
 							this.text, pos - (keyword.length + 1), keyword.length
@@ -1261,13 +1304,11 @@ object MisskeyMarkdownDecoder {
 				else -> {
 					val title = matcher.group(1)
 					makeDetected(
-						Node(
-							Node2Type.LINK,
-							arrayOf(
-								title
-								, matcher.group(2) // url
-								, remain[0].toString()   // silent なら "?" になる
-							)
+						Node2Type.LINK,
+						arrayOf(
+							title
+							, matcher.group(2) // url
+							, remain[0].toString()   // silent なら "?" になる
 						),
 						0, matcher.end(),
 						this.text, pos + matcher.start(1), title.length
@@ -1295,12 +1336,10 @@ object MisskeyMarkdownDecoder {
 			when {
 				! matcher.find() -> null
 				else -> makeDetected(
-					Node(
-						Node2Type.MENTION,
-						arrayOf(
-							matcher.group(1),
-							matcher.group(2) ?: "" // username, host
-						)
+					Node2Type.MENTION,
+					arrayOf(
+						matcher.group(1),
+						matcher.group(2) ?: "" // username, host
 					),
 					0, matcher.end(),
 					"", 0, 0
@@ -1322,10 +1361,8 @@ object MisskeyMarkdownDecoder {
 							null
 						
 						else -> makeDetected(
-							Node(
-								Node2Type.HASHTAG,
-								arrayOf(matcher.group(1)) // 先頭の#を含まない
-							),
+							Node2Type.HASHTAG,
+							arrayOf(matcher.group(1)), // 先頭の#を含まない
 							0, matcher.end(),
 							"", 0, 0
 						)
@@ -1358,7 +1395,7 @@ object MisskeyMarkdownDecoder {
 				val env = SpanOutputEnv(options, this)
 				
 				if(src != null) {
-					val root = Node(Node2Type.ROOT)
+					val root = Node(Node2Type.ROOT, emptyArray(),null)
 					NodeParseEnv(root, src, 0, src.length).parseInside()
 					for(sp in env.fireRender(root).list) {
 						env.sb.setSpan(sp.span, sp.start, sp.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)

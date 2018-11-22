@@ -66,6 +66,7 @@ internal class DlgContextMenu(
 		val btnFavouriteAnotherAccount =
 			viewRoot.findViewById<View>(R.id.btnFavouriteAnotherAccount)
 		val btnBoostAnotherAccount = viewRoot.findViewById<View>(R.id.btnBoostAnotherAccount)
+		val btnReactionAnotherAccount = viewRoot.findViewById<View>(R.id.btnReactionAnotherAccount)
 		val btnReplyAnotherAccount = viewRoot.findViewById<View>(R.id.btnReplyAnotherAccount)
 		val btnDelete = viewRoot.findViewById<View>(R.id.btnDelete)
 		val btnRedraft = viewRoot.findViewById<View>(R.id.btnRedraft)
@@ -121,6 +122,7 @@ internal class DlgContextMenu(
 		btnText.setOnClickListener(this)
 		btnFavouriteAnotherAccount.setOnClickListener(this)
 		btnBoostAnotherAccount.setOnClickListener(this)
+		btnReactionAnotherAccount.setOnClickListener(this)
 		btnReplyAnotherAccount.setOnClickListener(this)
 		btnReport.setOnClickListener(this)
 		btnMuteApp.setOnClickListener(this)
@@ -714,6 +716,12 @@ internal class DlgContextMenu(
 				access_info,
 				status
 			)
+			R.id.btnReactionAnotherAccount -> Action_Toot.reactionFromAnotherAccount(
+				activity,
+				access_info,
+				status
+			)
+			
 			
 			R.id.btnReplyAnotherAccount -> Action_Toot.replyFromAnotherAccount(
 				activity,

@@ -288,6 +288,10 @@ class ActMain : AppCompatActivity()
 		showToast(this@ActMain, false, R.string.unboost_succeeded)
 	}
 	
+	val reaction_complete_callback : EmptyCallback = {
+		showToast(this@ActMain, false, R.string.reaction_succeeded)
+	}
+	
 	private var nScreenColumn : Int = 0
 	private var nColumnWidth : Int = 0
 	

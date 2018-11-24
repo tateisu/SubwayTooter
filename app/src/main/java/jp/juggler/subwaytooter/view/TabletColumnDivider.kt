@@ -8,16 +8,16 @@ import android.support.v7.widget.RecyclerView
 import android.view.View
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.Styler
+import jp.juggler.subwaytooter.util.LogCategory
 
-class ListDivider(context : Context) : RecyclerView.ItemDecoration() {
+class TabletColumnDivider(context : Context) : RecyclerView.ItemDecoration() {
 	
 	companion object {
+		private val log = LogCategory("TabletColumnDivider")
 
 		var color :Int =0
 		
-		var height : Int = 0
-
-		var marginH : Int = 0
+		var barWidth : Int = 0
 	}
 	
 	private val drawable = Styler.getAttributeDrawable(context, R.attr.colorSettingDivider)
@@ -26,8 +26,7 @@ class ListDivider(context : Context) : RecyclerView.ItemDecoration() {
 	
 	init {
 		val density = context.resources.displayMetrics.density
-		height = ( density * 1f + 0.5f).toInt()
-		marginH = ( density * 12f + 0.5f).toInt()
+		barWidth = ( density * 1f + 0.5f).toInt()
 		paint.style = Paint.Style.FILL
 		paint.isAntiAlias = true
 	}
@@ -38,12 +37,14 @@ class ListDivider(context : Context) : RecyclerView.ItemDecoration() {
 		parent : RecyclerView,
 		state : RecyclerView.State
 	) {
-		outRect.set(0, 0, 0, height)
+		outRect.set(0, 0, barWidth, 0)
 	}
 	
 	override fun onDraw(canvas : Canvas, parent : RecyclerView, state : RecyclerView.State) {
-		val left = parent.paddingLeft +marginH
-		val right = parent.width - parent.paddingRight -marginH
+		val clip = canvas.clipBounds
+		
+		val top = clip.top
+		val bottom = clip.bottom
 		
 		if( color != 0){
 			paint.color = color
@@ -52,8 +53,25 @@ class ListDivider(context : Context) : RecyclerView.ItemDecoration() {
 		for(i in 0 until parent.childCount) {
 			val child = parent.getChildAt(i)
 			val params = child.layoutParams as RecyclerView.LayoutParams
-			val top = child.bottom + params.bottomMargin
-			val bottom = top + height
+			
+			if( child.left >= clip.right ) break
+			
+			if( i == 0 ){
+				// 左端
+				val left = child.left - params.leftMargin
+				val right = left + barWidth
+				if( color != 0){
+					rect.set(left, top, right, bottom)
+					canvas.drawRect(rect,paint)
+				}else {
+					drawable.setBounds(left, top, right, bottom)
+					drawable.draw(canvas)
+				}
+			}
+			
+			val left = child.right + params.rightMargin
+			val right = left + barWidth
+			
 			if( color != 0){
 				rect.set(left, top, right, bottom)
 				canvas.drawRect(rect,paint)
@@ -63,5 +81,4 @@ class ListDivider(context : Context) : RecyclerView.ItemDecoration() {
 			}
 		}
 	}
-	
 }

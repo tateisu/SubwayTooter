@@ -2242,11 +2242,15 @@ internal class ItemViewHolder(
 		val b = Benchmark(log, "Item-Inflate", 40L)
 		val rv = verticalLayout {
 			// トップレベルのViewGroupのlparamsはイニシャライザ内部に置くしかないみたい
-			layoutParams = RecyclerView.LayoutParams(matchParent, wrapContent)
+			layoutParams = RecyclerView.LayoutParams(matchParent, wrapContent).apply{
+				marginStart=dip(8)
+				marginEnd=dip(8)
+				topMargin=dip(2f)
+				bottomMargin=dip(1f)
+			}
 			
-			
-			topPadding = dip(3)
-			bottomPadding = dip(3)
+			setPaddingRelative(dip(4),dip(1f),dip(4),dip(2f))
+
 			descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
 			
 			llBoosted = linearLayout {

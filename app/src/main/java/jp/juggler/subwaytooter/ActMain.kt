@@ -50,6 +50,7 @@ import java.lang.ref.WeakReference
 import java.util.*
 import java.util.regex.Pattern
 import java.util.zip.ZipInputStream
+import kotlin.math.abs
 import kotlin.math.min
 
 class ActMain : AppCompatActivity()
@@ -293,7 +294,7 @@ class ActMain : AppCompatActivity()
 	}
 	
 	private var nScreenColumn : Int = 0
-	private var nColumnWidth : Int = 0
+	private var nColumnWidth : Int = 0 // dividerの幅を含む
 	
 	// 相対時刻の表記を定期的に更新する
 	private val proc_updateRelativeTime = object : Runnable {
@@ -488,6 +489,7 @@ class ActMain : AppCompatActivity()
 		
 		// カラーカスタマイズを読み直す
 		ListDivider.color = Pref.ipListDividerColor(pref)
+		TabletColumnDivider.color = Pref.ipListDividerColor(pref)
 		ItemViewHolder.toot_color_unlisted = Pref.ipTootColorUnlisted(pref)
 		ItemViewHolder.toot_color_follower = Pref.ipTootColorFollower(pref)
 		ItemViewHolder.toot_color_direct_user = Pref.ipTootColorDirectUser(pref)
@@ -1340,6 +1342,7 @@ class ActMain : AppCompatActivity()
 		}
 		val column_w_min = (0.5f + column_w_min_dp * density).toInt()
 		
+		
 		val sw = dm.widthPixels
 		
 		if(Pref.bpDisableTabletMode(pref) || sw < column_w_min * 2) {
@@ -1365,6 +1368,12 @@ class ActMain : AppCompatActivity()
 			env.tablet_pager_adapter = TabletColumnPagerAdapter(this)
 			env.tablet_layout_manager =
 				LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+			
+			if(env.tablet_pager.itemDecorationCount == 0) {
+				env.tablet_pager.addItemDecoration(TabletColumnDivider(this@ActMain))
+			}
+			
+			
 			env.tablet_pager.adapter = env.tablet_pager_adapter
 			env.tablet_pager.layoutManager = env.tablet_layout_manager
 			env.tablet_pager.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -1490,7 +1499,7 @@ class ActMain : AppCompatActivity()
 					var slide_ratio = 0f
 					if(vr.first <= vr.last) {
 						val child = env.tablet_layout_manager.findViewByPosition(vr.first)
-						slide_ratio = Math.abs((child?.left ?: 0) / nColumnWidth.toFloat())
+						slide_ratio = clipRange(0f,1f,abs((child?.left ?: 0) / nColumnWidth.toFloat()))
 					}
 					
 					llColumnStrip.setVisibleRange(vr.first, vr.last, slide_ratio)
@@ -2438,21 +2447,21 @@ class ActMain : AppCompatActivity()
 		
 		val dm = resources.displayMetrics
 		
-		val sw = dm.widthPixels
+		val screen_width = dm.widthPixels
 		
 		val density = dm.density
 		var column_w_min = (0.5f + column_w_min_dp * density).toInt()
 		if(column_w_min < 1) column_w_min = 1
 		
-		if(sw < column_w_min * 2) {
-			
+		var column_w :Int
+		
+		if(screen_width < column_w_min * 2) {
 			// 最小幅で2つ表示できないのなら1カラム表示
-			env.tablet_pager_adapter.columnWidth = sw
-			resizeAutoCW(sw)
+			column_w = screen_width
 		} else {
 			
 			// カラム最小幅から計算した表示カラム数
-			nScreenColumn = sw / column_w_min
+			nScreenColumn = screen_width / column_w_min
 			if(nScreenColumn < 1) nScreenColumn = 1
 			
 			// データのカラム数より大きくならないようにする
@@ -2463,19 +2472,23 @@ class ActMain : AppCompatActivity()
 			}
 			
 			// 表示カラム数から計算したカラム幅
-			var column_w = sw / nScreenColumn
+			column_w = screen_width / nScreenColumn
 			
 			// 最小カラム幅の1.5倍よりは大きくならないようにする
 			val column_w_max = (0.5f + column_w_min * 1.5f).toInt()
 			if(column_w > column_w_max) {
 				column_w = column_w_max
 			}
-			resizeAutoCW(column_w)
-			
-			nColumnWidth = column_w
-			env.tablet_pager_adapter.columnWidth = column_w
-			env.tablet_snap_helper.columnWidth = column_w
 		}
+		
+		nColumnWidth = column_w // dividerの幅を含む
+
+		val divider_width = (0.5f + 1f * density).toInt()
+		column_w -= divider_width
+		env.tablet_pager_adapter.columnWidth = column_w // dividerの幅を含まない
+		// env.tablet_snap_helper.columnWidth = column_w //使われていない
+
+		resizeAutoCW(column_w)// dividerの幅を含まない
 		
 		// 並べ直す
 		env.tablet_pager_adapter.notifyDataSetChanged()

@@ -178,7 +178,7 @@ constructor(gravity : Int) : LinearSnapHelper() {
 		return horizontalHelper
 	}
 	
-	var columnWidth : Int = 0
+	// var columnWidth : Int = 0
 	
 	override fun findTargetSnapPosition(
 		layoutManager : RecyclerView.LayoutManager, velocityX : Int, velocityY : Int

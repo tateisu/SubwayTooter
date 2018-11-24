@@ -11,7 +11,7 @@ internal class TabletColumnPagerAdapter(
 	private val inflater : LayoutInflater
 	private val columnList : List<Column>
 	
-	var columnWidth :Int = 0
+	var columnWidth :Int = 0 // dividerの幅を含まない
 	
 	init {
 		this.inflater = activity.layoutInflater

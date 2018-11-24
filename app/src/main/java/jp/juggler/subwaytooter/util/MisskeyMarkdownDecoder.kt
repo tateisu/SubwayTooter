@@ -1351,7 +1351,6 @@ object MisskeyMarkdownDecoder {
 				! matcher.find() -> null
 				
 				else -> {
-					val buttonLength = matcher.end()
 					val keyword = parseSearchPrev()
 					when {
 						keyword?.isEmpty() != false -> null
@@ -1359,8 +1358,7 @@ object MisskeyMarkdownDecoder {
 						else -> makeDetected(
 							NodeType.SEARCH,
 							arrayOf(keyword),
-							pos - (keyword.length + 1),
-							matcher.end(),
+							pos - (keyword.length + 1),matcher.end(),
 							this.text, pos - (keyword.length + 1), keyword.length
 						)
 					}

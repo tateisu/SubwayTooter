@@ -340,6 +340,7 @@
         <item name="android:background">?attr/colorSettingDivider</item>
         <item name="android:layout_marginTop">12dp</item>
         <item name="android:layout_marginBottom">12dp</item>
+        <item name="android:padding">0dp</item>
     </style>
 
     <style name="setting_horizontal_stretch">

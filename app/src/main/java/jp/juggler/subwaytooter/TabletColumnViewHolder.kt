@@ -20,7 +20,7 @@ internal class TabletColumnViewHolder(
 	
 	init {
 		columnViewHolder = ColumnViewHolder(activity, viewRoot)
-		viewRoot.findViewById<View>(R.id.vTabletDivider).visibility = View.VISIBLE
+		// viewRoot.findViewById<View>(R.id.vTabletDivider).visibility = View.VISIBLE
 	}
 	
 	fun bind(column : Column, pageIndex : Int, column_count : Int) {

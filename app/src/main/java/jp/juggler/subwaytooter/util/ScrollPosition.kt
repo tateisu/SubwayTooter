@@ -6,7 +6,14 @@ import jp.juggler.subwaytooter.ColumnViewHolder
 class ScrollPosition {
 	
 	var adapterIndex : Int
+	
+	// 先頭要素のピクセルオフセット。 通常は <= 0 だが、topMarginがある場合は >0 になりうる
 	val offset : Int
+	
+	val isHead : Boolean
+		get() = adapterIndex == 0 && offset >= 0
+	
+	override fun toString() : String ="ScrlPos($adapterIndex,$offset)"
 	
 	constructor(adapterIndex : Int, top : Int) {
 		this.adapterIndex = adapterIndex

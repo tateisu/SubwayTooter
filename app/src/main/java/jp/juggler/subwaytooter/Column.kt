@@ -6553,30 +6553,33 @@ class Column(
 			fireShowContent(reason = "mergeStreamingMessage", changeList = changeList)
 			
 			if(holder != null) {
-				if(holder_sp == null) {
-					// スクロール位置が先頭なら先頭にする
-					log.d("mergeStreamingMessage: has VH. missing scroll position.")
-					viewHolder?.scrollToTop()
-					
-				} else if(holder_sp.adapterIndex == 0 && holder_sp.offset == 0) {
-					// スクロール位置が先頭なら先頭にする
-					log.d(
-						"mergeStreamingMessage: has VH. keep head. offset=%s,offset=%s"
-						, holder_sp.adapterIndex
-						, holder_sp.offset
-					)
-					holder.setScrollPosition(ScrollPosition(0, 0))
-				} else if(restore_idx < - 1) {
-					// 可視範囲の検出に失敗
-					log.d("mergeStreamingMessage: has VH. can't get visible range.")
-				} else {
-					// 現在の要素が表示され続けるようにしたい
-					log.d("mergeStreamingMessage: has VH. added=$added")
-					holder.setListItemTop(restore_idx + added, restore_y)
+				when {
+					holder_sp == null -> {
+						// スクロール位置が先頭なら先頭にする
+						log.d("mergeStreamingMessage: has VH. missing scroll position.")
+						viewHolder?.scrollToTop()
+					}
+
+					holder_sp.isHead -> {
+						// スクロール位置が先頭なら先頭にする
+						log.d("mergeStreamingMessage: has VH. keep head. $holder_sp")
+						holder.setScrollPosition(ScrollPosition(0, 0))
+					}
+
+					restore_idx < - 1 ->{
+						// 可視範囲の検出に失敗
+						log.d("mergeStreamingMessage: has VH. can't get visible range.")
+					}
+
+					else -> {
+						// 現在の要素が表示され続けるようにしたい
+						log.d("mergeStreamingMessage: has VH. added=$added")
+						holder.setListItemTop(restore_idx + added, restore_y)
+					}
 				}
 			} else {
 				val scroll_save = this@Column.scroll_save
-				if(scroll_save == null || (scroll_save.adapterIndex == 0 && scroll_save.offset == 0)) {
+				if(scroll_save == null || scroll_save.isHead ) {
 					// スクロール位置が先頭なら先頭のまま
 				} else {
 					// 現在の要素が表示され続けるようにしたい

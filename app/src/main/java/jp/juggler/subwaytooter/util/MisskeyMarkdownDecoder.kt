@@ -8,6 +8,7 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
+import android.text.style.RelativeSizeSpan
 import android.util.SparseArray
 import android.util.SparseBooleanArray
 import jp.juggler.subwaytooter.ActMain
@@ -38,16 +39,21 @@ private inline fun <T, V> Array<out T>.firstNonNull(predicate : (T) -> V?) : V? 
 	return null
 }
 
-class SpanPos(
-	var start : Int,
-	var end : Int,
-	val span : Any
-)
-
 // 文字装飾の指定を溜めておいてノードの親子関係に応じて順序を調整して、最後にまとめて適用する
 class SpanList {
 	
-	val list = LinkedList<SpanPos>()
+	private class SpanPos(var start : Int, var end : Int, val span : Any)
+	
+	private val list = LinkedList<SpanPos>()
+	
+	fun setSpan(sb : SpannableStringBuilder) =
+		list.forEach { sb.setSpan(it.span, it.start, it.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE) }
+	
+	fun addAll(other : SpanList) = list.addAll(other.list)
+	
+	fun addWithOffset(src : SpanList, offset : Int) {
+		src.list.forEach { addLast(it.start + offset, it.end + offset, it.span) }
+	}
 	
 	fun addFirst(start : Int, end : Int, span : Any) = when {
 		start == end -> {
@@ -77,12 +83,6 @@ class SpanList {
 		}
 	}
 	
-	fun addWithOffset(src : Iterable<SpanPos>, offset : Int) {
-		for(sp in src) {
-			addLast(sp.start + offset, sp.end + offset, sp.span)
-		}
-	}
-	
 	fun insert(offset : Int, length : Int) {
 		for(sp in list) {
 			when {
@@ -102,12 +102,13 @@ class SpanList {
 			
 		}
 	}
+	
 }
 
-// Matcher.usePattern does re-create nativeImpl
-// use thread-local cache for each pattern to avoid it
-// this cache keep 1 matcher for each pattern.
-// if text is changed, matcher is dropped and re-created.
+// 正規表現パターンごとにMatcherをキャッシュする
+// 対象テキストが変わったらキャッシュを捨てて更新する
+// Matcher#region(start,text.length) を設定してから返す
+// (同一テキストに対してMatcher.usePatternで正規表現パターンを切り替えるのも検討したが、usePatternの方が多分遅くなる)
 internal object MatcherCache {
 	
 	private class MatcherCacheItem(
@@ -116,9 +117,11 @@ internal object MatcherCache {
 		var textHashCode : Int
 	)
 	
-	private val matcherCache = object : ThreadLocal<HashMap<Pattern, MatcherCacheItem>>() {
-		override fun initialValue() : HashMap<Pattern, MatcherCacheItem> = HashMap()
-	}
+	// スレッドごとにキャッシュ用のマップを持つ
+	private val matcherCache =
+		object : ThreadLocal<HashMap<Pattern, MatcherCacheItem>>() {
+			override fun initialValue() : HashMap<Pattern, MatcherCacheItem> = HashMap()
+		}
 	
 	internal fun matcher(pattern : Pattern, text : String, start : Int, end : Int) : Matcher {
 		val m : Matcher
@@ -247,16 +250,12 @@ object MisskeySyntaxHighlighter {
 	}
 	
 	private val symbolMap = SparseBooleanArray().apply {
-		for(c in "=+-*/%~^&|><!?") {
-			this.put(c.toInt(), true)
-		}
+		"=+-*/%~^&|><!?".forEach { put(it.toInt(), true) }
 	}
 	
 	// 文字列リテラルの開始文字のマップ
 	private val stringStart = SparseBooleanArray().apply {
-		for(c in "\"'`") {
-			this.put(c.toInt(), true)
-		}
+		"\"'`".forEach { put(it.toInt(), true) }
 	}
 	
 	private class Token(
@@ -350,40 +349,40 @@ object MisskeySyntaxHighlighter {
 		Pattern.compile("""\A([A-Z_-][A-Z0-9_-]*)([ \t]*\()?""", Pattern.CASE_INSENSITIVE)
 	private val reContainsAlpha = Pattern.compile("""[A-Za-z_]""")
 	
-	private val charH80 = 0x80.toChar()
+	private const val charH80 = 0x80.toChar()
 	
 	private val elements = arrayOf<Env.() -> Token?>(
 		
 		// マルチバイト文字をまとめて読み飛ばす
 		{
 			var s = pos
-			while( s < end && source[s] >= charH80){
-				++s
+			while(s < end && source[s] >= charH80) {
+				++ s
 			}
-			when{
-				s > pos -> Token(length = s-pos)
-				else->null
+			when {
+				s > pos -> Token(length = s - pos)
+				else -> null
 			}
 		},
-
+		
 		// 空白と改行をまとめて読み飛ばす
 		{
 			var s = pos
-			while( s < end && source[s] <= ' '){
-				++s
+			while(s < end && source[s] <= ' ') {
+				++ s
 			}
-			when{
-				s > pos -> Token(length = s-pos)
-				else->null
+			when {
+				s > pos -> Token(length = s - pos)
+				else -> null
 			}
 		},
-
+		
 		// comment
 		{
 			val match = remainMatcher(reLineComment)
 			when {
 				! match.find() -> null
-				else -> Token(length = match.end()-match.start(), comment = true)
+				else -> Token(length = match.end() - match.start(), comment = true)
 			}
 		},
 		
@@ -392,7 +391,7 @@ object MisskeySyntaxHighlighter {
 			val match = remainMatcher(reBlockComment)
 			when {
 				! match.find() -> null
-				else -> Token(length = match.end()-match.start(), comment = true)
+				else -> Token(length = match.end() - match.start(), comment = true)
 			}
 		},
 		
@@ -518,15 +517,14 @@ object MisskeySyntaxHighlighter {
 			when {
 				symbolMap.get(c.toInt(), false) ->
 					Token(length = 1, color = 0x42b983)
-				c =='-' ->
+				c == '-' ->
 					Token(length = 1, color = 0x42b983)
 				else -> null
 			}
 		}
 	)
 	
-	fun parse(source : String) = Env(source,0,source.length).parse()
-	
+	fun parse(source : String) = Env(source, 0, source.length).parse()
 }
 
 object MisskeyMarkdownDecoder {
@@ -547,6 +545,7 @@ object MisskeyMarkdownDecoder {
 		s.replace(reStartEmptyLines, "")
 			.replace(reEndEmptyLines, "")
 	
+	// URLを適当に短くする
 	private fun shortenUrl(display_url : String) : String {
 		return try {
 			val uri = Uri.parse(display_url)
@@ -569,12 +568,12 @@ object MisskeyMarkdownDecoder {
 			}
 			sbTmp.toString()
 		} catch(ex : Throwable) {
-			log.trace(ex)
+			MisskeyMarkdownDecoder.log.trace(ex)
 			display_url
 		}
 	}
 	
-	// マークダウン要素のデコード時に使う作業変数をまとめたクラス
+	// 装飾つきテキストの出力時に使うデータの集まり
 	internal class SpanOutputEnv(
 		val options : DecodeOptions,
 		val sb : SpannableStringBuilderEx
@@ -608,7 +607,7 @@ object MisskeyMarkdownDecoder {
 			val parent_result = this.spanList
 			parent.childNodes.forEach {
 				val child_result = fireRender(it)
-				parent_result.list.addAll(child_result.list)
+				parent_result.addAll(child_result)
 			}
 			this.spanList = parent_result
 			return parent_result
@@ -624,7 +623,10 @@ object MisskeyMarkdownDecoder {
 		
 		fun closeBlock() {
 			if(sb.length > 0 && sb[sb.length - 1] != '\n') {
+				val start = sb.length
 				sb.append('\n')
+				val end = sb.length
+				sb.setSpan(RelativeSizeSpan(0.1f), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
 			}
 		}
 		
@@ -719,351 +721,336 @@ object MisskeyMarkdownDecoder {
 		mixColor(Color.GRAY, 0xff0080),
 		mixColor(Color.GRAY, 0x8000ff)
 	)
-	
-	fun <T> hashSetOf(vararg values : T) = HashSet<T>().apply { addAll(values) }
-	
-	enum class NodeType(
-		val allowInside : Set<NodeType> = emptySet(),
-		val allowInsideAll : Boolean = false,
-		val render : SpanOutputEnv.(Node) -> Unit
-	) {
-		/////////////////////////////////////////////
-		// 入れ子なし
-		
-		TEXT(
-			render = { appendText(it.args[0], decodeEmoji = true) }
-		),
-		
-		EMOJI(
-			render = {
-				val code = it.args[0]
-				if(code.isNotEmpty()) {
-					appendText(":$code:", decodeEmoji = true)
-				}
+
+	// ノード種別とレンダリング関数
+	enum class NodeType(val render : SpanOutputEnv.(Node) -> Unit) {
+
+		TEXT({
+			appendText(it.args[0], decodeEmoji = true)
+		}),
+
+		EMOJI({
+			val code = it.args[0]
+			if(code.isNotEmpty()) {
+				appendText(":$code:", decodeEmoji = true)
 			}
-		),
-		
-		MENTION(
-			render = {
-				val username = it.args[0]
-				val host = it.args[1]
-				val linkHelper = linkHelper
-				if(linkHelper == null) {
-					appendText(
-						when {
-							host.isEmpty() -> "@$username"
-							else -> "@$username@$host"
-						}
-					
-					)
-				} else {
-					
-					val shortAcct = when {
-						host.isEmpty()
-							|| host.equals(linkHelper.host, ignoreCase = true) ->
-							username
-						else ->
-							"$username@$host"
+		}),
+
+		MENTION({
+			val username = it.args[0]
+			val host = it.args[1]
+			val linkHelper = linkHelper
+			if(linkHelper == null) {
+				appendText(
+					when {
+						host.isEmpty() -> "@$username"
+						else -> "@$username@$host"
 					}
-					
-					val userHost = when {
-						host.isEmpty() -> linkHelper.host
-						else -> host
-					}
-					val userUrl = "https://$userHost/@$username"
-					
-					val mentions = prepareMentions()
-					
-					if(mentions.find { m -> m.acct == shortAcct } == null) {
-						mentions.add(
-							TootMention(
-								EntityIdLong(- 1L)
-								, userUrl
-								, shortAcct
-								, username
-							)
+				
+				)
+			} else {
+				
+				val shortAcct = when {
+					host.isEmpty()
+						|| host.equals(linkHelper.host, ignoreCase = true) ->
+						username
+					else ->
+						"$username@$host"
+				}
+				
+				val userHost = when {
+					host.isEmpty() -> linkHelper.host
+					else -> host
+				}
+				val userUrl = "https://$userHost/@$username"
+				
+				val mentions = prepareMentions()
+				
+				if(mentions.find { m -> m.acct == shortAcct } == null) {
+					mentions.add(
+						TootMention(
+							EntityIdLong(- 1L)
+							, userUrl
+							, shortAcct
+							, username
 						)
-					}
-					
-					appendLink(
-						when {
-							Pref.bpMentionFullAcct(App1.pref) -> "@$username@$userHost"
-							else -> "@$shortAcct"
-						}
-						, userUrl
 					)
 				}
-			}
-		),
-		
-		HASHTAG(
-			render = {
-				val linkHelper = linkHelper
-				val tag = it.args[0]
-				if(tag.isNotEmpty() && linkHelper != null) {
-					appendLink(
-						"#$tag",
-						"https://${linkHelper.host}/tags/" + tag.encodePercent()
-					)
-				}
-			}
-		),
-		
-		CODE_INLINE(
-			render = {
-				val text = it.args[0]
-				val sp = MisskeySyntaxHighlighter.parse(text)
-				appendText(text)
-				spanList.addWithOffset(sp.list, start)
-				spanList.addLast(start, sb.length, BackgroundColorSpan(0x40808080))
-				spanList.addLast(start, sb.length, CalligraphyTypefaceSpan(Typeface.MONOSPACE))
-			}
-		),
-		
-		URL(
-			render = {
-				val url = it.args[0]
-				if(url.isNotEmpty()) {
-					appendLink(url, url, allowShort = true)
-				}
-			}
-		),
-		
-		CODE_BLOCK(
-			
-			render = {
-				closePreviousBlock()
-				
-				val text = trimBlock(it.args[0])
-				val sp = MisskeySyntaxHighlighter.parse(text)
-				appendText(text)
-				spanList.addWithOffset(sp.list, start)
-				spanList.addLast(start, sb.length, BackgroundColorSpan(0x40808080))
-				spanList.addLast(start, sb.length, android.text.style.RelativeSizeSpan(0.7f))
-				spanList.addLast(start, sb.length, CalligraphyTypefaceSpan(Typeface.MONOSPACE))
-				closeBlock()
-			}
-		),
-		
-		QUOTE_INLINE(
-			render = {
-				val text = trimBlock(it.args[0])
-				appendText(text)
-				spanList.addLast(
-					start,
-					sb.length,
-					android.text.style.BackgroundColorSpan(0x20808080)
-				)
-				spanList.addLast(
-					start,
-					sb.length,
-					CalligraphyTypefaceSpan(android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
-				)
-			}
-		),
-		
-		SEARCH(
-			render = {
-				closePreviousBlock()
-				
-				val text = it.args[0]
-				val kw_start = sb.length // キーワードの開始位置
-				appendText(text)
-				appendText(" ")
-				start = sb.length // 検索リンクの開始位置
 				
 				appendLink(
-					context.getString(jp.juggler.subwaytooter.R.string.search),
-					"https://www.google.co.jp/search?q=${text.encodePercent()}"
-				)
-				spanList.addLast(kw_start, sb.length, android.text.style.RelativeSizeSpan(1.2f))
-				
-				closeBlock()
-			}
-		),
-		
-		/////////////////////////////////////////////
-		// 入れ子あり
-		
-		// インライン要素、装飾のみ
-		
-		BIG(
-			allowInside = hashSetOf(MENTION, HASHTAG, EMOJI),
-			render = {
-				val start = this.start
-				fireRenderChildNodes(it)
-				spanList.addLast(start, sb.length, MisskeyBigSpan(font_bold))
-			}
-		),
-		
-		BOLD(
-			allowInside = hashSetOf(MENTION, HASHTAG, EMOJI),
-			render = {
-				val start = this.start
-				fireRenderChildNodes(it)
-				spanList.addLast(start, sb.length, CalligraphyTypefaceSpan(font_bold))
-			}
-		),
-		
-		MOTION(
-			allowInside = hashSetOf(BOLD, MENTION, HASHTAG, EMOJI),
-			render = {
-				val start = this.start
-				fireRenderChildNodes(it)
-				spanList.addFirst(
-					start,
-					sb.length,
-					jp.juggler.subwaytooter.span.MisskeyMotionSpan(jp.juggler.subwaytooter.ActMain.timeline_font)
+					when {
+						Pref.bpMentionFullAcct(App1.pref) -> "@$username@$userHost"
+						else -> "@$shortAcct"
+					}
+					, userUrl
 				)
 			}
-		),
+		}),
+
+		HASHTAG({
+			val linkHelper = linkHelper
+			val tag = it.args[0]
+			if(tag.isNotEmpty() && linkHelper != null) {
+				appendLink(
+					"#$tag",
+					"https://${linkHelper.host}/tags/" + tag.encodePercent()
+				)
+			}
+		}),
 		
-		// リンクなどのデータを扱う要素
+		CODE_INLINE({
+			val text = it.args[0]
+			val sp = MisskeySyntaxHighlighter.parse(text)
+			appendText(text)
+			spanList.addWithOffset(sp, start)
+			spanList.addLast(start, sb.length, BackgroundColorSpan(0x40808080))
+			spanList.addLast(start, sb.length, CalligraphyTypefaceSpan(Typeface.MONOSPACE))
+		}),
 		
-		LINK(
-			allowInside = hashSetOf(
-				BIG,
-				BOLD,
-				MOTION,
-				EMOJI
-			),
-			render = {
-				val url = it.args[1]
-				// val silent = data?.get(2)
-				// silentはプレビュー表示を抑制するが、Subwayにはもともとないので関係なかった
-				
-				if(url.isNotEmpty()) {
-					val start = this.start
-					fireRenderChildNodes(it)
-					val linkHelper = options.linkHelper
-					if(linkHelper != null) {
-						spanList.addFirst(
-							start, sb.length,
-							MyClickableSpan(
-								sb.substring(start, sb.length)
-								, url
-								, linkHelper.findAcctColor(url)
-								, options.linkTag
-							)
+		URL({
+			val url = it.args[0]
+			if(url.isNotEmpty()) {
+				appendLink(url, url, allowShort = true)
+			}
+		}),
+		
+		CODE_BLOCK({
+			closePreviousBlock()
+			
+			val text = trimBlock(it.args[0])
+			val sp = MisskeySyntaxHighlighter.parse(text)
+			appendText(text)
+			spanList.addWithOffset(sp, start)
+			spanList.addLast(start, sb.length, BackgroundColorSpan(0x40808080))
+			spanList.addLast(start, sb.length, android.text.style.RelativeSizeSpan(0.7f))
+			spanList.addLast(start, sb.length, CalligraphyTypefaceSpan(Typeface.MONOSPACE))
+			closeBlock()
+		}),
+		
+		QUOTE_INLINE({
+			val text = trimBlock(it.args[0])
+			appendText(text)
+			spanList.addLast(
+				start,
+				sb.length,
+				android.text.style.BackgroundColorSpan(0x20808080)
+			)
+			spanList.addLast(
+				start,
+				sb.length,
+				CalligraphyTypefaceSpan(android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
+			)
+		}),
+		
+		SEARCH({
+			closePreviousBlock()
+			
+			val text = it.args[0]
+			val kw_start = sb.length // キーワードの開始位置
+			appendText(text)
+			appendText(" ")
+			start = sb.length // 検索リンクの開始位置
+			
+			appendLink(
+				context.getString(jp.juggler.subwaytooter.R.string.search),
+				"https://www.google.co.jp/search?q=${text.encodePercent()}"
+			)
+			spanList.addLast(kw_start, sb.length, android.text.style.RelativeSizeSpan(1.2f))
+			
+			closeBlock()
+		}),
+		
+		BIG({
+			val start = this.start
+			fireRenderChildNodes(it)
+			spanList.addLast(start, sb.length, MisskeyBigSpan(font_bold))
+		}),
+		
+		BOLD({
+			val start = this.start
+			fireRenderChildNodes(it)
+			spanList.addLast(start, sb.length, CalligraphyTypefaceSpan(font_bold))
+		}),
+		
+		MOTION({
+			val start = this.start
+			fireRenderChildNodes(it)
+			spanList.addFirst(
+				start,
+				sb.length,
+				jp.juggler.subwaytooter.span.MisskeyMotionSpan(jp.juggler.subwaytooter.ActMain.timeline_font)
+			)
+		}),
+		
+		LINK({
+			val url = it.args[1]
+			// val silent = data?.get(2)
+			// silentはプレビュー表示を抑制するが、Subwayにはもともとないので関係なかった
+			
+			if(url.isNotEmpty()) {
+				val start = this.start
+				fireRenderChildNodes(it)
+				val linkHelper = options.linkHelper
+				if(linkHelper != null) {
+					spanList.addFirst(
+						start, sb.length,
+						MyClickableSpan(
+							sb.substring(start, sb.length)
+							, url
+							, linkHelper.findAcctColor(url)
+							, options.linkTag
 						)
-					}
+					)
 				}
 			}
-		),
+		}),
 		
-		TITLE(
-			allowInside = hashSetOf(
-				BIG,
-				BOLD,
-				MOTION,
-				URL,
-				LINK,
-				MENTION,
-				HASHTAG,
-				EMOJI,
-				CODE_INLINE
-			),
-			render = {
-				closePreviousBlock()
-				
-				val start = this.start
-				fireRenderChildNodes(it) // 改行を含まないことが分かっている
+		TITLE({
+			closePreviousBlock()
+			
+			val start = this.start
+			fireRenderChildNodes(it) // 改行を含まないことが分かっている
+			spanList.addLast(
+				start,
+				sb.length,
+				android.text.style.AlignmentSpan.Standard(android.text.Layout.Alignment.ALIGN_CENTER)
+			)
+			spanList.addLast(
+				start,
+				sb.length,
+				android.text.style.BackgroundColorSpan(0x20808080)
+			)
+			spanList.addLast(start, sb.length, android.text.style.RelativeSizeSpan(1.5f))
+			
+			closeBlock()
+		}),
+		
+		CENTER({
+			closePreviousBlock()
+			
+			val start = this.start
+			fireRenderChildNodes(it)
+			if(it.quoteNest > 0) {
+				// 引用ネストの内部ではセンタリングさせると引用マーカーまで動いてしまうので
+				// センタリングが機能しないようにする
+			} else {
 				spanList.addLast(
 					start,
 					sb.length,
-					android.text.style.AlignmentSpan.Standard(android.text.Layout.Alignment.ALIGN_CENTER)
+					android.text.style.AlignmentSpan.Standard(
+						android.text.Layout.Alignment.ALIGN_CENTER
+					)
 				)
-				spanList.addLast(
-					start,
-					sb.length,
-					android.text.style.BackgroundColorSpan(0x20808080)
-				)
-				spanList.addLast(start, sb.length, android.text.style.RelativeSizeSpan(1.5f))
-				
-				closeBlock()
 			}
-		),
+			
+			closeBlock()
+		}),
 		
-		QUOTE_BLOCK(
-			allowInsideAll = true,
-			render = {
-				closePreviousBlock()
-				
-				val start = this.start
-				
-				// 末尾にある空白のテキストノードを除去する
-				while(it.childNodes.isNotEmpty()) {
-					val last = it.childNodes.last()
-					if(last.type == NodeType.TEXT && last.args[0].isBlank()) {
-						it.childNodes.removeLast()
-					} else {
-						break
-					}
+		QUOTE_BLOCK({
+			closePreviousBlock()
+			
+			val start = this.start
+			
+			// 末尾にある空白のテキストノードを除去する
+			while(it.childNodes.isNotEmpty()) {
+				val last = it.childNodes.last()
+				if(last.type == NodeType.TEXT && last.args[0].isBlank()) {
+					it.childNodes.removeLast()
+				} else {
+					break
 				}
-				
-				fireRenderChildNodes(it)
-				
-				val bg_color = quoteNestColors[it.quoteNest % quoteNestColors.size]
-				// TextView の文字装飾では「ブロック要素の入れ子」を表現できない
-				// 内容の各行の始端に何か追加するというのがまずキツい
-				// しかし各行の頭に引用マークをつけないと引用のネストで意味が通じなくなってしまう
-				val tmp = sb.toString()
-				//log.d("QUOTE_BLOCK tmp=${tmp} start=$start end=${tmp.length}")
-				for(i in tmp.length - 1 downTo start) {
-					val prevChar = when(i) {
-						start -> '\n'
-						else -> tmp[i - 1]
-					}
-					//log.d("QUOTE_BLOCK prevChar=${ String.format("%x",prevChar.toInt())}")
-					if(prevChar == '\n') {
-						//log.d("QUOTE_BLOCK insert! i=$i")
-						sb.insert(i, "> ")
-						spanList.insert(i, 2)
-						spanList.addLast(
-							i, i + 1,
-							android.text.style.BackgroundColorSpan(bg_color)
-						)
-					}
-				}
-				
-				spanList.addLast(
-					start,
-					sb.length,
-					CalligraphyTypefaceSpan(android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
-				)
-				
-				closeBlock()
 			}
-		),
+			
+			fireRenderChildNodes(it)
+			
+			val bg_color = quoteNestColors[it.quoteNest % quoteNestColors.size]
+			// TextView の文字装飾では「ブロック要素の入れ子」を表現できない
+			// 内容の各行の始端に何か追加するというのがまずキツい
+			// しかし各行の頭に引用マークをつけないと引用のネストで意味が通じなくなってしまう
+			val tmp = sb.toString()
+			//log.d("QUOTE_BLOCK tmp=${tmp} start=$start end=${tmp.length}")
+			for(i in tmp.length - 1 downTo start) {
+				val prevChar = when(i) {
+					start -> '\n'
+					else -> tmp[i - 1]
+				}
+				//log.d("QUOTE_BLOCK prevChar=${ String.format("%x",prevChar.toInt())}")
+				if(prevChar == '\n') {
+					//log.d("QUOTE_BLOCK insert! i=$i")
+					sb.insert(i, "> ")
+					spanList.insert(i, 2)
+					spanList.addLast(
+						i, i + 1,
+						android.text.style.BackgroundColorSpan(bg_color)
+					)
+				}
+			}
+			
+			spanList.addLast(
+				start,
+				sb.length,
+				CalligraphyTypefaceSpan(android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
+			)
+			
+			closeBlock()
+		}),
 		
-		ROOT(
-			allowInsideAll = true,
-			render = { fireRenderChildNodes(it) }
-		),
+		ROOT({
+			fireRenderChildNodes(it)
+		}),
 		
-	}
-	
-	val nodeTypeAllSet = HashSet<NodeType>().apply {
-		for(v in NodeType.values()) {
-			this.add(v)
+		;
+		
+		companion object {
+
+			// あるノードが内部に持てるノード種別のマップ
+			val mapAllowInside = HashMap<NodeType, HashSet<NodeType>>().apply {
+				
+				fun <T> hashSetOf(vararg values : T) = HashSet<T>().apply { addAll(values) }
+				
+				infix fun NodeType.wraps(inner : HashSet<NodeType>) = put(this, inner)
+				
+				BIG wraps
+					hashSetOf(EMOJI, HASHTAG, MENTION)
+				BOLD wraps
+					hashSetOf(EMOJI, HASHTAG, MENTION, URL, LINK)
+				MOTION wraps
+					hashSetOf(EMOJI, HASHTAG, MENTION, URL, LINK, BOLD)
+				LINK wraps
+					hashSetOf(EMOJI, MOTION, BIG, BOLD)
+				TITLE wraps
+					hashSetOf(EMOJI, HASHTAG, MENTION, URL, LINK, BIG, BOLD, MOTION, CODE_INLINE)
+				CENTER wraps
+					hashSetOf(EMOJI, HASHTAG, MENTION, URL, LINK, BIG, BOLD, MOTION, CODE_INLINE)
+				QUOTE_BLOCK wraps
+					hashSetOf(
+						EMOJI, HASHTAG, MENTION, URL, LINK, BIG, BOLD, MOTION, CODE_INLINE,
+						CODE_BLOCK, QUOTE_INLINE, SEARCH, TITLE, CENTER, QUOTE_BLOCK
+					)
+				ROOT wraps
+					hashSetOf(
+						EMOJI, HASHTAG, MENTION, URL, LINK, BIG, BOLD, MOTION, CODE_INLINE,
+						CODE_BLOCK, QUOTE_INLINE, SEARCH, TITLE, CENTER, QUOTE_BLOCK
+					)
+			}
 		}
 	}
-	
+
+	// マークダウン要素
 	class Node(
 		val type : NodeType, // ノード種別
 		val args : Array<String> = emptyArray(), // 引数
 		parentNode : Node?
 	) {
-		
 		val childNodes = LinkedList<Node>()
 		
 		internal val quoteNest : Int = (parentNode?.quoteNest ?: 0) + when(type) {
 			NodeType.QUOTE_BLOCK, NodeType.QUOTE_INLINE -> 1
 			else -> 0
 		}
-		
 	}
 	
+	// マークダウン要素の出現位置
 	class NodeDetected(
 		val node : Node,
 		val start : Int, // テキスト中の開始位置
@@ -1072,10 +1059,8 @@ object MisskeyMarkdownDecoder {
 		val startInside : Int, // 内部範囲の開始位置
 		private val lengthInside : Int // 内部範囲の終了位置
 	) {
-		
 		val endInside : Int
 			get() = startInside + lengthInside
-		
 	}
 	
 	class NodeParseEnv(
@@ -1086,11 +1071,8 @@ object MisskeyMarkdownDecoder {
 	) {
 		
 		private val childNodes = parentNode.childNodes
-		private val allowInside = if(parentNode.type.allowInsideAll) {
-			nodeTypeAllSet
-		} else {
-			parentNode.type.allowInside
-		}
+		private val allowInside : HashSet<NodeType> =
+			NodeType.mapAllowInside[parentNode.type] ?: hashSetOf()
 		
 		// 直前のノードの終了位置
 		internal var lastEnd = start
@@ -1220,7 +1202,10 @@ object MisskeyMarkdownDecoder {
 	// (マークダウン要素の特徴的な文字)と(パーサ関数の配列)のマップ
 	private val nodeParserMap = SparseArray<Array<out NodeParseEnv.() -> NodeDetected?>>().apply {
 		
-		fun addParser(firstChars : String, vararg nodeParsers : NodeParseEnv.() -> NodeDetected?) {
+		fun addParser(
+			firstChars : String,
+			vararg nodeParsers : NodeParseEnv.() -> NodeDetected?
+		) {
 			for(s in firstChars) {
 				put(s.toInt(), nodeParsers)
 			}
@@ -1230,16 +1215,18 @@ object MisskeyMarkdownDecoder {
 		addParser(
 			"\""
 			, simpleParser(
-				Pattern.compile("""^"([^\x0d\x0a]+?)\n"[\x0d\x0a]*""")
+				Pattern.compile("""\A"([^\x0d\x0a]+?)\n"[\x0d\x0a]*""")
 				, NodeType.QUOTE_INLINE
 			)
 		)
 		
 		// Quote (行頭)>...(改行)
 		val reQuoteBlock = Pattern.compile(
-			"^>(?:[ 　]?)([^\\x0d\\x0a]*)(\\x0a|\\x0d\\x0a?)?",
+			// この正規表現の場合は \A ではなく ^ で各行の始端にマッチさせる
+			"""^>(?:[ 　]?)([^\x0d\x0a]*)(\x0a|\x0d\x0a?)?""",
 			Pattern.MULTILINE
 		)
+		
 		addParser(">", {
 			if(pos > 0) {
 				val c = text[pos - 1]
@@ -1281,7 +1268,7 @@ object MisskeyMarkdownDecoder {
 		addParser(
 			":"
 			, simpleParser(
-				Pattern.compile("""^:([a-zA-Z0-9+-_]+):""")
+				Pattern.compile("""\A:([a-zA-Z0-9+-_]+):""")
 				, NodeType.EMOJI
 			)
 		)
@@ -1289,7 +1276,7 @@ object MisskeyMarkdownDecoder {
 		addParser(
 			"("
 			, simpleParser(
-				Pattern.compile("""^\Q(((\E(.+?)\Q)))\E""")
+				Pattern.compile("""\A\Q(((\E(.+?)\Q)))\E""", Pattern.DOTALL)
 				, NodeType.MOTION
 			)
 		)
@@ -1297,8 +1284,12 @@ object MisskeyMarkdownDecoder {
 		addParser(
 			"<"
 			, simpleParser(
-				Pattern.compile("""^<motion>(.+?)</motion>""")
+				Pattern.compile("""\A<motion>(.+?)</motion>""", Pattern.DOTALL)
 				, NodeType.MOTION
+			)
+			, simpleParser(
+				Pattern.compile("""\A<center>(.+?)</center>""", Pattern.DOTALL)
+				, NodeType.CENTER
 			)
 		)
 		
@@ -1321,7 +1312,7 @@ object MisskeyMarkdownDecoder {
 		addParser(
 			"h"
 			, simpleParser(
-				Pattern.compile("""^(https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+)""")
+				Pattern.compile("""\A(https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+)""")
 				, NodeType.URL
 			)
 		)
@@ -1329,7 +1320,7 @@ object MisskeyMarkdownDecoder {
 		// 検索
 		
 		val reSearchButton = Pattern.compile(
-			"""^(検索|\[検索]|Search|\[Search])(\n|${'$'})"""
+			"""\A(検索|\[検索]|Search|\[Search])(\n|${'$'})"""
 			, Pattern.CASE_INSENSITIVE
 		)
 		
@@ -1358,7 +1349,7 @@ object MisskeyMarkdownDecoder {
 						else -> makeDetected(
 							NodeType.SEARCH,
 							arrayOf(keyword),
-							pos - (keyword.length + 1),matcher.end(),
+							pos - (keyword.length + 1), matcher.end(),
 							this.text, pos - (keyword.length + 1), keyword.length
 						)
 					}
@@ -1369,13 +1360,13 @@ object MisskeyMarkdownDecoder {
 		// [title] 【title】
 		// 直後に改行が必要だったが文末でも良いことになった https://github.com/syuilo/misskey/commit/79ffbf95db9d0cc019d06ab93b1bfa6ba0d4f9ae
 		val titleParser = simpleParser(
-			Pattern.compile("""^[【\[](.+?)[】\]](\n|\z)""")
+			Pattern.compile("""\A[【\[](.+?)[】\]](\n|\z)""")
 			, NodeType.TITLE
 		)
 		
 		// Link
 		val reLink = Pattern.compile(
-			"""^\??\[([^\[\]]+?)]\((https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+?)\)"""
+			"""\A\??\[([^\n\[\]]+?)]\((https?://[\w/:%#@${'$'}&?!()\[\]~.=+\-]+?)\)"""
 		)
 		
 		val linkParser : NodeParseEnv.() -> NodeDetected? = {
@@ -1409,7 +1400,7 @@ object MisskeyMarkdownDecoder {
 		
 		// メンション @username @username@host
 		val reMention = Pattern.compile(
-			"""^@([a-z0-9_]+)(?:@([a-z0-9.\-]+[a-z0-9]))?"""
+			"""\A@([a-z0-9_]+)(?:@([a-z0-9.\-]+[a-z0-9]))?"""
 			, Pattern.CASE_INSENSITIVE
 		)
 		
@@ -1430,7 +1421,7 @@ object MisskeyMarkdownDecoder {
 		})
 		
 		// Hashtag
-		val reHashtag = Pattern.compile("""^#([^\s]+)""")
+		val reHashtag = Pattern.compile("""\A#([^\s]+)""")
 		addParser("#"
 			, {
 				val matcher = remainMatcher(reHashtag)
@@ -1457,25 +1448,25 @@ object MisskeyMarkdownDecoder {
 		addParser(
 			"`"
 			, simpleParser(
-				Pattern.compile("""^```(?:.*)\n([\s\S]+?)\n```(?:\n|$)""")
+				Pattern.compile("""\A```(?:.*)\n([\s\S]+?)\n```(?:\n|$)""")
 				, NodeType.CODE_BLOCK
-					/*
-					(A)
-						```code``` は 閉じる部分の前後に改行がないのでダメ
-					(B)
-						```lang
-						code
-						code
-						code
-						```
-						はlang部分は表示されない
-					(C)
-						STの表示上の都合で閉じる部分の後の改行が複数あっても全て除去する
-					 */
+				/*
+				(A)
+					```code``` は 閉じる部分の前後に改行がないのでダメ
+				(B)
+					```lang
+					code
+					code
+					code
+					```
+					はlang部分は表示されない
+				(C)
+					STの表示上の都合で閉じる部分の後の改行が複数あっても全て除去する
+				 */
 			)
 			, simpleParser(
 				// インラインコードは内部にとある文字を含むと認識されない。理由は顔文字と衝突するからだとか
-				Pattern.compile("""^`([^`´\x0d\x0a]+)`""")
+				Pattern.compile("""\A`([^`´\x0d\x0a]+)`""")
 				, NodeType.CODE_INLINE
 			)
 		)
@@ -1492,9 +1483,8 @@ object MisskeyMarkdownDecoder {
 				if(src != null) {
 					val root = Node(NodeType.ROOT, emptyArray(), null)
 					NodeParseEnv(root, src, 0, src.length).parseInside()
-					for(sp in env.fireRender(root).list) {
-						env.sb.setSpan(sp.span, sp.start, sp.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-					}
+					env.fireRender(root).setSpan(env.sb)
+					
 				}
 				
 				// 末尾の空白を取り除く

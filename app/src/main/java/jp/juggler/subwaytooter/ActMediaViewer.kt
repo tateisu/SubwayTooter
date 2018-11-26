@@ -891,5 +891,5 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			}
 		}
 	}
-	
+
 }

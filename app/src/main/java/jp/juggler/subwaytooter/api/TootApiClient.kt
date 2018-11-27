@@ -118,7 +118,7 @@ class TootApiClient(
 		val DEFAULT_JSON_ERROR_PARSER = { json : JSONObject ->
 			val v = json.opt("error")
 			when(v) {
-				null,JSONObject.NULL -> null
+				null, JSONObject.NULL -> null
 				else -> v.toString()
 			}
 		}
@@ -1477,29 +1477,34 @@ fun TootApiClient.syncStatus(accessInfo : SavedAccount, urlArg : String) : TootA
 	// これを投稿元タンスのURLに変換しないと、投稿の同期には使えない
 	val m = TootStatus.reStatusPageMisskey.matcher(urlArg)
 	if(m.find()) {
-		val host =  m.group(1)
-		val client2 = TootApiClient(context, callback = callback)
-		client2.instance =host
-		val params = JSONObject().put("uri", urlArg)
-		val result = client2.request("/api/ap/show", params.toPostRequestBuilder())
-		if(result == null || result.error != null) return result
-
-		val obj = parseMisskeyApShow(
-			TootParser(context, accessInfo,serviceType = ServiceType.MISSKEY),
-			result.jsonObject
-		) as? TootStatus
-
-		if( obj != null ){
-			if( host .equals(accessInfo.host,ignoreCase = true)){
+		val host = m.group(1)
+		val noteId = m.group(2)
+		
+		val result = TootApiClient(context, callback = callback)
+			.apply { instance = host }
+			.request(
+				"/api/notes/show",
+				JSONObject()
+					.put("noteId", noteId)
+					.toPostRequestBuilder()
+			) ?: return null
+		
+		val obj = TootParser(
+			context,
+			accessInfo,
+			serviceType = ServiceType.MISSKEY
+		).status(result.jsonObject)
+		
+		if(obj != null) {
+			if(host.equals(accessInfo.host, ignoreCase = true)) {
 				result.data = obj
 				return result
 			}
 			val uri = obj.uri
-			if(uri?.isNotEmpty() == true){
+			if(uri?.isNotEmpty() == true) {
 				url = uri
 			}
 		}
-
 	}
 	
 	return if(accessInfo.isMisskey) {

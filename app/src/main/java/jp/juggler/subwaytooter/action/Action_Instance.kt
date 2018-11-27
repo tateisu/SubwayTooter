@@ -22,12 +22,12 @@ object Action_Instance {
 	fun information(
 		activity : ActMain, pos : Int, host : String
 	) {
-		activity.addColumn(false,pos, SavedAccount.na, Column.TYPE_INSTANCE_INFORMATION, host)
+		activity.addColumn(false, pos, SavedAccount.na, Column.TYPE_INSTANCE_INFORMATION, host)
 	}
 	
 	// 指定タンスのローカルタイムラインを開く
 	fun timelineLocal(
-		activity : ActMain, pos:Int,host : String
+		activity : ActMain, pos : Int, host : String
 	) {
 		// 指定タンスのアカウントを持ってるか？
 		val account_list = ArrayList<SavedAccount>()
@@ -36,8 +36,7 @@ object Action_Instance {
 		}
 		if(account_list.isEmpty()) {
 			// 持ってないなら疑似アカウントを追加する
-			val ai = addPseudoAccount(activity, host)
-			if(ai != null) {
+			addPseudoAccount(activity, host) { ai ->
 				activity.addColumn(pos, ai, Column.TYPE_LOCAL)
 			}
 		} else {
@@ -46,13 +45,12 @@ object Action_Instance {
 			AccountPicker.pick(
 				activity,
 				bAllowPseudo = true,
-				bAuto =  false,
+				bAuto = false,
 				message = activity.getString(R.string.account_picker_add_timeline_of, host),
 				accountListArg = account_list
 			) { ai -> activity.addColumn(pos, ai, Column.TYPE_LOCAL) }
 		}
 	}
-	
 	
 	// ドメインブロック
 	fun blockDomain(
@@ -72,7 +70,8 @@ object Action_Instance {
 				)
 				
 				var request_builder = Request.Builder()
-				request_builder = if(bBlock) request_builder.post(body) else request_builder.delete(body)
+				request_builder =
+					if(bBlock) request_builder.post(body) else request_builder.delete(body)
 				
 				return client.request("/api/v1/domain_blocks", request_builder)
 			}
@@ -86,7 +85,11 @@ object Action_Instance {
 						column.onDomainBlockChanged(access_info, domain, bBlock)
 					}
 					
-					showToast(activity, false, if(bBlock) R.string.block_succeeded else R.string.unblock_succeeded)
+					showToast(
+						activity,
+						false,
+						if(bBlock) R.string.block_succeeded else R.string.unblock_succeeded
+					)
 					
 				} else {
 					showToast(activity, false, result.error)
@@ -99,70 +102,70 @@ object Action_Instance {
 	fun timelinePublicAround2(
 		activity : ActMain,
 		access_info : SavedAccount,
-		pos:Int,
-		id:EntityId,
-		columnType:Int
+		pos : Int,
+		id : EntityId,
+		columnType : Int
 	) {
-		activity.addColumn(pos, access_info, columnType,id)
+		activity.addColumn(pos, access_info, columnType, id)
 	}
-
+	
 	private fun timelinePublicAround3(
 		activity : ActMain,
 		access_info : SavedAccount,
-		pos:Int,
-		status:TootStatus,
-		columnType:Int
+		pos : Int,
+		status : TootStatus,
+		columnType : Int
 	) {
-		TootTaskRunner(activity).run(access_info,object:TootTask{
+		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				return client.syncStatus(access_info,status)
+				return client.syncStatus(access_info, status)
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
-				result?: return
-				val localStatus = result. data as? TootStatus
-				if( localStatus != null ){
-					timelinePublicAround2(activity,access_info,pos,localStatus.id,columnType)
-				}else{
-					showToast(activity,true,result.error)
+				result ?: return
+				val localStatus = result.data as? TootStatus
+				if(localStatus != null) {
+					timelinePublicAround2(activity, access_info, pos, localStatus.id, columnType)
+				} else {
+					showToast(activity, true, result.error)
 				}
 			}
 		})
 	}
-
+	
 	// 指定タンスのローカルタイムラインを開く
 	fun timelinePublicAround(
 		activity : ActMain,
 		access_info : SavedAccount,
-		pos:Int,
+		pos : Int,
 		host : String?,
-		status:TootStatus?,
-		columnType:Int,
-		allowPseudo :Boolean = true
+		status : TootStatus?,
+		columnType : Int,
+		allowPseudo : Boolean = true
 	) {
-		if( host?.isEmpty() != false || host == "?") return
-		status?: return
+		if(host?.isEmpty() != false || host == "?") return
+		status ?: return
 		
 		// 利用可能なアカウントを列挙する
 		val account_list1 = ArrayList<SavedAccount>() // 閲覧アカウントとホストが同じ
 		val account_list2 = ArrayList<SavedAccount>() // その他実アカウント
 		label@ for(a in SavedAccount.loadAccountList(activity)) {
-
-			when{
+			
+			when {
 				//
-				a.isNA-> continue@label
-
+				a.isNA -> continue@label
+				
 				// Misskeyアカウントはステータスの同期が出来ないので選択させない
 				a.isMisskey -> continue@label
-
+				
 				// 閲覧アカウントとホスト名が同じならステータスIDの変換が必要ない
-				a.host.equals( access_info.host,ignoreCase = true) ->{
-					if( ! allowPseudo && a.isPseudo) continue@label
+				a.host.equals(access_info.host, ignoreCase = true) -> {
+					if(! allowPseudo && a.isPseudo) continue@label
 					account_list1.add(a)
 				}
 				
 				// 実アカウントならステータスを同期して同時間帯のTLを見れる
-				!a.isPseudo ->{
+				! a.isPseudo -> {
 					account_list2.add(a)
 				}
 			}
@@ -171,17 +174,17 @@ object Action_Instance {
 		SavedAccount.sort(account_list2)
 		account_list1.addAll(account_list2)
 		
-		if( account_list1.isNotEmpty()) {
+		if(account_list1.isNotEmpty()) {
 			AccountPicker.pick(
 				activity,
-				bAuto =  true,
+				bAuto = true,
 				message = "select account to read timeline",
 				accountListArg = account_list1
 			) { ai ->
-				if( !ai.isNA && ai.host.equals( access_info.host,ignoreCase = true) ){
-					timelinePublicAround2(activity,account_list1[0], pos, status.id,columnType)
-				}else {
-					timelinePublicAround3(activity, ai, pos, status,columnType)
+				if(! ai.isNA && ai.host.equals(access_info.host, ignoreCase = true)) {
+					timelinePublicAround2(activity, account_list1[0], pos, status.id, columnType)
+				} else {
+					timelinePublicAround3(activity, ai, pos, status, columnType)
 				}
 			}
 			return
@@ -189,7 +192,5 @@ object Action_Instance {
 		
 		showToast(activity, false, R.string.missing_available_account)
 	}
-	
-
 	
 }

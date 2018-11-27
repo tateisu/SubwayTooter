@@ -62,16 +62,36 @@ internal fun findAccountByName(
 internal fun addPseudoAccount(
 	context : Context,
 	host : String,
-	isMisskey : Boolean = false
-) : SavedAccount? {
-	
+	isMisskey : Boolean? = null,
+	callback : (SavedAccount) -> Unit
+) {
 	try {
 		val username = "?"
 		val full_acct = "$username@$host"
 		
 		var account = SavedAccount.loadAccountByAcct(context, full_acct)
 		if(account != null) {
-			return account
+			callback(account)
+			return
+		}
+		
+		if(isMisskey == null) {
+			TootTaskRunner(context).run(object : TootTask {
+				
+				var isMisskey2 : Boolean = false
+				
+				override fun background(client : TootApiClient) : TootApiResult? {
+					client.instance = host
+					val r = client.getInstanceInformation()
+					isMisskey2 = r?.jsonObject?.optBoolean(TootApiClient.KEY_IS_MISSKEY) ?: false
+					return r
+				}
+				
+				override fun handleResult(result : TootApiResult?) {
+					if(result != null) addPseudoAccount(context, host, isMisskey2, callback)
+				}
+			})
+			return
 		}
 		
 		val account_info = JSONObject()
@@ -91,15 +111,15 @@ internal fun addPseudoAccount(
 		account.notification_reaction = false
 		account.notification_vote = false
 		account.saveSetting()
-		return account
+		callback(account)
+		return
 	} catch(ex : Throwable) {
 		val log = LogCategory("addPseudoAccount")
 		log.trace(ex)
 		log.e(ex, "failed.")
 		showToast(context, ex, "addPseudoAccount failed.")
 	}
-	
-	return null
+	return
 }
 
 // 疑似アカ以外のアカウントのリスト
@@ -150,7 +170,7 @@ internal fun loadRelation1Mastodon(
 	val r2 = rr.result
 	val jsonArray = r2?.jsonArray
 	if(jsonArray != null) {
-		val list = parseList(::TootRelationShip,TootParser(client.context,access_info), jsonArray)
+		val list = parseList(::TootRelationShip, TootParser(client.context, access_info), jsonArray)
 		if(list.isNotEmpty()) {
 			rr.relation = saveUserRelation(access_info, list[0])
 		}

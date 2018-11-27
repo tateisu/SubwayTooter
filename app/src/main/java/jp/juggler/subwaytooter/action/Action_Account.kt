@@ -102,8 +102,11 @@ object Action_Account {
 							
 						} else {
 							// 疑似アカウントを追加
-							val a = addPseudoAccount(activity, instance, data.optBoolean("isMisskey",false))
-							if(a != null) {
+							addPseudoAccount(
+								activity,
+								instance,
+								data.optBoolean("isMisskey", false)
+							) { a ->
 								showToast(activity, false, R.string.server_confirmed)
 								val pos = App1.getAppState(activity).column_list.size
 								activity.addColumn(pos, a, Column.TYPE_LOCAL)
@@ -113,7 +116,6 @@ object Action_Account {
 								} catch(ignored : Throwable) {
 									// IllegalArgumentException がたまに出る
 								}
-								
 							}
 						}
 					} else {
@@ -155,8 +157,8 @@ object Action_Account {
 		pos : Int,
 		type : Int,
 		bAllowPseudo : Boolean,
-		bAllowMisskey: Boolean =true,
-		bAllowMastodon: Boolean =true,
+		bAllowMisskey : Boolean = true,
+		bAllowMastodon : Boolean = true,
 		args : Array<out Any> = emptyArray()
 	) {
 		
@@ -198,7 +200,14 @@ object Action_Account {
 				bAllowPseudo = false,
 				bAuto = true,
 				message = activity.getString(R.string.account_picker_toot)
-			) { ai -> ActPost.open(activity, ActMain.REQUEST_CODE_POST, ai.db_id, initial_text = initial_text) }
+			) { ai ->
+				ActPost.open(
+					activity,
+					ActMain.REQUEST_CODE_POST,
+					ai.db_id,
+					initial_text = initial_text
+				)
+			}
 		}
 	}
 	
@@ -208,8 +217,8 @@ object Action_Account {
 		who : TootAccount,
 		bSet : Boolean
 	) {
-		if( access_info.isMisskey ){
-			showToast(activity,false,"This feature is not provided on Misskey account.")
+		if(access_info.isMisskey) {
+			showToast(activity, false, "This feature is not provided on Misskey account.")
 			return
 		}
 		
@@ -220,20 +229,24 @@ object Action_Account {
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				val builder = Request.Builder().post(
-					RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED,"")
+					RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "")
 				)
 				var result = client.request(
-					"/api/v1/accounts/${who.id}/"+when(bSet){
-						true ->"pin"
-						false ->"unpin"
+					"/api/v1/accounts/${who.id}/" + when(bSet) {
+						true -> "pin"
+						false -> "unpin"
 					}
-					,builder
+					, builder
 				)
 				val jsonObject = result?.jsonObject
-				if( jsonObject != null ){
-					val tr = parseItem(::TootRelationShip,TootParser(client.context,access_info),jsonObject)
-					if( tr != null ) {
-						this.relation = saveUserRelation(access_info,tr)
+				if(jsonObject != null) {
+					val tr = parseItem(
+						::TootRelationShip,
+						TootParser(client.context, access_info),
+						jsonObject
+					)
+					if(tr != null) {
+						this.relation = saveUserRelation(access_info, tr)
 					}
 				}
 				return result
@@ -242,13 +255,15 @@ object Action_Account {
 			override fun handleResult(result : TootApiResult?) {
 				result ?: return
 				
-				if( result.error != null ){
-					showToast(activity,true,result.error)
-				}else{
-					showToast(activity,false,when(bSet){
-						true->R.string.endorse_succeeded
-						else->R.string.remove_endorse_succeeded
-					})
+				if(result.error != null) {
+					showToast(activity, true, result.error)
+				} else {
+					showToast(
+						activity, false, when(bSet) {
+							true -> R.string.endorse_succeeded
+							else -> R.string.remove_endorse_succeeded
+						}
+					)
 				}
 			}
 		})

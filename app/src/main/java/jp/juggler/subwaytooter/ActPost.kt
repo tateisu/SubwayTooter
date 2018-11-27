@@ -69,6 +69,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		internal const val KEY_REDRAFT_STATUS = "redraft_status"
 		internal const val KEY_INITIAL_TEXT = "initial_text"
 		internal const val KEY_SENT_INTENT = "sent_intent"
+		internal const val KEY_QUOTED_RENOTE = "quoted_renote"
 		
 		internal const val KEY_ATTACHMENT_LIST = "attachment_list"
 		internal const val KEY_VISIBILITY = "visibility"
@@ -104,24 +105,27 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		}
 		
 		private val imageHeaderList = arrayOf(
-			Pair("image/jpeg",intArrayOf(0xff,0xd8,0xff,0xe0).toByteArray()),
-			Pair("image/png",intArrayOf(0x89 ,0x50 ,0x4E ,0x47 ,0x0D ,0x0A ,0x1A ,0x0A).toByteArray()),
-			Pair("image/gif", charArrayOf('G' ,'I' ,'F').toByteArray())
+			Pair("image/jpeg", intArrayOf(0xff, 0xd8, 0xff, 0xe0).toByteArray()),
+			Pair(
+				"image/png",
+				intArrayOf(0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A).toByteArray()
+			),
+			Pair("image/gif", charArrayOf('G', 'I', 'F').toByteArray())
 		)
 		
-		private fun checkImageHeaderList(contentResolver:ContentResolver, uri : Uri) : String? {
-			try{
-				contentResolver.openInputStream(uri)?.use{ inStream ->
+		private fun checkImageHeaderList(contentResolver : ContentResolver, uri : Uri) : String? {
+			try {
+				contentResolver.openInputStream(uri)?.use { inStream ->
 					val data = ByteArray(32)
-					val nRead = inStream.read(data,0,data.size)
-					for( pair in imageHeaderList ){
+					val nRead = inStream.read(data, 0, data.size)
+					for(pair in imageHeaderList) {
 						val type = pair.first
 						val header = pair.second
-						if( nRead >= header.size && data.startWith(header) ) return type
+						if(nRead >= header.size && data.startWith(header)) return type
 					}
 				}
-			}catch(ex:Throwable){
-				log.e(ex,"checkImageHeaderList failed.")
+			} catch(ex : Throwable) {
+				log.e(ex, "checkImageHeaderList failed.")
 			}
 			return null
 		}
@@ -175,22 +179,31 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			initial_text : String? = null,
 			
 			// 外部アプリから共有されたインテント
-			sent_intent : Intent? = null
+			sent_intent : Intent? = null,
+			
+			// (Misskey) 返信を引用リノートにする
+			quotedRenote : Boolean = false
 		) {
 			val intent = Intent(activity, ActPost::class.java)
 			intent.putExtra(KEY_ACCOUNT_DB_ID, account_db_id)
+			
 			if(redraft_status != null) {
 				intent.putExtra(KEY_REDRAFT_STATUS, redraft_status.json.toString())
 			}
+			
 			if(reply_status != null) {
 				intent.putExtra(KEY_REPLY_STATUS, reply_status.json.toString())
+				intent.putExtra(KEY_QUOTED_RENOTE, quotedRenote)
 			}
+			
 			if(initial_text != null) {
 				intent.putExtra(KEY_INITIAL_TEXT, initial_text)
 			}
+			
 			if(sent_intent != null) {
 				intent.putExtra(KEY_SENT_INTENT, sent_intent)
 			}
+			
 			activity.startActivityForResult(intent, request_code)
 		}
 		
@@ -320,14 +333,12 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		}
 	}
 	
-
-	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
 		if(requestCode == REQUEST_CODE_ATTACHMENT_OLD && resultCode == Activity.RESULT_OK) {
 			data?.handleGetContentResult(contentResolver)?.forEach {
 				addAttachment(it.first, it.second)
 			}
-		
+			
 		} else if(requestCode == REQUEST_CODE_ATTACHMENT && resultCode == Activity.RESULT_OK) {
 			data?.handleGetContentResult(contentResolver)?.forEach {
 				addAttachment(it.first, it.second)
@@ -394,7 +405,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		initUI()
 		
 		// Android 9 から、明示的にフォーカスを当てる必要がある
-		if( savedInstanceState==null){
+		if(savedInstanceState == null) {
 			etContent.requestFocus()
 		}
 		
@@ -536,45 +547,56 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			if(sv != null && account != null) {
 				try {
 					val reply_status = TootParser(this@ActPost, account).status(sv.toJsonObject())
-					
+
+					val isQuoterRenote = intent.getBooleanExtra(KEY_QUOTED_RENOTE, false)
+
 					if(reply_status != null) {
-						// CW をリプライ元に合わせる
-						if(reply_status.spoiler_text?.isNotEmpty() == true) {
-							cbContentWarning.isChecked = true
-							etContentWarning.setText(reply_status.spoiler_text)
-						}
 						
-						val mention_list = ArrayList<String>()
-						
-						val old_mentions = reply_status.mentions
-						if(old_mentions != null) {
-							for(mention in old_mentions) {
-								val who_acct = mention.acct
-								if(who_acct.isNotEmpty()) {
-									if(account.isMe(who_acct)) continue
-									sv = "@" + account.getFullAcct(who_acct)
-									if(! mention_list.contains(sv)) {
-										mention_list.add(sv)
+						if(isQuoterRenote) {
+							cbQuoteRenote.isChecked = true
+
+							// 引用リノートはCWやメンションを引き継がない
+
+						}else{
+
+							// CW をリプライ元に合わせる
+							if(reply_status.spoiler_text?.isNotEmpty() == true) {
+								cbContentWarning.isChecked = true
+								etContentWarning.setText(reply_status.spoiler_text)
+							}
+							
+							val mention_list = ArrayList<String>()
+							
+							val old_mentions = reply_status.mentions
+							if(old_mentions != null) {
+								for(mention in old_mentions) {
+									val who_acct = mention.acct
+									if(who_acct.isNotEmpty()) {
+										if(account.isMe(who_acct)) continue
+										sv = "@" + account.getFullAcct(who_acct)
+										if(! mention_list.contains(sv)) {
+											mention_list.add(sv)
+										}
 									}
 								}
 							}
-						}
-						
-						// 元レスのacctを追加する
-						val who_acct = account.getFullAcct(reply_status.account)
-						if(! account.isMe(reply_status.account) // 自己レスにはメンションを追加しない
-							&& ! mention_list.contains("@$who_acct") // 既に含まれているならメンションを追加しない
-						) {
-							mention_list.add("@$who_acct")
-						}
-						
-						val sb = StringBuilder()
-						for(acct in mention_list) {
-							if(sb.isNotEmpty()) sb.append(' ')
-							sb.append(acct)
-						}
-						if(sb.isNotEmpty()) {
-							appendContentText(sb.append(' ').toString())
+							
+							// 元レスのacctを追加する
+							val who_acct = account.getFullAcct(reply_status.account)
+							if(! account.isMe(reply_status.account) // 自己レスにはメンションを追加しない
+								&& ! mention_list.contains("@$who_acct") // 既に含まれているならメンションを追加しない
+							) {
+								mention_list.add("@$who_acct")
+							}
+							
+							val sb = StringBuilder()
+							for(acct in mention_list) {
+								if(sb.isNotEmpty()) sb.append(' ')
+								sb.append(acct)
+							}
+							if(sb.isNotEmpty()) {
+								appendContentText(sb.append(' ').toString())
+							}
 						}
 						
 						// リプライ表示をつける
@@ -607,13 +629,10 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						} catch(ex : Throwable) {
 							log.trace(ex)
 						}
-						
 					}
-					
 				} catch(ex : Throwable) {
 					log.trace(ex)
 				}
-				
 			}
 			
 			appendContentText(account?.default_text, selectBefore = true)
@@ -650,14 +669,14 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						// 再編集の場合はdefault_textは反映されない
 						
 						val decodeOptions = DecodeOptions(this)
-
-						var text :Spannable
+						
+						var text : Spannable
 						
 						text = decodeOptions.decodeHTML(base_status.content)
 						etContent.text = text
-						etContent.setSelection(text.length )
-
-						text =decodeOptions.decodeEmoji(base_status.spoiler_text)
+						etContent.setSelection(text.length)
+						
+						text = decodeOptions.decodeEmoji(base_status.spoiler_text)
 						etContentWarning.setText(text)
 						etContentWarning.setSelection(text.length)
 						cbContentWarning.isChecked = text.isNotEmpty()
@@ -715,7 +734,6 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		showEnquete()
 		showQuotedRenote()
 	}
-	
 	
 	override fun onDestroy() {
 		post_helper.onDestroy()
@@ -783,8 +801,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		if(svEmoji.isEmpty()) return
 		
 		val editable = etContent.text
-		if( editable == null ) {
-			val sb = StringBuilder ()
+		if(editable == null) {
+			val sb = StringBuilder()
 			if(selectBefore) {
 				val start = 0
 				sb.append(' ')
@@ -796,7 +814,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				etContent.setText(sb)
 				etContent.setSelection(sb.length)
 			}
-		}else{
+		} else {
 			if(editable.isNotEmpty()
 				&& ! CharacterGroup.isWhitespace(editable[editable.length - 1].toInt())
 			) {
@@ -860,7 +878,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		etContentWarning = findViewById(R.id.etContentWarning)
 		etContent = findViewById(R.id.etContent)
 		
-		cbQuoteRenote= findViewById(R.id.cbQuoteRenote)
+		cbQuoteRenote = findViewById(R.id.cbQuoteRenote)
 		
 		cbEnquete = findViewById(R.id.cbEnquete)
 		llEnquete = findViewById(R.id.llEnquete)
@@ -895,10 +913,10 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		btnPost.setOnClickListener(this)
 		btnRemoveReply.setOnClickListener(this)
 		
-		val btnPlugin :ImageButton = findViewById(R.id.btnPlugin)
-		val btnEmojiPicker :ImageButton = findViewById(R.id.btnEmojiPicker)
-		val btnMore: ImageButton = findViewById(R.id.btnMore)
-
+		val btnPlugin : ImageButton = findViewById(R.id.btnPlugin)
+		val btnEmojiPicker : ImageButton = findViewById(R.id.btnEmojiPicker)
+		val btnMore : ImageButton = findViewById(R.id.btnMore)
+		
 		btnPlugin.setOnClickListener(this)
 		btnEmojiPicker.setOnClickListener(this)
 		btnMore.setOnClickListener(this)
@@ -909,11 +927,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			iv.setErrorImageResId(Styler.getAttributeResourceId(this, R.attr.ic_unknown))
 		}
 		
-		setIcon(btnPost,R.drawable.btn_post)
-		setIcon(btnMore,R.drawable.btn_more)
-		setIcon(btnPlugin,R.drawable.ic_plugin)
-		setIcon(btnEmojiPicker,R.drawable.ic_face)
-		setIcon(btnAttachment,R.drawable.btn_attachment)
+		setIcon(btnPost, R.drawable.btn_post)
+		setIcon(btnMore, R.drawable.btn_more)
+		setIcon(btnPlugin, R.drawable.ic_plugin)
+		setIcon(btnEmojiPicker, R.drawable.ic_face)
+		setIcon(btnAttachment, R.drawable.btn_attachment)
 		
 		cbContentWarning.setOnCheckedChangeListener { _, _ ->
 			updateContentWarning()
@@ -946,15 +964,15 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		etContent.contentMineTypeArray =
 			acceptable_mime_types.toArray(arrayOfNulls<String>(ActPost.acceptable_mime_types.size))
 		etContent.commitContentListener = commitContentListener
-	
+		
 	}
 	
-	private fun setIcon(iv:ImageView,drawableId:Int) {
+	private fun setIcon(iv : ImageView, drawableId : Int) {
 		Styler.setIconDrawableId(
 			this,
 			iv,
 			drawableId,
-			Styler.getAttributeColor(this,R.attr.colorColumnHeaderName)
+			Styler.getAttributeColor(this, R.attr.colorColumnHeaderName)
 		)
 	}
 	
@@ -1049,7 +1067,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			post_helper.setInstance(a.host, a.isMisskey)
 			
 			// 先読みしてキャッシュに保持しておく
-			App1.custom_emoji_lister.getList(a.host,a.isMisskey) {
+			App1.custom_emoji_lister.getList(a.host, a.isMisskey) {
 				// 何もしない
 			}
 			
@@ -1447,7 +1465,6 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 	}
 	
-
 	private fun performAttachmentOld() {
 		// SAFのIntentで開く
 		try {
@@ -1562,13 +1579,13 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		// image/j()pg だの image/j(e)pg だの、mime type を誤記するアプリがあまりに多い
 		// クレームで消耗するのを減らすためにファイルヘッダを確認する
-		if(mimeTypeArg == null || mimeTypeArg.startsWith("image/")){
-			val sv = checkImageHeaderList(contentResolver,uri)
-			if( sv != null) return sv
+		if(mimeTypeArg == null || mimeTypeArg.startsWith("image/")) {
+			val sv = checkImageHeaderList(contentResolver, uri)
+			if(sv != null) return sv
 		}
-
+		
 		// 既に引数で与えられてる
-		if(mimeTypeArg?.isNotEmpty() == true){
+		if(mimeTypeArg?.isNotEmpty() == true) {
 			return mimeTypeArg
 		}
 		
@@ -1582,8 +1599,6 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		return null
 	}
-	
-
 	
 	@SuppressLint("StaticFieldLeak")
 	private fun addAttachment(
@@ -1882,11 +1897,13 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	}
 	
 	private fun showVisibility() {
-		setIcon(btnVisibility,Styler.getVisibilityIcon(
-			this
-			, account?.isMisskey == true
-			, visibility ?: TootVisibility.Public
-		))
+		setIcon(
+			btnVisibility, Styler.getVisibilityIcon(
+				this
+				, account?.isMisskey == true
+				, visibility ?: TootVisibility.Public
+			)
+		)
 	}
 	
 	private fun performVisibility() {
@@ -1999,7 +2016,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		post_helper.attachment_list = this.attachment_list
 		
-		post_helper.emojiMapCustom = App1.custom_emoji_lister.getMap(account.host,account.isMisskey)
+		post_helper.emojiMapCustom =
+			App1.custom_emoji_lister.getMap(account.host, account.isMisskey)
 		
 		post_helper.redraft_status_id = redraft_status_id
 		
@@ -2020,7 +2038,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	private fun showQuotedRenote() {
 		val isReply = in_reply_to_id != null
 		val isMisskey = account?.isMisskey == true
-		cbQuoteRenote.visibility = if( isReply && isMisskey ) View.VISIBLE else View.GONE
+		cbQuoteRenote.visibility = if(isReply && isMisskey) View.VISIBLE else View.GONE
 	}
 	
 	internal fun showReplyTo() {
@@ -2092,7 +2110,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			json.put(DRAFT_REPLY_IMAGE, in_reply_to_image)
 			json.put(DRAFT_REPLY_URL, in_reply_to_url)
 			
-			json.put(DRAFT_QUOTED_RENOTE,cbQuoteRenote.isChecked)
+			json.put(DRAFT_QUOTED_RENOTE, cbQuoteRenote.isChecked)
 			json.put(DRAFT_IS_ENQUETE, isEnquete)
 			
 			val array = JSONArray()
@@ -2246,7 +2264,6 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				val draft_visibility = TootVisibility
 					.parseSavedVisibility(draft.parseString(DRAFT_VISIBILITY))
 				
-				
 				val evEmoji = DecodeOptions(this@ActPost, decodeEmoji = true).decodeEmoji(content)
 				etContent.setText(evEmoji)
 				etContent.setSelection(evEmoji.length)
@@ -2296,7 +2313,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					in_reply_to_image = reply_image
 					in_reply_to_url = reply_url
 				}
-
+				
 				
 				updateContentWarning()
 				showMediaAttachment()

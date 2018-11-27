@@ -3,14 +3,12 @@ package jp.juggler.subwaytooter.api
 import android.content.Context
 import android.content.SharedPreferences
 import jp.juggler.subwaytooter.*
-import jp.juggler.subwaytooter.api.entity.EntityId
-import jp.juggler.subwaytooter.api.entity.TootAccount
-import jp.juggler.subwaytooter.api.entity.TootInstance
-import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.ClientInfo
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import okhttp3.*
+import org.hjson.JsonObject
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -117,7 +115,13 @@ class TootApiClient(
 			}
 		}
 		
-		val DEFAULT_JSON_ERROR_PARSER = { json : JSONObject -> json.parseString("error") }
+		val DEFAULT_JSON_ERROR_PARSER = { json : JSONObject ->
+			val v = json.opt("error")
+			when(v) {
+				null,JSONObject.NULL -> null
+				else -> v.toString()
+			}
+		}
 		
 		internal fun simplifyErrorHtml(
 			response : Response,
@@ -516,7 +520,7 @@ class TootApiClient(
 		val result = TootApiResult.makeWithCaption(instance)
 		if(result.error != null) return result
 		
-		val account = this.account ?: return result.setError("account is null")
+		val account = this.account // may null
 		
 		try {
 			if(! sendRequest(result) {
@@ -525,7 +529,7 @@ class TootApiClient(
 					
 					request_builder.url("https://$instance$path")
 					
-					val access_token = account.getAccessToken()
+					val access_token = account?.getAccessToken()
 					if(access_token?.isNotEmpty() == true) {
 						request_builder.header("Authorization", "Bearer $access_token")
 					}
@@ -801,13 +805,13 @@ class TootApiClient(
 		
 		val user : JSONObject = token_info.optJSONObject("user")
 			?: return result.setError("missing user in the response.")
-
+		
 		token_info.remove("user")
 		
 		val apiKey = "$access_token$appSecret".encodeUTF8().digestSHA256().encodeHexLower()
 		
 		// ユーザ情報を読めたならtokenInfoを保存する
-		EntityId.mayNull( user.parseString("id") )?.putTo(token_info,KEY_USER_ID)
+		EntityId.mayNull(user.parseString("id"))?.putTo(token_info, KEY_USER_ID)
 		token_info.put(KEY_IS_MISSKEY, true)
 		token_info.put(KEY_AUTH_VERSION, AUTH_VERSION)
 		token_info.put(KEY_API_KEY_MISSKEY, apiKey)
@@ -1042,7 +1046,7 @@ class TootApiClient(
 		// misskeyのインスタンス情報を読めたら、それはmisskeyのインスタンス
 		val r2 = getInstanceInformationMisskey() ?: return null
 		if(r2.jsonObject != null) return r2
-
+		
 		// マストドンのインスタンス情報を読めたら、それはマストドンのインスタンス
 		val r1 = getInstanceInformationMastodon() ?: return null
 		if(r1.jsonObject != null) return r1
@@ -1465,8 +1469,40 @@ fun TootApiClient.syncAccountByAcct(accessInfo : SavedAccount, acct : String) : 
 	}
 }
 
-fun TootApiClient.syncStatus(accessInfo : SavedAccount, url : String) =
-	if(accessInfo.isMisskey) {
+fun TootApiClient.syncStatus(accessInfo : SavedAccount, urlArg : String) : TootApiResult? {
+	
+	var url = urlArg
+	
+	// misskey の投稿URLは外部タンスの投稿を複製したものの可能性がある
+	// これを投稿元タンスのURLに変換しないと、投稿の同期には使えない
+	val m = TootStatus.reStatusPageMisskey.matcher(urlArg)
+	if(m.find()) {
+		val host =  m.group(1)
+		val client2 = TootApiClient(context, callback = callback)
+		client2.instance =host
+		val params = JSONObject().put("uri", urlArg)
+		val result = client2.request("/api/ap/show", params.toPostRequestBuilder())
+		if(result == null || result.error != null) return result
+
+		val obj = parseMisskeyApShow(
+			TootParser(context, accessInfo,serviceType = ServiceType.MISSKEY),
+			result.jsonObject
+		) as? TootStatus
+
+		if( obj != null ){
+			if( host .equals(accessInfo.host,ignoreCase = true)){
+				result.data = obj
+				return result
+			}
+			val uri = obj.uri
+			if(uri?.isNotEmpty() == true){
+				url = uri
+			}
+		}
+
+	}
+	
+	return if(accessInfo.isMisskey) {
 		val params = accessInfo.putMisskeyApiToken().put("uri", url)
 		val result = request("/api/ap/show", params.toPostRequestBuilder())
 		if(result != null) {
@@ -1490,6 +1526,8 @@ fun TootApiClient.syncStatus(accessInfo : SavedAccount, url : String) =
 		}
 		result
 	}
+	
+}
 
 private inline fun <Z : Any?> String?.useNotEmpty(block : (String) -> Z?) : Z? =
 	if(this?.isNotEmpty() == true) {

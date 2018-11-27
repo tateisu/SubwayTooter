@@ -339,6 +339,7 @@
     <string name="minimum_column_width">Minimum column width (default=300(dp),app restart required)</string>
     <string name="media_thumbnail_height">Media Thumbnail height (default=64(dp), app restart required)</string>
     <string name="account_picker_reply">Which account do you reply from?</string>
+    <string name="account_picker_quoted_renote">Which account do you quoted renote from?</string>
     <string name="reply_from_another_account">Reply from another account</string>
     <string name="launcher_icon_by">Thanks to フタバ for the application icon.</string>
     <string name="ssl_bug_7_0">Android 7.0 can only use the elliptic curve \"prime256v1\".\nUnfortunately your instance seems to not support it.\nThis bug has been fixed in Android 7.1.1.\nYou can either upgrade your OS or ask the administrator of your instance to add support to the elliptic curve \"prime256v1\".\nSee also https://code.google.com/p/android/issues/detail?id=224438</string>
@@ -827,5 +828,6 @@
     <string name="quick_toot_bar_background_color">Quick toot bar background color</string>
     <string name="dont_show_preview_card">Don\'t show preview card</string>
     <string name="instance_does_not_support_push_api_pleroma">This instance does not support push subscription API. maybe it is Pleroma</string>
+    <string name="quote_renote">Quoted renote… (Misskey)</string>
 
 </resources>

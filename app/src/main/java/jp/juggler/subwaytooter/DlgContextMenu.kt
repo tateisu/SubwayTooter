@@ -2,7 +2,6 @@ package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.graphics.PorterDuff
 import android.support.v4.app.ShareCompat
 import android.support.v7.app.AlertDialog
 import android.view.View
@@ -68,6 +67,7 @@ internal class DlgContextMenu(
 		val btnBoostAnotherAccount = viewRoot.findViewById<View>(R.id.btnBoostAnotherAccount)
 		val btnReactionAnotherAccount = viewRoot.findViewById<View>(R.id.btnReactionAnotherAccount)
 		val btnReplyAnotherAccount = viewRoot.findViewById<View>(R.id.btnReplyAnotherAccount)
+		val btnQuotedRenote = viewRoot.findViewById<View>(R.id.btnQuotedRenote)
 		val btnDelete = viewRoot.findViewById<View>(R.id.btnDelete)
 		val btnRedraft = viewRoot.findViewById<View>(R.id.btnRedraft)
 		
@@ -124,6 +124,7 @@ internal class DlgContextMenu(
 		btnBoostAnotherAccount.setOnClickListener(this)
 		btnReactionAnotherAccount.setOnClickListener(this)
 		btnReplyAnotherAccount.setOnClickListener(this)
+		btnQuotedRenote.setOnClickListener(this)
 		btnReport.setOnClickListener(this)
 		btnMuteApp.setOnClickListener(this)
 		btnDelete.setOnClickListener(this)
@@ -728,7 +729,12 @@ internal class DlgContextMenu(
 				access_info,
 				status
 			)
-			
+			R.id.btnQuotedRenote-> Action_Toot.replyFromAnotherAccount(
+				activity,
+				access_info,
+				status,
+				quotedRenote = true
+			)
 			R.id.btnConversationAnotherAccount -> status?.let { status ->
 				Action_Toot.conversationOtherInstance(activity, pos, status)
 			}

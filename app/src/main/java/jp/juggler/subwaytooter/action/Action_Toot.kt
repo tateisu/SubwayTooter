@@ -10,10 +10,7 @@ import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.EmptyCallback
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.showToast
-import jp.juggler.subwaytooter.util.toPostRequestBuilder
+import jp.juggler.subwaytooter.util.*
 import okhttp3.Request
 import okhttp3.RequestBody
 import org.json.JSONObject
@@ -893,40 +890,25 @@ object Action_Toot {
 	// reply
 	
 	fun reply(
-		activity : ActMain, access_info : SavedAccount, status : TootStatus
+		activity : ActMain,
+		access_info : SavedAccount,
+		status : TootStatus,
+		quotedRenote : Boolean = false
 	) {
 		ActPost.open(
 			activity,
 			ActMain.REQUEST_CODE_POST,
 			access_info.db_id,
-			reply_status = status
+			reply_status = status,
+			quotedRenote = quotedRenote
 		)
 	}
 	
-	fun replyFromAnotherAccount(
-		activity : ActMain, timeline_account : SavedAccount, status : TootStatus?
-	) {
-		if(status == null) return
-		val who_host = timeline_account.host
-		AccountPicker.pick(
-			activity,
-			bAllowPseudo = false,
-			bAuto = false,
-			message = activity.getString(R.string.account_picker_reply),
-			accountListArg = makeAccountListNonPseudo(activity, who_host)
-		) { ai ->
-			if(ai.host.equals(status.host_access, ignoreCase = true)) {
-				// アクセス元ホストが同じならステータスIDを使って返信できる
-				reply(activity, ai, status)
-			} else {
-				// それ以外の場合、ステータスのURLを検索APIに投げることで返信できる
-				replyRemote(activity, ai, status.url)
-			}
-		}
-	}
-	
 	private fun replyRemote(
-		activity : ActMain, access_info : SavedAccount, remote_status_url : String?
+		activity : ActMain,
+		access_info : SavedAccount,
+		remote_status_url : String?,
+		quotedRenote : Boolean = false
 	) {
 		if(remote_status_url == null || remote_status_url.isEmpty()) return
 		
@@ -951,12 +933,53 @@ object Action_Toot {
 					
 					val ls = local_status
 					if(ls != null) {
-						reply(activity, access_info, ls)
+						reply(activity, access_info, ls, quotedRenote = quotedRenote)
 					} else {
 						showToast(activity, true, result.error)
 					}
 				}
 			})
+	}
+	
+	fun replyFromAnotherAccount(
+		activity : ActMain,
+		timeline_account : SavedAccount,
+		status : TootStatus?,
+		quotedRenote : Boolean = false
+	) {
+		status ?: return
+		val who_host = timeline_account.host
+		
+		val accountCallback : SavedAccountCallback = { ai ->
+			if(ai.host.equals(status.host_access, ignoreCase = true)) {
+				// アクセス元ホストが同じならステータスIDを使って返信できる
+				reply(activity, ai, status, quotedRenote = quotedRenote)
+			} else {
+				// それ以外の場合、ステータスのURLを検索APIに投げることで返信できる
+				replyRemote(activity, ai, status.url, quotedRenote = quotedRenote)
+			}
+		}
+		
+		if(quotedRenote) {
+			AccountPicker.pick(
+				activity,
+				bAllowPseudo = false,
+				bAllowMisskey = true,
+				bAllowMastodon = false,
+				bAuto = true,
+				message = activity.getString(R.string.account_picker_quoted_renote),
+				callback = accountCallback
+			)
+		} else {
+			AccountPicker.pick(
+				activity,
+				bAllowPseudo = false,
+				bAuto = false,
+				message = activity.getString(R.string.account_picker_reply),
+				accountListArg = makeAccountListNonPseudo(activity, who_host),
+				callback = accountCallback
+			)
+		}
 	}
 	
 	// 投稿画面を開く。初期テキストを指定する
@@ -1175,7 +1198,7 @@ object Action_Toot {
 		activity : ActMain,
 		timeline_account : SavedAccount,
 		status : TootStatus?,
-		code :String? = null
+		code : String? = null
 	) {
 		status ?: return
 		
@@ -1200,4 +1223,5 @@ object Action_Toot {
 			)
 		}
 	}
+	
 }

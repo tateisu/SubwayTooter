@@ -658,6 +658,15 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		@Suppress("HasPlatformType")
 		private val reTootUriAP2 = Pattern.compile("https?://([^/]+)/@[A-Za-z0-9_]+/(\\d+)")
 		
+		// 公開ステータスページのURL マストドン
+		@Suppress("HasPlatformType")
+		val reStatusPage = Pattern.compile("""\Ahttps://([^/]+)/@([A-Za-z0-9_]+)/(\d+)(?:\z|[?#])""")
+		
+		// 公開ステータスページのURL Misskey
+		@Suppress("HasPlatformType")
+		val reStatusPageMisskey = Pattern.compile("""\Ahttps://([^/]+)/notes/([0-9a-f]{24})\b""")
+		
+		
 		const val INVALID_ID = - 1L
 		
 		fun parseListTootsearch(

@@ -18,6 +18,7 @@
     <string name="account_picker_open_setting">どのアカウントの設定を開きますか？</string>
     <string name="account_picker_open_user_who">どのアカウントでユーザ %1$s のプロフィールを確認しますか？</string>
     <string name="account_picker_reply">どのアカウントで返信しますか？</string>
+    <string name="account_picker_quoted_renote">どのアカウントで引用リノートしますか？</string>
     <string name="account_picker_toot">どのアカウントでトゥートしますか？</string>
     <string name="account_remove">アカウントの削除</string>
     <string name="account_select_please">アカウントを選択してください</string>
@@ -809,5 +810,6 @@
     <string name="quick_toot_bar_background_color">簡易投稿入力の背景色</string>
     <string name="dont_show_preview_card">プレビューカードを表示しない</string>
     <string name="instance_does_not_support_push_api_pleroma">このインスタンスはプッシュ購読APIに対応していません。多分Pleromaです。</string>
+    <string name="quote_renote">引用リノート… (Misskey)</string>
 
 </resources>

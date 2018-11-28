@@ -27,7 +27,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		
 		// host, user ,(instance)
 		internal val reAccountUrl : Pattern =
-			Pattern.compile("\\Ahttps://([A-Za-z0-9._-]+)/@([A-Za-z0-9_]+)(?:@([A-Za-z0-9._-]+))?(?:\\z|[?#])")
+			Pattern.compile("""\Ahttps://([A-Za-z0-9._-]+)/@([A-Za-z0-9_][A-Za-z0-9_-]+)(?:@([A-Za-z0-9._-]+))?(?:\z|[?#])""")
 		
 		fun getAcctFromUrl(url : String) : String? {
 			val m = reAccountUrl.matcher(url)

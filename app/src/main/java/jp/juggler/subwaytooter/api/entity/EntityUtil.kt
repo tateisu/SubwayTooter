@@ -205,13 +205,12 @@ inline fun <reified T> parseListOrNull(
 
 fun <T : TootAttachmentLike> ArrayList<T>.encodeJson() : JSONArray {
 	val a = JSONArray()
-	for(ta in this) {
-		if(ta is TootAttachment) {
-			try {
-				a.put(ta.json)
-			} catch(ex : JSONException) {
-				EntityUtil.log.e(ex, "encode failed.")
-			}
+	forEach { ta->
+		if(ta !is TootAttachment) return@forEach
+		try {
+			a.put(ta.encodeJson())
+		} catch(ex : JSONException) {
+			EntityUtil.log.e(ex, "encode failed.")
 		}
 	}
 	return a

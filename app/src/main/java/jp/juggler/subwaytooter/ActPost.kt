@@ -9,6 +9,7 @@ import android.content.ContentValues
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.database.Cursor
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.AsyncTask
@@ -53,6 +54,8 @@ import org.json.JSONObject
 import java.io.*
 import java.lang.ref.WeakReference
 import java.util.*
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.atomic.AtomicBoolean
 
 class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callback {
 	
@@ -334,15 +337,12 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	}
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
+		
 		if(requestCode == REQUEST_CODE_ATTACHMENT_OLD && resultCode == Activity.RESULT_OK) {
-			data?.handleGetContentResult(contentResolver)?.forEach {
-				addAttachment(it.first, it.second)
-			}
+			checkAttachments(data?.handleGetContentResult(contentResolver))
 			
 		} else if(requestCode == REQUEST_CODE_ATTACHMENT && resultCode == Activity.RESULT_OK) {
-			data?.handleGetContentResult(contentResolver)?.forEach {
-				addAttachment(it.first, it.second)
-			}
+			checkAttachments(data?.handleGetContentResult(contentResolver))
 		} else if(requestCode == REQUEST_CODE_CAMERA) {
 			
 			if(resultCode != Activity.RESULT_OK) {
@@ -466,19 +466,16 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					this.attachment_list.clear()
 					
 					try {
-						val array = sv.toJsonArray()
-						for(i in 0 until array.length()) {
+						sv.toJsonArray().forEach {
+							if(it !is JSONObject) return@forEach
 							try {
-								val a = parseItem(
-									::TootAttachment,
-									ServiceType.MASTODON,
-									array.optJSONObject(i)
-								)
-								if(a != null) attachment_list.add(PostAttachment(a))
+								val a = TootAttachment.decodeJson(it)
+								attachment_list.add(PostAttachment(a))
 							} catch(ex : Throwable) {
 								log.trace(ex)
 							}
 						}
+						attachment_list.sort()
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
@@ -518,13 +515,13 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					Intent.ACTION_VIEW -> {
 						val uri = sent_intent.data
 						val type = sent_intent.type
-						if(uri != null) addAttachment(uri, type)
+						if(uri != null) addAttachment(uri,type)
 					}
 					
 					Intent.ACTION_SEND -> {
 						val uri = sent_intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
 						val type = sent_intent.type
-						if(uri != null) addAttachment(uri, type)
+						if(uri != null) addAttachment(uri,type)
 					}
 					
 					Intent.ACTION_SEND_MULTIPLE -> {
@@ -547,18 +544,18 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			if(sv != null && account != null) {
 				try {
 					val reply_status = TootParser(this@ActPost, account).status(sv.toJsonObject())
-
+					
 					val isQuoterRenote = intent.getBooleanExtra(KEY_QUOTED_RENOTE, false)
-
+					
 					if(reply_status != null) {
 						
 						if(isQuoterRenote) {
 							cbQuoteRenote.isChecked = true
-
+							
 							// 引用リノートはCWやメンションを引き継がない
-
-						}else{
-
+							
+						} else {
+							
 							// CW をリプライ元に合わせる
 							if(reply_status.spoiler_text?.isNotEmpty() == true) {
 								cbContentWarning.isChecked = true
@@ -661,6 +658,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 										this.attachment_list.add(pa)
 									}
 								}
+								this.attachment_list.sort()
 							} catch(ex : Throwable) {
 								log.trace(ex)
 							}
@@ -737,9 +735,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	
 	override fun onDestroy() {
 		post_helper.onDestroy()
-		
+		attachment_worker?.cancel()
 		super.onDestroy()
-		
 	}
 	
 	override fun onSaveInstanceState(outState : Bundle?) {
@@ -767,10 +764,10 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		if(! attachment_list.isEmpty()) {
 			val array = JSONArray()
 			for(pa in attachment_list) {
-				if(pa.status == PostAttachment.STATUS_UPLOADED) {
-					// アップロード完了したものだけ保持する
-					array.put(pa.attachment?.json)
-				}
+				// アップロード完了したものだけ保持する
+				if(pa.status != PostAttachment.STATUS_UPLOADED) continue
+				val json = pa.attachment?.encodeJson() ?: continue
+				array.put(json)
 			}
 			outState.putString(KEY_ATTACHMENT_LIST, array.toString())
 		}
@@ -1237,12 +1234,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			llAttachment.visibility = View.GONE
 		} else {
 			llAttachment.visibility = View.VISIBLE
-			var i = 0
-			val ie = ivMedia.size
-			while(i < ie) {
-				showAttachment_sub(ivMedia[i], i)
-				++ i
-			}
+			ivMedia.forEachIndexed { i,v ->showAttachment_sub(v, i) }
 		}
 	}
 	
@@ -1600,6 +1592,73 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		return null
 	}
 	
+	private fun checkAttachments(srcList : ArrayList<GetContentResultEntry>?) {
+		srcList ?: return
+		
+		fun Cursor.optLong(name : String) : Long? {
+			val idx = getColumnIndex(name)
+			val v = if(idx < 0) null else when(getType(idx)) {
+				Cursor.FIELD_TYPE_INTEGER -> getLong(idx)
+				Cursor.FIELD_TYPE_FLOAT -> getDouble(idx).toLong()
+				Cursor.FIELD_TYPE_STRING -> try {
+					getString(idx).toLong()
+				} catch(ex : Throwable) {
+					null
+				}
+				else -> null
+			}
+			return if(v == 0L) null else v
+		}
+		
+		var countHasTime = 0
+		
+		srcList.forEachIndexed { i, it ->
+			contentResolver.query(it.uri, null, null, null, null)?.use { cursor ->
+				if(! cursor.moveToNext()) return@forEachIndexed
+				for(name in cursor.columnNames.sorted()) {
+					val idx = cursor.getColumnIndex(name)
+					when(cursor.getType(idx)) {
+						Cursor.FIELD_TYPE_NULL -> log.d("[$i]$name=null")
+						Cursor.FIELD_TYPE_BLOB -> log.d("[$i]$name=(blob)")
+						Cursor.FIELD_TYPE_STRING -> log.d("[$i]$name=${cursor.getString(idx)}")
+						Cursor.FIELD_TYPE_INTEGER -> log.d("[$i]$name=(integer)${cursor.getLong(idx)}")
+						Cursor.FIELD_TYPE_FLOAT -> log.d("[$i]$name=(float)${cursor.getDouble(idx)}")
+					}
+				}
+				val t = cursor.optLong("date_modified")
+					?: cursor.optLong("last_modified")
+					?: cursor.optLong("date_added")
+				if(t != null) {
+					++ countHasTime
+					it.time = t
+				}
+			}
+		}
+		
+		if( countHasTime == srcList.size ) {
+			srcList.sortBy { it.time }
+		}
+
+		srcList.forEach {
+			addAttachment(it.uri, it.mimeType)
+		}
+		
+	}
+	
+	class AttachmentRequest(
+		val account : SavedAccount,
+		val pa : PostAttachment,
+		val uri : Uri,
+		val mimeType : String,
+		
+		val onUploadEnd : () -> Unit
+	)
+	
+	val attachment_queue = ConcurrentLinkedQueue<AttachmentRequest>()
+	private var attachment_worker: AttachmentWorker? = null
+	var lastAttachmentAdd : Long = 0L
+	var lastAttachmentComplete : Long = 0L
+	
 	@SuppressLint("StaticFieldLeak")
 	private fun addAttachment(
 		uri : Uri,
@@ -1631,53 +1690,153 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		app_state.attachment_list = this.attachment_list
 		
-		val pa = PostAttachment(this)
+		val pa = PostAttachment( this)
 		attachment_list.add(pa)
+		attachment_list.sort()
 		showMediaAttachment()
-		showToast(this, false, R.string.attachment_uploading)
+
+		// アップロード開始トースト(連発しない)
+		val now = System.currentTimeMillis()
+		if(now - lastAttachmentAdd >= 5000L) {
+			showToast(this, false, R.string.attachment_uploading)
+		}
+		lastAttachmentAdd = now
 		
-		TootTaskRunner(this, TootTaskRunner.PROGRESS_NONE).run(account, object : TootTask {
-			override fun background(client : TootApiClient) : TootApiResult? {
-				if(mime_type.isEmpty()) {
-					return TootApiResult("mime_type is empty.")
+		// マストドンは添付メディアをID順に表示するため
+		// 画像が複数ある場合は一つずつ処理する必要がある
+		// 投稿画面ごとに1スレッドだけ作成してバックグラウンド処理を行う
+		attachment_queue.add(AttachmentRequest(account,pa,uri,mime_type,onUploadEnd))
+		val oldWorker = attachment_worker
+		if( oldWorker == null || !oldWorker.isAlive || oldWorker.isInterrupted ){
+			oldWorker?.cancel()
+			attachment_worker = AttachmentWorker().apply{ start() }
+		}else{
+			oldWorker.notifyEx()
+		}
+	}
+	
+	inner class AttachmentWorker : WorkerBase(){
+
+		private val isCancelled = AtomicBoolean(false)
+		override fun cancel() {
+			isCancelled.set(true)
+			notifyEx()
+		}
+		
+		override fun run() {
+			try {
+				while(! isCancelled.get()) {
+					val item = attachment_queue.poll()
+					if(item == null) {
+						waitEx(86400)
+						continue
+					}
+					val result = item.upload()
+					handler.post {
+						item.handleResult(result)
+					}
+				}
+			}catch(ex:Throwable){
+				log.trace(ex)
+				log.e(ex,"AttachmentWorker")
+			}
+		}
+		
+		private fun AttachmentRequest.upload():TootApiResult?{
+			
+			if(mimeType.isEmpty()) {
+				return TootApiResult("mime_type is empty.")
+			}
+			
+			try {
+				val client = TootApiClient(this@ActPost,callback = object:TootApiCallback{
+					override val isApiCancelled : Boolean
+						get() = isCancelled.get()
+				})
+
+				client.account = account
+				
+				val opener = createOpener(uri, mimeType)
+				
+				val media_size_max = when {
+					mimeType.startsWith("video") -> {
+						1000000 * Math.max(1, Pref.spMovieSizeMax.toInt(pref))
+					}
+					
+					else -> {
+						1000000 * Math.max(1, Pref.spMediaSizeMax.toInt(pref))
+					}
 				}
 				
-				try {
-					val opener = createOpener(uri, mime_type)
-					
-					val media_size_max = when {
-						mime_type.startsWith("video") -> {
-							1000000 * Math.max(1, Pref.spMovieSizeMax.toInt(pref))
-						}
-						
-						else -> {
-							1000000 * Math.max(1, Pref.spMediaSizeMax.toInt(pref))
-						}
-					}
-					
-					val content_length = getStreamSize(true, opener.open())
-					if(content_length > media_size_max) {
-						return TootApiResult(
-							getString(
-								R.string.file_size_too_big,
-								media_size_max / 1000000
-							)
+				val content_length = getStreamSize(true, opener.open())
+				if(content_length > media_size_max) {
+					return TootApiResult(
+						getString(
+							R.string.file_size_too_big,
+							media_size_max / 1000000
 						)
+					)
+				}
+				
+				
+				if(account.isMisskey) {
+					val multipart_builder = MultipartBody.Builder()
+						.setType(MultipartBody.FORM)
+					
+					val apiKey = account.token_info?.parseString(TootApiClient.KEY_API_KEY_MISSKEY)
+					if(apiKey?.isNotEmpty() == true) {
+						multipart_builder.addFormDataPart("i", apiKey)
 					}
 					
-					
-					if(account.isMisskey) {
-						val multipart_builder = MultipartBody.Builder()
-							.setType(MultipartBody.FORM)
-						
-						val apiKey =
-							account.token_info?.parseString(TootApiClient.KEY_API_KEY_MISSKEY)
-						if(apiKey?.isNotEmpty() == true) {
-							multipart_builder.addFormDataPart("i", apiKey)
+					multipart_builder.addFormDataPart(
+						"file", getDocumentName(contentResolver, uri), object : RequestBody() {
+							override fun contentType() : MediaType? {
+								return MediaType.parse(opener.mimeType)
+							}
+							
+							@Throws(IOException::class)
+							override fun contentLength() : Long {
+								return content_length
+							}
+							
+							@Throws(IOException::class)
+							override fun writeTo(sink : BufferedSink) {
+								opener.open().use { inData ->
+									val tmp = ByteArray(4096)
+									while(true) {
+										val r = inData.read(tmp, 0, tmp.size)
+										if(r <= 0) break
+										sink.write(tmp, 0, r)
+									}
+								}
+							}
 						}
-						
-						multipart_builder.addFormDataPart(
-							"file", getDocumentName(contentResolver, uri), object : RequestBody() {
+					)
+					
+					val request_builder = Request.Builder().post(multipart_builder.build())
+					
+					val result = client.request("/api/drive/files/create", request_builder)
+					
+					opener.deleteTempFile()
+					onUploadEnd()
+					
+					val jsonObject = result?.jsonObject
+					if(jsonObject != null) {
+						val a = parseItem(::TootAttachment, ServiceType.MISSKEY, jsonObject)
+						if(a == null) {
+							result.error = "TootAttachment.parse failed"
+						} else {
+							pa.attachment = a
+						}
+					}
+					return result
+				} else {
+					val multipart_body = MultipartBody.Builder()
+						.setType(MultipartBody.FORM)
+						.addFormDataPart(
+							"file",
+							getDocumentName(contentResolver, uri),
+							object : RequestBody() {
 								override fun contentType() : MediaType? {
 									return MediaType.parse(opener.mimeType)
 								}
@@ -1700,94 +1859,47 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 								}
 							}
 						)
-						
-						val request_builder = Request.Builder().post(multipart_builder.build())
-						
-						val result = client.request("/api/drive/files/create", request_builder)
-						
-						opener.deleteTempFile()
-						onUploadEnd()
-						
-						val jsonObject = result?.jsonObject
-						if(jsonObject != null) {
-							val a = parseItem(::TootAttachment, ServiceType.MISSKEY, jsonObject)
-							if(a == null) {
-								result.error = "TootAttachment.parse failed"
-							} else {
-								pa.attachment = a
-							}
-						}
-						return result
-					} else {
-						val multipart_body = MultipartBody.Builder()
-							.setType(MultipartBody.FORM)
-							.addFormDataPart(
-								"file",
-								getDocumentName(contentResolver, uri),
-								object : RequestBody() {
-									override fun contentType() : MediaType? {
-										return MediaType.parse(opener.mimeType)
-									}
-									
-									@Throws(IOException::class)
-									override fun contentLength() : Long {
-										return content_length
-									}
-									
-									@Throws(IOException::class)
-									override fun writeTo(sink : BufferedSink) {
-										opener.open().use { inData ->
-											val tmp = ByteArray(4096)
-											while(true) {
-												val r = inData.read(tmp, 0, tmp.size)
-												if(r <= 0) break
-												sink.write(tmp, 0, r)
-											}
-										}
-									}
-								}
-							)
-							.build()
-						
-						val request_builder = Request.Builder()
-							.post(multipart_body)
-						
-						val result = client.request("/api/v1/media", request_builder)
-						
-						opener.deleteTempFile()
-						onUploadEnd()
-						
-						val jsonObject = result?.jsonObject
-						if(jsonObject != null) {
-							val a = parseItem(::TootAttachment, ServiceType.MASTODON, jsonObject)
-							if(a == null) {
-								result.error = "TootAttachment.parse failed"
-							} else {
-								pa.attachment = a
-							}
-						}
-						return result
-					}
+						.build()
 					
-				} catch(ex : Throwable) {
-					return TootApiResult(ex.withCaption("read failed."))
+					val request_builder = Request.Builder()
+						.post(multipart_body)
+					
+					val result = client.request("/api/v1/media", request_builder)
+					
+					opener.deleteTempFile()
+					onUploadEnd()
+					
+					val jsonObject = result?.jsonObject
+					if(jsonObject != null) {
+						val a = parseItem(::TootAttachment, ServiceType.MASTODON, jsonObject)
+						if(a == null) {
+							result.error = "TootAttachment.parse failed"
+						} else {
+							pa.attachment = a
+						}
+					}
+					return result
 				}
 				
+			} catch(ex : Throwable) {
+				return TootApiResult(ex.withCaption("read failed."))
 			}
 			
-			override fun handleResult(result : TootApiResult?) {
-				if(pa.attachment == null) {
-					pa.status = PostAttachment.STATUS_UPLOAD_FAILED
-					if(result != null) {
-						showToast(this@ActPost, true, result.error)
-					}
-				} else {
-					pa.status = PostAttachment.STATUS_UPLOADED
+		}
+
+		fun AttachmentRequest.handleResult(result : TootApiResult?) {
+			
+			if(pa.attachment == null) {
+				pa.status = PostAttachment.STATUS_UPLOAD_FAILED
+				if(result != null) {
+					showToast(this@ActPost, true, result.error)
 				}
-				// 投稿中に画面回転があった場合、新しい画面のコールバックを呼び出す必要がある
-				pa.callback?.onPostAttachmentComplete(pa)
+			} else {
+				pa.status = PostAttachment.STATUS_UPLOADED
 			}
-		})
+			// 投稿中に画面回転があった場合、新しい画面のコールバックを呼び出す必要がある
+			pa.callback?.onPostAttachmentComplete(pa)
+		}
 	}
 	
 	// 添付メディア投稿が完了したら呼ばれる
@@ -1808,7 +1920,12 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				val a = pa.attachment
 				if(a != null) {
 					// アップロード完了
-					showToast(this@ActPost, false, R.string.attachment_uploaded)
+
+					val now = System.currentTimeMillis()
+					if(now - lastAttachmentComplete >= 5000L) {
+						showToast(this@ActPost, false, R.string.attachment_uploaded)
+					}
+					lastAttachmentComplete = now
 					
 					if(Pref.bpAppendAttachmentUrlToContent(pref)) {
 						// 投稿欄の末尾に追記する
@@ -2093,8 +2210,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		try {
 			val tmp_attachment_list = JSONArray()
 			for(pa in attachment_list) {
-				val a = pa.attachment
-				if(a != null) tmp_attachment_list.put(a.json)
+				val json = pa.attachment?.encodeJson()
+				if(json != null) tmp_attachment_list.put(json)
 			}
 			
 			val json = JSONObject()
@@ -2148,34 +2265,28 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				
 				var content = draft.parseString(DRAFT_CONTENT) ?: ""
 				val account_db_id = draft.parseLong(DRAFT_ACCOUNT_DB_ID) ?: - 1L
-				var tmp_attachment_list = draft.optJSONArray(DRAFT_ATTACHMENT_LIST)
+				val tmp_attachment_list = draft.optJSONArray(DRAFT_ATTACHMENT_LIST)?.toObjectList()
 				
 				val account = SavedAccount.loadAccount(this@ActPost, account_db_id)
 				if(account == null) {
 					list_warning.add(getString(R.string.account_in_draft_is_lost))
 					try {
-						var i = 0
-						val ie = tmp_attachment_list.length()
-						while(i < ie) {
-							val ta =
-								parseItem(
-									::TootAttachment,
-									ServiceType.MASTODON,
-									tmp_attachment_list.optJSONObject(i)
-								)
-							val text_url = ta?.text_url
-							if(text_url?.isNotEmpty() == true) {
-								content = content.replace(text_url, "")
+						if(tmp_attachment_list != null) {
+							// 本文からURLを除去する
+							tmp_attachment_list.forEach {
+								val text_url = TootAttachment.decodeJson(it).text_url
+								if(text_url?.isNotEmpty() == true) {
+									content = content.replace(text_url, "")
+								}
 							}
-							++ i
+							tmp_attachment_list.clear()
+							draft.put(DRAFT_ATTACHMENT_LIST, tmp_attachment_list.toJsonArray())
+							draft.put(DRAFT_CONTENT, content)
+							draft.remove(DRAFT_REPLY_ID)
+							draft.remove(DRAFT_REPLY_TEXT)
+							draft.remove(DRAFT_REPLY_IMAGE)
+							draft.remove(DRAFT_REPLY_URL)
 						}
-						tmp_attachment_list = JSONArray()
-						draft.put(DRAFT_ATTACHMENT_LIST, tmp_attachment_list)
-						draft.put(DRAFT_CONTENT, content)
-						draft.remove(DRAFT_REPLY_ID)
-						draft.remove(DRAFT_REPLY_TEXT)
-						draft.remove(DRAFT_REPLY_IMAGE)
-						draft.remove(DRAFT_REPLY_URL)
 					} catch(ignored : JSONException) {
 					}
 					
@@ -2208,30 +2319,27 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					}
 				}
 				try {
-					var isSomeAttachmentRemoved = false
-					for(i in tmp_attachment_list.length() - 1 downTo 0) {
-						if(isCancelled) return null
-						val ta = parseItem(
-							::TootAttachment,
-							ServiceType.MASTODON,
-							tmp_attachment_list.optJSONObject(i)
-						)
-						if(ta == null) {
+					if(tmp_attachment_list != null) {
+						// 添付メディアの存在確認
+						var isSomeAttachmentRemoved = false
+						val it = tmp_attachment_list.iterator()
+						while(it.hasNext()) {
+							if(isCancelled) return null
+							val ta = TootAttachment.decodeJson(it.next())
+							if(check_exist(ta.url)) continue
+							it.remove()
 							isSomeAttachmentRemoved = true
-							tmp_attachment_list.remove(i)
-						} else if(! check_exist(ta.url)) {
-							isSomeAttachmentRemoved = true
-							tmp_attachment_list.remove(i)
+							// 本文からURLを除去する
 							val text_url = ta.text_url
 							if(text_url?.isNotEmpty() == true) {
 								content = content.replace(text_url, "")
 							}
 						}
-					}
-					if(isSomeAttachmentRemoved) {
-						list_warning.add(getString(R.string.attachment_in_draft_is_lost))
-						draft.put(DRAFT_ATTACHMENT_LIST, tmp_attachment_list)
-						draft.put(DRAFT_CONTENT, content)
+						if(isSomeAttachmentRemoved) {
+							list_warning.add(getString(R.string.attachment_in_draft_is_lost))
+							draft.put(DRAFT_ATTACHMENT_LIST, tmp_attachment_list.toJsonArray())
+							draft.put(DRAFT_CONTENT, content)
+						}
 					}
 				} catch(ex : JSONException) {
 					log.trace(ex)
@@ -2292,28 +2400,20 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				
 				if(tmp_attachment_list.length() > 0) {
 					attachment_list.clear()
-					var i = 0
-					val ie = tmp_attachment_list.length()
-					while(i < ie) {
-						val ta = parseItem(
-							::TootAttachment,
-							ServiceType.MASTODON,
-							tmp_attachment_list.optJSONObject(i)
-						)
-						if(ta != null) {
-							val pa = PostAttachment(ta)
-							attachment_list.add(pa)
-						}
-						++ i
+					tmp_attachment_list.forEach {
+						if(it !is JSONObject) return@forEach
+						val pa = PostAttachment(TootAttachment.decodeJson(it))
+						attachment_list.add(pa)
 					}
+					attachment_list.sort()
 				}
+				
 				if(reply_id != null) {
 					in_reply_to_id = reply_id
 					in_reply_to_text = reply_text
 					in_reply_to_image = reply_image
 					in_reply_to_url = reply_url
 				}
-				
 				
 				updateContentWarning()
 				showMediaAttachment()

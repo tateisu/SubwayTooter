@@ -207,11 +207,11 @@ class ActAccountSetting
 					data.handleGetContentResult(contentResolver).firstOrNull()?.let{
 						addAttachment(
 							requestCode,
-							it.first,
-							if( it.second?.isNotEmpty() == true)
-								it.second
+							it.uri,
+							if( it.mimeType?.isNotEmpty() == true)
+								it.mimeType
 							else
-								contentResolver.getType(it.first)
+								contentResolver.getType(it.uri)
 						)
 					}
 				}

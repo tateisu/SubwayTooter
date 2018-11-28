@@ -918,8 +918,8 @@ class ActAppSetting : AppCompatActivity()
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
 		if(resultCode == RESULT_OK && data != null && requestCode == REQUEST_CODE_TIMELINE_FONT) {
-			data.handleGetContentResult(contentResolver).firstOrNull()?.first?.let { uri ->
-				val file = saveTimelineFont(uri, "TimelineFont")
+			data.handleGetContentResult(contentResolver).firstOrNull()?.uri?.let {
+				val file = saveTimelineFont(it, "TimelineFont")
 				if(file != null) {
 					timeline_font = file.absolutePath
 					saveUIToData()
@@ -927,8 +927,8 @@ class ActAppSetting : AppCompatActivity()
 				}
 			}
 		} else if(resultCode == RESULT_OK && data != null && requestCode == REQUEST_CODE_TIMELINE_FONT_BOLD) {
-			data.handleGetContentResult(contentResolver).firstOrNull()?.first?.let { uri ->
-				val file = saveTimelineFont(uri, "TimelineFontBold")
+			data.handleGetContentResult(contentResolver).firstOrNull()?.uri?.let {
+				val file = saveTimelineFont(it, "TimelineFontBold")
 				if(file != null) {
 					timeline_font_bold = file.absolutePath
 					saveUIToData()
@@ -936,12 +936,8 @@ class ActAppSetting : AppCompatActivity()
 				}
 			}
 		} else if(resultCode == RESULT_OK && data != null && requestCode == REQUEST_CODE_APP_DATA_IMPORT) {
-			data.handleGetContentResult(contentResolver).firstOrNull()?.first?.let { uri ->
-				contentResolver.takePersistableUriPermission(
-					uri,
-					Intent.FLAG_GRANT_READ_URI_PERMISSION
-				)
-				importAppData(false, uri)
+			data.handleGetContentResult(contentResolver).firstOrNull()?.uri?.let {
+				importAppData(false, it)
 			}
 		}
 		super.onActivityResult(requestCode, resultCode, data)

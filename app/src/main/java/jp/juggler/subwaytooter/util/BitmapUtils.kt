@@ -56,11 +56,11 @@ fun createResizedBitmap(
 		}
 		
 		val resize_to = Math.min(size, resizeToArg)
-		
+
 		// inSampleSizeを計算
 		var bits = 0
 		var x = size
-		while(x > resize_to * 2) {
+		while(resize_to > 0 && x > resize_to * 2) {
 			++ bits
 			x = x shr 1
 		}
@@ -121,7 +121,6 @@ fun createResizedBitmap(
 					
 					6 -> {
 						tmp = dst_width
-						
 						dst_width = dst_height
 						dst_height = tmp
 						matrix.postRotate(90f)

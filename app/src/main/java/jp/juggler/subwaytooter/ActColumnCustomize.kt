@@ -72,7 +72,6 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 	private lateinit var tvSampleAcct : TextView
 	private lateinit var tvSampleContent : TextView
 	
-	
 	internal var loading_busy : Boolean = false
 	
 	private var last_image_uri : String? = null
@@ -108,9 +107,9 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 	}
 	
 	override fun onClick(v : View) {
-
+		
 		val builder : ColorPickerDialog.Builder
-
+		
 		when(v.id) {
 			
 			R.id.btnHeaderBackgroundEdit -> {
@@ -227,9 +226,8 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 	
 	override fun onActivityResult(requestCode : Int, resultCode : Int, data : Intent?) {
 		if(requestCode == REQUEST_CODE_PICK_BACKGROUND && data != null && resultCode == RESULT_OK) {
-			data.handleGetContentResult(contentResolver).firstOrNull()?.let { pair ->
-				updateBackground(pair.first)
-			}
+			data.handleGetContentResult(contentResolver).firstOrNull()
+				?.uri?.let { updateBackground(it) }
 		}
 	}
 	
@@ -428,7 +426,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			
 			loadImage(ivColumnBackground, column.column_bg_image)
 			
-			tvSampleAcct.setTextColor( column.getAcctColor())
+			tvSampleAcct.setTextColor(column.getAcctColor())
 			tvSampleContent.setTextColor(column.getContentColor())
 			
 		} finally {

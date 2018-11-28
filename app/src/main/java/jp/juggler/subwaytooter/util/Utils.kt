@@ -349,14 +349,14 @@ fun ByteArray.digestSHA256() : ByteArray {
 }
 
 fun ByteArray.startWith(
-	key:ByteArray,
-	thisOffset :Int =0,
-	keyOffset:Int=0,
-	length:Int = key.size-keyOffset
-):Boolean{
-	if( this.size -thisOffset >= length && key.size -keyOffset >=length ){
-		for( i in 0 until length ){
-			if( this[i+thisOffset] != key[i+keyOffset]) return false
+	key : ByteArray,
+	thisOffset : Int = 0,
+	keyOffset : Int = 0,
+	length : Int = key.size - keyOffset
+) : Boolean {
+	if(this.size - thisOffset >= length && key.size - keyOffset >= length) {
+		for(i in 0 until length) {
+			if(this[i + thisOffset] != key[i + keyOffset]) return false
 		}
 		return true
 	}
@@ -364,23 +364,22 @@ fun ByteArray.startWith(
 }
 
 // 各要素の下位8ビットを使ってバイト配列を作る
-fun IntArray.toByteArray():ByteArray{
+fun IntArray.toByteArray() : ByteArray {
 	val dst = ByteArray(this.size)
-	for(i in 0 until this.size){
+	for(i in 0 until this.size) {
 		dst[i] = this[i].toByte()
 	}
 	return dst
 }
 
 // 各要素の下位8ビットを使ってバイト配列を作る
-fun CharArray.toByteArray():ByteArray{
+fun CharArray.toByteArray() : ByteArray {
 	val dst = ByteArray(this.size)
-	for(i in 0 until this.size){
+	for(i in 0 until this.size) {
 		dst[i] = this[i].toByte()
 	}
 	return dst
 }
-
 
 //// MD5ハッシュの作成
 //@Suppress("unused")
@@ -398,9 +397,9 @@ fun String.digestSHA256Base64Url() : String {
 	return this.encodeUTF8().digestSHA256().encodeBase64Url()
 }
 
-fun String.toUri():Uri = Uri.parse(this)
+fun String.toUri() : Uri = Uri.parse(this)
 
-fun String.unescapeUri():String = Uri.decode(this)
+fun String.unescapeUri() : String = Uri.decode(this)
 
 ////////////////////////////////////////////////////////////////////
 // CharSequence
@@ -485,10 +484,10 @@ fun String?.optInt() : Int? {
 	}
 }
 
-fun String?.filterNotEmpty() :String? = when{
-	this==null -> null
+fun String?.filterNotEmpty() : String? = when {
+	this == null -> null
 	this.isEmpty() -> null
-	else->this
+	else -> this
 }
 
 //fun String.ellipsize(max : Int) = if(this.length > max) this.substring(0, max - 1) + "…" else this
@@ -675,6 +674,24 @@ inline fun JSONArray.downForEachIndexed(block : (i : Int, v : Any?) -> Unit) {
 	}
 }
 
+fun JSONArray.toAnyList() : ArrayList<Any> {
+	val dst_list = ArrayList<Any>(length())
+	forEach { if(it != null) dst_list.add(it) }
+	return dst_list
+}
+
+fun JSONArray.toObjectList() : ArrayList<JSONObject> {
+	val dst_list = ArrayList<JSONObject>(length())
+	forEach { if(it is JSONObject) dst_list.add(it) }
+	return dst_list
+}
+
+fun List<JSONObject>.toJsonArray() : JSONArray {
+	val dst_list = JSONArray()
+	forEach { dst_list.put(it) }
+	return dst_list
+}
+
 fun JSONArray.toStringArrayList() : ArrayList<String> {
 	val dst_list = ArrayList<String>(length())
 	forEach { o ->
@@ -706,6 +723,7 @@ fun JSONObject.parseFloatArrayList(name : String) : ArrayList<Float>? {
 	}
 	return null
 }
+
 fun String.toJsonObject() = JSONObject(this)
 fun String.toJsonArray() = JSONArray(this)
 
@@ -781,6 +799,12 @@ fun JSONObject.parseInt(key : String) : Int? {
 
 fun JSONObject.toPostRequestBuilder() : Request.Builder =
 	Request.Builder().post(RequestBody.create(TootApiClient.MEDIA_TYPE_JSON, this.toString()))
+
+fun jsonObject(initializer : JSONObject.() -> Unit) : JSONObject {
+	val dst = JSONObject()
+	dst.initializer()
+	return dst
+}
 
 ////////////////////////////////////////////////////////////////////
 // Bundle
@@ -881,19 +905,18 @@ fun vg(v : View, visible : Boolean) {
 	v.visibility = if(visible) View.VISIBLE else View.GONE
 }
 
-fun Float.abs() :Float = Math.abs(this)
+fun Float.abs() : Float = Math.abs(this)
 
 ////////////////////////////////////////////////////////////////////
 // context
 
-fun Context.loadRawResource( resId:Int):ByteArray{
-	resources.openRawResource(resId).use{ inStream->
-		val bao = ByteArrayOutputStream( inStream.available() )
-		IOUtils.copy(inStream,bao)
+fun Context.loadRawResource(resId : Int) : ByteArray {
+	resources.openRawResource(resId).use { inStream ->
+		val bao = ByteArrayOutputStream(inStream.available())
+		IOUtils.copy(inStream, bao)
 		return bao.toByteArray()
 	}
 }
-
 
 ////////////////////////////////////////////////////////////////////
 // file
@@ -936,17 +959,16 @@ fun showToast(context : Context, ex : Throwable, string_id : Int, vararg args : 
 	Utils.showToastImpl(context, true, ex.withCaption(context.resources, string_id, *args))
 }
 
-
-fun Cursor.getInt(key:String) =
+fun Cursor.getInt(key : String) =
 	getInt(getColumnIndex(key))
 
-fun Cursor.getIntOrNull(idx:Int) =
+fun Cursor.getIntOrNull(idx : Int) =
 	if(isNull(idx)) null else getInt(idx)
 
-fun Cursor.getIntOrNull(key:String) =
+fun Cursor.getIntOrNull(key : String) =
 	getIntOrNull(getColumnIndex(key))
 
-fun Cursor.getLong(key:String) =
+fun Cursor.getLong(key : String) =
 	getLong(getColumnIndex(key))
 
 //fun Cursor.getLongOrNull(idx:Int) =
@@ -955,18 +977,16 @@ fun Cursor.getLong(key:String) =
 //fun Cursor.getLongOrNull(key:String) =
 //	getLongOrNull(getColumnIndex(key))
 
-fun Cursor.getString(key:String) :String =
+fun Cursor.getString(key : String) : String =
 	getString(getColumnIndex(key))
 
-fun Cursor.getStringOrNull(keyIdx:Int) =
+fun Cursor.getStringOrNull(keyIdx : Int) =
 	if(isNull(keyIdx)) null else getString(keyIdx)
 
-fun Cursor.getStringOrNull(key:String) =
+fun Cursor.getStringOrNull(key : String) =
 	getStringOrNull(getColumnIndex(key))
 
-
-
-fun getDocumentName(contentResolver:ContentResolver,uri : Uri) : String {
+fun getDocumentName(contentResolver : ContentResolver, uri : Uri) : String {
 	val errorName = "no_name"
 	return contentResolver.query(uri, null, null, null, null, null)
 		?.use { cursor ->
@@ -995,7 +1015,7 @@ fun getStreamSize(bClose : Boolean, inStream : InputStream) : Long {
 	}
 }
 
-fun intentOpenDocument(mimeType : String):Intent{
+fun intentOpenDocument(mimeType : String) : Intent {
 	val intent = Intent(Intent.ACTION_OPEN_DOCUMENT)
 	intent.addCategory(Intent.CATEGORY_OPENABLE)
 	intent.type = mimeType // "image/*"
@@ -1018,63 +1038,69 @@ fun intentGetContent(
 	// EXTRA_MIME_TYPES は API 19以降。ACTION_GET_CONTENT でも ACTION_OPEN_DOCUMENT でも指定できる
 	intent.putExtra("android.intent.extra.MIME_TYPES", mimeTypes)
 	
-	intent.type =when {
-		mimeTypes.size == 1 ->  mimeTypes[0]
-
+	intent.type = when {
+		mimeTypes.size == 1 -> mimeTypes[0]
+		
 		// On Android 6.0 and above using "video/* image/" or "image/ video/*" type doesn't work
 		// it only recognizes the first filter you specify.
 		Build.VERSION.SDK_INT >= 23 -> "*/*"
-
+		
 		else -> mimeTypes.joinToString(" ")
 	}
 	
 	return Intent.createChooser(intent, caption)
 }
 
+data class GetContentResultEntry(
+	val uri:Uri,
+	val mimeType:String? =null,
+	var time : Long? =null
+)
+
 // returns list of pair of uri and mime-type.
-fun Intent.handleGetContentResult(contentResolver : ContentResolver) : ArrayList<Pair<Uri, String?>> {
-	val urlList = ArrayList<Pair<Uri, String?>>()
+fun Intent.handleGetContentResult(contentResolver : ContentResolver) : ArrayList<GetContentResultEntry> {
+	val urlList = ArrayList<GetContentResultEntry>()
 	// 単一選択
 	this.data?.let {
-		urlList.add(Pair(it, this.type))
+		urlList.add(GetContentResultEntry(it, this.type))
 	}
 	// 複数選択
 	val cd = this.clipData
 	if(cd != null) {
 		for(i in 0 until cd.itemCount) {
 			cd.getItemAt(i)?.uri?.let { uri ->
-				if(null == urlList.find { it.first == uri }) {
-					urlList.add(Pair(uri, null as String?))
+				if(null == urlList.find { it.uri == uri }) {
+					urlList.add(GetContentResultEntry(uri ))
 				}
 			}
 		}
 	}
 	urlList.forEach {
-		try{
+		try {
 			contentResolver.takePersistableUriPermission(
-				it.first,
+				it.uri,
 				Intent.FLAG_GRANT_READ_URI_PERMISSION
 			)
-		}catch(_:Throwable){
+		} catch(_ : Throwable) {
 		}
 	}
 	return urlList
 }
 
-fun Matcher.groupOrNull( g:Int):String? =
-	if( groupCount() >= g ){
+fun Matcher.groupOrNull(g : Int) : String? =
+	if(groupCount() >= g) {
 		group(g)
-	}else {
+	} else {
 		null
 	}
 
 // colorARGB.applyAlphaMultiplier(0.5f) でalpha値が半分になったARGB値を得る
-fun Int.applyAlphaMultiplier(alphaMultiplier: Float? = null):Int{
-	return if( alphaMultiplier ==null ){
+fun Int.applyAlphaMultiplier(alphaMultiplier : Float? = null) : Int {
+	return if(alphaMultiplier == null) {
 		this
-	}else{
+	} else {
 		val rgb = (this and 0xffffff)
-		val alpha = clipRange(0,255,((this ushr 24).toFloat() * alphaMultiplier +0.5f ).toInt())
+		val alpha = clipRange(0, 255, ((this ushr 24).toFloat() * alphaMultiplier + 0.5f).toInt())
 		return rgb or (alpha shl 24)
 	}
 }

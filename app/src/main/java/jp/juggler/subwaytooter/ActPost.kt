@@ -475,7 +475,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 								log.trace(ex)
 							}
 						}
-						attachment_list.sort()
+						
 					} catch(ex : Throwable) {
 						log.trace(ex)
 					}
@@ -658,7 +658,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 										this.attachment_list.add(pa)
 									}
 								}
-								this.attachment_list.sort()
+								
 							} catch(ex : Throwable) {
 								log.trace(ex)
 							}
@@ -1593,56 +1593,9 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	}
 	
 	private fun checkAttachments(srcList : ArrayList<GetContentResultEntry>?) {
-		srcList ?: return
-		
-		fun Cursor.optLong(name : String) : Long? {
-			val idx = getColumnIndex(name)
-			val v = if(idx < 0) null else when(getType(idx)) {
-				Cursor.FIELD_TYPE_INTEGER -> getLong(idx)
-				Cursor.FIELD_TYPE_FLOAT -> getDouble(idx).toLong()
-				Cursor.FIELD_TYPE_STRING -> try {
-					getString(idx).toLong()
-				} catch(ex : Throwable) {
-					null
-				}
-				else -> null
-			}
-			return if(v == 0L) null else v
-		}
-		
-		var countHasTime = 0
-		
-		srcList.forEachIndexed { i, it ->
-			contentResolver.query(it.uri, null, null, null, null)?.use { cursor ->
-				if(! cursor.moveToNext()) return@forEachIndexed
-				for(name in cursor.columnNames.sorted()) {
-					val idx = cursor.getColumnIndex(name)
-					when(cursor.getType(idx)) {
-						Cursor.FIELD_TYPE_NULL -> log.d("[$i]$name=null")
-						Cursor.FIELD_TYPE_BLOB -> log.d("[$i]$name=(blob)")
-						Cursor.FIELD_TYPE_STRING -> log.d("[$i]$name=${cursor.getString(idx)}")
-						Cursor.FIELD_TYPE_INTEGER -> log.d("[$i]$name=(integer)${cursor.getLong(idx)}")
-						Cursor.FIELD_TYPE_FLOAT -> log.d("[$i]$name=(float)${cursor.getDouble(idx)}")
-					}
-				}
-				val t = cursor.optLong("date_modified")
-					?: cursor.optLong("last_modified")
-					?: cursor.optLong("date_added")
-				if(t != null) {
-					++ countHasTime
-					it.time = t
-				}
-			}
-		}
-		
-		if( countHasTime == srcList.size ) {
-			srcList.sortBy { it.time }
-		}
-
-		srcList.forEach {
+		srcList?.forEach {
 			addAttachment(it.uri, it.mimeType)
 		}
-		
 	}
 	
 	class AttachmentRequest(
@@ -1663,6 +1616,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	private fun addAttachment(
 		uri : Uri,
 		mimeTypeArg : String? = null,
+		time :Long =0,
 		onUploadEnd : () -> Unit = {}
 	) {
 		
@@ -1692,7 +1646,6 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		val pa = PostAttachment( this)
 		attachment_list.add(pa)
-		attachment_list.sort()
 		showMediaAttachment()
 
 		// アップロード開始トースト(連発しない)
@@ -2405,7 +2358,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						val pa = PostAttachment(TootAttachment.decodeJson(it))
 						attachment_list.add(pa)
 					}
-					attachment_list.sort()
+					
 				}
 				
 				if(reply_id != null) {

@@ -444,8 +444,6 @@ class PostHelper(
 								val a = pa.attachment ?: continue
 								if(a.redraft && ! instance.versionGE(TootInstance.VERSION_2_4_1)) continue
 								array.put(a.id)
-								
-								log.d("media_ids id=${a.id} time=${pa.timeStartUpload}")
 							}
 							json.put("media_ids", array)
 						}

@@ -427,29 +427,8 @@ object HTMLDecoder {
 				return sb
 			}
 			
-			try {
-				val uri = Uri.parse(display_url)
-				val sb = StringBuilder()
-				if(! display_url.startsWith("http")){
-					sb.append(uri.scheme)
-					sb.append("://")
-				}
-				sb.append(uri.authority)
-				val a = uri.encodedPath ?: ""
-				val q = uri.encodedQuery
-				val f = uri.encodedFragment
-				val remain = a + (if(q==null) "" else "?$q") + if(f==null) "" else "#$f"
-				if(remain.length > 10) {
-					sb.append(remain.substring(0, 10))
-					sb.append("…")
-				} else {
-					sb.append(remain)
-				}
-				return sb
-			} catch(ex : Throwable) {
-				log.trace(ex)
-				return display_url
-			}
+			return shortenUrl(display_url)
+			
 			
 		}
 	}

@@ -3,14 +3,13 @@ package jp.juggler.subwaytooter
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
-
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.toUri
 
 class ActAbout : AppCompatActivity() {
 	
@@ -109,7 +108,7 @@ class ActAbout : AppCompatActivity() {
 	
 	private fun open_browser(url : String) {
 		try {
-			val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+			val intent = Intent(Intent.ACTION_VIEW, url.toUri())
 			startActivity(intent)
 		} catch(ex : Throwable) {
 			log.trace(ex,"open_browser failed.")

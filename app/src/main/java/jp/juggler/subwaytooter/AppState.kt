@@ -127,7 +127,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 	
 	private var last_sound : Long = 0
 	
-	val networkTracker :NetworkStateTracker
+	val networkTracker : NetworkStateTracker
 	
 	// initからプロパティにアクセスする場合、そのプロパティはinitより上で定義されていないとダメっぽい
 	// そしてその他のメソッドからval プロパティにアクセスする場合、そのプロパティはメソッドより上で初期化されていないとダメっぽい
@@ -237,7 +237,6 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 			enableSpeech()
 		}
 	}
-
 	
 	internal fun encodeColumnList() : JSONArray {
 		val array = JSONArray()
@@ -258,7 +257,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		return array
 	}
 	
-	internal fun saveColumnList(bEnableSpeech :Boolean = true) {
+	internal fun saveColumnList(bEnableSpeech : Boolean = true) {
 		val array = encodeColumnList()
 		saveColumnList(context, FILE_COLUMN_LIST, array)
 		if(bEnableSpeech) enableSpeech()
@@ -300,7 +299,7 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 					if(column == null) file.delete()
 				}
 			}
-		}catch(ex:Throwable){
+		} catch(ex : Throwable) {
 			// クラッシュレポートによると状態が悪いとダメらしい
 			// java.lang.IllegalStateException
 			log.trace(ex)
@@ -545,31 +544,24 @@ class AppState(internal val context : Context, internal val pref : SharedPrefere
 		
 		if(item.sound_type == HighlightWord.SOUND_TYPE_NONE) return
 		
-		if(item.sound_type == HighlightWord.SOUND_TYPE_CUSTOM && item.sound_uri?.isNotEmpty() == true) {
+		fun Uri?.tryRingtone() : Boolean {
 			try {
-				val ringtone = RingtoneManager.getRingtone(context, Uri.parse(item.sound_uri))
-				if(ringtone != null) {
-					last_ringtone = WeakReference(ringtone)
-					ringtone.play()
-					return
+				if(this != null) {
+					RingtoneManager.getRingtone(context, this)?.let { ringTone ->
+						last_ringtone = WeakReference(ringTone)
+						ringTone.play()
+						return true
+					}
 				}
 			} catch(ex : Throwable) {
 				log.trace(ex)
 			}
-			
+			return false
 		}
 		
-		val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-		try {
-			val ringtone = RingtoneManager.getRingtone(context, uri)
-			if(ringtone != null) {
-				last_ringtone = WeakReference(ringtone)
-				ringtone.play()
-			}
-		} catch(ex : Throwable) {
-			log.trace(ex)
-		}
+		if(item.sound_type == HighlightWord.SOUND_TYPE_CUSTOM && item.sound_uri.mayUri().tryRingtone()) return
 		
+		RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION).tryRingtone()
 	}
 	
 	fun onMuteUpdated() {

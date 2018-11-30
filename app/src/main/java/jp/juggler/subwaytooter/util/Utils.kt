@@ -399,7 +399,51 @@ fun String.digestSHA256Base64Url() : String {
 
 fun String.toUri() : Uri = Uri.parse(this)
 
+fun String?.mayUri() : Uri? = try {
+	if(this?.isNotEmpty() == true)
+		Uri.parse(this)
+	else
+		null
+} catch(ignored : Throwable) {
+	null
+}
+
 fun String.unescapeUri() : String = Uri.decode(this)
+
+// 指定した文字数までの部分文字列を返す
+// 文字列の長さが足りない場合は指定オフセットから終端までの長さを返す
+fun String.safeSubstring(count : Int, offset : Int = 0) = when {
+	offset + count <= length -> this.substring(offset, count)
+	else -> this.substring(offset, length)
+}
+
+// URLを適当に短くする
+fun shortenUrl(display_url : String) : String {
+	return try {
+		val uri = display_url.toUri()
+		
+		val sb = StringBuilder()
+		if(! display_url.startsWith("http")) {
+			sb.append(uri.scheme)
+			sb.append("://")
+		}
+		sb.append(uri.authority)
+		val a = uri.encodedPath ?: ""
+		val q = uri.encodedQuery
+		val f = uri.encodedFragment
+		val remain = a + (if(q == null) "" else "?$q") + if(f == null) "" else "#$f"
+		if(remain.length > 10) {
+			sb.append(remain.safeSubstring(10))
+			sb.append("…")
+		} else {
+			sb.append(remain)
+		}
+		sb.toString()
+	} catch(ex : Throwable) {
+		Utils.log.trace(ex)
+		display_url
+	}
+}
 
 ////////////////////////////////////////////////////////////////////
 // CharSequence
@@ -1052,9 +1096,9 @@ fun intentGetContent(
 }
 
 data class GetContentResultEntry(
-	val uri:Uri,
-	val mimeType:String? =null,
-	var time : Long? =null
+	val uri : Uri,
+	val mimeType : String? = null,
+	var time : Long? = null
 )
 
 // returns list of pair of uri and mime-type.
@@ -1070,7 +1114,7 @@ fun Intent.handleGetContentResult(contentResolver : ContentResolver) : ArrayList
 		for(i in 0 until cd.itemCount) {
 			cd.getItemAt(i)?.uri?.let { uri ->
 				if(null == urlList.find { it.uri == uri }) {
-					urlList.add(GetContentResultEntry(uri ))
+					urlList.add(GetContentResultEntry(uri))
 				}
 			}
 		}

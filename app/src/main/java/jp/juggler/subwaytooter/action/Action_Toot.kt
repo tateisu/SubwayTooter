@@ -1,6 +1,5 @@
 package jp.juggler.subwaytooter.action
 
-import android.net.Uri
 import android.text.SpannableStringBuilder
 import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
@@ -659,7 +658,7 @@ object Action_Toot {
 		
 		val dialog = ActionsDialog()
 		
-		val host_original = Uri.parse(url).authority ?: ""
+		val host_original = url.toUri().authority ?: ""
 		
 		// 選択肢：ブラウザで表示する
 		dialog.addAction(

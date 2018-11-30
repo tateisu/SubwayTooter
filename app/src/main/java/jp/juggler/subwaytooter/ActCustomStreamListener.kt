@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -13,14 +12,11 @@ import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import jp.juggler.subwaytooter.api.TootApiClient
-
-import org.hjson.JsonValue
-
-import java.util.regex.Pattern
-
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import okhttp3.Request
+import org.hjson.JsonValue
+import java.util.regex.Pattern
 
 class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextWatcher {
 	
@@ -194,7 +190,7 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 					
 					while(true) {
 						
-						if( ! Pref.bpSendAccessTokenToAppServer(Pref.pref(this@ActCustomStreamListener))){
+						if(! Pref.bpSendAccessTokenToAppServer(Pref.pref(this@ActCustomStreamListener))) {
 							addLog("we won't use push notification until 'SendAccessTokenToAppServer' is not set.")
 							break
 						}
@@ -254,21 +250,21 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 							if("*" == strInstance) {
 								has_wildcard = true
 							} else if(reUpperCase.matcher(strInstance).find()) {
-								addLog(strInstance + " : instance URL must be lower case.")
+								addLog("$strInstance : instance URL must be lower case.")
 								has_error = true
 								continue
 							} else if(strInstance[strInstance.length - 1] == '/') {
-								addLog(strInstance + " : instance URL must not be trailed with '/'.")
+								addLog("$strInstance : instance URL must not be trailed with '/'.")
 								has_error = true
 								continue
 							} else if(! reInstanceURL.matcher(strInstance).find()) {
-								addLog(strInstance + " : instance URL is not like https://.....")
+								addLog("$strInstance : instance URL is not like https://.....")
 								has_error = true
 								continue
 							}
 							val entry_value = member.value
 							if(! entry_value.isObject) {
-								addLog(strInstance + " : value for this instance is not JSON Object.")
+								addLog("$strInstance : value for this instance is not JSON Object.")
 								has_error = true
 								continue
 							}
@@ -299,7 +295,7 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 									if(! reUrl.matcher(sv).find()) {
 										addLog("$strInstance.$key : not like Url.")
 										has_error = true
-									} else if(Uri.parse(sv).scheme == "https") {
+									} else if(sv.startsWith("https://")) {
 										try {
 											addLog("check access to $sv …")
 											builder = Request.Builder().url(sv)
@@ -310,7 +306,6 @@ class ActCustomStreamListener : AppCompatActivity(), View.OnClickListener, TextW
 											addLog(ex.withCaption("$strInstance.$key : connect failed."))
 											has_error = true
 										}
-										
 									}
 								}
 							}

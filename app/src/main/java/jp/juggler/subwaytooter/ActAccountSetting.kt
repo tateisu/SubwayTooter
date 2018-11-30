@@ -548,12 +548,11 @@ class ActAccountSetting
 	
 	private fun open_browser(url : String) {
 		try {
-			val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+			val intent = Intent(Intent.ACTION_VIEW, url.toUri())
 			startActivity(intent)
 		} catch(ex : Throwable) {
 			log.trace(ex,"open_browser failed.")
 		}
-		
 	}
 	
 	private fun updateVisibility() {
@@ -694,18 +693,16 @@ class ActAccountSetting
 			override fun handleResult(result : TootApiResult?) {
 				result ?: return // cancelled.
 				
-				val url = result.string
+				val uri = result.string.mayUri()
 				val error = result.error
-				when {
-				// URLをブラウザで開く
-					url != null -> {
+				when{
+					uri != null->{
 						val data = Intent()
-						data.data = Uri.parse(url)
+						data.data = uri
 						setResult(Activity.RESULT_OK, data)
 						finish()
 					}
-				// エラーを表示
-					error != null -> {
+					error != null ->{
 						showToast(this@ActAccountSetting, true, error)
 						log.e("can't get oauth browser URL. $error")
 					}
@@ -729,15 +726,9 @@ class ActAccountSetting
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, R.string.notification_sound)
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
-		try {
-			val notification_sound_uri = this.notification_sound_uri
-			if(notification_sound_uri?.isNotEmpty() == true) {
-				intent.putExtra(
-					RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,
-					Uri.parse(notification_sound_uri)
-				)
-			}
-		} catch(ignored : Throwable) {
+		
+		notification_sound_uri.mayUri()?.let{uri->
+			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,uri)
 		}
 		
 		val chooser = Intent.createChooser(intent, getString(R.string.notification_sound))

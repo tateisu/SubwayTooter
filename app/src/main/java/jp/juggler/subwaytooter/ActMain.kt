@@ -1646,7 +1646,7 @@ class ActMain : AppCompatActivity()
 			}
 			
 			// queryIntentActivities に渡すURLは実在しないホストのものにする
-			val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://dummy.subwaytooter.club/"))
+			val intent = Intent(Intent.ACTION_VIEW, "https://dummy.subwaytooter.club/".toUri() )
 			intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 			val resolveInfoList = packageManager.queryIntentActivities(intent, query_flag)
 			if(resolveInfoList.isEmpty()) {

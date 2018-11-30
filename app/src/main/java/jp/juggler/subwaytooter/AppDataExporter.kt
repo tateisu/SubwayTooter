@@ -15,6 +15,7 @@ import jp.juggler.subwaytooter.api.entity.EntityIdLong
 import jp.juggler.subwaytooter.api.entity.EntityIdString
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.mayUri
 import jp.juggler.subwaytooter.util.parseLong
 import org.apache.commons.io.IOUtils
 import org.json.JSONException
@@ -461,15 +462,14 @@ object AppDataExporter {
 		column : Column
 	) {
 		try {
-			val sv = column.column_bg_image
-			if(sv.isEmpty()) return
-			context.contentResolver.openInputStream(Uri.parse(sv)).use { inStream ->
-				
-				zipStream.putNextEntry(ZipEntry("background-image/${column.column_id}"))
-				try {
-					IOUtils.copy(inStream, zipStream)
-				} finally {
-					zipStream.closeEntry()
+			column.column_bg_image.mayUri()?.let{ uri ->
+				context.contentResolver.openInputStream(uri).use { inStream ->
+					zipStream.putNextEntry(ZipEntry("background-image/${column.column_id}"))
+					try {
+						IOUtils.copy(inStream, zipStream)
+					} finally {
+						zipStream.closeEntry()
+					}
 				}
 			}
 		} catch(ex : Throwable) {

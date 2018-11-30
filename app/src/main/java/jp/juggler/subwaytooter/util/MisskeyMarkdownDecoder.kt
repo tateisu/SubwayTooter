@@ -3,7 +3,6 @@ package jp.juggler.subwaytooter.util
 import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
-import android.net.Uri
 import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.BackgroundColorSpan
@@ -27,11 +26,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyTypefaceSpan
 import java.util.*
 import java.util.regex.Matcher
 
-// 指定した文字数までの部分文字列を返す
-private fun String.safeSubstring(count : Int, offset : Int = 0) = when {
-	offset + count <= length -> this.substring(offset, count)
-	else -> this.substring(offset, length)
-}
+
 
 // 配列中の要素をラムダ式で変換して、戻り値が非nullならそこで処理を打ち切る
 private inline fun <T, V> Array<out T>.firstNonNull(predicate : (T) -> V?) : V? {
@@ -545,33 +540,7 @@ object MisskeyMarkdownDecoder {
 		s.replace(reStartEmptyLines, "")
 			.replace(reEndEmptyLines, "")
 	
-	// URLを適当に短くする
-	private fun shortenUrl(display_url : String) : String {
-		return try {
-			val uri = Uri.parse(display_url)
-			
-			val sbTmp = StringBuilder()
-			if(! display_url.startsWith("http")) {
-				sbTmp.append(uri.scheme)
-				sbTmp.append("://")
-			}
-			sbTmp.append(uri.authority)
-			val a = uri.encodedPath ?: ""
-			val q = uri.encodedQuery
-			val f = uri.encodedFragment
-			val remain = a + (if(q == null) "" else "?$q") + if(f == null) "" else "#$f"
-			if(remain.length > 10) {
-				sbTmp.append(remain.safeSubstring(10))
-				sbTmp.append("…")
-			} else {
-				sbTmp.append(remain)
-			}
-			sbTmp.toString()
-		} catch(ex : Throwable) {
-			MisskeyMarkdownDecoder.log.trace(ex)
-			display_url
-		}
-	}
+
 	
 	// 装飾つきテキストの出力時に使うデータの集まり
 	internal class SpanOutputEnv(

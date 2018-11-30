@@ -1546,7 +1546,7 @@ class PollingWorker private constructor(contextArg : Context) {
 				val intent_click = Intent(context, ActCallback::class.java)
 				intent_click.action = ActCallback.ACTION_NOTIFICATION_CLICK
 				intent_click.data =
-					Uri.parse("subwaytooter://notification_click/?db_id=" + account.db_id)
+					"subwaytooter://notification_click/?db_id=$account.db_id".toUri()
 				// FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY を付与してはいけない
 				intent_click.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 				val pi_click = PendingIntent.getActivity(
@@ -1608,20 +1608,13 @@ class PollingWorker private constructor(contextArg : Context) {
 						
 						try {
 							val acct = item.access_info.getFullAcct(item.notification.account)
-							val sv = AcctColor.getNotificationSound(acct)
-							sound_uri = if(sv == null || sv.isEmpty()) null else Uri.parse(sv)
+							sound_uri = AcctColor.getNotificationSound(acct).mayUri()
 						} catch(ex : Throwable) {
 							log.trace(ex)
 						}
 						
 						if(sound_uri == null) {
-							try {
-								val sv = account.sound_uri
-								sound_uri = if(sv.isEmpty()) null else Uri.parse(sv)
-							} catch(ex : Throwable) {
-								log.trace(ex)
-							}
-							
+							sound_uri = account.sound_uri.mayUri()
 						}
 						
 						var bSoundSet = false

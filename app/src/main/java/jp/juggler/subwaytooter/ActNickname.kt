@@ -20,6 +20,8 @@ import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.util.hideKeyboard
+import jp.juggler.subwaytooter.util.mayUri
+import jp.juggler.subwaytooter.util.toUri
 
 class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialogListener {
 	
@@ -251,15 +253,8 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, R.string.notification_sound)
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
-		try {
-			val notification_sound_uri = this.notification_sound_uri
-			val uri = if(notification_sound_uri?.isEmpty() != false) null else Uri.parse(
-				notification_sound_uri
-			)
-			if(uri != null) {
-				intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri)
-			}
-		} catch(ignored : Throwable) {
+		notification_sound_uri.mayUri()?.let{
+			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, it)
 		}
 		
 		val chooser = Intent.createChooser(intent, getString(R.string.notification_sound))

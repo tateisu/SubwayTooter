@@ -2,18 +2,9 @@ package jp.juggler.subwaytooter.action
 
 import android.app.Dialog
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.support.v7.app.AlertDialog
-import com.bumptech.glide.RequestBuilder
-
-import jp.juggler.subwaytooter.ActAccountSetting
-import jp.juggler.subwaytooter.ActMain
-import jp.juggler.subwaytooter.ActPost
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Column
-import jp.juggler.subwaytooter.Pref
-import jp.juggler.subwaytooter.R
+import jp.juggler.subwaytooter.*
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
@@ -25,6 +16,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.LogCategory
 import jp.juggler.subwaytooter.util.showToast
+import jp.juggler.subwaytooter.util.toUri
 import okhttp3.Request
 import okhttp3.RequestBody
 import org.json.JSONObject
@@ -57,10 +49,10 @@ object Action_Account {
 					val data = result.data
 					if(data is String) {
 						// ブラウザ用URLが生成された
-						val intent = Intent()
-						intent.data = Uri.parse(data)
-						activity.startAccessTokenUpdate(intent)
 						try {
+							val intent = Intent()
+							intent.data = data.toUri()
+							activity.startAccessTokenUpdate(intent)
 							dialog.dismiss()
 						} catch(ignored : Throwable) {
 							// IllegalArgumentException がたまに出る
@@ -231,7 +223,7 @@ object Action_Account {
 				val builder = Request.Builder().post(
 					RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "")
 				)
-				var result = client.request(
+				val result = client.request(
 					"/api/v1/accounts/${who.id}/" + when(bSet) {
 						true -> "pin"
 						false -> "unpin"

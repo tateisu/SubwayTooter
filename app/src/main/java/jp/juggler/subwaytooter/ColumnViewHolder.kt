@@ -762,9 +762,11 @@ class ColumnViewHolder(
 				override fun doInBackground(vararg params : Void) : Bitmap? {
 					return try {
 						createResizedBitmap(
-							activity,
-							Uri.parse(url),
-							if(screen_w > screen_h) screen_w else screen_h
+							activity, url.toUri(),
+							if(screen_w > screen_h)
+								screen_w
+							else
+								screen_h
 						)
 					} catch(ex : Throwable) {
 						log.trace(ex)

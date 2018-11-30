@@ -543,9 +543,8 @@ class App1 : Application() {
 		fun openCustomTab(activity : Activity, url : String) {
 			try {
 				if( Pref.bpDontUseCustomTabs(pref)){
-					val intent = Intent(Intent.ACTION_VIEW,Uri.parse(url))
+					val intent = Intent(Intent.ACTION_VIEW,url.toUri())
 					activity.startActivity(intent)
-
 				}else{
 
 					if(url.startsWith("http") && Pref.bpPriorChrome(pref)) {
@@ -564,7 +563,7 @@ class App1 : Application() {
 								"com.android.chrome",
 								"com.google.android.apps.chrome.Main"
 							)
-							customTabsIntent.launchUrl(activity, Uri.parse(url))
+							customTabsIntent.launchUrl(activity, url.toUri())
 							return
 						} catch(ex2 : Throwable) {
 							log.e(ex2, "openChromeTab: missing chrome. retry to other application.")
@@ -577,16 +576,12 @@ class App1 : Application() {
 						.setToolbarColor(Styler.getAttributeColor(activity, R.attr.colorPrimary))
 						.setShowTitle(true)
 						.build()
-						.launchUrl(activity, Uri.parse(url))
+						.launchUrl(activity, url.toUri())
 					
 				}
 			} catch(ex : Throwable) {
 				log.trace(ex)
-				val scheme = try {
-					Uri.parse(url).scheme
-				} catch(_ : Throwable) {
-					url
-				}
+				val scheme = url.mayUri()?.scheme ?: url
 				showToast(activity,true,"can't open browser app for %s", scheme)
 			}
 			

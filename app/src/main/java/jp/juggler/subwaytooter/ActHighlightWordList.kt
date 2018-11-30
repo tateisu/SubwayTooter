@@ -24,9 +24,7 @@ import java.util.ArrayList
 
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.showToast
-import jp.juggler.subwaytooter.util.toJsonObject
+import jp.juggler.subwaytooter.util.*
 
 class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	
@@ -309,36 +307,30 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 		val sound_type = item.sound_type
 		if(sound_type == HighlightWord.SOUND_TYPE_NONE) return
 		
-		
-		if(sound_type == HighlightWord.SOUND_TYPE_CUSTOM) {
-			val sound_uri = item.sound_uri
-			if(sound_uri?.isNotEmpty() == true) {
-				try {
-					val ringtone = RingtoneManager.getRingtone(this, Uri.parse(sound_uri))
+		fun Uri?.tryRingTone() : Boolean {
+			try {
+				if(this != null) {
+					val ringtone = RingtoneManager.getRingtone(this@ActHighlightWordList, this)
 					if(ringtone != null) {
 						stopLastRingtone()
 						last_ringtone = WeakReference(ringtone)
 						ringtone.play()
-						return
+						return true
 					}
-				} catch(ex : Throwable) {
-					log.trace(ex)
 				}
-				// fall thru 失敗したら通常の音を鳴らす
+			} catch(ex : Throwable) {
+				log.trace(ex)
 			}
+			
+			return false
 		}
 		
-		val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-		try {
-			val ringtone = RingtoneManager.getRingtone(this, uri)
-			if(ringtone != null) {
-				stopLastRingtone()
-				last_ringtone = WeakReference(ringtone)
-				ringtone.play()
-			}
-		} catch(ex : Throwable) {
-			log.trace(ex)
-		}
+		if(sound_type == HighlightWord.SOUND_TYPE_CUSTOM
+			&& item.sound_uri.mayUri().tryRingTone()
+		) return
+		
+		// fall thru 失敗したら通常の音を鳴らす
+		RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION).tryRingTone()
 		
 	}
 	

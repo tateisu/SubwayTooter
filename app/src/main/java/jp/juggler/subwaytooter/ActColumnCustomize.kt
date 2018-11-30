@@ -449,21 +449,21 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 	
 	private fun loadImage(ivColumnBackground : ImageView, url : String) {
 		try {
-			if(url.isEmpty()) {
+			if( url.isEmpty() ){
 				closeBitmaps()
 				return
-				
-			} else if(url == last_image_uri) {
+			}else if(url == last_image_uri) {
 				// 今表示してるのと同じ
 				return
 			}
 			
 			// 直前のBitmapを掃除する
 			closeBitmaps()
+
+			val uri = url.mayUri() ?: return
 			
 			// 画像をロードして、成功したら表示してURLを覚える
 			val resize_max = (0.5f + 64f * density).toInt()
-			val uri = Uri.parse(url)
 			last_image_bitmap = createResizedBitmap(this, uri, resize_max)
 			if(last_image_bitmap != null) {
 				ivColumnBackground.setImageBitmap(last_image_bitmap)

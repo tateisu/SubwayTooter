@@ -325,7 +325,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		
 		val mediaSource = ExtractorMediaSource.Factory(dataSourceFactory)
 			.setExtractorsFactory(extractorsFactory)
-			.createMediaSource(Uri.parse(url))
+			.createMediaSource(url.toUri())
 		
 		mediaSource.addEventListener(App1.getAppState(this).handler, mediaSourceEventListener)
 		
@@ -493,7 +493,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				
 				// 画像の中心が原点に来るようにして
 				matrix.postTranslate(src_width * - 0.5f, src_height * - 0.5f)
-
+				
 				// orientationに合わせた回転指定
 				val flipWh = when(orientation) {
 					2 -> {
@@ -545,11 +545,11 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 						return bitmap
 					}
 				}
-
+				
 				// 出力サイズ
 				val dst_width : Int
 				val dst_height : Int
-				when(flipWh){
+				when(flipWh) {
 					true -> {
 						dst_width = src_height
 						dst_height = src_width
@@ -732,7 +732,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		var fileName : String? = null
 		
 		try {
-			val pathSegments = Uri.parse(url).pathSegments
+			val pathSegments = url.toUri().pathSegments
 			if(pathSegments != null) {
 				val size = pathSegments.size
 				for(i in size - 1 downTo 0) {
@@ -754,7 +754,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		}
 		if(fileName.length >= 20) fileName = fileName.substring(fileName.length - 20)
 		
-		val request = DownloadManager.Request(Uri.parse(url))
+		val request = DownloadManager.Request(url.toUri())
 		request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
 		request.setTitle(fileName)
 		request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE or DownloadManager.Request.NETWORK_WIFI)
@@ -777,7 +777,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 				intent.type = "text/plain"
 				intent.putExtra(Intent.EXTRA_TEXT, url)
 			} else {
-				intent.data = Uri.parse(url)
+				intent.data = url.toUri()
 			}
 			
 			startActivity(intent)
@@ -844,13 +844,13 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		url : String?,
 		action : String
 	) {
-		if(url?.isEmpty() != false) return
+		val uri = url.mayUri() ?: return
 		
 		val caption = getString(R.string.open_browser_of, caption_prefix)
 		
 		ad.addAction(caption) {
 			try {
-				val intent = Intent(action, Uri.parse(url))
+				val intent = Intent(action, uri)
 				intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 				startActivity(intent)
 			} catch(ex : Throwable) {
@@ -891,5 +891,5 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			}
 		}
 	}
-
+	
 }

@@ -308,12 +308,14 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	private var mushroom_end : Int = 0
 	
 	private val link_click_listener : MyClickableSpanClickCallback = { _, span ->
-		try {
-			// ブラウザで開く
-			val intent = Intent(Intent.ACTION_VIEW, Uri.parse(span.url))
-			startActivity(intent)
-		} catch(ex : Throwable) {
-			log.trace(ex)
+		// ブラウザで開く
+		span.url.mayUri()?.let{
+			try {
+				val intent = Intent(Intent.ACTION_VIEW, it)
+				startActivity(intent)
+			} catch(ex : Throwable) {
+				log.trace(ex)
+			}
 		}
 	}
 	
@@ -422,9 +424,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			mushroom_end = savedInstanceState.getInt(STATE_MUSHROOM_END, 0)
 			redraft_status_id = EntityId.from(savedInstanceState, STATE_REDRAFT_STATUS_ID)
 			
-			sv = savedInstanceState.getString(STATE_URI_CAMERA_IMAGE)
-			if(sv?.isNotEmpty() == true) {
-				uriCameraImage = Uri.parse(sv)
+			savedInstanceState.getString(STATE_URI_CAMERA_IMAGE).mayUri()?.let{
+				uriCameraImage = it
 			}
 			
 			val account_db_id =

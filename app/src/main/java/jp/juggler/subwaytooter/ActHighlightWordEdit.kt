@@ -10,15 +10,13 @@ import android.view.View
 import android.widget.CompoundButton
 import android.widget.Switch
 import android.widget.TextView
-
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
-
-import org.json.JSONException
-
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.mayUri
 import jp.juggler.subwaytooter.util.toJsonObject
+import org.json.JSONException
 
 class ActHighlightWordEdit
 	: AppCompatActivity(),
@@ -220,13 +218,9 @@ class ActHighlightWordEdit
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, R.string.notification_sound)
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
-		try {
-			val sound_uri = item.sound_uri
-			val uri = if(sound_uri?.isEmpty() != false) null else Uri.parse(sound_uri)
-			if(uri != null) {
-				intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri)
-			}
-		} catch(ignored : Throwable) {
+		
+		item.sound_uri.mayUri()?.let { uri ->
+			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri)
 		}
 		
 		val chooser = Intent.createChooser(intent, getString(R.string.notification_sound))

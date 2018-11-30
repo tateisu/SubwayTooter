@@ -28,7 +28,7 @@ object StorageUtils{
 				uri = if(any_uri.startsWith("/")) {
 					Uri.fromFile(File(any_uri))
 				} else {
-					Uri.parse(any_uri)
+					any_uri.toUri()
 				}
 				val ext = MimeTypeMap.getFileExtensionFromUrl(any_uri)
 				if(ext != null) {
@@ -109,7 +109,7 @@ object StorageUtils{
 	fun getFile(context : Context, path : String) : File? {
 		try {
 			if(path.startsWith("/")) return File(path)
-			val uri = Uri.parse(path)
+			val uri = path.toUri()
 			if("file" == uri.scheme) return File(uri.path)
 			
 			// if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT )

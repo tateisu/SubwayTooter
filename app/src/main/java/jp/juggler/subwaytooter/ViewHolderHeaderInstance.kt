@@ -1,14 +1,13 @@
 package jp.juggler.subwaytooter
 
 import android.content.Intent
-import android.net.Uri
 import android.view.View
 import android.widget.TextView
 import jp.juggler.subwaytooter.action.Action_Account
-
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.subwaytooter.util.mayUri
 import jp.juggler.subwaytooter.util.showToast
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
@@ -24,7 +23,7 @@ internal class ViewHolderHeaderInstance(
 	companion object {
 		private val log = LogCategory("ViewHolderHeaderInstance")
 		
-		val reWhitespaceBeforeLineFeed = Pattern.compile("[ \t\r]+\n")
+		private val reWhitespaceBeforeLineFeed = Pattern.compile("[ \t\r]+\n")
 	}
 	
 	private val btnInstance : TextView
@@ -109,7 +108,7 @@ internal class ViewHolderHeaderInstance(
 			
 			tvLanguages.text = instance.languages?.joinToString(", ") ?: ""
 			
-			var sb = DecodeOptions(activity, access_info, decodeEmoji = true)
+			val sb = DecodeOptions(activity, access_info, decodeEmoji = true)
 				.decodeHTML("<p>" + (instance.description ?: "") + "</p>")
 			
 			// 行末の空白を除去
@@ -198,19 +197,13 @@ internal class ViewHolderHeaderInstance(
 				)
 			}
 			
-			R.id.ivThumbnail -> instance?.thumbnail?.let { thumbnail ->
+			R.id.ivThumbnail -> instance?.thumbnail?.mayUri()?.let { uri ->
 				try {
-					if(thumbnail.isNotEmpty()) {
-						val intent = Intent(Intent.ACTION_VIEW)
-						intent.data = Uri.parse(thumbnail)
-						activity.startActivity(intent)
-					}
-					
+					activity.startActivity(Intent(Intent.ACTION_VIEW,uri))
 				} catch(ex : Throwable) {
-					log.e(ex, "startActivity failed. thumbnail=$thumbnail")
+					log.e(ex, "startActivity failed. $uri")
 					showToast(activity, true, "missing web browser")
 				}
-				
 			}
 		}
 	}

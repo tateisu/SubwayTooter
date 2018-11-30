@@ -1,14 +1,16 @@
 package jp.juggler.subwaytooter.util
 
 import android.content.Context
-
+import jp.juggler.util.LogCategory
+import jp.juggler.util.decodeUTF8
+import jp.juggler.util.encodeUTF8
+import jp.juggler.util.toJsonArray
 import org.apache.commons.io.IOUtils
 import org.json.JSONArray
 import org.json.JSONObject
-
 import java.io.ByteArrayOutputStream
 import java.io.FileNotFoundException
-import java.util.LinkedList
+import java.util.*
 
 class TaskList {
 	

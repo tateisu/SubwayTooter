@@ -8,17 +8,14 @@ import android.view.View
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
-
-import java.util.ArrayList
-import java.util.concurrent.atomic.AtomicBoolean
-
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DialogInterfaceCallback
 import jp.juggler.subwaytooter.util.SavedAccountCallback
-import jp.juggler.subwaytooter.util.showToast
-
+import jp.juggler.util.showToast
+import java.util.*
+import java.util.concurrent.atomic.AtomicBoolean
 
 object AccountPicker {
 	
@@ -139,7 +136,7 @@ object AccountPicker {
 			
 			b.setPaddingRelative(pad_se, pad_tb, pad_se, pad_tb)
 			b.gravity = Gravity.START or Gravity.CENTER_VERTICAL
-			b.setAllCaps(false)
+			b.isAllCaps = false
 			b.layoutParams = lp
 			b.minHeight = (0.5f + 32f * density).toInt()
 			b.text = if(AcctColor.hasNickname(ac)) ac.nickname else a.acct

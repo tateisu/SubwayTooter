@@ -4,9 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.net.Uri
 import android.os.AsyncTask
-import android.os.SystemClock
 import android.support.v4.view.ViewCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -17,21 +15,23 @@ import android.text.TextWatcher
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import android.view.animation.AlphaAnimation
+import android.view.animation.Animation
 import android.view.inputmethod.EditorInfo
 import android.widget.*
-import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
-import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection
 import jp.juggler.subwaytooter.action.Action_List
 import jp.juggler.subwaytooter.action.Action_Notification
 import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.util.ScrollPosition
+import jp.juggler.util.createResizedBitmap
 import jp.juggler.subwaytooter.view.ListDivider
+import jp.juggler.util.*
 import org.jetbrains.anko.textColor
 import java.io.Closeable
 import java.lang.reflect.Field
 import java.util.regex.Pattern
-import android.view.animation.AlphaAnimation
-import android.view.animation.Animation
+import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayout
+import com.omadahealth.github.swipyrefreshlayout.library.SwipyRefreshLayoutDirection
 
 class ColumnViewHolder(
 	val activity : ActMain,
@@ -340,7 +340,7 @@ class ColumnViewHolder(
 		ivRefreshError = viewRoot.findViewById(R.id.ivRefreshError)
 		tvRefreshError = viewRoot.findViewById(R.id.tvRefreshError)
 		llRefreshError.setOnClickListener(this)
-		Styler.setIconDrawableId(activity, ivRefreshError, R.drawable.ic_error, Color.RED)
+		setIconDrawableId(activity, ivRefreshError, R.drawable.ic_error, Color.RED)
 		
 		
 		cbDontCloseColumn.setOnCheckedChangeListener(this)
@@ -621,7 +621,7 @@ class ColumnViewHolder(
 		}
 	}
 	
-	val procShowColumnStatus : Runnable = Runnable {
+	private val procShowColumnStatus : Runnable = Runnable {
 		
 		val column = this.column
 		if(column == null || column.is_dispose.get()) return@Runnable
@@ -683,15 +683,15 @@ class ColumnViewHolder(
 		// カラムヘッダ文字色(A)
 		var c = column.getHeaderNameColor()
 		tvColumnName.textColor = c
-		Styler.setIconAttr(
+		setIconAttr(
 			activity,
 			ivColumnIcon,
 			column.getIconAttrId(column.column_type),
 			c
 		)
-		Styler.setIconAttr(activity, btnColumnSetting, R.attr.ic_tune, c)
-		Styler.setIconAttr(activity, btnColumnReload, R.attr.btn_refresh, c)
-		Styler.setIconAttr(activity, btnColumnClose, R.attr.btn_close, c)
+		setIconAttr(activity, btnColumnSetting, R.attr.ic_tune, c)
+		setIconAttr(activity, btnColumnReload, R.attr.btn_refresh, c)
+		setIconAttr(activity, btnColumnClose, R.attr.btn_close, c)
 		
 		// カラムヘッダ文字色(B)
 		c = column.getHeaderPageNumberColor()
@@ -1045,7 +1045,7 @@ class ColumnViewHolder(
 		}
 	}
 	
-	val procShowColumnHeader : Runnable = Runnable {
+	private val procShowColumnHeader : Runnable = Runnable {
 		
 		val column = this.column
 		if(column == null || column.is_dispose.get()) return@Runnable
@@ -1066,7 +1066,7 @@ class ColumnViewHolder(
 			when {
 				c != 0 -> c
 				//	column.header_fg_color != 0 -> column.header_fg_color
-				else -> Styler.getAttributeColor(activity, R.attr.colorTimeSmall)
+				else -> getAttributeColor(activity, R.attr.colorTimeSmall)
 			}
 		)
 		

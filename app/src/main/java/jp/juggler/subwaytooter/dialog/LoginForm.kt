@@ -7,19 +7,13 @@ import android.text.InputType
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.EditorInfo
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
-import android.widget.CheckBox
-import android.widget.Filter
-import android.widget.TextView
-
+import android.widget.*
+import jp.juggler.subwaytooter.R
+import jp.juggler.util.LogCategory
+import jp.juggler.util.showToast
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import java.util.ArrayList
-
-import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.showToast
+import java.util.*
 
 object LoginForm {
 	private val log = LogCategory("LoginForm")
@@ -63,7 +57,7 @@ object LoginForm {
 		}
 		val dialog = Dialog(activity)
 		dialog.setContentView(view)
-		btnOk.setOnClickListener { _ ->
+		btnOk.setOnClickListener { _ -> // 警告がでるが、パラメータ名の指定を削ってはいけない
 			val instance = etInstance.text.toString().trim { it <= ' ' }
 			
 			when {

@@ -2,15 +2,15 @@ package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.b2i
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.forEach
+import jp.juggler.util.LogCategory
+import jp.juggler.util.forEach
 import org.json.JSONObject
 
 import java.util.ArrayList
 import java.util.regex.Pattern
 
-import jp.juggler.subwaytooter.util.parseLong
-import jp.juggler.subwaytooter.util.parseString
+import jp.juggler.util.parseLong
+import jp.juggler.util.parseString
 
 class TootList(parser:TootParser,src : JSONObject): TimelineItem(), Comparable<TootList> {
 

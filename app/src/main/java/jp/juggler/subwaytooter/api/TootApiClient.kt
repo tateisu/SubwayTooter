@@ -7,8 +7,8 @@ import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.ClientInfo
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
+import jp.juggler.util.*
 import okhttp3.*
-import org.hjson.JsonObject
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject

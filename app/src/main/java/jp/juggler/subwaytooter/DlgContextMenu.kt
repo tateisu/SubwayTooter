@@ -19,8 +19,7 @@ import jp.juggler.subwaytooter.dialog.DlgQRCode
 import jp.juggler.subwaytooter.table.FavMute
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.showToast
+import jp.juggler.util.*
 import java.util.*
 
 @SuppressLint("InflateParams")
@@ -238,7 +237,7 @@ internal class DlgContextMenu(
 			} else {
 				ivFollowedBy.visibility = View.VISIBLE
 				ivFollowedBy.setImageResource(
-					Styler.getAttributeResourceId(
+					getAttributeResourceId(
 						activity,
 						R.attr.ic_followed_by
 					)
@@ -246,14 +245,14 @@ internal class DlgContextMenu(
 			}
 			
 			btnFollow.setImageDrawable(
-				Styler.createColoredDrawable(
+				createColoredDrawable(
 					activity,
 					when {
 						relation.getRequested(who) -> R.drawable.ic_follow_wait_dark
 						relation.getFollowing(who) -> R.drawable.ic_follow_cross_dark
 						else -> R.drawable.ic_follow_plus_dark
 					},
-					Styler.getAttributeColor(
+					getAttributeColor(
 						activity,
 						when {
 							relation.getRequested(who) -> R.attr.colorRegexFilterError
@@ -265,10 +264,10 @@ internal class DlgContextMenu(
 			)
 			
 			btnMute.setImageDrawable(
-				Styler.createColoredDrawable(
+				createColoredDrawable(
 					activity,
 					R.drawable.ic_mute_dark,
-					Styler.getAttributeColor(
+					getAttributeColor(
 						activity,
 						when(relation.muting) {
 							true -> R.attr.colorImageButtonAccent
@@ -279,10 +278,10 @@ internal class DlgContextMenu(
 			)
 			
 			btnBlock.setImageDrawable(
-				Styler.createColoredDrawable(
+				createColoredDrawable(
 					activity,
 					R.drawable.ic_block_dark,
-					Styler.getAttributeColor(
+					getAttributeColor(
 						activity,
 						when(relation.blocking) {
 							true -> R.attr.colorImageButtonAccent
@@ -723,13 +722,12 @@ internal class DlgContextMenu(
 				status
 			)
 			
-			
 			R.id.btnReplyAnotherAccount -> Action_Toot.replyFromAnotherAccount(
 				activity,
 				access_info,
 				status
 			)
-			R.id.btnQuotedRenote-> Action_Toot.replyFromAnotherAccount(
+			R.id.btnQuotedRenote -> Action_Toot.replyFromAnotherAccount(
 				activity,
 				access_info,
 				status,

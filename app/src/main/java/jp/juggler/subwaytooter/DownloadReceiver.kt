@@ -4,22 +4,22 @@ import android.app.DownloadManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import jp.juggler.subwaytooter.util.getIntOrNull
-import jp.juggler.subwaytooter.util.getStringOrNull
-
-import jp.juggler.subwaytooter.util.showToast
+import jp.juggler.util.getIntOrNull
+import jp.juggler.util.getStringOrNull
+import jp.juggler.util.showToast
 
 class DownloadReceiver : BroadcastReceiver() {
 	override fun onReceive(context : Context, intent : Intent?) {
 		intent ?: return
-
+		
 		val action = intent.action ?: return
 		
 		if(DownloadManager.ACTION_DOWNLOAD_COMPLETE == action) {
 			val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, 0L)
 			
-			val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager?
-				?: throw NotImplementedError("missing DownloadManager system service")
+			val downloadManager =
+				context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager?
+					?: throw NotImplementedError("missing DownloadManager system service")
 			
 			val query = DownloadManager.Query().setFilterById(id)
 			downloadManager.query(query)?.use { cursor ->
@@ -27,7 +27,7 @@ class DownloadReceiver : BroadcastReceiver() {
 					
 					val title = cursor.getStringOrNull(DownloadManager.COLUMN_TITLE)
 					
-					if(DownloadManager.STATUS_SUCCESSFUL == cursor.getIntOrNull(DownloadManager.COLUMN_STATUS) ) {
+					if(DownloadManager.STATUS_SUCCESSFUL == cursor.getIntOrNull(DownloadManager.COLUMN_STATUS)) {
 						/*
 							ダウンロード完了通知がシステムからのものと重複することがある
 
@@ -42,9 +42,17 @@ class DownloadReceiver : BroadcastReceiver() {
 							重複を回避する方法はなさそうだ…
 						*/
 						
-						showToast(context, false, context.getString(R.string.download_complete, title))
+						showToast(
+							context,
+							false,
+							context.getString(R.string.download_complete, title)
+						)
 					} else {
-						showToast(context, false, context.getString(R.string.download_failed, title))
+						showToast(
+							context,
+							false,
+							context.getString(R.string.download_failed, title)
+						)
 					}
 				}
 			}

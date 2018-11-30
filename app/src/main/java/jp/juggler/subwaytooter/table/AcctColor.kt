@@ -3,20 +3,17 @@ package jp.juggler.subwaytooter.table
 import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
-
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.util.LogCategory
 import android.support.v4.util.LruCache
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
-import jp.juggler.subwaytooter.util.getIntOrNull
-import jp.juggler.subwaytooter.util.getStringOrNull
-import jp.juggler.subwaytooter.util.sanitizeBDI
-
-import java.util.Locale
-
+import jp.juggler.subwaytooter.App1
+import jp.juggler.util.LogCategory
+import jp.juggler.util.getIntOrNull
+import jp.juggler.util.getStringOrNull
+import jp.juggler.util.sanitizeBDI
+import java.util.*
 
 class AcctColor {
 	
@@ -68,7 +65,7 @@ class AcctColor {
 		
 	}
 	
-	companion object :TableCompanion {
+	companion object : TableCompanion {
 		
 		private val log = LogCategory("AcctColor")
 		
@@ -142,7 +139,7 @@ class AcctColor {
 						if(cursor.moveToNext()) {
 							
 							val ac = AcctColor(acct)
-						
+							
 							ac.color_fg = cursor.getIntOrNull(COL_COLOR_FG) ?: 0
 							ac.color_bg = cursor.getIntOrNull(COL_COLOR_BG) ?: 0
 							ac.nickname = cursor.getStringOrNull(COL_NICKNAME)
@@ -174,26 +171,27 @@ class AcctColor {
 			val nickname = ac.nickname
 			return if(nickname != null && nickname.isNotEmpty()) nickname.sanitizeBDI() else acct
 		}
+		
 		fun getNicknameWithColor(
 			acct : String
 		) : CharSequence {
 			val ac = load(acct)
 			val nickname = ac.nickname
 			val name = if(nickname == null || nickname.isEmpty()) acct else nickname.sanitizeBDI()
-			val sb = SpannableStringBuilder( name )
+			val sb = SpannableStringBuilder(name)
 			val start = 0
 			val end = sb.length
 			if(ac.color_fg != 0) {
 				sb.setSpan(
 					ForegroundColorSpan(ac.color_fg),
-					start,end,
+					start, end,
 					Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
 				)
 			}
 			if(ac.color_bg != 0) {
 				sb.setSpan(
 					BackgroundColorSpan(ac.color_bg),
-					start,end,
+					start, end,
 					Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
 				)
 			}

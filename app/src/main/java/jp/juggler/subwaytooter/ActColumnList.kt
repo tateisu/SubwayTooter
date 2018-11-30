@@ -10,21 +10,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-
+import jp.juggler.util.*
+import org.json.JSONArray
+import org.json.JSONObject
+import java.util.*
 import com.woxthebox.draglistview.DragItem
 import com.woxthebox.draglistview.DragItemAdapter
 import com.woxthebox.draglistview.DragListView
 import com.woxthebox.draglistview.swipe.ListSwipeHelper
 import com.woxthebox.draglistview.swipe.ListSwipeItem
-
-import org.json.JSONArray
-import org.json.JSONObject
-
-import java.util.ArrayList
-
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.activity
-import jp.juggler.subwaytooter.util.showToast
 
 class ActColumnList : AppCompatActivity() {
 	
@@ -232,7 +226,7 @@ class ActColumnList : AppCompatActivity() {
 		init {
 			var c = json.optInt(Column.KEY_COLUMN_ACCESS_COLOR, 0)
 			this.acct_color_fg =
-				if(c != 0) c else Styler.getAttributeColor(context, R.attr.colorColumnListItemText)
+				if(c != 0) c else getAttributeColor(context, R.attr.colorColumnListItemText)
 			
 			c = json.optInt(Column.KEY_COLUMN_ACCESS_COLOR_BG, 0)
 			this.acct_color_bg = c
@@ -272,7 +266,7 @@ class ActColumnList : AppCompatActivity() {
 			tvAccess.setPaddingRelative(acct_pad_lr, 0, acct_pad_lr, 0)
 			tvName.text = item.name
 			ivColumnIcon.setImageResource(
-				Styler.getAttributeResourceId(
+				getAttributeResourceId(
 					this@ActColumnList, Column.getIconAttrId(item.acct, item.type)
 				)
 			)
@@ -306,7 +300,7 @@ class ActColumnList : AppCompatActivity() {
 			
 			val ivColumnIcon = dragView.findViewById<ImageView>(R.id.ivColumnIcon)
 			ivColumnIcon.setImageResource(
-				Styler.getAttributeResourceId(
+				getAttributeResourceId(
 					this@ActColumnList, Column.getIconAttrId(item.acct, item.type)
 				)
 			)
@@ -315,7 +309,7 @@ class ActColumnList : AppCompatActivity() {
 				clickedView.findViewById<View>(R.id.ivBookmark).visibility
 			
 			dragView.findViewById<View>(R.id.item_layout).setBackgroundColor(
-				Styler.getAttributeColor(this@ActColumnList, R.attr.list_item_bg_pressed_dragged)
+				getAttributeColor(this@ActColumnList, R.attr.list_item_bg_pressed_dragged)
 			)
 		}
 	}
@@ -326,7 +320,7 @@ class ActColumnList : AppCompatActivity() {
 		
 		init {
 			setHasStableIds(true)
-			itemList = ArrayList()
+			itemList = ArrayList<MyItem>()
 		}
 		
 		override fun onCreateViewHolder(parent : ViewGroup, viewType : Int) : MyViewHolder {

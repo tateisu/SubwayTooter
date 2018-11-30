@@ -5,7 +5,7 @@ import android.support.test.runner.AndroidJUnit4
 import org.junit.Test
 import org.junit.runner.RunWith
 
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.util.*
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.assertEquals

@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.action
 
 import android.support.v7.app.AlertDialog
-
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Column
@@ -12,7 +11,7 @@ import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.showToast
+import jp.juggler.util.showToast
 import okhttp3.Request
 import okhttp3.RequestBody
 
@@ -25,18 +24,20 @@ object Action_Notification {
 			AlertDialog.Builder(activity)
 				.setMessage(R.string.confirm_delete_notification)
 				.setNegativeButton(R.string.cancel, null)
-				.setPositiveButton(R.string.ok) { _, _ -> deleteAll(activity, target_account, true) }
+				.setPositiveButton(R.string.ok) { _, _ ->
+					deleteAll(activity, target_account, true)
+				}
 				.show()
 			return
 		}
 		TootTaskRunner(activity).run(target_account, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				
-				val request_builder = Request.Builder().post(
-					RequestBody.create(
-						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" // 空データ
-					))
-				return client.request("/api/v1/notifications/clear", request_builder)
+				// 空データを送る
+				return client.request(
+					"/api/v1/notifications/clear",
+					Request.Builder()
+						.post(RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, ""))
+				)
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
@@ -63,14 +64,15 @@ object Action_Notification {
 	) {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val request_builder = Request.Builder()
-					.post(RequestBody.create(
-						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
-						, "id=" + notification.id.toString()
-					))
-				
 				return client.request(
-					"/api/v1/notifications/dismiss", request_builder)
+					"/api/v1/notifications/dismiss", Request.Builder()
+						.post(
+							RequestBody.create(
+								TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED
+								, "id=${notification.id}"
+							)
+						)
+				)
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

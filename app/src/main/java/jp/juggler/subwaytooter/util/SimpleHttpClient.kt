@@ -2,9 +2,8 @@ package jp.juggler.subwaytooter.util
 
 import android.content.Context
 import okhttp3.*
-import android.net.ConnectivityManager
-import android.net.NetworkInfo
 import jp.juggler.subwaytooter.App1
+import jp.juggler.util.LogCategory
 
 // okhttpそのままだとモックしづらいので
 // リクエストを投げてレスポンスを得る部分をインタフェースにまとめる

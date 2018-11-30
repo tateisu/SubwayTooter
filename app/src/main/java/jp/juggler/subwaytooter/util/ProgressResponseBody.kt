@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.util
 
+import jp.juggler.util.LogCategory
 import java.io.IOException
 import java.io.InputStream
 import java.nio.charset.Charset

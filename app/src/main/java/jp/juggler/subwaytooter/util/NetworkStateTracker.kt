@@ -3,6 +3,7 @@ package jp.juggler.subwaytooter.util
 import android.content.Context
 import android.net.*
 import android.os.Build
+import jp.juggler.util.LogCategory
 import java.lang.RuntimeException
 
 class NetworkStateTracker(

@@ -1,15 +1,8 @@
 package jp.juggler.subwaytooter.util
 
-import android.net.Uri
 import android.text.Spannable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
-
-import java.util.ArrayList
-import java.util.HashMap
-import java.util.HashSet
-import java.util.regex.Pattern
-
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
@@ -19,6 +12,12 @@ import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.HighlightWord
+import jp.juggler.util.LogCategory
+import jp.juggler.util.replaceAll
+import jp.juggler.util.replaceFirst
+import jp.juggler.util.shortenUrl
+import java.util.*
+import java.util.regex.Pattern
 
 object HTMLDecoder {
 	private val log = LogCategory("HTMLDecoder")
@@ -403,11 +402,11 @@ object HTMLDecoder {
 			// 通常リンクはhttp,httpsだけでなく幾つかのスキーマ名が含まれる
 			// スキーマ名の直後には必ず :// が出現する
 			// https://github.com/tootsuite/mastodon/pull/7810
-			if(! reNormalLink.matcher(display_url).find() ) {
+			if(! reNormalLink.matcher(display_url).find()) {
 				if(display_url.startsWith("@") && href != null && Pref.bpMentionFullAcct(App1.pref)) {
 					// メンションをfull acct にする
 					val acct = TootAccount.getAcctFromUrl(href)
-					if( acct!= null) return "@$acct"
+					if(acct != null) return "@$acct"
 				}
 				// ハッシュタグやメンションはURLの短縮表示の対象外
 				return display_url
@@ -429,7 +428,6 @@ object HTMLDecoder {
 			
 			return shortenUrl(display_url)
 			
-			
 		}
 	}
 	
@@ -447,8 +445,8 @@ object HTMLDecoder {
 	
 	fun decodeHTML(options : DecodeOptions, src : String?) : SpannableStringBuilder {
 		
-		if(  options.linkHelper?.isMisskey == true && !options.forceHtml ){
-			return MisskeyMarkdownDecoder.decodeMarkdown(options,src)
+		if(options.linkHelper?.isMisskey == true && ! options.forceHtml) {
+			return MisskeyMarkdownDecoder.decodeMarkdown(options, src)
 		}
 		
 		val sb = SpannableStringBuilder()

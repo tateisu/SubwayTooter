@@ -9,11 +9,9 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import android.net.Uri
 import android.os.Build
 import android.support.customtabs.CustomTabsIntent
 import android.util.Log
-
 import com.bumptech.glide.Glide
 import com.bumptech.glide.GlideBuilder
 import com.bumptech.glide.Registry
@@ -22,24 +20,25 @@ import com.bumptech.glide.load.engine.cache.InternalCacheDiskCacheFactory
 import com.bumptech.glide.load.engine.executor.GlideExecutor
 import com.bumptech.glide.load.engine.executor.GlideExecutor.newDiskCacheExecutor
 import com.bumptech.glide.load.engine.executor.GlideExecutor.newSourceExecutor
-import com.bumptech.glide.load.model.*
+import com.bumptech.glide.load.model.GlideUrl
 import jp.juggler.subwaytooter.api.TootApiClient
-
+import jp.juggler.subwaytooter.api.entity.TootAttachment
+import jp.juggler.subwaytooter.table.*
+import jp.juggler.subwaytooter.util.CustomEmojiCache
+import jp.juggler.subwaytooter.util.CustomEmojiLister
+import jp.juggler.subwaytooter.util.ProgressResponseBody
+import jp.juggler.util.*
+import okhttp3.*
 import java.io.File
 import java.io.InputStream
-import java.util.ArrayList
+import java.util.*
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadFactory
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
-
-import jp.juggler.subwaytooter.api.entity.TootAttachment
-import jp.juggler.subwaytooter.table.*
-import jp.juggler.subwaytooter.util.*
-import okhttp3.*
-import uk.co.chrisjenx.calligraphy.CalligraphyConfig
 import java.util.regex.Pattern
+import uk.co.chrisjenx.calligraphy.CalligraphyConfig
 
 class App1 : Application() {
 	
@@ -552,7 +551,7 @@ class App1 : Application() {
 							// 初回はChrome指定で試す
 							val customTabsIntent = CustomTabsIntent.Builder()
 								.setToolbarColor(
-									Styler.getAttributeColor(
+									getAttributeColor(
 										activity,
 										R.attr.colorPrimary
 									)
@@ -573,7 +572,7 @@ class App1 : Application() {
 
 					// Chromeがないようなのでcomponent指定なしでリトライ
 					CustomTabsIntent.Builder()
-						.setToolbarColor(Styler.getAttributeColor(activity, R.attr.colorPrimary))
+						.setToolbarColor(getAttributeColor(activity, R.attr.colorPrimary))
 						.setShowTitle(true)
 						.build()
 						.launchUrl(activity, url.toUri())

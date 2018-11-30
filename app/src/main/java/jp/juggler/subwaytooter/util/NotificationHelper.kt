@@ -7,6 +7,7 @@ import android.content.Context
 
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.util.LogCategory
 
 object NotificationHelper {
 	

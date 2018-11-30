@@ -1,9 +1,8 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.toJsonArray
-import jp.juggler.subwaytooter.util.toJsonObject
+import jp.juggler.util.LogCategory
+import jp.juggler.util.toJsonObject
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.regex.Pattern

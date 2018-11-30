@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase
 import java.util.HashSet
 
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.util.LogCategory
 
 object MutedApp : TableCompanion {
 	

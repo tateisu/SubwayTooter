@@ -2,8 +2,8 @@ package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.HTMLDecoder
-import jp.juggler.subwaytooter.util.filterNotEmpty
-import jp.juggler.subwaytooter.util.parseString
+import jp.juggler.util.filterNotEmpty
+import jp.juggler.util.parseString
 import org.json.JSONObject
 
 class TootCard(
@@ -21,12 +21,12 @@ class TootCard(
 	val image : String?,
 	
 	val type : String?,
-	val author_name : String? =null,
-	val author_url : String? =null,
-	val provider_name : String? =null,
-	val provider_url : String? =null,
+	val author_name : String? = null,
+	val author_url : String? = null,
+	val provider_name : String? = null,
+	val provider_url : String? = null,
 	
-	val originalStatus :TootStatus? =null
+	val originalStatus : TootStatus? = null
 ) {
 	
 	constructor(src : JSONObject) : this(
@@ -43,16 +43,17 @@ class TootCard(
 	
 	)
 	
-	constructor(parser: TootParser, src:TootStatus) :this(
+	constructor(parser : TootParser, src : TootStatus) : this(
 		originalStatus = src,
 		url = src.url,
-		title = "${src.account.display_name} @${parser.linkHelper .getFullAcct(src.account.acct)}",
-		description = if( parser.serviceType==ServiceType.MISSKEY){
-			src.spoiler_text.filterNotEmpty() ?: src.content
-		}else{
-			src.spoiler_text.filterNotEmpty() ?: HTMLDecoder.encodeEntity( src.content ?: "")
-		},
-		image = src.media_attachments ?. firstOrNull() ?. urlForThumbnail ?: src.account.avatar_static,
+		title = "${src.account.display_name} @${parser.linkHelper.getFullAcct(src.account.acct)}",
+		description = src.spoiler_text.filterNotEmpty()
+			?: if(parser.serviceType == ServiceType.MISSKEY) {
+				src.content
+			} else {
+				HTMLDecoder.encodeEntity(src.content ?: "")
+			},
+		image = src.media_attachments?.firstOrNull()?.urlForThumbnail ?: src.account.avatar_static,
 		type = "photo"
 	)
 }

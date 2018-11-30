@@ -2,9 +2,9 @@ package jp.juggler.subwaytooter.api.entity
 
 import android.content.Context
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.parseLong
-import jp.juggler.subwaytooter.util.parseString
+import jp.juggler.util.LogCategory
+import jp.juggler.util.parseLong
+import jp.juggler.util.parseString
 import org.json.JSONArray
 import org.json.JSONObject
 

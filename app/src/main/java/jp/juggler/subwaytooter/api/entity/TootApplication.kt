@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter.api.entity
 import jp.juggler.subwaytooter.api.TootParser
 import org.json.JSONObject
 
-import jp.juggler.subwaytooter.util.parseString
+import jp.juggler.util.parseString
 
 class TootApplication(parser: TootParser, src : JSONObject){
 	val name : String?

@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.apng.ApngFrames
+import jp.juggler.util.LogCategory
 
 class CustomEmojiCache(internal val context : Context) {
 	

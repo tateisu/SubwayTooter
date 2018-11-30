@@ -12,7 +12,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.ConnectivityManager
-import android.net.NetworkInfo
 import android.net.Uri
 import android.net.wifi.WifiManager
 import android.os.Build
@@ -51,6 +50,7 @@ import jp.juggler.subwaytooter.api.entity.EntityIdLong
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
+import jp.juggler.util.*
 import okhttp3.Call
 import okhttp3.Request
 import okhttp3.RequestBody

@@ -1,7 +1,5 @@
 package jp.juggler.subwaytooter.action
 
-import java.util.ArrayList
-
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Column
@@ -11,18 +9,27 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.encodePercent
-import jp.juggler.subwaytooter.util.showToast
+import jp.juggler.util.encodePercent
+import jp.juggler.util.showToast
 import okhttp3.Request
 import okhttp3.RequestBody
+import java.util.*
 
 object Action_Instance {
 	
 	// インスタンス情報カラムを開く
 	fun information(
-		activity : ActMain, pos : Int, host : String
+		activity : ActMain,
+		pos : Int,
+		host : String
 	) {
-		activity.addColumn(false, pos, SavedAccount.na, Column.TYPE_INSTANCE_INFORMATION, host)
+		activity.addColumn(
+			false,
+			pos,
+			SavedAccount.na,
+			Column.TYPE_INSTANCE_INFORMATION,
+			host
+		)
 	}
 	
 	// 指定タンスのローカルタイムラインを開く

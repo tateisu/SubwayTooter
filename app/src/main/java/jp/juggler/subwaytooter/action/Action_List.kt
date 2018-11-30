@@ -1,22 +1,20 @@
 package jp.juggler.subwaytooter.action
 
 import android.app.Dialog
-import org.json.JSONObject
-
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.*
-import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootList
 import jp.juggler.subwaytooter.api.entity.parseItem
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.showToast
-import jp.juggler.subwaytooter.util.toPostRequestBuilder
-import jp.juggler.subwaytooter.util.withCaption
+import jp.juggler.util.showToast
+import jp.juggler.util.toPostRequestBuilder
+import jp.juggler.util.withCaption
 import okhttp3.Request
 import okhttp3.RequestBody
+import org.json.JSONObject
 
 object Action_List {
 	

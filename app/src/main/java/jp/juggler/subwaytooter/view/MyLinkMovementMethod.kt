@@ -6,7 +6,7 @@ import android.text.method.Touch
 import android.text.style.ClickableSpan
 import android.view.MotionEvent
 import android.widget.TextView
-import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.util.LogCategory
 
 object MyLinkMovementMethod : LinkMovementMethod() {
 	

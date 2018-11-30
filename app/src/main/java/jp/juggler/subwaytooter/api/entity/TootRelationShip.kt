@@ -4,7 +4,7 @@ import jp.juggler.subwaytooter.api.TootParser
 import org.json.JSONObject
 
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.util.parseLong
+import jp.juggler.util.parseLong
 
 class TootRelationShip(parser:TootParser,src : JSONObject) {
 	

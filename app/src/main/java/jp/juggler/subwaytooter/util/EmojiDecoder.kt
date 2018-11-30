@@ -7,9 +7,6 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.util.SparseBooleanArray
 import jp.juggler.emoji.EmojiMap201709
-
-import java.util.ArrayList
-
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
@@ -18,7 +15,8 @@ import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.NetworkEmojiSpan
 import jp.juggler.subwaytooter.table.HighlightWord
-import java.util.HashMap
+import jp.juggler.util.codePointBefore
+import java.util.*
 import java.util.regex.Pattern
 
 object EmojiDecoder {

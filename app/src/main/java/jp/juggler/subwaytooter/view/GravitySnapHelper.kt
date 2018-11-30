@@ -11,7 +11,7 @@ import android.view.View
 import android.view.animation.DecelerateInterpolator
 import android.widget.Scroller
 
-import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.util.LogCategory
 
 class GravitySnapHelper @SuppressLint("RtlHardcoded")
 constructor(gravity : Int) : LinearSnapHelper() {

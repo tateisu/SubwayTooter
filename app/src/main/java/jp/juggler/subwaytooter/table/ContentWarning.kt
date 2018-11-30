@@ -6,8 +6,8 @@ import android.database.sqlite.SQLiteDatabase
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.entity.EntityIdString
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.getInt
+import jp.juggler.util.LogCategory
+import jp.juggler.util.getInt
 
 object ContentWarning : TableCompanion {
 	private val log = LogCategory("ContentWarning")

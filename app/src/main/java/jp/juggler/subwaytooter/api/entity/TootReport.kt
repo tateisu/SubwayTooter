@@ -2,8 +2,8 @@ package jp.juggler.subwaytooter.api.entity
 
 import org.json.JSONObject
 
-import jp.juggler.subwaytooter.util.parseLong
-import jp.juggler.subwaytooter.util.parseString
+import jp.juggler.util.parseLong
+import jp.juggler.util.parseString
 
 class TootReport(src:JSONObject): TimelineItem() {
 	

@@ -13,7 +13,7 @@ import android.widget.EditText
 import android.widget.TextView
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.util.*
 import okhttp3.Request
 import org.hjson.JsonValue
 import java.util.regex.Pattern

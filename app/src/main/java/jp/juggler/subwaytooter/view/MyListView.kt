@@ -8,7 +8,7 @@ import android.view.MotionEvent
 import android.widget.ListView
 import jp.juggler.subwaytooter.StatusButtonsPopup
 
-import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.util.LogCategory
 
 class MyListView : ListView {
 	

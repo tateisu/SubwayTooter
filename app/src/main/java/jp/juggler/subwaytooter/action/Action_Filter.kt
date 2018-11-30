@@ -10,8 +10,8 @@ import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootFilter
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.showToast
+import jp.juggler.util.LogCategory
+import jp.juggler.util.showToast
 import okhttp3.Request
 
 object Action_Filter {

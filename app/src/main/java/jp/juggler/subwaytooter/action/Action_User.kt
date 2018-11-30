@@ -13,7 +13,8 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.table.UserRelationMisskey
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.util.TootApiResultCallback
+import jp.juggler.util.*
 import okhttp3.Request
 import okhttp3.RequestBody
 import org.json.JSONObject
@@ -435,7 +436,7 @@ object Action_User {
 		activity : ActMain, access_info : SavedAccount, who : TootAccount, status : TootStatus
 	) {
 		ReportForm.showReportForm(activity, access_info, who, status) { dialog, comment, forward ->
-			report(activity, access_info, who, status, comment, forward) { _ ->
+			report(activity, access_info, who, status, comment, forward) {
 				// 成功したらダイアログを閉じる
 				try {
 					dialog.dismiss()

@@ -13,7 +13,7 @@ import com.bumptech.glide.gifdecoder.GifDecoder
 import com.bumptech.glide.load.Transformation
 import com.bumptech.glide.load.engine.bitmap_recycle.BitmapPool
 import com.bumptech.glide.util.Preconditions
-import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.util.LogCategory
 import java.lang.reflect.Field
 import java.nio.ByteBuffer
 

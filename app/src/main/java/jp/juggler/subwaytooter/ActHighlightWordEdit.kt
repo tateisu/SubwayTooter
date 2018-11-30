@@ -13,9 +13,10 @@ import android.widget.TextView
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.mayUri
-import jp.juggler.subwaytooter.util.toJsonObject
+import jp.juggler.util.LogCategory
+import jp.juggler.util.getAttributeColor
+import jp.juggler.util.mayUri
+import jp.juggler.util.toJsonObject
 import org.json.JSONException
 
 class ActHighlightWordEdit
@@ -134,7 +135,7 @@ class ActHighlightWordEdit
 			
 			c = item.color_fg
 			if(c == 0) {
-				tvName.setTextColor(Styler.getAttributeColor(this, android.R.attr.textColorPrimary))
+				tvName.setTextColor(getAttributeColor(this, android.R.attr.textColorPrimary))
 			} else {
 				tvName.setTextColor(c)
 			}

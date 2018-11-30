@@ -5,8 +5,8 @@ import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
 
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.getString
+import jp.juggler.util.LogCategory
+import jp.juggler.util.getString
 
 object SubscriptionServerKey : TableCompanion {
 	

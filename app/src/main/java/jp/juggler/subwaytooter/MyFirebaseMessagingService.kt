@@ -2,12 +2,11 @@ package jp.juggler.subwaytooter
 
 import android.content.Intent
 import android.os.Build
-import com.google.firebase.iid.FirebaseInstanceId
 
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 
-import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.util.LogCategory
 
 class MyFirebaseMessagingService : FirebaseMessagingService() {
 	

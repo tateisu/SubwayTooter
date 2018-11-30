@@ -7,13 +7,11 @@ import android.os.AsyncTask
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
-
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.showToast
-
+import jp.juggler.util.LogCategory
+import jp.juggler.util.showToast
 import net.glxn.qrgen.android.QRCode
 
 @SuppressLint("StaticFieldLeak")

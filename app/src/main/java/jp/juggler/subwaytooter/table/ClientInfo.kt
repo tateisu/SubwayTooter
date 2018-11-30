@@ -3,9 +3,9 @@ package jp.juggler.subwaytooter.table
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.getString
-import jp.juggler.subwaytooter.util.toJsonObject
+import jp.juggler.util.LogCategory
+import jp.juggler.util.getString
+import jp.juggler.util.toJsonObject
 import org.json.JSONObject
 
 object ClientInfo :TableCompanion {

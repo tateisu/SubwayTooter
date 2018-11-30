@@ -4,16 +4,12 @@ import android.content.ContentValues
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.provider.BaseColumns
-
-import org.json.JSONObject
-
-import java.util.ArrayList
-import java.util.Collections
-
 import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.digestSHA256Hex
-import jp.juggler.subwaytooter.util.toJsonObject
+import jp.juggler.util.LogCategory
+import jp.juggler.util.digestSHA256Hex
+import jp.juggler.util.toJsonObject
+import org.json.JSONObject
+import java.util.*
 
 class PostDraft {
 	
@@ -39,7 +35,7 @@ class PostDraft {
 	
 	fun delete() {
 		try {
-			App1.database.delete(table, COL_ID + "=?", arrayOf(id.toString()))
+			App1.database.delete(table, "$COL_ID=?", arrayOf(id.toString()))
 		} catch(ex : Throwable) {
 			log.e(ex, "delete failed.")
 		}
@@ -84,7 +80,7 @@ class PostDraft {
 			try {
 				// 古いデータを掃除する
 				val expire = now - 86400000L * 30
-				App1.database.delete(table, COL_TIME_SAVE + "<?", arrayOf(expire.toString()))
+				App1.database.delete(table, "$COL_TIME_SAVE<?", arrayOf(expire.toString()))
 			} catch(ex : Throwable) {
 				log.e(ex, "deleteOld failed.")
 			}
@@ -103,7 +99,7 @@ class PostDraft {
 				while(it.hasNext()) {
 					keys.add(it.next())
 				}
-				Collections.sort(keys)
+				keys.sort()
 				for(k in keys) {
 					val v = if(json.isNull(k)) "(null)" else json.opt(k).toString()
 					sb.append("&")
@@ -151,7 +147,7 @@ class PostDraft {
 					null,
 					null,
 					null,
-					COL_TIME_SAVE + " desc"
+					"$COL_TIME_SAVE desc"
 				)
 			} catch(ex : Throwable) {
 				log.trace(ex)

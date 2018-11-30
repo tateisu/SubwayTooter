@@ -11,9 +11,8 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.VelocityTracker
 import android.view.View
-
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.runOnMainLooper
+import jp.juggler.util.LogCategory
+import jp.juggler.util.runOnMainLooper
 
 class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) :
 	View(context, attrs, defStyle) {
@@ -178,7 +177,7 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 		return true
 	}
 	
-	var defaultScale :Float = 1f
+	private var defaultScale :Float = 1f
 	
 	// 表示位置の初期化
 	// 呼ばれるのは、ビットマップを変更した時、ビューのサイズが変わった時、画像をクリックした時

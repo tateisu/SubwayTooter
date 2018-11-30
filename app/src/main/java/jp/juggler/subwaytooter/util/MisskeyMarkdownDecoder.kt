@@ -22,12 +22,17 @@ import jp.juggler.subwaytooter.span.HighlightSpan
 import jp.juggler.subwaytooter.span.MisskeyBigSpan
 import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.HighlightWord
-import java.util.regex.Pattern
-import uk.co.chrisjenx.calligraphy.CalligraphyTypefaceSpan
+import jp.juggler.util.LogCategory
+import jp.juggler.util.encodePercent
+import jp.juggler.util.shortenUrl
 import java.util.*
 import java.util.regex.Matcher
+import java.util.regex.Pattern
+import uk.co.chrisjenx.calligraphy.CalligraphyTypefaceSpan
 
-
+// import uk.co.chrisjenx.calligraphy.CalligraphyTypefaceSpan
+private fun fontSpan(typeFace:Typeface):Any =
+	CalligraphyTypefaceSpan(typeFace)
 
 // 配列中の要素をラムダ式で変換して、戻り値が非nullならそこで処理を打ち切る
 private inline fun <T, V> Array<out T>.firstNonNull(predicate : (T) -> V?) : V? {
@@ -287,7 +292,7 @@ object MisskeySyntaxHighlighter {
 					spanList.addLast(
 						start,
 						end,
-						CalligraphyTypefaceSpan(Typeface.defaultFromStyle(Typeface.ITALIC))
+						fontSpan(Typeface.defaultFromStyle(Typeface.ITALIC))
 					)
 				}
 			}
@@ -774,7 +779,7 @@ object MisskeyMarkdownDecoder {
 			appendText(text)
 			spanList.addWithOffset(sp, start)
 			spanList.addLast(start, sb.length, BackgroundColorSpan(0x40808080))
-			spanList.addLast(start, sb.length, CalligraphyTypefaceSpan(Typeface.MONOSPACE))
+			spanList.addLast(start, sb.length, fontSpan(Typeface.MONOSPACE))
 		}),
 		
 		URL({
@@ -793,7 +798,7 @@ object MisskeyMarkdownDecoder {
 			spanList.addWithOffset(sp, start)
 			spanList.addLast(start, sb.length, BackgroundColorSpan(0x40808080))
 			spanList.addLast(start, sb.length, android.text.style.RelativeSizeSpan(0.7f))
-			spanList.addLast(start, sb.length, CalligraphyTypefaceSpan(Typeface.MONOSPACE))
+			spanList.addLast(start, sb.length, fontSpan(Typeface.MONOSPACE))
 			closeBlock()
 		}),
 		
@@ -808,7 +813,7 @@ object MisskeyMarkdownDecoder {
 			spanList.addLast(
 				start,
 				sb.length,
-				CalligraphyTypefaceSpan(android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
+				fontSpan(android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
 			)
 		}),
 		
@@ -839,7 +844,7 @@ object MisskeyMarkdownDecoder {
 		BOLD({
 			val start = this.start
 			fireRenderChildNodes(it)
-			spanList.addLast(start, sb.length, CalligraphyTypefaceSpan(font_bold))
+			spanList.addLast(start, sb.length, fontSpan(font_bold))
 		}),
 		
 		MOTION({
@@ -959,7 +964,7 @@ object MisskeyMarkdownDecoder {
 			spanList.addLast(
 				start,
 				sb.length,
-				CalligraphyTypefaceSpan(android.graphics.Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
+				fontSpan(Typeface.defaultFromStyle(android.graphics.Typeface.ITALIC))
 			)
 			
 			closeBlock()

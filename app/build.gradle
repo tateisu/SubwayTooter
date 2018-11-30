@@ -119,7 +119,7 @@ dependencies {
 
     implementation 'uk.co.chrisjenx:calligraphy:2.3.0'
 
-    implementation 'com.github.woxthebox:draglistview:1.5.4'
+    implementation 'com.github.woxthebox:draglistview:1.6.3'
 
     implementation 'com.github.omadahealth:swipy:1.2.3@aar'
 

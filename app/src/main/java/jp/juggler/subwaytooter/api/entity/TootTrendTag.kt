@@ -1,8 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.subwaytooter.App1
-import jp.juggler.subwaytooter.Pref
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.util.*
 import org.json.JSONArray
 import org.json.JSONObject
 

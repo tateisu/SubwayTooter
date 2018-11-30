@@ -8,6 +8,7 @@ import org.json.JSONObject
 
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.util.*
+import jp.juggler.util.*
 
 class HighlightWord {
 	

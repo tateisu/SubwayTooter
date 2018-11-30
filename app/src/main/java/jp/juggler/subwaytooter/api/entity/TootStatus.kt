@@ -8,19 +8,17 @@ import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootAccountMap
 import jp.juggler.subwaytooter.api.TootApiClient
-
-import org.json.JSONObject
-
-import java.lang.ref.WeakReference
-import java.util.regex.Pattern
-
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.HighlightWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
+import jp.juggler.util.*
 import org.json.JSONArray
+import org.json.JSONObject
+import java.lang.ref.WeakReference
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.regex.Pattern
 import kotlin.collections.ArrayList
 
 @Suppress("MemberVisibilityCanPrivate")

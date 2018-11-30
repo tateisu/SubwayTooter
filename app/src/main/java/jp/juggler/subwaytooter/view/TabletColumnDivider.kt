@@ -7,8 +7,8 @@ import android.graphics.Rect
 import android.support.v7.widget.RecyclerView
 import android.view.View
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.Styler
-import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.util.LogCategory
+import jp.juggler.util.getAttributeDrawable
 
 class TabletColumnDivider(context : Context) : RecyclerView.ItemDecoration() {
 	
@@ -20,7 +20,7 @@ class TabletColumnDivider(context : Context) : RecyclerView.ItemDecoration() {
 		var barWidth : Int = 0
 	}
 	
-	private val drawable = Styler.getAttributeDrawable(context, R.attr.colorSettingDivider)
+	private val drawable = getAttributeDrawable(context, R.attr.colorSettingDivider)
 	private val paint = Paint()
 	private val rect = Rect()
 	

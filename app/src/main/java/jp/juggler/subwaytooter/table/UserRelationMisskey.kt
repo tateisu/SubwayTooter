@@ -6,8 +6,8 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.getInt
+import jp.juggler.util.LogCategory
+import jp.juggler.util.getInt
 import org.json.JSONObject
 
 object UserRelationMisskey : TableCompanion {

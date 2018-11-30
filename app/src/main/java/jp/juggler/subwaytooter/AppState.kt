@@ -1,11 +1,7 @@
 package jp.juggler.subwaytooter
 
 import android.annotation.SuppressLint
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.content.SharedPreferences
+import android.content.*
 import android.media.Ringtone
 import android.media.RingtoneManager
 import android.net.Uri
@@ -15,31 +11,25 @@ import android.os.SystemClock
 import android.speech.tts.TextToSpeech
 import android.speech.tts.Voice
 import android.text.Spannable
-
+import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.span.MyClickableSpan
+import jp.juggler.subwaytooter.table.HighlightWord
+import jp.juggler.subwaytooter.table.MutedApp
+import jp.juggler.subwaytooter.table.MutedWord
+import jp.juggler.subwaytooter.table.SavedAccount
+import jp.juggler.subwaytooter.util.NetworkStateTracker
+import jp.juggler.subwaytooter.util.PostAttachment
+import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
-
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.io.FileNotFoundException
 import java.lang.ref.WeakReference
-import java.util.ArrayList
-import java.util.Arrays
-import java.util.HashSet
-import java.util.LinkedList
-import java.util.Locale
-import java.util.Random
+import java.util.*
 import java.util.regex.Pattern
-
-import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.span.MyClickableSpan
-import jp.juggler.subwaytooter.table.MutedApp
-import jp.juggler.subwaytooter.table.MutedWord
-import jp.juggler.subwaytooter.util.*
-import java.io.File
 
 class AppState(internal val context : Context, internal val pref : SharedPreferences) {
 	

@@ -10,13 +10,11 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.support.v4.content.ContextCompat
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory
-
-import android.util.AttributeSet
-import android.view.ViewGroup
 import android.support.v7.widget.AppCompatImageView
+import android.util.AttributeSet
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
-
 import com.bumptech.glide.Glide
 import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.model.GlideUrl
@@ -27,10 +25,9 @@ import com.bumptech.glide.request.target.ImageViewTarget
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.target.Target
 import com.bumptech.glide.request.transition.Transition
-
 import jp.juggler.subwaytooter.Pref
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.clipRange
+import jp.juggler.util.LogCategory
+import jp.juggler.util.clipRange
 
 class MyNetworkImageView : AppCompatImageView {
 	
@@ -39,13 +36,13 @@ class MyNetworkImageView : AppCompatImageView {
 	}
 	
 	// ロード中などに表示するDrawableのリソースID
-	private var mDefaultImageId  = 0
+	private var mDefaultImageId = 0
 	
 	// エラー時に表示するDrawableのリソースID
-	private var mErrorImageId  = 0
+	private var mErrorImageId = 0
 	
 	// 角丸の半径。元画像の短辺に対する割合を指定するらしい
-	internal var mCornerRadius  = 0f
+	internal var mCornerRadius = 0f
 	
 	// 表示したい画像のURL
 	private var mUrl : String? = null
@@ -58,8 +55,8 @@ class MyNetworkImageView : AppCompatImageView {
 	private val proc_focus_point : Runnable = Runnable { updateFocusPoint() }
 	
 	private var media_type_drawable : Drawable? = null
-	private var media_type_bottom  = 0
-	private var media_type_left  = 0
+	private var media_type_bottom = 0
+	private var media_type_left = 0
 	
 	constructor(context : Context)
 		: super(context)
@@ -116,7 +113,7 @@ class MyNetworkImageView : AppCompatImageView {
 		return null
 	}
 	
-	fun cancelLoading(defaultDrawable : Drawable? =null) {
+	fun cancelLoading(defaultDrawable : Drawable? = null) {
 		
 		val d = drawable
 		if(d is Animatable) {
@@ -309,11 +306,11 @@ class MyNetworkImageView : AppCompatImageView {
 							// 角丸でないならそのまま使う
 							drawable
 						}
-					
-					// GidDrawableを置き換える
+						
+						// GidDrawableを置き換える
 						drawable is GifDrawable -> replaceGifDrawable(drawable)
-					
-					// Glide 4.xから、静止画はBitmapDrawableになった
+						
+						// Glide 4.xから、静止画はBitmapDrawableになった
 						drawable is BitmapDrawable -> replaceBitmapDrawable(drawable)
 						
 						else -> {
@@ -558,7 +555,8 @@ class MyNetworkImageView : AppCompatImageView {
 					}
 				}
 			}
-			else->{
+			
+			else -> {
 				// not supported.
 			}
 		}

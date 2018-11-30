@@ -1,12 +1,12 @@
 package jp.juggler.subwaytooter.api.entity
 
 import android.content.Context
-import android.net.Uri
 import android.text.Spannable
 import jp.juggler.subwaytooter.api.MisskeyAccountDetailMap
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.UserRelationMisskey
 import jp.juggler.subwaytooter.util.*
+import jp.juggler.util.*
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.*

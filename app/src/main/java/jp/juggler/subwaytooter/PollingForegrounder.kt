@@ -10,7 +10,7 @@ import android.os.IBinder
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
 
-import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.util.LogCategory
 import jp.juggler.subwaytooter.util.NotificationHelper
 
 class PollingForegrounder : IntentService("PollingForegrounder") {

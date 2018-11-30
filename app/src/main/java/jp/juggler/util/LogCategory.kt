@@ -1,4 +1,4 @@
-package jp.juggler.subwaytooter.util
+package jp.juggler.util
 
 import android.content.res.Resources
 import android.util.Log

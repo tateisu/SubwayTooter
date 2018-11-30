@@ -10,14 +10,12 @@ import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.EditText
 import jp.juggler.subwaytooter.api.entity.*
-
-import java.util.Locale
-
 import jp.juggler.subwaytooter.table.MutedWord
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.showToast
+import jp.juggler.util.LogCategory
+import jp.juggler.util.showToast
+import java.util.*
 
 class ActText : AppCompatActivity(), View.OnClickListener {
 	
@@ -40,7 +38,12 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			sb.append(text)
 		}
 		
-		private fun addHeader(context : Context, sb : StringBuilder, key_str_id : Int, value : Any?) {
+		private fun addHeader(
+			context : Context,
+			sb : StringBuilder,
+			key_str_id : Int,
+			value : Any?
+		) {
 			if(sb.isNotEmpty() && sb[sb.length - 1] != '\n') {
 				sb.append('\n')
 			}
@@ -49,25 +52,40 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			sb.append(value?.toString() ?: "(null)")
 		}
 		
-		private fun encodeStatus(intent : Intent, context : Context, access_info : SavedAccount, status : TootStatus) {
+		private fun encodeStatus(
+			intent : Intent,
+			context : Context,
+			access_info : SavedAccount,
+			status : TootStatus
+		) {
 			val sb = StringBuilder()
 			
 			addHeader(context, sb, R.string.send_header_url, status.url)
 			
-			addHeader(context, sb, R.string.send_header_date, TootStatus.formatTime(context, status.time_created_at, false))
+			addHeader(
+				context,
+				sb,
+				R.string.send_header_date,
+				TootStatus.formatTime(context, status.time_created_at, false)
+			)
 			
 			
-			addHeader(context, sb, R.string.send_header_from_acct, access_info.getFullAcct(status.account))
+			addHeader(
+				context,
+				sb,
+				R.string.send_header_from_acct,
+				access_info.getFullAcct(status.account)
+			)
 			
-			val sv :String? = status.spoiler_text
-			if( sv != null && sv.isNotEmpty() ) {
+			val sv : String? = status.spoiler_text
+			if(sv != null && sv.isNotEmpty()) {
 				addHeader(context, sb, R.string.send_header_content_warning, sv)
 			}
 			
 			addAfterLine(sb, "\n")
 			
 			intent.putExtra(EXTRA_CONTENT_START, sb.length)
-			sb.append(DecodeOptions(context, access_info).decodeHTML( status.content))
+			sb.append(DecodeOptions(context, access_info).decodeHTML(status.content))
 			intent.putExtra(EXTRA_CONTENT_END, sb.length)
 			
 			dumpAttachment(sb, status.media_attachments)
@@ -78,25 +96,42 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			intent.putExtra(EXTRA_TEXT, sb.toString())
 		}
 		
-		private fun dumpAttachment(sb : StringBuilder, src : ArrayList<TootAttachmentLike> ?) {
+		private fun dumpAttachment(sb : StringBuilder, src : ArrayList<TootAttachmentLike>?) {
 			if(src == null) return
 			var i = 0
 			for(ma in src) {
 				++ i
-				if( ma is TootAttachment ) {
+				if(ma is TootAttachment) {
 					addAfterLine(sb, "\n")
 					addAfterLine(sb, String.format(Locale.JAPAN, "Media-%d-Url: %s", i, ma.url))
-					addAfterLine(sb, String.format(Locale.JAPAN, "Media-%d-Remote-Url: %s", i, ma.remote_url))
-					addAfterLine(sb, String.format(Locale.JAPAN, "Media-%d-Preview-Url: %s", i, ma.preview_url))
-					addAfterLine(sb, String.format(Locale.JAPAN, "Media-%d-Text-Url: %s", i, ma.text_url))
-				}else if( ma is TootAttachmentMSP){
+					addAfterLine(
+						sb,
+						String.format(Locale.JAPAN, "Media-%d-Remote-Url: %s", i, ma.remote_url)
+					)
+					addAfterLine(
+						sb,
+						String.format(Locale.JAPAN, "Media-%d-Preview-Url: %s", i, ma.preview_url)
+					)
+					addAfterLine(
+						sb,
+						String.format(Locale.JAPAN, "Media-%d-Text-Url: %s", i, ma.text_url)
+					)
+				} else if(ma is TootAttachmentMSP) {
 					addAfterLine(sb, "\n")
-					addAfterLine(sb, String.format(Locale.JAPAN, "Media-%d-Preview-Url: %s", i, ma.preview_url))
+					addAfterLine(
+						sb,
+						String.format(Locale.JAPAN, "Media-%d-Preview-Url: %s", i, ma.preview_url)
+					)
 				}
 			}
 		}
 		
-		private fun encodeAccount(intent : Intent, context : Context, access_info : SavedAccount, who : TootAccount) {
+		private fun encodeAccount(
+			intent : Intent,
+			context : Context,
+			access_info : SavedAccount,
+			who : TootAccount
+		) {
 			val sb = StringBuilder()
 			
 			intent.putExtra(EXTRA_CONTENT_START, sb.length)
@@ -112,7 +147,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			
 			addAfterLine(sb, "\n")
 			
-			sb.append(DecodeOptions(context, access_info).decodeHTML( who.note))
+			sb.append(DecodeOptions(context, access_info).decodeHTML(who.note))
 			
 			addAfterLine(sb, "\n")
 			
@@ -121,31 +156,61 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 			addHeader(context, sb, R.string.send_header_account_url, who.url)
 			
 			addHeader(context, sb, R.string.send_header_account_image_avatar, who.avatar)
-			addHeader(context, sb, R.string.send_header_account_image_avatar_static, who.avatar_static)
+			addHeader(
+				context,
+				sb,
+				R.string.send_header_account_image_avatar_static,
+				who.avatar_static
+			)
 			addHeader(context, sb, R.string.send_header_account_image_header, who.header)
-			addHeader(context, sb, R.string.send_header_account_image_header_static, who.header_static)
+			addHeader(
+				context,
+				sb,
+				R.string.send_header_account_image_header_static,
+				who.header_static
+			)
 			
 			addHeader(context, sb, R.string.send_header_account_created_at, who.created_at)
 			addHeader(context, sb, R.string.send_header_account_statuses_count, who.statuses_count)
-			addHeader(context, sb, R.string.send_header_account_followers_count, who.followers_count)
-			addHeader(context, sb, R.string.send_header_account_following_count, who.following_count)
+			addHeader(
+				context,
+				sb,
+				R.string.send_header_account_followers_count,
+				who.followers_count
+			)
+			addHeader(
+				context,
+				sb,
+				R.string.send_header_account_following_count,
+				who.following_count
+			)
 			addHeader(context, sb, R.string.send_header_account_locked, who.locked)
 			
 			addAfterLine(sb, "")
 			intent.putExtra(EXTRA_TEXT, sb.toString())
 		}
 		
-		fun open(activity : ActMain, request_code : Int, access_info : SavedAccount, status : TootStatus) {
+		fun open(
+			activity : ActMain,
+			request_code : Int,
+			access_info : SavedAccount,
+			status : TootStatus
+		) {
 			val intent = Intent(activity, ActText::class.java)
-			intent.putExtra(EXTRA_ACCOUNT_DB_ID,access_info.db_id)
+			intent.putExtra(EXTRA_ACCOUNT_DB_ID, access_info.db_id)
 			encodeStatus(intent, activity, access_info, status)
 			
 			activity.startActivityForResult(intent, request_code)
 		}
 		
-		fun open(activity : ActMain, request_code : Int, access_info : SavedAccount, who : TootAccount) {
+		fun open(
+			activity : ActMain,
+			request_code : Int,
+			access_info : SavedAccount,
+			who : TootAccount
+		) {
 			val intent = Intent(activity, ActText::class.java)
-			intent.putExtra(EXTRA_ACCOUNT_DB_ID,access_info.db_id)
+			intent.putExtra(EXTRA_ACCOUNT_DB_ID, access_info.db_id)
 			encodeAccount(intent, activity, access_info, who)
 			
 			activity.startActivityForResult(intent, request_code)
@@ -175,8 +240,8 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 		
 		val intent = intent
 		
-		account = SavedAccount.loadAccount(this,intent.getLongExtra(EXTRA_ACCOUNT_DB_ID,-1L))
-
+		account = SavedAccount.loadAccount(this, intent.getLongExtra(EXTRA_ACCOUNT_DB_ID, - 1L))
+		
 		initUI()
 		
 		if(savedInstanceState == null) {
@@ -203,8 +268,8 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 		
 		findViewById<View>(R.id.btnSearchMSP).setOnClickListener(this)
 		findViewById<View>(R.id.btnSearchTS).setOnClickListener(this)
-
-		val btnKeywordFilter :View = findViewById(R.id.btnKeywordFilter)
+		
+		val btnKeywordFilter : View = findViewById(R.id.btnKeywordFilter)
 		btnKeywordFilter.setOnClickListener(this)
 		btnKeywordFilter.isEnabled = account?.isPseudo == false
 		
@@ -268,7 +333,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 	
 	private fun search() {
 		val sv = selection
-		if( sv.isEmpty() ) {
+		if(sv.isEmpty()) {
 			showToast(this, false, "please select search keyword")
 			return
 		}
@@ -287,7 +352,7 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 	
 	private fun searchToot(resultCode : Int) {
 		val sv = selection
-		if(sv.isEmpty() ) {
+		if(sv.isEmpty()) {
 			showToast(this, false, "please select search keyword")
 			return
 		}
@@ -316,8 +381,8 @@ class ActText : AppCompatActivity(), View.OnClickListener {
 	
 	private fun keywordFilter() {
 		val account = this.account
-		if( account?.isPseudo != false ) return
-		ActKeywordFilter.open(this,account,initial_phrase = selection)
+		if(account?.isPseudo != false) return
+		ActKeywordFilter.open(this, account, initial_phrase = selection)
 	}
 	
 }

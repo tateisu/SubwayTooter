@@ -1,6 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
-import jp.juggler.subwaytooter.util.parseString
+import jp.juggler.util.parseString
 import org.json.JSONArray
 
 class TootAttachmentMSP(

@@ -2,6 +2,7 @@
 
 package jp.juggler.subwaytooter.util
 
+import jp.juggler.util.LogCategory
 import org.w3c.dom.Element
 import org.w3c.dom.NamedNodeMap
 import java.io.ByteArrayInputStream

@@ -8,9 +8,8 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.EntityIdString
 import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootRelationShip
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.getInt
-import org.json.JSONObject
+import jp.juggler.util.LogCategory
+import jp.juggler.util.getInt
 
 class UserRelation {
 	

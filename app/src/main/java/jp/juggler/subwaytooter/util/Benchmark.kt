@@ -1,6 +1,7 @@
 package jp.juggler.subwaytooter.util
 
 import android.os.SystemClock
+import jp.juggler.util.LogCategory
 
 class Benchmark(
 	val log : LogCategory,

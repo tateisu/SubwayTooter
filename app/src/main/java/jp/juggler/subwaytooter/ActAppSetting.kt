@@ -25,10 +25,7 @@ import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.dialog.ProgressDialogEx
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.handleGetContentResult
-import jp.juggler.subwaytooter.util.intentOpenDocument
-import jp.juggler.subwaytooter.util.showToast
+import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
 import org.jetbrains.anko.textColor
 import java.io.File
@@ -627,21 +624,21 @@ class ActAppSetting : AppCompatActivity()
 	private fun showColumnHeaderSample() {
 		val header_bg = when {
 			color_column_header_bg != 0 -> color_column_header_bg
-			else -> Styler.getAttributeColor(this, R.attr.color_column_header)
+			else -> getAttributeColor(this, R.attr.color_column_header)
 		}
 		
 		val header_fg = when {
 			color_column_header_fg != 0 -> color_column_header_fg
-			else -> Styler.getAttributeColor(this, R.attr.colorColumnHeaderName)
+			else -> getAttributeColor(this, R.attr.colorColumnHeaderName)
 		}
 		
 		ViewCompat.setBackground(
 			llColumnHeader,
-			Styler.getAdaptiveRippleDrawable(header_bg, header_fg)
+			getAdaptiveRippleDrawable(header_bg, header_fg)
 		)
 		
 		tvColumnName.textColor = header_fg
-		Styler.setIconAttr(
+		setIconAttr(
 			this,
 			ivColumnHeader,
 			R.attr.btn_federate_tl,
@@ -659,13 +656,13 @@ class ActAppSetting : AppCompatActivity()
 		
 		c = when {
 			color_column_acct != 0 -> color_column_acct
-			else -> Styler.getAttributeColor(this, R.attr.colorTimeSmall)
+			else -> getAttributeColor(this, R.attr.colorTimeSmall)
 		}
 		tvSampleAcct.setTextColor(c)
 		
 		c = when {
 			color_column_text != 0 -> color_column_text
-			else -> Styler.getAttributeColor(this, R.attr.colorContentText)
+			else -> getAttributeColor(this, R.attr.colorContentText)
 		}
 		tvSampleContent.setTextColor(c)
 		
@@ -1062,24 +1059,24 @@ class ActAppSetting : AppCompatActivity()
 			val fg = if(footer_button_fg_color != 0)
 				footer_button_fg_color
 			else
-				Styler.getAttributeColor(this, R.attr.colorRippleEffect)
-			ViewCompat.setBackground(ivFooterToot, Styler.getAdaptiveRippleDrawable(c, fg))
-			ViewCompat.setBackground(ivFooterMenu, Styler.getAdaptiveRippleDrawable(c, fg))
+				getAttributeColor(this, R.attr.colorRippleEffect)
+			ViewCompat.setBackground(ivFooterToot, getAdaptiveRippleDrawable(c, fg))
+			ViewCompat.setBackground(ivFooterMenu, getAdaptiveRippleDrawable(c, fg))
 		}
 		
 		c = footer_button_fg_color
 		if(c == 0) {
-			Styler.setIconAttr(this, ivFooterToot, R.attr.ic_edit)
-			Styler.setIconAttr(this, ivFooterMenu, R.attr.ic_hamburger)
+			setIconAttr(this, ivFooterToot, R.attr.ic_edit)
+			setIconAttr(this, ivFooterMenu, R.attr.ic_hamburger)
 		} else {
-			Styler.setIconAttr(this, ivFooterToot, R.attr.ic_edit, color = c)
-			Styler.setIconAttr(this, ivFooterMenu, R.attr.ic_hamburger, color = c)
+			setIconAttr(this, ivFooterToot, R.attr.ic_edit, color = c)
+			setIconAttr(this, ivFooterMenu, R.attr.ic_hamburger, color = c)
 		}
 		
 		c = footer_tab_bg_color
 		if(c == 0) {
 			llFooterBG.setBackgroundColor(
-				Styler.getAttributeColor(
+				getAttributeColor(
 					this,
 					R.attr.colorColumnStripBackground
 				)
@@ -1091,16 +1088,10 @@ class ActAppSetting : AppCompatActivity()
 		c = footer_tab_divider_color
 		if(c == 0) {
 			vFooterDivider1.setBackgroundColor(
-				Styler.getAttributeColor(
-					this,
-					R.attr.colorImageButton
-				)
+				getAttributeColor(this,R.attr.colorImageButton)
 			)
 			vFooterDivider2.setBackgroundColor(
-				Styler.getAttributeColor(
-					this,
-					R.attr.colorImageButton
-				)
+				getAttributeColor(this,R.attr.colorImageButton)
 			)
 		} else {
 			vFooterDivider1.setBackgroundColor(c)
@@ -1109,7 +1100,7 @@ class ActAppSetting : AppCompatActivity()
 		
 		c = footer_tab_indicator_color
 		if(c == 0) {
-			vIndicator.setBackgroundColor(Styler.getAttributeColor(this, R.attr.colorAccent))
+			vIndicator.setBackgroundColor(getAttributeColor(this, R.attr.colorAccent))
 		} else {
 			vIndicator.setBackgroundColor(c)
 		}

@@ -22,10 +22,11 @@ import jp.juggler.subwaytooter.api.entity.parseList
 import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
-import jp.juggler.subwaytooter.util.showToast
-import jp.juggler.subwaytooter.util.toPostRequestBuilder
 import jp.juggler.subwaytooter.view.MyListView
 import jp.juggler.subwaytooter.view.MyNetworkImageView
+import jp.juggler.util.getAttributeColor
+import jp.juggler.util.showToast
+import jp.juggler.util.toPostRequestBuilder
 import org.json.JSONObject
 import java.util.*
 
@@ -136,7 +137,7 @@ class DlgListMember(
 		this.list_owner = a
 		if(a == null) {
 			btnListOwner.setText(R.string.not_selected)
-			btnListOwner.setTextColor(Styler.getAttributeColor(activity, android.R.attr.textColorPrimary))
+			btnListOwner.setTextColor(getAttributeColor(activity, android.R.attr.textColorPrimary))
 			btnListOwner.setBackgroundResource(R.drawable.btn_bg_transparent)
 			//
 			
@@ -154,7 +155,7 @@ class DlgListMember(
 			if(AcctColor.hasColorForeground(ac)) {
 				btnListOwner.setTextColor(ac.color_fg)
 			} else {
-				btnListOwner.setTextColor(Styler.getAttributeColor(activity, android.R.attr.textColorPrimary))
+				btnListOwner.setTextColor(getAttributeColor(activity, android.R.attr.textColorPrimary))
 			}
 		}
 		

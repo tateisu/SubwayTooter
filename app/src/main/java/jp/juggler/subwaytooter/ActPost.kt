@@ -42,6 +42,7 @@ import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.FocusPointView
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.subwaytooter.view.MyNetworkImageView
+import jp.juggler.util.*
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.Request
@@ -920,8 +921,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		for(iv in ivMedia) {
 			iv.setOnClickListener(this)
-			iv.setDefaultImageResId(Styler.getAttributeResourceId(this, R.attr.ic_loading))
-			iv.setErrorImageResId(Styler.getAttributeResourceId(this, R.attr.ic_unknown))
+			iv.setDefaultImageResId(getAttributeResourceId(this, R.attr.ic_loading))
+			iv.setErrorImageResId(getAttributeResourceId(this, R.attr.ic_unknown))
 		}
 		
 		setIcon(btnPost, R.drawable.btn_post)
@@ -965,11 +966,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	}
 	
 	private fun setIcon(iv : ImageView, drawableId : Int) {
-		Styler.setIconDrawableId(
+		setIconDrawableId(
 			this,
 			iv,
 			drawableId,
-			Styler.getAttributeColor(this, R.attr.colorColumnHeaderName)
+			getAttributeColor(this, R.attr.colorColumnHeaderName)
 		)
 	}
 	
@@ -1042,7 +1043,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		val remain = max - length
 		tvCharCount.text = Integer.toString(remain)
-		val color = Styler.getAttributeColor(
+		val color = getAttributeColor(
 			this,
 			if(remain < 0) R.attr.colorRegexFilterError else android.R.attr.textColorPrimary
 		)
@@ -1058,7 +1059,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		if(a == null) {
 			post_helper.setInstance(null, false)
 			btnAccount.text = getString(R.string.not_selected)
-			btnAccount.setTextColor(Styler.getAttributeColor(this, android.R.attr.textColorPrimary))
+			btnAccount.setTextColor(getAttributeColor(this, android.R.attr.textColorPrimary))
 			btnAccount.setBackgroundResource(R.drawable.btn_bg_transparent)
 		} else {
 			post_helper.setInstance(a.host, a.isMisskey)
@@ -1082,7 +1083,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				btnAccount.setTextColor(ac.color_fg)
 			} else {
 				btnAccount.setTextColor(
-					Styler.getAttributeColor(
+					getAttributeColor(
 						this,
 						android.R.attr.textColorPrimary
 					)
@@ -1673,7 +1674,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	inner class AttachmentWorker : WorkerBase() {
 		
 		internal val isCancelled = AtomicBoolean(false)
-
+		
 		override fun cancel() {
 			isCancelled.set(true)
 			notifyEx()

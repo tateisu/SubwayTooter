@@ -7,17 +7,15 @@ import android.support.v7.widget.LinearLayoutManager
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-
+import jp.juggler.subwaytooter.table.MutedApp
+import jp.juggler.util.LogCategory
+import jp.juggler.util.getAttributeColor
+import java.util.*
 import com.woxthebox.draglistview.DragItem
 import com.woxthebox.draglistview.DragItemAdapter
 import com.woxthebox.draglistview.DragListView
 import com.woxthebox.draglistview.swipe.ListSwipeHelper
 import com.woxthebox.draglistview.swipe.ListSwipeItem
-
-import java.util.ArrayList
-
-import jp.juggler.subwaytooter.table.MutedApp
-import jp.juggler.subwaytooter.util.LogCategory
 
 class ActMutedApp : AppCompatActivity() {
 	
@@ -171,7 +169,7 @@ class ActMutedApp : AppCompatActivity() {
 				clickedView.findViewById<TextView>(R.id.tvName).text
 			
 			dragView.findViewById<View>(R.id.item_layout).setBackgroundColor(
-				Styler.getAttributeColor(this@ActMutedApp, R.attr.list_item_bg_pressed_dragged)
+				getAttributeColor(this@ActMutedApp, R.attr.list_item_bg_pressed_dragged)
 			)
 		}
 	}

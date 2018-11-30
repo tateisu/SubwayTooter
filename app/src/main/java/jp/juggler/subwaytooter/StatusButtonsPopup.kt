@@ -12,7 +12,7 @@ import android.widget.LinearLayout
 import android.widget.PopupWindow
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.util.LogCategory
 import org.jetbrains.anko.matchParent
 
 internal class StatusButtonsPopup(

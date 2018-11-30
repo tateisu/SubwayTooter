@@ -19,11 +19,13 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.util.DecodeOptions
 import jp.juggler.subwaytooter.util.NetworkEmojiInvalidator
-import jp.juggler.subwaytooter.util.intoStringResource
 import jp.juggler.subwaytooter.util.startMargin
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
 import jp.juggler.subwaytooter.view.MyTextView
+import jp.juggler.util.getAttributeColor
+import jp.juggler.util.intoStringResource
+import jp.juggler.util.setIconDrawableId
 import org.jetbrains.anko.textColor
 
 internal class ViewHolderHeaderProfile(
@@ -118,7 +120,7 @@ internal class ViewHolderHeaderProfile(
 	override fun showColor() {
 		var c = column.column_bg_color
 		c = if(c == 0) {
-			Styler.getAttributeColor(activity, R.attr.colorProfileBackgroundMask)
+			getAttributeColor(activity, R.attr.colorProfileBackgroundMask)
 		} else {
 			- 0x40000000 or (0x00ffffff and c)
 		}
@@ -155,8 +157,8 @@ internal class ViewHolderHeaderProfile(
 		btnStatusCount.textColor = contentColor
 		btnFollowing.textColor = contentColor
 		btnFollowers.textColor = contentColor
-
-		Styler.setIconDrawableId(
+		
+		setIconDrawableId(
 			activity,
 			btnMore,
 			R.drawable.btn_more,
@@ -375,10 +377,8 @@ internal class ViewHolderHeaderProfile(
 		llMoved.visibility = View.VISIBLE
 		tvMoved.visibility = View.VISIBLE
 		
-		val caption = who.decodeDisplayName(activity).intoStringResource(
-			activity,
-			R.string.account_moved_to
-		)
+		val caption = who.decodeDisplayName(activity)
+			.intoStringResource(activity, R.string.account_moved_to)
 		
 		tvMoved.text = caption
 		moved_caption_invalidator.register(caption)
@@ -407,7 +407,7 @@ internal class ViewHolderHeaderProfile(
 			else -> acctLong
 		}
 		
-		tv.setTextColor(if(AcctColor.hasColorForeground(ac)) ac.color_fg else column.getAcctColor() )
+		tv.setTextColor(if(AcctColor.hasColorForeground(ac)) ac.color_fg else column.getAcctColor())
 		
 		if(AcctColor.hasColorBackground(ac)) {
 			tv.setBackgroundColor(ac.color_bg)

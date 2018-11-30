@@ -1,7 +1,6 @@
 package jp.juggler.subwaytooter.action
 
 import android.support.v7.app.AlertDialog
-
 import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Column
@@ -14,7 +13,10 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.table.UserRelationMisskey
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.util.EmptyCallback
+import jp.juggler.util.encodePercent
+import jp.juggler.util.showToast
+import jp.juggler.util.toPostRequestBuilder
 import okhttp3.Request
 import okhttp3.RequestBody
 import org.json.JSONObject
@@ -206,7 +208,7 @@ object Action_Follow {
 						}, params.toPostRequestBuilder()
 					)
 					
-					fun saveFollow (f:Boolean){
+					fun saveFollow(f : Boolean) {
 						val ur = UserRelation.load(access_info.db_id, userId)
 						ur.following = f
 						UserRelationMisskey.save1(
@@ -226,12 +228,12 @@ object Action_Follow {
 						}
 						
 						// success
-						error ==null  -> saveFollow( bFollow)
+						error == null -> saveFollow(bFollow)
 						
 						// already followed/unfollowed
-						error.contains("already following") -> saveFollow( bFollow)
-						error.contains("already not following") -> saveFollow( bFollow)
-
+						error.contains("already following") -> saveFollow(bFollow)
+						error.contains("already not following") -> saveFollow(bFollow)
+						
 						// else something error
 					}
 					

@@ -6,11 +6,11 @@ import android.widget.TextView
 import jp.juggler.subwaytooter.action.Action_Account
 import jp.juggler.subwaytooter.api.entity.TootInstance
 import jp.juggler.subwaytooter.util.DecodeOptions
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.mayUri
-import jp.juggler.subwaytooter.util.showToast
 import jp.juggler.subwaytooter.view.MyLinkMovementMethod
 import jp.juggler.subwaytooter.view.MyNetworkImageView
+import jp.juggler.util.LogCategory
+import jp.juggler.util.mayUri
+import jp.juggler.util.showToast
 import java.util.*
 import java.util.regex.Pattern
 

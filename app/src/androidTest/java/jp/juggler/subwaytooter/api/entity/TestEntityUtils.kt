@@ -4,9 +4,9 @@ import android.support.test.runner.AndroidJUnit4
 import android.test.mock.MockContext
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.notEmptyOrThrow
-import jp.juggler.subwaytooter.util.parseLong
-import jp.juggler.subwaytooter.util.toJsonObject
+import jp.juggler.util.notEmptyOrThrow
+import jp.juggler.util.parseLong
+import jp.juggler.util.toJsonObject
 import org.json.JSONArray
 import org.json.JSONObject
 import org.junit.Assert.*

@@ -14,21 +14,20 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
-
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
 import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.util.createResizedBitmap
+import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
 import org.jetbrains.anko.textColor
 import java.io.File
 import java.io.FileOutputStream
-
 import java.text.NumberFormat
-import java.util.Locale
+import java.util.*
 import kotlin.math.max
 
 class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPickerDialogListener {
@@ -393,7 +392,7 @@ class ActColumnCustomize : AppCompatActivity(), View.OnClickListener, ColorPicke
 			
 			val c = column.getHeaderNameColor()
 			tvColumnName.textColor = c
-			Styler.setIconAttr(
+			setIconAttr(
 				this,
 				ivColumnHeader,
 				column.getIconAttrId(column.column_type),

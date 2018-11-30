@@ -7,7 +7,7 @@ import android.support.v7.util.ListUpdateCallback
 import android.support.v7.widget.RecyclerView
 import android.view.ViewGroup
 import jp.juggler.subwaytooter.api.entity.TimelineItem
-import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.util.LogCategory
 
 internal class ItemListAdapter(
 	private val activity : ActMain,

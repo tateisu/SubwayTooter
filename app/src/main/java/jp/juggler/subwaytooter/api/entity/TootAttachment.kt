@@ -1,15 +1,13 @@
 package jp.juggler.subwaytooter.api.entity
 
 import android.content.SharedPreferences
-
-import org.json.JSONObject
-
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.util.clipRange
-import jp.juggler.subwaytooter.util.jsonObject
-import jp.juggler.subwaytooter.util.parseLong
-import jp.juggler.subwaytooter.util.parseString
+import jp.juggler.util.clipRange
+import jp.juggler.util.jsonObject
+import jp.juggler.util.parseLong
+import jp.juggler.util.parseString
+import org.json.JSONObject
 
 class TootAttachment : TootAttachmentLike {
 	
@@ -37,8 +35,6 @@ class TootAttachment : TootAttachmentLike {
 		private const val KEY_FOCUS = "focus"
 		private const val KEY_X = "x"
 		private const val KEY_Y = "y"
-		private const val KEY_TIME_START_UPLOAD = "KEY_TIME_START_UPLOAD"
-		var timeSeed : Long = 0L
 		
 		fun decodeJson(src : JSONObject) = TootAttachment(src, decode = true)
 	}
@@ -74,8 +70,6 @@ class TootAttachment : TootAttachmentLike {
 	
 	// MisskeyはメディアごとにNSFWフラグがある
 	val isSensitive : Boolean
-	
-	var timeStartUpload : Long = 0L
 	
 	///////////////////////////////
 	
@@ -132,9 +126,6 @@ class TootAttachment : TootAttachmentLike {
 			}
 		}
 		
-		// internal use
-		// muse be > 0
-		this.timeStartUpload = src.parseLong(KEY_TIME_START_UPLOAD) ?: ++ timeSeed
 	}
 	
 	override val urlForThumbnail : String?
@@ -175,7 +166,6 @@ class TootAttachment : TootAttachmentLike {
 		put(KEY_TEXT_URL, text_url)
 		put(KEY_DESCRIPTION, description)
 		put(KEY_IS_SENSITIVE, isSensitive)
-		put(KEY_TIME_START_UPLOAD, timeStartUpload)
 		
 		if(focusX != 0f || focusY != 0f) {
 			put(KEY_META, jsonObject {
@@ -190,15 +180,15 @@ class TootAttachment : TootAttachmentLike {
 	
 	constructor(
 		src : JSONObject,
-		decode : Boolean // dummy parameter to use this ctor.
+		@Suppress("UNUSED_PARAMETER") decode : Boolean // dummy parameter for choosing this ctor.
 	) {
-
-		id = if( src.optBoolean(KEY_IS_STRING_ID) ) {
+		
+		id = if(src.optBoolean(KEY_IS_STRING_ID)) {
 			EntityId.mayDefault(src.parseString(KEY_ID))
 		} else {
 			EntityId.mayDefault(src.parseLong(KEY_ID))
 		}
-
+		
 		type = src.parseString(KEY_TYPE)
 		url = src.parseString(KEY_URL)
 		remote_url = src.parseString(KEY_REMOTE_URL)
@@ -211,7 +201,6 @@ class TootAttachment : TootAttachmentLike {
 		focusX = parseFocusValue(focus, KEY_X)
 		focusY = parseFocusValue(focus, KEY_Y)
 		
-		timeStartUpload = src.parseLong(KEY_TIME_START_UPLOAD) ?: ++ timeSeed
 	}
 }
 

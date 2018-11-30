@@ -6,9 +6,8 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
 import android.widget.LinearLayout
-
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.Styler
+import jp.juggler.util.getAttributeColor
 
 // 画面下のカラムストリップのLinearLayout
 // 可視範囲を示すインジケーターを表示する
@@ -25,7 +24,7 @@ class ColumnStripLinearLayout : LinearLayout {
 	// インジケーターの色
 	var indicatorColor : Int = 0
 		set(value) {
-			val c = if(value != 0) value else Styler.getAttributeColor(context, R.attr.colorAccent)
+			val c = if(value != 0) value else getAttributeColor(context, R.attr.colorAccent)
 			if(field != c) {
 				field = c
 				invalidate()
@@ -38,13 +37,17 @@ class ColumnStripLinearLayout : LinearLayout {
 	
 	constructor(context : Context) : super(context)
 	constructor(context : Context, attrs : AttributeSet?) : super(context, attrs)
-	constructor(context : Context, attrs : AttributeSet?, defStyleAttr : Int) : super(context, attrs, defStyleAttr)
+	constructor(context : Context, attrs : AttributeSet?, defStyleAttr : Int) : super(
+		context,
+		attrs,
+		defStyleAttr
+	)
 	
 	fun setVisibleRange(first : Int, last : Int, slide_ratio : Float) {
 		if(this.visibleFirst == first
 			&& this.visibleLast == last
 			&& this.visibleSlideRatio == slide_ratio
-			) return
+		) return
 		this.visibleFirst = first
 		this.visibleLast = last
 		this.visibleSlideRatio = slide_ratio
@@ -64,17 +67,17 @@ class ColumnStripLinearLayout : LinearLayout {
 		
 		val x = if(visibleSlideRatio != 0f) {
 			(0.5f + visibleSlideRatio * childFirst.width).toInt()
-		}else{
+		} else {
 			0
 		}
-
-		rect.left = childFirst.left +x
-		rect.right = childLast.right+x
+		
+		rect.left = childFirst.left + x
+		rect.right = childLast.right + x
 		rect.top = 0
 		rect.bottom = indicatorHeight
-
+		
 		paint.color = indicatorColor
-
+		
 		canvas.drawRect(rect, paint)
 	}
 	

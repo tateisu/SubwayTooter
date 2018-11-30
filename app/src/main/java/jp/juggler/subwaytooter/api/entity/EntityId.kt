@@ -4,7 +4,7 @@ import android.content.ContentValues
 import android.content.Intent
 import android.database.Cursor
 import android.os.Bundle
-import jp.juggler.subwaytooter.util.getStringOrNull
+import jp.juggler.util.getStringOrNull
 import org.json.JSONObject
 
 abstract class EntityId : Comparable<EntityId> {

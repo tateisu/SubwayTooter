@@ -1,4 +1,4 @@
-package jp.juggler.subwaytooter.util
+package jp.juggler.util
 
 import android.content.Context
 import android.graphics.*

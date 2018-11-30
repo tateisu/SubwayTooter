@@ -14,7 +14,10 @@ import android.view.View
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.table.*
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.util.BucketList
+import jp.juggler.subwaytooter.util.ScrollPosition
+import jp.juggler.subwaytooter.util.WordTrieTree
+import jp.juggler.util.*
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -321,7 +324,7 @@ class Column(
 		private val reSinceId =
 			Pattern.compile("[&?]since_id=(\\d+)") // より新しいデータの取得に使う(マストドン2.6.0未満)
 		
-		val COLUMN_REGEX_FILTER_DEFAULT = { _ : CharSequence? -> false }
+		val COLUMN_REGEX_FILTER_DEFAULT : (CharSequence?) -> Boolean = { false }
 		
 		private val time_format_hhmm = SimpleDateFormat("HH:mm", Locale.getDefault())
 		
@@ -482,26 +485,26 @@ class Column(
 			
 			//
 			c = Pref.ipCcdHeaderBg(pref)
-			if(c == 0) c = Styler.getAttributeColor(activity, R.attr.color_column_header)
+			if(c == 0) c = getAttributeColor(activity, R.attr.color_column_header)
 			defaultColorHeaderBg = c
 			//
 			c = Pref.ipCcdHeaderFg(pref)
-			if(c == 0) c = Styler.getAttributeColor(activity, R.attr.colorColumnHeaderName)
+			if(c == 0) c = getAttributeColor(activity, R.attr.colorColumnHeaderName)
 			defaultColorHeaderName = c
 			//
 			c = Pref.ipCcdHeaderFg(pref)
-			if(c == 0) c = Styler.getAttributeColor(activity, R.attr.colorColumnHeaderPageNumber)
+			if(c == 0) c = getAttributeColor(activity, R.attr.colorColumnHeaderPageNumber)
 			defaultColorHeaderPageNumber = c
 			//
 			c = Pref.ipCcdContentBg(pref)
 			defaultColorContentBg = c
 			//
 			c = Pref.ipCcdContentAcct(pref)
-			if(c == 0) c = Styler.getAttributeColor(activity, R.attr.colorTimeSmall)
+			if(c == 0) c = getAttributeColor(activity, R.attr.colorTimeSmall)
 			defaultColorContentAcct = c
 			//
 			c = Pref.ipCcdContentText(pref)
-			if(c == 0) c = Styler.getAttributeColor(activity, R.attr.colorContentText)
+			if(c == 0) c = getAttributeColor(activity, R.attr.colorContentText)
 			defaultColorContentText = c
 			
 		}
@@ -1183,7 +1186,7 @@ class Column(
 	fun removeNotifications() {
 		cancelLastTask()
 		
-		mRefreshLoadingErrorPopupState =0
+		mRefreshLoadingErrorPopupState = 0
 		mRefreshLoadingError = ""
 		bRefreshLoading = false
 		mInitialLoadingError = ""
@@ -1888,7 +1891,7 @@ class Column(
 		
 		initFilter()
 		
-		mRefreshLoadingErrorPopupState =0
+		mRefreshLoadingErrorPopupState = 0
 		mRefreshLoadingError = ""
 		mInitialLoadingError = ""
 		bFirstInitialized = true
@@ -6559,18 +6562,18 @@ class Column(
 						log.d("mergeStreamingMessage: has VH. missing scroll position.")
 						viewHolder?.scrollToTop()
 					}
-
+					
 					holder_sp.isHead -> {
 						// スクロール位置が先頭なら先頭にする
 						log.d("mergeStreamingMessage: has VH. keep head. $holder_sp")
 						holder.setScrollPosition(ScrollPosition(0, 0))
 					}
-
-					restore_idx < - 1 ->{
+					
+					restore_idx < - 1 -> {
 						// 可視範囲の検出に失敗
 						log.d("mergeStreamingMessage: has VH. can't get visible range.")
 					}
-
+					
 					else -> {
 						// 現在の要素が表示され続けるようにしたい
 						log.d("mergeStreamingMessage: has VH. added=$added")
@@ -6579,7 +6582,7 @@ class Column(
 				}
 			} else {
 				val scroll_save = this@Column.scroll_save
-				if(scroll_save == null || scroll_save.isHead ) {
+				if(scroll_save == null || scroll_save.isHead) {
 					// スクロール位置が先頭なら先頭のまま
 				} else {
 					// 現在の要素が表示され続けるようにしたい
@@ -6631,7 +6634,7 @@ class Column(
 			if(o is TootConversationSummary) newMap[o.id] = o
 		}
 		
-		if( list_data.isEmpty() || newMap.isEmpty()) return
+		if(list_data.isEmpty() || newMap.isEmpty()) return
 		
 		val removeSet = HashSet<EntityId>()
 		for(i in list_data.size - 1 downTo 0) {
@@ -6652,7 +6655,7 @@ class Column(
 			}
 		}
 		val it = list_new.iterator()
-		while(it.hasNext()){
+		while(it.hasNext()) {
 			val o = it.next() as? TootConversationSummary ?: continue
 			if(removeSet.contains(o.id)) it.remove()
 		}
@@ -6896,7 +6899,7 @@ class Column(
 	fun setHeaderBackground(view : View) {
 		ViewCompat.setBackground(
 			view,
-			Styler.getAdaptiveRippleDrawable(
+			getAdaptiveRippleDrawable(
 				getHeaderBackgroundColor(),
 				getHeaderNameColor()
 			)

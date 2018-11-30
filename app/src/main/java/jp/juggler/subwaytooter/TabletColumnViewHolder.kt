@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter
 import android.support.v7.widget.RecyclerView
 import android.view.View
 
-import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.util.LogCategory
 
 internal class TabletColumnViewHolder(
 	activity : ActMain,

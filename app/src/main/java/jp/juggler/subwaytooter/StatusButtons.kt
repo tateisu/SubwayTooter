@@ -1,8 +1,6 @@
 package jp.juggler.subwaytooter
 
 import android.content.Context
-import android.graphics.Color
-import android.graphics.PorterDuff
 import android.support.v4.content.ContextCompat
 import android.view.View
 import android.widget.ImageButton
@@ -20,10 +18,9 @@ import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.api.entity.TootVisibility
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.applyAlphaMultiplier
 import jp.juggler.subwaytooter.util.startMargin
 import jp.juggler.subwaytooter.view.CountImageButton
+import jp.juggler.util.*
 import org.jetbrains.anko.*
 import org.jetbrains.anko.custom.customView
 
@@ -60,7 +57,7 @@ internal class StatusButtons(
 	private val color_normal = column.getContentColor()
 	
 	private val color_accent : Int
-		get() = Styler.getAttributeColor(activity, R.attr.colorImageButtonAccent)
+		get() = getAttributeColor(activity, R.attr.colorImageButtonAccent)
 	
 	init {
 		this.access_info = column.access_info
@@ -89,14 +86,14 @@ internal class StatusButtons(
 		
 		val replies_count = status.replies_count
 		
-		Styler.setIconDrawableId(
+		setIconDrawableId(
 			activity,
 			btnConversation,
 			R.drawable.ic_conversation_dark,
 			color = color_normal,
 			alphaMultiplier = Styler.boost_alpha
 		)
-		Styler.setIconDrawableId(
+		setIconDrawableId(
 			activity,
 			btnMore,
 			R.drawable.btn_more_dark,
@@ -217,7 +214,7 @@ internal class StatusButtons(
 		count : String,
 		contentDescription : String
 	) {
-		val d = Styler.createColoredDrawable(activity,drawableId,color,alphaMultiplier = Styler.boost_alpha)
+		val d = createColoredDrawable(activity,drawableId,color,alphaMultiplier = Styler.boost_alpha)
 		b.setImageDrawable(d)
 		b.setPaddingAndText(holder.paddingH, holder.paddingV, count, 14f, holder.compoundPaddingDp)
 		b.setTextColor(color.applyAlphaMultiplier(Styler.boost_alpha))
@@ -477,7 +474,7 @@ class StatusButtonsViewHolder(
 					setPadding(paddingH, paddingV, paddingH, paddingV)
 					scaleType = ImageView.ScaleType.FIT_CENTER
 					imageResource =
-						Styler.getAttributeResourceId(context, R.attr.ic_conversation)
+						getAttributeResourceId(context, R.attr.ic_conversation)
 				}.lparams(buttonHeight, buttonHeight)
 				
 				btnReply = customView<CountImageButton> {
@@ -556,7 +553,7 @@ class StatusButtonsViewHolder(
 					
 					contentDescription = context.getString(R.string.more)
 					imageResource =
-						Styler.getAttributeResourceId(context, R.attr.btn_more)
+						getAttributeResourceId(context, R.attr.btn_more)
 				}.lparams(buttonHeight, buttonHeight) {
 					startMargin = marginBetween
 				}

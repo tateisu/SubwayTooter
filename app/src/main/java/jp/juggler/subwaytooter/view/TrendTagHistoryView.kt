@@ -5,7 +5,7 @@ import android.graphics.*
 import android.util.AttributeSet
 import android.view.View
 import jp.juggler.subwaytooter.api.entity.TootTrendTag
-import jp.juggler.subwaytooter.util.clipRange
+import jp.juggler.util.*
 import kotlin.math.max
 import kotlin.math.min
 
@@ -111,29 +111,29 @@ class TrendTagHistoryView : View {
 		for(i in 0 until size) {
 			val y = y_workarea[i]
 			when(i) {
-
-			// 始端
+				
+				// 始端
 				0 -> {
 					path.moveTo(x, y)
 					val nextY = y_workarea[i + 1]
 					lastSlope = (nextY - y) / x_step
 				}
-			
-			// 終端
+				
+				// 終端
 				size - 1 -> {
-
+					
 					// 制御点1
 					val c1x = lastX + controlXStep
 					val c1y = clipRange(y_min, y_max, lastY + controlXStep * lastSlope)
-
+					
 					// 制御点2
 					val slope = (y - lastY) / x_step
 					val c2x = x - controlXStep
 					val c2y = y - controlXStep * slope
 					path.cubicTo(c1x, c1y, c2x, c2y, x, y)
 				}
-
-			// 中間
+				
+				// 中間
 				else -> {
 					// 制御点1
 					val c1x = lastX + controlXStep

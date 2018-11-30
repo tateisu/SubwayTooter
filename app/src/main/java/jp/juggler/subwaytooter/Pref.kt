@@ -3,7 +3,7 @@ package jp.juggler.subwaytooter
 import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
-import jp.juggler.subwaytooter.util.optInt
+import jp.juggler.util.optInt
 
 @Suppress("EqualsOrHashCode")
 abstract class BasePref<T>(val key : String) {

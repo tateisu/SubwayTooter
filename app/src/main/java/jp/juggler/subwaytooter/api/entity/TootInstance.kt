@@ -2,6 +2,10 @@ package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.*
+import jp.juggler.util.parseInt
+import jp.juggler.util.parseLong
+import jp.juggler.util.parseString
+import jp.juggler.util.toStringArrayList
 import org.json.JSONObject
 import java.util.regex.Pattern
 

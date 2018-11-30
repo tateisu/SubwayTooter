@@ -12,19 +12,16 @@ import android.support.v7.widget.LinearLayoutManager
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-
 import com.woxthebox.draglistview.DragItem
 import com.woxthebox.draglistview.DragItemAdapter
 import com.woxthebox.draglistview.DragListView
 import com.woxthebox.draglistview.swipe.ListSwipeHelper
 import com.woxthebox.draglistview.swipe.ListSwipeItem
-
-import java.lang.ref.WeakReference
-import java.util.ArrayList
-
 import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.table.HighlightWord
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.util.*
+import java.lang.ref.WeakReference
+import java.util.*
 
 class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 	
@@ -166,7 +163,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 			c = item.color_fg
 			if(c == 0) {
 				tvName.setTextColor(
-					Styler.getAttributeColor(
+					getAttributeColor(
 						this@ActHighlightWordList,
 						android.R.attr.textColorPrimary
 					)
@@ -212,7 +209,7 @@ class ActHighlightWordList : AppCompatActivity(), View.OnClickListener {
 			dragView.findViewById<View>(R.id.btnSound).visibility =
 				clickedView.findViewById<View>(R.id.btnSound).visibility
 			dragView.findViewById<View>(R.id.item_layout).setBackgroundColor(
-				Styler.getAttributeColor(
+				getAttributeColor(
 					this@ActHighlightWordList,
 					R.attr.list_item_bg_pressed_dragged
 				)

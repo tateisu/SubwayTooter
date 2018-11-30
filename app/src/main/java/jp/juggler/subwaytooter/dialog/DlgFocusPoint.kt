@@ -13,8 +13,10 @@ import jp.juggler.subwaytooter.api.TootApiResult
 import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootAttachment
-import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.FocusPointView
+import jp.juggler.util.LogCategory
+import jp.juggler.util.showToast
+import jp.juggler.util.withCaption
 
 @SuppressLint("InflateParams")
 class DlgFocusPoint(val activity : Activity, val attachment : TootAttachment) :

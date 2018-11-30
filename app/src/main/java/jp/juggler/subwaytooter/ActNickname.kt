@@ -14,14 +14,12 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-
 import com.jrummyapps.android.colorpicker.ColorPickerDialog
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener
-
 import jp.juggler.subwaytooter.table.AcctColor
-import jp.juggler.subwaytooter.util.hideKeyboard
-import jp.juggler.subwaytooter.util.mayUri
-import jp.juggler.subwaytooter.util.toUri
+import jp.juggler.util.getAttributeColor
+import jp.juggler.util.hideKeyboard
+import jp.juggler.util.mayUri
 
 class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialogListener {
 	
@@ -178,7 +176,7 @@ class ActNickname : AppCompatActivity(), View.OnClickListener, ColorPickerDialog
 		var c : Int
 		
 		c = color_fg
-		if(c == 0) c = Styler.getAttributeColor(this, R.attr.colorTimeSmall)
+		if(c == 0) c = getAttributeColor(this, R.attr.colorTimeSmall)
 		tvPreview.setTextColor(c)
 		
 		c = color_bg

@@ -6,7 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import jp.juggler.subwaytooter.util.Benchmark
-import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.util.LogCategory
 import java.util.*
 
 internal class ColumnPagerAdapter(private val activity : ActMain) : PagerAdapter() {

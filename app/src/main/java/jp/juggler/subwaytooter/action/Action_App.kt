@@ -7,7 +7,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.TootApplication
 import jp.juggler.subwaytooter.table.MutedApp
-import jp.juggler.subwaytooter.util.showToast
+import jp.juggler.util.showToast
 
 object Action_App {
 	

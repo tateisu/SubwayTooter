@@ -41,6 +41,7 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.*
+import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
 import java.io.File
 import java.io.FileInputStream
@@ -1454,7 +1455,7 @@ class ActMain : AppCompatActivity()
 			
 			column.setHeaderBackground(viewRoot)
 			
-			Styler.setIconAttr(
+			setIconAttr(
 				this,
 				ivIcon,
 				column.getIconAttrId(column.column_type),
@@ -2349,31 +2350,31 @@ class ActMain : AppCompatActivity()
 		} else {
 			val fg = when {
 				footer_button_fg_color != 0 -> footer_button_fg_color
-				else -> Styler.getAttributeColor(this, R.attr.colorRippleEffect)
+				else -> getAttributeColor(this, R.attr.colorRippleEffect)
 			}
-			ViewCompat.setBackground(btnToot, Styler.getAdaptiveRippleDrawable(c, fg))
-			ViewCompat.setBackground(btnMenu, Styler.getAdaptiveRippleDrawable(c, fg))
-			ViewCompat.setBackground(btnQuickToot, Styler.getAdaptiveRippleDrawable(c, fg))
+			ViewCompat.setBackground(btnToot, getAdaptiveRippleDrawable(c, fg))
+			ViewCompat.setBackground(btnMenu, getAdaptiveRippleDrawable(c, fg))
+			ViewCompat.setBackground(btnQuickToot, getAdaptiveRippleDrawable(c, fg))
 		}
 		
 		c = footer_button_fg_color
 		if(c == 0) {
-			Styler.setIconAttr(this, btnToot, R.attr.ic_edit)
-			Styler.setIconAttr(this, btnMenu, R.attr.ic_hamburger)
-			Styler.setIconAttr(this, btnQuickToot, R.attr.btn_post)
+			setIconAttr(this, btnToot, R.attr.ic_edit)
+			setIconAttr(this, btnMenu, R.attr.ic_hamburger)
+			setIconAttr(this, btnQuickToot, R.attr.btn_post)
 		} else {
-			Styler.setIconAttr(this, btnToot, R.attr.ic_edit, c)
-			Styler.setIconAttr(this, btnMenu, R.attr.ic_hamburger, c)
-			Styler.setIconAttr(this, btnQuickToot, R.attr.btn_post, c)
+			setIconAttr(this, btnToot, R.attr.ic_edit, c)
+			setIconAttr(this, btnMenu, R.attr.ic_hamburger, c)
+			setIconAttr(this, btnQuickToot, R.attr.btn_post, c)
 		}
 		
 		c = footer_tab_bg_color
-		if(c == 0) c = Styler.getAttributeColor(this, R.attr.colorColumnStripBackground)
+		if(c == 0) c = getAttributeColor(this, R.attr.colorColumnStripBackground)
 		svColumnStrip.setBackgroundColor(c)
 		llQuickTootBar.setBackgroundColor(c)
 		
 		c = footer_tab_divider_color
-		if(c == 0) c = Styler.getAttributeColor(this, R.attr.colorImageButton)
+		if(c == 0) c = getAttributeColor(this, R.attr.colorImageButton)
 		vFooterDivider1.setBackgroundColor(c)
 		vFooterDivider2.setBackgroundColor(c)
 		

@@ -2,17 +2,20 @@ package jp.juggler.subwaytooter
 
 import android.app.Activity
 import android.content.Intent
-import android.os.*
+import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.view.View
 import android.widget.*
-import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.TootTask
+import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootFilter
 import jp.juggler.subwaytooter.api.entity.TootStatus
-
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.util.LogCategory
+import jp.juggler.util.showToast
 import okhttp3.Request
 import okhttp3.RequestBody
 import org.json.JSONArray

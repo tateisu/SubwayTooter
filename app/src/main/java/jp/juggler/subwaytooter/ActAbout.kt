@@ -8,8 +8,8 @@ import android.support.v7.app.AppCompatActivity
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.toUri
+import jp.juggler.util.LogCategory
+import jp.juggler.util.toUri
 
 class ActAbout : AppCompatActivity() {
 	

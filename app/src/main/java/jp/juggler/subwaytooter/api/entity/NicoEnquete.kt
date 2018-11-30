@@ -6,6 +6,7 @@ import android.text.SpannableString
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.util.*
+import jp.juggler.util.*
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.regex.Pattern

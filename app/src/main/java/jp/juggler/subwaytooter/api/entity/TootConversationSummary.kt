@@ -1,7 +1,7 @@
 package jp.juggler.subwaytooter.api.entity
 
 import jp.juggler.subwaytooter.api.TootParser
-import jp.juggler.subwaytooter.util.parseLong
+import jp.juggler.util.parseLong
 import org.json.JSONObject
 
 class TootConversationSummary(parser:TootParser,src:JSONObject) : TimelineItem(){

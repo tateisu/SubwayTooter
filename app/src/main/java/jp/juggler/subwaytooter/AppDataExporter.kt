@@ -14,9 +14,7 @@ import android.util.JsonWriter
 import jp.juggler.subwaytooter.api.entity.EntityIdLong
 import jp.juggler.subwaytooter.api.entity.EntityIdString
 import jp.juggler.subwaytooter.table.*
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.mayUri
-import jp.juggler.subwaytooter.util.parseLong
+import jp.juggler.util.*
 import org.apache.commons.io.IOUtils
 import org.json.JSONException
 import org.json.JSONObject
@@ -462,7 +460,7 @@ object AppDataExporter {
 		column : Column
 	) {
 		try {
-			column.column_bg_image.mayUri()?.let{ uri ->
+			column.column_bg_image.mayUri()?.let { uri ->
 				context.contentResolver.openInputStream(uri).use { inStream ->
 					zipStream.putNextEntry(ZipEntry("background-image/${column.column_id}"))
 					try {

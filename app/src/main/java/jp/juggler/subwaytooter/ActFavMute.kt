@@ -17,7 +17,7 @@ import com.woxthebox.draglistview.swipe.ListSwipeItem
 import java.util.ArrayList
 
 import jp.juggler.subwaytooter.table.FavMute
-import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.util.*
 
 class ActFavMute : AppCompatActivity() {
 	
@@ -165,7 +165,7 @@ class ActFavMute : AppCompatActivity() {
 			dragView.findViewById<TextView>(R.id.tvName).text = clickedView.findViewById<TextView>(R.id.tvName).text
 			
 			dragView.findViewById<View>(R.id.item_layout).setBackgroundColor(
-				Styler.getAttributeColor(this@ActFavMute, R.attr.list_item_bg_pressed_dragged)
+				getAttributeColor(this@ActFavMute, R.attr.list_item_bg_pressed_dragged)
 			)
 		}
 	}

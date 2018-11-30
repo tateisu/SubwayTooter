@@ -33,6 +33,7 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyNetworkImageView
+import jp.juggler.util.*
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.Request
@@ -454,7 +455,7 @@ class ActAccountSetting
 		val nickname = ac.nickname
 		tvUserCustom.text = if(nickname?.isNotEmpty() == true) nickname else full_acct
 		tvUserCustom.setTextColor(
-			if(ac.color_fg != 0) ac.color_fg else Styler.getAttributeColor(
+			if(ac.color_fg != 0) ac.color_fg else getAttributeColor(
 				this,
 				R.attr.colorTimeSmall
 			)
@@ -739,9 +740,9 @@ class ActAccountSetting
 	
 	private fun initializeProfile() {
 		// 初期状態
-		ivProfileAvatar.setErrorImageResId(Styler.getAttributeResourceId(this, R.attr.ic_question))
+		ivProfileAvatar.setErrorImageResId(getAttributeResourceId(this, R.attr.ic_question))
 		ivProfileAvatar.setDefaultImageResId(
-			Styler.getAttributeResourceId(
+			getAttributeResourceId(
 				this,
 				R.attr.ic_question
 			)

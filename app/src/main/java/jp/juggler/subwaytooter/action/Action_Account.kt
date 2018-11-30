@@ -14,9 +14,9 @@ import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.dialog.LoginForm
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.subwaytooter.util.LogCategory
-import jp.juggler.subwaytooter.util.showToast
-import jp.juggler.subwaytooter.util.toUri
+import jp.juggler.util.LogCategory
+import jp.juggler.util.showToast
+import jp.juggler.util.toUri
 import okhttp3.Request
 import okhttp3.RequestBody
 import org.json.JSONObject

@@ -26,9 +26,11 @@ import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.put
-import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.MyViewPager
 import jp.juggler.subwaytooter.view.NetworkEmojiView
+import jp.juggler.util.LogCategory
+import jp.juggler.util.parseString
+import jp.juggler.util.toJsonArray
 
 @SuppressLint("InflateParams")
 class EmojiPicker(

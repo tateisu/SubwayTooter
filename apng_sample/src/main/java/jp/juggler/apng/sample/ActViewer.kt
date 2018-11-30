@@ -10,11 +10,10 @@ import android.util.Log
 import android.view.View
 import android.widget.TextView
 import jp.juggler.apng.ApngFrames
-import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.android.Main
+import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileOutputStream
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 class ActViewer : AppCompatActivity() , CoroutineScope {
 	

@@ -9,23 +9,11 @@ import android.text.*
 import android.text.style.ForegroundColorSpan
 import android.view.View
 import jp.juggler.emoji.EmojiMap201709
-
-import org.json.JSONArray
-import org.json.JSONException
-import org.json.JSONObject
-
-import java.util.ArrayList
-import java.util.regex.Pattern
-
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.Styler
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
-import jp.juggler.subwaytooter.api.TootParser
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.dialog.EmojiPicker
@@ -36,10 +24,15 @@ import jp.juggler.subwaytooter.table.AcctSet
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.TagSet
 import jp.juggler.subwaytooter.view.MyEditText
+import jp.juggler.util.*
 import okhttp3.Request
 import okhttp3.RequestBody
+import org.json.JSONArray
+import org.json.JSONException
+import org.json.JSONObject
 import java.lang.ref.WeakReference
-import java.util.HashMap
+import java.util.*
+import java.util.regex.Pattern
 
 class PostHelper(
 	private val activity : AppCompatActivity,
@@ -753,7 +746,7 @@ class PostHelper(
 							sb.append(": → ")
 							sb.setSpan(
 								ForegroundColorSpan(
-									Styler.getAttributeColor(
+									getAttributeColor(
 										activity,
 										R.attr.colorTimeSmall
 									)

@@ -5,7 +5,7 @@ import org.json.JSONObject
 
 import java.util.regex.Pattern
 
-import jp.juggler.subwaytooter.util.LogCategory
+import jp.juggler.util.LogCategory
 import okhttp3.Response
 import okhttp3.WebSocket
 

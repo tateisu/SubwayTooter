@@ -9,7 +9,6 @@ import android.content.ClipboardManager
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.*
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
@@ -39,8 +38,9 @@ import jp.juggler.subwaytooter.api.TootTask
 import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
-import jp.juggler.subwaytooter.util.*
+import jp.juggler.subwaytooter.util.ProgressResponseBody
 import jp.juggler.subwaytooter.view.PinchBitmapView
+import jp.juggler.util.*
 import okhttp3.Request
 import org.json.JSONObject
 import java.io.ByteArrayInputStream
@@ -66,7 +66,7 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		internal fun <T : TootAttachmentLike> encodeMediaList(list : ArrayList<T>?) =
 			list?.encodeJson()?.toString() ?: "[]"
 		
-		internal fun decodeMediaList(serviceType : ServiceType, src : String?) =
+		internal fun decodeMediaList(src : String?) =
 			ArrayList<TootAttachment>().apply {
 				src?.toJsonArray()?.forEach {
 					if(it !is JSONObject) return@forEach
@@ -192,7 +192,6 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		]
 		
 		this.media_list = decodeMediaList(
-			serviceType,
 			savedInstanceState?.getString(EXTRA_DATA)
 				?: intent.getStringExtra(EXTRA_DATA)
 		)

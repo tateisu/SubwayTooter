@@ -31,6 +31,7 @@ import jp.juggler.subwaytooter.span.MyClickableSpan
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.*
+import jp.juggler.util.*
 import okhttp3.Request
 import okhttp3.RequestBody
 import org.jetbrains.anko.*
@@ -860,7 +861,7 @@ internal class ItemViewHolder(
 	) {
 		llReply.visibility = View.VISIBLE
 		
-		Styler.setIconAttr(
+		setIconAttr(
 			activity,
 			ivReply,
 			iconAttrId,
@@ -933,9 +934,9 @@ internal class ItemViewHolder(
 		}.intoStringResource(activity, string_id)
 		
 		if(reactionDrawableId != null) {
-			Styler.setIconDrawableId(activity, ivBoosted, reactionDrawableId)
+			setIconDrawableId(activity, ivBoosted, reactionDrawableId)
 		} else {
-			Styler.setIconAttr(
+			setIconAttr(
 				activity,
 				ivBoosted,
 				icon_attr_id,
@@ -996,7 +997,7 @@ internal class ItemViewHolder(
 		
 		if(status.conversation_main) {
 			this.viewRoot.setBackgroundColor(
-				(Styler.getAttributeColor(
+				(getAttributeColor(
 					activity,
 					R.attr.colorImageButtonAccent
 				) and 0xffffff) or 0x20000000
@@ -1151,7 +1152,7 @@ internal class ItemViewHolder(
 				tvMediaDescription.text = sb
 			}
 			
-			Styler.setIconAttr(
+			setIconAttr(
 				activity,
 				btnHideMedia,
 				R.attr.btn_close,
@@ -1242,7 +1243,7 @@ internal class ItemViewHolder(
 				if(sb.isNotEmpty()) sb.append('\u200B')
 				sb.appendColorShadeIcon(
 					activity,
-					Styler.getAttributeResourceId(activity, visIconAttrId),
+					getAttributeResourceId(activity, visIconAttrId),
 					Styler.getVisibilityString(
 						activity,
 						access_info.isMisskey,
@@ -1275,7 +1276,7 @@ internal class ItemViewHolder(
 				val color = if(MyClickableSpan.defaultLinkColor != 0) {
 					MyClickableSpan.defaultLinkColor
 				} else {
-					Styler.getAttributeColor(activity, R.attr.colorLink)
+					getAttributeColor(activity, R.attr.colorLink)
 				}
 				
 				sb.appendColorShadeIcon(
@@ -1952,7 +1953,7 @@ internal class ItemViewHolder(
 			b.scaleType = ImageView.ScaleType.FIT_CENTER
 			b.padding = paddingV
 			b.setOnClickListener { addReaction(status_showing, null) }
-
+			
 			b.setOnLongClickListener {
 				Action_Toot.reactionFromAnotherAccount(
 					activity,
@@ -1962,7 +1963,7 @@ internal class ItemViewHolder(
 				true
 			}
 			
-			Styler.setIconDrawableId(
+			setIconDrawableId(
 				activity,
 				b,
 				R.drawable.ic_add,
@@ -2242,15 +2243,15 @@ internal class ItemViewHolder(
 		val b = Benchmark(log, "Item-Inflate", 40L)
 		val rv = verticalLayout {
 			// トップレベルのViewGroupのlparamsはイニシャライザ内部に置くしかないみたい
-			layoutParams = RecyclerView.LayoutParams(matchParent, wrapContent).apply{
-				marginStart=dip(8)
-				marginEnd=dip(8)
-				topMargin=dip(2f)
-				bottomMargin=dip(1f)
+			layoutParams = RecyclerView.LayoutParams(matchParent, wrapContent).apply {
+				marginStart = dip(8)
+				marginEnd = dip(8)
+				topMargin = dip(2f)
+				bottomMargin = dip(1f)
 			}
 			
-			setPaddingRelative(dip(4),dip(1f),dip(4),dip(2f))
-
+			setPaddingRelative(dip(4), dip(1f), dip(4), dip(2f))
+			
 			descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
 			
 			llBoosted = linearLayout {
@@ -2497,7 +2498,7 @@ internal class ItemViewHolder(
 											)
 											contentDescription = "@string/hide"
 											imageResource =
-												Styler.getAttributeResourceId(
+												getAttributeResourceId(
 													context,
 													R.attr.btn_close
 												)
@@ -2564,14 +2565,14 @@ internal class ItemViewHolder(
 									
 									btnShowMedia = textView {
 										
-										backgroundColor = Styler.getAttributeColor(
+										backgroundColor = getAttributeColor(
 											context,
 											R.attr.colorShowMediaBackground
 										)
 										gravity = Gravity.CENTER_VERTICAL or Gravity.END
 										text = context.getString(R.string.tap_to_show)
 										textColor =
-											Styler.getAttributeColor(
+											getAttributeColor(
 												context,
 												R.attr.colorShowMediaText
 											)
@@ -2654,7 +2655,7 @@ internal class ItemViewHolder(
 											)
 											contentDescription = "@string/hide"
 											imageResource =
-												Styler.getAttributeResourceId(
+												getAttributeResourceId(
 													context,
 													R.attr.btn_close
 												)
@@ -2665,14 +2666,14 @@ internal class ItemViewHolder(
 									
 									btnShowMedia = textView {
 										
-										backgroundColor = Styler.getAttributeColor(
+										backgroundColor = getAttributeColor(
 											context,
 											R.attr.colorShowMediaBackground
 										)
 										gravity = Gravity.CENTER
 										text = context.getString(R.string.tap_to_show)
 										textColor =
-											Styler.getAttributeColor(
+											getAttributeColor(
 												context,
 												R.attr.colorShowMediaText
 											)
@@ -2836,7 +2837,7 @@ internal class ItemViewHolder(
 					
 					background =
 						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
-					imageResource = Styler.getAttributeResourceId(context, R.attr.btn_more)
+					imageResource = getAttributeResourceId(context, R.attr.btn_more)
 					contentDescription = context.getString(R.string.more)
 				}.lparams(dip(40), dip(40)) {
 					startMargin = dip(4)
@@ -2857,7 +2858,7 @@ internal class ItemViewHolder(
 					background =
 						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 					contentDescription = context.getString(R.string.follow_accept)
-					imageResource = Styler.getAttributeResourceId(context, R.attr.ic_check)
+					imageResource = getAttributeResourceId(context, R.attr.ic_check)
 					setPadding(0, 0, 0, 0)
 				}.lparams(dip(48f), dip(32f))
 				
@@ -2865,7 +2866,7 @@ internal class ItemViewHolder(
 					background =
 						ContextCompat.getDrawable(context, R.drawable.btn_bg_transparent)
 					contentDescription = context.getString(R.string.follow_deny)
-					imageResource = Styler.getAttributeResourceId(context, R.attr.btn_close)
+					imageResource = getAttributeResourceId(context, R.attr.btn_close)
 					setPadding(0, 0, 0, 0)
 				}.lparams(dip(48f), dip(32f)) {
 					startMargin = dip(4)

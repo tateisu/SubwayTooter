@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.view
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.*
 import android.os.SystemClock
@@ -7,7 +8,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import jp.juggler.subwaytooter.api.entity.TootAttachment
-import jp.juggler.subwaytooter.util.clipRange
+import jp.juggler.util.clipRange
 
 class FocusPointView : View {
 	
@@ -136,6 +137,7 @@ class FocusPointView : View {
 		postInvalidateDelayed(500L)
 	}
 	
+	@SuppressLint("ClickableViewAccessibility")
 	override fun onTouchEvent(event : MotionEvent) : Boolean {
 		when(event.action) {
 			MotionEvent.ACTION_DOWN -> {

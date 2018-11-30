@@ -16,9 +16,8 @@ import android.widget.BaseAdapter
 import android.widget.ListView
 import android.widget.TextView
 import jp.juggler.apng.ApngFrames
-import kotlinx.coroutines.experimental.*
-import kotlinx.coroutines.experimental.android.Main
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlinx.coroutines.*
+import kotlin.coroutines.CoroutineContext
 
 class ActList : AppCompatActivity(), CoroutineScope {
 	

@@ -829,5 +829,6 @@
     <string name="dont_show_preview_card">Don\'t show preview card</string>
     <string name="instance_does_not_support_push_api_pleroma">This instance does not support push subscription API. maybe it is Pleroma</string>
     <string name="quote_renote">Quoted renote… (Misskey)</string>
+    <string name="blank_cw">(blank CW)</string>
 
 </resources>

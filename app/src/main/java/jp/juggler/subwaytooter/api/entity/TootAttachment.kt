@@ -188,7 +188,10 @@ class TootAttachment : TootAttachmentLike {
 		
 	}
 	
-	constructor(src : JSONObject, decode : Boolean) {
+	constructor(
+		src : JSONObject,
+		decode : Boolean // dummy parameter to use this ctor.
+	) {
 
 		id = if( src.optBoolean(KEY_IS_STRING_ID) ) {
 			EntityId.mayDefault(src.parseString(KEY_ID))

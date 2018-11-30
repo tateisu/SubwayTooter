@@ -85,7 +85,12 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	private val language : String?
 	
 	//If not empty, warning text that should be displayed before the actual content
-	var spoiler_text : String?
+	// アプリ内部では空文字列はCWなしとして扱う
+	// マストドンは「null:CWなし」「空じゃない文字列：CWあり」の2種類
+	// Pleromaは「空文字列：CWなし」「空じゃない文字列：CWあり」の2種類
+	// Misskeyは「CWなし」「空欄CW」「CWあり」の3通り。空欄CWはパース時に書き換えてしまう
+	// Misskeyで投稿が削除された時に変更されるため、val変数にできない
+	var spoiler_text : String =""
 	var decoded_spoiler_text : Spannable
 	
 	//	Body of the status; this will contain HTML (remote HTML already sanitized)
@@ -114,7 +119,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	//One of: public, unlisted, private, direct
 	val visibility : TootVisibility
 	
-	val misskeyVisibleIds : ArrayList<String>?
+	private val misskeyVisibleIds : ArrayList<String>?
 	
 	//	An array of Attachments
 	val media_attachments : ArrayList<TootAttachmentLike>?
@@ -144,10 +149,10 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 	
 	val serviceType : ServiceType
 	
-	val deletedAt : String?
+	private val deletedAt : String?
 	val time_deleted_at : Long
 	
-	var localOnly : Boolean = false
+	private var localOnly : Boolean = false
 	
 	///////////////////////////////////////////////////////////////////
 	// 以下はentityから取得したデータではなく、アプリ内部で使う
@@ -202,7 +207,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			// お気に入りカラムなどではパース直後に変更することがある
 			
 			// 絵文字マップはすぐ後で使うので、最初の方で読んでおく
-			this.custom_emojis = parseMapOrNull(CustomEmoji.decodeMisskey, src.optJSONArray("emojis"), log)
+			this.custom_emojis =
+				parseMapOrNull(CustomEmoji.decodeMisskey, src.optJSONArray("emojis"), log)
 			this.profile_emojis = null
 			
 			val who = parser.account(src.optJSONObject("user"))
@@ -218,8 +224,10 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.favourited = src.optBoolean("isFavorited")
 			
 			this.localOnly = src.optBoolean("localOnly")
-			this.visibility = TootVisibility.parseMisskey(src.parseString("visibility"),localOnly) ?:
-				TootVisibility.Public
+			this.visibility = TootVisibility.parseMisskey(
+				src.parseString("visibility"),
+				localOnly
+			) ?: TootVisibility.Public
 			
 			this.misskeyVisibleIds = parseStringArray(src.optJSONArray("visibleUserIds"))
 			
@@ -281,12 +289,13 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				this
 			) ?: EMPTY_SPANNABLE
 			
-			// spoiler_text
-			this.spoiler_text = reWhitespace
-				.matcher(src.parseString("cw") ?: "")
-				.replaceAll(" ")
-				.sanitizeBDI()
-			
+			val sv = src.parseString("cw")?.cleanCW()
+			this.spoiler_text = when{
+				sv == null -> "" // CWなし
+				sv.isBlank() -> parser.context.getString(R.string.blank_cw)
+				else-> sv
+			}
+
 			options = DecodeOptions(
 				parser.context,
 				emojiMapCustom = custom_emojis,
@@ -316,14 +325,14 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			this.deletedAt = src.parseString("deletedAt")
 			this.time_deleted_at = parseTime(deletedAt)
 			
-			if( card == null) {
+			if(card == null) {
 				
-				if(reblog != null && hasAnyContent() ) {
+				if(reblog != null && hasAnyContent()) {
 					// 引用Renoteにプレビューカードをでっちあげる
 					card = TootCard(parser, reblog)
-				} else if(reply != null ) {
+				} else if(reply != null) {
 					// 返信にプレビューカードをでっちあげる
-					card = TootCard(parser, reply!! )
+					card = TootCard(parser, reply !!)
 				}
 			}
 			
@@ -446,11 +455,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				this.highlight_sound = options.highlight_sound
 			}
 			
-			// spoiler_text
-			this.spoiler_text = reWhitespace
-				.matcher(src.parseString("spoiler_text") ?: "")
-				.replaceAll(" ")
-				.sanitizeBDI()
+			this.spoiler_text = (src.parseString("spoiler_text") ?: "").cleanCW()
 			
 			options = DecodeOptions(
 				parser.context,
@@ -576,16 +581,16 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		reblog == null -> true // reblog以外はオリジナルコンテンツがあると見なす
 		serviceType != ServiceType.MISSKEY -> false // misskey以外のreblogはコンテンツがないと見なす
 		content?.isNotEmpty() == true
-			|| spoiler_text?.isNotEmpty() == true
+			|| spoiler_text.isNotEmpty()
 			|| media_attachments?.isNotEmpty() == true
 			|| enquete != null -> true
 		else -> false
 	}
-	
-	// return true if updated
-	fun increaseReaction(reaction : String?, byMe : Boolean,caller:String) : Boolean {
-		reaction ?: return false
 
+	// return true if updated
+	fun increaseReaction(reaction : String?, byMe : Boolean, caller : String) : Boolean {
+		reaction ?: return false
+		
 		MisskeyReaction.shortcodeMap[reaction] ?: return false
 		
 		synchronized(this) {
@@ -638,8 +643,6 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		@Volatile
 		internal var muted_word : WordTrieTree? = null
 		
-		private val reWhitespace = Pattern.compile("[\\s\\t\\x0d\\x0a]+")
-		
 		val EMPTY_SPANNABLE = SpannableString("")
 		
 		// OStatus
@@ -660,12 +663,12 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		
 		// 公開ステータスページのURL マストドン
 		@Suppress("HasPlatformType")
-		val reStatusPage = Pattern.compile("""\Ahttps://([^/]+)/@([A-Za-z0-9_]+)/(\d+)(?:\z|[?#])""")
+		val reStatusPage =
+			Pattern.compile("""\Ahttps://([^/]+)/@([A-Za-z0-9_]+)/(\d+)(?:\z|[?#])""")
 		
 		// 公開ステータスページのURL Misskey
 		@Suppress("HasPlatformType")
-		val reStatusPageMisskey = Pattern.compile("""\Ahttps://([^/]+)/notes/([0-9a-f]{24})\b""")
-		
+		val reStatusPageMisskey = Pattern.compile("""\Ahttps://([^/]+)/notes/([0-9a-f]{24})\b""", Pattern.CASE_INSENSITIVE)
 		
 		const val INVALID_ID = - 1L
 		
@@ -857,14 +860,11 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			return if(host != null && host.isNotEmpty() && host != "?") host else null
 		}
 		
-		private val reMisskeyNoteUrl =
-			Pattern.compile("""https://([^/]+)/notes/([0-9A-F]+)""", Pattern.CASE_INSENSITIVE)
 		
-		fun readMisskeyNoteId(url : String) : EntityId? {
+		private fun readMisskeyNoteId(url : String) : EntityId? {
 			// https://misskey.xyz/notes/5b802367744b650030a13640
-			val m = reMisskeyNoteUrl.matcher(url)
-			if(m.find()) return EntityIdString(m.group(2))
-			return null
+			val m = reStatusPageMisskey.matcher(url)
+			return if(!m.find()) null else EntityIdString(m.group(2))
 		}
 		
 		fun validStatusId(src : EntityId?) : EntityId? {
@@ -875,6 +875,10 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			}
 		}
 		
+		private fun String.cleanCW() =
+			CharacterGroup.reWhitespace.matcher(this).replaceAll(" ").sanitizeBDI()
+		/* 空欄かどうかがCW判定条件に影響するので、trimしてはいけない */
+
 		// 投稿元タンスでのステータスIDを調べる
 		fun findStatusIdFromUri(
 			uri : String?,

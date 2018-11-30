@@ -87,7 +87,6 @@ class ActMain : AppCompatActivity()
 		internal val reUrlHashTag =
 			Pattern.compile("""\Ahttps://([^/]+)/tags/([^?#・\s\-+.,:;/]+)(?:\z|[?#])""")
 		
-
 		var boostButtonSize = 0
 		var timeline_font : Typeface = Typeface.DEFAULT
 		var timeline_font_bold : Typeface = Typeface.DEFAULT_BOLD
@@ -829,7 +828,7 @@ class ActMain : AppCompatActivity()
 					posted_redraft_id = EntityId.from(data, ActPost.EXTRA_POSTED_REDRAFT_ID)
 					
 				}
-
+				
 				REQUEST_CODE_COLUMN_COLOR -> if(data != null) {
 					app_state.saveColumnList()
 					val idx = data.getIntExtra(ActColumnCustomize.EXTRA_COLUMN_INDEX, 0)
@@ -1340,7 +1339,6 @@ class ActMain : AppCompatActivity()
 		}
 		val column_w_min = (0.5f + column_w_min_dp * density).toInt()
 		
-		
 		val sw = dm.widthPixels
 		
 		if(Pref.bpDisableTabletMode(pref) || sw < column_w_min * 2) {
@@ -1497,7 +1495,8 @@ class ActMain : AppCompatActivity()
 					var slide_ratio = 0f
 					if(vr.first <= vr.last) {
 						val child = env.tablet_layout_manager.findViewByPosition(vr.first)
-						slide_ratio = clipRange(0f,1f,abs((child?.left ?: 0) / nColumnWidth.toFloat()))
+						slide_ratio =
+							clipRange(0f, 1f, abs((child?.left ?: 0) / nColumnWidth.toFloat()))
 					}
 					
 					llColumnStrip.setVisibleRange(vr.first, vr.last, slide_ratio)
@@ -1646,7 +1645,7 @@ class ActMain : AppCompatActivity()
 			}
 			
 			// queryIntentActivities に渡すURLは実在しないホストのものにする
-			val intent = Intent(Intent.ACTION_VIEW, "https://dummy.subwaytooter.club/".toUri() )
+			val intent = Intent(Intent.ACTION_VIEW, "https://dummy.subwaytooter.club/".toUri())
 			intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
 			val resolveInfoList = packageManager.queryIntentActivities(intent, query_flag)
 			if(resolveInfoList.isEmpty()) {
@@ -2504,7 +2503,7 @@ class ActMain : AppCompatActivity()
 		var column_w_min = (0.5f + column_w_min_dp * density).toInt()
 		if(column_w_min < 1) column_w_min = 1
 		
-		var column_w :Int
+		var column_w : Int
 		
 		if(screen_width < column_w_min * 2) {
 			// 最小幅で2つ表示できないのなら1カラム表示
@@ -2533,13 +2532,13 @@ class ActMain : AppCompatActivity()
 		}
 		
 		nColumnWidth = column_w // dividerの幅を含む
-
+		
 		val divider_width = (0.5f + 1f * density).toInt()
 		column_w -= divider_width
 		env.tablet_pager_adapter.columnWidth = column_w // dividerの幅を含まない
 		// env.tablet_snap_helper.columnWidth = column_w //使われていない
-
-		resizeAutoCW(column_w)// dividerの幅を含まない
+		
+		resizeAutoCW(column_w) // dividerの幅を含まない
 		
 		// 並べ直す
 		env.tablet_pager_adapter.notifyDataSetChanged()
@@ -2803,9 +2802,8 @@ class ActMain : AppCompatActivity()
 			auto_cw.originalLineCount = l.lineCount
 			val line_count = auto_cw.originalLineCount
 			
-			if(nAutoCwLines > 0
-				&& line_count > nAutoCwLines
-				&& status.spoiler_text?.isEmpty() != false
+			if( (nAutoCwLines > 0 && line_count > nAutoCwLines)
+				&& status.spoiler_text.isEmpty()
 				&& (status.mentions?.size ?: 0) <= nAutoCwLines
 			) {
 				val sb = SpannableStringBuilder()

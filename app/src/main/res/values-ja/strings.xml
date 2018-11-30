@@ -811,5 +811,6 @@
     <string name="dont_show_preview_card">プレビューカードを表示しない</string>
     <string name="instance_does_not_support_push_api_pleroma">このインスタンスはプッシュ購読APIに対応していません。多分Pleromaです。</string>
     <string name="quote_renote">引用リノート… (Misskey)</string>
+    <string name="blank_cw">(CW空欄)</string>
 
 </resources>

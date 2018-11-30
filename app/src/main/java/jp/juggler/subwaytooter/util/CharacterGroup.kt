@@ -1,6 +1,8 @@
 package jp.juggler.subwaytooter.util
 
+import android.util.SparseBooleanArray
 import android.util.SparseIntArray
+import java.util.regex.Pattern
 
 class CharacterGroup {
 	
@@ -20,30 +22,43 @@ class CharacterGroup {
 			return String(tmp, 0, 1)
 		}
 		
-		// 空白とみなす文字なら真
-		fun isWhitespace(cp : Int) : Boolean {
-			when(cp) {
+		private val mapWhitespace = SparseBooleanArray().apply {
+			intArrayOf(
 				0x0009 // HORIZONTAL TABULATION
-					, 0x000A // LINE FEED
-					, 0x000B // VERTICAL TABULATION
-					, 0x000C // FORM FEED
-					, 0x000D // CARRIAGE RETURN
-					, 0x001C // FILE SEPARATOR
-					, 0x001D // GROUP SEPARATOR
-					, 0x001E // RECORD SEPARATOR
-					, 0x001F // UNIT SEPARATOR
-					, 0x0020, 0x0085 // next line (latin-1)
-					, 0x00A0 //非区切りスペース
-					, 0x1680, 0x180E, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007 //非区切りスペース
-					, 0x2008, 0x2009, 0x200A, 0x200B, 0x200C, 0x200D, 0x2028 // line separator
-					, 0x2029 // paragraph separator
-					,
-				
-				0x202F //非区切りスペース
-					, 0x205F, 0x2060, 0x3000, 0x3164, 0xFEFF -> return true
-				else -> return false // Character.isWhitespace( cp ); は不要っぽい
+				, 0x000A // LINE FEED
+				, 0x000B // VERTICAL TABULATION
+				, 0x000C // FORM FEED
+				, 0x000D // CARRIAGE RETURN
+				, 0x001C // FILE SEPARATOR
+				, 0x001D // GROUP SEPARATOR
+				, 0x001E // RECORD SEPARATOR
+				, 0x001F // UNIT SEPARATOR
+				, 0x0020, 0x0085 // next line (latin-1)
+				, 0x00A0 //非区切りスペース
+				, 0x1680, 0x180E, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007 //非区切りスペース
+				, 0x2008, 0x2009, 0x200A, 0x200B, 0x200C, 0x200D, 0x2028 // line separator
+				, 0x2029 // paragraph separator
+				, 0x202F //非区切りスペース
+				, 0x205F, 0x2060, 0x3000, 0x3164, 0xFEFF
+			).forEach {
+				put(it,true)
 			}
 		}
+		
+		// 空白とみなす文字なら真
+		fun isWhitespace(cp : Int) : Boolean  = mapWhitespace.get(cp,false)
+
+		internal val reWhitespace :Pattern by lazy {
+			val sb = StringBuilder()
+			sb.append("[\\s\\t\\x0d\\x0a")
+			for(i in 0 until mapWhitespace.size()){
+				val k = mapWhitespace.keyAt(i)
+				if( k > 0x20 ) sb.append(k.toChar())
+			}
+			sb.append("]+")
+			 Pattern.compile(sb.toString())
+		}
+		
 		
 		// 文字列のリストからグループIDを決定する
 		private fun findGroupId(list : Array<String>) : Int {

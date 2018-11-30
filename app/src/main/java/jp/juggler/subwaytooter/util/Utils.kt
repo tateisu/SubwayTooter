@@ -718,11 +718,11 @@ inline fun JSONArray.downForEachIndexed(block : (i : Int, v : Any?) -> Unit) {
 	}
 }
 
-fun JSONArray.toAnyList() : ArrayList<Any> {
-	val dst_list = ArrayList<Any>(length())
-	forEach { if(it != null) dst_list.add(it) }
-	return dst_list
-}
+//fun JSONArray.toAnyList() : ArrayList<Any> {
+//	val dst_list = ArrayList<Any>(length())
+//	forEach { if(it != null) dst_list.add(it) }
+//	return dst_list
+//}
 
 fun JSONArray.toObjectList() : ArrayList<JSONObject> {
 	val dst_list = ArrayList<JSONObject>(length())

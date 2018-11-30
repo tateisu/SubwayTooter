@@ -42,6 +42,7 @@ import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.subwaytooter.view.PinchBitmapView
 import okhttp3.Request
+import org.json.JSONObject
 import java.io.ByteArrayInputStream
 import java.io.IOException
 import java.util.*
@@ -66,7 +67,12 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 			list?.encodeJson()?.toString() ?: "[]"
 		
 		internal fun decodeMediaList(serviceType : ServiceType, src : String?) =
-			parseList(::TootAttachment, serviceType, src?.toJsonArray())
+			ArrayList<TootAttachment>().apply {
+				src?.toJsonArray()?.forEach {
+					if(it !is JSONObject) return@forEach
+					add(TootAttachment.decodeJson(it))
+				}
+			}
 		
 		fun open(
 			activity : ActMain,

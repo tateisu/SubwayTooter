@@ -9,7 +9,6 @@ import android.content.ContentValues
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.database.Cursor
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.AsyncTask
@@ -309,7 +308,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	
 	private val link_click_listener : MyClickableSpanClickCallback = { _, span ->
 		// ブラウザで開く
-		span.url.mayUri()?.let{
+		span.url.mayUri()?.let {
 			try {
 				val intent = Intent(Intent.ACTION_VIEW, it)
 				startActivity(intent)
@@ -424,7 +423,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			mushroom_end = savedInstanceState.getInt(STATE_MUSHROOM_END, 0)
 			redraft_status_id = EntityId.from(savedInstanceState, STATE_REDRAFT_STATUS_ID)
 			
-			savedInstanceState.getString(STATE_URI_CAMERA_IMAGE).mayUri()?.let{
+			savedInstanceState.getString(STATE_URI_CAMERA_IMAGE).mayUri()?.let {
 				uriCameraImage = it
 			}
 			
@@ -516,13 +515,13 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 					Intent.ACTION_VIEW -> {
 						val uri = sent_intent.data
 						val type = sent_intent.type
-						if(uri != null) addAttachment(uri,type)
+						if(uri != null) addAttachment(uri, type)
 					}
 					
 					Intent.ACTION_SEND -> {
 						val uri = sent_intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
 						val type = sent_intent.type
-						if(uri != null) addAttachment(uri,type)
+						if(uri != null) addAttachment(uri, type)
 					}
 					
 					Intent.ACTION_SEND_MULTIPLE -> {
@@ -558,7 +557,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						} else {
 							
 							// CW をリプライ元に合わせる
-							if(reply_status.spoiler_text?.isNotEmpty() == true) {
+							if(reply_status.spoiler_text.isNotEmpty()) {
 								cbContentWarning.isChecked = true
 								etContentWarning.setText(reply_status.spoiler_text)
 							}
@@ -1235,7 +1234,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			llAttachment.visibility = View.GONE
 		} else {
 			llAttachment.visibility = View.VISIBLE
-			ivMedia.forEachIndexed { i,v ->showAttachment_sub(v, i) }
+			ivMedia.forEachIndexed { i, v -> showAttachment_sub(v, i) }
 		}
 	}
 	
@@ -1599,25 +1598,23 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		}
 	}
 	
-	class AttachmentRequest(
+	private class AttachmentRequest(
 		val account : SavedAccount,
 		val pa : PostAttachment,
 		val uri : Uri,
 		val mimeType : String,
-		
 		val onUploadEnd : () -> Unit
 	)
 	
-	val attachment_queue = ConcurrentLinkedQueue<AttachmentRequest>()
-	private var attachment_worker: AttachmentWorker? = null
-	var lastAttachmentAdd : Long = 0L
-	var lastAttachmentComplete : Long = 0L
+	private val attachment_queue = ConcurrentLinkedQueue<AttachmentRequest>()
+	private var attachment_worker : AttachmentWorker? = null
+	private var lastAttachmentAdd : Long = 0L
+	private var lastAttachmentComplete : Long = 0L
 	
 	@SuppressLint("StaticFieldLeak")
 	private fun addAttachment(
 		uri : Uri,
 		mimeTypeArg : String? = null,
-		time :Long =0,
 		onUploadEnd : () -> Unit = {}
 	) {
 		
@@ -1645,10 +1642,10 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		
 		app_state.attachment_list = this.attachment_list
 		
-		val pa = PostAttachment( this)
+		val pa = PostAttachment(this)
 		attachment_list.add(pa)
 		showMediaAttachment()
-
+		
 		// アップロード開始トースト(連発しない)
 		val now = System.currentTimeMillis()
 		if(now - lastAttachmentAdd >= 5000L) {
@@ -1659,18 +1656,18 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		// マストドンは添付メディアをID順に表示するため
 		// 画像が複数ある場合は一つずつ処理する必要がある
 		// 投稿画面ごとに1スレッドだけ作成してバックグラウンド処理を行う
-		attachment_queue.add(AttachmentRequest(account,pa,uri,mime_type,onUploadEnd))
+		attachment_queue.add(AttachmentRequest(account, pa, uri, mime_type, onUploadEnd))
 		val oldWorker = attachment_worker
-		if( oldWorker == null || !oldWorker.isAlive || oldWorker.isInterrupted ){
+		if(oldWorker == null || ! oldWorker.isAlive || oldWorker.isInterrupted) {
 			oldWorker?.cancel()
-			attachment_worker = AttachmentWorker().apply{ start() }
-		}else{
+			attachment_worker = AttachmentWorker().apply { start() }
+		} else {
 			oldWorker.notifyEx()
 		}
 	}
 	
-	inner class AttachmentWorker : WorkerBase(){
-
+	inner class AttachmentWorker : WorkerBase() {
+		
 		private val isCancelled = AtomicBoolean(false)
 		override fun cancel() {
 			isCancelled.set(true)
@@ -1690,24 +1687,24 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						item.handleResult(result)
 					}
 				}
-			}catch(ex:Throwable){
+			} catch(ex : Throwable) {
 				log.trace(ex)
-				log.e(ex,"AttachmentWorker")
+				log.e(ex, "AttachmentWorker")
 			}
 		}
 		
-		private fun AttachmentRequest.upload():TootApiResult?{
+		private fun AttachmentRequest.upload() : TootApiResult? {
 			
 			if(mimeType.isEmpty()) {
 				return TootApiResult("mime_type is empty.")
 			}
 			
 			try {
-				val client = TootApiClient(this@ActPost,callback = object:TootApiCallback{
+				val client = TootApiClient(this@ActPost, callback = object : TootApiCallback {
 					override val isApiCancelled : Boolean
 						get() = isCancelled.get()
 				})
-
+				
 				client.account = account
 				
 				val opener = createOpener(uri, mimeType)
@@ -1840,8 +1837,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			}
 			
 		}
-
-		fun AttachmentRequest.handleResult(result : TootApiResult?) {
+		
+		private fun AttachmentRequest.handleResult(result : TootApiResult?) {
 			
 			if(pa.attachment == null) {
 				pa.status = PostAttachment.STATUS_UPLOAD_FAILED
@@ -1874,7 +1871,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				val a = pa.attachment
 				if(a != null) {
 					// アップロード完了
-
+					
 					val now = System.currentTimeMillis()
 					if(now - lastAttachmentComplete >= 5000L) {
 						showToast(this@ActPost, false, R.string.attachment_uploaded)

@@ -48,16 +48,16 @@ class CharacterGroup {
 		// 空白とみなす文字なら真
 		fun isWhitespace(cp : Int) : Boolean  = mapWhitespace.get(cp,false)
 
-		internal val reWhitespace :Pattern by lazy {
-			val sb = StringBuilder()
-			sb.append("[\\s\\t\\x0d\\x0a")
-			for(i in 0 until mapWhitespace.size()){
-				val k = mapWhitespace.keyAt(i)
-				if( k > 0x20 ) sb.append(k.toChar())
-			}
-			sb.append("]+")
-			 Pattern.compile(sb.toString())
-		}
+		internal val reWhitespace =Pattern.compile(
+			StringBuilder().apply{
+				 append("[\\s\\t\\x0d\\x0a")
+				 for(i in 0 until mapWhitespace.size()){
+					 val k = mapWhitespace.keyAt(i)
+					 if( k > 0x20 ) append(k.toChar())
+				 }
+				 append("]+")
+			 }.toString()
+		)
 		
 		
 		// 文字列のリストからグループIDを決定する

@@ -1658,7 +1658,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		// 投稿画面ごとに1スレッドだけ作成してバックグラウンド処理を行う
 		attachment_queue.add(AttachmentRequest(account, pa, uri, mime_type, onUploadEnd))
 		val oldWorker = attachment_worker
-		if(oldWorker == null || ! oldWorker.isAlive || oldWorker.isInterrupted) {
+		if(oldWorker == null
+			|| ! oldWorker.isAlive
+			|| oldWorker.isInterrupted
+			|| oldWorker.isCancelled.get()
+		) {
 			oldWorker?.cancel()
 			attachment_worker = AttachmentWorker().apply { start() }
 		} else {
@@ -1668,7 +1672,8 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	
 	inner class AttachmentWorker : WorkerBase() {
 		
-		private val isCancelled = AtomicBoolean(false)
+		internal val isCancelled = AtomicBoolean(false)
+
 		override fun cancel() {
 			isCancelled.set(true)
 			notifyEx()
@@ -1679,7 +1684,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				while(! isCancelled.get()) {
 					val item = attachment_queue.poll()
 					if(item == null) {
-						waitEx(86400)
+						waitEx(86400000L)
 						continue
 					}
 					val result = item.upload()

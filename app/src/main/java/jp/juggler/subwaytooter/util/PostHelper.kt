@@ -344,11 +344,14 @@ class PostHelper(
 									}
 								)
 							} else {
-								val localVis = visibility_checked.strMisskey.replace("^local-".toRegex(),"")
-								if( localVis != visibility_checked.strMisskey){
+								val localVis = visibility_checked.strMisskey.replace(
+									"^local-".toRegex(),
+									""
+								)
+								if(localVis != visibility_checked.strMisskey) {
 									json.put("localOnly", true)
 									json.put("visibility", localVis)
-								}else {
+								} else {
 									json.put("visibility", visibility_checked.strMisskey)
 								}
 							}
@@ -365,9 +368,9 @@ class PostHelper(
 						}
 						
 						if(in_reply_to_id != null) {
-							if( useQuotedRenote){
+							if(useQuotedRenote) {
 								json.put("renoteId", in_reply_to_id.toString())
-							}else{
+							} else {
 								json.put("replyId", in_reply_to_id.toString())
 							}
 						}
@@ -481,7 +484,7 @@ class PostHelper(
 				}
 				
 				result = if(isMisskey) {
-					log.d("misskey json %s",body_string)
+					log.d("misskey json %s", body_string)
 					
 					client.request("/api/notes/create", request_builder)
 				} else {
@@ -567,59 +570,55 @@ class PostHelper(
 		}
 	
 	private val proc_text_changed = object : Runnable {
+		
 		override fun run() {
 			val et = this@PostHelper.et
-			if(et == null || callback2?.canOpenPopup() != true) {
+			if(et == null // EditTextを特定できない
+				|| et.selectionStart != et.selectionEnd // 範囲選択中
+				|| callback2?.canOpenPopup() != true // 何らかの理由でポップアップが許可されていない
+			) {
 				closeAcctPopup()
 				return
 			}
 			
-			var start = et.selectionStart
-			val end = et.selectionEnd
-			if(start != end) {
-				closeAcctPopup()
-				return
-			}
-			val src = et.text.toString()
+			checkMention(et, et.text.toString())
+		}
+		
+		private fun checkMention(et : MyEditText, src : String) {
+			
 			var count_atMark = 0
-			val pos_atMark = IntArray(2)
-			while(true) {
-				if(count_atMark >= 2) break
-				
-				if(start == 0) break
-				val c = src[start - 1]
+			val end = et.selectionEnd
+			var start : Int = - 1
+			var i = end
+			while(i > 0) {
+				val c = src[i - 1]
 				
 				if(c == '@') {
-					-- start
-					pos_atMark[count_atMark ++] = start
-					continue
+					start = -- i
+					if(++ count_atMark >= 2) break else continue
 				} else if('0' <= c && c <= '9'
 					|| 'A' <= c && c <= 'Z'
 					|| 'a' <= c && c <= 'z'
-					|| c == '_' || c == '-' || c == '.') {
-					-- start
+					|| c == '_' || c == '-' || c == '.'
+				) {
+					-- i
 					continue
 				}
 				// その他の文字種が出たら探索打ち切り
 				break
 			}
-			// 登場した@の数
-			start = when(count_atMark) {
-				1 -> pos_atMark[0]
-				2 -> pos_atMark[1]
-				
-				else -> {
-					// 次はAcctじゃなくてHashtagの補完を試みる
-					checkTag()
-					return
-				}
+			
+			if(start == - 1) {
+				checkTag(et, src)
+				return
 			}
-			// 最低でも2文字ないと補完しない
+			
 			// 最低でも2文字ないと補完しない
 			if(end - start < 2) {
 				closeAcctPopup()
 				return
 			}
+			
 			val limit = 100
 			val s = src.substring(start, end)
 			val acct_list = AcctSet.searchPrefix(s, limit)
@@ -631,23 +630,20 @@ class PostHelper(
 			}
 		}
 		
-		private fun checkTag() {
-			val et = this@PostHelper.et ?: return
+		private fun checkTag(et : MyEditText, src : String) {
 			
 			val end = et.selectionEnd
 			
-			val src = et.text.toString()
 			val last_sharp = src.lastIndexOf('#', end - 1)
 			
 			if(last_sharp == - 1 || end - last_sharp < 2) {
-				checkEmoji()
+				checkEmoji(et, src)
 				return
 			}
 			
 			val part = src.substring(last_sharp + 1, end)
 			if(reCharsNotTag.matcher(part).find()) {
-				// warning.d( "checkTag: character not tag in string %s", part );
-				checkEmoji()
+				checkEmoji(et, src)
 				return
 			}
 			
@@ -662,112 +658,121 @@ class PostHelper(
 			}
 		}
 		
-		private fun checkEmoji() {
-			val et = this@PostHelper.et ?: return
+		private fun checkEmoji(et : MyEditText, src : String) {
 			
 			val end = et.selectionEnd
-			val src = et.text.toString()
 			val last_colon = src.lastIndexOf(':', end - 1)
-			
 			if(last_colon == - 1 || end - last_colon < 1) {
 				closeAcctPopup()
 				return
 			}
-			val part = src.substring(last_colon + 1, end)
 			
-			if(reCharsNotEmoji.matcher(part).find()) {
-				log.d("checkEmoji: character not short code in string.")
-				closeAcctPopup()
-				return
-			}
-			
-			// : の手前は始端か改行か空白でなければならない
 			if(! EmojiDecoder.canStartShortCode(src, last_colon)) {
+				// : の手前は始端か改行か空白でなければならない
 				log.d("checkEmoji: invalid character before shortcode.")
 				closeAcctPopup()
 				return
 			}
 			
+			val part = src.substring(last_colon + 1, end)
+			
 			if(part.isEmpty()) {
+				// :を入力した直後は候補は0で、「閉じる」と「絵文字を選ぶ」だけが表示されたポップアップを出す
 				openPopup()?.setList(
 					et, last_colon, end, null, picker_caption_emoji, open_picker_emoji
 				)
-			} else {
-				
-				val code_list = ArrayList<CharSequence>()
-				val limit = 100
-				
-				// カスタム絵文字を検索
-				val instance = this@PostHelper.instance
-				if(instance != null && instance.isNotEmpty()) {
-					val custom_list = App1.custom_emoji_lister.getListWithAliases(
-						instance,
-						isMisskey,
-						onEmojiListLoad
-					)
-					if(custom_list != null) {
-						val needle = src.substring(last_colon + 1, end)
+				return
+			}
+			
+			if(reCharsNotEmoji.matcher(part).find()) {
+				// 範囲内に絵文字に使えない文字がある
+				closeAcctPopup()
+				return
+			}
+			
+			val code_list = ArrayList<CharSequence>()
+			val limit = 100
+			
+			// カスタム絵文字の候補を部分一致検索
+			code_list.addAll(customEmojiCodeList(this@PostHelper.instance, limit, part))
+			
+			// 通常の絵文字を部分一致で検索
+			val remain = limit - code_list.size
+			if(remain > 0) {
+				val s = src.substring(last_colon + 1, end).toLowerCase().replace('-', '_')
+				val matches = EmojiDecoder.searchShortCode(activity, s, remain)
+				log.d("checkEmoji: search for %s, result=%d", s, matches.size)
+				code_list.addAll(matches)
+			}
+			
+			openPopup()?.setList(
+				et,
+				last_colon,
+				end,
+				code_list,
+				picker_caption_emoji,
+				open_picker_emoji
+			)
+		}
+		
+		// カスタム絵文字の候補を作る
+		private fun customEmojiCodeList(
+			instance : String?,
+			limit : Int,
+			needle : String
+		) : ArrayList<CharSequence> {
+			val dst = ArrayList<CharSequence>()
+			
+			if(instance?.isNotEmpty() == true) {
+
+				val custom_list = App1.custom_emoji_lister.getListWithAliases(
+					instance,
+					isMisskey,
+					onEmojiListLoad
+				)
+
+				if(custom_list != null) {
+					
+					for(item in custom_list) {
+						if(dst.size >= limit) break
+						if(! item.shortcode.contains(needle)) continue
 						
-						for(item in custom_list) {
-							if(code_list.size >= limit) break
-							if(! item.shortcode.contains(needle)) continue
-							
-							val sb = SpannableStringBuilder()
-							sb.append(' ')
+						val sb = SpannableStringBuilder()
+						sb.append(' ')
+						sb.setSpan(
+							NetworkEmojiSpan(item.url),
+							0,
+							sb.length,
+							Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+						)
+						sb.append(' ')
+						if(item.alias != null) {
+							val start = sb.length
+							sb.append(":")
+							sb.append(item.alias)
+							sb.append(": → ")
 							sb.setSpan(
-								NetworkEmojiSpan(item.url),
-								0,
+								ForegroundColorSpan(
+									Styler.getAttributeColor(
+										activity,
+										R.attr.colorTimeSmall
+									)
+								),
+								start,
 								sb.length,
 								Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 							)
-							sb.append(' ')
-							if(item.alias != null) {
-								val start = sb.length
-								sb.append(":")
-								sb.append(item.alias)
-								sb.append(": → ")
-								sb.setSpan(
-									ForegroundColorSpan(
-										Styler.getAttributeColor(
-											activity,
-											R.attr.colorTimeSmall
-										)
-									),
-									start,
-									sb.length,
-									Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-								)
-							}
-							
-							sb.append(':')
-							sb.append(item.shortcode)
-							sb.append(':')
-							
-							code_list.add(sb)
 						}
+						
+						sb.append(':')
+						sb.append(item.shortcode)
+						sb.append(':')
+						
+						dst.add(sb)
 					}
 				}
-				
-				// 通常の絵文字を部分一致で検索
-				val remain = limit - code_list.size
-				if(remain > 0) {
-					val s = src.substring(last_colon + 1, end).toLowerCase().replace('-', '_')
-					val matches = EmojiDecoder.searchShortCode(activity, s, remain)
-					log.d("checkEmoji: search for %s, result=%d", s, matches.size)
-					code_list.addAll(matches)
-					
-				}
-				
-				openPopup()?.setList(
-					et,
-					last_colon,
-					end,
-					code_list,
-					picker_caption_emoji,
-					open_picker_emoji
-				)
 			}
-			
+			return dst
 		}
 	}
 	

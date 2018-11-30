@@ -15,6 +15,7 @@ import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
 import jp.juggler.subwaytooter.api.entity.EntityIdLong
+import jp.juggler.subwaytooter.api.entity.TootAccount
 import jp.juggler.subwaytooter.api.entity.TootMention
 import jp.juggler.subwaytooter.span.EmojiImageSpan
 import jp.juggler.subwaytooter.span.HighlightSpan
@@ -1367,14 +1368,9 @@ object MisskeyMarkdownDecoder {
 		addParser("検Ss", searchParser)
 		addParser("?", linkParser)
 		
-		// メンション @username @username@host
-		val reMention = Pattern.compile(
-			"""\A@([a-z0-9_]+(?:[a-z0-9_.-]+[a-z0-9_]+)?)(?:@([A-Za-z0-9][A-Za-z0-9._-]+))?"""
-			, Pattern.CASE_INSENSITIVE
-		)
-		
+
 		addParser("@", {
-			val matcher = remainMatcher(reMention)
+			val matcher = remainMatcher(TootAccount.reMention)
 			when {
 				! matcher.find() -> null
 				else -> makeDetected(

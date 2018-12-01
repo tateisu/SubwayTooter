@@ -453,8 +453,13 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				this.highlight_sound = options.highlight_sound
 			}
 			
-			this.spoiler_text = (src.parseString("spoiler_text") ?: "").cleanCW()
-			
+			val sv = (src.parseString("spoiler_text")?:"").cleanCW()
+			this.spoiler_text = when{
+				sv.isEmpty() ->"" // CWなし
+				sv.isBlank() ->parser.context.getString(R.string.blank_cw)
+				else->sv
+			}
+
 			options = DecodeOptions(
 				parser.context,
 				emojiMapCustom = custom_emojis,

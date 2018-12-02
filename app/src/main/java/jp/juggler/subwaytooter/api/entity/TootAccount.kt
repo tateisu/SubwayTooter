@@ -228,12 +228,12 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			this.id = EntityId.mayDefault(src.parseString("id"))
 			
 			this.acct = when {
-
+				
 				// アクセス元から見て内部ユーザなら short acct
-				host.equals(parser.linkHelper.host ,ignoreCase = true ) -> username
-
+				remoteHost?.equals(parser.linkHelper.host, ignoreCase = true) != false -> username
+				
 				// アクセス元から見て外部ユーザならfull acct
-				else->  "${username}@$host"
+				else -> "${username}@$host"
 			}
 			
 			this.followers_count = src.parseLong("followersCount") ?: - 1L

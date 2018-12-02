@@ -48,6 +48,7 @@ import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.EntityIdLong
 import jp.juggler.subwaytooter.api.entity.TootStatus
+import jp.juggler.subwaytooter.api.toRequestBody
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
@@ -1177,12 +1178,7 @@ class PollingWorker private constructor(contextArg : Context) {
 					
 					val request = Request.Builder()
 						.url("$APP_SERVER/unregister")
-						.post(
-							RequestBody.create(
-								TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED,
-								post_data
-							)
-						)
+						.post(post_data.toRequestBody())
 						.build()
 					
 					val call = App1.ok_http_client.newCall(request)
@@ -1277,12 +1273,7 @@ class PollingWorker private constructor(contextArg : Context) {
 					
 					val request = Request.Builder()
 						.url("$APP_SERVER/register")
-						.post(
-							RequestBody.create(
-								TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED,
-								post_data.toString()
-							)
-						)
+						.post(post_data.toString().toRequestBody())
 						.build()
 					
 					val call = App1.ok_http_client.newCall(request)

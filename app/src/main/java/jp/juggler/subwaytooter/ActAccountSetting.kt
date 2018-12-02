@@ -644,12 +644,7 @@ class ActAccountSetting
 							
 							val request = Request.Builder()
 								.url(PollingWorker.APP_SERVER + "/unregister")
-								.post(
-									RequestBody.create(
-										TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED,
-										post_data
-									)
-								)
+								.post(post_data.toRequestBody())
 								.build()
 							
 							val call = App1.ok_http_client.newCall(request)

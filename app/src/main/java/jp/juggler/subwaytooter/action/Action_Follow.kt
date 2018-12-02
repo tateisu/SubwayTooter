@@ -18,7 +18,6 @@ import jp.juggler.util.encodePercent
 import jp.juggler.util.showToast
 import jp.juggler.util.toPostRequestBuilder
 import okhttp3.Request
-import okhttp3.RequestBody
 import org.json.JSONObject
 
 object Action_Follow {
@@ -241,14 +240,12 @@ object Action_Follow {
 					if(bFollow and who.acct.contains("@")) {
 						
 						// リモートフォローする
-						val request_builder = Request.Builder().post(
-							RequestBody.create(
-								TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED,
-								"uri=" + who.acct.encodePercent()
-							)
+						result = client.request(
+							"/api/v1/follows",
+							 Request.Builder()
+								 .post( "uri=${who.acct.encodePercent()}".toRequestBody() )
 						)
-						
-						result = client.request("/api/v1/follows", request_builder)
+
 						val user = TootParser(activity, access_info).account(result?.jsonObject)
 						if(user != null) {
 							// リモートフォローAPIはリレーションを返さないので
@@ -259,11 +256,7 @@ object Action_Follow {
 						}
 					} else {
 						// ローカルでフォロー/アンフォローする
-						val request_builder = Request.Builder().post(
-							RequestBody.create(
-								TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" // 空データ
-							)
-						)
+						val request_builder = Request.Builder().post("".toRequestBody())
 						result = client.request(
 							"/api/v1/accounts/${who.id}/${if(bFollow) "follow" else "unfollow"}"
 							, request_builder
@@ -539,13 +532,11 @@ object Action_Follow {
 					}
 					
 				} else {
-					val request_builder = Request.Builder().post(
-						RequestBody.create(
-							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "uri=" + acct.encodePercent()
-						)
+					result = client.request(
+						"/api/v1/follows",
+						Request.Builder()
+							.post("uri=${acct.encodePercent()}".toRequestBody())
 					)
-					
-					result = client.request("/api/v1/follows", request_builder)
 					val user = TootParser(activity, access_info).account(result?.jsonObject)
 					if(user != null) {
 						this.remote_who = user
@@ -646,23 +637,18 @@ object Action_Follow {
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
-				if(access_info.isMisskey) {
-					val params = access_info.putMisskeyApiToken(JSONObject())
-						.put("userId", who.id)
-					
-					return client.request(
+				return if(access_info.isMisskey) {
+					client.request(
 						"/api/following/requests/${if(bAllow) "accept" else "reject"}",
-						params.toPostRequestBuilder()
+						access_info.putMisskeyApiToken()
+							.put("userId", who.id)
+							.toPostRequestBuilder()
 					)
 				} else {
-					val request_builder = Request.Builder().post(
-						RequestBody.create(
-							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" // 空データ
-						)
-					)
-					return client.request(
-						"/api/v1/follow_requests/" + who.id + if(bAllow) "/authorize" else "/reject",
-						request_builder
+					client.request(
+						"/api/v1/follow_requests/${who.id}/${if(bAllow) "authorize" else "reject"}",
+						// 空データ
+						Request.Builder().post("".toRequestBody())
 					)
 				}
 			}

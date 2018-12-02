@@ -18,7 +18,6 @@ import jp.juggler.util.LogCategory
 import jp.juggler.util.showToast
 import jp.juggler.util.toUri
 import okhttp3.Request
-import okhttp3.RequestBody
 import org.json.JSONObject
 
 object Action_Account {
@@ -220,15 +219,12 @@ object Action_Account {
 			var relation : UserRelation? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val builder = Request.Builder().post(
-					RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "")
-				)
 				val result = client.request(
 					"/api/v1/accounts/${who.id}/" + when(bSet) {
 						true -> "pin"
 						false -> "unpin"
 					}
-					, builder
+					, Request.Builder().post("".toRequestBody())
 				)
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {

@@ -50,8 +50,8 @@ class TootApiClient(
 	companion object {
 		private val log = LogCategory("TootApiClient")
 		
-		val MEDIA_TYPE_FORM_URL_ENCODED = MediaType.parse("application/x-www-form-urlencoded")
-		val MEDIA_TYPE_JSON = MediaType.parse("application/json;charset=UTF-8")
+		val MEDIA_TYPE_FORM_URL_ENCODED :MediaType = MediaType.get("application/x-www-form-urlencoded")
+		val MEDIA_TYPE_JSON :MediaType = MediaType.get("application/json;charset=UTF-8")
 		
 		private const val DEFAULT_CLIENT_NAME = "SubwayTooter"
 		internal const val KEY_CLIENT_CREDENTIAL = "SubwayTooterClientCredential"
@@ -1580,3 +1580,6 @@ fun TootApiClient.syncStatus(
 	return TootApiResult("can't resolve status URL/URI.")
 	
 }
+
+fun String.toRequestBody(mediaType : MediaType = TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED): RequestBody =
+	RequestBody.create( mediaType, this)

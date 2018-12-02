@@ -16,7 +16,6 @@ import jp.juggler.util.showToast
 import jp.juggler.util.toPostRequestBuilder
 import jp.juggler.util.toUri
 import okhttp3.Request
-import okhttp3.RequestBody
 import org.json.JSONObject
 import java.util.*
 import java.util.regex.Pattern
@@ -165,13 +164,9 @@ object Action_Toot {
 					}
 					
 				} else {
-					val request_builder = Request.Builder().post(
-						RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "")
-					)
-					
 					result = client.request(
-						"/api/v1/statuses/${target_status.id}/" + if(bSet) "favourite" else "unfavourite"
-						, request_builder
+						"/api/v1/statuses/${target_status.id}/${if(bSet) "favourite" else "unfavourite"}"
+						, Request.Builder().post("".toRequestBody())
 					)
 					val jsonObject = result?.jsonObject
 					new_status = TootParser(activity, access_info).status(jsonObject)
@@ -413,27 +408,15 @@ object Action_Toot {
 					}
 					
 				} else {
-					val request_builder = Request.Builder()
-						.post(
-							RequestBody.create(
-								TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, ""
-							)
-						)
 					
 					result = client.request(
-						"/api/v1/statuses/" + target_status.id + if(bSet) "/reblog" else "/unreblog",
-						request_builder
+						"/api/v1/statuses/${target_status.id}/${if(bSet) "reblog" else "unreblog"}",
+						Request.Builder().post("".toRequestBody())
 					)
-					val jsonObject = result?.jsonObject
-					if(jsonObject != null) {
-						
-						val new_status = parser.status(jsonObject)
-						
-						// reblogはreblogを表すStatusを返す
-						// unreblogはreblogしたStatusを返す
-						this.new_status =
-							if(new_status?.reblog != null) new_status.reblog else new_status
-					}
+					// reblogはreblogを表すStatusを返す
+					// unreblogはreblogしたStatusを返す
+					val s = parser.status(result?.jsonObject)
+					this.new_status = s?.reblog ?: s
 					
 					return result
 					
@@ -545,14 +528,8 @@ object Action_Toot {
 			.run(access_info, object : TootTask {
 				override fun background(client : TootApiClient) : TootApiResult? {
 					return client.request(
-						"/api/v1/conversations/${conversationSummary.id}/read"
-						,
-						Request.Builder().post(
-							RequestBody.create(
-								TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED,
-								""
-							)
-						)
+						"/api/v1/conversations/${conversationSummary.id}/read",
+						Request.Builder().post("".toRequestBody())
 					)
 				}
 				
@@ -836,20 +813,10 @@ object Action_Toot {
 				
 				var new_status : TootStatus? = null
 				override fun background(client : TootApiClient) : TootApiResult? {
-					val result : TootApiResult?
 					
-					val request_builder = Request.Builder()
-						.post(
-							RequestBody.create(
-								TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, ""
-							)
-						)
-					
-					result = client.request(
-						if(bSet)
-							"/api/v1/statuses/" + status.id + "/pin"
-						else
-							"/api/v1/statuses/" + status.id + "/unpin", request_builder
+					val result = client.request(
+						"/api/v1/statuses/${status.id}/${if(bSet) "pin" else "unpin"}",
+						Request.Builder().post("".toRequestBody())
 					)
 					
 					new_status = TootParser(activity, access_info).status(result?.jsonObject)
@@ -1057,12 +1024,10 @@ object Action_Toot {
 			var local_status : TootStatus? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val request_builder = Request.Builder()
-					.post(RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, ""))
 				
 				val result = client.request(
-					"/api/v1/statuses/" + status.id + if(bMute) "/mute" else "/unmute",
-					request_builder
+					"/api/v1/statuses/${status.id}/${if(bMute) "mute" else "unmute"}",
+					Request.Builder().post("".toRequestBody())
 				)
 				
 				local_status = TootParser(activity, access_info).status(result?.jsonObject)

@@ -6667,7 +6667,7 @@ class Column(
 			.apply {
 				if(access_info.isMisskey) {
 					if(parser != null) parser.serviceType = ServiceType.MISSKEY
-					put("limit", 100)
+					put("limit", 40)
 				}
 			}
 	

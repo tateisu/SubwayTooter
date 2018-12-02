@@ -61,26 +61,18 @@ object Action_ListMember {
 					if(bFollow) {
 						val relation : TootRelationShip?
 						if(access_info.isLocalUser(local_who)) {
-							val request_builder = Request.Builder().post(
-								RequestBody.create(
-									TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" // 空データ
-								)
-							)
 							
 							result = client.request(
 								"/api/v1/accounts/" + local_who.id + "/follow",
-								request_builder
+								Request.Builder().post("".toRequestBody())
 							)
 						} else {
 							// リモートフォローする
-							val request_builder = Request.Builder().post(
-								RequestBody.create(
-									TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED,
-									"uri=" + local_who.acct.encodePercent()
-								)
+							result = client.request(
+								"/api/v1/follows",
+								Request.Builder()
+									.post("uri=${local_who.acct.encodePercent()}".toRequestBody() )
 							)
-							
-							result = client.request("/api/v1/follows", request_builder)
 							
 							val jsonObject = result?.jsonObject ?: return result
 							

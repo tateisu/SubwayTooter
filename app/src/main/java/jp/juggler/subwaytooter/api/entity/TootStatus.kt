@@ -281,6 +281,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			if(options.highlight_sound != null && this.highlight_sound == null) {
 				this.highlight_sound = options.highlight_sound
 			}
+
 			// Markdownのデコード結果からmentionsを読むのだった
 			this.mentions =
 				(decoded_content as? MisskeyMarkdownDecoder.SpannableStringBuilderEx)?.mentions
@@ -299,12 +300,15 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 
 			options = DecodeOptions(
 				parser.context,
+				parser.linkHelper,
+				short = true,
+				decodeEmoji = true,
 				emojiMapCustom = custom_emojis,
 				emojiMapProfile = profile_emojis,
+				attachmentList = media_attachments,
 				highlightTrie = parser.highlightTrie
 			)
-			
-			this.decoded_spoiler_text = options.decodeEmoji(spoiler_text)
+			this.decoded_spoiler_text = options.decodeHTML(spoiler_text)
 			
 			this.hasHighlight = this.hasHighlight || options.hasHighlight
 			if(options.highlight_sound != null && this.highlight_sound == null) {
@@ -874,9 +878,9 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		}
 		
 		fun validStatusId(src : EntityId?) : EntityId? {
-			return when {
-				src == null -> null
-				src == EntityId.defaultLong -> null
+			return when(src) {
+				null -> null
+				EntityId.defaultLong -> null
 				else -> src
 			}
 		}

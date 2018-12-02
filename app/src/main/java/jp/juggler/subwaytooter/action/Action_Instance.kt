@@ -71,16 +71,14 @@ object Action_Instance {
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				
-				val body = RequestBody.create(
-					TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "domain=" + domain.encodePercent()
+				return client.request(
+					"/api/v1/domain_blocks",
+					Request.Builder()
+						.method(
+							if(bBlock) "POST" else "DELETE",
+							"domain=${domain.encodePercent()}".toRequestBody()
+						)
 				)
-				
-				var request_builder = Request.Builder()
-				request_builder =
-					if(bBlock) request_builder.post(body) else request_builder.delete(body)
-				
-				return client.request("/api/v1/domain_blocks", request_builder)
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

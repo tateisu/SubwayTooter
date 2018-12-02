@@ -16,7 +16,6 @@ import jp.juggler.subwaytooter.table.UserRelationMisskey
 import jp.juggler.subwaytooter.util.TootApiResultCallback
 import jp.juggler.util.*
 import okhttp3.Request
-import okhttp3.RequestBody
 import org.json.JSONObject
 
 object Action_User {
@@ -64,29 +63,27 @@ object Action_User {
 					}
 					return result
 				} else {
-					val request_builder = Request.Builder().post(
-						if(! bMute)
-							RequestBody.create(TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "")
-						else if(bMuteNotification)
-							RequestBody.create(
-								TootApiClient.MEDIA_TYPE_JSON,
-								"{\"notifications\": true}"
-							)
-						else
-							RequestBody.create(
-								TootApiClient.MEDIA_TYPE_JSON,
-								"{\"notifications\": false}"
-							)
-					)
-					
 					val result = client.request(
-						"/api/v1/accounts/" + who.id + if(bMute) "/mute" else "/unmute",
-						request_builder
+						"/api/v1/accounts/${who.id}/${if(bMute) "mute" else "unmute"}",
+						Request.Builder().post(
+							when {
+								! bMute -> "".toRequestBody()
+								else -> "{\"notifications\": ${if(bMuteNotification) "true" else "false"}}"
+									.toRequestBody(TootApiClient.MEDIA_TYPE_JSON)
+							}
+						)
 					)
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
 						relation =
-							saveUserRelation(access_info, parseItem(::TootRelationShip,  TootParser(activity,access_info),jsonObject))
+							saveUserRelation(
+								access_info,
+								parseItem(
+									::TootRelationShip,
+									TootParser(activity, access_info),
+									jsonObject
+								)
+							)
 					}
 					return result
 					
@@ -105,26 +102,26 @@ object Action_User {
 					}
 					
 					for(column in App1.getAppState(activity).column_list) {
-						if( column.access_info.acct != access_info.acct) continue
-						when{
-							!relation.muting ->{
-								if( column.column_type == Column.TYPE_MUTES){
+						if(column.access_info.acct != access_info.acct) continue
+						when {
+							! relation.muting -> {
+								if(column.column_type == Column.TYPE_MUTES) {
 									// ミュート解除したら「ミュートしたユーザ」カラムから消える
 									column.removeUser(access_info, Column.TYPE_MUTES, who.id)
-								}else{
+								} else {
 									// 他のカラムではフォローアイコンの表示更新が走る
 									column.updateFollowIcons(access_info)
 								}
 								
 							}
 							
-							column.column_type == Column.TYPE_PROFILE && column.profile_id == who.id ->{
+							column.column_type == Column.TYPE_PROFILE && column.profile_id == who.id -> {
 								// 該当ユーザのプロフページのトゥートはミュートしてても見れる
 								// しかしフォローアイコンの表示更新は必要
 								column.updateFollowIcons(access_info)
 							}
 							
-							else->{
+							else -> {
 								// ミュートしたユーザの情報はTLから消える
 								column.removeAccountInTimeline(access_info, who.id)
 							}
@@ -173,7 +170,7 @@ object Action_User {
 						params.toPostRequestBuilder()
 					)
 					
-					fun saveBlock (v:Boolean){
+					fun saveBlock(v : Boolean) {
 						val ur = UserRelation.load(access_info.db_id, who.id)
 						ur.blocking = v
 						UserRelationMisskey.save1(
@@ -192,31 +189,32 @@ object Action_User {
 						}
 						
 						// success
-						error ==null  -> saveBlock( bBlock)
+						error == null -> saveBlock(bBlock)
 						
 						// already
-						error.contains("already blocking") -> saveBlock( bBlock)
-						error.contains("already not blocking") -> saveBlock( bBlock)
+						error.contains("already blocking") -> saveBlock(bBlock)
+						error.contains("already not blocking") -> saveBlock(bBlock)
 						
 						// else something error
 					}
 					
 					return result
 				} else {
-					val request_builder = Request.Builder().post(
-						RequestBody.create(
-							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, "" // 空データ
-						)
-					)
 					
 					val result = client.request(
-						"/api/v1/accounts/" + who.id + if(bBlock) "/block" else "/unblock",
-						request_builder
+						"/api/v1/accounts/${who.id}/${if(bBlock) "block" else "unblock"}",
+						Request.Builder().post("".toRequestBody())
 					)
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
-						relation =
-							saveUserRelation(access_info, parseItem(::TootRelationShip,  TootParser(activity,access_info),jsonObject))
+						relation = saveUserRelation(
+							access_info,
+							parseItem(
+								::TootRelationShip,
+								TootParser(activity, access_info),
+								jsonObject
+							)
+						)
 					}
 					
 					return result
@@ -238,12 +236,12 @@ object Action_User {
 					
 					for(column in App1.getAppState(activity).column_list) {
 						
-						if( column.access_info.acct != access_info.acct ) continue
+						if(column.access_info.acct != access_info.acct) continue
 						
 						when {
 							
 							! relation.blocking -> {
-
+								
 								if(column.column_type == Column.TYPE_BLOCKS) {
 									// ブロック解除したら「ブロックしたユーザ」カラムのリストから消える
 									column.removeUser(
@@ -251,7 +249,7 @@ object Action_User {
 										Column.TYPE_BLOCKS,
 										who.id
 									)
-								}else{
+								} else {
 									// 他のカラムではフォローアイコンの更新を行う
 									column.updateFollowIcons(access_info)
 								}
@@ -263,7 +261,7 @@ object Action_User {
 								// しかしカラム中のフォローアイコン表示の更新は必要
 								column.updateFollowIcons(access_info)
 							}
-
+							
 							// 該当ユーザのプロフカラムではブロックしててもトゥートを見れる
 							// しかしカラム中のフォローアイコン表示の更新は必要
 							column.column_type == Column.TYPE_PROFILE && who.id == column.profile_id -> {
@@ -464,20 +462,16 @@ object Action_User {
 		
 		TootTaskRunner(activity).run(access_info, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val sb = (
-					"account_id=" + who.id.toString()
-						+ "&comment=" + comment.encodePercent()
-						+ "&status_ids[]=" + status.id.toString()
-						+ "&forward=" + if(forward) "true" else "false"
-					)
-				
-				val request_builder = Request.Builder().post(
-					RequestBody.create(
-						TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED, sb
+				return client.request(
+					"/api/v1/reports",
+					Request.Builder().post(
+						("account_id=" + who.id.toString() +
+							"&comment=" + comment.encodePercent() +
+							"&status_ids[]=" + status.id.toString() +
+							"&forward=" + if(forward) "true" else "false"
+							).toRequestBody()
 					)
 				)
-				
-				return client.request("/api/v1/reports", request_builder)
 			}
 			
 			override fun handleResult(result : TootApiResult?) {
@@ -522,7 +516,14 @@ object Action_User {
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
 					relation =
-						saveUserRelation(access_info, parseItem(::TootRelationShip, TootParser(activity,access_info),jsonObject))
+						saveUserRelation(
+							access_info,
+							parseItem(
+								::TootRelationShip,
+								TootParser(activity, access_info),
+								jsonObject
+							)
+						)
 				}
 				return result
 			}

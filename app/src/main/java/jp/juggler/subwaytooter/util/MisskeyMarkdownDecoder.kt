@@ -1295,7 +1295,7 @@ object MisskeyMarkdownDecoder {
 		// 検索
 		
 		val reSearchButton = Pattern.compile(
-			"""\A(検索|\[検索]|Search|\[Search])(\n|${'$'})"""
+			"""\A(検索|\[検索]|Search|\[Search])(\n|\z)"""
 			, Pattern.CASE_INSENSITIVE
 		)
 		
@@ -1391,7 +1391,7 @@ object MisskeyMarkdownDecoder {
 		})
 		
 		// Hashtag
-		val reHashtag = Pattern.compile("""\A#([^\s]+)""")
+		val reHashtag = Pattern.compile("""\A#([^#\s.,!?]+)""")
 		addParser("#"
 			, {
 				val matcher = remainMatcher(reHashtag)
@@ -1399,9 +1399,7 @@ object MisskeyMarkdownDecoder {
 					! matcher.find() -> null
 					else -> when {
 						// 先頭以外では直前に空白が必要らしい
-						pos > 0 &&
-							! CharacterGroup.isWhitespace(text[pos - 1].toInt()) ->
-							null
+						pos > 0 && ! CharacterGroup.isWhitespace(text[pos - 1].toInt()) -> null
 						
 						else -> makeDetected(
 							NodeType.HASHTAG,

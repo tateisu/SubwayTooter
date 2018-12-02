@@ -977,42 +977,47 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 	private var lastInstanceTask : TootTaskRunner? = null
 	
 	private fun getMaxCharCount() : Int {
+
 		val account = account
-		if(account != null
-			&& ! account.isPseudo
-			&& ! account.isMisskey
-		) {
-			val info = account.instance
-			var lastTask = lastInstanceTask
-			
-			// 情報がないか古いなら再取得
-			if(info == null || System.currentTimeMillis() - info.time_parse >= 300000L) {
-				// 同時に実行するタスクは1つまで
-				if(lastTask?.isActive != true) {
-					lastTask = TootTaskRunner(this, TootTaskRunner.PROGRESS_NONE)
-					lastInstanceTask = lastTask
-					lastTask.run(account, object : TootTask {
-						var newInfo : TootInstance? = null
-						
-						override fun background(client : TootApiClient) : TootApiResult? {
-							val result = client.request("/api/v1/instance")
-							newInfo = TootParser(this@ActPost, account).instance(result?.jsonObject)
-							return result
-						}
-						
-						override fun handleResult(result : TootApiResult?) {
-							if(isFinishing || isDestroyed) return
-							if(newInfo != null) {
-								account.instance = newInfo
-								updateTextCount()
+
+		when{
+			account == null || account.isPseudo -> {}
+
+			account.isMisskey ->return 3000
+
+			else->{
+				val info = account.instance
+
+				// 情報がないか古いなら再取得
+				if(info == null || System.currentTimeMillis() - info.time_parse >= 300000L) {
+
+					// 同時に実行するタスクは1つまで
+					var lastTask = lastInstanceTask
+					if(lastTask?.isActive != true) {
+						lastTask = TootTaskRunner(this, TootTaskRunner.PROGRESS_NONE)
+						lastInstanceTask = lastTask
+						lastTask.run(account, object : TootTask {
+							var newInfo : TootInstance? = null
+							
+							override fun background(client : TootApiClient) : TootApiResult? {
+								val result = client.request("/api/v1/instance")
+								newInfo = TootParser(this@ActPost, account).instance(result?.jsonObject)
+								return result
 							}
-						}
-					})
+							
+							override fun handleResult(result : TootApiResult?) {
+								if(isFinishing || isDestroyed) return
+								if(newInfo != null) {
+									account.instance = newInfo
+									updateTextCount()
+								}
+							}
+						})
+						// fall thru
+					}
 				}
-			}
-			
-			if(info != null) {
-				val max = info.max_toot_chars
+				
+				val max = info?.max_toot_chars
 				if(max != null && max > 0) return max
 			}
 		}

@@ -14,10 +14,7 @@ import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.dialog.LoginForm
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
-import jp.juggler.util.LogCategory
-import jp.juggler.util.showToast
-import jp.juggler.util.toUri
-import okhttp3.Request
+import jp.juggler.util.*
 import org.json.JSONObject
 
 object Action_Account {
@@ -223,8 +220,8 @@ object Action_Account {
 					"/api/v1/accounts/${who.id}/" + when(bSet) {
 						true -> "pin"
 						false -> "unpin"
-					}
-					, Request.Builder().post("".toRequestBody())
+					},
+					"".toRequestBody().toPost()
 				)
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {

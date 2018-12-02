@@ -11,9 +11,8 @@ import jp.juggler.subwaytooter.dialog.DlgTextInput
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.showToast
 import jp.juggler.util.toPostRequestBuilder
-import jp.juggler.util.withCaption
+import jp.juggler.util.toPutRequestBuilder
 import okhttp3.Request
-import okhttp3.RequestBody
 import org.json.JSONObject
 
 object Action_List {
@@ -32,26 +31,19 @@ object Action_List {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				val result = if(access_info.isMisskey) {
-					val params = access_info.putMisskeyApiToken(JSONObject())
-						.put("title", title)
-					
-					client.request("/api/users/lists/create", params.toPostRequestBuilder())
-				} else {
-					
-					val content = JSONObject()
-					try {
-						content.put("title", title)
-					} catch(ex : Throwable) {
-						return TootApiResult(ex.withCaption("can't encoding json parameter."))
-					}
-					
-					val request_builder = Request.Builder().post(
-						RequestBody.create(
-							TootApiClient.MEDIA_TYPE_JSON, content.toString()
-						)
+					client.request(
+						"/api/users/lists/create",
+						access_info.putMisskeyApiToken()
+							.put("title", title)
+							.toPostRequestBuilder()
 					)
-					
-					client.request("/api/v1/lists", request_builder)
+				} else {
+					client.request(
+						"/api/v1/lists",
+						JSONObject()
+							.put("title", title)
+							.toPostRequestBuilder()
+					)
 				}
 				
 				client.publishApiProgress(activity.getString(R.string.parsing_response))
@@ -150,29 +142,21 @@ object Action_List {
 						
 						override fun background(client : TootApiClient) : TootApiResult? {
 							val result = if(access_info.isMisskey) {
-								val params = access_info.putMisskeyApiToken()
-									.put("listId", item.id)
-									.put("title", text)
 								client.request(
 									"/api/users/lists/update",
-									params.toPostRequestBuilder()
+									access_info.putMisskeyApiToken()
+										.put("listId", item.id)
+										.put("title", text)
+										.toPostRequestBuilder()
 								)
 							} else {
-								val content = JSONObject()
-								try {
-									content.put("title", text)
-								} catch(ex : Throwable) {
-									return TootApiResult(ex.withCaption("can't encoding json parameter."))
-								}
-								
-								val request_builder = Request.Builder().put(
-									RequestBody.create(
-										TootApiClient.MEDIA_TYPE_JSON, content.toString()
-									)
+								client.request(
+									"/api/v1/lists/${item.id}",
+									JSONObject()
+										.put("title", text)
+										.toPutRequestBuilder()
 								)
-								client.request("/api/v1/lists/${item.id}", request_builder)
 							}
-							
 							
 							client.publishApiProgress(activity.getString(R.string.parsing_response))
 							list = parseItem(

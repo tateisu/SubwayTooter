@@ -11,8 +11,8 @@ import jp.juggler.subwaytooter.dialog.AccountPicker
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.encodePercent
 import jp.juggler.util.showToast
-import okhttp3.Request
-import okhttp3.RequestBody
+import jp.juggler.util.toRequest
+import jp.juggler.util.toRequestBody
 import java.util.*
 
 object Action_Instance {
@@ -73,11 +73,9 @@ object Action_Instance {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				return client.request(
 					"/api/v1/domain_blocks",
-					Request.Builder()
-						.method(
-							if(bBlock) "POST" else "DELETE",
-							"domain=${domain.encodePercent()}".toRequestBody()
-						)
+					"domain=${domain.encodePercent()}"
+						.toRequestBody()
+						.toRequest(if(bBlock) "POST" else "DELETE")
 				)
 			}
 			

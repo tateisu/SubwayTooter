@@ -187,8 +187,6 @@ fun JSONObject.parseInt(key : String) : Int? {
 	}
 }
 
-fun JSONObject.toPostRequestBuilder() : Request.Builder =
-	Request.Builder().post(RequestBody.create(TootApiClient.MEDIA_TYPE_JSON, this.toString()))
 
 fun jsonObject(initializer : JSONObject.() -> Unit) : JSONObject {
 	val dst = JSONObject()

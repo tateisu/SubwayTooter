@@ -19,10 +19,7 @@ import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.flexbox.JustifyContent
 import jp.juggler.subwaytooter.action.*
-import jp.juggler.subwaytooter.api.TootApiClient
-import jp.juggler.subwaytooter.api.TootApiResult
-import jp.juggler.subwaytooter.api.TootTask
-import jp.juggler.subwaytooter.api.TootTaskRunner
+import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.ActionsDialog
 import jp.juggler.subwaytooter.dialog.DlgConfirm
@@ -2173,25 +2170,21 @@ internal class ItemViewHolder(
 		
 		TootTaskRunner(context).run(accessInfo, object : TootTask {
 			override fun background(client : TootApiClient) : TootApiResult? {
-				if(accessInfo.isMisskey) {
-					val params = accessInfo.putMisskeyApiToken(JSONObject())
-						.put("noteId", enquete.status_id.toString())
-						.put("choice", idx)
-					return client.request("/api/notes/polls/vote", params.toPostRequestBuilder())
+				return if(accessInfo.isMisskey) {
+					client.request(
+						"/api/notes/polls/vote",
+						accessInfo.putMisskeyApiToken(JSONObject())
+							.put("noteId", enquete.status_id.toString())
+							.put("choice", idx)
+							.toPostRequestBuilder()
+					)
 				} else {
-					val form = JSONObject()
-					try {
-						form.put("item_index", Integer.toString(idx))
-					} catch(ex : Throwable) {
-						log.e(ex, "json encode failed.")
-						ex.printStackTrace()
-					}
-					
-					val request_builder = Request.Builder()
-						.post(RequestBody.create(TootApiClient.MEDIA_TYPE_JSON, form.toString()))
-					
-					return client.request("/api/v1/votes/" + enquete.status_id, request_builder)
-					
+					client.request(
+						"/api/v1/votes/${enquete.status_id}" ,
+						JSONObject()
+							.put("item_index", idx.toString())
+							.toPostRequestBuilder()
+					)
 				}
 			}
 			

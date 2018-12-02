@@ -5,12 +5,15 @@ import jp.juggler.subwaytooter.ActMain
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Column
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.api.*
+import jp.juggler.subwaytooter.api.TootApiClient
+import jp.juggler.subwaytooter.api.TootApiResult
+import jp.juggler.subwaytooter.api.TootTask
+import jp.juggler.subwaytooter.api.TootTaskRunner
 import jp.juggler.subwaytooter.api.entity.TootNotification
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.util.showToast
-import okhttp3.Request
-import okhttp3.RequestBody
+import jp.juggler.util.toPost
+import jp.juggler.util.toRequestBody
 
 object Action_Notification {
 	
@@ -32,8 +35,7 @@ object Action_Notification {
 				// 空データを送る
 				return client.request(
 					"/api/v1/notifications/clear",
-					Request.Builder()
-						.post("".toRequestBody())
+					"".toRequestBody().toPost()
 				)
 			}
 			
@@ -63,8 +65,7 @@ object Action_Notification {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				return client.request(
 					"/api/v1/notifications/dismiss",
-					Request.Builder()
-						.post( "id=${notification.id}".toRequestBody())
+					"id=${notification.id}".toRequestBody().toPost()
 				)
 			}
 			

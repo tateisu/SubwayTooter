@@ -22,7 +22,7 @@ import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
 
 import com.google.firebase.iid.FirebaseInstanceId
-import jp.juggler.subwaytooter.api.TootApiCallback
+import jp.juggler.subwaytooter.api.*
 
 import org.hjson.JsonObject
 import org.hjson.JsonValue
@@ -42,13 +42,10 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
-import jp.juggler.subwaytooter.api.TootApiClient
 import jp.juggler.subwaytooter.api.entity.TootNotification
-import jp.juggler.subwaytooter.api.TootParser
 import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.EntityIdLong
 import jp.juggler.subwaytooter.api.entity.TootStatus
-import jp.juggler.subwaytooter.api.toRequestBody
 import jp.juggler.subwaytooter.table.*
 import jp.juggler.subwaytooter.util.*
 import jp.juggler.util.*
@@ -1176,9 +1173,8 @@ class PollingWorker private constructor(contextArg : Context) {
 						+ "&app_id=" + context.packageName.encodePercent()
 						+ "&tag=" + tag)
 					
-					val request = Request.Builder()
+					val request = post_data.toRequestBody().toPost()
 						.url("$APP_SERVER/unregister")
-						.post(post_data.toRequestBody())
 						.build()
 					
 					val call = App1.ok_http_client.newCall(request)
@@ -1271,9 +1267,8 @@ class PollingWorker private constructor(contextArg : Context) {
 						post_data.append("&app_secret=").append(appSecret.encodePercent())
 					}
 					
-					val request = Request.Builder()
+					val request = post_data.toString().toRequestBody().toPost()
 						.url("$APP_SERVER/register")
-						.post(post_data.toString().toRequestBody())
 						.build()
 					
 					val call = App1.ok_http_client.newCall(request)

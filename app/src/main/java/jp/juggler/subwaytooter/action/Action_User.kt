@@ -65,13 +65,13 @@ object Action_User {
 				} else {
 					val result = client.request(
 						"/api/v1/accounts/${who.id}/${if(bMute) "mute" else "unmute"}",
-						Request.Builder().post(
-							when {
-								! bMute -> "".toRequestBody()
-								else -> "{\"notifications\": ${if(bMuteNotification) "true" else "false"}}"
-									.toRequestBody(TootApiClient.MEDIA_TYPE_JSON)
-							}
-						)
+						when {
+							! bMute -> "".toRequestBody()
+							else ->
+								JSONObject()
+									.put("notifications" ,bMuteNotification)
+									.toRequestBody()
+						}.toPost()
 					)
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
@@ -203,7 +203,7 @@ object Action_User {
 					
 					val result = client.request(
 						"/api/v1/accounts/${who.id}/${if(bBlock) "block" else "unblock"}",
-						Request.Builder().post("".toRequestBody())
+						"".toRequestBody().toPost()
 					)
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
@@ -464,13 +464,11 @@ object Action_User {
 			override fun background(client : TootApiClient) : TootApiResult? {
 				return client.request(
 					"/api/v1/reports",
-					Request.Builder().post(
-						("account_id=" + who.id.toString() +
-							"&comment=" + comment.encodePercent() +
-							"&status_ids[]=" + status.id.toString() +
-							"&forward=" + if(forward) "true" else "false"
-							).toRequestBody()
-					)
+					("account_id=" + who.id.toString() +
+						"&comment=" + comment.encodePercent() +
+						"&status_ids[]=" + status.id.toString() +
+						"&forward=" + if(forward) "true" else "false"
+						).toRequestBody().toPost()
 				)
 			}
 			

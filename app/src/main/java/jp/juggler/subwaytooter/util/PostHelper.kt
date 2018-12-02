@@ -12,7 +12,6 @@ import jp.juggler.emoji.EmojiMap201709
 import jp.juggler.subwaytooter.App1
 import jp.juggler.subwaytooter.Pref
 import jp.juggler.subwaytooter.R
-import jp.juggler.subwaytooter.Styler
 import jp.juggler.subwaytooter.api.*
 import jp.juggler.subwaytooter.api.entity.*
 import jp.juggler.subwaytooter.dialog.DlgConfirm
@@ -26,7 +25,6 @@ import jp.juggler.subwaytooter.table.TagSet
 import jp.juggler.subwaytooter.view.MyEditText
 import jp.juggler.util.*
 import okhttp3.Request
-import okhttp3.RequestBody
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -465,11 +463,8 @@ class PostHelper(
 				}
 				
 				val body_string = json.toString()
-				val request_body = RequestBody.create(
-					TootApiClient.MEDIA_TYPE_JSON, body_string
-				)
 				
-				val request_builder = Request.Builder().post(request_body)
+				val request_builder = body_string.toRequestBody(MEDIA_TYPE_JSON).toPost()
 				
 				if(! Pref.bpDontDuplicationCheck(pref)) {
 					val digest = (body_string + account.acct).digestSHA256Hex()
@@ -478,7 +473,6 @@ class PostHelper(
 				
 				result = if(isMisskey) {
 					log.d("misskey json %s", body_string)
-					
 					client.request("/api/notes/create", request_builder)
 				} else {
 					client.request("/api/v1/statuses", request_builder)

@@ -11,10 +11,7 @@ import jp.juggler.subwaytooter.table.AcctColor
 import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.util.EmptyCallback
 import jp.juggler.subwaytooter.util.SavedAccountCallback
-import jp.juggler.util.LogCategory
-import jp.juggler.util.showToast
-import jp.juggler.util.toPostRequestBuilder
-import jp.juggler.util.toUri
+import jp.juggler.util.*
 import okhttp3.Request
 import org.json.JSONObject
 import java.util.*
@@ -165,8 +162,8 @@ object Action_Toot {
 					
 				} else {
 					result = client.request(
-						"/api/v1/statuses/${target_status.id}/${if(bSet) "favourite" else "unfavourite"}"
-						, Request.Builder().post("".toRequestBody())
+						"/api/v1/statuses/${target_status.id}/${if(bSet) "favourite" else "unfavourite"}",
+						"".toRequestBody().toPost()
 					)
 					val jsonObject = result?.jsonObject
 					new_status = TootParser(activity, access_info).status(jsonObject)
@@ -411,7 +408,7 @@ object Action_Toot {
 					
 					result = client.request(
 						"/api/v1/statuses/${target_status.id}/${if(bSet) "reblog" else "unreblog"}",
-						Request.Builder().post("".toRequestBody())
+						"".toRequestBody().toPost()
 					)
 					// reblogはreblogを表すStatusを返す
 					// unreblogはreblogしたStatusを返す
@@ -529,7 +526,7 @@ object Action_Toot {
 				override fun background(client : TootApiClient) : TootApiResult? {
 					return client.request(
 						"/api/v1/conversations/${conversationSummary.id}/read",
-						Request.Builder().post("".toRequestBody())
+						"".toRequestBody().toPost()
 					)
 				}
 				
@@ -816,7 +813,7 @@ object Action_Toot {
 					
 					val result = client.request(
 						"/api/v1/statuses/${status.id}/${if(bSet) "pin" else "unpin"}",
-						Request.Builder().post("".toRequestBody())
+						"".toRequestBody().toPost()
 					)
 					
 					new_status = TootParser(activity, access_info).status(result?.jsonObject)
@@ -1027,7 +1024,7 @@ object Action_Toot {
 				
 				val result = client.request(
 					"/api/v1/statuses/${status.id}/${if(bMute) "mute" else "unmute"}",
-					Request.Builder().post("".toRequestBody())
+					"".toRequestBody().toPost()
 				)
 				
 				local_status = TootParser(activity, access_info).status(result?.jsonObject)

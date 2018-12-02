@@ -14,10 +14,7 @@ import jp.juggler.subwaytooter.api.entity.EntityId
 import jp.juggler.subwaytooter.api.entity.TootFilter
 import jp.juggler.subwaytooter.api.entity.TootStatus
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.LogCategory
-import jp.juggler.util.showToast
-import okhttp3.Request
-import okhttp3.RequestBody
+import jp.juggler.util.*
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -266,18 +263,20 @@ class ActKeywordFilter
 				else -> put("expires_in", seconds)
 			}
 			
-		}.toString()
+		}
 		
 		TootTaskRunner(this).run(account, object : TootTask {
 			
 			override fun background(client : TootApiClient) = if(filter_id == null) {
-				val builder = Request.Builder()
-					.post(RequestBody.create(TootApiClient.MEDIA_TYPE_JSON, params))
-				client.request(Column.PATH_FILTERS, builder)
+				client.request(
+					Column.PATH_FILTERS,
+					params.toPostRequestBuilder()
+				)
 			} else {
-				val builder = Request.Builder()
-					.put(RequestBody.create(TootApiClient.MEDIA_TYPE_JSON, params))
-				client.request("${Column.PATH_FILTERS}/$filter_id", builder)
+				client.request(
+					"${Column.PATH_FILTERS}/$filter_id",
+					params.toRequestBody().toPut()
+				)
 			}
 			
 			override fun handleResult(result : TootApiResult?) {

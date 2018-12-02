@@ -10,12 +10,8 @@ import jp.juggler.subwaytooter.api.entity.TootRelationShip
 import jp.juggler.subwaytooter.api.entity.parseList
 import jp.juggler.subwaytooter.dialog.DlgConfirm
 import jp.juggler.subwaytooter.table.SavedAccount
-import jp.juggler.util.encodePercent
-import jp.juggler.util.showToast
-import jp.juggler.util.toPostRequestBuilder
-import jp.juggler.util.withCaption
+import jp.juggler.util.*
 import okhttp3.Request
-import okhttp3.RequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.regex.Pattern
@@ -64,14 +60,13 @@ object Action_ListMember {
 							
 							result = client.request(
 								"/api/v1/accounts/" + local_who.id + "/follow",
-								Request.Builder().post("".toRequestBody())
+								"".toRequestBody().toPost()
 							)
 						} else {
 							// リモートフォローする
 							result = client.request(
 								"/api/v1/follows",
-								Request.Builder()
-									.post("uri=${local_who.acct.encodePercent()}".toRequestBody() )
+								"uri=${local_who.acct.encodePercent()}".toRequestBody().toPost()
 							)
 							
 							val jsonObject = result?.jsonObject ?: return result
@@ -84,7 +79,7 @@ object Action_ListMember {
 						}
 						val jsonArray = result?.jsonArray ?: return result
 						
-						val relation_list = parseList(::TootRelationShip,parser, jsonArray)
+						val relation_list = parseList(::TootRelationShip, parser, jsonArray)
 						relation = if(relation_list.isEmpty()) null else relation_list[0]
 						
 						if(relation == null) {
@@ -104,22 +99,16 @@ object Action_ListMember {
 					
 					// リストメンバー追加
 					
-					val content = JSONObject()
-					try {
-						val account_ids = JSONArray()
-						account_ids.put(local_who.id.toString())
-						content.put("account_ids", account_ids)
-					} catch(ex : Throwable) {
-						return TootApiResult(ex.withCaption("can't encoding json parameter."))
-					}
-					
-					val request_builder = Request.Builder().post(
-						RequestBody.create(
-							TootApiClient.MEDIA_TYPE_JSON, content.toString()
+					client.request(
+						"/api/v1/lists/$list_id/accounts",
+						JSONObject().put(
+							"account_ids",
+							JSONArray().put(
+								local_who.id.toString()
+							)
 						)
+							.toPostRequestBuilder()
 					)
-					
-					client.request("/api/v1/lists/$list_id/accounts", request_builder)
 				}
 			}
 			

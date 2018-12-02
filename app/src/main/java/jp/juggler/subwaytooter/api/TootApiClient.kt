@@ -50,8 +50,6 @@ class TootApiClient(
 	companion object {
 		private val log = LogCategory("TootApiClient")
 		
-		val MEDIA_TYPE_FORM_URL_ENCODED :MediaType = MediaType.get("application/x-www-form-urlencoded")
-		val MEDIA_TYPE_JSON :MediaType = MediaType.get("application/json;charset=UTF-8")
 		
 		private const val DEFAULT_CLIENT_NAME = "SubwayTooter"
 		internal const val KEY_CLIENT_CREDENTIAL = "SubwayTooterClientCredential"
@@ -847,16 +845,11 @@ class TootApiClient(
 		val instance = result.caption // same to instance
 		// OAuth2 クライアント登録
 		if(! sendRequest(result) {
-				Request.Builder()
+				("client_name=" + clientName.encodePercent()
+					+ "&redirect_uris=" + REDIRECT_URL.encodePercent()
+					+ "&scopes=$scope_string"
+					).toRequestBody().toPost()
 					.url("https://$instance/api/v1/apps")
-					.post(
-						RequestBody.create(
-							MEDIA_TYPE_FORM_URL_ENCODED,
-							"client_name=" + clientName.encodePercent()
-								+ "&redirect_uris=" + REDIRECT_URL.encodePercent()
-								+ "&scopes=$scope_string"
-						)
-					)
 					.build()
 			}) return result
 		
@@ -879,16 +872,12 @@ class TootApiClient(
 				val client_secret = client_info.parseString("client_secret")
 					?: return result.setError("missing client_secret")
 				
-				Request.Builder()
-					.url("https://$instance/oauth/token")
-					.post(
-						RequestBody.create(
-							MEDIA_TYPE_FORM_URL_ENCODED,
-							"grant_type=client_credentials"
-								+ "&client_id=" + client_id.encodePercent()
-								+ "&client_secret=" + client_secret.encodePercent()
-						)
+				("grant_type=client_credentials"
+					+ "&client_id=" + client_id.encodePercent()
+					+ "&client_secret=" + client_secret.encodePercent()
 					)
+					.toRequestBody().toPost()
+					.url("https://$instance/oauth/token")
 					.build()
 			}) return result
 		
@@ -935,17 +924,13 @@ class TootApiClient(
 			?: return result.setError("missing client_secret")
 		
 		if(! sendRequest(result) {
-				Request.Builder()
+				("token=" + client_credential.encodePercent()
+					+ "&client_id=" + client_id.encodePercent()
+					+ "&client_secret=" + client_secret.encodePercent()
+					).toRequestBody().toPost()
 					.url("https://$instance/oauth/revoke")
-					.post(
-						RequestBody.create(
-							TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED,
-							"token=" + client_credential.encodePercent()
-								+ "&client_id=" + client_id.encodePercent()
-								+ "&client_secret=" + client_secret.encodePercent()
-						)
-					)
 					.build()
+				
 			}) return result
 		
 		return parseJson(result)
@@ -1101,9 +1086,8 @@ class TootApiClient(
 					+ "&scope=$scope_string"
 					+ "&scopes=$scope_string")
 				
-				Request.Builder()
+				post_content.toRequestBody().toPost()
 					.url("https://$instance/oauth/token")
-					.post(RequestBody.create(MEDIA_TYPE_FORM_URL_ENCODED, post_content))
 					.build()
 				
 			}) return result
@@ -1491,7 +1475,7 @@ fun TootApiClient.syncStatus(accessInfo : SavedAccount, urlArg : String) : TootA
 		
 		val obj = TootParser(
 			context,
-			LinkHelper.newLinkHelper(host,isMisskey = true),
+			LinkHelper.newLinkHelper(host, isMisskey = true),
 			serviceType = ServiceType.MISSKEY
 		).status(result.jsonObject)
 		
@@ -1578,8 +1562,4 @@ fun TootApiClient.syncStatus(
 	}
 	
 	return TootApiResult("can't resolve status URL/URI.")
-	
 }
-
-fun String.toRequestBody(mediaType : MediaType = TootApiClient.MEDIA_TYPE_FORM_URL_ENCODED): RequestBody =
-	RequestBody.create( mediaType, this)

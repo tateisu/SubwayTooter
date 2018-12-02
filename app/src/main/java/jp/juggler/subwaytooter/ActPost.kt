@@ -1294,15 +1294,11 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 							object : TootTask {
 								override fun background(client : TootApiClient) : TootApiResult? {
 									try {
-										val json = JSONObject()
-										json.put("focus", "%.2f,%.2f".format(x, y))
 										val result = client.request(
-											"/api/v1/media/" + attachment.id,
-											Request.Builder().put(
-												RequestBody.create(
-													TootApiClient.MEDIA_TYPE_JSON, json.toString()
-												)
-											)
+											"/api/v1/media/${attachment.id}" ,
+											JSONObject()
+												.put("focus", "%.2f,%.2f".format(x, y))
+												.toPutRequestBuilder()
 										)
 										new_attachment =
 											parseItem(
@@ -1381,20 +1377,12 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 			var new_attachment : TootAttachment? = null
 			
 			override fun background(client : TootApiClient) : TootApiResult? {
-				val json = JSONObject()
-				try {
-					json.put("description", text)
-				} catch(ex : JSONException) {
-					log.trace(ex)
-					log.e(ex, "description encoding failed.")
-				}
-				
-				val body_string = json.toString()
-				val request_body = RequestBody.create(
-					TootApiClient.MEDIA_TYPE_JSON, body_string
+				val result = client.request(
+					"/api/v1/media/$attachment_id",
+					JSONObject()
+						.put("description", text)
+						.toPutRequestBuilder()
 				)
-				val request_builder = Request.Builder().put(request_body)
-				val result = client.request("/api/v1/media/$attachment_id", request_builder)
 				new_attachment =
 					parseItem(::TootAttachment, ServiceType.MASTODON, result?.jsonObject)
 				return result
@@ -1770,9 +1758,10 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 						}
 					)
 					
-					val request_builder = Request.Builder().post(multipart_builder.build())
-					
-					val result = client.request("/api/drive/files/create", request_builder)
+					val result = client.request(
+						"/api/drive/files/create",
+						multipart_builder.build().toPost()
+					)
 					
 					opener.deleteTempFile()
 					onUploadEnd()
@@ -1816,12 +1805,12 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 								}
 							}
 						)
-						.build()
+						
 					
-					val request_builder = Request.Builder()
-						.post(multipart_body)
-					
-					val result = client.request("/api/v1/media", request_builder)
+					val result = client.request(
+						"/api/v1/media",
+						multipart_body.build().toPost()
+					)
 					
 					opener.deleteTempFile()
 					onUploadEnd()

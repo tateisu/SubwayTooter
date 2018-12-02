@@ -14,10 +14,7 @@ import jp.juggler.subwaytooter.table.SavedAccount
 import jp.juggler.subwaytooter.table.UserRelation
 import jp.juggler.subwaytooter.table.UserRelationMisskey
 import jp.juggler.subwaytooter.util.EmptyCallback
-import jp.juggler.util.encodePercent
-import jp.juggler.util.showToast
-import jp.juggler.util.toPostRequestBuilder
-import okhttp3.Request
+import jp.juggler.util.*
 import org.json.JSONObject
 
 object Action_Follow {
@@ -242,8 +239,7 @@ object Action_Follow {
 						// リモートフォローする
 						result = client.request(
 							"/api/v1/follows",
-							 Request.Builder()
-								 .post( "uri=${who.acct.encodePercent()}".toRequestBody() )
+							"uri=${who.acct.encodePercent()}".toRequestBody().toPost()
 						)
 
 						val user = TootParser(activity, access_info).account(result?.jsonObject)
@@ -256,10 +252,9 @@ object Action_Follow {
 						}
 					} else {
 						// ローカルでフォロー/アンフォローする
-						val request_builder = Request.Builder().post("".toRequestBody())
 						result = client.request(
 							"/api/v1/accounts/${who.id}/${if(bFollow) "follow" else "unfollow"}"
-							, request_builder
+							, "".toRequestBody().toPost()
 						)
 						val newRelation = parseItem(
 							::TootRelationShip,
@@ -534,8 +529,7 @@ object Action_Follow {
 				} else {
 					result = client.request(
 						"/api/v1/follows",
-						Request.Builder()
-							.post("uri=${acct.encodePercent()}".toRequestBody())
+						"uri=${acct.encodePercent()}".toRequestBody().toPost()
 					)
 					val user = TootParser(activity, access_info).account(result?.jsonObject)
 					if(user != null) {
@@ -648,7 +642,7 @@ object Action_Follow {
 					client.request(
 						"/api/v1/follow_requests/${who.id}/${if(bAllow) "authorize" else "reject"}",
 						// 空データ
-						Request.Builder().post("".toRequestBody())
+						"".toRequestBody().toPost()
 					)
 				}
 			}

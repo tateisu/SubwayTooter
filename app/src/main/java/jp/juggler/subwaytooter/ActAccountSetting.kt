@@ -127,8 +127,7 @@ class ActAccountSetting
 	private lateinit var etNote : EditText
 	private lateinit var cbLocked : CheckBox
 	private lateinit var btnNote : View
-	private lateinit var etDefaultText :EditText
-	
+	private lateinit var etDefaultText : EditText
 	
 	private lateinit var name_invalidator : NetworkEmojiInvalidator
 	private lateinit var note_invalidator : NetworkEmojiInvalidator
@@ -203,13 +202,13 @@ class ActAccountSetting
 			}
 			
 			REQUEST_CODE_AVATAR_ATTACHMENT, REQUEST_CODE_HEADER_ATTACHMENT -> {
-
+				
 				if(resultCode == Activity.RESULT_OK && data != null) {
-					data.handleGetContentResult(contentResolver).firstOrNull()?.let{
+					data.handleGetContentResult(contentResolver).firstOrNull()?.let {
 						addAttachment(
 							requestCode,
 							it.uri,
-							if( it.mimeType?.isNotEmpty() == true)
+							if(it.mimeType?.isNotEmpty() == true)
 								it.mimeType
 							else
 								contentResolver.getType(it.uri)
@@ -284,7 +283,7 @@ class ActAccountSetting
 		btnProfileAvatar = findViewById(R.id.btnProfileAvatar)
 		btnProfileHeader = findViewById(R.id.btnProfileHeader)
 		etDisplayName = findViewById(R.id.etDisplayName)
-		etDefaultText= findViewById(R.id.etDefaultText)
+		etDefaultText = findViewById(R.id.etDefaultText)
 		btnDisplayName = findViewById(R.id.btnDisplayName)
 		etNote = findViewById(R.id.etNote)
 		btnNote = findViewById(R.id.btnNote)
@@ -357,7 +356,7 @@ class ActAccountSetting
 			NetworkEmojiInvalidator(handler, it)
 		}
 		
-		etDefaultText.addTextChangedListener(object:TextWatcher{
+		etDefaultText.addTextChangedListener(object : TextWatcher {
 			override fun afterTextChanged(s : Editable?) {
 				saveUIToData()
 			}
@@ -414,7 +413,7 @@ class ActAccountSetting
 		
 		notification_sound_uri = a.sound_uri
 		
-		etDefaultText.setText( a.default_text )
+		etDefaultText.setText(a.default_text)
 		
 		loading = false
 		
@@ -552,19 +551,19 @@ class ActAccountSetting
 			val intent = Intent(Intent.ACTION_VIEW, url.toUri())
 			startActivity(intent)
 		} catch(ex : Throwable) {
-			log.trace(ex,"open_browser failed.")
+			log.trace(ex, "open_browser failed.")
 		}
 	}
 	
 	private fun updateVisibility() {
-		btnVisibility.text = Styler.getVisibilityString(this, account.isMisskey,visibility)
+		btnVisibility.text = Styler.getVisibilityString(this, account.isMisskey, visibility)
 	}
 	
 	private fun performVisibility() {
 		
-		val list = if( account.isMisskey){
+		val list = if(account.isMisskey) {
 			arrayOf(
-			//	TootVisibility.WebSetting,
+				//	TootVisibility.WebSetting,
 				TootVisibility.Public,
 				TootVisibility.UnlistedHome,
 				TootVisibility.PrivateFollowers,
@@ -574,7 +573,7 @@ class ActAccountSetting
 				TootVisibility.DirectSpecified,
 				TootVisibility.DirectPrivate
 			)
-		}else{
+		} else {
 			arrayOf(
 				TootVisibility.WebSetting,
 				TootVisibility.Public,
@@ -584,14 +583,14 @@ class ActAccountSetting
 			)
 		}
 		
-		val caption_list = list.map{
-			Styler.getVisibilityCaption(this, account.isMisskey,it)
+		val caption_list = list.map {
+			Styler.getVisibilityCaption(this, account.isMisskey, it)
 		}.toTypedArray()
 		
 		AlertDialog.Builder(this)
 			.setTitle(R.string.choose_visibility)
 			.setItems(caption_list) { _, which ->
-				if( which in 0 until list.size ){
+				if(which in 0 until list.size) {
 					visibility = list[which]
 					updateVisibility()
 					saveUIToData()
@@ -637,24 +636,23 @@ class ActAccountSetting
 								return
 							}
 							
-							val post_data =
+							val call = App1.ok_http_client.newCall(
 								("instance_url=" + ("https://" + account.host).encodePercent()
 									+ "&app_id=" + packageName.encodePercent()
-									+ "&tag=" + tag)
-							
-							val request = Request.Builder()
-								.url(PollingWorker.APP_SERVER + "/unregister")
-								.post(post_data.toRequestBody())
-								.build()
-							
-							val call = App1.ok_http_client.newCall(request)
+									+ "&tag=" + tag
+									)
+									.toRequestBody()
+									.toPost()
+									.url(PollingWorker.APP_SERVER + "/unregister")
+									.build()
+							)
 							
 							val response = call.execute()
 							
 							log.e("performAccountRemove: %s", response)
 							
 						} catch(ex : Throwable) {
-							log.trace(ex,"performAccountRemove failed.")
+							log.trace(ex, "performAccountRemove failed.")
 						}
 						
 					}
@@ -691,14 +689,15 @@ class ActAccountSetting
 				
 				val uri = result.string.mayUri()
 				val error = result.error
-				when{
-					uri != null->{
+				when {
+					uri != null -> {
 						val data = Intent()
 						data.data = uri
 						setResult(Activity.RESULT_OK, data)
 						finish()
 					}
-					error != null ->{
+					
+					error != null -> {
 						showToast(this@ActAccountSetting, true, error)
 						log.e("can't get oauth browser URL. $error")
 					}
@@ -723,8 +722,8 @@ class ActAccountSetting
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
 		intent.putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT, false)
 		
-		notification_sound_uri.mayUri()?.let{uri->
-			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,uri)
+		notification_sound_uri.mayUri()?.let { uri ->
+			intent.putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, uri)
 		}
 		
 		val chooser = Intent.createChooser(intent, getString(R.string.notification_sound))
@@ -779,9 +778,9 @@ class ActAccountSetting
 			
 			var data : TootAccount? = null
 			override fun background(client : TootApiClient) : TootApiResult? {
-				if( account.isMisskey){
+				if(account.isMisskey) {
 					val params = account.putMisskeyApiToken(JSONObject())
-					val result = client.request("/api/i",params.toPostRequestBuilder())
+					val result = client.request("/api/i", params.toPostRequestBuilder())
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
 						data = TootParser(this@ActAccountSetting, account).account(jsonObject)
@@ -789,7 +788,7 @@ class ActAccountSetting
 					}
 					return result
 					
-				}else{
+				} else {
 					val result = client.request("/api/v1/accounts/verify_credentials")
 					val jsonObject = result?.jsonObject
 					if(jsonObject != null) {
@@ -857,6 +856,7 @@ class ActAccountSetting
 				account.isMisskey -> {
 					SpannableString(noteString ?: "")
 				}
+				
 				else -> {
 					decodeOptions.decodeEmoji(noteString)
 				}
@@ -950,9 +950,9 @@ class ActAccountSetting
 			private fun uploadImageMisskey(
 				client : TootApiClient,
 				opener : InputStreamOpener
-			):TootApiResult? {
+			) : TootApiResult? {
 				
-				val size = getStreamSize(true,opener.open())
+				val size = getStreamSize(true, opener.open())
 				
 				val multipart_builder = MultipartBody.Builder()
 					.setType(MultipartBody.FORM)
@@ -965,7 +965,7 @@ class ActAccountSetting
 				
 				multipart_builder.addFormDataPart(
 					"file",
-					getDocumentName(contentResolver,opener.uri),
+					getDocumentName(contentResolver, opener.uri),
 					object : RequestBody() {
 						override fun contentType() : MediaType? {
 							return MediaType.parse(opener.mimeType)
@@ -990,9 +990,10 @@ class ActAccountSetting
 					}
 				)
 				
-				val request_builder = Request.Builder().post(multipart_builder.build())
-				
-				val result = client.request("/api/drive/files/create", request_builder)
+				val result = client.request(
+					"/api/drive/files/create",
+					multipart_builder.build().toPost()
+				)
 				
 				val jsonObject = result?.jsonObject
 				if(jsonObject != null) {
@@ -1010,35 +1011,36 @@ class ActAccountSetting
 			override fun background(client : TootApiClient) : TootApiResult? {
 				
 				try {
-					if(account.isMisskey){
+					if(account.isMisskey) {
 						val params = account.putMisskeyApiToken()
 						
 						for(arg in args) {
 							val key = arg.first
 							val value = arg.second
 							
-							val misskeyKey = when(key){
-								"header"->"bannerId"
-								"avatar" ->"avatarId"
-								"display_name" ->"name"
+							val misskeyKey = when(key) {
+								"header" -> "bannerId"
+								"avatar" -> "avatarId"
+								"display_name" -> "name"
 								"note" -> "description"
 								"locked" -> "isLocked"
-								else->return TootApiResult("Misskey does not support property '${key}'")
+								else -> return TootApiResult("Misskey does not support property '${key}'")
 							}
 							
 							when(value) {
-								is String -> params.put(misskeyKey,value)
+								is String -> params.put(misskeyKey, value)
 								is Boolean -> params.put(misskeyKey, value)
+								
 								is InputStreamOpener -> {
-									val result = uploadImageMisskey(client,value)
-									val ta = result?. data as? TootAttachment ?: return result
+									val result = uploadImageMisskey(client, value)
+									val ta = result?.data as? TootAttachment ?: return result
 									params.put(misskeyKey, ta.id)
 								}
 							}
 						}
 						
 						val result =
-							client.request("/api/i/update",params.toPostRequestBuilder())
+							client.request("/api/i/update", params.toPostRequestBuilder())
 						val jsonObject = result?.jsonObject
 						if(jsonObject != null) {
 							val a = TootParser(this@ActAccountSetting, account).account(jsonObject)
@@ -1048,7 +1050,7 @@ class ActAccountSetting
 						
 						return result
 						
-					}else{
+					} else {
 						val multipart_body_builder = MultipartBody.Builder()
 							.setType(MultipartBody.FORM)
 						
@@ -1090,11 +1092,12 @@ class ActAccountSetting
 							}
 						}
 						
-						val request_builder = Request.Builder()
-							.patch(multipart_body_builder.build())
 						
-						val result =
-							client.request("/api/v1/accounts/update_credentials", request_builder)
+						
+						val result = client.request(
+							"/api/v1/accounts/update_credentials",
+							multipart_body_builder.build().toPatch()
+						)
 						val jsonObject = result?.jsonObject
 						if(jsonObject != null) {
 							val a = TootParser(this@ActAccountSetting, account).account(jsonObject)
@@ -1105,7 +1108,6 @@ class ActAccountSetting
 						return result
 						
 					}
-					
 					
 				} finally {
 					for(arg in args) {
@@ -1293,10 +1295,10 @@ class ActAccountSetting
 	
 	private fun performAttachment(request_code : Int) {
 		try {
-			val intent = intentGetContent(false,getString(R.string.pick_image),"image/*")
+			val intent = intentGetContent(false, getString(R.string.pick_image), "image/*")
 			startActivityForResult(intent, request_code)
 		} catch(ex : Throwable) {
-			log.trace(ex,"performAttachment failed.")
+			log.trace(ex, "performAttachment failed.")
 			showToast(this, ex, "performAttachment failed.")
 		}
 		
@@ -1318,7 +1320,7 @@ class ActAccountSetting
 			
 			startActivityForResult(intent, request_code)
 		} catch(ex : Throwable) {
-			log.trace(ex,"opening camera app failed.")
+			log.trace(ex, "opening camera app failed.")
 			showToast(this, ex, "opening camera app failed.")
 		}
 		
@@ -1328,7 +1330,7 @@ class ActAccountSetting
 		
 		val mimeType : String
 		
-		val uri: Uri
+		val uri : Uri
 		
 		@Throws(IOException::class)
 		fun open() : InputStream
@@ -1383,7 +1385,6 @@ class ActAccountSetting
 							override val uri : Uri
 								get() = uriArg
 							
-							
 							@Throws(IOException::class)
 							override fun open() = FileInputStream(temp_file)
 							
@@ -1397,7 +1398,7 @@ class ActAccountSetting
 				}
 				
 			} catch(ex : Throwable) {
-				log.trace(ex,"Resizing image failed.")
+				log.trace(ex, "Resizing image failed.")
 				showToast(this, ex, "Resizing image failed.")
 			}
 			
@@ -1482,7 +1483,7 @@ class ActAccountSetting
 				account,
 				verbose = true
 			)
-
+			
 			override fun background(client : TootApiClient) : TootApiResult? {
 				return wps.updateSubscription(client)
 			}
@@ -1490,7 +1491,7 @@ class ActAccountSetting
 			override fun handleResult(result : TootApiResult?) {
 				result ?: return
 				val log = wps.log
-				if( log.isNotEmpty() ){
+				if(log.isNotEmpty()) {
 					AlertDialog.Builder(this@ActAccountSetting)
 						.setMessage(log)
 						.setPositiveButton(R.string.close, null)

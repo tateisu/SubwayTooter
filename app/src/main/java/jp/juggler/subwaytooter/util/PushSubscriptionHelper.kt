@@ -15,7 +15,6 @@ import jp.juggler.util.encodePercent
 import jp.juggler.util.toPostRequestBuilder
 import jp.juggler.util.withCaption
 import okhttp3.Request
-import okhttp3.RequestBody
 import org.json.JSONObject
 
 class PushSubscriptionHelper(
@@ -84,18 +83,13 @@ class PushSubscriptionHelper(
 			
 			// サーバキーをアプリサーバに登録
 			val r = client.http(
-				Request.Builder()
+				JSONObject()
+					.put("client_id", clientIdentifier)
+					.put("server_key", serverKey)
+					.toPostRequestBuilder()
 					.url("${PollingWorker.APP_SERVER}/webpushserverkey")
-					.post(
-						RequestBody.create(
-							TootApiClient.MEDIA_TYPE_JSON,
-							JSONObject().apply {
-								put("client_id", clientIdentifier)
-								put("server_key", serverKey)
-							}.toString()
-						)
-					)
 					.build()
+					
 			)
 			val res = r?.response
 			if(res != null) {
@@ -294,17 +288,11 @@ class PushSubscriptionHelper(
 				
 				// アクセストークンの優先権を取得
 				r = client.http(
-					Request.Builder()
+					JSONObject()
+						.put("token_digest", tokenDigest)
+				.put("install_id", install_id)
+						.toPostRequestBuilder()
 						.url("${PollingWorker.APP_SERVER}/webpushtokencheck")
-						.post(
-							RequestBody.create(
-								TootApiClient.MEDIA_TYPE_JSON,
-								JSONObject().also {
-									it.put("token_digest", tokenDigest)
-									it.put("install_id", install_id)
-								}.toString()
-							)
-						)
 						.build()
 				)
 				
@@ -383,12 +371,7 @@ class PushSubscriptionHelper(
 					
 					r = client.request(
 						"/api/v1/push/subscription",
-						Request.Builder().post(
-							RequestBody.create(
-								TootApiClient.MEDIA_TYPE_JSON,
-								json.toString()
-							)
-						)
+						json.toPostRequestBuilder()
 					)
 					
 					res = r?.response ?: return r

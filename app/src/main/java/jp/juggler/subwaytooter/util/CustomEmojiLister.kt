@@ -9,6 +9,7 @@ import jp.juggler.subwaytooter.api.entity.CustomEmoji
 import jp.juggler.subwaytooter.api.entity.parseList
 import jp.juggler.util.LogCategory
 import jp.juggler.util.toJsonArray
+import jp.juggler.util.toRequestBody
 import okhttp3.RequestBody
 import org.json.JSONObject
 import java.util.*
@@ -195,9 +196,7 @@ class CustomEmojiLister(internal val context : Context) {
 					try {
 						val data = if(request.isMisskey) {
 							App1.getHttpCachedString("https://" + request.instance + "/api/meta") { builder ->
-								builder.post(
-									RequestBody.create(TootApiClient.MEDIA_TYPE_JSON, "{}")
-								)
+								builder.post( JSONObject().toRequestBody() )
 							}
 							
 						} else {

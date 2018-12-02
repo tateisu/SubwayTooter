@@ -73,7 +73,7 @@
     <string name="visibility_public">Cyhoeddus</string>
     <string name="visibility_unlisted">Heb ei restru</string>
     <string name="visibility_private">Dilynwyr yn unig</string>
-    <string name="visibility_direct">"Uniongyrchol "</string>
+    <string name="visibility_direct">Uniongyrchol</string>
     <string name="visibility_local_public">Cyhoeddus (lleol)</string>
     <string name="visibility_local_home">Cartref (lleol)</string>
     <string name="visibility_local_followers">Dilynwyr yn unig (lleol)</string>
@@ -85,7 +85,7 @@
     <string name="post_error_contents_warning_empty">Mae angen rhybudd ar eich tŵt.</string>
     <string name="wait_previous_operation">Arhoswch nes fod y gweithrediad olaf wedi ei gwblhau os gwelwch yn dda.</string>
     <string name="confirm">Cadarnhau</string>
-    <string name="confirm_favourite_from">"Ffefrynnu\'r statws hwn o %1$s \? Ceiff hysbysiad ei anfon i\'r awdur. "</string>
+    <string name="confirm_favourite_from">Ffefrynnu\'r statws hwn o %1$s \? Ceiff hysbysiad ei anfon i\'r awdur.</string>
     <string name="display_name_favourited_by">ffefrynnodd %1$s</string>
     <string name="display_name_replied_by">atebodd %1$s</string>
     <string name="display_name_voted_by">pleidleisiodd %1$s</string>
@@ -153,7 +153,7 @@
     <string name="app_exit">Cau yr ap</string>
     <string name="ask_always">Gofynnwch bob tro</string>
     <string name="open_column_list">Agor rhestr colofnau</string>
-    <string name="disable_fast_scroller">"Diffodd "</string>
+    <string name="disable_fast_scroller">Diffodd</string>
     <string name="delete_succeeded">Wedi ei ddileu\'n llwyddiannus</string>
     <string name="developer">Datblygwr</string>
     <string name="column_is_busy">Mae\'r golofn yn brysur</string>
@@ -171,8 +171,7 @@
     <string name="regex_filter">Hidlydd Regex</string>
     <string name="regex_error">Gwall Regex</string>
     <string name="notification_delete">Hysbysiadau gwag</string>
-    <string name="confirm_delete_notification">"Mi fydd hyn yn gwagio eich hysbysiad ar eich achos.
-\nYdych chi\'n siŵr\? "</string>
+    <string name="confirm_delete_notification">Mi fydd hyn yn gwagio eich hysbysiad ar eich achos.\nYdych chi\'n siŵr\? </string>
     <string name="search_for">Chwilio %1$s</string>
     <string name="contributor">cyfrannwr</string>
     <string name="thanks_for">Diolch am %1$s</string>
@@ -274,7 +273,7 @@
     <string name="draft_deleted">Drafft wedi\'i ddileu.</string>
     <string name="secret">Cyfrinachol</string>
     <string name="test">Profi</string>
-    <string name="custom_stream_listener_desc">"Mae\'r gosodiad hwn ar gyfer defnyddwyr profiadol. Os nad ydych chi\'n siŵr, peidiwch a golygu. "</string>
+    <string name="custom_stream_listener_desc">Mae\'r gosodiad hwn ar gyfer defnyddwyr profiadol. Os nad ydych chi\'n siŵr, peidiwch a golygu. </string>
     <string name="language_code">en</string>
     <string name="performance">Ymddangosiad</string>
     <string name="behavior">Ymddygiad</string>

@@ -81,8 +81,8 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			
 			// URLから調べる
 			// たぶんどんなURLでもauthorityの部分にホスト名が来るだろう(慢心)
-			url.mayUri()?.authority?.let{ host ->
-				if( host.isNotEmpty() ){
+			url.mayUri()?.authority?.let { host ->
+				if(host.isNotEmpty()) {
 					return host.toLowerCase()
 				}
 			}
@@ -187,7 +187,7 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 	// val user_hides_network : Boolean
 	
 	var pinnedNotes : ArrayList<TootStatus>? = null
-	var pinnedNoteIds : ArrayList<String>? = null
+	private var pinnedNoteIds : ArrayList<String>? = null
 	
 	init {
 		var sv : String?
@@ -195,14 +195,15 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 		if(parser.serviceType == ServiceType.MISSKEY) {
 			
 			val remoteHost = src.parseString("host")
-			val instance = remoteHost ?: parser.linkHelper.host ?: error("missing host")
+			this.host = remoteHost ?: parser.linkHelper.host ?: error("missing host")
 			
-			this.custom_emojis = parseMapOrNull(CustomEmoji.decodeMisskey, src.optJSONArray("emojis"))
+			this.custom_emojis =
+				parseMapOrNull(CustomEmoji.decodeMisskey, src.optJSONArray("emojis"))
 			
 			this.profile_emojis = null
 			
 			this.username = src.notEmptyOrThrow("username")
-			this.url = "https://$instance/@$username"
+			this.url = "https://$host/@$username"
 			
 			//
 			sv = src.parseString("name")
@@ -226,9 +227,11 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			
 			this.id = EntityId.mayDefault(src.parseString("id"))
 			
-			this.host = instance
+			
 			this.acct = when {
-				remoteHost?.isNotEmpty() == true -> "$username@$remoteHost"
+				// アクセス元から見て外部ユーザならfull acct
+				remoteHost?.isNotEmpty() == true -> "${username}@$remoteHost"
+				// アクセス元から見て内部ユーザなら short acct
 				else -> username
 			}
 			
@@ -246,13 +249,15 @@ open class TootAccount(parser : TootParser, src : JSONObject) {
 			
 			this.pinnedNoteIds = src.parseStringArrayList("pinnedNoteIds")
 			if(parser.misskeyDecodeProfilePin) {
-				val list = parseList(::TootStatus, parser,src.optJSONArray("pinnedNotes"))
+				val list = parseList(::TootStatus, parser, src.optJSONArray("pinnedNotes"))
 				list.forEach { it.pinned = true }
-				this.pinnedNotes = if( list.isNotEmpty() ) list else null
+				this.pinnedNotes = if(list.isNotEmpty()) list else null
 			}
 			
-			UserRelationMisskey.fromAccount(parser,src,id)
-			MisskeyAccountDetailMap.fromAccount(parser,this,id)
+			UserRelationMisskey.fromAccount(parser, src, id)
+			
+			@Suppress("LeakingThis")
+			MisskeyAccountDetailMap.fromAccount(parser, this, id)
 			
 		} else {
 			

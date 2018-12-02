@@ -22,12 +22,19 @@ interface LinkHelper {
 	
 	companion object {
 		
-		fun newLinkHelper(host : String?, isMisskey : Boolean = false) : LinkHelper =
-			object : LinkHelper {
-				override val host : String?
-					get() = host
-				override val isMisskey : Boolean
-					get() = isMisskey
-			}
+		fun newLinkHelper(host : String?, isMisskey : Boolean = false) = object : LinkHelper {
+
+			override val host : String?
+				get() = host
+
+			override val isMisskey : Boolean
+				get() = isMisskey
+		}
+		
+		val nullHost = object : LinkHelper {
+
+			override val host : String?
+				get() = null
+		}
 	}
 }

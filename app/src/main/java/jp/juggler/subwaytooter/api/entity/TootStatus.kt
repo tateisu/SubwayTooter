@@ -1,5 +1,6 @@
 package jp.juggler.subwaytooter.api.entity
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.text.Spannable
 import android.text.SpannableString
@@ -763,7 +764,8 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			return 0L
 		}
 		
-		private val date_format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+		@SuppressLint("SimpleDateFormat")
+		private val date_format = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 		
 		fun formatTime(context : Context, t : Long, bAllowRelative : Boolean) : String {
 			if(bAllowRelative && Pref.bpRelativeTimestamp(App1.pref)) {

@@ -1491,7 +1491,7 @@ fun TootApiClient.syncStatus(accessInfo : SavedAccount, urlArg : String) : TootA
 		
 		val obj = TootParser(
 			context,
-			accessInfo,
+			LinkHelper.newLinkHelper(host,isMisskey = true),
 			serviceType = ServiceType.MISSKEY
 		).status(result.jsonObject)
 		

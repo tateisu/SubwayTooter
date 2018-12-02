@@ -116,7 +116,7 @@ class TestDuplicateMap {
 			map,
 			parser,
 			account1Json,
-			TootStatus.INVALID_ID,
+			EntityId.INVALID_ID_LONG,
 			null, // "http://${parser.linkHelper.host}/@${account1.username}/4",
 			null //"http://${parser.linkHelper.host}/@${account1.username}/4"
 		)

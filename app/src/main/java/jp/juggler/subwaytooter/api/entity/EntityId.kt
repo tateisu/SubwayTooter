@@ -15,7 +15,10 @@ abstract class EntityId : Comparable<EntityId> {
 	
 	companion object {
 		
-		val defaultLong = EntityIdLong(TootStatus.INVALID_ID)
+		const val INVALID_ID_LONG = - 1L
+		
+		
+		val defaultLong = EntityIdLong(INVALID_ID_LONG)
 		val defaultString = EntityIdString("")
 		
 		fun mayDefault(x : Long?) = when(x) {
@@ -142,7 +145,7 @@ class EntityIdString(val x : String) : EntityId() {
 	
 	override fun toString() = x
 	
-	override fun toLong() = TootStatus.INVALID_ID // error("can't convert string ID to long")
+	override fun toLong() = EntityId.INVALID_ID_LONG // error("can't convert string ID to long")
 	
 	override fun putMisskeyUntil(dst : JSONObject) : JSONObject = dst.put("untilId", x)
 	override fun putMisskeySince(dst : JSONObject) : JSONObject = dst.put("sinceId", x)

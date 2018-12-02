@@ -190,16 +190,18 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 			
 			val uri = src.parseString("uri")
 			if(uri != null) {
+				// リモート投稿には uriが含まれる
 				this.uri = uri
 				this.url = uri
 			} else {
+				
 				this.uri = "https://$instance/notes/$misskeyId"
 				this.url = "https://$instance/notes/$misskeyId"
 			}
 			
 			this.created_at = src.parseString("createdAt")
 			this.time_created_at = parseTime(this.created_at)
-			this.id = EntityIdString(src.parseString("id") ?: error("missing id"))
+			this.id = EntityId.mayDefault(misskeyId)
 			
 			// ページネーションには日時を使う
 			this._orderId = EntityIdLong(time_created_at)
@@ -363,7 +365,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 				ServiceType.MASTODON -> {
 					this.host_access = parser.linkHelper.host
 					
-					this.id = EntityIdLong(src.parseLong("id") ?: INVALID_ID)
+					this.id = EntityId.mayDefault(src.parseLong("id") )
 					
 					this.reblogged = src.optBoolean("reblogged")
 					this.favourited = src.optBoolean("favourited")
@@ -386,7 +388,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					this.host_access = null
 					
 					// 投稿元タンスでのIDを調べる。失敗するかもしれない
-					this.id = findStatusIdFromUri(uri, url) ?: EntityIdLong(INVALID_ID)
+					this.id = findStatusIdFromUri(uri, url) ?: EntityId.defaultLong
 					
 					this.time_created_at = TootStatus.parseTime(this.created_at)
 					this.media_attachments =
@@ -405,7 +407,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 					this.host_access = null
 					
 					// MSPのデータはLTLから呼んだものなので、常に投稿元タンスでのidが得られる
-					this.id = EntityIdLong(src.parseLong("id") ?: INVALID_ID)
+					this.id = EntityId.mayDefault(src.parseLong("id") )
 					
 					this.time_created_at = parseTimeMSP(created_at)
 					this.media_attachments =
@@ -674,8 +676,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		@Suppress("HasPlatformType")
 		val reStatusPageMisskey = Pattern.compile("""\Ahttps://([^/]+)/notes/([0-9a-f]{24})\b""", Pattern.CASE_INSENSITIVE)
 		
-		const val INVALID_ID = - 1L
-		
+
 		fun parseListTootsearch(
 			parser : TootParser,
 			root : JSONObject
@@ -875,7 +876,7 @@ class TootStatus(parser : TootParser, src : JSONObject) : TimelineItem() {
 		fun validStatusId(src : EntityId?) : EntityId? {
 			return when {
 				src == null -> null
-				src is EntityIdLong && src.toLong() == TootStatus.INVALID_ID -> null
+				src == EntityId.defaultLong -> null
 				else -> src
 			}
 		}

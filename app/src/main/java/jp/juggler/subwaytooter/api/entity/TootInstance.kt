@@ -61,7 +61,6 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 	
 	// インスタンスの種別
 	enum class InstanceType {
-		
 		Mastodon,
 		Pleroma,
 		Misskey
@@ -87,9 +86,9 @@ class TootInstance(parser : TootParser, src : JSONObject) {
 			this.decoded_version = VersionString(version)
 			this.stats = null
 			this.thumbnail = null
-			this.max_toot_chars = 1000
+			this.max_toot_chars = src.parseInt("maxNoteTextLength")
 			this.instanceType = InstanceType.Misskey
-			this.languages = ArrayList<String>().also{ it.add("?")}
+			this.languages = src.optJSONArray("langs")?.toStringArrayList() ?: ArrayList()
 			this.contact_account = null
 			
 		}else {

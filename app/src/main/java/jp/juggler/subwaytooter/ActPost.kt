@@ -983,8 +983,6 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		when{
 			account == null || account.isPseudo -> {}
 
-			account.isMisskey ->return 3000
-
 			else->{
 				val info = account.instance
 
@@ -1000,7 +998,14 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 							var newInfo : TootInstance? = null
 							
 							override fun background(client : TootApiClient) : TootApiResult? {
-								val result = client.request("/api/v1/instance")
+								val result = if( account.isMisskey){
+									client.request(
+										"/api/meta",
+										account.putMisskeyApiToken().toPostRequestBuilder()
+									)
+								}else{
+									client.request("/api/v1/instance")
+								}
 								newInfo = TootParser(this@ActPost, account).instance(result?.jsonObject)
 								return result
 							}
@@ -1095,6 +1100,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 				)
 			}
 		}
+		updateTextCount()
 	}
 	
 	private fun performAccountChooser() {
@@ -1177,6 +1183,7 @@ class ActPost : AppCompatActivity(), View.OnClickListener, PostAttachment.Callba
 		}
 		showVisibility()
 		showQuotedRenote()
+		updateTextCount()
 	}
 	
 	@SuppressLint("StaticFieldLeak")

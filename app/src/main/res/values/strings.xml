@@ -831,5 +831,6 @@
     <string name="quote_renote">Quoted renote… (Misskey)</string>
     <string name="blank_cw">(blank CW)</string>
     <string name="actions_for_instance">Actions for this instance</string>
+    <string name="animation">Animation</string>
 
 </resources>

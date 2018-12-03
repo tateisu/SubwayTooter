@@ -100,8 +100,8 @@ class ActAppSetting : AppCompatActivity() {
 				openChild(it, R.layout.act_app_setting_media_attachment)
 			},
 			
-			genItem(R.string.emoji) {
-				openChild(it, R.layout.act_app_setting_emoji)
+			genItem(R.string.animation) {
+				openChild(it, R.layout.act_app_setting_animation)
 			},
 
 			genItem(R.string.appearance) {

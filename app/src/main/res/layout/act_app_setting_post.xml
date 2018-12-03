@@ -53,6 +53,7 @@
                 android:id="@+id/etMediaSizeMax"
                 style="@style/setting_horizontal_stretch"
                 android:inputType="number"
+                android:gravity="center"
                 />
 
         </LinearLayout>
@@ -71,6 +72,7 @@
                 android:id="@+id/etMovieSizeMax"
                 style="@style/setting_horizontal_stretch"
                 android:inputType="number"
+                android:gravity="center"
                 />
 
         </LinearLayout>
@@ -174,6 +176,7 @@
                 android:id="@+id/etQuoteNameFormat"
                 style="@style/setting_horizontal_stretch"
                 android:inputType="text"
+                android:gravity="center"
                 />
 
         </LinearLayout>

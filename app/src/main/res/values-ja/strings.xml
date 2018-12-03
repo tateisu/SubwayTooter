@@ -813,5 +813,6 @@
     <string name="quote_renote">引用リノート… (Misskey)</string>
     <string name="blank_cw">(空欄CW)</string>
     <string name="actions_for_instance">タンスへのアクション</string>
+    <string name="animation">アニメーション</string>
 
 </resources>

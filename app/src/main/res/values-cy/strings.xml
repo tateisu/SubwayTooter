@@ -415,4 +415,32 @@
     <string name="field_value3">gwerth3</string>
     <string name="field_value4">gwerth4</string>
     <string name="redraft_and_delete">Ailldrafftio a dileu</string>
+    <string name="follow_request_rejected">Gwrthod cais dilyn %1$s.</string>
+    <string name="token_not_specified">Mewnbynwch tocyn mynediad os gwelwch yn dda.</string>
+    <string name="quote_name">Dyfynnu enw…</string>
+    <string name="content_color">Lliw testun cynnwys</string>
+    <string name="content_sample">(sampl) Mae\'r cadno chwim yn neidio dros y ci diog.</string>
+    <string name="acct_sample">(sampl)enwdefnyddiwr@achos</string>
+    <string name="change_header">Newid delwedd pennawd</string>
+    <string name="missing_mail_app">Ap E-bost ar goll.</string>
+    <string name="ago">yn ôl</string>
+    <string name="relative_time_second_1">%1$d eiliad %2$s</string>
+    <string name="relative_time_second_2">%1$d eiliadau %2$s</string>
+    <string name="relative_time_minute_1">%1$d munud %2$s</string>
+    <string name="relative_time_minute_2">%1$d munudau %2$s</string>
+    <string name="relative_time_hour_1">%1$d awr %2$s</string>
+    <string name="relative_time_hour_2">%1$d oriau %2$s</string>
+    <string name="relative_time_day_1">%1$d dydd %2$s</string>
+    <string name="relative_time_day_2">%1$d dyddiau %2$s</string>
+    <string name="skin_tone_light">lliw croen golau</string>
+    <string name="skin_tone_medium_light">lliw croen cymhedrol o olau</string>
+    <string name="skin_tone_medium">lliw croen cymhedrol</string>
+    <string name="skin_tone_medium_dark">lliw croen cymhedrol o dywyll</string>
+    <string name="skin_tone_dark">lliw croen tywyll</string>
+    <string name="operation_succeeded">Gweithrediad llwyddiannus.</string>
+
+    <string name="list_member_add_remove">Ychwanegu/Cael gwared o\'r rhestrau…</string>
+    <string name="target_user">Defnyddiwr targed</string>
+    <string name="media_attachment_empty">Atodiadau cyfryngau ar goll.</string>
+    <string name="media_attachment_still_uploading">Nid yw uwchlwytho\'r cyfryngau wedi\'i gwblhau eto.</string>
     </resources>

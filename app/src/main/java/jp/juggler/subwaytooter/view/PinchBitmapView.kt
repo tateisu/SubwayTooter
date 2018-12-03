@@ -13,6 +13,9 @@ import android.view.VelocityTracker
 import android.view.View
 import jp.juggler.util.LogCategory
 import jp.juggler.util.runOnMainLooper
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.sqrt
 
 class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) :
 	View(context, attrs, defStyle) {
@@ -65,19 +68,19 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 	private var bPointerCountChanged : Boolean = false
 	
 	// ページめくりに必要なスワイプ強度
-	private var swipe_velocity : Float = 0.toFloat()
-	private var swipe_velocity2 : Float = 0.toFloat()
+	private var swipe_velocity = 0f
+	private var swipe_velocity2 = 0f
 	
 	// 指を動かしたと判断する距離
-	private var drag_width : Float = 0.toFloat()
+	private var drag_length = 0f
 	
-	private var time_touch_start : Long = 0
+	private var time_touch_start = 0L
 	
 	// フリック操作の検出に使う
 	private var velocityTracker : VelocityTracker? = null
 	
-	private var click_time : Long = 0
-	private var click_count : Int = 0
+	private var click_time = 0L
+	private var click_count = 0
 	
 	// 移動後の指の位置
 	internal val pos = PointerAvg()
@@ -120,13 +123,13 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 		val density = context.resources.displayMetrics.density
 		swipe_velocity = 1000f * density
 		swipe_velocity2 = 250f * density
-		drag_width = 4f * density // 誤反応しがちなのでやや厳しめ
+		drag_length = 4f * density // 誤反応しがちなのでやや厳しめ
 	}
 	
 	// ページめくり操作のコールバック
 	interface Callback {
 		
-		fun onSwipe(delta : Int)
+		fun onSwipe(deltaX : Int, deltaY : Int)
 		
 		fun onMove(bitmap_w : Float, bitmap_h : Float, tx : Float, ty : Float, scale : Float)
 	}
@@ -177,7 +180,7 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 		return true
 	}
 	
-	private var defaultScale :Float = 1f
+	private var defaultScale : Float = 1f
 	
 	// 表示位置の初期化
 	// 呼ばれるのは、ビットマップを変更した時、ビューのサイズが変わった時、画像をクリックした時
@@ -216,7 +219,7 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 			defaultScale = 1f
 			scale_min = 1f
 			scale_max = 1f
-
+			
 			current_scale = defaultScale
 			current_trans_y = 0f
 			current_trans_x = 0f
@@ -319,36 +322,64 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 			
 			// 指の数を変えていないならページめくり操作かもしれない
 			
+			// 「画像を動かした」かどうかのチェック
+			val image_moved = max(
+				abs(current_trans_x - start_image_trans_x),
+				abs(current_trans_y - start_image_trans_y)
+			)
+			if(image_moved >= drag_length) {
+				log.d("image moved. not flick action. $image_moved")
+				return
+			}
+			
 			velocityTracker.computeCurrentVelocity(1000)
-			val xv = velocityTracker.xVelocity
-			val yv = velocityTracker.yVelocity
+			val vx = velocityTracker.xVelocity
+			val vy = velocityTracker.yVelocity
+			val avx = abs(vx)
+			val avy = abs(vy)
+			val velocity = sqrt(vx * vx + vy * vy)
+			val aspect = try {
+				avx / avy
+			} catch(ex : Throwable) {
+				Float.MAX_VALUE
+			}
 			
-			val image_move_x = Math.abs(current_trans_x - start_image_trans_x)
-			val image_move_y = Math.abs(current_trans_y - start_image_trans_y)
-			
-			val draw_w = bitmap_w * current_scale
-			
-			if(Math.abs(xv) < Math.abs(yv) / 8) {
-				// 指を動かした方向の角度が左右ではなかった
-				log.d("flick is vertical.")
+			when {
+				aspect >= 0.9f -> {
+					// 指を動かした方向が左右だった
+					
+					val vMin = when {
+						current_scale * bitmap_w <= view_w -> swipe_velocity2
+						else -> swipe_velocity
+					}
+					
+					if(velocity < vMin) {
+						log.d("velocity $velocity not enough to pagingX")
+						return
+					}
+					
+					log.d("pagingX! m=$image_moved a=$aspect v=$velocity")
+					runOnMainLooper { callback?.onSwipe(if(vx >= 0f) - 1 else 1, 0) }
+				}
 				
-			} else if(Math.abs(xv) < (if(draw_w <= view_w) swipe_velocity2 else swipe_velocity)) {
-				// 左右方向の強さが足りなかった
-				log.d("velocity %f not enough to paging", xv)
+				aspect <= 0.333f -> {
+					// 指を動かした方向が上下だった
+					
+					val vMin = when {
+						current_scale * bitmap_h <= view_h -> swipe_velocity2
+						else -> swipe_velocity
+					}
+					
+					if(velocity < vMin) {
+						log.d("velocity $velocity not enough to pagingY")
+						return
+					}
+					
+					log.d("pagingY! m=$image_moved a=$aspect v=$velocity")
+					runOnMainLooper { callback?.onSwipe(0, if(vy >= 0f) - 1 else 1) }
+				}
 				
-			} else if(image_move_x >= drag_width || image_move_y >= drag_width * 5f) {
-				// 「画像を動かした」かどうかの最終チェック
-				log.d(
-					"image was moved. not paging action. %f %f ",
-					image_move_x / drag_width,
-					image_move_y / drag_width
-				)
-			} else {
-				log.d(
-					"paging! %f %f %f", image_move_x / drag_width, image_move_y / drag_width, xv
-				)
-				
-				runOnMainLooper { callback?.onSwipe(if(xv >= 0f) - 1 else 1) }
+				else -> log.d("flick is not horizontal/vertical. aspect=$aspect")
 			}
 		}
 	}
@@ -405,7 +436,6 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 		start_image_trans_y = current_trans_y
 		start_image_scale = current_scale
 		
-
 	}
 	
 	// 画面上の指の位置から画像中の指の位置を調べる
@@ -458,7 +488,7 @@ class PinchBitmapView(context : Context, attrs : AttributeSet?, defStyle : Int) 
 			val move_y = pos.avg[1] - start_pos.avg[1]
 			
 			// 「指を動かした」と判断したらフラグを立てる
-			if(Math.abs(move_x) >= drag_width || Math.abs(move_y) >= drag_width) {
+			if(Math.abs(move_x) >= drag_length || Math.abs(move_y) >= drag_length) {
 				bDrag = true
 			}
 			

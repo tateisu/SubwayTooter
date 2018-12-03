@@ -233,9 +233,14 @@ class ActMediaViewer : AppCompatActivity(), View.OnClickListener {
 		findViewById<View>(R.id.btnMore).setOnClickListener(this)
 		
 		pbvImage.setCallback(object : PinchBitmapView.Callback {
-			override fun onSwipe(delta : Int) {
+			override fun onSwipe(deltaX : Int,deltaY:Int) {
 				if(isDestroyed) return
-				loadDelta(delta)
+				if( deltaX != 0) {
+					loadDelta(deltaX)
+				}else{
+					log.d("finish by vertical swipe")
+					finish()
+				}
 			}
 			
 			override fun onMove(

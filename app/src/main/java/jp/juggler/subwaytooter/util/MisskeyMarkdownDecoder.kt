@@ -8,6 +8,7 @@ import android.text.Spanned
 import android.text.style.BackgroundColorSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
+import android.text.style.StrikethroughSpan
 import android.util.SparseArray
 import android.util.SparseBooleanArray
 import jp.juggler.subwaytooter.ActMain
@@ -31,8 +32,7 @@ import java.util.regex.Pattern
 import uk.co.chrisjenx.calligraphy.CalligraphyTypefaceSpan
 
 // import uk.co.chrisjenx.calligraphy.CalligraphyTypefaceSpan
-private fun fontSpan(typeFace:Typeface):Any =
-	CalligraphyTypefaceSpan(typeFace)
+private fun fontSpan(tf : Typeface) : Any = CalligraphyTypefaceSpan(tf)
 
 // 配列中の要素をラムダ式で変換して、戻り値が非nullならそこで処理を打ち切る
 private inline fun <T, V> Array<out T>.firstNonNull(predicate : (T) -> V?) : V? {
@@ -546,8 +546,6 @@ object MisskeyMarkdownDecoder {
 		s.replace(reStartEmptyLines, "")
 			.replace(reEndEmptyLines, "")
 	
-
-	
 	// 装飾つきテキストの出力時に使うデータの集まり
 	internal class SpanOutputEnv(
 		val options : DecodeOptions,
@@ -696,21 +694,21 @@ object MisskeyMarkdownDecoder {
 		mixColor(Color.GRAY, 0xff0080),
 		mixColor(Color.GRAY, 0x8000ff)
 	)
-
+	
 	// ノード種別とレンダリング関数
 	enum class NodeType(val render : SpanOutputEnv.(Node) -> Unit) {
-
+		
 		TEXT({
 			appendText(it.args[0], decodeEmoji = true)
 		}),
-
+		
 		EMOJI({
 			val code = it.args[0]
 			if(code.isNotEmpty()) {
 				appendText(":$code:", decodeEmoji = true)
 			}
 		}),
-
+		
 		MENTION({
 			val username = it.args[0]
 			val host = it.args[1]
@@ -761,7 +759,7 @@ object MisskeyMarkdownDecoder {
 				)
 			}
 		}),
-
+		
 		HASHTAG({
 			val linkHelper = linkHelper
 			val tag = it.args[0]
@@ -847,6 +845,11 @@ object MisskeyMarkdownDecoder {
 			spanList.addLast(start, sb.length, fontSpan(font_bold))
 		}),
 		
+		STRIKE({
+			val start = this.start
+			fireRenderChildNodes(it)
+			spanList.addLast(start, sb.length, StrikethroughSpan())
+		}),
 		MOTION({
 			val start = this.start
 			fireRenderChildNodes(it)
@@ -977,46 +980,66 @@ object MisskeyMarkdownDecoder {
 		;
 		
 		companion object {
-
+			
 			// あるノードが内部に持てるノード種別のマップ
 			val mapAllowInside = HashMap<NodeType, HashSet<NodeType>>().apply {
 				
 				fun <T> hashSetOf(vararg values : T) = HashSet<T>().apply { addAll(values) }
 				
 				infix fun NodeType.wraps(inner : HashSet<NodeType>) = put(this, inner)
+
+				// EMOJI, HASHTAG, MENTION, CODE_BLOCK, QUOTE_INLINE, SEARCH 等はマークダウン要素のネストを許可しない
 				
 				BIG wraps
-					hashSetOf(EMOJI, HASHTAG, MENTION)
+					hashSetOf(EMOJI, HASHTAG, MENTION, STRIKE)
+				
 				BOLD wraps
-					hashSetOf(EMOJI, HASHTAG, MENTION, URL, LINK)
-				MOTION wraps
+					hashSetOf(EMOJI, HASHTAG, MENTION, URL, LINK, STRIKE)
+				
+				STRIKE wraps
 					hashSetOf(EMOJI, HASHTAG, MENTION, URL, LINK, BOLD)
+				
+				MOTION wraps
+					hashSetOf(EMOJI, HASHTAG, MENTION, URL, LINK, BOLD, STRIKE)
+				
 				LINK wraps
-					hashSetOf(EMOJI, MOTION, BIG, BOLD)
+					hashSetOf(EMOJI, MOTION, BIG, BOLD, STRIKE)
+				
 				TITLE wraps
-					hashSetOf(EMOJI, HASHTAG, MENTION, URL, LINK, BIG, BOLD, MOTION, CODE_INLINE)
+					hashSetOf(
+						EMOJI, HASHTAG, MENTION, URL, LINK, BIG, BOLD, STRIKE,
+						MOTION, CODE_INLINE
+					)
+				
 				CENTER wraps
-					hashSetOf(EMOJI, HASHTAG, MENTION, URL, LINK, BIG, BOLD, MOTION, CODE_INLINE)
-				QUOTE_BLOCK wraps
 					hashSetOf(
-						EMOJI, HASHTAG, MENTION, URL, LINK, BIG, BOLD, MOTION, CODE_INLINE,
-						CODE_BLOCK, QUOTE_INLINE, SEARCH, TITLE, CENTER, QUOTE_BLOCK
+						EMOJI, HASHTAG, MENTION, URL, LINK, BIG, BOLD, STRIKE,
+						MOTION, CODE_INLINE
 					)
-				ROOT wraps
-					hashSetOf(
-						EMOJI, HASHTAG, MENTION, URL, LINK, BIG, BOLD, MOTION, CODE_INLINE,
-						CODE_BLOCK, QUOTE_INLINE, SEARCH, TITLE, CENTER, QUOTE_BLOCK
-					)
+				
+				// all except ROOT,TEXT
+				val allSet = hashSetOf(
+					CODE_BLOCK, QUOTE_INLINE, SEARCH,
+					EMOJI, HASHTAG, MENTION, URL, LINK, BIG, BOLD, STRIKE,
+					MOTION, CODE_INLINE,
+					TITLE, CENTER, QUOTE_BLOCK
+				)
+				
+				QUOTE_BLOCK wraps allSet
+				
+				ROOT wraps allSet
+				
 			}
 		}
 	}
-
+	
 	// マークダウン要素
 	class Node(
 		val type : NodeType, // ノード種別
 		val args : Array<String> = emptyArray(), // 引数
 		parentNode : Node?
 	) {
+		
 		val childNodes = LinkedList<Node>()
 		
 		internal val quoteNest : Int = (parentNode?.quoteNest ?: 0) + when(type) {
@@ -1034,6 +1057,7 @@ object MisskeyMarkdownDecoder {
 		val startInside : Int, // 内部範囲の開始位置
 		private val lengthInside : Int // 内部範囲の終了位置
 	) {
+		
 		val endInside : Int
 			get() = startInside + lengthInside
 	}
@@ -1185,6 +1209,15 @@ object MisskeyMarkdownDecoder {
 				put(s.toInt(), nodeParsers)
 			}
 		}
+		
+		// Strike ~~...~~
+		addParser(
+			"~"
+			, simpleParser(
+				Pattern.compile("""\A~~(.+?)~~""")
+				, NodeType.STRIKE
+			)
+		)
 		
 		// Quote "..."
 		addParser(
@@ -1373,7 +1406,7 @@ object MisskeyMarkdownDecoder {
 		addParser("検Ss", searchParser)
 		addParser("?", linkParser)
 		
-
+		
 		addParser("@", {
 			val matcher = remainMatcher(TootAccount.reMention)
 			when {
